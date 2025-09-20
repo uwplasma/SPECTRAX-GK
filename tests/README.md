@@ -1,6 +1,6 @@
 # Tests in SPECTRAX-GK
 
-The `tests/` folder contains **unit tests**, **regression tests**, and **physics benchmark tests**.  
+The `tests/` folder contains **unit tests**, **regression tests**, and **physics benchmark tests**.
 They ensure that the solvers remain stable, correct, and scientifically reliable.
 
 ---
