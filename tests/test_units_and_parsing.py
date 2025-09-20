@@ -1,13 +1,15 @@
-import io
 import tomllib
+
 from spectraxgk.io_config import _preprocess_toml_expressions, read_toml
 
+
 def test_preprocess_arithmetic_literals():
-    s = 'n0 = 0.5*10000\nval = 2*pi\n'
+    s = "n0 = 0.5*10000\nval = 2*pi\n"
     pre = _preprocess_toml_expressions(s)
     d = tomllib.loads(pre)
     assert isinstance(d["n0"], str) and d["n0"] == "0.5*10000"
     assert isinstance(d["val"], str) and d["val"] == "2*pi"
+
 
 def test_read_toml_exprs(tmp_path):
     p = tmp_path / "in.toml"
