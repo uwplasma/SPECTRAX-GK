@@ -1,6 +1,7 @@
 import jax.numpy as jnp
-from spectraxgk.poisson import build_P
 from spectraxgk.dg import upwind_D
+from spectraxgk.poisson import build_P
+
 
 def test_periodic_ops_shapes():
     Nx, L = 16, 1.0

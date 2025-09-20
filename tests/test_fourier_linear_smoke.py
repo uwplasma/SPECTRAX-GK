@@ -1,7 +1,6 @@
-import jax.numpy as jnp
-from spectraxgk.io_config import Config, SimCfg, GridCfg, HermiteCfg, BCCfg, PlotCfg, SpeciesCfg
-from spectraxgk.backends import run_fourier
-from spectraxgk.backends import resolve_kgrid
+from spectraxgk.backends import resolve_kgrid, run_fourier
+from spectraxgk.io_config import BCCfg, Config, GridCfg, HermiteCfg, PlotCfg, SimCfg, SpeciesCfg
+
 
 def _tiny_cfg():
     sim = SimCfg(mode="fourier", backend="eig", tmax=1e-6, nt=8, nonlinear=False)
@@ -9,9 +8,21 @@ def _tiny_cfg():
     hermite = HermiteCfg(N=8)
     bc = BCCfg(kind="periodic")
     plot = PlotCfg()
-    species = [SpeciesCfg(name="e", q=-1.0, n0=1e6, mass_base="electron", mass_multiple=1.0,
-                          temperature_eV=1.0, drift_c=0.0, amplitude=1e-3, k=1)]
+    species = [
+        SpeciesCfg(
+            name="e",
+            q=-1.0,
+            n0=1e6,
+            mass_base="electron",
+            mass_multiple=1.0,
+            temperature_eV=1.0,
+            drift_c=0.0,
+            amplitude=1e-3,
+            k=1,
+        )
+    ]
     return Config(sim=sim, grid=grid, hermite=hermite, bc=bc, plot=plot, species=species)
+
 
 def test_fourier_linear_shapes():
     cfg = _tiny_cfg()
