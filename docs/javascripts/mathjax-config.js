@@ -1,13 +1,17 @@
-// Configure MathJax (v3)
+// Configure MathJax (v3) to work with pymdownx.arithmatex (generic: true)
 window.MathJax = {
   tex: {
-    inlineMath: [["$", "$"], ["\\(", "\\)"]],
-    displayMath: [["$$", "$$"], ["\\[", "\\]"]],
+    // arithmatex will wrap content for us; use standard TeX delimiters
+    inlineMath: [["\\(", "\\)"]],
+    displayMath: [["\\[", "\\]"]],
     processEscapes: true,
     processEnvironments: true
   },
   options: {
-    skipHtmlTags: ["script", "noscript", "style", "textarea", "pre", "code"]
+    // Process ONLY elements that have the "arithmatex" class
+    // (that’s what pymdownx.arithmatex emits in generic mode)
+    ignoreHtmlClass: ".*|",       // ignore everything…
+    processHtmlClass: "arithmatex" // …except this
   }
 };
 
