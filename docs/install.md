@@ -11,7 +11,7 @@ For most users:
 
 ```bash
 pip install spectraxgk
-````
+```
 
 This installs the core package with CPU-based JAX. It works out of the box on Linux, macOS, and Windows (WSL2 recommended).
 

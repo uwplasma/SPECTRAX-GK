@@ -1,10 +1,3 @@
-````
-
----
-
-## 📘 `docs/quickstart.md`
-
-```markdown
 # Quickstart
 
 Let’s run your **first simulation** in just a few lines.
@@ -17,7 +10,7 @@ Run the built-in two-stream instability example:
 
 ```bash
 spectraxgk --input examples/two_stream.toml
-````
+```
 
 You’ll see:
 
@@ -25,6 +18,7 @@ You’ll see:
 
   * Plasma frequency, Debye length normalizations
   * Box size, time step, species info
+
 * A figure with:
 
   * **Energy traces** (per-species kinetic + field + total)
