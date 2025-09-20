@@ -23,11 +23,16 @@
 ## At a Glance
 
 We solve the Vlasov–Poisson system
-\[
+
+$$
 \frac{\partial f_s}{\partial t}
 + v \frac{\partial f_s}{\partial x}
-+ \frac{q_s}{m_s} E(x,t) \frac{\partial f_s}{\partial v} = 0, \qquad
-\frac{\partial E}{\partial x} = \frac{1}{\epsilon_0} \sum_s q_s \int f_s\, dv.
-\]
++ \frac{q_s}{m_s} E(x,t) \frac{\partial f_s}{\partial v} = 0
+$$
+
+$$
+\frac{\partial E}{\partial x} = \frac{1}{\epsilon_0}
+\sum_s q_s \int f_s\, dv
+$$
 
 See the [Physics](physics.md) page for the discretizations and normalization.
