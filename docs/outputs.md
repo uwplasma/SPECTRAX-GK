@@ -13,7 +13,7 @@ Running a simulation produces structured outputs (NumPy/JAX arrays) plus **plots
     "Ek_kt": (Nk, nt),         # Electric field Fourier modes
     "k": (Nk,)                 # Wavenumber array
   }
-````
+```
 
 * **DG solver**:
 

@@ -34,7 +34,7 @@ mass_base = "electron"   # "electron" or "proton"
 mass_multiple = 1.0      # e.g. 1836 for proton as multiple of electron mass
 temperature_eV = 1.0     # species temperature in eV
 drift_c = +0.1           # drift velocity as fraction of c
-````
+```
 
 ---
 
