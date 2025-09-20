@@ -1,7 +1,7 @@
 
 # Examples
 
-The `examples/` folder contains ready-to-run input files (`.toml`) showcasing standard plasma physics problems.  
+The `examples/` folder contains ready-to-run input files (`.toml`) showcasing standard plasma physics problems.
 Run any example with:
 
 ```bash
