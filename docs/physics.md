@@ -76,7 +76,7 @@ This hybrid **DG–Hermite** scheme is more robust in strongly nonlinear regimes
 
 We track **kinetic** and **field** energy to ensure conservation and diagnose dynamics.
 
-### Kinetic energy of species \(s\)
+### Kinetic energy of species s
 
 ![Kinetic energy](https://latex.codecogs.com/svg.image?\mathcal{E}^{(s)}_{\text{kin}}(t)%20=%20\frac{n_{0,s}%20m_s%20v_{\text{th},s}^2}{4\sqrt{2}}\int_0^L%20\left[C_{0}^{(s)}(x,t)%20+%20\sqrt{2}\,C_{2}^{(s)}(x,t)\right]\,dx)
 
