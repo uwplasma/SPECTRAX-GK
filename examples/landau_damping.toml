@@ -7,7 +7,7 @@ nonlinear = true        # << set true for NL, false for linear
 dealias_frac = 0.6667   # optional; only used in Fourier-NL
 
 [grid]
-L_lambdaD  = 64         # box is 64 Debye lengths long
+L_lambdaD  = 12         # box is 64 Debye lengths long
 debye_species = "electrons"   # optional; otherwise first q<0 is used
 Nx = 23                 # number of x points (DG) or Fourier modes in the box
 
