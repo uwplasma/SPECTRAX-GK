@@ -1,18 +1,18 @@
 [sim]
-mode    = "dg"      # "fourier" or "dg"
+mode    = "fourier"      # "fourier" or "dg"
 backend = "diffrax"          # "eig" or "diffrax"
-tmax    = 10.0   # <-- now interpreted as 40 / ω_p (dimensionless)
+tmax    = 0.1   # <-- now interpreted as 40 / ω_p (dimensionless)
 nt      = 200
-nonlinear = true        # << set true for NL, false for linear
+nonlinear = false        # << set true for NL, false for linear
 dealias_frac = 0.6667   # optional; only used in Fourier-NL
 
 [grid]
-L_lambdaD  = 12         # box is 64 Debye lengths long
+L_lambdaD  = "4.22601177e-4"         # box is 64 Debye lengths long
 debye_species = "electrons"   # optional; otherwise first q<0 is used
-Nx = 23                 # number of x points (DG) or Fourier modes in the box
+Nx = 1                 # number of x points (DG) or Fourier modes in the box
 
 [hermite]
-N  = 32
+N  = 3
 
 [bc]
 kind = "periodic"        # for DG; ignored by Fourier
@@ -36,20 +36,20 @@ seed_c1        = true
 
 # Ions: heavy, weakly warm, no initial perturbation (neutralizing background)
 
-[[species]]
-name           = "ions"
-q              = +1.0
-n0             = 1.0
-mass_base      = "proton"
-mass_multiple  = 1.0
-temperature_eV = 1.0
-drift_c        = 0.00
-nu0            = 0.0
-hyper_p        = 0
-collide_cutoff = 3
-amplitude      = 0.0
-k              = 0.5
-seed_c1        = false
+#[[species]]
+#name           = "ions"
+#q              = +1.0
+#n0             = 1.0
+#mass_base      = "proton"
+#mass_multiple  = 1.0
+#temperature_eV = 1.0
+#drift_c        = 0.00
+#nu0            = 0.0
+#hyper_p        = 0
+#collide_cutoff = 3
+#amplitude      = 0.0
+#k              = 0.5
+#seed_c1        = false
 
 [plot]
 nv         = 257
