@@ -1,18 +1,18 @@
 [sim]
 mode    = "fourier"      # "fourier" or "dg"
 backend = "diffrax"          # "eig" or "diffrax"
-tmax    = 0.1   # <-- now interpreted as 40 / ω_p (dimensionless)
+tmax    = 150   # in units of 1 / ω_p 
 nt      = 200
 nonlinear = false        # << set true for NL, false for linear
 dealias_frac = 0.6667   # optional; only used in Fourier-NL
 
 [grid]
-L_lambdaD  = "4.22601177e-4"         # box is 64 Debye lengths long
+L_lambdaD  = "4.2260117853e-4"         # box is 64 Debye lengths long
 debye_species = "electrons"   # optional; otherwise first q<0 is used
-Nx = 1                 # number of x points (DG) or Fourier modes in the box
+Nx = 4                 # number of x points (DG) or Fourier modes in the box
 
 [hermite]
-N  = 3
+N  = 30
 
 [bc]
 kind = "periodic"        # for DG; ignored by Fourier
@@ -53,8 +53,8 @@ seed_c1        = true
 
 [plot]
 nv         = 257
-vmin_c     = -0.1
-vmax_c     = 0.1
+vmin_c     = -0.001
+vmax_c     = 0.001
 fps        = 30
 dpi        = 150
 no_show    = false
