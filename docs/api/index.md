@@ -37,31 +37,31 @@
 
 ---
 
-::: spectraxgk.operators.py
+::: spectraxgk.operators
     options:
       show_source: false
 
 ---
 
-::: spectraxgk.post.py
+::: spectraxgk.post
     options:
       show_source: false
 
 ---
 
-::: spectraxgk.pretty.py
+::: spectraxgk.pretty
     options:
       show_source: false
 
 ---
 
-::: spectraxgk.solver.py
+::: spectraxgk.solver
     options:
       show_source: false
 
 ---
 
-::: spectraxgk.types.py
+::: spectraxgk.types
     options:
       show_source: false
 
