@@ -1,31 +1,68 @@
 
 # API Reference
 
+::: spectraxgk.args
+    options:
+      show_source: false
+
+---
+
+::: spectraxgk.basis
+    options:
+      show_source: false
+
+---
+
+::: spectraxgk.cli
+    options:
+      show_source: false
+
+---
+
+::: spectraxgk.grids
+    options:
+      show_source: false
+
+---
+
 ::: spectraxgk.io_config
     options:
       show_source: false
 
 ---
 
-::: spectraxgk.backends
+::: spectraxgk.model
     options:
       show_source: false
 
 ---
 
-::: spectraxgk.plots
+::: spectraxgk.operators.py
     options:
       show_source: false
 
 ---
 
-::: spectraxgk.diagnostics
+::: spectraxgk.post.py
     options:
       show_source: false
 
 ---
 
-::: spectraxgk.util
+::: spectraxgk.pretty.py
     options:
       show_source: false
+
+---
+
+::: spectraxgk.solver.py
+    options:
+      show_source: false
+
+---
+
+::: spectraxgk.types.py
+    options:
+      show_source: false
+
 ````
