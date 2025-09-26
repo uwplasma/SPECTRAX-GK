@@ -33,17 +33,13 @@ You can also drive SPECTRAX-GK as a library:
 
 ```python
 from spectraxgk.io_config import read_toml
-from spectraxgk.backends import run_fourier, run_dg
-from spectraxgk.plots import render_suite_onefigure
+from spectraxgk.solver import run_simulation
+from spectraxgk.post import load_result, plot_energy
 
-# Load config
-cfg = read_toml("examples/two_stream.toml")
-
-# Run simulation
-ts, out = run_dg(cfg)  # or run_fourier(cfg)
-
-# Plot results
-render_suite_onefigure(cfg, ts, out)
+cfg = read_toml("examples/linear_slab.toml")
+info = run_simulation(cfg)
+res = load_result(info["outfile"])
+plot_energy(res)
 ```
 
 ---
