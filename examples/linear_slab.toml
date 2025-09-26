@@ -1,27 +1,26 @@
 [sim]
-mode = "fourier" # "fourier" or "dg" (DG stubbed for now)
+mode    = "fourier"      # "fourier" or "dg" (DG stubbed for now)
 backend = "diffrax"
-tmax = 20.0
-nt = 401
+tmax    = 10.0
+nt      = 401
 save_every = 1
 nonlinear = false
-precision = "x64" # x64 or x32
-
+precision = "x64"        # x64 or x32
 
 [grid]
-Nn = 32
-Nm = 8
-kpar = 0.5
-vth = 1.0
-nu = 0.02
-
+Nn  = 32
+Nm  = 8
+kpar = 1.0
+vth  = 1.0
+nu   = 0.01
+es_drive = true
+e_coef = 5.0
 
 [ic]
-kind = "n0_mode" # or "random"
-amp = 1e-3
+kind  = "n0_mode"       # or "random"
+amp   = 1e-3
 phase = 0.0
 
-
 [paths]
-outdir = "outputs"
+outdir  = "outputs"
 outfile = "linear_slab_run.npz"
