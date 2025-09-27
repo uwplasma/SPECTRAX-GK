@@ -18,7 +18,7 @@ Nn  = 32
 Nm  = 4
 kpar = 1.0
 vth  = 1.0
-nu   = 0.01
+nu   = 0.001
 es_drive = true
 e_coef = 1.0
 
