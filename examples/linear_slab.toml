@@ -15,7 +15,7 @@ atol     = 1e-9
 
 [grid]
 Nn  = 32
-Nm  = 8
+Nm  = 4
 kpar = 1.0
 vth  = 1.0
 nu   = 0.01
