@@ -4,6 +4,8 @@ import os
 # (Best-effort) keep tests deterministic and lightweight
 os.environ.setdefault("XLA_PYTHON_CLIENT_PREALLOCATE", "false")
 os.environ.setdefault("JAX_PLATFORM_NAME", "cpu")
+# Must be set before importing spectraxgk modules that read this env var.
+os.environ.setdefault("SPECTRAX_X64", "1")
 
 import pytest
 import numpy as np
@@ -13,6 +15,7 @@ matplotlib.use("Agg")  # no GUI in CI
 
 import jax
 import jax.numpy as jnp
+jax.config.update("jax_enable_x64", True)
 
 from spectraxgk._initialization import initialize_simulation_parameters
 from spectraxgk._simulation import simulation
