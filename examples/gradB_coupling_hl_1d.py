@@ -17,11 +17,11 @@ def main():
     out = simulation_multispecies(
         input_parameters=dict(
             Lz=2*np.pi,
-            t_max=20.0,
+            t_max=1.0,
 
             enable_streaming=True,
             enable_gradB_parallel=True,   # <-- turns on ∇∥ ln B couplings
-            B_eps=0.15,                   # B(z)=1+eps*cos(...)
+            B_eps=0.01,                   # B(z)=1+eps*cos(...)
             B_mode=1,
 
             enable_nonlinear=False,
@@ -40,9 +40,9 @@ def main():
         ),
         Nx=Nx, Ny=Ny, Nz=Nz,
         Nl=Nl, Nh=Nh,
-        timesteps=400,
-        dt=0.05,
-        adaptive_time_step=True,
+        timesteps=100,
+        dt=0.0003,
+        adaptive_time_step=False,
         save="diagnostics",
         save_every=1,
         progress=True,
