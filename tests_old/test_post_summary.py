@@ -1,6 +1,6 @@
 import numpy as np
-from spectraxgk.post import save_summary
-from spectraxgk.types import Result
+from spectraxgk_old.post import save_summary
+from spectraxgk_old.types import Result
 
 
 def test_save_summary_png(tmp_path):

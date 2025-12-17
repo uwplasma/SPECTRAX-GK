@@ -1,6 +1,6 @@
 import jax.numpy as jnp
-from spectraxgk.model import LinearGK
-from spectraxgk.operators import StreamingOperator, LenardBernstein
+from spectraxgk_old.model import LinearGK
+from spectraxgk_old.operators import StreamingOperator, LenardBernstein
 
 def make_linear_model(Nn=4, Nm=3, kpar=0.0, vth=1.0, nu=0.2):
     stream = StreamingOperator(Nn=Nn, Nm=Nm, kpar=kpar, vth=vth)

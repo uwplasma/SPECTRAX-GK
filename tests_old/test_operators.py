@@ -1,5 +1,5 @@
 import jax.numpy as jnp
-from spectraxgk.operators import StreamingOperator, LenardBernstein, ElectrostaticDrive
+from spectraxgk_old.operators import StreamingOperator, LenardBernstein, ElectrostaticDrive
 
 
 def test_streaming_couple_real_symmetry():
