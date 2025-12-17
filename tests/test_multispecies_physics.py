@@ -70,17 +70,18 @@ def test_streaming_is_energy_conserving_linear(params_linear):
         return enforce_conjugate_symmetry_fftshifted(Gx, p)
 
     G = project(G)
-
     dG, _phi = rhs_gk_multispecies(G, p, Nh=p["Nh"], Nl=p["Nl"])
 
     from spectraxgk._model_multispecies import cheap_diagnostics_multispecies
-    W0 = cheap_diagnostics_multispecies(G, p)["W_free"]
 
     eps_val = 1e-6 if (G.real.dtype == jnp.float64) else 1e-4
     eps = jnp.asarray(eps_val, dtype=G.real.dtype)
-    W1 = cheap_diagnostics_multispecies(project(G + eps * dG), p)["W_free"]
 
-    dW = (W1 - W0) / eps
+
+    Wplus  = cheap_diagnostics_multispecies(project(G + eps * dG), p)["W_free"]
+    Wminus = cheap_diagnostics_multispecies(project(G - eps * dG), p)["W_free"]
+    dW = (Wplus - Wminus) / (2*eps)
+
     assert float(jnp.abs(dW)) < 1e-3
 
 

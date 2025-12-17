@@ -121,10 +121,11 @@ def test_streaming_energy_directional_derivative_small():
     dG, _ = rhs_gk_multispecies(G, p, Nh=p["Nh"], Nl=p["Nl"])
 
     from spectraxgk._model_multispecies import cheap_diagnostics_multispecies
-    W0 = cheap_diagnostics_multispecies(G, p)["W_free"]
 
     eps = jnp.asarray(1e-6 if (G.real.dtype == jnp.float64) else 1e-4, dtype=G.real.dtype)
-    W1 = cheap_diagnostics_multispecies(_project(G + eps * dG, p), p)["W_free"]
-    dW = (W1 - W0) / eps
+
+    Wplus  = cheap_diagnostics_multispecies(_project(G + eps * dG, p), p)["W_free"]
+    Wminus = cheap_diagnostics_multispecies(_project(G - eps * dG, p), p)["W_free"]
+    dW = (Wplus - Wminus) / (2*eps)
 
     assert float(jnp.abs(dW)) < 1e-3

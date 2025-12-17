@@ -14,9 +14,9 @@ def main():
     Nl, Nh = 1, 64
 
     species = [
-        dict(name="ion",   q=+1.0, T=1.0, n0=1.0, rho=0.0, vth=1.0, nu=0.0, Upar=0.0),
-        dict(name="e+",    q=-1.0, T=1.0, n0=0.5, rho=0.0, vth=1.0, nu=0.0, Upar=+1.2),
-        dict(name="e-",    q=-1.0, T=1.0, n0=0.5, rho=0.0, vth=1.0, nu=0.0, Upar=-1.2),
+        dict(name="ion",   q=+1.0, T=1.0, n0=1.0, rho=0.0, vth=1.0, nu=1, Upar=0.0),
+        dict(name="e+",    q=-1.0, T=1.0, n0=0.5, rho=0.0, vth=1.0, nu=1, Upar=+1.2),
+        dict(name="e-",    q=-1.0, T=1.0, n0=0.5, rho=0.0, vth=1.0, nu=1, Upar=-1.2),
     ]
 
     out = simulation_multispecies(
