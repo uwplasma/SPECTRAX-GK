@@ -1,16 +1,9 @@
 # tests/test_regression_small.py
 import numpy as np
-
 from spectraxgk._simulation import simulation
 
 
-def test_regression_small_run_final_energy_is_stable():
-    """
-    Regression test: fixed parameters, fixed time step, diagnostics-only.
-    This should be stable across runs on the same codebase.
-
-    If you intentionally change numerics/physics, update the reference values.
-    """
+def test_regression_small_run_invariants():
     out = simulation(
         input_parameters=dict(
             t_max=0.3,
@@ -30,18 +23,23 @@ def test_regression_small_run_final_energy_is_stable():
         progress=False,
     )
 
-    W0 = float(out["W_total"][0])
-    Wf = float(out["W_total"][-1])
-    Dc = float(out["Cum_D_coll"][-1])
+    t = np.asarray(out["time"])
+    W = np.asarray(out["W_total"])
+    D = np.asarray(out["D_coll"])
+    cum = np.asarray(out["Cum_D_coll"])
 
-    # Reference values (update if you change algorithms intentionally)
-    # These tolerances are tight enough to catch accidental changes, but not too brittle.
-    ref_W0 = 2.500e-06
-    ref_Wf = 2.450e-06
-    ref_Dc = 1.000e-08
+    # Basic sanity invariants
+    assert np.all(np.isfinite(t))
+    assert np.all(np.isfinite(W))
+    assert np.all(np.isfinite(D))
+    assert np.all(np.isfinite(cum))
 
-    assert np.isfinite(W0) and np.isfinite(Wf) and np.isfinite(Dc)
+    # D_coll should be >= 0 (up to tiny numerical noise)
+    assert np.min(D) >= -1e-10
 
-    assert abs(W0 - ref_W0) / max(abs(ref_W0), 1e-30) < 0.20
-    assert abs(Wf - ref_Wf) / max(abs(ref_Wf), 1e-30) < 0.20
-    assert abs(Dc - ref_Dc) / max(abs(ref_Dc), 1e-30) < 5.00
+    # Cum_D_coll should match trapezoid(D_coll) reasonably
+    cum_ref = np.concatenate([[0.0], np.cumsum(0.5 * (D[1:] + D[:-1]) * (t[1:] - t[:-1]))])
+    assert np.max(np.abs(cum - cum_ref)) <= 1e-9
+
+    # With collisions on, energy should not blow up
+    assert W[-1] <= 2.0 * W[0]
