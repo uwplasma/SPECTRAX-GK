@@ -1,68 +1,21 @@
-
 # API Reference
 
-::: spectraxgk.args
-    options:
-      show_source: false
+This section is generated using **mkdocstrings**.
 
----
+## Modules
 
-::: spectraxgk.basis
-    options:
-      show_source: false
+### `spectraxgk._simulation_multispecies`
 
----
+::: spectraxgk._simulation_multispecies
 
-::: spectraxgk.cli
-    options:
-      show_source: false
+### `spectraxgk._initialization_multispecies`
 
----
+::: spectraxgk._initialization_multispecies
 
-::: spectraxgk.grids
-    options:
-      show_source: false
+### `spectraxgk._model_multispecies`
 
----
+::: spectraxgk._model_multispecies
 
-::: spectraxgk.io_config
-    options:
-      show_source: false
+### `spectraxgk._hl_basis`
 
----
-
-::: spectraxgk.model
-    options:
-      show_source: false
-
----
-
-::: spectraxgk.operators
-    options:
-      show_source: false
-
----
-
-::: spectraxgk.post
-    options:
-      show_source: false
-
----
-
-::: spectraxgk.pretty
-    options:
-      show_source: false
-
----
-
-::: spectraxgk.solver
-    options:
-      show_source: false
-
----
-
-::: spectraxgk.types
-    options:
-      show_source: false
-
-````
+::: spectraxgk._hl_basis

@@ -14,20 +14,20 @@ def main():
     Nl, Nh = 1, 64
 
     species = [
-        dict(name="ion",   q=+1.0, T=1.0, n0=1.0, rho=0.0, vth=1.0, nu=1, Upar=0.0),
-        dict(name="e+",    q=-1.0, T=1.0, n0=0.5, rho=0.0, vth=1.0, nu=1, Upar=+1.2),
-        dict(name="e-",    q=-1.0, T=1.0, n0=0.5, rho=0.0, vth=1.0, nu=1, Upar=-1.2),
+        dict(name="ion",   q=+1.0, T=1.0, n0=1.0, rho=0.0, vth=1.0, nu=1e-4, Upar=0.0),
+        dict(name="e+",    q=-1.0, T=1.0, n0=0.5, rho=0.0, vth=1.0, nu=1e-4, Upar=+1.2),
+        dict(name="e-",    q=-1.0, T=1.0, n0=0.5, rho=0.0, vth=1.0, nu=1e-4, Upar=-1.2),
     ]
 
     out = simulation_multispecies(
         input_parameters=dict(
             Lz=2*np.pi,
-            t_max=30.0,
+            t_max=5.0,
 
             enable_streaming=True,
             enable_gradB_parallel=False,   # Hermite-only (no Laguerre coupling)
-            enable_nonlinear=False,
-            enable_collisions=False,
+            enable_nonlinear=True,
+            enable_collisions=True,
             enforce_reality=True,
 
             # excite kz=1

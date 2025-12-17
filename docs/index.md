@@ -1,38 +1,29 @@
 # SPECTRAX-GK
 
-> A differentiable, JAX-based solver for the multispecies **Vlasov–Poisson** system in 1D1V, supporting **Fourier–Hermite** and **Discontinuous Galerkin (DG)** discretizations.
+SPECTRAX-GK is a **JAX**-accelerated, differentiable solver for **multispecies electrostatic gyrokinetics** using a **Fourier–Laguerre–Hermite (FLH)** representation.
 
-[![PyPI](https://img.shields.io/pypi/v/spectraxgk.svg)](https://pypi.org/project/spectraxgk/)
-[![Python](https://img.shields.io/pypi/pyversions/spectraxgk.svg)](https://pypi.org/project/spectraxgk/)
-[![CI](https://github.com/uwplasma/SPECTRAX-GK/actions/workflows/ci.yml/badge.svg)](https://github.com/uwplasma/SPECTRAX-GK/actions/workflows/ci.yml)
-[![Docs](https://img.shields.io/badge/docs-material--mkdocs-blue)](https://uwplasma.github.io/SPECTRAX-GK/)
+It is built to be:
+- **fast** (JIT + vectorized species operators),
+- **transparent** (operators match the math),
+- **extensible** (new physics can be added without rewriting the whole code),
+- **reproducible** (all parameters stored in a JAX-friendly tree).
 
-## Why SPECTRAX-GK?
+## What you can do with it
 
-- **Two discretizations**: Fourier–Hermite (landau problems) & DG-in-x + Hermite-in-v (robust nonlinearity)
-- **Linear & nonlinear** physics with multi-species coupling
-- **Units-aware inputs**: time in \(1/\omega_p\), length in \(\lambda_D\), \(T\) in eV, drift as \(u/c\)
-- **Differentiable & JIT-able** via JAX
-- **Publication-quality diagnostics** and example configs
-- **Modern workflow**: Ruff (lint/format), MyPy (types), pytest (tests), pre-commit, CI/CD, auto docs
+- Linear collisionless dynamics (streaming-only, nonlinear off) with free-energy conservation checks.
+- Add **conserving model collisions** (Lenard–Bernstein form).
+- Add a simple **grad-B parallel coupling** using a slab `B(z)` profile.
+- Run multispecies systems with different drifts `Upar_s` (e.g., two-stream setups).
 
-👉 New here? Start with the [Quickstart](quickstart.md).
+## Where to start
 
----
+- **Install**: see [Install](install.md)
+- **Run your first example**: see [Quickstart](quickstart.md)
+- **Understand the equations**: see [Physics](physics.md)
+- **Configure runs**: see [Inputs](inputs.md) and [Outputs & Diagnostics](outputs.md)
 
-## At a Glance
+## Design philosophy
 
-We solve the Vlasov–Poisson system
-
-\[
-\frac{\partial f_s}{\partial t}
-+ v \frac{\partial f_s}{\partial x}
-+ \frac{q_s}{m_s} E(x,t) \frac{\partial f_s}{\partial v} = 0
-\]
-
-\[
-\frac{\partial E}{\partial x} = \frac{1}{\epsilon_0}
-\sum_s q_s \int f_s\, dv
-\]
-
-See the [Physics](physics.md) page for the discretizations and normalization.
+- Keep the parameter tree **JIT-safe**: no strings inside `params` used in compiled functions.
+- Keep complex arrays out of Diffrax `args` and saved diagnostics (pack/unpack state as real).
+- Make each physics operator locally testable.
