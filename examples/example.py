@@ -12,9 +12,9 @@ out = simulation(
         "enable_collisions": True,
         "enforce_reality": True,
     },
-    Nx=15, Ny=15, Nz=5,
-    Nh=12, Nl=4,
-    timesteps=200,
+    Nx=9, Ny=9, Nz=9,
+    Nh=10, Nl=3,
+    timesteps=10,
     dt=1e-2,
     adaptive_time_step=False,   # for reproducibility / debugging
     save="diagnostics",
