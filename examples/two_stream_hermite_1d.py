@@ -8,6 +8,7 @@ import numpy as np
 from spectraxgk._simulation_multispecies import simulation_multispecies
 from spectraxgk.plot_multispecies import plot_multispecies
 
+
 def main():
     Nx, Ny, Nz = 1, 1, 128
     Nl, Nh = 1, 64
@@ -24,6 +25,7 @@ def main():
             t_max=30.0,
 
             enable_streaming=True,
+            enable_gradB_parallel=False,   # Hermite-only (no Laguerre coupling)
             enable_nonlinear=False,
             enable_collisions=False,
             enforce_reality=True,
@@ -32,10 +34,10 @@ def main():
             nx0=0, ny0=0, nz0=1,
             pert_amp=1e-6,
 
-            # IMPORTANT: do NOT perturb ions, only electrons -> nonzero charge perturbation
+            # IMPORTANT: do NOT perturb ions -> avoid exact charge cancellation
             perturb_species=["e+", "e-"],
 
-            # IMPORTANT: allow k_perp=0 Poisson restoring (otherwise GK polarization gives den=0)
+            # IMPORTANT: allow k_perp=0 restoring (otherwise den=0)
             lambda_D=0.5,
 
             species=species,
@@ -68,6 +70,7 @@ def main():
 
     plot_dir = plot_multispecies(out, outdir="plots", prefix="two_stream_1d", show=False)
     print("Wrote plots to:", plot_dir)
+
 
 if __name__ == "__main__":
     main()
