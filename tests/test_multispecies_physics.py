@@ -53,9 +53,8 @@ def test_rhs_preserves_conjugate_symmetry(params_linear):
 
 def test_streaming_is_energy_conserving_linear(params_linear):
     """
-    With collisions=off and nonlinear=off, the streaming operator should be skew-adjoint:
-      d/dt (||H||^2) = 2 Re <H, dH/dt> ~ 0
-    Here we check Re(vdot(H, RHS)) ~ 0 (after building H internally).
+    Correct invariant here is W(G)=0.5||H(G,phi(G))||^2, not <G,dG>.
+    We check directional derivative dW/dt ≈ 0 via finite difference along RHS.
     """
     p = params_linear
     key = jax.random.PRNGKey(1)
@@ -64,22 +63,26 @@ def test_streaming_is_energy_conserving_linear(params_linear):
         + 1j * jax.random.normal(key, (p["Ns"], p["Nl"], p["Nh"], p["Ny"], p["Nx"], p["Nz"]))
     G = G.astype(p["Gk_0"].dtype)
 
-    # Force quasineutrality numerator to cancel so phi ~ 0:
-    # with q=±1 and equal n0, setting identical g_{m=0} in both species cancels.
-    G = G.at[1, :, 0, ...].set(G[0, :, 0, ...])
+    # Project onto the same manifold the RHS uses: dealias + enforce reality.
+    def project(Gx):
+        mask = p.get("mask23_c", p["mask23"].astype(Gx.dtype))
+        Gx = Gx * mask[None, None, None, ...]
+        return enforce_conjugate_symmetry_fftshifted(Gx, p)
 
-    G = enforce_conjugate_symmetry_fftshifted(G, p)
+    G = project(G)
 
     dG, _phi = rhs_gk_multispecies(G, p, Nh=p["Nh"], Nl=p["Nl"])
 
-    phi = solve_phi_quasineutrality_multispecies(G, p)
-    assert float(jnp.max(jnp.abs(phi))) < 1e-5
+    from spectraxgk._model_multispecies import cheap_diagnostics_multispecies
+    W0 = cheap_diagnostics_multispecies(G, p)["W_free"]
 
-    # In this linear-no-collisions-no-nonlinear config, dG is purely streaming.
-    # Check "energy derivative" proxy is ~0: Re <G, dG> is not exactly the invariant,
-    # but it should still be very small for a skew-adjoint linear operator in this basis.
-    val = jnp.real(jnp.vdot(G, dG))
-    assert float(jnp.abs(val)) < 1e-4
+    eps_val = 1e-6 if (G.real.dtype == jnp.float64) else 1e-4
+    eps = jnp.asarray(eps_val, dtype=G.real.dtype)
+    W1 = cheap_diagnostics_multispecies(project(G + eps * dG), p)["W_free"]
+
+    dW = (W1 - W0) / eps
+    assert float(jnp.abs(dW)) < 1e-3
+
 
 
 def test_collisions_are_dissipative():
