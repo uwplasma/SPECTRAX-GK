@@ -42,7 +42,7 @@ def main():
         Nl=Nl, Nh=Nh,
         timesteps=400,
         dt=0.05,
-        adaptive_time_step=False,
+        adaptive_time_step=True,
         save="diagnostics",
         save_every=1,
         progress=True,
