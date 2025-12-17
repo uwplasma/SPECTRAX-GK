@@ -1,6 +1,6 @@
 import io
 import os
-from spectraxgk.io_config import read_toml
+from spectraxgk_old.io_config import read_toml
 
 
 TOML_TXT = b"""

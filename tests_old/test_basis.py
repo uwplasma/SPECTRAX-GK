@@ -1,5 +1,5 @@
 import jax.numpy as jnp
-from spectraxgk.basis import hermite_coupling_factors, lb_eigenvalues
+from spectraxgk_old.basis import hermite_coupling_factors, lb_eigenvalues
 
 
 def test_hermite_coupling_shapes_and_values():

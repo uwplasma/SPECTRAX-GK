@@ -1,5 +1,5 @@
-from spectraxgk.args import resolve_input_path
-from spectraxgk.pretty import init_pretty
+from spectraxgk_old.args import resolve_input_path
+from spectraxgk_old.pretty import init_pretty
 
 
 def test_resolve_input_path_variants(tmp_path):

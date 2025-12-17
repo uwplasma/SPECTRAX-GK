@@ -1,6 +1,6 @@
 import numpy as np
-from spectraxgk.io_config import FullConfig, SimConfig, GridConfig, ICConfig, PathsConfig
-from spectraxgk.solver import run_simulation
+from spectraxgk_old.io_config import FullConfig, SimConfig, GridConfig, ICConfig, PathsConfig
+from spectraxgk_old.solver import run_simulation
 
 
 def test_run_small_constant_step(tmp_path):
