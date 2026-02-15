@@ -50,6 +50,14 @@ available that reverts to the energy-weighted drift closure used in earlier
 benchmarks. This option preserves historical Cyclone fits while the full GX
 operator is validated across ky and resolution scans.
 
+Normalization control
+---------------------
+
+To align with GX normalization conventions, ``LinearParams`` exposes a
+``rho_star`` factor that scales the perpendicular wave numbers used in the
+drift and drive terms. This allows fine adjustments of the effective
+:math:`k_\perp \rho` without changing the FFT grid spacing.
+
 Diamagnetic drive
 -----------------
 

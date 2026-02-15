@@ -100,3 +100,12 @@ Convergence summary:
 .. csv-table:: Cyclone base case convergence check
    :file: _static/cyclone_scan_convergence.csv
    :header-rows: 1
+
+GX-operator regression (in progress)
+------------------------------------
+
+We include a relaxed regression test that runs the full GX operator on a
+GX-matched grid (``y0``, ``ntheta``, ``nperiod``) and compares the resulting
+ky scan to the reference CSV. The tolerances are intentionally loose while the
+normalization and geometry factors (including ``rho_star``) are calibrated
+across ky. Tightening these tolerances is part of the ongoing validation plan.

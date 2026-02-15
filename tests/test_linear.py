@@ -206,6 +206,17 @@ def test_linear_cache_tree_roundtrip():
     assert jnp.allclose(cache2.hyper_ratio, cache.hyper_ratio)
 
 
+def test_linear_cache_rho_star_scales_ky():
+    """rho_star should scale cached ky for normalization control."""
+    grid_cfg = GridConfig(Nx=4, Ny=4, Nz=4, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams(rho_star=2.0)
+    cache = build_linear_cache(grid, geom, params, Nl=2, Nm=2)
+    assert jnp.allclose(cache.ky, grid.ky * 2.0)
+
+
 def test_linear_rhs_cached_invalid_shape():
     """Cached RHS should reject invalid shapes."""
     grid_cfg = GridConfig(Nx=4, Ny=4, Nz=4, Lx=6.0, Ly=6.0)
@@ -256,7 +267,17 @@ def test_integrate_linear_implicit_runs():
     geom = SAlphaGeometry.from_config(cfg.geometry)
     params = LinearParams(nu=0.1)
     G = jnp.zeros((1, 1, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
-    _, phi_t = integrate_linear(G, grid, geom, params, dt=0.1, steps=1, method="implicit")
+    _, phi_t = integrate_linear(
+        G,
+        grid,
+        geom,
+        params,
+        dt=0.1,
+        steps=1,
+        method="implicit",
+        implicit_iters=2,
+        implicit_relax=0.5,
+    )
     assert phi_t.shape[0] == 1
 
 
