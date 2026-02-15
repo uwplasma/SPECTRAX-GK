@@ -66,7 +66,7 @@ def main() -> int:
     conv_path = outdir / "cyclone_scan_convergence.csv"
     conv_path.write_text("\n".join(conv_rows) + "\n", encoding="utf-8")
 
-    gx_cfg = CycloneBaseCase(
+    full_cfg = CycloneBaseCase(
         grid=GridConfig(
             Nx=1,
             Ny=24,
@@ -78,29 +78,29 @@ def main() -> int:
             nperiod=2,
         )
     )
-    gx_params = LinearParams(
-        R_over_Ln=gx_cfg.model.R_over_Ln,
-        R_over_LTi=gx_cfg.model.R_over_LTi,
-        omega_d_scale=0.2,
-        omega_star_scale=0.55,
+    full_params = LinearParams(
+        R_over_Ln=full_cfg.model.R_over_Ln,
+        R_over_LTi=full_cfg.model.R_over_LTi,
+        omega_d_scale=0.1,
+        omega_star_scale=0.6,
         rho_star=0.9,
     )
-    gx_scan = run_cyclone_scan(
+    full_scan = run_cyclone_scan(
         gx_ky_subset,
-        cfg=gx_cfg,
+        cfg=full_cfg,
         Nl=2,
         Nm=4,
         steps=200,
         dt=0.02,
         tmin=2.0,
         method="imex",
-        operator="gx",
-        params=gx_params,
+        operator="full",
+        params=full_params,
     )
 
     def build_rows_abs(scan):
         rows = [
-            "ky,gamma_ref,omega_ref,gamma_gx,omega_gx,abs_gamma,abs_omega,rel_gamma,rel_omega"
+            "ky,gamma_ref,omega_ref,gamma_full,omega_full,abs_gamma,abs_omega,rel_gamma,rel_omega"
         ]
         for ky, gamma, omega in zip(scan.ky, scan.gamma, scan.omega):
             idx = int(np.argmin(np.abs(ref.ky - ky)))
@@ -115,29 +115,29 @@ def main() -> int:
             )
         return rows
 
-    gx_path = outdir / "cyclone_full_operator_scan_table.csv"
-    gx_path.write_text("\n".join(build_rows_abs(gx_scan)) + "\n", encoding="utf-8")
+    full_path = outdir / "cyclone_full_operator_scan_table.csv"
+    full_path.write_text("\n".join(build_rows_abs(full_scan)) + "\n", encoding="utf-8")
 
     rho_values = np.array([0.7, 0.8, 0.9, 1.0, 1.1])
     rho_rows = ["rho_star,mean_gamma_ratio,mean_omega_ratio"]
     for rho in rho_values:
         params = LinearParams(
-            R_over_Ln=gx_cfg.model.R_over_Ln,
-            R_over_LTi=gx_cfg.model.R_over_LTi,
-            omega_d_scale=0.2,
-            omega_star_scale=0.55,
+            R_over_Ln=full_cfg.model.R_over_Ln,
+            R_over_LTi=full_cfg.model.R_over_LTi,
+            omega_d_scale=0.1,
+            omega_star_scale=0.6,
             rho_star=float(rho),
         )
         scan = run_cyclone_scan(
             gx_ky_subset,
-            cfg=gx_cfg,
+            cfg=full_cfg,
             Nl=2,
             Nm=4,
             steps=200,
             dt=0.02,
             tmin=2.0,
             method="imex",
-            operator="gx",
+            operator="full",
             params=params,
         )
         rel_g = []

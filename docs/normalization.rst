@@ -52,6 +52,10 @@ drift/drive terms:
 - ``omega_d_scale``: scales curvature/grad-:math:`B`/mirror couplings.
 - ``omega_star_scale``: scales the diamagnetic drive.
 
+In code, ``rho_star`` multiplies the Fourier grids inside
+:func:`spectraxgk.linear.build_linear_cache`, while ``omega_d_scale`` and
+``omega_star_scale`` enter directly in :func:`spectraxgk.linear.linear_rhs_cached`.
+
 Defaults:
 
 - ``rho_star = 1.0`` (model default)
@@ -64,7 +68,7 @@ For the current Cyclone reference matching sweep we use:
 
 .. math::
 
-   \rho_* = 0.9,\qquad \omega_d\_scale = 0.2,\qquad \omega_\* \, scale = 0.55.
+   \rho_* = 0.9,\qquad \omega_d\_scale = 0.1,\qquad \omega_* \, scale = 0.6.
 
 These parameters are surfaced in the regression tables so that future
 normalization refinements can be tracked in a reproducible way.
