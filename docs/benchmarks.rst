@@ -4,26 +4,26 @@ Benchmarks
 Cyclone Base Case (Linear, Adiabatic Electrons)
 ----------------------------------------------
 
-We include a reference dataset for the linear Cyclone base case derived from the
-GX benchmark outputs for s-alpha geometry with Boltzmann electrons. [GX]_ The values
-are stored in:
+We include a reference dataset for the linear Cyclone base case derived from
+published s-alpha benchmark results with adiabatic electrons. [Dimits00]_ The
+values are stored in:
 
-- ``spectraxgk/data/cyclone_gx_adiabatic_ref.csv``
+- ``spectraxgk/data/cyclone_reference_adiabatic.csv``
 
-These correspond to the normalized growth rates and real frequencies shown in
-Fig. 1 of the GX paper (Cyclone base case, Boltzmann electrons). The harness
-loads these values and provides utilities to extract growth rates from time
-series signals. The linear operator now includes the GX-style curvature,
-grad-:math:`B`, and mirror couplings in s-alpha geometry, along with the
-Laguerre-form diamagnetic drive. A small ``omega_d_scale`` remains available to
-bridge normalization differences while the analytic geometry is refined.
+These correspond to normalized growth rates and real frequencies commonly used
+in linear Cyclone validation. The harness loads these values and provides
+utilities to extract growth rates from time series signals. The linear operator
+includes curvature, grad-:math:`B`, and mirror couplings in s-alpha geometry,
+along with the Laguerre-form diamagnetic drive. Small normalization parameters
+(``rho_star``, ``omega_d_scale``) are available to bridge analytic-geometry
+differences during validation.
 
 .. figure:: _static/cyclone_comparison.png
    :align: center
    :alt: Cyclone base case comparison
 
    Cyclone base case growth rates and real frequencies comparing SPECTRAX-GK
-   (linear operator) against the GX reference data.
+   (linear operator) against the published reference dataset.
 
 How to run the harness
 ----------------------
@@ -32,21 +32,26 @@ How to run the harness
 
    python examples/cyclone_linear_benchmark.py
 
-Regenerating the reference CSV
--------------------------------
+Reproducibility
+---------------
 
-.. code-block:: bash
-
-   python tools/extract_gx_cyclone_reference.py \
-     /path/to/itg_salpha_adiabatic_electrons_correct.out.nc \
-     src/spectraxgk/data/cyclone_gx_adiabatic_ref.csv
-
-Regenerating summary tables
----------------------------
+To regenerate the benchmark tables and figures:
 
 .. code-block:: bash
 
    python tools/make_tables.py
+   python tools/make_figures.py
+
+The reference CSV can be re-extracted from an external solver output using:
+
+.. code-block:: bash
+
+   python tools/extract_cyclone_reference.py \
+     /path/to/itg_salpha_adiabatic_electrons_correct.out.nc \
+     src/spectraxgk/data/cyclone_reference_adiabatic.csv
+
+This step is only needed when updating the external benchmark source (see
+References).
 
 Benchmark harness
 -----------------
@@ -57,7 +62,7 @@ extracts growth rates using a log-amplitude and phase fit. When
 portion of the time history to reduce sensitivity to early transients. The
 benchmark harness defaults to the energy-weighted drift closure
 (``operator="energy"``) to preserve the historical Cyclone reference matching,
-while the full GX-style operator can be enabled with ``operator="gx"`` for
+while the full drift/mirror operator can be enabled with ``operator="gx"`` for
 ongoing validation. Mode extraction can use a fixed ``z_index`` or an
 SVD-based time series.
 
@@ -65,7 +70,7 @@ Default Cyclone scaling parameters:
 
 - ``omega_d_scale = 0.32``
 - ``omega_star_scale = 1.0``
-- ``method="rk4"`` (explicit), ``mode_method="z_index"`` (GX-style midplane)
+- ``method="rk4"`` (explicit), ``mode_method="z_index"`` (midplane sample)
 - ``operator="energy"`` (reference-matching closure)
 
 Reduced ky scan tables
@@ -101,30 +106,39 @@ Convergence summary:
    :file: _static/cyclone_scan_convergence.csv
    :header-rows: 1
 
-GX-operator regression (in progress)
-------------------------------------
+Full-operator regression (in progress)
+--------------------------------------
 
-We include a relaxed regression test that runs the full GX operator on a
-GX-matched grid (``y0``, ``ntheta``, ``nperiod``) and compares the resulting
-ky scan to the reference CSV. The tolerances are intentionally loose while the
-normalization and geometry factors (including ``rho_star``) are calibrated
-across ky. Tightening these tolerances is part of the ongoing validation plan.
-See :doc:`normalization` for the current calibration parameters.
+We include a relaxed regression test that runs the full drift/mirror operator
+on a field-aligned grid (``y0``, ``ntheta``, ``nperiod``) and compares the
+resulting ky scan to the reference CSV. The tolerances are intentionally loose
+while the normalization and geometry factors (including ``rho_star``) are
+calibrated across ky. Tightening these tolerances is part of the ongoing
+validation plan. See :doc:`normalization` for the current calibration
+parameters.
 
 The current calibration sweep uses ``rho_star=0.9`` with
-``omega_d_scale=0.2`` and ``omega_star_scale=0.55`` on the GX grid
+``omega_d_scale=0.2`` and ``omega_star_scale=0.55`` on the field-aligned grid
 (``Nx=1, Ny=24, Nz=16, y0=20, ntheta=32, nperiod=2``). The table below tracks
-the GX operator output for a reduced ky scan with absolute values of
-``gamma``/``omega`` reported alongside the GX reference.
+the full-operator output for a reduced ky scan with absolute values of
+``gamma``/``omega`` reported alongside the reference data.
 
-.. csv-table:: GX operator reduced scan (GX grid)
-   :file: _static/cyclone_gx_scan_table.csv
+.. csv-table:: Full-operator reduced scan (field-aligned grid)
+   :file: _static/cyclone_full_operator_scan_table.csv
    :header-rows: 1
 
-We also track convergence of the GX normalization by scanning ``rho_star``
-and reporting mean ratios (``|gamma|/gamma_ref``, ``|omega|/omega_ref``) across
-the reduced ky subset:
+We also track convergence of the normalization by scanning ``rho_star`` and
+reporting mean ratios (``|gamma|/gamma_ref``, ``|omega|/omega_ref``) across the
+reduced ky subset:
 
-.. csv-table:: GX operator rho_star convergence scan
-   :file: _static/cyclone_gx_rhostar_convergence.csv
+.. csv-table:: Full-operator rho_star convergence scan
+   :file: _static/cyclone_rhostar_convergence.csv
    :header-rows: 1
+
+Validation tolerances
+---------------------
+
+The physics regression checks currently use a relative tolerance of ``rtol=2.7``
+on absolute growth rates and frequencies for the reduced ky subset. The reduced
+tables above provide context for tightening these tolerances as the analytic
+geometry and normalization are refined.

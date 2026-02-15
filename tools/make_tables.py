@@ -115,7 +115,7 @@ def main() -> int:
             )
         return rows
 
-    gx_path = outdir / "cyclone_gx_scan_table.csv"
+    gx_path = outdir / "cyclone_full_operator_scan_table.csv"
     gx_path.write_text("\n".join(build_rows_abs(gx_scan)) + "\n", encoding="utf-8")
 
     rho_values = np.array([0.7, 0.8, 0.9, 1.0, 1.1])
@@ -151,7 +151,7 @@ def main() -> int:
         rho_rows.append(
             f"{rho:.2f},{np.nanmean(rel_g):.3f},{np.nanmean(rel_w):.3f}"
         )
-    rho_path = outdir / "cyclone_gx_rhostar_convergence.csv"
+    rho_path = outdir / "cyclone_rhostar_convergence.csv"
     rho_path.write_text("\n".join(rho_rows) + "\n", encoding="utf-8")
     return 0
 

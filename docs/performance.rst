@@ -41,7 +41,7 @@ Cached basis indices
 
 To reduce per-step overhead, the linear cache now stores Laguerre/Hermite index
 arrays (:math:`l`, :math:`m`) and derived coefficients (``l+1``, ``m+1``,
-``sqrt(m)``, ``sqrt(m+1)``). These are reused inside the GX mirror/curvature
+``sqrt(m)``, ``sqrt(m+1)``). These are reused inside the mirror/curvature
 terms and the implicit preconditioner instead of re-allocating on every RHS
 call. The change is small in absolute cost for low-order runs, but becomes
 noticeable in higher-order scans and tight profiling loops.
@@ -50,8 +50,8 @@ GMRES preconditioner iterations
 --------------------------------
 
 For the implicit linear solver, we include a small iteration-count harness that
-solves a reduced GX system and compares the GMRES iteration count with and
-without the diagonal preconditioner (cv/gb/bgrad + damping):
+solves a reduced system and compares the GMRES iteration count with and without
+the diagonal preconditioner (cv/gb/bgrad + damping):
 
 .. code-block:: bash
 
@@ -63,6 +63,15 @@ On the reference run (Nl=2, Nm=3, Ny=4, Nz=8), this reported:
 
    iters_plain=25
    iters_precond=25
+
+JIT considerations
+------------------
+
+The linear integrator is ``jit``-compiled with the number of steps, method, and
+operator set as static arguments. Changing these values triggers recompilation,
+so performance-sensitive workflows should reuse them across scans. The cached
+operator arrays can be constructed once and reused across multiple runs to
+avoid repeated geometry setup costs.
 
 Planned optimizations
 ---------------------
