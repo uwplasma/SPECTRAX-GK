@@ -9,6 +9,20 @@ The linear solver supports explicit Euler, RK2, and RK4 updates inside a JAX
 history. The time integrator lives in ``spectraxgk.linear.integrate_linear`` and
 is configured via the ``method`` argument. RK4 is used in the Cyclone harness.
 
+Optional damping
+----------------
+
+To stabilize high-order Hermite-Laguerre moments, the linear operator supports
+two optional damping models:
+
+- A Lenard-Bernstein diagonal rate ``nu`` with coefficients
+  :math:`\nu(\alpha m + \beta l)`.
+- A hyper-damping term ``nu_hyper`` with exponent ``p_hyper`` that suppresses
+  the highest Hermite/Laguerre indices.
+
+Both are disabled by default and can be enabled via ``LinearParams`` for
+resolution studies.
+
 Performance caching
 -------------------
 

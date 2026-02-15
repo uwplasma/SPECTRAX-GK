@@ -14,6 +14,27 @@ coefficients, drift frequency, and zero-mode masks) in a ``LinearCache`` to
 avoid recomputing them at each time step. This cache is reused inside the JIT
 compiled integrator.
 
+Cache profiling
+---------------
+
+We include a small timing harness that compares cached and uncached RHS
+evaluation on a modest grid:
+
+.. code-block:: bash
+
+   python tools/profile_linear_cache.py
+
+On a reference CPU run (Nx=Ny=16, Nz=32, Nl=2, Nm=4), this reported:
+
+.. code-block:: text
+
+   uncached_s=0.000348
+   cached_s=0.000308
+   speedup=1.13x
+
+The exact speedup depends on hardware and problem size, but the cache consistently
+reduces overhead from repeated geometry evaluations.
+
 Planned optimizations
 ---------------------
 
