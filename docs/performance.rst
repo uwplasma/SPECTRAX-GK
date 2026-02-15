@@ -9,6 +9,11 @@ vectorized, accelerator-ready performance while retaining automatic
 differentiation. The linear operator and time integrator are designed to be
 ``jit``-friendly and to avoid Python-side loops in performance-critical paths.
 
+The linear solver precomputes geometry-dependent arrays (gyroaverage
+coefficients, drift frequency, and zero-mode masks) in a ``LinearCache`` to
+avoid recomputing them at each time step. This cache is reused inside the JIT
+compiled integrator.
+
 Planned optimizations
 ---------------------
 

@@ -9,6 +9,14 @@ The linear solver supports explicit Euler, RK2, and RK4 updates inside a JAX
 history. The time integrator lives in ``spectraxgk.linear.integrate_linear`` and
 is configured via the ``method`` argument. RK4 is used in the Cyclone harness.
 
+Performance caching
+-------------------
+
+To reduce repeated geometry work inside the time loop, we cache the gyroaverage
+coefficients, drift frequency, and zero-mode mask in a ``LinearCache`` object.
+The helper ``build_linear_cache`` constructs this cache, and
+``integrate_linear`` will build and reuse it automatically.
+
 Growth rate extraction
 ----------------------
 
