@@ -40,7 +40,7 @@ def test_spectral_grid_tree_roundtrip():
 
 
 def test_grid_config_y0_and_ntheta():
-    """GX-style grid inputs should map to expected ky and z spacing."""
+    """Field-aligned grid inputs should map to expected ky and z spacing."""
     cfg = GridConfig(Nx=4, Ny=12, Nz=4, Lx=2.0, Ly=3.0, y0=20.0, ntheta=8, nperiod=2)
     grid = build_spectral_grid(cfg)
     assert grid.z.shape[0] == 8 * 3

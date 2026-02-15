@@ -33,6 +33,11 @@ def test_extract_mode_time_series_methods():
     ratio_norm = ratio / ratio[0]
     assert np.allclose(ratio_norm, np.ones_like(ratio_norm), atol=1.0e-6)
 
+    project_series = extract_mode_time_series(phi_t, sel, method="project")
+    proj_ratio = project_series / ts
+    proj_norm = proj_ratio / proj_ratio[0]
+    assert np.allclose(proj_norm, np.ones_like(proj_norm), atol=1.0e-6)
+
     direct = extract_mode(phi_t, sel)
     assert np.allclose(direct, ts * spatial[1])
 
@@ -56,6 +61,18 @@ def test_select_fit_window_and_auto_fit():
     tmin, tmax = select_fit_window(t, signal, window_fraction=0.3, min_points=20)
     assert tmax > tmin
     assert tmin >= t[20]
+
+    tmin2, tmax2 = select_fit_window(
+        t,
+        signal,
+        window_fraction=0.3,
+        min_points=20,
+        start_fraction=0.5,
+        growth_weight=1.0,
+        require_positive=True,
+    )
+    assert tmax2 > tmin2
+    assert tmin2 >= t[int(0.5 * t.shape[0])]
 
     g_fit, w_fit, _tmin, _tmax = fit_growth_rate_auto(
         t, signal, window_fraction=0.3, min_points=20
@@ -101,6 +118,32 @@ def test_select_fit_window_and_auto_fit():
     flat_signal = np.ones_like(signal)
     _ = select_fit_window(t, flat_signal, window_fraction=0.3, min_points=20)
 
+    decaying = np.exp((-0.2 + 1j * omega) * t)
+    tmin3, tmax3 = select_fit_window(
+        t,
+        decaying,
+        window_fraction=0.3,
+        min_points=20,
+        start_fraction=0.1,
+        growth_weight=0.5,
+        require_positive=True,
+    )
+    assert tmax3 > tmin3
+
     g_fit2, w_fit2, _tmin2, _tmax2 = fit_growth_rate_auto(t, signal, tmin=2.0)
     assert np.isfinite(g_fit2)
     assert np.isfinite(w_fit2)
+
+    try:
+        select_fit_window(t, signal, start_fraction=-0.1)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("invalid start_fraction should raise ValueError")
+
+    try:
+        select_fit_window(t, signal, growth_weight=-1.0)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("negative growth_weight should raise ValueError")

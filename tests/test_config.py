@@ -9,6 +9,9 @@ def test_config_to_dict():
     d = cfg.to_dict()
     assert set(d.keys()) == {"grid", "time", "geometry", "model"}
     assert d["geometry"]["q"] == cfg.geometry.q
+    assert d["grid"]["y0"] == 20.0
+    assert d["grid"]["ntheta"] == 32
+    assert d["grid"]["nperiod"] == 2
 
 
 def test_config_override():

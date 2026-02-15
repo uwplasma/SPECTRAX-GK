@@ -2,7 +2,7 @@ Benchmarks
 ==========
 
 Cyclone Base Case (Linear, Adiabatic Electrons)
-----------------------------------------------
+------------------------------------------------
 
 We include a reference dataset for the linear Cyclone base case derived from
 published s-alpha benchmark results with adiabatic electrons. [Dimits00]_ The
@@ -14,7 +14,7 @@ These correspond to normalized growth rates and real frequencies commonly used
 in linear Cyclone validation. The harness loads these values and provides
 utilities to extract growth rates from time series signals. The linear operator
 includes curvature, grad-:math:`B`, and mirror couplings in s-alpha geometry,
-along with the Laguerre-form diamagnetic drive. Small normalization parameters
+along with the energy-weighted diamagnetic drive. Small normalization parameters
 (``rho_star``, ``omega_d_scale``) are available to bridge analytic-geometry
 differences during validation.
 
@@ -42,6 +42,17 @@ To regenerate the benchmark tables and figures:
    python tools/make_tables.py
    python tools/make_figures.py
 
+To reproduce the normalization sweep used in the full-operator tables:
+
+.. code-block:: bash
+
+   python tools/calibrate_cyclone.py \
+     --rho-star 0.7 0.8 0.9 1.0 1.1 \
+     --omega-d-scale 0.05 0.1 0.15 \
+     --omega-star-scale 0.4 0.5 0.6 \
+     --Nl 2 --Nm 4 --steps 200 --dt 0.02 --tmin 2.0 \
+     --output-csv docs/_static/cyclone_full_operator_sweep.csv
+
 The reference CSV can be re-extracted from an external solver output using:
 
 .. code-block:: bash
@@ -60,16 +71,20 @@ The Python helper ``run_cyclone_linear`` runs a short linear simulation and
 extracts growth rates using a log-amplitude and phase fit. When
 ``auto_window=True`` (the default), the harness scans for the most exponential
 portion of the time history to reduce sensitivity to early transients. The
+auto-window helper supports ``start_fraction``, ``growth_weight``, and
+``require_positive`` to bias the fit toward stable eigenmode growth when
+transients are present. The
 benchmark harness defaults to the energy-weighted drift closure
 (``operator="energy"``) to preserve the historical Cyclone reference matching,
-while the full drift/mirror operator can be enabled with ``operator="gx"`` for
-ongoing validation. Mode extraction can use a fixed ``z_index`` or an
-SVD-based time series.
+while the full drift/mirror operator can be enabled with ``operator="full"`` for
+ongoing validation. Mode extraction can use a fixed ``z_index`` or a
+projected, max-amplitude, or SVD-based time series.
 
 Default Cyclone scaling parameters:
 
 - ``omega_d_scale = 0.32``
 - ``omega_star_scale = 1.0``
+- ``rho_star = 1.0``
 - ``method="rk4"`` (explicit), ``mode_method="z_index"`` (midplane sample)
 - ``operator="energy"`` (reference-matching closure)
 
@@ -118,7 +133,7 @@ validation plan. See :doc:`normalization` for the current calibration
 parameters.
 
 The current calibration sweep uses ``rho_star=0.9`` with
-``omega_d_scale=0.2`` and ``omega_star_scale=0.55`` on the field-aligned grid
+``omega_d_scale=0.1`` and ``omega_star_scale=0.6`` on the field-aligned grid
 (``Nx=1, Ny=24, Nz=16, y0=20, ntheta=32, nperiod=2``). The table below tracks
 the full-operator output for a reduced ky scan with absolute values of
 ``gamma``/``omega`` reported alongside the reference data.
@@ -138,7 +153,9 @@ reduced ky subset:
 Validation tolerances
 ---------------------
 
-The physics regression checks currently use a relative tolerance of ``rtol=2.7``
-on absolute growth rates and frequencies for the reduced ky subset. The reduced
-tables above provide context for tightening these tolerances as the analytic
-geometry and normalization are refined.
+The physics regression checks currently use ``rtol=0.25`` for the single-mode
+Cyclone check and ``rtol=1.3``/``rtol=0.6`` for the reduced ky scan
+(gamma/omega). The full-operator reduced scan uses ``rtol=2.0`` on absolute
+values while the normalization sweep is refined. The reduced tables above
+provide context for tightening these tolerances as the analytic geometry and
+normalization are refined.

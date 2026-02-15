@@ -7,6 +7,7 @@ from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.linear import (
+    _integrate_linear_cached,
     LinearCache,
     LinearParams,
     apply_hermite_v,
@@ -358,7 +359,7 @@ def test_energy_operator_and_drive_coeffs():
 
 
 def test_gx_matches_energy_when_drives_off():
-    """GX and energy operators should match when drift/drive terms are disabled."""
+    """Full and energy operators should match when drift/drive terms are disabled."""
     grid_cfg = GridConfig(Nx=4, Ny=4, Nz=8, Lx=6.0, Ly=6.0)
     cfg = CycloneBaseCase(grid=grid_cfg)
     grid = build_spectral_grid(cfg.grid)
@@ -373,8 +374,35 @@ def test_gx_matches_energy_when_drives_off():
     assert jnp.allclose(phi_gx, phi_energy)
 
 
+def test_full_operator_alias_path():
+    """Full operator alias should route through the GX operator path."""
+    grid_cfg = GridConfig(Nx=2, Ny=2, Nz=4, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams(omega_d_scale=0.0, omega_star_scale=0.0)
+    G = jnp.zeros((1, 1, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
+    cache = build_linear_cache(grid, geom, params, 1, 1)
+    dG, phi = linear_rhs_cached(G, cache, params, operator="full")
+    assert jnp.isfinite(dG).all()
+    assert jnp.isfinite(phi).all()
+
+
+def test_cached_integrator_full_alias():
+    """Cached integrator should accept full operator alias."""
+    grid_cfg = GridConfig(Nx=2, Ny=2, Nz=4, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams()
+    cache = build_linear_cache(grid, geom, params, 1, 1)
+    G = jnp.zeros((1, 1, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
+    _, phi_t = _integrate_linear_cached(G, cache, params, dt=0.1, steps=1, method="rk2", operator="full")
+    assert phi_t.shape == (1, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz)
+
+
 def test_gx_mirror_curvature_activation():
-    """GX drift/mirror terms should activate when omega_d_scale is nonzero."""
+    """Drift/mirror terms should activate when omega_d_scale is nonzero."""
     grid_cfg = GridConfig(Nx=2, Ny=2, Nz=8, Lx=6.0, Ly=6.0)
     cfg = CycloneBaseCase(grid=grid_cfg)
     grid = build_spectral_grid(cfg.grid)
@@ -394,7 +422,7 @@ def test_gx_mirror_curvature_activation():
 
 
 def test_gx_diamagnetic_drive_populates_m2():
-    """GX diamagnetic drive should populate the m=2 component when enabled."""
+    """Diamagnetic drive should populate the m=2 component when enabled."""
     grid_cfg = GridConfig(Nx=2, Ny=4, Nz=8, Lx=6.0, Ly=6.0)
     cfg = CycloneBaseCase(grid=grid_cfg)
     grid = build_spectral_grid(cfg.grid)

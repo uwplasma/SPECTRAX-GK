@@ -1,4 +1,4 @@
-"""Profile GMRES iteration counts with and without the GX preconditioner."""
+"""Profile GMRES iteration counts with and without the drift preconditioner."""
 
 from __future__ import annotations
 
@@ -74,7 +74,7 @@ def main() -> int:
     @jax.jit
     def matvec_jax(v: jnp.ndarray) -> jnp.ndarray:
         G = v.reshape(shape)
-        dG, _ = linear_rhs_cached(G, cache, params, operator="gx")
+        dG, _ = linear_rhs_cached(G, cache, params, operator="full")
         return (G - dt * dG).reshape(size)
 
     def matvec_np(v: np.ndarray) -> np.ndarray:
