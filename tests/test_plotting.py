@@ -1,31 +1,44 @@
-# tests/test_plotting.py
+"""Plotting utilities should generate figures without errors."""
+
+import matplotlib
+
+matplotlib.use("Agg")
+
 import numpy as np
 
-from spectraxgk._plot import plot, plot_probe_velocity_reconstruction
+from spectraxgk.benchmarks import CycloneReference, CycloneScanResult
+import matplotlib.pyplot as plt
+from spectraxgk.plotting import cyclone_comparison_figure, cyclone_reference_figure
 
 
-def test_plot_runs_without_gui(run_small_sim):
-    out = run_small_sim(
-        input_parameters=dict(
-            t_max=0.2, nu=0.0, pert_amp=1e-3,
-            enable_streaming=True, enable_nonlinear=False, enable_collisions=False, enforce_reality=True
-        ),
-        timesteps=10,
-        save="diagnostics",
+def test_cyclone_reference_figure(tmp_path):
+    """The Cyclone reference plot should save successfully."""
+    ref = CycloneReference(
+        ky=np.array([0.1, 0.2]),
+        omega=np.array([0.3, 0.4]),
+        gamma=np.array([0.05, 0.06]),
     )
-    # Should not raise
-    plot(out)
+    fig, _axes = cyclone_reference_figure(ref)
+    out = tmp_path / "ref.png"
+    fig.savefig(out)
+    plt.close(fig)
+    assert out.exists()
 
 
-def test_probe_velocity_reconstruction_runs(run_small_sim):
-    out = run_small_sim(
-        input_parameters=dict(
-            t_max=0.2, nu=0.0, pert_amp=1e-3,
-            enable_streaming=True, enable_nonlinear=False, enable_collisions=False, enforce_reality=True
-        ),
-        timesteps=10,
-        save="diagnostics",
-        probe=dict(ky=7//2, kx=7//2+1, kz=5//2, lmax=2, mmax=6),
+def test_cyclone_comparison_figure(tmp_path):
+    """Comparison plot should render with both curves."""
+    ref = CycloneReference(
+        ky=np.array([0.1, 0.2]),
+        omega=np.array([0.3, 0.4]),
+        gamma=np.array([0.05, 0.06]),
     )
-    # Should not raise
-    plot_probe_velocity_reconstruction(out, l_pick=0)
+    scan = CycloneScanResult(
+        ky=np.array([0.1, 0.2]),
+        omega=np.array([0.25, 0.35]),
+        gamma=np.array([0.04, 0.05]),
+    )
+    fig, _axes = cyclone_comparison_figure(ref, scan)
+    out = tmp_path / "comparison.png"
+    fig.savefig(out)
+    plt.close(fig)
+    assert out.exists()
