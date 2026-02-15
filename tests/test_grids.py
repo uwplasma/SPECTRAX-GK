@@ -1,3 +1,5 @@
+"""Spectral grid construction tests."""
+
 import jax.numpy as jnp
 
 from spectraxgk.config import GridConfig
@@ -5,6 +7,7 @@ from spectraxgk.grids import build_spectral_grid
 
 
 def test_build_spectral_grid_shapes():
+    """Grid arrays should have consistent shapes."""
     cfg = GridConfig(Nx=8, Ny=6, Nz=4, Lx=2.0, Ly=3.0)
     grid = build_spectral_grid(cfg)
     assert grid.kx.shape == (cfg.Nx,)
@@ -16,6 +19,7 @@ def test_build_spectral_grid_shapes():
 
 
 def test_build_spectral_grid_spacing():
+    """Fourier spacing should match 2*pi/L for each direction."""
     cfg = GridConfig(Nx=8, Ny=6, Nz=4, Lx=2.0, Ly=3.0)
     grid = build_spectral_grid(cfg)
     dkx = grid.kx[1] - grid.kx[0]

@@ -27,3 +27,9 @@ Stage 4
 -------
 - VMEC/DESC geometry adapters and stellarator benchmarks.
 - Performance tuning and scaling studies.
+
+Publication milestones
+----------------------
+
+Each stage will produce a small, publication-quality figure and a short
+validation note to make the progression transparent and review-friendly.

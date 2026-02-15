@@ -1,10 +1,15 @@
+"""Benchmark utilities and reference data tests."""
+
 import numpy as np
 import pytest
 
-from spectraxgk.benchmarks import fit_growth_rate, load_cyclone_reference
+from spectraxgk.analysis import fit_growth_rate
+from spectraxgk.benchmarks import load_cyclone_reference, run_cyclone_linear
+from spectraxgk.config import CycloneBaseCase, GridConfig
 
 
 def test_load_cyclone_reference():
+    """Reference CSV must load and match known Cyclone values."""
     ref = load_cyclone_reference()
     assert ref.ky.shape == ref.omega.shape == ref.gamma.shape
     assert ref.ky.size == 12
@@ -15,6 +20,7 @@ def test_load_cyclone_reference():
 
 
 def test_fit_growth_rate_exact():
+    """Exact exponential signal should be recovered by the fitter."""
     t = np.linspace(0.0, 10.0, 200)
     gamma = 0.12
     omega = 0.34
@@ -25,6 +31,7 @@ def test_fit_growth_rate_exact():
 
 
 def test_fit_growth_rate_window():
+    """Windowing should not bias the fit for a pure exponential."""
     t = np.linspace(0.0, 10.0, 200)
     gamma = 0.08
     omega = 0.21
@@ -35,6 +42,7 @@ def test_fit_growth_rate_window():
 
 
 def test_fit_growth_rate_tmax():
+    """A tmax cut should still recover the correct growth rate."""
     t = np.linspace(0.0, 10.0, 200)
     gamma = 0.06
     omega = 0.18
@@ -45,6 +53,7 @@ def test_fit_growth_rate_tmax():
 
 
 def test_fit_growth_rate_invalid():
+    """The fitter should reject malformed inputs."""
     with pytest.raises(ValueError):
         fit_growth_rate(np.array([0.0, 1.0]), np.array([1.0 + 0j]))
     with pytest.raises(ValueError):
@@ -53,3 +62,21 @@ def test_fit_growth_rate_invalid():
         fit_growth_rate(np.array([0.0, 1.0]), np.array([[1.0 + 0j, 2.0 + 0j]]))
     with pytest.raises(ValueError):
         fit_growth_rate(np.array([0.0, 1.0]), np.array([1.0 + 0j, 2.0 + 0j]), tmin=2.0)
+
+
+def test_run_cyclone_linear_shapes():
+    """Smoke test for the Cyclone linear runner on a tiny grid."""
+    grid = GridConfig(Nx=8, Ny=8, Nz=16, Lx=62.8, Ly=62.8)
+    cfg = CycloneBaseCase(grid=grid)
+    result = run_cyclone_linear(cfg=cfg, steps=5, dt=0.1)
+    assert result.phi_t.shape[0] == 5
+    assert np.isfinite(result.gamma)
+    assert np.isfinite(result.omega)
+
+
+def test_run_cyclone_linear_defaults():
+    """Default cfg/params path should run without error."""
+    grid = GridConfig(Nx=6, Ny=6, Nz=8, Lx=62.8, Ly=62.8)
+    cfg = CycloneBaseCase(grid=grid)
+    result = run_cyclone_linear(cfg=cfg, steps=3, dt=0.1)
+    assert result.phi_t.shape[0] == 3

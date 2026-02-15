@@ -12,6 +12,7 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
+    "sphinx.ext.mathjax",
 ]
 
 templates_path = ["_templates"]
@@ -20,5 +21,3 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 html_theme = "alabaster"
 html_static_path = ["_static"]
 
-# Mock heavy deps for doc builds
-autodoc_mock_imports = ["jax", "jax.numpy", "jax.scipy"]
