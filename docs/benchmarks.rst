@@ -109,3 +109,21 @@ GX-matched grid (``y0``, ``ntheta``, ``nperiod``) and compares the resulting
 ky scan to the reference CSV. The tolerances are intentionally loose while the
 normalization and geometry factors (including ``rho_star``) are calibrated
 across ky. Tightening these tolerances is part of the ongoing validation plan.
+
+The current calibration sweep uses ``rho_star=0.9`` with
+``omega_d_scale=0.2`` and ``omega_star_scale=0.55`` on the GX grid
+(``Nx=1, Ny=24, Nz=16, y0=20, ntheta=32, nperiod=2``). The table below tracks
+the GX operator output for a reduced ky scan with absolute values of
+``gamma``/``omega`` reported alongside the GX reference.
+
+.. csv-table:: GX operator reduced scan (GX grid)
+   :file: _static/cyclone_gx_scan_table.csv
+   :header-rows: 1
+
+We also track convergence of the GX normalization by scanning ``rho_star``
+and reporting mean ratios (``|gamma|/gamma_ref``, ``|omega|/omega_ref``) across
+the reduced ky subset:
+
+.. csv-table:: GX operator rho_star convergence scan
+   :file: _static/cyclone_gx_rhostar_convergence.csv
+   :header-rows: 1

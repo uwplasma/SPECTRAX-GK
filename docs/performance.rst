@@ -36,6 +36,24 @@ The exact speedup depends on hardware and problem size. As more geometry and
 operator terms are cached (cv/gb/bgrad, hyper ratios), the overhead balance may
 shift; in this run the cached path was roughly cost-neutral.
 
+GMRES preconditioner iterations
+--------------------------------
+
+For the implicit linear solver, we include a small iteration-count harness that
+solves a reduced GX system and compares the GMRES iteration count with and
+without the diagonal preconditioner (cv/gb/bgrad + damping):
+
+.. code-block:: bash
+
+   python tools/profile_gmres_precond.py
+
+On the reference run (Nl=2, Nm=3, Ny=4, Nz=8), this reported:
+
+.. code-block:: text
+
+   iters_plain=25
+   iters_precond=25
+
 Planned optimizations
 ---------------------
 

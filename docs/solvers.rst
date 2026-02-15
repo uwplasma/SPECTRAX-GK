@@ -18,8 +18,8 @@ available:
 - ``method="implicit"``: a backward-Euler solve using a matrix-free GMRES
   iteration. This is slower but robust for stiff linear runs. A few stabilized
   fixed-point sub-iterations provide an initial guess and a diagonal
-  preconditioner based on the damping terms accelerates convergence for
-  higher-order scans.
+  preconditioner based on the damping terms and drift/mirror diagonals
+  (cv/gb/bgrad) accelerates convergence for higher-order scans.
 
 Optional damping
 ----------------
