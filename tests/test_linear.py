@@ -281,6 +281,50 @@ def test_integrate_linear_implicit_runs():
     assert phi_t.shape[0] == 1
 
 
+def test_integrate_linear_implicit_energy():
+    """Implicit path should cover the energy-operator preconditioner."""
+    grid_cfg = GridConfig(Nx=2, Ny=2, Nz=4, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams(nu=0.1, omega_d_scale=0.2)
+    G = jnp.zeros((1, 1, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
+    _, phi_t = integrate_linear(
+        G,
+        grid,
+        geom,
+        params,
+        dt=0.1,
+        steps=1,
+        method="implicit",
+        operator="energy",
+        implicit_iters=1,
+        implicit_relax=0.5,
+    )
+    assert phi_t.shape[0] == 1
+
+
+def test_integrate_linear_implicit_invalid_operator():
+    """Implicit path should reject invalid operator values."""
+    grid_cfg = GridConfig(Nx=2, Ny=2, Nz=4, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams(nu=0.1)
+    G = jnp.zeros((1, 1, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
+    with pytest.raises(ValueError):
+        integrate_linear(
+            G,
+            grid,
+            geom,
+            params,
+            dt=0.1,
+            steps=1,
+            method="implicit",
+            operator="bad",
+        )
+
+
 def test_apply_hermite_v_simple():
     """Hermite v operator should map a single mode to neighbors."""
     G = jnp.zeros((1, 3, 1, 1, 1))
