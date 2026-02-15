@@ -6,9 +6,9 @@ matplotlib.use("Agg")
 
 import numpy as np
 
-from spectraxgk.benchmarks import CycloneReference
+from spectraxgk.benchmarks import CycloneReference, CycloneScanResult
 import matplotlib.pyplot as plt
-from spectraxgk.plotting import cyclone_reference_figure
+from spectraxgk.plotting import cyclone_comparison_figure, cyclone_reference_figure
 
 
 def test_cyclone_reference_figure(tmp_path):
@@ -20,6 +20,25 @@ def test_cyclone_reference_figure(tmp_path):
     )
     fig, _axes = cyclone_reference_figure(ref)
     out = tmp_path / "ref.png"
+    fig.savefig(out)
+    plt.close(fig)
+    assert out.exists()
+
+
+def test_cyclone_comparison_figure(tmp_path):
+    """Comparison plot should render with both curves."""
+    ref = CycloneReference(
+        ky=np.array([0.1, 0.2]),
+        omega=np.array([0.3, 0.4]),
+        gamma=np.array([0.05, 0.06]),
+    )
+    scan = CycloneScanResult(
+        ky=np.array([0.1, 0.2]),
+        omega=np.array([0.25, 0.35]),
+        gamma=np.array([0.04, 0.05]),
+    )
+    fig, _axes = cyclone_comparison_figure(ref, scan)
+    out = tmp_path / "comparison.png"
     fig.savefig(out)
     plt.close(fig)
     assert out.exists()

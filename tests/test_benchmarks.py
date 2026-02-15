@@ -4,7 +4,12 @@ import numpy as np
 import pytest
 
 from spectraxgk.analysis import fit_growth_rate
-from spectraxgk.benchmarks import load_cyclone_reference, run_cyclone_linear
+from spectraxgk.benchmarks import (
+    compare_cyclone_to_reference,
+    load_cyclone_reference,
+    run_cyclone_linear,
+    run_cyclone_scan,
+)
 from spectraxgk.config import CycloneBaseCase, GridConfig
 
 
@@ -68,7 +73,7 @@ def test_run_cyclone_linear_shapes():
     """Smoke test for the Cyclone linear runner on a tiny grid."""
     grid = GridConfig(Nx=8, Ny=8, Nz=16, Lx=62.8, Ly=62.8)
     cfg = CycloneBaseCase(grid=grid)
-    result = run_cyclone_linear(cfg=cfg, steps=5, dt=0.1)
+    result = run_cyclone_linear(cfg=cfg, steps=5, dt=0.1, method="rk4")
     assert result.phi_t.shape[0] == 5
     assert np.isfinite(result.gamma)
     assert np.isfinite(result.omega)
@@ -78,5 +83,30 @@ def test_run_cyclone_linear_defaults():
     """Default cfg/params path should run without error."""
     grid = GridConfig(Nx=6, Ny=6, Nz=8, Lx=62.8, Ly=62.8)
     cfg = CycloneBaseCase(grid=grid)
-    result = run_cyclone_linear(cfg=cfg, steps=3, dt=0.1)
+    result = run_cyclone_linear(cfg=cfg, steps=3, dt=0.1, method="rk2")
     assert result.phi_t.shape[0] == 3
+
+
+def test_cyclone_scan_and_compare():
+    """Scan helper should return arrays and comparison should report errors."""
+    grid = GridConfig(Nx=6, Ny=6, Nz=8, Lx=62.8, Ly=62.8)
+    cfg = CycloneBaseCase(grid=grid)
+    ky_values = np.array([0.2, 0.3])
+    scan = run_cyclone_scan(ky_values, cfg=cfg, steps=3, dt=0.1, method="euler")
+    assert scan.ky.shape == ky_values.shape
+    ref = load_cyclone_reference()
+    result = run_cyclone_linear(cfg=cfg, steps=3, dt=0.1, ky_target=0.3, method="euler")
+    comparison = compare_cyclone_to_reference(result, ref)
+    assert comparison.ky > 0.0
+    assert np.isfinite(comparison.rel_gamma)
+
+
+def test_cyclone_physics_regression():
+    """Cyclone growth rates should track published values at ky rho_i = 0.3."""
+    grid = GridConfig(Nx=8, Ny=12, Nz=24, Lx=62.8, Ly=62.8)
+    cfg = CycloneBaseCase(grid=grid)
+    result = run_cyclone_linear(cfg=cfg, ky_target=0.3, steps=300, dt=0.02, tmin=3.0, method="rk4")
+    ref = load_cyclone_reference()
+    idx = int(np.argmin(np.abs(ref.ky - 0.3)))
+    assert np.isclose(result.gamma, ref.gamma[idx], rtol=0.25)
+    assert np.isclose(result.omega, ref.omega[idx], rtol=0.15)

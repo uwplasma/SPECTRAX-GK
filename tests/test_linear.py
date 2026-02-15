@@ -8,8 +8,12 @@ from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.linear import (
     LinearParams,
+    apply_hermite_v,
+    apply_laguerre_x,
     build_H,
     compute_b,
+    diamagnetic_drive_coeffs,
+    energy_operator,
     grad_z_periodic,
     integrate_linear,
     linear_rhs,
@@ -71,7 +75,7 @@ def test_streaming_zero_for_constant_z():
     cfg = CycloneBaseCase(grid=grid_cfg)
     grid = build_spectral_grid(cfg.grid)
     geom = SAlphaGeometry.from_config(cfg.geometry)
-    params = LinearParams()
+    params = LinearParams(omega_d_scale=0.0, omega_star_scale=0.0)
 
     G = jnp.zeros((2, 3, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
     G = G.at[:, 1:, ...].set(1.0)
@@ -126,8 +130,33 @@ def test_integrate_linear_shapes():
     geom = SAlphaGeometry.from_config(cfg.geometry)
     params = LinearParams()
     G = jnp.zeros((2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
-    _, phi_t = integrate_linear(G, grid, geom, params, dt=0.1, steps=3)
+    _, phi_t = integrate_linear(G, grid, geom, params, dt=0.1, steps=3, method="rk4")
     assert phi_t.shape[0] == 3
+
+
+def test_integrate_linear_methods():
+    """Euler and RK2 paths should run without error."""
+    grid_cfg = GridConfig(Nx=6, Ny=6, Nz=8, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams()
+    G = jnp.zeros((2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
+    for method in ("euler", "rk2"):
+        _, phi_t = integrate_linear(G, grid, geom, params, dt=0.1, steps=2, method=method)
+        assert phi_t.shape[0] == 2
+
+
+def test_integrate_linear_invalid_method():
+    """Invalid integrator names should raise a ValueError."""
+    grid_cfg = GridConfig(Nx=6, Ny=6, Nz=8, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams()
+    G = jnp.zeros((2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
+    with pytest.raises(ValueError):
+        integrate_linear(G, grid, geom, params, dt=0.1, steps=2, method="rk5")
 
 
 def test_jit_path_handles_tracers():
@@ -146,3 +175,35 @@ def test_jit_path_handles_tracers():
 
     out = _run(G)
     assert out.shape == G.shape
+
+
+def test_apply_hermite_v_simple():
+    """Hermite v operator should map a single mode to neighbors."""
+    G = jnp.zeros((1, 3, 1, 1, 1))
+    G = G.at[0, 1, 0, 0, 0].set(1.0)
+    out = apply_hermite_v(G)
+    assert jnp.isclose(out[0, 0, 0, 0, 0], 1.0)
+    assert jnp.isclose(out[0, 2, 0, 0, 0], jnp.sqrt(2.0))
+
+
+def test_apply_laguerre_x_simple():
+    """Laguerre x operator should reproduce the three-term recurrence."""
+    G = jnp.zeros((3, 1, 1, 1, 1))
+    G = G.at[1, 0, 0, 0, 0].set(1.0)
+    out = apply_laguerre_x(G)
+    assert jnp.isclose(out[0, 0, 0, 0, 0], -1.0)
+    assert jnp.isclose(out[1, 0, 0, 0, 0], 3.0)
+    assert jnp.isclose(out[2, 0, 0, 0, 0], -2.0)
+
+
+def test_energy_operator_and_drive_coeffs():
+    """Energy and drive coefficient helpers should return consistent shapes."""
+    G = jnp.zeros((2, 3, 1, 1, 1))
+    energy = energy_operator(G, coeff_const=1.0, coeff_par=0.5, coeff_perp=1.0)
+    assert energy.shape == G.shape
+    coeffs = diamagnetic_drive_coeffs(
+        2, 3, eta_i=jnp.array(0.0), coeff_const=1.0, coeff_par=0.5, coeff_perp=1.0
+    )
+    assert coeffs.shape == (2, 3)
+    assert jnp.isclose(coeffs[0, 0], 1.0)
+    assert jnp.allclose(coeffs[1:, :], 0.0)

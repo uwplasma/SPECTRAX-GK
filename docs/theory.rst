@@ -61,3 +61,25 @@ construct the standard gyrokinetic variable
 
 These relations match the Laguerre-Hermite pseudo-spectral form used in GX for
 Cyclone benchmarks. [GX]_
+
+Linear gyrokinetic operator
+---------------------------
+
+In the current linear electrostatic model, the Hermite-Laguerre moments evolve
+according to
+
+.. math::
+
+   \frac{\partial G_{\ell m}}{\partial t}
+   + v_{\mathrm{th}}\,\mathcal{L}_m[H]
+   = i \, \omega_d \, \mathcal{E}[H]
+   + i \, \omega_*^T \, \mathcal{W}[\phi],
+
+where :math:`\mathcal{L}_m` is the Hermite streaming ladder, :math:`\omega_d`
+is the curvature/grad-:math:`B` drift frequency, and :math:`\omega_*^T` is the
+diamagnetic drive frequency. The operators :math:`\mathcal{E}` and
+:math:`\mathcal{W}` control how velocity-space weighting enters the drift and
+drive terms. For the first Cyclone benchmarks we use a constant-energy
+weighting that reproduces published growth rates with modest moment counts, and
+retain the Laguerre-Hermite ladder forms as optional extensions for higher
+order velocity dependence. [GX]_
