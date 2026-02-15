@@ -87,6 +87,15 @@ def test_run_cyclone_linear_defaults():
     assert result.phi_t.shape[0] == 3
 
 
+def test_run_cyclone_linear_gx_operator_smoke():
+    """GX operator path should execute without NaNs on a tiny run."""
+    grid = GridConfig(Nx=6, Ny=6, Nz=8, Lx=62.8, Ly=62.8)
+    cfg = CycloneBaseCase(grid=grid)
+    result = run_cyclone_linear(cfg=cfg, steps=3, dt=0.1, method="rk2", operator="gx")
+    assert np.isfinite(result.gamma)
+    assert np.isfinite(result.omega)
+
+
 def test_cyclone_scan_and_compare():
     """Scan helper should return arrays and comparison should report errors."""
     grid = GridConfig(Nx=6, Ny=6, Nz=8, Lx=62.8, Ly=62.8)

@@ -9,6 +9,15 @@ The linear solver supports explicit Euler, RK2, and RK4 updates inside a JAX
 history. The time integrator lives in ``spectraxgk.linear.integrate_linear`` and
 is configured via the ``method`` argument. RK4 is used in the Cyclone harness.
 
+To stabilize higher-order Hermite-Laguerre scans, two additional options are
+available:
+
+- ``method="imex"``: a semi-implicit update that treats Lenard-Bernstein and
+  hyper-diffusion damping implicitly while keeping the drift/streaming terms
+  explicit.
+- ``method="implicit"``: a backward-Euler solve using a matrix-free GMRES
+  iteration. This is slower but robust for stiff linear runs.
+
 Optional damping
 ----------------
 
@@ -41,5 +50,8 @@ Given a complex mode time series
    \phi(t) \approx \exp[(\gamma + i \omega) t],
 
 we estimate :math:`\gamma` and :math:`\omega` by least-squares fits of
-:math:`\log|\phi|` and the unwrapped phase versus time. This method is used in
-the Cyclone linear benchmark harness.
+:math:`\log|\phi|` and the unwrapped phase versus time. The helper
+``fit_growth_rate_auto`` can automatically select a fitting window by scanning
+for the most exponential-like segment of the time history, reducing sensitivity
+to early transients in ky scans. This method is used in the Cyclone linear
+benchmark harness when ``auto_window=True``.
