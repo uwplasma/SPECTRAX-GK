@@ -1,7 +1,10 @@
+"""Configuration object tests."""
+
 from spectraxgk.config import CycloneBaseCase, GeometryConfig, GridConfig, ModelConfig, TimeConfig
 
 
 def test_config_to_dict():
+    """All config dataclasses should serialize to dictionaries."""
     cfg = CycloneBaseCase()
     d = cfg.to_dict()
     assert set(d.keys()) == {"grid", "time", "geometry", "model"}
@@ -9,6 +12,7 @@ def test_config_to_dict():
 
 
 def test_config_override():
+    """Overrides should propagate into the serialized representation."""
     grid = GridConfig(Nx=12, Ny=10, Nz=8)
     geom = GeometryConfig(q=1.7, s_hat=0.9, epsilon=0.2)
     model = ModelConfig(R_over_LTi=7.0, R_over_LTe=1.0, R_over_Ln=2.5)
