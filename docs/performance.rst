@@ -36,6 +36,16 @@ The exact speedup depends on hardware and problem size. As more geometry and
 operator terms are cached (cv/gb/bgrad, hyper ratios), the overhead balance may
 shift; in this run the cached path was roughly cost-neutral.
 
+Cached basis indices
+--------------------
+
+To reduce per-step overhead, the linear cache now stores Laguerre/Hermite index
+arrays (:math:`l`, :math:`m`) and derived coefficients (``l+1``, ``m+1``,
+``sqrt(m)``, ``sqrt(m+1)``). These are reused inside the GX mirror/curvature
+terms and the implicit preconditioner instead of re-allocating on every RHS
+call. The change is small in absolute cost for low-order runs, but becomes
+noticeable in higher-order scans and tight profiling loops.
+
 GMRES preconditioner iterations
 --------------------------------
 

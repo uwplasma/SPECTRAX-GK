@@ -109,6 +109,7 @@ GX-matched grid (``y0``, ``ntheta``, ``nperiod``) and compares the resulting
 ky scan to the reference CSV. The tolerances are intentionally loose while the
 normalization and geometry factors (including ``rho_star``) are calibrated
 across ky. Tightening these tolerances is part of the ongoing validation plan.
+See :doc:`normalization` for the current calibration parameters.
 
 The current calibration sweep uses ``rho_star=0.9`` with
 ``omega_d_scale=0.2`` and ``omega_star_scale=0.55`` on the GX grid
