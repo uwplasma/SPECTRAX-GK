@@ -14,6 +14,7 @@ if str(SRC) not in sys.path:
 
 from spectraxgk.benchmarks import load_cyclone_reference, run_cyclone_scan
 from spectraxgk.config import CycloneBaseCase, GridConfig
+from spectraxgk.linear import LinearParams
 
 
 def main() -> int:
@@ -22,6 +23,7 @@ def main() -> int:
 
     ref = load_cyclone_reference()
     ky_subset = np.array([0.3, 0.4])
+    gx_ky_subset = np.array([0.2, 0.3, 0.4])
     cfg = CycloneBaseCase(grid=GridConfig(Nx=8, Ny=12, Nz=24, Lx=62.8, Ly=62.8))
     low_scan = run_cyclone_scan(
         ky_subset, cfg=cfg, Nl=2, Nm=4, steps=400, dt=0.02, method="rk4"
@@ -63,6 +65,94 @@ def main() -> int:
         )
     conv_path = outdir / "cyclone_scan_convergence.csv"
     conv_path.write_text("\n".join(conv_rows) + "\n", encoding="utf-8")
+
+    gx_cfg = CycloneBaseCase(
+        grid=GridConfig(
+            Nx=1,
+            Ny=24,
+            Nz=16,
+            Lx=62.8,
+            Ly=62.8,
+            y0=20.0,
+            ntheta=32,
+            nperiod=2,
+        )
+    )
+    gx_params = LinearParams(
+        R_over_Ln=gx_cfg.model.R_over_Ln,
+        R_over_LTi=gx_cfg.model.R_over_LTi,
+        omega_d_scale=0.2,
+        omega_star_scale=0.55,
+        rho_star=0.9,
+    )
+    gx_scan = run_cyclone_scan(
+        gx_ky_subset,
+        cfg=gx_cfg,
+        Nl=2,
+        Nm=4,
+        steps=200,
+        dt=0.02,
+        tmin=2.0,
+        method="imex",
+        operator="gx",
+        params=gx_params,
+    )
+
+    def build_rows_abs(scan):
+        rows = [
+            "ky,gamma_ref,omega_ref,gamma_gx,omega_gx,abs_gamma,abs_omega,rel_gamma,rel_omega"
+        ]
+        for ky, gamma, omega in zip(scan.ky, scan.gamma, scan.omega):
+            idx = int(np.argmin(np.abs(ref.ky - ky)))
+            gamma_ref = float(ref.gamma[idx])
+            omega_ref = float(ref.omega[idx])
+            gamma_abs = abs(float(gamma))
+            omega_abs = abs(float(omega))
+            rel_gamma = (gamma_abs - gamma_ref) / gamma_ref if gamma_ref != 0.0 else np.nan
+            rel_omega = (omega_abs - omega_ref) / omega_ref if omega_ref != 0.0 else np.nan
+            rows.append(
+                f"{ky:.3f},{gamma_ref:.6f},{omega_ref:.6f},{gamma:.6f},{omega:.6f},{gamma_abs:.6f},{omega_abs:.6f},{rel_gamma:.3f},{rel_omega:.3f}"
+            )
+        return rows
+
+    gx_path = outdir / "cyclone_gx_scan_table.csv"
+    gx_path.write_text("\n".join(build_rows_abs(gx_scan)) + "\n", encoding="utf-8")
+
+    rho_values = np.array([0.7, 0.8, 0.9, 1.0, 1.1])
+    rho_rows = ["rho_star,mean_gamma_ratio,mean_omega_ratio"]
+    for rho in rho_values:
+        params = LinearParams(
+            R_over_Ln=gx_cfg.model.R_over_Ln,
+            R_over_LTi=gx_cfg.model.R_over_LTi,
+            omega_d_scale=0.2,
+            omega_star_scale=0.55,
+            rho_star=float(rho),
+        )
+        scan = run_cyclone_scan(
+            gx_ky_subset,
+            cfg=gx_cfg,
+            Nl=2,
+            Nm=4,
+            steps=200,
+            dt=0.02,
+            tmin=2.0,
+            method="imex",
+            operator="gx",
+            params=params,
+        )
+        rel_g = []
+        rel_w = []
+        for ky, gamma, omega in zip(scan.ky, scan.gamma, scan.omega):
+            idx = int(np.argmin(np.abs(ref.ky - ky)))
+            gamma_ref = float(ref.gamma[idx])
+            omega_ref = float(ref.omega[idx])
+            rel_g.append(abs(float(gamma)) / gamma_ref if gamma_ref != 0.0 else np.nan)
+            rel_w.append(abs(float(omega)) / omega_ref if omega_ref != 0.0 else np.nan)
+        rho_rows.append(
+            f"{rho:.2f},{np.nanmean(rel_g):.3f},{np.nanmean(rel_w):.3f}"
+        )
+    rho_path = outdir / "cyclone_gx_rhostar_convergence.csv"
+    rho_path.write_text("\n".join(rho_rows) + "\n", encoding="utf-8")
     return 0
 
 
