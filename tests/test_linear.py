@@ -158,7 +158,7 @@ def test_integrate_linear_with_cache():
     geom = SAlphaGeometry.from_config(cfg.geometry)
     params = LinearParams()
     G = jnp.zeros((2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
-    cache = build_linear_cache(grid, geom, params, G.shape[0])
+    cache = build_linear_cache(grid, geom, params, G.shape[0], G.shape[1])
     _, phi_t = integrate_linear(G, grid, geom, params, dt=0.1, steps=2, method="rk4", cache=cache)
     assert phi_t.shape[0] == 2
 
@@ -183,7 +183,7 @@ def test_linear_cache_matches_rhs():
     geom = SAlphaGeometry.from_config(cfg.geometry)
     params = LinearParams()
     G = jnp.zeros((2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
-    cache = build_linear_cache(grid, geom, params, G.shape[0])
+    cache = build_linear_cache(grid, geom, params, G.shape[0], G.shape[1])
     dG0, phi0 = linear_rhs(G, grid, geom, params)
     dG1, phi1 = linear_rhs_cached(G, cache, params)
     assert jnp.allclose(dG0, dG1)
@@ -197,11 +197,12 @@ def test_linear_cache_tree_roundtrip():
     grid = build_spectral_grid(cfg.grid)
     geom = SAlphaGeometry.from_config(cfg.geometry)
     params = LinearParams()
-    cache = build_linear_cache(grid, geom, params, Nl=2)
+    cache = build_linear_cache(grid, geom, params, Nl=2, Nm=2)
     children, aux = cache.tree_flatten()
     cache2 = LinearCache.tree_unflatten(aux, children)
     assert jnp.allclose(cache2.Jl, cache.Jl)
     assert jnp.allclose(cache2.omega_d, cache.omega_d)
+    assert jnp.allclose(cache2.lb_lam, cache.lb_lam)
 
 
 def test_linear_rhs_cached_invalid_shape():
@@ -211,7 +212,7 @@ def test_linear_rhs_cached_invalid_shape():
     grid = build_spectral_grid(cfg.grid)
     geom = SAlphaGeometry.from_config(cfg.geometry)
     params = LinearParams()
-    cache = build_linear_cache(grid, geom, params, Nl=2)
+    cache = build_linear_cache(grid, geom, params, Nl=2, Nm=2)
     with pytest.raises(ValueError):
         linear_rhs_cached(jnp.zeros((2, 3, 4)), cache, params)
 

@@ -108,8 +108,8 @@ def test_cyclone_physics_regression():
     result = run_cyclone_linear(cfg=cfg, ky_target=0.3, steps=300, dt=0.02, tmin=3.0, method="rk4")
     ref = load_cyclone_reference()
     idx = int(np.argmin(np.abs(ref.ky - 0.3)))
-    assert np.isclose(result.gamma, ref.gamma[idx], rtol=0.10)
-    assert np.isclose(result.omega, ref.omega[idx], rtol=0.08)
+    assert np.isclose(result.gamma, ref.gamma[idx], rtol=0.05)
+    assert np.isclose(result.omega, ref.omega[idx], rtol=0.05)
 
 
 def test_cyclone_scan_regression():
@@ -121,5 +121,5 @@ def test_cyclone_scan_regression():
     ref = load_cyclone_reference()
     for ky, gamma, omega in zip(scan.ky, scan.gamma, scan.omega):
         idx = int(np.argmin(np.abs(ref.ky - ky)))
-        assert np.isclose(gamma, ref.gamma[idx], rtol=1.2)
+        assert np.isclose(gamma, ref.gamma[idx], rtol=1.1)
         assert np.isclose(omega, ref.omega[idx], rtol=0.4)
