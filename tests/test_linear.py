@@ -412,6 +412,32 @@ def test_gx_diamagnetic_drive_populates_m2():
     cache_on = build_linear_cache(grid, geom, params_on, G.shape[0], G.shape[1])
     dG_on, _phi_on = linear_rhs_cached(G, cache_on, params_on, operator="gx")
     assert jnp.max(jnp.abs(dG_on[:, 2, ...])) > 0.0
+    assert jnp.allclose(dG_on[:, 1, ...], 0.0)
+
+
+def test_gx_drive_vanishes_for_ky_zero():
+    """Diamagnetic drive should vanish for the ky=0 mode."""
+    grid_cfg = GridConfig(Nx=2, Ny=4, Nz=8, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    G = jnp.zeros((2, 3, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz), dtype=jnp.complex64)
+    G = G.at[0, 0, 0, 0, :].set(1.0 + 0.0j)
+    params = LinearParams(omega_d_scale=0.0, omega_star_scale=1.0, kpar_scale=0.0)
+    cache = build_linear_cache(grid, geom, params, G.shape[0], G.shape[1])
+    dG, _phi = linear_rhs_cached(G, cache, params, operator="gx")
+    assert jnp.allclose(dG, 0.0)
+
+
+def test_rho_star_scales_cache_ky():
+    """rho_star should scale the cached ky values."""
+    grid_cfg = GridConfig(Nx=4, Ny=4, Nz=8, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams(rho_star=2.0)
+    cache = build_linear_cache(grid, geom, params, Nl=1, Nm=1)
+    assert jnp.allclose(cache.ky, 2.0 * grid.ky)
 
 
 def test_shift_axis_noop():
