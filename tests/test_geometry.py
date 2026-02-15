@@ -2,8 +2,9 @@
 
 import jax.numpy as jnp
 
+from spectraxgk.config import GeometryConfig, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.config import GeometryConfig
+from spectraxgk.grids import build_spectral_grid
 
 
 def test_kperp2_matches_s_alpha():
@@ -24,3 +25,42 @@ def test_geometry_from_config():
     assert geom.q == 1.7
     assert geom.R0 == 3.0
     assert geom.alpha == 0.1
+
+
+def test_bmag_and_omega_d_shapes():
+    """Magnetic field and drift frequency should have consistent shapes."""
+    geom = SAlphaGeometry(q=1.4, s_hat=0.8, epsilon=0.1)
+    theta = jnp.array([0.0])
+    bmag = geom.bmag(theta)
+    assert jnp.isclose(bmag[0], 1.0 / (1.0 + geom.epsilon))
+
+    grid = build_spectral_grid(GridConfig(Nx=4, Ny=4, Nz=8, Lx=6.0, Ly=6.0))
+    omega_d = geom.omega_d(grid.kx, grid.ky, grid.z)
+    assert omega_d.shape == (grid.ky.size, grid.kx.size, grid.z.size)
+
+
+def test_metric_and_drift_coeffs_at_midplane():
+    """Metric and drift coefficients should reduce cleanly at theta=0."""
+    geom = SAlphaGeometry(q=1.4, s_hat=0.7, epsilon=0.0, R0=2.0, alpha=0.2)
+    theta = jnp.array([0.0])
+    gds2, gds21, gds22 = geom.metric_coeffs(theta)
+    assert jnp.isclose(gds2[0], 1.0)
+    assert jnp.isclose(gds21[0], 0.0)
+    assert jnp.isclose(gds22, geom.s_hat * geom.s_hat)
+
+    cv, gb, cv0, gb0 = geom.drift_coeffs(theta)
+    assert jnp.isclose(cv[0], 1.0 / geom.R0)
+    assert jnp.isclose(gb[0], cv[0])
+    assert jnp.isclose(cv0[0], 0.0)
+    assert jnp.isclose(gb0[0], 0.0)
+
+
+def test_kx_effective_shear_shift():
+    """kx_effective should include the s-alpha shear shift."""
+    geom = SAlphaGeometry(q=1.4, s_hat=1.0, epsilon=0.0, alpha=0.5)
+    kx0 = jnp.array([0.2])
+    ky = jnp.array([0.3])
+    theta = jnp.array([1.0])
+    kx_eff = geom.kx_effective(kx0, ky, theta)
+    shear = geom.s_hat * theta - geom.alpha * jnp.sin(theta)
+    assert jnp.isclose(kx_eff[0], kx0[0] - shear[0] * ky[0])

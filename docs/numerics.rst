@@ -35,13 +35,36 @@ finite-difference in :math:`z` and the Hermite ladder coupling
 
    \mathcal{L}_m[H] = \sqrt{m+1} H_{m+1} + \sqrt{m} H_{m-1}.
 
+Curvature and diamagnetic drive
+-------------------------------
+
+The magnetic drift term is evaluated using the s-alpha curvature/grad-:math:`B`
+frequency :math:`\omega_d(\theta)` and an energy operator
+:math:`\mathcal{E}[H]`. In the initial Cyclone harness we use a constant-energy
+weighting,
+
+.. math::
+
+   \mathcal{E}[H] \approx H,
+
+while retaining optional Hermite-Laguerre ladder operators for higher-order
+velocity dependence. The diamagnetic drive is represented as
+
+.. math::
+
+   \omega_*^T \, \mathcal{W}[\phi] = \omega_*^T (1 + \eta_i(E - 3/2)) J_\ell \phi,
+
+with :math:`\eta_i = L_n / L_{Ti}`. The current defaults set the temperature
+weighting to zero for stability on coarse moment grids, and the scaling factors
+are tuned to match published Cyclone growth rates before full velocity-space
+physics is enabled.
+
 Time integration
 ----------------
 
-We currently integrate the linear system using a forward Euler step wrapped in a
-``jax.lax.scan`` loop, which is fully JIT-compilable and differentiable. Higher
-order schemes (RK2/RK4) will be introduced after the curvature and gradient
-terms are added.
+The linear system is integrated using explicit fixed-step schemes (Euler, RK2,
+RK4) implemented inside a ``jax.lax.scan`` loop. RK4 is used by default in the
+Cyclone harness to reduce phase and amplitude errors in the growth-rate fits.
 
 Dealiasing
 ----------
