@@ -38,7 +38,7 @@ finite-difference in :math:`z` and the Hermite ladder coupling
 Curvature, grad-B, and mirror couplings
 ---------------------------------------
 
-The magnetic drift terms follow the GX Laguerre-Hermite stencil: curvature
+The magnetic drift terms follow a Laguerre-Hermite stencil: curvature
 (``cv``) couples Hermite indices :math:`m\pm 2`, grad-:math:`B` (``gb``) couples
 Laguerre indices :math:`\ell\pm 1`, and the mirror term couples :math:`m\pm 1`
 and :math:`\ell\pm 1` with a :math:`b^\prime(\theta)` prefactor. These couplings
@@ -47,13 +47,13 @@ the non-adiabatic moments and the gyroaveraged potential.
 
 For regression tests and reference matching, an ``operator="energy"`` mode is
 available that reverts to the energy-weighted drift closure used in earlier
-benchmarks. This option preserves historical Cyclone fits while the full GX
-operator is validated across ky and resolution scans.
+benchmarks. This option preserves historical Cyclone fits while the full
+drift/mirror operator is validated across ky and resolution scans.
 
 Normalization control
 ---------------------
 
-To align with GX normalization conventions, ``LinearParams`` exposes a
+To align with published Cyclone base case data, ``LinearParams`` exposes a
 ``rho_star`` factor that scales the perpendicular wave numbers used in the
 drift and drive terms. This allows fine adjustments of the effective
 :math:`k_\perp \rho` without changing the FFT grid spacing.
@@ -61,7 +61,7 @@ drift and drive terms. This allows fine adjustments of the effective
 Diamagnetic drive
 -----------------
 
-The diamagnetic drive follows the GX Laguerre form with explicit gradient
+The diamagnetic drive follows a Laguerre form with explicit gradient
 dependence,
 
 .. math::
@@ -75,8 +75,7 @@ dependence,
      0, & \text{otherwise},
    \end{cases}
 
-with :math:`f^\prime = R/L_n` and :math:`t^\prime = R/L_T`. This form reduces
-parameter retuning when comparing to GX and GS2 Cyclone benchmarks.
+with :math:`f^\prime = R/L_n` and :math:`t^\prime = R/L_T`.
 
 Time integration
 ----------------
@@ -91,5 +90,4 @@ Dealiasing
 ----------
 
 For nonlinear terms (to be added), we will use the 2/3 de-aliasing rule in
-perpendicular Fourier space, consistent with GX and related pseudo-spectral
-codes. [GX]_
+perpendicular Fourier space, consistent with standard pseudo-spectral practice.

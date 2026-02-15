@@ -1,4 +1,4 @@
-"""Extract Cyclone base case reference data from GX NetCDF output."""
+"""Extract Cyclone base case reference data from an external NetCDF output."""
 
 from __future__ import annotations
 

@@ -13,6 +13,20 @@ References
    Pseudo-Spectral Velocity Formulation of Gyrokinetics," arXiv:1708.04029
    (2017).
 
+.. [Dimits00] A. M. Dimits et al., "Comparisons and physics basis of tokamak
+   transport models and turbulence simulations," Physics of Plasmas 7, 969
+   (2000).
+
+.. [Lin99] Z. Lin et al., Phys. Rev. Lett. 83, 3645 (1999).
+
+.. [Dorland00] W. Dorland et al., Phys. Rev. Lett. 85, 5579 (2000).
+
+.. [Jenko00] F. Jenko et al., Physics of Plasmas 7, 1904 (2000).
+
+.. [Chandran24] B. D. G. Chandran and A. A. Schekochihin, "Dispersion relation
+   for the electron-temperature-gradient-driven microtearing mode in tokamaks,"
+   Journal of Plasma Physics 90, 905900204 (2024).
+
 .. [GX] N. R. Mandell et al., "GX: a GPU-native gyrokinetic turbulence code for
    tokamak and stellarator design," Journal of Plasma Physics (2022).
 

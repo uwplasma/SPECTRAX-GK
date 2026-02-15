@@ -2,7 +2,7 @@ Normalization
 =============
 
 This section documents the normalization conventions used in SPECTRAX-GK and
-the specific calibration steps used to compare against GX Cyclone base case
+the calibration parameters used to compare against published Cyclone base case
 results.
 
 Dimensionless units
@@ -20,10 +20,10 @@ gyrokinetic scaling:
    \tilde{\phi} = \frac{e \phi}{T_i}, \qquad
    \tilde{\omega} = \frac{\omega}{v_{th}/R_0}.
 
-GX grid matching
-----------------
+Field-aligned grid parameters
+-----------------------------
 
-GX reports Cyclone base case results on a field-aligned grid with:
+For the Cyclone base case we use a field-aligned grid with:
 
 .. math::
 
@@ -38,27 +38,33 @@ sets:
    z \in [-\pi Z_p, \pi Z_p),\qquad
    Z_p = 2 n_{period} - 1.
 
-The GX-style scan tables and regression tests use ``Nx=1, Ny=24, Nz=16`` on
-this grid to match the discrete ky set used in the reference CSV.
+The reduced scan tables and regression tests use ``Nx=1, Ny=24, Nz=16`` on this
+grid to match the discrete ky set used in the reference CSV.
 
-Rho-star calibration
---------------------
+Normalization parameters
+------------------------
 
-GX and SPECTRAX-GK use the same gyro-radius normalization, but small
-discrepancies in the analytic geometry and drift terms can be absorbed by a
-single scale factor:
+The linear operator exposes three normalization parameters that influence the
+drift/drive terms:
 
-.. math::
+- ``rho_star``: scales :math:`k_x` and :math:`k_y` in the drift and drive
+  terms.
+- ``omega_d_scale``: scales curvature/grad-:math:`B`/mirror couplings.
+- ``omega_star_scale``: scales the diamagnetic drive.
 
-   k_y \rightarrow \rho_* k_y,\qquad
-   k_x \rightarrow \rho_* k_x.
+Defaults:
 
-This is exposed as ``LinearParams.rho_star`` and applied inside the linear
-cache. For the current GX comparison sweep, we use:
+- ``rho_star = 1.0`` (model default)
+- ``omega_d_scale = 1.0`` (model default)
+- ``omega_star_scale = 1.0`` (model default)
+
+Cyclone base case calibration:
+
+For the current Cyclone reference matching sweep we use:
 
 .. math::
 
    \rho_* = 0.9,\qquad \omega_d\_scale = 0.2,\qquad \omega_\* \, scale = 0.55.
 
-These parameters are intentionally surfaced in the regression tables so that
-future normalization refinements can be tracked in a reproducible way.
+These parameters are surfaced in the regression tables so that future
+normalization refinements can be tracked in a reproducible way.
