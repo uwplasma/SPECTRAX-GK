@@ -38,8 +38,8 @@ Here:
   :math:`b^\prime(\theta)`.
 - :math:`\mathcal{C}_m` and :math:`\mathcal{G}_\ell` encode curvature and
   grad-:math:`B` couplings, respectively.
-- :math:`\mathcal{D}_{\ell m}` is the diamagnetic drive (nonzero for
-  :math:`m=0,2`).
+- :math:`\mathcal{D}_{\ell m}` is the energy-weighted diamagnetic drive built
+  from :func:`spectraxgk.linear.diamagnetic_drive_coeffs`.
 - :math:`\mathcal{D}_{\mathrm{coll}}` represents optional Lenard-Bernstein and
   hyper-diffusion damping.
 

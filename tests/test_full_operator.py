@@ -1,4 +1,4 @@
-"""GX-operator regression checks against Cyclone reference data."""
+"""Full-operator regression checks against Cyclone reference data."""
 
 import numpy as np
 
@@ -7,8 +7,8 @@ from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.linear import LinearParams
 
 
-def test_gx_operator_scan_relaxed():
-    """GX operator should produce finite scans on a GX-matched grid."""
+def test_full_operator_scan_relaxed():
+    """Full operator should produce finite scans on a field-aligned grid."""
     grid = GridConfig(
         Nx=1,
         Ny=24,
@@ -24,8 +24,8 @@ def test_gx_operator_scan_relaxed():
     params = LinearParams(
         R_over_Ln=cfg.model.R_over_Ln,
         R_over_LTi=cfg.model.R_over_LTi,
-        omega_d_scale=0.2,
-        omega_star_scale=0.55,
+        omega_d_scale=0.1,
+        omega_star_scale=0.6,
         rho_star=0.9,
     )
     scan = run_cyclone_scan(
@@ -35,7 +35,7 @@ def test_gx_operator_scan_relaxed():
         dt=0.02,
         tmin=2.0,
         method="imex",
-        operator="gx",
+        operator="full",
         params=params,
     )
     ref = load_cyclone_reference()
@@ -43,5 +43,5 @@ def test_gx_operator_scan_relaxed():
         idx = int(np.argmin(np.abs(ref.ky - ky)))
         assert np.isfinite(gamma)
         assert np.isfinite(omega)
-        assert np.isclose(abs(gamma), ref.gamma[idx], rtol=2.7)
-        assert np.isclose(abs(omega), ref.omega[idx], rtol=2.7)
+        assert np.isclose(abs(gamma), ref.gamma[idx], rtol=2.0)
+        assert np.isclose(abs(omega), ref.omega[idx], rtol=2.0)
