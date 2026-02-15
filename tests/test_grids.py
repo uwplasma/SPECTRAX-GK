@@ -37,3 +37,32 @@ def test_spectral_grid_tree_roundtrip():
     assert jnp.allclose(grid2.kx, grid.kx)
     assert jnp.allclose(grid2.ky, grid.ky)
     assert jnp.allclose(grid2.z, grid.z)
+
+
+def test_grid_config_y0_and_ntheta():
+    """GX-style grid inputs should map to expected ky and z spacing."""
+    cfg = GridConfig(Nx=4, Ny=12, Nz=4, Lx=2.0, Ly=3.0, y0=20.0, ntheta=8, nperiod=2)
+    grid = build_spectral_grid(cfg)
+    assert grid.z.shape[0] == 8 * 3
+    dz = grid.z[1] - grid.z[0]
+    assert jnp.isclose(dz, 2.0 * jnp.pi / 8.0)
+    dky = grid.ky[1] - grid.ky[0]
+    assert jnp.isclose(dky, 1.0 / 20.0)
+
+
+def test_grid_config_ntheta_default_zp():
+    """ntheta without nperiod should default to Zp=1."""
+    cfg = GridConfig(Nx=4, Ny=4, Nz=4, Lx=2.0, Ly=3.0, ntheta=6)
+    grid = build_spectral_grid(cfg)
+    assert grid.z.shape[0] == 6
+    assert jnp.isclose(grid.z[0], -jnp.pi)
+    dz = grid.z[1] - grid.z[0]
+    assert jnp.isclose(dz, 2.0 * jnp.pi / 6.0)
+
+
+def test_grid_config_explicit_zp():
+    """Explicit Zp should override nperiod when provided."""
+    cfg = GridConfig(Nx=4, Ny=4, Nz=4, Lx=2.0, Ly=3.0, ntheta=5, zp=3)
+    grid = build_spectral_grid(cfg)
+    assert grid.z.shape[0] == 15
+    assert jnp.isclose(grid.z[0], -jnp.pi * 3.0)

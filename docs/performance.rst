@@ -28,9 +28,9 @@ On a reference CPU run (Nx=Ny=16, Nz=32, Nl=2, Nm=4), this reported:
 
 .. code-block:: text
 
-   uncached_s=0.000461
-   cached_s=0.000473
-   speedup=0.97x
+   uncached_s=0.000426
+   cached_s=0.000455
+   speedup=0.94x
 
 The exact speedup depends on hardware and problem size. As more geometry and
 operator terms are cached (cv/gb/bgrad, hyper ratios), the overhead balance may

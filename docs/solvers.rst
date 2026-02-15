@@ -16,7 +16,10 @@ available:
   hyper-diffusion damping implicitly while keeping the drift/streaming terms
   explicit.
 - ``method="implicit"``: a backward-Euler solve using a matrix-free GMRES
-  iteration. This is slower but robust for stiff linear runs.
+  iteration. This is slower but robust for stiff linear runs. A few stabilized
+  fixed-point sub-iterations provide an initial guess and a diagonal
+  preconditioner based on the damping terms accelerates convergence for
+  higher-order scans.
 
 Optional damping
 ----------------
