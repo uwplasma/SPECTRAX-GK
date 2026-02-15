@@ -35,34 +35,49 @@ finite-difference in :math:`z` and the Hermite ladder coupling
 
    \mathcal{L}_m[H] = \sqrt{m+1} H_{m+1} + \sqrt{m} H_{m-1}.
 
-Curvature and diamagnetic drive
--------------------------------
+Curvature, grad-B, and mirror couplings
+---------------------------------------
 
-The magnetic drift term is evaluated using the s-alpha curvature/grad-:math:`B`
-frequency :math:`\omega_d(\theta)` and a Hermite-Laguerre energy operator
-:math:`\mathcal{E}`. We use the full velocity dependence
+The magnetic drift terms follow the GX Laguerre-Hermite stencil: curvature
+(``cv``) couples Hermite indices :math:`m\pm 2`, grad-:math:`B` (``gb``) couples
+Laguerre indices :math:`\ell\pm 1`, and the mirror term couples :math:`m\pm 1`
+and :math:`\ell\pm 1` with a :math:`b^\prime(\theta)` prefactor. These couplings
+are applied directly to the gyrokinetic variable :math:`H_{\ell m}` built from
+the non-adiabatic moments and the gyroaveraged potential.
+
+For regression tests and reference matching, an ``operator="energy"`` mode is
+available that reverts to the energy-weighted drift closure used in earlier
+benchmarks. This option preserves historical Cyclone fits while the full GX
+operator is validated across ky and resolution scans.
+
+Diamagnetic drive
+-----------------
+
+The diamagnetic drive follows the GX Laguerre form with explicit gradient
+dependence,
 
 .. math::
 
-   \mathcal{E}[H] = \frac{1}{2} v_\parallel^2 H + \mu H,
+   \mathcal{D}_{\ell m} \propto
+   \begin{cases}
+     J_{\ell-1} \ell\, t^\prime
+     + J_\ell \left(f^\prime + 2\ell\, t^\prime\right)
+     + J_{\ell+1} (\ell+1)\, t^\prime, & m = 0, \\\\
+     J_\ell t^\prime / \sqrt{2}, & m = 2, \\\\
+     0, & \text{otherwise},
+   \end{cases}
 
-implemented via Hermite and Laguerre ladder recurrences. The diamagnetic drive
-is represented as
-
-.. math::
-
-   \omega_*^T \, \mathcal{W}[\phi] = \omega_*^T (1 + \eta_i(E - 3/2)) J_\ell \phi,
-
-with :math:`\eta_i = L_n / L_{Ti}`. The scaling factors are tuned to match the
-published Cyclone growth rates at :math:`k_y \rho_i = 0.3` on coarse moment
-grids while preserving the full energy operator.
+with :math:`f^\prime = R/L_n` and :math:`t^\prime = R/L_T`. This form reduces
+parameter retuning when comparing to GX and GS2 Cyclone benchmarks.
 
 Time integration
 ----------------
 
 The linear system is integrated using explicit fixed-step schemes (Euler, RK2,
-RK4) implemented inside a ``jax.lax.scan`` loop. RK4 is used by default in the
-Cyclone harness to reduce phase and amplitude errors in the growth-rate fits.
+RK4) implemented inside a ``jax.lax.scan`` loop. For higher-order Hermite-Laguerre
+scans, the ``imex`` and ``implicit`` options provide additional stability by
+treating damping terms implicitly. RK4 remains the default for the Cyclone
+harness.
 
 Dealiasing
 ----------

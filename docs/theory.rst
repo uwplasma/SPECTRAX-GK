@@ -57,7 +57,7 @@ construct the standard gyrokinetic variable
 
 .. math::
 
-   H_{\ell m} = G_{\ell m} + J_\ell \phi \, \delta_{m0}.
+   H_{\ell m} = G_{\ell m} + \frac{Z}{T}\,J_\ell \phi \, \delta_{m0}.
 
 These relations match the Laguerre-Hermite pseudo-spectral form used in GX for
 Cyclone benchmarks. [GX]_
@@ -66,19 +66,43 @@ Linear gyrokinetic operator
 ---------------------------
 
 In the current linear electrostatic model, the Hermite-Laguerre moments evolve
-according to
+according to a GX-style drift/mirror operator,
 
 .. math::
 
    \frac{\partial G_{\ell m}}{\partial t}
    + v_{\mathrm{th}}\,\mathcal{L}_m[H]
-   = i \, \omega_d \, \mathcal{E}[H]
-   + i \, \omega_*^T \, \mathcal{W}[\phi],
+   + v_{\mathrm{th}}\,b^\prime(\theta)\,\mathcal{M}_{\ell m}[H]
+   = -i Z/T\,\bigl(c_v \mathcal{C}_m[H] + g_b \mathcal{G}_\ell[H]\bigr)
+   + i k_y \phi \,\mathcal{D}_{\ell m},
 
-where :math:`\mathcal{L}_m` is the Hermite streaming ladder, :math:`\omega_d`
-is the curvature/grad-:math:`B` drift frequency, and :math:`\omega_*^T` is the
-diamagnetic drive frequency. The operators :math:`\mathcal{E}` and
-:math:`\mathcal{W}` control how velocity-space weighting enters the drift and
-drive terms. We use the full Hermite-Laguerre energy operator
-:math:`\mathcal{E}[H] = \frac{1}{2} v_\parallel^2 H + \mu H` in the Cyclone
-benchmark harness. [GX]_
+where :math:`\mathcal{L}_m` is the Hermite streaming ladder and
+:math:`b^\prime(\theta)` is the parallel magnetic field gradient used in the
+mirror force. The curvature (``cv``) and grad-:math:`B` (``gb``) drift couplings
+are encoded in :math:`\mathcal{C}_m` and :math:`\mathcal{G}_\ell`. Explicitly,
+
+.. math::
+
+   \mathcal{C}_m[H] =
+   \sqrt{(m+1)(m+2)} H_{\ell, m+2}
+   + (2m+1) H_{\ell m}
+   + \sqrt{m(m-1)} H_{\ell, m-2},
+
+.. math::
+
+   \mathcal{G}_\ell[H] =
+   (\ell+1) H_{\ell+1, m}
+   + (2\ell+1) H_{\ell m}
+   + \ell H_{\ell-1, m},
+
+.. math::
+
+   \mathcal{M}_{\ell m}[H] =
+   -\sqrt{m+1}\,(\ell+1) H_{\ell, m+1}
+   -\sqrt{m+1}\,\ell H_{\ell-1, m+1}
+   +\sqrt{m}\,\ell H_{\ell, m-1}
+   +\sqrt{m}\,(\ell+1) H_{\ell+1, m-1}.
+
+The diamagnetic drive term :math:`\mathcal{D}_{\ell m}` matches the GX
+Laguerre formulation with explicit :math:`R/L_n` and :math:`R/L_T` dependence,
+including a separate coupling in :math:`m=2` for temperature-gradient drive.
