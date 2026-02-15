@@ -1,0 +1,25 @@
+[grid]
+Nx = 48
+Ny = 48
+Nz = 64
+Lx = 62.8
+Ly = 62.8
+z_min = -3.141592653589793
+z_max = 3.141592653589793
+
+[time]
+t_max = 100.0
+dt = 0.1
+
+[geometry]
+q = 1.4
+s_hat = 0.8
+epsilon = 0.18
+R0 = 1.0
+B0 = 1.0
+alpha = 0.0
+
+[model]
+R_over_LTi = 6.9
+R_over_LTe = 0.0
+R_over_Ln = 2.2
