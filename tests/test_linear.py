@@ -357,6 +357,63 @@ def test_energy_operator_and_drive_coeffs():
     assert jnp.allclose(coeffs[1:, :], 0.0)
 
 
+def test_gx_matches_energy_when_drives_off():
+    """GX and energy operators should match when drift/drive terms are disabled."""
+    grid_cfg = GridConfig(Nx=4, Ny=4, Nz=8, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams(omega_d_scale=0.0, omega_star_scale=0.0)
+    G = jnp.zeros((2, 3, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
+    G = G.at[0, 0, 1, 0, :].set(1.0)
+    cache = build_linear_cache(grid, geom, params, G.shape[0], G.shape[1])
+    dG_gx, phi_gx = linear_rhs_cached(G, cache, params, operator="gx")
+    dG_energy, phi_energy = linear_rhs_cached(G, cache, params, operator="energy")
+    assert jnp.allclose(dG_gx, dG_energy)
+    assert jnp.allclose(phi_gx, phi_energy)
+
+
+def test_gx_mirror_curvature_activation():
+    """GX drift/mirror terms should activate when omega_d_scale is nonzero."""
+    grid_cfg = GridConfig(Nx=2, Ny=2, Nz=8, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    G = jnp.zeros((1, 3, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz), dtype=jnp.complex64)
+    G = G.at[0, 1, 1, 0, :].set(1.0 + 0.0j)
+
+    params_off = LinearParams(omega_d_scale=0.0, omega_star_scale=0.0, kpar_scale=0.0)
+    cache_off = build_linear_cache(grid, geom, params_off, G.shape[0], G.shape[1])
+    dG_off, _phi_off = linear_rhs_cached(G, cache_off, params_off, operator="gx")
+    assert jnp.allclose(dG_off, 0.0)
+
+    params_on = LinearParams(omega_d_scale=1.0, omega_star_scale=0.0, kpar_scale=0.0)
+    cache_on = build_linear_cache(grid, geom, params_on, G.shape[0], G.shape[1])
+    dG_on, _phi_on = linear_rhs_cached(G, cache_on, params_on, operator="gx")
+    assert jnp.max(jnp.abs(dG_on)) > 0.0
+
+
+def test_gx_diamagnetic_drive_populates_m2():
+    """GX diamagnetic drive should populate the m=2 component when enabled."""
+    grid_cfg = GridConfig(Nx=2, Ny=4, Nz=8, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    G = jnp.zeros((2, 3, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz), dtype=jnp.complex64)
+    ky_index = 1
+    G = G.at[0, 0, ky_index, 0, :].set(1.0 + 0.0j)
+
+    params_off = LinearParams(omega_d_scale=0.0, omega_star_scale=0.0, kpar_scale=0.0)
+    cache_off = build_linear_cache(grid, geom, params_off, G.shape[0], G.shape[1])
+    dG_off, _phi_off = linear_rhs_cached(G, cache_off, params_off, operator="gx")
+    assert jnp.allclose(dG_off[:, 2, ...], 0.0)
+
+    params_on = LinearParams(omega_d_scale=0.0, omega_star_scale=1.0, kpar_scale=0.0)
+    cache_on = build_linear_cache(grid, geom, params_on, G.shape[0], G.shape[1])
+    dG_on, _phi_on = linear_rhs_cached(G, cache_on, params_on, operator="gx")
+    assert jnp.max(jnp.abs(dG_on[:, 2, ...])) > 0.0
+
+
 def test_shift_axis_noop():
     """shift_axis should return the input when offset is zero."""
     from spectraxgk.linear import shift_axis
