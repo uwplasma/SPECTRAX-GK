@@ -33,6 +33,7 @@ def test_bmag_and_omega_d_shapes():
     theta = jnp.array([0.0])
     bmag = geom.bmag(theta)
     assert jnp.isclose(bmag[0], 1.0 / (1.0 + geom.epsilon))
+    assert jnp.isclose(geom.gradpar(), jnp.abs(1.0 / (geom.q * geom.R0)))
 
     grid = build_spectral_grid(GridConfig(Nx=4, Ny=4, Nz=8, Lx=6.0, Ly=6.0))
     omega_d = geom.omega_d(grid.kx, grid.ky, grid.z)
@@ -53,6 +54,12 @@ def test_metric_and_drift_coeffs_at_midplane():
     assert jnp.isclose(gb[0], cv[0])
     assert jnp.isclose(cv0[0], 0.0)
     assert jnp.isclose(gb0[0], 0.0)
+
+    cv_d, gb_d = geom.drift_components(jnp.array([0.0]), jnp.array([1.0]), theta)
+    assert cv_d.shape == (1, 1, 1)
+    assert gb_d.shape == (1, 1, 1)
+    bgrad = geom.bgrad(theta)
+    assert jnp.isfinite(bgrad[0])
 
 
 def test_kx_effective_shear_shift():

@@ -24,7 +24,7 @@ def main() -> int:
     fig.savefig(outdir / "cyclone_reference.pdf")
 
     ky_sample = ref.ky[::2]
-    scan = run_cyclone_scan(ky_sample, steps=300, dt=0.02, tmin=3.0, method="rk4")
+    scan = run_cyclone_scan(ky_sample, Nl=2, Nm=4, steps=300, dt=0.02, tmin=3.0, method="rk4")
     fig, _axes = cyclone_comparison_figure(ref, scan)
     fig.savefig(outdir / "cyclone_comparison.png", dpi=200)
     fig.savefig(outdir / "cyclone_comparison.pdf")
