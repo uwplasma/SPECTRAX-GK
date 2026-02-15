@@ -7,16 +7,19 @@ from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.linear import (
+    LinearCache,
     LinearParams,
     apply_hermite_v,
     apply_laguerre_x,
     build_H,
+    build_linear_cache,
     compute_b,
     diamagnetic_drive_coeffs,
     energy_operator,
     grad_z_periodic,
     integrate_linear,
     linear_rhs,
+    linear_rhs_cached,
     quasineutrality_phi,
     streaming_term,
 )
@@ -147,6 +150,19 @@ def test_integrate_linear_methods():
         assert phi_t.shape[0] == 2
 
 
+def test_integrate_linear_with_cache():
+    """Integrate with a precomputed cache path."""
+    grid_cfg = GridConfig(Nx=6, Ny=6, Nz=8, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams()
+    G = jnp.zeros((2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
+    cache = build_linear_cache(grid, geom, params, G.shape[0])
+    _, phi_t = integrate_linear(G, grid, geom, params, dt=0.1, steps=2, method="rk4", cache=cache)
+    assert phi_t.shape[0] == 2
+
+
 def test_integrate_linear_invalid_method():
     """Invalid integrator names should raise a ValueError."""
     grid_cfg = GridConfig(Nx=6, Ny=6, Nz=8, Lx=6.0, Ly=6.0)
@@ -157,6 +173,47 @@ def test_integrate_linear_invalid_method():
     G = jnp.zeros((2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
     with pytest.raises(ValueError):
         integrate_linear(G, grid, geom, params, dt=0.1, steps=2, method="rk5")
+
+
+def test_linear_cache_matches_rhs():
+    """Cached RHS should match the direct RHS for the same inputs."""
+    grid_cfg = GridConfig(Nx=6, Ny=6, Nz=8, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams()
+    G = jnp.zeros((2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
+    cache = build_linear_cache(grid, geom, params, G.shape[0])
+    dG0, phi0 = linear_rhs(G, grid, geom, params)
+    dG1, phi1 = linear_rhs_cached(G, cache, params)
+    assert jnp.allclose(dG0, dG1)
+    assert jnp.allclose(phi0, phi1)
+
+
+def test_linear_cache_tree_roundtrip():
+    """LinearCache pytree should round-trip through flatten/unflatten."""
+    grid_cfg = GridConfig(Nx=4, Ny=4, Nz=4, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams()
+    cache = build_linear_cache(grid, geom, params, Nl=2)
+    children, aux = cache.tree_flatten()
+    cache2 = LinearCache.tree_unflatten(aux, children)
+    assert jnp.allclose(cache2.Jl, cache.Jl)
+    assert jnp.allclose(cache2.omega_d, cache.omega_d)
+
+
+def test_linear_rhs_cached_invalid_shape():
+    """Cached RHS should reject invalid shapes."""
+    grid_cfg = GridConfig(Nx=4, Ny=4, Nz=4, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams()
+    cache = build_linear_cache(grid, geom, params, Nl=2)
+    with pytest.raises(ValueError):
+        linear_rhs_cached(jnp.zeros((2, 3, 4)), cache, params)
 
 
 def test_jit_path_handles_tracers():
