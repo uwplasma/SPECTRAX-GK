@@ -21,3 +21,10 @@ Linear RHS demo
 .. code-block:: bash
 
    python examples/linear_rhs_demo.py
+
+Cyclone linear benchmark
+------------------------
+
+.. code-block:: bash
+
+   python examples/cyclone_linear_benchmark.py

@@ -1,9 +1,12 @@
+"""Basis function tests for Hermite and Laguerre polynomials."""
+
 import jax.numpy as jnp
 
 from spectraxgk.basis import hermite_normed, laguerre
 
 
 def test_hermite_orthonormality():
+    """Hermite functions should be approximately orthonormal under exp(-x^2)."""
     n_max = 4
     x = jnp.linspace(-6.0, 6.0, 4001)
     dx = x[1] - x[0]
@@ -14,6 +17,7 @@ def test_hermite_orthonormality():
 
 
 def test_laguerre_orthonormality():
+    """Laguerre polynomials should be orthonormal under exp(-x)."""
     l_max = 4
     x = jnp.linspace(0.0, 40.0, 8001)
     dx = x[1] - x[0]
@@ -24,6 +28,7 @@ def test_laguerre_orthonormality():
 
 
 def test_basis_invalid_inputs():
+    """Negative orders should raise errors."""
     import pytest
     from spectraxgk.basis import hermite_ladder_coeffs
 
@@ -36,6 +41,7 @@ def test_basis_invalid_inputs():
 
 
 def test_basis_zero_order():
+    """Zero-order basis should return a single constant mode."""
     x = jnp.array([0.0, 1.0])
     h0 = hermite_normed(x, 0)
     l0 = laguerre(x, 0)

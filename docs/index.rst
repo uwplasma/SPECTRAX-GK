@@ -9,7 +9,17 @@ Fourier real space. This documentation reflects the new clean-room rebuild.
    :caption: Contents
 
    quickstart
-   roadmap
-   examples
+   theory
+   numerics
+   geometry
+   algorithms
+   solvers
+   architecture
    benchmarks
+   examples
+   codes
+   performance
+   testing
+   references
+   roadmap
    api
