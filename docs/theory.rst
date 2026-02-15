@@ -17,7 +17,7 @@ Flux-tube model
 We employ a field-aligned, local flux-tube model in which the perpendicular
 spatial dependence is represented spectrally and the parallel coordinate is
 resolved along a field line. This approximation underlies the Cyclone base case
-benchmark commonly used in gyrokinetic validation studies. [GX]_
+benchmark commonly used in gyrokinetic validation studies. [Dimits00]_
 
 Hermite-Laguerre velocity space
 -------------------------------
@@ -59,14 +59,14 @@ construct the standard gyrokinetic variable
 
    H_{\ell m} = G_{\ell m} + \frac{Z}{T}\,J_\ell \phi \, \delta_{m0}.
 
-These relations match the Laguerre-Hermite pseudo-spectral form used in GX for
-Cyclone benchmarks. [GX]_
+These relations match the Laguerre-Hermite pseudo-spectral form used in the
+gyrokinetic literature. [MDL17]_
 
 Linear gyrokinetic operator
 ---------------------------
 
 In the current linear electrostatic model, the Hermite-Laguerre moments evolve
-according to a GX-style drift/mirror operator,
+according to a drift/mirror operator,
 
 .. math::
 
@@ -103,6 +103,6 @@ are encoded in :math:`\mathcal{C}_m` and :math:`\mathcal{G}_\ell`. Explicitly,
    +\sqrt{m}\,\ell H_{\ell, m-1}
    +\sqrt{m}\,(\ell+1) H_{\ell+1, m-1}.
 
-The diamagnetic drive term :math:`\mathcal{D}_{\ell m}` matches the GX
-Laguerre formulation with explicit :math:`R/L_n` and :math:`R/L_T` dependence,
+The diamagnetic drive term :math:`\mathcal{D}_{\ell m}` follows a Laguerre
+formulation with explicit :math:`R/L_n` and :math:`R/L_T` dependence,
 including a separate coupling in :math:`m=2` for temperature-gradient drive.
