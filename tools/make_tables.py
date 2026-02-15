@@ -24,10 +24,10 @@ def main() -> int:
     ky_subset = np.array([0.3, 0.4])
     cfg = CycloneBaseCase(grid=GridConfig(Nx=8, Ny=12, Nz=24, Lx=62.8, Ly=62.8))
     low_scan = run_cyclone_scan(
-        ky_subset, cfg=cfg, Nl=2, Nm=4, steps=300, dt=0.02, tmin=3.0, method="rk4"
+        ky_subset, cfg=cfg, Nl=2, Nm=4, steps=400, dt=0.02, method="rk4"
     )
     high_scan = run_cyclone_scan(
-        ky_subset, cfg=cfg, Nl=3, Nm=6, steps=80, dt=0.01, tmin=0.2, method="rk4"
+        ky_subset, cfg=cfg, Nl=3, Nm=6, steps=300, dt=0.02, method="imex"
     )
 
     def build_rows(scan):

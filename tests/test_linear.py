@@ -138,14 +138,14 @@ def test_integrate_linear_shapes():
 
 
 def test_integrate_linear_methods():
-    """Euler and RK2 paths should run without error."""
+    """Explicit and IMEX paths should run without error."""
     grid_cfg = GridConfig(Nx=6, Ny=6, Nz=8, Lx=6.0, Ly=6.0)
     cfg = CycloneBaseCase(grid=grid_cfg)
     grid = build_spectral_grid(cfg.grid)
     geom = SAlphaGeometry.from_config(cfg.geometry)
     params = LinearParams()
     G = jnp.zeros((2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
-    for method in ("euler", "rk2"):
+    for method in ("euler", "rk2", "imex", "semi-implicit"):
         _, phi_t = integrate_linear(G, grid, geom, params, dt=0.1, steps=2, method=method)
         assert phi_t.shape[0] == 2
 
@@ -203,6 +203,7 @@ def test_linear_cache_tree_roundtrip():
     assert jnp.allclose(cache2.Jl, cache.Jl)
     assert jnp.allclose(cache2.omega_d, cache.omega_d)
     assert jnp.allclose(cache2.lb_lam, cache.lb_lam)
+    assert jnp.allclose(cache2.hyper_ratio, cache.hyper_ratio)
 
 
 def test_linear_rhs_cached_invalid_shape():
@@ -215,6 +216,18 @@ def test_linear_rhs_cached_invalid_shape():
     cache = build_linear_cache(grid, geom, params, Nl=2, Nm=2)
     with pytest.raises(ValueError):
         linear_rhs_cached(jnp.zeros((2, 3, 4)), cache, params)
+
+
+def test_linear_rhs_cached_invalid_operator():
+    """Unknown operator names should raise a ValueError."""
+    grid_cfg = GridConfig(Nx=4, Ny=4, Nz=4, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams()
+    cache = build_linear_cache(grid, geom, params, Nl=2, Nm=2)
+    with pytest.raises(ValueError):
+        linear_rhs_cached(jnp.zeros((2, 2, 4, 4, 4)), cache, params, operator="bad")
 
 
 def test_jit_path_handles_tracers():
@@ -233,6 +246,18 @@ def test_jit_path_handles_tracers():
 
     out = _run(G)
     assert out.shape == G.shape
+
+
+def test_integrate_linear_implicit_runs():
+    """Implicit path should run on a tiny grid."""
+    grid_cfg = GridConfig(Nx=2, Ny=2, Nz=4, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams(nu=0.1)
+    G = jnp.zeros((1, 1, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
+    _, phi_t = integrate_linear(G, grid, geom, params, dt=0.1, steps=1, method="implicit")
+    assert phi_t.shape[0] == 1
 
 
 def test_apply_hermite_v_simple():
@@ -265,3 +290,12 @@ def test_energy_operator_and_drive_coeffs():
     assert coeffs.shape == (2, 3)
     assert jnp.isclose(coeffs[0, 0], 1.0)
     assert jnp.allclose(coeffs[1:, :], 0.0)
+
+
+def test_shift_axis_noop():
+    """shift_axis should return the input when offset is zero."""
+    from spectraxgk.linear import shift_axis
+
+    arr = jnp.arange(6.0).reshape(2, 3)
+    out = shift_axis(arr, 0, axis=0)
+    assert jnp.allclose(out, arr)
