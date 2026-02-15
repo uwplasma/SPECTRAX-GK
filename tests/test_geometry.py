@@ -64,3 +64,16 @@ def test_kx_effective_shear_shift():
     kx_eff = geom.kx_effective(kx0, ky, theta)
     shear = geom.s_hat * theta - geom.alpha * jnp.sin(theta)
     assert jnp.isclose(kx_eff[0], kx0[0] - shear[0] * ky[0])
+
+
+def test_geometry_tree_roundtrip():
+    """Geometry pytree should round-trip through flatten/unflatten."""
+    geom = SAlphaGeometry(q=1.5, s_hat=0.8, epsilon=0.2, R0=3.0, B0=1.8, alpha=0.1)
+    children, aux = geom.tree_flatten()
+    geom2 = SAlphaGeometry.tree_unflatten(aux, children)
+    assert geom2.q == geom.q
+    assert geom2.s_hat == geom.s_hat
+    assert geom2.epsilon == geom.epsilon
+    assert geom2.R0 == geom.R0
+    assert geom2.B0 == geom.B0
+    assert geom2.alpha == geom.alpha
