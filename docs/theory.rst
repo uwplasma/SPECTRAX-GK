@@ -79,7 +79,6 @@ where :math:`\mathcal{L}_m` is the Hermite streaming ladder, :math:`\omega_d`
 is the curvature/grad-:math:`B` drift frequency, and :math:`\omega_*^T` is the
 diamagnetic drive frequency. The operators :math:`\mathcal{E}` and
 :math:`\mathcal{W}` control how velocity-space weighting enters the drift and
-drive terms. For the first Cyclone benchmarks we use a constant-energy
-weighting that reproduces published growth rates with modest moment counts, and
-retain the Laguerre-Hermite ladder forms as optional extensions for higher
-order velocity dependence. [GX]_
+drive terms. We use the full Hermite-Laguerre energy operator
+:math:`\mathcal{E}[H] = \frac{1}{2} v_\parallel^2 H + \mu H` in the Cyclone
+benchmark harness. [GX]_

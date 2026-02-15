@@ -39,25 +39,23 @@ Curvature and diamagnetic drive
 -------------------------------
 
 The magnetic drift term is evaluated using the s-alpha curvature/grad-:math:`B`
-frequency :math:`\omega_d(\theta)` and an energy operator
-:math:`\mathcal{E}[H]`. In the initial Cyclone harness we use a constant-energy
-weighting,
+frequency :math:`\omega_d(\theta)` and a Hermite-Laguerre energy operator
+:math:`\mathcal{E}`. We use the full velocity dependence
 
 .. math::
 
-   \mathcal{E}[H] \approx H,
+   \mathcal{E}[H] = \frac{1}{2} v_\parallel^2 H + \mu H,
 
-while retaining optional Hermite-Laguerre ladder operators for higher-order
-velocity dependence. The diamagnetic drive is represented as
+implemented via Hermite and Laguerre ladder recurrences. The diamagnetic drive
+is represented as
 
 .. math::
 
    \omega_*^T \, \mathcal{W}[\phi] = \omega_*^T (1 + \eta_i(E - 3/2)) J_\ell \phi,
 
-with :math:`\eta_i = L_n / L_{Ti}`. The current defaults set the temperature
-weighting to zero for stability on coarse moment grids, and the scaling factors
-are tuned to match published Cyclone growth rates before full velocity-space
-physics is enabled.
+with :math:`\eta_i = L_n / L_{Ti}`. The scaling factors are tuned to match the
+published Cyclone growth rates at :math:`k_y \rho_i = 0.3` on coarse moment
+grids while preserving the full energy operator.
 
 Time integration
 ----------------
