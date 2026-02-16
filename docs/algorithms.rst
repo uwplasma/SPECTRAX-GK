@@ -8,8 +8,8 @@ For each time step, the linear operator proceeds as follows:
 
 1. Compute :math:`b = k_\perp^2 \rho^2` from the s-alpha geometry.
 2. Evaluate the Laguerre gyroaverage coefficients :math:`J_\ell(b)`.
-3. Solve the adiabatic-electron quasineutrality equation for :math:`\phi`.
-4. Construct :math:`H_{\ell m} = G_{\ell m} + J_\ell \phi \delta_{m0}`.
+3. Solve the field equations for :math:`(\phi, B_\parallel, A_\parallel)`.
+4. Construct :math:`H_{\ell m}` including field couplings.
 5. Apply the Hermite ladder streaming operator to :math:`H`.
 
 This sequence is designed to be JIT-compilable, differentiable, and efficient
@@ -18,8 +18,8 @@ under JAX.
 Linear operator decomposition
 -----------------------------
 
-The linear electrostatic operator is decomposed into physically motivated
-pieces that act on :math:`H_{\ell m}`:
+The linear operator is decomposed into physically motivated pieces that act on
+:math:`H_{\ell m}`:
 
 .. math::
 
@@ -38,8 +38,9 @@ Here:
   :math:`b^\prime(\theta)`.
 - :math:`\mathcal{C}_m` and :math:`\mathcal{G}_\ell` encode curvature and
   grad-:math:`B` couplings, respectively.
-- :math:`\mathcal{D}_{\ell m}` is the energy-weighted diamagnetic drive built
-  from :func:`spectraxgk.linear.diamagnetic_drive_coeffs`.
+- :math:`\mathcal{D}_{\ell m}` is the energy-weighted diamagnetic drive, with
+  additional :math:`A_\parallel` and :math:`B_\parallel` couplings when
+  electromagnetic terms are enabled.
 - :math:`\mathcal{D}_{\mathrm{coll}}` represents optional Lenard-Bernstein and
   hyper-diffusion damping.
 

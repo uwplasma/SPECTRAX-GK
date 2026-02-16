@@ -216,6 +216,30 @@ def test_extract_eigenfunction_invalid():
         extract_eigenfunction(phi_t, t, sel, method="bad")
     with pytest.raises(ValueError):
         extract_eigenfunction(phi_t, t, sel, tmin=2.0, tmax=3.0)
+    with pytest.raises(ValueError):
+        extract_eigenfunction(phi_t, t, sel, z=np.zeros(3))
+
+
+def test_extract_eigenfunction_z_normalization():
+    """Eigenfunction should normalize to theta=0 when z is provided."""
+    t = np.linspace(0.0, 1.0, 8)
+    z = np.array([-1.0, 0.0, 1.0, 2.0])
+    mode = np.array([2.0, 4.0, 6.0, 8.0])
+    phi_t = (np.ones((t.size, 1, 1, mode.size)) * mode[None, None, None, :])
+    sel = ModeSelection(ky_index=0, kx_index=0, z_index=0)
+    out = extract_eigenfunction(phi_t, t, sel, z=z, method="snapshot")
+    assert np.isclose(out[1], 1.0)
+
+
+def test_extract_eigenfunction_z_zero_fallback():
+    """If theta=0 value is zero, normalization should fall back to max."""
+    t = np.linspace(0.0, 1.0, 8)
+    z = np.array([-1.0, 0.0, 1.0, 2.0])
+    mode = np.array([1.0, 0.0, 2.0, 3.0])
+    phi_t = (np.ones((t.size, 1, 1, mode.size)) * mode[None, None, None, :])
+    sel = ModeSelection(ky_index=0, kx_index=0, z_index=0)
+    out = extract_eigenfunction(phi_t, t, sel, z=z, method="snapshot")
+    assert np.isclose(np.max(np.abs(out)), 1.0)
 
 
 def test_extract_eigenfunction_nan_fallback():

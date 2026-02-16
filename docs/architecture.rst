@@ -7,7 +7,7 @@ Core modules
 - ``spectraxgk.basis``: Hermite and Laguerre basis functions.
 - ``spectraxgk.gyroaverage``: gyroaverage coefficients and polarization helpers.
 - ``spectraxgk.geometry``: analytic s-alpha flux-tube geometry.
-- ``spectraxgk.linear``: linear electrostatic operator and JAX time integrator.
+- ``spectraxgk.linear``: linear gyrokinetic operator (electrostatic + electromagnetic) and JAX time integrator.
 - ``spectraxgk.benchmarks``: reference datasets and benchmark harness.
 - ``spectraxgk.plotting``: reusable, publication-ready plotting utilities.
 
@@ -18,7 +18,7 @@ The linear solve is structured as:
 
 1. build the spectral grid and geometry
 2. compute gyroaverage coefficients
-3. solve quasineutrality
+3. solve the field equations for :math:`(\\phi, B_\\parallel, A_\\parallel)`
 4. build the gyrokinetic variable ``H``
 5. apply the Hermite streaming operator
 6. advance in time using ``integrate_linear``

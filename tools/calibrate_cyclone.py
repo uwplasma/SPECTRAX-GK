@@ -11,7 +11,7 @@ import numpy as np
 from spectraxgk.benchmarks import load_cyclone_reference, run_cyclone_scan
 from spectraxgk.config import CycloneBaseCase
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.linear import LinearParams
+from spectraxgk.linear import LinearParams, LinearTerms
 
 
 @dataclass(frozen=True)
@@ -51,6 +51,8 @@ def main() -> int:
     parser.add_argument("--steps", type=int, default=800)
     parser.add_argument("--dt", type=float, default=0.01)
     parser.add_argument("--ky-subset", nargs="*", type=float, default=[0.3, 0.4])
+    parser.add_argument("--tmin", type=float, default=None)
+    parser.add_argument("--tmax", type=float, default=None)
     parser.add_argument("--output-csv", type=str, default="")
     args = parser.parse_args()
 
@@ -80,8 +82,9 @@ def main() -> int:
                     steps=args.steps,
                     dt=args.dt,
                     tmin=args.tmin,
+                    tmax=args.tmax,
                     method="imex",
-                    operator="gx",
+                    terms=LinearTerms(),
                     params=params,
                 )
                 max_rel, mean_rel = _error_metrics(ref.ky, ref.gamma, ref.omega, scan)

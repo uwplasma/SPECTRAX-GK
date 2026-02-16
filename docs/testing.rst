@@ -48,10 +48,8 @@ Physics regression tests
 The physics-focused tests exercise reduced or symmetry limits that should
 remain invariant across refactors:
 
-- **Drive-off equivalence**: the full drift/mirror operator matches the
-  energy-closure when drift/drive terms are disabled.
-- **Full-operator alias**: ``operator="full"`` is exercised in both the cached
-  RHS and cached integrator paths to ensure the alias remains valid.
+- **Term toggles**: :class:`spectraxgk.linear.LinearTerms` switches individual
+  operator components without changing the equation structure.
 - **Mirror/curvature activation**: nonzero drift terms create nonzero response
   when streaming and drive are turned off.
 - **Diamagnetic drive structure**: the energy-weighted drive produces a
@@ -73,8 +71,7 @@ growth-rate extraction pipeline:
 - Loading the reference CSV via :func:`spectraxgk.benchmarks.load_cyclone_reference`.
 - Running short linear scans via :func:`spectraxgk.benchmarks.run_cyclone_linear`
   and :func:`spectraxgk.benchmarks.run_cyclone_scan`.
-- Full-operator regression with tightened tolerances for the reduced ky scan
-  at ``Nl=6, Nm=12``.
+- Reduced ky regression with tightened tolerances on the field-aligned grid.
 
 These tests live in ``tests/test_benchmarks.py`` and ``tests/test_full_operator.py``.
 
@@ -86,12 +83,15 @@ published benchmarks and trend tests:
 
 - **ITG/Cyclone base case**: reproduce the standard Cyclone base case growth
   rates and frequencies across a reduced ky scan. [Dimits00]_ [Lin99]_
-- **ETG linear instability**: verify that growth rates increase with
-  :math:`R/L_{Te}` on a reduced electron-scale grid and that the real
-  frequency follows the electron diamagnetic direction. [Dorland00]_ [Jenko00]_
-- **Microtearing (MTM)**: verify the collisional electron-driven branch on the
-  reduced MTM setup and track its damping trend with increasing collisionality.
-  [Chandran24]_
+- **Kinetic-electron ITG**: ensure the ion-scale kinetic-electron branch is
+  captured and produces finite growth rates.
+- **ETG linear instability**: verify that growth rates remain positive across
+  reduced electron-scale gradients and that the real frequency follows the
+  electron diamagnetic direction. [Dorland00]_ [Jenko00]_
+- **KBM beta scan**: verify the transition between ITG-like and KBM branches
+  in a fixed-:math:`k_y` beta sweep.
+- **TEM case**: capture the low-:math:`k_y` trapped-electron branch on the
+  published s-alpha parameter set. [Frei22]_
 
 Running tests
 -------------
