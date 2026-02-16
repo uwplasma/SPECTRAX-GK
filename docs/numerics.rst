@@ -77,22 +77,23 @@ share the cached operator data assembled by
 Gyroaverage and polarization
 ----------------------------
 
-The Laguerre gyroaverage coefficients are
+The Laguerre gyroaverage coefficients follow the Laguerre–Hermite convention
+used in the GX formulation,
 
 .. math::
 
-   J_\ell(b) = e^{-b/2} L_\ell(b),
+   J_\ell(b) = \frac{1}{\ell!}\left(-\frac{b}{2}\right)^\ell e^{-b/2},
 
-with :math:`b = k_\perp^2 \rho^2`. The truncated sum
-:math:`\sum_{\ell=0}^{N_\ell-1} J_\ell^2` approaches
-:math:`\Gamma_0(b) = e^{-b} I_0(b)` as :math:`N_\ell \to \infty`, which provides a
-useful convergence diagnostic.
+with :math:`b = k_\perp^2 \rho^2`. This definition is consistent with the
+Laguerre projection of the gyroaveraged potential in the Hermite–Laguerre
+closure used by the linear operator.
 
 Parallel streaming
 ------------------
 
-The streaming operator is applied in real space using a centered periodic
-finite-difference in :math:`z` and the Hermite ladder coupling
+The streaming operator is applied in real space using a spectral periodic
+derivative in :math:`z` (FFT-based, via ``jax.numpy.fft``) and the Hermite
+ladder coupling
 
 .. math::
 

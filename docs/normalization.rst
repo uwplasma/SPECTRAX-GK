@@ -73,7 +73,7 @@ For the current Cyclone reference matching sweep we use:
 
 .. math::
 
-   \rho_* = 1.0,\qquad \omega_d\_scale = 0.2,\qquad \omega_* \, scale = 0.18.
+   \rho_* = 0.3,\qquad \omega_d\_scale = 0.6,\qquad \omega_* \, scale = 8.5.
 
 These parameters are surfaced in the regression tables so that future
 normalization refinements can be tracked in a reproducible way.

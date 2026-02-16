@@ -11,6 +11,7 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from spectraxgk.benchmarks import load_cyclone_reference, run_cyclone_scan
+from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.plotting import cyclone_comparison_figure, cyclone_reference_figure
 
 
@@ -24,7 +25,8 @@ def main() -> int:
     fig.savefig(outdir / "cyclone_reference.pdf")
 
     ky_sample = ref.ky[::2]
-    scan = run_cyclone_scan(ky_sample, Nl=2, Nm=4, steps=400, dt=0.02, method="rk4")
+    cfg = CycloneBaseCase(grid=GridConfig(Nx=8, Ny=12, Nz=64, Lx=62.8, Ly=62.8))
+    scan = run_cyclone_scan(ky_sample, cfg=cfg, Nl=2, Nm=4, steps=400, dt=0.02, method="rk4")
     fig, _axes = cyclone_comparison_figure(ref, scan)
     fig.savefig(outdir / "cyclone_comparison.png", dpi=200)
     fig.savefig(outdir / "cyclone_comparison.pdf")
