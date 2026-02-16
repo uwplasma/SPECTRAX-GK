@@ -50,7 +50,7 @@ def main() -> int:
     fig.savefig(outdir / "cyclone_comparison.png", dpi=200)
     fig.savefig(outdir / "cyclone_comparison.pdf")
 
-    etg_grid = GridConfig(Nx=1, Ny=16, Nz=64, Lx=6.28, Ly=6.28)
+    etg_grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
     R_vals = [4.0, 6.0, 8.0, 10.0]
     etg_gamma = []
     etg_omega = []
@@ -61,10 +61,13 @@ def main() -> int:
             ky_target=3.0,
             Nl=4,
             Nm=8,
-            steps=400,
+            steps=200,
             dt=0.01,
             method="rk4",
             mode_method="z_index",
+            auto_window=False,
+            tmin=0.2,
+            tmax=0.6,
         )
         etg_gamma.append(res.gamma)
         etg_omega.append(res.omega)
@@ -74,7 +77,7 @@ def main() -> int:
     fig.savefig(outdir / "etg_trend.png", dpi=200)
     fig.savefig(outdir / "etg_trend.pdf")
 
-    mtm_grid = GridConfig(Nx=1, Ny=16, Nz=64, Lx=6.28, Ly=6.28)
+    mtm_grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
     nu_vals = [0.0, 0.1, 0.2, 0.3]
     mtm_gamma = []
     mtm_omega = []
@@ -85,10 +88,13 @@ def main() -> int:
             ky_target=3.0,
             Nl=4,
             Nm=8,
-            steps=400,
+            steps=200,
             dt=0.01,
             method="rk4",
             mode_method="z_index",
+            auto_window=False,
+            tmin=0.2,
+            tmax=0.6,
         )
         mtm_gamma.append(res.gamma)
         mtm_omega.append(res.omega)

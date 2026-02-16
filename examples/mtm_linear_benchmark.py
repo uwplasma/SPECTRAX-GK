@@ -6,13 +6,25 @@ from spectraxgk.plotting import mtm_trend_figure
 
 
 def main() -> None:
-    grid = GridConfig(Nx=1, Ny=16, Nz=64, Lx=6.28, Ly=6.28)
+    grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
     nu_vals = np.array([0.0, 0.1, 0.2, 0.3])
     gamma = []
     omega = []
     for nu in nu_vals:
         cfg = MTMBaseCase(grid=grid, model=MTMModelConfig(R_over_LTe=6.0, nu=float(nu)))
-        result = run_mtm_linear(cfg=cfg, ky_target=3.0, Nl=4, Nm=8, steps=400, dt=0.01, method="rk4")
+        result = run_mtm_linear(
+            cfg=cfg,
+            ky_target=3.0,
+            Nl=4,
+            Nm=8,
+            steps=200,
+            dt=0.01,
+            method="rk4",
+            auto_window=False,
+            tmin=0.2,
+            tmax=0.6,
+            mode_method="z_index",
+        )
         gamma.append(result.gamma)
         omega.append(result.omega)
         print(f"nu={nu:.2f} gamma={result.gamma:.6f} omega={result.omega:.6f}")
