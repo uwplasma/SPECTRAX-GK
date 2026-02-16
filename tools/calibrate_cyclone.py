@@ -42,15 +42,15 @@ def _parse_range(values: Iterable[float]) -> np.ndarray:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--rho-star", nargs="+", type=float, default=[0.8, 0.9, 1.0])
-    parser.add_argument("--omega-d-scale", nargs="+", type=float, default=[0.05, 0.1, 0.15])
-    parser.add_argument("--omega-star-scale", nargs="+", type=float, default=[0.4, 0.5, 0.6])
+    parser.add_argument("--rho-star", nargs="+", type=float, default=[0.2, 0.3, 0.4])
+    parser.add_argument("--omega-d-scale", nargs="+", type=float, default=[0.4, 0.6, 0.8])
+    parser.add_argument("--omega-star-scale", nargs="+", type=float, default=[7.5, 8.5, 9.5])
     parser.add_argument("--Nl", type=int, default=3)
     parser.add_argument("--Nm", type=int, default=6)
     parser.add_argument("--steps", type=int, default=400)
     parser.add_argument("--dt", type=float, default=0.02)
     parser.add_argument("--tmin", type=float, default=4.0)
-    parser.add_argument("--ky-subset", nargs="*", type=float, default=None)
+    parser.add_argument("--ky-subset", nargs="*", type=float, default=[0.3, 0.4])
     parser.add_argument("--output-csv", type=str, default="")
     args = parser.parse_args()
 
@@ -79,7 +79,7 @@ def main() -> int:
                     dt=args.dt,
                     tmin=args.tmin,
                     method="imex",
-                    operator="full",
+                    operator="gx",
                     params=params,
                 )
                 max_rel, mean_rel = _error_metrics(ref.ky, ref.gamma, ref.omega, scan)

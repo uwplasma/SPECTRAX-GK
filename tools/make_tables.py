@@ -24,7 +24,7 @@ def main() -> int:
     ref = load_cyclone_reference()
     ky_subset = np.array([0.3, 0.4])
     gx_ky_subset = np.array([0.2, 0.3, 0.4])
-    cfg = CycloneBaseCase(grid=GridConfig(Nx=8, Ny=12, Nz=24, Lx=62.8, Ly=62.8))
+    cfg = CycloneBaseCase(grid=GridConfig(Nx=8, Ny=12, Nz=64, Lx=62.8, Ly=62.8))
     low_scan = run_cyclone_scan(
         ky_subset, cfg=cfg, Nl=2, Nm=4, steps=400, dt=0.02, method="rk4"
     )
@@ -81,9 +81,9 @@ def main() -> int:
     full_params = LinearParams(
         R_over_Ln=full_cfg.model.R_over_Ln,
         R_over_LTi=full_cfg.model.R_over_LTi,
-        omega_d_scale=0.2,
-        omega_star_scale=0.18,
-        rho_star=1.0,
+        omega_d_scale=0.6,
+        omega_star_scale=8.5,
+        rho_star=0.3,
     )
     full_scan = run_cyclone_scan(
         gx_ky_subset,
@@ -118,14 +118,14 @@ def main() -> int:
     full_path = outdir / "cyclone_full_operator_scan_table.csv"
     full_path.write_text("\n".join(build_rows_abs(full_scan)) + "\n", encoding="utf-8")
 
-    rho_values = np.array([0.9, 1.0, 1.1])
+    rho_values = np.array([0.2, 0.3, 0.4])
     rho_rows = ["rho_star,mean_gamma_ratio,mean_omega_ratio"]
     for rho in rho_values:
         params = LinearParams(
             R_over_Ln=full_cfg.model.R_over_Ln,
             R_over_LTi=full_cfg.model.R_over_LTi,
-            omega_d_scale=0.2,
-            omega_star_scale=0.18,
+            omega_d_scale=0.6,
+            omega_star_scale=8.5,
             rho_star=float(rho),
         )
         scan = run_cyclone_scan(

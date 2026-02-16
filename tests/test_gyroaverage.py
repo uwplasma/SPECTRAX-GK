@@ -32,10 +32,11 @@ def test_Jl_shape_and_J0():
 
 
 def test_Jl_zero_b_is_one():
-    """At b=0 all Laguerre factors equal 1."""
+    """At b=0 only the l=0 coefficient is nonzero."""
     b = jnp.array(0.0)
     Jl = J_l_all(b, l_max=4)
-    assert jnp.allclose(Jl, jnp.ones((5,)))
+    assert jnp.isclose(Jl[0], 1.0)
+    assert jnp.allclose(Jl[1:], 0.0)
 
 
 def test_Jl_large_b_decay():
@@ -43,6 +44,14 @@ def test_Jl_large_b_decay():
     b = jnp.array(10.0)
     J0 = J_l_all(b, l_max=0)[0]
     assert J0 < 1.0e-2
+
+
+def test_Jl_first_order_coeff():
+    """J1 should match the analytic (-b/2) * exp(-b/2) coefficient."""
+    b = jnp.array(0.6)
+    Jl = J_l_all(b, l_max=1)
+    expected = -0.5 * b * jnp.exp(-0.5 * b)
+    assert jnp.isclose(Jl[1], expected)
 
 
 def test_sumJl2_monotone_in_lmax():

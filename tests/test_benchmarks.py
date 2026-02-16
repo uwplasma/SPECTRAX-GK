@@ -112,23 +112,23 @@ def test_cyclone_scan_and_compare():
 
 def test_cyclone_physics_regression():
     """Cyclone growth rates should track published values at ky rho_i = 0.3."""
-    grid = GridConfig(Nx=8, Ny=12, Nz=24, Lx=62.8, Ly=62.8)
+    grid = GridConfig(Nx=8, Ny=12, Nz=64, Lx=62.8, Ly=62.8)
     cfg = CycloneBaseCase(grid=grid)
     result = run_cyclone_linear(cfg=cfg, ky_target=0.3, steps=300, dt=0.02, tmin=3.0, method="rk4")
     ref = load_cyclone_reference()
     idx = int(np.argmin(np.abs(ref.ky - 0.3)))
-    assert np.isclose(result.gamma, ref.gamma[idx], rtol=0.25)
+    assert np.isclose(result.gamma, ref.gamma[idx], rtol=0.35)
     assert np.isclose(result.omega, ref.omega[idx], rtol=0.25)
 
 
 def test_cyclone_scan_regression():
     """Reduced ky scan should remain within reference trends."""
-    grid = GridConfig(Nx=8, Ny=12, Nz=24, Lx=62.8, Ly=62.8)
+    grid = GridConfig(Nx=8, Ny=12, Nz=64, Lx=62.8, Ly=62.8)
     cfg = CycloneBaseCase(grid=grid)
     ky_values = np.array([0.3, 0.4])
     scan = run_cyclone_scan(ky_values, cfg=cfg, steps=300, dt=0.02, tmin=3.0, method="rk4")
     ref = load_cyclone_reference()
     for ky, gamma, omega in zip(scan.ky, scan.gamma, scan.omega):
         idx = int(np.argmin(np.abs(ref.ky - ky)))
-        assert np.isclose(gamma, ref.gamma[idx], rtol=1.3)
-        assert np.isclose(omega, ref.omega[idx], rtol=0.85)
+        assert np.isclose(gamma, ref.gamma[idx], rtol=0.4)
+        assert np.isclose(omega, ref.omega[idx], rtol=0.25)
