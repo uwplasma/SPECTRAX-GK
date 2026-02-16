@@ -58,6 +58,8 @@ remain invariant across refactors:
   nonzero response when gradients are enabled and vanishes at :math:`k_y=0`.
 - **Normalization scaling**: ``rho_star`` rescales the cached :math:`k_y`
   values exactly.
+- **End-cap damping**: the linked-boundary taper only affects :math:`k_y>0`
+  modes and vanishes when ``damp_ends_amp = 0``.
 
 These checks are in ``tests/test_linear.py`` and are meant to be future-proof
 physics invariants.
@@ -71,7 +73,8 @@ growth-rate extraction pipeline:
 - Loading the reference CSV via :func:`spectraxgk.benchmarks.load_cyclone_reference`.
 - Running short linear scans via :func:`spectraxgk.benchmarks.run_cyclone_linear`
   and :func:`spectraxgk.benchmarks.run_cyclone_scan`.
-- Full-operator regression with relaxed tolerances for the reduced ky scan.
+- Full-operator regression with tightened tolerances for the reduced ky scan
+  at ``Nl=6, Nm=12``.
 
 These tests live in ``tests/test_benchmarks.py`` and ``tests/test_full_operator.py``.
 
