@@ -16,18 +16,24 @@ from spectraxgk.benchmarks import (
     load_cyclone_reference,
     run_cyclone_scan,
     run_etg_linear,
-    run_mtm_linear,
 )
-from spectraxgk.config import (
-    CycloneBaseCase,
-    ETGBaseCase,
-    ETGModelConfig,
-    GridConfig,
-    MTMBaseCase,
-    MTMModelConfig,
-)
+from spectraxgk.config import CycloneBaseCase, ETGBaseCase, ETGModelConfig, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.linear import LinearParams
+from spectraxgk.linear import LinearParams, LinearTerms
+
+
+def _build_rows(scan, ref):
+    rows = ["ky,gamma_ref,omega_ref,gamma_spectrax,omega_spectrax,rel_gamma,rel_omega"]
+    for ky, gamma, omega in zip(scan.ky, scan.gamma, scan.omega):
+        idx = int(np.argmin(np.abs(ref.ky - ky)))
+        gamma_ref = float(ref.gamma[idx])
+        omega_ref = float(ref.omega[idx])
+        rel_gamma = (gamma - gamma_ref) / gamma_ref if gamma_ref != 0.0 else np.nan
+        rel_omega = (omega - omega_ref) / omega_ref if omega_ref != 0.0 else np.nan
+        rows.append(
+            f"{ky:.3f},{gamma_ref:.6f},{omega_ref:.6f},{gamma:.6f},{omega:.6f},{rel_gamma:.3f},{rel_omega:.3f}"
+        )
+    return rows
 
 
 def main() -> int:
@@ -36,34 +42,37 @@ def main() -> int:
 
     ref = load_cyclone_reference()
     ky_subset = np.array([0.3, 0.4])
-    ky_reference_subset = np.array([0.2, 0.3, 0.4])
     cfg = CycloneBaseCase(grid=GridConfig(Nx=1, Ny=24, Nz=96, Lx=62.8, Ly=62.8))
+
     low_scan = run_cyclone_scan(
-        ky_subset, cfg=cfg, Nl=4, Nm=8, steps=800, dt=0.01, method="rk4"
+        ky_subset,
+        cfg=cfg,
+        Nl=2,
+        Nm=4,
+        steps=1200,
+        dt=0.01,
+        method="rk4",
+        window_fraction=0.5,
+        min_points=80,
     )
     high_scan = run_cyclone_scan(
-        ky_subset, cfg=cfg, Nl=6, Nm=12, steps=800, dt=0.01, method="rk4"
+        ky_subset,
+        cfg=cfg,
+        Nl=3,
+        Nm=6,
+        steps=1200,
+        dt=0.01,
+        method="rk4",
+        window_fraction=0.5,
+        min_points=80,
     )
 
-    def build_rows(scan):
-        rows = [
-            "ky,gamma_ref,omega_ref,gamma_spectrax,omega_spectrax,rel_gamma,rel_omega"
-        ]
-        for ky, gamma, omega in zip(scan.ky, scan.gamma, scan.omega):
-            idx = int(np.argmin(np.abs(ref.ky - ky)))
-            gamma_ref = float(ref.gamma[idx])
-            omega_ref = float(ref.omega[idx])
-            rel_gamma = (gamma - gamma_ref) / gamma_ref if gamma_ref != 0.0 else np.nan
-            rel_omega = (omega - omega_ref) / omega_ref if omega_ref != 0.0 else np.nan
-            rows.append(
-                f"{ky:.3f},{gamma_ref:.6f},{omega_ref:.6f},{gamma:.6f},{omega:.6f},{rel_gamma:.3f},{rel_omega:.3f}"
-            )
-        return rows
-
-    low_path = outdir / "cyclone_scan_table_lowres.csv"
-    low_path.write_text("\n".join(build_rows(low_scan)) + "\n", encoding="utf-8")
-    high_path = outdir / "cyclone_scan_table_highres.csv"
-    high_path.write_text("\n".join(build_rows(high_scan)) + "\n", encoding="utf-8")
+    (outdir / "cyclone_scan_table_lowres.csv").write_text(
+        "\n".join(_build_rows(low_scan, ref)) + "\n", encoding="utf-8"
+    )
+    (outdir / "cyclone_scan_table_highres.csv").write_text(
+        "\n".join(_build_rows(high_scan, ref)) + "\n", encoding="utf-8"
+    )
 
     conv_rows = [
         "ky,gamma_low,gamma_high,omega_low,omega_high,rel_gamma_change,rel_omega_change"
@@ -76,8 +85,9 @@ def main() -> int:
         conv_rows.append(
             f"{ky:.3f},{g_lo:.6f},{g_hi:.6f},{w_lo:.6f},{w_hi:.6f},{rel_g:.3f},{rel_w:.3f}"
         )
-    conv_path = outdir / "cyclone_scan_convergence.csv"
-    conv_path.write_text("\n".join(conv_rows) + "\n", encoding="utf-8")
+    (outdir / "cyclone_scan_convergence.csv").write_text(
+        "\n".join(conv_rows) + "\n", encoding="utf-8"
+    )
 
     full_cfg = CycloneBaseCase()
     full_geom = SAlphaGeometry.from_config(full_cfg.geometry)
@@ -90,38 +100,36 @@ def main() -> int:
         kpar_scale=float(full_geom.gradpar()),
     )
     full_scan = run_cyclone_scan(
-        ky_reference_subset,
+        np.array([0.2, 0.3, 0.4]),
         cfg=full_cfg,
         Nl=6,
         Nm=12,
-        steps=800,
+        steps=1200,
         dt=0.01,
         method="rk4",
-        operator="full",
+        terms=LinearTerms(),
         params=full_params,
     )
 
-    def build_rows_abs(scan):
-        rows = [
-            "ky,gamma_ref,omega_ref,gamma_full,omega_full,abs_gamma,abs_omega,rel_gamma,rel_omega"
-        ]
-        for ky, gamma, omega in zip(scan.ky, scan.gamma, scan.omega):
-            idx = int(np.argmin(np.abs(ref.ky - ky)))
-            gamma_ref = float(ref.gamma[idx])
-            omega_ref = float(ref.omega[idx])
-            gamma_abs = abs(float(gamma))
-            omega_abs = abs(float(omega))
-            rel_gamma = (gamma_abs - gamma_ref) / gamma_ref if gamma_ref != 0.0 else np.nan
-            rel_omega = (omega_abs - omega_ref) / omega_ref if omega_ref != 0.0 else np.nan
-            rows.append(
-                f"{ky:.3f},{gamma_ref:.6f},{omega_ref:.6f},{gamma:.6f},{omega:.6f},{gamma_abs:.6f},{omega_abs:.6f},{rel_gamma:.3f},{rel_omega:.3f}"
-            )
-        return rows
+    full_rows = [
+        "ky,gamma_ref,omega_ref,gamma_full,omega_full,abs_gamma,abs_omega,rel_gamma,rel_omega"
+    ]
+    for ky, gamma, omega in zip(full_scan.ky, full_scan.gamma, full_scan.omega):
+        idx = int(np.argmin(np.abs(ref.ky - ky)))
+        gamma_ref = float(ref.gamma[idx])
+        omega_ref = float(ref.omega[idx])
+        gamma_abs = abs(float(gamma))
+        omega_abs = abs(float(omega))
+        rel_gamma = (gamma_abs - gamma_ref) / gamma_ref if gamma_ref != 0.0 else np.nan
+        rel_omega = (omega_abs - omega_ref) / omega_ref if omega_ref != 0.0 else np.nan
+        full_rows.append(
+            f"{ky:.3f},{gamma_ref:.6f},{omega_ref:.6f},{gamma:.6f},{omega:.6f},{gamma_abs:.6f},{omega_abs:.6f},{rel_gamma:.3f},{rel_omega:.3f}"
+        )
+    (outdir / "cyclone_full_operator_scan_table.csv").write_text(
+        "\n".join(full_rows) + "\n", encoding="utf-8"
+    )
 
-    full_path = outdir / "cyclone_full_operator_scan_table.csv"
-    full_path.write_text("\n".join(build_rows_abs(full_scan)) + "\n", encoding="utf-8")
-
-    rho_values = np.array([0.5, 0.75, 1.0, 1.25])
+    rho_values = np.array([0.8, 1.0, 1.2])
     rho_rows = ["rho_star,mean_gamma_ratio,mean_omega_ratio"]
     for rho in rho_values:
         params = LinearParams(
@@ -133,14 +141,14 @@ def main() -> int:
             kpar_scale=float(full_geom.gradpar()),
         )
         scan = run_cyclone_scan(
-            ky_reference_subset,
+            np.array([0.2, 0.3, 0.4]),
             cfg=full_cfg,
             Nl=6,
             Nm=12,
-            steps=800,
+            steps=1200,
             dt=0.01,
             method="rk4",
-            operator="full",
+            terms=LinearTerms(),
             params=params,
         )
         rel_g = []
@@ -151,11 +159,10 @@ def main() -> int:
             omega_ref = float(ref.omega[idx])
             rel_g.append(abs(float(gamma)) / gamma_ref if gamma_ref != 0.0 else np.nan)
             rel_w.append(abs(float(omega)) / omega_ref if omega_ref != 0.0 else np.nan)
-        rho_rows.append(
-            f"{rho:.2f},{np.nanmean(rel_g):.3f},{np.nanmean(rel_w):.3f}"
-        )
-    rho_path = outdir / "cyclone_rhostar_convergence.csv"
-    rho_path.write_text("\n".join(rho_rows) + "\n", encoding="utf-8")
+        rho_rows.append(f"{rho:.2f},{np.nanmean(rel_g):.3f},{np.nanmean(rel_w):.3f}")
+    (outdir / "cyclone_rhostar_convergence.csv").write_text(
+        "\n".join(rho_rows) + "\n", encoding="utf-8"
+    )
 
     etg_grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
     etg_R = np.array([4.0, 6.0, 8.0, 10.0])
@@ -167,39 +174,17 @@ def main() -> int:
             ky_target=3.0,
             Nl=4,
             Nm=8,
-            steps=200,
+            steps=300,
             dt=0.01,
             method="rk4",
             mode_method="z_index",
-            auto_window=False,
-            tmin=0.2,
-            tmax=0.6,
+            auto_window=True,
         )
         etg_rows.append(f"{R:.2f},{res.gamma:.6f},{res.omega:.6f}")
-    etg_path = outdir / "etg_trend_table.csv"
-    etg_path.write_text("\n".join(etg_rows) + "\n", encoding="utf-8")
+    (outdir / "etg_trend_table.csv").write_text(
+        "\n".join(etg_rows) + "\n", encoding="utf-8"
+    )
 
-    mtm_grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
-    nu_values = np.array([0.0, 0.1, 0.2, 0.3])
-    mtm_rows = ["nu,gamma,omega"]
-    for nu in nu_values:
-        cfg = MTMBaseCase(grid=mtm_grid, model=MTMModelConfig(R_over_LTe=6.0, nu=float(nu)))
-        res = run_mtm_linear(
-            cfg=cfg,
-            ky_target=3.0,
-            Nl=4,
-            Nm=8,
-            steps=200,
-            dt=0.01,
-            method="rk4",
-            mode_method="z_index",
-            auto_window=False,
-            tmin=0.2,
-            tmax=0.6,
-        )
-        mtm_rows.append(f"{nu:.2f},{res.gamma:.6f},{res.omega:.6f}")
-    mtm_path = outdir / "mtm_trend_table.csv"
-    mtm_path.write_text("\n".join(mtm_rows) + "\n", encoding="utf-8")
     return 0
 
 

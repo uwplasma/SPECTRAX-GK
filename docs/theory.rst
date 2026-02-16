@@ -41,32 +41,38 @@ with the gyroaverage factor
 where :math:`b = k_\perp^2 \rho^2`. This Laguerre-Hermite formulation is detailed
 by Mandell, Dorland & Landreman (2017). [MDL17]_
 
-Electrostatic quasineutrality (adiabatic electrons)
----------------------------------------------------
+Field solve and gyrokinetic variable
+------------------------------------
 
-For the current linear operator, we assume adiabatic electrons and solve a
-Fourier-space quasineutrality equation of the form
-
-.. math::
-
-   \left(\tau_e + 1 - \sum_{\ell} J_\ell^2 \right) \phi
-   = \sum_{\ell} J_\ell G_{\ell, m=0},
-
-where :math:`\tau_e = T_i / T_e`. The electrostatic potential is then used to
-construct the standard gyrokinetic variable
+SPECTRAX-GK supports electrostatic and electromagnetic linear closures. For
+electrostatic runs, quasineutrality is solved in Fourier space for
+:math:`\phi`, with an optional adiabatic response controlled by
+:math:`\tau_e = T_i/T_e`:
 
 .. math::
 
-   H_{\ell m} = G_{\ell m} + \frac{Z}{T}\,J_\ell \phi \, \delta_{m0}.
+   \left(\tau_e + \sum_s \frac{Z_s^2 n_s}{T_s}\left[1-\sum_{\ell} J_{\ell}^2\right]\right) \phi
+   = \sum_s Z_s n_s \sum_{\ell} J_{\ell} G_{\ell, m=0}.
 
-These relations match the Laguerre-Hermite pseudo-spectral form used in the
-gyrokinetic literature. [MDL17]_
+Electromagnetic runs solve the coupled quasineutrality/perpendicular-Ampere
+system for :math:`(\phi, B_\parallel)` and then obtain :math:`A_\parallel` from
+parallel Ampere’s law. The gyrokinetic variable is
+
+.. math::
+
+   H_{\ell m} = G_{\ell m}
+   + \frac{Z_s}{T_s}\,J_\ell \phi \, \delta_{m0}
+   - \frac{Z_s v_{th,s}}{T_s}\,J_\ell A_\parallel \, \delta_{m1}
+   + J_{\ell}^{B}\,B_\parallel \, \delta_{m0},
+
+with :math:`J_{\ell}^{B} = J_{\ell} + J_{\ell-1}`. These relations match the
+Laguerre-Hermite pseudo-spectral form used in the gyrokinetic literature.
 
 Linear gyrokinetic operator
 ---------------------------
 
-In the current linear electrostatic model, the Hermite-Laguerre moments evolve
-according to a drift/mirror operator,
+In the linear model, the Hermite-Laguerre moments evolve according to a
+drift/mirror operator,
 
 .. math::
 

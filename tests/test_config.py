@@ -6,9 +6,10 @@ from spectraxgk.config import (
     ETGModelConfig,
     GeometryConfig,
     GridConfig,
+    KBMBaseCase,
+    KineticElectronBaseCase,
     ModelConfig,
-    MTMBaseCase,
-    MTMModelConfig,
+    TEMBaseCase,
     TimeConfig,
 )
 
@@ -46,9 +47,22 @@ def test_etg_config_to_dict():
     assert d["model"]["R_over_LTe"] == cfg.model.R_over_LTe
 
 
-def test_mtm_config_to_dict():
-    """MTM configuration should serialize to dictionaries."""
-    cfg = MTMBaseCase(model=MTMModelConfig(R_over_LTe=5.5, nu=0.15))
+def test_kinetic_config_to_dict():
+    """Kinetic-electron configuration should serialize to dictionaries."""
+    cfg = KineticElectronBaseCase()
     d = cfg.to_dict()
-    assert d["model"]["R_over_LTe"] == 5.5
-    assert d["model"]["nu"] == 0.15
+    assert d["model"]["R_over_LTi"] == cfg.model.R_over_LTi
+
+
+def test_kbm_config_to_dict():
+    """KBM configuration should serialize to dictionaries."""
+    cfg = KBMBaseCase()
+    d = cfg.to_dict()
+    assert d["model"]["beta"] == cfg.model.beta
+
+
+def test_tem_config_to_dict():
+    """TEM configuration should serialize to dictionaries."""
+    cfg = TEMBaseCase()
+    d = cfg.to_dict()
+    assert d["geometry"]["q"] == cfg.geometry.q

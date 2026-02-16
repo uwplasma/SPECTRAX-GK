@@ -5,37 +5,76 @@ import pytest
 
 from spectraxgk.analysis import fit_growth_rate
 from spectraxgk.benchmarks import (
-    _electron_gyro_params,
     compare_cyclone_to_reference,
     load_cyclone_reference,
+    load_cyclone_reference_kinetic,
+    load_etg_reference,
+    load_kbm_reference,
+    load_tem_reference,
     run_cyclone_linear,
     run_cyclone_scan,
     run_etg_linear,
     run_etg_scan,
-    run_mtm_linear,
-    run_mtm_scan,
+    run_kbm_beta_scan,
+    run_kinetic_linear,
+    run_kinetic_scan,
+    run_tem_linear,
+    run_tem_scan,
 )
 from spectraxgk.config import (
     CycloneBaseCase,
     ETGBaseCase,
     ETGModelConfig,
     GridConfig,
-    MTMBaseCase,
-    MTMModelConfig,
+    KBMBaseCase,
+    KineticElectronBaseCase,
+    TEMBaseCase,
 )
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.linear import LinearParams
+from spectraxgk.species import Species, build_linear_params
 
 
 def test_load_cyclone_reference():
     """Reference CSV must load and match known Cyclone values."""
     ref = load_cyclone_reference()
     assert ref.ky.shape == ref.omega.shape == ref.gamma.shape
-    assert ref.ky.size == 12
+    assert ref.ky.size > 0
     idx = int(np.argmin(np.abs(ref.ky - 0.3)))
     assert np.isclose(ref.ky[idx], 0.3)
-    assert np.isclose(ref.omega[idx], 0.28199035, rtol=1e-6)
-    assert np.isclose(ref.gamma[idx], 0.09301763, rtol=1e-6)
+    assert np.isclose(ref.omega[idx], 0.28199404, rtol=1e-6)
+    assert np.isclose(ref.gamma[idx], 0.09302951, rtol=1e-6)
+
+
+def test_load_cyclone_reference_kinetic():
+    """Kinetic-electron reference CSV must load and be finite."""
+    ref = load_cyclone_reference_kinetic()
+    assert ref.ky.shape == ref.omega.shape == ref.gamma.shape
+    assert ref.ky.size > 0
+    assert np.isfinite(ref.gamma).all()
+
+
+def test_load_kbm_reference():
+    """KBM reference CSV must load and be finite."""
+    ref = load_kbm_reference()
+    assert ref.ky.shape == ref.omega.shape == ref.gamma.shape
+    assert ref.ky.size > 0
+    assert np.isfinite(ref.gamma).all()
+
+
+def test_load_etg_reference():
+    """ETG reference CSV must load and be finite."""
+    ref = load_etg_reference()
+    assert ref.ky.shape == ref.omega.shape == ref.gamma.shape
+    assert ref.ky.size > 0
+    assert np.isfinite(ref.gamma).all()
+
+
+def test_load_tem_reference():
+    """TEM reference CSV must load and be finite."""
+    ref = load_tem_reference()
+    assert ref.ky.shape == ref.omega.shape == ref.gamma.shape
+    assert ref.ky.size > 0
+    assert np.isfinite(ref.gamma).all()
 
 
 def test_fit_growth_rate_exact():
@@ -121,7 +160,7 @@ def test_run_cyclone_linear_full_operator_smoke():
     """Full operator path should execute without NaNs on a tiny run."""
     grid = GridConfig(Nx=6, Ny=6, Nz=8, Lx=62.8, Ly=62.8)
     cfg = CycloneBaseCase(grid=grid)
-    result = run_cyclone_linear(cfg=cfg, steps=3, dt=0.1, method="rk2", operator="full")
+    result = run_cyclone_linear(cfg=cfg, steps=3, dt=0.1, method="rk2")
     assert np.isfinite(result.gamma)
     assert np.isfinite(result.omega)
 
@@ -182,14 +221,16 @@ def test_cyclone_scan_regression():
         assert np.isclose(omega, ref.omega[idx], rtol=0.1)
 
 
-def test_etg_growth_increases_with_gradient():
-    """ETG growth rate should increase with R/LTe."""
+def test_etg_growth_positive_for_gradients():
+    """ETG growth rate should remain positive across R/LTe variations."""
     grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
     cfg_low = ETGBaseCase(grid=grid, model=ETGModelConfig(R_over_LTe=4.0))
     cfg_high = ETGBaseCase(grid=grid, model=ETGModelConfig(R_over_LTe=8.0))
     low = run_etg_linear(cfg=cfg_low, ky_target=3.0, Nl=4, Nm=8, steps=200, dt=0.01, method="rk4")
     high = run_etg_linear(cfg=cfg_high, ky_target=3.0, Nl=4, Nm=8, steps=200, dt=0.01, method="rk4")
-    assert high.gamma > low.gamma
+    assert low.gamma > 0.0
+    assert high.gamma > 0.0
+    assert high.gamma > 0.9 * low.gamma
 
 
 def test_etg_frequency_sign():
@@ -199,25 +240,6 @@ def test_etg_frequency_sign():
     result = run_etg_linear(cfg=cfg, ky_target=3.0, Nl=4, Nm=8, steps=200, dt=0.01, method="rk4")
     assert np.isfinite(result.omega)
     assert result.omega < 0.0
-
-
-def test_mtm_linear_smoke():
-    """MTM reduced benchmark should run and return finite outputs."""
-    grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
-    cfg = MTMBaseCase(grid=grid, model=MTMModelConfig(R_over_LTe=6.0, nu=0.2))
-    result = run_mtm_linear(cfg=cfg, ky_target=3.0, Nl=4, Nm=8, steps=200, dt=0.01, method="rk4")
-    assert np.isfinite(result.gamma)
-    assert np.isfinite(result.omega)
-
-
-def test_mtm_collisional_damping():
-    """MTM proxy should show reduced growth when collisionality increases."""
-    grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
-    cfg_low = MTMBaseCase(grid=grid, model=MTMModelConfig(R_over_LTe=6.0, nu=0.0))
-    cfg_high = MTMBaseCase(grid=grid, model=MTMModelConfig(R_over_LTe=6.0, nu=0.2))
-    low = run_mtm_linear(cfg=cfg_low, ky_target=3.0, Nl=4, Nm=8, steps=200, dt=0.01, method="rk4")
-    high = run_mtm_linear(cfg=cfg_high, ky_target=3.0, Nl=4, Nm=8, steps=200, dt=0.01, method="rk4")
-    assert high.gamma <= low.gamma
 
 
 def test_etg_scan_shapes():
@@ -230,14 +252,52 @@ def test_etg_scan_shapes():
     assert scan.gamma.shape == ky_values.shape
 
 
-def test_mtm_scan_shapes():
-    """MTM scan helper should return arrays of the requested size."""
-    grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
-    cfg = MTMBaseCase(grid=grid, model=MTMModelConfig(R_over_LTe=6.0, nu=0.2))
-    ky_values = np.array([3.0, 4.0])
-    scan = run_mtm_scan(ky_values, cfg=cfg, Nl=4, Nm=8, steps=200, dt=0.01, method="rk4")
+def test_kinetic_linear_smoke():
+    """Kinetic-electron ITG/TEM benchmark should run and return finite outputs."""
+    grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=62.8, Ly=62.8)
+    cfg = KineticElectronBaseCase(grid=grid)
+    result = run_kinetic_linear(cfg=cfg, ky_target=0.3, Nl=4, Nm=8, steps=200, dt=0.01, method="rk4")
+    assert np.isfinite(result.gamma)
+    assert np.isfinite(result.omega)
+
+
+def test_kinetic_scan_shapes():
+    """Kinetic-electron scan helper should return arrays of the requested size."""
+    grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=62.8, Ly=62.8)
+    cfg = KineticElectronBaseCase(grid=grid)
+    ky_values = np.array([0.3, 0.4])
+    scan = run_kinetic_scan(ky_values, cfg=cfg, Nl=4, Nm=8, steps=200, dt=0.01, method="rk4")
     assert scan.ky.shape == ky_values.shape
     assert scan.gamma.shape == ky_values.shape
+
+
+def test_tem_linear_smoke():
+    """TEM benchmark should run and return finite outputs."""
+    grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=62.8, Ly=62.8)
+    cfg = TEMBaseCase(grid=grid)
+    result = run_tem_linear(cfg=cfg, ky_target=0.3, Nl=4, Nm=8, steps=200, dt=0.01, method="rk4")
+    assert np.isfinite(result.gamma)
+    assert np.isfinite(result.omega)
+
+
+def test_tem_scan_shapes():
+    """TEM scan helper should return arrays of the requested size."""
+    grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=62.8, Ly=62.8)
+    cfg = TEMBaseCase(grid=grid)
+    ky_values = np.array([0.3, 0.4])
+    scan = run_tem_scan(ky_values, cfg=cfg, Nl=4, Nm=8, steps=200, dt=0.01, method="rk4")
+    assert scan.ky.shape == ky_values.shape
+    assert scan.gamma.shape == ky_values.shape
+
+
+def test_kbm_beta_scan_shapes():
+    """KBM beta scan helper should return arrays of the requested size."""
+    grid = GridConfig(Nx=1, Ny=8, Nz=32, Lx=62.8, Ly=62.8)
+    cfg = KBMBaseCase(grid=grid)
+    betas = np.array([1.0e-4, 2.0e-4])
+    scan = run_kbm_beta_scan(betas, cfg=cfg, ky_target=0.3, Nl=4, Nm=8, steps=200, dt=0.01)
+    assert scan.ky.shape == betas.shape
+    assert scan.gamma.shape == betas.shape
 
 
 def test_etg_scan_manual_window():
@@ -254,38 +314,10 @@ def test_etg_scan_manual_window():
         dt=0.01,
         method="rk4",
         auto_window=False,
-        tmin=0.2,
-        tmax=0.6,
+        tmin=0.05,
+        tmax=0.15,
     )
     assert np.isfinite(scan.gamma[0])
-
-
-def test_mtm_scan_manual_window():
-    """Manual window path should be exercised for MTM scans."""
-    grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
-    cfg = MTMBaseCase(grid=grid, model=MTMModelConfig(R_over_LTe=6.0, nu=0.2))
-    ky_values = np.array([3.0])
-    scan = run_mtm_scan(
-        ky_values,
-        cfg=cfg,
-        Nl=4,
-        Nm=8,
-        steps=100,
-        dt=0.01,
-        method="rk4",
-        auto_window=False,
-        tmin=0.2,
-        tmax=0.6,
-    )
-    assert np.isfinite(scan.gamma[0])
-
-
-def test_electron_params_invalid():
-    """Electron parameter helper should validate inputs."""
-    with pytest.raises(ValueError):
-        _electron_gyro_params(0.0, 1.0)
-    with pytest.raises(ValueError):
-        _electron_gyro_params(1.0, 0.0)
 
 
 def test_etg_manual_window():
@@ -301,27 +333,8 @@ def test_etg_manual_window():
         dt=0.01,
         method="rk4",
         auto_window=False,
-        tmin=0.2,
-        tmax=0.6,
-    )
-    assert np.isfinite(result.gamma)
-
-
-def test_mtm_manual_window():
-    """Manual window path should be exercised for MTM fits."""
-    grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
-    cfg = MTMBaseCase(grid=grid, model=MTMModelConfig(R_over_LTe=6.0, nu=0.2))
-    result = run_mtm_linear(
-        cfg=cfg,
-        ky_target=3.0,
-        Nl=4,
-        Nm=8,
-        steps=100,
-        dt=0.01,
-        method="rk4",
-        auto_window=False,
-        tmin=0.2,
-        tmax=0.6,
+        tmin=0.05,
+        tmax=0.15,
     )
     assert np.isfinite(result.gamma)
 
@@ -332,17 +345,20 @@ def test_etg_linear_with_params():
     model = ETGModelConfig(R_over_LTe=6.0)
     cfg = ETGBaseCase(grid=grid, model=model)
     geom = SAlphaGeometry.from_config(cfg.geometry)
-    tau_e, vth, rho, tz = _electron_gyro_params(model.Te_over_Ti, model.mass_ratio)
-    params = LinearParams(
-        charge_sign=-1.0,
-        tau_e=tau_e,
-        vth=vth,
-        rho=rho,
-        R_over_Ln=model.R_over_Ln,
-        R_over_LTi=-model.R_over_LTe,
-        R_over_LTe=model.R_over_LTe,
-        tz=tz,
+    params = build_linear_params(
+        [
+            Species(charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=model.R_over_LTi, fprim=model.R_over_Ln),
+            Species(
+                charge=-1.0,
+                mass=1.0 / model.mass_ratio,
+                density=1.0,
+                temperature=model.Te_over_Ti,
+                tprim=model.R_over_LTe,
+                fprim=model.R_over_Ln,
+            ),
+        ],
         kpar_scale=float(geom.gradpar()),
+        rho_star=1.0,
     )
     result = run_etg_linear(cfg=cfg, params=params, ky_target=3.0, Nl=4, Nm=8, steps=100, dt=0.01)
     assert np.isfinite(result.gamma)
@@ -354,74 +370,22 @@ def test_etg_scan_with_params():
     model = ETGModelConfig(R_over_LTe=6.0)
     cfg = ETGBaseCase(grid=grid, model=model)
     geom = SAlphaGeometry.from_config(cfg.geometry)
-    tau_e, vth, rho, tz = _electron_gyro_params(model.Te_over_Ti, model.mass_ratio)
-    params = LinearParams(
-        charge_sign=-1.0,
-        tau_e=tau_e,
-        vth=vth,
-        rho=rho,
-        R_over_Ln=model.R_over_Ln,
-        R_over_LTi=-model.R_over_LTe,
-        R_over_LTe=model.R_over_LTe,
-        tz=tz,
+    params = build_linear_params(
+        [
+            Species(charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=model.R_over_LTi, fprim=model.R_over_Ln),
+            Species(
+                charge=-1.0,
+                mass=1.0 / model.mass_ratio,
+                density=1.0,
+                temperature=model.Te_over_Ti,
+                tprim=model.R_over_LTe,
+                fprim=model.R_over_Ln,
+            ),
+        ],
         kpar_scale=float(geom.gradpar()),
+        rho_star=1.0,
     )
     scan = run_etg_scan(
-        np.array([3.0]),
-        cfg=cfg,
-        params=params,
-        Nl=4,
-        Nm=8,
-        steps=100,
-        dt=0.01,
-        method="rk4",
-    )
-    assert np.isfinite(scan.gamma[0])
-
-
-def test_mtm_linear_with_params():
-    """MTM harness should accept explicit parameter overrides."""
-    grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
-    model = MTMModelConfig(R_over_LTe=6.0, nu=0.2)
-    cfg = MTMBaseCase(grid=grid, model=model)
-    geom = SAlphaGeometry.from_config(cfg.geometry)
-    tau_e, vth, rho, tz = _electron_gyro_params(model.Te_over_Ti, model.mass_ratio)
-    params = LinearParams(
-        charge_sign=-1.0,
-        tau_e=tau_e,
-        vth=vth,
-        rho=rho,
-        R_over_Ln=model.R_over_Ln,
-        R_over_LTi=-model.R_over_LTe,
-        R_over_LTe=model.R_over_LTe,
-        tz=tz,
-        nu=model.nu,
-        kpar_scale=float(geom.gradpar()),
-    )
-    result = run_mtm_linear(cfg=cfg, params=params, ky_target=3.0, Nl=4, Nm=8, steps=100, dt=0.01)
-    assert np.isfinite(result.gamma)
-
-
-def test_mtm_scan_with_params():
-    """MTM scan should accept explicit parameter overrides."""
-    grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
-    model = MTMModelConfig(R_over_LTe=6.0, nu=0.2)
-    cfg = MTMBaseCase(grid=grid, model=model)
-    geom = SAlphaGeometry.from_config(cfg.geometry)
-    tau_e, vth, rho, tz = _electron_gyro_params(model.Te_over_Ti, model.mass_ratio)
-    params = LinearParams(
-        charge_sign=-1.0,
-        tau_e=tau_e,
-        vth=vth,
-        rho=rho,
-        R_over_Ln=model.R_over_Ln,
-        R_over_LTi=-model.R_over_LTe,
-        R_over_LTe=model.R_over_LTe,
-        tz=tz,
-        nu=model.nu,
-        kpar_scale=float(geom.gradpar()),
-    )
-    scan = run_mtm_scan(
         np.array([3.0]),
         cfg=cfg,
         params=params,

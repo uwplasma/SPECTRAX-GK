@@ -12,9 +12,9 @@ from spectraxgk.plotting import (
     cyclone_comparison_figure,
     cyclone_reference_figure,
     etg_trend_figure,
+    growth_rate_heatmap,
     linear_validation_figure,
     LinearValidationPanel,
-    mtm_trend_figure,
 )
 
 
@@ -63,13 +63,13 @@ def test_etg_trend_figure(tmp_path):
     assert out.exists()
 
 
-def test_mtm_trend_figure(tmp_path):
-    """MTM trend plot should render and save."""
-    nu = np.array([0.0, 0.1, 0.2])
-    gamma = np.array([0.05, 0.08, 0.1])
-    omega = np.array([-0.2, -0.25, -0.3])
-    fig, _axes = mtm_trend_figure(nu, gamma, omega, ky_target=3.0)
-    out = tmp_path / "mtm_trend.png"
+def test_growth_rate_heatmap(tmp_path):
+    """Heatmap plot should render and save."""
+    x = np.array([0.0, 1.0, 2.0])
+    y = np.array([1.0, 2.0, 3.0])
+    gamma = np.random.random((y.size, x.size))
+    fig, _ax = growth_rate_heatmap(x, y, gamma, "Test", r"$R/L_n$", r"$R/L_T$")
+    out = tmp_path / "heatmap.png"
     fig.savefig(out)
     plt.close(fig)
     assert out.exists()
@@ -86,6 +86,9 @@ def test_linear_validation_figure(tmp_path):
         gamma=np.array([0.1, 0.2]),
         omega=np.array([0.3, 0.4]),
         x_label=r"$k_y$",
+        x_ref=np.array([0.2, 0.3]),
+        gamma_ref=np.array([0.11, 0.21]),
+        omega_ref=np.array([0.31, 0.41]),
     )
     fig, _axes = linear_validation_figure([panel])
     out = tmp_path / "summary.png"

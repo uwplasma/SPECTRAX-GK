@@ -5,7 +5,7 @@ import numpy as np
 from spectraxgk.benchmarks import run_cyclone_scan
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.linear import LinearParams
+from spectraxgk.linear import LinearParams, LinearTerms
 
 
 def test_full_operator_scan_relaxed():
@@ -39,7 +39,7 @@ def test_full_operator_scan_relaxed():
         steps=200,
         dt=0.02,
         method="rk4",
-        operator="full",
+        terms=LinearTerms(),
         params=params,
     )
     for ky, gamma, omega in zip(scan.ky, scan.gamma, scan.omega):
