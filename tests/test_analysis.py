@@ -6,6 +6,7 @@ import pytest
 from spectraxgk.analysis import (
     ModeSelection,
     extract_mode,
+    extract_eigenfunction,
     extract_mode_time_series,
     fit_growth_rate_auto,
     select_fit_window,
@@ -181,3 +182,75 @@ def test_select_fit_window_and_auto_fit():
         pass
     else:
         raise AssertionError("negative growth_weight should raise ValueError")
+
+
+def test_extract_eigenfunction_svd_and_snapshot():
+    """Eigenfunction extraction should recover the spatial mode."""
+    t = np.linspace(0.0, 1.0, 64)
+    gamma = 0.2
+    omega = 0.4
+    ts = np.exp((gamma - 1j * omega) * t)
+    mode = np.array([1.0, 2.0, 3.0, 4.0])
+    data = ts[:, None] * mode[None, :]
+    phi_t = data[:, None, None, :]
+    sel = ModeSelection(ky_index=0, kx_index=0, z_index=0)
+
+    svd_mode = extract_eigenfunction(phi_t, t, sel, method="svd")
+    snapshot_mode = extract_eigenfunction(phi_t, t, sel, method="snapshot")
+    assert np.allclose(svd_mode / svd_mode[0], mode / mode[0])
+    assert np.allclose(snapshot_mode / snapshot_mode[0], mode / mode[0])
+
+
+def test_extract_eigenfunction_invalid():
+    """Eigenfunction extraction should validate inputs."""
+    t = np.linspace(0.0, 1.0, 8)
+    phi_t = np.zeros((8, 1, 1, 4))
+    sel = ModeSelection(ky_index=0, kx_index=0, z_index=0)
+    with pytest.raises(ValueError):
+        extract_eigenfunction(phi_t[None, ...], t, sel)
+    with pytest.raises(ValueError):
+        extract_eigenfunction(phi_t, t[None, :], sel)
+    with pytest.raises(ValueError):
+        extract_eigenfunction(phi_t, t[:-1], sel)
+    with pytest.raises(ValueError):
+        extract_eigenfunction(phi_t, t, sel, method="bad")
+    with pytest.raises(ValueError):
+        extract_eigenfunction(phi_t, t, sel, tmin=2.0, tmax=3.0)
+
+
+def test_extract_eigenfunction_nan_fallback():
+    """SVD eigenfunction extraction should fall back on NaNs."""
+    t = np.linspace(0.0, 1.0, 16)
+    ts = np.exp((0.1 - 1j * 0.2) * t)
+    data = ts[:, None] * np.array([1.0, np.nan])[None, :]
+    phi_t = data[:, None, None, :]
+    sel = ModeSelection(ky_index=0, kx_index=0, z_index=0)
+    svd_mode = extract_eigenfunction(phi_t, t, sel, method="svd")
+    snap_mode = extract_eigenfunction(phi_t, t, sel, method="snapshot")
+    assert np.allclose(svd_mode, snap_mode, equal_nan=True)
+
+
+def test_extract_eigenfunction_linalg_fallback(monkeypatch):
+    """SVD eigenfunction extraction should fall back on LinAlgError."""
+    t = np.linspace(0.0, 1.0, 16)
+    ts = np.exp((0.1 - 1j * 0.2) * t)
+    data = ts[:, None] * np.linspace(1.0, 2.0, 4)[None, :]
+    phi_t = data[:, None, None, :]
+    sel = ModeSelection(ky_index=0, kx_index=0, z_index=0)
+
+    def _bad_svd(*_args, **_kwargs):
+        raise np.linalg.LinAlgError("forced failure")
+
+    monkeypatch.setattr(np.linalg, "svd", _bad_svd)
+    svd_mode = extract_eigenfunction(phi_t, t, sel, method="svd")
+    snap_mode = extract_eigenfunction(phi_t, t, sel, method="snapshot")
+    assert np.allclose(svd_mode, snap_mode)
+
+
+def test_extract_eigenfunction_zero_signal():
+    """Zero signals should return a finite eigenfunction."""
+    t = np.linspace(0.0, 1.0, 8)
+    phi_t = np.zeros((8, 1, 1, 4))
+    sel = ModeSelection(ky_index=0, kx_index=0, z_index=0)
+    mode = extract_eigenfunction(phi_t, t, sel, method="svd")
+    assert np.all(np.isfinite(mode))
