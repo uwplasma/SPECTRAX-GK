@@ -24,4 +24,5 @@ html_theme_options = {
     "collapse_navigation": False,
     "navigation_depth": 3,
     "titles_only": False,
+    "prev_next_buttons_location": "both",
 }

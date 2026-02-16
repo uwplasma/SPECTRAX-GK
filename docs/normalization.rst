@@ -20,6 +20,11 @@ gyrokinetic scaling:
    \tilde{\phi} = \frac{e \phi}{T_i}, \qquad
    \tilde{\omega} = \frac{\omega}{v_{th}/R_0}.
 
+For the Cyclone base case we take the reference length :math:`L_{ref}=a` so
+that the input gradients are expressed as
+:math:`a/L_T` and :math:`a/L_n`. With :math:`R_0 = R/a`, this means
+:math:`R/L_T = (R_0)\,(a/L_T)` and similarly for :math:`R/L_n`.
+
 Field-aligned grid parameters
 -----------------------------
 
@@ -56,7 +61,7 @@ In code, ``rho_star`` multiplies the Fourier grids inside
 :func:`spectraxgk.linear.build_linear_cache`, while ``omega_d_scale`` and
 ``omega_star_scale`` enter directly in :func:`spectraxgk.linear.linear_rhs_cached`.
 
-Defaults:
+Defaults (model parameters):
 
 - ``rho_star = 1.0`` (model default)
 - ``omega_d_scale = 1.0`` (model default)
@@ -68,7 +73,7 @@ For the current Cyclone reference matching sweep we use:
 
 .. math::
 
-   \rho_* = 0.9,\qquad \omega_d\_scale = 0.1,\qquad \omega_* \, scale = 0.6.
+   \rho_* = 1.0,\qquad \omega_d\_scale = 0.2,\qquad \omega_* \, scale = 0.18.
 
 These parameters are surfaced in the regression tables so that future
 normalization refinements can be tracked in a reproducible way.

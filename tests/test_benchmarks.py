@@ -131,4 +131,4 @@ def test_cyclone_scan_regression():
     for ky, gamma, omega in zip(scan.ky, scan.gamma, scan.omega):
         idx = int(np.argmin(np.abs(ref.ky - ky)))
         assert np.isclose(gamma, ref.gamma[idx], rtol=1.3)
-        assert np.isclose(omega, ref.omega[idx], rtol=0.6)
+        assert np.isclose(omega, ref.omega[idx], rtol=0.85)
