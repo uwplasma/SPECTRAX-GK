@@ -47,9 +47,9 @@ To reproduce the normalization sweep used in the full-operator tables:
 .. code-block:: bash
 
    python tools/calibrate_cyclone.py \
-     --rho-star 0.9 1.0 1.1 \
-     --omega-d-scale 0.1 0.2 0.3 \
-     --omega-star-scale 0.12 0.18 0.24 \
+     --rho-star 0.2 0.3 0.4 \
+     --omega-d-scale 0.4 0.6 0.8 \
+     --omega-star-scale 7.5 8.5 9.5 \
      --Nl 2 --Nm 4 --steps 200 --dt 0.02 --tmin 2.0 \
      --output-csv docs/_static/cyclone_full_operator_sweep.csv
 
@@ -80,9 +80,9 @@ projected, max-amplitude, or SVD-based time series.
 
 Default Cyclone scaling parameters:
 
-- ``omega_d_scale = 0.2``
-- ``omega_star_scale = 0.18``
-- ``rho_star = 1.0``
+- ``omega_d_scale = 0.6``
+- ``omega_star_scale = 8.5``
+- ``rho_star = 0.3``
 - ``method="rk4"`` (explicit), ``mode_method="z_index"`` (midplane sample)
 - ``operator="gx"`` (full drift/mirror operator)
 
@@ -102,7 +102,8 @@ Low-order (production) scan:
    :file: _static/cyclone_scan_table_lowres.csv
    :header-rows: 1
 
-Low-order settings: ``Nl=2``, ``Nm=4``, ``dt=0.02``, ``steps=400`` (auto window).
+Low-order settings: ``Nl=2``, ``Nm=4``, ``dt=0.02``, ``steps=400`` (auto window),
+``Nz=64``.
 
 Higher-order scan:
 
@@ -129,8 +130,8 @@ normalization and geometry factors (including ``rho_star``) are calibrated
 across ky. Tightening these tolerances is part of the ongoing validation plan.
 See :doc:`normalization` for the current calibration parameters.
 
-The current calibration sweep uses ``rho_star=1.0`` with
-``omega_d_scale=0.2`` and ``omega_star_scale=0.18`` on the field-aligned grid
+The current calibration sweep uses ``rho_star=0.3`` with
+``omega_d_scale=0.6`` and ``omega_star_scale=8.5`` on the field-aligned grid
 (``Nx=1, Ny=24, Nz=16, y0=20, ntheta=32, nperiod=2``). The table below tracks
 the full-operator output for a reduced ky scan with absolute values of
 ``gamma``/``omega`` reported alongside the reference data.
@@ -150,8 +151,8 @@ reduced ky subset:
 Validation tolerances
 ---------------------
 
-The physics regression checks currently use ``rtol=0.25`` for the single-mode
-Cyclone check and ``rtol=1.3``/``rtol=0.85`` for the reduced ky scan
+The physics regression checks currently use ``rtol=0.35`` for the single-mode
+Cyclone check and ``rtol=0.4``/``rtol=0.25`` for the reduced ky scan
 (gamma/omega). The full-operator reduced scan currently checks for finite
 values with bounded magnitudes while the normalization sweep is refined. The
 reduced tables above provide context for tightening these tolerances as the
