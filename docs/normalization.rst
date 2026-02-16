@@ -25,6 +25,24 @@ that the input gradients are expressed as
 :math:`a/L_T` and :math:`a/L_n`. With :math:`R_0 = R/a`, this means
 :math:`R/L_T = (R_0)\,(a/L_T)` and similarly for :math:`R/L_n`.
 
+Kinetic species sign conventions
+--------------------------------
+
+SPECTRAX-GK evolves a single kinetic species at a time. The species charge and
+temperature ratio are encoded by:
+
+- ``charge_sign``: :math:`+1` for ions, :math:`-1` for electrons.
+- ``tau_e``: ratio of kinetic-species temperature to the adiabatic background
+  temperature. For ion-kinetic runs with adiabatic electrons, this is
+  :math:`T_i/T_e`. For electron-kinetic runs with adiabatic ions, this is
+  :math:`T_e/T_i`.
+- ``tz``: gyrokinetic coupling factor :math:`q_s T_i/T_s`. For electrons this
+  is ``tz = -tau_e``.
+
+The electron-temperature-gradient benchmarks use ``charge_sign=-1`` and set
+``R_over_LTi = -R_over_LTe`` to represent the electron diamagnetic direction in
+the reduced ETG/MTM trend checks.
+
 Field-aligned grid parameters
 -----------------------------
 

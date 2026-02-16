@@ -78,19 +78,20 @@ growth-rate extraction pipeline:
 
 These tests live in ``tests/test_benchmarks.py`` and ``tests/test_full_operator.py``.
 
-Planned linear physics checks
------------------------------
+Linear physics checks
+---------------------
 
-Before nonlinear validation, we will add linear physics checks grounded in
-published benchmarks:
+Before nonlinear validation, we exercise linear physics checks grounded in
+published benchmarks and trend tests:
 
 - **ITG/Cyclone base case**: reproduce the standard Cyclone base case growth
   rates and frequencies across a reduced ky scan. [Dimits00]_ [Lin99]_
-- **ETG linear instability**: verify growth-rate trends with
-  :math:`R/L_{Te}` and compare against published ETG turbulence studies. [Dorland00]_ [Jenko00]_
-- **Microtearing (MTM)**: verify that MTMs are driven by electron temperature
-  gradients and magnetic drifts by comparing against published dispersion
-  relations. [Chandran24]_
+- **ETG linear instability**: verify that growth rates increase with
+  :math:`R/L_{Te}` on a reduced electron-scale grid and that the real
+  frequency follows the electron diamagnetic direction. [Dorland00]_ [Jenko00]_
+- **Microtearing (MTM)**: verify the collisional electron-driven branch on the
+  reduced MTM setup and track its damping trend with increasing collisionality.
+  [Chandran24]_
 
 Running tests
 -------------

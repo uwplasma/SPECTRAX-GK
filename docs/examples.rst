@@ -28,3 +28,17 @@ Cyclone linear benchmark
 .. code-block:: bash
 
    python examples/cyclone_linear_benchmark.py
+
+ETG linear trend
+----------------
+
+.. code-block:: bash
+
+   python examples/etg_linear_benchmark.py
+
+MTM linear trend
+----------------
+
+.. code-block:: bash
+
+   python examples/mtm_linear_benchmark.py
