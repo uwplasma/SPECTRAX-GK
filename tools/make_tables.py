@@ -12,8 +12,20 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from spectraxgk.benchmarks import load_cyclone_reference, run_cyclone_scan
-from spectraxgk.config import CycloneBaseCase, GridConfig
+from spectraxgk.benchmarks import (
+    load_cyclone_reference,
+    run_cyclone_scan,
+    run_etg_linear,
+    run_mtm_linear,
+)
+from spectraxgk.config import (
+    CycloneBaseCase,
+    ETGBaseCase,
+    ETGModelConfig,
+    GridConfig,
+    MTMBaseCase,
+    MTMModelConfig,
+)
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.linear import LinearParams
 
@@ -144,6 +156,44 @@ def main() -> int:
         )
     rho_path = outdir / "cyclone_rhostar_convergence.csv"
     rho_path.write_text("\n".join(rho_rows) + "\n", encoding="utf-8")
+
+    etg_grid = GridConfig(Nx=1, Ny=16, Nz=64, Lx=6.28, Ly=6.28)
+    etg_R = np.array([4.0, 6.0, 8.0, 10.0])
+    etg_rows = ["R_over_LTe,gamma,omega"]
+    for R in etg_R:
+        cfg = ETGBaseCase(grid=etg_grid, model=ETGModelConfig(R_over_LTe=float(R)))
+        res = run_etg_linear(
+            cfg=cfg,
+            ky_target=3.0,
+            Nl=4,
+            Nm=8,
+            steps=400,
+            dt=0.01,
+            method="rk4",
+            mode_method="z_index",
+        )
+        etg_rows.append(f"{R:.2f},{res.gamma:.6f},{res.omega:.6f}")
+    etg_path = outdir / "etg_trend_table.csv"
+    etg_path.write_text("\n".join(etg_rows) + "\n", encoding="utf-8")
+
+    mtm_grid = GridConfig(Nx=1, Ny=16, Nz=64, Lx=6.28, Ly=6.28)
+    nu_values = np.array([0.0, 0.1, 0.2, 0.3])
+    mtm_rows = ["nu,gamma,omega"]
+    for nu in nu_values:
+        cfg = MTMBaseCase(grid=mtm_grid, model=MTMModelConfig(R_over_LTe=6.0, nu=float(nu)))
+        res = run_mtm_linear(
+            cfg=cfg,
+            ky_target=3.0,
+            Nl=4,
+            Nm=8,
+            steps=400,
+            dt=0.01,
+            method="rk4",
+            mode_method="z_index",
+        )
+        mtm_rows.append(f"{nu:.2f},{res.gamma:.6f},{res.omega:.6f}")
+    mtm_path = outdir / "mtm_trend_table.csv"
+    mtm_path.write_text("\n".join(mtm_rows) + "\n", encoding="utf-8")
     return 0
 
 

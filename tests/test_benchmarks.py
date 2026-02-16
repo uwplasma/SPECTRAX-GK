@@ -5,12 +5,26 @@ import pytest
 
 from spectraxgk.analysis import fit_growth_rate
 from spectraxgk.benchmarks import (
+    _electron_gyro_params,
     compare_cyclone_to_reference,
     load_cyclone_reference,
     run_cyclone_linear,
     run_cyclone_scan,
+    run_etg_linear,
+    run_etg_scan,
+    run_mtm_linear,
+    run_mtm_scan,
 )
-from spectraxgk.config import CycloneBaseCase, GridConfig
+from spectraxgk.config import (
+    CycloneBaseCase,
+    ETGBaseCase,
+    ETGModelConfig,
+    GridConfig,
+    MTMBaseCase,
+    MTMModelConfig,
+)
+from spectraxgk.geometry import SAlphaGeometry
+from spectraxgk.linear import LinearParams
 
 
 def test_load_cyclone_reference():
@@ -166,3 +180,255 @@ def test_cyclone_scan_regression():
         idx = int(np.argmin(np.abs(ref.ky - ky)))
         assert np.isclose(gamma, ref.gamma[idx], rtol=0.25)
         assert np.isclose(omega, ref.omega[idx], rtol=0.1)
+
+
+def test_etg_growth_increases_with_gradient():
+    """ETG growth rate should increase with R/LTe."""
+    grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
+    cfg_low = ETGBaseCase(grid=grid, model=ETGModelConfig(R_over_LTe=4.0))
+    cfg_high = ETGBaseCase(grid=grid, model=ETGModelConfig(R_over_LTe=8.0))
+    low = run_etg_linear(cfg=cfg_low, ky_target=3.0, Nl=4, Nm=8, steps=200, dt=0.01, method="rk4")
+    high = run_etg_linear(cfg=cfg_high, ky_target=3.0, Nl=4, Nm=8, steps=200, dt=0.01, method="rk4")
+    assert high.gamma > low.gamma
+
+
+def test_etg_frequency_sign():
+    """ETG frequency should align with the electron diamagnetic direction."""
+    grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
+    cfg = ETGBaseCase(grid=grid, model=ETGModelConfig(R_over_LTe=6.0))
+    result = run_etg_linear(cfg=cfg, ky_target=3.0, Nl=4, Nm=8, steps=200, dt=0.01, method="rk4")
+    assert np.isfinite(result.omega)
+    assert result.omega < 0.0
+
+
+def test_mtm_linear_smoke():
+    """MTM reduced benchmark should run and return finite outputs."""
+    grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
+    cfg = MTMBaseCase(grid=grid, model=MTMModelConfig(R_over_LTe=6.0, nu=0.2))
+    result = run_mtm_linear(cfg=cfg, ky_target=3.0, Nl=4, Nm=8, steps=200, dt=0.01, method="rk4")
+    assert np.isfinite(result.gamma)
+    assert np.isfinite(result.omega)
+
+
+def test_mtm_collisional_damping():
+    """MTM proxy should show reduced growth when collisionality increases."""
+    grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
+    cfg_low = MTMBaseCase(grid=grid, model=MTMModelConfig(R_over_LTe=6.0, nu=0.0))
+    cfg_high = MTMBaseCase(grid=grid, model=MTMModelConfig(R_over_LTe=6.0, nu=0.2))
+    low = run_mtm_linear(cfg=cfg_low, ky_target=3.0, Nl=4, Nm=8, steps=200, dt=0.01, method="rk4")
+    high = run_mtm_linear(cfg=cfg_high, ky_target=3.0, Nl=4, Nm=8, steps=200, dt=0.01, method="rk4")
+    assert high.gamma <= low.gamma
+
+
+def test_etg_scan_shapes():
+    """ETG scan helper should return arrays of the requested size."""
+    grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
+    cfg = ETGBaseCase(grid=grid, model=ETGModelConfig(R_over_LTe=6.0))
+    ky_values = np.array([3.0, 4.0])
+    scan = run_etg_scan(ky_values, cfg=cfg, Nl=4, Nm=8, steps=200, dt=0.01, method="rk4")
+    assert scan.ky.shape == ky_values.shape
+    assert scan.gamma.shape == ky_values.shape
+
+
+def test_mtm_scan_shapes():
+    """MTM scan helper should return arrays of the requested size."""
+    grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
+    cfg = MTMBaseCase(grid=grid, model=MTMModelConfig(R_over_LTe=6.0, nu=0.2))
+    ky_values = np.array([3.0, 4.0])
+    scan = run_mtm_scan(ky_values, cfg=cfg, Nl=4, Nm=8, steps=200, dt=0.01, method="rk4")
+    assert scan.ky.shape == ky_values.shape
+    assert scan.gamma.shape == ky_values.shape
+
+
+def test_etg_scan_manual_window():
+    """Manual window path should be exercised for ETG scans."""
+    grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
+    cfg = ETGBaseCase(grid=grid, model=ETGModelConfig(R_over_LTe=6.0))
+    ky_values = np.array([3.0])
+    scan = run_etg_scan(
+        ky_values,
+        cfg=cfg,
+        Nl=4,
+        Nm=8,
+        steps=100,
+        dt=0.01,
+        method="rk4",
+        auto_window=False,
+        tmin=0.2,
+        tmax=0.6,
+    )
+    assert np.isfinite(scan.gamma[0])
+
+
+def test_mtm_scan_manual_window():
+    """Manual window path should be exercised for MTM scans."""
+    grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
+    cfg = MTMBaseCase(grid=grid, model=MTMModelConfig(R_over_LTe=6.0, nu=0.2))
+    ky_values = np.array([3.0])
+    scan = run_mtm_scan(
+        ky_values,
+        cfg=cfg,
+        Nl=4,
+        Nm=8,
+        steps=100,
+        dt=0.01,
+        method="rk4",
+        auto_window=False,
+        tmin=0.2,
+        tmax=0.6,
+    )
+    assert np.isfinite(scan.gamma[0])
+
+
+def test_electron_params_invalid():
+    """Electron parameter helper should validate inputs."""
+    with pytest.raises(ValueError):
+        _electron_gyro_params(0.0, 1.0)
+    with pytest.raises(ValueError):
+        _electron_gyro_params(1.0, 0.0)
+
+
+def test_etg_manual_window():
+    """Manual window path should be exercised for ETG fits."""
+    grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
+    cfg = ETGBaseCase(grid=grid, model=ETGModelConfig(R_over_LTe=6.0))
+    result = run_etg_linear(
+        cfg=cfg,
+        ky_target=3.0,
+        Nl=4,
+        Nm=8,
+        steps=100,
+        dt=0.01,
+        method="rk4",
+        auto_window=False,
+        tmin=0.2,
+        tmax=0.6,
+    )
+    assert np.isfinite(result.gamma)
+
+
+def test_mtm_manual_window():
+    """Manual window path should be exercised for MTM fits."""
+    grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
+    cfg = MTMBaseCase(grid=grid, model=MTMModelConfig(R_over_LTe=6.0, nu=0.2))
+    result = run_mtm_linear(
+        cfg=cfg,
+        ky_target=3.0,
+        Nl=4,
+        Nm=8,
+        steps=100,
+        dt=0.01,
+        method="rk4",
+        auto_window=False,
+        tmin=0.2,
+        tmax=0.6,
+    )
+    assert np.isfinite(result.gamma)
+
+
+def test_etg_linear_with_params():
+    """ETG harness should accept explicit parameter overrides."""
+    grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
+    model = ETGModelConfig(R_over_LTe=6.0)
+    cfg = ETGBaseCase(grid=grid, model=model)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    tau_e, vth, rho, tz = _electron_gyro_params(model.Te_over_Ti, model.mass_ratio)
+    params = LinearParams(
+        charge_sign=-1.0,
+        tau_e=tau_e,
+        vth=vth,
+        rho=rho,
+        R_over_Ln=model.R_over_Ln,
+        R_over_LTi=-model.R_over_LTe,
+        R_over_LTe=model.R_over_LTe,
+        tz=tz,
+        kpar_scale=float(geom.gradpar()),
+    )
+    result = run_etg_linear(cfg=cfg, params=params, ky_target=3.0, Nl=4, Nm=8, steps=100, dt=0.01)
+    assert np.isfinite(result.gamma)
+
+
+def test_etg_scan_with_params():
+    """ETG scan should accept explicit parameter overrides."""
+    grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
+    model = ETGModelConfig(R_over_LTe=6.0)
+    cfg = ETGBaseCase(grid=grid, model=model)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    tau_e, vth, rho, tz = _electron_gyro_params(model.Te_over_Ti, model.mass_ratio)
+    params = LinearParams(
+        charge_sign=-1.0,
+        tau_e=tau_e,
+        vth=vth,
+        rho=rho,
+        R_over_Ln=model.R_over_Ln,
+        R_over_LTi=-model.R_over_LTe,
+        R_over_LTe=model.R_over_LTe,
+        tz=tz,
+        kpar_scale=float(geom.gradpar()),
+    )
+    scan = run_etg_scan(
+        np.array([3.0]),
+        cfg=cfg,
+        params=params,
+        Nl=4,
+        Nm=8,
+        steps=100,
+        dt=0.01,
+        method="rk4",
+    )
+    assert np.isfinite(scan.gamma[0])
+
+
+def test_mtm_linear_with_params():
+    """MTM harness should accept explicit parameter overrides."""
+    grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
+    model = MTMModelConfig(R_over_LTe=6.0, nu=0.2)
+    cfg = MTMBaseCase(grid=grid, model=model)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    tau_e, vth, rho, tz = _electron_gyro_params(model.Te_over_Ti, model.mass_ratio)
+    params = LinearParams(
+        charge_sign=-1.0,
+        tau_e=tau_e,
+        vth=vth,
+        rho=rho,
+        R_over_Ln=model.R_over_Ln,
+        R_over_LTi=-model.R_over_LTe,
+        R_over_LTe=model.R_over_LTe,
+        tz=tz,
+        nu=model.nu,
+        kpar_scale=float(geom.gradpar()),
+    )
+    result = run_mtm_linear(cfg=cfg, params=params, ky_target=3.0, Nl=4, Nm=8, steps=100, dt=0.01)
+    assert np.isfinite(result.gamma)
+
+
+def test_mtm_scan_with_params():
+    """MTM scan should accept explicit parameter overrides."""
+    grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
+    model = MTMModelConfig(R_over_LTe=6.0, nu=0.2)
+    cfg = MTMBaseCase(grid=grid, model=model)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    tau_e, vth, rho, tz = _electron_gyro_params(model.Te_over_Ti, model.mass_ratio)
+    params = LinearParams(
+        charge_sign=-1.0,
+        tau_e=tau_e,
+        vth=vth,
+        rho=rho,
+        R_over_Ln=model.R_over_Ln,
+        R_over_LTi=-model.R_over_LTe,
+        R_over_LTe=model.R_over_LTe,
+        tz=tz,
+        nu=model.nu,
+        kpar_scale=float(geom.gradpar()),
+    )
+    scan = run_mtm_scan(
+        np.array([3.0]),
+        cfg=cfg,
+        params=params,
+        Nl=4,
+        Nm=8,
+        steps=100,
+        dt=0.01,
+        method="rk4",
+    )
+    assert np.isfinite(scan.gamma[0])
