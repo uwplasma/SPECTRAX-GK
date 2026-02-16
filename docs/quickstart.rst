@@ -24,7 +24,7 @@ Python demo
    from spectraxgk import load_cyclone_reference, run_cyclone_linear
 
    ref = load_cyclone_reference()
-   result = run_cyclone_linear(ky_target=0.3, steps=200, dt=0.05, tmin=5.0)
+   result = run_cyclone_linear(ky_target=0.3, method="rk4")
 
    print(result.gamma, result.omega)
 

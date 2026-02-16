@@ -1,6 +1,7 @@
 """Analysis helper tests for mode extraction and fit windows."""
 
 import numpy as np
+import pytest
 
 from spectraxgk.analysis import (
     ModeSelection,
@@ -16,7 +17,7 @@ def test_extract_mode_time_series_methods():
     t = np.linspace(0.0, 1.0, 64)
     gamma = 0.1
     omega = 0.2
-    ts = np.exp((gamma + 1j * omega) * t)
+    ts = np.exp((gamma - 1j * omega) * t)
     spatial = np.linspace(1.0, 2.0, 4)
     data = ts[:, None] * spatial[None, :]
     phi_t = data[:, None, None, :]
@@ -49,12 +50,45 @@ def test_extract_mode_time_series_methods():
         raise AssertionError("invalid mode method should raise ValueError")
 
 
+def test_extract_mode_svd_fallback_nan():
+    """SVD mode extraction should fall back when NaNs are present."""
+    t = np.linspace(0.0, 1.0, 16)
+    gamma = 0.1
+    omega = 0.2
+    ts = np.exp((gamma - 1j * omega) * t)
+    data = ts[:, None] * np.array([1.0, np.nan])[None, :]
+    phi_t = data[:, None, None, :]
+    sel = ModeSelection(ky_index=0, kx_index=0, z_index=0)
+    svd_series = extract_mode_time_series(phi_t, sel, method="svd")
+    proj_series = extract_mode_time_series(phi_t, sel, method="project")
+    assert np.allclose(svd_series, proj_series, equal_nan=True)
+
+
+def test_extract_mode_svd_fallback_linalg(monkeypatch):
+    """SVD mode extraction should fall back on LinAlgError."""
+    t = np.linspace(0.0, 1.0, 16)
+    gamma = 0.1
+    omega = 0.2
+    ts = np.exp((gamma - 1j * omega) * t)
+    data = ts[:, None] * np.linspace(1.0, 2.0, 4)[None, :]
+    phi_t = data[:, None, None, :]
+    sel = ModeSelection(ky_index=0, kx_index=0, z_index=0)
+
+    def _bad_svd(*_args, **_kwargs):
+        raise np.linalg.LinAlgError("forced failure")
+
+    monkeypatch.setattr(np.linalg, "svd", _bad_svd)
+    svd_series = extract_mode_time_series(phi_t, sel, method="svd")
+    proj_series = extract_mode_time_series(phi_t, sel, method="project")
+    assert np.allclose(svd_series, proj_series)
+
+
 def test_select_fit_window_and_auto_fit():
     """Auto window should favor the clean exponential region."""
     t = np.linspace(0.0, 10.0, 200)
     gamma = 0.12
     omega = 0.3
-    signal = np.exp((gamma + 1j * omega) * t)
+    signal = np.exp((gamma - 1j * omega) * t)
     signal = signal.copy()
     signal[:40] *= 1.0 + 0.2 * np.sin(5.0 * t[:40])
 
@@ -118,7 +152,7 @@ def test_select_fit_window_and_auto_fit():
     flat_signal = np.ones_like(signal)
     _ = select_fit_window(t, flat_signal, window_fraction=0.3, min_points=20)
 
-    decaying = np.exp((-0.2 + 1j * omega) * t)
+    decaying = np.exp((-0.2 - 1j * omega) * t)
     tmin3, tmax3 = select_fit_window(
         t,
         decaying,

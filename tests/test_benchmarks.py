@@ -29,7 +29,7 @@ def test_fit_growth_rate_exact():
     t = np.linspace(0.0, 10.0, 200)
     gamma = 0.12
     omega = 0.34
-    signal = np.exp((gamma + 1j * omega) * t)
+    signal = np.exp((gamma - 1j * omega) * t)
     g_fit, w_fit = fit_growth_rate(t, signal)
     assert np.isclose(g_fit, gamma, rtol=1e-3, atol=1e-3)
     assert np.isclose(w_fit, omega, rtol=1e-3, atol=1e-3)
@@ -40,7 +40,7 @@ def test_fit_growth_rate_window():
     t = np.linspace(0.0, 10.0, 200)
     gamma = 0.08
     omega = 0.21
-    signal = np.exp((gamma + 1j * omega) * t)
+    signal = np.exp((gamma - 1j * omega) * t)
     g_fit, w_fit = fit_growth_rate(t, signal, tmin=5.0)
     assert np.isclose(g_fit, gamma, rtol=1e-3, atol=1e-3)
     assert np.isclose(w_fit, omega, rtol=1e-3, atol=1e-3)
@@ -51,7 +51,7 @@ def test_fit_growth_rate_tmax():
     t = np.linspace(0.0, 10.0, 200)
     gamma = 0.06
     omega = 0.18
-    signal = np.exp((gamma + 1j * omega) * t)
+    signal = np.exp((gamma - 1j * omega) * t)
     g_fit, w_fit = fit_growth_rate(t, signal, tmax=7.0)
     assert np.isclose(g_fit, gamma, rtol=1e-3, atol=1e-3)
     assert np.isclose(w_fit, omega, rtol=1e-3, atol=1e-3)
@@ -87,6 +87,22 @@ def test_run_cyclone_linear_defaults():
     assert result.phi_t.shape[0] == 3
 
 
+def test_run_cyclone_linear_manual_window():
+    """Manual fit windows should exercise the explicit fit path."""
+    grid = GridConfig(Nx=4, Ny=4, Nz=8, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid)
+    result = run_cyclone_linear(
+        cfg=cfg,
+        steps=5,
+        dt=0.1,
+        method="rk2",
+        auto_window=False,
+        tmin=0.1,
+        tmax=0.3,
+    )
+    assert np.isfinite(result.gamma)
+
+
 def test_run_cyclone_linear_full_operator_smoke():
     """Full operator path should execute without NaNs on a tiny run."""
     grid = GridConfig(Nx=6, Ny=6, Nz=8, Lx=62.8, Ly=62.8)
@@ -110,25 +126,43 @@ def test_cyclone_scan_and_compare():
     assert np.isfinite(comparison.rel_gamma)
 
 
+def test_cyclone_scan_manual_window():
+    """Manual fit windows should exercise the explicit scan fit path."""
+    grid = GridConfig(Nx=4, Ny=4, Nz=8, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid)
+    ky_values = np.array([0.2])
+    scan = run_cyclone_scan(
+        ky_values,
+        cfg=cfg,
+        steps=5,
+        dt=0.1,
+        method="rk2",
+        auto_window=False,
+        tmin=0.1,
+        tmax=0.3,
+    )
+    assert scan.ky.shape == ky_values.shape
+
+
 def test_cyclone_physics_regression():
     """Cyclone growth rates should track published values at ky rho_i = 0.3."""
-    grid = GridConfig(Nx=8, Ny=12, Nz=64, Lx=62.8, Ly=62.8)
+    grid = GridConfig(Nx=1, Ny=24, Nz=96, Lx=62.8, Ly=62.8)
     cfg = CycloneBaseCase(grid=grid)
-    result = run_cyclone_linear(cfg=cfg, ky_target=0.3, steps=300, dt=0.02, tmin=3.0, method="rk4")
+    result = run_cyclone_linear(cfg=cfg, ky_target=0.3, Nl=6, Nm=12, steps=800, dt=0.01, method="rk4")
     ref = load_cyclone_reference()
     idx = int(np.argmin(np.abs(ref.ky - 0.3)))
-    assert np.isclose(result.gamma, ref.gamma[idx], rtol=0.35)
-    assert np.isclose(result.omega, ref.omega[idx], rtol=0.25)
+    assert np.isclose(result.gamma, ref.gamma[idx], rtol=0.2)
+    assert np.isclose(result.omega, ref.omega[idx], rtol=0.1)
 
 
 def test_cyclone_scan_regression():
     """Reduced ky scan should remain within reference trends."""
-    grid = GridConfig(Nx=8, Ny=12, Nz=64, Lx=62.8, Ly=62.8)
+    grid = GridConfig(Nx=1, Ny=24, Nz=96, Lx=62.8, Ly=62.8)
     cfg = CycloneBaseCase(grid=grid)
     ky_values = np.array([0.3, 0.4])
-    scan = run_cyclone_scan(ky_values, cfg=cfg, steps=300, dt=0.02, tmin=3.0, method="rk4")
+    scan = run_cyclone_scan(ky_values, cfg=cfg, Nl=6, Nm=12, steps=800, dt=0.01, method="rk4")
     ref = load_cyclone_reference()
     for ky, gamma, omega in zip(scan.ky, scan.gamma, scan.omega):
         idx = int(np.argmin(np.abs(ref.ky - ky)))
-        assert np.isclose(gamma, ref.gamma[idx], rtol=0.4)
-        assert np.isclose(omega, ref.omega[idx], rtol=0.25)
+        assert np.isclose(gamma, ref.gamma[idx], rtol=0.25)
+        assert np.isclose(omega, ref.omega[idx], rtol=0.1)

@@ -25,15 +25,19 @@ Optional damping
 ----------------
 
 To stabilize high-order Hermite-Laguerre moments, the linear operator supports
-two optional damping models:
+two damping models:
 
 - A Lenard-Bernstein diagonal rate ``nu`` with coefficients
   :math:`\nu(\alpha m + \beta l)`.
-- A hyper-damping term ``nu_hyper`` with exponent ``p_hyper`` that suppresses
-  the highest Hermite/Laguerre indices.
+- Hyper-collisions in velocity space with coefficients ``nu_hyper_l``,
+  ``nu_hyper_m``, and ``nu_hyper_lm`` and exponents ``p_hyper_l``,
+  ``p_hyper_m``, ``p_hyper_lm``. These damp the highest Hermite/Laguerre
+  indices and are enabled by default for Cyclone-style scans.
+- Smooth end-cap damping in the field-aligned direction controlled by
+  ``damp_ends_widthfrac`` and ``damp_ends_amp`` to suppress reflections at
+  linked boundaries.
 
-Both are disabled by default and can be enabled via ``LinearParams`` for
-resolution studies.
+Both can be disabled or tuned via ``LinearParams`` for resolution studies.
 
 Performance caching
 -------------------
@@ -50,7 +54,7 @@ Given a complex mode time series
 
 .. math::
 
-   \phi(t) \approx \exp[(\gamma + i \omega) t],
+   \phi(t) \approx \exp[(\gamma - i \omega) t],
 
 we estimate :math:`\gamma` and :math:`\omega` by least-squares fits of
 :math:`\log|\phi|` and the unwrapped phase versus time. The helper

@@ -10,6 +10,7 @@ import numpy as np
 
 from spectraxgk.benchmarks import load_cyclone_reference, run_cyclone_scan
 from spectraxgk.config import CycloneBaseCase
+from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.linear import LinearParams
 
 
@@ -42,14 +43,13 @@ def _parse_range(values: Iterable[float]) -> np.ndarray:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--rho-star", nargs="+", type=float, default=[0.2, 0.3, 0.4])
-    parser.add_argument("--omega-d-scale", nargs="+", type=float, default=[0.4, 0.6, 0.8])
-    parser.add_argument("--omega-star-scale", nargs="+", type=float, default=[7.5, 8.5, 9.5])
-    parser.add_argument("--Nl", type=int, default=3)
-    parser.add_argument("--Nm", type=int, default=6)
-    parser.add_argument("--steps", type=int, default=400)
-    parser.add_argument("--dt", type=float, default=0.02)
-    parser.add_argument("--tmin", type=float, default=4.0)
+    parser.add_argument("--rho-star", nargs="+", type=float, default=[0.5, 0.75, 1.0, 1.25])
+    parser.add_argument("--omega-d-scale", nargs="+", type=float, default=[0.8, 1.0, 1.2])
+    parser.add_argument("--omega-star-scale", nargs="+", type=float, default=[0.8, 1.0, 1.2])
+    parser.add_argument("--Nl", type=int, default=6)
+    parser.add_argument("--Nm", type=int, default=12)
+    parser.add_argument("--steps", type=int, default=800)
+    parser.add_argument("--dt", type=float, default=0.01)
     parser.add_argument("--ky-subset", nargs="*", type=float, default=[0.3, 0.4])
     parser.add_argument("--output-csv", type=str, default="")
     args = parser.parse_args()
@@ -58,6 +58,7 @@ def main() -> int:
     ky_values = ref.ky[1:] if args.ky_subset is None else np.array(args.ky_subset, dtype=float)
 
     cfg = CycloneBaseCase()
+    geom = SAlphaGeometry.from_config(cfg.geometry)
 
     results: list[SweepResult] = []
     for rho_star in _parse_range(args.rho_star):
@@ -69,6 +70,7 @@ def main() -> int:
                     omega_d_scale=float(omega_d_scale),
                     omega_star_scale=float(omega_star_scale),
                     rho_star=float(rho_star),
+                    kpar_scale=float(geom.gradpar()),
                 )
                 scan = run_cyclone_scan(
                     ky_values,

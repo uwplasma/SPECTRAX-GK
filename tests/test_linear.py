@@ -79,7 +79,17 @@ def test_streaming_zero_for_constant_z():
     cfg = CycloneBaseCase(grid=grid_cfg)
     grid = build_spectral_grid(cfg.grid)
     geom = SAlphaGeometry.from_config(cfg.geometry)
-    params = LinearParams(omega_d_scale=0.0, omega_star_scale=0.0)
+    params = LinearParams(
+        omega_d_scale=0.0,
+        omega_star_scale=0.0,
+        nu=0.0,
+        nu_hyper=0.0,
+        nu_hyper_l=0.0,
+        nu_hyper_m=0.0,
+        nu_hyper_lm=0.0,
+        damp_ends_amp=0.0,
+        damp_ends_widthfrac=0.0,
+    )
 
     G = jnp.zeros((2, 3, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
     G = G.at[:, 1:, ...].set(1.0)
@@ -368,7 +378,7 @@ def test_gx_matches_energy_when_drives_off():
     G = jnp.zeros((2, 3, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
     G = G.at[0, 0, 1, 0, :].set(1.0)
     cache = build_linear_cache(grid, geom, params, G.shape[0], G.shape[1])
-    dG_gx, phi_gx = linear_rhs_cached(G, cache, params, operator="gx")
+    dG_gx, phi_gx = linear_rhs_cached(G, cache, params, operator="full")
     dG_energy, phi_energy = linear_rhs_cached(G, cache, params, operator="energy")
     assert jnp.allclose(dG_gx, dG_energy)
     assert jnp.allclose(phi_gx, phi_energy)
@@ -412,12 +422,12 @@ def test_gx_mirror_curvature_activation():
 
     params_off = LinearParams(omega_d_scale=0.0, omega_star_scale=0.0, kpar_scale=0.0)
     cache_off = build_linear_cache(grid, geom, params_off, G.shape[0], G.shape[1])
-    dG_off, _phi_off = linear_rhs_cached(G, cache_off, params_off, operator="gx")
+    dG_off, _phi_off = linear_rhs_cached(G, cache_off, params_off, operator="full")
     assert jnp.allclose(dG_off, 0.0)
 
     params_on = LinearParams(omega_d_scale=1.0, omega_star_scale=0.0, kpar_scale=0.0)
     cache_on = build_linear_cache(grid, geom, params_on, G.shape[0], G.shape[1])
-    dG_on, _phi_on = linear_rhs_cached(G, cache_on, params_on, operator="gx")
+    dG_on, _phi_on = linear_rhs_cached(G, cache_on, params_on, operator="full")
     assert jnp.max(jnp.abs(dG_on)) > 0.0
 
 
@@ -433,12 +443,12 @@ def test_gx_diamagnetic_drive_populates_m2():
 
     params_off = LinearParams(omega_d_scale=0.0, omega_star_scale=0.0, kpar_scale=0.0)
     cache_off = build_linear_cache(grid, geom, params_off, G.shape[0], G.shape[1])
-    dG_off, _phi_off = linear_rhs_cached(G, cache_off, params_off, operator="gx")
+    dG_off, _phi_off = linear_rhs_cached(G, cache_off, params_off, operator="full")
     assert jnp.allclose(dG_off[:, 2, ...], 0.0)
 
     params_on = LinearParams(omega_d_scale=0.0, omega_star_scale=1.0, kpar_scale=0.0)
     cache_on = build_linear_cache(grid, geom, params_on, G.shape[0], G.shape[1])
-    dG_on, _phi_on = linear_rhs_cached(G, cache_on, params_on, operator="gx")
+    dG_on, _phi_on = linear_rhs_cached(G, cache_on, params_on, operator="full")
     assert jnp.max(jnp.abs(dG_on[:, 2, ...])) > 0.0
     assert jnp.allclose(dG_on[:, 1, ...], 0.0)
 
@@ -453,7 +463,7 @@ def test_gx_drive_vanishes_for_ky_zero():
     G = G.at[0, 0, 0, 0, :].set(1.0 + 0.0j)
     params = LinearParams(omega_d_scale=0.0, omega_star_scale=1.0, kpar_scale=0.0)
     cache = build_linear_cache(grid, geom, params, G.shape[0], G.shape[1])
-    dG, _phi = linear_rhs_cached(G, cache, params, operator="gx")
+    dG, _phi = linear_rhs_cached(G, cache, params, operator="full")
     assert jnp.allclose(dG, 0.0)
 
 
