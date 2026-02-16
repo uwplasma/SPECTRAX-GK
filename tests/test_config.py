@@ -1,6 +1,16 @@
 """Configuration object tests."""
 
-from spectraxgk.config import CycloneBaseCase, GeometryConfig, GridConfig, ModelConfig, TimeConfig
+from spectraxgk.config import (
+    CycloneBaseCase,
+    ETGBaseCase,
+    ETGModelConfig,
+    GeometryConfig,
+    GridConfig,
+    ModelConfig,
+    MTMBaseCase,
+    MTMModelConfig,
+    TimeConfig,
+)
 
 
 def test_config_to_dict():
@@ -26,3 +36,19 @@ def test_config_override():
     assert d["geometry"]["q"] == 1.7
     assert d["model"]["R_over_LTe"] == 1.0
     assert d["time"]["dt"] == 0.05
+
+
+def test_etg_config_to_dict():
+    """ETG configuration should serialize to dictionaries."""
+    cfg = ETGBaseCase()
+    d = cfg.to_dict()
+    assert set(d.keys()) == {"grid", "time", "geometry", "model"}
+    assert d["model"]["R_over_LTe"] == cfg.model.R_over_LTe
+
+
+def test_mtm_config_to_dict():
+    """MTM configuration should serialize to dictionaries."""
+    cfg = MTMBaseCase(model=MTMModelConfig(R_over_LTe=5.5, nu=0.15))
+    d = cfg.to_dict()
+    assert d["model"]["R_over_LTe"] == 5.5
+    assert d["model"]["nu"] == 0.15

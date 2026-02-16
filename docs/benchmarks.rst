@@ -152,3 +152,53 @@ Cyclone check (gamma) and ``rtol=0.1`` for the frequency. The reduced ky scan
 uses ``rtol=0.25`` for gamma and ``rtol=0.1`` for omega. The reduced tables
 above provide context for tightening these tolerances as higher resolution
 tables are updated.
+
+ETG Linear Trend (Reduced Electron-Scale Grid)
+----------------------------------------------
+
+SPECTRAX-GK includes a reduced electron-temperature-gradient (ETG) benchmark
+that targets the electron-scale branch on a compact flux-tube grid. The
+benchmark uses a reduced mass ratio (``mass_ratio=100`` by default) and a
+smaller perpendicular box (``Lx=Ly=6.28``) to resolve modes with
+:math:`k_y \rho_e \sim 0.3` without requiring extreme resolution.
+
+.. figure:: _static/etg_trend.png
+   :align: center
+   :alt: ETG trend versus R/LTe
+
+   ETG growth rates and real frequencies versus :math:`R/L_{Te}` at
+   :math:`k_y=3.0` on the reduced electron-scale grid.
+
+.. csv-table:: ETG trend table
+   :file: _static/etg_trend_table.csv
+   :header-rows: 1
+
+To regenerate the ETG trend table and figure:
+
+.. code-block:: bash
+
+   python tools/make_tables.py
+   python tools/make_figures.py
+
+MTM Linear Trend (Reduced Collisional Branch)
+---------------------------------------------
+
+The reduced microtearing (MTM) benchmark follows the collisional
+electron-driven branch on the same electron-scale grid. The reference scan
+tracks how the growth rate and frequency respond to weak collisionality (the
+growth rate decreases with increasing :math:`\nu`) while keeping the
+temperature-gradient drive fixed.
+
+.. figure:: _static/mtm_trend.png
+   :align: center
+   :alt: MTM trend versus collisionality
+
+   MTM trend versus collisionality at :math:`k_y=3.0` on the reduced grid.
+
+.. csv-table:: MTM trend table
+   :file: _static/mtm_trend_table.csv
+   :header-rows: 1
+
+The MTM trend table is regenerated together with the ETG trend by
+``tools/make_tables.py``. Both ETG/MTM tables are designed as lightweight
+trend checks before introducing full electromagnetic coupling.

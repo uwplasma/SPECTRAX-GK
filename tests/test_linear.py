@@ -63,6 +63,17 @@ def test_quasineutrality_simple():
     assert jnp.isclose(phi[0, 0, 0], Jl[0, 0, 0, 0] * 2.0 / den)
 
 
+def test_quasineutrality_charge_sign():
+    """Charge sign should flip the quasineutrality solution."""
+    Nl, Nm, Ny, Nx, Nz = 2, 1, 1, 1, 4
+    Jl = jnp.ones((Nl, Ny, Nx, Nz))
+    G = jnp.zeros((Nl, Nm, Ny, Nx, Nz))
+    G = G.at[0, 0, 0, 0, :].set(1.0)
+    phi_pos = quasineutrality_phi(G, Jl, tau_e=1.0, charge_sign=1.0)
+    phi_neg = quasineutrality_phi(G, Jl, tau_e=1.0, charge_sign=-1.0)
+    assert jnp.allclose(phi_pos, -phi_neg)
+
+
 def test_build_H_adds_phi_to_m0():
     """H should add J_l phi only to the m=0 Hermite index."""
     G = jnp.zeros((2, 2, 1, 1, 1))
