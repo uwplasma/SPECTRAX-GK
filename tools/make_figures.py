@@ -25,8 +25,8 @@ def main() -> int:
     fig.savefig(outdir / "cyclone_reference.pdf")
 
     ky_sample = ref.ky[::2]
-    cfg = CycloneBaseCase(grid=GridConfig(Nx=8, Ny=12, Nz=64, Lx=62.8, Ly=62.8))
-    scan = run_cyclone_scan(ky_sample, cfg=cfg, Nl=2, Nm=4, steps=400, dt=0.02, method="rk4")
+    cfg = CycloneBaseCase(grid=GridConfig(Nx=1, Ny=24, Nz=96, Lx=62.8, Ly=62.8))
+    scan = run_cyclone_scan(ky_sample, cfg=cfg, Nl=6, Nm=12, steps=800, dt=0.01, method="rk4")
     fig, _axes = cyclone_comparison_figure(ref, scan)
     fig.savefig(outdir / "cyclone_comparison.png", dpi=200)
     fig.savefig(outdir / "cyclone_comparison.pdf")

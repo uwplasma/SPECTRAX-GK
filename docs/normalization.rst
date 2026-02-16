@@ -43,7 +43,7 @@ sets:
    z \in [-\pi Z_p, \pi Z_p),\qquad
    Z_p = 2 n_{period} - 1.
 
-The reduced scan tables and regression tests use ``Nx=1, Ny=24, Nz=16`` on this
+The reduced scan tables and regression tests use ``Nx=1, Ny=24, Nz=96`` on this
 grid to match the discrete ky set used in the reference CSV.
 
 Normalization parameters
@@ -66,14 +66,6 @@ Defaults (model parameters):
 - ``rho_star = 1.0`` (model default)
 - ``omega_d_scale = 1.0`` (model default)
 - ``omega_star_scale = 1.0`` (model default)
-
-Cyclone base case calibration:
-
-For the current Cyclone reference matching sweep we use:
-
-.. math::
-
-   \rho_* = 0.3,\qquad \omega_d\_scale = 0.6,\qquad \omega_* \, scale = 8.5.
 
 These parameters are surfaced in the regression tables so that future
 normalization refinements can be tracked in a reproducible way.
