@@ -10,7 +10,7 @@ import jax.numpy as jnp
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid
-from spectraxgk.linear import LinearParams, build_linear_cache, linear_rhs_cached
+from spectraxgk.linear import LinearParams, LinearTerms, build_linear_cache, linear_rhs_cached
 
 
 def gmres_iterations(matvec, b: np.ndarray, precond=None, tol: float = 1.0e-6, maxiter: int = 40) -> int:
@@ -74,7 +74,7 @@ def main() -> int:
     @jax.jit
     def matvec_jax(v: jnp.ndarray) -> jnp.ndarray:
         G = v.reshape(shape)
-        dG, _ = linear_rhs_cached(G, cache, params, operator="full")
+        dG, _ = linear_rhs_cached(G, cache, params, terms=LinearTerms())
         return (G - dt * dG).reshape(size)
 
     def matvec_np(v: np.ndarray) -> np.ndarray:

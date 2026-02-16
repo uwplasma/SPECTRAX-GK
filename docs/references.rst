@@ -23,9 +23,9 @@ References
 
 .. [Jenko00] F. Jenko et al., Physics of Plasmas 7, 1904 (2000).
 
-.. [Chandran24] B. D. G. Chandran and A. A. Schekochihin, "Dispersion relation
-   for the electron-temperature-gradient-driven microtearing mode in tokamaks,"
-   Journal of Plasma Physics 90, 905900204 (2024).
+.. [Frei22] B. J. Frei, S. Ernst, and P. Ricci, "Numerical implementation of
+   the improved Sugama collision operator using a moment approach," Physics of
+   Plasmas 29, 102108 (2022).
 
 .. [GX] N. R. Mandell et al., "GX: a GPU-native gyrokinetic turbulence code for
    tokamak and stellarator design," Journal of Plasma Physics (2022).

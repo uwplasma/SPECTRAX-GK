@@ -10,6 +10,7 @@ from spectraxgk.linear import (
     _integrate_linear_cached,
     LinearCache,
     LinearParams,
+    LinearTerms,
     apply_hermite_v,
     apply_laguerre_x,
     build_H,
@@ -55,33 +56,76 @@ def test_quasineutrality_simple():
     """Quasineutrality should reduce to a simple ratio for a single mode."""
     Nl, Nm, Ny, Nx, Nz = 2, 2, 1, 1, 1
     b = jnp.array([[[0.5]]])
-    Jl = J_l_all(b, l_max=Nl - 1)
-    G = jnp.zeros((Nl, Nm, Ny, Nx, Nz))
-    G = G.at[0, 0, 0, 0, 0].set(2.0)
-    phi = quasineutrality_phi(G, Jl, tau_e=1.0)
-    den = 1.0 + 1.0 - jnp.sum(Jl[:, 0, 0, 0] ** 2)
-    assert jnp.isclose(phi[0, 0, 0], Jl[0, 0, 0, 0] * 2.0 / den)
+    Jl_single = J_l_all(b, l_max=Nl - 1)
+    Jl = Jl_single[None, ...]
+    G = jnp.zeros((1, Nl, Nm, Ny, Nx, Nz))
+    G = G.at[0, 0, 0, 0, 0, 0].set(2.0)
+    phi = quasineutrality_phi(
+        G,
+        Jl,
+        tau_e=1.0,
+        charge=jnp.array([1.0]),
+        density=jnp.array([1.0]),
+        tz=jnp.array([1.0]),
+    )
+    den = 1.0 + 1.0 - jnp.sum(Jl_single[:, 0, 0, 0] ** 2)
+    assert jnp.isclose(phi[0, 0, 0], Jl_single[0, 0, 0, 0] * 2.0 / den)
 
 
 def test_quasineutrality_charge_sign():
     """Charge sign should flip the quasineutrality solution."""
     Nl, Nm, Ny, Nx, Nz = 2, 1, 1, 1, 4
-    Jl = jnp.ones((Nl, Ny, Nx, Nz))
-    G = jnp.zeros((Nl, Nm, Ny, Nx, Nz))
-    G = G.at[0, 0, 0, 0, :].set(1.0)
-    phi_pos = quasineutrality_phi(G, Jl, tau_e=1.0, charge_sign=1.0)
-    phi_neg = quasineutrality_phi(G, Jl, tau_e=1.0, charge_sign=-1.0)
+    Jl = jnp.ones((1, Nl, Ny, Nx, Nz))
+    G = jnp.zeros((1, Nl, Nm, Ny, Nx, Nz))
+    G = G.at[0, 0, 0, 0, 0, :].set(1.0)
+    phi_pos = quasineutrality_phi(
+        G,
+        Jl,
+        tau_e=1.0,
+        charge=jnp.array([1.0]),
+        density=jnp.array([1.0]),
+        tz=jnp.array([1.0]),
+    )
+    phi_neg = quasineutrality_phi(
+        G,
+        Jl,
+        tau_e=1.0,
+        charge=jnp.array([-1.0]),
+        density=jnp.array([1.0]),
+        tz=jnp.array([-1.0]),
+    )
     assert jnp.allclose(phi_pos, -phi_neg)
 
 
 def test_build_H_adds_phi_to_m0():
     """H should add J_l phi only to the m=0 Hermite index."""
-    G = jnp.zeros((2, 2, 1, 1, 1))
-    Jl = jnp.ones((2, 1, 1, 1))
+    G = jnp.zeros((1, 2, 2, 1, 1, 1))
+    Jl = jnp.ones((1, 2, 1, 1, 1))
     phi = jnp.array([[[3.0]]])
-    H = build_H(G, Jl, phi)
-    assert jnp.allclose(H[:, 0, 0, 0, 0], 3.0)
-    assert jnp.allclose(H[:, 1, 0, 0, 0], 0.0)
+    H = build_H(G, Jl, phi, tz=jnp.array([1.0]))
+    assert jnp.allclose(H[0, :, 0, 0, 0, 0], 3.0)
+    assert jnp.allclose(H[0, :, 1, 0, 0, 0], 0.0)
+
+
+def test_build_H_adds_apar_to_m1():
+    """Apar term should enter H at m=1 with the correct sign."""
+    G = jnp.zeros((1, 2, 2, 1, 1, 1))
+    Jl = jnp.ones((1, 2, 1, 1, 1))
+    phi = jnp.zeros((1, 1, 1))
+    apar = jnp.ones((1, 1, 1))
+    H = build_H(G, Jl, phi, tz=jnp.array([1.0]), apar=apar, vth=jnp.array([2.0]))
+    assert jnp.allclose(H[0, :, 1, 0, 0, 0], -2.0)
+
+
+def test_build_H_adds_bpar_to_m0():
+    """Bpar term should enter H at m=0 with J_l + J_{l-1}."""
+    G = jnp.zeros((1, 3, 2, 1, 1, 1))
+    Jl = jnp.ones((1, 3, 1, 1, 1))
+    JlB = Jl + jnp.pad(Jl[:, :-1, ...], ((0, 0), (1, 0), (0, 0), (0, 0), (0, 0)))
+    phi = jnp.zeros((1, 1, 1))
+    bpar = jnp.ones((1, 1, 1))
+    H = build_H(G, Jl, phi, tz=jnp.array([1.0]), bpar=bpar, JlB=JlB)
+    assert jnp.allclose(H[0, :, 0, 0, 0, 0], JlB[0, :, 0, 0, 0])
 
 
 def test_streaming_zero_for_constant_z():
@@ -131,7 +175,14 @@ def test_linear_param_validation():
     with pytest.raises(ValueError):
         compute_b(grid, geom, rho=0.0)
     with pytest.raises(ValueError):
-        quasineutrality_phi(G, jnp.ones((2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz)), tau_e=0.0)
+        quasineutrality_phi(
+            G[None, ...],
+            jnp.ones((1, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz)),
+            tau_e=0.0,
+            charge=jnp.array([1.0]),
+            density=jnp.array([1.0]),
+            tz=jnp.array([1.0]),
+        )
     with pytest.raises(ValueError):
         streaming_term(G, dz=1.0, vth=0.0)
     with pytest.raises(ValueError):
@@ -228,6 +279,41 @@ def test_linear_cache_tree_roundtrip():
     assert jnp.allclose(cache2.hyper_ratio, cache.hyper_ratio)
 
 
+def test_build_linear_cache_multispecies():
+    """Cache should support multiple species arrays."""
+    grid_cfg = GridConfig(Nx=4, Ny=4, Nz=4, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams(rho=jnp.array([1.0, 0.5]))
+    cache = build_linear_cache(grid, geom, params, Nl=2, Nm=2)
+    assert cache.Jl.shape[0] == 2
+
+
+def test_linear_rhs_multispecies_shapes():
+    """Multispecies RHS should return a matching shape."""
+    grid_cfg = GridConfig(Nx=4, Ny=4, Nz=4, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams(
+        charge_sign=jnp.array([1.0, -1.0]),
+        density=jnp.array([1.0, 1.0]),
+        mass=jnp.array([1.0, 0.001]),
+        temp=jnp.array([1.0, 1.0]),
+        vth=jnp.array([1.0, 1.0]),
+        rho=jnp.array([1.0, 0.5]),
+        tz=jnp.array([1.0, -1.0]),
+        R_over_Ln=jnp.array([0.0, 0.0]),
+        R_over_LTi=jnp.array([0.0, 0.0]),
+    )
+    G = jnp.zeros((2, 2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
+    cache = build_linear_cache(grid, geom, params, Nl=2, Nm=2)
+    dG, phi = linear_rhs_cached(G, cache, params, terms=LinearTerms())
+    assert dG.shape == G.shape
+    assert phi.shape == (cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz)
+
+
 def test_linear_cache_rho_star_scales_ky():
     """rho_star should scale cached ky for normalization control."""
     grid_cfg = GridConfig(Nx=4, Ny=4, Nz=4, Lx=6.0, Ly=6.0)
@@ -249,18 +335,6 @@ def test_linear_rhs_cached_invalid_shape():
     cache = build_linear_cache(grid, geom, params, Nl=2, Nm=2)
     with pytest.raises(ValueError):
         linear_rhs_cached(jnp.zeros((2, 3, 4)), cache, params)
-
-
-def test_linear_rhs_cached_invalid_operator():
-    """Unknown operator names should raise a ValueError."""
-    grid_cfg = GridConfig(Nx=4, Ny=4, Nz=4, Lx=6.0, Ly=6.0)
-    cfg = CycloneBaseCase(grid=grid_cfg)
-    grid = build_spectral_grid(cfg.grid)
-    geom = SAlphaGeometry.from_config(cfg.geometry)
-    params = LinearParams()
-    cache = build_linear_cache(grid, geom, params, Nl=2, Nm=2)
-    with pytest.raises(ValueError):
-        linear_rhs_cached(jnp.zeros((2, 2, 4, 4, 4)), cache, params, operator="bad")
 
 
 def test_jit_path_handles_tracers():
@@ -303,50 +377,6 @@ def test_integrate_linear_implicit_runs():
     assert phi_t.shape[0] == 1
 
 
-def test_integrate_linear_implicit_energy():
-    """Implicit path should cover the energy-operator preconditioner."""
-    grid_cfg = GridConfig(Nx=2, Ny=2, Nz=4, Lx=6.0, Ly=6.0)
-    cfg = CycloneBaseCase(grid=grid_cfg)
-    grid = build_spectral_grid(cfg.grid)
-    geom = SAlphaGeometry.from_config(cfg.geometry)
-    params = LinearParams(nu=0.1, omega_d_scale=0.2)
-    G = jnp.zeros((1, 1, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
-    _, phi_t = integrate_linear(
-        G,
-        grid,
-        geom,
-        params,
-        dt=0.1,
-        steps=1,
-        method="implicit",
-        operator="energy",
-        implicit_iters=1,
-        implicit_relax=0.5,
-    )
-    assert phi_t.shape[0] == 1
-
-
-def test_integrate_linear_implicit_invalid_operator():
-    """Implicit path should reject invalid operator values."""
-    grid_cfg = GridConfig(Nx=2, Ny=2, Nz=4, Lx=6.0, Ly=6.0)
-    cfg = CycloneBaseCase(grid=grid_cfg)
-    grid = build_spectral_grid(cfg.grid)
-    geom = SAlphaGeometry.from_config(cfg.geometry)
-    params = LinearParams(nu=0.1)
-    G = jnp.zeros((1, 1, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
-    with pytest.raises(ValueError):
-        integrate_linear(
-            G,
-            grid,
-            geom,
-            params,
-            dt=0.1,
-            steps=1,
-            method="implicit",
-            operator="bad",
-        )
-
-
 def test_apply_hermite_v_simple():
     """Hermite v operator should map a single mode to neighbors."""
     G = jnp.zeros((1, 3, 1, 1, 1))
@@ -379,49 +409,6 @@ def test_energy_operator_and_drive_coeffs():
     assert jnp.allclose(coeffs[1:, :], 0.0)
 
 
-def test_gx_matches_energy_when_drives_off():
-    """Full and energy operators should match when drift/drive terms are disabled."""
-    grid_cfg = GridConfig(Nx=4, Ny=4, Nz=8, Lx=6.0, Ly=6.0)
-    cfg = CycloneBaseCase(grid=grid_cfg)
-    grid = build_spectral_grid(cfg.grid)
-    geom = SAlphaGeometry.from_config(cfg.geometry)
-    params = LinearParams(omega_d_scale=0.0, omega_star_scale=0.0)
-    G = jnp.zeros((2, 3, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
-    G = G.at[0, 0, 1, 0, :].set(1.0)
-    cache = build_linear_cache(grid, geom, params, G.shape[0], G.shape[1])
-    dG_gx, phi_gx = linear_rhs_cached(G, cache, params, operator="full")
-    dG_energy, phi_energy = linear_rhs_cached(G, cache, params, operator="energy")
-    assert jnp.allclose(dG_gx, dG_energy)
-    assert jnp.allclose(phi_gx, phi_energy)
-
-
-def test_full_operator_alias_path():
-    """Full operator alias should route through the GX operator path."""
-    grid_cfg = GridConfig(Nx=2, Ny=2, Nz=4, Lx=6.0, Ly=6.0)
-    cfg = CycloneBaseCase(grid=grid_cfg)
-    grid = build_spectral_grid(cfg.grid)
-    geom = SAlphaGeometry.from_config(cfg.geometry)
-    params = LinearParams(omega_d_scale=0.0, omega_star_scale=0.0)
-    G = jnp.zeros((1, 1, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
-    cache = build_linear_cache(grid, geom, params, 1, 1)
-    dG, phi = linear_rhs_cached(G, cache, params, operator="full")
-    assert jnp.isfinite(dG).all()
-    assert jnp.isfinite(phi).all()
-
-
-def test_cached_integrator_full_alias():
-    """Cached integrator should accept full operator alias."""
-    grid_cfg = GridConfig(Nx=2, Ny=2, Nz=4, Lx=6.0, Ly=6.0)
-    cfg = CycloneBaseCase(grid=grid_cfg)
-    grid = build_spectral_grid(cfg.grid)
-    geom = SAlphaGeometry.from_config(cfg.geometry)
-    params = LinearParams()
-    cache = build_linear_cache(grid, geom, params, 1, 1)
-    G = jnp.zeros((1, 1, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
-    _, phi_t = _integrate_linear_cached(G, cache, params, dt=0.1, steps=1, method="rk2", operator="full")
-    assert phi_t.shape == (1, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz)
-
-
 def test_gx_mirror_curvature_activation():
     """Drift/mirror terms should activate when omega_d_scale is nonzero."""
     grid_cfg = GridConfig(Nx=2, Ny=2, Nz=8, Lx=6.0, Ly=6.0)
@@ -431,14 +418,30 @@ def test_gx_mirror_curvature_activation():
     G = jnp.zeros((1, 3, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz), dtype=jnp.complex64)
     G = G.at[0, 1, 1, 0, :].set(1.0 + 0.0j)
 
-    params_off = LinearParams(omega_d_scale=0.0, omega_star_scale=0.0, kpar_scale=0.0)
+    params_off = LinearParams(
+        omega_d_scale=0.0,
+        omega_star_scale=0.0,
+        kpar_scale=0.0,
+        damp_ends_amp=0.0,
+        damp_ends_widthfrac=0.0,
+    )
     cache_off = build_linear_cache(grid, geom, params_off, G.shape[0], G.shape[1])
-    dG_off, _phi_off = linear_rhs_cached(G, cache_off, params_off, operator="full")
+    terms_off = LinearTerms(streaming=0.0, mirror=0.0, curvature=0.0, gradb=0.0, diamagnetic=0.0,
+                            collisions=0.0, hypercollisions=0.0, end_damping=0.0, apar=0.0)
+    dG_off, _phi_off = linear_rhs_cached(G, cache_off, params_off, terms=terms_off)
     assert jnp.allclose(dG_off, 0.0)
 
-    params_on = LinearParams(omega_d_scale=1.0, omega_star_scale=0.0, kpar_scale=0.0)
+    params_on = LinearParams(
+        omega_d_scale=1.0,
+        omega_star_scale=0.0,
+        kpar_scale=0.0,
+        damp_ends_amp=0.0,
+        damp_ends_widthfrac=0.0,
+    )
     cache_on = build_linear_cache(grid, geom, params_on, G.shape[0], G.shape[1])
-    dG_on, _phi_on = linear_rhs_cached(G, cache_on, params_on, operator="full")
+    terms_on = LinearTerms(streaming=0.0, mirror=1.0, curvature=1.0, gradb=1.0, diamagnetic=0.0,
+                           collisions=0.0, hypercollisions=0.0, end_damping=0.0, apar=0.0)
+    dG_on, _phi_on = linear_rhs_cached(G, cache_on, params_on, terms=terms_on)
     assert jnp.max(jnp.abs(dG_on)) > 0.0
 
 
@@ -452,14 +455,30 @@ def test_gx_diamagnetic_drive_populates_m2():
     ky_index = 1
     G = G.at[0, 0, ky_index, 0, :].set(1.0 + 0.0j)
 
-    params_off = LinearParams(omega_d_scale=0.0, omega_star_scale=0.0, kpar_scale=0.0)
+    params_off = LinearParams(
+        omega_d_scale=0.0,
+        omega_star_scale=0.0,
+        kpar_scale=0.0,
+        damp_ends_amp=0.0,
+        damp_ends_widthfrac=0.0,
+    )
     cache_off = build_linear_cache(grid, geom, params_off, G.shape[0], G.shape[1])
-    dG_off, _phi_off = linear_rhs_cached(G, cache_off, params_off, operator="full")
+    terms_off = LinearTerms(streaming=0.0, mirror=0.0, curvature=0.0, gradb=0.0, diamagnetic=0.0,
+                            collisions=0.0, hypercollisions=0.0, end_damping=0.0, apar=0.0)
+    dG_off, _phi_off = linear_rhs_cached(G, cache_off, params_off, terms=terms_off)
     assert jnp.allclose(dG_off[:, 2, ...], 0.0)
 
-    params_on = LinearParams(omega_d_scale=0.0, omega_star_scale=1.0, kpar_scale=0.0)
+    params_on = LinearParams(
+        omega_d_scale=0.0,
+        omega_star_scale=1.0,
+        kpar_scale=0.0,
+        damp_ends_amp=0.0,
+        damp_ends_widthfrac=0.0,
+    )
     cache_on = build_linear_cache(grid, geom, params_on, G.shape[0], G.shape[1])
-    dG_on, _phi_on = linear_rhs_cached(G, cache_on, params_on, operator="full")
+    terms_on = LinearTerms(streaming=0.0, mirror=0.0, curvature=0.0, gradb=0.0, diamagnetic=1.0,
+                           collisions=0.0, hypercollisions=0.0, end_damping=0.0, apar=0.0)
+    dG_on, _phi_on = linear_rhs_cached(G, cache_on, params_on, terms=terms_on)
     assert jnp.max(jnp.abs(dG_on[:, 2, ...])) > 0.0
     assert jnp.allclose(dG_on[:, 1, ...], 0.0)
 
@@ -472,9 +491,17 @@ def test_gx_drive_vanishes_for_ky_zero():
     geom = SAlphaGeometry.from_config(cfg.geometry)
     G = jnp.zeros((2, 3, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz), dtype=jnp.complex64)
     G = G.at[0, 0, 0, 0, :].set(1.0 + 0.0j)
-    params = LinearParams(omega_d_scale=0.0, omega_star_scale=1.0, kpar_scale=0.0)
+    params = LinearParams(
+        omega_d_scale=0.0,
+        omega_star_scale=1.0,
+        kpar_scale=0.0,
+        damp_ends_amp=0.0,
+        damp_ends_widthfrac=0.0,
+    )
     cache = build_linear_cache(grid, geom, params, G.shape[0], G.shape[1])
-    dG, _phi = linear_rhs_cached(G, cache, params, operator="full")
+    terms = LinearTerms(streaming=0.0, mirror=0.0, curvature=0.0, gradb=0.0, diamagnetic=1.0,
+                        collisions=0.0, hypercollisions=0.0, end_damping=0.0, apar=0.0)
+    dG, _phi = linear_rhs_cached(G, cache, params, terms=terms)
     assert jnp.allclose(dG, 0.0)
 
 
@@ -496,3 +523,42 @@ def test_shift_axis_noop():
     arr = jnp.arange(6.0).reshape(2, 3)
     out = shift_axis(arr, 0, axis=0)
     assert jnp.allclose(out, arr)
+
+
+def test_apar_streaming_coupling_changes_rhs():
+    """Finite beta should modify streaming via Apar coupling."""
+    grid_cfg = GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+
+    G = jnp.zeros((2, 3, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz), dtype=jnp.complex64)
+    z = grid.z
+    G = G.at[0, 1, 1, 0, :].set(jnp.sin(z) + 0.0j)
+
+    params_base = LinearParams(
+        kpar_scale=1.0,
+        omega_d_scale=0.0,
+        omega_star_scale=0.0,
+        nu=0.0,
+        nu_hyper=0.0,
+        damp_ends_amp=0.0,
+        damp_ends_widthfrac=0.0,
+        beta=0.0,
+        fapar=0.0,
+    )
+    params_beta = LinearParams(
+        kpar_scale=1.0,
+        omega_d_scale=0.0,
+        omega_star_scale=0.0,
+        nu=0.0,
+        nu_hyper=0.0,
+        damp_ends_amp=0.0,
+        damp_ends_widthfrac=0.0,
+        beta=1.0,
+        fapar=1.0,
+    )
+    cache = build_linear_cache(grid, geom, params_beta, G.shape[0], G.shape[1])
+    dG0, _phi0 = linear_rhs_cached(G, cache, params_base, terms=LinearTerms())
+    dG1, _phi1 = linear_rhs_cached(G, cache, params_beta, terms=LinearTerms())
+    assert jnp.max(jnp.abs(dG1 - dG0)) > 0.0

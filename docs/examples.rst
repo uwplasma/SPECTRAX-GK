@@ -36,9 +36,23 @@ ETG linear trend
 
    python examples/etg_linear_benchmark.py
 
-MTM linear trend
-----------------
+Kinetic-electron benchmark
+--------------------------
 
 .. code-block:: bash
 
-   python examples/mtm_linear_benchmark.py
+   python examples/kinetic_linear_benchmark.py
+
+KBM beta scan
+-------------
+
+.. code-block:: bash
+
+   python examples/kbm_beta_scan.py
+
+TEM benchmark
+-------------
+
+.. code-block:: bash
+
+   python examples/tem_linear_benchmark.py

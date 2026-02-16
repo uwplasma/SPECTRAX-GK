@@ -67,11 +67,11 @@ On the reference run (Nl=2, Nm=3, Ny=4, Nz=8), this reported:
 JIT considerations
 ------------------
 
-The linear integrator is ``jit``-compiled with the number of steps, method, and
-operator set as static arguments. Changing these values triggers recompilation,
-so performance-sensitive workflows should reuse them across scans. The cached
-operator arrays can be constructed once and reused across multiple runs to
-avoid repeated geometry setup costs.
+The linear integrator is ``jit``-compiled with the number of steps and method
+as static arguments. The operator term switches (:class:`spectraxgk.linear.LinearTerms`)
+should also remain static inside a compiled loop to avoid recompilation. The
+cached operator arrays can be constructed once and reused across multiple runs
+to avoid repeated geometry setup costs.
 
 Planned optimizations
 ---------------------

@@ -2,8 +2,8 @@ Normalization
 =============
 
 This section documents the normalization conventions used in SPECTRAX-GK and
-the calibration parameters used to compare against published Cyclone base case
-results.
+the calibration parameters that scale drift/drive terms for benchmark
+comparisons.
 
 Dimensionless units
 -------------------
@@ -25,23 +25,19 @@ that the input gradients are expressed as
 :math:`a/L_T` and :math:`a/L_n`. With :math:`R_0 = R/a`, this means
 :math:`R/L_T = (R_0)\,(a/L_T)` and similarly for :math:`R/L_n`.
 
-Kinetic species sign conventions
---------------------------------
+Kinetic species conventions
+---------------------------
 
-SPECTRAX-GK evolves a single kinetic species at a time. The species charge and
-temperature ratio are encoded by:
+SPECTRAX-GK supports multi-species kinetic systems. Species-dependent arrays
+carry the charge, mass, density, temperature, and gradient inputs:
 
-- ``charge_sign``: :math:`+1` for ions, :math:`-1` for electrons.
-- ``tau_e``: ratio of kinetic-species temperature to the adiabatic background
-  temperature. For ion-kinetic runs with adiabatic electrons, this is
-  :math:`T_i/T_e`. For electron-kinetic runs with adiabatic ions, this is
-  :math:`T_e/T_i`.
-- ``tz``: gyrokinetic coupling factor :math:`q_s T_i/T_s`. For electrons this
-  is ``tz = -tau_e``.
+- ``charge_sign``: :math:`Z_s` (e.g., :math:`+1` for ions, :math:`-1` for electrons).
+- ``temp`` / ``mass`` / ``density``: normalized to the reference species.
+- ``tz``: :math:`Z_s / T_s` coupling used in the field terms.
+- ``R_over_LTi`` / ``R_over_Ln``: normalized gradients for each species.
 
-The electron-temperature-gradient benchmarks use ``charge_sign=-1`` and set
-``R_over_LTi = -R_over_LTe`` to represent the electron diamagnetic direction in
-the reduced ETG/MTM trend checks.
+For adiabatic closures, ``tau_e`` provides the ratio between the kinetic
+species temperature and the Boltzmann species temperature.
 
 Field-aligned grid parameters
 -----------------------------
