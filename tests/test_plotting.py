@@ -12,6 +12,8 @@ from spectraxgk.plotting import (
     cyclone_comparison_figure,
     cyclone_reference_figure,
     etg_trend_figure,
+    linear_validation_figure,
+    LinearValidationPanel,
     mtm_trend_figure,
 )
 
@@ -68,6 +70,65 @@ def test_mtm_trend_figure(tmp_path):
     omega = np.array([-0.2, -0.25, -0.3])
     fig, _axes = mtm_trend_figure(nu, gamma, omega, ky_target=3.0)
     out = tmp_path / "mtm_trend.png"
+    fig.savefig(out)
+    plt.close(fig)
+    assert out.exists()
+
+
+def test_linear_validation_figure(tmp_path):
+    """Summary panel should render and save."""
+    z = np.linspace(-1.0, 1.0, 8)
+    panel = LinearValidationPanel(
+        name="Cyclone",
+        z=z,
+        eigenfunction=np.exp(1j * z),
+        x=np.array([0.2, 0.3]),
+        gamma=np.array([0.1, 0.2]),
+        omega=np.array([0.3, 0.4]),
+        x_label=r"$k_y$",
+    )
+    fig, _axes = linear_validation_figure([panel])
+    out = tmp_path / "summary.png"
+    fig.savefig(out)
+    plt.close(fig)
+    assert out.exists()
+
+
+def test_linear_validation_empty():
+    """Empty panel list should raise."""
+    try:
+        linear_validation_figure([])
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("empty panels should raise ValueError")
+
+
+def test_linear_validation_multiple_panels(tmp_path):
+    """Multiple panels should render without errors."""
+    z = np.linspace(-1.0, 1.0, 8)
+    panels = [
+        LinearValidationPanel(
+            name="Cyclone",
+            z=z,
+            eigenfunction=np.exp(1j * z),
+            x=np.array([0.2, 0.3]),
+            gamma=np.array([0.1, 0.2]),
+            omega=np.array([0.3, 0.4]),
+            x_label=r"$k_y$",
+        ),
+        LinearValidationPanel(
+            name="ITG",
+            z=z,
+            eigenfunction=np.exp(1j * 0.5 * z),
+            x=np.array([0.2, 0.3]),
+            gamma=np.array([0.15, 0.25]),
+            omega=np.array([0.35, 0.45]),
+            x_label=r"$k_y$",
+        ),
+    ]
+    fig, _axes = linear_validation_figure(panels)
+    out = tmp_path / "summary_multi.png"
     fig.savefig(out)
     plt.close(fig)
     assert out.exists()
