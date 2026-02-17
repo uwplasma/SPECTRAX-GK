@@ -36,7 +36,7 @@ def test_example_smoke_diffrax():
 def test_example_smoke_nonlinear_scan():
     """Run a tiny nonlinear scan over two seeds."""
     grid_cfg = GridConfig(Nx=1, Ny=2, Nz=4, Lx=6.0, Ly=6.0)
-    time_cfg = TimeConfig(t_max=0.2, dt=0.1, method="rk2")
+    time_cfg = TimeConfig(t_max=0.2, dt=0.1, method="rk2", use_diffrax=False)
     cfg = CycloneBaseCase(grid=grid_cfg, time=time_cfg)
     grid = build_spectral_grid(cfg.grid)
     geom = SAlphaGeometry.from_config(cfg.geometry)
