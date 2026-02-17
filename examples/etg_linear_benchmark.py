@@ -8,8 +8,8 @@ from spectraxgk.plotting import etg_trend_figure
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="ETG linear trend example.")
-    parser.add_argument("--diffrax", action="store_true", help="Use diffrax integrator.")
-    parser.add_argument("--solver", default="Tsit5", help="Diffrax solver name.")
+    parser.add_argument("--no-diffrax", action="store_true", help="Disable diffrax integrator.")
+    parser.add_argument("--solver", default="Heun", help="Diffrax solver name.")
     parser.add_argument("--adaptive", action="store_true", help="Enable adaptive step sizes.")
     args = parser.parse_args()
 
@@ -19,8 +19,8 @@ def main() -> None:
     time_cfg = TimeConfig(
         t_max=dt * steps,
         dt=dt,
-        method="rk4",
-        use_diffrax=args.diffrax,
+        method="rk2",
+        use_diffrax=not args.no_diffrax,
         diffrax_solver=args.solver,
         diffrax_adaptive=args.adaptive,
     )
@@ -34,10 +34,7 @@ def main() -> None:
             ky_target=3.0,
             Nl=4,
             Nm=8,
-            steps=steps,
-            dt=dt,
-            method="rk4",
-            time_cfg=time_cfg if args.diffrax else None,
+            time_cfg=time_cfg,
             auto_window=True,
             mode_method="z_index",
         )

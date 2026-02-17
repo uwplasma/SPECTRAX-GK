@@ -36,11 +36,12 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Benchmark custom vs diffrax integrators.")
     parser.add_argument("--repeat", type=int, default=3)
     parser.add_argument("--warmup", type=int, default=1)
-    parser.add_argument("--diffrax-solver", default="Tsit5")
+    parser.add_argument("--diffrax-solver", default="Heun")
     parser.add_argument("--diffrax-adaptive", action="store_true")
     parser.add_argument("--diffrax-rtol", type=float, default=1.0e-3)
     parser.add_argument("--diffrax-atol", type=float, default=1.0e-6)
     parser.add_argument("--diffrax-max-steps", type=int, default=20000)
+    parser.add_argument("--no-diffrax-jit", action="store_true")
     args = parser.parse_args()
 
     cfg = CycloneBaseCase()
@@ -79,7 +80,7 @@ def main() -> None:
             atol=args.diffrax_atol,
             max_steps=args.diffrax_max_steps,
             progress_bar=False,
-            jit=False,
+            jit=not args.no_diffrax_jit,
         )
 
     for _ in range(max(args.warmup, 0)):

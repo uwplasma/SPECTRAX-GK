@@ -92,7 +92,9 @@ solvers still run, but treat this as experimental behavior.
 
 Use :class:`spectraxgk.config.TimeConfig` and
 :func:`spectraxgk.runners.integrate_linear_from_config` to select diffrax
-integration from input configuration without changing call sites.
+integration from input configuration without changing call sites. By default,
+``TimeConfig`` enables diffrax with a fixed-step Heun solver; set
+``use_diffrax=False`` to force the built-in fixed-step integrators.
 
 Gyroaverage and polarization
 ----------------------------

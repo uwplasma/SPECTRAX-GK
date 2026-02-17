@@ -1,10 +1,26 @@
 Benchmarks
 ==========
 
-Benchmark runners default to the built-in fixed-step integrators, but the
-examples can be switched to diffrax solvers via ``--diffrax`` flags. A small
-runtime/memory comparison script is available in
-``tools/benchmark_integrators.py``.
+Benchmark runners follow the ``TimeConfig`` defaults (diffrax enabled with a
+fixed-step Heun solver). The fixed-step integrators remain available by setting
+``use_diffrax=False`` in the time configuration. A small runtime/memory
+comparison script is available in ``tools/benchmark_integrators.py``.
+
+Performance defaults
+--------------------
+
+The diffrax defaults aim for stable, consistent step control rather than
+absolute speed. A quick sweep with the benchmark script shows the relative
+runtime and host-memory costs on the Cyclone defaults (t_max=8, dt=0.01, Nl=6,
+Nm=12):
+
+- Custom fixed-step RK2: ~0.23 s, ~0.06 MB host peak.
+- Diffrax Heun fixed-step: ~2.68 s, ~8.65 MB host peak.
+- Diffrax Tsit5 adaptive: ~2.65 s, ~9.12 MB host peak.
+
+The diffrax Heun default matches the RK2 stability region while keeping the
+step size explicit and predictable. For the fastest linear scans, disable
+diffrax via ``TimeConfig(use_diffrax=False)``.
 
 Cyclone Base Case (Linear, Adiabatic Electrons)
 -----------------------------------------------
