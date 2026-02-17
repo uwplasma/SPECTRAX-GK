@@ -1,6 +1,11 @@
 Benchmarks
 ==========
 
+Benchmark runners default to the built-in fixed-step integrators, but the
+examples can be switched to diffrax solvers via ``--diffrax`` flags. A small
+runtime/memory comparison script is available in
+``tools/benchmark_integrators.py``.
+
 Cyclone Base Case (Linear, Adiabatic Electrons)
 -----------------------------------------------
 
@@ -11,6 +16,30 @@ target. SPECTRAX-GK ships a reference dataset stored in:
 
 The benchmark harness loads these values and compares growth rates and
 frequencies across a reduced :math:`k_y` scan on the field-aligned grid.
+
+.. list-table:: Cyclone base case parameters (GX Fig. 1)
+   :header-rows: 1
+
+   * - Parameter
+     - Value
+   * - Geometry
+     - ``q=1.4``, ``s_hat=0.8``, ``epsilon=0.18``, ``R0=2.77778``
+   * - Gradients
+     - ``R/LTi=2.49``, ``R/LTe=0.0``, ``R/Ln=0.8``
+   * - Species
+     - ions only; adiabatic electrons with ``tau_e=1``
+   * - Electromagnetic
+     - ``beta=0``, ``A_parallel=off``, ``B_parallel=off``
+   * - Collisions
+     - ``nu_i=1e-2``, hypercollisions off
+   * - Operator toggles
+     - streaming/mirror/curvature/grad-B/diamagnetic on; nonlinear off
+   * - Grid
+     - ``Nx=1, Ny=24, Nz=96, y0=20, ntheta=32, nperiod=2``
+   * - Velocity resolution
+     - ``Nl=6, Nm=16`` (figure generation)
+   * - Reference
+     - :cite:`GX`
 
 .. figure:: _static/linear_summary.png
    :align: center
@@ -38,6 +67,30 @@ stored in:
 These values are used in the multi-panel validation figure and in the
 kinetic-electron regression checks.
 
+.. list-table:: Kinetic-electron ITG parameters (GX Fig. 2a)
+   :header-rows: 1
+
+   * - Parameter
+     - Value
+   * - Geometry
+     - ``q=1.4``, ``s_hat=0.8``, ``epsilon=0.18``, ``R0=2.77778``
+   * - Gradients
+     - ``R/LTi=2.49``, ``R/LTe=2.49``, ``R/Ln=0.8``
+   * - Species
+     - ions + electrons, ``Te/Ti=1``, ``mi/me=3670``
+   * - Electromagnetic
+     - ``beta=1e-5``, ``A_parallel=on``, ``B_parallel=on``
+   * - Collisions
+     - ``nu_i=1e-2``, ``nu_e=1.65e-4``, hypercollisions off
+   * - Operator toggles
+     - streaming/mirror/curvature/grad-B/diamagnetic on; nonlinear off
+   * - Grid
+     - ``Nx=1, Ny=24, Nz=96, y0=20, ntheta=32, nperiod=2``
+   * - Velocity resolution
+     - ``Nl=6, Nm=16`` (figure generation)
+   * - Reference
+     - :cite:`GX`
+
 ETG (Electron-Scale)
 --------------------
 
@@ -49,6 +102,30 @@ and a digitized reference dataset from the published electron-scale scan:
 The scan is plotted alongside the SPECTRAX-GK output in the validation
 summary figure.
 
+.. list-table:: ETG parameters (GX Fig. 2b)
+   :header-rows: 1
+
+   * - Parameter
+     - Value
+   * - Geometry
+     - ``q=1.4``, ``s_hat=0.8``, ``epsilon=0.18``, ``R0=2.77778``
+   * - Gradients
+     - ``R/LTi=2.49``, ``R/LTe=2.49``, ``R/Ln=0.8``
+   * - Species
+     - ions + electrons, ``Te/Ti=1``, ``mi/me=3670``
+   * - Electromagnetic
+     - ``beta=1e-5``, ``A_parallel=on``, ``B_parallel=on``
+   * - Collisions
+     - ``nu_i=1e-2``, ``nu_e=1.65e-4``, hypercollisions off
+   * - Operator toggles
+     - streaming/mirror/curvature/grad-B/diamagnetic on; nonlinear off
+   * - Grid
+     - ``Nx=1, Ny=24, Nz=96, y0=0.2, ntheta=32, nperiod=2``
+   * - Velocity resolution
+     - ``Nl=6, Nm=16`` (figure generation)
+   * - Reference
+     - :cite:`GX`
+
 KBM (Electromagnetic Beta Scan)
 -------------------------------
 
@@ -56,6 +133,30 @@ Electromagnetic ballooning validation uses a fixed :math:`k_y` and a scan over
 :math:`\beta_{ref}`. The reference data are stored in:
 
 - ``spectraxgk/data/kbm_reference.csv``
+
+.. list-table:: KBM parameters (GX Fig. 3)
+   :header-rows: 1
+
+   * - Parameter
+     - Value
+   * - Geometry
+     - ``q=1.4``, ``s_hat=0.8``, ``epsilon=0.18``, ``R0=2.77778``
+   * - Gradients
+     - ``R/LTi=2.49``, ``R/LTe=2.49``, ``R/Ln=0.8``
+   * - Species
+     - ions + electrons, ``Te/Ti=1``, ``mi/me=3670``
+   * - Electromagnetic
+     - ``beta_ref`` scan, ``A_parallel=on``, ``B_parallel=off``
+   * - Collisions
+     - ``nu_i=0``, ``nu_e=0``, hypercollisions off
+   * - Operator toggles
+     - streaming/mirror/curvature/grad-B/diamagnetic on; nonlinear off
+   * - Grid
+     - ``Nx=1, Ny=12, Nz=96, y0=10, ntheta=32, nperiod=2``
+   * - Velocity resolution
+     - ``Nl=6, Nm=16`` (figure generation)
+   * - Reference
+     - :cite:`GX`
 
 TEM (Trapped-Electron Mode)
 ---------------------------
@@ -67,6 +168,30 @@ with steep gradients (:math:`R/L_{Ti} = R/L_{Te} = R/L_n = 20`),
 stored in:
 
 - ``spectraxgk/data/tem_reference.csv``
+
+.. list-table:: TEM parameters (Frei et al. 2022 Fig. 4)
+   :header-rows: 1
+
+   * - Parameter
+     - Value
+   * - Geometry
+     - ``q=2.7``, ``s_hat=0.5``, ``epsilon=0.18``, ``R0=2.77778``, ``alpha=0``
+   * - Gradients
+     - ``R/LTi=20``, ``R/LTe=20``, ``R/Ln=20``
+   * - Species
+     - ions + electrons, ``Te/Ti=1``, ``mi/me=370``
+   * - Electromagnetic
+     - ``beta=1e-4``, ``A_parallel=on``, ``B_parallel=off``
+   * - Collisions
+     - ``nu_i=0``, ``nu_e=0``, hypercollisions off
+   * - Operator toggles
+     - streaming/mirror/curvature/grad-B/diamagnetic on; nonlinear off
+   * - Grid
+     - ``Nx=1, Ny=24, Nz=160, y0=20, ntheta=32, nperiod=3``
+   * - Velocity resolution
+     - ``Nl=6, Nm=16`` (figure generation)
+   * - Reference
+     - :cite:`Frei22`
 
 Reduced ky scan tables
 ----------------------
@@ -115,35 +240,32 @@ A short scan over ``rho_star`` reports the mean ratios
    :file: _static/cyclone_rhostar_convergence.csv
    :header-rows: 1
 
-Gradient heatmaps
------------------
+Reference mismatch tables
+-------------------------
 
-Growth-rate heatmaps summarise the dependence on :math:`R/L_T` and
-:math:`R/L_n` for the major validation cases.
+The tables below compare the current solver outputs to the digitized reference
+datasets, reporting absolute values and relative errors (``rel_*``). These are
+regenerated by ``tools/make_tables.py``.
 
-.. figure:: _static/cyclone_heatmap.png
-   :align: center
-   :alt: Cyclone growth-rate heatmap
+.. csv-table:: Cyclone mismatch table
+   :file: _static/cyclone_mismatch_table.csv
+   :header-rows: 1
 
-   Cyclone growth rates versus gradients.
+.. csv-table:: Kinetic ITG mismatch table
+   :file: _static/kinetic_mismatch_table.csv
+   :header-rows: 1
 
-.. figure:: _static/kinetic_heatmap.png
-   :align: center
-   :alt: Kinetic-electron growth-rate heatmap
+.. csv-table:: ETG mismatch table
+   :file: _static/etg_mismatch_table.csv
+   :header-rows: 1
 
-   Kinetic-electron (ion-scale) growth rates versus gradients.
+.. csv-table:: KBM mismatch table
+   :file: _static/kbm_mismatch_table.csv
+   :header-rows: 1
 
-.. figure:: _static/etg_heatmap.png
-   :align: center
-   :alt: ETG growth-rate heatmap
-
-   Electron-scale ETG growth rates versus gradients.
-
-.. figure:: _static/tem_heatmap.png
-   :align: center
-   :alt: TEM growth-rate heatmap
-
-   TEM growth rates versus gradients.
+.. csv-table:: TEM mismatch table
+   :file: _static/tem_mismatch_table.csv
+   :header-rows: 1
 
 Reproducibility
 ---------------
