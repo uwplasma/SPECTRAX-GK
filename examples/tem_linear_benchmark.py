@@ -9,8 +9,8 @@ from spectraxgk.plotting import scan_comparison_figure
 def main() -> None:
     parser = argparse.ArgumentParser(description="TEM linear scan example.")
     parser.add_argument("--no-diffrax", action="store_true", help="Disable diffrax integrator.")
-    parser.add_argument("--solver", default="Heun", help="Diffrax solver name.")
-    parser.add_argument("--adaptive", action="store_true", help="Enable adaptive step sizes.")
+    parser.add_argument("--solver", default="Tsit5", help="Diffrax solver name.")
+    parser.add_argument("--no-adaptive", action="store_true", help="Disable adaptive step sizes.")
     args = parser.parse_args()
 
     ref = load_tem_reference()
@@ -23,7 +23,7 @@ def main() -> None:
         method="rk2",
         use_diffrax=not args.no_diffrax,
         diffrax_solver=args.solver,
-        diffrax_adaptive=args.adaptive,
+        diffrax_adaptive=not args.no_adaptive,
     )
     scan = run_tem_scan(
         ky_vals,

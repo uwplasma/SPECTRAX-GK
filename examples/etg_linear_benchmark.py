@@ -9,8 +9,8 @@ from spectraxgk.plotting import etg_trend_figure
 def main() -> None:
     parser = argparse.ArgumentParser(description="ETG linear trend example.")
     parser.add_argument("--no-diffrax", action="store_true", help="Disable diffrax integrator.")
-    parser.add_argument("--solver", default="Heun", help="Diffrax solver name.")
-    parser.add_argument("--adaptive", action="store_true", help="Enable adaptive step sizes.")
+    parser.add_argument("--solver", default="Tsit5", help="Diffrax solver name.")
+    parser.add_argument("--no-adaptive", action="store_true", help="Disable adaptive step sizes.")
     args = parser.parse_args()
 
     grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
@@ -22,7 +22,7 @@ def main() -> None:
         method="rk2",
         use_diffrax=not args.no_diffrax,
         diffrax_solver=args.solver,
-        diffrax_adaptive=args.adaptive,
+        diffrax_adaptive=not args.no_adaptive,
     )
     R_vals = np.array([4.0, 6.0, 8.0, 10.0])
     gamma = []

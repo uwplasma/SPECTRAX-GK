@@ -22,6 +22,11 @@ The diffrax Heun default matches the RK2 stability region while keeping the
 step size explicit and predictable. For the fastest linear scans, disable
 diffrax via ``TimeConfig(use_diffrax=False)``.
 
+For speed-critical diffrax scans, set ``TimeConfig(progress_bar=False)`` to
+enable JIT compilation of the solver loop, and reuse consistent step counts to
+avoid recompilation. Adaptive runs may also require higher
+``diffrax_max_steps`` to prevent early termination.
+
 Cyclone Base Case (Linear, Adiabatic Electrons)
 -----------------------------------------------
 
