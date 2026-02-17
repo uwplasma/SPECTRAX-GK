@@ -75,6 +75,17 @@ growth-rate extraction pipeline:
 
 These tests live in ``tests/test_benchmarks.py`` and ``tests/test_full_operator.py``.
 
+Diffrax and nonlinear smoke tests
+---------------------------------
+
+Diffrax integration and the nonlinear driver are exercised with fast smoke
+tests:
+
+- ``tests/test_diffrax_integrators.py`` runs explicit and IMEX diffrax solvers
+  on tiny grids.
+- ``tests/test_example_smoke.py`` verifies the config-driven runner (diffrax
+  enabled) and a short nonlinear scan with placeholder nonlinear terms.
+
 Linear physics checks
 ---------------------
 
