@@ -33,6 +33,11 @@ The core numerical algorithms and their implementation entry points are:
   :func:`spectraxgk.linear.diamagnetic_drive_coeffs`.
 - **Time integration (explicit RK, IMEX)**:
   :func:`spectraxgk.linear.integrate_linear`.
+- **Diffrax integration (explicit/implicit/IMEX)**:
+  :func:`spectraxgk.diffrax_integrators.integrate_linear_diffrax`,
+  :func:`spectraxgk.diffrax_integrators.integrate_nonlinear_diffrax`.
+- **Config-driven runner**:
+  :func:`spectraxgk.runners.integrate_linear_from_config`.
 - **Implicit solve (Backward Euler + GMRES)**:
   :func:`spectraxgk.linear.integrate_linear`.
 
@@ -73,6 +78,19 @@ The linear solver supports:
 These are all implemented in :func:`spectraxgk.linear.integrate_linear` and
 share the cached operator data assembled by
 :func:`spectraxgk.linear.build_linear_cache`.
+
+Diffrax integration
+-------------------
+
+Diffrax-backed solvers are available via
+:func:`spectraxgk.diffrax_integrators.integrate_linear_diffrax` and
+:func:`spectraxgk.diffrax_integrators.integrate_nonlinear_diffrax`. Explicit
+solvers (e.g., ``Tsit5``) and implicit/IMEX solvers (e.g., ``KenCarp``) are
+supported, with progress reporting enabled by default via a tqdm progress meter.
+
+Use :class:`spectraxgk.config.TimeConfig` and
+:func:`spectraxgk.runners.integrate_linear_from_config` to select diffrax
+integration from input configuration without changing call sites.
 
 Gyroaverage and polarization
 ----------------------------
@@ -122,6 +140,13 @@ equation is always solved while individual contributions (streaming, mirror,
 curvature, grad-:math:`B`, diamagnetic drive, collisions, hyper-collisions,
 end damping, :math:`A_\parallel`, :math:`B_\parallel`) can be switched on or
 off for controlled studies.
+
+For the nonlinear generalization, SPECTRAX-GK also exposes a term-wise
+assembly interface in :mod:`spectraxgk.terms`. The
+:class:`spectraxgk.terms.TermConfig` toggles the same operator components,
+and :func:`spectraxgk.terms.assemble_rhs` builds the RHS from per-term
+functions. This keeps term implementations isolated for easier extension,
+while preserving JAX differentiability and performance.
 
 Field solve and electromagnetic coupling
 ----------------------------------------
