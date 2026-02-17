@@ -87,6 +87,8 @@ Diffrax-backed solvers are available via
 :func:`spectraxgk.diffrax_integrators.integrate_nonlinear_diffrax`. Explicit
 solvers (e.g., ``Tsit5``) and implicit/IMEX solvers (e.g., ``KenCarp``) are
 supported, with progress reporting enabled by default via a tqdm progress meter.
+Diffrax currently emits a warning when evolving complex-valued states; the
+solvers still run, but treat this as experimental behavior.
 
 Use :class:`spectraxgk.config.TimeConfig` and
 :func:`spectraxgk.runners.integrate_linear_from_config` to select diffrax
