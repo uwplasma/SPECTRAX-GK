@@ -178,7 +178,7 @@ def test_linear_param_validation():
         quasineutrality_phi(
             G[None, ...],
             jnp.ones((1, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz)),
-            tau_e=0.0,
+            tau_e=-1.0,
             charge=jnp.array([1.0]),
             density=jnp.array([1.0]),
             tz=jnp.array([1.0]),
@@ -233,6 +233,18 @@ def test_integrate_linear_with_cache():
     G = jnp.zeros((2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
     cache = build_linear_cache(grid, geom, params, G.shape[0], G.shape[1])
     _, phi_t = integrate_linear(G, grid, geom, params, dt=0.1, steps=2, method="rk4", cache=cache)
+    assert phi_t.shape[0] == 2
+
+
+def test_integrate_linear_checkpoint_runs():
+    """Checkpointed integration should run on a tiny grid."""
+    grid_cfg = GridConfig(Nx=2, Ny=2, Nz=4, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams()
+    G = jnp.zeros((2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
+    _, phi_t = integrate_linear(G, grid, geom, params, dt=0.1, steps=2, method="rk4", checkpoint=True)
     assert phi_t.shape[0] == 2
 
 
