@@ -20,9 +20,7 @@ def main() -> None:
             steps=200,
             dt=0.01,
             method="rk4",
-            auto_window=False,
-            tmin=0.2,
-            tmax=0.6,
+            auto_window=True,
             mode_method="z_index",
         )
         gamma.append(result.gamma)

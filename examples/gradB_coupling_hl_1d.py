@@ -1,62 +1,29 @@
 #!/usr/bin/env python3
+"""Minimal grad-B coupling demo using the linear solver."""
+
 import numpy as np
-from spectraxgk._simulation_multispecies import simulation_multispecies
-from spectraxgk.plot_multispecies import plot_multispecies
+import jax.numpy as jnp
+
+from spectraxgk.config import GeometryConfig, GridConfig
+from spectraxgk.geometry import SAlphaGeometry
+from spectraxgk.grids import build_spectral_grid
+from spectraxgk.linear import LinearParams, LinearTerms, integrate_linear
 
 
-def main():
-    # 1D in space, but keep Laguerre + Hermite moments
-    Nx, Ny, Nz = 1, 1, 128
-    Nl, Nh = 6, 32
+def main() -> None:
+    grid_cfg = GridConfig(Nx=1, Ny=1, Nz=128, Lx=6.28, Ly=6.28)
+    grid = build_spectral_grid(grid_cfg)
+    geom = SAlphaGeometry.from_config(GeometryConfig())
+    params = LinearParams(R_over_LTi=0.0, R_over_Ln=0.0)
+    terms = LinearTerms(streaming=1.0, mirror=0.0, curvature=0.0, gradb=1.0, diamagnetic=0.0)
 
-    species = [
-        dict(name="ion", q=+1.0, T=1.0, n0=1.0, rho=0.0, vth=1.0, nu=0.0, Upar=0.0),
-        dict(name="e",   q=-1.0, T=1.0, n0=1.0, rho=0.0, vth=1.0, nu=0.0, Upar=0.0),
-    ]
+    G0 = jnp.zeros((2, 2, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64)
+    G0 = G0.at[0, 0, 0, 0, :].set(1.0e-3 + 0.0j)
 
-    out = simulation_multispecies(
-        input_parameters=dict(
-            Lz=2*np.pi,
-            t_max=1.0,
-
-            enable_streaming=True,
-            enable_gradB_parallel=True,   # <-- turns on ∇∥ ln B couplings
-            B_eps=0.01,                   # B(z)=1+eps*cos(...)
-            B_mode=1,
-
-            enable_nonlinear=False,
-            enable_collisions=False,
-            enforce_reality=True,
-
-            # excite kz=1
-            nx0=0, ny0=0, nz0=1,
-            pert_amp=1e-6,
-
-            # perturb only electrons to seed φ
-            perturb_species=["e"],
-
-            lambda_D=0.5,
-            species=species,
-        ),
-        Nx=Nx, Ny=Ny, Nz=Nz,
-        Nl=Nl, Nh=Nh,
-        timesteps=100,
-        dt=0.0003,
-        adaptive_time_step=False,
-        save="diagnostics",
-        save_every=1,
-        progress=True,
-        prefer_rich=True,
-        diag_config=dict(
-            save_phi_k_line=True,
-            save_density_k_line=True,
-            save_hermite_spectrum=True,
-            ky=0, kx=0, kz=Nz//2 + 1,
-        ),
-    )
-
-    plot_dir = plot_multispecies(out, outdir="plots", prefix="gradB_coupling_1d", show=False)
-    print("Wrote plots to:", plot_dir)
+    _, phi_t = integrate_linear(G0, grid, geom, params, dt=0.1, steps=5, method="rk2", terms=terms)
+    phi_np = np.asarray(phi_t)
+    print("gradB demo phi_t shape:", phi_np.shape)
+    print("phi_t min/max:", phi_np.min(), phi_np.max())
 
 
 if __name__ == "__main__":

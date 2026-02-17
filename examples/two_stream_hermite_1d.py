@@ -1,75 +1,29 @@
 #!/usr/bin/env python3
-import os
-# For higher-accuracy runs:
-# os.environ.setdefault("SPECTRAX_X64", "1")
-# os.environ.setdefault("JAX_ENABLE_X64", "1")
+"""Streaming-only 1D demo replacing legacy multispecies example."""
 
 import numpy as np
-from spectraxgk._simulation_multispecies import simulation_multispecies
-from spectraxgk.plot_multispecies import plot_multispecies
+import jax.numpy as jnp
+
+from spectraxgk.config import GeometryConfig, GridConfig
+from spectraxgk.geometry import SAlphaGeometry
+from spectraxgk.grids import build_spectral_grid
+from spectraxgk.linear import LinearParams, LinearTerms, integrate_linear
 
 
-def main():
-    Nx, Ny, Nz = 1, 1, 128
-    Nl, Nh = 1, 64
+def main() -> None:
+    grid_cfg = GridConfig(Nx=1, Ny=1, Nz=128, Lx=6.28, Ly=6.28)
+    grid = build_spectral_grid(grid_cfg)
+    geom = SAlphaGeometry.from_config(GeometryConfig())
+    params = LinearParams(R_over_LTi=0.0, R_over_Ln=0.0, nu=0.0)
+    terms = LinearTerms(streaming=1.0, mirror=0.0, curvature=0.0, gradb=0.0, diamagnetic=0.0)
 
-    species = [
-        dict(name="ion",   q=+1.0, T=1.0, n0=1.0, rho=0.0, vth=1.0, nu=1e-4, Upar=0.0),
-        dict(name="e+",    q=-1.0, T=1.0, n0=0.5, rho=0.0, vth=1.0, nu=1e-4, Upar=+1.2),
-        dict(name="e-",    q=-1.0, T=1.0, n0=0.5, rho=0.0, vth=1.0, nu=1e-4, Upar=-1.2),
-    ]
+    G0 = jnp.zeros((2, 2, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64)
+    G0 = G0.at[0, 0, 0, 0, :].set(1.0e-3 + 0.0j)
 
-    out = simulation_multispecies(
-        input_parameters=dict(
-            Lz=2*np.pi,
-            t_max=5.0,
-
-            enable_streaming=True,
-            enable_gradB_parallel=False,   # Hermite-only (no Laguerre coupling)
-            enable_nonlinear=True,
-            enable_collisions=True,
-            enforce_reality=True,
-
-            # excite kz=1
-            nx0=0, ny0=0, nz0=1,
-            pert_amp=1e-6,
-
-            # IMPORTANT: do NOT perturb ions -> avoid exact charge cancellation
-            perturb_species=["e+", "e-"],
-
-            # IMPORTANT: allow k_perp=0 restoring (otherwise den=0)
-            lambda_D=0.5,
-
-            species=species,
-        ),
-        Nx=Nx, Ny=Ny, Nz=Nz,
-        Nl=Nl, Nh=Nh,
-        timesteps=600,
-        dt=0.05,
-        adaptive_time_step=False,
-        save="diagnostics",
-        save_every=1,
-        progress=True,
-        prefer_rich=True,
-        diag_config=dict(
-            save_phi_k_line=True,
-            save_density_k_line=True,
-            save_hermite_spectrum=True,
-            ky=0, kx=0, kz=Nz//2 + 1,
-        ),
-    )
-
-    t = np.asarray(out["time"])
-    phi = np.asarray(out["phi_rms"])
-    print("phi_rms(t0,tend) =", phi[0], phi[-1])
-
-    a = np.log(np.maximum(phi, 1e-300))
-    i0, i1 = len(t)//3, 2*len(t)//3
-    gamma = np.polyfit(t[i0:i1], a[i0:i1], 1)[0]
-    print("Estimated growth rate gamma ~", gamma)
-
-    plot_dir = plot_multispecies(out, outdir="plots", prefix="two_stream_1d", show=False)
-    print("Wrote plots to:", plot_dir)
+    _, phi_t = integrate_linear(G0, grid, geom, params, dt=0.1, steps=10, method="rk2", terms=terms)
+    phi_np = np.asarray(phi_t)
+    print("two_stream demo phi_t shape:", phi_np.shape)
+    print("phi_t min/max:", phi_np.min(), phi_np.max())
 
 
 if __name__ == "__main__":
