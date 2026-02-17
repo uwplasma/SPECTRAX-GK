@@ -31,7 +31,11 @@ def test_integrate_linear_diffrax_runs():
         steps=2,
         method="Tsit5",
         progress_bar=False,
-        adaptive=False,
+        adaptive=True,
+        rtol=1.0e-3,
+        atol=1.0e-6,
+        max_steps=20000,
+        jit=False,
     )
     assert phi_t.shape[0] == 2
 
@@ -55,6 +59,10 @@ def test_integrate_nonlinear_diffrax_imex_runs():
         method="KenCarp4",
         terms=terms,
         progress_bar=False,
-        adaptive=False,
+        adaptive=True,
+        rtol=1.0e-3,
+        atol=1.0e-6,
+        max_steps=20000,
+        jit=False,
     )
     assert fields_t.phi.shape[0] == 2

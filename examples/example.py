@@ -1,31 +1,31 @@
-# examples/example.py
-from spectraxgk import simulation, plot
+"""Minimal linear run using the config-driven runner."""
 
-out = simulation(
-    input_parameters={
-        "t_max": 150.0,
-        "nu": 0.01,
-        "pert_amp": 1e-3,
-        # toggles you can flip for physics tests:
-        "enable_streaming": True,
-        "enable_nonlinear": True,
-        "enable_collisions": True,
-        "enforce_reality": True,
-    },
-    Nx=9, Ny=9, Nz=9,
-    Nh=10, Nl=3,
-    timesteps=10,
-    dt=1e-2,
-    adaptive_time_step=False,   # for reproducibility / debugging
-    save="diagnostics",
-    save_every=1,
-    probe=dict(
-        ky=15 // 2,
-        kx=15 // 2 + 1,
-        kz=5 // 2,
-        lmax=4,
-        mmax=12,
-    ),
+import numpy as np
+import jax.numpy as jnp
+
+from spectraxgk import (
+    CycloneBaseCase,
+    GridConfig,
+    LinearParams,
+    integrate_linear_from_config,
 )
+from spectraxgk.geometry import SAlphaGeometry
+from spectraxgk.grids import build_spectral_grid
 
-plot(out)
+
+def main() -> None:
+    grid_cfg = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams()
+
+    G0 = jnp.zeros((2, 2, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64)
+    G0 = G0.at[0, 0, 0, 0, :].set(1.0e-3 + 0.0j)
+
+    _, phi_t = integrate_linear_from_config(G0, grid, geom, params, cfg.time)
+    print("phi_t shape:", np.asarray(phi_t).shape)
+
+
+if __name__ == "__main__":
+    main()
