@@ -201,8 +201,7 @@ def test_cyclone_scan_manual_window():
 
 def test_cyclone_physics_regression():
     """Cyclone growth rates should track published values at ky rho_i = 0.3."""
-    grid = GridConfig(Nx=1, Ny=24, Nz=96, Lx=62.8, Ly=62.8)
-    cfg = CycloneBaseCase(grid=grid)
+    cfg = CycloneBaseCase()
     result = run_cyclone_linear(
         cfg=cfg,
         ky_target=0.3,
