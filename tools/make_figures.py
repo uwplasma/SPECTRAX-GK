@@ -59,14 +59,63 @@ def _scale_dt(ky: np.ndarray, base_dt: float, ky_ref: float) -> np.ndarray:
     return base_dt * scale
 
 
-SCAN_SOLVER = "krylov"
+CYCLONE_SCAN_SOLVER = "krylov"
+KINETIC_SCAN_SOLVER = "krylov"
+ETG_SCAN_SOLVER = "krylov"
+KBM_SCAN_SOLVER = "krylov"
+TEM_SCAN_SOLVER = "krylov"
 MODE_SOLVER = "time"
 MODE_METHOD = "imex2"
-CYCLONE_KRYLOV = KrylovConfig(method="propagator", power_iters=200, power_dt=0.01)
-KINETIC_KRYLOV = KrylovConfig(method="propagator", power_iters=240, power_dt=0.001)
-ETG_KRYLOV = KrylovConfig(method="propagator", power_iters=240, power_dt=0.0005)
-KBM_KRYLOV = KrylovConfig(method="propagator", power_iters=240, power_dt=0.001)
-TEM_KRYLOV = KrylovConfig(method="propagator", power_iters=240, power_dt=0.001)
+CYCLONE_KRYLOV = KrylovConfig(
+    method="shift_invert",
+    krylov_dim=16,
+    restarts=1,
+    power_iters=60,
+    power_dt=0.01,
+    shift_maxiter=30,
+    shift_restart=10,
+    shift_tol=1.0e-3,
+)
+KINETIC_KRYLOV = KrylovConfig(
+    method="shift_invert",
+    krylov_dim=16,
+    restarts=1,
+    power_iters=60,
+    power_dt=0.005,
+    shift_maxiter=30,
+    shift_restart=10,
+    shift_tol=1.0e-3,
+)
+ETG_KRYLOV = KrylovConfig(
+    method="shift_invert",
+    krylov_dim=16,
+    restarts=1,
+    power_iters=80,
+    power_dt=0.002,
+    shift_maxiter=40,
+    shift_restart=12,
+    shift_tol=2.0e-3,
+)
+KBM_KRYLOV = KrylovConfig(
+    method="shift_invert",
+    krylov_dim=16,
+    restarts=1,
+    power_iters=60,
+    power_dt=0.005,
+    shift_maxiter=30,
+    shift_restart=10,
+    shift_tol=1.0e-3,
+)
+TEM_KRYLOV = KrylovConfig(
+    method="shift_invert",
+    krylov_dim=16,
+    restarts=1,
+    power_iters=60,
+    power_dt=0.005,
+    shift_maxiter=30,
+    shift_restart=10,
+    shift_tol=1.0e-3,
+)
 
 WINDOWS = {
     "cyclone": dict(
@@ -201,7 +250,7 @@ def main() -> int:
         steps=cyclone_steps,
         dt=0.01,
         method=MODE_METHOD,
-        solver=SCAN_SOLVER,
+        solver=CYCLONE_SCAN_SOLVER,
         krylov_cfg=CYCLONE_KRYLOV,
         **WINDOWS["cyclone"],
     )
@@ -220,7 +269,7 @@ def main() -> int:
         steps=cyclone_steps,
         dt=0.01,
         window_kw=WINDOWS["cyclone"],
-        scan_solver=SCAN_SOLVER,
+        scan_solver=CYCLONE_SCAN_SOLVER,
         mode_solver=MODE_SOLVER,
         mode_method=MODE_METHOD,
     )
@@ -242,7 +291,7 @@ def main() -> int:
         steps=kinetic_steps,
         dt=kinetic_dt,
         window_kw=WINDOWS["kinetic"],
-        scan_solver=SCAN_SOLVER,
+        scan_solver=KINETIC_SCAN_SOLVER,
         mode_solver=MODE_SOLVER,
         mode_method=MODE_METHOD,
     )
@@ -263,7 +312,7 @@ def main() -> int:
         steps=1200,
         dt=etg_dt,
         window_kw=WINDOWS["etg"],
-        scan_solver=SCAN_SOLVER,
+        scan_solver=ETG_SCAN_SOLVER,
         mode_solver=MODE_SOLVER,
         mode_method=MODE_METHOD,
     )
@@ -282,7 +331,7 @@ def main() -> int:
         steps=1200,
         dt=0.001,
         method=MODE_METHOD,
-        solver=SCAN_SOLVER,
+        solver=KBM_SCAN_SOLVER,
         krylov_cfg=KBM_KRYLOV,
         **WINDOWS["kbm"],
     )
@@ -315,7 +364,7 @@ def main() -> int:
         steps=1200,
         dt=0.001,
         window_kw=WINDOWS["tem"],
-        scan_solver=SCAN_SOLVER,
+        scan_solver=TEM_SCAN_SOLVER,
         mode_solver=MODE_SOLVER,
         mode_method=MODE_METHOD,
     )
