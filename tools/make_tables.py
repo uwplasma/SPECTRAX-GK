@@ -30,12 +30,62 @@ from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.linear import LinearParams, LinearTerms
 from spectraxgk.linear_krylov import KrylovConfig
 
-LINEAR_SOLVER = "krylov"
-CYCLONE_KRYLOV = KrylovConfig(method="propagator", power_iters=200, power_dt=0.01)
-KINETIC_KRYLOV = KrylovConfig(method="propagator", power_iters=240, power_dt=0.001)
-ETG_KRYLOV = KrylovConfig(method="propagator", power_iters=240, power_dt=0.0005)
-KBM_KRYLOV = KrylovConfig(method="propagator", power_iters=240, power_dt=0.001)
-TEM_KRYLOV = KrylovConfig(method="propagator", power_iters=240, power_dt=0.001)
+CYCLONE_SOLVER = "krylov"
+KINETIC_SOLVER = "krylov"
+ETG_SOLVER = "krylov"
+KBM_SOLVER = "krylov"
+TEM_SOLVER = "krylov"
+
+CYCLONE_KRYLOV = KrylovConfig(
+    method="shift_invert",
+    krylov_dim=16,
+    restarts=1,
+    power_iters=60,
+    power_dt=0.01,
+    shift_maxiter=30,
+    shift_restart=10,
+    shift_tol=1.0e-3,
+)
+KINETIC_KRYLOV = KrylovConfig(
+    method="shift_invert",
+    krylov_dim=16,
+    restarts=1,
+    power_iters=60,
+    power_dt=0.005,
+    shift_maxiter=30,
+    shift_restart=10,
+    shift_tol=1.0e-3,
+)
+ETG_KRYLOV = KrylovConfig(
+    method="shift_invert",
+    krylov_dim=16,
+    restarts=1,
+    power_iters=80,
+    power_dt=0.002,
+    shift_maxiter=40,
+    shift_restart=12,
+    shift_tol=2.0e-3,
+)
+KBM_KRYLOV = KrylovConfig(
+    method="shift_invert",
+    krylov_dim=16,
+    restarts=1,
+    power_iters=60,
+    power_dt=0.005,
+    shift_maxiter=30,
+    shift_restart=10,
+    shift_tol=1.0e-3,
+)
+TEM_KRYLOV = KrylovConfig(
+    method="shift_invert",
+    krylov_dim=16,
+    restarts=1,
+    power_iters=60,
+    power_dt=0.005,
+    shift_maxiter=30,
+    shift_restart=10,
+    shift_tol=1.0e-3,
+)
 
 
 def _build_rows(scan, ref):
@@ -247,7 +297,7 @@ def main() -> int:
             Nm=8,
             steps=1000,
             dt=0.001,
-            solver=LINEAR_SOLVER,
+            solver=ETG_SOLVER,
             krylov_cfg=ETG_KRYLOV,
             mode_method="z_index",
             auto_window=True,
@@ -266,7 +316,7 @@ def main() -> int:
         Nm=12,
         steps=cyclone_steps,
         dt=0.01,
-        solver=LINEAR_SOLVER,
+        solver=CYCLONE_SOLVER,
         krylov_cfg=CYCLONE_KRYLOV,
         **WINDOWS["cyclone"],
     )
@@ -283,7 +333,7 @@ def main() -> int:
         Nm=12,
         steps=kinetic_steps,
         dt=kinetic_dt,
-        solver=LINEAR_SOLVER,
+        solver=KINETIC_SOLVER,
         krylov_cfg=KINETIC_KRYLOV,
         **WINDOWS["kinetic"],
     )
@@ -299,7 +349,7 @@ def main() -> int:
         Nm=12,
         steps=1200,
         dt=etg_dt,
-        solver=LINEAR_SOLVER,
+        solver=ETG_SOLVER,
         krylov_cfg=ETG_KRYLOV,
         **WINDOWS["etg"],
     )
@@ -315,7 +365,7 @@ def main() -> int:
         Nm=12,
         steps=1200,
         dt=0.001,
-        solver=LINEAR_SOLVER,
+        solver=KBM_SOLVER,
         krylov_cfg=KBM_KRYLOV,
         **WINDOWS["kbm"],
     )
@@ -330,7 +380,7 @@ def main() -> int:
         Nm=12,
         steps=1200,
         dt=0.001,
-        solver=LINEAR_SOLVER,
+        solver=TEM_SOLVER,
         krylov_cfg=TEM_KRYLOV,
         **WINDOWS["tem"],
     )
