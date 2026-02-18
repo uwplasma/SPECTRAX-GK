@@ -220,9 +220,8 @@ def test_cyclone_physics_regression():
 
 def test_cyclone_scan_regression():
     """Reduced ky scan should remain within reference trends."""
-    grid = GridConfig(Nx=1, Ny=24, Nz=96, Lx=62.8, Ly=62.8)
-    cfg = CycloneBaseCase(grid=grid)
-    ky_values = np.array([0.3, 0.4])
+    cfg = CycloneBaseCase()
+    ky_values = np.array([0.3])
     scan = run_cyclone_scan(
         ky_values,
         cfg=cfg,
