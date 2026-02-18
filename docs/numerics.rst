@@ -40,6 +40,8 @@ The core numerical algorithms and their implementation entry points are:
   :func:`spectraxgk.runners.integrate_linear_from_config`.
 - **Implicit solve (Backward Euler + GMRES)**:
   :func:`spectraxgk.linear.integrate_linear`.
+- **Nonlinear IMEX (implicit linear + explicit nonlinear)**:
+  :func:`spectraxgk.nonlinear.integrate_nonlinear`.
 
 JAX execution model
 -------------------
@@ -74,6 +76,9 @@ The linear solver supports:
   treated implicitly and the remaining terms explicitly.
 - **Backward Euler + GMRES** in ``method="implicit"`` for stiff scans, with a
   diagonal preconditioner that includes damping and drift/mirror diagonals.
+- **IMEX (implicit linear operator + explicit nonlinear term)** in
+  ``method="imex"`` for nonlinear runs, using the same GMRES-based linear
+  solve and preconditioner.
 
 These are all implemented in :func:`spectraxgk.linear.integrate_linear` and
 share the cached operator data assembled by
