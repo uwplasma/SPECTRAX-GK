@@ -58,8 +58,9 @@ def _scale_dt(ky: np.ndarray, base_dt: float, ky_ref: float) -> np.ndarray:
     return base_dt * scale
 
 
-LINEAR_METHOD = "implicit"
-TIME_SOLVER = "time"
+SCAN_SOLVER = "krylov"
+MODE_SOLVER = "time"
+MODE_METHOD = "imex2"
 
 WINDOWS = {
     "cyclone": dict(
@@ -114,7 +115,21 @@ def _eigenfunction_panel(run, grid, window_kw):
     return eig
 
 
-def _scan_and_mode(scan_fn, linear_fn, ky_values, cfg, Nl, Nm, steps, dt, window_kw):
+def _scan_and_mode(
+    scan_fn,
+    linear_fn,
+    ky_values,
+    cfg,
+    Nl,
+    Nm,
+    steps,
+    dt,
+    window_kw,
+    *,
+    scan_solver: str,
+    mode_solver: str,
+    mode_method: str,
+):
     scan = scan_fn(
         ky_values,
         cfg=cfg,
@@ -122,8 +137,8 @@ def _scan_and_mode(scan_fn, linear_fn, ky_values, cfg, Nl, Nm, steps, dt, window
         Nm=Nm,
         steps=steps,
         dt=dt,
-        method=LINEAR_METHOD,
-        solver=TIME_SOLVER,
+        method=mode_method,
+        solver=scan_solver,
         **window_kw,
     )
     sel_idx = int(np.nanargmax(scan.gamma))
@@ -137,8 +152,8 @@ def _scan_and_mode(scan_fn, linear_fn, ky_values, cfg, Nl, Nm, steps, dt, window
         Nm=Nm,
         steps=steps_run,
         dt=dt_run,
-        method=LINEAR_METHOD,
-        solver=TIME_SOLVER,
+        method=mode_method,
+        solver=mode_solver,
         **window_kw,
     )
     grid = build_spectral_grid(cfg.grid)
@@ -168,8 +183,8 @@ def main() -> int:
         Nm=16,
         steps=cyclone_steps,
         dt=0.01,
-        method=LINEAR_METHOD,
-        solver=TIME_SOLVER,
+        method=MODE_METHOD,
+        solver=SCAN_SOLVER,
         **WINDOWS["cyclone"],
     )
     fig, _axes = cyclone_comparison_figure(ref, scan)
@@ -187,6 +202,9 @@ def main() -> int:
         steps=cyclone_steps,
         dt=0.01,
         window_kw=WINDOWS["cyclone"],
+        scan_solver=SCAN_SOLVER,
+        mode_solver=MODE_SOLVER,
+        mode_method=MODE_METHOD,
     )
 
     kinetic_ref = load_cyclone_reference_kinetic()
@@ -206,6 +224,9 @@ def main() -> int:
         steps=kinetic_steps,
         dt=kinetic_dt,
         window_kw=WINDOWS["kinetic"],
+        scan_solver=SCAN_SOLVER,
+        mode_solver=MODE_SOLVER,
+        mode_method=MODE_METHOD,
     )
 
     etg_ref = load_etg_reference()
@@ -224,6 +245,9 @@ def main() -> int:
         steps=1200,
         dt=etg_dt,
         window_kw=WINDOWS["etg"],
+        scan_solver=SCAN_SOLVER,
+        mode_solver=MODE_SOLVER,
+        mode_method=MODE_METHOD,
     )
 
     kbm_ref = load_kbm_reference()
@@ -239,8 +263,8 @@ def main() -> int:
         Nm=16,
         steps=1200,
         dt=0.001,
-        method=LINEAR_METHOD,
-        solver=TIME_SOLVER,
+        method=MODE_METHOD,
+        solver=SCAN_SOLVER,
         **WINDOWS["kbm"],
     )
     kbm_run = run_kinetic_linear(
@@ -250,8 +274,8 @@ def main() -> int:
         Nm=16,
         steps=1200,
         dt=0.001,
-        method=LINEAR_METHOD,
-        solver=TIME_SOLVER,
+        method=MODE_METHOD,
+        solver=MODE_SOLVER,
         **WINDOWS["kbm"],
     )
     kbm_grid = build_spectral_grid(cfg_kbm.grid)
@@ -272,6 +296,9 @@ def main() -> int:
         steps=1200,
         dt=0.001,
         window_kw=WINDOWS["tem"],
+        scan_solver=SCAN_SOLVER,
+        mode_solver=MODE_SOLVER,
+        mode_method=MODE_METHOD,
     )
 
     panels = [

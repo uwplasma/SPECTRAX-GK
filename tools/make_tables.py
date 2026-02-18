@@ -29,8 +29,7 @@ from spectraxgk.config import CycloneBaseCase, ETGBaseCase, ETGModelConfig, Grid
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.linear import LinearParams, LinearTerms
 
-LINEAR_METHOD = "implicit"
-TIME_SOLVER = "time"
+LINEAR_SOLVER = "krylov"
 
 
 def _build_rows(scan, ref):
@@ -242,8 +241,7 @@ def main() -> int:
             Nm=8,
             steps=1000,
             dt=0.001,
-            method=LINEAR_METHOD,
-            solver=TIME_SOLVER,
+            solver=LINEAR_SOLVER,
             mode_method="z_index",
             auto_window=True,
             **WINDOWS["etg"],
@@ -261,8 +259,7 @@ def main() -> int:
         Nm=12,
         steps=cyclone_steps,
         dt=0.01,
-        method=LINEAR_METHOD,
-        solver=TIME_SOLVER,
+        solver=LINEAR_SOLVER,
         **WINDOWS["cyclone"],
     )
     (outdir / "cyclone_mismatch_table.csv").write_text(
@@ -278,8 +275,7 @@ def main() -> int:
         Nm=12,
         steps=kinetic_steps,
         dt=kinetic_dt,
-        method=LINEAR_METHOD,
-        solver=TIME_SOLVER,
+        solver=LINEAR_SOLVER,
         **WINDOWS["kinetic"],
     )
     (outdir / "kinetic_mismatch_table.csv").write_text(
@@ -294,8 +290,7 @@ def main() -> int:
         Nm=12,
         steps=1200,
         dt=etg_dt,
-        method=LINEAR_METHOD,
-        solver=TIME_SOLVER,
+        solver=LINEAR_SOLVER,
         **WINDOWS["etg"],
     )
     (outdir / "etg_mismatch_table.csv").write_text(
@@ -310,8 +305,7 @@ def main() -> int:
         Nm=12,
         steps=1200,
         dt=0.001,
-        method=LINEAR_METHOD,
-        solver=TIME_SOLVER,
+        solver=LINEAR_SOLVER,
         **WINDOWS["kbm"],
     )
     (outdir / "kbm_mismatch_table.csv").write_text(
@@ -325,8 +319,7 @@ def main() -> int:
         Nm=12,
         steps=1200,
         dt=0.001,
-        method=LINEAR_METHOD,
-        solver=TIME_SOLVER,
+        solver=LINEAR_SOLVER,
         **WINDOWS["tem"],
     )
     (outdir / "tem_mismatch_table.csv").write_text(
