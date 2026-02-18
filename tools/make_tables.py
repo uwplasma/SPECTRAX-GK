@@ -28,8 +28,14 @@ from spectraxgk.benchmarks import (
 from spectraxgk.config import CycloneBaseCase, ETGBaseCase, ETGModelConfig, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.linear import LinearParams, LinearTerms
+from spectraxgk.linear_krylov import KrylovConfig
 
 LINEAR_SOLVER = "krylov"
+CYCLONE_KRYLOV = KrylovConfig(method="propagator", power_iters=200, power_dt=0.01)
+KINETIC_KRYLOV = KrylovConfig(method="propagator", power_iters=240, power_dt=0.001)
+ETG_KRYLOV = KrylovConfig(method="propagator", power_iters=240, power_dt=0.0005)
+KBM_KRYLOV = KrylovConfig(method="propagator", power_iters=240, power_dt=0.001)
+TEM_KRYLOV = KrylovConfig(method="propagator", power_iters=240, power_dt=0.001)
 
 
 def _build_rows(scan, ref):
@@ -242,6 +248,7 @@ def main() -> int:
             steps=1000,
             dt=0.001,
             solver=LINEAR_SOLVER,
+            krylov_cfg=ETG_KRYLOV,
             mode_method="z_index",
             auto_window=True,
             **WINDOWS["etg"],
@@ -260,6 +267,7 @@ def main() -> int:
         steps=cyclone_steps,
         dt=0.01,
         solver=LINEAR_SOLVER,
+        krylov_cfg=CYCLONE_KRYLOV,
         **WINDOWS["cyclone"],
     )
     (outdir / "cyclone_mismatch_table.csv").write_text(
@@ -276,6 +284,7 @@ def main() -> int:
         steps=kinetic_steps,
         dt=kinetic_dt,
         solver=LINEAR_SOLVER,
+        krylov_cfg=KINETIC_KRYLOV,
         **WINDOWS["kinetic"],
     )
     (outdir / "kinetic_mismatch_table.csv").write_text(
@@ -291,6 +300,7 @@ def main() -> int:
         steps=1200,
         dt=etg_dt,
         solver=LINEAR_SOLVER,
+        krylov_cfg=ETG_KRYLOV,
         **WINDOWS["etg"],
     )
     (outdir / "etg_mismatch_table.csv").write_text(
@@ -306,6 +316,7 @@ def main() -> int:
         steps=1200,
         dt=0.001,
         solver=LINEAR_SOLVER,
+        krylov_cfg=KBM_KRYLOV,
         **WINDOWS["kbm"],
     )
     (outdir / "kbm_mismatch_table.csv").write_text(
@@ -320,6 +331,7 @@ def main() -> int:
         steps=1200,
         dt=0.001,
         solver=LINEAR_SOLVER,
+        krylov_cfg=TEM_KRYLOV,
         **WINDOWS["tem"],
     )
     (outdir / "tem_mismatch_table.csv").write_text(
