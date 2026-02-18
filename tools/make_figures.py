@@ -42,47 +42,103 @@ from spectraxgk.grids import build_spectral_grid
 from spectraxgk.plotting import (
     cyclone_comparison_figure,
     cyclone_reference_figure,
-    growth_rate_heatmap,
     linear_validation_figure,
     LinearValidationPanel,
 )
 
 
-def _eigenfunction_panel(run, grid):
-    signal = extract_mode_time_series(run.phi_t, run.selection, method="svd")
-    _g, _w, tmin, tmax = fit_growth_rate_auto(run.t, signal)
+def _scale_steps(ky: np.ndarray, base_steps: int, ky_ref: float, max_steps: int) -> np.ndarray:
+    scale = ky_ref / np.maximum(ky, 1.0e-6)
+    steps = base_steps * np.maximum(1.0, scale)
+    return np.clip(steps.astype(int), base_steps, max_steps)
+
+
+def _scale_dt(ky: np.ndarray, base_dt: float, ky_ref: float) -> np.ndarray:
+    scale = np.minimum(1.0, ky_ref / np.maximum(ky, 1.0e-6))
+    return base_dt * scale
+
+
+WINDOWS = {
+    "cyclone": dict(
+        window_fraction=0.3,
+        min_points=80,
+        start_fraction=0.3,
+        growth_weight=0.2,
+        require_positive=True,
+        min_amp_fraction=0.0,
+    ),
+    "kinetic": dict(
+        window_fraction=0.35,
+        min_points=120,
+        start_fraction=0.4,
+        growth_weight=0.2,
+        require_positive=True,
+        min_amp_fraction=0.05,
+    ),
+    "etg": dict(
+        window_fraction=0.3,
+        min_points=80,
+        start_fraction=0.3,
+        growth_weight=0.2,
+        require_positive=True,
+        min_amp_fraction=0.05,
+    ),
+    "kbm": dict(
+        window_fraction=0.35,
+        min_points=120,
+        start_fraction=0.4,
+        growth_weight=0.2,
+        require_positive=True,
+        min_amp_fraction=0.05,
+    ),
+    "tem": dict(
+        window_fraction=0.35,
+        min_points=120,
+        start_fraction=0.5,
+        growth_weight=0.2,
+        require_positive=True,
+        min_amp_fraction=0.1,
+    ),
+}
+
+
+def _eigenfunction_panel(run, grid, window_kw):
+    signal = extract_mode_time_series(run.phi_t, run.selection, method="project")
+    _g, _w, tmin, tmax = fit_growth_rate_auto(run.t, signal, **window_kw)
     eig = extract_eigenfunction(
-        run.phi_t, run.t, run.selection, z=grid.z, method="svd", tmin=tmin, tmax=tmax
+        run.phi_t, run.t, run.selection, z=grid.z, method="snapshot", tmin=tmin, tmax=tmax
     )
     return eig
 
 
-def _scan_and_mode(scan_fn, linear_fn, ky_values, cfg, Nl, Nm, steps, dt):
-    scan = scan_fn(ky_values, cfg=cfg, Nl=Nl, Nm=Nm, steps=steps, dt=dt, method="rk4")
-    ky_sel = float(scan.ky[int(np.nanargmax(scan.gamma))])
-    run = linear_fn(cfg=cfg, ky_target=ky_sel, Nl=Nl, Nm=Nm, steps=steps, dt=dt, method="rk4")
-    grid = build_spectral_grid(cfg.grid)
-    mode = _eigenfunction_panel(run, grid)
-    return scan, mode, grid, ky_sel
-
-
-def _gradient_heatmap(case, ky_target, cfg_factory, Rt_vals, Rn_vals, out_path, Nl, Nm):
-    gamma = np.zeros((len(Rt_vals), len(Rn_vals)))
-    for i, Rt in enumerate(Rt_vals):
-        for j, Rn in enumerate(Rn_vals):
-            cfg = cfg_factory(Rt, Rn)
-            result = case(cfg=cfg, ky_target=ky_target, Nl=Nl, Nm=Nm, steps=120, dt=0.02, method="rk4")
-            gamma[i, j] = result.gamma
-    fig, _ax = growth_rate_heatmap(
-        Rn_vals,
-        Rt_vals,
-        gamma,
-        title="Growth rate vs gradients",
-        x_label=r"$R/L_n$",
-        y_label=r"$R/L_T$",
+def _scan_and_mode(scan_fn, linear_fn, ky_values, cfg, Nl, Nm, steps, dt, window_kw):
+    scan = scan_fn(
+        ky_values,
+        cfg=cfg,
+        Nl=Nl,
+        Nm=Nm,
+        steps=steps,
+        dt=dt,
+        method="rk4",
+        **window_kw,
     )
-    fig.savefig(out_path, dpi=200)
-    fig.savefig(out_path.with_suffix(".pdf"))
+    sel_idx = int(np.nanargmax(scan.gamma))
+    ky_sel = float(scan.ky[sel_idx])
+    steps_run = int(steps[sel_idx]) if isinstance(steps, np.ndarray) else int(steps)
+    dt_run = float(dt[sel_idx]) if isinstance(dt, np.ndarray) else float(dt)
+    run = linear_fn(
+        cfg=cfg,
+        ky_target=ky_sel,
+        Nl=Nl,
+        Nm=Nm,
+        steps=steps_run,
+        dt=dt_run,
+        method="rk4",
+        **window_kw,
+    )
+    grid = build_spectral_grid(cfg.grid)
+    mode = _eigenfunction_panel(run, grid, window_kw)
+    return scan, mode, grid, ky_sel
 
 
 def main() -> int:
@@ -95,45 +151,116 @@ def main() -> int:
     fig.savefig(outdir / "cyclone_reference.png", dpi=200)
     fig.savefig(outdir / "cyclone_reference.pdf")
 
-    cfg_cyc = CycloneBaseCase(grid=GridConfig(Nx=1, Ny=24, Nz=96, Lx=62.8, Ly=62.8))
+    cfg_cyc = CycloneBaseCase(
+        grid=GridConfig(Nx=1, Ny=24, Nz=96, Lx=62.8, Ly=62.8, y0=20.0, ntheta=32, nperiod=2)
+    )
     scan_ky = ref.ky[::2]
-    scan = run_cyclone_scan(scan_ky, cfg=cfg_cyc, Nl=6, Nm=16, steps=500, dt=0.01, method="rk4")
+    cyclone_steps = _scale_steps(scan_ky, base_steps=800, ky_ref=0.2, max_steps=4000)
+    scan = run_cyclone_scan(
+        scan_ky,
+        cfg=cfg_cyc,
+        Nl=6,
+        Nm=16,
+        steps=cyclone_steps,
+        dt=0.01,
+        method="rk4",
+        **WINDOWS["cyclone"],
+    )
     fig, _axes = cyclone_comparison_figure(ref, scan)
     fig.savefig(outdir / "cyclone_comparison.png", dpi=200)
     fig.savefig(outdir / "cyclone_comparison.pdf")
 
     # Multi-panel summary: cyclone, kinetic ITG, ETG, KBM, TEM
     cyclone_scan, cyclone_mode, cyclone_grid, _ = _scan_and_mode(
-        run_cyclone_scan, run_cyclone_linear, scan_ky, cfg_cyc, Nl=6, Nm=16, steps=500, dt=0.01
+        run_cyclone_scan,
+        run_cyclone_linear,
+        scan_ky,
+        cfg_cyc,
+        Nl=6,
+        Nm=16,
+        steps=cyclone_steps,
+        dt=0.01,
+        window_kw=WINDOWS["cyclone"],
     )
 
     kinetic_ref = load_cyclone_reference_kinetic()
-    cfg_kin = KineticElectronBaseCase(grid=GridConfig(Nx=1, Ny=24, Nz=96, Lx=62.8, Ly=62.8))
+    cfg_kin = KineticElectronBaseCase(
+        grid=GridConfig(Nx=1, Ny=24, Nz=96, Lx=62.8, Ly=62.8, y0=20.0, ntheta=32, nperiod=2)
+    )
     kinetic_ky = kinetic_ref.ky[::2]
+    kinetic_steps = _scale_steps(kinetic_ky, base_steps=1200, ky_ref=0.3, max_steps=6000)
     kinetic_scan, kinetic_mode, kinetic_grid, _ = _scan_and_mode(
-        run_kinetic_scan, run_kinetic_linear, kinetic_ky, cfg_kin, Nl=6, Nm=16, steps=500, dt=0.01
+        run_kinetic_scan,
+        run_kinetic_linear,
+        kinetic_ky,
+        cfg_kin,
+        Nl=6,
+        Nm=16,
+        steps=kinetic_steps,
+        dt=0.001,
+        window_kw=WINDOWS["kinetic"],
     )
 
     etg_ref = load_etg_reference()
-    cfg_etg = ETGBaseCase(grid=GridConfig(Nx=1, Ny=24, Nz=96, Lx=6.28, Ly=6.28))
+    cfg_etg = ETGBaseCase(
+        grid=GridConfig(Nx=1, Ny=24, Nz=96, Lx=6.28, Ly=6.28, y0=0.2, ntheta=32, nperiod=2)
+    )
     etg_ky = etg_ref.ky[::2]
+    etg_dt = _scale_dt(etg_ky, base_dt=0.0005, ky_ref=20.0)
     etg_scan, etg_mode, etg_grid, _ = _scan_and_mode(
-        run_etg_scan, run_etg_linear, etg_ky, cfg_etg, Nl=6, Nm=16, steps=400, dt=0.01
+        run_etg_scan,
+        run_etg_linear,
+        etg_ky,
+        cfg_etg,
+        Nl=6,
+        Nm=16,
+        steps=1200,
+        dt=etg_dt,
+        window_kw=WINDOWS["etg"],
     )
 
     kbm_ref = load_kbm_reference()
-    cfg_kbm = KBMBaseCase(grid=GridConfig(Nx=1, Ny=12, Nz=96, Lx=62.8, Ly=62.8, y0=10.0, ntheta=32, nperiod=2))
+    cfg_kbm = KBMBaseCase(
+        grid=GridConfig(Nx=1, Ny=12, Nz=96, Lx=62.8, Ly=62.8, y0=10.0, ntheta=32, nperiod=2)
+    )
     kbm_beta = kbm_ref.ky[::2]
-    kbm_scan = run_kbm_beta_scan(kbm_beta, cfg=cfg_kbm, ky_target=0.3, Nl=6, Nm=16, steps=400, dt=0.01)
-    kbm_run = run_kinetic_linear(cfg=cfg_kbm, ky_target=0.3, Nl=6, Nm=16, steps=400, dt=0.01)
+    kbm_scan = run_kbm_beta_scan(
+        kbm_beta,
+        cfg=cfg_kbm,
+        ky_target=0.3,
+        Nl=6,
+        Nm=16,
+        steps=1200,
+        dt=0.001,
+        **WINDOWS["kbm"],
+    )
+    kbm_run = run_kinetic_linear(
+        cfg=cfg_kbm,
+        ky_target=0.3,
+        Nl=6,
+        Nm=16,
+        steps=1200,
+        dt=0.001,
+        **WINDOWS["kbm"],
+    )
     kbm_grid = build_spectral_grid(cfg_kbm.grid)
-    kbm_mode = _eigenfunction_panel(kbm_run, kbm_grid)
+    kbm_mode = _eigenfunction_panel(kbm_run, kbm_grid, WINDOWS["kbm"])
 
     tem_ref = load_tem_reference()
-    cfg_tem = TEMBaseCase(grid=GridConfig(Nx=1, Ny=24, Nz=96, Lx=62.8, Ly=62.8, y0=20.0, ntheta=32, nperiod=2))
+    cfg_tem = TEMBaseCase(
+        grid=GridConfig(Nx=1, Ny=24, Nz=160, Lx=62.8, Ly=62.8, y0=20.0, ntheta=32, nperiod=3)
+    )
     tem_ky = tem_ref.ky[::2]
     tem_scan, tem_mode, tem_grid, _ = _scan_and_mode(
-        run_tem_scan, run_tem_linear, tem_ky, cfg_tem, Nl=6, Nm=16, steps=500, dt=0.01
+        run_tem_scan,
+        run_tem_linear,
+        tem_ky,
+        cfg_tem,
+        Nl=6,
+        Nm=16,
+        steps=1200,
+        dt=0.001,
+        window_kw=WINDOWS["tem"],
     )
 
     panels = [
@@ -149,6 +276,7 @@ def main() -> int:
             gamma_ref=ref.gamma,
             omega_ref=ref.omega,
             ref_label="Reference",
+            log_x=True,
         ),
         LinearValidationPanel(
             name="Kinetic ITG",
@@ -162,6 +290,7 @@ def main() -> int:
             gamma_ref=kinetic_ref.gamma,
             omega_ref=kinetic_ref.omega,
             ref_label="Reference",
+            log_x=True,
         ),
         LinearValidationPanel(
             name="ETG",
@@ -175,6 +304,7 @@ def main() -> int:
             gamma_ref=etg_ref.gamma,
             omega_ref=etg_ref.omega,
             ref_label="Reference",
+            log_x=True,
         ),
         LinearValidationPanel(
             name="KBM",
@@ -201,59 +331,12 @@ def main() -> int:
             gamma_ref=tem_ref.gamma,
             omega_ref=tem_ref.omega,
             ref_label="Reference",
+            log_x=True,
         ),
     ]
     fig, _axes = linear_validation_figure(panels)
     fig.savefig(outdir / "linear_summary.png", dpi=200)
     fig.savefig(outdir / "linear_summary.pdf")
-
-    # Gradient heatmaps
-    Rt_vals = np.linspace(2.0, 8.0, 3)
-    Rn_vals = np.linspace(0.5, 3.0, 3)
-
-    _gradient_heatmap(
-        run_cyclone_linear,
-        0.3,
-        lambda Rt, Rn: CycloneBaseCase(grid=cfg_cyc.grid, model=cfg_cyc.model.__class__(R_over_LTi=float(Rt), R_over_Ln=float(Rn), R_over_LTe=0.0)),
-        Rt_vals,
-        Rn_vals,
-        outdir / "cyclone_heatmap.png",
-        Nl=6,
-        Nm=16,
-    )
-
-    _gradient_heatmap(
-        run_etg_linear,
-        20.0,
-        lambda Rt, Rn: ETGBaseCase(grid=cfg_etg.grid, model=ETGModelConfig(R_over_LTe=float(Rt), R_over_Ln=float(Rn))),
-        Rt_vals,
-        Rn_vals,
-        outdir / "etg_heatmap.png",
-        Nl=6,
-        Nm=16,
-    )
-
-    _gradient_heatmap(
-        run_tem_linear,
-        0.25,
-        lambda Rt, Rn: TEMBaseCase(grid=cfg_tem.grid, model=cfg_tem.model.__class__(R_over_LTi=float(Rt), R_over_LTe=float(Rt), R_over_Ln=float(Rn))),
-        Rt_vals,
-        Rn_vals,
-        outdir / "tem_heatmap.png",
-        Nl=6,
-        Nm=16,
-    )
-
-    _gradient_heatmap(
-        run_kinetic_linear,
-        0.3,
-        lambda Rt, Rn: KineticElectronBaseCase(grid=cfg_kin.grid, model=cfg_kin.model.__class__(R_over_LTi=float(Rt), R_over_LTe=float(Rt), R_over_Ln=float(Rn))),
-        Rt_vals,
-        Rn_vals,
-        outdir / "kinetic_heatmap.png",
-        Nl=6,
-        Nm=16,
-    )
 
     return 0
 
