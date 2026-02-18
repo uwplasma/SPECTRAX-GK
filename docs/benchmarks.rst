@@ -25,8 +25,8 @@ frequencies to align with published reference data.
      - ``omega_d_scale``
      - ``omega_star_scale``
    * - Cyclone (adiabatic)
-     - ``0.6``
-     - ``0.7``
+     - ``0.75``
+     - ``0.35``
    * - ETG
      - ``1.0``
      - ``1.0``
@@ -130,7 +130,7 @@ kinetic-electron regression checks.
    * - Gradients
      - ``R/LTi=2.49``, ``R/LTe=2.49``, ``R/Ln=0.8``
    * - Species
-     - ions + electrons, ``Te/Ti=1``, ``mi/me=3670``
+     - kinetic electrons + Boltzmann ions, ``Te/Ti=1``, ``mi/me=3670``
    * - Electromagnetic
      - ``beta=1e-5``, ``A_parallel=on``, ``B_parallel=on``
    * - Collisions
@@ -165,7 +165,7 @@ summary figure.
    * - Gradients
      - ``R/LTi=2.49``, ``R/LTe=2.49``, ``R/Ln=0.8``
    * - Species
-     - ions + electrons, ``Te/Ti=1``, ``mi/me=3670``
+     - kinetic electrons + Boltzmann ions, ``Te/Ti=1``, ``mi/me=3670``
    * - Electromagnetic
      - ``beta=1e-5``, ``A_parallel=on``, ``B_parallel=on``
    * - Collisions

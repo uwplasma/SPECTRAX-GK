@@ -29,6 +29,9 @@ from spectraxgk.config import CycloneBaseCase, ETGBaseCase, ETGModelConfig, Grid
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.linear import LinearParams, LinearTerms
 
+LINEAR_METHOD = "implicit"
+TIME_SOLVER = "time"
+
 
 def _build_rows(scan, ref):
     rows = ["ky,gamma_ref,omega_ref,gamma_spectrax,omega_spectrax,rel_gamma,rel_omega"]
@@ -239,7 +242,8 @@ def main() -> int:
             Nm=8,
             steps=1000,
             dt=0.001,
-            method="rk4",
+            method=LINEAR_METHOD,
+            solver=TIME_SOLVER,
             mode_method="z_index",
             auto_window=True,
             **WINDOWS["etg"],
@@ -252,7 +256,14 @@ def main() -> int:
     # Mismatch tables against reference data (full ky/beta lists)
     cyclone_steps = _scale_steps(ref.ky, base_steps=1200, ky_ref=0.2, max_steps=6000)
     cyclone_mismatch = run_cyclone_scan(
-        ref.ky, Nl=6, Nm=12, steps=cyclone_steps, dt=0.01, method="rk4", **WINDOWS["cyclone"]
+        ref.ky,
+        Nl=6,
+        Nm=12,
+        steps=cyclone_steps,
+        dt=0.01,
+        method=LINEAR_METHOD,
+        solver=TIME_SOLVER,
+        **WINDOWS["cyclone"],
     )
     (outdir / "cyclone_mismatch_table.csv").write_text(
         "\n".join(_build_rows(cyclone_mismatch, ref)) + "\n", encoding="utf-8"
@@ -260,13 +271,15 @@ def main() -> int:
 
     kinetic_ref = load_cyclone_reference_kinetic()
     kinetic_steps = _scale_steps(kinetic_ref.ky, base_steps=1200, ky_ref=0.3, max_steps=6000)
+    kinetic_dt = _scale_dt(kinetic_ref.ky, base_dt=0.001, ky_ref=0.3)
     kinetic_mismatch = run_kinetic_scan(
         kinetic_ref.ky,
         Nl=6,
         Nm=12,
         steps=kinetic_steps,
-        dt=0.001,
-        method="rk4",
+        dt=kinetic_dt,
+        method=LINEAR_METHOD,
+        solver=TIME_SOLVER,
         **WINDOWS["kinetic"],
     )
     (outdir / "kinetic_mismatch_table.csv").write_text(
@@ -276,7 +289,14 @@ def main() -> int:
     etg_ref = load_etg_reference()
     etg_dt = _scale_dt(etg_ref.ky, base_dt=0.0005, ky_ref=20.0)
     etg_mismatch = run_etg_scan(
-        etg_ref.ky, Nl=6, Nm=12, steps=1200, dt=etg_dt, method="rk4", **WINDOWS["etg"]
+        etg_ref.ky,
+        Nl=6,
+        Nm=12,
+        steps=1200,
+        dt=etg_dt,
+        method=LINEAR_METHOD,
+        solver=TIME_SOLVER,
+        **WINDOWS["etg"],
     )
     (outdir / "etg_mismatch_table.csv").write_text(
         "\n".join(_build_rows(etg_mismatch, etg_ref)) + "\n", encoding="utf-8"
@@ -290,7 +310,8 @@ def main() -> int:
         Nm=12,
         steps=1200,
         dt=0.001,
-        method="rk4",
+        method=LINEAR_METHOD,
+        solver=TIME_SOLVER,
         **WINDOWS["kbm"],
     )
     (outdir / "kbm_mismatch_table.csv").write_text(
@@ -299,7 +320,14 @@ def main() -> int:
 
     tem_ref = load_tem_reference()
     tem_mismatch = run_tem_scan(
-        tem_ref.ky, Nl=6, Nm=12, steps=1200, dt=0.001, method="rk4", **WINDOWS["tem"]
+        tem_ref.ky,
+        Nl=6,
+        Nm=12,
+        steps=1200,
+        dt=0.001,
+        method=LINEAR_METHOD,
+        solver=TIME_SOLVER,
+        **WINDOWS["tem"],
     )
     (outdir / "tem_mismatch_table.csv").write_text(
         "\n".join(_build_rows(tem_mismatch, tem_ref)) + "\n", encoding="utf-8"
