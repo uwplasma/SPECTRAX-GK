@@ -58,6 +58,9 @@ def _scale_dt(ky: np.ndarray, base_dt: float, ky_ref: float) -> np.ndarray:
     return base_dt * scale
 
 
+LINEAR_METHOD = "implicit"
+TIME_SOLVER = "time"
+
 WINDOWS = {
     "cyclone": dict(
         window_fraction=0.3,
@@ -119,7 +122,8 @@ def _scan_and_mode(scan_fn, linear_fn, ky_values, cfg, Nl, Nm, steps, dt, window
         Nm=Nm,
         steps=steps,
         dt=dt,
-        method="rk4",
+        method=LINEAR_METHOD,
+        solver=TIME_SOLVER,
         **window_kw,
     )
     sel_idx = int(np.nanargmax(scan.gamma))
@@ -133,7 +137,8 @@ def _scan_and_mode(scan_fn, linear_fn, ky_values, cfg, Nl, Nm, steps, dt, window
         Nm=Nm,
         steps=steps_run,
         dt=dt_run,
-        method="rk4",
+        method=LINEAR_METHOD,
+        solver=TIME_SOLVER,
         **window_kw,
     )
     grid = build_spectral_grid(cfg.grid)
@@ -163,7 +168,8 @@ def main() -> int:
         Nm=16,
         steps=cyclone_steps,
         dt=0.01,
-        method="rk4",
+        method=LINEAR_METHOD,
+        solver=TIME_SOLVER,
         **WINDOWS["cyclone"],
     )
     fig, _axes = cyclone_comparison_figure(ref, scan)
@@ -189,6 +195,7 @@ def main() -> int:
     )
     kinetic_ky = kinetic_ref.ky[::2]
     kinetic_steps = _scale_steps(kinetic_ky, base_steps=1200, ky_ref=0.3, max_steps=6000)
+    kinetic_dt = _scale_dt(kinetic_ky, base_dt=0.001, ky_ref=0.3)
     kinetic_scan, kinetic_mode, kinetic_grid, _ = _scan_and_mode(
         run_kinetic_scan,
         run_kinetic_linear,
@@ -197,7 +204,7 @@ def main() -> int:
         Nl=6,
         Nm=16,
         steps=kinetic_steps,
-        dt=0.001,
+        dt=kinetic_dt,
         window_kw=WINDOWS["kinetic"],
     )
 
@@ -232,6 +239,8 @@ def main() -> int:
         Nm=16,
         steps=1200,
         dt=0.001,
+        method=LINEAR_METHOD,
+        solver=TIME_SOLVER,
         **WINDOWS["kbm"],
     )
     kbm_run = run_kinetic_linear(
@@ -241,6 +250,8 @@ def main() -> int:
         Nm=16,
         steps=1200,
         dt=0.001,
+        method=LINEAR_METHOD,
+        solver=TIME_SOLVER,
         **WINDOWS["kbm"],
     )
     kbm_grid = build_spectral_grid(cfg_kbm.grid)
