@@ -126,7 +126,7 @@ def test_run_cyclone_linear_shapes():
     """Smoke test for the Cyclone linear runner on a tiny grid."""
     grid = GridConfig(Nx=8, Ny=8, Nz=16, Lx=62.8, Ly=62.8)
     cfg = CycloneBaseCase(grid=grid)
-    result = run_cyclone_linear(cfg=cfg, steps=5, dt=0.1, method="rk4")
+    result = run_cyclone_linear(cfg=cfg, steps=5, dt=0.1, method="rk4", solver="time")
     assert result.phi_t.shape[0] == 5
     assert np.isfinite(result.gamma)
     assert np.isfinite(result.omega)
@@ -136,7 +136,7 @@ def test_run_cyclone_linear_defaults():
     """Default cfg/params path should run without error."""
     grid = GridConfig(Nx=6, Ny=6, Nz=8, Lx=62.8, Ly=62.8)
     cfg = CycloneBaseCase(grid=grid)
-    result = run_cyclone_linear(cfg=cfg, steps=3, dt=0.1, method="rk2")
+    result = run_cyclone_linear(cfg=cfg, steps=3, dt=0.1, method="rk2", solver="time")
     assert result.phi_t.shape[0] == 3
 
 
@@ -149,6 +149,7 @@ def test_run_cyclone_linear_manual_window():
         steps=5,
         dt=0.1,
         method="rk2",
+        solver="time",
         auto_window=False,
         tmin=0.1,
         tmax=0.3,
@@ -160,7 +161,7 @@ def test_run_cyclone_linear_full_operator_smoke():
     """Full operator path should execute without NaNs on a tiny run."""
     grid = GridConfig(Nx=6, Ny=6, Nz=8, Lx=62.8, Ly=62.8)
     cfg = CycloneBaseCase(grid=grid)
-    result = run_cyclone_linear(cfg=cfg, steps=3, dt=0.1, method="rk2")
+    result = run_cyclone_linear(cfg=cfg, steps=3, dt=0.1, method="rk2", solver="time")
     assert np.isfinite(result.gamma)
     assert np.isfinite(result.omega)
 
@@ -170,10 +171,10 @@ def test_cyclone_scan_and_compare():
     grid = GridConfig(Nx=6, Ny=6, Nz=8, Lx=62.8, Ly=62.8)
     cfg = CycloneBaseCase(grid=grid)
     ky_values = np.array([0.2, 0.3])
-    scan = run_cyclone_scan(ky_values, cfg=cfg, steps=3, dt=0.1, method="euler")
+    scan = run_cyclone_scan(ky_values, cfg=cfg, steps=3, dt=0.1, method="euler", solver="time")
     assert scan.ky.shape == ky_values.shape
     ref = load_cyclone_reference()
-    result = run_cyclone_linear(cfg=cfg, steps=3, dt=0.1, ky_target=0.3, method="euler")
+    result = run_cyclone_linear(cfg=cfg, steps=3, dt=0.1, ky_target=0.3, method="euler", solver="time")
     comparison = compare_cyclone_to_reference(result, ref)
     assert comparison.ky > 0.0
     assert np.isfinite(comparison.rel_gamma)
@@ -190,6 +191,7 @@ def test_cyclone_scan_manual_window():
         steps=5,
         dt=0.1,
         method="rk2",
+        solver="time",
         auto_window=False,
         tmin=0.1,
         tmax=0.3,
@@ -201,7 +203,16 @@ def test_cyclone_physics_regression():
     """Cyclone growth rates should track published values at ky rho_i = 0.3."""
     grid = GridConfig(Nx=1, Ny=24, Nz=96, Lx=62.8, Ly=62.8)
     cfg = CycloneBaseCase(grid=grid)
-    result = run_cyclone_linear(cfg=cfg, ky_target=0.3, Nl=6, Nm=12, steps=800, dt=0.01, method="rk4")
+    result = run_cyclone_linear(
+        cfg=cfg,
+        ky_target=0.3,
+        Nl=6,
+        Nm=12,
+        steps=800,
+        dt=0.01,
+        method="rk4",
+        solver="time",
+    )
     ref = load_cyclone_reference()
     idx = int(np.argmin(np.abs(ref.ky - 0.3)))
     assert np.isclose(result.gamma, ref.gamma[idx], rtol=0.2)
@@ -213,7 +224,16 @@ def test_cyclone_scan_regression():
     grid = GridConfig(Nx=1, Ny=24, Nz=96, Lx=62.8, Ly=62.8)
     cfg = CycloneBaseCase(grid=grid)
     ky_values = np.array([0.3, 0.4])
-    scan = run_cyclone_scan(ky_values, cfg=cfg, Nl=6, Nm=12, steps=800, dt=0.01, method="rk4")
+    scan = run_cyclone_scan(
+        ky_values,
+        cfg=cfg,
+        Nl=6,
+        Nm=12,
+        steps=800,
+        dt=0.01,
+        method="rk4",
+        solver="time",
+    )
     ref = load_cyclone_reference()
     for ky, gamma, omega in zip(scan.ky, scan.gamma, scan.omega):
         idx = int(np.argmin(np.abs(ref.ky - ky)))
@@ -221,13 +241,22 @@ def test_cyclone_scan_regression():
         assert np.isclose(omega, ref.omega[idx], rtol=0.1)
 
 
+def test_cyclone_krylov_smoke():
+    """Krylov solver should return finite eigenvalues on a small scan."""
+    grid = GridConfig(Nx=1, Ny=24, Nz=96, Lx=62.8, Ly=62.8)
+    cfg = CycloneBaseCase(grid=grid)
+    result = run_cyclone_linear(cfg=cfg, ky_target=0.3, Nl=4, Nm=8, solver="krylov")
+    assert np.isfinite(result.gamma)
+    assert np.isfinite(result.omega)
+
+
 def test_etg_growth_positive_for_gradients():
     """ETG growth rate should remain positive across R/LTe variations."""
     grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
     cfg_low = ETGBaseCase(grid=grid, model=ETGModelConfig(R_over_LTe=4.0))
     cfg_high = ETGBaseCase(grid=grid, model=ETGModelConfig(R_over_LTe=8.0))
-    low = run_etg_linear(cfg=cfg_low, ky_target=3.0, Nl=4, Nm=8, steps=200, dt=0.01, method="rk4")
-    high = run_etg_linear(cfg=cfg_high, ky_target=3.0, Nl=4, Nm=8, steps=200, dt=0.01, method="rk4")
+    low = run_etg_linear(cfg=cfg_low, ky_target=3.0, Nl=4, Nm=8, steps=400, dt=0.001, method="rk4")
+    high = run_etg_linear(cfg=cfg_high, ky_target=3.0, Nl=4, Nm=8, steps=400, dt=0.001, method="rk4")
     assert low.gamma > 0.0
     assert high.gamma > 0.0
     assert high.gamma > 0.9 * low.gamma
@@ -237,7 +266,7 @@ def test_etg_frequency_sign():
     """ETG frequency should align with the electron diamagnetic direction."""
     grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
     cfg = ETGBaseCase(grid=grid, model=ETGModelConfig(R_over_LTe=6.0))
-    result = run_etg_linear(cfg=cfg, ky_target=3.0, Nl=4, Nm=8, steps=200, dt=0.01, method="rk4")
+    result = run_etg_linear(cfg=cfg, ky_target=3.0, Nl=4, Nm=8, steps=400, dt=0.001, method="rk4")
     assert np.isfinite(result.omega)
     assert result.omega < 0.0
 
@@ -247,7 +276,7 @@ def test_etg_scan_shapes():
     grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
     cfg = ETGBaseCase(grid=grid, model=ETGModelConfig(R_over_LTe=6.0))
     ky_values = np.array([3.0, 4.0])
-    scan = run_etg_scan(ky_values, cfg=cfg, Nl=4, Nm=8, steps=200, dt=0.01, method="rk4")
+    scan = run_etg_scan(ky_values, cfg=cfg, Nl=4, Nm=8, steps=400, dt=0.001, method="rk4")
     assert scan.ky.shape == ky_values.shape
     assert scan.gamma.shape == ky_values.shape
 
@@ -313,6 +342,7 @@ def test_etg_scan_manual_window():
         steps=100,
         dt=0.01,
         method="rk4",
+        solver="time",
         auto_window=False,
         tmin=0.05,
         tmax=0.15,
@@ -332,6 +362,7 @@ def test_etg_manual_window():
         steps=100,
         dt=0.01,
         method="rk4",
+        solver="time",
         auto_window=False,
         tmin=0.05,
         tmax=0.15,

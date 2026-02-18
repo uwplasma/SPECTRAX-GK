@@ -1,10 +1,41 @@
 Benchmarks
 ==========
 
-Benchmark runners follow the ``TimeConfig`` defaults (diffrax enabled with a
-fixed-step Heun solver). The fixed-step integrators remain available by setting
-``use_diffrax=False`` in the time configuration. A small runtime/memory
-comparison script is available in ``tools/benchmark_integrators.py``.
+Benchmark runners default to a matrix-free Krylov/Arnoldi eigen solver for
+linear scans, which avoids long explicit time integrations when only growth
+rates and frequencies are required. Fixed-step or diffrax time integrators
+remain available by setting ``solver="time"`` in the benchmark helpers (or by
+calling ``integrate_linear`` directly). A small runtime/memory comparison script
+is available in ``tools/benchmark_integrators.py``.
+
+The Krylov solver applies a mild frequency cap (``KrylovConfig.omega_cap_factor``)
+to avoid selecting spurious high-frequency Ritz values when multiple branches are
+present. Set ``omega_cap_factor=0`` to disable this filter.
+
+Normalization scalings
+----------------------
+
+Per-case normalization factors are applied to the diamagnetic and curvature
+frequencies to align with published reference data.
+
+.. list-table:: Calibration scalings
+   :header-rows: 1
+
+   * - Case
+     - ``omega_d_scale``
+     - ``omega_star_scale``
+   * - Cyclone (adiabatic)
+     - ``0.7``
+     - ``0.35``
+   * - ETG
+     - ``1.0``
+     - ``1.0``
+   * - TEM
+     - ``1.0``
+     - ``1.0``
+   * - KBM
+     - ``1.0``
+     - ``1.0``
 
 Performance defaults
 --------------------
@@ -22,10 +53,11 @@ The diffrax Heun default matches the RK2 stability region while keeping the
 step size explicit and predictable. For the fastest linear scans, disable
 diffrax via ``TimeConfig(use_diffrax=False)``.
 
-For speed-critical diffrax scans, set ``TimeConfig(progress_bar=False)`` to
-enable JIT compilation of the solver loop, and reuse consistent step counts to
-avoid recompilation. Adaptive runs may also require higher
-``diffrax_max_steps`` to prevent early termination.
+For speed-critical time-integrated scans, set ``TimeConfig(progress_bar=False)``
+to enable JIT compilation of the solver loop, and reuse consistent step counts
+to avoid recompilation. ``TimeConfig(sample_stride>1)`` reduces diagnostics
+overhead by saving fields at a lower cadence. Adaptive runs may also require
+higher ``diffrax_max_steps`` to prevent early termination.
 
 Cyclone Base Case (Linear, Adiabatic Electrons)
 -----------------------------------------------
