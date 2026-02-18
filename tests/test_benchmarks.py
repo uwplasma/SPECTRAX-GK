@@ -210,7 +210,7 @@ def test_cyclone_physics_regression():
         Nm=12,
         steps=800,
         dt=0.01,
-        method="rk4",
+        method="imex2",
         solver="time",
     )
     ref = load_cyclone_reference()
@@ -231,7 +231,7 @@ def test_cyclone_scan_regression():
         Nm=12,
         steps=800,
         dt=0.01,
-        method="rk4",
+        method="imex2",
         solver="time",
     )
     ref = load_cyclone_reference()
