@@ -148,7 +148,19 @@ def test_streaming_zero_for_constant_z():
 
     G = jnp.zeros((2, 3, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
     G = G.at[:, 1:, ...].set(1.0)
-    dG, _phi = linear_rhs(G, grid, geom, params)
+    terms = LinearTerms(
+        streaming=1.0,
+        mirror=0.0,
+        curvature=0.0,
+        gradb=0.0,
+        diamagnetic=0.0,
+        collisions=0.0,
+        hypercollisions=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+    )
+    dG, _phi = linear_rhs(G, grid, geom, params, terms=terms)
     assert jnp.allclose(dG, 0.0)
 
 
