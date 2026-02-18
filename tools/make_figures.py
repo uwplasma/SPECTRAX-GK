@@ -45,6 +45,7 @@ from spectraxgk.plotting import (
     linear_validation_figure,
     LinearValidationPanel,
 )
+from spectraxgk.linear_krylov import KrylovConfig
 
 
 def _scale_steps(ky: np.ndarray, base_steps: int, ky_ref: float, max_steps: int) -> np.ndarray:
@@ -61,6 +62,11 @@ def _scale_dt(ky: np.ndarray, base_dt: float, ky_ref: float) -> np.ndarray:
 SCAN_SOLVER = "krylov"
 MODE_SOLVER = "time"
 MODE_METHOD = "imex2"
+CYCLONE_KRYLOV = KrylovConfig(method="propagator", power_iters=200, power_dt=0.01)
+KINETIC_KRYLOV = KrylovConfig(method="propagator", power_iters=240, power_dt=0.001)
+ETG_KRYLOV = KrylovConfig(method="propagator", power_iters=240, power_dt=0.0005)
+KBM_KRYLOV = KrylovConfig(method="propagator", power_iters=240, power_dt=0.001)
+TEM_KRYLOV = KrylovConfig(method="propagator", power_iters=240, power_dt=0.001)
 
 WINDOWS = {
     "cyclone": dict(
@@ -130,6 +136,16 @@ def _scan_and_mode(
     mode_solver: str,
     mode_method: str,
 ):
+    krylov_cfg = None
+    if scan_solver.lower() == "krylov":
+        if scan_fn is run_cyclone_scan:
+            krylov_cfg = CYCLONE_KRYLOV
+        elif scan_fn is run_kinetic_scan:
+            krylov_cfg = KINETIC_KRYLOV
+        elif scan_fn is run_etg_scan:
+            krylov_cfg = ETG_KRYLOV
+        elif scan_fn is run_tem_scan:
+            krylov_cfg = TEM_KRYLOV
     scan = scan_fn(
         ky_values,
         cfg=cfg,
@@ -139,6 +155,7 @@ def _scan_and_mode(
         dt=dt,
         method=mode_method,
         solver=scan_solver,
+        krylov_cfg=krylov_cfg,
         **window_kw,
     )
     sel_idx = int(np.nanargmax(scan.gamma))
@@ -185,6 +202,7 @@ def main() -> int:
         dt=0.01,
         method=MODE_METHOD,
         solver=SCAN_SOLVER,
+        krylov_cfg=CYCLONE_KRYLOV,
         **WINDOWS["cyclone"],
     )
     fig, _axes = cyclone_comparison_figure(ref, scan)
@@ -265,6 +283,7 @@ def main() -> int:
         dt=0.001,
         method=MODE_METHOD,
         solver=SCAN_SOLVER,
+        krylov_cfg=KBM_KRYLOV,
         **WINDOWS["kbm"],
     )
     kbm_run = run_kinetic_linear(
