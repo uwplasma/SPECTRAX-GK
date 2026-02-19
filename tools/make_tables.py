@@ -112,27 +112,27 @@ WINDOWS = {
         min_amp_fraction=0.0,
     ),
     "kinetic": dict(
-        window_fraction=0.35,
+        window_fraction=0.3,
         min_points=120,
-        start_fraction=0.4,
-        growth_weight=0.2,
+        start_fraction=0.5,
+        growth_weight=0.1,
         require_positive=True,
-        min_amp_fraction=0.05,
+        min_amp_fraction=0.1,
     ),
     "etg": dict(
-        window_fraction=0.3,
-        min_points=80,
-        start_fraction=0.3,
+        window_fraction=0.25,
+        min_points=100,
+        start_fraction=0.45,
         growth_weight=0.2,
         require_positive=True,
-        min_amp_fraction=0.05,
+        min_amp_fraction=0.2,
     ),
     "kbm": dict(
-        window_fraction=0.35,
+        window_fraction=0.3,
         min_points=120,
-        start_fraction=0.4,
-        growth_weight=0.2,
-        require_positive=True,
+        start_fraction=0.35,
+        growth_weight=0.0,
+        require_positive=False,
         min_amp_fraction=0.05,
     ),
     "tem": dict(
@@ -328,6 +328,9 @@ def main() -> int:
     kinetic_ref = load_cyclone_reference_kinetic()
     kinetic_steps = _scale_steps(kinetic_ref.ky, base_steps=2000, ky_ref=0.3, max_steps=8000)
     kinetic_dt = _scale_dt(kinetic_ref.ky, base_dt=0.0005, ky_ref=0.3)
+    kinetic_tmax = kinetic_dt * kinetic_steps
+    kinetic_tmin = 0.6 * kinetic_tmax
+    kinetic_tmax = 0.95 * kinetic_tmax
     kinetic_mismatch = run_kinetic_scan(
         kinetic_ref.ky,
         Nl=6,
@@ -337,6 +340,9 @@ def main() -> int:
         method="imex2",
         solver=KINETIC_SOLVER,
         krylov_cfg=KINETIC_KRYLOV,
+        auto_window=False,
+        tmin=kinetic_tmin,
+        tmax=kinetic_tmax,
         **WINDOWS["kinetic"],
     )
     (outdir / "kinetic_mismatch_table.csv").write_text(
@@ -345,6 +351,9 @@ def main() -> int:
 
     etg_ref = load_etg_reference()
     etg_dt = _scale_dt(etg_ref.ky, base_dt=0.0002, ky_ref=20.0)
+    etg_tmax = etg_dt * 1200
+    etg_tmin = 0.4 * etg_tmax
+    etg_tmax = 0.85 * etg_tmax
     etg_mismatch = run_etg_scan(
         etg_ref.ky,
         Nl=6,
@@ -354,6 +363,9 @@ def main() -> int:
         method="imex2",
         solver=ETG_SOLVER,
         krylov_cfg=ETG_KRYLOV,
+        auto_window=False,
+        tmin=etg_tmin,
+        tmax=etg_tmax,
         **WINDOWS["etg"],
     )
     (outdir / "etg_mismatch_table.csv").write_text(
@@ -361,6 +373,9 @@ def main() -> int:
     )
 
     kbm_ref = load_kbm_reference()
+    kbm_tmax = 0.0005 * 1200
+    kbm_tmin = 0.4 * kbm_tmax
+    kbm_tmax = 0.75 * kbm_tmax
     kbm_mismatch = run_kbm_beta_scan(
         kbm_ref.ky,
         ky_target=0.3,
@@ -371,6 +386,9 @@ def main() -> int:
         method="imex2",
         solver=KBM_SOLVER,
         krylov_cfg=KBM_KRYLOV,
+        auto_window=False,
+        tmin=kbm_tmin,
+        tmax=kbm_tmax,
         **WINDOWS["kbm"],
     )
     (outdir / "kbm_mismatch_table.csv").write_text(
