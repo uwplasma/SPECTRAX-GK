@@ -30,11 +30,11 @@ from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.linear import LinearParams, LinearTerms
 from spectraxgk.linear_krylov import KrylovConfig
 
-CYCLONE_SOLVER = "krylov"
-KINETIC_SOLVER = "krylov"
-ETG_SOLVER = "krylov"
-KBM_SOLVER = "krylov"
-TEM_SOLVER = "krylov"
+CYCLONE_SOLVER = "time"
+KINETIC_SOLVER = "time"
+ETG_SOLVER = "time"
+KBM_SOLVER = "time"
+TEM_SOLVER = "time"
 
 CYCLONE_KRYLOV = KrylovConfig(
     method="shift_invert",
@@ -172,7 +172,7 @@ def main() -> int:
         Nm=4,
         steps=1200,
         dt=0.01,
-        method="rk4",
+        method="imex2",
         **WINDOWS["cyclone"],
     )
     high_scan = run_cyclone_scan(
@@ -182,7 +182,7 @@ def main() -> int:
         Nm=6,
         steps=1200,
         dt=0.01,
-        method="rk4",
+        method="imex2",
         **WINDOWS["cyclone"],
     )
 
@@ -316,6 +316,7 @@ def main() -> int:
         Nm=12,
         steps=cyclone_steps,
         dt=0.01,
+        method="imex2",
         solver=CYCLONE_SOLVER,
         krylov_cfg=CYCLONE_KRYLOV,
         **WINDOWS["cyclone"],
@@ -325,14 +326,15 @@ def main() -> int:
     )
 
     kinetic_ref = load_cyclone_reference_kinetic()
-    kinetic_steps = _scale_steps(kinetic_ref.ky, base_steps=1200, ky_ref=0.3, max_steps=6000)
-    kinetic_dt = _scale_dt(kinetic_ref.ky, base_dt=0.001, ky_ref=0.3)
+    kinetic_steps = _scale_steps(kinetic_ref.ky, base_steps=2000, ky_ref=0.3, max_steps=8000)
+    kinetic_dt = _scale_dt(kinetic_ref.ky, base_dt=0.0005, ky_ref=0.3)
     kinetic_mismatch = run_kinetic_scan(
         kinetic_ref.ky,
         Nl=6,
         Nm=12,
         steps=kinetic_steps,
         dt=kinetic_dt,
+        method="imex2",
         solver=KINETIC_SOLVER,
         krylov_cfg=KINETIC_KRYLOV,
         **WINDOWS["kinetic"],
@@ -342,13 +344,14 @@ def main() -> int:
     )
 
     etg_ref = load_etg_reference()
-    etg_dt = _scale_dt(etg_ref.ky, base_dt=0.0005, ky_ref=20.0)
+    etg_dt = _scale_dt(etg_ref.ky, base_dt=0.0002, ky_ref=20.0)
     etg_mismatch = run_etg_scan(
         etg_ref.ky,
         Nl=6,
         Nm=12,
         steps=1200,
         dt=etg_dt,
+        method="imex2",
         solver=ETG_SOLVER,
         krylov_cfg=ETG_KRYLOV,
         **WINDOWS["etg"],
@@ -364,7 +367,8 @@ def main() -> int:
         Nl=6,
         Nm=12,
         steps=1200,
-        dt=0.001,
+        dt=0.0005,
+        method="imex2",
         solver=KBM_SOLVER,
         krylov_cfg=KBM_KRYLOV,
         **WINDOWS["kbm"],
@@ -380,6 +384,7 @@ def main() -> int:
         Nm=12,
         steps=1200,
         dt=0.001,
+        method="imex2",
         solver=TEM_SOLVER,
         krylov_cfg=TEM_KRYLOV,
         **WINDOWS["tem"],
