@@ -59,11 +59,11 @@ def _scale_dt(ky: np.ndarray, base_dt: float, ky_ref: float) -> np.ndarray:
     return base_dt * scale
 
 
-CYCLONE_SCAN_SOLVER = "krylov"
-KINETIC_SCAN_SOLVER = "krylov"
-ETG_SCAN_SOLVER = "krylov"
-KBM_SCAN_SOLVER = "krylov"
-TEM_SCAN_SOLVER = "krylov"
+CYCLONE_SCAN_SOLVER = "time"
+KINETIC_SCAN_SOLVER = "time"
+ETG_SCAN_SOLVER = "time"
+KBM_SCAN_SOLVER = "time"
+TEM_SCAN_SOLVER = "time"
 MODE_SOLVER = "time"
 MODE_METHOD = "imex2"
 CYCLONE_KRYLOV = KrylovConfig(
@@ -279,8 +279,8 @@ def main() -> int:
         grid=GridConfig(Nx=1, Ny=24, Nz=96, Lx=62.8, Ly=62.8, y0=20.0, ntheta=32, nperiod=2)
     )
     kinetic_ky = kinetic_ref.ky[::2]
-    kinetic_steps = _scale_steps(kinetic_ky, base_steps=1200, ky_ref=0.3, max_steps=6000)
-    kinetic_dt = _scale_dt(kinetic_ky, base_dt=0.001, ky_ref=0.3)
+    kinetic_steps = _scale_steps(kinetic_ky, base_steps=2000, ky_ref=0.3, max_steps=8000)
+    kinetic_dt = _scale_dt(kinetic_ky, base_dt=0.0005, ky_ref=0.3)
     kinetic_scan, kinetic_mode, kinetic_grid, _ = _scan_and_mode(
         run_kinetic_scan,
         run_kinetic_linear,
@@ -301,7 +301,7 @@ def main() -> int:
         grid=GridConfig(Nx=1, Ny=24, Nz=96, Lx=6.28, Ly=6.28, y0=0.2, ntheta=32, nperiod=2)
     )
     etg_ky = etg_ref.ky[::2]
-    etg_dt = _scale_dt(etg_ky, base_dt=0.0005, ky_ref=20.0)
+    etg_dt = _scale_dt(etg_ky, base_dt=0.0002, ky_ref=20.0)
     etg_scan, etg_mode, etg_grid, _ = _scan_and_mode(
         run_etg_scan,
         run_etg_linear,
@@ -329,7 +329,7 @@ def main() -> int:
         Nl=6,
         Nm=16,
         steps=1200,
-        dt=0.001,
+        dt=0.0005,
         method=MODE_METHOD,
         solver=KBM_SCAN_SOLVER,
         krylov_cfg=KBM_KRYLOV,
@@ -341,7 +341,7 @@ def main() -> int:
         Nl=6,
         Nm=16,
         steps=1200,
-        dt=0.001,
+        dt=0.0005,
         method=MODE_METHOD,
         solver=MODE_SOLVER,
         **WINDOWS["kbm"],
