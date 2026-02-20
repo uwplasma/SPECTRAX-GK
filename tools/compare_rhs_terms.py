@@ -62,7 +62,16 @@ def _gx_build_H(
 
 
 def _gx_streaming(
-    H: jnp.ndarray, *, dz: jnp.ndarray, vth: jnp.ndarray, kpar_scale: jnp.ndarray
+    H: jnp.ndarray,
+    *,
+    dz: jnp.ndarray,
+    vth: jnp.ndarray,
+    kpar_scale: jnp.ndarray,
+    use_twist_shift: bool = False,
+    kx_link_plus: jnp.ndarray | None = None,
+    kx_link_minus: jnp.ndarray | None = None,
+    kx_mask_plus: jnp.ndarray | None = None,
+    kx_mask_minus: jnp.ndarray | None = None,
 ) -> jnp.ndarray:
     axis_m = -4
     Nm = H.shape[axis_m]
@@ -75,7 +84,21 @@ def _gx_streaming(
     ladder = sqrt_p.reshape(shape) * H_p1 + sqrt_m.reshape(shape) * H_m1
     vth_s = vth[:, None, None, None, None, None]
     rhs = -vth_s * ladder
-    rhs = grad_z_periodic(rhs, dz)
+    if use_twist_shift:
+        if kx_link_plus is None or kx_link_minus is None or kx_mask_plus is None or kx_mask_minus is None:
+            raise ValueError("kx_link arrays must be provided for twist-shift comparison")
+        from spectraxgk.terms.operators import grad_z_linked
+
+        rhs = grad_z_linked(
+            rhs,
+            dz=dz,
+            kx_link_plus=kx_link_plus,
+            kx_link_minus=kx_link_minus,
+            kx_mask_plus=kx_mask_plus,
+            kx_mask_minus=kx_mask_minus,
+        )
+    else:
+        rhs = grad_z_periodic(rhs, dz)
     return kpar_scale * rhs
 
 
@@ -84,7 +107,6 @@ def _gx_mirror(
     *,
     vth: jnp.ndarray,
     bgrad: jnp.ndarray,
-    omega_d_scale: jnp.ndarray,
     l: jnp.ndarray,
     sqrt_m: jnp.ndarray,
     sqrt_m_p1: jnp.ndarray,
@@ -100,7 +122,7 @@ def _gx_mirror(
         + sqrt_m * l * H_m_m1
         + sqrt_m * l_p1 * _shift_axis(H_m_m1, 1, axis=axis_l)
     )
-    bgrad_s = omega_d_scale * bgrad[None, None, None, None, None, :]
+    bgrad_s = bgrad[None, None, None, None, None, :]
     vth_s = vth[:, None, None, None, None, None]
     return -vth_s * bgrad_s * mirror_term
 
@@ -272,12 +294,21 @@ def main() -> int:
     bpar = fields.bpar if fields.bpar is not None else jnp.zeros_like(fields.phi)
     H = _gx_build_H(G, Jl, fields.phi, tz, apar=apar, vth=vth, bpar=bpar, JlB=JlB)
 
-    gx_stream = _gx_streaming(H, dz=cache.dz.astype(real_dtype), vth=vth, kpar_scale=jnp.asarray(params.kpar_scale, dtype=real_dtype))
+    gx_stream = _gx_streaming(
+        H,
+        dz=cache.dz.astype(real_dtype),
+        vth=vth,
+        kpar_scale=jnp.asarray(params.kpar_scale, dtype=real_dtype),
+        use_twist_shift=cache.use_twist_shift,
+        kx_link_plus=cache.kx_link_plus,
+        kx_link_minus=cache.kx_link_minus,
+        kx_mask_plus=cache.kx_link_mask_plus,
+        kx_mask_minus=cache.kx_link_mask_minus,
+    )
     gx_mirror = _gx_mirror(
         H,
         vth=vth,
         bgrad=cache.bgrad.astype(real_dtype),
-        omega_d_scale=jnp.asarray(params.omega_d_scale, dtype=real_dtype),
         l=cache.l.astype(real_dtype),
         sqrt_m=cache.sqrt_m.astype(real_dtype),
         sqrt_m_p1=cache.sqrt_m_p1.astype(real_dtype),
@@ -328,16 +359,23 @@ def main() -> int:
     )[0]
     our_stream = streaming_contribution(
         H,
+        kz=cache.kz.astype(real_dtype),
         dz=cache.dz.astype(real_dtype),
         vth=vth,
+        sqrt_p=cache.sqrt_p.astype(real_dtype),
+        sqrt_m=cache.sqrt_m_ladder.astype(real_dtype),
         kpar_scale=jnp.asarray(params.kpar_scale, dtype=real_dtype),
         weight=jnp.asarray(1.0, dtype=real_dtype),
+        kx_link_plus=cache.kx_link_plus,
+        kx_link_minus=cache.kx_link_minus,
+        kx_mask_plus=cache.kx_link_mask_plus,
+        kx_mask_minus=cache.kx_link_mask_minus,
+        use_twist_shift=cache.use_twist_shift,
     )
     our_mirror = mirror_contribution(
         H,
         vth=vth,
         bgrad=cache.bgrad.astype(real_dtype),
-        omega_d_scale=jnp.asarray(params.omega_d_scale, dtype=real_dtype),
         l=cache.l.astype(real_dtype),
         sqrt_m=cache.sqrt_m.astype(real_dtype),
         sqrt_m_p1=cache.sqrt_m_p1.astype(real_dtype),
