@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
+from dataclasses import asdict, is_dataclass
 from pathlib import Path
+from pprint import pformat
+import argparse
 import sys
 
 import numpy as np
+from tqdm.auto import tqdm
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src"
@@ -19,6 +23,7 @@ from spectraxgk.benchmarks import (
     load_etg_reference,
     load_kbm_reference,
     load_tem_reference,
+    LinearScanResult,
     run_cyclone_linear,
     run_cyclone_scan,
     run_etg_linear,
@@ -117,14 +122,193 @@ TEM_KRYLOV = KrylovConfig(
     shift_tol=1.0e-3,
 )
 
+
+
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Generate validation figures.")
+    parser.add_argument(
+        "--case",
+        choices=["all", "cyclone"],
+        default="all",
+        help="Limit figure generation to a specific case.",
+    )
+    parser.add_argument("--quiet", action="store_true", help="Disable verbose logging.")
+    parser.add_argument(
+        "--no-progress", action="store_true", help="Disable tqdm progress bars."
+    )
+    return parser.parse_args()
+
+
+def _log(msg: str, *, verbose: bool, use_tqdm: bool) -> None:
+    if not verbose:
+        return
+    if use_tqdm:
+        tqdm.write(msg)
+    else:
+        print(msg, flush=True)
+
+
+def _format_cfg(cfg) -> str:
+    if is_dataclass(cfg):
+        return pformat(asdict(cfg), width=120, sort_dicts=False)
+    return pformat(cfg, width=120, sort_dicts=False)
+
+
+def _window_value(val, idx: int) -> float | None:
+    if val is None:
+        return None
+    if isinstance(val, (list, tuple, np.ndarray)):
+        return float(val[idx])
+    return float(val)
+
+
+def _scan_linear_verbose(
+    *,
+    ky_values: np.ndarray,
+    run_linear_fn,
+    cfg,
+    Nl: int,
+    Nm: int,
+    dt: float | np.ndarray,
+    steps: int | np.ndarray,
+    method: str,
+    solver: str,
+    krylov_cfg,
+    window_kw: dict,
+    tmin: float | np.ndarray | None = None,
+    tmax: float | np.ndarray | None = None,
+    auto_window: bool = True,
+    label: str,
+    verbose: bool,
+    progress: bool,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    _log(f"\n=== {label} scan ===", verbose=verbose, use_tqdm=progress)
+    _log(f"Config:\n{_format_cfg(cfg)}", verbose=verbose, use_tqdm=progress)
+    _log(
+        f"Numerics: Nl={Nl} Nm={Nm} method={method} solver={solver} dt={dt} steps={steps}",
+        verbose=verbose,
+        use_tqdm=progress,
+    )
+    _log(f"Window params: {window_kw}", verbose=verbose, use_tqdm=progress)
+    if tmin is not None or tmax is not None:
+        _log(f"Manual window tmin={tmin} tmax={tmax}", verbose=verbose, use_tqdm=progress)
+
+    gammas: list[float] = []
+    omegas: list[float] = []
+    ky_out: list[float] = []
+    iterator = tqdm(ky_values, desc=f"{label} ky scan") if progress else ky_values
+    for i, ky in enumerate(iterator):
+        dt_i = float(dt[i]) if isinstance(dt, np.ndarray) else float(dt)
+        steps_i = int(steps[i]) if isinstance(steps, np.ndarray) else int(steps)
+        tmin_i = _window_value(tmin, i)
+        tmax_i = _window_value(tmax, i)
+        _log(
+            f"[{label}] start ky={float(ky):.4g} dt={dt_i:.4g} steps={steps_i} tmax={dt_i*steps_i:.4g}",
+            verbose=verbose,
+            use_tqdm=progress,
+        )
+        result = run_linear_fn(
+            ky_target=float(ky),
+            cfg=cfg,
+            Nl=Nl,
+            Nm=Nm,
+            dt=dt_i,
+            steps=steps_i,
+            method=method,
+            solver=solver,
+            krylov_cfg=krylov_cfg,
+            auto_window=auto_window,
+            tmin=tmin_i,
+            tmax=tmax_i,
+            **window_kw,
+        )
+        gammas.append(float(result.gamma))
+        omegas.append(float(result.omega))
+        ky_out.append(float(result.ky))
+        _log(
+            f"[{label}] done ky={float(result.ky):.4g} gamma={result.gamma:.6g} omega={result.omega:.6g}",
+            verbose=verbose,
+            use_tqdm=progress,
+        )
+
+    return np.array(ky_out), np.array(gammas), np.array(omegas)
+
+
+def _scan_kbm_verbose(
+    *,
+    betas: np.ndarray,
+    cfg,
+    Nl: int,
+    Nm: int,
+    dt: float,
+    steps: int,
+    method: str,
+    solver: str,
+    krylov_cfg,
+    window_kw: dict,
+    label: str,
+    verbose: bool,
+    progress: bool,
+) -> LinearScanResult:
+    _log(f"\n=== {label} beta scan ===", verbose=verbose, use_tqdm=progress)
+    _log(f"Config:\n{_format_cfg(cfg)}", verbose=verbose, use_tqdm=progress)
+    _log(
+        f"Numerics: Nl={Nl} Nm={Nm} method={method} solver={solver} dt={dt} steps={steps}",
+        verbose=verbose,
+        use_tqdm=progress,
+    )
+    _log(f"Window params: {window_kw}", verbose=verbose, use_tqdm=progress)
+
+    gammas: list[float] = []
+    omegas: list[float] = []
+    beta_out: list[float] = []
+    iterator = tqdm(betas, desc=f"{label} beta scan") if progress else betas
+    for beta in iterator:
+        _log(
+            f"[{label}] start beta={float(beta):.4g} dt={dt:.4g} steps={steps} tmax={dt*steps:.4g}",
+            verbose=verbose,
+            use_tqdm=progress,
+        )
+        result = run_kbm_beta_scan(
+            np.asarray([float(beta)]),
+            cfg=cfg,
+            ky_target=0.3,
+            Nl=Nl,
+            Nm=Nm,
+            steps=steps,
+            dt=dt,
+            method=method,
+            solver=solver,
+            krylov_cfg=krylov_cfg,
+            **window_kw,
+        )
+        gamma = float(result.gamma[0])
+        omega = float(result.omega[0])
+        gammas.append(gamma)
+        omegas.append(omega)
+        beta_out.append(float(beta))
+        _log(
+            f"[{label}] done beta={float(beta):.4g} gamma={gamma:.6g} omega={omega:.6g}",
+            verbose=verbose,
+            use_tqdm=progress,
+        )
+
+    return LinearScanResult(ky=np.array(beta_out), gamma=np.array(gammas), omega=np.array(omegas))
+
 WINDOWS = {
     "cyclone": dict(
         window_fraction=0.3,
         min_points=80,
-        start_fraction=0.3,
-        growth_weight=0.2,
+        start_fraction=0.58,
+        growth_weight=0.0,
         require_positive=True,
-        min_amp_fraction=0.0,
+        min_amp_fraction=0.05,
+        max_fraction=0.6,
+        end_fraction=0.8,
+        max_amp_fraction=0.8,
+        late_penalty=0.3,
+        window_method="loglinear",
+        mode_method="project",
     ),
     "kinetic": dict(
         window_fraction=0.3,
@@ -184,6 +368,11 @@ def _scan_and_mode(
     scan_solver: str,
     mode_solver: str,
     mode_method: str,
+    verbose: bool,
+    progress: bool,
+    label: str,
+    scan_kwargs: dict | None = None,
+    mode_kwargs: dict | None = None,
 ):
     krylov_cfg = None
     if scan_solver.lower() == "krylov":
@@ -195,22 +384,48 @@ def _scan_and_mode(
             krylov_cfg = ETG_KRYLOV
         elif scan_fn is run_tem_scan:
             krylov_cfg = TEM_KRYLOV
-    scan = scan_fn(
-        ky_values,
-        cfg=cfg,
-        Nl=Nl,
-        Nm=Nm,
-        steps=steps,
-        dt=dt,
-        method=mode_method,
-        solver=scan_solver,
-        krylov_cfg=krylov_cfg,
-        **window_kw,
-    )
+    if verbose or progress:
+        scan_ky, scan_g, scan_w = _scan_linear_verbose(
+            ky_values=np.asarray(ky_values),
+            run_linear_fn=linear_fn,
+            cfg=cfg,
+            Nl=Nl,
+            Nm=Nm,
+            dt=dt,
+            steps=steps,
+            method=mode_method,
+            solver=scan_solver,
+            krylov_cfg=krylov_cfg,
+            window_kw=window_kw,
+            label=label,
+            run_kwargs=scan_kwargs,
+            verbose=verbose,
+            progress=progress,
+        )
+        scan = LinearScanResult(ky=scan_ky, gamma=scan_g, omega=scan_w)
+    else:
+        scan = scan_fn(
+            ky_values,
+            cfg=cfg,
+            Nl=Nl,
+            Nm=Nm,
+            steps=steps,
+            dt=dt,
+            method=mode_method,
+            solver=scan_solver,
+            krylov_cfg=krylov_cfg,
+            **window_kw,
+            **(scan_kwargs or {}),
+        )
     sel_idx = int(np.nanargmax(scan.gamma))
     ky_sel = float(scan.ky[sel_idx])
     steps_run = int(steps[sel_idx]) if isinstance(steps, np.ndarray) else int(steps)
     dt_run = float(dt[sel_idx]) if isinstance(dt, np.ndarray) else float(dt)
+    _log(
+        f"[{label}] eigenfunction ky={ky_sel:.4g} dt={dt_run:.4g} steps={steps_run}",
+        verbose=verbose,
+        use_tqdm=progress,
+    )
     run = linear_fn(
         cfg=cfg,
         ky_target=ky_sel,
@@ -221,6 +436,7 @@ def _scan_and_mode(
         method=mode_method,
         solver=mode_solver,
         **window_kw,
+        **(mode_kwargs or {}),
     )
     grid = build_spectral_grid(cfg.grid)
     mode = _eigenfunction_panel(run, grid, window_kw)
@@ -228,6 +444,10 @@ def _scan_and_mode(
 
 
 def main() -> int:
+    args = _parse_args()
+    verbose = not args.quiet
+    progress = not args.no_progress
+
     outdir = ROOT / "docs" / "_static"
     outdir.mkdir(parents=True, exist_ok=True)
 
@@ -238,25 +458,32 @@ def main() -> int:
     fig.savefig(outdir / "cyclone_reference.pdf")
 
     cfg_cyc = CycloneBaseCase(
-        grid=GridConfig(Nx=1, Ny=24, Nz=96, Lx=62.8, Ly=62.8, y0=20.0, ntheta=32, nperiod=2)
+        grid=GridConfig(Nx=1, Ny=18, Nz=96, Lx=62.8, Ly=62.8, y0=20.0, ntheta=32, nperiod=2)
     )
     scan_ky = ref.ky[::2]
-    cyclone_steps = _scale_steps(scan_ky, base_steps=800, ky_ref=0.2, max_steps=4000)
-    scan = run_cyclone_scan(
-        scan_ky,
+    cyclone_steps = np.full_like(scan_ky, 5000, dtype=int)
+    scan_ky_out, scan_g, scan_w = _scan_linear_verbose(
+        ky_values=scan_ky,
+        run_linear_fn=run_cyclone_linear,
         cfg=cfg_cyc,
-        Nl=6,
+        Nl=48,
         Nm=16,
+        dt=0.002,
         steps=cyclone_steps,
-        dt=0.01,
         method=MODE_METHOD,
         solver=CYCLONE_SCAN_SOLVER,
         krylov_cfg=CYCLONE_KRYLOV,
-        **WINDOWS["cyclone"],
+        window_kw=WINDOWS["cyclone"],
+        label="Cyclone figure",
+        verbose=verbose,
+        progress=progress,
     )
+    scan = LinearScanResult(ky=scan_ky_out, gamma=scan_g, omega=scan_w)
     fig, _axes = cyclone_comparison_figure(ref, scan)
     fig.savefig(outdir / "cyclone_comparison.png", dpi=200)
     fig.savefig(outdir / "cyclone_comparison.pdf")
+    if args.case == "cyclone":
+        return 0
 
     # Multi-panel summary: cyclone, kinetic ITG, ETG, KBM, TEM
     cyclone_scan, cyclone_mode, cyclone_grid, _ = _scan_and_mode(
@@ -264,29 +491,32 @@ def main() -> int:
         run_cyclone_linear,
         scan_ky,
         cfg_cyc,
-        Nl=6,
+        Nl=48,
         Nm=16,
         steps=cyclone_steps,
-        dt=0.01,
+        dt=0.002,
         window_kw=WINDOWS["cyclone"],
         scan_solver=CYCLONE_SCAN_SOLVER,
         mode_solver=MODE_SOLVER,
         mode_method=MODE_METHOD,
+        verbose=verbose,
+        progress=progress,
+        label="Cyclone panel",
     )
 
     kinetic_ref = load_cyclone_reference_kinetic()
     cfg_kin = KineticElectronBaseCase(
-        grid=GridConfig(Nx=1, Ny=24, Nz=96, Lx=62.8, Ly=62.8, y0=20.0, ntheta=32, nperiod=2)
+        grid=GridConfig(Nx=1, Ny=12, Nz=96, Lx=62.8, Ly=62.8, y0=10.0, ntheta=32, nperiod=2)
     )
     kinetic_ky = kinetic_ref.ky[::2]
-    kinetic_steps = _scale_steps(kinetic_ky, base_steps=2000, ky_ref=0.3, max_steps=8000)
+    kinetic_steps = _scale_steps(kinetic_ky, base_steps=80000, ky_ref=0.3, max_steps=120000)
     kinetic_dt = _scale_dt(kinetic_ky, base_dt=0.0005, ky_ref=0.3)
     kinetic_scan, kinetic_mode, kinetic_grid, _ = _scan_and_mode(
         run_kinetic_scan,
         run_kinetic_linear,
         kinetic_ky,
         cfg_kin,
-        Nl=6,
+        Nl=48,
         Nm=16,
         steps=kinetic_steps,
         dt=kinetic_dt,
@@ -294,6 +524,9 @@ def main() -> int:
         scan_solver=KINETIC_SCAN_SOLVER,
         mode_solver=MODE_SOLVER,
         mode_method=MODE_METHOD,
+        verbose=verbose,
+        progress=progress,
+        label="Kinetic ITG panel",
     )
 
     etg_ref = load_etg_reference()
@@ -307,7 +540,7 @@ def main() -> int:
         run_etg_linear,
         etg_ky,
         cfg_etg,
-        Nl=6,
+        Nl=48,
         Nm=16,
         steps=1200,
         dt=etg_dt,
@@ -315,32 +548,42 @@ def main() -> int:
         scan_solver=ETG_SCAN_SOLVER,
         mode_solver=MODE_SOLVER,
         mode_method=MODE_METHOD,
+        verbose=verbose,
+        progress=progress,
+        label="ETG panel",
     )
 
     kbm_ref = load_kbm_reference()
     cfg_kbm = KBMBaseCase(
-        grid=GridConfig(Nx=1, Ny=12, Nz=96, Lx=62.8, Ly=62.8, y0=10.0, ntheta=32, nperiod=2)
+        grid=GridConfig(Nx=1, Ny=9, Nz=96, Lx=62.8, Ly=62.8, y0=10.0, ntheta=32, nperiod=2)
     )
     kbm_beta = kbm_ref.ky[::2]
-    kbm_scan = run_kbm_beta_scan(
-        kbm_beta,
+    kbm_scan = _scan_kbm_verbose(
+        betas=kbm_beta,
         cfg=cfg_kbm,
-        ky_target=0.3,
-        Nl=6,
+        Nl=48,
         Nm=16,
-        steps=1200,
+        steps=80000,
         dt=0.0005,
         method=MODE_METHOD,
         solver=KBM_SCAN_SOLVER,
         krylov_cfg=KBM_KRYLOV,
-        **WINDOWS["kbm"],
+        window_kw=WINDOWS["kbm"],
+        label="KBM panel",
+        verbose=verbose,
+        progress=progress,
+    )
+    _log(
+        "[KBM panel] eigenfunction ky=0.3 dt=0.0005 steps=80000",
+        verbose=verbose,
+        use_tqdm=progress,
     )
     kbm_run = run_kinetic_linear(
         cfg=cfg_kbm,
         ky_target=0.3,
-        Nl=6,
+        Nl=48,
         Nm=16,
-        steps=1200,
+        steps=80000,
         dt=0.0005,
         method=MODE_METHOD,
         solver=MODE_SOLVER,
@@ -359,7 +602,7 @@ def main() -> int:
         run_tem_linear,
         tem_ky,
         cfg_tem,
-        Nl=6,
+        Nl=48,
         Nm=16,
         steps=1200,
         dt=0.001,
@@ -367,6 +610,9 @@ def main() -> int:
         scan_solver=TEM_SCAN_SOLVER,
         mode_solver=MODE_SOLVER,
         mode_method=MODE_METHOD,
+        verbose=verbose,
+        progress=progress,
+        label="TEM panel",
     )
 
     panels = [
