@@ -17,6 +17,14 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from spectraxgk.benchmarks import (
+    CYCLONE_OMEGA_D_SCALE,
+    CYCLONE_OMEGA_STAR_SCALE,
+    CYCLONE_RHO_STAR,
+    GX_DAMP_ENDS_AMP,
+    GX_DAMP_ENDS_WIDTHFRAC,
+    _apply_gx_hypercollisions,
+    _build_initial_condition,
+    _midplane_index,
     load_cyclone_reference,
     load_cyclone_reference_kinetic,
     load_etg_reference,
@@ -40,8 +48,16 @@ from spectraxgk.config import (
     TEMBaseCase,
 )
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.linear import LinearParams, LinearTerms
+from spectraxgk.grids import build_spectral_grid, select_ky_grid
+from spectraxgk.gx_integrators import GXTimeConfig, integrate_linear_gx
+from spectraxgk.linear import LinearParams, LinearTerms, build_linear_cache
 from spectraxgk.linear_krylov import KrylovConfig
+from spectraxgk.analysis import (
+    ModeSelection,
+    extract_mode_time_series,
+    fit_growth_rate_auto,
+    select_ky_index,
+)
 
 CYCLONE_SOLVER = "time"
 KINETIC_SOLVER = "time"
@@ -370,6 +386,134 @@ WINDOWS = {
     ),
 }
 
+GX_CYCLONE_WINDOW = dict(
+    window_method="loglinear",
+    min_points=40,
+    start_fraction=0.1,
+    max_fraction=0.8,
+    end_fraction=0.8,
+    require_positive=True,
+    min_amp_fraction=0.05,
+    max_amp_fraction=0.8,
+    growth_weight=0.1,
+    late_penalty=0.1,
+)
+
+
+def _gx_balanced_policy(ky: float) -> tuple[int, int, float]:
+    if ky < 0.08:
+        return 16, 8, 80.0
+    if ky < 0.15:
+        return 16, 8, 20.0
+    if ky <= 0.25:
+        return 24, 12, 20.0
+    return 24, 12, 10.0
+
+
+def _gx_mode_policy(ky: float) -> str:
+    return "max" if ky < 0.3 else "project"
+
+
+def _gx_window_policy(ky: float, base_window: dict) -> dict:
+    window = dict(base_window)
+    if ky < 0.08:
+        window["start_fraction"] = 0.415
+        window["min_points"] = max(int(window.get("min_points", 0)), 80)
+        window["min_slope_frac"] = 0.25
+    if ky >= 0.3:
+        window["start_fraction"] = 0.3
+        window["end_fraction"] = 0.9
+        window["min_amp_fraction"] = 0.0
+        window["max_amp_fraction"] = 1.0
+        window["late_penalty"] = 0.0
+    return window
+
+
+def _cyclone_gx_scan(
+    ky_values: np.ndarray,
+    cfg: CycloneBaseCase,
+    window_kw: dict,
+    *,
+    verbose: bool,
+    progress: bool,
+) -> LinearScanResult:
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    grid_full = build_spectral_grid(cfg.grid)
+    gammas: list[float] = []
+    omegas: list[float] = []
+    ky_out: list[float] = []
+    iterator = tqdm(ky_values, desc="Cyclone GX ky scan") if progress else ky_values
+    for ky in iterator:
+        ky_val = float(ky)
+        Nl, Nm, tmax = _gx_balanced_policy(ky_val)
+        params = LinearParams(
+            R_over_Ln=cfg.model.R_over_Ln,
+            R_over_LTi=cfg.model.R_over_LTi,
+            R_over_LTe=cfg.model.R_over_LTe,
+            omega_d_scale=CYCLONE_OMEGA_D_SCALE,
+            omega_star_scale=CYCLONE_OMEGA_STAR_SCALE,
+            rho_star=CYCLONE_RHO_STAR,
+            kpar_scale=float(geom.gradpar()),
+            nu=cfg.model.nu_i,
+            damp_ends_amp=GX_DAMP_ENDS_AMP,
+            damp_ends_widthfrac=GX_DAMP_ENDS_WIDTHFRAC,
+        )
+        params = _apply_gx_hypercollisions(params, nhermite=Nm)
+        terms = LinearTerms()
+
+        ky_idx = select_ky_index(np.asarray(grid_full.ky), ky_val)
+        grid = select_ky_grid(grid_full, ky_idx)
+        G0 = _build_initial_condition(
+            grid,
+            geom,
+            ky_index=0,
+            kx_index=0,
+            Nl=Nl,
+            Nm=Nm,
+            init_cfg=cfg.init,
+        )
+        cache = build_linear_cache(grid, geom, params, Nl, Nm)
+        time_cfg = GXTimeConfig(
+            t_max=tmax,
+            dt=0.01,
+            fixed_dt=False,
+            dt_min=1.0e-7,
+            dt_max=0.1,
+            cfl_fac=0.3,
+        )
+        _log(
+            f"[Cyclone GX] ky={ky_val:.3f} Nl={Nl} Nm={Nm} tmax={tmax}",
+            verbose=verbose,
+            use_tqdm=progress,
+        )
+        t, phi_t, _gamma_t, _omega_t = integrate_linear_gx(
+            G0,
+            grid,
+            cache,
+            params,
+            geom,
+            time_cfg,
+            terms,
+            mode_method="z_index",
+            z_index=_midplane_index(grid),
+        )
+        sel = ModeSelection(ky_index=0, kx_index=0, z_index=_midplane_index(grid))
+        mode_method = _gx_mode_policy(ky_val)
+        signal = extract_mode_time_series(np.asarray(phi_t), sel, method=mode_method)
+        fit_kw = _gx_window_policy(ky_val, window_kw)
+        fit_kw = {k: v for k, v in fit_kw.items() if k != "mode_method"}
+        gamma, omega, tmin, tmax_fit = fit_growth_rate_auto(np.asarray(t), signal, **fit_kw)
+        _log(
+            f"[Cyclone GX] ky={ky_val:.3f} method={mode_method} fit=[{tmin:.3g}, {tmax_fit:.3g}] "
+            f"gamma={gamma:.6g} omega={omega:.6g}",
+            verbose=verbose,
+            use_tqdm=progress,
+        )
+        ky_out.append(ky_val)
+        gammas.append(float(gamma))
+        omegas.append(float(omega))
+    return LinearScanResult(ky=np.array(ky_out), gamma=np.array(gammas), omega=np.array(omegas))
+
 
 def _scale_steps(ky: np.ndarray, base_steps: int, ky_ref: float, max_steps: int) -> np.ndarray:
     scale = ky_ref / np.maximum(ky, 1.0e-6)
@@ -548,6 +692,23 @@ def main() -> int:
         "\n".join(rho_rows) + "\n", encoding="utf-8"
     )
 
+    # Mismatch tables against reference data (full ky list) using GX-balanced runs
+    gx_cfg = CycloneBaseCase(
+        grid=GridConfig(Nx=1, Ny=24, Nz=96, Lx=62.8, Ly=62.8, y0=20.0, ntheta=32, nperiod=2)
+    )
+    cyclone_mismatch = _cyclone_gx_scan(
+        ref.ky,
+        gx_cfg,
+        GX_CYCLONE_WINDOW,
+        verbose=verbose,
+        progress=progress,
+    )
+    (outdir / "cyclone_mismatch_table.csv").write_text(
+        "\n".join(_build_rows(cyclone_mismatch, ref)) + "\n", encoding="utf-8"
+    )
+    if args.case == "cyclone":
+        return 0
+
     etg_grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28, y0=0.2)
     etg_R = np.array([4.0, 6.0, 8.0, 10.0])
     etg_rows = ["R_over_LTe,gamma,omega"]
@@ -581,32 +742,6 @@ def main() -> int:
     (outdir / "etg_trend_table.csv").write_text(
         "\n".join(etg_rows) + "\n", encoding="utf-8"
     )
-
-    # Mismatch tables against reference data (full ky/beta lists)
-    cyclone_steps = np.full_like(ref.ky, 5000, dtype=int)
-    cyc_ky, cyc_g, cyc_w = _scan_linear_verbose(
-        ky_values=ref.ky,
-        run_linear_fn=run_cyclone_linear,
-        cfg=cfg,
-        Nl=48,
-        Nm=16,
-        dt=0.002,
-        steps=cyclone_steps,
-        method="imex2",
-        solver=CYCLONE_SOLVER,
-        krylov_cfg=CYCLONE_KRYLOV,
-        window_kw=WINDOWS["cyclone"],
-        label="Cyclone mismatch",
-        ref=ref,
-        verbose=verbose,
-        progress=progress,
-    )
-    cyclone_mismatch = LinearScanResult(ky=cyc_ky, gamma=cyc_g, omega=cyc_w)
-    (outdir / "cyclone_mismatch_table.csv").write_text(
-        "\n".join(_build_rows(cyclone_mismatch, ref)) + "\n", encoding="utf-8"
-    )
-    if args.case == "cyclone":
-        return 0
 
     kinetic_ref = load_cyclone_reference_kinetic()
     kinetic_steps = _scale_steps(kinetic_ref.ky, base_steps=80000, ky_ref=0.3, max_steps=120000)
