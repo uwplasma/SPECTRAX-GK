@@ -33,6 +33,8 @@ The core numerical algorithms and their implementation entry points are:
   :func:`spectraxgk.linear.diamagnetic_drive_coeffs`.
 - **Time integration (explicit RK, IMEX)**:
   :func:`spectraxgk.linear.integrate_linear`.
+- **GX-style RK4 (CFL adaptive, GX growth-rate diagnostics)**:
+  :func:`spectraxgk.gx_integrators.integrate_linear_gx`.
 - **Diffrax integration (explicit/implicit/IMEX)**:
   :func:`spectraxgk.diffrax_integrators.integrate_linear_diffrax`,
   :func:`spectraxgk.diffrax_integrators.integrate_nonlinear_diffrax`.
@@ -72,6 +74,10 @@ The linear solver supports:
 
 - **Forward Euler** (``method="euler"``) and **RK2/RK4** explicit schemes for
   non-stiff runs.
+- **GX-style RK4 with CFL step control**, matching the GX timestep estimator
+  (``integrate_linear_gx``). The timestep is recomputed from the linear
+  max-frequency estimate using the GX CFL rule, and growth rates are extracted
+  from the midplane ``phi`` ratio exactly as in the GX diagnostics kernel.
 - **IMEX (semi-implicit)** where the collisional/hyper-diffusion terms are
   treated implicitly and the remaining terms explicitly.
 - **Backward Euler + GMRES** in ``method="implicit"`` for stiff scans, with a
@@ -157,6 +163,21 @@ ladder coupling
 .. math::
 
    \mathcal{L}_m[H] = \sqrt{m+1} H_{m+1} + \sqrt{m} H_{m-1}.
+
+In the GX-aligned formulation we apply the parallel derivative to the
+non-adiabatic moments plus explicit field terms before the Hermite ladder is
+applied. In other words, the streamed quantity is
+
+.. math::
+
+   \tilde{G}_{\ell m} = G_{\ell m}
+   + \frac{Z_s}{T_s} J_\ell \phi\,\delta_{m0}
+   - \frac{Z_s v_{th}}{T_s} J_\ell A_\parallel\,\delta_{m1}
+   + J_\ell^B B_\parallel\,\delta_{m0},
+
+so that the GX-style streaming term uses :math:`\partial_z \tilde{G}` instead of
+the full :math:`H_{\ell m}` derivative. This matches the ordering and ghost
+exchange used by GX’s ``grad_parallel_linked`` operator.
 
 Curvature, grad-B, and mirror couplings
 ---------------------------------------

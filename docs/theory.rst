@@ -19,6 +19,12 @@ spatial dependence is represented spectrally and the parallel coordinate is
 resolved along a field line. This approximation underlies the Cyclone base case
 benchmark commonly used in gyrokinetic validation studies. [Dimits00]_
 
+The default boundary condition is a linked (twist-and-shift) flux tube, so the
+parallel derivative couples Fourier modes across adjacent :math:`k_x` indices.
+For non-twisting flux tubes (NTFT), SPECTRAX-GK follows GX’s ``m0`` and
+``deltaKx`` formulation, which modifies the effective :math:`k_\perp` and drift
+terms using the same twist factor and linking indices as GX.
+
 Hermite-Laguerre velocity space
 -------------------------------
 
@@ -112,3 +118,21 @@ are encoded in :math:`\mathcal{C}_m` and :math:`\mathcal{G}_\ell`. Explicitly,
 The diamagnetic drive term :math:`\mathcal{D}_{\ell m}` follows a Laguerre
 formulation with explicit :math:`R/L_n` and :math:`R/L_T` dependence,
 including a separate coupling in :math:`m=2` for temperature-gradient drive.
+
+GX-aligned streaming
+~~~~~~~~~~~~~~~~~~~~
+
+GX applies the parallel derivative to a gyrokinetic variable that includes the
+explicit field terms but omits the full :math:`H_{\ell m}` correction at
+``m>1``. SPECTRAX-GK’s GX path matches this by defining
+
+.. math::
+
+   \tilde{G}_{\ell m} = G_{\ell m}
+   + \frac{Z_s}{T_s} J_\ell \phi\,\delta_{m0}
+   - \frac{Z_s v_{th}}{T_s} J_\ell A_\parallel\,\delta_{m1}
+   + J_\ell^B B_\parallel\,\delta_{m0},
+
+and then applying the parallel derivative to :math:`\tilde{G}` before the
+Hermite ladder. This matches the ordering in GX’s ``grad_parallel_linked``
+implementation and is critical for reproducing the GX growth-rate diagnostics.
