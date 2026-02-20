@@ -99,7 +99,7 @@ CYCLONE_KRYLOV = KrylovConfig(
     shift_tol=1.0e-3,
 )
 KINETIC_KRYLOV = KrylovConfig(
-    method="shift_invert",
+    method="propagator",
     krylov_dim=16,
     restarts=1,
     power_iters=60,
