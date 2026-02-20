@@ -16,8 +16,22 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from spectraxgk.analysis import extract_eigenfunction, fit_growth_rate_auto, extract_mode_time_series
+from spectraxgk.analysis import (
+    ModeSelection,
+    extract_eigenfunction,
+    extract_mode_time_series,
+    fit_growth_rate_auto,
+    select_ky_index,
+)
 from spectraxgk.benchmarks import (
+    CYCLONE_OMEGA_D_SCALE,
+    CYCLONE_OMEGA_STAR_SCALE,
+    CYCLONE_RHO_STAR,
+    GX_DAMP_ENDS_AMP,
+    GX_DAMP_ENDS_WIDTHFRAC,
+    _apply_gx_hypercollisions,
+    _build_initial_condition,
+    _midplane_index,
     load_cyclone_reference,
     load_cyclone_reference_kinetic,
     load_etg_reference,
@@ -43,7 +57,10 @@ from spectraxgk.config import (
     KBMBaseCase,
     TEMBaseCase,
 )
-from spectraxgk.grids import build_spectral_grid
+from spectraxgk.geometry import SAlphaGeometry
+from spectraxgk.grids import build_spectral_grid, select_ky_grid
+from spectraxgk.gx_integrators import GXTimeConfig, integrate_linear_gx
+from spectraxgk.linear import LinearParams, LinearTerms, build_linear_cache
 from spectraxgk.plotting import (
     cyclone_comparison_figure,
     cyclone_reference_figure,
@@ -344,6 +361,157 @@ WINDOWS = {
     ),
 }
 
+GX_CYCLONE_WINDOW = dict(
+    window_method="loglinear",
+    min_points=40,
+    start_fraction=0.1,
+    max_fraction=0.8,
+    end_fraction=0.8,
+    require_positive=True,
+    min_amp_fraction=0.05,
+    max_amp_fraction=0.8,
+    growth_weight=0.1,
+    late_penalty=0.1,
+)
+
+
+def _gx_balanced_policy(ky: float) -> tuple[int, int, float]:
+    if ky < 0.08:
+        return 16, 8, 80.0
+    if ky < 0.15:
+        return 16, 8, 20.0
+    if ky <= 0.25:
+        return 24, 12, 20.0
+    return 24, 12, 10.0
+
+
+def _gx_mode_policy(ky: float) -> str:
+    return "max" if ky < 0.3 else "project"
+
+
+def _gx_window_policy(ky: float, base_window: dict) -> dict:
+    window = dict(base_window)
+    if ky < 0.08:
+        window["start_fraction"] = 0.415
+        window["min_points"] = max(int(window.get("min_points", 0)), 80)
+        window["min_slope_frac"] = 0.25
+    if ky >= 0.3:
+        window["start_fraction"] = 0.3
+        window["end_fraction"] = 0.9
+        window["min_amp_fraction"] = 0.0
+        window["max_amp_fraction"] = 1.0
+        window["late_penalty"] = 0.0
+    return window
+
+
+def _run_cyclone_gx_case(
+    *,
+    ky: float,
+    cfg: CycloneBaseCase,
+    geom: SAlphaGeometry,
+    window_kw: dict,
+    verbose: bool,
+    progress: bool,
+) -> tuple[float, float, np.ndarray, np.ndarray, ModeSelection, float, float, SpectralGrid]:
+    Nl, Nm, tmax = _gx_balanced_policy(float(ky))
+    grid_full = build_spectral_grid(cfg.grid)
+    ky_idx = select_ky_index(np.asarray(grid_full.ky), float(ky))
+    grid = select_ky_grid(grid_full, ky_idx)
+
+    params = LinearParams(
+        R_over_Ln=cfg.model.R_over_Ln,
+        R_over_LTi=cfg.model.R_over_LTi,
+        R_over_LTe=cfg.model.R_over_LTe,
+        omega_d_scale=CYCLONE_OMEGA_D_SCALE,
+        omega_star_scale=CYCLONE_OMEGA_STAR_SCALE,
+        rho_star=CYCLONE_RHO_STAR,
+        kpar_scale=float(geom.gradpar()),
+        nu=cfg.model.nu_i,
+        damp_ends_amp=GX_DAMP_ENDS_AMP,
+        damp_ends_widthfrac=GX_DAMP_ENDS_WIDTHFRAC,
+    )
+    params = _apply_gx_hypercollisions(params, nhermite=Nm)
+    terms = LinearTerms()
+
+    G0 = _build_initial_condition(
+        grid,
+        geom,
+        ky_index=0,
+        kx_index=0,
+        Nl=Nl,
+        Nm=Nm,
+        init_cfg=cfg.init,
+    )
+    cache = build_linear_cache(grid, geom, params, Nl, Nm)
+    time_cfg = GXTimeConfig(
+        t_max=tmax,
+        dt=0.01,
+        fixed_dt=False,
+        dt_min=1.0e-7,
+        dt_max=0.1,
+        cfl_fac=0.3,
+    )
+
+    _log(
+        f"[Cyclone GX] ky={float(ky):.3f} Nl={Nl} Nm={Nm} tmax={tmax}",
+        verbose=verbose,
+        use_tqdm=progress,
+    )
+    t, phi_t, _gamma_t, _omega_t = integrate_linear_gx(
+        G0,
+        grid,
+        cache,
+        params,
+        geom,
+        time_cfg,
+        terms,
+        mode_method="z_index",
+        z_index=_midplane_index(grid),
+    )
+    sel = ModeSelection(ky_index=0, kx_index=0, z_index=_midplane_index(grid))
+    mode_method = _gx_mode_policy(float(ky))
+    signal = extract_mode_time_series(np.asarray(phi_t), sel, method=mode_method)
+    fit_kw = _gx_window_policy(float(ky), window_kw)
+    fit_kw = {k: v for k, v in fit_kw.items() if k != "mode_method"}
+    gamma, omega, tmin, tmax_fit = fit_growth_rate_auto(np.asarray(t), signal, **fit_kw)
+    _log(
+        f"[Cyclone GX] ky={float(ky):.3f} method={mode_method} fit=[{tmin:.3g}, {tmax_fit:.3g}] "
+        f"gamma={gamma:.6g} omega={omega:.6g}",
+        verbose=verbose,
+        use_tqdm=progress,
+    )
+    return gamma, omega, np.asarray(t), np.asarray(phi_t), sel, tmin, tmax_fit, grid
+
+
+def _cyclone_gx_scan(
+    ky_values: np.ndarray,
+    cfg: CycloneBaseCase,
+    window_kw: dict,
+    *,
+    verbose: bool,
+    progress: bool,
+) -> tuple[LinearScanResult, float]:
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    gammas: list[float] = []
+    omegas: list[float] = []
+    ky_out: list[float] = []
+    iterator = tqdm(ky_values, desc="Cyclone GX ky scan") if progress else ky_values
+    for ky in iterator:
+        gamma, omega, _t, _phi_t, _sel, _tmin, _tmax, _grid = _run_cyclone_gx_case(
+            ky=float(ky),
+            cfg=cfg,
+            geom=geom,
+            window_kw=window_kw,
+            verbose=verbose,
+            progress=progress,
+        )
+        ky_out.append(float(ky))
+        gammas.append(float(gamma))
+        omegas.append(float(omega))
+    scan = LinearScanResult(ky=np.array(ky_out), gamma=np.array(gammas), omega=np.array(omegas))
+    ky_sel = float(scan.ky[int(np.nanargmax(scan.gamma))])
+    return scan, ky_sel
+
 
 def _eigenfunction_panel(run, grid, window_kw):
     signal = extract_mode_time_series(run.phi_t, run.selection, method="project")
@@ -458,27 +626,16 @@ def main() -> int:
     fig.savefig(outdir / "cyclone_reference.pdf")
 
     cfg_cyc = CycloneBaseCase(
-        grid=GridConfig(Nx=1, Ny=18, Nz=96, Lx=62.8, Ly=62.8, y0=20.0, ntheta=32, nperiod=2)
+        grid=GridConfig(Nx=1, Ny=24, Nz=96, Lx=62.8, Ly=62.8, y0=20.0, ntheta=32, nperiod=2)
     )
-    scan_ky = ref.ky[::2]
-    cyclone_steps = np.full_like(scan_ky, 5000, dtype=int)
-    scan_ky_out, scan_g, scan_w = _scan_linear_verbose(
-        ky_values=scan_ky,
-        run_linear_fn=run_cyclone_linear,
-        cfg=cfg_cyc,
-        Nl=48,
-        Nm=16,
-        dt=0.002,
-        steps=cyclone_steps,
-        method=MODE_METHOD,
-        solver=CYCLONE_SCAN_SOLVER,
-        krylov_cfg=CYCLONE_KRYLOV,
-        window_kw=WINDOWS["cyclone"],
-        label="Cyclone figure",
+    scan_ky = np.asarray(ref.ky)
+    scan, ky_sel = _cyclone_gx_scan(
+        scan_ky,
+        cfg_cyc,
+        GX_CYCLONE_WINDOW,
         verbose=verbose,
         progress=progress,
     )
-    scan = LinearScanResult(ky=scan_ky_out, gamma=scan_g, omega=scan_w)
     fig, _axes = cyclone_comparison_figure(ref, scan)
     fig.savefig(outdir / "cyclone_comparison.png", dpi=200)
     fig.savefig(outdir / "cyclone_comparison.pdf")
@@ -486,22 +643,19 @@ def main() -> int:
         return 0
 
     # Multi-panel summary: cyclone, kinetic ITG, ETG, KBM, TEM
-    cyclone_scan, cyclone_mode, cyclone_grid, _ = _scan_and_mode(
-        run_cyclone_scan,
-        run_cyclone_linear,
-        scan_ky,
-        cfg_cyc,
-        Nl=48,
-        Nm=16,
-        steps=cyclone_steps,
-        dt=0.002,
-        window_kw=WINDOWS["cyclone"],
-        scan_solver=CYCLONE_SCAN_SOLVER,
-        mode_solver=MODE_SOLVER,
-        mode_method=MODE_METHOD,
+    geom_cyc = SAlphaGeometry.from_config(cfg_cyc.geometry)
+    gamma_sel, omega_sel, t_sel, phi_sel, sel, tmin_sel, tmax_sel, grid_sel = _run_cyclone_gx_case(
+        ky=ky_sel,
+        cfg=cfg_cyc,
+        geom=geom_cyc,
+        window_kw=GX_CYCLONE_WINDOW,
         verbose=verbose,
         progress=progress,
-        label="Cyclone panel",
+    )
+    cyclone_scan = scan
+    cyclone_grid = grid_sel
+    cyclone_mode = extract_eigenfunction(
+        phi_sel, t_sel, sel, z=grid_sel.z, method="snapshot", tmin=tmin_sel, tmax=tmax_sel
     )
 
     kinetic_ref = load_cyclone_reference_kinetic()
