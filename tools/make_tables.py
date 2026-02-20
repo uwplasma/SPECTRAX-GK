@@ -779,7 +779,8 @@ def main() -> int:
 
     etg_ref = load_etg_reference()
     etg_dt = _scale_dt(etg_ref.ky, base_dt=0.0002, ky_ref=20.0)
-    etg_tmax = etg_dt * 1200
+    etg_steps = _scale_steps(etg_ref.ky, base_steps=1200, ky_ref=20.0, max_steps=4000)
+    etg_tmax = etg_dt * etg_steps
     etg_tmin = 0.4 * etg_tmax
     etg_tmax = 0.85 * etg_tmax
     etg_cfg = ETGBaseCase()
@@ -790,7 +791,7 @@ def main() -> int:
         Nl=48,
         Nm=16,
         dt=etg_dt,
-        steps=1200,
+        steps=etg_steps,
         method="imex2",
         solver=ETG_SOLVER,
         krylov_cfg=ETG_KRYLOV,
@@ -809,9 +810,11 @@ def main() -> int:
     )
 
     kbm_ref = load_kbm_reference()
-    kbm_tmax = 0.0005 * 1200
+    kbm_dt = _scale_dt(kbm_ref.ky, base_dt=0.0005, ky_ref=0.3)
+    kbm_steps = _scale_steps(kbm_ref.ky, base_steps=4000, ky_ref=0.3, max_steps=8000)
+    kbm_tmax = kbm_dt * kbm_steps
     kbm_tmin = 0.4 * kbm_tmax
-    kbm_tmax = 0.75 * kbm_tmax
+    kbm_tmax = 0.8 * kbm_tmax
     kbm_cfg = KBMBaseCase(
         grid=GridConfig(Nx=1, Ny=9, Nz=96, Lx=62.8, Ly=62.8, y0=10.0, ntheta=32, nperiod=2)
     )
@@ -820,8 +823,8 @@ def main() -> int:
         cfg=kbm_cfg,
         Nl=48,
         Nm=16,
-        dt=0.0005,
-        steps=80000,
+        dt=kbm_dt,
+        steps=kbm_steps,
         method="imex2",
         solver=KBM_SOLVER,
         krylov_cfg=KBM_KRYLOV,
@@ -840,6 +843,11 @@ def main() -> int:
     )
 
     tem_ref = load_tem_reference()
+    tem_dt = _scale_dt(tem_ref.ky, base_dt=0.001, ky_ref=0.3)
+    tem_steps = _scale_steps(tem_ref.ky, base_steps=2000, ky_ref=0.3, max_steps=6000)
+    tem_tmax = tem_dt * tem_steps
+    tem_tmin = 0.4 * tem_tmax
+    tem_tmax = 0.85 * tem_tmax
     tem_cfg = TEMBaseCase()
     tem_ky, tem_g, tem_w = _scan_linear_verbose(
         ky_values=tem_ref.ky,
@@ -847,12 +855,15 @@ def main() -> int:
         cfg=tem_cfg,
         Nl=48,
         Nm=16,
-        dt=0.001,
-        steps=1200,
+        dt=tem_dt,
+        steps=tem_steps,
         method="imex2",
         solver=TEM_SOLVER,
         krylov_cfg=TEM_KRYLOV,
         window_kw=WINDOWS["tem"],
+        tmin=tem_tmin,
+        tmax=tem_tmax,
+        auto_window=False,
         label="TEM mismatch",
         ref=tem_ref,
         verbose=verbose,
