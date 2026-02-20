@@ -60,7 +60,7 @@ from spectraxgk.analysis import (
 )
 
 CYCLONE_SOLVER = "time"
-KINETIC_SOLVER = "time"
+KINETIC_SOLVER = "krylov"
 ETG_SOLVER = "time"
 KBM_SOLVER = "time"
 TEM_SOLVER = "time"

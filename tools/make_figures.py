@@ -82,7 +82,7 @@ def _scale_dt(ky: np.ndarray, base_dt: float, ky_ref: float) -> np.ndarray:
 
 
 CYCLONE_SCAN_SOLVER = "time"
-KINETIC_SCAN_SOLVER = "time"
+KINETIC_SCAN_SOLVER = "krylov"
 ETG_SCAN_SOLVER = "time"
 KBM_SCAN_SOLVER = "time"
 TEM_SCAN_SOLVER = "time"
