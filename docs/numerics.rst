@@ -91,20 +91,47 @@ Diffrax-backed solvers are available via
 :func:`spectraxgk.diffrax_integrators.integrate_linear_diffrax` and
 :func:`spectraxgk.diffrax_integrators.integrate_nonlinear_diffrax`. Explicit
 solvers (e.g., ``Tsit5``) and implicit/IMEX solvers (e.g., ``KenCarp``) are
-supported, with progress reporting enabled by default via a tqdm progress meter.
-Diffrax currently emits a warning when evolving complex-valued states; the
-solvers still run, but treat this as experimental behavior.
+supported. Progress reporting is disabled by default; enable it by setting
+``TimeConfig.progress_bar=True`` (or ``progress_bar=True`` in the integrator
+call). Diffrax currently emits a warning when evolving complex-valued states;
+the solvers still run, but treat this as experimental behavior.
 
 Use :class:`spectraxgk.config.TimeConfig` and
 :func:`spectraxgk.runners.integrate_linear_from_config` to select diffrax
 integration from input configuration without changing call sites. By default,
-``TimeConfig`` enables diffrax with a fixed-step Heun solver; set
+``TimeConfig`` enables diffrax with a fixed-step Dopri8 solver; set
 ``use_diffrax=False`` to force the built-in fixed-step integrators.
 
 For the ETG/TEM/KBM baseline cases, the default configurations switch to
 adaptive Tsit5 with ``diffrax_rtol=1e-4``, ``diffrax_atol=1e-7``, and
 ``diffrax_max_steps=20000`` to avoid fixed-step instabilities. These defaults
 can be overridden on a per-run basis via the ``TimeConfig`` fields.
+
+Performance tuning
+------------------
+
+SPECTRAX-GK includes several performance-oriented options that preserve
+end-to-end JAX differentiability:
+
+- **Streaming growth-rate fits**: use
+  :func:`spectraxgk.diffrax_integrators.integrate_linear_diffrax_streaming`
+  to compute ``(gamma, omega)`` online without storing time series. This reduces
+  memory pressure during long scans. The streaming fit supports ``phi`` or
+  density moments via ``fit_signal`` and uses a fixed ``tmin/tmax`` window.
+- **Batched ky scans**: pass ``ky_batch>1`` to the benchmark scan helpers to
+  integrate multiple ky values at once using a sliced ky grid. This increases
+  GPU occupancy while keeping the physics identical for linear runs.
+- **Donation and sharded buffers**: time integrators donate state buffers in
+  JIT-compiled paths to reduce allocations. The diffrax integrators accept a
+  ``state_sharding`` argument if you want to preserve explicit JAX sharding on
+  the state array.
+- **Implicit preconditioning hooks**: ``implicit_preconditioner`` accepts
+  ``"auto"/"diag"/"physics"/"block"`` (full diagonal preconditioner),
+  ``"damping"`` (collisional/hyper-only), or ``"identity"`` to disable
+  preconditioning.
+- **Cached hypercollision factors**: the linear cache now stores the Hermite–
+  Laguerre hypercollision ratios and masks to avoid repeated power operations
+  inside the RHS assembly.
 
 Gyroaverage and polarization
 ----------------------------
