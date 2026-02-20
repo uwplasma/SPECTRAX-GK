@@ -60,6 +60,31 @@ sets:
 The reduced scan tables and regression tests use ``Nx=1, Ny=24, Nz=96`` on this
 grid to match the discrete ky set used in the reference CSV.
 
+GX-aligned spectral grids
+-------------------------
+
+SPECTRAX-GK’s GX-aligned integrator uses the same Fourier conventions as GX.
+The perpendicular wave numbers are defined as
+
+.. math::
+
+   k_x = \frac{n_x}{x_0}, \qquad k_y = \frac{n_y}{y_0},
+
+with ``x0 = Lx / (2π)`` and ``y0 = Ly / (2π)``. The parallel wave number is
+
+.. math::
+
+   k_z = \frac{n_z}{Z_p},
+
+where :math:`Z_p` sets the field-line length
+(:math:`z \in [-\pi Z_p, \pi Z_p)`), and :math:`k_z` is defined *without* the
+``gradpar`` factor. These definitions are implemented by
+``spectraxgk.grids.build_spectral_grid`` and are consistent with GX’s
+``kInit`` kernel.
+
+The midplane index used by the GX growth-rate diagnostic corresponds to
+``z_index = Nz//2 + 1``, matching the GX kernel logic when ``Nz > 1``.
+
 Normalization parameters
 ------------------------
 
@@ -74,6 +99,10 @@ drift/drive terms:
 In code, ``rho_star`` multiplies the Fourier grids inside
 :func:`spectraxgk.linear.build_linear_cache`, while ``omega_d_scale`` and
 ``omega_star_scale`` enter directly in :func:`spectraxgk.linear.linear_rhs_cached`.
+
+GX end-damping strength (``damp_ends_amp``) is scaled by the timestep inside the
+integrator to match the GX implementation: the damping kernel receives
+``damp_ends_amp / dt`` so that the damping is defined per unit time.
 
 Defaults (model parameters):
 

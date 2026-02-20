@@ -8,6 +8,10 @@ remain available by setting ``solver="time"`` in the benchmark helpers (or by
 calling ``integrate_linear`` directly). A small runtime/memory comparison script
 is available in ``tools/benchmark_integrators.py``.
 
+For GX-aligned time integration and diagnostics, SPECTRAX-GK includes a
+``integrate_linear_gx`` path that mirrors GX’s RK4 timestep selection and
+growth-rate extraction.
+
 The Krylov solver applies a mild frequency cap (``KrylovConfig.omega_cap_factor``)
 to avoid selecting spurious high-frequency Ritz values when multiple branches are
 present. Set ``omega_cap_factor=0`` to disable this filter.
@@ -84,13 +88,14 @@ frequencies across a reduced :math:`k_y` scan on the field-aligned grid.
    * - Electromagnetic
      - ``beta=0``, ``A_parallel=off``, ``B_parallel=off``
    * - Collisions
-     - ``nu_i=1e-2``, hypercollisions off
+     - ``nu_i=1e-2``, GX-style hypercollisions (kz-proportional) on
    * - Operator toggles
      - streaming/mirror/curvature/grad-B/diamagnetic on; nonlinear off
    * - Grid
      - ``Nx=1, Ny=24, Nz=96, y0=20, ntheta=32, nperiod=2``
    * - Velocity resolution
-     - ``Nl=6, Nm=16`` (figure generation)
+     - ``Nl=6, Nm=16`` (legacy figure generation); GX-aligned scans use
+       per-ky balanced resolutions below.
    * - Reference
      - :cite:`GX`
 
@@ -107,6 +112,53 @@ frequencies across a reduced :math:`k_y` scan on the field-aligned grid.
 
    Cyclone base case growth rates and real frequencies comparing SPECTRAX-GK
    against the published reference dataset.
+
+.. list-table:: Cyclone base case (GX-style integrator, balanced resolution)
+   :header-rows: 1
+
+   * - ky rho_i
+     - Nl
+     - Nm
+     - t_max
+     - gamma
+     - omega
+     - rel gamma
+     - rel omega
+   * - 0.05
+     - 16
+     - 8
+     - 30
+     - 0.0170
+     - 0.0461
+     - +73%
+     - +26%
+   * - 0.10
+     - 16
+     - 8
+     - 10
+     - 0.0298
+     - 0.0801
+     - -2.0%
+     - +0.3%
+   * - 0.20
+     - 24
+     - 12
+     - 20
+     - 0.0765
+     - 0.1864
+     - +1.9%
+     - +4.8%
+   * - 0.30
+     - 24
+     - 12
+     - 10
+     - 0.0911
+     - 0.2971
+     - -2.1%
+     - +5.4%
+
+Low-ky points converge slowly in time; longer ``t_max`` windows are required
+to match the reference within the same tolerance band.
 
 Kinetic-Electron ITG (Ion-Scale)
 --------------------------------
