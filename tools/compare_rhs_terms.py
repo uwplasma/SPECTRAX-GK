@@ -21,7 +21,7 @@ from spectraxgk.terms.linear_terms import (
     curvature_gradb_contribution,
     diamagnetic_contribution,
     mirror_contribution,
-    streaming_contribution,
+    streaming_contribution_gx,
 )
 from spectraxgk.terms.operators import grad_z_linked_fft, grad_z_periodic
 
@@ -490,8 +490,14 @@ def main() -> int:
         ),
         use_custom_vjp=False,
     )[0]
-    our_stream = streaming_contribution(
-        H,
+    our_stream = streaming_contribution_gx(
+        G,
+        phi=fields.phi,
+        apar=apar,
+        bpar=bpar,
+        Jl=Jl,
+        JlB=JlB,
+        tz=tz,
         kz=cache.kz.astype(real_dtype),
         dz=cache.dz.astype(real_dtype),
         vth=vth,
@@ -499,11 +505,9 @@ def main() -> int:
         sqrt_m=cache.sqrt_m_ladder.astype(real_dtype),
         kpar_scale=jnp.asarray(params.kpar_scale, dtype=real_dtype),
         weight=jnp.asarray(1.0, dtype=real_dtype),
-        kx_link_plus=cache.kx_link_plus,
-        kx_link_minus=cache.kx_link_minus,
-        kx_mask_plus=cache.kx_link_mask_plus,
-        kx_mask_minus=cache.kx_link_mask_minus,
         use_twist_shift=cache.use_twist_shift,
+        linked_indices=cache.linked_indices,
+        linked_kz=cache.linked_kz,
     )
     our_mirror = mirror_contribution(
         H,
