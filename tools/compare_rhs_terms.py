@@ -54,10 +54,13 @@ def _gx_build_H(
     bpar: jnp.ndarray,
     JlB: jnp.ndarray,
 ) -> jnp.ndarray:
+    zt = jnp.where(tz == 0.0, 0.0, 1.0 / tz)
     H = G
-    H = H.at[:, :, 0, ...].add(tz[:, None, None, None, None] * Jl * phi)
+    H = H.at[:, :, 0, ...].add(zt[:, None, None, None, None] * Jl * phi)
     H = H.at[:, :, 0, ...].add(JlB * bpar)
-    H = H.at[:, :, 1, ...].add(-tz[:, None, None, None, None] * vth[:, None, None, None, None] * Jl * apar)
+    H = H.at[:, :, 1, ...].add(
+        -zt[:, None, None, None, None] * vth[:, None, None, None, None] * Jl * apar
+    )
     return H
 
 
@@ -182,7 +185,7 @@ def _gx_diamagnetic(
     fprim_s = fprim[:, None, None, None, None]
     tz_s = tz[:, None, None, None, None]
     omega_star_s = omega_star[None, None, :, None, None]
-    omega_star_bpar = omega_star_s / tz_s
+    omega_star_bpar = omega_star_s * tz_s
     drive_m0 = omega_star_s * phi * (
         Jl_m1 * (l4 * tprim_s)
         + Jl * (fprim_s + 2.0 * l4 * tprim_s)
