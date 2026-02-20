@@ -225,12 +225,96 @@ def _rel_err(a: jnp.ndarray, b: jnp.ndarray) -> float:
     return float(_norm(a - b) / denom)
 
 
+def _gx_geometry_arrays(geom: SAlphaGeometry, theta: jnp.ndarray) -> dict[str, jnp.ndarray]:
+    """Compute GX-style s-alpha geometry arrays for comparison."""
+
+    shear = geom.s_hat * theta - geom.alpha * jnp.sin(theta)
+    gds2 = 1.0 + shear * shear
+    gds21 = -geom.s_hat * shear
+    gds22 = jnp.asarray(geom.s_hat) * jnp.asarray(geom.s_hat)
+    bmag = 1.0 / (1.0 + geom.epsilon * jnp.cos(theta))
+    bgrad = geom.gradpar() * geom.epsilon * jnp.sin(theta) * bmag
+    base = jnp.cos(theta) + shear * jnp.sin(theta)
+    cv = base / geom.R0
+    gb = cv
+    cv0 = (-geom.s_hat * jnp.sin(theta)) / geom.R0
+    gb0 = cv0
+    return {
+        "gds2": gds2,
+        "gds21": gds21,
+        "gds22": gds22,
+        "bmag": bmag,
+        "bgrad": bgrad,
+        "cv": cv,
+        "gb": gb,
+        "cv0": cv0,
+        "gb0": gb0,
+    }
+
+
+def _report_geom_diffs(cache: "LinearCache", geom: SAlphaGeometry, grid) -> None:
+    theta = jnp.asarray(grid.z)
+    gx = _gx_geometry_arrays(geom, theta)
+    spec = {
+        "bmag": cache.bmag,
+        "bgrad": cache.bgrad,
+    }
+    cv, gb, cv0, gb0 = geom.drift_coeffs(theta)
+    spec.update({"cv": cv, "gb": gb, "cv0": cv0, "gb0": gb0})
+    for key in ["bmag", "bgrad", "cv", "gb", "cv0", "gb0"]:
+        arr_spec = jnp.asarray(spec[key])
+        arr_gx = jnp.asarray(gx[key])
+        diff = jnp.max(jnp.abs(arr_spec - arr_gx))
+        print(f"geom diff {key}: max|spec-gx|={float(diff):.3e}")
+
+
+def _report_max_diff(
+    label: str,
+    ours: jnp.ndarray,
+    gx: jnp.ndarray,
+    cache: "LinearCache",
+    H: jnp.ndarray,
+    field_label: str,
+) -> None:
+    diff = ours - gx
+    absdiff = jnp.abs(diff)
+    flat_idx = int(jnp.argmax(absdiff))
+    idx = np.unravel_index(flat_idx, absdiff.shape)
+    ours_val = np.asarray(ours)[idx]
+    gx_val = np.asarray(gx)[idx]
+    diff_val = np.asarray(diff)[idx]
+    print(f"{label} max |Δ| at {field_label} index {idx}: ours={ours_val} gx={gx_val} diff={diff_val}")
+    if len(idx) == 6:
+        s, l, m, ky_i, kx_i, z_i = idx
+        bgrad = float(np.asarray(cache.bgrad)[z_i])
+        cv_d = float(np.asarray(cache.cv_d)[ky_i, kx_i, z_i])
+        gb_d = float(np.asarray(cache.gb_d)[ky_i, kx_i, z_i])
+        print(
+            f"  coeffs: bgrad={bgrad:.6e} cv_d={cv_d:.6e} gb_d={gb_d:.6e} ky={float(cache.ky[ky_i]):.6e}"
+        )
+        H_val = np.asarray(H)[idx]
+        print(f"  H[{idx}]= {H_val}")
+
+
+def _report_shift_diffs(H: jnp.ndarray) -> None:
+    from spectraxgk.terms.operators import shift_axis as shift_ops
+
+    for axis, name in [(-4, "m"), (-5, "l")]:
+        for offset in (-1, 1):
+            ours = shift_ops(H, offset, axis=axis)
+            ref = _shift_axis(H, offset, axis=axis)
+            diff = float(jnp.max(jnp.abs(ours - ref)))
+            print(f"shift_axis diff (axis {name}, offset {offset}): {diff:.3e}")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Compare RHS terms with GX formula replicas.")
     parser.add_argument("--ky", type=float, default=0.05)
     parser.add_argument("--Nl", type=int, default=6)
     parser.add_argument("--Nm", type=int, default=12)
     parser.add_argument("--seed", type=int, default=1)
+    parser.add_argument("--debug", action="store_true", help="Print max-diff indices and coefficients.")
+    parser.add_argument("--geom-out", type=str, default="", help="Optional npz path for geometry arrays.")
     args = parser.parse_args()
 
     cfg = CycloneBaseCase()
@@ -257,6 +341,27 @@ def main() -> int:
         p_hyper_m=20.0,
     )
     cache = build_linear_cache(grid, geom, params, args.Nl, args.Nm)
+    if args.debug:
+        _report_geom_diffs(cache, geom, grid)
+        if args.geom_out:
+            theta = np.asarray(grid.z)
+            gx = _gx_geometry_arrays(geom, jnp.asarray(grid.z))
+            np.savez(
+                args.geom_out,
+                theta=theta,
+                bmag=np.asarray(cache.bmag),
+                bgrad=np.asarray(cache.bgrad),
+                cv=np.asarray(geom.drift_coeffs(jnp.asarray(grid.z))[0]),
+                gb=np.asarray(geom.drift_coeffs(jnp.asarray(grid.z))[1]),
+                cv0=np.asarray(geom.drift_coeffs(jnp.asarray(grid.z))[2]),
+                gb0=np.asarray(geom.drift_coeffs(jnp.asarray(grid.z))[3]),
+                gx_bmag=np.asarray(gx["bmag"]),
+                gx_bgrad=np.asarray(gx["bgrad"]),
+                gx_cv=np.asarray(gx["cv"]),
+                gx_gb=np.asarray(gx["gb"]),
+                gx_cv0=np.asarray(gx["cv0"]),
+                gx_gb0=np.asarray(gx["gb0"]),
+            )
 
     ky_index = int(np.argmin(np.abs(np.asarray(grid.ky) - args.ky)))
     G = jnp.zeros((args.Nl, args.Nm, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64)
@@ -296,6 +401,8 @@ def main() -> int:
     apar = fields.apar if fields.apar is not None else jnp.zeros_like(fields.phi)
     bpar = fields.bpar if fields.bpar is not None else jnp.zeros_like(fields.phi)
     H = _gx_build_H(G, Jl, fields.phi, tz, apar=apar, vth=vth, bpar=bpar, JlB=JlB)
+    if args.debug:
+        _report_shift_diffs(H)
 
     gx_stream = _gx_streaming(
         H,
@@ -425,6 +532,9 @@ def main() -> int:
     print("RHS term comparison (relative L2 error vs GX replicas):")
     for name, (ours, gx) in comparisons.items():
         print(f"{name:>12}: {_rel_err(ours, gx):.3e}")
+    if args.debug:
+        _report_max_diff("mirror", our_mirror, gx_mirror, cache, H, "G")
+        _report_max_diff("curv+gradB", our_curv_gradb, gx_curv + gx_gradb, cache, H, "G")
 
     return 0
 
