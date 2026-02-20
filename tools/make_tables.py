@@ -744,7 +744,7 @@ def main() -> int:
     )
 
     kinetic_ref = load_cyclone_reference_kinetic()
-    kinetic_steps = _scale_steps(kinetic_ref.ky, base_steps=80000, ky_ref=0.3, max_steps=120000)
+    kinetic_steps = _scale_steps(kinetic_ref.ky, base_steps=40000, ky_ref=0.3, max_steps=60000)
     kinetic_dt = _scale_dt(kinetic_ref.ky, base_dt=0.0005, ky_ref=0.3)
     kinetic_tmax = kinetic_dt * kinetic_steps
     kinetic_tmin = 0.6 * kinetic_tmax
