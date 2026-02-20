@@ -665,6 +665,9 @@ def main() -> int:
     kinetic_ky = kinetic_ref.ky[::2]
     kinetic_steps = _scale_steps(kinetic_ky, base_steps=80000, ky_ref=0.3, max_steps=120000)
     kinetic_dt = _scale_dt(kinetic_ky, base_dt=0.0005, ky_ref=0.3)
+    kinetic_tmax = kinetic_dt * kinetic_steps
+    kinetic_tmin = 0.6 * kinetic_tmax
+    kinetic_tmax_fit = 0.95 * kinetic_tmax
     kinetic_scan, kinetic_mode, kinetic_grid, _ = _scan_and_mode(
         run_kinetic_scan,
         run_kinetic_linear,
@@ -678,6 +681,7 @@ def main() -> int:
         scan_solver=KINETIC_SCAN_SOLVER,
         mode_solver=MODE_SOLVER,
         mode_method=MODE_METHOD,
+        scan_kwargs={"tmin": kinetic_tmin, "tmax": kinetic_tmax_fit, "auto_window": False},
         verbose=verbose,
         progress=progress,
         label="Kinetic ITG panel",
@@ -689,6 +693,10 @@ def main() -> int:
     )
     etg_ky = etg_ref.ky[::2]
     etg_dt = _scale_dt(etg_ky, base_dt=0.0002, ky_ref=20.0)
+    etg_steps = _scale_steps(etg_ky, base_steps=1200, ky_ref=20.0, max_steps=4000)
+    etg_tmax = etg_dt * etg_steps
+    etg_tmin = 0.4 * etg_tmax
+    etg_tmax_fit = 0.85 * etg_tmax
     etg_scan, etg_mode, etg_grid, _ = _scan_and_mode(
         run_etg_scan,
         run_etg_linear,
@@ -696,12 +704,13 @@ def main() -> int:
         cfg_etg,
         Nl=48,
         Nm=16,
-        steps=1200,
+        steps=etg_steps,
         dt=etg_dt,
         window_kw=WINDOWS["etg"],
         scan_solver=ETG_SCAN_SOLVER,
         mode_solver=MODE_SOLVER,
         mode_method=MODE_METHOD,
+        scan_kwargs={"tmin": etg_tmin, "tmax": etg_tmax_fit, "auto_window": False},
         verbose=verbose,
         progress=progress,
         label="ETG panel",
@@ -712,23 +721,34 @@ def main() -> int:
         grid=GridConfig(Nx=1, Ny=9, Nz=96, Lx=62.8, Ly=62.8, y0=10.0, ntheta=32, nperiod=2)
     )
     kbm_beta = kbm_ref.ky[::2]
+    kbm_dt = _scale_dt(kbm_beta, base_dt=0.0005, ky_ref=0.3)
+    kbm_steps = _scale_steps(kbm_beta, base_steps=4000, ky_ref=0.3, max_steps=8000)
+    kbm_tmax = kbm_dt * kbm_steps
+    kbm_tmin = 0.4 * kbm_tmax
+    kbm_tmax = 0.8 * kbm_tmax
     kbm_scan = _scan_kbm_verbose(
         betas=kbm_beta,
         cfg=cfg_kbm,
         Nl=48,
         Nm=16,
-        steps=80000,
-        dt=0.0005,
+        steps=kbm_steps,
+        dt=kbm_dt,
         method=MODE_METHOD,
         solver=KBM_SCAN_SOLVER,
         krylov_cfg=KBM_KRYLOV,
         window_kw=WINDOWS["kbm"],
+        tmin=kbm_tmin,
+        tmax=kbm_tmax,
+        auto_window=False,
         label="KBM panel",
         verbose=verbose,
         progress=progress,
     )
+    kbm_idx = int(np.argmin(np.abs(kbm_beta - 0.3)))
+    kbm_steps_run = int(kbm_steps[kbm_idx])
+    kbm_dt_run = float(kbm_dt[kbm_idx])
     _log(
-        "[KBM panel] eigenfunction ky=0.3 dt=0.0005 steps=80000",
+        f"[KBM panel] eigenfunction ky=0.3 dt={kbm_dt_run:.4g} steps={kbm_steps_run}",
         verbose=verbose,
         use_tqdm=progress,
     )
@@ -737,8 +757,8 @@ def main() -> int:
         ky_target=0.3,
         Nl=48,
         Nm=16,
-        steps=80000,
-        dt=0.0005,
+        steps=kbm_steps_run,
+        dt=kbm_dt_run,
         method=MODE_METHOD,
         solver=MODE_SOLVER,
         **WINDOWS["kbm"],
@@ -751,6 +771,11 @@ def main() -> int:
         grid=GridConfig(Nx=1, Ny=24, Nz=160, Lx=62.8, Ly=62.8, y0=20.0, ntheta=32, nperiod=3)
     )
     tem_ky = tem_ref.ky[::2]
+    tem_dt = _scale_dt(tem_ky, base_dt=0.001, ky_ref=0.3)
+    tem_steps = _scale_steps(tem_ky, base_steps=2000, ky_ref=0.3, max_steps=6000)
+    tem_tmax = tem_dt * tem_steps
+    tem_tmin = 0.4 * tem_tmax
+    tem_tmax_fit = 0.85 * tem_tmax
     tem_scan, tem_mode, tem_grid, _ = _scan_and_mode(
         run_tem_scan,
         run_tem_linear,
@@ -758,12 +783,13 @@ def main() -> int:
         cfg_tem,
         Nl=48,
         Nm=16,
-        steps=1200,
-        dt=0.001,
+        steps=tem_steps,
+        dt=tem_dt,
         window_kw=WINDOWS["tem"],
         scan_solver=TEM_SCAN_SOLVER,
         mode_solver=MODE_SOLVER,
         mode_method=MODE_METHOD,
+        scan_kwargs={"tmin": tem_tmin, "tmax": tem_tmax_fit, "auto_window": False},
         verbose=verbose,
         progress=progress,
         label="TEM panel",
