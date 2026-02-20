@@ -13,7 +13,7 @@ import jax.numpy as jnp
 from spectraxgk.benchmarks import CycloneBaseCase
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid
-from spectraxgk.linear import LinearParams, build_linear_cache
+from spectraxgk.linear import LinearParams, build_H, build_linear_cache
 from spectraxgk.terms import assembly as rhs_assembly
 from spectraxgk.terms.config import TermConfig
 from spectraxgk.terms.fields import _solve_fields_impl
@@ -23,7 +23,7 @@ from spectraxgk.terms.linear_terms import (
     mirror_contribution,
     streaming_contribution,
 )
-from spectraxgk.terms.operators import grad_z_periodic
+from spectraxgk.terms.operators import grad_z_linked_fft, grad_z_periodic
 
 
 def _shift_axis(arr: jnp.ndarray, offset: int, axis: int) -> jnp.ndarray:
@@ -75,6 +75,8 @@ def _gx_streaming(
     kx_link_minus: jnp.ndarray | None = None,
     kx_mask_plus: jnp.ndarray | None = None,
     kx_mask_minus: jnp.ndarray | None = None,
+    linked_indices: tuple[jnp.ndarray, ...] | None = None,
+    linked_kz: tuple[jnp.ndarray, ...] | None = None,
 ) -> jnp.ndarray:
     axis_m = -4
     Nm = H.shape[axis_m]
@@ -88,18 +90,23 @@ def _gx_streaming(
     vth_s = vth[:, None, None, None, None, None]
     rhs = -vth_s * ladder
     if use_twist_shift:
-        if kx_link_plus is None or kx_link_minus is None or kx_mask_plus is None or kx_mask_minus is None:
-            raise ValueError("kx_link arrays must be provided for twist-shift comparison")
-        from spectraxgk.terms.operators import grad_z_linked
+        if linked_indices is not None and linked_kz is not None:
+            rhs = grad_z_linked_fft(
+                rhs, dz=dz, linked_indices=linked_indices, linked_kz=linked_kz
+            )
+        else:
+            if kx_link_plus is None or kx_link_minus is None or kx_mask_plus is None or kx_mask_minus is None:
+                raise ValueError("kx_link arrays must be provided for twist-shift comparison")
+            from spectraxgk.terms.operators import _grad_z_linked_fd
 
-        rhs = grad_z_linked(
-            rhs,
-            dz=dz,
-            kx_link_plus=kx_link_plus,
-            kx_link_minus=kx_link_minus,
-            kx_mask_plus=kx_mask_plus,
-            kx_mask_minus=kx_mask_minus,
-        )
+            rhs = _grad_z_linked_fd(
+                rhs,
+                dz=dz,
+                kx_link_plus=kx_link_plus,
+                kx_link_minus=kx_link_minus,
+                kx_mask_plus=kx_mask_plus,
+                kx_mask_minus=kx_mask_minus,
+            )
     else:
         rhs = grad_z_periodic(rhs, dz)
     return kpar_scale * rhs
@@ -264,8 +271,13 @@ def _report_geom_diffs(cache: "LinearCache", geom: SAlphaGeometry, grid) -> None
     for key in ["bmag", "bgrad", "cv", "gb", "cv0", "gb0"]:
         arr_spec = jnp.asarray(spec[key])
         arr_gx = jnp.asarray(gx[key])
-        diff = jnp.max(jnp.abs(arr_spec - arr_gx))
-        print(f"geom diff {key}: max|spec-gx|={float(diff):.3e}")
+        diff = jnp.abs(arr_spec - arr_gx)
+        flat_idx = int(jnp.argmax(diff))
+        idx = np.unravel_index(flat_idx, diff.shape)
+        print(
+            f"geom diff {key}: max|spec-gx|={float(diff[idx]):.3e} at {idx} "
+            f"(spec={float(arr_spec[idx]):.6e}, gx={float(arr_gx[idx]):.6e})"
+        )
 
 
 def _report_max_diff(
@@ -274,6 +286,7 @@ def _report_max_diff(
     gx: jnp.ndarray,
     cache: "LinearCache",
     H: jnp.ndarray,
+    H_gx: jnp.ndarray,
     field_label: str,
 ) -> None:
     diff = ours - gx
@@ -293,7 +306,8 @@ def _report_max_diff(
             f"  coeffs: bgrad={bgrad:.6e} cv_d={cv_d:.6e} gb_d={gb_d:.6e} ky={float(cache.ky[ky_i]):.6e}"
         )
         H_val = np.asarray(H)[idx]
-        print(f"  H[{idx}]= {H_val}")
+        H_gx_val = np.asarray(H_gx)[idx]
+        print(f"  H_spec[{idx}]={H_val} H_gx[{idx}]={H_gx_val}")
 
 
 def _report_shift_diffs(H: jnp.ndarray) -> None:
@@ -401,8 +415,15 @@ def main() -> int:
     apar = fields.apar if fields.apar is not None else jnp.zeros_like(fields.phi)
     bpar = fields.bpar if fields.bpar is not None else jnp.zeros_like(fields.phi)
     H = _gx_build_H(G, Jl, fields.phi, tz, apar=apar, vth=vth, bpar=bpar, JlB=JlB)
+    H_gx = H
+    H_ref = build_H(G, Jl, fields.phi, tz, apar=apar, vth=vth, bpar=bpar, JlB=JlB)
     if args.debug:
         _report_shift_diffs(H)
+        hdiff = jnp.abs(H_ref - H_gx)
+        hmax = float(jnp.max(hdiff))
+        if hmax > 0.0:
+            idx = np.unravel_index(int(jnp.argmax(hdiff)), hdiff.shape)
+            print(f"H diff max|Δ|={hmax:.3e} at {idx} (spec={np.asarray(H_ref)[idx]}, gx={np.asarray(H_gx)[idx]})")
 
     gx_stream = _gx_streaming(
         H,
@@ -414,6 +435,8 @@ def main() -> int:
         kx_link_minus=cache.kx_link_minus,
         kx_mask_plus=cache.kx_link_mask_plus,
         kx_mask_minus=cache.kx_link_mask_minus,
+        linked_indices=cache.linked_indices,
+        linked_kz=cache.linked_kz,
     )
     gx_mirror = _gx_mirror(
         H,
@@ -533,8 +556,8 @@ def main() -> int:
     for name, (ours, gx) in comparisons.items():
         print(f"{name:>12}: {_rel_err(ours, gx):.3e}")
     if args.debug:
-        _report_max_diff("mirror", our_mirror, gx_mirror, cache, H, "G")
-        _report_max_diff("curv+gradB", our_curv_gradb, gx_curv + gx_gradb, cache, H, "G")
+        _report_max_diff("mirror", our_mirror, gx_mirror, cache, H_ref, H_gx, "G")
+        _report_max_diff("curv+gradB", our_curv_gradb, gx_curv + gx_gradb, cache, H_ref, H_gx, "G")
 
     return 0
 
