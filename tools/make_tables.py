@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
+from dataclasses import asdict, is_dataclass
 from pathlib import Path
+from pprint import pformat
+import argparse
 import sys
 
 import numpy as np
+from tqdm.auto import tqdm
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src"
@@ -18,14 +22,23 @@ from spectraxgk.benchmarks import (
     load_etg_reference,
     load_kbm_reference,
     load_tem_reference,
-    run_cyclone_scan,
+    CycloneScanResult,
+    LinearScanResult,
+    run_cyclone_linear,
     run_etg_linear,
-    run_etg_scan,
-    run_kinetic_scan,
+    run_kinetic_linear,
     run_kbm_beta_scan,
-    run_tem_scan,
+    run_tem_linear,
 )
-from spectraxgk.config import CycloneBaseCase, ETGBaseCase, ETGModelConfig, GridConfig
+from spectraxgk.config import (
+    CycloneBaseCase,
+    ETGBaseCase,
+    ETGModelConfig,
+    GridConfig,
+    KineticElectronBaseCase,
+    KBMBaseCase,
+    TEMBaseCase,
+)
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.linear import LinearParams, LinearTerms
 from spectraxgk.linear_krylov import KrylovConfig
@@ -88,6 +101,7 @@ TEM_KRYLOV = KrylovConfig(
 )
 
 
+
 def _build_rows(scan, ref):
     rows = ["ky,gamma_ref,omega_ref,gamma_spectrax,omega_spectrax,rel_gamma,rel_omega"]
     for ky, gamma, omega in zip(scan.ky, scan.gamma, scan.omega):
@@ -102,14 +116,225 @@ def _build_rows(scan, ref):
     return rows
 
 
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Generate validation tables.")
+    parser.add_argument(
+        "--case",
+        choices=["all", "cyclone"],
+        default="all",
+        help="Limit table generation to a specific case.",
+    )
+    parser.add_argument("--quiet", action="store_true", help="Disable verbose logging.")
+    parser.add_argument(
+        "--no-progress", action="store_true", help="Disable tqdm progress bars."
+    )
+    return parser.parse_args()
+
+
+def _log(msg: str, *, verbose: bool, use_tqdm: bool) -> None:
+    if not verbose:
+        return
+    if use_tqdm:
+        tqdm.write(msg)
+    else:
+        print(msg, flush=True)
+
+
+def _format_cfg(cfg) -> str:
+    if is_dataclass(cfg):
+        return pformat(asdict(cfg), width=120, sort_dicts=False)
+    return pformat(cfg, width=120, sort_dicts=False)
+
+
+def _window_value(val, idx: int) -> float | None:
+    if val is None:
+        return None
+    if isinstance(val, (list, tuple, np.ndarray)):
+        return float(val[idx])
+    return float(val)
+
+
+def _scan_linear_verbose(
+    *,
+    ky_values: np.ndarray,
+    run_linear_fn,
+    cfg,
+    Nl: int,
+    Nm: int,
+    dt: float | np.ndarray,
+    steps: int | np.ndarray,
+    method: str,
+    solver: str,
+    krylov_cfg,
+    window_kw: dict,
+    tmin: float | np.ndarray | None = None,
+    tmax: float | np.ndarray | None = None,
+    auto_window: bool = True,
+    label: str,
+    run_kwargs: dict | None = None,
+    ref=None,
+    verbose: bool,
+    progress: bool,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    _log(f"\n=== {label} scan ===", verbose=verbose, use_tqdm=progress)
+    _log(f"Config:\n{_format_cfg(cfg)}", verbose=verbose, use_tqdm=progress)
+    _log(
+        f"Numerics: Nl={Nl} Nm={Nm} method={method} solver={solver} dt={dt} steps={steps}",
+        verbose=verbose,
+        use_tqdm=progress,
+    )
+    _log(f"Window params: {window_kw}", verbose=verbose, use_tqdm=progress)
+    if run_kwargs:
+        _log(f"Extra kwargs: {run_kwargs}", verbose=verbose, use_tqdm=progress)
+    if tmin is not None or tmax is not None:
+        _log(f"Manual window tmin={tmin} tmax={tmax}", verbose=verbose, use_tqdm=progress)
+
+    gammas: list[float] = []
+    omegas: list[float] = []
+    ky_out: list[float] = []
+    iterator = tqdm(ky_values, desc=f"{label} ky scan") if progress else ky_values
+    for i, ky in enumerate(iterator):
+        dt_i = float(dt[i]) if isinstance(dt, np.ndarray) else float(dt)
+        steps_i = int(steps[i]) if isinstance(steps, np.ndarray) else int(steps)
+        tmin_i = _window_value(tmin, i)
+        tmax_i = _window_value(tmax, i)
+        _log(
+            f"[{label}] start ky={float(ky):.4g} dt={dt_i:.4g} steps={steps_i} tmax={dt_i*steps_i:.4g}",
+            verbose=verbose,
+            use_tqdm=progress,
+        )
+        extra = run_kwargs or {}
+        result = run_linear_fn(
+            ky_target=float(ky),
+            cfg=cfg,
+            Nl=Nl,
+            Nm=Nm,
+            dt=dt_i,
+            steps=steps_i,
+            method=method,
+            solver=solver,
+            krylov_cfg=krylov_cfg,
+            auto_window=auto_window,
+            tmin=tmin_i,
+            tmax=tmax_i,
+            **window_kw,
+            **extra,
+        )
+        gammas.append(float(result.gamma))
+        omegas.append(float(result.omega))
+        ky_out.append(float(result.ky))
+        msg = f"[{label}] done ky={float(result.ky):.4g} gamma={result.gamma:.6g} omega={result.omega:.6g}"
+        if ref is not None:
+            idx = int(np.argmin(np.abs(ref.ky - result.ky)))
+            gamma_ref = float(ref.gamma[idx])
+            omega_ref = float(ref.omega[idx])
+            rel_gamma = (result.gamma - gamma_ref) / gamma_ref if gamma_ref != 0.0 else np.nan
+            rel_omega = (result.omega - omega_ref) / omega_ref if omega_ref != 0.0 else np.nan
+            msg += (
+                f" | ref gamma={gamma_ref:.6g} omega={omega_ref:.6g}"
+                f" rel_gamma={rel_gamma:.3g} rel_omega={rel_omega:.3g}"
+            )
+        _log(msg, verbose=verbose, use_tqdm=progress)
+
+    return np.array(ky_out), np.array(gammas), np.array(omegas)
+
+
+def _scan_kbm_verbose(
+    *,
+    betas: np.ndarray,
+    cfg,
+    Nl: int,
+    Nm: int,
+    dt: float | np.ndarray,
+    steps: int | np.ndarray,
+    method: str,
+    solver: str,
+    krylov_cfg,
+    window_kw: dict,
+    tmin: float | np.ndarray | None = None,
+    tmax: float | np.ndarray | None = None,
+    auto_window: bool = True,
+    label: str,
+    ref=None,
+    verbose: bool,
+    progress: bool,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    _log(f"\n=== {label} beta scan ===", verbose=verbose, use_tqdm=progress)
+    _log(f"Config:\n{_format_cfg(cfg)}", verbose=verbose, use_tqdm=progress)
+    _log(
+        f"Numerics: Nl={Nl} Nm={Nm} method={method} solver={solver} dt={dt} steps={steps}",
+        verbose=verbose,
+        use_tqdm=progress,
+    )
+    _log(f"Window params: {window_kw}", verbose=verbose, use_tqdm=progress)
+    if tmin is not None or tmax is not None:
+        _log(f"Manual window tmin={tmin} tmax={tmax}", verbose=verbose, use_tqdm=progress)
+
+    gammas: list[float] = []
+    omegas: list[float] = []
+    beta_out: list[float] = []
+    iterator = tqdm(betas, desc=f"{label} beta scan") if progress else betas
+    for i, beta in enumerate(iterator):
+        dt_i = float(dt[i]) if isinstance(dt, np.ndarray) else float(dt)
+        steps_i = int(steps[i]) if isinstance(steps, np.ndarray) else int(steps)
+        tmin_i = _window_value(tmin, i)
+        tmax_i = _window_value(tmax, i)
+        _log(
+            f"[{label}] start beta={float(beta):.4g} dt={dt_i:.4g} steps={steps_i} tmax={dt_i*steps_i:.4g}",
+            verbose=verbose,
+            use_tqdm=progress,
+        )
+        result = run_kbm_beta_scan(
+            np.asarray([float(beta)]),
+            cfg=cfg,
+            ky_target=0.3,
+            Nl=Nl,
+            Nm=Nm,
+            dt=dt_i,
+            steps=steps_i,
+            method=method,
+            solver=solver,
+            krylov_cfg=krylov_cfg,
+            auto_window=auto_window,
+            tmin=tmin_i,
+            tmax=tmax_i,
+            **window_kw,
+        )
+        gamma = float(result.gamma[0])
+        omega = float(result.omega[0])
+        gammas.append(gamma)
+        omegas.append(omega)
+        beta_out.append(float(beta))
+        msg = f"[{label}] done beta={float(beta):.4g} gamma={gamma:.6g} omega={omega:.6g}"
+        if ref is not None:
+            idx = int(np.argmin(np.abs(ref.ky - beta)))
+            gamma_ref = float(ref.gamma[idx])
+            omega_ref = float(ref.omega[idx])
+            rel_gamma = (gamma - gamma_ref) / gamma_ref if gamma_ref != 0.0 else np.nan
+            rel_omega = (omega - omega_ref) / omega_ref if omega_ref != 0.0 else np.nan
+            msg += (
+                f" | ref gamma={gamma_ref:.6g} omega={omega_ref:.6g}"
+                f" rel_gamma={rel_gamma:.3g} rel_omega={rel_omega:.3g}"
+            )
+        _log(msg, verbose=verbose, use_tqdm=progress)
+
+    return np.array(beta_out), np.array(gammas), np.array(omegas)
+
+
 WINDOWS = {
     "cyclone": dict(
         window_fraction=0.3,
         min_points=80,
-        start_fraction=0.3,
-        growth_weight=0.2,
+        start_fraction=0.58,
+        growth_weight=0.0,
         require_positive=True,
-        min_amp_fraction=0.0,
+        min_amp_fraction=0.05,
+        max_fraction=0.6,
+        end_fraction=0.8,
+        max_amp_fraction=0.8,
+        late_penalty=0.3,
+        window_method="loglinear",
+        mode_method="project",
     ),
     "kinetic": dict(
         window_fraction=0.3,
@@ -158,33 +383,55 @@ def _scale_dt(ky: np.ndarray, base_dt: float, ky_ref: float) -> np.ndarray:
 
 
 def main() -> int:
+    args = _parse_args()
+    verbose = not args.quiet
+    progress = not args.no_progress
+
     outdir = ROOT / "docs" / "_static"
     outdir.mkdir(parents=True, exist_ok=True)
 
     ref = load_cyclone_reference()
     ky_subset = np.array([0.3, 0.4])
-    cfg = CycloneBaseCase()
+    cfg = CycloneBaseCase(
+        grid=GridConfig(Nx=1, Ny=18, Nz=96, Lx=62.8, Ly=62.8, y0=20.0, ntheta=32, nperiod=2)
+    )
 
-    low_scan = run_cyclone_scan(
-        ky_subset,
+    ky_low, g_low, w_low = _scan_linear_verbose(
+        ky_values=ky_subset,
+        run_linear_fn=run_cyclone_linear,
         cfg=cfg,
-        Nl=2,
-        Nm=4,
-        steps=1200,
-        dt=0.01,
+        Nl=48,
+        Nm=16,
+        dt=0.002,
+        steps=5000,
         method="imex2",
-        **WINDOWS["cyclone"],
+        solver=CYCLONE_SOLVER,
+        krylov_cfg=CYCLONE_KRYLOV,
+        window_kw=WINDOWS["cyclone"],
+        label="Cyclone low-res",
+        ref=ref,
+        verbose=verbose,
+        progress=progress,
     )
-    high_scan = run_cyclone_scan(
-        ky_subset,
+    ky_high, g_high, w_high = _scan_linear_verbose(
+        ky_values=ky_subset,
+        run_linear_fn=run_cyclone_linear,
         cfg=cfg,
-        Nl=3,
-        Nm=6,
-        steps=1200,
-        dt=0.01,
+        Nl=48,
+        Nm=16,
+        dt=0.002,
+        steps=5000,
         method="imex2",
-        **WINDOWS["cyclone"],
+        solver=CYCLONE_SOLVER,
+        krylov_cfg=CYCLONE_KRYLOV,
+        window_kw=WINDOWS["cyclone"],
+        label="Cyclone high-res",
+        ref=ref,
+        verbose=verbose,
+        progress=progress,
     )
+    low_scan = CycloneScanResult(ky=ky_low, gamma=g_low, omega=w_low)
+    high_scan = CycloneScanResult(ky=ky_high, gamma=g_high, omega=w_high)
 
     (outdir / "cyclone_scan_table_lowres.csv").write_text(
         "\n".join(_build_rows(low_scan, ref)) + "\n", encoding="utf-8"
@@ -196,14 +443,12 @@ def main() -> int:
     conv_rows = [
         "ky,gamma_low,gamma_high,omega_low,omega_high,rel_gamma_change,rel_omega_change"
     ]
-    for ky, g_lo, g_hi, w_lo, w_hi in zip(
-        low_scan.ky, low_scan.gamma, high_scan.gamma, low_scan.omega, high_scan.omega
-    ):
+    for ky, g_lo, g_hi, w_lo, w_hi in zip(ky_low, g_low, g_high, w_low, w_high):
         rel_g = (g_hi - g_lo) / g_hi if g_hi != 0.0 else np.nan
         rel_w = (w_hi - w_lo) / w_hi if w_hi != 0.0 else np.nan
-        conv_rows.append(
-            f"{ky:.3f},{g_lo:.6f},{g_hi:.6f},{w_lo:.6f},{w_hi:.6f},{rel_g:.3f},{rel_w:.3f}"
-        )
+        row = f"{ky:.3f},{g_lo:.6f},{g_hi:.6f},{w_lo:.6f},{w_hi:.6f},{rel_g:.3f},{rel_w:.3f}"
+        conv_rows.append(row)
+        _log(f"[Cyclone conv] {row}", verbose=verbose, use_tqdm=progress)
     (outdir / "cyclone_scan_convergence.csv").write_text(
         "\n".join(conv_rows) + "\n", encoding="utf-8"
     )
@@ -218,23 +463,30 @@ def main() -> int:
         rho_star=1.0,
         kpar_scale=float(full_geom.gradpar()),
     )
-    full_scan = run_cyclone_scan(
-        np.array([0.2, 0.3, 0.4]),
+    full_ky, full_g, full_w = _scan_linear_verbose(
+        ky_values=np.array([0.2, 0.3, 0.4]),
+        run_linear_fn=run_cyclone_linear,
         cfg=full_cfg,
-        Nl=6,
-        Nm=12,
-        steps=1200,
-        dt=0.01,
-        method="rk4",
-        terms=LinearTerms(),
-        params=full_params,
-        **WINDOWS["cyclone"],
+        Nl=48,
+        Nm=16,
+        dt=0.002,
+        steps=5000,
+        method="imex2",
+        solver=CYCLONE_SOLVER,
+        krylov_cfg=CYCLONE_KRYLOV,
+        window_kw=WINDOWS["cyclone"],
+        label="Cyclone full-operator",
+        run_kwargs={"params": full_params, "terms": LinearTerms()},
+        ref=ref,
+        verbose=verbose,
+        progress=progress,
     )
+    full_scan = CycloneScanResult(ky=full_ky, gamma=full_g, omega=full_w)
 
     full_rows = [
         "ky,gamma_ref,omega_ref,gamma_full,omega_full,abs_gamma,abs_omega,rel_gamma,rel_omega"
     ]
-    for ky, gamma, omega in zip(full_scan.ky, full_scan.gamma, full_scan.omega):
+    for ky, gamma, omega in zip(full_ky, full_g, full_w):
         idx = int(np.argmin(np.abs(ref.ky - ky)))
         gamma_ref = float(ref.gamma[idx])
         omega_ref = float(ref.omega[idx])
@@ -242,9 +494,12 @@ def main() -> int:
         omega_abs = abs(float(omega))
         rel_gamma = (gamma_abs - gamma_ref) / gamma_ref if gamma_ref != 0.0 else np.nan
         rel_omega = (omega_abs - omega_ref) / omega_ref if omega_ref != 0.0 else np.nan
-        full_rows.append(
-            f"{ky:.3f},{gamma_ref:.6f},{omega_ref:.6f},{gamma:.6f},{omega:.6f},{gamma_abs:.6f},{omega_abs:.6f},{rel_gamma:.3f},{rel_omega:.3f}"
+        row = (
+            f"{ky:.3f},{gamma_ref:.6f},{omega_ref:.6f},{gamma:.6f},{omega:.6f},"
+            f"{gamma_abs:.6f},{omega_abs:.6f},{rel_gamma:.3f},{rel_omega:.3f}"
         )
+        full_rows.append(row)
+        _log(f"[Cyclone full] {row}", verbose=verbose, use_tqdm=progress)
     (outdir / "cyclone_full_operator_scan_table.csv").write_text(
         "\n".join(full_rows) + "\n", encoding="utf-8"
     )
@@ -260,27 +515,35 @@ def main() -> int:
             rho_star=float(rho),
             kpar_scale=float(full_geom.gradpar()),
         )
-        scan = run_cyclone_scan(
-            np.array([0.2, 0.3, 0.4]),
+        scan_ky, scan_g, scan_w = _scan_linear_verbose(
+            ky_values=np.array([0.2, 0.3, 0.4]),
+            run_linear_fn=run_cyclone_linear,
             cfg=full_cfg,
-            Nl=6,
-            Nm=12,
-            steps=1200,
-            dt=0.01,
-            method="rk4",
-            terms=LinearTerms(),
-            params=params,
-            **WINDOWS["cyclone"],
+            Nl=48,
+            Nm=16,
+            dt=0.002,
+            steps=5000,
+            method="imex2",
+            solver=CYCLONE_SOLVER,
+            krylov_cfg=CYCLONE_KRYLOV,
+            window_kw=WINDOWS["cyclone"],
+            label=f"Cyclone rho_star={rho:.2f}",
+            run_kwargs={"params": params, "terms": LinearTerms()},
+            ref=ref,
+            verbose=verbose,
+            progress=progress,
         )
         rel_g = []
         rel_w = []
-        for ky, gamma, omega in zip(scan.ky, scan.gamma, scan.omega):
+        for ky, gamma, omega in zip(scan_ky, scan_g, scan_w):
             idx = int(np.argmin(np.abs(ref.ky - ky)))
             gamma_ref = float(ref.gamma[idx])
             omega_ref = float(ref.omega[idx])
             rel_g.append(abs(float(gamma)) / gamma_ref if gamma_ref != 0.0 else np.nan)
             rel_w.append(abs(float(omega)) / omega_ref if omega_ref != 0.0 else np.nan)
-        rho_rows.append(f"{rho:.2f},{np.nanmean(rel_g):.3f},{np.nanmean(rel_w):.3f}")
+        row = f"{rho:.2f},{np.nanmean(rel_g):.3f},{np.nanmean(rel_w):.3f}"
+        rho_rows.append(row)
+        _log(f"[Cyclone rho_star] {row}", verbose=verbose, use_tqdm=progress)
     (outdir / "cyclone_rhostar_convergence.csv").write_text(
         "\n".join(rho_rows) + "\n", encoding="utf-8"
     )
@@ -290,6 +553,12 @@ def main() -> int:
     etg_rows = ["R_over_LTe,gamma,omega"]
     for R in etg_R:
         cfg = ETGBaseCase(grid=etg_grid, model=ETGModelConfig(R_over_LTe=float(R)))
+        _log(
+            f"\n=== ETG trend R/LTe={float(R):.2f} ===",
+            verbose=verbose,
+            use_tqdm=progress,
+        )
+        _log(f"Config:\n{_format_cfg(cfg)}", verbose=verbose, use_tqdm=progress)
         res = run_etg_linear(
             cfg=cfg,
             ky_target=5.0,
@@ -304,47 +573,71 @@ def main() -> int:
             **WINDOWS["etg"],
         )
         etg_rows.append(f"{R:.2f},{res.gamma:.6f},{res.omega:.6f}")
+        _log(
+            f"[ETG trend] gamma={res.gamma:.6g} omega={res.omega:.6g}",
+            verbose=verbose,
+            use_tqdm=progress,
+        )
     (outdir / "etg_trend_table.csv").write_text(
         "\n".join(etg_rows) + "\n", encoding="utf-8"
     )
 
     # Mismatch tables against reference data (full ky/beta lists)
-    cyclone_steps = _scale_steps(ref.ky, base_steps=1200, ky_ref=0.2, max_steps=6000)
-    cyclone_mismatch = run_cyclone_scan(
-        ref.ky,
-        Nl=6,
-        Nm=12,
+    cyclone_steps = np.full_like(ref.ky, 5000, dtype=int)
+    cyc_ky, cyc_g, cyc_w = _scan_linear_verbose(
+        ky_values=ref.ky,
+        run_linear_fn=run_cyclone_linear,
+        cfg=cfg,
+        Nl=48,
+        Nm=16,
+        dt=0.002,
         steps=cyclone_steps,
-        dt=0.01,
         method="imex2",
         solver=CYCLONE_SOLVER,
         krylov_cfg=CYCLONE_KRYLOV,
-        **WINDOWS["cyclone"],
+        window_kw=WINDOWS["cyclone"],
+        label="Cyclone mismatch",
+        ref=ref,
+        verbose=verbose,
+        progress=progress,
     )
+    cyclone_mismatch = LinearScanResult(ky=cyc_ky, gamma=cyc_g, omega=cyc_w)
     (outdir / "cyclone_mismatch_table.csv").write_text(
         "\n".join(_build_rows(cyclone_mismatch, ref)) + "\n", encoding="utf-8"
     )
+    if args.case == "cyclone":
+        return 0
 
     kinetic_ref = load_cyclone_reference_kinetic()
-    kinetic_steps = _scale_steps(kinetic_ref.ky, base_steps=2000, ky_ref=0.3, max_steps=8000)
+    kinetic_steps = _scale_steps(kinetic_ref.ky, base_steps=80000, ky_ref=0.3, max_steps=120000)
     kinetic_dt = _scale_dt(kinetic_ref.ky, base_dt=0.0005, ky_ref=0.3)
     kinetic_tmax = kinetic_dt * kinetic_steps
     kinetic_tmin = 0.6 * kinetic_tmax
     kinetic_tmax = 0.95 * kinetic_tmax
-    kinetic_mismatch = run_kinetic_scan(
-        kinetic_ref.ky,
-        Nl=6,
-        Nm=12,
-        steps=kinetic_steps,
+    kinetic_cfg = KineticElectronBaseCase(
+        grid=GridConfig(Nx=1, Ny=12, Nz=96, Lx=62.8, Ly=62.8, y0=10.0, ntheta=32, nperiod=2)
+    )
+    kin_ky, kin_g, kin_w = _scan_linear_verbose(
+        ky_values=kinetic_ref.ky,
+        run_linear_fn=run_kinetic_linear,
+        cfg=kinetic_cfg,
+        Nl=48,
+        Nm=16,
         dt=kinetic_dt,
+        steps=kinetic_steps,
         method="imex2",
         solver=KINETIC_SOLVER,
         krylov_cfg=KINETIC_KRYLOV,
-        auto_window=False,
+        window_kw=WINDOWS["kinetic"],
         tmin=kinetic_tmin,
         tmax=kinetic_tmax,
-        **WINDOWS["kinetic"],
+        auto_window=False,
+        label="Kinetic ITG mismatch",
+        ref=kinetic_ref,
+        verbose=verbose,
+        progress=progress,
     )
+    kinetic_mismatch = LinearScanResult(ky=kin_ky, gamma=kin_g, omega=kin_w)
     (outdir / "kinetic_mismatch_table.csv").write_text(
         "\n".join(_build_rows(kinetic_mismatch, kinetic_ref)) + "\n", encoding="utf-8"
     )
@@ -354,20 +647,28 @@ def main() -> int:
     etg_tmax = etg_dt * 1200
     etg_tmin = 0.4 * etg_tmax
     etg_tmax = 0.85 * etg_tmax
-    etg_mismatch = run_etg_scan(
-        etg_ref.ky,
-        Nl=6,
-        Nm=12,
-        steps=1200,
+    etg_cfg = ETGBaseCase()
+    etg_ky, etg_g, etg_w = _scan_linear_verbose(
+        ky_values=etg_ref.ky,
+        run_linear_fn=run_etg_linear,
+        cfg=etg_cfg,
+        Nl=48,
+        Nm=16,
         dt=etg_dt,
+        steps=1200,
         method="imex2",
         solver=ETG_SOLVER,
         krylov_cfg=ETG_KRYLOV,
-        auto_window=False,
+        window_kw=WINDOWS["etg"],
         tmin=etg_tmin,
         tmax=etg_tmax,
-        **WINDOWS["etg"],
+        auto_window=False,
+        label="ETG mismatch",
+        ref=etg_ref,
+        verbose=verbose,
+        progress=progress,
     )
+    etg_mismatch = LinearScanResult(ky=etg_ky, gamma=etg_g, omega=etg_w)
     (outdir / "etg_mismatch_table.csv").write_text(
         "\n".join(_build_rows(etg_mismatch, etg_ref)) + "\n", encoding="utf-8"
     )
@@ -376,37 +677,53 @@ def main() -> int:
     kbm_tmax = 0.0005 * 1200
     kbm_tmin = 0.4 * kbm_tmax
     kbm_tmax = 0.75 * kbm_tmax
-    kbm_mismatch = run_kbm_beta_scan(
-        kbm_ref.ky,
-        ky_target=0.3,
-        Nl=6,
-        Nm=12,
-        steps=1200,
+    kbm_cfg = KBMBaseCase(
+        grid=GridConfig(Nx=1, Ny=9, Nz=96, Lx=62.8, Ly=62.8, y0=10.0, ntheta=32, nperiod=2)
+    )
+    kbm_beta, kbm_g, kbm_w = _scan_kbm_verbose(
+        betas=kbm_ref.ky,
+        cfg=kbm_cfg,
+        Nl=48,
+        Nm=16,
         dt=0.0005,
+        steps=80000,
         method="imex2",
         solver=KBM_SOLVER,
         krylov_cfg=KBM_KRYLOV,
-        auto_window=False,
+        window_kw=WINDOWS["kbm"],
         tmin=kbm_tmin,
         tmax=kbm_tmax,
-        **WINDOWS["kbm"],
+        auto_window=False,
+        label="KBM mismatch",
+        ref=kbm_ref,
+        verbose=verbose,
+        progress=progress,
     )
+    kbm_mismatch = LinearScanResult(ky=kbm_beta, gamma=kbm_g, omega=kbm_w)
     (outdir / "kbm_mismatch_table.csv").write_text(
         "\n".join(_build_rows(kbm_mismatch, kbm_ref)) + "\n", encoding="utf-8"
     )
 
     tem_ref = load_tem_reference()
-    tem_mismatch = run_tem_scan(
-        tem_ref.ky,
-        Nl=6,
-        Nm=12,
-        steps=1200,
+    tem_cfg = TEMBaseCase()
+    tem_ky, tem_g, tem_w = _scan_linear_verbose(
+        ky_values=tem_ref.ky,
+        run_linear_fn=run_tem_linear,
+        cfg=tem_cfg,
+        Nl=48,
+        Nm=16,
         dt=0.001,
+        steps=1200,
         method="imex2",
         solver=TEM_SOLVER,
         krylov_cfg=TEM_KRYLOV,
-        **WINDOWS["tem"],
+        window_kw=WINDOWS["tem"],
+        label="TEM mismatch",
+        ref=tem_ref,
+        verbose=verbose,
+        progress=progress,
     )
+    tem_mismatch = LinearScanResult(ky=tem_ky, gamma=tem_g, omega=tem_w)
     (outdir / "tem_mismatch_table.csv").write_text(
         "\n".join(_build_rows(tem_mismatch, tem_ref)) + "\n", encoding="utf-8"
     )
