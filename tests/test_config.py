@@ -18,7 +18,7 @@ def test_config_to_dict():
     """All config dataclasses should serialize to dictionaries."""
     cfg = CycloneBaseCase()
     d = cfg.to_dict()
-    assert set(d.keys()) == {"grid", "time", "geometry", "model"}
+    assert set(d.keys()) == {"grid", "time", "geometry", "model", "init"}
     assert d["geometry"]["q"] == cfg.geometry.q
     assert d["grid"]["y0"] == 20.0
     assert d["grid"]["ntheta"] == 32
@@ -43,7 +43,7 @@ def test_etg_config_to_dict():
     """ETG configuration should serialize to dictionaries."""
     cfg = ETGBaseCase()
     d = cfg.to_dict()
-    assert set(d.keys()) == {"grid", "time", "geometry", "model"}
+    assert set(d.keys()) == {"grid", "time", "geometry", "model", "init"}
     assert d["model"]["R_over_LTe"] == cfg.model.R_over_LTe
 
 

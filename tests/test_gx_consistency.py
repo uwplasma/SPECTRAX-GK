@@ -81,34 +81,46 @@ def test_hypercollisions_matches_gx_formula():
     p_hyper_lm = jnp.asarray(6.0, dtype=jnp.float32)
     nu_hyper = jnp.asarray(0.0, dtype=jnp.float32)
     hyper_ratio = jnp.zeros((Nl, Nm, 1, 1, 1), dtype=jnp.float32)
+    ratio_l = (l / float(Nl)) ** p_hyper_l
+    ratio_m = (m / float(Nm)) ** p_hyper_m
+    ratio_lm = ((2.0 * l + m) / (2.0 * float(Nl) + float(Nm))) ** p_hyper_lm
+    mask_const = (m > 2.0) | (l > 1.0)
+    mask_kz = jnp.zeros_like(mask_const)
+    m_pow = m ** p_hyper_m
+    m_norm_kz = float(max(Nm - 1, 1))
+    m_norm_kz_factor = (p_hyper_m + 0.5) / (m_norm_kz ** (p_hyper_m + 0.5))
+    kz = jnp.asarray([0.0], dtype=jnp.float32)
+    kpar_scale = jnp.asarray(1.0, dtype=jnp.float32)
 
     out = hypercollisions_contribution(
         G,
         vth=vth,
-        l=l,
-        m=m,
         nu_hyper=nu_hyper,
         nu_hyper_l=nu_hyper_l,
         nu_hyper_m=nu_hyper_m,
         nu_hyper_lm=nu_hyper_lm,
-        p_hyper_l=p_hyper_l,
-        p_hyper_m=p_hyper_m,
-        p_hyper_lm=p_hyper_lm,
         hyper_ratio=hyper_ratio,
+        ratio_l=ratio_l,
+        ratio_m=ratio_m,
+        ratio_lm=ratio_lm,
+        mask_const=mask_const,
+        mask_kz=mask_kz,
+        m_pow=m_pow,
+        m_norm_kz_factor=m_norm_kz_factor,
+        kz=kz,
+        kpar_scale=kpar_scale,
+        hypercollisions_const=jnp.asarray(1.0, dtype=jnp.float32),
+        hypercollisions_kz=jnp.asarray(0.0, dtype=jnp.float32),
         weight=jnp.asarray(1.0, dtype=jnp.float32),
     )
 
     l_norm = float(Nl)
     m_norm = float(Nm)
-    ratio_l = (l / l_norm) ** p_hyper_l
-    ratio_m = (m / m_norm) ** p_hyper_m
-    ratio_lm = ((2.0 * l + m) / (2.0 * l_norm + m_norm)) ** p_hyper_lm
     scaled_nu_l = l_norm * nu_hyper_l
     scaled_nu_m = m_norm * nu_hyper_m
     hyper_term = -vth[:, None, None, None, None, None] * (
         scaled_nu_l * ratio_l + scaled_nu_m * ratio_m
     ) - nu_hyper_lm * ratio_lm
-    mask = (m > 2.0) | (l > 1.0)
-    expected = jnp.where(mask, hyper_term, 0.0) * G
+    expected = jnp.where(mask_const, hyper_term, 0.0) * G
 
     assert jnp.allclose(out, expected, rtol=1.0e-6, atol=1.0e-7)
