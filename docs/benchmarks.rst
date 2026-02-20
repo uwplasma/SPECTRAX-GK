@@ -127,38 +127,39 @@ frequencies across a reduced :math:`k_y` scan on the field-aligned grid.
    * - 0.05
      - 16
      - 8
-     - 30
-     - 0.0170
-     - 0.0461
-     - +73%
-     - +26%
+     - 80
+     - 0.00994
+     - 0.0413
+     - +1.2%
+     - +13%
    * - 0.10
      - 16
      - 8
-     - 10
-     - 0.0298
-     - 0.0801
-     - -2.0%
-     - +0.3%
+     - 20
+     - 0.0299
+     - 0.0790
+     - -1.8%
+     - -1.1%
    * - 0.20
      - 24
      - 12
      - 20
-     - 0.0765
-     - 0.1864
-     - +1.9%
-     - +4.8%
+     - 0.0762
+     - 0.1853
+     - +1.6%
+     - +4.2%
    * - 0.30
      - 24
      - 12
      - 10
-     - 0.0911
-     - 0.2971
-     - -2.1%
-     - +5.4%
+     - 0.0904
+     - 0.2906
+     - -2.8%
+     - +3.1%
 
-Low-ky points converge slowly in time; longer ``t_max`` windows are required
-to match the reference within the same tolerance band.
+Low-ky points converge slowly in time; even with ``t_max=80`` the ``ky=0.05``
+frequency remains elevated relative to the reference. Further convergence may
+require longer windows or higher velocity resolution.
 
 Kinetic-Electron ITG (Ion-Scale)
 --------------------------------
