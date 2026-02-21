@@ -82,7 +82,7 @@ def _scale_dt(ky: np.ndarray, base_dt: float, ky_ref: float) -> np.ndarray:
 
 
 CYCLONE_SCAN_SOLVER = "time"
-KINETIC_SCAN_SOLVER = "krylov"
+KINETIC_SCAN_SOLVER = "time"
 ETG_SCAN_SOLVER = "time"
 KBM_SCAN_SOLVER = "time"
 TEM_SCAN_SOLVER = "time"
@@ -263,7 +263,11 @@ def _scan_kbm_verbose(
     solver: str,
     krylov_cfg,
     window_kw: dict,
+    tmin: float | np.ndarray | None = None,
+    tmax: float | np.ndarray | None = None,
+    auto_window: bool = True,
     label: str,
+    run_kwargs: dict | None = None,
     verbose: bool,
     progress: bool,
 ) -> LinearScanResult:
@@ -275,6 +279,10 @@ def _scan_kbm_verbose(
         use_tqdm=progress,
     )
     _log(f"Window params: {window_kw}", verbose=verbose, use_tqdm=progress)
+    if run_kwargs:
+        _log(f"Extra kwargs: {run_kwargs}", verbose=verbose, use_tqdm=progress)
+    if tmin is not None or tmax is not None:
+        _log(f"Manual window tmin={tmin} tmax={tmax}", verbose=verbose, use_tqdm=progress)
 
     gammas: list[float] = []
     omegas: list[float] = []
@@ -286,6 +294,7 @@ def _scan_kbm_verbose(
             verbose=verbose,
             use_tqdm=progress,
         )
+        extra = run_kwargs or {}
         result = run_kbm_beta_scan(
             np.asarray([float(beta)]),
             cfg=cfg,
@@ -297,7 +306,11 @@ def _scan_kbm_verbose(
             method=method,
             solver=solver,
             krylov_cfg=krylov_cfg,
+            auto_window=auto_window,
+            tmin=tmin,
+            tmax=tmax,
             **window_kw,
+            **extra,
         )
         gamma = float(result.gamma[0])
         omega = float(result.omega[0])
@@ -660,7 +673,7 @@ def main() -> int:
 
     kinetic_ref = load_cyclone_reference_kinetic()
     cfg_kin = KineticElectronBaseCase(
-        grid=GridConfig(Nx=1, Ny=12, Nz=96, Lx=62.8, Ly=62.8, y0=10.0, ntheta=32, nperiod=2)
+        grid=GridConfig(Nx=1, Ny=16, Nz=96, Lx=62.8, Ly=62.8, y0=10.0, ntheta=32, nperiod=2)
     )
     kinetic_ky = kinetic_ref.ky[::2]
     kinetic_steps = _scale_steps(kinetic_ky, base_steps=20000, ky_ref=0.3, max_steps=30000)
@@ -681,7 +694,14 @@ def main() -> int:
         scan_solver=KINETIC_SCAN_SOLVER,
         mode_solver=MODE_SOLVER,
         mode_method=MODE_METHOD,
-        scan_kwargs={"tmin": kinetic_tmin, "tmax": kinetic_tmax_fit, "auto_window": False},
+        scan_kwargs={
+            "tmin": kinetic_tmin,
+            "tmax": kinetic_tmax_fit,
+            "auto_window": False,
+            "fit_signal": "phi",
+            "mode_method": "z_index",
+        },
+        mode_kwargs={"fit_signal": "phi", "mode_method": "z_index"},
         verbose=verbose,
         progress=progress,
         label="Kinetic ITG panel",
@@ -710,7 +730,13 @@ def main() -> int:
         scan_solver=ETG_SCAN_SOLVER,
         mode_solver=MODE_SOLVER,
         mode_method=MODE_METHOD,
-        scan_kwargs={"tmin": etg_tmin, "tmax": etg_tmax_fit, "auto_window": False},
+        scan_kwargs={
+            "tmin": etg_tmin,
+            "tmax": etg_tmax_fit,
+            "auto_window": False,
+            "mode_method": "z_index",
+        },
+        mode_kwargs={"mode_method": "z_index"},
         verbose=verbose,
         progress=progress,
         label="ETG panel",
@@ -718,7 +744,7 @@ def main() -> int:
 
     kbm_ref = load_kbm_reference()
     cfg_kbm = KBMBaseCase(
-        grid=GridConfig(Nx=1, Ny=9, Nz=96, Lx=62.8, Ly=62.8, y0=10.0, ntheta=32, nperiod=2)
+        grid=GridConfig(Nx=1, Ny=12, Nz=96, Lx=62.8, Ly=62.8, y0=10.0, ntheta=32, nperiod=2)
     )
     kbm_beta = kbm_ref.ky[::2]
     kbm_dt = _scale_dt(kbm_beta, base_dt=0.0005, ky_ref=0.3)
@@ -740,6 +766,7 @@ def main() -> int:
         tmin=kbm_tmin,
         tmax=kbm_tmax,
         auto_window=False,
+        run_kwargs={"fit_signal": "phi", "mode_method": "z_index"},
         label="KBM panel",
         verbose=verbose,
         progress=progress,
@@ -761,6 +788,8 @@ def main() -> int:
         dt=kbm_dt_run,
         method=MODE_METHOD,
         solver=MODE_SOLVER,
+        fit_signal="phi",
+        mode_method="z_index",
         **WINDOWS["kbm"],
     )
     kbm_grid = build_spectral_grid(cfg_kbm.grid)
@@ -789,7 +818,14 @@ def main() -> int:
         scan_solver=TEM_SCAN_SOLVER,
         mode_solver=MODE_SOLVER,
         mode_method=MODE_METHOD,
-        scan_kwargs={"tmin": tem_tmin, "tmax": tem_tmax_fit, "auto_window": False},
+        scan_kwargs={
+            "tmin": tem_tmin,
+            "tmax": tem_tmax_fit,
+            "auto_window": False,
+            "fit_signal": "phi",
+            "mode_method": "z_index",
+        },
+        mode_kwargs={"fit_signal": "phi", "mode_method": "z_index"},
         verbose=verbose,
         progress=progress,
         label="TEM panel",

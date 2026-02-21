@@ -60,7 +60,7 @@ from spectraxgk.analysis import (
 )
 
 CYCLONE_SOLVER = "time"
-KINETIC_SOLVER = "krylov"
+KINETIC_SOLVER = "time"
 ETG_SOLVER = "time"
 KBM_SOLVER = "time"
 TEM_SOLVER = "time"
@@ -272,6 +272,7 @@ def _scan_kbm_verbose(
     auto_window: bool = True,
     label: str,
     ref=None,
+    run_kwargs: dict | None = None,
     verbose: bool,
     progress: bool,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -283,6 +284,8 @@ def _scan_kbm_verbose(
         use_tqdm=progress,
     )
     _log(f"Window params: {window_kw}", verbose=verbose, use_tqdm=progress)
+    if run_kwargs:
+        _log(f"Extra kwargs: {run_kwargs}", verbose=verbose, use_tqdm=progress)
     if tmin is not None or tmax is not None:
         _log(f"Manual window tmin={tmin} tmax={tmax}", verbose=verbose, use_tqdm=progress)
 
@@ -300,6 +303,7 @@ def _scan_kbm_verbose(
             verbose=verbose,
             use_tqdm=progress,
         )
+        extra = run_kwargs or {}
         result = run_kbm_beta_scan(
             np.asarray([float(beta)]),
             cfg=cfg,
@@ -315,6 +319,7 @@ def _scan_kbm_verbose(
             tmin=tmin_i,
             tmax=tmax_i,
             **window_kw,
+            **extra,
         )
         gamma = float(result.gamma[0])
         omega = float(result.omega[0])
@@ -750,7 +755,7 @@ def main() -> int:
     kinetic_tmin = 0.6 * kinetic_tmax
     kinetic_tmax = 0.95 * kinetic_tmax
     kinetic_cfg = KineticElectronBaseCase(
-        grid=GridConfig(Nx=1, Ny=12, Nz=96, Lx=62.8, Ly=62.8, y0=10.0, ntheta=32, nperiod=2)
+        grid=GridConfig(Nx=1, Ny=16, Nz=96, Lx=62.8, Ly=62.8, y0=10.0, ntheta=32, nperiod=2)
     )
     kin_ky, kin_g, kin_w = _scan_linear_verbose(
         ky_values=kinetic_ref.ky,
@@ -767,6 +772,7 @@ def main() -> int:
         tmin=kinetic_tmin,
         tmax=kinetic_tmax,
         auto_window=False,
+        run_kwargs={"fit_signal": "phi", "mode_method": "z_index"},
         label="Kinetic ITG mismatch",
         ref=kinetic_ref,
         verbose=verbose,
@@ -799,6 +805,7 @@ def main() -> int:
         tmin=etg_tmin,
         tmax=etg_tmax,
         auto_window=False,
+        run_kwargs={"mode_method": "z_index"},
         label="ETG mismatch",
         ref=etg_ref,
         verbose=verbose,
@@ -816,7 +823,7 @@ def main() -> int:
     kbm_tmin = 0.4 * kbm_tmax
     kbm_tmax = 0.8 * kbm_tmax
     kbm_cfg = KBMBaseCase(
-        grid=GridConfig(Nx=1, Ny=9, Nz=96, Lx=62.8, Ly=62.8, y0=10.0, ntheta=32, nperiod=2)
+        grid=GridConfig(Nx=1, Ny=12, Nz=96, Lx=62.8, Ly=62.8, y0=10.0, ntheta=32, nperiod=2)
     )
     kbm_beta, kbm_g, kbm_w = _scan_kbm_verbose(
         betas=kbm_ref.ky,
@@ -832,6 +839,7 @@ def main() -> int:
         tmin=kbm_tmin,
         tmax=kbm_tmax,
         auto_window=False,
+        run_kwargs={"fit_signal": "phi", "mode_method": "z_index"},
         label="KBM mismatch",
         ref=kbm_ref,
         verbose=verbose,
@@ -864,6 +872,7 @@ def main() -> int:
         tmin=tem_tmin,
         tmax=tem_tmax,
         auto_window=False,
+        run_kwargs={"fit_signal": "phi", "mode_method": "z_index"},
         label="TEM mismatch",
         ref=tem_ref,
         verbose=verbose,
