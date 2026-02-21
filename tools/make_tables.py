@@ -60,10 +60,10 @@ from spectraxgk.analysis import (
 )
 
 CYCLONE_SOLVER = "time"
-KINETIC_SOLVER = "time"
-ETG_SOLVER = "time"
-KBM_SOLVER = "time"
-TEM_SOLVER = "time"
+KINETIC_SOLVER = "krylov"
+ETG_SOLVER = "krylov"
+KBM_SOLVER = "krylov"
+TEM_SOLVER = "krylov"
 
 CYCLONE_KRYLOV = KrylovConfig(
     method="shift_invert",
@@ -751,9 +751,6 @@ def main() -> int:
     kinetic_ref = load_cyclone_reference_kinetic()
     kinetic_steps = _scale_steps(kinetic_ref.ky, base_steps=20000, ky_ref=0.3, max_steps=30000)
     kinetic_dt = _scale_dt(kinetic_ref.ky, base_dt=0.0005, ky_ref=0.3)
-    kinetic_tmax = kinetic_dt * kinetic_steps
-    kinetic_tmin = 0.6 * kinetic_tmax
-    kinetic_tmax = 0.95 * kinetic_tmax
     kinetic_cfg = KineticElectronBaseCase(
         grid=GridConfig(Nx=1, Ny=16, Nz=96, Lx=62.8, Ly=62.8, y0=10.0, ntheta=32, nperiod=2)
     )
@@ -769,10 +766,7 @@ def main() -> int:
         solver=KINETIC_SOLVER,
         krylov_cfg=KINETIC_KRYLOV,
         window_kw=WINDOWS["kinetic"],
-        tmin=kinetic_tmin,
-        tmax=kinetic_tmax,
-        auto_window=False,
-        run_kwargs={"fit_signal": "phi", "mode_method": "z_index"},
+        auto_window=True,
         label="Kinetic ITG mismatch",
         ref=kinetic_ref,
         verbose=verbose,

@@ -82,10 +82,10 @@ def _scale_dt(ky: np.ndarray, base_dt: float, ky_ref: float) -> np.ndarray:
 
 
 CYCLONE_SCAN_SOLVER = "time"
-KINETIC_SCAN_SOLVER = "time"
-ETG_SCAN_SOLVER = "time"
-KBM_SCAN_SOLVER = "time"
-TEM_SCAN_SOLVER = "time"
+KINETIC_SCAN_SOLVER = "krylov"
+ETG_SCAN_SOLVER = "krylov"
+KBM_SCAN_SOLVER = "krylov"
+TEM_SCAN_SOLVER = "krylov"
 MODE_SOLVER = "time"
 MODE_METHOD = "imex2"
 CYCLONE_KRYLOV = KrylovConfig(
@@ -678,9 +678,6 @@ def main() -> int:
     kinetic_ky = kinetic_ref.ky[::2]
     kinetic_steps = _scale_steps(kinetic_ky, base_steps=20000, ky_ref=0.3, max_steps=30000)
     kinetic_dt = _scale_dt(kinetic_ky, base_dt=0.0005, ky_ref=0.3)
-    kinetic_tmax = kinetic_dt * kinetic_steps
-    kinetic_tmin = 0.6 * kinetic_tmax
-    kinetic_tmax_fit = 0.95 * kinetic_tmax
     kinetic_scan, kinetic_mode, kinetic_grid, _ = _scan_and_mode(
         run_kinetic_scan,
         run_kinetic_linear,
@@ -694,14 +691,8 @@ def main() -> int:
         scan_solver=KINETIC_SCAN_SOLVER,
         mode_solver=MODE_SOLVER,
         mode_method=MODE_METHOD,
-        scan_kwargs={
-            "tmin": kinetic_tmin,
-            "tmax": kinetic_tmax_fit,
-            "auto_window": False,
-            "fit_signal": "phi",
-            "mode_method": "z_index",
-        },
-        mode_kwargs={"fit_signal": "phi", "mode_method": "z_index"},
+        scan_kwargs={},
+        mode_kwargs={"fit_signal": "density", "mode_method": "z_index"},
         verbose=verbose,
         progress=progress,
         label="Kinetic ITG panel",
