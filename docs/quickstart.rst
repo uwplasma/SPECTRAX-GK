@@ -15,6 +15,8 @@ CLI demo
 
    spectrax-gk cyclone-info
    spectrax-gk cyclone-kperp --kx0 0.0 --ky 0.3
+   spectrax-gk run-linear --config examples/configs/cyclone.toml --plot --outdir docs/_static
+   spectrax-gk scan-linear --config examples/configs/etg.toml --plot --outdir docs/_static
 
 Python demo
 -----------
@@ -27,6 +29,13 @@ Python demo
    result = run_cyclone_linear(ky_target=0.3, method="rk4")
 
    print(result.gamma, result.omega)
+
+Run from TOML
+-------------
+
+.. code-block:: bash
+
+   python examples/run_from_toml.py --config examples/configs/cyclone.toml --plot --outdir docs/_static
 
 Figure generation
 -----------------
