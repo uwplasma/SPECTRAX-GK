@@ -185,9 +185,9 @@ kinetic-electron regression checks.
    * - Species
      - kinetic electrons + Boltzmann ions, ``Te/Ti=1``, ``mi/me=3670``
    * - Electromagnetic
-     - ``beta=1e-5``, ``A_parallel=on``, ``B_parallel=on``
+     - ``beta=1e-5``, ``A_parallel=on``, ``B_parallel=off``
    * - Collisions
-     - ``nu_i=1e-2``, ``nu_e=1.65e-4``, hypercollisions off
+     - ``nu_i=0``, ``nu_e=0``, hypercollisions off
    * - Operator toggles
      - streaming/mirror/curvature/grad-B/diamagnetic on; nonlinear off
    * - Grid
@@ -220,13 +220,15 @@ summary figure.
    * - Species
      - kinetic electrons + Boltzmann ions, ``Te/Ti=1``, ``mi/me=3670``
    * - Electromagnetic
-     - ``beta=1e-5``, ``A_parallel=on``, ``B_parallel=on``
+     - ``beta=1e-5``, ``A_parallel=on``, ``B_parallel=off``
    * - Collisions
-     - ``nu_i=1e-2``, ``nu_e=1.65e-4``, hypercollisions off
+     - ``nu_i=0``, ``nu_e=0``, hypercollisions off
    * - Operator toggles
      - streaming/mirror/curvature/grad-B/diamagnetic on; nonlinear off
    * - Grid
      - ``Nx=1, Ny=24, Nz=96, y0=0.2, ntheta=32, nperiod=2``
+   * - Time integration
+     - diffrax Dopri8 (adaptive), ``t_max=10``, ``dt=0.05``
    * - Velocity resolution
      - ``Nl=6, Nm=16`` (figure generation)
    * - Reference
