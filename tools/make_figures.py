@@ -66,6 +66,7 @@ from spectraxgk.plotting import (
     cyclone_reference_figure,
     linear_validation_figure,
     LinearValidationPanel,
+    scan_comparison_figure,
 )
 from spectraxgk.linear_krylov import KrylovConfig
 
@@ -81,9 +82,27 @@ def _scale_dt(ky: np.ndarray, base_dt: float, ky_ref: float) -> np.ndarray:
     return base_dt * scale
 
 
+def _etg_time_controls(
+    ky: np.ndarray,
+    *,
+    base_dt: float = 0.01,
+    ky_ref: float = 20.0,
+    base_steps: int = 500,
+    max_steps: int = 2000,
+    tmin_frac: float = 0.2,
+    tmax_frac: float = 0.6,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    dt = _scale_dt(ky, base_dt=base_dt, ky_ref=ky_ref)
+    steps = _scale_steps(ky, base_steps=base_steps, ky_ref=ky_ref, max_steps=max_steps)
+    t_total = dt * steps
+    tmin = tmin_frac * t_total
+    tmax = tmax_frac * t_total
+    return dt, steps, tmin, tmax
+
+
 CYCLONE_SCAN_SOLVER = "time"
 KINETIC_SCAN_SOLVER = "krylov"
-ETG_SCAN_SOLVER = "krylov"
+ETG_SCAN_SOLVER = "time"
 KBM_SCAN_SOLVER = "krylov"
 TEM_SCAN_SOLVER = "krylov"
 MODE_SOLVER = "time"
@@ -145,7 +164,7 @@ def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate validation figures.")
     parser.add_argument(
         "--case",
-        choices=["all", "cyclone"],
+        choices=["all", "cyclone", "etg"],
         default="all",
         help="Limit figure generation to a specific case.",
     )
@@ -195,6 +214,7 @@ def _scan_linear_verbose(
     tmin: float | np.ndarray | None = None,
     tmax: float | np.ndarray | None = None,
     auto_window: bool = True,
+    run_kwargs: dict | None = None,
     label: str,
     verbose: bool,
     progress: bool,
@@ -238,6 +258,7 @@ def _scan_linear_verbose(
             tmin=tmin_i,
             tmax=tmax_i,
             **window_kw,
+            **(run_kwargs or {}),
         )
         gammas.append(float(result.gamma))
         omegas.append(float(result.omega))
@@ -552,6 +573,9 @@ def _scan_and_mode(
     verbose: bool,
     progress: bool,
     label: str,
+    auto_window: bool = True,
+    tmin: float | np.ndarray | None = None,
+    tmax: float | np.ndarray | None = None,
     scan_kwargs: dict | None = None,
     mode_kwargs: dict | None = None,
 ):
@@ -578,6 +602,9 @@ def _scan_and_mode(
             solver=scan_solver,
             krylov_cfg=krylov_cfg,
             window_kw=window_kw,
+            auto_window=auto_window,
+            tmin=tmin,
+            tmax=tmax,
             label=label,
             run_kwargs=scan_kwargs,
             verbose=verbose,
@@ -595,6 +622,9 @@ def _scan_and_mode(
             method=mode_method,
             solver=scan_solver,
             krylov_cfg=krylov_cfg,
+            auto_window=auto_window,
+            tmin=tmin,
+            tmax=tmax,
             **window_kw,
             **(scan_kwargs or {}),
         )
@@ -654,6 +684,66 @@ def main() -> int:
     fig.savefig(outdir / "cyclone_comparison.pdf")
     if args.case == "cyclone":
         return 0
+    if args.case == "etg":
+        etg_ref = load_etg_reference()
+        cfg_etg = ETGBaseCase(
+            grid=GridConfig(
+                Nx=1,
+                Ny=24,
+                Nz=96,
+                Lx=6.28,
+                Ly=6.28,
+                y0=0.2,
+                ntheta=32,
+                nperiod=2,
+                boundary="linked",
+            )
+        )
+        etg_ky = etg_ref.ky[::2]
+        etg_time = cfg_etg.time
+        etg_steps = int(round(etg_time.t_max / etg_time.dt))
+        etg_scan, _etg_mode, _etg_grid, _ = _scan_and_mode(
+            run_etg_scan,
+            run_etg_linear,
+            etg_ky,
+            cfg_etg,
+            Nl=6,
+            Nm=16,
+            steps=etg_steps,
+            dt=etg_time.dt,
+            window_kw=WINDOWS["etg"],
+            scan_solver=ETG_SCAN_SOLVER,
+            mode_solver=MODE_SOLVER,
+            mode_method=MODE_METHOD,
+            auto_window=False,
+            tmin=2.0,
+            tmax=etg_time.t_max,
+            scan_kwargs={
+                "time_cfg": etg_time,
+                "fit_signal": "phi",
+                "mode_method": "z_index",
+            },
+            mode_kwargs={"time_cfg": etg_time, "fit_signal": "phi", "mode_method": "z_index"},
+            verbose=verbose,
+            progress=progress,
+            label="ETG panel",
+        )
+        fig, _axes = scan_comparison_figure(
+            etg_scan.ky,
+            etg_scan.gamma,
+            etg_scan.omega,
+            r"$k_y \rho_i$",
+            "ETG comparison (GX Fig. 2b)",
+            x_ref=etg_ref.ky,
+            gamma_ref=etg_ref.gamma,
+            omega_ref=etg_ref.omega,
+            label="SPECTRAX-GK",
+            ref_label="Reference",
+            log_x=True,
+        )
+        fig.savefig(outdir / "etg_comparison.png", dpi=200)
+        fig.savefig(outdir / "etg_comparison.pdf")
+        return 0
 
     # Multi-panel summary: cyclone, kinetic ITG, ETG, KBM, TEM
     geom_cyc = SAlphaGeometry.from_config(cfg_cyc.geometry)
@@ -700,38 +790,62 @@ def main() -> int:
 
     etg_ref = load_etg_reference()
     cfg_etg = ETGBaseCase(
-        grid=GridConfig(Nx=1, Ny=24, Nz=96, Lx=6.28, Ly=6.28, y0=0.2, ntheta=32, nperiod=2)
+        grid=GridConfig(
+            Nx=1,
+            Ny=24,
+            Nz=96,
+            Lx=6.28,
+            Ly=6.28,
+            y0=0.2,
+            ntheta=32,
+            nperiod=2,
+            boundary="linked",
+        )
     )
     etg_ky = etg_ref.ky[::2]
-    etg_dt = _scale_dt(etg_ky, base_dt=0.0002, ky_ref=20.0)
-    etg_steps = _scale_steps(etg_ky, base_steps=1200, ky_ref=20.0, max_steps=4000)
-    etg_tmax = etg_dt * etg_steps
-    etg_tmin = 0.4 * etg_tmax
-    etg_tmax_fit = 0.85 * etg_tmax
+    etg_time = cfg_etg.time
+    etg_steps = int(round(etg_time.t_max / etg_time.dt))
     etg_scan, etg_mode, etg_grid, _ = _scan_and_mode(
         run_etg_scan,
         run_etg_linear,
         etg_ky,
         cfg_etg,
-        Nl=48,
+        Nl=6,
         Nm=16,
         steps=etg_steps,
-        dt=etg_dt,
+        dt=etg_time.dt,
         window_kw=WINDOWS["etg"],
         scan_solver=ETG_SCAN_SOLVER,
         mode_solver=MODE_SOLVER,
         mode_method=MODE_METHOD,
+        auto_window=False,
+        tmin=2.0,
+        tmax=etg_time.t_max,
         scan_kwargs={
-            "tmin": etg_tmin,
-            "tmax": etg_tmax_fit,
-            "auto_window": False,
+            "time_cfg": etg_time,
+            "fit_signal": "phi",
             "mode_method": "z_index",
         },
-        mode_kwargs={"mode_method": "z_index"},
+        mode_kwargs={"time_cfg": etg_time, "fit_signal": "phi", "mode_method": "z_index"},
         verbose=verbose,
         progress=progress,
         label="ETG panel",
     )
+    fig, _axes = scan_comparison_figure(
+        etg_scan.ky,
+        etg_scan.gamma,
+        etg_scan.omega,
+        r"$k_y \rho_i$",
+        "ETG comparison (GX Fig. 2b)",
+        x_ref=etg_ref.ky,
+        gamma_ref=etg_ref.gamma,
+        omega_ref=etg_ref.omega,
+        label="SPECTRAX-GK",
+        ref_label="Reference",
+        log_x=True,
+    )
+    fig.savefig(outdir / "etg_comparison.png", dpi=200)
+    fig.savefig(outdir / "etg_comparison.pdf")
 
     kbm_ref = load_kbm_reference()
     cfg_kbm = KBMBaseCase(

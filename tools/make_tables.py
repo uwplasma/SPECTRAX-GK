@@ -61,7 +61,7 @@ from spectraxgk.analysis import (
 
 CYCLONE_SOLVER = "time"
 KINETIC_SOLVER = "krylov"
-ETG_SOLVER = "krylov"
+ETG_SOLVER = "time"
 KBM_SOLVER = "krylov"
 TEM_SOLVER = "krylov"
 
@@ -531,6 +531,24 @@ def _scale_dt(ky: np.ndarray, base_dt: float, ky_ref: float) -> np.ndarray:
     return base_dt * scale
 
 
+def _etg_time_controls(
+    ky: np.ndarray,
+    *,
+    base_dt: float = 0.01,
+    ky_ref: float = 20.0,
+    base_steps: int = 500,
+    max_steps: int = 2000,
+    tmin_frac: float = 0.2,
+    tmax_frac: float = 0.6,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    dt = _scale_dt(ky, base_dt=base_dt, ky_ref=ky_ref)
+    steps = _scale_steps(ky, base_steps=base_steps, ky_ref=ky_ref, max_steps=max_steps)
+    t_total = dt * steps
+    tmin = tmin_frac * t_total
+    tmax = tmax_frac * t_total
+    return dt, steps, tmin, tmax
+
+
 def main() -> int:
     args = _parse_args()
     verbose = not args.quiet
@@ -719,6 +737,8 @@ def main() -> int:
     etg_rows = ["R_over_LTe,gamma,omega"]
     for R in etg_R:
         cfg = ETGBaseCase(grid=etg_grid, model=ETGModelConfig(R_over_LTe=float(R)))
+        time_cfg = cfg.time
+        steps = int(round(time_cfg.t_max / time_cfg.dt))
         _log(
             f"\n=== ETG trend R/LTe={float(R):.2f} ===",
             verbose=verbose,
@@ -728,14 +748,18 @@ def main() -> int:
         res = run_etg_linear(
             cfg=cfg,
             ky_target=5.0,
-            Nl=4,
-            Nm=8,
-            steps=1000,
-            dt=0.001,
+            Nl=6,
+            Nm=16,
+            steps=steps,
+            dt=time_cfg.dt,
+            time_cfg=time_cfg,
             solver=ETG_SOLVER,
             krylov_cfg=ETG_KRYLOV,
             mode_method="z_index",
-            auto_window=True,
+            fit_signal="phi",
+            auto_window=False,
+            tmin=2.0,
+            tmax=time_cfg.t_max,
             **WINDOWS["etg"],
         )
         etg_rows.append(f"{R:.2f},{res.gamma:.6f},{res.omega:.6f}")
@@ -778,28 +802,29 @@ def main() -> int:
     )
 
     etg_ref = load_etg_reference()
-    etg_dt = _scale_dt(etg_ref.ky, base_dt=0.0002, ky_ref=20.0)
-    etg_steps = _scale_steps(etg_ref.ky, base_steps=1200, ky_ref=20.0, max_steps=4000)
-    etg_tmax = etg_dt * etg_steps
-    etg_tmin = 0.4 * etg_tmax
-    etg_tmax = 0.85 * etg_tmax
     etg_cfg = ETGBaseCase()
+    etg_time = etg_cfg.time
+    etg_steps = int(round(etg_time.t_max / etg_time.dt))
     etg_ky, etg_g, etg_w = _scan_linear_verbose(
         ky_values=etg_ref.ky,
         run_linear_fn=run_etg_linear,
         cfg=etg_cfg,
-        Nl=48,
+        Nl=6,
         Nm=16,
-        dt=etg_dt,
+        dt=etg_time.dt,
         steps=etg_steps,
         method="imex2",
         solver=ETG_SOLVER,
         krylov_cfg=ETG_KRYLOV,
         window_kw=WINDOWS["etg"],
-        tmin=etg_tmin,
-        tmax=etg_tmax,
         auto_window=False,
-        run_kwargs={"mode_method": "z_index"},
+        tmin=2.0,
+        tmax=etg_time.t_max,
+        run_kwargs={
+            "mode_method": "z_index",
+            "fit_signal": "phi",
+            "time_cfg": etg_time,
+        },
         label="ETG mismatch",
         ref=etg_ref,
         verbose=verbose,

@@ -99,6 +99,13 @@ frequencies across a reduced :math:`k_y` scan on the field-aligned grid.
    * - Reference
      - :cite:`GX`
 
+.. figure:: _static/etg_comparison.png
+   :width: 80%
+   :align: center
+   :alt: ETG comparison against reference
+
+   ETG growth rates and frequencies compared with the GX reference scan.
+
 .. figure:: _static/linear_summary.png
    :align: center
    :alt: Linear validation summary
@@ -228,7 +235,7 @@ summary figure.
    * - Grid
      - ``Nx=1, Ny=24, Nz=96, y0=0.2, ntheta=32, nperiod=2``
    * - Time integration
-     - diffrax Dopri8 (adaptive), ``t_max=10``, ``dt=0.05``
+     - diffrax Dopri8 (adaptive), ``t_max=10``, ``dt=0.05``, ``max_steps=200000``
    * - Velocity resolution
      - ``Nl=6, Nm=16`` (figure generation)
    * - Reference
