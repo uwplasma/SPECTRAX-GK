@@ -9,6 +9,7 @@ Fourier real space. This documentation reflects the new clean-room rebuild.
    :caption: Contents
 
    quickstart
+   inputs
    theory
    numerics
    normalization
