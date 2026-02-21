@@ -36,6 +36,13 @@ ETG linear trend
 
    python examples/etg_linear_benchmark.py
 
+TOML-driven run
+---------------
+
+.. code-block:: bash
+
+   python examples/run_from_toml.py --config examples/configs/cyclone.toml --plot
+
 Kinetic-electron benchmark
 --------------------------
 
