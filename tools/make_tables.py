@@ -7,6 +7,7 @@ from pathlib import Path
 from pprint import pformat
 import argparse
 import sys
+from typing import Callable
 
 import numpy as np
 from tqdm.auto import tqdm
@@ -61,7 +62,7 @@ from spectraxgk.analysis import (
 
 CYCLONE_SOLVER = "time"
 KINETIC_SOLVER = "krylov"
-ETG_SOLVER = "time"
+ETG_SOLVER = "krylov"
 KBM_SOLVER = "krylov"
 TEM_SOLVER = "krylov"
 
@@ -86,9 +87,27 @@ KINETIC_KRYLOV = KrylovConfig(
     shift_tol=1.0e-3,
 )
 ETG_KRYLOV = KrylovConfig(
-    method="shift_invert",
+    method="propagator",
     krylov_dim=16,
     restarts=1,
+    omega_min_factor=0.0,
+    omega_target_factor=0.5,
+    omega_cap_factor=0.5,
+    omega_sign=-1,
+    power_iters=80,
+    power_dt=0.002,
+    shift_maxiter=40,
+    shift_restart=12,
+    shift_tol=2.0e-3,
+)
+ETG_KRYLOV_LOW = KrylovConfig(
+    method="propagator",
+    krylov_dim=16,
+    restarts=1,
+    omega_min_factor=0.0,
+    omega_target_factor=0.0,
+    omega_cap_factor=2.0,
+    omega_sign=-1,
     power_iters=80,
     power_dt=0.002,
     shift_maxiter=40,
@@ -136,7 +155,7 @@ def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate validation tables.")
     parser.add_argument(
         "--case",
-        choices=["all", "cyclone"],
+        choices=["all", "cyclone", "etg"],
         default="all",
         help="Limit table generation to a specific case.",
     )
@@ -191,6 +210,8 @@ def _scan_linear_verbose(
     ref=None,
     verbose: bool,
     progress: bool,
+    resolution_policy: Callable[[float], tuple[int, int]] | None = None,
+    krylov_policy: Callable[[float], KrylovConfig] | None = None,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     _log(f"\n=== {label} scan ===", verbose=verbose, use_tqdm=progress)
     _log(f"Config:\n{_format_cfg(cfg)}", verbose=verbose, use_tqdm=progress)
@@ -210,6 +231,10 @@ def _scan_linear_verbose(
     ky_out: list[float] = []
     iterator = tqdm(ky_values, desc=f"{label} ky scan") if progress else ky_values
     for i, ky in enumerate(iterator):
+        if resolution_policy is not None:
+            Nl_i, Nm_i = resolution_policy(float(ky))
+        else:
+            Nl_i, Nm_i = int(Nl), int(Nm)
         dt_i = float(dt[i]) if isinstance(dt, np.ndarray) else float(dt)
         steps_i = int(steps[i]) if isinstance(steps, np.ndarray) else int(steps)
         tmin_i = _window_value(tmin, i)
@@ -220,16 +245,17 @@ def _scan_linear_verbose(
             use_tqdm=progress,
         )
         extra = run_kwargs or {}
+        krylov_cfg_use = krylov_policy(float(ky)) if krylov_policy is not None else krylov_cfg
         result = run_linear_fn(
             ky_target=float(ky),
             cfg=cfg,
-            Nl=Nl,
-            Nm=Nm,
+            Nl=int(Nl_i),
+            Nm=int(Nm_i),
             dt=dt_i,
             steps=steps_i,
             method=method,
             solver=solver,
-            krylov_cfg=krylov_cfg,
+            krylov_cfg=krylov_cfg_use,
             auto_window=auto_window,
             tmin=tmin_i,
             tmax=tmax_i,
@@ -549,6 +575,98 @@ def _etg_time_controls(
     return dt, steps, tmin, tmax
 
 
+def _etg_resolution_policy(ky: float) -> tuple[int, int]:
+    """Per-ky Hermite/Laguerre resolution for ETG scans."""
+
+    if ky < 10.0:
+        return 48, 16
+    return 48, 16
+
+
+def _etg_krylov_policy(ky: float) -> KrylovConfig:
+    if ky < 10.0:
+        return ETG_KRYLOV_LOW
+    return ETG_KRYLOV
+
+
+def _run_etg_tables(*, outdir: Path, verbose: bool, progress: bool) -> None:
+    etg_grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28, y0=0.2)
+    etg_R = np.array([4.0, 6.0, 8.0, 10.0])
+    etg_rows = ["R_over_LTe,gamma,omega"]
+    for R in etg_R:
+        cfg = ETGBaseCase(grid=etg_grid, model=ETGModelConfig(R_over_LTe=float(R)))
+        time_cfg = cfg.time
+        steps = int(round(time_cfg.t_max / time_cfg.dt))
+        _log(
+            f"\n=== ETG trend R/LTe={float(R):.2f} ===",
+            verbose=verbose,
+            use_tqdm=progress,
+        )
+        _log(f"Config:\n{_format_cfg(cfg)}", verbose=verbose, use_tqdm=progress)
+        res = run_etg_linear(
+            cfg=cfg,
+            ky_target=5.0,
+            Nl=24,
+            Nm=8,
+            steps=steps,
+            dt=time_cfg.dt,
+            time_cfg=time_cfg,
+            solver=ETG_SOLVER,
+            krylov_cfg=ETG_KRYLOV_LOW,
+            mode_method="z_index",
+            fit_signal="phi",
+            auto_window=False,
+            tmin=2.0,
+            tmax=time_cfg.t_max,
+            **WINDOWS["etg"],
+        )
+        etg_rows.append(f"{R:.2f},{res.gamma:.6f},{res.omega:.6f}")
+        _log(
+            f"[ETG trend] gamma={res.gamma:.6g} omega={res.omega:.6g}",
+            verbose=verbose,
+            use_tqdm=progress,
+        )
+    (outdir / "etg_trend_table.csv").write_text(
+        "\n".join(etg_rows) + "\n", encoding="utf-8"
+    )
+
+    etg_ref = load_etg_reference()
+    etg_cfg = ETGBaseCase()
+    etg_time = etg_cfg.time
+    etg_steps = int(round(etg_time.t_max / etg_time.dt))
+    etg_ky, etg_g, etg_w = _scan_linear_verbose(
+        ky_values=etg_ref.ky,
+        run_linear_fn=run_etg_linear,
+        cfg=etg_cfg,
+        Nl=24,
+        Nm=8,
+        dt=etg_time.dt,
+        steps=etg_steps,
+        method="imex2",
+        solver=ETG_SOLVER,
+        krylov_cfg=ETG_KRYLOV,
+        window_kw=WINDOWS["etg"],
+        auto_window=False,
+        tmin=2.0,
+        tmax=etg_time.t_max,
+        run_kwargs={
+            "mode_method": "z_index",
+            "fit_signal": "phi",
+            "time_cfg": etg_time,
+        },
+        label="ETG mismatch",
+        ref=etg_ref,
+        verbose=verbose,
+        progress=progress,
+        resolution_policy=_etg_resolution_policy,
+        krylov_policy=_etg_krylov_policy,
+    )
+    etg_mismatch = LinearScanResult(ky=etg_ky, gamma=etg_g, omega=etg_w)
+    (outdir / "etg_mismatch_table.csv").write_text(
+        "\n".join(_build_rows(etg_mismatch, etg_ref)) + "\n", encoding="utf-8"
+    )
+
+
 def main() -> int:
     args = _parse_args()
     verbose = not args.quiet
@@ -556,6 +674,9 @@ def main() -> int:
 
     outdir = ROOT / "docs" / "_static"
     outdir.mkdir(parents=True, exist_ok=True)
+    if args.case == "etg":
+        _run_etg_tables(outdir=outdir, verbose=verbose, progress=progress)
+        return 0
 
     ref = load_cyclone_reference()
     ky_subset = np.array([0.3, 0.4])
@@ -748,8 +869,8 @@ def main() -> int:
         res = run_etg_linear(
             cfg=cfg,
             ky_target=5.0,
-            Nl=6,
-            Nm=16,
+            Nl=24,
+            Nm=8,
             steps=steps,
             dt=time_cfg.dt,
             time_cfg=time_cfg,
@@ -809,8 +930,8 @@ def main() -> int:
         ky_values=etg_ref.ky,
         run_linear_fn=run_etg_linear,
         cfg=etg_cfg,
-        Nl=6,
-        Nm=16,
+        Nl=24,
+        Nm=8,
         dt=etg_time.dt,
         steps=etg_steps,
         method="imex2",
@@ -829,6 +950,7 @@ def main() -> int:
         ref=etg_ref,
         verbose=verbose,
         progress=progress,
+        resolution_policy=_etg_resolution_policy,
     )
     etg_mismatch = LinearScanResult(ky=etg_ky, gamma=etg_g, omega=etg_w)
     (outdir / "etg_mismatch_table.csv").write_text(

@@ -7,6 +7,7 @@ from pathlib import Path
 from pprint import pformat
 import argparse
 import sys
+from typing import Callable
 
 import numpy as np
 from tqdm.auto import tqdm
@@ -100,9 +101,23 @@ def _etg_time_controls(
     return dt, steps, tmin, tmax
 
 
+def _etg_resolution_policy(ky: float) -> tuple[int, int]:
+    """Per-ky Hermite/Laguerre resolution for ETG scans."""
+
+    if ky < 10.0:
+        return 48, 16
+    return 48, 16
+
+
+def _etg_krylov_policy(ky: float) -> KrylovConfig:
+    if ky < 10.0:
+        return ETG_KRYLOV_LOW
+    return ETG_KRYLOV
+
+
 CYCLONE_SCAN_SOLVER = "time"
 KINETIC_SCAN_SOLVER = "krylov"
-ETG_SCAN_SOLVER = "time"
+ETG_SCAN_SOLVER = "krylov"
 KBM_SCAN_SOLVER = "krylov"
 TEM_SCAN_SOLVER = "krylov"
 MODE_SOLVER = "time"
@@ -128,9 +143,27 @@ KINETIC_KRYLOV = KrylovConfig(
     shift_tol=1.0e-3,
 )
 ETG_KRYLOV = KrylovConfig(
-    method="shift_invert",
+    method="propagator",
     krylov_dim=16,
     restarts=1,
+    omega_min_factor=0.0,
+    omega_target_factor=0.5,
+    omega_cap_factor=0.5,
+    omega_sign=-1,
+    power_iters=80,
+    power_dt=0.002,
+    shift_maxiter=40,
+    shift_restart=12,
+    shift_tol=2.0e-3,
+)
+ETG_KRYLOV_LOW = KrylovConfig(
+    method="propagator",
+    krylov_dim=16,
+    restarts=1,
+    omega_min_factor=0.0,
+    omega_target_factor=0.0,
+    omega_cap_factor=2.0,
+    omega_sign=-1,
     power_iters=80,
     power_dt=0.002,
     shift_maxiter=40,
@@ -218,6 +251,8 @@ def _scan_linear_verbose(
     label: str,
     verbose: bool,
     progress: bool,
+    resolution_policy: Callable[[float], tuple[int, int]] | None = None,
+    krylov_policy: Callable[[float], KrylovConfig] | None = None,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     _log(f"\n=== {label} scan ===", verbose=verbose, use_tqdm=progress)
     _log(f"Config:\n{_format_cfg(cfg)}", verbose=verbose, use_tqdm=progress)
@@ -235,6 +270,10 @@ def _scan_linear_verbose(
     ky_out: list[float] = []
     iterator = tqdm(ky_values, desc=f"{label} ky scan") if progress else ky_values
     for i, ky in enumerate(iterator):
+        if resolution_policy is not None:
+            Nl_i, Nm_i = resolution_policy(float(ky))
+        else:
+            Nl_i, Nm_i = int(Nl), int(Nm)
         dt_i = float(dt[i]) if isinstance(dt, np.ndarray) else float(dt)
         steps_i = int(steps[i]) if isinstance(steps, np.ndarray) else int(steps)
         tmin_i = _window_value(tmin, i)
@@ -244,16 +283,17 @@ def _scan_linear_verbose(
             verbose=verbose,
             use_tqdm=progress,
         )
+        krylov_cfg_use = krylov_policy(float(ky)) if krylov_policy is not None else krylov_cfg
         result = run_linear_fn(
             ky_target=float(ky),
             cfg=cfg,
-            Nl=Nl,
-            Nm=Nm,
+            Nl=int(Nl_i),
+            Nm=int(Nm_i),
             dt=dt_i,
             steps=steps_i,
             method=method,
             solver=solver,
-            krylov_cfg=krylov_cfg,
+            krylov_cfg=krylov_cfg_use,
             auto_window=auto_window,
             tmin=tmin_i,
             tmax=tmax_i,
@@ -549,7 +589,11 @@ def _cyclone_gx_scan(
 
 def _eigenfunction_panel(run, grid, window_kw):
     signal = extract_mode_time_series(run.phi_t, run.selection, method="project")
-    _g, _w, tmin, tmax = fit_growth_rate_auto(run.t, signal, **window_kw)
+    if run.t.size < 2:
+        tmin = None
+        tmax = None
+    else:
+        _g, _w, tmin, tmax = fit_growth_rate_auto(run.t, signal, **window_kw)
     eig = extract_eigenfunction(
         run.phi_t, run.t, run.selection, z=grid.z, method="snapshot", tmin=tmin, tmax=tmax
     )
@@ -578,6 +622,8 @@ def _scan_and_mode(
     tmax: float | np.ndarray | None = None,
     scan_kwargs: dict | None = None,
     mode_kwargs: dict | None = None,
+    resolution_policy: Callable[[float], tuple[int, int]] | None = None,
+    krylov_policy: Callable[[float], KrylovConfig] | None = None,
 ):
     krylov_cfg = None
     if scan_solver.lower() == "krylov":
@@ -609,6 +655,8 @@ def _scan_and_mode(
             run_kwargs=scan_kwargs,
             verbose=verbose,
             progress=progress,
+            resolution_policy=resolution_policy,
+            krylov_policy=krylov_policy,
         )
         scan = LinearScanResult(ky=scan_ky, gamma=scan_g, omega=scan_w)
     else:
@@ -630,6 +678,10 @@ def _scan_and_mode(
         )
     sel_idx = int(np.nanargmax(scan.gamma))
     ky_sel = float(scan.ky[sel_idx])
+    if resolution_policy is not None:
+        Nl_mode, Nm_mode = resolution_policy(ky_sel)
+    else:
+        Nl_mode, Nm_mode = int(Nl), int(Nm)
     steps_run = int(steps[sel_idx]) if isinstance(steps, np.ndarray) else int(steps)
     dt_run = float(dt[sel_idx]) if isinstance(dt, np.ndarray) else float(dt)
     _log(
@@ -640,8 +692,8 @@ def _scan_and_mode(
     run = linear_fn(
         cfg=cfg,
         ky_target=ky_sel,
-        Nl=Nl,
-        Nm=Nm,
+        Nl=Nl_mode,
+        Nm=Nm_mode,
         steps=steps_run,
         dt=dt_run,
         method=mode_method,
@@ -654,6 +706,68 @@ def _scan_and_mode(
     return scan, mode, grid, ky_sel
 
 
+def _run_etg_figures(*, outdir: Path, verbose: bool, progress: bool) -> None:
+    etg_ref = load_etg_reference()
+    cfg_etg = ETGBaseCase(
+        grid=GridConfig(
+            Nx=1,
+            Ny=24,
+            Nz=96,
+            Lx=6.28,
+            Ly=6.28,
+            y0=0.2,
+            ntheta=32,
+            nperiod=2,
+            boundary="linked",
+        )
+    )
+    etg_ky = etg_ref.ky[::2]
+    etg_time = cfg_etg.time
+    etg_steps = int(round(etg_time.t_max / etg_time.dt))
+    etg_scan, _etg_mode, _etg_grid, _ = _scan_and_mode(
+        run_etg_scan,
+        run_etg_linear,
+        etg_ky,
+        cfg_etg,
+        Nl=24,
+        Nm=8,
+        steps=etg_steps,
+        dt=etg_time.dt,
+        window_kw=WINDOWS["etg"],
+        scan_solver=ETG_SCAN_SOLVER,
+        mode_solver="krylov",
+        mode_method=MODE_METHOD,
+        auto_window=False,
+        tmin=2.0,
+        tmax=etg_time.t_max,
+        scan_kwargs={
+            "fit_signal": "phi",
+            "mode_method": "z_index",
+        },
+        mode_kwargs={"fit_signal": "phi", "mode_method": "z_index"},
+        verbose=verbose,
+        progress=progress,
+        label="ETG panel",
+        resolution_policy=_etg_resolution_policy,
+        krylov_policy=_etg_krylov_policy,
+    )
+    fig, _axes = scan_comparison_figure(
+        etg_scan.ky,
+        etg_scan.gamma,
+        etg_scan.omega,
+        r"$k_y \rho_i$",
+        "ETG comparison (GX Fig. 2b)",
+        x_ref=etg_ref.ky,
+        gamma_ref=etg_ref.gamma,
+        omega_ref=etg_ref.omega,
+        label="SPECTRAX-GK",
+        ref_label="Reference",
+        log_x=True,
+    )
+    fig.savefig(outdir / "etg_comparison.png", dpi=200)
+    fig.savefig(outdir / "etg_comparison.pdf")
+
+
 def main() -> int:
     args = _parse_args()
     verbose = not args.quiet
@@ -661,6 +775,9 @@ def main() -> int:
 
     outdir = ROOT / "docs" / "_static"
     outdir.mkdir(parents=True, exist_ok=True)
+    if args.case == "etg":
+        _run_etg_figures(outdir=outdir, verbose=verbose, progress=progress)
+        return 0
 
     # Cyclone reference (adiabatic electrons)
     ref = load_cyclone_reference()
@@ -684,66 +801,8 @@ def main() -> int:
     fig.savefig(outdir / "cyclone_comparison.pdf")
     if args.case == "cyclone":
         return 0
-    if args.case == "etg":
-        etg_ref = load_etg_reference()
-        cfg_etg = ETGBaseCase(
-            grid=GridConfig(
-                Nx=1,
-                Ny=24,
-                Nz=96,
-                Lx=6.28,
-                Ly=6.28,
-                y0=0.2,
-                ntheta=32,
-                nperiod=2,
-                boundary="linked",
-            )
-        )
-        etg_ky = etg_ref.ky[::2]
-        etg_time = cfg_etg.time
-        etg_steps = int(round(etg_time.t_max / etg_time.dt))
-        etg_scan, _etg_mode, _etg_grid, _ = _scan_and_mode(
-            run_etg_scan,
-            run_etg_linear,
-            etg_ky,
-            cfg_etg,
-            Nl=6,
-            Nm=16,
-            steps=etg_steps,
-            dt=etg_time.dt,
-            window_kw=WINDOWS["etg"],
-            scan_solver=ETG_SCAN_SOLVER,
-            mode_solver=MODE_SOLVER,
-            mode_method=MODE_METHOD,
-            auto_window=False,
-            tmin=2.0,
-            tmax=etg_time.t_max,
-            scan_kwargs={
-                "time_cfg": etg_time,
-                "fit_signal": "phi",
-                "mode_method": "z_index",
-            },
-            mode_kwargs={"time_cfg": etg_time, "fit_signal": "phi", "mode_method": "z_index"},
-            verbose=verbose,
-            progress=progress,
-            label="ETG panel",
-        )
-        fig, _axes = scan_comparison_figure(
-            etg_scan.ky,
-            etg_scan.gamma,
-            etg_scan.omega,
-            r"$k_y \rho_i$",
-            "ETG comparison (GX Fig. 2b)",
-            x_ref=etg_ref.ky,
-            gamma_ref=etg_ref.gamma,
-            omega_ref=etg_ref.omega,
-            label="SPECTRAX-GK",
-            ref_label="Reference",
-            log_x=True,
-        )
-        fig.savefig(outdir / "etg_comparison.png", dpi=200)
-        fig.savefig(outdir / "etg_comparison.pdf")
-        return 0
+
+    _run_etg_figures(outdir=outdir, verbose=verbose, progress=progress)
 
     # Multi-panel summary: cyclone, kinetic ITG, ETG, KBM, TEM
     geom_cyc = SAlphaGeometry.from_config(cfg_cyc.geometry)
@@ -810,26 +869,27 @@ def main() -> int:
         run_etg_linear,
         etg_ky,
         cfg_etg,
-        Nl=6,
-        Nm=16,
+        Nl=24,
+        Nm=8,
         steps=etg_steps,
         dt=etg_time.dt,
         window_kw=WINDOWS["etg"],
         scan_solver=ETG_SCAN_SOLVER,
-        mode_solver=MODE_SOLVER,
+        mode_solver="krylov",
         mode_method=MODE_METHOD,
         auto_window=False,
         tmin=2.0,
         tmax=etg_time.t_max,
         scan_kwargs={
-            "time_cfg": etg_time,
             "fit_signal": "phi",
             "mode_method": "z_index",
         },
-        mode_kwargs={"time_cfg": etg_time, "fit_signal": "phi", "mode_method": "z_index"},
+        mode_kwargs={"fit_signal": "phi", "mode_method": "z_index"},
         verbose=verbose,
         progress=progress,
         label="ETG panel",
+        resolution_policy=_etg_resolution_policy,
+        krylov_policy=_etg_krylov_policy,
     )
     fig, _axes = scan_comparison_figure(
         etg_scan.ky,

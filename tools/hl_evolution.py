@@ -458,13 +458,14 @@ def _log_energy(series: np.ndarray) -> np.ndarray:
         return np.array([])
     abs_val = np.abs(series)
     abs_val = np.nan_to_num(abs_val, nan=0.0, posinf=0.0, neginf=0.0)
+    eps = np.finfo(abs_val.dtype).tiny
     axes = tuple(range(1, abs_val.ndim))
     scale = np.max(abs_val, axis=axes, keepdims=True)
     scale = np.where(scale > 0, scale, 1.0)
     scaled = abs_val / scale
     mean_scaled = np.mean(scaled**2, axis=axes)
     with np.errstate(divide="ignore", invalid="ignore"):
-        log_energy = np.log(mean_scaled + 1.0e-300) + 2.0 * np.log(np.squeeze(scale, axis=axes))
+        log_energy = np.log(mean_scaled + eps) + 2.0 * np.log(np.squeeze(scale, axis=axes))
     return log_energy
 
 
@@ -495,14 +496,20 @@ def _log_amp(signal: np.ndarray) -> np.ndarray:
     signal = np.asarray(signal)
     if signal.size == 0:
         return np.array([])
-    signal = np.nan_to_num(signal, nan=0.0, posinf=0.0, neginf=0.0)
-    scale = float(np.nanmax(np.abs(signal)))
+    finite = np.isfinite(signal)
+    if np.any(finite):
+        scale = float(np.max(np.abs(signal[finite])))
+    else:
+        scale = 1.0
+    if not np.all(finite):
+        signal = np.where(finite, signal, 0.0)
     if not np.isfinite(scale) or scale <= 0.0:
         scale = 1.0
     scaled = signal / scale
     amp = np.abs(scaled)
+    eps = np.finfo(amp.dtype).tiny
     with np.errstate(divide="ignore", invalid="ignore"):
-        return np.log(np.maximum(amp, 1.0e-300)) + np.log(scale)
+        return np.log(np.maximum(amp, eps)) + np.log(scale)
 
 
 def _default_fit_signal(case: str) -> str:
