@@ -43,34 +43,95 @@ def _map_curve(
     return x_data, y_data
 
 
+def _cluster_ranges(indices: np.ndarray, gap: int = 1) -> list[tuple[int, int]]:
+    ranges: list[tuple[int, int]] = []
+    start: int | None = None
+    prev: int | None = None
+    for idx in indices:
+        if start is None:
+            start = int(idx)
+            prev = int(idx)
+            continue
+        if idx == prev + gap:
+            prev = int(idx)
+            continue
+        ranges.append((start, int(prev)))
+        start = int(idx)
+        prev = int(idx)
+    if start is not None and prev is not None:
+        ranges.append((start, int(prev)))
+    return ranges
+
+
+def _detect_horizontal_lines(
+    gray: np.ndarray,
+    x0: int,
+    x1: int,
+    y0: int,
+    y1: int,
+    *,
+    thresh: int = 120,
+    frac: float = 0.6,
+) -> tuple[int, int]:
+    sub = gray[y0:y1, x0:x1]
+    mask = sub < thresh
+    counts = mask.sum(axis=1)
+    rows = np.where(counts > frac * (x1 - x0))[0]
+    if rows.size == 0:
+        raise RuntimeError("Unable to detect horizontal axis lines for ETG digitization")
+    ranges = _cluster_ranges(rows)
+    return y0 + ranges[0][0], y0 + ranges[-1][0]
+
+
+def _detect_vertical_lines(
+    gray: np.ndarray,
+    x0: int,
+    x1: int,
+    y0: int,
+    y1: int,
+    *,
+    thresh: int = 120,
+    frac: float = 0.6,
+) -> tuple[int, int]:
+    sub = gray[y0:y1, x0:x1]
+    mask = sub < thresh
+    counts = mask.sum(axis=0)
+    cols = np.where(counts > frac * (y1 - y0))[0]
+    if cols.size == 0:
+        raise RuntimeError("Unable to detect vertical axis lines for ETG digitization")
+    ranges = _cluster_ranges(cols)
+    if len(ranges) == 1:
+        return x0 + ranges[0][0], x0 + ranges[0][1]
+    return x0 + ranges[0][0], x0 + ranges[-1][0]
+
+
 def digitize_etg(fig_path: Path, out_path: Path) -> None:
     """Digitize ETG growth rates and frequencies from the GX paper figure."""
 
     arr = np.array(Image.open(fig_path).convert("RGB"))
+    gray = np.array(Image.open(fig_path).convert("L"))
     hsv = rgb2hsv(arr / 255.0)
     h, s, v = hsv[..., 0], hsv[..., 1], hsv[..., 2]
     blue = (h > 0.55) & (h < 0.75) & (s > 0.3) & (v > 0.3)
 
-    # Axis bounds determined from the crop in tools (gx_fig2b_crop5.png)
-    x0, x1 = 81, 1406
-    # Top panel (gamma)
-    yt0, yt1 = 127, 362
-    # Bottom panel (omega)
-    yb0, yb1 = 377, 574
+    # Rough bounding box for Fig. 2(b) in the GX paper (page render).
+    x0_guess, x1_guess = 520, 1100
+    y_top_guess0, y_top_guess1 = 700, 900
+    y_bot_guess0, y_bot_guess1 = 940, 1130
 
-    curve_top = _curve_from_mask(blue, x0, x1, yt0, yt1)
-    curve_bot = _curve_from_mask(blue, x0, x1, yb0, yb1)
+    x_left, x_right = _detect_vertical_lines(gray, x0_guess, x1_guess, y_bot_guess0, y_bot_guess1)
+    yt0, yt1 = _detect_horizontal_lines(gray, x0_guess, x1_guess, y_top_guess0, y_top_guess1)
+    yb0, yb1 = _detect_horizontal_lines(gray, x0_guess, x1_guess, y_bot_guess0, y_bot_guess1)
+
+    curve_top = _curve_from_mask(blue, x_left, x_right + 1, yt0, yt1)
+    curve_bot = _curve_from_mask(blue, x_left, x_right + 1, yb0, yb1)
 
     x_min, x_max = 0.0, 50.0
     y_gamma_min, y_gamma_max = 0.0, 10.0
     y_omega_min, y_omega_max = -40.0, 0.0
 
-    # Use curve extents for x to better match line endpoints.
-    x0t, x1t = int(curve_top[:, 0].min()), int(curve_top[:, 0].max())
-    x0b, x1b = int(curve_bot[:, 0].min()), int(curve_bot[:, 0].max())
-
-    x_top, y_top = _map_curve(curve_top, x0t, x1t, yt0, yt1, x_min, x_max, y_gamma_min, y_gamma_max)
-    x_bot, y_bot = _map_curve(curve_bot, x0b, x1b, yb0, yb1, x_min, x_max, y_omega_min, y_omega_max)
+    x_top, y_top = _map_curve(curve_top, x_left, x_right, yt0, yt1, x_min, x_max, y_gamma_min, y_gamma_max)
+    x_bot, y_bot = _map_curve(curve_bot, x_left, x_right, yb0, yb1, x_min, x_max, y_omega_min, y_omega_max)
 
     ky = np.array([5, 10, 15, 20, 25, 30, 35, 40, 45, 50], dtype=float)
     order = np.argsort(x_top)
@@ -123,11 +184,13 @@ def digitize_tem(fig_path: Path, out_path: Path) -> None:
 
 def main() -> int:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-    etg_fig = Path("/tmp/gx_fig2b_crop5.png")
+    etg_fig = Path("/tmp/gx_paper_fig2_page.png")
     tem_fig = Path("/tmp/tem_fig4_crop2.png")
 
     if not etg_fig.exists() or not tem_fig.exists():
-        raise SystemExit("Missing cropped reference figures in /tmp. Recreate the crops before running.")
+        raise SystemExit(
+            "Missing reference figures in /tmp. Render gx_paper_fig2_page.png and tem_fig4_crop2.png before running."
+        )
 
     digitize_etg(etg_fig, DATA_DIR / "etg_reference.csv")
     digitize_tem(tem_fig, DATA_DIR / "tem_reference.csv")
