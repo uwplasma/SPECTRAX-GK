@@ -70,6 +70,15 @@ On the reference run (Nl=2, Nm=3, Ny=4, Nz=8), this reported:
    iters_pas=11
    iters_pas_coarse=11
 
+On a larger run (Ny=8, Nz=64, Nl=12, Nm=12, dt=0.1), this reported:
+
+.. code-block:: text
+
+   iters_plain=38
+   iters_diag=38
+   iters_pas=39
+   iters_pas_coarse=39
+
 JIT considerations
 ------------------
 
