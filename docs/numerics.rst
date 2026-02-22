@@ -134,8 +134,10 @@ end-to-end JAX differentiability:
 - **Implicit preconditioning hooks**: ``implicit_preconditioner`` accepts
   ``"auto"/"diag"/"physics"/"block"`` (full diagonal preconditioner),
   ``"damping"`` (collisional/hyper-only), ``"pas"`` (PAS line preconditioner),
-  ``"pas-coarse"`` (line + kx-coarse additive correction), or ``"identity"``
-  to disable preconditioning.
+  ``"pas-coarse"`` (line + kx-coarse additive correction), ``"hermite-line"``
+  (Hermite streaming line solve in ``m`` at fixed :math:`k_z`), or
+  ``"hermite-line-coarse"`` (Hermite line solve + kx-coarse correction), or
+  ``"identity"`` to disable preconditioning.
 - **Cached hypercollision factors**: the linear cache now stores the Hermite–
   Laguerre hypercollision ratios and masks to avoid repeated power operations
   inside the RHS assembly.
