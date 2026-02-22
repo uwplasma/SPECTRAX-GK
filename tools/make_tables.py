@@ -51,6 +51,7 @@ from spectraxgk.config import (
     GridConfig,
     KineticElectronBaseCase,
     KBMBaseCase,
+    TimeConfig,
     TEMBaseCase,
 )
 from spectraxgk.geometry import SAlphaGeometry
@@ -121,6 +122,44 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--no-progress", action="store_true", help="Disable tqdm progress bars."
     )
+    parser.add_argument(
+        "--stiff-spot-check",
+        action="store_true",
+        help=(
+            "After Krylov scans, re-run the worst-mismatch high-ky points with a "
+            "robust implicit time integrator (GMRES + hermite-line preconditioner) "
+            "to diagnose instability-driven outliers."
+        ),
+    )
+    parser.add_argument(
+        "--stiff-spot-check-topk",
+        type=int,
+        default=2,
+        help="Number of outlier points to re-run per scan when --stiff-spot-check is enabled.",
+    )
+    parser.add_argument(
+        "--stiff-spot-check-min-ky",
+        type=float,
+        default=0.5,
+        help="Only consider ky >= this threshold when selecting stiff spot-check points.",
+    )
+    parser.add_argument(
+        "--stiff-spot-check-dt",
+        type=float,
+        default=0.01,
+        help="Fixed dt to use for implicit stiff spot-check runs.",
+    )
+    parser.add_argument(
+        "--stiff-spot-check-tmax",
+        type=float,
+        default=4.0,
+        help="Total time horizon to use for implicit stiff spot-check runs.",
+    )
+    parser.add_argument(
+        "--stiff-spot-check-replace",
+        action="store_true",
+        help="Replace Krylov results with implicit spot-check results when they reduce mismatch.",
+    )
     return parser.parse_args()
 
 
@@ -170,6 +209,12 @@ def _scan_linear_verbose(
     progress: bool,
     resolution_policy: Callable[[float], tuple[int, int]] | None = None,
     krylov_policy: Callable[[float], KrylovConfig] | None = None,
+    stiff_spot_check: bool = False,
+    stiff_spot_check_topk: int = 0,
+    stiff_spot_check_min_ky: float = 0.0,
+    stiff_spot_check_dt: float = 0.01,
+    stiff_spot_check_tmax: float = 4.0,
+    stiff_spot_check_replace: bool = False,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     _log(f"\n=== {label} scan ===", verbose=verbose, use_tqdm=progress)
     _log(f"Config:\n{_format_cfg(cfg)}", verbose=verbose, use_tqdm=progress)
@@ -187,6 +232,11 @@ def _scan_linear_verbose(
     gammas: list[float] = []
     omegas: list[float] = []
     ky_out: list[float] = []
+    mismatch_scores: list[float] = []
+    ref_pairs: list[tuple[float, float]] = []
+    base_extra = dict(DEFAULT_RUN_KW)
+    if run_kwargs:
+        base_extra.update(run_kwargs)
     iterator = tqdm(ky_values, desc=f"{label} ky scan") if progress else ky_values
     for i, ky in enumerate(iterator):
         if resolution_policy is not None:
@@ -202,9 +252,7 @@ def _scan_linear_verbose(
             verbose=verbose,
             use_tqdm=progress,
         )
-        extra = dict(DEFAULT_RUN_KW)
-        if run_kwargs:
-            extra.update(run_kwargs)
+        extra = dict(base_extra)
         krylov_cfg_use = krylov_policy(float(ky)) if krylov_policy is not None else krylov_cfg
         result = run_linear_fn(
             ky_target=float(ky),
@@ -220,7 +268,7 @@ def _scan_linear_verbose(
             tmin=tmin_i,
             tmax=tmax_i,
             **window_kw,
-            **extra,
+                **extra,
         )
         gammas.append(float(result.gamma))
         omegas.append(float(result.omega))
@@ -232,11 +280,91 @@ def _scan_linear_verbose(
             omega_ref = float(ref.omega[idx])
             rel_gamma = (result.gamma - gamma_ref) / gamma_ref if gamma_ref != 0.0 else np.nan
             rel_omega = (result.omega - omega_ref) / omega_ref if omega_ref != 0.0 else np.nan
+            mismatch_scores.append(float(np.nanmax(np.abs([rel_gamma, rel_omega]))))
+            ref_pairs.append((gamma_ref, omega_ref))
             msg += (
                 f" | ref gamma={gamma_ref:.6g} omega={omega_ref:.6g}"
                 f" rel_gamma={rel_gamma:.3g} rel_omega={rel_omega:.3g}"
             )
         _log(msg, verbose=verbose, use_tqdm=progress)
+
+    if (
+        stiff_spot_check
+        and str(solver).lower() == "krylov"
+        and ref is not None
+        and stiff_spot_check_topk > 0
+        and len(ky_out) == len(mismatch_scores)
+    ):
+        ky_arr = np.asarray(ky_out)
+        score_arr = np.asarray(mismatch_scores)
+        eligible = ky_arr >= float(stiff_spot_check_min_ky)
+        if np.any(eligible):
+            eligible_idx = np.where(eligible)[0]
+            ranked = eligible_idx[np.argsort(score_arr[eligible_idx])[::-1]]
+            top_idx = ranked[: int(stiff_spot_check_topk)]
+            _log(
+                f"\n[{label}] stiff spot-check (implicit + hermite-line) for {len(top_idx)} outliers",
+                verbose=verbose,
+                use_tqdm=progress,
+            )
+            for local_i in top_idx:
+                ky_val = float(ky_arr[local_i])
+                gamma_ref, omega_ref = ref_pairs[local_i]
+                gamma_k = float(gammas[local_i])
+                omega_k = float(omegas[local_i])
+                t_max = float(stiff_spot_check_tmax)
+                dt_spot = float(stiff_spot_check_dt)
+                steps_spot = max(int(round(t_max / dt_spot)), 1)
+                time_cfg_spot = TimeConfig(
+                    t_max=t_max,
+                    dt=dt_spot,
+                    method="implicit",
+                    use_diffrax=False,
+                    implicit_preconditioner="hermite-line",
+                    progress_bar=False,
+                    sample_stride=1,
+                )
+                extra_spot = dict(base_extra)
+                extra_spot.pop("time_cfg", None)
+                spot = run_linear_fn(
+                    ky_target=ky_val,
+                    cfg=cfg,
+                    Nl=int(Nl),
+                    Nm=int(Nm),
+                    dt=dt_spot,
+                    steps=steps_spot,
+                    method="implicit",
+                    solver="time",
+                    krylov_cfg=None,
+                    time_cfg=time_cfg_spot,
+                    auto_window=True,
+                    tmin=None,
+                    tmax=None,
+                    **window_kw,
+                    **extra_spot,
+                )
+                gamma_i = float(spot.gamma)
+                omega_i = float(spot.omega)
+                rel_k = abs((gamma_k - gamma_ref) / gamma_ref) if gamma_ref != 0.0 else np.inf
+                rel_i = abs((gamma_i - gamma_ref) / gamma_ref) if gamma_ref != 0.0 else np.inf
+                relw_k = abs((omega_k - omega_ref) / omega_ref) if omega_ref != 0.0 else np.inf
+                relw_i = abs((omega_i - omega_ref) / omega_ref) if omega_ref != 0.0 else np.inf
+                _log(
+                    f"[{label}] ky={ky_val:.4g} krylov(g={gamma_k:.4g}, w={omega_k:.4g}) "
+                    f"implicit(g={gamma_i:.4g}, w={omega_i:.4g}) "
+                    f"| ref(g={gamma_ref:.4g}, w={omega_ref:.4g}) "
+                    f"rel_g(k={rel_k:.3g}, i={rel_i:.3g}) rel_w(k={relw_k:.3g}, i={relw_i:.3g})",
+                    verbose=verbose,
+                    use_tqdm=progress,
+                )
+                if stiff_spot_check_replace and (rel_i + relw_i) < (rel_k + relw_k):
+                    gammas[local_i] = gamma_i
+                    omegas[local_i] = omega_i
+                    _log(
+                        f"[{label}] replaced krylov result at ky={ky_val:.4g} with implicit spot-check.",
+                        verbose=verbose,
+                        use_tqdm=progress,
+                    )
 
     return np.array(ky_out), np.array(gammas), np.array(omegas)
 
@@ -261,6 +389,11 @@ def _scan_kbm_verbose(
     run_kwargs: dict | None = None,
     verbose: bool,
     progress: bool,
+    stiff_spot_check: bool = False,
+    stiff_spot_check_topk: int = 0,
+    stiff_spot_check_dt: float = 0.01,
+    stiff_spot_check_tmax: float = 4.0,
+    stiff_spot_check_replace: bool = False,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     _log(f"\n=== {label} beta scan ===", verbose=verbose, use_tqdm=progress)
     _log(f"Config:\n{_format_cfg(cfg)}", verbose=verbose, use_tqdm=progress)
@@ -278,6 +411,11 @@ def _scan_kbm_verbose(
     gammas: list[float] = []
     omegas: list[float] = []
     beta_out: list[float] = []
+    mismatch_scores: list[float] = []
+    ref_pairs: list[tuple[float, float]] = []
+    base_extra = dict(DEFAULT_RUN_KW)
+    if run_kwargs:
+        base_extra.update(run_kwargs)
     iterator = tqdm(betas, desc=f"{label} beta scan") if progress else betas
     for i, beta in enumerate(iterator):
         dt_i = float(dt[i]) if isinstance(dt, np.ndarray) else float(dt)
@@ -289,9 +427,7 @@ def _scan_kbm_verbose(
             verbose=verbose,
             use_tqdm=progress,
         )
-        extra = dict(DEFAULT_RUN_KW)
-        if run_kwargs:
-            extra.update(run_kwargs)
+        extra = dict(base_extra)
         result = run_kbm_beta_scan(
             np.asarray([float(beta)]),
             cfg=cfg,
@@ -321,11 +457,90 @@ def _scan_kbm_verbose(
             omega_ref = float(ref.omega[idx])
             rel_gamma = (gamma - gamma_ref) / gamma_ref if gamma_ref != 0.0 else np.nan
             rel_omega = (omega - omega_ref) / omega_ref if omega_ref != 0.0 else np.nan
+            mismatch_scores.append(float(np.nanmax(np.abs([rel_gamma, rel_omega]))))
+            ref_pairs.append((gamma_ref, omega_ref))
             msg += (
                 f" | ref gamma={gamma_ref:.6g} omega={omega_ref:.6g}"
                 f" rel_gamma={rel_gamma:.3g} rel_omega={rel_omega:.3g}"
             )
         _log(msg, verbose=verbose, use_tqdm=progress)
+
+    if (
+        stiff_spot_check
+        and str(solver).lower() == "krylov"
+        and ref is not None
+        and stiff_spot_check_topk > 0
+        and len(beta_out) == len(mismatch_scores)
+    ):
+        beta_arr = np.asarray(beta_out)
+        score_arr = np.asarray(mismatch_scores)
+        ranked = np.argsort(score_arr)[::-1]
+        top_idx = ranked[: int(stiff_spot_check_topk)]
+        _log(
+            f"\n[{label}] stiff spot-check (implicit + hermite-line) for {len(top_idx)} outliers",
+            verbose=verbose,
+            use_tqdm=progress,
+        )
+        for local_i in top_idx:
+            beta_val = float(beta_arr[local_i])
+            gamma_ref, omega_ref = ref_pairs[local_i]
+            gamma_k = float(gammas[local_i])
+            omega_k = float(omegas[local_i])
+            t_max = float(stiff_spot_check_tmax)
+            dt_spot = float(stiff_spot_check_dt)
+            steps_spot = max(int(round(t_max / dt_spot)), 1)
+            time_cfg_spot = TimeConfig(
+                t_max=t_max,
+                dt=dt_spot,
+                method="implicit",
+                use_diffrax=False,
+                implicit_preconditioner="hermite-line",
+                progress_bar=False,
+                sample_stride=1,
+            )
+            extra_spot = dict(base_extra)
+            extra_spot.pop("time_cfg", None)
+            spot = run_kbm_beta_scan(
+                np.asarray([beta_val]),
+                cfg=cfg,
+                ky_target=0.3,
+                Nl=Nl,
+                Nm=Nm,
+                dt=dt_spot,
+                steps=steps_spot,
+                method="implicit",
+                solver="time",
+                krylov_cfg=None,
+                time_cfg=time_cfg_spot,
+                auto_window=True,
+                tmin=None,
+                tmax=None,
+                streaming_fit=False,
+                **window_kw,
+                **extra_spot,
+            )
+            gamma_i = float(spot.gamma[0])
+            omega_i = float(spot.omega[0])
+            rel_k = abs((gamma_k - gamma_ref) / gamma_ref) if gamma_ref != 0.0 else np.inf
+            rel_i = abs((gamma_i - gamma_ref) / gamma_ref) if gamma_ref != 0.0 else np.inf
+            relw_k = abs((omega_k - omega_ref) / omega_ref) if omega_ref != 0.0 else np.inf
+            relw_i = abs((omega_i - omega_ref) / omega_ref) if omega_ref != 0.0 else np.inf
+            _log(
+                f"[{label}] beta={beta_val:.4g} krylov(g={gamma_k:.4g}, w={omega_k:.4g}) "
+                f"implicit(g={gamma_i:.4g}, w={omega_i:.4g}) "
+                f"| ref(g={gamma_ref:.4g}, w={omega_ref:.4g}) "
+                f"rel_g(k={rel_k:.3g}, i={rel_i:.3g}) rel_w(k={relw_k:.3g}, i={relw_i:.3g})",
+                verbose=verbose,
+                use_tqdm=progress,
+            )
+            if stiff_spot_check_replace and (rel_i + relw_i) < (rel_k + relw_k):
+                gammas[local_i] = gamma_i
+                omegas[local_i] = omega_i
+                _log(
+                    f"[{label}] replaced krylov result at beta={beta_val:.4g} with implicit spot-check.",
+                    verbose=verbose,
+                    use_tqdm=progress,
+                )
 
     return np.array(beta_out), np.array(gammas), np.array(omegas)
 
@@ -634,6 +849,12 @@ def main() -> int:
     args = _parse_args()
     verbose = not args.quiet
     progress = not args.no_progress
+    stiff_spot_check = bool(args.stiff_spot_check)
+    stiff_spot_topk = int(args.stiff_spot_check_topk)
+    stiff_spot_min_ky = float(args.stiff_spot_check_min_ky)
+    stiff_spot_dt = float(args.stiff_spot_check_dt)
+    stiff_spot_tmax = float(args.stiff_spot_check_tmax)
+    stiff_spot_replace = bool(args.stiff_spot_check_replace)
 
     outdir = ROOT / "docs" / "_static"
     outdir.mkdir(parents=True, exist_ok=True)
@@ -880,6 +1101,12 @@ def main() -> int:
         ref=kinetic_ref,
         verbose=verbose,
         progress=progress,
+        stiff_spot_check=stiff_spot_check,
+        stiff_spot_check_topk=stiff_spot_topk,
+        stiff_spot_check_min_ky=stiff_spot_min_ky,
+        stiff_spot_check_dt=stiff_spot_dt,
+        stiff_spot_check_tmax=stiff_spot_tmax,
+        stiff_spot_check_replace=stiff_spot_replace,
     )
     kinetic_mismatch = LinearScanResult(ky=kin_ky, gamma=kin_g, omega=kin_w)
     (outdir / "kinetic_mismatch_table.csv").write_text(
@@ -949,6 +1176,11 @@ def main() -> int:
         ref=kbm_ref,
         verbose=verbose,
         progress=progress,
+        stiff_spot_check=stiff_spot_check,
+        stiff_spot_check_topk=stiff_spot_topk,
+        stiff_spot_check_dt=stiff_spot_dt,
+        stiff_spot_check_tmax=stiff_spot_tmax,
+        stiff_spot_check_replace=stiff_spot_replace,
     )
     kbm_mismatch = LinearScanResult(ky=kbm_beta, gamma=kbm_g, omega=kbm_w)
     (outdir / "kbm_mismatch_table.csv").write_text(
@@ -982,6 +1214,12 @@ def main() -> int:
         ref=tem_ref,
         verbose=verbose,
         progress=progress,
+        stiff_spot_check=stiff_spot_check,
+        stiff_spot_check_topk=stiff_spot_topk,
+        stiff_spot_check_min_ky=stiff_spot_min_ky,
+        stiff_spot_check_dt=stiff_spot_dt,
+        stiff_spot_check_tmax=stiff_spot_tmax,
+        stiff_spot_check_replace=stiff_spot_replace,
     )
     tem_mismatch = LinearScanResult(ky=tem_ky, gamma=tem_g, omega=tem_w)
     (outdir / "tem_mismatch_table.csv").write_text(

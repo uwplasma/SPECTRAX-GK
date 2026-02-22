@@ -97,7 +97,7 @@ frequencies across a reduced :math:`k_y` scan on the field-aligned grid.
      - ``Nl=6, Nm=16`` (legacy figure generation); GX-aligned scans use
        per-ky balanced resolutions below.
    * - Reference
-     - :cite:`GX`
+     - [GX]_
 
 .. figure:: _static/etg_comparison.png
    :width: 80%
@@ -202,7 +202,7 @@ kinetic-electron regression checks.
    * - Velocity resolution
      - ``Nl=6, Nm=16`` (figure generation)
    * - Reference
-     - :cite:`GX`
+     - [GX]_
 
 ETG (Electron-Scale)
 --------------------
@@ -239,7 +239,7 @@ summary figure.
    * - Velocity resolution
      - ``Nl=6, Nm=16`` (figure generation)
    * - Reference
-     - :cite:`GX`
+     - [GX]_
 
 KBM (Electromagnetic Beta Scan)
 -------------------------------
@@ -271,7 +271,7 @@ Electromagnetic ballooning validation uses a fixed :math:`k_y` and a scan over
    * - Velocity resolution
      - ``Nl=6, Nm=16`` (figure generation)
    * - Reference
-     - :cite:`GX`
+     - [GX]_
 
 TEM (Trapped-Electron Mode)
 ---------------------------
@@ -306,7 +306,7 @@ stored in:
    * - Velocity resolution
      - ``Nl=6, Nm=16`` (figure generation)
    * - Reference
-     - :cite:`Frei22`
+     - [Frei22]_
 
 Reduced ky scan tables
 ----------------------
@@ -391,6 +391,15 @@ To regenerate the benchmark tables and figures:
 
    python tools/make_tables.py
    python tools/make_figures.py
+
+To diagnose stiff outliers in Krylov-based mismatch tables (most commonly in
+high-ky TEM/KBM/kinetic-ITG points), enable the implicit spot-check mode. This
+re-runs the worst-mismatch points with a robust implicit solver (GMRES +
+Hermite-line streaming preconditioner) and prints the comparison:
+
+.. code-block:: bash
+
+   python tools/make_tables.py --stiff-spot-check
 
 Reference data extraction
 -------------------------
