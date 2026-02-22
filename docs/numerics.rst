@@ -144,7 +144,8 @@ end-to-end JAX differentiability:
   ``"damping"`` (element-wise inverse of the collisional/hyper damping) or
   ``"hermite-line"`` (Hermite streaming line solve via FFT in ``z`` and a
   tridiagonal solve in ``m``). The ``"-coarse"`` variants add a lightweight
-  kx-mean coarse correction.
+  coarse correction in the kx direction (for linked boundaries this averages
+  within linked chains; for periodic boundaries this reduces to a kx-mean).
 - **Cached hypercollision factors**: the linear cache now stores the Hermite–
   Laguerre hypercollision ratios and masks to avoid repeated power operations
   inside the RHS assembly.
