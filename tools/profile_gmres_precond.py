@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import argparse
 import numpy as np
 
 import jax
@@ -51,6 +52,25 @@ def gmres_iterations(matvec, b: np.ndarray, precond=None, tol: float = 1.0e-6, m
     return maxiter
 
 
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Profile GMRES preconditioners.")
+    parser.add_argument("--Nx", type=int, default=1)
+    parser.add_argument("--Ny", type=int, default=4)
+    parser.add_argument("--Nz", type=int, default=8)
+    parser.add_argument("--Lx", type=float, default=62.8)
+    parser.add_argument("--Ly", type=float, default=62.8)
+    parser.add_argument("--y0", type=float, default=20.0)
+    parser.add_argument("--ntheta", type=int, default=16)
+    parser.add_argument("--nperiod", type=int, default=1)
+    parser.add_argument("--boundary", choices=["periodic", "linked"], default="periodic")
+    parser.add_argument("--Nl", type=int, default=2)
+    parser.add_argument("--Nm", type=int, default=3)
+    parser.add_argument("--dt", type=float, default=0.02)
+    parser.add_argument("--tol", type=float, default=1.0e-6)
+    parser.add_argument("--maxiter", type=int, default=40)
+    return parser.parse_args()
+
+
 def _precond_from_operator(
     G0: jnp.ndarray,
     cache,
@@ -72,31 +92,34 @@ def _precond_from_operator(
 
 
 def main() -> int:
+    args = _parse_args()
     grid = GridConfig(
-        Nx=1,
-        Ny=4,
-        Nz=8,
-        Lx=62.8,
-        Ly=62.8,
-        y0=20.0,
-        ntheta=16,
-        nperiod=1,
+        Nx=args.Nx,
+        Ny=args.Ny,
+        Nz=args.Nz,
+        Lx=args.Lx,
+        Ly=args.Ly,
+        boundary=args.boundary,
+        y0=args.y0,
+        ntheta=args.ntheta,
+        nperiod=args.nperiod,
     )
     cfg = CycloneBaseCase(grid=grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
     params = LinearParams(
         R_over_Ln=cfg.model.R_over_Ln,
         R_over_LTi=cfg.model.R_over_LTi,
         omega_d_scale=0.2,
         omega_star_scale=0.55,
         rho_star=0.9,
+        kpar_scale=float(geom.gradpar()),
     )
-    Nl, Nm = 2, 3
+    Nl, Nm = int(args.Nl), int(args.Nm)
     grid_spec = build_spectral_grid(cfg.grid)
-    geom = SAlphaGeometry.from_config(cfg.geometry)
     cache = build_linear_cache(grid_spec, geom, params, Nl, Nm)
     shape = (Nl, Nm, grid_spec.ky.size, grid_spec.kx.size, grid_spec.z.size)
     size = int(np.prod(shape))
-    dt = 0.02
+    dt = float(args.dt)
     terms = LinearTerms()
     base_dtype = jnp.complex128 if _x64_enabled() else jnp.complex64
     G0 = jnp.zeros(shape, dtype=base_dtype)
@@ -121,7 +144,13 @@ def main() -> int:
 
     for label, key in precond_keys.items():
         precond = _precond_from_operator(G0, cache, params, dt, terms, key)
-        iters = gmres_iterations(matvec_np, b, precond=precond, tol=1.0e-6, maxiter=40)
+        iters = gmres_iterations(
+            matvec_np,
+            b,
+            precond=precond,
+            tol=float(args.tol),
+            maxiter=int(args.maxiter),
+        )
         print(f"iters_{label}={iters}")
     return 0
 
