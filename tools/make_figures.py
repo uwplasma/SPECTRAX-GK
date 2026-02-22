@@ -25,6 +25,11 @@ from spectraxgk.analysis import (
     select_ky_index,
 )
 from spectraxgk.benchmarks import (
+    CYCLONE_KRYLOV_DEFAULT,
+    ETG_KRYLOV_DEFAULT,
+    KBM_KRYLOV_DEFAULT,
+    KINETIC_KRYLOV_DEFAULT,
+    TEM_KRYLOV_DEFAULT,
     CYCLONE_OMEGA_D_SCALE,
     CYCLONE_OMEGA_STAR_SCALE,
     CYCLONE_RHO_STAR,
@@ -122,40 +127,11 @@ KBM_SCAN_SOLVER = "krylov"
 TEM_SCAN_SOLVER = "krylov"
 MODE_SOLVER = "time"
 MODE_METHOD = "imex2"
-CYCLONE_KRYLOV = KrylovConfig(
-    method="shift_invert",
-    krylov_dim=16,
-    restarts=1,
-    power_iters=60,
-    power_dt=0.01,
-    shift_maxiter=30,
-    shift_restart=10,
-    shift_tol=1.0e-3,
-)
-KINETIC_KRYLOV = KrylovConfig(
-    method="propagator",
-    krylov_dim=16,
-    restarts=1,
-    power_iters=60,
-    power_dt=0.0005,
-    shift_maxiter=30,
-    shift_restart=10,
-    shift_tol=1.0e-3,
-)
-ETG_KRYLOV = KrylovConfig(
-    method="propagator",
-    krylov_dim=16,
-    restarts=1,
-    omega_min_factor=0.0,
-    omega_target_factor=0.5,
-    omega_cap_factor=0.5,
-    omega_sign=-1,
-    power_iters=80,
-    power_dt=0.002,
-    shift_maxiter=40,
-    shift_restart=12,
-    shift_tol=2.0e-3,
-)
+DIAGNOSTIC_NORM = "gx"
+DEFAULT_RUN_KW = {"diagnostic_norm": DIAGNOSTIC_NORM}
+CYCLONE_KRYLOV = CYCLONE_KRYLOV_DEFAULT
+KINETIC_KRYLOV = KINETIC_KRYLOV_DEFAULT
+ETG_KRYLOV = ETG_KRYLOV_DEFAULT
 ETG_KRYLOV_LOW = KrylovConfig(
     method="propagator",
     krylov_dim=16,
@@ -170,26 +146,8 @@ ETG_KRYLOV_LOW = KrylovConfig(
     shift_restart=12,
     shift_tol=2.0e-3,
 )
-KBM_KRYLOV = KrylovConfig(
-    method="propagator",
-    krylov_dim=16,
-    restarts=1,
-    power_iters=60,
-    power_dt=0.005,
-    shift_maxiter=30,
-    shift_restart=10,
-    shift_tol=1.0e-3,
-)
-TEM_KRYLOV = KrylovConfig(
-    method="propagator",
-    krylov_dim=16,
-    restarts=1,
-    power_iters=60,
-    power_dt=0.005,
-    shift_maxiter=30,
-    shift_restart=10,
-    shift_tol=1.0e-3,
-)
+KBM_KRYLOV = KBM_KRYLOV_DEFAULT
+TEM_KRYLOV = TEM_KRYLOV_DEFAULT
 
 
 
@@ -284,6 +242,9 @@ def _scan_linear_verbose(
             use_tqdm=progress,
         )
         krylov_cfg_use = krylov_policy(float(ky)) if krylov_policy is not None else krylov_cfg
+        extra = dict(DEFAULT_RUN_KW)
+        if run_kwargs:
+            extra.update(run_kwargs)
         result = run_linear_fn(
             ky_target=float(ky),
             cfg=cfg,
@@ -298,7 +259,7 @@ def _scan_linear_verbose(
             tmin=tmin_i,
             tmax=tmax_i,
             **window_kw,
-            **(run_kwargs or {}),
+            **extra,
         )
         gammas.append(float(result.gamma))
         omegas.append(float(result.omega))
@@ -359,7 +320,9 @@ def _scan_kbm_verbose(
             verbose=verbose,
             use_tqdm=progress,
         )
-        extra = run_kwargs or {}
+        extra = dict(DEFAULT_RUN_KW)
+        if run_kwargs:
+            extra.update(run_kwargs)
         result = run_kbm_beta_scan(
             np.asarray([float(beta)]),
             cfg=cfg,
@@ -959,6 +922,7 @@ def main() -> int:
         solver=MODE_SOLVER,
         fit_signal="phi",
         mode_method="z_index",
+        diagnostic_norm=DIAGNOSTIC_NORM,
         **WINDOWS["kbm"],
     )
     kbm_grid = build_spectral_grid(cfg_kbm.grid)
