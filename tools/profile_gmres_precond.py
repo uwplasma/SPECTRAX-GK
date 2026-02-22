@@ -140,6 +140,8 @@ def main() -> int:
         "diag": "diag",
         "pas": "pas",
         "pas_coarse": "pas-coarse",
+        "hermite_line": "hermite-line",
+        "hermite_line_coarse": "hermite-line-coarse",
     }
 
     for label, key in precond_keys.items():

@@ -56,6 +56,8 @@ preconditioners:
 - ``diag``: full diagonal (damping + drift + mirror)
 - ``pas``: PAS line preconditioner (streaming + diagonal damping/drifts)
 - ``pas-coarse``: line + kx-coarse additive correction (Schur-style)
+- ``hermite-line``: Hermite streaming line solve (tridiagonal in ``m`` at fixed :math:`k_z`)
+- ``hermite-line-coarse``: Hermite line solve + kx-coarse correction
 
 .. code-block:: bash
 
@@ -65,10 +67,12 @@ On the reference run (Nl=2, Nm=3, Ny=4, Nz=8), this reported:
 
 .. code-block:: text
 
-   iters_plain=10
-   iters_diag=10
-   iters_pas=11
-   iters_pas_coarse=11
+   iters_plain=6
+   iters_diag=6
+   iters_pas=6
+   iters_pas_coarse=6
+   iters_hermite_line=4
+   iters_hermite_line_coarse=4
 
 On a larger run (Ny=8, Nz=64, Nl=12, Nm=12, dt=0.1), this reported:
 
@@ -78,6 +82,8 @@ On a larger run (Ny=8, Nz=64, Nl=12, Nm=12, dt=0.1), this reported:
    iters_diag=38
    iters_pas=39
    iters_pas_coarse=39
+   iters_hermite_line=22
+   iters_hermite_line_coarse=22
 
 JIT considerations
 ------------------

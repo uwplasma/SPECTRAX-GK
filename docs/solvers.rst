@@ -19,7 +19,10 @@ available:
   iteration. This is slower but robust for stiff linear runs. A few stabilized
   fixed-point sub-iterations provide an initial guess and a diagonal
   preconditioner based on the damping terms and drift/mirror diagonals
-  (cv/gb/bgrad) accelerates convergence for higher-order scans.
+  (cv/gb/bgrad) accelerates convergence for higher-order scans. For
+  streaming-dominated stiffness, ``implicit_preconditioner="hermite-line"``
+  applies a Hermite streaming line solve (tridiagonal in ``m`` at fixed
+  :math:`k_z`) and can substantially reduce GMRES iterations.
 
 Optional damping
 ----------------

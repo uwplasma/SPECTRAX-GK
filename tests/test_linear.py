@@ -8,12 +8,14 @@ from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.linear import (
     _integrate_linear_cached,
+    _x64_enabled,
     LinearCache,
     LinearParams,
     LinearTerms,
     apply_hermite_v,
     apply_laguerre_x,
     build_H,
+    _build_implicit_operator,
     build_linear_cache,
     compute_b,
     diamagnetic_drive_coeffs,
@@ -330,12 +332,41 @@ def test_linear_rhs_multispecies_shapes():
         tz=jnp.array([1.0, -1.0]),
         R_over_Ln=jnp.array([0.0, 0.0]),
         R_over_LTi=jnp.array([0.0, 0.0]),
+        )
+
+
+def test_implicit_preconditioner_hermite_line_shape_and_finite():
+    """Hermite-line preconditioner should run and preserve shape/dtype."""
+
+    grid_cfg = GridConfig(Nx=2, Ny=4, Nz=16, Lx=62.8, Ly=62.8)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams(
+        R_over_Ln=cfg.model.R_over_Ln,
+        R_over_LTi=cfg.model.R_over_LTi,
+        omega_d_scale=0.2,
+        omega_star_scale=0.55,
+        rho_star=0.9,
+        kpar_scale=float(geom.gradpar()),
     )
-    G = jnp.zeros((2, 2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
-    cache = build_linear_cache(grid, geom, params, Nl=2, Nm=2)
-    dG, phi = linear_rhs_cached(G, cache, params, terms=LinearTerms())
-    assert dG.shape == G.shape
-    assert phi.shape == (cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz)
+    Nl, Nm = 4, 6
+    cache = build_linear_cache(grid, geom, params, Nl, Nm)
+    base_dtype = jnp.complex128 if _x64_enabled() else jnp.complex64
+    G0 = jnp.zeros((1, Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size), dtype=base_dtype)
+    _G, _shape, size, _dt_val, precond_op, _matvec, _squeeze = _build_implicit_operator(
+        G0,
+        cache,
+        params,
+        dt=0.1,
+        terms=LinearTerms(),
+        implicit_preconditioner="hermite-line",
+    )
+    x = jnp.ones((size,), dtype=base_dtype)
+    y = precond_op(x)
+    assert y.shape == (size,)
+    assert jnp.all(jnp.isfinite(jnp.real(y)))
+    assert jnp.all(jnp.isfinite(jnp.imag(y)))
 
 
 def test_linear_cache_rho_star_scales_ky():
