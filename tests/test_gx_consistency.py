@@ -64,7 +64,7 @@ def test_salpha_geometry_matches_gx_formulas():
         ky0[:, None] * (ky0[:, None] * gds2 + 2.0 * kx0[:, None] * shat_inv * gds21)
         + (kx0[:, None] * shat_inv) ** 2 * gds22
     ) * (bmag_inv * bmag_inv)
-    assert jnp.allclose(kperp2, kperp2_expected, rtol=1.0e-10, atol=1.0e-12)
+    assert jnp.allclose(kperp2, kperp2_expected[0], rtol=1.0e-10, atol=1.0e-12)
 
 
 def test_hypercollisions_matches_gx_formula():
