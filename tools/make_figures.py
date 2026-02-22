@@ -171,7 +171,7 @@ ETG_KRYLOV_LOW = KrylovConfig(
     shift_tol=2.0e-3,
 )
 KBM_KRYLOV = KrylovConfig(
-    method="shift_invert",
+    method="propagator",
     krylov_dim=16,
     restarts=1,
     power_iters=60,
@@ -181,7 +181,7 @@ KBM_KRYLOV = KrylovConfig(
     shift_tol=1.0e-3,
 )
 TEM_KRYLOV = KrylovConfig(
-    method="shift_invert",
+    method="propagator",
     krylov_dim=16,
     restarts=1,
     power_iters=60,
@@ -349,9 +349,13 @@ def _scan_kbm_verbose(
     omegas: list[float] = []
     beta_out: list[float] = []
     iterator = tqdm(betas, desc=f"{label} beta scan") if progress else betas
-    for beta in iterator:
+    for i, beta in enumerate(iterator):
+        dt_i = float(dt[i]) if isinstance(dt, np.ndarray) else float(dt)
+        steps_i = int(steps[i]) if isinstance(steps, np.ndarray) else int(steps)
+        tmin_i = _window_value(tmin, i)
+        tmax_i = _window_value(tmax, i)
         _log(
-            f"[{label}] start beta={float(beta):.4g} dt={dt:.4g} steps={steps} tmax={dt*steps:.4g}",
+            f"[{label}] start beta={float(beta):.4g} dt={dt_i:.4g} steps={steps_i} tmax={dt_i*steps_i:.4g}",
             verbose=verbose,
             use_tqdm=progress,
         )
@@ -362,14 +366,14 @@ def _scan_kbm_verbose(
             ky_target=0.3,
             Nl=Nl,
             Nm=Nm,
-            steps=steps,
-            dt=dt,
+            steps=steps_i,
+            dt=dt_i,
             method=method,
             solver=solver,
             krylov_cfg=krylov_cfg,
             auto_window=auto_window,
-            tmin=tmin,
-            tmax=tmax,
+            tmin=tmin_i,
+            tmax=tmax_i,
             **window_kw,
             **extra,
         )
@@ -983,10 +987,10 @@ def main() -> int:
         scan_solver=TEM_SCAN_SOLVER,
         mode_solver=MODE_SOLVER,
         mode_method=MODE_METHOD,
+        tmin=tem_tmin,
+        tmax=tem_tmax_fit,
+        auto_window=False,
         scan_kwargs={
-            "tmin": tem_tmin,
-            "tmax": tem_tmax_fit,
-            "auto_window": False,
             "fit_signal": "phi",
             "mode_method": "z_index",
         },
