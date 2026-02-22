@@ -368,6 +368,28 @@ def test_etg_manual_window():
     assert np.isfinite(result.gamma)
 
 
+def test_tem_run_density_fit():
+    """TEM run should support density-based fits without error."""
+    grid = GridConfig(Nx=1, Ny=6, Nz=8, Lx=6.28, Ly=6.28, ntheta=8, nperiod=1)
+    cfg = TEMBaseCase(grid=grid)
+    result = run_tem_linear(
+        ky_target=0.3,
+        cfg=cfg,
+        Nl=4,
+        Nm=4,
+        dt=0.1,
+        steps=5,
+        method="euler",
+        solver="time",
+        fit_signal="density",
+        auto_window=False,
+        tmin=0.1,
+        tmax=0.4,
+    )
+    assert np.isfinite(result.gamma)
+    assert np.isfinite(result.omega)
+
+
 def test_etg_linear_with_params():
     """ETG harness should accept explicit parameter overrides."""
     grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
