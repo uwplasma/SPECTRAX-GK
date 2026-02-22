@@ -10,7 +10,14 @@ import jax.numpy as jnp
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid
-from spectraxgk.linear import LinearParams, LinearTerms, build_linear_cache, linear_rhs_cached
+from spectraxgk.linear import (
+    LinearParams,
+    LinearTerms,
+    build_linear_cache,
+    linear_rhs_cached,
+    _build_implicit_operator,
+    _x64_enabled,
+)
 
 
 def gmres_iterations(matvec, b: np.ndarray, precond=None, tol: float = 1.0e-6, maxiter: int = 40) -> int:
@@ -44,6 +51,26 @@ def gmres_iterations(matvec, b: np.ndarray, precond=None, tol: float = 1.0e-6, m
     return maxiter
 
 
+def _precond_from_operator(
+    G0: jnp.ndarray,
+    cache,
+    params,
+    dt: float,
+    terms: LinearTerms,
+    precond_key: str | None,
+) -> callable | None:
+    _, _shape, _size, _dt_val, precond_op, _matvec, _squeeze = _build_implicit_operator(
+        G0, cache, params, dt, terms, precond_key
+    )
+    if precond_op is None:
+        return None
+
+    def apply(v: np.ndarray) -> np.ndarray:
+        return np.asarray(precond_op(jnp.asarray(v)))
+
+    return apply
+
+
 def main() -> int:
     grid = GridConfig(
         Nx=1,
@@ -70,41 +97,32 @@ def main() -> int:
     shape = (Nl, Nm, grid_spec.ky.size, grid_spec.kx.size, grid_spec.z.size)
     size = int(np.prod(shape))
     dt = 0.02
+    terms = LinearTerms()
+    base_dtype = jnp.complex128 if _x64_enabled() else jnp.complex64
+    G0 = jnp.zeros(shape, dtype=base_dtype)
 
     @jax.jit
     def matvec_jax(v: jnp.ndarray) -> jnp.ndarray:
         G = v.reshape(shape)
-        dG, _ = linear_rhs_cached(G, cache, params, terms=LinearTerms())
+        dG, _ = linear_rhs_cached(G, cache, params, terms=terms)
         return (G - dt * dG).reshape(size)
 
     def matvec_np(v: np.ndarray) -> np.ndarray:
         return np.asarray(matvec_jax(jnp.asarray(v)))
 
-    damping = params.nu * cache.lb_lam + params.nu_hyper * cache.hyper_ratio
-    l = jnp.arange(Nl, dtype=jnp.float32)[:, None, None, None, None]
-    m = jnp.arange(Nm, dtype=jnp.float32)[None, :, None, None, None]
-    diag = -1j * params.tz * params.omega_d_scale * (
-        cache.cv_d[None, None, ...] * (2.0 * m + 1.0)
-        + cache.gb_d[None, None, ...] * (2.0 * l + 1.0)
-    )
-    bgrad = cache.bgrad[None, None, None, None, :]
-    mirror_diag = params.vth * params.omega_d_scale * (2.0 * l + 1.0) * (2.0 * m + 1.0)
-    mirror_weight = 0.2
-    diag = diag - mirror_weight * bgrad * mirror_diag
-    precond = 1.0 / (1.0 + dt * damping - dt * diag)
-
-    def precond_np(v: np.ndarray) -> np.ndarray:
-        v_jax = jnp.asarray(v).reshape(shape)
-        return np.asarray((v_jax * precond).reshape(size))
-
     rng = np.random.default_rng(0)
     b = rng.normal(size=size) + 1j * rng.normal(size=size)
+    precond_keys = {
+        "plain": None,
+        "diag": "diag",
+        "pas": "pas",
+        "pas_coarse": "pas-coarse",
+    }
 
-    iters_plain = gmres_iterations(matvec_np, b, precond=None, tol=1.0e-6, maxiter=40)
-    iters_prec = gmres_iterations(matvec_np, b, precond=precond_np, tol=1.0e-6, maxiter=40)
-
-    print(f"iters_plain={iters_plain}")
-    print(f"iters_precond={iters_prec}")
+    for label, key in precond_keys.items():
+        precond = _precond_from_operator(G0, cache, params, dt, terms, key)
+        iters = gmres_iterations(matvec_np, b, precond=precond, tol=1.0e-6, maxiter=40)
+        print(f"iters_{label}={iters}")
     return 0
 
 

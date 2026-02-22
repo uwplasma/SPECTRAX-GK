@@ -133,8 +133,9 @@ end-to-end JAX differentiability:
   the state array.
 - **Implicit preconditioning hooks**: ``implicit_preconditioner`` accepts
   ``"auto"/"diag"/"physics"/"block"`` (full diagonal preconditioner),
-  ``"damping"`` (collisional/hyper-only), or ``"identity"`` to disable
-  preconditioning.
+  ``"damping"`` (collisional/hyper-only), ``"pas"`` (PAS line preconditioner),
+  ``"pas-coarse"`` (line + kx-coarse additive correction), or ``"identity"``
+  to disable preconditioning.
 - **Cached hypercollision factors**: the linear cache now stores the Hermite–
   Laguerre hypercollision ratios and masks to avoid repeated power operations
   inside the RHS assembly.

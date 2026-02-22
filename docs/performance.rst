@@ -50,8 +50,12 @@ GMRES preconditioner iterations
 --------------------------------
 
 For the implicit linear solver, we include a small iteration-count harness that
-solves a reduced system and compares the GMRES iteration count with and without
-the diagonal preconditioner (cv/gb/bgrad + damping):
+solves a reduced system and compares the GMRES iteration count with multiple
+preconditioners:
+
+- ``diag``: full diagonal (damping + drift + mirror)
+- ``pas``: PAS line preconditioner (streaming + diagonal damping/drifts)
+- ``pas-coarse``: line + kx-coarse additive correction (Schur-style)
 
 .. code-block:: bash
 
@@ -61,8 +65,10 @@ On the reference run (Nl=2, Nm=3, Ny=4, Nz=8), this reported:
 
 .. code-block:: text
 
-   iters_plain=25
-   iters_precond=25
+   iters_plain=10
+   iters_diag=10
+   iters_pas=11
+   iters_pas_coarse=11
 
 JIT considerations
 ------------------
