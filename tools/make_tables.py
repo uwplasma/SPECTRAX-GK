@@ -562,19 +562,19 @@ WINDOWS = {
     ),
     "kinetic": dict(
         window_fraction=0.3,
-        min_points=120,
-        start_fraction=0.5,
+        min_points=160,
+        start_fraction=0.45,
         growth_weight=0.1,
         require_positive=True,
-        min_amp_fraction=0.1,
+        min_amp_fraction=0.05,
     ),
     "etg": dict(
         window_fraction=0.25,
-        min_points=100,
-        start_fraction=0.45,
+        min_points=120,
+        start_fraction=0.4,
         growth_weight=0.2,
         require_positive=True,
-        min_amp_fraction=0.2,
+        min_amp_fraction=0.1,
     ),
     "kbm": dict(
         window_fraction=0.3,
@@ -768,12 +768,19 @@ def _etg_krylov_policy(ky: float) -> KrylovConfig:
 
 def _run_etg_tables(*, outdir: Path, verbose: bool, progress: bool) -> None:
     etg_grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28, y0=0.2)
+    etg_time_cfg = TimeConfig(
+        t_max=6.0,
+        dt=0.01,
+        method="imex2",
+        use_diffrax=False,
+        progress_bar=False,
+        sample_stride=2,
+    )
     etg_R = np.array([4.0, 6.0, 8.0, 10.0])
     etg_rows = ["R_over_LTe,gamma,omega"]
     for R in etg_R:
         cfg = ETGBaseCase(grid=etg_grid, model=ETGModelConfig(R_over_LTe=float(R)))
-        time_cfg = cfg.time
-        steps = int(round(time_cfg.t_max / time_cfg.dt))
+        steps = int(round(etg_time_cfg.t_max / etg_time_cfg.dt))
         _log(
             f"\n=== ETG trend R/LTe={float(R):.2f} ===",
             verbose=verbose,
@@ -786,15 +793,13 @@ def _run_etg_tables(*, outdir: Path, verbose: bool, progress: bool) -> None:
             Nl=24,
             Nm=8,
             steps=steps,
-            dt=time_cfg.dt,
-            time_cfg=time_cfg,
+            dt=etg_time_cfg.dt,
+            time_cfg=etg_time_cfg,
             solver=ETG_SOLVER,
             krylov_cfg=ETG_KRYLOV_LOW,
             mode_method="z_index",
             fit_signal="phi",
-            auto_window=False,
-            tmin=2.0,
-            tmax=time_cfg.t_max,
+            auto_window=True,
             diagnostic_norm=DIAGNOSTIC_NORM,
             **WINDOWS["etg"],
         )
@@ -810,7 +815,14 @@ def _run_etg_tables(*, outdir: Path, verbose: bool, progress: bool) -> None:
 
     etg_ref = load_etg_reference()
     etg_cfg = ETGBaseCase()
-    etg_time = etg_cfg.time
+    etg_time = TimeConfig(
+        t_max=6.0,
+        dt=0.01,
+        method="imex2",
+        use_diffrax=False,
+        progress_bar=False,
+        sample_stride=2,
+    )
     etg_steps = int(round(etg_time.t_max / etg_time.dt))
     etg_ky, etg_g, etg_w = _scan_linear_verbose(
         ky_values=etg_ref.ky,
@@ -824,9 +836,7 @@ def _run_etg_tables(*, outdir: Path, verbose: bool, progress: bool) -> None:
         solver=ETG_SOLVER,
         krylov_cfg=ETG_KRYLOV,
         window_kw=WINDOWS["etg"],
-        auto_window=False,
-        tmin=2.0,
-        tmax=etg_time.t_max,
+        auto_window=True,
         run_kwargs={
             "mode_method": "z_index",
             "fit_signal": "phi",
@@ -1038,12 +1048,19 @@ def main() -> int:
         return 0
 
     etg_grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28, y0=0.2)
+    etg_time_cfg = TimeConfig(
+        t_max=6.0,
+        dt=0.01,
+        method="imex2",
+        use_diffrax=False,
+        progress_bar=False,
+        sample_stride=2,
+    )
     etg_R = np.array([4.0, 6.0, 8.0, 10.0])
     etg_rows = ["R_over_LTe,gamma,omega"]
     for R in etg_R:
         cfg = ETGBaseCase(grid=etg_grid, model=ETGModelConfig(R_over_LTe=float(R)))
-        time_cfg = cfg.time
-        steps = int(round(time_cfg.t_max / time_cfg.dt))
+        steps = int(round(etg_time_cfg.t_max / etg_time_cfg.dt))
         _log(
             f"\n=== ETG trend R/LTe={float(R):.2f} ===",
             verbose=verbose,
@@ -1056,15 +1073,15 @@ def main() -> int:
             Nl=24,
             Nm=8,
             steps=steps,
-            dt=time_cfg.dt,
-            time_cfg=time_cfg,
+            dt=etg_time_cfg.dt,
+            time_cfg=etg_time_cfg,
             solver=ETG_SOLVER,
             krylov_cfg=ETG_KRYLOV,
             mode_method="z_index",
             fit_signal="phi",
-            auto_window=False,
-            tmin=2.0,
-            tmax=time_cfg.t_max,
+            auto_window=True,
+            tmin=None,
+            tmax=None,
             diagnostic_norm=DIAGNOSTIC_NORM,
             **WINDOWS["etg"],
         )
@@ -1084,6 +1101,14 @@ def main() -> int:
     kinetic_cfg = KineticElectronBaseCase(
         grid=GridConfig(Nx=1, Ny=16, Nz=96, Lx=62.8, Ly=62.8, y0=10.0, ntheta=32, nperiod=2)
     )
+    kinetic_time_cfg = TimeConfig(
+        t_max=4.0,
+        dt=0.001,
+        method="imex2",
+        use_diffrax=False,
+        progress_bar=False,
+        sample_stride=2,
+    )
     kin_ky, kin_g, kin_w = _scan_linear_verbose(
         ky_values=kinetic_ref.ky,
         run_linear_fn=run_kinetic_linear,
@@ -1099,6 +1124,13 @@ def main() -> int:
         auto_window=True,
         label="Kinetic ITG mismatch",
         ref=kinetic_ref,
+        run_kwargs={
+            "time_cfg": kinetic_time_cfg,
+            "fit_signal": "phi",
+            "mode_method": "z_index",
+            "init_species_index": 1,
+            "density_species_index": 1,
+        },
         verbose=verbose,
         progress=progress,
         stiff_spot_check=stiff_spot_check,
@@ -1115,7 +1147,14 @@ def main() -> int:
 
     etg_ref = load_etg_reference()
     etg_cfg = ETGBaseCase()
-    etg_time = etg_cfg.time
+    etg_time = TimeConfig(
+        t_max=6.0,
+        dt=0.01,
+        method="imex2",
+        use_diffrax=False,
+        progress_bar=False,
+        sample_stride=2,
+    )
     etg_steps = int(round(etg_time.t_max / etg_time.dt))
     etg_ky, etg_g, etg_w = _scan_linear_verbose(
         ky_values=etg_ref.ky,
@@ -1129,9 +1168,7 @@ def main() -> int:
         solver=ETG_SOLVER,
         krylov_cfg=ETG_KRYLOV,
         window_kw=WINDOWS["etg"],
-        auto_window=False,
-        tmin=2.0,
-        tmax=etg_time.t_max,
+        auto_window=True,
         run_kwargs={
             "mode_method": "z_index",
             "fit_signal": "phi",
@@ -1151,11 +1188,16 @@ def main() -> int:
     kbm_ref = load_kbm_reference()
     kbm_dt = _scale_dt(kbm_ref.ky, base_dt=0.0005, ky_ref=0.3)
     kbm_steps = _scale_steps(kbm_ref.ky, base_steps=4000, ky_ref=0.3, max_steps=8000)
-    kbm_tmax = kbm_dt * kbm_steps
-    kbm_tmin = 0.4 * kbm_tmax
-    kbm_tmax = 0.8 * kbm_tmax
     kbm_cfg = KBMBaseCase(
         grid=GridConfig(Nx=1, Ny=12, Nz=96, Lx=62.8, Ly=62.8, y0=10.0, ntheta=32, nperiod=2)
+    )
+    kbm_time_cfg = TimeConfig(
+        t_max=3.0,
+        dt=0.001,
+        method="imex2",
+        use_diffrax=False,
+        progress_bar=False,
+        sample_stride=2,
     )
     kbm_beta, kbm_g, kbm_w = _scan_kbm_verbose(
         betas=kbm_ref.ky,
@@ -1168,10 +1210,10 @@ def main() -> int:
         solver=KBM_SOLVER,
         krylov_cfg=KBM_KRYLOV,
         window_kw=WINDOWS["kbm"],
-        tmin=kbm_tmin,
-        tmax=kbm_tmax,
-        auto_window=False,
-        run_kwargs={"fit_signal": "phi", "mode_method": "z_index"},
+        tmin=None,
+        tmax=None,
+        auto_window=True,
+        run_kwargs={"fit_signal": "phi", "mode_method": "z_index", "time_cfg": kbm_time_cfg},
         label="KBM mismatch",
         ref=kbm_ref,
         verbose=verbose,
@@ -1190,10 +1232,15 @@ def main() -> int:
     tem_ref = load_tem_reference()
     tem_dt = _scale_dt(tem_ref.ky, base_dt=0.001, ky_ref=0.3)
     tem_steps = _scale_steps(tem_ref.ky, base_steps=2000, ky_ref=0.3, max_steps=6000)
-    tem_tmax = tem_dt * tem_steps
-    tem_tmin = 0.4 * tem_tmax
-    tem_tmax = 0.85 * tem_tmax
     tem_cfg = TEMBaseCase()
+    tem_time_cfg = TimeConfig(
+        t_max=3.0,
+        dt=0.001,
+        method="imex2",
+        use_diffrax=False,
+        progress_bar=False,
+        sample_stride=2,
+    )
     tem_ky, tem_g, tem_w = _scan_linear_verbose(
         ky_values=tem_ref.ky,
         run_linear_fn=run_tem_linear,
@@ -1206,10 +1253,10 @@ def main() -> int:
         solver=TEM_SOLVER,
         krylov_cfg=TEM_KRYLOV,
         window_kw=WINDOWS["tem"],
-        tmin=tem_tmin,
-        tmax=tem_tmax,
-        auto_window=False,
-        run_kwargs={"fit_signal": "phi", "mode_method": "z_index"},
+        tmin=None,
+        tmax=None,
+        auto_window=True,
+        run_kwargs={"fit_signal": "phi", "mode_method": "z_index", "time_cfg": tem_time_cfg},
         label="TEM mismatch",
         ref=tem_ref,
         verbose=verbose,
