@@ -31,6 +31,7 @@ from spectraxgk.config import (
     TEMBaseCase,
 )
 from spectraxgk.geometry import SAlphaGeometry
+from spectraxgk.linear import LinearTerms
 from spectraxgk.species import Species, build_linear_params
 
 
@@ -362,6 +363,18 @@ def test_etg_manual_window():
         method="rk4",
         solver="time",
         fit_signal="phi",
+        terms=LinearTerms(
+            streaming=0.0,
+            mirror=0.0,
+            curvature=0.0,
+            gradb=0.0,
+            diamagnetic=0.0,
+            collisions=0.0,
+            hypercollisions=0.0,
+            end_damping=0.0,
+            apar=0.0,
+            bpar=0.0,
+        ),
         auto_window=False,
         tmin=0.05,
         tmax=0.15,
