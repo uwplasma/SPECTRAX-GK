@@ -134,7 +134,8 @@ end-to-end JAX differentiability:
 - **Implicit preconditioning hooks**: ``implicit_preconditioner`` accepts
   ``"auto"/"diag"/"physics"/"block"`` (full diagonal preconditioner),
   ``"damping"`` (collisional/hyper-only), ``"pas"`` (PAS line preconditioner),
-  ``"pas-coarse"`` (line + kx-coarse additive correction), ``"hermite-line"``
+  ``"pas-coarse"`` (line + coarse correction in kx/linked-kx chains),
+  ``"hermite-line"``
   (Hermite streaming line solve in ``m`` at fixed :math:`k_z`), or
   ``"hermite-line-coarse"`` (Hermite line solve + kx-coarse correction), or
   ``"identity"`` to disable preconditioning.
