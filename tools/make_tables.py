@@ -21,8 +21,13 @@ from spectraxgk.benchmarks import (
     CYCLONE_OMEGA_D_SCALE,
     CYCLONE_OMEGA_STAR_SCALE,
     CYCLONE_RHO_STAR,
+    CYCLONE_KRYLOV_DEFAULT,
     GX_DAMP_ENDS_AMP,
     GX_DAMP_ENDS_WIDTHFRAC,
+    KINETIC_KRYLOV_DEFAULT,
+    ETG_KRYLOV_DEFAULT,
+    KBM_KRYLOV_DEFAULT,
+    TEM_KRYLOV_DEFAULT,
     _apply_gx_hypercollisions,
     _build_initial_condition,
     _midplane_index,
@@ -65,41 +70,12 @@ KINETIC_SOLVER = "krylov"
 ETG_SOLVER = "krylov"
 KBM_SOLVER = "krylov"
 TEM_SOLVER = "krylov"
+DIAGNOSTIC_NORM = "gx"
+DEFAULT_RUN_KW = {"diagnostic_norm": DIAGNOSTIC_NORM}
 
-CYCLONE_KRYLOV = KrylovConfig(
-    method="shift_invert",
-    krylov_dim=16,
-    restarts=1,
-    power_iters=60,
-    power_dt=0.01,
-    shift_maxiter=30,
-    shift_restart=10,
-    shift_tol=1.0e-3,
-)
-KINETIC_KRYLOV = KrylovConfig(
-    method="propagator",
-    krylov_dim=16,
-    restarts=1,
-    power_iters=60,
-    power_dt=0.0005,
-    shift_maxiter=30,
-    shift_restart=10,
-    shift_tol=1.0e-3,
-)
-ETG_KRYLOV = KrylovConfig(
-    method="propagator",
-    krylov_dim=16,
-    restarts=1,
-    omega_min_factor=0.0,
-    omega_target_factor=0.5,
-    omega_cap_factor=0.5,
-    omega_sign=-1,
-    power_iters=80,
-    power_dt=0.002,
-    shift_maxiter=40,
-    shift_restart=12,
-    shift_tol=2.0e-3,
-)
+CYCLONE_KRYLOV = CYCLONE_KRYLOV_DEFAULT
+KINETIC_KRYLOV = KINETIC_KRYLOV_DEFAULT
+ETG_KRYLOV = ETG_KRYLOV_DEFAULT
 ETG_KRYLOV_LOW = KrylovConfig(
     method="propagator",
     krylov_dim=16,
@@ -114,26 +90,8 @@ ETG_KRYLOV_LOW = KrylovConfig(
     shift_restart=12,
     shift_tol=2.0e-3,
 )
-KBM_KRYLOV = KrylovConfig(
-    method="propagator",
-    krylov_dim=16,
-    restarts=1,
-    power_iters=60,
-    power_dt=0.005,
-    shift_maxiter=30,
-    shift_restart=10,
-    shift_tol=1.0e-3,
-)
-TEM_KRYLOV = KrylovConfig(
-    method="propagator",
-    krylov_dim=16,
-    restarts=1,
-    power_iters=60,
-    power_dt=0.005,
-    shift_maxiter=30,
-    shift_restart=10,
-    shift_tol=1.0e-3,
-)
+KBM_KRYLOV = KBM_KRYLOV_DEFAULT
+TEM_KRYLOV = TEM_KRYLOV_DEFAULT
 
 
 
@@ -244,7 +202,9 @@ def _scan_linear_verbose(
             verbose=verbose,
             use_tqdm=progress,
         )
-        extra = run_kwargs or {}
+        extra = dict(DEFAULT_RUN_KW)
+        if run_kwargs:
+            extra.update(run_kwargs)
         krylov_cfg_use = krylov_policy(float(ky)) if krylov_policy is not None else krylov_cfg
         result = run_linear_fn(
             ky_target=float(ky),
@@ -329,7 +289,9 @@ def _scan_kbm_verbose(
             verbose=verbose,
             use_tqdm=progress,
         )
-        extra = run_kwargs or {}
+        extra = dict(DEFAULT_RUN_KW)
+        if run_kwargs:
+            extra.update(run_kwargs)
         result = run_kbm_beta_scan(
             np.asarray([float(beta)]),
             cfg=cfg,
@@ -618,6 +580,7 @@ def _run_etg_tables(*, outdir: Path, verbose: bool, progress: bool) -> None:
             auto_window=False,
             tmin=2.0,
             tmax=time_cfg.t_max,
+            diagnostic_norm=DIAGNOSTIC_NORM,
             **WINDOWS["etg"],
         )
         etg_rows.append(f"{R:.2f},{res.gamma:.6f},{res.omega:.6f}")
@@ -881,6 +844,7 @@ def main() -> int:
             auto_window=False,
             tmin=2.0,
             tmax=time_cfg.t_max,
+            diagnostic_norm=DIAGNOSTIC_NORM,
             **WINDOWS["etg"],
         )
         etg_rows.append(f"{R:.2f},{res.gamma:.6f},{res.omega:.6f}")
