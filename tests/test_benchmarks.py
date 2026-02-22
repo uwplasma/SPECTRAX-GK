@@ -329,6 +329,30 @@ def test_kbm_beta_scan_shapes():
     assert scan.gamma.shape == betas.shape
 
 
+def test_kbm_beta_scan_time_mode_only_phi():
+    """KBM time-solver scan should fit a 1D mode signal in mode_only path."""
+    grid = GridConfig(Nx=1, Ny=8, Nz=32, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1)
+    cfg = KBMBaseCase(grid=grid)
+    scan = run_kbm_beta_scan(
+        np.array([1.0e-4]),
+        cfg=cfg,
+        ky_target=0.3,
+        Nl=4,
+        Nm=4,
+        solver="time",
+        method="euler",
+        dt=0.1,
+        steps=8,
+        fit_signal="phi",
+        mode_method="z_index",
+        auto_window=False,
+        tmin=0.2,
+        tmax=0.6,
+    )
+    assert np.isfinite(scan.gamma[0])
+    assert np.isfinite(scan.omega[0])
+
+
 def test_etg_scan_manual_window():
     """Manual window path should be exercised for ETG scans."""
     grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
