@@ -138,6 +138,13 @@ end-to-end JAX differentiability:
   (Hermite streaming line solve in ``m`` at fixed :math:`k_z`), or
   ``"hermite-line-coarse"`` (Hermite line solve + kx-coarse correction), or
   ``"identity"`` to disable preconditioning.
+- **Shift-invert preconditioning hooks**: the shift-invert Krylov solver uses
+  GMRES solves for ``(A - \sigma I)^{-1}``. Configure
+  ``KrylovConfig.shift_preconditioner`` to accelerate these solves with
+  ``"damping"`` (element-wise inverse of the collisional/hyper damping) or
+  ``"hermite-line"`` (Hermite streaming line solve via FFT in ``z`` and a
+  tridiagonal solve in ``m``). The ``"-coarse"`` variants add a lightweight
+  kx-mean coarse correction.
 - **Cached hypercollision factors**: the linear cache now stores the Hermite–
   Laguerre hypercollision ratios and masks to avoid repeated power operations
   inside the RHS assembly.
