@@ -32,6 +32,7 @@ from spectraxgk.config import (
 )
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.linear import LinearTerms
+from spectraxgk.linear_krylov import KrylovConfig
 from spectraxgk.species import Species, build_linear_params
 
 
@@ -402,6 +403,84 @@ def test_tem_run_density_fit():
     )
     assert np.isfinite(result.gamma)
     assert np.isfinite(result.omega)
+
+
+def test_benchmark_krylov_smoke_finite():
+    """Krylov solves should return finite gamma/omega for core benchmarks."""
+    krylov_cfg = KrylovConfig(
+        method="propagator",
+        krylov_dim=8,
+        restarts=1,
+        power_iters=20,
+        power_dt=0.01,
+        omega_cap_factor=5.0,
+    )
+
+    small_grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.28, Ly=6.28, ntheta=8, nperiod=1, y0=2.0)
+    cyclone_cfg = CycloneBaseCase(grid=small_grid)
+    cyclone = run_cyclone_linear(
+        cfg=cyclone_cfg,
+        ky_target=0.3,
+        Nl=4,
+        Nm=4,
+        solver="krylov",
+        krylov_cfg=krylov_cfg,
+    )
+    assert np.isfinite(cyclone.gamma)
+    assert np.isfinite(cyclone.omega)
+
+    etg_grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.28, Ly=6.28, ntheta=8, nperiod=1, y0=0.2)
+    etg_cfg = ETGBaseCase(grid=etg_grid, model=ETGModelConfig(R_over_LTe=6.0))
+    etg = run_etg_linear(
+        cfg=etg_cfg,
+        ky_target=3.0,
+        Nl=4,
+        Nm=4,
+        solver="krylov",
+        krylov_cfg=krylov_cfg,
+    )
+    assert np.isfinite(etg.gamma)
+    assert np.isfinite(etg.omega)
+
+    kin_grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0)
+    kin_cfg = KineticElectronBaseCase(grid=kin_grid)
+    kin = run_kinetic_linear(
+        cfg=kin_cfg,
+        ky_target=0.3,
+        Nl=4,
+        Nm=4,
+        solver="krylov",
+        krylov_cfg=krylov_cfg,
+    )
+    assert np.isfinite(kin.gamma)
+    assert np.isfinite(kin.omega)
+
+    kbm_grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0)
+    kbm_cfg = KBMBaseCase(grid=kbm_grid)
+    kbm_scan = run_kbm_beta_scan(
+        np.array([1.0e-4]),
+        cfg=kbm_cfg,
+        ky_target=0.3,
+        Nl=4,
+        Nm=4,
+        solver="krylov",
+        krylov_cfg=krylov_cfg,
+    )
+    assert np.isfinite(kbm_scan.gamma[0])
+    assert np.isfinite(kbm_scan.omega[0])
+
+    tem_grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0)
+    tem_cfg = TEMBaseCase(grid=tem_grid)
+    tem = run_tem_linear(
+        cfg=tem_cfg,
+        ky_target=0.3,
+        Nl=4,
+        Nm=4,
+        solver="krylov",
+        krylov_cfg=krylov_cfg,
+    )
+    assert np.isfinite(tem.gamma)
+    assert np.isfinite(tem.omega)
 
 
 def test_etg_linear_with_params():

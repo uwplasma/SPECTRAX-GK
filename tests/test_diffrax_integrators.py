@@ -1,6 +1,7 @@
 """Diffrax integrator smoke tests."""
 
 import pytest
+import jax
 import jax.numpy as jnp
 
 diffrax = pytest.importorskip("diffrax")
@@ -42,6 +43,33 @@ def test_integrate_linear_diffrax_runs():
         jit=False,
     )
     assert phi_t.shape[0] == 2
+
+
+def test_integrate_linear_diffrax_jit_smoke():
+    """One small JIT path smoke test to keep coverage."""
+    grid_cfg = GridConfig(Nx=1, Ny=2, Nz=4, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams()
+    G = jnp.ones((2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz)) * 1.0e-6
+    with jax.disable_jit(False):
+        _, phi_t = integrate_linear_diffrax(
+            G,
+            grid,
+            geom,
+            params,
+            dt=0.1,
+            steps=1,
+            method="Tsit5",
+            progress_bar=False,
+            adaptive=False,
+            rtol=1.0e-3,
+            atol=1.0e-6,
+            max_steps=100,
+            jit=True,
+        )
+    assert phi_t.shape[0] == 1
 
 
 def test_integrate_nonlinear_diffrax_imex_runs():
