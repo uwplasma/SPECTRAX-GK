@@ -182,6 +182,31 @@ def test_cyclone_scan_and_compare():
     assert np.isfinite(comparison.rel_gamma)
 
 
+def test_cyclone_scan_fixed_batch_shape_matches_unpadded():
+    """Fixed-shape ky batching should match unpadded batching outputs."""
+
+    grid = GridConfig(Nx=6, Ny=6, Nz=8, Lx=62.8, Ly=62.8)
+    cfg = CycloneBaseCase(grid=grid)
+    ky_values = np.array([0.2, 0.3, 0.4])
+    kwargs = dict(
+        cfg=cfg,
+        steps=3,
+        dt=0.1,
+        method="euler",
+        solver="time",
+        ky_batch=2,
+        tmin=0.0,
+        tmax=0.3,
+    )
+    scan_fixed = run_cyclone_scan(ky_values, fixed_batch_shape=True, **kwargs)
+    scan_unpadded = run_cyclone_scan(ky_values, fixed_batch_shape=False, **kwargs)
+    assert np.allclose(scan_fixed.ky, scan_unpadded.ky)
+    assert np.all(np.isfinite(scan_fixed.gamma))
+    assert np.all(np.isfinite(scan_fixed.omega))
+    assert np.allclose(scan_fixed.gamma, scan_unpadded.gamma, rtol=1.0e-5, atol=1.0e-6)
+    assert np.allclose(scan_fixed.omega, scan_unpadded.omega, rtol=1.0e-5, atol=1.0e-6)
+
+
 def test_cyclone_scan_manual_window():
     """Manual fit windows should exercise the explicit scan fit path."""
     grid = GridConfig(Nx=4, Ny=4, Nz=8, Lx=6.0, Ly=6.0)
