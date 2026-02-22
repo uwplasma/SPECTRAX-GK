@@ -7,7 +7,11 @@ diffrax = pytest.importorskip("diffrax")
 pytest.importorskip("equinox")
 
 from spectraxgk.config import CycloneBaseCase, GridConfig
-from spectraxgk.diffrax_integrators import integrate_linear_diffrax, integrate_nonlinear_diffrax
+from spectraxgk.diffrax_integrators import (
+    integrate_linear_diffrax,
+    integrate_linear_diffrax_streaming,
+    integrate_nonlinear_diffrax,
+)
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.linear import LinearParams
@@ -21,7 +25,7 @@ def test_integrate_linear_diffrax_runs():
     grid = build_spectral_grid(cfg.grid)
     geom = SAlphaGeometry.from_config(cfg.geometry)
     params = LinearParams()
-    G = jnp.zeros((2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
+    G = jnp.ones((2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz)) * 1.0e-6
     _, phi_t = integrate_linear_diffrax(
         G,
         grid,
@@ -47,7 +51,7 @@ def test_integrate_nonlinear_diffrax_imex_runs():
     grid = build_spectral_grid(cfg.grid)
     geom = SAlphaGeometry.from_config(cfg.geometry)
     params = LinearParams()
-    G = jnp.zeros((2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
+    G = jnp.ones((2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz)) * 1.0e-6
     terms = TermConfig(nonlinear=1.0)
     _, fields_t = integrate_nonlinear_diffrax(
         G,
@@ -66,3 +70,35 @@ def test_integrate_nonlinear_diffrax_imex_runs():
         jit=False,
     )
     assert fields_t.phi.shape[0] == 2
+
+
+def test_integrate_linear_diffrax_streaming_runs():
+    """Streaming fit path should run and return finite estimates."""
+    grid_cfg = GridConfig(Nx=1, Ny=2, Nz=4, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams()
+    G = jnp.ones((2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz)) * 1.0e-6
+    _, gamma, omega = integrate_linear_diffrax_streaming(
+        G,
+        grid,
+        geom,
+        params,
+        dt=0.1,
+        steps=2,
+        method="Euler",
+        progress_bar=False,
+        adaptive=False,
+        rtol=1.0e-3,
+        atol=1.0e-6,
+        max_steps=100,
+        jit=False,
+        tmin=0.0,
+        tmax=0.2,
+        return_state=False,
+    )
+    assert gamma.shape[0] == grid.ky.size
+    assert omega.shape[0] == grid.ky.size
+    assert jnp.all(jnp.isfinite(gamma))
+    assert jnp.all(jnp.isfinite(omega))
