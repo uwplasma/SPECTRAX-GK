@@ -361,6 +361,7 @@ def test_etg_manual_window():
         dt=0.01,
         method="rk4",
         solver="time",
+        fit_signal="phi",
         auto_window=False,
         tmin=0.05,
         tmax=0.15,
