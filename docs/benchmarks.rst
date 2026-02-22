@@ -22,18 +22,21 @@ Normalization scalings
 Per-case normalization factors are applied to the diamagnetic and curvature
 frequencies to align with published reference data.
 
-.. list-table:: Calibration scalings
+.. list-table:: Calibration scalings (current code defaults)
    :header-rows: 1
 
    * - Case
      - ``omega_d_scale``
      - ``omega_star_scale``
    * - Cyclone (adiabatic)
-     - ``0.75``
-     - ``0.35``
+     - ``1.0``
+     - ``1.0``
+   * - Kinetic ITG
+     - ``1.0``
+     - ``1.0``
    * - ETG
-     - ``1.0``
-     - ``1.0``
+     - ``0.08``
+     - ``1.5``
    * - TEM
      - ``1.0``
      - ``1.0``
@@ -44,24 +47,25 @@ frequencies to align with published reference data.
 Performance defaults
 --------------------
 
-The diffrax defaults aim for stable, consistent step control rather than
-absolute speed. A quick sweep with the benchmark script shows the relative
-runtime and host-memory costs on the Cyclone defaults (t_max=8, dt=0.01, Nl=6,
-Nm=12):
+Current defaults prioritize robust runs for mixed stiffness:
 
-- Custom fixed-step RK2: ~0.23 s, ~0.06 MB host peak.
-- Diffrax Heun fixed-step: ~2.68 s, ~8.65 MB host peak.
-- Diffrax Tsit5 adaptive: ~2.65 s, ~9.12 MB host peak.
+- ``TimeConfig(use_diffrax=True, diffrax_solver="Dopri8", diffrax_adaptive=True)``
+- ``progress_bar=False`` by default for scan throughput and cleaner JIT behavior.
 
-The diffrax Heun default matches the RK2 stability region while keeping the
-step size explicit and predictable. For the fastest linear scans, disable
-diffrax via ``TimeConfig(use_diffrax=False)``.
+Profiling snapshot (Cyclone, ``ky=0.3``, ``Nl=16``, ``Nm=48``, ``t_max=20``, ``dt=0.01``):
 
-For speed-critical time-integrated scans, set ``TimeConfig(progress_bar=False)``
-to enable JIT compilation of the solver loop, and reuse consistent step counts
-to avoid recompilation. ``TimeConfig(sample_stride>1)`` reduces diagnostics
-overhead by saving fields at a lower cadence. Adaptive runs may also require
-higher ``diffrax_max_steps`` to prevent early termination.
+- compile+warmup: ~27.5 s
+- steady run: ~24.9 s
+- reference output: ``gamma=0.0873``, ``omega=0.2907`` (close to reference)
+
+RHS HLO profiling shows the primary compile/runtime pressure comes from scan
+loops and update-heavy kernels (high ``while``/``scatter`` counts in the
+compiled HLO). For large scans, prefer:
+
+- ``progress_bar=False``
+- consistent ``dt/steps`` to avoid recompilation
+- ``sample_stride>1`` to reduce diagnostics overhead
+- Krylov scan mode for linear eigenvalue-only workflows
 
 Cyclone Base Case (Linear, Adiabatic Electrons)
 -----------------------------------------------
@@ -190,15 +194,15 @@ kinetic-electron regression checks.
    * - Gradients
      - ``R/LTi=2.49``, ``R/LTe=2.49``, ``R/Ln=0.8``
    * - Species
-     - kinetic electrons + Boltzmann ions, ``Te/Ti=1``, ``mi/me=3670``
+     - kinetic ions + kinetic electrons, ``Te/Ti=1``, ``mi/me=3670``
    * - Electromagnetic
      - ``beta=1e-5``, ``A_parallel=on``, ``B_parallel=off``
    * - Collisions
-     - ``nu_i=0``, ``nu_e=0``, hypercollisions off
+     - ``nu_i=0``, ``nu_e=0``, GX-style hypercollisions on
    * - Operator toggles
      - streaming/mirror/curvature/grad-B/diamagnetic on; nonlinear off
    * - Grid
-     - ``Nx=1, Ny=24, Nz=96, y0=20, ntheta=32, nperiod=2``
+     - ``Nx=1, Ny=16, Nz=96, y0=10, ntheta=32, nperiod=2``
    * - Velocity resolution
      - ``Nl=6, Nm=16`` (figure generation)
    * - Reference
@@ -225,7 +229,7 @@ summary figure.
    * - Gradients
      - ``R/LTi=2.49``, ``R/LTe=2.49``, ``R/Ln=0.8``
    * - Species
-     - kinetic electrons + Boltzmann ions, ``Te/Ti=1``, ``mi/me=3670``
+     - kinetic electrons + adiabatic ions, ``Te/Ti=1``, ``mi/me=3670``
    * - Electromagnetic
      - ``beta=1e-5``, ``A_parallel=on``, ``B_parallel=off``
    * - Collisions
@@ -234,8 +238,8 @@ summary figure.
      - streaming/mirror/curvature/grad-B/diamagnetic on; nonlinear off
    * - Grid
      - ``Nx=1, Ny=24, Nz=96, y0=0.2, ntheta=32, nperiod=2``
-   * - Time integration
-     - diffrax Dopri8 (adaptive), ``t_max=10``, ``dt=0.05``, ``max_steps=200000``
+   * - Linear scan mode
+     - Krylov/Arnoldi (time integration retained for diagnostics/spot checks)
    * - Velocity resolution
      - ``Nl=6, Nm=16`` (figure generation)
    * - Reference

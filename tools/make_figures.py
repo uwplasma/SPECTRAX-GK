@@ -61,6 +61,7 @@ from spectraxgk.config import (
     GridConfig,
     KineticElectronBaseCase,
     KBMBaseCase,
+    TimeConfig,
     TEMBaseCase,
 )
 from spectraxgk.geometry import SAlphaGeometry
@@ -370,19 +371,19 @@ WINDOWS = {
     ),
     "kinetic": dict(
         window_fraction=0.3,
-        min_points=120,
-        start_fraction=0.5,
+        min_points=160,
+        start_fraction=0.45,
         growth_weight=0.1,
         require_positive=True,
-        min_amp_fraction=0.1,
+        min_amp_fraction=0.05,
     ),
     "etg": dict(
         window_fraction=0.25,
-        min_points=100,
-        start_fraction=0.45,
+        min_points=120,
+        start_fraction=0.4,
         growth_weight=0.2,
         require_positive=True,
-        min_amp_fraction=0.2,
+        min_amp_fraction=0.1,
     ),
     "kbm": dict(
         window_fraction=0.3,
@@ -689,7 +690,14 @@ def _run_etg_figures(*, outdir: Path, verbose: bool, progress: bool) -> None:
         )
     )
     etg_ky = etg_ref.ky[::2]
-    etg_time = cfg_etg.time
+    etg_time = TimeConfig(
+        t_max=6.0,
+        dt=0.01,
+        method="imex2",
+        use_diffrax=False,
+        progress_bar=False,
+        sample_stride=2,
+    )
     etg_steps = int(round(etg_time.t_max / etg_time.dt))
     etg_scan, _etg_mode, _etg_grid, _ = _scan_and_mode(
         run_etg_scan,
@@ -702,16 +710,17 @@ def _run_etg_figures(*, outdir: Path, verbose: bool, progress: bool) -> None:
         dt=etg_time.dt,
         window_kw=WINDOWS["etg"],
         scan_solver=ETG_SCAN_SOLVER,
-        mode_solver="krylov",
+        mode_solver=MODE_SOLVER,
         mode_method=MODE_METHOD,
-        auto_window=False,
-        tmin=2.0,
-        tmax=etg_time.t_max,
+        auto_window=True,
+        tmin=None,
+        tmax=None,
         scan_kwargs={
             "fit_signal": "phi",
             "mode_method": "z_index",
+            "time_cfg": etg_time,
         },
-        mode_kwargs={"fit_signal": "phi", "mode_method": "z_index"},
+        mode_kwargs={"fit_signal": "phi", "mode_method": "z_index", "time_cfg": etg_time},
         verbose=verbose,
         progress=progress,
         label="ETG panel",
@@ -794,6 +803,14 @@ def main() -> int:
     kinetic_ky = kinetic_ref.ky[::2]
     kinetic_steps = _scale_steps(kinetic_ky, base_steps=20000, ky_ref=0.3, max_steps=30000)
     kinetic_dt = _scale_dt(kinetic_ky, base_dt=0.0005, ky_ref=0.3)
+    kinetic_time_cfg = TimeConfig(
+        t_max=4.0,
+        dt=0.001,
+        method="imex2",
+        use_diffrax=False,
+        progress_bar=False,
+        sample_stride=2,
+    )
     kinetic_scan, kinetic_mode, kinetic_grid, _ = _scan_and_mode(
         run_kinetic_scan,
         run_kinetic_linear,
@@ -807,8 +824,20 @@ def main() -> int:
         scan_solver=KINETIC_SCAN_SOLVER,
         mode_solver=MODE_SOLVER,
         mode_method=MODE_METHOD,
-        scan_kwargs={},
-        mode_kwargs={"fit_signal": "density", "mode_method": "z_index"},
+        scan_kwargs={
+            "time_cfg": kinetic_time_cfg,
+            "fit_signal": "phi",
+            "mode_method": "z_index",
+            "init_species_index": 1,
+            "density_species_index": 1,
+        },
+        mode_kwargs={
+            "fit_signal": "phi",
+            "mode_method": "z_index",
+            "time_cfg": kinetic_time_cfg,
+            "init_species_index": 1,
+            "density_species_index": 1,
+        },
         verbose=verbose,
         progress=progress,
         label="Kinetic ITG panel",
@@ -829,7 +858,14 @@ def main() -> int:
         )
     )
     etg_ky = etg_ref.ky[::2]
-    etg_time = cfg_etg.time
+    etg_time = TimeConfig(
+        t_max=6.0,
+        dt=0.01,
+        method="imex2",
+        use_diffrax=False,
+        progress_bar=False,
+        sample_stride=2,
+    )
     etg_steps = int(round(etg_time.t_max / etg_time.dt))
     etg_scan, etg_mode, etg_grid, _ = _scan_and_mode(
         run_etg_scan,
@@ -850,8 +886,9 @@ def main() -> int:
         scan_kwargs={
             "fit_signal": "phi",
             "mode_method": "z_index",
+            "time_cfg": etg_time,
         },
-        mode_kwargs={"fit_signal": "phi", "mode_method": "z_index"},
+        mode_kwargs={"fit_signal": "phi", "mode_method": "z_index", "time_cfg": etg_time},
         verbose=verbose,
         progress=progress,
         label="ETG panel",
@@ -881,9 +918,14 @@ def main() -> int:
     kbm_beta = kbm_ref.ky[::2]
     kbm_dt = _scale_dt(kbm_beta, base_dt=0.0005, ky_ref=0.3)
     kbm_steps = _scale_steps(kbm_beta, base_steps=4000, ky_ref=0.3, max_steps=8000)
-    kbm_tmax = kbm_dt * kbm_steps
-    kbm_tmin = 0.4 * kbm_tmax
-    kbm_tmax = 0.8 * kbm_tmax
+    kbm_time_cfg = TimeConfig(
+        t_max=3.0,
+        dt=0.001,
+        method="imex2",
+        use_diffrax=False,
+        progress_bar=False,
+        sample_stride=2,
+    )
     kbm_scan = _scan_kbm_verbose(
         betas=kbm_beta,
         cfg=cfg_kbm,
@@ -895,10 +937,10 @@ def main() -> int:
         solver=KBM_SCAN_SOLVER,
         krylov_cfg=KBM_KRYLOV,
         window_kw=WINDOWS["kbm"],
-        tmin=kbm_tmin,
-        tmax=kbm_tmax,
-        auto_window=False,
-        run_kwargs={"fit_signal": "phi", "mode_method": "z_index"},
+        tmin=None,
+        tmax=None,
+        auto_window=True,
+        run_kwargs={"fit_signal": "phi", "mode_method": "z_index", "time_cfg": kbm_time_cfg},
         label="KBM panel",
         verbose=verbose,
         progress=progress,
@@ -922,6 +964,7 @@ def main() -> int:
         solver=MODE_SOLVER,
         fit_signal="phi",
         mode_method="z_index",
+        time_cfg=kbm_time_cfg,
         diagnostic_norm=DIAGNOSTIC_NORM,
         **WINDOWS["kbm"],
     )
@@ -935,9 +978,14 @@ def main() -> int:
     tem_ky = tem_ref.ky[::2]
     tem_dt = _scale_dt(tem_ky, base_dt=0.001, ky_ref=0.3)
     tem_steps = _scale_steps(tem_ky, base_steps=2000, ky_ref=0.3, max_steps=6000)
-    tem_tmax = tem_dt * tem_steps
-    tem_tmin = 0.4 * tem_tmax
-    tem_tmax_fit = 0.85 * tem_tmax
+    tem_time_cfg = TimeConfig(
+        t_max=3.0,
+        dt=0.001,
+        method="imex2",
+        use_diffrax=False,
+        progress_bar=False,
+        sample_stride=2,
+    )
     tem_scan, tem_mode, tem_grid, _ = _scan_and_mode(
         run_tem_scan,
         run_tem_linear,
@@ -951,14 +999,15 @@ def main() -> int:
         scan_solver=TEM_SCAN_SOLVER,
         mode_solver=MODE_SOLVER,
         mode_method=MODE_METHOD,
-        tmin=tem_tmin,
-        tmax=tem_tmax_fit,
-        auto_window=False,
+        tmin=None,
+        tmax=None,
+        auto_window=True,
         scan_kwargs={
             "fit_signal": "phi",
             "mode_method": "z_index",
+            "time_cfg": tem_time_cfg,
         },
-        mode_kwargs={"fit_signal": "phi", "mode_method": "z_index"},
+        mode_kwargs={"fit_signal": "phi", "mode_method": "z_index", "time_cfg": tem_time_cfg},
         verbose=verbose,
         progress=progress,
         label="TEM panel",
