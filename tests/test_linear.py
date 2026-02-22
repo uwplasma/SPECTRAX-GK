@@ -28,6 +28,7 @@ from spectraxgk.linear import (
     streaming_term,
 )
 from spectraxgk.gyroaverage import J_l_all
+from spectraxgk.linear_krylov import dominant_eigenpair
 
 
 def test_grad_z_periodic_sine():
@@ -367,6 +368,57 @@ def test_implicit_preconditioner_hermite_line_shape_and_finite():
     assert y.shape == (size,)
     assert jnp.all(jnp.isfinite(jnp.real(y)))
     assert jnp.all(jnp.isfinite(jnp.imag(y)))
+
+
+def test_shift_invert_preconditioner_hermite_line_runs():
+    """Shift-invert Krylov path should run with the Hermite-line preconditioner."""
+
+    grid_cfg = GridConfig(Nx=2, Ny=4, Nz=16, Lx=6.28, Ly=6.28)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams(
+        omega_d_scale=0.0,
+        omega_star_scale=0.0,
+        nu=0.0,
+        nu_hyper=0.0,
+        damp_ends_amp=0.0,
+        damp_ends_widthfrac=0.0,
+        kpar_scale=float(geom.gradpar()),
+    )
+    Nl, Nm = 4, 8
+    cache = build_linear_cache(grid, geom, params, Nl, Nm)
+    base_dtype = jnp.complex128 if _x64_enabled() else jnp.complex64
+    v0 = jnp.ones((Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size), dtype=base_dtype)
+    terms = LinearTerms(
+        streaming=1.0,
+        mirror=0.0,
+        curvature=0.0,
+        gradb=0.0,
+        diamagnetic=0.0,
+        collisions=0.0,
+        hypercollisions=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+    )
+    eig, _vec = dominant_eigenpair(
+        v0,
+        cache,
+        params,
+        terms,
+        method="shift_invert",
+        krylov_dim=4,
+        restarts=1,
+        shift=0.5j,
+        shift_tol=1.0e-2,
+        shift_maxiter=20,
+        shift_restart=10,
+        shift_solve_method="batched",
+        shift_preconditioner="hermite-line",
+    )
+    assert jnp.isfinite(jnp.real(eig))
+    assert jnp.isfinite(jnp.imag(eig))
 
 
 def test_linear_cache_rho_star_scales_ky():
