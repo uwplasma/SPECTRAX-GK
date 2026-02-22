@@ -125,8 +125,9 @@ end-to-end JAX differentiability:
   memory pressure during long scans. The streaming fit supports ``phi`` or
   density moments via ``fit_signal`` and uses a fixed ``tmin/tmax`` window.
 - **Batched ky scans**: pass ``ky_batch>1`` to the benchmark scan helpers to
-  integrate multiple ky values at once using a sliced ky grid. This increases
-  GPU occupancy while keeping the physics identical for linear runs.
+  integrate multiple ky values at once using a sliced ky grid. Set
+  ``fixed_batch_shape=True`` (default) to edge-pad the final batch and avoid
+  recompilation on short tail batches.
 - **Donation and sharded buffers**: time integrators donate state buffers in
   JIT-compiled paths to reduce allocations. The diffrax integrators accept a
   ``state_sharding`` argument if you want to preserve explicit JAX sharding on
@@ -147,6 +148,16 @@ end-to-end JAX differentiability:
   tridiagonal solve in ``m``). The ``"-coarse"`` variants add a lightweight
   coarse correction in the kx direction (for linked boundaries this averages
   within linked chains; for periodic boundaries this reduces to a kx-mean).
+- **Targeted shift-invert mode selection**: set ``KrylovConfig.mode_family``
+  (for example ``"cyclone"``, ``"etg"``, ``"tem"``, ``"kbm"``) and
+  ``KrylovConfig.shift_selection`` to stabilize branch selection in stiff
+  spectra. ``KrylovConfig.fallback_method`` controls the automatic fallback
+  policy when shift-invert returns a non-finite or strongly damped mode.
+- **Reusable IMEX operators**: nonlinear IMEX runs can prebuild and reuse the
+  matrix-free linear operator with
+  :func:`spectraxgk.nonlinear.build_nonlinear_imex_operator` and pass it to
+  :func:`spectraxgk.nonlinear.integrate_nonlinear_imex_cached` via
+  ``implicit_operator``.
 - **Cached hypercollision factors**: the linear cache now stores the Hermite–
   Laguerre hypercollision ratios and masks to avoid repeated power operations
   inside the RHS assembly.

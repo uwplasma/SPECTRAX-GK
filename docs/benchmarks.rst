@@ -14,7 +14,10 @@ growth-rate extraction.
 
 The Krylov solver applies a mild frequency cap (``KrylovConfig.omega_cap_factor``)
 to avoid selecting spurious high-frequency Ritz values when multiple branches are
-present. Set ``omega_cap_factor=0`` to disable this filter.
+present. ``KrylovConfig.mode_family`` and ``KrylovConfig.shift_selection`` add
+case-aware targeting for shift-invert runs, and ``KrylovConfig.fallback_method``
+controls fallback when a shift-invert solve lands on a non-physical branch.
+Set ``omega_cap_factor=0`` to disable frequency capping.
 
 Normalization scalings
 ----------------------
@@ -51,6 +54,10 @@ Current defaults prioritize robust runs for mixed stiffness:
 
 - ``TimeConfig(use_diffrax=True, diffrax_solver="Dopri8", diffrax_adaptive=True)``
 - ``progress_bar=False`` by default for scan throughput and cleaner JIT behavior.
+- ``streaming_fit=True`` in scan helpers to avoid storing full time traces unless
+  explicitly requested.
+- ``ky_batch>1`` with ``fixed_batch_shape=True`` to keep batch shapes constant
+  across scans and avoid tail-batch recompiles.
 
 Profiling snapshot (Cyclone, ``ky=0.3``, ``Nl=16``, ``Nm=48``, ``t_max=20``, ``dt=0.01``):
 
