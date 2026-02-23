@@ -123,6 +123,16 @@ def _build_parser() -> argparse.ArgumentParser:
     p.add_argument("--Nl", type=int, default=6)
     p.add_argument("--Nm", type=int, default=16)
     p.add_argument("--solver", choices=("krylov", "time"), default="krylov")
+    p.add_argument("--dt", type=float, default=0.01)
+    p.add_argument("--steps", type=int, default=800)
+    p.add_argument("--method", type=str, default="rk4")
+    p.add_argument("--fit-signal", choices=("phi", "density", "auto"), default="phi")
+    p.add_argument("--streaming-fit", action=argparse.BooleanOptionalAction, default=True)
+    p.add_argument("--window-fraction", type=float, default=0.4)
+    p.add_argument("--start-fraction", type=float, default=0.2)
+    p.add_argument("--min-points", type=int, default=40)
+    p.add_argument("--growth-weight", type=float, default=1.0)
+    p.add_argument("--require-positive", action=argparse.BooleanOptionalAction, default=True)
     p.add_argument("--stella-navg-frac", type=float, default=0.3)
     return p
 
@@ -138,9 +148,18 @@ def main() -> None:
         ky_target=args.ky_target,
         Nl=args.Nl,
         Nm=args.Nm,
+        dt=args.dt,
+        steps=args.steps,
+        method=args.method,
         solver=args.solver,
         krylov_cfg=KBM_KRYLOV_DEFAULT,
-        fit_signal="phi",
+        fit_signal=args.fit_signal,
+        streaming_fit=args.streaming_fit,
+        window_fraction=args.window_fraction,
+        min_points=args.min_points,
+        start_fraction=args.start_fraction,
+        growth_weight=args.growth_weight,
+        require_positive=args.require_positive,
     )
     sp = pd.DataFrame(
         {
