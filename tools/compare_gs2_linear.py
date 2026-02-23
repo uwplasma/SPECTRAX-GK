@@ -218,7 +218,12 @@ def build_parser() -> argparse.ArgumentParser:
     # Keep defaults aligned with the SPECTRAX Cyclone/GX-balanced benchmark case.
     p.add_argument("--R-over-LTi", type=float, default=2.49)
     p.add_argument("--R-over-Ln", type=float, default=0.8)
-    p.add_argument("--R-over-LTe", type=float, default=0.0)
+    p.add_argument(
+        "--R-over-LTe",
+        type=float,
+        default=None,
+        help="Electron temperature gradient. If omitted: cyclone=0, ETG/kinetic=R-over-LTi.",
+    )
     p.add_argument("--nu-i", type=float, default=0.0)
     p.add_argument("--nu-e", type=float, default=0.0)
     p.add_argument("--mass-ratio", type=float, default=3670.0)
@@ -242,6 +247,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main() -> None:
     args = build_parser().parse_args()
+    r_over_lte = float(args.R_over_LTi) if args.R_over_LTe is None else float(args.R_over_LTe)
     if args.case == "cyclone":
         base_cfg = CycloneBaseCase(
             grid=GridConfig(Nx=1, Ny=args.Ny, Nz=args.Nz, Lx=62.8, Ly=62.8, ntheta=12, nperiod=1),
@@ -255,7 +261,7 @@ def main() -> None:
             ),
             model=ModelConfig(
                 R_over_LTi=args.R_over_LTi,
-                R_over_LTe=args.R_over_LTe,
+                R_over_LTe=0.0,
                 R_over_Ln=args.R_over_Ln,
                 nu_i=args.nu_i,
             ),
@@ -274,7 +280,7 @@ def main() -> None:
             ),
             model=ETGModelConfig(
                 R_over_LTi=args.R_over_LTi,
-                R_over_LTe=args.R_over_LTe,
+                R_over_LTe=r_over_lte,
                 R_over_Ln=args.R_over_Ln,
                 Te_over_Ti=args.Te_over_Ti,
                 mass_ratio=args.mass_ratio,
@@ -298,7 +304,7 @@ def main() -> None:
             ),
             model=KineticElectronModelConfig(
                 R_over_LTi=args.R_over_LTi,
-                R_over_LTe=args.R_over_LTe,
+                R_over_LTe=r_over_lte,
                 R_over_Ln=args.R_over_Ln,
                 Te_over_Ti=args.Te_over_Ti,
                 mass_ratio=args.mass_ratio,
