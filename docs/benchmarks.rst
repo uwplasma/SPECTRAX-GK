@@ -392,6 +392,37 @@ A short scan over ``rho_star`` reports the mean ratios
    :file: _static/cyclone_rhostar_convergence.csv
    :header-rows: 1
 
+Cross-code runtime and memory (representative points)
+-----------------------------------------------------
+
+The table below is a staging table for the cross-code performance appendix.
+Values are wall-clock and peak RSS on the current development workstation.
+SPECTRAX numbers currently include first-run JAX compilation overhead.
+
+.. list-table:: Runtime and memory comparison (staging)
+   :header-rows: 1
+
+   * - Benchmark point
+     - SPECTRAX-GK
+     - GX
+     - GS2
+     - stella
+   * - Cyclone ``ky=0.3`` (s, MB)
+     - ``31.5 s, 664 MB`` (first-run JIT)
+     - pending (GPU run)
+     - ``4.82 s, 35 MB``
+     - pending (timing harness update)
+   * - ETG ``ky=20`` (s, MB)
+     - pending
+     - pending (GPU run)
+     - pending
+     - pending
+   * - KBM ``beta_ref=0.3`` (s, MB)
+     - pending
+     - pending (GPU run)
+     - pending
+     - pending
+
 Reference mismatch tables
 -------------------------
 
