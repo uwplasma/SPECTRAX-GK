@@ -430,6 +430,8 @@ CSV with ``ky, gamma_ref, omega_ref, gamma_spectrax, omega_spectrax, rel_*``.
 ``--spectrax-integrator gx`` uses the GX-style SPECTRAX growth extraction path
 for more robust cross-code comparisons. ``--ref-*-scale`` is provided to align
 normalization conventions when comparing to external code outputs.
+Cyclone comparisons use the same flux-tube theta domain as the benchmark case
+(``ntheta=32``, ``nperiod=2``) to avoid geometry-window mismatches.
 
 For direct stella-vs-SPECTRAX checks from stella NetCDF output:
 
@@ -448,6 +450,9 @@ The stella helper reads ``omega`` and averages the last fraction of finite
 samples (controlled by ``--stella-navg-frac``) before emitting the mismatch CSV.
 The same ``--ref-*-scale`` and ``--spectrax-integrator`` options are available
 for ETG and kinetic-electron comparisons.
+For ETG/kinetic cases, if ``--R-over-LTe`` is omitted, the comparison drivers
+default it to ``--R-over-LTi`` so adiabatic-ion ETG runs use a nonzero electron
+temperature gradient by default.
 
 Reference data extraction
 -------------------------
