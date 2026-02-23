@@ -215,42 +215,49 @@ kinetic-electron regression checks.
    * - Reference
      - [GX]_
 
-ETG (Electron-Scale)
---------------------
+ETG (GS2/Stella Cross-Code)
+---------------------------
 
-Electron-temperature-gradient validation uses a reduced electron-scale box
-and a digitized reference dataset from the published electron-scale scan:
+The ETG cross-code tuning workflow uses matched GS2/stella NetCDF outputs and
+SPECTRAX GX-style growth extraction for the same ``(ky, geometry, species, gradients)``.
 
-- ``spectraxgk/data/etg_reference.csv``
-
-The scan is plotted alongside the SPECTRAX-GK output in the validation
-summary figure.
-
-.. list-table:: ETG parameters (GX Fig. 2b)
+.. list-table:: ETG cross-code parameters
    :header-rows: 1
 
    * - Parameter
      - Value
    * - Geometry
-     - ``q=1.4``, ``s_hat=0.8``, ``epsilon=0.18``, ``R0=2.77778``
+     - ``q=1.5``, ``s_hat=0.8``, ``epsilon=0.18``, ``R0=3.0``
    * - Gradients
-     - ``R/LTi=2.49``, ``R/LTe=2.49``, ``R/Ln=0.8``
+     - ion: ``R/LTi=0``, ``R/Lni=0``; electron: ``R/LTe=2.49``, ``R/Lne=0.8``
    * - Species
-     - kinetic electrons + adiabatic ions, ``Te/Ti=1``, ``mi/me=3670``
+     - two-species kinetic ions + electrons, ``Te/Ti=1``, ``mi/me=3670``
    * - Electromagnetic
-     - ``beta=1e-5``, ``A_parallel=on``, ``B_parallel=off``
+     - electrostatic reference (``beta=1e-5``, ``A_parallel=off``, ``B_parallel=off``)
    * - Collisions
-     - ``nu_i=0``, ``nu_e=0``, hypercollisions off
+     - ``nu_i=0``, ``nu_e=0``, GX-style hypercollisions on
    * - Operator toggles
      - streaming/mirror/curvature/grad-B/diamagnetic on; nonlinear off
    * - Grid
-     - ``Nx=1, Ny=24, Nz=96, y0=0.2, ntheta=32, nperiod=2``
+     - ``Nx=1, Ny=96, Nz=96, ntheta=32, nperiod=2``
    * - Linear scan mode
-     - Krylov/Arnoldi (time integration retained for diagnostics/spot checks)
+     - GX-style RK4 extraction, ``dt=2e-4``, ``steps=12000``, ``sample_stride=10``
    * - Velocity resolution
-     - ``Nl=6, Nm=16`` (figure generation)
-   * - Reference
-     - [GX]_
+     - ``Nl=10, Nm=12``
+   * - Tuned ETG scales
+     - ``omega_d_scale=0.4``, ``omega_star_scale=0.8``
+
+.. image:: _static/etg_gs2_stella_comparison.png
+   :width: 85%
+   :alt: ETG cross-code comparison (SPECTRAX vs GS2 vs stella)
+
+.. csv-table:: ETG GS2 mismatch table (tuned)
+   :file: _static/etg_gs2_mismatch.csv
+   :header-rows: 1
+
+.. csv-table:: ETG stella mismatch table (tuned)
+   :file: _static/etg_stella_mismatch.csv
+   :header-rows: 1
 
 KBM (Electromagnetic Beta Scan)
 -------------------------------
@@ -451,8 +458,30 @@ samples (controlled by ``--stella-navg-frac``) before emitting the mismatch CSV.
 The same ``--ref-*-scale`` and ``--spectrax-integrator`` options are available
 for ETG and kinetic-electron comparisons.
 For ETG/kinetic cases, if ``--R-over-LTe`` is omitted, the comparison drivers
-default it to ``--R-over-LTi`` so adiabatic-ion ETG runs use a nonzero electron
-temperature gradient by default.
+default it to ``--R-over-LTi``. For ETG with kinetic ions
+(``--no-etg-adiabatic-ions``), the drivers now default to ``R/LTi_i=0`` and
+``R/Ln_i=0`` while keeping electron gradients nonzero. You can override the ion
+temperature gradient explicitly via ``--etg-ion-R-over-LTi``.
+
+Recommended ETG cross-code command (GS2 or stella):
+
+.. code-block:: bash
+
+   python tools/compare_gs2_linear.py \
+     --case etg \
+     --gs2-out /path/to/etg_case.out.nc \
+     --spectrax-integrator gx \
+     --q 1.5 --s-hat 0.8 --epsilon 0.18 --R0 3.0 \
+     --R-over-LTe 2.49 --R-over-Ln 0.8 --no-etg-adiabatic-ions \
+     --Ny 96 --Nz 96 --Nl 10 --Nm 12 \
+     --dt 2e-4 --steps 12000 --sample-stride 10 \
+     --etg-omega-d-scale 0.4 --etg-omega-star-scale 0.8 \
+     --out-csv docs/_static/etg_gs2_mismatch.csv
+
+   python tools/plot_etg_crosscode.py \
+     --gs2-csv docs/_static/etg_gs2_mismatch.csv \
+     --stella-csv docs/_static/etg_stella_mismatch.csv \
+     --out docs/_static/etg_gs2_stella_comparison.png
 
 Reference data extraction
 -------------------------
