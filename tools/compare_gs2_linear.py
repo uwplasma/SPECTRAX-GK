@@ -7,6 +7,7 @@ import argparse
 from dataclasses import replace
 from pathlib import Path
 
+import jax.numpy as jnp
 import numpy as np
 import pandas as pd
 import xarray as xr
@@ -138,6 +139,9 @@ def _run_etg_gx(
     steps: int,
     navg_fraction: float,
     sample_stride: int,
+    omega_d_scale: float,
+    omega_star_scale: float,
+    hypercollisions: float,
 ) -> tuple[float, float]:
     geom = SAlphaGeometry.from_config(cfg.geometry)
     grid_full = build_spectral_grid(cfg.grid)
@@ -147,22 +151,22 @@ def _run_etg_gx(
         params = _electron_only_params(
             cfg.model,
             kpar_scale=float(geom.gradpar()),
-            omega_d_scale=ETG_OMEGA_D_SCALE,
-            omega_star_scale=ETG_OMEGA_STAR_SCALE,
+            omega_d_scale=omega_d_scale,
+            omega_star_scale=omega_star_scale,
             rho_star=ETG_RHO_STAR,
             nhermite=Nm,
         )
-        terms = LinearTerms(bpar=0.0)
+        terms = LinearTerms(apar=0.0, bpar=0.0, hypercollisions=hypercollisions)
     else:
         params = _two_species_params(
             cfg.model,
             kpar_scale=float(geom.gradpar()),
-            omega_d_scale=ETG_OMEGA_D_SCALE,
-            omega_star_scale=ETG_OMEGA_STAR_SCALE,
+            omega_d_scale=omega_d_scale,
+            omega_star_scale=omega_star_scale,
             rho_star=ETG_RHO_STAR,
             nhermite=Nm,
         )
-        terms = LinearTerms()
+        terms = LinearTerms(apar=0.0, bpar=0.0, hypercollisions=hypercollisions)
     cache = build_linear_cache(grid, geom, params, Nl, Nm)
     init_cfg = getattr(cfg, "init", None)
     G0 = _build_initial_condition(
@@ -174,6 +178,12 @@ def _run_etg_gx(
         Nm=Nm,
         init_cfg=init_cfg,
     )
+    charge = np.atleast_1d(np.asarray(params.charge_sign))
+    ns = int(charge.size)
+    electron_index = int(np.argmin(charge))
+    G0_species = np.zeros((ns, Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64)
+    G0_species[electron_index] = np.asarray(G0, dtype=np.complex64)
+    G0 = jnp.asarray(G0_species)
     t, phi_t, _gamma_t, _omega_t = integrate_linear_gx(
         G0,
         grid,
@@ -218,6 +228,23 @@ def build_parser() -> argparse.ArgumentParser:
     # Keep defaults aligned with the SPECTRAX Cyclone/GX-balanced benchmark case.
     p.add_argument("--R-over-LTi", type=float, default=2.49)
     p.add_argument("--R-over-Ln", type=float, default=0.8)
+    p.add_argument("--R-over-Ln-i", type=float, default=None)
+    p.add_argument("--R-over-Ln-e", type=float, default=None)
+    p.add_argument(
+        "--etg-adiabatic-ions",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Use adiabatic ions in ETG runs. Default false for GS2/stella two-species alignment.",
+    )
+    p.add_argument(
+        "--etg-ion-R-over-LTi",
+        type=float,
+        default=None,
+        help="Ion temperature gradient for ETG two-species runs; defaults to 0 when ions are kinetic.",
+    )
+    p.add_argument("--etg-omega-d-scale", type=float, default=0.4)
+    p.add_argument("--etg-omega-star-scale", type=float, default=0.8)
+    p.add_argument("--etg-hypercollisions", type=float, default=1.0)
     p.add_argument(
         "--R-over-LTe",
         type=float,
@@ -268,6 +295,18 @@ def main() -> None:
         )
         run_linear_fn = run_cyclone_linear
     elif args.case == "etg":
+        ln_i = args.R_over_Ln_i
+        ln_e = args.R_over_Ln_e
+        ion_r_over_lti = args.etg_ion_R_over_LTi
+        if not args.etg_adiabatic_ions:
+            if ln_i is None:
+                ln_i = 0.0
+            if ln_e is None:
+                ln_e = args.R_over_Ln
+            if ion_r_over_lti is None:
+                ion_r_over_lti = 0.0
+        if ion_r_over_lti is None:
+            ion_r_over_lti = args.R_over_LTi
         base_cfg = ETGBaseCase(
             grid=GridConfig(Nx=1, Ny=args.Ny, Nz=args.Nz, Lx=6.28, Ly=6.28, ntheta=32, nperiod=2),
             geometry=GeometryConfig(
@@ -279,15 +318,17 @@ def main() -> None:
                 alpha=0.0,
             ),
             model=ETGModelConfig(
-                R_over_LTi=args.R_over_LTi,
+                R_over_LTi=float(ion_r_over_lti),
                 R_over_LTe=r_over_lte,
                 R_over_Ln=args.R_over_Ln,
+                R_over_Lni=ln_i,
+                R_over_Lne=ln_e,
                 Te_over_Ti=args.Te_over_Ti,
                 mass_ratio=args.mass_ratio,
                 nu_i=args.nu_i,
                 nu_e=args.nu_e,
                 beta=1.0e-5,
-                adiabatic_ions=True,
+                adiabatic_ions=bool(args.etg_adiabatic_ions),
             ),
         )
         run_linear_fn = run_etg_linear
@@ -347,6 +388,9 @@ def main() -> None:
                     steps=args.steps,
                     navg_fraction=args.spectrax_navg_frac,
                     sample_stride=args.sample_stride,
+                    omega_d_scale=args.etg_omega_d_scale,
+                    omega_star_scale=args.etg_omega_star_scale,
+                    hypercollisions=args.etg_hypercollisions,
                 )
             else:
                 run_kwargs = {
@@ -360,6 +404,37 @@ def main() -> None:
                     "solver": args.solver,
                 }
                 if args.case == "etg":
+                    geom = SAlphaGeometry.from_config(base_cfg.geometry)
+                    if bool(args.etg_adiabatic_ions):
+                        params = _electron_only_params(
+                            base_cfg.model,
+                            kpar_scale=float(geom.gradpar()),
+                            omega_d_scale=args.etg_omega_d_scale,
+                            omega_star_scale=args.etg_omega_star_scale,
+                            rho_star=ETG_RHO_STAR,
+                            nhermite=args.Nm,
+                        )
+                        etg_terms = LinearTerms(
+                            apar=0.0,
+                            bpar=0.0,
+                            hypercollisions=args.etg_hypercollisions,
+                        )
+                    else:
+                        params = _two_species_params(
+                            base_cfg.model,
+                            kpar_scale=float(geom.gradpar()),
+                            omega_d_scale=args.etg_omega_d_scale,
+                            omega_star_scale=args.etg_omega_star_scale,
+                            rho_star=ETG_RHO_STAR,
+                            nhermite=args.Nm,
+                        )
+                        etg_terms = LinearTerms(
+                            apar=0.0,
+                            bpar=0.0,
+                            hypercollisions=args.etg_hypercollisions,
+                        )
+                    run_kwargs["params"] = params
+                    run_kwargs["terms"] = etg_terms
                     run_kwargs["fit_signal"] = args.fit_signal
                 result = run_linear_fn(**run_kwargs)
                 gamma_sp = float(result.gamma)
