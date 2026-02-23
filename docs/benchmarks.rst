@@ -418,12 +418,36 @@ For direct GS2-vs-SPECTRAX checks from GS2 NetCDF output:
 
    python tools/compare_gs2_linear.py \
      --gs2-out /path/to/gs2_case.out.nc \
-     --solver krylov \
-     --Nl 16 --Nm 8 \
+     --case cyclone \
+     --spectrax-integrator gx \
+     --Nl 48 --Nm 16 \
+     --dt 0.01 --steps 3000 \
+     --ref-gamma-scale 2.0 --ref-omega-scale 2.0 \
      --out-csv docs/_static/gs2_linear_mismatch.csv
 
 The helper reads GS2 ``omega_average`` at the final time and emits a mismatch
 CSV with ``ky, gamma_ref, omega_ref, gamma_spectrax, omega_spectrax, rel_*``.
+``--spectrax-integrator gx`` uses the GX-style SPECTRAX growth extraction path
+for more robust cross-code comparisons. ``--ref-*-scale`` is provided to align
+normalization conventions when comparing to external code outputs.
+
+For direct stella-vs-SPECTRAX checks from stella NetCDF output:
+
+.. code-block:: bash
+
+   python tools/compare_stella_linear.py \
+     --stella-out /path/to/stella_case.out.nc \
+     --case cyclone \
+     --spectrax-integrator gx \
+     --Nl 48 --Nm 16 \
+     --dt 0.01 --steps 3000 \
+     --ref-gamma-scale 2.0 --ref-omega-scale 2.0 \
+     --out-csv docs/_static/stella_linear_mismatch.csv
+
+The stella helper reads ``omega`` and averages the last fraction of finite
+samples (controlled by ``--stella-navg-frac``) before emitting the mismatch CSV.
+The same ``--ref-*-scale`` and ``--spectrax-integrator`` options are available
+for ETG and kinetic-electron comparisons.
 
 Reference data extraction
 -------------------------

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare GS2 linear outputs against SPECTRAX-GK on matching ky points."""
+"""Compare stella linear outputs against SPECTRAX-GK on matching ky points."""
 
 from __future__ import annotations
 
@@ -43,24 +43,82 @@ from spectraxgk.gx_integrators import GXTimeConfig, integrate_linear_gx
 from spectraxgk.linear import LinearParams, LinearTerms, build_linear_cache
 
 
-def _load_gs2_omega_gamma(
+def _load_stella_omega_gamma(
     path: Path,
+    navg_frac: float,
     *,
     gamma_scale: float,
     omega_scale: float,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     ds = xr.open_dataset(path)
-    if "omega_average" not in ds:
-        raise ValueError(f"{path} does not contain omega_average")
-    omega_avg = np.asarray(ds["omega_average"])
-    if omega_avg.ndim != 4 or omega_avg.shape[-1] != 2:
-        raise ValueError(f"unexpected omega_average shape in {path}: {omega_avg.shape}")
-    ky = np.asarray(ds["ky"])
-    # final time, kx=0 branch: ri axis stores (omega, gamma)
-    final = omega_avg[-1, :, 0, :]
-    omega_ref = final[:, 0] * omega_scale
-    gamma_ref = final[:, 1] * gamma_scale
-    return ky, gamma_ref, omega_ref
+    if "omega" not in ds:
+        raise ValueError(f"{path} does not contain omega")
+    if "ky" not in ds:
+        raise ValueError(f"{path} does not contain ky")
+
+    omega_da = ds["omega"]
+    omega_arr = np.asarray(omega_da)
+    dims = list(omega_da.dims)
+
+    if "ri" in dims:
+        comp_axis = dims.index("ri")
+    else:
+        size2_axes = [i for i, s in enumerate(omega_arr.shape) if s == 2]
+        if not size2_axes:
+            raise ValueError(f"could not infer omega component axis in {path} with shape {omega_arr.shape}")
+        comp_axis = size2_axes[-1]
+    omega_arr = np.moveaxis(omega_arr, comp_axis, -1)
+    dims = [d for i, d in enumerate(dims) if i != comp_axis] + ["ri"]
+
+    if "t" not in dims:
+        raise ValueError(f"could not infer time axis for omega in {path}")
+    time_axis = dims.index("t")
+
+    if "ky" not in dims:
+        raise ValueError(f"could not infer ky axis for omega in {path}")
+    ky_axis = dims.index("ky")
+
+    kx_idx = 0
+    if "kx" in dims:
+        kx_vals = np.asarray(ds["kx"])
+        kx_axis = dims.index("kx")
+        kx_idx = int(np.argmin(np.abs(kx_vals)))
+        omega_arr = np.take(omega_arr, kx_idx, axis=kx_axis)
+        dims.pop(kx_axis)
+        if ky_axis > kx_axis:
+            ky_axis -= 1
+        if time_axis > kx_axis:
+            time_axis -= 1
+
+    if omega_arr.ndim != 3:
+        raise ValueError(
+            f"unexpected omega rank after kx selection in {path}: shape={omega_arr.shape}, dims={dims}"
+        )
+
+    ky_vals = np.asarray(ds["ky"], dtype=float)
+    gamma_ref = np.zeros_like(ky_vals, dtype=float)
+    omega_ref = np.zeros_like(ky_vals, dtype=float)
+
+    for j in range(ky_vals.size):
+        time_ky = np.take(omega_arr, j, axis=ky_axis)
+        # time_ky shape: (time, 2)
+        if time_axis != 0:
+            time_ky = np.moveaxis(time_ky, time_axis, 0)
+        omega_t = np.asarray(time_ky[:, 0], dtype=float)
+        gamma_t = np.asarray(time_ky[:, 1], dtype=float)
+        finite = np.isfinite(omega_t) & np.isfinite(gamma_t)
+        if not np.any(finite):
+            omega_ref[j] = np.nan
+            gamma_ref[j] = np.nan
+            continue
+        omega_f = omega_t[finite]
+        gamma_f = gamma_t[finite]
+        n = max(1, int(np.floor(navg_frac * omega_f.size)))
+        omega_ref[j] = float(np.mean(omega_f[-n:])) * omega_scale
+        gamma_ref[j] = float(np.mean(gamma_f[-n:])) * gamma_scale
+
+    _ = kx_idx  # keep explicit for readability/debugging if needed later
+    return ky_vals, gamma_ref, omega_ref
 
 
 def _build_cyclone_params(cfg: CycloneBaseCase, geom: SAlphaGeometry, Nm: int) -> LinearParams:
@@ -198,34 +256,36 @@ def _run_etg_gx(
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument(
-        "--gs2-out",
+        "--stella-out",
         action="append",
         required=True,
-        help="Path to GS2 .out.nc file. Can be passed multiple times.",
+        help="Path to stella .out.nc file. Can be passed multiple times.",
     )
     p.add_argument("--case", choices=("cyclone", "etg", "kinetic"), default="cyclone")
-    p.add_argument("--out-csv", type=Path, default=Path("docs/_static/gs2_linear_mismatch.csv"))
+    p.add_argument(
+        "--out-csv", type=Path, default=Path("docs/_static/stella_linear_mismatch.csv")
+    )
     p.add_argument("--solver", default="krylov", choices=("krylov", "time"))
     p.add_argument("--Nl", type=int, default=16)
     p.add_argument("--Nm", type=int, default=8)
     p.add_argument("--dt", type=float, default=0.01)
     p.add_argument("--steps", type=int, default=800)
     p.add_argument("--method", default="imex2")
-    p.add_argument("--q", type=float, default=1.44)
+    p.add_argument("--q", type=float, default=1.4)
     p.add_argument("--s-hat", type=float, default=0.8)
     p.add_argument("--epsilon", type=float, default=0.18)
     p.add_argument("--R0", type=float, default=2.77778)
-    # Keep defaults aligned with the SPECTRAX Cyclone/GX-balanced benchmark case.
     p.add_argument("--R-over-LTi", type=float, default=2.49)
     p.add_argument("--R-over-Ln", type=float, default=0.8)
-    p.add_argument("--R-over-LTe", type=float, default=0.0)
+    p.add_argument("--R-over-LTe", type=float, default=2.49)
     p.add_argument("--nu-i", type=float, default=0.0)
     p.add_argument("--nu-e", type=float, default=0.0)
     p.add_argument("--mass-ratio", type=float, default=3670.0)
     p.add_argument("--Te-over-Ti", type=float, default=1.0)
     p.add_argument("--Ny", type=int, default=16)
     p.add_argument("--Nz", type=int, default=64)
-    p.add_argument("--verbose", action="store_true")
+    p.add_argument("--beta", type=float, default=1.0e-5)
+    p.add_argument("--stella-navg-frac", type=float, default=0.3)
     p.add_argument(
         "--spectrax-integrator",
         choices=("benchmark", "gx"),
@@ -237,6 +297,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--ref-gamma-scale", type=float, default=1.0)
     p.add_argument("--ref-omega-scale", type=float, default=1.0)
     p.add_argument("--fit-signal", choices=("phi", "density"), default="density")
+    p.add_argument("--verbose", action="store_true")
     return p
 
 
@@ -244,7 +305,7 @@ def main() -> None:
     args = build_parser().parse_args()
     if args.case == "cyclone":
         base_cfg = CycloneBaseCase(
-            grid=GridConfig(Nx=1, Ny=args.Ny, Nz=args.Nz, Lx=62.8, Ly=62.8, ntheta=12, nperiod=1),
+            grid=GridConfig(Nx=1, Ny=args.Ny, Nz=args.Nz, Lx=62.8, Ly=62.8, ntheta=32, nperiod=2),
             geometry=GeometryConfig(
                 q=args.q,
                 s_hat=args.s_hat,
@@ -255,7 +316,7 @@ def main() -> None:
             ),
             model=ModelConfig(
                 R_over_LTi=args.R_over_LTi,
-                R_over_LTe=args.R_over_LTe,
+                R_over_LTe=0.0,
                 R_over_Ln=args.R_over_Ln,
                 nu_i=args.nu_i,
             ),
@@ -280,8 +341,7 @@ def main() -> None:
                 mass_ratio=args.mass_ratio,
                 nu_i=args.nu_i,
                 nu_e=args.nu_e,
-                beta=1.0e-5,
-                adiabatic_ions=True,
+                beta=args.beta,
             ),
         )
         run_linear_fn = run_etg_linear
@@ -304,21 +364,22 @@ def main() -> None:
                 mass_ratio=args.mass_ratio,
                 nu_i=args.nu_i,
                 nu_e=args.nu_e,
-                beta=1.0e-5,
+                beta=args.beta,
             ),
         )
         run_linear_fn = run_kinetic_linear
 
     rows: list[dict[str, float | str]] = []
-    for gs2_file in args.gs2_out:
-        path = Path(gs2_file)
-        ky_vals, gamma_ref, omega_ref = _load_gs2_omega_gamma(
+    for stella_file in args.stella_out:
+        path = Path(stella_file)
+        ky_vals, gamma_ref, omega_ref = _load_stella_omega_gamma(
             path,
+            args.stella_navg_frac,
             gamma_scale=args.ref_gamma_scale,
             omega_scale=args.ref_omega_scale,
         )
         if args.verbose:
-            print(f"[GS2] {path}: {len(ky_vals)} ky points")
+            print(f"[stella] {path}: {len(ky_vals)} ky points")
         for idx, ky in enumerate(ky_vals):
             if args.spectrax_integrator == "gx" and args.case == "cyclone":
                 gamma_sp, omega_sp = _run_cyclone_gx(
