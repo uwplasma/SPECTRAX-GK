@@ -412,6 +412,19 @@ Hermite-line streaming preconditioner) and prints the comparison:
 
    python tools/make_tables.py --stiff-spot-check
 
+For direct GS2-vs-SPECTRAX checks from GS2 NetCDF output:
+
+.. code-block:: bash
+
+   python tools/compare_gs2_linear.py \
+     --gs2-out /path/to/gs2_case.out.nc \
+     --solver krylov \
+     --Nl 16 --Nm 8 \
+     --out-csv docs/_static/gs2_linear_mismatch.csv
+
+The helper reads GS2 ``omega_average`` at the final time and emits a mismatch
+CSV with ``ky, gamma_ref, omega_ref, gamma_spectrax, omega_spectrax, rel_*``.
+
 Reference data extraction
 -------------------------
 
