@@ -292,6 +292,26 @@ Electromagnetic ballooning validation uses a fixed :math:`k_y` and a scan over
    * - Reference
      - [GX]_
 
+KBM GS2/stella cross-code run (staging)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+We executed a first matched-input KBM cross-code set at ``ky=0.3`` with
+``beta_ref = [0.005, 0.01, 0.015, 0.02]`` for GS2, stella, and SPECTRAX.
+The current comparison is intended to lock run plumbing and diagnostic
+extraction before final normalization closure.
+
+.. image:: _static/kbm_gs2_stella_comparison.png
+   :width: 75%
+   :alt: KBM cross-code comparison (SPECTRAX vs GS2 vs stella)
+
+.. csv-table:: KBM GS2 mismatch table (staging)
+   :file: _static/kbm_gs2_mismatch.csv
+   :header-rows: 1
+
+.. csv-table:: KBM stella mismatch table (staging)
+   :file: _static/kbm_stella_mismatch.csv
+   :header-rows: 1
+
 KBM cross-code closure plan
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
