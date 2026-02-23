@@ -110,26 +110,27 @@ frequencies across a reduced :math:`k_y` scan on the field-aligned grid.
    * - Reference
      - [GX]_
 
-.. figure:: _static/etg_comparison.png
-   :width: 80%
-   :align: center
-   :alt: ETG comparison against reference
-
-   ETG growth rates and frequencies compared with the GX reference scan.
-
 .. figure:: _static/linear_summary.png
    :align: center
    :alt: Linear validation summary
 
-   Multi-panel summary of eigenfunctions, growth rates, and frequencies
-   across the linear benchmark suite.
+   Cross-code linear summary of eigenfunctions, growth rates, and frequencies
+   for Cyclone and ETG (SPECTRAX-GK vs GS2/stella).
 
 .. figure:: _static/cyclone_comparison.png
    :align: center
    :alt: Cyclone base case comparison
 
    Cyclone base case growth rates and real frequencies comparing SPECTRAX-GK
-   against the published reference dataset.
+   against GX (published reference), GS2, and stella.
+
+.. csv-table:: Cyclone GS2 mismatch table (tuned)
+   :file: _static/cyclone_gs2_mismatch.csv
+   :header-rows: 1
+
+.. csv-table:: Cyclone stella mismatch table (tuned)
+   :file: _static/cyclone_stella_mismatch.csv
+   :header-rows: 1
 
 .. list-table:: Cyclone base case (GX-style integrator, balanced resolution)
    :header-rows: 1
@@ -291,10 +292,28 @@ Electromagnetic ballooning validation uses a fixed :math:`k_y` and a scan over
    * - Reference
      - [GX]_
 
-TEM (Trapped-Electron Mode)
----------------------------
+KBM cross-code closure plan
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The TEM validation case follows the s-alpha parameters reported in Frei et al.
+Based on the GX, GS2, and stella source implementations, the remaining KBM
+benchmark work should proceed in this order:
+
+1. Lock a shared electromagnetic normalization contract:
+   ``beta_ref``, ``A_parallel`` scaling, and reported ``(gamma, omega)`` units.
+2. Run a single-point term audit at ``ky=0.3`` and representative ``beta_ref``
+   comparing SPECTRAX term-by-term RHS contributions against GX outputs.
+3. Enable the same fit-signal policy used in ETG/Cyclone (signal fallback +
+   conservative log-linear windows) before sweeping the full beta scan.
+4. Use the robust shift-invert + Hermite-line preconditioner for high-beta
+   stiff points, then verify branch continuity versus time-integration checks.
+5. Freeze a balanced KBM scan policy (``Nl/Nm``, ``dt``, ``t_max`` per beta)
+   and regenerate mismatch tables and publication figures.
+
+TEM (Future Work)
+-----------------
+
+The TEM validation case (Frei et al.) remains documented here as future work.
+It follows the s-alpha parameters reported in Frei et al.
 with steep gradients (:math:`R/L_{Ti} = R/L_{Te} = R/L_n = 20`),
 :math:`q=2.7`, :math:`\hat{s}=0.5`, :math:`\epsilon=0.18`, and
 :math:`m_e/m_i = 0.0027`. The digitized low-:math:`k_y` reference branch is
