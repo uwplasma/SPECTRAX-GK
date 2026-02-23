@@ -250,7 +250,7 @@ def main() -> None:
     r_over_lte = float(args.R_over_LTi) if args.R_over_LTe is None else float(args.R_over_LTe)
     if args.case == "cyclone":
         base_cfg = CycloneBaseCase(
-            grid=GridConfig(Nx=1, Ny=args.Ny, Nz=args.Nz, Lx=62.8, Ly=62.8, ntheta=12, nperiod=1),
+            grid=GridConfig(Nx=1, Ny=args.Ny, Nz=args.Nz, Lx=62.8, Ly=62.8, ntheta=32, nperiod=2),
             geometry=GeometryConfig(
                 q=args.q,
                 s_hat=args.s_hat,
