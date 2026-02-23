@@ -288,17 +288,22 @@ Electromagnetic ballooning validation uses a fixed :math:`k_y` and a scan over
    * - Grid
      - ``Nx=1, Ny=12, Nz=96, y0=10, ntheta=32, nperiod=2``
    * - Velocity resolution
-     - ``Nl=6, Nm=16`` (figure generation)
+     - ``Nl=8, Nm=24`` (cross-code figure generation)
+   * - Time integration (cross-code)
+     - Diffrax ``Dopri8`` fixed-step, ``dt=2e-3``, ``steps=2000``
+   * - Fit policy (cross-code)
+     - streaming fit, signal ``phi``, ``window_fraction=0.2``, ``start_fraction=0.2``
    * - Reference
      - [GX]_
 
 KBM GS2/stella cross-code run (staging)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-We executed a first matched-input KBM cross-code set at ``ky=0.3`` with
-``beta_ref = [0.005, 0.01, 0.015, 0.02]`` for GS2, stella, and SPECTRAX.
-The current comparison is intended to lock run plumbing and diagnostic
-extraction before final normalization closure.
+We executed an updated matched-input KBM cross-code set at ``ky=0.3`` with
+``beta_ref = [0.1, 0.2, 0.3, 0.4, 0.5]`` for GS2, stella, and SPECTRAX.
+For GS2, we used the same input set without ``dist_fn_species_knobs`` diffusion
+blocks in order to keep dissipation policy consistent with the SPECTRAX/stella
+run family for this staging comparison.
 
 .. image:: _static/kbm_gs2_stella_comparison.png
    :width: 75%
@@ -311,6 +316,16 @@ extraction before final normalization closure.
 .. csv-table:: KBM stella mismatch table (staging)
    :file: _static/kbm_stella_mismatch.csv
    :header-rows: 1
+
+Current summary (staging):
+
+- GS2 vs SPECTRAX: mean ``|rel_gamma| = 8.121%``, max ``|rel_gamma| = 16.224%``
+- GS2 vs SPECTRAX: mean ``|rel_omega| = 104.444%``
+- stella vs SPECTRAX: mean ``|rel_gamma| = 24.915%``
+- stella vs SPECTRAX: mean ``|rel_omega| = 104.494%``
+
+Interpretation: the KBM growth-rate branch is now much closer across codes on
+this matched set, while the real-frequency branch remains the primary closure task.
 
 KBM cross-code closure plan
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
