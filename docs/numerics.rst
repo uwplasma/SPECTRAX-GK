@@ -220,17 +220,16 @@ Putting the pieces together, the linear operator is assembled from:
 - **Grad-B drift**: ``gb_d`` coupling across :math:`\ell\pm1`.
 - **Diamagnetic drive**: :math:`\omega_*` energy-weighted source in ``m=0,2``.
 
-Operator toggles live in :class:`spectraxgk.linear.LinearTerms`, so the same
-equation is always solved while individual contributions (streaming, mirror,
-curvature, grad-:math:`B`, diamagnetic drive, collisions, hyper-collisions,
-end damping, :math:`A_\parallel`, :math:`B_\parallel`) can be switched on or
-off for controlled studies.
+Operator toggles start from :class:`spectraxgk.linear.LinearTerms` and are
+converted into one canonical :class:`spectraxgk.terms.TermConfig` through
+:func:`spectraxgk.linear.linear_terms_to_term_config`. The same modular RHS
+path is then used by fixed-step linear integrators, diffrax integrators,
+Krylov operator applications, and nonlinear IMEX linear solves.
 
-For the nonlinear generalization, SPECTRAX-GK also exposes a term-wise
-assembly interface in :mod:`spectraxgk.terms`. The
-:class:`spectraxgk.terms.TermConfig` toggles the same operator components,
-and :func:`spectraxgk.terms.assemble_rhs` builds the RHS from per-term
-functions. This keeps term implementations isolated for easier extension,
+The RHS is assembled in :mod:`spectraxgk.terms` via
+:func:`spectraxgk.terms.assemble_rhs_cached`, which sums per-term kernels
+(streaming, mirror, drifts, diamagnetic drive, collisions, hyper-collisions,
+and end damping). This keeps the physics core branch-free and easier to extend,
 while preserving JAX differentiability and performance.
 
 Field solve and electromagnetic coupling
@@ -240,7 +239,8 @@ Electrostatic runs solve quasineutrality for :math:`\phi` with optional
 Boltzmann response (``tau_e``). Electromagnetic runs solve the coupled
 quasineutrality/perpendicular-Ampere system for :math:`(\phi, B_\parallel)` and
 then compute :math:`A_\parallel` from parallel Ampere’s law. The implementation
-is in :func:`spectraxgk.linear.linear_rhs_cached`.
+is in :mod:`spectraxgk.terms.fields` and is called from
+:func:`spectraxgk.terms.assemble_rhs_cached`.
 
 Normalization control
 ---------------------

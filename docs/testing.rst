@@ -40,10 +40,15 @@ Representative unit checks include:
 - **Normalization contract consistency**:
   :func:`spectraxgk.normalization.get_normalization_contract`,
   :func:`spectraxgk.normalization.apply_diagnostic_normalization`.
+- **Modular RHS equivalence**:
+  :func:`spectraxgk.linear.linear_terms_to_term_config`,
+  :func:`spectraxgk.terms.assemble_rhs_cached`,
+  :func:`spectraxgk.linear.linear_rhs_cached`.
 
 These tests live in ``tests/test_linear.py`` and ``tests/test_grids.py`` and
-``tests/test_normalization.py`` and are designed to fail deterministically if a
-discretization or normalization changes.
+``tests/test_normalization.py`` and ``tests/test_terms_assembly.py`` and are
+designed to fail deterministically if a discretization, assembly path, or
+normalization changes.
 
 Physics regression tests
 ------------------------
