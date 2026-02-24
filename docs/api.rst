@@ -60,3 +60,9 @@ Config
 
 .. automodule:: spectraxgk.config
    :members:
+
+Normalization
+-------------
+
+.. automodule:: spectraxgk.normalization
+   :members:
