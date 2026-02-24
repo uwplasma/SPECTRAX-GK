@@ -23,7 +23,9 @@ Normalization scalings
 ----------------------
 
 Per-case normalization factors are applied to the diamagnetic and curvature
-frequencies to align with published reference data.
+frequencies to align with published reference data. The canonical source is
+``spectraxgk.normalization`` (``get_normalization_contract(case)``); benchmark
+constants remain compatibility aliases.
 
 .. list-table:: Calibration scalings (current code defaults)
    :header-rows: 1
@@ -40,6 +42,12 @@ frequencies to align with published reference data.
    * - KBM
      - ``1.0``
      - ``0.8``
+
+Diagnostic reporting normalization is controlled independently via
+``diagnostic_norm``:
+
+- ``none``: report raw solver values.
+- ``gx`` / ``rho_star``: report ``rho_star * (gamma, omega)``.
 
 Performance defaults
 --------------------
