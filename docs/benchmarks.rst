@@ -115,7 +115,7 @@ frequencies across a reduced :math:`k_y` scan on the field-aligned grid.
    :alt: Linear validation summary
 
    Cross-code linear summary of eigenfunctions, growth rates, and frequencies
-   for Cyclone and ETG (SPECTRAX-GK vs GS2/stella).
+   for Cyclone, ETG, and KBM (SPECTRAX-GK vs GS2/stella).
 
 .. figure:: _static/cyclone_comparison.png
    :align: center
@@ -290,9 +290,9 @@ Electromagnetic ballooning validation uses a fixed :math:`k_y` and a scan over
    * - Velocity resolution
      - ``Nl=8, Nm=24`` (cross-code figure generation)
    * - Time integration (cross-code)
-     - Diffrax ``Dopri8`` fixed-step, ``dt=2e-3``, ``steps=2000``
+     - Diffrax ``RK4`` fixed-step, ``dt=5e-4``, ``steps=12000``
    * - Fit policy (cross-code)
-     - streaming fit, signal ``phi``, ``window_fraction=0.2``, ``start_fraction=0.2``
+     - streaming fit, signal ``phi``, ``window_fraction=0.4``, ``start_fraction=0.2``
    * - Reference
      - [GX]_
 
@@ -319,13 +319,14 @@ run family for this staging comparison.
 
 Current summary (staging):
 
-- GS2 vs SPECTRAX: mean ``|rel_gamma| = 8.121%``, max ``|rel_gamma| = 16.224%``
-- GS2 vs SPECTRAX: mean ``|rel_omega| = 104.444%``
-- stella vs SPECTRAX: mean ``|rel_gamma| = 24.915%``
-- stella vs SPECTRAX: mean ``|rel_omega| = 104.494%``
+- GS2 vs SPECTRAX: mean ``|rel_gamma| = 6.666%``, max ``|rel_gamma| = 12.625%``
+- GS2 vs SPECTRAX: mean ``|rel_omega| = 16.067%``, max ``|rel_omega| = 30.604%``
+- stella vs SPECTRAX: mean ``|rel_gamma| = 27.249%``, max ``|rel_gamma| = 38.272%``
+- stella vs SPECTRAX: mean ``|rel_omega| = 21.670%``, max ``|rel_omega| = 46.713%``
 
-Interpretation: the KBM growth-rate branch is now much closer across codes on
-this matched set, while the real-frequency branch remains the primary closure task.
+Interpretation: KBM closure against GS2 is now within the project tolerance on
+both ``gamma`` and ``omega``. The stella set remains offset, with a persistent
+higher-growth branch across the beta scan.
 
 KBM cross-code closure plan
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
