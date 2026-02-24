@@ -43,6 +43,15 @@ TOML-driven run
 
    python examples/run_from_toml.py --config examples/configs/cyclone.toml --plot
 
+Unified runtime TOML run
+------------------------
+
+.. code-block:: bash
+
+   python examples/runtime_from_toml.py --config examples/configs/runtime_cyclone.toml
+   python examples/runtime_from_toml.py --config examples/configs/runtime_etg.toml
+   python examples/runtime_from_toml.py --config examples/configs/runtime_kbm.toml
+
 KBM beta scan
 -------------
 

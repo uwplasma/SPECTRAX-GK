@@ -88,6 +88,9 @@ tests:
   on tiny grids.
 - ``tests/test_example_smoke.py`` verifies the config-driven runner (diffrax
   enabled) and a short nonlinear scan with placeholder nonlinear terms.
+- ``tests/test_runtime_config.py`` and ``tests/test_runtime_runner.py`` verify
+  unified runtime TOML loading and case-agnostic linear runs (Cyclone/ETG/KBM)
+  through the same solver path.
 
 Linear physics checks
 ---------------------
