@@ -101,3 +101,42 @@ Planned optimizations
 - ``pjit``/sharding for multi-device acceleration
 - FFT acceleration and layout tuning
 - operator fusion for nonlinear terms
+
+Linear-to-nonlinear optimization roadmap
+----------------------------------------
+
+The current GS2 vs SPECTRAX runtime gap on CPU is dominated by JAX compile
+latency and repeated small-shape scan launches. The next implementation phase
+targets both linear and nonlinear performance with a single operator strategy:
+
+1. **Compile-once scan kernels**
+
+   - enforce fixed batch shapes across ``ky`` and ``beta`` scans,
+   - pre-JIT a small set of canonical ``(Nl, Nm, Ny, Nz)`` signatures,
+   - cache compiled executables on disk for repeated benchmark sweeps.
+
+2. **Operator fusion in RHS assembly**
+
+   - merge streaming/mirror/curvature/grad-B stencils into one fused kernel,
+   - remove scatter-heavy intermediate writes,
+   - keep field coupling and species sums contiguous in memory.
+
+3. **Matrix-free eigen path as default for linear scans**
+
+   - use Krylov/shift-invert for scan tables and figures,
+   - reserve long time integration for spot-check diagnostics only.
+
+4. **Preconditioner reuse**
+
+   - persist Hermite-line and shift-invert preconditioner structures across
+     neighboring scan points (same geometry/grid),
+   - reuse Jacobian-like linearization objects in IMEX stages.
+
+5. **Streaming diagnostics by default**
+
+   - avoid storing full time traces unless explicitly requested,
+   - compute growth/frequency online from selected mode signals.
+
+These steps are chosen to carry directly into nonlinear runs, where the same
+fused RHS, scan batching, and preconditioner reuse will dominate throughput and
+memory behavior.

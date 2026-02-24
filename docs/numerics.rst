@@ -108,7 +108,7 @@ integration from input configuration without changing call sites. By default,
 ``TimeConfig`` enables diffrax with a fixed-step Dopri8 solver; set
 ``use_diffrax=False`` to force the built-in fixed-step integrators.
 
-For the ETG/TEM/KBM baseline cases, the default configurations switch to
+For the ETG/KBM baseline cases, the default configurations switch to
 adaptive Tsit5 with ``diffrax_rtol=1e-4``, ``diffrax_atol=1e-7``, and
 ``diffrax_max_steps=20000`` to avoid fixed-step instabilities. These defaults
 can be overridden on a per-run basis via the ``TimeConfig`` fields.
@@ -149,7 +149,7 @@ end-to-end JAX differentiability:
   coarse correction in the kx direction (for linked boundaries this averages
   within linked chains; for periodic boundaries this reduces to a kx-mean).
 - **Targeted shift-invert mode selection**: set ``KrylovConfig.mode_family``
-  (for example ``"cyclone"``, ``"etg"``, ``"tem"``, ``"kbm"``) and
+  (for example ``"cyclone"``, ``"etg"``, ``"kbm"``) and
   ``KrylovConfig.shift_selection`` to stabilize branch selection in stiff
   spectra. ``KrylovConfig.fallback_method`` controls the automatic fallback
   policy when shift-invert returns a non-finite or strongly damped mode.

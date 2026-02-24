@@ -43,23 +43,9 @@ TOML-driven run
 
    python examples/run_from_toml.py --config examples/configs/cyclone.toml --plot
 
-Kinetic-electron benchmark
---------------------------
-
-.. code-block:: bash
-
-   python examples/kinetic_linear_benchmark.py
-
 KBM beta scan
 -------------
 
 .. code-block:: bash
 
    python examples/kbm_beta_scan.py
-
-TEM benchmark
--------------
-
-.. code-block:: bash
-
-   python examples/tem_linear_benchmark.py
