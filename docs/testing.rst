@@ -37,10 +37,13 @@ Representative unit checks include:
   :func:`spectraxgk.analysis.fit_growth_rate_auto`.
 - **Grid construction and normalization**:
   :func:`spectraxgk.grids.build_spectral_grid`.
+- **Normalization contract consistency**:
+  :func:`spectraxgk.normalization.get_normalization_contract`,
+  :func:`spectraxgk.normalization.apply_diagnostic_normalization`.
 
 These tests live in ``tests/test_linear.py`` and ``tests/test_grids.py`` and
-are designed to fail deterministically if a discretization or normalization
-changes.
+``tests/test_normalization.py`` and are designed to fail deterministically if a
+discretization or normalization changes.
 
 Physics regression tests
 ------------------------
