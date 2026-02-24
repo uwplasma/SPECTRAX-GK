@@ -66,3 +66,15 @@ Normalization
 
 .. automodule:: spectraxgk.normalization
    :members:
+
+Runtime Config
+--------------
+
+.. automodule:: spectraxgk.runtime_config
+   :members:
+
+Runtime Runner
+--------------
+
+.. automodule:: spectraxgk.runtime
+   :members:
