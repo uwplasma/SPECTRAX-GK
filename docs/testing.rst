@@ -94,15 +94,12 @@ published benchmarks and trend tests:
 
 - **ITG/Cyclone base case**: reproduce the standard Cyclone base case growth
   rates and frequencies across a reduced ky scan. [Dimits00]_ [Lin99]_
-- **Kinetic-electron ITG**: ensure the ion-scale kinetic-electron branch is
-  captured and produces finite growth rates.
 - **ETG linear instability**: verify that growth rates remain positive across
   reduced electron-scale gradients and that the real frequency follows the
   electron diamagnetic direction. [Dorland00]_ [Jenko00]_
 - **KBM beta scan**: verify the transition between ITG-like and KBM branches
-  in a fixed-:math:`k_y` beta sweep.
-- **TEM case**: capture the low-:math:`k_y` trapped-electron branch on the
-  published s-alpha parameter set. [Frei22]_
+  in a fixed-:math:`k_y` beta sweep, with GS2 as the primary electromagnetic
+  cross-code reference.
 
 Running tests
 -------------

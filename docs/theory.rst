@@ -1,6 +1,10 @@
 Theory
 ======
 
+For a full operator-level derivation tied to the implemented code paths
+(normalization, Hermite-Laguerre projection, field equations, and growth-rate
+diagnostics), see :doc:`linear_model`.
+
 Gyrokinetic ordering
 --------------------
 

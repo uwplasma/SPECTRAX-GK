@@ -17,6 +17,8 @@ Stage 2
 -------
 - Nonlinear E x B term with de-aliasing.
 - Drift-wave turbulence in a box.
+- Free-energy diagnostics and collisionless conservation regression tests.
+- IMEX split with reusable linear/preconditioner operators.
 
 Stage 3
 -------

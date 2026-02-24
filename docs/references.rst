@@ -23,10 +23,6 @@ References
 
 .. [Jenko00] F. Jenko et al., Physics of Plasmas 7, 1904 (2000).
 
-.. [Frei22] B. J. Frei, S. Ernst, and P. Ricci, "Numerical implementation of
-   the improved Sugama collision operator using a moment approach," Physics of
-   Plasmas 29, 102108 (2022).
-
 .. [GX] N. R. Mandell et al., "GX: a GPU-native gyrokinetic turbulence code for
    tokamak and stellarator design," Journal of Plasma Physics (2022).
 
@@ -35,3 +31,8 @@ References
 
 .. [STELLA] M. Barnes et al., "Stella: a gyrokinetic code for the
    new era of 4D micro-turbulence studies," arXiv:1806.02162 (2018).
+
+.. [STELLADOCS] stella user guide namelist documentation:
+   ``parameters.beta`` / ``knobs.fapar`` / ``knobs.fbpar`` entries, each marked
+   "Currently has no effect" in the published docs:
+   https://stellagk.github.io/stella/page/user_manual/index.html
