@@ -4,8 +4,9 @@ Testing
 Testing philosophy
 ------------------
 
-SPECTRAX-GK enforces **100% test coverage** and requires physics-based checks
-for each numerical component. The test suite is designed to be:
+SPECTRAX-GK enforces high coverage on critical solver modules and requires
+physics-based checks for each numerical component. The test suite is designed
+to be:
 
 - **pedagogic**: each test explains the concept being validated
 - **deterministic**: no stochastic outcomes or tolerance drift
@@ -91,6 +92,12 @@ tests:
 
 - ``tests/test_diffrax_integrators.py`` runs explicit and IMEX diffrax solvers
   on tiny grids.
+- ``tests/test_diffrax_integrators_core.py`` hardens branch coverage for
+  diffrax helper paths (solver selection, save modes, streaming fits, IMEX
+  branches, sharding, and validation errors).
+- ``tests/test_linear_krylov_core.py`` hardens matrix-free Krylov internals
+  (mode-family targeting, shift-invert preconditioner selection, fallback
+  policy, and dominant eigenpair wrappers).
 - ``tests/test_example_smoke.py`` verifies the config-driven runner (diffrax
   enabled) and a short nonlinear scan with placeholder nonlinear terms.
 - ``tests/test_runtime_config.py`` and ``tests/test_runtime_runner.py`` verify
@@ -139,3 +146,25 @@ coverage gate for ``spectraxgk.terms``:
 This guard ensures term-wise kernels, field solves, custom-VJP behavior, and
 assembly plumbing stay highly covered while the rest of the benchmark and
 cross-code harness keeps evolving.
+
+Core solver coverage gates
+--------------------------
+
+CI also enforces dedicated per-module thresholds for the two linear solver
+engines that are most likely to regress during algorithm work:
+
+- ``spectraxgk.linear_krylov`` (matrix-free Arnoldi/shift-invert path)
+- ``spectraxgk.diffrax_integrators`` (explicit/IMEX/implicit diffrax path)
+
+The gate runs focused tests and checks each module from ``coverage-core.xml``:
+
+.. code-block:: bash
+
+   pytest -q tests/test_linear_krylov_core.py \
+          tests/test_diffrax_integrators.py \
+          tests/test_diffrax_integrators_core.py \
+          --maxfail=1 --disable-warnings \
+          --cov=src/spectraxgk \
+          --cov-report=xml:coverage-core.xml
+
+Both modules are required to stay at or above 90% line coverage in CI.
