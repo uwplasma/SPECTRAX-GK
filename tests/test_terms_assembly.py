@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import jax.numpy as jnp
+import pytest
 
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
@@ -70,8 +71,34 @@ def test_linear_rhs_cached_matches_modular_assembly() -> None:
 
     dG_linear, phi_linear = linear_rhs_cached(G, cache, params, terms=terms, use_jit=False)
     dG_modular, fields = assemble_rhs_cached(G, cache, params, terms=term_cfg, use_custom_vjp=False)
+    dG_modular_vjp, fields_vjp = assemble_rhs_cached(G, cache, params, terms=term_cfg, use_custom_vjp=True)
     fields_only = compute_fields_cached(G, cache, params, terms=term_cfg, use_custom_vjp=False)
 
     assert jnp.allclose(dG_linear, dG_modular, rtol=1.0e-7, atol=1.0e-7)
+    assert jnp.allclose(dG_modular_vjp, dG_modular, rtol=1.0e-7, atol=1.0e-7)
     assert jnp.allclose(phi_linear, fields.phi, rtol=1.0e-7, atol=1.0e-7)
+    assert jnp.allclose(phi_linear, fields_vjp.phi, rtol=1.0e-7, atol=1.0e-7)
     assert jnp.allclose(phi_linear, fields_only.phi, rtol=1.0e-7, atol=1.0e-7)
+
+
+def test_assembly_validates_state_shapes_and_species_alignment() -> None:
+    grid_cfg = GridConfig(Nx=4, Ny=4, Nz=8, Lx=20.0, Ly=20.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams()
+    cache = build_linear_cache(grid, geom, params, Nl=2, Nm=3)
+
+    with pytest.raises(ValueError):
+        assemble_rhs_cached(jnp.zeros((2, 3, 4), dtype=jnp.complex64), cache, params)
+
+    # cache is single-species; this state is two-species.
+    with pytest.raises(ValueError):
+        assemble_rhs_cached(
+            jnp.zeros((2, 2, 3, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64),
+            cache,
+            params,
+        )
+
+    with pytest.raises(ValueError):
+        compute_fields_cached(jnp.zeros((2, 3, 4), dtype=jnp.complex64), cache, params)
