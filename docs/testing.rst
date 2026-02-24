@@ -118,3 +118,24 @@ Running tests
 .. code-block:: bash
 
    pytest
+
+Core modular coverage gate
+--------------------------
+
+To keep the modular RHS path future-proof, CI also enforces a dedicated
+coverage gate for ``spectraxgk.terms``:
+
+.. code-block:: bash
+
+   pytest -q tests/test_terms_assembly.py \
+          tests/test_terms_operators.py \
+          tests/test_terms_fields.py \
+          tests/test_terms_integrators.py \
+          tests/test_terms_validation.py \
+          --maxfail=1 --disable-warnings \
+          --cov=src/spectraxgk/terms \
+          --cov-fail-under=90
+
+This guard ensures term-wise kernels, field solves, custom-VJP behavior, and
+assembly plumbing stay highly covered while the rest of the benchmark and
+cross-code harness keeps evolving.
