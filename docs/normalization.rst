@@ -5,6 +5,51 @@ This section documents the normalization conventions used in SPECTRAX-GK and
 the calibration parameters that scale drift/drive terms for benchmark
 comparisons.
 
+Canonical normalization contract
+--------------------------------
+
+SPECTRAX-GK now centralizes benchmark-family normalization values in
+``spectraxgk.normalization`` via :class:`spectraxgk.normalization.NormalizationContract`.
+This is the single source of truth for case defaults:
+
+.. list-table:: Canonical per-case normalization contracts
+   :header-rows: 1
+
+   * - Case key
+     - ``rho_star``
+     - ``omega_d_scale``
+     - ``omega_star_scale``
+     - ``diagnostic_norm_default``
+   * - ``cyclone``
+     - ``1.0``
+     - ``1.0``
+     - ``1.0``
+     - ``none``
+   * - ``etg``
+     - ``1.0``
+     - ``0.4``
+     - ``0.8``
+     - ``none``
+   * - ``kinetic`` (``kinetic_itg`` alias)
+     - ``1.0``
+     - ``1.0``
+     - ``1.0``
+     - ``none``
+   * - ``tem``
+     - ``1.0``
+     - ``1.0``
+     - ``1.0``
+     - ``none``
+   * - ``kbm``
+     - ``1.0``
+     - ``1.0``
+     - ``0.8``
+     - ``none``
+
+These contracts are consumed by benchmark constants for backward compatibility
+(``CYCLONE_OMEGA_D_SCALE``, etc.), so existing scripts keep working while all
+new calibration updates flow through one module.
+
 Dimensionless units
 -------------------
 
@@ -85,6 +130,24 @@ where :math:`Z_p` sets the field-line length
 The midplane index used by the GX growth-rate diagnostic corresponds to
 ``z_index = Nz//2 + 1``, matching the GX kernel logic when ``Nz > 1``.
 
+Sign conventions
+----------------
+
+The growth-rate fitting in :func:`spectraxgk.analysis.fit_growth_rate` assumes
+
+.. math::
+
+   s(t) \sim \exp((\gamma - i \omega)\, t),
+
+so:
+
+- ``gamma > 0`` indicates instability.
+- ``omega`` is obtained from the negative phase slope.
+
+This is consistent across time-integration and Krylov post-processing paths.
+For scan tables and figures, values are reported in the same sign convention as
+the solver output unless an explicit diagnostic normalization is requested.
+
 Normalization parameters
 ------------------------
 
@@ -100,6 +163,17 @@ In code, ``rho_star`` multiplies the Fourier grids inside
 :func:`spectraxgk.linear.build_linear_cache`, while ``omega_d_scale`` and
 ``omega_star_scale`` enter directly in :func:`spectraxgk.linear.linear_rhs_cached`.
 
+Diagnostic normalization mode
+-----------------------------
+
+Benchmark runners expose ``diagnostic_norm`` and route it through
+``spectraxgk.normalization.apply_diagnostic_normalization``:
+
+- ``none``: return raw solver ``(gamma, omega)``.
+- ``gx`` / ``rho_star``: multiply reported ``(gamma, omega)`` by ``rho_star``.
+
+This affects reporting only; it does not alter the RHS/operator.
+
 GX end-damping strength (``damp_ends_amp``) is scaled by the timestep inside the
 integrator to match the GX implementation: the damping kernel receives
 ``damp_ends_amp / dt`` so that the damping is defined per unit time.
@@ -112,3 +186,14 @@ Defaults (model parameters):
 
 These parameters are surfaced in the regression tables so that future
 normalization refinements can be tracked in a reproducible way.
+
+Programmatic usage
+------------------
+
+.. code-block:: python
+
+   from spectraxgk.normalization import get_normalization_contract
+
+   contract = get_normalization_contract("etg")
+   # contract.omega_d_scale == 0.4
+   # contract.omega_star_scale == 0.8
