@@ -11,6 +11,7 @@ Fourier real space. This documentation reflects the new clean-room rebuild.
    quickstart
    inputs
    theory
+   linear_model
    numerics
    normalization
    geometry

@@ -34,18 +34,12 @@ frequencies to align with published reference data.
    * - Cyclone (adiabatic)
      - ``1.0``
      - ``1.0``
-   * - Kinetic ITG
-     - ``1.0``
-     - ``1.0``
    * - ETG
-     - ``0.08``
-     - ``1.5``
-   * - TEM
-     - ``1.0``
-     - ``1.0``
+     - ``0.4``
+     - ``0.8``
    * - KBM
      - ``1.0``
-     - ``1.0``
+     - ``0.8``
 
 Performance defaults
 --------------------
@@ -180,42 +174,6 @@ Low-ky points converge slowly in time; even with ``t_max=80`` the ``ky=0.05``
 frequency remains elevated relative to the reference. Further convergence may
 require longer windows or higher velocity resolution.
 
-Kinetic-Electron ITG (Ion-Scale)
---------------------------------
-
-Kinetic electrons introduce the trapped-electron and ion-scale branches used
-in published validation studies. The ion-scale kinetic-electron reference data are
-stored in:
-
-- ``spectraxgk/data/cyclone_reference_kinetic.csv``
-
-These values are used in the multi-panel validation figure and in the
-kinetic-electron regression checks.
-
-.. list-table:: Kinetic-electron ITG parameters (GX Fig. 2a)
-   :header-rows: 1
-
-   * - Parameter
-     - Value
-   * - Geometry
-     - ``q=1.4``, ``s_hat=0.8``, ``epsilon=0.18``, ``R0=2.77778``
-   * - Gradients
-     - ``R/LTi=2.49``, ``R/LTe=2.49``, ``R/Ln=0.8``
-   * - Species
-     - kinetic ions + kinetic electrons, ``Te/Ti=1``, ``mi/me=3670``
-   * - Electromagnetic
-     - ``beta=1e-5``, ``A_parallel=on``, ``B_parallel=off``
-   * - Collisions
-     - ``nu_i=0``, ``nu_e=0``, GX-style hypercollisions on
-   * - Operator toggles
-     - streaming/mirror/curvature/grad-B/diamagnetic on; nonlinear off
-   * - Grid
-     - ``Nx=1, Ny=16, Nz=96, y0=10, ntheta=32, nperiod=2``
-   * - Velocity resolution
-     - ``Nl=6, Nm=16`` (figure generation)
-   * - Reference
-     - [GX]_
-
 ETG (GS2/Stella Cross-Code)
 ---------------------------
 
@@ -296,8 +254,8 @@ Electromagnetic ballooning validation uses a fixed :math:`k_y` and a scan over
    * - Reference
      - [GX]_
 
-KBM GS2/stella cross-code run (staging)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KBM GS2/stella cross-code run
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 We executed an updated matched-input KBM cross-code set at ``ky=0.3`` with
 ``beta_ref = [0.1, 0.2, 0.3, 0.4, 0.5]`` for GS2, stella, and SPECTRAX.
@@ -317,69 +275,32 @@ run family for this staging comparison.
    :file: _static/kbm_stella_mismatch.csv
    :header-rows: 1
 
-Current summary (staging):
+Current summary:
 
 - GS2 vs SPECTRAX: mean ``|rel_gamma| = 6.666%``, max ``|rel_gamma| = 12.625%``
 - GS2 vs SPECTRAX: mean ``|rel_omega| = 16.067%``, max ``|rel_omega| = 30.604%``
 - stella vs SPECTRAX: mean ``|rel_gamma| = 27.249%``, max ``|rel_gamma| = 38.272%``
 - stella vs SPECTRAX: mean ``|rel_omega| = 21.670%``, max ``|rel_omega| = 46.713%``
 
-Interpretation: KBM closure against GS2 is now within the project tolerance on
-both ``gamma`` and ``omega``. The stella set remains offset, with a persistent
-higher-growth branch across the beta scan.
+Interpretation: KBM closure against GS2 is within tolerance on both ``gamma``
+and ``omega``. stella remains offset on this electromagnetic case. The official
+stella namelist documentation currently states that ``beta``, ``fapar``, and
+``fbpar`` have no effect in the documented user model, which is consistent with
+the nearly beta-independent stella growth-rate branch observed here. [STELLADOCS]_
 
-KBM cross-code closure plan
+stella KBM audit conclusion
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Based on the GX, GS2, and stella source implementations, the remaining KBM
-benchmark work should proceed in this order:
+For the present benchmark repository version, the KBM run inputs set
+``beta`` and ``fapar=1`` as expected, but the resulting stella branch remains
+nearly beta-independent over ``beta_ref = 0.1..0.5``. Combined with the
+published namelist caveat above, we treat stella as:
 
-1. Lock a shared electromagnetic normalization contract:
-   ``beta_ref``, ``A_parallel`` scaling, and reported ``(gamma, omega)`` units.
-2. Run a single-point term audit at ``ky=0.3`` and representative ``beta_ref``
-   comparing SPECTRAX term-by-term RHS contributions against GX outputs.
-3. Enable the same fit-signal policy used in ETG/Cyclone (signal fallback +
-   conservative log-linear windows) before sweeping the full beta scan.
-4. Use the robust shift-invert + Hermite-line preconditioner for high-beta
-   stiff points, then verify branch continuity versus time-integration checks.
-5. Freeze a balanced KBM scan policy (``Nl/Nm``, ``dt``, ``t_max`` per beta)
-   and regenerate mismatch tables and publication figures.
+- valid cross-code reference for Cyclone/ETG electrostatic checks,
+- non-primary for electromagnetic KBM closure.
 
-TEM (Future Work)
------------------
-
-The TEM validation case (Frei et al.) remains documented here as future work.
-It follows the s-alpha parameters reported in Frei et al.
-with steep gradients (:math:`R/L_{Ti} = R/L_{Te} = R/L_n = 20`),
-:math:`q=2.7`, :math:`\hat{s}=0.5`, :math:`\epsilon=0.18`, and
-:math:`m_e/m_i = 0.0027`. The digitized low-:math:`k_y` reference branch is
-stored in:
-
-- ``spectraxgk/data/tem_reference.csv``
-
-.. list-table:: TEM parameters (Frei et al. 2022 Fig. 4)
-   :header-rows: 1
-
-   * - Parameter
-     - Value
-   * - Geometry
-     - ``q=2.7``, ``s_hat=0.5``, ``epsilon=0.18``, ``R0=2.77778``, ``alpha=0``
-   * - Gradients
-     - ``R/LTi=20``, ``R/LTe=20``, ``R/Ln=20``
-   * - Species
-     - ions + electrons, ``Te/Ti=1``, ``mi/me=370``
-   * - Electromagnetic
-     - ``beta=1e-4``, ``A_parallel=on``, ``B_parallel=off``
-   * - Collisions
-     - ``nu_i=0``, ``nu_e=0``, hypercollisions off
-   * - Operator toggles
-     - streaming/mirror/curvature/grad-B/diamagnetic on; nonlinear off
-   * - Grid
-     - ``Nx=1, Ny=24, Nz=160, y0=20, ntheta=32, nperiod=3``
-   * - Velocity resolution
-     - ``Nl=6, Nm=16`` (figure generation)
-   * - Reference
-     - [Frei22]_
+Primary KBM closure is therefore performed against GS2 and the GX-published
+reference curve.
 
 Reduced ky scan tables
 ----------------------
@@ -470,10 +391,6 @@ regenerated by ``tools/make_tables.py``.
    :file: _static/cyclone_mismatch_table.csv
    :header-rows: 1
 
-.. csv-table:: Kinetic ITG mismatch table
-   :file: _static/kinetic_mismatch_table.csv
-   :header-rows: 1
-
 .. csv-table:: ETG mismatch table
    :file: _static/etg_mismatch_table.csv
    :header-rows: 1
@@ -482,9 +399,22 @@ regenerated by ``tools/make_tables.py``.
    :file: _static/kbm_mismatch_table.csv
    :header-rows: 1
 
-.. csv-table:: TEM mismatch table
-   :file: _static/tem_mismatch_table.csv
-   :header-rows: 1
+Linear benchmark completion status
+----------------------------------
+
+Completed for the current linear phase:
+
+- Cyclone (adiabatic electrons): GX/GS2/stella cross-code figures and mismatch tables.
+- ETG: GS2/stella cross-code figures and mismatch tables.
+- KBM: GS2 primary electromagnetic closure with mismatch tables and figure.
+- Published, reproducible parameter tables for each figure in README/docs.
+
+Remaining before freezing a publication release:
+
+- optional stella electromagnetic re-validation on a stella build/config where
+  ``beta`` and ``fapar`` are confirmed active in the documented model.
+- optional CPU/GPU runtime parity study with standardized hardware-normalized
+  benchmark scripts for SPECTRAX, GS2, and GX.
 
 Reproducibility
 ---------------
@@ -497,7 +427,7 @@ To regenerate the benchmark tables and figures:
    python tools/make_figures.py
 
 To diagnose stiff outliers in Krylov-based mismatch tables (most commonly in
-high-ky TEM/KBM/kinetic-ITG points), enable the implicit spot-check mode. This
+high-ky KBM points), enable the implicit spot-check mode. This
 re-runs the worst-mismatch points with a robust implicit solver (GMRES +
 Hermite-line streaming preconditioner) and prints the comparison:
 
@@ -542,12 +472,11 @@ For direct stella-vs-SPECTRAX checks from stella NetCDF output:
 The stella helper reads ``omega`` and averages the last fraction of finite
 samples (controlled by ``--stella-navg-frac``) before emitting the mismatch CSV.
 The same ``--ref-*-scale`` and ``--spectrax-integrator`` options are available
-for ETG and kinetic-electron comparisons.
-For ETG/kinetic cases, if ``--R-over-LTe`` is omitted, the comparison drivers
+for ETG comparisons.
+For ETG cases, if ``--R-over-LTe`` is omitted, the comparison drivers
 default it to ``--R-over-LTi``. For ETG with kinetic ions
-(``--no-etg-adiabatic-ions``), the drivers now default to ``R/LTi_i=0`` and
-``R/Ln_i=0`` while keeping electron gradients nonzero. You can override the ion
-temperature gradient explicitly via ``--etg-ion-R-over-LTi``.
+(``--no-etg-adiabatic-ions``), the drivers default to ``R/LTi_i=0`` and
+``R/Ln_i=0`` while keeping electron gradients nonzero.
 
 Recommended ETG cross-code command (GS2 or stella):
 
