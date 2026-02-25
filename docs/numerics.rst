@@ -308,5 +308,6 @@ disabled by setting ``damp_ends_amp = 0`` in ``LinearParams``.
 Dealiasing
 ----------
 
-For nonlinear terms (to be added), we will use the 2/3 de-aliasing rule in
-perpendicular Fourier space, consistent with standard pseudo-spectral practice.
+Nonlinear E×B terms use the 2/3 de-aliasing rule in perpendicular Fourier space,
+consistent with standard pseudo-spectral practice. The current implementation
+applies the mask before and after the real-space bracket evaluation.
