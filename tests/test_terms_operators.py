@@ -58,6 +58,34 @@ def test_grad_z_linked_fft_valid_chain_matches_manual() -> None:
     assert jnp.allclose(out, expected, atol=1.0e-5)
 
 
+def test_grad_z_linked_fft_with_inverse_permutation_matches_scatter_path() -> None:
+    ny, nx, nz = 1, 2, 8
+    z = jnp.linspace(0.0, 2.0 * jnp.pi, nz, endpoint=False)
+    dz = z[1] - z[0]
+    f = jnp.zeros((ny, nx, nz), dtype=jnp.complex64)
+    f = f.at[0, 0, :].set(jnp.exp(1j * z))
+    f = f.at[0, 1, :].set(2.0 * jnp.exp(1j * 2.0 * z))
+
+    idx_map = jnp.asarray([[1, 0]], dtype=jnp.int32)
+    kz_link = 2.0 * jnp.pi * jnp.fft.fftfreq(2 * nz, d=dz)
+    inv = jnp.asarray([1, 0], dtype=jnp.int32)
+
+    out_scatter = grad_z_linked_fft(
+        f,
+        dz=dz,
+        linked_indices=(idx_map,),
+        linked_kz=(kz_link,),
+    )
+    out_perm = grad_z_linked_fft(
+        f,
+        dz=dz,
+        linked_indices=(idx_map,),
+        linked_kz=(kz_link,),
+        linked_inverse_permutation=inv,
+    )
+    assert jnp.allclose(out_perm, out_scatter, atol=1.0e-5)
+
+
 def test_grad_z_linked_fft_validates_inputs() -> None:
     f = jnp.ones((1, 2, 8), dtype=jnp.complex64)
     dz = jnp.asarray(0.1)
