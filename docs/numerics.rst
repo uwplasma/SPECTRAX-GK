@@ -311,3 +311,14 @@ Dealiasing
 Nonlinear E×B terms use the 2/3 de-aliasing rule in perpendicular Fourier space,
 consistent with standard pseudo-spectral practice. The current implementation
 applies the mask before and after the real-space bracket evaluation.
+
+Nonlinear Electromagnetic Terms
+-------------------------------
+
+The nonlinear kernel evaluates gyro-averaged Poisson brackets in spectral space
+and converts to real space only for the perpendicular derivatives. The E×B term
+advects each Hermite–Laguerre moment with a gyro-averaged potential
+:math:`\chi = J_0 \phi + J_1 b_\parallel` (implemented via :math:`J_l` and
+:math:`J_l^B` in the Laguerre basis). The electromagnetic flutter contribution
+uses :math:`\{g_m, J_0 A_\parallel\}` and couples adjacent Hermite moments with the
+standard ladder factors, matching the GX nonlinear formulation.
