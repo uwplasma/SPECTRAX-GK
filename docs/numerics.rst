@@ -321,4 +321,6 @@ advects each Hermite–Laguerre moment with a gyro-averaged potential
 :math:`\chi = J_0 \phi + J_1 b_\parallel` (implemented via :math:`J_l` and
 :math:`J_l^B` in the Laguerre basis). The electromagnetic flutter contribution
 uses :math:`\{g_m, J_0 A_\parallel\}` and couples adjacent Hermite moments with the
-standard ladder factors, matching the GX nonlinear formulation.
+standard ladder factors, matching the GX nonlinear formulation. See
+:cite:`FC82,AL80,GX` for the governing electromagnetic gyrokinetic equations and
+GX's implementation details.
