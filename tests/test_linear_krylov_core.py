@@ -72,6 +72,19 @@ def test_mode_family_and_target_selection_helpers() -> None:
     assert int(idx) == 1
 
 
+def test_select_by_overlap_prefers_reference_branch() -> None:
+    V = jnp.asarray([[1.0 + 0.0j, 0.0 + 0.0j], [0.0 + 0.0j, 1.0 + 0.0j]])
+    eigvecs = jnp.eye(2, dtype=jnp.complex64)
+    v_ref = jnp.asarray([1.0 + 0.0j, 0.0 + 0.0j])
+    mask = jnp.asarray([True, True])
+    idx = lk._select_by_overlap(eigvecs, V, v_ref, mask, fallback_idx=jnp.asarray(1))
+    assert int(idx) == 0
+    idx_fallback = lk._select_by_overlap(
+        eigvecs, V, v_ref, jnp.asarray([False, False]), fallback_idx=jnp.asarray(1)
+    )
+    assert int(idx_fallback) == 1
+
+
 def test_build_shift_invert_preconditioner_modes() -> None:
     _grid, cache, params, v0, term_cfg, _terms = _tiny_krylov_setup(linked=False)
     sigma = jnp.asarray(0.1j, dtype=v0.dtype)
