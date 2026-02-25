@@ -5,6 +5,7 @@ from spectraxgk.benchmarks import (
     load_cyclone_reference_stella,
     load_etg_reference_gs2,
     load_etg_reference_stella,
+    load_kbm_reference_gs2,
 )
 
 
@@ -25,3 +26,7 @@ def test_load_cyclone_crosscode_references():
 def test_load_etg_crosscode_references():
     _check_ref(load_etg_reference_gs2())
     _check_ref(load_etg_reference_stella())
+
+
+def test_load_kbm_crosscode_references():
+    _check_ref(load_kbm_reference_gs2())
