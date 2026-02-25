@@ -228,6 +228,17 @@ SPECTRAX fixed-step IMEX growth extraction for the same
    :file: _static/etg_stella_mismatch.csv
    :header-rows: 1
 
+ETG branch-isolation diagnostics
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For high-:math:`k_y` ETG branch selection checks, use:
+
+- ``python tools/etg_branch_isolation.py``
+- ``python tools/compare_rhs_terms.py --case etg --ky 5 --adiabatic-ions --Ny 24 --Lx 6.28 --Ly 6.28 --y0 0.2 --Nl 48 --Nm 16 --boundary linked``
+- ``python tools/compare_rhs_terms.py --case etg --ky 25 --adiabatic-ions --Ny 24 --Lx 6.28 --Ly 6.28 --y0 0.2 --Nl 48 --Nm 16 --boundary linked``
+- ``python tools/etg_physics_audit.py --ky 5 --Nl 48 --Nm 16``
+- ``python tools/etg_physics_audit.py --ky 25 --Nl 48 --Nm 16``
+
 KBM (Electromagnetic Beta Scan)
 -------------------------------
 
