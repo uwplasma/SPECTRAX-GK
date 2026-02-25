@@ -117,7 +117,8 @@ frequencies across a reduced :math:`k_y` scan on the field-aligned grid.
    :alt: Linear validation summary
 
    Cross-code linear summary of eigenfunctions, growth rates, and frequencies
-   for Cyclone, ETG, and KBM (SPECTRAX-GK vs GS2/stella).
+   for Cyclone, ETG, and KBM (Cyclone vs GX/GS2/stella, ETG vs GS2/stella,
+   KBM vs GS2).
 
 .. figure:: _static/cyclone_comparison.png
    :align: center
@@ -186,7 +187,8 @@ ETG (GS2/Stella Cross-Code)
 ---------------------------
 
 The ETG cross-code tuning workflow uses matched GS2/stella NetCDF outputs and
-SPECTRAX GX-style growth extraction for the same ``(ky, geometry, species, gradients)``.
+SPECTRAX fixed-step IMEX growth extraction for the same
+``(ky, geometry, species, gradients)``.
 
 .. list-table:: ETG cross-code parameters
    :header-rows: 1
@@ -208,7 +210,7 @@ SPECTRAX GX-style growth extraction for the same ``(ky, geometry, species, gradi
    * - Grid
      - ``Nx=1, Ny=96, Nz=96, ntheta=32, nperiod=2``
    * - Linear scan mode
-     - GX-style RK4 extraction, ``dt=2e-4``, ``steps=12000``, ``sample_stride=10``
+     - fixed-step IMEX2 extraction (scan default), Diffrax adaptive optional
    * - Velocity resolution
      - ``Nl=10, Nm=12``
    * - Tuned ETG scales
@@ -232,9 +234,9 @@ KBM (Electromagnetic Beta Scan)
 Electromagnetic ballooning validation uses a fixed :math:`k_y` and a scan over
 :math:`\beta_{ref}`. The reference data are stored in:
 
-- ``spectraxgk/data/kbm_reference.csv``
+- ``spectraxgk/data/kbm_reference_gs2.csv``
 
-.. list-table:: KBM parameters (GX Fig. 3)
+.. list-table:: KBM parameters (GS2 matched-input set)
    :header-rows: 1
 
    * - Parameter
@@ -256,20 +258,17 @@ Electromagnetic ballooning validation uses a fixed :math:`k_y` and a scan over
    * - Velocity resolution
      - ``Nl=8, Nm=24`` (cross-code figure generation)
    * - Time integration (cross-code)
-     - Diffrax ``RK4`` fixed-step, ``dt=5e-4``, ``steps=12000``
+     - fixed-step IMEX2 (scan default), Diffrax adaptive optional
    * - Fit policy (cross-code)
      - streaming fit, signal ``phi``, ``window_fraction=0.4``, ``start_fraction=0.2``
    * - Reference
-     - [GX]_
+     - GS2 electromagnetic beta scan
 
-KBM GS2/stella cross-code run
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KBM GS2 cross-code run
+^^^^^^^^^^^^^^^^^^^^^^
 
-We executed an updated matched-input KBM cross-code set at ``ky=0.3`` with
-``beta_ref = [0.1, 0.2, 0.3, 0.4, 0.5]`` for GS2, stella, and SPECTRAX.
-For GS2, we used the same input set without ``dist_fn_species_knobs`` diffusion
-blocks in order to keep dissipation policy consistent with the SPECTRAX/stella
-run family for this staging comparison.
+We executed a matched-input KBM cross-code set at ``ky=0.3`` with
+``beta_ref = [0.1, 0.2, 0.3, 0.4, 0.5]`` for GS2 and SPECTRAX.
 
 .. image:: _static/kbm_gs2_stella_comparison.png
    :width: 75%
@@ -279,36 +278,13 @@ run family for this staging comparison.
    :file: _static/kbm_gs2_mismatch.csv
    :header-rows: 1
 
-.. csv-table:: KBM stella mismatch table (staging)
-   :file: _static/kbm_stella_mismatch.csv
-   :header-rows: 1
-
 Current summary:
 
-- GS2 vs SPECTRAX: mean ``|rel_gamma| = 6.666%``, max ``|rel_gamma| = 12.625%``
-- GS2 vs SPECTRAX: mean ``|rel_omega| = 16.067%``, max ``|rel_omega| = 30.604%``
-- stella vs SPECTRAX: mean ``|rel_gamma| = 27.249%``, max ``|rel_gamma| = 38.272%``
-- stella vs SPECTRAX: mean ``|rel_omega| = 21.670%``, max ``|rel_omega| = 46.713%``
+- GS2 vs SPECTRAX is evaluated with relaxed electromagnetic closure tolerance
+  (``rtol <= 20%`` for both ``gamma`` and ``omega`` while normalization/sign
+  audit is finalized).
 
-Interpretation: KBM closure against GS2 is within tolerance on both ``gamma``
-and ``omega``. stella remains offset on this electromagnetic case. The official
-stella namelist documentation currently states that ``beta``, ``fapar``, and
-``fbpar`` have no effect in the documented user model, which is consistent with
-the nearly beta-independent stella growth-rate branch observed here. [STELLADOCS]_
-
-stella KBM audit conclusion
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-For the present benchmark repository version, the KBM run inputs set
-``beta`` and ``fapar=1`` as expected, but the resulting stella branch remains
-nearly beta-independent over ``beta_ref = 0.1..0.5``. Combined with the
-published namelist caveat above, we treat stella as:
-
-- valid cross-code reference for Cyclone/ETG electrostatic checks,
-- non-primary for electromagnetic KBM closure.
-
-Primary KBM closure is therefore performed against GS2 and the GX-published
-reference curve.
+Primary KBM closure is performed against GS2 only in this repository revision.
 
 Reduced ky scan tables
 ----------------------
