@@ -209,6 +209,7 @@ def _scan_linear_verbose(
     progress: bool,
     resolution_policy: Callable[[float], tuple[int, int]] | None = None,
     krylov_policy: Callable[[float], KrylovConfig] | None = None,
+    per_ky_hook: Callable[[float, int, int], dict] | None = None,
     stiff_spot_check: bool = False,
     stiff_spot_check_topk: int = 0,
     stiff_spot_check_min_ky: float = 0.0,
@@ -253,6 +254,8 @@ def _scan_linear_verbose(
             use_tqdm=progress,
         )
         extra = dict(base_extra)
+        if per_ky_hook is not None:
+            extra.update(per_ky_hook(float(ky), int(Nl_i), int(Nm_i)))
         krylov_cfg_use = krylov_policy(float(ky)) if krylov_policy is not None else krylov_cfg
         result = run_linear_fn(
             ky_target=float(ky),
@@ -752,12 +755,32 @@ def _etg_time_controls(
     return dt, steps, tmin, tmax
 
 
+def _etg_window_controls(ky: np.ndarray, t_total: float) -> tuple[np.ndarray, np.ndarray]:
+    """Late-window bias for high-ky ETG fits."""
+
+    ky = np.asarray(ky, dtype=float)
+    tmin = np.empty_like(ky, dtype=float)
+    tmax = np.empty_like(ky, dtype=float)
+    low = ky < 15.0
+    mid = (ky >= 15.0) & (ky < 25.0)
+    high = ky >= 25.0
+    tmin[low] = 0.35 * t_total
+    tmax[low] = 0.7 * t_total
+    tmin[mid] = 0.5 * t_total
+    tmax[mid] = 0.85 * t_total
+    tmin[high] = 0.6 * t_total
+    tmax[high] = 0.9 * t_total
+    return tmin, tmax
+
+
 def _etg_resolution_policy(ky: float) -> tuple[int, int]:
     """Per-ky Hermite/Laguerre resolution for ETG scans."""
 
     if ky < 10.0:
         return 48, 16
-    return 48, 16
+    if ky < 20.0:
+        return 64, 24
+    return 72, 32
 
 
 def _etg_krylov_policy(ky: float) -> KrylovConfig:
@@ -837,6 +860,8 @@ def _run_etg_tables(*, outdir: Path, verbose: bool, progress: bool) -> None:
         krylov_cfg=ETG_KRYLOV,
         window_kw=WINDOWS["etg"],
         auto_window=True,
+        tmin=None,
+        tmax=None,
         run_kwargs={
             "mode_method": "z_index",
             "fit_signal": "phi",
