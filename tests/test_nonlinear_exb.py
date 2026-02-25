@@ -3,7 +3,7 @@ import jax.numpy as jnp
 
 from spectraxgk.config import GridConfig
 from spectraxgk.grids import build_spectral_grid
-from spectraxgk.terms.nonlinear import exb_nonlinear_contribution
+from spectraxgk.terms.nonlinear import exb_nonlinear_contribution, nonlinear_em_contribution, _apply_flutter, _spectral_bracket
 
 
 def _ifft2_xy(x: jnp.ndarray) -> jnp.ndarray:
@@ -82,6 +82,98 @@ def test_exb_bracket_matches_finite_difference():
     )
     bracket_spec_real = np.fft.ifft2(np.asarray(bracket_spec[0, 0, 0, :, :, 0])).real
     assert np.max(np.abs(bracket_spec_real - bracket_fd)) < 5.0e-3
+
+
+def test_apar_flutter_hermite_ladder():
+    grid = build_spectral_grid(GridConfig(Nx=4, Ny=4, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
+    rng = np.random.default_rng(3)
+    G = rng.normal(size=(1, 1, 3, grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
+        size=(1, 1, 3, grid.ky.size, grid.kx.size, grid.z.size)
+    )
+    apar = rng.normal(size=(grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
+        size=(grid.ky.size, grid.kx.size, grid.z.size)
+    )
+    Jl = jnp.ones((1, 1, grid.ky.size, grid.kx.size, grid.z.size))
+    JlB = jnp.ones_like(Jl)
+    vth = jnp.asarray([1.2])
+    sqrt_m = jnp.sqrt(jnp.arange(3, dtype=jnp.float32))[None, :, None, None, None]
+    sqrt_m_p1 = jnp.sqrt(jnp.arange(1, 4, dtype=jnp.float32))[None, :, None, None, None]
+
+    bracket_apar = _spectral_bracket(
+        jnp.asarray(G),
+        Jl * apar[None, None, ...],
+        kx_grid=grid.kx_grid,
+        ky_grid=grid.ky_grid,
+        dealias_mask=grid.dealias_mask,
+        kxfac=jnp.asarray(1.0),
+    )
+    flutter_expected = _apply_flutter(bracket_apar, vth, sqrt_m, sqrt_m_p1)
+
+    dG = nonlinear_em_contribution(
+        jnp.asarray(G),
+        phi=jnp.zeros_like(jnp.asarray(apar)),
+        apar=jnp.asarray(apar),
+        bpar=None,
+        Jl=Jl,
+        JlB=JlB,
+        tz=jnp.asarray([1.0]),
+        vth=vth,
+        sqrt_m=sqrt_m,
+        sqrt_m_p1=sqrt_m_p1,
+        kx_grid=grid.kx_grid,
+        ky_grid=grid.ky_grid,
+        dealias_mask=grid.dealias_mask,
+        kxfac=jnp.asarray(1.0),
+        weight=jnp.asarray(1.0),
+        apar_weight=1.0,
+        bpar_weight=1.0,
+    )
+    assert np.max(np.abs(np.asarray(dG + flutter_expected))) < 1.0e-6
+
+
+def test_bpar_contributes_to_chi():
+    grid = build_spectral_grid(GridConfig(Nx=4, Ny=4, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
+    rng = np.random.default_rng(4)
+    G = rng.normal(size=(1, 1, 2, grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
+        size=(1, 1, 2, grid.ky.size, grid.kx.size, grid.z.size)
+    )
+    phi = rng.normal(size=(grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
+        size=(grid.ky.size, grid.kx.size, grid.z.size)
+    )
+    bpar = rng.normal(size=(grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
+        size=(grid.ky.size, grid.kx.size, grid.z.size)
+    )
+    Jl = jnp.ones((1, 1, grid.ky.size, grid.kx.size, grid.z.size))
+    JlB = 2.0 * jnp.ones_like(Jl)
+    chi = Jl * phi[None, None, ...] + JlB * bpar[None, None, ...]
+    bracket_expected = _spectral_bracket(
+        jnp.asarray(G),
+        chi,
+        kx_grid=grid.kx_grid,
+        ky_grid=grid.ky_grid,
+        dealias_mask=grid.dealias_mask,
+        kxfac=jnp.asarray(1.0),
+    )
+    dG = nonlinear_em_contribution(
+        jnp.asarray(G),
+        phi=jnp.asarray(phi),
+        apar=None,
+        bpar=jnp.asarray(bpar),
+        Jl=Jl,
+        JlB=JlB,
+        tz=jnp.asarray([1.0]),
+        vth=jnp.asarray([1.0]),
+        sqrt_m=jnp.sqrt(jnp.arange(2, dtype=jnp.float32))[None, :, None, None, None],
+        sqrt_m_p1=jnp.sqrt(jnp.arange(1, 3, dtype=jnp.float32))[None, :, None, None, None],
+        kx_grid=grid.kx_grid,
+        ky_grid=grid.ky_grid,
+        dealias_mask=grid.dealias_mask,
+        kxfac=jnp.asarray(1.0),
+        weight=jnp.asarray(1.0),
+        apar_weight=1.0,
+        bpar_weight=1.0,
+    )
+    assert np.max(np.abs(np.asarray(dG + bracket_expected))) < 1.0e-6
 
 
 def test_exb_bracket_energy_conserves():
