@@ -127,27 +127,7 @@ def _etg_resolution_policy(ky: float) -> tuple[int, int]:
 
     if ky < 10.0:
         return 48, 16
-    if ky < 20.0:
-        return 64, 24
-    return 72, 32
-
-
-def _etg_window_controls(ky: np.ndarray, t_total: float) -> tuple[np.ndarray, np.ndarray]:
-    """Late-window bias for high-ky ETG fits."""
-
-    ky = np.asarray(ky, dtype=float)
-    tmin = np.empty_like(ky, dtype=float)
-    tmax = np.empty_like(ky, dtype=float)
-    low = ky < 15.0
-    mid = (ky >= 15.0) & (ky < 25.0)
-    high = ky >= 25.0
-    tmin[low] = 0.35 * t_total
-    tmax[low] = 0.7 * t_total
-    tmin[mid] = 0.5 * t_total
-    tmax[mid] = 0.85 * t_total
-    tmin[high] = 0.6 * t_total
-    tmax[high] = 0.9 * t_total
-    return tmin, tmax
+    return 48, 16
 
 
 def _etg_krylov_policy(ky: float) -> KrylovConfig:
@@ -734,7 +714,6 @@ def _run_etg_figures(*, outdir: Path, verbose: bool, progress: bool) -> None:
         sample_stride=10,
     )
     etg_steps = int(round(etg_time.t_max / etg_time.dt))
-    tmin_etg, tmax_etg = _etg_window_controls(etg_ky, etg_time.t_max)
     etg_scan, _etg_mode, _etg_grid, _ = _scan_and_mode(
         run_etg_scan,
         run_etg_linear,
@@ -1016,6 +995,15 @@ def _run_crosscode_figures(*, outdir: Path, verbose: bool, progress: bool) -> No
             omega=cyclone_scan.omega,
             x_label=r"$k_y \rho_i$",
             references=[
+                ReferenceSeries(
+                    label="GX",
+                    x=cyclone_ref_gx.ky,
+                    gamma=cyclone_ref_gx.gamma,
+                    omega=cyclone_ref_gx.omega,
+                    color="#1f77b4",
+                    marker="o",
+                    linestyle="--",
+                ),
                 ReferenceSeries(
                     label="GS2",
                     x=cyclone_ref_gs2.ky,
