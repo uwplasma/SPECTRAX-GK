@@ -8,6 +8,12 @@ remain available by setting ``solver="time"`` in the benchmark helpers (or by
 calling ``integrate_linear`` directly). A small runtime/memory comparison script
 is available in ``tools/benchmark_integrators.py``.
 
+For newcomer-friendly runs, set ``solver="auto"`` and ``fit_signal="auto"``.
+This selects between Krylov/time paths and between ``phi``/density diagnostics
+using the same windowing rules as the manual fits, and falls back when a
+non-finite or strongly damped branch is detected. Advanced users can still
+pin any solver or diagnostic choice explicitly.
+
 For GX-aligned time integration and diagnostics, SPECTRAX-GK includes a
 ``integrate_linear_gx`` path that mirrors GX’s RK4 timestep selection and
 growth-rate extraction.
