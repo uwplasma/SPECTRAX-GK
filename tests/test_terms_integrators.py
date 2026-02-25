@@ -53,13 +53,15 @@ def test_integrate_nonlinear_rejects_unknown_method() -> None:
 
 
 def test_nonlinear_placeholders() -> None:
-    G = jnp.ones((2, 3, 4), dtype=jnp.complex64)
+    G = jnp.ones((3, 4, 1), dtype=jnp.complex64)
     out = placeholder_nonlinear_contribution(G, weight=jnp.asarray(2.0))
     assert jnp.allclose(out, 0.0)
-    with pytest.raises(NotImplementedError):
-        exb_nonlinear_contribution(
-            G,
-            phi=jnp.ones((3, 4), dtype=jnp.complex64),
-            dealias_mask=jnp.ones((3, 4), dtype=bool),
-            weight=jnp.asarray(1.0),
-        )
+    exb = exb_nonlinear_contribution(
+        G,
+        phi=jnp.ones((3, 4, 1), dtype=jnp.complex64),
+        dealias_mask=jnp.ones((3, 4), dtype=bool),
+        kx_grid=jnp.ones((3, 4), dtype=jnp.float32),
+        ky_grid=jnp.ones((3, 4), dtype=jnp.float32),
+        weight=jnp.asarray(1.0),
+    )
+    assert exb.shape == G.shape
