@@ -29,6 +29,13 @@ Cyclone linear benchmark
 
    python examples/cyclone_linear_benchmark.py
 
+ETG auto benchmark (newcomer-friendly)
+--------------------------------------
+
+.. code-block:: bash
+
+   python examples/etg_linear_auto.py
+
 ETG linear trend
 ----------------
 

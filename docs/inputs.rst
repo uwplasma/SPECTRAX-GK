@@ -57,7 +57,8 @@ Minimal runtime TOML example
    ky = 0.3
    Nl = 24
    Nm = 12
-   solver = "krylov"
+   solver = "auto"
+   fit_signal = "auto"
 
 Minimal TOML example
 --------------------
@@ -90,12 +91,26 @@ Minimal TOML example
    ky = 0.3
    Nl = 24
    Nm = 12
-   solver = "time"
+   solver = "auto"
    method = "imex2"
 
    [fit]
    auto_window = true
    window_method = "loglinear"
+   fit_signal = "auto"
+
+Solver and fit-signal keys
+--------------------------
+
+The ``[run]`` and ``[scan]`` sections accept ``solver`` and ``fit_signal`` keys:
+
+* ``solver = "auto"`` (default): choose time vs Krylov and fall back if needed
+* ``solver = "time"``: always use time integration
+* ``solver = "krylov"``: always use the matrix-free eigen solver
+
+* ``fit_signal = "auto"`` (default): pick ``phi`` vs density based on fit quality
+* ``fit_signal = "phi"``: use the electrostatic potential time trace
+* ``fit_signal = "density"``: use the density moment time trace
 
 CLI usage
 ---------
