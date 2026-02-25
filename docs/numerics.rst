@@ -158,6 +158,24 @@ end-to-end JAX differentiability:
   :func:`spectraxgk.nonlinear.build_nonlinear_imex_operator` and pass it to
   :func:`spectraxgk.nonlinear.integrate_nonlinear_imex_cached` via
   ``implicit_operator``.
+
+Automatic solver + fit-signal selection
+---------------------------------------
+
+For newcomer-friendly runs, the benchmark and runtime drivers accept
+``solver="auto"`` and ``fit_signal="auto"``. The auto solver tries the
+preferred path for the case (time integration for ion-scale Cyclone/KBM
+benchmarks, Krylov for ETG) and falls back to the alternative if the returned
+``(gamma, omega)`` is non-finite or violates ``require_positive``. The auto
+fit-signal choice computes both ``phi`` and density moment time traces (when
+available), scores each using the same windowing rules (``R^2`` of log-amplitude
+and phase fits plus an optional growth-rate weight), and selects the higher
+score. To make this decision robust, auto mode disables streaming fits and
+stores the minimal time traces needed for the comparison.
+
+Advanced users can override these defaults in TOML or Python drivers by setting
+``solver="time"``/``"krylov"`` and ``fit_signal="phi"``/``"density"`` together
+with custom fit-window parameters.
 - **Cached hypercollision factors**: the linear cache now stores the Hermite–
   Laguerre hypercollision ratios and masks to avoid repeated power operations
   inside the RHS assembly.
