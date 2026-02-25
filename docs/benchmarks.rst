@@ -260,7 +260,8 @@ Electromagnetic ballooning validation uses a fixed :math:`k_y` and a scan over
    * - Time integration (cross-code)
      - fixed-step IMEX2 (scan default), Diffrax adaptive optional
    * - Fit policy (cross-code)
-     - streaming fit, signal ``phi``, ``window_fraction=0.4``, ``start_fraction=0.2``
+     - mode extracted at selected ``(ky, kx, z_mid)`` with log-linear
+       auto-windowing (conservative amplitude-capped windows)
    * - Reference
      - GS2 electromagnetic beta scan
 
