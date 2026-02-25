@@ -33,8 +33,8 @@ from spectraxgk.benchmarks import (
     _midplane_index,
     load_cyclone_reference,
     load_cyclone_reference_kinetic,
-    load_etg_reference,
-    load_kbm_reference,
+    load_etg_reference_gs2,
+    load_kbm_reference_gs2,
     load_tem_reference,
     CycloneScanResult,
     LinearScanResult,
@@ -67,10 +67,10 @@ from spectraxgk.analysis import (
 )
 
 CYCLONE_SOLVER = "time"
-KINETIC_SOLVER = "krylov"
-ETG_SOLVER = "krylov"
-KBM_SOLVER = "krylov"
-TEM_SOLVER = "krylov"
+KINETIC_SOLVER = "time"
+ETG_SOLVER = "time"
+KBM_SOLVER = "time"
+TEM_SOLVER = "time"
 DIAGNOSTIC_NORM = "gx"
 DEFAULT_RUN_KW = {"diagnostic_norm": DIAGNOSTIC_NORM}
 
@@ -769,12 +769,12 @@ def _etg_krylov_policy(ky: float) -> KrylovConfig:
 def _run_etg_tables(*, outdir: Path, verbose: bool, progress: bool) -> None:
     etg_grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28, y0=0.2)
     etg_time_cfg = TimeConfig(
-        t_max=6.0,
-        dt=0.01,
+        t_max=2.4,
+        dt=2.0e-4,
         method="imex2",
         use_diffrax=False,
         progress_bar=False,
-        sample_stride=2,
+        sample_stride=10,
     )
     etg_R = np.array([4.0, 6.0, 8.0, 10.0])
     etg_rows = ["R_over_LTe,gamma,omega"]
@@ -813,15 +813,15 @@ def _run_etg_tables(*, outdir: Path, verbose: bool, progress: bool) -> None:
         "\n".join(etg_rows) + "\n", encoding="utf-8"
     )
 
-    etg_ref = load_etg_reference()
+    etg_ref = load_etg_reference_gs2()
     etg_cfg = ETGBaseCase()
     etg_time = TimeConfig(
-        t_max=6.0,
-        dt=0.01,
+        t_max=2.4,
+        dt=2.0e-4,
         method="imex2",
         use_diffrax=False,
         progress_bar=False,
-        sample_stride=2,
+        sample_stride=10,
     )
     etg_steps = int(round(etg_time.t_max / etg_time.dt))
     etg_ky, etg_g, etg_w = _scan_linear_verbose(
@@ -1145,7 +1145,7 @@ def main() -> int:
         "\n".join(_build_rows(kinetic_mismatch, kinetic_ref)) + "\n", encoding="utf-8"
     )
 
-    etg_ref = load_etg_reference()
+    etg_ref = load_etg_reference_gs2()
     etg_cfg = ETGBaseCase()
     etg_time = TimeConfig(
         t_max=6.0,
@@ -1185,7 +1185,7 @@ def main() -> int:
         "\n".join(_build_rows(etg_mismatch, etg_ref)) + "\n", encoding="utf-8"
     )
 
-    kbm_ref = load_kbm_reference()
+    kbm_ref = load_kbm_reference_gs2()
     kbm_dt = _scale_dt(kbm_ref.ky, base_dt=0.0005, ky_ref=0.3)
     kbm_steps = _scale_steps(kbm_ref.ky, base_steps=4000, ky_ref=0.3, max_steps=8000)
     kbm_cfg = KBMBaseCase(

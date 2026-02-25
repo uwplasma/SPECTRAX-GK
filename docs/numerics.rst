@@ -108,10 +108,10 @@ integration from input configuration without changing call sites. By default,
 ``TimeConfig`` enables diffrax with a fixed-step Dopri8 solver; set
 ``use_diffrax=False`` to force the built-in fixed-step integrators.
 
-For the ETG/KBM baseline cases, the default configurations switch to
-adaptive Tsit5 with ``diffrax_rtol=1e-4``, ``diffrax_atol=1e-7``, and
-``diffrax_max_steps=20000`` to avoid fixed-step instabilities. These defaults
-can be overridden on a per-run basis via the ``TimeConfig`` fields.
+For scan workloads, the default path is custom fixed-step ``imex2`` with
+``TimeConfig.use_diffrax=False``. This keeps stepping shape-stable and improves
+throughput for multi-ky scans. Diffrax adaptive stepping remains available as
+an optional mode through ``TimeConfig.use_diffrax=True``.
 
 Performance tuning
 ------------------

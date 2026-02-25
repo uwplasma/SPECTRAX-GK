@@ -49,10 +49,9 @@ from spectraxgk.benchmarks import (
     load_cyclone_reference_kinetic,
     load_cyclone_reference_gs2,
     load_cyclone_reference_stella,
-    load_etg_reference,
     load_etg_reference_gs2,
     load_etg_reference_stella,
-    load_kbm_reference,
+    load_kbm_reference_gs2,
     load_tem_reference,
     LinearScanResult,
     run_cyclone_linear,
@@ -138,10 +137,10 @@ def _etg_krylov_policy(ky: float) -> KrylovConfig:
 
 
 CYCLONE_SCAN_SOLVER = "time"
-KINETIC_SCAN_SOLVER = "krylov"
-ETG_SCAN_SOLVER = "krylov"
-KBM_SCAN_SOLVER = "krylov"
-TEM_SCAN_SOLVER = "krylov"
+KINETIC_SCAN_SOLVER = "time"
+ETG_SCAN_SOLVER = "time"
+KBM_SCAN_SOLVER = "time"
+TEM_SCAN_SOLVER = "time"
 MODE_SOLVER = "time"
 MODE_METHOD = "imex2"
 DIAGNOSTIC_NORM = "gx"
@@ -691,7 +690,7 @@ def _scan_and_mode(
 
 
 def _run_etg_figures(*, outdir: Path, verbose: bool, progress: bool) -> None:
-    etg_ref = load_etg_reference()
+    etg_ref = load_etg_reference_gs2()
     cfg_etg = ETGBaseCase(
         grid=GridConfig(
             Nx=1,
@@ -707,12 +706,12 @@ def _run_etg_figures(*, outdir: Path, verbose: bool, progress: bool) -> None:
     )
     etg_ky = etg_ref.ky[::2]
     etg_time = TimeConfig(
-        t_max=6.0,
-        dt=0.01,
+        t_max=2.4,
+        dt=2.0e-4,
         method="imex2",
         use_diffrax=False,
         progress_bar=False,
-        sample_stride=2,
+        sample_stride=10,
     )
     etg_steps = int(round(etg_time.t_max / etg_time.dt))
     etg_scan, _etg_mode, _etg_grid, _ = _scan_and_mode(
@@ -748,7 +747,7 @@ def _run_etg_figures(*, outdir: Path, verbose: bool, progress: bool) -> None:
         etg_scan.gamma,
         etg_scan.omega,
         r"$k_y \rho_i$",
-        "ETG comparison (GX Fig. 2b)",
+        "ETG comparison (GS2/stella matched set)",
         x_ref=etg_ref.ky,
         gamma_ref=etg_ref.gamma,
         omega_ref=etg_ref.omega,
@@ -783,7 +782,6 @@ def _run_crosscode_figures(*, outdir: Path, verbose: bool, progress: bool) -> No
         outdir / "cyclone_gs2_mismatch.csv",
         outdir / "etg_gs2_mismatch.csv",
         outdir / "kbm_gs2_mismatch.csv",
-        outdir / "kbm_stella_mismatch.csv",
     ):
         if not required.exists():
             raise FileNotFoundError(
@@ -840,8 +838,7 @@ def _run_crosscode_figures(*, outdir: Path, verbose: bool, progress: bool) -> No
     etg_ref_gs2 = load_etg_reference_gs2()
     etg_ref_stella = load_etg_reference_stella()
     etg_scan = _load_spectrax_scan_from_mismatch(outdir / "etg_gs2_mismatch.csv")
-    kbm_ref_gs2 = _load_reference_from_mismatch(outdir / "kbm_gs2_mismatch.csv", x_col="beta")
-    kbm_ref_stella = _load_reference_from_mismatch(outdir / "kbm_stella_mismatch.csv", x_col="beta")
+    kbm_ref_gs2 = load_kbm_reference_gs2()
     kbm_scan = _load_spectrax_scan_from_mismatch(outdir / "kbm_gs2_mismatch.csv", x_col="beta")
 
     # Representative eigenfunctions for summary panel.
@@ -1065,15 +1062,6 @@ def _run_crosscode_figures(*, outdir: Path, verbose: bool, progress: bool) -> No
                     omega=kbm_ref_gs2.omega,
                     color="#ff7f0e",
                     marker="s",
-                    linestyle="--",
-                ),
-                ReferenceSeries(
-                    label="stella",
-                    x=kbm_ref_stella.ky,
-                    gamma=kbm_ref_stella.gamma,
-                    omega=kbm_ref_stella.omega,
-                    color="#9467bd",
-                    marker="d",
                     linestyle="--",
                 ),
             ],
