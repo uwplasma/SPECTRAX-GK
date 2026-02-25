@@ -355,11 +355,11 @@ def test_kbm_beta_scan_shapes():
 
 
 def test_kbm_beta_scan_time_mode_only_phi():
-    """KBM time-solver scan should fit a 1D mode signal in mode_only path."""
+    """KBM mode_only path should match full-field signal extraction."""
     grid = GridConfig(Nx=1, Ny=8, Nz=32, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1)
     cfg = KBMBaseCase(grid=grid)
-    scan = run_kbm_beta_scan(
-        np.array([1.0e-4]),
+    kwargs = dict(
+        betas=np.array([1.0e-4]),
         cfg=cfg,
         ky_target=0.3,
         Nl=4,
@@ -374,8 +374,20 @@ def test_kbm_beta_scan_time_mode_only_phi():
         tmin=0.2,
         tmax=0.6,
     )
-    assert np.isfinite(scan.gamma[0])
-    assert np.isfinite(scan.omega[0])
+    scan_mode_only = run_kbm_beta_scan(
+        mode_only=True,
+        **kwargs,
+    )
+    scan_full = run_kbm_beta_scan(
+        mode_only=False,
+        **kwargs,
+    )
+    assert np.isfinite(scan_mode_only.gamma[0])
+    assert np.isfinite(scan_mode_only.omega[0])
+    assert np.isfinite(scan_full.gamma[0])
+    assert np.isfinite(scan_full.omega[0])
+    assert np.isclose(scan_mode_only.gamma[0], scan_full.gamma[0], rtol=1.0e-6, atol=1.0e-10)
+    assert np.isclose(scan_mode_only.omega[0], scan_full.omega[0], rtol=1.0e-6, atol=1.0e-10)
 
 
 def test_etg_scan_manual_window():
