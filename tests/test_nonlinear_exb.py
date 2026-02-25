@@ -131,6 +131,58 @@ def test_apar_flutter_hermite_ladder():
     assert np.max(np.abs(np.asarray(dG + flutter_expected))) < 1.0e-6
 
 
+def test_apar_flutter_no_wrap_boundary():
+    grid = build_spectral_grid(GridConfig(Nx=4, Ny=4, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
+    Nm = 4
+    bracket = jnp.zeros(
+        (1, 1, Nm, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64
+    )
+    bracket = bracket.at[:, :, -1, 0, 0, 0].set(1.0 + 0.0j)
+    sqrt_m = jnp.sqrt(jnp.arange(Nm, dtype=jnp.float32))[None, :, None, None, None]
+    sqrt_m_p1 = jnp.sqrt(jnp.arange(1, Nm + 1, dtype=jnp.float32))[None, :, None, None, None]
+    flutter = _apply_flutter(bracket, jnp.asarray([1.0]), sqrt_m, sqrt_m_p1)
+    flutter_np = np.asarray(flutter)
+    assert np.allclose(flutter_np[:, :, 0, 0, 0, 0], 0.0)
+    assert np.allclose(flutter_np[:, :, -1, 0, 0, 0], 0.0)
+    expected = -np.sqrt(Nm - 1)
+    assert np.allclose(flutter_np[:, :, -2, 0, 0, 0], expected)
+
+
+def test_em_weights_are_toggles():
+    grid = build_spectral_grid(GridConfig(Nx=4, Ny=4, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
+    rng = np.random.default_rng(5)
+    G = rng.normal(size=(1, 1, 3, grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
+        size=(1, 1, 3, grid.ky.size, grid.kx.size, grid.z.size)
+    )
+    apar = rng.normal(size=(grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
+        size=(grid.ky.size, grid.kx.size, grid.z.size)
+    )
+    bpar = rng.normal(size=(grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
+        size=(grid.ky.size, grid.kx.size, grid.z.size)
+    )
+    Jl = jnp.ones((1, 1, grid.ky.size, grid.kx.size, grid.z.size))
+    JlB = jnp.ones_like(Jl)
+    common = dict(
+        phi=jnp.zeros_like(jnp.asarray(apar)),
+        apar=jnp.asarray(apar),
+        bpar=jnp.asarray(bpar),
+        Jl=Jl,
+        JlB=JlB,
+        tz=jnp.asarray([1.0]),
+        vth=jnp.asarray([1.0]),
+        sqrt_m=jnp.sqrt(jnp.arange(3, dtype=jnp.float32))[None, :, None, None, None],
+        sqrt_m_p1=jnp.sqrt(jnp.arange(1, 4, dtype=jnp.float32))[None, :, None, None, None],
+        kx_grid=grid.kx_grid,
+        ky_grid=grid.ky_grid,
+        dealias_mask=grid.dealias_mask,
+        kxfac=jnp.asarray(1.0),
+        weight=jnp.asarray(1.0),
+    )
+    dG_pos = nonlinear_em_contribution(jnp.asarray(G), apar_weight=1.0, bpar_weight=1.0, **common)
+    dG_neg = nonlinear_em_contribution(jnp.asarray(G), apar_weight=-1.0, bpar_weight=-1.0, **common)
+    assert np.max(np.abs(np.asarray(dG_pos - dG_neg))) < 1.0e-6
+
+
 def test_bpar_contributes_to_chi():
     grid = build_spectral_grid(GridConfig(Nx=4, Ny=4, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
     rng = np.random.default_rng(4)
