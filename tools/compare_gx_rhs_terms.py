@@ -8,6 +8,7 @@ from pathlib import Path
 
 import numpy as np
 import jax.numpy as jnp
+import jax
 from netCDF4 import Dataset
 
 from spectraxgk.benchmarks import (
@@ -66,6 +67,18 @@ def _load_field(path: Path, nyc: int, nx: int, nz: int) -> np.ndarray:
     z_idx = np.arange(nz)[None, None, :]
     idxyz = ky_idx + nyc * (kx_idx + nx * z_idx)
     return raw[idxyz.ravel()].reshape(nyc, nx, nz)
+
+
+def _cast_cache(cache: object, *, real_dtype: jnp.dtype, complex_dtype: jnp.dtype) -> object:
+    def _cast(x):
+        if isinstance(x, jnp.ndarray):
+            if jnp.issubdtype(x.dtype, jnp.complexfloating):
+                return x.astype(complex_dtype)
+            if jnp.issubdtype(x.dtype, jnp.floating):
+                return x.astype(real_dtype)
+        return x
+
+    return jax.tree_util.tree_map(_cast, cache)
 
 
 def _reshape_gx(
@@ -198,6 +211,7 @@ def main() -> None:
     )
     params = _apply_gx_hypercollisions(params, nhermite=args.Nm)
     cache = build_linear_cache(grid, geom, params, args.Nl, args.Nm)
+    cache = _cast_cache(cache, real_dtype=jnp.float32, complex_dtype=jnp.complex64)
     if gx_g_path.exists():
         gx_g = _reshape_gx(_load_bin(gx_g_path, gx_shape), nspec=nspec, nl=nl, nm=nm, nyc=nyc, nx=nx, nz=nz)
         gx_g = gx_g[0, :, :, ky_idx : ky_idx + 1, :, :]
