@@ -22,7 +22,9 @@ def test_gyroaverage_matches_gx_jflr():
 
 
 def test_salpha_geometry_matches_gx_formulas():
-    geom = SAlphaGeometry(q=1.4, s_hat=0.8, epsilon=0.18, R0=2.77778, B0=1.0, alpha=0.0)
+    geom = SAlphaGeometry(
+        q=1.4, s_hat=0.8, epsilon=0.18, R0=2.77778, B0=1.0, alpha=0.0, drift_scale=1.0
+    )
     theta = jnp.linspace(-jnp.pi, jnp.pi, 8, endpoint=False)
     shear = geom.s_hat * theta - geom.alpha * jnp.sin(theta)
 
@@ -65,6 +67,25 @@ def test_salpha_geometry_matches_gx_formulas():
         ky0[:, None] * (ky0[:, None] * gds2 + 2.0 * kx0[:, None] * shat_inv * gds21)
         + (kx0[:, None] * shat_inv) ** 2 * gds22_match
     ) * (bmag_inv * bmag_inv)
+    assert jnp.allclose(kperp2, kperp2_expected[0], rtol=1.0e-9, atol=1.0e-11)
+
+
+def test_salpha_geometry_kperp2_matches_gs2_formula():
+    """GS2-style kperp2 omits the bmag^{-2} factor."""
+    geom = SAlphaGeometry(q=1.4, s_hat=0.8, epsilon=0.18, R0=2.77778, B0=1.0, alpha=0.0, kperp2_bmag=False)
+    theta = jnp.linspace(-jnp.pi, jnp.pi, 8, endpoint=False)
+    shear = geom.s_hat * theta - geom.alpha * jnp.sin(theta)
+    gds2 = 1.0 + shear * shear
+    gds21 = -geom.s_hat * shear
+    gds22 = jnp.asarray(geom.s_hat * geom.s_hat, dtype=jnp.float32)
+
+    kx0 = jnp.asarray([0.1])
+    ky0 = jnp.asarray([0.2])
+    kx_hat = kx0 / geom.s_hat
+    kperp2 = geom.k_perp2(kx0, ky0, theta)
+    kperp2_expected = ky0[:, None] * (ky0[:, None] * gds2 + 2.0 * kx_hat[:, None] * gds21) + (
+        kx_hat[:, None] ** 2
+    ) * gds22
     assert jnp.allclose(kperp2, kperp2_expected[0], rtol=1.0e-9, atol=1.0e-11)
 
 

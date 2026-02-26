@@ -130,6 +130,18 @@ where :math:`Z_p` sets the field-line length
 The midplane index used by the GX growth-rate diagnostic corresponds to
 ``z_index = Nz//2 + 1``, matching the GX kernel logic when ``Nz > 1``.
 
+GX-aligned perpendicular normalization
+-------------------------------------
+
+GX defines the perpendicular metric as :math:`k_\perp^2/B^2` before applying
+the Laguerre gyroaverage. To match that convention in SPECTRAX-GK:
+
+- ``kperp2_bmag = True`` (include the :math:`B^{-2}` factor in :math:`k_\perp^2`)
+- ``bessel_bmag_power = 0`` (no extra :math:`B` scaling inside the Bessel argument)
+
+The Cyclone base case defaults follow this GX-aligned setting, and the
+``compare_gx_rhs_terms.py`` parity tool assumes the same normalization.
+
 Sign conventions
 ----------------
 
