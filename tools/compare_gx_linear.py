@@ -16,6 +16,7 @@ from spectraxgk.benchmarks import (
     CYCLONE_OMEGA_D_SCALE,
     CYCLONE_OMEGA_STAR_SCALE,
     CYCLONE_RHO_STAR,
+    CYCLONE_KRYLOV_DEFAULT,
     _apply_gx_hypercollisions,
     _build_initial_condition,
     _midplane_index,
@@ -83,16 +84,58 @@ def main() -> None:
     parser.add_argument("--steps", type=int, default=15000)
     parser.add_argument("--method", type=str, default="imex2")
     parser.add_argument("--solver", type=str, default="auto")
-    parser.add_argument("--ny", type=int, default=24)
+    parser.add_argument(
+        "--ny",
+        type=int,
+        default=None,
+        help="Full Ny (FFT grid). If omitted, inferred from GX nky.",
+    )
     parser.add_argument("--ntheta", type=int, default=32)
     parser.add_argument("--nperiod", type=int, default=2)
     parser.add_argument("--y0", type=float, default=20.0)
     parser.add_argument("--drift-scale", type=float, default=1.0)
     parser.add_argument(
+        "--gx-last",
+        action="store_true",
+        help="Use GX-style final-step omega/gamma (instead of time-average).",
+    )
+    parser.add_argument(
+        "--gx-fixed-dt",
+        action="store_true",
+        help="Force fixed dt for GX-style integrator (default: adaptive dt).",
+    )
+    parser.add_argument(
         "--ky",
         type=str,
         default="",
         help="Comma-separated ky values to compare (default: all from GX output)",
+    )
+    parser.add_argument(
+        "--mode-follow",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Enable ky continuation (overlap selection) in Krylov scans.",
+    )
+    parser.add_argument(
+        "--krylov-method",
+        type=str,
+        default=None,
+        help="Override Krylov method (power, propagator, shift_invert).",
+    )
+    parser.add_argument("--krylov-dim", type=int, default=None, help="Override Krylov dimension.")
+    parser.add_argument("--krylov-restarts", type=int, default=None, help="Override Krylov restarts.")
+    parser.add_argument("--krylov-power-dt", type=float, default=None, help="Override Krylov power dt.")
+    parser.add_argument(
+        "--krylov-omega-target",
+        type=float,
+        default=None,
+        help="Override omega_target_factor for Krylov.",
+    )
+    parser.add_argument(
+        "--krylov-shift-precond",
+        type=str,
+        default=None,
+        help="Override shift-invert preconditioner.",
     )
     parser.add_argument("--out", type=Path, default=None, help="Optional CSV path for mismatch table")
     args = parser.parse_args()
@@ -106,8 +149,13 @@ def main() -> None:
         gx_ky = gx_ky[idx]
         gx_gamma = gx_gamma[idx]
         gx_omega = gx_omega[idx]
+    if args.ny is None:
+        nky = int(len(gx_ky))
+        ny = 3 * (nky - 1) + 1
+    else:
+        ny = int(args.ny)
     cfg = _build_cyclone_cfg(
-        args.ny, ntheta=args.ntheta, nperiod=args.nperiod, y0=args.y0, drift_scale=args.drift_scale
+        ny, ntheta=args.ntheta, nperiod=args.nperiod, y0=args.y0, drift_scale=args.drift_scale
     )
 
     if args.solver == "gx_time":
@@ -141,8 +189,13 @@ def main() -> None:
                 Nm=args.Nm,
                 init_cfg=cfg.init,
             )
-            time_cfg = GXTimeConfig(dt=args.dt, t_max=args.dt * float(args.steps), sample_stride=1, fixed_dt=True)
-            t, phi_t, _g_t, _o_t = integrate_linear_gx(
+            time_cfg = GXTimeConfig(
+                dt=args.dt,
+                t_max=args.dt * float(args.steps),
+                sample_stride=1,
+                fixed_dt=args.gx_fixed_dt,
+            )
+            t, phi_t, gamma_t, omega_t = integrate_linear_gx(
                 G0,
                 grid,
                 cache,
@@ -152,14 +205,37 @@ def main() -> None:
                 terms=LinearTerms(),
                 mode_method="z_index",
             )
-            sel = ModeSelection(ky_index=0, kx_index=0, z_index=_midplane_index(grid))
-            gamma, omega, _g, _o, _t_mid = gx_growth_rate_from_phi(
-                phi_t, t, sel, navg_fraction=0.5, mode_method="z_index"
-            )
+            if gamma_t.size == 0:
+                raise ValueError("GX time integrator returned no growth-rate samples")
+            gamma_series = np.asarray(gamma_t)[:, 0, 0]
+            omega_series = np.asarray(omega_t)[:, 0, 0]
+            if args.gx_last or gamma_series.size == 1:
+                gamma = float(gamma_series[-1])
+                omega = float(omega_series[-1])
+            else:
+                istart = int(0.5 * gamma_series.size)
+                gamma = float(np.mean(gamma_series[istart:]))
+                omega = float(np.mean(omega_series[istart:]))
             gammas.append(gamma)
             omegas.append(omega)
         scan = type("CycloneScan", (), {"ky": gx_ky, "gamma": np.asarray(gammas), "omega": np.asarray(omegas)})()
     else:
+        krylov_cfg = None
+        if args.solver.lower() == "krylov":
+            krylov_cfg = CYCLONE_KRYLOV_DEFAULT
+            if args.krylov_method is not None:
+                krylov_cfg = replace(krylov_cfg, method=str(args.krylov_method))
+            if args.krylov_dim is not None:
+                krylov_cfg = replace(krylov_cfg, krylov_dim=int(args.krylov_dim))
+            if args.krylov_restarts is not None:
+                krylov_cfg = replace(krylov_cfg, restarts=int(args.krylov_restarts))
+            if args.krylov_power_dt is not None:
+                krylov_cfg = replace(krylov_cfg, power_dt=float(args.krylov_power_dt))
+            if args.krylov_omega_target is not None:
+                krylov_cfg = replace(krylov_cfg, omega_target_factor=float(args.krylov_omega_target))
+            if args.krylov_shift_precond is not None:
+                krylov_cfg = replace(krylov_cfg, shift_preconditioner=str(args.krylov_shift_precond))
+
         scan = run_cyclone_scan(
             gx_ky,
             cfg=cfg,
@@ -171,6 +247,8 @@ def main() -> None:
             solver=args.solver,
             fit_signal="auto",
             diagnostic_norm="gx",
+            mode_follow=bool(args.mode_follow),
+            krylov_cfg=krylov_cfg,
         )
 
     rel_gamma = (scan.gamma - gx_gamma) / gx_gamma
