@@ -93,6 +93,21 @@ target. SPECTRAX-GK ships a reference dataset stored in:
 The benchmark harness loads these values and compares growth rates and
 frequencies across a reduced :math:`k_y` scan on the field-aligned grid.
 
+GX parity mode
+^^^^^^^^^^^^^^
+SPECTRAX-GK includes a GX parity mode for Cyclone that mirrors GX’s default
+choices for geometry normalization and growth-rate extraction:
+
+* ``drift_scale=1.0`` (GX normalization for curvature/grad-B drifts).
+* Midplane sampling at ``z_index = nz//2 + 1`` (GX growth-rate diagnostic).
+* GX-style RK4 integration with adaptive timestep (CFL-based) and
+  instantaneous ``phi``-ratio extraction for ``(gamma, omega)``.
+
+The Cyclone base case enables GX parity by default (``gx_parity=True``). To
+turn it off or override individual pieces, pass explicit configuration
+overrides (e.g. custom ``geometry.drift_scale``, solver selection, or
+``gx_parity=False`` in the Cyclone benchmark helpers).
+
 .. list-table:: Cyclone base case parameters (GX Fig. 1)
    :header-rows: 1
 
