@@ -112,6 +112,9 @@ published benchmarks and trend tests:
 
 - **ITG/Cyclone base case**: reproduce the standard Cyclone base case growth
   rates and frequencies across a reduced ky scan. [Dimits00]_ [Lin99]_
+- **GX term-parity audit**: use the term-dump tooling to compare SPECTRAX-GK
+  streaming and linear-kernel RHS components against GX for a single Cyclone
+  state (see ``tools/dump_rhs_terms.py`` and ``tools/compare_gx_rhs_terms.py``).
 - **ETG linear instability**: verify that growth rates remain positive across
   reduced electron-scale gradients and that the real frequency follows the
   electron diamagnetic direction. [Dorland00]_ [Jenko00]_
