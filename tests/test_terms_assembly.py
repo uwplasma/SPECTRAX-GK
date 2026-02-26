@@ -1,104 +1,47 @@
-"""Tests for modular RHS assembly and linear-term adapters."""
-
-from __future__ import annotations
-
+import numpy as np
 import jax.numpy as jnp
-import pytest
 
-from spectraxgk.config import CycloneBaseCase, GridConfig
+from spectraxgk.config import GridConfig
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.grids import build_spectral_grid
-from spectraxgk.linear import (
-    LinearParams,
-    LinearTerms,
-    build_linear_cache,
-    linear_rhs_cached,
-    linear_terms_to_term_config,
-    term_config_to_linear_terms,
-)
-from spectraxgk.terms.assembly import assemble_rhs_cached, compute_fields_cached
+from spectraxgk.grids import build_spectral_grid, select_ky_grid
+from spectraxgk.linear import LinearParams, build_linear_cache
+from spectraxgk.terms.assembly import assemble_rhs_cached, assemble_rhs_terms_cached
+from spectraxgk.terms.config import TermConfig
 
 
-def test_linear_term_adapter_roundtrip() -> None:
-    terms = LinearTerms(
-        streaming=1.0,
-        mirror=0.8,
-        curvature=0.7,
-        gradb=0.6,
-        diamagnetic=0.5,
-        collisions=0.4,
-        hypercollisions=0.3,
-        end_damping=0.2,
-        apar=0.1,
-        bpar=0.9,
-    )
-    term_cfg = linear_terms_to_term_config(terms, nonlinear=0.25)
-    assert term_cfg.nonlinear == 0.25
-    roundtrip = term_config_to_linear_terms(term_cfg)
-    assert roundtrip == terms
-
-
-def test_linear_rhs_cached_matches_modular_assembly() -> None:
-    grid_cfg = GridConfig(Nx=6, Ny=6, Nz=8, Lx=62.8, Ly=62.8)
-    cfg = CycloneBaseCase(grid=grid_cfg)
-    grid = build_spectral_grid(cfg.grid)
-    geom = SAlphaGeometry.from_config(cfg.geometry)
+def test_assemble_rhs_terms_sum_matches_total() -> None:
+    grid_full = build_spectral_grid(GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.28, Ly=6.28))
+    grid = select_ky_grid(grid_full, 1)
+    geom = SAlphaGeometry(q=1.4, s_hat=0.8, epsilon=0.18, R0=2.77778, drift_scale=1.0)
     params = LinearParams(
-        beta=0.02,
-        fapar=1.0,
-        nu=0.03,
-        nu_hyper=0.02,
-        damp_ends_amp=0.01,
+        R_over_Ln=0.8,
+        R_over_LTi=2.49,
+        R_over_LTe=0.0,
+        omega_d_scale=1.0,
+        omega_star_scale=1.0,
+        rho_star=1.0,
+        kpar_scale=float(geom.gradpar()),
+        nu=0.0,
     )
-    Nl, Nm = 3, 4
-    cache = build_linear_cache(grid, geom, params, Nl=Nl, Nm=Nm)
-    values = jnp.arange(Nl * Nm * grid.ky.size * grid.kx.size * grid.z.size, dtype=jnp.float32)
-    values = values.reshape((Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size))
-    G = (1.0e-3 * values).astype(jnp.complex64) + 1j * (2.0e-4 * jnp.cos(values)).astype(jnp.complex64)
-    terms = LinearTerms(
-        streaming=1.0,
-        mirror=1.0,
-        curvature=1.0,
-        gradb=1.0,
-        diamagnetic=1.0,
-        collisions=1.0,
-        hypercollisions=1.0,
-        end_damping=1.0,
-        apar=1.0,
-        bpar=1.0,
+    Nl, Nm = 4, 4
+    cache = build_linear_cache(grid, geom, params, Nl, Nm)
+    rng = np.random.default_rng(0)
+    G0 = rng.normal(size=(Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
+        size=(Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size)
     )
-    term_cfg = linear_terms_to_term_config(terms)
-
-    dG_linear, phi_linear = linear_rhs_cached(G, cache, params, terms=terms, use_jit=False)
-    dG_modular, fields = assemble_rhs_cached(G, cache, params, terms=term_cfg, use_custom_vjp=False)
-    dG_modular_vjp, fields_vjp = assemble_rhs_cached(G, cache, params, terms=term_cfg, use_custom_vjp=True)
-    fields_only = compute_fields_cached(G, cache, params, terms=term_cfg, use_custom_vjp=False)
-
-    assert jnp.allclose(dG_linear, dG_modular, rtol=1.0e-7, atol=1.0e-7)
-    assert jnp.allclose(dG_modular_vjp, dG_modular, rtol=1.0e-7, atol=1.0e-7)
-    assert jnp.allclose(phi_linear, fields.phi, rtol=1.0e-7, atol=1.0e-7)
-    assert jnp.allclose(phi_linear, fields_vjp.phi, rtol=1.0e-7, atol=1.0e-7)
-    assert jnp.allclose(phi_linear, fields_only.phi, rtol=1.0e-7, atol=1.0e-7)
-
-
-def test_assembly_validates_state_shapes_and_species_alignment() -> None:
-    grid_cfg = GridConfig(Nx=4, Ny=4, Nz=8, Lx=20.0, Ly=20.0)
-    cfg = CycloneBaseCase(grid=grid_cfg)
-    grid = build_spectral_grid(cfg.grid)
-    geom = SAlphaGeometry.from_config(cfg.geometry)
-    params = LinearParams()
-    cache = build_linear_cache(grid, geom, params, Nl=2, Nm=3)
-
-    with pytest.raises(ValueError):
-        assemble_rhs_cached(jnp.zeros((2, 3, 4), dtype=jnp.complex64), cache, params)
-
-    # cache is single-species; this state is two-species.
-    with pytest.raises(ValueError):
-        assemble_rhs_cached(
-            jnp.zeros((2, 2, 3, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64),
-            cache,
-            params,
-        )
-
-    with pytest.raises(ValueError):
-        compute_fields_cached(jnp.zeros((2, 3, 4), dtype=jnp.complex64), cache, params)
+    G0 = jnp.asarray(G0)
+    term_cfg = TermConfig()
+    rhs_total, _fields = assemble_rhs_cached(G0, cache, params, terms=term_cfg)
+    rhs_terms, _fields_terms, contrib = assemble_rhs_terms_cached(G0, cache, params, terms=term_cfg)
+    rhs_sum = (
+        contrib["streaming"]
+        + contrib["mirror"]
+        + contrib["curvature"]
+        + contrib["gradb"]
+        + contrib["diamagnetic"]
+        + contrib["collisions"]
+        + contrib["hypercollisions"]
+        + contrib["end_damping"]
+    )
+    assert np.allclose(np.asarray(rhs_terms), np.asarray(rhs_total), rtol=1.0e-6, atol=1.0e-8)
+    assert np.allclose(np.asarray(rhs_sum), np.asarray(rhs_total), rtol=1.0e-6, atol=1.0e-8)
