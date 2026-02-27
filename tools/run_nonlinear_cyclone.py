@@ -47,6 +47,9 @@ def main() -> int:
     parser.add_argument("--method", type=str, default="rk3", choices=("euler", "rk2", "rk3", "rk4"))
     parser.add_argument("--sample-stride", type=int, default=10)
     parser.add_argument("--use-dealias-mask", action="store_true")
+    parser.add_argument("--D-hyper", type=float, default=0.05)
+    parser.add_argument("--p-hyper-kperp", type=float, default=2.0)
+    parser.add_argument("--no-hyperdiffusion", action="store_true")
     parser.add_argument("--out", type=Path, default=Path("docs/_static/nonlinear_cyclone_diag.csv"))
     args = parser.parse_args()
 
@@ -76,6 +79,7 @@ def main() -> int:
         nu=0.0,
     )
 
+    hyperdiffusion_on = not bool(args.no_hyperdiffusion)
     params = build_linear_params(
         [ion],
         tau_e=1.0,
@@ -89,8 +93,8 @@ def main() -> int:
         p_hyper=4.0,
         hypercollisions_const=1.0,
         hypercollisions_kz=0.0,
-        D_hyper=0.05,
-        p_hyper_kperp=2.0,
+        D_hyper=float(args.D_hyper) if hyperdiffusion_on else 0.0,
+        p_hyper_kperp=float(args.p_hyper_kperp),
     )
     params = _apply_gx_hypercollisions(params, nhermite=args.Nm)
 
@@ -104,7 +108,12 @@ def main() -> int:
     G0[:, 0, 0, ...] = _build_initial_noise(rng, G0[:, 0, 0, ...].shape, args.amp)
     G0 = jnp.asarray(G0)
 
-    term_cfg = TermConfig(nonlinear=1.0, apar=0.0, bpar=0.0, hyperdiffusion=1.0)
+    term_cfg = TermConfig(
+        nonlinear=1.0,
+        apar=0.0,
+        bpar=0.0,
+        hyperdiffusion=1.0 if hyperdiffusion_on else 0.0,
+    )
 
     t, diag = integrate_nonlinear_gx_diagnostics(
         G0,
