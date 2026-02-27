@@ -11,7 +11,13 @@ import numpy as np
 import pandas as pd
 from netCDF4 import Dataset
 
-from spectraxgk.analysis import ModeSelection, gx_growth_rate_from_phi, select_ky_index
+from spectraxgk.analysis import (
+    ModeSelection,
+    extract_mode_time_series,
+    fit_growth_rate_auto,
+    gx_growth_rate_from_phi,
+    select_ky_index,
+)
 from spectraxgk.benchmarks import (
     CYCLONE_OMEGA_D_SCALE,
     CYCLONE_OMEGA_STAR_SCALE,
@@ -214,9 +220,26 @@ def main() -> None:
                 omega = float(omega_series[-1])
             else:
                 sel = ModeSelection(ky_index=0, kx_index=0, z_index=_midplane_index(grid))
-                gamma, omega, _g, _o, _t_mid = gx_growth_rate_from_phi(
-                    phi_t, t, sel, navg_fraction=0.5, mode_method="z_index"
-                )
+                try:
+                    gamma, omega, _g, _o, _t_mid = gx_growth_rate_from_phi(
+                        phi_t, t, sel, navg_fraction=0.5, mode_method="z_index"
+                    )
+                except ValueError:
+                    print(
+                        "gx_growth_rate_from_phi: z_index failed; falling back to mode_method='max'"
+                    )
+                    try:
+                        gamma, omega, _g, _o, _t_mid = gx_growth_rate_from_phi(
+                            phi_t, t, sel, navg_fraction=0.5, mode_method="max"
+                        )
+                    except ValueError:
+                        print(
+                            "gx_growth_rate_from_phi: max failed; falling back to loglinear fit"
+                        )
+                        signal = extract_mode_time_series(phi_t, sel, method="max")
+                        gamma, omega, *_ = fit_growth_rate_auto(
+                            t, signal, window_method="loglinear"
+                        )
             gammas.append(gamma)
             omegas.append(omega)
         scan = type("CycloneScan", (), {"ky": gx_ky, "gamma": np.asarray(gammas), "omega": np.asarray(omegas)})()
