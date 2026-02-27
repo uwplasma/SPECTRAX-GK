@@ -116,11 +116,18 @@ def main() -> int:
         use_dealias_mask=bool(args.use_dealias_mask),
     )
 
+    gamma_t = np.asarray(diag.gamma_t)
+    omega_t = np.asarray(diag.omega_t)
+    if gamma_t.ndim > 1:
+        axes = tuple(range(1, gamma_t.ndim))
+        gamma_t = np.mean(gamma_t, axis=axes)
+        omega_t = np.mean(omega_t, axis=axes)
+
     data = np.column_stack(
         [
             np.asarray(t),
-            np.asarray(diag.gamma_t),
-            np.asarray(diag.omega_t),
+            gamma_t,
+            omega_t,
             np.asarray(diag.Wg_t),
             np.asarray(diag.Wphi_t),
             np.asarray(diag.Wapar_t),
