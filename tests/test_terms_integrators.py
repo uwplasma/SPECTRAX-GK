@@ -24,6 +24,7 @@ def _linear_rhs(rate: complex):
     [
         ("euler", lambda a: 1.0 + a),
         ("rk2", lambda a: 1.0 + a + 0.5 * a * a),
+        ("rk3", lambda a: 1.0 + a + 0.5 * a * a + (a * a * a) / 6.0),
         ("rk4", lambda a: 1.0 + a + 0.5 * a * a + (a * a * a) / 6.0 + (a * a * a * a) / 24.0),
     ],
 )
