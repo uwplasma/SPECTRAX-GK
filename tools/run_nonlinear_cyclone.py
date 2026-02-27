@@ -10,7 +10,7 @@ import numpy as np
 import jax.numpy as jnp
 
 from spectraxgk.benchmarks import CYCLONE_NORMALIZATION, _apply_gx_hypercollisions
-from spectraxgk.config import CycloneBaseCase, GeometryConfig, GridConfig, InitializationConfig
+from spectraxgk.config import GeometryConfig, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.nonlinear import integrate_nonlinear_gx_diagnostics
@@ -18,13 +18,12 @@ from spectraxgk.species import Species, build_linear_params
 from spectraxgk.terms.config import TermConfig
 
 
-def _build_initial_noise(
-    rng: np.random.Generator,
-    shape: tuple[int, ...],
-    amp: float,
-) -> np.ndarray:
-    noise = rng.normal(size=shape) + 1j * rng.normal(size=shape)
-    return (amp * noise).astype(np.complex64)
+def _gx_zp_from_grid(z: np.ndarray) -> float:
+    if z.size < 2:
+        return 1.0
+    dz = float(z[1] - z[0])
+    extent = float(z[-1] - z[0] + dz)
+    return extent / (2.0 * np.pi)
 
 
 def main() -> int:
@@ -41,6 +40,7 @@ def main() -> int:
     parser.add_argument("--Nm", type=int, default=4)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--amp", type=float, default=1.0e-3)
+    parser.add_argument("--ikpar-init", type=int, default=0)
     parser.add_argument("--tprim", type=float, default=2.49)
     parser.add_argument("--fprim", type=float, default=0.8)
     parser.add_argument("--rho-star", type=float, default=CYCLONE_NORMALIZATION.rho_star)
@@ -98,14 +98,19 @@ def main() -> int:
     )
     params = _apply_gx_hypercollisions(params, nhermite=args.Nm)
 
-    init_cfg = InitializationConfig(
-        gaussian_init=True,
-        gaussian_width=0.5,
-        init_field="density",
-    )
     rng = np.random.default_rng(args.seed)
     G0 = np.zeros((1, args.Nl, args.Nm, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64)
-    G0[:, 0, 0, ...] = _build_initial_noise(rng, G0[:, 0, 0, ...].shape, args.amp)
+    mask = np.asarray(grid.dealias_mask, dtype=bool)
+    mask = mask & (np.asarray(grid.ky)[:, None] > 0.0)
+    ra = (rng.random(size=mask.shape) - 0.5) * float(args.amp)
+    rb = (rng.random(size=mask.shape) - 0.5) * float(args.amp)
+    amp_complex = (ra + 1j * rb) * mask
+    zp = _gx_zp_from_grid(np.asarray(grid.z))
+    if int(args.ikpar_init) == 0:
+        phase = np.ones_like(grid.z)
+    else:
+        phase = np.cos(float(args.ikpar_init) * np.asarray(grid.z) / float(zp))
+    G0[:, 0, 0, ...] = amp_complex[:, :, None] * phase[None, None, :]
     G0 = jnp.asarray(G0)
 
     term_cfg = TermConfig(
