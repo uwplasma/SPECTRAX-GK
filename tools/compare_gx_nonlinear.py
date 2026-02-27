@@ -26,7 +26,7 @@ def _read_diag_series(group, name: str) -> np.ndarray:
 def _load_gx(path: Path) -> dict[str, np.ndarray]:
     root = Dataset(path, "r")
     diag = root.groups["Diagnostics"]
-    t = np.asarray(root.variables["time"][:], dtype=float)
+    t = np.asarray(root.groups["Grids"].variables["time"][:], dtype=float)
     out = {
         "t": t,
         "Wg": _read_diag_series(diag, "Wg_kyst"),
