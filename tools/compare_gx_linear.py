@@ -205,17 +205,18 @@ def main() -> None:
                 terms=LinearTerms(),
                 mode_method="z_index",
             )
-            if gamma_t.size == 0:
-                raise ValueError("GX time integrator returned no growth-rate samples")
-            gamma_series = np.asarray(gamma_t)[:, 0, 0]
-            omega_series = np.asarray(omega_t)[:, 0, 0]
-            if args.gx_last or gamma_series.size == 1:
+            if args.gx_last:
+                if gamma_t.size == 0:
+                    raise ValueError("GX time integrator returned no growth-rate samples")
+                gamma_series = np.asarray(gamma_t)[:, 0, 0]
+                omega_series = np.asarray(omega_t)[:, 0, 0]
                 gamma = float(gamma_series[-1])
                 omega = float(omega_series[-1])
             else:
-                istart = int(0.5 * gamma_series.size)
-                gamma = float(np.mean(gamma_series[istart:]))
-                omega = float(np.mean(omega_series[istart:]))
+                sel = ModeSelection(ky_index=0, kx_index=0, z_index=_midplane_index(grid))
+                gamma, omega, _g, _o, _t_mid = gx_growth_rate_from_phi(
+                    phi_t, t, sel, navg_fraction=0.5, mode_method="z_index"
+                )
             gammas.append(gamma)
             omegas.append(omega)
         scan = type("CycloneScan", (), {"ky": gx_ky, "gamma": np.asarray(gammas), "omega": np.asarray(omegas)})()
