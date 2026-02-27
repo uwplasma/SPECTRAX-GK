@@ -63,6 +63,21 @@ def _reshape_gx(
     return arr.reshape((nspec, nl, nm, nyc, nx, nz))
 
 
+def _expand_ky(arr: np.ndarray, *, nyc: int) -> np.ndarray:
+    """Expand Nyc (real FFT) axis to full Ny using conjugate symmetry."""
+    if arr.shape[-3] != nyc:
+        raise ValueError("Expected ky axis at position -3 with length nyc")
+    ny_full = 2 * (nyc - 1)
+    if ny_full <= 0:
+        return arr
+    pos = arr
+    if nyc <= 2:
+        return pos
+    neg = np.conj(pos[..., 1 : nyc - 1, :, :])
+    neg = neg[..., ::-1, :, :]
+    return np.concatenate([pos, neg], axis=-3)
+
+
 def _summary(label: str, ref: np.ndarray, test: np.ndarray) -> None:
     diff = test - ref
     max_ref = float(np.max(np.abs(ref)))
@@ -137,7 +152,7 @@ def main() -> None:
     with Dataset(args.gx_out, "r") as root:
         ky_vals = np.asarray(root.groups["Grids"].variables["ky"][:], dtype=float)
     ky_idx = int(np.argmin(np.abs(ky_vals - float(args.ky))))
-    g_state = g_state[:, :, :, ky_idx : ky_idx + 1, :, :]
+    g_state = _expand_ky(g_state, nyc=nyc)
 
     phi = _reshape_gx(
         _load_bin(args.gx_dir / "phi.bin", (1, 1, 1, nyc, nx, nz)),
@@ -147,7 +162,8 @@ def main() -> None:
         nyc=nyc,
         nx=nx,
         nz=nz,
-    )[0, 0, 0, ky_idx : ky_idx + 1, :, :]
+    )[0, 0, 0, ...]
+    phi = _expand_ky(phi[None, ...], nyc=nyc)[0]
     apar_path = args.gx_dir / "apar.bin"
     bpar_path = args.gx_dir / "bpar.bin"
     apar = None
@@ -161,7 +177,8 @@ def main() -> None:
             nyc=nyc,
             nx=nx,
             nz=nz,
-        )[0, 0, 0, ky_idx : ky_idx + 1, :, :]
+        )[0, 0, 0, ...]
+        apar = _expand_ky(apar[None, ...], nyc=nyc)[0]
     if bpar_path.exists():
         bpar = _reshape_gx(
             _load_bin(bpar_path, (1, 1, 1, nyc, nx, nz)),
@@ -171,7 +188,8 @@ def main() -> None:
             nyc=nyc,
             nx=nx,
             nz=nz,
-        )[0, 0, 0, ky_idx : ky_idx + 1, :, :]
+        )[0, 0, 0, ...]
+        bpar = _expand_ky(bpar[None, ...], nyc=nyc)[0]
 
     cfg = CycloneBaseCase(
         grid=GridConfig(
@@ -187,9 +205,8 @@ def main() -> None:
         )
     )
     geom = SAlphaGeometry.from_config(cfg.geometry)
-    grid_full = build_spectral_grid(cfg.grid)
-    ky_index = int(np.argmin(np.abs(np.asarray(grid_full.ky) - float(args.ky))))
-    grid = select_ky_grid(grid_full, ky_index)
+    grid = build_spectral_grid(cfg.grid)
+    ky_index = int(np.argmin(np.abs(np.asarray(grid.ky) - float(args.ky))))
     params = LinearParams(
         R_over_Ln=cfg.model.R_over_Ln,
         R_over_LTi=cfg.model.R_over_LTi,
@@ -250,18 +267,19 @@ def main() -> None:
             nz=nz,
         )
         ref = ref[:, :, :, ky_idx : ky_idx + 1, :, :]
-        _summary(key, ref, test_arr)
+        test_slice = test_arr[:, :, :, ky_index : ky_index + 1, :, :]
+        _summary(key, ref, test_slice)
 
     if args.out is not None:
         out = Path(args.out)
         out.parent.mkdir(parents=True, exist_ok=True)
         np.savez(
             out,
-            exb_phi=np.asarray(comps["exb_phi"]),
-            exb_bpar=np.asarray(comps["exb_bpar"]),
+            bracket_phi=np.asarray(comps["exb_phi"]),
+            bracket_bpar=np.asarray(comps["exb_bpar"]),
             bracket_apar=np.asarray(comps["bracket_apar"]),
             flutter=np.asarray(comps["flutter"]),
-            total=np.asarray(comps["total"]),
+            nl_total=np.asarray(comps["total"]),
         )
         print(f"Wrote {out}")
 
