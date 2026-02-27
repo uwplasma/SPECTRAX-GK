@@ -67,6 +67,7 @@ def main() -> None:
     parser.add_argument("--Nm", type=int, default=48)
     parser.add_argument("--dt", type=float, default=0.001)
     parser.add_argument("--steps", type=int, default=30000)
+    parser.add_argument("--sample-stride", type=int, default=10, help="Diagnostic sampling stride")
     args = parser.parse_args()
 
     root = Dataset(args.gx, "r")
@@ -108,7 +109,12 @@ def main() -> None:
     G0 = _build_initial_condition(
         grid, geom, ky_index=0, kx_index=0, Nl=args.Nl, Nm=args.Nm, init_cfg=cfg.init
     )
-    gx_time_cfg = GXTimeConfig(dt=args.dt, t_max=args.dt * args.steps, sample_stride=1, fixed_dt=True)
+    gx_time_cfg = GXTimeConfig(
+        dt=args.dt,
+        t_max=args.dt * args.steps,
+        sample_stride=int(max(args.sample_stride, 1)),
+        fixed_dt=True,
+    )
 
     t, phi_t, _g_t, _o_t, diag_spec = integrate_linear_gx_diagnostics(
         G0,
@@ -135,8 +141,11 @@ def main() -> None:
         return float((arr[-1] - arr[0]) / max(abs(arr[0]), 1.0e-12))
 
     print(f"ky={ky_val:.3f} gamma={gamma:.6e} omega={omega:.6e}")
-    print(f"GX energy drift: {_drift(gx_energy):.3e}")
-    print(f"SPECTRAX energy drift: {_drift(sp_energy):.3e}")
+    print(f"GX energy drift: {_drift(gx_energy):.3e} (start={gx_energy[0]:.3e}, end={gx_energy[-1]:.3e})")
+    print(
+        f"SPECTRAX energy drift: {_drift(sp_energy):.3e} "
+        f"(start={sp_energy[0]:.3e}, end={sp_energy[-1]:.3e})"
+    )
     print(f"GX heat flux avg: {np.mean(gx_heat):.6e}")
     print(f"SPECTRAX heat flux avg: {np.mean(diag_spec.heat_flux_t):.6e}")
     print(f"GX particle flux avg: {np.mean(gx_pflux):.6e}")
