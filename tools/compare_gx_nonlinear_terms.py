@@ -125,20 +125,21 @@ def _bracket_real(
     imag = jnp.asarray(1j, dtype=G_hat.dtype)
     kx = jnp.asarray(kx_grid)
     ky = jnp.asarray(ky_grid)
+    nxy = kx.shape[0] * kx.shape[1]
 
     # chi_hat: (Ns, Nl, Ny, Nx, Nz)
     kx_c = kx[None, None, :, :, None]
     ky_c = ky[None, None, :, :, None]
-    dchi_dx = jnp.fft.ifft2(imag * kx_c * chi_hat, axes=(-3, -2))
-    dchi_dy = jnp.fft.ifft2(imag * ky_c * chi_hat, axes=(-3, -2))
+    dchi_dx = jnp.fft.ifft2(imag * kx_c * chi_hat, axes=(-3, -2)) * nxy
+    dchi_dy = jnp.fft.ifft2(imag * ky_c * chi_hat, axes=(-3, -2)) * nxy
     dchi_dx = dchi_dx[:, :, None, ...]
     dchi_dy = dchi_dy[:, :, None, ...]
 
     # G_hat: (Ns, Nl, Nm, Ny, Nx, Nz)
     kx_g = kx[None, None, None, :, :, None]
     ky_g = ky[None, None, None, :, :, None]
-    dG_dx = jnp.fft.ifft2(imag * kx_g * G_hat, axes=(-3, -2))
-    dG_dy = jnp.fft.ifft2(imag * ky_g * G_hat, axes=(-3, -2))
+    dG_dx = jnp.fft.ifft2(imag * kx_g * G_hat, axes=(-3, -2)) * nxy
+    dG_dy = jnp.fft.ifft2(imag * ky_g * G_hat, axes=(-3, -2)) * nxy
 
     bracket = dchi_dx * dG_dy - dchi_dy * dG_dx
     return jnp.real(bracket)
@@ -202,6 +203,7 @@ def main() -> None:
         nx=nx,
         nz=nz,
     )[0, 0, 0, ...]
+    phi_nyc = phi
     phi = _expand_ky(phi[None, ...], nyc=nyc)[0]
     apar_path = args.gx_dir / "apar.bin"
     bpar_path = args.gx_dir / "bpar.bin"
@@ -242,6 +244,22 @@ def main() -> None:
         Lx = float(2.0 * np.pi / delta_kx) if delta_kx != 0.0 else args.Lx
     else:
         Lx = args.Lx
+    if args.boundary == "linked" and y0 is not None:
+        geom_tmp = SAlphaGeometry.from_config(CycloneBaseCase().geometry)
+        theta_tmp = np.linspace(-np.pi, np.pi, nz, endpoint=False)
+        gds2_tmp, gds21_tmp, gds22_tmp = geom_tmp.metric_coeffs(theta_tmp)
+        gds21_min = float(gds21_tmp[0]) if np.ndim(gds21_tmp) else float(gds21_tmp)
+        gds22_min = float(gds22_tmp[0]) if np.ndim(gds22_tmp) else float(gds22_tmp)
+        shat = float(geom_tmp.s_hat)
+        twist_shift_geo_fac = 0.0
+        if gds22_min != 0.0:
+            twist_shift_geo_fac = float(2.0 * shat * gds21_min / gds22_min)
+        if twist_shift_geo_fac != 0.0:
+            jtwist = int(np.round(twist_shift_geo_fac))
+            if jtwist == 0:
+                jtwist = 1
+            x0 = float(y0) * abs(jtwist) / abs(twist_shift_geo_fac)
+            Lx = float(2.0 * np.pi * x0)
     cfg = CycloneBaseCase(
         grid=GridConfig(
             Nx=nx,
@@ -326,7 +344,9 @@ def main() -> None:
             if m_tot != nm + 2 * m_ghost:
                 print(f"Skipping bracket_phi_real: unexpected m_tot {m_tot} for nm {nm}")
             else:
-                ref_full = raw_real.reshape((m_tot, nj, nz, ny_full, nx))
+                ref_full = raw_real.reshape((m_tot, nj, nz, nx, ny_full)).transpose(
+                    0, 1, 2, 4, 3
+                )
                 if m_ghost > 0:
                     ref_real = ref_full[m_ghost:-m_ghost]
                 else:
@@ -342,10 +362,17 @@ def main() -> None:
         if raw_j0.size != expected:
             print(f"Skipping j0phi: size {raw_j0.size} != {expected}")
         else:
-            # J0phi layout: (Nj, Nz, Nyc, Nx) with x fastest
-            j0phi = raw_j0.reshape((nj, nz, nyc, nx)).transpose(0, 2, 3, 1)
+            # J0phi layout: idxyz = idy + nyc*(idx + nx*idz)
+            j0phi = raw_j0.reshape((nj, nz, nx, nyc)).transpose(0, 3, 2, 1)
             ky_idx = int(np.argmin(np.abs(ky_vals - float(args.ky))))
-            test_j0 = np.asarray(chi_phi[0, :, ky_index, :, :])
+            b_nyc = cache.b[:, :nyc, :, :]
+            chi_phi_nyc = _gx_j0_field(
+                jnp.asarray(phi_nyc.astype(np.complex64)),
+                b_nyc,
+                cache.laguerre_roots,
+                1.0,
+            )
+            test_j0 = np.asarray(chi_phi_nyc[0, :, ky_idx, :, :])
             ref_j0 = j0phi[:, ky_idx, :, :]
             _summary("j0phi", ref_j0, test_j0)
 
