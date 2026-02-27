@@ -113,6 +113,27 @@ For scan workloads, the default path is custom fixed-step ``imex2`` with
 throughput for multi-ky scans. Diffrax adaptive stepping remains available as
 an optional mode through ``TimeConfig.use_diffrax=True``.
 
+Nonlinear FFT bracket
+---------------------
+
+The nonlinear :math:`E\times B` term is evaluated pseudospectrally using
+FFT-based derivatives in the perpendicular plane. By default SPECTRAX-GK uses
+the GX-style real FFT path (``TimeConfig.gx_real_fft = true``), which computes
+gradients from the Nyquist-compressed (``N_y/2+1``) spectrum and expands the
+result back to full :math:`k_y`. This exactly matches the GX nonlinear bracket
+normalization and minimizes memory traffic. Set ``gx_real_fft = false`` to use
+the full complex FFT bracket instead.
+
+De-aliasing and hyperdiffusion
+------------------------------
+
+Nonlinear brackets are filtered using the standard ``2/3`` de-alias mask. The
+mask lives on the spectral grid and is applied after each bracket evaluation.
+Additional numerical stabilization is provided by hyperdiffusion in
+:math:`k_\perp` (``TermConfig.hyperdiffusion`` / ``D_hyper`` settings), which
+acts as a scale-selective damping term and is treated implicitly in IMEX
+schemes.
+
 Performance tuning
 ------------------
 

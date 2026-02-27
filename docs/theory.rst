@@ -140,3 +140,37 @@ explicit field terms but omits the full :math:`H_{\ell m}` correction at
 and then applying the parallel derivative to :math:`\tilde{G}` before the
 Hermite ladder. This matches the ordering in GX’s ``grad_parallel_linked``
 implementation and is critical for reproducing the GX growth-rate diagnostics.
+
+Nonlinear E×B and flutter terms
+-------------------------------
+
+The nonlinear gyrokinetic equation adds the :math:`E\times B` bracket and the
+electromagnetic flutter coupling. In SPECTRAX-GK the nonlinear contribution is
+
+.. math::
+
+   \left(\frac{\partial g}{\partial t}\right)_\mathrm{NL}
+   = -\left\{ \langle \chi \rangle, g \right\}
+   - v_{th}\,\left(\sqrt{m+1}\,\{\langle A_\parallel \rangle, g\}_{m+1}
+   + \sqrt{m}\,\{\langle A_\parallel \rangle, g\}_{m-1}\right),
+
+with the Poisson bracket
+
+.. math::
+
+   \{g, \chi\} = \frac{\partial g}{\partial x}\frac{\partial \chi}{\partial y}
+   - \frac{\partial g}{\partial y}\frac{\partial \chi}{\partial x}.
+
+The gyrokinetic potential includes the perpendicular magnetic perturbation
+through
+
+.. math::
+
+   \chi = J_\ell \phi + J_\ell^B B_\parallel,
+
+so the nonlinear operator naturally splits into :math:`E\times B`,
+:math:`B_\parallel`, and flutter contributions. The implementation in
+:mod:`spectraxgk.terms.nonlinear` follows the GX normalization: gradients are
+computed with FFTs in :math:`x,y`, the bracket is evaluated in real space, and
+the result is filtered by the de-alias mask before returning to spectral
+space.
