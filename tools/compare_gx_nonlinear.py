@@ -68,11 +68,27 @@ def _relative_error(a: np.ndarray, b: np.ndarray) -> float:
     return float(np.nanmean(np.abs(a[mask] - b[mask]) / denom))
 
 
+def _window_mean(t: np.ndarray, y: np.ndarray, frac: float) -> float:
+    if t.size == 0:
+        return float("nan")
+    t_min = t.min() + (1.0 - frac) * (t.max() - t.min())
+    mask = (t >= t_min) & np.isfinite(y)
+    if not np.any(mask):
+        return float("nan")
+    return float(np.nanmean(y[mask]))
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--gx", type=Path, required=True, help="GX .out.nc file")
     parser.add_argument("--spectrax", type=Path, required=True, help="SPECTRAX diagnostics CSV")
     parser.add_argument("--out", type=Path, default=Path("docs/_static/nonlinear_cyclone_compare.png"))
+    parser.add_argument(
+        "--avg-fraction",
+        type=float,
+        default=0.2,
+        help="Fraction of late-time window for averaged metrics.",
+    )
     args = parser.parse_args()
 
     gx = _load_gx(args.gx)
@@ -86,6 +102,16 @@ def main() -> int:
     print(f"Wapar rel error: {_relative_error(sp['Wapar'], gx_interp['Wapar']):.3e}")
     print(f"Heat flux rel error: {_relative_error(sp['heat'], gx_interp['heat']):.3e}")
     print(f"Particle flux rel error: {_relative_error(sp['pflux'], gx_interp['pflux']):.3e}")
+    if 0.0 < args.avg_fraction <= 1.0:
+        wg_sp = _window_mean(t, sp["Wg"], args.avg_fraction)
+        wg_gx = _window_mean(t, gx_interp["Wg"], args.avg_fraction)
+        wphi_sp = _window_mean(t, sp["Wphi"], args.avg_fraction)
+        wphi_gx = _window_mean(t, gx_interp["Wphi"], args.avg_fraction)
+        q_sp = _window_mean(t, sp["heat"], args.avg_fraction)
+        q_gx = _window_mean(t, gx_interp["heat"], args.avg_fraction)
+        print(f"Late-time mean Wg: SPECTRAX={wg_sp:.3e}, GX={wg_gx:.3e}")
+        print(f"Late-time mean Wphi: SPECTRAX={wphi_sp:.3e}, GX={wphi_gx:.3e}")
+        print(f"Late-time mean Q: SPECTRAX={q_sp:.3e}, GX={q_gx:.3e}")
 
     fig, ax = plt.subplots(2, 1, figsize=(6.5, 6.0), sharex=True)
     mask = np.isfinite(sp["Wphi"]) & np.isfinite(gx_interp["Wphi"])
