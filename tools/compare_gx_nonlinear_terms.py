@@ -20,10 +20,15 @@ from spectraxgk.benchmarks import (
 )
 from spectraxgk.config import GridConfig
 from spectraxgk.geometry import SAlphaGeometry
+from spectraxgk.gyroaverage import gx_laguerre_nj
 from spectraxgk.grids import build_spectral_grid, select_ky_grid
 from spectraxgk.linear import LinearParams, build_linear_cache
 from spectraxgk.terms.config import TermConfig
-from spectraxgk.terms.nonlinear import nonlinear_em_components
+from spectraxgk.terms.nonlinear import (
+    _gx_j0_field,
+    _laguerre_to_grid,
+    nonlinear_em_components,
+)
 
 
 def _load_shape(path: Path) -> dict[str, int]:
@@ -167,6 +172,9 @@ def main() -> None:
     nyc = shape.get("nyc", args.Ny // 2 + 1)
     nx = shape.get("nx", 1)
     nz = shape.get("nz", args.Nz)
+    nj = shape.get("nj")
+    if nj is None:
+        nj = gx_laguerre_nj(nl)
     gx_shape = (nspec, nl, nm, nyc, nx, nz)
 
     g_state = _reshape_gx(
@@ -181,6 +189,7 @@ def main() -> None:
 
     with Dataset(args.gx_out, "r") as root:
         ky_vals = np.asarray(root.groups["Grids"].variables["ky"][:], dtype=float)
+        kx_vals = np.asarray(root.groups["Grids"].variables["kx"][:], dtype=float)
     ky_idx = int(np.argmin(np.abs(ky_vals - float(args.ky))))
     g_state = _expand_ky(g_state, nyc=nyc)
 
@@ -221,15 +230,27 @@ def main() -> None:
         )[0, 0, 0, ...]
         bpar = _expand_ky(bpar[None, ...], nyc=nyc)[0]
 
+    ny_full = 2 * (nyc - 1)
+    use_gx_spacing = ky_vals.size == ny_full and kx_vals.size == nx
+    if use_gx_spacing and ky_vals.size > 1:
+        delta_ky = float(ky_vals[1] - ky_vals[0])
+        y0 = 1.0 / delta_ky if delta_ky != 0.0 else args.y0
+    else:
+        y0 = args.y0
+    if use_gx_spacing and kx_vals.size > 1:
+        delta_kx = float(kx_vals[1] - kx_vals[0])
+        Lx = float(2.0 * np.pi / delta_kx) if delta_kx != 0.0 else args.Lx
+    else:
+        Lx = args.Lx
     cfg = CycloneBaseCase(
         grid=GridConfig(
             Nx=nx,
-            Ny=2 * (nyc - 1),
+            Ny=ny_full,
             Nz=nz,
-            Lx=args.Lx,
+            Lx=Lx,
             Ly=args.Ly,
             boundary=args.boundary,
-            y0=args.y0,
+            y0=y0,
             ntheta=args.ntheta,
             nperiod=args.nperiod,
         )
@@ -249,8 +270,8 @@ def main() -> None:
         damp_ends_amp=0.0,
         damp_ends_widthfrac=0.0,
     )
-    params = _apply_gx_hypercollisions(params, nhermite=args.Nm)
-    cache = build_linear_cache(grid, geom, params, args.Nl, args.Nm)
+    params = _apply_gx_hypercollisions(params, nhermite=nm)
+    cache = build_linear_cache(grid, geom, params, nl, nm)
 
     term_cfg = TermConfig(nonlinear=1.0, apar=1.0, bpar=1.0)
     G = jnp.asarray(g_state.astype(np.complex64))
@@ -272,12 +293,23 @@ def main() -> None:
         weight=term_cfg.nonlinear,
         apar_weight=term_cfg.apar,
         bpar_weight=term_cfg.bpar,
+        laguerre_to_grid=cache.laguerre_to_grid,
+        laguerre_to_spectral=cache.laguerre_to_spectral,
+        laguerre_roots=cache.laguerre_roots,
+        b=cache.b,
     )
 
     # Real-space bracket comparison if GX dump is available.
+    g_mu = _laguerre_to_grid(G, cache.laguerre_to_grid)
+    chi_phi = _gx_j0_field(
+        jnp.asarray(phi.astype(np.complex64)),
+        cache.b,
+        cache.laguerre_roots,
+        1.0,
+    )
     bracket_real = _bracket_real(
-        G,
-        (cache.Jl * jnp.asarray(phi.astype(np.complex64))[None, None, ...]),
+        g_mu,
+        chi_phi,
         kx_grid=cache.kx_grid,
         ky_grid=cache.ky_grid,
     )
@@ -285,7 +317,7 @@ def main() -> None:
     if gx_bracket_real.exists():
         raw_real = np.fromfile(gx_bracket_real, dtype=np.float32)
         ny_full = 2 * (nyc - 1)
-        denom = nl * nz * ny_full * nx
+        denom = nj * nz * ny_full * nx
         m_tot = int(raw_real.size // denom) if denom > 0 else 0
         if denom == 0 or m_tot <= 0 or raw_real.size % denom != 0:
             print(f"Skipping bracket_phi_real: size {raw_real.size} not divisible by {denom}")
@@ -294,14 +326,28 @@ def main() -> None:
             if m_tot != nm + 2 * m_ghost:
                 print(f"Skipping bracket_phi_real: unexpected m_tot {m_tot} for nm {nm}")
             else:
-                ref_full = raw_real.reshape((m_tot, nl, nz, ny_full, nx))
+                ref_full = raw_real.reshape((m_tot, nj, nz, ny_full, nx))
                 if m_ghost > 0:
                     ref_real = ref_full[m_ghost:-m_ghost]
                 else:
                     ref_real = ref_full
-                # bracket_real[0]: (Nl, Nm, Ny, Nx, Nz) -> (Nm, Nl, Nz, Ny, Nx)
+                # bracket_real[0]: (Nj, Nm, Ny, Nx, Nz) -> (Nm, Nj, Nz, Ny, Nx)
                 test_real = np.asarray(bracket_real[0]).transpose(1, 0, 4, 2, 3)
                 _summary("bracket_real", ref_real, test_real)
+
+    gx_j0phi = args.gx_dir / "nl_j0phi.bin"
+    if gx_j0phi.exists():
+        raw_j0 = np.fromfile(gx_j0phi, dtype=np.complex64)
+        expected = nj * nz * nyc * nx
+        if raw_j0.size != expected:
+            print(f"Skipping j0phi: size {raw_j0.size} != {expected}")
+        else:
+            # J0phi layout: (Nj, Nz, Nyc, Nx) with x fastest
+            j0phi = raw_j0.reshape((nj, nz, nyc, nx)).transpose(0, 2, 3, 1)
+            ky_idx = int(np.argmin(np.abs(ky_vals - float(args.ky))))
+            test_j0 = np.asarray(chi_phi[0, :, ky_index, :, :])
+            ref_j0 = j0phi[:, ky_idx, :, :]
+            _summary("j0phi", ref_j0, test_j0)
 
     exb_total = np.asarray(comps["exb_phi"]) + np.asarray(comps["exb_bpar"])
     gx_map = {
