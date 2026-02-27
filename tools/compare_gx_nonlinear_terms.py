@@ -155,7 +155,7 @@ def _bracket_real(
     dchi_dx = dchi_dx[:, :, None, ...]
     dchi_dy = dchi_dy[:, :, None, ...]
     dG_dx, dG_dy = _grad_xy_real(G_hat, kx_grid=kx_grid, ky_grid=ky_grid, ny_full=ny_full)
-    bracket = dchi_dx * dG_dy - dchi_dy * dG_dx
+    bracket = dG_dx * dchi_dy - dG_dy * dchi_dx
     return bracket
 
 
@@ -490,19 +490,21 @@ def main() -> None:
         b=cache.b,
     )
 
-    # Real-space bracket comparison if GX dump is available.
-    g_mu = _laguerre_to_grid(G, cache.laguerre_to_grid)
-    chi_phi = _gx_j0_field(
-        jnp.asarray(phi.astype(np.complex64)),
-        cache.b,
+    # Real-space bracket comparison if GX dump is available (use Nyc path).
+    g_nyc, phi_nyc_ord, kx_grid_nyc_ord, ky_grid_nyc_ord = _prepare_order_nyc(order)
+    g_mu_nyc = _laguerre_to_grid(jnp.asarray(g_nyc), cache.laguerre_to_grid)
+    b_nyc = cache.b[:, :nyc, :, :]
+    chi_phi_nyc = _gx_j0_field(
+        jnp.asarray(phi_nyc_ord.astype(np.complex64)),
+        b_nyc,
         cache.laguerre_roots,
         1.0,
     )
     bracket_real = _bracket_real(
-        g_mu,
-        chi_phi,
-        kx_grid=jnp.asarray(kx_grid),
-        ky_grid=jnp.asarray(ky_grid),
+        g_mu_nyc,
+        chi_phi_nyc,
+        kx_grid=jnp.asarray(kx_grid_nyc_ord),
+        ky_grid=jnp.asarray(ky_grid_nyc_ord),
         ny_full=ny_full,
     )
     if have_derivs:
