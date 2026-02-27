@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 import jax.numpy as jnp
 
-from spectraxgk.benchmarks import CYCLONE_NORMALIZATION
+from spectraxgk.benchmarks import CYCLONE_NORMALIZATION, _apply_gx_hypercollisions
 from spectraxgk.config import CycloneBaseCase, GeometryConfig, GridConfig, InitializationConfig
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid
@@ -35,7 +35,7 @@ def main() -> int:
     parser.add_argument("--nperiod", type=int, default=1)
     parser.add_argument("--y0", type=float, default=28.2)
     parser.add_argument("--Lx", type=float, default=2.0 * np.pi * 28.2)
-    parser.add_argument("--dt", type=float, default=0.05)
+    parser.add_argument("--dt", type=float, default=0.0377)
     parser.add_argument("--steps", type=int, default=200)
     parser.add_argument("--Nl", type=int, default=8)
     parser.add_argument("--Nm", type=int, default=4)
@@ -90,6 +90,7 @@ def main() -> int:
         hypercollisions_const=1.0,
         hypercollisions_kz=0.0,
     )
+    params = _apply_gx_hypercollisions(params, nhermite=args.Nm)
 
     init_cfg = InitializationConfig(
         gaussian_init=True,
