@@ -86,6 +86,7 @@ Minimal TOML example
    diffrax_adaptive = true
    diffrax_rtol = 1.0e-6
    diffrax_atol = 1.0e-8
+   gx_real_fft = true
 
    [run]
    ky = 0.3
@@ -98,6 +99,10 @@ Minimal TOML example
    auto_window = true
    window_method = "loglinear"
    fit_signal = "auto"
+
+The ``[time]`` section also accepts ``gx_real_fft`` (default ``true``) to
+select the GX-style real FFT nonlinear bracket. Set ``gx_real_fft = false`` to
+use a full complex FFT for the nonlinear term.
 
 Solver and fit-signal keys
 --------------------------
