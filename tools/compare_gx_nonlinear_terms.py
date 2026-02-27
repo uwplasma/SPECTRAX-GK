@@ -109,6 +109,36 @@ def _summary(label: str, ref: np.ndarray, test: np.ndarray) -> None:
     )
 
 
+def _bracket_real(
+    G_hat: jnp.ndarray,
+    chi_hat: jnp.ndarray,
+    *,
+    kx_grid: jnp.ndarray,
+    ky_grid: jnp.ndarray,
+) -> jnp.ndarray:
+    """Return real-space bracket {G, chi} without spectral masking."""
+    imag = jnp.asarray(1j, dtype=G_hat.dtype)
+    kx = jnp.asarray(kx_grid)
+    ky = jnp.asarray(ky_grid)
+
+    # chi_hat: (Ns, Nl, Ny, Nx, Nz)
+    kx_c = kx[None, None, :, :, None]
+    ky_c = ky[None, None, :, :, None]
+    dchi_dx = jnp.fft.ifft2(imag * kx_c * chi_hat, axes=(-3, -2))
+    dchi_dy = jnp.fft.ifft2(imag * ky_c * chi_hat, axes=(-3, -2))
+    dchi_dx = dchi_dx[:, :, None, ...]
+    dchi_dy = dchi_dy[:, :, None, ...]
+
+    # G_hat: (Ns, Nl, Nm, Ny, Nx, Nz)
+    kx_g = kx[None, None, None, :, :, None]
+    ky_g = ky[None, None, None, :, :, None]
+    dG_dx = jnp.fft.ifft2(imag * kx_g * G_hat, axes=(-3, -2))
+    dG_dy = jnp.fft.ifft2(imag * ky_g * G_hat, axes=(-3, -2))
+
+    bracket = dchi_dx * dG_dy - dchi_dy * dG_dx
+    return jnp.real(bracket)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--gx-dir", type=Path, required=True, help="Directory with GX nonlinear term dumps")
@@ -243,6 +273,35 @@ def main() -> None:
         apar_weight=term_cfg.apar,
         bpar_weight=term_cfg.bpar,
     )
+
+    # Real-space bracket comparison if GX dump is available.
+    bracket_real = _bracket_real(
+        G,
+        (cache.Jl * jnp.asarray(phi.astype(np.complex64))[None, None, ...]),
+        kx_grid=cache.kx_grid,
+        ky_grid=cache.ky_grid,
+    )
+    gx_bracket_real = args.gx_dir / "nl_bracket_phi_real.bin"
+    if gx_bracket_real.exists():
+        raw_real = np.fromfile(gx_bracket_real, dtype=np.float32)
+        ny_full = 2 * (nyc - 1)
+        denom = nl * nz * ny_full * nx
+        m_tot = int(raw_real.size // denom) if denom > 0 else 0
+        if denom == 0 or m_tot <= 0 or raw_real.size % denom != 0:
+            print(f"Skipping bracket_phi_real: size {raw_real.size} not divisible by {denom}")
+        else:
+            m_ghost = max(0, (m_tot - nm) // 2)
+            if m_tot != nm + 2 * m_ghost:
+                print(f"Skipping bracket_phi_real: unexpected m_tot {m_tot} for nm {nm}")
+            else:
+                ref_full = raw_real.reshape((m_tot, nl, nz, ny_full, nx))
+                if m_ghost > 0:
+                    ref_real = ref_full[m_ghost:-m_ghost]
+                else:
+                    ref_real = ref_full
+                # bracket_real[0]: (Nl, Nm, Ny, Nx, Nz) -> (Nm, Nl, Nz, Ny, Nx)
+                test_real = np.asarray(bracket_real[0]).transpose(1, 0, 4, 2, 3)
+                _summary("bracket_real", ref_real, test_real)
 
     exb_total = np.asarray(comps["exb_phi"]) + np.asarray(comps["exb_bpar"])
     gx_map = {
