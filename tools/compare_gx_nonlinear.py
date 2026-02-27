@@ -61,8 +61,11 @@ def _interp(target_t: np.ndarray, source_t: np.ndarray, source_y: np.ndarray) ->
 
 
 def _relative_error(a: np.ndarray, b: np.ndarray) -> float:
-    denom = np.maximum(np.abs(b), 1.0e-12)
-    return float(np.nanmean(np.abs(a - b) / denom))
+    mask = np.isfinite(a) & np.isfinite(b)
+    if not np.any(mask):
+        return float("nan")
+    denom = np.maximum(np.abs(b[mask]), 1.0e-12)
+    return float(np.nanmean(np.abs(a[mask] - b[mask]) / denom))
 
 
 def main() -> int:
@@ -85,12 +88,14 @@ def main() -> int:
     print(f"Particle flux rel error: {_relative_error(sp['pflux'], gx_interp['pflux']):.3e}")
 
     fig, ax = plt.subplots(2, 1, figsize=(6.5, 6.0), sharex=True)
-    ax[0].plot(t, sp["Wphi"], label="SPECTRAX Wphi")
-    ax[0].plot(t, gx_interp["Wphi"], label="GX Wphi", linestyle="--")
+    mask = np.isfinite(sp["Wphi"]) & np.isfinite(gx_interp["Wphi"])
+    ax[0].plot(t[mask], sp["Wphi"][mask], label="SPECTRAX Wphi")
+    ax[0].plot(t[mask], gx_interp["Wphi"][mask], label="GX Wphi", linestyle="--")
     ax[0].set_ylabel("Wphi")
     ax[0].legend(frameon=False)
-    ax[1].plot(t, sp["heat"], label="SPECTRAX Q")
-    ax[1].plot(t, gx_interp["heat"], label="GX Q", linestyle="--")
+    mask_h = np.isfinite(sp["heat"]) & np.isfinite(gx_interp["heat"])
+    ax[1].plot(t[mask_h], sp["heat"][mask_h], label="SPECTRAX Q")
+    ax[1].plot(t[mask_h], gx_interp["heat"][mask_h], label="GX Q", linestyle="--")
     ax[1].set_ylabel("Heat flux")
     ax[1].set_xlabel("t")
     ax[1].legend(frameon=False)
