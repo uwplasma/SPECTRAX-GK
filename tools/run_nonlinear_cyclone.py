@@ -89,6 +89,8 @@ def main() -> int:
         p_hyper=4.0,
         hypercollisions_const=1.0,
         hypercollisions_kz=0.0,
+        D_hyper=0.05,
+        p_hyper_kperp=2.0,
     )
     params = _apply_gx_hypercollisions(params, nhermite=args.Nm)
 
@@ -102,7 +104,7 @@ def main() -> int:
     G0[:, 0, 0, ...] = _build_initial_noise(rng, G0[:, 0, 0, ...].shape, args.amp)
     G0 = jnp.asarray(G0)
 
-    term_cfg = TermConfig(nonlinear=1.0, apar=0.0, bpar=0.0)
+    term_cfg = TermConfig(nonlinear=1.0, apar=0.0, bpar=0.0, hyperdiffusion=1.0)
 
     t, diag = integrate_nonlinear_gx_diagnostics(
         G0,
