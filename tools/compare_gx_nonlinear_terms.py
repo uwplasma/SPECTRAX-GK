@@ -107,6 +107,8 @@ def main() -> None:
     parser.add_argument("--Ly", type=float, default=62.8)
     parser.add_argument("--y0", type=float, default=20.0)
     parser.add_argument("--boundary", type=str, default="linked")
+    parser.add_argument("--ntheta", type=int, default=None)
+    parser.add_argument("--nperiod", type=int, default=None)
     parser.add_argument("--out", type=Path, default=None, help="Optional npz output for SPECTRAX terms")
     args = parser.parse_args()
 
@@ -180,8 +182,8 @@ def main() -> None:
             Ly=args.Ly,
             boundary=args.boundary,
             y0=args.y0,
-            ntheta=32,
-            nperiod=2,
+            ntheta=args.ntheta,
+            nperiod=args.nperiod,
         )
     )
     geom = SAlphaGeometry.from_config(cfg.geometry)
