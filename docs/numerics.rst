@@ -124,6 +124,14 @@ result back to full :math:`k_y`. This exactly matches the GX nonlinear bracket
 normalization and minimizes memory traffic. Set ``gx_real_fft = false`` to use
 the full complex FFT bracket instead.
 
+For electromagnetic nonlinear runs, SPECTRAX-GK stacks the gyro-averaged
+potentials ``J0*phi``, ``J0*apar``, and the ``bpar`` correction into a single
+FFT batch. This collapses multiple rFFT/iFFT passes into one pipeline per
+step and reuses the same real-space gradients for all channels.
+Laguerre/Bessel factors on the GX quadrature grid (``J0`` and ``J1/alpha``) are
+precomputed once per grid and cached in the linear operator, so the nonlinear
+kernel only applies them via inexpensive elementwise multiplies.
+
 De-aliasing and hyperdiffusion
 ------------------------------
 
@@ -149,6 +157,9 @@ end-to-end JAX differentiability:
   integrate multiple ky values at once using a sliced ky grid. Set
   ``fixed_batch_shape=True`` (default) to edge-pad the final batch and avoid
   recompilation on short tail batches.
+- **Stacked FFT channels**: nonlinear brackets batch ``phi/apar/bpar`` into a
+  single FFT pipeline so the spatial derivatives are computed once and reused
+  across fields. This removes redundant transforms and reduces FFT calls.
 - **Donation and sharded buffers**: time integrators donate state buffers in
   JIT-compiled paths to reduce allocations. The diffrax integrators accept a
   ``state_sharding`` argument if you want to preserve explicit JAX sharding on
