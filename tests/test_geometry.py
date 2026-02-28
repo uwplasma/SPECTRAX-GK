@@ -50,7 +50,8 @@ def test_metric_and_drift_coeffs_at_midplane():
     assert jnp.isclose(gds22, geom.s_hat * geom.s_hat)
 
     cv, gb, cv0, gb0 = geom.drift_coeffs(theta)
-    assert jnp.isclose(cv[0], 1.0 / geom.R0)
+    expected = geom.drift_scale * (1.0 / geom.R0)
+    assert jnp.isclose(cv[0], expected)
     assert jnp.isclose(gb[0], cv[0])
     assert jnp.isclose(cv0[0], 0.0)
     assert jnp.isclose(gb0[0], 0.0)

@@ -186,6 +186,11 @@ Benchmark runners expose ``diagnostic_norm`` and route it through
 
 This affects reporting only; it does not alter the RHS/operator.
 
+The unified runtime schema defaults to ``diagnostic_norm = "gx"`` so that
+out-of-the-box reports match GX-style normalization. Set
+``diagnostic_norm = "none"`` in the TOML or runtime config to recover raw
+solver outputs.
+
 GX end-damping strength (``damp_ends_amp``) is scaled by the timestep inside the
 integrator to match the GX implementation: the damping kernel receives
 ``damp_ends_amp / dt`` so that the damping is defined per unit time.

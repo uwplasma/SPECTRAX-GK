@@ -3,7 +3,7 @@
 import jax.numpy as jnp
 import pytest
 
-from spectraxgk.config import CycloneBaseCase, GridConfig
+from spectraxgk.config import CycloneBaseCase, GridConfig, GeometryConfig
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.linear import (
@@ -110,14 +110,14 @@ def test_build_H_adds_phi_to_m0():
     assert jnp.allclose(H[0, :, 1, 0, 0, 0], 0.0)
 
 
-def test_build_H_adds_apar_to_m1():
-    """Apar term should enter H at m=1 with the correct sign."""
+def test_build_H_ignores_apar():
+    """Apar does not enter H (streaming handles A_parallel explicitly)."""
     G = jnp.zeros((1, 2, 2, 1, 1, 1))
     Jl = jnp.ones((1, 2, 1, 1, 1))
     phi = jnp.zeros((1, 1, 1))
     apar = jnp.ones((1, 1, 1))
     H = build_H(G, Jl, phi, tz=jnp.array([1.0]), apar=apar, vth=jnp.array([2.0]))
-    assert jnp.allclose(H[0, :, 1, 0, 0, 0], -2.0)
+    assert jnp.allclose(H[0, :, 1, 0, 0, 0], 0.0)
 
 
 def test_build_H_adds_bpar_to_m0():
@@ -129,6 +129,23 @@ def test_build_H_adds_bpar_to_m0():
     bpar = jnp.ones((1, 1, 1))
     H = build_H(G, Jl, phi, tz=jnp.array([1.0]), bpar=bpar, JlB=JlB)
     assert jnp.allclose(H[0, :, 0, 0, 0, 0], JlB[0, :, 0, 0, 0])
+
+
+def test_linear_cache_bessel_bmag_power_scales_b():
+    grid_cfg = GridConfig(Nx=1, Ny=1, Nz=8, Lx=6.0, Ly=6.0)
+    grid = build_spectral_grid(grid_cfg)
+    geom_base = SAlphaGeometry.from_config(GeometryConfig(R0=2.77778))
+    geom_bmag = SAlphaGeometry.from_config(
+        GeometryConfig(R0=2.77778, kperp2_bmag=False, bessel_bmag_power=1.0)
+    )
+    params = LinearParams()
+    cache_base = build_linear_cache(grid, geom_base, params, Nl=2, Nm=2)
+    cache_bmag = build_linear_cache(grid, geom_bmag, params, Nl=2, Nm=2)
+    bmag = geom_bmag.bmag(jnp.asarray(grid.z))
+    ratio = cache_bmag.b / cache_base.b
+    expected = (1.0 / bmag)[None, None, None, :]
+    mask = jnp.isfinite(ratio)
+    assert jnp.allclose(ratio[mask], expected[mask], rtol=1.0e-6, atol=1.0e-8)
 
 
 def test_streaming_zero_for_constant_z():

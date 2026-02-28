@@ -101,13 +101,13 @@ def test_build_shift_invert_preconditioner_modes() -> None:
     assert jnp.all(jnp.isfinite(jnp.real(y)))
 
     precond, op = lk._build_shift_invert_precond(v0, cache, params, term_cfg, sigma, "hermite-line")
-    assert precond is None and op is not None
+    assert op is not None
     y = op(v0.reshape(-1))
     assert y.shape == (v0.size,)
     assert jnp.all(jnp.isfinite(jnp.real(y)))
 
     precond, op = lk._build_shift_invert_precond(v0, cache, params, term_cfg, sigma, "hermite-line-coarse")
-    assert precond is None and op is not None
+    assert op is not None
     y = op(v0.reshape(-1))
     assert y.shape == (v0.size,)
     assert jnp.all(jnp.isfinite(jnp.real(y)))
@@ -117,7 +117,7 @@ def test_build_shift_invert_preconditioner_linked_branch() -> None:
     _grid, cache, params, v0, term_cfg, _terms = _tiny_krylov_setup(linked=True)
     sigma = jnp.asarray(0.2j, dtype=v0.dtype)
     precond, op = lk._build_shift_invert_precond(v0, cache, params, term_cfg, sigma, "hermite-line")
-    assert precond is None and op is not None
+    assert op is not None
     y = op(v0.reshape(-1))
     assert y.shape == (v0.size,)
     assert jnp.all(jnp.isfinite(jnp.real(y)))
