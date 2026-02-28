@@ -44,6 +44,7 @@ The geometry is specified by:
 - ``epsilon``: inverse aspect ratio
 - ``R0``: reference major radius
 - ``B0``: reference magnetic field
+- ``drift_scale``: drift normalization (``1.0`` matches GX; ``2.0`` matches GS2)
 
 Field-aligned grid parameters
 -----------------------------

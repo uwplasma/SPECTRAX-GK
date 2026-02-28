@@ -38,7 +38,7 @@ Minimal runtime TOML example
 
    [normalization]
    contract = "cyclone"
-   diagnostic_norm = "none"
+   diagnostic_norm = "gx"
 
    [terms]
    streaming = 1.0
@@ -66,6 +66,7 @@ Minimal TOML example
 .. code-block:: toml
 
    case = "cyclone"
+   gx_parity = true
 
    [grid]
    Nx = 1
@@ -104,6 +105,11 @@ The ``[time]`` section also accepts ``gx_real_fft`` (default ``true``) to
 select the GX-style real FFT nonlinear bracket. Set ``gx_real_fft = false`` to
 use a full complex FFT for the nonlinear term.
 
+The ``[geometry]`` section supports ``drift_scale`` to switch between GX-style
+(``drift_scale = 1.0``) and GS2-style (``drift_scale = 2.0``) drift
+normalizations. The default configuration in SPECTRAX-GK uses the GX parity
+value.
+
 Solver and fit-signal keys
 --------------------------
 
@@ -126,6 +132,7 @@ CLI usage
    spectrax-gk scan-linear --config examples/configs/etg.toml --plot --outdir docs/_static
    spectrax-gk run-runtime-linear --config examples/configs/runtime_cyclone.toml
    spectrax-gk scan-runtime-linear --config examples/configs/runtime_etg.toml
+   spectrax-gk run-runtime-nonlinear --config examples/configs/runtime_cyclone.toml --out docs/_static/nonlinear_cyclone_diag.csv
 
 Python driver
 -------------
@@ -148,6 +155,7 @@ Supported sections include:
 * ``[run]`` (single-ky run settings)
 * ``[scan]`` (ky scan settings)
 * ``[fit]`` (growth-rate windowing options)
+* ``gx_parity`` (top-level flag or ``[gx_parity] enabled = true`` to enforce GX parity defaults)
 * ``[terms]`` (toggle linear terms)
 * ``[krylov]`` (Krylov solver settings)
 

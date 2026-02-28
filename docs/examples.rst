@@ -29,6 +29,20 @@ Cyclone linear benchmark
 
    python examples/cyclone_linear_benchmark.py
 
+Cyclone linear driver (JAX/JIT)
+-------------------------------
+
+.. code-block:: bash
+
+   python examples/cyclone_linear_driver.py
+
+Cyclone nonlinear driver (JAX/JIT)
+----------------------------------
+
+.. code-block:: bash
+
+   python examples/cyclone_nonlinear_driver.py
+
 ETG auto benchmark (newcomer-friendly)
 --------------------------------------
 

@@ -515,6 +515,20 @@ Recommended ETG cross-code command (GS2 or stella):
      --stella-csv docs/_static/etg_stella_mismatch.csv \
      --out docs/_static/etg_gs2_stella_comparison.png
 
+Nonlinear Cyclone diagnostics
+-----------------------------
+
+Nonlinear Cyclone runs use GX-style diagnostics in both GX and SPECTRAX-GK.
+The comparison below plots the GX and SPECTRAX diagnostics for a matched
+nonlinear Cyclone case (same grid and time stepping):
+
+.. figure:: _static/nonlinear_cyclone_diag_compare.png
+   :width: 95%
+   :alt: Nonlinear Cyclone diagnostics comparison between GX and SPECTRAX-GK
+
+   Nonlinear Cyclone diagnostics (GX vs SPECTRAX-GK): Wg, Wphi, Wapar, total
+   energy, heat flux, and particle flux.
+
 Reference data extraction
 -------------------------
 
