@@ -1,0 +1,108 @@
+#!/usr/bin/env python3
+"""Compare GX vs SPECTRAX nonlinear diagnostics for Cyclone runs."""
+
+from __future__ import annotations
+
+import argparse
+from pathlib import Path
+
+import numpy as np
+import matplotlib.pyplot as plt
+from netCDF4 import Dataset
+
+
+def _load_spectrax_csv(path: Path) -> dict[str, np.ndarray]:
+    data = np.loadtxt(path, delimiter=",", skiprows=1)
+    return {
+        "t": data[:, 0],
+        "gamma": data[:, 1],
+        "omega": data[:, 2],
+        "Wg": data[:, 3],
+        "Wphi": data[:, 4],
+        "Wapar": data[:, 5],
+        "energy": data[:, 6],
+        "heat_flux": data[:, 7],
+        "particle_flux": data[:, 8],
+    }
+
+
+def _load_gx_diag(path: Path) -> dict[str, np.ndarray]:
+    root = Dataset(path, "r")
+    diag = root.groups["Diagnostics"]
+    grid = root.groups["Grids"]
+    t = np.asarray(grid.variables["time"][:], dtype=float)
+    def _sum_s(name: str) -> np.ndarray:
+        arr = np.asarray(diag.variables[name][:], dtype=float)
+        if arr.ndim == 2:
+            return np.sum(arr, axis=1)
+        return arr
+
+    out = {
+        "t": t,
+        "phi2": np.asarray(diag.variables["Phi2_t"][:], dtype=float),
+        "Wg": _sum_s("Wg_st"),
+        "Wphi": _sum_s("Wphi_st"),
+        "Wapar": _sum_s("Wapar_st"),
+        "heat_flux": _sum_s("HeatFlux_st"),
+        "particle_flux": _sum_s("ParticleFlux_st"),
+    }
+    out["energy"] = out["Wg"] + out["Wphi"] + out["Wapar"]
+    root.close()
+    return out
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--gx", type=Path, required=True, help="GX .out.nc file with diagnostics")
+    parser.add_argument("--spectrax", type=Path, required=True, help="SPECTRAX nonlinear CSV diagnostics")
+    parser.add_argument(
+        "--out",
+        type=Path,
+        default=Path("docs/_static/nonlinear_cyclone_diag_compare.png"),
+        help="Output figure path",
+    )
+    args = parser.parse_args()
+
+    gx = _load_gx_diag(args.gx)
+    sp = _load_spectrax_csv(args.spectrax)
+
+    fig, axes = plt.subplots(3, 2, figsize=(9.5, 8.5), sharex=True)
+    axes = axes.ravel()
+
+    axes[0].plot(gx["t"], gx["Wg"], label="GX", lw=2)
+    axes[0].plot(sp["t"], sp["Wg"], label="SPECTRAX-GK", lw=2)
+    axes[0].set_ylabel("Wg")
+    axes[0].legend(frameon=False)
+
+    axes[1].plot(gx["t"], gx["Wphi"], label="GX", lw=2)
+    axes[1].plot(sp["t"], sp["Wphi"], label="SPECTRAX-GK", lw=2)
+    axes[1].set_ylabel("Wphi")
+
+    axes[2].plot(gx["t"], gx["Wapar"], label="GX", lw=2)
+    axes[2].plot(sp["t"], sp["Wapar"], label="SPECTRAX-GK", lw=2)
+    axes[2].set_ylabel("Wapar")
+
+    axes[3].plot(gx["t"], gx["energy"], label="GX", lw=2)
+    axes[3].plot(sp["t"], sp["energy"], label="SPECTRAX-GK", lw=2)
+    axes[3].set_ylabel("Wtot")
+
+    axes[4].plot(gx["t"], gx["heat_flux"], label="GX", lw=2)
+    axes[4].plot(sp["t"], sp["heat_flux"], label="SPECTRAX-GK", lw=2)
+    axes[4].set_ylabel("Heat flux")
+    axes[4].set_xlabel("t")
+
+    axes[5].plot(gx["t"], gx["particle_flux"], label="GX", lw=2)
+    axes[5].plot(sp["t"], sp["particle_flux"], label="SPECTRAX-GK", lw=2)
+    axes[5].set_ylabel("Particle flux")
+    axes[5].set_xlabel("t")
+
+    fig.suptitle("Nonlinear Cyclone diagnostics: GX vs SPECTRAX-GK", fontsize=12)
+    fig.tight_layout()
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(args.out, dpi=200)
+    print(f"saved {args.out}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

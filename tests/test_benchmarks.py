@@ -152,6 +152,7 @@ def test_run_cyclone_linear_manual_window():
         dt=0.1,
         method="rk2",
         solver="time",
+        gx_parity=False,
         auto_window=False,
         tmin=0.1,
         tmax=0.3,
@@ -238,6 +239,7 @@ def test_cyclone_physics_regression():
         dt=0.01,
         method="imex2",
         solver="time",
+        gx_parity=False,
     )
     ref = load_cyclone_reference()
     idx = int(np.argmin(np.abs(ref.ky - 0.3)))
@@ -270,7 +272,15 @@ def test_cyclone_krylov_smoke():
     """Krylov solver should return finite eigenvalues on a small scan."""
     grid = GridConfig(Nx=1, Ny=24, Nz=96, Lx=62.8, Ly=62.8)
     cfg = CycloneBaseCase(grid=grid)
-    result = run_cyclone_linear(cfg=cfg, ky_target=0.3, Nl=4, Nm=8, solver="krylov")
+    krylov_cfg = KrylovConfig(method="power", power_iters=40, power_dt=0.05)
+    result = run_cyclone_linear(
+        cfg=cfg,
+        ky_target=0.3,
+        Nl=4,
+        Nm=8,
+        solver="krylov",
+        krylov_cfg=krylov_cfg,
+    )
     assert np.isfinite(result.gamma)
     assert np.isfinite(result.omega)
 

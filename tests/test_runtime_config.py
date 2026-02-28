@@ -27,6 +27,12 @@ def test_runtime_config_to_dict_contains_sections() -> None:
     assert len(d["species"]) == 1
 
 
+def test_runtime_defaults_match_gx_parity() -> None:
+    cfg = RuntimeConfig()
+    assert cfg.geometry.drift_scale == 1.0
+    assert cfg.normalization.diagnostic_norm == "gx"
+
+
 def test_load_runtime_from_toml_roundtrip(tmp_path: Path) -> None:
     toml = """
 [[species]]
@@ -77,4 +83,3 @@ omega_star_scale = 0.7
     assert cfg.normalization.omega_star_scale == pytest.approx(0.7)
     assert len(cfg.species) == 2
     assert cfg.species[1].charge == pytest.approx(-1.0)
-

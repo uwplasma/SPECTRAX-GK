@@ -11,6 +11,7 @@ from spectraxgk.runtime import (
     build_runtime_linear_params,
     build_runtime_linear_terms,
     run_runtime_linear,
+    run_runtime_nonlinear,
     run_runtime_scan,
 )
 from spectraxgk.runtime_config import (
@@ -134,3 +135,16 @@ def test_runtime_scan_returns_arrays() -> None:
     assert scan.ky.shape == (2,)
     assert scan.gamma.shape == (2,)
     assert scan.omega.shape == (2,)
+
+
+def test_runtime_nonlinear_smoke() -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        species=(RuntimeSpeciesConfig(name="ion"),),
+        normalization=RuntimeNormalizationConfig(contract="cyclone"),
+        physics=RuntimePhysicsConfig(adiabatic_electrons=True, nonlinear=True),
+        terms=RuntimeTermsConfig(nonlinear=1.0, hypercollisions=0.0, end_damping=0.0),
+    )
+    res = run_runtime_nonlinear(cfg, ky_target=0.2, Nl=3, Nm=4, dt=0.01, steps=3, sample_stride=1)
+    assert res.diagnostics is not None
+    assert res.diagnostics.t.size == 3
