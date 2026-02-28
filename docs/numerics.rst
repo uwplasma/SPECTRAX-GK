@@ -131,6 +131,11 @@ step and reuses the same real-space gradients for all channels.
 Laguerre/Bessel factors on the GX quadrature grid (``J0`` and ``J1/alpha``) are
 precomputed once per grid and cached in the linear operator, so the nonlinear
 kernel only applies them via inexpensive elementwise multiplies.
+For nonlinear runs that do not require the GX quadrature grid, set
+``TimeConfig.laguerre_nonlinear_mode="spectral"`` to skip the Laguerre
+quadrature transform and instead use the spectral gyroaverage factors ``Jl``
+directly. The default ``"grid"`` mode matches GX and applies the quadrature
+transform.
 
 De-aliasing and hyperdiffusion
 ------------------------------

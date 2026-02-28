@@ -148,3 +148,25 @@ def test_runtime_nonlinear_smoke() -> None:
     res = run_runtime_nonlinear(cfg, ky_target=0.2, Nl=3, Nm=4, dt=0.01, steps=3, sample_stride=1)
     assert res.diagnostics is not None
     assert res.diagnostics.t.size == 3
+
+
+def test_runtime_nonlinear_diagnostics_stride() -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        species=(RuntimeSpeciesConfig(name="ion"),),
+        normalization=RuntimeNormalizationConfig(contract="cyclone"),
+        physics=RuntimePhysicsConfig(adiabatic_electrons=True, nonlinear=True),
+        terms=RuntimeTermsConfig(nonlinear=1.0, hypercollisions=0.0, end_damping=0.0),
+    )
+    res = run_runtime_nonlinear(
+        cfg,
+        ky_target=0.2,
+        Nl=3,
+        Nm=4,
+        dt=0.01,
+        steps=5,
+        sample_stride=1,
+        diagnostics_stride=2,
+    )
+    assert res.diagnostics is not None
+    assert res.diagnostics.t.size == 3

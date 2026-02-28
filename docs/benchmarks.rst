@@ -80,6 +80,7 @@ compiled HLO). For large scans, prefer:
 - ``progress_bar=False``
 - consistent ``dt/steps`` to avoid recompilation
 - ``sample_stride>1`` to reduce diagnostics overhead
+- ``diagnostics_stride>1`` to compute GX-style diagnostics less frequently
 - Krylov scan mode for linear eigenvalue-only workflows
 
 Cyclone Base Case (Linear, Adiabatic Electrons)
