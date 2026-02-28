@@ -33,6 +33,7 @@ def test_integrate_nonlinear_methods_match_linear_amplification(method, one_step
     steps = 4
     rate = 0.3 - 0.2j
     G0 = jnp.asarray([[1.0 + 0.0j, 0.5 + 0.25j]], dtype=jnp.complex64)
+    G0_ref = jnp.array(G0)
     G_final, fields = integrate_nonlinear(
         _linear_rhs(rate),
         G0,
@@ -42,7 +43,7 @@ def test_integrate_nonlinear_methods_match_linear_amplification(method, one_step
         checkpoint=True,
     )
     a = rate * dt
-    expected = (one_step_factor(a) ** steps) * G0
+    expected = (one_step_factor(a) ** steps) * G0_ref
     assert G_final.shape == G0.shape
     assert fields.phi.shape[0] == steps
     assert jnp.allclose(G_final, expected, rtol=3.0e-3, atol=3.0e-3)
