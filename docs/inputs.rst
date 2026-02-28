@@ -103,7 +103,12 @@ Minimal TOML example
 
 The ``[time]`` section also accepts ``gx_real_fft`` (default ``true``) to
 select the GX-style real FFT nonlinear bracket. Set ``gx_real_fft = false`` to
-use a full complex FFT for the nonlinear term.
+use a full complex FFT for the nonlinear term. Nonlinear diagnostics can be
+decimated with ``diagnostics_stride`` (compute/output every ``N`` steps). To
+control the Laguerre handling in nonlinear brackets, set
+``laguerre_nonlinear_mode = "grid"`` (GX-style quadrature, default) or
+``laguerre_nonlinear_mode = "spectral"`` (use spectral ``Jl`` without the
+quadrature transform).
 
 The ``[geometry]`` section supports ``drift_scale`` to switch between GX-style
 (``drift_scale = 1.0``) and GS2-style (``drift_scale = 2.0``) drift
