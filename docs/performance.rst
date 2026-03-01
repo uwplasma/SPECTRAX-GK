@@ -126,6 +126,28 @@ This puts SPECTRAX at ~6.9x slower than GX on GPU and ~40.8x slower on CPU for
 the same nonlinear Cyclone base case configuration. The gap is dominated by the
 nonlinear FFT pipeline and residual gather/scatter operations.
 
+Spectral nonlinear mode (fast toggle)
+-------------------------------------
+
+The spectral nonlinear mode skips Laguerre quadrature for the nonlinear bracket
+(``laguerre_nonlinear_mode = "spectral"`` or ``"fast"``). On the same Cyclone
+setup, the observed runtimes were:
+
+.. code-block:: text
+
+   SPECTRAX GPU: 0.09617 s / step  (≈1.18× faster than grid mode)
+   SPECTRAX CPU: 0.76575 s / step  (≈0.88×, slower than grid mode)
+
+Cyclone parity impact (GX diagnostics, t≤7.6):
+
+- Wg mean abs rel: 5.4%
+- Wphi mean abs rel: 11.2%
+- Heat flux mean abs rel: 10.7%
+
+The parity is essentially unchanged relative to grid mode for this case, but
+the speedup is modest; larger gains will require further FFT fusion and scatter
+elimination.
+
 Cached basis indices
 --------------------
 
