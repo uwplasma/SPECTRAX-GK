@@ -15,9 +15,14 @@ from spectraxgk.benchmarks import (
     CYCLONE_OMEGA_D_SCALE,
     CYCLONE_OMEGA_STAR_SCALE,
     CYCLONE_RHO_STAR,
+    KBM_OMEGA_D_SCALE,
+    KBM_OMEGA_STAR_SCALE,
+    KBM_RHO_STAR,
     CycloneBaseCase,
+    KBMBaseCase,
     _apply_gx_hypercollisions,
     _build_initial_condition,
+    _two_species_params,
 )
 from spectraxgk.config import GridConfig
 from spectraxgk.geometry import SAlphaGeometry
@@ -137,12 +142,15 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--gx-dir", type=Path, required=True, help="Directory with rhs_stream.bin, rhs_linear.bin")
     parser.add_argument("--gx-out", type=Path, required=True, help="GX .out.nc file to map ky indices")
+    parser.add_argument("--case", type=str, default="cyclone", choices=("cyclone", "kbm"))
     parser.add_argument("--ky", type=float, default=0.3)
     parser.add_argument("--Nl", type=int, default=48)
     parser.add_argument("--Nm", type=int, default=16)
     parser.add_argument("--Ny", type=int, default=24)
     parser.add_argument("--Nz", type=int, default=96)
     parser.add_argument("--y0", type=float, default=20.0)
+    parser.add_argument("--ntheta", type=int, default=None)
+    parser.add_argument("--nperiod", type=int, default=None)
     args = parser.parse_args()
 
     shape_path = args.gx_dir / "rhs_terms_shape.txt"
@@ -180,41 +188,70 @@ def main() -> None:
     gx_dia = gx_dia[:, :, :, ky_idx : ky_idx + 1, :, :]
     gx_coll = gx_coll[:, :, :, ky_idx : ky_idx + 1, :, :]
 
-    cfg = CycloneBaseCase(
-        grid=GridConfig(
-            Nx=nx,
-            Ny=args.Ny,
-            Nz=args.Nz,
-            Lx=62.8,
-            Ly=62.8,
-            boundary="linked",
-            y0=args.y0,
-            ntheta=None,
-            nperiod=None,
+    if args.case == "cyclone":
+        cfg = CycloneBaseCase(
+            grid=GridConfig(
+                Nx=nx,
+                Ny=args.Ny,
+                Nz=args.Nz,
+                Lx=62.8,
+                Ly=62.8,
+                boundary="linked",
+                y0=args.y0,
+                ntheta=None,
+                nperiod=None,
+            )
         )
-    )
-    geom = SAlphaGeometry.from_config(cfg.geometry)
+        geom = SAlphaGeometry.from_config(cfg.geometry)
+        params = LinearParams(
+            R_over_Ln=cfg.model.R_over_Ln,
+            R_over_LTi=cfg.model.R_over_LTi,
+            R_over_LTe=cfg.model.R_over_LTe,
+            omega_d_scale=CYCLONE_OMEGA_D_SCALE,
+            omega_star_scale=CYCLONE_OMEGA_STAR_SCALE,
+            rho_star=CYCLONE_RHO_STAR,
+            kpar_scale=float(geom.gradpar()),
+            nu=cfg.model.nu_i,
+            damp_ends_amp=0.0,
+            damp_ends_widthfrac=0.0,
+        )
+        params = _apply_gx_hypercollisions(params, nhermite=args.Nm)
+        init_species_index = 0
+    else:
+        ntheta = args.ntheta if args.ntheta is not None else 32
+        nperiod = args.nperiod if args.nperiod is not None else 2
+        cfg = KBMBaseCase(
+            grid=GridConfig(
+                Nx=nx,
+                Ny=args.Ny,
+                Nz=args.Nz,
+                Lx=62.8,
+                Ly=62.8,
+                boundary="linked",
+                y0=args.y0,
+                ntheta=ntheta,
+                nperiod=nperiod,
+            )
+        )
+        geom = SAlphaGeometry.from_config(cfg.geometry)
+        params = _two_species_params(
+            cfg.model,
+            kpar_scale=float(geom.gradpar()),
+            omega_d_scale=KBM_OMEGA_D_SCALE,
+            omega_star_scale=KBM_OMEGA_STAR_SCALE,
+            rho_star=KBM_RHO_STAR,
+            nhermite=args.Nm,
+        )
+        init_species_index = 0
+
     grid_full = build_spectral_grid(cfg.grid)
     ky_index = int(np.argmin(np.abs(np.asarray(grid_full.ky) - float(args.ky))))
     grid = select_ky_grid(grid_full, ky_index)
-    params = LinearParams(
-        R_over_Ln=cfg.model.R_over_Ln,
-        R_over_LTi=cfg.model.R_over_LTi,
-        R_over_LTe=cfg.model.R_over_LTe,
-        omega_d_scale=CYCLONE_OMEGA_D_SCALE,
-        omega_star_scale=CYCLONE_OMEGA_STAR_SCALE,
-        rho_star=CYCLONE_RHO_STAR,
-        kpar_scale=float(geom.gradpar()),
-        nu=cfg.model.nu_i,
-        damp_ends_amp=0.0,
-        damp_ends_widthfrac=0.0,
-    )
-    params = _apply_gx_hypercollisions(params, nhermite=args.Nm)
     cache = build_linear_cache(grid, geom, params, args.Nl, args.Nm)
     cache = _cast_cache(cache, real_dtype=jnp.float32, complex_dtype=jnp.complex64)
     if gx_g_path.exists():
         gx_g = _reshape_gx(_load_bin(gx_g_path, gx_shape), nspec=nspec, nl=nl, nm=nm, nyc=nyc, nx=nx, nz=nz)
-        gx_g = gx_g[0, :, :, ky_idx : ky_idx + 1, :, :]
+        gx_g = gx_g[:, :, :, ky_idx : ky_idx + 1, :, :]
         G0 = jnp.asarray(gx_g.astype(np.complex64))
     else:
         G0 = _build_initial_condition(
