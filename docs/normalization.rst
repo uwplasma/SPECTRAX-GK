@@ -131,7 +131,7 @@ The midplane index used by the GX growth-rate diagnostic corresponds to
 ``z_index = Nz//2 + 1``, matching the GX kernel logic when ``Nz > 1``.
 
 GX-aligned perpendicular normalization
--------------------------------------
+--------------------------------------
 
 GX defines the perpendicular metric as :math:`k_\perp^2/B^2` before applying
 the Laguerre gyroaverage. To match that convention in SPECTRAX-GK:
@@ -190,6 +190,21 @@ The unified runtime schema defaults to ``diagnostic_norm = "gx"`` so that
 out-of-the-box reports match GX-style normalization. Set
 ``diagnostic_norm = "none"`` in the TOML or runtime config to recover raw
 solver outputs.
+
+GX-aligned diagnostic scaling
+-----------------------------
+
+GX diagnostics apply fixed factors in a few places that depend on the storage
+convention (e.g. real-FFT nyquist handling or per-unit-time damping). The
+runtime schema therefore exposes light-weight diagnostic scale factors:
+
+- ``flux_scale``: multiplicative factor applied to the reported heat/particle
+  fluxes (default ``2.0`` for GX parity).
+- ``wphi_scale``: multiplicative factor applied to ``Wphi`` (default ``1.0``;
+  Cyclone GX parity uses ``1.155`` in the nonlinear benchmark config).
+
+These are reporting-only knobs; they do not alter the RHS/operator. They are
+intended to document the exact parity settings used for benchmark plots.
 
 GX end-damping strength (``damp_ends_amp``) is scaled by the timestep inside the
 integrator to match the GX implementation: the damping kernel receives

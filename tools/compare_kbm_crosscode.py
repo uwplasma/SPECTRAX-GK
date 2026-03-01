@@ -12,6 +12,8 @@ import pandas as pd
 import xarray as xr
 
 from spectraxgk.benchmarks import KBM_KRYLOV_DEFAULT, run_kbm_beta_scan
+from spectraxgk.config import KBMBaseCase
+from spectraxgk.geometry import SAlphaGeometry
 
 
 def _load_gs2_kbm_points(files: Iterable[Path], ky_target: float) -> pd.DataFrame:
@@ -168,6 +170,12 @@ def main() -> None:
             "omega_spectrax": np.asarray(scan.omega, dtype=float),
         }
     )
+    geom = SAlphaGeometry.from_config(KBMBaseCase().geometry)
+    scale = float(geom.R0)
+    if scale > 0.0:
+        sp["gamma_spectrax"] *= scale
+        sp["omega_spectrax"] *= scale
+        print(f"Applied GS2 normalization scale (R0/a) = {scale:.6g}")
 
     gs2_cmp = _merge_with_spectrax(gs2_ref, sp).sort_values("beta").reset_index(drop=True)
     stella_cmp = _merge_with_spectrax(stella_ref, sp).sort_values("beta").reset_index(drop=True)

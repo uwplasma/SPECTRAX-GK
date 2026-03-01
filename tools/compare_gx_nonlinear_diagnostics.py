@@ -55,6 +55,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--gx", type=Path, required=True, help="GX .out.nc file with diagnostics")
     parser.add_argument("--spectrax", type=Path, required=True, help="SPECTRAX nonlinear CSV diagnostics")
+    parser.add_argument("--tmax", type=float, default=None, help="Optional max time for plotting")
     parser.add_argument(
         "--out",
         type=Path,
@@ -65,6 +66,14 @@ def main() -> int:
 
     gx = _load_gx_diag(args.gx)
     sp = _load_spectrax_csv(args.spectrax)
+
+    if args.tmax is not None:
+        gx_mask = gx["t"] <= args.tmax
+        sp_mask = sp["t"] <= args.tmax
+        for key in gx:
+            gx[key] = gx[key][gx_mask]
+        for key in sp:
+            sp[key] = sp[key][sp_mask]
 
     fig, axes = plt.subplots(3, 2, figsize=(9.5, 8.5), sharex=True)
     axes = axes.ravel()

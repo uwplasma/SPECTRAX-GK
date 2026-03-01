@@ -68,6 +68,7 @@ end_damping = 1.0
 [normalization]
 contract = "cyclone"
 diagnostic_norm = "gx"
+wphi_scale = 1.155
 
 [run]
 ky = 0.3
