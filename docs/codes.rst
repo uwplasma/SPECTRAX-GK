@@ -18,7 +18,7 @@ for linear and nonlinear regimes.
 Current linear benchmarking policy:
 
 - Cyclone, ETG: compare against GS2 and stella.
-- KBM: use GS2 as the primary electromagnetic cross-code baseline.
+- KBM: use GX (s-alpha geometry) as the primary electromagnetic cross-code baseline.
 - stella KBM comparisons are reported as diagnostic-only until the documented
   ``beta/fapar/fbpar`` behavior is unambiguously electromagnetic in the tested
   stella build. [STELLADOCS]_

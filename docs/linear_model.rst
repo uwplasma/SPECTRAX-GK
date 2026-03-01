@@ -166,7 +166,7 @@ For all linear benchmark plots/tables:
 - report :math:`\gamma,\omega` with explicit normalization
 - publish mismatch tables by scan coordinate (:math:`k_y` or :math:`\beta_{ref}`)
 - include per-case parameter tables (geometry, gradients, species, toggles, grid, resolution)
-- use GS2 as the electromagnetic cross-code baseline for KBM
+- use GX (s-alpha geometry) as the electromagnetic cross-code baseline for KBM
 
 The nonlinear roadmap builds directly on this operator decomposition and
 normalization contract.

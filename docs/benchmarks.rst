@@ -140,7 +140,7 @@ overrides (e.g. custom ``geometry.drift_scale``, solver selection, or
 
    Cross-code linear summary of eigenfunctions, growth rates, and frequencies
    for Cyclone, ETG, and KBM (Cyclone vs GX/GS2/stella, ETG vs GS2/stella,
-   KBM vs GS2).
+   KBM vs GX).
 
 .. figure:: _static/cyclone_comparison.png
    :align: center
@@ -265,11 +265,11 @@ KBM (Electromagnetic Beta Scan)
 -------------------------------
 
 Electromagnetic ballooning validation uses a fixed :math:`k_y` and a scan over
-:math:`\beta_{ref}`. The reference data are stored in:
+:math:`\beta_{ref}`. Primary closure is now against GX (s-alpha geometry). Use
+``benchmarks/linear/KBM/kbm_salpha.in`` in the GX repository and
+``tools/compare_gx_kbm.py`` in SPECTRAX-GK to regenerate the mismatch tables.
 
-- ``spectraxgk/data/kbm_reference_gs2.csv``
-
-.. list-table:: KBM parameters (GS2 matched-input set)
+.. list-table:: KBM parameters (GX s-alpha matched-input set)
    :header-rows: 1
 
    * - Parameter
@@ -283,42 +283,31 @@ Electromagnetic ballooning validation uses a fixed :math:`k_y` and a scan over
    * - Electromagnetic
      - ``beta_ref`` scan, ``A_parallel=on``, ``B_parallel=off``
    * - Collisions
-     - ``nu_i=0``, ``nu_e=0``, hypercollisions off
+     - ``nu_i=0``, ``nu_e=0``, GX-style hypercollisions on
    * - Operator toggles
      - streaming/mirror/curvature/grad-B/diamagnetic on; nonlinear off
    * - Grid
-     - ``Nx=1, Ny=12, Nz=96, y0=10, ntheta=32, nperiod=2``
+     - ``Nx=1, Ny=16, Nz=96, y0=10, ntheta=32, nperiod=2``
    * - Velocity resolution
-     - ``Nl=8, Nm=24`` (cross-code figure generation)
+     - ``Nl=16, Nm=48`` (GX parity target)
    * - Time integration (cross-code)
-     - fixed-step IMEX2 (scan default), Diffrax adaptive optional
+     - GX-style RK4 with adaptive dt (parity); fixed-step IMEX2 for scan speed
    * - Fit policy (cross-code)
      - mode extracted at selected ``(ky, kx, z_mid)`` with log-linear
        auto-windowing (conservative amplitude-capped windows)
    * - Reference
-     - GS2 electromagnetic beta scan
+     - GX linear KBM (s-alpha geometry, matched-input set)
 
-KBM GS2 cross-code run
-^^^^^^^^^^^^^^^^^^^^^^
+KBM GX cross-code run
+^^^^^^^^^^^^^^^^^^^^
 
-We executed a matched-input KBM cross-code set at ``ky=0.3`` with
-``beta_ref = [0.1, 0.2, 0.3, 0.4, 0.5]`` for GS2 and SPECTRAX.
+We execute a matched-input KBM cross-code set at ``ky=0.3`` with
+``beta_ref = [0.1, 0.2, 0.3, 0.4, 0.5]`` for GX and SPECTRAX. Use:
 
-.. image:: _static/kbm_gs2_stella_comparison.png
-   :width: 75%
-   :alt: KBM cross-code comparison (SPECTRAX vs GS2 vs stella)
+- ``python tools/compare_gx_kbm.py --gx /path/to/kbm_salpha.out.nc --out docs/_static/kbm_gx_mismatch.csv``
 
-.. csv-table:: KBM GS2 mismatch table (staging)
-   :file: _static/kbm_gs2_mismatch.csv
-   :header-rows: 1
-
-Current summary:
-
-- GS2 vs SPECTRAX is evaluated with relaxed electromagnetic closure tolerance
-  (``rtol <= 20%`` for both ``gamma`` and ``omega`` while normalization/sign
-  audit is finalized).
-
-Primary KBM closure is performed against GS2 only in this repository revision.
+The KBM mismatch table is regenerated locally (not committed) and summarized
+in the run logs once parity closes.
 
 Reduced ky scan tables
 ----------------------
@@ -424,7 +413,7 @@ Completed for the current linear phase:
 
 - Cyclone (adiabatic electrons): GX/GS2/stella cross-code figures and mismatch tables.
 - ETG: GS2/stella cross-code figures and mismatch tables.
-- KBM: GS2 primary electromagnetic closure with mismatch tables and figure.
+- KBM: GX primary electromagnetic closure with mismatch tables and figure.
 - Published, reproducible parameter tables for each figure in README/docs.
 
 Remaining before freezing a publication release:
