@@ -137,6 +137,40 @@ def test_runtime_scan_returns_arrays() -> None:
     assert scan.omega.shape == (2,)
 
 
+def test_runtime_scan_batch_matches_serial() -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        species=(RuntimeSpeciesConfig(name="ion"),),
+        normalization=RuntimeNormalizationConfig(contract="cyclone", diagnostic_norm="none"),
+    )
+    ky_vals = [0.1, 0.2]
+    serial = run_runtime_scan(
+        cfg,
+        ky_values=ky_vals,
+        Nl=4,
+        Nm=6,
+        solver="time",
+        method="rk2",
+        dt=0.01,
+        steps=10,
+        fit_signal="phi",
+    )
+    batched = run_runtime_scan(
+        cfg,
+        ky_values=ky_vals,
+        Nl=4,
+        Nm=6,
+        solver="time",
+        method="rk2",
+        dt=0.01,
+        steps=10,
+        fit_signal="phi",
+        batch_ky=True,
+    )
+    assert np.allclose(serial.gamma, batched.gamma, rtol=5.0e-2, atol=1.0e-8)
+    assert np.allclose(serial.omega, batched.omega, rtol=5.0e-2, atol=1.0e-8)
+
+
 def test_runtime_nonlinear_smoke() -> None:
     cfg = replace(
         _base_runtime_cfg(),
@@ -170,3 +204,49 @@ def test_runtime_nonlinear_diagnostics_stride() -> None:
     )
     assert res.diagnostics is not None
     assert res.diagnostics.t.size == 3
+
+
+def test_runtime_nonlinear_disable_diagnostics() -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        species=(RuntimeSpeciesConfig(name="ion"),),
+        normalization=RuntimeNormalizationConfig(contract="cyclone"),
+        physics=RuntimePhysicsConfig(adiabatic_electrons=True, nonlinear=True),
+        terms=RuntimeTermsConfig(nonlinear=1.0, hypercollisions=0.0, end_damping=0.0),
+    )
+    res = run_runtime_nonlinear(
+        cfg,
+        ky_target=0.2,
+        Nl=3,
+        Nm=4,
+        dt=0.01,
+        steps=3,
+        diagnostics=False,
+    )
+    assert res.diagnostics is None
+    assert res.phi2 is not None
+
+
+def test_runtime_nonlinear_adaptive_dt() -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        time=TimeConfig(
+            t_max=0.2,
+            dt=0.01,
+            method="rk2",
+            use_diffrax=False,
+            sample_stride=1,
+            fixed_dt=False,
+            dt_min=1.0e-5,
+            dt_max=0.02,
+            cfl=0.5,
+        ),
+        species=(RuntimeSpeciesConfig(name="ion"),),
+        normalization=RuntimeNormalizationConfig(contract="cyclone"),
+        physics=RuntimePhysicsConfig(adiabatic_electrons=True, nonlinear=True),
+        terms=RuntimeTermsConfig(nonlinear=1.0, hypercollisions=0.0, end_damping=0.0),
+    )
+    res = run_runtime_nonlinear(cfg, ky_target=0.2, Nl=3, Nm=4, dt=0.01, steps=4)
+    assert res.diagnostics is not None
+    t_arr = np.asarray(res.diagnostics.t)
+    assert np.all(np.diff(t_arr) > 0)

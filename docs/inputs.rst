@@ -103,9 +103,13 @@ Minimal TOML example
 
 The ``[time]`` section also accepts ``gx_real_fft`` (default ``true``) to
 select the GX-style real FFT nonlinear bracket. Set ``gx_real_fft = false`` to
-use a full complex FFT for the nonlinear term. Nonlinear diagnostics can be
-decimated with ``diagnostics_stride`` (compute/output every ``N`` steps). To
-control the Laguerre handling in nonlinear brackets, set
+use a full complex FFT for the nonlinear term. Diagnostics output can be
+decimated with ``sample_stride`` (record every ``N`` steps) and
+``diagnostics_stride`` (compute GX-style diagnostics every ``N`` steps). Set
+``diagnostics = false`` in ``[time]`` (or ``--no-diagnostics`` on the CLI) to
+disable diagnostics entirely for speed. For GX-style CFL timestep control, use
+``fixed_dt = false`` along with ``cfl``/``cfl_fac`` and optional ``dt_min`` /
+``dt_max`` limits. To control the Laguerre handling in nonlinear brackets, set
 ``laguerre_nonlinear_mode = "grid"`` (GX-style quadrature, default) or
 ``laguerre_nonlinear_mode = "spectral"`` (use spectral ``Jl`` without the
 quadrature transform).
@@ -128,6 +132,10 @@ The ``[run]`` and ``[scan]`` sections accept ``solver`` and ``fit_signal`` keys:
 * ``fit_signal = "phi"``: use the electrostatic potential time trace
 * ``fit_signal = "density"``: use the density moment time trace
 
+For large ky scans, ``scan-runtime-linear --batch-ky`` integrates all ky values
+in a single time integration pass (time integrator only) and then extracts the
+growth rates from the per-ky traces.
+
 CLI usage
 ---------
 
@@ -136,8 +144,8 @@ CLI usage
    spectrax-gk run-linear --config examples/configs/cyclone.toml --plot --outdir docs/_static
    spectrax-gk scan-linear --config examples/configs/etg.toml --plot --outdir docs/_static
    spectrax-gk run-runtime-linear --config examples/configs/runtime_cyclone.toml
-   spectrax-gk scan-runtime-linear --config examples/configs/runtime_etg.toml
-   spectrax-gk run-runtime-nonlinear --config examples/configs/runtime_cyclone.toml --out docs/_static/nonlinear_cyclone_diag.csv
+   spectrax-gk scan-runtime-linear --config examples/configs/runtime_etg.toml --batch-ky
+   spectrax-gk run-runtime-nonlinear --config examples/configs/runtime_cyclone.toml --sample-stride 5 --out docs/_static/nonlinear_cyclone_diag.csv
 
 Python driver
 -------------
