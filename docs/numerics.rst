@@ -213,6 +213,9 @@ stores the minimal time traces needed for the comparison.
 Advanced users can override these defaults in TOML or Python drivers by setting
 ``solver="time"``/``"krylov"`` and ``fit_signal="phi"``/``"density"`` together
 with custom fit-window parameters.
+
+Implementation note:
+
 - **Cached hypercollision factors**: the linear cache now stores the Hermite–
   Laguerre hypercollision ratios and masks to avoid repeated power operations
   inside the RHS assembly.
@@ -359,5 +362,5 @@ advects each Hermite–Laguerre moment with a gyro-averaged potential
 :math:`J_l^B` in the Laguerre basis). The electromagnetic flutter contribution
 uses :math:`\{g_m, J_0 A_\parallel\}` and couples adjacent Hermite moments with the
 standard ladder factors, matching the GX nonlinear formulation. See
-:cite:`FC82,AL80,GX` for the governing electromagnetic gyrokinetic equations and
-GX's implementation details.
+FC82, AL80, and GX in :doc:`references` for the governing electromagnetic
+gyrokinetic equations and GX's implementation details.

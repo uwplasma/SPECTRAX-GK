@@ -7,6 +7,7 @@ from spectraxgk.grids import build_spectral_grid
 from spectraxgk.terms.nonlinear import (
     exb_nonlinear_contribution,
     nonlinear_em_contribution,
+    _apply_mask_xy,
     _apply_flutter,
     _spectral_bracket,
     _spectral_bracket_multi,
@@ -107,9 +108,10 @@ def test_apar_flutter_hermite_ladder():
     sqrt_m = jnp.sqrt(jnp.arange(3, dtype=jnp.float32))[None, :, None, None, None]
     sqrt_m_p1 = jnp.sqrt(jnp.arange(1, 4, dtype=jnp.float32))[None, :, None, None, None]
 
+    apar_masked = _apply_mask_xy(jnp.asarray(apar), grid.dealias_mask)
     bracket_apar = _spectral_bracket(
         jnp.asarray(G),
-        Jl * apar[None, None, ...],
+        Jl * apar_masked[None, None, ...],
         kx_grid=grid.kx_grid,
         ky_grid=grid.ky_grid,
         dealias_mask=grid.dealias_mask,
@@ -120,7 +122,7 @@ def test_apar_flutter_hermite_ladder():
     dG = nonlinear_em_contribution(
         jnp.asarray(G),
         phi=jnp.zeros_like(jnp.asarray(apar)),
-        apar=jnp.asarray(apar),
+        apar=apar_masked,
         bpar=None,
         Jl=Jl,
         JlB=JlB,
@@ -314,7 +316,9 @@ def test_bpar_contributes_to_chi():
     )
     Jl = jnp.ones((1, 1, grid.ky.size, grid.kx.size, grid.z.size))
     JlB = 2.0 * jnp.ones_like(Jl)
-    chi = Jl * phi[None, None, ...] + JlB * bpar[None, None, ...]
+    phi_masked = _apply_mask_xy(jnp.asarray(phi), grid.dealias_mask)
+    bpar_masked = _apply_mask_xy(jnp.asarray(bpar), grid.dealias_mask)
+    chi = Jl * phi_masked[None, None, ...] + JlB * bpar_masked[None, None, ...]
     bracket_expected = _spectral_bracket(
         jnp.asarray(G),
         chi,
@@ -325,9 +329,9 @@ def test_bpar_contributes_to_chi():
     )
     dG = nonlinear_em_contribution(
         jnp.asarray(G),
-        phi=jnp.asarray(phi),
+        phi=phi_masked,
         apar=None,
-        bpar=jnp.asarray(bpar),
+        bpar=bpar_masked,
         Jl=Jl,
         JlB=JlB,
         tz=jnp.asarray([1.0]),

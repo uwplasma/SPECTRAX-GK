@@ -182,15 +182,15 @@ def main() -> None:
 
     cfg = CycloneBaseCase(
         grid=GridConfig(
-            Nx=1,
+            Nx=nx,
             Ny=args.Ny,
             Nz=args.Nz,
             Lx=62.8,
             Ly=62.8,
             boundary="linked",
             y0=args.y0,
-            ntheta=32,
-            nperiod=2,
+            ntheta=None,
+            nperiod=None,
         )
     )
     geom = SAlphaGeometry.from_config(cfg.geometry)
@@ -289,6 +289,10 @@ def main() -> None:
             linked_indices=cache.linked_indices,
             linked_kz=cache.linked_kz,
             linked_inverse_permutation=cache.linked_inverse_permutation,
+            linked_full_cover=cache.linked_full_cover,
+            linked_gather_map=cache.linked_gather_map,
+            linked_gather_mask=cache.linked_gather_mask,
+            linked_use_gather=cache.linked_use_gather,
             use_twist_shift=cache.use_twist_shift,
         )
         contrib["mirror"] = mirror_contribution(
