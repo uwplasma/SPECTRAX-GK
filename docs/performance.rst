@@ -52,6 +52,70 @@ driver. It supports Perfetto traces, XLA HLO dumps, and memory snapshots.
 The trace directory can be opened with Perfetto. For GPU profiling, set
 ``JAX_PLATFORM_NAME=gpu`` before invoking the script.
 
+Recent nonlinear profiling (Cyclone, GX-balanced config)
+--------------------------------------------------------
+
+Reference run configuration:
+
+- ``ky=0.3``, ``Nl=4``, ``Nm=8``
+- ``dt=0.03769945``, ``steps=200``
+- ``examples/configs/runtime_cyclone_nonlinear_gx.toml``
+
+CPU profiling (Apple CPU, JAX CPU backend):
+
+.. code-block:: text
+
+   warmup_time_s=146.594
+   run_time_s=137.604
+
+GPU profiling (A100-class GPU, JAX CUDA backend):
+
+.. code-block:: text
+
+   warmup_time_s=50.212
+   run_time_s=30.467
+
+HLO summary (``jit_scan.*_after_optimizations``):
+
+- CPU: ``fft=623``, ``scatter=72``, ``gather=375``, ``dot=88``, ``fusion=1053``
+- GPU: ``fft=440``, ``scatter=30``, ``gather=322``, ``dot=44``, ``fusion=831``
+
+The nonlinear RHS remains FFT-heavy with nontrivial gather/scatter density.
+Primary optimization targets are the FFT pipeline (channel stacking, reuse of
+real-space gradients) and scatter removal in linked-FFT paths.
+
+Nonlinear benchmark harness
+---------------------------
+
+To capture per-step runtime and end-of-run diagnostics, use the nonlinear
+benchmark harness:
+
+.. code-block:: bash
+
+   python tools/benchmark_nonlinear_suite.py --steps 200 --dt 0.0377 \
+     --out /tmp/spectrax_nl_bench.csv
+
+You can optionally pass a GX log file to compare runtime per step:
+
+.. code-block:: bash
+
+   python tools/benchmark_nonlinear_suite.py --gx-log /path/to/gx_run.out
+
+Runtime comparison (nonlinear Cyclone)
+--------------------------------------
+
+Using the benchmark harness (same config as above), the per-step runtime is:
+
+.. code-block:: text
+
+   SPECTRAX CPU: 0.67704 s / step
+   SPECTRAX GPU: 0.11375 s / step
+   GX (A100):    0.016576 s / step
+
+This puts SPECTRAX at ~6.9x slower than GX on GPU and ~40.8x slower on CPU for
+the same nonlinear Cyclone base case configuration. The gap is dominated by the
+nonlinear FFT pipeline and residual gather/scatter operations.
+
 Cached basis indices
 --------------------
 
