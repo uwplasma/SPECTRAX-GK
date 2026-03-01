@@ -84,6 +84,10 @@ The nonlinear RHS remains FFT-heavy with nontrivial gather/scatter density.
 Primary optimization targets are the FFT pipeline (channel stacking, reuse of
 real-space gradients) and scatter removal in linked-FFT paths.
 
+GPU memory report (jit_scan module):
+
+- Total bytes used: ``228.21 MiB`` (XLA memory usage report).
+
 Nonlinear benchmark harness
 ---------------------------
 
