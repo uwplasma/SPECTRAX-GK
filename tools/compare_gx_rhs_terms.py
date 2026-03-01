@@ -42,7 +42,7 @@ from spectraxgk.terms.linear_terms import (
     mirror_contribution,
     streaming_contribution_gx,
 )
-from spectraxgk.terms.assembly import assemble_rhs_terms_cached
+from spectraxgk.terms.assembly import assemble_rhs_terms_cached, compute_fields_cached
 from spectraxgk.terms.config import TermConfig
 
 
@@ -263,7 +263,10 @@ def main() -> None:
             Nm=args.Nm,
             init_cfg=cfg.init,
         )
-    term_cfg = TermConfig(hypercollisions=0.0, end_damping=0.0)
+    if args.case == "kbm":
+        term_cfg = TermConfig(hypercollisions=0.0, end_damping=0.0, bpar=0.0)
+    else:
+        term_cfg = TermConfig(hypercollisions=0.0, end_damping=0.0)
     phi_path = args.gx_dir / "phi.bin"
     if phi_path.exists():
         apar_path = args.gx_dir / "apar.bin"
@@ -389,8 +392,9 @@ def main() -> None:
             lb_lam=cache.lb_lam,
             weight=w_coll,
         )
+        fields = compute_fields_cached(G, cache, params, terms=term_cfg, use_custom_vjp=False)
     else:
-        _rhs_total, _fields, contrib = assemble_rhs_terms_cached(G0, cache, params, terms=term_cfg)
+        _rhs_total, fields, contrib = assemble_rhs_terms_cached(G0, cache, params, terms=term_cfg)
 
     def _with_species(arr: jnp.ndarray | np.ndarray) -> np.ndarray:
         arr_np = np.asarray(arr)
@@ -416,6 +420,15 @@ def main() -> None:
     _summary("diamag", gx_dia, spectrax_dia)
     _summary("collisions", gx_coll, spectrax_coll)
     _summary("linear_sum", gx_linear, spectrax_linear)
+    if phi_path.exists():
+        spectrax_phi = np.asarray(fields.phi)
+        spectrax_apar = np.asarray(fields.apar) if fields.apar is not None else None
+        spectrax_bpar = np.asarray(fields.bpar) if fields.bpar is not None else None
+        _summary("phi", phi, spectrax_phi)
+        if spectrax_apar is not None:
+            _summary("apar", apar, spectrax_apar)
+        if spectrax_bpar is not None:
+            _summary("bpar", bpar, spectrax_bpar)
 
 
 if __name__ == "__main__":
