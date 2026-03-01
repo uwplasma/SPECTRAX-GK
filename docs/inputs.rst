@@ -109,10 +109,20 @@ decimated with ``sample_stride`` (record every ``N`` steps) and
 ``diagnostics = false`` in ``[time]`` (or ``--no-diagnostics`` on the CLI) to
 disable diagnostics entirely for speed. For GX-style CFL timestep control, use
 ``fixed_dt = false`` along with ``cfl``/``cfl_fac`` and optional ``dt_min`` /
-``dt_max`` limits. To control the Laguerre handling in nonlinear brackets, set
-``laguerre_nonlinear_mode = "grid"`` (GX-style quadrature, default) or
-``laguerre_nonlinear_mode = "spectral"`` (use spectral ``Jl`` without the
-quadrature transform).
+``dt_max`` limits. When adaptive timestepping is enabled, diagnostics include
+``dt_t`` (per-sample timestep history) and ``dt_mean`` (average effective dt)
+to quantify CFL-driven savings. To control the Laguerre handling in nonlinear
+brackets, set ``laguerre_nonlinear_mode = "grid"`` (GX-style quadrature,
+default) or ``laguerre_nonlinear_mode = "spectral"`` (use spectral ``Jl``
+without the quadrature transform).
+Cyclone's nonlinear defaults use ``dt_max ≈ 5× dt`` when adaptive timestepping
+is enabled; adjust per case if you need tighter stability or accuracy.
+
+Nonlinear collision/hypercollision splitting is enabled with
+``collision_split = true``. The ``collision_scheme`` key selects the update:
+``implicit`` (backward-Euler), ``exp`` (exact diagonal exponential), and
+``sts``/``rkc`` aliases (treated as stabilized explicit/exponential updates for
+diagonal operators).
 
 The ``[geometry]`` section supports ``drift_scale`` to switch between GX-style
 (``drift_scale = 1.0``) and GS2-style (``drift_scale = 2.0``) drift

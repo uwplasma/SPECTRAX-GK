@@ -1,5 +1,6 @@
 """Nonlinear integrator tests."""
 
+import numpy as np
 import jax.numpy as jnp
 
 from spectraxgk.config import CycloneBaseCase, GridConfig
@@ -92,3 +93,54 @@ def test_integrate_nonlinear_gx_diagnostics_shapes():
     )
     assert t.shape[0] == 3
     assert diag.energy_t.shape[0] == 3
+    assert np.isfinite(np.asarray(diag.dt_mean))
+    assert np.isfinite(np.asarray(diag.dt_t)).all()
+
+
+def test_integrate_nonlinear_imex_gx_diagnostics_shapes():
+    """IMEX nonlinear diagnostics should return time-series arrays."""
+
+    grid_cfg = GridConfig(Nx=2, Ny=2, Nz=4, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams()
+    G = jnp.zeros((2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
+    terms = TermConfig(nonlinear=0.0)
+    t, diag = integrate_nonlinear_gx_diagnostics(
+        G,
+        grid,
+        geom,
+        params,
+        dt=0.05,
+        steps=2,
+        method="imex",
+        terms=terms,
+    )
+    assert t.shape[0] == 2
+    assert diag.energy_t.shape[0] == 2
+
+
+def test_integrate_nonlinear_collision_split_sts():
+    """Collision split with STS scheme should run and remain finite."""
+
+    grid_cfg = GridConfig(Nx=2, Ny=2, Nz=4, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams()
+    G = jnp.zeros((2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
+    terms = TermConfig(nonlinear=0.0, collisions=1.0)
+    _t, diag = integrate_nonlinear_gx_diagnostics(
+        G,
+        grid,
+        geom,
+        params,
+        dt=0.05,
+        steps=1,
+        method="rk2",
+        terms=terms,
+        collision_split=True,
+        collision_scheme="sts",
+    )
+    assert np.isfinite(np.asarray(diag.Wg_t)).all()
