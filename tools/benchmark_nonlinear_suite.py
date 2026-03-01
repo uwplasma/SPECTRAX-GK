@@ -31,6 +31,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--method", type=str, default=None)
     parser.add_argument("--sample-stride", type=int, default=None)
     parser.add_argument("--diagnostics-stride", type=int, default=None)
+    parser.add_argument("--laguerre-mode", type=str, default=None)
     parser.add_argument("--gx-log", type=Path, default=None)
     parser.add_argument("--out", type=Path, default=None)
     return parser.parse_args()
@@ -66,6 +67,7 @@ def main() -> None:
             method=args.method,
             sample_stride=args.sample_stride,
             diagnostics_stride=args.diagnostics_stride,
+            laguerre_mode=args.laguerre_mode,
             diagnostics=True,
         )
 

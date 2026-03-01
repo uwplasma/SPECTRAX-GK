@@ -99,6 +99,12 @@ benchmark harness:
    python tools/benchmark_nonlinear_suite.py --steps 200 --dt 0.0377 \
      --out /tmp/spectrax_nl_bench.csv
 
+To test the faster spectral nonlinear mode (no Laguerre quadrature grid):
+
+.. code-block:: bash
+
+   python tools/benchmark_nonlinear_suite.py --laguerre-mode spectral
+
 You can optionally pass a GX log file to compare runtime per step:
 
 .. code-block:: bash
