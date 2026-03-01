@@ -4,6 +4,7 @@ import jax.numpy as jnp
 from dataclasses import replace
 
 from spectraxgk.benchmarks import CycloneBaseCase, _build_initial_condition
+from spectraxgk.config import InitializationConfig
 from spectraxgk.diagnostics import (
     gx_Wapar_krehm,
     gx_Wg,
@@ -64,6 +65,27 @@ def test_gx_energy_components_finite():
     assert np.isfinite(np.asarray(pflux))
     assert np.isfinite(np.asarray(energy))
     assert energy == Wg + Wphi + Wapar
+
+
+def test_gx_init_all_scaling_matches_reference():
+    cfg = CycloneBaseCase()
+    grid_full = build_spectral_grid(cfg.grid)
+    ky_index = select_ky_index(np.asarray(grid_full.ky), float(grid_full.ky[1]))
+    grid = select_ky_grid(grid_full, ky_index)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    init_cfg = InitializationConfig(
+        init_field="all",
+        init_amp=1.0,
+        gaussian_init=False,
+    )
+    G0 = _build_initial_condition(grid, geom, ky_index=0, kx_index=0, Nl=4, Nm=4, init_cfg=init_cfg)
+    base = 1.0 + 1.0j
+    # density (l=0,m=0) should be unscaled
+    assert np.allclose(G0[0, 0, 0, 0, 0], base)
+    # tpar (l=0,m=2) scaled by 1/sqrt(2)
+    assert np.allclose(G0[0, 2, 0, 0, 0], base / np.sqrt(2.0))
+    # qpar (l=0,m=3) scaled by 1/sqrt(6)
+    assert np.allclose(G0[0, 3, 0, 0, 0], base / np.sqrt(6.0))
 
 
 def test_integrate_linear_gx_diagnostics_shapes():
