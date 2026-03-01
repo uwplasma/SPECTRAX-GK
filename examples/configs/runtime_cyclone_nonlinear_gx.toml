@@ -38,6 +38,8 @@ R0 = 2.77778
 [init]
 init_field = "density"
 init_amp = 1.0e-3
+init_single = false
+random_seed = 22
 gaussian_init = false
 kpar_init = 0.0
 

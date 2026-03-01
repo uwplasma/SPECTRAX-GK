@@ -186,3 +186,8 @@ Notable runtime-only keys:
   flux diagnostics (GX parity default ``2.0``).
 * ``[normalization] wphi_scale``: multiplicative factor applied to ``Wphi``
   diagnostics (Cyclone GX parity uses ``1.155``).
+* ``[init] init_single``: if false and ``gaussian_init`` is false, initialize
+  a GX-style random perturbation across the 2/3-resolved ``(ky,kx)`` spectrum
+  (useful for nonlinear Cyclone parity).
+* ``[init] random_seed``: RNG seed used for GX-style random initial conditions
+  (default ``22``, matching GX).
