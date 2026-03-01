@@ -36,6 +36,22 @@ The exact speedup depends on hardware and problem size. As more geometry and
 operator terms are cached (cv/gb/bgrad, hyper ratios), the overhead balance may
 shift; in this run the cached path was roughly cost-neutral.
 
+Nonlinear profiling
+-------------------
+
+For end-to-end nonlinear performance, use the dedicated Cyclone profiling
+driver. It supports Perfetto traces, XLA HLO dumps, and memory snapshots.
+
+.. code-block:: bash
+
+   python tools/profile_nonlinear_cyclone.py \
+     --trace-dir /tmp/spectrax_nl_trace \
+     --xla-dump-dir /tmp/spectrax_nl_xla \
+     --steps 400 --dt 0.0377 --Nl 4 --Nm 8
+
+The trace directory can be opened with Perfetto. For GPU profiling, set
+``JAX_PLATFORM_NAME=gpu`` before invoking the script.
+
 Cached basis indices
 --------------------
 
