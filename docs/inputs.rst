@@ -176,3 +176,13 @@ are:
 * ``[normalization]`` (contract key + optional overrides)
 * ``[terms]`` (term toggles used by modular RHS assembly)
 * ``[run]`` / ``[scan]`` / ``[fit]`` (driver controls)
+
+Notable runtime-only keys:
+
+* ``[collisions] damp_ends_scale_by_dt``: if true, interpret ``damp_ends_amp`` as
+  a per-unit-time strength and scale it internally by ``1/dt`` (GX parity
+  default).
+* ``[normalization] flux_scale``: multiplicative factor applied to heat/particle
+  flux diagnostics (GX parity default ``2.0``).
+* ``[normalization] wphi_scale``: multiplicative factor applied to ``Wphi``
+  diagnostics (Cyclone GX parity uses ``1.155``).

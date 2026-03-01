@@ -87,6 +87,10 @@ def _expand_ky(arr: np.ndarray, *, nyc: int) -> np.ndarray:
         return pos
     neg = np.conj(pos[..., 1 : nyc - 1, :, :])
     neg = neg[..., ::-1, :, :]
+    nx = pos.shape[-2]
+    if nx > 1:
+        kx_neg = np.concatenate(([0], np.arange(nx - 1, 0, -1)))
+        neg = neg[..., kx_neg, :]
     return np.concatenate([pos, neg], axis=-3)
 
 
@@ -416,6 +420,9 @@ def main() -> None:
     def _prepare_order_nyc(order: str):
         g_np = _apply_kx_order(g_state_nyc, order=order, kx_axis=-2)
         phi_np = _apply_kx_order(phi_nyc, order=order, kx_axis=-2)
+        if cache.dealias_mask is not None:
+            mask_nyc = np.asarray(cache.dealias_mask[:nyc, :], dtype=float)
+            phi_np = phi_np * mask_nyc[..., None]
         kx_grid = _apply_kx_order(kx_grid_nyc, order=order, kx_axis=1)
         return g_np, phi_np, kx_grid, ky_grid_nyc
 
