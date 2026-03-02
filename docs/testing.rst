@@ -136,6 +136,22 @@ Running tests
 
    pytest
 
+CI split: fast PR vs nightly full
+---------------------------------
+
+CI is split into two tiers to keep pull requests fast while preserving full
+physics rigor:
+
+- **Fast PR/push tier**: three parallel shards run mypy and targeted test
+  subsets (fundamentals, linear core, runtime/nonlinear). This catches solver
+  and dtype regressions quickly.
+- **Nightly/manual tier**: full ``pytest`` suite plus strict coverage gates:
+  ``spectraxgk.terms >= 90%`` and per-module core gates for
+  ``linear_krylov.py`` and ``diffrax_integrators.py``.
+
+This keeps iteration latency low for development and still enforces complete
+coverage and regression checks every night (and on manual dispatch).
+
 Core modular coverage gate
 --------------------------
 
