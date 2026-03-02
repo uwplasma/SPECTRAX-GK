@@ -136,11 +136,17 @@ overrides (e.g. custom ``geometry.drift_scale``, solver selection, or
 
 .. figure:: _static/linear_summary.png
    :align: center
-   :alt: Linear validation summary
+   :alt: GX parity summary for Cyclone and KBM
 
-   Cross-code linear summary of eigenfunctions, growth rates, and frequencies
-   for Cyclone, ETG, and KBM (Cyclone vs GX/GS2/stella, ETG vs GS2/stella,
-   KBM vs GX).
+   GX parity summary panel for Cyclone and KBM, combining linear
+   eigenfunction overlays, linear ``k_y`` growth/frequency scans, and
+   nonlinear time traces of growth rate, frequency, and heat flux.
+
+Regenerate this panel with:
+
+- ``python tools/compare_gx_linear.py --gx /path/to/itg_salpha_adiabatic_electrons.out.nc --out docs/_static/cyclone_gx_mismatch.csv``
+- ``python tools/compare_gx_kbm.py --gx /path/to/kbm_salpha.out.nc --out docs/_static/kbm_gx_mismatch.csv``
+- ``python tools/make_gx_cyclone_kbm_panel.py --out docs/_static/gx_cyclone_kbm_panel.png``
 
 .. figure:: _static/cyclone_comparison.png
    :align: center
