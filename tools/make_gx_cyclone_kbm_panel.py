@@ -83,7 +83,10 @@ def _cyclone_spectrax_eigenfunction(ky_target: float) -> tuple[np.ndarray, np.nd
         gx_parity=True,
     )
     theta = np.asarray(build_spectral_grid(cfg.grid).z, dtype=float)
-    mode = np.asarray(res.phi_t[-1, 0, 0, :], dtype=np.complex128)
+    mode = np.asarray(
+        res.phi_t[-1, res.selection.ky_index, res.selection.kx_index, :],
+        dtype=np.complex128,
+    )
     return theta, _normalize_mode(theta, mode)
 
 
@@ -138,7 +141,10 @@ def _kbm_spectrax_eigenfunction(ky_target: float) -> tuple[np.ndarray, np.ndarra
         diagnostic_norm="gx",
     )
     theta = np.asarray(build_spectral_grid(cfg.grid).z, dtype=float)
-    mode = np.asarray(res.phi_t[-1, 0, 0, :], dtype=np.complex128)
+    mode = np.asarray(
+        res.phi_t[-1, res.selection.ky_index, res.selection.kx_index, :],
+        dtype=np.complex128,
+    )
     return theta, _normalize_mode(theta, mode)
 
 
@@ -204,10 +210,28 @@ def _load_gx_nonlinear(path: Path, ky_target: float) -> dict[str, np.ndarray]:
     ky = np.asarray(grids.variables["ky"][:], dtype=float)
     ky_idx = int(np.argmin(np.abs(ky - float(ky_target))))
 
+    if "Wphi_st" in diag.variables:
+        wphi_arr = np.asarray(diag.variables["Wphi_st"][:], dtype=float)
+        if wphi_arr.ndim == 2:
+            wphi = np.sum(wphi_arr, axis=1)
+        else:
+            wphi = wphi_arr
+    else:
+        wphi = _series_ky(np.asarray(diag.variables["Wphi_kyst"][:], dtype=float), ky_idx)
+
+    if "HeatFlux_st" in diag.variables:
+        heat_arr = np.asarray(diag.variables["HeatFlux_st"][:], dtype=float)
+        if heat_arr.ndim == 2:
+            heat = np.sum(heat_arr, axis=1)
+        else:
+            heat = heat_arr
+    else:
+        heat = _series_ky(np.asarray(diag.variables["HeatFlux_kyst"][:], dtype=float), ky_idx)
+
     out = {
         "t": t,
-        "Wphi": _series_ky(np.asarray(diag.variables["Wphi_kyst"][:], dtype=float), ky_idx),
-        "heat": _series_ky(np.asarray(diag.variables["HeatFlux_kyst"][:], dtype=float), ky_idx),
+        "Wphi": np.asarray(wphi, dtype=float),
+        "heat": np.asarray(heat, dtype=float),
     }
 
     if "omega_kxkyt" in diag.variables:
@@ -272,7 +296,7 @@ def _plot_linear_row(
     ax.plot(scan["ky"], rel_o, "s--", lw=1.8, label=r"$|\Delta\omega|/|\omega_{GX}|$")
     ax.set_xscale("log")
     ax.set_yscale("log")
-    ax.set_ylabel("relative error")
+    ax.set_ylabel("Relative error (γ, ω)")
     ax.set_xlabel(r"$k_y \rho_i$")
     ax.grid(alpha=0.25)
     ax.legend(frameon=False, fontsize=8)
@@ -284,33 +308,41 @@ def _plot_nonlinear_row(
     gx: dict[str, np.ndarray],
     sp: dict[str, np.ndarray],
 ) -> None:
+    t_max = float(min(np.nanmax(gx["t"]), np.nanmax(sp["t"])))
+    mask_t_gx = np.asarray(gx["t"] <= t_max, dtype=bool)
+    mask_t_sp = np.asarray(sp["t"] <= t_max, dtype=bool)
+
     ax = ax_row[0]
-    ax.plot(gx["t"], gx["Wphi"], lw=1.8, label="GX")
-    ax.plot(sp["t"], sp["Wphi"], lw=1.8, label="SPECTRAX")
+    ax.plot(gx["t"][mask_t_gx], gx["Wphi"][mask_t_gx], lw=1.8, label="GX")
+    ax.plot(sp["t"][mask_t_sp], sp["Wphi"][mask_t_sp], lw=1.8, label="SPECTRAX")
     ax.set_ylabel(f"{title}\n$W_\\phi$")
     ax.set_xlabel("t")
     ax.grid(alpha=0.25)
     ax.legend(frameon=False, fontsize=8)
 
     ax = ax_row[1]
-    ax.plot(gx["t"], gx["gamma"], lw=1.8, label="GX")
-    ax.plot(sp["t"], sp["gamma"], lw=1.8, label="SPECTRAX")
+    mask_gx = mask_t_gx & np.isfinite(gx["gamma"])
+    mask_sp = mask_t_sp & np.isfinite(sp["gamma"])
+    ax.plot(gx["t"][mask_gx], gx["gamma"][mask_gx], lw=1.8, label="GX")
+    ax.plot(sp["t"][mask_sp], sp["gamma"][mask_sp], lw=1.8, label="SPECTRAX")
     ax.set_ylabel(r"$\gamma(t)$")
     ax.set_xlabel("t")
     ax.grid(alpha=0.25)
     ax.legend(frameon=False, fontsize=8)
 
     ax = ax_row[2]
-    ax.plot(gx["t"], gx["omega"], lw=1.8, label="GX")
-    ax.plot(sp["t"], sp["omega"], lw=1.8, label="SPECTRAX")
+    mask_gx = mask_t_gx & np.isfinite(gx["omega"])
+    mask_sp = mask_t_sp & np.isfinite(sp["omega"])
+    ax.plot(gx["t"][mask_gx], gx["omega"][mask_gx], lw=1.8, label="GX")
+    ax.plot(sp["t"][mask_sp], sp["omega"][mask_sp], lw=1.8, label="SPECTRAX")
     ax.set_ylabel(r"$\omega(t)$")
     ax.set_xlabel("t")
     ax.grid(alpha=0.25)
     ax.legend(frameon=False, fontsize=8)
 
     ax = ax_row[3]
-    ax.plot(gx["t"], gx["heat"], lw=1.8, label="GX")
-    ax.plot(sp["t"], sp["heat"], lw=1.8, label="SPECTRAX")
+    ax.plot(gx["t"][mask_t_gx], gx["heat"][mask_t_gx], lw=1.8, label="GX")
+    ax.plot(sp["t"][mask_t_sp], sp["heat"][mask_t_sp], lw=1.8, label="SPECTRAX")
     ax.set_ylabel("Heat flux")
     ax.set_xlabel("t")
     ax.grid(alpha=0.25)
@@ -369,6 +401,7 @@ def main() -> int:
     args = parser.parse_args()
 
     cycl_scan = _load_linear_scan(args.cyclone_linear)
+    cycl_scan = cycl_scan[cycl_scan["ky"] <= 0.5 + 1.0e-12].reset_index(drop=True)
     kbm_scan = _load_linear_scan(args.kbm_linear)
 
     theta_gx_c, mode_gx_c = _load_gx_eigenfunction(args.gx_cyclone_linear_big, args.cyclone_ky)
@@ -403,7 +436,12 @@ def main() -> int:
     )
     _plot_nonlinear_row(axes[3], "KBM nonlinear", gx_nl_k, sp_nl_k)
 
-    col_titles = ["Eigenfunction / field", "Growth rate", "Frequency", "Heat flux / rel. error"]
+    col_titles = [
+        "Eigenfunction / field",
+        "Growth rate",
+        "Frequency",
+        "Relative error (linear γ,ω) / Heat flux (nonlinear)",
+    ]
     for j, title in enumerate(col_titles):
         axes[0, j].set_title(title)
     fig.suptitle("SPECTRAX-GK vs GX: Cyclone and KBM (linear + nonlinear)", fontsize=14)

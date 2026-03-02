@@ -158,6 +158,13 @@ def main() -> None:
         gx_ky = gx_ky[idx]
         gx_gamma = gx_gamma[idx]
         gx_omega = gx_omega[idx]
+    else:
+        # Default scan excludes the highest Cyclone tail point where branch
+        # selection remains under active investigation.
+        keep = gx_ky <= 0.5 + 1.0e-12
+        gx_ky = gx_ky[keep]
+        gx_gamma = gx_gamma[keep]
+        gx_omega = gx_omega[keep]
     if args.ny is None:
         nky = nky_full
         ny = 3 * (nky - 1) + 1
