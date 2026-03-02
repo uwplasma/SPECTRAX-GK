@@ -114,6 +114,9 @@ def main() -> None:
     gx_ky, gx_omega_series, beta, q_gx, shat_gx, eps_gx, Rmaj_gx = _load_gx_omega_gamma(
         args.gx
     )
+    nky_full = int(len(gx_ky))
+    if nky_full < 2:
+        raise ValueError("GX output must contain at least two positive ky points.")
     if args.ky:
         ky_req = np.asarray([float(k.strip()) for k in args.ky.split(",") if k.strip()])
         if ky_req.size == 0:
@@ -122,7 +125,7 @@ def main() -> None:
         gx_ky = gx_ky[idx]
         gx_omega_series = gx_omega_series[:, idx]
 
-    nky = int(args.nky) if args.nky is not None else int(len(gx_ky))
+    nky = int(args.nky) if args.nky is not None else nky_full
     ny = 3 * (nky - 1) + 1
     y0 = _infer_y0(gx_ky) if len(gx_ky) > 1 else float(args.y0)
 

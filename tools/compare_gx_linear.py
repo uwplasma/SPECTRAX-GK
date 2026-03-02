@@ -147,6 +147,9 @@ def main() -> None:
     args = parser.parse_args()
 
     gx_ky, gx_gamma, gx_omega = _load_gx_omega_gamma(args.gx)
+    nky_full = int(len(gx_ky))
+    if nky_full < 2:
+        raise ValueError("GX output must contain at least two positive ky points.")
     if args.ky:
         ky_req = np.asarray([float(k.strip()) for k in args.ky.split(",") if k.strip()])
         if ky_req.size == 0:
@@ -156,7 +159,7 @@ def main() -> None:
         gx_gamma = gx_gamma[idx]
         gx_omega = gx_omega[idx]
     if args.ny is None:
-        nky = int(len(gx_ky))
+        nky = nky_full
         ny = 3 * (nky - 1) + 1
     else:
         ny = int(args.ny)

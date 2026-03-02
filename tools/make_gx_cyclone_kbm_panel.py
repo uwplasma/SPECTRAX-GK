@@ -152,17 +152,35 @@ def _load_linear_scan(path: Path) -> pd.DataFrame:
 
 def _load_spectrax_diag(path: Path) -> dict[str, np.ndarray]:
     data = np.loadtxt(path, delimiter=",", skiprows=1)
-    return {
-        "t": np.asarray(data[:, 0], dtype=float),
-        "gamma": np.asarray(data[:, 1], dtype=float),
-        "omega": np.asarray(data[:, 2], dtype=float),
-        "Wg": np.asarray(data[:, 3], dtype=float),
-        "Wphi": np.asarray(data[:, 4], dtype=float),
-        "Wapar": np.asarray(data[:, 5], dtype=float),
-        "energy": np.asarray(data[:, 6], dtype=float),
-        "heat": np.asarray(data[:, 7], dtype=float),
-        "pflux": np.asarray(data[:, 8], dtype=float),
-    }
+    if data.ndim == 1:
+        data = data[None, :]
+    # Legacy tool CSV: t,gamma,omega,Wg,Wphi,Wapar,energy,heat,pflux (9 cols)
+    if data.shape[1] == 9:
+        return {
+            "t": np.asarray(data[:, 0], dtype=float),
+            "gamma": np.asarray(data[:, 1], dtype=float),
+            "omega": np.asarray(data[:, 2], dtype=float),
+            "Wg": np.asarray(data[:, 3], dtype=float),
+            "Wphi": np.asarray(data[:, 4], dtype=float),
+            "Wapar": np.asarray(data[:, 5], dtype=float),
+            "energy": np.asarray(data[:, 6], dtype=float),
+            "heat": np.asarray(data[:, 7], dtype=float),
+            "pflux": np.asarray(data[:, 8], dtype=float),
+        }
+    # CLI/runtime CSV: t,dt,gamma,omega,Wg,Wphi,Wapar,energy,heat,pflux (10 cols)
+    if data.shape[1] == 10:
+        return {
+            "t": np.asarray(data[:, 0], dtype=float),
+            "gamma": np.asarray(data[:, 2], dtype=float),
+            "omega": np.asarray(data[:, 3], dtype=float),
+            "Wg": np.asarray(data[:, 4], dtype=float),
+            "Wphi": np.asarray(data[:, 5], dtype=float),
+            "Wapar": np.asarray(data[:, 6], dtype=float),
+            "energy": np.asarray(data[:, 7], dtype=float),
+            "heat": np.asarray(data[:, 8], dtype=float),
+            "pflux": np.asarray(data[:, 9], dtype=float),
+        }
+    raise ValueError(f"Unsupported diagnostics CSV format in {path} with shape {data.shape}")
 
 
 def _series_ky(arr: np.ndarray, ky_idx: int) -> np.ndarray:
@@ -194,10 +212,9 @@ def _load_gx_nonlinear(path: Path, ky_target: float) -> dict[str, np.ndarray]:
 
     if "omega_kxkyt" in diag.variables:
         omega_kxkyt = np.asarray(diag.variables["omega_kxkyt"][:], dtype=float)
-        kx = np.asarray(grids.variables["kx"][:], dtype=float)
-        kx_idx = int(np.argmin(np.abs(kx)))
-        out["omega"] = omega_kxkyt[:, ky_idx, kx_idx, 0]
-        out["gamma"] = omega_kxkyt[:, ky_idx, kx_idx, 1]
+        # Match CLI/runtime CSV reduction: mean over all (ky, kx) entries.
+        out["omega"] = np.nanmean(omega_kxkyt[..., 0], axis=(1, 2))
+        out["gamma"] = np.nanmean(omega_kxkyt[..., 1], axis=(1, 2))
     else:
         phi2 = np.asarray(diag.variables["Phi2_t"][:], dtype=float)
         gamma = np.full_like(t, np.nan)
