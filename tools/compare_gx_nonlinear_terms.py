@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import replace
 from pathlib import Path
 
 import numpy as np
@@ -34,6 +35,34 @@ from spectraxgk.terms.nonlinear import (
     _laguerre_to_grid,
     nonlinear_em_components,
 )
+
+
+def _slice_species_params(params: LinearParams, nspec: int) -> LinearParams:
+    """Slice species-vector parameters to the first `nspec` entries."""
+    if nspec <= 0:
+        return params
+    fields = (
+        "charge_sign",
+        "density",
+        "mass",
+        "temp",
+        "vth",
+        "rho",
+        "tz",
+        "R_over_Ln",
+        "R_over_LTi",
+        "R_over_LTe",
+        "nu",
+    )
+    updates: dict[str, object] = {}
+    for name in fields:
+        val = getattr(params, name)
+        arr = np.asarray(val)
+        if arr.ndim == 0:
+            continue
+        if arr.shape[0] >= nspec:
+            updates[name] = arr[:nspec]
+    return replace(params, **updates) if updates else params
 
 
 def _load_shape(path: Path) -> dict[str, int]:
@@ -183,6 +212,19 @@ def _expand_ky(arr: np.ndarray, *, nyc: int) -> np.ndarray:
 
 
 def _summary(label: str, ref: np.ndarray, test: np.ndarray) -> None:
+    if ref.ndim != test.ndim:
+        raise ValueError(
+            f"{label}: incompatible ranks ref.ndim={ref.ndim} test.ndim={test.ndim}"
+        )
+    if ref.shape != test.shape:
+        common = tuple(min(r, t) for r, t in zip(ref.shape, test.shape))
+        slices = tuple(slice(0, n) for n in common)
+        print(
+            f"{label:12s} shape mismatch ref={ref.shape} test={test.shape}; "
+            f"comparing common slice={common}"
+        )
+        ref = ref[slices]
+        test = test[slices]
     diff = test - ref
     max_ref = float(np.max(np.abs(ref)))
     max_test = float(np.max(np.abs(test)))
@@ -276,7 +318,7 @@ def _grad_xy_real(
         ny_full = int(ky.shape[0])
     use_rfft = int(ky.shape[0]) != int(ny_full)
     if fft_norm is None:
-        fft_norm_val = float(int(kx.shape[1]) * int(ky.shape[0]))
+        fft_norm_val = float(int(kx.shape[1]) * int(ny_full))
     else:
         fft_norm_val = float(fft_norm)
     nxy = fft_norm_val
@@ -354,6 +396,28 @@ def main() -> None:
     )
     g_state = _expand_ky(g_state_nyc, nyc=nyc)
 
+    muB_roots = None
+    muB_path = args.gx_dir / "nl_muB.bin"
+    if muB_path.exists():
+        muB_roots = np.fromfile(muB_path, dtype=np.float32)
+    rho2s_dump = None
+    rho2s_path = args.gx_dir / "nl_rho2s.bin"
+    if rho2s_path.exists():
+        rho2s_dump = float(np.fromfile(rho2s_path, dtype=np.float32)[0])
+    kperp2_dump = None
+    kperp2_path = args.gx_dir / "nl_kperp2.bin"
+    if kperp2_path.exists():
+        raw_kperp2 = np.fromfile(kperp2_path, dtype=np.float32)
+        expected_kperp2 = nyc * nx * nz
+        if raw_kperp2.size == expected_kperp2:
+            # GX flat index: idxyz = idy + nyc * (idx + nx * idz)
+            # C-order view is (z, x, y); transpose to (y, x, z).
+            kperp2_dump = raw_kperp2.reshape((nz, nx, nyc)).transpose(2, 1, 0)
+        else:
+            print(
+                f"Skipping kperp2 dump: size {raw_kperp2.size} != {expected_kperp2}"
+            )
+
     kx_vals = None
     ky_vals = None
     kx_vals_dump = None
@@ -374,6 +438,10 @@ def main() -> None:
         kx_vals = np.asarray(root.groups["Grids"].variables["kx"][:], dtype=float)
     if kx_vals is None or ky_vals is None:
         raise ValueError("Failed to load GX kx/ky values")
+    if kx_vals_dump is not None and int(kx_vals_dump.size) == nx:
+        kx_vals = kx_vals_dump
+    if ky_vals_dump is not None and int(ky_vals_dump.size) == nyc:
+        ky_vals = ky_vals_dump
     if kx_vals_dump is not None:
         kx_vals_pad = kx_vals_dump
     else:
@@ -410,7 +478,7 @@ def main() -> None:
     expected_main = nyc * nx * nz
     expected_pad = nyc_pad * nx_pad * nz
     if phi_raw_c64.size == expected_pad:
-        phi_pad = phi_raw_c64.reshape((1, 1, 1, nyc_pad, nx_pad, nz))[0, 0, 0, ...]
+        phi_pad = phi_raw_c64.reshape((nz, nx_pad, nyc_pad)).transpose(2, 1, 0)
         phi_nyc = np.asarray(
             _extract_spectral_kxky(
                 jnp.asarray(phi_pad),
@@ -421,7 +489,7 @@ def main() -> None:
             )
         )
     elif phi_raw_c64.size == expected_main:
-        phi_nyc = phi_raw_c64.reshape((1, 1, 1, nyc, nx, nz))[0, 0, 0, ...]
+        phi_nyc = phi_raw_c64.reshape((nz, nx, nyc)).transpose(2, 1, 0)
     else:
         phi_nyc = _reshape_gx(
             _load_bin_complex(phi_path, (1, 1, 1, nyc, nx, nz)),
@@ -440,7 +508,7 @@ def main() -> None:
     if apar_path.exists():
         apar_raw = np.fromfile(apar_path, dtype=np.complex64)
         if apar_raw.size == expected_pad:
-            apar_pad = apar_raw.reshape((1, 1, 1, nyc_pad, nx_pad, nz))[0, 0, 0, ...]
+            apar_pad = apar_raw.reshape((nz, nx_pad, nyc_pad)).transpose(2, 1, 0)
             apar = np.asarray(
                 _extract_spectral_kxky(
                     jnp.asarray(apar_pad),
@@ -451,7 +519,7 @@ def main() -> None:
                 )
             )
         elif apar_raw.size == expected_main:
-            apar = apar_raw.reshape((1, 1, 1, nyc, nx, nz))[0, 0, 0, ...]
+            apar = apar_raw.reshape((nz, nx, nyc)).transpose(2, 1, 0)
         else:
             apar = _reshape_gx(
                 _load_bin_complex(apar_path, (1, 1, 1, nyc, nx, nz)),
@@ -466,7 +534,7 @@ def main() -> None:
     if bpar_path.exists():
         bpar_raw = np.fromfile(bpar_path, dtype=np.complex64)
         if bpar_raw.size == expected_pad:
-            bpar_pad = bpar_raw.reshape((1, 1, 1, nyc_pad, nx_pad, nz))[0, 0, 0, ...]
+            bpar_pad = bpar_raw.reshape((nz, nx_pad, nyc_pad)).transpose(2, 1, 0)
             bpar = np.asarray(
                 _extract_spectral_kxky(
                     jnp.asarray(bpar_pad),
@@ -477,7 +545,7 @@ def main() -> None:
                 )
             )
         elif bpar_raw.size == expected_main:
-            bpar = bpar_raw.reshape((1, 1, 1, nyc, nx, nz))[0, 0, 0, ...]
+            bpar = bpar_raw.reshape((nz, nx, nyc)).transpose(2, 1, 0)
         else:
             bpar = _reshape_gx(
                 _load_bin_complex(bpar_path, (1, 1, 1, nyc, nx, nz)),
@@ -518,6 +586,9 @@ def main() -> None:
             x0 = float(y0) * abs(jtwist) / abs(twist_shift_geo_fac)
             Lx = float(2.0 * np.pi * x0)
     if args.case == "kbm":
+        default_cfg = KBMBaseCase()
+        ntheta_use = args.ntheta if args.ntheta is not None else default_cfg.grid.ntheta
+        nperiod_use = args.nperiod if args.nperiod is not None else default_cfg.grid.nperiod
         cfg = KBMBaseCase(
             grid=GridConfig(
                 Nx=nx,
@@ -527,8 +598,8 @@ def main() -> None:
                 Ly=args.Ly,
                 boundary=args.boundary,
                 y0=y0,
-                ntheta=args.ntheta,
-                nperiod=args.nperiod,
+                ntheta=ntheta_use,
+                nperiod=nperiod_use,
             )
         )
         geom = SAlphaGeometry.from_config(cfg.geometry)
@@ -545,7 +616,11 @@ def main() -> None:
             damp_ends_amp=0.0,
             damp_ends_widthfrac=0.0,
         )
+        params = _slice_species_params(params, nspec)
     else:
+        default_cfg = CycloneBaseCase()
+        ntheta_use = args.ntheta if args.ntheta is not None else default_cfg.grid.ntheta
+        nperiod_use = args.nperiod if args.nperiod is not None else default_cfg.grid.nperiod
         cfg = CycloneBaseCase(
             grid=GridConfig(
                 Nx=nx,
@@ -555,8 +630,8 @@ def main() -> None:
                 Ly=args.Ly,
                 boundary=args.boundary,
                 y0=y0,
-                ntheta=args.ntheta,
-                nperiod=args.nperiod,
+                ntheta=ntheta_use,
+                nperiod=nperiod_use,
             )
         )
         geom = SAlphaGeometry.from_config(cfg.geometry)
@@ -575,7 +650,11 @@ def main() -> None:
             damp_ends_widthfrac=0.0,
         )
         params = _apply_gx_hypercollisions(params, nhermite=nm)
+        params = _slice_species_params(params, nspec)
     cache = build_linear_cache(grid, geom, params, nl, nm)
+    roots_ref = cache.laguerre_roots
+    if muB_roots is not None and muB_roots.size == roots_ref.size:
+        roots_ref = jnp.asarray(muB_roots, dtype=roots_ref.dtype)
     pad_cache = None
     if phi_pad is not None and (nx_pad != nx or ny_full_pad != ny_full):
         pad_cfg = GridConfig(
@@ -586,8 +665,8 @@ def main() -> None:
             Ly=args.Ly,
             boundary=args.boundary,
             y0=y0,
-            ntheta=args.ntheta,
-            nperiod=args.nperiod,
+            ntheta=cfg.grid.ntheta,
+            nperiod=cfg.grid.nperiod,
         )
         pad_grid = build_spectral_grid(pad_cfg)
         pad_cache = build_linear_cache(pad_grid, geom, params, nl, nm)
@@ -603,15 +682,19 @@ def main() -> None:
     ref_dj_dy = None
     if have_derivs:
         raw = np.fromfile(gx_dj_dx, dtype=np.float32)
-        expected = nj * nz * nx_pad * ny_full_pad
+        expected = nj * ny_full_pad * nx_pad * nz
         if raw.size == expected:
+            # GX flat index: idxyzj = idy + ny*(idx + nx*(idz + nz*idj))
+            # C-order view is (j, z, x, y); transpose to (j, y, x, z).
             ref_dj_dx = raw.reshape((nj, nz, nx_pad, ny_full_pad)).transpose(0, 3, 2, 1)
         raw = np.fromfile(gx_dj_dy, dtype=np.float32)
         if raw.size == expected:
             ref_dj_dy = raw.reshape((nj, nz, nx_pad, ny_full_pad)).transpose(0, 3, 2, 1)
         raw = np.fromfile(gx_dg_dx, dtype=np.float32)
-        expected_g = nm * nj * nz * nx_pad * ny_full_pad
+        expected_g = nm * nj * ny_full_pad * nx_pad * nz
         if raw.size == expected_g:
+            # GX flat index: ig = idxyzj + (nx*ny*nz*nj) * idm
+            # C-order view is (m, j, z, x, y); transpose to (m, j, y, x, z).
             ref_dg_dx = raw.reshape((nm, nj, nz, nx_pad, ny_full_pad)).transpose(0, 1, 4, 3, 2)
         raw = np.fromfile(gx_dg_dy, dtype=np.float32)
         if raw.size == expected_g:
@@ -636,19 +719,26 @@ def main() -> None:
         g_np = _apply_kx_order(g_state_nyc, order=order, kx_axis=-2)
         phi_np = _apply_kx_order(phi_nyc, order=order, kx_axis=-2)
         kx_grid = _apply_kx_order(kx_grid_nyc, order=order, kx_axis=1)
-        return g_np, phi_np, kx_grid, ky_grid_nyc
+        b_nyc_local = cache.b[:, :nyc, :, :]
+        b_nyc_local = _apply_kx_order(b_nyc_local, order=order, kx_axis=-2)
+        b_dump_local = None
+        if kperp2_dump is not None and rho2s_dump is not None:
+            b_dump_local = rho2s_dump * _apply_kx_order(
+                kperp2_dump[None, ...], order=order, kx_axis=-2
+            )[0]
+        return g_np, phi_np, kx_grid, ky_grid_nyc, b_nyc_local, b_dump_local
 
     def _compare_derivs(order: str) -> float:
-        g_np, phi_np, kx_grid, ky_grid = _prepare_order_nyc(order)
+        g_np, phi_np, kx_grid, ky_grid, b_nyc_local, b_dump_local = _prepare_order_nyc(order)
         kx_main_ord = _apply_kx_order_1d(kx_vals, order=order)
         kx_pad_ord = _apply_kx_order_1d(kx_vals_pad, order=order)
         ky_grid_pad_ord, kx_grid_pad_ord = np.meshgrid(ky_vals_pad, kx_pad_ord, indexing="ij")
         g_mu = _laguerre_to_grid(jnp.asarray(g_np), cache.laguerre_to_grid)
-        b_nyc = cache.b[:, :nyc, :, :]
+        b_nyc = b_dump_local[None, ...] if b_dump_local is not None else b_nyc_local
         chi_phi = _gx_j0_field(
             jnp.asarray(phi_np.astype(np.complex64)),
             b_nyc,
-            cache.laguerre_roots,
+            roots_ref,
             1.0,
         )
         g_mu_pad = _pad_spectral_kxky(
@@ -709,6 +799,15 @@ def main() -> None:
         term_cfg = TermConfig(nonlinear=1.0, apar=1.0, bpar=0.0)
     else:
         term_cfg = TermConfig(nonlinear=1.0, apar=1.0, bpar=1.0)
+    b_for_comps = cache.b
+    if kperp2_dump is not None and rho2s_dump is not None:
+        b_dump_nyc = rho2s_dump * _apply_kx_order(kperp2_dump, order=order, kx_axis=-2)
+        b_dump_full = _expand_ky(b_dump_nyc[None, ...], nyc=nyc)[0]
+        ns_cache = int(np.asarray(cache.b).shape[0])
+        b_for_comps = jnp.asarray(
+            np.broadcast_to(b_dump_full[None, ...], (ns_cache,) + b_dump_full.shape),
+            dtype=cache.b.dtype,
+        )
     G = jnp.asarray(g_state.astype(np.complex64))
     comps = nonlinear_em_components(
         G,
@@ -730,14 +829,14 @@ def main() -> None:
         bpar_weight=term_cfg.bpar,
         laguerre_to_grid=cache.laguerre_to_grid,
         laguerre_to_spectral=cache.laguerre_to_spectral,
-        laguerre_roots=cache.laguerre_roots,
-        b=cache.b,
+        laguerre_roots=roots_ref,
+        b=b_for_comps,
     )
 
     # Real-space bracket comparison if GX dump is available (use Nyc path).
-    g_nyc, phi_nyc_ord, kx_grid_nyc_ord, ky_grid_nyc_ord = _prepare_order_nyc(order)
+    g_nyc, phi_nyc_ord, kx_grid_nyc_ord, ky_grid_nyc_ord, b_nyc_ord, b_dump_ord = _prepare_order_nyc(order)
     g_mu_nyc = _laguerre_to_grid(jnp.asarray(g_nyc), cache.laguerre_to_grid)
-    b_nyc = cache.b[:, :nyc, :, :]
+    b_nyc = b_dump_ord[None, ...] if b_dump_ord is not None else b_nyc_ord
     if phi_pad is not None:
         phi_pad_ord = _apply_kx_order(phi_pad, order=order, kx_axis=-2)
         if pad_cache is not None:
@@ -753,14 +852,14 @@ def main() -> None:
         chi_phi_nyc = _gx_j0_field(
             jnp.asarray(phi_pad_ord.astype(np.complex64)),
             b_pad,
-            cache.laguerre_roots,
+            roots_ref,
             1.0,
         )
     else:
         chi_phi_nyc = _gx_j0_field(
             jnp.asarray(phi_nyc_ord.astype(np.complex64)),
             b_nyc,
-            cache.laguerre_roots,
+            roots_ref,
             1.0,
         )
     g_mu_pad = _pad_spectral_kxky(
@@ -788,9 +887,9 @@ def main() -> None:
         ny_full=ny_full_pad,
     )
     if have_derivs:
-        g_nyc, phi_nyc_ord, kx_grid_nyc_ord, ky_grid_nyc_ord = _prepare_order_nyc(order)
+        g_nyc, phi_nyc_ord, kx_grid_nyc_ord, ky_grid_nyc_ord, b_nyc_ord, b_dump_ord = _prepare_order_nyc(order)
         g_mu_nyc = _laguerre_to_grid(jnp.asarray(g_nyc), cache.laguerre_to_grid)
-        b_nyc = cache.b[:, :nyc, :, :]
+        b_nyc = b_dump_ord[None, ...] if b_dump_ord is not None else b_nyc_ord
         if phi_pad is not None:
             phi_pad_ord = _apply_kx_order(phi_pad, order=order, kx_axis=-2)
             if pad_cache is not None:
@@ -806,14 +905,14 @@ def main() -> None:
             chi_phi_nyc = _gx_j0_field(
                 jnp.asarray(phi_pad_ord.astype(np.complex64)),
                 b_pad,
-                cache.laguerre_roots,
+                roots_ref,
                 1.0,
             )
         else:
             chi_phi_nyc = _gx_j0_field(
                 jnp.asarray(phi_nyc_ord.astype(np.complex64)),
                 b_nyc,
-                cache.laguerre_roots,
+                roots_ref,
                 1.0,
             )
         g_mu_pad = _pad_spectral_kxky(
@@ -876,37 +975,68 @@ def main() -> None:
             if m_tot != nm + 2 * m_ghost:
                 print(f"Skipping bracket_phi_real: unexpected m_tot {m_tot} for nm {nm}")
             else:
-                ref_full = raw_real.reshape((m_tot, nj, nz, nx_pad, ny_full_pad)).transpose(
-                    0, 1, 2, 4, 3
-                )
+                # GX real bracket uses idxyzj memory ordering with y fastest:
+                # C-order view: (m, j, z, x, y) -> compare as (m, j, y, x, z).
+                ref_real = raw_real.reshape((m_tot, nj, nz, nx_pad, ny_full_pad))
                 if m_ghost > 0:
-                    ref_real = ref_full[m_ghost:-m_ghost]
-                else:
-                    ref_real = ref_full
-                # bracket_real[0]: (Nj, Nm, Ny, Nx, Nz) -> (Nm, Nj, Nz, Ny, Nx)
-                test_real = np.asarray(bracket_real[0]).transpose(1, 0, 4, 2, 3)
+                    ref_real = ref_real[m_ghost:-m_ghost]
+                ref_real = ref_real.transpose(0, 1, 4, 3, 2)
+                # bracket_real[0]: (Nj, Nm, Ny, Nx, Nz) -> (Nm, Nj, Ny, Nx, Nz)
+                test_real = np.asarray(bracket_real[0]).transpose(1, 0, 2, 3, 4)
                 _summary("bracket_real", ref_real, test_real)
+
+    if rho2s_dump is not None:
+        rho_param = params.rho
+        if isinstance(rho_param, (float, int)):
+            rho2_ref = float(rho_param) ** 2
+        else:
+            rho2_ref = float(np.asarray(rho_param)[0] ** 2)
+        print(f"GX rho2s dump: {rho2s_dump:.6e}")
+        print(f"SPECTRAX rho2s (species 0): {rho2_ref:.6e}")
+    if kperp2_dump is not None and rho2s_dump is not None:
+        b_dump = rho2s_dump * kperp2_dump
+        b_cache = np.asarray(cache.b[0, :nyc, :, :])
+        _summary("b_dump", b_dump, b_cache)
 
     gx_j0phi = args.gx_dir / "nl_j0phi.bin"
     if gx_j0phi.exists():
         raw_j0 = np.fromfile(gx_j0phi, dtype=np.complex64)
-        expected = nj * nz * nyc * nx
-        if raw_j0.size != expected:
-            print(f"Skipping j0phi: size {raw_j0.size} != {expected}")
-        else:
-            # J0phi layout: idxyz = idy + nyc*(idx + nx*idz)
+        expected_nyc = nj * nz * nyc * nx
+        expected_full = nj * nz * ny_full * nx
+        if raw_j0.size == expected_nyc:
+            # GX flat index: ig = idxyz + (nx*nyc*nz)*idj, idxyz = idy + nyc*(idx + nx*idz)
+            # C-order view is (j, z, x, y); transpose to (j, y, x, z).
             j0phi = raw_j0.reshape((nj, nz, nx, nyc)).transpose(0, 3, 2, 1)
             ky_idx = int(np.argmin(np.abs(ky_vals_nyc - float(args.ky))))
-            b_nyc = cache.b[:, :nyc, :, :]
+            g_nyc, phi_nyc_ord, _, _, b_nyc_ord, b_dump_ord = _prepare_order_nyc(order)
+            b_nyc = b_dump_ord[None, ...] if b_dump_ord is not None else b_nyc_ord
             chi_phi_nyc = _gx_j0_field(
-                jnp.asarray(phi_nyc.astype(np.complex64)),
+                jnp.asarray(phi_nyc_ord.astype(np.complex64)),
                 b_nyc,
-                cache.laguerre_roots,
+                roots_ref,
                 1.0,
             )
             test_j0 = np.asarray(chi_phi_nyc[0, :, ky_idx, :, :])
             ref_j0 = j0phi[:, ky_idx, :, :]
             _summary("j0phi", ref_j0, test_j0)
+        elif raw_j0.size == expected_full:
+            # Full-ky layout (Ny): C-order view is (j, z, x, y)
+            j0phi_full = raw_j0.reshape((nj, nz, nx, ny_full)).transpose(0, 3, 2, 1)
+            ky_idx = int(np.argmin(np.abs(ky_vals_full - float(args.ky))))
+            g_nyc, phi_nyc_ord, _, _, b_nyc_ord, b_dump_ord = _prepare_order_nyc(order)
+            b_nyc = b_dump_ord[None, ...] if b_dump_ord is not None else b_nyc_ord
+            chi_phi_nyc = _gx_j0_field(
+                jnp.asarray(phi_nyc_ord.astype(np.complex64)),
+                b_nyc,
+                roots_ref,
+                1.0,
+            )
+            chi_phi_full = np.asarray(_expand_ky(chi_phi_nyc[0], nyc=nyc))
+            test_j0 = chi_phi_full[:, ky_idx, :, :]
+            ref_j0 = j0phi_full[:, ky_idx, :, :]
+            _summary("j0phi", ref_j0, test_j0)
+        else:
+            print(f"Skipping j0phi: size {raw_j0.size} != {expected_nyc} or {expected_full}")
 
     exb_total = np.asarray(comps["exb_phi"]) + np.asarray(comps["exb_bpar"])
     gx_map = {

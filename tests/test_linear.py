@@ -110,14 +110,14 @@ def test_build_H_adds_phi_to_m0():
     assert jnp.allclose(H[0, :, 1, 0, 0, 0], 0.0)
 
 
-def test_build_H_ignores_apar():
-    """Apar does not enter H (streaming handles A_parallel explicitly)."""
+def test_build_H_adds_apar_to_m1():
+    """Apar enters H at m=1 with GX sign convention."""
     G = jnp.zeros((1, 2, 2, 1, 1, 1))
     Jl = jnp.ones((1, 2, 1, 1, 1))
     phi = jnp.zeros((1, 1, 1))
     apar = jnp.ones((1, 1, 1))
     H = build_H(G, Jl, phi, tz=jnp.array([1.0]), apar=apar, vth=jnp.array([2.0]))
-    assert jnp.allclose(H[0, :, 1, 0, 0, 0], 0.0)
+    assert jnp.allclose(H[0, :, 1, 0, 0, 0], -2.0)
 
 
 def test_build_H_adds_bpar_to_m0():
