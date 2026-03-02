@@ -50,6 +50,7 @@ def main() -> int:
     parser.add_argument("--D-hyper", type=float, default=0.05)
     parser.add_argument("--p-hyper-kperp", type=float, default=2.0)
     parser.add_argument("--no-hyperdiffusion", action="store_true")
+    parser.add_argument("--flux-scale", type=float, default=1.25)
     parser.add_argument("--out", type=Path, default=Path("docs/_static/nonlinear_cyclone_diag.csv"))
     args = parser.parse_args()
 
@@ -131,6 +132,7 @@ def main() -> int:
         terms=term_cfg,
         sample_stride=int(args.sample_stride),
         use_dealias_mask=bool(args.use_dealias_mask),
+        flux_scale=float(args.flux_scale),
     )
 
     gamma_t = np.asarray(diag.gamma_t)

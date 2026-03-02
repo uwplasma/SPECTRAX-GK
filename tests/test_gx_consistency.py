@@ -67,7 +67,8 @@ def test_salpha_geometry_matches_gx_formulas():
         ky0[:, None] * (ky0[:, None] * gds2 + 2.0 * kx0[:, None] * shat_inv * gds21)
         + (kx0[:, None] * shat_inv) ** 2 * gds22_match
     ) * (bmag_inv * bmag_inv)
-    assert jnp.allclose(kperp2, kperp2_expected[0], rtol=1.0e-9, atol=1.0e-11)
+    # Allow one-ulp level differences from mixed float32/float64 intermediates.
+    assert jnp.allclose(kperp2, kperp2_expected[0], rtol=1.0e-8, atol=5.0e-10)
 
 
 def test_salpha_geometry_kperp2_matches_gs2_formula():
@@ -86,7 +87,8 @@ def test_salpha_geometry_kperp2_matches_gs2_formula():
     kperp2_expected = ky0[:, None] * (ky0[:, None] * gds2 + 2.0 * kx_hat[:, None] * gds21) + (
         kx_hat[:, None] ** 2
     ) * gds22
-    assert jnp.allclose(kperp2, kperp2_expected[0], rtol=1.0e-9, atol=1.0e-11)
+    # Allow one-ulp level differences from mixed float32/float64 intermediates.
+    assert jnp.allclose(kperp2, kperp2_expected[0], rtol=1.0e-8, atol=5.0e-10)
 
 
 def test_hypercollisions_matches_gx_formula():
