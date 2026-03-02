@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 from dataclasses import replace
 from pathlib import Path
+import re
 
 import numpy as np
 import jax
@@ -72,6 +73,59 @@ def _load_shape(path: Path) -> dict[str, int]:
         if len(parts) == 2:
             data[parts[0]] = int(parts[1])
     return data
+
+
+def _infer_shape_from_gx_out(path: Path) -> dict[str, int]:
+    """Best-effort fallback when rhs_terms_shape.txt is unavailable."""
+    with Dataset(path, "r") as root:
+        grids = root.groups["Grids"]
+        inputs = root.groups["Inputs"]
+        ky = np.asarray(grids.variables["ky"][:], dtype=float)
+        kx = np.asarray(grids.variables["kx"][:], dtype=float)
+        theta = np.asarray(grids.variables["theta"][:], dtype=float)
+
+        def _read_int(name: str, default: int) -> int:
+            if name not in inputs.variables:
+                return default
+            return int(np.asarray(inputs.variables[name][:]).reshape(()))
+
+        nspec = _read_int("nspecies", _read_int("nspec", 1))
+        nl = _read_int("nlaguerre", 1)
+        nm = _read_int("nhermite", 1)
+        nj = _read_int("nj", gx_laguerre_nj(nl))
+    return {
+        "nspec": nspec,
+        "nl": nl,
+        "nm": nm,
+        "nyc": int(ky.size),
+        "nx": int(kx.size),
+        "nz": int(theta.size),
+        "nj": nj,
+    }
+
+
+def _infer_shape_from_gx_input(path: Path) -> dict[str, int]:
+    """Parse GX .in file for nhermite/nlaguerre/nspecies values."""
+    text = path.read_text()
+
+    def _pick_int(key: str, default: int) -> int:
+        pat = rf"^\s*{re.escape(key)}\s*=\s*([0-9]+)"
+        m = re.search(pat, text, flags=re.MULTILINE)
+        if m is None:
+            return default
+        return int(m.group(1))
+
+    nl = _pick_int("nlaguerre", 1)
+    nm = _pick_int("nhermite", 1)
+    nspec = _pick_int("nspecies", 1)
+    return {"nspec": nspec, "nl": nl, "nm": nm, "nj": gx_laguerre_nj(nl)}
+
+
+def _pick_first_existing(*candidates: Path) -> Path | None:
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    return None
 
 
 def _load_bin(path: Path, shape: tuple[int, ...]) -> np.ndarray:
@@ -368,9 +422,40 @@ def main() -> None:
     args = parser.parse_args()
 
     shape_path = args.gx_dir / "rhs_terms_shape.txt"
-    if not shape_path.exists():
-        raise FileNotFoundError(f"Missing shape file {shape_path}")
-    shape = _load_shape(shape_path)
+    if shape_path.exists():
+        shape = _load_shape(shape_path)
+    else:
+        print(f"Missing {shape_path}; inferring shape from GX input/output files")
+        shape = _infer_shape_from_gx_out(args.gx_out)
+        gx_input = _pick_first_existing(*sorted(args.gx_dir.glob("*.in")))
+        if gx_input is not None:
+            shape.update(_infer_shape_from_gx_input(gx_input))
+        kx_dump = args.gx_dir / "nl_kx.bin"
+        ky_dump = args.gx_dir / "nl_ky.bin"
+        if kx_dump.exists():
+            shape["nx"] = int(np.fromfile(kx_dump, dtype=np.float32).size)
+        if ky_dump.exists():
+            ny_raw = int(np.fromfile(ky_dump, dtype=np.float32).size)
+            shape["nyc"] = ny_raw
+        phi_guess = _pick_first_existing(args.gx_dir / "nl_phi.bin", args.gx_dir / "phi.bin")
+        if phi_guess is not None and int(shape.get("nz", 0)) <= 0:
+            nphi = int(np.fromfile(phi_guess, dtype=np.complex64).size)
+            nx_guess = int(shape.get("nx", 0))
+            nyc_guess = int(shape.get("nyc", 0))
+            if nx_guess > 0 and nyc_guess > 0 and nphi % (nx_guess * nyc_guess) == 0:
+                shape["nz"] = int(nphi // (nx_guess * nyc_guess))
+        g_guess = _pick_first_existing(args.gx_dir / "nl_g_state.bin", args.gx_dir / "g_state.bin")
+        if g_guess is not None:
+            nraw = int(np.fromfile(g_guess, dtype=np.complex64).size)
+            denom = (
+                int(shape.get("nl", 1))
+                * int(shape.get("nm", 1))
+                * int(shape.get("nyc", 1))
+                * int(shape.get("nx", 1))
+                * int(shape.get("nz", 1))
+            )
+            if denom > 0 and nraw % denom == 0:
+                shape["nspec"] = int(max(1, nraw // denom))
     nspec = shape.get("nspec", 1)
     nl = shape.get("nl", args.Nl)
     nm = shape.get("nm", args.Nm)
@@ -501,11 +586,11 @@ def main() -> None:
             nz=nz,
         )[0, 0, 0, ...]
     phi = _expand_ky(phi_nyc[None, ...], nyc=nyc)[0]
-    apar_path = args.gx_dir / "apar.bin"
-    bpar_path = args.gx_dir / "bpar.bin"
+    apar_path = _pick_first_existing(args.gx_dir / "apar.bin", args.gx_dir / "nl_apar.bin")
+    bpar_path = _pick_first_existing(args.gx_dir / "bpar.bin", args.gx_dir / "nl_bpar.bin")
     apar = None
     bpar = None
-    if apar_path.exists():
+    if apar_path is not None:
         apar_raw = np.fromfile(apar_path, dtype=np.complex64)
         if apar_raw.size == expected_pad:
             apar_pad = apar_raw.reshape((nz, nx_pad, nyc_pad)).transpose(2, 1, 0)
@@ -531,7 +616,7 @@ def main() -> None:
                 nz=nz,
             )[0, 0, 0, ...]
         apar = _expand_ky(apar[None, ...], nyc=nyc)[0]
-    if bpar_path.exists():
+    if bpar_path is not None:
         bpar_raw = np.fromfile(bpar_path, dtype=np.complex64)
         if bpar_raw.size == expected_pad:
             bpar_pad = bpar_raw.reshape((nz, nx_pad, nyc_pad)).transpose(2, 1, 0)

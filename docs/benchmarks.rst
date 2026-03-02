@@ -299,7 +299,7 @@ Electromagnetic ballooning validation uses a fixed :math:`k_y` and a scan over
      - GX linear KBM (s-alpha geometry, matched-input set)
 
 KBM GX cross-code run
-^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
 
 We execute a matched-input KBM cross-code set at ``ky=0.3`` with
 ``beta_ref = [0.1, 0.2, 0.3, 0.4, 0.5]`` for GX and SPECTRAX. Use:
@@ -308,6 +308,34 @@ We execute a matched-input KBM cross-code set at ``ky=0.3`` with
 
 The KBM mismatch table is regenerated locally (not committed) and summarized
 in the run logs once parity closes.
+
+KBM nonlinear term parity (GX)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For nonlinear KBM parity, we compare GX and SPECTRAX term dumps at one time
+step (same state, same grid, same normalization). The GX run uses
+``GX_DUMP_NL_DERIVS=1`` and ``GX_DUMP_NL_TERMS=1`` so each nonlinear building
+block is exported:
+
+- ``dJ0phi_dx``, ``dJ0phi_dy``
+- ``dg_dx``, ``dg_dy``
+- ``bracket_real`` (real-space Poisson bracket)
+- ``exb_total`` (spectral E×B increment)
+- ``bracket_apar`` and ``flutter`` (electromagnetic nonlinear split)
+- ``total`` (final nonlinear RHS increment)
+
+Reference command (SPECTRAX side):
+
+- ``python tools/compare_gx_nonlinear_terms.py --gx-dir /path/to/gx/dumps --gx-out /path/to/kbm_salpha_nonlinear.out.nc --case kbm --ky 0.3 --kx-order native``
+
+The comparator now supports GX dump folders directly:
+
+- ``rhs_terms_shape.txt`` is optional (it is inferred from GX input/output plus dump vectors).
+- ``nl_apar.bin`` / ``nl_bpar.bin`` are accepted directly (no manual renaming).
+
+For terms whose reference amplitudes are near machine zero, use absolute
+differences as the acceptance metric (relative errors can be numerically large
+with tiny denominators).
 
 Reduced ky scan tables
 ----------------------
