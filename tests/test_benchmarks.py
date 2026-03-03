@@ -20,6 +20,7 @@ from spectraxgk.benchmarks import (
     run_kinetic_scan,
     run_tem_linear,
     run_tem_scan,
+    select_kbm_solver_auto,
 )
 from spectraxgk.config import (
     CycloneBaseCase,
@@ -437,6 +438,15 @@ def test_kbm_beta_scan_timecfg_auto_fit_nondiffrax():
     )
     assert np.isfinite(scan.gamma[0])
     assert np.isfinite(scan.omega[0])
+
+
+def test_select_kbm_solver_auto_lock():
+    """KBM auto solver lock should be deterministic at parity anchor ky."""
+    assert select_kbm_solver_auto("auto", ky_target=0.1, gx_parity=True) == "gx_time"
+    assert select_kbm_solver_auto("auto", ky_target=0.3, gx_parity=True) == "gx_time"
+    assert select_kbm_solver_auto("auto", ky_target=0.4, gx_parity=True) == "gx_time"
+    assert select_kbm_solver_auto("auto", ky_target=0.22, gx_parity=False) == "time"
+    assert select_kbm_solver_auto("krylov", ky_target=0.3, gx_parity=True) == "krylov"
 
 
 def test_etg_scan_manual_window():

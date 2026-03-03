@@ -14,6 +14,11 @@ using the same windowing rules as the manual fits, and falls back when a
 non-finite or strongly damped branch is detected. Advanced users can still
 pin any solver or diagnostic choice explicitly.
 
+For the GX KBM parity anchors (``ky rho_i = 0.1, 0.3, 0.4``), auto mode uses a
+deterministic locked solver choice so repeated scans do not drift between
+branches. The lock is implemented in ``select_kbm_solver_auto`` and can be
+overridden by setting ``solver`` explicitly.
+
 For GX-aligned time integration and diagnostics, SPECTRAX-GK includes a
 ``integrate_linear_gx`` path that mirrors GX’s RK4 timestep selection and
 growth-rate extraction.
@@ -307,13 +312,14 @@ Electromagnetic ballooning validation uses a fixed :math:`k_y` and a scan over
 KBM GX cross-code run
 ^^^^^^^^^^^^^^^^^^^^^
 
-We execute a matched-input KBM cross-code set at ``ky=0.3`` with
-``beta_ref = [0.1, 0.2, 0.3, 0.4, 0.5]`` for GX and SPECTRAX. Use:
+We execute a matched-input KBM cross-code set at
+``ky rho_i = [0.1, 0.3, 0.4]`` for GX and SPECTRAX. Use:
 
-- ``python tools/compare_gx_kbm.py --gx /path/to/kbm_salpha.out.nc --out docs/_static/kbm_gx_mismatch.csv``
+- ``python tools/compare_gx_kbm.py --gx /path/to/kbm_salpha.out.nc --ky 0.1,0.3,0.4 --branch-policy single --solver auto --out docs/_static/kbm_gx_mismatch.csv``
 
-The KBM mismatch table is regenerated locally (not committed) and summarized
-in the run logs once parity closes.
+In parity mode, ``solver=auto`` uses the deterministic KBM lock
+(``select_kbm_solver_auto``) so runs remain branch-stable across repeated
+regeneration.
 
 KBM nonlinear term parity (GX)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -342,6 +348,11 @@ The comparator now supports GX dump folders directly:
 For terms whose reference amplitudes are near machine zero, use absolute
 differences as the acceptance metric (relative errors can be numerically large
 with tiny denominators).
+
+For nonlinear diagnostic parity (``Wg``, ``Wphi``, ``Wapar``, heat/particle
+fluxes), the current KBM closure has near-machine-zero late-time ``Wg`` in GX;
+therefore ``Wg`` is tracked with an absolute floor metric, while flux and
+field-energy channels continue to use relative-error checks.
 
 Reduced ky scan tables
 ----------------------
