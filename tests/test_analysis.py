@@ -9,6 +9,7 @@ from spectraxgk.analysis import (
     extract_eigenfunction,
     extract_mode_time_series,
     fit_growth_rate_auto,
+    gx_growth_rate_from_omega_series,
     select_fit_window,
 )
 
@@ -278,3 +279,31 @@ def test_extract_eigenfunction_zero_signal():
     sel = ModeSelection(ky_index=0, kx_index=0, z_index=0)
     mode = extract_eigenfunction(phi_t, t, sel, method="svd")
     assert np.all(np.isfinite(mode))
+
+
+def test_gx_growth_rate_from_omega_series():
+    """GX omega-series averaging should select the requested (ky, kx) branch."""
+
+    gamma_t = np.array(
+        [
+            [[0.1, 0.2], [0.3, 0.4]],
+            [[0.2, 0.3], [0.4, 0.5]],
+            [[0.3, 0.4], [0.5, 0.6]],
+            [[0.4, 0.5], [0.6, 0.7]],
+        ],
+        dtype=float,
+    )
+    omega_t = -2.0 * gamma_t
+    sel = ModeSelection(ky_index=1, kx_index=0, z_index=0)
+
+    g, w, gs, ws = gx_growth_rate_from_omega_series(gamma_t, omega_t, sel, navg_fraction=0.5)
+    assert np.allclose(gs, np.array([0.3, 0.4, 0.5, 0.6]))
+    assert np.allclose(ws, np.array([-0.6, -0.8, -1.0, -1.2]))
+    assert np.isclose(g, np.mean([0.5, 0.6]))
+    assert np.isclose(w, np.mean([-1.0, -1.2]))
+
+    g_last, w_last, _gs, _ws = gx_growth_rate_from_omega_series(
+        gamma_t, omega_t, sel, use_last=True
+    )
+    assert np.isclose(g_last, 0.6)
+    assert np.isclose(w_last, -1.2)
