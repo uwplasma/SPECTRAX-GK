@@ -29,6 +29,7 @@ from spectraxgk.config import (
     KBMBaseCase,
     KineticElectronBaseCase,
     TEMBaseCase,
+    TimeConfig,
 )
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.linear import LinearTerms
@@ -416,6 +417,26 @@ def test_kbm_beta_scan_time_mode_only_phi():
     assert np.isfinite(scan_full.omega[0])
     assert np.isclose(scan_mode_only.gamma[0], scan_full.gamma[0], rtol=1.0e-6, atol=1.0e-10)
     assert np.isclose(scan_mode_only.omega[0], scan_full.omega[0], rtol=1.0e-6, atol=1.0e-10)
+
+
+def test_kbm_beta_scan_timecfg_auto_fit_nondiffrax():
+    """KBM auto fit path should work with non-diffrax TimeConfig."""
+    grid = GridConfig(Nx=1, Ny=8, Nz=32, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1)
+    time_cfg = TimeConfig(t_max=0.8, dt=0.1, method="rk2", use_diffrax=False, sample_stride=1)
+    cfg = KBMBaseCase(grid=grid, time=time_cfg)
+    scan = run_kbm_beta_scan(
+        np.array([1.0e-4]),
+        cfg=cfg,
+        ky_target=0.3,
+        Nl=4,
+        Nm=4,
+        solver="time",
+        fit_signal="auto",
+        mode_only=False,
+        auto_window=True,
+    )
+    assert np.isfinite(scan.gamma[0])
+    assert np.isfinite(scan.omega[0])
 
 
 def test_etg_scan_manual_window():

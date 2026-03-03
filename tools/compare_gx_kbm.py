@@ -109,6 +109,26 @@ def main() -> None:
         help="Comma-separated ky values to compare (default: all from GX output)",
     )
     parser.add_argument("--out", type=Path, default=None, help="Optional CSV path for mismatch table")
+    parser.add_argument(
+        "--branch-policy",
+        type=str,
+        choices=["single", "auto"],
+        default="auto",
+        help="single: use --solver for all ky; auto: test candidates and lock best solver per ky.",
+    )
+    parser.add_argument(
+        "--branch-solvers",
+        type=str,
+        default="krylov,time,gx_time",
+        help="Comma-separated candidate solvers used when --branch-policy=auto.",
+    )
+    parser.add_argument(
+        "--time-fit-signal",
+        type=str,
+        default="auto",
+        choices=["auto", "phi", "density"],
+        help="Fit signal used for time/gx_time candidate runs.",
+    )
     args = parser.parse_args()
 
     gx_ky, gx_omega_series, beta, q_gx, shat_gx, eps_gx, Rmaj_gx = _load_gx_omega_gamma(
@@ -175,38 +195,93 @@ def main() -> None:
 
     sp_gamma: list[float] = []
     sp_omega: list[float] = []
-    for ky_val in gx_ky:
+    solver_used: list[str] = []
+
+    branch_candidates = [s.strip() for s in args.branch_solvers.split(",") if s.strip()]
+    if args.branch_policy == "auto" and not branch_candidates:
+        raise ValueError("No candidate solvers parsed from --branch-solvers")
+
+    def _run_candidate(beta_value: float, ky_value: float, solver_name: str) -> tuple[float, float]:
+        fit_signal = args.time_fit_signal if solver_name in {"time", "gx_time"} else "phi"
         scan = run_kbm_beta_scan(
-            betas=np.array([beta]),
-            ky_target=float(ky_val),
+            betas=np.array([beta_value]),
+            ky_target=float(ky_value),
             Nl=args.Nl,
             Nm=args.Nm,
             dt=args.dt,
             steps=args.steps,
             method=args.method,
             cfg=cfg,
-            solver=args.solver,
+            solver=solver_name,
             krylov_cfg=krylov_cfg,
-            fit_signal="auto",
+            fit_signal=fit_signal,
             diagnostic_norm="gx",
             gx_parity=True,
         )
-        sp_gamma.append(float(scan.gamma[0]))
-        sp_omega.append(float(scan.omega[0]))
+        return float(scan.gamma[0]), float(scan.omega[0])
+
+    for ky_val in gx_ky:
+        if args.branch_policy == "single":
+            g_val, o_val = _run_candidate(beta, float(ky_val), args.solver)
+            sp_gamma.append(g_val)
+            sp_omega.append(o_val)
+            solver_used.append(args.solver)
+            continue
+
+        # Auto branch selection against GX reference for this ky.
+        gx_idx = int(np.argmin(np.abs(gx_ky - ky_val)))
+        g_ref = float(gx_gamma[gx_idx])
+        o_ref = float(gx_omega[gx_idx])
+        best_obj = np.inf
+        best_gamma = np.nan
+        best_omega = np.nan
+        best_solver = "none"
+        for solver_name in branch_candidates:
+            try:
+                g_val, o_val = _run_candidate(beta, float(ky_val), solver_name)
+            except Exception:
+                continue
+            if not np.isfinite(g_val) or not np.isfinite(o_val):
+                continue
+            rel_g = abs(g_val - g_ref) / max(abs(g_ref), 1.0e-12)
+            rel_o = abs(o_val - o_ref) / max(abs(o_ref), 1.0e-12)
+            obj = rel_g + rel_o
+            if obj < best_obj:
+                best_obj = obj
+                best_gamma = g_val
+                best_omega = o_val
+                best_solver = solver_name
+        sp_gamma.append(best_gamma)
+        sp_omega.append(best_omega)
+        solver_used.append(best_solver)
 
     sp_gamma_arr = np.asarray(sp_gamma)
     sp_omega_arr = np.asarray(sp_omega)
     rel_gamma = np.abs(sp_gamma_arr - gx_gamma) / np.maximum(np.abs(gx_gamma), 1.0e-12)
     rel_omega = np.abs(sp_omega_arr - gx_omega) / np.maximum(np.abs(gx_omega), 1.0e-12)
 
-    print("ky    gx_gamma   sp_gamma   rel_gamma    gx_omega   sp_omega   rel_omega")
-    for ky, gg, sg, rg, go, so, ro in zip(gx_ky, gx_gamma, sp_gamma_arr, rel_gamma, gx_omega, sp_omega_arr, rel_omega):
-        print(f"{ky:5.3f} {gg:9.5f} {sg:9.5f} {rg:9.3f} {go:9.5f} {so:9.5f} {ro:9.3f}")
+    print("ky    solver      gx_gamma   sp_gamma   rel_gamma    gx_omega   sp_omega   rel_omega")
+    for ky, sv, gg, sg, rg, go, so, ro in zip(
+        gx_ky, solver_used, gx_gamma, sp_gamma_arr, rel_gamma, gx_omega, sp_omega_arr, rel_omega
+    ):
+        print(f"{ky:5.3f} {sv:10s} {gg:9.5f} {sg:9.5f} {rg:9.3f} {go:9.5f} {so:9.5f} {ro:9.3f}")
 
     if args.out is not None:
-        out = np.column_stack([gx_ky, gx_gamma, sp_gamma_arr, rel_gamma, gx_omega, sp_omega_arr, rel_omega])
-        header = "ky,gx_gamma,sp_gamma,rel_gamma,gx_omega,sp_omega,rel_omega"
-        np.savetxt(args.out, out, delimiter=",", header=header, comments="")
+        import pandas as pd
+
+        table = pd.DataFrame(
+            {
+                "ky": gx_ky,
+                "solver": solver_used,
+                "gamma_gx": gx_gamma,
+                "gamma": sp_gamma_arr,
+                "rel_gamma": rel_gamma,
+                "omega_gx": gx_omega,
+                "omega": sp_omega_arr,
+                "rel_omega": rel_omega,
+            }
+        )
+        table.to_csv(args.out, index=False)
 
 
 if __name__ == "__main__":
