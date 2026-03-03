@@ -321,6 +321,10 @@ In parity mode, ``solver=auto`` uses the deterministic KBM lock
 (``select_kbm_solver_auto``) so runs remain branch-stable across repeated
 regeneration.
 
+The lock was chosen from a targeted ky sweep against GX at
+``ky rho_i = 0.1, 0.3, 0.4`` with branch candidates
+``{krylov, gx_time, time}``, minimizing ``rel_gamma + rel_omega`` per point.
+
 KBM nonlinear term parity (GX)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
