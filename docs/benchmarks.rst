@@ -274,11 +274,11 @@ For high-:math:`k_y` ETG branch selection checks, use:
 - ``python tools/etg_physics_audit.py --ky 5 --Nl 48 --Nm 16``
 - ``python tools/etg_physics_audit.py --ky 25 --Nl 48 --Nm 16``
 
-KBM (Electromagnetic Beta Scan)
--------------------------------
+KBM (Electromagnetic Ky Scan)
+-----------------------------
 
-Electromagnetic ballooning validation uses a fixed :math:`k_y` and a scan over
-:math:`\beta_{ref}`. Primary closure is now against GX (s-alpha geometry). Use
+For GX parity closure we match GX's ``kbm_salpha.in`` benchmark directly:
+fixed :math:`\beta_{ref}` with a :math:`k_y` scan in s-alpha geometry. Use
 ``benchmarks/linear/KBM/kbm_salpha.in`` in the GX repository and
 ``tools/compare_gx_kbm.py`` in SPECTRAX-GK to regenerate the mismatch tables.
 
@@ -294,7 +294,7 @@ Electromagnetic ballooning validation uses a fixed :math:`k_y` and a scan over
    * - Species
      - ions + electrons, ``Te/Ti=1``, ``mi/me=3670``
    * - Electromagnetic
-     - ``beta_ref`` scan, ``A_parallel=on``, ``B_parallel=off``
+     - fixed ``beta_ref=0.015``, ``A_parallel=on``, ``B_parallel=off``
    * - Collisions
      - ``nu_i=0``, ``nu_e=0``, GX-style hypercollisions on
    * - Operator toggles
@@ -314,10 +314,10 @@ Electromagnetic ballooning validation uses a fixed :math:`k_y` and a scan over
 KBM GX cross-code run
 ^^^^^^^^^^^^^^^^^^^^^
 
-We execute a matched-input KBM cross-code set at
-``ky rho_i = [0.1, 0.3, 0.4]`` for GX and SPECTRAX. Use:
+We execute a matched-input KBM cross-code set on the GX ``ky`` grid
+(``ky rho_i = [0.1, 0.2, 0.3, 0.4, 0.5]``). Use:
 
-- ``python tools/compare_gx_kbm.py --gx /path/to/kbm_salpha.out.nc --ky 0.1,0.3,0.4 --branch-policy single --solver auto --out docs/_static/kbm_gx_mismatch.csv``
+- ``python tools/compare_gx_kbm.py --gx /path/to/kbm_salpha.out.nc --branch-policy single --solver gx_time --out docs/_static/kbm_gx_mismatch.csv``
 
 In parity mode, ``solver=auto`` uses the deterministic KBM lock
 (``select_kbm_solver_auto``) so runs remain branch-stable across repeated

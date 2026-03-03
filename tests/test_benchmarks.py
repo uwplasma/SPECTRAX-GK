@@ -16,6 +16,7 @@ from spectraxgk.benchmarks import (
     run_etg_linear,
     run_etg_scan,
     run_kbm_beta_scan,
+    run_kbm_scan,
     run_kinetic_linear,
     run_kinetic_scan,
     run_tem_linear,
@@ -382,6 +383,29 @@ def test_kbm_beta_scan_shapes():
     scan = run_kbm_beta_scan(betas, cfg=cfg, ky_target=0.3, Nl=4, Nm=8, steps=200, dt=0.01)
     assert scan.ky.shape == betas.shape
     assert scan.gamma.shape == betas.shape
+
+
+def test_kbm_ky_scan_shapes():
+    """KBM ky-scan wrapper should return arrays of the requested size."""
+    grid = GridConfig(Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2)
+    cfg = KBMBaseCase(grid=grid)
+    ky_values = np.array([0.2, 0.3])
+    scan = run_kbm_scan(
+        ky_values,
+        cfg=cfg,
+        beta_value=cfg.model.beta,
+        ky_batch=1,
+        Nl=4,
+        Nm=8,
+        dt=0.01,
+        steps=100,
+        method="rk2",
+        solver="gx_time",
+    )
+    assert scan.ky.shape == ky_values.shape
+    assert scan.gamma.shape == ky_values.shape
+    assert np.isfinite(scan.gamma).all()
+    assert np.isfinite(scan.omega).all()
 
 
 def test_kbm_beta_scan_time_mode_only_phi():

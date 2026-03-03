@@ -13,10 +13,7 @@ from netCDF4 import Dataset
 from spectraxgk.analysis import select_ky_index
 from spectraxgk.benchmarks import (
     KBM_KRYLOV_DEFAULT,
-    KBM_OMEGA_D_SCALE,
-    KBM_OMEGA_STAR_SCALE,
-    KBM_RHO_STAR,
-    run_kbm_beta_scan,
+    run_kbm_scan,
 )
 from spectraxgk.config import KBMBaseCase, GeometryConfig, GridConfig, KineticElectronModelConfig
 
@@ -203,9 +200,9 @@ def main() -> None:
 
     def _run_candidate(beta_value: float, ky_value: float, solver_name: str) -> tuple[float, float]:
         fit_signal = args.time_fit_signal if solver_name in {"time", "gx_time"} else "phi"
-        scan = run_kbm_beta_scan(
-            betas=np.array([beta_value]),
-            ky_target=float(ky_value),
+        scan = run_kbm_scan(
+            ky_values=np.array([ky_value]),
+            beta_value=float(beta_value),
             Nl=args.Nl,
             Nm=args.Nm,
             dt=args.dt,
