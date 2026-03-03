@@ -108,6 +108,8 @@ choices for geometry normalization and growth-rate extraction:
 * Midplane sampling at ``z_index = nz//2 + 1`` (GX growth-rate diagnostic).
 * GX-style RK4 integration with adaptive timestep (CFL-based) and
   instantaneous ``phi``-ratio extraction for ``(gamma, omega)``.
+* GX timestep cap semantics (``dt_max = dt`` when ``dt_max`` is unset).
+* GX validity mask for growth diagnostics (non-zero real and imaginary parts).
 
 The Cyclone base case enables GX parity by default (``gx_parity=True``). To
 turn it off or override individual pieces, pass explicit configuration

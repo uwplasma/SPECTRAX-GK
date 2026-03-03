@@ -115,8 +115,9 @@ to quantify CFL-driven savings. To control the Laguerre handling in nonlinear
 brackets, set ``laguerre_nonlinear_mode = "grid"`` (GX-style quadrature,
 default) or ``laguerre_nonlinear_mode = "spectral"`` (use spectral ``Jl``
 without the quadrature transform).
-Cyclone's nonlinear defaults use ``dt_max ≈ 5× dt`` when adaptive timestepping
-is enabled; adjust per case if you need tighter stability or accuracy.
+For GX-parity runs, leaving ``dt_max`` unset uses GX's default behavior
+(``dt_max = dt``). Increase ``dt_max`` explicitly only when you intentionally
+trade strict GX parity for throughput.
 
 Nonlinear collision/hypercollision splitting is enabled with
 ``collision_split = true``. The ``collision_scheme`` key selects the update:

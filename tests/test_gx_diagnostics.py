@@ -18,7 +18,11 @@ from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid, select_ky_grid
 from spectraxgk.analysis import select_ky_index
 from spectraxgk.linear import build_linear_cache, LinearParams, LinearTerms
-from spectraxgk.gx_integrators import GXTimeConfig, integrate_linear_gx_diagnostics
+from spectraxgk.gx_integrators import (
+    GXTimeConfig,
+    _gx_growth_rate_step,
+    integrate_linear_gx_diagnostics,
+)
 
 
 def _small_setup():
@@ -133,3 +137,50 @@ def test_gx_energy_drift_small_no_drive():
     if energy.size > 1:
         rel = np.abs((energy[-1] - energy[0]) / max(abs(energy[0]), 1.0e-12))
         assert rel < 0.05
+
+
+def test_gx_growth_rate_step_matches_real_imag_validity_mask():
+    """GX growth-rate kernel should require non-zero real and imaginary parts."""
+
+    phi_prev = jnp.asarray([[[1.0 + 1.0j, 1.0 + 1.0j]]], dtype=jnp.complex64)
+    phi_now_invalid = jnp.asarray([[[2.0 + 0.0j, 2.0 + 0.0j]]], dtype=jnp.complex64)
+    mask = jnp.asarray([[True]])
+    gamma_bad, omega_bad = _gx_growth_rate_step(
+        phi_now_invalid, phi_prev, 0.1, z_index=0, mask=mask
+    )
+    assert np.allclose(np.asarray(gamma_bad), 0.0)
+    assert np.allclose(np.asarray(omega_bad), 0.0)
+
+    phi_now_valid = jnp.asarray([[[2.0 + 2.0j, 2.0 + 2.0j]]], dtype=jnp.complex64)
+    gamma_ok, omega_ok = _gx_growth_rate_step(phi_now_valid, phi_prev, 0.1, z_index=0, mask=mask)
+    assert np.isfinite(np.asarray(gamma_ok)).all()
+    assert np.isfinite(np.asarray(omega_ok)).all()
+    assert not np.allclose(np.asarray(gamma_ok), 0.0)
+
+
+def test_linear_gx_adaptive_default_dt_max_matches_gx():
+    """When dt_max is unset, adaptive GX path should clamp to dt."""
+
+    cfg, grid, geom, params, cache = _small_setup()
+    G0 = _build_initial_condition(grid, geom, ky_index=0, kx_index=0, Nl=4, Nm=4, init_cfg=cfg.init)
+    time_cfg = GXTimeConfig(
+        dt=0.01,
+        t_max=0.05,
+        sample_stride=1,
+        fixed_dt=False,
+        dt_max=None,
+        cfl=10.0,
+    )
+    _t, _phi_t, _gamma_t, _omega_t, diag = integrate_linear_gx_diagnostics(
+        G0,
+        grid,
+        cache,
+        params,
+        geom,
+        time_cfg,
+        terms=LinearTerms(),
+        jit=False,
+    )
+    dt_t = np.asarray(diag.dt_t, dtype=float)
+    assert dt_t.size > 0
+    assert np.nanmax(dt_t) <= float(time_cfg.dt) + 1.0e-12

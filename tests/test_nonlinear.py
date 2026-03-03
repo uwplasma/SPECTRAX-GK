@@ -144,3 +144,31 @@ def test_integrate_nonlinear_collision_split_sts():
         collision_scheme="sts",
     )
     assert np.isfinite(np.asarray(diag.Wg_t)).all()
+
+
+def test_nonlinear_gx_adaptive_default_dt_max_matches_gx():
+    """Adaptive nonlinear GX diagnostics should clamp dt to dt when dt_max is unset."""
+
+    grid_cfg = GridConfig(Nx=2, Ny=2, Nz=4, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams()
+    G = jnp.zeros((2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
+    terms = TermConfig(nonlinear=0.0)
+    _t, diag = integrate_nonlinear_gx_diagnostics(
+        G,
+        grid,
+        geom,
+        params,
+        dt=0.05,
+        steps=3,
+        method="rk3",
+        terms=terms,
+        fixed_dt=False,
+        dt_max=None,
+        cfl=10.0,
+    )
+    dt_t = np.asarray(diag.dt_t, dtype=float)
+    assert dt_t.size > 0
+    assert np.nanmax(dt_t) <= 0.05 + 1.0e-6
