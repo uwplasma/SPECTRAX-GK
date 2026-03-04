@@ -400,6 +400,42 @@ Observed in this short-window gate:
    Short-window nonlinear KBM diagnostics parity using a denser GX write
    cadence (``nwrite=2``).
 
+KBM nonlinear horizon extension (same locked seed)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Using the same locked short-gate settings (RK4, ``dt=3e-4``, GX diagnostics
+mode reduction, ``Nl=4``, ``Nm=8``, ``ky=0.3``), we extended the run horizon:
+
+- ``t_max=0.50`` against ``.cache/gx/kbm_salpha_nonlinear_t0p50_dense.out.nc``
+- ``t_max=1.00`` against ``.cache/gx/kbm_salpha_nonlinear_t1p00_dense.out.nc``
+
+Findings:
+
+- ``Wphi`` and heat-flux channels remain close in relative error
+  (order ``1e-7``).
+- ``omega`` remains good in the early/mid window, then diverges as the run
+  enters nonlinear branch-sensitive dynamics.
+- In the ``t_max=1.00`` run, the first persistent drift appears around
+  ``t ~ 0.35`` (5e-2 window bins), after which instantaneous ``gamma``/``omega``
+  mismatches are no longer a robust parity metric.
+
+For this regime, parity acceptance should use:
+
+- short/early-window instantaneous ``gamma``/``omega`` checks, and
+- late-window averaged energy/flux diagnostics.
+
+.. figure:: _static/nonlinear_kbm_diag_compare_t0p50_dense.png
+   :align: center
+   :alt: KBM nonlinear diagnostics parity to t_max=0.50
+
+   Nonlinear KBM diagnostics parity extension to ``t_max=0.50``.
+
+.. figure:: _static/nonlinear_kbm_diag_compare_t1p00_dense.png
+   :align: center
+   :alt: KBM nonlinear diagnostics parity to t_max=1.00
+
+   Nonlinear KBM diagnostics parity extension to ``t_max=1.00``.
+
 Reduced ky scan tables
 ----------------------
 
