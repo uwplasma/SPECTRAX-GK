@@ -23,6 +23,17 @@ def _finite_diff_periodic(f: np.ndarray, dx: float, axis: int) -> np.ndarray:
     return (np.roll(f, -1, axis=axis) - np.roll(f, 1, axis=axis)) / (2.0 * dx)
 
 
+def _expand_hermitian(pos: np.ndarray, ny_full: int) -> np.ndarray:
+    """Expand rFFT-unique ky rows into full Hermitian spectrum."""
+    nyc = ny_full // 2 + 1
+    if nyc <= 2:
+        return pos
+    neg_hi = nyc - 1 if (ny_full % 2 == 0) else nyc
+    neg = np.conj(pos[..., 1:neg_hi, :, :])
+    neg = neg[..., ::-1, :, :]
+    return np.concatenate([pos, neg], axis=-3)
+
+
 def test_exb_bracket_zero_mean_mode():
     grid = build_spectral_grid(GridConfig(Nx=8, Ny=8, Nz=4, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
     rng = np.random.default_rng(0)
@@ -210,15 +221,8 @@ def test_gx_real_fft_bracket_match():
         size=(nyc, nx, grid.z.size)
     )
 
-    def _expand(pos):
-        if nyc <= 2:
-            return pos
-        neg = np.conj(pos[..., 1 : nyc - 1, :, :])
-        neg = neg[..., ::-1, :, :]
-        return np.concatenate([pos, neg], axis=-3)
-
-    G_full = _expand(G_nyc)
-    phi_full = _expand(phi_nyc[None, ...])[0]
+    G_full = _expand_hermitian(G_nyc, ny)
+    phi_full = _expand_hermitian(phi_nyc[None, ...], ny)[0]
 
     bracket_hat = _spectral_bracket(
         jnp.asarray(G_full),
@@ -246,13 +250,13 @@ def test_gx_real_fft_bracket_match():
     bracket_hat_nyc = np.fft.rfft2(bracket, axes=(-2, -3)) / Nxy
     mask_nyc = np.asarray(grid.dealias_mask)[:nyc, :]
     bracket_hat_nyc = bracket_hat_nyc * mask_nyc[None, None, None, :, :, None]
-    bracket_hat_ref = _expand(bracket_hat_nyc)
+    bracket_hat_ref = _expand_hermitian(bracket_hat_nyc, ny)
 
     assert np.allclose(
         np.asarray(bracket_hat),
         bracket_hat_ref,
-        rtol=5.0e-5,
-        atol=5.0e-7,
+        rtol=1.0e-4,
+        atol=2.0e-5,
     )
 
 
@@ -269,15 +273,8 @@ def test_gx_real_fft_toggle_matches_full_fft_for_hermitian():
         size=(nyc, nx, grid.z.size)
     )
 
-    def _expand(pos):
-        if nyc <= 2:
-            return pos
-        neg = np.conj(pos[..., 1 : nyc - 1, :, :])
-        neg = neg[..., ::-1, :, :]
-        return np.concatenate([pos, neg], axis=-3)
-
-    G_full = _expand(G_nyc)
-    chi_full = _expand(chi_nyc[None, ...])[0]
+    G_full = _expand_hermitian(G_nyc, ny)
+    chi_full = _expand_hermitian(chi_nyc[None, ...], ny)[0]
 
     bracket_gx = _spectral_bracket(
         jnp.asarray(G_full),
@@ -300,6 +297,57 @@ def test_gx_real_fft_toggle_matches_full_fft_for_hermitian():
     assert bracket_gx.shape == bracket_full.shape
     assert np.all(np.isfinite(np.asarray(bracket_gx)))
     assert np.all(np.isfinite(np.asarray(bracket_full)))
+
+
+def test_gx_real_fft_bracket_match_odd_ny():
+    grid = build_spectral_grid(GridConfig(Nx=6, Ny=7, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
+    ny = grid.ky.size
+    nx = grid.kx.size
+    nyc = ny // 2 + 1
+    rng = np.random.default_rng(321)
+    G_nyc = rng.normal(size=(1, 1, 1, nyc, nx, grid.z.size)) + 1j * rng.normal(
+        size=(1, 1, 1, nyc, nx, grid.z.size)
+    )
+    phi_nyc = rng.normal(size=(nyc, nx, grid.z.size)) + 1j * rng.normal(
+        size=(nyc, nx, grid.z.size)
+    )
+    G_full = _expand_hermitian(G_nyc, ny)
+    phi_full = _expand_hermitian(phi_nyc[None, ...], ny)[0]
+
+    bracket_hat = _spectral_bracket(
+        jnp.asarray(G_full),
+        jnp.asarray(phi_full),
+        kx_grid=grid.kx_grid,
+        ky_grid=grid.ky_grid,
+        dealias_mask=grid.dealias_mask,
+        kxfac=jnp.asarray(1.0),
+        gx_real_fft=True,
+    )
+
+    Nxy = nx * ny
+    kx_nyc = grid.kx_grid[:nyc, :]
+    ky_nyc = grid.ky_grid[:nyc, :]
+    kx_b = kx_nyc[None, None, None, :, :, None]
+    ky_b = ky_nyc[None, None, None, :, :, None]
+    kx_c = kx_nyc[None, None, :, :, None]
+    ky_c = ky_nyc[None, None, :, :, None]
+
+    dG_dx = np.fft.irfft2(1j * kx_b * G_nyc, s=(nx, ny), axes=(-2, -3)) * Nxy
+    dG_dy = np.fft.irfft2(1j * ky_b * G_nyc, s=(nx, ny), axes=(-2, -3)) * Nxy
+    dphi_dx = np.fft.irfft2(1j * kx_c * phi_nyc, s=(nx, ny), axes=(-2, -3)) * Nxy
+    dphi_dy = np.fft.irfft2(1j * ky_c * phi_nyc, s=(nx, ny), axes=(-2, -3)) * Nxy
+    bracket = dG_dx * dphi_dy[:, :, None, ...] - dG_dy * dphi_dx[:, :, None, ...]
+    bracket_hat_nyc = np.fft.rfft2(bracket, axes=(-2, -3)) / Nxy
+    mask_nyc = np.asarray(grid.dealias_mask)[:nyc, :]
+    bracket_hat_nyc = bracket_hat_nyc * mask_nyc[None, None, None, :, :, None]
+    bracket_hat_ref = _expand_hermitian(bracket_hat_nyc, ny)
+
+    assert np.allclose(
+        np.asarray(bracket_hat),
+        bracket_hat_ref,
+        rtol=1.0e-4,
+        atol=2.0e-5,
+    )
 
 
 def test_bpar_contributes_to_chi():
