@@ -21,11 +21,15 @@ nperiod = 1
 
 [time]
 t_max = 20.4
-dt = 0.03769945
-method = "k10"
+dt = 0.01
+method = "rk3"
 sample_stride = 10
 diagnostics_stride = 10
 use_diffrax = false
+fixed_dt = false
+dt_max = 0.05
+cfl = 0.9
+cfl_fac = 1.0
 gx_real_fft = true
 laguerre_nonlinear_mode = "grid"
 
@@ -70,8 +74,6 @@ end_damping = 1.0
 [normalization]
 contract = "cyclone"
 diagnostic_norm = "gx"
-flux_scale = 1.25
-wphi_scale = 1.155
 
 [run]
 ky = 0.3

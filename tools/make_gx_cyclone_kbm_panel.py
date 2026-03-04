@@ -340,8 +340,12 @@ def _plot_nonlinear_row(
     title: str,
     gx: dict[str, np.ndarray],
     sp: dict[str, np.ndarray],
+    *,
+    t_cap: float | None = None,
 ) -> None:
     t_max = float(min(np.nanmax(gx["t"]), np.nanmax(sp["t"])))
+    if t_cap is not None:
+        t_max = min(t_max, float(t_cap))
     mask_t_gx = np.asarray(gx["t"] <= t_max, dtype=bool)
     mask_t_sp = np.asarray(sp["t"] <= t_max, dtype=bool)
 
@@ -412,17 +416,24 @@ def main() -> int:
     parser.add_argument(
         "--gx-kbm-nonlinear",
         type=Path,
-        default=Path(".cache/gx/kbm_salpha_nonlinear_t0p20_dense.out.nc"),
+        default=Path(".cache/gx/kbm_salpha_nonlinear_t0p50_dense.out.nc"),
     )
     parser.add_argument(
         "--spectrax-cyclone-nonlinear",
         type=Path,
-        default=Path(".cache/spectrax/cyclone_nonlinear_diag.csv"),
+        default=Path(".cache/spectrax/cyclone_nonlinear_diag_gx_default.csv"),
     )
     parser.add_argument(
         "--spectrax-kbm-nonlinear",
         type=Path,
-        default=Path(".cache/spectrax/kbm_nonlinear_diag_t0p20.csv"),
+        default=Path(".cache/spectrax/kbm_nonlinear_diag_t0p50.csv"),
+    )
+    parser.add_argument("--cyclone-nonlinear-tmax", type=float, default=None)
+    parser.add_argument(
+        "--kbm-nonlinear-tmax",
+        type=float,
+        default=0.35,
+        help="Optional cap for KBM nonlinear traces.",
     )
     parser.add_argument("--cyclone-ky", type=float, default=0.3)
     parser.add_argument("--kbm-ky", type=float, default=0.3)
@@ -457,7 +468,13 @@ def main() -> int:
         mode_gx_c,
         cycl_scan,
     )
-    _plot_nonlinear_row(axes[1], "Cyclone nonlinear", gx_nl_c, sp_nl_c)
+    _plot_nonlinear_row(
+        axes[1],
+        "Cyclone nonlinear",
+        gx_nl_c,
+        sp_nl_c,
+        t_cap=args.cyclone_nonlinear_tmax,
+    )
     _plot_linear_row(
         axes[2],
         "KBM linear",
@@ -467,7 +484,13 @@ def main() -> int:
         mode_gx_k,
         kbm_scan,
     )
-    _plot_nonlinear_row(axes[3], "KBM nonlinear", gx_nl_k, sp_nl_k)
+    _plot_nonlinear_row(
+        axes[3],
+        "KBM nonlinear",
+        gx_nl_k,
+        sp_nl_k,
+        t_cap=args.kbm_nonlinear_tmax,
+    )
 
     col_titles = [
         "Eigenfunction / field",

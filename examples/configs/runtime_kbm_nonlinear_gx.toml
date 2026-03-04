@@ -32,14 +32,15 @@ ntheta = 32
 nperiod = 2
 
 [time]
-t_max = 4.0
-dt = 0.002
-method = "rk3"
-sample_stride = 10
-diagnostics_stride = 10
+t_max = 0.5
+dt = 0.0003
+method = "rk4"
+sample_stride = 1
+diagnostics_stride = 1
 use_diffrax = false
 gx_real_fft = true
 laguerre_nonlinear_mode = "grid"
+fixed_dt = true
 
 [geometry]
 q = 1.4
