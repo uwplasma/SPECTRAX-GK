@@ -360,6 +360,43 @@ fluxes), the current KBM closure has near-machine-zero late-time ``Wg`` in GX;
 therefore ``Wg`` is tracked with an absolute floor metric, while flux and
 field-energy channels continue to use relative-error checks.
 
+KBM nonlinear short-time diagnostics parity (dense GX cadence)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Before long-run KBM parity, we run a short-window diagnostic check with dense
+GX writes so ``omega`` is compared at near-identical times instead of sparse
+interpolation.
+
+GX (office GPU) short run:
+
+- ``kbm_salpha_nonlinear_short_dense.in`` with ``t_max=0.08``, ``nwrite=2``
+  and the same KBM setup as the nonlinear reference case.
+- Output: ``.cache/gx/kbm_salpha_nonlinear_short_dense.out.nc``.
+
+SPECTRAX short run (matched parity probe):
+
+- ``python -m spectraxgk.cli run-runtime-nonlinear --config examples/configs/runtime_kbm_nonlinear_gx_short.toml --steps 267 --out .cache/spectrax/kbm_nonlinear_diag_short_3e4.csv``
+
+Comparison:
+
+- ``python tools/compare_gx_nonlinear.py --gx .cache/gx/kbm_salpha_nonlinear_short_dense.out.nc --spectrax .cache/spectrax/kbm_nonlinear_diag_short_3e4.csv --out docs/_static/nonlinear_kbm_diag_compare_short_dense.png``
+
+Observed in this short-window gate:
+
+- ``Wphi`` and heat-flux channels remain near machine-level parity.
+- ``omega`` mismatch is reduced by using the denser GX cadence and a stable
+  short-run SPECTRAX step size (``dt=3e-4``), with late-window ``omega``
+  mismatch significantly smaller than early-transient mismatch.
+  For the current KBM short gate, mean relative ``omega`` error is
+  ``~14%`` over the full window and ``~7%`` for ``t >= 0.02``.
+
+.. figure:: _static/nonlinear_kbm_diag_compare_short_dense.png
+   :align: center
+   :alt: KBM nonlinear short-window diagnostics parity (GX vs SPECTRAX)
+
+   Short-window nonlinear KBM diagnostics parity using a denser GX write
+   cadence (``nwrite=2``).
+
 Reduced ky scan tables
 ----------------------
 
