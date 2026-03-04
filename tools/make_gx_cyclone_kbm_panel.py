@@ -9,26 +9,29 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import jax.numpy as jnp
 from netCDF4 import Dataset
 
 from spectraxgk.benchmarks import (
     KBM_OMEGA_D_SCALE,
     KBM_OMEGA_STAR_SCALE,
     KBM_RHO_STAR,
+    _build_initial_condition,
+    _midplane_index,
     _two_species_params,
     run_cyclone_linear,
-    run_kinetic_linear,
 )
 from spectraxgk.config import (
+    KBMBaseCase,
     CycloneBaseCase,
     GridConfig,
     InitializationConfig,
-    KineticElectronBaseCase,
     KineticElectronModelConfig,
 )
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.grids import build_spectral_grid
-from spectraxgk.linear import LinearTerms
+from spectraxgk.grids import build_spectral_grid, select_ky_grid
+from spectraxgk.gx_integrators import GXTimeConfig, integrate_linear_gx_diagnostics
+from spectraxgk.linear import LinearTerms, build_linear_cache
 
 
 def _normalize_mode(theta: np.ndarray, mode: np.ndarray) -> np.ndarray:
@@ -94,10 +97,10 @@ def _cyclone_spectrax_eigenfunction(ky_target: float) -> tuple[np.ndarray, np.nd
 
 
 def _kbm_spectrax_eigenfunction(ky_target: float) -> tuple[np.ndarray, np.ndarray]:
-    cfg = KineticElectronBaseCase(
+    cfg = KBMBaseCase(
         grid=GridConfig(
             Nx=1,
-            Ny=12,
+            Ny=16,
             Nz=96,
             Lx=62.8,
             Ly=62.8,
@@ -119,6 +122,11 @@ def _kbm_spectrax_eigenfunction(ky_target: float) -> tuple[np.ndarray, np.ndarra
         init=InitializationConfig(init_field="all", init_amp=1.0e-10, gaussian_init=True),
     )
     geom = SAlphaGeometry.from_config(cfg.geometry)
+    grid_full = build_spectral_grid(cfg.grid)
+    ky_index = int(np.argmin(np.abs(np.asarray(grid_full.ky) - float(ky_target))))
+    grid = select_ky_grid(grid_full, ky_index)
+    Nl = 8
+    Nm = 24
     params = _two_species_params(
         cfg.model,
         kpar_scale=float(geom.gradpar()),
@@ -128,26 +136,47 @@ def _kbm_spectrax_eigenfunction(ky_target: float) -> tuple[np.ndarray, np.ndarra
         beta_override=0.015,
         damp_ends_amp=0.0,
         damp_ends_widthfrac=0.0,
-        nhermite=8,
+        nhermite=Nm,
     )
-    res = run_kinetic_linear(
-        ky_target=float(ky_target),
-        cfg=cfg,
-        params=params,
-        Nl=4,
-        Nm=8,
-        solver="krylov",
+    cache = build_linear_cache(grid, geom, params, Nl=Nl, Nm=Nm)
+    G0 = np.zeros((2, Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64)
+    G0[1] = np.asarray(
+        _build_initial_condition(
+            grid,
+            geom,
+            ky_index=0,
+            kx_index=0,
+            Nl=Nl,
+            Nm=Nm,
+            init_cfg=cfg.init,
+        ),
+        dtype=np.complex64,
+    )
+    gx_cfg = GXTimeConfig(
+        t_max=8.0,
+        dt=0.01,
+        sample_stride=2,
+        fixed_dt=False,
+        use_dealias_mask=False,
+        dt_min=1.0e-7,
+        dt_max=0.05,
+        cfl=0.9,
+        cfl_fac=1.0,
+    )
+    _t, phi_t, _gamma_t, _omega_t, _diag = integrate_linear_gx_diagnostics(
+        jnp.asarray(G0),
+        grid,
+        cache,
+        params,
+        geom,
+        gx_cfg,
         terms=LinearTerms(bpar=0.0),
-        fit_signal="phi",
-        init_species_index=1,
-        density_species_index=1,
-        diagnostic_norm="gx",
+        mode_method="z_index",
+        z_index=_midplane_index(grid),
+        jit=True,
     )
-    theta = np.asarray(build_spectral_grid(cfg.grid).z, dtype=float)
-    mode = np.asarray(
-        res.phi_t[-1, res.selection.ky_index, res.selection.kx_index, :],
-        dtype=np.complex128,
-    )
+    theta = np.asarray(grid.z, dtype=float)
+    mode = np.asarray(phi_t[-1, 0, 0, :], dtype=np.complex128)
     return theta, _normalize_mode(theta, mode)
 
 
@@ -383,7 +412,7 @@ def main() -> int:
     parser.add_argument(
         "--gx-kbm-nonlinear",
         type=Path,
-        default=Path(".cache/gx/kbm_salpha_nonlinear.out.nc"),
+        default=Path(".cache/gx/kbm_salpha_nonlinear_t0p20_dense.out.nc"),
     )
     parser.add_argument(
         "--spectrax-cyclone-nonlinear",
@@ -393,7 +422,7 @@ def main() -> int:
     parser.add_argument(
         "--spectrax-kbm-nonlinear",
         type=Path,
-        default=Path(".cache/spectrax/kbm_nonlinear_diag.csv"),
+        default=Path(".cache/spectrax/kbm_nonlinear_diag_t0p20.csv"),
     )
     parser.add_argument("--cyclone-ky", type=float, default=0.3)
     parser.add_argument("--kbm-ky", type=float, default=0.3)

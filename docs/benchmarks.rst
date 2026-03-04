@@ -155,6 +155,11 @@ Regenerate this panel with:
 - ``python tools/compare_gx_kbm.py --gx /path/to/kbm_salpha.out.nc --out docs/_static/kbm_gx_mismatch.csv``
 - ``python tools/make_gx_cyclone_kbm_panel.py --out docs/_static/gx_cyclone_kbm_panel.png``
 
+By default, ``make_gx_cyclone_kbm_panel.py`` uses the dense-cadence short
+KBM nonlinear pair (``t_max=0.20``) and a GX-style time-integrated SPECTRAX
+KBM eigenfunction (not a standalone Krylov vector) so the panel remains
+branch-consistent with GX.
+
 .. figure:: _static/cyclone_comparison.png
    :align: center
    :alt: Cyclone base case comparison
