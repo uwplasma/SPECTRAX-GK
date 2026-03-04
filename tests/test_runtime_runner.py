@@ -7,7 +7,10 @@ from dataclasses import replace
 import numpy as np
 
 from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, TimeConfig
+from spectraxgk.geometry import SAlphaGeometry
+from spectraxgk.grids import build_spectral_grid
 from spectraxgk.runtime import (
+    _build_initial_condition,
     build_runtime_linear_params,
     build_runtime_linear_terms,
     run_runtime_linear,
@@ -250,3 +253,67 @@ def test_runtime_nonlinear_adaptive_dt() -> None:
     assert res.diagnostics is not None
     t_arr = np.asarray(res.diagnostics.t)
     assert np.all(np.diff(t_arr) > 0)
+
+
+def test_runtime_gaussian_init_populates_multiple_modes_when_not_single() -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        grid=GridConfig(
+            Nx=6,
+            Ny=8,
+            Nz=16,
+            Lx=6.28,
+            Ly=6.28,
+            boundary="linked",
+            y0=10.0,
+            ntheta=16,
+            nperiod=1,
+        ),
+        init=InitializationConfig(
+            init_field="density",
+            init_amp=1.0e-8,
+            gaussian_init=True,
+            gaussian_width=0.5,
+            init_single=False,
+        ),
+    )
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    grid = build_spectral_grid(cfg.grid)
+    ky_index = int(np.argmin(np.abs(np.asarray(grid.ky) - 0.2)))
+    g0 = np.asarray(
+        _build_initial_condition(
+            grid,
+            geom,
+            cfg,
+            ky_index=ky_index,
+            kx_index=0,
+            Nl=2,
+            Nm=2,
+            nspecies=1,
+        )
+    )
+    amp_kykx = np.max(np.abs(g0[0, 0, 0, ...]), axis=-1)
+    nonzero = amp_kykx > 0.0
+    assert int(np.count_nonzero(nonzero)) > 1
+
+
+def test_runtime_nonlinear_dealias_toggle_executes() -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        time=TimeConfig(
+            t_max=0.03,
+            dt=0.01,
+            method="rk2",
+            use_diffrax=False,
+            sample_stride=1,
+            diagnostics_stride=1,
+            nonlinear_dealias=False,
+        ),
+        species=(RuntimeSpeciesConfig(name="ion"),),
+        normalization=RuntimeNormalizationConfig(contract="cyclone"),
+        physics=RuntimePhysicsConfig(adiabatic_electrons=True, nonlinear=True),
+        terms=RuntimeTermsConfig(nonlinear=1.0, hypercollisions=0.0, end_damping=0.0),
+    )
+    res = run_runtime_nonlinear(cfg, ky_target=0.2, Nl=3, Nm=4, steps=3)
+    assert res.diagnostics is not None
+    assert np.all(np.isfinite(res.diagnostics.Wphi_t))
