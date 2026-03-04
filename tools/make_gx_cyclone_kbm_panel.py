@@ -239,9 +239,10 @@ def _load_gx_nonlinear(path: Path, ky_target: float) -> dict[str, np.ndarray]:
 
     if "omega_kxkyt" in diag.variables:
         omega_kxkyt = np.asarray(diag.variables["omega_kxkyt"][:], dtype=float)
-        # Match CLI/runtime CSV reduction: mean over all (ky, kx) entries.
-        out["omega"] = np.nanmean(omega_kxkyt[..., 0], axis=(1, 2))
-        out["gamma"] = np.nanmean(omega_kxkyt[..., 1], axis=(1, 2))
+        kx = np.asarray(grids.variables["kx"][:], dtype=float)
+        kx_idx = int(np.argmin(np.abs(kx)))
+        out["omega"] = omega_kxkyt[:, ky_idx, kx_idx, 0]
+        out["gamma"] = omega_kxkyt[:, ky_idx, kx_idx, 1]
     else:
         phi2 = np.asarray(diag.variables["Phi2_t"][:], dtype=float)
         gamma = np.full_like(t, np.nan)
