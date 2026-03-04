@@ -367,28 +367,31 @@ Before long-run KBM parity, we run a short-window diagnostic check with dense
 GX writes so ``omega`` is compared at near-identical times instead of sparse
 interpolation.
 
-GX (office GPU) short run:
+GX (office GPU) dense-cadence runs:
 
-- ``kbm_salpha_nonlinear_short_dense.in`` with ``t_max=0.08``, ``nwrite=2``
-  and the same KBM setup as the nonlinear reference case.
-- Output: ``.cache/gx/kbm_salpha_nonlinear_short_dense.out.nc``.
+- ``kbm_salpha_nonlinear_short_dense.in`` with ``nwrite=2`` and fixed ``dt``
+  at matched-input settings.
+- Outputs used for parity gates:
+  ``.cache/gx/kbm_salpha_nonlinear_short_dense.out.nc`` (``t_max=0.08``),
+  ``.cache/gx/kbm_salpha_nonlinear_t0p20_dense.out.nc`` (``t_max=0.20``).
 
-SPECTRAX short run (matched parity probe):
+SPECTRAX matched parity probes:
 
 - ``python -m spectraxgk.cli run-runtime-nonlinear --config examples/configs/runtime_kbm_nonlinear_gx_short.toml --steps 267 --out .cache/spectrax/kbm_nonlinear_diag_short_3e4.csv``
+- ``python -m spectraxgk.cli run-runtime-nonlinear --config examples/configs/runtime_kbm_nonlinear_gx_seed.toml --steps 667 --out .cache/spectrax/kbm_nonlinear_diag_t0p20.csv``
 
 Comparison:
 
-- ``python tools/compare_gx_nonlinear.py --gx .cache/gx/kbm_salpha_nonlinear_short_dense.out.nc --spectrax .cache/spectrax/kbm_nonlinear_diag_short_3e4.csv --out docs/_static/nonlinear_kbm_diag_compare_short_dense.png``
+- ``python tools/compare_gx_nonlinear.py --gx .cache/gx/kbm_salpha_nonlinear_t0p20_dense.out.nc --spectrax .cache/spectrax/kbm_nonlinear_diag_t0p20.csv --out docs/_static/nonlinear_kbm_diag_compare_short_dense.png``
 
 Observed in this short-window gate:
 
 - ``Wphi`` and heat-flux channels remain near machine-level parity.
 - ``omega`` mismatch is reduced by using the denser GX cadence and a stable
-  short-run SPECTRAX step size (``dt=3e-4``), with late-window ``omega``
-  mismatch significantly smaller than early-transient mismatch.
-  For the current KBM short gate, mean relative ``omega`` error is
-  ``~14%`` over the full window and ``~7%`` for ``t >= 0.02``.
+  SPECTRAX step size (``dt=3e-4``), with late-window ``omega`` mismatch
+  significantly smaller than early-transient mismatch.
+  For the current ``t_max=0.20`` gate, mean relative ``omega`` error is
+  ``~6.9%`` over the full window and ``~3.9%`` for ``t >= 0.02``.
 
 .. figure:: _static/nonlinear_kbm_diag_compare_short_dense.png
    :align: center
