@@ -197,7 +197,7 @@ def test_em_weights_are_toggles():
     assert np.max(np.abs(np.asarray(dG_on))) > 0.0
 
 
-def test_gx_real_fft_bracket_parity():
+def test_gx_real_fft_bracket_match():
     grid = build_spectral_grid(GridConfig(Nx=6, Ny=8, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
     ny = grid.ky.size
     nx = grid.kx.size

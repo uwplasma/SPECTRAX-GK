@@ -155,7 +155,7 @@ def test_run_cyclone_linear_manual_window():
         dt=0.1,
         method="rk2",
         solver="time",
-        gx_parity=False,
+        gx_reference=False,
         auto_window=False,
         tmin=0.1,
         tmax=0.3,
@@ -242,7 +242,7 @@ def test_cyclone_physics_regression():
         dt=0.01,
         method="imex2",
         solver="time",
-        gx_parity=False,
+        gx_reference=False,
     )
     ref = load_cyclone_reference()
     idx = int(np.argmin(np.abs(ref.ky - 0.3)))
@@ -465,12 +465,12 @@ def test_kbm_beta_scan_timecfg_auto_fit_nondiffrax():
 
 
 def test_select_kbm_solver_auto_lock():
-    """KBM auto solver lock should be deterministic at parity anchor ky."""
-    assert select_kbm_solver_auto("auto", ky_target=0.1, gx_parity=True) == "gx_time"
-    assert select_kbm_solver_auto("auto", ky_target=0.3, gx_parity=True) == "gx_time"
-    assert select_kbm_solver_auto("auto", ky_target=0.4, gx_parity=True) == "gx_time"
-    assert select_kbm_solver_auto("auto", ky_target=0.22, gx_parity=False) == "time"
-    assert select_kbm_solver_auto("krylov", ky_target=0.3, gx_parity=True) == "krylov"
+    """KBM auto solver lock should be deterministic at GX-reference anchor ky."""
+    assert select_kbm_solver_auto("auto", ky_target=0.1, gx_reference=True) == "gx_time"
+    assert select_kbm_solver_auto("auto", ky_target=0.3, gx_reference=True) == "gx_time"
+    assert select_kbm_solver_auto("auto", ky_target=0.4, gx_reference=True) == "gx_time"
+    assert select_kbm_solver_auto("auto", ky_target=0.22, gx_reference=False) == "time"
+    assert select_kbm_solver_auto("krylov", ky_target=0.3, gx_reference=True) == "krylov"
 
 
 def test_etg_scan_manual_window():

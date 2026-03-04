@@ -114,10 +114,10 @@ published benchmarks and trend tests:
 
 - **ITG/Cyclone base case**: reproduce the standard Cyclone base case growth
   rates and frequencies across a reduced ky scan. [Dimits00]_ [Lin99]_
-- **GX term-parity audit**: use the term-dump tooling to compare SPECTRAX-GK
+- **GX term-by-term audit**: use the term-dump tooling to compare SPECTRAX-GK
   streaming and linear-kernel RHS components against GX for a single Cyclone
   state (see ``tools/dump_rhs_terms.py`` and ``tools/compare_gx_rhs_terms.py``).
-- **GX nonlinear term-parity audit (KBM/Cyclone)**: compare nonlinear
+- **GX nonlinear term audit (KBM/Cyclone)**: compare nonlinear
   derivative, bracket, electromagnetic split, and total RHS dumps using
   ``tools/compare_gx_nonlinear_terms.py``. The tool supports GX dump folders
   with ``nl_apar.bin``/``nl_bpar.bin`` and can infer shape metadata when

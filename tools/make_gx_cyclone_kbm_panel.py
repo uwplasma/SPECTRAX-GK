@@ -86,7 +86,7 @@ def _cyclone_spectrax_eigenfunction(ky_target: float) -> tuple[np.ndarray, np.nd
         solver="auto",
         fit_signal="phi",
         diagnostic_norm="gx",
-        gx_parity=True,
+        gx_reference=True,
     )
     theta = np.asarray(build_spectral_grid(cfg.grid).z, dtype=float)
     mode = np.asarray(
@@ -411,30 +411,25 @@ def main() -> int:
     parser.add_argument(
         "--gx-cyclone-nonlinear",
         type=Path,
-        default=Path(".cache/gx/cyclone_salpha_nonlinear_omega.out.nc"),
+        default=Path(".cache/gx/cyclone_salpha_adiabatic_electrons_omega_t100.out.nc"),
     )
     parser.add_argument(
         "--gx-kbm-nonlinear",
         type=Path,
-        default=Path(".cache/gx/kbm_salpha_nonlinear_t0p50_dense.out.nc"),
+        default=Path(".cache/gx/kbm_salpha_nonlinear_t5p00_dense.out.nc"),
     )
     parser.add_argument(
         "--spectrax-cyclone-nonlinear",
         type=Path,
-        default=Path(".cache/spectrax/cyclone_nonlinear_diag_gx_default.csv"),
+        default=Path(".cache/spectrax/cyclone_nonlinear_diag_t100.csv"),
     )
     parser.add_argument(
         "--spectrax-kbm-nonlinear",
         type=Path,
-        default=Path(".cache/spectrax/kbm_nonlinear_diag_t0p50.csv"),
+        default=Path(".cache/spectrax/kbm_nonlinear_diag_t5.csv"),
     )
     parser.add_argument("--cyclone-nonlinear-tmax", type=float, default=None)
-    parser.add_argument(
-        "--kbm-nonlinear-tmax",
-        type=float,
-        default=0.35,
-        help="Optional cap for KBM nonlinear traces.",
-    )
+    parser.add_argument("--kbm-nonlinear-tmax", type=float, default=None)
     parser.add_argument("--cyclone-ky", type=float, default=0.3)
     parser.add_argument("--kbm-ky", type=float, default=0.3)
     parser.add_argument(
@@ -500,7 +495,7 @@ def main() -> int:
     ]
     for j, title in enumerate(col_titles):
         axes[0, j].set_title(title)
-    fig.suptitle("SPECTRAX-GK vs GX: Cyclone and KBM (linear + nonlinear)", fontsize=14)
+    fig.suptitle("SPECTRAX-GK vs GX: Cyclone and KBM comparisons (linear + nonlinear)", fontsize=14)
     fig.tight_layout(rect=[0, 0, 1, 0.98])
     args.out.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(args.out, dpi=220)

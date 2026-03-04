@@ -14,7 +14,7 @@ using the same windowing rules as the manual fits, and falls back when a
 non-finite or strongly damped branch is detected. Advanced users can still
 pin any solver or diagnostic choice explicitly.
 
-For the GX KBM parity anchors (``ky rho_i = 0.1, 0.3, 0.4``), auto mode uses a
+For the GX KBM comparison anchors (``ky rho_i = 0.1, 0.3, 0.4``), auto mode uses a
 deterministic locked solver choice so repeated scans do not drift between
 branches. The lock is implemented in ``select_kbm_solver_auto`` and can be
 overridden by setting ``solver`` explicitly.
@@ -99,9 +99,9 @@ target. SPECTRAX-GK ships a reference dataset stored in:
 The benchmark harness loads these values and compares growth rates and
 frequencies across a reduced :math:`k_y` scan on the field-aligned grid.
 
-GX parity mode
-^^^^^^^^^^^^^^
-SPECTRAX-GK includes a GX parity mode for Cyclone that mirrors GX’s default
+GX-aligned mode
+^^^^^^^^^^^^^^^
+SPECTRAX-GK includes a GX-aligned mode for Cyclone that mirrors GX’s default
 choices for geometry normalization and growth-rate extraction:
 
 * ``drift_scale=1.0`` (GX normalization for curvature/grad-B drifts).
@@ -111,10 +111,9 @@ choices for geometry normalization and growth-rate extraction:
 * GX timestep cap semantics (``dt_max = dt`` when ``dt_max`` is unset).
 * GX validity mask for growth diagnostics (non-zero real and imaginary parts).
 
-The Cyclone base case enables GX parity by default (``gx_parity=True``). To
-turn it off or override individual pieces, pass explicit configuration
-overrides (e.g. custom ``geometry.drift_scale``, solver selection, or
-``gx_parity=False`` in the Cyclone benchmark helpers).
+The Cyclone base-case helpers use these GX-aligned settings by default.
+Individual pieces can still be overridden through explicit runtime/config
+choices (e.g. custom ``geometry.drift_scale`` or solver selection).
 
 .. list-table:: Cyclone base case parameters (GX Fig. 1)
    :header-rows: 1
@@ -143,9 +142,9 @@ overrides (e.g. custom ``geometry.drift_scale``, solver selection, or
 
 .. figure:: _static/linear_summary.png
    :align: center
-   :alt: GX parity summary for Cyclone and KBM
+   :alt: GX comparison summary for Cyclone and KBM
 
-   GX parity summary panel for Cyclone and KBM, combining linear
+   GX comparison summary panel for Cyclone and KBM, combining linear
    eigenfunction overlays, linear ``k_y`` growth/frequency scans, and
    nonlinear time traces of growth rate, frequency, and heat flux.
 
@@ -160,9 +159,8 @@ By default, ``make_gx_cyclone_kbm_panel.py`` uses:
 - Cyclone nonlinear diagnostics from the GX-matched runtime config
   (same RK family/CFL controls as GX, and no manual ``flux_scale`` or
   ``wphi_scale`` override in the config).
-- KBM nonlinear diagnostics from the longer dense-cadence pair
-  (``t_max=0.50``), clipped to ``t<=0.35`` in the panel to stay on the
-  branch-consistent window.
+- Cyclone and KBM long nonlinear windows (``t=100`` for Cyclone,
+  ``t=5`` for KBM) to expose long-time heat-flux dynamics.
 - A GX-style time-integrated SPECTRAX KBM eigenfunction (not a standalone
   Krylov vector) so the plotted mode is selected the same way as GX.
 
@@ -288,7 +286,7 @@ For high-:math:`k_y` ETG branch selection checks, use:
 KBM (Electromagnetic Ky Scan)
 -----------------------------
 
-For GX parity closure we match GX's ``kbm_salpha.in`` benchmark directly:
+For GX comparison closure we match GX's ``kbm_salpha.in`` benchmark directly:
 fixed :math:`\beta_{ref}` with a :math:`k_y` scan in s-alpha geometry. Use
 ``benchmarks/linear/KBM/kbm_salpha.in`` in the GX repository and
 ``tools/compare_gx_kbm.py`` in SPECTRAX-GK to regenerate the mismatch tables.
@@ -313,9 +311,9 @@ fixed :math:`\beta_{ref}` with a :math:`k_y` scan in s-alpha geometry. Use
    * - Grid
      - ``Nx=1, Ny=16, Nz=96, y0=10, ntheta=32, nperiod=2``
    * - Velocity resolution
-     - ``Nl=16, Nm=48`` (GX parity target)
+     - ``Nl=16, Nm=48`` (GX comparison target)
    * - Time integration (cross-code)
-     - GX-style RK4 with adaptive dt (parity); fixed-step IMEX2 for scan speed
+     - GX-style RK4 with adaptive dt (comparison); fixed-step IMEX2 for scan speed
    * - Fit policy (cross-code)
      - mode extracted at selected ``(ky, kx, z_mid)`` with log-linear
        auto-windowing (conservative amplitude-capped windows)
@@ -330,7 +328,7 @@ We execute a matched-input KBM cross-code set on the GX ``ky`` grid
 
 - ``python tools/compare_gx_kbm.py --gx /path/to/kbm_salpha.out.nc --branch-policy single --solver gx_time --out docs/_static/kbm_gx_mismatch.csv``
 
-In parity mode, ``solver=auto`` uses the deterministic KBM lock
+In comparison mode, ``solver=auto`` uses the deterministic KBM lock
 (``select_kbm_solver_auto``) so runs remain branch-stable across repeated
 regeneration.
 
@@ -338,10 +336,10 @@ The lock was chosen from a targeted ky sweep against GX at
 ``ky rho_i = 0.1, 0.3, 0.4`` with branch candidates
 ``{krylov, gx_time, time}``, minimizing ``rel_gamma + rel_omega`` per point.
 
-KBM nonlinear term parity (GX)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KBM nonlinear term comparison (GX)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For nonlinear KBM parity, we compare GX and SPECTRAX term dumps at one time
+For nonlinear KBM comparison, we compare GX and SPECTRAX term dumps at one time
 step (same state, same grid, same normalization). The GX run uses
 ``GX_DUMP_NL_DERIVS=1`` and ``GX_DUMP_NL_TERMS=1`` so each nonlinear building
 block is exported:
@@ -366,15 +364,15 @@ For terms whose reference amplitudes are near machine zero, use absolute
 differences as the acceptance metric (relative errors can be numerically large
 with tiny denominators).
 
-For nonlinear diagnostic parity (``Wg``, ``Wphi``, ``Wapar``, heat/particle
+For nonlinear diagnostic comparison (``Wg``, ``Wphi``, ``Wapar``, heat/particle
 fluxes), the current KBM closure has near-machine-zero late-time ``Wg`` in GX;
 therefore ``Wg`` is tracked with an absolute floor metric, while flux and
 field-energy channels continue to use relative-error checks.
 
-KBM nonlinear short-time diagnostics parity (dense GX cadence)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KBM nonlinear short-time diagnostics comparison (dense GX cadence)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Before long-run KBM parity, we run a short-window diagnostic check with dense
+Before long-run KBM comparison, we run a short-window diagnostic check with dense
 GX writes so ``omega`` is compared at near-identical times instead of sparse
 interpolation.
 
@@ -382,11 +380,11 @@ GX (office GPU) dense-cadence runs:
 
 - ``kbm_salpha_nonlinear_short_dense.in`` with ``nwrite=2`` and fixed ``dt``
   at matched-input settings.
-- Outputs used for parity gates:
+- Outputs used for comparison gates:
   ``.cache/gx/kbm_salpha_nonlinear_short_dense.out.nc`` (``t_max=0.08``),
   ``.cache/gx/kbm_salpha_nonlinear_t0p20_dense.out.nc`` (``t_max=0.20``).
 
-SPECTRAX matched parity probes:
+SPECTRAX matched comparison probes:
 
 - ``python -m spectraxgk.cli run-runtime-nonlinear --config examples/configs/runtime_kbm_nonlinear_gx_short.toml --steps 267 --out .cache/spectrax/kbm_nonlinear_diag_short_3e4.csv``
 - ``python -m spectraxgk.cli run-runtime-nonlinear --config examples/configs/runtime_kbm_nonlinear_gx_seed.toml --steps 667 --out .cache/spectrax/kbm_nonlinear_diag_t0p20.csv``
@@ -397,7 +395,7 @@ Comparison:
 
 Observed in this short-window gate:
 
-- ``Wphi`` and heat-flux channels remain near machine-level parity.
+- ``Wphi`` and heat-flux channels remain near machine-level comparison.
 - ``omega`` mismatch is reduced by using the denser GX cadence and a stable
   SPECTRAX step size (``dt=3e-4``), with late-window ``omega`` mismatch
   significantly smaller than early-transient mismatch.
@@ -406,9 +404,9 @@ Observed in this short-window gate:
 
 .. figure:: _static/nonlinear_kbm_diag_compare_short_dense.png
    :align: center
-   :alt: KBM nonlinear short-window diagnostics parity (GX vs SPECTRAX)
+   :alt: KBM nonlinear short-window diagnostics comparison (GX vs SPECTRAX)
 
-   Short-window nonlinear KBM diagnostics parity using a denser GX write
+   Short-window nonlinear KBM diagnostics comparison using a denser GX write
    cadence (``nwrite=2``).
 
 KBM nonlinear horizon extension (same locked seed)
@@ -428,24 +426,24 @@ Findings:
   enters nonlinear branch-sensitive dynamics.
 - In the ``t_max=1.00`` run, the first persistent drift appears around
   ``t ~ 0.35`` (5e-2 window bins), after which instantaneous ``gamma``/``omega``
-  mismatches are no longer a robust parity metric.
+  mismatches are no longer a robust comparison metric.
 
-For this regime, parity acceptance should use:
+For this regime, comparison acceptance should use:
 
 - short/early-window instantaneous ``gamma``/``omega`` checks, and
 - late-window averaged energy/flux diagnostics.
 
 .. figure:: _static/nonlinear_kbm_diag_compare_t0p50_dense.png
    :align: center
-   :alt: KBM nonlinear diagnostics parity to t_max=0.50
+   :alt: KBM nonlinear diagnostics comparison to t_max=0.50
 
-   Nonlinear KBM diagnostics parity extension to ``t_max=0.50``.
+   Nonlinear KBM diagnostics comparison extension to ``t_max=0.50``.
 
 .. figure:: _static/nonlinear_kbm_diag_compare_t1p00_dense.png
    :align: center
-   :alt: KBM nonlinear diagnostics parity to t_max=1.00
+   :alt: KBM nonlinear diagnostics comparison to t_max=1.00
 
-   Nonlinear KBM diagnostics parity extension to ``t_max=1.00``.
+   Nonlinear KBM diagnostics comparison extension to ``t_max=1.00``.
 
 Reduced ky scan tables
 ----------------------
@@ -558,7 +556,7 @@ Remaining before freezing a publication release:
 
 - optional stella electromagnetic re-validation on a stella build/config where
   ``beta`` and ``fapar`` are confirmed active in the documented model.
-- optional CPU/GPU runtime parity study with standardized hardware-normalized
+- optional CPU/GPU runtime comparison study with standardized hardware-normalized
   benchmark scripts for SPECTRAX, GS2, and GX.
 
 Reproducibility

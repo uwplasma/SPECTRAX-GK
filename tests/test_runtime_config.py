@@ -27,7 +27,7 @@ def test_runtime_config_to_dict_contains_sections() -> None:
     assert len(d["species"]) == 1
 
 
-def test_runtime_defaults_match_gx_parity() -> None:
+def test_runtime_defaults_match_gx_reference() -> None:
     cfg = RuntimeConfig()
     assert cfg.geometry.drift_scale == 1.0
     assert cfg.normalization.diagnostic_norm == "gx"

@@ -213,7 +213,7 @@ def main() -> None:
             krylov_cfg=krylov_cfg,
             fit_signal=fit_signal,
             diagnostic_norm="gx",
-            gx_parity=True,
+            gx_reference=True,
         )
         return float(scan.gamma[0]), float(scan.omega[0])
 

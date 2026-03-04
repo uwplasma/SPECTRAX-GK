@@ -41,17 +41,34 @@ def _load_gx(path: Path) -> dict[str, np.ndarray]:
 
 def _load_spectrax(path: Path) -> dict[str, np.ndarray]:
     data = np.loadtxt(path, delimiter=",", skiprows=1)
-    return {
-        "t": data[:, 0],
-        "gamma": data[:, 1],
-        "omega": data[:, 2],
-        "Wg": data[:, 3],
-        "Wphi": data[:, 4],
-        "Wapar": data[:, 5],
-        "energy": data[:, 6],
-        "heat": data[:, 7],
-        "pflux": data[:, 8],
-    }
+    if data.ndim == 1:
+        data = data[None, :]
+    if data.shape[1] == 9:
+        return {
+            "t": data[:, 0],
+            "gamma": data[:, 1],
+            "omega": data[:, 2],
+            "Wg": data[:, 3],
+            "Wphi": data[:, 4],
+            "Wapar": data[:, 5],
+            "energy": data[:, 6],
+            "heat": data[:, 7],
+            "pflux": data[:, 8],
+        }
+    if data.shape[1] == 10:
+        # Runtime CLI format: t,dt,gamma,omega,Wg,Wphi,Wapar,energy,heat,pflux
+        return {
+            "t": data[:, 0],
+            "gamma": data[:, 2],
+            "omega": data[:, 3],
+            "Wg": data[:, 4],
+            "Wphi": data[:, 5],
+            "Wapar": data[:, 6],
+            "energy": data[:, 7],
+            "heat": data[:, 8],
+            "pflux": data[:, 9],
+        }
+    raise ValueError(f"Unsupported SPECTRAX CSV shape: {data.shape}")
 
 
 def _interp(target_t: np.ndarray, source_t: np.ndarray, source_y: np.ndarray) -> np.ndarray:

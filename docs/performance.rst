@@ -55,25 +55,26 @@ The trace directory can be opened with Perfetto. For GPU profiling, set
 Recent nonlinear profiling (Cyclone, GX-balanced config)
 --------------------------------------------------------
 
-Reference run configuration:
+Reference run configuration (March 4, 2026):
 
 - ``ky=0.3``, ``Nl=4``, ``Nm=8``
-- ``dt=0.03769945``, ``steps=200``
-- ``examples/configs/runtime_cyclone_nonlinear_gx.toml``
+- ``dt=0.01``, ``steps=400``
+- ``sample_stride=10``, ``diagnostics_stride=10``
+- ``tools/profile_nonlinear_cyclone.py`` with the GX-matched Cyclone runtime config
 
 CPU profiling (Apple CPU, JAX CPU backend):
 
 .. code-block:: text
 
-   warmup_time_s=146.594
-   run_time_s=137.604
+   warmup_time_s=117.803
+   run_time_s=109.147
 
 GPU profiling (A100-class GPU, JAX CUDA backend):
 
 .. code-block:: text
 
-   warmup_time_s=50.212
-   run_time_s=30.467
+   warmup_time_s=38.950
+   run_time_s=21.350
 
 HLO summary (``jit_scan.*_after_optimizations``):
 
@@ -114,17 +115,15 @@ You can optionally pass a GX log file to compare runtime per step:
 Runtime comparison (nonlinear Cyclone)
 --------------------------------------
 
-Using the benchmark harness (same config as above), the per-step runtime is:
+Using the same profiling setup (400 steps):
 
 .. code-block:: text
 
-   SPECTRAX CPU: 0.67704 s / step
-   SPECTRAX GPU: 0.11375 s / step
-   GX (A100):    0.016576 s / step
+   SPECTRAX CPU: 0.27287 s / step
+   SPECTRAX GPU: 0.05338 s / step
 
-This puts SPECTRAX at ~6.9x slower than GX on GPU and ~40.8x slower on CPU for
-the same nonlinear Cyclone base case configuration. The gap is dominated by the
-nonlinear FFT pipeline and residual gather/scatter operations.
+The dominant remaining cost is still the nonlinear FFT pipeline with
+gather/scatter-heavy kernels in the bracket assembly path.
 
 Spectral nonlinear mode (fast toggle)
 -------------------------------------
@@ -138,13 +137,13 @@ setup, the observed runtimes were:
    SPECTRAX GPU: 0.09617 s / step  (≈1.18× faster than grid mode)
    SPECTRAX CPU: 0.76575 s / step  (≈0.88×, slower than grid mode)
 
-Cyclone parity impact (GX diagnostics, t≤7.6):
+Cyclone comparison impact (GX diagnostics, t≤7.6):
 
 - Wg mean abs rel: 5.4%
 - Wphi mean abs rel: 11.2%
 - Heat flux mean abs rel: 10.7%
 
-The parity is essentially unchanged relative to grid mode for this case, but
+The diagnostics agreement is essentially unchanged relative to grid mode for this case, but
 the speedup is modest; larger gains will require further FFT fusion and scatter
 elimination.
 

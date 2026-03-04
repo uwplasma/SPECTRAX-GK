@@ -7,27 +7,27 @@ from pathlib import Path
 from spectraxgk.io import load_case_from_toml
 
 
-def test_load_case_from_toml_gx_parity_flag(tmp_path: Path) -> None:
+def test_load_case_from_toml_gx_reference_flag(tmp_path: Path) -> None:
     toml = """
 case = "cyclone"
-gx_parity = true
+gx_reference = true
 """
     path = tmp_path / "case.toml"
     path.write_text(toml, encoding="utf-8")
     case_name, cfg, _data = load_case_from_toml(path)
     assert case_name == "cyclone"
-    assert getattr(cfg, "gx_parity", False) is True
+    assert getattr(cfg, "gx_reference", False) is True
 
 
-def test_load_case_from_toml_gx_parity_table(tmp_path: Path) -> None:
+def test_load_case_from_toml_gx_reference_table(tmp_path: Path) -> None:
     toml = """
 case = "cyclone"
 
-[gx_parity]
+[gx_reference]
 enabled = false
 """
     path = tmp_path / "case.toml"
     path.write_text(toml, encoding="utf-8")
     case_name, cfg, _data = load_case_from_toml(path)
     assert case_name == "cyclone"
-    assert getattr(cfg, "gx_parity", True) is False
+    assert getattr(cfg, "gx_reference", True) is False

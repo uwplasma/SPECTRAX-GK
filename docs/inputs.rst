@@ -66,7 +66,7 @@ Minimal TOML example
 .. code-block:: toml
 
    case = "cyclone"
-   gx_parity = true
+   gx_reference = true
 
    [grid]
    Nx = 1
@@ -115,9 +115,9 @@ to quantify CFL-driven savings. To control the Laguerre handling in nonlinear
 brackets, set ``laguerre_nonlinear_mode = "grid"`` (GX-style quadrature,
 default) or ``laguerre_nonlinear_mode = "spectral"`` (use spectral ``Jl``
 without the quadrature transform).
-For GX-parity runs, leaving ``dt_max`` unset uses GX's default behavior
+For GX-reference runs, leaving ``dt_max`` unset uses GX's default behavior
 (``dt_max = dt``). Increase ``dt_max`` explicitly only when you intentionally
-trade strict GX parity for throughput.
+trade strict GX matching for throughput.
 
 Nonlinear collision/hypercollision splitting is enabled with
 ``collision_split = true``. The ``collision_scheme`` key selects the update:
@@ -127,7 +127,7 @@ diagonal operators).
 
 The ``[geometry]`` section supports ``drift_scale`` to switch between GX-style
 (``drift_scale = 1.0``) and GS2-style (``drift_scale = 2.0``) drift
-normalizations. The default configuration in SPECTRAX-GK uses the GX parity
+normalizations. The default configuration in SPECTRAX-GK uses the GX-reference
 value.
 
 Solver and fit-signal keys
@@ -179,7 +179,7 @@ Supported sections include:
 * ``[run]`` (single-ky run settings)
 * ``[scan]`` (ky scan settings)
 * ``[fit]`` (growth-rate windowing options)
-* ``gx_parity`` (top-level flag or ``[gx_parity] enabled = true`` to enforce GX parity defaults)
+* ``gx_reference`` (top-level flag or ``[gx_reference] enabled = true`` to enforce GX-reference defaults)
 * ``[terms]`` (toggle linear terms)
 * ``[krylov]`` (Krylov solver settings)
 
@@ -199,14 +199,14 @@ are:
 Notable runtime-only keys:
 
 * ``[collisions] damp_ends_scale_by_dt``: if true, interpret ``damp_ends_amp`` as
-  a per-unit-time strength and scale it internally by ``1/dt`` (GX parity
+  a per-unit-time strength and scale it internally by ``1/dt`` (GX-reference
   default).
 * ``[normalization] flux_scale``: multiplicative factor applied to heat/particle
-  flux diagnostics (GX parity default ``2.0``).
+  flux diagnostics (GX-reference default ``2.0``).
 * ``[normalization] wphi_scale``: multiplicative factor applied to ``Wphi``
-  diagnostics (Cyclone GX parity uses ``1.155``).
+  diagnostics (Cyclone GX-reference uses ``1.155``).
 * ``[init] init_single``: if false and ``gaussian_init`` is false, initialize
   a GX-style random perturbation across the 2/3-resolved ``(ky,kx)`` spectrum
-  (useful for nonlinear Cyclone parity).
+  (useful for nonlinear Cyclone comparison runs).
 * ``[init] random_seed``: RNG seed used for GX-style random initial conditions
   (default ``22``, matching GX).

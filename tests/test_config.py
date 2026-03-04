@@ -18,12 +18,12 @@ def test_config_to_dict():
     """All config dataclasses should serialize to dictionaries."""
     cfg = CycloneBaseCase()
     d = cfg.to_dict()
-    assert set(d.keys()) == {"grid", "time", "geometry", "model", "init", "gx_parity"}
+    assert set(d.keys()) == {"grid", "time", "geometry", "model", "init", "gx_reference"}
     assert d["geometry"]["q"] == cfg.geometry.q
     assert d["grid"]["y0"] == 20.0
     assert d["grid"]["ntheta"] == 32
     assert d["grid"]["nperiod"] == 2
-    assert d["gx_parity"]["enabled"] is True
+    assert d["gx_reference"]["enabled"] is True
 
 
 def test_config_override():

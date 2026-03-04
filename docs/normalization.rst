@@ -140,7 +140,7 @@ the Laguerre gyroaverage. To match that convention in SPECTRAX-GK:
 - ``bessel_bmag_power = 0`` (no extra :math:`B` scaling inside the Bessel argument)
 
 The Cyclone base case defaults follow this GX-aligned setting, and the
-``compare_gx_rhs_terms.py`` parity tool assumes the same normalization.
+``compare_gx_rhs_terms.py`` comparison tool assumes the same normalization.
 
 Sign conventions
 ----------------
@@ -199,12 +199,12 @@ convention (e.g. real-FFT nyquist handling or per-unit-time damping). The
 runtime schema therefore exposes light-weight diagnostic scale factors:
 
 - ``flux_scale``: multiplicative factor applied to the reported heat/particle
-  fluxes (default ``2.0`` for GX parity).
+  fluxes (default ``2.0`` for GX-reference).
 - ``wphi_scale``: multiplicative factor applied to ``Wphi`` (default ``1.0``;
-  Cyclone GX parity uses ``1.155`` in the nonlinear benchmark config).
+  Cyclone GX-reference uses ``1.155`` in the nonlinear benchmark config).
 
 These are reporting-only knobs; they do not alter the RHS/operator. They are
-intended to document the exact parity settings used for benchmark plots.
+intended to document the exact GX-reference settings used for benchmark plots.
 
 GX end-damping strength (``damp_ends_amp``) is scaled by the timestep inside the
 integrator to match the GX implementation: the damping kernel receives
