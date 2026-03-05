@@ -117,6 +117,10 @@ default) or ``laguerre_nonlinear_mode = "spectral"`` (use spectral ``Jl``
 without the quadrature transform).
 Use ``nonlinear_dealias = false`` to disable nonlinear dealias masking for
 reference/debug runs where you want to preserve all configured base modes.
+When ``nonlinear_dealias = true``, nonlinear runtime mode selection is
+dealias-aware: if the requested ``ky`` is filtered out by the 2/3 mask, the
+runner automatically picks the nearest retained ``ky``. The CLI prints the
+effective ``ky_sel``/``kx_sel`` used by diagnostics.
 For GX-reference runs, leaving ``dt_max`` unset uses GX's default behavior
 (``dt_max = dt``). Increase ``dt_max`` explicitly only when you intentionally
 trade strict GX matching for throughput.

@@ -7,6 +7,7 @@ from dataclasses import replace
 import numpy as np
 
 from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, TimeConfig
+from spectraxgk.diagnostics import GXDiagnostics
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.runtime import (
@@ -317,3 +318,96 @@ def test_runtime_nonlinear_dealias_toggle_executes() -> None:
     res = run_runtime_nonlinear(cfg, ky_target=0.2, Nl=3, Nm=4, steps=3)
     assert res.diagnostics is not None
     assert np.all(np.isfinite(res.diagnostics.Wphi_t))
+
+
+def test_runtime_nonlinear_mode_selection_respects_dealias(monkeypatch) -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        grid=GridConfig(
+            Nx=3,
+            Ny=7,
+            Nz=16,
+            Lx=62.8,
+            Ly=62.8,
+            boundary="periodic",
+            y0=10.0,
+        ),
+        time=TimeConfig(
+            t_max=0.02,
+            dt=0.01,
+            method="rk2",
+            use_diffrax=False,
+            sample_stride=1,
+            diagnostics_stride=1,
+            nonlinear_dealias=True,
+        ),
+        species=(RuntimeSpeciesConfig(name="ion"),),
+        normalization=RuntimeNormalizationConfig(contract="cyclone"),
+        physics=RuntimePhysicsConfig(adiabatic_electrons=True, nonlinear=True),
+        terms=RuntimeTermsConfig(nonlinear=1.0, hypercollisions=0.0, end_damping=0.0),
+    )
+
+    captured: dict[str, int] = {}
+
+    def _fake_integrator(
+        G0,
+        grid,
+        geom,
+        params,
+        *,
+        dt,
+        steps,
+        method,
+        terms,
+        sample_stride,
+        diagnostics_stride,
+        use_dealias_mask,
+        z_index=None,
+        gx_real_fft=True,
+        laguerre_mode="grid",
+        omega_ky_index=None,
+        omega_kx_index=0,
+        flux_scale=2.0,
+        wphi_scale=1.0,
+        fixed_dt=True,
+        dt_min=1.0e-7,
+        dt_max=None,
+        cfl=0.9,
+        cfl_fac=1.0,
+        collision_split=True,
+        collision_scheme="strang",
+        implicit_tol=1.0e-6,
+        implicit_maxiter=120,
+        implicit_iters=3,
+        implicit_relax=0.7,
+        implicit_restart=20,
+        implicit_solve_method="batched",
+        implicit_preconditioner=None,
+    ):
+        captured["omega_ky_index"] = int(omega_ky_index)
+        captured["omega_kx_index"] = int(omega_kx_index)
+        t = np.asarray([float(dt)], dtype=float)
+        zeros = np.zeros_like(t)
+        diag = GXDiagnostics(
+            t=t,
+            dt_t=t,
+            dt_mean=float(dt),
+            gamma_t=zeros,
+            omega_t=zeros,
+            Wg_t=zeros,
+            Wphi_t=zeros,
+            Wapar_t=zeros,
+            heat_flux_t=zeros,
+            particle_flux_t=zeros,
+            energy_t=zeros,
+        )
+        return t, diag
+
+    monkeypatch.setattr("spectraxgk.runtime.integrate_nonlinear_gx_diagnostics", _fake_integrator)
+    _res = run_runtime_nonlinear(cfg, ky_target=0.3, Nl=3, Nm=4, steps=1)
+
+    # Ny=7, y0=10 -> ky = [0, 0.1, 0.2, 0.3, -0.3, -0.2, -0.1]
+    # 2/3 dealias keeps |n|<=2 => ky=0.3 is excluded; nearest kept mode is ky=0.2 (index 2).
+    assert captured["omega_ky_index"] == 2
+    # Nx=3 FFT order puts kx=0 at index 0.
+    assert captured["omega_kx_index"] == 0
