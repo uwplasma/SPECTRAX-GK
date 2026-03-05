@@ -462,6 +462,19 @@ For this regime, comparison acceptance should use:
 
    Nonlinear KBM diagnostics comparison extension to ``t_max=1.00``.
 
+Long-horizon KBM comparison (``t > 100``) uses the same two-window acceptance:
+
+- strict startup gate (``t <= 0.1``), and
+- relaxed late-time gate (``t >= 100``), with optional absolute-error fallback
+  for near-zero flux channels.
+
+.. figure:: _static/nonlinear_kbm_diag_compare_t100_relaxed.png
+   :align: center
+   :alt: KBM nonlinear diagnostics comparison to t_max~100 with relaxed late-time gate
+
+   Nonlinear KBM long-horizon diagnostics (GX vs SPECTRAX-GK), evaluated with
+   strict early-time and relaxed late-time tolerance windows.
+
 Reduced ky scan tables
 ----------------------
 
@@ -663,9 +676,11 @@ Nonlinear Cyclone diagnostics
 
 Nonlinear Cyclone runs use GX-style diagnostics in both GX and SPECTRAX-GK.
 The comparison below plots the GX and SPECTRAX diagnostics for a matched
-nonlinear Cyclone case (same grid and time stepping):
+nonlinear Cyclone case over a long horizon (``t > 100``). We use strict
+startup checks for ``t <= 0.1`` and relaxed late-time checks for
+``t >= 100``.
 
-.. figure:: _static/nonlinear_cyclone_diag_compare.png
+.. figure:: _static/nonlinear_cyclone_diag_compare_t120_initgx.png
    :width: 95%
    :alt: Nonlinear Cyclone diagnostics comparison between GX and SPECTRAX-GK
 
