@@ -53,7 +53,7 @@ init_field = "all"
 init_amp = 1.0e-10
 gaussian_init = true
 gaussian_width = 0.5
-init_electrons_only = false
+init_electrons_only = true
 
 [physics]
 linear = false

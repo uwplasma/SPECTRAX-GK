@@ -392,6 +392,14 @@ SPECTRAX matched comparison probes:
 Comparison:
 
 - ``python tools/compare_gx_nonlinear.py --gx .cache/gx/kbm_salpha_nonlinear_t0p20_dense.out.nc --spectrax .cache/spectrax/kbm_nonlinear_diag_t0p20.csv --out docs/_static/nonlinear_kbm_diag_compare_short_dense.png``
+- ``python tools/compare_gx_nonlinear.py --gx .cache/gx/kbm_salpha_nonlinear_t0p20_dense.out.nc --spectrax .cache/spectrax/kbm_nonlinear_diag_t0p20.csv --early-tmax 0.1 --late-tmin 1.0 --rtol-early-Wg 0.05 --rtol-early-heat 0.25 --rtol-late-Wg 0.5 --rtol-late-heat 1.0``
+
+The nonlinear comparator now uses a scale-aware relative-error denominator
+instead of a fixed floor. This avoids artificially tiny relative errors when a
+channel amplitude is near machine zero and supports two tolerance regimes:
+
+- strict early-time gate (``t <= 0.1``) for deterministic startup parity,
+- relaxed late-time gate (``t >= 1`` by default) for branch-sensitive nonlinear drift.
 
 Observed in this short-window gate:
 

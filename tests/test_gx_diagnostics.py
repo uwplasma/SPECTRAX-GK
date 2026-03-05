@@ -6,6 +6,7 @@ from dataclasses import replace
 from spectraxgk.benchmarks import CycloneBaseCase, _build_initial_condition
 from spectraxgk.config import InitializationConfig
 from spectraxgk.diagnostics import (
+    _gx_fac_mask_nonzero,
     gx_Wapar_krehm,
     gx_Wg,
     gx_Wphi_krehm,
@@ -25,6 +26,16 @@ from spectraxgk.gx_integrators import (
     _gx_growth_rate_step,
     integrate_linear_gx_diagnostics,
 )
+
+
+def test_gx_flux_fac_nonzero_matches_positive_ky_convention() -> None:
+    cfg = CycloneBaseCase()
+    grid = build_spectral_grid(replace(cfg.grid, Ny=8, Nx=4))
+    fac = np.asarray(_gx_fac_mask_nonzero(grid, use_dealias=False))
+    ky = np.asarray(grid.ky, dtype=float)
+    pos = ky > 0.0
+    assert np.allclose(fac[pos], 1.0)
+    assert np.allclose(fac[~pos], 0.0)
 
 
 def _small_setup():

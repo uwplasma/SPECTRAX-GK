@@ -122,12 +122,38 @@ def _interp(target_t: np.ndarray, source_t: np.ndarray, source_y: np.ndarray) ->
     return np.interp(target_t, source_t, source_y)
 
 
-def _relative_error(a: np.ndarray, b: np.ndarray) -> float:
+def _relative_error(a: np.ndarray, b: np.ndarray, *, eps_rel: float = 1.0e-8) -> float:
     mask = np.isfinite(a) & np.isfinite(b)
     if not np.any(mask):
         return float("nan")
-    denom = np.maximum(np.abs(b[mask]), 1.0e-12)
-    return float(np.nanmean(np.abs(a[mask] - b[mask]) / denom))
+    b_sel = b[mask]
+    scale = float(np.nanmax(np.abs(b_sel)))
+    denom_floor = max(eps_rel * scale, 1.0e-30)
+    denom = np.maximum(np.abs(b_sel), denom_floor)
+    return float(np.nanmean(np.abs(a[mask] - b_sel) / denom))
+
+
+def _relative_error_window(
+    t: np.ndarray,
+    a: np.ndarray,
+    b: np.ndarray,
+    *,
+    tmin: float | None = None,
+    tmax: float | None = None,
+    eps_rel: float = 1.0e-8,
+) -> float:
+    mask = np.isfinite(a) & np.isfinite(b)
+    if tmin is not None:
+        mask = mask & (t >= float(tmin))
+    if tmax is not None:
+        mask = mask & (t <= float(tmax))
+    if not np.any(mask):
+        return float("nan")
+    b_sel = b[mask]
+    scale = float(np.nanmax(np.abs(b_sel)))
+    denom_floor = max(eps_rel * scale, 1.0e-30)
+    denom = np.maximum(np.abs(b_sel), denom_floor)
+    return float(np.nanmean(np.abs(a[mask] - b_sel) / denom))
 
 
 def _absolute_error(a: np.ndarray, b: np.ndarray) -> float:
@@ -159,6 +185,24 @@ def main() -> int:
         help="Fraction of late-time window for averaged metrics.",
     )
     parser.add_argument("--ky", type=float, default=0.3, help="ky mode used for GX omega/gamma extraction")
+    parser.add_argument(
+        "--early-tmax",
+        type=float,
+        default=0.1,
+        help="Early-time window end used for strict parity checks.",
+    )
+    parser.add_argument(
+        "--late-tmin",
+        type=float,
+        default=1.0,
+        help="Late-time window start used for relaxed nonlinear checks.",
+    )
+    parser.add_argument("--rtol-early-Wg", type=float, default=0.05)
+    parser.add_argument("--rtol-early-heat", type=float, default=0.2)
+    parser.add_argument("--rtol-early-pflux", type=float, default=0.3)
+    parser.add_argument("--rtol-late-Wg", type=float, default=0.5)
+    parser.add_argument("--rtol-late-heat", type=float, default=1.0)
+    parser.add_argument("--rtol-late-pflux", type=float, default=1.0)
     args = parser.parse_args()
 
     gx = _load_gx(args.gx, ky_target=args.ky)
@@ -202,6 +246,38 @@ def main() -> int:
         for i in range(ns):
             print(f"Heat flux s{i} rel error: {_relative_error(sp['heat_s'][:, i], gx_heat_s[:, i]):.3e}")
             print(f"Particle flux s{i} rel error: {_relative_error(sp['pflux_s'][:, i], gx_pflux_s[:, i]):.3e}")
+
+    early = {
+        "Wg": _relative_error_window(t, sp["Wg"], gx_interp["Wg"], tmax=args.early_tmax),
+        "heat": _relative_error_window(t, sp["heat"], gx_interp["heat"], tmax=args.early_tmax),
+        "pflux": _relative_error_window(t, sp["pflux"], gx_interp["pflux"], tmax=args.early_tmax),
+    }
+    late = {
+        "Wg": _relative_error_window(t, sp["Wg"], gx_interp["Wg"], tmin=args.late_tmin),
+        "heat": _relative_error_window(t, sp["heat"], gx_interp["heat"], tmin=args.late_tmin),
+        "pflux": _relative_error_window(t, sp["pflux"], gx_interp["pflux"], tmin=args.late_tmin),
+    }
+    print(
+        "Early-window relative errors "
+        f"(t<= {args.early_tmax:g}): "
+        f"Wg={early['Wg']:.3e}, heat={early['heat']:.3e}, pflux={early['pflux']:.3e}"
+    )
+    print(
+        "Late-window relative errors "
+        f"(t>= {args.late_tmin:g}): "
+        f"Wg={late['Wg']:.3e}, heat={late['heat']:.3e}, pflux={late['pflux']:.3e}"
+    )
+    early_ok = (
+        early["Wg"] <= args.rtol_early_Wg
+        and early["heat"] <= args.rtol_early_heat
+        and early["pflux"] <= args.rtol_early_pflux
+    )
+    late_ok = (
+        late["Wg"] <= args.rtol_late_Wg
+        and late["heat"] <= args.rtol_late_heat
+        and late["pflux"] <= args.rtol_late_pflux
+    )
+    print(f"Tolerance check: early={'PASS' if early_ok else 'FAIL'} late={'PASS' if late_ok else 'FAIL'}")
 
     fig, ax = plt.subplots(3, 1, figsize=(7.0, 8.0), sharex=True)
     mask = np.isfinite(sp["Wphi"]) & np.isfinite(gx_interp["Wphi"])
