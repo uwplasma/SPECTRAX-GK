@@ -19,6 +19,7 @@ from spectraxgk.runtime import (
     run_runtime_scan,
 )
 from spectraxgk.runtime_config import (
+    RuntimeCollisionConfig,
     RuntimeConfig,
     RuntimeNormalizationConfig,
     RuntimePhysicsConfig,
@@ -113,7 +114,7 @@ def test_runtime_terms_and_params_follow_toggles() -> None:
             hypercollisions=False,
         ),
     )
-    params = build_runtime_linear_params(cfg)
+    params = build_runtime_linear_params(cfg, Nm=6)
     terms = build_runtime_linear_terms(cfg)
     assert float(params.beta) == 0.1
     assert float(params.fapar) == 1.0
@@ -121,6 +122,26 @@ def test_runtime_terms_and_params_follow_toggles() -> None:
     assert terms.bpar == 0.0
     assert terms.collisions == 0.0
     assert terms.hypercollisions == 0.0
+
+
+def test_runtime_hypercollision_default_tracks_hermite_count() -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        collisions=RuntimeCollisionConfig(),
+    )
+    params_nm8 = build_runtime_linear_params(cfg, Nm=8)
+    params_nm16 = build_runtime_linear_params(cfg, Nm=16)
+    assert float(params_nm8.p_hyper_m) == 4.0
+    assert float(params_nm16.p_hyper_m) == 8.0
+
+
+def test_runtime_hypercollision_explicit_override_is_preserved() -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        collisions=RuntimeCollisionConfig(p_hyper_m=11.0),
+    )
+    params = build_runtime_linear_params(cfg, Nm=8)
+    assert float(params.p_hyper_m) == 11.0
 
 
 def test_runtime_scan_returns_arrays() -> None:
@@ -536,7 +557,7 @@ def test_runtime_nonlinear_mode_selection_respects_dealias(monkeypatch) -> None:
         laguerre_mode="grid",
         omega_ky_index=None,
         omega_kx_index=0,
-        flux_scale=2.0,
+        flux_scale=1.0,
         wphi_scale=1.0,
         fixed_dt=True,
         dt_min=1.0e-7,

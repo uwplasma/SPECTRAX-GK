@@ -199,7 +199,7 @@ convention (e.g. real-FFT nyquist handling or per-unit-time damping). The
 runtime schema therefore exposes light-weight diagnostic scale factors:
 
 - ``flux_scale``: multiplicative factor applied to the reported heat/particle
-  fluxes (default ``2.0`` for GX-reference).
+  fluxes (default ``1.0`` for GX-reference).
 - ``wphi_scale``: multiplicative factor applied to ``Wphi`` (default ``1.0``;
   Cyclone GX-reference uses ``1.155`` in the nonlinear benchmark config).
 

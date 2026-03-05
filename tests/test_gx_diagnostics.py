@@ -7,9 +7,9 @@ from spectraxgk.benchmarks import CycloneBaseCase, _build_initial_condition
 from spectraxgk.config import InitializationConfig
 from spectraxgk.diagnostics import (
     _gx_fac_mask_nonzero,
-    gx_Wapar_krehm,
+    gx_Wapar,
     gx_Wg,
-    gx_Wphi_krehm,
+    gx_Wphi,
     gx_energy_total,
     gx_heat_flux,
     gx_heat_flux_species,
@@ -17,6 +17,7 @@ from spectraxgk.diagnostics import (
     gx_particle_flux_species,
     gx_volume_factors,
 )
+from spectraxgk.gyroaverage import gamma0
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid, select_ky_grid
 from spectraxgk.analysis import select_ky_index
@@ -69,8 +70,8 @@ def test_gx_energy_components_finite():
     bpar = fields.bpar if fields.bpar is not None else jnp.zeros_like(phi)
 
     Wg = gx_Wg(G0, grid, params, vol_fac)
-    Wphi = gx_Wphi_krehm(phi, grid, params, vol_fac)
-    Wapar = gx_Wapar_krehm(apar, grid)
+    Wphi = gx_Wphi(phi, cache, params, vol_fac)
+    Wapar = gx_Wapar(apar, cache, vol_fac)
     heat = gx_heat_flux(G0, phi, apar, bpar, cache, grid, params, flux_fac)
     pflux = gx_particle_flux(G0, phi, apar, bpar, cache, grid, params, flux_fac)
     energy = gx_energy_total(Wg, Wphi, Wapar)
@@ -82,6 +83,33 @@ def test_gx_energy_components_finite():
     assert np.isfinite(np.asarray(pflux))
     assert np.isfinite(np.asarray(energy))
     assert energy == Wg + Wphi + Wapar
+
+
+def test_gx_standard_field_energies_match_geometry_weighted_formula():
+    _cfg, grid, geom, params, cache = _small_setup()
+    vol_fac, _flux_fac = gx_volume_factors(geom, grid)
+    phi = jnp.ones((grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64)
+    apar = (1.0 + 2.0j) * jnp.ones_like(phi)
+
+    fac = np.where(np.asarray(grid.ky, dtype=float)[:, None] == 0.0, 1.0, 2.0)
+    fac = fac * np.asarray(grid.dealias_mask, dtype=float)
+    weight = fac[:, :, None] * np.asarray(vol_fac, dtype=float)[None, None, :]
+    phi2 = np.abs(np.asarray(phi)) ** 2
+    apar2 = np.abs(np.asarray(apar)) ** 2
+
+    rho = np.atleast_1d(np.asarray(params.rho, dtype=float))
+    wphi_expected = 0.0
+    for rho_s in rho:
+        b = np.asarray(cache.kperp2, dtype=float) * (rho_s * rho_s)
+        wphi_expected += 0.5 * np.sum(phi2 * (1.0 - np.asarray(gamma0(b))) * weight)
+
+    bmag2 = np.asarray(cache.bmag, dtype=float)[None, None, :] ** 2 if cache.kperp2_bmag else 1.0
+    wapar_expected = 0.5 * np.sum(
+        apar2 * np.asarray(cache.kperp2, dtype=float) * bmag2 * weight
+    )
+
+    assert np.allclose(np.asarray(gx_Wphi(phi, cache, params, vol_fac)), wphi_expected)
+    assert np.allclose(np.asarray(gx_Wapar(apar, cache, vol_fac)), wapar_expected)
 
 
 def test_gx_species_flux_sums_to_total():

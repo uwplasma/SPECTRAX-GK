@@ -215,8 +215,11 @@ Notable runtime-only keys:
 * ``[collisions] hypercollisions_const`` / ``hypercollisions_kz``: defaults are
   GX-style ``0.0`` / ``1.0`` (kz-proportional hypercollisions enabled by
   default, constant hypercollisions off).
+* ``[collisions] p_hyper_m``: when omitted, the runtime path follows the GX
+  default ``min(20, Nm/2)`` instead of using a fixed exponent across Hermite
+  resolutions.
 * ``[normalization] flux_scale``: multiplicative factor applied to heat/particle
-  flux diagnostics (GX-reference default ``2.0``).
+  flux diagnostics (GX-reference default ``1.0``).
 * ``[normalization] wphi_scale``: multiplicative factor applied to ``Wphi``
   diagnostics (Cyclone GX-reference uses ``1.155``).
 * ``[init] init_single`` with ``gaussian_init = false`` and ``init_single = false``:

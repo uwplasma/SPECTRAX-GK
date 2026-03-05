@@ -38,10 +38,12 @@ from spectraxgk.terms.nonlinear import (
 )
 
 
-def _slice_species_params(params: LinearParams, nspec: int) -> LinearParams:
-    """Slice species-vector parameters to the first `nspec` entries."""
+def _slice_species_params(params: LinearParams, nspec: int, *, species_index: int = 0) -> LinearParams:
+    """Slice species-vector parameters to `nspec` entries starting at `species_index`."""
     if nspec <= 0:
         return params
+    start = max(int(species_index), 0)
+    stop = start + int(nspec)
     fields = (
         "charge_sign",
         "density",
@@ -61,8 +63,8 @@ def _slice_species_params(params: LinearParams, nspec: int) -> LinearParams:
         arr = np.asarray(val)
         if arr.ndim == 0:
             continue
-        if arr.shape[0] >= nspec:
-            updates[name] = arr[:nspec]
+        if arr.shape[0] >= stop:
+            updates[name] = arr[start:stop]
     return replace(params, **updates) if updates else params
 
 
@@ -410,6 +412,7 @@ def main() -> None:
     parser.add_argument("--Ly", type=float, default=62.8)
     parser.add_argument("--y0", type=float, default=20.0)
     parser.add_argument("--boundary", type=str, default="linked")
+    parser.add_argument("--species-index", type=int, default=0, help="Species index to compare")
     parser.add_argument("--ntheta", type=int, default=None)
     parser.add_argument("--nperiod", type=int, default=None)
     parser.add_argument(
@@ -701,7 +704,7 @@ def main() -> None:
             damp_ends_amp=0.0,
             damp_ends_widthfrac=0.0,
         )
-        params = _slice_species_params(params, nspec)
+        params = _slice_species_params(params, nspec, species_index=args.species_index)
     else:
         default_cfg = CycloneBaseCase()
         ntheta_use = args.ntheta if args.ntheta is not None else default_cfg.grid.ntheta
@@ -735,7 +738,7 @@ def main() -> None:
             damp_ends_widthfrac=0.0,
         )
         params = _apply_gx_hypercollisions(params, nhermite=nm)
-        params = _slice_species_params(params, nspec)
+        params = _slice_species_params(params, nspec, species_index=args.species_index)
     cache = build_linear_cache(grid, geom, params, nl, nm)
     roots_ref = cache.laguerre_roots
     if muB_roots is not None and muB_roots.size == roots_ref.size:
@@ -1077,7 +1080,7 @@ def main() -> None:
         else:
             rho2_ref = float(np.asarray(rho_param)[0] ** 2)
         print(f"GX rho2s dump: {rho2s_dump:.6e}")
-        print(f"SPECTRAX rho2s (species 0): {rho2_ref:.6e}")
+        print(f"SPECTRAX rho2s (species {args.species_index}): {rho2_ref:.6e}")
     if kperp2_dump is not None and rho2s_dump is not None:
         b_dump = rho2s_dump * kperp2_dump
         b_cache = np.asarray(cache.b[0, :nyc, :, :])

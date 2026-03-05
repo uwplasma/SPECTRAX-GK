@@ -31,6 +31,8 @@ def test_runtime_defaults_match_gx_reference() -> None:
     cfg = RuntimeConfig()
     assert cfg.geometry.drift_scale == 1.0
     assert cfg.normalization.diagnostic_norm == "gx"
+    assert cfg.normalization.flux_scale == 1.0
+    assert cfg.collisions.p_hyper_m is None
 
 
 def test_load_runtime_from_toml_roundtrip(tmp_path: Path) -> None:
