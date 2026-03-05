@@ -401,6 +401,15 @@ channel amplitude is near machine zero and supports two tolerance regimes:
 - strict early-time gate (``t <= 0.1``) for deterministic startup parity,
 - relaxed late-time gate (``t >= 1`` by default) for branch-sensitive nonlinear drift.
 
+For channels with very small amplitudes (especially early fluxes), the
+comparator also supports absolute-error fallbacks in each window:
+
+- ``--atol-early-Wg``, ``--atol-early-heat``, ``--atol-early-pflux``
+- ``--atol-late-Wg``, ``--atol-late-heat``, ``--atol-late-pflux``
+
+Each window/channel passes if either ``rel_error <= rtol`` or
+``abs_error <= atol``.
+
 Observed in this short-window gate:
 
 - ``Wphi`` and heat-flux channels remain near machine-level comparison.

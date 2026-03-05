@@ -163,6 +163,32 @@ def _absolute_error(a: np.ndarray, b: np.ndarray) -> float:
     return float(np.nanmean(np.abs(a[mask] - b[mask])))
 
 
+def _absolute_error_window(
+    t: np.ndarray,
+    a: np.ndarray,
+    b: np.ndarray,
+    *,
+    tmin: float | None = None,
+    tmax: float | None = None,
+) -> float:
+    mask = np.isfinite(a) & np.isfinite(b)
+    if tmin is not None:
+        mask = mask & (t >= float(tmin))
+    if tmax is not None:
+        mask = mask & (t <= float(tmax))
+    if not np.any(mask):
+        return float("nan")
+    return float(np.nanmean(np.abs(a[mask] - b[mask])))
+
+
+def _pass_tol(rel: float, abs_err: float, rtol: float, atol: float | None) -> bool:
+    if np.isfinite(rel) and rel <= rtol:
+        return True
+    if atol is not None and np.isfinite(abs_err) and abs_err <= atol:
+        return True
+    return False
+
+
 def _window_mean(t: np.ndarray, y: np.ndarray, frac: float) -> float:
     if t.size == 0:
         return float("nan")
@@ -203,6 +229,12 @@ def main() -> int:
     parser.add_argument("--rtol-late-Wg", type=float, default=0.5)
     parser.add_argument("--rtol-late-heat", type=float, default=1.0)
     parser.add_argument("--rtol-late-pflux", type=float, default=1.0)
+    parser.add_argument("--atol-early-Wg", type=float, default=None)
+    parser.add_argument("--atol-early-heat", type=float, default=None)
+    parser.add_argument("--atol-early-pflux", type=float, default=None)
+    parser.add_argument("--atol-late-Wg", type=float, default=None)
+    parser.add_argument("--atol-late-heat", type=float, default=None)
+    parser.add_argument("--atol-late-pflux", type=float, default=None)
     args = parser.parse_args()
 
     gx = _load_gx(args.gx, ky_target=args.ky)
@@ -252,10 +284,20 @@ def main() -> int:
         "heat": _relative_error_window(t, sp["heat"], gx_interp["heat"], tmax=args.early_tmax),
         "pflux": _relative_error_window(t, sp["pflux"], gx_interp["pflux"], tmax=args.early_tmax),
     }
+    early_abs = {
+        "Wg": _absolute_error_window(t, sp["Wg"], gx_interp["Wg"], tmax=args.early_tmax),
+        "heat": _absolute_error_window(t, sp["heat"], gx_interp["heat"], tmax=args.early_tmax),
+        "pflux": _absolute_error_window(t, sp["pflux"], gx_interp["pflux"], tmax=args.early_tmax),
+    }
     late = {
         "Wg": _relative_error_window(t, sp["Wg"], gx_interp["Wg"], tmin=args.late_tmin),
         "heat": _relative_error_window(t, sp["heat"], gx_interp["heat"], tmin=args.late_tmin),
         "pflux": _relative_error_window(t, sp["pflux"], gx_interp["pflux"], tmin=args.late_tmin),
+    }
+    late_abs = {
+        "Wg": _absolute_error_window(t, sp["Wg"], gx_interp["Wg"], tmin=args.late_tmin),
+        "heat": _absolute_error_window(t, sp["heat"], gx_interp["heat"], tmin=args.late_tmin),
+        "pflux": _absolute_error_window(t, sp["pflux"], gx_interp["pflux"], tmin=args.late_tmin),
     }
     print(
         "Early-window relative errors "
@@ -263,19 +305,29 @@ def main() -> int:
         f"Wg={early['Wg']:.3e}, heat={early['heat']:.3e}, pflux={early['pflux']:.3e}"
     )
     print(
+        "Early-window absolute errors "
+        f"(t<= {args.early_tmax:g}): "
+        f"Wg={early_abs['Wg']:.3e}, heat={early_abs['heat']:.3e}, pflux={early_abs['pflux']:.3e}"
+    )
+    print(
         "Late-window relative errors "
         f"(t>= {args.late_tmin:g}): "
         f"Wg={late['Wg']:.3e}, heat={late['heat']:.3e}, pflux={late['pflux']:.3e}"
     )
+    print(
+        "Late-window absolute errors "
+        f"(t>= {args.late_tmin:g}): "
+        f"Wg={late_abs['Wg']:.3e}, heat={late_abs['heat']:.3e}, pflux={late_abs['pflux']:.3e}"
+    )
     early_ok = (
-        early["Wg"] <= args.rtol_early_Wg
-        and early["heat"] <= args.rtol_early_heat
-        and early["pflux"] <= args.rtol_early_pflux
+        _pass_tol(early["Wg"], early_abs["Wg"], args.rtol_early_Wg, args.atol_early_Wg)
+        and _pass_tol(early["heat"], early_abs["heat"], args.rtol_early_heat, args.atol_early_heat)
+        and _pass_tol(early["pflux"], early_abs["pflux"], args.rtol_early_pflux, args.atol_early_pflux)
     )
     late_ok = (
-        late["Wg"] <= args.rtol_late_Wg
-        and late["heat"] <= args.rtol_late_heat
-        and late["pflux"] <= args.rtol_late_pflux
+        _pass_tol(late["Wg"], late_abs["Wg"], args.rtol_late_Wg, args.atol_late_Wg)
+        and _pass_tol(late["heat"], late_abs["heat"], args.rtol_late_heat, args.atol_late_heat)
+        and _pass_tol(late["pflux"], late_abs["pflux"], args.rtol_late_pflux, args.atol_late_pflux)
     )
     print(f"Tolerance check: early={'PASS' if early_ok else 'FAIL'} late={'PASS' if late_ok else 'FAIL'}")
 
