@@ -142,25 +142,49 @@ def main() -> int:
         gamma_t = np.mean(gamma_t, axis=axes)
         omega_t = np.mean(omega_t, axis=axes)
 
-    data = np.column_stack(
-        [
-            np.asarray(t),
-            gamma_t,
-            omega_t,
-            np.asarray(diag.Wg_t),
-            np.asarray(diag.Wphi_t),
-            np.asarray(diag.Wapar_t),
-            np.asarray(diag.energy_t),
-            np.asarray(diag.heat_flux_t),
-            np.asarray(diag.particle_flux_t),
-        ]
-    )
+    cols: list[np.ndarray] = [
+        np.asarray(t),
+        gamma_t,
+        omega_t,
+        np.asarray(diag.Wg_t),
+        np.asarray(diag.Wphi_t),
+        np.asarray(diag.Wapar_t),
+        np.asarray(diag.energy_t),
+        np.asarray(diag.heat_flux_t),
+        np.asarray(diag.particle_flux_t),
+    ]
+    headers = [
+        "t",
+        "gamma",
+        "omega",
+        "Wg",
+        "Wphi",
+        "Wapar",
+        "energy",
+        "heat_flux",
+        "particle_flux",
+    ]
+    if diag.heat_flux_species_t is not None:
+        heat_s = np.asarray(diag.heat_flux_species_t)
+        if heat_s.ndim == 1:
+            heat_s = heat_s[:, None]
+        for i in range(heat_s.shape[1]):
+            cols.append(heat_s[:, i])
+            headers.append(f"heat_flux_s{i}")
+    if diag.particle_flux_species_t is not None:
+        pflux_s = np.asarray(diag.particle_flux_species_t)
+        if pflux_s.ndim == 1:
+            pflux_s = pflux_s[:, None]
+        for i in range(pflux_s.shape[1]):
+            cols.append(pflux_s[:, i])
+            headers.append(f"particle_flux_s{i}")
+    data = np.column_stack(cols)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     np.savetxt(
         args.out,
         data,
         delimiter=",",
-        header="t,gamma,omega,Wg,Wphi,Wapar,energy,heat_flux,particle_flux",
+        header=",".join(headers),
         comments="",
     )
     print(f"saved {args.out}")

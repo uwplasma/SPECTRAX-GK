@@ -93,6 +93,10 @@ def test_integrate_nonlinear_gx_diagnostics_shapes():
     )
     assert t.shape[0] == 3
     assert diag.energy_t.shape[0] == 3
+    assert diag.heat_flux_species_t is not None
+    assert diag.particle_flux_species_t is not None
+    assert np.asarray(diag.heat_flux_species_t).shape == (3, 1)
+    assert np.asarray(diag.particle_flux_species_t).shape == (3, 1)
     assert np.isfinite(np.asarray(diag.dt_mean))
     assert np.isfinite(np.asarray(diag.dt_t)).all()
 
@@ -119,6 +123,10 @@ def test_integrate_nonlinear_imex_gx_diagnostics_shapes():
     )
     assert t.shape[0] == 2
     assert diag.energy_t.shape[0] == 2
+    assert diag.heat_flux_species_t is not None
+    assert diag.particle_flux_species_t is not None
+    assert np.asarray(diag.heat_flux_species_t).shape == (2, 1)
+    assert np.asarray(diag.particle_flux_species_t).shape == (2, 1)
 
 
 def test_integrate_nonlinear_collision_split_sts():

@@ -11,7 +11,9 @@ from spectraxgk.diagnostics import (
     gx_Wphi_krehm,
     gx_energy_total,
     gx_heat_flux,
+    gx_heat_flux_species,
     gx_particle_flux,
+    gx_particle_flux_species,
     gx_volume_factors,
 )
 from spectraxgk.geometry import SAlphaGeometry
@@ -69,6 +71,28 @@ def test_gx_energy_components_finite():
     assert np.isfinite(np.asarray(pflux))
     assert np.isfinite(np.asarray(energy))
     assert energy == Wg + Wphi + Wapar
+
+
+def test_gx_species_flux_sums_to_total():
+    cfg, grid, geom, params, cache = _small_setup()
+    _vol_fac, flux_fac = gx_volume_factors(geom, grid)
+    G0 = _build_initial_condition(grid, geom, ky_index=0, kx_index=0, Nl=4, Nm=4, init_cfg=cfg.init)
+    from spectraxgk.terms.assembly import assemble_rhs_cached
+
+    _dG, fields = assemble_rhs_cached(G0, cache, params, terms=LinearTerms())
+    phi = fields.phi
+    apar = fields.apar if fields.apar is not None else jnp.zeros_like(phi)
+    bpar = fields.bpar if fields.bpar is not None else jnp.zeros_like(phi)
+
+    heat_s = gx_heat_flux_species(G0, phi, apar, bpar, cache, grid, params, flux_fac)
+    pflux_s = gx_particle_flux_species(G0, phi, apar, bpar, cache, grid, params, flux_fac)
+    heat = gx_heat_flux(G0, phi, apar, bpar, cache, grid, params, flux_fac)
+    pflux = gx_particle_flux(G0, phi, apar, bpar, cache, grid, params, flux_fac)
+
+    assert heat_s.shape == (1,)
+    assert pflux_s.shape == (1,)
+    assert np.allclose(np.asarray(jnp.sum(heat_s)), np.asarray(heat))
+    assert np.allclose(np.asarray(jnp.sum(pflux_s)), np.asarray(pflux))
 
 
 def test_gx_init_all_scaling_matches_reference():

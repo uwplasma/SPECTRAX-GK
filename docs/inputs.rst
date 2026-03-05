@@ -160,6 +160,11 @@ CLI usage
    spectrax-gk scan-runtime-linear --config examples/configs/runtime_etg.toml --batch-ky
    spectrax-gk run-runtime-nonlinear --config examples/configs/runtime_cyclone.toml --sample-stride 5 --out docs/_static/nonlinear_cyclone_diag.csv
 
+When ``run-runtime-nonlinear`` writes ``--out`` CSV diagnostics, the base columns are
+``t,dt,gamma,omega,Wg,Wphi,Wapar,energy,heat_flux,particle_flux`` and species-resolved
+columns are appended when available:
+``heat_flux_s{i}``, ``particle_flux_s{i}`` for species index ``i``.
+
 Python driver
 -------------
 

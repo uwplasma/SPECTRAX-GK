@@ -12,18 +12,53 @@ from netCDF4 import Dataset
 
 
 def _load_spectrax_csv(path: Path) -> dict[str, np.ndarray]:
+    named = np.genfromtxt(path, delimiter=",", names=True)
+    if isinstance(named, np.ndarray) and named.dtype.names:
+        names = set(named.dtype.names)
+        if {"t", "Wg", "Wphi", "Wapar", "energy", "heat_flux", "particle_flux"}.issubset(names):
+            out = {
+                "t": np.asarray(named["t"], dtype=float),
+                "Wg": np.asarray(named["Wg"], dtype=float),
+                "Wphi": np.asarray(named["Wphi"], dtype=float),
+                "Wapar": np.asarray(named["Wapar"], dtype=float),
+                "energy": np.asarray(named["energy"], dtype=float),
+                "heat_flux": np.asarray(named["heat_flux"], dtype=float),
+                "particle_flux": np.asarray(named["particle_flux"], dtype=float),
+            }
+            if "gamma" in names:
+                out["gamma"] = np.asarray(named["gamma"], dtype=float)
+            if "omega" in names:
+                out["omega"] = np.asarray(named["omega"], dtype=float)
+            return out
+
     data = np.loadtxt(path, delimiter=",", skiprows=1)
-    return {
-        "t": data[:, 0],
-        "gamma": data[:, 1],
-        "omega": data[:, 2],
-        "Wg": data[:, 3],
-        "Wphi": data[:, 4],
-        "Wapar": data[:, 5],
-        "energy": data[:, 6],
-        "heat_flux": data[:, 7],
-        "particle_flux": data[:, 8],
-    }
+    if data.ndim == 1:
+        data = data[None, :]
+    if data.shape[1] == 9:
+        return {
+            "t": data[:, 0],
+            "gamma": data[:, 1],
+            "omega": data[:, 2],
+            "Wg": data[:, 3],
+            "Wphi": data[:, 4],
+            "Wapar": data[:, 5],
+            "energy": data[:, 6],
+            "heat_flux": data[:, 7],
+            "particle_flux": data[:, 8],
+        }
+    if data.shape[1] >= 10:
+        return {
+            "t": data[:, 0],
+            "gamma": data[:, 2],
+            "omega": data[:, 3],
+            "Wg": data[:, 4],
+            "Wphi": data[:, 5],
+            "Wapar": data[:, 6],
+            "energy": data[:, 7],
+            "heat_flux": data[:, 8],
+            "particle_flux": data[:, 9],
+        }
+    raise ValueError(f"unsupported SPECTRAX CSV shape {data.shape}")
 
 
 def _load_gx_diag(path: Path) -> dict[str, np.ndarray]:

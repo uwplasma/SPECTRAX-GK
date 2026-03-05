@@ -189,6 +189,26 @@ def _load_linear_scan(path: Path) -> pd.DataFrame:
 
 
 def _load_spectrax_diag(path: Path) -> dict[str, np.ndarray]:
+    named = np.genfromtxt(path, delimiter=",", names=True)
+    if isinstance(named, np.ndarray) and named.dtype.names:
+        names = set(named.dtype.names)
+        required = {"t", "Wg", "Wphi", "Wapar", "energy", "heat_flux", "particle_flux"}
+        if required.issubset(names):
+            out = {
+                "t": np.asarray(named["t"], dtype=float),
+                "Wg": np.asarray(named["Wg"], dtype=float),
+                "Wphi": np.asarray(named["Wphi"], dtype=float),
+                "Wapar": np.asarray(named["Wapar"], dtype=float),
+                "energy": np.asarray(named["energy"], dtype=float),
+                "heat": np.asarray(named["heat_flux"], dtype=float),
+                "pflux": np.asarray(named["particle_flux"], dtype=float),
+            }
+            if "gamma" in names:
+                out["gamma"] = np.asarray(named["gamma"], dtype=float)
+            if "omega" in names:
+                out["omega"] = np.asarray(named["omega"], dtype=float)
+            return out
+
     data = np.loadtxt(path, delimiter=",", skiprows=1)
     if data.ndim == 1:
         data = data[None, :]
@@ -205,8 +225,8 @@ def _load_spectrax_diag(path: Path) -> dict[str, np.ndarray]:
             "heat": np.asarray(data[:, 7], dtype=float),
             "pflux": np.asarray(data[:, 8], dtype=float),
         }
-    # CLI/runtime CSV: t,dt,gamma,omega,Wg,Wphi,Wapar,energy,heat,pflux (10 cols)
-    if data.shape[1] == 10:
+    # CLI/runtime CSV: t,dt,gamma,omega,Wg,Wphi,Wapar,energy,heat,pflux (+ optional species)
+    if data.shape[1] >= 10:
         return {
             "t": np.asarray(data[:, 0], dtype=float),
             "gamma": np.asarray(data[:, 2], dtype=float),

@@ -36,6 +36,10 @@ def _load_gx(path: Path, *, ky_target: float = 0.3) -> dict[str, np.ndarray]:
         "heat": _read_diag_series(diag, "HeatFlux_kyst"),
         "pflux": _read_diag_series(diag, "ParticleFlux_kyst"),
     }
+    if "HeatFlux_st" in diag.variables:
+        out["heat_s"] = np.asarray(diag.variables["HeatFlux_st"][:], dtype=float)
+    if "ParticleFlux_st" in diag.variables:
+        out["pflux_s"] = np.asarray(diag.variables["ParticleFlux_st"][:], dtype=float)
     if "omega_kxkyt" in diag.variables and "ky" in grids.variables and "kx" in grids.variables:
         ky = np.asarray(grids.variables["ky"][:], dtype=float)
         kx = np.asarray(grids.variables["kx"][:], dtype=float)
@@ -50,6 +54,37 @@ def _load_gx(path: Path, *, ky_target: float = 0.3) -> dict[str, np.ndarray]:
 
 
 def _load_spectrax(path: Path) -> dict[str, np.ndarray]:
+    named = np.genfromtxt(path, delimiter=",", names=True)
+    if isinstance(named, np.ndarray) and named.dtype.names:
+        names = set(named.dtype.names)
+        if {"t", "Wg", "Wphi", "Wapar", "energy", "heat_flux", "particle_flux"}.issubset(names):
+            out = {
+                "t": np.asarray(named["t"], dtype=float),
+                "Wg": np.asarray(named["Wg"], dtype=float),
+                "Wphi": np.asarray(named["Wphi"], dtype=float),
+                "Wapar": np.asarray(named["Wapar"], dtype=float),
+                "energy": np.asarray(named["energy"], dtype=float),
+                "heat": np.asarray(named["heat_flux"], dtype=float),
+                "pflux": np.asarray(named["particle_flux"], dtype=float),
+            }
+            if "gamma" in names:
+                out["gamma"] = np.asarray(named["gamma"], dtype=float)
+            if "omega" in names:
+                out["omega"] = np.asarray(named["omega"], dtype=float)
+            heat_species_cols = sorted(
+                [name for name in names if name.startswith("heat_flux_s")],
+                key=lambda key: int(key.removeprefix("heat_flux_s")),
+            )
+            if heat_species_cols:
+                out["heat_s"] = np.column_stack([np.asarray(named[key], dtype=float) for key in heat_species_cols])
+            pflux_species_cols = sorted(
+                [name for name in names if name.startswith("particle_flux_s")],
+                key=lambda key: int(key.removeprefix("particle_flux_s")),
+            )
+            if pflux_species_cols:
+                out["pflux_s"] = np.column_stack([np.asarray(named[key], dtype=float) for key in pflux_species_cols])
+            return out
+
     data = np.loadtxt(path, delimiter=",", skiprows=1)
     if data.ndim == 1:
         data = data[None, :]
@@ -160,6 +195,13 @@ def main() -> int:
         print(f"Late-time mean Wg: SPECTRAX={wg_sp:.3e}, GX={wg_gx:.3e}")
         print(f"Late-time mean Wphi: SPECTRAX={wphi_sp:.3e}, GX={wphi_gx:.3e}")
         print(f"Late-time mean Q: SPECTRAX={q_sp:.3e}, GX={q_gx:.3e}")
+    if "heat_s" in sp and "heat_s" in gx:
+        ns = min(sp["heat_s"].shape[1], gx["heat_s"].shape[1])
+        gx_heat_s = np.column_stack([_interp(t, gx["t"], gx["heat_s"][:, i]) for i in range(ns)])
+        gx_pflux_s = np.column_stack([_interp(t, gx["t"], gx["pflux_s"][:, i]) for i in range(ns)])
+        for i in range(ns):
+            print(f"Heat flux s{i} rel error: {_relative_error(sp['heat_s'][:, i], gx_heat_s[:, i]):.3e}")
+            print(f"Particle flux s{i} rel error: {_relative_error(sp['pflux_s'][:, i], gx_pflux_s[:, i]):.3e}")
 
     fig, ax = plt.subplots(3, 1, figsize=(7.0, 8.0), sharex=True)
     mask = np.isfinite(sp["Wphi"]) & np.isfinite(gx_interp["Wphi"])
