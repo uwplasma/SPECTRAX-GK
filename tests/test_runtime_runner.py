@@ -374,6 +374,121 @@ def test_runtime_init_species_targets_all_vs_electrons_only() -> None:
     assert np.max(np.abs(g_e[1])) > 0.0
 
 
+def test_runtime_init_all_applies_gx_moment_scaling_single_mode() -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        init=InitializationConfig(
+            init_field="all",
+            init_amp=1.0,
+            gaussian_init=False,
+            init_single=True,
+        ),
+    )
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    grid = build_spectral_grid(cfg.grid)
+    ky_index = int(np.argmin(np.abs(np.asarray(grid.ky) - 1.0)))
+    g0 = np.asarray(
+        _build_initial_condition(
+            grid,
+            geom,
+            cfg,
+            ky_index=ky_index,
+            kx_index=0,
+            Nl=3,
+            Nm=4,
+            nspecies=1,
+        )
+    )[0]
+
+    density = g0[0, 0, ky_index, 0, 0]
+    tpar = g0[0, 2, ky_index, 0, 0]
+    qpar = g0[0, 3, ky_index, 0, 0]
+    assert np.allclose(tpar / density, 1.0 / np.sqrt(2.0))
+    assert np.allclose(qpar / density, 1.0 / np.sqrt(6.0))
+
+
+def test_runtime_init_all_applies_gx_moment_scaling_multimode_gaussian() -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        grid=GridConfig(
+            Nx=6,
+            Ny=8,
+            Nz=16,
+            Lx=6.28,
+            Ly=6.28,
+            boundary="linked",
+            y0=10.0,
+            ntheta=16,
+            nperiod=1,
+        ),
+        init=InitializationConfig(
+            init_field="all",
+            init_amp=1.0,
+            gaussian_init=True,
+            gaussian_width=0.5,
+            init_single=False,
+        ),
+    )
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    grid = build_spectral_grid(cfg.grid)
+    ky_index = int(np.argmin(np.abs(np.asarray(grid.ky) - 1.0)))
+    g0 = np.asarray(
+        _build_initial_condition(
+            grid,
+            geom,
+            cfg,
+            ky_index=ky_index,
+            kx_index=0,
+            Nl=3,
+            Nm=4,
+            nspecies=1,
+        )
+    )[0]
+
+    amp_density = np.max(np.abs(g0[0, 0, ...]))
+    amp_tpar = np.max(np.abs(g0[0, 2, ...]))
+    amp_qpar = np.max(np.abs(g0[0, 3, ...]))
+    assert amp_density > 0.0
+    assert np.isclose(amp_tpar / amp_density, 1.0 / np.sqrt(2.0))
+    assert np.isclose(amp_qpar / amp_density, 1.0 / np.sqrt(6.0))
+
+
+def test_runtime_init_all_applies_gx_moment_scaling_multimode_random() -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        grid=GridConfig(Nx=6, Ny=8, Nz=16, Lx=6.28, Ly=6.28, boundary="periodic"),
+        init=InitializationConfig(
+            init_field="all",
+            init_amp=1.0,
+            gaussian_init=False,
+            init_single=False,
+            random_seed=7,
+        ),
+    )
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    grid = build_spectral_grid(cfg.grid)
+    ky_index = int(np.argmin(np.abs(np.asarray(grid.ky) - 1.0)))
+    g0 = np.asarray(
+        _build_initial_condition(
+            grid,
+            geom,
+            cfg,
+            ky_index=ky_index,
+            kx_index=0,
+            Nl=3,
+            Nm=4,
+            nspecies=1,
+        )
+    )[0]
+
+    amp_density = np.max(np.abs(g0[0, 0, ...]))
+    amp_tpar = np.max(np.abs(g0[0, 2, ...]))
+    amp_qpar = np.max(np.abs(g0[0, 3, ...]))
+    assert amp_density > 0.0
+    assert np.isclose(amp_tpar / amp_density, 1.0 / np.sqrt(2.0))
+    assert np.isclose(amp_qpar / amp_density, 1.0 / np.sqrt(6.0))
+
+
 def test_runtime_nonlinear_mode_selection_respects_dealias(monkeypatch) -> None:
     cfg = replace(
         _base_runtime_cfg(),

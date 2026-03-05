@@ -226,6 +226,9 @@ Notable runtime-only keys:
   initialize a GX-style Gaussian envelope across the resolved ``(ky,kx)`` modes.
 * ``[init] init_single = true``:
   initialize only the selected ``(ky,kx)`` mode.
+* ``[init] init_field = "all"``: the runtime/TOML path follows GX moment
+  scaling for this initializer, using reduced amplitudes for ``tpar``
+  (``1/sqrt(2)``) and ``qpar`` (``1/sqrt(6)``).
 * ``[init] init_electrons_only``: if ``true`` in multispecies runs, initialize
   only electron species (GX ``init_electrons_only`` behavior). If ``false``
   (default), initialize all kinetic species.
