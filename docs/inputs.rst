@@ -115,6 +115,8 @@ to quantify CFL-driven savings. To control the Laguerre handling in nonlinear
 brackets, set ``laguerre_nonlinear_mode = "grid"`` (GX-style quadrature,
 default) or ``laguerre_nonlinear_mode = "spectral"`` (use spectral ``Jl``
 without the quadrature transform).
+Use ``nonlinear_dealias = false`` to disable nonlinear dealias masking for
+reference/debug runs where you want to preserve all configured base modes.
 For GX-reference runs, leaving ``dt_max`` unset uses GX's default behavior
 (``dt_max = dt``). Increase ``dt_max`` explicitly only when you intentionally
 trade strict GX matching for throughput.
@@ -205,8 +207,12 @@ Notable runtime-only keys:
   flux diagnostics (GX-reference default ``2.0``).
 * ``[normalization] wphi_scale``: multiplicative factor applied to ``Wphi``
   diagnostics (Cyclone GX-reference uses ``1.155``).
-* ``[init] init_single``: if false and ``gaussian_init`` is false, initialize
-  a GX-style random perturbation across the 2/3-resolved ``(ky,kx)`` spectrum
-  (useful for nonlinear Cyclone comparison runs).
+* ``[init] init_single`` with ``gaussian_init = false`` and ``init_single = false``:
+  initialize a GX-style random perturbation across the 2/3-resolved ``(ky,kx)``
+  spectrum.
+* ``[init] init_single`` with ``gaussian_init = true`` and ``init_single = false``:
+  initialize a GX-style Gaussian envelope across the resolved ``(ky,kx)`` modes.
+* ``[init] init_single = true``:
+  initialize only the selected ``(ky,kx)`` mode.
 * ``[init] random_seed``: RNG seed used for GX-style random initial conditions
   (default ``22``, matching GX).
