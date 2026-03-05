@@ -208,6 +208,9 @@ Notable runtime-only keys:
 * ``[collisions] damp_ends_scale_by_dt``: if true, interpret ``damp_ends_amp`` as
   a per-unit-time strength and scale it internally by ``1/dt`` (GX-reference
   default).
+* ``[collisions] hypercollisions_const`` / ``hypercollisions_kz``: defaults are
+  GX-style ``0.0`` / ``1.0`` (kz-proportional hypercollisions enabled by
+  default, constant hypercollisions off).
 * ``[normalization] flux_scale``: multiplicative factor applied to heat/particle
   flux diagnostics (GX-reference default ``2.0``).
 * ``[normalization] wphi_scale``: multiplicative factor applied to ``Wphi``
