@@ -57,6 +57,7 @@ init_amp = 1.0e-10
 gaussian_init = true
 gaussian_width = 0.5
 init_single = false
+init_electrons_only = false
 
 [physics]
 linear = false
@@ -76,7 +77,7 @@ nu_hermite = 0.0
 nu_laguerre = 0.0
 nu_hyper = 0.0
 p_hyper = 4.0
-hypercollisions_const = 1.0
+hypercollisions_const = 0.0
 hypercollisions_kz = 1.0
 D_hyper = 0.0
 p_hyper_kperp = 2.0

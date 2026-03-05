@@ -280,7 +280,7 @@ def test_runtime_gaussian_init_populates_multiple_modes_when_not_single() -> Non
     )
     geom = SAlphaGeometry.from_config(cfg.geometry)
     grid = build_spectral_grid(cfg.grid)
-    ky_index = int(np.argmin(np.abs(np.asarray(grid.ky) - 0.2)))
+    ky_index = int(np.argmin(np.abs(np.asarray(grid.ky) - 1.0)))
     g0 = np.asarray(
         _build_initial_condition(
             grid,
@@ -318,6 +318,60 @@ def test_runtime_nonlinear_dealias_toggle_executes() -> None:
     res = run_runtime_nonlinear(cfg, ky_target=0.2, Nl=3, Nm=4, steps=3)
     assert res.diagnostics is not None
     assert np.all(np.isfinite(res.diagnostics.Wphi_t))
+
+
+def test_runtime_init_species_targets_all_vs_electrons_only() -> None:
+    cfg_all = replace(
+        _base_runtime_cfg(),
+        grid=GridConfig(Nx=1, Ny=8, Nz=16, Lx=6.28, Ly=6.28, boundary="periodic"),
+        species=(
+            RuntimeSpeciesConfig(name="ion", charge=1.0),
+            RuntimeSpeciesConfig(name="electron", charge=-1.0, mass=1.0 / 3670.0),
+        ),
+        init=InitializationConfig(
+            init_field="density",
+            init_amp=1.0e-8,
+            gaussian_init=False,
+            init_single=True,
+            init_electrons_only=False,
+        ),
+    )
+    geom = SAlphaGeometry.from_config(cfg_all.geometry)
+    grid = build_spectral_grid(cfg_all.grid)
+    ky_index = int(np.argmin(np.abs(np.asarray(grid.ky) - 1.0)))
+    g_all = np.asarray(
+        _build_initial_condition(
+            grid,
+            geom,
+            cfg_all,
+            ky_index=ky_index,
+            kx_index=0,
+            Nl=3,
+            Nm=4,
+            nspecies=2,
+        )
+    )
+    assert np.max(np.abs(g_all[0])) > 0.0
+    assert np.max(np.abs(g_all[1])) > 0.0
+
+    cfg_e = replace(
+        cfg_all,
+        init=replace(cfg_all.init, init_electrons_only=True),
+    )
+    g_e = np.asarray(
+        _build_initial_condition(
+            grid,
+            geom,
+            cfg_e,
+            ky_index=ky_index,
+            kx_index=0,
+            Nl=3,
+            Nm=4,
+            nspecies=2,
+        )
+    )
+    assert np.max(np.abs(g_e[0])) == 0.0
+    assert np.max(np.abs(g_e[1])) > 0.0
 
 
 def test_runtime_nonlinear_mode_selection_respects_dealias(monkeypatch) -> None:

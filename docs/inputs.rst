@@ -226,5 +226,8 @@ Notable runtime-only keys:
   initialize a GX-style Gaussian envelope across the resolved ``(ky,kx)`` modes.
 * ``[init] init_single = true``:
   initialize only the selected ``(ky,kx)`` mode.
+* ``[init] init_electrons_only``: if ``true`` in multispecies runs, initialize
+  only electron species (GX ``init_electrons_only`` behavior). If ``false``
+  (default), initialize all kinetic species.
 * ``[init] random_seed``: RNG seed used for GX-style random initial conditions
   (default ``22``, matching GX).
