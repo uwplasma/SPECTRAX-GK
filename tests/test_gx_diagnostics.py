@@ -182,6 +182,18 @@ def test_gx_growth_rate_step_matches_real_imag_validity_mask():
     assert not np.allclose(np.asarray(gamma_ok), 0.0)
 
 
+def test_gx_growth_rate_step_validity_depends_on_current_phi_only():
+    """GX kernel checks real/imag nonzero on current phi only."""
+
+    phi_prev = jnp.asarray([[[1.0 + 0.0j, 1.0 + 0.0j]]], dtype=jnp.complex64)
+    phi_now = jnp.asarray([[[2.0 + 2.0j, 2.0 + 2.0j]]], dtype=jnp.complex64)
+    mask = jnp.asarray([[True]])
+    gamma, omega = _gx_growth_rate_step(phi_now, phi_prev, 0.1, z_index=0, mask=mask)
+    assert np.isfinite(np.asarray(gamma)).all()
+    assert np.isfinite(np.asarray(omega)).all()
+    assert not np.allclose(np.asarray(gamma), 0.0)
+
+
 def test_linear_gx_adaptive_default_dt_max_matches_gx():
     """When dt_max is unset, adaptive GX path should clamp to dt."""
 
