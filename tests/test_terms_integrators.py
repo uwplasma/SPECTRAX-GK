@@ -54,6 +54,28 @@ def test_integrate_nonlinear_rejects_unknown_method() -> None:
         integrate_nonlinear(_linear_rhs(0.1 + 0.0j), jnp.ones((2, 2), dtype=jnp.complex64), 0.1, 4, method="bad")
 
 
+def test_integrate_nonlinear_projects_each_stage() -> None:
+    def rhs_fn(G: jnp.ndarray) -> tuple[jnp.ndarray, FieldState]:
+        flipped = jnp.flip(G, axis=-2)
+        return 1j * flipped, FieldState(phi=jnp.sum(G, axis=0))
+
+    def projector(G: jnp.ndarray) -> jnp.ndarray:
+        pos = G[..., :3, :]
+        neg = jnp.conj(pos[..., 1:2, :])[..., ::-1, :]
+        return jnp.concatenate([pos, neg], axis=-2)
+
+    G0 = jnp.asarray([[1.0 + 0.0j], [2.0 + 1.0j], [-3.0 + 0.5j], [7.0 - 2.0j]], dtype=jnp.complex64)
+    G_final, _fields = integrate_nonlinear(
+        rhs_fn,
+        G0,
+        0.1,
+        2,
+        method="rk4",
+        project_state=projector,
+    )
+    assert jnp.allclose(G_final[..., 3, :], jnp.conj(G_final[..., 1, :]))
+
+
 def test_nonlinear_placeholders() -> None:
     G = jnp.ones((3, 4, 1), dtype=jnp.complex64)
     out = placeholder_nonlinear_contribution(G, weight=jnp.asarray(2.0))
