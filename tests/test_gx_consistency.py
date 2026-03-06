@@ -3,7 +3,7 @@ import numpy as np
 import jax.numpy as jnp
 
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.gyroaverage import J_l_all
+from spectraxgk.gyroaverage import J_l_all, gx_factorial
 from spectraxgk.terms.linear_terms import hypercollisions_contribution
 
 
@@ -19,6 +19,26 @@ def test_gyroaverage_matches_gx_jflr():
     for l in range(5):
         expected = _gx_jflr(l, b)
         assert jnp.allclose(Jl[l], expected, rtol=1.0e-6, atol=1.0e-7)
+
+
+def test_gx_factorial_matches_stirling_branch():
+    m = jnp.asarray([7.0, 8.0, 12.0], dtype=jnp.float32)
+    expected = jnp.asarray(
+        [
+            math.sqrt(2.0 * math.pi * x) * (x**x) * math.exp(-x) * (1.0 + 1.0 / (12.0 * x) + 1.0 / (288.0 * x * x))
+            for x in (7.0, 8.0, 12.0)
+        ],
+        dtype=jnp.float32,
+    )
+    assert jnp.allclose(gx_factorial(m), expected, rtol=1.0e-7, atol=1.0e-7)
+
+
+def test_gyroaverage_matches_gx_jflr_stirling_branch():
+    b = jnp.asarray([0.3, 1.0, 2.5], dtype=jnp.float32)
+    l = 7
+    expected = jnp.exp(-0.5 * b) * ((-0.5 * b) ** l) / gx_factorial(jnp.asarray(float(l), dtype=b.dtype))
+    Jl = J_l_all(b, l_max=l)
+    assert jnp.allclose(Jl[l], expected, rtol=1.0e-7, atol=1.0e-8)
 
 
 def test_salpha_geometry_matches_gx_formulas():
