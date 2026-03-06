@@ -119,10 +119,13 @@ Nonlinear FFT bracket
 The nonlinear :math:`E\times B` term is evaluated pseudospectrally using
 FFT-based derivatives in the perpendicular plane. By default SPECTRAX-GK uses
 the GX-style real FFT path (``TimeConfig.gx_real_fft = true``), which computes
-gradients from the Nyquist-compressed (``N_y/2+1``) spectrum and expands the
-result back to full :math:`k_y`. This exactly matches the GX nonlinear bracket
-normalization and minimizes memory traffic. Set ``gx_real_fft = false`` to use
-the full complex FFT bracket instead.
+gradients from the Nyquist-compressed (``N_y/2+1``) spectrum using GX's native
+compressed wavenumber layout: non-negative ``k_y`` (including positive
+Nyquist when ``N_y`` is even) and a positive Nyquist multiplier on the ``k_x``
+axis when ``N_x`` is even. The result is then expanded back to full
+:math:`k_y`. This matches GX's nonlinear bracket normalization and minimizes
+memory traffic. Set ``gx_real_fft = false`` to use the full complex FFT bracket
+instead.
 
 For electromagnetic nonlinear runs, SPECTRAX-GK stacks the gyro-averaged
 potentials ``J0*phi``, ``J0*apar``, and the ``bpar`` correction into a single

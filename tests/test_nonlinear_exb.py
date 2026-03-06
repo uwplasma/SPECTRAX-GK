@@ -3,7 +3,7 @@ import jax.numpy as jnp
 
 from spectraxgk.config import GridConfig
 from spectraxgk.gyroaverage import bessel_j0, bessel_j1, gx_laguerre_transform
-from spectraxgk.grids import build_spectral_grid
+from spectraxgk.grids import build_spectral_grid, gx_real_fft_mesh
 from spectraxgk.terms.nonlinear import (
     exb_nonlinear_contribution,
     nonlinear_em_contribution,
@@ -235,8 +235,7 @@ def test_gx_real_fft_bracket_match():
     )
 
     Nxy = nx * ny
-    kx_nyc = grid.kx_grid[:nyc, :]
-    ky_nyc = grid.ky_grid[:nyc, :]
+    _, _, kx_nyc, ky_nyc = gx_real_fft_mesh(grid.kx_grid, grid.ky_grid)
     kx_b = kx_nyc[None, None, None, :, :, None]
     ky_b = ky_nyc[None, None, None, :, :, None]
     kx_c = kx_nyc[None, None, :, :, None]
@@ -325,8 +324,7 @@ def test_gx_real_fft_bracket_match_odd_ny():
     )
 
     Nxy = nx * ny
-    kx_nyc = grid.kx_grid[:nyc, :]
-    ky_nyc = grid.ky_grid[:nyc, :]
+    _, _, kx_nyc, ky_nyc = gx_real_fft_mesh(grid.kx_grid, grid.ky_grid)
     kx_b = kx_nyc[None, None, None, :, :, None]
     ky_b = ky_nyc[None, None, None, :, :, None]
     kx_c = kx_nyc[None, None, :, :, None]

@@ -3,7 +3,12 @@
 import jax.numpy as jnp
 
 from spectraxgk.config import GridConfig
-from spectraxgk.grids import SpectralGrid, build_spectral_grid
+from spectraxgk.grids import (
+    SpectralGrid,
+    build_spectral_grid,
+    gx_real_fft_kx,
+    gx_real_fft_ky,
+)
 
 
 def test_build_spectral_grid_shapes():
@@ -66,3 +71,17 @@ def test_grid_config_explicit_zp():
     grid = build_spectral_grid(cfg)
     assert grid.z.shape[0] == 15
     assert jnp.isclose(grid.z[0], -jnp.pi * 3.0)
+
+
+def test_gx_real_fft_wavenumbers_match_gx_native_layout():
+    """GX real-FFT helpers should expose positive Nyquist multipliers."""
+
+    cfg = GridConfig(Nx=4, Ny=10, Nz=4, Lx=2.0, Ly=20.0)
+    grid = build_spectral_grid(cfg)
+    dkx = 2.0 * jnp.pi / cfg.Lx
+    dky = 2.0 * jnp.pi / cfg.Ly
+    assert jnp.allclose(gx_real_fft_kx(grid.kx), jnp.asarray([0.0, dkx, 2.0 * dkx, -dkx]))
+    assert jnp.allclose(
+        gx_real_fft_ky(grid.ky),
+        jnp.asarray([0.0, dky, 2.0 * dky, 3.0 * dky, 4.0 * dky, 5.0 * dky]),
+    )
