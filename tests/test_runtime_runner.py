@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import replace
 
 import numpy as np
+import pytest
 
 from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, TimeConfig
 from spectraxgk.diagnostics import GXDiagnostics
@@ -133,6 +134,18 @@ def test_runtime_hypercollision_default_tracks_hermite_count() -> None:
     params_nm16 = build_runtime_linear_params(cfg, Nm=16)
     assert float(params_nm8.p_hyper_m) == 4.0
     assert float(params_nm16.p_hyper_m) == 8.0
+
+
+def test_runtime_end_damping_defaults_follow_gx_scaling() -> None:
+    base = _base_runtime_cfg()
+    cfg = replace(
+        base,
+        time=replace(base.time, dt=0.2),
+        collisions=RuntimeCollisionConfig(),
+    )
+    params = build_runtime_linear_params(cfg, Nm=8)
+    assert float(params.damp_ends_amp) == pytest.approx(0.5)
+    assert float(params.damp_ends_widthfrac) == pytest.approx(0.125)
 
 
 def test_runtime_hypercollision_explicit_override_is_preserved() -> None:

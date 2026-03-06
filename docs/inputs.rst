@@ -209,6 +209,8 @@ are:
 
 Notable runtime-only keys:
 
+* ``[collisions] damp_ends_amp`` / ``damp_ends_widthfrac``: GX-aligned end
+  damping defaults are ``0.1`` and ``0.125``.
 * ``[collisions] damp_ends_scale_by_dt``: if true, interpret ``damp_ends_amp`` as
   a per-unit-time strength and scale it internally by ``1/dt`` (GX-reference
   default).

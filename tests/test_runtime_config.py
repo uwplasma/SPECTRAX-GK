@@ -33,6 +33,8 @@ def test_runtime_defaults_match_gx_reference() -> None:
     assert cfg.normalization.diagnostic_norm == "gx"
     assert cfg.normalization.flux_scale == 1.0
     assert cfg.collisions.p_hyper_m is None
+    assert cfg.collisions.damp_ends_amp == pytest.approx(0.1)
+    assert cfg.collisions.damp_ends_widthfrac == pytest.approx(0.125)
 
 
 def test_load_runtime_from_toml_roundtrip(tmp_path: Path) -> None:

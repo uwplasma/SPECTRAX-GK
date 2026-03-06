@@ -206,9 +206,10 @@ runtime schema therefore exposes light-weight diagnostic scale factors:
 These are reporting-only knobs; they do not alter the RHS/operator. They are
 intended to document the exact GX-reference settings used for benchmark plots.
 
-GX end-damping strength (``damp_ends_amp``) is scaled by the timestep inside the
-integrator to match the GX implementation: the damping kernel receives
-``damp_ends_amp / dt`` so that the damping is defined per unit time.
+GX end-damping defaults are ``damp_ends_amp = 0.1`` and
+``damp_ends_widthfrac = 0.125``. The runtime scales ``damp_ends_amp`` by the
+timestep to match the GX implementation, so the damping kernel receives
+``damp_ends_amp / dt`` and the user-facing amplitude remains per-step.
 
 Defaults (model parameters):
 
