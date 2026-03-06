@@ -87,3 +87,18 @@ omega_star_scale = 0.7
     assert cfg.normalization.omega_star_scale == pytest.approx(0.7)
     assert len(cfg.species) == 2
     assert cfg.species[1].charge == pytest.approx(-1.0)
+
+
+def test_gx_aligned_kbm_runtime_examples_keep_end_damping_enabled() -> None:
+    cfg_dir = Path(__file__).resolve().parents[1] / "examples" / "configs"
+    paths = [
+        cfg_dir / "runtime_kbm_nonlinear_gx.toml",
+        cfg_dir / "runtime_kbm_nonlinear_gx_seed.toml",
+        cfg_dir / "runtime_kbm_nonlinear_gx_short.toml",
+        cfg_dir / "runtime_kbm_nonlinear_gx_short_lockin.toml",
+        cfg_dir / "runtime_kbm_nonlinear_gx_t100.toml",
+        cfg_dir / "runtime_kbm_nonlinear_gx_t100_nx4ny8_dt9e4.toml",
+    ]
+    for path in paths:
+        cfg, _ = load_runtime_from_toml(path)
+        assert cfg.terms.end_damping == pytest.approx(1.0), path.name

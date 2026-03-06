@@ -32,6 +32,10 @@ def _expand_hermitian(pos: np.ndarray, ny_full: int) -> np.ndarray:
     neg_hi = nyc - 1 if (ny_full % 2 == 0) else nyc
     neg = np.conj(pos[..., 1:neg_hi, :, :])
     neg = neg[..., ::-1, :, :]
+    nx = pos.shape[-2]
+    if nx > 1:
+        kx_neg = np.concatenate(([0], np.arange(nx - 1, 0, -1)))
+        neg = neg[..., kx_neg, :]
     return np.concatenate([pos, neg], axis=-3)
 
 
@@ -297,6 +301,40 @@ def test_gx_real_fft_toggle_matches_full_fft_for_hermitian():
     assert bracket_gx.shape == bracket_full.shape
     assert np.all(np.isfinite(np.asarray(bracket_gx)))
     assert np.all(np.isfinite(np.asarray(bracket_full)))
+
+
+def test_gx_real_fft_bracket_preserves_full_hermitian_symmetry():
+    grid = build_spectral_grid(GridConfig(Nx=6, Ny=8, Nz=2, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
+    ny = grid.ky.size
+    nx = grid.kx.size
+    nyc = ny // 2 + 1
+    rng = np.random.default_rng(7)
+    G_nyc = rng.normal(size=(1, 1, 2, nyc, nx, grid.z.size)) + 1j * rng.normal(
+        size=(1, 1, 2, nyc, nx, grid.z.size)
+    )
+    phi_nyc = rng.normal(size=(nyc, nx, grid.z.size)) + 1j * rng.normal(
+        size=(nyc, nx, grid.z.size)
+    )
+    G_full = _expand_hermitian(G_nyc, ny)
+    phi_full = _expand_hermitian(phi_nyc[None, ...], ny)[0]
+
+    bracket_hat = np.asarray(
+        _spectral_bracket(
+            jnp.asarray(G_full),
+            jnp.asarray(phi_full),
+            kx_grid=grid.kx_grid,
+            ky_grid=grid.ky_grid,
+            dealias_mask=grid.dealias_mask,
+            kxfac=jnp.asarray(1.0),
+            gx_real_fft=True,
+        )
+    )
+
+    neg_hi = nyc - 1 if (ny % 2 == 0) else nyc
+    kx_neg = np.concatenate(([0], np.arange(nx - 1, 0, -1)))
+    neg_ref = np.conj(bracket_hat[..., 1:neg_hi, :, :])[..., ::-1, :, :]
+    neg_ref = neg_ref[..., kx_neg, :]
+    assert np.allclose(bracket_hat[..., nyc:, :, :], neg_ref, rtol=1.0e-6, atol=1.0e-6)
 
 
 def test_gx_real_fft_bracket_match_odd_ny():
