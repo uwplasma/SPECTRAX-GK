@@ -2,6 +2,7 @@
 
 import numpy as np
 import jax.numpy as jnp
+import pytest
 
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
@@ -180,3 +181,48 @@ def test_nonlinear_gx_adaptive_default_dt_max_matches_gx():
     dt_t = np.asarray(diag.dt_t, dtype=float)
     assert dt_t.size > 0
     assert np.nanmax(dt_t) <= 0.05 + 1.0e-6
+
+
+@pytest.mark.parametrize("method", ["rk3", "imex"])
+def test_nonlinear_gx_gamma_omega_use_previous_step_not_previous_diagnostic(method: str):
+    """GX-style nonlinear gamma/omega should be invariant to diagnostics_stride."""
+
+    grid_cfg = GridConfig(Nx=2, Ny=4, Nz=4, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams()
+
+    shape = (2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz)
+    base = np.arange(np.prod(shape), dtype=np.float32).reshape(shape)
+    G = jnp.asarray(base + 1.0j * (base + 1.0), dtype=jnp.complex64)
+    terms = TermConfig(nonlinear=0.0)
+
+    t_dense, diag_dense = integrate_nonlinear_gx_diagnostics(
+        G,
+        grid,
+        geom,
+        params,
+        dt=0.02,
+        steps=4,
+        method=method,
+        terms=terms,
+        sample_stride=1,
+        diagnostics_stride=1,
+    )
+    t_sparse, diag_sparse = integrate_nonlinear_gx_diagnostics(
+        G,
+        grid,
+        geom,
+        params,
+        dt=0.02,
+        steps=4,
+        method=method,
+        terms=terms,
+        sample_stride=1,
+        diagnostics_stride=2,
+    )
+
+    assert np.allclose(np.asarray(t_dense)[::2], np.asarray(t_sparse))
+    assert np.allclose(np.asarray(diag_dense.gamma_t)[::2], np.asarray(diag_sparse.gamma_t))
+    assert np.allclose(np.asarray(diag_dense.omega_t)[::2], np.asarray(diag_sparse.omega_t))
