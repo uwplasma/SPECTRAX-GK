@@ -1,6 +1,7 @@
 """Nonlinear integrator tests."""
 
 import numpy as np
+import jax
 import jax.numpy as jnp
 import pytest
 
@@ -226,3 +227,34 @@ def test_nonlinear_gx_gamma_omega_use_previous_step_not_previous_diagnostic(meth
     assert np.allclose(np.asarray(t_dense)[::2], np.asarray(t_sparse))
     assert np.allclose(np.asarray(diag_dense.gamma_t)[::2], np.asarray(diag_sparse.gamma_t))
     assert np.allclose(np.asarray(diag_dense.omega_t)[::2], np.asarray(diag_sparse.omega_t))
+
+
+def test_nonlinear_imex_gx_diagnostics_match_operator_dtype_under_x64():
+    """IMEX GX diagnostics should keep the scan state dtype aligned with the implicit operator."""
+
+    grid_cfg = GridConfig(Nx=2, Ny=4, Nz=4, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+
+    with jax.enable_x64():
+        grid = build_spectral_grid(cfg.grid)
+        geom = SAlphaGeometry.from_config(cfg.geometry)
+        params = LinearParams()
+        shape = (2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz)
+        base = np.arange(np.prod(shape), dtype=np.float32).reshape(shape)
+        G = jnp.asarray(base + 1.0j * (base + 1.0), dtype=jnp.complex64)
+
+        _t, diag = integrate_nonlinear_gx_diagnostics(
+            G,
+            grid,
+            geom,
+            params,
+            dt=0.02,
+            steps=2,
+            method="imex",
+            terms=TermConfig(nonlinear=0.0),
+            sample_stride=1,
+            diagnostics_stride=1,
+        )
+
+    assert np.isfinite(np.asarray(diag.gamma_t)).all()
+    assert np.isfinite(np.asarray(diag.omega_t)).all()
