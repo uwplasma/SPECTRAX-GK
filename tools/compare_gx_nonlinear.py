@@ -104,6 +104,18 @@ def _load_spectrax(path: Path) -> dict[str, np.ndarray]:
             "heat": data[:, 7],
             "pflux": data[:, 8],
         }
+    if data.shape[1] == 8:
+        # Restart/exact-state format: t,gamma,omega,Wg,Wphi,Wapar,heat,pflux
+        return {
+            "t": data[:, 0],
+            "gamma": data[:, 1],
+            "omega": data[:, 2],
+            "Wg": data[:, 3],
+            "Wphi": data[:, 4],
+            "Wapar": data[:, 5],
+            "heat": data[:, 6],
+            "pflux": data[:, 7],
+        }
     if data.shape[1] == 10:
         # Runtime CLI format: t,dt,gamma,omega,Wg,Wphi,Wapar,energy,heat,pflux
         return {
