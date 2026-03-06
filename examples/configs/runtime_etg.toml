@@ -1,7 +1,7 @@
 [[species]]
 name = "electron"
 charge = -1.0
-mass = 0.00027248
+mass = 0.00027
 density = 1.0
 temperature = 1.0
 tprim = 2.49

@@ -145,7 +145,7 @@ def test_gx_jl_family_preserves_species_axis() -> None:
             Species(charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=1.0, fprim=1.0),
             Species(
                 charge=-1.0,
-                mass=0.00027248,
+                mass=0.00027,
                 density=1.0,
                 temperature=1.0,
                 tprim=1.0,
@@ -173,7 +173,7 @@ def test_gx_particle_flux_species_matches_manual_multispecies_formula() -> None:
             Species(charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=1.0, fprim=1.0),
             Species(
                 charge=-1.0,
-                mass=0.00027248,
+                mass=0.00027,
                 density=1.0,
                 temperature=1.0,
                 tprim=1.0,

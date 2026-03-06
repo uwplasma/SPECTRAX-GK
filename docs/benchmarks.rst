@@ -389,6 +389,11 @@ SPECTRAX matched comparison probes:
 - ``python -m spectraxgk.cli run-runtime-nonlinear --config examples/configs/runtime_kbm_nonlinear_gx_short.toml --steps 267 --out .cache/spectrax/kbm_nonlinear_diag_short_3e4.csv``
 - ``python -m spectraxgk.cli run-runtime-nonlinear --config examples/configs/runtime_kbm_nonlinear_gx_seed.toml --steps 667 --out .cache/spectrax/kbm_nonlinear_diag_t0p20.csv``
 
+The GX-aligned KBM runtime examples now use the same electron mass as the GX
+reference inputs (``m_e = 2.7e-4`` in ion-mass units). Using the physical
+``m_e/m_i`` ratio here introduced a persistent ``A_parallel``/transport bias in
+the nonlinear KBM comparison even when the equations and diagnostics matched.
+
 Comparison:
 
 - ``python tools/compare_gx_nonlinear.py --gx .cache/gx/kbm_salpha_nonlinear_t0p20_dense.out.nc --spectrax .cache/spectrax/kbm_nonlinear_diag_t0p20.csv --out docs/_static/nonlinear_kbm_diag_compare_short_dense.png``

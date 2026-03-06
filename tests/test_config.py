@@ -1,9 +1,12 @@
 """Configuration object tests."""
 
+import pytest
+
 from spectraxgk.config import (
     CycloneBaseCase,
     ETGBaseCase,
     ETGModelConfig,
+    GX_REFERENCE_ELECTRON_MASS,
     GeometryConfig,
     GridConfig,
     KBMBaseCase,
@@ -47,6 +50,7 @@ def test_etg_config_to_dict():
     d = cfg.to_dict()
     assert set(d.keys()) == {"grid", "time", "geometry", "model", "init"}
     assert d["model"]["R_over_LTe"] == cfg.model.R_over_LTe
+    assert d["model"]["mass_ratio"] == cfg.model.mass_ratio
 
 
 def test_kinetic_config_to_dict():
@@ -54,6 +58,13 @@ def test_kinetic_config_to_dict():
     cfg = KineticElectronBaseCase()
     d = cfg.to_dict()
     assert d["model"]["R_over_LTi"] == cfg.model.R_over_LTi
+
+
+def test_gx_reference_mass_ratio_defaults() -> None:
+    """GX-aligned benchmark defaults should use the conventional GX electron mass."""
+
+    for cfg in (ETGBaseCase(), KineticElectronBaseCase(), KBMBaseCase()):
+        assert (1.0 / cfg.model.mass_ratio) == pytest.approx(GX_REFERENCE_ELECTRON_MASS)
 
 
 def test_kbm_config_to_dict():
