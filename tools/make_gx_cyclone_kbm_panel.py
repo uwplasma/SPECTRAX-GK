@@ -431,22 +431,22 @@ def main() -> int:
     parser.add_argument(
         "--gx-cyclone-nonlinear",
         type=Path,
-        default=Path(".cache/gx/cyclone_salpha_adiabatic_electrons_omega_t100.out.nc"),
+        default=Path(".cache/gx/cyclone_salpha_adiabatic_electrons_omega_t400.out.nc"),
     )
     parser.add_argument(
         "--gx-kbm-nonlinear",
         type=Path,
-        default=Path(".cache/gx/kbm_salpha_nonlinear_t5p00_dense.out.nc"),
+        default=Path(".cache/gx/kbm_salpha_nonlinear_t100_dense.out.nc"),
     )
     parser.add_argument(
         "--spectrax-cyclone-nonlinear",
         type=Path,
-        default=Path(".cache/spectrax/cyclone_nonlinear_diag_t100.csv"),
+        default=Path(".cache/spectrax/cyclone_nonlinear_diag_t400.csv"),
     )
     parser.add_argument(
         "--spectrax-kbm-nonlinear",
         type=Path,
-        default=Path(".cache/spectrax/kbm_nonlinear_diag_t5.csv"),
+        default=Path(".cache/spectrax/kbm_nonlinear_diag_t100.csv"),
     )
     parser.add_argument("--cyclone-nonlinear-tmax", type=float, default=None)
     parser.add_argument("--kbm-nonlinear-tmax", type=float, default=None)

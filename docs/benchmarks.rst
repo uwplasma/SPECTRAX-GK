@@ -159,8 +159,8 @@ By default, ``make_gx_cyclone_kbm_panel.py`` uses:
 - Cyclone nonlinear diagnostics from the GX-matched runtime config
   (same RK family/CFL controls as GX, and no manual ``flux_scale`` or
   ``wphi_scale`` override in the config).
-- Cyclone and KBM long nonlinear windows (``t=100`` for Cyclone,
-  ``t=5`` for KBM) to expose long-time heat-flux dynamics.
+- Cyclone and KBM long nonlinear windows (``t=400`` for Cyclone,
+  ``t=100`` for KBM) to expose long-time heat-flux dynamics.
 - A GX-style time-integrated SPECTRAX KBM eigenfunction (not a standalone
   Krylov vector) so the plotted mode is selected the same way as GX.
 
@@ -467,11 +467,17 @@ For this regime, comparison acceptance should use:
 
    Nonlinear KBM diagnostics comparison extension to ``t_max=1.00``.
 
-Long-horizon KBM comparison (``t > 100``) uses the same two-window acceptance:
+Long-horizon KBM comparison (current matched run: ``t = 100``) uses the same
+two-window acceptance pattern:
 
-- strict startup gate (``t <= 0.1``), and
-- relaxed late-time gate (``t >= 100``), with optional absolute-error fallback
+- strict startup gate (``t <= 0.2``), and
+- relaxed late-time gate (``t >= 20``), with optional absolute-error fallback
   for near-zero flux channels.
+
+The short-window KBM parity fix carries through the startup interval, but the
+late-time KBM amplitudes still diverge strongly from GX by ``t ~ 100``. This
+figure is therefore a tracking diagnostic for the remaining long-horizon KBM
+mismatch, not a closure claim.
 
 .. figure:: _static/nonlinear_kbm_diag_compare_t100_relaxed.png
    :align: center
@@ -681,16 +687,16 @@ Nonlinear Cyclone diagnostics
 
 Nonlinear Cyclone runs use GX-style diagnostics in both GX and SPECTRAX-GK.
 The comparison below plots the GX and SPECTRAX diagnostics for a matched
-nonlinear Cyclone case over a long horizon (``t > 100``). We use strict
+nonlinear Cyclone case over the refreshed ``t = 400`` horizon. We use strict
 startup checks for ``t <= 0.1`` and relaxed late-time checks for
 ``t >= 100``.
 
-.. figure:: _static/nonlinear_cyclone_diag_compare_t120_initgx.png
+.. figure:: _static/nonlinear_cyclone_diag_compare_t400.png
    :width: 95%
    :alt: Nonlinear Cyclone diagnostics comparison between GX and SPECTRAX-GK
 
    Nonlinear Cyclone diagnostics (GX vs SPECTRAX-GK): Wg, Wphi, Wapar, total
-   energy, heat flux, and particle flux.
+   energy, heat flux, and particle flux over the ``t = 400`` matched horizon.
 
 Reference data extraction
 -------------------------
