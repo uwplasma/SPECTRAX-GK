@@ -53,8 +53,12 @@ def _read_diag_series(group, name: str, ky_idx: int) -> np.ndarray:
     var = group.variables[name][:]
     if var.ndim == 3:
         # time, species, ky
+        if name.startswith("Wapar_"):
+            return np.asarray(var[:, 0, ky_idx], dtype=float)
         return np.sum(var[:, :, ky_idx], axis=1)
     if var.ndim == 2:
+        if name.startswith("Wapar_"):
+            return np.asarray(var[:, 0], dtype=float)
         return np.sum(var[:, :], axis=1)
     raise ValueError(f"Unexpected shape for {name}: {var.shape}")
 

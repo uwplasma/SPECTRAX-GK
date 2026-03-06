@@ -22,7 +22,7 @@ kinetic = true
 
 [grid]
 Nx = 4
-Ny = 8
+Ny = 10
 Nz = 96
 Lx = 62.8
 Ly = 62.8

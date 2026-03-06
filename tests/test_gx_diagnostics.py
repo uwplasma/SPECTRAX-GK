@@ -6,6 +6,7 @@ from dataclasses import replace
 from spectraxgk.benchmarks import CycloneBaseCase, _build_initial_condition
 from spectraxgk.config import InitializationConfig
 from spectraxgk.diagnostics import (
+    _jl_family,
     _gx_fac_mask_nonzero,
     gx_Wapar,
     gx_Wg,
@@ -27,6 +28,7 @@ from spectraxgk.gx_integrators import (
     _gx_growth_rate_step,
     integrate_linear_gx_diagnostics,
 )
+from spectraxgk.species import Species, build_linear_params
 
 
 def test_gx_flux_fac_nonzero_matches_positive_ky_convention() -> None:
@@ -132,6 +134,105 @@ def test_gx_species_flux_sums_to_total():
     assert pflux_s.shape == (1,)
     assert np.allclose(np.asarray(jnp.sum(heat_s)), np.asarray(heat))
     assert np.allclose(np.asarray(jnp.sum(pflux_s)), np.asarray(pflux))
+
+
+def test_gx_jl_family_preserves_species_axis() -> None:
+    cfg = CycloneBaseCase()
+    grid = build_spectral_grid(replace(cfg.grid, Nx=4, Ny=8, Nz=8, ntheta=None, nperiod=None))
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = build_linear_params(
+        [
+            Species(charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=1.0, fprim=1.0),
+            Species(
+                charge=-1.0,
+                mass=0.00027248,
+                density=1.0,
+                temperature=1.0,
+                tprim=1.0,
+                fprim=1.0,
+            ),
+        ],
+        kpar_scale=float(geom.gradpar()),
+    )
+    cache = build_linear_cache(grid, geom, params, 3, 3)
+    Jl, JlB, Jfac = _jl_family(cache)
+
+    assert np.asarray(Jl).shape == np.asarray(cache.Jl).shape
+    assert np.asarray(JlB).shape == np.asarray(cache.JlB).shape
+    assert np.asarray(Jfac).shape == np.asarray(cache.Jl).shape
+    assert np.allclose(np.asarray(Jl), np.asarray(cache.Jl))
+    assert np.allclose(np.asarray(JlB), np.asarray(cache.JlB))
+
+
+def test_gx_particle_flux_species_matches_manual_multispecies_formula() -> None:
+    cfg = CycloneBaseCase()
+    grid = build_spectral_grid(replace(cfg.grid, Nx=4, Ny=8, Nz=8, ntheta=None, nperiod=None))
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = build_linear_params(
+        [
+            Species(charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=1.0, fprim=1.0),
+            Species(
+                charge=-1.0,
+                mass=0.00027248,
+                density=1.0,
+                temperature=1.0,
+                tprim=1.0,
+                fprim=1.0,
+            ),
+        ],
+        kpar_scale=float(geom.gradpar()),
+    )
+    cache = build_linear_cache(grid, geom, params, 3, 3)
+    _vol_fac, flux_fac = gx_volume_factors(geom, grid)
+
+    shape = (2, 3, 3, grid.ky.size, grid.kx.size, grid.z.size)
+    base = np.arange(np.prod(shape), dtype=np.float32).reshape(shape)
+    G = jnp.asarray(base + 1.0j * (base + 1.0), dtype=jnp.complex64)
+    field_base = np.arange(grid.ky.size * grid.kx.size * grid.z.size, dtype=np.float32).reshape(
+        grid.ky.size, grid.kx.size, grid.z.size
+    )
+    phi = jnp.asarray(field_base + 1.0j * (field_base + 1.0), dtype=jnp.complex64)
+    apar = 0.3 * phi
+    bpar = -0.2 * phi
+
+    got = np.asarray(
+        gx_particle_flux_species(
+            G,
+            phi,
+            apar,
+            bpar,
+            cache,
+            grid,
+            params,
+            flux_fac,
+            use_dealias=False,
+        )
+    )
+
+    fac = np.asarray(_gx_fac_mask_nonzero(grid, use_dealias=False), dtype=np.float32)[:, :, None]
+    flx = np.asarray(flux_fac, dtype=np.float32)[None, None, :]
+    ky = np.asarray(grid.ky, dtype=np.float32)[:, None, None]
+    vphi = 1.0j * ky * np.asarray(phi)
+    vapar = 1.0j * ky * np.asarray(apar)
+    vbpar = 1.0j * ky * np.asarray(bpar)
+    Jl = np.asarray(cache.Jl)
+    JlB = np.asarray(cache.JlB)
+    dens = np.asarray(params.density, dtype=np.float32)
+    vth = np.asarray(params.vth, dtype=np.float32)
+    tz = np.asarray(params.tz, dtype=np.float32)
+    G_np = np.asarray(G)
+
+    expected = []
+    for s in range(2):
+        G0 = G_np[s, :, 0, ...]
+        G1 = G_np[s, :, 1, ...]
+        n_bar = np.sum(Jl[s] * G0, axis=0)
+        u_bar = np.sum(Jl[s] * G1, axis=0)
+        uB_bar = np.sum(JlB[s] * G0, axis=0)
+        fg = np.conj(vphi) * n_bar - vth[s] * np.conj(vapar) * u_bar + tz[s] * np.conj(vbpar) * uB_bar
+        expected.append(np.sum((fg * 2.0 * flx * fac).real) * dens[s])
+
+    assert np.allclose(got, np.asarray(expected), rtol=1.0e-6, atol=1.0e-6)
 
 
 def test_gx_init_all_scaling_matches_reference():

@@ -66,20 +66,22 @@ def _load_gx_diag(path: Path) -> dict[str, np.ndarray]:
     diag = root.groups["Diagnostics"]
     grid = root.groups["Grids"]
     t = np.asarray(grid.variables["time"][:], dtype=float)
-    def _sum_s(name: str) -> np.ndarray:
+    def _reduce_species(name: str) -> np.ndarray:
         arr = np.asarray(diag.variables[name][:], dtype=float)
         if arr.ndim == 2:
+            if name.startswith("Wapar_"):
+                return arr[:, 0]
             return np.sum(arr, axis=1)
         return arr
 
     out = {
         "t": t,
         "phi2": np.asarray(diag.variables["Phi2_t"][:], dtype=float),
-        "Wg": _sum_s("Wg_st"),
-        "Wphi": _sum_s("Wphi_st"),
-        "Wapar": _sum_s("Wapar_st"),
-        "heat_flux": _sum_s("HeatFlux_st"),
-        "particle_flux": _sum_s("ParticleFlux_st"),
+        "Wg": _reduce_species("Wg_st"),
+        "Wphi": _reduce_species("Wphi_st"),
+        "Wapar": _reduce_species("Wapar_st"),
+        "heat_flux": _reduce_species("HeatFlux_st"),
+        "particle_flux": _reduce_species("ParticleFlux_st"),
     }
     out["energy"] = out["Wg"] + out["Wphi"] + out["Wapar"]
     root.close()

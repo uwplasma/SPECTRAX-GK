@@ -410,6 +410,11 @@ comparator also supports absolute-error fallbacks in each window:
 Each window/channel passes if either ``rel_error <= rtol`` or
 ``abs_error <= atol``.
 
+GX stores ``Wapar`` with a duplicated species axis in the nonlinear diagnostics
+output. The GX comparison tools therefore use the first GX species entry for
+``Wapar`` instead of summing over species, while ``Wg``, ``Wphi``, heat flux,
+and particle flux continue to sum across species in the usual way.
+
 Observed in this short-window gate:
 
 - ``Wphi`` and heat-flux channels remain near machine-level comparison.

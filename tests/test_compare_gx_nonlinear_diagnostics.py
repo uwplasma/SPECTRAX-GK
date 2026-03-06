@@ -16,23 +16,23 @@ def _write_minimal_gx_nc(path: Path, ntime: int = 5) -> None:
 
     with Dataset(path, "w") as root:
         root.createDimension("time", ntime)
-        root.createDimension("species", 1)
+        root.createDimension("species", 2)
         grids = root.createGroup("Grids")
         diags = root.createGroup("Diagnostics")
 
         tvar = grids.createVariable("time", "f8", ("time",))
         tvar[:] = np.linspace(0.0, 1.0, ntime)
 
-        for name in [
-            "Phi2_t",
-            "Wg_st",
-            "Wphi_st",
-            "Wapar_st",
-            "HeatFlux_st",
-            "ParticleFlux_st",
-        ]:
+        phi2 = diags.createVariable("Phi2_t", "f8", ("time",))
+        phi2[:] = np.linspace(0.1, 0.2, ntime)
+
+        for name in ["Wg_st", "Wphi_st", "HeatFlux_st", "ParticleFlux_st"]:
             var = diags.createVariable(name, "f8", ("time", "species"))
-            var[:, :] = np.linspace(0.1, 0.2, ntime)[:, None]
+            series = np.linspace(0.1, 0.2, ntime)[:, None]
+            var[:, :] = np.concatenate([series, 2.0 * series], axis=1)
+
+        wapar = diags.createVariable("Wapar_st", "f8", ("time", "species"))
+        wapar[:, :] = np.repeat(np.linspace(0.3, 0.4, ntime)[:, None], 2, axis=1)
 
 
 def _write_minimal_spectrax_csv(path: Path, ntime: int = 5) -> None:
@@ -90,3 +90,27 @@ def test_compare_gx_nonlinear_diagnostics_plot(tmp_path: Path) -> None:
 
     assert out_path.exists()
     assert out_path.stat().st_size > 0
+
+
+def test_compare_gx_nonlinear_diagnostics_uses_single_species_wapar(tmp_path: Path) -> None:
+    pytest.importorskip("netCDF4")
+
+    gx_path = tmp_path / "gx.out.nc"
+    _write_minimal_gx_nc(gx_path)
+
+    tools_dir = Path(__file__).resolve().parents[1] / "tools"
+    sys.path.insert(0, str(tools_dir))
+    try:
+        import compare_gx_nonlinear_diagnostics as mod
+
+        loaded = mod._load_gx_diag(gx_path)
+    finally:
+        sys.path.remove(str(tools_dir))
+
+    t = np.linspace(0.0, 1.0, 5)
+    assert np.allclose(loaded["Wg"], 3.0 * np.linspace(0.1, 0.2, 5))
+    assert np.allclose(loaded["Wphi"], 3.0 * np.linspace(0.1, 0.2, 5))
+    assert np.allclose(loaded["heat_flux"], 3.0 * np.linspace(0.1, 0.2, 5))
+    assert np.allclose(loaded["particle_flux"], 3.0 * np.linspace(0.1, 0.2, 5))
+    assert np.allclose(loaded["Wapar"], np.linspace(0.3, 0.4, 5))
+    assert np.allclose(loaded["t"], t)
