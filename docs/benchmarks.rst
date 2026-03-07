@@ -365,9 +365,16 @@ differences as the acceptance metric (relative errors can be numerically large
 with tiny denominators).
 
 For nonlinear diagnostic comparison (``Wg``, ``Wphi``, ``Wapar``, heat/particle
-fluxes), the current KBM closure has near-machine-zero late-time ``Wg`` in GX;
-therefore ``Wg`` is tracked with an absolute floor metric, while flux and
-field-energy channels continue to use relative-error checks.
+fluxes), we now use the same scale-aware relative-error denominator for both
+the short-window and long-window KBM gates. The earlier apparent late-time KBM
+collapse was traced to three parity issues outside the core GX-aligned equations:
+
+- the GX-aligned KBM runtime examples had incorrectly disabled linked-end damping,
+- the GX real-FFT nonlinear bracket reconstruction was missing the required
+  ``kx`` reversal for the negative-``ky`` block, and
+- the long-horizon restart study had been seeded from GX ``g_state.bin`` from
+  the linear-term dump path instead of the exact RK4 stage-0 state
+  (``rk4_stage0_g_state.bin``).
 
 KBM nonlinear short-time diagnostics comparison (dense GX cadence)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -479,17 +486,23 @@ two-window acceptance pattern:
 - relaxed late-time gate (``t >= 20``), with optional absolute-error fallback
   for near-zero flux channels.
 
-The short-window KBM parity fix carries through the startup interval, but the
-late-time KBM amplitudes still diverge strongly from GX by ``t ~ 100``. This
-figure is therefore a tracking diagnostic for the remaining long-horizon KBM
-mismatch, not a closure claim.
+With the corrected runtime config and full-spectrum real-FFT bookkeeping, the
+matched ``t=100`` KBM run now passes both windows against GX. The current
+end-to-end mean relative errors over the full ``t=100`` trace are approximately
+``Wg=6.54e-3``, ``Wphi=6.54e-3``, ``Wapar=6.54e-3``,
+``heat_flux=6.53e-3``, ``particle_flux=6.54e-3``,
+``gamma=7.13e-3``, and ``omega=1.85e-4``. An exact-state restart from the GX
+RK4 stage-0 dump at ``t≈5`` also matches the GX continuation through
+``t=20`` at roughly ``8e-4`` relative error, confirming that the long-horizon
+solver path is now aligned.
 
 .. figure:: _static/nonlinear_kbm_diag_compare_t100_relaxed.png
    :align: center
    :alt: KBM nonlinear diagnostics comparison to t_max~100 with relaxed late-time gate
 
-   Nonlinear KBM long-horizon diagnostics (GX vs SPECTRAX-GK), evaluated with
-   strict early-time and relaxed late-time tolerance windows.
+   Nonlinear KBM long-horizon diagnostics (GX vs SPECTRAX-GK), now passing the
+   strict early-time and relaxed late-time tolerance windows on the matched
+   ``t=100`` run.
 
 Reduced ky scan tables
 ----------------------
