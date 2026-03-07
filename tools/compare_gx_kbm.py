@@ -203,6 +203,11 @@ def _run_candidate(args, cfg: KBMBaseCase, ky_value: float, beta_value: float, s
     )
 
 
+def _write_rows(path: Path, rows: list[dict[str, float | str]]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame(rows).to_csv(path, index=False)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Compare GX KBM output against SPECTRAX-GK.")
     parser.add_argument("--gx", type=Path, required=True, help="Path to GX .out.nc file")
@@ -406,6 +411,8 @@ def main() -> None:
             "fit_window_tmax": fit_window_tmax,
         }
         rows.append(row)
+        if args.out is not None:
+            _write_rows(args.out, rows)
 
     table = pd.DataFrame(rows)
     print(
@@ -418,7 +425,7 @@ def main() -> None:
         )
 
     if args.out is not None:
-        table.to_csv(args.out, index=False)
+        _write_rows(args.out, rows)
 
 
 if __name__ == "__main__":
