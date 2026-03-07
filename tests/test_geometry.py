@@ -2,9 +2,16 @@
 
 import jax
 import jax.numpy as jnp
+import numpy as np
+import pytest
 
 from spectraxgk.config import GeometryConfig, GridConfig
-from spectraxgk.geometry import SAlphaGeometry, ensure_flux_tube_geometry_data, sample_flux_tube_geometry
+from spectraxgk.geometry import (
+    SAlphaGeometry,
+    ensure_flux_tube_geometry_data,
+    load_gx_geometry_netcdf,
+    sample_flux_tube_geometry,
+)
 from spectraxgk.grids import build_spectral_grid
 
 
@@ -137,3 +144,55 @@ def test_ensure_flux_tube_geometry_data_reuses_sampled_input():
     ensured = ensure_flux_tube_geometry_data(sampled, theta)
 
     assert ensured is sampled
+
+
+def test_load_gx_geometry_netcdf_reads_sampled_contract(tmp_path):
+    """GX-style NetCDF geometry output should map into the sampled contract."""
+
+    netcdf4 = pytest.importorskip("netCDF4")
+    Dataset = netcdf4.Dataset
+
+    path = tmp_path / "geom.out.nc"
+    theta = np.linspace(-np.pi, np.pi, 5)
+    with Dataset(path, "w") as root:
+        root.createDimension("theta", theta.size)
+        grids = root.createGroup("Grids")
+        geom = root.createGroup("Geometry")
+        grids.createVariable("theta", "f8", ("theta",))[:] = theta
+        for name, values in {
+            "bmag": np.linspace(1.0, 1.2, theta.size),
+            "bgrad": np.linspace(-0.1, 0.1, theta.size),
+            "gds2": np.linspace(1.0, 2.0, theta.size),
+            "gds21": np.linspace(-0.2, 0.2, theta.size),
+            "gds22": np.full(theta.size, 0.8),
+            "cvdrift": np.linspace(0.3, 0.5, theta.size),
+            "gbdrift": np.linspace(0.3, 0.5, theta.size),
+            "cvdrift0": np.linspace(-0.1, 0.1, theta.size),
+            "gbdrift0": np.linspace(-0.1, 0.1, theta.size),
+            "jacobian": np.linspace(2.0, 3.0, theta.size),
+            "grho": np.linspace(1.0, 1.4, theta.size),
+        }.items():
+            geom.createVariable(name, "f8", ("theta",))[:] = values
+        for name, value in {
+            "gradpar": 0.4,
+            "q": 1.7,
+            "shat": 0.6,
+            "rmaj": 5.0,
+            "aminor": 1.0,
+            "kxfac": 1.3,
+            "theta_scale": 2.0,
+            "nfp": 5.0,
+            "alpha": 0.2,
+        }.items():
+            geom.createVariable(name, "f8", ())[:] = value
+
+    loaded = load_gx_geometry_netcdf(path)
+
+    assert loaded.source_model == "gx-netcdf"
+    assert jnp.allclose(loaded.theta, theta)
+    assert jnp.allclose(loaded.jacobian_profile, np.linspace(2.0, 3.0, theta.size))
+    assert jnp.allclose(loaded.grho_profile, np.linspace(1.0, 1.4, theta.size))
+    assert loaded.kxfac == pytest.approx(1.3)
+    assert loaded.theta_scale == pytest.approx(2.0)
+    assert loaded.nfp == 5
+    assert loaded.epsilon == pytest.approx(0.2)

@@ -109,3 +109,11 @@ The sampled geometry contract is now a JAX pytree and is accepted by the
 linear cache, nonlinear config runner, and GX-style volume-weight diagnostics.
 That means upcoming VMEC or imported field-line geometry can be threaded into
 more of the codebase without rebuilding solver-specific side paths.
+
+The contract also preserves explicit ``jacobian`` and ``grho`` profiles when
+they are available from imported geometry. The helper
+``load_gx_geometry_netcdf`` reads a GX-style ``Geometry``/``Grids`` NetCDF
+layout directly into ``FluxTubeGeometryData``. That is the intended short path
+to the GX W7-X examples: import the sampled field-line geometry first, prove
+solver/diagnostic parity on that contract, and only then add a native VMEC path
+that generates the same contract inside SPECTRAX-GK.

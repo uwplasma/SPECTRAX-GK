@@ -98,6 +98,25 @@ def test_gx_volume_factors_accept_sampled_geometry_contract():
     assert np.allclose(np.asarray(flux_s), np.asarray(flux_ref))
 
 
+def test_gx_volume_factors_use_grho_for_flux_weights():
+    _cfg, grid, geom, _params, _cache = _small_setup()
+    sampled = sample_flux_tube_geometry(geom, grid.z)
+    sampled = replace(
+        sampled,
+        jacobian_profile=jnp.asarray([1.0, 2.0, 3.0, 4.0]),
+        grho_profile=jnp.asarray([1.0, 2.0, 1.0, 2.0]),
+        theta=jnp.asarray(grid.z[:4]),
+    )
+    grid_small = replace(grid, z=grid.z[:4])
+
+    vol_fac, flux_fac = gx_volume_factors(sampled, grid_small)
+
+    jac = np.array([1.0, 2.0, 3.0, 4.0])
+    grho = np.array([1.0, 2.0, 1.0, 2.0])
+    assert np.allclose(np.asarray(vol_fac), jac / np.sum(jac))
+    assert np.allclose(np.asarray(flux_fac), jac / np.sum(jac * grho))
+
+
 def test_gx_standard_field_energies_match_geometry_weighted_formula():
     _cfg, grid, geom, params, cache = _small_setup()
     vol_fac, _flux_fac = gx_volume_factors(geom, grid)
