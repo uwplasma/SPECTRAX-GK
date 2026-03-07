@@ -9,7 +9,7 @@ import pytest
 
 from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, TimeConfig
 from spectraxgk.diagnostics import GXDiagnostics
-from spectraxgk.geometry import SAlphaGeometry
+from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.runtime import (
     _build_initial_condition,
@@ -406,6 +406,35 @@ def test_runtime_init_species_targets_all_vs_electrons_only() -> None:
     )
     assert np.max(np.abs(g_e[0])) == 0.0
     assert np.max(np.abs(g_e[1])) > 0.0
+
+
+def test_runtime_initial_condition_accepts_sampled_geometry_contract() -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        init=InitializationConfig(
+            init_field="density",
+            init_amp=1.0e-8,
+            gaussian_init=False,
+            init_single=True,
+        ),
+    )
+    grid = build_spectral_grid(cfg.grid)
+    geom = sample_flux_tube_geometry(SAlphaGeometry.from_config(cfg.geometry), grid.z)
+    ky_index = int(np.argmin(np.abs(np.asarray(grid.ky) - 1.0)))
+    g0 = np.asarray(
+        _build_initial_condition(
+            grid,
+            geom,
+            cfg,
+            ky_index=ky_index,
+            kx_index=0,
+            Nl=3,
+            Nm=4,
+            nspecies=1,
+        )
+    )
+    assert g0.shape == (1, 3, 4, grid.ky.size, grid.kx.size, grid.z.size)
+    assert np.all(np.isfinite(g0))
 
 
 def test_runtime_init_all_applies_gx_moment_scaling_single_mode() -> None:

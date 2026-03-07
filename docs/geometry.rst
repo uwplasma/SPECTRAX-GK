@@ -106,7 +106,8 @@ s-alpha model into the same contract, and ``ensure_flux_tube_geometry_data``
 normalizes analytic and sampled inputs onto one solver-facing representation.
 
 The sampled geometry contract is now a JAX pytree and is accepted by the
-linear cache, nonlinear config runner, and GX-style volume-weight diagnostics.
+linear cache, runtime initial-condition builder, RHS assembly entry points,
+nonlinear config runner, and GX-style volume-weight diagnostics.
 That means upcoming VMEC or imported field-line geometry can be threaded into
 more of the codebase without rebuilding solver-specific side paths.
 
