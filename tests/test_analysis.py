@@ -9,6 +9,7 @@ from spectraxgk.analysis import (
     extract_eigenfunction,
     extract_mode_time_series,
     fit_growth_rate_auto,
+    gx_growth_rate_from_phi,
     gx_growth_rate_from_omega_series,
     select_fit_window,
 )
@@ -307,3 +308,34 @@ def test_gx_growth_rate_from_omega_series():
     )
     assert np.isclose(g_last, 0.6)
     assert np.isclose(w_last, -1.2)
+
+
+def test_gx_growth_rate_from_phi_supports_projected_branch_selection():
+    """Projected GX growth extraction should recover the dominant full-z branch."""
+
+    t = np.linspace(0.0, 15.0, 256)
+    gamma_dom = 0.2
+    omega_dom = 1.1
+    gamma_mid = 0.05
+    omega_mid = -0.3
+    dominant = np.exp((gamma_dom - 1j * omega_dom) * t)
+    midplane_branch = np.exp((gamma_mid - 1j * omega_mid) * t)
+
+    phi_t = np.zeros((t.size, 1, 1, 4), dtype=np.complex128)
+    phi_t[:, 0, 0, :] = (
+        dominant[:, None] * np.array([0.0, 1.0, 1.0, 1.0])[None, :]
+        + midplane_branch[:, None] * np.array([1.0, 0.0, 0.0, 0.0])[None, :]
+    )
+    sel = ModeSelection(ky_index=0, kx_index=0, z_index=0)
+
+    gamma_z, omega_z, _gz, _oz, _tmid = gx_growth_rate_from_phi(
+        phi_t, t, sel, navg_fraction=0.5, mode_method="z_index"
+    )
+    gamma_proj, omega_proj, _gp, _op, _tmidp = gx_growth_rate_from_phi(
+        phi_t, t, sel, navg_fraction=0.5, mode_method="project"
+    )
+
+    assert np.isclose(gamma_z, gamma_mid, rtol=5.0e-2, atol=5.0e-3)
+    assert np.isclose(omega_z, omega_mid, rtol=5.0e-2, atol=5.0e-3)
+    assert np.isclose(gamma_proj, gamma_dom, rtol=5.0e-2, atol=5.0e-3)
+    assert np.isclose(omega_proj, omega_dom, rtol=5.0e-2, atol=5.0e-3)

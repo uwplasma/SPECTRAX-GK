@@ -3,6 +3,7 @@
 import numpy as np
 import pytest
 
+import spectraxgk.benchmarks as benchmarks
 from spectraxgk.analysis import fit_growth_rate
 from spectraxgk.benchmarks import (
     compare_cyclone_to_reference,
@@ -429,6 +430,116 @@ def test_run_kbm_linear_gx_time_history():
     assert result.selection.ky_index == 0
     assert np.isfinite(result.gamma)
     assert np.isfinite(result.omega)
+
+
+def test_run_kbm_linear_gx_time_uses_requested_mode_extractor(monkeypatch):
+    """GX-time KBM runs should honor the requested post-processing extractor."""
+
+    calls: dict[str, str] = {}
+
+    def _fake_integrate(*_args, mode_method: str, **_kwargs):
+        from spectraxgk.diagnostics import GXDiagnostics
+
+        calls["integrate_mode_method"] = mode_method
+        t = np.array([0.1, 0.2, 0.3], dtype=float)
+        phi_t = np.ones((3, 1, 1, 4), dtype=np.complex64)
+        gamma_t = np.zeros((3, 1, 1), dtype=float)
+        omega_t = np.zeros((3, 1, 1), dtype=float)
+        diag = GXDiagnostics(
+            t=t,
+            dt_t=np.full(t.shape, 0.1, dtype=float),
+            dt_mean=np.asarray(0.1),
+            gamma_t=gamma_t,
+            omega_t=omega_t,
+            Wg_t=np.zeros_like(t),
+            Wphi_t=np.zeros_like(t),
+            Wapar_t=np.zeros_like(t),
+            heat_flux_t=np.zeros_like(t),
+            particle_flux_t=np.zeros_like(t),
+            energy_t=np.zeros_like(t),
+        )
+        return t, phi_t, gamma_t, omega_t, diag
+
+    def _fake_growth(phi_t, t, sel, *, navg_fraction: float, mode_method: str, use_last: bool = False):
+        del phi_t, t, sel, navg_fraction, use_last
+        calls["growth_mode_method"] = mode_method
+        return 0.25, 1.5, np.zeros(2), np.zeros(2), np.zeros(2)
+
+    monkeypatch.setattr(benchmarks, "integrate_linear_gx_diagnostics", _fake_integrate)
+    monkeypatch.setattr(benchmarks, "gx_growth_rate_from_phi", _fake_growth)
+
+    grid = GridConfig(Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2)
+    cfg = KBMBaseCase(grid=grid)
+    result = run_kbm_linear(
+        ky_target=0.3,
+        cfg=cfg,
+        Nl=2,
+        Nm=2,
+        dt=0.01,
+        steps=4,
+        solver="gx_time",
+        mode_method="project",
+    )
+
+    assert calls["integrate_mode_method"] == "z_index"
+    assert calls["growth_mode_method"] == "project"
+    assert np.isclose(result.gamma, 0.25)
+    assert np.isclose(result.omega, 1.5)
+
+
+def test_run_kbm_beta_scan_gx_time_keeps_project_mode(monkeypatch):
+    """KBM scan helpers should not downgrade project mode on the GX-time path."""
+
+    calls: list[str] = []
+
+    def _fake_integrate(*_args, mode_method: str, **_kwargs):
+        from spectraxgk.diagnostics import GXDiagnostics
+
+        calls.append(f"integrate:{mode_method}")
+        t = np.array([0.1, 0.2, 0.3], dtype=float)
+        phi_t = np.ones((3, 1, 1, 4), dtype=np.complex64)
+        gamma_t = np.zeros((3, 1, 1), dtype=float)
+        omega_t = np.zeros((3, 1, 1), dtype=float)
+        diag = GXDiagnostics(
+            t=t,
+            dt_t=np.full(t.shape, 0.1, dtype=float),
+            dt_mean=np.asarray(0.1),
+            gamma_t=gamma_t,
+            omega_t=omega_t,
+            Wg_t=np.zeros_like(t),
+            Wphi_t=np.zeros_like(t),
+            Wapar_t=np.zeros_like(t),
+            heat_flux_t=np.zeros_like(t),
+            particle_flux_t=np.zeros_like(t),
+            energy_t=np.zeros_like(t),
+        )
+        return t, phi_t, gamma_t, omega_t, diag
+
+    def _fake_growth(phi_t, t, sel, *, navg_fraction: float, mode_method: str, use_last: bool = False):
+        del phi_t, t, sel, navg_fraction, use_last
+        calls.append(f"growth:{mode_method}")
+        return 0.15, 0.9, np.zeros(2), np.zeros(2), np.zeros(2)
+
+    monkeypatch.setattr(benchmarks, "integrate_linear_gx_diagnostics", _fake_integrate)
+    monkeypatch.setattr(benchmarks, "gx_growth_rate_from_phi", _fake_growth)
+
+    grid = GridConfig(Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2)
+    cfg = KBMBaseCase(grid=grid)
+    scan = run_kbm_beta_scan(
+        np.array([cfg.model.beta]),
+        ky_target=0.3,
+        cfg=cfg,
+        Nl=2,
+        Nm=2,
+        dt=0.01,
+        steps=4,
+        solver="gx_time",
+        mode_method="project",
+    )
+
+    assert calls == ["integrate:z_index", "growth:project"]
+    assert np.isclose(scan.gamma[0], 0.15)
+    assert np.isclose(scan.omega[0], 0.9)
 
 
 def test_kbm_beta_scan_time_mode_only_phi():

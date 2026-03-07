@@ -364,6 +364,25 @@ def test_gx_growth_rate_step_validity_depends_on_current_phi_only():
     assert not np.allclose(np.asarray(gamma), 0.0)
 
 
+def test_gx_growth_rate_step_max_uses_per_step_peak():
+    """GX max-mode diagnostics should follow each step's peak-z sample."""
+
+    phi_prev = jnp.asarray([[[1.0 + 1.0j, 8.0 + 8.0j]]], dtype=jnp.complex64)
+    phi_now = jnp.asarray([[[9.0 + 9.0j, 2.0 + 2.0j]]], dtype=jnp.complex64)
+    mask = jnp.asarray([[True]])
+    gamma, omega = _gx_growth_rate_step(
+        phi_now,
+        phi_prev,
+        0.1,
+        z_index=0,
+        mask=mask,
+        mode_method="max",
+    )
+    ratio = (9.0 + 9.0j) / (8.0 + 8.0j)
+    assert np.allclose(np.asarray(gamma), np.log(np.abs(ratio)) / 0.1)
+    assert np.allclose(np.asarray(omega), -np.angle(ratio) / 0.1)
+
+
 def test_linear_gx_adaptive_default_dt_max_matches_gx():
     """When dt_max is unset, adaptive GX path should clamp to dt."""
 
