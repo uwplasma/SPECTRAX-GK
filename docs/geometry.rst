@@ -81,3 +81,26 @@ with
 
 These parameters will be extended to VMEC/DESC geometry once the linear solver
 is validated against Cyclone benchmarks.
+
+Geometry Data Contract
+----------------------
+
+The linear cache now accepts either:
+
+- the analytic ``SAlphaGeometry`` model, or
+- a sampled ``FluxTubeGeometryData`` contract.
+
+``FluxTubeGeometryData`` stores the solver-ready profiles on a specific
+``theta`` grid:
+
+- ``bmag`` and ``bgrad``,
+- ``gradpar``,
+- metric coefficients ``(gds2, gds21, gds22)``,
+- curvature / grad-B drift coefficients ``(cv, gb, cv0, gb0)``,
+- geometry metadata such as ``q``, ``s_hat``, ``R0``, and the
+  ``kperp2_bmag`` / ``bessel_bmag_power`` switches.
+
+This is the insertion point for future VMEC/DESC or GX-imported field-line
+geometry. The current helper ``sample_flux_tube_geometry`` converts the
+analytic s-alpha model into the same contract, so the solver can be hardened
+against geometry-source changes before a native VMEC path is added.

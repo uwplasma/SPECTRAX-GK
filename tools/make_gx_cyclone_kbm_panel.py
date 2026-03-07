@@ -12,6 +12,7 @@ import pandas as pd
 import jax.numpy as jnp
 from netCDF4 import Dataset
 
+from spectraxgk.analysis import extract_eigenfunction
 from spectraxgk.benchmarks import (
     KBM_OMEGA_D_SCALE,
     KBM_OMEGA_STAR_SCALE,
@@ -20,6 +21,7 @@ from spectraxgk.benchmarks import (
     _midplane_index,
     _two_species_params,
     run_cyclone_linear,
+    run_kbm_linear,
 )
 from spectraxgk.config import (
     KBMBaseCase,
@@ -121,62 +123,29 @@ def _kbm_spectrax_eigenfunction(ky_target: float) -> tuple[np.ndarray, np.ndarra
         ),
         init=InitializationConfig(init_field="all", init_amp=1.0e-10, gaussian_init=True),
     )
-    geom = SAlphaGeometry.from_config(cfg.geometry)
-    grid_full = build_spectral_grid(cfg.grid)
-    ky_index = int(np.argmin(np.abs(np.asarray(grid_full.ky) - float(ky_target))))
-    grid = select_ky_grid(grid_full, ky_index)
-    Nl = 8
-    Nm = 24
-    params = _two_species_params(
-        cfg.model,
-        kpar_scale=float(geom.gradpar()),
-        omega_d_scale=KBM_OMEGA_D_SCALE,
-        omega_star_scale=KBM_OMEGA_STAR_SCALE,
-        rho_star=KBM_RHO_STAR,
-        beta_override=0.015,
-        damp_ends_amp=0.0,
-        damp_ends_widthfrac=0.0,
-        nhermite=Nm,
-    )
-    cache = build_linear_cache(grid, geom, params, Nl=Nl, Nm=Nm)
-    G0 = np.zeros((2, Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64)
-    G0[1] = np.asarray(
-        _build_initial_condition(
-            grid,
-            geom,
-            ky_index=0,
-            kx_index=0,
-            Nl=Nl,
-            Nm=Nm,
-            init_cfg=cfg.init,
-        ),
-        dtype=np.complex64,
-    )
-    gx_cfg = GXTimeConfig(
-        t_max=8.0,
+    run = run_kbm_linear(
+        ky_target=float(ky_target),
+        cfg=cfg,
+        Nl=8,
+        Nm=24,
         dt=0.01,
+        steps=800,
+        solver="gx_time",
+        fit_signal="phi",
+        diagnostic_norm="gx",
+        gx_reference=True,
         sample_stride=2,
-        fixed_dt=False,
-        use_dealias_mask=False,
-        dt_min=1.0e-7,
-        dt_max=0.05,
-        cfl=0.9,
-        cfl_fac=1.0,
     )
-    _t, phi_t, _gamma_t, _omega_t, _diag = integrate_linear_gx_diagnostics(
-        jnp.asarray(G0),
-        grid,
-        cache,
-        params,
-        geom,
-        gx_cfg,
-        terms=LinearTerms(bpar=0.0),
-        mode_method="z_index",
-        z_index=_midplane_index(grid),
-        jit=True,
+    theta = np.asarray(build_spectral_grid(cfg.grid).z, dtype=float)
+    mode = extract_eigenfunction(
+        np.asarray(run.phi_t),
+        np.asarray(run.t, dtype=float),
+        run.selection,
+        z=theta,
+        method="svd",
+        tmin=0.6 * float(np.asarray(run.t)[-1]) if np.asarray(run.t).size > 1 else None,
+        tmax=float(np.asarray(run.t)[-1]) if np.asarray(run.t).size > 1 else None,
     )
-    theta = np.asarray(grid.z, dtype=float)
-    mode = np.asarray(phi_t[-1, 0, 0, :], dtype=np.complex128)
     return theta, _normalize_mode(theta, mode)
 
 
@@ -516,7 +485,7 @@ def main() -> int:
     for j, title in enumerate(col_titles):
         axes[0, j].set_title(title)
     fig.suptitle("SPECTRAX-GK vs GX: Cyclone and KBM comparisons (linear + nonlinear)", fontsize=14)
-    fig.tight_layout(rect=[0, 0, 1, 0.98])
+    fig.tight_layout(rect=(0.0, 0.0, 1.0, 0.98))
     args.out.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(args.out, dpi=220)
     print(f"saved {args.out}")

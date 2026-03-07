@@ -3,7 +3,7 @@
 import jax.numpy as jnp
 
 from spectraxgk.config import GeometryConfig, GridConfig
-from spectraxgk.geometry import SAlphaGeometry
+from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
 from spectraxgk.grids import build_spectral_grid
 
 
@@ -85,3 +85,26 @@ def test_geometry_tree_roundtrip():
     assert geom2.R0 == geom.R0
     assert geom2.B0 == geom.B0
     assert geom2.alpha == geom.alpha
+
+
+def test_sampled_flux_tube_geometry_matches_salpha_profiles():
+    """Sampled geometry data should preserve the analytic s-alpha profiles."""
+    geom = SAlphaGeometry(q=1.4, s_hat=0.8, epsilon=0.18, R0=2.77778, alpha=0.1)
+    theta = jnp.linspace(-jnp.pi, jnp.pi, 17)
+    sampled = sample_flux_tube_geometry(geom, theta)
+
+    assert jnp.allclose(sampled.bmag(theta), geom.bmag(theta))
+    assert jnp.allclose(sampled.bgrad(theta), geom.bgrad(theta))
+    gds2_s, gds21_s, gds22_s = sampled.metric_coeffs(theta)
+    gds2_g, gds21_g, gds22_g = geom.metric_coeffs(theta)
+    assert jnp.allclose(gds2_s, gds2_g)
+    assert jnp.allclose(gds21_s, gds21_g)
+    assert jnp.allclose(gds22_s, jnp.full_like(theta, gds22_g))
+
+    kx = jnp.array([0.0, 0.2])
+    ky = jnp.array([0.1, 0.3])
+    theta_b = theta[None, None, :]
+    assert jnp.allclose(
+        sampled.k_perp2(kx[None, :, None], ky[:, None, None], theta_b),
+        geom.k_perp2(kx[None, :, None], ky[:, None, None], theta_b),
+    )

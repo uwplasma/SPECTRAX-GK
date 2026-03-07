@@ -151,7 +151,7 @@ choices (e.g. custom ``geometry.drift_scale`` or solver selection).
 Regenerate this panel with:
 
 - ``python tools/compare_gx_linear.py --gx /path/to/itg_salpha_adiabatic_electrons.out.nc --out docs/_static/cyclone_gx_mismatch.csv``
-- ``python tools/compare_gx_kbm.py --gx /path/to/kbm_salpha.out.nc --out docs/_static/kbm_gx_mismatch.csv``
+- ``python tools/compare_gx_kbm.py --gx /path/to/kbm_salpha.out.nc --gx-big /path/to/kbm_salpha.big.nc --branch-policy fixed --solver gx_time --out docs/_static/kbm_gx_mismatch.csv``
 - ``python tools/make_gx_cyclone_kbm_panel.py --out docs/_static/gx_cyclone_kbm_panel.png``
 
 By default, ``make_gx_cyclone_kbm_panel.py`` uses:
@@ -326,15 +326,15 @@ KBM GX cross-code run
 We execute a matched-input KBM cross-code set on the GX ``ky`` grid
 (``ky rho_i = [0.1, 0.2, 0.3, 0.4, 0.5]``). Use:
 
-- ``python tools/compare_gx_kbm.py --gx /path/to/kbm_salpha.out.nc --branch-policy single --solver gx_time --out docs/_static/kbm_gx_mismatch.csv``
+- ``python tools/compare_gx_kbm.py --gx /path/to/kbm_salpha.out.nc --gx-big /path/to/kbm_salpha.big.nc --branch-policy fixed --solver gx_time --out docs/_static/kbm_gx_mismatch.csv``
 
-In comparison mode, ``solver=auto`` uses the deterministic KBM lock
-(``select_kbm_solver_auto``) so runs remain branch-stable across repeated
-regeneration.
-
-The lock was chosen from a targeted ky sweep against GX at
-``ky rho_i = 0.1, 0.3, 0.4`` with branch candidates
-``{krylov, gx_time, time}``, minimizing ``rel_gamma + rel_omega`` per point.
+The default KBM harness is now deterministic: one chosen solver is used across
+the whole ``ky`` scan, and the output table includes ``eig_overlap_gx``,
+``eig_rel_l2``, and ``eig_overlap_prev`` so branch continuity can be audited
+separately from ``gamma``/``omega`` mismatch. The legacy GX-scored
+per-point solver picker is still available through
+``--branch-policy gx-ref-auto`` for forensic studies, but it is no longer the
+default benchmark mode.
 
 KBM nonlinear term comparison (GX)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

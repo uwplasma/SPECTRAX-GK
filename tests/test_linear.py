@@ -4,7 +4,7 @@ import jax.numpy as jnp
 import pytest
 
 from spectraxgk.config import CycloneBaseCase, GridConfig, GeometryConfig
-from spectraxgk.geometry import SAlphaGeometry
+from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.linear import (
     _integrate_linear_cached,
@@ -146,6 +146,19 @@ def test_linear_cache_bessel_bmag_power_scales_b():
     expected = (1.0 / bmag)[None, None, None, :]
     mask = jnp.isfinite(ratio)
     assert jnp.allclose(ratio[mask], expected[mask], rtol=1.0e-6, atol=1.0e-8)
+
+
+def test_build_linear_cache_accepts_sampled_geometry_contract():
+    grid_cfg = GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.0, Ly=6.0)
+    grid = build_spectral_grid(grid_cfg)
+    geom = SAlphaGeometry.from_config(GeometryConfig(R0=2.77778, epsilon=0.18))
+    sampled = sample_flux_tube_geometry(geom, jnp.asarray(grid.z))
+    params = LinearParams()
+    cache_geom = build_linear_cache(grid, geom, params, Nl=2, Nm=2)
+    cache_sampled = build_linear_cache(grid, sampled, params, Nl=2, Nm=2)
+    assert jnp.allclose(cache_sampled.kperp2, cache_geom.kperp2)
+    assert jnp.allclose(cache_sampled.omega_d, cache_geom.omega_d)
+    assert jnp.allclose(cache_sampled.bmag, cache_geom.bmag)
 
 
 def test_streaming_zero_for_constant_z():

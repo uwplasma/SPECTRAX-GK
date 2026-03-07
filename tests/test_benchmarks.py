@@ -15,6 +15,7 @@ from spectraxgk.benchmarks import (
     run_cyclone_scan,
     run_etg_linear,
     run_etg_scan,
+    run_kbm_linear,
     run_kbm_beta_scan,
     run_kbm_scan,
     run_kinetic_linear,
@@ -406,6 +407,28 @@ def test_kbm_ky_scan_shapes():
     assert scan.gamma.shape == ky_values.shape
     assert np.isfinite(scan.gamma).all()
     assert np.isfinite(scan.omega).all()
+
+
+def test_run_kbm_linear_gx_time_history():
+    """Single-point KBM runs should return a usable field history."""
+    grid = GridConfig(Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2)
+    cfg = KBMBaseCase(grid=grid)
+    result = run_kbm_linear(
+        ky_target=0.3,
+        cfg=cfg,
+        Nl=4,
+        Nm=8,
+        dt=0.01,
+        steps=120,
+        solver="gx_time",
+        sample_stride=2,
+    )
+    assert result.t.ndim == 1
+    assert result.phi_t.ndim == 4
+    assert result.phi_t.shape[0] == result.t.size
+    assert result.selection.ky_index == 0
+    assert np.isfinite(result.gamma)
+    assert np.isfinite(result.omega)
 
 
 def test_kbm_beta_scan_time_mode_only_phi():

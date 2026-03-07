@@ -4,23 +4,21 @@
 from __future__ import annotations
 
 import argparse
-from dataclasses import replace
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 from netCDF4 import Dataset
 
-from spectraxgk.analysis import select_ky_index
-from spectraxgk.benchmarks import (
-    KBM_KRYLOV_DEFAULT,
-    run_kbm_scan,
-)
+from spectraxgk.analysis import extract_eigenfunction, select_ky_index
+from spectraxgk.benchmarks import run_kbm_linear
 from spectraxgk.config import KBMBaseCase, GeometryConfig, GridConfig, KineticElectronModelConfig
+from spectraxgk.grids import build_spectral_grid, select_ky_grid
 
 
 def _load_gx_omega_gamma(
     path: Path,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray, float, float | None, float | None, float | None, float | None]:
+) -> tuple[np.ndarray, np.ndarray, float, float | None, float | None, float | None, float | None]:
     root = Dataset(path, "r")
     try:
         grids = root.groups["Grids"]
@@ -52,11 +50,11 @@ def _load_gx_omega_gamma(
     q = _maybe_scalar("q")
     shat = _maybe_scalar("shat")
     eps = _maybe_scalar("eps")
-    Rmaj = _maybe_scalar("Rmaj")
+    rmaj = _maybe_scalar("Rmaj")
 
     root.close()
     mask = ky > 0.0
-    return ky[mask], omega[:, mask], beta, q, shat, eps, Rmaj
+    return ky[mask], omega[:, mask], beta, q, shat, eps, rmaj
 
 
 def _infer_y0(ky: np.ndarray) -> float:
@@ -68,18 +66,158 @@ def _infer_y0(ky: np.ndarray) -> float:
     return 1.0 / ky_min
 
 
+def _normalize_mode(theta: np.ndarray, mode: np.ndarray) -> np.ndarray:
+    finite = np.isfinite(mode)
+    if not np.any(finite):
+        return np.zeros_like(mode)
+    idx0 = int(np.argmin(np.abs(theta)))
+    ref = mode[idx0]
+    if not np.isfinite(ref) or abs(ref) < 1.0e-14:
+        idx = int(np.nanargmax(np.abs(np.where(finite, mode, 0.0))))
+        ref = mode[idx]
+    if not np.isfinite(ref) or abs(ref) < 1.0e-14:
+        scale = float(np.nanmax(np.abs(np.where(finite, mode, 0.0))))
+        return mode if scale <= 0.0 else mode / scale
+    return mode / ref
+
+
+def _load_gx_eigenfunction(path: Path, ky_target: float) -> tuple[np.ndarray, np.ndarray]:
+    root = Dataset(path, "r")
+    grids = root.groups["Grids"]
+    diag = root.groups["Diagnostics"]
+    theta = np.asarray(grids.variables["theta"][:], dtype=float)
+    ky = np.asarray(grids.variables["ky"][:], dtype=float)
+    ky_idx = int(np.argmin(np.abs(ky - float(ky_target))))
+    phi = np.asarray(diag.variables["Phi"][-1, ky_idx, 0, :, :], dtype=float)
+    root.close()
+    mode = phi[:, 0] + 1j * phi[:, 1]
+    return theta, _normalize_mode(theta, mode)
+
+
+def _mode_overlap(lhs: np.ndarray, rhs: np.ndarray) -> float:
+    denom = float(np.linalg.norm(lhs) * np.linalg.norm(rhs))
+    if denom <= 0.0:
+        return float("nan")
+    return float(np.abs(np.vdot(lhs, rhs)) / denom)
+
+
+def _mode_rel_l2(lhs: np.ndarray, rhs: np.ndarray) -> float:
+    rhs_norm = float(np.linalg.norm(rhs))
+    if rhs_norm <= 0.0:
+        return float("nan")
+    phase = np.vdot(lhs, rhs)
+    lhs_align = lhs if abs(phase) <= 1.0e-30 else lhs * np.exp(-1j * np.angle(phase))
+    return float(np.linalg.norm(lhs_align - rhs) / rhs_norm)
+
+
+def _interp_complex(x_new: np.ndarray, x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    return np.interp(x_new, x, y.real) + 1j * np.interp(x_new, x, y.imag)
+
+
+def _extract_mode(
+    result,
+    theta: np.ndarray,
+    *,
+    method: str,
+    tmin: float | None,
+    tmax: float | None,
+) -> np.ndarray:
+    phi_t = np.asarray(result.phi_t)
+    t = np.asarray(result.t, dtype=float)
+    if t.size <= 1:
+        return _normalize_mode(theta, np.asarray(phi_t[-1, 0, 0, :], dtype=np.complex128))
+    mode = extract_eigenfunction(
+        phi_t,
+        t,
+        result.selection,
+        z=theta,
+        method=method,
+        tmin=tmin,
+        tmax=tmax,
+    )
+    return _normalize_mode(theta, np.asarray(mode, dtype=np.complex128))
+
+
+def _build_cfg(
+    *,
+    beta: float,
+    q: float,
+    shat: float,
+    eps: float,
+    rmaj: float,
+    ny: int,
+    ntheta: int,
+    nperiod: int,
+    y0: float,
+) -> KBMBaseCase:
+    grid = GridConfig(
+        Nx=1,
+        Ny=ny,
+        Nz=ntheta * (2 * nperiod - 1),
+        Lx=62.8,
+        Ly=62.8,
+        y0=y0,
+        ntheta=ntheta,
+        nperiod=nperiod,
+        boundary="linked",
+    )
+    geom = GeometryConfig(
+        q=q,
+        s_hat=shat,
+        epsilon=eps,
+        R0=rmaj,
+    )
+    model = KineticElectronModelConfig(
+        R_over_LTi=2.49,
+        R_over_LTe=2.49,
+        R_over_Ln=0.8,
+        Te_over_Ti=1.0,
+        mass_ratio=3670.0,
+        nu_i=0.0,
+        nu_e=0.0,
+        beta=beta,
+    )
+    return KBMBaseCase(grid=grid, geometry=geom, model=model)
+
+
+def _run_candidate(args, cfg: KBMBaseCase, ky_value: float, beta_value: float, solver_name: str):
+    fit_signal = args.time_fit_signal if solver_name in {"time", "gx_time"} else "phi"
+    return run_kbm_linear(
+        ky_target=float(ky_value),
+        beta_value=float(beta_value),
+        Nl=args.Nl,
+        Nm=args.Nm,
+        dt=args.dt,
+        steps=args.steps,
+        method=args.method,
+        cfg=cfg,
+        solver=solver_name,
+        fit_signal=fit_signal,
+        mode_method=args.mode_method,
+        diagnostic_norm="gx",
+        gx_reference=True,
+        auto_window=not args.no_auto_window,
+        tmin=args.tmin,
+        tmax=args.tmax,
+        sample_stride=args.sample_stride,
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Compare GX KBM output against SPECTRAX-GK.")
     parser.add_argument("--gx", type=Path, required=True, help="Path to GX .out.nc file")
+    parser.add_argument(
+        "--gx-big",
+        type=Path,
+        default=Path(".cache/gx/kbm_salpha.big.nc"),
+        help="Path to GX .big.nc file for eigenfunction comparisons",
+    )
     parser.add_argument("--Nl", type=int, default=16)
     parser.add_argument("--Nm", type=int, default=48)
-    parser.add_argument("--krylov-dim", type=int, default=None)
-    parser.add_argument("--krylov-restarts", type=int, default=None)
-    parser.add_argument("--krylov-maxiter", type=int, default=None)
     parser.add_argument("--dt", type=float, default=0.01)
     parser.add_argument("--steps", type=int, default=4000)
     parser.add_argument("--method", type=str, default="rk4")
-    parser.add_argument("--solver", type=str, default="auto")
+    parser.add_argument("--solver", type=str, default="gx_time")
     parser.add_argument("--ntheta", type=int, default=32)
     parser.add_argument("--nperiod", type=int, default=2)
     parser.add_argument("--y0", type=float, default=10.0, help="Fallback y0 when ky list is truncated.")
@@ -105,19 +243,22 @@ def main() -> None:
         default="",
         help="Comma-separated ky values to compare (default: all from GX output)",
     )
-    parser.add_argument("--out", type=Path, default=None, help="Optional CSV path for mismatch table")
+    parser.add_argument("--sample-stride", type=int, default=1)
+    parser.add_argument("--tmin", type=float, default=None)
+    parser.add_argument("--tmax", type=float, default=None)
+    parser.add_argument("--no-auto-window", action="store_true")
     parser.add_argument(
         "--branch-policy",
         type=str,
-        choices=["single", "auto"],
-        default="auto",
-        help="single: use --solver for all ky; auto: test candidates and lock best solver per ky.",
+        choices=["fixed", "single", "gx-ref-auto", "auto"],
+        default="fixed",
+        help="fixed/single: use one solver for all ky; gx-ref-auto/auto: legacy GX-scored solver selection.",
     )
     parser.add_argument(
         "--branch-solvers",
         type=str,
-        default="krylov,time,gx_time",
-        help="Comma-separated candidate solvers used when --branch-policy=auto.",
+        default="gx_time,krylov,time",
+        help="Comma-separated candidate solvers used when --branch-policy=gx-ref-auto.",
     )
     parser.add_argument(
         "--time-fit-signal",
@@ -126,11 +267,26 @@ def main() -> None:
         choices=["auto", "phi", "density"],
         help="Fit signal used for time/gx_time candidate runs.",
     )
+    parser.add_argument(
+        "--mode-method",
+        type=str,
+        default="z_index",
+        choices=["z_index", "max", "project"],
+        help="Mode-extraction method for time-domain fallback fits.",
+    )
+    parser.add_argument(
+        "--eigen-method",
+        type=str,
+        default="svd",
+        choices=["svd", "snapshot"],
+        help="Method used to extract SPECTRAX eigenfunctions from time histories.",
+    )
+    parser.add_argument("--eigen-tmin", type=float, default=None)
+    parser.add_argument("--eigen-tmax", type=float, default=None)
+    parser.add_argument("--out", type=Path, default=None, help="Optional CSV path for mismatch table")
     args = parser.parse_args()
 
-    gx_ky, gx_omega_series, beta, q_gx, shat_gx, eps_gx, Rmaj_gx = _load_gx_omega_gamma(
-        args.gx
-    )
+    gx_ky, gx_omega_series, beta, q_gx, shat_gx, eps_gx, rmaj_gx = _load_gx_omega_gamma(args.gx)
     nky_full = int(len(gx_ky))
     if nky_full < 2:
         raise ValueError("GX output must contain at least two positive ky points.")
@@ -153,131 +309,115 @@ def main() -> None:
     gx_avg = np.mean(gx_omega_series[start:, :, :], axis=0)
     gx_omega = gx_avg[:, 0]
     gx_gamma = gx_avg[:, 1]
-    grid = GridConfig(
-        Nx=1,
-        Ny=ny,
-        Nz=args.ntheta * (2 * args.nperiod - 1),
-        Lx=62.8,
-        Ly=62.8,
-        y0=y0,
+
+    cfg = _build_cfg(
+        beta=beta,
+        q=float(q_gx if q_gx is not None else args.q),
+        shat=float(shat_gx if shat_gx is not None else args.shat),
+        eps=float(eps_gx if eps_gx is not None else args.eps),
+        rmaj=float(rmaj_gx if rmaj_gx is not None else args.Rmaj),
+        ny=ny,
         ntheta=args.ntheta,
         nperiod=args.nperiod,
-        boundary="linked",
+        y0=y0,
     )
-    geom = GeometryConfig(
-        q=float(q_gx if q_gx is not None else args.q),
-        s_hat=float(shat_gx if shat_gx is not None else args.shat),
-        epsilon=float(eps_gx if eps_gx is not None else args.eps),
-        R0=float(Rmaj_gx if Rmaj_gx is not None else args.Rmaj),
-    )
-    model = KineticElectronModelConfig(
-        R_over_LTi=2.49,
-        R_over_LTe=2.49,
-        R_over_Ln=0.8,
-        Te_over_Ti=1.0,
-        mass_ratio=3670.0,
-        nu_i=0.0,
-        nu_e=0.0,
-        beta=beta,
-    )
-    cfg = KBMBaseCase(grid=grid, geometry=geom, model=model)
 
-    krylov_cfg = KBM_KRYLOV_DEFAULT
-    if args.krylov_dim is not None:
-        krylov_cfg = replace(krylov_cfg, krylov_dim=int(args.krylov_dim))
-    if args.krylov_restarts is not None:
-        krylov_cfg = replace(krylov_cfg, restarts=int(args.krylov_restarts))
-    if args.krylov_maxiter is not None:
-        krylov_cfg = replace(krylov_cfg, shift_maxiter=int(args.krylov_maxiter))
-
-    sp_gamma: list[float] = []
-    sp_omega: list[float] = []
-    solver_used: list[str] = []
-
+    grid_full = build_spectral_grid(cfg.grid)
+    use_legacy_auto = args.branch_policy in {"gx-ref-auto", "auto"}
     branch_candidates = [s.strip() for s in args.branch_solvers.split(",") if s.strip()]
-    if args.branch_policy == "auto" and not branch_candidates:
+    if use_legacy_auto and not branch_candidates:
         raise ValueError("No candidate solvers parsed from --branch-solvers")
 
-    def _run_candidate(beta_value: float, ky_value: float, solver_name: str) -> tuple[float, float]:
-        fit_signal = args.time_fit_signal if solver_name in {"time", "gx_time"} else "phi"
-        scan = run_kbm_scan(
-            ky_values=np.array([ky_value]),
-            beta_value=float(beta_value),
-            Nl=args.Nl,
-            Nm=args.Nm,
-            dt=args.dt,
-            steps=args.steps,
-            method=args.method,
-            cfg=cfg,
-            solver=solver_name,
-            krylov_cfg=krylov_cfg,
-            fit_signal=fit_signal,
-            diagnostic_norm="gx",
-            gx_reference=True,
+    rows: list[dict[str, float | str]] = []
+    prev_mode: np.ndarray | None = None
+    for i, ky_val in enumerate(gx_ky):
+        if use_legacy_auto:
+            best_row = None
+            best_obj = np.inf
+            for solver_name in branch_candidates:
+                result = _run_candidate(args, cfg, float(ky_val), beta, solver_name)
+                rel_g = abs(float(result.gamma) - float(gx_gamma[i])) / max(abs(float(gx_gamma[i])), 1.0e-12)
+                rel_o = abs(float(result.omega) - float(gx_omega[i])) / max(abs(float(gx_omega[i])), 1.0e-12)
+                obj = rel_g + rel_o
+                if obj < best_obj:
+                    best_obj = obj
+                    best_row = (solver_name, result)
+            if best_row is None:
+                raise RuntimeError(f"No valid solver candidate for ky={float(ky_val):.4f}")
+            solver_used, result = best_row
+        else:
+            solver_used = args.solver
+            result = _run_candidate(args, cfg, float(ky_val), beta, solver_used)
+
+        ky_idx = select_ky_index(np.asarray(grid_full.ky), float(ky_val))
+        grid = select_ky_grid(grid_full, ky_idx)
+        theta = np.asarray(grid.z, dtype=float)
+        if args.eigen_tmin is not None or args.eigen_tmax is not None:
+            eig_tmin = args.eigen_tmin
+            eig_tmax = args.eigen_tmax
+        elif np.asarray(result.t).size > 1:
+            eig_tmin = float(np.asarray(result.t)[-1]) * 0.6
+            eig_tmax = float(np.asarray(result.t)[-1])
+        else:
+            eig_tmin = None
+            eig_tmax = None
+        mode_sp = _extract_mode(
+            result,
+            theta,
+            method=args.eigen_method,
+            tmin=eig_tmin,
+            tmax=eig_tmax,
         )
-        return float(scan.gamma[0]), float(scan.omega[0])
+        if args.gx_big.exists():
+            theta_gx, mode_gx = _load_gx_eigenfunction(args.gx_big, float(ky_val))
+            if theta_gx.shape != theta.shape or not np.allclose(theta_gx, theta, atol=1.0e-6, rtol=1.0e-6):
+                mode_gx = _normalize_mode(theta, _interp_complex(theta, theta_gx, mode_gx))
+            eig_overlap = _mode_overlap(mode_sp, mode_gx)
+            eig_rel_l2 = _mode_rel_l2(mode_sp, mode_gx)
+        else:
+            eig_overlap = float("nan")
+            eig_rel_l2 = float("nan")
+        prev_overlap = float("nan") if prev_mode is None else _mode_overlap(mode_sp, prev_mode)
+        prev_mode = mode_sp
 
-    for ky_val in gx_ky:
-        if args.branch_policy == "single":
-            g_val, o_val = _run_candidate(beta, float(ky_val), args.solver)
-            sp_gamma.append(g_val)
-            sp_omega.append(o_val)
-            solver_used.append(args.solver)
-            continue
+        fit_window_tmin = float("nan")
+        fit_window_tmax = float("nan")
+        t_series = np.asarray(result.t, dtype=float)
+        if t_series.size > 1 and solver_used == "gx_time":
+            fit_window_tmin = float(t_series[-1]) * (1.0 - float(args.gx_avg_fraction))
+            fit_window_tmax = float(t_series[-1])
+        elif args.tmin is not None and args.tmax is not None:
+            fit_window_tmin = float(args.tmin)
+            fit_window_tmax = float(args.tmax)
 
-        # Auto branch selection against GX reference for this ky.
-        gx_idx = int(np.argmin(np.abs(gx_ky - ky_val)))
-        g_ref = float(gx_gamma[gx_idx])
-        o_ref = float(gx_omega[gx_idx])
-        best_obj = np.inf
-        best_gamma = np.nan
-        best_omega = np.nan
-        best_solver = "none"
-        for solver_name in branch_candidates:
-            try:
-                g_val, o_val = _run_candidate(beta, float(ky_val), solver_name)
-            except Exception:
-                continue
-            if not np.isfinite(g_val) or not np.isfinite(o_val):
-                continue
-            rel_g = abs(g_val - g_ref) / max(abs(g_ref), 1.0e-12)
-            rel_o = abs(o_val - o_ref) / max(abs(o_ref), 1.0e-12)
-            obj = rel_g + rel_o
-            if obj < best_obj:
-                best_obj = obj
-                best_gamma = g_val
-                best_omega = o_val
-                best_solver = solver_name
-        sp_gamma.append(best_gamma)
-        sp_omega.append(best_omega)
-        solver_used.append(best_solver)
+        row = {
+            "ky": float(ky_val),
+            "solver": solver_used,
+            "gamma_gx": float(gx_gamma[i]),
+            "gamma": float(result.gamma),
+            "rel_gamma": abs(float(result.gamma) - float(gx_gamma[i])) / max(abs(float(gx_gamma[i])), 1.0e-12),
+            "omega_gx": float(gx_omega[i]),
+            "omega": float(result.omega),
+            "rel_omega": abs(float(result.omega) - float(gx_omega[i])) / max(abs(float(gx_omega[i])), 1.0e-12),
+            "eig_overlap_gx": eig_overlap,
+            "eig_rel_l2": eig_rel_l2,
+            "eig_overlap_prev": prev_overlap,
+            "fit_window_tmin": fit_window_tmin,
+            "fit_window_tmax": fit_window_tmax,
+        }
+        rows.append(row)
 
-    sp_gamma_arr = np.asarray(sp_gamma)
-    sp_omega_arr = np.asarray(sp_omega)
-    rel_gamma = np.abs(sp_gamma_arr - gx_gamma) / np.maximum(np.abs(gx_gamma), 1.0e-12)
-    rel_omega = np.abs(sp_omega_arr - gx_omega) / np.maximum(np.abs(gx_omega), 1.0e-12)
-
-    print("ky    solver      gx_gamma   sp_gamma   rel_gamma    gx_omega   sp_omega   rel_omega")
-    for ky, sv, gg, sg, rg, go, so, ro in zip(
-        gx_ky, solver_used, gx_gamma, sp_gamma_arr, rel_gamma, gx_omega, sp_omega_arr, rel_omega
-    ):
-        print(f"{ky:5.3f} {sv:10s} {gg:9.5f} {sg:9.5f} {rg:9.3f} {go:9.5f} {so:9.5f} {ro:9.3f}")
+    table = pd.DataFrame(rows)
+    print(
+        "ky    solver      gx_gamma   sp_gamma   rel_gamma    gx_omega   sp_omega   rel_omega   eig_ovlp   eig_rel"
+    )
+    for entry in table.itertuples(index=False):
+        print(
+            f"{entry.ky:5.3f} {entry.solver:10s} {entry.gamma_gx:9.5f} {entry.gamma:9.5f} {entry.rel_gamma:9.3f} "
+            f"{entry.omega_gx:9.5f} {entry.omega:9.5f} {entry.rel_omega:9.3f} {entry.eig_overlap_gx:9.3f} {entry.eig_rel_l2:9.3f}"
+        )
 
     if args.out is not None:
-        import pandas as pd
-
-        table = pd.DataFrame(
-            {
-                "ky": gx_ky,
-                "solver": solver_used,
-                "gamma_gx": gx_gamma,
-                "gamma": sp_gamma_arr,
-                "rel_gamma": rel_gamma,
-                "omega_gx": gx_omega,
-                "omega": sp_omega_arr,
-                "rel_omega": rel_omega,
-            }
-        )
         table.to_csv(args.out, index=False)
 
 
