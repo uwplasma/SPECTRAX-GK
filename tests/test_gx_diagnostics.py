@@ -2,6 +2,7 @@ import numpy as np
 
 import jax.numpy as jnp
 from dataclasses import replace
+import pytest
 
 from spectraxgk.benchmarks import CycloneBaseCase, _build_initial_condition
 from spectraxgk.config import InitializationConfig
@@ -25,6 +26,7 @@ from spectraxgk.analysis import select_ky_index
 from spectraxgk.linear import build_linear_cache, LinearParams, LinearTerms
 from spectraxgk.gx_integrators import (
     GXTimeConfig,
+    _gx_linear_omega_max,
     _gx_growth_rate_step,
     integrate_linear_gx_diagnostics,
 )
@@ -409,3 +411,22 @@ def test_linear_gx_adaptive_default_dt_max_matches_gx():
     dt_t = np.asarray(diag.dt_t, dtype=float)
     assert dt_t.size > 0
     assert np.nanmax(dt_t) <= float(time_cfg.dt) + 1.0e-12
+
+
+def test_gx_linear_omega_max_preserves_selected_ky_mode():
+    cfg = CycloneBaseCase()
+    grid_full = build_spectral_grid(cfg.grid)
+    ky_index = select_ky_index(np.asarray(grid_full.ky), 0.2)
+    grid = select_ky_grid(grid_full, ky_index)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams(
+        R_over_Ln=cfg.model.R_over_Ln,
+        R_over_LTi=cfg.model.R_over_LTi,
+        R_over_LTe=cfg.model.R_over_LTe,
+        kpar_scale=float(geom.gradpar()),
+        nu=cfg.model.nu_i,
+    )
+
+    omega_sel = _gx_linear_omega_max(grid, geom, params, 4, 4)
+
+    assert omega_sel[1] > 0.0

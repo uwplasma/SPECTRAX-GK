@@ -118,3 +118,12 @@ layout directly into ``FluxTubeGeometryData``. That is the intended short path
 to the GX W7-X examples: import the sampled field-line geometry first, prove
 solver/diagnostic parity on that contract, and only then add a native VMEC path
 that generates the same contract inside SPECTRAX-GK.
+
+Runtime and CLI paths can now construct that bridge directly from config with
+``geometry.model = "gx-netcdf"`` and
+``geometry.geometry_file = "/path/to/geometry.nc"``. Analytic s-alpha remains
+the default with ``geometry.model = "s-alpha"``.
+
+Imported geometry currently bypasses analytic twist-shift reconstruction and
+uses the provided grid as-is. That keeps the GX-import bridge honest while the
+native VMEC path is still being generalized.

@@ -437,6 +437,56 @@ def test_runtime_initial_condition_accepts_sampled_geometry_contract() -> None:
     assert np.all(np.isfinite(g0))
 
 
+def test_runtime_linear_accepts_gx_netcdf_geometry(tmp_path) -> None:
+    netcdf4 = pytest.importorskip("netCDF4")
+    Dataset = netcdf4.Dataset
+
+    cfg = replace(
+        _base_runtime_cfg(),
+        species=(RuntimeSpeciesConfig(name="ion"),),
+        normalization=RuntimeNormalizationConfig(contract="cyclone", diagnostic_norm="none"),
+        physics=RuntimePhysicsConfig(adiabatic_electrons=True, tau_e=1.0),
+    )
+    grid = build_spectral_grid(cfg.grid)
+    theta = np.asarray(grid.z, dtype=float)
+    path = tmp_path / "geom.out.nc"
+    with Dataset(path, "w") as root:
+        root.createDimension("theta", theta.size)
+        grids = root.createGroup("Grids")
+        geom = root.createGroup("Geometry")
+        grids.createVariable("theta", "f8", ("theta",))[:] = theta
+        analytic = SAlphaGeometry.from_config(cfg.geometry)
+        sampled = sample_flux_tube_geometry(analytic, grid.z)
+        for name, values in {
+            "bmag": np.asarray(sampled.bmag_profile),
+            "bgrad": np.asarray(sampled.bgrad_profile),
+            "gds2": np.asarray(sampled.gds2_profile),
+            "gds21": np.asarray(sampled.gds21_profile),
+            "gds22": np.asarray(sampled.gds22_profile),
+            "cvdrift": np.asarray(sampled.cv_profile),
+            "gbdrift": np.asarray(sampled.gb_profile),
+            "cvdrift0": np.asarray(sampled.cv0_profile),
+            "gbdrift0": np.asarray(sampled.gb0_profile),
+            "jacobian": np.asarray(sampled.jacobian_profile),
+            "grho": np.asarray(sampled.grho_profile),
+        }.items():
+            geom.createVariable(name, "f8", ("theta",))[:] = values
+        for name, value in {
+            "gradpar": sampled.gradpar_value,
+            "q": sampled.q,
+            "shat": sampled.s_hat,
+            "rmaj": sampled.R0,
+            "aminor": sampled.epsilon * sampled.R0,
+        }.items():
+            geom.createVariable(name, "f8", ())[:] = value
+
+    cfg_nc = replace(cfg, geometry=replace(cfg.geometry, model="gx-netcdf", geometry_file=str(path)))
+    out = run_runtime_linear(cfg_nc, ky_target=0.2, Nl=4, Nm=6, solver="krylov")
+
+    assert np.isfinite(out.gamma)
+    assert np.isfinite(out.omega)
+
+
 def test_runtime_init_all_applies_gx_moment_scaling_single_mode() -> None:
     cfg = replace(
         _base_runtime_cfg(),

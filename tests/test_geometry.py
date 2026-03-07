@@ -8,6 +8,7 @@ import pytest
 from spectraxgk.config import GeometryConfig, GridConfig
 from spectraxgk.geometry import (
     SAlphaGeometry,
+    build_flux_tube_geometry,
     ensure_flux_tube_geometry_data,
     load_gx_geometry_netcdf,
     sample_flux_tube_geometry,
@@ -33,6 +34,14 @@ def test_geometry_from_config():
     assert geom.q == 1.7
     assert geom.R0 == 3.0
     assert geom.alpha == 0.1
+
+
+def test_build_flux_tube_geometry_analytic_from_config():
+    cfg = GeometryConfig(q=1.7, s_hat=0.9, epsilon=0.2, R0=3.0, B0=2.0, alpha=0.1)
+    geom = build_flux_tube_geometry(cfg)
+
+    assert isinstance(geom, SAlphaGeometry)
+    assert geom.q == 1.7
 
 
 def test_bmag_and_omega_d_shapes():
@@ -196,3 +205,39 @@ def test_load_gx_geometry_netcdf_reads_sampled_contract(tmp_path):
     assert loaded.theta_scale == pytest.approx(2.0)
     assert loaded.nfp == 5
     assert loaded.epsilon == pytest.approx(0.2)
+
+
+def test_build_flux_tube_geometry_loads_gx_netcdf(tmp_path):
+    netcdf4 = pytest.importorskip("netCDF4")
+    Dataset = netcdf4.Dataset
+
+    path = tmp_path / "geom.out.nc"
+    theta = np.linspace(-np.pi, np.pi, 5)
+    with Dataset(path, "w") as root:
+        root.createDimension("theta", theta.size)
+        grids = root.createGroup("Grids")
+        geom = root.createGroup("Geometry")
+        grids.createVariable("theta", "f8", ("theta",))[:] = theta
+        for name in (
+            "bmag",
+            "bgrad",
+            "gds2",
+            "gds21",
+            "gds22",
+            "cvdrift",
+            "gbdrift",
+            "cvdrift0",
+            "gbdrift0",
+            "jacobian",
+            "grho",
+        ):
+            geom.createVariable(name, "f8", ("theta",))[:] = np.ones(theta.size)
+        geom.createVariable("gradpar", "f8", ())[:] = 0.4
+        geom.createVariable("q", "f8", ())[:] = 1.7
+        geom.createVariable("shat", "f8", ())[:] = 0.6
+        geom.createVariable("rmaj", "f8", ())[:] = 5.0
+        geom.createVariable("aminor", "f8", ())[:] = 1.0
+
+    loaded = build_flux_tube_geometry(GeometryConfig(model="gx-netcdf", geometry_file=str(path)))
+
+    assert loaded.source_model == "gx-netcdf"
