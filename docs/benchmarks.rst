@@ -159,8 +159,10 @@ By default, ``make_gx_cyclone_kbm_panel.py`` uses:
 - Cyclone nonlinear diagnostics from the GX-matched runtime config
   (same RK family/CFL controls as GX, and no manual ``flux_scale`` or
   ``wphi_scale`` override in the config).
-- Cyclone and KBM long nonlinear windows (``t=400`` for Cyclone,
-  ``t=100`` for KBM) to expose long-time heat-flux dynamics.
+- Cyclone and KBM long nonlinear windows (``t=400`` for both cases). The KBM
+  panel uses the full transport horizon while capping nonlinear ``gamma`` and
+  ``omega`` to the earlier startup window where those single-mode diagnostics
+  remain interpretable.
 - A GX-style time-integrated SPECTRAX KBM eigenfunction (not a standalone
   Krylov vector) so the plotted mode is selected the same way as GX.
 
@@ -487,14 +489,15 @@ two-window acceptance pattern:
   for near-zero flux channels.
 
 With the corrected runtime config and full-spectrum real-FFT bookkeeping, the
-matched ``t=100`` KBM run now passes both windows against GX. The current
-end-to-end mean relative errors over the full ``t=100`` trace are approximately
+matched ``t=100`` KBM run passes both the strict startup window and the
+relaxed late-time pointwise window against GX. The current end-to-end mean
+relative errors over the full ``t=100`` trace are approximately
 ``Wg=6.54e-3``, ``Wphi=6.54e-3``, ``Wapar=6.54e-3``,
 ``heat_flux=6.53e-3``, ``particle_flux=6.54e-3``,
 ``gamma=7.13e-3``, and ``omega=1.85e-4``. An exact-state restart from the GX
 RK4 stage-0 dump at ``t≈5`` also matches the GX continuation through
-``t=20`` at roughly ``8e-4`` relative error, confirming that the long-horizon
-solver path is now aligned.
+``t=20`` at roughly ``8e-4`` relative error, confirming that the matched
+nonlinear solver path is aligned before the turbulence decorrelates.
 
 .. figure:: _static/nonlinear_kbm_diag_compare_t100_relaxed.png
    :align: center
@@ -503,6 +506,31 @@ solver path is now aligned.
    Nonlinear KBM long-horizon diagnostics (GX vs SPECTRAX-GK), now passing the
    strict early-time and relaxed late-time tolerance windows on the matched
    ``t=100`` run.
+
+For the extended ``t=400`` KBM run we no longer use pointwise late-time
+interpolation as the primary acceptance metric. Once the saturated turbulence
+decorrelates, the physically relevant parity target is the late-window
+statistics on each code's native time grid:
+
+- strict startup gate from a dense GX reference run (``t <= 0.2``), and
+- late-window statistical gate from the long GX run (``t >= 20``),
+  comparing window means and standard deviations of ``Wg``, ``Wphi``,
+  ``Wapar``, heat flux, and particle flux.
+
+Using that two-reference workflow, the current ``KBM t=400`` run passes both
+windows. The startup mismatch stays at about ``1e-5`` relative error in
+``Wg``, heat flux, and particle flux when compared against the dense
+``t=0.20`` GX file, while the long-window statistical mismatch against the
+``t=400`` GX trace is about ``5.6%`` for ``Wg``, ``4.9%`` for heat flux, and
+``5.9%`` for particle flux (max of mean/std relative error over ``t >= 20``).
+
+.. figure:: _static/nonlinear_kbm_diag_compare_t400_stats.png
+   :align: center
+   :alt: KBM nonlinear diagnostics comparison to t_max=400 with startup and late-statistics checks
+
+   Nonlinear KBM extended comparison to ``t=400``. Startup parity is checked
+   against the dense short GX reference, while the late saturated regime is
+   assessed by native-grid window statistics instead of pointwise interpolation.
 
 Reduced ky scan tables
 ----------------------

@@ -19,7 +19,7 @@ from spectraxgk.diagnostics import (
     gx_volume_factors,
 )
 from spectraxgk.gyroaverage import gamma0
-from spectraxgk.geometry import SAlphaGeometry
+from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
 from spectraxgk.grids import build_spectral_grid, select_ky_grid
 from spectraxgk.analysis import select_ky_index
 from spectraxgk.linear import build_linear_cache, LinearParams, LinearTerms
@@ -85,6 +85,17 @@ def test_gx_energy_components_finite():
     assert np.isfinite(np.asarray(pflux))
     assert np.isfinite(np.asarray(energy))
     assert energy == Wg + Wphi + Wapar
+
+
+def test_gx_volume_factors_accept_sampled_geometry_contract():
+    _cfg, grid, geom, _params, _cache = _small_setup()
+    sampled = sample_flux_tube_geometry(geom, grid.z)
+
+    vol_ref, flux_ref = gx_volume_factors(geom, grid)
+    vol_s, flux_s = gx_volume_factors(sampled, grid)
+
+    assert np.allclose(np.asarray(vol_s), np.asarray(vol_ref))
+    assert np.allclose(np.asarray(flux_s), np.asarray(flux_ref))
 
 
 def test_gx_standard_field_energies_match_geometry_weighted_formula():

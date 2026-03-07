@@ -138,6 +138,21 @@ def _interp(target_t: np.ndarray, source_t: np.ndarray, source_y: np.ndarray) ->
     return np.interp(target_t, source_t, source_y)
 
 
+def _window_mask(
+    t: np.ndarray,
+    y: np.ndarray,
+    *,
+    tmin: float | None = None,
+    tmax: float | None = None,
+) -> np.ndarray:
+    mask = np.isfinite(y)
+    if tmin is not None:
+        mask = mask & (t >= float(tmin))
+    if tmax is not None:
+        mask = mask & (t <= float(tmax))
+    return mask
+
+
 def _relative_error(a: np.ndarray, b: np.ndarray, *, eps_rel: float = 1.0e-8) -> float:
     mask = np.isfinite(a) & np.isfinite(b)
     if not np.any(mask):
@@ -209,15 +224,63 @@ def _window_mean(t: np.ndarray, y: np.ndarray, frac: float) -> float:
     if t.size == 0:
         return float("nan")
     t_min = t.min() + (1.0 - frac) * (t.max() - t.min())
-    mask = (t >= t_min) & np.isfinite(y)
+    mask = _window_mask(t, y, tmin=t_min)
     if not np.any(mask):
         return float("nan")
     return float(np.nanmean(y[mask]))
 
 
+def _window_stats(
+    t: np.ndarray,
+    y: np.ndarray,
+    *,
+    tmin: float | None = None,
+    tmax: float | None = None,
+) -> dict[str, float]:
+    mask = _window_mask(t, y, tmin=tmin, tmax=tmax)
+    if not np.any(mask):
+        return {"mean": float("nan"), "std": float("nan"), "rms": float("nan")}
+    values = np.asarray(y[mask], dtype=float)
+    return {
+        "mean": float(np.nanmean(values)),
+        "std": float(np.nanstd(values)),
+        "rms": float(np.sqrt(np.nanmean(values**2))),
+    }
+
+
+def _scalar_relative_error(a: float, b: float, *, eps_rel: float = 1.0e-8) -> float:
+    if not np.isfinite(a) or not np.isfinite(b):
+        return float("nan")
+    scale = max(abs(a), abs(b), 1.0)
+    denom = max(abs(b), eps_rel * scale, 1.0e-30)
+    return float(abs(a - b) / denom)
+
+
+def _stats_relative_errors(
+    sp_t: np.ndarray,
+    sp_y: np.ndarray,
+    gx_t: np.ndarray,
+    gx_y: np.ndarray,
+    *,
+    tmin: float | None = None,
+    tmax: float | None = None,
+) -> tuple[dict[str, float], dict[str, float], dict[str, float]]:
+    sp_stats = _window_stats(sp_t, sp_y, tmin=tmin, tmax=tmax)
+    gx_stats = _window_stats(gx_t, gx_y, tmin=tmin, tmax=tmax)
+    rel = {name: _scalar_relative_error(sp_stats[name], gx_stats[name]) for name in ("mean", "std", "rms")}
+    abs_err = {name: float(abs(sp_stats[name] - gx_stats[name])) for name in ("mean", "std", "rms")}
+    return sp_stats, gx_stats, {"rel_mean": rel["mean"], "rel_std": rel["std"], "rel_rms": rel["rms"], "abs_mean": abs_err["mean"], "abs_std": abs_err["std"], "abs_rms": abs_err["rms"]}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--gx", type=Path, required=True, help="GX .out.nc file")
+    parser.add_argument(
+        "--gx-early",
+        type=Path,
+        default=None,
+        help="Optional dense GX .out.nc file used only for early-time checks.",
+    )
     parser.add_argument("--spectrax", type=Path, required=True, help="SPECTRAX diagnostics CSV")
     parser.add_argument("--out", type=Path, default=Path("docs/_static/nonlinear_cyclone_compare.png"))
     parser.add_argument(
@@ -239,6 +302,12 @@ def main() -> int:
         default=1.0,
         help="Late-time window start used for relaxed nonlinear checks.",
     )
+    parser.add_argument(
+        "--late-mode",
+        choices=["pointwise", "stats"],
+        default="pointwise",
+        help="Use pointwise interpolation or native-grid window statistics for late-time checks.",
+    )
     parser.add_argument("--rtol-early-Wg", type=float, default=0.05)
     parser.add_argument("--rtol-early-heat", type=float, default=0.2)
     parser.add_argument("--rtol-early-pflux", type=float, default=0.3)
@@ -254,13 +323,18 @@ def main() -> int:
     args = parser.parse_args()
 
     gx = _load_gx(args.gx, ky_target=args.ky)
+    gx_early = _load_gx(args.gx_early, ky_target=args.ky) if args.gx_early is not None else gx
     sp = _load_spectrax(args.spectrax)
     t = sp["t"]
 
     gx_interp = {key: _interp(t, gx["t"], gx[key]) for key in ["Wg", "Wphi", "Wapar", "heat", "pflux"]}
+    gx_early_interp = {key: _interp(t, gx_early["t"], gx_early[key]) for key in ["Wg", "Wphi", "Wapar", "heat", "pflux"]}
     if "gamma" in gx and "omega" in gx:
         gx_interp["gamma"] = _interp(t, gx["t"], gx["gamma"])
         gx_interp["omega"] = _interp(t, gx["t"], gx["omega"])
+    if "gamma" in gx_early and "omega" in gx_early:
+        gx_early_interp["gamma"] = _interp(t, gx_early["t"], gx_early["gamma"])
+        gx_early_interp["omega"] = _interp(t, gx_early["t"], gx_early["omega"])
 
     print(f"Wg rel error: {_relative_error(sp['Wg'], gx_interp['Wg']):.3e}")
     print(f"Wg abs error: {_absolute_error(sp['Wg'], gx_interp['Wg']):.3e}")
@@ -277,13 +351,15 @@ def main() -> int:
         print(f"Gamma abs error: {_absolute_error(sp['gamma'], gx_interp['gamma']):.3e}")
         print(f"Omega rel error: {_relative_error(sp['omega'], gx_interp['omega']):.3e}")
         print(f"Omega abs error: {_absolute_error(sp['omega'], gx_interp['omega']):.3e}")
+    if args.late_mode == "stats":
+        print("Note: full-trace relative errors above are pointwise interpolation metrics; long-horizon acceptance uses the late-window native-grid statistics below.")
     if 0.0 < args.avg_fraction <= 1.0:
-        wg_sp = _window_mean(t, sp["Wg"], args.avg_fraction)
-        wg_gx = _window_mean(t, gx_interp["Wg"], args.avg_fraction)
-        wphi_sp = _window_mean(t, sp["Wphi"], args.avg_fraction)
-        wphi_gx = _window_mean(t, gx_interp["Wphi"], args.avg_fraction)
-        q_sp = _window_mean(t, sp["heat"], args.avg_fraction)
-        q_gx = _window_mean(t, gx_interp["heat"], args.avg_fraction)
+        wg_sp = _window_mean(sp["t"], sp["Wg"], args.avg_fraction)
+        wg_gx = _window_mean(gx["t"], gx["Wg"], args.avg_fraction)
+        wphi_sp = _window_mean(sp["t"], sp["Wphi"], args.avg_fraction)
+        wphi_gx = _window_mean(gx["t"], gx["Wphi"], args.avg_fraction)
+        q_sp = _window_mean(sp["t"], sp["heat"], args.avg_fraction)
+        q_gx = _window_mean(gx["t"], gx["heat"], args.avg_fraction)
         print(f"Late-time mean Wg: SPECTRAX={wg_sp:.3e}, GX={wg_gx:.3e}")
         print(f"Late-time mean Wphi: SPECTRAX={wphi_sp:.3e}, GX={wphi_gx:.3e}")
         print(f"Late-time mean Q: SPECTRAX={q_sp:.3e}, GX={q_gx:.3e}")
@@ -296,25 +372,49 @@ def main() -> int:
             print(f"Particle flux s{i} rel error: {_relative_error(sp['pflux_s'][:, i], gx_pflux_s[:, i]):.3e}")
 
     early = {
-        "Wg": _relative_error_window(t, sp["Wg"], gx_interp["Wg"], tmax=args.early_tmax),
-        "heat": _relative_error_window(t, sp["heat"], gx_interp["heat"], tmax=args.early_tmax),
-        "pflux": _relative_error_window(t, sp["pflux"], gx_interp["pflux"], tmax=args.early_tmax),
+        "Wg": _relative_error_window(t, sp["Wg"], gx_early_interp["Wg"], tmax=args.early_tmax),
+        "heat": _relative_error_window(t, sp["heat"], gx_early_interp["heat"], tmax=args.early_tmax),
+        "pflux": _relative_error_window(t, sp["pflux"], gx_early_interp["pflux"], tmax=args.early_tmax),
     }
     early_abs = {
-        "Wg": _absolute_error_window(t, sp["Wg"], gx_interp["Wg"], tmax=args.early_tmax),
-        "heat": _absolute_error_window(t, sp["heat"], gx_interp["heat"], tmax=args.early_tmax),
-        "pflux": _absolute_error_window(t, sp["pflux"], gx_interp["pflux"], tmax=args.early_tmax),
+        "Wg": _absolute_error_window(t, sp["Wg"], gx_early_interp["Wg"], tmax=args.early_tmax),
+        "heat": _absolute_error_window(t, sp["heat"], gx_early_interp["heat"], tmax=args.early_tmax),
+        "pflux": _absolute_error_window(t, sp["pflux"], gx_early_interp["pflux"], tmax=args.early_tmax),
     }
-    late = {
-        "Wg": _relative_error_window(t, sp["Wg"], gx_interp["Wg"], tmin=args.late_tmin),
-        "heat": _relative_error_window(t, sp["heat"], gx_interp["heat"], tmin=args.late_tmin),
-        "pflux": _relative_error_window(t, sp["pflux"], gx_interp["pflux"], tmin=args.late_tmin),
-    }
-    late_abs = {
-        "Wg": _absolute_error_window(t, sp["Wg"], gx_interp["Wg"], tmin=args.late_tmin),
-        "heat": _absolute_error_window(t, sp["heat"], gx_interp["heat"], tmin=args.late_tmin),
-        "pflux": _absolute_error_window(t, sp["pflux"], gx_interp["pflux"], tmin=args.late_tmin),
-    }
+    if args.late_mode == "pointwise":
+        late = {
+            "Wg": _relative_error_window(t, sp["Wg"], gx_interp["Wg"], tmin=args.late_tmin),
+            "heat": _relative_error_window(t, sp["heat"], gx_interp["heat"], tmin=args.late_tmin),
+            "pflux": _relative_error_window(t, sp["pflux"], gx_interp["pflux"], tmin=args.late_tmin),
+        }
+        late_abs = {
+            "Wg": _absolute_error_window(t, sp["Wg"], gx_interp["Wg"], tmin=args.late_tmin),
+            "heat": _absolute_error_window(t, sp["heat"], gx_interp["heat"], tmin=args.late_tmin),
+            "pflux": _absolute_error_window(t, sp["pflux"], gx_interp["pflux"], tmin=args.late_tmin),
+        }
+    else:
+        late_stats = {
+            field: _stats_relative_errors(sp["t"], sp[field], gx["t"], gx[field], tmin=args.late_tmin)
+            for field in ["Wg", "Wphi", "Wapar", "heat", "pflux"]
+        }
+        for field, (sp_stats, gx_stats, errs) in late_stats.items():
+            print(
+                "Late-window stats "
+                f"{field} (t>= {args.late_tmin:g}): "
+                f"mean SPECTRAX={sp_stats['mean']:.3e} GX={gx_stats['mean']:.3e} rel={errs['rel_mean']:.3e}; "
+                f"std SPECTRAX={sp_stats['std']:.3e} GX={gx_stats['std']:.3e} rel={errs['rel_std']:.3e}; "
+                f"rms SPECTRAX={sp_stats['rms']:.3e} GX={gx_stats['rms']:.3e} rel={errs['rel_rms']:.3e}"
+            )
+        late = {
+            "Wg": max(late_stats["Wg"][2]["rel_mean"], late_stats["Wg"][2]["rel_std"]),
+            "heat": max(late_stats["heat"][2]["rel_mean"], late_stats["heat"][2]["rel_std"]),
+            "pflux": max(late_stats["pflux"][2]["rel_mean"], late_stats["pflux"][2]["rel_std"]),
+        }
+        late_abs = {
+            "Wg": max(late_stats["Wg"][2]["abs_mean"], late_stats["Wg"][2]["abs_std"]),
+            "heat": max(late_stats["heat"][2]["abs_mean"], late_stats["heat"][2]["abs_std"]),
+            "pflux": max(late_stats["pflux"][2]["abs_mean"], late_stats["pflux"][2]["abs_std"]),
+        }
     print(
         "Early-window relative errors "
         f"(t<= {args.early_tmax:g}): "
@@ -325,13 +425,15 @@ def main() -> int:
         f"(t<= {args.early_tmax:g}): "
         f"Wg={early_abs['Wg']:.3e}, heat={early_abs['heat']:.3e}, pflux={early_abs['pflux']:.3e}"
     )
+    late_label = "Late-window relative errors" if args.late_mode == "pointwise" else "Late-window summary relative errors"
+    late_abs_label = "Late-window absolute errors" if args.late_mode == "pointwise" else "Late-window summary absolute errors"
     print(
-        "Late-window relative errors "
+        f"{late_label} "
         f"(t>= {args.late_tmin:g}): "
         f"Wg={late['Wg']:.3e}, heat={late['heat']:.3e}, pflux={late['pflux']:.3e}"
     )
     print(
-        "Late-window absolute errors "
+        f"{late_abs_label} "
         f"(t>= {args.late_tmin:g}): "
         f"Wg={late_abs['Wg']:.3e}, heat={late_abs['heat']:.3e}, pflux={late_abs['pflux']:.3e}"
     )

@@ -101,6 +101,11 @@ The linear cache now accepts either:
   ``kperp2_bmag`` / ``bessel_bmag_power`` switches.
 
 This is the insertion point for future VMEC/DESC or GX-imported field-line
-geometry. The current helper ``sample_flux_tube_geometry`` converts the
-analytic s-alpha model into the same contract, so the solver can be hardened
-against geometry-source changes before a native VMEC path is added.
+geometry. The helper ``sample_flux_tube_geometry`` converts the analytic
+s-alpha model into the same contract, and ``ensure_flux_tube_geometry_data``
+normalizes analytic and sampled inputs onto one solver-facing representation.
+
+The sampled geometry contract is now a JAX pytree and is accepted by the
+linear cache, nonlinear config runner, and GX-style volume-weight diagnostics.
+That means upcoming VMEC or imported field-line geometry can be threaded into
+more of the codebase without rebuilding solver-specific side paths.

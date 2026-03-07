@@ -1,9 +1,10 @@
 """Geometry helper tests."""
 
+import jax
 import jax.numpy as jnp
 
 from spectraxgk.config import GeometryConfig, GridConfig
-from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
+from spectraxgk.geometry import SAlphaGeometry, ensure_flux_tube_geometry_data, sample_flux_tube_geometry
 from spectraxgk.grids import build_spectral_grid
 
 
@@ -108,3 +109,31 @@ def test_sampled_flux_tube_geometry_matches_salpha_profiles():
         sampled.k_perp2(kx[None, :, None], ky[:, None, None], theta_b),
         geom.k_perp2(kx[None, :, None], ky[:, None, None], theta_b),
     )
+
+
+def test_sampled_flux_tube_geometry_tree_roundtrip():
+    """Sampled geometry should behave as a pytree for JAX transforms."""
+
+    geom = SAlphaGeometry(q=1.8, s_hat=0.6, epsilon=0.14, R0=2.4, alpha=0.2)
+    theta = jnp.linspace(-jnp.pi, jnp.pi, 9)
+    sampled = sample_flux_tube_geometry(geom, theta)
+
+    leaves, treedef = jax.tree_util.tree_flatten(sampled)
+    restored = jax.tree_util.tree_unflatten(treedef, leaves)
+
+    assert restored.source_model == sampled.source_model
+    assert jnp.allclose(restored.theta, sampled.theta)
+    assert jnp.allclose(restored.bmag_profile, sampled.bmag_profile)
+    assert jnp.allclose(restored.cv_profile, sampled.cv_profile)
+
+
+def test_ensure_flux_tube_geometry_data_reuses_sampled_input():
+    """The geometry contract helper should preserve pre-sampled geometry objects."""
+
+    geom = SAlphaGeometry(q=1.7, s_hat=0.9, epsilon=0.1)
+    theta = jnp.linspace(-jnp.pi, jnp.pi, 13)
+    sampled = sample_flux_tube_geometry(geom, theta)
+
+    ensured = ensure_flux_tube_geometry_data(sampled, theta)
+
+    assert ensured is sampled

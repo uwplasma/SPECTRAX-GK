@@ -48,3 +48,25 @@ def test_compare_gx_nonlinear_loads_restart_csv(tmp_path: Path) -> None:
     assert np.allclose(loaded["Wapar"], data[:, 5])
     assert np.allclose(loaded["heat"], data[:, 6])
     assert np.allclose(loaded["pflux"], data[:, 7])
+
+
+def test_compare_gx_nonlinear_late_stats_handle_decorrelated_saturated_traces() -> None:
+    tools_dir = Path(__file__).resolve().parents[1] / "tools"
+    sys.path.insert(0, str(tools_dir))
+    try:
+        import compare_gx_nonlinear as mod
+    finally:
+        sys.path.remove(str(tools_dir))
+
+    t_sp = np.linspace(0.0, 400.0, 3201)
+    t_gx = np.linspace(0.0, 400.0, 801)
+    phase = 0.9
+    sp = 20.0 + 3.0 * np.sin(0.35 * t_sp)
+    gx = 20.0 + 3.0 * np.sin(0.35 * t_gx + phase)
+
+    pointwise = mod._relative_error_window(t_sp, sp, mod._interp(t_sp, t_gx, gx), tmin=20.0)
+    _, _, stats = mod._stats_relative_errors(t_sp, sp, t_gx, gx, tmin=20.0)
+
+    assert pointwise > 0.05
+    assert stats["rel_mean"] < 1.0e-3
+    assert stats["rel_std"] < 1.0e-2
