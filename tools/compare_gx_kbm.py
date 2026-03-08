@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import replace
 from pathlib import Path
 
 import numpy as np
@@ -11,7 +12,7 @@ import pandas as pd
 from netCDF4 import Dataset
 
 from spectraxgk.analysis import extract_eigenfunction, select_ky_index
-from spectraxgk.benchmarks import run_kbm_linear
+from spectraxgk.benchmarks import KBM_KRYLOV_DEFAULT, run_kbm_linear
 from spectraxgk.config import KBMBaseCase, GeometryConfig, GridConfig, KineticElectronModelConfig
 from spectraxgk.grids import build_spectral_grid, select_ky_grid
 
@@ -243,8 +244,34 @@ def _build_cfg(
     return KBMBaseCase(grid=grid, geometry=geom, model=model)
 
 
-def _run_candidate(args, cfg: KBMBaseCase, ky_value: float, beta_value: float, solver_name: str):
+def _run_candidate(
+    args,
+    cfg: KBMBaseCase,
+    ky_value: float,
+    beta_value: float,
+    solver_name: str,
+    *,
+    gx_gamma: float | None = None,
+    gx_omega: float | None = None,
+):
     fit_signal = args.time_fit_signal if solver_name in {"time", "gx_time"} else "phi"
+    krylov_cfg = None
+    if (
+        solver_name == "krylov"
+        and bool(getattr(args, "krylov_gx_shift", False))
+        and gx_gamma is not None
+        and gx_omega is not None
+        and np.isfinite(gx_gamma)
+        and np.isfinite(gx_omega)
+    ):
+        krylov_cfg = replace(
+            KBM_KRYLOV_DEFAULT,
+            shift=complex(float(gx_gamma), -float(gx_omega)),
+            shift_source="target",
+            shift_selection="shift",
+            omega_sign=0,
+            omega_target_factor=0.0,
+        )
     return run_kbm_linear(
         ky_target=float(ky_value),
         beta_value=float(beta_value),
@@ -255,6 +282,7 @@ def _run_candidate(args, cfg: KBMBaseCase, ky_value: float, beta_value: float, s
         method=args.method,
         cfg=cfg,
         solver=solver_name,
+        krylov_cfg=krylov_cfg,
         fit_signal=fit_signal,
         mode_method=args.mode_method,
         diagnostic_norm="gx",
@@ -333,6 +361,11 @@ def main() -> None:
     parser.add_argument("--branch-overlap-gx-weight", type=float, default=1.0)
     parser.add_argument("--branch-overlap-prev-weight", type=float, default=2.0)
     parser.add_argument(
+        "--krylov-gx-shift",
+        action="store_true",
+        help="When evaluating a Krylov candidate, use the GX reference eigenvalue as the shift target.",
+    )
+    parser.add_argument(
         "--time-fit-signal",
         type=str,
         default="auto",
@@ -409,7 +442,15 @@ def main() -> None:
             best_row = None
             best_obj = np.inf
             for solver_name in branch_candidates:
-                result = _run_candidate(args, cfg, float(ky_val), beta, solver_name)
+                result = _run_candidate(
+                    args,
+                    cfg,
+                    float(ky_val),
+                    beta,
+                    solver_name,
+                    gx_gamma=float(gx_gamma[i]),
+                    gx_omega=float(gx_omega[i]),
+                )
                 rel_g = abs(float(result.gamma) - float(gx_gamma[i])) / max(abs(float(gx_gamma[i])), 1.0e-12)
                 rel_o = abs(float(result.omega) - float(gx_omega[i])) / max(abs(float(gx_omega[i])), 1.0e-12)
                 obj = rel_g + rel_o
@@ -423,7 +464,15 @@ def main() -> None:
             best_candidate = None
             best_obj = np.inf
             for solver_name in branch_candidates:
-                result_c = _run_candidate(args, cfg, float(ky_val), beta, solver_name)
+                result_c = _run_candidate(
+                    args,
+                    cfg,
+                    float(ky_val),
+                    beta,
+                    solver_name,
+                    gx_gamma=float(gx_gamma[i]),
+                    gx_omega=float(gx_omega[i]),
+                )
                 _theta, mode_c, eig_overlap_c, eig_rel_l2_c, prev_overlap_c = _mode_metrics(
                     result_c,
                     grid_full=grid_full,
@@ -455,7 +504,15 @@ def main() -> None:
             branch_score = float(best_obj)
         else:
             solver_used = args.solver
-            result = _run_candidate(args, cfg, float(ky_val), beta, solver_used)
+            result = _run_candidate(
+                args,
+                cfg,
+                float(ky_val),
+                beta,
+                solver_used,
+                gx_gamma=float(gx_gamma[i]),
+                gx_omega=float(gx_omega[i]),
+            )
 
         if not use_continuation:
             _theta, mode_sp, eig_overlap, eig_rel_l2, prev_overlap = _mode_metrics(

@@ -340,7 +340,9 @@ default benchmark mode. When a fixed-solver scan still jumps between nearby
 KBM branches, ``--branch-policy continuation`` scores the candidate solvers by
 ``gamma``/``omega`` mismatch together with GX overlap and previous-``ky`` mode
 continuity, making the branch choice explicit instead of silently changing the
-physics extraction rule point-by-point.
+physics extraction rule point-by-point. For branch-isolation studies with the
+Krylov solver, ``--krylov-gx-shift`` additionally seeds shift-invert with the
+GX reference eigenvalue so the harness can ask for the same branch explicitly.
 
 KBM nonlinear term comparison (GX)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
