@@ -109,6 +109,7 @@ def main() -> None:
         damp_ends_widthfrac=1.0 / 8.0,
     )
     params = _apply_gx_hypercollisions(params, nhermite=args.Nm)
+    params = replace(params, damp_ends_amp=float(params.damp_ends_amp) / float(args.dt))
     cache = build_linear_cache(grid, geom, params, args.Nl, args.Nm)
     G0 = _build_initial_condition(
         grid, geom, ky_index=0, kx_index=0, Nl=args.Nl, Nm=args.Nm, init_cfg=cfg.init

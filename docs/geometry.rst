@@ -133,6 +133,13 @@ The linear KBM benchmark entry point now uses the same geometry builder, so
 the GX parity harness can exercise imported sampled geometry through
 ``run_kbm_linear`` instead of only through the runtime wrappers.
 
+With the corrected GX-time damping contract, that imported-geometry bridge now
+also reproduces the corrected GX W7-X linear ITG ``t=2`` reference on the same
+sampled field line. The tracked short-window scan in
+``docs/_static/w7x_linear_t2_scan.csv`` shows mean absolute ``omega`` errors of
+about ``7e-6`` to ``9e-6`` and mean relative ``gamma`` errors of about
+``0.4%`` to ``4.2%`` across ``ky = 0.1, 0.2, 0.3, 0.4``.
+
 Imported geometry currently bypasses analytic twist-shift reconstruction and
 uses the provided grid as-is. That keeps the GX-import bridge honest while the
 native VMEC path is still being generalized.

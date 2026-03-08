@@ -79,3 +79,14 @@ KBM beta scan
 .. code-block:: bash
 
    python examples/kbm_beta_scan.py
+
+W7-X imported geometry parity
+-----------------------------
+
+.. code-block:: bash
+
+   python tools/compare_gx_imported_linear.py \
+     --gx /path/to/itg_w7x_adiabatic_electrons.out.nc \
+     --geometry-file /path/to/itg_w7x_adiabatic_electrons.eik.nc \
+     --ky 0.1 0.2 0.3 0.4 \
+     --out docs/_static/w7x_linear_t2_scan.csv

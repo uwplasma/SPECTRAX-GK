@@ -229,6 +229,33 @@ Low-ky points converge slowly in time; even with ``t_max=80`` the ``ky=0.05``
 frequency remains elevated relative to the reference. Further convergence may
 require longer windows or higher velocity resolution.
 
+W7-X imported GX geometry (linear ITG)
+--------------------------------------
+
+SPECTRAX-GK can now run linear GX-time diagnostics directly on GX/VMEC
+``*.eik.nc`` field-line geometry. The current short-window parity anchor uses
+the GX W7-X adiabatic-electron ITG example with the imported geometry file
+``itg_w7x_adiabatic_electrons.eik.nc`` and the corrected GX ``t=2`` output.
+
+Regenerate the tracked mismatch table with:
+
+- ``python tools/compare_gx_imported_linear.py --gx /path/to/itg_w7x_adiabatic_electrons.out.nc --geometry-file /path/to/itg_w7x_adiabatic_electrons.eik.nc --ky 0.1 0.2 0.3 0.4 --out docs/_static/w7x_linear_t2_scan.csv``
+
+The comparison tool reads the sampled geometry and the GX output time grid,
+infers the real-FFT ``ky`` layout from the GX file, converts the GX end-damping
+input into the solver-side RHS coefficient, and reports per-``ky`` mismatch in
+``omega``, ``gamma``, and GX-style field-energy diagnostics.
+
+.. csv-table:: W7-X imported-geometry mismatch table (GX ``t=2``)
+   :file: _static/w7x_linear_t2_scan.csv
+   :header-rows: 1
+
+The low-``ky`` W7-X branch is close to marginal, so the tracked table records
+both absolute and floor-regularized relative ``gamma`` errors. For
+``ky = 0.2`` to ``0.4``, the current imported-geometry parity is within about
+``4.3e-5`` mean relative error in ``omega`` and about ``0.4%`` to ``1.0%`` in
+``gamma`` over the sampled GX time grid.
+
 ETG (GS2/Stella Cross-Code)
 ---------------------------
 
