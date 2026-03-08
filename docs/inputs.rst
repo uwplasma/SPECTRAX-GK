@@ -139,7 +139,10 @@ It also accepts ``model = "gx-netcdf"`` with
 ``geometry_file = "/path/to/gx_geometry.nc"`` to run from imported sampled
 field-line geometry instead of the analytic ``s-alpha`` model. The imported
 file can be a GX output ``*.out.nc`` or a root-level GX ``*.eik.nc`` geometry
-file produced by the VMEC workflow.
+file produced by the VMEC workflow. When that imported geometry is used with a
+linked boundary, SPECTRAX-GK now follows the file's own ``theta`` range,
+``jtwist/x0`` geometry factor, and ``kxfac`` metadata instead of forcing the
+analytic s-alpha grid defaults.
 
 Solver and fit-signal keys
 --------------------------

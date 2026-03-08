@@ -444,7 +444,7 @@ def test_run_kbm_linear_accepts_gx_netcdf_geometry(tmp_path: Path):
     Dataset = netcdf4.Dataset
 
     grid = GridConfig(Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2)
-    theta = np.asarray(build_spectral_grid(grid).z, dtype=float)
+    theta = np.linspace(-3.0 * np.pi, 3.0 * np.pi, grid.Nz + 1)
     geom_path = tmp_path / "kbm_geom.out.nc"
     with Dataset(geom_path, "w") as root:
         root.createDimension("theta", theta.size)

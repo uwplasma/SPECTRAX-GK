@@ -8,8 +8,10 @@ import pytest
 from spectraxgk.config import GeometryConfig, GridConfig
 from spectraxgk.geometry import (
     SAlphaGeometry,
+    apply_gx_geometry_grid_defaults,
     build_flux_tube_geometry,
     ensure_flux_tube_geometry_data,
+    gx_twist_shift_params,
     load_gx_geometry_netcdf,
     sample_flux_tube_geometry,
 )
@@ -155,6 +157,22 @@ def test_ensure_flux_tube_geometry_data_reuses_sampled_input():
     assert ensured is sampled
 
 
+def test_ensure_flux_tube_geometry_data_trims_closed_theta_interval():
+    """Imported GX geometry should drop the terminal theta point for solver grids."""
+
+    geom = SAlphaGeometry(q=1.7, s_hat=0.9, epsilon=0.1)
+    theta_closed = jnp.linspace(-jnp.pi, jnp.pi, 17)
+    theta_solver = theta_closed[:-1]
+    sampled = sample_flux_tube_geometry(geom, theta_closed)
+
+    ensured = ensure_flux_tube_geometry_data(sampled, theta_solver)
+
+    assert ensured is not sampled
+    assert ensured.theta.shape == theta_solver.shape
+    assert jnp.allclose(ensured.theta, theta_solver)
+    assert jnp.allclose(ensured.bmag_profile, sampled.bmag_profile[:-1])
+
+
 def test_load_gx_geometry_netcdf_reads_sampled_contract(tmp_path):
     """GX-style NetCDF geometry output should map into the sampled contract."""
 
@@ -285,3 +303,41 @@ def test_build_flux_tube_geometry_loads_gx_netcdf(tmp_path):
     loaded = build_flux_tube_geometry(GeometryConfig(model="gx-netcdf", geometry_file=str(path)))
 
     assert loaded.source_model == "gx-netcdf"
+
+
+def test_apply_gx_geometry_grid_defaults_uses_imported_theta_and_kxfac(tmp_path):
+    netcdf4 = pytest.importorskip("netCDF4")
+    Dataset = netcdf4.Dataset
+
+    path = tmp_path / "geom.eik.nc"
+    theta = np.linspace(-3.0 * np.pi, 3.0 * np.pi, 9)
+    with Dataset(path, "w") as root:
+        root.createDimension("z", theta.size)
+        root.createVariable("theta", "f8", ("z",))[:] = theta
+        root.createVariable("bmag", "f8", ("z",))[:] = np.ones(theta.size)
+        root.createVariable("gds2", "f8", ("z",))[:] = np.ones(theta.size)
+        root.createVariable("gds21", "f8", ("z",))[:] = np.ones(theta.size)
+        root.createVariable("gds22", "f8", ("z",))[:] = np.full(theta.size, 0.5)
+        root.createVariable("cvdrift", "f8", ("z",))[:] = np.zeros(theta.size)
+        root.createVariable("gbdrift", "f8", ("z",))[:] = np.zeros(theta.size)
+        root.createVariable("cvdrift0", "f8", ("z",))[:] = np.zeros(theta.size)
+        root.createVariable("gbdrift0", "f8", ("z",))[:] = np.zeros(theta.size)
+        root.createVariable("jacob", "f8", ("z",))[:] = np.ones(theta.size)
+        root.createVariable("grho", "f8", ("z",))[:] = np.ones(theta.size)
+        root.createVariable("gradpar", "f8", ("z",))[:] = np.full(theta.size, 0.4)
+        root.createVariable("q", "f8", ())[:] = 1.7
+        root.createVariable("shat", "f8", ())[:] = 0.5
+        root.createVariable("Rmaj", "f8", ())[:] = 5.0
+        root.createVariable("kxfac", "f8", ())[:] = 1.7
+
+    geom = load_gx_geometry_netcdf(path)
+    grid = GridConfig(Nx=4, Ny=4, Nz=16, Lx=6.28, Ly=6.28, boundary="linked", y0=10.0)
+    adjusted = apply_gx_geometry_grid_defaults(geom, grid)
+    jtwist, x0 = gx_twist_shift_params(geom, adjusted)
+
+    assert adjusted.Nz == theta.size - 1
+    assert adjusted.z_min == pytest.approx(theta[0])
+    assert adjusted.z_max == pytest.approx(theta[-1])
+    assert adjusted.kxfac == pytest.approx(1.7)
+    assert adjusted.jtwist == jtwist
+    assert adjusted.Lx == pytest.approx(2.0 * np.pi * x0)

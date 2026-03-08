@@ -497,11 +497,10 @@ def test_runtime_linear_accepts_root_level_gx_eik_geometry(tmp_path) -> None:
         normalization=RuntimeNormalizationConfig(contract="cyclone", diagnostic_norm="none"),
         physics=RuntimePhysicsConfig(adiabatic_electrons=True, tau_e=1.0),
     )
-    grid = build_spectral_grid(cfg.grid)
-    theta = np.asarray(grid.z, dtype=float)
+    theta = np.linspace(-3.0 * np.pi, 3.0 * np.pi, cfg.grid.Nz + 1)
     path = tmp_path / "geom.eik.nc"
     analytic = SAlphaGeometry.from_config(cfg.geometry)
-    sampled = sample_flux_tube_geometry(analytic, grid.z)
+    sampled = sample_flux_tube_geometry(analytic, theta)
     with Dataset(path, "w") as root:
         root.createDimension("z", theta.size)
         root.createVariable("theta", "f8", ("z",))[:] = theta
@@ -526,6 +525,50 @@ def test_runtime_linear_accepts_root_level_gx_eik_geometry(tmp_path) -> None:
 
     cfg_nc = replace(cfg, geometry=replace(cfg.geometry, model="gx-netcdf", geometry_file=str(path)))
     out = run_runtime_linear(cfg_nc, ky_target=0.2, Nl=4, Nm=6, solver="krylov")
+
+    assert np.isfinite(out.gamma)
+    assert np.isfinite(out.omega)
+
+
+def test_runtime_linear_gx_time_accepts_root_level_gx_eik_geometry(tmp_path) -> None:
+    netcdf4 = pytest.importorskip("netCDF4")
+    Dataset = netcdf4.Dataset
+
+    cfg = replace(
+        _base_runtime_cfg(),
+        species=(RuntimeSpeciesConfig(name="ion"),),
+        normalization=RuntimeNormalizationConfig(contract="cyclone", diagnostic_norm="none"),
+        physics=RuntimePhysicsConfig(adiabatic_electrons=True, tau_e=1.0),
+        time=replace(_base_runtime_cfg().time, dt=0.02, t_max=0.08, sample_stride=1),
+    )
+    theta = np.linspace(-3.0 * np.pi, 3.0 * np.pi, cfg.grid.Nz + 1)
+    path = tmp_path / "geom.eik.nc"
+    analytic = SAlphaGeometry.from_config(cfg.geometry)
+    sampled = sample_flux_tube_geometry(analytic, theta)
+    with Dataset(path, "w") as root:
+        root.createDimension("z", theta.size)
+        root.createVariable("theta", "f8", ("z",))[:] = theta
+        root.createVariable("bmag", "f8", ("z",))[:] = np.asarray(sampled.bmag_profile)
+        root.createVariable("gds2", "f8", ("z",))[:] = np.asarray(sampled.gds2_profile)
+        root.createVariable("gds21", "f8", ("z",))[:] = np.asarray(sampled.gds21_profile)
+        root.createVariable("gds22", "f8", ("z",))[:] = np.asarray(sampled.gds22_profile)
+        root.createVariable("cvdrift", "f8", ("z",))[:] = np.asarray(sampled.cv_profile)
+        root.createVariable("gbdrift", "f8", ("z",))[:] = np.asarray(sampled.gb_profile)
+        root.createVariable("cvdrift0", "f8", ("z",))[:] = np.asarray(sampled.cv0_profile)
+        root.createVariable("gbdrift0", "f8", ("z",))[:] = np.asarray(sampled.gb0_profile)
+        root.createVariable("jacob", "f8", ("z",))[:] = np.asarray(sampled.jacobian_profile)
+        root.createVariable("grho", "f8", ("z",))[:] = np.asarray(sampled.grho_profile)
+        root.createVariable("gradpar", "f8", ("z",))[:] = np.full(theta.size, sampled.gradpar_value)
+        root.createVariable("q", "f8", ())[:] = sampled.q
+        root.createVariable("shat", "f8", ())[:] = sampled.s_hat
+        root.createVariable("Rmaj", "f8", ())[:] = sampled.R0
+        root.createVariable("kxfac", "f8", ())[:] = sampled.kxfac
+        root.createVariable("scale", "f8", ())[:] = sampled.theta_scale
+        root.createVariable("nfp", "f8", ())[:] = sampled.nfp
+        root.createVariable("alpha", "f8", ())[:] = sampled.alpha
+
+    cfg_nc = replace(cfg, geometry=replace(cfg.geometry, model="gx-netcdf", geometry_file=str(path)))
+    out = run_runtime_linear(cfg_nc, ky_target=0.2, Nl=4, Nm=6, solver="gx_time")
 
     assert np.isfinite(out.gamma)
     assert np.isfinite(out.omega)
