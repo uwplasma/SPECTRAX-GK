@@ -30,3 +30,35 @@ def test_compare_gx_kbm_checkpoints_partial_rows(tmp_path: Path) -> None:
     second = pd.read_csv(out)
     assert list(second["ky"]) == [0.2, 0.3]
     assert list(second["gamma"]) == [1.0, 2.0]
+
+
+def test_compare_gx_kbm_continuation_score_prefers_overlap() -> None:
+    tools_dir = Path(__file__).resolve().parents[1] / "tools"
+    sys.path.insert(0, str(tools_dir))
+    try:
+        import compare_gx_kbm as mod
+    finally:
+        sys.path.remove(str(tools_dir))
+
+    smooth = mod._candidate_objective(
+        rel_gamma=0.10,
+        rel_omega=0.10,
+        eig_overlap_gx=0.80,
+        eig_overlap_prev=0.95,
+        gamma_weight=1.0,
+        omega_weight=1.0,
+        gx_overlap_weight=1.0,
+        prev_overlap_weight=2.0,
+    )
+    jump = mod._candidate_objective(
+        rel_gamma=0.08,
+        rel_omega=0.08,
+        eig_overlap_gx=0.82,
+        eig_overlap_prev=0.20,
+        gamma_weight=1.0,
+        omega_weight=1.0,
+        gx_overlap_weight=1.0,
+        prev_overlap_weight=2.0,
+    )
+
+    assert smooth < jump

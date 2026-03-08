@@ -114,6 +114,25 @@ def _interp_complex(x_new: np.ndarray, x: np.ndarray, y: np.ndarray) -> np.ndarr
     return np.interp(x_new, x, y.real) + 1j * np.interp(x_new, x, y.imag)
 
 
+def _candidate_objective(
+    *,
+    rel_gamma: float,
+    rel_omega: float,
+    eig_overlap_gx: float,
+    eig_overlap_prev: float,
+    gamma_weight: float,
+    omega_weight: float,
+    gx_overlap_weight: float,
+    prev_overlap_weight: float,
+) -> float:
+    obj = gamma_weight * rel_gamma + omega_weight * rel_omega
+    if np.isfinite(eig_overlap_gx):
+        obj += gx_overlap_weight * (1.0 - eig_overlap_gx)
+    if np.isfinite(eig_overlap_prev):
+        obj += prev_overlap_weight * (1.0 - eig_overlap_prev)
+    return float(obj)
+
+
 def _extract_mode(
     result,
     theta: np.ndarray,
@@ -136,6 +155,50 @@ def _extract_mode(
         tmax=tmax,
     )
     return _normalize_mode(theta, np.asarray(mode, dtype=np.complex128))
+
+
+def _mode_metrics(
+    result,
+    *,
+    grid_full,
+    ky_value: float,
+    gx_big: Path,
+    eigen_method: str,
+    eigen_tmin: float | None,
+    eigen_tmax: float | None,
+    prev_mode: np.ndarray | None,
+) -> tuple[np.ndarray, np.ndarray, float, float, float]:
+    ky_idx = select_ky_index(np.asarray(grid_full.ky), float(ky_value))
+    grid = select_ky_grid(grid_full, ky_idx)
+    theta = np.asarray(grid.z, dtype=float)
+    if eigen_tmin is not None or eigen_tmax is not None:
+        eig_tmin = eigen_tmin
+        eig_tmax = eigen_tmax
+    elif np.asarray(result.t).size > 1:
+        eig_tmin = float(np.asarray(result.t)[-1]) * 0.6
+        eig_tmax = float(np.asarray(result.t)[-1])
+    else:
+        eig_tmin = None
+        eig_tmax = None
+
+    mode_sp = _extract_mode(
+        result,
+        theta,
+        method=eigen_method,
+        tmin=eig_tmin,
+        tmax=eig_tmax,
+    )
+    if gx_big.exists():
+        theta_gx, mode_gx = _load_gx_eigenfunction(gx_big, float(ky_value))
+        if theta_gx.shape != theta.shape or not np.allclose(theta_gx, theta, atol=1.0e-6, rtol=1.0e-6):
+            mode_gx = _normalize_mode(theta, _interp_complex(theta, theta_gx, mode_gx))
+        eig_overlap = _mode_overlap(mode_sp, mode_gx)
+        eig_rel_l2 = _mode_rel_l2(mode_sp, mode_gx)
+    else:
+        eig_overlap = float("nan")
+        eig_rel_l2 = float("nan")
+    prev_overlap = float("nan") if prev_mode is None else _mode_overlap(mode_sp, prev_mode)
+    return theta, mode_sp, eig_overlap, eig_rel_l2, prev_overlap
 
 
 def _build_cfg(
@@ -255,9 +318,9 @@ def main() -> None:
     parser.add_argument(
         "--branch-policy",
         type=str,
-        choices=["fixed", "single", "gx-ref-auto", "auto"],
+        choices=["fixed", "single", "gx-ref-auto", "auto", "continuation"],
         default="fixed",
-        help="fixed/single: use one solver for all ky; gx-ref-auto/auto: legacy GX-scored solver selection.",
+        help="fixed/single: use one solver for all ky; gx-ref-auto/auto: legacy GX-scored solver selection; continuation: choose the most continuous candidate branch across ky.",
     )
     parser.add_argument(
         "--branch-solvers",
@@ -265,6 +328,10 @@ def main() -> None:
         default="gx_time,krylov,time",
         help="Comma-separated candidate solvers used when --branch-policy=gx-ref-auto.",
     )
+    parser.add_argument("--branch-gamma-weight", type=float, default=1.0)
+    parser.add_argument("--branch-omega-weight", type=float, default=1.0)
+    parser.add_argument("--branch-overlap-gx-weight", type=float, default=1.0)
+    parser.add_argument("--branch-overlap-prev-weight", type=float, default=2.0)
     parser.add_argument(
         "--time-fit-signal",
         type=str,
@@ -329,13 +396,15 @@ def main() -> None:
 
     grid_full = build_spectral_grid(cfg.grid)
     use_legacy_auto = args.branch_policy in {"gx-ref-auto", "auto"}
+    use_continuation = args.branch_policy == "continuation"
     branch_candidates = [s.strip() for s in args.branch_solvers.split(",") if s.strip()]
-    if use_legacy_auto and not branch_candidates:
+    if (use_legacy_auto or use_continuation) and not branch_candidates:
         raise ValueError("No candidate solvers parsed from --branch-solvers")
 
     rows: list[dict[str, float | str]] = []
     prev_mode: np.ndarray | None = None
     for i, ky_val in enumerate(gx_ky):
+        branch_score = float("nan")
         if use_legacy_auto:
             best_row = None
             best_obj = np.inf
@@ -350,39 +419,55 @@ def main() -> None:
             if best_row is None:
                 raise RuntimeError(f"No valid solver candidate for ky={float(ky_val):.4f}")
             solver_used, result = best_row
+        elif use_continuation:
+            best_candidate = None
+            best_obj = np.inf
+            for solver_name in branch_candidates:
+                result_c = _run_candidate(args, cfg, float(ky_val), beta, solver_name)
+                _theta, mode_c, eig_overlap_c, eig_rel_l2_c, prev_overlap_c = _mode_metrics(
+                    result_c,
+                    grid_full=grid_full,
+                    ky_value=float(ky_val),
+                    gx_big=args.gx_big,
+                    eigen_method=args.eigen_method,
+                    eigen_tmin=args.eigen_tmin,
+                    eigen_tmax=args.eigen_tmax,
+                    prev_mode=prev_mode,
+                )
+                rel_g = abs(float(result_c.gamma) - float(gx_gamma[i])) / max(abs(float(gx_gamma[i])), 1.0e-12)
+                rel_o = abs(float(result_c.omega) - float(gx_omega[i])) / max(abs(float(gx_omega[i])), 1.0e-12)
+                obj = _candidate_objective(
+                    rel_gamma=rel_g,
+                    rel_omega=rel_o,
+                    eig_overlap_gx=eig_overlap_c,
+                    eig_overlap_prev=prev_overlap_c,
+                    gamma_weight=float(args.branch_gamma_weight),
+                    omega_weight=float(args.branch_omega_weight),
+                    gx_overlap_weight=float(args.branch_overlap_gx_weight),
+                    prev_overlap_weight=float(args.branch_overlap_prev_weight),
+                )
+                if obj < best_obj:
+                    best_obj = obj
+                    best_candidate = (solver_name, result_c, mode_c, eig_overlap_c, eig_rel_l2_c, prev_overlap_c)
+            if best_candidate is None:
+                raise RuntimeError(f"No valid solver candidate for ky={float(ky_val):.4f}")
+            solver_used, result, mode_sp, eig_overlap, eig_rel_l2, prev_overlap = best_candidate
+            branch_score = float(best_obj)
         else:
             solver_used = args.solver
             result = _run_candidate(args, cfg, float(ky_val), beta, solver_used)
 
-        ky_idx = select_ky_index(np.asarray(grid_full.ky), float(ky_val))
-        grid = select_ky_grid(grid_full, ky_idx)
-        theta = np.asarray(grid.z, dtype=float)
-        if args.eigen_tmin is not None or args.eigen_tmax is not None:
-            eig_tmin = args.eigen_tmin
-            eig_tmax = args.eigen_tmax
-        elif np.asarray(result.t).size > 1:
-            eig_tmin = float(np.asarray(result.t)[-1]) * 0.6
-            eig_tmax = float(np.asarray(result.t)[-1])
-        else:
-            eig_tmin = None
-            eig_tmax = None
-        mode_sp = _extract_mode(
-            result,
-            theta,
-            method=args.eigen_method,
-            tmin=eig_tmin,
-            tmax=eig_tmax,
-        )
-        if args.gx_big.exists():
-            theta_gx, mode_gx = _load_gx_eigenfunction(args.gx_big, float(ky_val))
-            if theta_gx.shape != theta.shape or not np.allclose(theta_gx, theta, atol=1.0e-6, rtol=1.0e-6):
-                mode_gx = _normalize_mode(theta, _interp_complex(theta, theta_gx, mode_gx))
-            eig_overlap = _mode_overlap(mode_sp, mode_gx)
-            eig_rel_l2 = _mode_rel_l2(mode_sp, mode_gx)
-        else:
-            eig_overlap = float("nan")
-            eig_rel_l2 = float("nan")
-        prev_overlap = float("nan") if prev_mode is None else _mode_overlap(mode_sp, prev_mode)
+        if not use_continuation:
+            _theta, mode_sp, eig_overlap, eig_rel_l2, prev_overlap = _mode_metrics(
+                result,
+                grid_full=grid_full,
+                ky_value=float(ky_val),
+                gx_big=args.gx_big,
+                eigen_method=args.eigen_method,
+                eigen_tmin=args.eigen_tmin,
+                eigen_tmax=args.eigen_tmax,
+                prev_mode=prev_mode,
+            )
         prev_mode = mode_sp
 
         fit_window_tmin = float("nan")
@@ -407,6 +492,7 @@ def main() -> None:
             "eig_overlap_gx": eig_overlap,
             "eig_rel_l2": eig_rel_l2,
             "eig_overlap_prev": prev_overlap,
+            "branch_score": branch_score,
             "fit_window_tmin": fit_window_tmin,
             "fit_window_tmax": fit_window_tmax,
         }

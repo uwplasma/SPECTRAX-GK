@@ -336,7 +336,11 @@ the whole ``ky`` scan, and the output table includes ``eig_overlap_gx``,
 separately from ``gamma``/``omega`` mismatch. The legacy GX-scored
 per-point solver picker is still available through
 ``--branch-policy gx-ref-auto`` for forensic studies, but it is no longer the
-default benchmark mode.
+default benchmark mode. When a fixed-solver scan still jumps between nearby
+KBM branches, ``--branch-policy continuation`` scores the candidate solvers by
+``gamma``/``omega`` mismatch together with GX overlap and previous-``ky`` mode
+continuity, making the branch choice explicit instead of silently changing the
+physics extraction rule point-by-point.
 
 KBM nonlinear term comparison (GX)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
