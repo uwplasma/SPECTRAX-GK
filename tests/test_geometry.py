@@ -180,7 +180,8 @@ def test_load_gx_geometry_netcdf_reads_sampled_contract(tmp_path):
     Dataset = netcdf4.Dataset
 
     path = tmp_path / "geom.out.nc"
-    theta = np.linspace(-np.pi, np.pi, 5)
+    theta = np.linspace(-np.pi, np.pi, 5, endpoint=False)
+    jacobian = np.linspace(2.0, 3.0, theta.size)
     with Dataset(path, "w") as root:
         root.createDimension("theta", theta.size)
         grids = root.createGroup("Grids")
@@ -196,7 +197,7 @@ def test_load_gx_geometry_netcdf_reads_sampled_contract(tmp_path):
             "gbdrift": np.linspace(0.3, 0.5, theta.size),
             "cvdrift0": np.linspace(-0.1, 0.1, theta.size),
             "gbdrift0": np.linspace(-0.1, 0.1, theta.size),
-            "jacobian": np.linspace(2.0, 3.0, theta.size),
+            "jacobian": jacobian,
             "grho": np.linspace(1.0, 1.4, theta.size),
         }.items():
             geom.createVariable(name, "f8", ("theta",))[:] = values
@@ -216,8 +217,9 @@ def test_load_gx_geometry_netcdf_reads_sampled_contract(tmp_path):
     loaded = load_gx_geometry_netcdf(path)
 
     assert loaded.source_model == "gx-netcdf"
+    assert loaded.theta_closed_interval is False
     assert jnp.allclose(loaded.theta, theta)
-    assert jnp.allclose(loaded.jacobian_profile, np.linspace(2.0, 3.0, theta.size))
+    assert jnp.allclose(loaded.jacobian_profile, jacobian)
     assert jnp.allclose(loaded.grho_profile, np.linspace(1.0, 1.4, theta.size))
     assert loaded.kxfac == pytest.approx(1.3)
     assert loaded.theta_scale == pytest.approx(2.0)
@@ -234,6 +236,7 @@ def test_load_gx_geometry_netcdf_reads_root_level_eik_layout(tmp_path):
     path = tmp_path / "geom.eik.nc"
     theta = np.linspace(-np.pi, np.pi, 5)
     bmag = np.linspace(1.0, 1.2, theta.size)
+    drhodpsi = 1.7
     with Dataset(path, "w") as root:
         root.createDimension("z", theta.size)
         root.createVariable("theta", "f8", ("z",))[:] = theta
@@ -248,6 +251,7 @@ def test_load_gx_geometry_netcdf_reads_root_level_eik_layout(tmp_path):
         root.createVariable("jacob", "f8", ("z",))[:] = np.linspace(2.0, 3.0, theta.size)
         root.createVariable("grho", "f8", ("z",))[:] = np.linspace(1.0, 1.4, theta.size)
         root.createVariable("gradpar", "f8", ("z",))[:] = np.full(theta.size, 0.4)
+        root.createVariable("drhodpsi", "f8", ())[:] = drhodpsi
         root.createVariable("q", "f8", ())[:] = 1.7
         root.createVariable("shat", "f8", ())[:] = 0.6
         root.createVariable("Rmaj", "f8", ())[:] = 5.0
@@ -259,9 +263,13 @@ def test_load_gx_geometry_netcdf_reads_root_level_eik_layout(tmp_path):
     loaded = load_gx_geometry_netcdf(path)
 
     assert loaded.source_model == "gx-netcdf"
+    assert loaded.theta_closed_interval is True
     assert jnp.allclose(loaded.theta, theta)
-    assert jnp.allclose(loaded.jacobian_profile, np.linspace(2.0, 3.0, theta.size))
+    expected_jacobian = 1.0 / np.abs(drhodpsi * 0.4 * bmag)
+    assert jnp.allclose(loaded.jacobian_profile, expected_jacobian)
     assert jnp.allclose(loaded.grho_profile, np.linspace(1.0, 1.4, theta.size))
+    assert jnp.allclose(loaded.cv_profile, 0.5 * np.linspace(0.3, 0.5, theta.size))
+    assert jnp.allclose(loaded.gb_profile, 0.5 * np.linspace(0.3, 0.5, theta.size))
     assert loaded.kxfac == pytest.approx(1.3)
     assert loaded.theta_scale == pytest.approx(2.0)
     assert loaded.nfp == 5
@@ -274,7 +282,7 @@ def test_build_flux_tube_geometry_loads_gx_netcdf(tmp_path):
     Dataset = netcdf4.Dataset
 
     path = tmp_path / "geom.out.nc"
-    theta = np.linspace(-np.pi, np.pi, 5)
+    theta = np.linspace(-np.pi, np.pi, 5, endpoint=False)
     with Dataset(path, "w") as root:
         root.createDimension("theta", theta.size)
         grids = root.createGroup("Grids")
@@ -341,3 +349,44 @@ def test_apply_gx_geometry_grid_defaults_uses_imported_theta_and_kxfac(tmp_path)
     assert adjusted.kxfac == pytest.approx(1.7)
     assert adjusted.jtwist == jtwist
     assert adjusted.Lx == pytest.approx(2.0 * np.pi * x0)
+
+
+def test_apply_gx_geometry_grid_defaults_preserves_open_solver_theta(tmp_path):
+    netcdf4 = pytest.importorskip("netCDF4")
+    Dataset = netcdf4.Dataset
+
+    path = tmp_path / "geom.out.nc"
+    theta = np.linspace(-np.pi, np.pi, 8, endpoint=False)
+    with Dataset(path, "w") as root:
+        root.createDimension("theta", theta.size)
+        grids = root.createGroup("Grids")
+        geom = root.createGroup("Geometry")
+        grids.createVariable("theta", "f8", ("theta",))[:] = theta
+        for name in (
+            "bmag",
+            "bgrad",
+            "gds2",
+            "gds21",
+            "gds22",
+            "cvdrift",
+            "gbdrift",
+            "cvdrift0",
+            "gbdrift0",
+            "jacobian",
+            "grho",
+        ):
+            geom.createVariable(name, "f8", ("theta",))[:] = np.ones(theta.size)
+        geom.createVariable("gradpar", "f8", ())[:] = 0.4
+        geom.createVariable("q", "f8", ())[:] = 1.7
+        geom.createVariable("shat", "f8", ())[:] = 0.5
+        geom.createVariable("rmaj", "f8", ())[:] = 5.0
+        geom.createVariable("kxfac", "f8", ())[:] = 1.7
+
+    geom = load_gx_geometry_netcdf(path)
+    grid = GridConfig(Nx=4, Ny=4, Nz=16, Lx=6.28, Ly=6.28, boundary="linked", y0=10.0)
+    adjusted = apply_gx_geometry_grid_defaults(geom, grid)
+
+    spacing = theta[1] - theta[0]
+    assert adjusted.Nz == theta.size
+    assert adjusted.z_min == pytest.approx(theta[0])
+    assert adjusted.z_max == pytest.approx(theta[-1] + spacing)

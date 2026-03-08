@@ -170,3 +170,41 @@ def test_solve_fields_custom_vjp_gradient_matches_impl() -> None:
     assert jnp.all(jnp.isfinite(g_impl))
     assert jnp.all(jnp.isfinite(g_vjp))
     assert jnp.allclose(g_vjp, g_impl, rtol=1.0e-5, atol=1.0e-5)
+
+
+def test_adiabatic_zonal_field_solve_uses_cached_jacobian() -> None:
+    cache, params, G, charge, density, temp, mass, tz, vth = _build_case(beta=0.0, fapar=0.0)
+    G = jnp.zeros_like(G)
+    z = jnp.asarray(cache.bmag)
+    zonal_profile = 0.2 + 0.05j * z
+    G = G.at[0, 0, 0, 0, 1, :].set(zonal_profile)
+
+    out_base = _solve_fields_impl(
+        G,
+        cache,
+        params,
+        charge=charge,
+        density=density,
+        temp=temp,
+        mass=mass,
+        tz=tz,
+        vth=vth,
+        fapar=jnp.asarray(0.0, dtype=jnp.float32),
+        w_bpar=jnp.asarray(0.0, dtype=jnp.float32),
+    )
+    varied_jacobian = jnp.linspace(1.0, 3.0, cache.jacobian.size, dtype=cache.jacobian.dtype)
+    out_varied = _solve_fields_impl(
+        G,
+        replace(cache, jacobian=varied_jacobian),
+        params,
+        charge=charge,
+        density=density,
+        temp=temp,
+        mass=mass,
+        tz=tz,
+        vth=vth,
+        fapar=jnp.asarray(0.0, dtype=jnp.float32),
+        w_bpar=jnp.asarray(0.0, dtype=jnp.float32),
+    )
+
+    assert not jnp.allclose(out_base.phi, out_varied.phi)

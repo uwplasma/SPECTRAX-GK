@@ -23,14 +23,21 @@ from spectraxgk.gyroaverage import gamma0
 from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
 from spectraxgk.grids import build_spectral_grid, select_ky_grid
 from spectraxgk.analysis import select_ky_index
-from spectraxgk.linear import build_linear_cache, LinearParams, LinearTerms
+from spectraxgk.linear import (
+    build_linear_cache,
+    LinearParams,
+    LinearTerms,
+    linear_terms_to_term_config,
+)
 from spectraxgk.gx_integrators import (
     GXTimeConfig,
     _gx_linear_omega_max,
     _gx_growth_rate_step,
+    _rk4_step,
     integrate_linear_gx_diagnostics,
 )
 from spectraxgk.species import Species, build_linear_params
+from spectraxgk.terms.assembly import assemble_rhs_cached
 
 
 def test_gx_flux_fac_nonzero_matches_positive_ky_convention() -> None:
@@ -383,6 +390,44 @@ def test_gx_growth_rate_step_max_uses_per_step_peak():
     ratio = (9.0 + 9.0j) / (8.0 + 8.0j)
     assert np.allclose(np.asarray(gamma), np.log(np.abs(ratio)) / 0.1)
     assert np.allclose(np.asarray(omega), -np.angle(ratio) / 0.1)
+
+
+def test_rk4_step_uses_runtime_scaled_end_damping_once() -> None:
+    cfg, grid, geom, params, cache = _small_setup()
+    params = replace(params, damp_ends_amp=0.5)
+    G0 = _build_initial_condition(grid, geom, ky_index=0, kx_index=0, Nl=4, Nm=4, init_cfg=cfg.init)
+    terms = LinearTerms(
+        streaming=0.0,
+        mirror=0.0,
+        curvature=0.0,
+        gradb=0.0,
+        diamagnetic=0.0,
+        collisions=0.0,
+        hypercollisions=0.0,
+        end_damping=1.0,
+        apar=0.0,
+        bpar=0.0,
+    )
+    term_cfg = linear_terms_to_term_config(terms)
+    dt = 0.2
+
+    G_step, fields_step = _rk4_step(G0, cache, params, term_cfg, dt)
+
+    def rhs(state: jnp.ndarray) -> jnp.ndarray:
+        dG, _fields = assemble_rhs_cached(state, cache, params, terms=term_cfg)
+        return dG
+
+    k1 = rhs(G0)
+    k2 = rhs(G0 + 0.5 * dt * k1)
+    k3 = rhs(G0 + 0.5 * dt * k2)
+    k4 = rhs(G0 + dt * k3)
+    G_manual = G0 + (dt / 6.0) * (k1 + 2.0 * k2 + 2.0 * k3 + k4)
+    _dG_manual, fields_manual = assemble_rhs_cached(G_manual, cache, params, terms=term_cfg)
+
+    assert np.allclose(np.asarray(G_step), np.asarray(G_manual), rtol=1.0e-6, atol=1.0e-6)
+    assert np.allclose(
+        np.asarray(fields_step.phi), np.asarray(fields_manual.phi), rtol=1.0e-6, atol=1.0e-6
+    )
 
 
 def test_linear_gx_adaptive_default_dt_max_matches_gx():
