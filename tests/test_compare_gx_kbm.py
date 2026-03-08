@@ -110,6 +110,7 @@ def test_compare_gx_kbm_run_candidate_uses_gx_shift_for_krylov(monkeypatch) -> N
     krylov_cfg = captured["krylov_cfg"]
     assert krylov_cfg is not None
     assert krylov_cfg.shift == complex(0.219, -1.141)
+    assert krylov_cfg.shift_source == "propagator"
     assert krylov_cfg.omega_sign == 0
     assert krylov_cfg.omega_target_factor == 0.0
     assert krylov_cfg.shift_selection == "shift"

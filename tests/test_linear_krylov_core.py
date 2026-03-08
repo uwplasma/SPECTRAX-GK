@@ -167,6 +167,96 @@ def test_dominant_eigenpair_shift_invert_sources_and_errors() -> None:
         lk.dominant_eigenpair(v0, cache, params, terms=terms, method="bad")
 
 
+@pytest.mark.parametrize("shift_source", ["propagator", "power"])
+def test_dominant_eigenpair_explicit_shift_uses_requested_seed_source(
+    monkeypatch: pytest.MonkeyPatch,
+    shift_source: str,
+) -> None:
+    _grid, cache, params, v0, _term_cfg, terms = _tiny_krylov_setup(linked=False)
+    captured: dict[str, jnp.ndarray] = {}
+    seed = jnp.full_like(v0, 3.0 + 0.0j)
+
+    def _fake_shift(v_init, v_ref, *_args, sigma, **_kwargs):
+        captured["v_init"] = v_init
+        captured["v_ref"] = v_ref
+        captured["sigma"] = sigma
+        return jnp.asarray(0.4 + 0.2j, dtype=v0.dtype), jnp.full_like(v0, 5.0 + 0.0j)
+
+    monkeypatch.setattr(lk, "dominant_eigenpair_shift_invert_cached", _fake_shift)
+    if shift_source == "propagator":
+        monkeypatch.setattr(
+            lk,
+            "dominant_eigenpair_propagator_cached",
+            lambda *args, **kwargs: (jnp.asarray(0.1 + 0.0j, dtype=v0.dtype), seed),
+        )
+    else:
+        monkeypatch.setattr(
+            lk,
+            "dominant_eigenpair_power",
+            lambda *args, **kwargs: (jnp.asarray(0.1 + 0.0j, dtype=v0.dtype), seed),
+        )
+
+    eig, vec = lk.dominant_eigenpair(
+        v0,
+        cache,
+        params,
+        terms=terms,
+        method="shift_invert",
+        shift=0.2 - 1.1j,
+        shift_source=shift_source,
+        shift_selection="shift",
+        krylov_dim=4,
+        restarts=1,
+        shift_maxiter=15,
+        shift_restart=10,
+        power_iters=4,
+        power_dt=0.05,
+    )
+
+    assert jnp.allclose(captured["sigma"], jnp.asarray(0.2 - 1.1j, dtype=v0.dtype))
+    assert jnp.allclose(captured["v_init"], seed)
+    assert jnp.allclose(eig, jnp.asarray(0.4 + 0.2j, dtype=v0.dtype))
+    assert jnp.allclose(vec, 5.0 + 0.0j)
+
+
+def test_dominant_eigenpair_explicit_shift_defaults_to_reference_seed(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _grid, cache, params, v0, _term_cfg, terms = _tiny_krylov_setup(linked=False)
+    captured: dict[str, jnp.ndarray] = {}
+    v_ref = jnp.full_like(v0, 7.0 + 0.0j)
+
+    def _fake_shift(v_init, v_ref_in, *_args, sigma, **_kwargs):
+        captured["v_init"] = v_init
+        captured["v_ref"] = v_ref_in
+        captured["sigma"] = sigma
+        return jnp.asarray(0.4 + 0.2j, dtype=v0.dtype), jnp.full_like(v0, 5.0 + 0.0j)
+
+    monkeypatch.setattr(lk, "dominant_eigenpair_shift_invert_cached", _fake_shift)
+
+    lk.dominant_eigenpair(
+        v0,
+        cache,
+        params,
+        terms=terms,
+        method="shift_invert",
+        shift=0.2 - 1.1j,
+        shift_source="target",
+        shift_selection="shift",
+        v_ref=v_ref,
+        krylov_dim=4,
+        restarts=1,
+        shift_maxiter=15,
+        shift_restart=10,
+        power_iters=4,
+        power_dt=0.05,
+    )
+
+    assert jnp.allclose(captured["sigma"], jnp.asarray(0.2 - 1.1j, dtype=v0.dtype))
+    assert jnp.allclose(captured["v_init"], v_ref)
+    assert jnp.allclose(captured["v_ref"], v_ref)
+
+
 def test_shift_invert_fallback_policy(monkeypatch: pytest.MonkeyPatch) -> None:
     _grid, cache, params, v0, term_cfg, terms = _tiny_krylov_setup(linked=False)
 

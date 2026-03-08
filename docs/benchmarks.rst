@@ -344,7 +344,10 @@ physics extraction rule point-by-point. For branch-isolation studies with the
 Krylov solver, ``--krylov-gx-shift`` additionally seeds shift-invert with the
 GX reference eigenvalue so the harness can ask for the same branch explicitly.
 Explicit Krylov shifts now bypass the built-in KBM target sweep instead of being
-silently retargeted to the default heuristic branches.
+silently retargeted to the default heuristic branches. When an explicit shift is
+used, the Krylov entry point also honors the requested seed source, so
+shift-invert can reuse a propagator/power seed instead of always restarting
+from the raw initial condition.
 
 KBM nonlinear term comparison (GX)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

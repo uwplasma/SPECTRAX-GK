@@ -267,7 +267,7 @@ def _run_candidate(
         krylov_cfg = replace(
             KBM_KRYLOV_DEFAULT,
             shift=complex(float(gx_gamma), -float(gx_omega)),
-            shift_source="target",
+            shift_source="propagator",
             shift_selection="shift",
             omega_sign=0,
             omega_target_factor=0.0,
