@@ -2,6 +2,7 @@
 
 from dataclasses import replace
 from pathlib import Path
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -597,6 +598,94 @@ def test_run_kbm_beta_scan_gx_time_keeps_project_mode(monkeypatch):
     assert calls == ["integrate:z_index", "growth:project"]
     assert np.isclose(scan.gamma[0], 0.15)
     assert np.isclose(scan.omega[0], 0.9)
+
+
+def test_run_kbm_linear_krylov_explicit_shift_bypasses_multi_target(monkeypatch):
+    """Explicit KBM Krylov shifts should bypass the built-in target sweep."""
+
+    calls: list[dict[str, object]] = []
+
+    def _fake_dominant_eigenpair(v0, *args, **kwargs):
+        calls.append(kwargs)
+        return 0.2 - 1.1j, np.zeros_like(np.asarray(v0))
+
+    def _fake_compute_fields_cached(vec, cache, params, terms):
+        del cache, params, terms
+        return SimpleNamespace(phi=np.zeros(np.asarray(vec).shape[-3:], dtype=np.complex64))
+
+    monkeypatch.setattr(benchmarks, "dominant_eigenpair", _fake_dominant_eigenpair)
+    monkeypatch.setattr(benchmarks, "compute_fields_cached", _fake_compute_fields_cached)
+
+    grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0)
+    cfg = KBMBaseCase(grid=grid)
+    krylov_cfg = replace(
+        benchmarks.KBM_KRYLOV_DEFAULT,
+        shift=complex(0.2, -1.1),
+        shift_source="target",
+        shift_selection="shift",
+        omega_sign=0,
+        omega_target_factor=0.0,
+    )
+
+    result = run_kbm_linear(
+        ky_target=0.3,
+        cfg=cfg,
+        Nl=4,
+        Nm=4,
+        solver="krylov",
+        krylov_cfg=krylov_cfg,
+        gx_reference=False,
+        diagnostic_norm="none",
+    )
+
+    assert len(calls) == 1
+    assert calls[0]["shift"] == complex(0.2, -1.1)
+    assert calls[0]["shift_selection"] == "shift"
+    assert calls[0]["omega_target_factor"] == 0.0
+    assert np.isclose(result.gamma, 0.2)
+    assert np.isclose(result.omega, 1.1)
+
+
+def test_run_kbm_beta_scan_krylov_explicit_shift_bypasses_multi_target(monkeypatch):
+    """KBM beta scans should honor explicit Krylov shifts without retargeting."""
+
+    calls: list[dict[str, object]] = []
+
+    def _fake_dominant_eigenpair(v0, *args, **kwargs):
+        calls.append(kwargs)
+        return 0.2 - 1.1j, np.zeros_like(np.asarray(v0))
+
+    monkeypatch.setattr(benchmarks, "dominant_eigenpair", _fake_dominant_eigenpair)
+
+    grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0)
+    cfg = KBMBaseCase(grid=grid)
+    krylov_cfg = replace(
+        benchmarks.KBM_KRYLOV_DEFAULT,
+        shift=complex(0.2, -1.1),
+        shift_source="target",
+        shift_selection="shift",
+        omega_sign=0,
+        omega_target_factor=0.0,
+    )
+
+    scan = run_kbm_beta_scan(
+        np.array([1.0e-4]),
+        ky_target=0.3,
+        cfg=cfg,
+        Nl=4,
+        Nm=4,
+        solver="krylov",
+        krylov_cfg=krylov_cfg,
+        gx_reference=False,
+        diagnostic_norm="none",
+    )
+
+    assert len(calls) == 1
+    assert calls[0]["shift"] == complex(0.2, -1.1)
+    assert calls[0]["shift_selection"] == "shift"
+    assert calls[0]["omega_target_factor"] == 0.0
+    assert np.isclose(scan.gamma[0], 0.2)
+    assert np.isclose(scan.omega[0], 1.1)
 
 
 def test_kbm_beta_scan_time_mode_only_phi():
