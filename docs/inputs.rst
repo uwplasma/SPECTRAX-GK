@@ -137,7 +137,9 @@ normalizations. The default configuration in SPECTRAX-GK uses the GX-reference
 value.
 It also accepts ``model = "gx-netcdf"`` with
 ``geometry_file = "/path/to/gx_geometry.nc"`` to run from imported sampled
-field-line geometry instead of the analytic ``s-alpha`` model.
+field-line geometry instead of the analytic ``s-alpha`` model. The imported
+file can be a GX output ``*.out.nc`` or a root-level GX ``*.eik.nc`` geometry
+file produced by the VMEC workflow.
 
 Solver and fit-signal keys
 --------------------------

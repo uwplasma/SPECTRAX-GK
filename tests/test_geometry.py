@@ -207,6 +207,50 @@ def test_load_gx_geometry_netcdf_reads_sampled_contract(tmp_path):
     assert loaded.epsilon == pytest.approx(0.2)
 
 
+def test_load_gx_geometry_netcdf_reads_root_level_eik_layout(tmp_path):
+    """Root-level GX eik.nc geometry should map into the sampled contract."""
+
+    netcdf4 = pytest.importorskip("netCDF4")
+    Dataset = netcdf4.Dataset
+
+    path = tmp_path / "geom.eik.nc"
+    theta = np.linspace(-np.pi, np.pi, 5)
+    bmag = np.linspace(1.0, 1.2, theta.size)
+    with Dataset(path, "w") as root:
+        root.createDimension("z", theta.size)
+        root.createVariable("theta", "f8", ("z",))[:] = theta
+        root.createVariable("bmag", "f8", ("z",))[:] = bmag
+        root.createVariable("gds2", "f8", ("z",))[:] = np.linspace(1.0, 2.0, theta.size)
+        root.createVariable("gds21", "f8", ("z",))[:] = np.linspace(-0.2, 0.2, theta.size)
+        root.createVariable("gds22", "f8", ("z",))[:] = np.full(theta.size, 0.8)
+        root.createVariable("cvdrift", "f8", ("z",))[:] = np.linspace(0.3, 0.5, theta.size)
+        root.createVariable("gbdrift", "f8", ("z",))[:] = np.linspace(0.3, 0.5, theta.size)
+        root.createVariable("cvdrift0", "f8", ("z",))[:] = np.linspace(-0.1, 0.1, theta.size)
+        root.createVariable("gbdrift0", "f8", ("z",))[:] = np.linspace(-0.1, 0.1, theta.size)
+        root.createVariable("jacob", "f8", ("z",))[:] = np.linspace(2.0, 3.0, theta.size)
+        root.createVariable("grho", "f8", ("z",))[:] = np.linspace(1.0, 1.4, theta.size)
+        root.createVariable("gradpar", "f8", ("z",))[:] = np.full(theta.size, 0.4)
+        root.createVariable("q", "f8", ())[:] = 1.7
+        root.createVariable("shat", "f8", ())[:] = 0.6
+        root.createVariable("Rmaj", "f8", ())[:] = 5.0
+        root.createVariable("kxfac", "f8", ())[:] = 1.3
+        root.createVariable("scale", "f8", ())[:] = 2.0
+        root.createVariable("nfp", "f8", ())[:] = 5.0
+        root.createVariable("alpha", "f8", ())[:] = 0.2
+
+    loaded = load_gx_geometry_netcdf(path)
+
+    assert loaded.source_model == "gx-netcdf"
+    assert jnp.allclose(loaded.theta, theta)
+    assert jnp.allclose(loaded.jacobian_profile, np.linspace(2.0, 3.0, theta.size))
+    assert jnp.allclose(loaded.grho_profile, np.linspace(1.0, 1.4, theta.size))
+    assert loaded.kxfac == pytest.approx(1.3)
+    assert loaded.theta_scale == pytest.approx(2.0)
+    assert loaded.nfp == 5
+    assert loaded.R0 == pytest.approx(5.0)
+    assert np.all(np.isfinite(np.asarray(loaded.bgrad_profile)))
+
+
 def test_build_flux_tube_geometry_loads_gx_netcdf(tmp_path):
     netcdf4 = pytest.importorskip("netCDF4")
     Dataset = netcdf4.Dataset
