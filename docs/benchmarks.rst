@@ -347,7 +347,8 @@ Explicit Krylov shifts now bypass the built-in KBM target sweep instead of being
 silently retargeted to the default heuristic branches. When an explicit shift is
 used, the Krylov entry point also honors the requested seed source, so
 shift-invert can reuse a propagator/power seed instead of always restarting
-from the raw initial condition.
+from the raw initial condition. The benchmark harness keeps that seed source
+explicit via ``--krylov-gx-shift-source`` instead of hardwiring one KBM policy.
 
 KBM nonlinear term comparison (GX)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

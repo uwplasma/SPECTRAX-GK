@@ -267,7 +267,7 @@ def _run_candidate(
         krylov_cfg = replace(
             KBM_KRYLOV_DEFAULT,
             shift=complex(float(gx_gamma), -float(gx_omega)),
-            shift_source="propagator",
+            shift_source=str(getattr(args, "krylov_gx_shift_source", "target")),
             shift_selection="shift",
             omega_sign=0,
             omega_target_factor=0.0,
@@ -364,6 +364,13 @@ def main() -> None:
         "--krylov-gx-shift",
         action="store_true",
         help="When evaluating a Krylov candidate, use the GX reference eigenvalue as the shift target.",
+    )
+    parser.add_argument(
+        "--krylov-gx-shift-source",
+        type=str,
+        default="target",
+        choices=["target", "power", "propagator"],
+        help="Seed source to pair with --krylov-gx-shift when probing an explicit shift-invert target.",
     )
     parser.add_argument(
         "--time-fit-signal",

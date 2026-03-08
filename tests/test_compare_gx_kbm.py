@@ -94,6 +94,7 @@ def test_compare_gx_kbm_run_candidate_uses_gx_shift_for_krylov(monkeypatch) -> N
         tmax=None,
         sample_stride=1,
         krylov_gx_shift=True,
+        krylov_gx_shift_source="target",
     )
 
     result = mod._run_candidate(
@@ -110,7 +111,7 @@ def test_compare_gx_kbm_run_candidate_uses_gx_shift_for_krylov(monkeypatch) -> N
     krylov_cfg = captured["krylov_cfg"]
     assert krylov_cfg is not None
     assert krylov_cfg.shift == complex(0.219, -1.141)
-    assert krylov_cfg.shift_source == "propagator"
+    assert krylov_cfg.shift_source == "target"
     assert krylov_cfg.omega_sign == 0
     assert krylov_cfg.omega_target_factor == 0.0
     assert krylov_cfg.shift_selection == "shift"
@@ -145,6 +146,7 @@ def test_compare_gx_kbm_run_candidate_skips_gx_shift_for_non_krylov(monkeypatch)
         tmax=None,
         sample_stride=1,
         krylov_gx_shift=True,
+        krylov_gx_shift_source="target",
     )
 
     mod._run_candidate(
@@ -158,3 +160,50 @@ def test_compare_gx_kbm_run_candidate_skips_gx_shift_for_non_krylov(monkeypatch)
     )
 
     assert captured["krylov_cfg"] is None
+
+
+def test_compare_gx_kbm_run_candidate_allows_shift_source_override(monkeypatch) -> None:
+    tools_dir = Path(__file__).resolve().parents[1] / "tools"
+    sys.path.insert(0, str(tools_dir))
+    try:
+        import compare_gx_kbm as mod
+    finally:
+        sys.path.remove(str(tools_dir))
+
+    captured: dict[str, object] = {}
+
+    def _fake_run_kbm_linear(**kwargs):
+        captured.update(kwargs)
+        return SimpleNamespace(gamma=0.1, omega=0.2)
+
+    monkeypatch.setattr(mod, "run_kbm_linear", _fake_run_kbm_linear)
+
+    args = SimpleNamespace(
+        time_fit_signal="auto",
+        Nl=16,
+        Nm=48,
+        dt=0.01,
+        steps=4000,
+        method="rk4",
+        mode_method="z_index",
+        no_auto_window=False,
+        tmin=None,
+        tmax=None,
+        sample_stride=1,
+        krylov_gx_shift=True,
+        krylov_gx_shift_source="propagator",
+    )
+
+    mod._run_candidate(
+        args,
+        cfg=object(),
+        ky_value=0.3,
+        beta_value=0.015,
+        solver_name="krylov",
+        gx_gamma=0.219,
+        gx_omega=1.141,
+    )
+
+    krylov_cfg = captured["krylov_cfg"]
+    assert krylov_cfg is not None
+    assert krylov_cfg.shift_source == "propagator"
