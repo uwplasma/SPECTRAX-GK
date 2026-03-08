@@ -1,5 +1,8 @@
 """Benchmark utilities and reference data tests."""
 
+from dataclasses import replace
+from pathlib import Path
+
 import numpy as np
 import pytest
 
@@ -36,6 +39,7 @@ from spectraxgk.config import (
     TimeConfig,
 )
 from spectraxgk.geometry import SAlphaGeometry
+from spectraxgk.grids import build_spectral_grid
 from spectraxgk.linear import LinearTerms
 from spectraxgk.linear_krylov import KrylovConfig
 from spectraxgk.species import Species, build_linear_params
@@ -428,6 +432,59 @@ def test_run_kbm_linear_gx_time_history():
     assert result.phi_t.ndim == 4
     assert result.phi_t.shape[0] == result.t.size
     assert result.selection.ky_index == 0
+    assert np.isfinite(result.gamma)
+    assert np.isfinite(result.omega)
+
+
+def test_run_kbm_linear_accepts_gx_netcdf_geometry(tmp_path: Path):
+    """KBM linear benchmark entry point should accept imported GX geometry."""
+
+    netcdf4 = pytest.importorskip("netCDF4")
+    Dataset = netcdf4.Dataset
+
+    grid = GridConfig(Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2)
+    theta = np.asarray(build_spectral_grid(grid).z, dtype=float)
+    geom_path = tmp_path / "kbm_geom.out.nc"
+    with Dataset(geom_path, "w") as root:
+        root.createDimension("theta", theta.size)
+        grids = root.createGroup("Grids")
+        geom = root.createGroup("Geometry")
+        grids.createVariable("theta", "f8", ("theta",))[:] = theta
+        geom.createVariable("bmag", "f8", ("theta",))[:] = np.ones(theta.size)
+        geom.createVariable("bgrad", "f8", ("theta",))[:] = 0.05 * np.sin(theta)
+        geom.createVariable("gds2", "f8", ("theta",))[:] = 1.0 + 0.1 * theta * theta
+        geom.createVariable("gds21", "f8", ("theta",))[:] = -0.02 * theta
+        geom.createVariable("gds22", "f8", ("theta",))[:] = np.full(theta.size, 0.64)
+        geom.createVariable("cvdrift", "f8", ("theta",))[:] = 0.03 * np.cos(theta)
+        geom.createVariable("gbdrift", "f8", ("theta",))[:] = 0.03 * np.cos(theta)
+        geom.createVariable("cvdrift0", "f8", ("theta",))[:] = -0.01 * np.sin(theta)
+        geom.createVariable("gbdrift0", "f8", ("theta",))[:] = -0.01 * np.sin(theta)
+        geom.createVariable("jacobian", "f8", ("theta",))[:] = np.ones(theta.size)
+        geom.createVariable("grho", "f8", ("theta",))[:] = np.ones(theta.size)
+        geom.createVariable("gradpar", "f8", ())[:] = 1.0 / (1.4 * 2.77778)
+        geom.createVariable("q", "f8", ())[:] = 1.4
+        geom.createVariable("shat", "f8", ())[:] = 0.8
+        geom.createVariable("rmaj", "f8", ())[:] = 2.77778
+        geom.createVariable("aminor", "f8", ())[:] = 1.0
+
+    cfg = KBMBaseCase(grid=grid)
+    cfg_nc = replace(
+        cfg,
+        geometry=replace(cfg.geometry, model="gx-netcdf", geometry_file=str(geom_path)),
+    )
+    result = run_kbm_linear(
+        ky_target=0.3,
+        cfg=cfg_nc,
+        Nl=4,
+        Nm=8,
+        dt=0.01,
+        steps=40,
+        solver="gx_time",
+        sample_stride=2,
+    )
+    assert result.t.ndim == 1
+    assert result.phi_t.ndim == 4
+    assert result.phi_t.shape[0] == result.t.size
     assert np.isfinite(result.gamma)
     assert np.isfinite(result.omega)
 

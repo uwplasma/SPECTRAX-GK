@@ -123,6 +123,9 @@ Runtime and CLI paths can now construct that bridge directly from config with
 ``geometry.model = "gx-netcdf"`` and
 ``geometry.geometry_file = "/path/to/geometry.nc"``. Analytic s-alpha remains
 the default with ``geometry.model = "s-alpha"``.
+The linear KBM benchmark entry point now uses the same geometry builder, so
+the GX parity harness can exercise imported sampled geometry through
+``run_kbm_linear`` instead of only through the runtime wrappers.
 
 Imported geometry currently bypasses analytic twist-shift reconstruction and
 uses the provided grid as-is. That keeps the GX-import bridge honest while the
