@@ -106,6 +106,30 @@ W7-X nonlinear imported geometry TOML run
    python -m spectraxgk.cli run-runtime-nonlinear \
      --config examples/configs/runtime_w7x_nonlinear_imported_geometry.toml
 
+Generate GX-compatible geometry from a runtime TOML
+---------------------------------------------------
+
+.. code-block:: bash
+
+   python tools/generate_gx_vmec_eik.py \
+     --config examples/configs/runtime_hsx_nonlinear_vmec_geometry.toml
+
+HSX nonlinear VMEC runtime example
+----------------------------------
+
+.. code-block:: bash
+
+   python examples/hsx_nonlinear_vmec_geometry.py \
+     --vmec-file /home/user/local/vmec_equilibria/HSX/QHS_vac/wout_HSX_QHS_vac.nc
+
+HSX nonlinear VMEC TOML run
+---------------------------
+
+.. code-block:: bash
+
+   python -m spectraxgk.cli run-runtime-nonlinear \
+     --config examples/configs/runtime_hsx_nonlinear_vmec_geometry.toml
+
 KBM beta scan
 -------------
 
