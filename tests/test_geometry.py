@@ -403,6 +403,55 @@ def test_build_flux_tube_geometry_accepts_imported_eik_aliases(tmp_path, model: 
 
     assert loaded.source_model == "gx-netcdf"
     assert loaded.theta_closed_interval is True
+    assert loaded.theta_scale == pytest.approx(2.0)
+    assert loaded.nfp == 5
+
+
+def test_ensure_flux_tube_geometry_data_trims_closed_imported_vmec_grid(tmp_path):
+    netcdf4 = pytest.importorskip("netCDF4")
+    Dataset = netcdf4.Dataset
+
+    path = tmp_path / "geom_vmec.eik.nc"
+    theta = np.linspace(-3.0 * np.pi, 3.0 * np.pi, 9)
+    jacob = np.linspace(2.0, 3.0, theta.size)
+    grho = np.linspace(1.0, 1.4, theta.size)
+    with Dataset(path, "w") as root:
+        root.createDimension("z", theta.size)
+        root.createVariable("theta", "f8", ("z",))[:] = theta
+        root.createVariable("bmag", "f8", ("z",))[:] = np.linspace(1.0, 1.2, theta.size)
+        root.createVariable("gds2", "f8", ("z",))[:] = np.linspace(1.0, 2.0, theta.size)
+        root.createVariable("gds21", "f8", ("z",))[:] = np.linspace(-0.2, 0.2, theta.size)
+        root.createVariable("gds22", "f8", ("z",))[:] = np.full(theta.size, 0.8)
+        root.createVariable("cvdrift", "f8", ("z",))[:] = np.linspace(0.3, 0.5, theta.size)
+        root.createVariable("gbdrift", "f8", ("z",))[:] = np.linspace(0.3, 0.5, theta.size)
+        root.createVariable("cvdrift0", "f8", ("z",))[:] = np.linspace(-0.1, 0.1, theta.size)
+        root.createVariable("gbdrift0", "f8", ("z",))[:] = np.linspace(-0.1, 0.1, theta.size)
+        root.createVariable("jacob", "f8", ("z",))[:] = jacob
+        root.createVariable("grho", "f8", ("z",))[:] = grho
+        root.createVariable("gradpar", "f8", ("z",))[:] = np.full(theta.size, 0.4)
+        root.createVariable("q", "f8", ())[:] = 1.7
+        root.createVariable("shat", "f8", ())[:] = 0.6
+        root.createVariable("Rmaj", "f8", ())[:] = 5.0
+        root.createVariable("scale", "f8", ())[:] = 2.0
+        root.createVariable("nfp", "f8", ())[:] = 5.0
+
+    geom = build_flux_tube_geometry(GeometryConfig(model="vmec-eik", geometry_file=str(path)))
+    grid_cfg = apply_gx_geometry_grid_defaults(
+        geom,
+        GridConfig(Nx=4, Ny=4, Nz=16, Lx=6.28, Ly=6.28, boundary="linked", y0=10.0),
+    )
+    grid = build_spectral_grid(grid_cfg)
+    sampled = ensure_flux_tube_geometry_data(geom, grid.z)
+
+    assert geom.theta_closed_interval is True
+    assert sampled.theta_closed_interval is False
+    assert sampled.theta.shape[0] == grid.z.size
+    assert jnp.allclose(sampled.theta, jnp.asarray(grid.z))
+    assert sampled.theta_scale == pytest.approx(2.0)
+    assert sampled.nfp == 5
+    expected_jacob = 1.0 / (0.4 * np.linspace(1.0, 1.2, theta.size)[:-1])
+    assert jnp.allclose(sampled.jacobian_profile, jnp.asarray(expected_jacob))
+    assert jnp.allclose(sampled.grho_profile, jnp.asarray(grho[:-1]))
 
 
 def test_apply_gx_geometry_grid_defaults_uses_imported_theta_and_kxfac(tmp_path):

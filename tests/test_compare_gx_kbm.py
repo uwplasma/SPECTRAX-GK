@@ -7,6 +7,7 @@ from types import SimpleNamespace
 from pathlib import Path
 
 import pandas as pd
+import pytest
 
 
 def test_compare_gx_kbm_checkpoints_partial_rows(tmp_path: Path) -> None:
@@ -221,3 +222,39 @@ def test_compare_gx_kbm_parser_defaults_to_project_mode() -> None:
     args = parser.parse_args(["--gx", "kbm.out.nc"])
 
     assert args.mode_method == "project"
+    assert args.branch_policy == "continuation"
+
+
+def test_compare_gx_kbm_candidate_row_captures_branch_metrics() -> None:
+    tools_dir = Path(__file__).resolve().parents[1] / "tools"
+    sys.path.insert(0, str(tools_dir))
+    try:
+        import compare_gx_kbm as mod
+    finally:
+        sys.path.remove(str(tools_dir))
+
+    result = SimpleNamespace(gamma=0.8, omega=-1.5)
+    row = mod._candidate_row(
+        ky=0.3,
+        solver="gx_time",
+        result=result,
+        gx_gamma=1.0,
+        gx_omega=-2.0,
+        eig_overlap_gx=0.9,
+        eig_rel_l2=0.1,
+        eig_overlap_prev=0.8,
+        branch_score=0.42,
+        selected=True,
+    )
+
+    assert row["ky"] == 0.3
+    assert row["solver"] == "gx_time"
+    assert row["gamma"] == 0.8
+    assert row["omega"] == -1.5
+    assert row["rel_gamma"] == pytest.approx(0.2)
+    assert row["rel_omega"] == pytest.approx(0.25)
+    assert row["eig_overlap_gx"] == 0.9
+    assert row["eig_rel_l2"] == 0.1
+    assert row["eig_overlap_prev"] == 0.8
+    assert row["branch_score"] == 0.42
+    assert row["selected"] is True

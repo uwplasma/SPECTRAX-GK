@@ -299,6 +299,40 @@ def _write_rows(path: Path, rows: list[dict[str, float | str]]) -> None:
     pd.DataFrame(rows).to_csv(path, index=False)
 
 
+def _candidate_row(
+    *,
+    ky: float,
+    solver: str,
+    result,
+    gx_gamma: float,
+    gx_omega: float,
+    eig_overlap_gx: float,
+    eig_rel_l2: float,
+    eig_overlap_prev: float,
+    branch_score: float,
+    selected: bool,
+) -> dict[str, float | str | bool]:
+    gamma = float(result.gamma)
+    omega = float(result.omega)
+    rel_gamma = abs(gamma - float(gx_gamma)) / max(abs(float(gx_gamma)), 1.0e-12)
+    rel_omega = abs(omega - float(gx_omega)) / max(abs(float(gx_omega)), 1.0e-12)
+    return {
+        "ky": float(ky),
+        "solver": solver,
+        "gamma_gx": float(gx_gamma),
+        "gamma": gamma,
+        "rel_gamma": rel_gamma,
+        "omega_gx": float(gx_omega),
+        "omega": omega,
+        "rel_omega": rel_omega,
+        "eig_overlap_gx": eig_overlap_gx,
+        "eig_rel_l2": eig_rel_l2,
+        "eig_overlap_prev": eig_overlap_prev,
+        "branch_score": branch_score,
+        "selected": bool(selected),
+    }
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Compare GX KBM output against SPECTRAX-GK.")
     parser.add_argument("--gx", type=Path, required=True, help="Path to GX .out.nc file")
@@ -347,7 +381,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--branch-policy",
         type=str,
         choices=["fixed", "single", "gx-ref-auto", "auto", "continuation"],
-        default="fixed",
+        default="continuation",
         help="fixed/single: use one solver for all ky; gx-ref-auto/auto: legacy GX-scored solver selection; continuation: choose the most continuous candidate branch across ky.",
     )
     parser.add_argument(
@@ -396,6 +430,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--eigen-tmin", type=float, default=None)
     parser.add_argument("--eigen-tmax", type=float, default=None)
     parser.add_argument("--out", type=Path, default=None, help="Optional CSV path for mismatch table")
+    parser.add_argument(
+        "--candidate-out",
+        type=Path,
+        default=None,
+        help="Optional CSV path for per-candidate branch metrics (one row per ky/solver).",
+    )
     return parser
 
 
@@ -447,12 +487,14 @@ def main() -> None:
         raise ValueError("No candidate solvers parsed from --branch-solvers")
 
     rows: list[dict[str, float | str]] = []
+    candidate_rows: list[dict[str, float | str | bool]] = []
     prev_mode: np.ndarray | None = None
     for i, ky_val in enumerate(gx_ky):
         branch_score = float("nan")
         if use_legacy_auto:
             best_row = None
             best_obj = np.inf
+            candidate_start = len(candidate_rows)
             for solver_name in branch_candidates:
                 result = _run_candidate(
                     args,
@@ -466,15 +508,32 @@ def main() -> None:
                 rel_g = abs(float(result.gamma) - float(gx_gamma[i])) / max(abs(float(gx_gamma[i])), 1.0e-12)
                 rel_o = abs(float(result.omega) - float(gx_omega[i])) / max(abs(float(gx_omega[i])), 1.0e-12)
                 obj = rel_g + rel_o
+                candidate_rows.append(
+                    _candidate_row(
+                        ky=float(ky_val),
+                        solver=solver_name,
+                        result=result,
+                        gx_gamma=float(gx_gamma[i]),
+                        gx_omega=float(gx_omega[i]),
+                        eig_overlap_gx=float("nan"),
+                        eig_rel_l2=float("nan"),
+                        eig_overlap_prev=float("nan"),
+                        branch_score=float(obj),
+                        selected=False,
+                    )
+                )
                 if obj < best_obj:
                     best_obj = obj
                     best_row = (solver_name, result)
             if best_row is None:
                 raise RuntimeError(f"No valid solver candidate for ky={float(ky_val):.4f}")
             solver_used, result = best_row
+            for row in candidate_rows[candidate_start:]:
+                row["selected"] = row["solver"] == solver_used
         elif use_continuation:
             best_candidate = None
             best_obj = np.inf
+            candidate_start = len(candidate_rows)
             for solver_name in branch_candidates:
                 result_c = _run_candidate(
                     args,
@@ -507,6 +566,20 @@ def main() -> None:
                     gx_overlap_weight=float(args.branch_overlap_gx_weight),
                     prev_overlap_weight=float(args.branch_overlap_prev_weight),
                 )
+                candidate_rows.append(
+                    _candidate_row(
+                        ky=float(ky_val),
+                        solver=solver_name,
+                        result=result_c,
+                        gx_gamma=float(gx_gamma[i]),
+                        gx_omega=float(gx_omega[i]),
+                        eig_overlap_gx=eig_overlap_c,
+                        eig_rel_l2=eig_rel_l2_c,
+                        eig_overlap_prev=prev_overlap_c,
+                        branch_score=float(obj),
+                        selected=False,
+                    )
+                )
                 if obj < best_obj:
                     best_obj = obj
                     best_candidate = (solver_name, result_c, mode_c, eig_overlap_c, eig_rel_l2_c, prev_overlap_c)
@@ -514,6 +587,8 @@ def main() -> None:
                 raise RuntimeError(f"No valid solver candidate for ky={float(ky_val):.4f}")
             solver_used, result, mode_sp, eig_overlap, eig_rel_l2, prev_overlap = best_candidate
             branch_score = float(best_obj)
+            for row in candidate_rows[candidate_start:]:
+                row["selected"] = row["solver"] == solver_used
         else:
             solver_used = args.solver
             result = _run_candidate(
@@ -524,6 +599,20 @@ def main() -> None:
                 solver_used,
                 gx_gamma=float(gx_gamma[i]),
                 gx_omega=float(gx_omega[i]),
+            )
+            candidate_rows.append(
+                _candidate_row(
+                    ky=float(ky_val),
+                    solver=solver_used,
+                    result=result,
+                    gx_gamma=float(gx_gamma[i]),
+                    gx_omega=float(gx_omega[i]),
+                    eig_overlap_gx=float("nan"),
+                    eig_rel_l2=float("nan"),
+                    eig_overlap_prev=float("nan"),
+                    branch_score=float("nan"),
+                    selected=True,
+                )
             )
 
         if not use_continuation:
@@ -568,6 +657,8 @@ def main() -> None:
         rows.append(row)
         if args.out is not None:
             _write_rows(args.out, rows)
+        if args.candidate_out is not None:
+            _write_rows(args.candidate_out, candidate_rows)
 
     table = pd.DataFrame(rows)
     print(
@@ -581,6 +672,8 @@ def main() -> None:
 
     if args.out is not None:
         _write_rows(args.out, rows)
+    if args.candidate_out is not None:
+        _write_rows(args.candidate_out, candidate_rows)
 
 
 if __name__ == "__main__":

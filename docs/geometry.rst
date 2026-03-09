@@ -138,7 +138,10 @@ the GX parity harness can exercise imported sampled geometry through
 ``run_kbm_linear`` instead of only through the runtime wrappers.
 Regression coverage now runs that benchmark path explicitly for both
 ``"vmec-eik"`` and ``"desc-eik"`` aliases, so imported W7-X-style geometry is
-checked through both runtime and benchmark entry points.
+checked through both runtime and benchmark entry points. The test suite also
+locks the closed-interval ``*.eik.nc`` contract itself: imported VMEC/DESC
+geometry must preserve ``theta_scale``/``nfp`` metadata and trim the terminal
+theta point consistently when mapped onto the solver's open field-line grid.
 
 With the corrected GX-time damping contract, that imported-geometry bridge now
 also reproduces the corrected GX W7-X linear ITG ``t=2`` reference on the same
