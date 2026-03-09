@@ -11,7 +11,14 @@ import numpy as np
 import pandas as pd
 from netCDF4 import Dataset
 
-from spectraxgk.analysis import extract_eigenfunction, select_ky_index
+from spectraxgk.analysis import (
+    extract_eigenfunction,
+    extract_mode_time_series,
+    fit_growth_rate,
+    fit_growth_rate_auto,
+    gx_growth_rate_from_phi,
+    select_ky_index,
+)
 from spectraxgk.benchmarks import KBM_KRYLOV_DEFAULT, run_kbm_linear
 from spectraxgk.config import KBMBaseCase, GeometryConfig, GridConfig, KineticElectronModelConfig
 from spectraxgk.grids import build_spectral_grid, select_ky_grid
@@ -296,6 +303,85 @@ def _run_candidate(
     )
 
 
+def _recompute_time_history_growth(args, result, *, mode_method: str):
+    """Recompute growth rates from a cached time-history result."""
+
+    t = np.asarray(result.t, dtype=float)
+    if t.size <= 1:
+        return result
+
+    if args.tmin is not None and args.tmax is not None:
+        try:
+            signal = extract_mode_time_series(np.asarray(result.phi_t), result.selection, method=mode_method)
+            gamma, omega = fit_growth_rate(signal=signal, t=t, tmin=args.tmin, tmax=args.tmax)
+            return replace(result, gamma=float(gamma), omega=float(omega))
+        except ValueError:
+            pass
+
+    try:
+        gamma, omega, _g_t, _o_t, _t_mid = gx_growth_rate_from_phi(
+            np.asarray(result.phi_t),
+            t,
+            result.selection,
+            navg_fraction=float(args.gx_avg_fraction),
+            mode_method=mode_method,
+        )
+        return replace(result, gamma=float(gamma), omega=float(omega))
+    except ValueError:
+        signal = extract_mode_time_series(np.asarray(result.phi_t), result.selection, method=mode_method)
+        gamma, omega, _tmin, _tmax = fit_growth_rate_auto(
+            t,
+            signal,
+            window_fraction=0.4,
+            min_points=40,
+            start_fraction=0.2,
+            growth_weight=1.0,
+            require_positive=True,
+            min_amp_fraction=0.0,
+        )
+        return replace(result, gamma=float(gamma), omega=float(omega))
+
+
+def _run_candidate_cached(
+    args,
+    cfg: KBMBaseCase,
+    ky_value: float,
+    beta_value: float,
+    solver_name: str,
+    *,
+    mode_method_override: str | None,
+    result_cache: dict[tuple[object, ...], object],
+    gx_gamma: float | None = None,
+    gx_omega: float | None = None,
+):
+    mode_method_use = str(mode_method_override or args.mode_method)
+    cache_key: tuple[object, ...]
+    if solver_name == "gx_time":
+        cache_key = ("gx_time", float(ky_value), float(beta_value), args.dt, args.steps, args.method)
+        if cache_key not in result_cache:
+            result_cache[cache_key] = _run_candidate(
+                args,
+                cfg,
+                ky_value,
+                beta_value,
+                solver_name,
+                mode_method_override="z_index",
+                gx_gamma=gx_gamma,
+                gx_omega=gx_omega,
+            )
+        return _recompute_time_history_growth(args, result_cache[cache_key], mode_method=mode_method_use)
+    return _run_candidate(
+        args,
+        cfg,
+        ky_value,
+        beta_value,
+        solver_name,
+        mode_method_override=mode_method_override,
+        gx_gamma=gx_gamma,
+        gx_omega=gx_omega,
+    )
+
+
 def _parse_candidate_spec(spec: str) -> tuple[str, str | None, str]:
     label = spec.strip()
     if not label:
@@ -405,7 +491,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--branch-solvers",
         type=str,
-        default="gx_time@project,gx_time@max,gx_time@z_index,krylov,time",
+        default="gx_time@project,gx_time@svd,gx_time@max,gx_time@z_index,krylov,time",
         help="Comma-separated candidate solvers used when --branch-policy=gx-ref-auto. Candidates can override time/gx_time extraction with the form solver@mode_method, e.g. gx_time@max.",
     )
     parser.add_argument("--branch-gamma-weight", type=float, default=1.0)
@@ -435,7 +521,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--mode-method",
         type=str,
         default="project",
-        choices=["z_index", "max", "project"],
+        choices=["z_index", "max", "project", "svd"],
         help="Mode-extraction method for GX-time/fallback fits. The default matches run_kbm_linear and projects onto the late-time KBM structure.",
     )
     parser.add_argument(
@@ -509,18 +595,20 @@ def main() -> None:
     prev_mode: np.ndarray | None = None
     for i, ky_val in enumerate(gx_ky):
         branch_score = float("nan")
+        result_cache: dict[tuple[object, ...], object] = {}
         if use_legacy_auto:
             best_row = None
             best_obj = np.inf
             candidate_start = len(candidate_rows)
             for solver_name, mode_method_override, solver_label in branch_candidates:
-                result = _run_candidate(
+                result = _run_candidate_cached(
                     args,
                     cfg,
                     float(ky_val),
                     beta,
                     solver_name,
                     mode_method_override=mode_method_override,
+                    result_cache=result_cache,
                     gx_gamma=float(gx_gamma[i]),
                     gx_omega=float(gx_omega[i]),
                 )
@@ -556,13 +644,14 @@ def main() -> None:
             best_obj = np.inf
             candidate_start = len(candidate_rows)
             for solver_name, mode_method_override, solver_label in branch_candidates:
-                result_c = _run_candidate(
+                result_c = _run_candidate_cached(
                     args,
                     cfg,
                     float(ky_val),
                     beta,
                     solver_name,
                     mode_method_override=mode_method_override,
+                    result_cache=result_cache,
                     gx_gamma=float(gx_gamma[i]),
                     gx_omega=float(gx_omega[i]),
                 )
@@ -615,12 +704,14 @@ def main() -> None:
                 row["selected"] = row["solver"] == solver_used
         else:
             solver_used = args.solver
-            result = _run_candidate(
+            result = _run_candidate_cached(
                 args,
                 cfg,
                 float(ky_val),
                 beta,
                 solver_used,
+                mode_method_override=None,
+                result_cache=result_cache,
                 gx_gamma=float(gx_gamma[i]),
                 gx_omega=float(gx_omega[i]),
             )

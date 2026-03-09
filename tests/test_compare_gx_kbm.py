@@ -209,6 +209,75 @@ def test_compare_gx_kbm_run_candidate_honors_mode_method_override(monkeypatch) -
     assert captured["mode_method"] == "max"
 
 
+def test_compare_gx_kbm_run_candidate_cached_reuses_gx_time_trajectory(monkeypatch) -> None:
+    tools_dir = Path(__file__).resolve().parents[1] / "tools"
+    sys.path.insert(0, str(tools_dir))
+    try:
+        import compare_gx_kbm as mod
+    finally:
+        sys.path.remove(str(tools_dir))
+
+    calls: list[str] = []
+
+    def _fake_run_candidate(*_args, **_kwargs):
+        calls.append("run")
+        return SimpleNamespace(
+            gamma=0.1,
+            omega=0.2,
+            t=[0.0, 1.0],
+            phi_t=[[[[1.0 + 0.0j]]], [[[2.0 + 0.0j]]]],
+            selection=SimpleNamespace(ky_index=0, kx_index=0, z_index=0),
+        )
+
+    def _fake_recompute(args, result, *, mode_method):
+        calls.append(f"recompute:{mode_method}")
+        return SimpleNamespace(
+            gamma=1.1 if mode_method == "project" else 1.2,
+            omega=-2.1 if mode_method == "project" else -2.2,
+            t=result.t,
+            phi_t=result.phi_t,
+            selection=result.selection,
+        )
+
+    monkeypatch.setattr(mod, "_run_candidate", _fake_run_candidate)
+    monkeypatch.setattr(mod, "_recompute_time_history_growth", _fake_recompute)
+
+    args = SimpleNamespace(
+        mode_method="project",
+        dt=0.01,
+        steps=4000,
+        method="rk4",
+    )
+    cache: dict[tuple[object, ...], object] = {}
+
+    result_project = mod._run_candidate_cached(
+        args,
+        cfg=object(),
+        ky_value=0.3,
+        beta_value=0.015,
+        solver_name="gx_time",
+        mode_method_override="project",
+        result_cache=cache,
+        gx_gamma=0.2,
+        gx_omega=-1.0,
+    )
+    result_max = mod._run_candidate_cached(
+        args,
+        cfg=object(),
+        ky_value=0.3,
+        beta_value=0.015,
+        solver_name="gx_time",
+        mode_method_override="max",
+        result_cache=cache,
+        gx_gamma=0.2,
+        gx_omega=-1.0,
+    )
+
+    assert calls == ["run", "recompute:project", "recompute:max"]
+    assert result_project.gamma == 1.1
+    assert result_max.gamma == 1.2
+
+
 def test_compare_gx_kbm_run_candidate_allows_shift_source_override(monkeypatch) -> None:
     tools_dir = Path(__file__).resolve().parents[1] / "tools"
     sys.path.insert(0, str(tools_dir))
@@ -269,7 +338,7 @@ def test_compare_gx_kbm_parser_defaults_to_project_mode() -> None:
 
     assert args.mode_method == "project"
     assert args.branch_policy == "continuation"
-    assert args.branch_solvers == "gx_time@project,gx_time@max,gx_time@z_index,krylov,time"
+    assert args.branch_solvers == "gx_time@project,gx_time@svd,gx_time@max,gx_time@z_index,krylov,time"
 
 
 def test_compare_gx_kbm_candidate_row_captures_branch_metrics() -> None:
