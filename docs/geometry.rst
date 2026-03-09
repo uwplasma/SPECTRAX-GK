@@ -177,6 +177,25 @@ That same imported contract now has a first-class nonlinear runtime workflow:
 GX nonlinear W7-X adiabatic-electron setup while keeping the geometry source
 explicitly tied to a VMEC/DESC ``*.eik.nc`` field-line file.
 
+SPECTRAX-GK now also supports a direct VMEC runtime bridge with
+``geometry.model = "vmec"``. This path does not invent a second stellarator
+geometry implementation: it shells out to GX's own ``gx_geo_vmec.py`` helper,
+produces a GX-compatible ``*.eik.nc`` file, and then re-enters the same
+imported-geometry contract described above. The bridge is cached by input
+content and VMEC file timestamp, so repeated runtime or CLI calls reuse the
+same generated file unless an explicit ``geometry_file`` target is requested.
+That gives SPECTRAX-GK a parity-first VMEC path immediately, while keeping the
+native JAX geometry contract centered on ``FluxTubeGeometryData``.
+
+Two user-facing entry points now exercise that bridge:
+
+- ``tools/generate_gx_vmec_eik.py --config ...`` generates a GX-compatible
+  ``*.eik.nc`` file from a SPECTRAX runtime TOML.
+- ``examples/hsx_nonlinear_vmec_geometry.py`` and
+  ``examples/configs/runtime_hsx_nonlinear_vmec_geometry.toml`` run a nonlinear
+  adiabatic-electron ITG case on the supplied HSX VMEC equilibrium file while
+  letting SPECTRAX generate and reuse the field-line geometry automatically.
+
 Imported geometry currently bypasses analytic twist-shift reconstruction and
 uses the provided grid as-is. That keeps the GX-import bridge honest while the
 native VMEC path is still being generalized.

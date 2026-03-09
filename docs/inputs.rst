@@ -147,6 +147,14 @@ file produced by the VMEC workflow. When that imported geometry is used with a
 linked boundary, SPECTRAX-GK now follows the file's own ``theta`` range,
 ``jtwist/x0`` geometry factor, and ``kxfac`` metadata instead of forcing the
 analytic s-alpha grid defaults.
+For direct VMEC workflows, the runtime also accepts ``model = "vmec"``.
+In that mode SPECTRAX-GK calls GX's ``gx_geo_vmec.py`` helper to generate a
+matching ``*.eik.nc`` file on demand, then immediately reuses the same imported
+geometry path as the W7-X examples. Set ``vmec_file`` plus the flux-tube keys
+``torflux``, ``npol`` and optionally ``alpha``. ``geometry_file`` can be used
+as an explicit output/reuse path for the generated ``*.eik.nc`` file, and
+``gx_repo`` can point to a non-default GX checkout if needed. This is now the
+recommended parity-first route for new stellarator cases such as HSX.
 
 Solver and fit-signal keys
 --------------------------
