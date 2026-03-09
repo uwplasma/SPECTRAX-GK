@@ -633,6 +633,16 @@ def test_runtime_linear_accepts_vmec_model_via_generated_eik(
     assert np.isfinite(out.omega)
 
 
+def test_runtime_linear_secondary_slab_example_runs() -> None:
+    cfg_path = Path(__file__).resolve().parents[1] / "examples" / "configs" / "runtime_secondary_slab.toml"
+    cfg, _ = load_runtime_from_toml(cfg_path)
+
+    out = run_runtime_linear(cfg, ky_target=0.1, Nl=3, Nm=8, solver="gx_time")
+
+    assert np.isfinite(out.gamma)
+    assert np.isfinite(out.omega)
+
+
 def test_runtime_linear_gx_time_root_level_geometry_matches_analytic_reference(tmp_path) -> None:
     netcdf4 = pytest.importorskip("netCDF4")
     Dataset = netcdf4.Dataset
