@@ -129,6 +129,10 @@ as the W7-X examples in the GX benchmark tree. For imported geometry, the
 runtime now also adopts the file's ``theta`` extent, linked-boundary
 ``jtwist/x0`` defaults, and ``kxfac`` metadata so the flux-tube grid is built
 from the same field-line domain GX used to generate the file.
+The same importer is also exposed under the aliases
+``geometry.model = "gx-eik"``, ``"vmec-eik"``, and ``"desc-eik"`` so configs
+can reflect the provenance of a root-level ``*.eik.nc`` file without changing
+the solver-facing geometry contract.
 The linear KBM benchmark entry point now uses the same geometry builder, so
 the GX parity harness can exercise imported sampled geometry through
 ``run_kbm_linear`` instead of only through the runtime wrappers.

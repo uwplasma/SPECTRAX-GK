@@ -156,3 +156,18 @@ def test_w7x_imported_geometry_example_toml_loads() -> None:
     assert cfg.geometry.geometry_file is not None
     assert cfg.physics.adiabatic_electrons is True
     assert cfg.normalization.diagnostic_norm == "gx"
+
+
+def test_load_runtime_from_toml_accepts_desc_eik_geometry_alias(tmp_path: Path) -> None:
+    toml = """
+[geometry]
+model = "desc-eik"
+geometry_file = "/tmp/w7x-desc.eik.nc"
+"""
+    path = tmp_path / "runtime_desc.toml"
+    path.write_text(toml, encoding="utf-8")
+
+    cfg, _ = load_runtime_from_toml(path)
+
+    assert cfg.geometry.model == "desc-eik"
+    assert cfg.geometry.geometry_file == "/tmp/w7x-desc.eik.nc"

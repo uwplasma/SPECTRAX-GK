@@ -370,6 +370,41 @@ def test_build_flux_tube_geometry_loads_gx_netcdf(tmp_path):
     assert loaded.source_model == "gx-netcdf"
 
 
+@pytest.mark.parametrize("model", ["gx-eik", "vmec-eik", "desc-eik", "eik"])
+def test_build_flux_tube_geometry_accepts_imported_eik_aliases(tmp_path, model: str):
+    netcdf4 = pytest.importorskip("netCDF4")
+    Dataset = netcdf4.Dataset
+
+    path = tmp_path / "geom.eik.nc"
+    theta = np.linspace(-np.pi, np.pi, 5)
+    with Dataset(path, "w") as root:
+        root.createDimension("z", theta.size)
+        root.createVariable("theta", "f8", ("z",))[:] = theta
+        root.createVariable("bmag", "f8", ("z",))[:] = np.linspace(1.0, 1.2, theta.size)
+        root.createVariable("gds2", "f8", ("z",))[:] = np.linspace(1.0, 2.0, theta.size)
+        root.createVariable("gds21", "f8", ("z",))[:] = np.linspace(-0.2, 0.2, theta.size)
+        root.createVariable("gds22", "f8", ("z",))[:] = np.full(theta.size, 0.8)
+        root.createVariable("cvdrift", "f8", ("z",))[:] = np.linspace(0.3, 0.5, theta.size)
+        root.createVariable("gbdrift", "f8", ("z",))[:] = np.linspace(0.3, 0.5, theta.size)
+        root.createVariable("cvdrift0", "f8", ("z",))[:] = np.linspace(-0.1, 0.1, theta.size)
+        root.createVariable("gbdrift0", "f8", ("z",))[:] = np.linspace(-0.1, 0.1, theta.size)
+        root.createVariable("jacob", "f8", ("z",))[:] = np.linspace(2.0, 3.0, theta.size)
+        root.createVariable("grho", "f8", ("z",))[:] = np.linspace(1.0, 1.4, theta.size)
+        root.createVariable("gradpar", "f8", ("z",))[:] = np.full(theta.size, 0.4)
+        root.createVariable("drhodpsi", "f8", ())[:] = 1.0
+        root.createVariable("q", "f8", ())[:] = 1.7
+        root.createVariable("shat", "f8", ())[:] = 0.6
+        root.createVariable("Rmaj", "f8", ())[:] = 5.0
+        root.createVariable("kxfac", "f8", ())[:] = 1.3
+        root.createVariable("scale", "f8", ())[:] = 2.0
+        root.createVariable("nfp", "f8", ())[:] = 5.0
+
+    loaded = build_flux_tube_geometry(GeometryConfig(model=model, geometry_file=str(path)))
+
+    assert loaded.source_model == "gx-netcdf"
+    assert loaded.theta_closed_interval is True
+
+
 def test_apply_gx_geometry_grid_defaults_uses_imported_theta_and_kxfac(tmp_path):
     netcdf4 = pytest.importorskip("netCDF4")
     Dataset = netcdf4.Dataset
