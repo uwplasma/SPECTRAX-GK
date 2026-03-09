@@ -82,6 +82,14 @@ W7-X imported geometry runtime example
      --geometry-file /path/to/itg_w7x_adiabatic_electrons.eik.nc \
      --ky 0.3
 
+W7-X imported geometry TOML run
+-------------------------------
+
+.. code-block:: bash
+
+   python -m spectraxgk.cli run-runtime-linear \
+     --config examples/configs/runtime_w7x_linear_imported_geometry.toml
+
 KBM beta scan
 -------------
 

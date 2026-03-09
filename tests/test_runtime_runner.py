@@ -11,6 +11,7 @@ from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, 
 from spectraxgk.diagnostics import GXDiagnostics
 from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
 from spectraxgk.grids import build_spectral_grid
+from spectraxgk.io import load_runtime_from_toml
 from spectraxgk.runtime import (
     _build_initial_condition,
     build_runtime_linear_params,
@@ -638,6 +639,122 @@ def test_runtime_linear_gx_time_root_level_geometry_matches_analytic_reference(t
 
     assert imported_out.gamma == pytest.approx(analytic_out.gamma, rel=2.0e-3, abs=1.0e-6)
     assert imported_out.omega == pytest.approx(analytic_out.omega, rel=2.0e-3, abs=1.0e-6)
+
+
+def test_runtime_linear_gx_time_root_level_geometry_matches_analytic_reference_from_toml(tmp_path) -> None:
+    netcdf4 = pytest.importorskip("netCDF4")
+    Dataset = netcdf4.Dataset
+
+    theta = np.linspace(-3.0 * np.pi, 3.0 * np.pi, 33)
+    path = tmp_path / "geom.eik.nc"
+    analytic = SAlphaGeometry(q=1.4, s_hat=0.8, epsilon=0.18, R0=2.77778, alpha=0.0)
+    sampled = sample_flux_tube_geometry(analytic, theta)
+    with Dataset(path, "w") as root:
+        root.createDimension("z", theta.size)
+        root.createVariable("theta", "f8", ("z",))[:] = theta
+        root.createVariable("bmag", "f8", ("z",))[:] = np.asarray(sampled.bmag_profile)
+        root.createVariable("gds2", "f8", ("z",))[:] = np.asarray(sampled.gds2_profile)
+        root.createVariable("gds21", "f8", ("z",))[:] = np.asarray(sampled.gds21_profile)
+        root.createVariable("gds22", "f8", ("z",))[:] = np.asarray(sampled.gds22_profile)
+        root.createVariable("cvdrift", "f8", ("z",))[:] = 2.0 * np.asarray(sampled.cv_profile)
+        root.createVariable("gbdrift", "f8", ("z",))[:] = 2.0 * np.asarray(sampled.gb_profile)
+        root.createVariable("cvdrift0", "f8", ("z",))[:] = 2.0 * np.asarray(sampled.cv0_profile)
+        root.createVariable("gbdrift0", "f8", ("z",))[:] = 2.0 * np.asarray(sampled.gb0_profile)
+        root.createVariable("jacob", "f8", ("z",))[:] = np.full(theta.size, 7.0)
+        root.createVariable("grho", "f8", ("z",))[:] = np.asarray(sampled.grho_profile)
+        root.createVariable("gradpar", "f8", ("z",))[:] = np.full(theta.size, sampled.gradpar_value)
+        root.createVariable("drhodpsi", "f8", ())[:] = 1.0
+        root.createVariable("q", "f8", ())[:] = sampled.q
+        root.createVariable("shat", "f8", ())[:] = sampled.s_hat
+        root.createVariable("Rmaj", "f8", ())[:] = sampled.R0
+        root.createVariable("kxfac", "f8", ())[:] = sampled.kxfac
+        root.createVariable("scale", "f8", ())[:] = sampled.theta_scale
+        root.createVariable("nfp", "f8", ())[:] = sampled.nfp
+        root.createVariable("alpha", "f8", ())[:] = sampled.alpha
+
+    toml = f"""
+[[species]]
+name = "ion"
+charge = 1.0
+mass = 1.0
+density = 1.0
+temperature = 1.0
+tprim = 3.0
+fprim = 1.0
+kinetic = true
+
+[grid]
+Nx = 1
+Ny = 8
+Nz = 32
+Lx = 62.8
+Ly = 62.8
+boundary = "linked"
+y0 = 10.0
+z_min = {-3.0 * np.pi}
+z_max = {3.0 * np.pi}
+
+[time]
+t_max = 0.08
+dt = 0.02
+method = "rk4"
+use_diffrax = false
+sample_stride = 1
+fixed_dt = true
+
+[geometry]
+model = "gx-netcdf"
+geometry_file = "{path}"
+
+[physics]
+adiabatic_electrons = true
+tau_e = 1.0
+electromagnetic = false
+
+[terms]
+end_damping = 0.0
+hypercollisions = 0.0
+
+[normalization]
+contract = "kinetic"
+diagnostic_norm = "none"
+"""
+    cfg_path = tmp_path / "runtime_w7x.toml"
+    cfg_path.write_text(toml, encoding="utf-8")
+
+    cfg_loaded, _ = load_runtime_from_toml(cfg_path)
+    cfg_ref = replace(
+        _base_runtime_cfg(),
+        grid=GridConfig(
+            Nx=1,
+            Ny=8,
+            Nz=32,
+            Lx=62.8,
+            Ly=62.8,
+            boundary="linked",
+            y0=10.0,
+            z_min=-3.0 * np.pi,
+            z_max=3.0 * np.pi,
+        ),
+        time=TimeConfig(
+            t_max=0.08,
+            dt=0.02,
+            method="rk4",
+            use_diffrax=False,
+            sample_stride=1,
+            fixed_dt=True,
+        ),
+        species=(RuntimeSpeciesConfig(name="ion", tprim=3.0, fprim=1.0),),
+        normalization=RuntimeNormalizationConfig(contract="kinetic", diagnostic_norm="none"),
+        physics=RuntimePhysicsConfig(adiabatic_electrons=True, tau_e=1.0),
+        terms=RuntimeTermsConfig(end_damping=0.0, hypercollisions=0.0),
+    )
+
+    loaded_out = run_runtime_linear(cfg_loaded, ky_target=0.2, Nl=4, Nm=6, solver="gx_time")
+    analytic_out = run_runtime_linear(cfg_ref, ky_target=0.2, Nl=4, Nm=6, solver="gx_time")
+
+    assert loaded_out.gamma == pytest.approx(analytic_out.gamma, rel=2.0e-3, abs=1.0e-6)
+    assert loaded_out.omega == pytest.approx(analytic_out.omega, rel=2.0e-3, abs=1.0e-6)
 
 
 def test_runtime_init_all_applies_gx_moment_scaling_single_mode() -> None:

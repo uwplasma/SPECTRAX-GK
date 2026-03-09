@@ -102,3 +102,57 @@ def test_gx_aligned_kbm_runtime_examples_keep_end_damping_enabled() -> None:
     for path in paths:
         cfg, _ = load_runtime_from_toml(path)
         assert cfg.terms.end_damping == pytest.approx(1.0), path.name
+
+
+def test_load_runtime_from_toml_keeps_imported_geometry_fields(tmp_path: Path) -> None:
+    toml = """
+[[species]]
+name = "ion"
+charge = 1.0
+mass = 1.0
+density = 1.0
+temperature = 1.0
+tprim = 3.0
+fprim = 1.0
+kinetic = true
+
+[grid]
+Nx = 1
+Ny = 12
+Nz = 32
+
+[geometry]
+model = "gx-netcdf"
+geometry_file = "/tmp/w7x.eik.nc"
+
+[physics]
+adiabatic_electrons = true
+electromagnetic = false
+
+[run]
+ky = 0.3
+Nl = 8
+Nm = 12
+solver = "gx_time"
+"""
+    path = tmp_path / "runtime_w7x.toml"
+    path.write_text(toml, encoding="utf-8")
+
+    cfg, data = load_runtime_from_toml(path)
+
+    assert isinstance(data, dict)
+    assert cfg.geometry.model == "gx-netcdf"
+    assert cfg.geometry.geometry_file == "/tmp/w7x.eik.nc"
+    assert cfg.physics.adiabatic_electrons is True
+
+
+def test_w7x_imported_geometry_example_toml_loads() -> None:
+    path = Path(__file__).resolve().parents[1] / "examples" / "configs" / "runtime_w7x_linear_imported_geometry.toml"
+
+    cfg, data = load_runtime_from_toml(path)
+
+    assert isinstance(data, dict)
+    assert cfg.geometry.model == "gx-netcdf"
+    assert cfg.geometry.geometry_file is not None
+    assert cfg.physics.adiabatic_electrons is True
+    assert cfg.normalization.diagnostic_norm == "gx"
