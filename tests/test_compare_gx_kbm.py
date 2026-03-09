@@ -6,6 +6,7 @@ import sys
 from types import SimpleNamespace
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -73,6 +74,7 @@ def test_compare_gx_kbm_run_candidate_uses_gx_shift_for_krylov(monkeypatch) -> N
         import compare_gx_kbm as mod
     finally:
         sys.path.remove(str(tools_dir))
+    from spectraxgk.benchmarks import LinearRunResult
 
     captured: dict[str, object] = {}
 
@@ -258,6 +260,7 @@ def test_compare_gx_kbm_run_candidate_cached_reuses_gx_time_trajectory(monkeypat
         solver_name="gx_time",
         mode_method_override="project",
         result_cache=cache,
+        gx_time_ref=None,
         gx_gamma=0.2,
         gx_omega=-1.0,
     )
@@ -269,6 +272,7 @@ def test_compare_gx_kbm_run_candidate_cached_reuses_gx_time_trajectory(monkeypat
         solver_name="gx_time",
         mode_method_override="max",
         result_cache=cache,
+        gx_time_ref=None,
         gx_gamma=0.2,
         gx_omega=-1.0,
     )
@@ -276,6 +280,48 @@ def test_compare_gx_kbm_run_candidate_cached_reuses_gx_time_trajectory(monkeypat
     assert calls == ["run", "recompute:project", "recompute:max"]
     assert result_project.gamma == 1.1
     assert result_max.gamma == 1.2
+
+
+def test_compare_gx_kbm_recompute_on_gx_time_grid(monkeypatch) -> None:
+    tools_dir = Path(__file__).resolve().parents[1] / "tools"
+    sys.path.insert(0, str(tools_dir))
+    try:
+        import compare_gx_kbm as mod
+    finally:
+        sys.path.remove(str(tools_dir))
+    from spectraxgk.benchmarks import LinearRunResult
+
+    captured: dict[str, object] = {}
+
+    def _fake_recompute(_args, result, *, mode_method: str):
+        captured["t"] = np.asarray(result.t)
+        captured["phi_shape"] = np.asarray(result.phi_t).shape
+        captured["mode_method"] = mode_method
+        return result
+
+    monkeypatch.setattr(mod, "_recompute_time_history_growth", _fake_recompute)
+
+    result = LinearRunResult(
+        t=np.array([0.0, 1.0, 2.0], dtype=float),
+        phi_t=np.array([[[[1.0 + 0.0j]]], [[[2.0 + 0.0j]]], [[[3.0 + 0.0j]]]], dtype=np.complex128),
+        gamma=0.0,
+        omega=0.0,
+        ky=0.3,
+        selection=SimpleNamespace(ky_index=0, kx_index=0, z_index=0),
+    )
+    gx_time = np.array([0.0, 0.5, 1.5], dtype=float)
+
+    sampled = mod._recompute_time_history_growth_on_grid(
+        SimpleNamespace(),
+        result,
+        mode_method="project",
+        t_ref=gx_time,
+    )
+
+    assert np.allclose(captured["t"], gx_time)
+    assert captured["phi_shape"] == (3, 1, 1, 1)
+    assert captured["mode_method"] == "project"
+    assert np.allclose(np.asarray(sampled.phi_t)[:, 0, 0, 0].real, [1.0, 1.5, 2.5])
 
 
 def test_compare_gx_kbm_run_candidate_allows_shift_source_override(monkeypatch) -> None:

@@ -352,6 +352,37 @@ def _recompute_time_history_growth(args, result, *, mode_method: str):
         return replace(result, gamma=float(gamma), omega=float(omega))
 
 
+def _interp_phi_t(phi_t: np.ndarray, t_src: np.ndarray, t_dst: np.ndarray) -> np.ndarray:
+    phi_src = np.asarray(phi_t, dtype=np.complex128)
+    if np.array_equal(t_src, t_dst):
+        return phi_src
+    flat = phi_src.reshape(phi_src.shape[0], -1)
+    out = np.empty((t_dst.size, flat.shape[1]), dtype=np.complex128)
+    for j in range(flat.shape[1]):
+        out[:, j] = np.interp(t_dst, t_src, flat[:, j].real) + 1j * np.interp(
+            t_dst, t_src, flat[:, j].imag
+        )
+    return out.reshape((t_dst.size,) + phi_src.shape[1:])
+
+
+def _recompute_time_history_growth_on_grid(
+    args,
+    result,
+    *,
+    mode_method: str,
+    t_ref: np.ndarray | None = None,
+):
+    if t_ref is None or np.asarray(t_ref).size <= 1:
+        return _recompute_time_history_growth(args, result, mode_method=mode_method)
+    t_src = np.asarray(result.t, dtype=float)
+    t_dst = np.asarray(t_ref, dtype=float)
+    if t_src.size <= 1:
+        return result
+    phi_t = _interp_phi_t(np.asarray(result.phi_t), t_src, t_dst)
+    sampled = replace(result, t=t_dst, phi_t=phi_t)
+    return _recompute_time_history_growth(args, sampled, mode_method=mode_method)
+
+
 def _run_candidate_cached(
     args,
     cfg: KBMBaseCase,
@@ -361,6 +392,7 @@ def _run_candidate_cached(
     *,
     mode_method_override: str | None,
     result_cache: dict[tuple[object, ...], object],
+    gx_time_ref: np.ndarray | None = None,
     gx_gamma: float | None = None,
     gx_omega: float | None = None,
 ):
@@ -379,7 +411,12 @@ def _run_candidate_cached(
                 gx_gamma=gx_gamma,
                 gx_omega=gx_omega,
             )
-        return _recompute_time_history_growth(args, result_cache[cache_key], mode_method=mode_method_use)
+        return _recompute_time_history_growth_on_grid(
+            args,
+            result_cache[cache_key],
+            mode_method=mode_method_use,
+            t_ref=gx_time_ref,
+        )
     return _run_candidate(
         args,
         cfg,
@@ -626,6 +663,7 @@ def main() -> None:
                     solver_name,
                     mode_method_override=mode_method_override,
                     result_cache=result_cache,
+                    gx_time_ref=gx_time,
                     gx_gamma=float(gx_gamma[i]),
                     gx_omega=float(gx_omega[i]),
                 )
@@ -669,6 +707,7 @@ def main() -> None:
                     solver_name,
                     mode_method_override=mode_method_override,
                     result_cache=result_cache,
+                    gx_time_ref=gx_time,
                     gx_gamma=float(gx_gamma[i]),
                     gx_omega=float(gx_omega[i]),
                 )
@@ -729,6 +768,7 @@ def main() -> None:
                 solver_used,
                 mode_method_override=None,
                 result_cache=result_cache,
+                gx_time_ref=gx_time,
                 gx_gamma=float(gx_gamma[i]),
                 gx_omega=float(gx_omega[i]),
             )
