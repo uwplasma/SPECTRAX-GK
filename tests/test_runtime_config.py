@@ -23,6 +23,7 @@ def test_runtime_config_to_dict_contains_sections() -> None:
         "collisions",
         "normalization",
         "terms",
+        "expert",
     }
     assert len(d["species"]) == 1
 
@@ -70,6 +71,16 @@ use_apar = true
 adiabatic_electrons = false
 beta = 0.2
 
+[expert]
+fixed_mode = true
+iky_fixed = 1
+ikx_fixed = 0
+
+[init]
+init_file = "/tmp/restart.bin"
+init_file_scale = 5.0
+init_file_mode = "add"
+
 [normalization]
 contract = "kbm"
 omega_star_scale = 0.7
@@ -85,6 +96,12 @@ omega_star_scale = 0.7
     assert cfg.physics.beta == pytest.approx(0.2)
     assert cfg.normalization.contract == "kbm"
     assert cfg.normalization.omega_star_scale == pytest.approx(0.7)
+    assert cfg.expert.fixed_mode is True
+    assert cfg.expert.iky_fixed == 1
+    assert cfg.expert.ikx_fixed == 0
+    assert cfg.init.init_file == "/tmp/restart.bin"
+    assert cfg.init.init_file_scale == pytest.approx(5.0)
+    assert cfg.init.init_file_mode == "add"
     assert len(cfg.species) == 2
     assert cfg.species[1].charge == pytest.approx(-1.0)
 

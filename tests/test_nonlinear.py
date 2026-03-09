@@ -13,6 +13,7 @@ from spectraxgk.nonlinear import (
     build_nonlinear_imex_operator,
     integrate_nonlinear,
     integrate_nonlinear_gx_diagnostics,
+    integrate_nonlinear_gx_diagnostics_state,
     integrate_nonlinear_imex_cached,
 )
 from spectraxgk.terms.config import TermConfig
@@ -258,3 +259,32 @@ def test_nonlinear_imex_gx_diagnostics_match_operator_dtype_under_x64():
 
     assert np.isfinite(np.asarray(diag.gamma_t)).all()
     assert np.isfinite(np.asarray(diag.omega_t)).all()
+
+
+def test_nonlinear_gx_state_diagnostics_can_freeze_one_mode():
+    """Fixed-mode projection should preserve a selected Fourier mode exactly."""
+
+    grid_cfg = GridConfig(Nx=4, Ny=4, Nz=4, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams()
+
+    shape = (2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz)
+    base = np.arange(np.prod(shape), dtype=np.float32).reshape(shape)
+    G = jnp.asarray(base + 1.0j * (base + 1.0), dtype=jnp.complex64)
+
+    _t, _diag, G_final, _fields = integrate_nonlinear_gx_diagnostics_state(
+        G,
+        grid,
+        geom,
+        params,
+        dt=0.02,
+        steps=3,
+        method="rk3",
+        terms=TermConfig(nonlinear=1.0, collisions=0.0, hypercollisions=0.0),
+        fixed_mode_ky_index=1,
+        fixed_mode_kx_index=0,
+    )
+
+    assert np.allclose(np.asarray(G_final)[..., 1, 0, :], np.asarray(G)[..., 1, 0, :])
