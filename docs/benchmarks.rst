@@ -378,6 +378,15 @@ used, the Krylov entry point also honors the requested seed source, so
 shift-invert can reuse a propagator/power seed instead of always restarting
 from the raw initial condition. The benchmark harness keeps that seed source
 explicit via ``--krylov-gx-shift-source`` instead of hardwiring one KBM policy.
+When branch mismatch remains after the matched-state RHS audit, use the startup
+state comparator to separate initialization from time-history extraction:
+
+- ``python tools/compare_gx_startup.py --gx-dir /path/to/gx_dump --gx-out /path/to/kbm_salpha.out.nc --case kbm --ky 0.3 --Ny 16 --Nz 96 --Nl 16 --Nm 48 --ntheta 32 --nperiod 2``
+
+This reads ``field_g_state.bin`` / ``field_phi.bin`` from a GX
+``GX_DUMP_FIELDS`` startup dump, rebuilds the matching SPECTRAX initial state,
+and reports direct ``g``/``phi``/``A_parallel`` mismatch before any time
+integration or growth-rate fitting is involved.
 
 KBM nonlinear term comparison (GX)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
