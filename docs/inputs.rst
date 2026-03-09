@@ -135,6 +135,10 @@ The ``[geometry]`` section supports ``drift_scale`` to switch between GX-style
 (``drift_scale = 1.0``) and GS2-style (``drift_scale = 2.0``) drift
 normalizations. The default configuration in SPECTRAX-GK uses the GX-reference
 value.
+For GX slab benchmarks, set ``model = "slab"``. Optional slab-specific keys are
+``z0`` (sets ``gradpar = 1/z0`` when positive, matching GX's slab domain
+normalization) and ``zero_shat = true`` (forces the GX zero-shear slab metric
+``gds2 = 1, gds21 = 0, gds22 = 1``).
 It also accepts ``model = "gx-netcdf"`` with
 ``geometry_file = "/path/to/gx_geometry.nc"`` to run from imported sampled
 field-line geometry instead of the analytic ``s-alpha`` model. The imported

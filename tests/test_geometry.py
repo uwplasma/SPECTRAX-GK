@@ -8,6 +8,7 @@ import pytest
 from spectraxgk.config import GeometryConfig, GridConfig
 from spectraxgk.geometry import (
     SAlphaGeometry,
+    SlabGeometry,
     apply_gx_geometry_grid_defaults,
     build_flux_tube_geometry,
     ensure_flux_tube_geometry_data,
@@ -44,6 +45,45 @@ def test_build_flux_tube_geometry_analytic_from_config():
 
     assert isinstance(geom, SAlphaGeometry)
     assert geom.q == 1.7
+
+
+def test_build_flux_tube_geometry_slab_from_config():
+    cfg = GeometryConfig(model="slab", s_hat=0.3, z0=2.5, zero_shat=False)
+    geom = build_flux_tube_geometry(cfg)
+
+    assert isinstance(geom, SlabGeometry)
+    assert geom.s_hat == pytest.approx(0.3)
+    assert geom.gradpar() == pytest.approx(0.4)
+
+
+def test_slab_geometry_matches_gx_contract():
+    geom = SlabGeometry(s_hat=0.4, z0=3.0)
+    theta = jnp.array([-jnp.pi, 0.0, jnp.pi / 2.0])
+    gds2, gds21, gds22 = geom.metric_coeffs(theta)
+    cv, gb, cv0, gb0 = geom.drift_coeffs(theta)
+
+    assert jnp.allclose(geom.bmag(theta), jnp.ones_like(theta))
+    assert jnp.allclose(geom.bgrad(theta), jnp.zeros_like(theta))
+    assert geom.gradpar() == pytest.approx(1.0 / 3.0)
+    assert jnp.allclose(cv, jnp.zeros_like(theta))
+    assert jnp.allclose(gb, jnp.zeros_like(theta))
+    assert jnp.allclose(cv0, jnp.zeros_like(theta))
+    assert jnp.allclose(gb0, jnp.zeros_like(theta))
+    assert jnp.allclose(gds2, 1.0 + (0.4 * theta) ** 2)
+    assert jnp.allclose(gds21, -(0.4 * 0.4) * theta)
+    assert jnp.allclose(gds22, jnp.full_like(theta, 0.16))
+
+
+def test_zero_shat_slab_geometry_matches_gx_override():
+    geom = SlabGeometry.from_config(GeometryConfig(model="slab", s_hat=0.8, zero_shat=True))
+    theta = jnp.array([-1.0, 0.0, 1.0])
+    gds2, gds21, gds22 = geom.metric_coeffs(theta)
+
+    assert geom.s_hat == pytest.approx(0.0)
+    assert geom.gradpar() == pytest.approx(1.0)
+    assert jnp.allclose(gds2, jnp.ones_like(theta))
+    assert jnp.allclose(gds21, jnp.zeros_like(theta))
+    assert jnp.allclose(gds22, jnp.ones_like(theta))
 
 
 def test_bmag_and_omega_d_shapes():
@@ -127,6 +167,21 @@ def test_sampled_flux_tube_geometry_matches_salpha_profiles():
         sampled.k_perp2(kx[None, :, None], ky[:, None, None], theta_b),
         geom.k_perp2(kx[None, :, None], ky[:, None, None], theta_b),
     )
+
+
+def test_sampled_flux_tube_geometry_matches_slab_profiles():
+    geom = SlabGeometry(s_hat=0.5, z0=2.0)
+    theta = jnp.linspace(-jnp.pi, jnp.pi, 17)
+    sampled = sample_flux_tube_geometry(geom, theta)
+
+    assert sampled.source_model == "slab"
+    assert jnp.allclose(sampled.bmag(theta), jnp.ones_like(theta))
+    assert jnp.allclose(sampled.bgrad(theta), jnp.zeros_like(theta))
+    gds2_s, gds21_s, gds22_s = sampled.metric_coeffs(theta)
+    gds2_g, gds21_g, gds22_g = geom.metric_coeffs(theta)
+    assert jnp.allclose(gds2_s, gds2_g)
+    assert jnp.allclose(gds21_s, gds21_g)
+    assert jnp.allclose(gds22_s, gds22_g)
 
 
 def test_sampled_flux_tube_geometry_tree_roundtrip():

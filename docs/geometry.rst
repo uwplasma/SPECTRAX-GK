@@ -82,6 +82,25 @@ with
 These parameters will be extended to VMEC/DESC geometry once the linear solver
 is validated against Cyclone benchmarks.
 
+Slab Model
+----------
+
+SPECTRAX-GK now also exposes GX's slab geometry contract directly with
+``geometry.model = "slab"``. This is the correct backend for GX's
+``secondary`` and ``cETG`` benchmarks; it is not an ``s-alpha`` approximation.
+
+The slab overrides follow the audited GX implementation:
+
+- ``bmag = 1`` and ``bgrad = 0``
+- ``cvdrift = gbdrift = cvdrift0 = gbdrift0 = 0``
+- ``gradpar = 1`` by default, or ``1/z0`` when ``geometry.z0 > 0``
+- the metric still uses the supplied ``s_hat`` unless ``geometry.zero_shat = true``
+- with ``zero_shat = true``, the slab metric becomes ``gds2 = 1``,
+  ``gds21 = 0``, ``gds22 = 1`` and the effective solver shear is zero
+
+That contract is now locked by unit tests so future secondary/cETG work is
+built on the same geometry semantics GX uses.
+
 Geometry Data Contract
 ----------------------
 
@@ -123,7 +142,9 @@ contract inside SPECTRAX-GK.
 Runtime and CLI paths can now construct that bridge directly from config with
 ``geometry.model = "gx-netcdf"`` and
 ``geometry.geometry_file = "/path/to/geometry.nc"``. Analytic s-alpha remains
-the default with ``geometry.model = "s-alpha"``. In practice that geometry file
+the default with ``geometry.model = "s-alpha"``. For slab cases use
+``geometry.model = "slab"`` with optional ``geometry.z0`` and
+``geometry.zero_shat`` controls. In practice an imported geometry file
 can be either a GX ``*.out.nc`` file or a VMEC-generated ``*.eik.nc`` file such
 as the W7-X examples in the GX benchmark tree. For imported geometry, the
 runtime now also adopts the file's ``theta`` extent, linked-boundary
