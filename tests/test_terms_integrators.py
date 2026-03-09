@@ -9,6 +9,12 @@ from spectraxgk.terms.config import FieldState
 from spectraxgk.terms.integrators import integrate_nonlinear
 from spectraxgk.terms.nonlinear import exb_nonlinear_contribution, placeholder_nonlinear_contribution
 
+_SSPX3_ADT = float((1.0 / 6.0) ** (1.0 / 3.0))
+_SSPX3_WGTFAC = float((9.0 - 2.0 * (6.0 ** (2.0 / 3.0))) ** 0.5)
+_SSPX3_W1 = 0.5 * (_SSPX3_WGTFAC - 1.0)
+_SSPX3_W2 = 0.5 * ((6.0 ** (2.0 / 3.0)) - 1.0 - _SSPX3_WGTFAC)
+_SSPX3_W3 = (1.0 / _SSPX3_ADT) - 1.0 - _SSPX3_W2 * (_SSPX3_W1 + 1.0)
+
 
 def _linear_rhs(rate: complex):
     def rhs_fn(G: jnp.ndarray) -> tuple[jnp.ndarray, FieldState]:
@@ -26,6 +32,25 @@ def _linear_rhs(rate: complex):
         ("rk2", lambda a: 1.0 + a + 0.5 * a * a),
         ("rk3", lambda a: 1.0 + a + 0.5 * a * a + (a * a * a) / 6.0),
         ("rk4", lambda a: 1.0 + a + 0.5 * a * a + (a * a * a) / 6.0 + (a * a * a * a) / 24.0),
+        (
+            "sspx3",
+            lambda a: (
+                (1.0 - _SSPX3_W2 - _SSPX3_W3)
+                + _SSPX3_W3 * (1.0 + _SSPX3_ADT * a)
+                + (_SSPX3_W2 - 1.0)
+                * (
+                    (1.0 - _SSPX3_W1)
+                    + (_SSPX3_W1 - 1.0) * (1.0 + _SSPX3_ADT * a)
+                    + (1.0 + _SSPX3_ADT * a) ** 2
+                )
+                + (1.0 + _SSPX3_ADT * a)
+                * (
+                    (1.0 - _SSPX3_W1)
+                    + (_SSPX3_W1 - 1.0) * (1.0 + _SSPX3_ADT * a)
+                    + (1.0 + _SSPX3_ADT * a) ** 2
+                )
+            ),
+        ),
     ],
 )
 def test_integrate_nonlinear_methods_match_linear_amplification(method, one_step_factor) -> None:

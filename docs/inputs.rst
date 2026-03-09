@@ -269,3 +269,6 @@ Notable runtime-only keys:
 * ``[expert] fixed_mode`` with ``iky_fixed`` / ``ikx_fixed``: keep one Fourier
   mode exactly frozen during nonlinear evolution, matching GX's ``eqfix``
   behavior used by the ``secondary`` benchmark.
+* ``[time] method = "sspx3"``: use the GX SSPx3 scheme directly. This is the
+  relevant explicit method for GX's ``secondary`` and ``cETG`` benchmark
+  families; ``rk3_gx`` is a different three-stage scheme.

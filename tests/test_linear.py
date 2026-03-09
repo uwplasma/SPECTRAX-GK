@@ -263,7 +263,7 @@ def test_integrate_linear_methods():
     geom = SAlphaGeometry.from_config(cfg.geometry)
     params = LinearParams()
     G = jnp.zeros((2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
-    for method in ("euler", "rk2", "imex", "semi-implicit"):
+    for method in ("euler", "rk2", "imex", "semi-implicit", "sspx3"):
         _, phi_t = integrate_linear(G, grid, geom, params, dt=0.1, steps=2, method=method)
         assert phi_t.shape[0] == 2
 

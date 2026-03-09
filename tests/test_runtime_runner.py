@@ -212,6 +212,49 @@ def test_runtime_scan_batch_matches_serial() -> None:
     assert np.allclose(serial.omega, batched.omega, rtol=5.0e-2, atol=1.0e-8)
 
 
+def test_runtime_linear_time_solver_can_return_state() -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        species=(RuntimeSpeciesConfig(name="ion"),),
+        normalization=RuntimeNormalizationConfig(contract="cyclone", diagnostic_norm="none"),
+    )
+    res = run_runtime_linear(
+        cfg,
+        ky_target=0.1,
+        Nl=3,
+        Nm=4,
+        solver="time",
+        method="sspx3",
+        dt=0.01,
+        steps=2,
+        return_state=True,
+    )
+    assert res.state is not None
+    assert res.state.ndim == 6
+    assert res.state.shape[:3] == (1, 3, 4)
+    assert res.state.shape[-1] == cfg.grid.Nz
+
+
+def test_runtime_linear_gx_time_rejects_return_state() -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        species=(RuntimeSpeciesConfig(name="ion"),),
+        normalization=RuntimeNormalizationConfig(contract="cyclone", diagnostic_norm="none"),
+    )
+    with pytest.raises(ValueError, match="return_state"):
+        run_runtime_linear(
+            cfg,
+            ky_target=0.1,
+            Nl=3,
+            Nm=4,
+            solver="gx_time",
+            method="rk4",
+            dt=0.01,
+            steps=2,
+            return_state=True,
+        )
+
+
 def test_runtime_nonlinear_smoke() -> None:
     cfg = replace(
         _base_runtime_cfg(),
