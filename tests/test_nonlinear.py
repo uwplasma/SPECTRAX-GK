@@ -91,7 +91,7 @@ def test_integrate_nonlinear_gx_diagnostics_shapes():
         params,
         dt=0.1,
         steps=3,
-        method="rk3",
+        method="sspx3",
         terms=terms,
     )
     assert t.shape[0] == 3
@@ -261,7 +261,8 @@ def test_nonlinear_imex_gx_diagnostics_match_operator_dtype_under_x64():
     assert np.isfinite(np.asarray(diag.omega_t)).all()
 
 
-def test_nonlinear_gx_state_diagnostics_can_freeze_one_mode():
+@pytest.mark.parametrize("method", ["rk3", "sspx3"])
+def test_nonlinear_gx_state_diagnostics_can_freeze_one_mode(method: str):
     """Fixed-mode projection should preserve a selected Fourier mode exactly."""
 
     grid_cfg = GridConfig(Nx=4, Ny=4, Nz=4, Lx=6.0, Ly=6.0)
@@ -281,7 +282,7 @@ def test_nonlinear_gx_state_diagnostics_can_freeze_one_mode():
         params,
         dt=0.02,
         steps=3,
-        method="rk3",
+        method=method,
         terms=TermConfig(nonlinear=1.0, collisions=0.0, hypercollisions=0.0),
         fixed_mode_ky_index=1,
         fixed_mode_kx_index=0,
