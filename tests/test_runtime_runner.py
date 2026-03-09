@@ -359,8 +359,29 @@ def test_runtime_init_file_add_mode_adds_seed_perturbation(tmp_path) -> None:
     assert np.allclose(g0[0, 0, 1:, :, :, :], 3.0)
     assert np.allclose(g0[0, 0, 0, 0, :, :], 3.0)
     assert np.allclose(g0[0, 0, 0, 1, 1:, :], 3.0)
-    expected = 3.0 + 0.25 * (1.0 + 1.0j)
+    expected = 3.0 + 0.25
     assert np.allclose(g0[0, 0, 0, 1, 0, :], expected)
+
+
+def test_runtime_single_mode_init_matches_gx_real_phase() -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        init=InitializationConfig(
+            init_field="density",
+            init_amp=0.25,
+            gaussian_init=False,
+            init_single=True,
+        ),
+    )
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    ky_index = int(np.argmin(np.abs(np.asarray(grid.ky) - 1.0)))
+
+    g0 = np.asarray(_build_initial_condition(grid, geom, cfg, ky_index=ky_index, kx_index=0, Nl=3, Nm=4, nspecies=1))
+
+    seeded = g0[0, 0, 0, ky_index, 0, :]
+    assert np.allclose(seeded.real, 0.25)
+    assert np.allclose(seeded.imag, 0.0)
 
 
 def test_runtime_nonlinear_fixed_mode_returns_frozen_state() -> None:
@@ -463,6 +484,28 @@ def test_runtime_gaussian_init_populates_multiple_modes_when_not_single() -> Non
     amp_kykx = np.max(np.abs(g0[0, 0, 0, ...]), axis=-1)
     nonzero = amp_kykx > 0.0
     assert int(np.count_nonzero(nonzero)) > 1
+
+
+def test_runtime_gaussian_single_mode_keeps_gx_equal_real_imag_parts() -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        grid=GridConfig(Nx=4, Ny=8, Nz=16, Lx=6.28, Ly=6.28, boundary="linked", y0=10.0, ntheta=16, nperiod=1),
+        init=InitializationConfig(
+            init_field="density",
+            init_amp=1.0,
+            gaussian_init=True,
+            gaussian_width=0.5,
+            init_single=True,
+        ),
+    )
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    grid = build_spectral_grid(cfg.grid)
+    ky_index = int(np.argmin(np.abs(np.asarray(grid.ky) - 1.0)))
+
+    g0 = np.asarray(_build_initial_condition(grid, geom, cfg, ky_index=ky_index, kx_index=0, Nl=3, Nm=4, nspecies=1))
+
+    seeded = g0[0, 0, 0, ky_index, 0, :]
+    assert np.allclose(seeded.real, seeded.imag)
 
 
 def test_runtime_nonlinear_dealias_toggle_executes() -> None:
@@ -1256,3 +1299,95 @@ def test_runtime_nonlinear_mode_selection_respects_dealias(monkeypatch) -> None:
     assert captured["omega_ky_index"] == 2
     # Nx=3 FFT order puts kx=0 at index 0.
     assert captured["omega_kx_index"] == 0
+
+
+def test_runtime_nonlinear_mode_selection_honors_kx_target(monkeypatch) -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        grid=GridConfig(
+            Nx=5,
+            Ny=5,
+            Nz=8,
+            Lx=12.0,
+            Ly=62.8,
+            boundary="periodic",
+            y0=10.0,
+        ),
+        time=TimeConfig(
+            t_max=0.02,
+            dt=0.01,
+            method="rk3",
+            use_diffrax=False,
+            sample_stride=1,
+            diagnostics_stride=1,
+            nonlinear_dealias=False,
+        ),
+        species=(RuntimeSpeciesConfig(name="ion"),),
+        normalization=RuntimeNormalizationConfig(contract="cyclone"),
+        physics=RuntimePhysicsConfig(adiabatic_electrons=True, nonlinear=True),
+        terms=RuntimeTermsConfig(nonlinear=1.0, hypercollisions=0.0, end_damping=0.0),
+    )
+
+    captured: dict[str, int] = {}
+
+    def _fake_integrator(
+        G0,
+        grid,
+        geom,
+        params,
+        *,
+        dt,
+        steps,
+        method,
+        terms,
+        sample_stride,
+        diagnostics_stride,
+        use_dealias_mask,
+        z_index=None,
+        gx_real_fft=True,
+        laguerre_mode="grid",
+        omega_ky_index=None,
+        omega_kx_index=0,
+        flux_scale=1.0,
+        wphi_scale=1.0,
+        fixed_dt=True,
+        dt_min=1.0e-7,
+        dt_max=None,
+        cfl=0.9,
+        cfl_fac=1.0,
+        collision_split=True,
+        collision_scheme="strang",
+        implicit_tol=1.0e-6,
+        implicit_maxiter=120,
+        implicit_iters=3,
+        implicit_relax=0.7,
+        implicit_restart=20,
+        implicit_solve_method="batched",
+        implicit_preconditioner=None,
+        fixed_mode_ky_index=None,
+        fixed_mode_kx_index=None,
+    ):
+        captured["omega_ky_index"] = int(omega_ky_index)
+        captured["omega_kx_index"] = int(omega_kx_index)
+        t = np.asarray([float(dt)], dtype=float)
+        zeros = np.zeros_like(t)
+        diag = GXDiagnostics(
+            t=t,
+            dt_t=t,
+            dt_mean=float(dt),
+            gamma_t=zeros,
+            omega_t=zeros,
+            Wg_t=zeros,
+            Wphi_t=zeros,
+            Wapar_t=zeros,
+            heat_flux_t=zeros,
+            particle_flux_t=zeros,
+            energy_t=zeros,
+        )
+        return t, diag, np.asarray(G0), None
+
+    monkeypatch.setattr("spectraxgk.runtime.integrate_nonlinear_gx_diagnostics_state", _fake_integrator)
+    _res = run_runtime_nonlinear(cfg, ky_target=0.1, kx_target=-1.1, Nl=3, Nm=4, steps=1)
+
+    assert captured["omega_ky_index"] == 1
+    assert captured["omega_kx_index"] == 3

@@ -23,7 +23,7 @@ nperiod = 1
 [time]
 t_max = 2.0
 dt = 1.0
-method = "rk4"
+method = "sspx3"
 use_diffrax = false
 sample_stride = 1
 fixed_dt = true
@@ -78,4 +78,4 @@ nonlinear = 0.0
 ky = 0.1
 Nl = 3
 Nm = 8
-solver = "gx_time"
+solver = "time"
