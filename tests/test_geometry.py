@@ -547,6 +547,40 @@ def test_apply_gx_geometry_grid_defaults_uses_imported_theta_and_kxfac(tmp_path)
     assert adjusted.Lx == pytest.approx(2.0 * np.pi * x0)
 
 
+def test_apply_gx_geometry_grid_defaults_applies_twist_shift_for_fix_aspect(tmp_path):
+    netcdf4 = pytest.importorskip("netCDF4")
+    Dataset = netcdf4.Dataset
+
+    path = tmp_path / "geom_fix_aspect.eik.nc"
+    theta = np.linspace(-np.pi, np.pi, 9)
+    with Dataset(path, "w") as root:
+        root.createDimension("z", theta.size)
+        root.createVariable("theta", "f8", ("z",))[:] = theta
+        root.createVariable("bmag", "f8", ("z",))[:] = np.ones(theta.size)
+        root.createVariable("gds2", "f8", ("z",))[:] = np.ones(theta.size)
+        root.createVariable("gds21", "f8", ("z",))[:] = np.full(theta.size, -0.6)
+        root.createVariable("gds22", "f8", ("z",))[:] = np.full(theta.size, 0.2)
+        root.createVariable("cvdrift", "f8", ("z",))[:] = np.zeros(theta.size)
+        root.createVariable("gbdrift", "f8", ("z",))[:] = np.zeros(theta.size)
+        root.createVariable("cvdrift0", "f8", ("z",))[:] = np.zeros(theta.size)
+        root.createVariable("gbdrift0", "f8", ("z",))[:] = np.zeros(theta.size)
+        root.createVariable("jacob", "f8", ("z",))[:] = np.ones(theta.size)
+        root.createVariable("grho", "f8", ("z",))[:] = np.ones(theta.size)
+        root.createVariable("gradpar", "f8", ("z",))[:] = np.full(theta.size, 0.4)
+        root.createVariable("q", "f8", ())[:] = 1.7
+        root.createVariable("shat", "f8", ())[:] = 0.5
+        root.createVariable("Rmaj", "f8", ())[:] = 5.0
+        root.createVariable("kxfac", "f8", ())[:] = 1.0
+
+    geom = load_gx_geometry_netcdf(path)
+    grid = GridConfig(Nx=4, Ny=4, Nz=16, Lx=6.28, Ly=6.28, boundary="fix aspect", y0=10.0)
+    adjusted = apply_gx_geometry_grid_defaults(geom, grid)
+    jtwist, x0 = gx_twist_shift_params(geom, adjusted)
+
+    assert adjusted.jtwist == jtwist
+    assert adjusted.Lx == pytest.approx(2.0 * np.pi * x0)
+
+
 def test_apply_gx_geometry_grid_defaults_preserves_open_solver_theta(tmp_path):
     netcdf4 = pytest.importorskip("netCDF4")
     Dataset = netcdf4.Dataset
