@@ -154,6 +154,14 @@ Secondary slab runtime TOML run
    python -m spectraxgk.cli run-runtime-linear \
      --config examples/configs/runtime_secondary_slab.toml
 
+The runtime path now also supports the two GX controls needed for the
+nonlinear ``kh01 -> kh01a`` secondary workflow:
+
+* ``[init] init_file_scale`` / ``init_file_mode = "add"`` for scaled restart
+  states with an added fresh perturbation.
+* ``[expert] fixed_mode = true`` with ``iky_fixed`` / ``ikx_fixed`` for the
+  frozen-primary-mode evolution used by GX's ``eqfix`` path.
+
 KBM beta scan
 -------------
 

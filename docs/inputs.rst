@@ -225,6 +225,7 @@ are:
 * ``[collisions]`` (collision and hypercollision controls)
 * ``[normalization]`` (contract key + optional overrides)
 * ``[terms]`` (term toggles used by modular RHS assembly)
+* ``[expert]`` (advanced fixed-mode controls for specialized workflows)
 * ``[run]`` / ``[scan]`` / ``[fit]`` (driver controls)
 
 Notable runtime-only keys:
@@ -259,3 +260,12 @@ Notable runtime-only keys:
   (default), initialize all kinetic species.
 * ``[init] random_seed``: RNG seed used for GX-style random initial conditions
   (default ``22``, matching GX).
+* ``[init] init_file``: load a saved complex state from either the full-``ky``
+  SPECTRAX layout or GX's packed positive-``ky`` layout.
+* ``[init] init_file_scale`` / ``init_file_mode``: scale a loaded restart state
+  and either ``replace`` the analytic seed (default) or ``add`` it to the
+  fresh perturbation. This is the general runtime equivalent of GX's
+  restart-scaling and ``restart_with_perturb`` workflows.
+* ``[expert] fixed_mode`` with ``iky_fixed`` / ``ikx_fixed``: keep one Fourier
+  mode exactly frozen during nonlinear evolution, matching GX's ``eqfix``
+  behavior used by the ``secondary`` benchmark.
