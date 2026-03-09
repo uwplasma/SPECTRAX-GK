@@ -299,7 +299,7 @@ def _write_rows(path: Path, rows: list[dict[str, float | str]]) -> None:
     pd.DataFrame(rows).to_csv(path, index=False)
 
 
-def main() -> None:
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Compare GX KBM output against SPECTRAX-GK.")
     parser.add_argument("--gx", type=Path, required=True, help="Path to GX .out.nc file")
     parser.add_argument(
@@ -382,9 +382,9 @@ def main() -> None:
     parser.add_argument(
         "--mode-method",
         type=str,
-        default="z_index",
+        default="project",
         choices=["z_index", "max", "project"],
-        help="Mode-extraction method for time-domain fallback fits.",
+        help="Mode-extraction method for GX-time/fallback fits. The default matches run_kbm_linear and projects onto the late-time KBM structure.",
     )
     parser.add_argument(
         "--eigen-method",
@@ -396,6 +396,11 @@ def main() -> None:
     parser.add_argument("--eigen-tmin", type=float, default=None)
     parser.add_argument("--eigen-tmax", type=float, default=None)
     parser.add_argument("--out", type=Path, default=None, help="Optional CSV path for mismatch table")
+    return parser
+
+
+def main() -> None:
+    parser = build_parser()
     args = parser.parse_args()
 
     gx_ky, gx_omega_series, beta, q_gx, shat_gx, eps_gx, rmaj_gx = _load_gx_omega_gamma(args.gx)

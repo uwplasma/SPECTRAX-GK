@@ -343,9 +343,9 @@ fixed :math:`\beta_{ref}` with a :math:`k_y` scan in s-alpha geometry. Use
      - ``Nl=16, Nm=48`` (GX comparison target)
    * - Time integration (cross-code)
      - GX-style RK4 with adaptive dt (comparison); fixed-step IMEX2 for scan speed
-   * - Fit policy (cross-code)
-     - mode extracted at selected ``(ky, kx, z_mid)`` with log-linear
-       auto-windowing (conservative amplitude-capped windows)
+  * - Fit policy (cross-code)
+    - projected complex mode signal extracted from the selected ``(ky, kx)``
+      structure, with GX-time averaging or log-linear auto-windowing as needed
    * - Reference
      - GX linear KBM (s-alpha geometry, matched-input set)
 
@@ -355,7 +355,7 @@ KBM GX cross-code run
 We execute a matched-input KBM cross-code set on the GX ``ky`` grid
 (``ky rho_i = [0.1, 0.2, 0.3, 0.4, 0.5]``). Use:
 
-- ``python tools/compare_gx_kbm.py --gx /path/to/kbm_salpha.out.nc --gx-big /path/to/kbm_salpha.big.nc --branch-policy fixed --solver gx_time --out docs/_static/kbm_gx_mismatch.csv``
+- ``python tools/compare_gx_kbm.py --gx /path/to/kbm_salpha.out.nc --gx-big /path/to/kbm_salpha.big.nc --branch-policy fixed --solver gx_time --mode-method project --out docs/_static/kbm_gx_mismatch.csv``
 
 The default KBM harness is now deterministic: one chosen solver is used across
 the whole ``ky`` scan, and the output table includes ``eig_overlap_gx``,
@@ -370,6 +370,9 @@ continuity, making the branch choice explicit instead of silently changing the
 physics extraction rule point-by-point. For branch-isolation studies with the
 Krylov solver, ``--krylov-gx-shift`` additionally seeds shift-invert with the
 GX reference eigenvalue so the harness can ask for the same branch explicitly.
+The harness now defaults to ``--mode-method project`` so the reported
+``gamma``/``omega`` follow the same projected-mode extraction used by the KBM
+benchmark API instead of silently dropping back to a midplane-only signal.
 Explicit Krylov shifts now bypass the built-in KBM target sweep instead of being
 silently retargeted to the default heuristic branches. When an explicit shift is
 used, the Krylov entry point also honors the requested seed source, so

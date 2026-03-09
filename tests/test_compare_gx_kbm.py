@@ -207,3 +207,17 @@ def test_compare_gx_kbm_run_candidate_allows_shift_source_override(monkeypatch) 
     krylov_cfg = captured["krylov_cfg"]
     assert krylov_cfg is not None
     assert krylov_cfg.shift_source == "propagator"
+
+
+def test_compare_gx_kbm_parser_defaults_to_project_mode() -> None:
+    tools_dir = Path(__file__).resolve().parents[1] / "tools"
+    sys.path.insert(0, str(tools_dir))
+    try:
+        import compare_gx_kbm as mod
+    finally:
+        sys.path.remove(str(tools_dir))
+
+    parser = mod.build_parser()
+    args = parser.parse_args(["--gx", "kbm.out.nc"])
+
+    assert args.mode_method == "project"
