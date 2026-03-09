@@ -136,6 +136,9 @@ the solver-facing geometry contract.
 The linear KBM benchmark entry point now uses the same geometry builder, so
 the GX parity harness can exercise imported sampled geometry through
 ``run_kbm_linear`` instead of only through the runtime wrappers.
+Regression coverage now runs that benchmark path explicitly for both
+``"vmec-eik"`` and ``"desc-eik"`` aliases, so imported W7-X-style geometry is
+checked through both runtime and benchmark entry points.
 
 With the corrected GX-time damping contract, that imported-geometry bridge now
 also reproduces the corrected GX W7-X linear ITG ``t=2`` reference on the same

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import jax.numpy as jnp
@@ -74,7 +75,7 @@ def _load_field(path: Path, nyc: int, nx: int, nz: int) -> np.ndarray:
     return raw[idxyz.ravel()].reshape(nyc, nx, nz)
 
 
-def _cast_cache(cache: object, *, real_dtype: jnp.dtype, complex_dtype: jnp.dtype) -> object:
+def _cast_cache(cache: Any, *, real_dtype: jnp.dtype, complex_dtype: jnp.dtype) -> Any:
     def _cast(x):
         if isinstance(x, jnp.ndarray):
             if jnp.issubdtype(x.dtype, jnp.complexfloating):
@@ -138,19 +139,172 @@ def _summary(label: str, ref: np.ndarray, test: np.ndarray) -> None:
     )
 
 
-def main() -> None:
+def _infer_y0(ky: np.ndarray) -> float:
+    ky_pos = np.asarray(ky, dtype=float)
+    ky_pos = ky_pos[ky_pos > 0.0]
+    if ky_pos.size == 0:
+        raise ValueError("Need at least one positive ky value to infer y0")
+    return float(1.0 / np.min(ky_pos))
+
+
+def _manual_linear_contributions_from_fields(
+    G: jnp.ndarray,
+    cache: Any,
+    params: LinearParams,
+    term_cfg: TermConfig,
+    *,
+    phi: np.ndarray | jnp.ndarray,
+    apar: np.ndarray | jnp.ndarray,
+    bpar: np.ndarray | jnp.ndarray,
+):
+    """Assemble linear term contributions using externally supplied fields.
+
+    GX term dumps are most useful when SPECTRAX evaluates the operator on the
+    exact same ``G, phi, apar, bpar`` state rather than on a recomputed field
+    solve. Keep this helper close to the comparison tool so tests can lock its
+    argument/shape contract to the current linear-term APIs.
+    """
+
+    G_arr = jnp.asarray(G)
+    out_dtype = jnp.result_type(G_arr, jnp.complex64)
+    G_arr = jnp.asarray(G_arr, dtype=out_dtype)
+    real_dtype = jnp.real(jnp.empty((), dtype=out_dtype)).dtype
+    imag = jnp.asarray(1j, dtype=out_dtype)
+
+    ns = int(G_arr.shape[0]) if G_arr.ndim == 6 else 1
+    charge = _as_species_array(params.charge_sign, ns, "charge_sign").astype(real_dtype)
+    density = _as_species_array(params.density, ns, "density").astype(real_dtype)
+    mass = _as_species_array(params.mass, ns, "mass").astype(real_dtype)
+    temp = _as_species_array(params.temp, ns, "temp").astype(real_dtype)
+    tz = _as_species_array(params.tz, ns, "tz").astype(real_dtype)
+    vth = _as_species_array(params.vth, ns, "vth").astype(real_dtype)
+    tprim = _as_species_array(params.R_over_LTi, ns, "R_over_LTi").astype(real_dtype)
+    fprim = _as_species_array(params.R_over_Ln, ns, "R_over_Ln").astype(real_dtype)
+    nu = _as_species_array(params.nu, ns, "nu").astype(real_dtype)
+
+    omega_d_scale = jnp.asarray(params.omega_d_scale, dtype=real_dtype)
+    omega_star_scale = jnp.asarray(params.omega_star_scale, dtype=real_dtype)
+    kpar_scale = jnp.asarray(params.kpar_scale, dtype=real_dtype)
+
+    w_stream = jnp.asarray(term_cfg.streaming, dtype=real_dtype)
+    w_mirror = jnp.asarray(term_cfg.mirror, dtype=real_dtype)
+    w_curv = jnp.asarray(term_cfg.curvature, dtype=real_dtype)
+    w_gradb = jnp.asarray(term_cfg.gradb, dtype=real_dtype)
+    w_dia = jnp.asarray(term_cfg.diamagnetic, dtype=real_dtype)
+    w_coll = jnp.asarray(term_cfg.collisions, dtype=real_dtype)
+
+    Jl = jnp.asarray(cache.Jl, dtype=real_dtype)
+    JlB = jnp.asarray(cache.JlB, dtype=real_dtype)
+    phi_j = jnp.asarray(phi, dtype=out_dtype)
+    apar_j = jnp.asarray(apar, dtype=out_dtype)
+    bpar_j = jnp.asarray(bpar, dtype=out_dtype)
+
+    H = build_H(G_arr, Jl, phi_j, tz, apar=apar_j, vth=vth, bpar=bpar_j, JlB=JlB)
+    zero = jnp.zeros_like(G_arr)
+
+    contrib: dict[str, jnp.ndarray] = {}
+    contrib["streaming"] = streaming_contribution_gx(
+        G_arr,
+        phi=phi_j,
+        apar=apar_j,
+        bpar=bpar_j,
+        Jl=Jl,
+        JlB=JlB,
+        tz=tz,
+        kz=cache.kz,
+        dz=cache.dz,
+        vth=vth,
+        sqrt_p=cache.sqrt_p,
+        sqrt_m=cache.sqrt_m_ladder,
+        kpar_scale=kpar_scale,
+        weight=w_stream,
+        linked_indices=cache.linked_indices,
+        linked_kz=cache.linked_kz,
+        linked_inverse_permutation=cache.linked_inverse_permutation,
+        linked_full_cover=cache.linked_full_cover,
+        linked_gather_map=cache.linked_gather_map,
+        linked_gather_mask=cache.linked_gather_mask,
+        linked_use_gather=cache.linked_use_gather,
+        use_twist_shift=cache.use_twist_shift,
+    )
+    contrib["mirror"] = mirror_contribution(
+        H,
+        vth=vth,
+        bgrad=cache.bgrad,
+        l=cache.l,
+        sqrt_m=cache.sqrt_m,
+        sqrt_m_p1=cache.sqrt_m_p1,
+        weight=w_mirror,
+    )
+    contrib["curvature"] = curvature_gradb_contribution(
+        H,
+        tz=tz,
+        omega_d_scale=omega_d_scale,
+        cv_d=cache.cv_d,
+        gb_d=cache.gb_d,
+        l=cache.l,
+        m=cache.m,
+        imag=imag,
+        weight_curv=w_curv,
+        weight_gradb=jnp.asarray(0.0, dtype=real_dtype),
+    )
+    contrib["gradb"] = curvature_gradb_contribution(
+        H,
+        tz=tz,
+        omega_d_scale=omega_d_scale,
+        cv_d=cache.cv_d,
+        gb_d=cache.gb_d,
+        l=cache.l,
+        m=cache.m,
+        imag=imag,
+        weight_curv=jnp.asarray(0.0, dtype=real_dtype),
+        weight_gradb=w_gradb,
+    )
+    contrib["diamagnetic"] = diamagnetic_contribution(
+        zero,
+        phi=phi_j,
+        apar=apar_j,
+        bpar=bpar_j,
+        Jl=Jl,
+        JlB=JlB,
+        l4=cache.l4,
+        tprim=tprim,
+        fprim=fprim,
+        tz=tz,
+        vth=vth,
+        omega_star_scale=omega_star_scale,
+        ky=cache.ky,
+        imag=imag,
+        weight=w_dia,
+    )
+    contrib["collisions"] = collisions_contribution(
+        H,
+        nu=nu,
+        lb_lam=cache.lb_lam,
+        weight=w_coll,
+    )
+    fields = compute_fields_cached(G_arr, cache, params, terms=term_cfg, use_custom_vjp=False)
+    return fields, contrib
+
+
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--gx-dir", type=Path, required=True, help="Directory with rhs_stream.bin, rhs_linear.bin")
     parser.add_argument("--gx-out", type=Path, required=True, help="GX .out.nc file to map ky indices")
     parser.add_argument("--case", type=str, default="cyclone", choices=("cyclone", "kbm"))
     parser.add_argument("--ky", type=float, default=0.3)
-    parser.add_argument("--Nl", type=int, default=48)
-    parser.add_argument("--Nm", type=int, default=16)
+    parser.add_argument("--Nl", type=int, default=None, help="Laguerre resolution (defaults to dump metadata)")
+    parser.add_argument("--Nm", type=int, default=None, help="Hermite resolution (defaults to dump metadata)")
     parser.add_argument("--Ny", type=int, default=24)
     parser.add_argument("--Nz", type=int, default=96)
-    parser.add_argument("--y0", type=float, default=20.0)
+    parser.add_argument("--y0", type=float, default=None, help="Perpendicular box parameter (defaults to GX ky grid)")
     parser.add_argument("--ntheta", type=int, default=None)
     parser.add_argument("--nperiod", type=int, default=None)
+    return parser
+
+
+def main() -> None:
+    parser = build_parser()
     args = parser.parse_args()
 
     shape_path = args.gx_dir / "rhs_terms_shape.txt"
@@ -161,8 +315,10 @@ def main() -> None:
 
     shape = _load_shape(shape_path)
     nspec = shape.get("nspec", 1)
-    nl = shape.get("nl", args.Nl)
-    nm = shape.get("nm", args.Nm)
+    nl = shape.get("nl", int(args.Nl) if args.Nl is not None else 1)
+    nm = shape.get("nm", int(args.Nm) if args.Nm is not None else 1)
+    Nl_use = int(args.Nl) if args.Nl is not None else int(nl)
+    Nm_use = int(args.Nm) if args.Nm is not None else int(nm)
     nyc = shape.get("nyc", args.Ny // 2 + 1)
     nx = shape.get("nx", 1)
     nz = shape.get("nz", args.Nz)
@@ -179,6 +335,7 @@ def main() -> None:
 
     with Dataset(args.gx_out, "r") as root:
         ky_vals = np.asarray(root.groups["Grids"].variables["ky"][:], dtype=float)
+    y0_use = float(args.y0) if args.y0 is not None else _infer_y0(ky_vals)
     ky_idx = int(np.argmin(np.abs(ky_vals - float(args.ky))))
     gx_stream = gx_stream[:, :, :, ky_idx : ky_idx + 1, :, :]
     gx_linear = gx_linear[:, :, :, ky_idx : ky_idx + 1, :, :]
@@ -188,6 +345,7 @@ def main() -> None:
     gx_dia = gx_dia[:, :, :, ky_idx : ky_idx + 1, :, :]
     gx_coll = gx_coll[:, :, :, ky_idx : ky_idx + 1, :, :]
 
+    cfg: CycloneBaseCase | KBMBaseCase
     if args.case == "cyclone":
         cfg = CycloneBaseCase(
             grid=GridConfig(
@@ -197,7 +355,7 @@ def main() -> None:
                 Lx=62.8,
                 Ly=62.8,
                 boundary="linked",
-                y0=args.y0,
+                y0=y0_use,
                 ntheta=None,
                 nperiod=None,
             )
@@ -215,7 +373,7 @@ def main() -> None:
             damp_ends_amp=0.0,
             damp_ends_widthfrac=0.0,
         )
-        params = _apply_gx_hypercollisions(params, nhermite=args.Nm)
+        params = _apply_gx_hypercollisions(params, nhermite=Nm_use)
         init_species_index = 0
     else:
         ntheta = args.ntheta if args.ntheta is not None else 32
@@ -228,7 +386,7 @@ def main() -> None:
                 Lx=62.8,
                 Ly=62.8,
                 boundary="linked",
-                y0=args.y0,
+                y0=y0_use,
                 ntheta=ntheta,
                 nperiod=nperiod,
             )
@@ -240,14 +398,14 @@ def main() -> None:
             omega_d_scale=KBM_OMEGA_D_SCALE,
             omega_star_scale=KBM_OMEGA_STAR_SCALE,
             rho_star=KBM_RHO_STAR,
-            nhermite=args.Nm,
+            nhermite=Nm_use,
         )
         init_species_index = 0
 
     grid_full = build_spectral_grid(cfg.grid)
     ky_index = int(np.argmin(np.abs(np.asarray(grid_full.ky) - float(args.ky))))
     grid = select_ky_grid(grid_full, ky_index)
-    cache = build_linear_cache(grid, geom, params, args.Nl, args.Nm)
+    cache = build_linear_cache(grid, geom, params, Nl_use, Nm_use)
     cache = _cast_cache(cache, real_dtype=jnp.float32, complex_dtype=jnp.complex64)
     if gx_g_path.exists():
         gx_g = _reshape_gx(_load_bin(gx_g_path, gx_shape), nspec=nspec, nl=nl, nm=nm, nyc=nyc, nx=nx, nz=nz)
@@ -259,8 +417,8 @@ def main() -> None:
             geom,
             ky_index=0,
             kx_index=0,
-            Nl=args.Nl,
-            Nm=args.Nm,
+            Nl=Nl_use,
+            Nm=Nm_use,
             init_cfg=cfg.init,
         )
     if args.case == "kbm":
@@ -276,123 +434,15 @@ def main() -> None:
         bpar = _load_field(bpar_path, nyc, nx, nz)[ky_idx : ky_idx + 1, :, :]
 
         G = G0 if G0.ndim == 6 else G0[None, ...]
-        out_dtype = jnp.result_type(G, jnp.complex64)
-        G = jnp.asarray(G, dtype=out_dtype)
-        real_dtype = jnp.real(jnp.empty((), dtype=out_dtype)).dtype
-        imag = jnp.asarray(1j, dtype=out_dtype)
-        ns = G.shape[0]
-
-        charge = _as_species_array(params.charge_sign, ns, "charge_sign").astype(real_dtype)
-        density = _as_species_array(params.density, ns, "density").astype(real_dtype)
-        mass = _as_species_array(params.mass, ns, "mass").astype(real_dtype)
-        temp = _as_species_array(params.temp, ns, "temp").astype(real_dtype)
-        tz = _as_species_array(params.tz, ns, "tz").astype(real_dtype)
-        vth = _as_species_array(params.vth, ns, "vth").astype(real_dtype)
-        tprim = _as_species_array(params.R_over_LTi, ns, "R_over_LTi").astype(real_dtype)
-        fprim = _as_species_array(params.R_over_Ln, ns, "R_over_Ln").astype(real_dtype)
-        nu = _as_species_array(params.nu, ns, "nu").astype(real_dtype)
-
-        omega_d_scale = jnp.asarray(params.omega_d_scale, dtype=real_dtype)
-        omega_star_scale = jnp.asarray(params.omega_star_scale, dtype=real_dtype)
-        kpar_scale = jnp.asarray(params.kpar_scale, dtype=real_dtype)
-
-        w_stream = jnp.asarray(term_cfg.streaming, dtype=real_dtype)
-        w_mirror = jnp.asarray(term_cfg.mirror, dtype=real_dtype)
-        w_curv = jnp.asarray(term_cfg.curvature, dtype=real_dtype)
-        w_gradb = jnp.asarray(term_cfg.gradb, dtype=real_dtype)
-        w_dia = jnp.asarray(term_cfg.diamagnetic, dtype=real_dtype)
-        w_coll = jnp.asarray(term_cfg.collisions, dtype=real_dtype)
-
-        Jl = cache.Jl
-        JlB = cache.JlB
-        phi_j = jnp.asarray(phi, dtype=out_dtype)
-        apar_j = jnp.asarray(apar, dtype=out_dtype)
-        bpar_j = jnp.asarray(bpar, dtype=out_dtype)
-
-        H = build_H(G, Jl, phi_j, tz, apar=apar_j, vth=vth, bpar=bpar_j, JlB=JlB)
-        contrib = {}
-        contrib["streaming"] = streaming_contribution_gx(
-            G,
-            phi=phi_j,
-            apar=apar_j,
-            bpar=bpar_j,
-            Jl=Jl,
-            JlB=JlB,
-            tz=tz,
-            kz=cache.kz,
-            dz=cache.dz,
-            vth=vth,
-            sqrt_p=cache.sqrt_p,
-            sqrt_m=cache.sqrt_m_ladder,
-            kpar_scale=kpar_scale,
-            weight=w_stream,
-            linked_indices=cache.linked_indices,
-            linked_kz=cache.linked_kz,
-            linked_inverse_permutation=cache.linked_inverse_permutation,
-            linked_full_cover=cache.linked_full_cover,
-            linked_gather_map=cache.linked_gather_map,
-            linked_gather_mask=cache.linked_gather_mask,
-            linked_use_gather=cache.linked_use_gather,
-            use_twist_shift=cache.use_twist_shift,
+        fields, contrib = _manual_linear_contributions_from_fields(
+            jnp.asarray(G),
+            cache,
+            params,
+            term_cfg,
+            phi=phi,
+            apar=apar,
+            bpar=bpar,
         )
-        contrib["mirror"] = mirror_contribution(
-            H,
-            vth=vth,
-            bgrad=cache.bgrad,
-            l=cache.l,
-            sqrt_m=cache.sqrt_m,
-            sqrt_m_p1=cache.sqrt_m_p1,
-            weight=w_mirror,
-        )
-        contrib["curvature"] = curvature_gradb_contribution(
-            H,
-            tz=tz,
-            omega_d_scale=omega_d_scale,
-            cv_d=cache.cv_d,
-            gb_d=cache.gb_d,
-            l=cache.l,
-            m=cache.m,
-            imag=imag,
-            weight_curv=w_curv,
-            weight_gradb=jnp.asarray(0.0, dtype=real_dtype),
-        )
-        contrib["gradb"] = curvature_gradb_contribution(
-            H,
-            tz=tz,
-            omega_d_scale=omega_d_scale,
-            cv_d=cache.cv_d,
-            gb_d=cache.gb_d,
-            l=cache.l,
-            m=cache.m,
-            imag=imag,
-            weight_curv=jnp.asarray(0.0, dtype=real_dtype),
-            weight_gradb=w_gradb,
-        )
-        zero = jnp.zeros_like(G)
-        contrib["diamagnetic"] = diamagnetic_contribution(
-            zero,
-            phi=phi_j,
-            apar=apar_j,
-            bpar=bpar_j,
-            Jl=Jl,
-            JlB=JlB,
-            l4=cache.l4,
-            tprim=tprim,
-            fprim=fprim,
-            tz=tz,
-            vth=vth,
-            omega_star_scale=omega_star_scale,
-            ky=cache.ky,
-            imag=imag,
-            weight=w_dia,
-        )
-        contrib["collisions"] = collisions_contribution(
-            H,
-            nu=nu,
-            lb_lam=cache.lb_lam,
-            weight=w_coll,
-        )
-        fields = compute_fields_cached(G, cache, params, terms=term_cfg, use_custom_vjp=False)
     else:
         _rhs_total, fields, contrib = assemble_rhs_terms_cached(G0, cache, params, terms=term_cfg)
 

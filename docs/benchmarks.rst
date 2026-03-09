@@ -402,6 +402,9 @@ Reference command (SPECTRAX side):
 The comparator now supports GX dump folders directly:
 
 - ``rhs_terms_shape.txt`` is optional (it is inferred from GX input/output plus dump vectors).
+- ``--Nl`` / ``--Nm`` default to the dump metadata instead of hard-coded values.
+- ``--y0`` defaults to the positive-``ky`` GX grid spacing, so the reconstructed
+  SPECTRAX grid matches the dump's field-line box unless you override it.
 - ``nl_apar.bin`` / ``nl_bpar.bin`` are accepted directly (no manual renaming).
 
 For terms whose reference amplitudes are near machine zero, use absolute
