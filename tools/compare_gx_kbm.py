@@ -522,6 +522,8 @@ def main() -> None:
                         selected=False,
                     )
                 )
+                if args.candidate_out is not None:
+                    _write_rows(args.candidate_out, candidate_rows)
                 if obj < best_obj:
                     best_obj = obj
                     best_row = (solver_name, result)
@@ -580,6 +582,8 @@ def main() -> None:
                         selected=False,
                     )
                 )
+                if args.candidate_out is not None:
+                    _write_rows(args.candidate_out, candidate_rows)
                 if obj < best_obj:
                     best_obj = obj
                     best_candidate = (solver_name, result_c, mode_c, eig_overlap_c, eig_rel_l2_c, prev_overlap_c)
@@ -614,6 +618,8 @@ def main() -> None:
                     selected=True,
                 )
             )
+            if args.candidate_out is not None:
+                _write_rows(args.candidate_out, candidate_rows)
 
         if not use_continuation:
             _theta, mode_sp, eig_overlap, eig_rel_l2, prev_overlap = _mode_metrics(
