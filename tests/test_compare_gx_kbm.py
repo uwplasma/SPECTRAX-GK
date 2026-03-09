@@ -324,6 +324,40 @@ def test_compare_gx_kbm_recompute_on_gx_time_grid(monkeypatch) -> None:
     assert np.allclose(np.asarray(sampled.phi_t)[:, 0, 0, 0].real, [1.0, 1.5, 2.5])
 
 
+def test_compare_gx_kbm_recompute_on_gx_time_grid_prefers_instantaneous_omega_series() -> None:
+    tools_dir = Path(__file__).resolve().parents[1] / "tools"
+    sys.path.insert(0, str(tools_dir))
+    try:
+        import compare_gx_kbm as mod
+    finally:
+        sys.path.remove(str(tools_dir))
+    from spectraxgk.benchmarks import LinearRunResult
+
+    result = LinearRunResult(
+        t=np.array([0.0, 1.0, 2.0], dtype=float),
+        phi_t=np.array([[[[1.0 + 0.0j]]], [[[2.0 + 0.0j]]], [[[3.0 + 0.0j]]]], dtype=np.complex128),
+        gamma=0.0,
+        omega=0.0,
+        ky=0.3,
+        selection=SimpleNamespace(ky_index=0, kx_index=0, z_index=0),
+        gamma_t=np.array([[[1.0]], [[3.0]], [[5.0]]], dtype=float),
+        omega_t=np.array([[[2.0]], [[4.0]], [[6.0]]], dtype=float),
+    )
+    gx_time = np.array([0.5, 1.5], dtype=float)
+
+    sampled = mod._recompute_time_history_growth_on_grid(
+        SimpleNamespace(gx_avg_fraction=0.5),
+        result,
+        mode_method="z_index",
+        t_ref=gx_time,
+    )
+
+    assert np.isclose(sampled.gamma, 4.0)
+    assert np.isclose(sampled.omega, 5.0)
+    assert np.array_equal(np.asarray(sampled.t), np.asarray(result.t))
+    assert np.array_equal(np.asarray(sampled.phi_t), np.asarray(result.phi_t))
+
+
 def test_compare_gx_kbm_run_candidate_allows_shift_source_override(monkeypatch) -> None:
     tools_dir = Path(__file__).resolve().parents[1] / "tools"
     sys.path.insert(0, str(tools_dir))

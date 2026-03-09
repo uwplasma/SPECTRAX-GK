@@ -432,6 +432,10 @@ def test_run_kbm_linear_gx_time_history():
     assert result.t.ndim == 1
     assert result.phi_t.ndim == 4
     assert result.phi_t.shape[0] == result.t.size
+    assert result.gamma_t is not None
+    assert result.omega_t is not None
+    assert np.asarray(result.gamma_t).shape[0] == result.t.size
+    assert np.asarray(result.omega_t).shape[0] == result.t.size
     assert result.selection.ky_index == 0
     assert np.isfinite(result.gamma)
     assert np.isfinite(result.omega)

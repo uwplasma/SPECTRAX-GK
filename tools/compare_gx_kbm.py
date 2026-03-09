@@ -17,6 +17,7 @@ from spectraxgk.analysis import (
     fit_growth_rate,
     fit_growth_rate_auto,
     gx_growth_rate_from_phi,
+    gx_growth_rate_from_omega_series,
     select_ky_index,
 )
 from spectraxgk.benchmarks import KBM_KRYLOV_DEFAULT, run_kbm_linear
@@ -389,6 +390,17 @@ def _interp_phi_t(phi_t: np.ndarray, t_src: np.ndarray, t_dst: np.ndarray) -> np
     return out.reshape((t_dst.size,) + phi_src.shape[1:])
 
 
+def _interp_real_tseries(data_t: np.ndarray, t_src: np.ndarray, t_dst: np.ndarray) -> np.ndarray:
+    data_src = np.asarray(data_t, dtype=float)
+    if np.array_equal(t_src, t_dst):
+        return data_src
+    flat = data_src.reshape(data_src.shape[0], -1)
+    out = np.empty((t_dst.size, flat.shape[1]), dtype=float)
+    for j in range(flat.shape[1]):
+        out[:, j] = np.interp(t_dst, t_src, flat[:, j])
+    return out.reshape((t_dst.size,) + data_src.shape[1:])
+
+
 def _recompute_time_history_growth_on_grid(
     args,
     result,
@@ -396,6 +408,27 @@ def _recompute_time_history_growth_on_grid(
     mode_method: str,
     t_ref: np.ndarray | None = None,
 ):
+    gamma_t = getattr(result, "gamma_t", None)
+    omega_t = getattr(result, "omega_t", None)
+    if (
+        mode_method in {"z_index", "max"}
+        and gamma_t is not None
+        and omega_t is not None
+    ):
+        gamma_arr = np.asarray(gamma_t, dtype=float)
+        omega_arr = np.asarray(omega_t, dtype=float)
+        t_src = np.asarray(result.t, dtype=float)
+        if t_ref is not None and np.asarray(t_ref).size > 1 and t_src.size > 1:
+            t_dst = np.asarray(t_ref, dtype=float)
+            gamma_arr = _interp_real_tseries(gamma_arr, t_src, t_dst)
+            omega_arr = _interp_real_tseries(omega_arr, t_src, t_dst)
+        gamma, omega, _g_t, _o_t = gx_growth_rate_from_omega_series(
+            gamma_arr,
+            omega_arr,
+            result.selection,
+            navg_fraction=float(args.gx_avg_fraction),
+        )
+        return replace(result, gamma=float(gamma), omega=float(omega))
     if t_ref is None or np.asarray(t_ref).size <= 1:
         return _recompute_time_history_growth(args, result, mode_method=mode_method)
     t_src = np.asarray(result.t, dtype=float)
