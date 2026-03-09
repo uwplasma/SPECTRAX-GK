@@ -36,6 +36,24 @@ def _load_gx_omega_gamma(
     float | None,
     float | None,
 ]:
+    def _maybe_scalar_array(data: np.ndarray | float) -> float | None:
+        val = float(np.asarray(data))
+        if abs(val) < 1.0e-12:
+            return None
+        return val
+
+    if path.suffix == ".npz":
+        data = np.load(path, allow_pickle=False)
+        time = np.asarray(data["time"], dtype=float)
+        ky = np.asarray(data["ky"], dtype=float)
+        omega = np.asarray(data["omega_series"], dtype=float)
+        beta = float(np.asarray(data["beta"]))
+        q = None if "q" not in data else _maybe_scalar_array(data["q"])
+        shat = None if "shat" not in data else _maybe_scalar_array(data["shat"])
+        eps = None if "eps" not in data else _maybe_scalar_array(data["eps"])
+        rmaj = None if "rmaj" not in data else _maybe_scalar_array(data["rmaj"])
+        return time, ky, omega, beta, q, shat, eps, rmaj
+
     root = Dataset(path, "r")
     try:
         grids = root.groups["Grids"]
@@ -60,10 +78,7 @@ def _load_gx_omega_gamma(
         data = np.asarray(inputs.variables[name][:])
         if np.ma.is_masked(data):
             return None
-        val = float(data)
-        if abs(val) < 1.0e-12:
-            return None
-        return val
+        return _maybe_scalar_array(data)
 
     q = _maybe_scalar("q")
     shat = _maybe_scalar("shat")
@@ -100,6 +115,15 @@ def _normalize_mode(theta: np.ndarray, mode: np.ndarray) -> np.ndarray:
 
 
 def _load_gx_eigenfunction(path: Path, ky_target: float) -> tuple[np.ndarray, np.ndarray]:
+    if path.suffix == ".npz":
+        data = np.load(path, allow_pickle=False)
+        theta = np.asarray(data["theta"], dtype=float)
+        ky = np.asarray(data["ky"], dtype=float)
+        modes = np.asarray(data["phi_modes"])
+        ky_idx = int(np.argmin(np.abs(ky - float(ky_target))))
+        mode = np.asarray(modes[ky_idx], dtype=np.complex128)
+        return theta, _normalize_mode(theta, mode)
+
     root = Dataset(path, "r")
     grids = root.groups["Grids"]
     diag = root.groups["Diagnostics"]

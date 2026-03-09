@@ -451,3 +451,80 @@ def test_compare_gx_kbm_parse_candidate_spec_without_override() -> None:
     assert solver == "krylov"
     assert mode_method is None
     assert label == "krylov"
+
+
+def test_compare_gx_kbm_loads_npz_reference(tmp_path: Path) -> None:
+    tools_dir = Path(__file__).resolve().parents[1] / "tools"
+    sys.path.insert(0, str(tools_dir))
+    try:
+        import compare_gx_kbm as mod
+    finally:
+        sys.path.remove(str(tools_dir))
+
+    path = tmp_path / "kbm_ref.npz"
+    np.savez(
+        path,
+        time=np.array([0.1, 0.2], dtype=float),
+        ky=np.array([0.1, 0.2, 0.3], dtype=float),
+        omega_series=np.zeros((2, 3, 2), dtype=float),
+        beta=np.asarray(0.015),
+        q=np.asarray(1.4),
+        shat=np.asarray(0.8),
+        eps=np.asarray(0.18),
+        rmaj=np.asarray(2.77778),
+        theta=np.array([-1.0, 0.0, 1.0], dtype=float),
+        phi_modes=np.array(
+            [
+                [1.0 + 0.0j, 2.0 + 0.0j, 1.0 + 0.0j],
+                [2.0 + 0.0j, 4.0 + 0.0j, 2.0 + 0.0j],
+                [1.0j, 2.0j, 1.0j],
+            ],
+            dtype=np.complex128,
+        ),
+    )
+
+    time, ky, omega, beta, q, shat, eps, rmaj = mod._load_gx_omega_gamma(path)
+    theta, mode = mod._load_gx_eigenfunction(path, 0.2)
+
+    assert np.allclose(time, np.array([0.1, 0.2]))
+    assert np.allclose(ky, np.array([0.1, 0.2, 0.3]))
+    assert omega.shape == (2, 3, 2)
+    assert beta == pytest.approx(0.015)
+    assert q == pytest.approx(1.4)
+    assert shat == pytest.approx(0.8)
+    assert eps == pytest.approx(0.18)
+    assert rmaj == pytest.approx(2.77778)
+    assert np.allclose(theta, np.array([-1.0, 0.0, 1.0]))
+    assert np.allclose(mode, np.array([0.5 + 0.0j, 1.0 + 0.0j, 0.5 + 0.0j]))
+
+
+def test_compare_gx_kbm_npz_zero_geometry_scalars_fall_back_to_defaults(tmp_path: Path) -> None:
+    tools_dir = Path(__file__).resolve().parents[1] / "tools"
+    sys.path.insert(0, str(tools_dir))
+    try:
+        import compare_gx_kbm as mod
+    finally:
+        sys.path.remove(str(tools_dir))
+
+    path = tmp_path / "kbm_ref_zero_geom.npz"
+    np.savez(
+        path,
+        time=np.array([0.1, 0.2], dtype=float),
+        ky=np.array([0.1, 0.2, 0.3], dtype=float),
+        omega_series=np.zeros((2, 3, 2), dtype=float),
+        beta=np.asarray(0.015),
+        q=np.asarray(0.0),
+        shat=np.asarray(0.0),
+        eps=np.asarray(0.0),
+        rmaj=np.asarray(0.0),
+        theta=np.array([-1.0, 0.0, 1.0], dtype=float),
+        phi_modes=np.ones((3, 3), dtype=np.complex128),
+    )
+
+    _time, _ky, _omega, beta, q, shat, eps, rmaj = mod._load_gx_omega_gamma(path)
+
+    assert beta == pytest.approx(0.015)
+    assert q is None
+    assert shat is None
+    assert eps is None
+    assert rmaj is None
