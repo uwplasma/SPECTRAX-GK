@@ -106,6 +106,14 @@ W7-X nonlinear imported geometry TOML run
    python -m spectraxgk.cli run-runtime-nonlinear \
      --config examples/configs/runtime_w7x_nonlinear_imported_geometry.toml
 
+W7-X nonlinear VMEC TOML run
+----------------------------
+
+.. code-block:: bash
+
+   python -m spectraxgk.cli run-runtime-nonlinear \
+     --config examples/configs/runtime_w7x_nonlinear_vmec_geometry.toml
+
 Generate GX-compatible geometry from a runtime TOML
 ---------------------------------------------------
 
@@ -129,6 +137,22 @@ HSX nonlinear VMEC TOML run
 
    python -m spectraxgk.cli run-runtime-nonlinear \
      --config examples/configs/runtime_hsx_nonlinear_vmec_geometry.toml
+
+HSX matched GX input template
+-----------------------------
+
+.. code-block:: bash
+
+   /path/to/reference-code/gx \
+     examples/configs/gx_hsx_nonlinear_adiabatic_electrons.in
+
+Secondary slab runtime TOML run
+-------------------------------
+
+.. code-block:: bash
+
+   python -m spectraxgk.cli run-runtime-linear \
+     --config examples/configs/runtime_secondary_slab.toml
 
 KBM beta scan
 -------------
