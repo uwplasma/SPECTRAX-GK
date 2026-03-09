@@ -375,7 +375,12 @@ branch studies honest when the remaining mismatch is in extraction rather than
 in the operator or the startup state. The harness defaults to
 ``--mode-method project`` so the reported ``gamma``/``omega`` follow the same
 projected-mode extraction used by the KBM benchmark API instead of silently
-dropping back to a midplane-only signal.
+dropping back to a midplane-only signal, and it now reuses one GX-time
+trajectory when rescoring ``project``/``svd``/``max``/``z_index`` extractors so
+the extraction audit no longer reruns identical dynamics for the same ``ky``.
+The GX-aligned linear KBM helpers also now inherit GX's linked-end damping
+defaults instead of silently zeroing them, which removes another benchmark-only
+contract mismatch from the remaining branch-capture work.
 Explicit Krylov shifts now bypass the built-in KBM target sweep instead of being
 silently retargeted to the default heuristic branches. When an explicit shift is
 used, the Krylov entry point also honors the requested seed source, so
