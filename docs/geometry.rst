@@ -100,6 +100,11 @@ The slab overrides follow the audited GX implementation:
 
 That contract is now locked by unit tests so future secondary/cETG work is
 built on the same geometry semantics GX uses.
+It does not mean both benchmarks are solved already: ``secondary`` is a
+geometry-plus-runtime parity problem, while GX's ``cETG`` benchmark is a
+dedicated collisional reduced model with its own solver/RHS path. The slab
+backend is the correct prerequisite for both, but only ``secondary`` sits on
+the generic-runtime parity path today.
 
 Geometry Data Contract
 ----------------------

@@ -195,6 +195,37 @@ def test_hsx_nonlinear_vmec_geometry_example_toml_loads() -> None:
     assert cfg.terms.nonlinear == pytest.approx(1.0)
 
 
+def test_w7x_nonlinear_vmec_geometry_example_toml_loads() -> None:
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "examples"
+        / "configs"
+        / "runtime_w7x_nonlinear_vmec_geometry.toml"
+    )
+
+    cfg, data = load_runtime_from_toml(path)
+
+    assert isinstance(data, dict)
+    assert cfg.geometry.model == "vmec"
+    assert cfg.geometry.vmec_file is not None
+    assert cfg.geometry.torflux == pytest.approx(0.64)
+    assert cfg.physics.nonlinear is True
+    assert cfg.physics.adiabatic_electrons is True
+
+
+def test_secondary_slab_example_toml_loads() -> None:
+    path = Path(__file__).resolve().parents[1] / "examples" / "configs" / "runtime_secondary_slab.toml"
+
+    cfg, data = load_runtime_from_toml(path)
+
+    assert isinstance(data, dict)
+    assert cfg.geometry.model == "slab"
+    assert cfg.geometry.s_hat == pytest.approx(1.0e-8)
+    assert cfg.physics.linear is True
+    assert cfg.physics.nonlinear is False
+    assert cfg.physics.adiabatic_electrons is True
+
+
 def test_load_runtime_from_toml_accepts_desc_eik_geometry_alias(tmp_path: Path) -> None:
     toml = """
 [geometry]
