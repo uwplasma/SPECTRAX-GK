@@ -256,6 +256,32 @@ both absolute and floor-regularized relative ``gamma`` errors. For
 ``4.3e-5`` mean relative error in ``omega`` and about ``0.4%`` to ``1.0%`` in
 ``gamma`` over the sampled GX time grid.
 
+Secondary slab benchmark
+------------------------
+
+SPECTRAX-GK now ships a staged slab workflow for the GX ``kh01 -> kh01a``
+secondary-instability benchmark:
+
+- ``examples/configs/runtime_secondary_slab.toml`` matches the GX ``kh01``
+  seed geometry/grid/physics contract.
+- ``examples/secondary_slab_workflow.py`` runs the staged seed-plus-restart
+  workflow through the unified runtime API.
+- ``tools/compare_gx_secondary.py`` compares the staged SPECTRAX result against
+  a GX ``kh01a.out.nc`` file on the tracked mode set.
+
+The most important parity fix here was the runtime single-mode initializer:
+GX seeds ``init_single`` non-Gaussian modes as purely real amplitudes, while
+multi-mode Gaussian and random initializers use complex structure. SPECTRAX now
+follows that contract, which restores the expected early secondary growth.
+
+Because the fixed-pump secondary problem is exponentially unstable, the useful
+parity target is the early finite-growth window before amplitudes overflow. On
+the current staged workflow, the sideband ``(ky=0.1, kx=0.05)`` recovers a
+short-window growth rate of about ``gamma = 4.90`` on the GX slab grid, which
+matches the GX benchmark README target to within about ``2e-4`` in absolute
+error. Late-time ``omega`` and field amplitudes are not yet a frozen parity
+asset and remain under audit.
+
 ETG (GS2/Stella Cross-Code)
 ---------------------------
 

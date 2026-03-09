@@ -162,6 +162,17 @@ nonlinear ``kh01 -> kh01a`` secondary workflow:
 * ``[expert] fixed_mode = true`` with ``iky_fixed`` / ``ikx_fixed`` for the
   frozen-primary-mode evolution used by GX's ``eqfix`` path.
 
+Secondary slab staged workflow
+------------------------------
+
+.. code-block:: bash
+
+   python examples/secondary_slab_workflow.py
+
+The staged helper runs the linear ``kh01`` seed, writes a restart state in the
+runtime binary layout, then launches the nonlinear ``kh01a`` follow-up with the
+matching scaled additive restart and frozen pump mode controls.
+
 KBM beta scan
 -------------
 
