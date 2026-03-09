@@ -150,6 +150,12 @@ sampled field line. The tracked short-window scan in
 about ``7e-6`` to ``9e-6`` and mean relative ``gamma`` errors of about
 ``0.4%`` to ``4.2%`` across ``ky = 0.1, 0.2, 0.3, 0.4``.
 
+That same imported contract now has a first-class nonlinear runtime workflow:
+``examples/w7x_nonlinear_imported_geometry.py`` and
+``examples/configs/runtime_w7x_nonlinear_imported_geometry.toml`` mirror the
+GX nonlinear W7-X adiabatic-electron setup while keeping the geometry source
+explicitly tied to a VMEC/DESC ``*.eik.nc`` field-line file.
+
 Imported geometry currently bypasses analytic twist-shift reconstruction and
 uses the provided grid as-is. That keeps the GX-import bridge honest while the
 native VMEC path is still being generalized.

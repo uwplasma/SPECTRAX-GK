@@ -90,6 +90,22 @@ W7-X imported geometry TOML run
    python -m spectraxgk.cli run-runtime-linear \
      --config examples/configs/runtime_w7x_linear_imported_geometry.toml
 
+W7-X nonlinear imported geometry runtime example
+------------------------------------------------
+
+.. code-block:: bash
+
+   python examples/w7x_nonlinear_imported_geometry.py \
+     --geometry-file /path/to/w7x_adiabatic_electrons.eik.nc
+
+W7-X nonlinear imported geometry TOML run
+-----------------------------------------
+
+.. code-block:: bash
+
+   python -m spectraxgk.cli run-runtime-nonlinear \
+     --config examples/configs/runtime_w7x_nonlinear_imported_geometry.toml
+
 KBM beta scan
 -------------
 

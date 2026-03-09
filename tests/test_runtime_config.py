@@ -158,6 +158,24 @@ def test_w7x_imported_geometry_example_toml_loads() -> None:
     assert cfg.normalization.diagnostic_norm == "gx"
 
 
+def test_w7x_nonlinear_imported_geometry_example_toml_loads() -> None:
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "examples"
+        / "configs"
+        / "runtime_w7x_nonlinear_imported_geometry.toml"
+    )
+
+    cfg, data = load_runtime_from_toml(path)
+
+    assert isinstance(data, dict)
+    assert cfg.geometry.model == "vmec-eik"
+    assert cfg.geometry.geometry_file is not None
+    assert cfg.physics.nonlinear is True
+    assert cfg.physics.adiabatic_electrons is True
+    assert cfg.terms.nonlinear == pytest.approx(1.0)
+
+
 def test_load_runtime_from_toml_accepts_desc_eik_geometry_alias(tmp_path: Path) -> None:
     toml = """
 [geometry]
