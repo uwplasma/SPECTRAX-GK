@@ -73,6 +73,15 @@ Unified runtime TOML run
    python examples/runtime_from_toml.py --config examples/configs/runtime_etg.toml
    python examples/runtime_from_toml.py --config examples/configs/runtime_kbm.toml
 
+W7-X imported geometry runtime example
+-------------------------------------
+
+.. code-block:: bash
+
+   python examples/w7x_linear_imported_geometry.py \
+     --geometry-file /path/to/itg_w7x_adiabatic_electrons.eik.nc \
+     --ky 0.3
+
 KBM beta scan
 -------------
 

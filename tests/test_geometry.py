@@ -277,6 +277,63 @@ def test_load_gx_geometry_netcdf_reads_root_level_eik_layout(tmp_path):
     assert np.all(np.isfinite(np.asarray(loaded.bgrad_profile)))
 
 
+def test_root_level_eik_import_matches_sampled_contract_after_trim(tmp_path):
+    """VMEC-style closed-interval GX imports should recover the open solver contract."""
+
+    netcdf4 = pytest.importorskip("netCDF4")
+    Dataset = netcdf4.Dataset
+
+    analytic = SAlphaGeometry(q=1.4, s_hat=0.8, epsilon=0.18, R0=2.77778, alpha=0.1)
+    theta_closed = np.linspace(-3.0 * np.pi, 3.0 * np.pi, 65)
+    sampled_closed = sample_flux_tube_geometry(analytic, jnp.asarray(theta_closed))
+    path = tmp_path / "geom.eik.nc"
+    with Dataset(path, "w") as root:
+        root.createDimension("z", theta_closed.size)
+        root.createVariable("theta", "f8", ("z",))[:] = theta_closed
+        root.createVariable("bmag", "f8", ("z",))[:] = np.asarray(sampled_closed.bmag_profile)
+        root.createVariable("gds2", "f8", ("z",))[:] = np.asarray(sampled_closed.gds2_profile)
+        root.createVariable("gds21", "f8", ("z",))[:] = np.asarray(sampled_closed.gds21_profile)
+        root.createVariable("gds22", "f8", ("z",))[:] = np.asarray(sampled_closed.gds22_profile)
+        root.createVariable("cvdrift", "f8", ("z",))[:] = 2.0 * np.asarray(sampled_closed.cv_profile)
+        root.createVariable("gbdrift", "f8", ("z",))[:] = 2.0 * np.asarray(sampled_closed.gb_profile)
+        root.createVariable("cvdrift0", "f8", ("z",))[:] = 2.0 * np.asarray(sampled_closed.cv0_profile)
+        root.createVariable("gbdrift0", "f8", ("z",))[:] = 2.0 * np.asarray(sampled_closed.gb0_profile)
+        root.createVariable("jacob", "f8", ("z",))[:] = np.full(theta_closed.size, 7.0)
+        root.createVariable("grho", "f8", ("z",))[:] = np.asarray(sampled_closed.grho_profile)
+        root.createVariable("gradpar", "f8", ("z",))[:] = np.full(
+            theta_closed.size, sampled_closed.gradpar_value
+        )
+        root.createVariable("drhodpsi", "f8", ())[:] = 1.0
+        root.createVariable("q", "f8", ())[:] = sampled_closed.q
+        root.createVariable("shat", "f8", ())[:] = sampled_closed.s_hat
+        root.createVariable("Rmaj", "f8", ())[:] = sampled_closed.R0
+        root.createVariable("kxfac", "f8", ())[:] = sampled_closed.kxfac
+        root.createVariable("scale", "f8", ())[:] = sampled_closed.theta_scale
+        root.createVariable("nfp", "f8", ())[:] = sampled_closed.nfp
+        root.createVariable("alpha", "f8", ())[:] = sampled_closed.alpha
+
+    loaded = load_gx_geometry_netcdf(path)
+    theta_solver = jnp.asarray(theta_closed[:-1])
+    loaded_open = ensure_flux_tube_geometry_data(loaded, theta_solver)
+    sampled_open = ensure_flux_tube_geometry_data(sampled_closed, theta_solver)
+
+    assert loaded.theta_closed_interval is True
+    assert jnp.allclose(loaded_open.theta, sampled_open.theta)
+    assert jnp.allclose(loaded_open.bmag_profile, sampled_open.bmag_profile, rtol=1.0e-6, atol=1.0e-6)
+    assert jnp.allclose(loaded_open.gds2_profile, sampled_open.gds2_profile, rtol=1.0e-6, atol=1.0e-6)
+    assert jnp.allclose(loaded_open.gds21_profile, sampled_open.gds21_profile, rtol=1.0e-6, atol=1.0e-6)
+    assert jnp.allclose(loaded_open.gds22_profile, sampled_open.gds22_profile, rtol=1.0e-6, atol=1.0e-6)
+    assert jnp.allclose(loaded_open.cv_profile, sampled_open.cv_profile, rtol=1.0e-6, atol=1.0e-6)
+    assert jnp.allclose(loaded_open.gb_profile, sampled_open.gb_profile, rtol=1.0e-6, atol=1.0e-6)
+    assert jnp.allclose(loaded_open.cv0_profile, sampled_open.cv0_profile, rtol=1.0e-6, atol=1.0e-6)
+    assert jnp.allclose(loaded_open.gb0_profile, sampled_open.gb0_profile, rtol=1.0e-6, atol=1.0e-6)
+    assert jnp.allclose(
+        loaded_open.jacobian_profile, sampled_open.jacobian_profile, rtol=1.0e-6, atol=1.0e-6
+    )
+    assert jnp.allclose(loaded_open.grho_profile, sampled_open.grho_profile, rtol=1.0e-6, atol=1.0e-6)
+    assert jnp.allclose(loaded_open.bgrad_profile, sampled_open.bgrad_profile, rtol=1.0e-4, atol=1.0e-4)
+
+
 def test_build_flux_tube_geometry_loads_gx_netcdf(tmp_path):
     netcdf4 = pytest.importorskip("netCDF4")
     Dataset = netcdf4.Dataset
