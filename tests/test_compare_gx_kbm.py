@@ -163,6 +163,52 @@ def test_compare_gx_kbm_run_candidate_skips_gx_shift_for_non_krylov(monkeypatch)
     assert captured["krylov_cfg"] is None
 
 
+def test_compare_gx_kbm_run_candidate_honors_mode_method_override(monkeypatch) -> None:
+    tools_dir = Path(__file__).resolve().parents[1] / "tools"
+    sys.path.insert(0, str(tools_dir))
+    try:
+        import compare_gx_kbm as mod
+    finally:
+        sys.path.remove(str(tools_dir))
+
+    captured: dict[str, object] = {}
+
+    def _fake_run_kbm_linear(**kwargs):
+        captured.update(kwargs)
+        return SimpleNamespace(gamma=0.1, omega=0.2)
+
+    monkeypatch.setattr(mod, "run_kbm_linear", _fake_run_kbm_linear)
+
+    args = SimpleNamespace(
+        time_fit_signal="auto",
+        Nl=16,
+        Nm=48,
+        dt=0.01,
+        steps=4000,
+        method="rk4",
+        mode_method="project",
+        no_auto_window=False,
+        tmin=None,
+        tmax=None,
+        sample_stride=1,
+        krylov_gx_shift=False,
+        krylov_gx_shift_source="target",
+    )
+
+    mod._run_candidate(
+        args,
+        cfg=object(),
+        ky_value=0.3,
+        beta_value=0.015,
+        solver_name="gx_time",
+        mode_method_override="max",
+        gx_gamma=0.219,
+        gx_omega=1.141,
+    )
+
+    assert captured["mode_method"] == "max"
+
+
 def test_compare_gx_kbm_run_candidate_allows_shift_source_override(monkeypatch) -> None:
     tools_dir = Path(__file__).resolve().parents[1] / "tools"
     sys.path.insert(0, str(tools_dir))
@@ -223,6 +269,7 @@ def test_compare_gx_kbm_parser_defaults_to_project_mode() -> None:
 
     assert args.mode_method == "project"
     assert args.branch_policy == "continuation"
+    assert args.branch_solvers == "gx_time@project,gx_time@max,gx_time@z_index,krylov,time"
 
 
 def test_compare_gx_kbm_candidate_row_captures_branch_metrics() -> None:
@@ -258,3 +305,33 @@ def test_compare_gx_kbm_candidate_row_captures_branch_metrics() -> None:
     assert row["eig_overlap_prev"] == 0.8
     assert row["branch_score"] == 0.42
     assert row["selected"] is True
+
+
+def test_compare_gx_kbm_parse_candidate_spec_supports_mode_override() -> None:
+    tools_dir = Path(__file__).resolve().parents[1] / "tools"
+    sys.path.insert(0, str(tools_dir))
+    try:
+        import compare_gx_kbm as mod
+    finally:
+        sys.path.remove(str(tools_dir))
+
+    solver, mode_method, label = mod._parse_candidate_spec("gx_time@max")
+
+    assert solver == "gx_time"
+    assert mode_method == "max"
+    assert label == "gx_time@max"
+
+
+def test_compare_gx_kbm_parse_candidate_spec_without_override() -> None:
+    tools_dir = Path(__file__).resolve().parents[1] / "tools"
+    sys.path.insert(0, str(tools_dir))
+    try:
+        import compare_gx_kbm as mod
+    finally:
+        sys.path.remove(str(tools_dir))
+
+    solver, mode_method, label = mod._parse_candidate_spec("krylov")
+
+    assert solver == "krylov"
+    assert mode_method is None
+    assert label == "krylov"

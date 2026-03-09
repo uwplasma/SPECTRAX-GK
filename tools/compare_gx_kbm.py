@@ -251,10 +251,12 @@ def _run_candidate(
     beta_value: float,
     solver_name: str,
     *,
+    mode_method_override: str | None = None,
     gx_gamma: float | None = None,
     gx_omega: float | None = None,
 ):
     fit_signal = args.time_fit_signal if solver_name in {"time", "gx_time"} else "phi"
+    mode_method_use = str(mode_method_override or args.mode_method)
     krylov_cfg = None
     if (
         solver_name == "krylov"
@@ -284,7 +286,7 @@ def _run_candidate(
         solver=solver_name,
         krylov_cfg=krylov_cfg,
         fit_signal=fit_signal,
-        mode_method=args.mode_method,
+        mode_method=mode_method_use,
         diagnostic_norm="gx",
         gx_reference=True,
         auto_window=not args.no_auto_window,
@@ -292,6 +294,22 @@ def _run_candidate(
         tmax=args.tmax,
         sample_stride=args.sample_stride,
     )
+
+
+def _parse_candidate_spec(spec: str) -> tuple[str, str | None, str]:
+    label = spec.strip()
+    if not label:
+        raise ValueError("Empty branch candidate spec")
+    if "@" not in label:
+        return label, None, label
+    solver_name, mode_method = label.split("@", 1)
+    solver_name = solver_name.strip()
+    mode_method = mode_method.strip()
+    if not solver_name:
+        raise ValueError(f"Missing solver name in candidate spec '{spec}'")
+    if not mode_method:
+        raise ValueError(f"Missing mode method in candidate spec '{spec}'")
+    return solver_name, mode_method, label
 
 
 def _write_rows(path: Path, rows: list[dict[str, float | str]]) -> None:
@@ -387,8 +405,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--branch-solvers",
         type=str,
-        default="gx_time,krylov,time",
-        help="Comma-separated candidate solvers used when --branch-policy=gx-ref-auto.",
+        default="gx_time@project,gx_time@max,gx_time@z_index,krylov,time",
+        help="Comma-separated candidate solvers used when --branch-policy=gx-ref-auto. Candidates can override time/gx_time extraction with the form solver@mode_method, e.g. gx_time@max.",
     )
     parser.add_argument("--branch-gamma-weight", type=float, default=1.0)
     parser.add_argument("--branch-omega-weight", type=float, default=1.0)
@@ -482,7 +500,7 @@ def main() -> None:
     grid_full = build_spectral_grid(cfg.grid)
     use_legacy_auto = args.branch_policy in {"gx-ref-auto", "auto"}
     use_continuation = args.branch_policy == "continuation"
-    branch_candidates = [s.strip() for s in args.branch_solvers.split(",") if s.strip()]
+    branch_candidates = [_parse_candidate_spec(s) for s in args.branch_solvers.split(",") if s.strip()]
     if (use_legacy_auto or use_continuation) and not branch_candidates:
         raise ValueError("No candidate solvers parsed from --branch-solvers")
 
@@ -495,13 +513,14 @@ def main() -> None:
             best_row = None
             best_obj = np.inf
             candidate_start = len(candidate_rows)
-            for solver_name in branch_candidates:
+            for solver_name, mode_method_override, solver_label in branch_candidates:
                 result = _run_candidate(
                     args,
                     cfg,
                     float(ky_val),
                     beta,
                     solver_name,
+                    mode_method_override=mode_method_override,
                     gx_gamma=float(gx_gamma[i]),
                     gx_omega=float(gx_omega[i]),
                 )
@@ -511,7 +530,7 @@ def main() -> None:
                 candidate_rows.append(
                     _candidate_row(
                         ky=float(ky_val),
-                        solver=solver_name,
+                        solver=solver_label,
                         result=result,
                         gx_gamma=float(gx_gamma[i]),
                         gx_omega=float(gx_omega[i]),
@@ -526,7 +545,7 @@ def main() -> None:
                     _write_rows(args.candidate_out, candidate_rows)
                 if obj < best_obj:
                     best_obj = obj
-                    best_row = (solver_name, result)
+                    best_row = (solver_label, result)
             if best_row is None:
                 raise RuntimeError(f"No valid solver candidate for ky={float(ky_val):.4f}")
             solver_used, result = best_row
@@ -536,13 +555,14 @@ def main() -> None:
             best_candidate = None
             best_obj = np.inf
             candidate_start = len(candidate_rows)
-            for solver_name in branch_candidates:
+            for solver_name, mode_method_override, solver_label in branch_candidates:
                 result_c = _run_candidate(
                     args,
                     cfg,
                     float(ky_val),
                     beta,
                     solver_name,
+                    mode_method_override=mode_method_override,
                     gx_gamma=float(gx_gamma[i]),
                     gx_omega=float(gx_omega[i]),
                 )
@@ -571,7 +591,7 @@ def main() -> None:
                 candidate_rows.append(
                     _candidate_row(
                         ky=float(ky_val),
-                        solver=solver_name,
+                        solver=solver_label,
                         result=result_c,
                         gx_gamma=float(gx_gamma[i]),
                         gx_omega=float(gx_omega[i]),
@@ -586,7 +606,7 @@ def main() -> None:
                     _write_rows(args.candidate_out, candidate_rows)
                 if obj < best_obj:
                     best_obj = obj
-                    best_candidate = (solver_name, result_c, mode_c, eig_overlap_c, eig_rel_l2_c, prev_overlap_c)
+                    best_candidate = (solver_label, result_c, mode_c, eig_overlap_c, eig_rel_l2_c, prev_overlap_c)
             if best_candidate is None:
                 raise RuntimeError(f"No valid solver candidate for ky={float(ky_val):.4f}")
             solver_used, result, mode_sp, eig_overlap, eig_rel_l2, prev_overlap = best_candidate

@@ -368,10 +368,14 @@ GX-scored per-point solver picker is still available through
 ``--branch-policy gx-ref-auto`` for forensic studies. For branch-isolation
 studies with the Krylov solver, ``--krylov-gx-shift`` additionally seeds
 shift-invert with the GX reference eigenvalue so the harness can ask for the
-same branch explicitly. The harness defaults to ``--mode-method project`` so
-the reported ``gamma``/``omega`` follow the same projected-mode extraction used
-by the KBM benchmark API instead of silently dropping back to a midplane-only
-signal.
+same branch explicitly. Candidate definitions can now also override the
+time-history extraction method with ``solver@mode_method`` syntax in
+``--branch-solvers`` (for example ``gx_time@max``), which keeps linear KBM
+branch studies honest when the remaining mismatch is in extraction rather than
+in the operator or the startup state. The harness defaults to
+``--mode-method project`` so the reported ``gamma``/``omega`` follow the same
+projected-mode extraction used by the KBM benchmark API instead of silently
+dropping back to a midplane-only signal.
 Explicit Krylov shifts now bypass the built-in KBM target sweep instead of being
 silently retargeted to the default heuristic branches. When an explicit shift is
 used, the Krylov entry point also honors the requested seed source, so
