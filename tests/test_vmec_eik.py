@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import sys
 
 import pytest
 
@@ -110,7 +111,60 @@ def test_generate_runtime_vmec_eik_invokes_gx_script_and_creates_output(
     assert called["cmd"] is not None
     cmd = called["cmd"]
     assert isinstance(cmd, list)
+    assert cmd[0] == sys.executable
     assert str(gx_script) in cmd
+
+
+def test_generate_runtime_vmec_eik_uses_configured_python_interpreter(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    cfg = _vmec_runtime_cfg(tmp_path, geometry_file=str(tmp_path / "geom.eik.nc"))
+    cfg = RuntimeConfig(
+        grid=cfg.grid,
+        time=cfg.time,
+        geometry=GeometryConfig(
+            model="vmec",
+            vmec_file=cfg.geometry.vmec_file,
+            geometry_file=cfg.geometry.geometry_file,
+            torflux=cfg.geometry.torflux,
+            npol=cfg.geometry.npol,
+            alpha=cfg.geometry.alpha,
+            gx_repo=cfg.geometry.gx_repo,
+            gx_python="python3",
+        ),
+        init=cfg.init,
+        species=cfg.species,
+        physics=cfg.physics,
+        normalization=cfg.normalization,
+        collisions=cfg.collisions,
+        terms=cfg.terms,
+    )
+    gx_script = Path(cfg.geometry.gx_repo) / "geometry_modules" / "pyvmec" / "gx_geo_vmec.py"
+    gx_script.parent.mkdir(parents=True, exist_ok=True)
+    gx_script.write_text("# stub", encoding="utf-8")
+
+    called: dict[str, object] = {}
+
+    def _fake_run(cmd, check, capture_output, text, cwd):  # type: ignore[no-untyped-def]
+        called["cmd"] = cmd
+        out = Path(cmd[-1])
+        out.write_text("generated", encoding="utf-8")
+
+        class _Result:
+            returncode = 0
+            stdout = "ok"
+            stderr = ""
+
+        return _Result()
+
+    monkeypatch.setattr("spectraxgk.vmec_eik.subprocess.run", _fake_run)
+
+    out = generate_runtime_vmec_eik(cfg, force=True)
+
+    assert out.exists()
+    cmd = called["cmd"]
+    assert isinstance(cmd, list)
+    assert cmd[0] == "python3"
 
 
 def test_generate_runtime_vmec_eik_reuses_existing_output_without_subprocess(

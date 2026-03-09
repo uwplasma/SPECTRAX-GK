@@ -22,6 +22,7 @@ def build_hsx_nonlinear_cfg(
     *,
     geometry_file: str | None,
     gx_repo: str | None,
+    gx_python: str | None,
     torflux: float,
     alpha: float,
     npol: float,
@@ -55,6 +56,7 @@ def build_hsx_nonlinear_cfg(
             vmec_file=vmec_file,
             geometry_file=geometry_file,
             gx_repo=gx_repo,
+            gx_python=gx_python,
             torflux=torflux,
             alpha=alpha,
             npol=npol,
@@ -112,6 +114,7 @@ def main() -> int:
     parser.add_argument("--vmec-file", required=True, help="Path to the VMEC wout file")
     parser.add_argument("--geometry-file", default=None, help="Optional output/reuse path for the generated *.eik.nc file")
     parser.add_argument("--gx-repo", default=None, help="Optional GX repository path for gx_geo_vmec.py")
+    parser.add_argument("--gx-python", default=None, help="Optional Python interpreter used for GX VMEC geometry generation")
     parser.add_argument("--torflux", type=float, default=0.64, help="Normalized toroidal flux surface label")
     parser.add_argument("--alpha", type=float, default=0.0, help="Field-line alpha label")
     parser.add_argument("--npol", type=float, default=1.0, help="Number of poloidal turns")
@@ -127,6 +130,7 @@ def main() -> int:
         args.vmec_file,
         geometry_file=args.geometry_file,
         gx_repo=args.gx_repo,
+        gx_python=args.gx_python,
         torflux=float(args.torflux),
         alpha=float(args.alpha),
         npol=float(args.npol),
