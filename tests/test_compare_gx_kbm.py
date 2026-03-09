@@ -337,6 +337,7 @@ def test_compare_gx_kbm_parser_defaults_to_project_mode() -> None:
     args = parser.parse_args(["--gx", "kbm.out.nc"])
 
     assert args.mode_method == "project"
+    assert args.steps is None
     assert args.branch_policy == "continuation"
     assert args.branch_solvers == "gx_time@project,gx_time@svd,gx_time@max,gx_time@z_index,krylov,time"
 

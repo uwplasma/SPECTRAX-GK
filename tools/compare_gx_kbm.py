@@ -26,7 +26,16 @@ from spectraxgk.grids import build_spectral_grid, select_ky_grid
 
 def _load_gx_omega_gamma(
     path: Path,
-) -> tuple[np.ndarray, np.ndarray, float, float | None, float | None, float | None, float | None]:
+) -> tuple[
+    np.ndarray,
+    np.ndarray,
+    np.ndarray,
+    float,
+    float | None,
+    float | None,
+    float | None,
+    float | None,
+]:
     root = Dataset(path, "r")
     try:
         grids = root.groups["Grids"]
@@ -36,6 +45,7 @@ def _load_gx_omega_gamma(
         raise ValueError(f"{path} missing expected GX groups") from exc
 
     ky = np.asarray(grids.variables["ky"][:], dtype=float)
+    time = np.asarray(grids.variables["time"][:], dtype=float)
     omega_kxkyt = np.asarray(diagnostics.variables["omega_kxkyt"][:], dtype=float)
     if omega_kxkyt.ndim != 4 or omega_kxkyt.shape[-1] != 2:
         raise ValueError(f"unexpected omega_kxkyt shape: {omega_kxkyt.shape}")
@@ -62,7 +72,7 @@ def _load_gx_omega_gamma(
 
     root.close()
     mask = ky > 0.0
-    return ky[mask], omega[:, mask], beta, q, shat, eps, rmaj
+    return time, ky[mask], omega[:, mask], beta, q, shat, eps, rmaj
 
 
 def _infer_y0(ky: np.ndarray) -> float:
@@ -449,7 +459,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--Nl", type=int, default=16)
     parser.add_argument("--Nm", type=int, default=48)
     parser.add_argument("--dt", type=float, default=0.01)
-    parser.add_argument("--steps", type=int, default=4000)
+    parser.add_argument(
+        "--steps",
+        type=int,
+        default=None,
+        help="Number of SPECTRAX time steps. Defaults to the GX reference horizon rounded up by --dt.",
+    )
     parser.add_argument("--method", type=str, default="rk4")
     parser.add_argument("--solver", type=str, default="gx_time")
     parser.add_argument("--ntheta", type=int, default=32)
@@ -547,7 +562,7 @@ def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
 
-    gx_ky, gx_omega_series, beta, q_gx, shat_gx, eps_gx, rmaj_gx = _load_gx_omega_gamma(args.gx)
+    gx_time, gx_ky, gx_omega_series, beta, q_gx, shat_gx, eps_gx, rmaj_gx = _load_gx_omega_gamma(args.gx)
     nky_full = int(len(gx_ky))
     if nky_full < 2:
         raise ValueError("GX output must contain at least two positive ky points.")
@@ -582,6 +597,8 @@ def main() -> None:
         nperiod=args.nperiod,
         y0=y0,
     )
+    steps_use = int(args.steps) if args.steps is not None else max(int(np.ceil(float(gx_time[-1]) / float(args.dt))), 1)
+    args.steps = steps_use
 
     grid_full = build_spectral_grid(cfg.grid)
     use_legacy_auto = args.branch_policy in {"gx-ref-auto", "auto"}
