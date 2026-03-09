@@ -545,6 +545,105 @@ def test_run_kbm_linear_gx_time_uses_requested_mode_extractor(monkeypatch):
     assert np.isclose(result.omega, 1.5)
 
 
+def test_run_kbm_linear_uses_gx_linked_end_damping_by_default(monkeypatch):
+    """GX-aligned KBM runs should inherit GX linked-end damping defaults."""
+
+    captured: dict[str, float] = {}
+
+    def _fake_two_species_params(*args, damp_ends_amp: float, damp_ends_widthfrac: float, **kwargs):
+        del args, kwargs
+        captured["amp"] = float(damp_ends_amp)
+        captured["width"] = float(damp_ends_widthfrac)
+        return SimpleNamespace(
+            damp_ends_amp=float(damp_ends_amp),
+            damp_ends_widthfrac=float(damp_ends_widthfrac),
+            rho_star=benchmarks.KBM_RHO_STAR,
+        )
+
+    def _fake_build_linear_cache(*_args, **_kwargs):
+        return object()
+
+    def _fake_integrate(*_args, mode_method: str, **_kwargs):
+        from spectraxgk.diagnostics import GXDiagnostics
+
+        del mode_method
+        t = np.array([0.1, 0.2], dtype=float)
+        phi_t = np.ones((2, 1, 1, 4), dtype=np.complex64)
+        gamma_t = np.zeros((2, 1, 1), dtype=float)
+        omega_t = np.zeros((2, 1, 1), dtype=float)
+        diag = GXDiagnostics(
+            t=t,
+            dt_t=np.full(t.shape, 0.1, dtype=float),
+            dt_mean=np.asarray(0.1),
+            gamma_t=gamma_t,
+            omega_t=omega_t,
+            Wg_t=np.zeros_like(t),
+            Wphi_t=np.zeros_like(t),
+            Wapar_t=np.zeros_like(t),
+            heat_flux_t=np.zeros_like(t),
+            particle_flux_t=np.zeros_like(t),
+            energy_t=np.zeros_like(t),
+        )
+        return t, phi_t, gamma_t, omega_t, diag
+
+    monkeypatch.setattr(benchmarks, "_two_species_params", _fake_two_species_params)
+    monkeypatch.setattr(benchmarks, "build_linear_cache", _fake_build_linear_cache)
+    monkeypatch.setattr(benchmarks, "integrate_linear_gx_diagnostics", _fake_integrate)
+    monkeypatch.setattr(
+        benchmarks,
+        "gx_growth_rate_from_phi",
+        lambda *args, **kwargs: (0.1, 0.2, np.zeros(1), np.zeros(1), np.zeros(1)),
+    )
+
+    grid = GridConfig(Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2)
+    cfg = KBMBaseCase(grid=grid)
+    run_kbm_linear(ky_target=0.3, cfg=cfg, Nl=2, Nm=2, dt=0.01, steps=4, solver="gx_time")
+
+    assert captured["amp"] == pytest.approx(benchmarks.GX_DAMP_ENDS_AMP)
+    assert captured["width"] == pytest.approx(benchmarks.GX_DAMP_ENDS_WIDTHFRAC)
+
+
+def test_run_kbm_linear_disables_gx_linked_end_damping_when_requested(monkeypatch):
+    """Non-GX KBM runs should keep linked-end damping disabled by default."""
+
+    captured: dict[str, float] = {}
+
+    def _fake_two_species_params(*args, damp_ends_amp: float, damp_ends_widthfrac: float, **kwargs):
+        del args, kwargs
+        captured["amp"] = float(damp_ends_amp)
+        captured["width"] = float(damp_ends_widthfrac)
+        return SimpleNamespace(
+            damp_ends_amp=float(damp_ends_amp),
+            damp_ends_widthfrac=float(damp_ends_widthfrac),
+            rho_star=benchmarks.KBM_RHO_STAR,
+        )
+
+    def _fake_integrate(*_args, **_kwargs):
+        return np.array([0.0]), np.zeros((1, 1, 1, 4), dtype=np.complex64)
+
+    monkeypatch.setattr(benchmarks, "_two_species_params", _fake_two_species_params)
+    monkeypatch.setattr(benchmarks, "build_linear_cache", lambda *_args, **_kwargs: object())
+    monkeypatch.setattr(benchmarks, "integrate_linear", _fake_integrate)
+    monkeypatch.setattr(benchmarks, "fit_growth_rate_auto", lambda *args, **kwargs: (0.1, 0.2, 0.0, 0.0))
+
+    grid = GridConfig(Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2)
+    cfg = KBMBaseCase(grid=grid)
+    run_kbm_linear(
+        ky_target=0.3,
+        cfg=cfg,
+        Nl=2,
+        Nm=2,
+        dt=0.01,
+        steps=4,
+        solver="time",
+        gx_reference=False,
+        fit_signal="phi",
+    )
+
+    assert captured["amp"] == pytest.approx(0.0)
+    assert captured["width"] == pytest.approx(0.0)
+
+
 def test_run_kbm_beta_scan_gx_time_keeps_project_mode(monkeypatch):
     """KBM scan helpers should not downgrade project mode on the GX-time path."""
 
@@ -598,6 +697,70 @@ def test_run_kbm_beta_scan_gx_time_keeps_project_mode(monkeypatch):
     assert calls == ["integrate:z_index", "growth:project"]
     assert np.isclose(scan.gamma[0], 0.15)
     assert np.isclose(scan.omega[0], 0.9)
+
+
+def test_run_kbm_beta_scan_uses_gx_linked_end_damping_by_default(monkeypatch):
+    """GX-aligned KBM beta scans should inherit GX linked-end damping defaults."""
+
+    captured: dict[str, float] = {}
+
+    def _fake_two_species_params(*args, damp_ends_amp: float, damp_ends_widthfrac: float, **kwargs):
+        del args, kwargs
+        captured["amp"] = float(damp_ends_amp)
+        captured["width"] = float(damp_ends_widthfrac)
+        return SimpleNamespace(
+            damp_ends_amp=float(damp_ends_amp),
+            damp_ends_widthfrac=float(damp_ends_widthfrac),
+            rho_star=benchmarks.KBM_RHO_STAR,
+        )
+
+    def _fake_integrate(*_args, mode_method: str, **_kwargs):
+        from spectraxgk.diagnostics import GXDiagnostics
+
+        del mode_method
+        t = np.array([0.1, 0.2], dtype=float)
+        phi_t = np.ones((2, 1, 1, 4), dtype=np.complex64)
+        gamma_t = np.zeros((2, 1, 1), dtype=float)
+        omega_t = np.zeros((2, 1, 1), dtype=float)
+        diag = GXDiagnostics(
+            t=t,
+            dt_t=np.full(t.shape, 0.1, dtype=float),
+            dt_mean=np.asarray(0.1),
+            gamma_t=gamma_t,
+            omega_t=omega_t,
+            Wg_t=np.zeros_like(t),
+            Wphi_t=np.zeros_like(t),
+            Wapar_t=np.zeros_like(t),
+            heat_flux_t=np.zeros_like(t),
+            particle_flux_t=np.zeros_like(t),
+            energy_t=np.zeros_like(t),
+        )
+        return t, phi_t, gamma_t, omega_t, diag
+
+    monkeypatch.setattr(benchmarks, "_two_species_params", _fake_two_species_params)
+    monkeypatch.setattr(benchmarks, "build_linear_cache", lambda *_args, **_kwargs: object())
+    monkeypatch.setattr(benchmarks, "integrate_linear_gx_diagnostics", _fake_integrate)
+    monkeypatch.setattr(
+        benchmarks,
+        "gx_growth_rate_from_phi",
+        lambda *args, **kwargs: (0.1, 0.2, np.zeros(1), np.zeros(1), np.zeros(1)),
+    )
+
+    grid = GridConfig(Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2)
+    cfg = KBMBaseCase(grid=grid)
+    run_kbm_beta_scan(
+        np.array([cfg.model.beta]),
+        ky_target=0.3,
+        cfg=cfg,
+        Nl=2,
+        Nm=2,
+        dt=0.01,
+        steps=4,
+        solver="gx_time",
+    )
+
+    assert captured["amp"] == pytest.approx(benchmarks.GX_DAMP_ENDS_AMP)
+    assert captured["width"] == pytest.approx(benchmarks.GX_DAMP_ENDS_WIDTHFRAC)
 
 
 def test_run_kbm_linear_krylov_explicit_shift_bypasses_multi_target(monkeypatch):
