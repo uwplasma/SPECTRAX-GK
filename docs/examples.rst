@@ -120,7 +120,8 @@ Generate GX-compatible geometry from a runtime TOML
 .. code-block:: bash
 
    python tools/generate_gx_vmec_eik.py \
-     --config examples/configs/runtime_hsx_nonlinear_vmec_geometry.toml
+     --config examples/configs/runtime_hsx_nonlinear_vmec_geometry.toml \
+     --gx-python python3
 
 HSX nonlinear VMEC runtime example
 ----------------------------------
@@ -128,7 +129,8 @@ HSX nonlinear VMEC runtime example
 .. code-block:: bash
 
    python examples/hsx_nonlinear_vmec_geometry.py \
-     --vmec-file /Users/rogeriojorge/local/vmec_equilibria/HSX/QHS_vac/wout_HSX_QHS_vac.nc
+     --vmec-file /Users/rogeriojorge/local/vmec_equilibria/HSX/QHS_vac/wout_HSX_QHS_vac.nc \
+     --gx-python python3
 
 HSX nonlinear VMEC TOML run
 ---------------------------

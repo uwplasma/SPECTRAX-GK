@@ -191,6 +191,10 @@ content and VMEC file timestamp, so repeated runtime or CLI calls reuse the
 same generated file unless an explicit ``geometry_file`` target is requested.
 That gives SPECTRAX-GK a parity-first VMEC path immediately, while keeping the
 native JAX geometry contract centered on ``FluxTubeGeometryData``.
+When the GX VMEC helper depends on a different Python environment, set
+``geometry.gx_python`` (or the ``GX_VMEC_PYTHON`` environment variable) so
+SPECTRAX launches ``gx_geo_vmec.py`` with the interpreter that has
+``booz_xform`` installed.
 
 Two user-facing entry points now exercise that bridge:
 

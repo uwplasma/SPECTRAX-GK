@@ -256,3 +256,21 @@ geometry_file = "/tmp/w7x-desc.eik.nc"
 
     assert cfg.geometry.model == "desc-eik"
     assert cfg.geometry.geometry_file == "/tmp/w7x-desc.eik.nc"
+
+
+def test_load_runtime_from_toml_accepts_vmec_gx_python(tmp_path: Path) -> None:
+    toml = """
+[geometry]
+model = "vmec"
+vmec_file = "/tmp/wout_test.nc"
+torflux = 0.64
+gx_python = "python3"
+"""
+    path = tmp_path / "runtime_vmec.toml"
+    path.write_text(toml, encoding="utf-8")
+
+    cfg, _ = load_runtime_from_toml(path)
+
+    assert cfg.geometry.model == "vmec"
+    assert cfg.geometry.vmec_file == "/tmp/wout_test.nc"
+    assert cfg.geometry.gx_python == "python3"

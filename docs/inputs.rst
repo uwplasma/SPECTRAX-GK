@@ -153,7 +153,10 @@ matching ``*.eik.nc`` file on demand, then immediately reuses the same imported
 geometry path as the W7-X examples. Set ``vmec_file`` plus the flux-tube keys
 ``torflux``, ``npol`` and optionally ``alpha``. ``geometry_file`` can be used
 as an explicit output/reuse path for the generated ``*.eik.nc`` file, and
-``gx_repo`` can point to a non-default GX checkout if needed. This is now the
+``gx_repo`` can point to a non-default GX checkout if needed. If GX's VMEC
+helper must run under a different Python interpreter than SPECTRAX itself
+(for example when ``booz_xform`` is installed in a separate environment), set
+``gx_python`` or the ``GX_VMEC_PYTHON`` environment variable. This is now the
 recommended parity-first route for new stellarator cases such as HSX.
 
 Solver and fit-signal keys
