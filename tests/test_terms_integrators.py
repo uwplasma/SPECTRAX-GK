@@ -31,6 +31,8 @@ def _linear_rhs(rate: complex):
         ("euler", lambda a: 1.0 + a),
         ("rk2", lambda a: 1.0 + a + 0.5 * a * a),
         ("rk3", lambda a: 1.0 + a + 0.5 * a * a + (a * a * a) / 6.0),
+        ("rk3_gx", lambda a: 1.0 + a + 0.5 * a * a + (a * a * a) / 6.0),
+        ("rk3_classic", lambda a: 1.0 + a + 0.5 * a * a + (a * a * a) / 6.0),
         ("rk4", lambda a: 1.0 + a + 0.5 * a * a + (a * a * a) / 6.0 + (a * a * a * a) / 24.0),
         (
             "sspx3",
@@ -99,6 +101,13 @@ def test_integrate_nonlinear_projects_each_stage() -> None:
         project_state=projector,
     )
     assert jnp.allclose(G_final[..., 3, :], jnp.conj(G_final[..., 1, :]))
+
+
+def test_integrate_nonlinear_rk3_alias_matches_gx_variant() -> None:
+    G0 = jnp.asarray([[1.0 + 0.0j, 0.5 + 0.25j]], dtype=jnp.complex64)
+    out_rk3, _ = integrate_nonlinear(_linear_rhs(0.3 - 0.2j), jnp.array(G0), 0.1, 3, method="rk3")
+    out_gx, _ = integrate_nonlinear(_linear_rhs(0.3 - 0.2j), jnp.array(G0), 0.1, 3, method="rk3_gx")
+    assert jnp.allclose(out_rk3, out_gx)
 
 
 def test_nonlinear_placeholders() -> None:
