@@ -471,6 +471,97 @@ def test_runtime_nonlinear_adaptive_default_steps_match_integrator_dt_cap() -> N
     assert steps_val == 20
 
 
+def test_runtime_nonlinear_adaptive_default_steps_chunk_until_tmax(monkeypatch) -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        time=TimeConfig(
+            t_max=0.25,
+            dt=0.1,
+            method="rk3",
+            use_diffrax=False,
+            sample_stride=2,
+            diagnostics_stride=2,
+            fixed_dt=False,
+            dt_min=1.0e-5,
+            dt_max=None,
+            cfl=1.0,
+        ),
+        species=(RuntimeSpeciesConfig(name="ion"),),
+        normalization=RuntimeNormalizationConfig(contract="cyclone"),
+        physics=RuntimePhysicsConfig(adiabatic_electrons=True, nonlinear=True),
+        terms=RuntimeTermsConfig(nonlinear=1.0, hypercollisions=0.0, end_damping=0.0),
+    )
+
+    calls: list[tuple[int, int, int]] = []
+
+    def _fake_integrator(
+        G0,
+        grid,
+        geom,
+        params,
+        *,
+        dt,
+        steps,
+        method,
+        terms,
+        sample_stride,
+        diagnostics_stride,
+        use_dealias_mask,
+        z_index=None,
+        gx_real_fft=True,
+        laguerre_mode="grid",
+        omega_ky_index=None,
+        omega_kx_index=0,
+        flux_scale=1.0,
+        wphi_scale=1.0,
+        fixed_dt=True,
+        dt_min=1.0e-7,
+        dt_max=None,
+        cfl=0.9,
+        cfl_fac=1.0,
+        collision_split=True,
+        collision_scheme="strang",
+        implicit_tol=1.0e-6,
+        implicit_maxiter=120,
+        implicit_iters=3,
+        implicit_relax=0.7,
+        implicit_restart=20,
+        implicit_solve_method="batched",
+        implicit_preconditioner=None,
+        fixed_mode_ky_index=None,
+        fixed_mode_kx_index=None,
+    ):
+        calls.append((int(steps), int(sample_stride), int(diagnostics_stride)))
+        t = np.asarray([0.04, 0.08, 0.12], dtype=float)
+        dt_t = np.asarray([0.04, 0.04, 0.04], dtype=float)
+        gamma_t = np.asarray([1.0, 2.0, 3.0], dtype=float) + 3.0 * (len(calls) - 1)
+        zeros = np.zeros_like(t)
+        diag = GXDiagnostics(
+            t=t,
+            dt_t=dt_t,
+            dt_mean=float(np.mean(dt_t)),
+            gamma_t=gamma_t,
+            omega_t=zeros,
+            Wg_t=gamma_t,
+            Wphi_t=zeros,
+            Wapar_t=zeros,
+            heat_flux_t=zeros,
+            particle_flux_t=zeros,
+            energy_t=gamma_t,
+        )
+        return t, diag, np.asarray(G0), None
+
+    monkeypatch.setattr("spectraxgk.runtime.integrate_nonlinear_gx_diagnostics_state", _fake_integrator)
+
+    res = run_runtime_nonlinear(cfg, ky_target=0.2, Nl=3, Nm=4, dt=0.1, steps=None)
+
+    assert res.diagnostics is not None
+    assert calls == [(3, 1, 1), (3, 1, 1), (3, 1, 1)]
+    assert np.allclose(np.asarray(res.diagnostics.t), np.asarray([0.04, 0.12, 0.20, 0.28]))
+    assert np.allclose(np.asarray(res.diagnostics.gamma_t), np.asarray([1.0, 3.0, 5.0, 7.0]))
+    assert float(np.asarray(res.diagnostics.t)[-1]) >= float(cfg.time.t_max)
+
+
 def test_runtime_gaussian_init_populates_multiple_modes_when_not_single() -> None:
     cfg = replace(
         _base_runtime_cfg(),
