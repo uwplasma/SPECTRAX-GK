@@ -462,7 +462,22 @@ generic ``1.0`` prefactor. The nonlinear adaptive timestepper now also applies
 the missing GX linear frequency cap in addition to the nonlinear CFL cap.
 On the tracked W7-X ``rk3`` run that reduced the
 late-window mean ``Wg`` mismatch from about ``24%`` to about ``6%``, but the
-late-time variance mismatch remains open.
+late-time variance mismatch remains open in a free run from startup.
+
+To distinguish a real timestepper/RHS mismatch from chaotic long-window
+decorrelation, use the exact-state runtime window audit:
+
+- ``python tools/compare_gx_runtime_window.py --gx-dir /path/to/gx_dump --gx-out /path/to/w7x.out.nc --config examples/configs/runtime_w7x_nonlinear_vmec_geometry.toml --time-index-start 10 --time-index-stop 11``
+
+This starts SPECTRAX from the exact dumped GX ``diag_state_G`` at
+``time_index_start`` and compares the next runtime diagnostic window at the GX
+``time_index_stop`` physical time, rather than at a guessed fixed step count.
+On the tracked W7-X ``time_index=10 -> 11`` window
+(``t ~= 32.44665203 -> 35.60740119``), ``Wg``, ``Wphi``, and heat flux all
+match GX to about ``1e-4`` relative. That closes the exact-state local
+evolution audit for the tracked nonlinear W7-X case and leaves the remaining
+long-window mismatch as a decorrelation/statistics question rather than a
+same-state timestepper or RHS bug.
 
 The matching late-time linear-term audit now uses the same runtime-configured
 imported-geometry path:
