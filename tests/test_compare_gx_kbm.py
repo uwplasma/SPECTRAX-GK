@@ -244,6 +244,52 @@ def test_compare_gx_kbm_run_candidate_honors_mode_method_override(monkeypatch) -
     assert captured["mode_method"] == "max"
 
 
+def test_compare_gx_kbm_run_candidate_strips_late_fit_suffix(monkeypatch) -> None:
+    tools_dir = Path(__file__).resolve().parents[1] / "tools"
+    sys.path.insert(0, str(tools_dir))
+    try:
+        import compare_gx_kbm as mod
+    finally:
+        sys.path.remove(str(tools_dir))
+
+    captured: dict[str, object] = {}
+
+    def _fake_run_kbm_linear(**kwargs):
+        captured.update(kwargs)
+        return SimpleNamespace(gamma=0.1, omega=0.2)
+
+    monkeypatch.setattr(mod, "run_kbm_linear", _fake_run_kbm_linear)
+
+    args = SimpleNamespace(
+        time_fit_signal="auto",
+        Nl=16,
+        Nm=48,
+        dt=0.01,
+        steps=4000,
+        method="rk4",
+        mode_method="project",
+        no_auto_window=False,
+        tmin=None,
+        tmax=None,
+        sample_stride=1,
+        krylov_gx_shift=False,
+        krylov_gx_shift_source="target",
+    )
+
+    mod._run_candidate(
+        args,
+        cfg=object(),
+        ky_value=0.3,
+        beta_value=0.015,
+        solver_name="gx_time",
+        mode_method_override="project_late",
+        gx_gamma=0.219,
+        gx_omega=1.141,
+    )
+
+    assert captured["mode_method"] == "project"
+
+
 def test_compare_gx_kbm_run_candidate_cached_reuses_gx_time_trajectory(monkeypatch) -> None:
     tools_dir = Path(__file__).resolve().parents[1] / "tools"
     sys.path.insert(0, str(tools_dir))
@@ -507,6 +553,59 @@ def test_compare_gx_kbm_recompute_project_uses_fit_window(monkeypatch) -> None:
     assert calls["signal_len"] == 3
     assert np.isclose(out.gamma, 0.33)
     assert np.isclose(out.omega, 1.44)
+    assert np.isclose(out.fit_window_tmin, 0.0)
+    assert np.isclose(out.fit_window_tmax, 0.0)
+
+
+def test_compare_gx_kbm_recompute_project_late_uses_late_fit_policy(monkeypatch) -> None:
+    tools_dir = Path(__file__).resolve().parents[1] / "tools"
+    sys.path.insert(0, str(tools_dir))
+    try:
+        import compare_gx_kbm as mod
+    finally:
+        sys.path.remove(str(tools_dir))
+    from spectraxgk.benchmarks import LinearRunResult
+
+    calls: dict[str, object] = {}
+
+    def _fake_extract(phi_t, sel, *, method: str):
+        del phi_t, sel
+        calls["method"] = method
+        return np.array([1.0 + 0.0j, 1.1 - 0.1j, 1.2 - 0.2j], dtype=np.complex128)
+
+    def _fake_fit_auto(t, signal, **kwargs):
+        del t, signal
+        calls["kwargs"] = kwargs
+        return 0.22, 0.88, 6.0, 9.6
+
+    monkeypatch.setattr(mod, "extract_mode_time_series", _fake_extract)
+    monkeypatch.setattr(mod, "fit_growth_rate_auto", _fake_fit_auto)
+
+    result = LinearRunResult(
+        t=np.array([0.0, 1.0, 2.0], dtype=float),
+        phi_t=np.array([[[[1.0 + 0.0j]]], [[[2.0 + 0.0j]]], [[[3.0 + 0.0j]]]], dtype=np.complex128),
+        gamma=0.0,
+        omega=0.0,
+        ky=0.3,
+        selection=SimpleNamespace(ky_index=0, kx_index=0, z_index=0),
+    )
+
+    out = mod._recompute_time_history_growth(
+        SimpleNamespace(tmin=None, tmax=None),
+        result,
+        mode_method="project_late",
+    )
+
+    assert calls["method"] == "project"
+    assert calls["kwargs"]["window_method"] == "fixed"
+    assert calls["kwargs"]["window_fraction"] == pytest.approx(mod.LATE_PROJECT_WINDOW_FRACTION)
+    assert calls["kwargs"]["min_points"] == mod.LATE_PROJECT_MIN_POINTS
+    assert calls["kwargs"]["start_fraction"] == pytest.approx(mod.LATE_PROJECT_START_FRACTION)
+    assert calls["kwargs"]["growth_weight"] == pytest.approx(mod.LATE_PROJECT_GROWTH_WEIGHT)
+    assert np.isclose(out.gamma, 0.22)
+    assert np.isclose(out.omega, 0.88)
+    assert np.isclose(out.fit_window_tmin, 6.0)
+    assert np.isclose(out.fit_window_tmax, 9.6)
 
 
 def test_compare_gx_kbm_run_candidate_allows_shift_source_override(monkeypatch) -> None:
@@ -570,7 +669,10 @@ def test_compare_gx_kbm_parser_defaults_to_project_mode() -> None:
     assert args.mode_method == "project"
     assert args.steps is None
     assert args.branch_policy == "continuation"
-    assert args.branch_solvers == "gx_time@project,gx_time@svd,gx_time@max,gx_time@z_index,krylov,time"
+    assert (
+        args.branch_solvers
+        == "gx_time@project,gx_time@project_late,gx_time@svd,gx_time@svd_late,gx_time@max,gx_time@z_index,krylov,time"
+    )
 
 
 def test_compare_gx_kbm_candidate_row_captures_branch_metrics() -> None:
@@ -606,6 +708,34 @@ def test_compare_gx_kbm_candidate_row_captures_branch_metrics() -> None:
     assert row["eig_overlap_prev"] == 0.8
     assert row["branch_score"] == 0.42
     assert row["selected"] is True
+    assert np.isnan(row["fit_window_tmin"])
+    assert np.isnan(row["fit_window_tmax"])
+
+
+def test_compare_gx_kbm_candidate_row_captures_fit_window() -> None:
+    tools_dir = Path(__file__).resolve().parents[1] / "tools"
+    sys.path.insert(0, str(tools_dir))
+    try:
+        import compare_gx_kbm as mod
+    finally:
+        sys.path.remove(str(tools_dir))
+
+    result = SimpleNamespace(gamma=0.8, omega=-1.5, fit_window_tmin=6.0, fit_window_tmax=9.6)
+    row = mod._candidate_row(
+        ky=0.3,
+        solver="gx_time@project_late",
+        result=result,
+        gx_gamma=1.0,
+        gx_omega=-2.0,
+        eig_overlap_gx=0.9,
+        eig_rel_l2=0.1,
+        eig_overlap_prev=0.8,
+        branch_score=0.42,
+        selected=True,
+    )
+
+    assert row["fit_window_tmin"] == pytest.approx(6.0)
+    assert row["fit_window_tmax"] == pytest.approx(9.6)
 
 
 def test_compare_gx_kbm_parse_candidate_spec_supports_mode_override() -> None:
