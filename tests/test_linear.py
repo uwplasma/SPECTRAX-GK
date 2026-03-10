@@ -29,6 +29,7 @@ from spectraxgk.linear import (
 )
 from spectraxgk.gyroaverage import J_l_all
 from spectraxgk.linear_krylov import dominant_eigenpair
+from spectraxgk.terms.linear_terms import collisions_contribution
 
 
 def test_grad_z_periodic_sine():
@@ -118,6 +119,30 @@ def test_build_H_adds_apar_to_m1():
     apar = jnp.ones((1, 1, 1))
     H = build_H(G, Jl, phi, tz=jnp.array([1.0]), apar=apar, vth=jnp.array([2.0]))
     assert jnp.allclose(H[0, :, 1, 0, 0, 0], -2.0)
+
+
+def test_collisions_include_gx_conservation_correction():
+    G = jnp.zeros((1, 1, 3, 1, 1, 1), dtype=jnp.complex64)
+    G = G.at[0, 0, 0, 0, 0, 0].set(2.0 + 0.0j)
+    G = G.at[0, 0, 1, 0, 0, 0].set(3.0 + 0.0j)
+    G = G.at[0, 0, 2, 0, 0, 0].set(5.0 + 0.0j)
+    Jl = jnp.ones((1, 1, 1, 1, 1), dtype=jnp.float32)
+    JlB = jnp.ones((1, 1, 1, 1, 1), dtype=jnp.float32)
+    H = G
+    out = collisions_contribution(
+        H,
+        G=G,
+        Jl=Jl,
+        JlB=JlB,
+        b=jnp.full((1, 1, 1, 1), 4.0, dtype=jnp.float32),
+        nu=jnp.array([0.5], dtype=jnp.float32),
+        lb_lam=jnp.zeros((1, 1, 3, 1, 1, 1), dtype=jnp.float32),
+        weight=jnp.asarray(1.0, dtype=jnp.float32),
+    )
+
+    assert jnp.allclose(out[0, 0, 0, 0, 0, 0], 4.0)
+    assert jnp.allclose(out[0, 0, 1, 0, 0, 0], 1.5)
+    assert jnp.allclose(out[0, 0, 2, 0, 0, 0], 5.0)
 
 
 def test_build_H_adds_bpar_to_m0():

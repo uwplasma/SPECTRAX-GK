@@ -282,6 +282,10 @@ def _manual_linear_contributions_from_fields(
     )
     contrib["collisions"] = collisions_contribution(
         H,
+        G=G_arr,
+        Jl=Jl,
+        JlB=JlB,
+        b=cache.b,
         nu=nu,
         lb_lam=cache.lb_lam,
         weight=w_coll,

@@ -216,12 +216,17 @@ compressed real-FFT positive-``ky`` dump grid directly from
 ``diag_state_ky_t*.bin``. That closes the remaining imported-geometry
 diagnostic-contract gap for nonlinear VMEC cases: startup, ``phi``, ``kperp2``,
 ``fluxfac``, ``Wg``, ``Wphi``, and heat flux all agree on the same GX state.
-The follow-on exact-state linear audit on that same W7-X dump shows that the
-imported-geometry field solve, mirror, curvature, grad-``B``, and diamagnetic
-pieces are already matching GX to roundoff as well. The remaining late-time
-stellarator mismatch is therefore narrowed to the imported-geometry linear
-``streaming`` and ``collisions`` paths rather than to the VMEC/eik bridge
-itself.
+The follow-on exact-state linear audit on that same W7-X dump now also matches
+GX to roundoff. The remaining operator-level fixes were:
+
+- treat ``boundary = "fix aspect"`` and ``"continuous drifts"`` as GX linked
+  twist-and-shift boundaries in the linear cache, and
+- include the GX collision-conservation correction on top of the
+  Lenard-Bernstein damping term.
+
+With those in place, the imported VMEC/eik bridge, the late-time linear RHS,
+and the late-time nonlinear E x B diagnostics all agree with GX on the same
+dumped stellarator state.
 
 Two user-facing entry points now exercise that bridge:
 
