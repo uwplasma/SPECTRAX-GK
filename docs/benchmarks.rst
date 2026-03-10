@@ -425,11 +425,15 @@ When branch mismatch remains after the matched-state RHS audit, use the startup
 state comparator to separate initialization from time-history extraction:
 
 - ``python tools/compare_gx_startup.py --gx-dir /path/to/gx_dump --gx-out /path/to/kbm_salpha.out.nc --case kbm --ky 0.3 --Ny 16 --Nz 96 --Nl 16 --Nm 48 --ntheta 32 --nperiod 2``
+- ``python tools/compare_gx_runtime_startup.py --gx-dir /path/to/gx_dump --gx-out /path/to/w7x.out.nc --config examples/configs/runtime_w7x_nonlinear_vmec_geometry.toml --ky 0.047619047619047616``
 
 This reads ``field_g_state.bin`` / ``field_phi.bin`` from a GX
 ``GX_DUMP_FIELDS`` startup dump, rebuilds the matching SPECTRAX initial state,
 and reports direct ``g``/``phi``/``A_parallel`` mismatch before any time
-integration or growth-rate fitting is involved.
+integration or growth-rate fitting is involved. The runtime-configured variant
+uses the same TOML/VMEC path as the nonlinear W7-X and HSX runs, so imported
+geometry and GX-generated ``*.eik.nc`` startup states can be audited without
+falling back to a separate hand-written ``s-alpha`` benchmark setup.
 
 KBM nonlinear term comparison (GX)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
