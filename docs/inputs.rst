@@ -271,7 +271,11 @@ Notable runtime-only keys:
   only electron species (GX ``init_electrons_only`` behavior). If ``false``
   (default), initialize all kinetic species.
 * ``[init] random_seed``: RNG seed used for GX-style random initial conditions
-  (default ``22``, matching GX).
+  (default ``22``, matching GX). The runtime now follows GX's C ``srand`` /
+  ``rand`` sequence and GX's positive-``kx``-major loop order when populating
+  random multi-mode perturbations, so nonlinear random-start cases use the
+  same seeded perturbation pattern as GX by default instead of merely matching
+  the distribution.
 * ``[init] init_file``: load a saved complex state from either the full-``ky``
   SPECTRAX layout or GX's packed positive-``ky`` layout.
 * ``[init] init_file_scale`` / ``init_file_mode``: scale a loaded restart state
