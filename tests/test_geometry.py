@@ -17,6 +17,7 @@ from spectraxgk.geometry import (
     sample_flux_tube_geometry,
 )
 from spectraxgk.grids import build_spectral_grid
+from spectraxgk.linear import LinearParams, build_linear_cache
 
 
 def test_kperp2_matches_s_alpha():
@@ -579,6 +580,44 @@ def test_apply_gx_geometry_grid_defaults_applies_twist_shift_for_fix_aspect(tmp_
 
     assert adjusted.jtwist == jtwist
     assert adjusted.Lx == pytest.approx(2.0 * np.pi * x0)
+
+
+def test_build_linear_cache_uses_linked_streaming_for_fix_aspect_imported_geometry(tmp_path):
+    netcdf4 = pytest.importorskip("netCDF4")
+    Dataset = netcdf4.Dataset
+
+    path = tmp_path / "geom_fix_aspect_cache.eik.nc"
+    theta = np.linspace(-np.pi, np.pi, 9)
+    with Dataset(path, "w") as root:
+        root.createDimension("z", theta.size)
+        root.createVariable("theta", "f8", ("z",))[:] = theta
+        root.createVariable("bmag", "f8", ("z",))[:] = np.ones(theta.size)
+        root.createVariable("gds2", "f8", ("z",))[:] = np.ones(theta.size)
+        root.createVariable("gds21", "f8", ("z",))[:] = np.full(theta.size, -0.6)
+        root.createVariable("gds22", "f8", ("z",))[:] = np.full(theta.size, 0.2)
+        root.createVariable("cvdrift", "f8", ("z",))[:] = np.zeros(theta.size)
+        root.createVariable("gbdrift", "f8", ("z",))[:] = np.zeros(theta.size)
+        root.createVariable("cvdrift0", "f8", ("z",))[:] = np.zeros(theta.size)
+        root.createVariable("gbdrift0", "f8", ("z",))[:] = np.zeros(theta.size)
+        root.createVariable("jacob", "f8", ("z",))[:] = np.ones(theta.size)
+        root.createVariable("grho", "f8", ("z",))[:] = np.ones(theta.size)
+        root.createVariable("gradpar", "f8", ("z",))[:] = np.full(theta.size, 0.4)
+        root.createVariable("q", "f8", ())[:] = 1.7
+        root.createVariable("shat", "f8", ())[:] = 0.5
+        root.createVariable("Rmaj", "f8", ())[:] = 5.0
+        root.createVariable("kxfac", "f8", ())[:] = 1.0
+
+    geom = load_gx_geometry_netcdf(path)
+    grid_cfg = apply_gx_geometry_grid_defaults(
+        geom,
+        GridConfig(Nx=4, Ny=4, Nz=16, Lx=6.28, Ly=6.28, boundary="fix aspect", y0=10.0),
+    )
+    grid = build_spectral_grid(grid_cfg)
+    cache = build_linear_cache(grid, geom, LinearParams(), Nl=2, Nm=4)
+
+    assert cache.use_twist_shift is True
+    assert cache.jtwist != 0
+    assert cache.linked_indices
 
 
 def test_apply_gx_geometry_grid_defaults_preserves_open_solver_theta(tmp_path):
