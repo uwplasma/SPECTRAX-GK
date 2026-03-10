@@ -462,12 +462,19 @@ imported-geometry path:
 - ``python tools/compare_gx_rhs_terms.py --gx-dir /path/to/gx_linear_dump --gx-out /path/to/run.out.nc --config examples/configs/runtime_w7x_nonlinear_vmec_geometry.toml --ky 0.047619047619047616``
 
 On the tracked ``GX_DUMP_DIAG_INDEX=10`` W7-X restart state, the imported
-geometry field solve, mirror, curvature, grad-``B``, and diamagnetic terms all
-match GX to roundoff, while the remaining exact-state mismatch is concentrated
-in the linear ``streaming`` and ``collisions`` contributions. That removes the
-nonlinear E x B bracket, imported geometry reconstruction, and diagnostic
-definitions from the current W7-X late-time parity gap and narrows the next
-audit target to the linear parallel-streaming/collision contract.
+geometry field solve, streaming, mirror, curvature, grad-``B``, diamagnetic,
+and collisions terms now all match GX to roundoff. Closing that exact-state
+audit required two GX-contract fixes in the runtime path:
+
+- ``boundary = "fix aspect"`` must use the generalized twist-and-shift linked
+  parallel derivative, not the periodic path, and
+- the Lenard-Bernstein collision operator must include the same conservation
+  correction that GX applies by default.
+
+That removes the imported-geometry linear and nonlinear operators, geometry
+reconstruction, startup state, and diagnostic definitions from the current
+W7-X late-time parity gap. Any remaining mismatch after this point is a
+trajectory-level evolution issue rather than a same-state operator mismatch.
 
 KBM nonlinear term comparison (GX)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
