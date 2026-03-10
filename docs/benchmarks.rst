@@ -154,6 +154,12 @@ Regenerate this panel with:
 - ``python tools/compare_gx_kbm.py --gx /path/to/kbm_salpha.out.nc --gx-big /path/to/kbm_salpha.big.nc --out docs/_static/kbm_gx_mismatch.csv --candidate-out docs/_static/kbm_gx_candidates.csv``
 - ``python tools/make_gx_cyclone_kbm_panel.py --out docs/_static/gx_cyclone_kbm_panel.png``
 
+For low-``ky`` KBM branch audits, ``tools/probe_gx_kbm_extractors.py`` now also
+supports explicit checkpoint horizons so a long ``gx_time`` trajectory can be
+replaced by a sequence of shorter runs that write rows incrementally:
+
+- ``python tools/probe_gx_kbm_extractors.py --gx /path/to/kbm_salpha.out.nc --gx-big /path/to/kbm_salpha.big.nc --ky 0.1,0.2 --checkpoint-steps 400,800,1200 --out docs/_static/kbm_probe_lowky.csv``
+
 By default, ``make_gx_cyclone_kbm_panel.py`` uses:
 
 - Cyclone nonlinear diagnostics from the GX-matched runtime config
