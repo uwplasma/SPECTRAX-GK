@@ -114,7 +114,10 @@ the GX method default instead of a universal constant:
 ``rk3``/``sspx3`` use ``1.73``, ``rk4`` uses ``2.82``, and other methods keep
 ``1.0``. When adaptive timestepping is enabled, diagnostics include
 ``dt_t`` (per-sample timestep history) and ``dt_mean`` (average effective dt)
-to quantify CFL-driven savings. To control the Laguerre handling in nonlinear
+to quantify CFL-driven savings. In GX-aligned nonlinear runs the adaptive
+``dt`` estimate combines the GX linear frequency cap with the instantaneous
+nonlinear cap, matching GX's CFL update instead of using the nonlinear
+bracket alone. To control the Laguerre handling in nonlinear
 brackets, set ``laguerre_nonlinear_mode = "grid"`` (GX-style quadrature,
 default) or ``laguerre_nonlinear_mode = "spectral"`` (use spectral ``Jl``
 without the quadrature transform).
