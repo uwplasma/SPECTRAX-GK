@@ -152,12 +152,14 @@ In that mode SPECTRAX-GK calls GX's ``gx_geo_vmec.py`` helper to generate a
 matching ``*.eik.nc`` file on demand, then immediately reuses the same imported
 geometry path as the W7-X examples. Set ``vmec_file`` plus the flux-tube keys
 ``torflux``, ``npol`` and optionally ``alpha``. ``geometry_file`` can be used
-as an explicit output/reuse path for the generated ``*.eik.nc`` file, and
+as an explicit output path for the generated ``*.eik.nc`` file, and
 ``gx_repo`` can point to a non-default GX checkout if needed. If GX's VMEC
 helper must run under a different Python interpreter than SPECTRAX itself
 (for example when ``booz_xform`` is installed in a separate environment), set
 ``gx_python`` or the ``GX_VMEC_PYTHON`` environment variable. This is now the
 recommended parity-first route for new stellarator cases such as HSX.
+When ``geometry_file`` is set for ``model = "vmec"``, SPECTRAX regenerates
+that target instead of reusing a stale file from an older VMEC conversion.
 For VMEC ``fix aspect`` runs, SPECTRAX now follows GX's default helper
 contract and does not inject ``x0`` from the runtime ``Lx``. That keeps the
 generated ``*.eik.nc`` file aligned with GX's own W7-X/HSX geometry output.
@@ -272,6 +274,8 @@ Notable runtime-only keys:
   only electron species (GX ``init_electrons_only`` behavior). If ``false``
   (default), initialize all kinetic species.
 * ``[init] random_seed``: RNG seed used for GX-style random initial conditions
+  with the same glibc ``rand()`` sequence and startup mode ordering that GX
+  uses on Linux
   (default ``22``, matching GX). The runtime now follows the Linux ``glibc``
   ``rand()`` sequence used by GX together with GX's positive-``kx``-major loop
   order and exact startup loop bounds, so random multi-mode perturbations are

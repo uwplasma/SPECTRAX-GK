@@ -188,8 +188,10 @@ SPECTRAX-GK now also supports a direct VMEC runtime bridge with
 geometry implementation: it shells out to GX's own ``gx_geo_vmec.py`` helper,
 produces a GX-compatible ``*.eik.nc`` file, and then re-enters the same
 imported-geometry contract described above. The bridge is cached by input
-content and VMEC file timestamp, so repeated runtime or CLI calls reuse the
-same generated file unless an explicit ``geometry_file`` target is requested.
+content and VMEC file timestamp when SPECTRAX chooses the output path itself.
+If the user supplies an explicit ``geometry_file`` target, the runtime now
+regenerates that file instead of silently reusing whatever stale ``*.eik.nc``
+may already be present there.
 That gives SPECTRAX-GK a parity-first VMEC path immediately, while keeping the
 native JAX geometry contract centered on ``FluxTubeGeometryData``.
 For VMEC ``fix aspect`` cases, the bridge now leaves ``x0`` unset when calling
@@ -200,6 +202,9 @@ When the GX VMEC helper depends on a different Python environment, set
 ``geometry.gx_python`` (or the ``GX_VMEC_PYTHON`` environment variable) so
 SPECTRAX launches ``gx_geo_vmec.py`` with the interpreter that has
 ``booz_xform`` installed.
+The nonlinear W7-X and HSX startup audits now confirm that this VMEC runtime
+path reproduces GX startup ``g_state`` and ``phi`` to roundoff when the
+generated ``*.eik.nc`` is rebuilt from the same VMEC input.
 
 Two user-facing entry points now exercise that bridge:
 

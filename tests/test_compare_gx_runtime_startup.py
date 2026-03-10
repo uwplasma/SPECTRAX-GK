@@ -96,10 +96,14 @@ def test_compare_gx_runtime_startup_builds_full_grid_before_slicing(
         "replace",
         lambda obj, **updates: SimpleNamespace(**(obj.__dict__ | updates)),
     )
-    monkeypatch.setattr(mod, "load_runtime_from_toml", lambda _path: (SimpleNamespace(grid=SimpleNamespace(Nx=1, Ny=4, Nz=2, y0=10.0), species=[object()]), None))
+    monkeypatch.setattr(
+        mod,
+        "load_runtime_from_toml",
+        lambda _path: (SimpleNamespace(grid=SimpleNamespace(Nx=1, Ny=4, Nz=2, y0=10.0), species=[object()]), None),
+    )
     monkeypatch.setattr(mod, "build_runtime_geometry", lambda _cfg: object())
     monkeypatch.setattr(mod, "apply_gx_geometry_grid_defaults", lambda _geom, grid: grid)
-    grid_full = SimpleNamespace(ky=np.array([0.1, 0.2]), kx=np.array([0.0]))
+    grid_full = SimpleNamespace(ky=np.array([0.0, 0.1, 0.2, -0.1]), kx=np.array([0.0]))
     monkeypatch.setattr(mod, "build_spectral_grid", lambda _grid: grid_full)
     monkeypatch.setattr(mod, "build_runtime_linear_params", lambda *_args, **_kwargs: object())
     monkeypatch.setattr(mod, "_species_to_linear", lambda _species: [object()])
@@ -113,7 +117,7 @@ def test_compare_gx_runtime_startup_builds_full_grid_before_slicing(
         captured["Nl"] = Nl
         captured["Nm"] = Nm
         captured["nspecies"] = nspecies
-        return np.arange(4, dtype=np.complex64).reshape(1, 1, 1, 2, 1, 2)
+        return np.arange(8, dtype=np.complex64).reshape(1, 1, 1, 4, 1, 2)
 
     monkeypatch.setattr(mod, "_build_initial_condition", _fake_build_initial_condition)
     monkeypatch.setattr(mod, "build_linear_cache", lambda *_args, **_kwargs: object())
@@ -121,7 +125,7 @@ def test_compare_gx_runtime_startup_builds_full_grid_before_slicing(
     monkeypatch.setattr(
         mod,
         "compute_fields_cached",
-        lambda *_args, **_kwargs: SimpleNamespace(phi=np.arange(4, dtype=np.complex64).reshape(2, 1, 2), apar=None),
+        lambda *_args, **_kwargs: SimpleNamespace(phi=np.arange(8, dtype=np.complex64).reshape(4, 1, 2), apar=None),
     )
 
     summaries: list[tuple[str, tuple[int, ...], tuple[int, ...]]] = []
@@ -149,7 +153,7 @@ def test_compare_gx_runtime_startup_builds_full_grid_before_slicing(
     mod.main()
 
     assert captured["grid"] is grid_full
-    assert captured["ky_index"] == 1
+    assert captured["ky_index"] == 2
     assert captured["kx_index"] == 0
     assert ("g_state", (1, 1, 1, 1, 1, 2), (1, 1, 1, 1, 1, 2)) in summaries
     assert ("phi", (1, 1, 2), (1, 1, 2)) in summaries
