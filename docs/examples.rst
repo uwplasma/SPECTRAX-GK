@@ -115,17 +115,21 @@ W7-X nonlinear VMEC TOML run
 
 .. code-block:: bash
 
+   export GX_VMEC_PYTHON=python3
    python -m spectraxgk.cli run-runtime-nonlinear \
      --config examples/configs/runtime_w7x_nonlinear_vmec_geometry.toml
+
+The W7-X VMEC TOML now resolves ``geometry.vmec_file`` relative to the active
+GX repo, so it no longer depends on a workstation-specific absolute path.
 
 Generate GX-compatible geometry from a runtime TOML
 ---------------------------------------------------
 
 .. code-block:: bash
 
+   export HSX_VMEC_FILE=/absolute/path/to/wout_HSX_QHS_vac.nc
    python tools/generate_gx_vmec_eik.py \
-     --config examples/configs/runtime_hsx_nonlinear_vmec_geometry.toml \
-     --gx-python python3
+     --config examples/configs/runtime_hsx_nonlinear_vmec_geometry.toml
 
 HSX nonlinear VMEC runtime example
 ----------------------------------
@@ -144,6 +148,8 @@ HSX nonlinear VMEC TOML run
 
 .. code-block:: bash
 
+   export HSX_VMEC_FILE=/absolute/path/to/wout_HSX_QHS_vac.nc
+   export GX_VMEC_PYTHON=python3
    python -m spectraxgk.cli run-runtime-nonlinear \
      --config examples/configs/runtime_hsx_nonlinear_vmec_geometry.toml
 
