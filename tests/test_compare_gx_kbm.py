@@ -315,6 +315,73 @@ def test_compare_gx_kbm_run_candidate_cached_reuses_gx_time_trajectory(monkeypat
     assert result_max.gamma == 1.2
 
 
+def test_compare_gx_kbm_run_candidate_cached_loads_saved_trajectory(
+    monkeypatch, tmp_path: Path
+) -> None:
+    tools_dir = Path(__file__).resolve().parents[1] / "tools"
+    sys.path.insert(0, str(tools_dir))
+    try:
+        import compare_gx_kbm as mod
+    finally:
+        sys.path.remove(str(tools_dir))
+
+    base = SimpleNamespace(
+        gamma=0.1,
+        omega=0.2,
+        ky=0.3,
+        t=np.array([0.0, 1.0], dtype=float),
+        phi_t=np.array([[[[1.0 + 0.0j]]], [[[2.0 + 0.0j]]]], dtype=np.complex128),
+        gamma_t=np.array([[[0.1]], [[0.2]]], dtype=float),
+        omega_t=np.array([[[1.0]], [[1.1]]], dtype=float),
+        selection=SimpleNamespace(ky_index=0, kx_index=0, z_index=0),
+    )
+    mod._save_trajectory(tmp_path / "kbm_ky_0p3000_trajectory.npz", base)
+
+    def _unexpected_run(*_args, **_kwargs):
+        raise AssertionError("trajectory reuse should avoid rerunning gx_time dynamics")
+
+    def _fake_recompute(_args, result, *, mode_method, t_ref=None):
+        assert t_ref is None
+        assert np.array_equal(np.asarray(result.t), np.asarray(base.t))
+        assert mode_method == "project"
+        return SimpleNamespace(
+            gamma=0.77,
+            omega=1.55,
+            t=result.t,
+            phi_t=result.phi_t,
+            selection=result.selection,
+        )
+
+    monkeypatch.setattr(mod, "_run_candidate", _unexpected_run)
+    monkeypatch.setattr(mod, "_recompute_time_history_growth_on_grid", _fake_recompute)
+
+    args = SimpleNamespace(
+        mode_method="project",
+        dt=0.01,
+        steps=4000,
+        method="rk4",
+        trajectory_dir=tmp_path,
+        reuse_trajectory=True,
+    )
+    cache: dict[tuple[object, ...], object] = {}
+
+    result = mod._run_candidate_cached(
+        args,
+        cfg=object(),
+        ky_value=0.3,
+        beta_value=0.015,
+        solver_name="gx_time",
+        mode_method_override="project",
+        result_cache=cache,
+        gx_time_ref=None,
+        gx_gamma=0.2,
+        gx_omega=-1.0,
+    )
+
+    assert result.gamma == 0.77
+    assert result.omega == 1.55
+
+
 def test_compare_gx_kbm_recompute_on_gx_time_grid(monkeypatch) -> None:
     tools_dir = Path(__file__).resolve().parents[1] / "tools"
     sys.path.insert(0, str(tools_dir))

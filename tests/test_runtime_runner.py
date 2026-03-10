@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import ctypes
 from dataclasses import replace
 from pathlib import Path
 
@@ -16,6 +15,8 @@ from spectraxgk.grids import build_spectral_grid
 from spectraxgk.io import load_runtime_from_toml
 from spectraxgk.runtime import (
     _build_initial_condition,
+    _gx_centered_random_pairs,
+    _gx_init_mode_pairs,
     _infer_runtime_nonlinear_steps,
     build_runtime_linear_params,
     build_runtime_linear_terms,
@@ -45,19 +46,23 @@ def _base_runtime_cfg() -> RuntimeConfig:
 
 
 def _gx_c_rand_pairs(seed: int, count: int) -> np.ndarray:
-    libc = ctypes.CDLL(None)
-    srand = libc.srand
-    rand = libc.rand
-    srand.argtypes = [ctypes.c_uint]
-    rand.restype = ctypes.c_int
-    srand(ctypes.c_uint(int(seed)))
     rand_max = float((1 << 31) - 1)
+    seed_use = 1 if int(seed) == 0 else int(seed)
+    state = np.zeros(344 + 2 * count, dtype=np.uint64)
+    state[0] = np.uint64(seed_use)
+    for i in range(1, 31):
+        state[i] = np.uint64((16807 * int(state[i - 1])) % int(rand_max))
+    for i in range(31, 34):
+        state[i] = state[i - 31]
+    for i in range(34, state.size):
+        state[i] = (state[i - 31] + state[i - 3]) & np.uint64(0xFFFFFFFF)
+    rand_vals = (state[344:] >> np.uint64(1)).astype(float, copy=False)
     half = 0.5 * rand_max
     inv = 1.0 / rand_max
     out = np.empty((count, 2), dtype=float)
     for i in range(count):
-        out[i, 0] = (float(rand()) - half) * inv
-        out[i, 1] = (float(rand()) - half) * inv
+        out[i, 0] = (rand_vals[2 * i] - half) * inv
+        out[i, 1] = (rand_vals[2 * i + 1] - half) * inv
     return out
 
 
@@ -1374,15 +1379,7 @@ def test_runtime_random_multimode_init_matches_gx_c_rand_sequence() -> None:
     z_max = float(z.max())
     z_period = (z_max - z_min) / (2.0 * np.pi) if z_max > z_min else 1.0
     z_phase = np.cos(float(cfg.init.kpar_init) * z / z_period)
-    dealias = np.asarray(grid.dealias_mask, dtype=bool)
-    ky_indices = np.where(np.asarray(grid.ky) > 0.0)[0]
-    kx_indices = np.where(np.asarray(grid.kx) >= 0.0)[0]
-    active_modes = [
-        (int(kx_i), int(ky_i))
-        for kx_i in kx_indices
-        for ky_i in ky_indices
-        if dealias[ky_i, kx_i]
-    ]
+    active_modes = _gx_init_mode_pairs(grid)
     expected = np.zeros_like(g0)
     for (kx_i, ky_i), (ra, rb) in zip(
         active_modes,
@@ -1395,6 +1392,24 @@ def test_runtime_random_multimode_init_matches_gx_c_rand_sequence() -> None:
             expected[ky_i, expected.shape[1] - kx_i, :] = (rb + 1j * ra) * z_phase
 
     assert np.allclose(g0, expected)
+
+
+def test_runtime_gx_init_mode_pairs_match_gx_loop_bounds() -> None:
+    grid = build_spectral_grid(GridConfig(Nx=96, Ny=96, Nz=8, Lx=6.28, Ly=6.28, boundary="periodic"))
+    active_modes = _gx_init_mode_pairs(grid)
+
+    assert active_modes[0] == (0, 1)
+    assert active_modes[-1] == (31, 31)
+    assert len(active_modes) == 32 * 31
+    assert all(0 <= kx_i <= 31 for kx_i, _ in active_modes)
+    assert all(1 <= ky_i <= 31 for _, ky_i in active_modes)
+
+
+def test_runtime_gx_centered_random_pairs_match_glibc_reference() -> None:
+    vals = _gx_centered_random_pairs(22, 5)
+    ref = _gx_c_rand_pairs(22, 5)
+
+    assert np.allclose(vals, ref)
 
 
 def test_runtime_nonlinear_mode_selection_respects_dealias(monkeypatch) -> None:

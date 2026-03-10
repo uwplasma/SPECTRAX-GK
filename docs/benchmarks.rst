@@ -408,6 +408,10 @@ projected-mode extraction used by the KBM benchmark API instead of silently
 dropping back to a midplane-only signal, and it now reuses one GX-time
 trajectory when rescoring ``project``/``svd``/``max``/``z_index`` extractors so
 the extraction audit no longer reruns identical dynamics for the same ``ky``.
+That reuse path is also exposed at the CLI via ``--trajectory-dir`` together
+with ``--reuse-trajectory``, so completed GX-time probe trajectories can be fed
+back into the main continuation harness when regenerating the tracked mismatch
+table and README assets.
 Focused ``--ky`` audits now preserve the full GX ``nky``/``y0`` metadata from
 the original reference file instead of collapsing the solver grid to the subset
 being inspected, which keeps single-``ky`` branch probes on the same flux-tube
