@@ -108,8 +108,11 @@ decimated with ``sample_stride`` (record every ``N`` steps) and
 ``diagnostics_stride`` (compute GX-style diagnostics every ``N`` steps). Set
 ``diagnostics = false`` in ``[time]`` (or ``--no-diagnostics`` on the CLI) to
 disable diagnostics entirely for speed. For GX-style CFL timestep control, use
-``fixed_dt = false`` along with ``cfl``/``cfl_fac`` and optional ``dt_min`` /
-``dt_max`` limits. When adaptive timestepping is enabled, diagnostics include
+``fixed_dt = false`` along with ``cfl`` and optional ``cfl_fac`` /
+``dt_min`` / ``dt_max`` limits. When ``cfl_fac`` is omitted, SPECTRAX uses
+the GX method default instead of a universal constant:
+``rk3``/``sspx3`` use ``1.73``, ``rk4`` uses ``2.82``, and other methods keep
+``1.0``. When adaptive timestepping is enabled, diagnostics include
 ``dt_t`` (per-sample timestep history) and ``dt_mean`` (average effective dt)
 to quantify CFL-driven savings. To control the Laguerre handling in nonlinear
 brackets, set ``laguerre_nonlinear_mode = "grid"`` (GX-style quadrature,

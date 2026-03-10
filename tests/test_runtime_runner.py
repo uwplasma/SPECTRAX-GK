@@ -671,6 +671,168 @@ def test_runtime_nonlinear_dealias_toggle_executes() -> None:
     assert np.all(np.isfinite(res.diagnostics.Wphi_t))
 
 
+def test_runtime_nonlinear_uses_gx_method_default_cfl_fac(monkeypatch: pytest.MonkeyPatch) -> None:
+    captured: dict[str, float] = {}
+
+    def _fake_integrator(
+        G0,
+        grid,
+        geom,
+        params,
+        *,
+        dt,
+        steps,
+        method,
+        terms,
+        sample_stride,
+        diagnostics_stride,
+        use_dealias_mask,
+        z_index=None,
+        gx_real_fft=True,
+        laguerre_mode="grid",
+        omega_ky_index=None,
+        omega_kx_index=0,
+        flux_scale=1.0,
+        wphi_scale=1.0,
+        fixed_dt=True,
+        dt_min=1.0e-7,
+        dt_max=None,
+        cfl=0.9,
+        cfl_fac=1.0,
+        collision_split=True,
+        collision_scheme="strang",
+        implicit_tol=1.0e-6,
+        implicit_maxiter=120,
+        implicit_iters=3,
+        implicit_relax=0.7,
+        implicit_restart=20,
+        implicit_solve_method="batched",
+        implicit_preconditioner=None,
+        fixed_mode_ky_index=None,
+        fixed_mode_kx_index=None,
+    ):
+        captured["cfl_fac"] = float(cfl_fac)
+        t = np.asarray([0.1], dtype=float)
+        diag = GXDiagnostics(
+            t=t,
+            dt_t=t,
+            dt_mean=float(t[0]),
+            gamma_t=np.zeros_like(t),
+            omega_t=np.zeros_like(t),
+            Wg_t=np.zeros_like(t),
+            Wphi_t=np.zeros_like(t),
+            Wapar_t=np.zeros_like(t),
+            heat_flux_t=np.zeros_like(t),
+            particle_flux_t=np.zeros_like(t),
+            energy_t=np.zeros_like(t),
+        )
+        return t, diag, np.asarray(G0), None
+
+    monkeypatch.setattr("spectraxgk.runtime.integrate_nonlinear_gx_diagnostics_state", _fake_integrator)
+
+    cfg = replace(
+        _base_runtime_cfg(),
+        time=TimeConfig(
+            t_max=0.1,
+            dt=0.1,
+            method="rk3",
+            use_diffrax=False,
+            sample_stride=1,
+            diagnostics_stride=1,
+            fixed_dt=False,
+            cfl=1.0,
+            cfl_fac=None,
+        ),
+        physics=RuntimePhysicsConfig(adiabatic_electrons=True, nonlinear=True),
+        terms=RuntimeTermsConfig(nonlinear=1.0, hypercollisions=0.0, end_damping=0.0),
+    )
+
+    run_runtime_nonlinear(cfg, ky_target=0.2, Nl=3, Nm=4, steps=1)
+
+    assert captured["cfl_fac"] == pytest.approx(1.73)
+
+
+def test_runtime_nonlinear_preserves_explicit_cfl_fac(monkeypatch: pytest.MonkeyPatch) -> None:
+    captured: dict[str, float] = {}
+
+    def _fake_integrator(
+        G0,
+        grid,
+        geom,
+        params,
+        *,
+        dt,
+        steps,
+        method,
+        terms,
+        sample_stride,
+        diagnostics_stride,
+        use_dealias_mask,
+        z_index=None,
+        gx_real_fft=True,
+        laguerre_mode="grid",
+        omega_ky_index=None,
+        omega_kx_index=0,
+        flux_scale=1.0,
+        wphi_scale=1.0,
+        fixed_dt=True,
+        dt_min=1.0e-7,
+        dt_max=None,
+        cfl=0.9,
+        cfl_fac=1.0,
+        collision_split=True,
+        collision_scheme="strang",
+        implicit_tol=1.0e-6,
+        implicit_maxiter=120,
+        implicit_iters=3,
+        implicit_relax=0.7,
+        implicit_restart=20,
+        implicit_solve_method="batched",
+        implicit_preconditioner=None,
+        fixed_mode_ky_index=None,
+        fixed_mode_kx_index=None,
+    ):
+        captured["cfl_fac"] = float(cfl_fac)
+        t = np.asarray([0.1], dtype=float)
+        diag = GXDiagnostics(
+            t=t,
+            dt_t=t,
+            dt_mean=float(t[0]),
+            gamma_t=np.zeros_like(t),
+            omega_t=np.zeros_like(t),
+            Wg_t=np.zeros_like(t),
+            Wphi_t=np.zeros_like(t),
+            Wapar_t=np.zeros_like(t),
+            heat_flux_t=np.zeros_like(t),
+            particle_flux_t=np.zeros_like(t),
+            energy_t=np.zeros_like(t),
+        )
+        return t, diag, np.asarray(G0), None
+
+    monkeypatch.setattr("spectraxgk.runtime.integrate_nonlinear_gx_diagnostics_state", _fake_integrator)
+
+    cfg = replace(
+        _base_runtime_cfg(),
+        time=TimeConfig(
+            t_max=0.1,
+            dt=0.1,
+            method="rk3",
+            use_diffrax=False,
+            sample_stride=1,
+            diagnostics_stride=1,
+            fixed_dt=False,
+            cfl=1.0,
+            cfl_fac=1.25,
+        ),
+        physics=RuntimePhysicsConfig(adiabatic_electrons=True, nonlinear=True),
+        terms=RuntimeTermsConfig(nonlinear=1.0, hypercollisions=0.0, end_damping=0.0),
+    )
+
+    run_runtime_nonlinear(cfg, ky_target=0.2, Nl=3, Nm=4, steps=1)
+
+    assert captured["cfl_fac"] == pytest.approx(1.25)
+
+
 def test_runtime_init_species_targets_all_vs_electrons_only() -> None:
     cfg_all = replace(
         _base_runtime_cfg(),
