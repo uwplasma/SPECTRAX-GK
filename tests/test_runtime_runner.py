@@ -15,6 +15,7 @@ from spectraxgk.grids import build_spectral_grid
 from spectraxgk.io import load_runtime_from_toml
 from spectraxgk.runtime import (
     _build_initial_condition,
+    _infer_runtime_nonlinear_steps,
     build_runtime_linear_params,
     build_runtime_linear_terms,
     run_runtime_linear,
@@ -442,6 +443,32 @@ def test_runtime_nonlinear_adaptive_dt() -> None:
     assert res.diagnostics is not None
     t_arr = np.asarray(res.diagnostics.t)
     assert np.all(np.diff(t_arr) > 0)
+
+
+def test_runtime_nonlinear_adaptive_default_steps_match_integrator_dt_cap() -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        time=TimeConfig(
+            t_max=0.2,
+            dt=0.01,
+            method="rk3",
+            use_diffrax=False,
+            sample_stride=1,
+            diagnostics_stride=1,
+            fixed_dt=False,
+            dt_min=1.0e-5,
+            dt_max=None,
+            cfl=1.0,
+        ),
+        species=(RuntimeSpeciesConfig(name="ion"),),
+        normalization=RuntimeNormalizationConfig(contract="cyclone"),
+        physics=RuntimePhysicsConfig(adiabatic_electrons=True, nonlinear=True),
+        terms=RuntimeTermsConfig(nonlinear=1.0, hypercollisions=0.0, end_damping=0.0),
+    )
+
+    steps_val = _infer_runtime_nonlinear_steps(cfg, dt=0.01, steps=None)
+
+    assert steps_val == 20
 
 
 def test_runtime_gaussian_init_populates_multiple_modes_when_not_single() -> None:
