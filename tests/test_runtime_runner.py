@@ -1605,6 +1605,46 @@ def test_runtime_random_multimode_zero_kx_matches_gx_overwrite_order() -> None:
     assert np.allclose(g0[1, 0, :], (rb + 1j * ra) * np.ones_like(g0[1, 0, :]))
 
 
+def test_runtime_random_multimode_init_does_not_depend_on_diagnostic_ky() -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        grid=GridConfig(Nx=6, Ny=8, Nz=8, Lx=6.28, Ly=6.28, boundary="periodic"),
+        init=InitializationConfig(
+            init_field="density",
+            init_amp=1.0,
+            gaussian_init=False,
+            init_single=False,
+            random_seed=7,
+        ),
+    )
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    grid = build_spectral_grid(cfg.grid)
+    g0_ky0 = np.asarray(_build_initial_condition(grid, geom, cfg, ky_index=0, kx_index=1, Nl=1, Nm=1, nspecies=1))
+    g0_ky1 = np.asarray(_build_initial_condition(grid, geom, cfg, ky_index=1, kx_index=1, Nl=1, Nm=1, nspecies=1))
+
+    assert np.allclose(g0_ky0, g0_ky1)
+
+
+def test_runtime_gaussian_multimode_init_does_not_depend_on_diagnostic_ky() -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        grid=GridConfig(Nx=6, Ny=8, Nz=8, Lx=6.28, Ly=6.28, boundary="periodic"),
+        init=InitializationConfig(
+            init_field="density",
+            init_amp=1.0,
+            gaussian_init=True,
+            init_single=False,
+            gaussian_width=0.35,
+        ),
+    )
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    grid = build_spectral_grid(cfg.grid)
+    g0_ky0 = np.asarray(_build_initial_condition(grid, geom, cfg, ky_index=0, kx_index=1, Nl=1, Nm=1, nspecies=1))
+    g0_ky1 = np.asarray(_build_initial_condition(grid, geom, cfg, ky_index=1, kx_index=1, Nl=1, Nm=1, nspecies=1))
+
+    assert np.allclose(g0_ky0, g0_ky1)
+
+
 def test_runtime_nonlinear_mode_selection_respects_dealias(monkeypatch) -> None:
     cfg = replace(
         _base_runtime_cfg(),

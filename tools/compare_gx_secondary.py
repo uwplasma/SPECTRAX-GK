@@ -24,6 +24,14 @@ DEFAULT_MODES = (
     (0.1, 0.05),
 )
 
+README_TARGET_PATH = (
+    Path(__file__).resolve().parents[2] / "gx" / "benchmarks" / "nonlinear" / "secondary" / "README.md"
+)
+README_TARGET_ZERO_MODES = {
+    (0.0, 0.0): {"gamma_gx": 0.0, "omega_gx": 0.0},
+    (0.1, 0.0): {"gamma_gx": 0.0, "omega_gx": 0.0},
+}
+
 
 def _select_index(values: np.ndarray, target: float) -> int:
     return int(np.argmin(np.abs(np.asarray(values, dtype=float) - float(target))))
@@ -55,6 +63,45 @@ def _load_gx_modes(path: Path, modes: tuple[tuple[float, float], ...]) -> pd.Dat
     return pd.DataFrame(rows)
 
 
+def _load_gx_readme_targets(path: Path, modes: tuple[tuple[float, float], ...]) -> pd.DataFrame:
+    if not path.exists():
+        raise FileNotFoundError(f"secondary README target file not found: {path}")
+    text = path.read_text(encoding="utf-8")
+    targets: dict[tuple[float, float], dict[str, float]] = {}
+    for raw_line in text.splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+        parts = line.split()
+        if len(parts) not in (2, 4):
+            continue
+        try:
+            floats = [float(part) for part in parts]
+        except ValueError:
+            continue
+        if len(parts) == 4:
+            ky, kx, omega, gamma = floats
+            targets[(ky, kx)] = {"gamma_gx": gamma, "omega_gx": omega}
+        elif len(parts) == 2:
+            ky, kx = floats
+            if (ky, kx) in README_TARGET_ZERO_MODES:
+                targets[(ky, kx)] = dict(README_TARGET_ZERO_MODES[(ky, kx)])
+    rows: list[dict[str, float]] = []
+    for ky_target, kx_target in modes:
+        key = (float(ky_target), float(kx_target))
+        if key not in targets:
+            raise ValueError(f"secondary README target missing mode {key}")
+        rows.append(
+            {
+                "ky": float(ky_target),
+                "kx": float(kx_target),
+                "gamma_gx": float(targets[key]["gamma_gx"]),
+                "omega_gx": float(targets[key]["omega_gx"]),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -63,7 +110,19 @@ def build_parser() -> argparse.ArgumentParser:
         default=Path("examples/configs/runtime_secondary_slab.toml"),
         help="Stage-1 secondary runtime config.",
     )
-    parser.add_argument("--gx-out", type=Path, required=True, help="GX kh01a out.nc file.")
+    parser.add_argument("--gx-out", type=Path, default=None, help="GX kh01a out.nc file.")
+    parser.add_argument(
+        "--gx-readme",
+        type=Path,
+        default=README_TARGET_PATH,
+        help="GX secondary README containing the published target table.",
+    )
+    parser.add_argument(
+        "--gx-source",
+        choices=("out-nc", "readme"),
+        default="readme",
+        help="Use a real GX out.nc file or the published README target table.",
+    )
     parser.add_argument("--out", type=Path, default=None, help="Optional CSV output path.")
     parser.add_argument("--Nl", type=int, default=3)
     parser.add_argument("--Nm", type=int, default=8)
@@ -110,11 +169,17 @@ def main() -> None:
             sample_stride=int(args.sample_stride),
         )
 
-    gx_df = _load_gx_modes(args.gx_out, modes)
+    if args.gx_source == "out-nc":
+        if args.gx_out is None:
+            raise ValueError("--gx-out is required when --gx-source=out-nc")
+        gx_df = _load_gx_modes(args.gx_out, modes)
+    else:
+        gx_df = _load_gx_readme_targets(args.gx_readme, modes)
     sp_df = pd.DataFrame([row.__dict__ for row in sp_rows]).rename(
         columns={"gamma": "gamma_sp", "omega": "omega_sp"}
     )
     table = gx_df.merge(sp_df, on=["ky", "kx"], how="inner")
+    table["gx_source"] = args.gx_source
     table["rel_gamma"] = np.abs(table["gamma_sp"] - table["gamma_gx"]) / np.maximum(
         np.abs(table["gamma_gx"]), 1.0e-12
     )
