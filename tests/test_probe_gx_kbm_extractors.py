@@ -43,6 +43,12 @@ def test_probe_gx_kbm_extractors_save_load_roundtrip(tmp_path: Path) -> None:
     assert restored.ky == result.ky
 
 
+def test_probe_gx_kbm_extractors_parse_checkpoint_steps() -> None:
+    mod = _load_module()
+    assert mod._parse_checkpoint_steps("", 1200) == [1200]
+    assert mod._parse_checkpoint_steps("1200,400,800,800", 10) == [400, 800, 1200]
+
+
 def test_probe_gx_kbm_extractors_main_reuses_cached_trajectory(
     monkeypatch, tmp_path: Path
 ) -> None:
@@ -57,7 +63,7 @@ def test_probe_gx_kbm_extractors_main_reuses_cached_trajectory(
         ky=0.3,
         selection=ModeSelection(ky_index=0, kx_index=0, z_index=0),
     )
-    mod._save_trajectory(mod._trajectory_path(traj_dir, 0.3), result)
+    mod._save_trajectory(mod._trajectory_path(traj_dir, 0.3, steps=1200), result)
 
     gx_time = np.array([0.0, 1.0], dtype=float)
     gx_ky = np.array([0.3], dtype=float)
@@ -133,6 +139,8 @@ def test_probe_gx_kbm_extractors_main_reuses_cached_trajectory(
             "--reuse-trajectory",
             "--ky",
             "0.3",
+            "--checkpoint-steps",
+            "1200",
             "--mode-methods",
             "project,max",
         ],
@@ -142,5 +150,6 @@ def test_probe_gx_kbm_extractors_main_reuses_cached_trajectory(
 
     table = pd.read_csv(out)
     assert list(table["solver"]) == ["gx_time@project", "gx_time@max"]
+    assert list(table["steps"]) == [1200, 1200]
     assert np.allclose(table["gamma"], [1.0, 1.5])
     assert np.allclose(table["omega"], [2.0, 2.5])
