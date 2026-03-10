@@ -49,7 +49,7 @@ adiabatic_electrons = true
 adiabatic_ions = false
 tau_e = 1.0
 beta = 0.0
-collisions = false
+collisions = true
 hypercollisions = true
 
 [collisions]
@@ -73,7 +73,7 @@ mirror = 1.0
 curvature = 1.0
 gradb = 1.0
 diamagnetic = 1.0
-collisions = 0.0
+collisions = 1.0
 hypercollisions = 1.0
 hyperdiffusion = 1.0
 end_damping = 1.0
