@@ -4,8 +4,9 @@
 from __future__ import annotations
 
 import argparse
-from dataclasses import replace
+from dataclasses import is_dataclass, replace
 from pathlib import Path
+from types import SimpleNamespace
 
 import numpy as np
 import pandas as pd
@@ -320,6 +321,14 @@ def _build_cfg(
     return KBMBaseCase(grid=grid, geometry=geom, model=model)
 
 
+def _replace_result(result, /, **updates):
+    if is_dataclass(result):
+        return replace(result, **updates)
+    values = dict(vars(result))
+    values.update(updates)
+    return SimpleNamespace(**values)
+
+
 def _run_candidate(
     args,
     cfg: KBMBaseCase,
@@ -379,11 +388,29 @@ def _recompute_time_history_growth(args, result, *, mode_method: str):
     if t.size <= 1:
         return result
 
+    if mode_method in {"project", "svd"}:
+        signal = extract_mode_time_series(np.asarray(result.phi_t), result.selection, method=mode_method)
+        if args.tmin is not None and args.tmax is not None:
+            gamma, omega = fit_growth_rate(signal=signal, t=t, tmin=args.tmin, tmax=args.tmax)
+        else:
+            gamma, omega, _tmin, _tmax = fit_growth_rate_auto(
+                t,
+                signal,
+                window_method="fixed",
+                window_fraction=0.4,
+                min_points=40,
+                start_fraction=0.2,
+                growth_weight=1.0,
+                require_positive=True,
+                min_amp_fraction=0.0,
+            )
+        return _replace_result(result, gamma=float(gamma), omega=float(omega))
+
     if args.tmin is not None and args.tmax is not None:
         try:
             signal = extract_mode_time_series(np.asarray(result.phi_t), result.selection, method=mode_method)
             gamma, omega = fit_growth_rate(signal=signal, t=t, tmin=args.tmin, tmax=args.tmax)
-            return replace(result, gamma=float(gamma), omega=float(omega))
+            return _replace_result(result, gamma=float(gamma), omega=float(omega))
         except ValueError:
             pass
 
@@ -395,7 +422,7 @@ def _recompute_time_history_growth(args, result, *, mode_method: str):
             navg_fraction=float(args.gx_avg_fraction),
             mode_method=mode_method,
         )
-        return replace(result, gamma=float(gamma), omega=float(omega))
+        return _replace_result(result, gamma=float(gamma), omega=float(omega))
     except ValueError:
         signal = extract_mode_time_series(np.asarray(result.phi_t), result.selection, method=mode_method)
         gamma, omega, _tmin, _tmax = fit_growth_rate_auto(
@@ -408,7 +435,7 @@ def _recompute_time_history_growth(args, result, *, mode_method: str):
             require_positive=True,
             min_amp_fraction=0.0,
         )
-        return replace(result, gamma=float(gamma), omega=float(omega))
+        return _replace_result(result, gamma=float(gamma), omega=float(omega))
 
 
 def _interp_phi_t(phi_t: np.ndarray, t_src: np.ndarray, t_dst: np.ndarray) -> np.ndarray:
@@ -462,7 +489,9 @@ def _recompute_time_history_growth_on_grid(
             result.selection,
             navg_fraction=float(args.gx_avg_fraction),
         )
-        return replace(result, gamma=float(gamma), omega=float(omega))
+        return _replace_result(result, gamma=float(gamma), omega=float(omega))
+    if mode_method in {"project", "svd"}:
+        return _recompute_time_history_growth(args, result, mode_method=mode_method)
     if t_ref is None or np.asarray(t_ref).size <= 1:
         return _recompute_time_history_growth(args, result, mode_method=mode_method)
     t_src = np.asarray(result.t, dtype=float)
@@ -470,8 +499,9 @@ def _recompute_time_history_growth_on_grid(
     if t_src.size <= 1:
         return result
     phi_t = _interp_phi_t(np.asarray(result.phi_t), t_src, t_dst)
-    sampled = replace(result, t=t_dst, phi_t=phi_t)
-    return _recompute_time_history_growth(args, sampled, mode_method=mode_method)
+    sampled = _replace_result(result, t=t_dst, phi_t=phi_t)
+    updated = _recompute_time_history_growth(args, sampled, mode_method=mode_method)
+    return _replace_result(result, gamma=float(updated.gamma), omega=float(updated.omega))
 
 
 def _run_candidate_cached(

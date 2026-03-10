@@ -351,10 +351,11 @@ def test_compare_gx_kbm_recompute_on_gx_time_grid(monkeypatch) -> None:
         t_ref=gx_time,
     )
 
-    assert np.allclose(captured["t"], gx_time)
-    assert captured["phi_shape"] == (3, 1, 1, 1)
+    assert np.array_equal(np.asarray(captured["t"]), np.asarray(result.t))
+    assert captured["phi_shape"] == np.asarray(result.phi_t).shape
     assert captured["mode_method"] == "project"
-    assert np.allclose(np.asarray(sampled.phi_t)[:, 0, 0, 0].real, [1.0, 1.5, 2.5])
+    assert np.array_equal(np.asarray(sampled.t), np.asarray(result.t))
+    assert np.array_equal(np.asarray(sampled.phi_t), np.asarray(result.phi_t))
 
 
 def test_compare_gx_kbm_recompute_on_gx_time_grid_prefers_instantaneous_omega_series() -> None:
@@ -389,6 +390,56 @@ def test_compare_gx_kbm_recompute_on_gx_time_grid_prefers_instantaneous_omega_se
     assert np.isclose(sampled.omega, 5.0)
     assert np.array_equal(np.asarray(sampled.t), np.asarray(result.t))
     assert np.array_equal(np.asarray(sampled.phi_t), np.asarray(result.phi_t))
+
+
+def test_compare_gx_kbm_recompute_project_uses_fit_window(monkeypatch) -> None:
+    tools_dir = Path(__file__).resolve().parents[1] / "tools"
+    sys.path.insert(0, str(tools_dir))
+    try:
+        import compare_gx_kbm as mod
+    finally:
+        sys.path.remove(str(tools_dir))
+    from spectraxgk.benchmarks import LinearRunResult
+
+    calls: dict[str, object] = {}
+
+    def _fake_extract(phi_t, sel, *, method: str):
+        del phi_t, sel
+        calls["method"] = method
+        return np.array([1.0 + 0.0j, 1.1 - 0.1j, 1.2 - 0.2j], dtype=np.complex128)
+
+    def _fake_fit_auto(t, signal, **kwargs):
+        del t, kwargs
+        calls["signal_len"] = int(np.asarray(signal).shape[0])
+        return 0.33, 1.44, 0.0, 0.0
+
+    monkeypatch.setattr(mod, "extract_mode_time_series", _fake_extract)
+    monkeypatch.setattr(mod, "fit_growth_rate_auto", _fake_fit_auto)
+    monkeypatch.setattr(
+        mod,
+        "gx_growth_rate_from_phi",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("unexpected GX ratio fit")),
+    )
+
+    result = LinearRunResult(
+        t=np.array([0.0, 1.0, 2.0], dtype=float),
+        phi_t=np.array([[[[1.0 + 0.0j]]], [[[2.0 + 0.0j]]], [[[3.0 + 0.0j]]]], dtype=np.complex128),
+        gamma=0.0,
+        omega=0.0,
+        ky=0.3,
+        selection=SimpleNamespace(ky_index=0, kx_index=0, z_index=0),
+    )
+
+    out = mod._recompute_time_history_growth(
+        SimpleNamespace(tmin=None, tmax=None),
+        result,
+        mode_method="project",
+    )
+
+    assert calls["method"] == "project"
+    assert calls["signal_len"] == 3
+    assert np.isclose(out.gamma, 0.33)
+    assert np.isclose(out.omega, 1.44)
 
 
 def test_compare_gx_kbm_run_candidate_allows_shift_source_override(monkeypatch) -> None:
