@@ -172,6 +172,21 @@ By default, ``make_gx_cyclone_kbm_panel.py`` uses:
 - A GX-style time-integrated SPECTRAX KBM eigenfunction (not a standalone
   Krylov vector) so the plotted mode is selected the same way as GX.
 
+For linear KBM acceptance, the tracked four-point table remains the primary
+asset, but the low-``ky`` branch may also be audited with the checkpoint probe
+when a shorter GX-time horizon gives a cleaner branch capture. The currently
+accepted closure rule is:
+
+- default target: ``rel_gamma <= 1.0e-1`` and ``rel_omega <= 1.0e-1``
+- accepted low-``ky`` override: ``1.5e-1`` at specific ``ky`` values when the
+  branch is documented by the checkpoint probe asset
+
+The current checkpoint asset is:
+
+.. csv-table:: KBM low-ky checkpoint probe
+   :file: _static/kbm_probe_lowky_ckpt.csv
+   :header-rows: 1
+
 .. figure:: _static/cyclone_comparison.png
    :align: center
    :alt: Cyclone base case comparison
