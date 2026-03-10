@@ -206,7 +206,8 @@ def test_hsx_nonlinear_vmec_geometry_example_toml_loads() -> None:
     assert isinstance(data, dict)
     assert cfg.geometry.model == "vmec"
     assert cfg.geometry.vmec_file is not None
-    assert cfg.geometry.gx_python == "python3"
+    assert cfg.geometry.vmec_file == "$HSX_VMEC_FILE"
+    assert cfg.geometry.gx_python is None
     assert cfg.geometry.torflux == pytest.approx(0.64)
     assert cfg.physics.nonlinear is True
     assert cfg.physics.adiabatic_electrons is True
@@ -226,7 +227,8 @@ def test_w7x_nonlinear_vmec_geometry_example_toml_loads() -> None:
     assert isinstance(data, dict)
     assert cfg.geometry.model == "vmec"
     assert cfg.geometry.vmec_file is not None
-    assert cfg.geometry.gx_python == "python3"
+    assert cfg.geometry.vmec_file == "benchmarks/nonlinear/w7x/wout_w7x.nc"
+    assert cfg.geometry.gx_python is None
     assert cfg.geometry.torflux == pytest.approx(0.64)
     assert cfg.physics.nonlinear is True
     assert cfg.physics.adiabatic_electrons is True

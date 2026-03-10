@@ -89,6 +89,69 @@ def test_build_gx_vmec_geometry_request_leaves_x0_unset_for_gx_defaults(tmp_path
     assert request.x0 is None
 
 
+def test_build_gx_vmec_geometry_request_resolves_relative_vmec_file_from_gx_repo(
+    tmp_path: Path,
+) -> None:
+    gx_repo = tmp_path / "gx"
+    vmec_path = gx_repo / "benchmarks" / "nonlinear" / "w7x" / "wout_w7x.nc"
+    vmec_path.parent.mkdir(parents=True, exist_ok=True)
+    vmec_path.write_text("stub", encoding="utf-8")
+    cfg = _vmec_runtime_cfg(tmp_path)
+    cfg = RuntimeConfig(
+        grid=cfg.grid,
+        time=cfg.time,
+        geometry=GeometryConfig(
+            model="vmec",
+            vmec_file="benchmarks/nonlinear/w7x/wout_w7x.nc",
+            geometry_file=cfg.geometry.geometry_file,
+            torflux=cfg.geometry.torflux,
+            npol=cfg.geometry.npol,
+            alpha=cfg.geometry.alpha,
+            gx_repo=str(gx_repo),
+        ),
+        init=cfg.init,
+        species=cfg.species,
+        physics=cfg.physics,
+        normalization=cfg.normalization,
+        collisions=cfg.collisions,
+        terms=cfg.terms,
+    )
+
+    request = build_gx_vmec_geometry_request(cfg)
+
+    assert request.vmec_file == str(vmec_path.resolve())
+
+
+def test_build_gx_vmec_geometry_request_expands_env_vmec_file(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    vmec_path = tmp_path / "wout_env.nc"
+    vmec_path.write_text("stub", encoding="utf-8")
+    monkeypatch.setenv("HSX_VMEC_FILE", str(vmec_path))
+    cfg = _vmec_runtime_cfg(tmp_path)
+    cfg = RuntimeConfig(
+        grid=cfg.grid,
+        time=cfg.time,
+        geometry=GeometryConfig(
+            model="vmec",
+            vmec_file="$HSX_VMEC_FILE",
+            geometry_file=cfg.geometry.geometry_file,
+            torflux=cfg.geometry.torflux,
+            npol=cfg.geometry.npol,
+            alpha=cfg.geometry.alpha,
+            gx_repo=cfg.geometry.gx_repo,
+        ),
+        init=cfg.init,
+        species=cfg.species,
+        physics=cfg.physics,
+        normalization=cfg.normalization,
+        collisions=cfg.collisions,
+        terms=cfg.terms,
+    )
+
+    request = build_gx_vmec_geometry_request(cfg)
+
+    assert request.vmec_file == str(vmec_path.resolve())
+
+
 def test_generate_runtime_vmec_eik_invokes_gx_script_and_creates_output(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

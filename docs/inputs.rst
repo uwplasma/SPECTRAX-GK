@@ -158,6 +158,10 @@ helper must run under a different Python interpreter than SPECTRAX itself
 (for example when ``booz_xform`` is installed in a separate environment), set
 ``gx_python`` or the ``GX_VMEC_PYTHON`` environment variable. This is now the
 recommended parity-first route for new stellarator cases such as HSX.
+``vmec_file`` supports ``$ENV_VAR`` expansion, and relative paths are resolved
+against ``gx_repo`` before falling back to the current working directory. The
+W7-X runtime TOML uses that contract so the same config works on both local
+and office-style GX checkouts.
 When ``geometry_file`` is set for ``model = "vmec"``, SPECTRAX regenerates
 that target instead of reusing a stale file from an older VMEC conversion.
 For VMEC ``fix aspect`` runs, SPECTRAX now follows GX's default helper

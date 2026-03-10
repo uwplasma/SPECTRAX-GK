@@ -202,6 +202,11 @@ When the GX VMEC helper depends on a different Python environment, set
 ``geometry.gx_python`` (or the ``GX_VMEC_PYTHON`` environment variable) so
 SPECTRAX launches ``gx_geo_vmec.py`` with the interpreter that has
 ``booz_xform`` installed.
+The VMEC bridge now also expands environment variables in ``geometry.vmec_file``
+and resolves relative VMEC paths against ``gx_repo`` before falling back to the
+current working directory. That lets the tracked W7-X runtime TOML point at the
+benchmark ``wout`` file through the GX repo itself, while the HSX runtime TOML
+can stay portable via ``$HSX_VMEC_FILE``.
 The nonlinear W7-X and HSX startup audits now confirm that this VMEC runtime
 path reproduces GX startup ``g_state`` and ``phi`` to roundoff when the
 generated ``*.eik.nc`` is rebuilt from the same VMEC input.
