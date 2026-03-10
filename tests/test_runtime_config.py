@@ -190,6 +190,8 @@ def test_w7x_nonlinear_imported_geometry_example_toml_loads() -> None:
     assert cfg.geometry.geometry_file is not None
     assert cfg.physics.nonlinear is True
     assert cfg.physics.adiabatic_electrons is True
+    assert cfg.physics.collisions is True
+    assert cfg.terms.collisions == pytest.approx(1.0)
     assert cfg.terms.nonlinear == pytest.approx(1.0)
 
 
@@ -211,6 +213,8 @@ def test_hsx_nonlinear_vmec_geometry_example_toml_loads() -> None:
     assert cfg.geometry.torflux == pytest.approx(0.64)
     assert cfg.physics.nonlinear is True
     assert cfg.physics.adiabatic_electrons is True
+    assert cfg.physics.collisions is True
+    assert cfg.terms.collisions == pytest.approx(1.0)
     assert cfg.terms.nonlinear == pytest.approx(1.0)
 
 
@@ -232,6 +236,8 @@ def test_w7x_nonlinear_vmec_geometry_example_toml_loads() -> None:
     assert cfg.geometry.torflux == pytest.approx(0.64)
     assert cfg.physics.nonlinear is True
     assert cfg.physics.adiabatic_electrons is True
+    assert cfg.physics.collisions is True
+    assert cfg.terms.collisions == pytest.approx(1.0)
 
 
 def test_secondary_slab_example_toml_loads() -> None:
