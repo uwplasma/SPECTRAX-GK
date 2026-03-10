@@ -158,6 +158,9 @@ helper must run under a different Python interpreter than SPECTRAX itself
 (for example when ``booz_xform`` is installed in a separate environment), set
 ``gx_python`` or the ``GX_VMEC_PYTHON`` environment variable. This is now the
 recommended parity-first route for new stellarator cases such as HSX.
+For VMEC ``fix aspect`` runs, SPECTRAX now follows GX's default helper
+contract and does not inject ``x0`` from the runtime ``Lx``. That keeps the
+generated ``*.eik.nc`` file aligned with GX's own W7-X/HSX geometry output.
 
 Solver and fit-signal keys
 --------------------------
