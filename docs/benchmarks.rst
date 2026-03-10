@@ -474,6 +474,7 @@ block is exported:
 Reference command (SPECTRAX side):
 
 - ``python tools/compare_gx_nonlinear_terms.py --gx-dir /path/to/gx/dumps --gx-out /path/to/kbm_salpha_nonlinear.out.nc --case kbm --ky 0.3 --kx-order native``
+- ``python tools/compare_gx_nonlinear_terms.py --gx-dir /path/to/gx/dumps --gx-out /path/to/run.out.nc --config examples/configs/runtime_w7x_nonlinear_vmec_geometry.toml --ky 0.3 --kx-order native``
 
 The comparator now supports GX dump folders directly:
 
@@ -482,6 +483,9 @@ The comparator now supports GX dump folders directly:
 - ``--y0`` defaults to the positive-``ky`` GX grid spacing, so the reconstructed
   SPECTRAX grid matches the dump's field-line box unless you override it.
 - ``nl_apar.bin`` / ``nl_bpar.bin`` are accepted directly (no manual renaming).
+- ``--config`` routes the comparison through the same runtime TOML geometry and
+  physics path used by imported/VMEC cases such as W7-X and HSX, instead of
+  rebuilding an ``s-alpha`` benchmark case.
 
 For terms whose reference amplitudes are near machine zero, use absolute
 differences as the acceptance metric (relative errors can be numerically large
