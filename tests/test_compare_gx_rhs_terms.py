@@ -100,6 +100,77 @@ def test_compare_gx_rhs_terms_parser_defaults_to_dump_metadata() -> None:
     assert args.y0 is None
 
 
+def test_compare_gx_rhs_terms_parser_accepts_runtime_config() -> None:
+    tools_dir = Path(__file__).resolve().parents[1] / "tools"
+    sys.path.insert(0, str(tools_dir))
+    try:
+        import compare_gx_rhs_terms as mod
+    finally:
+        sys.path.remove(str(tools_dir))
+
+    parser = mod.build_parser()
+    args = parser.parse_args(
+        ["--gx-dir", "/tmp/gx", "--gx-out", "/tmp/gx.out.nc", "--config", "/tmp/runtime.toml"]
+    )
+
+    assert args.config == Path("/tmp/runtime.toml")
+
+
+def test_compare_gx_rhs_terms_runtime_context_overrides_grid_from_dump(monkeypatch) -> None:
+    tools_dir = Path(__file__).resolve().parents[1] / "tools"
+    sys.path.insert(0, str(tools_dir))
+    try:
+        import compare_gx_rhs_terms as mod
+    finally:
+        sys.path.remove(str(tools_dir))
+
+    cfg = type("Cfg", (), {"grid": type("Grid", (), {"Nx": 8, "Ny": 8, "Nz": 8, "y0": None})()})()
+    captured: dict[str, object] = {}
+
+    monkeypatch.setattr(mod, "load_runtime_from_toml", lambda _path: (cfg, None))
+    monkeypatch.setattr(
+        mod,
+        "replace",
+        lambda obj, **updates: type("Obj", (), obj.__dict__ | updates)(),
+    )
+
+    def _fake_build_runtime_geometry(cfg_use):
+        captured["cfg_use"] = cfg_use
+        return "geom"
+
+    monkeypatch.setattr(mod, "build_runtime_geometry", _fake_build_runtime_geometry)
+    monkeypatch.setattr(mod, "apply_gx_geometry_grid_defaults", lambda _geom, grid: grid)
+    grid_obj = type("GridObj", (), {"ky": np.array([0.0, 0.2, -0.2]), "kx": np.array([0.0])})()
+    monkeypatch.setattr(mod, "build_spectral_grid", lambda _grid: grid_obj)
+    monkeypatch.setattr(mod, "build_runtime_linear_params", lambda *_args, **_kwargs: "params")
+    monkeypatch.setattr(
+        mod,
+        "build_runtime_term_config",
+        lambda _cfg: TermConfig(hypercollisions=1.0, end_damping=1.0),
+    )
+
+    cfg_use, geom, grid_full, params, term_cfg = mod._build_runtime_compare_context(
+        Path("runtime.toml"),
+        nx=3,
+        ny_full=6,
+        nz=5,
+        nm=4,
+        ky_vals=np.array([0.2, 0.4], dtype=float),
+        y0_override=None,
+    )
+
+    assert cfg_use.grid.Nx == 3
+    assert cfg_use.grid.Ny == 6
+    assert cfg_use.grid.Nz == 5
+    assert cfg_use.grid.y0 == 5.0
+    assert captured["cfg_use"] is cfg_use
+    assert geom == "geom"
+    assert grid_full is grid_obj
+    assert params == "params"
+    assert term_cfg.hypercollisions == 0.0
+    assert term_cfg.end_damping == 0.0
+
+
 def test_run_kbm_linear_accepts_vmec_and_desc_eik_benchmark_aliases(tmp_path: Path) -> None:
     netcdf4 = pytest.importorskip("netCDF4")
     Dataset = netcdf4.Dataset

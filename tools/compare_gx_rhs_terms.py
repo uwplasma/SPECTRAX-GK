@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -26,8 +27,9 @@ from spectraxgk.benchmarks import (
     _two_species_params,
 )
 from spectraxgk.config import GridConfig
-from spectraxgk.geometry import SAlphaGeometry
+from spectraxgk.geometry import SAlphaGeometry, apply_gx_geometry_grid_defaults
 from spectraxgk.grids import build_spectral_grid, select_ky_grid
+from spectraxgk.io import load_runtime_from_toml
 from spectraxgk.linear import (
     LinearParams,
     LinearTerms,
@@ -36,6 +38,7 @@ from spectraxgk.linear import (
     build_linear_cache,
     linear_terms_to_term_config,
 )
+from spectraxgk.runtime import build_runtime_geometry, build_runtime_linear_params, build_runtime_term_config
 from spectraxgk.terms.linear_terms import (
     collisions_contribution,
     curvature_gradb_contribution,
@@ -291,6 +294,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--gx-dir", type=Path, required=True, help="Directory with rhs_stream.bin, rhs_linear.bin")
     parser.add_argument("--gx-out", type=Path, required=True, help="GX .out.nc file to map ky indices")
+    parser.add_argument(
+        "--config",
+        type=Path,
+        default=None,
+        help="Runtime TOML config. When set, geometry/physics come from the runtime path instead of --case.",
+    )
     parser.add_argument("--case", type=str, default="cyclone", choices=("cyclone", "kbm"))
     parser.add_argument("--ky", type=float, default=0.3)
     parser.add_argument("--Nl", type=int, default=None, help="Laguerre resolution (defaults to dump metadata)")
@@ -301,6 +310,36 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--ntheta", type=int, default=None)
     parser.add_argument("--nperiod", type=int, default=None)
     return parser
+
+
+def _build_runtime_compare_context(
+    config_path: Path,
+    *,
+    nx: int,
+    ny_full: int,
+    nz: int,
+    nm: int,
+    ky_vals: np.ndarray,
+    y0_override: float | None,
+):
+    cfg, _data = load_runtime_from_toml(config_path)
+    y0_use = float(y0_override) if y0_override is not None else _infer_y0(ky_vals)
+    cfg_use = replace(
+        cfg,
+        grid=replace(
+            cfg.grid,
+            Nx=int(nx),
+            Ny=int(ny_full),
+            Nz=int(nz),
+            y0=float(y0_use),
+        ),
+    )
+    geom = build_runtime_geometry(cfg_use)
+    grid_cfg = apply_gx_geometry_grid_defaults(geom, cfg_use.grid)
+    grid_full = build_spectral_grid(grid_cfg)
+    params = build_runtime_linear_params(cfg_use, Nm=nm, geom=geom)
+    term_cfg = replace(build_runtime_term_config(cfg_use), hypercollisions=0.0, end_damping=0.0)
+    return cfg_use, geom, grid_full, params, term_cfg
 
 
 def main() -> None:
@@ -345,8 +384,20 @@ def main() -> None:
     gx_dia = gx_dia[:, :, :, ky_idx : ky_idx + 1, :, :]
     gx_coll = gx_coll[:, :, :, ky_idx : ky_idx + 1, :, :]
 
-    cfg: CycloneBaseCase | KBMBaseCase
-    if args.case == "cyclone":
+    cfg: Any
+    if args.config is not None:
+        cfg, geom, grid_full, params, term_cfg = _build_runtime_compare_context(
+            args.config,
+            nx=nx,
+            ny_full=int(2 * (nyc - 1)),
+            nz=nz,
+            nm=Nm_use,
+            ky_vals=ky_vals,
+            y0_override=args.y0,
+        )
+        params = params
+        init_species_index = 0
+    elif args.case == "cyclone":
         cfg = CycloneBaseCase(
             grid=GridConfig(
                 Nx=nx,
@@ -375,6 +426,8 @@ def main() -> None:
         )
         params = _apply_gx_hypercollisions(params, nhermite=Nm_use)
         init_species_index = 0
+        grid_full = build_spectral_grid(cfg.grid)
+        term_cfg = TermConfig(hypercollisions=0.0, end_damping=0.0)
     else:
         ntheta = args.ntheta if args.ntheta is not None else 32
         nperiod = args.nperiod if args.nperiod is not None else 2
@@ -401,8 +454,9 @@ def main() -> None:
             nhermite=Nm_use,
         )
         init_species_index = 0
+        grid_full = build_spectral_grid(cfg.grid)
+        term_cfg = TermConfig(hypercollisions=0.0, end_damping=0.0, bpar=0.0)
 
-    grid_full = build_spectral_grid(cfg.grid)
     ky_index = int(np.argmin(np.abs(np.asarray(grid_full.ky) - float(args.ky))))
     grid = select_ky_grid(grid_full, ky_index)
     cache = build_linear_cache(grid, geom, params, Nl_use, Nm_use)
@@ -421,10 +475,6 @@ def main() -> None:
             Nm=Nm_use,
             init_cfg=cfg.init,
         )
-    if args.case == "kbm":
-        term_cfg = TermConfig(hypercollisions=0.0, end_damping=0.0, bpar=0.0)
-    else:
-        term_cfg = TermConfig(hypercollisions=0.0, end_damping=0.0)
     phi_path = args.gx_dir / "phi.bin"
     if phi_path.exists():
         apar_path = args.gx_dir / "apar.bin"
