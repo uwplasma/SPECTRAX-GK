@@ -138,6 +138,13 @@ def _pick_first_existing(*candidates: Path) -> Path | None:
     return None
 
 
+def _pick_species_dump(gx_dir: Path, stem: str, species_index: int) -> Path | None:
+    return _pick_first_existing(
+        gx_dir / f"{stem}_s{species_index}.bin",
+        gx_dir / f"{stem}.bin",
+    )
+
+
 def _load_bin(path: Path, shape: tuple[int, ...]) -> np.ndarray:
     raw = np.fromfile(path, dtype=np.complex64)
     if raw.size != int(np.prod(shape)):
@@ -496,7 +503,12 @@ def main() -> None:
             nyc_guess = int(shape.get("nyc", 0))
             if nx_guess > 0 and nyc_guess > 0 and nphi % (nx_guess * nyc_guess) == 0:
                 shape["nz"] = int(nphi // (nx_guess * nyc_guess))
-        g_guess = _pick_first_existing(args.gx_dir / "nl_g_state.bin", args.gx_dir / "g_state.bin")
+        g_guess = _pick_first_existing(
+            args.gx_dir / "nl_g_state_s0.bin",
+            args.gx_dir / "nl_g_state.bin",
+            args.gx_dir / "g_state_s0.bin",
+            args.gx_dir / "g_state.bin",
+        )
         if g_guess is not None:
             nraw = int(np.fromfile(g_guess, dtype=np.complex64).size)
             denom = (
@@ -519,9 +531,11 @@ def main() -> None:
         nj = gx_laguerre_nj(nl)
     gx_shape = (nspec, nl, nm, nyc, nx, nz)
 
-    g_state_path = args.gx_dir / "nl_g_state.bin"
-    if not g_state_path.exists():
-        g_state_path = args.gx_dir / "g_state.bin"
+    g_state_path = _pick_species_dump(args.gx_dir, "nl_g_state", args.species_index)
+    if g_state_path is None:
+        g_state_path = _pick_species_dump(args.gx_dir, "g_state", args.species_index)
+    if g_state_path is None:
+        raise FileNotFoundError("Expected nl_g_state/g_state dump in GX nonlinear dump directory")
     g_state_nyc = _reshape_gx(
         _load_bin(g_state_path, gx_shape),
         nspec=nspec,
@@ -826,11 +840,16 @@ def main() -> None:
         pad_grid = build_spectral_grid(pad_cfg)
         pad_cache = build_linear_cache(pad_grid, geom, params, nl, nm)
 
-    gx_dg_dx = args.gx_dir / "nl_dg_dx.bin"
-    gx_dg_dy = args.gx_dir / "nl_dg_dy.bin"
+    gx_dg_dx = _pick_species_dump(args.gx_dir, "nl_dg_dx", args.species_index)
+    gx_dg_dy = _pick_species_dump(args.gx_dir, "nl_dg_dy", args.species_index)
     gx_dj_dx = args.gx_dir / "nl_dJ0phi_dx.bin"
     gx_dj_dy = args.gx_dir / "nl_dJ0phi_dy.bin"
-    have_derivs = gx_dg_dx.exists() and gx_dg_dy.exists() and gx_dj_dx.exists() and gx_dj_dy.exists()
+    have_derivs = (
+        gx_dg_dx is not None
+        and gx_dg_dy is not None
+        and gx_dj_dx.exists()
+        and gx_dj_dy.exists()
+    )
     ref_dg_dx = None
     ref_dg_dy = None
     ref_dj_dx = None
@@ -845,12 +864,14 @@ def main() -> None:
         raw = np.fromfile(gx_dj_dy, dtype=np.float32)
         if raw.size == expected:
             ref_dj_dy = raw.reshape((nj, nz, nx_pad, ny_full_pad)).transpose(0, 3, 2, 1)
+        assert gx_dg_dx is not None
         raw = np.fromfile(gx_dg_dx, dtype=np.float32)
         expected_g = nm * nj * ny_full_pad * nx_pad * nz
         if raw.size == expected_g:
             # GX flat index: ig = idxyzj + (nx*ny*nz*nj) * idm
             # C-order view is (m, j, z, x, y); transpose to (m, j, y, x, z).
             ref_dg_dx = raw.reshape((nm, nj, nz, nx_pad, ny_full_pad)).transpose(0, 1, 4, 3, 2)
+        assert gx_dg_dy is not None
         raw = np.fromfile(gx_dg_dy, dtype=np.float32)
         if raw.size == expected_g:
             ref_dg_dy = raw.reshape((nm, nj, nz, nx_pad, ny_full_pad)).transpose(0, 1, 4, 3, 2)
@@ -1131,8 +1152,8 @@ def main() -> None:
         _summary("dJ0phi_dy", ref_dj_dy, test_dj_dy)
         _summary("dg_dx", ref_dg_dx, test_dg_dx)
         _summary("dg_dy", ref_dg_dy, test_dg_dy)
-    gx_bracket_real = args.gx_dir / "nl_bracket_phi_real.bin"
-    if gx_bracket_real.exists():
+    gx_bracket_real = _pick_species_dump(args.gx_dir, "nl_bracket_phi_real", args.species_index)
+    if gx_bracket_real is not None and gx_bracket_real.exists():
         raw_real = np.fromfile(gx_bracket_real, dtype=np.float32)
         denom = nj * nz * ny_full_pad * nx_pad
         m_tot = int(raw_real.size // denom) if denom > 0 else 0
@@ -1243,16 +1264,16 @@ def main() -> None:
 
     exb_total = np.asarray(comps["exb_phi"]) + np.asarray(comps["exb_bpar"])
     gx_map = {
-        "exb_total": ("nl_exb_phi.bin", exb_total),
-        "exb_bpar": ("nl_exb_bpar.bin", np.asarray(comps["exb_bpar"])),
-        "bracket_apar": ("nl_bracket_apar.bin", np.asarray(comps["bracket_apar"])),
-        "flutter": ("nl_flutter.bin", np.asarray(comps["flutter"])),
-        "total": ("nl_total.bin", np.asarray(comps["total"])),
+        "exb_total": ("nl_exb_phi", exb_total),
+        "exb_bpar": ("nl_exb_bpar", np.asarray(comps["exb_bpar"])),
+        "bracket_apar": ("nl_bracket_apar", np.asarray(comps["bracket_apar"])),
+        "flutter": ("nl_flutter", np.asarray(comps["flutter"])),
+        "total": ("nl_total", np.asarray(comps["total"])),
     }
-    for key, (fname, test_arr) in gx_map.items():
-        path = args.gx_dir / fname
-        if not path.exists():
-            print(f"Skipping {key}: {path} not found")
+    for key, (stem, test_arr) in gx_map.items():
+        path = _pick_species_dump(args.gx_dir, stem, args.species_index)
+        if path is None:
+            print(f"Skipping {key}: no dump found for {stem}")
             continue
         ref = _reshape_gx(
             _load_bin(path, gx_shape),
@@ -1268,12 +1289,16 @@ def main() -> None:
         _summary(key, ref, test_slice)
 
     if (
-        not (args.gx_dir / "nl_flutter.bin").exists()
-        and (args.gx_dir / "nl_total.bin").exists()
-        and (args.gx_dir / "nl_exb_phi.bin").exists()
+        _pick_species_dump(args.gx_dir, "nl_flutter", args.species_index) is None
+        and _pick_species_dump(args.gx_dir, "nl_total", args.species_index) is not None
+        and _pick_species_dump(args.gx_dir, "nl_exb_phi", args.species_index) is not None
     ):
+        total_path = _pick_species_dump(args.gx_dir, "nl_total", args.species_index)
+        exb_phi_path = _pick_species_dump(args.gx_dir, "nl_exb_phi", args.species_index)
+        assert total_path is not None
+        assert exb_phi_path is not None
         ref_total = _reshape_gx(
-            _load_bin(args.gx_dir / "nl_total.bin", gx_shape),
+            _load_bin(total_path, gx_shape),
             nspec=nspec,
             nl=nl,
             nm=nm,
@@ -1282,7 +1307,7 @@ def main() -> None:
             nz=nz,
         )
         ref_exb_phi = _reshape_gx(
-            _load_bin(args.gx_dir / "nl_exb_phi.bin", gx_shape),
+            _load_bin(exb_phi_path, gx_shape),
             nspec=nspec,
             nl=nl,
             nm=nm,
@@ -1291,8 +1316,8 @@ def main() -> None:
             nz=nz,
         )
         ref_flutter = ref_total - ref_exb_phi
-        exb_bpar_path = args.gx_dir / "nl_exb_bpar.bin"
-        if exb_bpar_path.exists():
+        exb_bpar_path = _pick_species_dump(args.gx_dir, "nl_exb_bpar", args.species_index)
+        if exb_bpar_path is not None and exb_bpar_path.exists():
             ref_exb_bpar = _reshape_gx(
                 _load_bin(exb_bpar_path, gx_shape),
                 nspec=nspec,

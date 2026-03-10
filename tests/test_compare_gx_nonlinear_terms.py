@@ -86,3 +86,21 @@ def test_build_runtime_compare_context_overrides_grid_from_dump(monkeypatch) -> 
     assert grid is grid_obj
     assert params == "params"
     assert term_cfg == "terms"
+
+
+def test_pick_species_dump_prefers_species_suffix(tmp_path: Path) -> None:
+    tools_dir = Path(__file__).resolve().parents[1] / "tools"
+    sys.path.insert(0, str(tools_dir))
+    try:
+        import compare_gx_nonlinear_terms as mod
+    finally:
+        sys.path.remove(str(tools_dir))
+
+    suffixed = tmp_path / "nl_total_s0.bin"
+    plain = tmp_path / "nl_total.bin"
+    suffixed.write_bytes(b"s")
+    plain.write_bytes(b"p")
+
+    picked = mod._pick_species_dump(tmp_path, "nl_total", 0)
+
+    assert picked == suffixed
