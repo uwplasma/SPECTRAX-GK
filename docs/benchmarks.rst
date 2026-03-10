@@ -267,7 +267,8 @@ secondary-instability benchmark:
 - ``examples/secondary_slab_workflow.py`` runs the staged seed-plus-restart
   workflow through the unified runtime API.
 - ``tools/compare_gx_secondary.py`` compares the staged SPECTRAX result against
-  a GX ``kh01a.out.nc`` file on the tracked mode set.
+  either a GX ``kh01a.out.nc`` file or the published GX README target table on
+  the tracked mode set.
 
 The most important parity fix here was the runtime single-mode initializer:
 GX seeds ``init_single`` non-Gaussian modes as purely real amplitudes, while
@@ -280,11 +281,18 @@ matching the amplitude distribution.
 
 Because the fixed-pump secondary problem is exponentially unstable, the useful
 parity target is the early finite-growth window before amplitudes overflow. On
-the current staged workflow, the sideband ``(ky=0.1, kx=0.05)`` recovers a
-short-window growth rate of about ``gamma = 4.90`` on the GX slab grid, which
-matches the GX benchmark README target to within about ``2e-4`` in absolute
-error. Late-time ``omega`` and field amplitudes are not yet a frozen parity
-asset and remain under audit.
+the current staged workflow, all four nonzero tracked sidebands recover a
+short-window growth rate of about ``gamma = 4.902045`` on the GX slab grid,
+which matches the GX benchmark README target to within about ``4.3e-5``
+relative error. The tracked residual is now in ``omega`` sign/magnitude rather
+than in missing sideband growth, so late-time ``omega`` and field amplitudes
+remain under audit.
+
+When stock GX cannot emit ``kh01a.out.nc`` on the current hardware/runtime
+stack, regenerate the tracked secondary comparison against the published GX
+benchmark target with:
+
+- ``python tools/compare_gx_secondary.py --gx-source readme --out docs/_static/secondary_gx_readme_compare.csv``
 
 ETG (GS2/Stella Cross-Code)
 ---------------------------
