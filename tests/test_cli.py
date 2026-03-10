@@ -350,4 +350,5 @@ Nm = 4
     out = capsys.readouterr().out
     assert code == 0
     assert "nonlinear:" in out
+    assert "t=0.1" in out
     assert captured["steps"] is None
