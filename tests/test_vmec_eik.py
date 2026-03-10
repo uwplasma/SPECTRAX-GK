@@ -64,6 +64,7 @@ def test_write_gx_vmec_geometry_input_emits_expected_contract(tmp_path: Path) ->
     cfg = _vmec_runtime_cfg(tmp_path)
     request = build_gx_vmec_geometry_request(cfg)
     input_path = tmp_path / "gx_vmec.toml"
+    assert cfg.geometry.vmec_file is not None
 
     write_gx_vmec_geometry_input(request, input_path)
 
@@ -75,14 +76,25 @@ def test_write_gx_vmec_geometry_input_emits_expected_contract(tmp_path: Path) ->
     assert f'vmec_file = "{Path(cfg.geometry.vmec_file).resolve()}"' in text
     assert "torflux = 0.64" in text
     assert "npol = 2.0" in text
+    assert "x0 =" not in text
     assert "[species]" in text
     assert 'type = ["ion", "electron"]' in text
+
+
+def test_build_gx_vmec_geometry_request_leaves_x0_unset_for_gx_defaults(tmp_path: Path) -> None:
+    cfg = _vmec_runtime_cfg(tmp_path)
+
+    request = build_gx_vmec_geometry_request(cfg)
+
+    assert request.x0 is None
 
 
 def test_generate_runtime_vmec_eik_invokes_gx_script_and_creates_output(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     cfg = _vmec_runtime_cfg(tmp_path, geometry_file=str(tmp_path / "geom.eik.nc"))
+    assert cfg.geometry.gx_repo is not None
+    assert cfg.geometry.geometry_file is not None
     gx_script = Path(cfg.geometry.gx_repo) / "geometry_modules" / "pyvmec" / "gx_geo_vmec.py"
     gx_script.parent.mkdir(parents=True, exist_ok=True)
     gx_script.write_text("# stub", encoding="utf-8")
@@ -139,6 +151,7 @@ def test_generate_runtime_vmec_eik_uses_configured_python_interpreter(
         collisions=cfg.collisions,
         terms=cfg.terms,
     )
+    assert cfg.geometry.gx_repo is not None
     gx_script = Path(cfg.geometry.gx_repo) / "geometry_modules" / "pyvmec" / "gx_geo_vmec.py"
     gx_script.parent.mkdir(parents=True, exist_ok=True)
     gx_script.write_text("# stub", encoding="utf-8")
