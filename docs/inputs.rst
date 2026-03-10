@@ -299,4 +299,6 @@ Notable runtime-only keys:
   behavior used by the ``secondary`` benchmark.
 * ``[time] method = "sspx3"``: use the GX SSPx3 scheme directly. This is the
   relevant explicit method for GX's ``secondary`` and ``cETG`` benchmark
-  families; ``rk3_gx`` is a different three-stage scheme.
+  families. Plain ``rk3`` now follows GX's three-stage Heun-style timestepper;
+  ``rk3_classic`` keeps the older classical RK3 update if you need it for
+  controlled comparisons, and ``rk3_gx`` remains as a compatibility alias.
