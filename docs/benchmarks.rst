@@ -439,6 +439,23 @@ uses the same TOML/VMEC path as the nonlinear W7-X and HSX runs, so imported
 geometry and GX-generated ``*.eik.nc`` startup states can be audited without
 falling back to a separate hand-written ``s-alpha`` benchmark setup.
 
+For late-time runtime-configured audits on the exact dumped nonlinear state, use
+the matching diagnostic-state comparator:
+
+- ``python tools/compare_gx_runtime_diag_state.py --gx-dir /path/to/gx_dump --gx-out /path/to/w7x.out.nc --config examples/configs/runtime_w7x_nonlinear_vmec_geometry.toml --time-index 10``
+
+This reads ``diag_state_G_*`` / ``diag_state_phi`` / ``diag_state_kperp2`` /
+``diag_state_fluxfac`` from a ``GX_DUMP_DIAG_INDEX`` run and evaluates the
+same SPECTRAX diagnostics on that dumped state. The comparator now rebuilds the
+true GX real-FFT positive-``ky`` dump grid rather than slicing the first
+``Nyc`` rows of the full FFT ordering, which was previously folding the
+negative Nyquist row into the audit and halving ``Wg`` / ``Wphi`` for
+nonlinear VMEC cases. With that fixed, the tracked W7-X audit at
+``t ~= 32.44665203`` matches GX to roundoff on ``Wg``, ``Wphi``, heat flux,
+particle flux, ``phi``, ``k_perp^2``, and ``fluxfac``. The remaining nonlinear
+W7-X mismatch is therefore later-time dynamics, not startup, geometry, field
+solve, or diagnostic post-processing on the same state.
+
 KBM nonlinear term comparison (GX)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

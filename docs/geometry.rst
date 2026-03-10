@@ -210,6 +210,12 @@ can stay portable via ``$HSX_VMEC_FILE``.
 The nonlinear W7-X and HSX startup audits now confirm that this VMEC runtime
 path reproduces GX startup ``g_state`` and ``phi`` to roundoff when the
 generated ``*.eik.nc`` is rebuilt from the same VMEC input.
+The late-time W7-X diagnostic-state audit now also matches GX to roundoff on
+the exact dumped nonlinear state once the comparison tool reconstructs the
+compressed real-FFT positive-``ky`` dump grid directly from
+``diag_state_ky_t*.bin``. That closes the remaining imported-geometry
+diagnostic-contract gap for nonlinear VMEC cases: startup, ``phi``, ``kperp2``,
+``fluxfac``, ``Wg``, ``Wphi``, and heat flux all agree on the same GX state.
 
 Two user-facing entry points now exercise that bridge:
 

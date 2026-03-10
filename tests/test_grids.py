@@ -8,6 +8,7 @@ from spectraxgk.grids import (
     build_spectral_grid,
     gx_real_fft_kx,
     gx_real_fft_ky,
+    select_gx_real_fft_ky_grid,
 )
 
 
@@ -85,3 +86,18 @@ def test_gx_real_fft_wavenumbers_match_gx_native_layout():
         gx_real_fft_ky(grid.ky),
         jnp.asarray([0.0, dky, 2.0 * dky, 3.0 * dky, 4.0 * dky, 5.0 * dky]),
     )
+
+
+def test_select_gx_real_fft_ky_grid_uses_explicit_positive_dump_values():
+    """GX dump grids should not inherit the negative Nyquist sign from fftfreq order."""
+
+    cfg = GridConfig(Nx=4, Ny=6, Nz=4, Lx=2.0, Ly=6.0)
+    grid = build_spectral_grid(cfg)
+    gx_ky = jnp.asarray([0.0, 2.0 * jnp.pi / cfg.Ly, 2.0 * 2.0 * jnp.pi / cfg.Ly, 3.0 * 2.0 * jnp.pi / cfg.Ly])
+    gx_grid = select_gx_real_fft_ky_grid(grid, gx_ky)
+
+    assert jnp.allclose(gx_grid.ky, gx_ky)
+    assert jnp.all(gx_grid.ky >= 0.0)
+    assert jnp.allclose(gx_grid.kx, gx_real_fft_kx(grid.kx))
+    assert gx_grid.dealias_mask.shape == (gx_ky.shape[0], cfg.Nx)
+    assert jnp.allclose(gx_grid.ky_grid[:, 0], gx_ky)
