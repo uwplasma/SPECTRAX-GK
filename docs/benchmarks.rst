@@ -411,7 +411,12 @@ the extraction audit no longer reruns identical dynamics for the same ``ky``.
 That reuse path is also exposed at the CLI via ``--trajectory-dir`` together
 with ``--reuse-trajectory``, so completed GX-time probe trajectories can be fed
 back into the main continuation harness when regenerating the tracked mismatch
-table and README assets.
+table and README assets. For slow-separating low-``ky`` KBM branches, the
+continuation candidate set now also includes ``gx_time@project_late`` and
+``gx_time@svd_late``. Those candidates reuse the same cached trajectory, but
+fit a later fixed projected window and record the actual selected
+``fit_window_tmin`` / ``fit_window_tmax`` in both the mismatch table and the
+per-candidate audit CSV.
 Focused ``--ky`` audits now preserve the full GX ``nky``/``y0`` metadata from
 the original reference file instead of collapsing the solver grid to the subset
 being inspected, which keeps single-``ky`` branch probes on the same flux-tube

@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import argparse
-from dataclasses import is_dataclass, replace
+from dataclasses import fields, is_dataclass, replace
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -25,6 +25,11 @@ from spectraxgk.analysis import (
 from spectraxgk.benchmarks import KBM_KRYLOV_DEFAULT, run_kbm_linear
 from spectraxgk.config import KBMBaseCase, GeometryConfig, GridConfig, KineticElectronModelConfig
 from spectraxgk.grids import build_spectral_grid, select_ky_grid
+
+LATE_PROJECT_WINDOW_FRACTION = 0.3
+LATE_PROJECT_MIN_POINTS = 80
+LATE_PROJECT_START_FRACTION = 0.4
+LATE_PROJECT_GROWTH_WEIGHT = 1.0
 
 
 def _load_gx_omega_gamma(
@@ -367,10 +372,24 @@ def _build_cfg(
 
 def _replace_result(result, /, **updates):
     if is_dataclass(result):
-        return replace(result, **updates)
+        field_names = {field.name for field in fields(result)}
+        replace_updates = {name: value for name, value in updates.items() if name in field_names}
+        extra_updates = {name: value for name, value in updates.items() if name not in field_names}
+        result_new = replace(result, **replace_updates)
+        if not extra_updates:
+            return result_new
+        values = dict(vars(result_new))
+        values.update(extra_updates)
+        return SimpleNamespace(**values)
     values = dict(vars(result))
     values.update(updates)
     return SimpleNamespace(**values)
+
+
+def _split_mode_method_policy(mode_method: str) -> tuple[str, str]:
+    if mode_method.endswith("_late"):
+        return mode_method[: -len("_late")], "late"
+    return mode_method, "default"
 
 
 def _run_candidate(
@@ -386,6 +405,7 @@ def _run_candidate(
 ):
     fit_signal = args.time_fit_signal if solver_name in {"time", "gx_time"} else "phi"
     mode_method_use = str(mode_method_override or args.mode_method)
+    mode_method_base, _fit_policy = _split_mode_method_policy(mode_method_use)
     krylov_cfg = None
     if (
         solver_name == "krylov"
@@ -415,7 +435,7 @@ def _run_candidate(
         solver=solver_name,
         krylov_cfg=krylov_cfg,
         fit_signal=fit_signal,
-        mode_method=mode_method_use,
+        mode_method=mode_method_base,
         diagnostic_norm="gx",
         gx_reference=True,
         auto_window=not args.no_auto_window,
@@ -432,29 +452,58 @@ def _recompute_time_history_growth(args, result, *, mode_method: str):
     if t.size <= 1:
         return result
 
-    if mode_method in {"project", "svd"}:
-        signal = extract_mode_time_series(np.asarray(result.phi_t), result.selection, method=mode_method)
+    mode_method_base, fit_policy = _split_mode_method_policy(mode_method)
+
+    if mode_method_base in {"project", "svd"}:
+        signal = extract_mode_time_series(np.asarray(result.phi_t), result.selection, method=mode_method_base)
         if args.tmin is not None and args.tmax is not None:
             gamma, omega = fit_growth_rate(signal=signal, t=t, tmin=args.tmin, tmax=args.tmax)
+            fit_tmin = float(args.tmin)
+            fit_tmax = float(args.tmax)
         else:
-            gamma, omega, _tmin, _tmax = fit_growth_rate_auto(
-                t,
-                signal,
-                window_method="fixed",
-                window_fraction=0.4,
-                min_points=40,
-                start_fraction=0.2,
-                growth_weight=1.0,
-                require_positive=True,
-                min_amp_fraction=0.0,
-            )
-        return _replace_result(result, gamma=float(gamma), omega=float(omega))
+            if fit_policy == "late":
+                gamma, omega, fit_tmin, fit_tmax = fit_growth_rate_auto(
+                    t,
+                    signal,
+                    window_method="fixed",
+                    window_fraction=LATE_PROJECT_WINDOW_FRACTION,
+                    min_points=LATE_PROJECT_MIN_POINTS,
+                    start_fraction=LATE_PROJECT_START_FRACTION,
+                    growth_weight=LATE_PROJECT_GROWTH_WEIGHT,
+                    require_positive=True,
+                    min_amp_fraction=0.0,
+                )
+            else:
+                gamma, omega, fit_tmin, fit_tmax = fit_growth_rate_auto(
+                    t,
+                    signal,
+                    window_method="fixed",
+                    window_fraction=0.4,
+                    min_points=40,
+                    start_fraction=0.2,
+                    growth_weight=1.0,
+                    require_positive=True,
+                    min_amp_fraction=0.0,
+                )
+        return _replace_result(
+            result,
+            gamma=float(gamma),
+            omega=float(omega),
+            fit_window_tmin=float(fit_tmin),
+            fit_window_tmax=float(fit_tmax),
+        )
 
     if args.tmin is not None and args.tmax is not None:
         try:
-            signal = extract_mode_time_series(np.asarray(result.phi_t), result.selection, method=mode_method)
+            signal = extract_mode_time_series(np.asarray(result.phi_t), result.selection, method=mode_method_base)
             gamma, omega = fit_growth_rate(signal=signal, t=t, tmin=args.tmin, tmax=args.tmax)
-            return _replace_result(result, gamma=float(gamma), omega=float(omega))
+            return _replace_result(
+                result,
+                gamma=float(gamma),
+                omega=float(omega),
+                fit_window_tmin=float(args.tmin),
+                fit_window_tmax=float(args.tmax),
+            )
         except ValueError:
             pass
 
@@ -464,12 +513,20 @@ def _recompute_time_history_growth(args, result, *, mode_method: str):
             t,
             result.selection,
             navg_fraction=float(args.gx_avg_fraction),
-            mode_method=mode_method,
+            mode_method=mode_method_base,
         )
-        return _replace_result(result, gamma=float(gamma), omega=float(omega))
+        fit_tmin = float(t[-1]) * (1.0 - float(args.gx_avg_fraction))
+        fit_tmax = float(t[-1])
+        return _replace_result(
+            result,
+            gamma=float(gamma),
+            omega=float(omega),
+            fit_window_tmin=fit_tmin,
+            fit_window_tmax=fit_tmax,
+        )
     except ValueError:
-        signal = extract_mode_time_series(np.asarray(result.phi_t), result.selection, method=mode_method)
-        gamma, omega, _tmin, _tmax = fit_growth_rate_auto(
+        signal = extract_mode_time_series(np.asarray(result.phi_t), result.selection, method=mode_method_base)
+        gamma, omega, fit_tmin, fit_tmax = fit_growth_rate_auto(
             t,
             signal,
             window_fraction=0.4,
@@ -479,7 +536,13 @@ def _recompute_time_history_growth(args, result, *, mode_method: str):
             require_positive=True,
             min_amp_fraction=0.0,
         )
-        return _replace_result(result, gamma=float(gamma), omega=float(omega))
+        return _replace_result(
+            result,
+            gamma=float(gamma),
+            omega=float(omega),
+            fit_window_tmin=float(fit_tmin),
+            fit_window_tmax=float(fit_tmax),
+        )
 
 
 def _interp_phi_t(phi_t: np.ndarray, t_src: np.ndarray, t_dst: np.ndarray) -> np.ndarray:
@@ -513,10 +576,11 @@ def _recompute_time_history_growth_on_grid(
     mode_method: str,
     t_ref: np.ndarray | None = None,
 ):
+    mode_method_base, _fit_policy = _split_mode_method_policy(mode_method)
     gamma_t = getattr(result, "gamma_t", None)
     omega_t = getattr(result, "omega_t", None)
     if (
-        mode_method in {"z_index", "max"}
+        mode_method_base in {"z_index", "max"}
         and gamma_t is not None
         and omega_t is not None
     ):
@@ -533,8 +597,18 @@ def _recompute_time_history_growth_on_grid(
             result.selection,
             navg_fraction=float(args.gx_avg_fraction),
         )
-        return _replace_result(result, gamma=float(gamma), omega=float(omega))
-    if mode_method in {"project", "svd"}:
+        fit_tmin = float(t_dst[-1]) * (1.0 - float(args.gx_avg_fraction)) if t_ref is not None else float(t_src[-1]) * (
+            1.0 - float(args.gx_avg_fraction)
+        )
+        fit_tmax = float(t_dst[-1]) if t_ref is not None else float(t_src[-1])
+        return _replace_result(
+            result,
+            gamma=float(gamma),
+            omega=float(omega),
+            fit_window_tmin=fit_tmin,
+            fit_window_tmax=fit_tmax,
+        )
+    if mode_method_base in {"project", "svd"}:
         return _recompute_time_history_growth(args, result, mode_method=mode_method)
     if t_ref is None or np.asarray(t_ref).size <= 1:
         return _recompute_time_history_growth(args, result, mode_method=mode_method)
@@ -654,6 +728,8 @@ def _candidate_row(
         "eig_overlap_prev": eig_overlap_prev,
         "branch_score": branch_score,
         "selected": bool(selected),
+        "fit_window_tmin": float(getattr(result, "fit_window_tmin", float("nan"))),
+        "fit_window_tmax": float(getattr(result, "fit_window_tmax", float("nan"))),
     }
 
 
@@ -727,7 +803,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--branch-solvers",
         type=str,
-        default="gx_time@project,gx_time@svd,gx_time@max,gx_time@z_index,krylov,time",
+        default="gx_time@project,gx_time@project_late,gx_time@svd,gx_time@svd_late,gx_time@max,gx_time@z_index,krylov,time",
         help="Comma-separated candidate solvers used when --branch-policy=gx-ref-auto. Candidates can override time/gx_time extraction with the form solver@mode_method, e.g. gx_time@max.",
     )
     parser.add_argument("--branch-gamma-weight", type=float, default=1.0)
@@ -757,7 +833,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--mode-method",
         type=str,
         default="project",
-        choices=["z_index", "max", "project", "svd"],
+        choices=["z_index", "max", "project", "svd", "project_late", "svd_late"],
         help="Mode-extraction method for GX-time/fallback fits. The default matches run_kbm_linear and projects onto the late-time KBM structure.",
     )
     parser.add_argument(
@@ -978,15 +1054,16 @@ def main() -> None:
             )
         prev_mode = mode_sp
 
-        fit_window_tmin = float("nan")
-        fit_window_tmax = float("nan")
-        t_series = np.asarray(result.t, dtype=float)
-        if t_series.size > 1 and solver_used == "gx_time":
-            fit_window_tmin = float(t_series[-1]) * (1.0 - float(args.gx_avg_fraction))
-            fit_window_tmax = float(t_series[-1])
-        elif args.tmin is not None and args.tmax is not None:
-            fit_window_tmin = float(args.tmin)
-            fit_window_tmax = float(args.tmax)
+        fit_window_tmin = float(getattr(result, "fit_window_tmin", float("nan")))
+        fit_window_tmax = float(getattr(result, "fit_window_tmax", float("nan")))
+        if not np.isfinite(fit_window_tmin) or not np.isfinite(fit_window_tmax):
+            t_series = np.asarray(result.t, dtype=float)
+            if t_series.size > 1 and solver_used == "gx_time":
+                fit_window_tmin = float(t_series[-1]) * (1.0 - float(args.gx_avg_fraction))
+                fit_window_tmax = float(t_series[-1])
+            elif args.tmin is not None and args.tmax is not None:
+                fit_window_tmin = float(args.tmin)
+                fit_window_tmax = float(args.tmax)
 
         row = {
             "ky": float(ky_val),
