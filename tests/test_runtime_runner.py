@@ -1386,7 +1386,7 @@ def test_runtime_random_multimode_init_matches_gx_c_rand_sequence() -> None:
         cfg.init.init_amp * _gx_c_rand_pairs(int(cfg.init.random_seed), len(active_modes)),
         strict=True,
     ):
-        vals = (ra + 1j * rb) * z_phase
+        vals = ((rb + 1j * ra) if kx_i == 0 else (ra + 1j * rb)) * z_phase
         expected[ky_i, kx_i, :] = vals
         if kx_i != 0:
             expected[ky_i, expected.shape[1] - kx_i, :] = (rb + 1j * ra) * z_phase
@@ -1410,6 +1410,37 @@ def test_runtime_gx_centered_random_pairs_match_glibc_reference() -> None:
     ref = _gx_c_rand_pairs(22, 5)
 
     assert np.allclose(vals, ref)
+
+
+def test_runtime_random_multimode_zero_kx_matches_gx_overwrite_order() -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        grid=GridConfig(Nx=6, Ny=8, Nz=4, Lx=6.28, Ly=6.28, boundary="periodic"),
+        init=InitializationConfig(
+            init_field="density",
+            init_amp=1.0,
+            gaussian_init=False,
+            init_single=False,
+            random_seed=22,
+        ),
+    )
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    grid = build_spectral_grid(cfg.grid)
+    g0 = np.asarray(
+        _build_initial_condition(
+            grid,
+            geom,
+            cfg,
+            ky_index=1,
+            kx_index=0,
+            Nl=1,
+            Nm=1,
+            nspecies=1,
+        )
+    )[0, 0, 0]
+
+    ra, rb = _gx_c_rand_pairs(22, 1)[0]
+    assert np.allclose(g0[1, 0, :], (rb + 1j * ra) * np.ones_like(g0[1, 0, :]))
 
 
 def test_runtime_nonlinear_mode_selection_respects_dealias(monkeypatch) -> None:

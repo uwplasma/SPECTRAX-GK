@@ -180,22 +180,39 @@ def test_generate_runtime_vmec_eik_uses_configured_python_interpreter(
     assert cmd[0] == "python3"
 
 
-def test_generate_runtime_vmec_eik_reuses_existing_output_without_subprocess(
+def test_generate_runtime_vmec_eik_regenerates_explicit_output_path(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     out_path = tmp_path / "geom.eik.nc"
     out_path.write_text("existing", encoding="utf-8")
     cfg = _vmec_runtime_cfg(tmp_path, geometry_file=str(out_path))
+    assert cfg.geometry.gx_repo is not None
+    gx_script = Path(cfg.geometry.gx_repo) / "geometry_modules" / "pyvmec" / "gx_geo_vmec.py"
+    gx_script.parent.mkdir(parents=True, exist_ok=True)
+    gx_script.write_text("# stub", encoding="utf-8")
 
-    def _fail(*args, **kwargs):  # type: ignore[no-untyped-def]
-        raise AssertionError("subprocess.run should not be called when the output already exists")
+    called: dict[str, object] = {}
 
-    monkeypatch.setattr("spectraxgk.vmec_eik.subprocess.run", _fail)
+    def _fake_run(cmd, check, capture_output, text, cwd):  # type: ignore[no-untyped-def]
+        called["cmd"] = cmd
+        called["cwd"] = cwd
+        out = Path(cmd[-1])
+        out.write_text("generated", encoding="utf-8")
+
+        class _Result:
+            returncode = 0
+            stdout = "ok"
+            stderr = ""
+
+        return _Result()
+
+    monkeypatch.setattr("spectraxgk.vmec_eik.subprocess.run", _fake_run)
 
     out = generate_runtime_vmec_eik(cfg)
 
     assert out == out_path.resolve()
-    assert out.read_text(encoding="utf-8") == "existing"
+    assert out.read_text(encoding="utf-8") == "generated"
+    assert called["cmd"] is not None
 
 
 def test_build_gx_vmec_geometry_request_requires_torflux(tmp_path: Path) -> None:

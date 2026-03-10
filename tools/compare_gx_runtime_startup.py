@@ -120,14 +120,14 @@ def main() -> None:
     ky_idx_gx = int(np.argmin(np.abs(ky_vals - float(args.ky))))
     gx_g_slice = _select_ky_block(gx_g, ky_idx_gx)
     gx_phi_slice = _select_ky_block(gx_phi, ky_idx_gx)
-    sp_g_slice = _select_ky_block(np.asarray(g0, dtype=np.complex64), ky_idx_gx)
-    sp_phi_slice = _select_ky_block(np.asarray(sp_fields.phi, dtype=np.complex64), ky_idx_gx)
+    sp_g_slice = _select_ky_block(np.asarray(g0, dtype=np.complex64), ky_index)
+    sp_phi_slice = _select_ky_block(np.asarray(sp_fields.phi, dtype=np.complex64), ky_index)
     _summary("g_state", gx_g_slice.astype(np.complex64), sp_g_slice)
     _summary("phi", gx_phi_slice.astype(np.complex64), sp_phi_slice)
 
     if gx_apar is not None and sp_fields.apar is not None:
         gx_apar_slice = _select_ky_block(gx_apar, ky_idx_gx)
-        sp_apar_slice = _select_ky_block(np.asarray(sp_fields.apar, dtype=np.complex64), ky_idx_gx)
+        sp_apar_slice = _select_ky_block(np.asarray(sp_fields.apar, dtype=np.complex64), ky_index)
         _summary("apar", gx_apar_slice.astype(np.complex64), sp_apar_slice)
 
 
