@@ -65,8 +65,19 @@ def test_probe_gx_kbm_extractors_main_reuses_cached_trajectory(
 
     monkeypatch.setattr(
         mod,
-        "_load_gx_omega_gamma",
-        lambda _path: (gx_time, gx_ky, gx_omega_series, 0.01, 1.4, 0.8, 0.18, 2.77778),
+        "_prepare_gx_reference",
+        lambda _path, *, ky_arg, y0_fallback: (
+            gx_time,
+            gx_ky,
+            gx_omega_series,
+            0.01,
+            1.4,
+            0.8,
+            0.18,
+            2.77778,
+            4,
+            10.0,
+        ),
     )
     monkeypatch.setattr(
         mod,

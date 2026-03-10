@@ -100,6 +100,40 @@ def _infer_y0(ky: np.ndarray) -> float:
     return 1.0 / ky_min
 
 
+def _prepare_gx_reference(
+    path: Path,
+    *,
+    ky_arg: str,
+    y0_fallback: float,
+) -> tuple[
+    np.ndarray,
+    np.ndarray,
+    np.ndarray,
+    float,
+    float | None,
+    float | None,
+    float | None,
+    float | None,
+    int,
+    float,
+]:
+    gx_time, gx_ky_full, gx_omega_series, beta, q_gx, shat_gx, eps_gx, rmaj_gx = _load_gx_omega_gamma(path)
+    nky_full = int(len(gx_ky_full))
+    if nky_full < 2:
+        raise ValueError("GX output must contain at least two positive ky points.")
+    y0 = _infer_y0(gx_ky_full) if len(gx_ky_full) > 1 else float(y0_fallback)
+    if ky_arg:
+        ky_req = np.asarray([float(k.strip()) for k in ky_arg.split(",") if k.strip()], dtype=float)
+        if ky_req.size == 0:
+            raise ValueError("No ky values parsed from --ky")
+        idx = [int(np.argmin(np.abs(gx_ky_full - k))) for k in ky_req]
+        gx_ky = gx_ky_full[idx]
+        gx_omega_series = gx_omega_series[:, idx]
+    else:
+        gx_ky = gx_ky_full
+    return gx_time, gx_ky, gx_omega_series, beta, q_gx, shat_gx, eps_gx, rmaj_gx, nky_full, y0
+
+
 def _normalize_mode(theta: np.ndarray, mode: np.ndarray) -> np.ndarray:
     finite = np.isfinite(mode)
     if not np.any(finite):
@@ -656,21 +690,13 @@ def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
 
-    gx_time, gx_ky, gx_omega_series, beta, q_gx, shat_gx, eps_gx, rmaj_gx = _load_gx_omega_gamma(args.gx)
-    nky_full = int(len(gx_ky))
-    if nky_full < 2:
-        raise ValueError("GX output must contain at least two positive ky points.")
-    if args.ky:
-        ky_req = np.asarray([float(k.strip()) for k in args.ky.split(",") if k.strip()])
-        if ky_req.size == 0:
-            raise ValueError("No ky values parsed from --ky")
-        idx = [int(np.argmin(np.abs(gx_ky - k))) for k in ky_req]
-        gx_ky = gx_ky[idx]
-        gx_omega_series = gx_omega_series[:, idx]
-
+    gx_time, gx_ky, gx_omega_series, beta, q_gx, shat_gx, eps_gx, rmaj_gx, nky_full, y0 = _prepare_gx_reference(
+        args.gx,
+        ky_arg=str(args.ky),
+        y0_fallback=float(args.y0),
+    )
     nky = int(args.nky) if args.nky is not None else nky_full
     ny = 3 * (nky - 1) + 1
-    y0 = _infer_y0(gx_ky) if len(gx_ky) > 1 else float(args.y0)
 
     if gx_omega_series.ndim != 3:
         raise ValueError(f"Unexpected GX omega series shape: {gx_omega_series.shape}")

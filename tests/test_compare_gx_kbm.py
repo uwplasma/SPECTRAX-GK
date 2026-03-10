@@ -11,6 +11,39 @@ import pandas as pd
 import pytest
 
 
+def test_compare_gx_kbm_prepare_gx_reference_preserves_full_grid_metadata(monkeypatch) -> None:
+    tools_dir = Path(__file__).resolve().parents[1] / "tools"
+    sys.path.insert(0, str(tools_dir))
+    try:
+        import compare_gx_kbm as mod
+    finally:
+        sys.path.remove(str(tools_dir))
+
+    gx_time = np.array([0.0, 1.0], dtype=float)
+    gx_ky = np.array([0.1, 0.2, 0.3, 0.4], dtype=float)
+    gx_omega_series = np.arange(2 * 4 * 2, dtype=float).reshape(2, 4, 2)
+
+    monkeypatch.setattr(
+        mod,
+        "_load_gx_omega_gamma",
+        lambda _path: (gx_time, gx_ky, gx_omega_series, 0.01, 1.4, 0.8, 0.18, 2.77778),
+    )
+
+    prepared = mod._prepare_gx_reference(Path("dummy.nc"), ky_arg="0.3", y0_fallback=10.0)
+
+    gx_time_sel, gx_ky_sel, gx_omega_sel, beta, q, shat, eps, rmaj, nky_full, y0 = prepared
+    assert np.array_equal(gx_time_sel, gx_time)
+    assert np.array_equal(gx_ky_sel, np.array([0.3]))
+    assert np.array_equal(gx_omega_sel, gx_omega_series[:, [2], :])
+    assert beta == 0.01
+    assert q == 1.4
+    assert shat == 0.8
+    assert eps == 0.18
+    assert rmaj == 2.77778
+    assert nky_full == 4
+    assert np.isclose(y0, 10.0)
+
+
 def test_compare_gx_kbm_checkpoints_partial_rows(tmp_path: Path) -> None:
     tools_dir = Path(__file__).resolve().parents[1] / "tools"
     sys.path.insert(0, str(tools_dir))
