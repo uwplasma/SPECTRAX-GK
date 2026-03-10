@@ -106,7 +106,7 @@ def main() -> int:
     args = parser.parse_args()
 
     cfg = build_w7x_nonlinear_cfg(args.geometry_file, dt=float(args.dt), t_max=float(args.t_max))
-    steps = int(args.steps) if args.steps is not None else int(round(float(args.t_max) / float(args.dt)))
+    steps = int(args.steps) if args.steps is not None else None
     result = run_runtime_nonlinear(
         cfg,
         ky_target=float(args.ky),
