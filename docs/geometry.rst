@@ -192,6 +192,10 @@ content and VMEC file timestamp, so repeated runtime or CLI calls reuse the
 same generated file unless an explicit ``geometry_file`` target is requested.
 That gives SPECTRAX-GK a parity-first VMEC path immediately, while keeping the
 native JAX geometry contract centered on ``FluxTubeGeometryData``.
+For VMEC ``fix aspect`` cases, the bridge now leaves ``x0`` unset when calling
+GX so the helper chooses the same cut that GX would choose from ``y0`` and the
+geometry itself. SPECTRAX no longer back-solves ``x0 = Lx/(2 pi)`` into the
+helper input, which was generating the wrong HSX/W7-X ``*.eik.nc`` files.
 When the GX VMEC helper depends on a different Python environment, set
 ``geometry.gx_python`` (or the ``GX_VMEC_PYTHON`` environment variable) so
 SPECTRAX launches ``gx_geo_vmec.py`` with the interpreter that has
