@@ -522,13 +522,24 @@ def test_run_kbm_linear_gx_time_uses_requested_mode_extractor(monkeypatch):
         )
         return t, phi_t, gamma_t, omega_t, diag
 
-    def _fake_growth(phi_t, t, sel, *, navg_fraction: float, mode_method: str, use_last: bool = False):
-        del phi_t, t, sel, navg_fraction, use_last
-        calls["growth_mode_method"] = mode_method
-        return 0.25, 1.5, np.zeros(2), np.zeros(2), np.zeros(2)
+    def _fake_extract(phi_t, sel, method: str = "z_index"):
+        del phi_t, sel
+        calls["extract_mode_method"] = method
+        return np.array([1.0 + 0.0j, 1.1 - 0.1j, 1.2 - 0.2j], dtype=np.complex128)
+
+    def _fake_fit_auto(t, signal, **kwargs):
+        del t, kwargs
+        calls["fit_signal_len"] = str(np.asarray(signal).shape[0])
+        return 0.25, 1.5, 0.0, 0.0
 
     monkeypatch.setattr(benchmarks, "integrate_linear_gx_diagnostics", _fake_integrate)
-    monkeypatch.setattr(benchmarks, "gx_growth_rate_from_phi", _fake_growth)
+    monkeypatch.setattr(benchmarks, "extract_mode_time_series", _fake_extract)
+    monkeypatch.setattr(benchmarks, "fit_growth_rate_auto", _fake_fit_auto)
+    monkeypatch.setattr(
+        benchmarks,
+        "gx_growth_rate_from_phi",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("unexpected GX ratio fit")),
+    )
 
     grid = GridConfig(Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2)
     cfg = KBMBaseCase(grid=grid)
@@ -544,7 +555,8 @@ def test_run_kbm_linear_gx_time_uses_requested_mode_extractor(monkeypatch):
     )
 
     assert calls["integrate_mode_method"] == "z_index"
-    assert calls["growth_mode_method"] == "project"
+    assert calls["extract_mode_method"] == "project"
+    assert calls["fit_signal_len"] == "3"
     assert np.isclose(result.gamma, 0.25)
     assert np.isclose(result.omega, 1.5)
 
@@ -768,13 +780,24 @@ def test_run_kbm_beta_scan_gx_time_keeps_project_mode(monkeypatch):
         )
         return t, phi_t, gamma_t, omega_t, diag
 
-    def _fake_growth(phi_t, t, sel, *, navg_fraction: float, mode_method: str, use_last: bool = False):
-        del phi_t, t, sel, navg_fraction, use_last
-        calls.append(f"growth:{mode_method}")
-        return 0.15, 0.9, np.zeros(2), np.zeros(2), np.zeros(2)
+    def _fake_extract(phi_t, sel, method: str = "z_index"):
+        del phi_t, sel
+        calls.append(f"extract:{method}")
+        return np.array([1.0 + 0.0j, 1.1 - 0.1j, 1.2 - 0.2j], dtype=np.complex128)
+
+    def _fake_fit_auto(t, signal, **kwargs):
+        del t, signal, kwargs
+        calls.append("fit:auto")
+        return 0.15, 0.9, 0.0, 0.0
 
     monkeypatch.setattr(benchmarks, "integrate_linear_gx_diagnostics", _fake_integrate)
-    monkeypatch.setattr(benchmarks, "gx_growth_rate_from_phi", _fake_growth)
+    monkeypatch.setattr(benchmarks, "extract_mode_time_series", _fake_extract)
+    monkeypatch.setattr(benchmarks, "fit_growth_rate_auto", _fake_fit_auto)
+    monkeypatch.setattr(
+        benchmarks,
+        "gx_growth_rate_from_phi",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("unexpected GX ratio fit")),
+    )
 
     grid = GridConfig(Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2)
     cfg = KBMBaseCase(grid=grid)
@@ -790,7 +813,7 @@ def test_run_kbm_beta_scan_gx_time_keeps_project_mode(monkeypatch):
         mode_method="project",
     )
 
-    assert calls == ["integrate:z_index", "growth:project"]
+    assert calls == ["integrate:z_index", "extract:project", "fit:auto"]
     assert np.isclose(scan.gamma[0], 0.15)
     assert np.isclose(scan.omega[0], 0.9)
 
