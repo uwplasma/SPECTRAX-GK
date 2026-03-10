@@ -258,10 +258,11 @@ Notable runtime-only keys:
 * ``[normalization] wphi_scale``: multiplicative factor applied to ``Wphi``
   diagnostics (Cyclone GX-reference uses ``1.155``).
 * ``[init] init_single`` with ``gaussian_init = false`` and ``init_single = false``:
-  initialize a GX-style random perturbation across the 2/3-resolved ``(ky,kx)``
-  spectrum.
+  initialize a GX-style random perturbation across the exact GX startup loop
+  bounds in ``(ky,kx)``.
 * ``[init] init_single`` with ``gaussian_init = true`` and ``init_single = false``:
-  initialize a GX-style Gaussian envelope across the resolved ``(ky,kx)`` modes.
+  initialize a GX-style Gaussian envelope across the same GX startup loop
+  bounds.
 * ``[init] init_single = true``:
   initialize only the selected ``(ky,kx)`` mode.
 * ``[init] init_field = "all"``: the runtime/TOML path follows GX moment
@@ -271,11 +272,11 @@ Notable runtime-only keys:
   only electron species (GX ``init_electrons_only`` behavior). If ``false``
   (default), initialize all kinetic species.
 * ``[init] random_seed``: RNG seed used for GX-style random initial conditions
-  (default ``22``, matching GX). The runtime now follows GX's C ``srand`` /
-  ``rand`` sequence and GX's positive-``kx``-major loop order when populating
-  random multi-mode perturbations, so nonlinear random-start cases use the
-  same seeded perturbation pattern as GX by default instead of merely matching
-  the distribution.
+  (default ``22``, matching GX). The runtime now follows the Linux ``glibc``
+  ``rand()`` sequence used by GX together with GX's positive-``kx``-major loop
+  order and exact startup loop bounds, so random multi-mode perturbations are
+  host-platform independent and reproduce the same seeded pattern on macOS and
+  Linux.
 * ``[init] init_file``: load a saved complex state from either the full-``ky``
   SPECTRAX layout or GX's packed positive-``ky`` layout.
 * ``[init] init_file_scale`` / ``init_file_mode``: scale a loaded restart state

@@ -13,6 +13,7 @@ import pandas as pd
 from netCDF4 import Dataset
 
 from spectraxgk.analysis import (
+    ModeSelection,
     extract_eigenfunction,
     extract_mode_time_series,
     fit_growth_rate,
@@ -170,6 +171,49 @@ def _load_gx_eigenfunction(path: Path, ky_target: float) -> tuple[np.ndarray, np
     root.close()
     mode = phi[:, 0] + 1j * phi[:, 1]
     return theta, _normalize_mode(theta, mode)
+
+
+def _trajectory_path(base_dir: Path, ky_value: float) -> Path:
+    tag = f"{float(ky_value):0.4f}".replace(".", "p")
+    return base_dir / f"kbm_ky_{tag}_trajectory.npz"
+
+
+def _save_trajectory(path: Path, result) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    gamma_t = getattr(result, "gamma_t", None)
+    omega_t = getattr(result, "omega_t", None)
+    np.savez_compressed(
+        path,
+        t=np.asarray(result.t, dtype=float),
+        phi_t=np.asarray(result.phi_t),
+        gamma_t=np.asarray(gamma_t, dtype=float) if gamma_t is not None else np.array([], dtype=float),
+        omega_t=np.asarray(omega_t, dtype=float) if omega_t is not None else np.array([], dtype=float),
+        ky=float(result.ky),
+        sel_ky=int(result.selection.ky_index),
+        sel_kx=int(result.selection.kx_index),
+        sel_z=int(result.selection.z_index),
+    )
+    return path
+
+
+def _load_trajectory(path: Path):
+    data = np.load(path, allow_pickle=False)
+    gamma_t = np.asarray(data["gamma_t"], dtype=float)
+    omega_t = np.asarray(data["omega_t"], dtype=float)
+    return SimpleNamespace(
+        t=np.asarray(data["t"], dtype=float),
+        phi_t=np.asarray(data["phi_t"]),
+        gamma=float("nan"),
+        omega=float("nan"),
+        ky=float(np.asarray(data["ky"])),
+        gamma_t=None if gamma_t.size == 0 else gamma_t,
+        omega_t=None if omega_t.size == 0 else omega_t,
+        selection=ModeSelection(
+            ky_index=int(np.asarray(data["sel_ky"])),
+            kx_index=int(np.asarray(data["sel_kx"])),
+            z_index=int(np.asarray(data["sel_z"])),
+        ),
+    )
 
 
 def _mode_overlap(lhs: np.ndarray, rhs: np.ndarray) -> float:
@@ -522,16 +566,24 @@ def _run_candidate_cached(
     if solver_name == "gx_time":
         cache_key = ("gx_time", float(ky_value), float(beta_value), args.dt, args.steps, args.method)
         if cache_key not in result_cache:
-            result_cache[cache_key] = _run_candidate(
-                args,
-                cfg,
-                ky_value,
-                beta_value,
-                solver_name,
-                mode_method_override="z_index",
-                gx_gamma=gx_gamma,
-                gx_omega=gx_omega,
-            )
+            traj_dir = getattr(args, "trajectory_dir", None)
+            reuse_traj = bool(getattr(args, "reuse_trajectory", False))
+            traj_path = None if traj_dir is None else _trajectory_path(Path(traj_dir), float(ky_value))
+            if reuse_traj and traj_path is not None and traj_path.exists():
+                result_cache[cache_key] = _load_trajectory(traj_path)
+            else:
+                result_cache[cache_key] = _run_candidate(
+                    args,
+                    cfg,
+                    ky_value,
+                    beta_value,
+                    solver_name,
+                    mode_method_override="z_index",
+                    gx_gamma=gx_gamma,
+                    gx_omega=gx_omega,
+                )
+                if traj_path is not None:
+                    _save_trajectory(traj_path, result_cache[cache_key])
         return _recompute_time_history_growth_on_grid(
             args,
             result_cache[cache_key],
@@ -651,6 +703,17 @@ def build_parser() -> argparse.ArgumentParser:
         help="Comma-separated ky values to compare (default: all from GX output)",
     )
     parser.add_argument("--sample-stride", type=int, default=1)
+    parser.add_argument(
+        "--trajectory-dir",
+        type=Path,
+        default=None,
+        help="Optional directory for cached GX-time KBM trajectory npz files.",
+    )
+    parser.add_argument(
+        "--reuse-trajectory",
+        action="store_true",
+        help="Reuse cached GX-time trajectories from --trajectory-dir when available.",
+    )
     parser.add_argument("--tmin", type=float, default=None)
     parser.add_argument("--tmax", type=float, default=None)
     parser.add_argument("--no-auto-window", action="store_true")

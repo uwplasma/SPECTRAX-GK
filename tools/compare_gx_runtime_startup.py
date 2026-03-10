@@ -13,7 +13,7 @@ from netCDF4 import Dataset
 
 from compare_gx_rhs_terms import _infer_y0, _load_bin, _load_field, _load_shape, _reshape_gx, _summary
 from spectraxgk.geometry import apply_gx_geometry_grid_defaults
-from spectraxgk.grids import build_spectral_grid, select_ky_grid
+from spectraxgk.grids import build_spectral_grid
 from spectraxgk.io import load_runtime_from_toml
 from spectraxgk.linear import build_linear_cache
 from spectraxgk.runtime import (
@@ -100,33 +100,35 @@ def main() -> None:
     grid_cfg = apply_gx_geometry_grid_defaults(geom, cfg_use.grid)
     grid_full = build_spectral_grid(grid_cfg)
     ky_index = int(np.argmin(np.abs(np.asarray(grid_full.ky) - float(args.ky))))
-    grid = select_ky_grid(grid_full, ky_index)
-    kx_index = int(np.argmin(np.abs(np.asarray(grid.kx, dtype=float) - float(args.kx_target))))
+    kx_index = int(np.argmin(np.abs(np.asarray(grid_full.kx, dtype=float) - float(args.kx_target))))
 
     params = build_runtime_linear_params(cfg_use, Nm=nm, geom=geom)
     g0 = _build_initial_condition(
-        grid,
+        grid_full,
         geom,
         cfg_use,
-        ky_index=0,
+        ky_index=ky_index,
         kx_index=kx_index,
         Nl=nl,
         Nm=nm,
         nspecies=len(_species_to_linear(cfg_use.species)),
     )
-    cache = build_linear_cache(grid, geom, params, nl, nm)
+    cache = build_linear_cache(grid_full, geom, params, nl, nm)
     term_cfg = build_runtime_term_config(cfg_use)
     sp_fields = compute_fields_cached(jnp.asarray(g0), cache, params, terms=term_cfg)
 
     ky_idx_gx = int(np.argmin(np.abs(ky_vals - float(args.ky))))
     gx_g_slice = _select_ky_block(gx_g, ky_idx_gx)
     gx_phi_slice = _select_ky_block(gx_phi, ky_idx_gx)
-    _summary("g_state", gx_g_slice.astype(np.complex64), np.asarray(g0, dtype=np.complex64))
-    _summary("phi", gx_phi_slice.astype(np.complex64), np.asarray(sp_fields.phi, dtype=np.complex64))
+    sp_g_slice = _select_ky_block(np.asarray(g0, dtype=np.complex64), ky_idx_gx)
+    sp_phi_slice = _select_ky_block(np.asarray(sp_fields.phi, dtype=np.complex64), ky_idx_gx)
+    _summary("g_state", gx_g_slice.astype(np.complex64), sp_g_slice)
+    _summary("phi", gx_phi_slice.astype(np.complex64), sp_phi_slice)
 
     if gx_apar is not None and sp_fields.apar is not None:
         gx_apar_slice = _select_ky_block(gx_apar, ky_idx_gx)
-        _summary("apar", gx_apar_slice.astype(np.complex64), np.asarray(sp_fields.apar, dtype=np.complex64))
+        sp_apar_slice = _select_ky_block(np.asarray(sp_fields.apar, dtype=np.complex64), ky_idx_gx)
+        _summary("apar", gx_apar_slice.astype(np.complex64), sp_apar_slice)
 
 
 if __name__ == "__main__":
