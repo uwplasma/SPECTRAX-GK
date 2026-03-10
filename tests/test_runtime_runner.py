@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ctypes
 from dataclasses import replace
 from pathlib import Path
 
@@ -41,6 +42,23 @@ def _base_runtime_cfg() -> RuntimeConfig:
         init=InitializationConfig(init_field="density", init_amp=1.0e-8, gaussian_init=False),
         terms=RuntimeTermsConfig(hypercollisions=0.0, end_damping=0.0),
     )
+
+
+def _gx_c_rand_pairs(seed: int, count: int) -> np.ndarray:
+    libc = ctypes.CDLL(None)
+    srand = libc.srand
+    rand = libc.rand
+    srand.argtypes = [ctypes.c_uint]
+    rand.restype = ctypes.c_int
+    srand(ctypes.c_uint(int(seed)))
+    rand_max = float((1 << 31) - 1)
+    half = 0.5 * rand_max
+    inv = 1.0 / rand_max
+    out = np.empty((count, 2), dtype=float)
+    for i in range(count):
+        out[i, 0] = (float(rand()) - half) * inv
+        out[i, 1] = (float(rand()) - half) * inv
+    return out
 
 
 def test_runtime_linear_cyclone_etg_kbm_smoke() -> None:
@@ -1322,6 +1340,61 @@ def test_runtime_init_all_applies_gx_moment_scaling_multimode_random() -> None:
     assert amp_density > 0.0
     assert np.isclose(amp_tpar / amp_density, 1.0 / np.sqrt(2.0))
     assert np.isclose(amp_qpar / amp_density, 1.0 / np.sqrt(6.0))
+
+
+def test_runtime_random_multimode_init_matches_gx_c_rand_sequence() -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        grid=GridConfig(Nx=6, Ny=8, Nz=8, Lx=6.28, Ly=6.28, boundary="periodic"),
+        init=InitializationConfig(
+            init_field="density",
+            init_amp=1.0,
+            gaussian_init=False,
+            init_single=False,
+            random_seed=7,
+        ),
+    )
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    grid = build_spectral_grid(cfg.grid)
+    g0 = np.asarray(
+        _build_initial_condition(
+            grid,
+            geom,
+            cfg,
+            ky_index=1,
+            kx_index=0,
+            Nl=1,
+            Nm=1,
+            nspecies=1,
+        )
+    )[0, 0, 0]
+
+    z = np.asarray(grid.z, dtype=float)
+    z_min = float(z.min())
+    z_max = float(z.max())
+    z_period = (z_max - z_min) / (2.0 * np.pi) if z_max > z_min else 1.0
+    z_phase = np.cos(float(cfg.init.kpar_init) * z / z_period)
+    dealias = np.asarray(grid.dealias_mask, dtype=bool)
+    ky_indices = np.where(np.asarray(grid.ky) > 0.0)[0]
+    kx_indices = np.where(np.asarray(grid.kx) >= 0.0)[0]
+    active_modes = [
+        (int(kx_i), int(ky_i))
+        for kx_i in kx_indices
+        for ky_i in ky_indices
+        if dealias[ky_i, kx_i]
+    ]
+    expected = np.zeros_like(g0)
+    for (kx_i, ky_i), (ra, rb) in zip(
+        active_modes,
+        cfg.init.init_amp * _gx_c_rand_pairs(int(cfg.init.random_seed), len(active_modes)),
+        strict=True,
+    ):
+        vals = (ra + 1j * rb) * z_phase
+        expected[ky_i, kx_i, :] = vals
+        if kx_i != 0:
+            expected[ky_i, expected.shape[1] - kx_i, :] = (rb + 1j * ra) * z_phase
+
+    assert np.allclose(g0, expected)
 
 
 def test_runtime_nonlinear_mode_selection_respects_dealias(monkeypatch) -> None:

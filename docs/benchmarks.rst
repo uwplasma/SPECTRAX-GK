@@ -272,7 +272,11 @@ secondary-instability benchmark:
 The most important parity fix here was the runtime single-mode initializer:
 GX seeds ``init_single`` non-Gaussian modes as purely real amplitudes, while
 multi-mode Gaussian and random initializers use complex structure. SPECTRAX now
-follows that contract, which restores the expected early secondary growth.
+follows that contract, and the random multi-mode runtime initializer now also
+uses GX's seeded C ``rand()`` sequence and ``kx``-major fill order instead of a
+NumPy RNG surrogate. That restores the expected seeded perturbations for
+nonlinear secondary and stellarator startup comparisons instead of only
+matching the amplitude distribution.
 
 Because the fixed-pump secondary problem is exponentially unstable, the useful
 parity target is the early finite-growth window before amplitudes overflow. On
