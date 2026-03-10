@@ -16,9 +16,8 @@ from spectraxgk.grids import build_spectral_grid
 
 from compare_gx_kbm import (
     _build_cfg,
-    _infer_y0,
-    _load_gx_omega_gamma,
     _mode_metrics,
+    _prepare_gx_reference,
     _recompute_time_history_growth_on_grid,
 )
 
@@ -147,22 +146,15 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main() -> None:
     args = build_parser().parse_args()
-    gx_time, gx_ky, gx_omega_series, beta, q_gx, shat_gx, eps_gx, rmaj_gx = _load_gx_omega_gamma(args.gx)
+    gx_time, gx_ky, gx_omega_series, beta, q_gx, shat_gx, eps_gx, rmaj_gx, nky_full, y0 = _prepare_gx_reference(
+        args.gx,
+        ky_arg=str(args.ky),
+        y0_fallback=float(args.y0),
+    )
     if gx_omega_series.ndim != 3:
         raise ValueError(f"Unexpected GX omega series shape: {gx_omega_series.shape}")
-    if args.ky:
-        ky_req = np.asarray([float(k.strip()) for k in args.ky.split(",") if k.strip()], dtype=float)
-        if ky_req.size == 0:
-            raise ValueError("No ky values parsed from --ky")
-        idx = np.asarray([int(np.argmin(np.abs(gx_ky - k))) for k in ky_req], dtype=int)
-        gx_ky = gx_ky[idx]
-        gx_omega_series = gx_omega_series[:, idx]
-    nky_full = int(len(gx_ky))
-    if nky_full < 1:
-        raise ValueError("GX reference must contain at least one positive ky point.")
     nky = int(args.nky) if args.nky is not None else max(int(np.max(np.arange(nky_full) + 1)), nky_full)
     ny = 3 * (nky - 1) + 1
-    y0 = _infer_y0(gx_ky) if len(gx_ky) > 1 else float(args.y0)
 
     start = int((1.0 - float(args.gx_avg_fraction)) * gx_omega_series.shape[0])
     start = max(0, min(start, gx_omega_series.shape[0] - 1))

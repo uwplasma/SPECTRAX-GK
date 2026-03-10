@@ -404,6 +404,10 @@ projected-mode extraction used by the KBM benchmark API instead of silently
 dropping back to a midplane-only signal, and it now reuses one GX-time
 trajectory when rescoring ``project``/``svd``/``max``/``z_index`` extractors so
 the extraction audit no longer reruns identical dynamics for the same ``ky``.
+Focused ``--ky`` audits now preserve the full GX ``nky``/``y0`` metadata from
+the original reference file instead of collapsing the solver grid to the subset
+being inspected, which keeps single-``ky`` branch probes on the same flux-tube
+domain as the full benchmark table.
 The GX-aligned linear KBM helpers also now inherit GX's linked-end damping
 defaults instead of silently zeroing them, which removes another benchmark-only
 contract mismatch from the remaining branch-capture work.
