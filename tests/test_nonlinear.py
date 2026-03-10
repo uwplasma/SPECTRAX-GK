@@ -6,7 +6,8 @@ import jax.numpy as jnp
 import pytest
 
 from spectraxgk.config import CycloneBaseCase, GridConfig
-from spectraxgk.geometry import SAlphaGeometry
+from spectraxgk.geometry import SAlphaGeometry, ensure_flux_tube_geometry_data
+from spectraxgk.gx_integrators import _gx_linear_omega_max
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.linear import LinearParams, build_linear_cache
 from spectraxgk.nonlinear import (
@@ -183,6 +184,53 @@ def test_nonlinear_gx_adaptive_default_dt_max_matches_gx():
     dt_t = np.asarray(diag.dt_t, dtype=float)
     assert dt_t.size > 0
     assert np.nanmax(dt_t) <= 0.05 + 1.0e-6
+
+
+def test_nonlinear_gx_adaptive_dt_includes_linear_frequency_cap():
+    """Adaptive nonlinear dt should honor the GX linear CFL estimate even with zero nonlinear drive."""
+
+    grid_cfg = GridConfig(Nx=8, Ny=8, Nz=16, Lx=20.0, Ly=20.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    geom_eff = ensure_flux_tube_geometry_data(geom, grid.z)
+    params = LinearParams(R_over_LTi=3.0, R_over_Ln=1.0)
+    G = jnp.zeros((2, 4, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
+    terms = TermConfig(nonlinear=0.0)
+
+    cfl = 0.5
+    cfl_fac = 1.73
+    dt0 = 0.1
+    cache = build_linear_cache(grid, geom_eff, params, Nl=2, Nm=4)
+    linear_omega = _gx_linear_omega_max(
+        grid,
+        geom_eff,
+        params,
+        nl=int(cache.l.shape[0]),
+        nm=int(cache.m.shape[1]),
+        include_diamagnetic_drive=False,
+    )
+    expected_dt = cfl_fac * cfl / float(np.sum(linear_omega))
+
+    _t, diag = integrate_nonlinear_gx_diagnostics(
+        G,
+        grid,
+        geom,
+        params,
+        dt=dt0,
+        steps=2,
+        method="rk3",
+        terms=terms,
+        fixed_dt=False,
+        dt_max=dt0,
+        cfl=cfl,
+        cfl_fac=cfl_fac,
+    )
+
+    dt_t = np.asarray(diag.dt_t, dtype=float)
+    assert dt_t.size > 0
+    assert dt_t[0] == pytest.approx(expected_dt, rel=1.0e-5, abs=1.0e-8)
+    assert dt_t[0] < dt0
 
 
 @pytest.mark.parametrize("method", ["rk3", "imex"])

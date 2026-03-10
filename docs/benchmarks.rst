@@ -458,7 +458,9 @@ solve, or diagnostic post-processing on the same state. A separate runtime
 contract fix also moved the free trajectory in the right direction: when
 ``[time].cfl_fac`` is omitted, the runtime now resolves the GX method default
 (``rk3``/``sspx3`` -> ``1.73``, ``rk4`` -> ``2.82``) instead of reusing a
-generic ``1.0`` prefactor. On the tracked W7-X ``rk3`` run that reduced the
+generic ``1.0`` prefactor. The nonlinear adaptive timestepper now also applies
+the missing GX linear frequency cap in addition to the nonlinear CFL cap.
+On the tracked W7-X ``rk3`` run that reduced the
 late-window mean ``Wg`` mismatch from about ``24%`` to about ``6%``, but the
 late-time variance mismatch remains open.
 
