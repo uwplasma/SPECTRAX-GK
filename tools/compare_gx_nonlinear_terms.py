@@ -7,6 +7,7 @@ import argparse
 from dataclasses import replace
 from pathlib import Path
 import re
+from typing import Any, cast
 
 import numpy as np
 import jax
@@ -26,16 +27,23 @@ from spectraxgk.benchmarks import (
     _two_species_params,
 )
 from spectraxgk.config import GridConfig
-from spectraxgk.geometry import SAlphaGeometry
+from spectraxgk.geometry import SAlphaGeometry, apply_gx_geometry_grid_defaults
 from spectraxgk.gyroaverage import gx_laguerre_nj
 from spectraxgk.grids import build_spectral_grid, select_ky_grid
+from spectraxgk.io import load_runtime_from_toml
 from spectraxgk.linear import LinearParams, build_linear_cache
+from spectraxgk.runtime import (
+    build_runtime_geometry,
+    build_runtime_linear_params,
+    build_runtime_term_config,
+)
 from spectraxgk.terms.config import TermConfig
 from spectraxgk.terms.nonlinear import (
     _gx_j0_field,
     _laguerre_to_grid,
     nonlinear_em_components,
 )
+from compare_gx_rhs_terms import _infer_y0
 
 
 def _slice_species_params(params: LinearParams, nspec: int, *, species_index: int = 0) -> LinearParams:
@@ -65,7 +73,7 @@ def _slice_species_params(params: LinearParams, nspec: int, *, species_index: in
             continue
         if arr.shape[0] >= stop:
             updates[name] = arr[start:stop]
-    return replace(params, **updates) if updates else params
+    return cast(LinearParams, replace(params, **updates)) if updates else params  # type: ignore[arg-type]
 
 
 def _load_shape(path: Path) -> dict[str, int]:
@@ -398,10 +406,47 @@ def _grad_xy_real(
     return dF_dx, dF_dy
 
 
-def main() -> None:
+def _build_runtime_compare_context(
+    config_path: Path,
+    *,
+    nx: int,
+    ny_full: int,
+    nz: int,
+    nl: int,
+    nm: int,
+    ky_vals_nyc: np.ndarray,
+    y0_override: float | None,
+):
+    cfg, _data = load_runtime_from_toml(config_path)
+    y0_use = float(y0_override) if y0_override is not None else _infer_y0(ky_vals_nyc)
+    cfg_use = replace(
+        cfg,
+        grid=replace(
+            cfg.grid,
+            Nx=int(nx),
+            Ny=int(ny_full),
+            Nz=int(nz),
+            y0=float(y0_use),
+        ),
+    )
+    geom = build_runtime_geometry(cfg_use)
+    grid_cfg = apply_gx_geometry_grid_defaults(geom, cfg_use.grid)
+    grid = build_spectral_grid(grid_cfg)
+    params = build_runtime_linear_params(cfg_use, Nm=nm, geom=geom)
+    term_cfg = build_runtime_term_config(cfg_use)
+    return cfg_use, geom, grid, params, term_cfg
+
+
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--gx-dir", type=Path, required=True, help="Directory with GX nonlinear term dumps")
     parser.add_argument("--gx-out", type=Path, required=True, help="GX .out.nc file to map ky indices")
+    parser.add_argument(
+        "--config",
+        type=Path,
+        default=None,
+        help="Runtime TOML config. When set, geometry/physics come from the runtime path instead of --case.",
+    )
     parser.add_argument("--case", type=str, default="cyclone", choices=("cyclone", "kbm"))
     parser.add_argument("--ky", type=float, default=0.3)
     parser.add_argument("--Nl", type=int, default=48)
@@ -410,7 +455,7 @@ def main() -> None:
     parser.add_argument("--Nz", type=int, default=96)
     parser.add_argument("--Lx", type=float, default=62.8)
     parser.add_argument("--Ly", type=float, default=62.8)
-    parser.add_argument("--y0", type=float, default=20.0)
+    parser.add_argument("--y0", type=float, default=None)
     parser.add_argument("--boundary", type=str, default="linked")
     parser.add_argument("--species-index", type=int, default=0, help="Species index to compare")
     parser.add_argument("--ntheta", type=int, default=None)
@@ -422,7 +467,11 @@ def main() -> None:
         help="kx ordering for spectral arrays: native, fftshift, ifftshift, or auto",
     )
     parser.add_argument("--out", type=Path, default=None, help="Optional npz output for SPECTRAX terms")
-    args = parser.parse_args()
+    return parser
+
+
+def main() -> None:
+    args = build_parser().parse_args()
 
     shape_path = args.gx_dir / "rhs_terms_shape.txt"
     if shape_path.exists():
@@ -646,99 +695,117 @@ def main() -> None:
             )[0, 0, 0, ...]
         bpar = _expand_ky(bpar[None, ...], nyc=nyc)[0]
 
-    use_gx_spacing = ky_vals_nyc.size > 1 and kx_vals.size > 1
-    if use_gx_spacing and ky_vals_nyc.size > 1:
-        delta_ky = float(ky_vals_nyc[1] - ky_vals_nyc[0])
-        y0 = 1.0 / delta_ky if delta_ky != 0.0 else args.y0
-    else:
-        y0 = args.y0
-    if use_gx_spacing and kx_vals.size > 1:
-        delta_kx = float(kx_vals[1] - kx_vals[0])
-        Lx = float(2.0 * np.pi / delta_kx) if delta_kx != 0.0 else args.Lx
-    else:
-        Lx = args.Lx
-    if args.boundary == "linked" and y0 is not None:
-        geom_tmp = SAlphaGeometry.from_config(CycloneBaseCase().geometry)
-        theta_tmp = np.linspace(-np.pi, np.pi, nz, endpoint=False)
-        gds2_tmp, gds21_tmp, gds22_tmp = geom_tmp.metric_coeffs(theta_tmp)
-        gds21_min = float(gds21_tmp[0]) if np.ndim(gds21_tmp) else float(gds21_tmp)
-        gds22_min = float(gds22_tmp[0]) if np.ndim(gds22_tmp) else float(gds22_tmp)
-        shat = float(geom_tmp.s_hat)
-        twist_shift_geo_fac = 0.0
-        if gds22_min != 0.0:
-            twist_shift_geo_fac = float(2.0 * shat * gds21_min / gds22_min)
-        if twist_shift_geo_fac != 0.0:
-            jtwist = int(np.round(twist_shift_geo_fac))
-            if jtwist == 0:
-                jtwist = 1
-            x0 = float(y0) * abs(jtwist) / abs(twist_shift_geo_fac)
-            Lx = float(2.0 * np.pi * x0)
-    if args.case == "kbm":
-        default_cfg = KBMBaseCase()
-        ntheta_use = args.ntheta if args.ntheta is not None else default_cfg.grid.ntheta
-        nperiod_use = args.nperiod if args.nperiod is not None else default_cfg.grid.nperiod
-        cfg = KBMBaseCase(
-            grid=GridConfig(
-                Nx=nx,
-                Ny=ny_full,
-                Nz=nz,
-                Lx=Lx,
-                Ly=args.Ly,
-                boundary=args.boundary,
-                y0=y0,
-                ntheta=ntheta_use,
-                nperiod=nperiod_use,
-            )
+    cfg: Any
+    if args.config is not None:
+        cfg, geom, grid, params, term_cfg = _build_runtime_compare_context(
+            args.config,
+            nx=nx,
+            ny_full=ny_full,
+            nz=nz,
+            nl=nl,
+            nm=nm,
+            ky_vals_nyc=ky_vals_nyc,
+            y0_override=None if args.y0 is None else float(args.y0),
         )
-        geom = SAlphaGeometry.from_config(cfg.geometry)
-        grid = build_spectral_grid(cfg.grid)
         ky_index = int(np.argmin(np.abs(np.asarray(grid.ky) - float(args.ky))))
-        params = _two_species_params(
-            cfg.model,
-            kpar_scale=float(geom.gradpar()),
-            omega_d_scale=KBM_OMEGA_D_SCALE,
-            omega_star_scale=KBM_OMEGA_STAR_SCALE,
-            rho_star=KBM_RHO_STAR,
-            nhermite=nm,
-            beta_override=cfg.model.beta,
-            damp_ends_amp=0.0,
-            damp_ends_widthfrac=0.0,
-        )
         params = _slice_species_params(params, nspec, species_index=args.species_index)
     else:
-        default_cfg = CycloneBaseCase()
-        ntheta_use = args.ntheta if args.ntheta is not None else default_cfg.grid.ntheta
-        nperiod_use = args.nperiod if args.nperiod is not None else default_cfg.grid.nperiod
-        cfg = CycloneBaseCase(
-            grid=GridConfig(
-                Nx=nx,
-                Ny=ny_full,
-                Nz=nz,
-                Lx=Lx,
-                Ly=args.Ly,
-                boundary=args.boundary,
-                y0=y0,
-                ntheta=ntheta_use,
-                nperiod=nperiod_use,
+        use_gx_spacing = ky_vals_nyc.size > 1 and kx_vals.size > 1
+        if use_gx_spacing and ky_vals_nyc.size > 1:
+            delta_ky = float(ky_vals_nyc[1] - ky_vals_nyc[0])
+            y0 = 1.0 / delta_ky if delta_ky != 0.0 else args.y0
+        else:
+            y0 = args.y0
+        if use_gx_spacing and kx_vals.size > 1:
+            delta_kx = float(kx_vals[1] - kx_vals[0])
+            Lx = float(2.0 * np.pi / delta_kx) if delta_kx != 0.0 else args.Lx
+        else:
+            Lx = args.Lx
+        if args.boundary == "linked" and y0 is not None:
+            geom_tmp = SAlphaGeometry.from_config(CycloneBaseCase().geometry)
+            theta_tmp = jnp.linspace(-jnp.pi, jnp.pi, nz, endpoint=False)
+            _gds2_tmp, gds21_tmp, gds22_tmp = geom_tmp.metric_coeffs(theta_tmp)
+            gds21_min = float(gds21_tmp[0]) if np.ndim(gds21_tmp) else float(gds21_tmp)
+            gds22_min = float(gds22_tmp[0]) if np.ndim(gds22_tmp) else float(gds22_tmp)
+            shat = float(geom_tmp.s_hat)
+            twist_shift_geo_fac = 0.0
+            if gds22_min != 0.0:
+                twist_shift_geo_fac = float(2.0 * shat * gds21_min / gds22_min)
+            if twist_shift_geo_fac != 0.0:
+                jtwist = int(np.round(twist_shift_geo_fac))
+                if jtwist == 0:
+                    jtwist = 1
+                x0 = float(y0) * abs(jtwist) / abs(twist_shift_geo_fac)
+                Lx = float(2.0 * np.pi * x0)
+        default_cfg: Any
+        if args.case == "kbm":
+            default_cfg = KBMBaseCase()
+            ntheta_use = args.ntheta if args.ntheta is not None else default_cfg.grid.ntheta
+            nperiod_use = args.nperiod if args.nperiod is not None else default_cfg.grid.nperiod
+            cfg = KBMBaseCase(
+                grid=GridConfig(
+                    Nx=nx,
+                    Ny=ny_full,
+                    Nz=nz,
+                    Lx=Lx,
+                    Ly=args.Ly,
+                    boundary=args.boundary,
+                    y0=y0,
+                    ntheta=ntheta_use,
+                    nperiod=nperiod_use,
+                )
             )
-        )
-        geom = SAlphaGeometry.from_config(cfg.geometry)
-        grid = build_spectral_grid(cfg.grid)
-        ky_index = int(np.argmin(np.abs(np.asarray(grid.ky) - float(args.ky))))
-        params = LinearParams(
-            R_over_Ln=cfg.model.R_over_Ln,
-            R_over_LTi=cfg.model.R_over_LTi,
-            R_over_LTe=cfg.model.R_over_LTe,
-            omega_d_scale=CYCLONE_OMEGA_D_SCALE,
-            omega_star_scale=CYCLONE_OMEGA_STAR_SCALE,
-            rho_star=CYCLONE_RHO_STAR,
-            kpar_scale=float(geom.gradpar()),
-            nu=cfg.model.nu_i,
-            damp_ends_amp=0.0,
-            damp_ends_widthfrac=0.0,
-        )
-        params = _apply_gx_hypercollisions(params, nhermite=nm)
-        params = _slice_species_params(params, nspec, species_index=args.species_index)
+            geom = SAlphaGeometry.from_config(cfg.geometry)
+            grid = build_spectral_grid(cfg.grid)
+            ky_index = int(np.argmin(np.abs(np.asarray(grid.ky) - float(args.ky))))
+            params = _two_species_params(
+                cfg.model,
+                kpar_scale=float(geom.gradpar()),
+                omega_d_scale=KBM_OMEGA_D_SCALE,
+                omega_star_scale=KBM_OMEGA_STAR_SCALE,
+                rho_star=KBM_RHO_STAR,
+                nhermite=nm,
+                beta_override=cfg.model.beta,
+                damp_ends_amp=0.0,
+                damp_ends_widthfrac=0.0,
+            )
+            params = _slice_species_params(params, nspec, species_index=args.species_index)
+            term_cfg = TermConfig(nonlinear=1.0, apar=1.0, bpar=0.0)
+        else:
+            default_cfg = CycloneBaseCase()
+            ntheta_use = args.ntheta if args.ntheta is not None else default_cfg.grid.ntheta
+            nperiod_use = args.nperiod if args.nperiod is not None else default_cfg.grid.nperiod
+            cfg = CycloneBaseCase(
+                grid=GridConfig(
+                    Nx=nx,
+                    Ny=ny_full,
+                    Nz=nz,
+                    Lx=Lx,
+                    Ly=args.Ly,
+                    boundary=args.boundary,
+                    y0=y0,
+                    ntheta=ntheta_use,
+                    nperiod=nperiod_use,
+                )
+            )
+            geom = SAlphaGeometry.from_config(cfg.geometry)
+            grid = build_spectral_grid(cfg.grid)
+            ky_index = int(np.argmin(np.abs(np.asarray(grid.ky) - float(args.ky))))
+            params = LinearParams(
+                R_over_Ln=cfg.model.R_over_Ln,
+                R_over_LTi=cfg.model.R_over_LTi,
+                R_over_LTe=cfg.model.R_over_LTe,
+                omega_d_scale=CYCLONE_OMEGA_D_SCALE,
+                omega_star_scale=CYCLONE_OMEGA_STAR_SCALE,
+                rho_star=CYCLONE_RHO_STAR,
+                kpar_scale=float(geom.gradpar()),
+                nu=cfg.model.nu_i,
+                damp_ends_amp=0.0,
+                damp_ends_widthfrac=0.0,
+            )
+            params = _apply_gx_hypercollisions(params, nhermite=nm)
+            params = _slice_species_params(params, nspec, species_index=args.species_index)
+            term_cfg = TermConfig(nonlinear=1.0, apar=1.0, bpar=1.0)
     cache = build_linear_cache(grid, geom, params, nl, nm)
     roots_ref = cache.laguerre_roots
     if muB_roots is not None and muB_roots.size == roots_ref.size:
@@ -808,7 +875,7 @@ def main() -> None:
         phi_np = _apply_kx_order(phi_nyc, order=order, kx_axis=-2)
         apar_np = _apply_kx_order(apar[:nyc, ...], order=order, kx_axis=-2) if apar is not None else None
         kx_grid = _apply_kx_order(kx_grid_nyc, order=order, kx_axis=1)
-        b_nyc_local = cache.b[:, :nyc, :, :]
+        b_nyc_local = np.asarray(cache.b[:, :nyc, :, :])
         b_nyc_local = _apply_kx_order(b_nyc_local, order=order, kx_axis=-2)
         b_dump_local = None
         if kperp2_dump is not None and rho2s_dump is not None:
@@ -860,6 +927,10 @@ def main() -> None:
         test_dj_dy = np.asarray(dchi_dy[0])
         test_dg_dx = np.asarray(dG_dx[0]).transpose(1, 0, 2, 3, 4)
         test_dg_dy = np.asarray(dG_dy[0]).transpose(1, 0, 2, 3, 4)
+        assert ref_dj_dx is not None
+        assert ref_dj_dy is not None
+        assert ref_dg_dx is not None
+        assert ref_dg_dy is not None
         rms = (
             _rms_rel(ref_dj_dx, test_dj_dx)
             + _rms_rel(ref_dj_dy, test_dj_dy)
@@ -873,7 +944,7 @@ def main() -> None:
     if order == "auto" and have_derivs:
         candidates = ["native", "fftshift", "ifftshift"]
         scores = {cand: _compare_derivs(cand) for cand in candidates}
-        order = min(scores, key=scores.get)
+        order = min(scores, key=scores.__getitem__)
         print(f"Selected kx order: {order}")
     elif order == "auto":
         order = "native"
@@ -884,10 +955,6 @@ def main() -> None:
     )
     g_state, phi, apar, bpar, kx_grid, ky_grid = _prepare_order(order)
 
-    if args.case == "kbm":
-        term_cfg = TermConfig(nonlinear=1.0, apar=1.0, bpar=0.0)
-    else:
-        term_cfg = TermConfig(nonlinear=1.0, apar=1.0, bpar=1.0)
     b_for_comps = cache.b
     if kperp2_dump is not None and rho2s_dump is not None:
         b_dump_nyc = rho2s_dump * _apply_kx_order(kperp2_dump, order=order, kx_axis=-2)
@@ -905,8 +972,8 @@ def main() -> None:
         bpar=jnp.asarray(bpar.astype(np.complex64)) if bpar is not None else None,
         Jl=cache.Jl,
         JlB=cache.JlB,
-        tz=params.tz,
-        vth=params.vth,
+        tz=jnp.asarray(params.tz),
+        vth=jnp.asarray(params.vth),
         sqrt_m=cache.sqrt_m,
         sqrt_m_p1=cache.sqrt_m_p1,
         kx_grid=jnp.asarray(kx_grid),
@@ -1056,6 +1123,10 @@ def main() -> None:
             rms_dx_flip = _rms_rel(ref_dj_dx, -test_dj_dx)
             rms_dy_flip = _rms_rel(ref_dj_dy, -test_dj_dy)
             print(f"rms dJ0phi_dx flip={rms_dx_flip:.3e} dJ0phi_dy flip={rms_dy_flip:.3e}")
+        assert ref_dj_dx is not None
+        assert ref_dj_dy is not None
+        assert ref_dg_dx is not None
+        assert ref_dg_dy is not None
         _summary("dJ0phi_dx", ref_dj_dx, test_dj_dx)
         _summary("dJ0phi_dy", ref_dj_dy, test_dj_dy)
         _summary("dg_dx", ref_dg_dx, test_dg_dx)
@@ -1128,7 +1199,7 @@ def main() -> None:
                 roots_ref,
                 1.0,
             )
-            chi_phi_full = np.asarray(_expand_ky(chi_phi_nyc[0], nyc=nyc))
+            chi_phi_full = _expand_ky(np.asarray(chi_phi_nyc[0]), nyc=nyc)
             test_j0 = chi_phi_full[:, ky_idx, :, :]
             ref_j0 = j0phi_full[:, ky_idx, :, :]
             _summary("j0phi", ref_j0, test_j0)
@@ -1163,7 +1234,7 @@ def main() -> None:
                 roots_ref,
                 1.0,
             )
-            chi_apar_full = np.asarray(_expand_ky(chi_apar_nyc[0], nyc=nyc))
+            chi_apar_full = _expand_ky(np.asarray(chi_apar_nyc[0]), nyc=nyc)
             test_j0 = chi_apar_full[:, ky_idx, :, :]
             ref_j0 = j0apar_full[:, ky_idx, :, :]
             _summary("j0apar", ref_j0, test_j0)
