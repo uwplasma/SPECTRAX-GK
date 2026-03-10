@@ -454,7 +454,13 @@ nonlinear VMEC cases. With that fixed, the tracked W7-X audit at
 ``t ~= 32.44665203`` matches GX to roundoff on ``Wg``, ``Wphi``, heat flux,
 particle flux, ``phi``, ``k_perp^2``, and ``fluxfac``. The remaining nonlinear
 W7-X mismatch is therefore later-time dynamics, not startup, geometry, field
-solve, or diagnostic post-processing on the same state.
+solve, or diagnostic post-processing on the same state. A separate runtime
+contract fix also moved the free trajectory in the right direction: when
+``[time].cfl_fac`` is omitted, the runtime now resolves the GX method default
+(``rk3``/``sspx3`` -> ``1.73``, ``rk4`` -> ``2.82``) instead of reusing a
+generic ``1.0`` prefactor. On the tracked W7-X ``rk3`` run that reduced the
+late-window mean ``Wg`` mismatch from about ``24%`` to about ``6%``, but the
+late-time variance mismatch remains open.
 
 The matching late-time linear-term audit now uses the same runtime-configured
 imported-geometry path:
