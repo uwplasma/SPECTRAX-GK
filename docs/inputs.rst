@@ -187,6 +187,12 @@ CLI usage
    spectrax-gk scan-runtime-linear --config examples/configs/runtime_etg.toml --batch-ky
    spectrax-gk run-runtime-nonlinear --config examples/configs/runtime_cyclone.toml --sample-stride 5 --out docs/_static/nonlinear_cyclone_diag.csv
 
+For ``run-runtime-nonlinear``, omit ``--steps`` when ``fixed_dt = false`` unless
+you explicitly want a capped step count. The CLI now preserves ``steps = None``
+for adaptive nonlinear runs so the runtime can keep integrating in chunks until
+it reaches the requested ``t_max`` instead of silently reverting to the old
+``round(t_max / dt)`` ceiling.
+
 When ``run-runtime-nonlinear`` writes ``--out`` CSV diagnostics, the base columns are
 ``t,dt,gamma,omega,Wg,Wphi,Wapar,energy,heat_flux,particle_flux`` and species-resolved
 columns are appended when available:
