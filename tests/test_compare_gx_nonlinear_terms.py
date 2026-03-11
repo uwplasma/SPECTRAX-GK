@@ -104,3 +104,23 @@ def test_pick_species_dump_prefers_species_suffix(tmp_path: Path) -> None:
     picked = mod._pick_species_dump(tmp_path, "nl_total", 0)
 
     assert picked == suffixed
+
+
+def test_pick_first_existing_uses_diag_state_kxky_fallback(tmp_path: Path) -> None:
+    tools_dir = Path(__file__).resolve().parents[1] / "tools"
+    sys.path.insert(0, str(tools_dir))
+    try:
+        import compare_gx_nonlinear_terms as mod
+    finally:
+        sys.path.remove(str(tools_dir))
+
+    diag_kx = tmp_path / "diag_state_kx_t23.bin"
+    diag_ky = tmp_path / "diag_state_ky_t23.bin"
+    diag_kx.write_bytes(b"kx")
+    diag_ky.write_bytes(b"ky")
+
+    picked_kx = mod._pick_first_existing(tmp_path / "nl_kx.bin", *sorted(tmp_path.glob("diag_state_kx_t*.bin")))
+    picked_ky = mod._pick_first_existing(tmp_path / "nl_ky.bin", *sorted(tmp_path.glob("diag_state_ky_t*.bin")))
+
+    assert picked_kx == diag_kx
+    assert picked_ky == diag_ky

@@ -101,3 +101,22 @@ def test_select_gx_real_fft_ky_grid_uses_explicit_positive_dump_values():
     assert jnp.allclose(gx_grid.kx, gx_real_fft_kx(grid.kx))
     assert gx_grid.dealias_mask.shape == (gx_ky.shape[0], cfg.Nx)
     assert jnp.allclose(gx_grid.ky_grid[:, 0], gx_ky)
+
+
+def test_twothirds_mask_matches_gx_strict_cutoff():
+    """GX excludes the |k| = 1/3 shell on the padded nonlinear grid."""
+
+    cfg = GridConfig(Nx=96, Ny=96, Nz=4, Lx=2.0 * jnp.pi, Ly=96.0)
+    grid = build_spectral_grid(cfg)
+    gx_grid = select_gx_real_fft_ky_grid(grid, gx_real_fft_ky(grid.ky))
+    mask = jnp.asarray(gx_grid.dealias_mask)
+
+    # Positive ky rows retained by GX on a 96-point padded grid are 0..31.
+    assert int(mask[:, 0].sum()) == 32
+    assert bool(mask[31, 0])
+    assert not bool(mask[32, 0])
+
+    # Retained kx modes are -31..31 in FFT ordering.
+    assert int(mask[0, :].sum()) == 63
+    assert bool(mask[0, 31])
+    assert not bool(mask[0, 32])
