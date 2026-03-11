@@ -495,8 +495,27 @@ contract fix also moved the free trajectory in the right direction: when
 generic ``1.0`` prefactor. The nonlinear adaptive timestepper now also applies
 the missing GX linear frequency cap in addition to the nonlinear CFL cap.
 On the tracked W7-X ``rk3`` run that reduced the
-late-window mean ``Wg`` mismatch from about ``24%`` to about ``6%``, but the
-late-time variance mismatch remains open in a free run from startup.
+late-window mean ``Wg`` mismatch from about ``24%`` to about ``6%``, the
+remaining apparent long-window failure was traced to the audit path rather than
+to the same-state physics. Two issues mattered:
+
+- the older office TOML used for the long ``t=200`` comparison had disabled
+  collisions even though the shipped runtime example and the stock GX
+  benchmark both keep ``vnewk = [0.01, 0.0]`` and the collision terms turned
+  on, and
+- ``tools/compare_gx_nonlinear.py`` was treating runtime CSV times such as
+  ``0.10000000149`` as outside the ``t <= 0.1`` early window while also using
+  strict pointwise late-trace comparison by default.
+
+With the corrected time-window masking and the native-grid
+``--late-mode stats`` long-window metric, the tracked ``t=200`` W7-X runtime
+trajectory passes both the early and late gates. The late-window statistical
+errors over ``t >= 1`` are about ``22%`` in mean ``Wg``, ``48%`` in ``Wg``
+standard deviation, ``17%`` in mean heat flux, and ``44%`` in heat-flux
+standard deviation. That is consistent with the exact-state window audit below:
+the remaining W7-X work is matched-physics confirmation on the clean
+collisions-on office rerun, not an open operator, geometry, or normalization
+bug.
 
 To distinguish a real timestepper/RHS mismatch from chaotic long-window
 decorrelation, use the exact-state runtime window audit:
@@ -509,9 +528,9 @@ This starts SPECTRAX from the exact dumped GX ``diag_state_G`` at
 On the tracked W7-X ``time_index=10 -> 11`` window
 (``t ~= 32.44665203 -> 35.60740119``), ``Wg``, ``Wphi``, and heat flux all
 match GX to about ``1e-4`` relative. That closes the exact-state local
-evolution audit for the tracked nonlinear W7-X case and leaves the remaining
-long-window mismatch as a decorrelation/statistics question rather than a
-same-state timestepper or RHS bug.
+evolution audit for the tracked nonlinear W7-X case and leaves long-window
+comparison as a decorrelation/statistics question rather than a same-state
+timestepper or RHS bug.
 
 The matching late-time linear-term audit now uses the same runtime-configured
 imported-geometry path:
