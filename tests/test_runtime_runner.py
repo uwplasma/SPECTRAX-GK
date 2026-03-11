@@ -1120,6 +1120,14 @@ def test_runtime_linear_secondary_slab_example_runs() -> None:
     assert np.isfinite(out.omega)
 
 
+def test_runtime_rejects_cetg_reference_example() -> None:
+    cfg_path = Path(__file__).resolve().parents[1] / "examples" / "configs" / "runtime_cetg_reference.toml"
+    cfg, _ = load_runtime_from_toml(cfg_path)
+
+    with pytest.raises(NotImplementedError, match="collisional-slab ETG solver"):
+        run_runtime_nonlinear(cfg, ky_target=1.0 / 6.366, kx_target=0.0, Nl=2, Nm=1, steps=1)
+
+
 def test_runtime_linear_gx_time_root_level_geometry_matches_analytic_reference(tmp_path) -> None:
     netcdf4 = pytest.importorskip("netCDF4")
     Dataset = netcdf4.Dataset

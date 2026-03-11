@@ -197,6 +197,25 @@ requiring a local ``kh01a.out.nc`` file:
      --gx-source readme \
      --out docs/_static/secondary_gx_readme_compare.csv
 
+cETG reduced-model reference boundary
+-------------------------------------
+
+.. code-block:: bash
+
+   python tools/inspect_gx_reduced_model.py \
+     /Users/rogeriojorge/local/gx/benchmarks/nonlinear/cETG/cetg.in --json
+
+.. code-block:: bash
+
+   python -m spectraxgk.cli run-runtime-nonlinear \
+     --config examples/configs/runtime_cetg_reference.toml
+
+The second command currently raises an explicit ``NotImplementedError``. That
+is intentional: SPECTRAX-GK does not yet route GX ``cETG``/``KREHM`` benchmark
+inputs through the full-GK slab path, because that would silently compare the
+wrong equations. The runtime config and inspection tool define the benchmark
+contract that the dedicated reduced-model implementation will need to satisfy.
+
 KBM beta scan
 -------------
 

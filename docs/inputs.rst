@@ -256,6 +256,11 @@ Notable runtime-only keys:
 
 * ``[collisions] damp_ends_amp`` / ``damp_ends_widthfrac``: GX-aligned end
   damping defaults are ``0.1`` and ``0.125``.
+* ``[physics] reduced_model``: explicit physics-family selector for benchmark
+  inputs that are not full gyrokinetics. The default is ``"gyrokinetic"``.
+  ``"cetg"`` and ``"krehm"`` are accepted as explicit boundary markers, but
+  the runtime currently raises ``NotImplementedError`` for them instead of
+  silently routing those inputs through the wrong full-GK equations.
 * ``[collisions] damp_ends_scale_by_dt``: if true, interpret ``damp_ends_amp`` as
   a per-unit-time strength and scale it internally by ``1/dt`` (GX-reference
   default).
