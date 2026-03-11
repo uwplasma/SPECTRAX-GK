@@ -226,7 +226,12 @@ GX to roundoff. The remaining operator-level fixes were:
 
 With those in place, the imported VMEC/eik bridge, the late-time linear RHS,
 and the late-time nonlinear E x B diagnostics all agree with GX on the same
-dumped stellarator state.
+dumped stellarator state. The final nonlinear W7-X free-run mismatch then
+collapsed once the runtime de-alias mask matched GX exactly: the two-thirds
+cutoff must be strict (``< 1/3``), not inclusive. With that correction, the
+tracked stock-GX W7-X ``t = 200`` VMEC runtime rerun also passes the native
+late-window comparison, so the shipped nonlinear W7-X example is now closed at
+startup, exact-state, and long-horizon levels.
 
 Two user-facing entry points now exercise that bridge:
 
