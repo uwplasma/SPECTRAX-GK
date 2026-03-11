@@ -313,9 +313,11 @@ within about ``2.1e-5`` relative error. The remaining residual is in the tiny
 ``omega`` signal rather than in missing sideband growth, so the tracked CSV now
 records both relative and absolute ``omega`` errors.
 
-When stock GX cannot emit ``kh01a.out.nc`` on the current hardware/runtime
-stack, regenerate the tracked secondary comparison against the published GX
-benchmark target with:
+The tracked secondary asset now comes from a real GX ``kh01a.out.nc`` file generated on the legacy cETG-capable office checkout. Regenerate it with:
+
+- ``python tools/compare_gx_secondary.py --gx-source out-nc --gx-out .cache/gx/secondary_legacy/kh01a.out.nc --out docs/_static/secondary_gx_out_compare.csv``
+
+The README-target mode remains available as a fallback when a real GX slab out.nc file is unavailable:
 
 - ``python tools/compare_gx_secondary.py --gx-source readme --out docs/_static/secondary_gx_readme_compare.csv``
 

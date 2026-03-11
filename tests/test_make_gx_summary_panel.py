@@ -10,7 +10,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
 
-from make_gx_summary_panel import _load_secondary, _secondary_table_rows
+from make_gx_summary_panel import STATIC, _load_secondary, _secondary_table_rows, build_parser
 
 
 def test_load_secondary_adds_abs_omega_when_missing(tmp_path: Path) -> None:
@@ -47,3 +47,8 @@ def test_secondary_table_rows_format_expected_values(tmp_path: Path) -> None:
     ).to_csv(path, index=False)
     rows = _secondary_table_rows(_load_secondary(path))
     assert rows == [["(0.00, -0.05)", "4.901835", "4.901937", "2.10e-05", "-1.60e-04", "2.60e-07", "1.60e-04"]]
+
+
+def test_parser_defaults_to_real_secondary_out_nc_asset() -> None:
+    args = build_parser().parse_args([])
+    assert args.secondary_csv == STATIC / "secondary_gx_out_compare.csv"
