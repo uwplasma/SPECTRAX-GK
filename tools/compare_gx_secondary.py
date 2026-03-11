@@ -130,10 +130,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--stage1-dt", type=float, default=1.0)
     parser.add_argument("--stage1-steps", type=int, default=2)
     parser.add_argument("--stage2-dt", type=float, default=0.01)
-    parser.add_argument("--stage2-tmax", type=float, default=2.0)
+    parser.add_argument("--stage2-tmax", type=float, default=100.0)
     parser.add_argument("--restart-scale", type=float, default=500.0)
     parser.add_argument("--init-amp", type=float, default=1.0e-5)
     parser.add_argument("--sample-stride", type=int, default=20)
+    parser.add_argument("--fit-fraction", type=float, default=0.5)
     return parser
 
 
@@ -167,6 +168,7 @@ def main() -> None:
             Nl=int(args.Nl),
             Nm=int(args.Nm),
             sample_stride=int(args.sample_stride),
+            fit_fraction=float(args.fit_fraction),
         )
 
     if args.gx_source == "out-nc":
@@ -180,6 +182,8 @@ def main() -> None:
     )
     table = gx_df.merge(sp_df, on=["ky", "kx"], how="inner")
     table["gx_source"] = args.gx_source
+    table["abs_gamma"] = np.abs(table["gamma_sp"] - table["gamma_gx"])
+    table["abs_omega"] = np.abs(table["omega_sp"] - table["omega_gx"])
     table["rel_gamma"] = np.abs(table["gamma_sp"] - table["gamma_gx"]) / np.maximum(
         np.abs(table["gamma_gx"]), 1.0e-12
     )

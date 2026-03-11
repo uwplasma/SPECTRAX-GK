@@ -144,7 +144,7 @@ choices (e.g. custom ``geometry.drift_scale`` or solver selection).
    :align: center
    :alt: GX comparison summary for Cyclone and KBM
 
-   GX comparison summary panel for Cyclone and KBM, combining linear
+   GX comparison subpanel for Cyclone and KBM, combining linear
    eigenfunction overlays, linear ``k_y`` growth/frequency scans, and
    nonlinear time traces of growth rate, frequency, and heat flux.
 
@@ -153,6 +153,7 @@ Regenerate this panel with:
 - ``python tools/compare_gx_linear.py --gx /path/to/itg_salpha_adiabatic_electrons.out.nc --out docs/_static/cyclone_gx_mismatch.csv``
 - ``python tools/compare_gx_kbm.py --gx /path/to/kbm_salpha.out.nc --gx-big /path/to/kbm_salpha.big.nc --out docs/_static/kbm_gx_mismatch.csv --candidate-out docs/_static/kbm_gx_candidates.csv``
 - ``python tools/make_gx_cyclone_kbm_panel.py --out docs/_static/gx_cyclone_kbm_panel.png``
+- ``python tools/make_gx_summary_panel.py --out docs/_static/gx_summary_panel.png``
 
 For low-``ky`` KBM branch audits, ``tools/probe_gx_kbm_extractors.py`` now also
 supports explicit checkpoint horizons so a long ``gx_time`` trajectory can be
@@ -301,13 +302,16 @@ nonlinear secondary and stellarator startup comparisons instead of only
 matching the amplitude distribution.
 
 Because the fixed-pump secondary problem is exponentially unstable, the useful
-parity target is the early finite-growth window before amplitudes overflow. On
-the current staged workflow, all four nonzero tracked sidebands recover a
-short-window growth rate of about ``gamma = 4.902045`` on the GX slab grid,
-which matches the GX benchmark README target to within about ``4.3e-5``
-relative error. The tracked residual is now in ``omega`` sign/magnitude rather
-than in missing sideband growth, so late-time ``omega`` and field amplitudes
-remain under audit.
+parity target is the longest leading finite-growth window before amplitudes
+overflow. The staged helper now records the selected complex mode trace
+(``phi_mode_t``) from the nonlinear runtime path and fits ``gamma``/``omega``
+on the longest leading finite prefix instead of silently truncating the run or
+reading the last instantaneous diagnostic sample. On the tracked honest
+``t = 100`` staged workflow, all four nonzero sidebands recover
+``gamma = 4.901937`` on the GX slab grid, which matches the GX README target to
+within about ``2.1e-5`` relative error. The remaining residual is in the tiny
+``omega`` signal rather than in missing sideband growth, so the tracked CSV now
+records both relative and absolute ``omega`` errors.
 
 When stock GX cannot emit ``kh01a.out.nc`` on the current hardware/runtime
 stack, regenerate the tracked secondary comparison against the published GX
@@ -560,6 +564,29 @@ matches stock GX over the long free trajectory as well.
 
    Nonlinear W7-X VMEC runtime comparison against the stock GX benchmark
    through ``t = 200`` after closing the strict de-alias cutoff mismatch.
+
+HSX nonlinear VMEC runtime parity
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The HSX VMEC workflow now uses the same GX-backed ``vmec -> eik.nc`` bridge as
+the tracked W7-X runs, with both codes consuming the same
+``wout_HSX_QHS_vac.nc`` file. The earlier apparent HSX failure was not a core
+physics mismatch: the audit had incorrectly compared a SPECTRAX ``t = 200``
+trace against a stock-GX reference that stopped at ``t = 50``.
+
+With the horizon matched at ``t = 50``, the tracked HSX nonlinear rerun now
+passes the same early-window and late-window statistical gates used for W7-X.
+Over ``t >= 20``, the current mismatch is about ``3.5%`` in mean ``Wg``,
+``7.1%`` in ``Wg`` standard deviation, ``1.4%`` in mean ``Wphi``, ``6.1%`` in
+``Wphi`` standard deviation, ``2.7%`` in mean heat flux, and ``2.8%`` in
+heat-flux standard deviation.
+
+.. figure:: _static/hsx_nonlinear_compare_t50_true.png
+   :width: 85%
+   :align: center
+
+   Nonlinear HSX VMEC runtime comparison against the matched stock-GX
+   ``t = 50`` reference using the same VMEC ``wout`` file.
 
 KBM nonlinear term comparison (GX)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
