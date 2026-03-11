@@ -71,7 +71,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--secondary-csv",
         type=Path,
-        default=STATIC / "secondary_gx_readme_compare.csv",
+        default=STATIC / "secondary_gx_out_compare.csv",
         help="Tracked secondary comparison CSV.",
     )
     parser.add_argument(
@@ -113,7 +113,7 @@ def main() -> None:
 
     ax3 = fig.add_subplot(gs[1, 1])
     ax3.axis("off")
-    ax3.set_title("Secondary Slab (GX README target)", fontsize=14, fontweight="bold")
+    ax3.set_title("Secondary Slab (GX kh01a.out.nc)", fontsize=14, fontweight="bold")
     table = ax3.table(
         cellText=_secondary_table_rows(secondary),
         colLabels=["(ky,kx)", "γ GX", "γ S", "rel γ", "ω GX", "ω S", "|Δω|"],
@@ -128,6 +128,7 @@ def main() -> None:
         0.5,
         0.03,
         "Gamma now uses the longest leading finite selected-mode window.\n"
+        "Rows come from a real GX kh01a.out.nc reference.\n"
         "Tiny secondary omega remains under audit; absolute error is more informative than relative error here.",
         ha="center",
         va="bottom",

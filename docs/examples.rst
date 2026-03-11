@@ -188,8 +188,16 @@ The staged helper runs the linear ``kh01`` seed, writes a restart state in the
 runtime binary layout, then launches the nonlinear ``kh01a`` follow-up with the
 matching scaled additive restart and frozen pump mode controls.
 
-To compare that staged run against the published GX benchmark target without
-requiring a local ``kh01a.out.nc`` file:
+To compare that staged run against a real GX ``kh01a.out.nc`` reference:
+
+.. code-block:: bash
+
+   python tools/compare_gx_secondary.py \
+     --gx-source out-nc \
+     --gx-out .cache/gx/secondary_legacy/kh01a.out.nc \
+     --out docs/_static/secondary_gx_out_compare.csv
+
+The README-target fallback remains available when no real GX output file is present:
 
 .. code-block:: bash
 
