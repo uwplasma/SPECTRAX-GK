@@ -507,15 +507,15 @@ to the same-state physics. Two issues mattered:
   ``0.10000000149`` as outside the ``t <= 0.1`` early window while also using
   strict pointwise late-trace comparison by default.
 
-With the corrected time-window masking and the native-grid
-``--late-mode stats`` long-window metric, the tracked ``t=200`` W7-X runtime
-trajectory passes both the early and late gates. The late-window statistical
-errors over ``t >= 1`` are about ``22%`` in mean ``Wg``, ``48%`` in ``Wg``
-standard deviation, ``17%`` in mean heat flux, and ``44%`` in heat-flux
-standard deviation. That is consistent with the exact-state window audit below:
-the remaining W7-X work is matched-physics confirmation on the clean
-collisions-on office rerun, not an open operator, geometry, or normalization
-bug.
+With the corrected time-window masking, the native-grid
+``--late-mode stats`` long-window metric, and the strict GX nonlinear
+de-alias cutoff (GX excludes the exact ``|k| = 1/3`` shell), the tracked
+stock-GX ``t=200`` W7-X runtime trajectory now passes both the early and late
+gates. Over ``t >= 20``, the tracked statistical mismatch is about ``9.7%`` in
+mean ``Wg``, ``1.6%`` in ``Wg`` standard deviation, ``12.7%`` in mean
+``Wphi``, ``2.2%`` in ``Wphi`` standard deviation, ``5.7%`` in mean heat
+flux, and ``2.5%`` in heat-flux standard deviation. That closes the nonlinear
+W7-X free-run parity slice rather than leaving it as an open audit item.
 
 To distinguish a real timestepper/RHS mismatch from chaotic long-window
 decorrelation, use the exact-state runtime window audit:
@@ -549,8 +549,17 @@ audit required two GX-contract fixes in the runtime path:
 
 That removes the imported-geometry linear and nonlinear operators, geometry
 reconstruction, startup state, and diagnostic definitions from the current
-W7-X late-time parity gap. Any remaining mismatch after this point is a
-trajectory-level evolution issue rather than a same-state operator mismatch.
+W7-X late-time parity gap. The last remaining mismatch was indeed
+trajectory-level evolution, and the final missing piece there was the strict
+GX de-alias cutoff. With that fixed, the tracked nonlinear W7-X runtime now
+matches stock GX over the long free trajectory as well.
+
+.. figure:: _static/nonlinear_w7x_diag_compare_t200.png
+   :width: 85%
+   :align: center
+
+   Nonlinear W7-X VMEC runtime comparison against the stock GX benchmark
+   through ``t = 200`` after closing the strict de-alias cutoff mismatch.
 
 KBM nonlinear term comparison (GX)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
