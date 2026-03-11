@@ -70,3 +70,23 @@ def test_compare_gx_nonlinear_late_stats_handle_decorrelated_saturated_traces() 
     assert pointwise > 0.05
     assert stats["rel_mean"] < 1.0e-3
     assert stats["rel_std"] < 1.0e-2
+
+
+def test_compare_gx_nonlinear_window_mask_tolerates_runtime_time_roundoff() -> None:
+    tools_dir = Path(__file__).resolve().parents[1] / "tools"
+    sys.path.insert(0, str(tools_dir))
+    try:
+        import compare_gx_nonlinear as mod
+    finally:
+        sys.path.remove(str(tools_dir))
+
+    t = np.array([0.10000000149011612, 0.2], dtype=float)
+    y = np.array([1.0, 2.0], dtype=float)
+
+    mask = mod._window_mask(t, y, tmax=0.1)
+    rel = mod._relative_error_window(t, y, y, tmax=0.1)
+    abs_err = mod._absolute_error_window(t, y, y, tmax=0.1)
+
+    assert np.array_equal(mask, np.array([True, False]))
+    assert rel == 0.0
+    assert abs_err == 0.0
