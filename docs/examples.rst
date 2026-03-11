@@ -205,6 +205,11 @@ The README-target fallback remains available when no real GX output file is pres
      --gx-source readme \
      --out docs/_static/secondary_gx_readme_compare.csv
 
+When ``--gx-source out-nc`` is used, the helper averages the last half of the
+GX ``omega_kxkyt`` time series instead of taking the final instantaneous
+sample. That keeps the tiny secondary-frequency comparison tied to the
+steady-state plateau rather than to the last noisy point.
+
 cETG reduced-model reference boundary
 -------------------------------------
 

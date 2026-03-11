@@ -37,7 +37,22 @@ def _select_index(values: np.ndarray, target: float) -> int:
     return int(np.argmin(np.abs(np.asarray(values, dtype=float) - float(target))))
 
 
-def _load_gx_modes(path: Path, modes: tuple[tuple[float, float], ...]) -> pd.DataFrame:
+def _tail_mean(series: np.ndarray, fraction: float) -> float:
+    if not 0.0 < fraction <= 1.0:
+        raise ValueError(f"tail fraction must lie in (0, 1], got {fraction}")
+    arr = np.asarray(series, dtype=float)
+    if arr.ndim != 1 or arr.size == 0:
+        raise ValueError(f"expected 1D non-empty series, got shape {arr.shape}")
+    start = max(0, int(np.floor(arr.size * (1.0 - float(fraction)))))
+    return float(np.mean(arr[start:]))
+
+
+def _load_gx_modes(
+    path: Path,
+    modes: tuple[tuple[float, float], ...],
+    *,
+    tail_fraction: float,
+) -> pd.DataFrame:
     root = Dataset(path, "r")
     grids = root.groups["Grids"]
     diag = root.groups["Diagnostics"]
@@ -52,12 +67,14 @@ def _load_gx_modes(path: Path, modes: tuple[tuple[float, float], ...]) -> pd.Dat
     for ky_target, kx_target in modes:
         ky_i = _select_index(ky, ky_target)
         kx_i = _select_index(kx, kx_target)
+        omega_t = omega_kxkyt[:, ky_i, kx_i, 0]
+        gamma_t = omega_kxkyt[:, ky_i, kx_i, 1]
         rows.append(
             {
                 "ky": float(ky_target),
                 "kx": float(kx_target),
-                "gamma_gx": float(last[ky_i, kx_i, 1]),
-                "omega_gx": float(last[ky_i, kx_i, 0]),
+                "gamma_gx": _tail_mean(gamma_t, tail_fraction),
+                "omega_gx": _tail_mean(omega_t, tail_fraction),
             }
         )
     return pd.DataFrame(rows)
@@ -123,6 +140,12 @@ def build_parser() -> argparse.ArgumentParser:
         default="readme",
         help="Use a real GX out.nc file or the published README target table.",
     )
+    parser.add_argument(
+        "--gx-tail-fraction",
+        type=float,
+        default=0.5,
+        help="Trailing fraction of GX omega_kxkyt samples to average in out-nc mode.",
+    )
     parser.add_argument("--out", type=Path, default=None, help="Optional CSV output path.")
     parser.add_argument("--Nl", type=int, default=3)
     parser.add_argument("--Nm", type=int, default=8)
@@ -174,7 +197,7 @@ def main() -> None:
     if args.gx_source == "out-nc":
         if args.gx_out is None:
             raise ValueError("--gx-out is required when --gx-source=out-nc")
-        gx_df = _load_gx_modes(args.gx_out, modes)
+        gx_df = _load_gx_modes(args.gx_out, modes, tail_fraction=float(args.gx_tail_fraction))
     else:
         gx_df = _load_gx_readme_targets(args.gx_readme, modes)
     sp_df = pd.DataFrame([row.__dict__ for row in sp_rows]).rename(

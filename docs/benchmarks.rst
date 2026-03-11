@@ -313,7 +313,7 @@ within about ``2.1e-5`` relative error. The remaining residual is in the tiny
 ``omega`` signal rather than in missing sideband growth, so the tracked CSV now
 records both relative and absolute ``omega`` errors.
 
-The tracked secondary asset now comes from a real GX ``kh01a.out.nc`` file generated on the legacy cETG-capable office checkout. Regenerate it with:
+The tracked secondary asset now comes from a real GX ``kh01a.out.nc`` file generated on the legacy cETG-capable office checkout. In ``out-nc`` mode the helper compares against the trailing mean of GX ``omega_kxkyt`` over the last half of the recorded window, since the last instantaneous secondary-frequency sample is visibly noisier than the growth-rate plateau. Regenerate it with:
 
 - ``python tools/compare_gx_secondary.py --gx-source out-nc --gx-out .cache/gx/secondary_legacy/kh01a.out.nc --out docs/_static/secondary_gx_out_compare.csv``
 
