@@ -573,9 +573,15 @@ def main() -> None:
     ky_vals = None
     kx_vals_dump = None
     ky_vals_dump = None
-    kx_dump = args.gx_dir / "nl_kx.bin"
-    ky_dump = args.gx_dir / "nl_ky.bin"
-    if kx_dump.exists() and ky_dump.exists():
+    kx_dump = _pick_first_existing(
+        args.gx_dir / "nl_kx.bin",
+        *sorted(args.gx_dir.glob("diag_state_kx_t*.bin")),
+    )
+    ky_dump = _pick_first_existing(
+        args.gx_dir / "nl_ky.bin",
+        *sorted(args.gx_dir.glob("diag_state_ky_t*.bin")),
+    )
+    if kx_dump is not None and ky_dump is not None:
         try:
             kx_vals_dump = _load_float_bin(kx_dump, nx).astype(float)
         except ValueError:
@@ -895,6 +901,7 @@ def main() -> None:
         g_np = _apply_kx_order(g_state_nyc, order=order, kx_axis=-2)
         phi_np = _apply_kx_order(phi_nyc, order=order, kx_axis=-2)
         apar_np = _apply_kx_order(apar[:nyc, ...], order=order, kx_axis=-2) if apar is not None else None
+        bpar_np = _apply_kx_order(bpar[:nyc, ...], order=order, kx_axis=-2) if bpar is not None else None
         kx_grid = _apply_kx_order(kx_grid_nyc, order=order, kx_axis=1)
         b_nyc_local = np.asarray(cache.b[:, :nyc, :, :])
         b_nyc_local = _apply_kx_order(b_nyc_local, order=order, kx_axis=-2)
@@ -903,10 +910,10 @@ def main() -> None:
             b_dump_local = rho2s_dump * _apply_kx_order(
                 kperp2_dump[None, ...], order=order, kx_axis=-2
             )[0]
-        return g_np, phi_np, apar_np, kx_grid, ky_grid_nyc, b_nyc_local, b_dump_local
+        return g_np, phi_np, apar_np, bpar_np, kx_grid, ky_grid_nyc, b_nyc_local, b_dump_local
 
     def _compare_derivs(order: str) -> float:
-        g_np, phi_np, _apar_np, kx_grid, ky_grid, b_nyc_local, b_dump_local = _prepare_order_nyc(order)
+        g_np, phi_np, _apar_np, _bpar_np, kx_grid, ky_grid, b_nyc_local, b_dump_local = _prepare_order_nyc(order)
         kx_main_ord = _apply_kx_order_1d(kx_vals, order=order)
         kx_pad_ord = _apply_kx_order_1d(kx_vals_pad, order=order)
         ky_grid_pad_ord, kx_grid_pad_ord = np.meshgrid(ky_vals_pad, kx_pad_ord, indexing="ij")
@@ -974,7 +981,14 @@ def main() -> None:
     ky_grid_pad_ordered, kx_grid_pad_ordered = np.meshgrid(
         ky_vals_pad, kx_vals_pad_ordered, indexing="ij"
     )
-    g_state, phi, apar, bpar, kx_grid, ky_grid = _prepare_order(order)
+    (
+        g_state_cmp,
+        phi_cmp,
+        apar_cmp,
+        bpar_cmp,
+        kx_grid_cmp,
+        ky_grid_cmp,
+    ) = _prepare_order(order)
 
     b_for_comps = cache.b
     if kperp2_dump is not None and rho2s_dump is not None:
@@ -985,20 +999,20 @@ def main() -> None:
             np.broadcast_to(b_dump_full[None, ...], (ns_cache,) + b_dump_full.shape),
             dtype=cache.b.dtype,
         )
-    G = jnp.asarray(g_state.astype(np.complex64))
+    G = jnp.asarray(g_state_cmp.astype(np.complex64))
     comps = nonlinear_em_components(
         G,
-        phi=jnp.asarray(phi.astype(np.complex64)),
-        apar=jnp.asarray(apar.astype(np.complex64)) if apar is not None else None,
-        bpar=jnp.asarray(bpar.astype(np.complex64)) if bpar is not None else None,
+        phi=jnp.asarray(phi_cmp.astype(np.complex64)),
+        apar=jnp.asarray(apar_cmp.astype(np.complex64)) if apar_cmp is not None else None,
+        bpar=jnp.asarray(bpar_cmp.astype(np.complex64)) if bpar_cmp is not None else None,
         Jl=cache.Jl,
         JlB=cache.JlB,
         tz=jnp.asarray(params.tz),
         vth=jnp.asarray(params.vth),
         sqrt_m=cache.sqrt_m,
         sqrt_m_p1=cache.sqrt_m_p1,
-        kx_grid=jnp.asarray(kx_grid),
-        ky_grid=jnp.asarray(ky_grid),
+        kx_grid=jnp.asarray(kx_grid_cmp),
+        ky_grid=jnp.asarray(ky_grid_cmp),
         dealias_mask=cache.dealias_mask,
         kxfac=cache.kxfac,
         weight=term_cfg.nonlinear,
@@ -1011,7 +1025,16 @@ def main() -> None:
     )
 
     # Real-space bracket comparison if GX dump is available (use Nyc path).
-    g_nyc, phi_nyc_ord, apar_nyc_ord, kx_grid_nyc_ord, ky_grid_nyc_ord, b_nyc_ord, b_dump_ord = _prepare_order_nyc(order)
+    (
+        g_nyc,
+        phi_nyc_ord,
+        apar_nyc_ord,
+        _bpar_nyc_ord,
+        kx_grid_nyc_ord,
+        ky_grid_nyc_ord,
+        b_nyc_ord,
+        b_dump_ord,
+    ) = _prepare_order_nyc(order)
     g_mu_nyc = _laguerre_to_grid(jnp.asarray(g_nyc), cache.laguerre_to_grid)
     b_nyc = b_dump_ord[None, ...] if b_dump_ord is not None else b_nyc_ord
     if phi_pad is not None:
@@ -1068,6 +1091,7 @@ def main() -> None:
             g_nyc,
             phi_nyc_ord,
             _apar_nyc_ord,
+            _bpar_nyc_ord,
             kx_grid_nyc_ord,
             ky_grid_nyc_ord,
             b_nyc_ord,
@@ -1197,7 +1221,7 @@ def main() -> None:
             # C-order view is (j, z, x, y); transpose to (j, y, x, z).
             j0phi = raw_j0.reshape((nj, nz, nx, nyc)).transpose(0, 3, 2, 1)
             ky_idx = int(np.argmin(np.abs(ky_vals_nyc - float(args.ky))))
-            g_nyc, phi_nyc_ord, apar_nyc_ord, _, _, b_nyc_ord, b_dump_ord = _prepare_order_nyc(order)
+            g_nyc, phi_nyc_ord, apar_nyc_ord, _bpar_nyc_ord, _, _, b_nyc_ord, b_dump_ord = _prepare_order_nyc(order)
             b_nyc = b_dump_ord[None, ...] if b_dump_ord is not None else b_nyc_ord
             chi_phi_nyc = _gx_j0_field(
                 jnp.asarray(phi_nyc_ord.astype(np.complex64)),
@@ -1212,7 +1236,7 @@ def main() -> None:
             # Full-ky layout (Ny): C-order view is (j, z, x, y)
             j0phi_full = raw_j0.reshape((nj, nz, nx, ny_full)).transpose(0, 3, 2, 1)
             ky_idx = int(np.argmin(np.abs(ky_vals_full - float(args.ky))))
-            g_nyc, phi_nyc_ord, apar_nyc_ord, _, _, b_nyc_ord, b_dump_ord = _prepare_order_nyc(order)
+            g_nyc, phi_nyc_ord, apar_nyc_ord, _bpar_nyc_ord, _, _, b_nyc_ord, b_dump_ord = _prepare_order_nyc(order)
             b_nyc = b_dump_ord[None, ...] if b_dump_ord is not None else b_nyc_ord
             chi_phi_nyc = _gx_j0_field(
                 jnp.asarray(phi_nyc_ord.astype(np.complex64)),
@@ -1233,7 +1257,7 @@ def main() -> None:
         if raw_j0.size == expected_nyc:
             j0apar = raw_j0.reshape((nj, nz, nx, nyc)).transpose(0, 3, 2, 1)
             ky_idx = int(np.argmin(np.abs(ky_vals_nyc - float(args.ky))))
-            g_nyc, _phi_nyc_ord, apar_nyc_ord, _, _, b_nyc_ord, b_dump_ord = _prepare_order_nyc(order)
+            g_nyc, _phi_nyc_ord, apar_nyc_ord, _bpar_nyc_ord, _, _, b_nyc_ord, b_dump_ord = _prepare_order_nyc(order)
             b_nyc = b_dump_ord[None, ...] if b_dump_ord is not None else b_nyc_ord
             chi_apar_nyc = _gx_j0_field(
                 jnp.asarray(apar_nyc_ord.astype(np.complex64)),
@@ -1247,7 +1271,7 @@ def main() -> None:
         elif raw_j0.size == expected_full:
             j0apar_full = raw_j0.reshape((nj, nz, nx, ny_full)).transpose(0, 3, 2, 1)
             ky_idx = int(np.argmin(np.abs(ky_vals_full - float(args.ky))))
-            g_nyc, _phi_nyc_ord, apar_nyc_ord, _, _, b_nyc_ord, b_dump_ord = _prepare_order_nyc(order)
+            g_nyc, _phi_nyc_ord, apar_nyc_ord, _bpar_nyc_ord, _, _, b_nyc_ord, b_dump_ord = _prepare_order_nyc(order)
             b_nyc = b_dump_ord[None, ...] if b_dump_ord is not None else b_nyc_ord
             chi_apar_nyc = _gx_j0_field(
                 jnp.asarray(apar_nyc_ord.astype(np.complex64)),
