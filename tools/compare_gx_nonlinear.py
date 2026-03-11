@@ -145,11 +145,18 @@ def _window_mask(
     tmin: float | None = None,
     tmax: float | None = None,
 ) -> np.ndarray:
+    def _bound_tol(bound: float) -> float:
+        # Runtime CSV times often carry float32 roundoff (e.g. 0.10000000149).
+        # Treat those samples as lying on the requested comparison window.
+        return max(1.0e-12, 1.0e-8 * max(1.0, abs(bound)))
+
     mask = np.isfinite(y)
     if tmin is not None:
-        mask = mask & (t >= float(tmin))
+        tmin_f = float(tmin)
+        mask = mask & (t >= (tmin_f - _bound_tol(tmin_f)))
     if tmax is not None:
-        mask = mask & (t <= float(tmax))
+        tmax_f = float(tmax)
+        mask = mask & (t <= (tmax_f + _bound_tol(tmax_f)))
     return mask
 
 
@@ -173,11 +180,7 @@ def _relative_error_window(
     tmax: float | None = None,
     eps_rel: float = 1.0e-8,
 ) -> float:
-    mask = np.isfinite(a) & np.isfinite(b)
-    if tmin is not None:
-        mask = mask & (t >= float(tmin))
-    if tmax is not None:
-        mask = mask & (t <= float(tmax))
+    mask = _window_mask(t, a, tmin=tmin, tmax=tmax) & _window_mask(t, b, tmin=tmin, tmax=tmax)
     if not np.any(mask):
         return float("nan")
     b_sel = b[mask]
@@ -202,11 +205,7 @@ def _absolute_error_window(
     tmin: float | None = None,
     tmax: float | None = None,
 ) -> float:
-    mask = np.isfinite(a) & np.isfinite(b)
-    if tmin is not None:
-        mask = mask & (t >= float(tmin))
-    if tmax is not None:
-        mask = mask & (t <= float(tmax))
+    mask = _window_mask(t, a, tmin=tmin, tmax=tmax) & _window_mask(t, b, tmin=tmin, tmax=tmax)
     if not np.any(mask):
         return float("nan")
     return float(np.nanmean(np.abs(a[mask] - b[mask])))
