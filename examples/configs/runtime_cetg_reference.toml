@@ -1,0 +1,78 @@
+[[species]]
+name = "electron"
+charge = -1.0
+mass = 2.7e-4
+density = 1.0
+temperature = 1.0
+tprim = 0.0
+fprim = 0.0
+nu = 0.0
+kinetic = true
+
+[grid]
+Nx = 128
+Ny = 128
+Nz = 48
+Lx = 39.99822788269204
+Ly = 39.99822788269204
+boundary = "periodic"
+y0 = 6.366
+z_min = -3.183
+z_max = 3.183
+ntheta = 48
+nperiod = 1
+
+[time]
+t_max = 500.0
+dt = 0.005
+method = "sspx3"
+use_diffrax = false
+fixed_dt = false
+cfl = 1.0
+sample_stride = 100
+
+[geometry]
+model = "slab"
+z0 = 3.183
+zero_shat = true
+
+[init]
+init_field = "density"
+init_amp = 1.0e-2
+gaussian_init = false
+init_single = true
+kpar_init = 1.0
+
+[physics]
+reduced_model = "cetg"
+linear = false
+nonlinear = true
+electrostatic = true
+electromagnetic = false
+adiabatic_electrons = false
+adiabatic_ions = true
+tau_e = 1.0
+beta = 0.0
+collisions = false
+hypercollisions = false
+
+[collisions]
+D_hyper = 5.0e-4
+
+[normalization]
+contract = "kinetic"
+diagnostic_norm = "gx"
+
+[terms]
+streaming = 1.0
+mirror = 0.0
+curvature = 0.0
+gradb = 0.0
+diamagnetic = 0.0
+collisions = 0.0
+hypercollisions = 0.0
+hyperdiffusion = 1.0
+end_damping = 0.0
+apar = 0.0
+bpar = 0.0
+nonlinear = 1.0

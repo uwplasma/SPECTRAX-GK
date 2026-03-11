@@ -319,6 +319,27 @@ benchmark target with:
 
 - ``python tools/compare_gx_secondary.py --gx-source readme --out docs/_static/secondary_gx_readme_compare.csv``
 
+cETG reduced-model boundary
+---------------------------
+
+GX's nonlinear ``cETG`` benchmark is not a standard full-gyrokinetic slab
+case. It switches GX into the dedicated collisional-slab ETG reduced model
+(``[Collisional_slab_ETG] cetg = true``), which changes the active equations,
+field solve, and dissipation contract. SPECTRAX-GK now treats that explicitly
+instead of letting users accidentally run the benchmark through the wrong
+full-GK slab path.
+
+Reference commands:
+
+- ``python tools/inspect_gx_reduced_model.py /path/to/reference-code/benchmarks/nonlinear/cETG/cetg.in --json``
+- ``python -m spectraxgk.cli run-runtime-nonlinear --config examples/configs/runtime_cetg_reference.toml``
+
+The runtime command currently raises ``NotImplementedError`` for
+``physics.reduced_model = "cetg"``. That is the honest harness boundary until
+the dedicated reduced-model solver lands: the reference GX contract is
+available and test-covered, but SPECTRAX does not yet pretend to offer parity
+for a model it does not implement.
+
 ETG (GS2/Stella Cross-Code)
 ---------------------------
 
