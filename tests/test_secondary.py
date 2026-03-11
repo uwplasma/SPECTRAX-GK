@@ -6,6 +6,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import numpy as np
+import pytest
 
 from spectraxgk.config import GridConfig, InitializationConfig, TimeConfig
 from spectraxgk.diagnostics import GXDiagnostics
@@ -17,6 +18,7 @@ from spectraxgk.runtime_config import (
     RuntimeTermsConfig,
 )
 from spectraxgk.secondary import (
+    _leading_finite_prefix,
     build_secondary_stage2_config,
     run_secondary_modes,
     run_secondary_seed,
@@ -72,6 +74,7 @@ def test_run_secondary_modes_uses_requested_targets(monkeypatch) -> None:
                 heat_flux_t=t * 0.0,
                 particle_flux_t=t * 0.0,
                 energy_t=t * 0.0,
+                phi_mode_t=np.array([1.0 + 0.0j]),
             )
 
     def _fake_runner(*args, **kwargs):
@@ -83,6 +86,67 @@ def test_run_secondary_modes_uses_requested_targets(monkeypatch) -> None:
     assert captured == [(0.0, -0.05), (0.1, 0.05)]
     assert rows[0].gamma == 1.5
     assert rows[1].omega == -0.25
+
+
+def test_run_secondary_modes_prefers_mode_trace_fit(monkeypatch) -> None:
+    class _Result:
+        def __init__(self) -> None:
+            t = np.array([0.0, 1.0, 2.0], dtype=float)
+            signal = np.exp((2.0 - 0.25j) * t)
+            self.diagnostics = GXDiagnostics(
+                t=t,
+                dt_t=np.full_like(t, 1.0),
+                dt_mean=1.0,
+                gamma_t=np.array([0.0, 0.0, 0.0]),
+                omega_t=np.array([0.0, 0.0, 0.0]),
+                Wg_t=t * 0.0,
+                Wphi_t=t * 0.0,
+                Wapar_t=t * 0.0,
+                heat_flux_t=t * 0.0,
+                particle_flux_t=t * 0.0,
+                energy_t=t * 0.0,
+                phi_mode_t=signal,
+            )
+
+    monkeypatch.setattr("spectraxgk.secondary.run_runtime_nonlinear", lambda *args, **kwargs: _Result())
+    row = run_secondary_modes(_base_cfg(), modes=((0.1, 0.05),), Nl=3, Nm=8, fit_fraction=1.0)[0]
+    assert row.gamma == pytest.approx(2.0)
+    assert row.omega == pytest.approx(0.25)
+
+
+def test_run_secondary_modes_fits_leading_finite_prefix(monkeypatch) -> None:
+    class _Result:
+        def __init__(self) -> None:
+            t = np.array([0.0, 1.0, 2.0, 3.0], dtype=float)
+            signal = np.exp((1.5 - 0.125j) * t).astype(np.complex128)
+            signal[-1] = np.nan + 1j * np.nan
+            self.diagnostics = GXDiagnostics(
+                t=t,
+                dt_t=np.full_like(t, 1.0),
+                dt_mean=1.0,
+                gamma_t=np.array([0.0, 0.0, 0.0, 0.0]),
+                omega_t=np.array([0.0, 0.0, 0.0, 0.0]),
+                Wg_t=t * 0.0,
+                Wphi_t=t * 0.0,
+                Wapar_t=t * 0.0,
+                heat_flux_t=t * 0.0,
+                particle_flux_t=t * 0.0,
+                energy_t=t * 0.0,
+                phi_mode_t=signal,
+            )
+
+    monkeypatch.setattr("spectraxgk.secondary.run_runtime_nonlinear", lambda *args, **kwargs: _Result())
+    row = run_secondary_modes(_base_cfg(), modes=((0.1, 0.05),), Nl=3, Nm=8, fit_fraction=1.0)[0]
+    assert row.gamma == pytest.approx(1.5)
+    assert row.omega == pytest.approx(0.125)
+
+
+def test_leading_finite_prefix_stops_before_first_nan() -> None:
+    t = np.array([0.0, 1.0, 2.0, 3.0], dtype=float)
+    sig = np.array([1.0 + 0.0j, 2.0 + 0.0j, np.nan + 0.0j, 4.0 + 0.0j], dtype=np.complex128)
+    t_out, sig_out = _leading_finite_prefix(t, sig)
+    assert np.allclose(t_out, np.array([0.0, 1.0]))
+    assert np.allclose(sig_out, np.array([1.0 + 0.0j, 2.0 + 0.0j]))
 
 
 def test_secondary_stage2_sideband_grows_on_short_window() -> None:

@@ -54,3 +54,5 @@ def test_compare_gx_secondary_parser_defaults_to_readme_source() -> None:
     args = build_parser().parse_args(["--gx-readme", "README.md"])
     assert args.gx_source == "readme"
     assert args.gx_out is None
+    assert args.stage2_tmax == pytest.approx(100.0)
+    assert args.fit_fraction == pytest.approx(0.5)
