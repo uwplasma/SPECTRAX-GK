@@ -4,9 +4,10 @@ from __future__ import annotations
 
 from dataclasses import replace
 
+import jax.numpy as jnp
 import numpy as np
 
-from spectraxgk.cetg import build_cetg_model_params, cetg_fields, validate_cetg_runtime_config
+from spectraxgk.cetg import _cetg_linear_omega_max, build_cetg_model_params, cetg_fields, validate_cetg_runtime_config
 from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, TimeConfig
 from spectraxgk.geometry import SlabGeometry
 from spectraxgk.grids import build_spectral_grid
@@ -109,9 +110,24 @@ def test_build_cetg_model_params_matches_gx_defaults() -> None:
 
     assert params.tau_fac == 1.0
     assert params.z_ion == 1.0
+    assert params.z0 == np.pi
     assert params.nu_hyper == 2.0
     assert params.D_hyper == 5.0e-4
     assert params.dealias_kz is True
+
+
+def test_cetg_linear_omega_max_matches_legacy_gx_formula() -> None:
+    cfg = _base_cetg_cfg()
+    geom = SlabGeometry.from_config(cfg.geometry)
+    grid = build_spectral_grid(cfg.grid)
+    params = build_cetg_model_params(cfg, geom, Nl=2, Nm=1)
+
+    ky_max = float(grid.ky[(grid.ky.size - 1) // 3])
+    assert cfg.geometry.z0 is not None
+    kz_max = float(grid.z.size) / 3.0 / float(cfg.geometry.z0) * float(geom.gradpar())
+    cfac = 0.5 * float(params.c1) * np.sqrt(1.0 + (float(params.C12) - 1.0))
+
+    assert np.isclose(_cetg_linear_omega_max(grid, params), cfac * np.sqrt(ky_max) * kz_max)
 
 
 def test_cetg_field_solve_matches_gx_tau_bar_and_kz_dealias_scale() -> None:
@@ -124,7 +140,7 @@ def test_cetg_field_solve_matches_gx_tau_bar_and_kz_dealias_scale() -> None:
     temperature = np.zeros_like(density)
     G = np.stack([density, temperature], axis=0)[None, :, None, :, :, :]
 
-    fields = cetg_fields(G, grid, params)
+    fields = cetg_fields(jnp.asarray(G), grid, params)
 
     mask = np.asarray(grid.dealias_mask, dtype=bool)
     phi = np.asarray(fields.phi)
