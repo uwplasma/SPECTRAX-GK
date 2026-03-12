@@ -23,6 +23,28 @@ def _resolve(path: str | Path) -> Path:
     return p if p.is_absolute() else ROOT / p
 
 
+def _autocrop_image(
+    image: np.ndarray,
+    *,
+    white_threshold: float = 0.985,
+    pad_pixels: int = 12,
+) -> np.ndarray:
+    arr = np.asarray(image)
+    if arr.ndim != 3 or arr.shape[2] not in (3, 4):
+        return arr
+    rgb = arr[..., :3]
+    non_white = np.any(rgb < white_threshold, axis=2)
+    rows = np.where(np.any(non_white, axis=1))[0]
+    cols = np.where(np.any(non_white, axis=0))[0]
+    if rows.size == 0 or cols.size == 0:
+        return arr
+    r0 = max(int(rows[0]) - pad_pixels, 0)
+    r1 = min(int(rows[-1]) + pad_pixels + 1, arr.shape[0])
+    c0 = max(int(cols[0]) - pad_pixels, 0)
+    c1 = min(int(cols[-1]) + pad_pixels + 1, arr.shape[1])
+    return arr[r0:r1, c0:c1]
+
+
 def _load_secondary(path: Path) -> pd.DataFrame:
     df = pd.read_csv(path)
     required = {"ky", "kx", "gamma_gx", "gamma_sp", "rel_gamma", "omega_gx", "omega_sp"}
@@ -280,21 +302,25 @@ def main() -> None:
     hsx_linear = _load_imported_linear(hsx_linear_csv)
     cetg = _load_cetg(cetg_csv)
 
-    fig = plt.figure(figsize=(18, 20), constrained_layout=True)
-    gs = fig.add_gridspec(4, 2, height_ratios=[1.1, 1.0, 0.8, 0.8])
+    fig = plt.figure(figsize=(18, 19), constrained_layout=True)
+    gs = fig.add_gridspec(4, 2, height_ratios=[1.05, 1.0, 0.82, 0.82])
+
+    cyclone_img = _autocrop_image(mpimg.imread(cyclone_kbm), pad_pixels=16)
+    w7x_img = _autocrop_image(mpimg.imread(w7x_panel), pad_pixels=10)
+    hsx_img = _autocrop_image(mpimg.imread(hsx_panel), pad_pixels=10)
 
     ax0 = fig.add_subplot(gs[0, :])
-    ax0.imshow(mpimg.imread(cyclone_kbm))
+    ax0.imshow(cyclone_img)
     ax0.set_title("Cyclone / KBM", fontsize=14, fontweight="bold")
     ax0.axis("off")
 
     ax1 = fig.add_subplot(gs[1, 0])
-    ax1.imshow(mpimg.imread(w7x_panel))
+    ax1.imshow(w7x_img)
     ax1.set_title("W7-X Nonlinear VMEC", fontsize=14, fontweight="bold")
     ax1.axis("off")
 
     ax2 = fig.add_subplot(gs[1, 1])
-    ax2.imshow(mpimg.imread(hsx_panel))
+    ax2.imshow(hsx_img)
     ax2.set_title("HSX Nonlinear VMEC", fontsize=14, fontweight="bold")
     ax2.axis("off")
 
@@ -312,7 +338,7 @@ def main() -> None:
 
     fig.suptitle("GX-Aligned Validation Summary", fontsize=18, fontweight="bold")
     out.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(out, dpi=180)
+    fig.savefig(out, dpi=220, facecolor="white")
     print(f"saved {out}")
 
 
