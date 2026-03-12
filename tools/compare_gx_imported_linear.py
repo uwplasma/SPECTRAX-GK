@@ -112,6 +112,26 @@ def _infer_y0(ky: np.ndarray) -> float:
     return float(1.0 / np.min(positive))
 
 
+def _resolve_imported_real_fft_ny(gx_ky: np.ndarray, gx_contract: GXInputContract | None) -> int:
+    """Return the full real-FFT ``Ny`` implied by the stored GX ``ky`` grid."""
+
+    inferred = _infer_real_fft_ny(gx_ky)
+    if gx_contract is None:
+        return inferred
+    ny_input = int(gx_contract.Ny)
+    if ny_input <= 0:
+        return inferred
+    # GX input files store the dealiased positive-ky count (`nky`), while the
+    # imported SPECTRAX grid needs the full real-FFT layout represented in the
+    # NetCDF `ky` coordinate.
+    if ny_input == inferred:
+        return inferred
+    positive_ky = int(np.asarray(gx_ky)[np.asarray(gx_ky) > 0.0].size)
+    if ny_input == positive_ky or ny_input == positive_ky + 1:
+        return inferred
+    return inferred
+
+
 def _load_gx_input_contract(path: Path) -> GXInputContract:
     data = load_toml(path)
     dims = data.get("Dimensions", {})
@@ -599,7 +619,7 @@ def main() -> None:
     boundary = "linked"
     y0 = _infer_y0(gx_ky)
     nx = 1
-    ny = _infer_real_fft_ny(gx_ky)
+    ny = _resolve_imported_real_fft_ny(gx_ky, None)
     nperiod = 1
     ntheta = 0
     gx_contract: GXInputContract | None = None
@@ -620,8 +640,7 @@ def main() -> None:
         boundary = str(gx_contract.boundary)
         y0 = float(gx_contract.y0) if np.isfinite(float(gx_contract.y0)) else y0
         nx = max(1, int(gx_contract.Nx))
-        ny_input = int(gx_contract.Ny)
-        ny = ny_input if ny_input > 0 else ny
+        ny = _resolve_imported_real_fft_ny(gx_ky, gx_contract)
         nperiod = max(1, int(gx_contract.nperiod))
         ntheta_in = int(gx_contract.ntheta)
         if ntheta_in > 0:
