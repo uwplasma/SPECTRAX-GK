@@ -52,6 +52,8 @@ electromagnetic = false
 adiabatic_electrons = false
 adiabatic_ions = true
 tau_e = 1.0
+tau_fac = 1.0
+z_ion = 1.0
 beta = 0.0
 collisions = false
 hypercollisions = false
@@ -76,3 +78,6 @@ end_damping = 0.0
 apar = 0.0
 bpar = 0.0
 nonlinear = 1.0
+
+[expert]
+dealias_kz = true
