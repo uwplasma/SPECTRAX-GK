@@ -296,12 +296,16 @@ Regenerate the tracked HSX linear audit with:
    :file: _static/hsx_linear_t2_scan.csv
    :header-rows: 1
 
-This HSX linear row is still an open audit item. The refreshed clean-mainline
-comparison remains order-unity in ``gamma``/``omega`` even after the species
-contract fix, which is the signature of an extraction/integrator-contract
-mismatch rather than a geometry-file mismatch. The nonlinear HSX path already
-uses the same VMEC file successfully, so this table is being tracked as an
-honest open benchmark rather than forced into a fake parity band.
+This HSX linear row is still an open audit item, but the failure mode is now
+narrowed substantially. The generic imported-linear harness now uses the same
+GX-style initialization contract as runtime runs, including multimode random
+startup on ``fix aspect`` grids, matches the tracked GX mode by ``kx`` value
+instead of raw index, and honors the GX explicit method choice instead of
+hard-wiring RK4. Exact HSX startup-state audits on the full imported
+``(ky, kx, z)`` block now close to roundoff, so the remaining order-unity
+``gamma``/``omega`` mismatch is downstream of startup and geometry. The next
+HSX linear audit step is therefore an exact post-step/diagnostic comparison,
+not more VMEC-file or species-contract tuning.
 
 Secondary slab benchmark
 ------------------------
