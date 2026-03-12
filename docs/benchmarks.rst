@@ -187,12 +187,12 @@ By default, ``make_gx_cyclone_kbm_panel.py`` uses:
 - A GX-style time-integrated SPECTRAX KBM eigenfunction (not a standalone
   Krylov vector) so the plotted mode is selected the same way as GX.
 
-The tracked tokamak subpanel is intentionally still the older
-``s-alpha`` matched-input lane, but the clean-mainline nonlinear Cyclone Miller
-lane is now closed separately. After the Miller imported-geometry bridge and
-the root-level ``*.eiknc.nc`` open-theta fix landed, the exact late-state audit
-on the clean GX Miller run closes to roundoff, and the matched free nonlinear
-reruns pass on both the short ``t=20`` slice and the longer ``t≈122`` horizon.
+The tracked tokamak subpanel now uses the honest clean-mainline Cyclone Miller
+lane together with the tracked KBM lane. After the Miller
+imported-geometry bridge and the root-level ``*.eiknc.nc`` open-theta fix
+landed, the exact late-state audit on the clean GX Miller run closes to
+roundoff, and the matched free nonlinear reruns pass on both the short
+``t=20`` slice and the longer ``t≈122`` horizon.
 The imported-linear Miller lane is now also closed on the tracked late-sample
 branch after two generic imported-contract fixes:
 
@@ -204,9 +204,9 @@ branch after two generic imported-contract fixes:
 The refreshed raw scan is tracked in
 ``docs/_static/cyclone_miller_linear_scan.csv`` and the derived late-sample
 mismatch table in ``docs/_static/cyclone_miller_linear_mismatch.csv``. The
-current remaining tokamak publication task is therefore plumbing only: rebuild
-the tokamak subpanel so the linear row and nonlinear row both use the honest
-clean-mainline Miller contract instead of mixing benchmark families.
+tokamak publication builder now consumes those tracked Miller linear assets
+directly and pairs them with the tracked nonlinear Cyclone Miller and KBM
+comparison figures.
 
 For linear KBM acceptance, the tracked four-point table remains the primary
 asset, but the low-``ky`` branch may also be audited with the checkpoint probe
