@@ -327,20 +327,21 @@ cETG reduced-model boundary
 GX's nonlinear ``cETG`` benchmark is not a standard full-gyrokinetic slab
 case. It switches GX into the dedicated collisional-slab ETG reduced model
 (``[Collisional_slab_ETG] cetg = true``), which changes the active equations,
-field solve, and dissipation contract. SPECTRAX-GK now treats that explicitly
-instead of letting users accidentally run the benchmark through the wrong
-full-GK slab path.
+field solve, FFT normalization, and dissipation contract. SPECTRAX-GK now
+implements that model explicitly instead of letting users accidentally run the
+benchmark through the wrong full-GK slab path.
 
 Reference commands:
 
 - ``python tools/inspect_gx_reduced_model.py /Users/rogeriojorge/local/gx/benchmarks/nonlinear/cETG/cetg.in --json``
 - ``python -m spectraxgk.cli run-runtime-nonlinear --config examples/configs/runtime_cetg_reference.toml``
 
-The runtime command currently raises ``NotImplementedError`` for
-``physics.reduced_model = "cetg"``. That is the honest harness boundary until
-the dedicated reduced-model solver lands: the reference GX contract is
-available and test-covered, but SPECTRAX does not yet pretend to offer parity
-for a model it does not implement.
+The dedicated SPECTRAX cETG runtime path is now live. The important current
+parity distinction is:
+
+- exact-state/grouped-output parity against the legacy GX ``cetg_smoke.nc``
+  contract is closed
+- full time-evolution parity is still under active audit
 
 The legacy GX cETG reference lane on ``office`` is now runnable again from the
 coherent ``aed3b78b`` checkout with runtime-only callback/NetCDF fallbacks.
@@ -354,6 +355,10 @@ Its output contract is an older grouped NetCDF layout rather than a modern
 Inspect one of those files with:
 
 - ``python tools/inspect_gx_legacy_cetg.py /path/to/cetg_smoke.nc --json``
+
+For exact-state grouped-output auditing against a legacy GX restart file, use:
+
+- ``python tools/compare_gx_cetg_restart.py --gx-nc /path/to/cetg_smoke.nc --gx-restart /path/to/cetg_smoke.restart.nc --config examples/configs/runtime_cetg_reference.toml``
 
 ETG (GS2/Stella Cross-Code)
 ---------------------------
