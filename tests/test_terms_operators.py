@@ -7,6 +7,7 @@ import pytest
 
 from spectraxgk.basis import hermite_ladder_coeffs
 from spectraxgk.terms.operators import (
+    abs_z_linked_fft,
     apply_hermite_v,
     apply_hermite_v2,
     apply_laguerre_x,
@@ -84,6 +85,50 @@ def test_grad_z_linked_fft_with_inverse_permutation_matches_scatter_path() -> No
         linked_inverse_permutation=inv,
     )
     assert jnp.allclose(out_perm, out_scatter, atol=1.0e-5)
+
+
+def test_grad_z_linked_fft_restores_negative_ky_rows_by_conjugate_symmetry() -> None:
+    ny, nx, nz = 8, 4, 8
+    z = jnp.linspace(0.0, 2.0 * jnp.pi, nz, endpoint=False)
+    dz = z[1] - z[0]
+    f = jnp.zeros((ny, nx, nz), dtype=jnp.complex64)
+    f = f.at[1, 0, :].set(jnp.exp(1j * z))
+    f = f.at[1, 1, :].set((1.0 - 0.5j) * jnp.exp(1j * 2.0 * z))
+    kx_neg = jnp.asarray([0, 3, 2, 1], dtype=jnp.int32)
+    f = f.at[7, :, :].set(jnp.conj(jnp.take(f[1], kx_neg, axis=0)))
+
+    idx_map = jnp.asarray([[1, 1 + ny]], dtype=jnp.int32)
+    kz_link = 2.0 * jnp.pi * jnp.fft.fftfreq(2 * nz, d=dz)
+    out = grad_z_linked_fft(
+        f,
+        dz=dz,
+        linked_indices=(idx_map,),
+        linked_kz=(kz_link,),
+    )
+
+    assert jnp.max(jnp.abs(out[7])) > 0.0
+    assert jnp.allclose(out[7], jnp.conj(jnp.take(out[1], kx_neg, axis=0)), atol=1.0e-5)
+
+
+def test_abs_z_linked_fft_restores_negative_ky_rows_by_conjugate_symmetry() -> None:
+    ny, nx, nz = 8, 4, 8
+    z = jnp.linspace(0.0, 2.0 * jnp.pi, nz, endpoint=False)
+    f = jnp.zeros((ny, nx, nz), dtype=jnp.complex64)
+    f = f.at[1, 0, :].set(jnp.exp(1j * z))
+    f = f.at[1, 1, :].set((1.0 + 0.25j) * jnp.exp(1j * 2.0 * z))
+    kx_neg = jnp.asarray([0, 3, 2, 1], dtype=jnp.int32)
+    f = f.at[7, :, :].set(jnp.conj(jnp.take(f[1], kx_neg, axis=0)))
+
+    idx_map = jnp.asarray([[1, 1 + ny]], dtype=jnp.int32)
+    kz_link = 2.0 * jnp.pi * jnp.fft.fftfreq(2 * nz, d=z[1] - z[0])
+    out = abs_z_linked_fft(
+        f,
+        linked_indices=(idx_map,),
+        linked_kz=(kz_link,),
+    )
+
+    assert jnp.max(jnp.abs(out[7])) > 0.0
+    assert jnp.allclose(out[7], jnp.conj(jnp.take(out[1], kx_neg, axis=0)), atol=1.0e-5)
 
 
 def test_grad_z_linked_fft_validates_inputs() -> None:

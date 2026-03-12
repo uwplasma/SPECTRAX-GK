@@ -85,7 +85,7 @@ def test_linear_table_rows_formats_scan_metrics(tmp_path: Path) -> None:
         }
     ).to_csv(path, index=False)
     rows = _linear_table_rows(_load_imported_linear(path))
-    assert rows == [["0.100", "2.00e-03", "4.00e-02", "5.00e-06", "6.00e-06"]]
+    assert rows == [["0.100", "1.00e-06", "3.00e-05", "5.00e-06", "6.00e-06"]]
 
 
 def test_load_cetg_requires_expected_columns(tmp_path: Path) -> None:

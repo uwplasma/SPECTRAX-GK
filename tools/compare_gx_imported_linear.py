@@ -8,6 +8,8 @@ from dataclasses import dataclass
 from dataclasses import replace
 from pathlib import Path
 
+import jax
+import jax.numpy as jnp
 import numpy as np
 import pandas as pd
 from netCDF4 import Dataset
@@ -15,14 +17,23 @@ from netCDF4 import Dataset
 from spectraxgk.benchmarks import _apply_gx_hypercollisions
 from spectraxgk.config import GridConfig, InitializationConfig
 from spectraxgk.geometry import apply_gx_geometry_grid_defaults, load_gx_geometry_netcdf
+from spectraxgk.gyroaverage import gamma0
 from spectraxgk.grids import build_spectral_grid, select_ky_grid
 from spectraxgk.analysis import select_ky_index
-from spectraxgk.gx_integrators import GXTimeConfig, integrate_linear_gx_diagnostics
+from spectraxgk.gx_integrators import (
+    GXTimeConfig,
+    _gx_growth_rate_step,
+    _gx_midplane_index,
+    _gx_term_config,
+    _linear_explicit_step,
+    integrate_linear_gx_diagnostics,
+)
 from spectraxgk.io import load_toml
 from spectraxgk.linear import LinearTerms, build_linear_cache
 from spectraxgk.runtime import _build_initial_condition as _build_runtime_initial_condition
 from spectraxgk.runtime_config import RuntimeConfig, RuntimeSpeciesConfig
 from spectraxgk.species import Species, build_linear_params
+from spectraxgk.terms.assembly import assemble_rhs_cached
 
 
 @dataclass(frozen=True)
@@ -52,11 +63,24 @@ class GXInputContract:
     random_seed: int
     init_electrons_only: bool
     random_init: bool
+    hypercollisions: bool
+    hyper: bool
+    D_hyper: float
+    damp_ends_amp: float
+    damp_ends_widthfrac: float
 
 
 def _load_gx_reference(
     path: Path,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    def _read_ky_series(diag_group, name: str) -> np.ndarray:
+        data = np.asarray(diag_group.variables[name][:], dtype=float)
+        if data.ndim == 3:
+            if data.shape[1] == 1 or name.startswith("Wapar_"):
+                return np.asarray(data[:, 0, :], dtype=float)
+            return np.asarray(np.sum(data, axis=1), dtype=float)
+        raise ValueError(f"Unexpected shape for {name}: {data.shape}")
+
     root = Dataset(path, "r")
     try:
         grids = root.groups["Grids"]
@@ -65,9 +89,9 @@ def _load_gx_reference(
         ky = np.asarray(grids.variables["ky"][:], dtype=float)
         kx = np.asarray(grids.variables["kx"][:], dtype=float)
         omega = np.asarray(diag.variables["omega_kxkyt"][:], dtype=float)
-        Wg = np.asarray(diag.variables["Wg_kyst"][:, 0, :], dtype=float)
-        Wphi = np.asarray(diag.variables["Wphi_kyst"][:, 0, :], dtype=float)
-        Wapar = np.asarray(diag.variables["Wapar_kyst"][:, 0, :], dtype=float)
+        Wg = _read_ky_series(diag, "Wg_kyst")
+        Wphi = _read_ky_series(diag, "Wphi_kyst")
+        Wapar = _read_ky_series(diag, "Wapar_kyst")
     finally:
         root.close()
     return time, ky, kx, omega, Wg, Wphi, Wapar
@@ -98,6 +122,7 @@ def _load_gx_input_contract(path: Path) -> GXInputContract:
     species_raw = data.get("species", {})
     boltz = data.get("Boltzmann", {})
     diagnostics = data.get("Diagnostics", {})
+    dissipation = data.get("Dissipation", {})
 
     nspecies = int(dims.get("nspecies", 1))
 
@@ -163,6 +188,11 @@ def _load_gx_input_contract(path: Path) -> GXInputContract:
         random_seed=int(init.get("random_seed", 22)),
         init_electrons_only=bool(init.get("init_electrons_only", False)),
         random_init=bool(init.get("random_init", False)),
+        hypercollisions=bool(dissipation.get("hypercollisions", False)),
+        hyper=bool(dissipation.get("hyper", False)),
+        D_hyper=float(dissipation.get("D_hyper", 0.0)),
+        damp_ends_amp=float(dissipation.get("damp_ends_amp", 0.1)),
+        damp_ends_widthfrac=float(dissipation.get("damp_ends_widthfrac", 1.0 / 8.0)),
     )
 
 
@@ -250,6 +280,152 @@ def _match_local_kx_index(grid_kx: np.ndarray, gx_kx_value: float) -> int:
     return int(np.argmin(np.abs(np.asarray(grid_kx, dtype=float) - float(gx_kx_value))))
 
 
+def _select_gx_kx_index(gx_kx: np.ndarray, gx_contract: GXInputContract | None) -> int:
+    gx_kx_arr = np.asarray(gx_kx, dtype=float)
+    if gx_contract is not None and gx_contract.init_single:
+        if 0 <= int(gx_contract.ikx_single) < int(gx_kx_arr.size):
+            return int(gx_contract.ikx_single)
+    return int(np.argmin(np.abs(gx_kx_arr)))
+
+
+def _gx_fac_mask_cached(cache, *, use_dealias: bool) -> jnp.ndarray:
+    ky = jnp.asarray(cache.ky)
+    has_negative = jnp.any(ky < 0.0)
+    fac = jnp.where(has_negative, 1.0, jnp.where(ky == 0.0, 1.0, 2.0))
+    fac = fac[:, None] * jnp.ones((1, cache.kx.size), dtype=fac.dtype)
+    if use_dealias:
+        fac = fac * cache.dealias_mask.astype(fac.dtype)
+    return fac
+
+
+def _species_array(val: float | jnp.ndarray, ns: int) -> jnp.ndarray:
+    arr = jnp.asarray(val)
+    if arr.ndim == 0:
+        return jnp.broadcast_to(arr, (ns,))
+    return arr
+
+
+def _gx_Wg_by_ky(G: jnp.ndarray, cache, params, vol_fac: jnp.ndarray, *, use_dealias: bool = True) -> jnp.ndarray:
+    Gs = G if G.ndim == 6 else G[None, ...]
+    ns = Gs.shape[0]
+    nt = _species_array(params.density, ns) * _species_array(params.temp, ns)
+    fac = _gx_fac_mask_cached(cache, use_dealias=use_dealias)
+    weight = fac[:, :, None] * vol_fac[None, None, :]
+    contrib = 0.5 * (jnp.abs(Gs) ** 2) * nt[:, None, None, None, None, None]
+    contrib = contrib * weight[None, None, None, :, :, :]
+    return jnp.sum(contrib, axis=(0, 1, 2, 4, 5))
+
+
+def _gx_Wphi_by_ky(phi: jnp.ndarray, cache, params, vol_fac: jnp.ndarray, *, use_dealias: bool = True) -> jnp.ndarray:
+    fac = _gx_fac_mask_cached(cache, use_dealias=use_dealias)
+    weight = fac[:, :, None] * vol_fac[None, None, :]
+    rho = jnp.asarray(params.rho)
+    if rho.ndim == 0:
+        rho = rho[None]
+    phi2 = jnp.abs(phi) ** 2
+    wphi = jnp.zeros((phi.shape[0],), dtype=jnp.real(phi).dtype)
+    for rho_s in rho:
+        b = cache.kperp2 * (rho_s * rho_s)
+        contrib = 0.5 * phi2 * (1.0 - gamma0(b)) * weight
+        wphi = wphi + jnp.sum(contrib, axis=(1, 2))
+    return wphi
+
+
+def _gx_Wapar_by_ky(apar: jnp.ndarray, cache, vol_fac: jnp.ndarray, *, use_dealias: bool = True) -> jnp.ndarray:
+    fac = _gx_fac_mask_cached(cache, use_dealias=use_dealias)
+    weight = fac[:, :, None] * vol_fac[None, None, :]
+    bmag2 = cache.bmag[None, None, :] ** 2 if cache.kperp2_bmag else 1.0
+    contrib = 0.5 * (jnp.abs(apar) ** 2) * cache.kperp2 * bmag2 * weight
+    return jnp.sum(contrib, axis=(1, 2))
+
+
+def _integrate_target_mode_series(
+    *,
+    G0: jnp.ndarray,
+    grid,
+    cache,
+    params,
+    time_cfg: GXTimeConfig,
+    terms: LinearTerms,
+    mode_method: str,
+    ky_index: int,
+    kx_index: int,
+    sample_steps: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    if mode_method not in {"z_index", "max"}:
+        raise ValueError("mode_method must be 'z_index' or 'max'")
+
+    term_cfg = _gx_term_config(terms)
+    mask = jnp.asarray(grid.dealias_mask, dtype=bool)
+    z_index = _gx_midplane_index(grid.z.size)
+    dt = float(time_cfg.dt)
+    t_max = float(time_cfg.t_max)
+    sample_stride = int(max(time_cfg.sample_stride, 1))
+    vol_fac = cache.jacobian / jnp.sum(cache.jacobian)
+
+    G = jnp.asarray(G0)
+    t = 0.0
+    step = 0
+
+    _, fields0 = assemble_rhs_cached(G, cache, params, terms=term_cfg)
+    phi_prev = fields0.phi
+
+    def _step(G_state, cache_state, params_state, term_cfg_state, dt_state):
+        return _linear_explicit_step(
+            G_state,
+            cache_state,
+            params_state,
+            term_cfg_state,
+            dt_state,
+            method=time_cfg.method,
+        )
+
+    stepper = jax.jit(_step, donate_argnums=(0,))
+
+    gamma_list: list[float] = []
+    omega_list: list[float] = []
+    Wg_list: list[float] = []
+    Wphi_list: list[float] = []
+    Wapar_list: list[float] = []
+
+    while t < t_max - 1.0e-12:
+        G, fields = stepper(G, cache, params, term_cfg, dt)
+        step += 1
+        t += dt
+
+        if step % sample_stride == 0 or t >= t_max:
+            phi = fields.phi
+            apar = fields.apar if fields.apar is not None else jnp.zeros_like(phi)
+            gamma, omega = _gx_growth_rate_step(
+                phi,
+                phi_prev,
+                dt,
+                z_index=z_index,
+                mask=mask,
+                mode_method=mode_method,
+            )
+            Wg = _gx_Wg_by_ky(G, cache, params, vol_fac)
+            Wphi = _gx_Wphi_by_ky(phi, cache, params, vol_fac)
+            Wapar = _gx_Wapar_by_ky(apar, cache, vol_fac)
+            gamma_list.append(float(np.asarray(gamma)[ky_index, kx_index]))
+            omega_list.append(float(np.asarray(omega)[ky_index, kx_index]))
+            Wg_list.append(float(np.asarray(Wg)[ky_index]))
+            Wphi_list.append(float(np.asarray(Wphi)[ky_index]))
+            Wapar_list.append(float(np.asarray(Wapar)[ky_index]))
+            phi_prev = phi
+        else:
+            phi_prev = fields.phi
+
+    sample_idx = np.asarray(sample_steps, dtype=int)
+    return (
+        np.asarray(gamma_list, dtype=float)[sample_idx],
+        np.asarray(omega_list, dtype=float)[sample_idx],
+        np.asarray(Wg_list, dtype=float)[sample_idx],
+        np.asarray(Wphi_list, dtype=float)[sample_idx],
+        np.asarray(Wapar_list, dtype=float)[sample_idx],
+    )
+
+
 def _run_single_ky(
     *,
     ky_target: float,
@@ -264,6 +440,7 @@ def _run_single_ky(
     sample_steps: np.ndarray,
     mode_method: str,
     kx_index: int,
+    terms: LinearTerms,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     ky_index = select_ky_index(np.asarray(grid_full.ky), ky_target)
     G0_full = _build_imported_initial_condition(
@@ -276,29 +453,28 @@ def _run_single_ky(
         Nl=Nl,
         Nm=Nm,
     )
-    G0 = G0_full[:, :, :, ky_index : ky_index + 1, :, :]
-    grid = select_ky_grid(grid_full, ky_index)
+    use_full_grid = gx_contract is not None
+    if use_full_grid:
+        G0 = G0_full
+        grid = grid_full
+        ky_diag_index = ky_index
+    else:
+        G0 = G0_full[:, :, :, ky_index : ky_index + 1, :, :]
+        grid = select_ky_grid(grid_full, ky_index)
+        ky_diag_index = 0
     cache = build_linear_cache(grid, geom, params, Nl, Nm)
-    _t, _phi_t, gamma_t, omega_t, diag = integrate_linear_gx_diagnostics(
-        G0,
-        grid,
-        cache,
-        params,
-        geom,
-        time_cfg,
-        terms=LinearTerms(),
+    return _integrate_target_mode_series(
+        G0=G0,
+        grid=grid,
+        cache=cache,
+        params=params,
+        time_cfg=time_cfg,
+        terms=terms,
         mode_method=mode_method,
-        jit=True,
+        ky_index=ky_diag_index,
+        kx_index=kx_index,
+        sample_steps=sample_steps,
     )
-    gamma = np.asarray(gamma_t)[sample_steps, 0, 0]
-    omega = np.asarray(omega_t)[sample_steps, 0, 0]
-    Wg = np.asarray(diag.Wg_t)[sample_steps]
-    Wphi = np.asarray(diag.Wphi_t)[sample_steps]
-    Wapar = np.asarray(diag.Wapar_t)[sample_steps]
-    if np.asarray(gamma_t).ndim == 3:
-        gamma = np.asarray(gamma_t)[sample_steps, 0, kx_index]
-        omega = np.asarray(omega_t)[sample_steps, 0, kx_index]
-    return gamma, omega, Wg, Wphi, Wapar
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -404,12 +580,28 @@ def main() -> None:
         kpar_scale=float(geom.gradpar()),
         beta=beta,
     )
-    params = _apply_gx_hypercollisions(params, nhermite=args.Nm)
-    params = replace(
-        params,
-        damp_ends_amp=float(args.damp_ends_amp) / dt,
-        damp_ends_widthfrac=float(args.damp_ends_widthfrac),
-    )
+    terms = LinearTerms()
+    if gx_contract is not None:
+        if gx_contract.hypercollisions:
+            params = _apply_gx_hypercollisions(params, nhermite=args.Nm)
+        params = replace(
+            params,
+            D_hyper=float(gx_contract.D_hyper),
+            damp_ends_amp=float(gx_contract.damp_ends_amp) / dt,
+            damp_ends_widthfrac=float(gx_contract.damp_ends_widthfrac),
+        )
+        terms = replace(
+            terms,
+            hypercollisions=1.0 if gx_contract.hypercollisions else 0.0,
+            hyperdiffusion=1.0 if gx_contract.hyper else 0.0,
+        )
+    else:
+        params = _apply_gx_hypercollisions(params, nhermite=args.Nm)
+        params = replace(
+            params,
+            damp_ends_amp=float(args.damp_ends_amp) / dt,
+            damp_ends_widthfrac=float(args.damp_ends_widthfrac),
+        )
     time_cfg = GXTimeConfig(
         dt=dt,
         t_max=float(gx_time[-1]),
@@ -421,10 +613,7 @@ def main() -> None:
     rows: list[dict[str, float]] = []
     for ky_target in ky_values:
         ky_idx = int(np.argmin(np.abs(gx_ky - float(ky_target))))
-        gx_kx_idx = 0
-        if gx_omega.ndim >= 3 and gx_omega.shape[2] > 1:
-            gamma_cube = np.asarray(gx_omega[:, ky_idx, :, 1], dtype=float)
-            gx_kx_idx = int(np.nanargmax(np.abs(gamma_cube[-1])))
+        gx_kx_idx = _select_gx_kx_index(gx_kx, gx_contract)
         kx_idx = _match_local_kx_index(np.asarray(grid_full.kx), float(gx_kx[gx_kx_idx]))
         gamma, omega, Wg, Wphi, Wapar = _run_single_ky(
             ky_target=float(ky_target),
@@ -439,6 +628,7 @@ def main() -> None:
             sample_steps=sample_steps,
             mode_method=args.mode_method,
             kx_index=kx_idx,
+            terms=terms,
         )
         omega_ref = gx_omega[:, ky_idx, gx_kx_idx, 0]
         gamma_ref = gx_omega[:, ky_idx, gx_kx_idx, 1]

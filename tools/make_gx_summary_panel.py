@@ -73,8 +73,8 @@ def _linear_table_rows(df: pd.DataFrame) -> list[list[str]]:
         rows.append(
             [
                 f"{row.ky:.3f}",
-                f"{row.mean_rel_omega:.2e}",
-                f"{row.mean_rel_gamma:.2e}",
+                f"{row.mean_abs_omega:.2e}",
+                f"{row.mean_abs_gamma:.2e}",
                 f"{row.mean_rel_Wg:.2e}",
                 f"{row.mean_rel_Wphi:.2e}",
             ]
@@ -223,7 +223,7 @@ def main() -> None:
     ax3.set_title("W7-X Linear VMEC", fontsize=14, fontweight="bold")
     table = ax3.table(
         cellText=_linear_table_rows(w7x_linear),
-        colLabels=["ky", "rel ω", "rel γ", "rel Wg", "rel Wphi"],
+        colLabels=["ky", "abs ω", "abs γ", "rel Wg", "rel Wphi"],
         loc="center",
         cellLoc="center",
         colLoc="center",
@@ -237,7 +237,7 @@ def main() -> None:
     ax4.set_title("HSX Linear VMEC", fontsize=14, fontweight="bold")
     table = ax4.table(
         cellText=_linear_table_rows(hsx_linear),
-        colLabels=["ky", "rel ω", "rel γ", "rel Wg", "rel Wphi"],
+        colLabels=["ky", "abs ω", "abs γ", "rel Wg", "rel Wphi"],
         loc="center",
         cellLoc="center",
         colLoc="center",
