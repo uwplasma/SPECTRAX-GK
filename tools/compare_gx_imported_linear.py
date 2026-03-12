@@ -522,6 +522,14 @@ def _run_single_ky(
     )
 
 
+def _write_scan_rows(rows: list[dict[str, float]], out: Path | None) -> pd.DataFrame:
+    df = pd.DataFrame(rows).sort_values("ky").reset_index(drop=True)
+    if out is not None:
+        out.parent.mkdir(parents=True, exist_ok=True)
+        df.to_csv(out, index=False)
+    return df
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Compare GX linear diagnostics against SPECTRAX-GK using imported GX/VMEC geometry."
@@ -701,12 +709,11 @@ def main() -> None:
                 "gamma_ref_last": float(gamma_ref[-1]),
             }
         )
+        _write_scan_rows(rows, args.out)
 
-    df = pd.DataFrame(rows).sort_values("ky").reset_index(drop=True)
+    df = _write_scan_rows(rows, args.out)
     print(df.to_string(index=False))
     if args.out is not None:
-        args.out.parent.mkdir(parents=True, exist_ok=True)
-        df.to_csv(args.out, index=False)
         print(f"saved {args.out}")
 
 
