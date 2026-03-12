@@ -17,9 +17,12 @@ import compare_gx_imported_linear as imported_linear
 from compare_gx_imported_linear import (
     GXInputContract,
     _build_imported_initial_condition,
+    _gx_Wg_by_ky,
+    _gx_kyst_fac_mask_cached,
     _load_gx_input_contract,
     _match_local_kx_index,
     _run_single_ky,
+    _select_geometry_source,
     _select_gx_kx_index,
     build_parser,
 )
@@ -101,6 +104,7 @@ def test_load_gx_input_contract_reads_fix_aspect_and_species_contract(tmp_path: 
     assert contract.nperiod == 1
     assert contract.ntheta == 48
     assert contract.boundary == "fix aspect"
+    assert contract.geo_option == "s-alpha"
     assert contract.y0 == 21.0
     assert contract.beta == 0.01
     assert contract.tau_e == 1.0
@@ -183,6 +187,7 @@ def _dummy_gx_contract(*, init_single: bool) -> GXInputContract:
         nperiod=1,
         ntheta=8,
         boundary="periodic",
+        geo_option="s-alpha",
         y0=10.0,
         species=(Species(charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=0.0, fprim=0.0),),
         tau_e=0.0,
@@ -303,3 +308,48 @@ def test_run_single_ky_preserves_single_ky_fallback_without_gx_contract(monkeypa
     assert captured["grid_ky"] == 1
     assert captured["g_shape"][3] == 1
     assert captured["ky_index"] == 0
+
+
+def test_gx_kyst_fac_mask_cached_uses_positive_half_storage_on_full_ky_grid() -> None:
+    cache = SimpleNamespace(
+        ky=np.asarray([-0.2, 0.0, 0.2], dtype=np.float32),
+        kx=np.asarray([0.0, 0.1], dtype=np.float32),
+        dealias_mask=np.asarray([[1.0, 1.0], [1.0, 1.0], [1.0, 0.0]], dtype=np.float32),
+    )
+    fac = np.asarray(_gx_kyst_fac_mask_cached(cache, use_dealias=True), dtype=float)
+    np.testing.assert_allclose(
+        fac,
+        np.asarray(
+            [
+                [0.0, 0.0],
+                [1.0, 1.0],
+                [2.0, 0.0],
+            ],
+            dtype=float,
+        ),
+    )
+
+
+def test_gx_Wg_by_ky_matches_gx_positive_ky_storage_contract() -> None:
+    cache = SimpleNamespace(
+        ky=np.asarray([-0.2, 0.0, 0.2], dtype=np.float32),
+        kx=np.asarray([0.0], dtype=np.float32),
+        dealias_mask=np.asarray([[1.0], [1.0], [1.0]], dtype=np.float32),
+    )
+    params = SimpleNamespace(density=1.0, temp=1.0)
+    vol_fac = np.asarray([1.0], dtype=np.float32)
+    G = np.ones((1, 1, 1, 3, 1, 1), dtype=np.complex64)
+    Wg = np.asarray(_gx_Wg_by_ky(G, cache, params, vol_fac), dtype=float)
+    np.testing.assert_allclose(Wg, np.asarray([0.0, 0.5, 1.0], dtype=float))
+
+
+def test_select_geometry_source_prefers_gx_output_for_vmec_generated_runs() -> None:
+    gx_out = Path("/tmp/run.out.nc")
+    geom = Path("/tmp/run.eik.nc")
+    vmec_contract = replace(_dummy_gx_contract(init_single=False), geo_option="vmec")
+    desc_contract = replace(_dummy_gx_contract(init_single=False), geo_option="desc")
+    nc_contract = replace(_dummy_gx_contract(init_single=False), geo_option="nc")
+    assert _select_geometry_source(gx_out, geom, None) == geom
+    assert _select_geometry_source(gx_out, geom, vmec_contract) == gx_out
+    assert _select_geometry_source(gx_out, geom, desc_contract) == gx_out
+    assert _select_geometry_source(gx_out, geom, nc_contract) == geom

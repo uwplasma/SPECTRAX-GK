@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 import sys
 
+import matplotlib.pyplot as plt
 import pandas as pd
 import pytest
 
@@ -16,6 +17,9 @@ from make_gx_summary_panel import (
     _linear_table_rows,
     _load_cetg,
     _load_imported_linear,
+    _plot_cetg,
+    _plot_imported_linear,
+    _plot_secondary,
     _load_secondary,
     _secondary_table_rows,
     build_parser,
@@ -112,3 +116,63 @@ def test_cetg_table_rows_reduce_to_mean_relative_errors(tmp_path: Path) -> None:
     rows = _cetg_table_rows(_load_cetg(path))
     assert [row[0] for row in rows] == ["W", "Phi2", "qflux", "pflux"]
     assert all(row[1].endswith("e-02") or row[1].endswith("e-01") for row in rows)
+
+
+def test_plot_imported_linear_adds_lines_and_log_axis() -> None:
+    df = pd.DataFrame(
+        {
+            "ky": [0.1, 0.2],
+            "mean_abs_omega": [1.0e-6, 2.0e-6],
+            "mean_abs_gamma": [3.0e-6, 4.0e-6],
+            "mean_rel_Wg": [5.0e-5, 6.0e-5],
+            "mean_rel_Wphi": [7.0e-5, 8.0e-5],
+            "mean_rel_Wapar": [0.0, 0.0],
+        }
+    )
+    fig, ax = plt.subplots()
+    try:
+        _plot_imported_linear(ax, df, "Imported")
+        assert ax.get_yscale() == "log"
+        assert len(ax.lines) == 4
+    finally:
+        plt.close(fig)
+
+
+def test_plot_secondary_adds_gamma_lines_and_abs_omega_bars() -> None:
+    df = pd.DataFrame(
+        {
+            "ky": [0.0, 0.1],
+            "kx": [-0.05, 0.05],
+            "gamma_gx": [4.9, 4.9],
+            "gamma_sp": [4.9, 4.9],
+            "abs_omega": [1.0e-4, 2.0e-4],
+        }
+    )
+    fig, ax = plt.subplots()
+    try:
+        _plot_secondary(ax, df, "Secondary")
+        assert len(ax.lines) == 2
+        assert len(fig.axes) == 2
+    finally:
+        plt.close(fig)
+
+
+def test_plot_cetg_adds_log_time_traces_for_finite_metrics() -> None:
+    df = pd.DataFrame(
+        {
+            "t": [0.1, 0.2, 0.3],
+            "W_spectrax": [1.0, 1.1, 1.2],
+            "W_gx": [1.0, 1.0, 1.0],
+            "Phi2_spectrax": [2.0, 2.1, 2.2],
+            "Phi2_gx": [2.0, 2.0, 2.0],
+            "qflux_spectrax": [3.0, 3.1, 3.2],
+            "qflux_gx": [3.0, 3.0, 3.0],
+        }
+    )
+    fig, ax = plt.subplots()
+    try:
+        _plot_cetg(ax, df, "cETG")
+        assert ax.get_yscale() == "log"
+        assert len(ax.lines) == 6
+    finally:
+        plt.close(fig)

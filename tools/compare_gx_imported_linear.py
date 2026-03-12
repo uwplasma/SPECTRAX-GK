@@ -43,6 +43,7 @@ class GXInputContract:
     nperiod: int
     ntheta: int
     boundary: str
+    geo_option: str
     y0: float
     species: tuple[Species, ...]
     tau_e: float
@@ -119,6 +120,7 @@ def _load_gx_input_contract(path: Path) -> GXInputContract:
     time = data.get("Time", {})
     init = data.get("Initialization", {})
     expert = data.get("Expert", {})
+    geometry = data.get("Geometry", {})
     species_raw = data.get("species", {})
     boltz = data.get("Boltzmann", {})
     diagnostics = data.get("Diagnostics", {})
@@ -168,6 +170,7 @@ def _load_gx_input_contract(path: Path) -> GXInputContract:
         nperiod=int(dims.get("nperiod", 1)),
         ntheta=int(dims.get("ntheta", 0)),
         boundary=str(domain.get("boundary", "linked")),
+        geo_option=str(geometry.get("geo_option", "s-alpha")).strip().lower(),
         y0=float(domain["y0"]) if "y0" in domain else float("nan"),
         species=species,
         tau_e=tau_e,
@@ -194,6 +197,20 @@ def _load_gx_input_contract(path: Path) -> GXInputContract:
         damp_ends_amp=float(dissipation.get("damp_ends_amp", 0.1)),
         damp_ends_widthfrac=float(dissipation.get("damp_ends_widthfrac", 1.0 / 8.0)),
     )
+
+
+def _select_geometry_source(
+    gx_out: Path,
+    geometry_file: Path,
+    gx_contract: GXInputContract | None,
+) -> Path:
+    """Choose the authoritative geometry source for imported GX comparisons."""
+
+    if gx_contract is None:
+        return geometry_file
+    if gx_contract.geo_option in {"vmec", "desc"}:
+        return gx_out
+    return geometry_file
 
 
 def _runtime_species_tuple(species: tuple[Species, ...]) -> tuple[RuntimeSpeciesConfig, ...]:
@@ -298,6 +315,23 @@ def _gx_fac_mask_cached(cache, *, use_dealias: bool) -> jnp.ndarray:
     return fac
 
 
+def _gx_kyst_fac_mask_cached(cache, *, use_dealias: bool) -> jnp.ndarray:
+    """Return GX kyst fac*mask on a full SPECTRAX ky layout.
+
+    GX stores ``*_kyst`` diagnostics on the positive-rFFT ky half only, while the
+    evolved SPECTRAX state may carry the full ``±ky`` layout. To compare a full
+    state against GX ``*_kyst`` data, keep the positive-ky rows with the Hermitian
+    factor of 2, keep ky=0 with unit weight, and exclude ky<0 entirely.
+    """
+
+    ky = jnp.asarray(cache.ky)
+    fac = jnp.where(ky > 0.0, 2.0, jnp.where(ky == 0.0, 1.0, 0.0))
+    fac = fac[:, None] * jnp.ones((1, cache.kx.size), dtype=fac.dtype)
+    if use_dealias:
+        fac = fac * cache.dealias_mask.astype(fac.dtype)
+    return fac
+
+
 def _species_array(val: float | jnp.ndarray, ns: int) -> jnp.ndarray:
     arr = jnp.asarray(val)
     if arr.ndim == 0:
@@ -309,7 +343,7 @@ def _gx_Wg_by_ky(G: jnp.ndarray, cache, params, vol_fac: jnp.ndarray, *, use_dea
     Gs = G if G.ndim == 6 else G[None, ...]
     ns = Gs.shape[0]
     nt = _species_array(params.density, ns) * _species_array(params.temp, ns)
-    fac = _gx_fac_mask_cached(cache, use_dealias=use_dealias)
+    fac = _gx_kyst_fac_mask_cached(cache, use_dealias=use_dealias)
     weight = fac[:, :, None] * vol_fac[None, None, :]
     contrib = 0.5 * (jnp.abs(Gs) ** 2) * nt[:, None, None, None, None, None]
     contrib = contrib * weight[None, None, None, :, :, :]
@@ -317,7 +351,7 @@ def _gx_Wg_by_ky(G: jnp.ndarray, cache, params, vol_fac: jnp.ndarray, *, use_dea
 
 
 def _gx_Wphi_by_ky(phi: jnp.ndarray, cache, params, vol_fac: jnp.ndarray, *, use_dealias: bool = True) -> jnp.ndarray:
-    fac = _gx_fac_mask_cached(cache, use_dealias=use_dealias)
+    fac = _gx_kyst_fac_mask_cached(cache, use_dealias=use_dealias)
     weight = fac[:, :, None] * vol_fac[None, None, :]
     rho = jnp.asarray(params.rho)
     if rho.ndim == 0:
@@ -332,7 +366,7 @@ def _gx_Wphi_by_ky(phi: jnp.ndarray, cache, params, vol_fac: jnp.ndarray, *, use
 
 
 def _gx_Wapar_by_ky(apar: jnp.ndarray, cache, vol_fac: jnp.ndarray, *, use_dealias: bool = True) -> jnp.ndarray:
-    fac = _gx_fac_mask_cached(cache, use_dealias=use_dealias)
+    fac = _gx_kyst_fac_mask_cached(cache, use_dealias=use_dealias)
     weight = fac[:, :, None] * vol_fac[None, None, :]
     bmag2 = cache.bmag[None, None, :] ** 2 if cache.kperp2_bmag else 1.0
     contrib = 0.5 * (jnp.abs(apar) ** 2) * cache.kperp2 * bmag2 * weight
@@ -523,13 +557,12 @@ def main() -> None:
     dt = float(gx_time[0])
     sample_steps = np.arange(gx_time.size, dtype=int)
 
-    geom = load_gx_geometry_netcdf(args.geometry_file)
     boundary = "linked"
     y0 = _infer_y0(gx_ky)
     nx = 1
     ny = _infer_real_fft_ny(gx_ky)
     nperiod = 1
-    ntheta = int(np.asarray(geom.theta).size)
+    ntheta = 0
     gx_contract: GXInputContract | None = None
     species = [
         Species(
@@ -560,6 +593,9 @@ def main() -> None:
         if gx_contract.dt is not None:
             dt = float(gx_contract.dt)
             sample_steps = np.arange(gx_time.size, dtype=int)
+    geom = load_gx_geometry_netcdf(_select_geometry_source(args.gx, args.geometry_file, gx_contract))
+    if ntheta <= 0:
+        ntheta = int(np.asarray(geom.theta).size)
 
     grid_cfg = GridConfig(
         Nx=nx,

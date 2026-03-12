@@ -5,9 +5,11 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+from typing import cast
 
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
 import numpy as np
 import pandas as pd
 
@@ -131,6 +133,84 @@ def _cetg_table_rows(df: pd.DataFrame) -> list[list[str]]:
     return [[name, f"{value:.2e}"] for name, value in metrics]
 
 
+def _plot_imported_linear(ax: Axes, df: pd.DataFrame, title: str) -> None:
+    ky = np.asarray(df["ky"], dtype=float)
+    ax.plot(ky, np.asarray(df["mean_abs_omega"], dtype=float), marker="o", linewidth=2.0, label="abs ω")
+    ax.plot(ky, np.asarray(df["mean_abs_gamma"], dtype=float), marker="s", linewidth=2.0, label="abs γ")
+    ax.plot(ky, np.asarray(df["mean_rel_Wg"], dtype=float), marker="^", linewidth=2.0, linestyle="--", label="rel Wg")
+    ax.plot(
+        ky,
+        np.asarray(df["mean_rel_Wphi"], dtype=float),
+        marker="d",
+        linewidth=2.0,
+        linestyle="--",
+        label="rel Wphi",
+    )
+    if "mean_rel_Wapar" in df.columns and np.any(np.asarray(df["mean_rel_Wapar"], dtype=float) > 0.0):
+        ax.plot(
+            ky,
+            np.asarray(df["mean_rel_Wapar"], dtype=float),
+            marker="x",
+            linewidth=1.8,
+            linestyle=":",
+            label="rel Wapar",
+        )
+    ax.set_title(title, fontsize=14, fontweight="bold")
+    ax.set_xlabel("ky")
+    ax.set_yscale("log")
+    ax.set_ylabel("error")
+    ax.grid(True, which="both", alpha=0.25)
+    ax.legend(fontsize=8, ncol=2, frameon=False, loc="upper left")
+
+
+def _plot_secondary(ax: Axes, df: pd.DataFrame, title: str) -> None:
+    modes = [f"({row.ky:.2f},{row.kx:+.2f})" for row in df.itertuples(index=False)]
+    x = np.arange(len(modes), dtype=float)
+    ax.plot(x, np.asarray(df["gamma_gx"], dtype=float), marker="o", linewidth=2.0, label="γ GX")
+    ax.plot(x, np.asarray(df["gamma_sp"], dtype=float), marker="s", linewidth=2.0, linestyle="--", label="γ S")
+    ax.set_title(title, fontsize=14, fontweight="bold")
+    ax.set_ylabel("gamma")
+    ax.set_xticks(x)
+    ax.set_xticklabels(modes, rotation=25, ha="right", fontsize=8)
+    ax.grid(True, axis="y", alpha=0.25)
+    ax_omega = cast(Axes, ax.twinx())
+    ax_omega.bar(
+        x,
+        np.asarray(df["abs_omega"], dtype=float),
+        width=0.55,
+        color="0.75",
+        alpha=0.5,
+        label="|Δω|",
+    )
+    ax_omega.set_ylabel("|Δω|")
+    handles_l, labels_l = ax.get_legend_handles_labels()
+    handles_r, labels_r = ax_omega.get_legend_handles_labels()
+    ax.legend(handles_l + handles_r, labels_l + labels_r, fontsize=8, frameon=False, loc="upper left")
+
+
+def _plot_cetg(ax: Axes, df: pd.DataFrame, title: str) -> None:
+    t = np.asarray(df["t"], dtype=float)
+    metric_specs = [
+        ("W", "W_spectrax", "W_gx", "#1f77b4"),
+        ("Phi2", "Phi2_spectrax", "Phi2_gx", "#ff7f0e"),
+        ("qflux", "qflux_spectrax", "qflux_gx", "#2ca02c"),
+    ]
+    for label, sp_col, gx_col, color in metric_specs:
+        sp = np.asarray(df[sp_col], dtype=float)
+        gx = np.asarray(df[gx_col], dtype=float)
+        finite = np.isfinite(sp) & np.isfinite(gx) & (sp > 0.0) & (gx > 0.0)
+        if not np.any(finite):
+            continue
+        ax.plot(t[finite], gx[finite], color=color, linewidth=2.0, label=f"{label} GX")
+        ax.plot(t[finite], sp[finite], color=color, linewidth=1.8, linestyle="--", label=f"{label} S")
+    ax.set_title(title, fontsize=14, fontweight="bold")
+    ax.set_xlabel("t")
+    ax.set_yscale("log")
+    ax.set_ylabel("signal")
+    ax.grid(True, which="both", alpha=0.25)
+    ax.legend(fontsize=7, frameon=False, ncol=2, loc="upper left")
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -219,79 +299,16 @@ def main() -> None:
     ax2.axis("off")
 
     ax3 = fig.add_subplot(gs[2, 0])
-    ax3.axis("off")
-    ax3.set_title("W7-X Linear VMEC", fontsize=14, fontweight="bold")
-    table = ax3.table(
-        cellText=_linear_table_rows(w7x_linear),
-        colLabels=["ky", "abs ω", "abs γ", "rel Wg", "rel Wphi"],
-        loc="center",
-        cellLoc="center",
-        colLoc="center",
-    )
-    table.auto_set_font_size(False)
-    table.set_fontsize(9)
-    table.scale(1.0, 1.45)
+    _plot_imported_linear(ax3, w7x_linear, "W7-X Linear VMEC")
 
     ax4 = fig.add_subplot(gs[2, 1])
-    ax4.axis("off")
-    ax4.set_title("HSX Linear VMEC", fontsize=14, fontweight="bold")
-    table = ax4.table(
-        cellText=_linear_table_rows(hsx_linear),
-        colLabels=["ky", "abs ω", "abs γ", "rel Wg", "rel Wphi"],
-        loc="center",
-        cellLoc="center",
-        colLoc="center",
-    )
-    table.auto_set_font_size(False)
-    table.set_fontsize(9)
-    table.scale(1.0, 1.45)
+    _plot_imported_linear(ax4, hsx_linear, "HSX Linear VMEC")
 
     ax5 = fig.add_subplot(gs[3, 0])
-    ax5.axis("off")
-    ax5.set_title("Secondary Slab (GX kh01a.out.nc)", fontsize=14, fontweight="bold")
-    table = ax5.table(
-        cellText=_secondary_table_rows(secondary),
-        colLabels=["(ky,kx)", "γ GX", "γ S", "rel γ", "ω GX", "ω S", "|Δω|"],
-        loc="center",
-        cellLoc="center",
-        colLoc="center",
-    )
-    table.auto_set_font_size(False)
-    table.set_fontsize(9)
-    table.scale(1.0, 1.3)
-    ax5.text(
-        0.5,
-        0.03,
-        "Gamma now uses the longest leading finite selected-mode window.\n"
-        "Rows come from a real GX kh01a.out.nc reference.\n"
-        "Tiny secondary omega remains under audit; absolute error is more informative than relative error here.",
-        ha="center",
-        va="bottom",
-        fontsize=10,
-    )
+    _plot_secondary(ax5, secondary, "Secondary Slab (GX kh01a.out.nc)")
 
     ax6 = fig.add_subplot(gs[3, 1])
-    ax6.axis("off")
-    ax6.set_title("cETG (legacy GX)", fontsize=14, fontweight="bold")
-    table = ax6.table(
-        cellText=_cetg_table_rows(cetg),
-        colLabels=["metric", "mean rel err"],
-        loc="center",
-        cellLoc="center",
-        colLoc="center",
-    )
-    table.auto_set_font_size(False)
-    table.set_fontsize(10)
-    table.scale(1.0, 1.6)
-    ax6.text(
-        0.5,
-        0.06,
-        "Short-horizon cETG comparison uses the legacy grouped GX output lane.\n"
-        "This is the honest reduced-model reference until a native panel plot is added.",
-        ha="center",
-        va="bottom",
-        fontsize=10,
-    )
+    _plot_cetg(ax6, cetg, "cETG (legacy GX)")
 
     fig.suptitle("GX-Aligned Validation Summary", fontsize=18, fontweight="bold")
     out.parent.mkdir(parents=True, exist_ok=True)

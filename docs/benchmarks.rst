@@ -299,19 +299,19 @@ Regenerate the tracked HSX linear audit with:
    :file: _static/hsx_linear_t2_scan.csv
    :header-rows: 1
 
-This HSX linear row remains an open audit item, but it is now much narrower.
+This HSX linear slice is now tracked as closed on the clean GX main branch.
 The imported-linear harness no longer slices the imported GX run down to a
 single ``ky`` before evolving it, so multimode GX startup on ``fix aspect``
 VMEC geometry is preserved exactly through the time integrator. The tracked
 branch selection is also now explicit: imported linear scans follow the
 ``kx ~= 0`` branch by default, unless the GX input itself requested
 ``init_single = true`` with a different ``ikx_single``. With those fixes plus
-the corrected linked-chain end damping, the HSX clean-mainline ``t=2`` audit
-now closes ``omega`` to about ``8e-4`` to ``4e-3`` mean absolute error and
+the corrected linked-chain end damping and the authoritative grouped geometry
+from the clean GX ``out.nc`` file, the HSX clean-mainline ``t=2`` audit now
+closes ``omega`` to about ``8e-4`` to ``4e-3`` mean absolute error and
 ``gamma`` to about ``3e-4`` to ``5e-3`` mean absolute error across the tracked
-``ky`` values. The remaining HSX linear discrepancy is in the reported
-``Wg_kyst`` / ``Wphi_kyst`` energy projection, not in startup, VMEC geometry,
-or the linear RHS/update contract.
+``ky`` values, while the GX-style ``Wg_kyst`` / ``Wphi_kyst`` energy
+projections are down to about ``2.6%`` to ``7.3%`` relative error.
 
 Secondary slab benchmark
 ------------------------
