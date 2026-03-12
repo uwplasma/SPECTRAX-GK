@@ -150,8 +150,13 @@ Runtime and CLI paths can now construct that bridge directly from config with
 the default with ``geometry.model = "s-alpha"``. For slab cases use
 ``geometry.model = "slab"`` with optional ``geometry.z0`` and
 ``geometry.zero_shat`` controls. In practice an imported geometry file
-can be either a GX ``*.out.nc`` file or a VMEC-generated ``*.eik.nc`` file such
-as the W7-X examples in the GX benchmark tree. For imported geometry, the
+can be either a GX ``*.out.nc`` file or a GX/VMEC-generated ``*.eik.nc`` file
+such as the W7-X examples in the GX benchmark tree. Root-level ``*.eik.nc``
+files are no longer assumed to be closed-interval grids: the importer now
+infers whether the terminal theta point is present from the periodic endpoint
+content of the geometry profiles, so both VMEC-style closed grids and GX
+Miller's already-open ``*.eiknc.nc`` grids are mapped onto the correct solver
+contract. For imported geometry, the
 runtime now also adopts the file's ``theta`` extent, twist-shift
 ``jtwist/x0`` defaults for both ``linked`` and ``fix aspect`` boundaries, and
 ``kxfac`` metadata so the flux-tube grid is built from the same field-line
@@ -165,10 +170,14 @@ the GX parity harness can exercise imported sampled geometry through
 ``run_kbm_linear`` instead of only through the runtime wrappers.
 Regression coverage now runs that benchmark path explicitly for both
 ``"vmec-eik"`` and ``"desc-eik"`` aliases, so imported W7-X-style geometry is
-checked through both runtime and benchmark entry points. The test suite also
-locks the closed-interval ``*.eik.nc`` contract itself: imported VMEC/DESC
-geometry must preserve ``theta_scale``/``nfp`` metadata and trim the terminal
-theta point consistently when mapped onto the solver's open field-line grid.
+checked through both runtime and benchmark entry points. The test suite now
+locks both root-level contracts explicitly:
+
+- imported VMEC/DESC closed-interval ``*.eik.nc`` files must preserve
+  ``theta_scale``/``nfp`` metadata and trim the terminal theta point
+  consistently when mapped onto the solver's open field-line grid, and
+- imported GX Miller ``*.eiknc.nc`` files must stay on their already-open theta
+  grid without a spurious terminal-point trim.
 
 With the corrected GX-time damping contract, that imported-geometry bridge now
 also reproduces the corrected GX W7-X linear ITG ``t=2`` reference on the same
@@ -241,7 +250,10 @@ contract described above. This keeps the Miller lane geometry-honest without
 introducing a second hand-maintained Miller implementation in the runtime path.
 On the tracked Cyclone Miller parameters, the generated ``*.eiknc.nc`` file
 matches the clean GX grouped ``Geometry`` arrays to roundoff in the main
-metric and drift profiles.
+metric and drift profiles. With the root-level open/closed theta inference
+corrected, the clean-mainline Cyclone Miller late-state audit also now closes
+on the exact dumped GX state: ``kperp2``, ``fluxfac``, ``phi``, ``Wg``,
+``Wphi``, and heat flux all match to roundoff on the same nonlinear state.
 
 Two user-facing entry points now exercise that bridge:
 
