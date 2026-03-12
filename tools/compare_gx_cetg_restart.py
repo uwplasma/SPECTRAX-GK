@@ -37,18 +37,18 @@ def _kz_filter(arr: np.ndarray) -> np.ndarray:
     return np.fft.ifft(np.fft.fft(arr, axis=-1) * mask, axis=-1)
 
 
-def _phi2_qflux_from_gx_positive_state(
-    state_positive_ky: np.ndarray,
+def _phi2_qflux_from_gx_active_state(
+    state_active: np.ndarray,
     ky_active: np.ndarray,
     *,
     tau_fac: float,
     pressure: float,
     dealias_kz: bool,
 ) -> tuple[float, float, np.ndarray]:
-    state = np.asarray(state_positive_ky, dtype=np.complex128)
-    pos = state[0, :, 0]
-    density = pos[0, : ky_active.size]
-    temperature = pos[1, : ky_active.size]
+    state = np.asarray(state_active, dtype=np.complex128)
+    active = state[0, :, 0]
+    density = active[0, : ky_active.size]
+    temperature = active[1, : ky_active.size]
     phi = -float(tau_fac) * density
     if dealias_kz:
         phi = _kz_filter(phi)
@@ -95,8 +95,8 @@ def main() -> int:
     grid = build_spectral_grid(cfg.grid)
     params = build_cetg_model_params(cfg, geom, Nl=2, Nm=1)
 
-    phi2_restart_raw, qflux_restart_raw, phi_restart_raw = _phi2_qflux_from_gx_positive_state(
-        restart.state_positive_ky,
+    phi2_restart_raw, qflux_restart_raw, phi_restart_raw = _phi2_qflux_from_gx_active_state(
+        restart.state_active,
         gx.ky,
         tau_fac=params.tau_fac,
         pressure=params.pressure,
@@ -131,7 +131,7 @@ def main() -> int:
         flux = np.ones((nz,), dtype=float) / float(nz)
         fac = np.where(np.arange(gx.ky.size) == 0, 1.0, 2.0)[:, None, None]
         phi2_special = float(np.sum(0.5 * np.abs(phi_special) ** 2 * fac * vol[None, None, :]))
-        temp = np.asarray(restart.state_positive_ky[0, 1, 0, : gx.ky.size], dtype=np.complex128)
+        temp = np.asarray(restart.state_active[0, 1, 0, : gx.ky.size], dtype=np.complex128)
         vphi_r = -1j * gx.ky[:, None, None] * phi_special
         qflux_special = float(np.sum(np.real(np.conj(vphi_r) * temp) * 2.0 * flux[None, None, :]) * params.pressure)
         phi_special_vs_restart = _rms_rel(phi_special, phi_restart_raw)

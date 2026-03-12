@@ -121,6 +121,10 @@ def test_load_gx_legacy_cetg_restart_maps_compressed_kx_layout(tmp_path: Path) -
     out = load_gx_legacy_cetg_restart(path, nx_full=4, ny_full=4)
 
     assert out.time == pytest.approx(1.25)
+    assert out.state_active.shape == (1, 2, 1, 2, 3, 2)
+    assert out.state_active[0, 0, 0, 0, 0, 0] == pytest.approx(10.0 + 1.0j)
+    assert out.state_active[0, 0, 0, 1, 1, 0] == pytest.approx(20.0 + 2.0j)
+    assert out.state_active[0, 1, 0, 1, 2, 1] == pytest.approx(30.0 + 3.0j)
     assert out.state_positive_ky.shape == (1, 2, 1, 3, 4, 2)
     assert out.state_positive_ky[0, 0, 0, 0, 0, 0] == pytest.approx(10.0 + 1.0j)
     assert out.state_positive_ky[0, 0, 0, 1, 1, 0] == pytest.approx(20.0 + 2.0j)

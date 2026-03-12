@@ -114,7 +114,7 @@ def test_build_cetg_model_params_matches_gx_defaults() -> None:
     assert params.dealias_kz is True
 
 
-def test_cetg_field_solve_matches_gx_tau_bar() -> None:
+def test_cetg_field_solve_matches_gx_tau_bar_and_kz_dealias_scale() -> None:
     cfg = _base_cetg_cfg()
     geom = SlabGeometry.from_config(cfg.geometry)
     grid = build_spectral_grid(cfg.grid)
@@ -128,7 +128,7 @@ def test_cetg_field_solve_matches_gx_tau_bar() -> None:
 
     mask = np.asarray(grid.dealias_mask, dtype=bool)
     phi = np.asarray(fields.phi)
-    assert np.allclose(phi[mask], -1.0)
+    assert np.allclose(phi[mask], -float(grid.z.size))
     assert np.allclose(phi[~mask], 0.0)
 
 
@@ -144,7 +144,12 @@ def test_runtime_linear_cetg_smoke_uses_model_native_dims() -> None:
 
 
 def test_runtime_nonlinear_cetg_smoke_uses_model_native_dims() -> None:
-    cfg = _base_cetg_cfg()
+    base = _base_cetg_cfg()
+    cfg = replace(
+        base,
+        time=replace(base.time, dt=1.0e-4, t_max=4.0e-4, fixed_dt=True),
+        init=replace(base.init, init_amp=1.0e-6),
+    )
 
     out = run_runtime_nonlinear(cfg, ky_target=1.0 / 2.0, kx_target=0.0, steps=4, sample_stride=1, return_state=True)
 
