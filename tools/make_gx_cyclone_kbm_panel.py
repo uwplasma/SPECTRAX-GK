@@ -1,504 +1,133 @@
 #!/usr/bin/env python3
-"""Build a GX-vs-SPECTRAX Cyclone/KBM linear+nonlinear comparison panel."""
+"""Build the tracked tokamak GX-vs-SPECTRAX publication panel."""
 
 from __future__ import annotations
 
 import argparse
 from pathlib import Path
 
+import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import jax.numpy as jnp
-from netCDF4 import Dataset
+from matplotlib.axes import Axes
 
-from spectraxgk.analysis import extract_eigenfunction
-from spectraxgk.benchmarks import (
-    KBM_OMEGA_D_SCALE,
-    KBM_OMEGA_STAR_SCALE,
-    KBM_RHO_STAR,
-    _build_initial_condition,
-    _midplane_index,
-    _two_species_params,
-    run_cyclone_linear,
-    run_kbm_linear,
-)
-from spectraxgk.config import (
-    KBMBaseCase,
-    CycloneBaseCase,
-    GridConfig,
-    InitializationConfig,
-    KineticElectronModelConfig,
-)
-from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.grids import build_spectral_grid, select_ky_grid
-from spectraxgk.gx_integrators import GXTimeConfig, integrate_linear_gx_diagnostics
-from spectraxgk.linear import LinearTerms, build_linear_cache
+from make_gx_summary_panel import STATIC, _autocrop_image, _resolve
 
 
-def _normalize_mode(theta: np.ndarray, mode: np.ndarray) -> np.ndarray:
-    finite = np.isfinite(mode)
-    if not np.any(finite):
-        return np.zeros_like(mode)
-    idx0 = int(np.argmin(np.abs(theta)))
-    ref = mode[idx0]
-    if not np.isfinite(ref) or abs(ref) < 1.0e-14:
-        j = int(np.nanargmax(np.abs(np.where(finite, mode, 0.0))))
-        ref = mode[j]
-    if not np.isfinite(ref) or abs(ref) < 1.0e-14:
-        return mode
-    return mode / ref
+REQUIRED_LINEAR_COLUMNS = {"ky", "gamma", "omega", "gamma_gx", "omega_gx"}
 
 
-def _load_gx_eigenfunction(path: Path, ky_target: float) -> tuple[np.ndarray, np.ndarray]:
-    root = Dataset(path, "r")
-    grids = root.groups["Grids"]
-    diag = root.groups["Diagnostics"]
-    theta = np.asarray(grids.variables["theta"][:], dtype=float)
-    ky = np.asarray(grids.variables["ky"][:], dtype=float)
-    ky_idx = int(np.argmin(np.abs(ky - float(ky_target))))
-    phi = np.asarray(diag.variables["Phi"][-1, ky_idx, 0, :, :], dtype=float)
-    root.close()
-    mode = phi[:, 0] + 1j * phi[:, 1]
-    return theta, _normalize_mode(theta, mode)
-
-
-def _cyclone_spectrax_eigenfunction(ky_target: float) -> tuple[np.ndarray, np.ndarray]:
-    cfg = CycloneBaseCase(
-        grid=GridConfig(
-            Nx=1,
-            Ny=24,
-            Nz=96,
-            Lx=62.8,
-            Ly=62.8,
-            boundary="linked",
-            y0=20.0,
-            ntheta=32,
-            nperiod=2,
-        )
-    )
-    res = run_cyclone_linear(
-        ky_target=float(ky_target),
-        cfg=cfg,
-        Nl=16,
-        Nm=8,
-        dt=0.01,
-        steps=8000,
-        method="imex2",
-        solver="auto",
-        fit_signal="phi",
-        diagnostic_norm="gx",
-        gx_reference=True,
-    )
-    theta = np.asarray(build_spectral_grid(cfg.grid).z, dtype=float)
-    mode = np.asarray(
-        res.phi_t[-1, res.selection.ky_index, res.selection.kx_index, :],
-        dtype=np.complex128,
-    )
-    return theta, _normalize_mode(theta, mode)
-
-
-def _kbm_spectrax_eigenfunction(ky_target: float) -> tuple[np.ndarray, np.ndarray]:
-    cfg = KBMBaseCase(
-        grid=GridConfig(
-            Nx=1,
-            Ny=16,
-            Nz=96,
-            Lx=62.8,
-            Ly=62.8,
-            boundary="linked",
-            y0=10.0,
-            ntheta=32,
-            nperiod=2,
-        ),
-        model=KineticElectronModelConfig(
-            R_over_LTi=2.49,
-            R_over_LTe=2.49,
-            R_over_Ln=0.8,
-            Te_over_Ti=1.0,
-            mass_ratio=3670.0,
-            nu_i=0.0,
-            nu_e=0.0,
-            beta=0.015,
-        ),
-        init=InitializationConfig(init_field="all", init_amp=1.0e-10, gaussian_init=True),
-    )
-    run = run_kbm_linear(
-        ky_target=float(ky_target),
-        cfg=cfg,
-        Nl=8,
-        Nm=24,
-        dt=0.01,
-        steps=800,
-        solver="gx_time",
-        fit_signal="phi",
-        diagnostic_norm="gx",
-        gx_reference=True,
-        sample_stride=2,
-    )
-    theta = np.asarray(build_spectral_grid(cfg.grid).z, dtype=float)
-    mode = extract_eigenfunction(
-        np.asarray(run.phi_t),
-        np.asarray(run.t, dtype=float),
-        run.selection,
-        z=theta,
-        method="svd",
-        tmin=0.6 * float(np.asarray(run.t)[-1]) if np.asarray(run.t).size > 1 else None,
-        tmax=float(np.asarray(run.t)[-1]) if np.asarray(run.t).size > 1 else None,
-    )
-    return theta, _normalize_mode(theta, mode)
-
-
-def _load_linear_scan(path: Path) -> pd.DataFrame:
+def _load_linear_mismatch(path: Path) -> pd.DataFrame:
     df = pd.read_csv(path)
-    req = {"ky", "gamma", "omega", "gamma_gx", "omega_gx"}
-    if not req.issubset(df.columns):
-        raise ValueError(f"{path} missing expected columns {req}")
+    missing = REQUIRED_LINEAR_COLUMNS.difference(df.columns)
+    if missing:
+        raise ValueError(f"{path} missing columns {sorted(missing)}")
     return df.sort_values("ky").reset_index(drop=True)
 
 
-def _load_spectrax_diag(path: Path) -> dict[str, np.ndarray]:
-    named = np.genfromtxt(path, delimiter=",", names=True)
-    if isinstance(named, np.ndarray) and named.dtype.names:
-        names = set(named.dtype.names)
-        required = {"t", "Wg", "Wphi", "Wapar", "energy", "heat_flux", "particle_flux"}
-        if required.issubset(names):
-            out = {
-                "t": np.asarray(named["t"], dtype=float),
-                "Wg": np.asarray(named["Wg"], dtype=float),
-                "Wphi": np.asarray(named["Wphi"], dtype=float),
-                "Wapar": np.asarray(named["Wapar"], dtype=float),
-                "energy": np.asarray(named["energy"], dtype=float),
-                "heat": np.asarray(named["heat_flux"], dtype=float),
-                "pflux": np.asarray(named["particle_flux"], dtype=float),
-            }
-            if "gamma" in names:
-                out["gamma"] = np.asarray(named["gamma"], dtype=float)
-            if "omega" in names:
-                out["omega"] = np.asarray(named["omega"], dtype=float)
-            return out
-
-    data = np.loadtxt(path, delimiter=",", skiprows=1)
-    if data.ndim == 1:
-        data = data[None, :]
-    # Legacy tool CSV: t,gamma,omega,Wg,Wphi,Wapar,energy,heat,pflux (9 cols)
-    if data.shape[1] == 9:
-        return {
-            "t": np.asarray(data[:, 0], dtype=float),
-            "gamma": np.asarray(data[:, 1], dtype=float),
-            "omega": np.asarray(data[:, 2], dtype=float),
-            "Wg": np.asarray(data[:, 3], dtype=float),
-            "Wphi": np.asarray(data[:, 4], dtype=float),
-            "Wapar": np.asarray(data[:, 5], dtype=float),
-            "energy": np.asarray(data[:, 6], dtype=float),
-            "heat": np.asarray(data[:, 7], dtype=float),
-            "pflux": np.asarray(data[:, 8], dtype=float),
-        }
-    # CLI/runtime CSV: t,dt,gamma,omega,Wg,Wphi,Wapar,energy,heat,pflux (+ optional species)
-    if data.shape[1] >= 10:
-        return {
-            "t": np.asarray(data[:, 0], dtype=float),
-            "gamma": np.asarray(data[:, 2], dtype=float),
-            "omega": np.asarray(data[:, 3], dtype=float),
-            "Wg": np.asarray(data[:, 4], dtype=float),
-            "Wphi": np.asarray(data[:, 5], dtype=float),
-            "Wapar": np.asarray(data[:, 6], dtype=float),
-            "energy": np.asarray(data[:, 7], dtype=float),
-            "heat": np.asarray(data[:, 8], dtype=float),
-            "pflux": np.asarray(data[:, 9], dtype=float),
-        }
-    raise ValueError(f"Unsupported diagnostics CSV format in {path} with shape {data.shape}")
+def _mean_rel(lhs: np.ndarray, rhs: np.ndarray) -> float:
+    lhs_f = np.asarray(lhs, dtype=float)
+    rhs_f = np.asarray(rhs, dtype=float)
+    finite = np.isfinite(lhs_f) & np.isfinite(rhs_f)
+    if not np.any(finite):
+        return float("nan")
+    rhs_sel = rhs_f[finite]
+    floor = max(float(np.nanmax(np.abs(rhs_sel))) * 1.0e-12, 1.0e-30)
+    denom = np.maximum(np.abs(rhs_sel), floor)
+    return float(np.nanmean(np.abs(lhs_f[finite] - rhs_sel) / denom))
 
 
-def _series_ky(arr: np.ndarray, ky_idx: int) -> np.ndarray:
-    if arr.ndim == 1:
-        return np.asarray(arr, dtype=float)
-    if arr.ndim == 2:
-        if ky_idx < arr.shape[1]:
-            return np.asarray(arr[:, ky_idx], dtype=float)
-        return np.asarray(np.sum(arr, axis=1), dtype=float)
-    if arr.ndim == 3:
-        # (t, species, ky)
-        return np.asarray(np.sum(arr[:, :, ky_idx], axis=1), dtype=float)
-    raise ValueError(f"unsupported array shape {arr.shape}")
-
-
-def _load_gx_nonlinear(path: Path, ky_target: float) -> dict[str, np.ndarray]:
-    root = Dataset(path, "r")
-    grids = root.groups["Grids"]
-    diag = root.groups["Diagnostics"]
-    t = np.asarray(grids.variables["time"][:], dtype=float)
-    ky = np.asarray(grids.variables["ky"][:], dtype=float)
-    ky_idx = int(np.argmin(np.abs(ky - float(ky_target))))
-
-    if "Wphi_st" in diag.variables:
-        wphi_arr = np.asarray(diag.variables["Wphi_st"][:], dtype=float)
-        if wphi_arr.ndim == 2:
-            wphi = np.sum(wphi_arr, axis=1)
-        else:
-            wphi = wphi_arr
-    else:
-        wphi = _series_ky(np.asarray(diag.variables["Wphi_kyst"][:], dtype=float), ky_idx)
-
-    if "HeatFlux_st" in diag.variables:
-        heat_arr = np.asarray(diag.variables["HeatFlux_st"][:], dtype=float)
-        if heat_arr.ndim == 2:
-            heat = np.sum(heat_arr, axis=1)
-        else:
-            heat = heat_arr
-    else:
-        heat = _series_ky(np.asarray(diag.variables["HeatFlux_kyst"][:], dtype=float), ky_idx)
-
-    out = {
-        "t": t,
-        "Wphi": np.asarray(wphi, dtype=float),
-        "heat": np.asarray(heat, dtype=float),
-    }
-
-    if "omega_kxkyt" in diag.variables:
-        omega_kxkyt = np.asarray(diag.variables["omega_kxkyt"][:], dtype=float)
-        kx = np.asarray(grids.variables["kx"][:], dtype=float)
-        kx_idx = int(np.argmin(np.abs(kx)))
-        out["omega"] = omega_kxkyt[:, ky_idx, kx_idx, 0]
-        out["gamma"] = omega_kxkyt[:, ky_idx, kx_idx, 1]
-    else:
-        phi2 = np.asarray(diag.variables["Phi2_t"][:], dtype=float)
-        gamma = np.full_like(t, np.nan)
-        if t.size > 1:
-            dt = np.diff(t)
-            ratio = np.maximum(phi2[1:] / np.maximum(phi2[:-1], 1.0e-30), 1.0e-30)
-            gamma[1:] = 0.5 * np.log(ratio) / np.maximum(dt, 1.0e-12)
-        out["gamma"] = gamma
-        out["omega"] = np.full_like(t, np.nan)
-    root.close()
-    return out
-
-
-def _plot_linear_row(
-    ax_row: np.ndarray,
-    title: str,
-    theta_sp: np.ndarray,
-    mode_sp: np.ndarray,
-    theta_gx: np.ndarray,
-    mode_gx: np.ndarray,
-    scan: pd.DataFrame,
-) -> None:
-    ax = ax_row[0]
-    ax.plot(theta_sp, np.real(mode_sp), color="tab:blue", lw=1.8, label="SPECTRAX Re")
-    ax.plot(theta_sp, np.imag(mode_sp), color="tab:orange", lw=1.8, ls="--", label="SPECTRAX Im")
-    ax.plot(theta_gx, np.real(mode_gx), color="tab:green", lw=1.6, alpha=0.8, label="GX Re")
-    ax.plot(theta_gx, np.imag(mode_gx), color="tab:red", lw=1.6, ls="--", alpha=0.8, label="GX Im")
-    ax.set_ylabel(f"{title}\n$\\phi(\\theta)/\\phi(0)$")
-    ax.set_xlabel(r"$\theta$")
-    ax.grid(alpha=0.25)
-    ax.legend(frameon=False, fontsize=8, ncol=2)
-
-    ax = ax_row[1]
-    ax.plot(scan["ky"], scan["gamma"], "o-", lw=1.8, label="SPECTRAX")
-    ax.plot(scan["ky"], scan["gamma_gx"], "s--", lw=1.8, label="GX")
-    ax.set_xscale("log")
-    ax.set_ylabel(r"$\gamma$")
+def _plot_linear_metric(ax: Axes, df: pd.DataFrame, *, metric: str, title: str) -> None:
+    ky = np.asarray(df["ky"], dtype=float)
+    gx = np.asarray(df[f"{metric}_gx"], dtype=float)
+    sp = np.asarray(df[metric], dtype=float)
+    ax.plot(ky, gx, marker="o", linewidth=2.2, color="#111111", label="GX")
+    ax.plot(ky, sp, marker="s", linewidth=2.2, color="#d1495b", linestyle="--", label="SPECTRAX")
+    ax.set_title(title, fontsize=13, fontweight="bold")
     ax.set_xlabel(r"$k_y \rho_i$")
-    ax.grid(alpha=0.25)
-    ax.legend(frameon=False, fontsize=8)
-
-    ax = ax_row[2]
-    ax.plot(scan["ky"], scan["omega"], "o-", lw=1.8, label="SPECTRAX")
-    ax.plot(scan["ky"], scan["omega_gx"], "s--", lw=1.8, label="GX")
-    ax.set_xscale("log")
-    ax.set_ylabel(r"$\omega$")
-    ax.set_xlabel(r"$k_y \rho_i$")
-    ax.grid(alpha=0.25)
-    ax.legend(frameon=False, fontsize=8)
-
-    ax = ax_row[3]
-    rel_g = np.abs((scan["gamma"] - scan["gamma_gx"]) / np.maximum(np.abs(scan["gamma_gx"]), 1.0e-12))
-    rel_o = np.abs((scan["omega"] - scan["omega_gx"]) / np.maximum(np.abs(scan["omega_gx"]), 1.0e-12))
-    ax.plot(scan["ky"], rel_g, "o-", lw=1.8, label=r"$|\Delta\gamma|/|\gamma_{GX}|$")
-    ax.plot(scan["ky"], rel_o, "s--", lw=1.8, label=r"$|\Delta\omega|/|\omega_{GX}|$")
-    ax.set_xscale("log")
-    ax.set_yscale("log")
-    ax.set_ylabel("Relative error (γ, ω)")
-    ax.set_xlabel(r"$k_y \rho_i$")
-    ax.grid(alpha=0.25)
-    ax.legend(frameon=False, fontsize=8)
+    ax.set_ylabel(metric)
+    ax.grid(True, alpha=0.25)
+    rel = _mean_rel(sp, gx)
+    ax.text(
+        0.03,
+        0.97,
+        f"mean rel err = {rel:.2e}",
+        transform=ax.transAxes,
+        va="top",
+        ha="left",
+        fontsize=9,
+        bbox={"boxstyle": "round,pad=0.25", "fc": "white", "ec": "0.7", "alpha": 0.9},
+    )
+    ax.legend(frameon=False, fontsize=8, loc="best")
 
 
-def _plot_nonlinear_row(
-    ax_row: np.ndarray,
-    title: str,
-    gx: dict[str, np.ndarray],
-    sp: dict[str, np.ndarray],
-    *,
-    t_cap: float | None = None,
-    mode_t_cap: float | None = None,
-) -> None:
-    t_max = float(min(np.nanmax(gx["t"]), np.nanmax(sp["t"])))
-    if t_cap is not None:
-        t_max = min(t_max, float(t_cap))
-    mask_t_gx = np.asarray(gx["t"] <= t_max, dtype=bool)
-    mask_t_sp = np.asarray(sp["t"] <= t_max, dtype=bool)
-    mode_t_max = t_max if mode_t_cap is None else min(t_max, float(mode_t_cap))
-    mask_mode_gx = np.asarray(gx["t"] <= mode_t_max, dtype=bool)
-    mask_mode_sp = np.asarray(sp["t"] <= mode_t_max, dtype=bool)
-
-    ax = ax_row[0]
-    ax.plot(gx["t"][mask_t_gx], gx["Wphi"][mask_t_gx], lw=1.8, label="GX")
-    ax.plot(sp["t"][mask_t_sp], sp["Wphi"][mask_t_sp], lw=1.8, label="SPECTRAX")
-    ax.set_ylabel(f"{title}\n$W_\\phi$")
-    ax.set_xlabel("t")
-    ax.grid(alpha=0.25)
-    ax.legend(frameon=False, fontsize=8)
-
-    ax = ax_row[1]
-    mask_gx = mask_mode_gx & np.isfinite(gx["gamma"])
-    mask_sp = mask_mode_sp & np.isfinite(sp["gamma"])
-    ax.plot(gx["t"][mask_gx], gx["gamma"][mask_gx], lw=1.8, label="GX")
-    ax.plot(sp["t"][mask_sp], sp["gamma"][mask_sp], lw=1.8, label="SPECTRAX")
-    ax.set_ylabel(r"$\gamma(t)$")
-    ax.set_xlabel("t")
-    ax.grid(alpha=0.25)
-    ax.legend(frameon=False, fontsize=8)
-
-    ax = ax_row[2]
-    mask_gx = mask_mode_gx & np.isfinite(gx["omega"])
-    mask_sp = mask_mode_sp & np.isfinite(sp["omega"])
-    ax.plot(gx["t"][mask_gx], gx["omega"][mask_gx], lw=1.8, label="GX")
-    ax.plot(sp["t"][mask_sp], sp["omega"][mask_sp], lw=1.8, label="SPECTRAX")
-    ax.set_ylabel(r"$\omega(t)$")
-    ax.set_xlabel("t")
-    ax.grid(alpha=0.25)
-    ax.legend(frameon=False, fontsize=8)
-
-    ax = ax_row[3]
-    ax.plot(gx["t"][mask_t_gx], gx["heat"][mask_t_gx], lw=1.8, label="GX")
-    ax.plot(sp["t"][mask_t_sp], sp["heat"][mask_t_sp], lw=1.8, label="SPECTRAX")
-    ax.set_ylabel("Heat flux")
-    ax.set_xlabel("t")
-    ax.grid(alpha=0.25)
-    ax.legend(frameon=False, fontsize=8)
-
-
-def main() -> int:
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--cyclone-linear",
         type=Path,
-        default=Path("docs/_static/cyclone_gx_mismatch.csv"),
+        default=STATIC / "cyclone_miller_linear_mismatch.csv",
+        help="Tracked clean-mainline Cyclone Miller linear mismatch CSV.",
     )
     parser.add_argument(
         "--kbm-linear",
         type=Path,
-        default=Path("docs/_static/kbm_gx_mismatch.csv"),
+        default=STATIC / "kbm_gx_mismatch.csv",
+        help="Tracked KBM linear mismatch CSV.",
     )
     parser.add_argument(
-        "--gx-cyclone-linear-big",
+        "--cyclone-nonlinear-panel",
         type=Path,
-        default=Path(".cache/gx/itg_salpha_adiabatic_electrons.big.nc"),
+        default=STATIC / "nonlinear_cyclone_miller_diag_compare_t122.png",
+        help="Tracked clean-mainline Cyclone Miller nonlinear comparison figure.",
     )
     parser.add_argument(
-        "--gx-kbm-linear-big",
+        "--kbm-nonlinear-panel",
         type=Path,
-        default=Path(".cache/gx/kbm_salpha.big.nc"),
+        default=STATIC / "nonlinear_kbm_diag_compare_t400_stats.png",
+        help="Tracked KBM nonlinear comparison figure.",
     )
-    parser.add_argument(
-        "--gx-cyclone-nonlinear",
-        type=Path,
-        default=Path(".cache/gx/cyclone_salpha_adiabatic_electrons_omega_t400.out.nc"),
-    )
-    parser.add_argument(
-        "--gx-kbm-nonlinear",
-        type=Path,
-        default=Path(".cache/gx/kbm_salpha_nonlinear_t400_dense.out.nc"),
-    )
-    parser.add_argument(
-        "--spectrax-cyclone-nonlinear",
-        type=Path,
-        default=Path(".cache/spectrax/cyclone_nonlinear_diag_t400.csv"),
-    )
-    parser.add_argument(
-        "--spectrax-kbm-nonlinear",
-        type=Path,
-        default=Path(".cache/spectrax/kbm_nonlinear_diag_t400.csv"),
-    )
-    parser.add_argument("--cyclone-nonlinear-tmax", type=float, default=None)
-    parser.add_argument("--kbm-nonlinear-tmax", type=float, default=None)
-    parser.add_argument("--cyclone-nonlinear-mode-tmax", type=float, default=None)
-    parser.add_argument("--kbm-nonlinear-mode-tmax", type=float, default=120.0)
-    parser.add_argument("--cyclone-ky", type=float, default=0.3)
-    parser.add_argument("--kbm-ky", type=float, default=0.3)
     parser.add_argument(
         "--out",
         type=Path,
-        default=Path("docs/_static/gx_cyclone_kbm_panel.png"),
+        default=STATIC / "gx_cyclone_kbm_panel.png",
+        help="Output tokamak panel path.",
     )
-    args = parser.parse_args()
+    return parser
 
-    cycl_scan = _load_linear_scan(args.cyclone_linear)
-    cycl_scan = cycl_scan[cycl_scan["ky"] <= 0.5 + 1.0e-12].reset_index(drop=True)
-    kbm_scan = _load_linear_scan(args.kbm_linear)
 
-    theta_gx_c, mode_gx_c = _load_gx_eigenfunction(args.gx_cyclone_linear_big, args.cyclone_ky)
-    theta_sp_c, mode_sp_c = _cyclone_spectrax_eigenfunction(args.cyclone_ky)
-    theta_gx_k, mode_gx_k = _load_gx_eigenfunction(args.gx_kbm_linear_big, args.kbm_ky)
-    theta_sp_k, mode_sp_k = _kbm_spectrax_eigenfunction(args.kbm_ky)
+def main() -> None:
+    args = build_parser().parse_args()
+    cyclone_linear = _load_linear_mismatch(_resolve(args.cyclone_linear))
+    kbm_linear = _load_linear_mismatch(_resolve(args.kbm_linear))
+    cyclone_img = _autocrop_image(mpimg.imread(_resolve(args.cyclone_nonlinear_panel)), pad_pixels=8)
+    kbm_img = _autocrop_image(mpimg.imread(_resolve(args.kbm_nonlinear_panel)), pad_pixels=8)
+    out = _resolve(args.out)
 
-    gx_nl_c = _load_gx_nonlinear(args.gx_cyclone_nonlinear, args.cyclone_ky)
-    gx_nl_k = _load_gx_nonlinear(args.gx_kbm_nonlinear, args.kbm_ky)
-    sp_nl_c = _load_spectrax_diag(args.spectrax_cyclone_nonlinear)
-    sp_nl_k = _load_spectrax_diag(args.spectrax_kbm_nonlinear)
+    fig = plt.figure(figsize=(18, 11), constrained_layout=True)
+    gs = fig.add_gridspec(2, 4, height_ratios=[0.95, 1.25])
 
-    fig, axes = plt.subplots(4, 4, figsize=(18, 16))
-    _plot_linear_row(
-        axes[0],
-        "Cyclone linear",
-        theta_sp_c,
-        mode_sp_c,
-        theta_gx_c,
-        mode_gx_c,
-        cycl_scan,
-    )
-    _plot_nonlinear_row(
-        axes[1],
-        "Cyclone nonlinear",
-        gx_nl_c,
-        sp_nl_c,
-        t_cap=args.cyclone_nonlinear_tmax,
-        mode_t_cap=args.cyclone_nonlinear_mode_tmax,
-    )
-    _plot_linear_row(
-        axes[2],
-        "KBM linear",
-        theta_sp_k,
-        mode_sp_k,
-        theta_gx_k,
-        mode_gx_k,
-        kbm_scan,
-    )
-    _plot_nonlinear_row(
-        axes[3],
-        "KBM nonlinear",
-        gx_nl_k,
-        sp_nl_k,
-        t_cap=args.kbm_nonlinear_tmax,
-        mode_t_cap=args.kbm_nonlinear_mode_tmax,
-    )
+    _plot_linear_metric(fig.add_subplot(gs[0, 0]), cyclone_linear, metric="gamma", title="Cyclone (Miller) Linear γ")
+    _plot_linear_metric(fig.add_subplot(gs[0, 1]), cyclone_linear, metric="omega", title="Cyclone (Miller) Linear ω")
+    _plot_linear_metric(fig.add_subplot(gs[0, 2]), kbm_linear, metric="gamma", title="KBM Linear γ")
+    _plot_linear_metric(fig.add_subplot(gs[0, 3]), kbm_linear, metric="omega", title="KBM Linear ω")
 
-    col_titles = [
-        "Eigenfunction / field",
-        "Growth rate",
-        "Frequency",
-        "Relative error (linear γ,ω) / Heat flux (nonlinear)",
-    ]
-    for j, title in enumerate(col_titles):
-        axes[0, j].set_title(title)
-    fig.suptitle("SPECTRAX-GK vs GX: Cyclone and KBM comparisons (linear + nonlinear)", fontsize=14)
-    fig.tight_layout(rect=(0.0, 0.0, 1.0, 0.98))
-    args.out.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(args.out, dpi=220)
-    print(f"saved {args.out}")
-    return 0
+    ax_c = fig.add_subplot(gs[1, :2])
+    ax_c.imshow(cyclone_img)
+    ax_c.set_title("Cyclone (Miller) Nonlinear", fontsize=14, fontweight="bold")
+    ax_c.axis("off")
+
+    ax_k = fig.add_subplot(gs[1, 2:])
+    ax_k.imshow(kbm_img)
+    ax_k.set_title("KBM Nonlinear", fontsize=14, fontweight="bold")
+    ax_k.axis("off")
+
+    fig.suptitle("Tokamak GX Validation: Cyclone and KBM", fontsize=17, fontweight="bold")
+    out.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out, dpi=240, facecolor="white")
+    print(f"saved {out}")
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    main()
