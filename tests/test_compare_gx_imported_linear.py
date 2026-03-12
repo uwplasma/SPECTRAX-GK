@@ -26,6 +26,7 @@ from compare_gx_imported_linear import (
     _run_single_ky,
     _select_geometry_source,
     _select_gx_kx_index,
+    _write_scan_rows,
     build_parser,
 )
 from spectraxgk.config import GridConfig
@@ -405,3 +406,17 @@ def test_integrate_target_mode_series_collects_requested_sample_count(monkeypatc
     np.testing.assert_allclose(Wg, np.full(3, 3.0, dtype=float))
     np.testing.assert_allclose(Wphi, np.full(3, 4.0, dtype=float))
     np.testing.assert_allclose(Wapar, np.full(3, 5.0, dtype=float))
+
+
+def test_write_scan_rows_checkpoints_sorted_csv(tmp_path: Path) -> None:
+    out = tmp_path / "scan.csv"
+    df = _write_scan_rows(
+        [
+            {"ky": 0.3, "mean_abs_gamma": 3.0},
+            {"ky": 0.1, "mean_abs_gamma": 1.0},
+        ],
+        out,
+    )
+    assert list(df["ky"]) == [0.1, 0.3]
+    saved = np.genfromtxt(out, delimiter=",", names=True)
+    np.testing.assert_allclose(np.asarray(saved["ky"], dtype=float), np.asarray([0.1, 0.3], dtype=float))
