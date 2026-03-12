@@ -408,6 +408,33 @@ def test_runtime_single_mode_init_matches_gx_real_phase() -> None:
     assert np.allclose(seeded.imag, 0.0)
 
 
+def test_runtime_single_mode_init_applies_gx_kpar_phase() -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        init=InitializationConfig(
+            init_field="density",
+            init_amp=0.25,
+            gaussian_init=False,
+            init_single=True,
+            kpar_init=2.0,
+        ),
+    )
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    ky_index = int(np.argmin(np.abs(np.asarray(grid.ky) - 1.0)))
+
+    g0 = np.asarray(_build_initial_condition(grid, geom, cfg, ky_index=ky_index, kx_index=0, Nl=3, Nm=4, nspecies=1))
+
+    z = np.asarray(grid.z, dtype=float)
+    z_min = float(z.min())
+    z_max = float(z.max())
+    z_period = (z_max - z_min) / (2.0 * np.pi) if z_max > z_min else 1.0
+    expected = 0.25 * np.cos(2.0 * z / z_period)
+    seeded = g0[0, 0, 0, ky_index, 0, :]
+    assert np.allclose(seeded.real, expected)
+    assert np.allclose(seeded.imag, 0.0)
+
+
 def test_runtime_nonlinear_fixed_mode_returns_frozen_state() -> None:
     grid = build_spectral_grid(GridConfig(Nx=4, Ny=4, Nz=4, Lx=6.28, Ly=6.28, boundary="periodic"))
     ky_fixed = float(np.asarray(grid.ky)[1])
@@ -1120,12 +1147,15 @@ def test_runtime_linear_secondary_slab_example_runs() -> None:
     assert np.isfinite(out.omega)
 
 
-def test_runtime_rejects_cetg_reference_example() -> None:
+def test_runtime_cetg_reference_example_runs_small_smoke() -> None:
     cfg_path = Path(__file__).resolve().parents[1] / "examples" / "configs" / "runtime_cetg_reference.toml"
     cfg, _ = load_runtime_from_toml(cfg_path)
 
-    with pytest.raises(NotImplementedError, match="collisional-slab ETG solver"):
-        run_runtime_nonlinear(cfg, ky_target=1.0 / 6.366, kx_target=0.0, Nl=2, Nm=1, steps=1)
+    out = run_runtime_nonlinear(cfg, ky_target=1.0 / 6.366, kx_target=0.0, steps=2, sample_stride=1)
+
+    assert out.diagnostics is not None
+    assert np.all(np.isfinite(np.asarray(out.diagnostics.Wg_t)))
+    assert np.allclose(np.asarray(out.diagnostics.Wapar_t), 0.0)
 
 
 def test_runtime_linear_gx_time_root_level_geometry_matches_analytic_reference(tmp_path) -> None:
