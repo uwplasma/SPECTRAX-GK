@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 from netCDF4 import Dataset
 
-from spectraxgk.benchmarks import _apply_gx_hypercollisions, _build_initial_condition
+from spectraxgk.benchmarks import _apply_gx_hypercollisions
 from spectraxgk.config import GridConfig, InitializationConfig
 from spectraxgk.geometry import apply_gx_geometry_grid_defaults, load_gx_geometry_netcdf
 from spectraxgk.grids import build_spectral_grid, select_ky_grid
@@ -20,6 +20,8 @@ from spectraxgk.analysis import select_ky_index
 from spectraxgk.gx_integrators import GXTimeConfig, integrate_linear_gx_diagnostics
 from spectraxgk.io import load_toml
 from spectraxgk.linear import LinearTerms, build_linear_cache
+from spectraxgk.runtime import _build_initial_condition as _build_runtime_initial_condition
+from spectraxgk.runtime_config import RuntimeConfig, RuntimeSpeciesConfig
 from spectraxgk.species import Species, build_linear_params
 
 
@@ -34,24 +36,41 @@ class GXInputContract:
     species: tuple[Species, ...]
     tau_e: float
     beta: float
+    dt: float | None
+    scheme: str
+    nwrite: int
+    init_field: str
+    init_amp: float
+    init_single: bool
+    ikx_single: int
+    iky_single: int
+    gaussian_init: bool
+    gaussian_width: float
+    gaussian_envelope_constant: float
+    gaussian_envelope_sine: float
+    kpar_init: float
+    random_seed: int
+    init_electrons_only: bool
+    random_init: bool
 
 
 def _load_gx_reference(
     path: Path,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     root = Dataset(path, "r")
     try:
         grids = root.groups["Grids"]
         diag = root.groups["Diagnostics"]
         time = np.asarray(grids.variables["time"][:], dtype=float)
         ky = np.asarray(grids.variables["ky"][:], dtype=float)
+        kx = np.asarray(grids.variables["kx"][:], dtype=float)
         omega = np.asarray(diag.variables["omega_kxkyt"][:], dtype=float)
         Wg = np.asarray(diag.variables["Wg_kyst"][:, 0, :], dtype=float)
         Wphi = np.asarray(diag.variables["Wphi_kyst"][:, 0, :], dtype=float)
         Wapar = np.asarray(diag.variables["Wapar_kyst"][:, 0, :], dtype=float)
     finally:
         root.close()
-    return time, ky, omega, Wg, Wphi, Wapar
+    return time, ky, kx, omega, Wg, Wphi, Wapar
 
 
 def _infer_real_fft_ny(ky: np.ndarray) -> int:
@@ -73,8 +92,12 @@ def _load_gx_input_contract(path: Path) -> GXInputContract:
     dims = data.get("Dimensions", {})
     domain = data.get("Domain", {})
     physics = data.get("Physics", {})
+    time = data.get("Time", {})
+    init = data.get("Initialization", {})
+    expert = data.get("Expert", {})
     species_raw = data.get("species", {})
     boltz = data.get("Boltzmann", {})
+    diagnostics = data.get("Diagnostics", {})
 
     nspecies = int(dims.get("nspecies", 1))
 
@@ -112,6 +135,7 @@ def _load_gx_input_contract(path: Path) -> GXInputContract:
     add_boltz = bool(boltz.get("add_Boltzmann_species", False))
     boltz_type = str(boltz.get("Boltzmann_type", "")).strip().lower()
     tau_e = float(boltz.get("tau_fac", 0.0)) if add_boltz and boltz_type == "electrons" else 0.0
+    kpar_init = float(init["ikpar_init"]) if "ikpar_init" in init else float(init.get("kpar_init", 0.0))
 
     return GXInputContract(
         Nx=int(dims.get("nkx", dims.get("nx", 1))),
@@ -123,6 +147,93 @@ def _load_gx_input_contract(path: Path) -> GXInputContract:
         species=species,
         tau_e=tau_e,
         beta=float(physics.get("beta", 0.0)),
+        dt=None if "dt" not in time else float(time["dt"]),
+        scheme=str(time.get("scheme", "rk4")).strip().lower(),
+        nwrite=max(1, int(diagnostics.get("nwrite", 1))),
+        init_field=str(init.get("init_field", "density")).strip().lower(),
+        init_amp=float(init.get("init_amp", 1.0e-5)),
+        init_single=bool(expert.get("init_single", False)),
+        ikx_single=int(expert.get("ikx_single", 0)),
+        iky_single=int(expert.get("iky_single", 1)),
+        gaussian_init=bool(init.get("gaussian_init", False)),
+        gaussian_width=float(init.get("gaussian_width", 0.5)),
+        gaussian_envelope_constant=float(init.get("gaussian_envelope_constant_coefficient", 1.0)),
+        gaussian_envelope_sine=float(init.get("gaussian_envelope_sine_coefficient", 0.0)),
+        kpar_init=kpar_init,
+        random_seed=int(init.get("random_seed", 22)),
+        init_electrons_only=bool(init.get("init_electrons_only", False)),
+        random_init=bool(init.get("random_init", False)),
+    )
+
+
+def _runtime_species_tuple(species: tuple[Species, ...]) -> tuple[RuntimeSpeciesConfig, ...]:
+    return tuple(
+        RuntimeSpeciesConfig(
+            name=f"species_{idx}",
+            charge=float(sp.charge),
+            mass=float(sp.mass),
+            density=float(sp.density),
+            temperature=float(sp.temperature),
+            tprim=float(sp.tprim),
+            fprim=float(sp.fprim),
+            nu=float(sp.nu),
+            kinetic=True,
+        )
+        for idx, sp in enumerate(species)
+    )
+
+
+def _build_imported_initial_condition(
+    *,
+    grid,
+    geom,
+    gx_contract: GXInputContract | None,
+    species: tuple[Species, ...],
+    ky_index: int,
+    kx_index: int,
+    Nl: int,
+    Nm: int,
+):
+    if gx_contract is None:
+        init_cfg = InitializationConfig(
+            gaussian_init=True,
+            init_field="density",
+            init_amp=1.0e-10,
+        )
+        seed_ky = ky_index
+        seed_kx = kx_index
+    else:
+        if gx_contract.random_init:
+            raise NotImplementedError(
+                "Imported linear comparison does not yet support GX random_init=true startup"
+            )
+        init_cfg = InitializationConfig(
+            init_field=gx_contract.init_field,
+            init_amp=gx_contract.init_amp,
+            init_single=gx_contract.init_single,
+            random_seed=gx_contract.random_seed,
+            gaussian_init=gx_contract.gaussian_init,
+            gaussian_width=gx_contract.gaussian_width,
+            gaussian_envelope_constant=gx_contract.gaussian_envelope_constant,
+            gaussian_envelope_sine=gx_contract.gaussian_envelope_sine,
+            kpar_init=gx_contract.kpar_init,
+            init_electrons_only=gx_contract.init_electrons_only,
+        )
+        seed_ky = gx_contract.iky_single if gx_contract.init_single else ky_index
+        seed_kx = gx_contract.ikx_single if gx_contract.init_single else kx_index
+    cfg = RuntimeConfig(
+        init=init_cfg,
+        species=_runtime_species_tuple(species),
+    )
+    return _build_runtime_initial_condition(
+        grid,
+        geom,
+        cfg,
+        ky_index=int(seed_ky),
+        kx_index=int(seed_kx),
+        Nl=Nl,
+        Nm=Nm,
+        nspecies=len(species),
     )
 
 
@@ -135,6 +246,10 @@ def _mean_rel_error(lhs: np.ndarray, rhs: np.ndarray, *, floor_fraction: float) 
     return float(np.mean(np.abs(lhs - rhs) / denom))
 
 
+def _match_local_kx_index(grid_kx: np.ndarray, gx_kx_value: float) -> int:
+    return int(np.argmin(np.abs(np.asarray(grid_kx, dtype=float) - float(gx_kx_value))))
+
+
 def _run_single_ky(
     *,
     ky_target: float,
@@ -142,24 +257,28 @@ def _run_single_ky(
     grid_full,
     params,
     time_cfg: GXTimeConfig,
-    init_cfg: InitializationConfig,
+    gx_contract: GXInputContract | None,
+    species: tuple[Species, ...],
     Nl: int,
     Nm: int,
     sample_steps: np.ndarray,
     mode_method: str,
+    kx_index: int,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     ky_index = select_ky_index(np.asarray(grid_full.ky), ky_target)
-    grid = select_ky_grid(grid_full, ky_index)
-    cache = build_linear_cache(grid, geom, params, Nl, Nm)
-    G0 = _build_initial_condition(
-        grid,
-        geom,
-        ky_index=0,
-        kx_index=0,
+    G0_full = _build_imported_initial_condition(
+        grid=grid_full,
+        geom=geom,
+        gx_contract=gx_contract,
+        species=species,
+        ky_index=ky_index,
+        kx_index=kx_index,
         Nl=Nl,
         Nm=Nm,
-        init_cfg=init_cfg,
     )
+    G0 = G0_full[:, :, :, ky_index : ky_index + 1, :, :]
+    grid = select_ky_grid(grid_full, ky_index)
+    cache = build_linear_cache(grid, geom, params, Nl, Nm)
     _t, _phi_t, gamma_t, omega_t, diag = integrate_linear_gx_diagnostics(
         G0,
         grid,
@@ -176,6 +295,9 @@ def _run_single_ky(
     Wg = np.asarray(diag.Wg_t)[sample_steps]
     Wphi = np.asarray(diag.Wphi_t)[sample_steps]
     Wapar = np.asarray(diag.Wapar_t)[sample_steps]
+    if np.asarray(gamma_t).ndim == 3:
+        gamma = np.asarray(gamma_t)[sample_steps, 0, kx_index]
+        omega = np.asarray(omega_t)[sample_steps, 0, kx_index]
     return gamma, omega, Wg, Wphi, Wapar
 
 
@@ -219,11 +341,11 @@ def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
 
-    gx_time, gx_ky, gx_omega, gx_Wg, gx_Wphi, gx_Wapar = _load_gx_reference(args.gx)
+    gx_time, gx_ky, gx_kx, gx_omega, gx_Wg, gx_Wphi, gx_Wapar = _load_gx_reference(args.gx)
     positive_ky = gx_ky[gx_ky > 0.0]
     ky_values = positive_ky if args.ky is None or len(args.ky) == 0 else np.asarray(args.ky, dtype=float)
     dt = float(gx_time[0])
-    sample_steps = np.rint(gx_time / dt).astype(int) - 1
+    sample_steps = np.arange(gx_time.size, dtype=int)
 
     geom = load_gx_geometry_netcdf(args.geometry_file)
     boundary = "linked"
@@ -232,6 +354,7 @@ def main() -> None:
     ny = _infer_real_fft_ny(gx_ky)
     nperiod = 1
     ntheta = int(np.asarray(geom.theta).size)
+    gx_contract: GXInputContract | None = None
     species = [
         Species(
             charge=1.0,
@@ -258,6 +381,9 @@ def main() -> None:
         species = list(gx_contract.species)
         tau_e = float(gx_contract.tau_e)
         beta = float(gx_contract.beta)
+        if gx_contract.dt is not None:
+            dt = float(gx_contract.dt)
+            sample_steps = np.arange(gx_time.size, dtype=int)
 
     grid_cfg = GridConfig(
         Nx=nx,
@@ -284,38 +410,43 @@ def main() -> None:
         damp_ends_amp=float(args.damp_ends_amp) / dt,
         damp_ends_widthfrac=float(args.damp_ends_widthfrac),
     )
-    init_cfg = InitializationConfig(
-        gaussian_init=True,
-        init_field="density",
-        init_amp=1.0e-10,
-    )
     time_cfg = GXTimeConfig(
         dt=dt,
         t_max=float(gx_time[-1]),
-        sample_stride=1,
+        method=(gx_contract.scheme if gx_contract is not None else "rk4"),
+        sample_stride=(gx_contract.nwrite if gx_contract is not None else 1),
         fixed_dt=True,
     )
 
     rows: list[dict[str, float]] = []
     for ky_target in ky_values:
         ky_idx = int(np.argmin(np.abs(gx_ky - float(ky_target))))
+        gx_kx_idx = 0
+        if gx_omega.ndim >= 3 and gx_omega.shape[2] > 1:
+            gamma_cube = np.asarray(gx_omega[:, ky_idx, :, 1], dtype=float)
+            gx_kx_idx = int(np.nanargmax(np.abs(gamma_cube[-1])))
+        kx_idx = _match_local_kx_index(np.asarray(grid_full.kx), float(gx_kx[gx_kx_idx]))
         gamma, omega, Wg, Wphi, Wapar = _run_single_ky(
             ky_target=float(ky_target),
             geom=geom,
             grid_full=grid_full,
             params=params,
             time_cfg=time_cfg,
-            init_cfg=init_cfg,
+            gx_contract=gx_contract,
+            species=tuple(species),
             Nl=args.Nl,
             Nm=args.Nm,
             sample_steps=sample_steps,
             mode_method=args.mode_method,
+            kx_index=kx_idx,
         )
-        omega_ref = gx_omega[:, ky_idx, 0, 0]
-        gamma_ref = gx_omega[:, ky_idx, 0, 1]
+        omega_ref = gx_omega[:, ky_idx, gx_kx_idx, 0]
+        gamma_ref = gx_omega[:, ky_idx, gx_kx_idx, 1]
         rows.append(
             {
                 "ky": float(ky_target),
+                "kx_ref": float(gx_kx[gx_kx_idx]),
+                "kx_local": float(np.asarray(grid_full.kx)[kx_idx]),
                 "mean_abs_omega": float(np.mean(np.abs(omega - omega_ref))),
                 "mean_rel_omega": _mean_rel_error(
                     omega, omega_ref, floor_fraction=float(args.rel_floor_fraction)
