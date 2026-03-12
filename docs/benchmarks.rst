@@ -148,12 +148,22 @@ choices (e.g. custom ``geometry.drift_scale`` or solver selection).
    eigenfunction overlays, linear ``k_y`` growth/frequency scans, and
    nonlinear time traces of growth rate, frequency, and heat flux.
 
-Regenerate this panel with:
+Regenerate the tokamak and publication panels with:
 
 - ``python tools/compare_gx_linear.py --gx /path/to/itg_salpha_adiabatic_electrons.out.nc --out docs/_static/cyclone_gx_mismatch.csv``
 - ``python tools/compare_gx_kbm.py --gx /path/to/kbm_salpha.out.nc --gx-big /path/to/kbm_salpha.big.nc --out docs/_static/kbm_gx_mismatch.csv --candidate-out docs/_static/kbm_gx_candidates.csv``
 - ``python tools/make_gx_cyclone_kbm_panel.py --out docs/_static/gx_cyclone_kbm_panel.png``
+- ``python tools/make_gx_publication_panel.py --out docs/_static/gx_publication_panel.png --pdf-out docs/_static/gx_publication_panel.pdf``
 - ``python tools/make_gx_summary_panel.py --out docs/_static/gx_summary_panel.png``
+
+.. figure:: _static/gx_publication_panel.png
+   :width: 95%
+   :align: center
+   :alt: Publication-facing GX validation panel for Cyclone, KBM, W7-X, and HSX
+
+   Publication-facing GX validation panel used in the README and manuscript
+   draft workflow. It intentionally limits the headline claim to the main
+   full-gyrokinetic benchmark families: Cyclone, KBM, W7-X, and HSX.
 
 For low-``ky`` KBM branch audits, ``tools/probe_gx_kbm_extractors.py`` now also
 supports explicit checkpoint horizons so a long ``gx_time`` trajectory can be
