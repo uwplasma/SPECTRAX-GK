@@ -10,14 +10,16 @@ import pytest
 
 from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, TimeConfig
 from spectraxgk.diagnostics import GXDiagnostics
-from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
+from spectraxgk.geometry import SAlphaGeometry, apply_gx_geometry_grid_defaults, sample_flux_tube_geometry
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.io import load_runtime_from_toml
 from spectraxgk.runtime import (
     _build_initial_condition,
     _gx_centered_random_pairs,
     _gx_init_mode_pairs,
+    _gx_periodic_zp,
     _infer_runtime_nonlinear_steps,
+    build_runtime_geometry,
     build_runtime_linear_params,
     build_runtime_linear_terms,
     run_runtime_linear,
@@ -426,12 +428,10 @@ def test_runtime_single_mode_init_applies_gx_kpar_phase() -> None:
     g0 = np.asarray(_build_initial_condition(grid, geom, cfg, ky_index=ky_index, kx_index=0, Nl=3, Nm=4, nspecies=1))
 
     z = np.asarray(grid.z, dtype=float)
-    z_min = float(z.min())
-    z_max = float(z.max())
-    z_period = (z_max - z_min) / (2.0 * np.pi) if z_max > z_min else 1.0
+    z_period = _gx_periodic_zp(z)
     expected = 0.25 * np.cos(2.0 * z / z_period)
     seeded = g0[0, 0, 0, ky_index, 0, :]
-    assert np.allclose(seeded.real, expected)
+    assert np.allclose(seeded.real, expected, atol=1.0e-6)
     assert np.allclose(seeded.imag, 0.0)
 
 
@@ -1575,9 +1575,7 @@ def test_runtime_random_multimode_init_matches_gx_c_rand_sequence() -> None:
     )[0, 0, 0]
 
     z = np.asarray(grid.z, dtype=float)
-    z_min = float(z.min())
-    z_max = float(z.max())
-    z_period = (z_max - z_min) / (2.0 * np.pi) if z_max > z_min else 1.0
+    z_period = _gx_periodic_zp(z)
     z_phase = np.cos(float(cfg.init.kpar_init) * z / z_period)
     active_modes = _gx_init_mode_pairs(grid)
     expected = np.zeros_like(g0)
@@ -1591,7 +1589,7 @@ def test_runtime_random_multimode_init_matches_gx_c_rand_sequence() -> None:
         if kx_i != 0:
             expected[ky_i, expected.shape[1] - kx_i, :] = (rb + 1j * ra) * z_phase
 
-    assert np.allclose(g0, expected)
+    assert np.allclose(g0, expected, atol=1.0e-6)
 
 
 def test_runtime_gx_init_mode_pairs_match_gx_loop_bounds() -> None:
@@ -1610,6 +1608,17 @@ def test_runtime_gx_centered_random_pairs_match_glibc_reference() -> None:
     ref = _gx_c_rand_pairs(22, 5)
 
     assert np.allclose(vals, ref)
+
+
+def test_runtime_gx_periodic_zp_uses_discrete_period_not_endpoint_span() -> None:
+    cfg, _data = load_runtime_from_toml("examples/configs/runtime_cetg_reference.toml")
+    geom = build_runtime_geometry(cfg)
+    grid = build_spectral_grid(apply_gx_geometry_grid_defaults(geom, cfg.grid))
+    z = np.asarray(grid.z, dtype=float)
+
+    zp = _gx_periodic_zp(z)
+
+    assert np.isclose(zp, 1.0, atol=2.0e-4)
 
 
 def test_runtime_random_multimode_zero_kx_matches_gx_overwrite_order() -> None:

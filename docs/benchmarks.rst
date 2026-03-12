@@ -341,7 +341,10 @@ parity distinction is:
 
 - exact-state/grouped-output parity against the legacy GX ``cetg_smoke.nc``
   contract is closed
-- full time-evolution parity is still under active audit
+- startup-state parity against the legacy GX ``cetg_init.restart.nc`` and raw
+  startup ``Special/Phi_z`` dump is also closed
+- full time-evolution parity is still under active audit and is now isolated to
+  the adaptive-step/runtime-evolution path
 
 The legacy GX cETG reference lane on ``office`` is now runnable again from the
 coherent ``aed3b78b`` checkout with runtime-only callback/NetCDF fallbacks.
@@ -359,6 +362,10 @@ Inspect one of those files with:
 For exact-state grouped-output auditing against a legacy GX restart file, use:
 
 - ``python tools/compare_gx_cetg_restart.py --gx-nc /path/to/cetg_smoke.nc --gx-restart /path/to/cetg_smoke.restart.nc --config examples/configs/runtime_cetg_reference.toml``
+
+For raw startup-state auditing against the legacy GX ``t=0`` cETG files, use:
+
+- ``python tools/compare_gx_cetg_startup.py --gx-nc /path/to/cetg_init.nc --gx-restart /path/to/cetg_init.restart.nc --config examples/configs/runtime_cetg_reference.toml``
 
 ETG (GS2/Stella Cross-Code)
 ---------------------------
