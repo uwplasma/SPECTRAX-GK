@@ -393,8 +393,14 @@ def _integrate_target_mode_series(
     mask = jnp.asarray(grid.dealias_mask, dtype=bool)
     z_index = _gx_midplane_index(grid.z.size)
     dt = float(time_cfg.dt)
-    t_max = float(time_cfg.t_max)
     sample_stride = int(max(time_cfg.sample_stride, 1))
+    target_samples = int(np.asarray(sample_steps).size)
+    if target_samples <= 0:
+        raise ValueError("sample_steps must request at least one sample")
+    max_steps = max(
+        sample_stride * target_samples,
+        int(np.ceil(float(time_cfg.t_max) / dt)) + sample_stride + 2,
+    )
     vol_fac = cache.jacobian / jnp.sum(cache.jacobian)
 
     G = jnp.asarray(G0)
@@ -422,12 +428,12 @@ def _integrate_target_mode_series(
     Wphi_list: list[float] = []
     Wapar_list: list[float] = []
 
-    while t < t_max - 1.0e-12:
+    while len(gamma_list) < target_samples and step < max_steps:
         G, fields = stepper(G, cache, params, term_cfg, dt)
         step += 1
         t += dt
 
-        if step % sample_stride == 0 or t >= t_max:
+        if step % sample_stride == 0:
             phi = fields.phi
             apar = fields.apar if fields.apar is not None else jnp.zeros_like(phi)
             gamma, omega = _gx_growth_rate_step(
@@ -450,13 +456,18 @@ def _integrate_target_mode_series(
         else:
             phi_prev = fields.phi
 
-    sample_idx = np.asarray(sample_steps, dtype=int)
+    if len(gamma_list) != target_samples:
+        raise RuntimeError(
+            "Imported-linear integration produced "
+            f"{len(gamma_list)} samples, expected {target_samples} "
+            f"(dt={dt}, sample_stride={sample_stride}, max_steps={max_steps})"
+        )
     return (
-        np.asarray(gamma_list, dtype=float)[sample_idx],
-        np.asarray(omega_list, dtype=float)[sample_idx],
-        np.asarray(Wg_list, dtype=float)[sample_idx],
-        np.asarray(Wphi_list, dtype=float)[sample_idx],
-        np.asarray(Wapar_list, dtype=float)[sample_idx],
+        np.asarray(gamma_list, dtype=float),
+        np.asarray(omega_list, dtype=float),
+        np.asarray(Wg_list, dtype=float),
+        np.asarray(Wphi_list, dtype=float),
+        np.asarray(Wapar_list, dtype=float),
     )
 
 

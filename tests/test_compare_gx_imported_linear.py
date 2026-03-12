@@ -7,6 +7,7 @@ from pathlib import Path
 import sys
 from types import SimpleNamespace
 
+import jax.numpy as jnp
 import numpy as np
 from typing import Any
 
@@ -17,6 +18,7 @@ import compare_gx_imported_linear as imported_linear
 from compare_gx_imported_linear import (
     GXInputContract,
     _build_imported_initial_condition,
+    _integrate_target_mode_series,
     _gx_Wg_by_ky,
     _gx_kyst_fac_mask_cached,
     _load_gx_input_contract,
@@ -337,10 +339,10 @@ def test_gx_Wg_by_ky_matches_gx_positive_ky_storage_contract() -> None:
         dealias_mask=np.asarray([[1.0], [1.0], [1.0]], dtype=np.float32),
     )
     params = SimpleNamespace(density=1.0, temp=1.0)
-    vol_fac = np.asarray([1.0], dtype=np.float32)
-    G = np.ones((1, 1, 1, 3, 1, 1), dtype=np.complex64)
+    vol_fac = jnp.asarray([1.0], dtype=jnp.float32)
+    G = jnp.ones((1, 1, 1, 3, 1, 1), dtype=jnp.complex64)
     Wg = np.asarray(_gx_Wg_by_ky(G, cache, params, vol_fac), dtype=float)
-    np.testing.assert_allclose(Wg, np.asarray([0.0, 0.5, 1.0], dtype=float))
+    assert np.allclose(Wg, np.asarray([0.0, 0.5, 1.0], dtype=float))
 
 
 def test_select_geometry_source_prefers_gx_output_for_vmec_generated_runs() -> None:
@@ -353,3 +355,53 @@ def test_select_geometry_source_prefers_gx_output_for_vmec_generated_runs() -> N
     assert _select_geometry_source(gx_out, geom, vmec_contract) == gx_out
     assert _select_geometry_source(gx_out, geom, desc_contract) == gx_out
     assert _select_geometry_source(gx_out, geom, nc_contract) == geom
+
+
+def test_integrate_target_mode_series_collects_requested_sample_count(monkeypatch) -> None:
+    monkeypatch.setattr(imported_linear.jax, "jit", lambda fn, donate_argnums=None: fn)
+    monkeypatch.setattr(
+        imported_linear,
+        "assemble_rhs_cached",
+        lambda *_args, **_kwargs: (
+            None,
+            SimpleNamespace(phi=jnp.zeros((2, 2, 3), dtype=jnp.complex64), apar=None),
+        ),
+    )
+    monkeypatch.setattr(
+        imported_linear,
+        "_linear_explicit_step",
+        lambda G_state, *_args, **_kwargs: (
+            G_state,
+            SimpleNamespace(phi=jnp.zeros((2, 2, 3), dtype=jnp.complex64), apar=None),
+        ),
+    )
+    monkeypatch.setattr(
+        imported_linear,
+        "_gx_growth_rate_step",
+        lambda *_args, **_kwargs: (
+            jnp.ones((2, 2), dtype=jnp.float32),
+            jnp.full((2, 2), 2.0, dtype=jnp.float32),
+        ),
+    )
+    monkeypatch.setattr(imported_linear, "_gx_Wg_by_ky", lambda *_args, **_kwargs: jnp.asarray([0.0, 3.0]))
+    monkeypatch.setattr(imported_linear, "_gx_Wphi_by_ky", lambda *_args, **_kwargs: jnp.asarray([0.0, 4.0]))
+    monkeypatch.setattr(imported_linear, "_gx_Wapar_by_ky", lambda *_args, **_kwargs: jnp.asarray([0.0, 5.0]))
+
+    gamma, omega, Wg, Wphi, Wapar = _integrate_target_mode_series(
+        G0=jnp.zeros((1, 1, 1, 2, 2, 3), dtype=jnp.complex64),
+        grid=SimpleNamespace(dealias_mask=np.ones((2, 2), dtype=bool), z=np.arange(3)),
+        cache=SimpleNamespace(jacobian=jnp.ones(3, dtype=jnp.float32)),
+        params=SimpleNamespace(),
+        time_cfg=GXTimeConfig(dt=0.1, t_max=0.21, sample_stride=1, fixed_dt=True),
+        terms=LinearTerms(),
+        mode_method="z_index",
+        ky_index=1,
+        kx_index=0,
+        sample_steps=np.arange(3, dtype=int),
+    )
+
+    np.testing.assert_allclose(gamma, np.ones(3, dtype=float))
+    np.testing.assert_allclose(omega, np.full(3, 2.0, dtype=float))
+    np.testing.assert_allclose(Wg, np.full(3, 3.0, dtype=float))
+    np.testing.assert_allclose(Wphi, np.full(3, 4.0, dtype=float))
+    np.testing.assert_allclose(Wapar, np.full(3, 5.0, dtype=float))
