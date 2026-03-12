@@ -342,6 +342,19 @@ the dedicated reduced-model solver lands: the reference GX contract is
 available and test-covered, but SPECTRAX does not yet pretend to offer parity
 for a model it does not implement.
 
+The legacy GX cETG reference lane on ``office`` is now runnable again from the
+coherent ``aed3b78b`` checkout with runtime-only callback/NetCDF fallbacks.
+Its output contract is an older grouped NetCDF layout rather than a modern
+``*.out.nc`` file:
+
+- root coordinates: ``time``, ``kx``, ``ky``, ``kz``, ``x``, ``y``
+- ``Spectra/W``, ``Spectra/Phi2t``
+- ``Fluxes/qflux``, ``Fluxes/pflux``
+
+Inspect one of those files with:
+
+- ``python tools/inspect_gx_legacy_cetg.py /path/to/cetg_smoke.nc --json``
+
 ETG (GS2/Stella Cross-Code)
 ---------------------------
 
