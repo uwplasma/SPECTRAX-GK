@@ -11,7 +11,11 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
 
 from inspect_gx_legacy_cetg import build_parser
-from spectraxgk.gx_legacy_output import load_gx_legacy_cetg_output
+from spectraxgk.gx_legacy_output import (
+    expand_gx_legacy_positive_ky_state,
+    load_gx_legacy_cetg_output,
+    load_gx_legacy_cetg_restart,
+)
 
 
 def test_load_gx_legacy_cetg_output_reads_grouped_contract(tmp_path: Path) -> None:
@@ -91,3 +95,44 @@ def test_inspect_gx_legacy_cetg_parser_accepts_json_flag() -> None:
     args = build_parser().parse_args(["/tmp/cetg_smoke.nc", "--json"])
     assert args.gx_nc == Path("/tmp/cetg_smoke.nc")
     assert args.json is True
+
+
+def test_load_gx_legacy_cetg_restart_maps_compressed_kx_layout(tmp_path: Path) -> None:
+    netcdf4 = pytest.importorskip("netCDF4")
+    Dataset = netcdf4.Dataset
+
+    path = tmp_path / "cetg.restart.nc"
+    with Dataset(path, "w") as root:
+        root.createDimension("Nspecies", 1)
+        root.createDimension("Nm", 1)
+        root.createDimension("Nl", 2)
+        root.createDimension("Nz", 2)
+        root.createDimension("Nkx", 3)
+        root.createDimension("Nky", 2)
+        root.createDimension("ri", 2)
+        root.createVariable("time", "f8", ())[:] = 1.25
+        G = root.createVariable("G", "f8", ("Nspecies", "Nm", "Nl", "Nz", "Nkx", "Nky", "ri"))
+        raw = np.zeros((1, 1, 2, 2, 3, 2, 2), dtype=float)
+        raw[0, 0, 0, 0, 0, 0] = (10.0, 1.0)
+        raw[0, 0, 0, 0, 1, 1] = (20.0, 2.0)
+        raw[0, 0, 1, 1, 2, 1] = (30.0, 3.0)
+        G[:] = raw
+
+    out = load_gx_legacy_cetg_restart(path, nx_full=4, ny_full=4)
+
+    assert out.time == pytest.approx(1.25)
+    assert out.state_positive_ky.shape == (1, 2, 1, 3, 4, 2)
+    assert out.state_positive_ky[0, 0, 0, 0, 0, 0] == pytest.approx(10.0 + 1.0j)
+    assert out.state_positive_ky[0, 0, 0, 1, 1, 0] == pytest.approx(20.0 + 2.0j)
+    assert out.state_positive_ky[0, 1, 0, 1, 3, 1] == pytest.approx(30.0 + 3.0j)
+    assert out.state_positive_ky[0, 0, 0, 2, 0, 0] == pytest.approx(0.0)
+
+
+def test_expand_gx_legacy_positive_ky_state_builds_full_hermitian_ky_grid() -> None:
+    pos = np.zeros((1, 2, 1, 3, 4, 1), dtype=np.complex64)
+    pos[0, 0, 0, 1, 1, 0] = 1.0 + 2.0j
+    full = expand_gx_legacy_positive_ky_state(pos, ny_full=4)
+
+    assert full.shape == (1, 2, 1, 4, 4, 1)
+    assert full[0, 0, 0, 1, 1, 0] == pytest.approx(1.0 + 2.0j)
+    assert full[0, 0, 0, 3, 3, 0] == pytest.approx(1.0 - 2.0j)
