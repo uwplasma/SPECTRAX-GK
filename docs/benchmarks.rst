@@ -266,7 +266,10 @@ Regenerate the tracked mismatch table with:
 The comparison tool reads the sampled geometry and the GX output time grid,
 infers the real-FFT ``ky`` layout from the GX file, converts the GX end-damping
 input into the solver-side RHS coefficient, and reports per-``ky`` mismatch in
-``omega``, ``gamma``, and GX-style field-energy diagnostics.
+``omega``, ``gamma``, and GX-style field-energy diagnostics. The tracked panel
+uses absolute ``omega``/``gamma`` errors for imported-linear rows because the
+lowest-growth branches can be near marginal, which makes pure relative
+``gamma`` metrics unstable even when the absolute mismatch is small.
 
 .. csv-table:: W7-X imported-geometry mismatch table (GX ``t=2``)
    :file: _static/w7x_linear_t2_scan.csv
@@ -296,16 +299,19 @@ Regenerate the tracked HSX linear audit with:
    :file: _static/hsx_linear_t2_scan.csv
    :header-rows: 1
 
-This HSX linear row is still an open audit item, but the failure mode is now
-narrowed substantially. The generic imported-linear harness now uses the same
-GX-style initialization contract as runtime runs, including multimode random
-startup on ``fix aspect`` grids, matches the tracked GX mode by ``kx`` value
-instead of raw index, and honors the GX explicit method choice instead of
-hard-wiring RK4. Exact HSX startup-state audits on the full imported
-``(ky, kx, z)`` block now close to roundoff, so the remaining order-unity
-``gamma``/``omega`` mismatch is downstream of startup and geometry. The next
-HSX linear audit step is therefore an exact post-step/diagnostic comparison,
-not more VMEC-file or species-contract tuning.
+This HSX linear row remains an open audit item, but it is now much narrower.
+The imported-linear harness no longer slices the imported GX run down to a
+single ``ky`` before evolving it, so multimode GX startup on ``fix aspect``
+VMEC geometry is preserved exactly through the time integrator. The tracked
+branch selection is also now explicit: imported linear scans follow the
+``kx ~= 0`` branch by default, unless the GX input itself requested
+``init_single = true`` with a different ``ikx_single``. With those fixes plus
+the corrected linked-chain end damping, the HSX clean-mainline ``t=2`` audit
+now closes ``omega`` to about ``8e-4`` to ``4e-3`` mean absolute error and
+``gamma`` to about ``3e-4`` to ``5e-3`` mean absolute error across the tracked
+``ky`` values. The remaining HSX linear discrepancy is in the reported
+``Wg_kyst`` / ``Wphi_kyst`` energy projection, not in startup, VMEC geometry,
+or the linear RHS/update contract.
 
 Secondary slab benchmark
 ------------------------

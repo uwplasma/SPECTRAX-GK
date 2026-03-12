@@ -1,6 +1,7 @@
 """Linear operator tests for the flux-tube electrostatic model."""
 
 import jax.numpy as jnp
+import numpy as np
 import pytest
 
 from spectraxgk.config import CycloneBaseCase, GridConfig, GeometryConfig
@@ -184,6 +185,35 @@ def test_build_linear_cache_accepts_sampled_geometry_contract():
     assert jnp.allclose(cache_sampled.kperp2, cache_geom.kperp2)
     assert jnp.allclose(cache_sampled.omega_d, cache_geom.omega_d)
     assert jnp.allclose(cache_sampled.bmag, cache_geom.bmag)
+
+
+def test_build_linear_cache_restores_linked_end_damping_on_full_fft_grid():
+    grid = build_spectral_grid(
+        GridConfig(
+            Nx=8,
+            Ny=8,
+            Nz=8,
+            Lx=62.8,
+            Ly=2.0 * np.pi,
+            boundary="linked",
+            y0=1.0,
+        )
+    )
+    geom = SAlphaGeometry.from_config(GeometryConfig(s_hat=0.8))
+    cache = build_linear_cache(grid, geom, LinearParams(), Nl=2, Nm=2)
+
+    profile = np.asarray(cache.linked_damp_profile, dtype=float)
+    assert profile.shape == (grid.ky.size, grid.kx.size, grid.z.size)
+    assert np.max(profile) > 0.0
+
+    pos_rows = np.flatnonzero(np.max(profile, axis=(1, 2)) > 0.0)
+    pos_rows = pos_rows[pos_rows > 0]
+    assert pos_rows.size > 0
+    ky_idx = int(pos_rows[0])
+    kx_idx = int(np.flatnonzero(np.max(profile[ky_idx], axis=-1) > 0.0)[0])
+    mirror_ky = (-ky_idx) % int(grid.ky.size)
+    mirror_kx = 0 if kx_idx == 0 else int(grid.kx.size - kx_idx)
+    assert np.allclose(profile[mirror_ky, mirror_kx], profile[ky_idx, kx_idx])
 
 
 def test_streaming_zero_for_constant_z():
