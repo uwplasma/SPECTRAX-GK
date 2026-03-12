@@ -1,0 +1,142 @@
+#!/usr/bin/env python3
+"""Compare a GX startup field dump against an imported-geometry SPECTRAX setup."""
+
+from __future__ import annotations
+
+import argparse
+from pathlib import Path
+
+import jax.numpy as jnp
+import numpy as np
+from netCDF4 import Dataset
+
+from compare_gx_imported_linear import (
+    _build_imported_initial_condition,
+    _load_gx_input_contract,
+    _select_geometry_source,
+)
+from compare_gx_rhs_terms import _infer_y0, _load_bin, _load_field, _load_shape, _reshape_gx, _summary
+from compare_gx_runtime_startup import _full_ny_from_positive_ky, _select_ky_block
+from spectraxgk.geometry import apply_gx_geometry_grid_defaults, load_gx_geometry_netcdf
+from spectraxgk.grids import build_spectral_grid
+from spectraxgk.linear import build_linear_cache
+from spectraxgk.species import build_linear_params
+from spectraxgk.terms.assembly import compute_fields_cached
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--gx-dir", type=Path, required=True, help="Directory containing GX field dump binaries")
+    parser.add_argument("--gx-out", type=Path, required=True, help="GX .out.nc file for ky metadata")
+    parser.add_argument(
+        "--geometry-file",
+        type=Path,
+        required=True,
+        help="GX/VMEC geometry file used for the imported SPECTRAX run",
+    )
+    parser.add_argument("--gx-input", type=Path, required=True, help="GX input file used to build the imported setup")
+    parser.add_argument("--ky", type=float, required=True, help="ky value to compare")
+    parser.add_argument("--kx-target", type=float, default=0.0, help="kx target within the selected ky block")
+    parser.add_argument("--y0", type=float, default=None, help="Optional y0 override; defaults to GX ky metadata")
+    return parser
+
+
+def main() -> None:
+    args = build_parser().parse_args()
+
+    shape = _load_shape(args.gx_dir / "field_shape.txt")
+    nspec = shape["nspec"]
+    nl = shape["nl"]
+    nm = shape["nm"]
+    nyc = shape["nyc"]
+    nx = shape["nx"]
+    nz = shape["nz"]
+    gx_shape = (nspec, nl, nm, nyc, nx, nz)
+
+    gx_g = _reshape_gx(
+        _load_bin(args.gx_dir / "field_g_state.bin", gx_shape),
+        nspec=nspec,
+        nl=nl,
+        nm=nm,
+        nyc=nyc,
+        nx=nx,
+        nz=nz,
+    )
+    gx_phi = _load_field(args.gx_dir / "field_phi.bin", nyc, nx, nz)
+    gx_apar = None
+    gx_apar_path = args.gx_dir / "field_apar.bin"
+    if gx_apar_path.exists():
+        gx_apar = _load_field(gx_apar_path, nyc, nx, nz)
+
+    with Dataset(args.gx_out, "r") as root:
+        ky_vals = np.asarray(root.groups["Grids"].variables["ky"][:], dtype=float)
+
+    gx_contract = _load_gx_input_contract(args.gx_input)
+    y0_use = float(args.y0) if args.y0 is not None else _infer_y0(ky_vals)
+    ny_full = _full_ny_from_positive_ky(ky_vals)
+    geom = load_gx_geometry_netcdf(_select_geometry_source(args.gx_out, args.geometry_file, gx_contract))
+    grid_cfg = apply_gx_geometry_grid_defaults(
+        geom,
+        gx_contract_to_grid(
+            gx_contract=gx_contract,
+            nx=int(nx),
+            ny=int(ny_full),
+            nz=int(nz),
+            y0=float(y0_use),
+        ),
+    )
+    grid_full = build_spectral_grid(grid_cfg)
+    ky_index = int(np.argmin(np.abs(np.asarray(grid_full.ky) - float(args.ky))))
+    kx_index = int(np.argmin(np.abs(np.asarray(grid_full.kx, dtype=float) - float(args.kx_target))))
+
+    g0 = _build_imported_initial_condition(
+        grid=grid_full,
+        geom=geom,
+        gx_contract=gx_contract,
+        species=gx_contract.species,
+        ky_index=ky_index,
+        kx_index=kx_index,
+        Nl=nl,
+        Nm=nm,
+    )
+    params = build_linear_params(
+        gx_contract.species,
+        tau_e=float(gx_contract.tau_e),
+        kpar_scale=float(geom.gradpar()),
+        beta=float(gx_contract.beta),
+    )
+    cache = build_linear_cache(grid_full, geom, params, nl, nm)
+    sp_fields = compute_fields_cached(jnp.asarray(g0), cache, params)
+
+    ky_idx_gx = int(np.argmin(np.abs(ky_vals - float(args.ky))))
+    gx_g_slice = _select_ky_block(gx_g, ky_idx_gx)
+    gx_phi_slice = _select_ky_block(gx_phi, ky_idx_gx)
+    sp_g_slice = _select_ky_block(np.asarray(g0, dtype=np.complex64), ky_index)
+    sp_phi_slice = _select_ky_block(np.asarray(sp_fields.phi, dtype=np.complex64), ky_index)
+    _summary("g_state", gx_g_slice.astype(np.complex64), sp_g_slice)
+    _summary("phi", gx_phi_slice.astype(np.complex64), sp_phi_slice)
+
+    if gx_apar is not None and sp_fields.apar is not None:
+        gx_apar_slice = _select_ky_block(gx_apar, ky_idx_gx)
+        sp_apar_slice = _select_ky_block(np.asarray(sp_fields.apar, dtype=np.complex64), ky_index)
+        _summary("apar", gx_apar_slice.astype(np.complex64), sp_apar_slice)
+
+
+def gx_contract_to_grid(*, gx_contract, nx: int, ny: int, nz: int, y0: float):
+    from spectraxgk.config import GridConfig
+
+    return GridConfig(
+        Nx=int(nx),
+        Ny=int(ny),
+        Nz=int(nz),
+        Lx=62.8,
+        Ly=2.0 * np.pi * float(y0),
+        boundary=str(gx_contract.boundary),
+        y0=float(y0),
+        nperiod=max(1, int(gx_contract.nperiod)),
+        ntheta=max(1, int(gx_contract.ntheta)),
+    )
+
+
+if __name__ == "__main__":
+    main()
