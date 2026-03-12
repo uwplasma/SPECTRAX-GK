@@ -187,11 +187,15 @@ By default, ``make_gx_cyclone_kbm_panel.py`` uses:
 - A GX-style time-integrated SPECTRAX KBM eigenfunction (not a standalone
   Krylov vector) so the plotted mode is selected the same way as GX.
 
-The current nonlinear Cyclone tokamak asset is intentionally still the
-``s-alpha`` matched-input lane. A fresh clean-mainline GX audit showed that the
-stock nonlinear Cyclone benchmark now runs with ``geo_option = "miller"``, so
-direct comparisons against that clean-mainline file are not honest until the
-SPECTRAX side uses a matching Miller/imported geometry contract.
+The tracked tokamak subpanel is intentionally still the older
+``s-alpha`` matched-input lane, but the clean-mainline nonlinear Cyclone Miller
+lane is now closed separately. After the Miller imported-geometry bridge and
+the root-level ``*.eiknc.nc`` open-theta fix landed, the exact late-state audit
+on the clean GX Miller run closes to roundoff, and the matched free nonlinear
+reruns pass on both the short ``t=20`` slice and the longer ``t≈122`` horizon.
+The current remaining tokamak publication task is therefore narrower: rebuild
+the tokamak subpanel so the linear row and nonlinear row both use the honest
+clean-mainline Miller contract instead of mixing benchmark families.
 
 For linear KBM acceptance, the tracked four-point table remains the primary
 asset, but the low-``ky`` branch may also be audited with the checkpoint probe
@@ -1114,6 +1118,21 @@ startup checks for ``t <= 0.1`` and relaxed late-time checks for
 
    Nonlinear Cyclone diagnostics (GX vs SPECTRAX-GK): Wg, Wphi, Wapar, total
    energy, heat flux, and particle flux over the ``t = 400`` matched horizon.
+
+For the honest clean-mainline GX Miller lane, the currently tracked matched
+window is the refreshed ``t≈122`` reference reproduced on ``office`` through
+the new Miller geometry bridge. After fixing the generic root-level
+``*.eiknc.nc`` open-theta import bug, the exact late-state audit closes to
+roundoff and the free nonlinear run also passes the matched-window comparison:
+
+.. figure:: _static/nonlinear_cyclone_miller_diag_compare_t122.png
+   :width: 95%
+   :alt: Clean-mainline nonlinear Cyclone Miller diagnostics comparison between GX and SPECTRAX-GK
+
+   Clean-mainline nonlinear Cyclone Miller diagnostics (GX vs SPECTRAX-GK)
+   over the matched ``t≈122`` horizon. The tracked rerun passes with about
+   ``6.6%`` relative error in ``Wg``, ``6.8%`` in ``Wphi``, and ``9.2%`` in
+   heat flux over the full window, with both the early and late gates passing.
 
 Reference data extraction
 -------------------------
