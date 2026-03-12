@@ -595,9 +595,6 @@ def main() -> int:
     )
 
     params_use = params
-    if params_use.damp_ends_amp != 0.0 and terms.end_damping != 0.0:
-        params_use = replace(params_use, damp_ends_amp=params_use.damp_ends_amp / dt)
-
     _, phi_t, density_t, hl_t = integrate_linear_diagnostics(
         np.asarray(G0),
         grid,

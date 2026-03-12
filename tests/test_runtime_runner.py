@@ -165,12 +165,24 @@ def test_runtime_hypercollision_default_tracks_hermite_count() -> None:
     assert float(params_nm16.p_hyper_m) == 8.0
 
 
-def test_runtime_end_damping_defaults_follow_gx_scaling() -> None:
+def test_runtime_end_damping_defaults_follow_gx_rate_contract() -> None:
     base = _base_runtime_cfg()
     cfg = replace(
         base,
         time=replace(base.time, dt=0.2),
         collisions=RuntimeCollisionConfig(),
+    )
+    params = build_runtime_linear_params(cfg, Nm=8)
+    assert float(params.damp_ends_amp) == pytest.approx(0.1)
+    assert float(params.damp_ends_widthfrac) == pytest.approx(0.125)
+
+
+def test_runtime_end_damping_can_explicitly_scale_by_dt() -> None:
+    base = _base_runtime_cfg()
+    cfg = replace(
+        base,
+        time=replace(base.time, dt=0.2),
+        collisions=RuntimeCollisionConfig(damp_ends_scale_by_dt=True),
     )
     params = build_runtime_linear_params(cfg, Nm=8)
     assert float(params.damp_ends_amp) == pytest.approx(0.5)

@@ -642,7 +642,7 @@ def main() -> None:
         params = replace(
             params,
             D_hyper=float(gx_contract.D_hyper),
-            damp_ends_amp=float(gx_contract.damp_ends_amp) / dt,
+            damp_ends_amp=float(gx_contract.damp_ends_amp),
             damp_ends_widthfrac=float(gx_contract.damp_ends_widthfrac),
         )
         terms = replace(
@@ -654,7 +654,7 @@ def main() -> None:
         params = _apply_gx_hypercollisions(params, nhermite=args.Nm)
         params = replace(
             params,
-            damp_ends_amp=float(args.damp_ends_amp) / dt,
+            damp_ends_amp=float(args.damp_ends_amp),
             damp_ends_widthfrac=float(args.damp_ends_widthfrac),
         )
     time_cfg = GXTimeConfig(
