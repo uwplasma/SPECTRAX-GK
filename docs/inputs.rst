@@ -174,6 +174,17 @@ For VMEC ``fix aspect`` runs, SPECTRAX now follows GX's default helper
 contract and does not inject ``x0`` from the runtime ``Lx``. That keeps the
 generated ``*.eik.nc`` file aligned with GX's own W7-X/HSX geometry output.
 
+For Miller tokamak workflows, the runtime also accepts ``model = "miller"``.
+In that mode SPECTRAX-GK calls GX's ``geometry_modules/miller/gx_geo.py``
+helper to generate a matching root-level ``*.eiknc.nc`` file, then immediately
+re-enters the same imported geometry path used for VMEC ``eik.nc`` files.
+Set the Miller inputs directly in ``[geometry]``:
+``rhoc``, ``q``, ``s_hat``, ``R0``, optional ``R_geo``, ``shift``,
+``akappa``, ``akappri``, ``tri``, ``tripri``, and ``betaprim``.
+``geometry_file`` can be used as an explicit output path for the generated
+Miller ``*.eiknc.nc`` file, and ``gx_python`` applies here as well when the GX
+helper must run in a different Python environment.
+
 Solver and fit-signal keys
 --------------------------
 

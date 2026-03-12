@@ -131,6 +131,14 @@ Generate GX-compatible geometry from a runtime TOML
    python tools/generate_gx_vmec_eik.py \
      --config examples/configs/runtime_hsx_nonlinear_vmec_geometry.toml
 
+Generate GX-compatible Miller geometry from a runtime TOML
+----------------------------------------------------------
+
+.. code-block:: bash
+
+   python tools/generate_gx_miller_eik.py \
+     --config examples/configs/runtime_cyclone_nonlinear_gx_miller.toml
+
 HSX nonlinear VMEC runtime example
 ----------------------------------
 

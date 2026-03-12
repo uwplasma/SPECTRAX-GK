@@ -1147,6 +1147,61 @@ def test_runtime_linear_secondary_slab_example_runs() -> None:
     assert np.isfinite(out.omega)
 
 
+def test_runtime_linear_accepts_miller_model_via_generated_eik(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    netcdf4 = pytest.importorskip("netCDF4")
+    Dataset = netcdf4.Dataset
+
+    cfg = RuntimeConfig(
+        grid=GridConfig(Nx=1, Ny=8, Nz=16, Lx=6.28, Ly=6.28, boundary="linked", y0=10.0, ntheta=16, nperiod=1),
+        time=TimeConfig(t_max=0.2, dt=0.01, method="rk2", use_diffrax=False, sample_stride=1, fixed_dt=True),
+        geometry=GeometryConfig(q=1.4, s_hat=0.8, epsilon=0.18, R0=2.77778),
+        init=InitializationConfig(init_field="density", init_amp=1.0e-8, gaussian_init=False),
+        terms=RuntimeTermsConfig(hypercollisions=0.0, end_damping=0.0),
+        physics=RuntimePhysicsConfig(linear=True, nonlinear=False, adiabatic_electrons=True, collisions=False),
+    )
+    sampled = sample_flux_tube_geometry(SAlphaGeometry.from_config(cfg.geometry), build_spectral_grid(cfg.grid).z)
+    path = tmp_path / "miller.eiknc.nc"
+    theta = np.asarray(sampled.theta)
+    with Dataset(path, "w") as root:
+        root.createDimension("z", theta.size)
+        root.createVariable("theta", "f8", ("z",))[:] = theta
+        root.createVariable("bmag", "f8", ("z",))[:] = np.asarray(sampled.bmag_profile)
+        root.createVariable("gbdrift", "f8", ("z",))[:] = np.asarray(sampled.gb_profile)
+        root.createVariable("gbdrift0", "f8", ("z",))[:] = np.asarray(sampled.gb0_profile)
+        root.createVariable("cvdrift", "f8", ("z",))[:] = np.asarray(sampled.cv_profile)
+        root.createVariable("cvdrift0", "f8", ("z",))[:] = np.asarray(sampled.cv0_profile)
+        root.createVariable("gds2", "f8", ("z",))[:] = np.asarray(sampled.gds2_profile)
+        root.createVariable("gds21", "f8", ("z",))[:] = np.asarray(sampled.gds21_profile)
+        root.createVariable("gds22", "f8", ("z",))[:] = np.asarray(sampled.gds22_profile)
+        root.createVariable("jacob", "f8", ("z",))[:] = np.asarray(sampled.jacobian_profile)
+        root.createVariable("grho", "f8", ("z",))[:] = np.asarray(sampled.grho_profile)
+        root.createVariable("gradpar", "f8", ("z",))[:] = np.full(theta.size, sampled.gradpar_value)
+        root.createVariable("q", "f8", ())[:] = sampled.q
+        root.createVariable("shat", "f8", ())[:] = sampled.s_hat
+        root.createVariable("Rmaj", "f8", ())[:] = sampled.R0
+        root.createVariable("kxfac", "f8", ())[:] = sampled.kxfac
+        root.createVariable("scale", "f8", ())[:] = sampled.theta_scale
+        root.createVariable("nfp", "f8", ())[:] = sampled.nfp
+        root.createVariable("alpha", "f8", ())[:] = sampled.alpha
+
+    monkeypatch.setattr("spectraxgk.runtime.generate_runtime_miller_eik", lambda cfg: path)
+
+    cfg_miller = replace(
+        cfg,
+        geometry=replace(
+            cfg.geometry,
+            model="miller",
+            geometry_file=str(path),
+            rhoc=0.5,
+            R_geo=cfg.geometry.R0,
+        ),
+    )
+    out = run_runtime_linear(cfg_miller, ky_target=0.2, Nl=4, Nm=6, solver="krylov")
+
+    assert np.isfinite(out.gamma)
+    assert np.isfinite(out.omega)
+
+
 def test_runtime_cetg_reference_example_runs_small_smoke() -> None:
     cfg_path = Path(__file__).resolve().parents[1] / "examples" / "configs" / "runtime_cetg_reference.toml"
     cfg, _ = load_runtime_from_toml(cfg_path)
