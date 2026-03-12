@@ -291,6 +291,61 @@ def test_load_gx_geometry_netcdf_reads_root_level_eik_layout(tmp_path):
 
     path = tmp_path / "geom.eik.nc"
     theta = np.linspace(-np.pi, np.pi, 5)
+    bmag = np.array([1.0, 1.1, 1.2, 1.1, 1.0])
+    gds2 = np.array([1.0, 1.4, 1.8, 1.4, 1.0])
+    gds21 = np.array([0.0, -0.2, 0.0, 0.2, 0.0])
+    gds22 = np.full(theta.size, 0.8)
+    cvdrift = np.array([0.3, 0.4, 0.5, 0.4, 0.3])
+    cvdrift0 = np.array([0.0, -0.1, 0.0, 0.1, 0.0])
+    drhodpsi = 1.7
+    with Dataset(path, "w") as root:
+        root.createDimension("z", theta.size)
+        root.createVariable("theta", "f8", ("z",))[:] = theta
+        root.createVariable("bmag", "f8", ("z",))[:] = bmag
+        root.createVariable("gds2", "f8", ("z",))[:] = gds2
+        root.createVariable("gds21", "f8", ("z",))[:] = gds21
+        root.createVariable("gds22", "f8", ("z",))[:] = gds22
+        root.createVariable("cvdrift", "f8", ("z",))[:] = cvdrift
+        root.createVariable("gbdrift", "f8", ("z",))[:] = cvdrift
+        root.createVariable("cvdrift0", "f8", ("z",))[:] = cvdrift0
+        root.createVariable("gbdrift0", "f8", ("z",))[:] = cvdrift0
+        root.createVariable("jacob", "f8", ("z",))[:] = np.linspace(2.0, 3.0, theta.size)
+        root.createVariable("grho", "f8", ("z",))[:] = np.linspace(1.0, 1.4, theta.size)
+        root.createVariable("gradpar", "f8", ("z",))[:] = np.full(theta.size, 0.4)
+        root.createVariable("drhodpsi", "f8", ())[:] = drhodpsi
+        root.createVariable("q", "f8", ())[:] = 1.7
+        root.createVariable("shat", "f8", ())[:] = 0.6
+        root.createVariable("Rmaj", "f8", ())[:] = 5.0
+        root.createVariable("kxfac", "f8", ())[:] = 1.3
+        root.createVariable("scale", "f8", ())[:] = 2.0
+        root.createVariable("nfp", "f8", ())[:] = 5.0
+        root.createVariable("alpha", "f8", ())[:] = 0.2
+
+    loaded = load_gx_geometry_netcdf(path)
+
+    assert loaded.source_model == "gx-netcdf"
+    assert loaded.theta_closed_interval is True
+    assert jnp.allclose(loaded.theta, theta)
+    expected_jacobian = 1.0 / np.abs(drhodpsi * 0.4 * bmag)
+    assert jnp.allclose(loaded.jacobian_profile, expected_jacobian)
+    assert jnp.allclose(loaded.grho_profile, np.linspace(1.0, 1.4, theta.size))
+    assert jnp.allclose(loaded.cv_profile, 0.5 * cvdrift)
+    assert jnp.allclose(loaded.gb_profile, 0.5 * cvdrift)
+    assert loaded.kxfac == pytest.approx(1.3)
+    assert loaded.theta_scale == pytest.approx(2.0)
+    assert loaded.nfp == 5
+    assert loaded.R0 == pytest.approx(5.0)
+    assert np.all(np.isfinite(np.asarray(loaded.bgrad_profile)))
+
+
+def test_load_gx_geometry_netcdf_detects_open_root_level_eik_layout(tmp_path):
+    """Root-level GX eik files can already be on the open solver grid."""
+
+    netcdf4 = pytest.importorskip("netCDF4")
+    Dataset = netcdf4.Dataset
+
+    path = tmp_path / "geom_open.eik.nc"
+    theta = np.linspace(-np.pi, np.pi, 5, endpoint=False)
     bmag = np.linspace(1.0, 1.2, theta.size)
     drhodpsi = 1.7
     with Dataset(path, "w") as root:
@@ -319,18 +374,12 @@ def test_load_gx_geometry_netcdf_reads_root_level_eik_layout(tmp_path):
     loaded = load_gx_geometry_netcdf(path)
 
     assert loaded.source_model == "gx-netcdf"
-    assert loaded.theta_closed_interval is True
+    assert loaded.theta_closed_interval is False
     assert jnp.allclose(loaded.theta, theta)
     expected_jacobian = 1.0 / np.abs(drhodpsi * 0.4 * bmag)
     assert jnp.allclose(loaded.jacobian_profile, expected_jacobian)
-    assert jnp.allclose(loaded.grho_profile, np.linspace(1.0, 1.4, theta.size))
     assert jnp.allclose(loaded.cv_profile, 0.5 * np.linspace(0.3, 0.5, theta.size))
     assert jnp.allclose(loaded.gb_profile, 0.5 * np.linspace(0.3, 0.5, theta.size))
-    assert loaded.kxfac == pytest.approx(1.3)
-    assert loaded.theta_scale == pytest.approx(2.0)
-    assert loaded.nfp == 5
-    assert loaded.R0 == pytest.approx(5.0)
-    assert np.all(np.isfinite(np.asarray(loaded.bgrad_profile)))
 
 
 def test_root_level_eik_import_matches_sampled_contract_after_trim(tmp_path):
@@ -457,6 +506,7 @@ def test_build_flux_tube_geometry_accepts_imported_eik_aliases(tmp_path, model: 
 
     loaded = build_flux_tube_geometry(GeometryConfig(model=model, geometry_file=str(path)))
 
+    assert not isinstance(loaded, (SAlphaGeometry, SlabGeometry))
     assert loaded.source_model == "gx-netcdf"
     assert loaded.theta_closed_interval is True
     assert loaded.theta_scale == pytest.approx(2.0)
