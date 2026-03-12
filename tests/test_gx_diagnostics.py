@@ -3,6 +3,7 @@ import numpy as np
 import jax.numpy as jnp
 from dataclasses import replace
 import pytest
+import spectraxgk.gx_integrators as gx_integrators
 
 from spectraxgk.benchmarks import CycloneBaseCase, _build_initial_condition
 from spectraxgk.config import InitializationConfig
@@ -317,6 +318,36 @@ def test_integrate_linear_gx_diagnostics_shapes():
     assert diag.Wapar_t.shape[0] == t.shape[0]
     assert diag.heat_flux_t.shape[0] == t.shape[0]
     assert diag.particle_flux_t.shape[0] == t.shape[0]
+
+
+def test_integrate_linear_gx_diagnostics_honors_rk3_method(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    cfg, grid, geom, params, cache = _small_setup()
+    G0 = _build_initial_condition(grid, geom, ky_index=0, kx_index=0, Nl=4, Nm=4, init_cfg=cfg.init)
+    calls: list[str] = []
+
+    def _fake_step(G, cache, params, term_cfg, dt, *, method):
+        calls.append(str(method))
+        _dG, fields = assemble_rhs_cached(G, cache, params, terms=term_cfg)
+        return G, fields
+
+    monkeypatch.setattr(gx_integrators, "_linear_explicit_step", _fake_step)
+
+    time_cfg = GXTimeConfig(dt=0.01, t_max=0.01, method="rk3", sample_stride=1, fixed_dt=True)
+    integrate_linear_gx_diagnostics(
+        G0,
+        grid,
+        cache,
+        params,
+        geom,
+        time_cfg,
+        terms=LinearTerms(),
+        jit=False,
+    )
+
+    assert calls
+    assert set(calls) == {"rk3"}
 
 
 def test_gx_energy_drift_small_no_drive():
