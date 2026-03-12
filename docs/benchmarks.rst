@@ -343,8 +343,11 @@ parity distinction is:
   contract is closed
 - startup-state parity against the legacy GX ``cetg_init.restart.nc`` and raw
   startup ``Special/Phi_z`` dump is also closed
+- the first SSPx3 advance now uses the same carried-field contract as legacy
+  GX, and the cETG runtime now marches adaptive runs to ``t_max`` instead of
+  truncating them at ``ceil(t_max / dt_max)`` nominal steps
 - full time-evolution parity is still under active audit and is now isolated to
-  the adaptive-step/runtime-evolution path
+  the later-time adaptive runtime/state-comparison path
 
 The legacy GX cETG reference lane on ``office`` is now runnable again from the
 coherent ``aed3b78b`` checkout with runtime-only callback/NetCDF fallbacks.
