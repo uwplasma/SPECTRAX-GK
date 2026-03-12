@@ -25,6 +25,7 @@ from compare_gx_imported_linear import (
     _gx_kyst_fac_mask_cached,
     _load_gx_input_contract,
     _match_local_kx_index,
+    _resolve_imported_real_fft_ny,
     _run_single_ky,
     _select_geometry_source,
     _select_gx_kx_index,
@@ -214,6 +215,12 @@ def test_select_gx_kx_index_honors_explicit_single_mode_startup() -> None:
     gx_kx = np.asarray([-0.2, -0.1, 0.0, 0.1, 0.2], dtype=float)
     contract = replace(_dummy_gx_contract(init_single=True), ikx_single=4)
     assert _select_gx_kx_index(gx_kx, contract) == 4
+
+
+def test_resolve_imported_real_fft_ny_uses_full_gx_ky_layout() -> None:
+    gx_ky = np.asarray([0.0] + [0.05 * i for i in range(1, 16)], dtype=float)
+    contract = replace(_dummy_gx_contract(init_single=False), Ny=16)
+    assert _resolve_imported_real_fft_ny(gx_ky, contract) == 43
 
 
 def _dummy_gx_contract(*, init_single: bool) -> GXInputContract:
