@@ -40,7 +40,7 @@ zero_shat = true
 init_field = "density"
 init_amp = 1.0e-2
 gaussian_init = false
-init_single = true
+init_single = false
 kpar_init = 1.0
 
 [physics]
