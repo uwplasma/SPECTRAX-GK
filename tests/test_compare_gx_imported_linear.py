@@ -19,6 +19,7 @@ import compare_gx_imported_linear as imported_linear
 from compare_gx_imported_linear import (
     GXInputContract,
     _build_imported_initial_condition,
+    _infer_gx_linear_dt,
     _integrate_target_mode_series,
     _gx_Wg_by_ky,
     _gx_kyst_fac_mask_cached,
@@ -148,6 +149,18 @@ def test_imported_linear_uses_raw_damp_ends_rate() -> None:
     )
     assert float(params.damp_ends_amp) == pytest.approx(0.1)
     assert float(params.damp_ends_amp) != pytest.approx(0.1 / dt)
+
+
+def test_infer_gx_linear_dt_prefers_explicit_input_dt() -> None:
+    contract = replace(_dummy_gx_contract(init_single=False), dt=0.025, nwrite=50)
+    gx_time = np.asarray([1.25, 2.50, 3.75], dtype=float)
+    assert _infer_gx_linear_dt(gx_time, contract) == pytest.approx(0.025)
+
+
+def test_infer_gx_linear_dt_uses_diagnostic_spacing_without_input_dt() -> None:
+    contract = replace(_dummy_gx_contract(init_single=False), dt=None, nwrite=100)
+    gx_time = np.asarray([0.5, 1.0, 1.5, 2.0], dtype=float)
+    assert _infer_gx_linear_dt(gx_time, contract) == pytest.approx(0.005)
 
 
 def test_build_imported_initial_condition_uses_runtime_multikx_startup() -> None:

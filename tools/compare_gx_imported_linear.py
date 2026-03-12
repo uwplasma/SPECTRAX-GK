@@ -530,6 +530,27 @@ def _write_scan_rows(rows: list[dict[str, float]], out: Path | None) -> pd.DataF
     return df
 
 
+def _infer_gx_linear_dt(gx_time: np.ndarray, gx_contract: GXInputContract | None) -> float:
+    """Infer the underlying GX timestep from saved diagnostic times."""
+
+    if gx_contract is not None and gx_contract.dt is not None:
+        return float(gx_contract.dt)
+
+    time_arr = np.asarray(gx_time, dtype=float)
+    if time_arr.size == 0:
+        raise ValueError("gx_time cannot be empty")
+    nwrite = 1 if gx_contract is None else max(1, int(gx_contract.nwrite))
+    positive = time_arr[time_arr > 0.0]
+    if time_arr.size >= 2:
+        diffs = np.diff(time_arr)
+        positive_diffs = diffs[diffs > 0.0]
+        if positive_diffs.size > 0:
+            return float(np.median(positive_diffs) / float(nwrite))
+    if positive.size > 0:
+        return float(positive[0] / float(nwrite))
+    raise ValueError("Could not infer a positive GX timestep from diagnostic times")
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Compare GX linear diagnostics against SPECTRAX-GK using imported GX/VMEC geometry."
@@ -573,7 +594,6 @@ def main() -> None:
     gx_time, gx_ky, gx_kx, gx_omega, gx_Wg, gx_Wphi, gx_Wapar = _load_gx_reference(args.gx)
     positive_ky = gx_ky[gx_ky > 0.0]
     ky_values = positive_ky if args.ky is None or len(args.ky) == 0 else np.asarray(args.ky, dtype=float)
-    dt = float(gx_time[0])
     sample_steps = np.arange(gx_time.size, dtype=int)
 
     boundary = "linked"
@@ -609,9 +629,8 @@ def main() -> None:
         species = list(gx_contract.species)
         tau_e = float(gx_contract.tau_e)
         beta = float(gx_contract.beta)
-        if gx_contract.dt is not None:
-            dt = float(gx_contract.dt)
-            sample_steps = np.arange(gx_time.size, dtype=int)
+        sample_steps = np.arange(gx_time.size, dtype=int)
+    dt = _infer_gx_linear_dt(gx_time, gx_contract)
     geom = load_gx_geometry_netcdf(_select_geometry_source(args.gx, args.geometry_file, gx_contract))
     if ntheta <= 0:
         ntheta = int(np.asarray(geom.theta).size)
