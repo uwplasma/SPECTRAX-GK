@@ -440,8 +440,6 @@ def _run_time_method(
     ref: tuple[float, float] | None,
 ):
     params_use = params
-    if params_use.damp_ends_amp != 0.0 and terms.end_damping != 0.0:
-        params_use = replace(params_use, damp_ends_amp=params_use.damp_ends_amp / float(dt))
     G_out, phi_t, density_t, hl_t = integrate_linear_diagnostics(
         G0,
         grid,
@@ -535,8 +533,6 @@ def _run_diffrax_method(
     ref: tuple[float, float] | None,
 ):
     params_use = params
-    if params_use.damp_ends_amp != 0.0 and terms.end_damping != 0.0:
-        params_use = replace(params_use, damp_ends_amp=params_use.damp_ends_amp / float(dt))
     _, phi_t = integrate_linear_diffrax(
         G0,
         grid,

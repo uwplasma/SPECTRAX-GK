@@ -207,9 +207,9 @@ These are reporting-only knobs; they do not alter the RHS/operator. They are
 intended to document the exact GX-reference settings used for benchmark plots.
 
 GX end-damping defaults are ``damp_ends_amp = 0.1`` and
-``damp_ends_widthfrac = 0.125``. The runtime scales ``damp_ends_amp`` by the
-timestep to match the GX implementation, so the damping kernel receives
-``damp_ends_amp / dt`` and the user-facing amplitude remains per-step.
+``damp_ends_widthfrac = 0.125``. The damping kernel interprets
+``damp_ends_amp`` directly as a rate; the runtime no longer rescales it by the
+timestep.
 
 Defaults (model parameters):
 

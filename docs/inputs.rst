@@ -272,9 +272,9 @@ Notable runtime-only keys:
   ``"cetg"`` and ``"krehm"`` are accepted as explicit boundary markers, but
   the runtime currently raises ``NotImplementedError`` for them instead of
   silently routing those inputs through the wrong full-GK equations.
-* ``[collisions] damp_ends_scale_by_dt``: if true, interpret ``damp_ends_amp`` as
-  a per-unit-time strength and scale it internally by ``1/dt`` (GX-reference
-  default).
+* ``[collisions] damp_ends_scale_by_dt``: compatibility escape hatch for older
+  per-step inputs. The GX-aligned default is ``false`` because
+  ``damp_ends_amp`` is already a per-unit-time damping rate.
 * ``[collisions] hypercollisions_const`` / ``hypercollisions_kz``: defaults are
   GX-style ``0.0`` / ``1.0`` (kz-proportional hypercollisions enabled by
   default, constant hypercollisions off).
