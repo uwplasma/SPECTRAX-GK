@@ -193,7 +193,18 @@ lane is now closed separately. After the Miller imported-geometry bridge and
 the root-level ``*.eiknc.nc`` open-theta fix landed, the exact late-state audit
 on the clean GX Miller run closes to roundoff, and the matched free nonlinear
 reruns pass on both the short ``t=20`` slice and the longer ``t≈122`` horizon.
-The current remaining tokamak publication task is therefore narrower: rebuild
+The imported-linear Miller lane is now also closed on the tracked late-sample
+branch after two generic imported-contract fixes:
+
+* linked-end damping is treated as a rate instead of being rescaled by
+  ``1/dt``
+* imported GX input parsing no longer overwrites the full real-FFT ``Ny`` with
+  the dealiased input ``nky``
+
+The refreshed raw scan is tracked in
+``docs/_static/cyclone_miller_linear_scan.csv`` and the derived late-sample
+mismatch table in ``docs/_static/cyclone_miller_linear_mismatch.csv``. The
+current remaining tokamak publication task is therefore plumbing only: rebuild
 the tokamak subpanel so the linear row and nonlinear row both use the honest
 clean-mainline Miller contract instead of mixing benchmark families.
 
