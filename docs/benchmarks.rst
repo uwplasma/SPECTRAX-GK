@@ -163,7 +163,11 @@ Regenerate the tokamak and publication panels with:
 
    Publication-facing GX validation panel used in the README and manuscript
    draft workflow. It intentionally limits the headline claim to the main
-   full-gyrokinetic benchmark families: Cyclone, KBM, W7-X, and HSX.
+   full-gyrokinetic benchmark families: Cyclone, KBM, W7-X, and HSX. The
+   current tokamak slice is still the matched ``s-alpha`` Cyclone/KBM lane;
+   the clean-mainline nonlinear Cyclone benchmark in GX uses Miller geometry
+   and remains a separate open parity item until SPECTRAX-GK has a matching
+   Miller/imported-geometry path for that case.
 
 For low-``ky`` KBM branch audits, ``tools/probe_gx_kbm_extractors.py`` now also
 supports explicit checkpoint horizons so a long ``gx_time`` trajectory can be
@@ -182,6 +186,12 @@ By default, ``make_gx_cyclone_kbm_panel.py`` uses:
   remain interpretable.
 - A GX-style time-integrated SPECTRAX KBM eigenfunction (not a standalone
   Krylov vector) so the plotted mode is selected the same way as GX.
+
+The current nonlinear Cyclone tokamak asset is intentionally still the
+``s-alpha`` matched-input lane. A fresh clean-mainline GX audit showed that the
+stock nonlinear Cyclone benchmark now runs with ``geo_option = "miller"``, so
+direct comparisons against that clean-mainline file are not honest until the
+SPECTRAX side uses a matching Miller/imported geometry contract.
 
 For linear KBM acceptance, the tracked four-point table remains the primary
 asset, but the low-``ky`` branch may also be audited with the checkpoint probe
