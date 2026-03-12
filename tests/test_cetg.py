@@ -50,7 +50,7 @@ def _base_cetg_cfg() -> RuntimeConfig:
         init=InitializationConfig(
             init_field="density",
             init_amp=1.0e-3,
-            init_single=True,
+            init_single=False,
             gaussian_init=False,
             kpar_init=1.0,
         ),

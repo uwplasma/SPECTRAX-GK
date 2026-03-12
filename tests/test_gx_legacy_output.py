@@ -51,6 +51,42 @@ def test_load_gx_legacy_cetg_output_reads_grouped_contract(tmp_path: Path) -> No
     assert out.pflux.shape == (3, 1)
 
 
+def test_load_gx_legacy_cetg_output_reconstructs_totals_from_spectra(tmp_path: Path) -> None:
+    netcdf4 = pytest.importorskip("netCDF4")
+    Dataset = netcdf4.Dataset
+
+    path = tmp_path / "cetg_fill.nc"
+    fill = 9.969209968386869e36
+    with Dataset(path, "w") as root:
+        root.createDimension("time", 2)
+        root.createDimension("ky", 2)
+        root.createDimension("kx", 3)
+        root.createDimension("kz", 4)
+        root.createDimension("x", 4)
+        root.createDimension("y", 4)
+        root.createDimension("s", 1)
+        root.createVariable("time", "f8", ("time",))[:] = np.array([0.0, 1.0])
+        root.createVariable("ky", "f8", ("ky",))[:] = np.array([0.1, 0.2])
+        root.createVariable("kx", "f8", ("kx",))[:] = np.array([-0.1, 0.0, 0.1])
+        root.createVariable("kz", "f8", ("kz",))[:] = np.linspace(-1.0, 1.0, 4)
+        root.createVariable("x", "f8", ("x",))[:] = np.linspace(0.0, 1.0, 4)
+        root.createVariable("y", "f8", ("y",))[:] = np.linspace(0.0, 1.0, 4)
+        spectra = root.createGroup("Spectra")
+        fluxes = root.createGroup("Fluxes")
+        spectra.createVariable("W", "f8", ("time",))[:] = np.array([fill, fill])
+        spectra.createVariable("Phi2t", "f8", ("time",))[:] = np.array([fill, fill])
+        spectra.createVariable("Wkxst", "f8", ("time", "s", "kx"))[:] = np.array([[[1.0, 2.0, 3.0]], [[4.0, 5.0, 6.0]]])
+        spectra.createVariable("Phi2kxt", "f8", ("time", "kx"))[:] = np.array([[1.0, 2.0, 3.0], [0.5, 1.0, 1.5]])
+        fluxes.createVariable("qflux", "f8", ("time", "s"))[:] = np.array([[1.0], [2.0]])
+        fluxes.createVariable("pflux", "f8", ("time", "s"))[:] = np.array([[fill], [fill]])
+
+    out = load_gx_legacy_cetg_output(path)
+
+    assert out.W.tolist() == pytest.approx([6.0, 15.0])
+    assert out.Phi2.tolist() == pytest.approx([6.0, 3.0])
+    assert np.allclose(out.pflux, 0.0)
+
+
 def test_inspect_gx_legacy_cetg_parser_accepts_json_flag() -> None:
     args = build_parser().parse_args(["/tmp/cetg_smoke.nc", "--json"])
     assert args.gx_nc == Path("/tmp/cetg_smoke.nc")
