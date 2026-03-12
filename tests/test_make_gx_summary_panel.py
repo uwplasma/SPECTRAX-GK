@@ -6,6 +6,7 @@ from pathlib import Path
 import sys
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -13,6 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
 
 from make_gx_summary_panel import (
     STATIC,
+    _autocrop_image,
     _cetg_table_rows,
     _linear_table_rows,
     _load_cetg,
@@ -176,3 +178,10 @@ def test_plot_cetg_adds_log_time_traces_for_finite_metrics() -> None:
         assert len(ax.lines) == 6
     finally:
         plt.close(fig)
+
+
+def test_autocrop_image_trims_uniform_border() -> None:
+    image = np.ones((10, 12, 3), dtype=float)
+    image[3:7, 4:9, :] = 0.0
+    cropped = _autocrop_image(image, white_threshold=0.95, pad_pixels=0)
+    assert cropped.shape == (4, 5, 3)
