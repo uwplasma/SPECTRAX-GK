@@ -233,10 +233,22 @@ tracked stock-GX W7-X ``t = 200`` VMEC runtime rerun also passes the native
 late-window comparison, so the shipped nonlinear W7-X example is now closed at
 startup, exact-state, and long-horizon levels.
 
+Tokamak Miller geometry now follows the same parity-first bridge pattern.
+With ``geometry.model = "miller"``, SPECTRAX-GK shells out to GX's own
+``geometry_modules/miller/gx_geo.py`` helper, generates the matching
+root-level ``*.eiknc.nc`` file, and then re-enters the same imported-geometry
+contract described above. This keeps the Miller lane geometry-honest without
+introducing a second hand-maintained Miller implementation in the runtime path.
+On the tracked Cyclone Miller parameters, the generated ``*.eiknc.nc`` file
+matches the clean GX grouped ``Geometry`` arrays to roundoff in the main
+metric and drift profiles.
+
 Two user-facing entry points now exercise that bridge:
 
 - ``tools/generate_gx_vmec_eik.py --config ...`` generates a GX-compatible
   ``*.eik.nc`` file from a SPECTRAX runtime TOML.
+- ``tools/generate_gx_miller_eik.py --config ...`` generates a GX-compatible
+  Miller ``*.eiknc.nc`` file from a SPECTRAX runtime TOML.
 - ``examples/hsx_nonlinear_vmec_geometry.py`` and
   ``examples/configs/runtime_hsx_nonlinear_vmec_geometry.toml`` run a nonlinear
   adiabatic-electron ITG case on the supplied HSX VMEC equilibrium file while

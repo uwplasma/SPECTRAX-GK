@@ -299,3 +299,52 @@ gx_python = "python3"
     assert cfg.geometry.model == "vmec"
     assert cfg.geometry.vmec_file == "/tmp/wout_test.nc"
     assert cfg.geometry.gx_python == "python3"
+
+
+def test_load_runtime_from_toml_accepts_miller_geometry_fields(tmp_path: Path) -> None:
+    toml = """
+[geometry]
+model = "miller"
+rhoc = 0.5
+q = 1.4
+s_hat = 0.8
+R0 = 2.77778
+R_geo = 2.77778
+shift = 0.0
+akappa = 1.0
+akappri = 0.0
+tri = 0.0
+tripri = 0.0
+betaprim = 0.0
+gx_python = "python3"
+"""
+    path = tmp_path / "runtime_miller.toml"
+    path.write_text(toml, encoding="utf-8")
+
+    cfg, _ = load_runtime_from_toml(path)
+
+    assert cfg.geometry.model == "miller"
+    assert cfg.geometry.rhoc == pytest.approx(0.5)
+    assert cfg.geometry.R_geo == pytest.approx(2.77778)
+    assert cfg.geometry.akappa == pytest.approx(1.0)
+    assert cfg.geometry.tripri == pytest.approx(0.0)
+    assert cfg.geometry.gx_python == "python3"
+
+
+def test_cyclone_nonlinear_gx_miller_example_toml_loads() -> None:
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "examples"
+        / "configs"
+        / "runtime_cyclone_nonlinear_gx_miller.toml"
+    )
+
+    cfg, data = load_runtime_from_toml(path)
+
+    assert isinstance(data, dict)
+    assert cfg.geometry.model == "miller"
+    assert cfg.geometry.q == pytest.approx(1.4)
+    assert cfg.geometry.s_hat == pytest.approx(0.8)
+    assert cfg.geometry.rhoc == pytest.approx(0.5)
+    assert cfg.physics.nonlinear is True
+    assert cfg.physics.adiabatic_electrons is True
