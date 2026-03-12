@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import dataclass
 from dataclasses import replace
 from pathlib import Path
 
@@ -17,8 +18,22 @@ from spectraxgk.geometry import apply_gx_geometry_grid_defaults, load_gx_geometr
 from spectraxgk.grids import build_spectral_grid, select_ky_grid
 from spectraxgk.analysis import select_ky_index
 from spectraxgk.gx_integrators import GXTimeConfig, integrate_linear_gx_diagnostics
+from spectraxgk.io import load_toml
 from spectraxgk.linear import LinearTerms, build_linear_cache
 from spectraxgk.species import Species, build_linear_params
+
+
+@dataclass(frozen=True)
+class GXInputContract:
+    Nx: int
+    Ny: int
+    nperiod: int
+    ntheta: int
+    boundary: str
+    y0: float
+    species: tuple[Species, ...]
+    tau_e: float
+    beta: float
 
 
 def _load_gx_reference(
@@ -51,6 +66,64 @@ def _infer_y0(ky: np.ndarray) -> float:
     if positive.size == 0:
         raise ValueError("GX reference does not contain positive ky modes")
     return float(1.0 / np.min(positive))
+
+
+def _load_gx_input_contract(path: Path) -> GXInputContract:
+    data = load_toml(path)
+    dims = data.get("Dimensions", {})
+    domain = data.get("Domain", {})
+    physics = data.get("Physics", {})
+    species_raw = data.get("species", {})
+    boltz = data.get("Boltzmann", {})
+
+    nspecies = int(dims.get("nspecies", 1))
+
+    def _species_array(name: str, *, default: float) -> np.ndarray:
+        raw = species_raw.get(name)
+        if raw is None:
+            return np.full(nspecies, default, dtype=float)
+        arr = np.asarray(raw, dtype=float)
+        if arr.ndim == 0:
+            arr = np.full(nspecies, float(arr), dtype=float)
+        if arr.size < nspecies:
+            raise ValueError(f"{path} species.{name} has {arr.size} entries, expected at least {nspecies}")
+        return np.asarray(arr[:nspecies], dtype=float)
+
+    charge = _species_array("z", default=1.0)
+    mass = _species_array("mass", default=1.0)
+    dens = _species_array("dens", default=1.0)
+    temp = _species_array("temp", default=1.0)
+    tprim = _species_array("tprim", default=0.0)
+    fprim = _species_array("fprim", default=0.0)
+    nu = _species_array("vnewk", default=0.0)
+    species = tuple(
+        Species(
+            charge=float(charge[i]),
+            mass=float(mass[i]),
+            density=float(dens[i]),
+            temperature=float(temp[i]),
+            tprim=float(tprim[i]),
+            fprim=float(fprim[i]),
+            nu=float(nu[i]),
+        )
+        for i in range(nspecies)
+    )
+
+    add_boltz = bool(boltz.get("add_Boltzmann_species", False))
+    boltz_type = str(boltz.get("Boltzmann_type", "")).strip().lower()
+    tau_e = float(boltz.get("tau_fac", 0.0)) if add_boltz and boltz_type == "electrons" else 0.0
+
+    return GXInputContract(
+        Nx=int(dims.get("nkx", dims.get("nx", 1))),
+        Ny=int(dims.get("nky", dims.get("ny", 0))),
+        nperiod=int(dims.get("nperiod", 1)),
+        ntheta=int(dims.get("ntheta", 0)),
+        boundary=str(domain.get("boundary", "linked")),
+        y0=float(domain["y0"]) if "y0" in domain else float("nan"),
+        species=species,
+        tau_e=tau_e,
+        beta=float(physics.get("beta", 0.0)),
+    )
 
 
 def _mean_rel_error(lhs: np.ndarray, rhs: np.ndarray, *, floor_fraction: float) -> float:
@@ -106,7 +179,7 @@ def _run_single_ky(
     return gamma, omega, Wg, Wphi, Wapar
 
 
-def main() -> None:
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Compare GX linear diagnostics against SPECTRAX-GK using imported GX/VMEC geometry."
     )
@@ -116,6 +189,12 @@ def main() -> None:
         type=Path,
         required=True,
         help="Path to the GX/VMEC geometry file (for example *.eik.nc)",
+    )
+    parser.add_argument(
+        "--gx-input",
+        type=Path,
+        default=None,
+        help="Optional GX input file used to infer boundary/grid defaults for imported geometry cases.",
     )
     parser.add_argument("--out", type=Path, default=None, help="Optional CSV output path")
     parser.add_argument("--ky", type=float, nargs="*", default=None, help="Specific ky values to compare")
@@ -133,6 +212,11 @@ def main() -> None:
         default=1.0e-2,
         help="Relative-error floor as a fraction of the peak reference magnitude for each series",
     )
+    return parser
+
+
+def main() -> None:
+    parser = build_parser()
     args = parser.parse_args()
 
     gx_time, gx_ky, gx_omega, gx_Wg, gx_Wphi, gx_Wapar = _load_gx_reference(args.gx)
@@ -142,30 +226,57 @@ def main() -> None:
     sample_steps = np.rint(gx_time / dt).astype(int) - 1
 
     geom = load_gx_geometry_netcdf(args.geometry_file)
+    boundary = "linked"
+    y0 = _infer_y0(gx_ky)
+    nx = 1
+    ny = _infer_real_fft_ny(gx_ky)
+    nperiod = 1
+    ntheta = int(np.asarray(geom.theta).size)
+    species = [
+        Species(
+            charge=1.0,
+            mass=1.0,
+            density=1.0,
+            temperature=1.0,
+            tprim=float(args.tprim),
+            fprim=float(args.fprim),
+        )
+    ]
+    tau_e = float(args.tau_e)
+    beta = 0.0
+    if args.gx_input is not None:
+        gx_contract = _load_gx_input_contract(args.gx_input)
+        boundary = str(gx_contract.boundary)
+        y0 = float(gx_contract.y0) if np.isfinite(float(gx_contract.y0)) else y0
+        nx = max(1, int(gx_contract.Nx))
+        ny_input = int(gx_contract.Ny)
+        ny = ny_input if ny_input > 0 else ny
+        nperiod = max(1, int(gx_contract.nperiod))
+        ntheta_in = int(gx_contract.ntheta)
+        if ntheta_in > 0:
+            ntheta = ntheta_in
+        species = list(gx_contract.species)
+        tau_e = float(gx_contract.tau_e)
+        beta = float(gx_contract.beta)
+
     grid_cfg = GridConfig(
-        Nx=1,
-        Ny=_infer_real_fft_ny(gx_ky),
+        Nx=nx,
+        Ny=ny,
         Nz=int(np.asarray(geom.theta).size),
         Lx=62.8,
-        Ly=62.8,
-        boundary="linked",
-        y0=_infer_y0(gx_ky),
+        Ly=2.0 * np.pi * y0,
+        boundary=boundary,
+        y0=y0,
+        nperiod=nperiod,
+        ntheta=ntheta,
     )
     grid_full = build_spectral_grid(apply_gx_geometry_grid_defaults(geom, grid_cfg))
 
     params = build_linear_params(
-        [
-            Species(
-                charge=1.0,
-                mass=1.0,
-                density=1.0,
-                temperature=1.0,
-                tprim=float(args.tprim),
-                fprim=float(args.fprim),
-            )
-        ],
-        tau_e=float(args.tau_e),
+        species,
+        tau_e=tau_e,
         kpar_scale=float(geom.gradpar()),
+        beta=beta,
     )
     params = _apply_gx_hypercollisions(params, nhermite=args.Nm)
     params = replace(

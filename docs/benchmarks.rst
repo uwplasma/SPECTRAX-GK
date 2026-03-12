@@ -273,10 +273,35 @@ input into the solver-side RHS coefficient, and reports per-``ky`` mismatch in
    :header-rows: 1
 
 The low-``ky`` W7-X branch is close to marginal, so the tracked table records
-both absolute and floor-regularized relative ``gamma`` errors. For
-``ky = 0.2`` to ``0.4``, the current imported-geometry parity is within about
-``4.3e-5`` mean relative error in ``omega`` and about ``0.4%`` to ``1.0%`` in
-``gamma`` over the sampled GX time grid.
+both absolute and floor-regularized relative ``gamma`` errors. On the refreshed
+clean-mainline GX ``t=2`` run, ``ky = 0.2`` to ``0.4`` are within about
+``1.6e-5`` to ``4.1e-5`` mean relative error in ``omega`` and about ``1.1%`` to
+``2.7%`` in ``gamma`` over the sampled GX time grid, while the near-marginal
+``ky = 0.1`` branch still carries about ``1.18e-1`` relative ``gamma`` error.
+
+HSX imported GX geometry (linear ITG audit)
+-------------------------------------------
+
+The imported-geometry comparison helper is now generic enough to read the GX
+input contract directly, including ``nspecies``, the packed ``[species]``
+arrays, and the adiabatic-electron Boltzmann metadata. That closes the old
+W7-X-specific assumption that every imported-geometry case was a single kinetic
+ion plus a hard-coded ``tau_e``.
+
+Regenerate the tracked HSX linear audit with:
+
+- ``python tools/compare_gx_imported_linear.py --gx /path/to/hsx_linear.out.nc --geometry-file /path/to/hsx_linear.eik.nc --gx-input /path/to/hsx_linear.in --ky 0.047619047619047616 0.09523809523809523 0.14285714285714285 0.19047619047619047 --out docs/_static/hsx_linear_t2_scan.csv``
+
+.. csv-table:: HSX imported-geometry mismatch table (GX ``t=2`` audit)
+   :file: _static/hsx_linear_t2_scan.csv
+   :header-rows: 1
+
+This HSX linear row is still an open audit item. The refreshed clean-mainline
+comparison remains order-unity in ``gamma``/``omega`` even after the species
+contract fix, which is the signature of an extraction/integrator-contract
+mismatch rather than a geometry-file mismatch. The nonlinear HSX path already
+uses the same VMEC file successfully, so this table is being tracked as an
+honest open benchmark rather than forced into a fake parity band.
 
 Secondary slab benchmark
 ------------------------
@@ -369,6 +394,14 @@ For exact-state grouped-output auditing against a legacy GX restart file, use:
 For raw startup-state auditing against the legacy GX ``t=0`` cETG files, use:
 
 - ``python tools/compare_gx_cetg_startup.py --gx-nc /path/to/cetg_init.nc --gx-restart /path/to/cetg_init.restart.nc --config examples/configs/runtime_cetg_reference.toml``
+
+The first tracked honest legacy-GX time-trace comparison is now
+``docs/_static/cetg_gx_compare.csv``. On the current ``cetg_smoke.nc`` short
+slice, the leading finite overlap ends at about ``t = 0.05199``; over that
+prefix the mean relative errors are about ``6.10e-1`` in ``W``,
+``6.08e-1`` in ``Phi2``, ``2.08e-1`` in heat flux, and ``0`` in particle flux.
+That is good enough for a summary-panel audit row, but it is still clearly an
+open reduced-model parity task rather than a closed benchmark.
 
 ETG (GS2/Stella Cross-Code)
 ---------------------------
