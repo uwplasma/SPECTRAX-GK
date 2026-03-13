@@ -223,6 +223,12 @@ def test_resolve_imported_real_fft_ny_uses_full_gx_ky_layout() -> None:
     assert _resolve_imported_real_fft_ny(gx_ky, contract) == 43
 
 
+def test_resolve_imported_real_fft_ny_keeps_single_positive_ky_unmasked() -> None:
+    gx_ky = np.asarray([0.0, 0.01], dtype=float)
+    contract = replace(_dummy_gx_contract(init_single=False), Ny=2)
+    assert _resolve_imported_real_fft_ny(gx_ky, contract) == 4
+
+
 def _dummy_gx_contract(*, init_single: bool) -> GXInputContract:
     return GXInputContract(
         Nx=8,
