@@ -102,7 +102,14 @@ def _infer_real_fft_ny(ky: np.ndarray) -> int:
     positive = ky[ky > 0.0]
     if positive.size == 0:
         raise ValueError("GX reference does not contain positive ky modes")
-    return int(3 * (positive.size - 1) + 1)
+    # Invert GX's "dealiased positive ky count" convention.
+    #
+    # Most GX benchmark outputs store only the dealiased non-negative ky block.
+    # To build a full FFT grid that:
+    # - contains the requested smallest positive ky, and
+    # - does not immediately mask it out under GX's strict 2/3 rule
+    # we need Ny >= 4 even when only one positive ky is present.
+    return max(4, int(3 * (positive.size - 1) + 1))
 
 
 def _infer_y0(ky: np.ndarray) -> float:
