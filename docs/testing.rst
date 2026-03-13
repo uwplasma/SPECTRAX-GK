@@ -136,6 +136,37 @@ Running tests
 
    pytest
 
+Stress-matrix parity gates
+--------------------------
+
+In addition to unit/regression tests, SPECTRAX-GK includes a small set of
+"stress-matrix" gates meant to catch parity regressions early (before tracked
+benchmark figures move):
+
+- **Restart parity**: ``tests/test_restart_gate.py`` verifies that a nonlinear
+  run resumed from a GX-compatible binary restart file reproduces the same
+  final state as a continuous run.
+- **CPU/GPU short-window parity** (optional): ``tests/test_device_parity_gate.py``
+  compares a short nonlinear trajectory norm on CPU vs GPU. Enable explicitly:
+
+  .. code-block:: bash
+
+     SPECTRAXGK_DEVICE_PARITY=1 pytest -q tests/test_device_parity_gate.py
+
+- **VMEC roundtrip determinism** (optional): ``tests/test_vmec_roundtrip_gate.py``
+  regenerates an ``*.eik.nc`` from a provided VMEC file twice and asserts the
+  imported geometry arrays are bitwise identical. Enable explicitly:
+
+  .. code-block:: bash
+
+     SPECTRAXGK_VMEC_FILE=/path/to/wout.nc pytest -q tests/test_vmec_roundtrip_gate.py
+
+For developer workflows that require local GX benchmark NetCDFs or GX dump
+artifacts, use:
+
+- ``tools/run_gx_linear_stress_matrix.py`` (KAW, Cyclone kinetic electrons, KBM Miller)
+- ``tools/run_exact_state_audit.py`` (manifest-driven wrapper around the exact-state audit tools)
+
 CI split: fast PR vs nightly full
 ---------------------------------
 
