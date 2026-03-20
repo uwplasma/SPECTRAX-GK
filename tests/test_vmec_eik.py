@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 import sys
 
@@ -161,12 +162,18 @@ def test_generate_runtime_vmec_eik_invokes_gx_script_and_creates_output(
     gx_script = Path(cfg.geometry.gx_repo) / "geometry_modules" / "pyvmec" / "gx_geo_vmec.py"
     gx_script.parent.mkdir(parents=True, exist_ok=True)
     gx_script.write_text("# stub", encoding="utf-8")
+    booz_root = tmp_path / "booz_xform_jax"
+    (booz_root / "src" / "booz_xform_jax").mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr("spectraxgk.vmec_eik.resolve_booz_xform_jax_repo", lambda explicit_repo=None: booz_root)
 
     called: dict[str, object] = {}
 
-    def _fake_run(cmd, check, capture_output, text, cwd):  # type: ignore[no-untyped-def]
+    def _fake_run(cmd, check, capture_output, text, cwd, env):  # type: ignore[no-untyped-def]
         called["cmd"] = cmd
         called["cwd"] = cwd
+        called["env"] = env
+        pythonpath = env["PYTHONPATH"].split(os.pathsep)
+        called["compat_module_text"] = (Path(pythonpath[0]) / "booz_xform.py").read_text(encoding="utf-8")
         out = Path(cmd[-1])
         out.write_text("generated", encoding="utf-8")
 
@@ -188,6 +195,13 @@ def test_generate_runtime_vmec_eik_invokes_gx_script_and_creates_output(
     assert isinstance(cmd, list)
     assert cmd[0] == sys.executable
     assert str(gx_script) in cmd
+    env = called["env"]
+    assert isinstance(env, dict)
+    pythonpath = env["PYTHONPATH"].split(os.pathsep)
+    assert pythonpath[1] == str((booz_root / "src").resolve())
+    compat_module_text = called["compat_module_text"]
+    assert isinstance(compat_module_text, str)
+    assert "from booz_xform_jax import Booz_xform" in compat_module_text
 
 
 def test_generate_runtime_vmec_eik_uses_configured_python_interpreter(
@@ -221,7 +235,7 @@ def test_generate_runtime_vmec_eik_uses_configured_python_interpreter(
 
     called: dict[str, object] = {}
 
-    def _fake_run(cmd, check, capture_output, text, cwd):  # type: ignore[no-untyped-def]
+    def _fake_run(cmd, check, capture_output, text, cwd, env):  # type: ignore[no-untyped-def]
         called["cmd"] = cmd
         out = Path(cmd[-1])
         out.write_text("generated", encoding="utf-8")
@@ -256,7 +270,7 @@ def test_generate_runtime_vmec_eik_regenerates_explicit_output_path(
 
     called: dict[str, object] = {}
 
-    def _fake_run(cmd, check, capture_output, text, cwd):  # type: ignore[no-untyped-def]
+    def _fake_run(cmd, check, capture_output, text, cwd, env):  # type: ignore[no-untyped-def]
         called["cmd"] = cmd
         called["cwd"] = cwd
         out = Path(cmd[-1])
@@ -276,6 +290,40 @@ def test_generate_runtime_vmec_eik_regenerates_explicit_output_path(
     assert out == out_path.resolve()
     assert out.read_text(encoding="utf-8") == "generated"
     assert called["cmd"] is not None
+
+
+def test_generate_runtime_vmec_eik_falls_back_without_booz_xform_jax(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    cfg = _vmec_runtime_cfg(tmp_path, geometry_file=str(tmp_path / "geom.eik.nc"))
+    assert cfg.geometry.gx_repo is not None
+    gx_script = Path(cfg.geometry.gx_repo) / "geometry_modules" / "pyvmec" / "gx_geo_vmec.py"
+    gx_script.parent.mkdir(parents=True, exist_ok=True)
+    gx_script.write_text("# stub", encoding="utf-8")
+    monkeypatch.setattr("spectraxgk.vmec_eik.resolve_booz_xform_jax_repo", lambda explicit_repo=None: None)
+
+    called: dict[str, object] = {}
+
+    def _fake_run(cmd, check, capture_output, text, cwd, env):  # type: ignore[no-untyped-def]
+        called["env"] = env
+        out = Path(cmd[-1])
+        out.write_text("generated", encoding="utf-8")
+
+        class _Result:
+            returncode = 0
+            stdout = "ok"
+            stderr = ""
+
+        return _Result()
+
+    monkeypatch.setattr("spectraxgk.vmec_eik.subprocess.run", _fake_run)
+
+    out = generate_runtime_vmec_eik(cfg, force=True)
+
+    assert out.exists()
+    env = called["env"]
+    assert isinstance(env, dict)
+    assert "booz_xform_jax" not in env.get("PYTHONPATH", "")
 
 
 def test_build_gx_vmec_geometry_request_requires_torflux(tmp_path: Path) -> None:
