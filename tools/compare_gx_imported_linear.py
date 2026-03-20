@@ -6,6 +6,8 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass
 from dataclasses import replace
+import hashlib
+import json
 from pathlib import Path
 
 import jax
@@ -69,6 +71,18 @@ class GXInputContract:
     D_hyper: float
     damp_ends_amp: float
     damp_ends_widthfrac: float
+
+
+def _file_cache_token(path: Path | None) -> dict[str, str | int | None]:
+    if path is None:
+        return {"path": None, "size": None, "mtime_ns": None}
+    resolved = path.expanduser().resolve()
+    stat = resolved.stat()
+    return {
+        "path": str(resolved),
+        "size": int(stat.st_size),
+        "mtime_ns": int(stat.st_mtime_ns),
+    }
 
 
 def _load_gx_reference(
@@ -578,6 +592,84 @@ def _infer_gx_linear_dt(gx_time: np.ndarray, gx_contract: GXInputContract | None
     raise ValueError("Could not infer a positive GX timestep from diagnostic times")
 
 
+def _build_sample_steps(
+    gx_time: np.ndarray,
+    *,
+    sample_step_stride: int,
+    max_samples: int | None,
+) -> np.ndarray:
+    steps = np.arange(np.asarray(gx_time).size, dtype=int)
+    stride = max(1, int(sample_step_stride))
+    if stride > 1:
+        steps = steps[::stride]
+    if max_samples is not None:
+        steps = steps[: max(0, int(max_samples))]
+    if steps.size == 0:
+        raise ValueError("Selected sample window is empty; increase --max-samples or lower --sample-step-stride")
+    return np.asarray(steps, dtype=int)
+
+
+def _series_cache_path(
+    *,
+    cache_dir: Path,
+    gx_path: Path,
+    geometry_file: Path,
+    gx_input: Path | None,
+    ky_target: float,
+    Nl: int,
+    Nm: int,
+    mode_method: str,
+    rel_floor_fraction: float,
+    sample_steps: np.ndarray,
+) -> Path:
+    payload = {
+        "version": 1,
+        "gx": _file_cache_token(gx_path),
+        "geometry_file": _file_cache_token(geometry_file),
+        "gx_input": _file_cache_token(gx_input),
+        "ky_target": float(ky_target),
+        "Nl": int(Nl),
+        "Nm": int(Nm),
+        "mode_method": str(mode_method),
+        "rel_floor_fraction": float(rel_floor_fraction),
+        "sample_steps": [int(v) for v in np.asarray(sample_steps, dtype=int)],
+    }
+    digest = hashlib.sha256(json.dumps(payload, sort_keys=True).encode("utf-8")).hexdigest()[:16]
+    tag = f"{float(ky_target):0.4f}".replace(".", "p")
+    return cache_dir / f"ky_{tag}_{digest}.npz"
+
+
+def _load_cached_ky_series(path: Path) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    with np.load(path) as data:
+        return (
+            np.asarray(data["gamma"], dtype=float),
+            np.asarray(data["omega"], dtype=float),
+            np.asarray(data["Wg"], dtype=float),
+            np.asarray(data["Wphi"], dtype=float),
+            np.asarray(data["Wapar"], dtype=float),
+        )
+
+
+def _save_cached_ky_series(
+    path: Path,
+    *,
+    gamma: np.ndarray,
+    omega: np.ndarray,
+    Wg: np.ndarray,
+    Wphi: np.ndarray,
+    Wapar: np.ndarray,
+) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    np.savez_compressed(
+        path,
+        gamma=np.asarray(gamma, dtype=float),
+        omega=np.asarray(omega, dtype=float),
+        Wg=np.asarray(Wg, dtype=float),
+        Wphi=np.asarray(Wphi, dtype=float),
+        Wapar=np.asarray(Wapar, dtype=float),
+    )
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Compare GX linear diagnostics against SPECTRAX-GK using imported GX/VMEC geometry."
@@ -596,7 +688,30 @@ def build_parser() -> argparse.ArgumentParser:
         help="Optional GX input file used to infer boundary/grid defaults for imported geometry cases.",
     )
     parser.add_argument("--out", type=Path, default=None, help="Optional CSV output path")
+    parser.add_argument(
+        "--cache-dir",
+        type=Path,
+        default=None,
+        help="Optional directory for per-ky cached trajectory/result arrays.",
+    )
+    parser.add_argument(
+        "--reuse-cache",
+        action="store_true",
+        help="Reuse matching per-ky cached trajectory/result arrays when available.",
+    )
     parser.add_argument("--ky", type=float, nargs="*", default=None, help="Specific ky values to compare")
+    parser.add_argument(
+        "--sample-step-stride",
+        type=int,
+        default=1,
+        help="Subsample the saved GX diagnostic sample indices by this stride before scoring.",
+    )
+    parser.add_argument(
+        "--max-samples",
+        type=int,
+        default=None,
+        help="If set, only score the first N selected GX diagnostic samples.",
+    )
     parser.add_argument("--Nl", type=int, default=8)
     parser.add_argument("--Nm", type=int, default=16)
     parser.add_argument("--tprim", type=float, default=3.0)
@@ -621,7 +736,11 @@ def main() -> None:
     gx_time, gx_ky, gx_kx, gx_omega, gx_Wg, gx_Wphi, gx_Wapar = _load_gx_reference(args.gx)
     positive_ky = gx_ky[gx_ky > 0.0]
     ky_values = positive_ky if args.ky is None or len(args.ky) == 0 else np.asarray(args.ky, dtype=float)
-    sample_steps = np.arange(gx_time.size, dtype=int)
+    sample_steps = _build_sample_steps(
+        gx_time,
+        sample_step_stride=int(args.sample_step_stride),
+        max_samples=args.max_samples,
+    )
 
     boundary = "linked"
     y0 = _infer_y0(gx_ky)
@@ -655,7 +774,11 @@ def main() -> None:
         species = list(gx_contract.species)
         tau_e = float(gx_contract.tau_e)
         beta = float(gx_contract.beta)
-        sample_steps = np.arange(gx_time.size, dtype=int)
+        sample_steps = _build_sample_steps(
+            gx_time,
+            sample_step_stride=int(args.sample_step_stride),
+            max_samples=args.max_samples,
+        )
     dt = _infer_gx_linear_dt(gx_time, gx_contract)
     geom = load_gx_geometry_netcdf(_select_geometry_source(args.gx, args.geometry_file, gx_contract))
     if ntheta <= 0:
@@ -711,27 +834,54 @@ def main() -> None:
     )
 
     rows: list[dict[str, float]] = []
+    cache_dir = None if args.cache_dir is None else args.cache_dir.expanduser().resolve()
     for ky_target in ky_values:
         ky_idx = int(np.argmin(np.abs(gx_ky - float(ky_target))))
         gx_kx_idx = _select_gx_kx_index(gx_kx, gx_contract)
         kx_idx = _match_local_kx_index(np.asarray(grid_full.kx), float(gx_kx[gx_kx_idx]))
-        gamma, omega, Wg, Wphi, Wapar = _run_single_ky(
-            ky_target=float(ky_target),
-            geom=geom,
-            grid_full=grid_full,
-            params=params,
-            time_cfg=time_cfg,
-            gx_contract=gx_contract,
-            species=tuple(species),
-            Nl=args.Nl,
-            Nm=args.Nm,
-            sample_steps=sample_steps,
-            mode_method=args.mode_method,
-            kx_index=kx_idx,
-            terms=terms,
-        )
-        omega_ref = gx_omega[:, ky_idx, gx_kx_idx, 0]
-        gamma_ref = gx_omega[:, ky_idx, gx_kx_idx, 1]
+        cache_path = None
+        if cache_dir is not None:
+            cache_path = _series_cache_path(
+                cache_dir=cache_dir,
+                gx_path=args.gx,
+                geometry_file=args.geometry_file,
+                gx_input=args.gx_input,
+                ky_target=float(ky_target),
+                Nl=int(args.Nl),
+                Nm=int(args.Nm),
+                mode_method=str(args.mode_method),
+                rel_floor_fraction=float(args.rel_floor_fraction),
+                sample_steps=sample_steps,
+            )
+        if cache_path is not None and args.reuse_cache and cache_path.exists():
+            gamma, omega, Wg, Wphi, Wapar = _load_cached_ky_series(cache_path)
+        else:
+            gamma, omega, Wg, Wphi, Wapar = _run_single_ky(
+                ky_target=float(ky_target),
+                geom=geom,
+                grid_full=grid_full,
+                params=params,
+                time_cfg=time_cfg,
+                gx_contract=gx_contract,
+                species=tuple(species),
+                Nl=args.Nl,
+                Nm=args.Nm,
+                sample_steps=sample_steps,
+                mode_method=args.mode_method,
+                kx_index=kx_idx,
+                terms=terms,
+            )
+            if cache_path is not None:
+                _save_cached_ky_series(
+                    cache_path,
+                    gamma=gamma,
+                    omega=omega,
+                    Wg=Wg,
+                    Wphi=Wphi,
+                    Wapar=Wapar,
+                )
+        omega_ref = gx_omega[sample_steps, ky_idx, gx_kx_idx, 0]
+        gamma_ref = gx_omega[sample_steps, ky_idx, gx_kx_idx, 1]
         rows.append(
             {
                 "ky": float(ky_target),
@@ -745,9 +895,9 @@ def main() -> None:
                 "mean_rel_gamma": _mean_rel_error(
                     gamma, gamma_ref, floor_fraction=float(args.rel_floor_fraction)
                 ),
-                "mean_rel_Wg": _mean_rel_error(Wg, gx_Wg[:, ky_idx], floor_fraction=1.0e-6),
-                "mean_rel_Wphi": _mean_rel_error(Wphi, gx_Wphi[:, ky_idx], floor_fraction=1.0e-6),
-                "mean_rel_Wapar": _mean_rel_error(Wapar, gx_Wapar[:, ky_idx], floor_fraction=1.0e-6),
+                "mean_rel_Wg": _mean_rel_error(Wg, gx_Wg[sample_steps, ky_idx], floor_fraction=1.0e-6),
+                "mean_rel_Wphi": _mean_rel_error(Wphi, gx_Wphi[sample_steps, ky_idx], floor_fraction=1.0e-6),
+                "mean_rel_Wapar": _mean_rel_error(Wapar, gx_Wapar[sample_steps, ky_idx], floor_fraction=1.0e-6),
                 "omega_last": float(omega[-1]),
                 "omega_ref_last": float(omega_ref[-1]),
                 "gamma_last": float(gamma[-1]),

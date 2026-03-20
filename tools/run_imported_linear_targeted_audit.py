@@ -40,6 +40,18 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--damp-ends-widthfrac", type=float, default=1.0 / 8.0)
     p.add_argument("--mode-method", choices=("z_index", "max"), default="z_index")
     p.add_argument("--rel-floor-fraction", type=float, default=1.0e-2)
+    p.add_argument(
+        "--sample-step-stride",
+        type=int,
+        default=1,
+        help="Subsample saved GX diagnostic samples by this stride inside compare_gx_imported_linear.py.",
+    )
+    p.add_argument(
+        "--max-samples",
+        type=int,
+        default=None,
+        help="If set, only score the first N selected GX diagnostic samples per ky.",
+    )
     p.add_argument("--reuse-cache", action="store_true", help="Reuse existing per-ky CSV rows if present.")
     return p
 
@@ -105,8 +117,12 @@ def main() -> None:
             str(geometry_file),
             "--out",
             str(cache_csv),
+            "--cache-dir",
+            str(cache_dir),
             "--ky",
             str(float(ky)),
+            "--sample-step-stride",
+            str(int(args.sample_step_stride)),
             "--Nl",
             str(int(args.Nl)),
             "--Nm",
@@ -126,6 +142,10 @@ def main() -> None:
             "--rel-floor-fraction",
             str(float(args.rel_floor_fraction)),
         ]
+        if args.max_samples is not None:
+            cmd += ["--max-samples", str(int(args.max_samples))]
+        if args.reuse_cache:
+            cmd += ["--reuse-cache"]
         if gx_input is not None:
             cmd += ["--gx-input", str(gx_input)]
         subprocess.run(cmd, check=True)
