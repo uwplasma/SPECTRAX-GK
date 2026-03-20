@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -49,9 +50,19 @@ def _lane_section(manifest: dict[str, Any]) -> dict[str, Any]:
     return lanes
 
 
+def _resolve_manifest_path(value: str | Path, *, manifest_dir: Path) -> Path:
+    raw = os.path.expandvars(str(value))
+    path = Path(raw).expanduser()
+    if not path.is_absolute():
+        path = manifest_dir / path
+    return path.resolve()
+
+
 def main() -> None:
     args = build_parser().parse_args()
-    manifest = load_toml(args.manifest)
+    manifest_path = args.manifest.expanduser().resolve()
+    manifest_dir = manifest_path.parent
+    manifest = load_toml(manifest_path)
     lanes = _lane_section(manifest)
 
     selected = [args.lane] if args.lane is not None else list(lanes.keys())
@@ -59,7 +70,7 @@ def main() -> None:
     py = str(args.python)
     here = Path(__file__).resolve().parent
 
-    summary: dict[str, Any] = {"manifest": str(Path(args.manifest).resolve()), "lanes": {}}
+    summary: dict[str, Any] = {"manifest": str(manifest_path), "lanes": {}}
 
     for lane_key in selected:
         if lane_key not in lanes:
@@ -68,8 +79,8 @@ def main() -> None:
         if not isinstance(cfg, dict):
             raise SystemExit(f"Lane config must be a table: lane.{lane_key}")
 
-        gx_out = Path(cfg["gx_out"]).expanduser()
-        config = Path(cfg["config"]).expanduser()
+        gx_out = _resolve_manifest_path(cfg["gx_out"], manifest_dir=manifest_dir)
+        config = _resolve_manifest_path(cfg["config"], manifest_dir=manifest_dir)
         out_dir = out_root / lane_key
         out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -81,7 +92,7 @@ def main() -> None:
                 py,
                 str(here / "compare_gx_runtime_startup.py"),
                 "--gx-dir",
-                str(Path(st["gx_dir"]).expanduser()),
+                str(_resolve_manifest_path(st["gx_dir"], manifest_dir=manifest_dir)),
                 "--gx-out",
                 str(gx_out),
                 "--config",
@@ -101,7 +112,7 @@ def main() -> None:
                 py,
                 str(here / "compare_gx_runtime_diag_state.py"),
                 "--gx-dir",
-                str(Path(ds["gx_dir"]).expanduser()),
+                str(_resolve_manifest_path(ds["gx_dir"], manifest_dir=manifest_dir)),
                 "--gx-out",
                 str(gx_out),
                 "--config",
@@ -121,7 +132,7 @@ def main() -> None:
                 py,
                 str(here / "compare_gx_runtime_window.py"),
                 "--gx-dir",
-                str(Path(w["gx_dir"]).expanduser()),
+                str(_resolve_manifest_path(w["gx_dir"], manifest_dir=manifest_dir)),
                 "--gx-out",
                 str(gx_out),
                 "--config",
@@ -150,4 +161,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
