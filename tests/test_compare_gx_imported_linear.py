@@ -19,6 +19,7 @@ import compare_gx_imported_linear as imported_linear
 from compare_gx_imported_linear import (
     GXInputContract,
     _build_imported_initial_condition,
+    _build_sample_steps,
     _infer_gx_linear_dt,
     _integrate_target_mode_series,
     _gx_Wg_by_ky,
@@ -51,6 +52,35 @@ def test_compare_gx_imported_linear_parser_accepts_gx_input() -> None:
         ]
     )
     assert args.gx_input == Path("/tmp/run.in")
+
+
+def test_compare_gx_imported_linear_parser_accepts_cache_and_sample_controls() -> None:
+    args = build_parser().parse_args(
+        [
+            "--gx",
+            "/tmp/run.out.nc",
+            "--geometry-file",
+            "/tmp/run.eik.nc",
+            "--cache-dir",
+            "/tmp/cache",
+            "--reuse-cache",
+            "--sample-step-stride",
+            "3",
+            "--max-samples",
+            "12",
+        ]
+    )
+    assert args.cache_dir == Path("/tmp/cache")
+    assert args.reuse_cache is True
+    assert args.sample_step_stride == 3
+    assert args.max_samples == 12
+
+
+def test_build_sample_steps_supports_stride_and_early_window() -> None:
+    gx_time = np.linspace(0.0, 9.0, 10)
+    assert np.array_equal(_build_sample_steps(gx_time, sample_step_stride=1, max_samples=None), np.arange(10))
+    assert np.array_equal(_build_sample_steps(gx_time, sample_step_stride=2, max_samples=None), np.arange(0, 10, 2))
+    assert np.array_equal(_build_sample_steps(gx_time, sample_step_stride=2, max_samples=3), np.asarray([0, 2, 4]))
 
 
 def test_load_gx_input_contract_reads_fix_aspect_and_species_contract(tmp_path: Path) -> None:

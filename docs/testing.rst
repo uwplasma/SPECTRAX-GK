@@ -172,6 +172,22 @@ artifacts, use:
 - ``tools/run_device_parity_gate.py`` (manifest-driven CPU/GPU short-window parity gate)
 - ``tools/run_vmec_roundtrip_gate.py`` (manifest-driven VMEC ``vmec -> eik.nc`` determinism gate)
 
+The targeted imported-linear wrapper and the underlying
+``compare_gx_imported_linear.py`` comparator now support two important controls
+for honest stress-lane scoring without changing the default full-window
+behavior:
+
+- ``--sample-step-stride``: subsample the saved GX diagnostic sample indices
+  before scoring.
+- ``--max-samples``: truncate scoring to the first N selected samples.
+
+The lower-level comparator also supports ``--cache-dir`` plus ``--reuse-cache``
+to persist per-``ky`` trajectory/result arrays (``gamma``, ``omega``,
+``Wg``, ``Wphi``, ``Wapar``) as compressed ``.npz`` files keyed by the actual
+GX file, geometry file, GX input, selected ``ky``, Hermite/Laguerre
+resolution, mode selector, and sample-window contract. This makes the
+stress-lane tooling incremental instead of rerunning a full lane every time.
+
 For VMEC-backed exact-state audits, the runtime bridge now prefers a local
 ``booz_xform_jax`` checkout and injects a temporary ``booz_xform`` compatibility
 shim only into the GX geometry-helper subprocess. This preserves GX as ground
