@@ -166,6 +166,7 @@ artifacts, use:
 
 - ``tools/run_gx_linear_stress_matrix.py`` (KAW, Cyclone kinetic electrons, KBM Miller)
 - ``tools/run_exact_state_audit.py`` (manifest-driven wrapper around the exact-state audit tools)
+- ``tools/run_restart_parity_gate.py`` (manifest-driven nonlinear restart/continuation parity gate)
 
 For VMEC-backed exact-state audits, the runtime bridge now prefers a local
 ``booz_xform_jax`` checkout and injects a temporary ``booz_xform`` compatibility
@@ -188,6 +189,17 @@ path is:
      --manifest tools/exact_state_lanes.office.toml \
      --outdir tools_out/exact_state_audit_office
 
+The restart/continuation gate uses the same environment model and should be
+run against the tracked nonlinear lanes with ``PYTHONPATH`` set to the source
+tree so the office venv does not pick up a stale installed package:
+
+.. code-block:: bash
+
+   PYTHONPATH=/home/rjorge/SPECTRAX-GK/src \
+   /home/rjorge/venvs/spectrax/bin/python tools/run_restart_parity_gate.py \
+     --manifest tools/restart_gate_lanes.office.toml \
+     --outdir tools_out/restart_parity_office
+
 If the helper must be forced to another interpreter, the fallback remains:
 
 .. code-block:: bash
@@ -198,8 +210,8 @@ If the helper must be forced to another interpreter, the fallback remains:
      --manifest tools/exact_state_lanes.office.toml \
      --outdir tools_out/exact_state_audit_office
 
-CI split: fast PR vs nightly full
----------------------------------
+CI split: fast PR vs manual full
+--------------------------------
 
 CI is split into two tiers to keep pull requests fast while preserving full
 physics rigor:

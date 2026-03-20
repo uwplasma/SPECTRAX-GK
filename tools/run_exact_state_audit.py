@@ -14,6 +14,7 @@ It wraps:
 from __future__ import annotations
 
 import argparse
+from contextlib import contextmanager
 import json
 import os
 from pathlib import Path
@@ -43,6 +44,24 @@ def _run_tool(cmd: list[str], *, cwd: Path | None, log_path: Path) -> dict[str, 
     return {"returncode": int(proc.returncode), "log": str(log_path)}
 
 
+@contextmanager
+def _temporary_env(env_updates: dict[str, str] | None):
+    if not env_updates:
+        yield
+        return
+    previous: dict[str, str | None] = {key: os.environ.get(key) for key in env_updates}
+    try:
+        for key, value in env_updates.items():
+            os.environ[str(key)] = str(value)
+        yield
+    finally:
+        for key, value in previous.items():
+            if value is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = value
+
+
 def _lane_section(manifest: dict[str, Any]) -> dict[str, Any]:
     lanes = manifest.get("lane")
     if not isinstance(lanes, dict):
@@ -56,6 +75,16 @@ def _resolve_manifest_path(value: str | Path, *, manifest_dir: Path) -> Path:
     if not path.is_absolute():
         path = manifest_dir / path
     return path.resolve()
+
+
+def _expand_env_value(value: object) -> str:
+    text = str(value)
+    for _ in range(4):
+        expanded = os.path.expanduser(os.path.expandvars(text))
+        if expanded == text:
+            return expanded
+        text = expanded
+    return text
 
 
 def main() -> None:
@@ -85,72 +114,81 @@ def main() -> None:
         out_dir.mkdir(parents=True, exist_ok=True)
 
         lane_summary: dict[str, Any] = {"gx_out": str(gx_out), "config": str(config)}
+        env_cfg = cfg.get("env")
+        env_updates = (
+            {str(key): _expand_env_value(value) for key, value in env_cfg.items()}
+            if isinstance(env_cfg, dict)
+            else None
+        )
+        if env_updates:
+            lane_summary["env"] = env_updates
 
-        if "startup" in cfg:
-            st = cfg["startup"]
-            cmd = [
-                py,
-                str(here / "compare_gx_runtime_startup.py"),
-                "--gx-dir",
-                str(_resolve_manifest_path(st["gx_dir"], manifest_dir=manifest_dir)),
-                "--gx-out",
-                str(gx_out),
-                "--config",
-                str(config),
-                "--ky",
-                str(st["ky"]),
-            ]
-            if "kx_target" in st:
-                cmd += ["--kx-target", str(st["kx_target"])]
-            if "y0" in st:
-                cmd += ["--y0", str(st["y0"])]
-            lane_summary["startup"] = _run_tool(cmd, cwd=here, log_path=out_dir / "startup.log")
+        with _temporary_env(env_updates):
+            if "startup" in cfg:
+                st = cfg["startup"]
+                cmd = [
+                    py,
+                    str(here / "compare_gx_runtime_startup.py"),
+                    "--gx-dir",
+                    str(_resolve_manifest_path(st["gx_dir"], manifest_dir=manifest_dir)),
+                    "--gx-out",
+                    str(gx_out),
+                    "--config",
+                    str(config),
+                    "--ky",
+                    str(st["ky"]),
+                ]
+                if "kx_target" in st:
+                    cmd += ["--kx-target", str(st["kx_target"])]
+                if "y0" in st:
+                    cmd += ["--y0", str(st["y0"])]
+                lane_summary["startup"] = _run_tool(cmd, cwd=here, log_path=out_dir / "startup.log")
 
-        if "diag_state" in cfg:
-            ds = cfg["diag_state"]
-            cmd = [
-                py,
-                str(here / "compare_gx_runtime_diag_state.py"),
-                "--gx-dir",
-                str(_resolve_manifest_path(ds["gx_dir"], manifest_dir=manifest_dir)),
-                "--gx-out",
-                str(gx_out),
-                "--config",
-                str(config),
-                "--time-index",
-                str(ds["time_index"]),
-                "--out",
-                str(out_dir / "diag_state.csv"),
-            ]
-            if "y0" in ds:
-                cmd += ["--y0", str(ds["y0"])]
-            lane_summary["diag_state"] = _run_tool(cmd, cwd=here, log_path=out_dir / "diag_state.log")
+            if "diag_state" in cfg:
+                ds = cfg["diag_state"]
+                cmd = [
+                    py,
+                    str(here / "compare_gx_runtime_diag_state.py"),
+                    "--gx-dir",
+                    str(_resolve_manifest_path(ds["gx_dir"], manifest_dir=manifest_dir)),
+                    "--gx-out",
+                    str(gx_out),
+                    "--config",
+                    str(config),
+                    "--time-index",
+                    str(ds["time_index"]),
+                    "--out",
+                    str(out_dir / "diag_state.csv"),
+                ]
+                if "y0" in ds:
+                    cmd += ["--y0", str(ds["y0"])]
+                lane_summary["diag_state"] = _run_tool(cmd, cwd=here, log_path=out_dir / "diag_state.log")
 
-        if "window" in cfg:
-            w = cfg["window"]
-            cmd = [
-                py,
-                str(here / "compare_gx_runtime_window.py"),
-                "--gx-dir",
-                str(_resolve_manifest_path(w["gx_dir"], manifest_dir=manifest_dir)),
-                "--gx-out",
-                str(gx_out),
-                "--config",
-                str(config),
-                "--time-index-start",
-                str(w["time_index_start"]),
-                "--time-index-stop",
-                str(w["time_index_stop"]),
-                "--out",
-                str(out_dir / "window.csv"),
-            ]
-            if "steps" in w:
-                cmd += ["--steps", str(w["steps"])]
-            if "ky" in w:
-                cmd += ["--ky", str(w["ky"])]
-            if "y0" in w:
-                cmd += ["--y0", str(w["y0"])]
-            lane_summary["window"] = _run_tool(cmd, cwd=here, log_path=out_dir / "window.log")
+            if "window" in cfg:
+                w = cfg["window"]
+                cmd = [
+                    py,
+                    str(here / "compare_gx_runtime_window.py"),
+                    "--gx-dir",
+                    str(_resolve_manifest_path(w["gx_dir"], manifest_dir=manifest_dir)),
+                    "--gx-out",
+                    str(gx_out),
+                    "--config",
+                    str(config),
+                    "--time-index-start",
+                    str(w["time_index_start"]),
+                    "--time-index-stop",
+                    str(w["time_index_stop"]),
+                    "--out",
+                    str(out_dir / "window.csv"),
+                ]
+                if "steps" in w:
+                    cmd += ["--steps", str(w["steps"])]
+                if "ky" in w:
+                    cmd += ["--ky", str(w["ky"])]
+                if "y0" in w:
+                    cmd += ["--y0", str(w["y0"])]
+                lane_summary["window"] = _run_tool(cmd, cwd=here, log_path=out_dir / "window.log")
 
         summary["lanes"][lane_key] = lane_summary
 
