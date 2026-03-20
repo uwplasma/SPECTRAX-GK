@@ -167,6 +167,20 @@ artifacts, use:
 - ``tools/run_gx_linear_stress_matrix.py`` (KAW, Cyclone kinetic electrons, KBM Miller)
 - ``tools/run_exact_state_audit.py`` (manifest-driven wrapper around the exact-state audit tools)
 
+For VMEC-backed exact-state audits, the GX geometry helper must run under a
+Python that exposes ``booz_xform.Booz_xform`` correctly. The runtime bridge
+already supports this through ``geometry.gx_python`` and the
+``GX_VMEC_PYTHON`` environment variable. On ``office``, the audited working
+setting is:
+
+.. code-block:: bash
+
+   GX_VMEC_PYTHON=/usr/bin/python3 \
+   HSX_VMEC_FILE=/path/to/wout_HSX_QHS_vac.nc \
+   /home/rjorge/venvs/spectrax/bin/python tools/run_exact_state_audit.py \
+     --manifest tools/exact_state_lanes.office.toml \
+     --outdir tools_out/exact_state_audit_office
+
 CI split: fast PR vs nightly full
 ---------------------------------
 
