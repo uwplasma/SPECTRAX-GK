@@ -167,11 +167,28 @@ artifacts, use:
 - ``tools/run_gx_linear_stress_matrix.py`` (KAW, Cyclone kinetic electrons, KBM Miller)
 - ``tools/run_exact_state_audit.py`` (manifest-driven wrapper around the exact-state audit tools)
 
-For VMEC-backed exact-state audits, the GX geometry helper must run under a
-Python that exposes ``booz_xform.Booz_xform`` correctly. The runtime bridge
-already supports this through ``geometry.gx_python`` and the
-``GX_VMEC_PYTHON`` environment variable. On ``office``, the audited working
-setting is:
+For VMEC-backed exact-state audits, the runtime bridge now prefers a local
+``booz_xform_jax`` checkout and injects a temporary ``booz_xform`` compatibility
+shim only into the GX geometry-helper subprocess. This preserves GX as ground
+truth while avoiding a host-level dependency on the original ``booz_xform``
+Python package.
+
+The bridge auto-discovers ``booz_xform_jax`` in standard locations
+(``/home/user/local/booz_xform_jax`` and ``/home/user/booz_xform_jax``)
+or from ``GX_BOOZ_XFORM_JAX_PATH`` / ``BOOZ_XFORM_JAX_PATH``. When a specific
+Python is still needed for GX's helper, it can be provided through
+``geometry.gx_python`` or ``GX_VMEC_PYTHON``. On ``office``, the normal audited
+path is:
+
+.. code-block:: bash
+
+   rsync -a /path/to/booz_xform_jax/ office:/home/user/booz_xform_jax/
+   HSX_VMEC_FILE=/path/to/wout_HSX_QHS_vac.nc \
+   /home/user/venvs/spectrax/bin/python tools/run_exact_state_audit.py \
+     --manifest tools/exact_state_lanes.office.toml \
+     --outdir tools_out/exact_state_audit_office
+
+If the helper must be forced to another interpreter, the fallback remains:
 
 .. code-block:: bash
 
@@ -190,12 +207,12 @@ physics rigor:
 - **Fast PR/push tier**: three parallel shards run mypy and targeted test
   subsets (fundamentals, linear core, runtime/nonlinear). This catches solver
   and dtype regressions quickly.
-- **Nightly/manual tier**: full ``pytest`` suite plus strict coverage gates:
+- **Manual full tier**: full ``pytest`` suite plus strict coverage gates:
   ``spectraxgk.terms >= 90%`` and per-module core gates for
   ``linear_krylov.py`` and ``diffrax_integrators.py``.
 
 This keeps iteration latency low for development and still enforces complete
-coverage and regression checks every night (and on manual dispatch).
+coverage and regression checks on demand without relying on scheduled runners.
 
 Core modular coverage gate
 --------------------------

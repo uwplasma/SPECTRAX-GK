@@ -2,16 +2,14 @@
 #
 # Run on office from the repo root:
 #   export HSX_VMEC_FILE="$HOME/gx_refs/main_clean_20260312/nonlinear/hsx/wout_HSX_QHS_vac.nc"
-#   export GX_VMEC_PYTHON="/usr/bin/python3"
 #   python tools/run_exact_state_audit.py \
 #     --manifest tools/exact_state_lanes.office.toml \
 #     --outdir tools_out/exact_state_audit_office
 #
 # This manifest is intentionally honest about current dump coverage:
 # - Cyclone Miller: diag-state audit available from the tracked late-state dump.
-# - KBM: tracked lane metadata only for now; the currently available field dumps
-#   do not match the published nonlinear startup contract tightly enough to use
-#   as a regression gate.
+# - KBM: startup audit re-enabled from the fresh matched call-1 dump generated
+#   from GX's tracked dense t100 nonlinear benchmark input.
 # - W7-X: startup + diag-state audits available from tracked startup/late dumps.
 # - HSX: startup audit available from the tracked startup dump.
 # Missing window/restart entries should be added only when the corresponding GX
@@ -28,6 +26,11 @@ time_index = 47
 [lane.kbm_salpha]
 config = "../examples/configs/runtime_kbm_nonlinear_gx_t100.toml"
 gx_out = "$HOME/gx_refs/main_clean_20260312/nonlinear/kbm/kbm_salpha_nonlinear.out.nc"
+
+[lane.kbm_salpha.startup]
+gx_dir = "$HOME/gx_runs/kbm_t100_dense_call1_clean"
+ky = 0.3
+kx_target = 0.0
 
 [lane.w7x_vmec]
 config = "../examples/configs/runtime_w7x_nonlinear_vmec_geometry.toml"
