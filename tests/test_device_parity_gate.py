@@ -9,7 +9,11 @@ import pytest
 jax = pytest.importorskip("jax")
 
 from spectraxgk.runtime import run_runtime_nonlinear
-from tests.test_restart_gate import _restart_base_cfg
+
+try:
+    from test_restart_gate import _restart_base_cfg
+except ModuleNotFoundError:  # pragma: no cover - package-style collection fallback
+    from tests.test_restart_gate import _restart_base_cfg
 
 
 @pytest.mark.gpu
@@ -17,9 +21,17 @@ def test_cpu_gpu_short_window_gate_matches_within_tolerance() -> None:
     if os.environ.get("SPECTRAXGK_DEVICE_PARITY", "").strip() not in {"1", "true", "yes"}:
         pytest.skip("Set SPECTRAXGK_DEVICE_PARITY=1 to enable CPU/GPU parity gate.")
 
-    devices = jax.devices()
-    cpu = next((d for d in devices if d.platform == "cpu"), None)
-    gpu = next((d for d in devices if d.platform in {"gpu", "cuda"}), None)
+    try:
+        cpu_devices = jax.devices("cpu")
+    except Exception:
+        cpu_devices = ()
+    try:
+        gpu_devices = jax.devices("gpu")
+    except Exception:
+        gpu_devices = ()
+
+    cpu = cpu_devices[0] if cpu_devices else None
+    gpu = gpu_devices[0] if gpu_devices else None
     if cpu is None or gpu is None:
         pytest.skip("No GPU backend detected for JAX.")
 
@@ -52,4 +64,3 @@ def test_cpu_gpu_short_window_gate_matches_within_tolerance() -> None:
     assert norm_cpu > 0.0
     assert norm_gpu > 0.0
     assert norm_gpu == pytest.approx(norm_cpu, rel=2.0e-4, abs=1.0e-7)
-
