@@ -167,6 +167,8 @@ artifacts, use:
 - ``tools/run_gx_linear_stress_matrix.py`` (KAW, Cyclone kinetic electrons, KBM Miller)
 - ``tools/run_exact_state_audit.py`` (manifest-driven wrapper around the exact-state audit tools)
 - ``tools/run_restart_parity_gate.py`` (manifest-driven nonlinear restart/continuation parity gate)
+- ``tools/run_device_parity_gate.py`` (manifest-driven CPU/GPU short-window parity gate)
+- ``tools/run_vmec_roundtrip_gate.py`` (manifest-driven VMEC ``vmec -> eik.nc`` determinism gate)
 
 For VMEC-backed exact-state audits, the runtime bridge now prefers a local
 ``booz_xform_jax`` checkout and injects a temporary ``booz_xform`` compatibility
@@ -199,6 +201,27 @@ tree so the office venv does not pick up a stale installed package:
    /home/rjorge/venvs/spectrax/bin/python tools/run_restart_parity_gate.py \
      --manifest tools/restart_gate_lanes.office.toml \
      --outdir tools_out/restart_parity_office
+
+The device-parity gate now has audited ``office`` manifests for one tokamak and
+one stellarator lane, both requiring stable nonzero outputs rather than the
+older zero-norm smoke probe:
+
+.. code-block:: bash
+
+   PYTHONPATH=/home/rjorge/SPECTRAX-GK/src \
+   /home/rjorge/venvs/spectrax/bin/python tools/run_device_parity_gate.py \
+     --manifest tools/device_parity_lanes.office.toml \
+     --outdir tools_out/device_parity_office
+
+The VMEC roundtrip gate uses the same manifest pattern and currently covers the
+tracked W7-X and HSX VMEC lanes:
+
+.. code-block:: bash
+
+   PYTHONPATH=/home/rjorge/SPECTRAX-GK/src \
+   /home/rjorge/venvs/spectrax/bin/python tools/run_vmec_roundtrip_gate.py \
+     --manifest tools/vmec_roundtrip_lanes.office.toml \
+     --outdir tools_out/vmec_roundtrip_office
 
 If the helper must be forced to another interpreter, the fallback remains:
 
