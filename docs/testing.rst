@@ -165,6 +165,7 @@ For developer workflows that require local GX benchmark NetCDFs or GX dump
 artifacts, use:
 
 - ``tools/run_gx_linear_stress_matrix.py`` (KAW, Cyclone kinetic electrons, KBM Miller)
+- ``tools/run_kbm_lowky_extractor_audit.py`` (direct cached-trajectory KBM low-``ky`` extractor audit)
 - ``tools/run_exact_state_audit.py`` (manifest-driven wrapper around the exact-state audit tools)
 - ``tools/run_restart_parity_gate.py`` (manifest-driven nonlinear restart/continuation parity gate)
 - ``tools/run_device_parity_gate.py`` (manifest-driven CPU/GPU short-window parity gate)
