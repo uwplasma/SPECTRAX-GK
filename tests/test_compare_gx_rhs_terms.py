@@ -116,6 +116,32 @@ def test_compare_gx_rhs_terms_parser_accepts_runtime_config() -> None:
     assert args.config == Path("/tmp/runtime.toml")
 
 
+def test_compare_gx_rhs_terms_parser_accepts_imported_geometry_args() -> None:
+    tools_dir = Path(__file__).resolve().parents[1] / "tools"
+    sys.path.insert(0, str(tools_dir))
+    try:
+        import compare_gx_rhs_terms as mod
+    finally:
+        sys.path.remove(str(tools_dir))
+
+    parser = mod.build_parser()
+    args = parser.parse_args(
+        [
+            "--gx-dir",
+            "/tmp/gx",
+            "--gx-out",
+            "/tmp/gx.out.nc",
+            "--gx-input",
+            "/tmp/gx.in",
+            "--geometry-file",
+            "/tmp/geom.nc",
+        ]
+    )
+
+    assert args.gx_input == Path("/tmp/gx.in")
+    assert args.geometry_file == Path("/tmp/geom.nc")
+
+
 def test_compare_gx_rhs_terms_runtime_context_overrides_grid_from_dump(monkeypatch) -> None:
     tools_dir = Path(__file__).resolve().parents[1] / "tools"
     sys.path.insert(0, str(tools_dir))

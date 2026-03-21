@@ -26,8 +26,8 @@ from spectraxgk.benchmarks import (
     _build_initial_condition,
     _two_species_params,
 )
-from spectraxgk.config import GridConfig
-from spectraxgk.geometry import SAlphaGeometry, apply_gx_geometry_grid_defaults
+from spectraxgk.config import GeometryConfig, GridConfig
+from spectraxgk.geometry import SlabGeometry, SAlphaGeometry, apply_gx_geometry_grid_defaults, load_gx_geometry_netcdf
 from spectraxgk.grids import build_spectral_grid, select_ky_grid
 from spectraxgk.io import load_runtime_from_toml
 from spectraxgk.linear import (
@@ -48,6 +48,15 @@ from spectraxgk.terms.linear_terms import (
 )
 from spectraxgk.terms.assembly import assemble_rhs_terms_cached, compute_fields_cached
 from spectraxgk.terms.config import TermConfig
+from spectraxgk.species import build_linear_params
+
+from compare_gx_imported_linear import (
+    _load_gx_input_contract,
+    _read_gx_output_bool,
+    _resolve_imported_boundary,
+    _resolve_imported_real_fft_ny,
+    _select_geometry_source,
+)
 
 
 def _load_shape(path: Path) -> dict[str, int]:
@@ -304,6 +313,18 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Runtime TOML config. When set, geometry/physics come from the runtime path instead of --case.",
     )
+    parser.add_argument(
+        "--gx-input",
+        type=Path,
+        default=None,
+        help="GX input file for imported-geometry term audits.",
+    )
+    parser.add_argument(
+        "--geometry-file",
+        type=Path,
+        default=None,
+        help="Imported GX geometry source (.out.nc/.eik.nc); required with --gx-input for non-slab cases.",
+    )
     parser.add_argument("--case", type=str, default="cyclone", choices=("cyclone", "kbm"))
     parser.add_argument("--ky", type=float, default=0.3)
     parser.add_argument("--Nl", type=int, default=None, help="Laguerre resolution (defaults to dump metadata)")
@@ -344,6 +365,78 @@ def _build_runtime_compare_context(
     params = build_runtime_linear_params(cfg_use, Nm=nm, geom=geom)
     term_cfg = replace(build_runtime_term_config(cfg_use), hypercollisions=0.0, end_damping=0.0)
     return cfg_use, geom, grid_full, params, term_cfg
+
+
+def _build_imported_compare_context(
+    gx_out: Path,
+    gx_input: Path,
+    geometry_file: Path | None,
+    *,
+    nx: int,
+    nz: int,
+    nm: int,
+    ky_vals: np.ndarray,
+    y0_override: float | None,
+):
+    gx_contract = _load_gx_input_contract(gx_input)
+    y0_use = float(y0_override) if y0_override is not None else _infer_y0(ky_vals)
+    ny_full = _resolve_imported_real_fft_ny(ky_vals, gx_contract)
+    boundary_eff = _resolve_imported_boundary(
+        str(gx_contract.boundary),
+        zero_shat=bool(gx_contract.zero_shat),
+    )
+    if gx_contract.geo_option == "slab":
+        gx_contract = replace(
+            gx_contract,
+            zero_shat=_read_gx_output_bool(gx_out, "zero_shat", default=gx_contract.zero_shat),
+        )
+        boundary_eff = _resolve_imported_boundary(
+            str(gx_contract.boundary),
+            zero_shat=bool(gx_contract.zero_shat),
+        )
+        geom = SlabGeometry.from_config(
+            GeometryConfig(model="slab", s_hat=float(gx_contract.s_hat), zero_shat=bool(gx_contract.zero_shat))
+        )
+    else:
+        if geometry_file is None:
+            raise ValueError("--geometry-file is required with --gx-input for non-slab imported cases")
+        geom = load_gx_geometry_netcdf(_select_geometry_source(gx_out, geometry_file, gx_contract))
+
+    lx = 2.0 * np.pi * y0_use if boundary_eff == "periodic" else 62.8
+    grid_cfg = GridConfig(
+        Nx=int(nx),
+        Ny=int(ny_full),
+        Nz=int(nz),
+        Lx=float(lx),
+        Ly=2.0 * np.pi * float(y0_use),
+        boundary=str(boundary_eff),
+        y0=float(y0_use),
+        nperiod=max(1, int(gx_contract.nperiod)),
+        ntheta=max(1, int(gx_contract.ntheta)),
+    )
+    grid_full = build_spectral_grid(apply_gx_geometry_grid_defaults(geom, grid_cfg))
+    params = build_linear_params(
+        gx_contract.species,
+        tau_e=float(gx_contract.tau_e),
+        kpar_scale=float(geom.gradpar()),
+        beta=float(gx_contract.beta),
+        fapar=float(gx_contract.fapar),
+    )
+    if gx_contract.hypercollisions:
+        params = _apply_gx_hypercollisions(params, nhermite=int(nm))
+    params = replace(
+        params,
+        D_hyper=float(gx_contract.D_hyper),
+        damp_ends_amp=float(gx_contract.damp_ends_amp),
+        damp_ends_widthfrac=float(gx_contract.damp_ends_widthfrac),
+    )
+    terms = LinearTerms(
+        hypercollisions=1.0 if gx_contract.hypercollisions else 0.0,
+        hyperdiffusion=1.0 if gx_contract.hyper else 0.0,
+        apar=1.0 if float(gx_contract.fapar) > 0.0 else 0.0,
+        bpar=1.0 if float(gx_contract.fbpar) > 0.0 else 0.0,
+    )
+    return gx_contract, geom, grid_full, params, linear_terms_to_term_config(terms)
 
 
 def main() -> None:
@@ -389,7 +482,20 @@ def main() -> None:
     gx_coll = gx_coll[:, :, :, ky_idx : ky_idx + 1, :, :]
 
     cfg: Any
-    if args.config is not None:
+    if args.gx_input is not None:
+        cfg = None
+        _gx_contract, geom, grid_full, params, term_cfg = _build_imported_compare_context(
+            args.gx_out,
+            args.gx_input,
+            args.geometry_file,
+            nx=nx,
+            nz=nz,
+            nm=Nm_use,
+            ky_vals=ky_vals,
+            y0_override=args.y0,
+        )
+        init_species_index = 0
+    elif args.config is not None:
         cfg, geom, grid_full, params, term_cfg = _build_runtime_compare_context(
             args.config,
             nx=nx,
