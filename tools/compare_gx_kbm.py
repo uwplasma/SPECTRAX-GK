@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import argparse
-from dataclasses import fields, is_dataclass, replace
+from dataclasses import dataclass, fields, is_dataclass, replace
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -25,11 +25,75 @@ from spectraxgk.analysis import (
 from spectraxgk.benchmarks import KBM_KRYLOV_DEFAULT, run_kbm_linear
 from spectraxgk.config import KBMBaseCase, GeometryConfig, GridConfig, KineticElectronModelConfig
 from spectraxgk.grids import build_spectral_grid, select_ky_grid
+from spectraxgk.io import load_toml
 
 LATE_PROJECT_WINDOW_FRACTION = 0.3
 LATE_PROJECT_MIN_POINTS = 80
 LATE_PROJECT_START_FRACTION = 0.4
 LATE_PROJECT_GROWTH_WEIGHT = 1.0
+
+
+@dataclass(frozen=True)
+class KBMGXInputContract:
+    y0: float
+    ntheta: int
+    nperiod: int
+    q: float
+    shat: float
+    eps: float
+    rmaj: float
+    beta: float
+    ion_tprim: float
+    ele_tprim: float
+    ion_fprim: float
+    ele_fprim: float
+    te_over_ti: float
+    mass_ratio: float
+    init_field: str
+    gaussian_init: bool
+    init_electrons_only: bool
+
+
+def _load_kbm_gx_input_contract(path: Path) -> KBMGXInputContract:
+    data = load_toml(path)
+    dims = data.get("Dimensions", {})
+    domain = data.get("Domain", {})
+    physics = data.get("Physics", {})
+    geometry = data.get("Geometry", {})
+    species = data.get("species", {})
+    init = data.get("Initialization", {})
+
+    charge = np.asarray(species.get("z", [1.0, -1.0]), dtype=float)
+    mass = np.asarray(species.get("mass", [1.0, 2.7e-4]), dtype=float)
+    temp = np.asarray(species.get("temp", [1.0, 1.0]), dtype=float)
+    tprim = np.asarray(species.get("tprim", [2.49, 2.49]), dtype=float)
+    fprim = np.asarray(species.get("fprim", [0.8, 0.8]), dtype=float)
+    ele_candidates = np.flatnonzero(charge < 0.0)
+    ele_idx = int(ele_candidates[0]) if ele_candidates.size else min(1, charge.size - 1)
+    ion_idx = 0 if ele_idx != 0 else min(1, charge.size - 1)
+    me = float(mass[ele_idx])
+    te = float(temp[ele_idx])
+    ti = float(temp[ion_idx])
+    rmaj = float(geometry.get("Rmaj", 2.77778))
+    return KBMGXInputContract(
+        y0=float(domain.get("y0", 10.0)),
+        ntheta=int(dims.get("ntheta", 32)),
+        nperiod=int(dims.get("nperiod", 2)),
+        q=float(geometry.get("qinp", geometry.get("q", 1.4))),
+        shat=float(geometry.get("shat", 0.8)),
+        eps=float(geometry.get("rhoc", 0.5)) / rmaj,
+        rmaj=rmaj,
+        beta=float(physics.get("beta", 0.015)),
+        ion_tprim=float(tprim[ion_idx]),
+        ele_tprim=float(tprim[ele_idx]),
+        ion_fprim=float(fprim[ion_idx]),
+        ele_fprim=float(fprim[ele_idx]),
+        te_over_ti=float(te / ti) if ti != 0.0 else 1.0,
+        mass_ratio=float(1.0 / me) if me != 0.0 else float("inf"),
+        init_field=str(init.get("init_field", "all")),
+        gaussian_init=bool(init.get("gaussian_init", True)),
+        init_electrons_only=bool(init.get("init_electrons_only", False)),
+    )
 
 
 def _load_gx_omega_gamma(
@@ -339,6 +403,15 @@ def _build_cfg(
     ntheta: int,
     nperiod: int,
     y0: float,
+    mass_ratio: float,
+    ion_tprim: float,
+    ele_tprim: float,
+    ion_fprim: float,
+    ele_fprim: float,
+    te_over_ti: float,
+    init_field: str,
+    gaussian_init: bool,
+    init_electrons_only: bool,
 ) -> KBMBaseCase:
     grid = GridConfig(
         Nx=1,
@@ -358,16 +431,26 @@ def _build_cfg(
         R0=rmaj,
     )
     model = KineticElectronModelConfig(
-        R_over_LTi=2.49,
-        R_over_LTe=2.49,
-        R_over_Ln=0.8,
-        Te_over_Ti=1.0,
-        mass_ratio=3670.0,
+        R_over_LTi=ion_tprim,
+        R_over_LTe=ele_tprim,
+        R_over_Ln=ele_fprim,
+        Te_over_Ti=te_over_ti,
+        mass_ratio=mass_ratio,
         nu_i=0.0,
         nu_e=0.0,
         beta=beta,
     )
-    return KBMBaseCase(grid=grid, geometry=geom, model=model)
+    return KBMBaseCase(
+        grid=grid,
+        geometry=geom,
+        model=model,
+        init=replace(
+            KBMBaseCase().init,
+            init_field=init_field,
+            gaussian_init=gaussian_init,
+            init_electrons_only=init_electrons_only,
+        ),
+    )
 
 
 def _replace_result(result, /, **updates):
@@ -756,6 +839,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--ntheta", type=int, default=32)
     parser.add_argument("--nperiod", type=int, default=2)
     parser.add_argument("--y0", type=float, default=10.0, help="Fallback y0 when ky list is truncated.")
+    parser.add_argument("--gx-input", type=Path, default=None, help="Optional GX input file for exact benchmark contract overrides.")
     parser.add_argument(
         "--nky",
         type=int,
@@ -864,6 +948,7 @@ def main() -> None:
         ky_arg=str(args.ky),
         y0_fallback=float(args.y0),
     )
+    gx_input_contract = None if args.gx_input is None else _load_kbm_gx_input_contract(args.gx_input)
     nky = int(args.nky) if args.nky is not None else nky_full
     ny = 3 * (nky - 1) + 1
 
@@ -876,15 +961,28 @@ def main() -> None:
     gx_gamma = gx_avg[:, 1]
 
     cfg = _build_cfg(
-        beta=beta,
-        q=float(q_gx if q_gx is not None else args.q),
-        shat=float(shat_gx if shat_gx is not None else args.shat),
-        eps=float(eps_gx if eps_gx is not None else args.eps),
-        rmaj=float(rmaj_gx if rmaj_gx is not None else args.Rmaj),
+        beta=float(beta if gx_input_contract is None else gx_input_contract.beta),
+        q=float(q_gx if q_gx is not None else (args.q if gx_input_contract is None else gx_input_contract.q)),
+        shat=float(
+            shat_gx if shat_gx is not None else (args.shat if gx_input_contract is None else gx_input_contract.shat)
+        ),
+        eps=float(eps_gx if eps_gx is not None else (args.eps if gx_input_contract is None else gx_input_contract.eps)),
+        rmaj=float(
+            rmaj_gx if rmaj_gx is not None else (args.Rmaj if gx_input_contract is None else gx_input_contract.rmaj)
+        ),
         ny=ny,
-        ntheta=args.ntheta,
-        nperiod=args.nperiod,
-        y0=y0,
+        ntheta=int(args.ntheta if gx_input_contract is None else gx_input_contract.ntheta),
+        nperiod=int(args.nperiod if gx_input_contract is None else gx_input_contract.nperiod),
+        y0=float(y0 if gx_input_contract is None else gx_input_contract.y0),
+        mass_ratio=float(3703.7037037037035 if gx_input_contract is None else gx_input_contract.mass_ratio),
+        ion_tprim=float(2.49 if gx_input_contract is None else gx_input_contract.ion_tprim),
+        ele_tprim=float(2.49 if gx_input_contract is None else gx_input_contract.ele_tprim),
+        ion_fprim=float(0.8 if gx_input_contract is None else gx_input_contract.ion_fprim),
+        ele_fprim=float(0.8 if gx_input_contract is None else gx_input_contract.ele_fprim),
+        te_over_ti=float(1.0 if gx_input_contract is None else gx_input_contract.te_over_ti),
+        init_field=str("all" if gx_input_contract is None else gx_input_contract.init_field),
+        gaussian_init=bool(True if gx_input_contract is None else gx_input_contract.gaussian_init),
+        init_electrons_only=bool(False if gx_input_contract is None else gx_input_contract.init_electrons_only),
     )
     steps_use = int(args.steps) if args.steps is not None else max(int(np.ceil(float(gx_time[-1]) / float(args.dt))), 1)
     args.steps = steps_use

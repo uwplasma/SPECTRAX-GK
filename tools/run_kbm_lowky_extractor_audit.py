@@ -12,6 +12,7 @@ import subprocess
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--gx", type=Path, required=True, help="Path to GX KBM .out.nc file.")
+    p.add_argument("--gx-input", type=Path, default=None, help="Optional GX input file for exact benchmark contract overrides.")
     p.add_argument(
         "--gx-big",
         type=Path,
@@ -50,6 +51,7 @@ def main() -> None:
     args = build_parser().parse_args()
     here = Path(__file__).resolve().parent
     gx = args.gx.expanduser().resolve()
+    gx_input = args.gx_input.expanduser().resolve() if args.gx_input is not None else gx.with_suffix(".in")
     gx_big = args.gx_big.expanduser().resolve() if args.gx_big is not None else gx.with_suffix(".big.nc")
     if not gx_big.exists():
         gx_big = (args.out.parent if args.out.parent != Path("") else Path.cwd()) / "missing_gx_big.nc"
@@ -59,6 +61,8 @@ def main() -> None:
         str(here / "compare_gx_kbm.py"),
         "--gx",
         str(gx),
+        "--gx-input",
+        str(gx_input),
         "--gx-big",
         str(gx_big),
         "--ky",

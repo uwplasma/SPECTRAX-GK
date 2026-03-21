@@ -267,6 +267,8 @@ def _dummy_gx_contract(*, init_single: bool) -> GXInputContract:
         ntheta=8,
         boundary="periodic",
         geo_option="s-alpha",
+        s_hat=0.0,
+        zero_shat=False,
         y0=10.0,
         species=(Species(charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=0.0, fprim=0.0),),
         tau_e=0.0,
@@ -328,7 +330,7 @@ def test_run_single_ky_uses_full_grid_for_imported_multimode(monkeypatch) -> Non
         species=(Species(charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=0.0, fprim=0.0),),
         Nl=1,
         Nm=1,
-        sample_steps=np.arange(2, dtype=int),
+        sample_times=np.asarray([0.1, 0.2], dtype=float),
         mode_method="z_index",
         kx_index=0,
         terms=LinearTerms(),
@@ -378,7 +380,7 @@ def test_run_single_ky_preserves_single_ky_fallback_without_gx_contract(monkeypa
         species=(Species(charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=0.0, fprim=0.0),),
         Nl=1,
         Nm=1,
-        sample_steps=np.arange(2, dtype=int),
+        sample_times=np.asarray([0.1, 0.2], dtype=float),
         mode_method="z_index",
         kx_index=0,
         terms=LinearTerms(),
@@ -463,10 +465,12 @@ def test_integrate_target_mode_series_collects_requested_sample_count(monkeypatc
     monkeypatch.setattr(imported_linear, "_gx_Wg_by_ky", lambda *_args, **_kwargs: jnp.asarray([0.0, 3.0]))
     monkeypatch.setattr(imported_linear, "_gx_Wphi_by_ky", lambda *_args, **_kwargs: jnp.asarray([0.0, 4.0]))
     monkeypatch.setattr(imported_linear, "_gx_Wapar_by_ky", lambda *_args, **_kwargs: jnp.asarray([0.0, 5.0]))
+    monkeypatch.setattr(imported_linear, "_gx_linear_omega_max", lambda *_args, **_kwargs: np.asarray([0.0, 0.0, 0.0]))
 
     gamma, omega, Wg, Wphi, Wapar = _integrate_target_mode_series(
         G0=jnp.zeros((1, 1, 1, 2, 2, 3), dtype=jnp.complex64),
         grid=SimpleNamespace(dealias_mask=np.ones((2, 2), dtype=bool), z=np.arange(3)),
+        geom=SimpleNamespace(s_hat=0.0, gradpar=lambda: 1.0, metric_coeffs=lambda theta: (jnp.ones_like(theta), jnp.zeros_like(theta), jnp.ones_like(theta)), drift_coeffs=lambda theta: (jnp.zeros_like(theta), jnp.zeros_like(theta), jnp.zeros_like(theta), jnp.zeros_like(theta))),
         cache=SimpleNamespace(jacobian=jnp.ones(3, dtype=jnp.float32)),
         params=SimpleNamespace(),
         time_cfg=GXTimeConfig(dt=0.1, t_max=0.21, sample_stride=1, fixed_dt=True),
@@ -474,7 +478,7 @@ def test_integrate_target_mode_series_collects_requested_sample_count(monkeypatc
         mode_method="z_index",
         ky_index=1,
         kx_index=0,
-        sample_steps=np.arange(3, dtype=int),
+        sample_times=np.asarray([0.1, 0.2, 0.3], dtype=float),
     )
 
     np.testing.assert_allclose(gamma, np.ones(3, dtype=float))

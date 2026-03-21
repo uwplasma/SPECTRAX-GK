@@ -17,14 +17,15 @@ import pandas as pd
 from netCDF4 import Dataset
 
 from spectraxgk.benchmarks import _apply_gx_hypercollisions
-from spectraxgk.config import GridConfig, InitializationConfig
-from spectraxgk.geometry import apply_gx_geometry_grid_defaults, load_gx_geometry_netcdf
+from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, resolve_cfl_fac
+from spectraxgk.geometry import SlabGeometry, apply_gx_geometry_grid_defaults, load_gx_geometry_netcdf
 from spectraxgk.gyroaverage import gamma0
 from spectraxgk.grids import build_spectral_grid, select_ky_grid
 from spectraxgk.analysis import select_ky_index
 from spectraxgk.gx_integrators import (
     GXTimeConfig,
     _gx_growth_rate_step,
+    _gx_linear_omega_max,
     _gx_midplane_index,
     _gx_term_config,
     _linear_explicit_step,
@@ -46,6 +47,8 @@ class GXInputContract:
     ntheta: int
     boundary: str
     geo_option: str
+    s_hat: float
+    zero_shat: bool
     y0: float
     species: tuple[Species, ...]
     tau_e: float
@@ -110,6 +113,17 @@ def _load_gx_reference(
     finally:
         root.close()
     return time, ky, kx, omega, Wg, Wphi, Wapar
+
+
+def _read_gx_output_bool(path: Path, name: str, *, default: bool = False) -> bool:
+    root = Dataset(path, "r")
+    try:
+        inputs = root.groups.get("Inputs")
+        if inputs is None or name not in inputs.variables:
+            return bool(default)
+        return bool(np.asarray(inputs.variables[name][:]).item())
+    finally:
+        root.close()
 
 
 def _infer_real_fft_ny(ky: np.ndarray) -> int:
@@ -212,6 +226,8 @@ def _load_gx_input_contract(path: Path) -> GXInputContract:
         ntheta=int(dims.get("ntheta", 0)),
         boundary=str(domain.get("boundary", "linked")),
         geo_option=str(geometry.get("geo_option", "s-alpha")).strip().lower(),
+        s_hat=float(geometry.get("shat", 0.0)),
+        zero_shat=bool(geometry.get("zero_shat", False)),
         y0=float(domain["y0"]) if "y0" in domain else float("nan"),
         species=species,
         tau_e=tau_e,
@@ -418,6 +434,7 @@ def _integrate_target_mode_series(
     *,
     G0: jnp.ndarray,
     grid,
+    geom,
     cache,
     params,
     time_cfg: GXTimeConfig,
@@ -425,7 +442,7 @@ def _integrate_target_mode_series(
     mode_method: str,
     ky_index: int,
     kx_index: int,
-    sample_steps: np.ndarray,
+    sample_times: np.ndarray,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     if mode_method not in {"z_index", "max"}:
         raise ValueError("mode_method must be 'z_index' or 'max'")
@@ -434,19 +451,32 @@ def _integrate_target_mode_series(
     mask = jnp.asarray(grid.dealias_mask, dtype=bool)
     z_index = _gx_midplane_index(grid.z.size)
     dt = float(time_cfg.dt)
-    sample_stride = int(max(time_cfg.sample_stride, 1))
-    target_samples = int(np.asarray(sample_steps).size)
+    dt_min = float(time_cfg.dt_min)
+    dt_max = float(time_cfg.dt_max) if time_cfg.dt_max is not None else dt
+    target_times = np.asarray(sample_times, dtype=float)
+    target_samples = int(target_times.size)
     if target_samples <= 0:
-        raise ValueError("sample_steps must request at least one sample")
+        raise ValueError("sample_times must request at least one sample")
+    if np.any(np.diff(target_times) < -1.0e-14):
+        raise ValueError("sample_times must be monotonically nondecreasing")
+    max_target_time = float(target_times[-1])
+    dt_ceiling = float(time_cfg.dt_max) if time_cfg.dt_max is not None else dt
+    dt_floor = max(min(dt, dt_ceiling), float(time_cfg.dt_min))
     max_steps = max(
-        sample_stride * target_samples,
-        int(np.ceil(float(time_cfg.t_max) / dt)) + sample_stride + 2,
+        int(np.ceil(max_target_time / max(dt_floor, 1.0e-12))) + 8 * target_samples + 8,
+        8 * target_samples + 8,
     )
     vol_fac = cache.jacobian / jnp.sum(cache.jacobian)
 
     G = jnp.asarray(G0)
     t = 0.0
     step = 0
+
+    omega_max = _gx_linear_omega_max(grid, geom, params, G.shape[-5], G.shape[-4])
+    wmax = float(np.sum(omega_max))
+    if not time_cfg.fixed_dt and wmax > 0.0:
+        dt_guess = float(time_cfg.cfl_fac) * float(time_cfg.cfl) / wmax
+        dt = min(max(dt_guess, dt_min), dt_max)
 
     _, fields0 = assemble_rhs_cached(G, cache, params, terms=term_cfg)
     phi_prev = fields0.phi
@@ -469,18 +499,30 @@ def _integrate_target_mode_series(
     Wphi_list: list[float] = []
     Wapar_list: list[float] = []
 
-    while len(gamma_list) < target_samples and step < max_steps:
-        G, fields = stepper(G, cache, params, term_cfg, dt)
-        step += 1
-        t += dt
+    target_idx = 0
+    while target_idx < target_samples and step < max_steps:
+        dt_step = dt
+        if not time_cfg.fixed_dt and wmax > 0.0:
+            dt_guess = float(time_cfg.cfl_fac) * float(time_cfg.cfl) / wmax
+            dt_step = min(max(dt_guess, dt_min), dt_max)
+        next_target = float(target_times[target_idx])
+        remaining = next_target - t
+        if remaining <= 1.0e-14:
+            remaining = 0.0
+        elif dt_step > remaining:
+            dt_step = max(remaining, float(time_cfg.dt_min))
 
-        if step % sample_stride == 0:
+        G, fields = stepper(G, cache, params, term_cfg, dt_step)
+        step += 1
+        t += dt_step
+
+        if t >= next_target - 1.0e-12:
             phi = fields.phi
             apar = fields.apar if fields.apar is not None else jnp.zeros_like(phi)
             gamma, omega = _gx_growth_rate_step(
                 phi,
                 phi_prev,
-                dt,
+                dt_step,
                 z_index=z_index,
                 mask=mask,
                 mode_method=mode_method,
@@ -493,6 +535,7 @@ def _integrate_target_mode_series(
             Wg_list.append(float(np.asarray(Wg)[ky_index]))
             Wphi_list.append(float(np.asarray(Wphi)[ky_index]))
             Wapar_list.append(float(np.asarray(Wapar)[ky_index]))
+            target_idx += 1
             phi_prev = phi
         else:
             phi_prev = fields.phi
@@ -523,7 +566,7 @@ def _run_single_ky(
     species: tuple[Species, ...],
     Nl: int,
     Nm: int,
-    sample_steps: np.ndarray,
+    sample_times: np.ndarray,
     mode_method: str,
     kx_index: int,
     terms: LinearTerms,
@@ -552,6 +595,7 @@ def _run_single_ky(
     return _integrate_target_mode_series(
         G0=G0,
         grid=grid,
+        geom=geom,
         cache=cache,
         params=params,
         time_cfg=time_cfg,
@@ -559,7 +603,7 @@ def _run_single_ky(
         mode_method=mode_method,
         ky_index=ky_diag_index,
         kx_index=kx_index,
-        sample_steps=sample_steps,
+        sample_times=sample_times,
     )
 
 
@@ -741,6 +785,7 @@ def main() -> None:
         sample_step_stride=int(args.sample_step_stride),
         max_samples=args.max_samples,
     )
+    sample_times = np.asarray(gx_time[sample_steps], dtype=float)
 
     boundary = "linked"
     y0 = _infer_y0(gx_ky)
@@ -779,18 +824,36 @@ def main() -> None:
             sample_step_stride=int(args.sample_step_stride),
             max_samples=args.max_samples,
         )
+        sample_times = np.asarray(gx_time[sample_steps], dtype=float)
     dt = _infer_gx_linear_dt(gx_time, gx_contract)
-    geom = load_gx_geometry_netcdf(_select_geometry_source(args.gx, args.geometry_file, gx_contract))
+    if gx_contract is not None and gx_contract.geo_option == "slab":
+        gx_contract = replace(
+            gx_contract,
+            zero_shat=_read_gx_output_bool(args.gx, "zero_shat", default=gx_contract.zero_shat),
+        )
+        geom = SlabGeometry.from_config(
+            GeometryConfig(model="slab", s_hat=float(gx_contract.s_hat), zero_shat=bool(gx_contract.zero_shat))
+        )
+        nz = int(gx_contract.ntheta) if int(gx_contract.ntheta) > 0 else 16
+    else:
+        geom = load_gx_geometry_netcdf(_select_geometry_source(args.gx, args.geometry_file, gx_contract))
+        nz = int(np.asarray(geom.theta).size)
     if ntheta <= 0:
-        ntheta = int(np.asarray(geom.theta).size)
+        ntheta = nz
+
+    lx = 62.8
+    boundary_eff = boundary
+    if gx_contract is not None and gx_contract.zero_shat:
+        boundary_eff = "periodic"
+        lx = 2.0 * np.pi * y0
 
     grid_cfg = GridConfig(
         Nx=nx,
         Ny=ny,
-        Nz=int(np.asarray(geom.theta).size),
-        Lx=62.8,
+        Nz=nz,
+        Lx=lx,
         Ly=2.0 * np.pi * y0,
-        boundary=boundary,
+        boundary=boundary_eff,
         y0=y0,
         nperiod=nperiod,
         ntheta=ntheta,
@@ -830,7 +893,8 @@ def main() -> None:
         t_max=float(gx_time[-1]),
         method=(gx_contract.scheme if gx_contract is not None else "rk4"),
         sample_stride=(gx_contract.nwrite if gx_contract is not None else 1),
-        fixed_dt=True,
+        fixed_dt=bool(gx_contract is not None and gx_contract.dt is not None),
+        cfl_fac=resolve_cfl_fac((gx_contract.scheme if gx_contract is not None else "rk4"), None),
     )
 
     rows: list[dict[str, float]] = []
@@ -866,7 +930,7 @@ def main() -> None:
                 species=tuple(species),
                 Nl=args.Nl,
                 Nm=args.Nm,
-                sample_steps=sample_steps,
+                sample_times=sample_times,
                 mode_method=args.mode_method,
                 kx_index=kx_idx,
                 terms=terms,
