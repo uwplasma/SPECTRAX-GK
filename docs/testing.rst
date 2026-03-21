@@ -166,6 +166,7 @@ artifacts, use:
 
 - ``tools/run_gx_linear_stress_matrix.py`` (KAW, Cyclone kinetic electrons, KBM Miller)
 - ``tools/run_imported_linear_targeted_audit.py`` (generic per-``ky`` targeted imported-linear wrapper)
+- ``tools/compare_gx_imported_window.py`` (exact imported-linear one-window replay against GX ``diag_state`` dumps)
 - ``tools/run_kbm_lowky_extractor_audit.py`` (direct cached-trajectory KBM low-``ky`` extractor audit)
 - ``tools/run_exact_state_audit.py`` (manifest-driven wrapper around the exact-state audit tools)
 - ``tools/run_restart_parity_gate.py`` (manifest-driven nonlinear restart/continuation parity gate)
