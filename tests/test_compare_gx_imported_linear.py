@@ -202,6 +202,37 @@ def test_imported_linear_zero_shat_promotes_to_periodic_boundary() -> None:
     assert _resolve_imported_boundary("linked", zero_shat=False) == "linked"
 
 
+def test_load_gx_input_contract_promotes_near_zero_shear_to_zero_shat(tmp_path: Path) -> None:
+    path = tmp_path / "kaw_like.in"
+    path.write_text(
+        """
+[Dimensions]
+ ntheta = 16
+ nperiod = 1
+ nky = 2
+ nkx = 1
+ nspecies = 1
+
+[Domain]
+ y0 = 100.0
+ boundary = "linked"
+
+[Physics]
+ beta = 0.01
+
+[Geometry]
+ geo_option = "slab"
+ shat = 1.0e-8
+""".strip()
+    )
+
+    contract = _load_gx_input_contract(path)
+
+    assert contract.s_hat == pytest.approx(1.0e-8)
+    assert contract.zero_shat is True
+    assert _resolve_imported_boundary(contract.boundary, zero_shat=contract.zero_shat) == "periodic"
+
+
 def test_imported_linear_uses_raw_damp_ends_rate() -> None:
     contract = _dummy_gx_contract(init_single=False)
     dt = 0.2

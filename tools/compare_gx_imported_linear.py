@@ -18,7 +18,13 @@ from netCDF4 import Dataset
 
 from spectraxgk.benchmarks import _apply_gx_hypercollisions
 from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, resolve_cfl_fac
-from spectraxgk.geometry import SlabGeometry, apply_gx_geometry_grid_defaults, load_gx_geometry_netcdf
+from spectraxgk.geometry import (
+    SlabGeometry,
+    apply_gx_geometry_grid_defaults,
+    gx_effective_boundary,
+    gx_zero_shat_enabled,
+    load_gx_geometry_netcdf,
+)
 from spectraxgk.gyroaverage import gamma0
 from spectraxgk.grids import build_spectral_grid, select_ky_grid
 from spectraxgk.analysis import select_ky_index
@@ -240,6 +246,13 @@ def _load_gx_input_contract(path: Path) -> GXInputContract:
     tau_e = float(boltz.get("tau_fac", 0.0)) if add_boltz and boltz_type == "electrons" else 0.0
     kpar_init = float(init["ikpar_init"]) if "ikpar_init" in init else float(init.get("kpar_init", 0.0))
 
+    s_hat = float(geometry.get("shat", 0.0))
+    zero_shat = gx_zero_shat_enabled(
+        s_hat,
+        zero_shat=bool(geometry.get("zero_shat", False)),
+        threshold=float(geometry.get("zero_shat_threshold", 1.0e-5)),
+    )
+
     return GXInputContract(
         Nx=int(dims.get("nkx", dims.get("nx", 1))),
         Ny=int(dims.get("nky", dims.get("ny", 0))),
@@ -249,8 +262,8 @@ def _load_gx_input_contract(path: Path) -> GXInputContract:
         nhermite=int(dims.get("nhermite", 16)),
         boundary=str(domain.get("boundary", "linked")),
         geo_option=str(geometry.get("geo_option", "s-alpha")).strip().lower(),
-        s_hat=float(geometry.get("shat", 0.0)),
-        zero_shat=bool(geometry.get("zero_shat", False)),
+        s_hat=s_hat,
+        zero_shat=zero_shat,
         y0=float(domain["y0"]) if "y0" in domain else float("nan"),
         fapar=float(physics.get("fapar", 1.0 if float(physics.get("beta", 0.0)) > 0.0 else 0.0)),
         fbpar=float(physics.get("fbpar", 1.0 if float(physics.get("beta", 0.0)) > 0.0 else 0.0)),
