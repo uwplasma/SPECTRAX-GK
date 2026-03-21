@@ -31,8 +31,8 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="If set and --ky is omitted, only run the first N positive ky values from the GX file.",
     )
-    p.add_argument("--Nl", type=int, default=8)
-    p.add_argument("--Nm", type=int, default=16)
+    p.add_argument("--Nl", type=int, default=None)
+    p.add_argument("--Nm", type=int, default=None)
     p.add_argument("--tprim", type=float, default=3.0)
     p.add_argument("--fprim", type=float, default=1.0)
     p.add_argument("--tau-e", type=float, default=1.0, dest="tau_e")
@@ -123,10 +123,6 @@ def main() -> None:
             str(float(ky)),
             "--sample-step-stride",
             str(int(args.sample_step_stride)),
-            "--Nl",
-            str(int(args.Nl)),
-            "--Nm",
-            str(int(args.Nm)),
             "--tprim",
             str(float(args.tprim)),
             "--fprim",
@@ -142,6 +138,10 @@ def main() -> None:
             "--rel-floor-fraction",
             str(float(args.rel_floor_fraction)),
         ]
+        if args.Nl is not None:
+            cmd += ["--Nl", str(int(args.Nl))]
+        if args.Nm is not None:
+            cmd += ["--Nm", str(int(args.Nm))]
         if args.max_samples is not None:
             cmd += ["--max-samples", str(int(args.max_samples))]
         if args.reuse_cache:

@@ -24,6 +24,8 @@ def test_run_imported_linear_targeted_audit_parser_defaults(tmp_path: Path) -> N
     assert args.geometry_file == Path("geom.nc")
     assert args.out == out
     assert args.max_kys is None
+    assert args.Nl is None
+    assert args.Nm is None
     assert args.sample_step_stride == 1
     assert args.max_samples is None
 
