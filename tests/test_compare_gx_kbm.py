@@ -669,10 +669,59 @@ def test_compare_gx_kbm_parser_defaults_to_project_mode() -> None:
     assert args.mode_method == "project"
     assert args.steps is None
     assert args.branch_policy == "continuation"
+    assert args.gx_input is None
     assert (
         args.branch_solvers
         == "gx_time@project,gx_time@project_late,gx_time@svd,gx_time@svd_late,gx_time@max,gx_time@z_index,krylov,time"
     )
+
+
+def test_compare_gx_kbm_loads_gx_input_contract(tmp_path: Path) -> None:
+    tools_dir = Path(__file__).resolve().parents[1] / "tools"
+    sys.path.insert(0, str(tools_dir))
+    try:
+        import compare_gx_kbm as mod
+    finally:
+        sys.path.remove(str(tools_dir))
+
+    gx_in = tmp_path / "kbm_miller.in"
+    gx_in.write_text(
+        """
+[Dimensions]
+ntheta = 32
+nperiod = 2
+
+[Domain]
+y0 = 10.0
+
+[Physics]
+beta = 0.015
+
+[Initialization]
+init_field = "all"
+gaussian_init = true
+init_electrons_only = true
+
+[Geometry]
+rhoc = 0.5
+Rmaj = 2.77778
+qinp = 1.4
+shat = 0.8
+
+[species]
+z = [1.0, -1.0]
+mass = [1.0, 2.7e-4]
+temp = [1.0, 1.0]
+tprim = [2.49, 2.49]
+fprim = [0.8, 0.8]
+""".strip()
+    )
+
+    contract = mod._load_kbm_gx_input_contract(gx_in)
+    assert contract.mass_ratio == pytest.approx(1.0 / 2.7e-4)
+    assert contract.init_electrons_only is True
+    assert contract.init_field == "all"
+    assert contract.eps == pytest.approx(0.5 / 2.77778)
 
 
 def test_compare_gx_kbm_candidate_row_captures_branch_metrics() -> None:

@@ -14,3 +14,4 @@ def test_run_kbm_lowky_extractor_audit_parser_defaults(tmp_path: Path) -> None:
     assert args.gx == Path("kbm.out.nc")
     assert args.out == out
     assert args.ky == "0.3,0.4"
+    assert args.gx_input is None
