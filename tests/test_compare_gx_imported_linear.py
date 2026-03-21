@@ -556,6 +556,69 @@ def test_integrate_target_mode_series_collects_requested_sample_count(monkeypatc
     np.testing.assert_allclose(Phi2, np.zeros(3, dtype=float))
 
 
+def test_integrate_target_mode_series_uses_elapsed_sample_interval(monkeypatch) -> None:
+    monkeypatch.setattr(imported_linear.jax, "jit", lambda fn, donate_argnums=None: fn)
+    monkeypatch.setattr(
+        imported_linear,
+        "assemble_rhs_cached",
+        lambda *_args, **_kwargs: (
+            None,
+            SimpleNamespace(phi=jnp.zeros((1, 1, 1), dtype=jnp.complex64), apar=None),
+        ),
+    )
+
+    step_count = {"n": 0}
+
+    def _fake_step(G_state, *_args, **_kwargs):
+        step_count["n"] += 1
+        phi_val = float(step_count["n"])
+        phi = jnp.full((1, 1, 1), phi_val, dtype=jnp.complex64)
+        return G_state, SimpleNamespace(phi=phi, apar=None)
+
+    monkeypatch.setattr(imported_linear, "_linear_explicit_step", _fake_step)
+    captured: dict[str, object] = {}
+
+    def _fake_growth(phi, phi_prev, dt_step, **_kwargs):
+        captured["phi"] = np.asarray(phi)
+        captured["phi_prev"] = np.asarray(phi_prev)
+        captured["dt"] = float(dt_step)
+        return jnp.ones((1, 1), dtype=jnp.float32), jnp.ones((1, 1), dtype=jnp.float32)
+
+    monkeypatch.setattr(imported_linear, "_gx_growth_rate_step", _fake_growth)
+    monkeypatch.setattr(imported_linear, "_gx_Wg_by_ky", lambda *_args, **_kwargs: jnp.asarray([1.0]))
+    monkeypatch.setattr(imported_linear, "_gx_Wphi_by_ky", lambda *_args, **_kwargs: jnp.asarray([1.0]))
+    monkeypatch.setattr(imported_linear, "_gx_Wapar_by_ky", lambda *_args, **_kwargs: jnp.asarray([0.0]))
+    monkeypatch.setattr(imported_linear, "_gx_linear_omega_max", lambda *_args, **_kwargs: np.asarray([0.0, 0.0, 0.0]))
+
+    _integrate_target_mode_series(
+        G0=jnp.zeros((1, 1, 1, 1, 1, 1), dtype=jnp.complex64),
+        grid=SimpleNamespace(dealias_mask=np.ones((1, 1), dtype=bool), z=np.arange(1)),
+        geom=SimpleNamespace(
+            s_hat=0.0,
+            gradpar=lambda: 1.0,
+            metric_coeffs=lambda theta: (jnp.ones_like(theta), jnp.zeros_like(theta), jnp.ones_like(theta)),
+            drift_coeffs=lambda theta: (
+                jnp.zeros_like(theta),
+                jnp.zeros_like(theta),
+                jnp.zeros_like(theta),
+                jnp.zeros_like(theta),
+            ),
+        ),
+        cache=SimpleNamespace(jacobian=jnp.ones(1, dtype=jnp.float32)),
+        params=SimpleNamespace(),
+        time_cfg=GXTimeConfig(dt=0.1, t_max=0.2, sample_stride=1, fixed_dt=True),
+        terms=LinearTerms(),
+        mode_method="z_index",
+        ky_index=0,
+        kx_index=0,
+        sample_times=np.asarray([0.2], dtype=float),
+    )
+
+    np.testing.assert_allclose(captured["phi_prev"], np.zeros((1, 1, 1), dtype=np.complex64))
+    np.testing.assert_allclose(captured["phi"], np.full((1, 1, 1), 2.0, dtype=np.complex64))
+    assert np.isclose(float(captured["dt"]), 0.2)
+
+
 def test_write_scan_rows_checkpoints_sorted_csv(tmp_path: Path) -> None:
     out = tmp_path / "scan.csv"
     df = _write_scan_rows(

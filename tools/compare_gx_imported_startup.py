@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+from typing import Optional, Tuple
 
 import jax.numpy as jnp
 import numpy as np
@@ -13,11 +14,12 @@ from netCDF4 import Dataset
 from compare_gx_imported_linear import (
     _build_imported_initial_condition,
     _load_gx_input_contract,
+    _resolve_imported_real_fft_ny,
     _resolve_imported_boundary,
     _select_geometry_source,
 )
 from compare_gx_rhs_terms import _infer_y0, _load_bin, _load_field, _load_shape, _reshape_gx, _summary
-from compare_gx_runtime_startup import _full_ny_from_positive_ky, _select_ky_block
+from compare_gx_runtime_startup import _select_ky_block
 from spectraxgk.config import GeometryConfig
 from spectraxgk.geometry import SlabGeometry, apply_gx_geometry_grid_defaults, load_gx_geometry_netcdf
 from spectraxgk.grids import build_spectral_grid
@@ -43,10 +45,32 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _resolve_startup_dump_layout(gx_dir: Path) -> Tuple[Path, Path, Path, Optional[Path]]:
+    """Return the shape/g_state/phi/apar paths for a GX startup-style dump."""
+
+    field_shape = gx_dir / "field_shape.txt"
+    if field_shape.exists():
+        field_g = gx_dir / "field_g_state.bin"
+        field_phi = gx_dir / "field_phi.bin"
+        field_apar = gx_dir / "field_apar.bin"
+        return field_shape, field_g, field_phi, field_apar if field_apar.exists() else None
+
+    rhs_shape = gx_dir / "rhs_terms_shape.txt"
+    if rhs_shape.exists():
+        rhs_g = gx_dir / "g_state.bin"
+        rhs_phi = gx_dir / "phi.bin"
+        rhs_apar = gx_dir / "apar.bin"
+        return rhs_shape, rhs_g, rhs_phi, rhs_apar if rhs_apar.exists() else None
+
+    # Keep the historical default for tests and lightweight ad hoc runs.
+    return field_shape, gx_dir / "field_g_state.bin", gx_dir / "field_phi.bin", None
+
+
 def main() -> None:
     args = build_parser().parse_args()
 
-    shape = _load_shape(args.gx_dir / "field_shape.txt")
+    shape_path, gx_g_path, gx_phi_path, gx_apar_path = _resolve_startup_dump_layout(args.gx_dir)
+    shape = _load_shape(shape_path)
     nspec = shape["nspec"]
     nl = shape["nl"]
     nm = shape["nm"]
@@ -56,7 +80,7 @@ def main() -> None:
     gx_shape = (nspec, nl, nm, nyc, nx, nz)
 
     gx_g = _reshape_gx(
-        _load_bin(args.gx_dir / "field_g_state.bin", gx_shape),
+        _load_bin(gx_g_path, gx_shape),
         nspec=nspec,
         nl=nl,
         nm=nm,
@@ -64,10 +88,9 @@ def main() -> None:
         nx=nx,
         nz=nz,
     )
-    gx_phi = _load_field(args.gx_dir / "field_phi.bin", nyc, nx, nz)
+    gx_phi = _load_field(gx_phi_path, nyc, nx, nz)
     gx_apar = None
-    gx_apar_path = args.gx_dir / "field_apar.bin"
-    if gx_apar_path.exists():
+    if gx_apar_path is not None:
         gx_apar = _load_field(gx_apar_path, nyc, nx, nz)
 
     with Dataset(args.gx_out, "r") as root:
@@ -75,7 +98,7 @@ def main() -> None:
 
     gx_contract = _load_gx_input_contract(args.gx_input)
     y0_use = float(args.y0) if args.y0 is not None else _infer_y0(ky_vals)
-    ny_full = _full_ny_from_positive_ky(ky_vals)
+    ny_full = _resolve_imported_real_fft_ny(ky_vals, gx_contract)
     if getattr(gx_contract, "geo_option", "s-alpha") == "slab":
         geom = SlabGeometry.from_config(
             GeometryConfig(

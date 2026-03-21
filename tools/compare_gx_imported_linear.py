@@ -514,7 +514,8 @@ def _integrate_target_mode_series(
         dt = min(max(dt_guess, dt_min), dt_max)
 
     _, fields0 = assemble_rhs_cached(G, cache, params, terms=term_cfg)
-    phi_prev = fields0.phi
+    phi_prev_sample = fields0.phi
+    t_prev_sample = t
 
     def _step(G_state, cache_state, params_state, term_cfg_state, dt_state):
         return _linear_explicit_step(
@@ -555,10 +556,11 @@ def _integrate_target_mode_series(
         if t >= next_target - 1.0e-12:
             phi = fields.phi
             apar = fields.apar if fields.apar is not None else jnp.zeros_like(phi)
+            dt_sample = max(t - t_prev_sample, 0.0)
             gamma, omega = _gx_growth_rate_step(
                 phi,
-                phi_prev,
-                dt_step,
+                phi_prev_sample,
+                dt_sample,
                 z_index=z_index,
                 mask=mask,
                 mode_method=mode_method,
@@ -574,9 +576,8 @@ def _integrate_target_mode_series(
             Wapar_list.append(float(np.asarray(Wapar)[ky_index]))
             Phi2_list.append(float(np.asarray(Phi2)[ky_index]))
             target_idx += 1
-            phi_prev = phi
-        else:
-            phi_prev = fields.phi
+            phi_prev_sample = phi
+            t_prev_sample = t
 
     if len(gamma_list) != target_samples:
         raise RuntimeError(

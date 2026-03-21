@@ -41,6 +41,27 @@ def test_compare_gx_imported_startup_parser_requires_core_args() -> None:
     assert args.ky == 0.3
 
 
+def test_compare_gx_imported_startup_prefers_rhs_terms_dump_layout(tmp_path: Path) -> None:
+    tools_dir = Path(__file__).resolve().parents[1] / "tools"
+    sys.path.insert(0, str(tools_dir))
+    try:
+        import compare_gx_imported_startup as mod
+    finally:
+        sys.path.remove(str(tools_dir))
+
+    (tmp_path / "rhs_terms_shape.txt").write_text("nyc=2\nnx=1\nnz=2\n", encoding="utf-8")
+    (tmp_path / "g_state.bin").write_bytes(b"")
+    (tmp_path / "phi.bin").write_bytes(b"")
+    (tmp_path / "apar.bin").write_bytes(b"")
+
+    shape_path, g_path, phi_path, apar_path = mod._resolve_startup_dump_layout(tmp_path)
+
+    assert shape_path == tmp_path / "rhs_terms_shape.txt"
+    assert g_path == tmp_path / "g_state.bin"
+    assert phi_path == tmp_path / "phi.bin"
+    assert apar_path == tmp_path / "apar.bin"
+
+
 def test_compare_gx_imported_startup_builds_full_grid_before_slicing(
     tmp_path: Path, monkeypatch
 ) -> None:
@@ -73,6 +94,7 @@ def test_compare_gx_imported_startup_builds_full_grid_before_slicing(
         "_load_gx_input_contract",
         lambda _path: SimpleNamespace(
             boundary="linked",
+            Ny=2,
             nperiod=2,
             ntheta=4,
             species=(object(),),
@@ -166,6 +188,7 @@ def test_compare_gx_imported_startup_uses_slab_geometry_contract(
         lambda _path: SimpleNamespace(
             boundary="linked",
             geo_option="slab",
+            Ny=2,
             s_hat=1.0e-8,
             zero_shat=True,
             nperiod=1,
