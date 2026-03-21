@@ -656,6 +656,42 @@ def _infer_gx_linear_dt(gx_time: np.ndarray, gx_contract: GXInputContract | None
     raise ValueError("Could not infer a positive GX timestep from diagnostic times")
 
 
+def _gx_has_uniform_linear_dt(
+    gx_time: np.ndarray,
+    gx_contract: GXInputContract | None,
+    *,
+    rtol: float = 1.0e-6,
+    atol: float = 1.0e-12,
+) -> bool:
+    """Return True when the GX diagnostic times imply a uniform underlying dt.
+
+    Imported-linear audits compare against a specific GX run. When the saved
+    times correspond to a constant underlying timestep, reusing that inferred dt
+    is a more faithful contract than re-estimating an adaptive CFL step from
+    the reconstructed SPECTRAX state.
+    """
+
+    time_arr = np.asarray(gx_time, dtype=float)
+    if time_arr.size <= 1:
+        return True
+    diffs = np.diff(time_arr)
+    positive_diffs = diffs[diffs > 0.0]
+    if positive_diffs.size <= 1:
+        return True
+    nwrite = 1 if gx_contract is None else max(1, int(gx_contract.nwrite))
+    dt_steps = positive_diffs / float(nwrite)
+    dt_ref = float(np.median(dt_steps))
+    close = np.isclose(dt_steps, dt_ref, rtol=rtol, atol=atol)
+    if bool(np.all(close)):
+        return True
+    # GX commonly ends a linear run with one truncated final interval when
+    # `time + dt > t_max`; that should not force the audit back onto the CFL
+    # estimator for the entire trajectory.
+    if dt_steps.size >= 2 and bool(np.all(close[:-1])):
+        return True
+    return False
+
+
 def _build_sample_steps(
     gx_time: np.ndarray,
     *,
@@ -919,7 +955,10 @@ def main() -> None:
         t_max=float(gx_time[-1]),
         method=(gx_contract.scheme if gx_contract is not None else "rk4"),
         sample_stride=(gx_contract.nwrite if gx_contract is not None else 1),
-        fixed_dt=bool(gx_contract is not None and gx_contract.dt is not None),
+        fixed_dt=bool(
+            (gx_contract is not None and gx_contract.dt is not None)
+            or _gx_has_uniform_linear_dt(gx_time, gx_contract)
+        ),
         cfl_fac=resolve_cfl_fac((gx_contract.scheme if gx_contract is not None else "rk4"), None),
     )
 

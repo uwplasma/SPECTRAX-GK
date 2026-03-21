@@ -20,6 +20,7 @@ from compare_gx_imported_linear import (
     GXInputContract,
     _build_imported_initial_condition,
     _build_sample_steps,
+    _gx_has_uniform_linear_dt,
     _resolve_imported_boundary,
     _infer_gx_linear_dt,
     _integrate_target_mode_series,
@@ -216,6 +217,24 @@ def test_infer_gx_linear_dt_uses_diagnostic_spacing_without_input_dt() -> None:
     contract = replace(_dummy_gx_contract(init_single=False), dt=None, nwrite=100)
     gx_time = np.asarray([0.5, 1.0, 1.5, 2.0], dtype=float)
     assert _infer_gx_linear_dt(gx_time, contract) == pytest.approx(0.005)
+
+
+def test_gx_has_uniform_linear_dt_true_for_constant_spacing() -> None:
+    contract = replace(_dummy_gx_contract(init_single=False), dt=None, nwrite=10)
+    gx_time = np.asarray([0.1, 0.2, 0.3, 0.4], dtype=float)
+    assert _gx_has_uniform_linear_dt(gx_time, contract) is True
+
+
+def test_gx_has_uniform_linear_dt_false_for_variable_spacing() -> None:
+    contract = replace(_dummy_gx_contract(init_single=False), dt=None, nwrite=10)
+    gx_time = np.asarray([0.1, 0.21, 0.33, 0.46], dtype=float)
+    assert _gx_has_uniform_linear_dt(gx_time, contract) is False
+
+
+def test_gx_has_uniform_linear_dt_ignores_single_truncated_final_interval() -> None:
+    contract = replace(_dummy_gx_contract(init_single=False), dt=None, nwrite=10)
+    gx_time = np.asarray([0.1, 0.2, 0.3, 0.35], dtype=float)
+    assert _gx_has_uniform_linear_dt(gx_time, contract) is True
 
 
 def test_build_imported_initial_condition_uses_runtime_multikx_startup() -> None:
