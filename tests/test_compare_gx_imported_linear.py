@@ -20,6 +20,7 @@ from compare_gx_imported_linear import (
     GXInputContract,
     _build_imported_initial_condition,
     _build_sample_steps,
+    _resolve_imported_boundary,
     _infer_gx_linear_dt,
     _integrate_target_mode_series,
     _gx_Wg_by_ky,
@@ -178,6 +179,12 @@ def test_compare_gx_imported_linear_parser_defaults_hl_dims_to_gx_contract() -> 
     )
     assert args.Nl is None
     assert args.Nm is None
+
+
+def test_imported_linear_zero_shat_promotes_to_periodic_boundary() -> None:
+    assert _resolve_imported_boundary("linked", zero_shat=True) == "periodic"
+    assert _resolve_imported_boundary("periodic", zero_shat=True) == "periodic"
+    assert _resolve_imported_boundary("linked", zero_shat=False) == "linked"
 
 
 def test_imported_linear_uses_raw_damp_ends_rate() -> None:
