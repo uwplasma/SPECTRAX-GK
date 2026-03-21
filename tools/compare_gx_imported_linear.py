@@ -171,6 +171,18 @@ def _resolve_imported_real_fft_ny(gx_ky: np.ndarray, gx_contract: GXInputContrac
     return inferred
 
 
+def _resolve_imported_boundary(boundary: str, *, zero_shat: bool) -> str:
+    """Return the effective GX boundary contract for imported linear runs.
+
+    GX promotes near-zero magnetic shear to ``zero_shat`` and, in that path,
+    forces periodic parallel boundary conditions.
+    """
+
+    if bool(zero_shat):
+        return "periodic"
+    return str(boundary)
+
+
 def _load_gx_input_contract(path: Path) -> GXInputContract:
     data = load_toml(path)
     dims = data.get("Dimensions", {})
@@ -850,9 +862,11 @@ def main() -> None:
         ntheta = nz
 
     lx = 62.8
-    boundary_eff = boundary
-    if gx_contract is not None and gx_contract.zero_shat:
-        boundary_eff = "periodic"
+    boundary_eff = _resolve_imported_boundary(
+        boundary,
+        zero_shat=bool(gx_contract.zero_shat) if gx_contract is not None else False,
+    )
+    if boundary_eff == "periodic":
         lx = 2.0 * np.pi * y0
 
     grid_cfg = GridConfig(
