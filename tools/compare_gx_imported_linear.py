@@ -50,6 +50,8 @@ class GXInputContract:
     s_hat: float
     zero_shat: bool
     y0: float
+    fapar: float
+    fbpar: float
     species: tuple[Species, ...]
     tau_e: float
     beta: float
@@ -229,6 +231,8 @@ def _load_gx_input_contract(path: Path) -> GXInputContract:
         s_hat=float(geometry.get("shat", 0.0)),
         zero_shat=bool(geometry.get("zero_shat", False)),
         y0=float(domain["y0"]) if "y0" in domain else float("nan"),
+        fapar=float(physics.get("fapar", 1.0 if float(physics.get("beta", 0.0)) > 0.0 else 0.0)),
+        fbpar=float(physics.get("fbpar", 1.0 if float(physics.get("beta", 0.0)) > 0.0 else 0.0)),
         species=species,
         tau_e=tau_e,
         beta=float(physics.get("beta", 0.0)),
@@ -544,7 +548,7 @@ def _integrate_target_mode_series(
         raise RuntimeError(
             "Imported-linear integration produced "
             f"{len(gamma_list)} samples, expected {target_samples} "
-            f"(dt={dt}, sample_stride={sample_stride}, max_steps={max_steps})"
+            f"(dt={dt}, max_steps={max_steps})"
         )
     return (
         np.asarray(gamma_list, dtype=float),
@@ -865,6 +869,7 @@ def main() -> None:
         tau_e=tau_e,
         kpar_scale=float(geom.gradpar()),
         beta=beta,
+        fapar=(float(gx_contract.fapar) if gx_contract is not None else (1.0 if beta > 0.0 else 0.0)),
     )
     terms = LinearTerms()
     if gx_contract is not None:

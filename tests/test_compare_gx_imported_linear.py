@@ -142,6 +142,8 @@ def test_load_gx_input_contract_reads_fix_aspect_and_species_contract(tmp_path: 
     assert contract.boundary == "fix aspect"
     assert contract.geo_option == "s-alpha"
     assert contract.y0 == 21.0
+    assert contract.fapar == 1.0
+    assert contract.fbpar == 1.0
     assert contract.beta == 0.01
     assert contract.tau_e == 1.0
     assert contract.dt == 0.005
@@ -270,6 +272,8 @@ def _dummy_gx_contract(*, init_single: bool) -> GXInputContract:
         s_hat=0.0,
         zero_shat=False,
         y0=10.0,
+        fapar=0.0,
+        fbpar=0.0,
         species=(Species(charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=0.0, fprim=0.0),),
         tau_e=0.0,
         beta=0.0,
