@@ -13,11 +13,13 @@ from netCDF4 import Dataset
 from compare_gx_imported_linear import (
     _build_imported_initial_condition,
     _load_gx_input_contract,
+    _resolve_imported_boundary,
     _select_geometry_source,
 )
 from compare_gx_rhs_terms import _infer_y0, _load_bin, _load_field, _load_shape, _reshape_gx, _summary
 from compare_gx_runtime_startup import _full_ny_from_positive_ky, _select_ky_block
-from spectraxgk.geometry import apply_gx_geometry_grid_defaults, load_gx_geometry_netcdf
+from spectraxgk.config import GeometryConfig
+from spectraxgk.geometry import SlabGeometry, apply_gx_geometry_grid_defaults, load_gx_geometry_netcdf
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.linear import build_linear_cache
 from spectraxgk.species import build_linear_params
@@ -74,7 +76,16 @@ def main() -> None:
     gx_contract = _load_gx_input_contract(args.gx_input)
     y0_use = float(args.y0) if args.y0 is not None else _infer_y0(ky_vals)
     ny_full = _full_ny_from_positive_ky(ky_vals)
-    geom = load_gx_geometry_netcdf(_select_geometry_source(args.gx_out, args.geometry_file, gx_contract))
+    if getattr(gx_contract, "geo_option", "s-alpha") == "slab":
+        geom = SlabGeometry.from_config(
+            GeometryConfig(
+                model="slab",
+                s_hat=float(getattr(gx_contract, "s_hat", 0.0)),
+                zero_shat=bool(getattr(gx_contract, "zero_shat", False)),
+            )
+        )
+    else:
+        geom = load_gx_geometry_netcdf(_select_geometry_source(args.gx_out, args.geometry_file, gx_contract))
     grid_cfg = apply_gx_geometry_grid_defaults(
         geom,
         gx_contract_to_grid(
@@ -125,13 +136,19 @@ def main() -> None:
 def gx_contract_to_grid(*, gx_contract, nx: int, ny: int, nz: int, y0: float):
     from spectraxgk.config import GridConfig
 
+    boundary = _resolve_imported_boundary(
+        str(gx_contract.boundary),
+        zero_shat=bool(getattr(gx_contract, "zero_shat", False)),
+    )
+    lx = 2.0 * np.pi * float(y0) if boundary == "periodic" else 62.8
+
     return GridConfig(
         Nx=int(nx),
         Ny=int(ny),
         Nz=int(nz),
-        Lx=62.8,
+        Lx=lx,
         Ly=2.0 * np.pi * float(y0),
-        boundary=str(gx_contract.boundary),
+        boundary=boundary,
         y0=float(y0),
         nperiod=max(1, int(gx_contract.nperiod)),
         ntheta=max(1, int(gx_contract.ntheta)),
