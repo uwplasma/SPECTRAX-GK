@@ -514,7 +514,7 @@ def test_integrate_target_mode_series_collects_requested_sample_count(monkeypatc
     monkeypatch.setattr(imported_linear, "_gx_Wapar_by_ky", lambda *_args, **_kwargs: jnp.asarray([0.0, 5.0]))
     monkeypatch.setattr(imported_linear, "_gx_linear_omega_max", lambda *_args, **_kwargs: np.asarray([0.0, 0.0, 0.0]))
 
-    gamma, omega, Wg, Wphi, Wapar = _integrate_target_mode_series(
+    gamma, omega, Wg, Wphi, Wapar, Phi2 = _integrate_target_mode_series(
         G0=jnp.zeros((1, 1, 1, 2, 2, 3), dtype=jnp.complex64),
         grid=SimpleNamespace(dealias_mask=np.ones((2, 2), dtype=bool), z=np.arange(3)),
         geom=SimpleNamespace(s_hat=0.0, gradpar=lambda: 1.0, metric_coeffs=lambda theta: (jnp.ones_like(theta), jnp.zeros_like(theta), jnp.ones_like(theta)), drift_coeffs=lambda theta: (jnp.zeros_like(theta), jnp.zeros_like(theta), jnp.zeros_like(theta), jnp.zeros_like(theta))),
@@ -533,6 +533,7 @@ def test_integrate_target_mode_series_collects_requested_sample_count(monkeypatc
     np.testing.assert_allclose(Wg, np.full(3, 3.0, dtype=float))
     np.testing.assert_allclose(Wphi, np.full(3, 4.0, dtype=float))
     np.testing.assert_allclose(Wapar, np.full(3, 5.0, dtype=float))
+    np.testing.assert_allclose(Phi2, np.zeros(3, dtype=float))
 
 
 def test_write_scan_rows_checkpoints_sorted_csv(tmp_path: Path) -> None:
