@@ -4,6 +4,7 @@ import jax.numpy as jnp
 from dataclasses import replace
 import pytest
 import spectraxgk.gx_integrators as gx_integrators
+from types import SimpleNamespace
 
 from spectraxgk.benchmarks import CycloneBaseCase, _build_initial_condition
 from spectraxgk.config import InitializationConfig
@@ -39,6 +40,7 @@ from spectraxgk.gx_integrators import (
 )
 from spectraxgk.species import Species, build_linear_params
 from spectraxgk.terms.assembly import assemble_rhs_cached
+from spectraxgk.terms.config import FieldState
 
 
 def test_gx_flux_fac_nonzero_matches_positive_ky_convention() -> None:
@@ -348,6 +350,43 @@ def test_integrate_linear_gx_diagnostics_honors_rk3_method(
 
     assert calls
     assert set(calls) == {"rk3"}
+
+
+def test_linear_explicit_step_applies_gx_post_step_mask(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    cache = SimpleNamespace(
+        dealias_mask=jnp.asarray([[True, True], [True, False]]),
+        ky=jnp.asarray([0.0, 0.2]),
+        kx=jnp.asarray([0.0, 0.1]),
+    )
+    G0 = jnp.ones((1, 1, 2, 2, 1), dtype=jnp.complex64)
+    seen_states: list[np.ndarray] = []
+
+    def _fake_assemble_rhs(state, _cache, _params, *, terms):
+        seen_states.append(np.asarray(state))
+        return jnp.zeros_like(state), FieldState(phi=state[0, 0])
+
+    monkeypatch.setattr(gx_integrators, "assemble_rhs_cached", _fake_assemble_rhs)
+
+    G_next, fields = gx_integrators._linear_explicit_step(
+        G0,
+        cache,
+        object(),
+        linear_terms_to_term_config(LinearTerms()),
+        0.1,
+        method="euler",
+    )
+
+    expected = np.ones((2, 2, 1), dtype=np.complex64)
+    expected[0, 0, 0] = 0.0
+    expected[1, 1, 0] = 0.0
+
+    assert len(seen_states) == 2
+    assert np.allclose(seen_states[0][0, 0], 1.0)
+    assert np.allclose(np.asarray(G_next[0, 0]), expected)
+    assert np.allclose(np.asarray(seen_states[-1][0, 0]), expected)
+    assert np.allclose(np.asarray(fields.phi), expected)
 
 
 def test_gx_energy_drift_small_no_drive():
