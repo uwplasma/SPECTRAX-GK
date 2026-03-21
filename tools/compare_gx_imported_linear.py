@@ -33,7 +33,10 @@ from spectraxgk.gx_integrators import (
 )
 from spectraxgk.io import load_toml
 from spectraxgk.linear import LinearTerms, build_linear_cache
-from spectraxgk.runtime import _build_initial_condition as _build_runtime_initial_condition
+from spectraxgk.runtime import (
+    _build_initial_condition as _build_runtime_initial_condition,
+    _load_initial_state_from_file,
+)
 from spectraxgk.runtime_config import RuntimeConfig, RuntimeSpeciesConfig
 from spectraxgk.species import Species, build_linear_params
 from spectraxgk.terms.assembly import assemble_rhs_cached
@@ -164,14 +167,12 @@ def _resolve_imported_real_fft_ny(gx_ky: np.ndarray, gx_contract: GXInputContrac
     ny_input = int(gx_contract.Ny)
     if ny_input <= 0:
         return inferred
-    # GX input files store the dealiased positive-ky count (`nky`), while the
-    # imported SPECTRAX grid needs the full real-FFT layout represented in the
-    # NetCDF `ky` coordinate.
-    if ny_input == inferred:
-        return inferred
-    positive_ky = int(np.asarray(gx_ky)[np.asarray(gx_ky) > 0.0].size)
-    if ny_input == positive_ky or ny_input == positive_ky + 1:
-        return inferred
+    # GX input files store the dealiased non-negative ky count (`nky`), while
+    # the imported SPECTRAX grid needs the full real-FFT layout. For the GX
+    # 2/3-rule contract, the non-negative block has length `floor(Ny/3) + 1`,
+    # so the inverse mapping is `Ny = 3 * (nky - 1) + 1`.
+    if ny_input == int(np.asarray(gx_ky).size):
+        return max(inferred, int(3 * (ny_input - 1) + 1))
     return inferred
 
 
@@ -608,18 +609,22 @@ def _run_single_ky(
     mode_method: str,
     kx_index: int,
     terms: LinearTerms,
+    G0_override: jnp.ndarray | None = None,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     ky_index = select_ky_index(np.asarray(grid_full.ky), ky_target)
-    G0_full = _build_imported_initial_condition(
-        grid=grid_full,
-        geom=geom,
-        gx_contract=gx_contract,
-        species=species,
-        ky_index=ky_index,
-        kx_index=kx_index,
-        Nl=Nl,
-        Nm=Nm,
-    )
+    if G0_override is None:
+        G0_full = _build_imported_initial_condition(
+            grid=grid_full,
+            geom=geom,
+            gx_contract=gx_contract,
+            species=species,
+            ky_index=ky_index,
+            kx_index=kx_index,
+            Nl=Nl,
+            Nm=Nm,
+        )
+    else:
+        G0_full = jnp.asarray(G0_override)
     use_full_grid = gx_contract is not None
     if use_full_grid:
         G0 = G0_full
@@ -810,6 +815,12 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Optional GX input file used to infer boundary/grid defaults for imported geometry cases.",
     )
+    parser.add_argument(
+        "--init-file",
+        type=Path,
+        default=None,
+        help="Optional raw GX state file to use as the exact initial condition.",
+    )
     parser.add_argument("--out", type=Path, default=None, help="Optional CSV output path")
     parser.add_argument(
         "--cache-dir",
@@ -943,6 +954,19 @@ def main() -> None:
 
     nl_use = int(args.Nl) if args.Nl is not None else int(gx_contract.nlaguerre if gx_contract is not None else 8)
     nm_use = int(args.Nm) if args.Nm is not None else int(gx_contract.nhermite if gx_contract is not None else 16)
+    init_state = None
+    if args.init_file is not None:
+        init_state = jnp.asarray(
+            _load_initial_state_from_file(
+                args.init_file.expanduser().resolve(),
+                nspecies=len(species),
+                Nl=nl_use,
+                Nm=nm_use,
+                ny=int(np.asarray(grid_full.ky).size),
+                nx=int(np.asarray(grid_full.kx).size),
+                nz=int(np.asarray(grid_full.z).size),
+            )
+        )
 
     params = build_linear_params(
         species,
@@ -1022,6 +1046,7 @@ def main() -> None:
                 mode_method=args.mode_method,
                 kx_index=kx_idx,
                 terms=terms,
+                G0_override=init_state,
             )
             if cache_path is not None:
                 _save_cached_ky_series(
