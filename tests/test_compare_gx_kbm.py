@@ -11,6 +11,19 @@ import pandas as pd
 import pytest
 
 
+def test_compare_gx_kbm_parser_defaults_hl_dims_to_gx_contract() -> None:
+    tools_dir = Path(__file__).resolve().parents[1] / "tools"
+    sys.path.insert(0, str(tools_dir))
+    try:
+        import compare_gx_kbm as mod
+    finally:
+        sys.path.remove(str(tools_dir))
+
+    args = mod.build_parser().parse_args(["--gx", "/tmp/run.out.nc"])
+    assert args.Nl is None
+    assert args.Nm is None
+
+
 def test_compare_gx_kbm_prepare_gx_reference_preserves_full_grid_metadata(monkeypatch) -> None:
     tools_dir = Path(__file__).resolve().parents[1] / "tools"
     sys.path.insert(0, str(tools_dir))

@@ -45,6 +45,8 @@ class GXInputContract:
     Ny: int
     nperiod: int
     ntheta: int
+    nlaguerre: int
+    nhermite: int
     boundary: str
     geo_option: str
     s_hat: float
@@ -226,6 +228,8 @@ def _load_gx_input_contract(path: Path) -> GXInputContract:
         Ny=int(dims.get("nky", dims.get("ny", 0))),
         nperiod=int(dims.get("nperiod", 1)),
         ntheta=int(dims.get("ntheta", 0)),
+        nlaguerre=int(dims.get("nlaguerre", 8)),
+        nhermite=int(dims.get("nhermite", 16)),
         boundary=str(domain.get("boundary", "linked")),
         geo_option=str(geometry.get("geo_option", "s-alpha")).strip().lower(),
         s_hat=float(geometry.get("shat", 0.0)),
@@ -760,8 +764,8 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="If set, only score the first N selected GX diagnostic samples.",
     )
-    parser.add_argument("--Nl", type=int, default=8)
-    parser.add_argument("--Nm", type=int, default=16)
+    parser.add_argument("--Nl", type=int, default=None)
+    parser.add_argument("--Nm", type=int, default=None)
     parser.add_argument("--tprim", type=float, default=3.0)
     parser.add_argument("--fprim", type=float, default=1.0)
     parser.add_argument("--tau-e", type=float, default=1.0, dest="tau_e")
@@ -864,6 +868,9 @@ def main() -> None:
     )
     grid_full = build_spectral_grid(apply_gx_geometry_grid_defaults(geom, grid_cfg))
 
+    nl_use = int(args.Nl) if args.Nl is not None else int(gx_contract.nlaguerre if gx_contract is not None else 8)
+    nm_use = int(args.Nm) if args.Nm is not None else int(gx_contract.nhermite if gx_contract is not None else 16)
+
     params = build_linear_params(
         species,
         tau_e=tau_e,
@@ -874,7 +881,7 @@ def main() -> None:
     terms = LinearTerms()
     if gx_contract is not None:
         if gx_contract.hypercollisions:
-            params = _apply_gx_hypercollisions(params, nhermite=args.Nm)
+            params = _apply_gx_hypercollisions(params, nhermite=nm_use)
         params = replace(
             params,
             D_hyper=float(gx_contract.D_hyper),
@@ -887,7 +894,7 @@ def main() -> None:
             hyperdiffusion=1.0 if gx_contract.hyper else 0.0,
         )
     else:
-        params = _apply_gx_hypercollisions(params, nhermite=args.Nm)
+        params = _apply_gx_hypercollisions(params, nhermite=nm_use)
         params = replace(
             params,
             damp_ends_amp=float(args.damp_ends_amp),
@@ -916,8 +923,8 @@ def main() -> None:
                 geometry_file=args.geometry_file,
                 gx_input=args.gx_input,
                 ky_target=float(ky_target),
-                Nl=int(args.Nl),
-                Nm=int(args.Nm),
+                Nl=nl_use,
+                Nm=nm_use,
                 mode_method=str(args.mode_method),
                 rel_floor_fraction=float(args.rel_floor_fraction),
                 sample_steps=sample_steps,
@@ -933,8 +940,8 @@ def main() -> None:
                 time_cfg=time_cfg,
                 gx_contract=gx_contract,
                 species=tuple(species),
-                Nl=args.Nl,
-                Nm=args.Nm,
+                Nl=nl_use,
+                Nm=nm_use,
                 sample_times=sample_times,
                 mode_method=args.mode_method,
                 kx_index=kx_idx,

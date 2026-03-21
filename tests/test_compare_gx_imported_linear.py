@@ -139,6 +139,8 @@ def test_load_gx_input_contract_reads_fix_aspect_and_species_contract(tmp_path: 
     assert contract.Ny == 96
     assert contract.nperiod == 1
     assert contract.ntheta == 48
+    assert contract.nlaguerre == 8
+    assert contract.nhermite == 16
     assert contract.boundary == "fix aspect"
     assert contract.geo_option == "s-alpha"
     assert contract.y0 == 21.0
@@ -163,6 +165,19 @@ def test_load_gx_input_contract_reads_fix_aspect_and_species_contract(tmp_path: 
     assert len(contract.species) == 1
     assert contract.species[0].charge == 1.0
     assert contract.species[0].tprim == 3.0
+
+
+def test_compare_gx_imported_linear_parser_defaults_hl_dims_to_gx_contract() -> None:
+    args = build_parser().parse_args(
+        [
+            "--gx",
+            "/tmp/run.out.nc",
+            "--geometry-file",
+            "/tmp/run.eik.nc",
+        ]
+    )
+    assert args.Nl is None
+    assert args.Nm is None
 
 
 def test_imported_linear_uses_raw_damp_ends_rate() -> None:
@@ -267,6 +282,8 @@ def _dummy_gx_contract(*, init_single: bool) -> GXInputContract:
         Ny=8,
         nperiod=1,
         ntheta=8,
+        nlaguerre=8,
+        nhermite=16,
         boundary="periodic",
         geo_option="s-alpha",
         s_hat=0.0,

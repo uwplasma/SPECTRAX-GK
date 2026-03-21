@@ -38,6 +38,8 @@ class KBMGXInputContract:
     y0: float
     ntheta: int
     nperiod: int
+    nlaguerre: int
+    nhermite: int
     q: float
     shat: float
     eps: float
@@ -79,6 +81,8 @@ def _load_kbm_gx_input_contract(path: Path) -> KBMGXInputContract:
         y0=float(domain.get("y0", 10.0)),
         ntheta=int(dims.get("ntheta", 32)),
         nperiod=int(dims.get("nperiod", 2)),
+        nlaguerre=int(dims.get("nlaguerre", 16)),
+        nhermite=int(dims.get("nhermite", 48)),
         q=float(geometry.get("qinp", geometry.get("q", 1.4))),
         shat=float(geometry.get("shat", 0.8)),
         eps=float(geometry.get("rhoc", 0.5)) / rmaj,
@@ -825,8 +829,8 @@ def build_parser() -> argparse.ArgumentParser:
         default=Path(".cache/gx/kbm_salpha.big.nc"),
         help="Path to GX .big.nc file for eigenfunction comparisons",
     )
-    parser.add_argument("--Nl", type=int, default=16)
-    parser.add_argument("--Nm", type=int, default=48)
+    parser.add_argument("--Nl", type=int, default=None)
+    parser.add_argument("--Nm", type=int, default=None)
     parser.add_argument("--dt", type=float, default=0.01)
     parser.add_argument(
         "--steps",
@@ -949,6 +953,8 @@ def main() -> None:
         y0_fallback=float(args.y0),
     )
     gx_input_contract = None if args.gx_input is None else _load_kbm_gx_input_contract(args.gx_input)
+    args.Nl = int(args.Nl) if args.Nl is not None else int(16 if gx_input_contract is None else gx_input_contract.nlaguerre)
+    args.Nm = int(args.Nm) if args.Nm is not None else int(48 if gx_input_contract is None else gx_input_contract.nhermite)
     nky = int(args.nky) if args.nky is not None else nky_full
     ny = 3 * (nky - 1) + 1
 
