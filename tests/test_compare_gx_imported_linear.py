@@ -56,6 +56,20 @@ def test_compare_gx_imported_linear_parser_accepts_gx_input() -> None:
     assert args.gx_input == Path("/tmp/run.in")
 
 
+def test_compare_gx_imported_linear_parser_accepts_exact_init_file() -> None:
+    args = build_parser().parse_args(
+        [
+            "--gx",
+            "/tmp/run.out.nc",
+            "--geometry-file",
+            "/tmp/run.eik.nc",
+            "--init-file",
+            "/tmp/g_state.bin",
+        ]
+    )
+    assert args.init_file == Path("/tmp/g_state.bin")
+
+
 def test_compare_gx_imported_linear_parser_accepts_cache_and_sample_controls() -> None:
     args = build_parser().parse_args(
         [
@@ -293,7 +307,13 @@ def test_select_gx_kx_index_honors_explicit_single_mode_startup() -> None:
 def test_resolve_imported_real_fft_ny_uses_full_gx_ky_layout() -> None:
     gx_ky = np.asarray([0.0] + [0.05 * i for i in range(1, 16)], dtype=float)
     contract = replace(_dummy_gx_contract(init_single=False), Ny=16)
-    assert _resolve_imported_real_fft_ny(gx_ky, contract) == 43
+    assert _resolve_imported_real_fft_ny(gx_ky, contract) == 46
+
+
+def test_resolve_imported_real_fft_ny_recovers_miller_gx_nky_contract() -> None:
+    gx_ky = np.asarray([0.0, 0.1, 0.2, 0.3, 0.4, 0.5], dtype=float)
+    contract = replace(_dummy_gx_contract(init_single=False), Ny=6)
+    assert _resolve_imported_real_fft_ny(gx_ky, contract) == 16
 
 
 def test_resolve_imported_real_fft_ny_keeps_single_positive_ky_unmasked() -> None:
