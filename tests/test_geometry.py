@@ -7,6 +7,7 @@ import pytest
 
 from spectraxgk.config import GeometryConfig, GridConfig
 from spectraxgk.geometry import (
+    GX_ZERO_SHAT_THRESHOLD,
     SAlphaGeometry,
     SlabGeometry,
     apply_gx_geometry_grid_defaults,
@@ -85,6 +86,23 @@ def test_zero_shat_slab_geometry_matches_gx_override():
     assert jnp.allclose(gds2, jnp.ones_like(theta))
     assert jnp.allclose(gds21, jnp.zeros_like(theta))
     assert jnp.allclose(gds22, jnp.ones_like(theta))
+
+
+def test_slab_geometry_auto_zero_shat_threshold_matches_gx_default():
+    geom = SlabGeometry.from_config(
+        GeometryConfig(model="slab", s_hat=0.1 * GX_ZERO_SHAT_THRESHOLD, zero_shat=False)
+    )
+
+    assert geom.zero_shat is True
+    assert geom.s_hat == pytest.approx(0.0)
+
+
+def test_salpha_geometry_auto_zero_shat_threshold_matches_gx_default():
+    geom = SAlphaGeometry.from_config(
+        GeometryConfig(s_hat=0.1 * GX_ZERO_SHAT_THRESHOLD, zero_shat=False)
+    )
+
+    assert geom.s_hat == pytest.approx(0.0)
 
 
 def test_bmag_and_omega_d_shapes():
@@ -630,6 +648,16 @@ def test_apply_gx_geometry_grid_defaults_applies_twist_shift_for_fix_aspect(tmp_
 
     assert adjusted.jtwist == jtwist
     assert adjusted.Lx == pytest.approx(2.0 * np.pi * x0)
+
+
+def test_apply_gx_geometry_grid_defaults_promotes_near_zero_shat_to_periodic():
+    geom = SlabGeometry.from_config(GeometryConfig(model="slab", s_hat=1.0e-8))
+    grid = GridConfig(Nx=1, Ny=4, Nz=16, Lx=62.8, Ly=2.0 * np.pi * 100.0, boundary="linked", y0=100.0)
+
+    adjusted = apply_gx_geometry_grid_defaults(geom, grid)
+
+    assert adjusted.boundary == "periodic"
+    assert adjusted.jtwist is None
 
 
 def test_build_linear_cache_uses_linked_streaming_for_fix_aspect_imported_geometry(tmp_path):
