@@ -94,7 +94,7 @@ def _file_cache_token(path: Path | None) -> dict[str, str | int | None]:
 
 def _load_gx_reference(
     path: Path,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     def _read_ky_series(diag_group, name: str) -> np.ndarray:
         data = np.asarray(diag_group.variables[name][:], dtype=float)
         if data.ndim == 3:
@@ -114,9 +114,13 @@ def _load_gx_reference(
         Wg = _read_ky_series(diag, "Wg_kyst")
         Wphi = _read_ky_series(diag, "Wphi_kyst")
         Wapar = _read_ky_series(diag, "Wapar_kyst")
+        if "Phi2_kyt" in diag.variables:
+            Phi2 = np.asarray(diag.variables["Phi2_kyt"][:], dtype=float)
+        else:
+            Phi2 = np.full((time.size, ky.size), np.nan, dtype=float)
     finally:
         root.close()
-    return time, ky, kx, omega, Wg, Wphi, Wapar
+    return time, ky, kx, omega, Wg, Wphi, Wapar, Phi2
 
 
 def _read_gx_output_bool(path: Path, name: str, *, default: bool = False) -> bool:
@@ -450,6 +454,11 @@ def _gx_Wapar_by_ky(apar: jnp.ndarray, cache, vol_fac: jnp.ndarray, *, use_deali
     return jnp.sum(contrib, axis=(1, 2))
 
 
+def _gx_Phi2_by_ky(phi: jnp.ndarray, vol_fac: jnp.ndarray) -> jnp.ndarray:
+    weight = vol_fac[None, None, :]
+    return jnp.sum(jnp.abs(phi) ** 2 * weight, axis=(1, 2))
+
+
 def _integrate_target_mode_series(
     *,
     G0: jnp.ndarray,
@@ -463,7 +472,7 @@ def _integrate_target_mode_series(
     ky_index: int,
     kx_index: int,
     sample_times: np.ndarray,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     if mode_method not in {"z_index", "max"}:
         raise ValueError("mode_method must be 'z_index' or 'max'")
 
@@ -482,10 +491,15 @@ def _integrate_target_mode_series(
     max_target_time = float(target_times[-1])
     dt_ceiling = float(time_cfg.dt_max) if time_cfg.dt_max is not None else dt
     dt_floor = max(min(dt, dt_ceiling), float(time_cfg.dt_min))
-    max_steps = max(
-        int(np.ceil(max_target_time / max(dt_floor, 1.0e-12))) + 8 * target_samples + 8,
-        8 * target_samples + 8,
-    )
+    base_steps = int(np.ceil(max_target_time / max(dt_floor, 1.0e-12)))
+    if time_cfg.fixed_dt:
+        max_steps = max(base_steps + 8 * target_samples + 8, 8 * target_samples + 8)
+    else:
+        # Imported audits can encounter much smaller reconstructed adaptive steps
+        # than the initial dt guess. Use a generous safety factor so we do not
+        # misclassify a lane because the harness ran out of budget before
+        # reaching the requested GX sample times.
+        max_steps = max(base_steps * 256 + 1024, 32 * target_samples + 32)
     vol_fac = cache.jacobian / jnp.sum(cache.jacobian)
 
     G = jnp.asarray(G0)
@@ -518,6 +532,7 @@ def _integrate_target_mode_series(
     Wg_list: list[float] = []
     Wphi_list: list[float] = []
     Wapar_list: list[float] = []
+    Phi2_list: list[float] = []
 
     target_idx = 0
     while target_idx < target_samples and step < max_steps:
@@ -550,11 +565,13 @@ def _integrate_target_mode_series(
             Wg = _gx_Wg_by_ky(G, cache, params, vol_fac)
             Wphi = _gx_Wphi_by_ky(phi, cache, params, vol_fac)
             Wapar = _gx_Wapar_by_ky(apar, cache, vol_fac)
+            Phi2 = _gx_Phi2_by_ky(phi, vol_fac)
             gamma_list.append(float(np.asarray(gamma)[ky_index, kx_index]))
             omega_list.append(float(np.asarray(omega)[ky_index, kx_index]))
             Wg_list.append(float(np.asarray(Wg)[ky_index]))
             Wphi_list.append(float(np.asarray(Wphi)[ky_index]))
             Wapar_list.append(float(np.asarray(Wapar)[ky_index]))
+            Phi2_list.append(float(np.asarray(Phi2)[ky_index]))
             target_idx += 1
             phi_prev = phi
         else:
@@ -572,6 +589,7 @@ def _integrate_target_mode_series(
         np.asarray(Wg_list, dtype=float),
         np.asarray(Wphi_list, dtype=float),
         np.asarray(Wapar_list, dtype=float),
+        np.asarray(Phi2_list, dtype=float),
     )
 
 
@@ -590,7 +608,7 @@ def _run_single_ky(
     mode_method: str,
     kx_index: int,
     terms: LinearTerms,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     ky_index = select_ky_index(np.asarray(grid_full.ky), ky_target)
     G0_full = _build_imported_initial_condition(
         grid=grid_full,
@@ -723,7 +741,7 @@ def _series_cache_path(
     sample_steps: np.ndarray,
 ) -> Path:
     payload = {
-        "version": 1,
+        "version": 2,
         "gx": _file_cache_token(gx_path),
         "geometry_file": _file_cache_token(geometry_file),
         "gx_input": _file_cache_token(gx_input),
@@ -739,7 +757,9 @@ def _series_cache_path(
     return cache_dir / f"ky_{tag}_{digest}.npz"
 
 
-def _load_cached_ky_series(path: Path) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+def _load_cached_ky_series(
+    path: Path,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     with np.load(path) as data:
         return (
             np.asarray(data["gamma"], dtype=float),
@@ -747,6 +767,7 @@ def _load_cached_ky_series(path: Path) -> tuple[np.ndarray, np.ndarray, np.ndarr
             np.asarray(data["Wg"], dtype=float),
             np.asarray(data["Wphi"], dtype=float),
             np.asarray(data["Wapar"], dtype=float),
+            np.asarray(data["Phi2"], dtype=float),
         )
 
 
@@ -758,6 +779,7 @@ def _save_cached_ky_series(
     Wg: np.ndarray,
     Wphi: np.ndarray,
     Wapar: np.ndarray,
+    Phi2: np.ndarray,
 ) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     np.savez_compressed(
@@ -767,6 +789,7 @@ def _save_cached_ky_series(
         Wg=np.asarray(Wg, dtype=float),
         Wphi=np.asarray(Wphi, dtype=float),
         Wapar=np.asarray(Wapar, dtype=float),
+        Phi2=np.asarray(Phi2, dtype=float),
     )
 
 
@@ -833,7 +856,7 @@ def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
 
-    gx_time, gx_ky, gx_kx, gx_omega, gx_Wg, gx_Wphi, gx_Wapar = _load_gx_reference(args.gx)
+    gx_time, gx_ky, gx_kx, gx_omega, gx_Wg, gx_Wphi, gx_Wapar, gx_Phi2 = _load_gx_reference(args.gx)
     positive_ky = gx_ky[gx_ky > 0.0]
     ky_values = positive_ky if args.ky is None or len(args.ky) == 0 else np.asarray(args.ky, dtype=float)
     sample_steps = _build_sample_steps(
@@ -983,9 +1006,9 @@ def main() -> None:
                 sample_steps=sample_steps,
             )
         if cache_path is not None and args.reuse_cache and cache_path.exists():
-            gamma, omega, Wg, Wphi, Wapar = _load_cached_ky_series(cache_path)
+            gamma, omega, Wg, Wphi, Wapar, Phi2 = _load_cached_ky_series(cache_path)
         else:
-            gamma, omega, Wg, Wphi, Wapar = _run_single_ky(
+            gamma, omega, Wg, Wphi, Wapar, Phi2 = _run_single_ky(
                 ky_target=float(ky_target),
                 geom=geom,
                 grid_full=grid_full,
@@ -1008,31 +1031,40 @@ def main() -> None:
                     Wg=Wg,
                     Wphi=Wphi,
                     Wapar=Wapar,
+                    Phi2=Phi2,
                 )
         omega_ref = gx_omega[sample_steps, ky_idx, gx_kx_idx, 0]
         gamma_ref = gx_omega[sample_steps, ky_idx, gx_kx_idx, 1]
-        rows.append(
-            {
-                "ky": float(ky_target),
-                "kx_ref": float(gx_kx[gx_kx_idx]),
-                "kx_local": float(np.asarray(grid_full.kx)[kx_idx]),
-                "mean_abs_omega": float(np.mean(np.abs(omega - omega_ref))),
-                "mean_rel_omega": _mean_rel_error(
-                    omega, omega_ref, floor_fraction=float(args.rel_floor_fraction)
-                ),
-                "mean_abs_gamma": float(np.mean(np.abs(gamma - gamma_ref))),
-                "mean_rel_gamma": _mean_rel_error(
-                    gamma, gamma_ref, floor_fraction=float(args.rel_floor_fraction)
-                ),
-                "mean_rel_Wg": _mean_rel_error(Wg, gx_Wg[sample_steps, ky_idx], floor_fraction=1.0e-6),
-                "mean_rel_Wphi": _mean_rel_error(Wphi, gx_Wphi[sample_steps, ky_idx], floor_fraction=1.0e-6),
-                "mean_rel_Wapar": _mean_rel_error(Wapar, gx_Wapar[sample_steps, ky_idx], floor_fraction=1.0e-6),
-                "omega_last": float(omega[-1]),
-                "omega_ref_last": float(omega_ref[-1]),
-                "gamma_last": float(gamma[-1]),
-                "gamma_ref_last": float(gamma_ref[-1]),
-            }
-        )
+        row = {
+            "ky": float(ky_target),
+            "kx_ref": float(gx_kx[gx_kx_idx]),
+            "kx_local": float(np.asarray(grid_full.kx)[kx_idx]),
+            "mean_abs_omega": float(np.mean(np.abs(omega - omega_ref))),
+            "mean_rel_omega": _mean_rel_error(
+                omega, omega_ref, floor_fraction=float(args.rel_floor_fraction)
+            ),
+            "mean_abs_gamma": float(np.mean(np.abs(gamma - gamma_ref))),
+            "mean_rel_gamma": _mean_rel_error(
+                gamma, gamma_ref, floor_fraction=float(args.rel_floor_fraction)
+            ),
+            "mean_rel_Wg": _mean_rel_error(Wg, gx_Wg[sample_steps, ky_idx], floor_fraction=1.0e-6),
+            "mean_rel_Wphi": _mean_rel_error(Wphi, gx_Wphi[sample_steps, ky_idx], floor_fraction=1.0e-6),
+            "mean_rel_Wapar": _mean_rel_error(Wapar, gx_Wapar[sample_steps, ky_idx], floor_fraction=1.0e-6),
+            "omega_last": float(omega[-1]),
+            "omega_ref_last": float(omega_ref[-1]),
+            "gamma_last": float(gamma[-1]),
+            "gamma_ref_last": float(gamma_ref[-1]),
+        }
+        phi2_ref = gx_Phi2[sample_steps, ky_idx]
+        if np.any(np.isfinite(phi2_ref)):
+            row.update(
+                {
+                    "mean_rel_Phi2": _mean_rel_error(Phi2, phi2_ref, floor_fraction=1.0e-6),
+                    "Phi2_last": float(Phi2[-1]),
+                    "Phi2_ref_last": float(phi2_ref[-1]),
+                }
+            )
+        rows.append(row)
         _write_scan_rows(rows, args.out)
 
     df = _write_scan_rows(rows, args.out)
