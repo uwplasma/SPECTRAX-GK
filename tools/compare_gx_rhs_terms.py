@@ -43,6 +43,8 @@ from spectraxgk.terms.linear_terms import (
     collisions_contribution,
     curvature_gradb_contribution,
     diamagnetic_contribution,
+    end_damping_contribution,
+    hypercollisions_contribution,
     mirror_contribution,
     streaming_contribution_gx,
 )
@@ -193,6 +195,13 @@ def _manual_linear_contributions_from_fields(
     tprim = _as_species_array(params.R_over_LTi, ns, "R_over_LTi").astype(real_dtype)
     fprim = _as_species_array(params.R_over_Ln, ns, "R_over_Ln").astype(real_dtype)
     nu = _as_species_array(params.nu, ns, "nu").astype(real_dtype)
+    nu_hyper = jnp.asarray(params.nu_hyper, dtype=real_dtype)
+    nu_hyper_l = jnp.asarray(params.nu_hyper_l, dtype=real_dtype)
+    nu_hyper_m = jnp.asarray(params.nu_hyper_m, dtype=real_dtype)
+    nu_hyper_lm = jnp.asarray(params.nu_hyper_lm, dtype=real_dtype)
+    hypercollisions_const = jnp.asarray(params.hypercollisions_const, dtype=real_dtype)
+    hypercollisions_kz = jnp.asarray(params.hypercollisions_kz, dtype=real_dtype)
+    damp_amp = jnp.asarray(params.damp_ends_amp, dtype=real_dtype)
 
     omega_d_scale = jnp.asarray(params.omega_d_scale, dtype=real_dtype)
     omega_star_scale = jnp.asarray(params.omega_star_scale, dtype=real_dtype)
@@ -204,6 +213,8 @@ def _manual_linear_contributions_from_fields(
     w_gradb = jnp.asarray(term_cfg.gradb, dtype=real_dtype)
     w_dia = jnp.asarray(term_cfg.diamagnetic, dtype=real_dtype)
     w_coll = jnp.asarray(term_cfg.collisions, dtype=real_dtype)
+    w_hyper = jnp.asarray(term_cfg.hypercollisions, dtype=real_dtype)
+    w_damp = jnp.asarray(term_cfg.end_damping, dtype=real_dtype)
 
     Jl = jnp.asarray(cache.Jl, dtype=real_dtype)
     JlB = jnp.asarray(cache.JlB, dtype=real_dtype)
@@ -298,6 +309,42 @@ def _manual_linear_contributions_from_fields(
         nu=nu,
         lb_lam=cache.lb_lam,
         weight=w_coll,
+    )
+    contrib["hypercollisions"] = hypercollisions_contribution(
+        G_arr,
+        vth=vth,
+        nu_hyper=nu_hyper,
+        nu_hyper_l=nu_hyper_l,
+        nu_hyper_m=nu_hyper_m,
+        nu_hyper_lm=nu_hyper_lm,
+        hyper_ratio=cache.hyper_ratio,
+        ratio_l=cache.ratio_l,
+        ratio_m=cache.ratio_m,
+        ratio_lm=cache.ratio_lm,
+        mask_const=cache.mask_const,
+        mask_kz=cache.mask_kz,
+        m_pow=cache.m_pow,
+        m_norm_kz_factor=cache.m_norm_kz_factor,
+        kz=cache.kz,
+        kpar_scale=kpar_scale,
+        hypercollisions_const=hypercollisions_const,
+        hypercollisions_kz=hypercollisions_kz,
+        weight=w_hyper,
+        linked_indices=cache.linked_indices,
+        linked_kz=cache.linked_kz,
+        linked_inverse_permutation=cache.linked_inverse_permutation,
+        linked_full_cover=cache.linked_full_cover,
+        linked_gather_map=cache.linked_gather_map,
+        linked_gather_mask=cache.linked_gather_mask,
+        linked_use_gather=cache.linked_use_gather,
+    )
+    contrib["end_damping"] = end_damping_contribution(
+        H,
+        ky=cache.ky,
+        damp_profile=cache.damp_profile,
+        linked_damp_profile=cache.linked_damp_profile,
+        damp_amp=damp_amp,
+        weight=w_damp,
     )
     fields = compute_fields_cached(G_arr, cache, params, terms=term_cfg, use_custom_vjp=False)
     return fields, contrib
@@ -468,6 +515,28 @@ def main() -> None:
     gx_dia = _reshape_gx(_load_bin(args.gx_dir / "rhs_diamagnetic.bin", gx_shape), nspec=nspec, nl=nl, nm=nm, nyc=nyc, nx=nx, nz=nz)
     gx_coll = _reshape_gx(_load_bin(args.gx_dir / "rhs_collisions.bin", gx_shape), nspec=nspec, nl=nl, nm=nm, nyc=nyc, nx=nx, nz=nz)
     gx_g_path = args.gx_dir / "g_state.bin"
+    gx_hyper_delta: np.ndarray | None = None
+    hyper_shape_path = args.gx_dir / "hypercollisions_shape.txt"
+    hyper_delta_path = args.gx_dir / "hypercollisions_rhs_delta.bin"
+    if hyper_shape_path.exists() and hyper_delta_path.exists():
+        hyper_shape = _load_shape(hyper_shape_path)
+        hyper_gx_shape = (
+            hyper_shape.get("nspec", nspec),
+            hyper_shape.get("nl", nl),
+            hyper_shape.get("nm", nm),
+            hyper_shape.get("nyc", nyc),
+            hyper_shape.get("nx", nx),
+            hyper_shape.get("nz", nz),
+        )
+        gx_hyper_delta = _reshape_gx(
+            _load_bin(hyper_delta_path, hyper_gx_shape),
+            nspec=hyper_gx_shape[0],
+            nl=hyper_gx_shape[1],
+            nm=hyper_gx_shape[2],
+            nyc=hyper_gx_shape[3],
+            nx=hyper_gx_shape[4],
+            nz=hyper_gx_shape[5],
+        )
 
     with Dataset(args.gx_out, "r") as root:
         ky_vals = np.asarray(root.groups["Grids"].variables["ky"][:], dtype=float)
@@ -480,6 +549,8 @@ def main() -> None:
     gx_gradb = gx_gradb[:, :, :, ky_idx : ky_idx + 1, :, :]
     gx_dia = gx_dia[:, :, :, ky_idx : ky_idx + 1, :, :]
     gx_coll = gx_coll[:, :, :, ky_idx : ky_idx + 1, :, :]
+    if gx_hyper_delta is not None:
+        gx_hyper_delta = gx_hyper_delta[:, :, :, ky_idx : ky_idx + 1, :, :]
 
     cfg: Any
     if args.gx_input is not None:
@@ -618,6 +689,7 @@ def main() -> None:
     spectrax_gradb = _with_species(contrib["gradb"])
     spectrax_dia = _with_species(contrib["diamagnetic"])
     spectrax_coll = _with_species(contrib["collisions"])
+    spectrax_hyper = _with_species(contrib["hypercollisions"])
 
     spectrax_linear = (
         spectrax_mirror + spectrax_curv + spectrax_gradb + spectrax_dia + spectrax_coll
@@ -629,6 +701,8 @@ def main() -> None:
     _summary("gradb", gx_gradb, spectrax_gradb)
     _summary("diamag", gx_dia, spectrax_dia)
     _summary("collisions", gx_coll, spectrax_coll)
+    if gx_hyper_delta is not None:
+        _summary("hyper", gx_hyper_delta, spectrax_hyper)
     _summary("linear_sum", gx_linear, spectrax_linear)
     if phi_path.exists():
         spectrax_phi = np.asarray(fields.phi)

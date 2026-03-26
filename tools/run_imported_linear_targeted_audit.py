@@ -38,7 +38,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--tau-e", type=float, default=1.0, dest="tau_e")
     p.add_argument("--damp-ends-amp", type=float, default=0.1)
     p.add_argument("--damp-ends-widthfrac", type=float, default=1.0 / 8.0)
-    p.add_argument("--mode-method", choices=("z_index", "max"), default="z_index")
+    p.add_argument("--mode-method", choices=("z_index", "max", "project", "svd"), default="z_index")
     p.add_argument("--rel-floor-fraction", type=float, default=1.0e-2)
     p.add_argument(
         "--sample-step-stride",

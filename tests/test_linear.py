@@ -63,7 +63,7 @@ def test_build_linked_fft_maps_keeps_real_fft_positive_ky_modes():
     assert np.asarray(linked_kz[0]).shape == (32,)
 
 
-def test_build_linear_cache_zero_shat_periodic_uses_linked_fft_without_end_damping():
+def test_build_linear_cache_zero_shat_periodic_uses_periodic_fft_without_end_damping():
     from spectraxgk.geometry import SlabGeometry, apply_gx_geometry_grid_defaults
     from spectraxgk.config import GeometryConfig
     from spectraxgk.grids import select_gx_real_fft_ky_grid
@@ -86,10 +86,10 @@ def test_build_linear_cache_zero_shat_periodic_uses_linked_fft_without_end_dampi
 
     cache = build_linear_cache(grid, geom, params, Nl=2, Nm=4)
 
-    assert cache.use_twist_shift is True
-    assert cache.jtwist == 2
-    assert len(cache.linked_indices) == 1
-    assert np.asarray(cache.linked_indices[0]).shape == (3, 1)
+    assert cache.use_twist_shift is False
+    assert cache.jtwist == 0
+    assert len(cache.linked_indices) == 0
+    assert np.allclose(np.asarray(cache.damp_profile), 0.0)
     assert cache.linked_damp_profile.size == 0
 
 
