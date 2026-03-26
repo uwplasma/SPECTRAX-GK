@@ -52,6 +52,12 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="If set, only score the first N selected GX diagnostic samples per ky.",
     )
+    p.add_argument(
+        "--sample-window",
+        choices=("head", "tail"),
+        default="head",
+        help="When --max-samples is set, select the first or last N stride-filtered GX diagnostic samples.",
+    )
     p.add_argument("--reuse-cache", action="store_true", help="Reuse existing per-ky CSV rows if present.")
     return p
 
@@ -123,6 +129,8 @@ def main() -> None:
             str(float(ky)),
             "--sample-step-stride",
             str(int(args.sample_step_stride)),
+            "--sample-window",
+            str(args.sample_window),
             "--tprim",
             str(float(args.tprim)),
             "--fprim",

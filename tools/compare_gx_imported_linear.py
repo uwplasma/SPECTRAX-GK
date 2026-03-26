@@ -493,7 +493,8 @@ def _integrate_target_mode_series(
     mode_method: str,
     ky_index: int,
     kx_index: int,
-    sample_times: np.ndarray,
+    reference_times: np.ndarray,
+    output_steps: np.ndarray,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     if mode_method not in {"z_index", "max", "project", "svd"}:
         raise ValueError("mode_method must be one of {'z_index', 'max', 'project', 'svd'}")
@@ -504,12 +505,21 @@ def _integrate_target_mode_series(
     dt = float(time_cfg.dt)
     dt_min = float(time_cfg.dt_min)
     dt_max = float(time_cfg.dt_max) if time_cfg.dt_max is not None else dt
-    target_times = np.asarray(sample_times, dtype=float)
+    target_times = np.asarray(reference_times, dtype=float)
     target_samples = int(target_times.size)
     if target_samples <= 0:
-        raise ValueError("sample_times must request at least one sample")
+        raise ValueError("reference_times must request at least one sample")
     if np.any(np.diff(target_times) < -1.0e-14):
-        raise ValueError("sample_times must be monotonically nondecreasing")
+        raise ValueError("reference_times must be monotonically nondecreasing")
+    output_idx = np.asarray(output_steps, dtype=int)
+    if output_idx.ndim != 1:
+        raise ValueError("output_steps must be a 1D index array")
+    if output_idx.size <= 0:
+        raise ValueError("output_steps must request at least one sample")
+    if np.any(output_idx < 0) or np.any(output_idx >= target_samples):
+        raise ValueError("output_steps must index reference_times")
+    if np.any(np.diff(output_idx) < 0):
+        raise ValueError("output_steps must be monotonically nondecreasing")
     max_target_time = float(target_times[-1])
     dt_ceiling = float(time_cfg.dt_max) if time_cfg.dt_max is not None else dt
     dt_floor = max(min(dt, dt_ceiling), float(time_cfg.dt_min))
@@ -632,13 +642,19 @@ def _integrate_target_mode_series(
         )
         gamma_list = list(np.asarray(gamma_t, dtype=float))
         omega_list = list(np.asarray(omega_t, dtype=float))
+    gamma_arr = np.asarray(gamma_list, dtype=float)
+    omega_arr = np.asarray(omega_list, dtype=float)
+    Wg_arr = np.asarray(Wg_list, dtype=float)
+    Wphi_arr = np.asarray(Wphi_list, dtype=float)
+    Wapar_arr = np.asarray(Wapar_list, dtype=float)
+    Phi2_arr = np.asarray(Phi2_list, dtype=float)
     return (
-        np.asarray(gamma_list, dtype=float),
-        np.asarray(omega_list, dtype=float),
-        np.asarray(Wg_list, dtype=float),
-        np.asarray(Wphi_list, dtype=float),
-        np.asarray(Wapar_list, dtype=float),
-        np.asarray(Phi2_list, dtype=float),
+        gamma_arr[output_idx],
+        omega_arr[output_idx],
+        Wg_arr[output_idx],
+        Wphi_arr[output_idx],
+        Wapar_arr[output_idx],
+        Phi2_arr[output_idx],
     )
 
 
@@ -653,7 +669,8 @@ def _run_single_ky(
     species: tuple[Species, ...],
     Nl: int,
     Nm: int,
-    sample_times: np.ndarray,
+    reference_times: np.ndarray,
+    output_steps: np.ndarray,
     mode_method: str,
     kx_index: int,
     terms: LinearTerms,
@@ -694,7 +711,8 @@ def _run_single_ky(
         mode_method=mode_method,
         ky_index=ky_diag_index,
         kx_index=kx_index,
-        sample_times=sample_times,
+        reference_times=reference_times,
+        output_steps=output_steps,
     )
 
 
@@ -768,13 +786,18 @@ def _build_sample_steps(
     *,
     sample_step_stride: int,
     max_samples: int | None,
+    sample_window: str = "head",
 ) -> np.ndarray:
     steps = np.arange(np.asarray(gx_time).size, dtype=int)
     stride = max(1, int(sample_step_stride))
     if stride > 1:
         steps = steps[::stride]
     if max_samples is not None:
-        steps = steps[: max(0, int(max_samples))]
+        nkeep = max(0, int(max_samples))
+        if sample_window == "tail":
+            steps = steps[-nkeep:]
+        else:
+            steps = steps[:nkeep]
     if steps.size == 0:
         raise ValueError("Selected sample window is empty; increase --max-samples or lower --sample-step-stride")
     return np.asarray(steps, dtype=int)
@@ -894,6 +917,12 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="If set, only score the first N selected GX diagnostic samples.",
     )
+    parser.add_argument(
+        "--sample-window",
+        choices=("head", "tail"),
+        default="head",
+        help="When --max-samples is set, select the first or last N stride-filtered GX diagnostic samples.",
+    )
     parser.add_argument("--Nl", type=int, default=None)
     parser.add_argument("--Nm", type=int, default=None)
     parser.add_argument("--tprim", type=float, default=3.0)
@@ -922,8 +951,11 @@ def main() -> None:
         gx_time,
         sample_step_stride=int(args.sample_step_stride),
         max_samples=args.max_samples,
+        sample_window=str(args.sample_window),
     )
     sample_times = np.asarray(gx_time[sample_steps], dtype=float)
+    ref_stop = int(sample_steps[-1]) + 1
+    reference_times = np.asarray(gx_time[:ref_stop], dtype=float)
 
     boundary = "linked"
     y0 = _infer_y0(gx_ky)
@@ -961,8 +993,11 @@ def main() -> None:
             gx_time,
             sample_step_stride=int(args.sample_step_stride),
             max_samples=args.max_samples,
+            sample_window=str(args.sample_window),
         )
         sample_times = np.asarray(gx_time[sample_steps], dtype=float)
+        ref_stop = int(sample_steps[-1]) + 1
+        reference_times = np.asarray(gx_time[:ref_stop], dtype=float)
     dt = _infer_gx_linear_dt(gx_time, gx_contract)
     if gx_contract is not None and gx_contract.geo_option == "slab":
         gx_contract = replace(
@@ -1090,7 +1125,8 @@ def main() -> None:
                 species=tuple(species),
                 Nl=nl_use,
                 Nm=nm_use,
-                sample_times=sample_times,
+                reference_times=reference_times,
+                output_steps=sample_steps,
                 mode_method=args.mode_method,
                 kx_index=kx_idx,
                 terms=terms,

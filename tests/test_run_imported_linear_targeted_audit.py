@@ -28,6 +28,7 @@ def test_run_imported_linear_targeted_audit_parser_defaults(tmp_path: Path) -> N
     assert args.Nm is None
     assert args.sample_step_stride == 1
     assert args.max_samples is None
+    assert args.sample_window == "head"
 
 
 def test_run_imported_linear_targeted_audit_parser_accepts_inner_cache_controls(tmp_path: Path) -> None:
@@ -44,11 +45,14 @@ def test_run_imported_linear_targeted_audit_parser_accepts_inner_cache_controls(
             "4",
             "--max-samples",
             "16",
+            "--sample-window",
+            "tail",
             "--reuse-cache",
         ]
     )
     assert args.sample_step_stride == 4
     assert args.max_samples == 16
+    assert args.sample_window == "tail"
     assert args.reuse_cache is True
 
 

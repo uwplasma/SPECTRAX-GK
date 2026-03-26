@@ -111,6 +111,10 @@ def test_build_sample_steps_supports_stride_and_early_window() -> None:
     assert np.array_equal(_build_sample_steps(gx_time, sample_step_stride=1, max_samples=None), np.arange(10))
     assert np.array_equal(_build_sample_steps(gx_time, sample_step_stride=2, max_samples=None), np.arange(0, 10, 2))
     assert np.array_equal(_build_sample_steps(gx_time, sample_step_stride=2, max_samples=3), np.asarray([0, 2, 4]))
+    assert np.array_equal(
+        _build_sample_steps(gx_time, sample_step_stride=2, max_samples=3, sample_window="tail"),
+        np.asarray([4, 6, 8]),
+    )
 
 
 def test_load_gx_input_contract_reads_fix_aspect_and_species_contract(tmp_path: Path) -> None:
@@ -434,7 +438,7 @@ def test_run_single_ky_uses_full_grid_for_imported_multimode(monkeypatch) -> Non
         captured["grid"] = kwargs["grid"]
         captured["g_shape"] = tuple(np.asarray(kwargs["G0"]).shape)
         captured["ky_index"] = kwargs["ky_index"]
-        return tuple(np.zeros(2, dtype=float) for _ in range(5))
+        return tuple(np.zeros(2, dtype=float) for _ in range(6))
 
     monkeypatch.setattr(imported_linear, "_integrate_target_mode_series", _fake_integrate)
 
@@ -448,7 +452,8 @@ def test_run_single_ky_uses_full_grid_for_imported_multimode(monkeypatch) -> Non
         species=(Species(charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=0.0, fprim=0.0),),
         Nl=1,
         Nm=1,
-        sample_times=np.asarray([0.1, 0.2], dtype=float),
+        reference_times=np.asarray([0.1, 0.2], dtype=float),
+        output_steps=np.asarray([0, 1], dtype=int),
         mode_method="z_index",
         kx_index=0,
         terms=LinearTerms(),
@@ -484,7 +489,7 @@ def test_run_single_ky_preserves_single_ky_fallback_without_gx_contract(monkeypa
         captured["grid_ky"] = int(kwargs["grid"].ky.size)
         captured["g_shape"] = tuple(np.asarray(kwargs["G0"]).shape)
         captured["ky_index"] = kwargs["ky_index"]
-        return tuple(np.zeros(2, dtype=float) for _ in range(5))
+        return tuple(np.zeros(2, dtype=float) for _ in range(6))
 
     monkeypatch.setattr(imported_linear, "_integrate_target_mode_series", _fake_integrate)
 
@@ -498,7 +503,8 @@ def test_run_single_ky_preserves_single_ky_fallback_without_gx_contract(monkeypa
         species=(Species(charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=0.0, fprim=0.0),),
         Nl=1,
         Nm=1,
-        sample_times=np.asarray([0.1, 0.2], dtype=float),
+        reference_times=np.asarray([0.1, 0.2], dtype=float),
+        output_steps=np.asarray([0, 1], dtype=int),
         mode_method="z_index",
         kx_index=0,
         terms=LinearTerms(),
@@ -596,7 +602,8 @@ def test_integrate_target_mode_series_collects_requested_sample_count(monkeypatc
         mode_method="z_index",
         ky_index=1,
         kx_index=0,
-        sample_times=np.asarray([0.1, 0.2, 0.3], dtype=float),
+        reference_times=np.asarray([0.1, 0.2, 0.3], dtype=float),
+        output_steps=np.asarray([0, 1, 2], dtype=int),
     )
 
     np.testing.assert_allclose(gamma, np.ones(3, dtype=float))
@@ -662,12 +669,82 @@ def test_integrate_target_mode_series_uses_elapsed_sample_interval(monkeypatch) 
         mode_method="z_index",
         ky_index=0,
         kx_index=0,
-        sample_times=np.asarray([0.2], dtype=float),
+        reference_times=np.asarray([0.2], dtype=float),
+        output_steps=np.asarray([0], dtype=int),
     )
 
     np.testing.assert_allclose(captured["phi_prev"], np.zeros((1, 1, 1), dtype=np.complex64))
     np.testing.assert_allclose(captured["phi"], np.full((1, 1, 1), 2.0, dtype=np.complex64))
     assert np.isclose(float(captured["dt"]), 0.2)
+
+
+def test_integrate_target_mode_series_downsamples_output_without_sparsifying_growth_interval(monkeypatch) -> None:
+    monkeypatch.setattr(imported_linear.jax, "jit", lambda fn, donate_argnums=None: fn)
+    monkeypatch.setattr(
+        imported_linear,
+        "assemble_rhs_cached",
+        lambda *_args, **_kwargs: (
+            None,
+            SimpleNamespace(phi=jnp.zeros((1, 1, 1), dtype=jnp.complex64), apar=None),
+        ),
+    )
+
+    step_count = {"n": 0}
+
+    def _fake_step(G_state, *_args, **_kwargs):
+        step_count["n"] += 1
+        phi_val = float(step_count["n"])
+        phi = jnp.full((1, 1, 1), phi_val + 1.0j * phi_val, dtype=jnp.complex64)
+        return G_state, SimpleNamespace(phi=phi, apar=None)
+
+    monkeypatch.setattr(imported_linear, "_linear_explicit_step", _fake_step)
+    growth_calls: list[tuple[np.ndarray, np.ndarray, float]] = []
+
+    def _fake_growth(phi, phi_prev, dt_step, **_kwargs):
+        growth_calls.append((np.asarray(phi), np.asarray(phi_prev), float(dt_step)))
+        n = len(growth_calls)
+        return (
+            jnp.full((1, 1), float(n), dtype=jnp.float32),
+            jnp.full((1, 1), 10.0 * float(n), dtype=jnp.float32),
+        )
+
+    monkeypatch.setattr(imported_linear, "_gx_growth_rate_step", _fake_growth)
+    monkeypatch.setattr(imported_linear, "_gx_Wg_by_ky", lambda *_args, **_kwargs: jnp.asarray([1.0]))
+    monkeypatch.setattr(imported_linear, "_gx_Wphi_by_ky", lambda *_args, **_kwargs: jnp.asarray([1.0]))
+    monkeypatch.setattr(imported_linear, "_gx_Wapar_by_ky", lambda *_args, **_kwargs: jnp.asarray([0.0]))
+    monkeypatch.setattr(imported_linear, "_gx_linear_omega_max", lambda *_args, **_kwargs: np.asarray([0.0, 0.0, 0.0]))
+
+    gamma, omega, *_rest = _integrate_target_mode_series(
+        G0=jnp.zeros((1, 1, 1, 1, 1, 1), dtype=jnp.complex64),
+        grid=SimpleNamespace(dealias_mask=np.ones((1, 1), dtype=bool), z=np.arange(1)),
+        geom=SimpleNamespace(
+            s_hat=0.0,
+            gradpar=lambda: 1.0,
+            metric_coeffs=lambda theta: (jnp.ones_like(theta), jnp.zeros_like(theta), jnp.ones_like(theta)),
+            drift_coeffs=lambda theta: (
+                jnp.zeros_like(theta),
+                jnp.zeros_like(theta),
+                jnp.zeros_like(theta),
+                jnp.zeros_like(theta),
+            ),
+        ),
+        cache=SimpleNamespace(jacobian=jnp.ones(1, dtype=jnp.float32)),
+        params=SimpleNamespace(),
+        time_cfg=GXTimeConfig(dt=0.1, t_max=0.3, sample_stride=1, fixed_dt=True),
+        terms=LinearTerms(),
+        mode_method="z_index",
+        ky_index=0,
+        kx_index=0,
+        reference_times=np.asarray([0.1, 0.2, 0.3], dtype=float),
+        output_steps=np.asarray([2], dtype=int),
+    )
+
+    assert len(growth_calls) == 3
+    np.testing.assert_allclose(growth_calls[-1][1], np.full((1, 1, 1), 2.0 + 2.0j, dtype=np.complex64))
+    np.testing.assert_allclose(growth_calls[-1][0], np.full((1, 1, 1), 3.0 + 3.0j, dtype=np.complex64))
+    assert np.isclose(growth_calls[-1][2], 0.1)
+    np.testing.assert_allclose(gamma, np.asarray([3.0], dtype=float))
+    np.testing.assert_allclose(omega, np.asarray([30.0], dtype=float))
 
 
 def test_write_scan_rows_checkpoints_sorted_csv(tmp_path: Path) -> None:
