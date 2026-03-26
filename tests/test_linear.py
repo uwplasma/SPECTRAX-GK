@@ -8,6 +8,7 @@ from spectraxgk.config import CycloneBaseCase, GridConfig, GeometryConfig
 from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.linear import (
+    _build_linked_fft_maps,
     _integrate_linear_cached,
     _x64_enabled,
     LinearCache,
@@ -40,6 +41,55 @@ def test_grad_z_periodic_sine():
     f = jnp.sin(z)
     df = grad_z_periodic(f, dz)
     assert jnp.allclose(df, jnp.cos(z), atol=2.0e-2)
+
+
+def test_build_linked_fft_maps_keeps_real_fft_positive_ky_modes():
+    kx = np.array([0.0], dtype=float)
+    ky = np.array([0.0, 0.01, 0.02], dtype=float)
+    linked_indices, linked_kz = _build_linked_fft_maps(
+        kx=kx,
+        ky=ky,
+        y0=100.0,
+        jtwist=2,
+        dz=(2.0 * np.pi) / 32.0,
+        nz=32,
+        real_dtype=jnp.float32,
+        ky_mode=np.array([0, 1, 2], dtype=int),
+    )
+
+    assert len(linked_indices) == 1
+    assert np.array_equal(np.asarray(linked_indices[0]), np.array([[0], [1], [2]], dtype=np.int32))
+    assert np.asarray(linked_kz[0]).shape == (32,)
+
+
+def test_build_linear_cache_zero_shat_periodic_uses_linked_fft_without_end_damping():
+    from spectraxgk.geometry import SlabGeometry, apply_gx_geometry_grid_defaults
+    from spectraxgk.config import GeometryConfig
+    from spectraxgk.grids import select_gx_real_fft_ky_grid
+    from spectraxgk.species import Species, build_linear_params
+
+    geom = SlabGeometry.from_config(GeometryConfig(model="slab", s_hat=1.0e-8, zero_shat=True))
+    grid_cfg = apply_gx_geometry_grid_defaults(
+        geom,
+        GridConfig(Nx=1, Ny=7, Nz=32, Lx=2.0 * np.pi, Ly=200.0 * np.pi, boundary="linked", y0=100.0),
+    )
+    grid_full = build_spectral_grid(grid_cfg)
+    grid = select_gx_real_fft_ky_grid(grid_full, np.array([0.0, 0.01, 0.02], dtype=np.float32))
+    params = build_linear_params(
+        (Species(charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=0.0, fprim=0.0),),
+        tau_e=0.0,
+        kpar_scale=float(geom.gradpar()),
+        beta=0.01,
+        fapar=1.0,
+    )
+
+    cache = build_linear_cache(grid, geom, params, Nl=2, Nm=4)
+
+    assert cache.use_twist_shift is True
+    assert cache.jtwist == 2
+    assert len(cache.linked_indices) == 1
+    assert np.asarray(cache.linked_indices[0]).shape == (3, 1)
+    assert cache.linked_damp_profile.size == 0
 
 
 def test_compute_b_shape_and_value():

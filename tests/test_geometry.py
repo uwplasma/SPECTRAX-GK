@@ -657,7 +657,7 @@ def test_apply_gx_geometry_grid_defaults_promotes_near_zero_shat_to_periodic():
     adjusted = apply_gx_geometry_grid_defaults(geom, grid)
 
     assert adjusted.boundary == "periodic"
-    assert adjusted.jtwist is None
+    assert adjusted.jtwist == 2 * adjusted.Nx
 
 
 def test_build_linear_cache_uses_linked_streaming_for_fix_aspect_imported_geometry(tmp_path):
