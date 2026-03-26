@@ -27,7 +27,7 @@ from spectraxgk.geometry import (
 )
 from spectraxgk.gyroaverage import gamma0
 from spectraxgk.grids import build_spectral_grid, select_ky_grid
-from spectraxgk.analysis import select_ky_index
+from spectraxgk.analysis import ModeSelection, gx_growth_rate_from_phi, select_ky_index
 from spectraxgk.gx_integrators import (
     GXTimeConfig,
     _gx_growth_rate_step,
@@ -173,12 +173,20 @@ def _resolve_imported_real_fft_ny(gx_ky: np.ndarray, gx_contract: GXInputContrac
     ny_input = int(gx_contract.Ny)
     if ny_input <= 0:
         return inferred
+    full_ny_from_input = max(4, int(3 * (ny_input - 1) + 1))
     # GX input files store the dealiased non-negative ky count (`nky`), while
     # the imported SPECTRAX grid needs the full real-FFT layout. For the GX
     # 2/3-rule contract, the non-negative block has length `floor(Ny/3) + 1`,
     # so the inverse mapping is `Ny = 3 * (nky - 1) + 1`.
     if ny_input == int(np.asarray(gx_ky).size):
-        return max(inferred, int(3 * (ny_input - 1) + 1))
+        return full_ny_from_input
+    # Raw `diag_state_ky` dumps keep the full non-negative real-FFT block,
+    # including the Nyquist row when present. Map that back onto the same full
+    # `Ny` implied by the GX input contract instead of inverting it as though
+    # it were the dealiased NetCDF ky axis.
+    raw_real_fft_block = full_ny_from_input // 2 + 1
+    if int(np.asarray(gx_ky).size) == raw_real_fft_block:
+        return full_ny_from_input
     return inferred
 
 
@@ -487,8 +495,8 @@ def _integrate_target_mode_series(
     kx_index: int,
     sample_times: np.ndarray,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    if mode_method not in {"z_index", "max"}:
-        raise ValueError("mode_method must be 'z_index' or 'max'")
+    if mode_method not in {"z_index", "max", "project", "svd"}:
+        raise ValueError("mode_method must be one of {'z_index', 'max', 'project', 'svd'}")
 
     term_cfg = _gx_term_config(terms)
     mask = jnp.asarray(grid.dealias_mask, dtype=bool)
@@ -548,6 +556,12 @@ def _integrate_target_mode_series(
     Wphi_list: list[float] = []
     Wapar_list: list[float] = []
     Phi2_list: list[float] = []
+    phi_samples: list[np.ndarray] = []
+    phi_sample_times: list[float] = []
+    if mode_method in {"project", "svd"}:
+        phi0_sel = np.asarray(fields0.phi)[ky_index : ky_index + 1, kx_index : kx_index + 1, :]
+        phi_samples.append(np.asarray(phi0_sel, dtype=np.complex64))
+        phi_sample_times.append(float(t))
 
     target_idx = 0
     while target_idx < target_samples and step < max_steps:
@@ -570,14 +584,18 @@ def _integrate_target_mode_series(
             phi = fields.phi
             apar = fields.apar if fields.apar is not None else jnp.zeros_like(phi)
             dt_sample = max(t - t_prev_sample, 0.0)
-            gamma, omega = _gx_growth_rate_step(
-                phi,
-                phi_prev_sample,
-                dt_sample,
-                z_index=z_index,
-                mask=mask,
-                mode_method=mode_method,
-            )
+            if mode_method in {"project", "svd"}:
+                gamma = jnp.zeros(phi.shape[:2], dtype=jnp.real(phi).dtype)
+                omega = jnp.zeros(phi.shape[:2], dtype=jnp.real(phi).dtype)
+            else:
+                gamma, omega = _gx_growth_rate_step(
+                    phi,
+                    phi_prev_sample,
+                    dt_sample,
+                    z_index=z_index,
+                    mask=mask,
+                    mode_method=mode_method,
+                )
             Wg = _gx_Wg_by_ky(G, cache, params, vol_fac)
             Wphi = _gx_Wphi_by_ky(phi, cache, params, vol_fac)
             Wapar = _gx_Wapar_by_ky(apar, cache, vol_fac)
@@ -588,6 +606,10 @@ def _integrate_target_mode_series(
             Wphi_list.append(float(np.asarray(Wphi)[ky_index]))
             Wapar_list.append(float(np.asarray(Wapar)[ky_index]))
             Phi2_list.append(float(np.asarray(Phi2)[ky_index]))
+            if mode_method in {"project", "svd"}:
+                phi_sel = np.asarray(phi)[ky_index : ky_index + 1, kx_index : kx_index + 1, :]
+                phi_samples.append(np.asarray(phi_sel, dtype=np.complex64))
+                phi_sample_times.append(float(t))
             target_idx += 1
             phi_prev_sample = phi
             t_prev_sample = t
@@ -598,6 +620,18 @@ def _integrate_target_mode_series(
             f"{len(gamma_list)} samples, expected {target_samples} "
             f"(dt={dt}, max_steps={max_steps})"
         )
+    if mode_method in {"project", "svd"}:
+        phi_t = np.asarray(phi_samples, dtype=np.complex64)
+        t_arr = np.asarray(phi_sample_times, dtype=float)
+        _gamma_avg, _omega_avg, gamma_t, omega_t, _t_mid = gx_growth_rate_from_phi(
+            phi_t,
+            t_arr,
+            ModeSelection(ky_index=0, kx_index=0, z_index=z_index),
+            use_last=False,
+            mode_method=mode_method,
+        )
+        gamma_list = list(np.asarray(gamma_t, dtype=float))
+        omega_list = list(np.asarray(omega_t, dtype=float))
     return (
         np.asarray(gamma_list, dtype=float),
         np.asarray(omega_list, dtype=float),
@@ -867,7 +901,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--tau-e", type=float, default=1.0, dest="tau_e")
     parser.add_argument("--damp-ends-amp", type=float, default=0.1)
     parser.add_argument("--damp-ends-widthfrac", type=float, default=1.0 / 8.0)
-    parser.add_argument("--mode-method", choices=("z_index", "max"), default="z_index")
+    parser.add_argument("--mode-method", choices=("z_index", "max", "project", "svd"), default="z_index")
     parser.add_argument(
         "--rel-floor-fraction",
         type=float,

@@ -50,3 +50,20 @@ def test_run_imported_linear_targeted_audit_parser_accepts_inner_cache_controls(
     assert args.sample_step_stride == 4
     assert args.max_samples == 16
     assert args.reuse_cache is True
+
+
+def test_run_imported_linear_targeted_audit_parser_accepts_project_mode_method(tmp_path: Path) -> None:
+    out = tmp_path / "combined.csv"
+    args = build_parser().parse_args(
+        [
+            "--gx",
+            "gx.out.nc",
+            "--geometry-file",
+            "geom.nc",
+            "--out",
+            str(out),
+            "--mode-method",
+            "project",
+        ]
+    )
+    assert args.mode_method == "project"

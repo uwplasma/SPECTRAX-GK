@@ -33,10 +33,16 @@ def _load_real_field(path: Path, nyc: int, nx: int, nz: int) -> np.ndarray:
     return raw[idxyz.ravel()].reshape(nyc, nx, nz)
 
 
-def _load_complex_packed_fields(path: Path, nyc: int, nx: int, nz: int, nfields: int) -> list[np.ndarray]:
+def _load_complex_packed_fields(path: Path, nyc: int, nx: int, nz: int, nfields: int | None = None) -> list[np.ndarray]:
     raw = np.fromfile(path, dtype=np.complex64)
     nR = nyc * nx * nz
-    expected = nfields * nR
+    if nR <= 0:
+        raise ValueError(f"{path} has invalid grid size")
+    if nfields is None:
+        if raw.size % nR != 0:
+            raise ValueError(f"{path} size {raw.size} is not an integer multiple of block size {nR}")
+        nfields = int(raw.size // nR)
+    expected = int(nfields) * nR
     if raw.size != expected:
         raise ValueError(f"{path} size {raw.size} does not match expected {expected}")
     out: list[np.ndarray] = []
@@ -178,17 +184,26 @@ def main() -> None:
         nx=nx,
         nz=nz,
     )
-    gx_nbar_blocks = _load_complex_packed_fields(args.gx_dir / "field_nbar.bin", nyc, nx, nz, 3)
-    gx_factors = {
+    gx_nbar_blocks = _load_complex_packed_fields(args.gx_dir / "field_nbar.bin", nyc, nx, nz)
+    gx_factors: dict[str, np.ndarray] = {
         "nbar": gx_nbar_blocks[0],
-        "jparbar": gx_nbar_blocks[1],
-        "jperpbar": gx_nbar_blocks[2],
-        "qneutFacPhi": _load_real_field(args.gx_dir / "field_qneutFacPhi.bin", nyc, nx, nz),
-        "qneutFacBpar": _load_real_field(args.gx_dir / "field_qneutFacBpar.bin", nyc, nx, nz),
-        "ampereParFac": _load_real_field(args.gx_dir / "field_ampereParFac.bin", nyc, nx, nz),
-        "amperePerpFacPhi": _load_real_field(args.gx_dir / "field_amperePerpFacPhi.bin", nyc, nx, nz),
-        "amperePerpFacBpar": _load_real_field(args.gx_dir / "field_amperePerpFacBpar.bin", nyc, nx, nz),
     }
+    if len(gx_nbar_blocks) > 1:
+        gx_factors["jparbar"] = gx_nbar_blocks[1]
+    if len(gx_nbar_blocks) > 2:
+        gx_factors["jperpbar"] = gx_nbar_blocks[2]
+
+    real_factor_files = {
+        "qneutFacPhi": "field_qneutFacPhi.bin",
+        "qneutFacBpar": "field_qneutFacBpar.bin",
+        "ampereParFac": "field_ampereParFac.bin",
+        "amperePerpFacPhi": "field_amperePerpFacPhi.bin",
+        "amperePerpFacBpar": "field_amperePerpFacBpar.bin",
+    }
+    for name, filename in real_factor_files.items():
+        path = args.gx_dir / filename
+        if path.exists():
+            gx_factors[name] = _load_real_field(path, nyc, nx, nz)
 
     from netCDF4 import Dataset
 
@@ -222,6 +237,8 @@ def main() -> None:
         "amperePerpFacPhi",
         "amperePerpFacBpar",
     ):
+        if name not in gx_factors or name not in sp_factors:
+            continue
         gx_slice = _select_ky_block(gx_factors[name], ky_idx)
         sp_slice = np.asarray(sp_factors[name], dtype=np.complex64)
         _summary(name, np.asarray(gx_slice).astype(np.complex64), np.asarray(sp_slice).astype(np.complex64))

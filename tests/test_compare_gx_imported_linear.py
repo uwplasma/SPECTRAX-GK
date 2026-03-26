@@ -92,6 +92,20 @@ def test_compare_gx_imported_linear_parser_accepts_cache_and_sample_controls() -
     assert args.max_samples == 12
 
 
+def test_compare_gx_imported_linear_parser_accepts_project_mode_method() -> None:
+    args = build_parser().parse_args(
+        [
+            "--gx",
+            "/tmp/run.out.nc",
+            "--geometry-file",
+            "/tmp/run.eik.nc",
+            "--mode-method",
+            "project",
+        ]
+    )
+    assert args.mode_method == "project"
+
+
 def test_build_sample_steps_supports_stride_and_early_window() -> None:
     gx_time = np.linspace(0.0, 9.0, 10)
     assert np.array_equal(_build_sample_steps(gx_time, sample_step_stride=1, max_samples=None), np.arange(10))
@@ -349,6 +363,12 @@ def test_resolve_imported_real_fft_ny_recovers_miller_gx_nky_contract() -> None:
 
 def test_resolve_imported_real_fft_ny_keeps_single_positive_ky_unmasked() -> None:
     gx_ky = np.asarray([0.0, 0.01], dtype=float)
+    contract = replace(_dummy_gx_contract(init_single=False), Ny=2)
+    assert _resolve_imported_real_fft_ny(gx_ky, contract) == 4
+
+
+def test_resolve_imported_real_fft_ny_accepts_full_diag_state_ky_block() -> None:
+    gx_ky = np.asarray([0.0, 0.01, 0.02], dtype=float)
     contract = replace(_dummy_gx_contract(init_single=False), Ny=2)
     assert _resolve_imported_real_fft_ny(gx_ky, contract) == 4
 
