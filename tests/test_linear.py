@@ -29,6 +29,7 @@ from spectraxgk.linear import (
     quasineutrality_phi,
     streaming_term,
 )
+from spectraxgk.terms.operators import grad_z_linked_fft
 from spectraxgk.gyroaverage import J_l_all
 from spectraxgk.linear_krylov import dominant_eigenpair
 from spectraxgk.terms.linear_terms import collisions_contribution
@@ -90,6 +91,39 @@ def test_build_linear_cache_zero_shat_periodic_uses_linked_fft_without_end_dampi
     assert len(cache.linked_indices) == 1
     assert np.asarray(cache.linked_indices[0]).shape == (3, 1)
     assert cache.linked_damp_profile.size == 0
+
+
+def test_linked_fft_derivative_matches_periodic_for_one_link_chains():
+    rng = np.random.default_rng(0)
+    f = (
+        rng.normal(size=(2, 3, 1, 32)) + 1j * rng.normal(size=(2, 3, 1, 32))
+    ).astype(np.complex64)
+    dz = (2.0 * np.pi) / 32.0
+    linked_indices, linked_kz = _build_linked_fft_maps(
+        kx=np.array([0.0], dtype=float),
+        ky=np.array([0.0, 0.01, 0.02], dtype=float),
+        y0=100.0,
+        jtwist=2,
+        dz=dz,
+        nz=32,
+        real_dtype=jnp.float32,
+        ky_mode=np.array([0, 1, 2], dtype=int),
+    )
+
+    df_periodic = grad_z_periodic(jnp.asarray(f), dz=dz)
+    df_linked = grad_z_linked_fft(
+        jnp.asarray(f),
+        dz=dz,
+        linked_indices=linked_indices,
+        linked_kz=linked_kz,
+        linked_full_cover=True,
+        linked_inverse_permutation=jnp.arange(3, dtype=jnp.int32),
+        linked_use_gather=True,
+        linked_gather_map=jnp.arange(3, dtype=jnp.int32),
+        linked_gather_mask=jnp.ones(3, dtype=bool),
+    )
+
+    assert jnp.allclose(df_linked, df_periodic, rtol=1.0e-6, atol=2.0e-6)
 
 
 def test_compute_b_shape_and_value():
