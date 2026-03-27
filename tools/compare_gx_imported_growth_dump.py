@@ -48,6 +48,12 @@ def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--gx-dir-start", type=Path, required=True, help="Directory containing the start diag_state_* dump set.")
     p.add_argument("--gx-dir-stop", type=Path, required=True, help="Directory containing the stop diag_state_* dump set.")
+    p.add_argument(
+        "--gx-restart-start",
+        type=Path,
+        default=None,
+        help="Optional GX restart.nc file holding the exact start distribution state for late-window replay.",
+    )
     p.add_argument("--gx-out", type=Path, required=True, help="GX .out.nc file for times and omega_kxkyt.")
     p.add_argument("--gx-input", type=Path, required=True, help="GX input file describing the imported contract.")
     p.add_argument("--geometry-file", type=Path, required=True, help="Imported geometry file used by SPECTRAX.")
@@ -87,6 +93,61 @@ def _load_growth_dt(path: Path) -> float:
     if raw32.size == 1:
         return float(raw32[0])
     raise ValueError(f"unexpected growth dt payload in {path}")
+
+
+def _gx_active_kx_count(nx_full: int) -> int:
+    return 1 + 2 * ((int(nx_full) - 1) // 3)
+
+
+def _gx_active_ky_count(ny_full: int) -> int:
+    return 1 + ((int(ny_full) - 1) // 3)
+
+
+def _expand_gx_restart_state_to_full_positive_ky(
+    state_active: np.ndarray,
+    *,
+    ny_full: int,
+    nx_full: int,
+) -> np.ndarray:
+    state_active = np.asarray(state_active, dtype=np.complex64)
+    if state_active.ndim != 6:
+        raise ValueError(f"restart state must have rank 6, got {state_active.shape}")
+    nspec, nl, nm, naky, nakx, nz = state_active.shape
+    nyc_full = int(ny_full) // 2 + 1
+    expected_naky = _gx_active_ky_count(int(ny_full))
+    expected_nakx = _gx_active_kx_count(int(nx_full))
+    if naky != expected_naky:
+        raise ValueError(f"restart Nky={naky} does not match ny_full={ny_full} (expected {expected_naky})")
+    if nakx != expected_nakx:
+        raise ValueError(f"restart Nkx={nakx} does not match nx_full={nx_full} (expected {expected_nakx})")
+
+    out = np.zeros((nspec, nl, nm, nyc_full, int(nx_full), nz), dtype=np.complex64)
+    split = 1 + ((int(nx_full) - 1) // 3)
+    out[..., :naky, :split, :] = state_active[..., :split, :]
+    if int(nx_full) > 1:
+        for i in range(2 * int(nx_full) // 3 + 1, int(nx_full)):
+            it = i - 2 * int(nx_full) // 3 + ((int(nx_full) - 1) // 3)
+            out[..., :naky, i, :] = state_active[..., it, :]
+    return out
+
+
+def _load_gx_restart_state(path: Path) -> np.ndarray:
+    with Dataset(path, "r") as root:
+        if "G" not in root.variables:
+            raise ValueError(f"restart file {path} does not contain variable 'G'")
+        raw = np.asarray(root.variables["G"][:], dtype=float)
+    if raw.ndim != 7 or raw.shape[-1] != 2:
+        raise ValueError(f"unexpected GX restart G shape {raw.shape}")
+    state = raw[..., 0] + 1j * raw[..., 1]
+    # GX restart layout: (species, m, l, z, kx, ky) -> SPECTRAX: (species, l, m, ky, kx, z)
+    return np.asarray(np.transpose(state, (0, 2, 1, 5, 4, 3)), dtype=np.complex64)
+
+
+def _load_gx_restart_time(path: Path) -> float:
+    with Dataset(path, "r") as root:
+        if "time" not in root.variables:
+            raise ValueError(f"restart file {path} does not contain variable 'time'")
+        return float(np.asarray(root.variables["time"][:], dtype=float).reshape(-1)[0])
 
 
 def main() -> None:
@@ -135,8 +196,14 @@ def main() -> None:
         target = _load_growth_dt(growth_dt_path)
         gx_apar_stop = None
         gx_bpar_stop = None
-        gx_G_start = (
-            _load_species_state(
+        gx_G_start = None
+        restart_time = None
+        restart_state_active = None
+        if args.gx_restart_start is not None:
+            restart_state_active = _load_gx_restart_state(args.gx_restart_start)
+            restart_time = _load_gx_restart_time(args.gx_restart_start)
+        elif start_has_state:
+            gx_G_start = _load_species_state(
                 args.gx_dir_start,
                 nspec=nspec,
                 nl=nl,
@@ -146,9 +213,6 @@ def main() -> None:
                 nz=nz,
                 time_index=args.time_index_start,
             )
-            if start_has_state
-            else None
-        )
     else:
         gx_G_start = _load_species_state(
             args.gx_dir_start,
@@ -167,6 +231,14 @@ def main() -> None:
 
     y0 = float(gx_contract.y0) if np.isfinite(float(gx_contract.y0)) else _infer_y0(gx_ky)
     ny_full = _resolve_imported_real_fft_ny(gx_ky, gx_contract)
+    if stop_has_growth and args.gx_restart_start is not None:
+        if restart_state_active is None:
+            raise ValueError("restart_state_active must be available for restart-based growth replay")
+        gx_G_start = _expand_gx_restart_state_to_full_positive_ky(
+            restart_state_active,
+            ny_full=ny_full,
+            nx_full=int(nx),
+        )
     if gx_contract.geo_option == "slab":
         geom = SlabGeometry.from_config(
             GeometryConfig(model="slab", s_hat=float(gx_contract.s_hat), zero_shat=bool(gx_contract.zero_shat))
@@ -235,6 +307,7 @@ def main() -> None:
         omega_max = _gx_linear_omega_max(grid, geom, params, nl, nm)
         wmax = float(np.sum(omega_max))
         t = 0.0
+        phi_prev_step = gx_phi_start
 
         def _step(G_state, cache_state, params_state, term_cfg_state, dt_state):
             return _linear_explicit_step(
@@ -248,30 +321,51 @@ def main() -> None:
 
         stepper = jax.jit(_step, donate_argnums=(0,))
         term_cfg = _gx_term_config(terms)
-        while t < target - 1.0e-12:
-            dt_step = float(time_cfg.dt)
-            if not time_cfg.fixed_dt and wmax > 0.0:
-                dt_guess = float(time_cfg.cfl_fac) * float(time_cfg.cfl) / wmax
-                dt_step = min(max(dt_guess, dt_min), dt_max)
-            remaining = target - t
-            if dt_step > remaining:
-                dt_step = max(remaining, dt_min)
-            G, fields = stepper(G, cache, params, term_cfg, dt_step)
-            t += dt_step
+        if stop_has_growth and args.gx_restart_start is not None:
+            if restart_time is None:
+                raise ValueError("restart_time must be available for restart-based growth replay")
+            target = float(gx_time[args.time_index_stop] - restart_time)
+            step_dt = float(_load_growth_dt(growth_dt_path))
+            if step_dt <= 0.0:
+                raise ValueError("growth dump dt must be > 0")
+            nsteps_float = target / step_dt
+            nsteps = int(np.rint(nsteps_float))
+            if nsteps < 1 or not np.isclose(target, step_dt * nsteps, rtol=1.0e-6, atol=1.0e-10):
+                raise ValueError(
+                    "restart-based growth replay requires a uniform late window; "
+                    f"got target={target:.12g}, step_dt={step_dt:.12g}, ratio={nsteps_float:.12g}"
+                )
+            for _ in range(nsteps):
+                G, fields = stepper(G, cache, params, term_cfg, step_dt)
+                t += step_dt
+                if t < target - 0.5 * step_dt:
+                    phi_prev_step = np.asarray(fields.phi, dtype=np.complex64)
+            gamma_sp_dump, omega_sp_dump = _gx_growth_pair(np.asarray(fields.phi, dtype=np.complex64), phi_prev_step, step_dt)
+        else:
+            while t < target - 1.0e-12:
+                dt_step = float(time_cfg.dt)
+                if not time_cfg.fixed_dt and wmax > 0.0:
+                    dt_guess = float(time_cfg.cfl_fac) * float(time_cfg.cfl) / wmax
+                    dt_step = min(max(dt_guess, dt_min), dt_max)
+                remaining = target - t
+                if dt_step > remaining:
+                    dt_step = max(remaining, dt_min)
+                G, fields = stepper(G, cache, params, term_cfg, dt_step)
+                t += dt_step
 
-        sp_phi_stop = np.asarray(fields.phi, dtype=np.complex64)
-        sp_apar_stop = (
-            np.asarray(fields.apar, dtype=np.complex64)
-            if fields.apar is not None
-            else np.zeros_like(gx_phi_stop, dtype=np.complex64)
-        )
-        sp_bpar_stop = (
-            np.asarray(fields.bpar, dtype=np.complex64)
-            if fields.bpar is not None
-            else np.zeros_like(gx_phi_stop, dtype=np.complex64)
-        )
-        _ = (gx_apar_stop, gx_bpar_stop, sp_apar_stop, sp_bpar_stop)
-        gamma_sp_dump, omega_sp_dump = _gx_growth_pair(sp_phi_stop, gx_phi_start, target)
+            sp_phi_stop = np.asarray(fields.phi, dtype=np.complex64)
+            sp_apar_stop = (
+                np.asarray(fields.apar, dtype=np.complex64)
+                if fields.apar is not None
+                else np.zeros_like(gx_phi_stop, dtype=np.complex64)
+            )
+            sp_bpar_stop = (
+                np.asarray(fields.bpar, dtype=np.complex64)
+                if fields.bpar is not None
+                else np.zeros_like(gx_phi_stop, dtype=np.complex64)
+            )
+            _ = (gx_apar_stop, gx_bpar_stop, sp_apar_stop, sp_bpar_stop)
+            gamma_sp_dump, omega_sp_dump = _gx_growth_pair(sp_phi_stop, gx_phi_start, target)
 
     ky_target = float(args.ky) if args.ky is not None else float(np.min(gx_ky[gx_ky > 0.0]))
     ky_idx = _select_index(gx_ky, ky_target)
@@ -281,12 +375,17 @@ def main() -> None:
         "time_index_start": int(args.time_index_start),
         "time_index_stop": int(args.time_index_stop),
         "t_start": float(gx_time[args.time_index_start]),
+        "t_restart_start": (float(restart_time) if stop_has_growth and args.gx_restart_start is not None else np.nan),
         "t_stop": float(gx_time[args.time_index_stop]),
         "delta_t": float(target),
         "compare_mode": (
             "growth_dump"
             if stop_has_growth and gx_G_start is None
-            else ("growth_replay" if stop_has_growth else "state_replay")
+            else (
+                "growth_restart_replay"
+                if stop_has_growth and args.gx_restart_start is not None
+                else ("growth_replay" if stop_has_growth else "state_replay")
+            )
         ),
         "ky": float(gx_kx.size and gx_ky[ky_idx]),
         "kx": float(gx_kx[kx_idx]),
