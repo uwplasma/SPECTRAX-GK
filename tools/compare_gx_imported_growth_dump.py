@@ -104,17 +104,18 @@ def main() -> None:
     growth_dt_path = args.gx_dir_stop / f"diag_growth_dt_t{args.time_index_stop}.bin"
     growth_kx_path = args.gx_dir_stop / f"diag_growth_kx_t{args.time_index_stop}.bin"
     growth_ky_path = args.gx_dir_stop / f"diag_growth_ky_t{args.time_index_stop}.bin"
-    growth_mode = all(
+    stop_has_growth = all(
         path.exists()
         for path in (growth_phi_prev_path, growth_phi_path, growth_dt_path, growth_kx_path, growth_ky_path)
     )
-    if growth_mode:
+    start_has_state = (args.gx_dir_start / f"diag_state_G_s0_t{args.time_index_start}.bin").exists()
+    if stop_has_growth:
         if args.time_index_stop < args.time_index_start:
             raise ValueError("time-index-stop must be >= time-index-start in growth-dump mode")
     elif args.time_index_stop <= args.time_index_start:
         raise ValueError("time-index-stop must be greater than time-index-start")
 
-    if growth_mode:
+    if stop_has_growth:
         gx_kx = _load_real_vector_auto(growth_kx_path)
         gx_ky = _load_real_vector_auto(growth_ky_path)
     else:
@@ -122,19 +123,32 @@ def main() -> None:
         gx_ky = _load_real_vector_auto(args.gx_dir_start / f"diag_state_ky_t{args.time_index_start}.bin")
     nyc = int(gx_ky.size)
     nx = int(gx_kx.size)
-    phi_seed_path = growth_phi_prev_path if growth_mode else args.gx_dir_start / f"diag_state_phi_t{args.time_index_start}.bin"
+    phi_seed_path = growth_phi_prev_path if stop_has_growth else args.gx_dir_start / f"diag_state_phi_t{args.time_index_start}.bin"
     phi_raw = np.fromfile(phi_seed_path, dtype=np.complex64)
     if phi_raw.size % max(nyc * nx, 1) != 0:
         raise ValueError(f"{phi_seed_path.name} size {phi_raw.size} is not divisible by nyc*nx={nyc*nx}")
     nz = int(phi_raw.size // (nyc * nx))
 
-    if growth_mode:
+    if stop_has_growth:
         gx_phi_start = _load_field(growth_phi_prev_path, nyc, nx, nz)
         gx_phi_stop = _load_field(growth_phi_path, nyc, nx, nz)
         target = _load_growth_dt(growth_dt_path)
         gx_apar_stop = None
         gx_bpar_stop = None
-        gx_G_start = None
+        gx_G_start = (
+            _load_species_state(
+                args.gx_dir_start,
+                nspec=nspec,
+                nl=nl,
+                nm=nm,
+                nyc=nyc,
+                nx=nx,
+                nz=nz,
+                time_index=args.time_index_start,
+            )
+            if start_has_state
+            else None
+        )
     else:
         gx_G_start = _load_species_state(
             args.gx_dir_start,
@@ -204,7 +218,7 @@ def main() -> None:
     dt = _infer_gx_linear_dt(gx_time, gx_contract)
     time_cfg = GXTimeConfig(
         dt=dt,
-        t_max=float(gx_time[args.time_index_stop] - gx_time[args.time_index_start]) if not growth_mode else float(target),
+        t_max=float(gx_time[args.time_index_stop] - gx_time[args.time_index_start]) if not stop_has_growth else float(target),
         method=str(gx_contract.scheme),
         sample_stride=max(1, int(gx_contract.nwrite)),
         fixed_dt=bool((gx_contract.dt is not None) or _gx_has_uniform_linear_dt(gx_time, gx_contract)),
@@ -214,7 +228,7 @@ def main() -> None:
     dt_max = float(time_cfg.dt_max) if time_cfg.dt_max is not None else float(time_cfg.dt)
 
     gamma_gx_dump, omega_gx_dump = _gx_growth_pair(gx_phi_stop, gx_phi_start, target)
-    if growth_mode:
+    if stop_has_growth and gx_G_start is None:
         gamma_sp_dump, omega_sp_dump = gamma_gx_dump, omega_gx_dump
     else:
         G = jnp.asarray(gx_G_start, dtype=jnp.complex64)
@@ -269,7 +283,11 @@ def main() -> None:
         "t_start": float(gx_time[args.time_index_start]),
         "t_stop": float(gx_time[args.time_index_stop]),
         "delta_t": float(target),
-        "compare_mode": "growth_dump" if growth_mode else "state_replay",
+        "compare_mode": (
+            "growth_dump"
+            if stop_has_growth and gx_G_start is None
+            else ("growth_replay" if stop_has_growth else "state_replay")
+        ),
         "ky": float(gx_kx.size and gx_ky[ky_idx]),
         "kx": float(gx_kx[kx_idx]),
         "omega_out": float(gx_omega[args.time_index_stop, ky_idx, kx_idx, 0]),
