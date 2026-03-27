@@ -5,7 +5,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
 
-from compare_gx_imported_growth_dump import build_parser
+from compare_gx_imported_growth_dump import _load_growth_dt, build_parser
 
 
 def test_compare_gx_imported_growth_dump_parser_accepts_required_paths() -> None:
@@ -34,3 +34,11 @@ def test_compare_gx_imported_growth_dump_parser_accepts_required_paths() -> None
     assert args.geometry_file == Path("/tmp/geom.nc")
     assert args.time_index_start == 10
     assert args.time_index_stop == 11
+
+
+def test_load_growth_dt_accepts_float64_scalar(tmp_path: Path) -> None:
+    path = tmp_path / "diag_growth_dt_t45.bin"
+    import numpy as np
+
+    np.asarray([2.5e-4], dtype=np.float64).tofile(path)
+    assert _load_growth_dt(path) == 2.5e-4
