@@ -123,7 +123,7 @@ The diamagnetic drive term :math:`\mathcal{D}_{\ell m}` follows a Laguerre
 formulation with explicit :math:`R/L_n` and :math:`R/L_T` dependence,
 including a separate coupling in :math:`m=2` for temperature-gradient drive.
 
-GX-aligned streaming
+Field-aligned streaming representation
 ~~~~~~~~~~~~~~~~~~~~
 
 GX applies the parallel derivative to a gyrokinetic variable that includes the

@@ -33,7 +33,7 @@ The core numerical algorithms and their implementation entry points are:
   :func:`spectraxgk.linear.diamagnetic_drive_coeffs`.
 - **Time integration (explicit RK, IMEX)**:
   :func:`spectraxgk.linear.integrate_linear`.
-- **GX-style RK4 (CFL adaptive, GX growth-rate diagnostics)**:
+- **CFL-controlled RK4 (adaptive step control, streaming diagnostics)**:
   :func:`spectraxgk.gx_integrators.integrate_linear_gx`.
 - **Diffrax integration (explicit/implicit/IMEX)**:
   :func:`spectraxgk.diffrax_integrators.integrate_linear_diffrax`,
@@ -74,7 +74,7 @@ The linear solver supports:
 
 - **Forward Euler** (``method="euler"``) and **RK2/RK4** explicit schemes for
   non-stiff runs.
-- **GX-style RK4 with CFL step control**, matching the GX timestep estimator
+- **reference-compatible RK4 with CFL step control**, matching the GX timestep estimator
   (``integrate_linear_gx``). The timestep is recomputed from the linear
   max-frequency estimate using the GX CFL rule, and growth rates are extracted
   from the midplane ``phi`` ratio exactly as in the GX diagnostics kernel.
@@ -118,7 +118,7 @@ Nonlinear FFT bracket
 
 The nonlinear :math:`E\times B` term is evaluated pseudospectrally using
 FFT-based derivatives in the perpendicular plane. By default SPECTRAX-GK uses
-the GX-style real FFT path (``TimeConfig.gx_real_fft = true``), which computes
+the compressed real-FFT path (``TimeConfig.gx_real_fft = true``), which computes
 gradients from the Nyquist-compressed (``N_y/2+1``) spectrum using GX's native
 compressed wavenumber layout: non-negative ``k_y`` (including positive
 Nyquist when ``N_y`` is even) and a positive Nyquist multiplier on the ``k_x``
@@ -248,7 +248,7 @@ ladder coupling
 
    \mathcal{L}_m[H] = \sqrt{m+1} H_{m+1} + \sqrt{m} H_{m-1}.
 
-In the GX-aligned formulation we apply the parallel derivative to the
+In the current linked-FFT formulation we apply the parallel derivative to the
 non-adiabatic moments plus explicit field terms before the Hermite ladder is
 applied. In other words, the streamed quantity is
 
@@ -259,7 +259,7 @@ applied. In other words, the streamed quantity is
    - \frac{Z_s v_{th}}{T_s} J_\ell A_\parallel\,\delta_{m1}
    + J_\ell^B B_\parallel\,\delta_{m0},
 
-so that the GX-style streaming term uses :math:`\partial_z \tilde{G}` instead of
+so that the current streaming term uses :math:`\partial_z \tilde{G}` instead of
 the full :math:`H_{\ell m}` derivative. This matches the ordering and ghost
 exchange used by GX’s ``grad_parallel_linked`` operator.
 
