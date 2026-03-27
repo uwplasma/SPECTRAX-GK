@@ -105,10 +105,10 @@ sets:
 The reduced scan tables and regression tests use ``Nx=1, Ny=24, Nz=96`` on this
 grid to match the discrete ky set used in the reference CSV.
 
-GX-aligned spectral grids
+Spectral grids
 -------------------------
 
-SPECTRAX-GK’s GX-aligned integrator uses the same Fourier conventions as GX.
+SPECTRAX-GK’s explicit benchmark integrator uses the compressed Fourier conventions required by the tracked reference data.
 The perpendicular wave numbers are defined as
 
 .. math::
@@ -130,7 +130,7 @@ where :math:`Z_p` sets the field-line length
 The midplane index used by the GX growth-rate diagnostic corresponds to
 ``z_index = Nz//2 + 1``, matching the GX kernel logic when ``Nz > 1``.
 
-GX-aligned perpendicular normalization
+Perpendicular normalization
 --------------------------------------
 
 GX defines the perpendicular metric as :math:`k_\perp^2/B^2` before applying
@@ -139,7 +139,7 @@ the Laguerre gyroaverage. To match that convention in SPECTRAX-GK:
 - ``kperp2_bmag = True`` (include the :math:`B^{-2}` factor in :math:`k_\perp^2`)
 - ``bessel_bmag_power = 0`` (no extra :math:`B` scaling inside the Bessel argument)
 
-The Cyclone base case defaults follow this GX-aligned setting, and the
+The Cyclone base case defaults follow this benchmark setting, and the
 ``compare_gx_rhs_terms.py`` comparison tool assumes the same normalization.
 
 Sign conventions
@@ -187,11 +187,11 @@ Benchmark runners expose ``diagnostic_norm`` and route it through
 This affects reporting only; it does not alter the RHS/operator.
 
 The unified runtime schema defaults to ``diagnostic_norm = "gx"`` so that
-out-of-the-box reports match GX-style normalization. Set
+out-of-the-box reports match the tracked benchmark normalization. Set
 ``diagnostic_norm = "none"`` in the TOML or runtime config to recover raw
 solver outputs.
 
-GX-aligned diagnostic scaling
+Diagnostic scaling
 -----------------------------
 
 GX diagnostics apply fixed factors in a few places that depend on the storage

@@ -131,7 +131,7 @@ normalizes analytic and sampled inputs onto one solver-facing representation.
 
 The sampled geometry contract is now a JAX pytree and is accepted by the
 linear cache, runtime initial-condition builder, RHS assembly entry points,
-nonlinear config runner, and GX-style volume-weight diagnostics.
+nonlinear config runner, and reference-compatible volume-weight diagnostics.
 That means upcoming VMEC or imported field-line geometry can be threaded into
 more of the codebase without rebuilding solver-specific side paths.
 
@@ -166,7 +166,7 @@ The same importer is also exposed under the aliases
 can reflect the provenance of a root-level ``*.eik.nc`` file without changing
 the solver-facing geometry contract.
 The linear KBM benchmark entry point now uses the same geometry builder, so
-the GX parity harness can exercise imported sampled geometry through
+the benchmark audit harness can exercise imported sampled geometry through
 ``run_kbm_linear`` instead of only through the runtime wrappers.
 Regression coverage now runs that benchmark path explicitly for both
 ``"vmec-eik"`` and ``"desc-eik"`` aliases, so imported W7-X-style geometry is

@@ -98,7 +98,7 @@ W7-X nonlinear imported geometry runtime example
    python examples/w7x_nonlinear_imported_geometry.py \
      --geometry-file /path/to/w7x_adiabatic_electrons.eik.nc
 
-Leave ``--steps`` unset for the default GX-style adaptive horizon. Set it only
+Leave ``--steps`` unset for the default adaptive horizon. Set it only
 when you intentionally want a capped step count for profiling or reduced
 benchmark windows.
 

@@ -136,7 +136,7 @@ Two production paths are used:
       \log |s| = \gamma t + c,\quad
       \arg s = -\omega t + c_\phi.
 
-2. GX-style instantaneous ratio (for consistency checks):
+2. Instantaneous ratio diagnostic (for consistency checks):
 
    .. math::
 

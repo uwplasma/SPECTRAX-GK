@@ -102,23 +102,23 @@ Minimal TOML example
    fit_signal = "auto"
 
 The ``[time]`` section also accepts ``gx_real_fft`` (default ``true``) to
-select the GX-style real FFT nonlinear bracket. Set ``gx_real_fft = false`` to
+select the compressed real-FFT nonlinear bracket. Set ``gx_real_fft = false`` to
 use a full complex FFT for the nonlinear term. Diagnostics output can be
 decimated with ``sample_stride`` (record every ``N`` steps) and
-``diagnostics_stride`` (compute GX-style diagnostics every ``N`` steps). Set
+``diagnostics_stride`` (compute streaming diagnostics every ``N`` steps). Set
 ``diagnostics = false`` in ``[time]`` (or ``--no-diagnostics`` on the CLI) to
-disable diagnostics entirely for speed. For GX-style CFL timestep control, use
+disable diagnostics entirely for speed. For CFL-controlled timestep control, use
 ``fixed_dt = false`` along with ``cfl`` and optional ``cfl_fac`` /
 ``dt_min`` / ``dt_max`` limits. When ``cfl_fac`` is omitted, SPECTRAX uses
 the GX method default instead of a universal constant:
 ``rk3``/``sspx3`` use ``1.73``, ``rk4`` uses ``2.82``, and other methods keep
 ``1.0``. When adaptive timestepping is enabled, diagnostics include
 ``dt_t`` (per-sample timestep history) and ``dt_mean`` (average effective dt)
-to quantify CFL-driven savings. In GX-aligned nonlinear runs the adaptive
+to quantify CFL-driven savings. In reference-compatible nonlinear runs the adaptive
 ``dt`` estimate combines the GX linear frequency cap with the instantaneous
 nonlinear cap, matching GX's CFL update instead of using the nonlinear
 bracket alone. To control the Laguerre handling in nonlinear
-brackets, set ``laguerre_nonlinear_mode = "grid"`` (GX-style quadrature,
+brackets, set ``laguerre_nonlinear_mode = "grid"`` (reference quadrature,
 default) or ``laguerre_nonlinear_mode = "spectral"`` (use spectral ``Jl``
 without the quadrature transform).
 Use ``nonlinear_dealias = false`` to disable nonlinear dealias masking for
@@ -137,7 +137,7 @@ Nonlinear collision/hypercollision splitting is enabled with
 ``sts``/``rkc`` aliases (treated as stabilized explicit/exponential updates for
 diagonal operators).
 
-The ``[geometry]`` section supports ``drift_scale`` to switch between GX-style
+The ``[geometry]`` section supports ``drift_scale`` to switch between reference-compatible
 (``drift_scale = 1.0``) and GS2-style (``drift_scale = 2.0``) drift
 normalizations. The default configuration in SPECTRAX-GK uses the GX-reference
 value.
@@ -265,7 +265,7 @@ are:
 
 Notable runtime-only keys:
 
-* ``[collisions] damp_ends_amp`` / ``damp_ends_widthfrac``: GX-aligned end
+* ``[collisions] damp_ends_amp`` / ``damp_ends_widthfrac``: reference-compatible end
   damping defaults are ``0.1`` and ``0.125``.
 * ``[physics] reduced_model``: explicit physics-family selector for benchmark
   inputs that are not full gyrokinetics. The default is ``"gyrokinetic"``.
@@ -273,10 +273,10 @@ Notable runtime-only keys:
   the runtime currently raises ``NotImplementedError`` for them instead of
   silently routing those inputs through the wrong full-GK equations.
 * ``[collisions] damp_ends_scale_by_dt``: compatibility escape hatch for older
-  per-step inputs. The GX-aligned default is ``false`` because
+  per-step inputs. The reference-compatible default is ``false`` because
   ``damp_ends_amp`` is already a per-unit-time damping rate.
 * ``[collisions] hypercollisions_const`` / ``hypercollisions_kz``: defaults are
-  GX-style ``0.0`` / ``1.0`` (kz-proportional hypercollisions enabled by
+  the reference-compatible ``0.0`` / ``1.0`` (kz-proportional hypercollisions enabled by
   default, constant hypercollisions off).
 * ``[collisions] p_hyper_m``: when omitted, the runtime path follows the GX
   default ``min(20, Nm/2)`` instead of using a fixed exponent across Hermite
@@ -286,10 +286,10 @@ Notable runtime-only keys:
 * ``[normalization] wphi_scale``: multiplicative factor applied to ``Wphi``
   diagnostics (Cyclone GX-reference uses ``1.155``).
 * ``[init] init_single`` with ``gaussian_init = false`` and ``init_single = false``:
-  initialize a GX-style random perturbation across the exact GX startup loop
+  initialize a random perturbation across the exact GX startup loop
   bounds in ``(ky,kx)``.
 * ``[init] init_single`` with ``gaussian_init = true`` and ``init_single = false``:
-  initialize a GX-style Gaussian envelope across the same GX startup loop
+  initialize a Gaussian envelope across the same GX startup loop
   bounds.
 * ``[init] init_single = true``:
   initialize only the selected ``(ky,kx)`` mode.
@@ -299,7 +299,7 @@ Notable runtime-only keys:
 * ``[init] init_electrons_only``: if ``true`` in multispecies runs, initialize
   only electron species (GX ``init_electrons_only`` behavior). If ``false``
   (default), initialize all kinetic species.
-* ``[init] random_seed``: RNG seed used for GX-style random initial conditions
+* ``[init] random_seed``: RNG seed used for reference-compatible random initial conditions
   with the same glibc ``rand()`` sequence and startup mode ordering that GX
   uses on Linux
   (default ``22``, matching GX). The runtime now follows the Linux ``glibc``
