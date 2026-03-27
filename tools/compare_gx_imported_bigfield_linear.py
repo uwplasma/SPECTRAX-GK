@@ -26,7 +26,13 @@ from compare_gx_imported_linear import (
     _resolve_imported_real_fft_ny,
     _select_geometry_source,
 )
-from spectraxgk.analysis import ModeSelection, gx_growth_rate_from_phi, select_ky_index
+from spectraxgk.analysis import (
+    ModeSelection,
+    extract_mode_time_series,
+    fit_growth_rate,
+    gx_growth_rate_from_phi,
+    select_ky_index,
+)
 from spectraxgk.benchmarks import _apply_gx_hypercollisions
 from spectraxgk.config import GeometryConfig, GridConfig, resolve_cfl_fac
 from spectraxgk.geometry import SlabGeometry, apply_gx_geometry_grid_defaults, load_gx_geometry_netcdf
@@ -130,6 +136,93 @@ def _reduce_linear_grid_to_target_ky(grid, ky_index: int, *, init_single: bool):
     if init_single:
         return grid, int(ky_index)
     return select_ky_grid(grid, int(ky_index)), 0
+
+
+def _growth_rate_from_signal_sparse(
+    signal: np.ndarray,
+    t: np.ndarray,
+    *,
+    navg_fraction: float = 0.5,
+    use_last: bool = False,
+) -> tuple[float, float, np.ndarray, np.ndarray, np.ndarray]:
+    """Fallback growth extraction for sparse but finite complex histories."""
+
+    signal = np.asarray(signal, dtype=np.complex128)
+    t = np.asarray(t, dtype=float)
+    finite = np.isfinite(signal) & np.isfinite(t)
+    if np.count_nonzero(finite) < 2:
+        raise ValueError("not enough finite samples for sparse growth extraction")
+
+    signal = signal[finite]
+    t = t[finite]
+    nonzero = np.abs(signal) > 1.0e-30
+    if np.count_nonzero(nonzero) < 2:
+        raise ValueError("not enough nonzero samples for sparse growth extraction")
+    signal = signal[nonzero]
+    t = t[nonzero]
+
+    ratio = signal[1:] / signal[:-1]
+    dt = np.diff(t)
+    valid = np.isfinite(ratio) & np.isfinite(dt) & (dt != 0.0)
+    if np.any(valid):
+        gamma_t = np.log(np.abs(ratio[valid])) / dt[valid]
+        omega_t = -np.angle(ratio[valid]) / dt[valid]
+        t_mid = 0.5 * (t[1:][valid] + t[:-1][valid])
+        if use_last:
+            return float(gamma_t[-1]), float(omega_t[-1]), gamma_t, omega_t, t_mid
+        istart = int(len(gamma_t) * navg_fraction)
+        istart = max(0, min(istart, len(gamma_t) - 1))
+        return (
+            float(np.mean(gamma_t[istart:])),
+            float(np.mean(omega_t[istart:])),
+            gamma_t,
+            omega_t,
+            t_mid,
+        )
+
+    gamma, omega = fit_growth_rate(t, signal, tmin=float(t[0]), tmax=float(t[-1]))
+    t_mid = np.asarray([0.5 * (t[0] + t[-1])], dtype=float)
+    gamma_t = np.asarray([float(gamma)], dtype=float)
+    omega_t = np.asarray([float(omega)], dtype=float)
+    return float(gamma), float(omega), gamma_t, omega_t, t_mid
+
+
+def _growth_rate_with_method_fallback(
+    phi_t: np.ndarray,
+    t: np.ndarray,
+    sel: ModeSelection,
+    *,
+    requested_method: str,
+) -> tuple[str, float, float, np.ndarray, np.ndarray, np.ndarray]:
+    methods = [requested_method, "project", "svd", "max", "z_index"]
+    ordered_methods: list[str] = []
+    for method in methods:
+        if method not in ordered_methods:
+            ordered_methods.append(method)
+
+    last_exc: Exception | None = None
+    for method in ordered_methods:
+        try:
+            gamma, omega, gamma_t, omega_t, t_mid = gx_growth_rate_from_phi(
+                phi_t,
+                t,
+                sel,
+                use_last=False,
+                mode_method=method,
+            )
+            return method, gamma, omega, gamma_t, omega_t, t_mid
+        except ValueError as exc:
+            last_exc = exc
+            try:
+                signal = extract_mode_time_series(phi_t, sel, method=method)
+                gamma, omega, gamma_t, omega_t, t_mid = _growth_rate_from_signal_sparse(signal, t)
+                return method, gamma, omega, gamma_t, omega_t, t_mid
+            except ValueError as sparse_exc:
+                last_exc = sparse_exc
+
+    if last_exc is None:
+        raise ValueError("no growth-rate extraction method succeeded")
+    raise last_exc
 
 
 def main() -> None:
@@ -239,25 +332,25 @@ def main() -> None:
     )
 
     sel = ModeSelection(ky_index=0, kx_index=0, z_index=_gx_midplane_index(int(gx_theta.size)))
-    gx_gamma, gx_omega, gx_gamma_t, gx_omega_t, _gx_tmid = gx_growth_rate_from_phi(
+    gx_mode_method, gx_gamma, gx_omega, gx_gamma_t, gx_omega_t, _gx_tmid = _growth_rate_with_method_fallback(
         gx_phi_sel,
         sample_times,
         sel,
-        use_last=False,
-        mode_method=str(args.mode_method),
+        requested_method=str(args.mode_method),
     )
-    sp_gamma, sp_omega, sp_gamma_t, sp_omega_t, _sp_tmid = gx_growth_rate_from_phi(
+    sp_mode_method, sp_gamma, sp_omega, sp_gamma_t, sp_omega_t, _sp_tmid = _growth_rate_with_method_fallback(
         sp_phi_sel,
         sample_times,
         sel,
-        use_last=False,
-        mode_method=str(args.mode_method),
+        requested_method=str(args.mode_method),
     )
 
     row = {
         "ky": float(args.ky),
         "kx": float(args.kx),
-        "mode_method": str(args.mode_method),
+        "mode_method_requested": str(args.mode_method),
+        "gx_mode_method_used": str(gx_mode_method),
+        "sp_mode_method_used": str(sp_mode_method),
         "sample_count": int(sample_times.size),
         "gx_gamma": float(gx_gamma),
         "sp_gamma": float(sp_gamma),
