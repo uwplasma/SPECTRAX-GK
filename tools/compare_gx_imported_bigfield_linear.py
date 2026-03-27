@@ -30,7 +30,7 @@ from spectraxgk.analysis import ModeSelection, gx_growth_rate_from_phi, select_k
 from spectraxgk.benchmarks import _apply_gx_hypercollisions
 from spectraxgk.config import GeometryConfig, GridConfig, resolve_cfl_fac
 from spectraxgk.geometry import SlabGeometry, apply_gx_geometry_grid_defaults, load_gx_geometry_netcdf
-from spectraxgk.grids import build_spectral_grid, select_gx_real_fft_ky_grid
+from spectraxgk.grids import build_spectral_grid, select_gx_real_fft_ky_grid, select_ky_grid
 from spectraxgk.gx_integrators import GXTimeConfig, _linear_explicit_step, _gx_midplane_index
 from spectraxgk.linear import LinearTerms, build_linear_cache
 from spectraxgk.species import build_linear_params
@@ -126,6 +126,12 @@ def _integrate_phi_samples(
     return np.asarray(phi_samples, dtype=np.complex64)
 
 
+def _reduce_linear_grid_to_target_ky(grid, ky_index: int, *, init_single: bool):
+    if init_single:
+        return grid, int(ky_index)
+    return select_ky_grid(grid, int(ky_index)), 0
+
+
 def main() -> None:
     args = build_parser().parse_args()
     gx_time, gx_ky, gx_kx, gx_theta, gx_phi = _load_gx_big_phi(args.gx_big)
@@ -169,6 +175,11 @@ def main() -> None:
     grid_full = build_spectral_grid(grid_cfg)
     grid = select_gx_real_fft_ky_grid(grid_full, gx_ky.astype(np.float32))
     ky_idx_local = select_ky_index(np.asarray(grid.ky), float(args.ky))
+    grid, ky_idx_local = _reduce_linear_grid_to_target_ky(
+        grid,
+        ky_idx_local,
+        init_single=bool(gx_contract.init_single),
+    )
     kx_idx_local = int(np.argmin(np.abs(np.asarray(grid.kx) - float(args.kx))))
 
     nl = int(gx_contract.nlaguerre)
