@@ -24,6 +24,11 @@ Regenerate the atlas figures with:
 
    python tools/make_benchmark_atlas.py
 
+The atlas builder now reads its inputs from
+``tools/benchmark_atlas_manifest.toml`` and writes a machine-readable summary to
+``tools_out/benchmark_atlas_summary.json`` so the panel provenance stays
+explicit.
+
 This produces:
 
 - ``docs/_static/benchmark_imported_linear_panel.png``

@@ -4,7 +4,9 @@
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
+import tomllib
 
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
@@ -19,6 +21,67 @@ REF_COLOR = "#111827"
 SP_COLOR = "#1d4ed8"
 GRID_COLOR = "#cbd5e1"
 TITLE_COLOR = "#0f172a"
+TEXT_COLOR = "#334155"
+FONT_FAMILY = "DejaVu Sans"
+SUPTITLE_SIZE = 18
+TILE_TITLE_SIZE = 12
+NOTE_SIZE = 8
+TICK_SIZE = 9
+LEGEND_SIZE = 10
+PANEL_WIDTH = 18.0
+LINEAR_PANEL_HEIGHT = 7.2
+ATLAS_HEIGHT = 14.2
+README_HEIGHT = 18.6
+
+
+def _atlas_manifest_path() -> Path:
+    return ROOT / "tools" / "benchmark_atlas_manifest.toml"
+
+
+def _load_manifest(path: Path | None = None) -> dict:
+    manifest_path = _resolve(path or _atlas_manifest_path())
+    with manifest_path.open("rb") as fh:
+        return tomllib.load(fh)
+
+
+def _resolve_asset_paths(manifest: dict) -> dict[str, dict[str, Path]]:
+    groups = manifest.get("group", {})
+    resolved: dict[str, dict[str, Path]] = {}
+    for group_name, assets in groups.items():
+        resolved[group_name] = {}
+        for asset_name, rel_path in assets.items():
+            resolved[group_name][asset_name] = _resolve(rel_path)
+    return resolved
+
+
+def _validate_manifest_assets(resolved_assets: dict[str, dict[str, Path]]) -> None:
+    missing: list[Path] = []
+    for assets in resolved_assets.values():
+        for path in assets.values():
+            if not path.exists():
+                missing.append(path)
+    if missing:
+        joined = "\n".join(str(path) for path in missing)
+        raise FileNotFoundError(f"benchmark atlas inputs are missing:\n{joined}")
+
+
+def _write_summary(
+    summary_path: Path,
+    *,
+    manifest_path: Path,
+    resolved_assets: dict[str, dict[str, Path]],
+    outputs: dict[str, Path],
+) -> None:
+    payload = {
+        "manifest": str(manifest_path),
+        "groups": {
+            group: {name: str(path) for name, path in assets.items()}
+            for group, assets in resolved_assets.items()
+        },
+        "outputs": {name: str(path) for name, path in outputs.items()},
+    }
+    summary_path.parent.mkdir(parents=True, exist_ok=True)
+    summary_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
 
 def _resolve(path: str | Path) -> Path:
@@ -67,7 +130,7 @@ def _style_axis(ax: plt.Axes) -> None:
     ax.spines["right"].set_visible(False)
     ax.spines["left"].set_color("#94a3b8")
     ax.spines["bottom"].set_color("#94a3b8")
-    ax.tick_params(colors="#334155", labelsize=9)
+    ax.tick_params(colors=TEXT_COLOR, labelsize=TICK_SIZE)
 
 
 def _plot_overlay_case(
@@ -94,7 +157,7 @@ def _plot_overlay_case(
 
     ax_gamma.plot(x, gamma_ref_vals, color=REF_COLOR, marker="o", linewidth=2.0, label="Reference")
     ax_gamma.plot(x, gamma_sp_vals, color=SP_COLOR, marker="s", linewidth=2.0, label="SPECTRAX-GK")
-    ax_gamma.set_title(title, fontsize=12, color=TITLE_COLOR, fontweight="bold")
+    ax_gamma.set_title(title, fontsize=TILE_TITLE_SIZE, color=TITLE_COLOR, fontweight="bold")
     ax_gamma.set_ylabel(r"Growth rate $\gamma$")
 
     ax_omega.plot(x, omega_ref_vals, color=REF_COLOR, marker="o", linewidth=2.0, label="Reference")
@@ -119,8 +182,8 @@ def _plot_overlay_case(
         transform=ax_gamma.transAxes,
         va="top",
         ha="left",
-        fontsize=8,
-        color="#334155",
+        fontsize=NOTE_SIZE,
+        color=TEXT_COLOR,
         bbox={"facecolor": "white", "edgecolor": "#cbd5e1", "boxstyle": "round,pad=0.25"},
     )
 
@@ -151,8 +214,8 @@ def _plot_kaw_case(ax_gamma: plt.Axes, ax_omega: plt.Axes, df: pd.DataFrame) -> 
         transform=ax_omega.transAxes,
         va="bottom",
         ha="left",
-        fontsize=8,
-        color="#334155",
+        fontsize=NOTE_SIZE,
+        color=TEXT_COLOR,
         bbox={"facecolor": "white", "edgecolor": "#cbd5e1", "boxstyle": "round,pad=0.25"},
     )
 
@@ -196,25 +259,25 @@ def _plot_exact_growth_case(
         transform=ax_omega.transAxes,
         va="bottom",
         ha="left",
-        fontsize=8,
-        color="#334155",
+        fontsize=NOTE_SIZE,
+        color=TEXT_COLOR,
         bbox={"facecolor": "white", "edgecolor": "#cbd5e1", "boxstyle": "round,pad=0.25"},
     )
 
 
 def _image_tile(ax: plt.Axes, image: np.ndarray, title: str) -> None:
     ax.imshow(image)
-    ax.set_title(title, fontsize=12, color=TITLE_COLOR, fontweight="bold")
+    ax.set_title(title, fontsize=TILE_TITLE_SIZE, color=TITLE_COLOR, fontweight="bold")
     ax.axis("off")
 
 
-def _build_imported_linear_panel(path: Path) -> None:
-    w7x = pd.read_csv(STATIC / "w7x_linear_t2_scan.csv").sort_values("ky")
-    hsx = pd.read_csv(STATIC / "hsx_linear_t2_scan.csv").sort_values("ky")
-    miller = pd.read_csv(STATIC / "cyclone_miller_linear_mismatch.csv").sort_values("ky")
-    kaw = pd.read_csv(STATIC / "kaw_exact_growth_dump.csv").sort_values("ky")
+def _build_imported_linear_panel(path: Path, assets: dict[str, Path]) -> None:
+    w7x = pd.read_csv(assets["w7x"]).sort_values("ky")
+    hsx = pd.read_csv(assets["hsx"]).sort_values("ky")
+    miller = pd.read_csv(assets["miller"]).sort_values("ky")
+    kaw = pd.read_csv(assets["kaw"]).sort_values("ky")
 
-    fig, axes = plt.subplots(2, 4, figsize=(18, 7), constrained_layout=True)
+    fig, axes = plt.subplots(2, 4, figsize=(PANEL_WIDTH, LINEAR_PANEL_HEIGHT), constrained_layout=True)
 
     _plot_overlay_case(
         axes[0, 0],
@@ -255,17 +318,25 @@ def _build_imported_linear_panel(path: Path) -> None:
     _plot_kaw_case(axes[0, 3], axes[1, 3], kaw)
 
     handles, labels = axes[0, 0].get_legend_handles_labels()
-    fig.legend(handles, labels, loc="upper center", ncol=2, frameon=False, bbox_to_anchor=(0.5, 1.03))
-    fig.suptitle("Imported Geometry and Exact-Diagnostic Linear Benchmarks", fontsize=16, fontweight="bold")
+    fig.legend(
+        handles,
+        labels,
+        loc="upper center",
+        ncol=2,
+        frameon=False,
+        bbox_to_anchor=(0.5, 1.03),
+        fontsize=LEGEND_SIZE,
+    )
+    fig.suptitle("Imported Geometry and Exact-Diagnostic Linear Benchmarks", fontsize=SUPTITLE_SIZE, fontweight="bold")
     _save(fig, path)
 
 
-def _build_extended_linear_panel(path: Path) -> None:
-    kinetic = pd.read_csv(STATIC / "kinetic_mismatch_table.csv").sort_values("ky")
-    tem = pd.read_csv(STATIC / "tem_mismatch_table.csv").sort_values("ky")
-    miller = pd.read_csv(STATIC / "kbm_miller_exact_growth_dump.csv").sort_values("ky")
+def _build_extended_linear_panel(path: Path, assets: dict[str, Path]) -> None:
+    kinetic = pd.read_csv(assets["kinetic"]).sort_values("ky")
+    tem = pd.read_csv(assets["tem"]).sort_values("ky")
+    miller = pd.read_csv(assets["miller"]).sort_values("ky")
 
-    fig, axes = plt.subplots(2, 3, figsize=(15.5, 7.2), constrained_layout=True)
+    fig, axes = plt.subplots(2, 3, figsize=(PANEL_WIDTH, LINEAR_PANEL_HEIGHT), constrained_layout=True)
     _plot_overlay_case(
         axes[0, 0],
         axes[1, 0],
@@ -303,38 +374,46 @@ def _build_extended_linear_panel(path: Path) -> None:
         rel_omega="rel_omega_sp_vs_gx_dump",
     )
     handles, labels = axes[0, 0].get_legend_handles_labels()
-    fig.legend(handles, labels, loc="upper center", ncol=2, frameon=False, bbox_to_anchor=(0.5, 1.03))
-    fig.suptitle("Extended Linear Stress Matrix", fontsize=16, fontweight="bold")
+    fig.legend(
+        handles,
+        labels,
+        loc="upper center",
+        ncol=2,
+        frameon=False,
+        bbox_to_anchor=(0.5, 1.03),
+        fontsize=LEGEND_SIZE,
+    )
+    fig.suptitle("Extended Linear Stress Matrix", fontsize=SUPTITLE_SIZE, fontweight="bold")
     _save(fig, path)
 
 
-def _build_core_linear_atlas(path: Path, imported_panel_path: Path) -> None:
-    cyclone = _load_image(STATIC / "cyclone_comparison.png")
-    etg = _load_image(STATIC / "etg_gs2_stella_comparison.png")
-    kbm = _load_image(STATIC / "kbm_gs2_stella_comparison.png")
+def _build_core_linear_atlas(path: Path, imported_panel_path: Path, assets: dict[str, Path]) -> None:
+    cyclone = _load_image(assets["cyclone"])
+    etg = _load_image(assets["etg"])
+    kbm = _load_image(assets["kbm"])
     imported = _load_image(imported_panel_path, pad_pixels=6)
 
-    fig, axes = plt.subplots(2, 2, figsize=(18, 13), constrained_layout=True)
+    fig, axes = plt.subplots(2, 2, figsize=(PANEL_WIDTH, ATLAS_HEIGHT), constrained_layout=True)
     _image_tile(axes[0, 0], cyclone, "Cyclone ITG Cross-Code Scan")
     _image_tile(axes[0, 1], etg, "ETG Cross-Code Scan")
     _image_tile(axes[1, 0], kbm, "KBM Cross-Code Scan")
     _image_tile(axes[1, 1], imported, "Imported Geometry and Exact-Diagnostic Scans")
-    fig.suptitle("Core Linear Benchmark Atlas", fontsize=18, fontweight="bold")
+    fig.suptitle("Core Linear Benchmark Atlas", fontsize=SUPTITLE_SIZE, fontweight="bold")
     _save(fig, path)
 
 
-def _build_core_nonlinear_atlas(path: Path) -> None:
-    cyclone = _load_image(STATIC / "nonlinear_cyclone_miller_diag_compare_t122.png", pad_pixels=10)
-    kbm = _load_image(STATIC / "nonlinear_kbm_diag_compare_t400_stats.png", pad_pixels=10)
-    w7x = _load_image(STATIC / "nonlinear_w7x_diag_compare_t200.png", pad_pixels=10)
-    hsx = _load_image(STATIC / "hsx_nonlinear_compare_t50_true.png", pad_pixels=10)
+def _build_core_nonlinear_atlas(path: Path, assets: dict[str, Path]) -> None:
+    cyclone = _load_image(assets["cyclone"], pad_pixels=10)
+    kbm = _load_image(assets["kbm"], pad_pixels=10)
+    w7x = _load_image(assets["w7x"], pad_pixels=10)
+    hsx = _load_image(assets["hsx"], pad_pixels=10)
 
-    fig, axes = plt.subplots(2, 2, figsize=(18, 16), constrained_layout=True)
+    fig, axes = plt.subplots(2, 2, figsize=(PANEL_WIDTH, ATLAS_HEIGHT), constrained_layout=True)
     _image_tile(axes[0, 0], cyclone, "Cyclone Nonlinear Time Trace (Miller Geometry)")
     _image_tile(axes[0, 1], kbm, "KBM Nonlinear Time Trace")
     _image_tile(axes[1, 0], w7x, "W7-X Nonlinear Time Trace")
     _image_tile(axes[1, 1], hsx, "HSX Nonlinear Time Trace")
-    fig.suptitle("Core Nonlinear Benchmark Atlas", fontsize=18, fontweight="bold")
+    fig.suptitle("Core Nonlinear Benchmark Atlas", fontsize=SUPTITLE_SIZE, fontweight="bold")
     _save(fig, path)
 
 
@@ -342,15 +421,21 @@ def _build_readme_panel(path: Path, core_linear_path: Path, core_nonlinear_path:
     linear = _load_image(core_linear_path, pad_pixels=6)
     nonlinear = _load_image(core_nonlinear_path, pad_pixels=6)
 
-    fig, axes = plt.subplots(2, 1, figsize=(18, 22), constrained_layout=True)
+    fig, axes = plt.subplots(2, 1, figsize=(PANEL_WIDTH, README_HEIGHT), constrained_layout=True)
     _image_tile(axes[0], linear, "Linear Benchmarks")
     _image_tile(axes[1], nonlinear, "Nonlinear Benchmarks")
-    fig.suptitle("SPECTRAX-GK Benchmark Atlas", fontsize=20, fontweight="bold")
+    fig.suptitle("SPECTRAX-GK Benchmark Atlas", fontsize=SUPTITLE_SIZE + 2, fontweight="bold")
     _save(fig, path)
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--manifest",
+        type=Path,
+        default=_atlas_manifest_path(),
+        help="Atlas input manifest.",
+    )
     parser.add_argument(
         "--imported-linear-out",
         type=Path,
@@ -381,22 +466,55 @@ def build_parser() -> argparse.ArgumentParser:
         default=STATIC / "benchmark_readme_panel.png",
         help="Output path for the README benchmark panel.",
     )
+    parser.add_argument(
+        "--summary-out",
+        type=Path,
+        default=ROOT / "tools_out" / "benchmark_atlas_summary.json",
+        help="Optional JSON summary of the atlas inputs and outputs.",
+    )
     return parser
 
 
 def main() -> None:
+    plt.rcParams.update(
+        {
+            "font.family": FONT_FAMILY,
+            "axes.titlesize": TILE_TITLE_SIZE,
+            "axes.labelsize": 10,
+            "xtick.labelsize": TICK_SIZE,
+            "ytick.labelsize": TICK_SIZE,
+            "legend.fontsize": LEGEND_SIZE,
+        }
+    )
     args = build_parser().parse_args()
+    manifest_path = _resolve(args.manifest)
+    manifest = _load_manifest(manifest_path)
+    assets = _resolve_asset_paths(manifest)
+    _validate_manifest_assets(assets)
     imported_linear_out = _resolve(args.imported_linear_out)
     extended_linear_out = _resolve(args.extended_linear_out)
     core_linear_out = _resolve(args.core_linear_out)
     core_nonlinear_out = _resolve(args.core_nonlinear_out)
     readme_out = _resolve(args.readme_out)
+    summary_out = _resolve(args.summary_out)
 
-    _build_imported_linear_panel(imported_linear_out)
-    _build_extended_linear_panel(extended_linear_out)
-    _build_core_linear_atlas(core_linear_out, imported_linear_out)
-    _build_core_nonlinear_atlas(core_nonlinear_out)
+    _build_imported_linear_panel(imported_linear_out, assets["imported_linear"])
+    _build_extended_linear_panel(extended_linear_out, assets["extended_linear"])
+    _build_core_linear_atlas(core_linear_out, imported_linear_out, assets["core_linear"])
+    _build_core_nonlinear_atlas(core_nonlinear_out, assets["core_nonlinear"])
     _build_readme_panel(readme_out, core_linear_out, core_nonlinear_out)
+    _write_summary(
+        summary_out,
+        manifest_path=manifest_path,
+        resolved_assets=assets,
+        outputs={
+            "imported_linear": imported_linear_out,
+            "extended_linear": extended_linear_out,
+            "core_linear": core_linear_out,
+            "core_nonlinear": core_nonlinear_out,
+            "readme": readme_out,
+        },
+    )
 
 
 if __name__ == "__main__":
