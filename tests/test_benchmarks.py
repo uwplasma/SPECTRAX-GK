@@ -6,6 +6,7 @@ from types import SimpleNamespace
 
 import numpy as np
 import pytest
+import jax.numpy as jnp
 
 import spectraxgk.benchmarks as benchmarks
 from spectraxgk.analysis import fit_growth_rate
@@ -1343,3 +1344,75 @@ def test_etg_scan_with_params():
         method="rk4",
     )
     assert np.isfinite(scan.gamma[0])
+
+
+def test_etg_linear_defaults_to_electrostatic_terms(monkeypatch):
+    from types import SimpleNamespace
+    import spectraxgk.benchmarks as benchmarks
+
+    captured = {}
+
+    def fake_dominant_eigenpair(G0, cache, params, terms=None, **_kwargs):
+        captured["terms"] = terms
+        return jnp.asarray(0.2 - 0.3j, dtype=jnp.complex64), jnp.zeros_like(G0)
+
+    def fake_compute_fields_cached(vec, cache, params, terms=None):
+        return SimpleNamespace(phi=jnp.zeros(vec.shape[-3:], dtype=jnp.complex64))
+
+    monkeypatch.setattr(benchmarks, "dominant_eigenpair", fake_dominant_eigenpair)
+    monkeypatch.setattr(benchmarks, "compute_fields_cached", fake_compute_fields_cached)
+
+    grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.28, Ly=0.628)
+    cfg = ETGBaseCase(
+        grid=grid,
+        model=ETGModelConfig(
+            R_over_LTi=0.0,
+            R_over_LTe=2.49,
+            R_over_Ln=0.8,
+            R_over_Lni=0.0,
+            R_over_Lne=0.8,
+            adiabatic_ions=False,
+            mass_ratio=3670.0,
+        ),
+    )
+    out = run_etg_linear(cfg=cfg, ky_target=3.0, Nl=2, Nm=2, solver="krylov")
+
+    assert np.isfinite(out.gamma)
+    assert captured["terms"] == LinearTerms(apar=0.0, bpar=0.0, hypercollisions=1.0)
+
+
+def test_etg_scan_defaults_to_electrostatic_terms(monkeypatch):
+    import spectraxgk.benchmarks as benchmarks
+
+    captured = {}
+
+    def fake_dominant_eigenpair(G0, cache, params, terms=None, **_kwargs):
+        idx = int(captured.get("calls", 0))
+        captured["calls"] = idx + 1
+        captured.setdefault("terms", []).append(terms)
+        eig = jnp.asarray((0.1 + idx) - 0.2j, dtype=jnp.complex64)
+        return eig, jnp.zeros_like(G0)
+
+    monkeypatch.setattr(benchmarks, "dominant_eigenpair", fake_dominant_eigenpair)
+
+    grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.28, Ly=0.628)
+    cfg = ETGBaseCase(
+        grid=grid,
+        model=ETGModelConfig(
+            R_over_LTi=0.0,
+            R_over_LTe=2.49,
+            R_over_Ln=0.8,
+            R_over_Lni=0.0,
+            R_over_Lne=0.8,
+            adiabatic_ions=False,
+            mass_ratio=3670.0,
+        ),
+    )
+    scan = run_etg_scan(np.array([3.0, 4.0]), cfg=cfg, Nl=2, Nm=2, solver="krylov")
+
+    assert np.all(np.isfinite(scan.gamma))
+    assert captured["calls"] == 2
+    assert captured["terms"] == [
+        LinearTerms(apar=0.0, bpar=0.0, hypercollisions=1.0),
+        LinearTerms(apar=0.0, bpar=0.0, hypercollisions=1.0),
+    ]
