@@ -11,8 +11,8 @@ miller = "docs/_static/kbm_miller_exact_growth_dump.csv"
 
 [group.core_linear]
 cyclone = "docs/_static/cyclone_comparison.png"
-etg = "docs/_static/etg_gs2_stella_comparison.png"
-kbm = "docs/_static/kbm_gs2_stella_comparison.png"
+etg = "docs/_static/etg_comparison.png"
+kbm = "docs/_static/kbm_comparison.png"
 
 [group.core_nonlinear]
 cyclone = "docs/_static/nonlinear_cyclone_miller_diag_compare_t122.png"

@@ -92,8 +92,8 @@ def test_salpha_geometry_matches_gx_formulas():
     assert jnp.allclose(kperp2, kperp2_expected[0], rtol=1.0e-8, atol=5.0e-10)
 
 
-def test_salpha_geometry_kperp2_matches_gs2_formula():
-    """GS2-style kperp2 omits the bmag^{-2} factor."""
+def test_salpha_geometry_kperp2_matches_alternate_formula():
+    """Alternate kperp2 convention omits the bmag^{-2} factor."""
     geom = SAlphaGeometry(q=1.4, s_hat=0.8, epsilon=0.18, R0=2.77778, B0=1.0, alpha=0.0, kperp2_bmag=False)
     theta = jnp.linspace(-jnp.pi, jnp.pi, 8, endpoint=False)
     shear = geom.s_hat * theta - geom.alpha * jnp.sin(theta)

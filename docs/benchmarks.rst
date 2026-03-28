@@ -3,8 +3,7 @@ Benchmarks
 
 SPECTRAX-GK’s benchmark figures are organized as a compact atlas instead of a
 case-by-case gallery. The layout follows the standard gyrokinetic comparison
-pattern used in the GX, stella, and stellarator benchmark literature [GX]_
-[STELLA]_ [W7XBENCH]_:
+pattern used in the GX and stellarator benchmark literature [GX]_:
 
 - linear growth-rate and real-frequency overlays versus ``k_y`` (or ``beta``),
 - nonlinear time traces of heat flux, free energy, electrostatic field energy,
@@ -50,10 +49,7 @@ The tracked atlas is now paired with a refresh manifest:
 
 The refresh runner executes the benchmark matrix in manifest order from
 ``tools/benchmark_refresh_manifest.toml`` and writes a summary to
-``tools_out/benchmark_refresh_summary.json``. Jobs that depend on clean GX,
-GS2, or stella outputs declare explicit environment-variable requirements for
-their argument bundles, so the refresh pipeline can be rerun without editing
-the Python scripts themselves.
+``tools_out/benchmark_refresh_summary.json``. Jobs that depend on clean GX outputs declare explicit environment-variable requirements for their argument bundles, so the refresh pipeline can be rerun without editing the Python scripts themselves.
 
 Example:
 
@@ -92,7 +88,7 @@ already used in the current parity and regression workflow:
    :alt: Core linear benchmark atlas
 
    Core linear benchmark atlas. The first three tiles are the main tokamak
-   cross-code scans, while the fourth tile collects imported-geometry and
+   benchmark scans, while the fourth tile collects imported-geometry and
    exact-diagnostic checks for W7-X, HSX, Cyclone Miller geometry, and KAW.
 
 .. figure:: _static/benchmark_core_nonlinear_atlas.png
@@ -103,20 +99,20 @@ already used in the current parity and regression workflow:
    Core nonlinear benchmark atlas. These panels track the time histories used
    for the main nonlinear validation claim: Cyclone, KBM, W7-X, and HSX.
 
-Cross-code linear comparisons
------------------------------
+Linear benchmark comparisons
+----------------------------
 
 The core linear atlas intentionally combines two types of benchmark inputs:
 
-- published or curated cross-code scans for Cyclone ITG, ETG, and KBM,
+- curated benchmark scans for Cyclone ITG, ETG, and KBM,
 - direct imported-geometry or exact-diagnostic comparisons for W7-X, HSX,
   Cyclone Miller geometry, and KAW.
 
-The current tracked cross-code coverage is:
+The current tracked linear coverage is:
 
-- Cyclone ITG against external tokamak references
-- ETG against GS2 and stella
-- KBM against GX, GS2, and stella where matching inputs are available
+- Cyclone ITG against the tracked benchmark reference
+- ETG against the tracked internal benchmark reference
+- KBM against the tracked internal benchmark reference and exact-diagnostic audits
 - W7-X and HSX short-window imported-geometry audits against GX
 - Cyclone Miller imported-geometry audit against GX
 - KAW exact late diagnostic reconstruction from same-run field dumps
@@ -173,7 +169,7 @@ Stellarator core cases
 Reduced and stress cases
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-- ETG: linear cross-code overlays
+- ETG: linear benchmark overlays
 - KAW: exact late-time diagnostic reconstruction and exact-window energy audit
 - KBM Miller: exact late-time growth replay on the tracked low-``k_y`` branch
 - Cyclone kinetic electrons: extended linear stress lane

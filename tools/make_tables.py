@@ -37,8 +37,8 @@ from spectraxgk.benchmarks import (
     _two_species_params,
     load_cyclone_reference,
     load_cyclone_reference_kinetic,
-    load_etg_reference_gs2,
-    load_kbm_reference_gs2,
+    load_etg_reference,
+    load_kbm_reference,
     load_tem_reference,
     CycloneScanResult,
     LinearScanResult,
@@ -925,7 +925,7 @@ def _etg_time_controls(
     return dt, steps, tmin, tmax
 
 
-def _etg_crosscode_case() -> ETGBaseCase:
+def _etg_benchmark_case() -> ETGBaseCase:
     return ETGBaseCase(
         grid=GridConfig(
             Nx=1,
@@ -968,7 +968,7 @@ def _run_etg_gx_growth(
     ky_index = select_ky_index(np.asarray(grid_full.ky), ky)
     grid = select_ky_grid(grid_full, ky_index)
     if getattr(cfg.model, "adiabatic_ions", False):
-        raise ValueError("ETG cross-code growth helper expects a two-species ETG case")
+        raise ValueError("ETG growth helper expects a two-species ETG benchmark case")
     params = _two_species_params(
         cfg.model,
         kpar_scale=float(geom.gradpar()),
@@ -1074,8 +1074,8 @@ def _run_etg_tables(*, outdir: Path, verbose: bool, progress: bool) -> None:
         "\n".join(etg_rows) + "\n", encoding="utf-8"
     )
 
-    etg_ref = load_etg_reference_gs2()
-    etg_cfg = _etg_crosscode_case()
+    etg_ref = load_etg_reference()
+    etg_cfg = _etg_benchmark_case()
     etg_time = TimeConfig(
         t_max=ETG_GX_MISMATCH_DT * ETG_GX_MISMATCH_STEPS,
         dt=ETG_GX_MISMATCH_DT,
@@ -1395,8 +1395,8 @@ def main() -> int:
         "\n".join(_build_rows(kinetic_mismatch, kinetic_ref)) + "\n", encoding="utf-8"
     )
 
-    etg_ref = load_etg_reference_gs2()
-    etg_cfg = _etg_crosscode_case()
+    etg_ref = load_etg_reference()
+    etg_cfg = _etg_benchmark_case()
     etg_time = TimeConfig(
         t_max=6.0,
         dt=0.01,
@@ -1418,7 +1418,7 @@ def main() -> int:
         "\n".join(_build_rows(etg_mismatch, etg_ref)) + "\n", encoding="utf-8"
     )
 
-    kbm_ref = load_kbm_reference_gs2()
+    kbm_ref = load_kbm_reference()
     kbm_dt = _scale_dt(kbm_ref.ky, base_dt=0.0005, ky_ref=0.3)
     kbm_steps = _scale_steps(kbm_ref.ky, base_steps=4000, ky_ref=0.3, max_steps=8000)
     kbm_cfg = KBMBaseCase(
