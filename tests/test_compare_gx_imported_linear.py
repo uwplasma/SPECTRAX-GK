@@ -196,6 +196,8 @@ def test_load_gx_input_contract_reads_fix_aspect_and_species_contract(tmp_path: 
     assert contract.D_hyper == 0.05
     assert contract.damp_ends_amp == 0.1
     assert contract.damp_ends_widthfrac == 1.0 / 8.0
+    assert contract.restart_with_perturb is False
+    assert contract.restart_scale == 1.0
     assert len(contract.species) == 1
     assert contract.species[0].charge == 1.0
     assert contract.species[0].tprim == 3.0
@@ -224,6 +226,9 @@ def test_load_gx_input_contract_promotes_near_zero_shear_to_zero_shat(tmp_path: 
     path = tmp_path / "kaw_like.in"
     path.write_text(
         """
+restart_with_perturb = true
+scale = 0.125
+
 [Dimensions]
  ntheta = 16
  nperiod = 1
@@ -249,6 +254,36 @@ def test_load_gx_input_contract_promotes_near_zero_shear_to_zero_shat(tmp_path: 
     assert contract.s_hat == pytest.approx(1.0e-8)
     assert contract.zero_shat is True
     assert _resolve_imported_boundary(contract.boundary, zero_shat=contract.zero_shat) == "periodic"
+
+
+def test_load_gx_input_contract_parses_restart_contract(tmp_path: Path) -> None:
+    path = tmp_path / "restart_like.in"
+    path.write_text(
+        """
+restart_with_perturb = true
+scale = 0.125
+
+[Dimensions]
+ ntheta = 16
+ nperiod = 1
+ nky = 2
+ nkx = 1
+ nspecies = 1
+
+[Domain]
+ y0 = 100.0
+ boundary = "linked"
+
+[Geometry]
+ geo_option = "slab"
+ shat = 0.0
+""".strip()
+    )
+
+    contract = _load_gx_input_contract(path)
+
+    assert contract.restart_with_perturb is True
+    assert contract.restart_scale == pytest.approx(0.125)
 
 
 def test_imported_linear_uses_raw_damp_ends_rate() -> None:
@@ -416,6 +451,8 @@ def _dummy_gx_contract(*, init_single: bool) -> GXInputContract:
         D_hyper=0.0,
         damp_ends_amp=0.1,
         damp_ends_widthfrac=1.0 / 8.0,
+        restart_with_perturb=False,
+        restart_scale=1.0,
     )
 
 

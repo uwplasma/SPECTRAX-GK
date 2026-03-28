@@ -87,6 +87,8 @@ class GXInputContract:
     D_hyper: float
     damp_ends_amp: float
     damp_ends_widthfrac: float
+    restart_with_perturb: bool
+    restart_scale: float
 
 
 def _file_cache_token(path: Path | None) -> dict[str, str | int | None]:
@@ -299,6 +301,8 @@ def _load_gx_input_contract(path: Path) -> GXInputContract:
         D_hyper=float(dissipation.get("D_hyper", 0.0)),
         damp_ends_amp=float(dissipation.get("damp_ends_amp", 0.1)),
         damp_ends_widthfrac=float(dissipation.get("damp_ends_widthfrac", 1.0 / 8.0)),
+        restart_with_perturb=bool(data.get("restart_with_perturb", False)),
+        restart_scale=float(data.get("scale", 1.0)),
     )
 
 

@@ -14,6 +14,7 @@ import pandas as pd
 from netCDF4 import Dataset
 
 from compare_gx_imported_linear import (
+    _build_imported_initial_condition,
     _gx_has_uniform_linear_dt,
     _gx_term_config,
     _infer_gx_linear_dt,
@@ -231,14 +232,6 @@ def main() -> None:
 
     y0 = float(gx_contract.y0) if np.isfinite(float(gx_contract.y0)) else _infer_y0(gx_ky)
     ny_full = _resolve_imported_real_fft_ny(gx_ky, gx_contract)
-    if stop_has_growth and args.gx_restart_start is not None:
-        if restart_state_active is None:
-            raise ValueError("restart_state_active must be available for restart-based growth replay")
-        gx_G_start = _expand_gx_restart_state_to_full_positive_ky(
-            restart_state_active,
-            ny_full=ny_full,
-            nx_full=int(nx),
-        )
     if gx_contract.geo_option == "slab":
         geom = SlabGeometry.from_config(
             GeometryConfig(model="slab", s_hat=float(gx_contract.s_hat), zero_shat=bool(gx_contract.zero_shat))
@@ -264,6 +257,30 @@ def main() -> None:
     )
     grid_full = build_spectral_grid(grid_cfg)
     grid = select_gx_real_fft_ky_grid(grid_full, gx_ky.astype(np.float32))
+
+    if stop_has_growth and args.gx_restart_start is not None:
+        if restart_state_active is None:
+            raise ValueError("restart_state_active must be available for restart-based growth replay")
+        gx_G_start = _expand_gx_restart_state_to_full_positive_ky(
+            restart_state_active,
+            ny_full=ny_full,
+            nx_full=int(nx),
+        )
+        gx_G_start = np.asarray(gx_G_start, dtype=np.complex64) * np.complex64(gx_contract.restart_scale)
+        if gx_contract.restart_with_perturb:
+            gx_G_start = gx_G_start + np.asarray(
+                _build_imported_initial_condition(
+                    grid=grid,
+                    geom=geom,
+                    gx_contract=gx_contract,
+                    species=gx_contract.species,
+                    ky_index=0,
+                    kx_index=0,
+                    Nl=nl,
+                    Nm=nm,
+                ),
+                dtype=np.complex64,
+            )
 
     params = build_linear_params(
         gx_contract.species,
