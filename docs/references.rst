@@ -29,14 +29,3 @@ References
 .. [GENE] F. Jenko et al., "The GENE code," Journal of Computational Physics
    230, 6979 (2011).
 
-.. [STELLA] M. Barnes et al., "Stella: a gyrokinetic code for the
-   new era of 4D micro-turbulence studies," arXiv:1806.02162 (2018).
-
-.. [W7XBENCH] A. González-Jerez et al., "Electrostatic gyrokinetic simulations
-   in Wendelstein 7-X geometry: benchmark between the codes stella and GENE,"
-   Journal of Plasma Physics 88, 905880305 (2022).
-
-.. [STELLADOCS] stella user guide namelist documentation:
-   ``parameters.beta`` / ``knobs.fapar`` / ``knobs.fbpar`` entries, each marked
-   "Currently has no effect" in the published docs:
-   https://stellagk.github.io/stella/page/user_manual/index.html

@@ -126,8 +126,8 @@ published benchmarks and trend tests:
   reduced electron-scale gradients and that the real frequency follows the
   electron diamagnetic direction. [Dorland00]_ [Jenko00]_
 - **KBM beta scan**: verify the transition between ITG-like and KBM branches
-  in a fixed-:math:`k_y` beta sweep, with GS2 as the primary electromagnetic
-  cross-code reference.
+  in a fixed-:math:`k_y` beta sweep against the tracked benchmark reference and
+  exact-diagnostic audits.
 
 Running tests
 -------------

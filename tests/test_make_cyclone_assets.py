@@ -200,7 +200,7 @@ def test_run_etg_tables_uses_tracked_mismatch_helper(monkeypatch, tmp_path) -> N
     def fake_run_etg_linear(**kwargs):
         return type("Res", (), {"gamma": 1.0, "omega": -2.0})()
 
-    def fake_load_etg_reference_gs2():
+    def fake_load_etg_reference():
         return make_tables.LinearScanResult(
             ky=np.array([10.0, 20.0]),
             gamma=np.array([1.0, 2.0]),
@@ -221,7 +221,7 @@ def test_run_etg_tables_uses_tracked_mismatch_helper(monkeypatch, tmp_path) -> N
         )
 
     monkeypatch.setattr(make_tables, "run_etg_linear", fake_run_etg_linear)
-    monkeypatch.setattr(make_tables, "load_etg_reference_gs2", fake_load_etg_reference_gs2)
+    monkeypatch.setattr(make_tables, "load_etg_reference", fake_load_etg_reference)
     monkeypatch.setattr(
         make_tables,
         "_etg_reference_mismatch_scan",
@@ -242,7 +242,7 @@ def test_run_etg_tables_uses_tracked_mismatch_helper(monkeypatch, tmp_path) -> N
     assert (tmp_path / "etg_mismatch_table.csv").exists()
 
 
-def test_run_etg_figures_uses_crosscode_case(monkeypatch, tmp_path: Path) -> None:
+def test_run_etg_figures_uses_tracked_case(monkeypatch, tmp_path: Path) -> None:
     import tools.make_figures as make_figures
 
     called: dict[str, object] = {}
@@ -272,7 +272,7 @@ def test_run_etg_figures_uses_crosscode_case(monkeypatch, tmp_path: Path) -> Non
 
     monkeypatch.setattr(
         make_figures,
-        "load_etg_reference_gs2",
+        "load_etg_reference",
         lambda: make_figures.LinearScanResult(
             ky=np.array([10.0, 20.0, 30.0]),
             gamma=np.array([1.0, 2.0, 3.0]),
@@ -310,7 +310,7 @@ def test_run_etg_figures_prefers_existing_mismatch_csv(monkeypatch, tmp_path: Pa
 
     monkeypatch.setattr(
         make_figures,
-        "load_etg_reference_gs2",
+        "load_etg_reference",
         lambda: make_figures.LinearScanResult(
             ky=np.array([10.0, 20.0]),
             gamma=np.array([1.0, 5.0]),

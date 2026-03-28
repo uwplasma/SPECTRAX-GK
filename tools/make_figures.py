@@ -47,11 +47,8 @@ from spectraxgk.benchmarks import (
     _midplane_index,
     load_cyclone_reference,
     load_cyclone_reference_kinetic,
-    load_cyclone_reference_gs2,
-    load_cyclone_reference_stella,
-    load_etg_reference_gs2,
-    load_etg_reference_stella,
-    load_kbm_reference_gs2,
+    load_etg_reference,
+    load_kbm_reference,
     load_tem_reference,
     LinearScanResult,
     run_cyclone_linear,
@@ -84,10 +81,6 @@ from spectraxgk.plotting import (
     cyclone_reference_figure,
     linear_validation_figure,
     LinearValidationPanel,
-    linear_validation_multi_reference_figure,
-    MultiReferenceValidationPanel,
-    ReferenceSeries,
-    scan_multi_reference_figure,
     scan_comparison_figure,
 )
 from spectraxgk.linear_krylov import KrylovConfig
@@ -122,7 +115,7 @@ def _etg_time_controls(
     return dt, steps, tmin, tmax
 
 
-def _etg_crosscode_case() -> ETGBaseCase:
+def _etg_benchmark_case() -> ETGBaseCase:
     return ETGBaseCase(
         grid=GridConfig(
             Nx=1,
@@ -778,12 +771,12 @@ def _scan_and_mode(
 
 
 def _run_etg_figures(*, outdir: Path, verbose: bool, progress: bool) -> None:
-    etg_ref = load_etg_reference_gs2()
+    etg_ref = load_etg_reference()
     mismatch_csv = outdir / "etg_mismatch_table.csv"
     if mismatch_csv.exists():
         etg_scan = _load_spectrax_scan_from_mismatch(mismatch_csv)
     else:
-        cfg_etg = _etg_crosscode_case()
+        cfg_etg = _etg_benchmark_case()
         etg_ky = np.asarray(etg_ref.ky)
         etg_time = TimeConfig(
             t_max=2.4,
@@ -827,7 +820,7 @@ def _run_etg_figures(*, outdir: Path, verbose: bool, progress: bool) -> None:
         etg_scan.gamma,
         etg_scan.omega,
         r"$k_y \rho_i$",
-        "ETG comparison (GS2/stella matched set)",
+        "ETG Benchmark Scan",
         x_ref=etg_ref.ky,
         gamma_ref=etg_ref.gamma,
         omega_ref=etg_ref.omega,
@@ -837,6 +830,29 @@ def _run_etg_figures(*, outdir: Path, verbose: bool, progress: bool) -> None:
     )
     fig.savefig(outdir / "etg_comparison.png", dpi=200)
     fig.savefig(outdir / "etg_comparison.pdf")
+
+
+def _run_kbm_figures(*, outdir: Path) -> None:
+    kbm_ref = load_kbm_reference()
+    mismatch_csv = outdir / "kbm_mismatch_table.csv"
+    if not mismatch_csv.exists():
+        raise FileNotFoundError(f"missing {mismatch_csv}; generate the KBM mismatch table first")
+    kbm_scan = _load_spectrax_scan_from_mismatch(mismatch_csv)
+    fig, _axes = scan_comparison_figure(
+        kbm_scan.ky,
+        kbm_scan.gamma,
+        kbm_scan.omega,
+        r"$\beta$",
+        "KBM Benchmark Scan",
+        x_ref=kbm_ref.ky,
+        gamma_ref=kbm_ref.gamma,
+        omega_ref=kbm_ref.omega,
+        label="SPECTRAX-GK",
+        ref_label="Reference",
+        log_x=False,
+    )
+    fig.savefig(outdir / "kbm_comparison.png", dpi=200)
+    fig.savefig(outdir / "kbm_comparison.pdf")
 
 
 def _load_spectrax_scan_from_mismatch(csv_path: Path, *, x_col: str = "ky") -> LinearScanResult:
@@ -892,325 +908,6 @@ def _cyclone_refresh_reference(ref: LinearScanResult) -> LinearScanResult:
     )
 
 
-def _run_crosscode_figures(*, outdir: Path, verbose: bool, progress: bool) -> None:
-    for required in (
-        outdir / "cyclone_gs2_mismatch.csv",
-        outdir / "etg_gs2_mismatch.csv",
-        outdir / "kbm_gs2_mismatch.csv",
-    ):
-        if not required.exists():
-            raise FileNotFoundError(
-                f"missing {required}; generate mismatch tables first with compare_gs2_linear.py / "
-                "compare_stella_linear.py"
-            )
-
-    # Cyclone cross-code references
-    cyclone_ref_gx = load_cyclone_reference()
-    cyclone_ref_gs2 = load_cyclone_reference_gs2()
-    cyclone_ref_stella = load_cyclone_reference_stella()
-    cyclone_scan = _load_spectrax_scan_from_mismatch(outdir / "cyclone_gs2_mismatch.csv")
-    fig, _axes = scan_multi_reference_figure(
-        cyclone_scan.ky,
-        cyclone_scan.gamma,
-        cyclone_scan.omega,
-        x_label=r"$k_y \rho_i$",
-        title="Cyclone cross-code comparison",
-        references=[
-            ReferenceSeries(
-                label="GX",
-                x=cyclone_ref_gx.ky,
-                gamma=cyclone_ref_gx.gamma,
-                omega=cyclone_ref_gx.omega,
-                color="#1f77b4",
-                marker="o",
-                linestyle="--",
-            ),
-            ReferenceSeries(
-                label="GS2",
-                x=cyclone_ref_gs2.ky,
-                gamma=cyclone_ref_gs2.gamma,
-                omega=cyclone_ref_gs2.omega,
-                color="#ff7f0e",
-                marker="s",
-                linestyle="--",
-            ),
-            ReferenceSeries(
-                label="stella",
-                x=cyclone_ref_stella.ky,
-                gamma=cyclone_ref_stella.gamma,
-                omega=cyclone_ref_stella.omega,
-                color="#9467bd",
-                marker="d",
-                linestyle="--",
-            ),
-        ],
-        log_x=True,
-    )
-    fig.savefig(outdir / "cyclone_comparison.png", dpi=200)
-    fig.savefig(outdir / "cyclone_comparison.pdf")
-
-    # ETG cross-code references
-    etg_ref_gs2 = load_etg_reference_gs2()
-    etg_ref_stella = load_etg_reference_stella()
-    etg_scan = _load_spectrax_scan_from_mismatch(outdir / "etg_gs2_mismatch.csv")
-    kbm_ref_gs2 = load_kbm_reference_gs2()
-    kbm_scan = _load_spectrax_scan_from_mismatch(outdir / "kbm_gs2_mismatch.csv", x_col="beta")
-
-    # Representative eigenfunctions for summary panel.
-    cfg_cyc = CycloneBaseCase(
-        grid=GridConfig(Nx=1, Ny=24, Nz=96, Lx=62.8, Ly=62.8, y0=20.0, ntheta=32, nperiod=2)
-    )
-    cyclone_window = {k: v for k, v in WINDOWS["cyclone"].items() if k != "mode_method"}
-    run_cyc = run_cyclone_linear(
-        cfg=cfg_cyc,
-        ky_target=0.3,
-        Nl=48,
-        Nm=16,
-        dt=0.01,
-        steps=3000,
-        method="imex2",
-        solver="time",
-        mode_method="z_index",
-        diagnostic_norm="gx",
-        **cyclone_window,
-    )
-    grid_cyc = build_spectral_grid(cfg_cyc.grid)
-    mode_cyc = _eigenfunction_panel(run_cyc, grid_cyc, cyclone_window)
-
-    cfg_etg = ETGBaseCase(
-        grid=GridConfig(
-            Nx=1,
-            Ny=96,
-            Nz=96,
-            Lx=6.28,
-            Ly=0.628,
-            ntheta=32,
-            nperiod=2,
-            boundary="linked",
-        ),
-        model=ETGModelConfig(
-            R_over_LTi=0.0,
-            R_over_LTe=2.49,
-            R_over_Ln=0.8,
-            R_over_Lni=0.0,
-            R_over_Lne=0.8,
-            Te_over_Ti=1.0,
-            mass_ratio=3670.0,
-            nu_i=0.0,
-            nu_e=0.0,
-            beta=1.0e-5,
-            adiabatic_ions=False,
-        ),
-    )
-    geom_etg = SAlphaGeometry.from_config(cfg_etg.geometry)
-    params_etg = _two_species_params(
-        cfg_etg.model,
-        kpar_scale=float(geom_etg.gradpar()),
-        omega_d_scale=ETG_OMEGA_D_SCALE,
-        omega_star_scale=ETG_OMEGA_STAR_SCALE,
-        rho_star=ETG_RHO_STAR,
-        nhermite=12,
-    )
-    terms_etg = LinearTerms(apar=0.0, bpar=0.0, hypercollisions=1.0)
-    run_etg = run_etg_linear(
-        cfg=cfg_etg,
-        ky_target=20.0,
-        Nl=10,
-        Nm=12,
-        dt=2.0e-4,
-        steps=12000,
-        method="imex2",
-        solver="time",
-        params=params_etg,
-        terms=terms_etg,
-        fit_signal="density",
-        mode_method="project",
-        gx_growth=True,
-        gx_navg_fraction=0.5,
-        sample_stride=10,
-    )
-    grid_etg = build_spectral_grid(cfg_etg.grid)
-    mode_etg = _eigenfunction_panel(run_etg, grid_etg, WINDOWS["etg"])
-
-    cfg_kbm = KBMBaseCase(
-        grid=GridConfig(Nx=1, Ny=24, Nz=96, Lx=62.8, Ly=62.8, y0=20.0, ntheta=32, nperiod=2)
-    )
-    geom_kbm = SAlphaGeometry.from_config(cfg_kbm.geometry)
-    params_kbm = _two_species_params(
-        cfg_kbm.model,
-        kpar_scale=float(geom_kbm.gradpar()),
-        omega_d_scale=1.0,
-        omega_star_scale=0.8,
-        rho_star=1.0,
-        beta_override=0.3,
-        damp_ends_amp=0.0,
-        damp_ends_widthfrac=0.0,
-        nhermite=16,
-    )
-    grid_kbm_full = build_spectral_grid(cfg_kbm.grid)
-    ky_idx_kbm = select_ky_index(np.asarray(grid_kbm_full.ky), 0.3)
-    grid_kbm = select_ky_grid(grid_kbm_full, ky_idx_kbm)
-    cache_kbm = build_linear_cache(grid_kbm, geom_kbm, params_kbm, Nl=6, Nm=16)
-    sel_kbm = ModeSelection(ky_index=0, kx_index=0, z_index=_midplane_index(grid_kbm))
-    G0_kbm = np.zeros((2, 6, 16, grid_kbm.ky.size, grid_kbm.kx.size, grid_kbm.z.size), dtype=np.complex64)
-    G0_kbm[1] = np.asarray(
-        _build_initial_condition(
-            grid_kbm,
-            geom_kbm,
-            ky_index=0,
-            kx_index=0,
-            Nl=6,
-            Nm=16,
-            init_cfg=cfg_kbm.init,
-        ),
-        dtype=np.complex64,
-    )
-    time_kbm = TimeConfig(
-        t_max=6.0,
-        dt=5.0e-4,
-        method="rk2",
-        sample_stride=1,
-        checkpoint=False,
-        implicit_restart=20,
-        implicit_preconditioner=None,
-        implicit_solve_method="batched",
-        use_diffrax=True,
-        diffrax_solver="Dopri8",
-        diffrax_adaptive=False,
-        diffrax_rtol=1.0e-5,
-        diffrax_atol=1.0e-7,
-        diffrax_max_steps=32768,
-        progress_bar=False,
-    )
-    _, phi_t_kbm = integrate_linear_from_config(
-        jnp.asarray(G0_kbm),
-        grid_kbm,
-        geom_kbm,
-        params_kbm,
-        time_kbm,
-        cache=cache_kbm,
-        terms=LinearTerms(bpar=0.0),
-        save_mode=None,
-        mode_method="z_index",
-    )
-    run_kbm = SimpleNamespace(
-        t=np.arange(phi_t_kbm.shape[0]) * time_kbm.dt,
-        phi_t=np.asarray(phi_t_kbm),
-        selection=sel_kbm,
-    )
-    mode_kbm = _eigenfunction_panel(run_kbm, grid_kbm, WINDOWS["kbm"])
-
-    panels = [
-        MultiReferenceValidationPanel(
-            name="Cyclone",
-            z=grid_cyc.z,
-            eigenfunction=mode_cyc,
-            x=cyclone_scan.ky,
-            gamma=cyclone_scan.gamma,
-            omega=cyclone_scan.omega,
-            x_label=r"$k_y \rho_i$",
-            references=[
-                ReferenceSeries(
-                    label="GX",
-                    x=cyclone_ref_gx.ky,
-                    gamma=cyclone_ref_gx.gamma,
-                    omega=cyclone_ref_gx.omega,
-                    color="#1f77b4",
-                    marker="o",
-                    linestyle="--",
-                ),
-                ReferenceSeries(
-                    label="GS2",
-                    x=cyclone_ref_gs2.ky,
-                    gamma=cyclone_ref_gs2.gamma,
-                    omega=cyclone_ref_gs2.omega,
-                    color="#ff7f0e",
-                    marker="s",
-                    linestyle="--",
-                ),
-                ReferenceSeries(
-                    label="stella",
-                    x=cyclone_ref_stella.ky,
-                    gamma=cyclone_ref_stella.gamma,
-                    omega=cyclone_ref_stella.omega,
-                    color="#9467bd",
-                    marker="d",
-                    linestyle="--",
-                ),
-            ],
-            log_x=True,
-        ),
-        MultiReferenceValidationPanel(
-            name="ETG",
-            z=grid_etg.z,
-            eigenfunction=mode_etg,
-            x=etg_scan.ky,
-            gamma=etg_scan.gamma,
-            omega=etg_scan.omega,
-            x_label=r"$k_y \rho_i$",
-            references=[
-                ReferenceSeries(
-                    label="GS2",
-                    x=etg_ref_gs2.ky,
-                    gamma=etg_ref_gs2.gamma,
-                    omega=etg_ref_gs2.omega,
-                    color="#ff7f0e",
-                    marker="s",
-                    linestyle="--",
-                ),
-                ReferenceSeries(
-                    label="stella",
-                    x=etg_ref_stella.ky,
-                    gamma=etg_ref_stella.gamma,
-                    omega=etg_ref_stella.omega,
-                    color="#9467bd",
-                    marker="d",
-                    linestyle="--",
-                ),
-            ],
-            log_x=True,
-        ),
-        MultiReferenceValidationPanel(
-            name="KBM",
-            z=grid_kbm.z,
-            eigenfunction=mode_kbm,
-            x=kbm_scan.ky,
-            gamma=kbm_scan.gamma,
-            omega=kbm_scan.omega,
-            x_label=r"$\beta_{ref}$",
-            references=[
-                ReferenceSeries(
-                    label="GS2",
-                    x=kbm_ref_gs2.ky,
-                    gamma=kbm_ref_gs2.gamma,
-                    omega=kbm_ref_gs2.omega,
-                    color="#ff7f0e",
-                    marker="s",
-                    linestyle="--",
-                ),
-            ],
-            log_x=False,
-        ),
-    ]
-    fig, _axes = linear_validation_multi_reference_figure(panels)
-    fig.suptitle(
-        "Cross-code summary (Cyclone, ETG, KBM): SPECTRAX-GK vs GS2/stella",
-        fontsize=12,
-        y=1.02,
-    )
-    fig.text(
-        0.01,
-        0.01,
-        "Cyclone params: q=1.4, s_hat=0.8, eps=0.18, R0=2.77778, R/LTi=2.49, R/Ln=0.8, adiabatic e.\n"
-        "ETG params: q=1.5, s_hat=0.8, eps=0.18, R0=3.0, ion R/LTi=0,R/Ln=0; electron R/LTe=2.49,R/Ln=0.8, "
-        "kinetic ions/electrons, omega_d*=0.4, omega_*=0.8.\n"
-        "KBM params: ky*rho_i=0.3, beta scan, kinetic ions/electrons, A_parallel on, B_parallel off, omega_d*=1.0, omega_*=0.8.",
-        fontsize=8,
-    )
-    fig.savefig(outdir / "linear_summary.png", dpi=200, bbox_inches="tight")
-    fig.savefig(outdir / "linear_summary.pdf", bbox_inches="tight")
-
-
 def main() -> int:
     args = _parse_args()
     verbose = not args.quiet
@@ -1246,7 +943,7 @@ def main() -> int:
         return 0
 
     _run_etg_figures(outdir=outdir, verbose=verbose, progress=progress)
-    _run_crosscode_figures(outdir=outdir, verbose=verbose, progress=progress)
+    _run_kbm_figures(outdir=outdir)
     return 0
 
 

@@ -394,9 +394,9 @@ def _build_core_linear_atlas(path: Path, imported_panel_path: Path, assets: dict
     imported = _load_image(imported_panel_path, pad_pixels=6)
 
     fig, axes = plt.subplots(2, 2, figsize=(PANEL_WIDTH, ATLAS_HEIGHT), constrained_layout=True)
-    _image_tile(axes[0, 0], cyclone, "Cyclone ITG Cross-Code Scan")
-    _image_tile(axes[0, 1], etg, "ETG Cross-Code Scan")
-    _image_tile(axes[1, 0], kbm, "KBM Cross-Code Scan")
+    _image_tile(axes[0, 0], cyclone, "Cyclone ITG Benchmark Scan")
+    _image_tile(axes[0, 1], etg, "ETG Benchmark Scan")
+    _image_tile(axes[1, 0], kbm, "KBM Benchmark Scan")
     _image_tile(axes[1, 1], imported, "Imported Geometry and Exact-Diagnostic Scans")
     fig.suptitle("Core Linear Benchmark Atlas", fontsize=SUPTITLE_SIZE, fontweight="bold")
     _save(fig, path)

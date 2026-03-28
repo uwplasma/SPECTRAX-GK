@@ -21,47 +21,6 @@ outputs = [
 ]
 
 [[job]]
-name = "etg-gs2"
-description = "Refresh ETG GS2 mismatch rows from clean GS2 outputs."
-cwd = "{root}"
-requires_env = ["GS2_ETG_ARGS"]
-command = "PYTHONPATH=src python tools/compare_gs2_linear.py --case etg ${GS2_ETG_ARGS} --out-csv docs/_static/etg_gs2_mismatch.csv"
-outputs = ["docs/_static/etg_gs2_mismatch.csv"]
-
-[[job]]
-name = "etg-stella"
-description = "Refresh ETG stella mismatch rows from clean stella outputs."
-cwd = "{root}"
-requires_env = ["STELLA_ETG_ARGS"]
-command = "PYTHONPATH=src python tools/compare_stella_linear.py --case etg ${STELLA_ETG_ARGS} --out-csv docs/_static/etg_stella_mismatch.csv"
-outputs = ["docs/_static/etg_stella_mismatch.csv"]
-
-[[job]]
-name = "etg-crosscode-plot"
-description = "Regenerate the ETG GS2/stella overlay figure."
-cwd = "{root}"
-command = "python tools/plot_etg_crosscode.py --gs2-csv docs/_static/etg_gs2_mismatch.csv --stella-csv docs/_static/etg_stella_mismatch.csv --out docs/_static/etg_gs2_stella_comparison.png"
-outputs = ["docs/_static/etg_gs2_stella_comparison.png"]
-
-[[job]]
-name = "kbm-crosscode"
-description = "Refresh KBM GS2/stella mismatch tables from clean external outputs."
-cwd = "{root}"
-requires_env = ["KBM_GS2_ARGS", "KBM_STELLA_ARGS"]
-command = "PYTHONPATH=src python tools/compare_kbm_crosscode.py ${KBM_GS2_ARGS} ${KBM_STELLA_ARGS} --out-gs2-csv docs/_static/kbm_gs2_mismatch.csv --out-stella-csv docs/_static/kbm_stella_mismatch.csv"
-outputs = [
-  "docs/_static/kbm_gs2_mismatch.csv",
-  "docs/_static/kbm_stella_mismatch.csv",
-]
-
-[[job]]
-name = "kbm-crosscode-plot"
-description = "Regenerate the KBM GS2/stella overlay figure."
-cwd = "{root}"
-command = "python tools/plot_kbm_crosscode.py --gs2-csv docs/_static/kbm_gs2_mismatch.csv --stella-csv docs/_static/kbm_stella_mismatch.csv --out docs/_static/kbm_gs2_stella_comparison.png"
-outputs = ["docs/_static/kbm_gs2_stella_comparison.png"]
-
-[[job]]
 name = "imported-linear-w7x"
 description = "Refresh the W7-X imported linear scan from clean GX outputs."
 cwd = "{root}"

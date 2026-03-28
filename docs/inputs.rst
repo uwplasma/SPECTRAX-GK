@@ -138,9 +138,7 @@ Nonlinear collision/hypercollision splitting is enabled with
 diagonal operators).
 
 The ``[geometry]`` section supports ``drift_scale`` to switch between reference-compatible
-(``drift_scale = 1.0``) and GS2-style (``drift_scale = 2.0``) drift
-normalizations. The default configuration in SPECTRAX-GK uses the GX-reference
-value.
+(``drift_scale = 1.0``) and the alternate doubled-drift convention (``drift_scale = 2.0``). The default configuration in SPECTRAX-GK uses the tracked benchmark value.
 For GX slab benchmarks, set ``model = "slab"``. Optional slab-specific keys are
 ``z0`` (sets ``gradpar = 1/z0`` when positive, matching GX's slab domain
 normalization) and ``zero_shat = true`` (forces the GX zero-shear slab metric

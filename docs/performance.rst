@@ -216,8 +216,7 @@ Planned optimizations
 Linear-to-nonlinear optimization roadmap
 ----------------------------------------
 
-The current GS2 vs SPECTRAX runtime gap on CPU is dominated by JAX compile
-latency and repeated small-shape scan launches. The next implementation phase
+The current benchmark runtime gap on CPU is dominated by JAX compile latency and repeated small-shape scan launches. The next implementation phase
 targets both linear and nonlinear performance with a single operator strategy:
 
 1. **Compile-once scan kernels**
