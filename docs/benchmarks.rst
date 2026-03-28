@@ -116,6 +116,7 @@ The current extended panel covers:
 
 - Cyclone kinetic electrons
 - TEM
+- KBM Miller exact late growth window
 
 .. figure:: _static/benchmark_extended_linear_panel.png
    :width: 90%
@@ -147,6 +148,7 @@ Reduced and stress cases
 
 - ETG: linear cross-code overlays
 - KAW: exact late-time diagnostic reconstruction and exact-window energy audit
+- KBM Miller: exact late-time growth replay on the tracked low-``k_y`` branch
 - Cyclone kinetic electrons: extended linear stress lane
 - TEM: extended linear stress lane
 
