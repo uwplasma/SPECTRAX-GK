@@ -19,6 +19,7 @@ import compare_gx_imported_linear as imported_linear
 from compare_gx_imported_linear import (
     GXInputContract,
     _build_imported_initial_condition,
+    _build_imported_linear_terms,
     _build_sample_steps,
     _gx_has_uniform_linear_dt,
     _resolve_imported_boundary,
@@ -454,6 +455,20 @@ def _dummy_gx_contract(*, init_single: bool) -> GXInputContract:
         restart_with_perturb=False,
         restart_scale=1.0,
     )
+
+
+def test_build_imported_linear_terms_honors_em_switches() -> None:
+    electrostatic = _build_imported_linear_terms(_dummy_gx_contract(init_single=False))
+    assert electrostatic.apar == 0.0
+    assert electrostatic.bpar == 0.0
+
+    electromagnetic = _build_imported_linear_terms(
+        replace(_dummy_gx_contract(init_single=False), fapar=1.0, fbpar=1.0, hypercollisions=True, hyper=True)
+    )
+    assert electromagnetic.apar == 1.0
+    assert electromagnetic.bpar == 1.0
+    assert electromagnetic.hypercollisions == 1.0
+    assert electromagnetic.hyperdiffusion == 1.0
 
 
 def test_run_single_ky_uses_full_grid_for_imported_multimode(monkeypatch) -> None:

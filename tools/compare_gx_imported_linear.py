@@ -337,6 +337,19 @@ def _runtime_species_tuple(species: tuple[Species, ...]) -> tuple[RuntimeSpecies
     )
 
 
+def _build_imported_linear_terms(gx_contract: GXInputContract | None) -> LinearTerms:
+    terms = LinearTerms()
+    if gx_contract is None:
+        return terms
+    return replace(
+        terms,
+        hypercollisions=1.0 if gx_contract.hypercollisions else 0.0,
+        hyperdiffusion=1.0 if gx_contract.hyper else 0.0,
+        apar=1.0 if float(gx_contract.fapar) > 0.0 else 0.0,
+        bpar=1.0 if float(gx_contract.fbpar) > 0.0 else 0.0,
+    )
+
+
 def _build_imported_initial_condition(
     *,
     grid,
@@ -1062,7 +1075,7 @@ def main() -> None:
         beta=beta,
         fapar=(float(gx_contract.fapar) if gx_contract is not None else (1.0 if beta > 0.0 else 0.0)),
     )
-    terms = LinearTerms()
+    terms = _build_imported_linear_terms(gx_contract)
     if gx_contract is not None:
         if gx_contract.hypercollisions:
             params = _apply_gx_hypercollisions(params, nhermite=nm_use)
@@ -1071,11 +1084,6 @@ def main() -> None:
             D_hyper=float(gx_contract.D_hyper),
             damp_ends_amp=float(gx_contract.damp_ends_amp),
             damp_ends_widthfrac=float(gx_contract.damp_ends_widthfrac),
-        )
-        terms = replace(
-            terms,
-            hypercollisions=1.0 if gx_contract.hypercollisions else 0.0,
-            hyperdiffusion=1.0 if gx_contract.hyper else 0.0,
         )
     else:
         params = _apply_gx_hypercollisions(params, nhermite=nm_use)
