@@ -31,6 +31,7 @@ from spectraxgk.benchmarks import (
     _apply_gx_hypercollisions,
     _build_initial_condition,
     _midplane_index,
+    _two_species_params,
     load_cyclone_reference,
     load_cyclone_reference_kinetic,
     load_etg_reference_gs2,
@@ -65,6 +66,7 @@ from spectraxgk.analysis import (
     ModeSelection,
     extract_mode_time_series,
     fit_growth_rate_auto,
+    gx_growth_rate_from_phi,
     select_ky_index,
 )
 
@@ -848,28 +850,25 @@ def _etg_reference_mismatch_scan(
     _log("\n=== ETG mismatch scan ===", verbose=verbose, use_tqdm=progress)
     _log(f"Config:\n{_format_cfg(cfg)}", verbose=verbose, use_tqdm=progress)
     _log(
-        f"Numerics: Nl=24 Nm=8 method=imex2 solver=krylov dt={dt} steps={steps}",
+        f"Numerics: Nl=24 Nm=8 GX-growth-style ETG replay dt={dt} steps={steps}",
         verbose=verbose,
         use_tqdm=progress,
     )
-    _log(f"Window params: {WINDOWS['etg']}", verbose=verbose, use_tqdm=progress)
-    scan = run_etg_scan(
-        np.asarray(ref.ky),
-        cfg=cfg,
-        Nl=24,
-        Nm=8,
-        dt=dt,
-        steps=steps,
-        method="imex2",
-        solver="krylov",
-        krylov_cfg=ETG_KRYLOV,
-        auto_window=True,
-        mode_method="z_index",
-        fit_signal="phi",
-        diagnostic_norm=DIAGNOSTIC_NORM,
-        **WINDOWS["etg"],
-    )
-    for ky_val, gamma_val, omega_val in zip(scan.ky, scan.gamma, scan.omega):
+    ky_rows: list[float] = []
+    gamma_rows: list[float] = []
+    omega_rows: list[float] = []
+    for ky_val in np.asarray(ref.ky, dtype=float):
+        gamma_val, omega_val = _run_etg_gx_growth(
+            cfg=cfg,
+            ky=float(ky_val),
+            Nl=24,
+            Nm=8,
+            dt=dt,
+            steps=steps,
+        )
+        ky_rows.append(float(ky_val))
+        gamma_rows.append(float(gamma_val))
+        omega_rows.append(float(omega_val))
         idx = int(np.argmin(np.abs(ref.ky - ky_val)))
         gamma_ref = float(ref.gamma[idx])
         omega_ref = float(ref.omega[idx])
@@ -882,7 +881,11 @@ def _etg_reference_mismatch_scan(
             verbose=verbose,
             use_tqdm=progress,
         )
-    return LinearScanResult(ky=np.asarray(scan.ky), gamma=np.asarray(scan.gamma), omega=np.asarray(scan.omega))
+    return LinearScanResult(
+        ky=np.asarray(ky_rows),
+        gamma=np.asarray(gamma_rows),
+        omega=np.asarray(omega_rows),
+    )
 
 
 def _scale_steps(ky: np.ndarray, base_steps: int, ky_ref: float, max_steps: int) -> np.ndarray:
@@ -912,6 +915,94 @@ def _etg_time_controls(
     tmin = tmin_frac * t_total
     tmax = tmax_frac * t_total
     return dt, steps, tmin, tmax
+
+
+def _etg_crosscode_case() -> ETGBaseCase:
+    return ETGBaseCase(
+        grid=GridConfig(
+            Nx=1,
+            Ny=16,
+            Nz=64,
+            Lx=6.28,
+            Ly=0.628,
+            ntheta=32,
+            nperiod=2,
+        ),
+        model=ETGModelConfig(
+            R_over_LTi=0.0,
+            R_over_LTe=2.49,
+            R_over_Ln=0.8,
+            R_over_Lni=0.0,
+            R_over_Lne=0.8,
+            Te_over_Ti=1.0,
+            mass_ratio=3670.0,
+            nu_i=0.0,
+            nu_e=0.0,
+            beta=1.0e-5,
+            adiabatic_ions=False,
+        ),
+    )
+
+
+def _run_etg_gx_growth(
+    *,
+    cfg: ETGBaseCase,
+    ky: float,
+    Nl: int,
+    Nm: int,
+    dt: float,
+    steps: int,
+    sample_stride: int = 20,
+    navg_fraction: float = 0.3,
+) -> tuple[float, float]:
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    grid_full = build_spectral_grid(cfg.grid)
+    ky_index = select_ky_index(np.asarray(grid_full.ky), ky)
+    grid = select_ky_grid(grid_full, ky_index)
+    if getattr(cfg.model, "adiabatic_ions", False):
+        raise ValueError("ETG cross-code growth helper expects a two-species ETG case")
+    params = _two_species_params(
+        cfg.model,
+        kpar_scale=float(geom.gradpar()),
+        omega_d_scale=0.4,
+        omega_star_scale=0.8,
+        rho_star=0.016507,
+        nhermite=Nm,
+    )
+    cache = build_linear_cache(grid, geom, params, Nl, Nm)
+    G0_single = _build_initial_condition(
+        grid,
+        geom,
+        ky_index=0,
+        kx_index=0,
+        Nl=Nl,
+        Nm=Nm,
+        init_cfg=cfg.init,
+    )
+    charge = np.atleast_1d(np.asarray(params.charge_sign))
+    ns = int(charge.size)
+    electron_index = int(np.argmin(charge))
+    G0 = np.zeros((ns, Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64)
+    G0[electron_index] = np.asarray(G0_single, dtype=np.complex64)
+    t, phi_t, _gamma_t, _omega_t = integrate_linear_gx(
+        G0,
+        grid,
+        cache,
+        params,
+        geom,
+        GXTimeConfig(dt=dt, t_max=dt * float(steps), sample_stride=max(1, sample_stride)),
+        terms=LinearTerms(apar=0.0, bpar=0.0, hypercollisions=1.0),
+        mode_method="z_index",
+    )
+    sel = ModeSelection(ky_index=0, kx_index=0, z_index=grid.z.size // 2)
+    gamma, omega, _g_t, _w_t, _t_mid = gx_growth_rate_from_phi(
+        np.asarray(phi_t),
+        np.asarray(t),
+        sel,
+        navg_fraction=navg_fraction,
+        mode_method="z_index",
+    )
+    return float(gamma), float(omega)
 
 
 def _etg_resolution_policy(ky: float) -> tuple[int, int]:
@@ -976,42 +1067,24 @@ def _run_etg_tables(*, outdir: Path, verbose: bool, progress: bool) -> None:
     )
 
     etg_ref = load_etg_reference_gs2()
-    etg_cfg = ETGBaseCase()
+    etg_cfg = _etg_crosscode_case()
     etg_time = TimeConfig(
-        t_max=2.4,
-        dt=2.0e-4,
+        t_max=6.0,
+        dt=0.01,
         method="imex2",
         use_diffrax=False,
         progress_bar=False,
-        sample_stride=10,
+        sample_stride=2,
     )
     etg_steps = int(round(etg_time.t_max / etg_time.dt))
-    etg_ky, etg_g, etg_w = _scan_linear_verbose(
-        ky_values=etg_ref.ky,
-        run_linear_fn=run_etg_linear,
-        cfg=etg_cfg,
-        Nl=24,
-        Nm=8,
+    etg_mismatch = _etg_reference_mismatch_scan(
+        etg_ref,
+        etg_cfg,
         dt=etg_time.dt,
         steps=etg_steps,
-        method="imex2",
-        solver=ETG_SOLVER,
-        krylov_cfg=ETG_KRYLOV,
-        window_kw=WINDOWS["etg"],
-        auto_window=True,
-        run_kwargs={
-            "mode_method": "z_index",
-            "fit_signal": "phi",
-            "time_cfg": etg_time,
-        },
-        label="ETG mismatch",
-        ref=etg_ref,
         verbose=verbose,
         progress=progress,
-        resolution_policy=_etg_resolution_policy,
-        krylov_policy=_etg_krylov_policy,
     )
-    etg_mismatch = LinearScanResult(ky=etg_ky, gamma=etg_g, omega=etg_w)
     (outdir / "etg_mismatch_table.csv").write_text(
         "\n".join(_build_rows(etg_mismatch, etg_ref)) + "\n", encoding="utf-8"
     )
@@ -1315,7 +1388,7 @@ def main() -> int:
     )
 
     etg_ref = load_etg_reference_gs2()
-    etg_cfg = ETGBaseCase()
+    etg_cfg = _etg_crosscode_case()
     etg_time = TimeConfig(
         t_max=6.0,
         dt=0.01,
