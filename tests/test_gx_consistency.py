@@ -4,6 +4,7 @@ import jax.numpy as jnp
 
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.gyroaverage import J_l_all, gx_factorial
+from spectraxgk.terms import linear_terms as linear_terms_module
 from spectraxgk.terms.linear_terms import hypercollisions_contribution
 
 
@@ -168,3 +169,47 @@ def test_hypercollisions_matches_gx_formula():
     expected = jnp.where(mask_const, hyper_term, 0.0) * G
 
     assert jnp.allclose(out, expected, rtol=1.0e-6, atol=1.0e-7)
+
+
+def test_hypercollisions_skips_linked_abs_kz_when_kz_weight_is_zero(monkeypatch):
+    def _fail(*args, **kwargs):
+        raise AssertionError("abs_z_linked_fft should not run when hypercollisions_kz is zero")
+
+    monkeypatch.setattr(linear_terms_module, "abs_z_linked_fft", _fail)
+
+    Nl, Nm = 2, 4
+    G = jnp.ones((1, Nl, Nm, 1, 1, 2), dtype=jnp.complex64)
+    zeros_lm = jnp.zeros((Nl, Nm, 1, 1, 1), dtype=jnp.float32)
+    mask_const = jnp.zeros((1, Nl, Nm, 1, 1, 1), dtype=bool)
+    mask_kz = jnp.ones((1, Nl, Nm, 1, 1, 1), dtype=bool)
+
+    out = hypercollisions_contribution(
+        G,
+        vth=jnp.asarray([1.0], dtype=jnp.float32),
+        nu_hyper=jnp.asarray([0.0], dtype=jnp.float32),
+        nu_hyper_l=jnp.asarray(0.0, dtype=jnp.float32),
+        nu_hyper_m=jnp.asarray(1.0, dtype=jnp.float32),
+        nu_hyper_lm=jnp.asarray(0.0, dtype=jnp.float32),
+        hyper_ratio=zeros_lm,
+        ratio_l=zeros_lm,
+        ratio_m=zeros_lm,
+        ratio_lm=zeros_lm,
+        mask_const=mask_const,
+        mask_kz=mask_kz,
+        m_pow=jnp.ones((1, Nl, Nm, 1, 1, 1), dtype=jnp.float32),
+        m_norm_kz_factor=jnp.asarray(1.0, dtype=jnp.float32),
+        kz=jnp.asarray([0.0, 1.0], dtype=jnp.float32),
+        kpar_scale=jnp.asarray(1.0, dtype=jnp.float32),
+        hypercollisions_const=jnp.asarray(1.0, dtype=jnp.float32),
+        hypercollisions_kz=jnp.asarray(0.0, dtype=jnp.float32),
+        weight=jnp.asarray(1.0, dtype=jnp.float32),
+        linked_indices=(jnp.asarray([[0]], dtype=jnp.int32),),
+        linked_kz=(jnp.asarray([0.0, 1.0], dtype=jnp.float32),),
+        linked_inverse_permutation=jnp.asarray([0], dtype=jnp.int32),
+        linked_full_cover=True,
+        linked_gather_map=jnp.asarray([0], dtype=jnp.int32),
+        linked_gather_mask=jnp.asarray([True], dtype=bool),
+        linked_use_gather=True,
+    )
+
+    assert jnp.allclose(out, jnp.zeros_like(G))

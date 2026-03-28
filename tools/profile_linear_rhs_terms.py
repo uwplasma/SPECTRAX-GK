@@ -34,6 +34,7 @@ from spectraxgk.terms.linear_terms import (
     mirror_contribution,
     streaming_contribution_gx,
 )
+from spectraxgk.terms.operators import abs_z_linked_fft, grad_z_linked_fft, shift_axis
 
 
 def _parse_args() -> argparse.Namespace:
@@ -120,6 +121,7 @@ def main() -> None:
     omega_star_scale = jnp.asarray(params.omega_star_scale, dtype=real_dtype)
     kpar_scale = jnp.asarray(params.kpar_scale, dtype=real_dtype)
     nu_hyper = jnp.asarray(params.nu_hyper, dtype=real_dtype)
+    nu_hyper = _as_species_array(nu_hyper, ns, "nu_hyper").astype(real_dtype)
     nu_hyper_l = jnp.asarray(params.nu_hyper_l, dtype=real_dtype)
     nu_hyper_m = jnp.asarray(params.nu_hyper_m, dtype=real_dtype)
     nu_hyper_lm = jnp.asarray(params.nu_hyper_lm, dtype=real_dtype)
@@ -128,6 +130,48 @@ def main() -> None:
     D_hyper = jnp.asarray(params.D_hyper, dtype=real_dtype)
     p_hyper_kperp = jnp.asarray(params.p_hyper_kperp, dtype=real_dtype)
     damp_amp = jnp.asarray(params.damp_ends_amp, dtype=real_dtype)
+
+    streaming_rhs_pre_grad = None
+    hyper_kz_source = None
+    if cache.use_twist_shift:
+        axis_m = -4
+        G_p1 = shift_axis(G0, 1, axis=axis_m)
+        G_m1 = shift_axis(G0, -1, axis=axis_m)
+        vth_s = vth[:, None, None, None, None, None]
+        streaming_rhs_pre_grad = -vth_s * (cache.sqrt_p * G_p1 + cache.sqrt_m_ladder * G_m1)
+
+        tz_arr = tz[:, None, None, None, None, None]
+        zt = jnp.where(tz_arr == 0.0, 0.0, 1.0 / tz_arr)
+        zt5 = zt[:, 0, 0, 0, 0, 0][:, None, None, None, None]
+        vth5 = vth[:, None, None, None, None]
+        phi_s = fields.phi[None, None, ...]
+        apar_s = apar[None, None, ...]
+        bpar_s = bpar[None, None, ...]
+        Nm = streaming_rhs_pre_grad.shape[2]
+        m_idx = jnp.arange(Nm, dtype=jnp.int32)[None, None, :, None, None, None]
+        field_rhs = jnp.zeros_like(streaming_rhs_pre_grad)
+        drive_m0 = zt5 * (vth5 * vth5) * cache.Jl * apar_s
+        field_rhs = field_rhs + (m_idx == 0).astype(field_rhs.dtype) * drive_m0[:, :, None, ...]
+        if Nm > 1:
+            drive_m1 = -zt5 * vth5 * cache.Jl * phi_s - vth5 * cache.JlB * bpar_s
+            field_rhs = field_rhs + (m_idx == 1).astype(field_rhs.dtype) * drive_m1[:, :, None, ...]
+        if Nm > 2:
+            drive_m2 = jnp.sqrt(2.0) * zt5 * (vth5 * vth5) * cache.Jl * apar_s
+            field_rhs = field_rhs + (m_idx == 2).astype(field_rhs.dtype) * drive_m2[:, :, None, ...]
+        streaming_rhs_pre_grad = kpar_scale * (streaming_rhs_pre_grad + field_rhs)
+
+        nu_hyp_m = (
+            nu_hyper[:, None, None, None, None, None]
+            * cache.hyper_ratio[None, :, None, None, None, None]
+            * jnp.sqrt(mass)[:, None, None, None, None, None]
+            * jnp.abs(kpar_scale)
+        )
+        hyper_kz_source = (
+            jnp.asarray(term_cfg.hypercollisions, dtype=real_dtype)
+            * hypercollisions_kz
+            * jnp.where(cache.mask_kz, -nu_hyp_m * cache.m_pow, 0.0)
+            * G0
+        )
 
     kernel_fns = {
         "build_H": jax.jit(lambda: build_H(G0, cache.Jl, fields.phi, tz, apar=apar, vth=vth, bpar=bpar, JlB=cache.JlB)),
@@ -156,6 +200,23 @@ def main() -> None:
                 linked_use_gather=cache.linked_use_gather,
                 use_twist_shift=cache.use_twist_shift,
             )
+        ),
+        "linked_grad_z": (
+            jax.jit(
+                lambda: grad_z_linked_fft(
+                    streaming_rhs_pre_grad,
+                    dz=cache.dz,
+                    linked_indices=cache.linked_indices,
+                    linked_kz=cache.linked_kz,
+                    linked_inverse_permutation=cache.linked_inverse_permutation,
+                    linked_full_cover=cache.linked_full_cover,
+                    linked_gather_map=cache.linked_gather_map,
+                    linked_gather_mask=cache.linked_gather_mask,
+                    linked_use_gather=cache.linked_use_gather,
+                )
+            )
+            if cache.use_twist_shift
+            else None
         ),
         "mirror": jax.jit(
             lambda: mirror_contribution(
@@ -243,6 +304,22 @@ def main() -> None:
                 linked_use_gather=cache.linked_use_gather,
             )
         ),
+        "linked_abs_kz": (
+            jax.jit(
+                lambda: abs_z_linked_fft(
+                    hyper_kz_source,
+                    linked_indices=cache.linked_indices,
+                    linked_kz=cache.linked_kz,
+                    linked_inverse_permutation=cache.linked_inverse_permutation,
+                    linked_full_cover=cache.linked_full_cover,
+                    linked_gather_map=cache.linked_gather_map,
+                    linked_gather_mask=cache.linked_gather_mask,
+                    linked_use_gather=cache.linked_use_gather,
+                )
+            )
+            if cache.use_twist_shift
+            else None
+        ),
         "hyperdiffusion": jax.jit(
             lambda: hyperdiffusion_contribution(
                 G0,
@@ -275,6 +352,8 @@ def main() -> None:
         }
     ]
     for name, fn in kernel_fns.items():
+        if fn is None:
+            continue
         seconds, out = _time_callable(fn, repeats=args.repeats)
         arr = out[0] if name == "full_linear_rhs" else out
         rows.append(
