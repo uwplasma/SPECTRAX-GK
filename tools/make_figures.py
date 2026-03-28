@@ -179,6 +179,11 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--no-progress", action="store_true", help="Disable tqdm progress bars."
     )
+    parser.add_argument(
+        "--reuse-cyclone-mismatch",
+        action="store_true",
+        help="Reuse docs/_static/cyclone_mismatch_table.csv instead of recomputing the Cyclone scan.",
+    )
     return parser.parse_args()
 
 
@@ -783,6 +788,15 @@ def _load_reference_from_mismatch(csv_path: Path, *, x_col: str) -> LinearScanRe
     )
 
 
+def _load_cyclone_scan_from_rows(csv_path: Path) -> LinearScanResult:
+    df = pd.read_csv(csv_path).sort_values("ky")
+    return LinearScanResult(
+        ky=df["ky"].to_numpy(dtype=float),
+        gamma=df["gamma_spectrax"].to_numpy(dtype=float),
+        omega=df["omega_spectrax"].to_numpy(dtype=float),
+    )
+
+
 def _run_crosscode_figures(*, outdir: Path, verbose: bool, progress: bool) -> None:
     for required in (
         outdir / "cyclone_gs2_mismatch.csv",
@@ -1122,14 +1136,17 @@ def main() -> int:
     cfg_cyc = CycloneBaseCase(
         grid=GridConfig(Nx=1, Ny=24, Nz=96, Lx=62.8, Ly=62.8, y0=20.0, ntheta=32, nperiod=2)
     )
-    scan_ky = np.asarray(ref.ky)
-    scan, ky_sel = _cyclone_gx_scan(
-        scan_ky,
-        cfg_cyc,
-        GX_CYCLONE_WINDOW,
-        verbose=verbose,
-        progress=progress,
-    )
+    if args.reuse_cyclone_mismatch:
+        scan = _load_cyclone_scan_from_rows(outdir / "cyclone_mismatch_table.csv")
+    else:
+        scan_ky = np.asarray(ref.ky)
+        scan, _ky_sel = _cyclone_gx_scan(
+            scan_ky,
+            cfg_cyc,
+            GX_CYCLONE_WINDOW,
+            verbose=verbose,
+            progress=progress,
+        )
     fig, _axes = cyclone_comparison_figure(ref, scan)
     fig.savefig(outdir / "cyclone_comparison.png", dpi=200)
     fig.savefig(outdir / "cyclone_comparison.pdf")

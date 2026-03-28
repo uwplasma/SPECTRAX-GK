@@ -160,6 +160,11 @@ def _parse_args() -> argparse.Namespace:
         action="store_true",
         help="Replace Krylov results with implicit spot-check results when they reduce mismatch.",
     )
+    parser.add_argument(
+        "--refresh-minimal",
+        action="store_true",
+        help="Only build the tracked outputs required by the benchmark refresh workflow.",
+    )
     return parser.parse_args()
 
 
@@ -882,6 +887,21 @@ def main() -> int:
         return 0
 
     ref = load_cyclone_reference()
+    if args.refresh_minimal:
+        gx_cfg = CycloneBaseCase(
+            grid=GridConfig(Nx=1, Ny=24, Nz=96, Lx=62.8, Ly=62.8, y0=20.0, ntheta=32, nperiod=2)
+        )
+        cyclone_mismatch = _cyclone_gx_scan(
+            ref.ky,
+            gx_cfg,
+            GX_CYCLONE_WINDOW,
+            verbose=verbose,
+            progress=progress,
+        )
+        (outdir / "cyclone_mismatch_table.csv").write_text(
+            "\n".join(_build_rows(cyclone_mismatch, ref)) + "\n", encoding="utf-8"
+        )
+        return 0
     ky_subset = np.array([0.3, 0.4])
     cfg = CycloneBaseCase(
         grid=GridConfig(Nx=1, Ny=18, Nz=96, Lx=62.8, Ly=62.8, y0=20.0, ntheta=32, nperiod=2)
