@@ -157,6 +157,51 @@ def _plot_kaw_case(ax_gamma: plt.Axes, ax_omega: plt.Axes, df: pd.DataFrame) -> 
     )
 
 
+def _plot_exact_growth_case(
+    ax_gamma: plt.Axes,
+    ax_omega: plt.Axes,
+    df: pd.DataFrame,
+    *,
+    title: str,
+    gamma_ref: str,
+    gamma_sp: str,
+    omega_ref: str,
+    omega_sp: str,
+    rel_gamma: str | None = None,
+    rel_omega: str | None = None,
+    note_title: str = "window errors",
+) -> None:
+    _plot_overlay_case(
+        ax_gamma,
+        ax_omega,
+        df,
+        title=title,
+        xcol="ky",
+        gamma_ref=gamma_ref,
+        gamma_sp=gamma_sp,
+        omega_ref=omega_ref,
+        omega_sp=omega_sp,
+        x_label=r"$k_y \rho_i$",
+    )
+    row = df.iloc[0]
+    lines = [note_title]
+    if rel_gamma is not None and rel_gamma in row:
+        lines.append(f"rel γ = {row[rel_gamma]:.2e}")
+    if rel_omega is not None and rel_omega in row:
+        lines.append(f"rel ω = {row[rel_omega]:.2e}")
+    ax_omega.text(
+        0.03,
+        0.12,
+        "\n".join(lines),
+        transform=ax_omega.transAxes,
+        va="bottom",
+        ha="left",
+        fontsize=8,
+        color="#334155",
+        bbox={"facecolor": "white", "edgecolor": "#cbd5e1", "boxstyle": "round,pad=0.25"},
+    )
+
+
 def _image_tile(ax: plt.Axes, image: np.ndarray, title: str) -> None:
     ax.imshow(image)
     ax.set_title(title, fontsize=12, color=TITLE_COLOR, fontweight="bold")
@@ -218,8 +263,9 @@ def _build_imported_linear_panel(path: Path) -> None:
 def _build_extended_linear_panel(path: Path) -> None:
     kinetic = pd.read_csv(STATIC / "kinetic_mismatch_table.csv").sort_values("ky")
     tem = pd.read_csv(STATIC / "tem_mismatch_table.csv").sort_values("ky")
+    miller = pd.read_csv(STATIC / "kbm_miller_exact_growth_dump.csv").sort_values("ky")
 
-    fig, axes = plt.subplots(2, 2, figsize=(10.5, 7), constrained_layout=True)
+    fig, axes = plt.subplots(2, 3, figsize=(15.5, 7.2), constrained_layout=True)
     _plot_overlay_case(
         axes[0, 0],
         axes[1, 0],
@@ -243,6 +289,18 @@ def _build_extended_linear_panel(path: Path) -> None:
         omega_ref="omega_ref",
         omega_sp="omega_spectrax",
         x_label=r"$k_y \rho_i$",
+    )
+    _plot_exact_growth_case(
+        axes[0, 2],
+        axes[1, 2],
+        miller,
+        title="KBM Miller Late Growth Window",
+        gamma_ref="gamma_gx_dump",
+        gamma_sp="gamma_sp_dump",
+        omega_ref="omega_gx_dump",
+        omega_sp="omega_sp_dump",
+        rel_gamma="rel_gamma_sp_vs_gx_dump",
+        rel_omega="rel_omega_sp_vs_gx_dump",
     )
     handles, labels = axes[0, 0].get_legend_handles_labels()
     fig.legend(handles, labels, loc="upper center", ncol=2, frameon=False, bbox_to_anchor=(0.5, 1.03))
