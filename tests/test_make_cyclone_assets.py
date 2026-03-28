@@ -151,3 +151,42 @@ def test_make_figures_reference_mismatch_scan_uses_tracked_scan(monkeypatch) -> 
     assert called["mode_only"] is False
     assert called["diagnostic_norm"] == make_figures.DIAGNOSTIC_NORM
     assert np.allclose(out.gamma, [1.0, 2.0])
+
+
+def test_make_tables_etg_reference_mismatch_scan_uses_tracked_scan(monkeypatch) -> None:
+    import tools.make_tables as make_tables
+
+    ref = make_tables.LinearScanResult(
+        ky=np.array([10.0, 20.0]),
+        gamma=np.array([1.0, 2.0]),
+        omega=np.array([3.0, 4.0]),
+    )
+    called: dict[str, object] = {}
+
+    def fake_run_etg_scan(ky_values, **kwargs):
+        called["ky"] = np.asarray(ky_values).copy()
+        called["solver"] = kwargs["solver"]
+        called["mode_method"] = kwargs["mode_method"]
+        called["fit_signal"] = kwargs["fit_signal"]
+        called["diagnostic_norm"] = kwargs["diagnostic_norm"]
+        return make_tables.LinearScanResult(
+            ky=np.asarray(ky_values), gamma=np.array([5.0, 6.0]), omega=np.array([7.0, 8.0])
+        )
+
+    monkeypatch.setattr(make_tables, "run_etg_scan", fake_run_etg_scan)
+
+    out = make_tables._etg_reference_mismatch_scan(
+        ref,
+        make_tables.ETGBaseCase(),
+        dt=0.01,
+        steps=600,
+        verbose=False,
+        progress=False,
+    )
+
+    assert np.allclose(called["ky"], ref.ky)
+    assert called["solver"] == "krylov"
+    assert called["mode_method"] == "z_index"
+    assert called["fit_signal"] == "phi"
+    assert called["diagnostic_norm"] == make_tables.DIAGNOSTIC_NORM
+    assert np.allclose(out.gamma, [5.0, 6.0])
