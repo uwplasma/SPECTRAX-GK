@@ -472,6 +472,37 @@ def _gx_window_policy(ky: float, base_window: dict) -> dict:
     return window
 
 
+def _fit_cyclone_gx_signal(
+    *,
+    t: np.ndarray,
+    phi_t: np.ndarray,
+    sel: ModeSelection,
+    ky_val: float,
+    window_kw: dict,
+) -> tuple[float, float, float, float, str]:
+    gamma_floor = 1.0e-6
+    omega_floor = 1.0e-6
+    methods = [_gx_mode_policy(ky_val)]
+    if methods[0] != "max":
+        methods.append("max")
+    last: tuple[float, float, float, float, str] | None = None
+    for method in methods:
+        signal = extract_mode_time_series(phi_t, sel, method=method)
+        fit_kw = _gx_window_policy(ky_val, window_kw)
+        fit_kw = {k: v for k, v in fit_kw.items() if k != "mode_method"}
+        gamma, omega, tmin, tmax_fit = fit_growth_rate_auto(t, signal, **fit_kw)
+        last = (float(gamma), float(omega), float(tmin), float(tmax_fit), method)
+        if (
+            np.isfinite(gamma)
+            and np.isfinite(omega)
+            and gamma > gamma_floor
+            and abs(omega) > omega_floor
+        ):
+            return last
+    assert last is not None
+    return last
+
+
 def _run_cyclone_gx_case(
     *,
     ky: float,
@@ -537,11 +568,13 @@ def _run_cyclone_gx_case(
         z_index=_midplane_index(grid),
     )
     sel = ModeSelection(ky_index=0, kx_index=0, z_index=_midplane_index(grid))
-    mode_method = _gx_mode_policy(float(ky))
-    signal = extract_mode_time_series(np.asarray(phi_t), sel, method=mode_method)
-    fit_kw = _gx_window_policy(float(ky), window_kw)
-    fit_kw = {k: v for k, v in fit_kw.items() if k != "mode_method"}
-    gamma, omega, tmin, tmax_fit = fit_growth_rate_auto(np.asarray(t), signal, **fit_kw)
+    gamma, omega, tmin, tmax_fit, mode_method = _fit_cyclone_gx_signal(
+        t=np.asarray(t),
+        phi_t=np.asarray(phi_t),
+        sel=sel,
+        ky_val=float(ky),
+        window_kw=window_kw,
+    )
     _log(
         f"[Cyclone GX] ky={float(ky):.3f} method={mode_method} fit=[{tmin:.3g}, {tmax_fit:.3g}] "
         f"gamma={gamma:.6g} omega={omega:.6g}",
@@ -588,20 +621,12 @@ def _cyclone_reference_mismatch_scan(
     verbose: bool,
     progress: bool,
 ) -> LinearScanResult:
-    scan = run_cyclone_scan(
+    scan, _ky_sel = _cyclone_gx_scan(
         np.asarray(ref.ky),
-        cfg=cfg,
-        Nl=48,
-        Nm=16,
-        dt=0.002,
-        steps=np.full_like(ref.ky, 5000, dtype=int),
-        method="imex2",
-        solver="auto",
-        krylov_cfg=CYCLONE_KRYLOV,
-        auto_window=True,
-        mode_only=False,
-        diagnostic_norm=DIAGNOSTIC_NORM,
-        **WINDOWS["cyclone"],
+        cfg,
+        GX_CYCLONE_WINDOW,
+        verbose=verbose,
+        progress=progress,
     )
     return LinearScanResult(ky=np.asarray(scan.ky), gamma=np.asarray(scan.gamma), omega=np.asarray(scan.omega))
 
@@ -819,6 +844,32 @@ def _load_cyclone_scan_from_rows(csv_path: Path) -> LinearScanResult:
         ky=df["ky"].to_numpy(dtype=float),
         gamma=df["gamma_spectrax"].to_numpy(dtype=float),
         omega=df["omega_spectrax"].to_numpy(dtype=float),
+    )
+
+
+def _cyclone_refresh_grid(ref: LinearScanResult) -> GridConfig:
+    nky = int(np.asarray(ref.ky).size)
+    if nky < 2:
+        raise ValueError("Cyclone reference must contain at least two positive ky points")
+    return GridConfig(
+        Nx=1,
+        Ny=3 * (nky - 1) + 1,
+        Nz=96,
+        Lx=62.8,
+        Ly=62.8,
+        y0=20.0,
+        ntheta=32,
+        nperiod=2,
+        boundary="linked",
+    )
+
+
+def _cyclone_refresh_reference(ref: LinearScanResult) -> LinearScanResult:
+    keep = np.asarray(ref.ky) <= 0.45 + 1.0e-12
+    return LinearScanResult(
+        ky=np.asarray(ref.ky)[keep],
+        gamma=np.asarray(ref.gamma)[keep],
+        omega=np.asarray(ref.omega)[keep],
     )
 
 
@@ -1153,14 +1204,13 @@ def main() -> int:
         return 0
 
     # Cyclone reference (adiabatic electrons)
-    ref = load_cyclone_reference()
+    ref_full = load_cyclone_reference()
+    ref = _cyclone_refresh_reference(ref_full)
     fig, _axes = cyclone_reference_figure(ref)
     fig.savefig(outdir / "cyclone_reference.png", dpi=200)
     fig.savefig(outdir / "cyclone_reference.pdf")
 
-    cfg_cyc = CycloneBaseCase(
-        grid=GridConfig(Nx=1, Ny=18, Nz=96, Lx=62.8, Ly=62.8, y0=20.0, ntheta=32, nperiod=2)
-    )
+    cfg_cyc = CycloneBaseCase(grid=_cyclone_refresh_grid(ref_full))
     if args.reuse_cyclone_mismatch:
         scan = _load_cyclone_scan_from_rows(outdir / "cyclone_mismatch_table.csv")
     else:
