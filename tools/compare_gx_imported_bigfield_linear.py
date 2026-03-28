@@ -15,6 +15,7 @@ from netCDF4 import Dataset
 
 from compare_gx_imported_linear import (
     _build_imported_initial_condition,
+    _build_imported_linear_terms,
     _build_sample_steps,
     _gx_has_uniform_linear_dt,
     _gx_linear_omega_max,
@@ -294,7 +295,7 @@ def main() -> None:
         beta=float(gx_contract.beta),
         fapar=float(gx_contract.fapar),
     )
-    terms = LinearTerms()
+    terms = _build_imported_linear_terms(gx_contract)
     if gx_contract.hypercollisions:
         params = _apply_gx_hypercollisions(params, nhermite=nm)
     params = replace(
@@ -302,11 +303,6 @@ def main() -> None:
         D_hyper=float(gx_contract.D_hyper),
         damp_ends_amp=float(gx_contract.damp_ends_amp),
         damp_ends_widthfrac=float(gx_contract.damp_ends_widthfrac),
-    )
-    terms = replace(
-        terms,
-        hypercollisions=1.0 if gx_contract.hypercollisions else 0.0,
-        hyperdiffusion=1.0 if gx_contract.hyper else 0.0,
     )
     cache = build_linear_cache(grid, geom, params, nl, nm)
     dt = _infer_gx_linear_dt(gx_time, gx_contract)
