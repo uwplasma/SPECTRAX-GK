@@ -6,7 +6,7 @@ import pytest
 
 from spectraxgk.config import CycloneBaseCase, GridConfig, GeometryConfig
 from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
-from spectraxgk.grids import build_spectral_grid
+from spectraxgk.grids import build_spectral_grid, select_ky_grid
 from spectraxgk.linear import (
     _build_linked_fft_maps,
     _integrate_linear_cached,
@@ -33,6 +33,8 @@ from spectraxgk.terms.operators import grad_z_linked_fft
 from spectraxgk.gyroaverage import J_l_all
 from spectraxgk.linear_krylov import dominant_eigenpair
 from spectraxgk.terms.linear_terms import collisions_contribution
+from spectraxgk.terms.assembly import assemble_rhs_terms_cached
+from spectraxgk.terms.config import TermConfig
 
 
 def test_grad_z_periodic_sine():
@@ -298,6 +300,76 @@ def test_build_linear_cache_restores_linked_end_damping_on_full_fft_grid():
     mirror_ky = (-ky_idx) % int(grid.ky.size)
     mirror_kx = 0 if kx_idx == 0 else int(grid.kx.size - kx_idx)
     assert np.allclose(profile[mirror_ky, mirror_kx], profile[ky_idx, kx_idx])
+
+
+def test_build_linear_cache_keeps_linked_end_damping_on_selected_positive_ky_grid():
+    grid_full = build_spectral_grid(
+        GridConfig(
+            Nx=1,
+            Ny=16,
+            Nz=96,
+            Lx=62.8,
+            Ly=20.0 * np.pi,
+            boundary="linked",
+            y0=10.0,
+            ntheta=32,
+            nperiod=2,
+        )
+    )
+    ky_idx = int(np.argmin(np.abs(np.asarray(grid_full.ky) - 0.3)))
+    assert float(grid_full.ky[ky_idx]) > 0.0
+    grid = select_ky_grid(grid_full, ky_idx)
+    geom = SAlphaGeometry.from_config(GeometryConfig(s_hat=0.8))
+    cache = build_linear_cache(grid, geom, LinearParams(), Nl=16, Nm=48)
+
+    profile = np.asarray(cache.linked_damp_profile, dtype=float)
+    assert profile.shape == (1, grid.kx.size, grid.z.size)
+    assert np.max(profile) > 0.0
+    assert int(np.asarray(grid.ky_mode)[0]) > 0
+
+
+def test_assemble_rhs_terms_scales_linked_end_damping_by_step_dt():
+    grid_full = build_spectral_grid(
+        GridConfig(
+            Nx=1,
+            Ny=16,
+            Nz=96,
+            Lx=62.8,
+            Ly=20.0 * np.pi,
+            boundary="linked",
+            y0=10.0,
+            ntheta=32,
+            nperiod=2,
+        )
+    )
+    ky_idx = int(np.argmin(np.abs(np.asarray(grid_full.ky) - 0.3)))
+    grid = select_ky_grid(grid_full, ky_idx)
+    geom = SAlphaGeometry.from_config(GeometryConfig(s_hat=0.8))
+    params = LinearParams(damp_ends_amp=0.1, damp_ends_widthfrac=0.125)
+    cache = build_linear_cache(grid, geom, params, Nl=2, Nm=4)
+    G = jnp.ones((2, 4, 1, 1, 96), dtype=jnp.complex64)
+    term_cfg = TermConfig(
+        streaming=0.0,
+        mirror=0.0,
+        curvature=0.0,
+        gradb=0.0,
+        diamagnetic=0.0,
+        collisions=0.0,
+        hypercollisions=0.0,
+        hyperdiffusion=0.0,
+        end_damping=1.0,
+        apar=0.0,
+        bpar=0.0,
+    )
+
+    _rhs_raw, _fields_raw, contrib_raw = assemble_rhs_terms_cached(G, cache, params, terms=term_cfg)
+    _rhs_dt, _fields_dt, contrib_dt = assemble_rhs_terms_cached(G, cache, params, terms=term_cfg, dt=0.2)
+
+    end_raw = np.asarray(contrib_raw["end_damping"])
+    end_dt = np.asarray(contrib_dt["end_damping"])
+    mask = np.abs(end_raw) > 1.0e-12
+    assert np.any(mask)
+    assert np.allclose(end_dt[mask], end_raw[mask] / 0.2, rtol=1.0e-6, atol=1.0e-6)
 
 
 def test_streaming_zero_for_constant_z():
