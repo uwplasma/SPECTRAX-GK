@@ -2,7 +2,7 @@
 name = "cyclone-core-assets"
 description = "Regenerate the tracked Cyclone tables and figures."
 cwd = "{root}"
-command = "PYTHONPATH=src python tools/make_tables.py --case cyclone --no-progress && PYTHONPATH=src python tools/make_figures.py --case cyclone --no-progress"
+command = "PYTHONPATH=src python tools/make_tables.py --case cyclone --no-progress --refresh-minimal && PYTHONPATH=src python tools/make_figures.py --case cyclone --no-progress --reuse-cyclone-mismatch"
 outputs = [
   "docs/_static/cyclone_mismatch_table.csv",
   "docs/_static/cyclone_comparison.png",
