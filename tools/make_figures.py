@@ -581,6 +581,34 @@ def _cyclone_gx_scan(
     return scan, ky_sel
 
 
+def _cyclone_reference_mismatch_scan(
+    ref: LinearScanResult,
+    cfg: CycloneBaseCase,
+    *,
+    verbose: bool,
+    progress: bool,
+) -> LinearScanResult:
+    steps = np.full_like(ref.ky, 5000, dtype=int)
+    scan_ky, scan_g, scan_w = _scan_linear_verbose(
+        ky_values=ref.ky,
+        run_linear_fn=run_cyclone_linear,
+        cfg=cfg,
+        Nl=48,
+        Nm=16,
+        dt=0.002,
+        steps=steps,
+        method="imex2",
+        solver=CYCLONE_SCAN_SOLVER,
+        krylov_cfg=CYCLONE_KRYLOV,
+        window_kw=WINDOWS["cyclone"],
+        label="Cyclone figure",
+        ref=ref,
+        verbose=verbose,
+        progress=progress,
+    )
+    return LinearScanResult(ky=scan_ky, gamma=scan_g, omega=scan_w)
+
+
 def _eigenfunction_panel(run, grid, window_kw):
     signal = extract_mode_time_series(run.phi_t, run.selection, method="project")
     if run.t.size < 2:
@@ -1134,16 +1162,14 @@ def main() -> int:
     fig.savefig(outdir / "cyclone_reference.pdf")
 
     cfg_cyc = CycloneBaseCase(
-        grid=GridConfig(Nx=1, Ny=24, Nz=96, Lx=62.8, Ly=62.8, y0=20.0, ntheta=32, nperiod=2)
+        grid=GridConfig(Nx=1, Ny=18, Nz=96, Lx=62.8, Ly=62.8, y0=20.0, ntheta=32, nperiod=2)
     )
     if args.reuse_cyclone_mismatch:
         scan = _load_cyclone_scan_from_rows(outdir / "cyclone_mismatch_table.csv")
     else:
-        scan_ky = np.asarray(ref.ky)
-        scan, _ky_sel = _cyclone_gx_scan(
-            scan_ky,
+        scan = _cyclone_reference_mismatch_scan(
+            ref,
             cfg_cyc,
-            GX_CYCLONE_WINDOW,
             verbose=verbose,
             progress=progress,
         )

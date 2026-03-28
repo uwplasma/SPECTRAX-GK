@@ -737,6 +737,34 @@ def _cyclone_gx_scan(
     return LinearScanResult(ky=np.array(ky_out), gamma=np.array(gammas), omega=np.array(omegas))
 
 
+def _cyclone_reference_mismatch_scan(
+    ref: LinearScanResult,
+    cfg: CycloneBaseCase,
+    *,
+    verbose: bool,
+    progress: bool,
+) -> LinearScanResult:
+    steps = np.full_like(ref.ky, 5000, dtype=int)
+    scan_ky, scan_g, scan_w = _scan_linear_verbose(
+        ky_values=ref.ky,
+        run_linear_fn=run_cyclone_linear,
+        cfg=cfg,
+        Nl=48,
+        Nm=16,
+        dt=0.002,
+        steps=steps,
+        method="imex2",
+        solver=CYCLONE_SOLVER,
+        krylov_cfg=CYCLONE_KRYLOV,
+        window_kw=WINDOWS["cyclone"],
+        label="Cyclone mismatch",
+        ref=ref,
+        verbose=verbose,
+        progress=progress,
+    )
+    return LinearScanResult(ky=scan_ky, gamma=scan_g, omega=scan_w)
+
+
 def _scale_steps(ky: np.ndarray, base_steps: int, ky_ref: float, max_steps: int) -> np.ndarray:
     scale = ky_ref / np.maximum(ky, 1.0e-6)
     steps = base_steps * np.maximum(1.0, scale)
@@ -888,13 +916,12 @@ def main() -> int:
 
     ref = load_cyclone_reference()
     if args.refresh_minimal:
-        gx_cfg = CycloneBaseCase(
-            grid=GridConfig(Nx=1, Ny=24, Nz=96, Lx=62.8, Ly=62.8, y0=20.0, ntheta=32, nperiod=2)
+        cfg = CycloneBaseCase(
+            grid=GridConfig(Nx=1, Ny=18, Nz=96, Lx=62.8, Ly=62.8, y0=20.0, ntheta=32, nperiod=2)
         )
-        cyclone_mismatch = _cyclone_gx_scan(
-            ref.ky,
-            gx_cfg,
-            GX_CYCLONE_WINDOW,
+        cyclone_mismatch = _cyclone_reference_mismatch_scan(
+            ref,
+            cfg,
             verbose=verbose,
             progress=progress,
         )
@@ -1060,13 +1087,9 @@ def main() -> int:
     )
 
     # Mismatch tables against reference data (full ky list) using GX-balanced runs
-    gx_cfg = CycloneBaseCase(
-        grid=GridConfig(Nx=1, Ny=24, Nz=96, Lx=62.8, Ly=62.8, y0=20.0, ntheta=32, nperiod=2)
-    )
-    cyclone_mismatch = _cyclone_gx_scan(
-        ref.ky,
-        gx_cfg,
-        GX_CYCLONE_WINDOW,
+    cyclone_mismatch = _cyclone_reference_mismatch_scan(
+        ref,
+        cfg,
         verbose=verbose,
         progress=progress,
     )
