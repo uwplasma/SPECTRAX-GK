@@ -261,30 +261,36 @@ def _scan_linear_verbose(
         extra = dict(DEFAULT_RUN_KW)
         if run_kwargs:
             extra.update(run_kwargs)
-        result = run_linear_fn(
-            ky_target=float(ky),
-            cfg=cfg,
-            Nl=int(Nl_i),
-            Nm=int(Nm_i),
-            dt=dt_i,
-            steps=steps_i,
-            method=method,
-            solver=solver,
-            krylov_cfg=krylov_cfg_use,
-            auto_window=auto_window,
-            tmin=tmin_i,
-            tmax=tmax_i,
-            **window_kw,
-            **extra,
-        )
-        gammas.append(float(result.gamma))
-        omegas.append(float(result.omega))
-        ky_out.append(float(result.ky))
-        _log(
-            f"[{label}] done ky={float(result.ky):.4g} gamma={result.gamma:.6g} omega={result.omega:.6g}",
-            verbose=verbose,
-            use_tqdm=progress,
-        )
+        try:
+            result = run_linear_fn(
+                ky_target=float(ky),
+                cfg=cfg,
+                Nl=int(Nl_i),
+                Nm=int(Nm_i),
+                dt=dt_i,
+                steps=steps_i,
+                method=method,
+                solver=solver,
+                krylov_cfg=krylov_cfg_use,
+                auto_window=auto_window,
+                tmin=tmin_i,
+                tmax=tmax_i,
+                **window_kw,
+                **extra,
+            )
+            gamma_val = float(result.gamma)
+            omega_val = float(result.omega)
+            ky_val = float(result.ky)
+            msg = f"[{label}] done ky={ky_val:.4g} gamma={gamma_val:.6g} omega={omega_val:.6g}"
+        except Exception as exc:
+            gamma_val = float("nan")
+            omega_val = float("nan")
+            ky_val = float(ky)
+            msg = f"[{label}] failed ky={ky_val:.4g} error={type(exc).__name__}: {exc}"
+        gammas.append(gamma_val)
+        omegas.append(omega_val)
+        ky_out.append(ky_val)
+        _log(msg, verbose=verbose, use_tqdm=progress)
 
     return np.array(ky_out), np.array(gammas), np.array(omegas)
 

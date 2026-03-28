@@ -39,6 +39,28 @@ This produces:
 
 PDF copies are emitted alongside each PNG for manuscript workflows.
 
+Fresh-run refresh workflow
+--------------------------
+
+The tracked atlas is now paired with a refresh manifest:
+
+.. code-block:: bash
+
+   python tools/run_benchmark_refresh.py --list
+
+The refresh runner executes the benchmark matrix in manifest order from
+``tools/benchmark_refresh_manifest.toml`` and writes a summary to
+``tools_out/benchmark_refresh_summary.json``. Jobs that depend on clean GX,
+GS2, or stella outputs declare explicit environment-variable requirements for
+their argument bundles, so the refresh pipeline can be rerun without editing
+the Python scripts themselves.
+
+Example:
+
+.. code-block:: bash
+
+   python tools/run_benchmark_refresh.py --job cyclone-core-assets --job benchmark-atlas
+
 Tracked benchmark metrics
 -------------------------
 
