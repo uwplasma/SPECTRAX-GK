@@ -588,25 +588,22 @@ def _cyclone_reference_mismatch_scan(
     verbose: bool,
     progress: bool,
 ) -> LinearScanResult:
-    steps = np.full_like(ref.ky, 5000, dtype=int)
-    scan_ky, scan_g, scan_w = _scan_linear_verbose(
-        ky_values=ref.ky,
-        run_linear_fn=run_cyclone_linear,
+    scan = run_cyclone_scan(
+        np.asarray(ref.ky),
         cfg=cfg,
         Nl=48,
         Nm=16,
         dt=0.002,
-        steps=steps,
+        steps=np.full_like(ref.ky, 5000, dtype=int),
         method="imex2",
-        solver=CYCLONE_SCAN_SOLVER,
+        solver="auto",
         krylov_cfg=CYCLONE_KRYLOV,
-        window_kw=WINDOWS["cyclone"],
-        label="Cyclone figure",
-        ref=ref,
-        verbose=verbose,
-        progress=progress,
+        auto_window=True,
+        mode_only=False,
+        diagnostic_norm=DIAGNOSTIC_NORM,
+        **WINDOWS["cyclone"],
     )
-    return LinearScanResult(ky=scan_ky, gamma=scan_g, omega=scan_w)
+    return LinearScanResult(ky=np.asarray(scan.ky), gamma=np.asarray(scan.gamma), omega=np.asarray(scan.omega))
 
 
 def _eigenfunction_panel(run, grid, window_kw):

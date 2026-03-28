@@ -39,6 +39,7 @@ from spectraxgk.benchmarks import (
     CycloneScanResult,
     LinearScanResult,
     run_cyclone_linear,
+    run_cyclone_scan,
     run_etg_linear,
     run_kinetic_linear,
     run_kbm_beta_scan,
@@ -744,25 +745,43 @@ def _cyclone_reference_mismatch_scan(
     verbose: bool,
     progress: bool,
 ) -> LinearScanResult:
-    steps = np.full_like(ref.ky, 5000, dtype=int)
-    scan_ky, scan_g, scan_w = _scan_linear_verbose(
-        ky_values=ref.ky,
-        run_linear_fn=run_cyclone_linear,
+    _log("\n=== Cyclone mismatch scan ===", verbose=verbose, use_tqdm=progress)
+    _log(f"Config:\n{_format_cfg(cfg)}", verbose=verbose, use_tqdm=progress)
+    _log(
+        "Numerics: Nl=48 Nm=16 method=imex2 solver=auto dt=0.002 steps=5000",
+        verbose=verbose,
+        use_tqdm=progress,
+    )
+    _log(f"Window params: {WINDOWS['cyclone']}", verbose=verbose, use_tqdm=progress)
+    scan = run_cyclone_scan(
+        np.asarray(ref.ky),
         cfg=cfg,
         Nl=48,
         Nm=16,
         dt=0.002,
-        steps=steps,
+        steps=np.full_like(ref.ky, 5000, dtype=int),
         method="imex2",
-        solver=CYCLONE_SOLVER,
+        solver="auto",
         krylov_cfg=CYCLONE_KRYLOV,
-        window_kw=WINDOWS["cyclone"],
-        label="Cyclone mismatch",
-        ref=ref,
-        verbose=verbose,
-        progress=progress,
+        auto_window=True,
+        mode_only=False,
+        diagnostic_norm=DIAGNOSTIC_NORM,
+        **WINDOWS["cyclone"],
     )
-    return LinearScanResult(ky=scan_ky, gamma=scan_g, omega=scan_w)
+    for ky_val, gamma_val, omega_val in zip(scan.ky, scan.gamma, scan.omega):
+        idx = int(np.argmin(np.abs(ref.ky - ky_val)))
+        gamma_ref = float(ref.gamma[idx])
+        omega_ref = float(ref.omega[idx])
+        rel_gamma = (float(gamma_val) - gamma_ref) / gamma_ref if gamma_ref != 0.0 else np.nan
+        rel_omega = (float(omega_val) - omega_ref) / omega_ref if omega_ref != 0.0 else np.nan
+        _log(
+            f"[Cyclone mismatch] done ky={float(ky_val):.4g} gamma={float(gamma_val):.6g} omega={float(omega_val):.6g}"
+            f" | ref gamma={gamma_ref:.6g} omega={omega_ref:.6g}"
+            f" rel_gamma={rel_gamma:.3g} rel_omega={rel_omega:.3g}",
+            verbose=verbose,
+            use_tqdm=progress,
+        )
+    return LinearScanResult(ky=np.asarray(scan.ky), gamma=np.asarray(scan.gamma), omega=np.asarray(scan.omega))
 
 
 def _scale_steps(ky: np.ndarray, base_steps: int, ky_ref: float, max_steps: int) -> np.ndarray:

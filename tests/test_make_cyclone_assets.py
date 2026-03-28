@@ -77,3 +77,77 @@ def test_make_figures_cyclone_fallback_uses_reference_mismatch_scan(monkeypatch,
 
     assert make_figures.main() == 0
     assert called == {"helper": "reference", "Ny": 18}
+
+
+def test_make_tables_reference_mismatch_scan_uses_tracked_scan(monkeypatch) -> None:
+    import tools.make_tables as make_tables
+
+    ref = make_tables.LinearScanResult(
+        ky=np.array([0.1, 0.2]),
+        gamma=np.array([0.3, 0.4]),
+        omega=np.array([0.5, 0.6]),
+    )
+    called: dict[str, object] = {}
+
+    def fake_run_cyclone_scan(ky_values, **kwargs):
+        called["ky"] = np.asarray(ky_values).copy()
+        called["solver"] = kwargs["solver"]
+        called["mode_only"] = kwargs["mode_only"]
+        called["diagnostic_norm"] = kwargs["diagnostic_norm"]
+        return make_tables.CycloneScanResult(
+            ky=np.asarray(ky_values), gamma=np.array([1.0, 2.0]), omega=np.array([3.0, 4.0])
+        )
+
+    monkeypatch.setattr(make_tables, "run_cyclone_scan", fake_run_cyclone_scan)
+
+    out = make_tables._cyclone_reference_mismatch_scan(
+        ref,
+        make_tables.CycloneBaseCase(
+            grid=make_tables.GridConfig(Nx=1, Ny=18, Nz=96, Lx=62.8, Ly=62.8, y0=20.0, ntheta=32, nperiod=2)
+        ),
+        verbose=False,
+        progress=False,
+    )
+
+    assert np.allclose(called["ky"], ref.ky)
+    assert called["solver"] == "auto"
+    assert called["mode_only"] is False
+    assert called["diagnostic_norm"] == make_tables.DIAGNOSTIC_NORM
+    assert np.allclose(out.gamma, [1.0, 2.0])
+
+
+def test_make_figures_reference_mismatch_scan_uses_tracked_scan(monkeypatch) -> None:
+    import tools.make_figures as make_figures
+
+    ref = make_figures.LinearScanResult(
+        ky=np.array([0.1, 0.2]),
+        gamma=np.array([0.3, 0.4]),
+        omega=np.array([0.5, 0.6]),
+    )
+    called: dict[str, object] = {}
+
+    def fake_run_cyclone_scan(ky_values, **kwargs):
+        called["ky"] = np.asarray(ky_values).copy()
+        called["solver"] = kwargs["solver"]
+        called["mode_only"] = kwargs["mode_only"]
+        called["diagnostic_norm"] = kwargs["diagnostic_norm"]
+        return make_figures.LinearScanResult(
+            ky=np.asarray(ky_values), gamma=np.array([1.0, 2.0]), omega=np.array([3.0, 4.0])
+        )
+
+    monkeypatch.setattr(make_figures, "run_cyclone_scan", fake_run_cyclone_scan)
+
+    out = make_figures._cyclone_reference_mismatch_scan(
+        ref,
+        make_figures.CycloneBaseCase(
+            grid=make_figures.GridConfig(Nx=1, Ny=18, Nz=96, Lx=62.8, Ly=62.8, y0=20.0, ntheta=32, nperiod=2)
+        ),
+        verbose=False,
+        progress=False,
+    )
+
+    assert np.allclose(called["ky"], ref.ky)
+    assert called["solver"] == "auto"
+    assert called["mode_only"] is False
+    assert called["diagnostic_norm"] == make_figures.DIAGNOSTIC_NORM
+    assert np.allclose(out.gamma, [1.0, 2.0])
