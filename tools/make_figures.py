@@ -122,6 +122,33 @@ def _etg_time_controls(
     return dt, steps, tmin, tmax
 
 
+def _etg_crosscode_case() -> ETGBaseCase:
+    return ETGBaseCase(
+        grid=GridConfig(
+            Nx=1,
+            Ny=16,
+            Nz=64,
+            Lx=6.28,
+            Ly=0.628,
+            ntheta=32,
+            nperiod=2,
+        ),
+        model=ETGModelConfig(
+            R_over_LTi=0.0,
+            R_over_LTe=2.49,
+            R_over_Ln=0.8,
+            R_over_Lni=0.0,
+            R_over_Lne=0.8,
+            Te_over_Ti=1.0,
+            mass_ratio=3670.0,
+            nu_i=0.0,
+            nu_e=0.0,
+            beta=1.0e-5,
+            adiabatic_ions=False,
+        ),
+    )
+
+
 def _etg_resolution_policy(ky: float) -> tuple[int, int]:
     """Per-ky Hermite/Laguerre resolution for ETG scans."""
 
@@ -752,57 +779,49 @@ def _scan_and_mode(
 
 def _run_etg_figures(*, outdir: Path, verbose: bool, progress: bool) -> None:
     etg_ref = load_etg_reference_gs2()
-    cfg_etg = ETGBaseCase(
-        grid=GridConfig(
-            Nx=1,
-            Ny=24,
-            Nz=96,
-            Lx=6.28,
-            Ly=6.28,
-            y0=0.2,
-            ntheta=32,
-            nperiod=2,
-            boundary="linked",
+    mismatch_csv = outdir / "etg_mismatch_table.csv"
+    if mismatch_csv.exists():
+        etg_scan = _load_spectrax_scan_from_mismatch(mismatch_csv)
+    else:
+        cfg_etg = _etg_crosscode_case()
+        etg_ky = np.asarray(etg_ref.ky)
+        etg_time = TimeConfig(
+            t_max=2.4,
+            dt=2.0e-4,
+            method="imex2",
+            use_diffrax=False,
+            progress_bar=False,
+            sample_stride=10,
         )
-    )
-    etg_ky = etg_ref.ky[::2]
-    etg_time = TimeConfig(
-        t_max=2.4,
-        dt=2.0e-4,
-        method="imex2",
-        use_diffrax=False,
-        progress_bar=False,
-        sample_stride=10,
-    )
-    etg_steps = int(round(etg_time.t_max / etg_time.dt))
-    etg_scan, _etg_mode, _etg_grid, _ = _scan_and_mode(
-        run_etg_scan,
-        run_etg_linear,
-        etg_ky,
-        cfg_etg,
-        Nl=24,
-        Nm=8,
-        steps=etg_steps,
-        dt=etg_time.dt,
-        window_kw=WINDOWS["etg"],
-        scan_solver=ETG_SCAN_SOLVER,
-        mode_solver=MODE_SOLVER,
-        mode_method=MODE_METHOD,
-        auto_window=True,
-        tmin=None,
-        tmax=None,
-        scan_kwargs={
-            "fit_signal": "phi",
-            "mode_method": "z_index",
-            "time_cfg": etg_time,
-        },
-        mode_kwargs={"fit_signal": "phi", "mode_method": "z_index", "time_cfg": etg_time},
-        verbose=verbose,
-        progress=progress,
-        label="ETG panel",
-        resolution_policy=_etg_resolution_policy,
-        krylov_policy=_etg_krylov_policy,
-    )
+        etg_steps = int(round(etg_time.t_max / etg_time.dt))
+        etg_scan, _etg_mode, _etg_grid, _ = _scan_and_mode(
+            run_etg_scan,
+            run_etg_linear,
+            etg_ky,
+            cfg_etg,
+            Nl=24,
+            Nm=8,
+            steps=etg_steps,
+            dt=etg_time.dt,
+            window_kw=WINDOWS["etg"],
+            scan_solver=ETG_SCAN_SOLVER,
+            mode_solver=MODE_SOLVER,
+            mode_method=MODE_METHOD,
+            auto_window=True,
+            tmin=None,
+            tmax=None,
+            scan_kwargs={
+                "fit_signal": "phi",
+                "mode_method": "z_index",
+                "time_cfg": etg_time,
+            },
+            mode_kwargs={"fit_signal": "phi", "mode_method": "z_index", "time_cfg": etg_time},
+            verbose=verbose,
+            progress=progress,
+            label="ETG panel",
+            resolution_policy=_etg_resolution_policy,
+            krylov_policy=_etg_krylov_policy,
+        )
     fig, _axes = scan_comparison_figure(
         etg_scan.ky,
         etg_scan.gamma,

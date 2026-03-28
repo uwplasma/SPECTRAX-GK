@@ -46,6 +46,13 @@ def test_Jl_large_b_decay():
     assert J0 < 1.0e-2
 
 
+def test_Jl_large_b_stays_finite():
+    """Large-b ETG coefficients should underflow cleanly instead of overflowing."""
+    b = jnp.array([100.0, 500.0, 2000.0], dtype=jnp.float32)
+    Jl = J_l_all(b, l_max=23)
+    assert jnp.all(jnp.isfinite(Jl))
+
+
 def test_Jl_first_order_coeff():
     """J1 should match the analytic (-b/2) * exp(-b/2) coefficient."""
     b = jnp.array(0.6)

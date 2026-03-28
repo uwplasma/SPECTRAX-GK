@@ -157,7 +157,7 @@ def test_make_figures_reference_mismatch_scan_uses_dedicated_gx_scan(monkeypatch
     assert np.allclose(out.gamma, [1.0, 2.0])
 
 
-def test_make_tables_etg_reference_mismatch_scan_uses_tracked_scan(monkeypatch) -> None:
+def test_make_tables_etg_reference_mismatch_scan_uses_gx_growth_helper(monkeypatch) -> None:
     import tools.make_tables as make_tables
 
     ref = make_tables.LinearScanResult(
@@ -167,17 +167,14 @@ def test_make_tables_etg_reference_mismatch_scan_uses_tracked_scan(monkeypatch) 
     )
     called: dict[str, object] = {}
 
-    def fake_run_etg_scan(ky_values, **kwargs):
-        called["ky"] = np.asarray(ky_values).copy()
-        called["solver"] = kwargs["solver"]
-        called["mode_method"] = kwargs["mode_method"]
-        called["fit_signal"] = kwargs["fit_signal"]
-        called["diagnostic_norm"] = kwargs["diagnostic_norm"]
-        return make_tables.LinearScanResult(
-            ky=np.asarray(ky_values), gamma=np.array([5.0, 6.0]), omega=np.array([7.0, 8.0])
-        )
+    def fake_run_etg_gx_growth(**kwargs):
+        ky = float(kwargs["ky"])
+        called.setdefault("ky", []).append(ky)
+        called["dt"] = kwargs["dt"]
+        called["steps"] = kwargs["steps"]
+        return (5.0 + ky, 7.0 + ky)
 
-    monkeypatch.setattr(make_tables, "run_etg_scan", fake_run_etg_scan)
+    monkeypatch.setattr(make_tables, "_run_etg_gx_growth", fake_run_etg_gx_growth)
 
     out = make_tables._etg_reference_mismatch_scan(
         ref,
@@ -189,11 +186,149 @@ def test_make_tables_etg_reference_mismatch_scan_uses_tracked_scan(monkeypatch) 
     )
 
     assert np.allclose(called["ky"], ref.ky)
-    assert called["solver"] == "krylov"
-    assert called["mode_method"] == "z_index"
-    assert called["fit_signal"] == "phi"
-    assert called["diagnostic_norm"] == make_tables.DIAGNOSTIC_NORM
-    assert np.allclose(out.gamma, [5.0, 6.0])
+    assert called["dt"] == 0.01
+    assert called["steps"] == 600
+    assert np.allclose(out.gamma, [15.0, 25.0])
+    assert np.allclose(out.omega, [17.0, 27.0])
+
+
+def test_run_etg_tables_uses_tracked_mismatch_helper(monkeypatch, tmp_path) -> None:
+    import tools.make_tables as make_tables
+
+    called: dict[str, object] = {}
+
+    def fake_run_etg_linear(**kwargs):
+        return type("Res", (), {"gamma": 1.0, "omega": -2.0})()
+
+    def fake_load_etg_reference_gs2():
+        return make_tables.LinearScanResult(
+            ky=np.array([10.0, 20.0]),
+            gamma=np.array([1.0, 2.0]),
+            omega=np.array([3.0, 4.0]),
+        )
+
+    def fake_etg_reference_mismatch_scan(ref, cfg, *, dt, steps, verbose, progress):
+        called["ref"] = ref
+        called["cfg"] = cfg
+        called["dt"] = dt
+        called["steps"] = steps
+        called["verbose"] = verbose
+        called["progress"] = progress
+        return make_tables.LinearScanResult(
+            ky=np.array([10.0, 20.0]),
+            gamma=np.array([5.0, 6.0]),
+            omega=np.array([7.0, 8.0]),
+        )
+
+    monkeypatch.setattr(make_tables, "run_etg_linear", fake_run_etg_linear)
+    monkeypatch.setattr(make_tables, "load_etg_reference_gs2", fake_load_etg_reference_gs2)
+    monkeypatch.setattr(
+        make_tables,
+        "_etg_reference_mismatch_scan",
+        fake_etg_reference_mismatch_scan,
+    )
+
+    make_tables._run_etg_tables(outdir=tmp_path, verbose=False, progress=False)
+
+    assert called["dt"] == 0.01
+    assert called["steps"] == 600
+    assert called["verbose"] is False
+    assert called["progress"] is False
+    cfg = called["cfg"]
+    assert cfg.model.adiabatic_ions is False
+    assert cfg.model.R_over_LTi == 0.0
+    assert cfg.model.R_over_Lni == 0.0
+    assert cfg.model.R_over_Lne == 0.8
+    assert (tmp_path / "etg_mismatch_table.csv").exists()
+
+
+def test_run_etg_figures_uses_crosscode_case(monkeypatch, tmp_path: Path) -> None:
+    import tools.make_figures as make_figures
+
+    called: dict[str, object] = {}
+
+    def fake_scan_and_mode(
+        _scan_fn,
+        _linear_fn,
+        ky_values,
+        cfg,
+        *,
+        label,
+        **kwargs,
+    ):
+        called["ky_values"] = np.asarray(ky_values).copy()
+        called["cfg"] = cfg
+        called["label"] = label
+        return (
+            make_figures.LinearScanResult(
+                ky=np.asarray(ky_values),
+                gamma=np.array([1.0, 2.0, 3.0]),
+                omega=np.array([-4.0, -5.0, -6.0]),
+            ),
+            None,
+            None,
+            float(np.asarray(ky_values)[0]),
+        )
+
+    monkeypatch.setattr(
+        make_figures,
+        "load_etg_reference_gs2",
+        lambda: make_figures.LinearScanResult(
+            ky=np.array([10.0, 20.0, 30.0]),
+            gamma=np.array([1.0, 2.0, 3.0]),
+            omega=np.array([-4.0, -5.0, -6.0]),
+        ),
+    )
+    monkeypatch.setattr(make_figures, "_scan_and_mode", fake_scan_and_mode)
+    monkeypatch.setattr(
+        make_figures,
+        "scan_comparison_figure",
+        lambda *args, **kwargs: (_DummyFigure(), None),
+    )
+
+    make_figures._run_etg_figures(outdir=tmp_path, verbose=False, progress=False)
+
+    cfg = called["cfg"]
+    assert np.allclose(called["ky_values"], [10.0, 20.0, 30.0])
+    assert called["label"] == "ETG panel"
+    assert cfg.model.adiabatic_ions is False
+    assert cfg.model.R_over_LTi == 0.0
+    assert cfg.model.R_over_Lni == 0.0
+    assert cfg.model.R_over_Lne == 0.8
+
+
+def test_run_etg_figures_prefers_existing_mismatch_csv(monkeypatch, tmp_path: Path) -> None:
+    import tools.make_figures as make_figures
+
+    mismatch = tmp_path / "etg_mismatch_table.csv"
+    mismatch.write_text(
+        "ky,gamma_ref,omega_ref,gamma_spectrax,omega_spectrax,rel_gamma,rel_omega\n"
+        "10,1,2,3,4,0,0\n"
+        "20,5,6,7,8,0,0\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(
+        make_figures,
+        "load_etg_reference_gs2",
+        lambda: make_figures.LinearScanResult(
+            ky=np.array([10.0, 20.0]),
+            gamma=np.array([1.0, 5.0]),
+            omega=np.array([2.0, 6.0]),
+        ),
+    )
+    monkeypatch.setattr(
+        make_figures,
+        "_scan_and_mode",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("should reuse mismatch csv")),
+    )
+    monkeypatch.setattr(
+        make_figures,
+        "scan_comparison_figure",
+        lambda *args, **kwargs: (_DummyFigure(), None),
+    )
+
+    make_figures._run_etg_figures(outdir=tmp_path, verbose=False, progress=False)
 
 
 def test_make_tables_cyclone_gx_scan_falls_back_from_project_to_max(monkeypatch) -> None:

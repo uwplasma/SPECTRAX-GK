@@ -58,7 +58,7 @@ def test_mode_family_and_target_selection_helpers() -> None:
     assert lk._mode_family_sign("etg") == -1
     assert lk._mode_family_sign("other") == 0
     real = jnp.asarray([-0.1, 0.05, 0.08])
-    imag = jnp.asarray([-1.0, 1.9, 2.2])
+    imag = jnp.asarray([1.0, -1.9, -2.2])
     mask = jnp.asarray([True, True, False])
     idx = lk._select_by_target(
         real,
@@ -70,6 +70,16 @@ def test_mode_family_and_target_selection_helpers() -> None:
         fallback_idx=jnp.asarray(0),
     )
     assert int(idx) == 1
+    idx_neg = lk._select_by_target(
+        real,
+        -imag,
+        mask,
+        omega_scale=jnp.asarray(1.0),
+        omega_target_factor=2.0,
+        omega_sign=-1,
+        fallback_idx=jnp.asarray(0),
+    )
+    assert int(idx_neg) == 1
 
 
 def test_select_by_overlap_prefers_reference_branch() -> None:
@@ -255,6 +265,40 @@ def test_dominant_eigenpair_explicit_shift_defaults_to_reference_seed(
     assert jnp.allclose(captured["sigma"], jnp.asarray(0.2 - 1.1j, dtype=v0.dtype))
     assert jnp.allclose(captured["v_init"], v_ref)
     assert jnp.allclose(captured["v_ref"], v_ref)
+
+
+def test_dominant_eigenpair_target_shift_uses_physical_omega_sign(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _grid, cache, params, v0, _term_cfg, terms = _tiny_krylov_setup(linked=False)
+    captured: dict[str, jnp.ndarray] = {}
+
+    def _fake_shift(v_init, v_ref_in, *_args, sigma, **_kwargs):
+        captured["sigma"] = sigma
+        return jnp.asarray(0.4 + 0.2j, dtype=v0.dtype), jnp.full_like(v0, 5.0 + 0.0j)
+
+    monkeypatch.setattr(lk, "dominant_eigenpair_shift_invert_cached", _fake_shift)
+    monkeypatch.setattr(lk, "_omega_scale", lambda *_args, **_kwargs: jnp.asarray(2.0))
+
+    lk.dominant_eigenpair(
+        v0,
+        cache,
+        params,
+        terms=terms,
+        method="shift_invert",
+        shift_source="target",
+        shift_selection="shift",
+        omega_target_factor=0.5,
+        omega_sign=-1,
+        krylov_dim=4,
+        restarts=1,
+        shift_maxiter=15,
+        shift_restart=10,
+        power_iters=4,
+        power_dt=0.05,
+    )
+
+    assert jnp.allclose(captured["sigma"], jnp.asarray(0.0 + 1.0j, dtype=v0.dtype))
 
 
 def test_shift_invert_fallback_policy(monkeypatch: pytest.MonkeyPatch) -> None:

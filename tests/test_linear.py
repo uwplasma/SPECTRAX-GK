@@ -95,6 +95,20 @@ def test_build_linear_cache_zero_shat_periodic_uses_periodic_fft_without_end_dam
     assert cache.linked_damp_profile.size == 0
 
 
+def test_build_linear_cache_single_selected_ky_ignores_nonlinear_dealias_mask():
+    grid_cfg = GridConfig(Nx=1, Ny=16, Nz=32, Lx=2.0 * np.pi, Ly=0.628, boundary="periodic", y0=0.2)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid_full = build_spectral_grid(cfg.grid)
+    grid = select_ky_grid(grid_full, 6)  # ky = 30 on this grid; masked by 2/3 in the full nonlinear mesh
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams()
+
+    cache = build_linear_cache(grid, geom, params, Nl=2, Nm=2)
+
+    assert np.asarray(grid.dealias_mask).item() is False
+    assert float(np.nanmax(np.asarray(cache.kperp2))) > 0.0
+
+
 def test_linked_fft_derivative_matches_periodic_for_one_link_chains():
     rng = np.random.default_rng(0)
     f = (
