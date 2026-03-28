@@ -41,6 +41,7 @@ from spectraxgk.benchmarks import (
     run_cyclone_linear,
     run_cyclone_scan,
     run_etg_linear,
+    run_etg_scan,
     run_kinetic_linear,
     run_kbm_beta_scan,
     run_tem_linear,
@@ -784,6 +785,55 @@ def _cyclone_reference_mismatch_scan(
     return LinearScanResult(ky=np.asarray(scan.ky), gamma=np.asarray(scan.gamma), omega=np.asarray(scan.omega))
 
 
+def _etg_reference_mismatch_scan(
+    ref: LinearScanResult,
+    cfg: ETGBaseCase,
+    *,
+    dt: float,
+    steps: int,
+    verbose: bool,
+    progress: bool,
+) -> LinearScanResult:
+    _log("\n=== ETG mismatch scan ===", verbose=verbose, use_tqdm=progress)
+    _log(f"Config:\n{_format_cfg(cfg)}", verbose=verbose, use_tqdm=progress)
+    _log(
+        f"Numerics: Nl=24 Nm=8 method=imex2 solver=krylov dt={dt} steps={steps}",
+        verbose=verbose,
+        use_tqdm=progress,
+    )
+    _log(f"Window params: {WINDOWS['etg']}", verbose=verbose, use_tqdm=progress)
+    scan = run_etg_scan(
+        np.asarray(ref.ky),
+        cfg=cfg,
+        Nl=24,
+        Nm=8,
+        dt=dt,
+        steps=steps,
+        method="imex2",
+        solver="krylov",
+        krylov_cfg=ETG_KRYLOV,
+        auto_window=True,
+        mode_method="z_index",
+        fit_signal="phi",
+        diagnostic_norm=DIAGNOSTIC_NORM,
+        **WINDOWS["etg"],
+    )
+    for ky_val, gamma_val, omega_val in zip(scan.ky, scan.gamma, scan.omega):
+        idx = int(np.argmin(np.abs(ref.ky - ky_val)))
+        gamma_ref = float(ref.gamma[idx])
+        omega_ref = float(ref.omega[idx])
+        rel_gamma = (float(gamma_val) - gamma_ref) / gamma_ref if gamma_ref != 0.0 else np.nan
+        rel_omega = (float(omega_val) - omega_ref) / omega_ref if omega_ref != 0.0 else np.nan
+        _log(
+            f"[ETG mismatch] done ky={float(ky_val):.4g} gamma={float(gamma_val):.6g} omega={float(omega_val):.6g}"
+            f" | ref gamma={gamma_ref:.6g} omega={omega_ref:.6g}"
+            f" rel_gamma={rel_gamma:.3g} rel_omega={rel_omega:.3g}",
+            verbose=verbose,
+            use_tqdm=progress,
+        )
+    return LinearScanResult(ky=np.asarray(scan.ky), gamma=np.asarray(scan.gamma), omega=np.asarray(scan.omega))
+
+
 def _scale_steps(ky: np.ndarray, base_steps: int, ky_ref: float, max_steps: int) -> np.ndarray:
     scale = ky_ref / np.maximum(ky, 1.0e-6)
     steps = base_steps * np.maximum(1.0, scale)
@@ -1227,31 +1277,14 @@ def main() -> int:
         sample_stride=2,
     )
     etg_steps = int(round(etg_time.t_max / etg_time.dt))
-    etg_ky, etg_g, etg_w = _scan_linear_verbose(
-        ky_values=etg_ref.ky,
-        run_linear_fn=run_etg_linear,
-        cfg=etg_cfg,
-        Nl=24,
-        Nm=8,
+    etg_mismatch = _etg_reference_mismatch_scan(
+        etg_ref,
+        etg_cfg,
         dt=etg_time.dt,
         steps=etg_steps,
-        method="imex2",
-        solver=ETG_SOLVER,
-        krylov_cfg=ETG_KRYLOV,
-        window_kw=WINDOWS["etg"],
-        auto_window=True,
-        run_kwargs={
-            "mode_method": "z_index",
-            "fit_signal": "phi",
-            "time_cfg": etg_time,
-        },
-        label="ETG mismatch",
-        ref=etg_ref,
         verbose=verbose,
         progress=progress,
-        resolution_policy=_etg_resolution_policy,
     )
-    etg_mismatch = LinearScanResult(ky=etg_ky, gamma=etg_g, omega=etg_w)
     (outdir / "etg_mismatch_table.csv").write_text(
         "\n".join(_build_rows(etg_mismatch, etg_ref)) + "\n", encoding="utf-8"
     )

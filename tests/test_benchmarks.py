@@ -295,6 +295,52 @@ def test_cyclone_krylov_smoke():
     assert np.isfinite(result.omega)
 
 
+def test_cyclone_scan_gx_time_falls_back_to_krylov_when_gx_growth_is_unavailable(monkeypatch):
+    import spectraxgk.benchmarks as benchmarks
+
+    monkeypatch.setattr(benchmarks, "build_linear_cache", lambda *_args, **_kwargs: object())
+    monkeypatch.setattr(
+        benchmarks,
+        "integrate_linear_gx",
+        lambda *_args, **_kwargs: (
+            np.array([0.0, 0.1], dtype=float),
+            np.ones((2, 1, 1, 8), dtype=np.complex64),
+            np.zeros((2, 1, 1), dtype=float),
+            np.zeros((2, 1, 1), dtype=float),
+        ),
+    )
+    monkeypatch.setattr(
+        benchmarks,
+        "gx_growth_rate_from_phi",
+        lambda *args, **kwargs: (_ for _ in ()).throw(ValueError("No finite GX growth-rate samples available")),
+    )
+    monkeypatch.setattr(
+        benchmarks,
+        "dominant_eigenpair",
+        lambda *_args, **_kwargs: (0.3 - 0.8j, np.ones((1, 2, 2, 1, 1, 8), dtype=np.complex64)),
+    )
+    monkeypatch.setattr(
+        benchmarks,
+        "_normalize_growth_rate",
+        lambda gamma, omega, *_args, **_kwargs: (float(gamma), float(omega)),
+    )
+
+    cfg = CycloneBaseCase(grid=GridConfig(Nx=1, Ny=8, Nz=8, Lx=6.0, Ly=6.0, y0=5.0, ntheta=8, nperiod=1))
+    scan = run_cyclone_scan(
+        np.array([0.3]),
+        cfg=cfg,
+        Nl=2,
+        Nm=2,
+        dt=np.array([0.1]),
+        steps=np.array([2]),
+        method="imex2",
+        solver="auto",
+    )
+
+    assert np.isclose(scan.gamma[0], 0.3)
+    assert np.isclose(scan.omega[0], 0.8)
+
+
 def test_etg_growth_positive_for_gradients():
     """ETG growth rate should remain positive across R/LTe variations."""
     grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
