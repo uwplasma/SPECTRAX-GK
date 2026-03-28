@@ -5,7 +5,11 @@ from spectraxgk.config import GridConfig
 from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
 from spectraxgk.grids import build_spectral_grid, select_ky_grid
 from spectraxgk.linear import LinearParams, build_linear_cache
-from spectraxgk.terms.assembly import assemble_rhs, assemble_rhs_cached, assemble_rhs_terms_cached
+from spectraxgk.terms.assembly import (
+    assemble_rhs,
+    assemble_rhs_cached,
+    assemble_rhs_terms_cached,
+)
 from spectraxgk.terms.config import TermConfig
 
 
