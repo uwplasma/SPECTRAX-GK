@@ -308,7 +308,7 @@ def main() -> None:
         if ion_r_over_lti is None:
             ion_r_over_lti = args.R_over_LTi
         base_cfg = ETGBaseCase(
-            grid=GridConfig(Nx=1, Ny=args.Ny, Nz=args.Nz, Lx=6.28, Ly=6.28, ntheta=32, nperiod=2),
+            grid=GridConfig(Nx=1, Ny=args.Ny, Nz=args.Nz, Lx=6.28, Ly=0.628, ntheta=32, nperiod=2),
             geometry=GeometryConfig(
                 q=args.q,
                 s_hat=args.s_hat,

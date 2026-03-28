@@ -22,6 +22,9 @@ from spectraxgk.benchmarks import (
     CYCLONE_OMEGA_STAR_SCALE,
     CYCLONE_RHO_STAR,
     CYCLONE_KRYLOV_DEFAULT,
+    ETG_OMEGA_D_SCALE,
+    ETG_OMEGA_STAR_SCALE,
+    ETG_RHO_STAR,
     GX_DAMP_ENDS_AMP,
     GX_DAMP_ENDS_WIDTHFRAC,
     KINETIC_KRYLOV_DEFAULT,
@@ -77,6 +80,11 @@ KBM_SOLVER = "time"
 TEM_SOLVER = "time"
 DIAGNOSTIC_NORM = "gx"
 DEFAULT_RUN_KW = {"diagnostic_norm": DIAGNOSTIC_NORM}
+
+ETG_GX_MISMATCH_NL = 16
+ETG_GX_MISMATCH_NM = 8
+ETG_GX_MISMATCH_DT = 0.01
+ETG_GX_MISMATCH_STEPS = 800
 
 CYCLONE_KRYLOV = CYCLONE_KRYLOV_DEFAULT
 KINETIC_KRYLOV = KINETIC_KRYLOV_DEFAULT
@@ -850,7 +858,7 @@ def _etg_reference_mismatch_scan(
     _log("\n=== ETG mismatch scan ===", verbose=verbose, use_tqdm=progress)
     _log(f"Config:\n{_format_cfg(cfg)}", verbose=verbose, use_tqdm=progress)
     _log(
-        f"Numerics: Nl=24 Nm=8 GX-growth-style ETG replay dt={dt} steps={steps}",
+        f"Numerics: Nl={ETG_GX_MISMATCH_NL} Nm={ETG_GX_MISMATCH_NM} GX-growth-style ETG replay dt={dt} steps={steps}",
         verbose=verbose,
         use_tqdm=progress,
     )
@@ -861,8 +869,8 @@ def _etg_reference_mismatch_scan(
         gamma_val, omega_val = _run_etg_gx_growth(
             cfg=cfg,
             ky=float(ky_val),
-            Nl=24,
-            Nm=8,
+            Nl=ETG_GX_MISMATCH_NL,
+            Nm=ETG_GX_MISMATCH_NM,
             dt=dt,
             steps=steps,
         )
@@ -964,9 +972,9 @@ def _run_etg_gx_growth(
     params = _two_species_params(
         cfg.model,
         kpar_scale=float(geom.gradpar()),
-        omega_d_scale=0.4,
-        omega_star_scale=0.8,
-        rho_star=0.016507,
+        omega_d_scale=ETG_OMEGA_D_SCALE,
+        omega_star_scale=ETG_OMEGA_STAR_SCALE,
+        rho_star=ETG_RHO_STAR,
         nhermite=Nm,
     )
     cache = build_linear_cache(grid, geom, params, Nl, Nm)
@@ -1069,8 +1077,8 @@ def _run_etg_tables(*, outdir: Path, verbose: bool, progress: bool) -> None:
     etg_ref = load_etg_reference_gs2()
     etg_cfg = _etg_crosscode_case()
     etg_time = TimeConfig(
-        t_max=6.0,
-        dt=0.01,
+        t_max=ETG_GX_MISMATCH_DT * ETG_GX_MISMATCH_STEPS,
+        dt=ETG_GX_MISMATCH_DT,
         method="imex2",
         use_diffrax=False,
         progress_bar=False,

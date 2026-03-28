@@ -68,6 +68,10 @@ def _max_diff(name: str, a: np.ndarray, b: np.ndarray) -> None:
     print(f"{name:>18s} | max abs={diff:.3e} rel={rel:.3e}")
 
 
+def _rho_e_over_rho_i(mass_ratio: float, te_over_ti: float) -> float:
+    return math.sqrt(te_over_ti / mass_ratio)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="ETG high-ky physics audit vs GX formulas")
     parser.add_argument("--ky", type=float, default=25.0)
@@ -115,7 +119,7 @@ def main() -> int:
     _max_diff("cv_d", cv_d_s, cv_d_gx)
     _max_diff("gb_d", gb_d_s, gb_d_gx)
 
-    b = kperp2_s * (0.016507 ** 2)  # rho_e/rho_i for ETG default
+    b = kperp2_s * (_rho_e_over_rho_i(float(cfg.model.mass_ratio), float(cfg.model.Te_over_Ti)) ** 2)
     Jl = np.asarray(J_l_all(jnp.asarray(b), l_max=args.Nl - 1))
     Jl_gx = np.exp(-0.5 * b)[None, ...] * ((-0.5 * b) ** np.arange(args.Nl)[:, None, None, None]) / np.array(
         [math.factorial(l) for l in range(args.Nl)]

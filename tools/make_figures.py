@@ -983,7 +983,7 @@ def _run_crosscode_figures(*, outdir: Path, verbose: bool, progress: bool) -> No
             Ny=96,
             Nz=96,
             Lx=6.28,
-            Ly=6.28,
+            Ly=0.628,
             ntheta=32,
             nperiod=2,
             boundary="linked",
