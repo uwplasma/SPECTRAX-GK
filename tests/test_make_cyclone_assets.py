@@ -180,14 +180,14 @@ def test_make_tables_etg_reference_mismatch_scan_uses_gx_growth_helper(monkeypat
         ref,
         make_tables.ETGBaseCase(),
         dt=0.01,
-        steps=600,
+        steps=make_tables.ETG_GX_MISMATCH_STEPS,
         verbose=False,
         progress=False,
     )
 
     assert np.allclose(called["ky"], ref.ky)
     assert called["dt"] == 0.01
-    assert called["steps"] == 600
+    assert called["steps"] == make_tables.ETG_GX_MISMATCH_STEPS
     assert np.allclose(out.gamma, [15.0, 25.0])
     assert np.allclose(out.omega, [17.0, 27.0])
 
@@ -231,7 +231,7 @@ def test_run_etg_tables_uses_tracked_mismatch_helper(monkeypatch, tmp_path) -> N
     make_tables._run_etg_tables(outdir=tmp_path, verbose=False, progress=False)
 
     assert called["dt"] == 0.01
-    assert called["steps"] == 600
+    assert called["steps"] == make_tables.ETG_GX_MISMATCH_STEPS
     assert called["verbose"] is False
     assert called["progress"] is False
     cfg = called["cfg"]
