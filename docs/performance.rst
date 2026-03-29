@@ -202,9 +202,9 @@ The assembled figure is generated from the collected per-case summaries with
 - ``docs/_static/runtime_memory_benchmark.png``
 - ``docs/_static/runtime_memory_benchmark.pdf``
 
-The current cETG reduced-model row includes SPECTRAX-GK CPU and GPU
-measurements only. The available GX build on the tracked office host still
-fails on that benchmark, so no GX bar is plotted for that case.
+The cETG reduced-model row now includes all three measured backends. The GX
+runtime uses a matched short ``t_max=5`` input so the wall-time and memory
+comparison uses the same integration window as the SPECTRAX-GK runtime case.
 
 Cached basis indices
 --------------------

@@ -3,13 +3,13 @@ Benchmarks
 
 SPECTRAX-GK’s benchmark figures are organized as a compact atlas instead of a
 case-by-case gallery. The layout follows the standard gyrokinetic comparison
-pattern used in the GX and stellarator benchmark literature [GX]_:
+pattern:
 
 - linear growth-rate and real-frequency overlays versus ``k_y`` (or ``beta``),
 - nonlinear time traces of heat flux, free energy, electrostatic field energy,
   and magnetic field energy when present,
-- compact cross-code panels that separate headline validation cases from
-  broader stress lanes.
+- compact panels that separate exact diagnostic closures from broader stress
+  lanes.
 
 The figures in this page are generated directly from tracked CSV assets and
 curated comparison traces in ``docs/_static``.
@@ -28,14 +28,13 @@ The atlas builder now reads its inputs from
 ``tools_out/benchmark_atlas_summary.json`` so the panel provenance stays
 explicit.
 
-This produces:
+This produces the tracked atlas panels:
 
-- ``docs/_static/benchmark_imported_linear_panel.png``
-- ``docs/_static/benchmark_extended_linear_panel.png``
 - ``docs/_static/benchmark_core_linear_atlas.png``
 - ``docs/_static/benchmark_core_nonlinear_atlas.png``
 - ``docs/_static/benchmark_convergence_panel.png``
 - ``docs/_static/benchmark_readme_panel.png``
+- ``docs/_static/benchmark_extended_linear_panel.png``
 
 PDF copies are emitted alongside each PNG for manuscript workflows.
 
@@ -72,7 +71,7 @@ throughout:
 - magnetic field energy when ``A_parallel`` or ``B_parallel`` are active
 
 Representative convergence gate
---------------------------------
+-------------------------------
 
 The benchmark suite makes convergence explicit instead of leaving it implicit
 in the chosen production grids. The tracked convergence tile uses the Cyclone
@@ -108,48 +107,49 @@ already used in the current parity and regression workflow:
    :align: center
    :alt: Core linear benchmark atlas
 
-   Core linear benchmark atlas. The first three tiles are the main tokamak
-   benchmark scans, while the fourth tile collects imported-geometry and
-   exact-diagnostic checks for W7-X, HSX, Cyclone Miller geometry, and KAW.
+   Linear benchmark master panel. This panel keeps the headline linear
+   coverage on one page: Cyclone ITG, ETG, KBM, W7-X, HSX, Cyclone Miller,
+   KAW, and the KBM Miller late-growth replay.
 
 .. figure:: _static/benchmark_core_nonlinear_atlas.png
    :width: 100%
    :align: center
    :alt: Core nonlinear benchmark atlas
 
-   Core nonlinear benchmark atlas. These panels track the time histories used
-   for the main nonlinear validation claim: Cyclone, KBM, W7-X, and HSX.
+   Nonlinear benchmark master panel. This panel groups the tracked nonlinear
+   overlays used in the public benchmark set: Cyclone, KBM, W7-X, HSX,
+   Cyclone Miller, and the reduced cETG comparison.
 
-Linear benchmark comparisons
-----------------------------
+Interpretation of parity
+------------------------
 
-The core linear atlas intentionally combines two types of benchmark inputs:
+The atlas intentionally mixes two classes of evidence:
 
-- curated benchmark scans for Cyclone ITG, ETG, and KBM,
-- direct imported-geometry or exact-diagnostic comparisons for W7-X, HSX,
-  Cyclone Miller geometry, and KAW.
+- broad benchmark overlays over scanned parameters such as ``k_y`` or
+  ``beta``,
+- exact-window or exact-diagnostic closures on selected lanes.
 
-The current tracked linear coverage is:
+Only the exact-window closures should be read as strict small-tolerance parity
+gates. In the current tracked set those are:
 
-- Cyclone ITG against the tracked benchmark reference
-- ETG against the tracked internal benchmark reference
-- KBM against the tracked internal benchmark reference and exact-diagnostic audits
-- W7-X and HSX short-window imported-geometry audits against GX
-- Cyclone Miller imported-geometry audit against GX
-- KAW exact late diagnostic reconstruction from same-run field dumps
+- KAW exact diagnostic window
+- KBM Miller late-growth replay
 
-The README uses the compact summary panel below, but the separate core linear
-atlas plus the imported/exact and convergence panels are the more legible
-publication assets:
+The broader scanned benchmark panels are coverage figures, not universal
+``rtol <= 3e-2`` claims for every tile. They remain valuable because they show
+which branches and diagnostics are being tracked across the codebase.
+
+README summary panel
+--------------------
 
 .. figure:: _static/benchmark_readme_panel.png
    :width: 100%
    :align: center
    :alt: README benchmark atlas
 
-   Publication-facing benchmark summary. The README panel now includes the
-   representative convergence tile together with the linear, nonlinear,
-   imported/exact, and extended stress panels.
+   Publication-facing benchmark summary. The README panel is intentionally
+   limited to the convergence gate plus the linear and nonlinear master panels
+   so the top-level presentation stays compact.
 
 Extended stress matrix
 ----------------------
@@ -169,9 +169,9 @@ The current extended panel covers:
    :align: center
    :alt: Extended linear stress matrix
 
-   Extended linear stress matrix. These lanes are useful for stress testing
-   solver contracts, but they are intentionally separated from the main
-   publication-facing benchmark atlas.
+   Extended linear stress matrix. These lanes remain visible for solver stress
+   testing, but they are intentionally separated from the main publication
+   panel.
 
 Case groups
 -----------
@@ -201,12 +201,7 @@ Reduced and stress cases
 Notes on interpretation
 -----------------------
 
-The atlas is split deliberately:
-
-- the README and top-level docs show the compact atlas and the core linear and
-  nonlinear panels,
-- the extended stress matrix remains visible in the benchmark docs,
-- open exploratory lanes are not mixed into the headline validation figure.
-
-This keeps the public benchmark story reviewer-proof while still preserving the
-wider stress-test record inside the docs and ``plan.md``.
+The atlas is split deliberately. The README stays limited to a compact
+publication panel, while this page keeps the larger linear, nonlinear, and
+stress figures visible without claiming that every scanned point is an exact
+closure.
