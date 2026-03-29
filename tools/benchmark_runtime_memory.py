@@ -43,17 +43,18 @@ class RuntimeBenchRun:
     backend: str
     command: str
     cwd: str
+    host: str | None = None
     enabled: bool = True
     wrap_time: bool = True
 
 
 def _resolve(path: str | Path) -> Path:
-    p = Path(path)
+    p = Path(str(path)).expanduser()
     return p if p.is_absolute() else ROOT / p
 
 
 def _render(text: str) -> str:
-    return os.path.expandvars(text.replace("{root}", str(ROOT)))
+    return text.replace("{root}", str(ROOT))
 
 
 def _load_manifest(path: Path) -> list[RuntimeBenchRun]:
@@ -68,6 +69,7 @@ def _load_manifest(path: Path) -> list[RuntimeBenchRun]:
                 backend=str(item["backend"]),
                 command=str(item["command"]),
                 cwd=str(item.get("cwd", "{root}")),
+                host=None if item.get("host") in (None, "") else str(item.get("host")),
                 enabled=bool(item.get("enabled", True)),
                 wrap_time=bool(item.get("wrap_time", True)),
             )
@@ -84,8 +86,8 @@ def _select_runs(runs: list[RuntimeBenchRun], cases: set[str] | None, backends: 
     return out
 
 
-def _time_wrapper_prefix() -> list[str]:
-    system = platform.system().lower()
+def _time_wrapper_prefix(system_name: str | None = None) -> list[str]:
+    system = (system_name or platform.system()).lower()
     if system == "darwin":
         return ["/usr/bin/time", "-l"]
     return ["/usr/bin/time", "-v"]
@@ -93,8 +95,8 @@ def _time_wrapper_prefix() -> list[str]:
 
 def _parse_peak_rss_mb(text: str) -> float | None:
     byte_patterns = [
-        r"(\d+)\s+maximum resident set size",
-        r"peak memory footprint:\s*(\d+)",
+        r"(?mi)^[ \t]*(\d+)[ \t]+maximum resident set size$",
+        r"(?mi)^[ \t]*peak memory footprint:\s*(\d+)\s*$",
     ]
     for pattern in byte_patterns:
         match = re.search(pattern, text, flags=re.IGNORECASE)
@@ -102,9 +104,9 @@ def _parse_peak_rss_mb(text: str) -> float | None:
             return float(match.group(1)) / (1024.0 * 1024.0)
 
     kb_patterns = [
-        r"maximum resident set size\s*=\s*(\d+)",
-        r"Maximum resident set size \(kbytes\):\s*(\d+)",
-        r"maxresident\)k\s*=\s*(\d+)",
+        r"(?mi)^[ \t]*maximum resident set size\s*=\s*(\d+)\s*$",
+        r"(?mi)^[ \t]*Maximum resident set size \(kbytes\):\s*(\d+)\s*$",
+        r"(?mi)^[ \t]*maxresident\)k\s*=\s*(\d+)\s*$",
     ]
     for pattern in kb_patterns:
         match = re.search(pattern, text, flags=re.IGNORECASE)
@@ -114,21 +116,34 @@ def _parse_peak_rss_mb(text: str) -> float | None:
 
 
 def _run_command(run: RuntimeBenchRun) -> dict[str, object]:
-    rendered_cwd = _resolve(_render(run.cwd))
+    rendered_host = _render(run.host) if run.host else None
+    rendered_cwd = _render(run.cwd)
     rendered_command = _render(run.command)
-    shell_cmd = rendered_command
-    if run.wrap_time:
-        prefix = " ".join(shlex.quote(x) for x in _time_wrapper_prefix())
-        shell_cmd = f"{prefix} /bin/sh -lc {shlex.quote(rendered_command)}"
-
     start = time.perf_counter()
-    proc = subprocess.run(
-        shell_cmd,
-        shell=True,
-        cwd=rendered_cwd,
-        capture_output=True,
-        text=True,
-    )
+    if rendered_host:
+        shell_cmd = rendered_command
+        if run.wrap_time:
+            prefix = " ".join(shlex.quote(x) for x in _time_wrapper_prefix("linux"))
+            shell_cmd = f"{prefix} /bin/sh -lc {shlex.quote(rendered_command)}"
+        remote_cmd = f"cd {shlex.quote(rendered_cwd)} && {shell_cmd}"
+        proc = subprocess.run(
+            ["ssh", rendered_host, remote_cmd],
+            capture_output=True,
+            text=True,
+        )
+    else:
+        resolved_cwd = _resolve(rendered_cwd)
+        shell_cmd = rendered_command
+        if run.wrap_time:
+            prefix = " ".join(shlex.quote(x) for x in _time_wrapper_prefix())
+            shell_cmd = f"{prefix} /bin/sh -lc {shlex.quote(rendered_command)}"
+        proc = subprocess.run(
+            shell_cmd,
+            shell=True,
+            cwd=resolved_cwd,
+            capture_output=True,
+            text=True,
+        )
     elapsed = time.perf_counter() - start
     combined = (proc.stdout or "") + "\n" + (proc.stderr or "")
     peak_rss_mb = _parse_peak_rss_mb(combined)
@@ -137,7 +152,8 @@ def _run_command(run: RuntimeBenchRun) -> dict[str, object]:
         "label": run.label,
         "backend": run.backend,
         "command": rendered_command,
-        "cwd": str(rendered_cwd),
+        "cwd": rendered_cwd if rendered_host else str(_resolve(rendered_cwd)),
+        "host": rendered_host or "",
         "wrap_time": run.wrap_time,
         "status": "success" if proc.returncode == 0 else "failed",
         "returncode": proc.returncode,
@@ -158,6 +174,7 @@ def _write_csv(path: Path, rows: list[dict[str, object]]) -> None:
         "returncode",
         "runtime_s",
         "peak_rss_mb",
+        "host",
         "cwd",
         "command",
     ]
@@ -234,14 +251,19 @@ def main() -> int:
 
     if args.list:
         for run in selected:
-            print(f"{run.case} [{run.backend}] -> {run.command}")
+            prefix = f"{run.host}:" if run.host else ""
+            print(f"{run.case} [{run.backend}] -> {prefix}{run.command}")
         return 0
 
     rows: list[dict[str, object]] = []
     for run in selected:
         rendered_command = _render(run.command)
+        rendered_cwd = _render(run.cwd)
         if args.dry_run:
-            print(f"[dry-run] {run.case} [{run.backend}] cd {_resolve(_render(run.cwd))} && {rendered_command}")
+            if run.host:
+                print(f"[dry-run] {run.case} [{run.backend}] ssh {run.host} 'cd {rendered_cwd} && {rendered_command}'")
+            else:
+                print(f"[dry-run] {run.case} [{run.backend}] cd {_resolve(rendered_cwd)} && {rendered_command}")
             continue
         row = _run_command(run)
         rows.append(row)

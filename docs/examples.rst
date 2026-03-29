@@ -20,6 +20,7 @@ Tokamak cases
 
    python examples/cyclone_runtime_linear.py
    python examples/cyclone_runtime_nonlinear.py --steps 200
+   python examples/cetg_runtime_nonlinear.py --steps 1000
    python examples/etg_runtime_linear.py
    python examples/kbm_runtime_linear.py
    python examples/kbm_runtime_nonlinear.py --steps 200
@@ -32,6 +33,9 @@ Stellarator and imported-geometry cases
 
    python examples/w7x_linear_imported_geometry.py \
      --geometry-file /path/to/itg_w7x_adiabatic_electrons.eik.nc
+
+   python examples/hsx_linear_imported_geometry.py \
+     --geometry-file /path/to/hsx_linear.eik.nc
 
    python examples/w7x_nonlinear_imported_geometry.py \
      --geometry-file /path/to/w7x_adiabatic_electrons.eik.nc
@@ -122,14 +126,14 @@ The staged helper runs the linear seed, writes a restart state in the runtime
 binary layout, and then launches the nonlinear follow-up with the matching
 restart and fixed-mode controls used in the tracked secondary benchmark.
 
-Reduced-model boundary
-----------------------
+Reduced-model runtime
+---------------------
 
 .. code-block:: bash
 
+   python examples/cetg_runtime_nonlinear.py --steps 1000
    python -m spectraxgk.cli run-runtime-nonlinear \
      --config examples/configs/runtime_cetg_reference.toml
 
-That command currently raises an explicit ``NotImplementedError``. The config
-exists to define the reduced-model contract clearly rather than to pretend that
-the full-GK runtime path already supports that model family.
+The reduced collisional slab ETG workflow uses the dedicated cETG runtime
+solver rather than the full-GK field solve path.

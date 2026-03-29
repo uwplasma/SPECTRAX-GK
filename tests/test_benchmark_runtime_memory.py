@@ -27,11 +27,13 @@ case = "b"
 label = "B"
 backend = "gx"
 command = "echo b"
+host = "office"
 enabled = false
 """,
         encoding="utf-8",
     )
     runs = _load_manifest(manifest)
+    assert runs[1].host == "office"
     selected = _select_runs(runs, {"a"}, {"spectrax_cpu"})
     assert len(selected) == 1
     assert selected[0].case == "a"
