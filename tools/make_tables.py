@@ -6,6 +6,7 @@ from dataclasses import asdict, is_dataclass
 from pathlib import Path
 from pprint import pformat
 import argparse
+import csv
 import sys
 from typing import Callable
 
@@ -120,6 +121,100 @@ def _build_rows(scan, ref):
             f"{ky:.3f},{gamma_ref:.6f},{omega_ref:.6f},{gamma:.6f},{omega:.6f},{rel_gamma:.3f},{rel_omega:.3f}"
         )
     return rows
+
+
+def _rows_from_reference_columns(
+    x: np.ndarray,
+    gamma_ref: np.ndarray,
+    omega_ref: np.ndarray,
+    gamma: np.ndarray,
+    omega: np.ndarray,
+) -> list[str]:
+    rows = ["ky,gamma_ref,omega_ref,gamma_spectrax,omega_spectrax,rel_gamma,rel_omega"]
+    for ky, g_ref, w_ref, g, w in zip(x, gamma_ref, omega_ref, gamma, omega):
+        rel_gamma = (g - g_ref) / g_ref if g_ref != 0.0 else np.nan
+        rel_omega = (w - w_ref) / w_ref if w_ref != 0.0 else np.nan
+        rows.append(
+            f"{float(ky):.3f},{float(g_ref):.6f},{float(w_ref):.6f},{float(g):.6f},{float(w):.6f},{float(rel_gamma):.3f},{float(rel_omega):.3f}"
+        )
+    return rows
+
+
+def _kbm_public_rows_from_gx_mismatch(csv_path: Path) -> list[str]:
+    with csv_path.open("r", encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle)
+        rows = sorted((row for row in reader), key=lambda row: float(row["ky"]))
+    if not rows:
+        raise ValueError(f"no rows found in {csv_path}")
+    ky = np.array([float(row["ky"]) for row in rows], dtype=float)
+    gamma_ref = np.array([float(row["gamma_gx"]) for row in rows], dtype=float)
+    omega_ref = np.array([float(row["omega_gx"]) for row in rows], dtype=float)
+    gamma = np.array([float(row["gamma"]) for row in rows], dtype=float)
+    omega = np.array([float(row["omega"]) for row in rows], dtype=float)
+    return _rows_from_reference_columns(ky, gamma_ref, omega_ref, gamma, omega)
+
+
+def _write_kbm_public_mismatch_table(
+    outdir: Path,
+    *,
+    verbose: bool,
+    progress: bool,
+    stiff_spot_check: bool,
+    stiff_spot_topk: int,
+    stiff_spot_dt: float,
+    stiff_spot_tmax: float,
+    stiff_spot_replace: bool,
+) -> None:
+    kbm_table = outdir / "kbm_mismatch_table.csv"
+    kbm_gx_mismatch = outdir / "kbm_gx_mismatch.csv"
+    if kbm_gx_mismatch.exists():
+        kbm_table.write_text(
+            "\n".join(_kbm_public_rows_from_gx_mismatch(kbm_gx_mismatch)) + "\n",
+            encoding="utf-8",
+        )
+        return
+
+    kbm_ref = load_kbm_reference()
+    kbm_dt = _scale_dt(kbm_ref.ky, base_dt=0.0005, ky_ref=0.3)
+    kbm_steps = _scale_steps(kbm_ref.ky, base_steps=4000, ky_ref=0.3, max_steps=8000)
+    kbm_cfg = KBMBaseCase(
+        grid=GridConfig(Nx=1, Ny=12, Nz=96, Lx=62.8, Ly=62.8, y0=10.0, ntheta=32, nperiod=2)
+    )
+    kbm_time_cfg = TimeConfig(
+        t_max=3.0,
+        dt=0.001,
+        method="imex2",
+        use_diffrax=False,
+        progress_bar=False,
+        sample_stride=2,
+    )
+    kbm_beta, kbm_g, kbm_w = _scan_kbm_verbose(
+        betas=kbm_ref.ky,
+        cfg=kbm_cfg,
+        Nl=48,
+        Nm=16,
+        dt=kbm_dt,
+        steps=kbm_steps,
+        method="imex2",
+        solver=KBM_SOLVER,
+        krylov_cfg=KBM_KRYLOV,
+        window_kw=WINDOWS["kbm"],
+        tmin=None,
+        tmax=None,
+        auto_window=True,
+        run_kwargs={"fit_signal": "phi", "mode_method": "z_index", "time_cfg": kbm_time_cfg},
+        label="KBM mismatch",
+        ref=kbm_ref,
+        verbose=verbose,
+        progress=progress,
+        stiff_spot_check=stiff_spot_check,
+        stiff_spot_check_topk=stiff_spot_topk,
+        stiff_spot_check_dt=stiff_spot_dt,
+        stiff_spot_check_tmax=stiff_spot_tmax,
+        stiff_spot_check_replace=stiff_spot_replace,
+    )
+    kbm_mismatch = LinearScanResult(ky=kbm_beta, gamma=kbm_g, omega=kbm_w)
+    kbm_table.write_text("\n".join(_build_rows(kbm_mismatch, kbm_ref)) + "\n", encoding="utf-8")
 
 
 def _cyclone_refresh_grid(ref: LinearScanResult) -> GridConfig:
@@ -1420,48 +1515,15 @@ def main() -> int:
         "\n".join(_build_rows(etg_mismatch, etg_ref)) + "\n", encoding="utf-8"
     )
 
-    kbm_ref = load_kbm_reference()
-    kbm_dt = _scale_dt(kbm_ref.ky, base_dt=0.0005, ky_ref=0.3)
-    kbm_steps = _scale_steps(kbm_ref.ky, base_steps=4000, ky_ref=0.3, max_steps=8000)
-    kbm_cfg = KBMBaseCase(
-        grid=GridConfig(Nx=1, Ny=12, Nz=96, Lx=62.8, Ly=62.8, y0=10.0, ntheta=32, nperiod=2)
-    )
-    kbm_time_cfg = TimeConfig(
-        t_max=3.0,
-        dt=0.001,
-        method="imex2",
-        use_diffrax=False,
-        progress_bar=False,
-        sample_stride=2,
-    )
-    kbm_beta, kbm_g, kbm_w = _scan_kbm_verbose(
-        betas=kbm_ref.ky,
-        cfg=kbm_cfg,
-        Nl=48,
-        Nm=16,
-        dt=kbm_dt,
-        steps=kbm_steps,
-        method="imex2",
-        solver=KBM_SOLVER,
-        krylov_cfg=KBM_KRYLOV,
-        window_kw=WINDOWS["kbm"],
-        tmin=None,
-        tmax=None,
-        auto_window=True,
-        run_kwargs={"fit_signal": "phi", "mode_method": "z_index", "time_cfg": kbm_time_cfg},
-        label="KBM mismatch",
-        ref=kbm_ref,
+    _write_kbm_public_mismatch_table(
+        outdir,
         verbose=verbose,
         progress=progress,
         stiff_spot_check=stiff_spot_check,
-        stiff_spot_check_topk=stiff_spot_topk,
-        stiff_spot_check_dt=stiff_spot_dt,
-        stiff_spot_check_tmax=stiff_spot_tmax,
-        stiff_spot_check_replace=stiff_spot_replace,
-    )
-    kbm_mismatch = LinearScanResult(ky=kbm_beta, gamma=kbm_g, omega=kbm_w)
-    (outdir / "kbm_mismatch_table.csv").write_text(
-        "\n".join(_build_rows(kbm_mismatch, kbm_ref)) + "\n", encoding="utf-8"
+        stiff_spot_topk=stiff_spot_topk,
+        stiff_spot_dt=stiff_spot_dt,
+        stiff_spot_tmax=stiff_spot_tmax,
+        stiff_spot_replace=stiff_spot_replace,
     )
 
     tem_ref = load_tem_reference()
