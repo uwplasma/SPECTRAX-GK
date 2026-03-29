@@ -418,6 +418,37 @@ def test_kbm_public_rows_from_gx_mismatch_uses_gx_reference_columns(tmp_path: Pa
     assert rows[2].startswith("0.300,0.220000,1.140000,0.200000,1.270000,")
 
 
+def test_kbm_public_rows_from_gx_mismatch_prefers_better_lowky_checkpoint(tmp_path: Path) -> None:
+    import tools.make_tables as make_tables
+
+    csv_path = tmp_path / "kbm_gx_mismatch.csv"
+    csv_path.write_text(
+        "\n".join(
+            [
+                "ky,solver,gamma_gx,gamma,rel_gamma,omega_gx,omega,rel_omega,eig_overlap_gx,eig_rel_l2,eig_overlap_prev,branch_score,fit_window_tmin,fit_window_tmax",
+                "0.2,gx_time@max,0.30,0.36,0.20,0.88,0.89,0.01,0.99,0.13,1.0,0.2,20.0,40.0",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    ckpt_path = tmp_path / "kbm_probe_lowky_ckpt.csv"
+    ckpt_path.write_text(
+        "\n".join(
+            [
+                "ky,steps,horizon_t,solver,gamma_gx,gamma,rel_gamma,omega_gx,omega,rel_omega,eig_overlap_gx,eig_rel_l2",
+                "0.2,800,8.0,gx_time@project,0.30,0.3006,0.002,0.88,0.9988,0.135,0.98,0.16",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    rows = make_tables._kbm_public_rows_from_gx_mismatch(csv_path, lowky_ckpt_path=ckpt_path)
+
+    assert rows[1].startswith("0.200,0.300000,0.880000,0.300600,0.998800,")
+
+
 def test_write_kbm_public_mismatch_table_prefers_gx_mismatch_when_present(monkeypatch, tmp_path: Path) -> None:
     import tools.make_tables as make_tables
 
