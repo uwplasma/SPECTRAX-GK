@@ -42,4 +42,4 @@ Figure generation
 
 .. code-block:: bash
 
-   python tools/make_figures.py
+   PYTHONPATH=src python tools/make_benchmark_atlas.py
