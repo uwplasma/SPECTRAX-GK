@@ -1416,3 +1416,56 @@ def test_etg_scan_defaults_to_electrostatic_terms(monkeypatch):
         LinearTerms(apar=0.0, bpar=0.0, hypercollisions=1.0),
         LinearTerms(apar=0.0, bpar=0.0, hypercollisions=1.0),
     ]
+
+
+def test_run_etg_scan_continuation_uses_shift_selection_for_carried_shift(monkeypatch):
+    import spectraxgk.benchmarks as benchmarks
+
+    calls: list[dict[str, object]] = []
+
+    def fake_dominant_eigenpair(G0, cache, params, terms=None, **kwargs):
+        calls.append(dict(kwargs))
+        eig = jnp.asarray((0.2 + 0.1 * len(calls)) - 0.3j, dtype=jnp.complex64)
+        vec = jnp.ones_like(G0) * (1.0 + 0.0j)
+        return eig, vec
+
+    monkeypatch.setattr(benchmarks, "dominant_eigenpair", fake_dominant_eigenpair)
+
+    grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.28, Ly=0.628)
+    cfg = ETGBaseCase(
+        grid=grid,
+        model=ETGModelConfig(
+            R_over_LTi=0.0,
+            R_over_LTe=2.49,
+            R_over_Ln=0.8,
+            R_over_Lni=0.0,
+            R_over_Lne=0.8,
+            adiabatic_ions=False,
+            mass_ratio=3670.0,
+        ),
+    )
+    kcfg = KrylovConfig(
+        method="shift_invert",
+        shift=None,
+        shift_source="target",
+        shift_selection="targeted",
+        mode_family="etg",
+        continuation=True,
+        continuation_selection="overlap",
+    )
+
+    scan = run_etg_scan(
+        np.array([3.0, 4.0]),
+        cfg=cfg,
+        Nl=2,
+        Nm=2,
+        solver="krylov",
+        krylov_cfg=kcfg,
+    )
+
+    assert np.all(np.isfinite(scan.gamma))
+    assert len(calls) == 2
+    assert calls[0]["shift_selection"] == "targeted"
+    assert complex(calls[1]["shift"]) == pytest.approx(complex(0.3, -0.3))
+    assert calls[1]["shift_selection"] == "shift"
+    assert calls[1]["select_overlap"] is True
