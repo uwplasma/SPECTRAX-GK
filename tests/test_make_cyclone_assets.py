@@ -80,7 +80,7 @@ def test_make_figures_cyclone_fallback_uses_reference_mismatch_scan(monkeypatch,
     assert called == {"helper": "reference", "Ny": 7}
 
 
-def test_make_tables_reference_mismatch_scan_uses_dedicated_gx_scan(monkeypatch) -> None:
+def test_make_tables_reference_mismatch_scan_uses_fixed_step_diffrax_contract(monkeypatch) -> None:
     import tools.make_tables as make_tables
 
     ref = make_tables.LinearScanResult(
@@ -90,17 +90,19 @@ def test_make_tables_reference_mismatch_scan_uses_dedicated_gx_scan(monkeypatch)
     )
     called: dict[str, object] = {}
 
-    def fake_cyclone_gx_scan(ky_values, cfg, window_kw, *, verbose: bool, progress: bool):
+    def fake_run_cyclone_scan(ky_values, **kwargs):
         called["ky"] = np.asarray(ky_values).copy()
-        called["Ny"] = cfg.grid.Ny
-        called["window"] = dict(window_kw)
-        called["verbose"] = verbose
-        called["progress"] = progress
+        called["Ny"] = kwargs["cfg"].grid.Ny
+        called["window"] = dict(kwargs["window_kw"]) if "window_kw" in kwargs else None
+        called["Nl"] = kwargs["Nl"]
+        called["Nm"] = kwargs["Nm"]
+        called["dt"] = kwargs["dt"]
+        called["time_cfg"] = kwargs["time_cfg"]
         return make_tables.CycloneScanResult(
             ky=np.asarray(ky_values), gamma=np.array([1.0, 2.0]), omega=np.array([3.0, 4.0])
         )
 
-    monkeypatch.setattr(make_tables, "_cyclone_gx_scan", fake_cyclone_gx_scan)
+    monkeypatch.setattr(make_tables, "run_cyclone_scan", fake_run_cyclone_scan)
 
     out = make_tables._cyclone_reference_mismatch_scan(
         ref,
@@ -111,9 +113,10 @@ def test_make_tables_reference_mismatch_scan_uses_dedicated_gx_scan(monkeypatch)
 
     assert np.allclose(called["ky"], ref.ky)
     assert called["Ny"] == 4
-    assert called["window"] == make_tables.GX_CYCLONE_WINDOW
-    assert called["verbose"] is False
-    assert called["progress"] is False
+    assert called["Nl"] == make_tables.CYCLONE_PUBLIC_NL
+    assert called["Nm"] == make_tables.CYCLONE_PUBLIC_NM
+    assert called["dt"] == 0.01
+    assert called["time_cfg"] == make_tables.CYCLONE_PUBLIC_TIME
     assert np.allclose(out.gamma, [1.0, 2.0])
 
 
@@ -129,7 +132,7 @@ def test_cyclone_low_ky_gx_policy_extends_runtime_and_late_window() -> None:
     assert window["late_penalty"] == 0.0
 
 
-def test_make_figures_reference_mismatch_scan_uses_dedicated_gx_scan(monkeypatch) -> None:
+def test_make_figures_reference_mismatch_scan_uses_fixed_step_diffrax_contract(monkeypatch) -> None:
     import tools.make_figures as make_figures
 
     ref = make_figures.LinearScanResult(
@@ -139,20 +142,18 @@ def test_make_figures_reference_mismatch_scan_uses_dedicated_gx_scan(monkeypatch
     )
     called: dict[str, object] = {}
 
-    def fake_cyclone_gx_scan(ky_values, cfg, window_kw, *, verbose: bool, progress: bool):
+    def fake_run_cyclone_scan(ky_values, **kwargs):
         called["ky"] = np.asarray(ky_values).copy()
-        called["Ny"] = cfg.grid.Ny
-        called["window"] = dict(window_kw)
-        called["verbose"] = verbose
-        called["progress"] = progress
-        return (
-            make_figures.LinearScanResult(
-                ky=np.asarray(ky_values), gamma=np.array([1.0, 2.0]), omega=np.array([3.0, 4.0])
-            ),
-            0.2,
+        called["Ny"] = kwargs["cfg"].grid.Ny
+        called["Nl"] = kwargs["Nl"]
+        called["Nm"] = kwargs["Nm"]
+        called["dt"] = kwargs["dt"]
+        called["time_cfg"] = kwargs["time_cfg"]
+        return make_figures.LinearScanResult(
+            ky=np.asarray(ky_values), gamma=np.array([1.0, 2.0]), omega=np.array([3.0, 4.0])
         )
 
-    monkeypatch.setattr(make_figures, "_cyclone_gx_scan", fake_cyclone_gx_scan)
+    monkeypatch.setattr(make_figures, "run_cyclone_scan", fake_run_cyclone_scan)
 
     out = make_figures._cyclone_reference_mismatch_scan(
         ref,
@@ -163,9 +164,10 @@ def test_make_figures_reference_mismatch_scan_uses_dedicated_gx_scan(monkeypatch
 
     assert np.allclose(called["ky"], ref.ky)
     assert called["Ny"] == 4
-    assert called["window"] == make_figures.GX_CYCLONE_WINDOW
-    assert called["verbose"] is False
-    assert called["progress"] is False
+    assert called["Nl"] == make_figures.CYCLONE_PUBLIC_NL
+    assert called["Nm"] == make_figures.CYCLONE_PUBLIC_NM
+    assert called["dt"] == 0.01
+    assert called["time_cfg"] == make_figures.CYCLONE_PUBLIC_TIME
     assert np.allclose(out.gamma, [1.0, 2.0])
 
 

@@ -462,6 +462,21 @@ GX_CYCLONE_WINDOW = dict(
     late_penalty=0.1,
 )
 
+CYCLONE_PUBLIC_TIME = TimeConfig(
+    t_max=150.0,
+    dt=0.01,
+    use_diffrax=True,
+    diffrax_solver="Tsit5",
+    diffrax_adaptive=False,
+    diffrax_rtol=1.0e-4,
+    diffrax_atol=1.0e-7,
+    diffrax_max_steps=20000,
+    progress_bar=False,
+    fixed_dt=True,
+)
+CYCLONE_PUBLIC_NL = 6
+CYCLONE_PUBLIC_NM = 12
+
 
 def _gx_balanced_policy(ky: float) -> tuple[int, int, float]:
     if ky < 0.08:
@@ -643,12 +658,16 @@ def _cyclone_reference_mismatch_scan(
     verbose: bool,
     progress: bool,
 ) -> LinearScanResult:
-    scan, _ky_sel = _cyclone_gx_scan(
+    steps = _scale_steps(np.asarray(ref.ky), base_steps=1200, ky_ref=0.2, max_steps=6000)
+    scan = run_cyclone_scan(
         np.asarray(ref.ky),
-        cfg,
-        GX_CYCLONE_WINDOW,
-        verbose=verbose,
-        progress=progress,
+        cfg=cfg,
+        Nl=CYCLONE_PUBLIC_NL,
+        Nm=CYCLONE_PUBLIC_NM,
+        dt=0.01,
+        steps=steps,
+        time_cfg=CYCLONE_PUBLIC_TIME,
+        **WINDOWS["cyclone"],
     )
     return LinearScanResult(ky=np.asarray(scan.ky), gamma=np.asarray(scan.gamma), omega=np.asarray(scan.omega))
 
