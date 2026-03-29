@@ -186,6 +186,23 @@ def test_select_fit_window_and_auto_fit():
         raise AssertionError("negative growth_weight should raise ValueError")
 
 
+def test_fit_growth_rate_auto_fallback_respects_start_fraction() -> None:
+    t = np.linspace(0.0, 10.0, 200)
+    signal = np.exp((-0.08 - 1j * 0.3) * t)
+
+    _g, _w, tmin, tmax = fit_growth_rate_auto(
+        t,
+        signal,
+        min_points=20,
+        start_fraction=0.6,
+        min_r2=2.0,
+        window_method="loglinear",
+    )
+
+    assert tmax > tmin
+    assert tmin >= t[int(0.6 * t.size)]
+
+
 def test_extract_eigenfunction_svd_and_snapshot():
     """Eigenfunction extraction should recover the spatial mode."""
     t = np.linspace(0.0, 1.0, 64)
