@@ -66,10 +66,9 @@ cwd = "/home/user/SPECTRAX-GK-bench"
 case = "etg-linear"
 label = "ETG Linear"
 backend = "gx"
-command = "${GX_ETG_LINEAR_CMD}"
-cwd = "{root}"
-enabled = false
-wrap_time = false
+host = "office"
+command = "LD_LIBRARY_PATH=/home/user/local/install/openmpi-4.1.6/lib:/home/user/local/install/netcdf-c-4.9.2/lib:/home/user/local/install/hdf5-1.14.5/lib:/home/user/local/install/gsl-2.7.1/lib:/home/user/local/install/libcutensor-1.7.0.1/lib/11:/home/user/local/install/nccl-2.18.1/lib:$LD_LIBRARY_PATH /home/user/GX/gx ETG_runtime_ky15.in"
+cwd = "/home/user/GX/benchmarks/linear"
 
 [[run]]
 case = "w7x-linear"
@@ -241,7 +240,7 @@ cwd = "/home/user/GX/benchmarks/nonlinear/cyclone"
 
 [[run]]
 case = "cetg-nonlinear"
-label = "cETG Nonlinear"
+label = "ETG Nonlinear (cETG)"
 backend = "spectrax_cpu"
 host = "office"
 command = "PATH=/home/user/stellarator_venv/bin:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=cpu python examples/cetg_runtime_nonlinear.py --steps 1000"
@@ -249,7 +248,7 @@ cwd = "/home/user/SPECTRAX-GK-bench"
 
 [[run]]
 case = "cetg-nonlinear"
-label = "cETG Nonlinear"
+label = "ETG Nonlinear (cETG)"
 backend = "spectrax_gpu"
 host = "office"
 command = "PATH=/home/user/stellarator_venv/bin:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=gpu python examples/cetg_runtime_nonlinear.py --steps 1000"
@@ -257,11 +256,12 @@ cwd = "/home/user/SPECTRAX-GK-bench"
 
 [[run]]
 case = "cetg-nonlinear"
-label = "cETG Nonlinear"
+label = "ETG Nonlinear (cETG)"
 backend = "gx"
 host = "office"
 command = "LD_LIBRARY_PATH=/home/user/local/install/openmpi-4.1.6/lib:/home/user/local/install/netcdf-c-4.9.2/lib:/home/user/local/install/hdf5-1.14.5/lib:/home/user/local/install/gsl-2.7.1/lib:/home/user/local/install/libcutensor-1.7.0.1/lib/11:/home/user/local/install/nccl-2.18.1/lib:$LD_LIBRARY_PATH /home/user/GX/gx cetg.in"
 cwd = "/home/user/GX/benchmarks/nonlinear/cETG"
+enabled = false
 
 [[run]]
 case = "kaw-linear"

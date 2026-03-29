@@ -176,13 +176,35 @@ peak RSS from the target machine.
 The checked-in case inventory already covers the publication-facing families:
 
 - Cyclone ITG linear and nonlinear
-- cETG nonlinear
+- ETG nonlinear (cETG reduced model)
 - ETG linear
 - KBM linear and nonlinear
 - W7-X linear and nonlinear
 - HSX linear and nonlinear
 - Cyclone Miller nonlinear
 - KAW linear
+
+Final runtime/memory figure
+---------------------------
+
+.. image:: _static/runtime_memory_benchmark.png
+   :alt: Runtime and memory comparison across published benchmark cases
+   :width: 100%
+
+The runtime subplot uses a log scale because the measured wall times span
+roughly three orders of magnitude across the linear, nonlinear, and imported
+geometry cases. The memory subplot stays linear because the peak RSS spread is
+much narrower.
+
+The assembled figure is generated from the collected per-case summaries with
+``tools/benchmark_runtime_memory.py --summary-glob ...`` and written to:
+
+- ``docs/_static/runtime_memory_benchmark.png``
+- ``docs/_static/runtime_memory_benchmark.pdf``
+
+The current cETG reduced-model row includes SPECTRAX-GK CPU and GPU
+measurements only. The available GX build on the tracked office host still
+fails on that benchmark, so no GX bar is plotted for that case.
 
 Cached basis indices
 --------------------

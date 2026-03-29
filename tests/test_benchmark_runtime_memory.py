@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from tools.benchmark_runtime_memory import _load_manifest, _parse_peak_rss_mb, _select_runs
+from tools.benchmark_runtime_memory import _load_manifest, _load_summary_rows, _parse_peak_rss_mb, _select_runs
 
 
 ROOT = Path("/path/to/SPECTRAX-GK")
@@ -43,3 +43,13 @@ enabled = false
 def test_parse_peak_rss_mb_supports_macos_and_linux_formats() -> None:
     assert _parse_peak_rss_mb("peak memory footprint: 1048576") == 1.0
     assert _parse_peak_rss_mb("Maximum resident set size (kbytes): 2048") == 2.0
+
+
+def test_load_summary_rows_merges_matching_json_files(tmp_path: Path) -> None:
+    first = tmp_path / "a.json"
+    first.write_text('{"rows":[{"case":"a","backend":"spectrax_cpu","status":"success"}]}\n', encoding="utf-8")
+    second = tmp_path / "b.json"
+    second.write_text('{"rows":[{"case":"a","backend":"gx","status":"success"}]}\n', encoding="utf-8")
+    rows = _load_summary_rows([str(tmp_path / "*.json")])
+    assert len(rows) == 2
+    assert {row["backend"] for row in rows} == {"spectrax_cpu", "gx"}

@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import csv
 from dataclasses import dataclass
+import glob
 import json
 import os
 from pathlib import Path
@@ -34,6 +35,20 @@ BACKEND_COLORS = {
     "spectrax_gpu": "#2e8b57",
     "gx": "#b35c1e",
 }
+CASE_ORDER = (
+    "cyclone-linear",
+    "cyclone-nonlinear",
+    "etg-linear",
+    "cetg-nonlinear",
+    "kbm-linear",
+    "kbm-nonlinear",
+    "kaw-linear",
+    "w7x-linear",
+    "w7x-nonlinear",
+    "hsx-linear",
+    "hsx-nonlinear",
+    "miller-nonlinear",
+)
 
 
 @dataclass(frozen=True)
@@ -185,6 +200,25 @@ def _write_csv(path: Path, rows: list[dict[str, object]]) -> None:
             writer.writerow({k: row.get(k) for k in fieldnames})
 
 
+def _load_summary_rows(patterns: list[str]) -> list[dict[str, object]]:
+    rows_by_key: dict[tuple[str, str], dict[str, object]] = {}
+    seen: set[str] = set()
+    for pattern in patterns:
+        for match in sorted(glob.glob(str(_resolve(pattern)))):
+            if match in seen:
+                continue
+            seen.add(match)
+            data = json.loads(Path(match).read_text(encoding="utf-8"))
+            file_rows = data.get("rows", [])
+            if not isinstance(file_rows, list):
+                raise ValueError(f"{match} does not contain a 'rows' list")
+            for row in file_rows:
+                row_dict = dict(row)
+                key = (str(row_dict.get("case", "")), str(row_dict.get("backend", "")))
+                rows_by_key[key] = row_dict
+    return list(rows_by_key.values())
+
+
 def _plot_results(csv_path: Path, png_path: Path, pdf_path: Path) -> None:
     import matplotlib.pyplot as plt
     import pandas as pd
@@ -194,16 +228,18 @@ def _plot_results(csv_path: Path, png_path: Path, pdf_path: Path) -> None:
     if ok.empty:
         raise ValueError("no successful runtime rows available for plotting")
 
+    preferred = {case: idx for idx, case in enumerate(CASE_ORDER)}
     order = []
     labels = {}
     for _, row in ok.iterrows():
         if row["case"] not in labels:
             labels[row["case"]] = row["label"]
             order.append(row["case"])
+    order.sort(key=lambda case: (preferred.get(case, len(preferred)), labels[case]))
 
     x = list(range(len(order)))
     width = 0.24
-    fig, axes = plt.subplots(1, 2, figsize=(max(11.0, 1.2 * len(order) + 5.0), 5.6), constrained_layout=True)
+    fig, axes = plt.subplots(1, 2, figsize=(max(13.0, 1.25 * len(order) + 5.5), 5.9), constrained_layout=True)
 
     for idx, backend in enumerate(BACKEND_ORDER):
         sub = ok[ok["backend"] == backend].set_index("case")
@@ -218,10 +254,11 @@ def _plot_results(csv_path: Path, png_path: Path, pdf_path: Path) -> None:
         (axes[0], "Runtime", "Wall time [s]"),
         (axes[1], "Peak Memory", "Peak RSS [MiB]"),
     ):
-        ax.set_xticks(x, tick_labels, rotation=35, ha="right")
+        ax.set_xticks(x, tick_labels, rotation=32, ha="right")
         ax.set_title(title)
         ax.set_ylabel(ylabel)
         ax.grid(axis="y", alpha=0.25, linewidth=0.6)
+    axes[0].set_yscale("log")
     axes[0].legend(loc="upper left", ncols=3, frameon=False)
     fig.suptitle("Runtime and Memory Comparison")
     png_path.parent.mkdir(parents=True, exist_ok=True)
@@ -240,12 +277,31 @@ def _build_parser() -> argparse.ArgumentParser:
     p.add_argument("--csv-out", type=Path, default=DEFAULT_CSV)
     p.add_argument("--plot-out", type=Path, default=DEFAULT_PNG)
     p.add_argument("--summary-out", type=Path, default=DEFAULT_SUMMARY)
+    p.add_argument(
+        "--summary-glob",
+        action="append",
+        default=None,
+        help="Read existing summary JSON files matching this glob and assemble the combined CSV/plot without executing commands.",
+    )
     p.add_argument("--skip-plot", action="store_true", help="Only write CSV/summary, do not build the plot.")
     return p
 
 
 def main() -> int:
     args = _build_parser().parse_args()
+    if args.summary_glob:
+        rows = _load_summary_rows(list(args.summary_glob))
+        if not rows:
+            raise ValueError("no summary rows matched the provided --summary-glob patterns")
+        _write_csv(_resolve(args.csv_out), rows)
+        _resolve(args.summary_out).parent.mkdir(parents=True, exist_ok=True)
+        _resolve(args.summary_out).write_text(json.dumps({"rows": rows}, indent=2) + "\n", encoding="utf-8")
+        if not args.skip_plot:
+            plot_png = _resolve(args.plot_out)
+            plot_pdf = plot_png.with_suffix(".pdf")
+            _plot_results(_resolve(args.csv_out), plot_png, plot_pdf)
+        return 0
+
     runs = _load_manifest(_resolve(args.manifest))
     selected = _select_runs(runs, set(args.case or [] ) or None, set(args.backend or []) or None)
 
