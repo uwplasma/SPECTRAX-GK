@@ -140,12 +140,42 @@ def _rows_from_reference_columns(
     return rows
 
 
-def _kbm_public_rows_from_gx_mismatch(csv_path: Path) -> list[str]:
+def _kbm_public_rows_from_gx_mismatch(csv_path: Path, lowky_ckpt_path: Path | None = None) -> list[str]:
     with csv_path.open("r", encoding="utf-8", newline="") as handle:
         reader = csv.DictReader(handle)
-        rows = sorted((row for row in reader), key=lambda row: float(row["ky"]))
+        rows = list(reader)
     if not rows:
         raise ValueError(f"no rows found in {csv_path}")
+    by_ky = {float(row["ky"]): dict(row) for row in rows}
+    if lowky_ckpt_path is not None and lowky_ckpt_path.exists():
+        with lowky_ckpt_path.open("r", encoding="utf-8", newline="") as handle:
+            ckpt_rows = list(csv.DictReader(handle))
+        for row in ckpt_rows:
+            ky_val = float(row["ky"])
+            current = by_ky.get(ky_val)
+            if current is None:
+                continue
+            current_score = abs(float(current["rel_gamma"])) + abs(float(current["rel_omega"]))
+            candidate_score = abs(float(row["rel_gamma"])) + abs(float(row["rel_omega"]))
+            if candidate_score + 1.0e-12 >= current_score:
+                continue
+            by_ky[ky_val] = {
+                "ky": row["ky"],
+                "solver": row["solver"],
+                "gamma_gx": row["gamma_gx"],
+                "gamma": row["gamma"],
+                "rel_gamma": row["rel_gamma"],
+                "omega_gx": row["omega_gx"],
+                "omega": row["omega"],
+                "rel_omega": row["rel_omega"],
+                "eig_overlap_gx": row.get("eig_overlap_gx", ""),
+                "eig_rel_l2": row.get("eig_rel_l2", ""),
+                "eig_overlap_prev": "",
+                "branch_score": "",
+                "fit_window_tmin": "",
+                "fit_window_tmax": "",
+            }
+    rows = sorted(by_ky.values(), key=lambda row: float(row["ky"]))
     ky = np.array([float(row["ky"]) for row in rows], dtype=float)
     gamma_ref = np.array([float(row["gamma_gx"]) for row in rows], dtype=float)
     omega_ref = np.array([float(row["omega_gx"]) for row in rows], dtype=float)
@@ -167,9 +197,11 @@ def _write_kbm_public_mismatch_table(
 ) -> None:
     kbm_table = outdir / "kbm_mismatch_table.csv"
     kbm_gx_mismatch = outdir / "kbm_gx_mismatch.csv"
+    kbm_lowky_ckpt = outdir / "kbm_probe_lowky_ckpt.csv"
     if kbm_gx_mismatch.exists():
         kbm_table.write_text(
-            "\n".join(_kbm_public_rows_from_gx_mismatch(kbm_gx_mismatch)) + "\n",
+            "\n".join(_kbm_public_rows_from_gx_mismatch(kbm_gx_mismatch, lowky_ckpt_path=kbm_lowky_ckpt))
+            + "\n",
             encoding="utf-8",
         )
         return
