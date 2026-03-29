@@ -1,8 +1,8 @@
 SPECTRAX-GK
 ===========
 
-SPECTRAX-GK is a JAX gyrokinetic solver using Hermite-Laguerre velocity space and
-Fourier real space. This documentation reflects the new clean-room rebuild.
+SPECTRAX-GK is a JAX-native gyrokinetic solver using Hermite-Laguerre velocity
+space, Fourier perpendicular coordinates, and field-aligned flux-tube geometry.
 
 .. toctree::
    :maxdepth: 2

@@ -52,15 +52,15 @@ driver. It supports Perfetto traces, XLA HLO dumps, and memory snapshots.
 The trace directory can be opened with Perfetto. For GPU profiling, set
 ``JAX_PLATFORM_NAME=gpu`` before invoking the script.
 
-Recent nonlinear profiling (Cyclone, GX-balanced config)
---------------------------------------------------------
+Recent nonlinear profiling (Cyclone, benchmark-locked config)
+-------------------------------------------------------------
 
 Reference run configuration (March 4, 2026):
 
 - ``ky=0.3``, ``Nl=4``, ``Nm=8``
 - ``dt=0.01``, ``steps=400``
 - ``sample_stride=10``, ``diagnostics_stride=10``
-- ``tools/profile_nonlinear_cyclone.py`` with the GX-matched Cyclone runtime config
+- ``tools/profile_nonlinear_cyclone.py`` with the tracked Cyclone runtime config
 
 CPU profiling (Apple CPU, JAX CPU backend):
 
@@ -106,7 +106,7 @@ To test the faster spectral nonlinear mode (no Laguerre quadrature grid):
 
    python tools/benchmark_nonlinear_suite.py --laguerre-mode spectral
 
-You can optionally pass a GX log file to compare runtime per step:
+You can optionally pass a comparison-code log file to compare runtime per step:
 
 .. code-block:: bash
 
@@ -137,7 +137,7 @@ setup, the observed runtimes were:
    SPECTRAX GPU: 0.09617 s / step  (≈1.18× faster than grid mode)
    SPECTRAX CPU: 0.76575 s / step  (≈0.88×, slower than grid mode)
 
-Cyclone comparison impact (GX diagnostics, t≤7.6):
+Cyclone comparison impact (benchmark diagnostics, t≤7.6):
 
 - Wg mean abs rel: 5.4%
 - Wphi mean abs rel: 11.2%
@@ -146,6 +146,42 @@ Cyclone comparison impact (GX diagnostics, t≤7.6):
 The diagnostics agreement is essentially unchanged relative to grid mode for this case, but
 the speedup is modest; larger gains will require further FFT fusion and scatter
 elimination.
+
+Runtime and memory comparison workflow
+--------------------------------------
+
+For the publication runtime comparison pass, use the manifest-driven runner:
+
+.. code-block:: bash
+
+   python tools/benchmark_runtime_memory.py --list
+   python tools/benchmark_runtime_memory.py --dry-run --case cyclone-linear --backend spectrax_cpu
+
+The runner reads ``tools/runtime_memory_manifest.toml`` and writes:
+
+- ``tools_out/runtime_memory_results.csv``
+- ``tools_out/runtime_memory_summary.json``
+- ``docs/_static/runtime_memory_benchmark.png``
+
+The manifest is designed to hold three rows per case:
+
+- ``spectrax_cpu``
+- ``spectrax_gpu``
+- ``gx``
+
+Host-specific GPU and external comparison commands are intentionally left
+disabled in the checked-in manifest until the corresponding execution paths are
+available on the target machine.
+
+The checked-in case inventory already covers the publication-facing families:
+
+- Cyclone ITG linear and nonlinear
+- ETG linear
+- KBM linear and nonlinear
+- W7-X linear and nonlinear
+- HSX linear and nonlinear
+- Cyclone Miller nonlinear
+- KAW linear
 
 Cached basis indices
 --------------------

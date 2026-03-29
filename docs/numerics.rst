@@ -74,10 +74,11 @@ The linear solver supports:
 
 - **Forward Euler** (``method="euler"``) and **RK2/RK4** explicit schemes for
   non-stiff runs.
-- **reference-compatible RK4 with CFL step control**, matching the GX timestep estimator
+- **reference-compatible RK4 with CFL step control**
   (``integrate_linear_gx``). The timestep is recomputed from the linear
-  max-frequency estimate using the GX CFL rule, and growth rates are extracted
-  from the midplane ``phi`` ratio exactly as in the GX diagnostics kernel.
+  max-frequency estimate using the benchmark-locked CFL rule, and growth rates
+  are extracted from the midplane ``phi`` ratio using the same diagnostic
+  convention as the tracked comparison data.
 - **IMEX (semi-implicit)** where the collisional/hyper-diffusion terms are
   treated implicitly and the remaining terms explicitly.
 - **Backward Euler + GMRES** in ``method="implicit"`` for stiff scans, with a
@@ -119,11 +120,11 @@ Nonlinear FFT bracket
 The nonlinear :math:`E\times B` term is evaluated pseudospectrally using
 FFT-based derivatives in the perpendicular plane. By default SPECTRAX-GK uses
 the compressed real-FFT path (``TimeConfig.gx_real_fft = true``), which computes
-gradients from the Nyquist-compressed (``N_y/2+1``) spectrum using GX's native
-compressed wavenumber layout: non-negative ``k_y`` (including positive
+gradients from the Nyquist-compressed (``N_y/2+1``) spectrum using the
+benchmark-compatible compressed wavenumber layout: non-negative ``k_y`` (including positive
 Nyquist when ``N_y`` is even) and a positive Nyquist multiplier on the ``k_x``
 axis when ``N_x`` is even. The result is then expanded back to full
-:math:`k_y`. This matches GX's nonlinear bracket normalization and minimizes
+:math:`k_y`. This matches the tracked nonlinear reference layout and minimizes
 memory traffic. Set ``gx_real_fft = false`` to use the full complex FFT bracket
 instead.
 
@@ -131,13 +132,13 @@ For electromagnetic nonlinear runs, SPECTRAX-GK stacks the gyro-averaged
 potentials ``J0*phi``, ``J0*apar``, and the ``bpar`` correction into a single
 FFT batch. This collapses multiple rFFT/iFFT passes into one pipeline per
 step and reuses the same real-space gradients for all channels.
-Laguerre/Bessel factors on the GX quadrature grid (``J0`` and ``J1/alpha``) are
+Laguerre/Bessel factors on the benchmark quadrature grid (``J0`` and ``J1/alpha``) are
 precomputed once per grid and cached in the linear operator, so the nonlinear
 kernel only applies them via inexpensive elementwise multiplies.
-For nonlinear runs that do not require the GX quadrature grid, set
+For nonlinear runs that do not require the benchmark quadrature grid, set
 ``TimeConfig.laguerre_nonlinear_mode="spectral"`` to skip the Laguerre
 quadrature transform and instead use the spectral gyroaverage factors ``Jl``
-directly. The default ``"grid"`` mode matches GX and applies the quadrature
+directly. The default ``"grid"`` mode applies the quadrature
 transform.
 
 De-aliasing and hyperdiffusion

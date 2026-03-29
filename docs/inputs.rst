@@ -110,13 +110,13 @@ decimated with ``sample_stride`` (record every ``N`` steps) and
 disable diagnostics entirely for speed. For CFL-controlled timestep control, use
 ``fixed_dt = false`` along with ``cfl`` and optional ``cfl_fac`` /
 ``dt_min`` / ``dt_max`` limits. When ``cfl_fac`` is omitted, SPECTRAX uses
-the GX method default instead of a universal constant:
+the benchmark-locked method default instead of a universal constant:
 ``rk3``/``sspx3`` use ``1.73``, ``rk4`` uses ``2.82``, and other methods keep
 ``1.0``. When adaptive timestepping is enabled, diagnostics include
 ``dt_t`` (per-sample timestep history) and ``dt_mean`` (average effective dt)
-to quantify CFL-driven savings. In reference-compatible nonlinear runs the adaptive
-``dt`` estimate combines the GX linear frequency cap with the instantaneous
-nonlinear cap, matching GX's CFL update instead of using the nonlinear
+to quantify CFL-driven savings. In benchmark-locked nonlinear runs the adaptive
+``dt`` estimate combines the linear frequency cap with the instantaneous
+nonlinear cap, matching the tracked comparison CFL update instead of using the nonlinear
 bracket alone. To control the Laguerre handling in nonlinear
 brackets, set ``laguerre_nonlinear_mode = "grid"`` (reference quadrature,
 default) or ``laguerre_nonlinear_mode = "spectral"`` (use spectral ``Jl``
@@ -127,9 +127,9 @@ When ``nonlinear_dealias = true``, nonlinear runtime mode selection is
 dealias-aware: if the requested ``ky`` is filtered out by the 2/3 mask, the
 runner automatically picks the nearest retained ``ky``. The CLI prints the
 effective ``ky_sel``/``kx_sel`` used by diagnostics.
-For GX-reference runs, leaving ``dt_max`` unset uses GX's default behavior
-(``dt_max = dt``). Increase ``dt_max`` explicitly only when you intentionally
-trade strict GX matching for throughput.
+For benchmark-locked runs, leaving ``dt_max`` unset keeps ``dt_max = dt``.
+Increase ``dt_max`` explicitly only when you intentionally trade strict
+comparison matching for throughput.
 
 Nonlinear collision/hypercollision splitting is enabled with
 ``collision_split = true``. The ``collision_scheme`` key selects the update:
@@ -137,27 +137,27 @@ Nonlinear collision/hypercollision splitting is enabled with
 ``sts``/``rkc`` aliases (treated as stabilized explicit/exponential updates for
 diagonal operators).
 
-The ``[geometry]`` section supports ``drift_scale`` to switch between reference-compatible
+The ``[geometry]`` section supports ``drift_scale`` to switch between benchmark-compatible
 (``drift_scale = 1.0``) and the alternate doubled-drift convention (``drift_scale = 2.0``). The default configuration in SPECTRAX-GK uses the tracked benchmark value.
-For GX slab benchmarks, set ``model = "slab"``. Optional slab-specific keys are
-``z0`` (sets ``gradpar = 1/z0`` when positive, matching GX's slab domain
-normalization) and ``zero_shat = true`` (forces the GX zero-shear slab metric
+For slab benchmarks, set ``model = "slab"``. Optional slab-specific keys are
+``z0`` (sets ``gradpar = 1/z0`` when positive, matching the reference slab domain
+normalization) and ``zero_shat = true`` (forces the zero-shear slab metric
 ``gds2 = 1, gds21 = 0, gds22 = 1``).
 It also accepts ``model = "gx-netcdf"`` with
 ``geometry_file = "/path/to/gx_geometry.nc"`` to run from imported sampled
 field-line geometry instead of the analytic ``s-alpha`` model. The imported
-file can be a GX output ``*.out.nc`` or a root-level GX ``*.eik.nc`` geometry
+file can be a tracked benchmark ``*.out.nc`` or a root-level ``*.eik.nc`` geometry
 file produced by the VMEC workflow. When that imported geometry is used with a
 linked boundary, SPECTRAX-GK now follows the file's own ``theta`` range,
 ``jtwist/x0`` geometry factor, and ``kxfac`` metadata instead of forcing the
 analytic s-alpha grid defaults.
 For direct VMEC workflows, the runtime also accepts ``model = "vmec"``.
-In that mode SPECTRAX-GK calls GX's ``gx_geo_vmec.py`` helper to generate a
+In that mode SPECTRAX-GK calls the VMEC geometry helper to generate a
 matching ``*.eik.nc`` file on demand, then immediately reuses the same imported
 geometry path as the W7-X examples. Set ``vmec_file`` plus the flux-tube keys
 ``torflux``, ``npol`` and optionally ``alpha``. ``geometry_file`` can be used
 as an explicit output path for the generated ``*.eik.nc`` file, and
-``gx_repo`` can point to a non-default GX checkout if needed. If GX's VMEC
+``gx_repo`` can point to a non-default helper checkout if needed. If the VMEC
 helper must run under a different Python interpreter than SPECTRAX itself
 (for example when ``booz_xform`` is installed in a separate environment), set
 ``gx_python`` or the ``GX_VMEC_PYTHON`` environment variable. This is now the
@@ -168,12 +168,12 @@ W7-X runtime TOML uses that contract so the same config works on both local
 and office-style GX checkouts.
 When ``geometry_file`` is set for ``model = "vmec"``, SPECTRAX regenerates
 that target instead of reusing a stale file from an older VMEC conversion.
-For VMEC ``fix aspect`` runs, SPECTRAX now follows GX's default helper
-contract and does not inject ``x0`` from the runtime ``Lx``. That keeps the
-generated ``*.eik.nc`` file aligned with GX's own W7-X/HSX geometry output.
+For VMEC ``fix aspect`` runs, SPECTRAX follows the helper default contract and
+does not inject ``x0`` from the runtime ``Lx``. That keeps the generated
+``*.eik.nc`` file aligned with the imported W7-X/HSX geometry output.
 
 For Miller tokamak workflows, the runtime also accepts ``model = "miller"``.
-In that mode SPECTRAX-GK calls GX's ``geometry_modules/miller/gx_geo.py``
+In that mode SPECTRAX-GK calls the Miller geometry helper
 helper to generate a matching root-level ``*.eiknc.nc`` file, then immediately
 re-enters the same imported geometry path used for VMEC ``eik.nc`` files.
 Set the Miller inputs directly in ``[geometry]``:
