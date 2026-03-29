@@ -393,3 +393,63 @@ def test_make_tables_cyclone_gx_scan_falls_back_from_project_to_max(monkeypatch)
     assert methods == ["project", "max"]
     assert np.allclose(scan.gamma, [0.1])
     assert np.allclose(scan.omega, [0.4])
+
+
+def test_kbm_public_rows_from_gx_mismatch_uses_gx_reference_columns(tmp_path: Path) -> None:
+    import tools.make_tables as make_tables
+
+    csv_path = tmp_path / "kbm_gx_mismatch.csv"
+    csv_path.write_text(
+        "\n".join(
+            [
+                "ky,solver,gamma_gx,gamma,rel_gamma,omega_gx,omega,rel_omega,eig_overlap_gx,eig_rel_l2,eig_overlap_prev,branch_score,fit_window_tmin,fit_window_tmax",
+                "0.3,gx_time@project,0.22,0.20,-0.09,1.14,1.27,0.11,0.98,0.15,0.99,0.19,5.0,10.0",
+                "0.1,gx_time@project_late,0.14,0.13,-0.07,0.66,0.67,0.01,0.98,0.16,,0.13,7.0,11.0",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    rows = make_tables._kbm_public_rows_from_gx_mismatch(csv_path)
+
+    assert rows[0] == "ky,gamma_ref,omega_ref,gamma_spectrax,omega_spectrax,rel_gamma,rel_omega"
+    assert rows[1].startswith("0.100,0.140000,0.660000,0.130000,0.670000,")
+    assert rows[2].startswith("0.300,0.220000,1.140000,0.200000,1.270000,")
+
+
+def test_write_kbm_public_mismatch_table_prefers_gx_mismatch_when_present(monkeypatch, tmp_path: Path) -> None:
+    import tools.make_tables as make_tables
+
+    (tmp_path / "kbm_gx_mismatch.csv").write_text(
+        "\n".join(
+            [
+                "ky,solver,gamma_gx,gamma,rel_gamma,omega_gx,omega,rel_omega,eig_overlap_gx,eig_rel_l2,eig_overlap_prev,branch_score,fit_window_tmin,fit_window_tmax",
+                "0.2,gx_time@max,0.30,0.31,0.03,0.88,0.89,0.01,0.99,0.13,1.0,0.2,20.0,40.0",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(
+        make_tables,
+        "load_kbm_reference",
+        lambda: (_ for _ in ()).throw(
+            AssertionError("load_kbm_reference should not be called when gx mismatch csv exists")
+        ),
+    )
+
+    make_tables._write_kbm_public_mismatch_table(
+        tmp_path,
+        verbose=False,
+        progress=False,
+        stiff_spot_check=False,
+        stiff_spot_topk=0,
+        stiff_spot_dt=0.01,
+        stiff_spot_tmax=1.0,
+        stiff_spot_replace=False,
+    )
+
+    table_text = (tmp_path / "kbm_mismatch_table.csv").read_text(encoding="utf-8")
+    assert "0.200,0.300000,0.880000,0.310000,0.890000" in table_text
