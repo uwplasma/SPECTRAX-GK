@@ -81,3 +81,8 @@ nonlinear = 1.0
 
 [expert]
 dealias_kz = true
+
+[run]
+ky = 0.15708451146716934
+Nl = 2
+Nm = 1
