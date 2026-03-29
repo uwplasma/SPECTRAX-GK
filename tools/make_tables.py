@@ -786,6 +786,21 @@ GX_CYCLONE_WINDOW = dict(
     late_penalty=0.1,
 )
 
+CYCLONE_PUBLIC_TIME = TimeConfig(
+    t_max=150.0,
+    dt=0.01,
+    use_diffrax=True,
+    diffrax_solver="Tsit5",
+    diffrax_adaptive=False,
+    diffrax_rtol=1.0e-4,
+    diffrax_atol=1.0e-7,
+    diffrax_max_steps=20000,
+    progress_bar=False,
+    fixed_dt=True,
+)
+CYCLONE_PUBLIC_NL = 6
+CYCLONE_PUBLIC_NM = 12
+
 
 def _gx_balanced_policy(ky: float) -> tuple[int, int, float]:
     if ky < 0.08:
@@ -947,17 +962,21 @@ def _cyclone_reference_mismatch_scan(
     _log("\n=== Cyclone mismatch scan ===", verbose=verbose, use_tqdm=progress)
     _log(f"Config:\n{_format_cfg(cfg)}", verbose=verbose, use_tqdm=progress)
     _log(
-        "Numerics: dedicated GX-style benchmark scan with per-ky extraction policy",
+        "Numerics: fixed-step Tsit5 public benchmark scan",
         verbose=verbose,
         use_tqdm=progress,
     )
-    _log(f"Window params: {GX_CYCLONE_WINDOW}", verbose=verbose, use_tqdm=progress)
-    scan = _cyclone_gx_scan(
+    _log(f"Window params: {WINDOWS['cyclone']}", verbose=verbose, use_tqdm=progress)
+    steps = _scale_steps(np.asarray(ref.ky), base_steps=1200, ky_ref=0.2, max_steps=6000)
+    scan = run_cyclone_scan(
         np.asarray(ref.ky),
-        cfg,
-        GX_CYCLONE_WINDOW,
-        verbose=verbose,
-        progress=progress,
+        cfg=cfg,
+        Nl=CYCLONE_PUBLIC_NL,
+        Nm=CYCLONE_PUBLIC_NM,
+        dt=0.01,
+        steps=steps,
+        time_cfg=CYCLONE_PUBLIC_TIME,
+        **WINDOWS["cyclone"],
     )
     for ky_val, gamma_val, omega_val in zip(scan.ky, scan.gamma, scan.omega):
         idx = int(np.argmin(np.abs(ref.ky - ky_val)))
