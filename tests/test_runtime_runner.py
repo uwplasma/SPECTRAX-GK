@@ -127,6 +127,52 @@ def test_runtime_linear_cyclone_etg_kbm_smoke() -> None:
         assert np.isfinite(res.omega)
 
 
+def test_runtime_linear_etg_defaults_to_frequency_targeted_krylov(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import spectraxgk.runtime as runtime
+
+    electron = RuntimeSpeciesConfig(
+        name="electron",
+        charge=-1.0,
+        mass=1.0 / 3670.0,
+        density=1.0,
+        temperature=1.0,
+        tprim=2.49,
+        fprim=0.8,
+    )
+    cfg = replace(
+        _base_runtime_cfg(),
+        species=(electron,),
+        normalization=RuntimeNormalizationConfig(contract="etg", diagnostic_norm="none"),
+        physics=RuntimePhysicsConfig(
+            adiabatic_electrons=False,
+            adiabatic_ions=True,
+            electrostatic=True,
+            electromagnetic=False,
+        ),
+    )
+
+    captured: dict[str, object] = {}
+
+    def fake_dominant_eigenpair(_g0, _cache, _params, terms=None, **kwargs):
+        captured["terms"] = terms
+        captured.update(kwargs)
+        return np.asarray(0.2 + 0.3j, dtype=np.complex64), np.zeros_like(np.asarray(_g0))
+
+    monkeypatch.setattr(runtime, "dominant_eigenpair", fake_dominant_eigenpair)
+
+    out = run_runtime_linear(cfg, ky_target=2.0, Nl=4, Nm=6, solver="krylov")
+
+    assert np.isfinite(out.gamma)
+    assert captured["method"] == "shift_invert"
+    assert captured["omega_target_factor"] == pytest.approx(0.4)
+    assert captured["omega_sign"] == -1
+    assert captured["shift_source"] == "target"
+    assert captured["shift_selection"] == "targeted"
+    assert captured["mode_family"] == "etg"
+
+
 def test_runtime_terms_and_params_follow_toggles() -> None:
     cfg = replace(
         _base_runtime_cfg(),
