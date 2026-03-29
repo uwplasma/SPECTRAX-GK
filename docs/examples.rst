@@ -22,6 +22,7 @@ Tokamak cases
    python examples/cyclone_runtime_nonlinear.py --steps 200
    python examples/cetg_runtime_nonlinear.py --steps 1000
    python examples/etg_runtime_linear.py
+   python examples/kaw_runtime_linear.py
    python examples/kbm_runtime_linear.py
    python examples/kbm_runtime_nonlinear.py --steps 200
    python examples/miller_nonlinear_runtime.py --steps 200

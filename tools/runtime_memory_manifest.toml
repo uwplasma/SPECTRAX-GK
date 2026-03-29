@@ -243,25 +243,22 @@ wrap_time = false
 case = "kaw-linear"
 label = "KAW Linear"
 backend = "spectrax_cpu"
-command = "${SPECTRAX_KAW_LINEAR_CPU_CMD}"
-cwd = "{root}"
-enabled = false
-wrap_time = false
+host = "office"
+command = "PATH=/home/rjorge/stellarator_venv/bin:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=cpu python examples/kaw_runtime_linear.py --ky 0.01 --Nl 16 --Nm 64 --solver gx_time"
+cwd = "/home/rjorge/SPECTRAX-GK-bench"
 
 [[run]]
 case = "kaw-linear"
 label = "KAW Linear"
 backend = "spectrax_gpu"
-command = "${SPECTRAX_KAW_LINEAR_GPU_CMD}"
-cwd = "{root}"
-enabled = false
-wrap_time = false
+host = "office"
+command = "PATH=/home/rjorge/stellarator_venv/bin:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=gpu python examples/kaw_runtime_linear.py --ky 0.01 --Nl 16 --Nm 64 --solver gx_time"
+cwd = "/home/rjorge/SPECTRAX-GK-bench"
 
 [[run]]
 case = "kaw-linear"
 label = "KAW Linear"
 backend = "gx"
-command = "${GX_KAW_LINEAR_CMD}"
-cwd = "{root}"
-enabled = false
-wrap_time = false
+host = "office"
+command = "LD_LIBRARY_PATH=/home/rjorge/local/install/openmpi-4.1.6/lib:/home/rjorge/local/install/netcdf-c-4.9.2/lib:/home/rjorge/local/install/hdf5-1.14.5/lib:/home/rjorge/local/install/gsl-2.7.1/lib:/home/rjorge/local/install/libcutensor-1.7.0.1/lib/11:/home/rjorge/local/install/nccl-2.18.1/lib:$LD_LIBRARY_PATH /home/rjorge/GX/gx kaw_betahat10.0_kp0.01.in"
+cwd = "/home/rjorge/GX/benchmarks/linear/KAW"

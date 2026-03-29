@@ -23,7 +23,7 @@ def build_hsx_cfg(geometry_file: str, *, dt: float, t_max: float) -> RuntimeConf
         time=TimeConfig(
             t_max=t_max,
             dt=dt,
-            method="rk3",
+            method="rk4",
             use_diffrax=False,
             fixed_dt=True,
             sample_stride=1,
