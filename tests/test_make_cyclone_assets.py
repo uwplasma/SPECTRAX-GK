@@ -117,6 +117,18 @@ def test_make_tables_reference_mismatch_scan_uses_dedicated_gx_scan(monkeypatch)
     assert np.allclose(out.gamma, [1.0, 2.0])
 
 
+def test_cyclone_low_ky_gx_policy_extends_runtime_and_late_window() -> None:
+    import tools.make_tables as make_tables
+
+    Nl, Nm, tmax = make_tables._gx_balanced_policy(0.05)
+    assert (Nl, Nm, tmax) == (16, 8, 320.0)
+
+    window = make_tables._gx_window_policy(0.05, make_tables.GX_CYCLONE_WINDOW)
+    assert window["start_fraction"] == 0.65
+    assert window["end_fraction"] == 0.95
+    assert window["late_penalty"] == 0.0
+
+
 def test_make_figures_reference_mismatch_scan_uses_dedicated_gx_scan(monkeypatch) -> None:
     import tools.make_figures as make_figures
 

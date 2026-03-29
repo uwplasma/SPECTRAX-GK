@@ -662,11 +662,11 @@ GX_CYCLONE_WINDOW = dict(
 
 def _gx_balanced_policy(ky: float) -> tuple[int, int, float]:
     if ky < 0.08:
-        return 16, 8, 80.0
+        return 16, 8, 320.0
     if ky < 0.15:
-        return 16, 8, 20.0
+        return 16, 8, 80.0
     if ky <= 0.25:
-        return 24, 12, 20.0
+        return 24, 12, 40.0
     return 24, 12, 10.0
 
 
@@ -677,9 +677,11 @@ def _gx_mode_policy(ky: float) -> str:
 def _gx_window_policy(ky: float, base_window: dict) -> dict:
     window = dict(base_window)
     if ky < 0.08:
-        window["start_fraction"] = 0.415
+        window["start_fraction"] = 0.65
+        window["end_fraction"] = 0.95
         window["min_points"] = max(int(window.get("min_points", 0)), 80)
         window["min_slope_frac"] = 0.25
+        window["late_penalty"] = 0.0
     if ky >= 0.3:
         window["start_fraction"] = 0.3
         window["end_fraction"] = 0.9
