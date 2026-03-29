@@ -26,25 +26,25 @@ cwd = "/home/rjorge/GX/benchmarks/linear/ITG_cyclone"
 case = "cyclone-nonlinear"
 label = "Cyclone ITG Nonlinear"
 backend = "spectrax_cpu"
-command = "JAX_PLATFORM_NAME=cpu python examples/cyclone_runtime_nonlinear.py --ky 0.3 --Nl 4 --Nm 8 --steps 200 --dt 0.0377"
-cwd = "{root}"
+host = "office"
+command = "PATH=/home/rjorge/stellarator_venv/bin:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=cpu python examples/cyclone_runtime_nonlinear.py --ky 0.3 --Nl 4 --Nm 8 --steps 200 --dt 0.0377"
+cwd = "/home/rjorge/SPECTRAX-GK-bench"
 
 [[run]]
 case = "cyclone-nonlinear"
 label = "Cyclone ITG Nonlinear"
 backend = "spectrax_gpu"
-command = "JAX_PLATFORM_NAME=gpu python examples/cyclone_runtime_nonlinear.py --ky 0.3 --Nl 4 --Nm 8 --steps 200 --dt 0.0377"
-cwd = "{root}"
-enabled = false
+host = "office"
+command = "PATH=/home/rjorge/stellarator_venv/bin:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=gpu python examples/cyclone_runtime_nonlinear.py --ky 0.3 --Nl 4 --Nm 8 --steps 200 --dt 0.0377"
+cwd = "/home/rjorge/SPECTRAX-GK-bench"
 
 [[run]]
 case = "cyclone-nonlinear"
 label = "Cyclone ITG Nonlinear"
 backend = "gx"
-command = "${GX_CYCLONE_NONLINEAR_CMD}"
-cwd = "{root}"
-enabled = false
-wrap_time = false
+host = "office"
+command = "LD_LIBRARY_PATH=/home/rjorge/local/install/openmpi-4.1.6/lib:/home/rjorge/local/install/netcdf-c-4.9.2/lib:/home/rjorge/local/install/hdf5-1.14.5/lib:/home/rjorge/local/install/gsl-2.7.1/lib:/home/rjorge/local/install/libcutensor-1.7.0.1/lib/11:/home/rjorge/local/install/nccl-2.18.1/lib:$LD_LIBRARY_PATH /home/rjorge/GX/gx cyclone_salpha_adiabatic_electrons.in"
+cwd = "/home/rjorge/GX/benchmarks/nonlinear/cyclone"
 
 [[run]]
 case = "etg-linear"
@@ -219,25 +219,49 @@ cwd = "/home/rjorge/gx_refs/main_clean_20260312/linear/hsx"
 case = "miller-nonlinear"
 label = "Cyclone Miller Nonlinear"
 backend = "spectrax_cpu"
-command = "JAX_PLATFORM_NAME=cpu python examples/miller_nonlinear_runtime.py --ky 0.3 --Nl 4 --Nm 8 --steps 200 --dt 0.0377"
-cwd = "{root}"
+host = "office"
+command = "PATH=/home/rjorge/stellarator_venv/bin:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=cpu python examples/miller_nonlinear_runtime.py --ky 0.3 --Nl 4 --Nm 8 --steps 200 --dt 0.0377"
+cwd = "/home/rjorge/SPECTRAX-GK-bench"
 
 [[run]]
 case = "miller-nonlinear"
 label = "Cyclone Miller Nonlinear"
 backend = "spectrax_gpu"
-command = "JAX_PLATFORM_NAME=gpu python examples/miller_nonlinear_runtime.py --ky 0.3 --Nl 4 --Nm 8 --steps 200 --dt 0.0377"
-cwd = "{root}"
-enabled = false
+host = "office"
+command = "PATH=/home/rjorge/stellarator_venv/bin:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=gpu python examples/miller_nonlinear_runtime.py --ky 0.3 --Nl 4 --Nm 8 --steps 200 --dt 0.0377"
+cwd = "/home/rjorge/SPECTRAX-GK-bench"
 
 [[run]]
 case = "miller-nonlinear"
 label = "Cyclone Miller Nonlinear"
 backend = "gx"
-command = "${GX_MILLER_NONLINEAR_CMD}"
-cwd = "{root}"
-enabled = false
-wrap_time = false
+host = "office"
+command = "LD_LIBRARY_PATH=/home/rjorge/local/install/openmpi-4.1.6/lib:/home/rjorge/local/install/netcdf-c-4.9.2/lib:/home/rjorge/local/install/hdf5-1.14.5/lib:/home/rjorge/local/install/gsl-2.7.1/lib:/home/rjorge/local/install/libcutensor-1.7.0.1/lib/11:/home/rjorge/local/install/nccl-2.18.1/lib:$LD_LIBRARY_PATH /home/rjorge/GX/gx cyclone_miller_adiabatic_electrons.in"
+cwd = "/home/rjorge/GX/benchmarks/nonlinear/cyclone"
+
+[[run]]
+case = "cetg-nonlinear"
+label = "cETG Nonlinear"
+backend = "spectrax_cpu"
+host = "office"
+command = "PATH=/home/rjorge/stellarator_venv/bin:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=cpu python examples/cetg_runtime_nonlinear.py --steps 1000"
+cwd = "/home/rjorge/SPECTRAX-GK-bench"
+
+[[run]]
+case = "cetg-nonlinear"
+label = "cETG Nonlinear"
+backend = "spectrax_gpu"
+host = "office"
+command = "PATH=/home/rjorge/stellarator_venv/bin:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=gpu python examples/cetg_runtime_nonlinear.py --steps 1000"
+cwd = "/home/rjorge/SPECTRAX-GK-bench"
+
+[[run]]
+case = "cetg-nonlinear"
+label = "cETG Nonlinear"
+backend = "gx"
+host = "office"
+command = "LD_LIBRARY_PATH=/home/rjorge/local/install/openmpi-4.1.6/lib:/home/rjorge/local/install/netcdf-c-4.9.2/lib:/home/rjorge/local/install/hdf5-1.14.5/lib:/home/rjorge/local/install/gsl-2.7.1/lib:/home/rjorge/local/install/libcutensor-1.7.0.1/lib/11:/home/rjorge/local/install/nccl-2.18.1/lib:$LD_LIBRARY_PATH /home/rjorge/GX/gx cetg.in"
+cwd = "/home/rjorge/GX/benchmarks/nonlinear/cETG"
 
 [[run]]
 case = "kaw-linear"
