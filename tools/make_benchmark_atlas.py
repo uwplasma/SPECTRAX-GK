@@ -34,6 +34,17 @@ ATLAS_HEIGHT = 14.2
 README_HEIGHT = 24.0
 CONVERGENCE_HEIGHT = 5.8
 
+plt.rcParams.update(
+    {
+        "font.family": FONT_FAMILY,
+        "axes.titlesize": TILE_TITLE_SIZE,
+        "axes.labelsize": 10,
+        "legend.fontsize": LEGEND_SIZE,
+        "xtick.labelsize": TICK_SIZE,
+        "ytick.labelsize": TICK_SIZE,
+    }
+)
+
 
 def _atlas_manifest_path() -> Path:
     return ROOT / "tools" / "benchmark_atlas_manifest.toml"
@@ -272,6 +283,45 @@ def _image_tile(ax: plt.Axes, image: np.ndarray, title: str) -> None:
     ax.axis("off")
 
 
+def _image_tile_plain(ax: plt.Axes, image: np.ndarray) -> None:
+    ax.imshow(image)
+    ax.axis("off")
+
+
+def _plot_cetg_trace_panel(ax: plt.Axes, df: pd.DataFrame) -> None:
+    t = np.asarray(df["t"], dtype=float)
+    metrics = [
+        ("free energy", "W_spectrax", "W_gx", "#1d4ed8"),
+        ("electrostatic field energy", "Phi2_spectrax", "Phi2_gx", "#ea580c"),
+        ("heat flux", "qflux_spectrax", "qflux_gx", "#15803d"),
+    ]
+    _style_axis(ax)
+    for label, sp_col, gx_col, color in metrics:
+        sp = np.asarray(df[sp_col], dtype=float)
+        gx = np.asarray(df[gx_col], dtype=float)
+        finite = np.isfinite(sp) & np.isfinite(gx) & (np.abs(sp) > 0.0) & (np.abs(gx) > 0.0)
+        if not np.any(finite):
+            continue
+        ax.plot(t[finite], gx[finite], color=color, linewidth=2.0, label=f"{label} GX")
+        ax.plot(t[finite], sp[finite], color=color, linewidth=1.8, linestyle="--", label=f"{label} SPECTRAX-GK")
+    ax.set_title("ETG Nonlinear (cETG Reduced Model)", fontsize=TILE_TITLE_SIZE, color=TITLE_COLOR, fontweight="bold")
+    ax.set_xlabel("t")
+    ax.set_ylabel("signal")
+    ax.set_yscale("log")
+    ax.legend(frameon=False, fontsize=7, ncol=2, loc="upper left")
+    ax.text(
+        0.03,
+        0.05,
+        "legacy reduced-model comparison",
+        transform=ax.transAxes,
+        fontsize=NOTE_SIZE,
+        color=TEXT_COLOR,
+        ha="left",
+        va="bottom",
+        bbox={"facecolor": "white", "edgecolor": "#cbd5e1", "boxstyle": "round,pad=0.25"},
+    )
+
+
 def _build_convergence_panel(path: Path, assets: dict[str, Path]) -> None:
     scan = pd.read_csv(assets["cyclone_scan"]).sort_values("ky")
     rhostar = pd.read_csv(assets["cyclone_rhostar"]).sort_values("rho_star")
@@ -467,33 +517,106 @@ def _build_extended_linear_panel(path: Path, assets: dict[str, Path]) -> None:
     _save(fig, path)
 
 
-def _build_core_linear_atlas(path: Path, imported_panel_path: Path, assets: dict[str, Path]) -> None:
-    cyclone = _load_image(assets["cyclone"])
-    etg = _load_image(assets["etg"])
-    kbm = _load_image(assets["kbm"])
-    imported = _load_image(imported_panel_path, pad_pixels=6)
+def _build_core_linear_atlas(path: Path, assets: dict[str, Path]) -> None:
+    cyclone = pd.read_csv(assets["cyclone"]).sort_values("ky")
+    etg = pd.read_csv(assets["etg"]).sort_values("ky")
+    kbm = pd.read_csv(assets["kbm"]).sort_values("ky")
+    w7x = pd.read_csv(assets["w7x"]).sort_values("ky")
+    hsx = pd.read_csv(assets["hsx"]).sort_values("ky")
+    miller = pd.read_csv(assets["miller"]).sort_values("ky")
+    kaw = pd.read_csv(assets["kaw"]).sort_values("ky")
+    kbm_miller = pd.read_csv(assets["kbm_miller"]).sort_values("ky")
 
-    fig, axes = plt.subplots(2, 2, figsize=(PANEL_WIDTH, ATLAS_HEIGHT), constrained_layout=True)
-    _image_tile(axes[0, 0], cyclone, "Cyclone ITG Benchmark Scan")
-    _image_tile(axes[0, 1], etg, "ETG Benchmark Scan")
-    _image_tile(axes[1, 0], kbm, "KBM Benchmark Scan")
-    _image_tile(axes[1, 1], imported, "Imported Geometry and Exact-Diagnostic Scans")
-    fig.suptitle("Core Linear Benchmark Atlas", fontsize=SUPTITLE_SIZE, fontweight="bold")
+    fig = plt.figure(figsize=(20.5, 16.0), constrained_layout=True)
+    outer = fig.add_gridspec(2, 4)
+
+    def add_case(idx: int) -> tuple[plt.Axes, plt.Axes]:
+        sub = outer[idx // 4, idx % 4].subgridspec(2, 1, hspace=0.05)
+        return fig.add_subplot(sub[0]), fig.add_subplot(sub[1])
+
+    cases = [
+        ("Cyclone ITG", cyclone, "ky", "gamma_ref", "gamma_spectrax", "omega_ref", "omega_spectrax", r"$k_y \rho_i$"),
+        ("ETG", etg, "ky", "gamma_ref", "gamma_spectrax", "omega_ref", "omega_spectrax", r"$k_y \rho_i$"),
+        ("KBM", kbm, "ky", "gamma_ref", "gamma_spectrax", "omega_ref", "omega_spectrax", r"$\beta$"),
+        ("W7-X VMEC", w7x, "ky", "gamma_ref_last", "gamma_last", "omega_ref_last", "omega_last", r"$k_y \rho_i$"),
+        ("HSX VMEC", hsx, "ky", "gamma_ref_last", "gamma_last", "omega_ref_last", "omega_last", r"$k_y \rho_i$"),
+        ("Cyclone Miller", miller, "ky", "gamma_gx", "gamma", "omega_gx", "omega", r"$k_y \rho_i$"),
+    ]
+
+    for idx, (title, df, xcol, gref, gsp, oref, osp, xlabel) in enumerate(cases):
+        axg, axo = add_case(idx)
+        _plot_overlay_case(
+            axg,
+            axo,
+            df,
+            title=title,
+            xcol=xcol,
+            gamma_ref=gref,
+            gamma_sp=gsp,
+            omega_ref=oref,
+            omega_sp=osp,
+            x_label=xlabel,
+        )
+
+    axg, axo = add_case(6)
+    _plot_kaw_case(axg, axo, kaw)
+
+    axg, axo = add_case(7)
+    _plot_exact_growth_case(
+        axg,
+        axo,
+        kbm_miller,
+        title="KBM Miller Late Growth",
+        gamma_ref="gamma_gx_dump",
+        gamma_sp="gamma_sp_dump",
+        omega_ref="omega_gx_dump",
+        omega_sp="omega_sp_dump",
+        rel_gamma="rel_gamma_sp_vs_gx_dump",
+        rel_omega="rel_omega_sp_vs_gx_dump",
+    )
+
+    handles, labels = axg.get_legend_handles_labels()
+    fig.legend(handles, labels, loc="upper center", ncol=2, frameon=False, bbox_to_anchor=(0.5, 1.01), fontsize=LEGEND_SIZE)
+    fig.suptitle("Linear Benchmark Master Panel", fontsize=SUPTITLE_SIZE, fontweight="bold")
     _save(fig, path)
 
 
 def _build_core_nonlinear_atlas(path: Path, assets: dict[str, Path]) -> None:
-    cyclone = _load_image(assets["cyclone"], pad_pixels=10)
-    kbm = _load_image(assets["kbm"], pad_pixels=10)
-    w7x = _load_image(assets["w7x"], pad_pixels=10)
-    hsx = _load_image(assets["hsx"], pad_pixels=10)
+    cyclone = _load_image(assets["cyclone"], pad_pixels=8)
+    kbm = _load_image(assets["kbm"], pad_pixels=8)
+    w7x = _load_image(assets["w7x"], pad_pixels=8)
+    hsx = _load_image(assets["hsx"], pad_pixels=8)
+    miller = _load_image(assets["miller"], pad_pixels=8)
+    cetg = pd.read_csv(assets["cetg"])
 
-    fig, axes = plt.subplots(2, 2, figsize=(PANEL_WIDTH, ATLAS_HEIGHT), constrained_layout=True)
-    _image_tile(axes[0, 0], cyclone, "Cyclone Nonlinear Time Trace (Miller Geometry)")
-    _image_tile(axes[0, 1], kbm, "KBM Nonlinear Time Trace")
-    _image_tile(axes[1, 0], w7x, "W7-X Nonlinear Time Trace")
-    _image_tile(axes[1, 1], hsx, "HSX Nonlinear Time Trace")
-    fig.suptitle("Core Nonlinear Benchmark Atlas", fontsize=SUPTITLE_SIZE, fontweight="bold")
+    fig = plt.figure(figsize=(20.5, 17.5), constrained_layout=True)
+    outer = fig.add_gridspec(3, 2)
+
+    tiles = [
+        (cyclone, "Cyclone ITG Nonlinear"),
+        (kbm, "KBM Nonlinear"),
+        (w7x, "W7-X Nonlinear"),
+        (hsx, "HSX Nonlinear"),
+        (miller, "Cyclone Miller Nonlinear"),
+    ]
+    for idx, (image, title) in enumerate(tiles):
+        ax = fig.add_subplot(outer[idx // 2, idx % 2])
+        _image_tile_plain(ax, image)
+        ax.text(
+            0.01,
+            0.99,
+            title,
+            transform=ax.transAxes,
+            va="top",
+            ha="left",
+            fontsize=11,
+            color=TITLE_COLOR,
+            bbox={"facecolor": "white", "edgecolor": "#cbd5e1", "boxstyle": "round,pad=0.2"},
+        )
+
+    ax_cetg = fig.add_subplot(outer[2, 1])
+    _plot_cetg_trace_panel(ax_cetg, cetg)
+    fig.suptitle("Nonlinear Benchmark Master Panel", fontsize=SUPTITLE_SIZE, fontweight="bold")
     _save(fig, path)
 
 
@@ -502,26 +625,21 @@ def _build_readme_panel(
     *,
     convergence_path: Path,
     core_linear_path: Path,
-    imported_linear_path: Path,
     core_nonlinear_path: Path,
-    extended_linear_path: Path,
 ) -> None:
-    convergence = _load_image(convergence_path, pad_pixels=6)
-    core_linear = _load_image(core_linear_path, pad_pixels=6)
-    imported_linear = _load_image(imported_linear_path, pad_pixels=6)
-    core_nonlinear = _load_image(core_nonlinear_path, pad_pixels=6)
-    extended_linear = _load_image(extended_linear_path, pad_pixels=6)
+    convergence = _load_image(convergence_path, pad_pixels=2)
+    core_linear = _load_image(core_linear_path, pad_pixels=2)
+    core_nonlinear = _load_image(core_nonlinear_path, pad_pixels=2)
 
-    fig = plt.figure(figsize=(PANEL_WIDTH, README_HEIGHT), constrained_layout=True)
-    gs = fig.add_gridspec(3, 2, height_ratios=[0.85, 1.1, 1.35])
+    fig = plt.figure(figsize=(18.5, 22.0))
+    gs = fig.add_gridspec(3, 1, height_ratios=[0.78, 1.52, 1.58], hspace=0.02)
 
-    _image_tile(fig.add_subplot(gs[0, :]), convergence, "Convergence and Sensitivity Gate")
-    _image_tile(fig.add_subplot(gs[1, 0]), core_linear, "Core Linear Benchmarks")
-    _image_tile(fig.add_subplot(gs[1, 1]), imported_linear, "Imported Geometry and Exact Diagnostics")
-    _image_tile(fig.add_subplot(gs[2, 0]), core_nonlinear, "Core Nonlinear Benchmarks")
-    _image_tile(fig.add_subplot(gs[2, 1]), extended_linear, "Extended Linear Stress Matrix")
+    for idx, image in enumerate((convergence, core_linear, core_nonlinear)):
+        ax = fig.add_subplot(gs[idx, 0])
+        _image_tile_plain(ax, image)
 
-    fig.suptitle("SPECTRAX-GK Benchmark and Convergence Atlas", fontsize=SUPTITLE_SIZE + 2, fontweight="bold")
+    fig.suptitle("SPECTRAX-GK Benchmark and Convergence Atlas", fontsize=SUPTITLE_SIZE + 1, fontweight="bold", y=0.995)
+    fig.subplots_adjust(top=0.985, bottom=0.015, left=0.02, right=0.98)
     _save(fig, path)
 
 
@@ -579,16 +697,6 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main() -> None:
-    plt.rcParams.update(
-        {
-            "font.family": FONT_FAMILY,
-            "axes.titlesize": TILE_TITLE_SIZE,
-            "axes.labelsize": 10,
-            "xtick.labelsize": TICK_SIZE,
-            "ytick.labelsize": TICK_SIZE,
-            "legend.fontsize": LEGEND_SIZE,
-        }
-    )
     args = build_parser().parse_args()
     manifest_path = _resolve(args.manifest)
     manifest = _load_manifest(manifest_path)
@@ -604,16 +712,14 @@ def main() -> None:
 
     _build_imported_linear_panel(imported_linear_out, assets["imported_linear"])
     _build_extended_linear_panel(extended_linear_out, assets["extended_linear"])
-    _build_core_linear_atlas(core_linear_out, imported_linear_out, assets["core_linear"])
+    _build_core_linear_atlas(core_linear_out, assets["core_linear"])
     _build_core_nonlinear_atlas(core_nonlinear_out, assets["core_nonlinear"])
     _build_convergence_panel(convergence_out, assets["convergence"])
     _build_readme_panel(
         readme_out,
         convergence_path=convergence_out,
         core_linear_path=core_linear_out,
-        imported_linear_path=imported_linear_out,
         core_nonlinear_path=core_nonlinear_out,
-        extended_linear_path=extended_linear_out,
     )
     _write_summary(
         summary_out,
