@@ -169,13 +169,14 @@ The manifest is designed to hold three rows per case:
 - ``spectrax_gpu``
 - ``gx``
 
-Host-specific GPU and external comparison commands are intentionally left
-disabled in the checked-in manifest until the corresponding execution paths are
-available on the target machine.
+Each row may also carry a ``host`` so the same runner can execute local and
+remote measurements through one manifest while still collecting wall time and
+peak RSS from the target machine.
 
 The checked-in case inventory already covers the publication-facing families:
 
 - Cyclone ITG linear and nonlinear
+- cETG nonlinear
 - ETG linear
 - KBM linear and nonlinear
 - W7-X linear and nonlinear
