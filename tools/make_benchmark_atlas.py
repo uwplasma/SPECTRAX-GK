@@ -31,7 +31,8 @@ LEGEND_SIZE = 10
 PANEL_WIDTH = 18.0
 LINEAR_PANEL_HEIGHT = 7.2
 ATLAS_HEIGHT = 14.2
-README_HEIGHT = 18.6
+README_HEIGHT = 24.0
+CONVERGENCE_HEIGHT = 5.8
 
 
 def _atlas_manifest_path() -> Path:
@@ -271,6 +272,85 @@ def _image_tile(ax: plt.Axes, image: np.ndarray, title: str) -> None:
     ax.axis("off")
 
 
+def _build_convergence_panel(path: Path, assets: dict[str, Path]) -> None:
+    scan = pd.read_csv(assets["cyclone_scan"]).sort_values("ky")
+    rhostar = pd.read_csv(assets["cyclone_rhostar"]).sort_values("rho_star")
+
+    fig, axes = plt.subplots(1, 2, figsize=(PANEL_WIDTH, CONVERGENCE_HEIGHT), constrained_layout=True)
+    ax_scan, ax_rho = axes
+
+    _style_axis(ax_scan)
+    ax_scan.plot(
+        np.asarray(scan["ky"], dtype=float),
+        np.asarray(scan["rel_gamma_change"], dtype=float),
+        color=SP_COLOR,
+        marker="o",
+        linewidth=2.2,
+        label=r"$\Delta \gamma$",
+    )
+    ax_scan.plot(
+        np.asarray(scan["ky"], dtype=float),
+        np.asarray(scan["rel_omega_change"], dtype=float),
+        color="#c2410c",
+        marker="s",
+        linewidth=2.2,
+        label=r"$\Delta \omega$",
+    )
+    ax_scan.set_title("Cyclone Resolution Convergence", fontsize=TILE_TITLE_SIZE, color=TITLE_COLOR, fontweight="bold")
+    ax_scan.set_xlabel(r"$k_y \rho_i$")
+    ax_scan.set_ylabel("relative change")
+    ax_scan.legend(frameon=False, fontsize=LEGEND_SIZE, loc="upper left")
+    ax_scan.text(
+        0.03,
+        0.08,
+        "tracked high-vs-low production grid check",
+        transform=ax_scan.transAxes,
+        fontsize=NOTE_SIZE,
+        color=TEXT_COLOR,
+        ha="left",
+        va="bottom",
+        bbox={"facecolor": "white", "edgecolor": "#cbd5e1", "boxstyle": "round,pad=0.25"},
+    )
+
+    _style_axis(ax_rho)
+    rho = np.asarray(rhostar["rho_star"], dtype=float)
+    ax_rho.plot(
+        rho,
+        np.asarray(rhostar["mean_gamma_ratio"], dtype=float),
+        color=SP_COLOR,
+        marker="o",
+        linewidth=2.2,
+        label=r"$\gamma/\gamma_{\rho_\star=1}$",
+    )
+    ax_rho.plot(
+        rho,
+        np.asarray(rhostar["mean_omega_ratio"], dtype=float),
+        color="#c2410c",
+        marker="s",
+        linewidth=2.2,
+        label=r"$\omega/\omega_{\rho_\star=1}$",
+    )
+    ax_rho.axhline(1.0, color=REF_COLOR, linewidth=1.4, linestyle=":")
+    ax_rho.set_title(r"Cyclone $\rho_\star$ Sensitivity", fontsize=TILE_TITLE_SIZE, color=TITLE_COLOR, fontweight="bold")
+    ax_rho.set_xlabel(r"$\rho_\star / \rho_{\star,\mathrm{bench}}$")
+    ax_rho.set_ylabel("normalized response")
+    ax_rho.legend(frameon=False, fontsize=LEGEND_SIZE, loc="upper left")
+    ax_rho.text(
+        0.03,
+        0.08,
+        "benchmark panels use the locked reference normalization",
+        transform=ax_rho.transAxes,
+        fontsize=NOTE_SIZE,
+        color=TEXT_COLOR,
+        ha="left",
+        va="bottom",
+        bbox={"facecolor": "white", "edgecolor": "#cbd5e1", "boxstyle": "round,pad=0.25"},
+    )
+
+    fig.suptitle("Representative Convergence and Sensitivity Checks", fontsize=SUPTITLE_SIZE, fontweight="bold")
+    _save(fig, path)
+
+
 def _build_imported_linear_panel(path: Path, assets: dict[str, Path]) -> None:
     w7x = pd.read_csv(assets["w7x"]).sort_values("ky")
     hsx = pd.read_csv(assets["hsx"]).sort_values("ky")
@@ -417,14 +497,31 @@ def _build_core_nonlinear_atlas(path: Path, assets: dict[str, Path]) -> None:
     _save(fig, path)
 
 
-def _build_readme_panel(path: Path, core_linear_path: Path, core_nonlinear_path: Path) -> None:
-    linear = _load_image(core_linear_path, pad_pixels=6)
-    nonlinear = _load_image(core_nonlinear_path, pad_pixels=6)
+def _build_readme_panel(
+    path: Path,
+    *,
+    convergence_path: Path,
+    core_linear_path: Path,
+    imported_linear_path: Path,
+    core_nonlinear_path: Path,
+    extended_linear_path: Path,
+) -> None:
+    convergence = _load_image(convergence_path, pad_pixels=6)
+    core_linear = _load_image(core_linear_path, pad_pixels=6)
+    imported_linear = _load_image(imported_linear_path, pad_pixels=6)
+    core_nonlinear = _load_image(core_nonlinear_path, pad_pixels=6)
+    extended_linear = _load_image(extended_linear_path, pad_pixels=6)
 
-    fig, axes = plt.subplots(2, 1, figsize=(PANEL_WIDTH, README_HEIGHT), constrained_layout=True)
-    _image_tile(axes[0], linear, "Linear Benchmarks")
-    _image_tile(axes[1], nonlinear, "Nonlinear Benchmarks")
-    fig.suptitle("SPECTRAX-GK Benchmark Atlas", fontsize=SUPTITLE_SIZE + 2, fontweight="bold")
+    fig = plt.figure(figsize=(PANEL_WIDTH, README_HEIGHT), constrained_layout=True)
+    gs = fig.add_gridspec(3, 2, height_ratios=[0.85, 1.1, 1.35])
+
+    _image_tile(fig.add_subplot(gs[0, :]), convergence, "Convergence and Sensitivity Gate")
+    _image_tile(fig.add_subplot(gs[1, 0]), core_linear, "Core Linear Benchmarks")
+    _image_tile(fig.add_subplot(gs[1, 1]), imported_linear, "Imported Geometry and Exact Diagnostics")
+    _image_tile(fig.add_subplot(gs[2, 0]), core_nonlinear, "Core Nonlinear Benchmarks")
+    _image_tile(fig.add_subplot(gs[2, 1]), extended_linear, "Extended Linear Stress Matrix")
+
+    fig.suptitle("SPECTRAX-GK Benchmark and Convergence Atlas", fontsize=SUPTITLE_SIZE + 2, fontweight="bold")
     _save(fig, path)
 
 
@@ -461,6 +558,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Output path for the core nonlinear atlas.",
     )
     parser.add_argument(
+        "--convergence-out",
+        type=Path,
+        default=STATIC / "benchmark_convergence_panel.png",
+        help="Output path for the representative convergence panel.",
+    )
+    parser.add_argument(
         "--readme-out",
         type=Path,
         default=STATIC / "benchmark_readme_panel.png",
@@ -495,6 +598,7 @@ def main() -> None:
     extended_linear_out = _resolve(args.extended_linear_out)
     core_linear_out = _resolve(args.core_linear_out)
     core_nonlinear_out = _resolve(args.core_nonlinear_out)
+    convergence_out = _resolve(args.convergence_out)
     readme_out = _resolve(args.readme_out)
     summary_out = _resolve(args.summary_out)
 
@@ -502,7 +606,15 @@ def main() -> None:
     _build_extended_linear_panel(extended_linear_out, assets["extended_linear"])
     _build_core_linear_atlas(core_linear_out, imported_linear_out, assets["core_linear"])
     _build_core_nonlinear_atlas(core_nonlinear_out, assets["core_nonlinear"])
-    _build_readme_panel(readme_out, core_linear_out, core_nonlinear_out)
+    _build_convergence_panel(convergence_out, assets["convergence"])
+    _build_readme_panel(
+        readme_out,
+        convergence_path=convergence_out,
+        core_linear_path=core_linear_out,
+        imported_linear_path=imported_linear_out,
+        core_nonlinear_path=core_nonlinear_out,
+        extended_linear_path=extended_linear_out,
+    )
     _write_summary(
         summary_out,
         manifest_path=manifest_path,
@@ -512,6 +624,7 @@ def main() -> None:
             "extended_linear": extended_linear_out,
             "core_linear": core_linear_out,
             "core_nonlinear": core_nonlinear_out,
+            "convergence": convergence_out,
             "readme": readme_out,
         },
     )

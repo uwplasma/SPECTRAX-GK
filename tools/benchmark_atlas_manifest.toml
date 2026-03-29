@@ -19,3 +19,7 @@ cyclone = "docs/_static/nonlinear_cyclone_miller_diag_compare_t122.png"
 kbm = "docs/_static/nonlinear_kbm_diag_compare_t400_stats.png"
 w7x = "docs/_static/nonlinear_w7x_diag_compare_t200.png"
 hsx = "docs/_static/hsx_nonlinear_compare_t50_true.png"
+
+[group.convergence]
+cyclone_scan = "docs/_static/cyclone_scan_convergence.csv"
+cyclone_rhostar = "docs/_static/cyclone_rhostar_convergence.csv"

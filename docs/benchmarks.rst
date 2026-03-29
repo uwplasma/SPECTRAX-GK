@@ -34,6 +34,7 @@ This produces:
 - ``docs/_static/benchmark_extended_linear_panel.png``
 - ``docs/_static/benchmark_core_linear_atlas.png``
 - ``docs/_static/benchmark_core_nonlinear_atlas.png``
+- ``docs/_static/benchmark_convergence_panel.png``
 - ``docs/_static/benchmark_readme_panel.png``
 
 PDF copies are emitted alongside each PNG for manuscript workflows.
@@ -69,6 +70,26 @@ throughout:
 - free energy
 - electrostatic field energy (legacy variable name ``Wphi``)
 - magnetic field energy when ``A_parallel`` or ``B_parallel`` are active
+
+Representative convergence gate
+--------------------------------
+
+The benchmark suite makes convergence explicit instead of leaving it implicit
+in the chosen production grids. The tracked convergence tile uses the Cyclone
+ITG lane to show:
+
+- grid convergence on the production linear scan at representative
+  ``k_y`` values,
+- response sensitivity to the benchmark-normalized ``rho_star`` scaling.
+
+.. figure:: _static/benchmark_convergence_panel.png
+   :width: 100%
+   :align: center
+   :alt: Representative convergence panel
+
+   Representative convergence and sensitivity gate. This panel is included in
+   the README publication summary so convergence is visible alongside the parity
+   figures rather than being left implicit.
 
 Primary publication set
 -----------------------
@@ -118,15 +139,17 @@ The current tracked linear coverage is:
 - KAW exact late diagnostic reconstruction from same-run field dumps
 
 The README uses the compact summary panel below, but the separate core linear
-atlas is the more legible publication asset:
+atlas plus the imported/exact and convergence panels are the more legible
+publication assets:
 
 .. figure:: _static/benchmark_readme_panel.png
    :width: 100%
    :align: center
    :alt: README benchmark atlas
 
-   Compact README benchmark atlas. This is a summary figure; the individual
-   linear and nonlinear atlas figures are preferred for papers and talks.
+   Publication-facing benchmark summary. The README panel now includes the
+   representative convergence tile together with the linear, nonlinear,
+   imported/exact, and extended stress panels.
 
 Extended stress matrix
 ----------------------
