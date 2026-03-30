@@ -23,16 +23,16 @@ GRID_COLOR = "#cbd5e1"
 TITLE_COLOR = "#0f172a"
 TEXT_COLOR = "#334155"
 FONT_FAMILY = "DejaVu Sans"
-SUPTITLE_SIZE = 18
-TILE_TITLE_SIZE = 12
-NOTE_SIZE = 8
-TICK_SIZE = 9
-LEGEND_SIZE = 10
+SUPTITLE_SIZE = 24
+TILE_TITLE_SIZE = 16
+NOTE_SIZE = 11
+TICK_SIZE = 12
+LEGEND_SIZE = 13
 PANEL_WIDTH = 18.0
-LINEAR_PANEL_HEIGHT = 7.2
+LINEAR_PANEL_HEIGHT = 8.8
 ATLAS_HEIGHT = 14.2
 README_HEIGHT = 24.0
-CONVERGENCE_HEIGHT = 5.8
+CONVERGENCE_HEIGHT = 6.8
 
 plt.rcParams.update(
     {
@@ -308,7 +308,7 @@ def _plot_cetg_trace_panel(ax: plt.Axes, df: pd.DataFrame) -> None:
     ax.set_xlabel("t")
     ax.set_ylabel("signal")
     ax.set_yscale("log")
-    ax.legend(frameon=False, fontsize=7, ncol=2, loc="upper left")
+    ax.legend(frameon=False, fontsize=10, ncol=2, loc="upper left")
     ax.text(
         0.03,
         0.05,
@@ -609,7 +609,7 @@ def _build_core_nonlinear_atlas(path: Path, assets: dict[str, Path]) -> None:
             transform=ax.transAxes,
             va="top",
             ha="left",
-            fontsize=11,
+            fontsize=14,
             color=TITLE_COLOR,
             bbox={"facecolor": "white", "edgecolor": "#cbd5e1", "boxstyle": "round,pad=0.2"},
         )
