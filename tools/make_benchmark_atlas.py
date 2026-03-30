@@ -278,13 +278,13 @@ def _plot_exact_growth_case(
 
 
 def _image_tile(ax: plt.Axes, image: np.ndarray, title: str) -> None:
-    ax.imshow(image)
+    ax.imshow(image, aspect="auto")
     ax.set_title(title, fontsize=TILE_TITLE_SIZE, color=TITLE_COLOR, fontweight="bold")
     ax.axis("off")
 
 
 def _image_tile_plain(ax: plt.Axes, image: np.ndarray) -> None:
-    ax.imshow(image)
+    ax.imshow(image, aspect="auto")
     ax.axis("off")
 
 
