@@ -223,6 +223,17 @@ def _plot_results(csv_path: Path, png_path: Path, pdf_path: Path) -> None:
     import matplotlib.pyplot as plt
     import pandas as pd
 
+    plt.rcParams.update(
+        {
+            "font.size": 13,
+            "axes.titlesize": 18,
+            "axes.labelsize": 15,
+            "xtick.labelsize": 12,
+            "ytick.labelsize": 12,
+            "legend.fontsize": 12,
+        }
+    )
+
     df = pd.read_csv(csv_path)
     ok = df[df["status"] == "success"].copy()
     if ok.empty:
@@ -239,7 +250,7 @@ def _plot_results(csv_path: Path, png_path: Path, pdf_path: Path) -> None:
 
     x = list(range(len(order)))
     width = 0.24
-    fig, axes = plt.subplots(1, 2, figsize=(max(13.0, 1.25 * len(order) + 5.5), 5.9), constrained_layout=True)
+    fig, axes = plt.subplots(1, 2, figsize=(max(15.5, 1.45 * len(order) + 6.5), 7.4), constrained_layout=True)
 
     for idx, backend in enumerate(BACKEND_ORDER):
         sub = ok[ok["backend"] == backend].set_index("case")
@@ -254,13 +265,13 @@ def _plot_results(csv_path: Path, png_path: Path, pdf_path: Path) -> None:
         (axes[0], "Runtime", "Wall time [s]"),
         (axes[1], "Peak Memory", "Peak RSS [MiB]"),
     ):
-        ax.set_xticks(x, tick_labels, rotation=32, ha="right")
-        ax.set_title(title)
+        ax.set_xticks(x, tick_labels, rotation=28, ha="right")
+        ax.set_title(title, pad=10)
         ax.set_ylabel(ylabel)
         ax.grid(axis="y", alpha=0.25, linewidth=0.6)
     axes[0].set_yscale("log")
     axes[0].legend(loc="upper left", ncols=3, frameon=False)
-    fig.suptitle("Runtime and Memory Comparison")
+    fig.suptitle("Runtime and Memory Comparison", fontsize=21)
     png_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(png_path, dpi=220)
     fig.savefig(pdf_path)
