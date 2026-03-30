@@ -153,6 +153,10 @@ The broader scanned benchmark panels are coverage figures, not universal
 ``rtol <= 3e-2`` claims for every tile. They remain valuable because they show
 which branches and diagnostics are being tracked across the codebase.
 
+Benchmark-specific replay knobs used to regenerate these figures stay confined
+to the benchmark builders in ``tools/``. They are not promoted into generic
+runtime defaults for the solver or the shipped example drivers.
+
 README summary panel
 --------------------
 
