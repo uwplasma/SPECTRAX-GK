@@ -184,6 +184,10 @@ The checked-in case inventory already covers the publication-facing families:
 - Cyclone Miller nonlinear
 - KAW linear
 
+These rows are the ones shown in the README/runtime panel. TEM currently
+appears only in the extended linear benchmark atlas, not in the runtime figure,
+because there is not yet a tracked three-backend runtime row for that case.
+
 Final runtime/memory figure
 ---------------------------
 
@@ -205,6 +209,10 @@ The assembled figure is generated from the collected per-case summaries with
 The cETG reduced-model row now includes all three measured backends. The GX
 runtime uses a matched short ``t_max=5`` input so the wall-time and memory
 comparison uses the same integration window as the SPECTRAX-GK runtime case.
+The published runtime figure therefore complements the atlas instead of
+duplicating it: the atlas carries growth/frequency and nonlinear
+transport/energy comparisons, while the runtime figure carries CPU/GPU/GX wall
+time and peak RSS for the shipped runtime cases.
 
 Cached basis indices
 --------------------
