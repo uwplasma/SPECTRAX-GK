@@ -56,15 +56,15 @@ the CLI or the generic example drivers directly:
 
 .. code-block:: bash
 
-   python examples/runtime_from_toml.py --config examples/configs/runtime_cyclone.toml
-   python examples/runtime_from_toml.py --config examples/configs/runtime_etg.toml
-   python examples/runtime_from_toml.py --config examples/configs/runtime_kbm.toml
+   python examples/runtime_from_toml.py --config examples/linear/axisymmetric/runtime_cyclone.toml
+   python examples/runtime_from_toml.py --config examples/linear/axisymmetric/runtime_etg.toml
+   python examples/runtime_from_toml.py --config examples/linear/axisymmetric/runtime_kbm.toml
 
    python -m spectraxgk.cli run-runtime-linear \
-     --config examples/configs/runtime_w7x_linear_imported_geometry.toml
+     --config examples/linear/axisymmetric/runtime_w7x_linear_imported_geometry.toml
 
    python -m spectraxgk.cli run-runtime-nonlinear \
-     --config examples/configs/runtime_w7x_nonlinear_vmec_geometry.toml
+     --config examples/linear/axisymmetric/runtime_w7x_nonlinear_vmec_geometry.toml
 
 Geometry helper workflows
 -------------------------
@@ -77,10 +77,10 @@ Miller inputs when the external helper scripts are available:
    export HSX_VMEC_FILE=/absolute/path/to/wout_HSX_QHS_vac.nc
    export GX_VMEC_PYTHON=python3
    python tools/generate_gx_vmec_eik.py \
-     --config examples/configs/runtime_hsx_nonlinear_vmec_geometry.toml
+     --config examples/linear/axisymmetric/runtime_hsx_nonlinear_vmec_geometry.toml
 
    python tools/generate_gx_miller_eik.py \
-     --config examples/configs/runtime_cyclone_nonlinear_gx_miller.toml
+     --config examples/linear/axisymmetric/runtime_cyclone_nonlinear_gx_miller.toml
 
 Benchmark and scan helpers
 --------------------------
@@ -119,7 +119,7 @@ Secondary slab workflow
 .. code-block:: bash
 
    python -m spectraxgk.cli run-runtime-linear \
-     --config examples/configs/runtime_secondary_slab.toml
+     --config examples/linear/axisymmetric/runtime_secondary_slab.toml
 
    python examples/secondary_slab_workflow.py
 
@@ -134,7 +134,7 @@ Reduced-model runtime
 
    python examples/cetg_runtime_nonlinear.py --steps 1000
    python -m spectraxgk.cli run-runtime-nonlinear \
-     --config examples/configs/runtime_cetg_reference.toml
+     --config examples/linear/axisymmetric/runtime_cetg_reference.toml
 
 The reduced collisional slab ETG workflow uses the dedicated cETG runtime
 solver rather than the full-GK field solve path.

@@ -49,7 +49,7 @@ The tracked atlas is now paired with a refresh manifest:
 
 The refresh runner executes the benchmark matrix in manifest order from
 ``tools/benchmark_refresh_manifest.toml`` and writes a summary to
-``tools_out/benchmark_refresh_summary.json``. Jobs that depend on clean GX outputs declare explicit environment-variable requirements for their argument bundles, so the refresh pipeline can be rerun without editing the Python scripts themselves.
+``tools_out/benchmark_refresh_summary.json``. Jobs that depend on reference data declare explicit environment-variable requirements for their argument bundles, so the refresh pipeline can be rerun without editing the Python scripts themselves.
 
 Example:
 
@@ -74,7 +74,7 @@ At the README level, these metrics are intentionally packed into one compact
 publication panel plus one separate runtime/memory panel. The atlas therefore
 answers two questions:
 
-- which branches and diagnostics are being tracked for parity,
+- which branches and diagnostics are being tracked for validation,
 - which shipped cases have measured CPU/GPU/runtime-memory coverage.
 
 Representative convergence gate
@@ -94,14 +94,14 @@ ITG lane to show:
    :alt: Representative convergence panel
 
    Representative convergence and sensitivity gate. This panel is included in
-   the README publication summary so convergence is visible alongside the parity
+   the README publication summary so convergence is visible alongside the validation
    figures rather than being left implicit.
 
 Primary publication set
 -----------------------
 
 The headline validation set is limited to the full-gyrokinetic lanes that are
-already used in the current parity and regression workflow:
+already used in the current validation and regression workflow:
 
 - Cyclone ITG linear and nonlinear
 - KBM linear and nonlinear
@@ -111,7 +111,7 @@ already used in the current parity and regression workflow:
 
 The README atlas also includes one extended linear strip for exploratory or
 stress lanes that are still useful to show publicly without folding them into
-the primary parity claim:
+the primary validation claim:
 
 - Cyclone kinetic electrons
 - TEM
@@ -134,7 +134,7 @@ the primary parity claim:
    overlays used in the public benchmark set: Cyclone, KBM, W7-X, HSX,
    Cyclone Miller, and the reduced cETG comparison.
 
-Interpretation of parity
+Interpretation of validation
 ------------------------
 
 The atlas intentionally mixes two classes of evidence:
@@ -143,7 +143,7 @@ The atlas intentionally mixes two classes of evidence:
   ``beta``,
 - exact-window or exact-diagnostic closures on selected lanes.
 
-Only the exact-window closures should be read as strict small-tolerance parity
+Only the exact-window closures should be read as strict small-tolerance validation
 gates. In the current tracked set those are:
 
 - KAW exact diagnostic window
@@ -168,7 +168,7 @@ README summary panel
    Publication-facing benchmark summary. The README panel is intentionally
    limited to the convergence gate plus the linear and nonlinear master panels
    so the top-level presentation stays compact. In practice that means one
-   image for parity/convergence coverage and one separate image for runtime and
+   image for validation/convergence coverage and one separate image for runtime and
    peak-memory measurements.
 
 Extended stress matrix

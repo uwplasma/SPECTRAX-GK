@@ -16,7 +16,7 @@
 # dump artifacts exist.
 
 [lane.cyclone_miller]
-config = "../examples/configs/runtime_cyclone_nonlinear_gx_miller.toml"
+config = "../examples/linear/axisymmetric/runtime_cyclone_nonlinear_gx_miller.toml"
 gx_out = "$HOME/gx_runs/cyclone_diag160/cyclone_diag160.out.nc"
 
 [lane.cyclone_miller.diag_state]
@@ -24,7 +24,7 @@ gx_dir = "$HOME/gx_runs/cyclone_diag160"
 time_index = 47
 
 [lane.kbm_salpha]
-config = "../examples/configs/runtime_kbm_nonlinear_gx_t100.toml"
+config = "../examples/linear/axisymmetric/runtime_kbm_nonlinear_gx_t100.toml"
 gx_out = "$HOME/gx_refs/main_clean_20260312/nonlinear/kbm/kbm_salpha_nonlinear.out.nc"
 
 [lane.kbm_salpha.startup]
@@ -33,7 +33,7 @@ ky = 0.3
 kx_target = 0.0
 
 [lane.w7x_vmec]
-config = "../examples/configs/runtime_w7x_nonlinear_vmec_geometry.toml"
+config = "../examples/linear/axisymmetric/runtime_w7x_nonlinear_vmec_geometry.toml"
 gx_out = "$HOME/gx_refs/main_clean_20260312/nonlinear/w7x/w7x_adiabatic_electrons.out.nc"
 
 [lane.w7x_vmec.startup]
@@ -46,7 +46,7 @@ gx_dir = "$HOME/gx_runs/w7x/diag_t10_clean"
 time_index = 10
 
 [lane.hsx_vmec]
-config = "../examples/configs/runtime_hsx_nonlinear_vmec_geometry.toml"
+config = "../examples/linear/axisymmetric/runtime_hsx_nonlinear_vmec_geometry.toml"
 gx_out = "$HOME/gx_refs/main_clean_20260312/nonlinear/hsx/hsx_nonlinear.out.nc"
 env.HSX_VMEC_FILE = "$HOME/gx_refs/main_clean_20260312/nonlinear/hsx/wout_HSX_QHS_vac.nc"
 
