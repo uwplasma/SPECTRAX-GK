@@ -1724,7 +1724,7 @@ def test_runtime_gx_centered_random_pairs_match_glibc_reference() -> None:
 
 
 def test_runtime_gx_periodic_zp_uses_discrete_period_not_endpoint_span() -> None:
-    cfg, _data = load_runtime_from_toml("examples/configs/runtime_cetg_reference.toml")
+    cfg, _data = load_runtime_from_toml("examples/nonlinear/axisymmetric/runtime_cetg_reference.toml")
     geom = build_runtime_geometry(cfg)
     grid = build_spectral_grid(apply_gx_geometry_grid_defaults(geom, cfg.grid))
     z = np.asarray(grid.z, dtype=float)

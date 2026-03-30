@@ -1,0 +1,42 @@
+case = "cyclone"
+
+[grid]
+Nx = 1
+Ny = 24
+Nz = 96
+Lx = 62.8
+Ly = 62.8
+boundary = "linked"
+y0 = 20.0
+ntheta = 32
+nperiod = 2
+
+[time]
+t_max = 10.0
+dt = 0.002
+use_diffrax = true
+diffrax_solver = "Dopri8"
+diffrax_adaptive = true
+diffrax_rtol = 1.0e-6
+diffrax_atol = 1.0e-8
+diffrax_max_steps = 200000
+
+[run]
+ky = 0.3
+Nl = 24
+Nm = 12
+solver = "time"
+method = "imex2"
+
+[fit]
+auto_window = true
+window_method = "loglinear"
+window_fraction = 0.3
+start_fraction = 0.58
+min_points = 80
+min_amp_fraction = 0.05
+max_fraction = 0.6
+end_fraction = 0.8
+max_amp_fraction = 0.8
+late_penalty = 0.3
+mode_method = "project"
