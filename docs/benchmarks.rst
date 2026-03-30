@@ -70,6 +70,13 @@ throughout:
 - electrostatic field energy (legacy variable name ``Wphi``)
 - magnetic field energy when ``A_parallel`` or ``B_parallel`` are active
 
+At the README level, these metrics are intentionally packed into one compact
+publication panel plus one separate runtime/memory panel. The atlas therefore
+answers two questions:
+
+- which branches and diagnostics are being tracked for parity,
+- which shipped cases have measured CPU/GPU/runtime-memory coverage.
+
 Representative convergence gate
 -------------------------------
 
@@ -101,6 +108,13 @@ already used in the current parity and regression workflow:
 - W7-X VMEC linear and nonlinear
 - HSX VMEC linear and nonlinear
 - Cyclone Miller geometry linear and nonlinear
+
+The README atlas also includes one extended linear strip for exploratory or
+stress lanes that are still useful to show publicly without folding them into
+the primary parity claim:
+
+- Cyclone kinetic electrons
+- TEM
 
 .. figure:: _static/benchmark_core_linear_atlas.png
    :width: 100%
@@ -149,7 +163,9 @@ README summary panel
 
    Publication-facing benchmark summary. The README panel is intentionally
    limited to the convergence gate plus the linear and nonlinear master panels
-   so the top-level presentation stays compact.
+   so the top-level presentation stays compact. In practice that means one
+   image for parity/convergence coverage and one separate image for runtime and
+   peak-memory measurements.
 
 Extended stress matrix
 ----------------------
