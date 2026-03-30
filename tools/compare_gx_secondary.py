@@ -124,7 +124,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--config",
         type=Path,
-        default=Path("examples/configs/runtime_secondary_slab.toml"),
+        default=Path("examples/linear/axisymmetric/runtime_secondary_slab.toml"),
         help="Stage-1 secondary runtime config.",
     )
     parser.add_argument("--gx-out", type=Path, default=None, help="GX kh01a out.nc file.")

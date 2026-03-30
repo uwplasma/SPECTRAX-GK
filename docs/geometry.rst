@@ -188,7 +188,7 @@ about ``7e-6`` to ``9e-6`` and mean relative ``gamma`` errors of about
 
 That same imported contract now has a first-class nonlinear runtime workflow:
 ``examples/w7x_nonlinear_imported_geometry.py`` and
-``examples/configs/runtime_w7x_nonlinear_imported_geometry.toml`` mirror the
+``examples/linear/axisymmetric/runtime_w7x_nonlinear_imported_geometry.toml`` mirror the
 GX nonlinear W7-X adiabatic-electron setup while keeping the geometry source
 explicitly tied to a VMEC/DESC ``*.eik.nc`` field-line file.
 
@@ -262,7 +262,7 @@ Two user-facing entry points now exercise that bridge:
 - ``tools/generate_gx_miller_eik.py --config ...`` generates a GX-compatible
   Miller ``*.eiknc.nc`` file from a SPECTRAX runtime TOML.
 - ``examples/hsx_nonlinear_vmec_geometry.py`` and
-  ``examples/configs/runtime_hsx_nonlinear_vmec_geometry.toml`` run a nonlinear
+  ``examples/linear/axisymmetric/runtime_hsx_nonlinear_vmec_geometry.toml`` run a nonlinear
   adiabatic-electron ITG case on the supplied HSX VMEC equilibrium file while
   letting SPECTRAX generate and reuse the field-line geometry automatically.
 

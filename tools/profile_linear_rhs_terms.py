@@ -42,7 +42,7 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument(
         "--config",
         type=Path,
-        default=Path("examples/configs/runtime_cyclone_nonlinear_gx.toml"),
+        default=Path("examples/linear/axisymmetric/runtime_cyclone_nonlinear_gx.toml"),
     )
     p.add_argument("--ky", type=float, default=0.3)
     p.add_argument("--kx", type=float, default=None)

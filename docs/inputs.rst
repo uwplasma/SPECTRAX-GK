@@ -205,11 +205,11 @@ CLI usage
 
 .. code-block:: bash
 
-   spectrax-gk run-linear --config examples/configs/cyclone.toml --plot --outdir docs/_static
-   spectrax-gk scan-linear --config examples/configs/etg.toml --plot --outdir docs/_static
-   spectrax-gk run-runtime-linear --config examples/configs/runtime_cyclone.toml
-   spectrax-gk scan-runtime-linear --config examples/configs/runtime_etg.toml --batch-ky
-   spectrax-gk run-runtime-nonlinear --config examples/configs/runtime_cyclone.toml --sample-stride 5 --out docs/_static/nonlinear_cyclone_diag.csv
+   spectrax-gk run-linear --config examples/linear/axisymmetric/cyclone.toml --plot --outdir docs/_static
+   spectrax-gk scan-linear --config examples/linear/axisymmetric/etg.toml --plot --outdir docs/_static
+   spectrax-gk run-runtime-linear --config examples/linear/axisymmetric/runtime_cyclone.toml
+   spectrax-gk scan-runtime-linear --config examples/linear/axisymmetric/runtime_etg.toml --batch-ky
+   spectrax-gk run-runtime-nonlinear --config examples/linear/axisymmetric/runtime_cyclone.toml --sample-stride 5 --out docs/_static/nonlinear_cyclone_diag.csv
 
 For ``run-runtime-nonlinear``, omit ``--steps`` when ``fixed_dt = false`` unless
 you explicitly want a capped step count. The CLI now preserves ``steps = None``
@@ -227,8 +227,8 @@ Python driver
 
 .. code-block:: bash
 
-   python examples/run_from_toml.py --config examples/configs/etg.toml --plot --outdir docs/_static
-   python examples/runtime_from_toml.py --config examples/configs/runtime_kbm.toml
+   python examples/run_from_toml.py --config examples/linear/axisymmetric/etg.toml --plot --outdir docs/_static
+   python examples/runtime_from_toml.py --config examples/linear/axisymmetric/runtime_kbm.toml
 
 TOML sections
 -------------
