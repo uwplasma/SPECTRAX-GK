@@ -25,9 +25,9 @@ benchmark commonly used in gyrokinetic validation studies. [Dimits00]_
 
 The default boundary condition is a linked (twist-and-shift) flux tube, so the
 parallel derivative couples Fourier modes across adjacent :math:`k_x` indices.
-For non-twisting flux tubes (NTFT), SPECTRAX-GK follows GX’s ``m0`` and
-``deltaKx`` formulation, which modifies the effective :math:`k_\perp` and drift
-terms using the same twist factor and linking indices as GX.
+For non-twisting flux tubes (NTFT), SPECTRAX-GK employs an ``m0`` and
+``deltaKx`` formulation compatible with GX, which modifies the effective
+:math:`k_\perp` and drift terms using the same twist factor and linking indices.
 
 Hermite-Laguerre velocity space
 -------------------------------
@@ -126,9 +126,10 @@ including a separate coupling in :math:`m=2` for temperature-gradient drive.
 Field-aligned streaming representation
 ~~~~~~~~~~~~~~~~~~~~
 
-GX applies the parallel derivative to a gyrokinetic variable that includes the
+To maintain compatibility with certain legacy benchmarks, SPECTRAX-GK supports
+applying the parallel derivative to a gyrokinetic variable that includes the
 explicit field terms but omits the full :math:`H_{\ell m}` correction at
-``m>1``. SPECTRAX-GK’s GX path matches this by defining
+``m>1``. This is achieved by defining
 
 .. math::
 
@@ -139,7 +140,7 @@ explicit field terms but omits the full :math:`H_{\ell m}` correction at
 
 and then applying the parallel derivative to :math:`\tilde{G}` before the
 Hermite ladder. This matches the ordering in GX’s ``grad_parallel_linked``
-implementation and is critical for reproducing the GX growth-rate diagnostics.
+implementation and is critical for precise growth-rate validation against GX.
 
 Nonlinear E×B and flutter terms
 -------------------------------
@@ -170,7 +171,7 @@ through
 
 so the nonlinear operator naturally splits into :math:`E\times B`,
 :math:`B_\parallel`, and flutter contributions. The implementation in
-:mod:`spectraxgk.terms.nonlinear` follows the GX normalization: gradients are
-computed with FFTs in :math:`x,y`, the bracket is evaluated in real space, and
-the result is filtered by the de-alias mask before returning to spectral
-space.
+:mod:`spectraxgk.terms.nonlinear` supports standard gyrokinetic normalization:
+gradients are computed with FFTs in :math:`x,y`, the bracket is evaluated in
+real space, and the result is filtered by the de-alias mask before returning to
+spectral space.
