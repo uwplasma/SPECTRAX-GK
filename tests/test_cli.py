@@ -232,6 +232,90 @@ diagnostic_norm = "none"
     assert "nonlinear" in out
 
 
+def test_cli_direct_config_shorthand_accepts_no_progress(monkeypatch, tmp_path: Path) -> None:
+    """Direct config shorthand should forward progress flags to nonlinear runtime runs."""
+    cfg = """
+[[species]]
+name = "ion"
+charge = 1.0
+mass = 1.0
+density = 1.0
+temperature = 1.0
+tprim = 2.49
+fprim = 0.8
+kinetic = true
+
+[grid]
+Nx = 1
+Ny = 6
+Nz = 16
+Lx = 62.8
+Ly = 62.8
+boundary = "periodic"
+
+[time]
+t_max = 0.1
+dt = 0.01
+method = "rk2"
+use_diffrax = false
+
+[geometry]
+q = 1.4
+s_hat = 0.8
+epsilon = 0.18
+R0 = 2.77778
+
+[init]
+init_field = "density"
+init_amp = 1e-8
+gaussian_init = false
+
+[physics]
+electrostatic = true
+electromagnetic = false
+adiabatic_electrons = true
+tau_e = 1.0
+nonlinear = true
+
+[terms]
+nonlinear = 1.0
+"""
+    path = tmp_path / "runtime_cli_shorthand_progress.toml"
+    path.write_text(cfg, encoding="utf-8")
+    captured: dict[str, object] = {}
+
+    def _fake_run_runtime_nonlinear(_cfg, **kwargs):
+        captured.update(kwargs)
+        diag = GXDiagnostics(
+            t=np.asarray([0.1]),
+            dt_t=np.asarray([0.1]),
+            dt_mean=np.asarray(0.1),
+            gamma_t=np.asarray([0.0]),
+            omega_t=np.asarray([0.0]),
+            Wg_t=np.asarray([1.0]),
+            Wphi_t=np.asarray([2.0]),
+            Wapar_t=np.asarray([0.0]),
+            heat_flux_t=np.asarray([3.0]),
+            particle_flux_t=np.asarray([0.0]),
+            energy_t=np.asarray([3.0]),
+            heat_flux_species_t=None,
+            particle_flux_species_t=None,
+            phi_mode_t=None,
+        )
+        return RuntimeNonlinearResult(
+            t=np.asarray([0.1]),
+            diagnostics=diag,
+            ky_selected=0.2,
+            kx_selected=0.0,
+        )
+
+    monkeypatch.setattr("spectraxgk.cli.run_runtime_nonlinear", _fake_run_runtime_nonlinear)
+    monkeypatch.setattr(sys, "argv", ["spectrax-gk", str(path), "--steps", "3", "--no-progress"])
+    code = main()
+    assert code == 0
+    assert captured["show_progress"] is False
+
+
 def test_cli_run_runtime_nonlinear_outputs_species_flux_columns(capsys, monkeypatch, tmp_path: Path):
     """Nonlinear CSV output should include per-species flux diagnostics when available."""
     cfg = """
