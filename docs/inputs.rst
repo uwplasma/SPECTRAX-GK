@@ -190,6 +190,8 @@ The ``[run]`` and ``[scan]`` sections accept ``solver`` and ``fit_signal`` keys:
 
 * ``solver = "auto"`` (default): choose time vs Krylov and fall back if needed
 * ``solver = "time"``: always use time integration
+* ``solver = "explicit_time"``: force the explicit single-mode time integrator
+  used by the legacy compatibility path
 * ``solver = "krylov"``: always use the matrix-free eigen solver
 
 * ``fit_signal = "auto"`` (default): pick ``phi`` vs density based on fit quality

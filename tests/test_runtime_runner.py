@@ -1094,7 +1094,7 @@ def test_runtime_linear_accepts_root_level_gx_eik_geometry(tmp_path) -> None:
     assert np.isfinite(out.omega)
 
 
-def test_runtime_linear_gx_time_accepts_root_level_gx_eik_geometry(tmp_path) -> None:
+def test_runtime_linear_explicit_time_accepts_root_level_gx_eik_geometry(tmp_path) -> None:
     netcdf4 = pytest.importorskip("netCDF4")
     Dataset = netcdf4.Dataset
 
@@ -1132,7 +1132,7 @@ def test_runtime_linear_gx_time_accepts_root_level_gx_eik_geometry(tmp_path) -> 
         root.createVariable("alpha", "f8", ())[:] = sampled.alpha
 
     cfg_nc = replace(cfg, geometry=replace(cfg.geometry, model="gx-netcdf", geometry_file=str(path)))
-    out = run_runtime_linear(cfg_nc, ky_target=0.2, Nl=4, Nm=6, solver="gx_time")
+    out = run_runtime_linear(cfg_nc, ky_target=0.2, Nl=4, Nm=6, solver="explicit_time")
 
     assert np.isfinite(out.gamma)
     assert np.isfinite(out.omega)
@@ -1199,7 +1199,7 @@ def test_runtime_linear_secondary_slab_example_runs() -> None:
     cfg_path = Path(__file__).resolve().parents[1] / "examples" / "benchmarks" / "runtime_secondary_slab.toml"
     cfg, _ = load_runtime_from_toml(cfg_path)
 
-    out = run_runtime_linear(cfg, ky_target=0.1, Nl=3, Nm=8, solver="gx_time")
+    out = run_runtime_linear(cfg, ky_target=0.1, Nl=3, Nm=8, solver="explicit_time")
 
     assert np.isfinite(out.gamma)
     assert np.isfinite(out.omega)
