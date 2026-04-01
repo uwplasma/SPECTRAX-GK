@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+import sys
 import pytest
 import numpy as np
 from unittest.mock import MagicMock
@@ -18,6 +19,7 @@ from spectraxgk.vmec_eik import (
     build_gx_vmec_geometry_request,
     generate_runtime_vmec_eik,
 )
+from spectraxgk.from_gx.vmec import internal_vmec_backend_available
 
 
 def _vmec_runtime_cfg(tmp_path: Path, *, geometry_file: str | None = None) -> RuntimeConfig:
@@ -103,3 +105,25 @@ def test_generate_runtime_vmec_eik_invokes_internal_generator(
     request = kwargs["request"]
     assert request.ntheta == 32
     assert request.vmec_file == str(Path(cfg.geometry.vmec_file).resolve())
+
+
+def test_internal_vmec_backend_available_detects_env_provided_booz_xform_jax(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    pkg_root = tmp_path / "booz_xform_jax_checkout"
+    pkg_dir = pkg_root / "src" / "booz_xform_jax"
+    pkg_dir.mkdir(parents=True)
+    (pkg_dir / "__init__.py").write_text("class Booz_xform:\n    pass\n", encoding="utf-8")
+
+    for name in ("booz_xform_jax", "booz_xform"):
+        sys.modules.pop(name, None)
+    original_sys_path = list(sys.path)
+    monkeypatch.setenv("BOOZ_XFORM_JAX_PATH", str(pkg_root))
+    monkeypatch.delenv("GX_BOOZ_XFORM_JAX_PATH", raising=False)
+
+    try:
+        assert internal_vmec_backend_available() is True
+    finally:
+        sys.path[:] = original_sys_path
+        for name in ("booz_xform_jax", "booz_xform"):
+            sys.modules.pop(name, None)
