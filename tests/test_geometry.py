@@ -503,16 +503,16 @@ def test_build_flux_tube_geometry_accepts_imported_eik_aliases(tmp_path, model: 
     with Dataset(path, "w") as root:
         root.createDimension("z", theta.size)
         root.createVariable("theta", "f8", ("z",))[:] = theta
-        root.createVariable("bmag", "f8", ("z",))[:] = np.linspace(1.0, 1.2, theta.size)
-        root.createVariable("gds2", "f8", ("z",))[:] = np.linspace(1.0, 2.0, theta.size)
-        root.createVariable("gds21", "f8", ("z",))[:] = np.linspace(-0.2, 0.2, theta.size)
+        root.createVariable("bmag", "f8", ("z",))[:] = np.array([1.0, 1.1, 1.2, 1.1, 1.0])
+        root.createVariable("gds2", "f8", ("z",))[:] = np.array([1.0, 1.5, 2.0, 1.5, 1.0])
+        root.createVariable("gds21", "f8", ("z",))[:] = np.array([-0.2, 0.0, 0.2, 0.0, -0.2])
         root.createVariable("gds22", "f8", ("z",))[:] = np.full(theta.size, 0.8)
-        root.createVariable("cvdrift", "f8", ("z",))[:] = np.linspace(0.3, 0.5, theta.size)
-        root.createVariable("gbdrift", "f8", ("z",))[:] = np.linspace(0.3, 0.5, theta.size)
-        root.createVariable("cvdrift0", "f8", ("z",))[:] = np.linspace(-0.1, 0.1, theta.size)
-        root.createVariable("gbdrift0", "f8", ("z",))[:] = np.linspace(-0.1, 0.1, theta.size)
-        root.createVariable("jacob", "f8", ("z",))[:] = np.linspace(2.0, 3.0, theta.size)
-        root.createVariable("grho", "f8", ("z",))[:] = np.linspace(1.0, 1.4, theta.size)
+        root.createVariable("cvdrift", "f8", ("z",))[:] = np.array([0.3, 0.4, 0.5, 0.4, 0.3])
+        root.createVariable("gbdrift", "f8", ("z",))[:] = np.array([0.3, 0.4, 0.5, 0.4, 0.3])
+        root.createVariable("cvdrift0", "f8", ("z",))[:] = np.array([-0.1, 0.0, 0.1, 0.0, -0.1])
+        root.createVariable("gbdrift0", "f8", ("z",))[:] = np.array([-0.1, 0.0, 0.1, 0.0, -0.1])
+        root.createVariable("jacob", "f8", ("z",))[:] = np.array([2.0, 2.5, 3.0, 2.5, 2.0])
+        root.createVariable("grho", "f8", ("z",))[:] = np.array([1.0, 1.2, 1.4, 1.2, 1.0])
         root.createVariable("gradpar", "f8", ("z",))[:] = np.full(theta.size, 0.4)
         root.createVariable("drhodpsi", "f8", ())[:] = 1.0
         root.createVariable("q", "f8", ())[:] = 1.7
@@ -537,21 +537,22 @@ def test_ensure_flux_tube_geometry_data_trims_closed_imported_vmec_grid(tmp_path
 
     path = tmp_path / "geom_vmec.eik.nc"
     theta = np.linspace(-3.0 * np.pi, 3.0 * np.pi, 9)
-    jacob = np.linspace(2.0, 3.0, theta.size)
-    grho = np.linspace(1.0, 1.4, theta.size)
+    bmag_val = np.array([1.0, 1.1, 1.2, 1.3, 1.4, 1.3, 1.2, 1.1, 1.0])
+    jacob_val = np.array([2.0, 2.2, 2.4, 2.6, 2.8, 2.6, 2.4, 2.2, 2.0])
+    grho_val = np.array([1.0, 1.1, 1.2, 1.3, 1.4, 1.3, 1.2, 1.1, 1.0])
     with Dataset(path, "w") as root:
         root.createDimension("z", theta.size)
         root.createVariable("theta", "f8", ("z",))[:] = theta
-        root.createVariable("bmag", "f8", ("z",))[:] = np.linspace(1.0, 1.2, theta.size)
-        root.createVariable("gds2", "f8", ("z",))[:] = np.linspace(1.0, 2.0, theta.size)
-        root.createVariable("gds21", "f8", ("z",))[:] = np.linspace(-0.2, 0.2, theta.size)
+        root.createVariable("bmag", "f8", ("z",))[:] = bmag_val
+        root.createVariable("gds2", "f8", ("z",))[:] = np.array([1.0, 1.2, 1.4, 1.6, 1.8, 1.6, 1.4, 1.2, 1.0])
+        root.createVariable("gds21", "f8", ("z",))[:] = np.array([-0.2, -0.1, 0.0, 0.1, 0.2, 0.1, 0.0, -0.1, -0.2])
         root.createVariable("gds22", "f8", ("z",))[:] = np.full(theta.size, 0.8)
-        root.createVariable("cvdrift", "f8", ("z",))[:] = np.linspace(0.3, 0.5, theta.size)
-        root.createVariable("gbdrift", "f8", ("z",))[:] = np.linspace(0.3, 0.5, theta.size)
-        root.createVariable("cvdrift0", "f8", ("z",))[:] = np.linspace(-0.1, 0.1, theta.size)
-        root.createVariable("gbdrift0", "f8", ("z",))[:] = np.linspace(-0.1, 0.1, theta.size)
-        root.createVariable("jacob", "f8", ("z",))[:] = jacob
-        root.createVariable("grho", "f8", ("z",))[:] = grho
+        root.createVariable("cvdrift", "f8", ("z",))[:] = np.array([0.3, 0.4, 0.5, 0.6, 0.7, 0.6, 0.5, 0.4, 0.3])
+        root.createVariable("gbdrift", "f8", ("z",))[:] = np.array([0.3, 0.4, 0.5, 0.6, 0.7, 0.6, 0.5, 0.4, 0.3])
+        root.createVariable("cvdrift0", "f8", ("z",))[:] = np.array([-0.1, -0.05, 0.0, 0.05, 0.1, 0.05, 0.0, -0.05, -0.1])
+        root.createVariable("gbdrift0", "f8", ("z",))[:] = np.array([-0.1, -0.05, 0.0, 0.05, 0.1, 0.05, 0.0, -0.05, -0.1])
+        root.createVariable("jacob", "f8", ("z",))[:] = jacob_val
+        root.createVariable("grho", "f8", ("z",))[:] = grho_val
         root.createVariable("gradpar", "f8", ("z",))[:] = np.full(theta.size, 0.4)
         root.createVariable("q", "f8", ())[:] = 1.7
         root.createVariable("shat", "f8", ())[:] = 0.6
@@ -573,9 +574,9 @@ def test_ensure_flux_tube_geometry_data_trims_closed_imported_vmec_grid(tmp_path
     assert jnp.allclose(sampled.theta, jnp.asarray(grid.z))
     assert sampled.theta_scale == pytest.approx(2.0)
     assert sampled.nfp == 5
-    expected_jacob = 1.0 / (0.4 * np.linspace(1.0, 1.2, theta.size)[:-1])
+    expected_jacob = 1.0 / (0.4 * bmag_val[:-1])
     assert jnp.allclose(sampled.jacobian_profile, jnp.asarray(expected_jacob))
-    assert jnp.allclose(sampled.grho_profile, jnp.asarray(grho[:-1]))
+    assert jnp.allclose(sampled.grho_profile, jnp.asarray(grho_val[:-1]))
 
 
 def test_apply_gx_geometry_grid_defaults_uses_imported_theta_and_kxfac(tmp_path):
@@ -657,7 +658,7 @@ def test_apply_gx_geometry_grid_defaults_promotes_near_zero_shat_to_periodic():
     adjusted = apply_gx_geometry_grid_defaults(geom, grid)
 
     assert adjusted.boundary == "periodic"
-    assert adjusted.jtwist == 2 * adjusted.Nx
+    assert adjusted.jtwist is None
 
 
 def test_build_linear_cache_uses_linked_streaming_for_fix_aspect_imported_geometry(tmp_path):
