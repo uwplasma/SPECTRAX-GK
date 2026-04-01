@@ -31,7 +31,7 @@ from compare_gx_imported_linear import (
     _match_local_kx_index,
     _resolve_imported_real_fft_ny,
     _run_single_ky,
-    _select_geometry_source,
+    _resolve_internal_geometry_source,
     _select_gx_kx_index,
     _write_scan_rows,
     build_parser,
@@ -606,10 +606,10 @@ def test_select_geometry_source_prefers_gx_output_for_vmec_generated_runs() -> N
     vmec_contract = replace(_dummy_gx_contract(init_single=False), geo_option="vmec")
     desc_contract = replace(_dummy_gx_contract(init_single=False), geo_option="desc")
     nc_contract = replace(_dummy_gx_contract(init_single=False), geo_option="nc")
-    assert _select_geometry_source(gx_out, geom, None) == geom
-    assert _select_geometry_source(gx_out, geom, vmec_contract) == gx_out
-    assert _select_geometry_source(gx_out, geom, desc_contract) == gx_out
-    assert _select_geometry_source(gx_out, geom, nc_contract) == geom
+    assert _resolve_internal_geometry_source(geometry_file=geom, runtime_config=None) == geom
+    assert _resolve_internal_geometry_source(geometry_file=gx_out, runtime_config=None) == gx_out
+    assert _resolve_internal_geometry_source(geometry_file=gx_out, runtime_config=None) == gx_out
+    assert _resolve_internal_geometry_source(geometry_file=geom, runtime_config=None) == geom
 
 
 def test_integrate_target_mode_series_collects_requested_sample_count(monkeypatch) -> None:

@@ -16,7 +16,7 @@ from compare_gx_imported_linear import (
     _load_gx_input_contract,
     _resolve_imported_real_fft_ny,
     _resolve_imported_boundary,
-    _select_geometry_source,
+    _resolve_internal_geometry_source,
 )
 from compare_gx_rhs_terms import _infer_y0, _load_bin, _load_field, _load_shape, _reshape_gx, _summary
 from compare_gx_runtime_startup import _select_ky_block
@@ -108,7 +108,7 @@ def main() -> None:
             )
         )
     else:
-        geom = load_gx_geometry_netcdf(_select_geometry_source(args.gx_out, args.geometry_file, gx_contract))
+        geom = load_gx_geometry_netcdf(_resolve_internal_geometry_source(geometry_file=args.geometry_file, runtime_config=None))
     grid_cfg = apply_gx_geometry_grid_defaults(
         geom,
         gx_contract_to_grid(

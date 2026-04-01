@@ -25,7 +25,7 @@ from compare_gx_imported_linear import (
     _load_gx_input_contract,
     _resolve_imported_boundary,
     _resolve_imported_real_fft_ny,
-    _select_geometry_source,
+    _resolve_internal_geometry_source,
 )
 from spectraxgk.analysis import (
     ModeSelection,
@@ -248,7 +248,7 @@ def main() -> None:
             GeometryConfig(model="slab", s_hat=float(gx_contract.s_hat), zero_shat=bool(gx_contract.zero_shat))
         )
     else:
-        geom = load_gx_geometry_netcdf(_select_geometry_source(args.gx_big, args.geometry_file, gx_contract))
+        geom = load_gx_geometry_netcdf(_resolve_internal_geometry_source(geometry_file=args.geometry_file, runtime_config=None))
 
     boundary_eff = _resolve_imported_boundary(gx_contract.boundary, zero_shat=bool(gx_contract.zero_shat))
     lx = 2.0 * np.pi * y0 if boundary_eff == "periodic" else 62.8
