@@ -139,7 +139,7 @@ def test_run_cyclone_linear_shapes():
     """Smoke test for the Cyclone linear runner on a tiny grid."""
     grid = GridConfig(Nx=8, Ny=8, Nz=16, Lx=62.8, Ly=62.8)
     cfg = CycloneBaseCase(grid=grid)
-    result = run_cyclone_linear(cfg=cfg, steps=5, dt=0.1, method="rk4", solver="time")
+    result = run_cyclone_linear(cfg=cfg, ky_target=0.1, steps=5, dt=0.1, method="rk4", solver="time")
     assert result.phi_t.shape[0] == 5
     assert np.isfinite(result.gamma)
     assert np.isfinite(result.omega)
@@ -149,7 +149,7 @@ def test_run_cyclone_linear_defaults():
     """Default cfg/params path should run without error."""
     grid = GridConfig(Nx=6, Ny=6, Nz=8, Lx=62.8, Ly=62.8)
     cfg = CycloneBaseCase(grid=grid)
-    result = run_cyclone_linear(cfg=cfg, steps=3, dt=0.1, method="rk2", solver="time")
+    result = run_cyclone_linear(cfg=cfg, ky_target=0.1, steps=3, dt=0.1, method="rk2", solver="time")
     assert result.phi_t.shape[0] == 3
 
 
@@ -175,14 +175,14 @@ def test_run_cyclone_linear_full_operator_smoke():
     """Full operator path should execute without NaNs on a tiny run."""
     grid = GridConfig(Nx=6, Ny=6, Nz=8, Lx=62.8, Ly=62.8)
     cfg = CycloneBaseCase(grid=grid)
-    result = run_cyclone_linear(cfg=cfg, steps=3, dt=0.1, method="rk2", solver="time")
+    result = run_cyclone_linear(cfg=cfg, ky_target=0.1, steps=3, dt=0.1, method="rk2", solver="time")
     assert np.isfinite(result.gamma)
     assert np.isfinite(result.omega)
 
 
 def test_cyclone_scan_and_compare():
     """Scan helper should return arrays and comparison should report errors."""
-    grid = GridConfig(Nx=6, Ny=6, Nz=8, Lx=62.8, Ly=62.8)
+    grid = GridConfig(Nx=6, Ny=12, Nz=8, Lx=62.8, Ly=62.8)
     cfg = CycloneBaseCase(grid=grid)
     ky_values = np.array([0.2, 0.3])
     scan = run_cyclone_scan(ky_values, cfg=cfg, steps=3, dt=0.1, method="euler", solver="time")
@@ -197,7 +197,7 @@ def test_cyclone_scan_and_compare():
 def test_cyclone_scan_fixed_batch_shape_matches_unpadded():
     """Fixed-shape ky batching should match unpadded batching outputs."""
 
-    grid = GridConfig(Nx=6, Ny=6, Nz=8, Lx=62.8, Ly=62.8)
+    grid = GridConfig(Nx=6, Ny=16, Nz=8, Lx=62.8, Ly=62.8)
     cfg = CycloneBaseCase(grid=grid)
     ky_values = np.array([0.2, 0.3, 0.4])
     kwargs = dict(

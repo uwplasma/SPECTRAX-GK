@@ -107,7 +107,7 @@ omega_star_scale = 0.7
 
 
 def test_gx_aligned_kbm_runtime_examples_keep_end_damping_enabled() -> None:
-    cfg_dir = Path(__file__).resolve().parents[1] / "examples" / "configs"
+    cfg_dir = Path(__file__).resolve().parents[1] / "examples" / "nonlinear" / "axisymmetric"
     paths = [
         cfg_dir / "runtime_kbm_nonlinear_gx.toml",
         cfg_dir / "runtime_kbm_nonlinear_gx_seed.toml",
@@ -164,7 +164,7 @@ solver = "gx_time"
 
 
 def test_w7x_imported_geometry_example_toml_loads() -> None:
-    path = Path(__file__).resolve().parents[1] / "examples" / "configs" / "runtime_w7x_linear_imported_geometry.toml"
+    path = Path(__file__).resolve().parents[1] / "examples" / "linear" / "non-axisymmetric" / "runtime_w7x_linear_imported_geometry.toml"
 
     cfg, data = load_runtime_from_toml(path)
 
@@ -179,7 +179,8 @@ def test_w7x_nonlinear_imported_geometry_example_toml_loads() -> None:
     path = (
         Path(__file__).resolve().parents[1]
         / "examples"
-        / "configs"
+        / "nonlinear"
+        / "non-axisymmetric"
         / "runtime_w7x_nonlinear_imported_geometry.toml"
     )
 
@@ -199,7 +200,8 @@ def test_hsx_nonlinear_vmec_geometry_example_toml_loads() -> None:
     path = (
         Path(__file__).resolve().parents[1]
         / "examples"
-        / "configs"
+        / "nonlinear"
+        / "non-axisymmetric"
         / "runtime_hsx_nonlinear_vmec_geometry.toml"
     )
 
@@ -222,7 +224,8 @@ def test_w7x_nonlinear_vmec_geometry_example_toml_loads() -> None:
     path = (
         Path(__file__).resolve().parents[1]
         / "examples"
-        / "configs"
+        / "nonlinear"
+        / "non-axisymmetric"
         / "runtime_w7x_nonlinear_vmec_geometry.toml"
     )
 
@@ -231,7 +234,7 @@ def test_w7x_nonlinear_vmec_geometry_example_toml_loads() -> None:
     assert isinstance(data, dict)
     assert cfg.geometry.model == "vmec"
     assert cfg.geometry.vmec_file is not None
-    assert cfg.geometry.vmec_file == "benchmarks/nonlinear/w7x/wout_w7x.nc"
+    assert cfg.geometry.vmec_file == "../vmec_equilibria/W7-X/OP1.1_limiter/wout_w7x.1000_1000_1000_1000_+0390_+0390.01.00s.nc"
     assert cfg.geometry.gx_python is None
     assert cfg.geometry.torflux == pytest.approx(0.64)
     assert cfg.physics.nonlinear is True
@@ -241,7 +244,7 @@ def test_w7x_nonlinear_vmec_geometry_example_toml_loads() -> None:
 
 
 def test_secondary_slab_example_toml_loads() -> None:
-    path = Path(__file__).resolve().parents[1] / "examples" / "configs" / "runtime_secondary_slab.toml"
+    path = Path(__file__).resolve().parents[1] / "examples" / "benchmarks" / "runtime_secondary_slab.toml"
 
     cfg, data = load_runtime_from_toml(path)
 
@@ -254,7 +257,7 @@ def test_secondary_slab_example_toml_loads() -> None:
 
 
 def test_cetg_reference_example_toml_loads() -> None:
-    path = Path(__file__).resolve().parents[1] / "examples" / "configs" / "runtime_cetg_reference.toml"
+    path = Path(__file__).resolve().parents[1] / "examples" / "nonlinear" / "axisymmetric" / "runtime_cetg_reference.toml"
 
     cfg, data = load_runtime_from_toml(path)
 
@@ -335,7 +338,8 @@ def test_cyclone_nonlinear_gx_miller_example_toml_loads() -> None:
     path = (
         Path(__file__).resolve().parents[1]
         / "examples"
-        / "configs"
+        / "nonlinear"
+        / "axisymmetric"
         / "runtime_cyclone_nonlinear_gx_miller.toml"
     )
 

@@ -1196,7 +1196,7 @@ def test_runtime_linear_accepts_vmec_model_via_generated_eik(
 
 
 def test_runtime_linear_secondary_slab_example_runs() -> None:
-    cfg_path = Path(__file__).resolve().parents[1] / "examples" / "configs" / "runtime_secondary_slab.toml"
+    cfg_path = Path(__file__).resolve().parents[1] / "examples" / "benchmarks" / "runtime_secondary_slab.toml"
     cfg, _ = load_runtime_from_toml(cfg_path)
 
     out = run_runtime_linear(cfg, ky_target=0.1, Nl=3, Nm=8, solver="gx_time")
@@ -1261,7 +1261,7 @@ def test_runtime_linear_accepts_miller_model_via_generated_eik(tmp_path: Path, m
 
 
 def test_runtime_cetg_reference_example_runs_small_smoke() -> None:
-    cfg_path = Path(__file__).resolve().parents[1] / "examples" / "configs" / "runtime_cetg_reference.toml"
+    cfg_path = Path(__file__).resolve().parents[1] / "examples" / "nonlinear" / "axisymmetric" / "runtime_cetg_reference.toml"
     cfg, _ = load_runtime_from_toml(cfg_path)
 
     out = run_runtime_nonlinear(cfg, ky_target=1.0 / 6.366, kx_target=0.0, steps=2, sample_stride=1)

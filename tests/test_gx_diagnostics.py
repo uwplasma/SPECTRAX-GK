@@ -363,7 +363,7 @@ def test_linear_explicit_step_applies_gx_post_step_mask(
     G0 = jnp.ones((1, 1, 2, 2, 1), dtype=jnp.complex64)
     seen_states: list[np.ndarray] = []
 
-    def _fake_assemble_rhs(state, _cache, _params, *, terms):
+    def _fake_assemble_rhs(state, _cache, _params, *, terms, dt=None):
         seen_states.append(np.asarray(state))
         return jnp.zeros_like(state), FieldState(phi=state[0, 0])
 

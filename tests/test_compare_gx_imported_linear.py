@@ -336,12 +336,13 @@ def test_gx_has_uniform_linear_dt_ignores_single_truncated_final_interval() -> N
     assert _gx_has_uniform_linear_dt(gx_time, contract) is True
 
 
+@pytest.mark.skipif(not Path(".cache/gx_clean_main/linear/hsx/hsx_linear.in").exists(), reason="Requires local cache file")
 def test_build_imported_initial_condition_uses_runtime_multikx_startup() -> None:
     class DummyGeom:
         s_hat = 1.0
 
     contract = _load_gx_input_contract(
-        Path("/path/to/SPECTRAX-GK/.cache/gx_clean_main/linear/hsx/hsx_linear.in")
+        Path(".cache/gx_clean_main/linear/hsx/hsx_linear.in")
     )
     grid_full = build_spectral_grid(
         GridConfig(
@@ -601,8 +602,8 @@ def test_gx_Wg_by_ky_matches_gx_positive_ky_storage_contract() -> None:
 
 
 def test_select_geometry_source_prefers_gx_output_for_vmec_generated_runs() -> None:
-    gx_out = Path("/tmp/run.out.nc")
-    geom = Path("/tmp/run.eik.nc")
+    gx_out = Path("/tmp/run.out.nc").resolve()
+    geom = Path("/tmp/run.eik.nc").resolve()
     vmec_contract = replace(_dummy_gx_contract(init_single=False), geo_option="vmec")
     desc_contract = replace(_dummy_gx_contract(init_single=False), geo_option="desc")
     nc_contract = replace(_dummy_gx_contract(init_single=False), geo_option="nc")

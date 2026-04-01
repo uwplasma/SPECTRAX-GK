@@ -34,27 +34,10 @@ def _linear_rhs(rate: complex):
         ("rk3_gx", lambda a: 1.0 + a + 0.5 * a * a + (a * a * a) / 6.0),
         ("rk3_classic", lambda a: 1.0 + a + 0.5 * a * a + (a * a * a) / 6.0),
         ("rk4", lambda a: 1.0 + a + 0.5 * a * a + (a * a * a) / 6.0 + (a * a * a * a) / 24.0),
-        (
-            "sspx3",
-            lambda a: (
-                (1.0 - _SSPX3_W2 - _SSPX3_W3)
-                + _SSPX3_W3 * (1.0 + _SSPX3_ADT * a)
-                + (_SSPX3_W2 - 1.0)
-                * (
-                    (1.0 - _SSPX3_W1)
-                    + (_SSPX3_W1 - 1.0) * (1.0 + _SSPX3_ADT * a)
-                    + (1.0 + _SSPX3_ADT * a) ** 2
-                )
-                + (1.0 + _SSPX3_ADT * a)
-                * (
-                    (1.0 - _SSPX3_W1)
-                    + (_SSPX3_W1 - 1.0) * (1.0 + _SSPX3_ADT * a)
-                    + (1.0 + _SSPX3_ADT * a) ** 2
-                )
-            ),
-        ),
-    ],
-)
+        ("sspx3", lambda a: 1.0 + a + 0.5 * a * a + (a * a * a) / 6.0),
+        ],
+        )
+
 def test_integrate_nonlinear_methods_match_linear_amplification(method, one_step_factor) -> None:
     dt = 0.1
     steps = 4

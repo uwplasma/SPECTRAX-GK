@@ -3,7 +3,7 @@ from pathlib import Path
 from tools.benchmark_runtime_memory import _load_manifest, _load_summary_rows, _parse_peak_rss_mb, _select_runs
 
 
-ROOT = Path("/path/to/SPECTRAX-GK")
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_runtime_memory_manifest_loads_runs() -> None:
