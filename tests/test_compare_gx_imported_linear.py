@@ -37,6 +37,7 @@ from compare_gx_imported_linear import (
     build_parser,
 )
 from spectraxgk.config import GridConfig
+from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.gx_integrators import GXTimeConfig
 from spectraxgk.linear import LinearTerms
@@ -615,6 +616,7 @@ def test_select_geometry_source_prefers_gx_output_for_vmec_generated_runs() -> N
 
 def test_integrate_target_mode_series_collects_requested_sample_count(monkeypatch) -> None:
     monkeypatch.setattr(imported_linear.jax, "jit", lambda fn, donate_argnums=None: fn)
+    monkeypatch.setattr(imported_linear, "ensure_flux_tube_geometry_data", lambda geom, _theta: geom)
     monkeypatch.setattr(
         imported_linear,
         "assemble_rhs_cached",
@@ -667,8 +669,77 @@ def test_integrate_target_mode_series_collects_requested_sample_count(monkeypatc
     np.testing.assert_allclose(Phi2, np.zeros(3, dtype=float))
 
 
+def test_integrate_target_mode_series_normalizes_imported_geometry_before_omega_max(monkeypatch) -> None:
+    monkeypatch.setattr(imported_linear.jax, "jit", lambda fn, donate_argnums=None: fn)
+    monkeypatch.setattr(
+        imported_linear,
+        "assemble_rhs_cached",
+        lambda *_args, **_kwargs: (
+            None,
+            SimpleNamespace(phi=jnp.zeros((1, 1, 4), dtype=jnp.complex64), apar=None),
+        ),
+    )
+    monkeypatch.setattr(
+        imported_linear,
+        "_linear_explicit_step",
+        lambda G_state, *_args, **_kwargs: (
+            G_state,
+            SimpleNamespace(phi=jnp.zeros((1, 1, 4), dtype=jnp.complex64), apar=None),
+        ),
+    )
+    monkeypatch.setattr(
+        imported_linear,
+        "_gx_growth_rate_step",
+        lambda *_args, **_kwargs: (
+            jnp.asarray([[0.0]], dtype=float),
+            jnp.asarray([[0.0]], dtype=float),
+        ),
+    )
+    monkeypatch.setattr(imported_linear, "_gx_Wg_by_ky", lambda *_args, **_kwargs: jnp.asarray([0.0]))
+    monkeypatch.setattr(imported_linear, "_gx_Wphi_by_ky", lambda *_args, **_kwargs: jnp.asarray([0.0]))
+    monkeypatch.setattr(imported_linear, "_gx_Wapar_by_ky", lambda *_args, **_kwargs: jnp.asarray([0.0]))
+
+    analytic = SAlphaGeometry.from_config(
+        imported_linear.GeometryConfig(model="s-alpha", q=1.4, s_hat=0.8, epsilon=0.18, R0=1.0)
+    )
+    theta_solver = jnp.linspace(-jnp.pi, jnp.pi, 4, endpoint=False)
+    theta_closed = jnp.linspace(-jnp.pi, jnp.pi, 5)
+    sampled_closed = sample_flux_tube_geometry(analytic, theta_closed)
+    geom = replace(sampled_closed, theta_closed_interval=True)
+
+    captured: dict[str, float] = {}
+
+    def _fake_omega_max(grid_arg, geom_arg, *_args, **_kwargs):
+        theta_arg = np.asarray(geom_arg.theta, dtype=float)
+        captured["theta_len"] = float(theta_arg.shape[0])
+        captured["theta_last"] = float(theta_arg[-1])
+        captured["grid_z_len"] = float(np.asarray(grid_arg.z).shape[0])
+        return np.asarray([0.0, 0.0, 0.0], dtype=float)
+
+    monkeypatch.setattr(imported_linear, "_gx_linear_omega_max", _fake_omega_max)
+
+    _integrate_target_mode_series(
+        G0=jnp.zeros((1, 1, 1, 1, 1, 4), dtype=jnp.complex64),
+        grid=SimpleNamespace(dealias_mask=np.ones((1, 1), dtype=bool), z=np.asarray(theta_solver, dtype=float)),
+        geom=geom,
+        cache=SimpleNamespace(jacobian=jnp.ones(4, dtype=jnp.float32)),
+        params=SimpleNamespace(),
+        time_cfg=GXTimeConfig(dt=0.1, t_max=0.1, sample_stride=1, fixed_dt=True),
+        terms=LinearTerms(),
+        mode_method="z_index",
+        ky_index=0,
+        kx_index=0,
+        reference_times=np.asarray([0.1], dtype=float),
+        output_steps=np.asarray([0], dtype=int),
+    )
+
+    assert captured["theta_len"] == captured["grid_z_len"] == 4.0
+    assert captured["theta_last"] != pytest.approx(float(theta_closed[-1]))
+
+
 def test_integrate_target_mode_series_uses_elapsed_sample_interval(monkeypatch) -> None:
     monkeypatch.setattr(imported_linear.jax, "jit", lambda fn, donate_argnums=None: fn)
+    monkeypatch.setattr(imported_linear, "ensure_flux_tube_geometry_data", lambda geom, _theta: geom)
     monkeypatch.setattr(
         imported_linear,
         "assemble_rhs_cached",
@@ -733,6 +804,7 @@ def test_integrate_target_mode_series_uses_elapsed_sample_interval(monkeypatch) 
 
 def test_integrate_target_mode_series_downsamples_output_without_sparsifying_growth_interval(monkeypatch) -> None:
     monkeypatch.setattr(imported_linear.jax, "jit", lambda fn, donate_argnums=None: fn)
+    monkeypatch.setattr(imported_linear, "ensure_flux_tube_geometry_data", lambda geom, _theta: geom)
     monkeypatch.setattr(
         imported_linear,
         "assemble_rhs_cached",

@@ -21,6 +21,7 @@ from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, 
 from spectraxgk.geometry import (
     SlabGeometry,
     apply_gx_geometry_grid_defaults,
+    ensure_flux_tube_geometry_data,
     gx_effective_boundary,
     gx_zero_shat_enabled,
     load_gx_geometry_netcdf,
@@ -571,7 +572,8 @@ def _integrate_target_mode_series(
     t = 0.0
     step = 0
 
-    omega_max = _gx_linear_omega_max(grid, geom, params, G.shape[-5], G.shape[-4])
+    geom_eff = ensure_flux_tube_geometry_data(geom, grid.z)
+    omega_max = _gx_linear_omega_max(grid, geom_eff, params, G.shape[-5], G.shape[-4])
     wmax = float(np.sum(omega_max))
     if not time_cfg.fixed_dt and wmax > 0.0:
         dt_guess = float(time_cfg.cfl_fac) * float(time_cfg.cfl) / wmax
