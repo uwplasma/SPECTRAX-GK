@@ -57,7 +57,7 @@ from compare_gx_imported_linear import (
     _read_gx_output_bool,
     _resolve_imported_boundary,
     _resolve_imported_real_fft_ny,
-    _select_geometry_source,
+    _resolve_internal_geometry_source,
 )
 
 
@@ -447,7 +447,7 @@ def _build_imported_compare_context(
     else:
         if geometry_file is None:
             raise ValueError("--geometry-file is required with --gx-input for non-slab imported cases")
-        geom = load_gx_geometry_netcdf(_select_geometry_source(gx_out, geometry_file, gx_contract))
+        geom = load_gx_geometry_netcdf(_resolve_internal_geometry_source(geometry_file=geometry_file, runtime_config=None))
 
     lx = 2.0 * np.pi * y0_use if boundary_eff == "periodic" else 62.8
     grid_cfg = GridConfig(
