@@ -127,13 +127,13 @@ where :math:`Z_p` sets the field-line length
 ``spectraxgk.grids.build_spectral_grid`` and are consistent with GX’s
 ``kInit`` kernel.
 
-The midplane index used by the GX growth-rate diagnostic corresponds to
-``z_index = Nz//2 + 1``, matching the GX kernel logic when ``Nz > 1``.
+The midplane index used by the reference growth-rate diagnostic corresponds to
+``z_index = Nz//2 + 1``, matching the audited benchmark kernel logic when ``Nz > 1``.
 
 Perpendicular normalization
 --------------------------------------
 
-GX defines the perpendicular metric as :math:`k_\perp^2/B^2` before applying
+The reference diagnostic contract defines the perpendicular metric as :math:`k_\perp^2/B^2` before applying
 the Laguerre gyroaverage. To match that convention in SPECTRAX-GK:
 
 - ``kperp2_bmag = True`` (include the :math:`B^{-2}` factor in :math:`k_\perp^2`)
@@ -194,7 +194,7 @@ solver outputs.
 Diagnostic scaling
 -----------------------------
 
-GX diagnostics apply fixed factors in a few places that depend on the storage
+The reference diagnostics apply fixed factors in a few places that depend on the storage
 convention (e.g. real-FFT nyquist handling or per-unit-time damping). The
 runtime schema therefore exposes light-weight diagnostic scale factors:
 
@@ -206,7 +206,7 @@ runtime schema therefore exposes light-weight diagnostic scale factors:
 These are reporting-only knobs; they do not alter the RHS/operator. They are
 intended to document the exact GX-reference settings used for benchmark plots.
 
-GX end-damping defaults are ``damp_ends_amp = 0.1`` and
+The reference end-damping defaults are ``damp_ends_amp = 0.1`` and
 ``damp_ends_widthfrac = 0.125``. The damping kernel interprets
 ``damp_ends_amp`` directly as a rate; the runtime no longer rescales it by the
 timestep.

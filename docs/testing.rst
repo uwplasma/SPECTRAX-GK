@@ -144,7 +144,7 @@ In addition to unit/regression tests, SPECTRAX-GK includes a small set of
 benchmark figures move):
 
 - **Restart parity**: ``tests/test_restart_gate.py`` verifies that a nonlinear
-  run resumed from a GX-compatible binary restart file reproduces the same
+  run resumed from a compatible binary restart file reproduces the same
   final state as a continuous run.
 - **CPU/GPU short-window parity** (optional): ``tests/test_device_parity_gate.py``
   compares a short nonlinear trajectory norm on CPU vs GPU. Enable explicitly:
@@ -161,12 +161,12 @@ benchmark figures move):
 
      SPECTRAXGK_VMEC_FILE=/path/to/wout.nc pytest -q tests/test_vmec_roundtrip_gate.py
 
-For developer workflows that require local GX benchmark NetCDFs or GX dump
+For developer workflows that require local reference benchmark NetCDFs or dump
 artifacts, use:
 
 - ``tools/run_gx_linear_stress_matrix.py`` (KAW, Cyclone kinetic electrons, KBM Miller)
 - ``tools/run_imported_linear_targeted_audit.py`` (generic per-``ky`` targeted imported-linear wrapper)
-- ``tools/compare_gx_imported_window.py`` (exact imported-linear one-window replay against GX ``diag_state`` dumps)
+- ``tools/compare_gx_imported_window.py`` (exact imported-linear one-window replay against reference ``diag_state`` dumps)
 - ``tools/run_kbm_lowky_extractor_audit.py`` (direct cached-trajectory KBM low-``ky`` extractor audit)
 - ``tools/run_exact_state_audit.py`` (manifest-driven wrapper around the exact-state audit tools)
 - ``tools/run_restart_parity_gate.py`` (manifest-driven nonlinear restart/continuation parity gate)
@@ -178,21 +178,21 @@ The targeted imported-linear wrapper and the underlying
 for honest stress-lane scoring without changing the default full-window
 behavior:
 
-- ``--sample-step-stride``: subsample the saved GX diagnostic sample indices
+- ``--sample-step-stride``: subsample the saved diagnostic sample indices
   before scoring.
 - ``--max-samples``: truncate scoring to the first N selected samples.
 
 The lower-level comparator also supports ``--cache-dir`` plus ``--reuse-cache``
 to persist per-``ky`` trajectory/result arrays (``gamma``, ``omega``,
 ``Wg``, ``Wphi``, ``Wapar``) as compressed ``.npz`` files keyed by the actual
-GX file, geometry file, GX input, selected ``ky``, Hermite/Laguerre
+reference file, geometry file, reference input, selected ``ky``, Hermite/Laguerre
 resolution, mode selector, and sample-window contract. This makes the
 stress-lane tooling incremental instead of rerunning a full lane every time.
 
 For VMEC-backed exact-state audits, the runtime bridge now prefers a local
 ``booz_xform_jax`` checkout and injects a temporary ``booz_xform`` compatibility
-shim only into the GX geometry-helper subprocess. This preserves GX as ground
-truth while avoiding a host-level dependency on the original ``booz_xform``
+shim only into the external geometry-helper subprocess. This preserves the
+audited reference workflow while avoiding a host-level dependency on the original ``booz_xform``
 Python package.
 
 The bridge auto-discovers ``booz_xform_jax`` from
