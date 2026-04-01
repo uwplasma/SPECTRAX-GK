@@ -218,6 +218,56 @@ def test_compare_gx_imported_linear_parser_defaults_hl_dims_to_gx_contract() -> 
     assert args.Nm is None
 
 
+def test_write_scan_rows_preserves_extended_metric_columns(tmp_path: Path) -> None:
+    out = tmp_path / "scan.csv"
+    rows = [
+        {
+            "ky": 0.2,
+            "peak_abs_omega_ref": 0.4,
+            "mean_abs_omega": 0.01,
+            "mean_rel_omega": 0.02,
+            "peak_abs_gamma_ref": 0.03,
+            "mean_abs_gamma": 0.004,
+            "mean_rel_gamma": 0.5,
+            "mean_abs_Wg": 1.0e-5,
+            "mean_rel_Wg": 0.03,
+            "mean_abs_Wphi": 2.0e-5,
+            "mean_rel_Wphi": 0.04,
+            "mean_abs_Wapar": 0.0,
+            "mean_rel_Wapar": 0.0,
+        },
+        {
+            "ky": 0.1,
+            "peak_abs_omega_ref": 0.2,
+            "mean_abs_omega": 0.005,
+            "mean_rel_omega": 0.01,
+            "peak_abs_gamma_ref": 0.01,
+            "mean_abs_gamma": 0.002,
+            "mean_rel_gamma": 0.25,
+            "mean_abs_Wg": 5.0e-6,
+            "mean_rel_Wg": 0.02,
+            "mean_abs_Wphi": 1.0e-5,
+            "mean_rel_Wphi": 0.03,
+            "mean_abs_Wapar": 0.0,
+            "mean_rel_Wapar": 0.0,
+            "mean_abs_Phi2": 3.0e-5,
+            "mean_rel_Phi2": 0.05,
+        },
+    ]
+
+    df = _write_scan_rows(rows, out)
+
+    assert list(df["ky"]) == [0.1, 0.2]
+    assert "peak_abs_gamma_ref" in df.columns
+    assert "mean_abs_Wg" in df.columns
+    assert "mean_abs_Wphi" in df.columns
+    assert "mean_abs_Phi2" in df.columns
+
+    written = out.read_text()
+    assert "mean_abs_Wg" in written
+    assert "peak_abs_omega_ref" in written
+
+
 def test_imported_linear_zero_shat_promotes_to_periodic_boundary() -> None:
     assert _resolve_imported_boundary("linked", zero_shat=True) == "periodic"
     assert _resolve_imported_boundary("periodic", zero_shat=True) == "periodic"
