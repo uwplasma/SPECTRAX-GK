@@ -43,9 +43,12 @@ from spectraxgk.runtime import (
     _build_initial_condition as _build_runtime_initial_condition,
     _load_initial_state_from_file,
 )
+from spectraxgk.io import load_runtime_from_toml
+from spectraxgk.miller_eik import generate_runtime_miller_eik
 from spectraxgk.runtime_config import RuntimeConfig, RuntimeSpeciesConfig
 from spectraxgk.species import Species, build_linear_params
 from spectraxgk.terms.assembly import assemble_rhs_cached
+from spectraxgk.vmec_eik import generate_runtime_vmec_eik
 
 
 @dataclass(frozen=True)
@@ -306,18 +309,31 @@ def _load_gx_input_contract(path: Path) -> GXInputContract:
     )
 
 
-def _select_geometry_source(
-    gx_out: Path,
-    geometry_file: Path,
-    gx_contract: GXInputContract | None,
+def _resolve_internal_geometry_source(
+    *,
+    geometry_file: Path | None,
+    runtime_config: Path | None,
 ) -> Path:
-    """Choose the authoritative geometry source for imported GX comparisons."""
+    """Resolve geometry for the SPECTRAX run without sourcing it from GX output files."""
 
-    if gx_contract is None:
-        return geometry_file
-    if gx_contract.geo_option in {"vmec", "desc"}:
-        return gx_out
-    return geometry_file
+    if geometry_file is not None:
+        return geometry_file.expanduser().resolve()
+
+    if runtime_config is not None:
+        cfg, _ = load_runtime_from_toml(runtime_config.expanduser().resolve())
+        model = str(cfg.geometry.model).strip().lower()
+        if model == "vmec":
+            return generate_runtime_vmec_eik(cfg, force=True).expanduser().resolve()
+        if model == "miller":
+            return generate_runtime_miller_eik(cfg, force=True).expanduser().resolve()
+        raise ValueError(
+            f"--runtime-config must use geometry.model='vmec' or 'miller' for internal generation; got {cfg.geometry.model!r}"
+        )
+
+    raise ValueError(
+        "No geometry source for SPECTRAX run. Provide either --geometry-file or --runtime-config "
+        "(VMEC runtime TOML)."
+    )
 
 
 def _runtime_species_tuple(species: tuple[Species, ...]) -> tuple[RuntimeSpeciesConfig, ...]:
@@ -824,7 +840,7 @@ def _series_cache_path(
     *,
     cache_dir: Path,
     gx_path: Path,
-    geometry_file: Path,
+    geometry_file: Path | None,
     gx_input: Path | None,
     ky_target: float,
     Nl: int,
@@ -894,8 +910,15 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--geometry-file",
         type=Path,
-        required=True,
-        help="Path to the GX/VMEC geometry file (for example *.eik.nc)",
+        default=None,
+        help="Optional path to a GX/VMEC geometry file (for example *.eik.nc). "
+        "If omitted, pass --runtime-config to generate VMEC geometry internally.",
+    )
+    parser.add_argument(
+        "--runtime-config",
+        type=Path,
+        default=None,
+        help="Optional SPECTRAX runtime TOML used to generate VMEC geometry internally when --geometry-file is omitted.",
     )
     parser.add_argument(
         "--gx-input",
@@ -1026,7 +1049,11 @@ def main() -> None:
         )
         nz = int(gx_contract.ntheta) if int(gx_contract.ntheta) > 0 else 16
     else:
-        geom = load_gx_geometry_netcdf(_select_geometry_source(args.gx, args.geometry_file, gx_contract))
+        geometry_source = _resolve_internal_geometry_source(
+            geometry_file=args.geometry_file,
+            runtime_config=args.runtime_config,
+        )
+        geom = load_gx_geometry_netcdf(geometry_source)
         nz = int(np.asarray(geom.theta).size)
     if ntheta <= 0:
         ntheta = nz
@@ -1115,7 +1142,7 @@ def main() -> None:
             cache_path = _series_cache_path(
                 cache_dir=cache_dir,
                 gx_path=args.gx,
-                geometry_file=args.geometry_file,
+                geometry_file=(geometry_source if gx_contract is None or gx_contract.geo_option != "slab" else None),
                 gx_input=args.gx_input,
                 ky_target=float(ky_target),
                 Nl=nl_use,

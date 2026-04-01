@@ -33,7 +33,7 @@ cfl = 1.0
 [geometry]
 model = "vmec"
 vmec_file = "$HSX_VMEC_FILE"
-geometry_file = ".cache/spectrax/hsx_qhs_vac_s064.eik.nc"
+#geometry_file = ".cache/spectrax/hsx_qhs_vac_s064.eik.nc"
 torflux = 0.64
 alpha = 0.0
 npol = 1.0
