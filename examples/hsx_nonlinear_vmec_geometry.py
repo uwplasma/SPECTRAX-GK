@@ -113,8 +113,8 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Run the HSX nonlinear ITG VMEC example.")
     parser.add_argument("--vmec-file", required=True, help="Path to the VMEC wout file")
     parser.add_argument("--geometry-file", default=None, help="Optional output/reuse path for the generated *.eik.nc file")
-    parser.add_argument("--gx-repo", default=None, help="Optional GX repository path for gx_geo_vmec.py")
-    parser.add_argument("--gx-python", default=None, help="Optional Python interpreter used for GX VMEC geometry generation")
+    parser.add_argument("--gx-repo", default=None, help="Optional helper repository path for external VMEC geometry generation")
+    parser.add_argument("--gx-python", default=None, help="Optional Python interpreter used for external VMEC geometry generation")
     parser.add_argument("--torflux", type=float, default=0.64, help="Normalized toroidal flux surface label")
     parser.add_argument("--alpha", type=float, default=0.0, help="Field-line alpha label")
     parser.add_argument("--npol", type=float, default=1.0, help="Number of poloidal turns")
@@ -147,7 +147,7 @@ def main() -> int:
         steps=steps,
     )
     if result.diagnostics is None or result.ky_selected is None:
-        raise RuntimeError("Nonlinear runtime did not produce GX diagnostics")
+        raise RuntimeError("Nonlinear runtime did not produce diagnostics")
     print(
         "ky={:.6f} Wg={:.8e} Wphi={:.8e} heat={:.8e} pflux={:.8e}".format(
             float(result.ky_selected),

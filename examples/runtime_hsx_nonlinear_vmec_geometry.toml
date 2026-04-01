@@ -34,7 +34,6 @@ cfl = 1.0
 model = "vmec"
 vmec_file = "./wout_HSX_QHS_vacuum_ns201.nc"
 #geometry_file = "wout_HSX_QHS_vacuum_ns201.nc"
-gx_repo = "/path/to/reference-code"
 torflux = 0.64
 alpha = 0.0
 npol = 1.0

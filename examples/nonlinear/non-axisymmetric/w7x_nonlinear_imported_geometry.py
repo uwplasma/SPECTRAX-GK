@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the GX W7-X nonlinear ITG case from an imported GX/VMEC geometry file."""
+"""Run the W7-X nonlinear ITG case from an imported sampled geometry file."""
 
 from __future__ import annotations
 
@@ -91,7 +91,7 @@ def build_w7x_nonlinear_cfg(geometry_file: str, *, dt: float, t_max: float) -> R
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run the imported-geometry W7-X nonlinear ITG example.")
-    parser.add_argument("--geometry-file", required=True, help="Path to the GX/VMEC *.eik.nc geometry file")
+    parser.add_argument("--geometry-file", required=True, help="Path to the imported *.eik.nc geometry file")
     parser.add_argument("--ky", type=float, default=1.0 / 21.0, help="Target ky mode for diagnostics")
     parser.add_argument("--Nl", type=int, default=4)
     parser.add_argument("--Nm", type=int, default=8)
@@ -99,7 +99,7 @@ def main() -> int:
         "--dt",
         type=float,
         default=0.1,
-        help="Maximum time step. The runtime uses GX-style adaptive CFL control by default.",
+        help="Maximum time step. The runtime uses adaptive CFL control by default.",
     )
     parser.add_argument("--t-max", type=float, default=200.0, help="Final time")
     parser.add_argument("--steps", type=int, default=None, help="Optional explicit step count override")
@@ -116,7 +116,7 @@ def main() -> int:
         steps=steps,
     )
     if result.diagnostics is None or result.ky_selected is None:
-        raise RuntimeError("Nonlinear runtime did not produce GX diagnostics")
+        raise RuntimeError("Nonlinear runtime did not produce diagnostics")
     print(
         "ky={:.6f} Wg={:.8e} Wphi={:.8e} heat={:.8e} pflux={:.8e}".format(
             float(result.ky_selected),

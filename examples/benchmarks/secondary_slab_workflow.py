@@ -1,4 +1,4 @@
-"""Run the GX-style secondary slab workflow in two stages."""
+"""Run the secondary slab workflow in two stages."""
 
 from __future__ import annotations
 

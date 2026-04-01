@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the GX W7-X linear ITG case from an imported GX/VMEC geometry file."""
+"""Run the W7-X linear ITG case from an imported sampled geometry file."""
 
 from __future__ import annotations
 
@@ -70,7 +70,7 @@ def build_w7x_cfg(geometry_file: str, *, dt: float, t_max: float) -> RuntimeConf
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run the imported-geometry W7-X linear ITG example.")
-    parser.add_argument("--geometry-file", required=True, help="Path to the GX/VMEC *.eik.nc geometry file")
+    parser.add_argument("--geometry-file", required=True, help="Path to the imported *.eik.nc geometry file")
     parser.add_argument("--ky", type=float, default=0.3, help="Target ky mode")
     parser.add_argument("--Nl", type=int, default=8)
     parser.add_argument("--Nm", type=int, default=16)
@@ -79,7 +79,7 @@ def main() -> int:
         "--dt",
         type=float,
         default=0.005890226417991923,
-        help="Time step. The default matches the corrected GX W7-X t=2 reference run.",
+        help="Time step. The default matches the tracked W7-X t=2 reference run.",
     )
     parser.add_argument("--t-max", type=float, default=2.0, help="Final time")
     args = parser.parse_args()
