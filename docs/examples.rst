@@ -18,31 +18,31 @@ Tokamak cases
 
 .. code-block:: bash
 
-   python examples/cyclone_runtime_linear.py
-   python examples/cyclone_runtime_nonlinear.py --steps 200
-   python examples/cetg_runtime_nonlinear.py --steps 1000
-   python examples/etg_runtime_linear.py
-   python examples/kaw_runtime_linear.py
-   python examples/kbm_runtime_linear.py
-   python examples/kbm_runtime_nonlinear.py --steps 200
-   python examples/miller_nonlinear_runtime.py --steps 200
+   python examples/linear/axisymmetric/cyclone_runtime_linear.py
+   python examples/nonlinear/axisymmetric/cyclone_runtime_nonlinear.py --steps 200
+   python examples/nonlinear/axisymmetric/cetg_runtime_nonlinear.py --steps 1000
+   python examples/linear/axisymmetric/etg_runtime_linear.py
+   python examples/linear/axisymmetric/kaw_runtime_linear.py
+   python examples/linear/axisymmetric/kbm_runtime_linear.py
+   python examples/nonlinear/axisymmetric/kbm_runtime_nonlinear.py --steps 200
+   python examples/nonlinear/axisymmetric/miller_nonlinear_runtime.py --steps 200
 
 Stellarator and imported-geometry cases
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: bash
 
-   python examples/w7x_linear_imported_geometry.py \
+   python examples/linear/non-axisymmetric/w7x_linear_imported_geometry.py \
      --geometry-file /path/to/itg_w7x_adiabatic_electrons.eik.nc
 
-   python examples/hsx_linear_imported_geometry.py \
+   python examples/linear/non-axisymmetric/hsx_linear_imported_geometry.py \
      --geometry-file /path/to/hsx_linear.eik.nc
 
-   python examples/w7x_nonlinear_imported_geometry.py \
+   python examples/nonlinear/non-axisymmetric/w7x_nonlinear_imported_geometry.py \
      --geometry-file /path/to/w7x_adiabatic_electrons.eik.nc
 
-   python examples/w7x_nonlinear_vmec_geometry.py --steps 200
-   python examples/hsx_nonlinear_vmec_geometry.py --steps 200
+   python examples/nonlinear/non-axisymmetric/w7x_nonlinear_vmec_geometry.py --steps 200
+   python examples/nonlinear/non-axisymmetric/hsx_nonlinear_vmec_geometry.py --steps 200
 
 For the VMEC-backed stellarator examples, omit ``--steps`` when you want the
 default adaptive horizon. Set ``--steps`` only when you intentionally want a
@@ -56,15 +56,14 @@ the CLI or the generic example drivers directly:
 
 .. code-block:: bash
 
-   python examples/runtime_from_toml.py --config examples/linear/axisymmetric/runtime_cyclone.toml
-   python examples/runtime_from_toml.py --config examples/linear/axisymmetric/runtime_etg.toml
-   python examples/runtime_from_toml.py --config examples/linear/axisymmetric/runtime_kbm.toml
+   python examples/utilities/runtime_from_toml.py --config examples/linear/axisymmetric/runtime_cyclone.toml
+   python examples/utilities/runtime_from_toml.py --config examples/linear/axisymmetric/runtime_etg.toml
+   python examples/utilities/runtime_from_toml.py --config examples/linear/axisymmetric/runtime_kbm.toml
 
    python -m spectraxgk.cli run-runtime-linear \
-     --config examples/linear/axisymmetric/runtime_w7x_linear_imported_geometry.toml
+     --config examples/linear/non-axisymmetric/runtime_w7x_linear_imported_geometry.toml
 
-   python -m spectraxgk.cli run-runtime-nonlinear \
-     --config examples/linear/axisymmetric/runtime_w7x_nonlinear_vmec_geometry.toml
+   spectrax-gk examples/nonlinear/axisymmetric/runtime_cetg_reference.toml --steps 200
 
 Geometry helper workflows
 -------------------------
@@ -77,10 +76,10 @@ Miller inputs when the external helper scripts are available:
    export HSX_VMEC_FILE=/absolute/path/to/wout_HSX_QHS_vac.nc
    export GX_VMEC_PYTHON=python3
    python tools/generate_gx_vmec_eik.py \
-     --config examples/linear/axisymmetric/runtime_hsx_nonlinear_vmec_geometry.toml
+     --config examples/nonlinear/non-axisymmetric/runtime_hsx_nonlinear_vmec_geometry.toml
 
    python tools/generate_gx_miller_eik.py \
-     --config examples/linear/axisymmetric/runtime_cyclone_nonlinear_gx_miller.toml
+     --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_gx_miller.toml
 
 Benchmark and scan helpers
 --------------------------
@@ -90,12 +89,12 @@ discussion:
 
 .. code-block:: bash
 
-   python examples/cyclone_linear_benchmark.py
-   python examples/etg_linear_auto.py
-   python examples/etg_linear_benchmark.py
-   python examples/kbm_beta_scan.py
-   python examples/kinetic_linear_benchmark.py
-   python examples/tem_linear_benchmark.py
+   python examples/benchmarks/cyclone_linear_benchmark.py
+   python examples/linear/axisymmetric/etg_linear_auto.py
+   python examples/benchmarks/etg_linear_benchmark.py
+   python examples/benchmarks/kbm_beta_scan.py
+   python examples/benchmarks/kinetic_linear_benchmark.py
+   python examples/benchmarks/tem_linear_benchmark.py
 
 Foundational demos
 ------------------
@@ -105,13 +104,13 @@ blocks without running a full benchmark case:
 
 .. code-block:: bash
 
-   python examples/basis_orthonormality.py
-   python examples/cyclone_geometry.py
-   python examples/diffrax_linear_demo.py
-   python examples/example.py
-   python examples/gradB_coupling_hl_1d.py
-   python examples/linear_rhs_demo.py
-   python examples/two_stream_hermite_1d.py
+   python examples/benchmarks/basis_orthonormality.py
+   python examples/theory_and_demos/cyclone_geometry.py
+   python examples/theory_and_demos/diffrax_linear_demo.py
+   python examples/theory_and_demos/example.py
+   python examples/theory_and_demos/gradB_coupling_hl_1d.py
+   python examples/theory_and_demos/linear_rhs_demo.py
+   python examples/theory_and_demos/two_stream_hermite_1d.py
 
 Secondary slab workflow
 -----------------------
@@ -119,9 +118,9 @@ Secondary slab workflow
 .. code-block:: bash
 
    python -m spectraxgk.cli run-runtime-linear \
-     --config examples/linear/axisymmetric/runtime_secondary_slab.toml
+     --config examples/benchmarks/runtime_secondary_slab.toml
 
-   python examples/secondary_slab_workflow.py
+   python examples/benchmarks/secondary_slab_workflow.py
 
 The staged helper runs the linear seed, writes a restart state in the runtime
 binary layout, and then launches the nonlinear follow-up with the matching
@@ -132,9 +131,8 @@ Reduced-model runtime
 
 .. code-block:: bash
 
-   python examples/cetg_runtime_nonlinear.py --steps 1000
-   python -m spectraxgk.cli run-runtime-nonlinear \
-     --config examples/linear/axisymmetric/runtime_cetg_reference.toml
+   python examples/nonlinear/axisymmetric/cetg_runtime_nonlinear.py --steps 1000
+   spectrax-gk examples/nonlinear/axisymmetric/runtime_cetg_reference.toml --steps 1000
 
 The reduced collisional slab ETG workflow uses the dedicated cETG runtime
 solver rather than the full-GK field solve path.

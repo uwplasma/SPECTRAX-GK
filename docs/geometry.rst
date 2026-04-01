@@ -187,29 +187,28 @@ about ``7e-6`` to ``9e-6`` and mean relative ``gamma`` errors of about
 ``0.4%`` to ``4.2%`` across ``ky = 0.1, 0.2, 0.3, 0.4``.
 
 That same imported contract now has a first-class nonlinear runtime workflow:
-``examples/w7x_nonlinear_imported_geometry.py`` and
-``examples/linear/axisymmetric/runtime_w7x_nonlinear_imported_geometry.toml`` mirror the
+``examples/nonlinear/non-axisymmetric/w7x_nonlinear_imported_geometry.py`` and
+``examples/nonlinear/non-axisymmetric/runtime_w7x_nonlinear_imported_geometry.toml`` mirror the
 GX nonlinear W7-X adiabatic-electron setup while keeping the geometry source
 explicitly tied to a VMEC/DESC ``*.eik.nc`` field-line file.
 
 SPECTRAX-GK now also supports a direct VMEC runtime bridge with
-``geometry.model = "vmec"``. This path does not invent a second stellarator
-geometry implementation: it shells out to GX's own ``gx_geo_vmec.py`` helper,
-produces a GX-compatible ``*.eik.nc`` file, and then re-enters the same
+``geometry.model = "vmec"``. This path uses the existing compatibility helper
+to produce an imported ``*.eik.nc`` file and then re-enters the same
 imported-geometry contract described above. The bridge is cached by input
 content and VMEC file timestamp when SPECTRAX chooses the output path itself.
 If the user supplies an explicit ``geometry_file`` target, the runtime now
 regenerates that file instead of silently reusing whatever stale ``*.eik.nc``
 may already be present there.
-That gives SPECTRAX-GK a parity-first VMEC path immediately, while keeping the
-native JAX geometry contract centered on ``FluxTubeGeometryData``.
+That keeps the native JAX geometry contract centered on ``FluxTubeGeometryData``
+while preserving reproducible imported-geometry workflows.
 For VMEC ``fix aspect`` cases, the bridge now leaves ``x0`` unset when calling
 GX so the helper chooses the same cut that GX would choose from ``y0`` and the
 geometry itself. SPECTRAX no longer back-solves ``x0 = Lx/(2 pi)`` into the
 helper input, which was generating the wrong HSX/W7-X ``*.eik.nc`` files.
-When the GX VMEC helper depends on a different Python environment, set
+When the VMEC helper depends on a different Python environment, set
 ``geometry.gx_python`` (or the ``GX_VMEC_PYTHON`` environment variable) so
-SPECTRAX launches ``gx_geo_vmec.py`` with the interpreter that has
+SPECTRAX launches the helper with the interpreter that has
 ``booz_xform`` installed.
 The VMEC bridge now also expands environment variables in ``geometry.vmec_file``
 and resolves relative VMEC paths against ``gx_repo`` before falling back to the
@@ -242,10 +241,10 @@ tracked stock-GX W7-X ``t = 200`` VMEC runtime rerun also passes the native
 late-window comparison, so the shipped nonlinear W7-X example is now closed at
 startup, exact-state, and long-horizon levels.
 
-Tokamak Miller geometry now follows the same parity-first bridge pattern.
-With ``geometry.model = "miller"``, SPECTRAX-GK shells out to GX's own
-``geometry_modules/miller/gx_geo.py`` helper, generates the matching
-root-level ``*.eiknc.nc`` file, and then re-enters the same imported-geometry
+Tokamak Miller geometry now follows the same imported-geometry bridge pattern.
+With ``geometry.model = "miller"``, SPECTRAX-GK shells out to the existing
+Miller helper, generates the matching root-level ``*.eiknc.nc`` file, and then
+re-enters the same imported-geometry
 contract described above. This keeps the Miller lane geometry-honest without
 introducing a second hand-maintained Miller implementation in the runtime path.
 On the tracked Cyclone Miller parameters, the generated ``*.eiknc.nc`` file
@@ -257,12 +256,12 @@ on the exact dumped GX state: ``kperp2``, ``fluxfac``, ``phi``, ``Wg``,
 
 Two user-facing entry points now exercise that bridge:
 
-- ``tools/generate_gx_vmec_eik.py --config ...`` generates a GX-compatible
+- ``tools/generate_gx_vmec_eik.py --config ...`` generates a compatible
   ``*.eik.nc`` file from a SPECTRAX runtime TOML.
-- ``tools/generate_gx_miller_eik.py --config ...`` generates a GX-compatible
+- ``tools/generate_gx_miller_eik.py --config ...`` generates a compatible
   Miller ``*.eiknc.nc`` file from a SPECTRAX runtime TOML.
-- ``examples/hsx_nonlinear_vmec_geometry.py`` and
-  ``examples/linear/axisymmetric/runtime_hsx_nonlinear_vmec_geometry.toml`` run a nonlinear
+- ``examples/nonlinear/non-axisymmetric/hsx_nonlinear_vmec_geometry.py`` and
+  ``examples/nonlinear/non-axisymmetric/runtime_hsx_nonlinear_vmec_geometry.toml`` run a nonlinear
   adiabatic-electron ITG case on the supplied HSX VMEC equilibrium file while
   letting SPECTRAX generate and reuse the field-line geometry automatically.
 

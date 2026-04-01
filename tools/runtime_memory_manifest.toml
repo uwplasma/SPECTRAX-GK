@@ -3,285 +3,285 @@ case = "cyclone-linear"
 label = "Cyclone ITG Linear"
 backend = "spectrax_cpu"
 host = "office"
-command = "PATH=/home/user/stellarator_venv/bin:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=cpu python examples/cyclone_runtime_linear.py --ky 0.3 --Nl 24 --Nm 12 --solver auto"
-cwd = "/home/user/SPECTRAX-GK-bench"
+command = "PATH=${SPECTRAX_VENV_BIN}:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=cpu python examples/linear/axisymmetric/cyclone_runtime_linear.py --ky 0.3 --Nl 24 --Nm 12 --solver auto"
+cwd = "${SPECTRAX_BENCH_ROOT}"
 
 [[run]]
 case = "cyclone-linear"
 label = "Cyclone ITG Linear"
 backend = "spectrax_gpu"
 host = "office"
-command = "PATH=/home/user/stellarator_venv/bin:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=gpu python examples/cyclone_runtime_linear.py --ky 0.3 --Nl 24 --Nm 12 --solver auto"
-cwd = "/home/user/SPECTRAX-GK-bench"
+command = "PATH=${SPECTRAX_VENV_BIN}:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=gpu python examples/linear/axisymmetric/cyclone_runtime_linear.py --ky 0.3 --Nl 24 --Nm 12 --solver auto"
+cwd = "${SPECTRAX_BENCH_ROOT}"
 
 [[run]]
 case = "cyclone-linear"
 label = "Cyclone ITG Linear"
 backend = "gx"
 host = "office"
-command = "LD_LIBRARY_PATH=/home/user/local/install/openmpi-4.1.6/lib:/home/user/local/install/netcdf-c-4.9.2/lib:/home/user/local/install/hdf5-1.14.5/lib:/home/user/local/install/gsl-2.7.1/lib:/home/user/local/install/libcutensor-1.7.0.1/lib/11:/home/user/local/install/nccl-2.18.1/lib:$LD_LIBRARY_PATH /home/user/GX/gx itg_salpha_adiabatic_electrons.in"
-cwd = "/home/user/GX/benchmarks/linear/ITG_cyclone"
+command = "LD_LIBRARY_PATH=${GX_RUNTIME_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${GX_BIN} itg_salpha_adiabatic_electrons.in"
+cwd = "${GX_REPO}/benchmarks/linear/ITG_cyclone"
 
 [[run]]
 case = "cyclone-nonlinear"
 label = "Cyclone ITG Nonlinear"
 backend = "spectrax_cpu"
 host = "office"
-command = "PATH=/home/user/stellarator_venv/bin:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=cpu python examples/cyclone_runtime_nonlinear.py --ky 0.3 --Nl 4 --Nm 8 --steps 200 --dt 0.0377"
-cwd = "/home/user/SPECTRAX-GK-bench"
+command = "PATH=${SPECTRAX_VENV_BIN}:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=cpu python examples/nonlinear/axisymmetric/cyclone_runtime_nonlinear.py --ky 0.3 --Nl 4 --Nm 8 --steps 200 --dt 0.0377"
+cwd = "${SPECTRAX_BENCH_ROOT}"
 
 [[run]]
 case = "cyclone-nonlinear"
 label = "Cyclone ITG Nonlinear"
 backend = "spectrax_gpu"
 host = "office"
-command = "PATH=/home/user/stellarator_venv/bin:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=gpu python examples/cyclone_runtime_nonlinear.py --ky 0.3 --Nl 4 --Nm 8 --steps 200 --dt 0.0377"
-cwd = "/home/user/SPECTRAX-GK-bench"
+command = "PATH=${SPECTRAX_VENV_BIN}:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=gpu python examples/nonlinear/axisymmetric/cyclone_runtime_nonlinear.py --ky 0.3 --Nl 4 --Nm 8 --steps 200 --dt 0.0377"
+cwd = "${SPECTRAX_BENCH_ROOT}"
 
 [[run]]
 case = "cyclone-nonlinear"
 label = "Cyclone ITG Nonlinear"
 backend = "gx"
 host = "office"
-command = "LD_LIBRARY_PATH=/home/user/local/install/openmpi-4.1.6/lib:/home/user/local/install/netcdf-c-4.9.2/lib:/home/user/local/install/hdf5-1.14.5/lib:/home/user/local/install/gsl-2.7.1/lib:/home/user/local/install/libcutensor-1.7.0.1/lib/11:/home/user/local/install/nccl-2.18.1/lib:$LD_LIBRARY_PATH /home/user/GX/gx cyclone_salpha_adiabatic_electrons.in"
-cwd = "/home/user/GX/benchmarks/nonlinear/cyclone"
+command = "LD_LIBRARY_PATH=${GX_RUNTIME_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${GX_BIN} cyclone_salpha_adiabatic_electrons.in"
+cwd = "${GX_REPO}/benchmarks/nonlinear/cyclone"
 
 [[run]]
 case = "etg-linear"
 label = "ETG Linear"
 backend = "spectrax_cpu"
 host = "office"
-command = "PATH=/home/user/stellarator_venv/bin:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=cpu python examples/etg_runtime_linear.py --ky 15.0 --Nl 24 --Nm 8 --solver krylov"
-cwd = "/home/user/SPECTRAX-GK-bench"
+command = "PATH=${SPECTRAX_VENV_BIN}:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=cpu python examples/linear/axisymmetric/etg_runtime_linear.py --ky 15.0 --Nl 24 --Nm 8 --solver krylov"
+cwd = "${SPECTRAX_BENCH_ROOT}"
 
 [[run]]
 case = "etg-linear"
 label = "ETG Linear"
 backend = "spectrax_gpu"
 host = "office"
-command = "PATH=/home/user/stellarator_venv/bin:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=gpu python examples/etg_runtime_linear.py --ky 15.0 --Nl 24 --Nm 8 --solver krylov"
-cwd = "/home/user/SPECTRAX-GK-bench"
+command = "PATH=${SPECTRAX_VENV_BIN}:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=gpu python examples/linear/axisymmetric/etg_runtime_linear.py --ky 15.0 --Nl 24 --Nm 8 --solver krylov"
+cwd = "${SPECTRAX_BENCH_ROOT}"
 
 [[run]]
 case = "etg-linear"
 label = "ETG Linear"
 backend = "gx"
 host = "office"
-command = "LD_LIBRARY_PATH=/home/user/local/install/openmpi-4.1.6/lib:/home/user/local/install/netcdf-c-4.9.2/lib:/home/user/local/install/hdf5-1.14.5/lib:/home/user/local/install/gsl-2.7.1/lib:/home/user/local/install/libcutensor-1.7.0.1/lib/11:/home/user/local/install/nccl-2.18.1/lib:$LD_LIBRARY_PATH /home/user/GX/gx ETG_runtime_ky15.in"
-cwd = "/home/user/GX/benchmarks/linear"
-
-[[run]]
-case = "w7x-linear"
-label = "W7-X Linear"
-backend = "spectrax_cpu"
-host = "office"
-command = "PATH=/home/user/stellarator_venv/bin:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=cpu python examples/w7x_linear_imported_geometry.py --geometry-file /home/user/gx_refs/main_clean_20260312/linear/w7x/itg_w7x_adiabatic_electrons_t2.eik.nc --ky 0.3 --Nl 8 --Nm 16 --solver gx_time"
-cwd = "/home/user/SPECTRAX-GK-bench"
-
-[[run]]
-case = "w7x-linear"
-label = "W7-X Linear"
-backend = "spectrax_gpu"
-host = "office"
-command = "PATH=/home/user/stellarator_venv/bin:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=gpu python examples/w7x_linear_imported_geometry.py --geometry-file /home/user/gx_refs/main_clean_20260312/linear/w7x/itg_w7x_adiabatic_electrons_t2.eik.nc --ky 0.3 --Nl 8 --Nm 16 --solver gx_time"
-cwd = "/home/user/SPECTRAX-GK-bench"
-
-[[run]]
-case = "w7x-linear"
-label = "W7-X Linear"
-backend = "gx"
-host = "office"
-command = "LD_LIBRARY_PATH=/home/user/local/install/openmpi-4.1.6/lib:/home/user/local/install/netcdf-c-4.9.2/lib:/home/user/local/install/hdf5-1.14.5/lib:/home/user/local/install/gsl-2.7.1/lib:/home/user/local/install/libcutensor-1.7.0.1/lib/11:/home/user/local/install/nccl-2.18.1/lib:$LD_LIBRARY_PATH /home/user/GX/gx itg_w7x_adiabatic_electrons_t2.in"
-cwd = "/home/user/gx_refs/main_clean_20260312/linear/w7x"
-
-[[run]]
-case = "kbm-linear"
-label = "KBM Linear"
-backend = "spectrax_cpu"
-host = "office"
-command = "PATH=/home/user/stellarator_venv/bin:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=cpu python examples/kbm_runtime_linear.py --ky 0.3 --Nl 48 --Nm 16 --solver krylov"
-cwd = "/home/user/SPECTRAX-GK-bench"
-
-[[run]]
-case = "kbm-linear"
-label = "KBM Linear"
-backend = "spectrax_gpu"
-host = "office"
-command = "PATH=/home/user/stellarator_venv/bin:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=gpu python examples/kbm_runtime_linear.py --ky 0.3 --Nl 48 --Nm 16 --solver krylov"
-cwd = "/home/user/SPECTRAX-GK-bench"
-
-[[run]]
-case = "kbm-linear"
-label = "KBM Linear"
-backend = "gx"
-host = "office"
-command = "LD_LIBRARY_PATH=/home/user/local/install/openmpi-4.1.6/lib:/home/user/local/install/netcdf-c-4.9.2/lib:/home/user/local/install/hdf5-1.14.5/lib:/home/user/local/install/gsl-2.7.1/lib:/home/user/local/install/libcutensor-1.7.0.1/lib/11:/home/user/local/install/nccl-2.18.1/lib:$LD_LIBRARY_PATH /home/user/GX/gx kbm_salpha.in"
-cwd = "/home/user/GX/benchmarks/linear/KBM"
-
-[[run]]
-case = "kbm-nonlinear"
-label = "KBM Nonlinear"
-backend = "spectrax_cpu"
-host = "office"
-command = "PATH=/home/user/stellarator_venv/bin:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=cpu python examples/kbm_runtime_nonlinear.py --ky 0.3 --Nl 4 --Nm 8 --steps 267 --dt 0.0003"
-cwd = "/home/user/SPECTRAX-GK-bench"
-
-[[run]]
-case = "kbm-nonlinear"
-label = "KBM Nonlinear"
-backend = "spectrax_gpu"
-host = "office"
-command = "PATH=/home/user/stellarator_venv/bin:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=gpu python examples/kbm_runtime_nonlinear.py --ky 0.3 --Nl 4 --Nm 8 --steps 267 --dt 0.0003"
-cwd = "/home/user/SPECTRAX-GK-bench"
-
-[[run]]
-case = "kbm-nonlinear"
-label = "KBM Nonlinear"
-backend = "gx"
-host = "office"
-command = "LD_LIBRARY_PATH=/home/user/local/install/openmpi-4.1.6/lib:/home/user/local/install/netcdf-c-4.9.2/lib:/home/user/local/install/hdf5-1.14.5/lib:/home/user/local/install/gsl-2.7.1/lib:/home/user/local/install/libcutensor-1.7.0.1/lib/11:/home/user/local/install/nccl-2.18.1/lib:$LD_LIBRARY_PATH /home/user/GX/gx kbm_salpha_nonlinear_short_dense.in"
-cwd = "/home/user/GX/benchmarks/nonlinear/KBM"
-
-[[run]]
-case = "w7x-nonlinear"
-label = "W7-X Nonlinear"
-backend = "spectrax_cpu"
-host = "office"
-command = "PATH=/home/user/stellarator_venv/bin:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=cpu python examples/w7x_nonlinear_vmec_geometry.py --config /home/user/gx_runs/runtime_w7x_nonlinear_vmec_geometry_office.toml --ky 0.047619047619047616 --Nl 4 --Nm 8 --steps 200 --dt 0.1"
-cwd = "/home/user/SPECTRAX-GK-bench"
-
-[[run]]
-case = "w7x-nonlinear"
-label = "W7-X Nonlinear"
-backend = "spectrax_gpu"
-host = "office"
-command = "PATH=/home/user/stellarator_venv/bin:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=gpu python examples/w7x_nonlinear_vmec_geometry.py --config /home/user/gx_runs/runtime_w7x_nonlinear_vmec_geometry_office.toml --ky 0.047619047619047616 --Nl 4 --Nm 8 --steps 200 --dt 0.1"
-cwd = "/home/user/SPECTRAX-GK-bench"
-
-[[run]]
-case = "w7x-nonlinear"
-label = "W7-X Nonlinear"
-backend = "gx"
-host = "office"
-command = "LD_LIBRARY_PATH=/home/user/local/install/openmpi-4.1.6/lib:/home/user/local/install/netcdf-c-4.9.2/lib:/home/user/local/install/hdf5-1.14.5/lib:/home/user/local/install/gsl-2.7.1/lib:/home/user/local/install/libcutensor-1.7.0.1/lib/11:/home/user/local/install/nccl-2.18.1/lib:$LD_LIBRARY_PATH /home/user/GX/gx w7x_adiabatic_electrons.in"
-cwd = "/home/user/GX/benchmarks/nonlinear/w7x"
-
-[[run]]
-case = "hsx-nonlinear"
-label = "HSX Nonlinear"
-backend = "spectrax_cpu"
-host = "office"
-command = "PATH=/home/user/stellarator_venv/bin:$PATH PYTHONPATH=src HSX_VMEC_FILE=/home/user/gx_refs/main_clean_20260312/nonlinear/hsx/wout_HSX_QHS_vac.nc JAX_PLATFORM_NAME=cpu python examples/hsx_nonlinear_vmec_geometry.py --vmec-file /home/user/gx_refs/main_clean_20260312/nonlinear/hsx/wout_HSX_QHS_vac.nc --steps 200 --dt 0.1"
-cwd = "/home/user/SPECTRAX-GK-bench"
-
-[[run]]
-case = "hsx-nonlinear"
-label = "HSX Nonlinear"
-backend = "spectrax_gpu"
-host = "office"
-command = "PATH=/home/user/stellarator_venv/bin:$PATH PYTHONPATH=src HSX_VMEC_FILE=/home/user/gx_refs/main_clean_20260312/nonlinear/hsx/wout_HSX_QHS_vac.nc JAX_PLATFORM_NAME=gpu python examples/hsx_nonlinear_vmec_geometry.py --vmec-file /home/user/gx_refs/main_clean_20260312/nonlinear/hsx/wout_HSX_QHS_vac.nc --steps 200 --dt 0.1"
-cwd = "/home/user/SPECTRAX-GK-bench"
-
-[[run]]
-case = "hsx-nonlinear"
-label = "HSX Nonlinear"
-backend = "gx"
-host = "office"
-command = "LD_LIBRARY_PATH=/home/user/local/install/openmpi-4.1.6/lib:/home/user/local/install/netcdf-c-4.9.2/lib:/home/user/local/install/hdf5-1.14.5/lib:/home/user/local/install/gsl-2.7.1/lib:/home/user/local/install/libcutensor-1.7.0.1/lib/11:/home/user/local/install/nccl-2.18.1/lib:$LD_LIBRARY_PATH /home/user/GX/gx hsx_nonlinear.in"
-cwd = "/home/user/gx_refs/main_clean_20260312/nonlinear/hsx"
-
-[[run]]
-case = "hsx-linear"
-label = "HSX Linear"
-backend = "spectrax_cpu"
-host = "office"
-command = "PATH=/home/user/stellarator_venv/bin:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=cpu python examples/hsx_linear_imported_geometry.py --geometry-file /home/user/gx_refs/main_clean_20260312/linear/hsx/hsx_linear.eik.nc --ky 0.047619047619047616 --Nl 8 --Nm 8 --solver gx_time --dt 0.005 --t-max 2.0"
-cwd = "/home/user/SPECTRAX-GK-bench"
-
-[[run]]
-case = "hsx-linear"
-label = "HSX Linear"
-backend = "spectrax_gpu"
-host = "office"
-command = "PATH=/home/user/stellarator_venv/bin:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=gpu python examples/hsx_linear_imported_geometry.py --geometry-file /home/user/gx_refs/main_clean_20260312/linear/hsx/hsx_linear.eik.nc --ky 0.047619047619047616 --Nl 8 --Nm 8 --solver gx_time --dt 0.005 --t-max 2.0"
-cwd = "/home/user/SPECTRAX-GK-bench"
-
-[[run]]
-case = "hsx-linear"
-label = "HSX Linear"
-backend = "gx"
-host = "office"
-command = "LD_LIBRARY_PATH=/home/user/local/install/openmpi-4.1.6/lib:/home/user/local/install/netcdf-c-4.9.2/lib:/home/user/local/install/hdf5-1.14.5/lib:/home/user/local/install/gsl-2.7.1/lib:/home/user/local/install/libcutensor-1.7.0.1/lib/11:/home/user/local/install/nccl-2.18.1/lib:$LD_LIBRARY_PATH /home/user/GX/gx hsx_linear.in"
-cwd = "/home/user/gx_refs/main_clean_20260312/linear/hsx"
-
-[[run]]
-case = "miller-nonlinear"
-label = "Cyclone Miller Nonlinear"
-backend = "spectrax_cpu"
-host = "office"
-command = "PATH=/home/user/stellarator_venv/bin:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=cpu python examples/miller_nonlinear_runtime.py --ky 0.3 --Nl 4 --Nm 8 --steps 200 --dt 0.0377"
-cwd = "/home/user/SPECTRAX-GK-bench"
-
-[[run]]
-case = "miller-nonlinear"
-label = "Cyclone Miller Nonlinear"
-backend = "spectrax_gpu"
-host = "office"
-command = "PATH=/home/user/stellarator_venv/bin:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=gpu python examples/miller_nonlinear_runtime.py --ky 0.3 --Nl 4 --Nm 8 --steps 200 --dt 0.0377"
-cwd = "/home/user/SPECTRAX-GK-bench"
-
-[[run]]
-case = "miller-nonlinear"
-label = "Cyclone Miller Nonlinear"
-backend = "gx"
-host = "office"
-command = "LD_LIBRARY_PATH=/home/user/local/install/openmpi-4.1.6/lib:/home/user/local/install/netcdf-c-4.9.2/lib:/home/user/local/install/hdf5-1.14.5/lib:/home/user/local/install/gsl-2.7.1/lib:/home/user/local/install/libcutensor-1.7.0.1/lib/11:/home/user/local/install/nccl-2.18.1/lib:$LD_LIBRARY_PATH /home/user/GX/gx cyclone_miller_adiabatic_electrons.in"
-cwd = "/home/user/GX/benchmarks/nonlinear/cyclone"
+command = "LD_LIBRARY_PATH=${GX_RUNTIME_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${GX_BIN} ETG_runtime_ky15.in"
+cwd = "${GX_REPO}/benchmarks/linear"
 
 [[run]]
 case = "cetg-nonlinear"
 label = "ETG Nonlinear (cETG)"
 backend = "spectrax_cpu"
 host = "office"
-command = "PATH=/home/user/stellarator_venv/bin:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=cpu python examples/cetg_runtime_nonlinear.py --steps 1000"
-cwd = "/home/user/SPECTRAX-GK-bench"
+command = "PATH=${SPECTRAX_VENV_BIN}:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=cpu python examples/nonlinear/axisymmetric/cetg_runtime_nonlinear.py --steps 1000"
+cwd = "${SPECTRAX_BENCH_ROOT}"
 
 [[run]]
 case = "cetg-nonlinear"
 label = "ETG Nonlinear (cETG)"
 backend = "spectrax_gpu"
 host = "office"
-command = "PATH=/home/user/stellarator_venv/bin:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=gpu python examples/cetg_runtime_nonlinear.py --steps 1000"
-cwd = "/home/user/SPECTRAX-GK-bench"
+command = "PATH=${SPECTRAX_VENV_BIN}:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=gpu python examples/nonlinear/axisymmetric/cetg_runtime_nonlinear.py --steps 1000"
+cwd = "${SPECTRAX_BENCH_ROOT}"
 
 [[run]]
 case = "cetg-nonlinear"
 label = "ETG Nonlinear (cETG)"
 backend = "gx"
 host = "office"
-command = "tmpdir=$(mktemp -d) && cp cetg.in \"$tmpdir/cetg_short.in\" && sed -i 's/t_max = 500.0/t_max = 5.0/; s/nwrite = 500/nwrite = 10/' \"$tmpdir/cetg_short.in\" && cd \"$tmpdir\" && LD_LIBRARY_PATH=/home/user/local/install/openmpi-4.1.6/lib:/home/user/local/install/netcdf-c-4.9.2/lib:/home/user/local/install/hdf5-1.14.5/lib:/home/user/local/install/gsl-2.7.1/lib:/home/user/local/install/libcutensor-1.7.0.1/lib/11:/home/user/local/install/nccl-2.18.1/lib:$LD_LIBRARY_PATH /home/user/GX/gx cetg_short.in"
-cwd = "/home/user/GX/benchmarks/nonlinear/cETG"
+command = "tmpdir=$(mktemp -d) && cp cetg.in \"$tmpdir/cetg_short.in\" && sed -i 's/t_max = 500.0/t_max = 5.0/; s/nwrite = 500/nwrite = 10/' \"$tmpdir/cetg_short.in\" && cd \"$tmpdir\" && LD_LIBRARY_PATH=${GX_RUNTIME_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${GX_BIN} cetg_short.in"
+cwd = "${GX_REPO}/benchmarks/nonlinear/cETG"
+
+[[run]]
+case = "kbm-linear"
+label = "KBM Linear"
+backend = "spectrax_cpu"
+host = "office"
+command = "PATH=${SPECTRAX_VENV_BIN}:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=cpu python examples/linear/axisymmetric/kbm_runtime_linear.py --ky 0.3 --Nl 48 --Nm 16 --solver krylov"
+cwd = "${SPECTRAX_BENCH_ROOT}"
+
+[[run]]
+case = "kbm-linear"
+label = "KBM Linear"
+backend = "spectrax_gpu"
+host = "office"
+command = "PATH=${SPECTRAX_VENV_BIN}:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=gpu python examples/linear/axisymmetric/kbm_runtime_linear.py --ky 0.3 --Nl 48 --Nm 16 --solver krylov"
+cwd = "${SPECTRAX_BENCH_ROOT}"
+
+[[run]]
+case = "kbm-linear"
+label = "KBM Linear"
+backend = "gx"
+host = "office"
+command = "LD_LIBRARY_PATH=${GX_RUNTIME_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${GX_BIN} kbm_salpha.in"
+cwd = "${GX_REPO}/benchmarks/linear/KBM"
+
+[[run]]
+case = "kbm-nonlinear"
+label = "KBM Nonlinear"
+backend = "spectrax_cpu"
+host = "office"
+command = "PATH=${SPECTRAX_VENV_BIN}:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=cpu python examples/nonlinear/axisymmetric/kbm_runtime_nonlinear.py --ky 0.3 --Nl 4 --Nm 8 --steps 267 --dt 0.0003"
+cwd = "${SPECTRAX_BENCH_ROOT}"
+
+[[run]]
+case = "kbm-nonlinear"
+label = "KBM Nonlinear"
+backend = "spectrax_gpu"
+host = "office"
+command = "PATH=${SPECTRAX_VENV_BIN}:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=gpu python examples/nonlinear/axisymmetric/kbm_runtime_nonlinear.py --ky 0.3 --Nl 4 --Nm 8 --steps 267 --dt 0.0003"
+cwd = "${SPECTRAX_BENCH_ROOT}"
+
+[[run]]
+case = "kbm-nonlinear"
+label = "KBM Nonlinear"
+backend = "gx"
+host = "office"
+command = "LD_LIBRARY_PATH=${GX_RUNTIME_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${GX_BIN} kbm_salpha_nonlinear_short_dense.in"
+cwd = "${GX_REPO}/benchmarks/nonlinear/KBM"
 
 [[run]]
 case = "kaw-linear"
 label = "KAW Linear"
 backend = "spectrax_cpu"
 host = "office"
-command = "PATH=/home/user/stellarator_venv/bin:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=cpu python examples/kaw_runtime_linear.py --ky 0.01 --Nl 16 --Nm 64 --solver gx_time"
-cwd = "/home/user/SPECTRAX-GK-bench"
+command = "PATH=${SPECTRAX_VENV_BIN}:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=cpu python examples/linear/axisymmetric/kaw_runtime_linear.py --ky 0.01 --Nl 16 --Nm 64 --solver gx_time"
+cwd = "${SPECTRAX_BENCH_ROOT}"
 
 [[run]]
 case = "kaw-linear"
 label = "KAW Linear"
 backend = "spectrax_gpu"
 host = "office"
-command = "PATH=/home/user/stellarator_venv/bin:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=gpu python examples/kaw_runtime_linear.py --ky 0.01 --Nl 16 --Nm 64 --solver gx_time"
-cwd = "/home/user/SPECTRAX-GK-bench"
+command = "PATH=${SPECTRAX_VENV_BIN}:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=gpu python examples/linear/axisymmetric/kaw_runtime_linear.py --ky 0.01 --Nl 16 --Nm 64 --solver gx_time"
+cwd = "${SPECTRAX_BENCH_ROOT}"
 
 [[run]]
 case = "kaw-linear"
 label = "KAW Linear"
 backend = "gx"
 host = "office"
-command = "LD_LIBRARY_PATH=/home/user/local/install/openmpi-4.1.6/lib:/home/user/local/install/netcdf-c-4.9.2/lib:/home/user/local/install/hdf5-1.14.5/lib:/home/user/local/install/gsl-2.7.1/lib:/home/user/local/install/libcutensor-1.7.0.1/lib/11:/home/user/local/install/nccl-2.18.1/lib:$LD_LIBRARY_PATH /home/user/GX/gx kaw_betahat10.0_kp0.01.in"
-cwd = "/home/user/GX/benchmarks/linear/KAW"
+command = "LD_LIBRARY_PATH=${GX_RUNTIME_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${GX_BIN} kaw_betahat10.0_kp0.01.in"
+cwd = "${GX_REPO}/benchmarks/linear/KAW"
+
+[[run]]
+case = "w7x-linear"
+label = "W7-X Linear"
+backend = "spectrax_cpu"
+host = "office"
+command = "PATH=${SPECTRAX_VENV_BIN}:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=cpu python examples/linear/non-axisymmetric/w7x_linear_imported_geometry.py --geometry-file ${GX_REFS_ROOT}/linear/w7x/itg_w7x_adiabatic_electrons_t2.eik.nc --ky 0.3 --Nl 8 --Nm 16 --solver gx_time"
+cwd = "${SPECTRAX_BENCH_ROOT}"
+
+[[run]]
+case = "w7x-linear"
+label = "W7-X Linear"
+backend = "spectrax_gpu"
+host = "office"
+command = "PATH=${SPECTRAX_VENV_BIN}:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=gpu python examples/linear/non-axisymmetric/w7x_linear_imported_geometry.py --geometry-file ${GX_REFS_ROOT}/linear/w7x/itg_w7x_adiabatic_electrons_t2.eik.nc --ky 0.3 --Nl 8 --Nm 16 --solver gx_time"
+cwd = "${SPECTRAX_BENCH_ROOT}"
+
+[[run]]
+case = "w7x-linear"
+label = "W7-X Linear"
+backend = "gx"
+host = "office"
+command = "LD_LIBRARY_PATH=${GX_RUNTIME_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${GX_BIN} itg_w7x_adiabatic_electrons_t2.in"
+cwd = "${GX_REFS_ROOT}/linear/w7x"
+
+[[run]]
+case = "w7x-nonlinear"
+label = "W7-X Nonlinear"
+backend = "spectrax_cpu"
+host = "office"
+command = "PATH=${SPECTRAX_VENV_BIN}:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=cpu python examples/nonlinear/non-axisymmetric/w7x_nonlinear_vmec_geometry.py --config examples/nonlinear/non-axisymmetric/runtime_w7x_nonlinear_vmec_geometry.toml --ky 0.047619047619047616 --Nl 4 --Nm 8 --steps 200 --dt 0.1"
+cwd = "${SPECTRAX_BENCH_ROOT}"
+
+[[run]]
+case = "w7x-nonlinear"
+label = "W7-X Nonlinear"
+backend = "spectrax_gpu"
+host = "office"
+command = "PATH=${SPECTRAX_VENV_BIN}:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=gpu python examples/nonlinear/non-axisymmetric/w7x_nonlinear_vmec_geometry.py --config examples/nonlinear/non-axisymmetric/runtime_w7x_nonlinear_vmec_geometry.toml --ky 0.047619047619047616 --Nl 4 --Nm 8 --steps 200 --dt 0.1"
+cwd = "${SPECTRAX_BENCH_ROOT}"
+
+[[run]]
+case = "w7x-nonlinear"
+label = "W7-X Nonlinear"
+backend = "gx"
+host = "office"
+command = "LD_LIBRARY_PATH=${GX_RUNTIME_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${GX_BIN} w7x_adiabatic_electrons.in"
+cwd = "${GX_REPO}/benchmarks/nonlinear/w7x"
+
+[[run]]
+case = "hsx-linear"
+label = "HSX Linear"
+backend = "spectrax_cpu"
+host = "office"
+command = "PATH=${SPECTRAX_VENV_BIN}:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=cpu python examples/linear/non-axisymmetric/hsx_linear_imported_geometry.py --geometry-file ${GX_REFS_ROOT}/linear/hsx/hsx_linear.eik.nc --ky 0.047619047619047616 --Nl 8 --Nm 8 --solver gx_time --dt 0.005 --t-max 2.0"
+cwd = "${SPECTRAX_BENCH_ROOT}"
+
+[[run]]
+case = "hsx-linear"
+label = "HSX Linear"
+backend = "spectrax_gpu"
+host = "office"
+command = "PATH=${SPECTRAX_VENV_BIN}:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=gpu python examples/linear/non-axisymmetric/hsx_linear_imported_geometry.py --geometry-file ${GX_REFS_ROOT}/linear/hsx/hsx_linear.eik.nc --ky 0.047619047619047616 --Nl 8 --Nm 8 --solver gx_time --dt 0.005 --t-max 2.0"
+cwd = "${SPECTRAX_BENCH_ROOT}"
+
+[[run]]
+case = "hsx-linear"
+label = "HSX Linear"
+backend = "gx"
+host = "office"
+command = "LD_LIBRARY_PATH=${GX_RUNTIME_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${GX_BIN} hsx_linear.in"
+cwd = "${GX_REFS_ROOT}/linear/hsx"
+
+[[run]]
+case = "hsx-nonlinear"
+label = "HSX Nonlinear"
+backend = "spectrax_cpu"
+host = "office"
+command = "PATH=${SPECTRAX_VENV_BIN}:$PATH PYTHONPATH=src HSX_VMEC_FILE=${HSX_VMEC_FILE} JAX_PLATFORM_NAME=cpu python examples/hsx_nonlinear_vmec_geometry.py --vmec-file ${HSX_VMEC_FILE} --steps 200 --dt 0.1"
+cwd = "${SPECTRAX_BENCH_ROOT}"
+
+[[run]]
+case = "hsx-nonlinear"
+label = "HSX Nonlinear"
+backend = "spectrax_gpu"
+host = "office"
+command = "PATH=${SPECTRAX_VENV_BIN}:$PATH PYTHONPATH=src HSX_VMEC_FILE=${HSX_VMEC_FILE} JAX_PLATFORM_NAME=gpu python examples/hsx_nonlinear_vmec_geometry.py --vmec-file ${HSX_VMEC_FILE} --steps 200 --dt 0.1"
+cwd = "${SPECTRAX_BENCH_ROOT}"
+
+[[run]]
+case = "hsx-nonlinear"
+label = "HSX Nonlinear"
+backend = "gx"
+host = "office"
+command = "LD_LIBRARY_PATH=${GX_RUNTIME_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${GX_BIN} hsx_nonlinear.in"
+cwd = "${GX_REFS_ROOT}/nonlinear/hsx"
+
+[[run]]
+case = "miller-nonlinear"
+label = "Cyclone Miller Nonlinear"
+backend = "spectrax_cpu"
+host = "office"
+command = "PATH=${SPECTRAX_VENV_BIN}:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=cpu python examples/nonlinear/axisymmetric/miller_nonlinear_runtime.py --ky 0.3 --Nl 4 --Nm 8 --steps 200 --dt 0.0377"
+cwd = "${SPECTRAX_BENCH_ROOT}"
+
+[[run]]
+case = "miller-nonlinear"
+label = "Cyclone Miller Nonlinear"
+backend = "spectrax_gpu"
+host = "office"
+command = "PATH=${SPECTRAX_VENV_BIN}:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=gpu python examples/nonlinear/axisymmetric/miller_nonlinear_runtime.py --ky 0.3 --Nl 4 --Nm 8 --steps 200 --dt 0.0377"
+cwd = "${SPECTRAX_BENCH_ROOT}"
+
+[[run]]
+case = "miller-nonlinear"
+label = "Cyclone Miller Nonlinear"
+backend = "gx"
+host = "office"
+command = "LD_LIBRARY_PATH=${GX_RUNTIME_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${GX_BIN} cyclone_miller_adiabatic_electrons.in"
+cwd = "${GX_REPO}/benchmarks/nonlinear/cyclone"

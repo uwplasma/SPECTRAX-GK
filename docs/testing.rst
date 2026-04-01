@@ -195,18 +195,20 @@ shim only into the GX geometry-helper subprocess. This preserves GX as ground
 truth while avoiding a host-level dependency on the original ``booz_xform``
 Python package.
 
-The bridge auto-discovers ``booz_xform_jax`` in standard locations
-(``/home/user/local/booz_xform_jax`` and ``/home/user/booz_xform_jax``)
-or from ``GX_BOOZ_XFORM_JAX_PATH`` / ``BOOZ_XFORM_JAX_PATH``. When a specific
+The bridge auto-discovers ``booz_xform_jax`` from
+``GX_BOOZ_XFORM_JAX_PATH`` / ``BOOZ_XFORM_JAX_PATH`` or from a checkout placed
+next to the SPECTRAX-GK workspace. When a specific
 Python is still needed for GX's helper, it can be provided through
 ``geometry.gx_python`` or ``GX_VMEC_PYTHON``. On ``office``, the normal audited
 path is:
 
 .. code-block:: bash
 
-   rsync -a /path/to/booz_xform_jax/ office:/home/user/booz_xform_jax/
+   export BOOZ_XFORM_JAX_PATH=/path/to/booz_xform_jax
+   export SPECTRAX_VENV_PYTHON=/path/to/venv/bin/python
+   export SPECTRAX_OFFICE_ROOT=/path/to/SPECTRAX-GK
    HSX_VMEC_FILE=/path/to/wout_HSX_QHS_vac.nc \
-   /home/user/venvs/spectrax/bin/python tools/run_exact_state_audit.py \
+   "$SPECTRAX_VENV_PYTHON" tools/run_exact_state_audit.py \
      --manifest tools/exact_state_lanes.office.toml \
      --outdir tools_out/exact_state_audit_office
 
@@ -216,8 +218,8 @@ tree so the office venv does not pick up a stale installed package:
 
 .. code-block:: bash
 
-   PYTHONPATH=/home/user/SPECTRAX-GK/src \
-   /home/user/venvs/spectrax/bin/python tools/run_restart_parity_gate.py \
+   PYTHONPATH="$SPECTRAX_OFFICE_ROOT/src" \
+   "$SPECTRAX_VENV_PYTHON" tools/run_restart_parity_gate.py \
      --manifest tools/restart_gate_lanes.office.toml \
      --outdir tools_out/restart_parity_office
 
@@ -227,8 +229,8 @@ older zero-norm smoke probe:
 
 .. code-block:: bash
 
-   PYTHONPATH=/home/user/SPECTRAX-GK/src \
-   /home/user/venvs/spectrax/bin/python tools/run_device_parity_gate.py \
+   PYTHONPATH="$SPECTRAX_OFFICE_ROOT/src" \
+   "$SPECTRAX_VENV_PYTHON" tools/run_device_parity_gate.py \
      --manifest tools/device_parity_lanes.office.toml \
      --outdir tools_out/device_parity_office
 
@@ -237,8 +239,8 @@ tracked W7-X and HSX VMEC lanes:
 
 .. code-block:: bash
 
-   PYTHONPATH=/home/user/SPECTRAX-GK/src \
-   /home/user/venvs/spectrax/bin/python tools/run_vmec_roundtrip_gate.py \
+   PYTHONPATH="$SPECTRAX_OFFICE_ROOT/src" \
+   "$SPECTRAX_VENV_PYTHON" tools/run_vmec_roundtrip_gate.py \
      --manifest tools/vmec_roundtrip_lanes.office.toml \
      --outdir tools_out/vmec_roundtrip_office
 
@@ -248,7 +250,7 @@ If the helper must be forced to another interpreter, the fallback remains:
 
    GX_VMEC_PYTHON=/usr/bin/python3 \
    HSX_VMEC_FILE=/path/to/wout_HSX_QHS_vac.nc \
-   /home/user/venvs/spectrax/bin/python tools/run_exact_state_audit.py \
+   "$SPECTRAX_VENV_PYTHON" tools/run_exact_state_audit.py \
      --manifest tools/exact_state_lanes.office.toml \
      --outdir tools_out/exact_state_audit_office
 

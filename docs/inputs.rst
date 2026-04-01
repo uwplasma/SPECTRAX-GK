@@ -161,7 +161,7 @@ as an explicit output path for the generated ``*.eik.nc`` file, and
 helper must run under a different Python interpreter than SPECTRAX itself
 (for example when ``booz_xform`` is installed in a separate environment), set
 ``gx_python`` or the ``GX_VMEC_PYTHON`` environment variable. This is now the
-recommended parity-first route for new stellarator cases such as HSX.
+recommended imported-geometry route for new stellarator cases such as HSX.
 ``vmec_file`` supports ``$ENV_VAR`` expansion, and relative paths are resolved
 against ``gx_repo`` before falling back to the current working directory. The
 W7-X runtime TOML uses that contract so the same config works on both local
@@ -209,7 +209,8 @@ CLI usage
    spectrax-gk scan-linear --config examples/linear/axisymmetric/etg.toml --plot --outdir docs/_static
    spectrax-gk run-runtime-linear --config examples/linear/axisymmetric/runtime_cyclone.toml
    spectrax-gk scan-runtime-linear --config examples/linear/axisymmetric/runtime_etg.toml --batch-ky
-   spectrax-gk run-runtime-nonlinear --config examples/linear/axisymmetric/runtime_cyclone.toml --sample-stride 5 --out docs/_static/nonlinear_cyclone_diag.csv
+   spectrax-gk run-runtime-nonlinear --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_gx.toml --sample-stride 5 --out docs/_static/nonlinear_cyclone_diag.csv
+   spectrax-gk examples/nonlinear/axisymmetric/runtime_cetg_reference.toml --steps 100
 
 For ``run-runtime-nonlinear``, omit ``--steps`` when ``fixed_dt = false`` unless
 you explicitly want a capped step count. The CLI now preserves ``steps = None``
@@ -227,8 +228,8 @@ Python driver
 
 .. code-block:: bash
 
-   python examples/run_from_toml.py --config examples/linear/axisymmetric/etg.toml --plot --outdir docs/_static
-   python examples/runtime_from_toml.py --config examples/linear/axisymmetric/runtime_kbm.toml
+   python examples/utilities/run_from_toml.py --config examples/linear/axisymmetric/etg.toml --plot --outdir docs/_static
+   python examples/utilities/runtime_from_toml.py --config examples/linear/axisymmetric/runtime_kbm.toml
 
 TOML sections
 -------------
