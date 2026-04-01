@@ -78,4 +78,4 @@ nonlinear = 0.0
 ky = 0.3
 Nl = 12
 Nm = 32
-solver = "gx_time"
+solver = "explicit_time"

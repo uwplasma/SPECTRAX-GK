@@ -74,7 +74,7 @@ def main() -> int:
     parser.add_argument("--ky", type=float, default=0.3, help="Target ky mode")
     parser.add_argument("--Nl", type=int, default=8)
     parser.add_argument("--Nm", type=int, default=16)
-    parser.add_argument("--solver", choices=["gx_time", "krylov", "time"], default="gx_time")
+    parser.add_argument("--solver", choices=["explicit_time", "gx_time", "krylov", "time"], default="explicit_time")
     parser.add_argument(
         "--dt",
         type=float,

@@ -150,7 +150,7 @@ electromagnetic = false
 ky = 0.3
 Nl = 8
 Nm = 12
-solver = "gx_time"
+solver = "explicit_time"
 """
     path = tmp_path / "runtime_w7x.toml"
     path.write_text(toml, encoding="utf-8")

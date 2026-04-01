@@ -96,5 +96,4 @@ nonlinear = 0.0
 ky = 0.01
 Nl = 16
 Nm = 64
-solver = "gx_time"
-
+solver = "explicit_time"
