@@ -1189,16 +1189,21 @@ def main() -> None:
             "ky": float(ky_target),
             "kx_ref": float(gx_kx[gx_kx_idx]),
             "kx_local": float(np.asarray(grid_full.kx)[kx_idx]),
+            "peak_abs_omega_ref": float(np.max(np.abs(omega_ref))),
             "mean_abs_omega": float(np.mean(np.abs(omega - omega_ref))),
             "mean_rel_omega": _mean_rel_error(
                 omega, omega_ref, floor_fraction=float(args.rel_floor_fraction)
             ),
+            "peak_abs_gamma_ref": float(np.max(np.abs(gamma_ref))),
             "mean_abs_gamma": float(np.mean(np.abs(gamma - gamma_ref))),
             "mean_rel_gamma": _mean_rel_error(
                 gamma, gamma_ref, floor_fraction=float(args.rel_floor_fraction)
             ),
+            "mean_abs_Wg": float(np.mean(np.abs(Wg - gx_Wg[sample_steps, ky_idx]))),
             "mean_rel_Wg": _mean_rel_error(Wg, gx_Wg[sample_steps, ky_idx], floor_fraction=1.0e-6),
+            "mean_abs_Wphi": float(np.mean(np.abs(Wphi - gx_Wphi[sample_steps, ky_idx]))),
             "mean_rel_Wphi": _mean_rel_error(Wphi, gx_Wphi[sample_steps, ky_idx], floor_fraction=1.0e-6),
+            "mean_abs_Wapar": float(np.mean(np.abs(Wapar - gx_Wapar[sample_steps, ky_idx]))),
             "mean_rel_Wapar": _mean_rel_error(Wapar, gx_Wapar[sample_steps, ky_idx], floor_fraction=1.0e-6),
             "omega_last": float(omega[-1]),
             "omega_ref_last": float(omega_ref[-1]),
@@ -1209,6 +1214,7 @@ def main() -> None:
         if np.any(np.isfinite(phi2_ref)):
             row.update(
                 {
+                    "mean_abs_Phi2": float(np.mean(np.abs(Phi2 - phi2_ref))),
                     "mean_rel_Phi2": _mean_rel_error(Phi2, phi2_ref, floor_fraction=1.0e-6),
                     "Phi2_last": float(Phi2[-1]),
                     "Phi2_ref_last": float(phi2_ref[-1]),

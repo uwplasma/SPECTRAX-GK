@@ -188,6 +188,12 @@ to persist per-``ky`` trajectory/result arrays (``gamma``, ``omega``,
 reference file, geometry file, reference input, selected ``ky``, Hermite/Laguerre
 resolution, mode selector, and sample-window contract. This makes the
 stress-lane tooling incremental instead of rerunning a full lane every time.
+It now also writes absolute diagnostic-error columns and the reference
+``|gamma|`` / ``|omega|`` scales alongside the relative metrics. That matters
+for near-marginal imported-linear stellarator lanes such as HSX, where
+``mean_rel_gamma`` can look large simply because the reference growth rate is
+close to zero even while the absolute growth-rate mismatch and the field-energy
+diagnostics remain small.
 
 For VMEC-backed exact-state audits, the runtime bridge now prefers a local
 ``booz_xform_jax`` checkout and injects a temporary ``booz_xform`` compatibility
