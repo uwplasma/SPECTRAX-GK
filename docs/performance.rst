@@ -106,7 +106,7 @@ To test the faster spectral nonlinear mode (no Laguerre quadrature grid):
 
    python tools/benchmark_nonlinear_suite.py --laguerre-mode spectral
 
-You can optionally pass a comparison-code log file to compare runtime per step:
+You can optionally pass a reference-code log file to compare runtime per step:
 
 .. code-block:: bash
 

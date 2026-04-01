@@ -159,7 +159,7 @@ geometry path as the W7-X examples. Set ``vmec_file`` plus the flux-tube keys
 as an explicit output path for the generated ``*.eik.nc`` file, and
 ``gx_repo`` can point to a non-default helper checkout if needed. If the VMEC
 helper must run under a different Python interpreter than SPECTRAX itself
-(for example when ``booz_xform`` is installed in a separate environment), set
+(for example when ``booz_xform_jax`` lives in a separate environment), set
 ``gx_python`` or the ``GX_VMEC_PYTHON`` environment variable. This is now the
 recommended imported-geometry route for new stellarator cases such as HSX.
 ``vmec_file`` supports ``$ENV_VAR`` expansion, and relative paths are resolved

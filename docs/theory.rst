@@ -126,7 +126,7 @@ including a separate coupling in :math:`m=2` for temperature-gradient drive.
 Field-aligned streaming representation
 ~~~~~~~~~~~~~~~~~~~~
 
-To maintain compatibility with certain legacy benchmarks, SPECTRAX-GK supports
+To maintain compatibility with audited reference benchmarks, SPECTRAX-GK supports
 applying the parallel derivative to a gyrokinetic variable that includes the
 explicit field terms but omits the full :math:`H_{\ell m}` correction at
 ``m>1``. This is achieved by defining
@@ -140,7 +140,8 @@ explicit field terms but omits the full :math:`H_{\ell m}` correction at
 
 and then applying the parallel derivative to :math:`\tilde{G}` before the
 Hermite ladder. This matches the ordering in GX’s ``grad_parallel_linked``
-implementation and is critical for precise growth-rate validation against GX.
+implementation and preserves the validated linked-boundary operator contract
+used by the imported-geometry and benchmark lanes.
 
 Nonlinear E×B and flutter terms
 -------------------------------

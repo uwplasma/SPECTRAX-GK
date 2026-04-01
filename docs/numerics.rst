@@ -34,7 +34,8 @@ The core numerical algorithms and their implementation entry points are:
 - **Time integration (explicit RK, IMEX)**:
   :func:`spectraxgk.linear.integrate_linear`.
 - **CFL-controlled RK4 (adaptive step control, streaming diagnostics)**:
-  :func:`spectraxgk.gx_integrators.integrate_linear_gx`.
+  :func:`spectraxgk.integrate_linear_explicit`
+  (compatibility alias: :func:`spectraxgk.gx_integrators.integrate_linear_gx`).
 - **Diffrax integration (explicit/implicit/IMEX)**:
   :func:`spectraxgk.diffrax_integrators.integrate_linear_diffrax`,
   :func:`spectraxgk.diffrax_integrators.integrate_nonlinear_diffrax`.
