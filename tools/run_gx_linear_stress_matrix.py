@@ -18,8 +18,8 @@ import pandas as pd
 def _default_gx_repo() -> Path | None:
     for candidate in (
         os.environ.get("GX_REPO"),
-        "/path/to/reference-code",
-        "/home/user/GX",
+        str(Path(__file__).resolve().parents[2].parent / "GX"),
+        str(Path(__file__).resolve().parents[2].parent / "gx"),
     ):
         if not candidate:
             continue

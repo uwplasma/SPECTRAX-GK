@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from tools.benchmark_runtime_memory import _load_manifest, _load_summary_rows, _parse_peak_rss_mb, _select_runs
+from tools.benchmark_runtime_memory import _load_manifest, _load_summary_rows, _parse_peak_rss_mb, _render, _select_runs
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -53,3 +53,10 @@ def test_load_summary_rows_merges_matching_json_files(tmp_path: Path) -> None:
     rows = _load_summary_rows([str(tmp_path / "*.json")])
     assert len(rows) == 2
     assert {row["backend"] for row in rows} == {"spectrax_cpu", "gx"}
+
+
+def test_render_expands_root_and_env(monkeypatch) -> None:
+    monkeypatch.setenv("SPECTRAX_BENCH_ROOT", "/tmp/bench")
+    rendered = _render("{root}:${SPECTRAX_BENCH_ROOT}")
+    assert str(ROOT) in rendered
+    assert "/tmp/bench" in rendered

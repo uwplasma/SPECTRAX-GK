@@ -2,9 +2,11 @@ from pathlib import Path
 
 from tools.run_benchmark_refresh import _load_manifest, _select_jobs
 
+ROOT = Path(__file__).resolve().parents[1]
+
 
 def test_refresh_manifest_loads_jobs() -> None:
-    manifest = Path("/path/to/SPECTRAX-GK/tools/benchmark_refresh_manifest.toml")
+    manifest = ROOT / "tools" / "benchmark_refresh_manifest.toml"
     jobs = _load_manifest(manifest)
 
     names = [job.name for job in jobs]

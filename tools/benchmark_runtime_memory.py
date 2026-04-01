@@ -69,7 +69,7 @@ def _resolve(path: str | Path) -> Path:
 
 
 def _render(text: str) -> str:
-    return text.replace("{root}", str(ROOT))
+    return os.path.expandvars(text.replace("{root}", str(ROOT)))
 
 
 def _load_manifest(path: Path) -> list[RuntimeBenchRun]:
@@ -301,12 +301,12 @@ def _build_parser() -> argparse.ArgumentParser:
 def main() -> int:
     args = _build_parser().parse_args()
     if args.summary_glob:
-        rows = _load_summary_rows(list(args.summary_glob))
-        if not rows:
+        summary_rows = _load_summary_rows(list(args.summary_glob))
+        if not summary_rows:
             raise ValueError("no summary rows matched the provided --summary-glob patterns")
-        _write_csv(_resolve(args.csv_out), rows)
+        _write_csv(_resolve(args.csv_out), summary_rows)
         _resolve(args.summary_out).parent.mkdir(parents=True, exist_ok=True)
-        _resolve(args.summary_out).write_text(json.dumps({"rows": rows}, indent=2) + "\n", encoding="utf-8")
+        _resolve(args.summary_out).write_text(json.dumps({"rows": summary_rows}, indent=2) + "\n", encoding="utf-8")
         if not args.skip_plot:
             plot_png = _resolve(args.plot_out)
             plot_pdf = plot_png.with_suffix(".pdf")
@@ -334,14 +334,20 @@ def main() -> int:
             continue
         row = _run_command(run)
         rows.append(row)
+        runtime_obj = row["runtime_s"]
+        returncode_obj = row["returncode"]
+        if not isinstance(runtime_obj, (int, float)) or not isinstance(returncode_obj, int):
+            raise TypeError("runtime benchmark row has invalid runtime or return code types")
+        runtime_s = float(runtime_obj)
+        return_code = returncode_obj
         print(
-            f"{row['case']} [{row['backend']}] status={row['status']} runtime_s={float(row['runtime_s']):.3f} peak_rss_mb={row['peak_rss_mb']}"
+            f"{row['case']} [{row['backend']}] status={row['status']} runtime_s={runtime_s:.3f} peak_rss_mb={row['peak_rss_mb']}"
         )
         if row["status"] != "success":
             _write_csv(_resolve(args.csv_out), rows)
             _resolve(args.summary_out).parent.mkdir(parents=True, exist_ok=True)
             _resolve(args.summary_out).write_text(json.dumps({"rows": rows}, indent=2) + "\n", encoding="utf-8")
-            return int(row["returncode"])
+            return return_code
 
     if rows:
         _write_csv(_resolve(args.csv_out), rows)
