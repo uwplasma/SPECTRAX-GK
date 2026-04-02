@@ -74,7 +74,7 @@ Miller inputs when the external helper scripts are available:
 .. code-block:: bash
 
    export HSX_VMEC_FILE=/absolute/path/to/wout_HSX_QHS_vac.nc
-   export GX_VMEC_PYTHON=python3
+   export SPECTRAX_BOOZ_XFORM_JAX_PATH=/absolute/path/to/booz_xform_jax
    python tools/generate_gx_vmec_eik.py \
      --config examples/nonlinear/non-axisymmetric/runtime_hsx_nonlinear_vmec_geometry.toml
 

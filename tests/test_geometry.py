@@ -7,7 +7,7 @@ import pytest
 
 from spectraxgk.config import GeometryConfig, GridConfig
 from spectraxgk.geometry import (
-    GX_ZERO_SHAT_THRESHOLD,
+    ZERO_SHAT_THRESHOLD,
     SAlphaGeometry,
     SlabGeometry,
     apply_gx_geometry_grid_defaults,
@@ -90,7 +90,7 @@ def test_zero_shat_slab_geometry_matches_gx_override():
 
 def test_slab_geometry_auto_zero_shat_threshold_matches_gx_default():
     geom = SlabGeometry.from_config(
-        GeometryConfig(model="slab", s_hat=0.1 * GX_ZERO_SHAT_THRESHOLD, zero_shat=False)
+        GeometryConfig(model="slab", s_hat=0.1 * ZERO_SHAT_THRESHOLD, zero_shat=False)
     )
 
     assert geom.zero_shat is True
@@ -99,7 +99,7 @@ def test_slab_geometry_auto_zero_shat_threshold_matches_gx_default():
 
 def test_salpha_geometry_auto_zero_shat_threshold_matches_gx_default():
     geom = SAlphaGeometry.from_config(
-        GeometryConfig(s_hat=0.1 * GX_ZERO_SHAT_THRESHOLD, zero_shat=False)
+        GeometryConfig(s_hat=0.1 * ZERO_SHAT_THRESHOLD, zero_shat=False)
     )
 
     assert geom.s_hat == pytest.approx(0.0)

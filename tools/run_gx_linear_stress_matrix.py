@@ -17,7 +17,7 @@ import pandas as pd
 
 def _default_gx_repo() -> Path | None:
     for candidate in (
-        os.environ.get("GX_REPO"),
+        os.environ.get("REFERENCE_GK_REPO"),
         str(Path(__file__).resolve().parents[2].parent / "GX"),
         str(Path(__file__).resolve().parents[2].parent / "gx"),
     ):
@@ -49,7 +49,7 @@ def _case_defs(gx_repo: Path) -> dict[str, dict[str, Path]]:
 
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--gx-repo", type=Path, default=None, help="Path to a GX checkout (defaults to $GX_REPO or common locations).")
+    p.add_argument("--gx-repo", type=Path, default=None, help="Path to a comparison-code checkout (defaults to $REFERENCE_GK_REPO or common locations).")
     p.add_argument("--outdir", type=Path, default=Path("tools_out") / "stress_matrix_linear", help="Output directory for CSV artifacts.")
     p.add_argument(
         "--cases",
@@ -97,7 +97,7 @@ def main() -> None:
     if gx_repo is None:
         gx_repo = _default_gx_repo()
     if gx_repo is None:
-        raise SystemExit("Could not find a GX repo. Pass --gx-repo or set GX_REPO.")
+        raise SystemExit("Could not find a comparison-code repo. Pass --gx-repo or set REFERENCE_GK_REPO.")
     gx_repo = gx_repo.expanduser().resolve()
 
     defs = _case_defs(gx_repo)

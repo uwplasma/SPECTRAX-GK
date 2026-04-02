@@ -26,8 +26,8 @@ from spectraxgk.benchmarks import (
     ETG_OMEGA_D_SCALE,
     ETG_OMEGA_STAR_SCALE,
     ETG_RHO_STAR,
-    GX_DAMP_ENDS_AMP,
-    GX_DAMP_ENDS_WIDTHFRAC,
+    REFERENCE_DAMP_ENDS_AMP,
+    REFERENCE_DAMP_ENDS_WIDTHFRAC,
     KINETIC_KRYLOV_DEFAULT,
     ETG_KRYLOV_DEFAULT,
     KBM_KRYLOV_DEFAULT,
@@ -773,7 +773,7 @@ WINDOWS = {
     ),
 }
 
-GX_CYCLONE_WINDOW = dict(
+REFERENCE_CYCLONE_WINDOW = dict(
     window_method="loglinear",
     min_points=40,
     start_fraction=0.1,
@@ -890,8 +890,8 @@ def _cyclone_gx_scan(
             rho_star=CYCLONE_RHO_STAR,
             kpar_scale=float(geom.gradpar()),
             nu=cfg.model.nu_i,
-            damp_ends_amp=GX_DAMP_ENDS_AMP,
-            damp_ends_widthfrac=GX_DAMP_ENDS_WIDTHFRAC,
+            damp_ends_amp=REFERENCE_DAMP_ENDS_AMP,
+            damp_ends_widthfrac=REFERENCE_DAMP_ENDS_WIDTHFRAC,
         )
         params = _apply_gx_hypercollisions(params, nhermite=Nm)
         terms = LinearTerms()

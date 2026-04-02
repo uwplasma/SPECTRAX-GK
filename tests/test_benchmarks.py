@@ -662,8 +662,8 @@ def test_run_kbm_linear_uses_gx_linked_end_damping_by_default(monkeypatch):
     cfg = KBMBaseCase(grid=grid)
     run_kbm_linear(ky_target=0.3, cfg=cfg, Nl=2, Nm=2, dt=0.01, steps=4, solver="gx_time")
 
-    assert captured["amp"] == pytest.approx(benchmarks.GX_DAMP_ENDS_AMP)
-    assert captured["width"] == pytest.approx(benchmarks.GX_DAMP_ENDS_WIDTHFRAC)
+    assert captured["amp"] == pytest.approx(benchmarks.REFERENCE_DAMP_ENDS_AMP)
+    assert captured["width"] == pytest.approx(benchmarks.REFERENCE_DAMP_ENDS_WIDTHFRAC)
 
 
 def test_run_kbm_linear_gx_time_uses_gx_rk4_cfl_factor_by_default(monkeypatch):
@@ -976,8 +976,8 @@ def test_run_kbm_beta_scan_uses_gx_linked_end_damping_by_default(monkeypatch):
         solver="gx_time",
     )
 
-    assert captured["amp"] == pytest.approx(benchmarks.GX_DAMP_ENDS_AMP)
-    assert captured["width"] == pytest.approx(benchmarks.GX_DAMP_ENDS_WIDTHFRAC)
+    assert captured["amp"] == pytest.approx(benchmarks.REFERENCE_DAMP_ENDS_AMP)
+    assert captured["width"] == pytest.approx(benchmarks.REFERENCE_DAMP_ENDS_WIDTHFRAC)
 
 
 def test_run_kbm_linear_krylov_explicit_shift_bypasses_multi_target(monkeypatch):

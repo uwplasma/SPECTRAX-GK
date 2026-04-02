@@ -206,11 +206,11 @@ For VMEC ``fix aspect`` cases, the bridge now leaves ``x0`` unset when calling
 GX so the helper chooses the same cut that GX would choose from ``y0`` and the
 geometry itself. SPECTRAX no longer back-solves ``x0 = Lx/(2 pi)`` into the
 helper input, which was generating the wrong HSX/W7-X ``*.eik.nc`` files.
-When the VMEC helper depends on a different Python environment, set
-``geometry.gx_python`` (or the ``GX_VMEC_PYTHON`` environment variable) so
-SPECTRAX launches the helper with the interpreter that has
-``booz_xform_jax`` available. A legacy ``booz_xform`` install is only needed as
-fallback compatibility for older helper environments.
+When ``booz_xform_jax`` is not installed into the active environment, point
+SPECTRAX at it through ``BOOZ_XFORM_JAX_PATH`` or
+``SPECTRAX_BOOZ_XFORM_JAX_PATH``. The internal backend is preferred. A legacy
+``booz_xform`` install is only needed as fallback compatibility for older
+helper environments.
 The VMEC bridge now also expands environment variables in ``geometry.vmec_file``
 and resolves relative VMEC paths against ``gx_repo`` before falling back to the
 current working directory. That lets the tracked W7-X runtime TOML point at the

@@ -202,10 +202,10 @@ audited reference workflow while avoiding a host-level dependency on the origina
 Python package.
 
 The bridge auto-discovers ``booz_xform_jax`` from
-``GX_BOOZ_XFORM_JAX_PATH`` / ``BOOZ_XFORM_JAX_PATH`` or from a checkout placed
+``BOOZ_XFORM_JAX_PATH`` / ``SPECTRAX_BOOZ_XFORM_JAX_PATH`` or from a checkout placed
 next to the SPECTRAX-GK workspace. When a specific
-Python is still needed for GX's helper, it can be provided through
-``geometry.gx_python`` or ``GX_VMEC_PYTHON``. On ``office``, the normal audited
+Python environment is needed for the helper subprocesses, set
+``geometry.gx_python`` in the runtime TOML. On ``office``, the normal audited
 path is:
 
 .. code-block:: bash
@@ -250,15 +250,10 @@ tracked W7-X and HSX VMEC lanes:
      --manifest tools/vmec_roundtrip_lanes.office.toml \
      --outdir tools_out/vmec_roundtrip_office
 
-If the helper must be forced to another interpreter, the fallback remains:
-
-.. code-block:: bash
-
-   GX_VMEC_PYTHON=/usr/bin/python3 \
-   HSX_VMEC_FILE=/path/to/wout_HSX_QHS_vac.nc \
-   "$SPECTRAX_VENV_PYTHON" tools/run_exact_state_audit.py \
-     --manifest tools/exact_state_lanes.office.toml \
-     --outdir tools_out/exact_state_audit_office
+If the helper must be forced to another interpreter, set ``geometry.gx_python``
+in the runtime TOML used by the audit and rerun the same command. The old
+environment-variable override is no longer documented because the preferred
+path is the internal ``booz_xform_jax`` backend.
 
 CI split: fast PR vs manual full
 --------------------------------
