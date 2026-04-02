@@ -10,6 +10,7 @@ from spectraxgk.miller_eik import (
     build_gx_miller_geometry_request,
     generate_runtime_miller_eik,
 )
+from spectraxgk.from_gx.miller import _request_attr
 from spectraxgk.runtime_config import (
     RuntimeConfig,
     RuntimeNormalizationConfig,
@@ -92,3 +93,13 @@ def test_generate_runtime_miller_eik_invokes_internal_generator(
     request = kwargs["request"]
     assert request.ntheta == 24
     assert request.q == 1.4
+
+
+def test_internal_miller_request_attr_accepts_runtime_aliases() -> None:
+    class Req:
+        q = 1.4
+        s_hat = 0.8
+
+    req = Req()
+    assert _request_attr(req, "qinp", "q") == 1.4
+    assert _request_attr(req, "shat", "s_hat") == 0.8
