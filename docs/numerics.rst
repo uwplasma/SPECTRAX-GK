@@ -295,6 +295,9 @@ The RHS is assembled in :mod:`spectraxgk.terms` via
 and end damping). This keeps the physics core branch-free and easier to extend,
 while preserving JAX differentiability and performance.
 
+For the explicit equations and per-parameter operator definitions, see
+:doc:`operators`.
+
 Field solve and electromagnetic coupling
 ----------------------------------------
 

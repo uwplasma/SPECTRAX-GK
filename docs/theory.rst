@@ -3,7 +3,9 @@ Theory
 
 For a full operator-level derivation tied to the implemented code paths
 (normalization, Hermite-Laguerre projection, field equations, and growth-rate
-diagnostics), see :doc:`linear_model`.
+diagnostics), see :doc:`linear_model`. For the explicit implemented operator
+set, collisions, hypercollisions, nonlinear brackets, and parameter-to-source
+mapping, see :doc:`operators`.
 
 Gyrokinetic ordering
 --------------------
