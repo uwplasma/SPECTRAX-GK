@@ -1246,6 +1246,47 @@ def _run_etg_tables(*, outdir: Path, verbose: bool, progress: bool) -> None:
     )
 
 
+def _run_tem_tables(*, outdir: Path, verbose: bool, progress: bool) -> None:
+    tem_ref = load_tem_reference()
+    tem_dt = _scale_dt(tem_ref.ky, base_dt=0.001, ky_ref=0.3)
+    tem_steps = _scale_steps(tem_ref.ky, base_steps=2000, ky_ref=0.3, max_steps=6000)
+    tem_tmax = tem_dt * tem_steps
+    tem_tmin = 0.4 * tem_tmax
+    tem_tmax = 0.85 * tem_tmax
+    tem_cfg = TEMBaseCase()
+    tem_ky, tem_g, tem_w = _scan_linear_verbose(
+        ky_values=tem_ref.ky,
+        run_linear_fn=run_tem_linear,
+        cfg=tem_cfg,
+        Nl=48,
+        Nm=16,
+        dt=tem_dt,
+        steps=tem_steps,
+        method="imex2",
+        solver=TEM_SOLVER,
+        krylov_cfg=TEM_KRYLOV,
+        window_kw=WINDOWS["tem"],
+        tmin=tem_tmin,
+        tmax=tem_tmax,
+        auto_window=False,
+        run_kwargs={"mode_method": "z_index"},
+        label="TEM mismatch",
+        ref=tem_ref,
+        verbose=verbose,
+        progress=progress,
+        stiff_spot_check=False,
+        stiff_spot_check_topk=0,
+        stiff_spot_check_min_ky=0.0,
+        stiff_spot_check_dt=0.0,
+        stiff_spot_check_tmax=0.0,
+        stiff_spot_check_replace=False,
+    )
+    tem_mismatch = LinearScanResult(ky=tem_ky, gamma=tem_g, omega=tem_w)
+    (outdir / "tem_mismatch_table.csv").write_text(
+        "\n".join(_build_rows(tem_mismatch, tem_ref)) + "\n", encoding="utf-8"
+    )
+
+
 def main() -> int:
     args = _parse_args()
     verbose = not args.quiet
@@ -1577,49 +1618,7 @@ def main() -> int:
         stiff_spot_replace=stiff_spot_replace,
     )
 
-    tem_ref = load_tem_reference()
-    tem_dt = _scale_dt(tem_ref.ky, base_dt=0.001, ky_ref=0.3)
-    tem_steps = _scale_steps(tem_ref.ky, base_steps=2000, ky_ref=0.3, max_steps=6000)
-    tem_cfg = TEMBaseCase()
-    tem_time_cfg = TimeConfig(
-        t_max=3.0,
-        dt=0.001,
-        method="imex2",
-        use_diffrax=False,
-        progress_bar=False,
-        sample_stride=2,
-    )
-    tem_ky, tem_g, tem_w = _scan_linear_verbose(
-        ky_values=tem_ref.ky,
-        run_linear_fn=run_tem_linear,
-        cfg=tem_cfg,
-        Nl=48,
-        Nm=16,
-        dt=tem_dt,
-        steps=tem_steps,
-        method="imex2",
-        solver=TEM_SOLVER,
-        krylov_cfg=TEM_KRYLOV,
-        window_kw=WINDOWS["tem"],
-        tmin=None,
-        tmax=None,
-        auto_window=True,
-        run_kwargs={"fit_signal": "phi", "mode_method": "z_index", "time_cfg": tem_time_cfg},
-        label="TEM mismatch",
-        ref=tem_ref,
-        verbose=verbose,
-        progress=progress,
-        stiff_spot_check=stiff_spot_check,
-        stiff_spot_check_topk=stiff_spot_topk,
-        stiff_spot_check_min_ky=stiff_spot_min_ky,
-        stiff_spot_check_dt=stiff_spot_dt,
-        stiff_spot_check_tmax=stiff_spot_tmax,
-        stiff_spot_check_replace=stiff_spot_replace,
-    )
-    tem_mismatch = LinearScanResult(ky=tem_ky, gamma=tem_g, omega=tem_w)
-    (outdir / "tem_mismatch_table.csv").write_text(
-        "\n".join(_build_rows(tem_mismatch, tem_ref)) + "\n", encoding="utf-8"
-    )
+    _run_tem_tables(outdir=outdir, verbose=verbose, progress=progress)
 
     return 0
 
