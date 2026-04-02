@@ -33,6 +33,7 @@ from spectraxgk.linear import (
 )
 from spectraxgk.gx_integrators import (
     GXTimeConfig,
+    _gx_growth_mask,
     _gx_linear_omega_max,
     _gx_growth_rate_step,
     _rk4_step,
@@ -460,6 +461,24 @@ def test_gx_growth_rate_step_max_uses_per_step_peak():
     ratio = (9.0 + 9.0j) / (8.0 + 8.0j)
     assert np.allclose(np.asarray(gamma), np.log(np.abs(ratio)) / 0.1)
     assert np.allclose(np.asarray(omega), -np.angle(ratio) / 0.1)
+
+
+def test_gx_growth_mask_promotes_single_selected_nonzonal_slice() -> None:
+    mask = _gx_growth_mask(
+        jnp.asarray([-0.01]),
+        jnp.asarray([0.0]),
+        jnp.asarray([[False]]),
+    )
+    assert np.asarray(mask).item() is True
+
+
+def test_gx_growth_mask_keeps_single_selected_zonal_slice_masked() -> None:
+    mask = _gx_growth_mask(
+        jnp.asarray([0.0]),
+        jnp.asarray([0.0]),
+        jnp.asarray([[False]]),
+    )
+    assert np.asarray(mask).item() is False
 
 
 def test_rk4_step_uses_runtime_scaled_end_damping_once() -> None:

@@ -46,11 +46,14 @@ The current live sweep on `main` confirms the following:
   - this is still a real physics/operator mismatch, not just a plotting or fitting issue.
 
 - KAW generic runtime contract is still broken.
-  - live runtime at requested `ky=0.01` collapses to:
-    - `ky=0.0`
-    - `gamma≈0`
-    - `omega≈0`
-  - this is still the zonal-collapse issue.
+  - the zonal-collapse selector bug is fixed on `main`
+  - live runtime no longer collapses to `ky=0`, but it is still far from the tracked exact-growth lane
+  - current live runtime point:
+    - `ky=-0.01`
+    - `gamma≈73.84`
+    - `omega≈-151.39`
+  - history check shows the older public runtime path was also not benchmark-aligned, so this is not just a recent regression
+  - GX-style single-slice diagnostic masking is now repaired for selected nonzonal `ky` slices, but the KAW runtime contract itself still needs a deeper parity audit
 
 - ETG generic runtime contract is still broken.
   - live runtime at `ky=15` gives:
@@ -107,7 +110,7 @@ The current live sweep on `main` confirms the following:
 Current repair order after the fresh sweep:
 
 1. TEM operator/parameter contract
-2. KAW runtime contract
+2. KAW runtime contract and exact-growth alignment
 3. ETG runtime branch-following
 4. KBM generic-helper / benchmark-contract drift
 5. Miller low-`ky`
