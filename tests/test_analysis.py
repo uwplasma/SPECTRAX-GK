@@ -11,6 +11,7 @@ from spectraxgk.analysis import (
     fit_growth_rate_auto,
     gx_growth_rate_from_phi,
     gx_growth_rate_from_omega_series,
+    select_ky_index,
     select_fit_window,
 )
 
@@ -201,6 +202,23 @@ def test_fit_growth_rate_auto_fallback_respects_start_fraction() -> None:
 
     assert tmax > tmin
     assert tmin >= t[int(0.6 * t.size)]
+
+
+def test_select_ky_index_prefers_nonzonal_matching_magnitude() -> None:
+    ky = np.array([0.0, -0.01])
+    assert select_ky_index(ky, 0.01) == 1
+    assert select_ky_index(ky, 0.009) == 1
+
+
+def test_select_ky_index_prefers_sign_match_when_available() -> None:
+    ky = np.array([0.0, -0.01, 0.01])
+    assert select_ky_index(ky, 0.01) == 2
+    assert select_ky_index(ky, -0.01) == 1
+
+
+def test_select_ky_index_keeps_zonal_when_request_is_closer_to_zero() -> None:
+    ky = np.array([0.0, -0.01])
+    assert select_ky_index(ky, 1.0e-4) == 0
 
 
 def test_extract_eigenfunction_svd_and_snapshot():
