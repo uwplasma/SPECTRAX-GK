@@ -25,6 +25,13 @@ When ``--out`` is provided for runtime-configured single-point runs, the CLI wri
 a JSON summary plus sidecar time-series/state artifacts using the supplied path
 as a prefix.
 
+The same artifact prefix can be stored in the runtime TOML itself:
+
+.. code-block:: toml
+
+   [output]
+   path = "tools_out/cyclone_runtime"
+
 Python demo
 -----------
 

@@ -177,6 +177,239 @@ diagnostic_norm = "none"
     assert (tmp_path / "linear_bundle.timeseries.csv").exists()
 
 
+def test_cli_run_runtime_linear_uses_toml_output_path(capsys, monkeypatch, tmp_path: Path) -> None:
+    cfg = """
+[[species]]
+name = "ion"
+charge = 1.0
+mass = 1.0
+density = 1.0
+temperature = 1.0
+tprim = 2.49
+fprim = 0.8
+kinetic = true
+
+[grid]
+Nx = 1
+Ny = 6
+Nz = 16
+Lx = 62.8
+Ly = 62.8
+boundary = "periodic"
+
+[time]
+t_max = 0.2
+dt = 0.01
+method = "rk2"
+use_diffrax = false
+
+[geometry]
+q = 1.4
+s_hat = 0.8
+epsilon = 0.18
+R0 = 2.77778
+
+[init]
+init_field = "density"
+init_amp = 1e-8
+gaussian_init = false
+
+[physics]
+electrostatic = true
+electromagnetic = false
+adiabatic_electrons = true
+tau_e = 1.0
+
+[normalization]
+contract = "cyclone"
+diagnostic_norm = "none"
+
+[output]
+path = "artifacts/from_toml"
+"""
+    path = tmp_path / "runtime_cli_linear_toml_out.toml"
+    path.write_text(cfg, encoding="utf-8")
+
+    def _fake_run_runtime_linear(_cfg, **_kwargs):
+        return RuntimeLinearResult(
+            ky=0.2,
+            gamma=0.3,
+            omega=-0.4,
+            selection=ModeSelection(ky_index=0, kx_index=0, z_index=1),
+            t=np.asarray([0.1, 0.2]),
+            signal=np.asarray([1.0, 2.0]),
+        )
+
+    monkeypatch.setattr("spectraxgk.cli.run_runtime_linear", _fake_run_runtime_linear)
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["spectrax-gk", "run-runtime-linear", "--config", str(path)],
+    )
+    code = main()
+    out = capsys.readouterr().out
+    assert code == 0
+    assert "saved artifacts/from_toml.summary.json" in out
+    assert (tmp_path / "artifacts" / "from_toml.summary.json").exists()
+    assert (tmp_path / "artifacts" / "from_toml.timeseries.csv").exists()
+
+
+def test_cli_run_runtime_linear_cli_out_overrides_toml_output_path(capsys, monkeypatch, tmp_path: Path) -> None:
+    cfg = """
+[[species]]
+name = "ion"
+charge = 1.0
+mass = 1.0
+density = 1.0
+temperature = 1.0
+tprim = 2.49
+fprim = 0.8
+kinetic = true
+
+[grid]
+Nx = 1
+Ny = 6
+Nz = 16
+Lx = 62.8
+Ly = 62.8
+boundary = "periodic"
+
+[time]
+t_max = 0.2
+dt = 0.01
+method = "rk2"
+use_diffrax = false
+
+[geometry]
+q = 1.4
+s_hat = 0.8
+epsilon = 0.18
+R0 = 2.77778
+
+[init]
+init_field = "density"
+init_amp = 1e-8
+gaussian_init = false
+
+[physics]
+electrostatic = true
+electromagnetic = false
+adiabatic_electrons = true
+tau_e = 1.0
+
+[normalization]
+contract = "cyclone"
+diagnostic_norm = "none"
+
+[output]
+path = "artifacts/from_toml"
+"""
+    path = tmp_path / "runtime_cli_linear_toml_override.toml"
+    path.write_text(cfg, encoding="utf-8")
+    out_base = tmp_path / "cli_override"
+
+    def _fake_run_runtime_linear(_cfg, **_kwargs):
+        return RuntimeLinearResult(
+            ky=0.2,
+            gamma=0.3,
+            omega=-0.4,
+            selection=ModeSelection(ky_index=0, kx_index=0, z_index=1),
+            t=np.asarray([0.1, 0.2]),
+            signal=np.asarray([1.0, 2.0]),
+        )
+
+    monkeypatch.setattr("spectraxgk.cli.run_runtime_linear", _fake_run_runtime_linear)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["spectrax-gk", "run-runtime-linear", "--config", str(path), "--out", str(out_base)],
+    )
+    code = main()
+    out = capsys.readouterr().out
+    assert code == 0
+    assert f"saved {out_base}.summary.json" in out
+    assert (tmp_path / "cli_override.summary.json").exists()
+    assert not (tmp_path / "artifacts" / "from_toml.summary.json").exists()
+
+
+def test_cli_direct_config_shorthand_uses_toml_output_path(capsys, monkeypatch, tmp_path: Path) -> None:
+    cfg = """
+[[species]]
+name = "ion"
+charge = 1.0
+mass = 1.0
+density = 1.0
+temperature = 1.0
+tprim = 2.49
+fprim = 0.8
+kinetic = true
+
+[grid]
+Nx = 1
+Ny = 6
+Nz = 16
+Lx = 62.8
+Ly = 62.8
+boundary = "periodic"
+
+[time]
+t_max = 0.2
+dt = 0.01
+method = "rk2"
+use_diffrax = false
+
+[geometry]
+q = 1.4
+s_hat = 0.8
+epsilon = 0.18
+R0 = 2.77778
+
+[init]
+init_field = "density"
+init_amp = 1e-8
+gaussian_init = false
+
+[physics]
+electrostatic = true
+electromagnetic = false
+adiabatic_electrons = true
+tau_e = 1.0
+
+[normalization]
+contract = "cyclone"
+diagnostic_norm = "none"
+
+[output]
+path = "artifacts/direct_shorthand"
+"""
+    path = tmp_path / "runtime_cli_direct.toml"
+    path.write_text(cfg, encoding="utf-8")
+
+    def _fake_run_runtime_linear(_cfg, **_kwargs):
+        return RuntimeLinearResult(
+            ky=0.2,
+            gamma=0.3,
+            omega=-0.4,
+            selection=ModeSelection(ky_index=0, kx_index=0, z_index=1),
+            t=np.asarray([0.1, 0.2]),
+            signal=np.asarray([1.0, 2.0]),
+        )
+
+    monkeypatch.setattr("spectraxgk.cli.run_runtime_linear", _fake_run_runtime_linear)
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["spectrax-gk", str(path)],
+    )
+    code = main()
+    out = capsys.readouterr().out
+    assert code == 0
+    assert "saved artifacts/direct_shorthand.summary.json" in out
+    assert (tmp_path / "artifacts" / "direct_shorthand.summary.json").exists()
+
+
 def test_cli_run_runtime_nonlinear(capsys, monkeypatch, tmp_path: Path):
     """The unified runtime nonlinear command should run a tiny configuration."""
     cfg = """

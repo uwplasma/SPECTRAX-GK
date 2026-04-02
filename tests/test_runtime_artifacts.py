@@ -28,8 +28,31 @@ def test_write_runtime_linear_artifacts_writes_bundle(tmp_path: Path) -> None:
     assert summary["kind"] == "linear"
     assert summary["gamma"] == 0.3
     assert summary["selection"]["ky_index"] == 1
+    csv_lines = Path(paths["timeseries"]).read_text(encoding="utf-8").splitlines()
+    assert csv_lines[0] == "t,signal_real,signal_imag,signal_abs"
     assert Path(paths["timeseries"]).exists()
     assert Path(paths["state"]).exists()
+
+
+def test_write_runtime_linear_artifacts_splits_complex_signal_columns(tmp_path: Path) -> None:
+    result = RuntimeLinearResult(
+        ky=0.2,
+        gamma=0.3,
+        omega=-0.4,
+        selection=ModeSelection(ky_index=1, kx_index=2, z_index=3),
+        t=np.asarray([0.1, 0.2]),
+        signal=np.asarray([1.0 + 2.0j, 3.0 + 4.0j]),
+        state=None,
+    )
+
+    paths = write_runtime_linear_artifacts(tmp_path / "linear_complex", result)
+
+    rows = Path(paths["timeseries"]).read_text(encoding="utf-8").splitlines()
+    assert rows[0] == "t,signal_real,signal_imag,signal_abs"
+    data = np.loadtxt(paths["timeseries"], delimiter=",", skiprows=1)
+    np.testing.assert_allclose(data[:, 1], np.asarray([1.0, 3.0]))
+    np.testing.assert_allclose(data[:, 2], np.asarray([2.0, 4.0]))
+    np.testing.assert_allclose(data[:, 3], np.abs(np.asarray([1.0 + 2.0j, 3.0 + 4.0j])))
 
 
 def test_write_runtime_nonlinear_artifacts_preserves_csv_target(tmp_path: Path) -> None:

@@ -220,12 +220,20 @@ for adaptive nonlinear runs so the runtime can keep integrating in chunks until
 it reaches the requested ``t_max`` instead of silently reverting to the old
 ``round(t_max / dt)`` ceiling.
 
-For single-point runtime commands, ``--out`` writes a structured artifact bundle.
+For single-point runtime commands, artifact output can be requested either with
+``--out`` or directly in the runtime TOML:
+
+.. code-block:: toml
+
+   [output]
+   path = "tools_out/runtime_case"
+
+``--out`` takes precedence over ``[output].path`` when both are provided.
 Linear runs write a JSON summary and, when a fitted signal is available, a
-``*.timeseries.csv`` sidecar with ``t,signal``. Nonlinear runs write a JSON
-summary plus a diagnostics CSV. When the requested path already ends in
-``.csv``, that exact filename is used for the diagnostics table and the JSON
-summary is written next to it as ``*.summary.json``.
+``*.timeseries.csv`` sidecar with ``t,signal_real,signal_imag,signal_abs``.
+Nonlinear runs write a JSON summary plus a diagnostics CSV. When the requested
+path already ends in ``.csv``, that exact filename is used for the diagnostics
+table and the JSON summary is written next to it as ``*.summary.json``.
 
 The nonlinear diagnostics CSV base columns are
 ``t,dt,gamma,omega,Wg,Wphi,Wapar,energy,heat_flux,particle_flux`` and
@@ -269,6 +277,7 @@ are:
 * ``[normalization]`` (contract key + optional overrides)
 * ``[terms]`` (term toggles used by modular RHS assembly)
 * ``[expert]`` (advanced fixed-mode controls for specialized workflows)
+* ``[output]`` (artifact path for single-point runtime commands)
 * ``[run]`` / ``[scan]`` / ``[fit]`` (driver controls)
 
 Notable runtime-only keys:

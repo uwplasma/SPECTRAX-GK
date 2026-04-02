@@ -24,6 +24,7 @@ def test_runtime_config_to_dict_contains_sections() -> None:
         "normalization",
         "terms",
         "expert",
+        "output",
     }
     assert len(d["species"]) == 1
 
@@ -84,6 +85,9 @@ init_file_mode = "add"
 [normalization]
 contract = "kbm"
 omega_star_scale = 0.7
+
+[output]
+path = "tools_out/runtime_case"
 """
     path = tmp_path / "runtime.toml"
     path.write_text(toml, encoding="utf-8")
@@ -102,6 +106,7 @@ omega_star_scale = 0.7
     assert cfg.init.init_file == "/tmp/restart.bin"
     assert cfg.init.init_file_scale == pytest.approx(5.0)
     assert cfg.init.init_file_mode == "add"
+    assert cfg.output.path == "tools_out/runtime_case"
     assert len(cfg.species) == 2
     assert cfg.species[1].charge == pytest.approx(-1.0)
 
@@ -171,6 +176,7 @@ def test_w7x_imported_geometry_example_toml_loads() -> None:
     assert isinstance(data, dict)
     assert cfg.geometry.model == "gx-netcdf"
     assert cfg.geometry.geometry_file is not None
+    assert cfg.init.init_field == "density"
     assert cfg.physics.adiabatic_electrons is True
     assert cfg.normalization.diagnostic_norm == "gx"
 

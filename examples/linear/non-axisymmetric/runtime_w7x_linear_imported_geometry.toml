@@ -31,7 +31,7 @@ model = "gx-netcdf"
 geometry_file = "/path/to/itg_w7x_adiabatic_electrons.eik.nc"
 
 [init]
-init_field = "phi"
+init_field = "density"
 init_amp = 1e-10
 gaussian_init = true
 gaussian_width = 0.5
