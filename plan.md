@@ -757,5 +757,19 @@ Only after the rerun data is real:
   - old seed replay
   - `tz` convention replay
   - simple electromagnetic sub-scale toggles
+- Additional TEM contract checks completed:
+  - `init_species_index` and `density_species_index` changes do not close the `ky=0.3` row
+  - non-Gaussian init only shifts the point slightly
+  - periodic boundary is catastrophically wrong; linked boundary remains the correct family
+  - `apar=0` / `beta=0` moves `omega` closer to the reference but pushes `gamma` farther away
+  - historical `R0=2.77778` is not the fix; it drives the point onto a different wrong branch
+  - changing the electron mass ratio away from `370` makes the point dramatically worse
+- Current TEM interpretation:
+  - the mismatch is below the benchmark harness
+  - it now looks like either a deeper operator/physics-contract drift or a stale TEM reference lane
+- GX cross-check status:
+  - first direct TEM GX replay on `office` is blocked by the remote GX runtime environment
+  - current `GX/gx` binary aborts before running because of shared-library/runtime mismatch (`libcutensor`/`hdf5`/`netcdf` environment inconsistency)
 - Next TEM step:
-  - compare startup term contributions and short-horizon evolution directly, now that the diagnostics path is trustworthy for two-species runs.
+  - repair the `office` GX runtime environment enough to run a direct TEM replay
+  - then compare startup/early-window behavior against GX before changing the SPECTRAX TEM operator
