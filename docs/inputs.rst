@@ -209,7 +209,7 @@ CLI usage
 
    spectrax-gk run-linear --config examples/linear/axisymmetric/cyclone.toml --plot --outdir docs/_static
    spectrax-gk scan-linear --config examples/linear/axisymmetric/etg.toml --plot --outdir docs/_static
-   spectrax-gk run-runtime-linear --config examples/linear/axisymmetric/runtime_cyclone.toml
+   spectrax-gk run-runtime-linear --config examples/linear/axisymmetric/runtime_cyclone.toml --out tools_out/cyclone_runtime
    spectrax-gk scan-runtime-linear --config examples/linear/axisymmetric/runtime_etg.toml --batch-ky
    spectrax-gk run-runtime-nonlinear --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_gx.toml --sample-stride 5 --out docs/_static/nonlinear_cyclone_diag.csv
    spectrax-gk examples/nonlinear/axisymmetric/runtime_cetg_reference.toml --steps 100
@@ -220,9 +220,16 @@ for adaptive nonlinear runs so the runtime can keep integrating in chunks until
 it reaches the requested ``t_max`` instead of silently reverting to the old
 ``round(t_max / dt)`` ceiling.
 
-When ``run-runtime-nonlinear`` writes ``--out`` CSV diagnostics, the base columns are
-``t,dt,gamma,omega,Wg,Wphi,Wapar,energy,heat_flux,particle_flux`` and species-resolved
-columns are appended when available:
+For single-point runtime commands, ``--out`` writes a structured artifact bundle.
+Linear runs write a JSON summary and, when a fitted signal is available, a
+``*.timeseries.csv`` sidecar with ``t,signal``. Nonlinear runs write a JSON
+summary plus a diagnostics CSV. When the requested path already ends in
+``.csv``, that exact filename is used for the diagnostics table and the JSON
+summary is written next to it as ``*.summary.json``.
+
+The nonlinear diagnostics CSV base columns are
+``t,dt,gamma,omega,Wg,Wphi,Wapar,energy,heat_flux,particle_flux`` and
+species-resolved columns are appended when available:
 ``heat_flux_s{i}``, ``particle_flux_s{i}`` for species index ``i``.
 
 Python driver

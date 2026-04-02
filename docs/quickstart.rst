@@ -17,7 +17,13 @@ CLI demo
    spectrax-gk cyclone-kperp --kx0 0.0 --ky 0.3
    spectrax-gk run-linear --config examples/linear/axisymmetric/cyclone.toml --plot --outdir docs/_static
    spectrax-gk scan-linear --config examples/linear/axisymmetric/etg.toml --plot --outdir docs/_static
+   spectrax-gk run-runtime-linear --config examples/linear/axisymmetric/runtime_cyclone.toml --out tools_out/cyclone_runtime
+   spectrax-gk run-runtime-nonlinear --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_gx.toml --steps 50 --out tools_out/cyclone_nonlinear
    spectrax-gk examples/nonlinear/axisymmetric/runtime_cetg_reference.toml --steps 100
+
+When ``--out`` is provided for runtime-configured single-point runs, the CLI writes
+a JSON summary plus sidecar time-series/state artifacts using the supplied path
+as a prefix.
 
 Python demo
 -----------
