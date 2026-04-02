@@ -71,7 +71,7 @@ def main() -> int:
                     scan.ky,
                     scan.gamma,
                     scan.omega,
-                    r"$k_y \\rho_i$",
+                    r"$k_y \rho_i$",
                     f"{case_name.upper()} scan",
                     x_ref=ref.ky,
                     gamma_ref=ref.gamma,

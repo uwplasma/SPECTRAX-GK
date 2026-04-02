@@ -135,7 +135,7 @@ the primary validation claim:
    Cyclone Miller, and the reduced cETG comparison.
 
 Interpretation of validation
-------------------------
+----------------------------
 
 The atlas intentionally mixes two classes of evidence:
 

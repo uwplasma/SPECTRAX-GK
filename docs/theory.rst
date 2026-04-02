@@ -126,7 +126,7 @@ formulation with explicit :math:`R/L_n` and :math:`R/L_T` dependence,
 including a separate coupling in :math:`m=2` for temperature-gradient drive.
 
 Field-aligned streaming representation
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To maintain compatibility with audited reference benchmarks, SPECTRAX-GK supports
 applying the parallel derivative to a gyrokinetic variable that includes the
