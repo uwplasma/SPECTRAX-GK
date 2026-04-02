@@ -52,13 +52,17 @@ Runtime TOML entry points
 -------------------------
 
 When you want the full config surface instead of the thin case wrappers, use
-the CLI or the generic example drivers directly:
+the CLI or the generic example drivers directly. These runtime utilities are
+best treated as solver-smoke and exploration entry points; the benchmark
+examples remain the audited parity surface for ETG and the other validation
+lanes:
 
 .. code-block:: bash
 
    python examples/utilities/runtime_from_toml.py --config examples/linear/axisymmetric/runtime_cyclone.toml
    python examples/utilities/runtime_from_toml.py --config examples/linear/axisymmetric/runtime_etg.toml
    python examples/utilities/runtime_from_toml.py --config examples/linear/axisymmetric/runtime_kbm.toml
+   python examples/linear/axisymmetric/etg_linear_auto.py --outdir tools_out/etg_auto
 
    python -m spectraxgk.cli run-runtime-linear \
      --config examples/linear/non-axisymmetric/runtime_w7x_linear_imported_geometry.toml
