@@ -197,6 +197,37 @@ def _case_config(name: str, args) -> tuple[object, object, int, float, float, fl
     raise ValueError(f"Unknown case '{name}'")
 
 
+def _build_seed_state(
+    *,
+    cfg,
+    geom,
+    grid,
+    params,
+    Nl: int,
+    Nm: int,
+    init_species_index: int,
+) -> np.ndarray:
+    """Build a single- or multi-species startup state matching ``params``."""
+
+    G0_single = _build_initial_condition(
+        grid,
+        geom,
+        ky_index=0,
+        kx_index=0,
+        Nl=Nl,
+        Nm=Nm,
+        init_cfg=cfg.init,
+    )
+    ns = int(np.atleast_1d(np.asarray(params.charge_sign)).shape[0])
+    if ns == 1:
+        return np.asarray(G0_single, dtype=np.complex64)
+    if init_species_index < 0 or init_species_index >= ns:
+        raise ValueError("init_species_index out of range for multi-species seed")
+    G0 = np.zeros((ns, Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64)
+    G0[int(init_species_index)] = np.asarray(G0_single, dtype=np.complex64)
+    return G0
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--case", type=str, default="cyclone")
@@ -224,14 +255,14 @@ def main() -> None:
     ky_index = int(np.argmin(np.abs(np.asarray(grid_full.ky) - float(args.ky))))
     grid = select_ky_grid(grid_full, ky_index)
 
-    G0 = _build_initial_condition(
-        grid,
-        geom,
-        ky_index=0,
-        kx_index=0,
+    G0 = _build_seed_state(
+        cfg=cfg,
+        geom=geom,
+        grid=grid,
+        params=params,
         Nl=args.Nl,
         Nm=args.Nm,
-        init_cfg=cfg.init,
+        init_species_index=_init_species_index,
     )
     cache = build_linear_cache(grid, geom, params, args.Nl, args.Nm)
     term_cfg = TermConfig()

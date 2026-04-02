@@ -250,3 +250,65 @@ def test_run_kbm_linear_accepts_vmec_and_desc_eik_benchmark_aliases(tmp_path: Pa
         )
         assert np.isfinite(result.gamma)
         assert np.isfinite(result.omega)
+
+
+def test_ky_diagnostics_build_problem_seeds_multispecies_tem() -> None:
+    tools_dir = Path(__file__).resolve().parents[1] / "tools"
+    sys.path.insert(0, str(tools_dir))
+    try:
+        import ky_diagnostics as mod
+    finally:
+        sys.path.remove(str(tools_dir))
+
+    _cfg, grid, _geom, params, _terms, G0 = mod._build_problem("tem", 0.3, None, 4, 6)
+
+    assert np.asarray(G0).shape == (2, 4, 6, grid.ky.size, grid.kx.size, grid.z.size)
+    assert int(np.atleast_1d(np.asarray(params.charge_sign)).shape[0]) == 2
+    assert np.any(np.abs(np.asarray(G0[1])) > 0.0)
+    assert np.allclose(np.asarray(G0[0]), 0.0)
+
+
+def test_dump_rhs_terms_seed_state_handles_multispecies_tem() -> None:
+    tools_dir = Path(__file__).resolve().parents[1] / "tools"
+    sys.path.insert(0, str(tools_dir))
+    try:
+        import dump_rhs_terms as mod
+    finally:
+        sys.path.remove(str(tools_dir))
+
+    args = type(
+        "Args",
+        (),
+        {
+            "Nx": 1,
+            "Ny": 8,
+            "Nz": 24,
+            "Lx": 62.8,
+            "Ly": 62.8,
+            "boundary": "linked",
+            "y0": 10.0,
+            "ntheta": 8,
+            "nperiod": 2,
+            "Nm": 6,
+            "drift_scale": 1.0,
+        },
+    )()
+    cfg, params, init_species_index, *_ = mod._case_config("tem", args)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    grid_full = build_spectral_grid(cfg.grid)
+    ky_idx = int(np.argmin(np.abs(np.asarray(grid_full.ky) - 0.3)))
+    grid = select_ky_grid(grid_full, ky_idx)
+
+    G0 = mod._build_seed_state(
+        cfg=cfg,
+        geom=geom,
+        grid=grid,
+        params=params,
+        Nl=4,
+        Nm=6,
+        init_species_index=init_species_index,
+    )
+
+    assert np.asarray(G0).shape == (2, 4, 6, grid.ky.size, grid.kx.size, grid.z.size)
+    assert np.any(np.abs(np.asarray(G0[1])) > 0.0)
+    assert np.allclose(np.asarray(G0[0]), 0.0)
