@@ -45,8 +45,8 @@ from spectraxgk.benchmarks import (
     _build_initial_condition,
     _electron_only_params,
     _two_species_params,
-    GX_DAMP_ENDS_AMP,
-    GX_DAMP_ENDS_WIDTHFRAC,
+    REFERENCE_DAMP_ENDS_AMP,
+    REFERENCE_DAMP_ENDS_WIDTHFRAC,
     load_cyclone_reference,
     load_cyclone_reference_kinetic,
     load_etg_reference,
@@ -212,8 +212,8 @@ def _build_problem(case: str, ky: float, beta: float | None, Nl: int, Nm: int):
             rho_star=CYCLONE_RHO_STAR,
             kpar_scale=float(geom.gradpar()),
             nu=cfg.model.nu_i,
-            damp_ends_amp=GX_DAMP_ENDS_AMP,
-            damp_ends_widthfrac=GX_DAMP_ENDS_WIDTHFRAC,
+            damp_ends_amp=REFERENCE_DAMP_ENDS_AMP,
+            damp_ends_widthfrac=REFERENCE_DAMP_ENDS_WIDTHFRAC,
         )
         params = _apply_gx_hypercollisions(params, nhermite=Nm)
         terms = LinearTerms()

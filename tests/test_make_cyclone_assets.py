@@ -126,7 +126,7 @@ def test_cyclone_low_ky_gx_policy_extends_runtime_and_late_window() -> None:
     Nl, Nm, tmax = make_tables._gx_balanced_policy(0.05)
     assert (Nl, Nm, tmax) == (16, 8, 320.0)
 
-    window = make_tables._gx_window_policy(0.05, make_tables.GX_CYCLONE_WINDOW)
+    window = make_tables._gx_window_policy(0.05, make_tables.REFERENCE_CYCLONE_WINDOW)
     assert window["start_fraction"] == 0.65
     assert window["end_fraction"] == 0.95
     assert window["late_penalty"] == 0.0

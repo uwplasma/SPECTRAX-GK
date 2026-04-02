@@ -118,8 +118,8 @@ def test_internal_vmec_backend_available_detects_env_provided_booz_xform_jax(
     for name in ("booz_xform_jax", "booz_xform"):
         sys.modules.pop(name, None)
     original_sys_path = list(sys.path)
-    monkeypatch.setenv("BOOZ_XFORM_JAX_PATH", str(pkg_root))
-    monkeypatch.delenv("GX_BOOZ_XFORM_JAX_PATH", raising=False)
+    monkeypatch.setenv("SPECTRAX_BOOZ_XFORM_JAX_PATH", str(pkg_root))
+    monkeypatch.delenv("BOOZ_XFORM_JAX_PATH", raising=False)
 
     try:
         assert internal_vmec_backend_available() is True

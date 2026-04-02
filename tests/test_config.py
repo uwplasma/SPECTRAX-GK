@@ -6,7 +6,7 @@ from spectraxgk.config import (
     CycloneBaseCase,
     ETGBaseCase,
     ETGModelConfig,
-    GX_REFERENCE_ELECTRON_MASS,
+    REFERENCE_ELECTRON_MASS,
     GeometryConfig,
     GridConfig,
     KBMBaseCase,
@@ -66,7 +66,7 @@ def test_gx_reference_mass_ratio_defaults() -> None:
     """GX-aligned benchmark defaults should use the conventional GX electron mass."""
 
     for cfg in (ETGBaseCase(), KineticElectronBaseCase(), KBMBaseCase()):
-        assert (1.0 / cfg.model.mass_ratio) == pytest.approx(GX_REFERENCE_ELECTRON_MASS)
+        assert (1.0 / cfg.model.mass_ratio) == pytest.approx(REFERENCE_ELECTRON_MASS)
 
 
 def test_kbm_config_to_dict():
