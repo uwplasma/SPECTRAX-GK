@@ -1209,6 +1209,50 @@ def test_tem_run_density_fit():
     assert np.isfinite(result.omega)
 
 
+def test_kinetic_linear_defaults_to_plain_linear_terms(monkeypatch):
+    """Kinetic benchmark defaults should preserve the historical plain term set."""
+    captured: dict[str, object] = {}
+
+    def _fake_dominant_eigenpair(_G0, _cache, _params, *, terms=None, **_kwargs):
+        captured["terms"] = terms
+        return 0.1 + 0.2j, np.zeros((4, 4, 1, 1, 8), dtype=np.complex64)
+
+    def _fake_compute_fields_cached(_vec, _cache, _params, *, terms=None):
+        return type("Fields", (), {"phi": np.zeros((1, 1, 8), dtype=np.complex64)})()
+
+    monkeypatch.setattr(benchmarks, "dominant_eigenpair", _fake_dominant_eigenpair)
+    monkeypatch.setattr(benchmarks, "compute_fields_cached", _fake_compute_fields_cached)
+
+    grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0)
+    cfg = KineticElectronBaseCase(grid=grid)
+    run_kinetic_linear(cfg=cfg, ky_target=0.3, Nl=4, Nm=4, solver="krylov")
+    terms = captured["terms"]
+    assert terms is not None
+    assert terms.bpar == 1.0
+
+
+def test_tem_linear_defaults_to_bpar_disabled_terms(monkeypatch):
+    """TEM benchmark defaults should disable bpar coupling by default."""
+    captured: dict[str, object] = {}
+
+    def _fake_dominant_eigenpair(_G0, _cache, _params, *, terms=None, **_kwargs):
+        captured["terms"] = terms
+        return 0.1 + 0.2j, np.zeros((4, 4, 1, 1, 8), dtype=np.complex64)
+
+    def _fake_compute_fields_cached(_vec, _cache, _params, *, terms=None):
+        return type("Fields", (), {"phi": np.zeros((1, 1, 8), dtype=np.complex64)})()
+
+    monkeypatch.setattr(benchmarks, "dominant_eigenpair", _fake_dominant_eigenpair)
+    monkeypatch.setattr(benchmarks, "compute_fields_cached", _fake_compute_fields_cached)
+
+    grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0)
+    cfg = TEMBaseCase(grid=grid)
+    run_tem_linear(cfg=cfg, ky_target=0.3, Nl=4, Nm=4, solver="krylov")
+    terms = captured["terms"]
+    assert terms is not None
+    assert terms.bpar == 0.0
+
+
 def test_benchmark_krylov_smoke_finite():
     """Krylov solves should return finite gamma/omega for core benchmarks."""
     krylov_cfg = KrylovConfig(
