@@ -136,6 +136,25 @@ Running tests
 
    pytest
 
+Benchmark reproducibility stack
+-------------------------------
+
+The public CI and the tracked benchmark atlas are currently validated against a
+tested numerical stack:
+
+- ``jax>=0.8,<0.9``
+- ``jaxlib>=0.8,<0.9``
+- ``numpy>=2.3,<2.4``
+- ``diffrax>=0.7,<0.8``
+- ``equinox>=0.13,<0.14``
+
+This is not a claim that newer releases are unsupported. It is a statement
+about benchmark reproducibility. Near-marginal or branch-sensitive lanes such
+as TEM, ETG runtime scans, and some imported-linear stellarator cases can move
+materially under newer JAX/NumPy combinations even when the code still runs.
+When investigating parity regressions, reproduce the issue on the tested stack
+first before changing solver logic.
+
 Stress-matrix parity gates
 --------------------------
 
