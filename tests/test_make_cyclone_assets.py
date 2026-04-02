@@ -486,3 +486,38 @@ def test_write_kbm_public_mismatch_table_prefers_gx_mismatch_when_present(monkey
 
     table_text = (tmp_path / "kbm_mismatch_table.csv").read_text(encoding="utf-8")
     assert "0.200,0.300000,0.880000,0.310000,0.890000" in table_text
+
+
+def test_run_tem_tables_restores_fixed_late_window_contract(monkeypatch, tmp_path: Path) -> None:
+    import tools.make_tables as make_tables
+
+    called: dict[str, object] = {}
+
+    def fake_load_tem_reference():
+        return make_tables.LinearScanResult(
+            ky=np.array([0.3]),
+            gamma=np.array([2.0]),
+            omega=np.array([1.0]),
+        )
+
+    def fake_scan_linear_verbose(**kwargs):
+        called["dt"] = kwargs["dt"]
+        called["steps"] = kwargs["steps"]
+        called["tmin"] = kwargs["tmin"]
+        called["tmax"] = kwargs["tmax"]
+        called["auto_window"] = kwargs["auto_window"]
+        called["run_kwargs"] = dict(kwargs["run_kwargs"])
+        return (np.array([0.3]), np.array([2.1]), np.array([1.1]))
+
+    monkeypatch.setattr(make_tables, "load_tem_reference", fake_load_tem_reference)
+    monkeypatch.setattr(make_tables, "_scan_linear_verbose", fake_scan_linear_verbose)
+
+    make_tables._run_tem_tables(outdir=tmp_path, verbose=False, progress=False)
+
+    assert called["dt"] == 0.001
+    assert called["steps"] == 2000
+    assert called["tmin"] == 0.8
+    assert called["tmax"] == 1.7
+    assert called["auto_window"] is False
+    assert called["run_kwargs"] == {"mode_method": "z_index"}
+    assert (tmp_path / "tem_mismatch_table.csv").exists()
