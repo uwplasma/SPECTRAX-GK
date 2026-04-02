@@ -282,10 +282,23 @@ Notable runtime-only keys:
 * ``[collisions] p_hyper_m``: when omitted, the runtime path follows the GX
   default ``min(20, Nm/2)`` instead of using a fixed exponent across Hermite
   resolutions.
+* ``[collisions] nu_hermite`` / ``nu_laguerre``: coefficients entering the
+  Lenard-Bernstein collision eigenvalue used by the modular collision kernel.
+* ``[collisions] nu_hyper`` / ``p_hyper``: isotropic hypercollision amplitude
+  and exponent.
+* ``[collisions] nu_hyper_l`` / ``nu_hyper_m`` / ``nu_hyper_lm`` and
+  ``p_hyper_l`` / ``p_hyper_m`` / ``p_hyper_lm``: Laguerre-only,
+  Hermite-only, and mixed hypercollision channels.
+* ``[collisions] D_hyper`` / ``p_hyper_kperp``: perpendicular hyperdiffusion
+  amplitude and exponent.
 * ``[normalization] flux_scale``: multiplicative factor applied to heat/particle
   flux diagnostics (GX-reference default ``1.0``).
 * ``[normalization] wphi_scale``: multiplicative factor applied to ``Wphi``
   diagnostics (Cyclone GX-reference uses ``1.155``).
+* ``[normalization] rho_star``: rescales the operator wavenumbers before
+  building the drift/Bessel terms.
+* ``[normalization] omega_d_scale`` / ``omega_star_scale``: multiplicative
+  normalization factors for magnetic-drift and diamagnetic-drive terms.
 * ``[init] init_single`` with ``gaussian_init = false`` and ``init_single = false``:
   initialize a random perturbation across the exact GX startup loop
   bounds in ``(ky,kx)``.
@@ -322,3 +335,9 @@ Notable runtime-only keys:
   families. Plain ``rk3`` now follows GX's three-stage Heun-style timestepper;
   ``rk3_classic`` keeps the older classical RK3 update if you need it for
   controlled comparisons, and ``rk3_gx`` remains as a compatibility alias.
+* ``[terms]``: each key is a pure multiplicative operator weight:
+  ``streaming``, ``mirror``, ``curvature``, ``gradb``, ``diamagnetic``,
+  ``collisions``, ``hypercollisions``, ``hyperdiffusion``, ``end_damping``,
+  ``apar``, ``bpar``, ``nonlinear``.
+
+For the explicit equations attached to these controls, see :doc:`operators`.

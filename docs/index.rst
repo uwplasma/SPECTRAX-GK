@@ -12,6 +12,7 @@ space, Fourier perpendicular coordinates, and field-aligned flux-tube geometry.
    inputs
    theory
    linear_model
+   operators
    numerics
    normalization
    geometry
