@@ -296,6 +296,36 @@ def test_cyclone_krylov_smoke():
     assert np.isfinite(result.omega)
 
 
+def test_run_cyclone_linear_auto_can_fallback_to_krylov_after_time_path(monkeypatch):
+    import spectraxgk.benchmarks as benchmarks
+
+    monkeypatch.setattr(
+        benchmarks,
+        "_select_fit_signal_auto",
+        lambda *args, **kwargs: (np.ones_like(args[0]), "phi", np.nan, np.nan),
+    )
+    monkeypatch.setattr(
+        benchmarks,
+        "dominant_eigenpair",
+        lambda G0, *_args, **_kwargs: (0.2 - 0.3j, np.zeros_like(np.asarray(G0))),
+    )
+
+    grid = GridConfig(Nx=4, Ny=4, Nz=8, Lx=6.0, Ly=6.0, y0=5.0, ntheta=8, nperiod=1)
+    cfg = CycloneBaseCase(grid=grid)
+    result = run_cyclone_linear(
+        cfg=cfg,
+        ky_target=0.1,
+        Nl=2,
+        Nm=2,
+        steps=2,
+        dt=0.1,
+        method="rk4",
+        solver="auto",
+    )
+    assert np.isfinite(result.gamma)
+    assert np.isfinite(result.omega)
+
+
 def test_cyclone_scan_gx_time_falls_back_to_krylov_when_gx_growth_is_unavailable(monkeypatch):
     import spectraxgk.benchmarks as benchmarks
 
