@@ -20,6 +20,100 @@ Working acceptance target for this pass:
 This is a recovery-and-hardening pass, not a publication-quality final freeze.
 
 
+## Fresh Sweep Status (2026-04-02)
+
+The current live sweep on `main` confirms the following:
+
+- Cyclone ITG linear remains acceptable but not closed.
+  - tracked worst public row:
+    - `ky=0.1`
+    - `rel_gamma=+0.099`
+    - `rel_omega=+0.039`
+  - representative live point at `ky=0.3`:
+    - `gamma≈0.0539`
+    - `omega≈0.2996`
+    - reference `gamma≈0.0930`, `omega≈0.2820`
+
+- TEM benchmark contract was partially repaired and pushed, but TEM is still not acceptable.
+  - restored tracked late-window contract now gives at `ky=0.3`:
+    - `gamma≈3.700`
+    - `omega≈1.503`
+    - reference `gamma≈2.184`, `omega≈1.230`
+  - current tracked worst row:
+    - `ky=0.45`
+    - `rel_gamma≈-4.25`
+    - `rel_omega≈-52.8`
+  - this is still a real physics/operator mismatch, not just a plotting or fitting issue.
+
+- KAW generic runtime contract is still broken.
+  - live runtime at requested `ky=0.01` collapses to:
+    - `ky=0.0`
+    - `gamma≈0`
+    - `omega≈0`
+  - this is still the zonal-collapse issue.
+
+- ETG generic runtime contract is still broken.
+  - live runtime at `ky=15` gives:
+    - `gamma≈34.46`
+    - `omega≈8.22`
+  - this is still a branch-following failure.
+
+- KBM public tracked benchmark lane is moderate, but the generic direct helper path is badly drifted.
+  - tracked worst public row:
+    - `ky=0.1`
+    - `rel_gamma≈-0.113`
+    - `rel_omega≈+0.011`
+  - naive direct `run_kbm_linear()` discriminator at `ky=0.3` is catastrophically wrong:
+    - `gamma≈191.8`
+    - `omega≈-602.7`
+    - reference `gamma≈0.314`, `omega≈1.076`
+  - this means the benchmark-grade KBM path and the generic helper path have drifted apart.
+
+- Miller linear remains an open low-`ky` lane.
+  - tracked worst row:
+    - `ky=0.05`
+    - `rel_gamma≈+0.294`
+    - `rel_omega≈-0.043`
+
+- W7-X imported linear remains good.
+  - tracked worst absolute row:
+    - `ky=0.3`
+    - `mean_abs_gamma≈1.87e-05`
+    - `mean_abs_omega≈7.02e-06`
+  - representative live runtime point at `ky=0.3` runs and returns finite values:
+    - `gamma≈-0.0256`
+    - `omega≈-0.1967`
+
+- HSX imported linear remains the weaker stellarator lane.
+  - tracked worst row:
+    - `ky≈0.1905`
+    - `mean_abs_gamma≈4.79e-03`
+    - `mean_abs_omega≈3.75e-03`
+    - `mean_rel_gamma≈1.14`
+
+- Short nonlinear execution smokes currently succeed for:
+  - Cyclone nonlinear
+  - KBM nonlinear short
+  - Miller nonlinear
+  - W7-X nonlinear and HSX nonlinear are still being checked on local geometry inputs.
+
+- TEM root-cause narrowing from live discriminators:
+  - restoring the old late-time fit window materially improves TEM
+  - changing `imex2` to `rk4` does not materially change the restored TEM point
+  - the remaining mismatch is therefore not an integrator-family issue
+  - parity-era `build_linear_params()` did not have the current electromagnetic sub-scaling hooks
+  - current EM scaling variants move TEM, but no simple global setting recovers the reference branch
+
+Current repair order after the fresh sweep:
+
+1. TEM operator/parameter contract
+2. KAW runtime contract
+3. ETG runtime branch-following
+4. KBM generic-helper / benchmark-contract drift
+5. Miller low-`ky`
+6. HSX imported-linear interpretation and, if needed, late-time audit
+
+
 ## Current Public Atlas State
 
 Tracked linear comparison sources:
@@ -646,4 +740,3 @@ Only after the rerun data is real:
    - Miller
 5. Keep TEM and kinetic-electron Cyclone as internal debug lanes until parity is restored.
 6. After the fresh data exists, decide which atlas tiles stay public and regenerate only those panels.
-
