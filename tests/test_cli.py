@@ -6,9 +6,10 @@ from pathlib import Path
 import numpy as np
 
 from spectraxgk import __version__
+from spectraxgk.analysis import ModeSelection
 from spectraxgk.cli import main
 from spectraxgk.diagnostics import GXDiagnostics
-from spectraxgk.runtime import RuntimeNonlinearResult
+from spectraxgk.runtime import RuntimeLinearResult, RuntimeNonlinearResult
 
 
 def test_version_exposed():
@@ -99,6 +100,81 @@ solver = "krylov"
     out = capsys.readouterr().out
     assert code == 0
     assert "gamma=" in out
+
+
+def test_cli_run_runtime_linear_writes_artifacts(capsys, monkeypatch, tmp_path: Path) -> None:
+    cfg = """
+[[species]]
+name = "ion"
+charge = 1.0
+mass = 1.0
+density = 1.0
+temperature = 1.0
+tprim = 2.49
+fprim = 0.8
+kinetic = true
+
+[grid]
+Nx = 1
+Ny = 6
+Nz = 16
+Lx = 62.8
+Ly = 62.8
+boundary = "periodic"
+
+[time]
+t_max = 0.2
+dt = 0.01
+method = "rk2"
+use_diffrax = false
+
+[geometry]
+q = 1.4
+s_hat = 0.8
+epsilon = 0.18
+R0 = 2.77778
+
+[init]
+init_field = "density"
+init_amp = 1e-8
+gaussian_init = false
+
+[physics]
+electrostatic = true
+electromagnetic = false
+adiabatic_electrons = true
+tau_e = 1.0
+
+[normalization]
+contract = "cyclone"
+diagnostic_norm = "none"
+"""
+    path = tmp_path / "runtime_cli_linear_out.toml"
+    path.write_text(cfg, encoding="utf-8")
+    out_base = tmp_path / "linear_bundle"
+
+    def _fake_run_runtime_linear(_cfg, **_kwargs):
+        return RuntimeLinearResult(
+            ky=0.2,
+            gamma=0.3,
+            omega=-0.4,
+            selection=ModeSelection(ky_index=0, kx_index=0, z_index=1),
+            t=np.asarray([0.1, 0.2]),
+            signal=np.asarray([1.0, 2.0]),
+        )
+
+    monkeypatch.setattr("spectraxgk.cli.run_runtime_linear", _fake_run_runtime_linear)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["spectrax-gk", "run-runtime-linear", "--config", str(path), "--out", str(out_base)],
+    )
+    code = main()
+    out = capsys.readouterr().out
+    assert code == 0
+    assert "saved" in out
+    assert (tmp_path / "linear_bundle.summary.json").exists()
+    assert (tmp_path / "linear_bundle.timeseries.csv").exists()
 
 
 def test_cli_run_runtime_nonlinear(capsys, monkeypatch, tmp_path: Path):
