@@ -743,3 +743,19 @@ Only after the rerun data is real:
    - Miller
 5. Keep TEM and kinetic-electron Cyclone as internal debug lanes until parity is restored.
 6. After the fresh data exists, decide which atlas tiles stay public and regenerate only those panels.
+
+
+## Current TEM Debug Status
+
+- The multi-species diagnostics tools are now fixed for TEM/KBM/kinetic startup states:
+  - `tools/ky_diagnostics.py`
+  - `tools/dump_rhs_terms.py`
+- The remaining TEM mismatch is not explained by:
+  - mode extraction (`project`, `z_index`, `max`, `svd` all land on the same branch)
+  - fit signal (`phi` vs `density`)
+  - integrator family (`imex2` vs `rk4`)
+  - old seed replay
+  - `tz` convention replay
+  - simple electromagnetic sub-scale toggles
+- Next TEM step:
+  - compare startup term contributions and short-horizon evolution directly, now that the diagnostics path is trustworthy for two-species runs.

@@ -199,6 +199,7 @@ def _reference_at(case: str, ky: float) -> tuple[float, float]:
 
 
 def _build_problem(case: str, ky: float, beta: float | None, Nl: int, Nm: int):
+    init_species_index = 0
     if case == "cyclone":
         cfg = CycloneBaseCase()
         grid_full = build_spectral_grid(cfg.grid)
@@ -232,6 +233,7 @@ def _build_problem(case: str, ky: float, beta: float | None, Nl: int, Nm: int):
             nhermite=Nm,
         )
         terms = LinearTerms()
+        init_species_index = 1
     elif case == "etg":
         cfg = ETGBaseCase()
         grid_full = build_spectral_grid(cfg.grid)
@@ -247,6 +249,7 @@ def _build_problem(case: str, ky: float, beta: float | None, Nl: int, Nm: int):
                 damp_ends_widthfrac=0.0,
                 nhermite=Nm,
             )
+            init_species_index = 0
         else:
             params = _two_species_params(
                 cfg.model,
@@ -258,6 +261,7 @@ def _build_problem(case: str, ky: float, beta: float | None, Nl: int, Nm: int):
                 damp_ends_widthfrac=0.0,
                 nhermite=Nm,
             )
+            init_species_index = 1
         terms = LinearTerms()
     elif case == "kbm":
         cfg = KBMBaseCase()
@@ -276,6 +280,7 @@ def _build_problem(case: str, ky: float, beta: float | None, Nl: int, Nm: int):
             nhermite=Nm,
         )
         terms = LinearTerms(bpar=0.0)
+        init_species_index = 1
     elif case == "tem":
         cfg = TEMBaseCase()
         grid_full = build_spectral_grid(cfg.grid)
@@ -291,13 +296,14 @@ def _build_problem(case: str, ky: float, beta: float | None, Nl: int, Nm: int):
             nhermite=Nm,
         )
         terms = LinearTerms(bpar=0.0)
+        init_species_index = 1
     else:
         raise ValueError(f"Unknown case '{case}'")
 
     ky_index = select_ky_index(np.asarray(grid_full.ky), ky)
     grid = select_ky_grid(grid_full, ky_index)
     init_cfg = getattr(cfg, "init", None) or InitializationConfig()
-    G0 = _build_initial_condition(
+    G0_single = _build_initial_condition(
         grid,
         geom,
         ky_index=0,
@@ -306,6 +312,12 @@ def _build_problem(case: str, ky: float, beta: float | None, Nl: int, Nm: int):
         Nm=Nm,
         init_cfg=init_cfg,
     )
+    ns = int(np.atleast_1d(np.asarray(params.charge_sign)).shape[0])
+    if ns == 1:
+        G0 = G0_single
+    else:
+        G0 = np.zeros((ns, Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64)
+        G0[int(init_species_index)] = np.asarray(G0_single, dtype=np.complex64)
     return cfg, grid, geom, params, terms, G0
 
 
