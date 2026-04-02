@@ -8,6 +8,11 @@ Install
 
    pip install -e .
 
+For parity-sensitive benchmark work, use the tested stack declared in the
+package metadata and ``requirements.txt``. The code may execute on newer JAX or
+NumPy releases, but the tracked benchmark figures are currently validated on
+the pinned ``jax/jaxlib/numpy/diffrax/equinox`` ranges shipped with the repo.
+
 CLI demo
 --------
 
