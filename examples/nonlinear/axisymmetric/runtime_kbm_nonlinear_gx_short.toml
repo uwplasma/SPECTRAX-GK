@@ -103,3 +103,4 @@ nonlinear = 1.0
 ky = 0.3
 Nl = 4
 Nm = 8
+steps = 200

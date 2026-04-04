@@ -46,7 +46,7 @@ gx_dir = "$HOME/gx_runs/w7x/diag_t10_clean"
 time_index = 10
 
 [lane.hsx_vmec]
-config = "../examples/linear/axisymmetric/runtime_hsx_nonlinear_vmec_geometry.toml"
+config = "../examples/nonlinear/non-axisymmetric/runtime_hsx_nonlinear_vmec_geometry.toml"
 gx_out = "$HOME/gx_refs/main_clean_20260312/nonlinear/hsx/hsx_nonlinear.out.nc"
 env.HSX_VMEC_FILE = "$HOME/gx_refs/main_clean_20260312/nonlinear/hsx/wout_HSX_QHS_vac.nc"
 

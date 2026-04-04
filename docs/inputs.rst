@@ -207,9 +207,9 @@ CLI usage
 
 .. code-block:: bash
 
-   spectrax-gk run-linear --config examples/linear/axisymmetric/cyclone.toml --plot --outdir docs/_static
-   spectrax-gk scan-linear --config examples/linear/axisymmetric/etg.toml --plot --outdir docs/_static
-   spectrax-gk run-runtime-linear --config examples/linear/axisymmetric/runtime_cyclone.toml --out tools_out/cyclone_runtime
+  cd examples/linear/axisymmetric && spectrax-gk cyclone.toml
+  spectrax-gk scan-runtime-linear --config examples/linear/axisymmetric/runtime_etg.toml --plot --outdir docs/_static
+  spectrax-gk run-runtime-linear --config examples/linear/axisymmetric/cyclone.toml --out tools_out/cyclone_runtime
    spectrax-gk scan-runtime-linear --config examples/linear/axisymmetric/runtime_etg.toml --batch-ky
    spectrax-gk run-runtime-nonlinear --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_gx.toml --sample-stride 5 --out docs/_static/nonlinear_cyclone_diag.csv
    spectrax-gk examples/nonlinear/axisymmetric/runtime_cetg_reference.toml --steps 100
@@ -245,8 +245,8 @@ Python driver
 
 .. code-block:: bash
 
-   python examples/utilities/run_from_toml.py --config examples/linear/axisymmetric/etg.toml --plot --outdir docs/_static
-   python examples/utilities/runtime_from_toml.py --config examples/linear/axisymmetric/runtime_kbm.toml
+  python examples/utilities/runtime_from_toml.py --config examples/linear/axisymmetric/etg.toml
+  python examples/utilities/runtime_from_toml.py --config examples/linear/axisymmetric/runtime_kbm.toml
 
 TOML sections
 -------------

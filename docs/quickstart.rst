@@ -20,9 +20,9 @@ CLI demo
 
    spectrax-gk cyclone-info
    spectrax-gk cyclone-kperp --kx0 0.0 --ky 0.3
-   spectrax-gk run-linear --config examples/linear/axisymmetric/cyclone.toml --plot --outdir docs/_static
-   spectrax-gk scan-linear --config examples/linear/axisymmetric/etg.toml --plot --outdir docs/_static
-   spectrax-gk run-runtime-linear --config examples/linear/axisymmetric/runtime_cyclone.toml --out tools_out/cyclone_runtime
+   cd examples/linear/axisymmetric && spectrax-gk cyclone.toml
+   spectrax-gk scan-runtime-linear --config examples/linear/axisymmetric/runtime_etg.toml --plot --outdir docs/_static
+   spectrax-gk run-runtime-linear --config examples/linear/axisymmetric/cyclone.toml --out tools_out/cyclone_runtime
    spectrax-gk run-runtime-nonlinear --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_gx.toml --steps 50 --out tools_out/cyclone_nonlinear
    spectrax-gk examples/nonlinear/axisymmetric/runtime_cetg_reference.toml --steps 100
 
@@ -54,7 +54,7 @@ Run from TOML
 
 .. code-block:: bash
 
-   python examples/utilities/run_from_toml.py --config examples/linear/axisymmetric/cyclone.toml --plot --outdir docs/_static
+   python examples/utilities/runtime_from_toml.py --config examples/linear/axisymmetric/cyclone.toml
 
 Figure generation
 -----------------

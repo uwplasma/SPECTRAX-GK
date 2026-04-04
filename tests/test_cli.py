@@ -99,6 +99,7 @@ solver = "krylov"
     code = main()
     out = capsys.readouterr().out
     assert code == 0
+    assert "starting runtime linear run" in out
     assert "gamma=" in out
 
 
@@ -406,8 +407,53 @@ path = "artifacts/direct_shorthand"
     code = main()
     out = capsys.readouterr().out
     assert code == 0
+    assert "starting runtime linear run" in out
     assert "saved artifacts/direct_shorthand.summary.json" in out
     assert (tmp_path / "artifacts" / "direct_shorthand.summary.json").exists()
+
+
+def test_cli_direct_config_shorthand_legacy_case_uses_run_linear_path(
+    capsys, monkeypatch, tmp_path: Path
+) -> None:
+    cfg = """
+[grid]
+Nx = 8
+Ny = 8
+Nz = 16
+Lx = 62.8
+Ly = 62.8
+
+[time]
+t_max = 1.0
+dt = 0.1
+
+[geometry]
+q = 1.4
+s_hat = 0.8
+epsilon = 0.18
+
+[model]
+R_over_LTi = 6.9
+R_over_LTe = 0.0
+R_over_Ln = 2.2
+"""
+    path = tmp_path / "cyclone_base_case.toml"
+    path.write_text(cfg, encoding="utf-8")
+
+    class _FakeResult:
+        ky = 0.3
+        gamma = 0.2
+        omega = 0.4
+
+    monkeypatch.setattr("spectraxgk.cli.run_cyclone_linear", lambda **_kwargs: _FakeResult())
+    monkeypatch.setattr(sys, "argv", ["spectrax-gk", str(path)])
+
+    code = main()
+    out = capsys.readouterr().out
+    assert code == 0
+    assert "starting legacy linear cyclone run" in out
+    assert "detected legacy case TOML; using run-linear path" in out
+    assert "gamma=" in out
 
 
 def test_cli_run_runtime_nonlinear(capsys, monkeypatch, tmp_path: Path):
