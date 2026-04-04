@@ -4,11 +4,16 @@
 from __future__ import annotations
 
 import argparse
+import sys
 
 import numpy as np
 
 from spectraxgk.io import load_runtime_from_toml
 from spectraxgk.runtime import run_runtime_linear, run_runtime_scan
+
+
+def _status(message: str) -> None:
+    print(f"runtime: {message}")
 
 
 def main() -> int:
@@ -46,6 +51,7 @@ def main() -> int:
             method=scan_cfg.get("method", None),
             dt=scan_cfg.get("dt", None),
             steps=scan_cfg.get("steps", None),
+            show_progress=bool(getattr(sys.stdout, "isatty", lambda: False)()),
             **fit_cfg,
         )
         for ky, g, w in zip(scan.ky, scan.gamma, scan.omega):
@@ -61,6 +67,8 @@ def main() -> int:
         method=run_cfg.get("method", None),
         dt=run_cfg.get("dt", None),
         steps=run_cfg.get("steps", None),
+        show_progress=bool(getattr(sys.stdout, "isatty", lambda: False)()),
+        status_callback=_status,
         **fit_cfg,
     )
     print(f"ky={res.ky:.4f} gamma={res.gamma:.6f} omega={res.omega:.6f}")

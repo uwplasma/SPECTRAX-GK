@@ -319,6 +319,31 @@ def test_runtime_linear_time_solver_can_return_state() -> None:
     assert res.state.shape[-1] == cfg.grid.Nz
 
 
+def test_runtime_linear_records_fit_window_metadata() -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        species=(RuntimeSpeciesConfig(name="ion"),),
+        normalization=RuntimeNormalizationConfig(contract="cyclone", diagnostic_norm="none"),
+    )
+    res = run_runtime_linear(
+        cfg,
+        ky_target=0.1,
+        Nl=3,
+        Nm=4,
+        solver="time",
+        method="rk2",
+        dt=0.01,
+        steps=10,
+        fit_signal="phi",
+        auto_window=False,
+        tmin=0.02,
+        tmax=0.08,
+    )
+    assert res.fit_signal_used == "phi"
+    assert res.fit_window_tmin == pytest.approx(0.02)
+    assert res.fit_window_tmax == pytest.approx(0.08)
+
+
 def test_runtime_linear_gx_time_rejects_return_state() -> None:
     cfg = replace(
         _base_runtime_cfg(),

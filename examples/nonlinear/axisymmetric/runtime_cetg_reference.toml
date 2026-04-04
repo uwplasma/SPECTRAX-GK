@@ -86,3 +86,4 @@ dealias_kz = true
 ky = 0.15708451146716934
 Nl = 2
 Nm = 1
+steps = 1000

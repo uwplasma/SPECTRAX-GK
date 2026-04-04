@@ -60,7 +60,13 @@ def main() -> int:
     from spectraxgk.io import load_runtime_from_toml
     from spectraxgk.vmec_eik import build_gx_vmec_geometry_request, generate_runtime_vmec_eik
 
-    cfg_path = repo_root / "examples" / "runtime_hsx_nonlinear_vmec_geometry.toml"
+    cfg_path = (
+        repo_root
+        / "examples"
+        / "nonlinear"
+        / "non-axisymmetric"
+        / "runtime_hsx_nonlinear_vmec_geometry.toml"
+    )
     gx_repo = (repo_root / ".." / "gx").resolve()
 
     cfg, _ = load_runtime_from_toml(str(cfg_path))

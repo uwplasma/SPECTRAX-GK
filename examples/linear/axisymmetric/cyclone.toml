@@ -1,4 +1,13 @@
-case = "cyclone"
+[[species]]
+name = "ion"
+charge = 1.0
+mass = 1.0
+density = 1.0
+temperature = 1.0
+tprim = 2.49
+fprim = 0.8
+nu = 0.0
+kinetic = true
 
 [grid]
 Nx = 1
@@ -14,19 +23,71 @@ nperiod = 2
 [time]
 t_max = 10.0
 dt = 0.002
-use_diffrax = true
-diffrax_solver = "Dopri8"
-diffrax_adaptive = true
-diffrax_rtol = 1.0e-6
-diffrax_atol = 1.0e-8
-diffrax_max_steps = 200000
+method = "imex2"
+use_diffrax = false
+sample_stride = 2
+progress_bar = true
+
+[geometry]
+q = 1.4
+s_hat = 0.8
+epsilon = 0.18
+R0 = 2.77778
+
+[init]
+init_field = "density"
+init_amp = 1.0e-10
+gaussian_init = true
+gaussian_width = 0.5
+
+[physics]
+linear = true
+nonlinear = false
+electrostatic = true
+electromagnetic = false
+adiabatic_electrons = true
+tau_e = 1.0
+collisions = true
+hypercollisions = true
+
+[collisions]
+nu_hermite = 1.0
+nu_laguerre = 2.0
+nu_hyper = 0.0
+p_hyper = 4.0
+hypercollisions_const = 1.0
+hypercollisions_kz = 0.0
+damp_ends_amp = 0.1
+damp_ends_widthfrac = 0.125
+
+[normalization]
+contract = "cyclone"
+diagnostic_norm = "none"
+
+[terms]
+streaming = 1.0
+mirror = 1.0
+curvature = 1.0
+gradb = 1.0
+diamagnetic = 1.0
+collisions = 1.0
+hypercollisions = 1.0
+end_damping = 1.0
+apar = 1.0
+bpar = 0.0
+nonlinear = 0.0
 
 [run]
 ky = 0.3
 Nl = 24
 Nm = 12
-solver = "time"
-method = "imex2"
+solver = "krylov"
+
+[scan]
+ky = [0.1, 0.2, 0.3, 0.4, 0.5]
+Nl = 24
+Nm = 12
+solver = "krylov"
 
 [fit]
 auto_window = true

@@ -378,3 +378,41 @@ def test_shift_invert_fallback_policy(monkeypatch: pytest.MonkeyPatch) -> None:
     )
     eig_val = lk.dominant_eigenvalue(v0, cache, params, terms=terms, krylov_dim=4, restarts=1)
     assert jnp.allclose(eig_val, jnp.asarray(0.7 + 0.1j))
+
+
+def test_dominant_eigenpair_reports_shift_invert_status(monkeypatch: pytest.MonkeyPatch) -> None:
+    _grid, cache, params, v0, _term_cfg, terms = _tiny_krylov_setup(linked=False)
+    messages: list[str] = []
+
+    monkeypatch.setattr(
+        lk,
+        "dominant_eigenpair_propagator_cached",
+        lambda *args, **kwargs: (jnp.asarray(0.1 + 0.2j, dtype=v0.dtype), jnp.full_like(v0, 2.0 + 0.0j)),
+    )
+    monkeypatch.setattr(
+        lk,
+        "dominant_eigenpair_shift_invert_cached",
+        lambda *args, **kwargs: (jnp.asarray(0.3 + 0.4j, dtype=v0.dtype), jnp.full_like(v0, 3.0 + 0.0j)),
+    )
+
+    eig, vec = lk.dominant_eigenpair(
+        v0,
+        cache,
+        params,
+        terms=terms,
+        method="shift_invert",
+        shift_source="propagator",
+        krylov_dim=4,
+        restarts=1,
+        shift_maxiter=15,
+        shift_restart=10,
+        power_dt=0.05,
+        status_callback=messages.append,
+    )
+
+    assert jnp.allclose(eig, jnp.asarray(0.3 + 0.4j, dtype=v0.dtype))
+    assert jnp.allclose(vec, 3.0 + 0.0j)
+    assert any("preparing shift-invert solve" in item for item in messages)
+    assert any("estimating shift from propagator seed" in item for item in messages)
+    assert any("running shift-invert Arnoldi" in item for item in messages)
+    assert any("shift-invert solve finished" in item for item in messages)

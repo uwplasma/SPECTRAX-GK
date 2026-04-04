@@ -18,8 +18,19 @@ def main() -> int:
     p.add_argument("--Nm", type=int, default=None)
     p.add_argument("--steps", type=int, default=None)
     p.add_argument("--dt", type=float, default=None)
+    p.add_argument("--sample-stride", type=int, default=None)
+    p.add_argument("--diagnostics-stride", type=int, default=None)
     args = p.parse_args()
-    return run_nonlinear_case(CONFIG, ky=args.ky, Nl=args.Nl, Nm=args.Nm, steps=args.steps, dt=args.dt)
+    return run_nonlinear_case(
+        CONFIG,
+        ky=args.ky,
+        Nl=args.Nl,
+        Nm=args.Nm,
+        steps=args.steps,
+        dt=args.dt,
+        sample_stride=args.sample_stride,
+        diagnostics_stride=args.diagnostics_stride,
+    )
 
 
 if __name__ == "__main__":

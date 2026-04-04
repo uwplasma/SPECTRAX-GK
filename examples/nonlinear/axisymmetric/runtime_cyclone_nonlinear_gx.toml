@@ -79,3 +79,4 @@ diagnostic_norm = "gx"
 ky = 0.3
 Nl = 4
 Nm = 8
+steps = 200
