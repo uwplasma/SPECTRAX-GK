@@ -163,8 +163,10 @@ In addition to unit/regression tests, SPECTRAX-GK includes a small set of
 benchmark figures move):
 
 - **Restart parity**: ``tests/test_restart_gate.py`` verifies that a nonlinear
-  run resumed from a compatible binary restart file reproduces the same
-  final state as a continuous run.
+  run resumed from a compatible restart reproduces the same final state as a
+  continuous run. This now covers both the raw binary state path and the
+  GX-style ``*.restart.nc`` bundle path, together with append-on-restart
+  history preservation in ``*.out.nc``.
 - **CPU/GPU short-window parity** (optional): ``tests/test_device_parity_gate.py``
   compares a short nonlinear trajectory norm on CPU vs GPU. Enable explicitly:
 

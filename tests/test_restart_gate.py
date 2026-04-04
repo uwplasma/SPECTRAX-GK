@@ -4,14 +4,21 @@ from dataclasses import replace
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, TimeConfig
 from spectraxgk.restart import write_gx_restart_state
 from spectraxgk.runtime import run_runtime_nonlinear
+from spectraxgk.runtime_artifacts import (
+    load_runtime_nonlinear_gx_diagnostics,
+    run_runtime_nonlinear_with_artifacts,
+    write_runtime_nonlinear_artifacts,
+)
 from spectraxgk.runtime_config import (
     RuntimeCollisionConfig,
     RuntimeConfig,
     RuntimeNormalizationConfig,
+    RuntimeOutputConfig,
     RuntimePhysicsConfig,
     RuntimeSpeciesConfig,
     RuntimeTermsConfig,
@@ -118,4 +125,148 @@ def test_restart_gate_nonlinear_matches_continuous(tmp_path: Path) -> None:
     assert part2.state is not None
 
     np.testing.assert_array_equal(np.asarray(part2.state), np.asarray(full.state))
+
+
+def test_restart_gate_nonlinear_matches_continuous_from_gx_netcdf(tmp_path: Path) -> None:
+    pytest.importorskip("netCDF4")
+
+    cfg = _restart_base_cfg()
+    Nl = 4
+    Nm = 6
+    dt = 0.02
+    steps1 = 7
+    steps2 = 9
+    ky = 0.2
+    kx = 0.0
+
+    full = run_runtime_nonlinear(
+        cfg,
+        ky_target=ky,
+        kx_target=kx,
+        Nl=Nl,
+        Nm=Nm,
+        dt=dt,
+        steps=steps1 + steps2,
+        sample_stride=1,
+        diagnostics_stride=1,
+        return_state=True,
+    )
+    part1 = run_runtime_nonlinear(
+        cfg,
+        ky_target=ky,
+        kx_target=kx,
+        Nl=Nl,
+        Nm=Nm,
+        dt=dt,
+        steps=steps1,
+        sample_stride=1,
+        diagnostics_stride=1,
+        return_state=True,
+    )
+    assert part1.state is not None
+    assert full.state is not None
+
+    paths = write_runtime_nonlinear_artifacts(tmp_path / "roundtrip.out.nc", part1, cfg)
+
+    cfg_restart = replace(
+        cfg,
+        init=replace(cfg.init, init_file=str(paths["restart"]), init_file_scale=1.0, init_file_mode="replace"),
+    )
+    part2 = run_runtime_nonlinear(
+        cfg_restart,
+        ky_target=ky,
+        kx_target=kx,
+        Nl=Nl,
+        Nm=Nm,
+        dt=dt,
+        steps=steps2,
+        sample_stride=1,
+        diagnostics_stride=1,
+        return_state=True,
+    )
+    assert part2.state is not None
+
+    np.testing.assert_array_equal(np.asarray(part2.state), np.asarray(full.state))
+
+
+def test_restart_gate_append_on_restart_preserves_full_history(tmp_path: Path) -> None:
+    pytest.importorskip("netCDF4")
+
+    cfg = _restart_base_cfg()
+    cfg = replace(
+        cfg,
+        output=RuntimeOutputConfig(
+            path=str(tmp_path / "history.out.nc"),
+            restart_if_exists=True,
+            append_on_restart=True,
+            save_for_restart=True,
+            nsave=7,
+        ),
+    )
+
+    Nl = 4
+    Nm = 6
+    dt = 0.02
+    steps1 = 7
+    steps2 = 9
+    ky = 0.2
+    kx = 0.0
+
+    full = run_runtime_nonlinear(
+        cfg,
+        ky_target=ky,
+        kx_target=kx,
+        Nl=Nl,
+        Nm=Nm,
+        dt=dt,
+        steps=steps1 + steps2,
+        sample_stride=1,
+        diagnostics_stride=1,
+        return_state=True,
+    )
+    out_path = tmp_path / "history.out.nc"
+
+    part1, part1_paths = run_runtime_nonlinear_with_artifacts(
+        cfg,
+        out=out_path,
+        ky_target=ky,
+        kx_target=kx,
+        Nl=Nl,
+        Nm=Nm,
+        dt=dt,
+        steps=steps1,
+        sample_stride=1,
+        diagnostics_stride=1,
+        diagnostics=True,
+    )
+    assert part1.state is not None
+    assert "restart" in part1_paths
+
+    part2, _paths = run_runtime_nonlinear_with_artifacts(
+        cfg,
+        out=out_path,
+        ky_target=ky,
+        kx_target=kx,
+        Nl=Nl,
+        Nm=Nm,
+        dt=dt,
+        steps=steps2,
+        sample_stride=1,
+        diagnostics_stride=1,
+        diagnostics=True,
+    )
+    assert part2.state is not None
+    assert full.state is not None
+
+    np.testing.assert_array_equal(np.asarray(part2.state), np.asarray(full.state))
+    loaded = load_runtime_nonlinear_gx_diagnostics(out_path)
+    assert full.diagnostics is not None
+    np.testing.assert_allclose(np.asarray(loaded.t), np.asarray(full.diagnostics.t), rtol=1.0e-6, atol=1.0e-8)
+    np.testing.assert_allclose(np.asarray(loaded.Wg_t), np.asarray(full.diagnostics.Wg_t), rtol=1.0e-6, atol=1.0e-6)
+    np.testing.assert_allclose(np.asarray(loaded.Wphi_t), np.asarray(full.diagnostics.Wphi_t), rtol=1.0e-6, atol=1.0e-6)
+    np.testing.assert_allclose(np.asarray(loaded.Wapar_t), np.asarray(full.diagnostics.Wapar_t), rtol=1.0e-6, atol=1.0e-6)
+    np.testing.assert_allclose(np.asarray(loaded.heat_flux_t), np.asarray(full.diagnostics.heat_flux_t), rtol=1.0e-6, atol=1.0e-6)
+    np.testing.assert_allclose(np.asarray(loaded.particle_flux_t), np.asarray(full.diagnostics.particle_flux_t), rtol=1.0e-6, atol=1.0e-6)
+    assert full.diagnostics.turbulent_heating_t is not None
+    np.testing.assert_allclose(np.asarray(loaded.turbulent_heating_t), np.asarray(full.diagnostics.turbulent_heating_t), rtol=1.0e-6, atol=1.0e-6)
 
