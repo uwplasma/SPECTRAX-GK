@@ -16,10 +16,19 @@ from spectraxgk.diagnostics import (
     gx_Wphi,
     gx_energy_total,
     gx_heat_flux,
+    gx_heat_flux_resolved_species,
+    gx_heat_flux_split_resolved_species,
+    gx_heat_flux_split_species,
     gx_heat_flux_species,
     gx_particle_flux,
+    gx_particle_flux_resolved_species,
+    gx_particle_flux_split_resolved_species,
+    gx_particle_flux_split_species,
     gx_particle_flux_species,
     gx_volume_factors,
+    gx_turbulent_heating,
+    gx_turbulent_heating_resolved_species,
+    gx_turbulent_heating_species,
 )
 from spectraxgk.gyroaverage import gamma0
 from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
@@ -276,6 +285,212 @@ def test_gx_particle_flux_species_matches_manual_multispecies_formula() -> None:
         expected.append(np.sum((fg * 2.0 * flx * fac).real) * dens[s])
 
     assert np.allclose(got, np.asarray(expected), rtol=1.0e-6, atol=1.0e-6)
+
+
+def test_gx_flux_channel_splits_sum_to_total_multispecies() -> None:
+    cfg = CycloneBaseCase()
+    grid = build_spectral_grid(replace(cfg.grid, Nx=4, Ny=8, Nz=8, ntheta=None, nperiod=None))
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = build_linear_params(
+        [
+            Species(charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=1.0, fprim=1.0),
+            Species(
+                charge=-1.0,
+                mass=0.00027,
+                density=1.0,
+                temperature=1.0,
+                tprim=1.0,
+                fprim=1.0,
+            ),
+        ],
+        kpar_scale=float(geom.gradpar()),
+    )
+    cache = build_linear_cache(grid, geom, params, 3, 4)
+    _vol_fac, flux_fac = gx_volume_factors(geom, grid)
+
+    shape = (2, 3, 4, grid.ky.size, grid.kx.size, grid.z.size)
+    base = np.arange(np.prod(shape), dtype=np.float32).reshape(shape)
+    G = jnp.asarray(base + 1.0j * (base + 1.0), dtype=jnp.complex64)
+    field_base = np.arange(grid.ky.size * grid.kx.size * grid.z.size, dtype=np.float32).reshape(
+        grid.ky.size, grid.kx.size, grid.z.size
+    )
+    phi = jnp.asarray(field_base + 1.0j * (field_base + 1.0), dtype=jnp.complex64)
+    apar = 0.3 * phi
+    bpar = -0.2 * phi
+
+    heat = np.asarray(gx_heat_flux_species(G, phi, apar, bpar, cache, grid, params, flux_fac, use_dealias=False))
+    heat_es, heat_apar, heat_bpar = (
+        np.asarray(arr)
+        for arr in gx_heat_flux_split_species(
+            G,
+            phi,
+            apar,
+            bpar,
+            cache,
+            grid,
+            params,
+            flux_fac,
+            use_dealias=False,
+        )
+    )
+    pflux = np.asarray(gx_particle_flux_species(G, phi, apar, bpar, cache, grid, params, flux_fac, use_dealias=False))
+    pflux_es, pflux_apar, pflux_bpar = (
+        np.asarray(arr)
+        for arr in gx_particle_flux_split_species(
+            G,
+            phi,
+            apar,
+            bpar,
+            cache,
+            grid,
+            params,
+            flux_fac,
+            use_dealias=False,
+        )
+    )
+
+    np.testing.assert_allclose(heat, heat_es + heat_apar + heat_bpar, rtol=1.0e-6, atol=1.0e-6)
+    np.testing.assert_allclose(pflux, pflux_es + pflux_apar + pflux_bpar, rtol=1.0e-6, atol=1.0e-6)
+
+    heat_total = gx_heat_flux_resolved_species(G, phi, apar, bpar, cache, grid, params, flux_fac, use_dealias=False)
+    heat_split = gx_heat_flux_split_resolved_species(G, phi, apar, bpar, cache, grid, params, flux_fac, use_dealias=False)
+    pflux_total = gx_particle_flux_resolved_species(G, phi, apar, bpar, cache, grid, params, flux_fac, use_dealias=False)
+    pflux_split = gx_particle_flux_split_resolved_species(G, phi, apar, bpar, cache, grid, params, flux_fac, use_dealias=False)
+
+    for total_arr, split_arrs in ((heat_total, heat_split), (pflux_total, pflux_split)):
+        for idx in range(len(total_arr)):
+            combined = np.asarray(split_arrs[0][idx]) + np.asarray(split_arrs[1][idx]) + np.asarray(split_arrs[2][idx])
+            np.testing.assert_allclose(np.asarray(total_arr[idx]), combined, rtol=1.0e-6, atol=1.0e-6)
+
+
+def test_gx_turbulent_heating_zero_for_steady_state() -> None:
+    cfg = CycloneBaseCase()
+    grid = build_spectral_grid(replace(cfg.grid, Nx=4, Ny=8, Nz=8, ntheta=None, nperiod=None))
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = build_linear_params(
+        [
+            Species(charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=1.0, fprim=1.0),
+            Species(charge=-1.0, mass=0.00027, density=1.0, temperature=1.0, tprim=1.0, fprim=1.0),
+        ],
+        kpar_scale=float(geom.gradpar()),
+    )
+    cache = build_linear_cache(grid, geom, params, 3, 4)
+    vol_fac, _flux_fac = gx_volume_factors(geom, grid)
+
+    shape = (2, 3, 4, grid.ky.size, grid.kx.size, grid.z.size)
+    base = np.arange(np.prod(shape), dtype=np.float32).reshape(shape)
+    G = jnp.asarray(base + 1.0j * (base + 0.5), dtype=jnp.complex64)
+    field_base = np.arange(grid.ky.size * grid.kx.size * grid.z.size, dtype=np.float32).reshape(
+        grid.ky.size, grid.kx.size, grid.z.size
+    )
+    phi = jnp.asarray(field_base + 1.0j * (field_base + 1.0), dtype=jnp.complex64)
+    apar = 0.2 * phi
+    bpar = -0.1 * phi
+
+    heat_species = gx_turbulent_heating_species(
+        G,
+        G,
+        phi,
+        apar,
+        bpar,
+        phi,
+        apar,
+        bpar,
+        cache,
+        grid,
+        params,
+        vol_fac,
+        0.05,
+        use_dealias=False,
+    )
+    heat_total = gx_turbulent_heating(
+        G,
+        G,
+        phi,
+        apar,
+        bpar,
+        phi,
+        apar,
+        bpar,
+        cache,
+        grid,
+        params,
+        vol_fac,
+        0.05,
+        use_dealias=False,
+    )
+
+    np.testing.assert_allclose(np.asarray(heat_species), 0.0, atol=1.0e-7)
+    np.testing.assert_allclose(np.asarray(heat_total), 0.0, atol=1.0e-7)
+
+
+def test_gx_turbulent_heating_resolved_sums_to_species_total() -> None:
+    cfg = CycloneBaseCase()
+    grid = build_spectral_grid(replace(cfg.grid, Nx=4, Ny=8, Nz=8, ntheta=None, nperiod=None))
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = build_linear_params(
+        [
+            Species(charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=1.0, fprim=1.0),
+            Species(charge=-1.0, mass=0.00027, density=1.0, temperature=1.0, tprim=1.0, fprim=1.0),
+        ],
+        kpar_scale=float(geom.gradpar()),
+    )
+    cache = build_linear_cache(grid, geom, params, 3, 4)
+    vol_fac, _flux_fac = gx_volume_factors(geom, grid)
+
+    shape = (2, 3, 4, grid.ky.size, grid.kx.size, grid.z.size)
+    base = np.arange(np.prod(shape), dtype=np.float32).reshape(shape)
+    G_old = jnp.asarray(base + 1.0j * (base + 0.5), dtype=jnp.complex64)
+    G = 1.03 * G_old + (0.02 - 0.01j)
+    field_base = np.arange(grid.ky.size * grid.kx.size * grid.z.size, dtype=np.float32).reshape(
+        grid.ky.size, grid.kx.size, grid.z.size
+    )
+    phi_old = jnp.asarray(field_base + 1.0j * (field_base + 1.0), dtype=jnp.complex64)
+    phi = 1.01 * phi_old + (0.03 + 0.02j)
+    apar_old = 0.2 * phi_old
+    apar = 0.2 * phi
+    bpar_old = -0.1 * phi_old
+    bpar = -0.1 * phi + (0.01 - 0.02j)
+
+    heat_species = gx_turbulent_heating_species(
+        G,
+        G_old,
+        phi,
+        apar,
+        bpar,
+        phi_old,
+        apar_old,
+        bpar_old,
+        cache,
+        grid,
+        params,
+        vol_fac,
+        0.05,
+        use_dealias=False,
+    )
+    heat_st, heat_kxst, heat_kyst, heat_kxkyst, heat_zst = gx_turbulent_heating_resolved_species(
+        G,
+        G_old,
+        phi,
+        apar,
+        bpar,
+        phi_old,
+        apar_old,
+        bpar_old,
+        cache,
+        grid,
+        params,
+        vol_fac,
+        0.05,
+        use_dealias=False,
+    )
+
+    np.testing.assert_allclose(np.asarray(heat_st), np.asarray(heat_species), rtol=1.0e-5, atol=1.0e-6)
+    np.testing.assert_allclose(np.asarray(heat_kxst).sum(axis=1), np.asarray(heat_species), rtol=1.0e-5, atol=1.0e-6)
+    np.testing.assert_allclose(np.asarray(heat_kyst).sum(axis=1), np.asarray(heat_species), rtol=1.0e-5, atol=1.0e-6)
+    np.testing.assert_allclose(np.asarray(heat_kxkyst).sum(axis=(1, 2)), np.asarray(heat_species), rtol=1.0e-5, atol=1.0e-6)
+    np.testing.assert_allclose(np.asarray(heat_zst).sum(axis=1), np.asarray(heat_species), rtol=1.0e-5, atol=1.0e-6)
+    assert np.max(np.abs(np.asarray(heat_species))) > 0.0
 
 
 def test_gx_init_all_scaling_matches_reference():

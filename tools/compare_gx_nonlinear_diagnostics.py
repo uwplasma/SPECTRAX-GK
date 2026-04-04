@@ -11,6 +11,14 @@ import matplotlib.pyplot as plt
 from netCDF4 import Dataset
 
 
+def _reduce_species_time(arr: np.ndarray, name: str) -> np.ndarray:
+    if arr.ndim == 2:
+        if name.startswith("Wapar"):
+            return arr[:, 0]
+        return np.sum(arr, axis=1)
+    return arr
+
+
 def _load_spectrax_csv(path: Path) -> dict[str, np.ndarray]:
     named = np.genfromtxt(path, delimiter=",", names=True)
     if isinstance(named, np.ndarray) and named.dtype.names:
@@ -61,37 +69,70 @@ def _load_spectrax_csv(path: Path) -> dict[str, np.ndarray]:
     raise ValueError(f"unsupported SPECTRAX CSV shape {data.shape}")
 
 
-def _load_gx_diag(path: Path) -> dict[str, np.ndarray]:
+def _load_spectrax_diag(path: Path) -> dict[str, np.ndarray]:
     root = Dataset(path, "r")
     diag = root.groups["Diagnostics"]
     grid = root.groups["Grids"]
-    t = np.asarray(grid.variables["time"][:], dtype=float)
-    def _reduce_species(name: str) -> np.ndarray:
-        arr = np.asarray(diag.variables[name][:], dtype=float)
-        if arr.ndim == 2:
-            if name.startswith("Wapar_"):
-                return arr[:, 0]
-            return np.sum(arr, axis=1)
-        return arr
-
     out = {
-        "t": t,
+        "t": np.asarray(grid.variables["time"][:], dtype=float),
         "phi2": np.asarray(diag.variables["Phi2_t"][:], dtype=float),
-        "Wg": _reduce_species("Wg_st"),
-        "Wphi": _reduce_species("Wphi_st"),
-        "Wapar": _reduce_species("Wapar_st"),
-        "heat_flux": _reduce_species("HeatFlux_st"),
-        "particle_flux": _reduce_species("ParticleFlux_st"),
+        "Wg": _reduce_species_time(np.asarray(diag.variables["Wg_st"][:], dtype=float), "Wg_st"),
+        "Wphi": _reduce_species_time(np.asarray(diag.variables["Wphi_st"][:], dtype=float), "Wphi_st"),
+        "Wapar": _reduce_species_time(np.asarray(diag.variables["Wapar_st"][:], dtype=float), "Wapar_st"),
+        "heat_flux": _reduce_species_time(np.asarray(diag.variables["HeatFlux_st"][:], dtype=float), "HeatFlux_st"),
+        "particle_flux": _reduce_species_time(
+            np.asarray(diag.variables["ParticleFlux_st"][:], dtype=float), "ParticleFlux_st"
+        ),
     }
     out["energy"] = out["Wg"] + out["Wphi"] + out["Wapar"]
     root.close()
     return out
 
 
+def _load_gx_diag(path: Path) -> dict[str, np.ndarray]:
+    root = Dataset(path, "r")
+    diag = root.groups["Diagnostics"]
+    grid = root.groups["Grids"]
+    t = np.asarray(grid.variables["time"][:], dtype=float)
+    out = {
+        "t": t,
+        "phi2": np.asarray(diag.variables["Phi2_t"][:], dtype=float),
+        "Wg": _reduce_species_time(np.asarray(diag.variables["Wg_st"][:], dtype=float), "Wg_st"),
+        "Wphi": _reduce_species_time(np.asarray(diag.variables["Wphi_st"][:], dtype=float), "Wphi_st"),
+        "Wapar": _reduce_species_time(np.asarray(diag.variables["Wapar_st"][:], dtype=float), "Wapar_st"),
+        "heat_flux": _reduce_species_time(np.asarray(diag.variables["HeatFlux_st"][:], dtype=float), "HeatFlux_st"),
+        "particle_flux": _reduce_species_time(
+            np.asarray(diag.variables["ParticleFlux_st"][:], dtype=float), "ParticleFlux_st"
+        ),
+    }
+    out["energy"] = out["Wg"] + out["Wphi"] + out["Wapar"]
+    root.close()
+    return out
+
+
+def _load_spectrax(path: Path) -> dict[str, np.ndarray]:
+    if path.suffix == ".nc":
+        return _load_spectrax_diag(path)
+    return _load_spectrax_csv(path)
+
+
+def _interp_summary(
+    ref_t: np.ndarray,
+    ref_y: np.ndarray,
+    cmp_t: np.ndarray,
+    cmp_y: np.ndarray,
+) -> tuple[float, float, float]:
+    cmp_interp = np.interp(ref_t, cmp_t, cmp_y)
+    denom = np.maximum(np.abs(cmp_interp), 1.0e-30)
+    rel = np.abs((ref_y - cmp_interp) / denom)
+    final_rel = float((ref_y[-1] - cmp_interp[-1]) / denom[-1])
+    return float(np.mean(rel)), float(np.max(rel)), final_rel
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--gx", type=Path, required=True, help="GX .out.nc file with diagnostics")
-    parser.add_argument("--spectrax", type=Path, required=True, help="SPECTRAX nonlinear CSV diagnostics")
+    parser.add_argument("--spectrax", type=Path, required=True, help="SPECTRAX nonlinear CSV or GX-style .out.nc")
     parser.add_argument("--tmax", type=float, default=None, help="Optional max time for plotting")
     parser.add_argument(
         "--out",
@@ -102,7 +143,7 @@ def main() -> int:
     args = parser.parse_args()
 
     gx = _load_gx_diag(args.gx)
-    sp = _load_spectrax_csv(args.spectrax)
+    sp = _load_spectrax(args.spectrax)
 
     if args.tmax is not None:
         gx_mask = gx["t"] <= args.tmax
@@ -147,6 +188,23 @@ def main() -> int:
     args.out.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(args.out, dpi=200)
     print(f"saved {args.out}")
+
+    summary_pairs = []
+    if "phi2" in sp and "phi2" in gx:
+        summary_pairs.append(("Phi2", sp["phi2"], gx["phi2"]))
+    summary_pairs.extend(
+        [
+            ("Wg", sp["Wg"], gx["Wg"]),
+            ("Wphi", sp["Wphi"], gx["Wphi"]),
+            ("Wapar", sp["Wapar"], gx["Wapar"]),
+            ("HeatFlux", sp["heat_flux"], gx["heat_flux"]),
+            ("ParticleFlux", sp["particle_flux"], gx["particle_flux"]),
+        ]
+    )
+    print("metric mean_rel_abs max_rel_abs final_rel")
+    for name, sp_y, gx_y in summary_pairs:
+        mean_rel, max_rel, final_rel = _interp_summary(sp["t"], sp_y, gx["t"], gx_y)
+        print(f"{name} {mean_rel:.6e} {max_rel:.6e} {final_rel:.6e}")
     return 0
 
 

@@ -639,7 +639,7 @@ nonlinear = 1.0
     path.write_text(cfg, encoding="utf-8")
     captured: dict[str, object] = {}
 
-    def _fake_run_runtime_nonlinear(_cfg, **kwargs):
+    def _fake_run_runtime_nonlinear_with_artifacts(_cfg, **kwargs):
         captured.update(kwargs)
         diag = GXDiagnostics(
             t=np.asarray([0.1]),
@@ -657,14 +657,17 @@ nonlinear = 1.0
             particle_flux_species_t=None,
             phi_mode_t=None,
         )
-        return RuntimeNonlinearResult(
-            t=np.asarray([0.1]),
-            diagnostics=diag,
-            ky_selected=0.2,
-            kx_selected=0.0,
+        return (
+            RuntimeNonlinearResult(
+                t=np.asarray([0.1]),
+                diagnostics=diag,
+                ky_selected=0.2,
+                kx_selected=0.0,
+            ),
+            {},
         )
 
-    monkeypatch.setattr("spectraxgk.cli.run_runtime_nonlinear", _fake_run_runtime_nonlinear)
+    monkeypatch.setattr("spectraxgk.cli.run_runtime_nonlinear_with_artifacts", _fake_run_runtime_nonlinear_with_artifacts)
     monkeypatch.setattr(sys, "argv", ["spectrax-gk", str(path), "--steps", "3", "--no-progress"])
     code = main()
     assert code == 0
@@ -817,7 +820,7 @@ Nm = 4
 
     captured: dict[str, object] = {}
 
-    def _fake_run_runtime_nonlinear(cfg, **kwargs):
+    def _fake_run_runtime_nonlinear_with_artifacts(cfg, **kwargs):
         captured["steps"] = kwargs.get("steps")
         diag = GXDiagnostics(
             t=np.asarray([0.1]),
@@ -832,14 +835,17 @@ Nm = 4
             particle_flux_t=np.asarray([0.0]),
             energy_t=np.asarray([1.5]),
         )
-        return RuntimeNonlinearResult(
-            t=np.asarray([0.1]),
-            diagnostics=diag,
-            ky_selected=0.2,
-            kx_selected=0.0,
+        return (
+            RuntimeNonlinearResult(
+                t=np.asarray([0.1]),
+                diagnostics=diag,
+                ky_selected=0.2,
+                kx_selected=0.0,
+            ),
+            {},
         )
 
-    monkeypatch.setattr("spectraxgk.cli.run_runtime_nonlinear", _fake_run_runtime_nonlinear)
+    monkeypatch.setattr("spectraxgk.cli.run_runtime_nonlinear_with_artifacts", _fake_run_runtime_nonlinear_with_artifacts)
     monkeypatch.setattr(
         sys,
         "argv",

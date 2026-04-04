@@ -9,7 +9,7 @@ import numpy as np
 import pytest
 
 from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, TimeConfig
-from spectraxgk.diagnostics import GXDiagnostics
+from spectraxgk.diagnostics import GXDiagnostics, GXResolvedDiagnostics
 from spectraxgk.geometry import SAlphaGeometry, apply_gx_geometry_grid_defaults, sample_flux_tube_geometry
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.io import load_runtime_from_toml
@@ -397,6 +397,78 @@ def test_runtime_nonlinear_diagnostics_stride() -> None:
     )
     assert res.diagnostics is not None
     assert res.diagnostics.t.size == 3
+
+
+def test_runtime_nonlinear_em_flux_channels_sum_to_total() -> None:
+    ion = RuntimeSpeciesConfig(
+        name="ion",
+        charge=1.0,
+        mass=1.0,
+        density=1.0,
+        temperature=1.0,
+        tprim=1.0,
+        fprim=1.0,
+    )
+    electron = RuntimeSpeciesConfig(
+        name="electron",
+        charge=-1.0,
+        mass=1.0 / 3670.0,
+        density=1.0,
+        temperature=1.0,
+        tprim=1.0,
+        fprim=1.0,
+    )
+    cfg = replace(
+        _base_runtime_cfg(),
+        species=(ion, electron),
+        normalization=RuntimeNormalizationConfig(contract="kbm", diagnostic_norm="none"),
+        physics=RuntimePhysicsConfig(
+            adiabatic_electrons=False,
+            electrostatic=False,
+            electromagnetic=True,
+            use_apar=True,
+            use_bpar=True,
+            nonlinear=True,
+            beta=0.02,
+            collisions=False,
+            hypercollisions=False,
+        ),
+        init=InitializationConfig(init_field="all", init_amp=1.0e-8, gaussian_init=False),
+        terms=RuntimeTermsConfig(nonlinear=1.0, hypercollisions=0.0, end_damping=0.0, apar=1.0, bpar=1.0),
+    )
+
+    res = run_runtime_nonlinear(cfg, ky_target=0.2, Nl=3, Nm=4, dt=0.01, steps=2, sample_stride=1, return_state=True)
+
+    assert res.diagnostics is not None
+    assert isinstance(res.diagnostics.resolved, GXResolvedDiagnostics)
+    resolved = res.diagnostics.resolved
+    assert resolved is not None
+    for total, es, apar, bpar in (
+        (resolved.HeatFlux_kxst, resolved.HeatFluxES_kxst, resolved.HeatFluxApar_kxst, resolved.HeatFluxBpar_kxst),
+        (resolved.HeatFlux_kyst, resolved.HeatFluxES_kyst, resolved.HeatFluxApar_kyst, resolved.HeatFluxBpar_kyst),
+        (resolved.HeatFlux_kxkyst, resolved.HeatFluxES_kxkyst, resolved.HeatFluxApar_kxkyst, resolved.HeatFluxBpar_kxkyst),
+        (resolved.HeatFlux_zst, resolved.HeatFluxES_zst, resolved.HeatFluxApar_zst, resolved.HeatFluxBpar_zst),
+        (resolved.ParticleFlux_kxst, resolved.ParticleFluxES_kxst, resolved.ParticleFluxApar_kxst, resolved.ParticleFluxBpar_kxst),
+        (resolved.ParticleFlux_kyst, resolved.ParticleFluxES_kyst, resolved.ParticleFluxApar_kyst, resolved.ParticleFluxBpar_kyst),
+        (resolved.ParticleFlux_kxkyst, resolved.ParticleFluxES_kxkyst, resolved.ParticleFluxApar_kxkyst, resolved.ParticleFluxBpar_kxkyst),
+        (resolved.ParticleFlux_zst, resolved.ParticleFluxES_zst, resolved.ParticleFluxApar_zst, resolved.ParticleFluxBpar_zst),
+    ):
+        assert total is not None
+        assert es is not None
+        assert apar is not None
+        assert bpar is not None
+        np.testing.assert_allclose(np.asarray(total), np.asarray(es) + np.asarray(apar) + np.asarray(bpar), rtol=1.0e-5, atol=1.0e-6)
+
+    assert res.diagnostics.turbulent_heating_species_t is not None
+    turb_heat_s = np.asarray(res.diagnostics.turbulent_heating_species_t)
+    assert resolved.TurbulentHeating_kxst is not None
+    assert resolved.TurbulentHeating_kyst is not None
+    assert resolved.TurbulentHeating_kxkyst is not None
+    assert resolved.TurbulentHeating_zst is not None
+    np.testing.assert_allclose(np.asarray(resolved.TurbulentHeating_kxst).sum(axis=2), turb_heat_s, rtol=1.0e-5, atol=1.0e-6)
+    np.testing.assert_allclose(np.asarray(resolved.TurbulentHeating_kyst).sum(axis=2), turb_heat_s, rtol=1.0e-5, atol=1.0e-6)
+    np.testing.assert_allclose(np.asarray(resolved.TurbulentHeating_kxkyst).sum(axis=(2, 3)), turb_heat_s, rtol=1.0e-5, atol=1.0e-6)
+    np.testing.assert_allclose(np.asarray(resolved.TurbulentHeating_zst).sum(axis=2), turb_heat_s, rtol=1.0e-5, atol=1.0e-6)
 
 
 def test_runtime_nonlinear_disable_diagnostics() -> None:

@@ -8,6 +8,8 @@
 #
 # This manifest is intentionally honest about current dump coverage:
 # - Cyclone Miller: diag-state audit available from the tracked late-state dump.
+# - Cyclone runtime dense baseline: startup + late diag-state audits available
+#   from the translated local-match GX run used for the main nonlinear parity work.
 # - KBM: startup audit re-enabled from the fresh matched call-1 dump generated
 #   from GX's tracked dense t100 nonlinear benchmark input.
 # - W7-X: startup + diag-state audits available from tracked startup/late dumps.
@@ -21,6 +23,19 @@ gx_out = "$HOME/gx_runs/cyclone_diag160/cyclone_diag160.out.nc"
 
 [lane.cyclone_miller.diag_state]
 gx_dir = "$HOME/gx_runs/cyclone_diag160"
+time_index = 47
+
+[lane.cyclone_runtime_salpha]
+config = "../examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_gx.toml"
+gx_out = "$HOME/gx_runs/cyclone_local_match/cyclone_local_match_dense.out.nc"
+
+[lane.cyclone_runtime_salpha.startup]
+gx_dir = "$HOME/gx_runs/cyclone_local_match_dense_call1"
+ky = 0.3
+kx_target = 0.0
+
+[lane.cyclone_runtime_salpha.diag_state]
+gx_dir = "$HOME/gx_runs/cyclone_local_match_dense_diag_t47"
 time_index = 47
 
 [lane.kbm_salpha]

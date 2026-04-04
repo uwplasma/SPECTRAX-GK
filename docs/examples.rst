@@ -69,6 +69,40 @@ lanes:
 
    spectrax-gk examples/nonlinear/axisymmetric/runtime_cetg_reference.toml --steps 200
 
+Nonlinear restart and continuation
+---------------------------------
+
+The tracked nonlinear runtime path supports a GX-style ``out/big/restart``
+bundle together with continuation from the saved restart state.
+
+One-shot nonlinear bundle write:
+
+.. code-block:: bash
+
+   spectrax-gk run-runtime-nonlinear \
+     --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_gx.toml \
+     --steps 200 \
+     --out tools_out/cyclone_release.out.nc
+
+Restart-aware TOML snippet:
+
+.. code-block:: toml
+
+   [time]
+   nstep_restart = 100
+
+   [output]
+   path = "tools_out/cyclone_release.out.nc"
+   restart_if_exists = true
+   save_for_restart = true
+   append_on_restart = true
+   restart_with_perturb = false
+
+With that configuration, rerunning the same nonlinear command resumes from
+``tools_out/cyclone_release.restart.nc`` when it already exists and appends the
+continued history to ``tools_out/cyclone_release.out.nc``. This is the
+recommended user-facing workflow for long nonlinear turbulence jobs.
+
 Geometry helper workflows
 -------------------------
 

@@ -235,10 +235,23 @@ Nonlinear runs write a JSON summary plus a diagnostics CSV. When the requested
 path already ends in ``.csv``, that exact filename is used for the diagnostics
 table and the JSON summary is written next to it as ``*.summary.json``.
 
+If the nonlinear output path ends in ``.out.nc`` (recommended) or another
+``.nc`` suffix, the runtime switches to GX-style NetCDF artifacts instead of
+the lightweight JSON/CSV pair. In that mode SPECTRAX-GK writes:
+
+* ``*.out.nc``: diagnostic history together with ``Grids``, ``Geometry``, and
+  ``Inputs`` groups.
+* ``*.big.nc``: final fields and moments in spectral and real-space layouts.
+* ``*.restart.nc``: restart state for continuation runs.
+
+See :doc:`outputs` for the detailed variable inventory.
+
 The nonlinear diagnostics CSV base columns are
 ``t,dt,gamma,omega,Wg,Wphi,Wapar,energy,heat_flux,particle_flux`` and
 species-resolved columns are appended when available:
 ``heat_flux_s{i}``, ``particle_flux_s{i}`` for species index ``i``.
+When turbulent-heating diagnostics are present, the CSV also includes
+``turbulent_heating`` and ``turbulent_heating_s{i}``.
 
 Python driver
 -------------
@@ -346,6 +359,9 @@ Notable runtime-only keys:
 * ``[expert] fixed_mode`` with ``iky_fixed`` / ``ikx_fixed``: keep one Fourier
   mode exactly frozen during nonlinear evolution, matching GX's ``eqfix``
   behavior used by the ``secondary`` benchmark.
+* ``[time] nstep_restart``: when writing a GX-style nonlinear bundle,
+  checkpoint every ``nstep_restart`` steps instead of waiting for the end of
+  the run. This is useful for long adaptive runs and batch jobs.
 * ``[time] method = "sspx3"``: use the GX SSPx3 scheme directly. This is the
   relevant explicit method for GX's ``secondary`` and ``cETG`` benchmark
   families. Plain ``rk3`` now follows GX's three-stage Heun-style timestepper;
@@ -355,5 +371,35 @@ Notable runtime-only keys:
   ``streaming``, ``mirror``, ``curvature``, ``gradb``, ``diamagnetic``,
   ``collisions``, ``hypercollisions``, ``hyperdiffusion``, ``end_damping``,
   ``apar``, ``bpar``, ``nonlinear``.
+
+Runtime output and restart controls
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``[output]`` section controls runtime artifact layout and restart behavior:
+
+* ``path``: artifact target. Use a plain prefix such as
+  ``tools_out/runtime_case`` for JSON/CSV sidecars, or ``*.out.nc`` for a
+  GX-style nonlinear NetCDF bundle.
+* ``restart``: force loading from ``restart_from_file`` or from the derived
+  sibling ``*.restart.nc`` next to ``path``. Raise an error if the restart
+  file is missing.
+* ``restart_if_exists``: opportunistically resume from an existing restart file
+  without requiring one to be present.
+* ``save_for_restart``: write the ``*.restart.nc`` checkpoint when a GX-style
+  nonlinear bundle is requested.
+* ``restart_to_file`` / ``restart_from_file``: explicit checkpoint paths when
+  the default sibling naming is not desired.
+* ``restart_with_perturb``: combine the loaded restart state with a fresh
+  analytic seed instead of fully replacing it. Internally this maps onto
+  ``init_file_mode = "add"``.
+* ``restart_scale``: multiplicative scale applied to the loaded restart state.
+* ``append_on_restart``: append continued diagnostic history to the existing
+  ``*.out.nc`` file instead of replacing it.
+* ``nsave``: checkpoint cadence fallback, in steps, for GX-style nonlinear
+  bundles when ``time.nstep_restart`` is not set.
+
+For direct restart control outside the ``[output]`` helper path, the generic
+``[init] init_file`` / ``init_file_scale`` / ``init_file_mode`` keys remain the
+lower-level mechanism.
 
 For the explicit equations attached to these controls, see :doc:`operators`.

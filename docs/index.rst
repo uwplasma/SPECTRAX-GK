@@ -10,6 +10,7 @@ space, Fourier perpendicular coordinates, and field-aligned flux-tube geometry.
 
    quickstart
    inputs
+   outputs
    theory
    linear_model
    operators
