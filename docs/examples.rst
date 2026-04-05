@@ -70,7 +70,7 @@ lanes:
    spectrax-gk examples/nonlinear/axisymmetric/runtime_cetg_reference.toml --steps 200
 
 Nonlinear restart and continuation
----------------------------------
+----------------------------------
 
 The tracked nonlinear runtime path supports a GX-style ``out/big/restart``
 bundle together with continuation from the saved restart state.
