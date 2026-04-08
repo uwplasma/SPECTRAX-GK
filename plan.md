@@ -85,10 +85,27 @@ Additional x64 discriminator:
 - unit EM sub-scales `(1.0, 1.0, 1.0)`: `gamma ~= 4.07`, `omega ~= 0.63`
 - EM response off `(0.0, 0.0, 0.0)`: `gamma ~= 4.62`, `omega ~= 1.51`
 
-Conclusion: TEM is not primarily a precision-policy problem, and the added EM
-sub-scales do not by themselves explain the remaining mismatch. The next TEM
-step should target the deeper operator/physics contract rather than more fit or
-window tweaks.
+Conclusion from the x64/EM sweeps alone: TEM is not primarily a
+precision-policy problem, and the added EM sub-scales do not by themselves
+explain the remaining mismatch.
+
+Additional TEM root-cause finding (2026-04-08):
+
+- The shipped TEM lane is not GX-backed. ``src/spectraxgk/data/tem_reference.csv``
+  is digitized from the literature via ``tools/digitize_reference.py``.
+- The repo's present TEM case definition is not the same contract as the cited
+  literature comparison. The current ``TEMBaseCase`` uses ``q=2.7``,
+  ``s_hat=0.5``, and ``R/L* = 20``; the cited trapped-electron literature uses
+  Cyclone-like parameters instead.
+- Direct x64 reruns under the exact published TEM table contract show that the
+  older parity-era commit ``9a2bd47`` is much worse than current under that
+  same contract (``gamma ~= 64.68``, ``omega ~= -202.22``), so the remaining
+  TEM issue is not a simple regression from a previously closed GX lane.
+
+Revised TEM next step:
+
+- Rebuild the literature case definition and its digitized reference
+  consistently, or demote/remove TEM from the public stress panel.
 
 ## Known Benchmark Mismatches To Track Post-Ship
 

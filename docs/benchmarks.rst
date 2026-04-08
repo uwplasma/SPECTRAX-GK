@@ -181,7 +181,7 @@ visible without mixing them into the primary publication set.
 The current extended panel covers:
 
 - Cyclone kinetic electrons
-- TEM
+- TEM (literature-backed stress lane)
 - KBM Miller exact late growth window
 
 .. figure:: _static/benchmark_extended_linear_panel.png
@@ -192,6 +192,11 @@ The current extended panel covers:
    Extended linear stress matrix. These lanes remain visible for solver stress
    testing, but they are intentionally separated from the main publication
    panel.
+
+The TEM row is provisional. The shipped ``tem_reference.csv`` is digitized from
+the literature rather than sourced from a GX benchmark dump, and the exact case
+definition behind that digitized curve is still being reassembled. It should be
+read as a tracked stress lane, not as a closed GX-parity result.
 
 Case groups
 -----------
