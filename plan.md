@@ -1,11 +1,11 @@
 # SPECTRAX-GK Ship Readiness Plan
 
-Last updated: 2026-04-07
-Current public head: `430e301 linear: fix sampled progress diagnostics`
+Last updated: 2026-04-08
+Current public baseline under review: `d04d014 Merge branch 'claude/condescending-buck'`
 
 ## Current Ship Status
 
-`main` is ready for shipment from a software-quality standpoint after the sampled-progress linear diagnostics fix.
+`main` is ready for shipment from a software-quality standpoint after the sampled-progress linear diagnostics fix and the 2026-04-08 upstream-regression recovery.
 
 Validated gates on the current recovery pass:
 
@@ -15,6 +15,7 @@ Validated gates on the current recovery pass:
 - Runtime / CLI / nonlinear CI shard: `154 passed`
 - Focused linear/runtime/CLI regression slice: passed
 - Full pytest at pulled head before the narrow local fix: `613 passed, 3 skipped`
+- Full pytest after the latest upstream merge and local recovery: `616 passed, 3 skipped`
 - Sphinx HTML build with warnings as errors: passed
 - Package build and `twine check dist/*`: passed
 
@@ -31,6 +32,19 @@ Fixed paths:
 - `tests/test_linear.py`: lower-level regression coverage
 - `tests/test_runtime_runner.py`: public runtime regression coverage
 
+The latest upstream merge (`d04d014`) then introduced two separate issues:
+
+1. `run_cyclone_linear(..., solver="auto")` stopped falling back to Krylov
+   when the time-path GX growth extractor returned no finite samples.
+2. Several benchmark-facing linear runtime/example TOMLs drifted away from their
+   parity-oriented collision contracts.
+
+Recovered paths:
+
+- `src/spectraxgk/benchmarks.py`: auto time-path failure now falls back to Krylov
+- `examples/linear/axisymmetric/*.toml`: restored parity-facing collision contracts
+- `tests/test_runtime_config.py`: locks the linear benchmark runtime examples to the expected collision contract
+
 ## Performance / Accuracy Check
 
 Representative CPU examples compared against checkpoint `61aac05` show broadly unchanged runtime and identical printed outputs after the fix:
@@ -42,7 +56,17 @@ Representative CPU examples compared against checkpoint `61aac05` show broadly u
 | KAW linear runtime | same order | same known runtime-contract mismatch |
 | Cyclone nonlinear short | same order | same printed `Wg`, `Wphi`, heat |
 
-Conclusion: this update did not make the code materially faster, but it also did not introduce new benchmark-asset accuracy drift after the sampled-progress fix.
+Conclusion: the sampled-progress fix itself did not materially change runtime.
+A later upstream precision-policy/config update made some runtime examples
+faster, but not in a parity-neutral way.
+
+Precision-policy finding:
+
+- With default precision, several runtime example outputs moved materially.
+- With `JAX_ENABLE_X64=1`, current Cyclone, ETG, and KAW runtime examples reproduce the previous-head outputs exactly.
+
+So the remaining runtime-example drift is primarily a precision-policy issue,
+not a benchmark-builder or reference-data issue.
 
 ## Known Benchmark Mismatches To Track Post-Ship
 
