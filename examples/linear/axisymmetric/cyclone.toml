@@ -1,3 +1,8 @@
+# Benchmark-facing linear example.
+# For parity-sensitive reproduction against tracked reference outputs, run with:
+#   JAX_ENABLE_X64=1 spectrax-gk examples/linear/axisymmetric/cyclone.toml
+# For faster exploratory runs, omit JAX_ENABLE_X64 and use the default precision policy.
+
 [[species]]
 name = "ion"
 charge = 1.0
