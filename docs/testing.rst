@@ -154,6 +154,9 @@ as TEM, ETG runtime scans, and some imported-linear stellarator cases can move
 materially under newer JAX/NumPy combinations even when the code still runs.
 When investigating parity regressions, reproduce the issue on the tested stack
 first before changing solver logic.
+For runtime-example parity reproduction across recent precision-policy changes,
+also set ``JAX_ENABLE_X64=1``. Default precision can be faster while still
+moving parity-sensitive linear example outputs.
 
 Stress-matrix parity gates
 --------------------------
