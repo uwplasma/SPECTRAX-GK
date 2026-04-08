@@ -68,6 +68,28 @@ Precision-policy finding:
 So the remaining runtime-example drift is primarily a precision-policy issue,
 not a benchmark-builder or reference-data issue.
 
+## Current TEM Status
+
+The TEM benchmark still remains open after the x64 recovery work.
+
+Using the exact published TEM table contract in x64 mode
+(`dt=0.001`, `steps=2000`, fixed late window, `mode_method="z_index"`),
+the current TEM branch at `ky=0.3` is still:
+
+- current: `gamma ~= 4.67`, `omega ~= 1.17`
+- reference: `gamma ~= 2.18`, `omega ~= 1.23`
+
+Additional x64 discriminator:
+
+- current EM sub-scales `(0.5, 0.5, 0.5)`: `gamma ~= 4.67`, `omega ~= 1.17`
+- unit EM sub-scales `(1.0, 1.0, 1.0)`: `gamma ~= 4.07`, `omega ~= 0.63`
+- EM response off `(0.0, 0.0, 0.0)`: `gamma ~= 4.62`, `omega ~= 1.51`
+
+Conclusion: TEM is not primarily a precision-policy problem, and the added EM
+sub-scales do not by themselves explain the remaining mismatch. The next TEM
+step should target the deeper operator/physics contract rather than more fit or
+window tweaks.
+
 ## Known Benchmark Mismatches To Track Post-Ship
 
 Current checked-in public mismatch tables remain unchanged across the latest public update range:
