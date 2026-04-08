@@ -521,3 +521,51 @@ def test_run_tem_tables_restores_fixed_late_window_contract(monkeypatch, tmp_pat
     assert called["auto_window"] is False
     assert called["run_kwargs"] == {"mode_method": "z_index"}
     assert (tmp_path / "tem_mismatch_table.csv").exists()
+
+
+def test_run_kinetic_tables_restores_fixed_krylov_contract(monkeypatch, tmp_path: Path) -> None:
+    import tools.make_tables as make_tables
+
+    called: dict[str, object] = {}
+    ky = np.array([0.2, 0.3], dtype=float)
+    steps = make_tables._scale_steps(ky, base_steps=20000, ky_ref=0.3, max_steps=30000)
+    dt = make_tables._scale_dt(ky, base_dt=0.0005, ky_ref=0.3)
+
+    def fake_load_cyclone_reference_kinetic():
+        return make_tables.LinearScanResult(
+            ky=ky,
+            gamma=np.array([0.1, 0.2]),
+            omega=np.array([0.3, 0.4]),
+        )
+
+    def fake_scan_linear_verbose(**kwargs):
+        called["cfg"] = kwargs["cfg"]
+        called["solver"] = kwargs["solver"]
+        called["krylov_cfg"] = kwargs["krylov_cfg"]
+        called["tmin"] = np.asarray(kwargs["tmin"], dtype=float)
+        called["tmax"] = np.asarray(kwargs["tmax"], dtype=float)
+        called["auto_window"] = kwargs["auto_window"]
+        return ky, np.array([0.11, 0.22]), np.array([0.33, 0.44])
+
+    monkeypatch.setattr(make_tables, "load_cyclone_reference_kinetic", fake_load_cyclone_reference_kinetic)
+    monkeypatch.setattr(make_tables, "_scan_linear_verbose", fake_scan_linear_verbose)
+
+    make_tables._run_kinetic_tables(
+        outdir=tmp_path,
+        verbose=False,
+        progress=False,
+        stiff_spot_check=False,
+        stiff_spot_topk=0,
+        stiff_spot_min_ky=0.0,
+        stiff_spot_dt=0.0,
+        stiff_spot_tmax=0.0,
+        stiff_spot_replace=False,
+    )
+
+    assert called["solver"] == "krylov"
+    assert called["krylov_cfg"] == make_tables.KINETIC_KRYLOV
+    assert called["auto_window"] is False
+    assert called["cfg"].grid.Ny == 12
+    assert np.allclose(called["tmin"], 0.6 * dt * steps)
+    assert np.allclose(called["tmax"], 0.95 * dt * steps)
+    assert (tmp_path / "kinetic_mismatch_table.csv").exists()

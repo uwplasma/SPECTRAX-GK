@@ -107,6 +107,41 @@ Revised TEM next step:
 - Rebuild the literature case definition and its digitized reference
   consistently, or demote/remove TEM from the public stress panel.
 
+## Kinetic-Electron Cyclone Recovery Notes (2026-04-08)
+
+- The public kinetic mismatch lane had real contract drift in source:
+  - ``run_kinetic_linear()`` was using full ``LinearTerms()`` instead of the
+    electrostatic ``bpar=0`` contract already used by the kinetic scan helper.
+  - kinetic benchmark helpers were not applying the GX-linked end damping or GX
+    hypercollision reference contract.
+  - ``KINETIC_KRYLOV_DEFAULT`` had drifted onto a TEM-like negative-frequency
+    branch policy even though this lane is the GX kinetic-electron Cyclone ITG case.
+- The public kinetic table builder also drifted away from the older tracked
+  contract:
+  - ``solver="time"`` instead of ``"krylov"``
+  - ``Ny=16`` instead of ``Ny=12``
+  - auto-windowing instead of the fixed late window
+  - time/phi override path instead of the older fixed-window Krylov path
+- Current source now restores the benchmark-side contract:
+  - kinetic helpers use the GX electrostatic reference defaults
+  - kinetic builder is back on the fixed-window Krylov path
+  - tests now lock those defaults in place
+- Early imported GX replay on the real GX kinetic-electron Cyclone output is
+  materially healthier than the public mismatch table suggested:
+  - ``mean_abs_gamma ~= 0.581``
+  - ``mean_rel_gamma ~= 0.392``
+  - ``gamma_last ~= 0.347`` vs ``gamma_ref_last ~= 0.466``
+  - energies are effectively closed in the early window
+- Interpretation:
+  - the kinetic core is not obviously broken at the same level as TEM
+  - the remaining public kinetic issue is now narrowed to late-window /
+    branch-selection closure on top of the benchmark contract
+
+Revised kinetic next step:
+
+- Re-run the exact public kinetic table on the restored contract and inspect the
+  resulting late-window rows before touching solver internals again.
+
 ## Known Benchmark Mismatches To Track Post-Ship
 
 Current checked-in public mismatch tables remain unchanged across the latest public update range:
