@@ -1239,12 +1239,15 @@ def test_tem_run_density_fit():
     assert np.isfinite(result.omega)
 
 
-def test_kinetic_linear_defaults_to_plain_linear_terms(monkeypatch):
-    """Kinetic benchmark defaults should preserve the historical plain term set."""
+def test_kinetic_linear_defaults_to_gx_reference_contract(monkeypatch):
+    """Kinetic benchmark defaults should keep the GX electrostatic contract."""
     captured: dict[str, object] = {}
 
     def _fake_dominant_eigenpair(_G0, _cache, _params, *, terms=None, **_kwargs):
         captured["terms"] = terms
+        captured["params"] = _params
+        captured["mode_family"] = _kwargs.get("mode_family")
+        captured["omega_sign"] = _kwargs.get("omega_sign")
         return 0.1 + 0.2j, np.zeros((4, 4, 1, 1, 8), dtype=np.complex64)
 
     def _fake_compute_fields_cached(_vec, _cache, _params, *, terms=None):
@@ -1257,8 +1260,15 @@ def test_kinetic_linear_defaults_to_plain_linear_terms(monkeypatch):
     cfg = KineticElectronBaseCase(grid=grid)
     run_kinetic_linear(cfg=cfg, ky_target=0.3, Nl=4, Nm=4, solver="krylov")
     terms = captured["terms"]
+    params = captured["params"]
     assert terms is not None
-    assert terms.bpar == 1.0
+    assert terms.bpar == 0.0
+    assert float(params.damp_ends_amp) == pytest.approx(benchmarks.REFERENCE_DAMP_ENDS_AMP)
+    assert float(params.damp_ends_widthfrac) == pytest.approx(benchmarks.REFERENCE_DAMP_ENDS_WIDTHFRAC)
+    assert float(params.nu_hyper_l) == pytest.approx(benchmarks.REFERENCE_NU_HYPER_L)
+    assert float(params.nu_hyper_m) == pytest.approx(benchmarks.REFERENCE_NU_HYPER_M)
+    assert captured["mode_family"] == "cyclone"
+    assert captured["omega_sign"] == 1
 
 
 def test_tem_linear_defaults_to_bpar_disabled_terms(monkeypatch):

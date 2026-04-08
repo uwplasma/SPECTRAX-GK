@@ -75,7 +75,7 @@ from spectraxgk.analysis import (
 )
 
 CYCLONE_SOLVER = "time"
-KINETIC_SOLVER = "time"
+KINETIC_SOLVER = "krylov"
 ETG_SOLVER = "time"
 KBM_SOLVER = "time"
 TEM_SOLVER = "time"
@@ -1287,6 +1287,59 @@ def _run_tem_tables(*, outdir: Path, verbose: bool, progress: bool) -> None:
     )
 
 
+def _run_kinetic_tables(
+    *,
+    outdir: Path,
+    verbose: bool,
+    progress: bool,
+    stiff_spot_check: bool,
+    stiff_spot_topk: int,
+    stiff_spot_min_ky: float,
+    stiff_spot_dt: float,
+    stiff_spot_tmax: float,
+    stiff_spot_replace: bool,
+) -> None:
+    kinetic_ref = load_cyclone_reference_kinetic()
+    kinetic_steps = _scale_steps(kinetic_ref.ky, base_steps=20000, ky_ref=0.3, max_steps=30000)
+    kinetic_dt = _scale_dt(kinetic_ref.ky, base_dt=0.0005, ky_ref=0.3)
+    kinetic_ttotal = kinetic_dt * kinetic_steps
+    kinetic_tmin = 0.6 * kinetic_ttotal
+    kinetic_tmax = 0.95 * kinetic_ttotal
+    kinetic_cfg = KineticElectronBaseCase(
+        grid=GridConfig(Nx=1, Ny=12, Nz=96, Lx=62.8, Ly=62.8, y0=10.0, ntheta=32, nperiod=2)
+    )
+    kin_ky, kin_g, kin_w = _scan_linear_verbose(
+        ky_values=kinetic_ref.ky,
+        run_linear_fn=run_kinetic_linear,
+        cfg=kinetic_cfg,
+        Nl=48,
+        Nm=16,
+        dt=kinetic_dt,
+        steps=kinetic_steps,
+        method="imex2",
+        solver=KINETIC_SOLVER,
+        krylov_cfg=KINETIC_KRYLOV,
+        window_kw=WINDOWS["kinetic"],
+        tmin=kinetic_tmin,
+        tmax=kinetic_tmax,
+        auto_window=False,
+        label="Kinetic ITG mismatch",
+        ref=kinetic_ref,
+        verbose=verbose,
+        progress=progress,
+        stiff_spot_check=stiff_spot_check,
+        stiff_spot_check_topk=stiff_spot_topk,
+        stiff_spot_check_min_ky=stiff_spot_min_ky,
+        stiff_spot_check_dt=stiff_spot_dt,
+        stiff_spot_check_tmax=stiff_spot_tmax,
+        stiff_spot_check_replace=stiff_spot_replace,
+    )
+    kinetic_mismatch = LinearScanResult(ky=kin_ky, gamma=kin_g, omega=kin_w)
+    (outdir / "kinetic_mismatch_table.csv").write_text(
+        "\n".join(_build_rows(kinetic_mismatch, kinetic_ref)) + "\n", encoding="utf-8"
+    )
+
+
 def main() -> int:
     args = _parse_args()
     verbose = not args.quiet
@@ -1534,54 +1587,16 @@ def main() -> int:
         "\n".join(etg_rows) + "\n", encoding="utf-8"
     )
 
-    kinetic_ref = load_cyclone_reference_kinetic()
-    kinetic_steps = _scale_steps(kinetic_ref.ky, base_steps=20000, ky_ref=0.3, max_steps=30000)
-    kinetic_dt = _scale_dt(kinetic_ref.ky, base_dt=0.0005, ky_ref=0.3)
-    kinetic_cfg = KineticElectronBaseCase(
-        grid=GridConfig(Nx=1, Ny=16, Nz=96, Lx=62.8, Ly=62.8, y0=10.0, ntheta=32, nperiod=2)
-    )
-    kinetic_time_cfg = TimeConfig(
-        t_max=4.0,
-        dt=0.001,
-        method="imex2",
-        use_diffrax=False,
-        progress_bar=False,
-        sample_stride=2,
-    )
-    kin_ky, kin_g, kin_w = _scan_linear_verbose(
-        ky_values=kinetic_ref.ky,
-        run_linear_fn=run_kinetic_linear,
-        cfg=kinetic_cfg,
-        Nl=48,
-        Nm=16,
-        dt=kinetic_dt,
-        steps=kinetic_steps,
-        method="imex2",
-        solver=KINETIC_SOLVER,
-        krylov_cfg=KINETIC_KRYLOV,
-        window_kw=WINDOWS["kinetic"],
-        auto_window=True,
-        label="Kinetic ITG mismatch",
-        ref=kinetic_ref,
-        run_kwargs={
-            "time_cfg": kinetic_time_cfg,
-            "fit_signal": "phi",
-            "mode_method": "z_index",
-            "init_species_index": 1,
-            "density_species_index": 1,
-        },
+    _run_kinetic_tables(
+        outdir=outdir,
         verbose=verbose,
         progress=progress,
         stiff_spot_check=stiff_spot_check,
-        stiff_spot_check_topk=stiff_spot_topk,
-        stiff_spot_check_min_ky=stiff_spot_min_ky,
-        stiff_spot_check_dt=stiff_spot_dt,
-        stiff_spot_check_tmax=stiff_spot_tmax,
-        stiff_spot_check_replace=stiff_spot_replace,
-    )
-    kinetic_mismatch = LinearScanResult(ky=kin_ky, gamma=kin_g, omega=kin_w)
-    (outdir / "kinetic_mismatch_table.csv").write_text(
-        "\n".join(_build_rows(kinetic_mismatch, kinetic_ref)) + "\n", encoding="utf-8"
+        stiff_spot_topk=stiff_spot_topk,
+        stiff_spot_min_ky=stiff_spot_min_ky,
+        stiff_spot_dt=stiff_spot_dt,
+        stiff_spot_tmax=stiff_spot_tmax,
+        stiff_spot_replace=stiff_spot_replace,
     )
 
     etg_ref = load_etg_reference()
