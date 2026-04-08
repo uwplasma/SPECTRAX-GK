@@ -480,6 +480,30 @@ def test_integrate_linear_shapes():
     assert phi_t.shape[0] == 3
 
 
+def test_integrate_linear_progress_with_sample_stride_gt_one():
+    """Sampled progress reporting must compute diagnostics before emitting callbacks."""
+    grid_cfg = GridConfig(Nx=4, Ny=4, Nz=8, Lx=6.0, Ly=6.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams()
+    G = jnp.zeros((2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz))
+
+    _, phi_t = integrate_linear(
+        G,
+        grid,
+        geom,
+        params,
+        dt=0.1,
+        steps=4,
+        method="rk2",
+        sample_stride=2,
+        show_progress=True,
+    )
+
+    assert phi_t.shape[0] == 2
+
+
 def test_integrate_linear_methods():
     """Explicit and IMEX paths should run without error."""
     grid_cfg = GridConfig(Nx=6, Ny=6, Nz=8, Lx=6.0, Ly=6.0)

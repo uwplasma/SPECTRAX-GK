@@ -344,6 +344,29 @@ def test_runtime_linear_records_fit_window_metadata() -> None:
     assert res.fit_window_tmax == pytest.approx(0.08)
 
 
+def test_runtime_linear_progress_with_sample_stride_gt_one() -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        species=(RuntimeSpeciesConfig(name="ion"),),
+        normalization=RuntimeNormalizationConfig(contract="cyclone", diagnostic_norm="none"),
+        time=replace(_base_runtime_cfg().time, sample_stride=2),
+    )
+    res = run_runtime_linear(
+        cfg,
+        ky_target=0.1,
+        Nl=3,
+        Nm=4,
+        solver="time",
+        method="rk2",
+        dt=0.01,
+        steps=10,
+        sample_stride=2,
+        show_progress=True,
+    )
+    assert np.isfinite(res.gamma)
+    assert np.isfinite(res.omega)
+
+
 def test_runtime_linear_gx_time_rejects_return_state() -> None:
     cfg = replace(
         _base_runtime_cfg(),
