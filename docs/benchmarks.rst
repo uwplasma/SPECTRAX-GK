@@ -157,6 +157,15 @@ Benchmark-specific replay knobs used to regenerate these figures stay confined
 to the benchmark builders in ``tools/``. They are not promoted into generic
 runtime defaults for the solver or the shipped example drivers.
 
+For the current stellarator nonlinear pair, the tracked public figures should
+also be read asymmetrically:
+
+- HSX nonlinear is currently acceptable on the best validated ``t <= 50`` trace
+  and remains part of the public benchmark set.
+- W7-X nonlinear is still an active repair lane. The tracked figure should show
+  the best currently validated ``t <= 200`` trace, but it should not yet be
+  interpreted as a closed small-tolerance parity result.
+
 README summary panel
 --------------------
 
