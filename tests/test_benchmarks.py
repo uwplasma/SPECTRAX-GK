@@ -1249,6 +1249,7 @@ def test_kinetic_linear_defaults_to_gx_reference_contract(monkeypatch):
         captured["params"] = _params
         captured["mode_family"] = _kwargs.get("mode_family")
         captured["omega_sign"] = _kwargs.get("omega_sign")
+        captured["shift_source"] = _kwargs.get("shift_source")
         return 0.1 + 0.2j, np.zeros((4, 4, 1, 1, 8), dtype=np.complex64)
 
     def _fake_compute_fields_cached(_vec, _cache, _params, *, terms=None):
@@ -1270,6 +1271,7 @@ def test_kinetic_linear_defaults_to_gx_reference_contract(monkeypatch):
     assert float(params.nu_hyper_m) == pytest.approx(benchmarks.REFERENCE_NU_HYPER_M)
     assert captured["mode_family"] == "cyclone"
     assert captured["omega_sign"] == 1
+    assert captured["shift_source"] == "history"
 
 
 def test_kinetic_linear_defaults_to_legacy_reference_seed(monkeypatch):
