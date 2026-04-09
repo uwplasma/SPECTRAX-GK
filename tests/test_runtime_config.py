@@ -227,6 +227,7 @@ def test_w7x_nonlinear_imported_geometry_example_toml_loads() -> None:
     assert cfg.physics.collisions is True
     assert cfg.terms.collisions == pytest.approx(1.0)
     assert cfg.terms.nonlinear == pytest.approx(1.0)
+    assert "steps" not in data.get("run", {})
 
 
 def test_w7x_nonlinear_imported_geometry_builder_keeps_collision_contract() -> None:
@@ -267,6 +268,7 @@ def test_hsx_nonlinear_vmec_geometry_example_toml_loads() -> None:
     assert cfg.physics.collisions is True
     assert cfg.terms.collisions == pytest.approx(1.0)
     assert cfg.terms.nonlinear == pytest.approx(1.0)
+    assert "steps" not in data.get("run", {})
 
 
 def test_hsx_nonlinear_vmec_geometry_builder_keeps_collision_contract() -> None:
@@ -316,6 +318,7 @@ def test_w7x_nonlinear_vmec_geometry_example_toml_loads() -> None:
     assert cfg.physics.adiabatic_electrons is True
     assert cfg.physics.collisions is True
     assert cfg.terms.collisions == pytest.approx(1.0)
+    assert "steps" not in data.get("run", {})
 
 
 def test_load_runtime_from_toml_resolves_relative_runtime_paths_against_config_dir(tmp_path: Path) -> None:

@@ -299,6 +299,11 @@ Current nonlinear-lane status at the handoff point:
   - So the remaining open W7-X nonlinear issue is now narrowed further:
     long-window evolution drift remains, but it is not a startup-state bug and
     it is not a restart/continuation bug.
+  - A separate public runtime-contract bug was also identified and fixed:
+    the checked-in adaptive stellarator nonlinear TOMLs were still carrying
+    `run.steps = 200`, which truncates the public W7-X/HSX VMEC runs (and the
+    W7-X imported runtime TOML) well before `t_max` under adaptive stepping.
+    Those caps are now removed and covered by tests.
 
 - `HSX nonlinear`
   - Acceptable for this pass on the best validated `t <= 50` trace.
