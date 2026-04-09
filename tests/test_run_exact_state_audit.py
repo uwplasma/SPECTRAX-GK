@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import sys
+import tomllib
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
 
@@ -36,3 +37,13 @@ def test_resolve_manifest_path_handles_relative_and_env_paths(tmp_path: Path, mo
 
     assert rel == (tmp_path / "configs" / "lane.toml").resolve()
     assert env_rel == (tmp_path / "audit_root" / "dumps").resolve()
+
+
+def test_exact_state_office_manifest_w7x_config_resolves_to_real_example() -> None:
+    repo = Path(__file__).resolve().parents[1]
+    manifest = repo / "tools" / "exact_state_lanes.office.toml"
+    data = tomllib.loads(manifest.read_text(encoding="utf-8"))
+    config = data["lane"]["w7x_vmec"]["config"]
+    resolved = _resolve_manifest_path(config, manifest_dir=manifest.parent)
+    assert resolved == (repo / "examples" / "nonlinear" / "non-axisymmetric" / "runtime_w7x_nonlinear_vmec_geometry.toml")
+    assert resolved.is_file()
