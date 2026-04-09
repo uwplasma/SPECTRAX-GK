@@ -36,11 +36,12 @@ from compare_gx_imported_linear import (
     _write_scan_rows,
     build_parser,
 )
-from spectraxgk.config import GridConfig
+from spectraxgk.config import GeometryConfig, GridConfig
 from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.gx_integrators import GXTimeConfig
 from spectraxgk.linear import LinearTerms
+from spectraxgk.runtime_config import RuntimeConfig
 from spectraxgk.species import Species
 
 
@@ -662,6 +663,50 @@ def test_select_geometry_source_prefers_gx_output_for_vmec_generated_runs() -> N
     assert _resolve_internal_geometry_source(geometry_file=gx_out, runtime_config=None) == gx_out
     assert _resolve_internal_geometry_source(geometry_file=gx_out, runtime_config=None) == gx_out
     assert _resolve_internal_geometry_source(geometry_file=geom, runtime_config=None) == geom
+
+
+def test_resolve_internal_geometry_source_uses_gx_grid_contract_for_internal_miller(monkeypatch) -> None:
+    runtime_path = Path("/tmp/runtime_miller.toml")
+    captured: dict[str, object] = {}
+    cfg = RuntimeConfig(
+        grid=GridConfig(boundary="periodic", y0=28.2, ntheta=24, nperiod=1),
+        geometry=GeometryConfig(model="miller", q=1.4, s_hat=0.8, R0=2.77778, R_geo=2.77778),
+    )
+    gx_contract = replace(
+        _dummy_gx_contract(init_single=False),
+        boundary="linked",
+        y0=20.0,
+        ntheta=32,
+        nperiod=2,
+    )
+    out = Path("/tmp/internal_miller.eiknc.nc").resolve()
+
+    monkeypatch.setattr(imported_linear, "load_runtime_from_toml", lambda _path: (cfg, {}))
+
+    def _fake_generate_runtime_miller_eik(runtime_cfg, *, force):
+        captured["boundary"] = runtime_cfg.grid.boundary
+        captured["y0"] = runtime_cfg.grid.y0
+        captured["ntheta"] = runtime_cfg.grid.ntheta
+        captured["nperiod"] = runtime_cfg.grid.nperiod
+        captured["force"] = force
+        return out
+
+    monkeypatch.setattr(imported_linear, "generate_runtime_miller_eik", _fake_generate_runtime_miller_eik)
+
+    resolved = _resolve_internal_geometry_source(
+        geometry_file=None,
+        runtime_config=runtime_path,
+        gx_contract=gx_contract,
+    )
+
+    assert resolved == out
+    assert captured == {
+        "boundary": "linked",
+        "y0": 20.0,
+        "ntheta": 32,
+        "nperiod": 2,
+        "force": True,
+    }
 
 
 def test_integrate_target_mode_series_collects_requested_sample_count(monkeypatch) -> None:
