@@ -565,7 +565,7 @@ def test_run_kinetic_tables_restores_fixed_krylov_contract(monkeypatch, tmp_path
     assert called["solver"] == "krylov"
     assert called["krylov_cfg"] == make_tables.KINETIC_KRYLOV
     assert called["auto_window"] is False
-    assert called["cfg"].grid.Ny == 12
+    assert called["cfg"].grid.Ny == 2 * ky.size + 1
     assert np.allclose(called["tmin"], 0.6 * dt * steps)
     assert np.allclose(called["tmax"], 0.95 * dt * steps)
     assert (tmp_path / "kinetic_mismatch_table.csv").exists()

@@ -1300,13 +1300,23 @@ def _run_kinetic_tables(
     stiff_spot_replace: bool,
 ) -> None:
     kinetic_ref = load_cyclone_reference_kinetic()
+    kinetic_ny = 2 * int(kinetic_ref.ky.size) + 1
     kinetic_steps = _scale_steps(kinetic_ref.ky, base_steps=20000, ky_ref=0.3, max_steps=30000)
     kinetic_dt = _scale_dt(kinetic_ref.ky, base_dt=0.0005, ky_ref=0.3)
     kinetic_ttotal = kinetic_dt * kinetic_steps
     kinetic_tmin = 0.6 * kinetic_ttotal
     kinetic_tmax = 0.95 * kinetic_ttotal
     kinetic_cfg = KineticElectronBaseCase(
-        grid=GridConfig(Nx=1, Ny=12, Nz=96, Lx=62.8, Ly=62.8, y0=10.0, ntheta=32, nperiod=2)
+        grid=GridConfig(
+            Nx=1,
+            Ny=kinetic_ny,
+            Nz=96,
+            Lx=62.8,
+            Ly=62.8,
+            y0=10.0,
+            ntheta=32,
+            nperiod=2,
+        )
     )
     kin_ky, kin_g, kin_w = _scan_linear_verbose(
         ky_values=kinetic_ref.ky,
