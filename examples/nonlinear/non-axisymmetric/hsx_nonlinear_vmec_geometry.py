@@ -89,7 +89,7 @@ def build_hsx_nonlinear_cfg(
             use_apar=False,
             use_bpar=False,
             beta=0.0,
-            collisions=False,
+            collisions=True,
             hypercollisions=True,
         ),
         collisions=RuntimeCollisionConfig(

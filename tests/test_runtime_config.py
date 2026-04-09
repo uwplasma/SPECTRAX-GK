@@ -2,12 +2,21 @@
 
 from __future__ import annotations
 
+import importlib.util
 from pathlib import Path
 
 import pytest
 
 from spectraxgk.io import load_runtime_from_toml
 from spectraxgk.runtime_config import RuntimeConfig
+
+
+def _load_module_from_path(name: str, path: Path):
+    spec = importlib.util.spec_from_file_location(name, path)
+    assert spec is not None and spec.loader is not None
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
 
 
 def test_runtime_config_to_dict_contains_sections() -> None:
@@ -220,6 +229,22 @@ def test_w7x_nonlinear_imported_geometry_example_toml_loads() -> None:
     assert cfg.terms.nonlinear == pytest.approx(1.0)
 
 
+def test_w7x_nonlinear_imported_geometry_builder_keeps_collision_contract() -> None:
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "examples"
+        / "nonlinear"
+        / "non-axisymmetric"
+        / "w7x_nonlinear_imported_geometry.py"
+    )
+    mod = _load_module_from_path("w7x_nonlinear_imported_geometry", path)
+    cfg = mod.build_w7x_nonlinear_cfg("/tmp/w7x.eik.nc", dt=0.1, t_max=200.0)
+    assert cfg.physics.collisions is True
+    assert cfg.terms.collisions == pytest.approx(1.0)
+    assert cfg.terms.hypercollisions == pytest.approx(1.0)
+    assert cfg.collisions.D_hyper == pytest.approx(0.05)
+
+
 def test_hsx_nonlinear_vmec_geometry_example_toml_loads() -> None:
     path = (
         Path(__file__).resolve().parents[1]
@@ -242,6 +267,32 @@ def test_hsx_nonlinear_vmec_geometry_example_toml_loads() -> None:
     assert cfg.physics.collisions is True
     assert cfg.terms.collisions == pytest.approx(1.0)
     assert cfg.terms.nonlinear == pytest.approx(1.0)
+
+
+def test_hsx_nonlinear_vmec_geometry_builder_keeps_collision_contract() -> None:
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "examples"
+        / "nonlinear"
+        / "non-axisymmetric"
+        / "hsx_nonlinear_vmec_geometry.py"
+    )
+    mod = _load_module_from_path("hsx_nonlinear_vmec_geometry", path)
+    cfg = mod.build_hsx_nonlinear_cfg(
+        "/tmp/hsx.nc",
+        geometry_file=None,
+        gx_repo=None,
+        gx_python=None,
+        torflux=0.64,
+        alpha=0.0,
+        npol=1.0,
+        dt=0.1,
+        t_max=200.0,
+    )
+    assert cfg.physics.collisions is True
+    assert cfg.terms.collisions == pytest.approx(1.0)
+    assert cfg.terms.hypercollisions == pytest.approx(1.0)
+    assert cfg.collisions.D_hyper == pytest.approx(0.05)
 
 
 def test_w7x_nonlinear_vmec_geometry_example_toml_loads() -> None:
