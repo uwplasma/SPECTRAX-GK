@@ -312,6 +312,9 @@ Current nonlinear-lane status at the handoff point:
     ignoring `cfg.output.path`, so example-driven W7-X/HSX runs printed live
     progress but silently discarded the artifact bundle. That wrapper path now
     honors the TOML output contract and is covered by runtime tests.
+  - The nonlinear wrapper path now routes through the chunk-aware artifact
+    helper, so long adaptive stellarator runs persist diagnostics after each
+    completed chunk instead of only at the full-horizon exit.
 
 - `HSX nonlinear`
   - Acceptable for this pass on the best validated `t <= 50` trace.
