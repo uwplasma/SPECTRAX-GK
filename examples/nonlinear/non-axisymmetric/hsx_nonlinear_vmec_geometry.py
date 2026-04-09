@@ -4,9 +4,10 @@
 from __future__ import annotations
 
 import argparse
+from pathlib import Path
 
 from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, TimeConfig
-from spectraxgk.runtime import run_runtime_nonlinear
+from spectraxgk.runtime import run_nonlinear_case, run_runtime_nonlinear
 from spectraxgk.runtime_config import (
     RuntimeCollisionConfig,
     RuntimeConfig,
@@ -15,6 +16,8 @@ from spectraxgk.runtime_config import (
     RuntimeSpeciesConfig,
     RuntimeTermsConfig,
 )
+
+CONFIG = Path(__file__).resolve().parent / "runtime_hsx_nonlinear_vmec_geometry.toml"
 
 
 def build_hsx_nonlinear_cfg(
@@ -111,7 +114,8 @@ def build_hsx_nonlinear_cfg(
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run the HSX nonlinear ITG VMEC example.")
-    parser.add_argument("--vmec-file", required=True, help="Path to the VMEC wout file")
+    parser.add_argument("--config", type=Path, default=CONFIG, help="Runtime TOML used by the config-backed wrapper path")
+    parser.add_argument("--vmec-file", default=None, help="Path to the VMEC wout file for the manual builder path")
     parser.add_argument("--geometry-file", default=None, help="Optional output/reuse path for the generated *.eik.nc file")
     parser.add_argument("--gx-repo", default=None, help="Optional helper repository path for external VMEC geometry generation")
     parser.add_argument("--gx-python", default=None, help="Optional Python interpreter used for external VMEC geometry generation")
@@ -125,6 +129,16 @@ def main() -> int:
     parser.add_argument("--t-max", type=float, default=200.0, help="Final time")
     parser.add_argument("--steps", type=int, default=None, help="Optional explicit step-count override")
     args = parser.parse_args()
+
+    if args.vmec_file is None:
+        return run_nonlinear_case(
+            args.config,
+            ky=args.ky,
+            Nl=args.Nl,
+            Nm=args.Nm,
+            steps=args.steps,
+            dt=args.dt,
+        )
 
     cfg = build_hsx_nonlinear_cfg(
         args.vmec_file,
