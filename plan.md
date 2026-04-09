@@ -315,6 +315,16 @@ Current nonlinear-lane status at the handoff point:
   - The nonlinear wrapper path now routes through the chunk-aware artifact
     helper, so long adaptive stellarator runs persist diagnostics after each
     completed chunk instead of only at the full-horizon exit.
+  - Fresh `office` audit on the corrected bundle-backed runtime path confirms
+    the first persisted chunk is already close through `t <= 55.3072`:
+    - `mean_rel_abs(Wg) ~= 1.36e-2`
+    - `mean_rel_abs(Wphi) ~= 1.30e-2`
+    - `mean_rel_abs(HeatFlux) ~= 1.54e-2`
+    - `final_rel(HeatFlux) ~= -1.10e-1`
+  - Interpretation:
+    - the corrected public W7-X nonlinear lane is healthy through the first
+      long chunk
+    - any remaining mismatch is now a later-window evolution question only
 
 - `HSX nonlinear`
   - Acceptable for this pass on the best validated `t <= 50` trace.
@@ -329,6 +339,11 @@ Current nonlinear-lane status at the handoff point:
       lanes are checked
   - The programmatic VMEC wrapper had likewise drifted from the published TOML
     collision contract; it is now aligned and covered by tests.
+  - The user-facing wrapper surface had also drifted from W7-X:
+    `hsx_nonlinear_vmec_geometry.py` still required a manual `--vmec-file`
+    even though the checked-in runtime TOML already carried the intended
+    config-backed contract. That surface is now being normalized so HSX and
+    W7-X follow the same runtime-wrapper pattern by default.
 
 ## Next Work Order
 

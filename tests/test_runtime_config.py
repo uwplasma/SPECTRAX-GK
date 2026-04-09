@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.util
 from pathlib import Path
+import sys
 
 import pytest
 
@@ -297,6 +298,37 @@ def test_hsx_nonlinear_vmec_geometry_builder_keeps_collision_contract() -> None:
     assert cfg.terms.collisions == pytest.approx(1.0)
     assert cfg.terms.hypercollisions == pytest.approx(1.0)
     assert cfg.collisions.D_hyper == pytest.approx(0.05)
+
+
+def test_hsx_nonlinear_vmec_wrapper_defaults_to_config_path(monkeypatch: pytest.MonkeyPatch) -> None:
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "examples"
+        / "nonlinear"
+        / "non-axisymmetric"
+        / "hsx_nonlinear_vmec_geometry.py"
+    )
+    mod = _load_module_from_path("hsx_nonlinear_vmec_geometry_main", path)
+
+    captured: dict[str, object] = {}
+
+    def fake_run_nonlinear_case(config_path, **kwargs):
+        captured["config_path"] = Path(config_path)
+        captured["kwargs"] = kwargs
+        return 0
+
+    monkeypatch.setattr(mod, "run_nonlinear_case", fake_run_nonlinear_case)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["hsx_nonlinear_vmec_geometry.py", "--steps", "200"],
+    )
+
+    rc = mod.main()
+
+    assert rc == 0
+    assert captured["config_path"] == mod.CONFIG
+    assert captured["kwargs"]["steps"] == 200
 
 
 def test_w7x_nonlinear_vmec_geometry_example_toml_loads() -> None:

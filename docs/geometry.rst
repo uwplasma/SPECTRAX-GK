@@ -264,6 +264,9 @@ Two user-facing entry points now exercise that bridge:
   ``examples/nonlinear/non-axisymmetric/runtime_hsx_nonlinear_vmec_geometry.toml`` run a nonlinear
   adiabatic-electron ITG case on the supplied HSX VMEC equilibrium file while
   letting SPECTRAX generate and reuse the field-line geometry automatically.
+  The wrapper now follows the same config-backed pattern as W7-X by default:
+  set ``HSX_VMEC_FILE`` for the runtime TOML path, or pass ``--vmec-file``
+  when you intentionally want the older manual-builder entry point.
 
 Imported geometry currently bypasses analytic twist-shift reconstruction and
 uses the provided grid as-is. That keeps the GX-import bridge honest while the
