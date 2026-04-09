@@ -142,7 +142,7 @@ def _run_command(run: RuntimeBenchRun) -> dict[str, object]:
             shell_cmd = f"{prefix} /bin/sh -lc {shlex.quote(rendered_command)}"
         remote_cmd = f"cd {shlex.quote(rendered_cwd)} && {shell_cmd}"
         proc = subprocess.run(
-            ["ssh", rendered_host, remote_cmd],
+            ["ssh", "-x", rendered_host, remote_cmd],
             capture_output=True,
             text=True,
         )
