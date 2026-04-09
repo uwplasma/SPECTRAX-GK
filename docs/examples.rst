@@ -58,6 +58,9 @@ under ``tools_out/`` by default:
 
 Those diagnostics and their matching ``*.summary.json`` files are the intended
 inputs for the parity helpers under ``tools/``.
+The direct Python runtime wrappers now route through the same artifact-aware
+nonlinear path as the CLI, so long adaptive runs update that bundle as each
+chunk completes.
 
 Runtime TOML entry points
 -------------------------

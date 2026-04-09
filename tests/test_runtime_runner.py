@@ -2173,16 +2173,23 @@ def test_run_nonlinear_case_uses_toml_output_path(
     def fake_load_runtime_from_toml(_path):
         return cfg, {"run": {"ky": 0.2, "Nl": 4, "Nm": 6}, "time": {"dt": 0.1}}
 
-    def fake_run_runtime_nonlinear(*_args, **_kwargs):
-        return runtime.RuntimeNonlinearResult(
-            t=t,
-            diagnostics=diag,
-            ky_selected=0.2,
-            kx_selected=0.0,
+    def fake_run_runtime_nonlinear_with_artifacts(*_args, **_kwargs):
+        summary = tmp_path / "nonlinear_case.summary.json"
+        diag_path = tmp_path / "nonlinear_case.diagnostics.csv"
+        summary.write_text("{}\n", encoding="utf-8")
+        diag_path.write_text("t,dt,gamma,omega,Wg,Wphi,Wapar,energy,heat_flux,particle_flux\n", encoding="utf-8")
+        return (
+            runtime.RuntimeNonlinearResult(
+                t=t,
+                diagnostics=diag,
+                ky_selected=0.2,
+                kx_selected=0.0,
+            ),
+            {"summary": str(summary), "diagnostics": str(diag_path)},
         )
 
     monkeypatch.setattr("spectraxgk.io.load_runtime_from_toml", fake_load_runtime_from_toml)
-    monkeypatch.setattr(runtime, "run_runtime_nonlinear", fake_run_runtime_nonlinear)
+    monkeypatch.setattr("spectraxgk.runtime_artifacts.run_runtime_nonlinear_with_artifacts", fake_run_runtime_nonlinear_with_artifacts)
 
     rc = run_nonlinear_case(tmp_path / "dummy.toml", show_progress=False)
 
