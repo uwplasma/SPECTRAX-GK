@@ -153,11 +153,17 @@ Additional kinetic finding from the current recovery pass:
 - Source now restores that historical seed only on the GX-reference kinetic
   helper path, and only when the caller is still using the exact default
   kinetic init. Explicit user init overrides are preserved.
+- The current public kinetic scan contract also had a structural high-``k_y``
+  representation bug: with ``Ny=12``, the actual spectral grid only represents
+  positive ``k_y`` up to ``0.5`` before aliasing onto negative modes. That made
+  the published ``k_y=0.6`` and ``0.7`` rows invalid on the public kinetic
+  table builder. The table builder now uses a non-aliasing ``Ny`` derived from
+  the reference scan length.
 
 Revised kinetic next step:
 
 - Re-run the exact public kinetic table on the restored contract plus restored
-  legacy reference seed.
+  legacy reference seed and non-aliasing ``k_y`` grid.
 - If the high-frequency branch disappears but ``omega`` remains wrong-sign or
   under-resolved, then the next fix is positive-frequency branch targeting, not
   more contract cleanup.
