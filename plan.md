@@ -354,17 +354,25 @@ Current nonlinear-lane status at the handoff point:
     even though the checked-in runtime TOML already carried the intended
     config-backed contract. That surface is now being normalized so HSX and
     W7-X follow the same runtime-wrapper pattern by default.
-  - A fresh bundle-backed `office` audit is now running on the normalized HSX
-    wrapper path.
+  - Fresh bundle-backed `office` replay on the normalized wrapper path now
+    closes at a similar level through `t <= 50.8582`:
+    - `mean_rel_abs(Wg) ~= 3.88e-2`
+    - `mean_rel_abs(Wphi) ~= 3.69e-2`
+    - `mean_rel_abs(HeatFlux) ~= 8.66e-2`
+    - `final_rel(Wg) ~= -3.36e-1`
+    - `final_rel(Wphi) ~= -3.74e-1`
+  - Interpretation:
+    - HSX nonlinear remains acceptable for the current pass
+    - the refreshed normalized wrapper path is healthier than the older
+      tracked HSX nonlinear comparison
 
 ## Next Work Order
 
-1. Treat Cyclone Miller linear, HSX linear, and KBM linear as effectively closed for this pass unless refreshed data regresses.
-2. Treat Cyclone nonlinear and HSX nonlinear as acceptable on the current tracked comparisons.
-3. Keep W7-X nonlinear as the next active open nonlinear lane.
-4. Then continue in order: ETG nonlinear, KBM nonlinear, kinetic-electron Cyclone.
-5. Leave KAW and TEM out of the active parity-recovery path until the above GX-backed lanes are honestly closed.
-6. Consider making `ruff` a future CI gate only after a dedicated lint cleanup; current repo-wide `ruff check .` still reports pre-existing style debt.
+1. Treat Cyclone Miller linear, HSX linear, KBM linear, Cyclone nonlinear, HSX nonlinear, and W7-X nonlinear as acceptable for the current pass unless refreshed data regresses.
+2. Define the next honest nonlinear lane: full-GK ETG nonlinear is not currently a shipped public benchmark in the repo, only reduced `cETG`, so the next ETG step is case-definition and reference-selection work rather than a simple refresh.
+3. Then continue with the remaining GX-backed nonlinear queue: KBM nonlinear, kinetic-electron Cyclone.
+4. Leave KAW and TEM out of the active parity-recovery path until the above GX-backed lanes are honestly closed.
+5. Consider making `ruff` a future CI gate only after a dedicated lint cleanup; current repo-wide `ruff check .` still reports pre-existing style debt.
 
 ## CI/CD Status (2026-04-09)
 
