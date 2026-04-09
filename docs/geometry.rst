@@ -211,11 +211,10 @@ SPECTRAX at it through ``BOOZ_XFORM_JAX_PATH`` or
 ``SPECTRAX_BOOZ_XFORM_JAX_PATH``. The internal backend is preferred. A legacy
 ``booz_xform`` install is only needed as fallback compatibility for older
 helper environments.
-The VMEC bridge now also expands environment variables in ``geometry.vmec_file``
-and resolves relative VMEC paths against ``gx_repo`` before falling back to the
-current working directory. That lets the tracked W7-X runtime TOML point at the
-benchmark ``wout`` file through the GX repo itself, while the HSX runtime TOML
-can stay portable via ``$HSX_VMEC_FILE``.
+The VMEC bridge now also expands environment variables in ``geometry.vmec_file``.
+Tracked portable runtime TOMLs should therefore pass external VMEC equilibria
+through explicit environment variables such as ``$W7X_VMEC_FILE`` and
+``$HSX_VMEC_FILE`` instead of relying on a machine-local checkout layout.
 The nonlinear W7-X and HSX startup audits now confirm that this VMEC runtime
 path reproduces GX startup ``g_state`` and ``phi`` to roundoff when the
 generated ``*.eik.nc`` is rebuilt from the same VMEC input.

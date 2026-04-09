@@ -6,9 +6,11 @@ from pathlib import Path
 import sys
 import tomllib
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
 
-from run_exact_state_audit import _resolve_manifest_path, build_parser
+from run_exact_state_audit import _resolve_manifest_path, _tool_env, build_parser
 
 
 def test_run_exact_state_audit_parser_accepts_core_args() -> None:
@@ -47,3 +49,12 @@ def test_exact_state_office_manifest_w7x_config_resolves_to_real_example() -> No
     resolved = _resolve_manifest_path(config, manifest_dir=manifest.parent)
     assert resolved == (repo / "examples" / "nonlinear" / "non-axisymmetric" / "runtime_w7x_nonlinear_vmec_geometry.toml")
     assert resolved.is_file()
+
+
+def test_tool_env_prepends_absolute_repo_pythonpath(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setenv("PYTHONPATH", "src:.")
+    env = _tool_env(tmp_path)
+    parts = env["PYTHONPATH"].split(":")
+    assert parts[0] == str((tmp_path / "src").resolve())
+    assert parts[1] == str(tmp_path.resolve())
+    assert parts[2:] == ["src", "."]
