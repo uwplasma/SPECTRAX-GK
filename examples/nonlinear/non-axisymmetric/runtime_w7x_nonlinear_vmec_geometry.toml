@@ -32,7 +32,7 @@ cfl = 1.0
 
 [geometry]
 model = "vmec"
-vmec_file = "../vmec_equilibria/W7-X/OP1.1_limiter/wout_w7x.1000_1000_1000_1000_+0390_+0390.01.00s.nc"
+vmec_file = "$W7X_VMEC_FILE"
 #geometry_file = ".cache/spectrax/w7x_adiabatic_electrons_vmec.eik.nc"
 torflux = 0.64
 alpha = 0.0

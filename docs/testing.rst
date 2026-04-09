@@ -237,6 +237,7 @@ path is:
    export BOOZ_XFORM_JAX_PATH=/path/to/booz_xform_jax
    export SPECTRAX_VENV_PYTHON=/path/to/venv/bin/python
    export SPECTRAX_OFFICE_ROOT=/path/to/SPECTRAX-GK
+   W7X_VMEC_FILE=/path/to/wout_w7x.nc \
    HSX_VMEC_FILE=/path/to/wout_HSX_QHS_vac.nc \
    "$SPECTRAX_VENV_PYTHON" tools/run_exact_state_audit.py \
      --manifest tools/exact_state_lanes.office.toml \

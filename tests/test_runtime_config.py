@@ -112,10 +112,10 @@ path = "tools_out/runtime_case"
     assert cfg.expert.fixed_mode is True
     assert cfg.expert.iky_fixed == 1
     assert cfg.expert.ikx_fixed == 0
-    assert cfg.init.init_file == "/tmp/restart.bin"
+    assert cfg.init.init_file == str(Path("/tmp/restart.bin").resolve())
     assert cfg.init.init_file_scale == pytest.approx(5.0)
     assert cfg.init.init_file_mode == "add"
-    assert cfg.output.path == "tools_out/runtime_case"
+    assert cfg.output.path == str((tmp_path / "tools_out" / "runtime_case").resolve())
     assert len(cfg.species) == 2
     assert cfg.species[1].charge == pytest.approx(-1.0)
 
@@ -191,7 +191,7 @@ solver = "explicit_time"
 
     assert isinstance(data, dict)
     assert cfg.geometry.model == "gx-netcdf"
-    assert cfg.geometry.geometry_file == "/tmp/w7x.eik.nc"
+    assert cfg.geometry.geometry_file == str(Path("/tmp/w7x.eik.nc").resolve())
     assert cfg.physics.adiabatic_electrons is True
 
 
@@ -309,13 +309,44 @@ def test_w7x_nonlinear_vmec_geometry_example_toml_loads() -> None:
     assert isinstance(data, dict)
     assert cfg.geometry.model == "vmec"
     assert cfg.geometry.vmec_file is not None
-    assert cfg.geometry.vmec_file == "../vmec_equilibria/W7-X/OP1.1_limiter/wout_w7x.1000_1000_1000_1000_+0390_+0390.01.00s.nc"
+    assert cfg.geometry.vmec_file == "$W7X_VMEC_FILE"
     assert cfg.geometry.gx_python is None
     assert cfg.geometry.torflux == pytest.approx(0.64)
     assert cfg.physics.nonlinear is True
     assert cfg.physics.adiabatic_electrons is True
     assert cfg.physics.collisions is True
     assert cfg.terms.collisions == pytest.approx(1.0)
+
+
+def test_load_runtime_from_toml_resolves_relative_runtime_paths_against_config_dir(tmp_path: Path) -> None:
+    cfg_dir = tmp_path / "configs"
+    cfg_dir.mkdir()
+    toml = """
+[geometry]
+model = "vmec"
+vmec_file = "../vmec/wout.nc"
+geometry_file = "../geom/run.eik.nc"
+torflux = 0.64
+
+[init]
+init_file = "../restart/state.bin"
+
+[output]
+path = "../out/run.out.nc"
+restart_to_file = "../out/run.restart.nc"
+restart_from_file = "../out/run.resume.nc"
+"""
+    path = cfg_dir / "runtime.toml"
+    path.write_text(toml, encoding="utf-8")
+
+    cfg, _ = load_runtime_from_toml(path)
+
+    assert cfg.geometry.vmec_file == str((tmp_path / "vmec" / "wout.nc").resolve())
+    assert cfg.geometry.geometry_file == str((tmp_path / "geom" / "run.eik.nc").resolve())
+    assert cfg.init.init_file == str((tmp_path / "restart" / "state.bin").resolve())
+    assert cfg.output.path == str((tmp_path / "out" / "run.out.nc").resolve())
+    assert cfg.output.restart_to_file == str((tmp_path / "out" / "run.restart.nc").resolve())
+    assert cfg.output.restart_from_file == str((tmp_path / "out" / "run.resume.nc").resolve())
 
 
 def test_secondary_slab_example_toml_loads() -> None:
@@ -358,7 +389,7 @@ geometry_file = "/tmp/w7x-desc.eik.nc"
     cfg, _ = load_runtime_from_toml(path)
 
     assert cfg.geometry.model == "desc-eik"
-    assert cfg.geometry.geometry_file == "/tmp/w7x-desc.eik.nc"
+    assert cfg.geometry.geometry_file == str(Path("/tmp/w7x-desc.eik.nc").resolve())
 
 
 def test_load_runtime_from_toml_accepts_vmec_gx_python(tmp_path: Path) -> None:
@@ -375,7 +406,7 @@ gx_python = "python3"
     cfg, _ = load_runtime_from_toml(path)
 
     assert cfg.geometry.model == "vmec"
-    assert cfg.geometry.vmec_file == "/tmp/wout_test.nc"
+    assert cfg.geometry.vmec_file == str(Path("/tmp/wout_test.nc").resolve())
     assert cfg.geometry.gx_python == "python3"
 
 

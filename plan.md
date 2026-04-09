@@ -280,6 +280,14 @@ Current nonlinear-lane status at the handoff point:
   - The programmatic imported-geometry wrapper had also drifted from the
     published TOML contract by silently disabling collisions. That wrapper is
     now aligned with the shipped example and covered by tests.
+  - The shipped VMEC TOML was also not actually portable on a clean clone:
+    it pointed at a machine-local relative `wout` path that does not exist in
+    the repo. The public contract is now explicit through `W7X_VMEC_FILE`,
+    matching the existing HSX pattern.
+  - The exact-state audit runner also had a clean-clone subprocess bug:
+    helper tools were launched from `tools/` without an absolute repo
+    `PYTHONPATH`, so `spectraxgk` imports failed on a fresh checkout. That
+    runner is now hardened to prepend absolute repo paths.
 
 - `HSX nonlinear`
   - Acceptable for this pass on the best validated `t <= 50` trace.

@@ -34,9 +34,26 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 
-def _run_tool(cmd: list[str], *, cwd: Path | None, log_path: Path) -> dict[str, Any]:
+def _tool_env(repo_root: Path) -> dict[str, str]:
+    env = dict(os.environ)
+    existing = env.get("PYTHONPATH", "")
+    entries = [str((repo_root / "src").resolve()), str(repo_root.resolve())]
+    if existing:
+        entries.append(existing)
+    env["PYTHONPATH"] = os.pathsep.join(entries)
+    return env
+
+
+def _run_tool(cmd: list[str], *, cwd: Path | None, log_path: Path, env: dict[str, str] | None = None) -> dict[str, Any]:
     log_path.parent.mkdir(parents=True, exist_ok=True)
-    proc = subprocess.run(cmd, cwd=str(cwd) if cwd is not None else None, capture_output=True, text=True, check=False)
+    proc = subprocess.run(
+        cmd,
+        cwd=str(cwd) if cwd is not None else None,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
     log_path.write_text(
         f"$ {' '.join(cmd)}\n\nstdout:\n{proc.stdout}\n\nstderr:\n{proc.stderr}\n",
         encoding="utf-8",
@@ -98,6 +115,8 @@ def main() -> None:
     out_root = args.outdir.expanduser().resolve()
     py = str(args.python)
     here = Path(__file__).resolve().parent
+    repo_root = here.parent
+    tool_env = _tool_env(repo_root)
 
     summary: dict[str, Any] = {"manifest": str(manifest_path), "lanes": {}}
 
@@ -142,7 +161,7 @@ def main() -> None:
                     cmd += ["--kx-target", str(st["kx_target"])]
                 if "y0" in st:
                     cmd += ["--y0", str(st["y0"])]
-                lane_summary["startup"] = _run_tool(cmd, cwd=here, log_path=out_dir / "startup.log")
+                lane_summary["startup"] = _run_tool(cmd, cwd=here, log_path=out_dir / "startup.log", env=tool_env)
 
             if "diag_state" in cfg:
                 ds = cfg["diag_state"]
@@ -162,7 +181,7 @@ def main() -> None:
                 ]
                 if "y0" in ds:
                     cmd += ["--y0", str(ds["y0"])]
-                lane_summary["diag_state"] = _run_tool(cmd, cwd=here, log_path=out_dir / "diag_state.log")
+                lane_summary["diag_state"] = _run_tool(cmd, cwd=here, log_path=out_dir / "diag_state.log", env=tool_env)
 
             if "window" in cfg:
                 w = cfg["window"]
@@ -188,7 +207,7 @@ def main() -> None:
                     cmd += ["--ky", str(w["ky"])]
                 if "y0" in w:
                     cmd += ["--y0", str(w["y0"])]
-                lane_summary["window"] = _run_tool(cmd, cwd=here, log_path=out_dir / "window.log")
+                lane_summary["window"] = _run_tool(cmd, cwd=here, log_path=out_dir / "window.log", env=tool_env)
 
         summary["lanes"][lane_key] = lane_summary
 
