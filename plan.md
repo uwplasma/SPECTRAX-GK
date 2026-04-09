@@ -1,7 +1,7 @@
 # SPECTRAX-GK Ship Readiness Plan
 
 Last updated: 2026-04-09
-Current public baseline under review: `83d112b tools: align internal Miller geometry with GX grid contract`
+Current public baseline under review: `092aeb9 benchmarks: close Miller low-ky linear lane`
 
 ## Current Ship Status
 
@@ -197,9 +197,9 @@ Working order agreed for the next parity pass:
 2. HSX linear
 3. KBM linear
 4. Cyclone nonlinear
-5. ETG nonlinear
-6. W7-X nonlinear
-7. HSX nonlinear
+5. W7-X nonlinear
+6. HSX nonlinear
+7. ETG nonlinear
 8. KBM nonlinear
 9. Kinetic-electron Cyclone
 
@@ -264,11 +264,35 @@ Current nonlinear-lane status at the handoff point:
     - do not spend more solver/debug time here before the remaining nonlinear
       lanes are checked
 
+- `W7-X nonlinear`
+  - Still open.
+  - Existing office candidate sweep at `t <= 200` shows the best currently
+    validated trace is the VMEC-fixed branch (`w7x_spectrax_t200_vmecfix.csv`,
+    tied with `chunked2`):
+    - `mean_rel_abs(Wg) ~= 4.70e-1`
+    - `mean_rel_abs(Wphi) ~= 5.77e-1`
+    - `mean_rel_abs(HeatFlux) ~= 3.39e-1`
+    - final relative heat-flux error `~= 8.15e-3`
+  - This is still too loose to call parity-closed.
+  - Public W7-X nonlinear figure should therefore show the best current trace,
+    but the lane remains active in the repair queue.
+
+- `HSX nonlinear`
+  - Acceptable on the current best validated trace at `t <= 50`.
+  - Existing office candidate sweep shows the best current run is
+    `hsx_spectrax_t50_current.csv` with:
+    - `mean_rel_abs(Wg) ~= 7.77e-2`
+    - `mean_rel_abs(Wphi) ~= 9.56e-2`
+    - `mean_rel_abs(HeatFlux) ~= 7.97e-2`
+    - final relative heat-flux error `~= 3.05e-2`
+  - This is good enough for the current pass; keep the lane in the public set
+    and move active debugging effort to W7-X and the later nonlinear lanes.
+
 ## Next Work Order
 
 1. Treat Cyclone Miller linear, HSX linear, and KBM linear as effectively closed for this pass unless refreshed data regresses.
-2. Treat Cyclone nonlinear as acceptable on the current tracked comparison.
-3. Move directly to the next active nonlinear parity lanes:
-   ETG, W7-X, HSX, KBM.
-4. Leave KAW and TEM out of the active parity-recovery path until the above GX-backed lanes are honestly closed.
-5. Consider making `ruff` a future CI gate only after a dedicated lint cleanup; current repo-wide `ruff check .` still reports pre-existing style debt.
+2. Treat Cyclone nonlinear and HSX nonlinear as acceptable on the current tracked comparisons.
+3. Keep W7-X nonlinear as the next active open nonlinear lane.
+4. Then continue in order: ETG nonlinear, KBM nonlinear, kinetic-electron Cyclone.
+5. Leave KAW and TEM out of the active parity-recovery path until the above GX-backed lanes are honestly closed.
+6. Consider making `ruff` a future CI gate only after a dedicated lint cleanup; current repo-wide `ruff check .` still reports pre-existing style debt.
