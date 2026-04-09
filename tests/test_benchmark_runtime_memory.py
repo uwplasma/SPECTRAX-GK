@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from tools.benchmark_runtime_memory import _load_manifest, _load_summary_rows, _parse_peak_rss_mb, _render, _select_runs
+from tools.benchmark_runtime_memory import RuntimeBenchRun, _load_manifest, _load_summary_rows, _parse_peak_rss_mb, _render, _run_command, _select_runs
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -60,3 +60,39 @@ def test_render_expands_root_and_env(monkeypatch) -> None:
     rendered = _render("{root}:${SPECTRAX_BENCH_ROOT}")
     assert str(ROOT) in rendered
     assert "/tmp/bench" in rendered
+
+
+def test_gx_runtime_memory_manifest_runs_in_isolated_tempdir() -> None:
+    runs = _load_manifest(ROOT / "tools" / "runtime_memory_manifest.toml")
+    gx_runs = [run for run in runs if run.backend == "gx"]
+    assert gx_runs
+    for run in gx_runs:
+        assert "mktemp -d" in run.command
+        assert "env -u DISPLAY" in run.command
+        assert "CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE}" in run.command
+
+
+def test_gpu_runtime_memory_manifest_pins_configured_cuda_device() -> None:
+    runs = _load_manifest(ROOT / "tools" / "runtime_memory_manifest.toml")
+    gpu_runs = [run for run in runs if run.backend == "spectrax_gpu"]
+    assert gpu_runs
+    for run in gpu_runs:
+        assert "CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE}" in run.command
+
+
+def test_remote_runtime_memory_runs_disable_x11_forwarding(monkeypatch) -> None:
+    captured = {}
+
+    def fake_run(cmd, capture_output, text):  # type: ignore[no-untyped-def]
+        captured["cmd"] = cmd
+        class Proc:
+            returncode = 0
+            stdout = ""
+            stderr = ""
+        return Proc()
+
+    monkeypatch.setattr("tools.benchmark_runtime_memory.subprocess.run", fake_run)
+    run = RuntimeBenchRun(case="c", label="C", backend="gx", command="echo hi", cwd="/tmp", host="office")
+    row = _run_command(run)
+    assert row["status"] == "success"
+    assert captured["cmd"][:2] == ["ssh", "-x"]
