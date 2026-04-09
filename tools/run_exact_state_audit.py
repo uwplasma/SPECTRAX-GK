@@ -54,8 +54,15 @@ def _run_tool(cmd: list[str], *, cwd: Path | None, log_path: Path, env: dict[str
         text=True,
         check=False,
     )
+    env_lines: list[str] = []
+    if env is not None:
+        for key in ("PYTHONPATH", "W7X_VMEC_FILE", "HSX_VMEC_FILE"):
+            if key in env:
+                env_lines.append(f"{key}={env[key]}")
     log_path.write_text(
-        f"$ {' '.join(cmd)}\n\nstdout:\n{proc.stdout}\n\nstderr:\n{proc.stderr}\n",
+        f"$ {' '.join(cmd)}\n"
+        + (f"env:\n" + "\n".join(env_lines) + "\n\n" if env_lines else "\n")
+        + f"stdout:\n{proc.stdout}\n\nstderr:\n{proc.stderr}\n",
         encoding="utf-8",
     )
     return {"returncode": int(proc.returncode), "log": str(log_path)}
@@ -116,7 +123,6 @@ def main() -> None:
     py = str(args.python)
     here = Path(__file__).resolve().parent
     repo_root = here.parent
-    tool_env = _tool_env(repo_root)
 
     summary: dict[str, Any] = {"manifest": str(manifest_path), "lanes": {}}
 
@@ -143,6 +149,7 @@ def main() -> None:
             lane_summary["env"] = env_updates
 
         with _temporary_env(env_updates):
+            tool_env = _tool_env(repo_root)
             if "startup" in cfg:
                 st = cfg["startup"]
                 cmd = [
