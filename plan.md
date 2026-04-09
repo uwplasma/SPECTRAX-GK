@@ -325,6 +325,16 @@ Current nonlinear-lane status at the handoff point:
     - the corrected public W7-X nonlinear lane is healthy through the first
       long chunk
     - any remaining mismatch is now a later-window evolution question only
+  - Deeper live `office` replay on the same corrected path remains materially
+    better than the older public long-window trace through `t <= 108.2958`:
+    - `mean_rel_abs(Wg) ~= 1.27e-1`
+    - `mean_rel_abs(Wphi) ~= 1.14e-1`
+    - `mean_rel_abs(HeatFlux) ~= 1.50e-1`
+    - `final_rel(Wg) ~= 3.88e-2`
+    - `final_rel(Wphi) ~= 4.78e-2`
+  - Under the current acceptance target, W7-X nonlinear is now close enough
+    that it should stay in the benchmark set while HSX, ETG, KBM, and kinetic
+    continue through the same refreshed audit workflow.
 
 - `HSX nonlinear`
   - Acceptable for this pass on the best validated `t <= 50` trace.
@@ -344,6 +354,8 @@ Current nonlinear-lane status at the handoff point:
     even though the checked-in runtime TOML already carried the intended
     config-backed contract. That surface is now being normalized so HSX and
     W7-X follow the same runtime-wrapper pattern by default.
+  - A fresh bundle-backed `office` audit is now running on the normalized HSX
+    wrapper path.
 
 ## Next Work Order
 
