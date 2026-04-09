@@ -7,8 +7,7 @@ fixed_dt = true
 required_nonzero = ["state_norm", "Wphi"]
 
 [lane.w7x_vmec]
-config = "../examples/linear/axisymmetric/runtime_w7x_nonlinear_vmec_geometry.toml"
+config = "../examples/nonlinear/non-axisymmetric/runtime_w7x_nonlinear_vmec_geometry.toml"
 steps = 4
 fixed_dt = true
 required_nonzero = ["state_norm", "Wphi"]
-

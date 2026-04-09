@@ -258,35 +258,37 @@ Current nonlinear-lane status at the handoff point:
     - `mean_rel_abs(Wg) ~= 6.63e-2`
     - `mean_rel_abs(Wphi) ~= 6.84e-2`
     - `mean_rel_abs(HeatFlux) ~= 9.19e-2`
-    - final relative heat-flux error `~= 7.79e-2`
+    - `final_rel(HeatFlux) ~= 7.79e-2`
+
+- `W7-X nonlinear`
+  - Still the next active open GX-backed lane.
+  - Best current validated long-window trace on `office` is the VMEC-fixed
+    branch (`w7x_spectrax_t200_vmecfix.csv`, tied with `chunked2`):
+    - `mean_rel_abs(Wg) ~= 4.70e-1`
+    - `mean_rel_abs(Wphi) ~= 5.77e-1`
+    - `mean_rel_abs(HeatFlux) ~= 3.39e-1`
+    - `final_rel(HeatFlux) ~= 8.15e-3`
+  - Exact-state audit still closes tightly through the tracked startup / late
+    dump window, so the remaining drift is in later-time nonlinear evolution,
+    not the startup state or VMEC import itself.
+  - The office parity manifests had also drifted off the real public example:
+    several still pointed to the nonexistent
+    `examples/linear/axisymmetric/runtime_w7x_nonlinear_vmec_geometry.toml`.
+    Those manifests are now corrected and covered by tests so future restart /
+    exact-state / device-parity audits are anchored to the shipped nonlinear
+    W7-X configuration.
+
+- `HSX nonlinear`
+  - Acceptable for this pass on the best validated `t <= 50` trace.
+  - Current best validated metrics:
+    - `mean_rel_abs(Wg) ~= 7.77e-2`
+    - `mean_rel_abs(Wphi) ~= 9.56e-2`
+    - `mean_rel_abs(HeatFlux) ~= 7.97e-2`
+    - `final_rel(HeatFlux) ~= 3.05e-2`
   - Interpretation:
     - keep this lane in the public benchmark set
     - do not spend more solver/debug time here before the remaining nonlinear
       lanes are checked
-
-- `W7-X nonlinear`
-  - Still open.
-  - Existing office candidate sweep at `t <= 200` shows the best currently
-    validated trace is the VMEC-fixed branch (`w7x_spectrax_t200_vmecfix.csv`,
-    tied with `chunked2`):
-    - `mean_rel_abs(Wg) ~= 4.70e-1`
-    - `mean_rel_abs(Wphi) ~= 5.77e-1`
-    - `mean_rel_abs(HeatFlux) ~= 3.39e-1`
-    - final relative heat-flux error `~= 8.15e-3`
-  - This is still too loose to call parity-closed.
-  - Public W7-X nonlinear figure should therefore show the best current trace,
-    but the lane remains active in the repair queue.
-
-- `HSX nonlinear`
-  - Acceptable on the current best validated trace at `t <= 50`.
-  - Existing office candidate sweep shows the best current run is
-    `hsx_spectrax_t50_current.csv` with:
-    - `mean_rel_abs(Wg) ~= 7.77e-2`
-    - `mean_rel_abs(Wphi) ~= 9.56e-2`
-    - `mean_rel_abs(HeatFlux) ~= 7.97e-2`
-    - final relative heat-flux error `~= 3.05e-2`
-  - This is good enough for the current pass; keep the lane in the public set
-    and move active debugging effort to W7-X and the later nonlinear lanes.
 
 ## Next Work Order
 

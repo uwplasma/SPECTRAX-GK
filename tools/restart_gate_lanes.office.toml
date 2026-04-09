@@ -17,7 +17,7 @@ steps_second = 8
 fixed_dt = true
 
 [lane.w7x_vmec]
-config = "../examples/linear/axisymmetric/runtime_w7x_nonlinear_vmec_geometry.toml"
+config = "../examples/nonlinear/non-axisymmetric/runtime_w7x_nonlinear_vmec_geometry.toml"
 steps_first = 4
 steps_second = 4
 fixed_dt = true
