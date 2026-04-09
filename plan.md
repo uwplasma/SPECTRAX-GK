@@ -277,6 +277,9 @@ Current nonlinear-lane status at the handoff point:
     Those manifests are now corrected and covered by tests so future restart /
     exact-state / device-parity audits are anchored to the shipped nonlinear
     W7-X configuration.
+  - The programmatic imported-geometry wrapper had also drifted from the
+    published TOML contract by silently disabling collisions. That wrapper is
+    now aligned with the shipped example and covered by tests.
 
 - `HSX nonlinear`
   - Acceptable for this pass on the best validated `t <= 50` trace.
@@ -289,6 +292,8 @@ Current nonlinear-lane status at the handoff point:
     - keep this lane in the public benchmark set
     - do not spend more solver/debug time here before the remaining nonlinear
       lanes are checked
+  - The programmatic VMEC wrapper had likewise drifted from the published TOML
+    collision contract; it is now aligned and covered by tests.
 
 ## Next Work Order
 
