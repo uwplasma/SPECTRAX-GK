@@ -314,6 +314,7 @@ def _resolve_internal_geometry_source(
     *,
     geometry_file: Path | None,
     runtime_config: Path | None,
+    gx_contract: GXInputContract | None = None,
 ) -> Path:
     """Resolve geometry for the SPECTRAX run without sourcing it from GX output files."""
 
@@ -322,6 +323,22 @@ def _resolve_internal_geometry_source(
 
     if runtime_config is not None:
         cfg, _ = load_runtime_from_toml(runtime_config.expanduser().resolve())
+        if gx_contract is not None:
+            ntheta = int(gx_contract.ntheta)
+            nperiod = int(gx_contract.nperiod)
+            cfg = replace(
+                cfg,
+                grid=replace(
+                    cfg.grid,
+                    boundary=_resolve_imported_boundary(
+                        gx_contract.boundary,
+                        zero_shat=bool(gx_contract.zero_shat),
+                    ),
+                    y0=float(gx_contract.y0),
+                    ntheta=ntheta if ntheta > 0 else cfg.grid.ntheta,
+                    nperiod=nperiod if nperiod > 0 else cfg.grid.nperiod,
+                ),
+            )
         model = str(cfg.geometry.model).strip().lower()
         if model == "vmec":
             return generate_runtime_vmec_eik(cfg, force=True).expanduser().resolve()
@@ -1054,6 +1071,7 @@ def main() -> None:
         geometry_source = _resolve_internal_geometry_source(
             geometry_file=args.geometry_file,
             runtime_config=args.runtime_config,
+            gx_contract=gx_contract,
         )
         geom = load_gx_geometry_netcdf(geometry_source)
         nz = int(np.asarray(geom.theta).size)
