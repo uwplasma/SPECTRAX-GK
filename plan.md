@@ -365,3 +365,17 @@ Current nonlinear-lane status at the handoff point:
 4. Then continue in order: ETG nonlinear, KBM nonlinear, kinetic-electron Cyclone.
 5. Leave KAW and TEM out of the active parity-recovery path until the above GX-backed lanes are honestly closed.
 6. Consider making `ruff` a future CI gate only after a dedicated lint cleanup; current repo-wide `ruff check .` still reports pre-existing style debt.
+
+## CI/CD Status (2026-04-09)
+
+- GitHub Actions `runtime-nonlinear` had two concrete regressions on current
+  `main`:
+  - `tests/test_cli.py` still expected the old relative `saved ...` message
+    even though TOML output paths are now resolved and printed absolutely.
+  - `tests/test_nonlinear.py` still used `jax.enable_x64()`, which is no
+    longer available on the current JAX stack used in CI.
+- Local CI-equivalent validation after the fixes:
+  - `python3 -m mypy src` -> clean
+  - runtime-nonlinear shard command from `.github/workflows/ci.yml` -> passed
+- The remaining GitHub warning about Node.js 20 actions is not currently a
+  failing CI condition; it is a future workflow-maintenance item.

@@ -251,7 +251,7 @@ path = "artifacts/from_toml"
     code = main()
     out = capsys.readouterr().out
     assert code == 0
-    assert "saved artifacts/from_toml.summary.json" in out
+    assert f"saved {tmp_path / 'artifacts' / 'from_toml.summary.json'}" in out
     assert (tmp_path / "artifacts" / "from_toml.summary.json").exists()
     assert (tmp_path / "artifacts" / "from_toml.timeseries.csv").exists()
 
@@ -408,7 +408,7 @@ path = "artifacts/direct_shorthand"
     out = capsys.readouterr().out
     assert code == 0
     assert "starting runtime linear run" in out
-    assert "saved artifacts/direct_shorthand.summary.json" in out
+    assert f"saved {tmp_path / 'artifacts' / 'direct_shorthand.summary.json'}" in out
     assert (tmp_path / "artifacts" / "direct_shorthand.summary.json").exists()
 
 

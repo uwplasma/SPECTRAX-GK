@@ -334,7 +334,9 @@ def test_nonlinear_imex_gx_diagnostics_match_operator_dtype_under_x64():
     grid_cfg = GridConfig(Nx=2, Ny=4, Nz=4, Lx=6.0, Ly=6.0)
     cfg = CycloneBaseCase(grid=grid_cfg)
 
-    with jax.enable_x64():
+    old_x64 = bool(jax.config.jax_enable_x64)
+    jax.config.update("jax_enable_x64", True)
+    try:
         grid = build_spectral_grid(cfg.grid)
         geom = SAlphaGeometry.from_config(cfg.geometry)
         params = LinearParams()
@@ -354,6 +356,8 @@ def test_nonlinear_imex_gx_diagnostics_match_operator_dtype_under_x64():
             sample_stride=1,
             diagnostics_stride=1,
         )
+    finally:
+        jax.config.update("jax_enable_x64", old_x64)
 
     assert np.isfinite(np.asarray(diag.gamma_t)).all()
     assert np.isfinite(np.asarray(diag.omega_t)).all()
