@@ -22,6 +22,8 @@ from spectraxgk.runtime import (
     build_runtime_geometry,
     build_runtime_linear_params,
     build_runtime_linear_terms,
+    run_linear_case,
+    run_nonlinear_case,
     run_runtime_linear,
     run_runtime_nonlinear,
     run_runtime_scan,
@@ -2110,3 +2112,82 @@ def test_runtime_nonlinear_mode_selection_honors_kx_target(monkeypatch) -> None:
 
     assert captured["omega_ky_index"] == 1
     assert captured["omega_kx_index"] == 3
+
+
+def test_run_linear_case_uses_toml_output_path(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    import spectraxgk.runtime as runtime
+
+    base = _base_runtime_cfg()
+    cfg = replace(base, output=replace(base.output, path=str(tmp_path / "linear_case")))
+
+    def fake_load_runtime_from_toml(_path):
+        return cfg, {"run": {"ky": 0.2, "Nl": 4, "Nm": 6, "solver": "krylov"}}
+
+    def fake_run_runtime_linear(*_args, **_kwargs):
+        return runtime.RuntimeLinearResult(
+            ky=0.2,
+            gamma=0.1,
+            omega=0.2,
+            selection=runtime.ModeSelection(ky_index=0, kx_index=0, z_index=0),
+        )
+
+    monkeypatch.setattr("spectraxgk.io.load_runtime_from_toml", fake_load_runtime_from_toml)
+    monkeypatch.setattr(runtime, "run_runtime_linear", fake_run_runtime_linear)
+
+    rc = run_linear_case(tmp_path / "dummy.toml", show_progress=False)
+
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert f"saved {tmp_path / 'linear_case.summary.json'}" in out
+    assert (tmp_path / "linear_case.summary.json").exists()
+
+
+def test_run_nonlinear_case_uses_toml_output_path(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    import spectraxgk.runtime as runtime
+
+    base = _base_runtime_cfg()
+    cfg = replace(base, output=replace(base.output, path=str(tmp_path / "nonlinear_case")))
+    t = np.asarray([0.0, 0.1], dtype=float)
+    diag = GXDiagnostics(
+        t=t,
+        dt_t=t + 0.1,
+        dt_mean=0.1,
+        gamma_t=np.asarray([0.0, 0.1], dtype=float),
+        omega_t=np.asarray([0.0, 0.2], dtype=float),
+        Wg_t=np.asarray([1.0, 1.1], dtype=float),
+        Wphi_t=np.asarray([2.0, 2.1], dtype=float),
+        Wapar_t=np.asarray([0.0, 0.0], dtype=float),
+        heat_flux_t=np.asarray([4.0, 4.2], dtype=float),
+        particle_flux_t=np.asarray([5.0, 5.2], dtype=float),
+        energy_t=np.asarray([3.0, 3.2], dtype=float),
+    )
+
+    def fake_load_runtime_from_toml(_path):
+        return cfg, {"run": {"ky": 0.2, "Nl": 4, "Nm": 6}, "time": {"dt": 0.1}}
+
+    def fake_run_runtime_nonlinear(*_args, **_kwargs):
+        return runtime.RuntimeNonlinearResult(
+            t=t,
+            diagnostics=diag,
+            ky_selected=0.2,
+            kx_selected=0.0,
+        )
+
+    monkeypatch.setattr("spectraxgk.io.load_runtime_from_toml", fake_load_runtime_from_toml)
+    monkeypatch.setattr(runtime, "run_runtime_nonlinear", fake_run_runtime_nonlinear)
+
+    rc = run_nonlinear_case(tmp_path / "dummy.toml", show_progress=False)
+
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert f"saved {tmp_path / 'nonlinear_case.summary.json'}" in out
+    assert (tmp_path / "nonlinear_case.summary.json").exists()
+    assert (tmp_path / "nonlinear_case.diagnostics.csv").exists()

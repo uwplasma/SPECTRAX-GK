@@ -307,6 +307,11 @@ Current nonlinear-lane status at the handoff point:
   - The shipped W7-X/HSX nonlinear runtime TOMLs now also emit default
     `tools_out/...` diagnostics/summary artifacts, so long `office` parity
     runs no longer depend on ad hoc CLI output overrides.
+  - A second runtime-entry bug was then closed on `main`: the direct Python
+    runtime wrappers (`run_linear_case()` / `run_nonlinear_case()`) were still
+    ignoring `cfg.output.path`, so example-driven W7-X/HSX runs printed live
+    progress but silently discarded the artifact bundle. That wrapper path now
+    honors the TOML output contract and is covered by runtime tests.
 
 - `HSX nonlinear`
   - Acceptable for this pass on the best validated `t <= 50` trace.
