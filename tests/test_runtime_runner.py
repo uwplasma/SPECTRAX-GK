@@ -2173,7 +2173,10 @@ def test_run_nonlinear_case_uses_toml_output_path(
     def fake_load_runtime_from_toml(_path):
         return cfg, {"run": {"ky": 0.2, "Nl": 4, "Nm": 6}, "time": {"dt": 0.1}}
 
+    captured: dict[str, object] = {}
+
     def fake_run_runtime_nonlinear_with_artifacts(*_args, **_kwargs):
+        captured.update(_kwargs)
         summary = tmp_path / "nonlinear_case.summary.json"
         diag_path = tmp_path / "nonlinear_case.diagnostics.csv"
         summary.write_text("{}\n", encoding="utf-8")
@@ -2195,6 +2198,7 @@ def test_run_nonlinear_case_uses_toml_output_path(
 
     out = capsys.readouterr().out
     assert rc == 0
+    assert captured["out"] == str(tmp_path / "nonlinear_case")
     assert f"saved {tmp_path / 'nonlinear_case.summary.json'}" in out
     assert (tmp_path / "nonlinear_case.summary.json").exists()
     assert (tmp_path / "nonlinear_case.diagnostics.csv").exists()
