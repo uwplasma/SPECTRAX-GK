@@ -288,6 +288,17 @@ Current nonlinear-lane status at the handoff point:
     helper tools were launched from `tools/` without an absolute repo
     `PYTHONPATH`, so `spectraxgk` imports failed on a fresh checkout. That
     runner is now hardened to prepend absolute repo paths.
+  - Clean `office` restart/continuation parity is now explicitly closed on the
+    shipped W7-X VMEC lane:
+    - `state max_abs = 0`
+    - `state max_rel = 0`
+    - `Wg/Wphi/heat/pflux` restart diagnostics all `abs = rel = 0`
+  - Direct startup replay on the same corrected head also matches GX tightly:
+    - `g_state max_rel ~= 1.33e-7`
+    - `phi max_rel ~= 1.54e-6`
+  - So the remaining open W7-X nonlinear issue is now narrowed further:
+    long-window evolution drift remains, but it is not a startup-state bug and
+    it is not a restart/continuation bug.
 
 - `HSX nonlinear`
   - Acceptable for this pass on the best validated `t <= 50` trace.
