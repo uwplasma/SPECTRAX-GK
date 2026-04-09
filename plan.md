@@ -208,8 +208,8 @@ TEM is intentionally out of scope for this pass.
 Current linear-lane status under that ordering:
 
 - `Cyclone Miller linear`
-  - Still the only linear lane that needs active repair before moving on.
-  - The remaining public low-`k_y` issue is now narrowed to the imported-linear
+  - Now acceptable for the current pass.
+  - The remaining public low-`k_y` issue was narrowed to the imported-linear
     contract, not the nonlinear Miller solver core:
     - exact-state nonlinear Cyclone Miller audits remain extremely tight
     - the imported-linear comparator had been generating internal Miller
@@ -217,10 +217,16 @@ Current linear-lane status under that ordering:
       (`ntheta=24`, `nperiod=1`, `y0=28.2`) instead of the GX linear input
       contract (`ntheta=32`, `nperiod=2`, `y0=20.0`)
   - Fixed in `83d112b`.
-  - Remaining next step:
-    - re-run the corrected `ky=0.05/0.1` imported-linear probes
-    - if needed, restore the Miller `scan -> derived mismatch table` pipeline
-      and allow a documented Miller-specific low-`k_y` override row.
+  - Public Miller refresh pipeline also restored in `b91d599`:
+    - refresh now writes the raw scan to `cyclone_miller_linear_scan.csv`
+    - then derives the legacy panel table from the scan
+  - Corrected targeted `ky=0.05` row under the fixed contract:
+    - `gamma = 0.012058`, `gamma_ref = 0.012291`, `rel_gamma = -1.89e-2`
+    - `omega = 0.028325`, `omega_ref = 0.028820`, `rel_omega = -1.72e-2`
+  - Current published maxima after the refresh:
+    - `max |rel_gamma| ~= 0.138`
+    - `max |rel_omega| ~= 0.017`
+  - This satisfies the agreed `rtol ~= 1.5e-1` low-`k_y` acceptance target.
 
 - `HSX linear`
   - Acceptable under the current absolute-error framing.
@@ -243,10 +249,8 @@ Current linear-lane status under that ordering:
 
 ## Next Work Order
 
-1. Finish the corrected Cyclone Miller low-`k_y` imported-linear audit on top of `83d112b`.
-2. If Miller is materially improved, refresh the public Miller linear assets and keep that lane open only if `ky=0.05` still exceeds the accepted `1.5e-1` envelope.
-3. Treat HSX linear and KBM linear as effectively closed for this pass unless refreshed data regresses.
-4. Move directly to the nonlinear parity order after the linear Miller decision:
+1. Treat Cyclone Miller linear, HSX linear, and KBM linear as effectively closed for this pass unless refreshed data regresses.
+2. Move directly to the nonlinear parity order:
    Cyclone, ETG, W7-X, HSX, KBM.
-5. Leave KAW and TEM out of the active parity-recovery path until the above GX-backed lanes are honestly closed.
-6. Consider making `ruff` a future CI gate only after a dedicated lint cleanup; current repo-wide `ruff check .` still reports pre-existing style debt.
+3. Leave KAW and TEM out of the active parity-recovery path until the above GX-backed lanes are honestly closed.
+4. Consider making `ruff` a future CI gate only after a dedicated lint cleanup; current repo-wide `ruff check .` still reports pre-existing style debt.
