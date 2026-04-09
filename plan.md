@@ -1,7 +1,7 @@
 # SPECTRAX-GK Ship Readiness Plan
 
-Last updated: 2026-04-08
-Current public baseline under review: `d04d014 Merge branch 'claude/condescending-buck'`
+Last updated: 2026-04-09
+Current public baseline under review: `83d112b tools: align internal Miller geometry with GX grid contract`
 
 ## Current Ship Status
 
@@ -189,10 +189,64 @@ Current checked-in public mismatch tables remain unchanged across the latest pub
 
 These are numerical benchmark follow-up items, not blockers for the current sampled-progress software fix.
 
+## Current Lane Order (2026-04-09)
+
+Working order agreed for the next parity pass:
+
+1. Cyclone Miller linear
+2. HSX linear
+3. KBM linear
+4. Cyclone nonlinear
+5. ETG nonlinear
+6. W7-X nonlinear
+7. HSX nonlinear
+8. KBM nonlinear
+9. Kinetic-electron Cyclone
+
+TEM is intentionally out of scope for this pass.
+
+Current linear-lane status under that ordering:
+
+- `Cyclone Miller linear`
+  - Still the only linear lane that needs active repair before moving on.
+  - The remaining public low-`k_y` issue is now narrowed to the imported-linear
+    contract, not the nonlinear Miller solver core:
+    - exact-state nonlinear Cyclone Miller audits remain extremely tight
+    - the imported-linear comparator had been generating internal Miller
+      geometry from the nonlinear example TOML's field-line grid
+      (`ntheta=24`, `nperiod=1`, `y0=28.2`) instead of the GX linear input
+      contract (`ntheta=32`, `nperiod=2`, `y0=20.0`)
+  - Fixed in `83d112b`.
+  - Remaining next step:
+    - re-run the corrected `ky=0.05/0.1` imported-linear probes
+    - if needed, restore the Miller `scan -> derived mismatch table` pipeline
+      and allow a documented Miller-specific low-`k_y` override row.
+
+- `HSX linear`
+  - Acceptable under the current absolute-error framing.
+  - The lane is still near-marginal, so relative growth error alone is not a
+    good acceptance metric.
+  - Current published maxima:
+    - `mean_abs_gamma ~= 4.79e-03`
+    - `mean_abs_omega ~= 3.75e-03`
+    - `mean_rel_omega ~= 5.09e-02`
+  - Unless a later refresh regresses these absolute metrics, no solver change
+    is currently justified here.
+
+- `KBM linear`
+  - Already inside the requested tolerance envelope for this pass.
+  - Current published maxima:
+    - `max |rel_gamma| ~= 0.113`
+    - `max |rel_omega| ~= 0.135`
+  - No linear KBM code change is currently required for the agreed
+    `rtol ~= 1.5e-1` target.
+
 ## Next Work Order
 
-1. Keep `main` shipped at the current fixed head unless CI reports a new failure.
-2. Treat TEM and kinetic-electron Cyclone as the next parity-recovery lanes.
-3. Then repair KAW runtime contract and ETG runtime branch-following.
-4. Rebuild benchmark assets only after the corresponding numerical lane is honestly improved.
-5. Consider making `ruff` a future CI gate only after a dedicated lint cleanup; current repo-wide `ruff check .` still reports pre-existing style debt.
+1. Finish the corrected Cyclone Miller low-`k_y` imported-linear audit on top of `83d112b`.
+2. If Miller is materially improved, refresh the public Miller linear assets and keep that lane open only if `ky=0.05` still exceeds the accepted `1.5e-1` envelope.
+3. Treat HSX linear and KBM linear as effectively closed for this pass unless refreshed data regresses.
+4. Move directly to the nonlinear parity order after the linear Miller decision:
+   Cyclone, ETG, W7-X, HSX, KBM.
+5. Leave KAW and TEM out of the active parity-recovery path until the above GX-backed lanes are honestly closed.
+6. Consider making `ruff` a future CI gate only after a dedicated lint cleanup; current repo-wide `ruff check .` still reports pre-existing style debt.
