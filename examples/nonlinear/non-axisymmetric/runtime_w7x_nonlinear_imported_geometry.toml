@@ -85,3 +85,6 @@ nonlinear = 1.0
 ky = 0.047619047619047616
 Nl = 4
 Nm = 8
+
+[output]
+path = "../../../tools_out/w7x_nonlinear_imported_runtime"

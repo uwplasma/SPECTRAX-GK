@@ -49,6 +49,16 @@ For the VMEC-backed stellarator examples, omit ``--steps`` when you want the
 default adaptive horizon. Set ``--steps`` only when you intentionally want a
 short profiling or diagnostic window.
 
+The shipped nonlinear stellarator runtime TOMLs now also emit artifact bundles
+under ``tools_out/`` by default:
+
+- ``tools_out/w7x_nonlinear_vmec_runtime.diagnostics.csv``
+- ``tools_out/hsx_nonlinear_vmec_runtime.diagnostics.csv``
+- ``tools_out/w7x_nonlinear_imported_runtime.diagnostics.csv``
+
+Those diagnostics and their matching ``*.summary.json`` files are the intended
+inputs for the parity helpers under ``tools/``.
+
 Runtime TOML entry points
 -------------------------
 

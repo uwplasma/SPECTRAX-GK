@@ -105,6 +105,9 @@ tests:
 - ``tests/test_runtime_config.py`` and ``tests/test_runtime_runner.py`` verify
   unified runtime TOML loading and case-agnostic linear runs (Cyclone/ETG/KBM)
   through the same solver path.
+- ``tests/test_runtime_config.py`` also locks the public nonlinear stellarator
+  runtime contract, including the absence of adaptive-step truncation caps and
+  the presence of default ``tools_out/...`` artifact paths for W7-X and HSX.
 
 Linear physics checks
 ---------------------
