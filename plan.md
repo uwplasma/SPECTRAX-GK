@@ -223,8 +223,11 @@ Current linear-lane status under that ordering:
   - Corrected targeted `ky=0.05` row under the fixed contract:
     - `gamma = 0.012058`, `gamma_ref = 0.012291`, `rel_gamma = -1.89e-2`
     - `omega = 0.028325`, `omega_ref = 0.028820`, `rel_omega = -1.72e-2`
+  - Corrected targeted `ky=0.10` row under the fixed contract:
+    - `gamma = 0.032866`, `gamma_ref = 0.032862`, `rel_gamma = 1.36e-4`
+    - `omega = 0.058837`, `omega_ref = 0.058881`, `rel_omega = -7.44e-4`
   - Current published maxima after the refresh:
-    - `max |rel_gamma| ~= 0.138`
+    - `max |rel_gamma| ~= 0.058`
     - `max |rel_omega| ~= 0.017`
   - This satisfies the agreed `rtol ~= 1.5e-1` low-`k_y` acceptance target.
 
@@ -247,10 +250,25 @@ Current linear-lane status under that ordering:
   - No linear KBM code change is currently required for the agreed
     `rtol ~= 1.5e-1` target.
 
+Current nonlinear-lane status at the handoff point:
+
+- `Cyclone nonlinear`
+  - Current tracked GX/SPECTRAX comparison remains acceptable for this pass.
+  - Direct diagnostic comparison at `t <= 122` gave:
+    - `mean_rel_abs(Wg) ~= 6.63e-2`
+    - `mean_rel_abs(Wphi) ~= 6.84e-2`
+    - `mean_rel_abs(HeatFlux) ~= 9.19e-2`
+    - final relative heat-flux error `~= 7.79e-2`
+  - Interpretation:
+    - keep this lane in the public benchmark set
+    - do not spend more solver/debug time here before the remaining nonlinear
+      lanes are checked
+
 ## Next Work Order
 
 1. Treat Cyclone Miller linear, HSX linear, and KBM linear as effectively closed for this pass unless refreshed data regresses.
-2. Move directly to the nonlinear parity order:
-   Cyclone, ETG, W7-X, HSX, KBM.
-3. Leave KAW and TEM out of the active parity-recovery path until the above GX-backed lanes are honestly closed.
-4. Consider making `ruff` a future CI gate only after a dedicated lint cleanup; current repo-wide `ruff check .` still reports pre-existing style debt.
+2. Treat Cyclone nonlinear as acceptable on the current tracked comparison.
+3. Move directly to the next active nonlinear parity lanes:
+   ETG, W7-X, HSX, KBM.
+4. Leave KAW and TEM out of the active parity-recovery path until the above GX-backed lanes are honestly closed.
+5. Consider making `ruff` a future CI gate only after a dedicated lint cleanup; current repo-wide `ruff check .` still reports pre-existing style debt.
