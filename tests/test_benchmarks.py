@@ -35,6 +35,7 @@ from spectraxgk.config import (
     ETGBaseCase,
     ETGModelConfig,
     GridConfig,
+    InitializationConfig,
     KBMBaseCase,
     KineticElectronBaseCase,
     TEMBaseCase,
@@ -1269,6 +1270,62 @@ def test_kinetic_linear_defaults_to_gx_reference_contract(monkeypatch):
     assert float(params.nu_hyper_m) == pytest.approx(benchmarks.REFERENCE_NU_HYPER_M)
     assert captured["mode_family"] == "cyclone"
     assert captured["omega_sign"] == 1
+
+
+def test_kinetic_linear_defaults_to_legacy_reference_seed(monkeypatch):
+    """Default kinetic GX-reference helpers should restore the historical density seed."""
+
+    captured: dict[str, object] = {}
+
+    def _fake_build_initial_condition(_grid, _geom, *, init_cfg, **_kwargs):
+        captured["init_cfg"] = init_cfg
+        return np.zeros((4, 4, 1, 1, 8), dtype=np.complex64)
+
+    def _fake_dominant_eigenpair(_G0, _cache, _params, *, terms=None, **_kwargs):
+        return 0.1 + 0.2j, np.zeros((4, 4, 1, 1, 8), dtype=np.complex64)
+
+    def _fake_compute_fields_cached(_vec, _cache, _params, *, terms=None):
+        return type("Fields", (), {"phi": np.zeros((1, 1, 8), dtype=np.complex64)})()
+
+    monkeypatch.setattr(benchmarks, "_build_initial_condition", _fake_build_initial_condition)
+    monkeypatch.setattr(benchmarks, "dominant_eigenpair", _fake_dominant_eigenpair)
+    monkeypatch.setattr(benchmarks, "compute_fields_cached", _fake_compute_fields_cached)
+
+    grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0)
+    cfg = KineticElectronBaseCase(grid=grid)
+    run_kinetic_linear(cfg=cfg, ky_target=0.3, Nl=4, Nm=4, solver="krylov")
+
+    init_cfg = captured["init_cfg"]
+    assert init_cfg.init_field == "density"
+    assert init_cfg.init_amp == pytest.approx(1.0e-3)
+    assert init_cfg.gaussian_init is False
+
+
+def test_kinetic_linear_respects_explicit_user_seed(monkeypatch):
+    """Explicit kinetic init overrides should not be replaced by the legacy parity seed."""
+
+    captured: dict[str, object] = {}
+
+    def _fake_build_initial_condition(_grid, _geom, *, init_cfg, **_kwargs):
+        captured["init_cfg"] = init_cfg
+        return np.zeros((4, 4, 1, 1, 8), dtype=np.complex64)
+
+    def _fake_dominant_eigenpair(_G0, _cache, _params, *, terms=None, **_kwargs):
+        return 0.1 + 0.2j, np.zeros((4, 4, 1, 1, 8), dtype=np.complex64)
+
+    def _fake_compute_fields_cached(_vec, _cache, _params, *, terms=None):
+        return type("Fields", (), {"phi": np.zeros((1, 1, 8), dtype=np.complex64)})()
+
+    monkeypatch.setattr(benchmarks, "_build_initial_condition", _fake_build_initial_condition)
+    monkeypatch.setattr(benchmarks, "dominant_eigenpair", _fake_dominant_eigenpair)
+    monkeypatch.setattr(benchmarks, "compute_fields_cached", _fake_compute_fields_cached)
+
+    grid = GridConfig(Nx=1, Ny=4, Nz=8, Lx=62.8, Ly=62.8, ntheta=8, nperiod=1, y0=10.0)
+    custom_init = InitializationConfig(init_field="density", init_amp=1.0e-7, gaussian_init=True)
+    cfg = KineticElectronBaseCase(grid=grid, init=custom_init)
+    run_kinetic_linear(cfg=cfg, ky_target=0.3, Nl=4, Nm=4, solver="krylov")
+
+    assert captured["init_cfg"] == custom_init
 
 
 def test_tem_linear_defaults_to_bpar_disabled_terms(monkeypatch):

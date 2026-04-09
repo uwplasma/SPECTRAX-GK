@@ -137,10 +137,30 @@ Revised TEM next step:
   - the remaining public kinetic issue is now narrowed to late-window /
     branch-selection closure on top of the benchmark contract
 
+Additional kinetic finding from the current recovery pass:
+
+- The kinetic helper had also drifted away from the historical benchmark seed.
+  Older parity runs seeded a constant electron-density moment at amplitude
+  ``1e-3``. The current public helper was instead using the generic default
+  kinetic init, i.e. a tiny Gaussian density seed.
+- That seed drift materially changes the selected Krylov branch:
+  - with the restored table contract but current default seed, the refreshed
+    public kinetic table still lands on a catastrophic high-frequency branch
+    for ``ky=0.3``--``0.5``
+  - at ``ky=0.3`` and table-like resolution, forcing the historical constant
+    density seed collapses that catastrophic branch and brings ``gamma`` close
+    to the GX reference, although ``omega`` still needs follow-up closure
+- Source now restores that historical seed only on the GX-reference kinetic
+  helper path, and only when the caller is still using the exact default
+  kinetic init. Explicit user init overrides are preserved.
+
 Revised kinetic next step:
 
-- Re-run the exact public kinetic table on the restored contract and inspect the
-  resulting late-window rows before touching solver internals again.
+- Re-run the exact public kinetic table on the restored contract plus restored
+  legacy reference seed.
+- If the high-frequency branch disappears but ``omega`` remains wrong-sign or
+  under-resolved, then the next fix is positive-frequency branch targeting, not
+  more contract cleanup.
 
 ## Known Benchmark Mismatches To Track Post-Ship
 
