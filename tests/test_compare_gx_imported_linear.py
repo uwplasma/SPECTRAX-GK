@@ -39,7 +39,7 @@ from compare_gx_imported_linear import (
 from spectraxgk.config import GeometryConfig, GridConfig
 from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
 from spectraxgk.grids import build_spectral_grid
-from spectraxgk.gx_integrators import GXTimeConfig
+from spectraxgk.gx_integrators import ExplicitTimeConfig
 from spectraxgk.linear import LinearTerms
 from spectraxgk.runtime_config import RuntimeConfig
 from spectraxgk.species import Species
@@ -552,7 +552,7 @@ def test_run_single_ky_uses_full_grid_for_imported_multimode(monkeypatch) -> Non
         geom=SimpleNamespace(),
         grid_full=grid_full,
         params=SimpleNamespace(),
-        time_cfg=GXTimeConfig(dt=0.1, t_max=0.2, sample_stride=1, fixed_dt=True),
+        time_cfg=ExplicitTimeConfig(dt=0.1, t_max=0.2, sample_stride=1, fixed_dt=True),
         gx_contract=_dummy_gx_contract(init_single=False),
         species=(Species(charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=0.0, fprim=0.0),),
         Nl=1,
@@ -603,7 +603,7 @@ def test_run_single_ky_preserves_single_ky_fallback_without_gx_contract(monkeypa
         geom=SimpleNamespace(),
         grid_full=grid_full,
         params=SimpleNamespace(),
-        time_cfg=GXTimeConfig(dt=0.1, t_max=0.2, sample_stride=1, fixed_dt=True),
+        time_cfg=ExplicitTimeConfig(dt=0.1, t_max=0.2, sample_stride=1, fixed_dt=True),
         gx_contract=None,
         species=(Species(charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=0.0, fprim=0.0),),
         Nl=1,
@@ -747,7 +747,7 @@ def test_integrate_target_mode_series_collects_requested_sample_count(monkeypatc
         geom=SimpleNamespace(s_hat=0.0, gradpar=lambda: 1.0, metric_coeffs=lambda theta: (jnp.ones_like(theta), jnp.zeros_like(theta), jnp.ones_like(theta)), drift_coeffs=lambda theta: (jnp.zeros_like(theta), jnp.zeros_like(theta), jnp.zeros_like(theta), jnp.zeros_like(theta))),
         cache=SimpleNamespace(jacobian=jnp.ones(3, dtype=jnp.float32)),
         params=SimpleNamespace(),
-        time_cfg=GXTimeConfig(dt=0.1, t_max=0.21, sample_stride=1, fixed_dt=True),
+        time_cfg=ExplicitTimeConfig(dt=0.1, t_max=0.21, sample_stride=1, fixed_dt=True),
         terms=LinearTerms(),
         mode_method="z_index",
         ky_index=1,
@@ -819,7 +819,7 @@ def test_integrate_target_mode_series_normalizes_imported_geometry_before_omega_
         geom=geom,
         cache=SimpleNamespace(jacobian=jnp.ones(4, dtype=jnp.float32)),
         params=SimpleNamespace(),
-        time_cfg=GXTimeConfig(dt=0.1, t_max=0.1, sample_stride=1, fixed_dt=True),
+        time_cfg=ExplicitTimeConfig(dt=0.1, t_max=0.1, sample_stride=1, fixed_dt=True),
         terms=LinearTerms(),
         mode_method="z_index",
         ky_index=0,
@@ -883,7 +883,7 @@ def test_integrate_target_mode_series_uses_elapsed_sample_interval(monkeypatch) 
         ),
         cache=SimpleNamespace(jacobian=jnp.ones(1, dtype=jnp.float32)),
         params=SimpleNamespace(),
-        time_cfg=GXTimeConfig(dt=0.1, t_max=0.2, sample_stride=1, fixed_dt=True),
+        time_cfg=ExplicitTimeConfig(dt=0.1, t_max=0.2, sample_stride=1, fixed_dt=True),
         terms=LinearTerms(),
         mode_method="z_index",
         ky_index=0,
@@ -950,7 +950,7 @@ def test_integrate_target_mode_series_downsamples_output_without_sparsifying_gro
         ),
         cache=SimpleNamespace(jacobian=jnp.ones(1, dtype=jnp.float32)),
         params=SimpleNamespace(),
-        time_cfg=GXTimeConfig(dt=0.1, t_max=0.3, sample_stride=1, fixed_dt=True),
+        time_cfg=ExplicitTimeConfig(dt=0.1, t_max=0.3, sample_stride=1, fixed_dt=True),
         terms=LinearTerms(),
         mode_method="z_index",
         ky_index=0,

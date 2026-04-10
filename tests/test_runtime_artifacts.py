@@ -8,7 +8,7 @@ import pytest
 
 from spectraxgk.analysis import ModeSelection
 from spectraxgk.config import GridConfig, TimeConfig
-from spectraxgk.diagnostics import GXDiagnostics, GXResolvedDiagnostics
+from spectraxgk.diagnostics import SimulationDiagnostics, ResolvedDiagnostics
 from spectraxgk.runtime import RuntimeLinearResult, RuntimeNonlinearResult
 from spectraxgk.runtime_config import RuntimeConfig, RuntimeOutputConfig
 from spectraxgk.runtime_artifacts import (
@@ -71,7 +71,7 @@ def test_write_runtime_linear_artifacts_splits_complex_signal_columns(tmp_path: 
 
 
 def test_write_runtime_nonlinear_artifacts_preserves_csv_target(tmp_path: Path) -> None:
-    diag = GXDiagnostics(
+    diag = SimulationDiagnostics(
         t=np.asarray([0.1, 0.2]),
         dt_t=np.asarray([0.1, 0.1]),
         dt_mean=np.asarray(0.1),
@@ -112,7 +112,7 @@ def test_write_runtime_nonlinear_artifacts_writes_gx_netcdf_bundle(tmp_path: Pat
     netcdf4 = pytest.importorskip("netCDF4")
     Dataset = netcdf4.Dataset
 
-    diag = GXDiagnostics(
+    diag = SimulationDiagnostics(
         t=np.asarray([0.0, 0.1], dtype=float),
         dt_t=np.asarray([0.05, 0.05], dtype=float),
         dt_mean=np.asarray(0.05),
@@ -129,7 +129,7 @@ def test_write_runtime_nonlinear_artifacts_writes_gx_netcdf_bundle(tmp_path: Pat
         turbulent_heating_t=np.asarray([8.0, 8.1], dtype=float),
         turbulent_heating_species_t=np.asarray([[8.0], [8.1]], dtype=float),
         phi_mode_t=None,
-        resolved=GXResolvedDiagnostics(
+        resolved=ResolvedDiagnostics(
             Phi2_kxt=np.ones((2, 8), dtype=float),
             Phi2_kyt=np.ones((2, 8), dtype=float),
             Phi2_kxkyt=np.ones((2, 8, 8), dtype=float),
@@ -269,7 +269,7 @@ def test_run_runtime_nonlinear_with_artifacts_uses_restart_if_exists(monkeypatch
         ),
     )
 
-    diag = GXDiagnostics(
+    diag = SimulationDiagnostics(
         t=np.asarray([0.1]),
         dt_t=np.asarray([0.1]),
         dt_mean=np.asarray(0.1),

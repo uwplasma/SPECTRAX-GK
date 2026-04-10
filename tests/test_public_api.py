@@ -2,8 +2,9 @@ import spectraxgk
 
 
 def test_standalone_public_aliases_match_compatibility_exports() -> None:
-    assert spectraxgk.LinearExplicitTimeConfig is spectraxgk.GXTimeConfig
-    assert spectraxgk.SimulationDiagnostics is spectraxgk.GXDiagnostics
+    assert spectraxgk.LinearExplicitTimeConfig is spectraxgk.ExplicitTimeConfig
+    assert spectraxgk.GXTimeConfig is spectraxgk.ExplicitTimeConfig
+    assert spectraxgk.GXDiagnostics is spectraxgk.SimulationDiagnostics
     assert spectraxgk.integrate_linear_explicit is spectraxgk.integrate_linear_gx
     assert (
         spectraxgk.integrate_linear_explicit_diagnostics
