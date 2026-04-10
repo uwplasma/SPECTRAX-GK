@@ -211,6 +211,11 @@ def _write_csv(path: Path, rows: list[dict[str, object]]) -> None:
             writer.writerow({k: row.get(k) for k in fieldnames})
 
 
+def _write_summary(path: Path, rows: list[dict[str, object]]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({"rows": rows}, indent=2) + "\n", encoding="utf-8")
+
+
 def _load_summary_rows(patterns: list[str]) -> list[dict[str, object]]:
     rows_by_key: dict[tuple[str, str], dict[str, object]] = {}
     seen: set[str] = set()
@@ -353,6 +358,8 @@ def main() -> int:
         row = _run_command(run)
         row.update(_write_row_logs(_resolve(args.log_dir), row))
         rows.append(row)
+        _write_csv(_resolve(args.csv_out), rows)
+        _write_summary(_resolve(args.summary_out), rows)
         runtime_obj = row["runtime_s"]
         returncode_obj = row["returncode"]
         if not isinstance(runtime_obj, (int, float)) or not isinstance(returncode_obj, int):
@@ -365,15 +372,9 @@ def main() -> int:
         if row["status"] != "success":
             any_failures = True
             if not args.continue_on_error:
-                _write_csv(_resolve(args.csv_out), rows)
-                _resolve(args.summary_out).parent.mkdir(parents=True, exist_ok=True)
-                _resolve(args.summary_out).write_text(json.dumps({"rows": rows}, indent=2) + "\n", encoding="utf-8")
                 return return_code
 
     if rows:
-        _write_csv(_resolve(args.csv_out), rows)
-        _resolve(args.summary_out).parent.mkdir(parents=True, exist_ok=True)
-        _resolve(args.summary_out).write_text(json.dumps({"rows": rows}, indent=2) + "\n", encoding="utf-8")
         if not args.skip_plot:
             plot_png = _resolve(args.plot_out)
             plot_pdf = plot_png.with_suffix(".pdf")

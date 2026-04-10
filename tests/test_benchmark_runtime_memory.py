@@ -9,6 +9,7 @@ from tools.benchmark_runtime_memory import (
     _run_command,
     _select_runs,
     _write_row_logs,
+    _write_summary,
 )
 
 
@@ -119,3 +120,10 @@ def test_runtime_memory_row_logs_are_written(tmp_path: Path) -> None:
     logs = _write_row_logs(tmp_path, row)
     assert Path(logs["stdout_log"]).read_text(encoding="utf-8") == "ok"
     assert Path(logs["stderr_log"]).read_text(encoding="utf-8") == "warn"
+
+
+def test_runtime_memory_summary_is_written(tmp_path: Path) -> None:
+    rows = [{"case": "a", "backend": "spectrax_cpu", "status": "success"}]
+    out = tmp_path / "summary.json"
+    _write_summary(out, rows)
+    assert '"case": "a"' in out.read_text(encoding="utf-8")
