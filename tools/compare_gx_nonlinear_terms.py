@@ -290,6 +290,23 @@ def _resolve_dealias_mask(mask: jnp.ndarray | np.ndarray, *, ny: int, nx: int) -
     return twothirds_mask(int(ny), int(nx))
 
 
+def _synth_positive_ky(*, nyc: int, y0: float) -> np.ndarray:
+    return np.arange(int(nyc), dtype=float) / float(y0)
+
+
+def _synth_full_ky(*, nyc: int, y0: float) -> np.ndarray:
+    ky_pos = _synth_positive_ky(nyc=nyc, y0=y0)
+    ny_full = 2 * (int(nyc) - 1)
+    if ny_full > int(nyc):
+        return np.concatenate([ky_pos, -ky_pos[1 : int(nyc) - 1][::-1]])
+    return ky_pos
+
+
+def _synth_kx(*, nx: int, delta_kx: float) -> np.ndarray:
+    idx = np.fft.fftfreq(int(nx), d=1.0 / float(nx))
+    return (2.0 * np.pi / (2.0 * np.pi / float(delta_kx))) * idx
+
+
 def _summary(label: str, ref: np.ndarray, test: np.ndarray) -> None:
     if ref.ndim != test.ndim:
         raise ValueError(
@@ -603,10 +620,30 @@ def main() -> None:
         kx_vals = np.asarray(root.groups["Grids"].variables["kx"][:], dtype=float)
     if kx_vals is None or ky_vals is None:
         raise ValueError("Failed to load GX kx/ky values")
+    y0_infer = float(args.y0) if args.y0 is not None else _infer_y0(ky_vals)
     if kx_vals_dump is not None and int(kx_vals_dump.size) == nx:
         kx_vals = kx_vals_dump
+    elif int(kx_vals.size) != nx:
+        positive = np.abs(np.asarray(kx_vals, dtype=float))
+        positive = positive[positive > 0.0]
+        delta_kx = float(np.min(positive)) if positive.size else float(2.0 * np.pi / args.Lx)
+        kx_vals = _synth_kx(nx=nx, delta_kx=delta_kx)
     if ky_vals_dump is not None and int(ky_vals_dump.size) == nyc:
-        ky_vals = ky_vals_dump
+        ky_vals_nyc = ky_vals_dump
+        ky_vals_full = _synth_full_ky(nyc=nyc, y0=y0_infer)
+        ny_full = int(ky_vals_full.size)
+    elif int(ky_vals.size) == nyc:
+        ky_vals_nyc = ky_vals
+        ky_vals_full = _synth_full_ky(nyc=nyc, y0=y0_infer)
+        ny_full = int(ky_vals_full.size)
+    elif int(ky_vals.size) < nyc:
+        ky_vals_nyc = _synth_positive_ky(nyc=nyc, y0=y0_infer)
+        ky_vals_full = _synth_full_ky(nyc=nyc, y0=y0_infer)
+        ny_full = int(ky_vals_full.size)
+    else:
+        ky_vals_full = np.asarray(ky_vals, dtype=float)
+        ny_full = int(ky_vals_full.size)
+        ky_vals_nyc = ky_vals_full[:nyc]
     if kx_vals_dump is not None:
         kx_vals_pad = kx_vals_dump
     else:
@@ -614,19 +651,7 @@ def main() -> None:
     if ky_vals_dump is not None:
         ky_vals_pad = ky_vals_dump
     else:
-        ky_vals_pad = ky_vals
-    if ky_vals.size == nyc:
-        ky_vals_nyc = ky_vals
-        ny_full = 2 * (nyc - 1)
-        if ny_full > nyc:
-            ky_neg = -ky_vals[1 : nyc - 1][::-1]
-            ky_vals_full = np.concatenate([ky_vals, ky_neg])
-        else:
-            ky_vals_full = ky_vals
-    else:
-        ky_vals_full = ky_vals
-        ny_full = int(ky_vals_full.size)
-        ky_vals_nyc = ky_vals_full[:nyc]
+        ky_vals_pad = ky_vals_nyc
     nyc_pad = int(ky_vals_pad.size)
     nx_pad = int(kx_vals_pad.size)
     ny_full_pad = 2 * (nyc_pad - 1)

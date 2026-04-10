@@ -137,3 +137,18 @@ def test_resolve_dealias_mask_rebuilds_to_compared_shape() -> None:
     mask = mod._resolve_dealias_mask(np.ones((4, 4), dtype=bool), ny=10, nx=4)
 
     assert mask.shape == (10, 4)
+
+
+def test_synth_positive_and_full_ky_rebuild_dump_grid() -> None:
+    tools_dir = Path(__file__).resolve().parents[1] / "tools"
+    sys.path.insert(0, str(tools_dir))
+    try:
+        import compare_gx_nonlinear_terms as mod
+    finally:
+        sys.path.remove(str(tools_dir))
+
+    ky_pos = mod._synth_positive_ky(nyc=6, y0=10.0)
+    ky_full = mod._synth_full_ky(nyc=6, y0=10.0)
+
+    assert np.allclose(ky_pos, [0.0, 0.1, 0.2, 0.3, 0.4, 0.5])
+    assert np.allclose(ky_full, [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, -0.4, -0.3, -0.2, -0.1])
