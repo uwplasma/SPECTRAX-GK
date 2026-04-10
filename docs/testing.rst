@@ -200,6 +200,12 @@ artifacts, use:
 - ``tools/run_device_parity_gate.py`` (manifest-driven CPU/GPU short-window parity gate)
 - ``tools/run_vmec_roundtrip_gate.py`` (manifest-driven VMEC ``vmec -> eik.nc`` determinism gate)
 
+The current full-GK nonlinear ETG lane is now explicitly tracked as a pilot
+runtime contract via
+``examples/nonlinear/axisymmetric/runtime_etg_nonlinear.toml``. That lane is
+separate from the reduced ``cETG`` solver and should be used for future
+GX-backed nonlinear ETG parity work.
+
 The targeted imported-linear wrapper and the underlying
 ``compare_gx_imported_linear.py`` comparator now support two important controls
 for honest stress-lane scoring without changing the default full-window

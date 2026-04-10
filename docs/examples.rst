@@ -190,3 +190,15 @@ Reduced-model runtime
 
 The reduced collisional slab ETG workflow uses the dedicated cETG runtime
 solver rather than the full-GK field solve path.
+
+Full-GK ETG nonlinear pilot
+---------------------------
+
+.. code-block:: bash
+
+   python examples/nonlinear/axisymmetric/etg_runtime_nonlinear.py --steps 200
+   JAX_ENABLE_X64=1 spectrax-gk examples/nonlinear/axisymmetric/runtime_etg_nonlinear.toml --steps 200
+
+This is the full-GK two-species ETG nonlinear pilot lane. It is intentionally
+separate from the reduced cETG workflow and is the correct starting point for
+future GX-backed nonlinear ETG parity work.

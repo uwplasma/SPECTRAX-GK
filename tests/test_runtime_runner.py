@@ -1393,6 +1393,18 @@ def test_runtime_cetg_reference_example_runs_small_smoke() -> None:
     assert np.allclose(np.asarray(out.diagnostics.Wapar_t), 0.0)
 
 
+def test_runtime_etg_nonlinear_example_runs_small_smoke() -> None:
+    cfg_path = Path(__file__).resolve().parents[1] / "examples" / "nonlinear" / "axisymmetric" / "runtime_etg_nonlinear.toml"
+    cfg, _ = load_runtime_from_toml(cfg_path)
+
+    out = run_runtime_nonlinear(cfg, ky_target=3.0, kx_target=0.0, steps=2, sample_stride=1)
+
+    assert out.diagnostics is not None
+    assert np.all(np.isfinite(np.asarray(out.diagnostics.Wg_t)))
+    assert np.all(np.isfinite(np.asarray(out.diagnostics.Wphi_t)))
+    assert np.allclose(np.asarray(out.diagnostics.Wapar_t), 0.0)
+
+
 def test_runtime_linear_gx_time_root_level_geometry_matches_analytic_reference(tmp_path) -> None:
     netcdf4 = pytest.importorskip("netCDF4")
     Dataset = netcdf4.Dataset
