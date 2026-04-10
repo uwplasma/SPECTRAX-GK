@@ -66,18 +66,18 @@ def test_build_linked_fft_maps_keeps_real_fft_positive_ky_modes():
 
 
 def test_build_linear_cache_zero_shat_periodic_uses_periodic_fft_without_end_damping():
-    from spectraxgk.geometry import SlabGeometry, apply_gx_geometry_grid_defaults
+    from spectraxgk.geometry import SlabGeometry, apply_geometry_grid_defaults
     from spectraxgk.config import GeometryConfig
-    from spectraxgk.grids import select_gx_real_fft_ky_grid
+    from spectraxgk.grids import select_real_fft_ky_grid
     from spectraxgk.species import Species, build_linear_params
 
     geom = SlabGeometry.from_config(GeometryConfig(model="slab", s_hat=1.0e-8, zero_shat=True))
-    grid_cfg = apply_gx_geometry_grid_defaults(
+    grid_cfg = apply_geometry_grid_defaults(
         geom,
         GridConfig(Nx=1, Ny=7, Nz=32, Lx=2.0 * np.pi, Ly=200.0 * np.pi, boundary="linked", y0=100.0),
     )
     grid_full = build_spectral_grid(grid_cfg)
-    grid = select_gx_real_fft_ky_grid(grid_full, np.array([0.0, 0.01, 0.02], dtype=np.float32))
+    grid = select_real_fft_ky_grid(grid_full, np.array([0.0, 0.01, 0.02], dtype=np.float32))
     params = build_linear_params(
         (Species(charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=0.0, fprim=0.0),),
         tau_e=0.0,
