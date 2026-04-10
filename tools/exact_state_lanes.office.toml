@@ -39,7 +39,7 @@ gx_dir = "$HOME/gx_runs/cyclone_local_match_dense_diag_t47"
 time_index = 47
 
 [lane.kbm_salpha]
-config = "../examples/linear/axisymmetric/runtime_kbm_nonlinear_gx_t100.toml"
+config = "../examples/nonlinear/axisymmetric/runtime_kbm_nonlinear_gx_t100.toml"
 gx_out = "$HOME/gx_refs/main_clean_20260312/nonlinear/kbm/kbm_salpha_nonlinear.out.nc"
 
 [lane.kbm_salpha.startup]

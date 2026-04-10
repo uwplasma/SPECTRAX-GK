@@ -366,6 +366,18 @@ Current nonlinear-lane status at the handoff point:
     - the refreshed normalized wrapper path is healthier than the older
       tracked HSX nonlinear comparison
 
+- `KBM nonlinear`
+  - The first refreshed audit hit a concrete tooling/config bug before any
+    physics comparison:
+    - both `tools/exact_state_lanes.office.toml` and
+      `tools/restart_gate_lanes.office.toml` still pointed at the nonexistent
+      `examples/linear/axisymmetric/runtime_kbm_nonlinear_gx_t100.toml`
+      instead of the shipped nonlinear config under
+      `examples/nonlinear/axisymmetric/`
+  - Those office manifests are now corrected and covered by tests.
+  - Next KBM step is to rerun the startup/exact-state audit on the corrected
+    path and then separate startup closure from later nonlinear evolution.
+
 ## Next Work Order
 
 1. Treat Cyclone Miller linear, HSX linear, KBM linear, Cyclone nonlinear, HSX nonlinear, and W7-X nonlinear as acceptable for the current pass unless refreshed data regresses.
@@ -383,7 +395,8 @@ Current nonlinear-lane status at the handoff point:
      - it is still very open numerically
      - it is also materially slower on the current SPECTRAX runtime path
    - next ETG task is now contract/physics closure against that short window, not case-definition from scratch
-3. Then continue with the remaining GX-backed nonlinear queue: KBM nonlinear, kinetic-electron Cyclone.
+3. Then continue with the remaining GX-backed nonlinear queue:
+   KBM nonlinear, kinetic-electron Cyclone.
 4. Leave KAW and TEM out of the active parity-recovery path until the above GX-backed lanes are honestly closed.
 5. Consider making `ruff` a future CI gate only after a dedicated lint cleanup; current repo-wide `ruff check .` still reports pre-existing style debt.
 
