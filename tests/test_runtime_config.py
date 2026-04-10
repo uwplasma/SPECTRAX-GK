@@ -154,6 +154,29 @@ def test_linear_axisymmetric_runtime_examples_keep_parity_collision_contract() -
         assert cfg.collisions.hypercollisions_kz == pytest.approx(hyper_kz), name
 
 
+def test_etg_nonlinear_pilot_example_keeps_two_species_full_gk_contract() -> None:
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "examples"
+        / "nonlinear"
+        / "axisymmetric"
+        / "runtime_etg_nonlinear.toml"
+    )
+
+    cfg, data = load_runtime_from_toml(path)
+
+    assert isinstance(data, dict)
+    assert len(cfg.species) == 2
+    assert cfg.physics.linear is False
+    assert cfg.physics.nonlinear is True
+    assert cfg.physics.electrostatic is True
+    assert cfg.physics.electromagnetic is False
+    assert cfg.physics.adiabatic_ions is False
+    assert cfg.physics.adiabatic_electrons is False
+    assert data["run"]["ky"] == pytest.approx(5.0)
+    assert cfg.output.path == str((path.parents[3] / "tools_out" / "etg_nonlinear_runtime").resolve())
+
+
 def test_load_runtime_from_toml_keeps_imported_geometry_fields(tmp_path: Path) -> None:
     toml = """
 [[species]]

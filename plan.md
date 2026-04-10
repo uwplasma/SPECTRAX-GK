@@ -373,7 +373,16 @@ Current nonlinear-lane status at the handoff point:
    - `/Users/rogeriojorge/local/SPECTRAX-GK/examples/nonlinear/axisymmetric/runtime_etg_nonlinear.toml`
    - `/Users/rogeriojorge/local/SPECTRAX-GK/examples/nonlinear/axisymmetric/etg_runtime_nonlinear.py`
    - it is two-species, electrostatic, nonlinear, and intentionally separate from reduced `cETG`
-   - next ETG task is now GX reference selection and first parity replay, not case-definition from scratch
+   - the pilot now uses `ky = 5.0`, which lines up with the existing GX two-species ETG `y0 = 0.2` contract (`ky_min = 5`)
+   - first short `office` replay now exists on both codes at `t = 0.01`
+   - current x64 short-window result is not closed:
+     - `spectrax-gk`: `Wg_last ~= 9.12e-22`, `Wphi_last ~= 6.24e-22`, `heat_last ~= 5.23e-22`, runtime `~= 35.2 s`
+     - `GX`: `Wg_last ~= 7.97e-21`, `Wphi_last ~= 5.23e-21`, `heat_last ~= 1.14e-20`, runtime `~= 3.26 s`
+   - interpretation:
+     - the lane is now concrete and reproducible
+     - it is still very open numerically
+     - it is also materially slower on the current SPECTRAX runtime path
+   - next ETG task is now contract/physics closure against that short window, not case-definition from scratch
 3. Then continue with the remaining GX-backed nonlinear queue: KBM nonlinear, kinetic-electron Cyclone.
 4. Leave KAW and TEM out of the active parity-recovery path until the above GX-backed lanes are honestly closed.
 5. Consider making `ruff` a future CI gate only after a dedicated lint cleanup; current repo-wide `ruff check .` still reports pre-existing style debt.

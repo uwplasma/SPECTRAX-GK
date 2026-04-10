@@ -206,6 +206,18 @@ runtime contract via
 separate from the reduced ``cETG`` solver and should be used for future
 GX-backed nonlinear ETG parity work.
 
+For ETG nonlinear audit runs, use dense short-window overrides first:
+
+.. code-block:: bash
+
+   JAX_ENABLE_X64=1 spectrax-gk examples/nonlinear/axisymmetric/runtime_etg_nonlinear.toml \
+     --steps 10 \
+     --sample-stride 1 \
+     --diagnostics-stride 1
+
+This lane is currently expensive enough that short persisted windows are the
+right first diagnostic step before attempting long production horizons.
+
 The targeted imported-linear wrapper and the underlying
 ``compare_gx_imported_linear.py`` comparator now support two important controls
 for honest stress-lane scoring without changing the default full-window
