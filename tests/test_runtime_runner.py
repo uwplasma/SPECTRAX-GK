@@ -1397,7 +1397,7 @@ def test_runtime_etg_nonlinear_example_runs_small_smoke() -> None:
     cfg_path = Path(__file__).resolve().parents[1] / "examples" / "nonlinear" / "axisymmetric" / "runtime_etg_nonlinear.toml"
     cfg, _ = load_runtime_from_toml(cfg_path)
 
-    out = run_runtime_nonlinear(cfg, ky_target=3.0, kx_target=0.0, steps=2, sample_stride=1)
+    out = run_runtime_nonlinear(cfg, ky_target=5.0, kx_target=0.0, steps=2, sample_stride=1)
 
     assert out.diagnostics is not None
     assert np.all(np.isfinite(np.asarray(out.diagnostics.Wg_t)))
