@@ -19,7 +19,7 @@ case = "cyclone-linear"
 label = "Cyclone ITG Linear"
 backend = "gx"
 host = "office"
-command = "tmpdir=$(mktemp -d) && trap 'rm -rf \"$tmpdir\"' EXIT && for f in *; do case \"$f\" in *.out.nc|*.restart.nc|*.big.nc|*.bin|rhs_terms_shape.txt) ;; *) ln -s \"$(pwd)/$f\" \"$tmpdir/$f\" ;; esac; done && cd \"$tmpdir\" && CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} env -u DISPLAY HDF5_DISABLE_VERSION_CHECK=1 LD_LIBRARY_PATH=${REFERENCE_GK_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${REFERENCE_GK_BIN} itg_salpha_adiabatic_electrons.in"
+command = "tmpdir=$(mktemp -d) && trap 'rm -rf \"$tmpdir\"' EXIT && for f in *; do case \"$f\" in *.out.nc|*.restart.nc|*.big.nc|*.bin|rhs_terms_shape.txt) ;; *) ln -s \"$(pwd)/$f\" \"$tmpdir/$f\" ;; esac; done && cd \"$tmpdir\" && python3 - <<'PY'\nfrom pathlib import Path\nimport re\np = Path('itg_salpha_adiabatic_electrons.in')\ntext = p.read_text()\ntext = re.sub(r'(?m)^\\s*t_max\\s*=.*$', ' t_max = 10.0', text)\np.write_text(text)\nPY\nCUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} env -u DISPLAY HDF5_DISABLE_VERSION_CHECK=1 LD_LIBRARY_PATH=${REFERENCE_GK_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${REFERENCE_GK_BIN} itg_salpha_adiabatic_electrons.in"
 cwd = "${REFERENCE_GK_REPO}/benchmarks/linear/ITG_cyclone"
 
 [[run]]
@@ -43,7 +43,7 @@ case = "cyclone-nonlinear"
 label = "Cyclone ITG Nonlinear"
 backend = "gx"
 host = "office"
-command = "tmpdir=$(mktemp -d) && trap 'rm -rf \"$tmpdir\"' EXIT && for f in *; do case \"$f\" in *.out.nc|*.restart.nc|*.big.nc|*.bin|rhs_terms_shape.txt) ;; *) ln -s \"$(pwd)/$f\" \"$tmpdir/$f\" ;; esac; done && cd \"$tmpdir\" && CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} env -u DISPLAY HDF5_DISABLE_VERSION_CHECK=1 LD_LIBRARY_PATH=${REFERENCE_GK_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${REFERENCE_GK_BIN} cyclone_salpha_adiabatic_electrons.in"
+command = "tmpdir=$(mktemp -d) && trap 'rm -rf \"$tmpdir\"' EXIT && for f in *; do case \"$f\" in *.out.nc|*.restart.nc|*.big.nc|*.bin|rhs_terms_shape.txt) ;; *) ln -s \"$(pwd)/$f\" \"$tmpdir/$f\" ;; esac; done && cd \"$tmpdir\" && python3 - <<'PY'\nfrom pathlib import Path\nimport re\np = Path('cyclone_salpha_adiabatic_electrons.in')\ntext = p.read_text()\ntext = re.sub(r'(?m)^\\s*t_max\\s*=.*$', ' t_max = 7.54', text)\np.write_text(text)\nPY\nCUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} env -u DISPLAY HDF5_DISABLE_VERSION_CHECK=1 LD_LIBRARY_PATH=${REFERENCE_GK_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${REFERENCE_GK_BIN} cyclone_salpha_adiabatic_electrons.in"
 cwd = "${REFERENCE_GK_REPO}/benchmarks/nonlinear/cyclone"
 
 [[run]]
@@ -91,7 +91,7 @@ case = "kbm-linear"
 label = "KBM Linear"
 backend = "gx"
 host = "office"
-command = "tmpdir=$(mktemp -d) && trap 'rm -rf \"$tmpdir\"' EXIT && for f in *; do case \"$f\" in *.out.nc|*.restart.nc|*.big.nc|*.bin|rhs_terms_shape.txt) ;; *) ln -s \"$(pwd)/$f\" \"$tmpdir/$f\" ;; esac; done && cd \"$tmpdir\" && CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} env -u DISPLAY HDF5_DISABLE_VERSION_CHECK=1 LD_LIBRARY_PATH=${REFERENCE_GK_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${REFERENCE_GK_BIN} kbm_salpha.in"
+command = "tmpdir=$(mktemp -d) && trap 'rm -rf \"$tmpdir\"' EXIT && for f in *; do case \"$f\" in *.out.nc|*.restart.nc|*.big.nc|*.bin|rhs_terms_shape.txt) ;; *) ln -s \"$(pwd)/$f\" \"$tmpdir/$f\" ;; esac; done && cd \"$tmpdir\" && python3 - <<'PY'\nfrom pathlib import Path\nimport re\np = Path('kbm_salpha.in')\ntext = p.read_text()\ntext = re.sub(r'(?m)^\\s*t_max\\s*=.*$', ' t_max = 4.0', text)\np.write_text(text)\nPY\nCUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} env -u DISPLAY HDF5_DISABLE_VERSION_CHECK=1 LD_LIBRARY_PATH=${REFERENCE_GK_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${REFERENCE_GK_BIN} kbm_salpha.in"
 cwd = "${REFERENCE_GK_REPO}/benchmarks/linear/KBM"
 
 [[run]]
@@ -163,7 +163,7 @@ case = "w7x-nonlinear"
 label = "W7-X Nonlinear"
 backend = "gx"
 host = "office"
-command = "tmpdir=$(mktemp -d) && trap 'rm -rf \"$tmpdir\"' EXIT && for f in *; do case \"$f\" in *.out.nc|*.restart.nc|*.big.nc|*.bin|rhs_terms_shape.txt) ;; *) ln -s \"$(pwd)/$f\" \"$tmpdir/$f\" ;; esac; done && cd \"$tmpdir\" && CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} env -u DISPLAY HDF5_DISABLE_VERSION_CHECK=1 LD_LIBRARY_PATH=${REFERENCE_GK_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${REFERENCE_GK_BIN} w7x_adiabatic_electrons.in"
+command = "tmpdir=$(mktemp -d) && trap 'rm -rf \"$tmpdir\"' EXIT && for f in *; do case \"$f\" in *.out.nc|*.restart.nc|*.big.nc|*.bin|rhs_terms_shape.txt) ;; *) ln -s \"$(pwd)/$f\" \"$tmpdir/$f\" ;; esac; done && cd \"$tmpdir\" && python3 - <<'PY'\nfrom pathlib import Path\nimport re\np = Path('w7x_adiabatic_electrons.in')\ntext = p.read_text()\ntext = re.sub(r'(?m)^\\s*t_max\\s*=.*$', ' t_max = 20.0', text)\np.write_text(text)\nPY\nCUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} env -u DISPLAY HDF5_DISABLE_VERSION_CHECK=1 LD_LIBRARY_PATH=${REFERENCE_GK_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${REFERENCE_GK_BIN} w7x_adiabatic_electrons.in"
 cwd = "${REFERENCE_GK_REPO}/benchmarks/nonlinear/w7x"
 
 [[run]]
@@ -211,7 +211,7 @@ case = "hsx-nonlinear"
 label = "HSX Nonlinear"
 backend = "gx"
 host = "office"
-command = "tmpdir=$(mktemp -d) && trap 'rm -rf \"$tmpdir\"' EXIT && for f in *; do case \"$f\" in *.out.nc|*.restart.nc|*.big.nc|*.bin|rhs_terms_shape.txt) ;; *) ln -s \"$(pwd)/$f\" \"$tmpdir/$f\" ;; esac; done && cd \"$tmpdir\" && CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} env -u DISPLAY HDF5_DISABLE_VERSION_CHECK=1 LD_LIBRARY_PATH=${REFERENCE_GK_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${REFERENCE_GK_BIN} hsx_nonlinear.in"
+command = "tmpdir=$(mktemp -d) && trap 'rm -rf \"$tmpdir\"' EXIT && for f in *; do case \"$f\" in *.out.nc|*.restart.nc|*.big.nc|*.bin|rhs_terms_shape.txt) ;; *) ln -s \"$(pwd)/$f\" \"$tmpdir/$f\" ;; esac; done && cd \"$tmpdir\" && python3 - <<'PY'\nfrom pathlib import Path\nimport re\np = Path('hsx_nonlinear.in')\ntext = p.read_text()\ntext = re.sub(r'(?m)^\\s*t_max\\s*=.*$', ' t_max = 20.0', text)\np.write_text(text)\nPY\nCUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} env -u DISPLAY HDF5_DISABLE_VERSION_CHECK=1 LD_LIBRARY_PATH=${REFERENCE_GK_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${REFERENCE_GK_BIN} hsx_nonlinear.in"
 cwd = "${REFERENCE_GK_REFS_ROOT}/nonlinear/hsx"
 
 [[run]]
@@ -235,5 +235,5 @@ case = "miller-nonlinear"
 label = "Cyclone Miller Nonlinear"
 backend = "gx"
 host = "office"
-command = "tmpdir=$(mktemp -d) && trap 'rm -rf \"$tmpdir\"' EXIT && for f in *; do case \"$f\" in *.out.nc|*.restart.nc|*.big.nc|*.bin|rhs_terms_shape.txt) ;; *) ln -s \"$(pwd)/$f\" \"$tmpdir/$f\" ;; esac; done && cd \"$tmpdir\" && CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} env -u DISPLAY HDF5_DISABLE_VERSION_CHECK=1 LD_LIBRARY_PATH=${REFERENCE_GK_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${REFERENCE_GK_BIN} cyclone_miller_adiabatic_electrons.in"
+command = "tmpdir=$(mktemp -d) && trap 'rm -rf \"$tmpdir\"' EXIT && for f in *; do case \"$f\" in *.out.nc|*.restart.nc|*.big.nc|*.bin|rhs_terms_shape.txt) ;; *) ln -s \"$(pwd)/$f\" \"$tmpdir/$f\" ;; esac; done && cd \"$tmpdir\" && python3 - <<'PY'\nfrom pathlib import Path\nimport re\np = Path('cyclone_miller_adiabatic_electrons.in')\ntext = p.read_text()\ntext = re.sub(r'(?m)^\\s*t_max\\s*=.*$', ' t_max = 7.54', text)\np.write_text(text)\nPY\nCUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} env -u DISPLAY HDF5_DISABLE_VERSION_CHECK=1 LD_LIBRARY_PATH=${REFERENCE_GK_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${REFERENCE_GK_BIN} cyclone_miller_adiabatic_electrons.in"
 cwd = "${REFERENCE_GK_REPO}/benchmarks/nonlinear/cyclone"
