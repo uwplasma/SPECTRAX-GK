@@ -51,6 +51,16 @@ def test_exact_state_office_manifest_w7x_config_resolves_to_real_example() -> No
     assert resolved.is_file()
 
 
+def test_exact_state_office_manifest_kbm_config_resolves_to_real_example() -> None:
+    repo = Path(__file__).resolve().parents[1]
+    manifest = repo / "tools" / "exact_state_lanes.office.toml"
+    data = tomllib.loads(manifest.read_text(encoding="utf-8"))
+    config = data["lane"]["kbm_salpha"]["config"]
+    resolved = _resolve_manifest_path(config, manifest_dir=manifest.parent)
+    assert resolved == (repo / "examples" / "nonlinear" / "axisymmetric" / "runtime_kbm_nonlinear_gx_t100.toml")
+    assert resolved.is_file()
+
+
 def test_tool_env_prepends_absolute_repo_pythonpath(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     monkeypatch.setenv("PYTHONPATH", "src:.")
     env = _tool_env(tmp_path)
