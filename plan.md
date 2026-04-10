@@ -494,6 +494,9 @@ Current nonlinear-lane status at the handoff point:
 - The runtime/memory runner now supports better long-batch recovery:
   - `--continue-on-error` keeps the batch moving across later rows
   - `--log-dir` writes per-row stdout/stderr logs for postmortem debugging
+  - per-row CSV/summary persistence now happens after every completed row, so
+    long office sweeps no longer lose all partial progress when a later row
+    fails or the session is interrupted
 
 ## CI/CD Status (2026-04-09)
 
