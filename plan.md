@@ -474,6 +474,8 @@ Current nonlinear-lane status at the handoff point:
   - `GXReducedModelContract` -> `ReducedModelContract`
   - `load_gx_reduced_model_contract()` -> `load_reduced_model_contract()`
   - `gx_default_cfl_fac()` -> `explicit_method_default_cfl_fac()`
+  - `GXVmecGeometryRequest` -> `VmecGeometryRequest`
+  - `build_gx_vmec_geometry_request()` -> `build_vmec_geometry_request()`
   - the older GX-prefixed names remain as aliases so the broader rename can
     proceed incrementally without breaking the current release branch
 - A fresh runtime/memory sweep was relaunched against a clean `office` clone at

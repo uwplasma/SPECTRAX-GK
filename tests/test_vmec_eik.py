@@ -16,6 +16,7 @@ from spectraxgk.runtime_config import (
     RuntimeSpeciesConfig,
 )
 from spectraxgk.vmec_eik import (
+    build_vmec_geometry_request,
     build_gx_vmec_geometry_request,
     generate_runtime_vmec_eik,
 )
@@ -62,9 +63,9 @@ def _vmec_runtime_cfg(tmp_path: Path, *, geometry_file: str | None = None) -> Ru
     )
 
 
-def test_build_gx_vmec_geometry_request_creates_expected_request(tmp_path: Path) -> None:
+def test_build_vmec_geometry_request_creates_expected_request(tmp_path: Path) -> None:
     cfg = _vmec_runtime_cfg(tmp_path)
-    request = build_gx_vmec_geometry_request(cfg)
+    request = build_vmec_geometry_request(cfg)
     
     assert request.vmec_file == str(Path(cfg.geometry.vmec_file).resolve())
     assert request.torflux == 0.64
@@ -75,16 +76,23 @@ def test_build_gx_vmec_geometry_request_creates_expected_request(tmp_path: Path)
     assert request.z == (1.0, -1.0) # Ion + adiabatic electron
 
 
-def test_build_gx_vmec_geometry_request_expands_env_vmec_file(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_build_vmec_geometry_request_expands_env_vmec_file(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     vmec_path = tmp_path / "wout_env.nc"
     vmec_path.write_text("stub", encoding="utf-8")
     monkeypatch.setenv("HSX_VMEC_FILE", str(vmec_path))
     cfg = _vmec_runtime_cfg(tmp_path)
     cfg = replace(cfg, geometry=replace(cfg.geometry, vmec_file="$HSX_VMEC_FILE"))
 
-    request = build_gx_vmec_geometry_request(cfg)
+    request = build_vmec_geometry_request(cfg)
 
     assert request.vmec_file == str(vmec_path.resolve())
+
+
+def test_build_gx_vmec_geometry_request_alias_still_resolves(tmp_path: Path) -> None:
+    cfg = _vmec_runtime_cfg(tmp_path)
+    request = build_gx_vmec_geometry_request(cfg)
+
+    assert request.torflux == pytest.approx(0.64)
 
 
 def test_generate_runtime_vmec_eik_invokes_internal_generator(
