@@ -82,12 +82,12 @@ lanes:
    python -m spectraxgk.cli run-runtime-linear \
      --config examples/linear/non-axisymmetric/runtime_w7x_linear_imported_geometry.toml
 
-   spectrax-gk examples/nonlinear/axisymmetric/runtime_cetg_reference.toml --steps 200
+   spectrax-gk examples/linear/axisymmetric/runtime_cyclone.toml
 
 Nonlinear restart and continuation
 ----------------------------------
 
-The tracked nonlinear runtime path supports a GX-style ``out/big/restart``
+The tracked nonlinear runtime path supports a NetCDF ``out/big/restart``
 bundle together with continuation from the saved restart state.
 
 One-shot nonlinear bundle write:

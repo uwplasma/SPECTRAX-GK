@@ -68,7 +68,9 @@ def test_gx_runtime_memory_manifest_runs_in_isolated_tempdir() -> None:
     assert gx_runs
     for run in gx_runs:
         assert "mktemp -d" in run.command
-        assert "env -u DISPLAY" in run.command
+        assert "env " in run.command
+        assert "-u DISPLAY" in run.command
+        assert "HDF5_DISABLE_VERSION_CHECK=1" in run.command
         assert "CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE}" in run.command
 
 

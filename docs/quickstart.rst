@@ -35,7 +35,7 @@ a JSON summary plus sidecar time-series/state artifacts using the supplied path
 as a prefix.
 
 If the nonlinear target ends in ``.out.nc`` or another ``.nc`` suffix, the
-runtime writes a GX-style bundle instead:
+runtime writes a restartable NetCDF bundle instead:
 
 - ``*.out.nc``: diagnostic history, geometry, and input metadata
 - ``*.big.nc``: final fields and moments in spectral and real-space layouts
