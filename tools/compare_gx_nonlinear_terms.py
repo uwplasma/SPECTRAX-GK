@@ -29,7 +29,7 @@ from spectraxgk.benchmarks import (
 from spectraxgk.config import GridConfig
 from spectraxgk.geometry import SAlphaGeometry, apply_gx_geometry_grid_defaults
 from spectraxgk.gyroaverage import gx_laguerre_nj
-from spectraxgk.grids import build_spectral_grid, select_ky_grid
+from spectraxgk.grids import build_spectral_grid, select_ky_grid, twothirds_mask
 from spectraxgk.io import load_runtime_from_toml
 from spectraxgk.linear import LinearParams, build_linear_cache
 from spectraxgk.runtime import (
@@ -280,6 +280,14 @@ def _expand_ky(arr: np.ndarray, *, nyc: int) -> np.ndarray:
         kx_neg = np.concatenate(([0], np.arange(nx - 1, 0, -1)))
         neg = neg[..., kx_neg, :]
     return np.concatenate([pos, neg], axis=-3)
+
+
+def _resolve_dealias_mask(mask: jnp.ndarray | np.ndarray, *, ny: int, nx: int) -> jnp.ndarray:
+    """Return a dealias mask compatible with the compared spectral field shape."""
+    mask_np = np.asarray(mask, dtype=bool)
+    if mask_np.shape == (ny, nx):
+        return jnp.asarray(mask_np)
+    return twothirds_mask(int(ny), int(nx))
 
 
 def _summary(label: str, ref: np.ndarray, test: np.ndarray) -> None:
@@ -989,6 +997,7 @@ def main() -> None:
         kx_grid_cmp,
         ky_grid_cmp,
     ) = _prepare_order(order)
+    dealias_mask_cmp = _resolve_dealias_mask(cache.dealias_mask, ny=phi_cmp.shape[-3], nx=phi_cmp.shape[-2])
 
     b_for_comps = cache.b
     if kperp2_dump is not None and rho2s_dump is not None:
@@ -1013,7 +1022,7 @@ def main() -> None:
         sqrt_m_p1=cache.sqrt_m_p1,
         kx_grid=jnp.asarray(kx_grid_cmp),
         ky_grid=jnp.asarray(ky_grid_cmp),
-        dealias_mask=cache.dealias_mask,
+        dealias_mask=dealias_mask_cmp,
         kxfac=cache.kxfac,
         weight=term_cfg.nonlinear,
         apar_weight=term_cfg.apar,
