@@ -1,6 +1,6 @@
 # SPECTRAX-GK Ship Readiness Plan
 
-Last updated: 2026-04-09
+Last updated: 2026-04-10
 Current public baseline under review: `092aeb9 benchmarks: close Miller low-ky linear lane`
 
 ## Current Ship Status
@@ -481,16 +481,30 @@ Current nonlinear-lane status at the handoff point:
   - `GXTimeConfig` -> `ExplicitTimeConfig`
   - the older GX-prefixed names remain as aliases so the broader rename can
     proceed incrementally without breaking the current release branch
-- A fresh runtime/memory sweep was relaunched against a clean `office` clone at
-  the exact current `main` head (`b31bb01`):
-  - `cyclone-linear [spectrax_cpu]` completed in about `40.95 s`
-  - `cyclone-linear [spectrax_gpu]` completed in about `16.90 s`
-  - the batch is still running on the first reference-code row
-  - a separate local debug replay showed the reference-runtime panel still
-    needs one more hardening pass before the final 1.0 sweep can be trusted:
-    the first GX row is a genuine long-running job, but ad hoc replays can
-    still fail fast if the required remote environment variables are not
-    injected exactly as in the manifest
+- The next low-risk runtime-facing helper rename slice is also now in place with
+  compatibility aliases preserved:
+  - `gx_zero_shat_enabled()` -> `zero_shear_enabled()`
+  - `gx_effective_boundary()` -> `effective_boundary()`
+  - `gx_twist_shift_params()` -> `twist_shift_params()`
+  - `apply_gx_geometry_grid_defaults()` -> `apply_geometry_grid_defaults()`
+  - `gx_real_fft_kx()` -> `real_fft_ordered_kx()`
+  - `gx_real_fft_ky()` -> `real_fft_unique_ky()`
+  - `gx_real_fft_mesh()` -> `real_fft_mesh()`
+  - `select_gx_real_fft_ky_grid()` -> `select_real_fft_ky_grid()`
+  - the old names remain as aliases so comparison tooling and older tests keep
+    working while the broader rename continues
+- The earlier RC runtime/memory outputs were discarded after three overlapping
+  local benchmark writers were found to be appending to the same files.
+- A single clean final runtime/memory sweep is now running against fresh output
+  files and a clean `office` clone from the current release branch:
+  - `tools_out/runtime_memory_results_final.csv`
+  - `tools_out/runtime_memory_summary_final.json`
+  - `tools_out/runtime_memory_logs_final/`
+  - `docs/_static/runtime_memory_benchmark_final.png`
+- First authoritative rows from that clean final sweep:
+  - `cyclone-linear [spectrax_cpu]` completed in about `39.58 s`
+  - `cyclone-linear [spectrax_gpu]` completed in about `24.22 s`
+  - the batch is still in the long `cyclone-linear [gx]` reference row
 - The runtime/memory runner now supports better long-batch recovery:
   - `--continue-on-error` keeps the batch moving across later rows
   - `--log-dir` writes per-row stdout/stderr logs for postmortem debugging

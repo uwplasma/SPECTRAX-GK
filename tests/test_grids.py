@@ -6,9 +6,9 @@ from spectraxgk.config import GridConfig
 from spectraxgk.grids import (
     SpectralGrid,
     build_spectral_grid,
-    gx_real_fft_kx,
-    gx_real_fft_ky,
-    select_gx_real_fft_ky_grid,
+    real_fft_ordered_kx,
+    real_fft_unique_ky,
+    select_real_fft_ky_grid,
 )
 
 
@@ -81,9 +81,9 @@ def test_gx_real_fft_wavenumbers_match_gx_native_layout():
     grid = build_spectral_grid(cfg)
     dkx = 2.0 * jnp.pi / cfg.Lx
     dky = 2.0 * jnp.pi / cfg.Ly
-    assert jnp.allclose(gx_real_fft_kx(grid.kx), jnp.asarray([0.0, dkx, 2.0 * dkx, -dkx]))
+    assert jnp.allclose(real_fft_ordered_kx(grid.kx), jnp.asarray([0.0, dkx, 2.0 * dkx, -dkx]))
     assert jnp.allclose(
-        gx_real_fft_ky(grid.ky),
+        real_fft_unique_ky(grid.ky),
         jnp.asarray([0.0, dky, 2.0 * dky, 3.0 * dky, 4.0 * dky, 5.0 * dky]),
     )
 
@@ -94,11 +94,11 @@ def test_select_gx_real_fft_ky_grid_uses_explicit_positive_dump_values():
     cfg = GridConfig(Nx=4, Ny=6, Nz=4, Lx=2.0, Ly=6.0)
     grid = build_spectral_grid(cfg)
     gx_ky = jnp.asarray([0.0, 2.0 * jnp.pi / cfg.Ly, 2.0 * 2.0 * jnp.pi / cfg.Ly, 3.0 * 2.0 * jnp.pi / cfg.Ly])
-    gx_grid = select_gx_real_fft_ky_grid(grid, gx_ky)
+    gx_grid = select_real_fft_ky_grid(grid, gx_ky)
 
     assert jnp.allclose(gx_grid.ky, gx_ky)
     assert jnp.all(gx_grid.ky >= 0.0)
-    assert jnp.allclose(gx_grid.kx, gx_real_fft_kx(grid.kx))
+    assert jnp.allclose(gx_grid.kx, real_fft_ordered_kx(grid.kx))
     assert gx_grid.dealias_mask.shape == (gx_ky.shape[0], cfg.Nx)
     assert jnp.allclose(gx_grid.ky_grid[:, 0], gx_ky)
 
@@ -108,7 +108,7 @@ def test_twothirds_mask_matches_gx_strict_cutoff():
 
     cfg = GridConfig(Nx=96, Ny=96, Nz=4, Lx=2.0 * jnp.pi, Ly=96.0)
     grid = build_spectral_grid(cfg)
-    gx_grid = select_gx_real_fft_ky_grid(grid, gx_real_fft_ky(grid.ky))
+    gx_grid = select_real_fft_ky_grid(grid, real_fft_unique_ky(grid.ky))
     mask = jnp.asarray(gx_grid.dealias_mask)
 
     # Positive ky rows retained by GX on a 96-point padded grid are 0..31.

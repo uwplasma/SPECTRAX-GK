@@ -10,7 +10,7 @@ import pytest
 
 from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, TimeConfig
 from spectraxgk.diagnostics import SimulationDiagnostics, ResolvedDiagnostics
-from spectraxgk.geometry import SAlphaGeometry, apply_gx_geometry_grid_defaults, sample_flux_tube_geometry
+from spectraxgk.geometry import SAlphaGeometry, apply_geometry_grid_defaults, sample_flux_tube_geometry
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.io import load_runtime_from_toml
 from spectraxgk.runtime import (
@@ -1879,7 +1879,7 @@ def test_runtime_gx_centered_random_pairs_match_glibc_reference() -> None:
 def test_runtime_gx_periodic_zp_uses_discrete_period_not_endpoint_span() -> None:
     cfg, _data = load_runtime_from_toml("examples/nonlinear/axisymmetric/runtime_cetg_reference.toml")
     geom = build_runtime_geometry(cfg)
-    grid = build_spectral_grid(apply_gx_geometry_grid_defaults(geom, cfg.grid))
+    grid = build_spectral_grid(apply_geometry_grid_defaults(geom, cfg.grid))
     z = np.asarray(grid.z, dtype=float)
 
     zp = _gx_periodic_zp(z)
