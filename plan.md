@@ -491,6 +491,9 @@ Current nonlinear-lane status at the handoff point:
     the first GX row is a genuine long-running job, but ad hoc replays can
     still fail fast if the required remote environment variables are not
     injected exactly as in the manifest
+- The runtime/memory runner now supports better long-batch recovery:
+  - `--continue-on-error` keeps the batch moving across later rows
+  - `--log-dir` writes per-row stdout/stderr logs for postmortem debugging
 
 ## CI/CD Status (2026-04-09)
 

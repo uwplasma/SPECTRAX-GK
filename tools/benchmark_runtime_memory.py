@@ -24,6 +24,7 @@ DEFAULT_CSV = ROOT / "tools_out" / "runtime_memory_results.csv"
 DEFAULT_PNG = ROOT / "docs" / "_static" / "runtime_memory_benchmark.png"
 DEFAULT_PDF = ROOT / "docs" / "_static" / "runtime_memory_benchmark.pdf"
 DEFAULT_SUMMARY = ROOT / "tools_out" / "runtime_memory_summary.json"
+DEFAULT_LOG_DIR = ROOT / "tools_out" / "runtime_memory_logs"
 BACKEND_ORDER = ("spectrax_cpu", "spectrax_gpu", "gx")
 BACKEND_LABELS = {
     "spectrax_cpu": "SPECTRAX CPU",
@@ -128,6 +129,16 @@ def _parse_peak_rss_mb(text: str) -> float | None:
     return None
 
 
+def _write_row_logs(log_dir: Path, row: dict[str, object]) -> dict[str, str]:
+    log_dir.mkdir(parents=True, exist_ok=True)
+    stem = f"{row['case']}__{row['backend']}"
+    stdout_path = log_dir / f"{stem}.stdout.log"
+    stderr_path = log_dir / f"{stem}.stderr.log"
+    stdout_path.write_text(str(row.get("stdout") or ""), encoding="utf-8")
+    stderr_path.write_text(str(row.get("stderr") or ""), encoding="utf-8")
+    return {"stdout_log": str(stdout_path), "stderr_log": str(stderr_path)}
+
+
 def _run_command(run: RuntimeBenchRun) -> dict[str, object]:
     rendered_host = _render(run.host) if run.host else None
     rendered_cwd = _render(run.cwd)
@@ -190,6 +201,8 @@ def _write_csv(path: Path, rows: list[dict[str, object]]) -> None:
         "host",
         "cwd",
         "command",
+        "stdout_log",
+        "stderr_log",
     ]
     with path.open("w", newline="", encoding="utf-8") as fh:
         writer = csv.DictWriter(fh, fieldnames=fieldnames)
@@ -286,6 +299,7 @@ def _build_parser() -> argparse.ArgumentParser:
     p.add_argument("--csv-out", type=Path, default=DEFAULT_CSV)
     p.add_argument("--plot-out", type=Path, default=DEFAULT_PNG)
     p.add_argument("--summary-out", type=Path, default=DEFAULT_SUMMARY)
+    p.add_argument("--log-dir", type=Path, default=DEFAULT_LOG_DIR)
     p.add_argument(
         "--summary-glob",
         action="append",
@@ -293,6 +307,11 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Read existing summary JSON files matching this glob and assemble the combined CSV/plot without executing commands.",
     )
     p.add_argument("--skip-plot", action="store_true", help="Only write CSV/summary, do not build the plot.")
+    p.add_argument(
+        "--continue-on-error",
+        action="store_true",
+        help="Keep running remaining rows after a failure and return nonzero at the end if any row failed.",
+    )
     return p
 
 
@@ -321,6 +340,7 @@ def main() -> int:
         return 0
 
     rows: list[dict[str, object]] = []
+    any_failures = False
     for run in selected:
         rendered_command = _render(run.command)
         rendered_cwd = _render(run.cwd)
@@ -331,6 +351,7 @@ def main() -> int:
                 print(f"[dry-run] {run.case} [{run.backend}] cd {_resolve(rendered_cwd)} && {rendered_command}")
             continue
         row = _run_command(run)
+        row.update(_write_row_logs(_resolve(args.log_dir), row))
         rows.append(row)
         runtime_obj = row["runtime_s"]
         returncode_obj = row["returncode"]
@@ -342,10 +363,12 @@ def main() -> int:
             f"{row['case']} [{row['backend']}] status={row['status']} runtime_s={runtime_s:.3f} peak_rss_mb={row['peak_rss_mb']}"
         )
         if row["status"] != "success":
-            _write_csv(_resolve(args.csv_out), rows)
-            _resolve(args.summary_out).parent.mkdir(parents=True, exist_ok=True)
-            _resolve(args.summary_out).write_text(json.dumps({"rows": rows}, indent=2) + "\n", encoding="utf-8")
-            return return_code
+            any_failures = True
+            if not args.continue_on_error:
+                _write_csv(_resolve(args.csv_out), rows)
+                _resolve(args.summary_out).parent.mkdir(parents=True, exist_ok=True)
+                _resolve(args.summary_out).write_text(json.dumps({"rows": rows}, indent=2) + "\n", encoding="utf-8")
+                return return_code
 
     if rows:
         _write_csv(_resolve(args.csv_out), rows)
@@ -355,7 +378,7 @@ def main() -> int:
             plot_png = _resolve(args.plot_out)
             plot_pdf = plot_png.with_suffix(".pdf")
             _plot_results(_resolve(args.csv_out), plot_png, plot_pdf)
-    return 0
+    return 1 if any_failures else 0
 
 
 if __name__ == "__main__":
