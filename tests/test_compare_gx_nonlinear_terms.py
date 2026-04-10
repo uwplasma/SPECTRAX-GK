@@ -124,3 +124,16 @@ def test_pick_first_existing_uses_diag_state_kxky_fallback(tmp_path: Path) -> No
 
     assert picked_kx == diag_kx
     assert picked_ky == diag_ky
+
+
+def test_resolve_dealias_mask_rebuilds_to_compared_shape() -> None:
+    tools_dir = Path(__file__).resolve().parents[1] / "tools"
+    sys.path.insert(0, str(tools_dir))
+    try:
+        import compare_gx_nonlinear_terms as mod
+    finally:
+        sys.path.remove(str(tools_dir))
+
+    mask = mod._resolve_dealias_mask(np.ones((4, 4), dtype=bool), ny=10, nx=4)
+
+    assert mask.shape == (10, 4)
