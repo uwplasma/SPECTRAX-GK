@@ -102,10 +102,10 @@ bpar = 0.0
 nonlinear = 1.0
 
 [run]
-ky = 3.0
+ky = 5.0
 Nl = 16
 Nm = 8
 steps = 500
 
 [output]
-path = "tools_out/etg_nonlinear_runtime"
+path = "../../../tools_out/etg_nonlinear_runtime"
