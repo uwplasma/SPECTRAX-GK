@@ -1,6 +1,15 @@
 from pathlib import Path
 
-from tools.benchmark_runtime_memory import RuntimeBenchRun, _load_manifest, _load_summary_rows, _parse_peak_rss_mb, _render, _run_command, _select_runs
+from tools.benchmark_runtime_memory import (
+    RuntimeBenchRun,
+    _load_manifest,
+    _load_summary_rows,
+    _parse_peak_rss_mb,
+    _render,
+    _run_command,
+    _select_runs,
+    _write_row_logs,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -98,3 +107,15 @@ def test_remote_runtime_memory_runs_disable_x11_forwarding(monkeypatch) -> None:
     row = _run_command(run)
     assert row["status"] == "success"
     assert captured["cmd"][:2] == ["ssh", "-x"]
+
+
+def test_runtime_memory_row_logs_are_written(tmp_path: Path) -> None:
+    row = {
+        "case": "cyclone-linear",
+        "backend": "gx",
+        "stdout": "ok",
+        "stderr": "warn",
+    }
+    logs = _write_row_logs(tmp_path, row)
+    assert Path(logs["stdout_log"]).read_text(encoding="utf-8") == "ok"
+    assert Path(logs["stderr_log"]).read_text(encoding="utf-8") == "warn"

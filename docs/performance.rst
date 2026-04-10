@@ -156,11 +156,14 @@ For the publication runtime comparison pass, use the manifest-driven runner:
 
    python tools/benchmark_runtime_memory.py --list
    python tools/benchmark_runtime_memory.py --dry-run --case cyclone-linear --backend spectrax_cpu
+   python tools/benchmark_runtime_memory.py --continue-on-error --log-dir tools_out/runtime_memory_logs
 
 The runner reads ``tools/runtime_memory_manifest.toml`` and writes:
 
 - ``tools_out/runtime_memory_results.csv``
 - ``tools_out/runtime_memory_summary.json``
+- ``tools_out/runtime_memory_logs/*.stdout.log``
+- ``tools_out/runtime_memory_logs/*.stderr.log``
 - ``docs/_static/runtime_memory_benchmark.png``
 
 The manifest is designed to hold three rows per case:
