@@ -19,7 +19,7 @@ case = "cyclone-linear"
 label = "Cyclone ITG Linear"
 backend = "gx"
 host = "office"
-command = "tmpdir=$(mktemp -d) && trap 'rm -rf \"$tmpdir\"' EXIT && for f in *; do case \"$f\" in *.out.nc|*.restart.nc|*.big.nc|*.bin|rhs_terms_shape.txt) ;; *) ln -s \"$(pwd)/$f\" \"$tmpdir/$f\" ;; esac; done && cd \"$tmpdir\" && CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} env -u DISPLAY LD_LIBRARY_PATH=${REFERENCE_GK_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${REFERENCE_GK_BIN} itg_salpha_adiabatic_electrons.in"
+command = "tmpdir=$(mktemp -d) && trap 'rm -rf \"$tmpdir\"' EXIT && for f in *; do case \"$f\" in *.out.nc|*.restart.nc|*.big.nc|*.bin|rhs_terms_shape.txt) ;; *) ln -s \"$(pwd)/$f\" \"$tmpdir/$f\" ;; esac; done && cd \"$tmpdir\" && CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} env -u DISPLAY HDF5_DISABLE_VERSION_CHECK=1 LD_LIBRARY_PATH=${REFERENCE_GK_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${REFERENCE_GK_BIN} itg_salpha_adiabatic_electrons.in"
 cwd = "${REFERENCE_GK_REPO}/benchmarks/linear/ITG_cyclone"
 
 [[run]]
@@ -43,7 +43,7 @@ case = "cyclone-nonlinear"
 label = "Cyclone ITG Nonlinear"
 backend = "gx"
 host = "office"
-command = "tmpdir=$(mktemp -d) && trap 'rm -rf \"$tmpdir\"' EXIT && for f in *; do case \"$f\" in *.out.nc|*.restart.nc|*.big.nc|*.bin|rhs_terms_shape.txt) ;; *) ln -s \"$(pwd)/$f\" \"$tmpdir/$f\" ;; esac; done && cd \"$tmpdir\" && CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} env -u DISPLAY LD_LIBRARY_PATH=${REFERENCE_GK_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${REFERENCE_GK_BIN} cyclone_salpha_adiabatic_electrons.in"
+command = "tmpdir=$(mktemp -d) && trap 'rm -rf \"$tmpdir\"' EXIT && for f in *; do case \"$f\" in *.out.nc|*.restart.nc|*.big.nc|*.bin|rhs_terms_shape.txt) ;; *) ln -s \"$(pwd)/$f\" \"$tmpdir/$f\" ;; esac; done && cd \"$tmpdir\" && CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} env -u DISPLAY HDF5_DISABLE_VERSION_CHECK=1 LD_LIBRARY_PATH=${REFERENCE_GK_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${REFERENCE_GK_BIN} cyclone_salpha_adiabatic_electrons.in"
 cwd = "${REFERENCE_GK_REPO}/benchmarks/nonlinear/cyclone"
 
 [[run]]
@@ -67,32 +67,8 @@ case = "etg-linear"
 label = "ETG Linear"
 backend = "gx"
 host = "office"
-command = "tmpdir=$(mktemp -d) && trap 'rm -rf \"$tmpdir\"' EXIT && for f in *; do case \"$f\" in *.out.nc|*.restart.nc|*.big.nc|*.bin|rhs_terms_shape.txt) ;; *) ln -s \"$(pwd)/$f\" \"$tmpdir/$f\" ;; esac; done && cd \"$tmpdir\" && CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} env -u DISPLAY LD_LIBRARY_PATH=${REFERENCE_GK_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${REFERENCE_GK_BIN} ETG_runtime_ky15.in"
+command = "tmpdir=$(mktemp -d) && trap 'rm -rf \"$tmpdir\"' EXIT && for f in *; do case \"$f\" in *.out.nc|*.restart.nc|*.big.nc|*.bin|rhs_terms_shape.txt) ;; *) ln -s \"$(pwd)/$f\" \"$tmpdir/$f\" ;; esac; done && cd \"$tmpdir\" && CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} env -u DISPLAY HDF5_DISABLE_VERSION_CHECK=1 LD_LIBRARY_PATH=${REFERENCE_GK_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${REFERENCE_GK_BIN} ETG_runtime_ky15.in"
 cwd = "${REFERENCE_GK_REPO}/benchmarks/linear"
-
-[[run]]
-case = "cetg-nonlinear"
-label = "ETG Nonlinear (cETG)"
-backend = "spectrax_cpu"
-host = "office"
-command = "PATH=${SPECTRAX_VENV_BIN}:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=cpu python examples/nonlinear/axisymmetric/cetg_runtime_nonlinear.py --steps 1000"
-cwd = "${SPECTRAX_BENCH_ROOT}"
-
-[[run]]
-case = "cetg-nonlinear"
-label = "ETG Nonlinear (cETG)"
-backend = "spectrax_gpu"
-host = "office"
-command = "PATH=${SPECTRAX_VENV_BIN}:$PATH PYTHONPATH=src CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} JAX_PLATFORM_NAME=gpu python examples/nonlinear/axisymmetric/cetg_runtime_nonlinear.py --steps 1000"
-cwd = "${SPECTRAX_BENCH_ROOT}"
-
-[[run]]
-case = "cetg-nonlinear"
-label = "ETG Nonlinear (cETG)"
-backend = "gx"
-host = "office"
-command = "tmpdir=$(mktemp -d) && trap 'rm -rf \"$tmpdir\"' EXIT && cp cetg.in \"$tmpdir/cetg_short.in\" && sed -i 's/t_max = 500.0/t_max = 5.0/; s/nwrite = 500/nwrite = 10/' \"$tmpdir/cetg_short.in\" && cd \"$tmpdir\" && CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} env -u DISPLAY LD_LIBRARY_PATH=${REFERENCE_GK_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${REFERENCE_GK_BIN} cetg_short.in"
-cwd = "${REFERENCE_GK_REPO}/benchmarks/nonlinear/cETG"
 
 [[run]]
 case = "kbm-linear"
@@ -115,7 +91,7 @@ case = "kbm-linear"
 label = "KBM Linear"
 backend = "gx"
 host = "office"
-command = "tmpdir=$(mktemp -d) && trap 'rm -rf \"$tmpdir\"' EXIT && for f in *; do case \"$f\" in *.out.nc|*.restart.nc|*.big.nc|*.bin|rhs_terms_shape.txt) ;; *) ln -s \"$(pwd)/$f\" \"$tmpdir/$f\" ;; esac; done && cd \"$tmpdir\" && CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} env -u DISPLAY LD_LIBRARY_PATH=${REFERENCE_GK_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${REFERENCE_GK_BIN} kbm_salpha.in"
+command = "tmpdir=$(mktemp -d) && trap 'rm -rf \"$tmpdir\"' EXIT && for f in *; do case \"$f\" in *.out.nc|*.restart.nc|*.big.nc|*.bin|rhs_terms_shape.txt) ;; *) ln -s \"$(pwd)/$f\" \"$tmpdir/$f\" ;; esac; done && cd \"$tmpdir\" && CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} env -u DISPLAY HDF5_DISABLE_VERSION_CHECK=1 LD_LIBRARY_PATH=${REFERENCE_GK_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${REFERENCE_GK_BIN} kbm_salpha.in"
 cwd = "${REFERENCE_GK_REPO}/benchmarks/linear/KBM"
 
 [[run]]
@@ -139,32 +115,8 @@ case = "kbm-nonlinear"
 label = "KBM Nonlinear"
 backend = "gx"
 host = "office"
-command = "tmpdir=$(mktemp -d) && trap 'rm -rf \"$tmpdir\"' EXIT && for f in *; do case \"$f\" in *.out.nc|*.restart.nc|*.big.nc|*.bin|rhs_terms_shape.txt) ;; *) ln -s \"$(pwd)/$f\" \"$tmpdir/$f\" ;; esac; done && cd \"$tmpdir\" && CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} env -u DISPLAY LD_LIBRARY_PATH=${REFERENCE_GK_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${REFERENCE_GK_BIN} kbm_salpha_nonlinear_short_dense.in"
+command = "tmpdir=$(mktemp -d) && trap 'rm -rf \"$tmpdir\"' EXIT && for f in *; do case \"$f\" in *.out.nc|*.restart.nc|*.big.nc|*.bin|rhs_terms_shape.txt) ;; *) ln -s \"$(pwd)/$f\" \"$tmpdir/$f\" ;; esac; done && cd \"$tmpdir\" && CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} env -u DISPLAY HDF5_DISABLE_VERSION_CHECK=1 LD_LIBRARY_PATH=${REFERENCE_GK_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${REFERENCE_GK_BIN} kbm_salpha_nonlinear_short_dense.in"
 cwd = "${REFERENCE_GK_REPO}/benchmarks/nonlinear/KBM"
-
-[[run]]
-case = "kaw-linear"
-label = "KAW Linear"
-backend = "spectrax_cpu"
-host = "office"
-command = "PATH=${SPECTRAX_VENV_BIN}:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=cpu python examples/linear/axisymmetric/kaw_runtime_linear.py --ky 0.01 --Nl 16 --Nm 64 --solver explicit_time"
-cwd = "${SPECTRAX_BENCH_ROOT}"
-
-[[run]]
-case = "kaw-linear"
-label = "KAW Linear"
-backend = "spectrax_gpu"
-host = "office"
-command = "PATH=${SPECTRAX_VENV_BIN}:$PATH PYTHONPATH=src CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} JAX_PLATFORM_NAME=gpu python examples/linear/axisymmetric/kaw_runtime_linear.py --ky 0.01 --Nl 16 --Nm 64 --solver explicit_time"
-cwd = "${SPECTRAX_BENCH_ROOT}"
-
-[[run]]
-case = "kaw-linear"
-label = "KAW Linear"
-backend = "gx"
-host = "office"
-command = "tmpdir=$(mktemp -d) && trap 'rm -rf \"$tmpdir\"' EXIT && for f in *; do case \"$f\" in *.out.nc|*.restart.nc|*.big.nc|*.bin|rhs_terms_shape.txt) ;; *) ln -s \"$(pwd)/$f\" \"$tmpdir/$f\" ;; esac; done && cd \"$tmpdir\" && CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} env -u DISPLAY LD_LIBRARY_PATH=${REFERENCE_GK_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${REFERENCE_GK_BIN} kaw_betahat10.0_kp0.01.in"
-cwd = "${REFERENCE_GK_REPO}/benchmarks/linear/KAW"
 
 [[run]]
 case = "w7x-linear"
@@ -187,7 +139,7 @@ case = "w7x-linear"
 label = "W7-X Linear"
 backend = "gx"
 host = "office"
-command = "tmpdir=$(mktemp -d) && trap 'rm -rf \"$tmpdir\"' EXIT && for f in *; do case \"$f\" in *.out.nc|*.restart.nc|*.big.nc|*.bin|rhs_terms_shape.txt) ;; *) ln -s \"$(pwd)/$f\" \"$tmpdir/$f\" ;; esac; done && cd \"$tmpdir\" && CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} env -u DISPLAY LD_LIBRARY_PATH=${REFERENCE_GK_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${REFERENCE_GK_BIN} itg_w7x_adiabatic_electrons_t2.in"
+command = "tmpdir=$(mktemp -d) && trap 'rm -rf \"$tmpdir\"' EXIT && for f in *; do case \"$f\" in *.out.nc|*.restart.nc|*.big.nc|*.bin|rhs_terms_shape.txt) ;; *) ln -s \"$(pwd)/$f\" \"$tmpdir/$f\" ;; esac; done && cd \"$tmpdir\" && CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} env -u DISPLAY HDF5_DISABLE_VERSION_CHECK=1 LD_LIBRARY_PATH=${REFERENCE_GK_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${REFERENCE_GK_BIN} itg_w7x_adiabatic_electrons_t2.in"
 cwd = "${REFERENCE_GK_REFS_ROOT}/linear/w7x"
 
 [[run]]
@@ -211,7 +163,7 @@ case = "w7x-nonlinear"
 label = "W7-X Nonlinear"
 backend = "gx"
 host = "office"
-command = "tmpdir=$(mktemp -d) && trap 'rm -rf \"$tmpdir\"' EXIT && for f in *; do case \"$f\" in *.out.nc|*.restart.nc|*.big.nc|*.bin|rhs_terms_shape.txt) ;; *) ln -s \"$(pwd)/$f\" \"$tmpdir/$f\" ;; esac; done && cd \"$tmpdir\" && CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} env -u DISPLAY LD_LIBRARY_PATH=${REFERENCE_GK_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${REFERENCE_GK_BIN} w7x_adiabatic_electrons.in"
+command = "tmpdir=$(mktemp -d) && trap 'rm -rf \"$tmpdir\"' EXIT && for f in *; do case \"$f\" in *.out.nc|*.restart.nc|*.big.nc|*.bin|rhs_terms_shape.txt) ;; *) ln -s \"$(pwd)/$f\" \"$tmpdir/$f\" ;; esac; done && cd \"$tmpdir\" && CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} env -u DISPLAY HDF5_DISABLE_VERSION_CHECK=1 LD_LIBRARY_PATH=${REFERENCE_GK_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${REFERENCE_GK_BIN} w7x_adiabatic_electrons.in"
 cwd = "${REFERENCE_GK_REPO}/benchmarks/nonlinear/w7x"
 
 [[run]]
@@ -235,7 +187,7 @@ case = "hsx-linear"
 label = "HSX Linear"
 backend = "gx"
 host = "office"
-command = "tmpdir=$(mktemp -d) && trap 'rm -rf \"$tmpdir\"' EXIT && for f in *; do case \"$f\" in *.out.nc|*.restart.nc|*.big.nc|*.bin|rhs_terms_shape.txt) ;; *) ln -s \"$(pwd)/$f\" \"$tmpdir/$f\" ;; esac; done && cd \"$tmpdir\" && CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} env -u DISPLAY LD_LIBRARY_PATH=${REFERENCE_GK_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${REFERENCE_GK_BIN} hsx_linear.in"
+command = "tmpdir=$(mktemp -d) && trap 'rm -rf \"$tmpdir\"' EXIT && for f in *; do case \"$f\" in *.out.nc|*.restart.nc|*.big.nc|*.bin|rhs_terms_shape.txt) ;; *) ln -s \"$(pwd)/$f\" \"$tmpdir/$f\" ;; esac; done && cd \"$tmpdir\" && CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} env -u DISPLAY HDF5_DISABLE_VERSION_CHECK=1 LD_LIBRARY_PATH=${REFERENCE_GK_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${REFERENCE_GK_BIN} hsx_linear.in"
 cwd = "${REFERENCE_GK_REFS_ROOT}/linear/hsx"
 
 [[run]]
@@ -259,7 +211,7 @@ case = "hsx-nonlinear"
 label = "HSX Nonlinear"
 backend = "gx"
 host = "office"
-command = "tmpdir=$(mktemp -d) && trap 'rm -rf \"$tmpdir\"' EXIT && for f in *; do case \"$f\" in *.out.nc|*.restart.nc|*.big.nc|*.bin|rhs_terms_shape.txt) ;; *) ln -s \"$(pwd)/$f\" \"$tmpdir/$f\" ;; esac; done && cd \"$tmpdir\" && CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} env -u DISPLAY LD_LIBRARY_PATH=${REFERENCE_GK_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${REFERENCE_GK_BIN} hsx_nonlinear.in"
+command = "tmpdir=$(mktemp -d) && trap 'rm -rf \"$tmpdir\"' EXIT && for f in *; do case \"$f\" in *.out.nc|*.restart.nc|*.big.nc|*.bin|rhs_terms_shape.txt) ;; *) ln -s \"$(pwd)/$f\" \"$tmpdir/$f\" ;; esac; done && cd \"$tmpdir\" && CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} env -u DISPLAY HDF5_DISABLE_VERSION_CHECK=1 LD_LIBRARY_PATH=${REFERENCE_GK_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${REFERENCE_GK_BIN} hsx_nonlinear.in"
 cwd = "${REFERENCE_GK_REFS_ROOT}/nonlinear/hsx"
 
 [[run]]
@@ -283,5 +235,5 @@ case = "miller-nonlinear"
 label = "Cyclone Miller Nonlinear"
 backend = "gx"
 host = "office"
-command = "tmpdir=$(mktemp -d) && trap 'rm -rf \"$tmpdir\"' EXIT && for f in *; do case \"$f\" in *.out.nc|*.restart.nc|*.big.nc|*.bin|rhs_terms_shape.txt) ;; *) ln -s \"$(pwd)/$f\" \"$tmpdir/$f\" ;; esac; done && cd \"$tmpdir\" && CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} env -u DISPLAY LD_LIBRARY_PATH=${REFERENCE_GK_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${REFERENCE_GK_BIN} cyclone_miller_adiabatic_electrons.in"
+command = "tmpdir=$(mktemp -d) && trap 'rm -rf \"$tmpdir\"' EXIT && for f in *; do case \"$f\" in *.out.nc|*.restart.nc|*.big.nc|*.bin|rhs_terms_shape.txt) ;; *) ln -s \"$(pwd)/$f\" \"$tmpdir/$f\" ;; esac; done && cd \"$tmpdir\" && CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} env -u DISPLAY HDF5_DISABLE_VERSION_CHECK=1 LD_LIBRARY_PATH=${REFERENCE_GK_LD_LIBRARY_PATH}:$LD_LIBRARY_PATH ${REFERENCE_GK_BIN} cyclone_miller_adiabatic_electrons.in"
 cwd = "${REFERENCE_GK_REPO}/benchmarks/nonlinear/cyclone"

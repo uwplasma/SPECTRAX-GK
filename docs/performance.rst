@@ -173,20 +173,20 @@ Each row may also carry a ``host`` so the same runner can execute local and
 remote measurements through one manifest while still collecting wall time and
 peak RSS from the target machine.
 
-The checked-in case inventory already covers the publication-facing families:
+The checked-in case inventory for the 1.0 release panel covers the shipped
+runtime families:
 
 - Cyclone ITG linear and nonlinear
-- ETG nonlinear (cETG reduced model)
 - ETG linear
 - KBM linear and nonlinear
 - W7-X linear and nonlinear
 - HSX linear and nonlinear
 - Cyclone Miller nonlinear
-- KAW linear
 
-These rows are the ones shown in the README/runtime panel. TEM currently
-appears only in the extended linear benchmark atlas, not in the runtime figure,
-because there is not yet a tracked three-backend runtime row for that case.
+These rows are the ones shown in the README/runtime panel. ETG nonlinear,
+KAW, and TEM remain separate tracked work items and are intentionally excluded
+from the shipped runtime figure until their release-grade benchmark contracts
+are closed.
 
 Final runtime/memory figure
 ---------------------------
@@ -206,13 +206,10 @@ The assembled figure is generated from the collected per-case summaries with
 - ``docs/_static/runtime_memory_benchmark.png``
 - ``docs/_static/runtime_memory_benchmark.pdf``
 
-The cETG reduced-model row now includes all three measured backends. The GX
-runtime uses a matched short ``t_max=5`` input so the wall-time and memory
-comparison uses the same integration window as the SPECTRAX-GK runtime case.
-The published runtime figure therefore complements the atlas instead of
-duplicating it: the atlas carries growth/frequency and nonlinear
-transport/energy comparisons, while the runtime figure carries CPU/GPU/GX wall
-time and peak RSS for the shipped runtime cases.
+The published runtime figure complements the atlas instead of duplicating it:
+the atlas carries growth/frequency and nonlinear transport/energy comparisons,
+while the runtime figure carries CPU/GPU/reference wall time and peak RSS for
+the shipped runtime cases.
 
 Cached basis indices
 --------------------

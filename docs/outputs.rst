@@ -4,7 +4,7 @@ Outputs and Restart Artifacts
 SPECTRAX-GK supports two runtime artifact modes:
 
 - lightweight prefix-based JSON/CSV sidecars for quick solver runs,
-- GX-style nonlinear NetCDF bundles for parity, post-processing, and restart.
+- nonlinear NetCDF restart bundles for parity, post-processing, and restart.
 
 Lightweight runtime artifacts
 -----------------------------
@@ -26,8 +26,8 @@ available species-resolved columns:
 - ``turbulent_heating``
 - ``turbulent_heating_s{i}``
 
-GX-style nonlinear bundle
--------------------------
+Nonlinear NetCDF bundle
+-----------------------
 
 When the nonlinear output target ends in ``.out.nc`` (recommended) or another
 ``.nc`` suffix, SPECTRAX-GK writes three coordinated files:
@@ -44,9 +44,9 @@ post-processing workflows.
 
 The main nonlinear history file contains:
 
-- ``Grids``: time history and active GX ``kx/ky/theta`` coordinates
+- ``Grids``: time history and active spectral ``kx/ky/theta`` coordinates
 - ``Geometry``: flux-tube metric arrays and geometry scalars
-- ``Inputs``: imported runtime metadata needed by GX-style tools
+- ``Inputs``: imported runtime metadata needed by the comparison tooling
 - ``Diagnostics``: scalar, species-resolved, and resolved nonlinear outputs
 
 The diagnostic group includes the main history series:
@@ -77,7 +77,7 @@ inspection and comparison:
 ``*.restart.nc``
 ^^^^^^^^^^^^^^^^
 
-The restart sidecar stores the nonlinear Hermite-Laguerre state in GX's packed
+The restart sidecar stores the nonlinear Hermite-Laguerre state in the packed
 restart layout together with the final time. SPECTRAX-GK can reload this file
 directly through either:
 

@@ -439,6 +439,35 @@ Current nonlinear-lane status at the handoff point:
 4. Leave KAW and TEM out of the active parity-recovery path until the above GX-backed lanes are honestly closed.
 5. Consider making `ruff` a future CI gate only after a dedicated lint cleanup; current repo-wide `ruff check .` still reports pre-existing style debt.
 
+## Release Readiness Checkpoint (2026-04-10)
+
+- Local QA on the current tree is green:
+  - `python3 -m mypy src` -> clean
+  - `PYTHONPATH=src:. pytest -q -o addopts=''` -> `645 passed, 3 skipped`
+  - `python3 -m sphinx -W -b dummy docs docs/_build/dummy` -> passed
+- The runtime/memory manifest has been narrowed to the shipped 1.0 lanes:
+  - Cyclone ITG linear/nonlinear
+  - ETG linear
+  - KBM linear/nonlinear
+  - W7-X linear/nonlinear
+  - HSX linear/nonlinear
+  - Cyclone Miller nonlinear
+- Reduced `cETG` and out-of-scope `KAW` rows have been removed from the 1.0
+  performance panel workflow.
+- The `office` reference-runtime contract needed an explicit compatibility
+  environment in the manifest:
+  - add `HDF5_DISABLE_VERSION_CHECK=1` to the reference-code rows
+  - retain the explicit shared-library path bundle for `cutensor`, `nccl`,
+    `hdf5`, `netcdf`, and `gsl`
+- Full runtime/memory refresh is now a pure batch-duration problem, not a
+  broken-infrastructure problem:
+  - `cyclone-linear [spectrax_cpu]` completed in about `69.3 s`
+  - `cyclone-linear [spectrax_gpu]` completed in about `37.4 s`
+  - the first reference-code row is a multi-minute run on `office`
+- So the only remaining blocker to a literal 1.0 release stamp is completion
+  of the long runtime/memory batch and regeneration of the final performance
+  panel from those refreshed rows.
+
 ## CI/CD Status (2026-04-09)
 
 - GitHub Actions `runtime-nonlinear` had two concrete regressions on current
