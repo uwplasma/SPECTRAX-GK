@@ -1397,7 +1397,26 @@ def test_runtime_etg_nonlinear_example_runs_small_smoke() -> None:
     cfg_path = Path(__file__).resolve().parents[1] / "examples" / "nonlinear" / "axisymmetric" / "runtime_etg_nonlinear.toml"
     cfg, _ = load_runtime_from_toml(cfg_path)
 
-    out = run_runtime_nonlinear(cfg, ky_target=5.0, kx_target=0.0, steps=2, sample_stride=1)
+    # Keep the shipped ETG pilot contract intact, but reduce the test problem to
+    # a CI-sized smoke so GitHub runners do not materialize the production-scale
+    # nonlinear diagnostic buffers.
+    cfg = replace(
+        cfg,
+        grid=GridConfig(
+            Nx=4,
+            Ny=4,
+            Nz=8,
+            Lx=6.28,
+            Ly=6.28,
+            boundary="linked",
+            y0=0.2,
+            ntheta=8,
+            nperiod=1,
+        ),
+        time=replace(cfg.time, t_max=0.002, dt=0.001, sample_stride=1, diagnostics_stride=1, fixed_dt=True),
+    )
+
+    out = run_runtime_nonlinear(cfg, ky_target=5.0, kx_target=0.0, steps=2, sample_stride=1, Nl=2, Nm=2)
 
     assert out.diagnostics is not None
     assert np.all(np.isfinite(np.asarray(out.diagnostics.Wg_t)))
