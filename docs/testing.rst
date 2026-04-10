@@ -275,6 +275,15 @@ tree so the office venv does not pick up a stale installed package:
      --manifest tools/restart_gate_lanes.office.toml \
      --outdir tools_out/restart_parity_office
 
+The current ``office`` exact-state manifest now includes:
+
+- startup audits for Cyclone, KBM, W7-X, and HSX
+- late dumped-state audits for Cyclone Miller, Cyclone runtime, W7-X, and KBM
+
+For KBM specifically, the startup and ``t=130`` dumped-state audits now close on
+the shipped nonlinear config, so the remaining KBM work is later free-evolution
+drift rather than a startup-state or diagnostic-reconstruction mismatch.
+
 The device-parity gate now has audited ``office`` manifests for one tokamak and
 one stellarator lane, both requiring stable nonzero outputs rather than the
 older zero-norm smoke probe:

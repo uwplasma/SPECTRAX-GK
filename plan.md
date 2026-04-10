@@ -375,8 +375,29 @@ Current nonlinear-lane status at the handoff point:
       instead of the shipped nonlinear config under
       `examples/nonlinear/axisymmetric/`
   - Those office manifests are now corrected and covered by tests.
-  - Next KBM step is to rerun the startup/exact-state audit on the corrected
-    path and then separate startup closure from later nonlinear evolution.
+  - Corrected `office` startup audit on the shipped nonlinear config is now
+    closed:
+    - `g_state max_rel ~= 1.33e-5`
+    - `phi max_rel ~= 1.30e-5`
+    - `apar max_rel ~= 1.34e-5`
+  - The `office` late dumped-state audit at `t ~= 8.00043` is also mostly
+    closed on the same shipped config:
+    - `Wg rel ~= 1.16e-4`
+    - `Wphi rel ~= 1.09e-5`
+    - `heat rel ~= 2.25e-4`
+    - `pflux rel ~= 3.61e-4`
+    - `Wapar rel ~= 5.00e-1`
+  - A short free-evolution replay from the closed startup state still diverges
+    immediately:
+    - by `t <= 0.012`, `mean_rel_abs(Wg) ~= 8.42e-1`,
+      `mean_rel_abs(Wphi) ~= 9.64e-1`,
+      `mean_rel_abs(HeatFlux) ~= 8.73e-1`
+    - by `t <= 0.060`, `mean_rel_abs(Wg) ~= 1.35`,
+      `mean_rel_abs(Wphi) ~= 9.65e-1`,
+      `mean_rel_abs(HeatFlux) ~= 4.39e-1`
+  - So KBM is now narrowed to immediate nonlinear evolution drift, not startup
+    state construction. The next KBM task is a first-step / few-step evolution
+    audit against the existing GX field-call dumps.
 
 ## Next Work Order
 

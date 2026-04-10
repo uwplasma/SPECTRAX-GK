@@ -47,6 +47,10 @@ gx_dir = "$HOME/gx_runs/kbm_t100_dense_call1_clean"
 ky = 0.3
 kx_target = 0.0
 
+[lane.kbm_salpha.diag_state]
+gx_dir = "$HOME/gx_runs/kbm_diag_t130"
+time_index = 130
+
 [lane.w7x_vmec]
 config = "../examples/nonlinear/non-axisymmetric/runtime_w7x_nonlinear_vmec_geometry.toml"
 gx_out = "$HOME/gx_refs/main_clean_20260312/nonlinear/w7x/w7x_adiabatic_electrons.out.nc"
