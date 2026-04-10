@@ -369,7 +369,11 @@ Current nonlinear-lane status at the handoff point:
 ## Next Work Order
 
 1. Treat Cyclone Miller linear, HSX linear, KBM linear, Cyclone nonlinear, HSX nonlinear, and W7-X nonlinear as acceptable for the current pass unless refreshed data regresses.
-2. Define the next honest nonlinear lane: full-GK ETG nonlinear is not currently a shipped public benchmark in the repo, only reduced `cETG`, so the next ETG step is case-definition and reference-selection work rather than a simple refresh.
+2. Full-GK ETG nonlinear now has an explicit shipped pilot contract:
+   - `/Users/rogeriojorge/local/SPECTRAX-GK/examples/nonlinear/axisymmetric/runtime_etg_nonlinear.toml`
+   - `/Users/rogeriojorge/local/SPECTRAX-GK/examples/nonlinear/axisymmetric/etg_runtime_nonlinear.py`
+   - it is two-species, electrostatic, nonlinear, and intentionally separate from reduced `cETG`
+   - next ETG task is now GX reference selection and first parity replay, not case-definition from scratch
 3. Then continue with the remaining GX-backed nonlinear queue: KBM nonlinear, kinetic-electron Cyclone.
 4. Leave KAW and TEM out of the active parity-recovery path until the above GX-backed lanes are honestly closed.
 5. Consider making `ruff` a future CI gate only after a dedicated lint cleanup; current repo-wide `ruff check .` still reports pre-existing style debt.
