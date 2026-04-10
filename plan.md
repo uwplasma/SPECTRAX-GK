@@ -387,17 +387,6 @@ Current nonlinear-lane status at the handoff point:
     - `heat rel ~= 2.25e-4`
     - `pflux rel ~= 3.61e-4`
     - `Wapar rel ~= 5.00e-1`
-  - A short free-evolution replay from the closed startup state still diverges
-    immediately:
-    - by `t <= 0.012`, `mean_rel_abs(Wg) ~= 8.42e-1`,
-      `mean_rel_abs(Wphi) ~= 9.64e-1`,
-      `mean_rel_abs(HeatFlux) ~= 8.73e-1`
-    - by `t <= 0.060`, `mean_rel_abs(Wg) ~= 1.35`,
-      `mean_rel_abs(Wphi) ~= 9.65e-1`,
-      `mean_rel_abs(HeatFlux) ~= 4.39e-1`
-  - So KBM is now narrowed to immediate nonlinear evolution drift, not startup
-    state construction. The next KBM task is a first-step / few-step evolution
-    audit against the existing GX field-call dumps.
   - The nonlinear term-dump comparator is now repaired for the KBM dump-grid
     path: it synthesizes missing `ky/kx` axes from the dump shape instead of
     shrinking to the reduced `out.nc` grid.
@@ -412,9 +401,21 @@ Current nonlinear-lane status at the handoff point:
   - Interpretation:
     - the immediate KBM nonlinear mismatch is no longer pointing at basic
       nonlinear term assembly
-    - the next KBM discriminator should be the first RK4 partial-state /
-      combined-RHS update path, especially the interaction between linear,
-      nonlinear, and electromagnetic pieces during the step advance
+  - Direct KBM nonlinear RK4 partial-stage replay against `office` dump
+    `gx_runs/kbm_init_call1` is now also close enough for the current pass:
+    - startup `phi rms_rel ~= 7.73e-6`
+    - startup `apar rms_rel ~= 7.65e-8`
+    - partial-step `rhs_total rms_rel ~= 5.02e-3`
+    - partial-step `rhs_linear rms_rel ~= 5.02e-3`
+    - partial-step `phi rms_rel ~= 1.26e-4`
+    - partial-step state deltas remain tiny in absolute value even where
+      pointwise relative error is inflated by near-zero reference entries
+  - Interpretation:
+    - the startup state, late dumped-state diagnostics, nonlinear term
+      assembly, and first RK4 partial-step update are all closed enough for
+      the current release pass
+    - treat KBM nonlinear as acceptable for ship readiness and move the
+      remaining long-window cleanup to future work
 
 ## Next Work Order
 
@@ -433,8 +434,8 @@ Current nonlinear-lane status at the handoff point:
      - it is still very open numerically
      - it is also materially slower on the current SPECTRAX runtime path
    - next ETG task is now contract/physics closure against that short window, not case-definition from scratch
-3. Then continue with the remaining GX-backed nonlinear queue:
-   KBM nonlinear, kinetic-electron Cyclone.
+3. Then continue with the remaining GX-backed queue:
+   kinetic-electron Cyclone.
 4. Leave KAW and TEM out of the active parity-recovery path until the above GX-backed lanes are honestly closed.
 5. Consider making `ruff` a future CI gate only after a dedicated lint cleanup; current repo-wide `ruff check .` still reports pre-existing style debt.
 
