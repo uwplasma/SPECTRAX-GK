@@ -282,7 +282,10 @@ The current ``office`` exact-state manifest now includes:
 
 For KBM specifically, the startup and ``t=130`` dumped-state audits now close on
 the shipped nonlinear config, so the remaining KBM work is later free-evolution
-drift rather than a startup-state or diagnostic-reconstruction mismatch.
+drift rather than a startup-state or diagnostic-reconstruction mismatch. The
+KBM nonlinear term-dump comparator is also now usable on the tracked dump-grid
+paths, which means the next KBM audit step is the combined RK4 partial-step
+update path rather than basic nonlinear term assembly.
 
 The device-parity gate now has audited ``office`` manifests for one tokamak and
 one stellarator lane, both requiring stable nonzero outputs rather than the

@@ -398,6 +398,23 @@ Current nonlinear-lane status at the handoff point:
   - So KBM is now narrowed to immediate nonlinear evolution drift, not startup
     state construction. The next KBM task is a first-step / few-step evolution
     audit against the existing GX field-call dumps.
+  - The nonlinear term-dump comparator is now repaired for the KBM dump-grid
+    path: it synthesizes missing `ky/kx` axes from the dump shape instead of
+    shrinking to the reduced `out.nc` grid.
+  - Direct KBM nonlinear term replay against `office` dump
+    `gx_runs/kbm_call325` is now close on the startup state:
+    - `dJ0phi_dx rms_rel ~= 1.15e-7`
+    - `dJ0phi_dy rms_rel ~= 1.36e-7`
+    - `j0phi rms_rel ~= 2.05e-7`
+    - `j0apar rms_rel ~= 2.04e-7`
+    - `exb_total`, `bracket_apar`, and `total` all match to tiny absolute
+      error on the dumped state
+  - Interpretation:
+    - the immediate KBM nonlinear mismatch is no longer pointing at basic
+      nonlinear term assembly
+    - the next KBM discriminator should be the first RK4 partial-state /
+      combined-RHS update path, especially the interaction between linear,
+      nonlinear, and electromagnetic pieces during the step advance
 
 ## Next Work Order
 
