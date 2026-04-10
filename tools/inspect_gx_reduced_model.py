@@ -7,7 +7,7 @@ import argparse
 import json
 from pathlib import Path
 
-from spectraxgk.gx_reduced_models import load_gx_reduced_model_contract
+from spectraxgk.gx_reduced_models import load_reduced_model_contract
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -19,7 +19,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main() -> None:
     args = build_parser().parse_args()
-    contract = load_gx_reduced_model_contract(args.gx_input)
+    contract = load_reduced_model_contract(args.gx_input)
     payload = contract.to_dict()
     if args.json:
         print(json.dumps(payload, indent=2, sort_keys=True))
