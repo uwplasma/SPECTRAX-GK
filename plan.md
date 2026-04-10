@@ -497,6 +497,10 @@ Current nonlinear-lane status at the handoff point:
   - per-row CSV/summary persistence now happens after every completed row, so
     long office sweeps no longer lose all partial progress when a later row
     fails or the session is interrupted
+- The runtime/memory manifest now rewrites mismatched reference-code `t_max`
+  values on the fly inside the temp copy so the performance panel compares
+  runtime-equivalent workloads instead of mixing short SPECTRAX runtime examples
+  with full reference benchmark horizons.
 
 ## CI/CD Status (2026-04-09)
 
