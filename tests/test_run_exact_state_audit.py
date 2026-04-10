@@ -61,6 +61,15 @@ def test_exact_state_office_manifest_kbm_config_resolves_to_real_example() -> No
     assert resolved.is_file()
 
 
+def test_exact_state_office_manifest_kbm_has_late_diag_state_lane() -> None:
+    repo = Path(__file__).resolve().parents[1]
+    manifest = repo / "tools" / "exact_state_lanes.office.toml"
+    data = tomllib.loads(manifest.read_text(encoding="utf-8"))
+    diag_state = data["lane"]["kbm_salpha"]["diag_state"]
+    assert diag_state["time_index"] == 130
+    assert "kbm_diag_t130" in diag_state["gx_dir"]
+
+
 def test_tool_env_prepends_absolute_repo_pythonpath(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     monkeypatch.setenv("PYTHONPATH", "src:.")
     env = _tool_env(tmp_path)
