@@ -467,6 +467,20 @@ Current nonlinear-lane status at the handoff point:
 - So the only remaining blocker to a literal 1.0 release stamp is completion
   of the long runtime/memory batch and regeneration of the final performance
   panel from those refreshed rows.
+- The first low-risk adapter renames toward more physical/mathematical naming
+  are now in place with compatibility shims preserved:
+  - `GXMillerGeometryRequest` -> `MillerGeometryRequest`
+  - `build_gx_miller_geometry_request()` -> `build_miller_geometry_request()`
+  - `GXReducedModelContract` -> `ReducedModelContract`
+  - `load_gx_reduced_model_contract()` -> `load_reduced_model_contract()`
+  - `gx_default_cfl_fac()` -> `explicit_method_default_cfl_fac()`
+  - the older GX-prefixed names remain as aliases so the broader rename can
+    proceed incrementally without breaking the current release branch
+- A fresh runtime/memory sweep was relaunched against a clean `office` clone at
+  the exact current `main` head (`b31bb01`):
+  - `cyclone-linear [spectrax_cpu]` completed in about `40.95 s`
+  - `cyclone-linear [spectrax_gpu]` completed in about `16.90 s`
+  - the batch is still running on the first reference-code row
 
 ## CI/CD Status (2026-04-09)
 

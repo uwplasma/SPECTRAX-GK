@@ -7,6 +7,7 @@ from unittest.mock import MagicMock
 
 from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, TimeConfig
 from spectraxgk.miller_eik import (
+    build_miller_geometry_request,
     build_gx_miller_geometry_request,
     generate_runtime_miller_eik,
 )
@@ -64,15 +65,22 @@ def _miller_runtime_cfg(tmp_path: Path, *, geometry_file: str | None = None) -> 
     )
 
 
-def test_build_gx_miller_geometry_request_creates_expected_request(tmp_path: Path) -> None:
+def test_build_miller_geometry_request_creates_expected_request(tmp_path: Path) -> None:
     cfg = _miller_runtime_cfg(tmp_path)
-    request = build_gx_miller_geometry_request(cfg)
+    request = build_miller_geometry_request(cfg)
     
     assert request.q == 1.4
     assert request.s_hat == 0.8
     assert request.rhoc == 0.5
     assert request.ntheta == 24
     assert request.nperiod == 1
+
+
+def test_build_gx_miller_geometry_request_alias_still_resolves(tmp_path: Path) -> None:
+    cfg = _miller_runtime_cfg(tmp_path)
+    request = build_gx_miller_geometry_request(cfg)
+
+    assert request.q == 1.4
 
 
 def test_generate_runtime_miller_eik_invokes_internal_generator(

@@ -14,6 +14,7 @@ from spectraxgk.config import (
     ModelConfig,
     TEMBaseCase,
     TimeConfig,
+    explicit_method_default_cfl_fac,
     gx_default_cfl_fac,
     resolve_cfl_fac,
 )
@@ -83,7 +84,14 @@ def test_tem_config_to_dict():
     assert d["geometry"]["q"] == cfg.geometry.q
 
 
-def test_gx_default_cfl_fac_is_method_resolved() -> None:
+def test_explicit_method_default_cfl_fac_is_method_resolved() -> None:
+    assert explicit_method_default_cfl_fac("rk2") == pytest.approx(1.0)
+    assert explicit_method_default_cfl_fac("rk3") == pytest.approx(1.73)
+    assert explicit_method_default_cfl_fac("sspx3") == pytest.approx(1.73)
+    assert explicit_method_default_cfl_fac("rk4") == pytest.approx(2.82)
+
+
+def test_gx_default_cfl_fac_alias_is_method_resolved() -> None:
     assert gx_default_cfl_fac("rk2") == pytest.approx(1.0)
     assert gx_default_cfl_fac("rk3") == pytest.approx(1.73)
     assert gx_default_cfl_fac("sspx3") == pytest.approx(1.73)
