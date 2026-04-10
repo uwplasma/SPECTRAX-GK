@@ -134,6 +134,11 @@ the primary validation claim:
    overlays used in the public benchmark set: Cyclone, KBM, W7-X, HSX,
    Cyclone Miller, and the reduced cETG comparison.
 
+For the current release pass, Cyclone, KBM, W7-X, HSX, and Cyclone Miller are
+treated as the acceptable nonlinear validation set. ETG nonlinear remains a
+tracked pilot lane, while TEM and KAW are intentionally kept out of the active
+parity claim until their separate recovery work is finished.
+
 Interpretation of validation
 ----------------------------
 

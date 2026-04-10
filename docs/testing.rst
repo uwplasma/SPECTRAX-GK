@@ -280,12 +280,11 @@ The current ``office`` exact-state manifest now includes:
 - startup audits for Cyclone, KBM, W7-X, and HSX
 - late dumped-state audits for Cyclone Miller, Cyclone runtime, W7-X, and KBM
 
-For KBM specifically, the startup and ``t=130`` dumped-state audits now close on
-the shipped nonlinear config, so the remaining KBM work is later free-evolution
-drift rather than a startup-state or diagnostic-reconstruction mismatch. The
-KBM nonlinear term-dump comparator is also now usable on the tracked dump-grid
-paths, which means the next KBM audit step is the combined RK4 partial-step
-update path rather than basic nonlinear term assembly.
+For KBM specifically, the startup audit, late dumped-state audit, nonlinear
+term replay, and first RK4 partial-step replay now all close on the shipped
+nonlinear config for the current release pass. The remaining KBM work is
+therefore future long-window cleanup rather than a blocking startup-state,
+diagnostic-reconstruction, or first-step assembly mismatch.
 
 The device-parity gate now has audited ``office`` manifests for one tokamak and
 one stellarator lane, both requiring stable nonzero outputs rather than the
