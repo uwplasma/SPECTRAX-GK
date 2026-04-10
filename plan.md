@@ -398,5 +398,9 @@ Current nonlinear-lane status at the handoff point:
 - Local CI-equivalent validation after the fixes:
   - `python3 -m mypy src` -> clean
   - runtime-nonlinear shard command from `.github/workflows/ci.yml` -> passed
+- The full-GK ETG nonlinear smoke now shrinks the loaded pilot config to a
+  CI-sized grid/time problem before calling `run_runtime_nonlinear()`. This
+  preserves the shipped user-facing pilot while keeping GitHub runners below
+  the nonlinear diagnostics memory ceiling.
 - The remaining GitHub warning about Node.js 20 actions is not currently a
   failing CI condition; it is a future workflow-maintenance item.
