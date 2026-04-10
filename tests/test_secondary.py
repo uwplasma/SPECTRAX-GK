@@ -9,7 +9,7 @@ import numpy as np
 import pytest
 
 from spectraxgk.config import GridConfig, InitializationConfig, TimeConfig
-from spectraxgk.diagnostics import GXDiagnostics
+from spectraxgk.diagnostics import SimulationDiagnostics
 from spectraxgk.runtime_config import (
     RuntimeConfig,
     RuntimeExpertConfig,
@@ -62,7 +62,7 @@ def test_run_secondary_modes_uses_requested_targets(monkeypatch) -> None:
     class _Result:
         def __init__(self) -> None:
             t = np.array([0.1], dtype=float)
-            self.diagnostics = GXDiagnostics(
+            self.diagnostics = SimulationDiagnostics(
                 t=t,
                 dt_t=t,
                 dt_mean=t[0],
@@ -93,7 +93,7 @@ def test_run_secondary_modes_prefers_mode_trace_fit(monkeypatch) -> None:
         def __init__(self) -> None:
             t = np.array([0.0, 1.0, 2.0], dtype=float)
             signal = np.exp((2.0 - 0.25j) * t)
-            self.diagnostics = GXDiagnostics(
+            self.diagnostics = SimulationDiagnostics(
                 t=t,
                 dt_t=np.full_like(t, 1.0),
                 dt_mean=1.0,
@@ -120,7 +120,7 @@ def test_run_secondary_modes_fits_leading_finite_prefix(monkeypatch) -> None:
             t = np.array([0.0, 1.0, 2.0, 3.0], dtype=float)
             signal = np.exp((1.5 - 0.125j) * t).astype(np.complex128)
             signal[-1] = np.nan + 1j * np.nan
-            self.diagnostics = GXDiagnostics(
+            self.diagnostics = SimulationDiagnostics(
                 t=t,
                 dt_t=np.full_like(t, 1.0),
                 dt_mean=1.0,

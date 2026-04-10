@@ -9,7 +9,7 @@ import numpy as np
 import pytest
 
 from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, TimeConfig
-from spectraxgk.diagnostics import GXDiagnostics, GXResolvedDiagnostics
+from spectraxgk.diagnostics import SimulationDiagnostics, ResolvedDiagnostics
 from spectraxgk.geometry import SAlphaGeometry, apply_gx_geometry_grid_defaults, sample_flux_tube_geometry
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.io import load_runtime_from_toml
@@ -465,7 +465,7 @@ def test_runtime_nonlinear_em_flux_channels_sum_to_total() -> None:
     res = run_runtime_nonlinear(cfg, ky_target=0.2, Nl=3, Nm=4, dt=0.01, steps=2, sample_stride=1, return_state=True)
 
     assert res.diagnostics is not None
-    assert isinstance(res.diagnostics.resolved, GXResolvedDiagnostics)
+    assert isinstance(res.diagnostics.resolved, ResolvedDiagnostics)
     resolved = res.diagnostics.resolved
     assert resolved is not None
     for total, es, apar, bpar in (
@@ -766,7 +766,7 @@ def test_runtime_nonlinear_adaptive_default_steps_chunk_until_tmax(monkeypatch) 
         dt_t = np.asarray([0.04, 0.04, 0.04], dtype=float)
         gamma_t = np.asarray([1.0, 2.0, 3.0], dtype=float) + 3.0 * (len(calls) - 1)
         zeros = np.zeros_like(t)
-        diag = GXDiagnostics(
+        diag = SimulationDiagnostics(
             t=t,
             dt_t=dt_t,
             dt_mean=float(np.mean(dt_t)),
@@ -920,7 +920,7 @@ def test_runtime_nonlinear_uses_gx_method_default_cfl_fac(monkeypatch: pytest.Mo
     ):
         captured["cfl_fac"] = float(cfl_fac)
         t = np.asarray([0.1], dtype=float)
-        diag = GXDiagnostics(
+        diag = SimulationDiagnostics(
             t=t,
             dt_t=t,
             dt_mean=float(t[0]),
@@ -1001,7 +1001,7 @@ def test_runtime_nonlinear_preserves_explicit_cfl_fac(monkeypatch: pytest.Monkey
     ):
         captured["cfl_fac"] = float(cfl_fac)
         t = np.asarray([0.1], dtype=float)
-        diag = GXDiagnostics(
+        diag = SimulationDiagnostics(
             t=t,
             dt_t=t,
             dt_mean=float(t[0]),
@@ -2028,7 +2028,7 @@ def test_runtime_nonlinear_mode_selection_respects_dealias(monkeypatch) -> None:
         captured["omega_kx_index"] = int(omega_kx_index)
         t = np.asarray([float(dt)], dtype=float)
         zeros = np.zeros_like(t)
-        diag = GXDiagnostics(
+        diag = SimulationDiagnostics(
             t=t,
             dt_t=t,
             dt_mean=float(dt),
@@ -2123,7 +2123,7 @@ def test_runtime_nonlinear_mode_selection_honors_kx_target(monkeypatch) -> None:
         captured["omega_kx_index"] = int(omega_kx_index)
         t = np.asarray([float(dt)], dtype=float)
         zeros = np.zeros_like(t)
-        diag = GXDiagnostics(
+        diag = SimulationDiagnostics(
             t=t,
             dt_t=t,
             dt_mean=float(dt),
@@ -2187,7 +2187,7 @@ def test_run_nonlinear_case_uses_toml_output_path(
     base = _base_runtime_cfg()
     cfg = replace(base, output=replace(base.output, path=str(tmp_path / "nonlinear_case")))
     t = np.asarray([0.0, 0.1], dtype=float)
-    diag = GXDiagnostics(
+    diag = SimulationDiagnostics(
         t=t,
         dt_t=t + 0.1,
         dt_mean=0.1,

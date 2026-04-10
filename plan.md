@@ -476,6 +476,9 @@ Current nonlinear-lane status at the handoff point:
   - `gx_default_cfl_fac()` -> `explicit_method_default_cfl_fac()`
   - `GXVmecGeometryRequest` -> `VmecGeometryRequest`
   - `build_gx_vmec_geometry_request()` -> `build_vmec_geometry_request()`
+  - `GXDiagnostics` -> `SimulationDiagnostics`
+  - `GXResolvedDiagnostics` -> `ResolvedDiagnostics`
+  - `GXTimeConfig` -> `ExplicitTimeConfig`
   - the older GX-prefixed names remain as aliases so the broader rename can
     proceed incrementally without breaking the current release branch
 - A fresh runtime/memory sweep was relaunched against a clean `office` clone at
@@ -483,6 +486,11 @@ Current nonlinear-lane status at the handoff point:
   - `cyclone-linear [spectrax_cpu]` completed in about `40.95 s`
   - `cyclone-linear [spectrax_gpu]` completed in about `16.90 s`
   - the batch is still running on the first reference-code row
+  - a separate local debug replay showed the reference-runtime panel still
+    needs one more hardening pass before the final 1.0 sweep can be trusted:
+    the first GX row is a genuine long-running job, but ad hoc replays can
+    still fail fast if the required remote environment variables are not
+    injected exactly as in the manifest
 
 ## CI/CD Status (2026-04-09)
 

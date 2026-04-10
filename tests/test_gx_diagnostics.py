@@ -41,7 +41,7 @@ from spectraxgk.linear import (
     linear_terms_to_term_config,
 )
 from spectraxgk.gx_integrators import (
-    GXTimeConfig,
+    ExplicitTimeConfig,
     _gx_growth_mask,
     _gx_linear_omega_max,
     _gx_growth_rate_step,
@@ -517,7 +517,7 @@ def test_gx_init_all_scaling_matches_reference():
 def test_integrate_linear_gx_diagnostics_shapes():
     cfg, grid, geom, params, cache = _small_setup()
     G0 = _build_initial_condition(grid, geom, ky_index=0, kx_index=0, Nl=4, Nm=4, init_cfg=cfg.init)
-    time_cfg = GXTimeConfig(dt=0.01, t_max=0.1, sample_stride=1, fixed_dt=True)
+    time_cfg = ExplicitTimeConfig(dt=0.01, t_max=0.1, sample_stride=1, fixed_dt=True)
 
     t, phi_t, gamma_t, omega_t, diag = integrate_linear_gx_diagnostics(
         G0,
@@ -552,7 +552,7 @@ def test_integrate_linear_gx_diagnostics_honors_rk3_method(
 
     monkeypatch.setattr(gx_integrators, "_linear_explicit_step", _fake_step)
 
-    time_cfg = GXTimeConfig(dt=0.01, t_max=0.01, method="rk3", sample_stride=1, fixed_dt=True)
+    time_cfg = ExplicitTimeConfig(dt=0.01, t_max=0.01, method="rk3", sample_stride=1, fixed_dt=True)
     integrate_linear_gx_diagnostics(
         G0,
         grid,
@@ -609,7 +609,7 @@ def test_gx_energy_drift_small_no_drive():
     cfg, grid, geom, params, cache = _small_setup()
     params = replace(params, R_over_Ln=0.0, R_over_LTi=0.0, R_over_LTe=0.0, nu=0.0)
     G0 = _build_initial_condition(grid, geom, ky_index=0, kx_index=0, Nl=4, Nm=4, init_cfg=cfg.init)
-    time_cfg = GXTimeConfig(dt=0.01, t_max=0.2, sample_stride=1, fixed_dt=True)
+    time_cfg = ExplicitTimeConfig(dt=0.01, t_max=0.2, sample_stride=1, fixed_dt=True)
 
     _, _, _, _, diag = integrate_linear_gx_diagnostics(
         G0,
@@ -739,7 +739,7 @@ def test_linear_gx_adaptive_default_dt_max_matches_gx():
 
     cfg, grid, geom, params, cache = _small_setup()
     G0 = _build_initial_condition(grid, geom, ky_index=0, kx_index=0, Nl=4, Nm=4, init_cfg=cfg.init)
-    time_cfg = GXTimeConfig(
+    time_cfg = ExplicitTimeConfig(
         dt=0.01,
         t_max=0.05,
         sample_stride=1,

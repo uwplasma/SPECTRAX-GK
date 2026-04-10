@@ -8,7 +8,7 @@ import numpy as np
 from spectraxgk import __version__
 from spectraxgk.analysis import ModeSelection
 from spectraxgk.cli import main
-from spectraxgk.diagnostics import GXDiagnostics
+from spectraxgk.diagnostics import SimulationDiagnostics
 from spectraxgk.runtime import RuntimeLinearResult, RuntimeNonlinearResult
 
 
@@ -641,7 +641,7 @@ nonlinear = 1.0
 
     def _fake_run_runtime_nonlinear_with_artifacts(_cfg, **kwargs):
         captured.update(kwargs)
-        diag = GXDiagnostics(
+        diag = SimulationDiagnostics(
             t=np.asarray([0.1]),
             dt_t=np.asarray([0.1]),
             dt_mean=np.asarray(0.1),
@@ -822,7 +822,7 @@ Nm = 4
 
     def _fake_run_runtime_nonlinear_with_artifacts(cfg, **kwargs):
         captured["steps"] = kwargs.get("steps")
-        diag = GXDiagnostics(
+        diag = SimulationDiagnostics(
             t=np.asarray([0.1]),
             dt_t=np.asarray([0.01]),
             dt_mean=np.asarray(0.01),

@@ -578,14 +578,14 @@ def test_run_kbm_linear_gx_time_uses_requested_mode_extractor(monkeypatch):
     calls: dict[str, str] = {}
 
     def _fake_integrate(*_args, mode_method: str, **_kwargs):
-        from spectraxgk.diagnostics import GXDiagnostics
+        from spectraxgk.diagnostics import SimulationDiagnostics
 
         calls["integrate_mode_method"] = mode_method
         t = np.array([0.1, 0.2, 0.3], dtype=float)
         phi_t = np.ones((3, 1, 1, 4), dtype=np.complex64)
         gamma_t = np.zeros((3, 1, 1), dtype=float)
         omega_t = np.zeros((3, 1, 1), dtype=float)
-        diag = GXDiagnostics(
+        diag = SimulationDiagnostics(
             t=t,
             dt_t=np.full(t.shape, 0.1, dtype=float),
             dt_mean=np.asarray(0.1),
@@ -658,14 +658,14 @@ def test_run_kbm_linear_uses_gx_linked_end_damping_by_default(monkeypatch):
         return object()
 
     def _fake_integrate(*_args, mode_method: str, **_kwargs):
-        from spectraxgk.diagnostics import GXDiagnostics
+        from spectraxgk.diagnostics import SimulationDiagnostics
 
         del mode_method
         t = np.array([0.1, 0.2], dtype=float)
         phi_t = np.ones((2, 1, 1, 4), dtype=np.complex64)
         gamma_t = np.zeros((2, 1, 1), dtype=float)
         omega_t = np.zeros((2, 1, 1), dtype=float)
-        diag = GXDiagnostics(
+        diag = SimulationDiagnostics(
             t=t,
             dt_t=np.full(t.shape, 0.1, dtype=float),
             dt_mean=np.asarray(0.1),
@@ -701,7 +701,7 @@ def test_run_kbm_linear_gx_time_uses_gx_rk4_cfl_factor_by_default(monkeypatch):
     captured: dict[str, float] = {}
 
     def _fake_integrate(*args, mode_method: str, **_kwargs):
-        from spectraxgk.diagnostics import GXDiagnostics
+        from spectraxgk.diagnostics import SimulationDiagnostics
 
         del mode_method
         time_cfg = args[5]
@@ -710,7 +710,7 @@ def test_run_kbm_linear_gx_time_uses_gx_rk4_cfl_factor_by_default(monkeypatch):
         phi_t = np.ones((2, 1, 1, 4), dtype=np.complex64)
         gamma_t = np.zeros((2, 1, 1), dtype=float)
         omega_t = np.zeros((2, 1, 1), dtype=float)
-        diag = GXDiagnostics(
+        diag = SimulationDiagnostics(
             t=t,
             dt_t=np.full(t.shape, 0.1, dtype=float),
             dt_mean=np.asarray(0.1),
@@ -735,14 +735,14 @@ def test_run_kbm_linear_gx_time_uses_gx_rk4_cfl_factor_by_default(monkeypatch):
     cfg = KBMBaseCase(grid=GridConfig(Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2))
     run_kbm_linear(ky_target=0.3, cfg=cfg, Nl=2, Nm=2, dt=0.01, steps=4, solver="gx_time")
 
-    assert captured["cfl_fac"] == pytest.approx(benchmarks.GXTimeConfig.cfl_fac)
+    assert captured["cfl_fac"] == pytest.approx(benchmarks.ExplicitTimeConfig.cfl_fac)
 
 
 def test_run_kbm_linear_gx_time_preserves_explicit_cfl_factor(monkeypatch):
     captured: dict[str, float] = {}
 
     def _fake_integrate(*args, mode_method: str, **_kwargs):
-        from spectraxgk.diagnostics import GXDiagnostics
+        from spectraxgk.diagnostics import SimulationDiagnostics
 
         del mode_method
         time_cfg = args[5]
@@ -751,7 +751,7 @@ def test_run_kbm_linear_gx_time_preserves_explicit_cfl_factor(monkeypatch):
         phi_t = np.ones((2, 1, 1, 4), dtype=np.complex64)
         gamma_t = np.zeros((2, 1, 1), dtype=float)
         omega_t = np.zeros((2, 1, 1), dtype=float)
-        diag = GXDiagnostics(
+        diag = SimulationDiagnostics(
             t=t,
             dt_t=np.full(t.shape, 0.1, dtype=float),
             dt_mean=np.asarray(0.1),
@@ -793,7 +793,7 @@ def test_run_kbm_linear_gx_time_uses_method_default_cfl_factor(monkeypatch):
     captured: dict[str, float] = {}
 
     def _fake_integrate(*args, mode_method: str, **_kwargs):
-        from spectraxgk.diagnostics import GXDiagnostics
+        from spectraxgk.diagnostics import SimulationDiagnostics
 
         del mode_method
         time_cfg = args[5]
@@ -802,7 +802,7 @@ def test_run_kbm_linear_gx_time_uses_method_default_cfl_factor(monkeypatch):
         phi_t = np.ones((2, 1, 1, 4), dtype=np.complex64)
         gamma_t = np.zeros((2, 1, 1), dtype=float)
         omega_t = np.zeros((2, 1, 1), dtype=float)
-        diag = GXDiagnostics(
+        diag = SimulationDiagnostics(
             t=t,
             dt_t=np.full(t.shape, 0.1, dtype=float),
             dt_mean=np.asarray(0.1),
@@ -887,14 +887,14 @@ def test_run_kbm_beta_scan_gx_time_keeps_project_mode(monkeypatch):
     calls: list[str] = []
 
     def _fake_integrate(*_args, mode_method: str, **_kwargs):
-        from spectraxgk.diagnostics import GXDiagnostics
+        from spectraxgk.diagnostics import SimulationDiagnostics
 
         calls.append(f"integrate:{mode_method}")
         t = np.array([0.1, 0.2, 0.3], dtype=float)
         phi_t = np.ones((3, 1, 1, 4), dtype=np.complex64)
         gamma_t = np.zeros((3, 1, 1), dtype=float)
         omega_t = np.zeros((3, 1, 1), dtype=float)
-        diag = GXDiagnostics(
+        diag = SimulationDiagnostics(
             t=t,
             dt_t=np.full(t.shape, 0.1, dtype=float),
             dt_mean=np.asarray(0.1),
@@ -963,14 +963,14 @@ def test_run_kbm_beta_scan_uses_gx_linked_end_damping_by_default(monkeypatch):
         )
 
     def _fake_integrate(*_args, mode_method: str, **_kwargs):
-        from spectraxgk.diagnostics import GXDiagnostics
+        from spectraxgk.diagnostics import SimulationDiagnostics
 
         del mode_method
         t = np.array([0.1, 0.2], dtype=float)
         phi_t = np.ones((2, 1, 1, 4), dtype=np.complex64)
         gamma_t = np.zeros((2, 1, 1), dtype=float)
         omega_t = np.zeros((2, 1, 1), dtype=float)
-        diag = GXDiagnostics(
+        diag = SimulationDiagnostics(
             t=t,
             dt_t=np.full(t.shape, 0.1, dtype=float),
             dt_mean=np.asarray(0.1),
