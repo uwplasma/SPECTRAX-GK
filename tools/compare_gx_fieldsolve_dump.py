@@ -9,7 +9,7 @@ from pathlib import Path
 import jax.numpy as jnp
 import numpy as np
 
-from compare_gx_rhs_terms import (
+from tools.compare_gx_rhs_terms import (
     _build_imported_compare_context,
     _infer_y0,
     _load_bin,

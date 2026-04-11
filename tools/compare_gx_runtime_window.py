@@ -12,8 +12,8 @@ import numpy as np
 import pandas as pd
 from netCDF4 import Dataset
 
-from compare_gx_rhs_terms import _infer_y0, _summary
-from compare_gx_runtime_diag_state import _gx_diag_scalar, _gx_diag_species, _load_field, _load_real_vector_auto, _load_species_state, _maybe_load_field
+from tools.compare_gx_rhs_terms import _infer_y0, _summary
+from tools.compare_gx_runtime_diag_state import _gx_diag_scalar, _gx_diag_species, _load_field, _load_real_vector_auto, _load_species_state, _maybe_load_field
 from spectraxgk.geometry import apply_gx_geometry_grid_defaults, ensure_flux_tube_geometry_data
 from spectraxgk.grids import build_spectral_grid, select_gx_real_fft_ky_grid
 from spectraxgk.io import load_runtime_from_toml

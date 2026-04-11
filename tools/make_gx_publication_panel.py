@@ -9,13 +9,22 @@ from pathlib import Path
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 
-from make_gx_summary_panel import (
-    STATIC,
-    _autocrop_image,
-    _load_imported_linear,
-    _plot_imported_linear,
-    _resolve,
-)
+try:
+    from tools.make_gx_summary_panel import (
+        STATIC,
+        _autocrop_image,
+        _load_imported_linear,
+        _plot_imported_linear,
+        _resolve,
+    )
+except ModuleNotFoundError:  # Allows PYTHONPATH=tools execution in tests.
+    from make_gx_summary_panel import (
+        STATIC,
+        _autocrop_image,
+        _load_imported_linear,
+        _plot_imported_linear,
+        _resolve,
+    )
 
 
 def build_parser() -> argparse.ArgumentParser:

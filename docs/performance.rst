@@ -132,9 +132,11 @@ We record two scaling sweeps to validate multi-device execution. The first
 captures the diffrax integrator path on CPU (macOS) and GPU (`office`) for a
 fixed linear ITG configuration (Ny=64, Nz=128, Nl=6, Nm=6), comparing one vs
 two devices across several time horizons. GPU runs use ``sample_stride=5`` to
-limit memory pressure. The second sweep uses the sharded linear RK2 loop on
-CPU to measure strong scaling across 1/2/4/8 devices at Ny=96, Nz=192, Nl=8,
-Nm=8.
+limit memory pressure. The second sweep uses the sharded linear RK2 loop at a
+larger grid (Ny=128, Nz=256, Nl=8, Nm=8) to measure strong scaling on CPU
+(1/2/4/8 devices) and GPU (1/2 devices). The GPU curve highlights the current
+communication overhead at this size; follow-on work will focus on reducing
+cross-device transfers in the bracket and field solve paths.
 
 .. image:: _static/scaling_speedup.png
    :alt: SPECTRAX-GK scaling speedup

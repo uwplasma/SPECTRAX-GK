@@ -10,7 +10,7 @@ from pathlib import Path
 import jax.numpy as jnp
 import numpy as np
 
-from compare_gx_rhs_terms import _load_bin, _load_field, _load_shape, _reshape_gx, _summary
+from tools.compare_gx_rhs_terms import _load_bin, _load_field, _load_shape, _reshape_gx, _summary
 from spectraxgk.geometry import apply_gx_geometry_grid_defaults, ensure_flux_tube_geometry_data
 from spectraxgk.grids import build_spectral_grid, gx_real_fft_ky, select_gx_real_fft_ky_grid
 from spectraxgk.io import load_runtime_from_toml

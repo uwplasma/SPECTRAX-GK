@@ -9,8 +9,8 @@ from pathlib import Path
 
 import jax.numpy as jnp
 import numpy as np
-from compare_gx_rhs_terms import _infer_y0, _load_bin, _load_field, _load_shape, _reshape_gx, _summary
-from compare_gx_startup import _build_case_setup, _build_startup_state, _select_ky_block
+from tools.compare_gx_rhs_terms import _infer_y0, _load_bin, _load_field, _load_shape, _reshape_gx, _summary
+from tools.compare_gx_startup import _build_case_setup, _build_startup_state, _select_ky_block
 from spectraxgk.grids import build_spectral_grid, select_ky_grid
 from spectraxgk.linear import build_linear_cache
 from spectraxgk.terms.assembly import assemble_rhs_cached, compute_fields_cached

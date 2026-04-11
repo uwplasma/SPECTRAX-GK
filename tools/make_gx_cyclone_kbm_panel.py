@@ -12,7 +12,10 @@ import numpy as np
 import pandas as pd
 from matplotlib.axes import Axes
 
-from make_gx_summary_panel import STATIC, _autocrop_image, _resolve
+try:
+    from tools.make_gx_summary_panel import STATIC, _autocrop_image, _resolve
+except ModuleNotFoundError:  # Allows PYTHONPATH=tools execution in tests.
+    from make_gx_summary_panel import STATIC, _autocrop_image, _resolve
 
 
 REQUIRED_LINEAR_COLUMNS = {"ky", "gamma", "omega", "gamma_gx", "omega_gx"}

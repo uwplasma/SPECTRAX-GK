@@ -10,7 +10,7 @@ import jax.numpy as jnp
 import numpy as np
 from netCDF4 import Dataset
 
-from compare_gx_rhs_terms import _summary
+from tools.compare_gx_rhs_terms import _summary
 from spectraxgk.cetg import build_cetg_model_params, cetg_fields
 from spectraxgk.geometry import apply_gx_geometry_grid_defaults
 from spectraxgk.gx_legacy_output import GXLegacyCetgRestart, load_gx_legacy_cetg_restart

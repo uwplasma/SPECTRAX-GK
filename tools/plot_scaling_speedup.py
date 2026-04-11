@@ -37,25 +37,32 @@ def main() -> None:
     ax0.set_title("SPECTRAX-GK 2x scaling (Ny=64, Nz=128, Nl=6, Nm=6)")
     ax0.legend(loc="best")
 
-    sharded = df[df["backend"] == "cpu_sharded"]
-    if not sharded.empty:
-        steps = sorted(sharded["steps"].unique())
-        for idx, step in enumerate(steps):
-            sub_step = sharded[sharded["steps"] == step].sort_values("devices")
-            devices = sub_step["devices"].to_numpy()
-            t1 = float(sub_step[sub_step["devices"] == 1]["elapsed_s"].iloc[0])
-            speedups = t1 / sub_step["elapsed_s"].to_numpy()
-            ax1.plot(
-                devices,
-                speedups,
-                marker="o",
-                label=f"{step} steps",
-            )
-        ax1.plot(devices, devices, linestyle=":", color="#444444", label="ideal")
-        ax1.set_xticks(sorted(sharded["devices"].unique()))
+    strong_backends = [
+        ("cpu_sharded_large", "CPU", "#1f77b4"),
+        ("cuda_sharded_large", "GPU", "#ff7f0e"),
+    ]
+    max_devices = 0
+    for backend, label, color in strong_backends:
+        sub = df[df["backend"] == backend]
+        if sub.empty:
+            continue
+        devices = sorted(sub["devices"].unique())
+        t1 = float(sub[sub["devices"] == 1]["elapsed_s"].iloc[0])
+        speedups = [t1 / float(sub[sub["devices"] == d]["elapsed_s"].iloc[0]) for d in devices]
+        ax1.plot(devices, speedups, marker="o", color=color, label=label)
+        max_devices = max(max_devices, max(devices))
+    if max_devices:
+        ax1.plot(
+            list(range(1, max_devices + 1)),
+            list(range(1, max_devices + 1)),
+            linestyle=":",
+            color="#444444",
+            label="ideal",
+        )
+        ax1.set_xticks(list(range(1, max_devices + 1)))
     ax1.set_xlabel("Devices")
     ax1.set_ylabel("Speedup (1x / N)")
-    ax1.set_title("CPU strong scaling (sharded linear RK2, Ny=96, Nz=192, Nl=8, Nm=8)")
+    ax1.set_title("Strong scaling (sharded linear RK2, Ny=128, Nz=256, Nl=8, Nm=8)")
     ax1.legend(loc="best", ncol=2)
 
     fig.tight_layout()

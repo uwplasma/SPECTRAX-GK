@@ -17,3 +17,9 @@ cpu_sharded,240,1,47.0681767464,96,192,8,8,1,sharded linear RK2
 cpu_sharded,240,2,16.5778460503,96,192,8,8,1,sharded linear RK2
 cpu_sharded,240,4,13.6866030693,96,192,8,8,1,sharded linear RK2
 cpu_sharded,240,8,12.2400219440,96,192,8,8,1,sharded linear RK2
+cpu_sharded_large,120,1,66.6312310696,128,256,8,8,1,sharded linear RK2 large
+cpu_sharded_large,120,2,25.1562080383,128,256,8,8,1,sharded linear RK2 large
+cpu_sharded_large,120,4,22.3829438686,128,256,8,8,1,sharded linear RK2 large
+cpu_sharded_large,120,8,22.4275999069,128,256,8,8,1,sharded linear RK2 large
+cuda_sharded_large,120,1,14.2556567192,128,256,8,8,1,sharded linear RK2 large
+cuda_sharded_large,120,2,20.0515837669,128,256,8,8,1,sharded linear RK2 large

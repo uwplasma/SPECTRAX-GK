@@ -11,15 +11,15 @@ import jax.numpy as jnp
 import numpy as np
 from netCDF4 import Dataset
 
-from compare_gx_imported_linear import (
+from tools.compare_gx_imported_linear import (
     _build_imported_initial_condition,
     _load_gx_input_contract,
     _resolve_imported_real_fft_ny,
     _resolve_imported_boundary,
     _resolve_internal_geometry_source,
 )
-from compare_gx_rhs_terms import _infer_y0, _load_bin, _load_field, _load_shape, _reshape_gx, _summary
-from compare_gx_runtime_startup import _select_ky_block
+from tools.compare_gx_rhs_terms import _infer_y0, _load_bin, _load_field, _load_shape, _reshape_gx, _summary
+from tools.compare_gx_runtime_startup import _select_ky_block
 from spectraxgk.config import GeometryConfig
 from spectraxgk.geometry import SlabGeometry, apply_gx_geometry_grid_defaults, load_gx_geometry_netcdf
 from spectraxgk.grids import build_spectral_grid
