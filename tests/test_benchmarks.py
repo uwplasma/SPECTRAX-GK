@@ -11,6 +11,7 @@ import jax.numpy as jnp
 import spectraxgk.benchmarks as benchmarks
 
 pytestmark = pytest.mark.integration
+
 from spectraxgk.analysis import fit_growth_rate
 from spectraxgk.benchmarks import (
     compare_cyclone_to_reference,
