@@ -110,6 +110,14 @@ integration from input configuration without changing call sites. By default,
 ``TimeConfig`` enables diffrax with a fixed-step Dopri8 solver; set
 ``use_diffrax=False`` to force the built-in fixed-step integrators.
 
+For multi-device runs, set ``TimeConfig.state_sharding = "auto"`` (or ``"ky"``)
+to shard the packed state array over multiple JAX devices. This is honored
+only by diffrax-based integrations; when only one device is visible, the
+sharding request is ignored and the run proceeds on a single device.
+On macOS you can emulate multiple CPU devices with
+``XLA_FLAGS=--xla_force_host_platform_device_count=2`` to validate the sharding
+path without a multi-GPU host.
+
 For scan workloads, the default path is custom fixed-step ``imex2`` with
 ``TimeConfig.use_diffrax=False``. This keeps stepping shape-stable and improves
 throughput for multi-ky scans. Diffrax adaptive stepping remains available as

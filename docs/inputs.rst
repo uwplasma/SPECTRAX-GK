@@ -87,6 +87,7 @@ Minimal TOML example
    diffrax_adaptive = true
    diffrax_rtol = 1.0e-6
    diffrax_atol = 1.0e-8
+   state_sharding = "auto"
    gx_real_fft = true
 
    [run]
@@ -128,6 +129,10 @@ dealias-aware: if the requested ``ky`` is filtered out by the 2/3 mask, the
 runner automatically picks the nearest retained ``ky``. The CLI prints the
 effective ``ky_sel``/``kx_sel`` used by diagnostics.
 For benchmark-locked runs, leaving ``dt_max`` unset keeps ``dt_max = dt``.
+Set ``state_sharding = "auto"`` (or ``"ky"``) to shard the packed state array
+over multiple JAX devices. This is honored by the diffrax integrators only and
+falls back to single-device execution if only one device is visible. Other
+valid values are ``"kx"``, ``"z"``, ``"l"``, ``"m"``, and ``"species"``.
 Increase ``dt_max`` explicitly only when you intentionally trade strict
 comparison matching for throughput.
 
