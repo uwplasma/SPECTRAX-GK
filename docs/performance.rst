@@ -191,10 +191,12 @@ KAW, and TEM remain separate tracked work items and are intentionally excluded
 from the shipped runtime figure until their release-grade benchmark contracts
 are closed.
 
-For the stellarator nonlinear runtime rows, the shipped panel uses imported
-`*.eik.nc` geometry files on the `office` benchmark host instead of VMEC
-regeneration, because that host does not carry the internal VMEC geometry
-backend dependencies.
+For the stellarator rows on the `office` benchmark host, the shipped panel
+uses pre-generated `*.eik.nc` geometry files instead of live VMEC
+regeneration. The GX reference rows on that host also need a consistent local
+`netcdf-c` / `hdf5` runtime stack; the default `office` stellarator runtime
+environment mixed incompatible HDF5 / NetCDF libraries and lacked the Python
+geometry helper dependencies needed for VMEC-driven geometry generation.
 
 Final runtime/memory figure
 ---------------------------
