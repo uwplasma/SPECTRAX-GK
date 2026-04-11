@@ -1,7 +1,7 @@
 # SPECTRAX-GK Ship Readiness Plan
 
-Last updated: 2026-04-10
-Current public baseline under review: `092aeb9 benchmarks: close Miller low-ky linear lane`
+Last updated: 2026-04-11
+Current public baseline under review: `fb6fabc add large-grid scaling sweep and fix tools imports`
 
 ## Current Ship Status
 
@@ -20,6 +20,20 @@ Validated gates on the current recovery pass:
 - Package build and `twine check dist/*`: passed
 
 The current repo is clean and synced to `origin/main` after each pushed checkpoint.
+
+## Test Strategy Update (2026-04-11)
+
+Goal: keep default test runs fast while preserving full integration coverage.
+
+Changes:
+
+- Default `pytest` run now excludes integration tests (`-m "not integration"`).
+- Heavy suites (`tests/test_benchmarks.py`, `tests/test_runtime_runner.py`) are tagged as integration.
+- Added `tools/run_tests_fast.py` to enforce a 5-minute per-file cap for local runs.
+
+To run the full integration suite:
+
+- `pytest -m integration`
 
 ## Fixed In Latest Checkpoint
 

@@ -5,6 +5,8 @@ import jax
 import jax.numpy as jnp
 import pytest
 
+pytestmark = pytest.mark.integration
+
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.geometry import SAlphaGeometry, ensure_flux_tube_geometry_data
 from spectraxgk.gx_integrators import _gx_linear_omega_max
