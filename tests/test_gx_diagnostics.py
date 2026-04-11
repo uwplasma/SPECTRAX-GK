@@ -14,7 +14,7 @@ from spectraxgk.diagnostics import (
     gx_Wapar,
     gx_Wg,
     gx_Wphi,
-    gx_energy_total,
+    total_energy,
     gx_heat_flux,
     gx_heat_flux_resolved_species,
     gx_heat_flux_split_resolved_species,
@@ -98,7 +98,7 @@ def test_gx_energy_components_finite():
     Wapar = gx_Wapar(apar, cache, vol_fac)
     heat = gx_heat_flux(G0, phi, apar, bpar, cache, grid, params, flux_fac)
     pflux = gx_particle_flux(G0, phi, apar, bpar, cache, grid, params, flux_fac)
-    energy = gx_energy_total(Wg, Wphi, Wapar)
+    energy = total_energy(Wg, Wphi, Wapar)
 
     assert np.isfinite(np.asarray(Wg))
     assert np.isfinite(np.asarray(Wphi))

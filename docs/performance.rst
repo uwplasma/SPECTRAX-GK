@@ -191,6 +191,11 @@ KAW, and TEM remain separate tracked work items and are intentionally excluded
 from the shipped runtime figure until their release-grade benchmark contracts
 are closed.
 
+For the stellarator nonlinear runtime rows, the shipped panel uses imported
+`*.eik.nc` geometry files on the `office` benchmark host instead of VMEC
+regeneration, because that host does not carry the internal VMEC geometry
+backend dependencies.
+
 Final runtime/memory figure
 ---------------------------
 
