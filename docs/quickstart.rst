@@ -64,6 +64,13 @@ To make the run restart-aware, add the restart controls directly to the TOML:
 Rerunning the same nonlinear command then resumes from the saved
 ``*.restart.nc`` checkpoint and appends the continued history to ``*.out.nc``.
 
+Plot diagnostics directly from the output:
+
+.. code-block:: bash
+
+   python examples/utilities/plot_runtime_outputs.py tools_out/cyclone_nonlinear.out.nc \
+     --out tools_out/cyclone_nonlinear_diagnostics.png
+
 Python demo
 -----------
 

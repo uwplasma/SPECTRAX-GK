@@ -118,3 +118,18 @@ For long adaptive jobs, the usual user-facing pattern is simply to rerun the
 same nonlinear command. If ``restart_if_exists = true`` and the checkpoint is
 present, the runtime resumes from ``*.restart.nc`` and keeps growing the
 history in ``*.out.nc``.
+
+Plotting diagnostics
+--------------------
+
+Use the plotting helper to visualize nonlinear diagnostic histories from
+``*.out.nc`` files:
+
+.. code-block:: bash
+
+   python examples/utilities/plot_runtime_outputs.py tools_out/cyclone_release.out.nc \
+     --out tools_out/cyclone_release_diagnostics.png \
+     --title "Cyclone Diagnostics"
+
+The script reads ``Diagnostics/t`` together with ``Phi2_t``, ``Wg_st``,
+``Wphi_st``, and ``HeatFlux_st`` (when present) and produces a 2x2 panel.
