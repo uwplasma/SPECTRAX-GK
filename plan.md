@@ -28,7 +28,7 @@ Goal: keep default test runs fast while preserving full integration coverage.
 Changes:
 
 - Default `pytest` run now excludes integration tests (`-m "not integration"`).
-- Heavy suites (`tests/test_benchmarks.py`, `tests/test_runtime_runner.py`) are tagged as integration.
+- Heavy suites (`tests/test_benchmarks.py`, `tests/test_runtime_runner.py`, `tests/test_linear.py`, `tests/test_nonlinear.py`) are tagged as integration.
 - Added `tools/run_tests_fast.py` to enforce a 5-minute per-file cap for local runs.
 
 To run the full integration suite:
