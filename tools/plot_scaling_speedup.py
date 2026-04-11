@@ -14,7 +14,7 @@ def main() -> None:
     df = pd.read_csv(data_path)
 
     set_plot_style()
-    fig, axes = plt.subplots(2, 1, figsize=(6.5, 6.0), sharex=True)
+    fig, axes = plt.subplots(2, 1, figsize=(6.5, 7.0))
     ax0, ax1 = axes
 
     for backend, color in [("cpu", "#1f77b4"), ("cuda", "#ff7f0e")]:
@@ -31,16 +31,31 @@ def main() -> None:
             runtimes_1.append(t1)
             runtimes_2.append(t2)
         ax0.plot(steps, speedups, marker="o", color=color, label=f"{backend.upper()} 2x")
-        ax1.plot(steps, runtimes_1, marker="o", linestyle="--", color=color, label=f"{backend.upper()} 1x")
-        ax1.plot(steps, runtimes_2, marker="s", linestyle="-", color=color, label=f"{backend.upper()} 2x")
 
     ax0.axhline(2.0, color="#444444", linestyle=":", linewidth=1.0, label="ideal")
     ax0.set_ylabel("Speedup (1x / 2x)")
-    ax0.set_title("SPECTRAX-GK scaling (Ny=64, Nz=128, Nl=6, Nm=6)")
+    ax0.set_title("SPECTRAX-GK 2x scaling (Ny=64, Nz=128, Nl=6, Nm=6)")
     ax0.legend(loc="best")
 
-    ax1.set_xlabel("Steps (dt=0.05, Tsit5)")
-    ax1.set_ylabel("Wall time [s]")
+    sharded = df[df["backend"] == "cpu_sharded"]
+    if not sharded.empty:
+        steps = sorted(sharded["steps"].unique())
+        for idx, step in enumerate(steps):
+            sub_step = sharded[sharded["steps"] == step].sort_values("devices")
+            devices = sub_step["devices"].to_numpy()
+            t1 = float(sub_step[sub_step["devices"] == 1]["elapsed_s"].iloc[0])
+            speedups = t1 / sub_step["elapsed_s"].to_numpy()
+            ax1.plot(
+                devices,
+                speedups,
+                marker="o",
+                label=f"{step} steps",
+            )
+        ax1.plot(devices, devices, linestyle=":", color="#444444", label="ideal")
+        ax1.set_xticks(sorted(sharded["devices"].unique()))
+    ax1.set_xlabel("Devices")
+    ax1.set_ylabel("Speedup (1x / N)")
+    ax1.set_title("CPU strong scaling (sharded linear RK2, Ny=96, Nz=192, Nl=8, Nm=8)")
     ax1.legend(loc="best", ncol=2)
 
     fig.tight_layout()
