@@ -9,3 +9,11 @@ cuda,800,1,56.4328477383,64,128,6,6,5,Ny=64 Nz=128 Nl=6 Nm=6
 cuda,800,2,31.5462217331,64,128,6,6,5,Ny=64 Nz=128 Nl=6 Nm=6
 cuda,1200,1,121.1005024910,64,128,6,6,5,Ny=64 Nz=128 Nl=6 Nm=6
 cuda,1200,2,64.9097630978,64,128,6,6,5,Ny=64 Nz=128 Nl=6 Nm=6
+cpu_sharded,120,1,26.8918259144,96,192,8,8,1,sharded linear RK2
+cpu_sharded,120,2,8.5279757977,96,192,8,8,1,sharded linear RK2
+cpu_sharded,120,4,7.2303040028,96,192,8,8,1,sharded linear RK2
+cpu_sharded,120,8,6.7253699303,96,192,8,8,1,sharded linear RK2
+cpu_sharded,240,1,47.0681767464,96,192,8,8,1,sharded linear RK2
+cpu_sharded,240,2,16.5778460503,96,192,8,8,1,sharded linear RK2
+cpu_sharded,240,4,13.6866030693,96,192,8,8,1,sharded linear RK2
+cpu_sharded,240,8,12.2400219440,96,192,8,8,1,sharded linear RK2
