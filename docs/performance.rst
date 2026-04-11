@@ -125,6 +125,26 @@ Using the same profiling setup (400 steps):
 The dominant remaining cost is still the nonlinear FFT pipeline with
 gather/scatter-heavy kernels in the bracket assembly path.
 
+Multi-device scaling (linear diffrax)
+------------------------------------
+
+We record the strong-scaling sweep used to validate the new multi-device
+sharding hooks on CPU (macOS) and GPU (`office`). The sweep uses a fixed
+linear ITG configuration (Ny=64, Nz=128, Nl=6, Nm=6) and compares one vs two
+devices across several time horizons. GPU runs use ``sample_stride=5`` to
+limit memory pressure.
+
+.. image:: _static/scaling_speedup.png
+   :alt: SPECTRAX-GK scaling speedup
+   :align: center
+
+The raw sweep data lives in ``docs/_static/scaling_speedup_data.csv`` and can
+be replotted with:
+
+.. code-block:: bash
+
+   python tools/plot_scaling_speedup.py
+
 Spectral nonlinear mode (fast toggle)
 -------------------------------------
 

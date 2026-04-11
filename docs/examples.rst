@@ -164,6 +164,7 @@ blocks without running a full benchmark case:
    python examples/benchmarks/basis_orthonormality.py
    python examples/theory_and_demos/cyclone_geometry.py
    python examples/theory_and_demos/autodiff_inverse_growth.py
+   python examples/theory_and_demos/autodiff_inverse_twomode.py
    python examples/theory_and_demos/diffrax_linear_demo.py
    python examples/theory_and_demos/example.py
    python examples/theory_and_demos/gradB_coupling_hl_1d.py
