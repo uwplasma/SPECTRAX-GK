@@ -30,10 +30,16 @@ Changes:
 - Default `pytest` run now excludes integration tests (`-m "not integration"`).
 - Heavy suites (`tests/test_benchmarks.py`, `tests/test_runtime_runner.py`, `tests/test_linear.py`, `tests/test_nonlinear.py`) are tagged as integration.
 - Added `tools/run_tests_fast.py` to enforce a 5-minute per-file cap for local runs.
+- Added plotting helper for nonlinear `*.out.nc` diagnostics and documented
+  geometry (VMEC/Miller) and output plotting examples in the docs.
 
 To run the full integration suite:
 
 - `pytest -m integration`
+
+Latest local integration run (2026-04-11):
+
+- `pytest -m integration` => `175 passed, 1 skipped`
 
 ## Fixed In Latest Checkpoint
 

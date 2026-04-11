@@ -104,6 +104,21 @@ sharded linear RK2 loop:
 On multi-GPU systems, point ``--devices`` at the available accelerators and
 update ``--backend`` accordingly (for example ``cuda_sharded_large``).
 
+Plotting outputs
+----------------
+
+To visualize nonlinear diagnostic histories from ``*.out.nc`` files:
+
+.. code-block:: bash
+
+   python examples/utilities/plot_runtime_outputs.py tools_out/cyclone_release.out.nc \
+     --out tools_out/cyclone_release_diagnostics.png
+
+Geometry examples
+-----------------
+
+VMEC and Miller geometry usage examples are documented in :doc:`geometry`.
+
 Nonlinear restart and continuation
 ----------------------------------
 

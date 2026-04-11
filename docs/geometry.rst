@@ -268,6 +268,34 @@ Two user-facing entry points now exercise that bridge:
   set ``HSX_VMEC_FILE`` for the runtime TOML path, or pass ``--vmec-file``
   when you intentionally want the older manual-builder entry point.
 
+VMEC and Miller runtime examples
+--------------------------------
+
+VMEC-driven stellarator runs:
+
+.. code-block:: bash
+
+   export W7X_VMEC_FILE=/absolute/path/to/wout_w7x.nc
+   spectrax-gk run-runtime-nonlinear \
+     --config examples/nonlinear/non-axisymmetric/runtime_w7x_nonlinear_vmec_geometry.toml \
+     --steps 200 \
+     --out tools_out/w7x_vmec.out.nc
+
+   export HSX_VMEC_FILE=/absolute/path/to/wout_HSX_QHS_vac.nc
+   spectrax-gk run-runtime-nonlinear \
+     --config examples/nonlinear/non-axisymmetric/runtime_hsx_nonlinear_vmec_geometry.toml \
+     --steps 200 \
+     --out tools_out/hsx_vmec.out.nc
+
+Miller geometry runs:
+
+.. code-block:: bash
+
+   spectrax-gk run-runtime-nonlinear \
+     --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_gx_miller.toml \
+     --steps 200 \
+     --out tools_out/cyclone_miller.out.nc
+
 Imported geometry currently bypasses analytic twist-shift reconstruction and
 uses the provided grid as-is. That keeps the GX-import bridge honest while the
 native VMEC path is still being generalized.
