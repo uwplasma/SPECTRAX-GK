@@ -163,11 +163,15 @@ blocks without running a full benchmark case:
 
    python examples/benchmarks/basis_orthonormality.py
    python examples/theory_and_demos/cyclone_geometry.py
+   python examples/theory_and_demos/autodiff_inverse_growth.py
    python examples/theory_and_demos/diffrax_linear_demo.py
    python examples/theory_and_demos/example.py
    python examples/theory_and_demos/gradB_coupling_hl_1d.py
    python examples/theory_and_demos/linear_rhs_demo.py
    python examples/theory_and_demos/two_stream_hermite_1d.py
+
+The autodiff inverse demo writes a summary JSON and a CSV trace in the chosen
+output directory alongside the publication-ready plot.
 
 Secondary slab workflow
 -----------------------

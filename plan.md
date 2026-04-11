@@ -189,6 +189,47 @@ Current checked-in public mismatch tables remain unchanged across the latest pub
 
 These are numerical benchmark follow-up items, not blockers for the current sampled-progress software fix.
 
+## New Work Items (2026-04-10)
+
+- Autodiff validation example (Gyaradax-style inverse/sensitivity):
+  - Goal: add a published-grade, autodiff-driven inverse or sensitivity example with polished figures.
+  - Reference: https://arxiv.org/pdf/2604.06085
+  - Plan:
+    - Choose one robust, cheap observable to differentiate (e.g., linear growth rate at fixed `ky` or a short-window nonlinear diagnostic).
+    - Implement an inverse problem or sensitivity sweep using JAX autodiff.
+    - Generate a single consolidated figure with:
+      - inferred parameter vs. ground truth
+      - gradient check / finite-diff validation
+      - uncertainty or local sensitivity summary
+    - Deliver in `examples/` with reproducible script and `docs/_static` output.
+  - Status (2026-04-10):
+    - Implemented `examples/theory_and_demos/autodiff_inverse_growth.py`.
+    - Generated `docs/_static/autodiff_inverse_growth.png` (+ PDF/CSV).
+    - Documented in README + docs examples list.
+
+- Multi-device parallelization for long runs:
+  - Goal: add multi-device execution so long kinetic-electron and stellarator runs can be accelerated.
+  - Requirements:
+    - JAX `pmap` / `pjit` pathway for multi-CPU and multi-GPU.
+    - Support for running on 2 GPUs in `office` and multi-core CPU on macOS.
+  - Plan:
+    - Implement a minimal multi-device path on one nonlinear case (Cyclone or KBM).
+    - Add a CLI/runner flag to select the distributed mode.
+    - Validate on macOS with multiple CPU devices (`XLA_FLAGS=--xla_force_host_platform_device_count`).
+    - Validate on `office` with 2 GPUs.
+  - Status (2026-04-10):
+    - Added `TimeConfig.state_sharding` and `spectraxgk.sharding.resolve_state_sharding`.
+    - Runners now pass `state_sharding` into diffrax integrators.
+    - Documented `state_sharding` in inputs/numerics docs + README.
+    - Added unit tests for sharding helper.
+    - Validated on macOS CPU with `XLA_FLAGS=--xla_force_host_platform_device_count=2`.
+      - Diffrax linear run completed and produced expected `phi_t` shape.
+      - Added `with_sharding_constraint` hooks and disabled diffrax `throw`
+        when sharded to avoid XLA rematerialization warnings.
+      - Scaling on CPU is modest for small workloads (~1.05x for Ny=32, Nz=64);
+        expect stronger scaling on larger grids / GPUs.
+    - Validation on `office` 2-GPU still pending.
+
 ## Current Lane Order (2026-04-09)
 
 Working order agreed for the next parity pass:
