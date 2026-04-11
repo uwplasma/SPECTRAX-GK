@@ -170,8 +170,8 @@ blocks without running a full benchmark case:
    python examples/theory_and_demos/linear_rhs_demo.py
    python examples/theory_and_demos/two_stream_hermite_1d.py
 
-The autodiff inverse demo writes a summary JSON and a CSV trace in the chosen
-output directory alongside the publication-ready plot.
+The autodiff inverse demo writes a summary JSON plus `R/L_Ti` and `R/L_n`
+sweep CSVs in the chosen output directory alongside the publication-ready plot.
 
 Secondary slab workflow
 -----------------------

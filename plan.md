@@ -226,11 +226,17 @@ These are numerical benchmark follow-up items, not blockers for the current samp
       - Diffrax linear run completed and produced expected `phi_t` shape.
       - Added `with_sharding_constraint` hooks and disabled diffrax `throw`
         when sharded to avoid XLA rematerialization warnings.
-      - Scaling on CPU is modest for small workloads (~1.05x for Ny=32, Nz=64);
-        expect stronger scaling on larger grids / GPUs.
+      - Large CPU strong-scaling pass (Ny=64, Nz=128, Nl=6, Nm=6, steps=220):
+        - 1 device: 68.36s
+        - 2 devices: 60.95s (1.12x speedup)
     - Validated on `office` with 2 GPUs using `PYTHONPATH=.../src`:
       - `jax.devices()` detected 2 CUDA devices.
       - Sharded diffrax linear run completed with expected `phi_t` shape.
+      - Large GPU pass (Ny=64, Nz=128, Nl=6, Nm=6, sample_stride=5):
+        - steps=900: 1 GPU 77.35s, 2 GPUs 47.08s (1.64x speedup)
+        - steps=1200: 2 GPUs 73.69s (used to clear the 1-minute requirement)
+      - Attempting steps=500 with sample_stride=1 on 1 GPU was killed (memory), so
+        long GPU runs should use a coarser `sample_stride` to avoid OOM.
 
 ## Current Lane Order (2026-04-09)
 
