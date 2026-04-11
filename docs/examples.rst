@@ -41,6 +41,9 @@ Stellarator and imported-geometry cases
    python examples/nonlinear/non-axisymmetric/w7x_nonlinear_imported_geometry.py \
      --geometry-file /path/to/w7x_adiabatic_electrons.eik.nc
 
+   python examples/nonlinear/non-axisymmetric/hsx_nonlinear_imported_geometry.py \
+     --geometry-file /path/to/hsx_nonlinear.eik.nc
+
    export W7X_VMEC_FILE=/absolute/path/to/wout_w7x.nc
    export HSX_VMEC_FILE=/absolute/path/to/wout_HSX_QHS_vac.nc
    python examples/nonlinear/non-axisymmetric/w7x_nonlinear_vmec_geometry.py --steps 200

@@ -495,6 +495,29 @@ Current nonlinear-lane status at the handoff point:
     working while the broader rename continues
 - The earlier RC runtime/memory outputs were discarded after three overlapping
   local benchmark writers were found to be appending to the same files.
+- The final runtime/memory sweep completed with 30 manifest rows. Most rows are
+  now authoritative and preserved in:
+  - `tools_out/runtime_memory_results_final.csv`
+  - `tools_out/runtime_memory_summary_final.json`
+- The completed clean sweep surfaced two separate stellarator runtime issues:
+  - local SPECTRAX stellarator nonlinear rows were still using VMEC generation
+    on `office`, which failed immediately because that host does not have the
+    internal VMEC geometry backend stack installed
+  - GX stellarator runtime rows (`w7x-linear`, `w7x-nonlinear`, `hsx-linear`,
+    `hsx-nonlinear`) crash in the reference environment with exit `139`
+    after startup; this is now tracked as an external reference-runtime issue,
+    not a SPECTRAX performance-runner issue
+- W7-X nonlinear local runtime rows were recovered by switching the performance
+  manifest to the imported `*.eik.nc` runtime path. A merged ship panel was
+  regenerated from the preserved full sweep plus the W7-X stellarator patch
+  summary and written to:
+  - `tools_out/runtime_memory_results_ship.csv`
+  - `tools_out/runtime_memory_summary_ship.json`
+  - `docs/_static/runtime_memory_benchmark.png`
+  - `docs/_static/runtime_memory_benchmark.pdf`
+- HSX nonlinear local runtime rows are now on the same imported-geometry path,
+  but the fresh `office` rerun is still genuinely in progress and was not
+  folded into the shipped panel in this checkpoint.
 - A single clean final runtime/memory sweep is now running against fresh output
   files and a clean `office` clone from the current release branch:
   - `tools_out/runtime_memory_results_final.csv`

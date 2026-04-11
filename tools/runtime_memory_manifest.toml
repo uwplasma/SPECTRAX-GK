@@ -147,7 +147,7 @@ case = "w7x-nonlinear"
 label = "W7-X Nonlinear"
 backend = "spectrax_cpu"
 host = "office"
-command = "PATH=${SPECTRAX_VENV_BIN}:$PATH PYTHONPATH=src W7X_VMEC_FILE=${W7X_VMEC_FILE} JAX_PLATFORM_NAME=cpu python examples/nonlinear/non-axisymmetric/w7x_nonlinear_vmec_geometry.py --config examples/nonlinear/non-axisymmetric/runtime_w7x_nonlinear_vmec_geometry.toml --ky 0.047619047619047616 --Nl 4 --Nm 8 --steps 200 --dt 0.1"
+command = "PATH=${SPECTRAX_VENV_BIN}:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=cpu python examples/nonlinear/non-axisymmetric/w7x_nonlinear_imported_geometry.py --geometry-file ${REFERENCE_GK_REFS_ROOT}/nonlinear/w7x/w7x_adiabatic_electrons.eik.nc --ky 0.047619047619047616 --Nl 4 --Nm 8 --steps 200 --dt 0.1"
 cwd = "${SPECTRAX_BENCH_ROOT}"
 
 [[run]]
@@ -155,7 +155,7 @@ case = "w7x-nonlinear"
 label = "W7-X Nonlinear"
 backend = "spectrax_gpu"
 host = "office"
-command = "PATH=${SPECTRAX_VENV_BIN}:$PATH PYTHONPATH=src W7X_VMEC_FILE=${W7X_VMEC_FILE} CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} JAX_PLATFORM_NAME=gpu python examples/nonlinear/non-axisymmetric/w7x_nonlinear_vmec_geometry.py --config examples/nonlinear/non-axisymmetric/runtime_w7x_nonlinear_vmec_geometry.toml --ky 0.047619047619047616 --Nl 4 --Nm 8 --steps 200 --dt 0.1"
+command = "PATH=${SPECTRAX_VENV_BIN}:$PATH PYTHONPATH=src CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} JAX_PLATFORM_NAME=gpu python examples/nonlinear/non-axisymmetric/w7x_nonlinear_imported_geometry.py --geometry-file ${REFERENCE_GK_REFS_ROOT}/nonlinear/w7x/w7x_adiabatic_electrons.eik.nc --ky 0.047619047619047616 --Nl 4 --Nm 8 --steps 200 --dt 0.1"
 cwd = "${SPECTRAX_BENCH_ROOT}"
 
 [[run]]
@@ -195,7 +195,7 @@ case = "hsx-nonlinear"
 label = "HSX Nonlinear"
 backend = "spectrax_cpu"
 host = "office"
-command = "PATH=${SPECTRAX_VENV_BIN}:$PATH PYTHONPATH=src HSX_VMEC_FILE=${HSX_VMEC_FILE} JAX_PLATFORM_NAME=cpu python examples/nonlinear/non-axisymmetric/hsx_nonlinear_vmec_geometry.py --vmec-file ${HSX_VMEC_FILE} --steps 200 --dt 0.1"
+command = "PATH=${SPECTRAX_VENV_BIN}:$PATH PYTHONPATH=src JAX_PLATFORM_NAME=cpu python examples/nonlinear/non-axisymmetric/hsx_nonlinear_imported_geometry.py --geometry-file ${REFERENCE_GK_REFS_ROOT}/nonlinear/hsx/hsx_nonlinear.eik.nc --ky 0.047619047619047616 --Nl 4 --Nm 8 --steps 200 --dt 0.1"
 cwd = "${SPECTRAX_BENCH_ROOT}"
 
 [[run]]
@@ -203,7 +203,7 @@ case = "hsx-nonlinear"
 label = "HSX Nonlinear"
 backend = "spectrax_gpu"
 host = "office"
-command = "PATH=${SPECTRAX_VENV_BIN}:$PATH PYTHONPATH=src HSX_VMEC_FILE=${HSX_VMEC_FILE} CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} JAX_PLATFORM_NAME=gpu python examples/nonlinear/non-axisymmetric/hsx_nonlinear_vmec_geometry.py --vmec-file ${HSX_VMEC_FILE} --steps 200 --dt 0.1"
+command = "PATH=${SPECTRAX_VENV_BIN}:$PATH PYTHONPATH=src CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE} JAX_PLATFORM_NAME=gpu python examples/nonlinear/non-axisymmetric/hsx_nonlinear_imported_geometry.py --geometry-file ${REFERENCE_GK_REFS_ROOT}/nonlinear/hsx/hsx_nonlinear.eik.nc --ky 0.047619047619047616 --Nl 4 --Nm 8 --steps 200 --dt 0.1"
 cwd = "${SPECTRAX_BENCH_ROOT}"
 
 [[run]]
