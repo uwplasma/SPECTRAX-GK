@@ -228,7 +228,9 @@ These are numerical benchmark follow-up items, not blockers for the current samp
         when sharded to avoid XLA rematerialization warnings.
       - Scaling on CPU is modest for small workloads (~1.05x for Ny=32, Nz=64);
         expect stronger scaling on larger grids / GPUs.
-    - Validation on `office` 2-GPU still pending.
+    - Validated on `office` with 2 GPUs using `PYTHONPATH=.../src`:
+      - `jax.devices()` detected 2 CUDA devices.
+      - Sharded diffrax linear run completed with expected `phi_t` shape.
 
 ## Current Lane Order (2026-04-09)
 
