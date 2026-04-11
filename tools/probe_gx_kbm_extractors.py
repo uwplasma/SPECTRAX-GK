@@ -14,7 +14,7 @@ from spectraxgk.analysis import ModeSelection
 from spectraxgk.benchmarks import run_kbm_linear
 from spectraxgk.grids import build_spectral_grid
 
-from compare_gx_kbm import (
+from tools.compare_gx_kbm import (
     _build_cfg,
     _mode_metrics,
     _prepare_gx_reference,

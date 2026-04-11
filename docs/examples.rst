@@ -87,6 +87,23 @@ lanes:
 
    spectrax-gk examples/linear/axisymmetric/runtime_cyclone.toml
 
+Scaling utilities
+-----------------
+
+Use the strong-scaling sweep helper to collect multi-device timings for the
+sharded linear RK2 loop:
+
+.. code-block:: bash
+
+   python examples/utilities/strong_scaling_sweep.py \
+     --ny 128 --nz 256 --nl 8 --nm 8 --steps 120 \
+     --devices 1,2,4,8 \
+     --backend cpu_sharded_large \
+     --out tools_out/strong_scaling_cpu.csv
+
+On multi-GPU systems, point ``--devices`` at the available accelerators and
+update ``--backend`` accordingly (for example ``cuda_sharded_large``).
+
 Nonlinear restart and continuation
 ----------------------------------
 

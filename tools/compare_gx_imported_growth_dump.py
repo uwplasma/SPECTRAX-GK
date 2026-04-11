@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 from netCDF4 import Dataset
 
-from compare_gx_imported_linear import (
+from tools.compare_gx_imported_linear import (
     _build_imported_initial_condition,
     _build_imported_linear_terms,
     _gx_has_uniform_linear_dt,
@@ -24,8 +24,8 @@ from compare_gx_imported_linear import (
     _resolve_imported_real_fft_ny,
     _resolve_internal_geometry_source,
 )
-from compare_gx_rhs_terms import _infer_y0
-from compare_gx_runtime_diag_state import (
+from tools.compare_gx_rhs_terms import _infer_y0
+from tools.compare_gx_runtime_diag_state import (
     _load_field,
     _load_real_vector_auto,
     _load_species_state,

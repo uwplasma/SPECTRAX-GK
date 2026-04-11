@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 from netCDF4 import Dataset
 
-from compare_gx_rhs_terms import _infer_y0, _load_field, _reshape_gx, _summary
+from tools.compare_gx_rhs_terms import _infer_y0, _load_field, _reshape_gx, _summary
 from spectraxgk.diagnostics import (
     gx_Wapar,
     gx_Wg,

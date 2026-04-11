@@ -11,7 +11,7 @@ import jax.numpy as jnp
 import numpy as np
 from netCDF4 import Dataset
 
-from compare_gx_rhs_terms import _infer_y0, _load_bin, _load_field, _load_shape, _reshape_gx, _summary
+from tools.compare_gx_rhs_terms import _infer_y0, _load_bin, _load_field, _load_shape, _reshape_gx, _summary
 from spectraxgk.geometry import apply_gx_geometry_grid_defaults
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.io import load_runtime_from_toml

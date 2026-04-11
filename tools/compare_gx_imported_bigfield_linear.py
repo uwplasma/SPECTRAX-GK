@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 from netCDF4 import Dataset
 
-from compare_gx_imported_linear import (
+from tools.compare_gx_imported_linear import (
     _build_imported_initial_condition,
     _build_imported_linear_terms,
     _build_sample_steps,
