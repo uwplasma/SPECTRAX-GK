@@ -459,14 +459,14 @@ Current nonlinear-lane status at the handoff point:
   - add `HDF5_DISABLE_VERSION_CHECK=1` to the reference-code rows
   - retain the explicit shared-library path bundle for `cutensor`, `nccl`,
     `hdf5`, `netcdf`, and `gsl`
-- Full runtime/memory refresh is now a pure batch-duration problem, not a
-  broken-infrastructure problem:
-  - `cyclone-linear [spectrax_cpu]` completed in about `69.3 s`
-  - `cyclone-linear [spectrax_gpu]` completed in about `37.4 s`
-  - the first reference-code row is a multi-minute run on `office`
-- So the only remaining blocker to a literal 1.0 release stamp is completion
-  of the long runtime/memory batch and regeneration of the final performance
-  panel from those refreshed rows.
+- The runtime/memory blocker is now closed:
+  - the shipped 1.0 runtime/memory panel has been regenerated from a completed
+    merged summary with all shipped rows present
+  - the final shipped outputs are:
+    - `tools_out/runtime_memory_results_ship.csv`
+    - `tools_out/runtime_memory_summary_ship.json`
+    - `docs/_static/runtime_memory_benchmark.png`
+    - `docs/_static/runtime_memory_benchmark.pdf`
 - The first low-risk adapter renames toward more physical/mathematical naming
   are now in place with compatibility shims preserved:
   - `GXMillerGeometryRequest` -> `MillerGeometryRequest`
@@ -499,35 +499,25 @@ Current nonlinear-lane status at the handoff point:
   now authoritative and preserved in:
   - `tools_out/runtime_memory_results_final.csv`
   - `tools_out/runtime_memory_summary_final.json`
-- The completed clean sweep surfaced two separate stellarator runtime issues:
-  - local SPECTRAX stellarator nonlinear rows were still using VMEC generation
-    on `office`, which failed immediately because that host does not have the
-    internal VMEC geometry backend stack installed
+- The completed clean sweep surfaced two separate stellarator runtime issues,
+  and both are now fixed for the shipped panel:
+  - local SPECTRAX stellarator nonlinear rows had still been using VMEC
+    generation on `office`; the shipped performance rows now use imported
+    `*.eik.nc` geometry instead
   - GX stellarator runtime rows (`w7x-linear`, `w7x-nonlinear`, `hsx-linear`,
-    `hsx-nonlinear`) crash in the reference environment with exit `139`
-    after startup; this is now tracked as an external reference-runtime issue,
-    not a SPECTRAX performance-runner issue
-- W7-X nonlinear local runtime rows were recovered by switching the performance
-  manifest to the imported `*.eik.nc` runtime path. A merged ship panel was
-  regenerated from the preserved full sweep plus the W7-X stellarator patch
-  summary and written to:
-  - `tools_out/runtime_memory_results_ship.csv`
-  - `tools_out/runtime_memory_summary_ship.json`
-  - `docs/_static/runtime_memory_benchmark.png`
-  - `docs/_static/runtime_memory_benchmark.pdf`
-- HSX nonlinear local runtime rows are now on the same imported-geometry path,
-  but the fresh `office` rerun is still genuinely in progress and was not
-  folded into the shipped panel in this checkpoint.
-- A single clean final runtime/memory sweep is now running against fresh output
-  files and a clean `office` clone from the current release branch:
-  - `tools_out/runtime_memory_results_final.csv`
-  - `tools_out/runtime_memory_summary_final.json`
-  - `tools_out/runtime_memory_logs_final/`
-  - `docs/_static/runtime_memory_benchmark_final.png`
-- First authoritative rows from that clean final sweep:
-  - `cyclone-linear [spectrax_cpu]` completed in about `39.58 s`
-  - `cyclone-linear [spectrax_gpu]` completed in about `24.22 s`
-  - the batch is still in the long `cyclone-linear [gx]` reference row
+    `hsx-nonlinear`) were crashing because the default `office` runtime mixed
+    incompatible HDF5 / NetCDF libraries and also expected a `python`
+    / `booz_xform` VMEC helper path that was not available
+  - those GX rows now run under a consistent local `netcdf-c` / `hdf5`
+    library stack and are patched onto the already-shipped `*.eik.nc` geometry
+    files instead of live VMEC regeneration
+- The final shipped stellarator runtime measurements now include:
+  - `w7x-linear [gx]`: `34.43 s`, `1969.37 MiB`
+  - `w7x-nonlinear [gx]`: `110.97 s`, `2186.76 MiB`
+  - `hsx-linear [gx]`: `124.48 s`, `2117.12 MiB`
+  - `hsx-nonlinear [gx]`: `135.75 s`, `2186.70 MiB`
+  - `hsx-nonlinear [spectrax_cpu]`: `646.54 s`, `6368.16 MiB`
+  - `hsx-nonlinear [spectrax_gpu]`: `49.25 s`, `2128.44 MiB`
 - The runtime/memory runner now supports better long-batch recovery:
   - `--continue-on-error` keeps the batch moving across later rows
   - `--log-dir` writes per-row stdout/stderr logs for postmortem debugging

@@ -84,6 +84,18 @@ def test_gx_runtime_memory_manifest_runs_in_isolated_tempdir() -> None:
         assert "CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE}" in run.command
 
 
+def test_gx_stellarator_runtime_manifest_uses_pregenerated_nc_geometry() -> None:
+    runs = _load_manifest(ROOT / "tools" / "runtime_memory_manifest.toml")
+    stellarator = [run for run in runs if run.backend == "gx" and run.case in {"w7x-linear", "w7x-nonlinear", "hsx-linear", "hsx-nonlinear"}]
+    assert len(stellarator) == 4
+    for run in stellarator:
+        assert 'geo_option = "nc"' in run.command
+        assert 'vmec_file' in run.command
+        assert 'geo_file = "' in run.command
+        assert "REFERENCE_GK_NETCDF_LIBDIR" in run.command
+        assert "REFERENCE_GK_PYTHON_BIN" in run.command
+
+
 def test_gpu_runtime_memory_manifest_pins_configured_cuda_device() -> None:
     runs = _load_manifest(ROOT / "tools" / "runtime_memory_manifest.toml")
     gpu_runs = [run for run in runs if run.backend == "spectrax_gpu"]
