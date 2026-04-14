@@ -23,6 +23,11 @@ methods, and model-specific paths are easy to locate:
   (analytic s-alpha, Miller, VMEC/imported geometry, slab) together with the
   TOML schema used by the executable and Python drivers.
 
+For a first technical read, start with :doc:`theory`, then move to
+:doc:`operators` and :doc:`numerics`. That path gives the governing equations,
+the term-by-term implementation contract, and the numerical approximations in
+the same order they appear in the code.
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents

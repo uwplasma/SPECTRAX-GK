@@ -125,8 +125,8 @@ Using the same profiling setup (400 steps):
 The dominant remaining cost is still the nonlinear FFT pipeline with
 gather/scatter-heavy kernels in the bracket assembly path.
 
-Multi-device scaling (diffrax + sharded linear loop)
-----------------------------------------------------
+Parallelization scaling (diffrax + distributed linear loop)
+-----------------------------------------------------------
 
 The shipped scaling figure is intentionally limited to the release-grade
 2-device diffrax speedup sweep. It captures CPU (macOS) and GPU (``office``)
@@ -145,7 +145,7 @@ be replotted with:
 
    python tools/plot_scaling_speedup.py
 
-The exploratory sharded-RK2 strong-scaling data is still tracked in the CSV
+The exploratory distributed-RK2 strong-scaling data is still tracked in the CSV
 for engineering work, but it is intentionally not presented as a headline
 publication figure because the current curve is dominated by communication
 overhead rather than near-ideal scaling.
@@ -308,7 +308,7 @@ Planned optimizations
 ---------------------
 
 - ``vmap`` over species and parameter scans
-- JAX mesh-based parallelization for multi-device acceleration
+- JAX mesh-based parallelization across multiple devices
 - FFT acceleration and layout tuning
 - operator fusion for nonlinear terms
 

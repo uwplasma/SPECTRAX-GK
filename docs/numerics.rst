@@ -179,10 +179,10 @@ end-to-end JAX differentiability:
 - **Stacked FFT channels**: nonlinear brackets batch ``phi/apar/bpar`` into a
   single FFT pipeline so the spatial derivatives are computed once and reused
   across fields. This removes redundant transforms and reduces FFT calls.
-- **Donation and sharded buffers**: time integrators donate state buffers in
-  JIT-compiled paths to reduce allocations. The diffrax integrators accept a
-  ``state_sharding`` argument if you want to preserve explicit JAX sharding on
-  the state array.
+- **Donation and parallelized buffers**: time integrators donate state buffers
+  in JIT-compiled paths to reduce allocations. The diffrax integrators accept a
+  ``state_sharding`` argument if you want to preserve explicit JAX
+  parallelization on the state array.
 - **Implicit preconditioning hooks**: ``implicit_preconditioner`` accepts
   ``"auto"/"diag"/"physics"/"block"`` (full diagonal preconditioner),
   ``"damping"`` (collisional/hyper-only), ``"pas"`` (PAS line preconditioner),

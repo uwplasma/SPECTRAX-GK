@@ -107,7 +107,7 @@ select the compressed real-FFT nonlinear bracket. Set ``gx_real_fft = false`` to
 use a full complex FFT for the nonlinear term. Diagnostics output can be
 decimated with ``sample_stride`` (record every ``N`` steps) and
 ``diagnostics_stride`` (compute streaming diagnostics every ``N`` steps). Set
-``diagnostics = false`` in ``[time]`` (or ``--no-diagnostics`` on the CLI) to
+``diagnostics = false`` in ``[time]`` (or ``--no-diagnostics`` on the executable) to
 disable diagnostics entirely for speed. For CFL-controlled timestep control, use
 ``fixed_dt = false`` along with ``cfl`` and optional ``cfl_fac`` /
 ``dt_min`` / ``dt_max`` limits. When ``cfl_fac`` is omitted, SPECTRAX uses
@@ -145,6 +145,9 @@ diagonal operators).
 
 The ``[geometry]`` section supports ``drift_scale`` to switch between benchmark-compatible
 (``drift_scale = 1.0``) and the alternate doubled-drift convention (``drift_scale = 2.0``). The default configuration in SPECTRAX-GK uses the tracked benchmark value.
+The physical meaning of the runtime terms and geometry coefficients is detailed
+in :doc:`theory` and :doc:`operators`; the TOML layer here documents how those
+implemented models are selected and parameterized.
 For slab benchmarks, set ``model = "slab"``. Optional slab-specific keys are
 ``z0`` (sets ``gradpar = 1/z0`` when positive, matching the reference slab domain
 normalization) and ``zero_shat = true`` (forces the zero-shear slab metric
