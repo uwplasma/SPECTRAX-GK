@@ -21,11 +21,10 @@ kbm_miller = "docs/_static/kbm_miller_exact_growth_dump.csv"
 
 [group.core_nonlinear]
 cyclone = "docs/_static/nonlinear_cyclone_diag_compare.png"
-kbm = "docs/_static/nonlinear_kbm_diag_compare_t100_refresh.png"
+kbm = "docs/_static/nonlinear_kbm_diag_compare_t400_stats.png"
 w7x = "docs/_static/nonlinear_w7x_diag_compare_t200.png"
 hsx = "docs/_static/hsx_nonlinear_compare_t50_true.png"
 miller = "docs/_static/nonlinear_cyclone_miller_diag_compare_t122.png"
-etg = "docs/_static/etg_fullgk_pilot_compare_dt1e4_gaussian_match.png"
 
 [group.convergence]
 cyclone_scan = "docs/_static/cyclone_scan_convergence.csv"

@@ -131,13 +131,16 @@ the primary validation claim:
    :alt: Core nonlinear benchmark atlas
 
    Nonlinear benchmark master panel. This panel groups the tracked nonlinear
-   overlays used in the public benchmark set: Cyclone, KBM, W7-X, HSX,
-   Cyclone Miller, and the short-window full-GK ETG pilot.
+   overlays used in the public benchmark set: Cyclone, KBM, W7-X, HSX, and
+   Cyclone Miller.
 
-For the current release pass, Cyclone, KBM, W7-X, HSX, Cyclone Miller, and the
-short-window full-GK ETG pilot are treated as the acceptable nonlinear
-validation set. TEM and KAW are intentionally kept out of the active parity
-claim until their separate recovery work is finished.
+For the current release pass, Cyclone, KBM, W7-X, HSX, and Cyclone Miller are
+treated as the acceptable nonlinear validation set in the main atlas. The
+short-window full-GK ETG pilot remains documented in the examples and testing
+notes, but it is intentionally kept out of the primary publication panel
+because it is a pilot rather than a headline transport benchmark. TEM and KAW
+are intentionally kept out of the active parity claim until their separate
+recovery work is finished.
 
 Interpretation of validation
 ----------------------------

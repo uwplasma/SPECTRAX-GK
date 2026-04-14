@@ -88,7 +88,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--kbm-nonlinear-panel",
         type=Path,
-        default=STATIC / "nonlinear_kbm_diag_compare_t100_refresh.png",
+        default=STATIC / "nonlinear_kbm_diag_compare_t400_stats.png",
         help="Tracked KBM nonlinear comparison figure.",
     )
     parser.add_argument(

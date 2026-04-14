@@ -212,12 +212,6 @@ def build_parser() -> argparse.ArgumentParser:
         help="Tracked linear HSX imported-geometry comparison CSV.",
     )
     parser.add_argument(
-        "--etg-panel",
-        type=Path,
-        default=STATIC / "etg_fullgk_pilot_compare_dt1e4_gaussian_match.png",
-        help="Tracked full-GK ETG nonlinear pilot comparison figure.",
-    )
-    parser.add_argument(
         "--out",
         type=Path,
         default=STATIC / "gx_summary_panel.png",
@@ -234,20 +228,17 @@ def main() -> None:
     secondary_csv = _resolve(args.secondary_csv)
     w7x_linear_csv = _resolve(args.w7x_linear_csv)
     hsx_linear_csv = _resolve(args.hsx_linear_csv)
-    etg_panel = _resolve(args.etg_panel)
     out = _resolve(args.out)
 
     secondary = _load_secondary(secondary_csv)
     w7x_linear = _load_imported_linear(w7x_linear_csv)
     hsx_linear = _load_imported_linear(hsx_linear_csv)
-    fig = plt.figure(figsize=(20.5, 22.0), constrained_layout=True)
-    gs = fig.add_gridspec(4, 2, height_ratios=[1.45, 1.15, 0.95, 1.0])
+    fig = plt.figure(figsize=(20.5, 21.0), constrained_layout=True)
+    gs = fig.add_gridspec(4, 2, height_ratios=[1.45, 1.15, 0.95, 0.9])
 
     cyclone_img = _autocrop_image(mpimg.imread(cyclone_kbm), pad_pixels=4)
     w7x_img = _autocrop_image(mpimg.imread(w7x_panel), pad_pixels=4)
     hsx_img = _autocrop_image(mpimg.imread(hsx_panel), pad_pixels=4)
-    etg_img = _autocrop_image(mpimg.imread(etg_panel), pad_pixels=4)
-
     ax0 = fig.add_subplot(gs[0, :])
     ax0.imshow(cyclone_img)
     ax0.set_title("Cyclone / KBM", fontsize=14, fontweight="bold")
@@ -269,13 +260,8 @@ def main() -> None:
     ax4 = fig.add_subplot(gs[2, 1])
     _plot_imported_linear(ax4, hsx_linear, "HSX Linear VMEC")
 
-    ax5 = fig.add_subplot(gs[3, 0])
+    ax5 = fig.add_subplot(gs[3, :])
     _plot_secondary(ax5, secondary, "Secondary Slab (GX kh01a.out.nc)")
-
-    ax6 = fig.add_subplot(gs[3, 1])
-    ax6.imshow(etg_img)
-    ax6.set_title("ETG Nonlinear Pilot", fontsize=14, fontweight="bold")
-    ax6.axis("off")
 
     fig.suptitle("GX-Aligned Validation Summary", fontsize=18, fontweight="bold")
     out.parent.mkdir(parents=True, exist_ok=True)

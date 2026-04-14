@@ -306,6 +306,16 @@ def run_demo(
         ax2.set_xlabel(r"$R/L_{Ti}$")
         ax2.set_ylabel(r"$R/L_{n}$")
         ax2.set_title("Inverse solve + loss contours")
+        ax2.text(
+            0.03,
+            0.03,
+            "One mode fits the observables,\nnot both gradients uniquely.",
+            transform=ax2.transAxes,
+            ha="left",
+            va="bottom",
+            fontsize=10,
+            bbox={"boxstyle": "round,pad=0.25", "fc": "white", "ec": "0.75", "alpha": 0.92},
+        )
         ax2.legend(loc="best", fontsize=8)
 
         ax3 = axes[1, 1]
@@ -324,7 +334,7 @@ def run_demo(
             bbox={"boxstyle": "round,pad=0.25", "fc": "white", "ec": "0.7", "alpha": 0.9},
         )
 
-        fig.suptitle("Autodiff sensitivity and local inverse demo (single mode)")
+        fig.suptitle("Autodiff sensitivity and local inverse demo (single mode, non-unique)")
         fig.tight_layout(rect=(0.0, 0.0, 1.0, 0.97))
 
         fig_path = outdir / "autodiff_inverse_growth.png"
