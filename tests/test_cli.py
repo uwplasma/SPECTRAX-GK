@@ -1,4 +1,4 @@
-"""CLI tests for basic command execution."""
+"""Executable tests for basic command execution."""
 
 import sys
 from pathlib import Path
@@ -14,7 +14,7 @@ from spectraxgk.runtime import RuntimeLinearResult, RuntimeNonlinearResult
 
 def test_version_exposed():
     """Version string should be exported from the package."""
-    assert __version__ == "1.0"
+    assert __version__ == "1.1"
 
 
 def test_cli_cyclone_info(capsys, monkeypatch):
@@ -757,7 +757,7 @@ Nm = 4
 
 
 def test_cli_run_runtime_nonlinear_keeps_adaptive_steps_none(capsys, monkeypatch, tmp_path: Path):
-    """Adaptive nonlinear CLI runs should keep ``steps=None`` unless explicitly set."""
+    """Adaptive nonlinear executable runs should keep ``steps=None`` unless explicitly set."""
 
     cfg = """
 [[species]]
