@@ -80,6 +80,15 @@ def _load_gx_modes(
     return pd.DataFrame(rows)
 
 
+def _load_gx_time_max(path: Path) -> float:
+    root = Dataset(path, "r")
+    time = np.asarray(root.groups["Grids"].variables["time"][:], dtype=float)
+    root.close()
+    if time.ndim != 1 or time.size == 0:
+        raise ValueError(f"unexpected GX time array in {path}")
+    return float(time[-1])
+
+
 def _load_gx_readme_targets(path: Path, modes: tuple[tuple[float, float], ...]) -> pd.DataFrame:
     if not path.exists():
         raise FileNotFoundError(f"secondary README target file not found: {path}")
@@ -124,7 +133,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--config",
         type=Path,
-        default=Path("examples/linear/axisymmetric/runtime_secondary_slab.toml"),
+        default=Path("examples/benchmarks/runtime_secondary_slab.toml"),
         help="Stage-1 secondary runtime config.",
     )
     parser.add_argument("--gx-out", type=Path, default=None, help="GX kh01a out.nc file.")
@@ -153,7 +162,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--stage1-dt", type=float, default=1.0)
     parser.add_argument("--stage1-steps", type=int, default=2)
     parser.add_argument("--stage2-dt", type=float, default=0.01)
-    parser.add_argument("--stage2-tmax", type=float, default=100.0)
+    parser.add_argument(
+        "--stage2-tmax",
+        type=float,
+        default=None,
+        help="Stage-2 nonlinear horizon. Defaults to the GX out.nc final time in out-nc mode, or 100 for README mode.",
+    )
     parser.add_argument("--restart-scale", type=float, default=500.0)
     parser.add_argument("--init-amp", type=float, default=1.0e-5)
     parser.add_argument("--sample-stride", type=int, default=20)
@@ -167,6 +181,16 @@ def main() -> None:
     modes = tuple(DEFAULT_MODES)
 
     with TemporaryDirectory(prefix="spectrax_secondary_compare_") as tmpdir:
+        if args.gx_source == "out-nc":
+            if args.gx_out is None:
+                raise ValueError("--gx-out is required when --gx-source=out-nc")
+            stage2_tmax = (
+                float(args.stage2_tmax)
+                if args.stage2_tmax is not None
+                else _load_gx_time_max(args.gx_out)
+            )
+        else:
+            stage2_tmax = float(args.stage2_tmax) if args.stage2_tmax is not None else 100.0
         restart_path = Path(tmpdir) / "secondary_seed.bin"
         run_secondary_seed(
             cfg,
@@ -183,7 +207,7 @@ def main() -> None:
             restart_scale=float(args.restart_scale),
             init_amp=float(args.init_amp),
             dt=float(args.stage2_dt),
-            t_max=float(args.stage2_tmax),
+            t_max=stage2_tmax,
         )
         sp_rows = run_secondary_modes(
             stage2_cfg,
@@ -195,8 +219,6 @@ def main() -> None:
         )
 
     if args.gx_source == "out-nc":
-        if args.gx_out is None:
-            raise ValueError("--gx-out is required when --gx-source=out-nc")
         gx_df = _load_gx_modes(args.gx_out, modes, tail_fraction=float(args.gx_tail_fraction))
     else:
         gx_df = _load_gx_readme_targets(args.gx_readme, modes)

@@ -106,24 +106,6 @@ def _linear_table_rows(df: pd.DataFrame) -> list[list[str]]:
     return rows
 
 
-def _load_cetg(path: Path) -> pd.DataFrame:
-    df = pd.read_csv(path)
-    required = {
-        "W_spectrax",
-        "W_gx",
-        "Phi2_spectrax",
-        "Phi2_gx",
-        "qflux_spectrax",
-        "qflux_gx",
-        "pflux_spectrax",
-        "pflux_gx",
-    }
-    missing = required.difference(df.columns)
-    if missing:
-        raise ValueError(f"{path} missing columns {sorted(missing)}")
-    return df
-
-
 def _mean_rel(lhs: np.ndarray, rhs: np.ndarray, floor_fraction: float = 1.0e-8) -> float:
     lhs_f = np.asarray(lhs, dtype=float)
     rhs_f = np.asarray(rhs, dtype=float)
@@ -134,25 +116,6 @@ def _mean_rel(lhs: np.ndarray, rhs: np.ndarray, floor_fraction: float = 1.0e-8) 
     floor = max(float(np.nanmax(np.abs(rhs_sel))) * floor_fraction, 1.0e-30)
     denom = np.maximum(np.abs(rhs_sel), floor)
     return float(np.nanmean(np.abs(lhs_f[finite] - rhs_sel) / denom))
-
-
-def _cetg_table_rows(df: pd.DataFrame) -> list[list[str]]:
-    metrics = [
-        ("W", _mean_rel(np.asarray(df["W_spectrax"], dtype=float), np.asarray(df["W_gx"], dtype=float))),
-        (
-            "Phi2",
-            _mean_rel(np.asarray(df["Phi2_spectrax"], dtype=float), np.asarray(df["Phi2_gx"], dtype=float)),
-        ),
-        (
-            "qflux",
-            _mean_rel(np.asarray(df["qflux_spectrax"], dtype=float), np.asarray(df["qflux_gx"], dtype=float)),
-        ),
-        (
-            "pflux",
-            _mean_rel(np.asarray(df["pflux_spectrax"], dtype=float), np.asarray(df["pflux_gx"], dtype=float)),
-        ),
-    ]
-    return [[name, f"{value:.2e}"] for name, value in metrics]
 
 
 def _plot_imported_linear(ax: Axes, df: pd.DataFrame, title: str) -> None:
@@ -210,29 +173,6 @@ def _plot_secondary(ax: Axes, df: pd.DataFrame, title: str) -> None:
     ax.legend(handles_l + handles_r, labels_l + labels_r, fontsize=8, frameon=False, loc="upper left")
 
 
-def _plot_cetg(ax: Axes, df: pd.DataFrame, title: str) -> None:
-    t = np.asarray(df["t"], dtype=float)
-    metric_specs = [
-        ("W", "W_spectrax", "W_gx", "#1f77b4"),
-        ("Phi2", "Phi2_spectrax", "Phi2_gx", "#ff7f0e"),
-        ("qflux", "qflux_spectrax", "qflux_gx", "#2ca02c"),
-    ]
-    for label, sp_col, gx_col, color in metric_specs:
-        sp = np.asarray(df[sp_col], dtype=float)
-        gx = np.asarray(df[gx_col], dtype=float)
-        finite = np.isfinite(sp) & np.isfinite(gx) & (sp > 0.0) & (gx > 0.0)
-        if not np.any(finite):
-            continue
-        ax.plot(t[finite], gx[finite], color=color, linewidth=2.0, label=f"{label} GX")
-        ax.plot(t[finite], sp[finite], color=color, linewidth=1.8, linestyle="--", label=f"{label} S")
-    ax.set_title(title, fontsize=14, fontweight="bold")
-    ax.set_xlabel("t")
-    ax.set_yscale("log")
-    ax.set_ylabel("signal")
-    ax.grid(True, which="both", alpha=0.25)
-    ax.legend(fontsize=7, frameon=False, ncol=2, loc="upper left")
-
-
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -272,10 +212,10 @@ def build_parser() -> argparse.ArgumentParser:
         help="Tracked linear HSX imported-geometry comparison CSV.",
     )
     parser.add_argument(
-        "--cetg-csv",
+        "--etg-panel",
         type=Path,
-        default=STATIC / "cetg_gx_compare.csv",
-        help="Tracked legacy GX cETG comparison CSV.",
+        default=STATIC / "etg_fullgk_pilot_compare_dt1e4_gaussian_match.png",
+        help="Tracked full-GK ETG nonlinear pilot comparison figure.",
     )
     parser.add_argument(
         "--out",
@@ -294,20 +234,19 @@ def main() -> None:
     secondary_csv = _resolve(args.secondary_csv)
     w7x_linear_csv = _resolve(args.w7x_linear_csv)
     hsx_linear_csv = _resolve(args.hsx_linear_csv)
-    cetg_csv = _resolve(args.cetg_csv)
+    etg_panel = _resolve(args.etg_panel)
     out = _resolve(args.out)
 
     secondary = _load_secondary(secondary_csv)
     w7x_linear = _load_imported_linear(w7x_linear_csv)
     hsx_linear = _load_imported_linear(hsx_linear_csv)
-    cetg = _load_cetg(cetg_csv)
-
     fig = plt.figure(figsize=(18, 19), constrained_layout=True)
     gs = fig.add_gridspec(4, 2, height_ratios=[1.05, 1.0, 0.82, 0.82])
 
     cyclone_img = _autocrop_image(mpimg.imread(cyclone_kbm), pad_pixels=16)
     w7x_img = _autocrop_image(mpimg.imread(w7x_panel), pad_pixels=10)
     hsx_img = _autocrop_image(mpimg.imread(hsx_panel), pad_pixels=10)
+    etg_img = _autocrop_image(mpimg.imread(etg_panel), pad_pixels=10)
 
     ax0 = fig.add_subplot(gs[0, :])
     ax0.imshow(cyclone_img)
@@ -334,7 +273,9 @@ def main() -> None:
     _plot_secondary(ax5, secondary, "Secondary Slab (GX kh01a.out.nc)")
 
     ax6 = fig.add_subplot(gs[3, 1])
-    _plot_cetg(ax6, cetg, "cETG (legacy GX)")
+    ax6.imshow(etg_img)
+    ax6.set_title("ETG Nonlinear Pilot", fontsize=14, fontweight="bold")
+    ax6.axis("off")
 
     fig.suptitle("GX-Aligned Validation Summary", fontsize=18, fontweight="bold")
     out.parent.mkdir(parents=True, exist_ok=True)

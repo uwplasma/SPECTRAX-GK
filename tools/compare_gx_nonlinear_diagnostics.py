@@ -8,6 +8,7 @@ from pathlib import Path
 
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 from netCDF4 import Dataset
 
 
@@ -116,6 +117,33 @@ def _load_spectrax(path: Path) -> dict[str, np.ndarray]:
     return _load_spectrax_csv(path)
 
 
+def _reduce_species_resolved(arr: np.ndarray, name: str) -> np.ndarray:
+    if arr.ndim != 3:
+        raise ValueError(f"expected resolved array with shape (time, species, mode), got {arr.shape} for {name}")
+    if name.startswith("Wapar"):
+        return np.asarray(arr[:, 0, :], dtype=float)
+    return np.asarray(np.sum(arr, axis=1), dtype=float)
+
+
+def _load_resolved_diag(path: Path) -> dict[str, np.ndarray]:
+    root = Dataset(path, "r")
+    diag = root.groups["Diagnostics"]
+    grid = root.groups["Grids"]
+    out = {
+        "t": np.asarray(grid.variables["time"][:], dtype=float),
+        "kx": np.asarray(grid.variables["kx"][:], dtype=float),
+        "ky": np.asarray(grid.variables["ky"][:], dtype=float),
+        "Wphi_kx": _reduce_species_resolved(np.asarray(diag.variables["Wphi_kxst"][:], dtype=float), "Wphi_kxst"),
+        "Wphi_ky": _reduce_species_resolved(np.asarray(diag.variables["Wphi_kyst"][:], dtype=float), "Wphi_kyst"),
+        "HeatFlux_kx": _reduce_species_resolved(
+            np.asarray(diag.variables["HeatFlux_kxst"][:], dtype=float),
+            "HeatFlux_kxst",
+        ),
+    }
+    root.close()
+    return out
+
+
 def _interp_summary(
     ref_t: np.ndarray,
     ref_y: np.ndarray,
@@ -129,6 +157,101 @@ def _interp_summary(
     return float(np.mean(rel)), float(np.max(rel)), final_rel
 
 
+def _interp_mode_summary(
+    ref_t: np.ndarray,
+    ref_y: np.ndarray,
+    cmp_t: np.ndarray,
+    cmp_y: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    if ref_y.ndim != 2 or cmp_y.ndim != 2:
+        raise ValueError(f"expected resolved 2D arrays, got {ref_y.shape} and {cmp_y.shape}")
+    if ref_y.shape[1] != cmp_y.shape[1]:
+        raise ValueError(f"resolved mode count mismatch: {ref_y.shape[1]} vs {cmp_y.shape[1]}")
+    mean_rel = np.zeros(ref_y.shape[1], dtype=float)
+    max_rel = np.zeros(ref_y.shape[1], dtype=float)
+    final_rel = np.zeros(ref_y.shape[1], dtype=float)
+    for idx in range(ref_y.shape[1]):
+        cmp_interp = np.interp(ref_t, cmp_t, cmp_y[:, idx])
+        denom = np.maximum(np.abs(cmp_interp), 1.0e-30)
+        rel = np.abs((ref_y[:, idx] - cmp_interp) / denom)
+        mean_rel[idx] = float(np.mean(rel))
+        max_rel[idx] = float(np.max(rel))
+        final_rel[idx] = float((ref_y[-1, idx] - cmp_interp[-1]) / denom[-1])
+    return mean_rel, max_rel, final_rel
+
+
+def _write_resolved_audit(
+    *,
+    gx_path: Path,
+    sp_path: Path,
+    out_png: Path,
+    out_csv: Path | None,
+    tmax: float | None,
+) -> None:
+    gx = _load_resolved_diag(gx_path)
+    sp = _load_resolved_diag(sp_path)
+
+    if tmax is not None:
+        gx_mask = gx["t"] <= tmax
+        sp_mask = sp["t"] <= tmax
+        gx["t"] = gx["t"][gx_mask]
+        sp["t"] = sp["t"][sp_mask]
+        for key in ("Wphi_kx", "Wphi_ky", "HeatFlux_kx"):
+            gx[key] = gx[key][gx_mask, :]
+            sp[key] = sp[key][sp_mask, :]
+
+    rows: list[dict[str, float | str | int]] = []
+    audit_specs = (
+        ("Wphi_kx", "kx", gx["kx"]),
+        ("Wphi_ky", "ky", gx["ky"]),
+        ("HeatFlux_kx", "kx", gx["kx"]),
+    )
+    fig, axes = plt.subplots(1, 3, figsize=(13.5, 4.0), constrained_layout=True)
+    for ax, (name, axis_name, coords) in zip(axes, audit_specs):
+        mean_rel, max_rel, final_rel = _interp_mode_summary(sp["t"], sp[name], gx["t"], gx[name])
+        coord_vals = np.asarray(coords, dtype=float)
+        ax.plot(coord_vals, mean_rel, marker="o", linewidth=2.0, label="mean rel")
+        ax.plot(coord_vals, max_rel, marker="s", linewidth=1.8, linestyle="--", label="max rel")
+        ax.plot(coord_vals, np.abs(final_rel), marker="^", linewidth=1.6, linestyle=":", label="|final rel|")
+        ax.set_title(name.replace("_", " "), fontsize=12, fontweight="bold")
+        ax.set_xlabel(axis_name)
+        ax.set_yscale("log")
+        ax.grid(True, which="both", alpha=0.25)
+        if axis_name == "kx":
+            ax.set_ylabel("relative error")
+        worst_idx = int(np.argmax(mean_rel))
+        ax.axvline(coord_vals[worst_idx], color="0.6", linewidth=1.0, linestyle=":")
+        ax.text(
+            coord_vals[worst_idx],
+            mean_rel[worst_idx],
+            f"worst {axis_name}={coord_vals[worst_idx]:.3g}",
+            fontsize=8,
+            ha="left",
+            va="bottom",
+        )
+        for idx, coord in enumerate(coord_vals):
+            rows.append(
+                {
+                    "metric": name,
+                    "axis": axis_name,
+                    "mode_index": idx,
+                    "mode_value": float(coord),
+                    "mean_rel": float(mean_rel[idx]),
+                    "max_rel": float(max_rel[idx]),
+                    "final_rel": float(final_rel[idx]),
+                }
+            )
+    axes[0].legend(frameon=False, fontsize=8)
+    fig.suptitle("Resolved nonlinear diagnostic audit: GX vs SPECTRAX-GK", fontsize=14, fontweight="bold")
+    out_png.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out_png, dpi=220)
+    print(f"saved {out_png}")
+    if out_csv is not None:
+        out_csv.parent.mkdir(parents=True, exist_ok=True)
+        pd.DataFrame(rows).to_csv(out_csv, index=False)
+        print(f"saved {out_csv}")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--gx", type=Path, required=True, help="GX .out.nc file with diagnostics")
@@ -139,6 +262,18 @@ def main() -> int:
         type=Path,
         default=Path("docs/_static/nonlinear_cyclone_diag_compare.png"),
         help="Output figure path",
+    )
+    parser.add_argument(
+        "--resolved-out",
+        type=Path,
+        default=None,
+        help="Optional resolved-diagnostic audit figure (requires both inputs as .nc)",
+    )
+    parser.add_argument(
+        "--resolved-csv",
+        type=Path,
+        default=None,
+        help="Optional CSV summary for the resolved-diagnostic audit",
     )
     args = parser.parse_args()
 
@@ -205,6 +340,16 @@ def main() -> int:
     for name, sp_y, gx_y in summary_pairs:
         mean_rel, max_rel, final_rel = _interp_summary(sp["t"], sp_y, gx["t"], gx_y)
         print(f"{name} {mean_rel:.6e} {max_rel:.6e} {final_rel:.6e}")
+    if args.resolved_out is not None:
+        if args.gx.suffix != ".nc" or args.spectrax.suffix != ".nc":
+            raise ValueError("--resolved-out requires both --gx and --spectrax to be .nc files")
+        _write_resolved_audit(
+            gx_path=args.gx,
+            sp_path=args.spectrax,
+            out_png=args.resolved_out,
+            out_csv=args.resolved_csv,
+            tmax=args.tmax,
+        )
     return 0
 
 

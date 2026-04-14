@@ -60,6 +60,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Tracked linear HSX imported-geometry comparison CSV.",
     )
     parser.add_argument(
+        "--etg-panel",
+        type=Path,
+        default=STATIC / "etg_fullgk_pilot_compare_dt1e4_gaussian_match.png",
+        help="Tracked full-GK ETG nonlinear pilot comparison figure.",
+    )
+    parser.add_argument(
         "--out",
         type=Path,
         default=STATIC / "gx_publication_panel.png",
@@ -81,6 +87,7 @@ def main() -> None:
     hsx_panel = _resolve(args.hsx_panel)
     w7x_linear_csv = _resolve(args.w7x_linear_csv)
     hsx_linear_csv = _resolve(args.hsx_linear_csv)
+    etg_panel = _resolve(args.etg_panel)
     out = _resolve(args.out)
     pdf_out = _resolve(args.pdf_out)
 
@@ -90,9 +97,10 @@ def main() -> None:
     cyclone_img = _autocrop_image(mpimg.imread(cyclone_kbm), pad_pixels=16)
     w7x_img = _autocrop_image(mpimg.imread(w7x_panel), pad_pixels=10)
     hsx_img = _autocrop_image(mpimg.imread(hsx_panel), pad_pixels=10)
+    etg_img = _autocrop_image(mpimg.imread(etg_panel), pad_pixels=10)
 
-    fig = plt.figure(figsize=(18, 16), constrained_layout=True)
-    gs = fig.add_gridspec(3, 2, height_ratios=[1.15, 0.95, 0.9])
+    fig = plt.figure(figsize=(18, 20), constrained_layout=True)
+    gs = fig.add_gridspec(4, 2, height_ratios=[1.15, 0.95, 0.9, 0.92])
 
     ax0 = fig.add_subplot(gs[0, :])
     ax0.imshow(cyclone_img)
@@ -114,6 +122,11 @@ def main() -> None:
 
     ax4 = fig.add_subplot(gs[2, 1])
     _plot_imported_linear(ax4, hsx_linear, "HSX Linear VMEC")
+
+    ax5 = fig.add_subplot(gs[3, :])
+    ax5.imshow(etg_img)
+    ax5.set_title("ETG Nonlinear Short-Window Pilot", fontsize=14, fontweight="bold")
+    ax5.axis("off")
 
     fig.suptitle("GX-Aligned Validation: Publication Panel", fontsize=18, fontweight="bold")
     out.parent.mkdir(parents=True, exist_ok=True)

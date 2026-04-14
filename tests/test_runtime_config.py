@@ -173,6 +173,11 @@ def test_etg_nonlinear_pilot_example_keeps_two_species_full_gk_contract() -> Non
     assert cfg.physics.electromagnetic is False
     assert cfg.physics.adiabatic_ions is False
     assert cfg.physics.adiabatic_electrons is False
+    assert cfg.grid.Lx == pytest.approx(1.25)
+    assert cfg.init.gaussian_init is True
+    assert cfg.init.init_single is False
+    assert cfg.collisions.hypercollisions_const == pytest.approx(0.0)
+    assert cfg.collisions.hypercollisions_kz == pytest.approx(1.0)
     assert data["run"]["ky"] == pytest.approx(5.0)
     assert cfg.output.path == str((path.parents[3] / "tools_out" / "etg_nonlinear_runtime").resolve())
 

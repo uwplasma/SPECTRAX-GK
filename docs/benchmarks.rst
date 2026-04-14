@@ -132,12 +132,12 @@ the primary validation claim:
 
    Nonlinear benchmark master panel. This panel groups the tracked nonlinear
    overlays used in the public benchmark set: Cyclone, KBM, W7-X, HSX,
-   Cyclone Miller, and the reduced cETG comparison.
+   Cyclone Miller, and the short-window full-GK ETG pilot.
 
-For the current release pass, Cyclone, KBM, W7-X, HSX, and Cyclone Miller are
-treated as the acceptable nonlinear validation set. ETG nonlinear remains a
-tracked pilot lane, while TEM and KAW are intentionally kept out of the active
-parity claim until their separate recovery work is finished.
+For the current release pass, Cyclone, KBM, W7-X, HSX, Cyclone Miller, and the
+short-window full-GK ETG pilot are treated as the acceptable nonlinear
+validation set. TEM and KAW are intentionally kept out of the active parity
+claim until their separate recovery work is finished.
 
 Interpretation of validation
 ----------------------------
@@ -167,9 +167,10 @@ also be read asymmetrically:
 
 - HSX nonlinear is currently acceptable on the best validated ``t <= 50`` trace
   and remains part of the public benchmark set.
-- W7-X nonlinear is still an active repair lane. The tracked figure should show
-  the best currently validated ``t <= 200`` trace, but it should not yet be
-  interpreted as a closed small-tolerance parity result.
+- W7-X nonlinear is currently acceptable on the refreshed ``t <= 200`` trace
+  and remains part of the public benchmark set. It should still be read as a
+  long-window benchmark closure rather than a universal small-tolerance claim
+  for every late-time sample.
 
 README summary panel
 --------------------
@@ -179,11 +180,31 @@ README summary panel
    :align: center
    :alt: README benchmark atlas
 
-   Publication-facing benchmark summary. The README panel is intentionally
-   limited to the convergence gate plus the linear and nonlinear master panels
-   so the top-level presentation stays compact. In practice that means one
-   image for validation/convergence coverage and one separate image for runtime and
-   peak-memory measurements.
+   Publication-facing benchmark summary. The shipped summary/publication stack
+   now includes the closed short-window full-GK ETG nonlinear pilot alongside
+   the tokamak and stellarator headline lanes, while the top-level README atlas
+   remains compact with one validation image and one separate runtime/memory
+   image.
+
+Supplementary closure figures
+-----------------------------
+
+Some parity lanes are tracked as supplementary closure artifacts rather than as
+headline atlas tiles. Current examples include:
+
+- ``docs/_static/nonlinear_cyclone_short_resolved_audit_t5.png`` for the
+  corrected short nonlinear Cyclone replay, which now uses the explicit
+  short-reference dissipation contract and localizes the remaining mismatch in
+  resolved ``k_y`` field-energy diagnostics.
+- ``docs/_static/secondary_gx_out_compare.csv`` for the refreshed secondary
+  stage-2 mode table built from the dense ``kh01a`` GX replay.
+- ``docs/_static/nonlinear_w7x_diag_compare_t200.png``,
+  ``docs/_static/hsx_nonlinear_compare_t50_true.png``, and
+  ``docs/_static/nonlinear_kbm_diag_compare_t100_refresh.png`` for the
+  refreshed long-window nonlinear publication figures.
+- ``docs/_static/etg_fullgk_pilot_compare_dt1e4_gaussian_match.png`` for the
+  closed short-window full-GK ETG nonlinear pilot that now appears in the
+  shipped summary/publication panels.
 
 Extended stress matrix
 ----------------------

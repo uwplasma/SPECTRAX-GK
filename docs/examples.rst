@@ -51,7 +51,9 @@ Stellarator and imported-geometry cases
 
 For the VMEC-backed stellarator examples, omit ``--steps`` when you want the
 default adaptive horizon. Set ``--steps`` only when you intentionally want a
-short profiling or diagnostic window.
+short profiling or diagnostic window. For longer W7-X nonlinear runs, keep
+adaptive timesteps enabled (the default for the examples) or reduce ``dt`` if
+you need a fixed-step stability study.
 
 The shipped nonlinear stellarator runtime TOMLs now also emit artifact bundles
 under ``tools_out/`` by default:
@@ -133,6 +135,12 @@ One-shot nonlinear bundle write:
      --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_gx.toml \
      --steps 200 \
      --out tools_out/cyclone_release.out.nc
+
+For the short GX-reference Cyclone replay (`t_max = 5`, no collisions), use
+``examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_gx_short.toml``.
+That file pins the short-run dissipation contract explicitly
+(``p_hyper = 2``, ``damp_ends_amp = 0``) instead of relying on the longer
+production defaults.
 
 Restart-aware TOML snippet:
 
@@ -240,5 +248,7 @@ Full-GK ETG nonlinear pilot
    JAX_ENABLE_X64=1 spectrax-gk examples/nonlinear/axisymmetric/runtime_etg_nonlinear.toml --steps 200
 
 This is the full-GK two-species ETG nonlinear pilot lane. It is intentionally
-separate from the reduced cETG workflow and is the correct starting point for
-future GX-backed nonlinear ETG parity work.
+separate from the reduced cETG workflow. The shipped contract now matches the
+audited GX short-window startup path: ``Lx = 1.25`` for the linked ETG box and
+``gaussian_init = true`` with ``init_single = false`` because GX reads
+``init_single`` from its ``[Expert]`` section, not from ``[Initialization]``.

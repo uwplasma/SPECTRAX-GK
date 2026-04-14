@@ -836,7 +836,7 @@ def test_runtime_gaussian_init_populates_multiple_modes_when_not_single() -> Non
     assert int(np.count_nonzero(nonzero)) > 1
 
 
-def test_runtime_gaussian_single_mode_keeps_gx_equal_real_imag_parts() -> None:
+def test_runtime_gaussian_single_mode_uses_gx_real_single_mode_branch() -> None:
     cfg = replace(
         _base_runtime_cfg(),
         grid=GridConfig(Nx=4, Ny=8, Nz=16, Lx=6.28, Ly=6.28, boundary="linked", y0=10.0, ntheta=16, nperiod=1),
@@ -855,7 +855,41 @@ def test_runtime_gaussian_single_mode_keeps_gx_equal_real_imag_parts() -> None:
     g0 = np.asarray(_build_initial_condition(grid, geom, cfg, ky_index=ky_index, kx_index=0, Nl=3, Nm=4, nspecies=1))
 
     seeded = g0[0, 0, 0, ky_index, 0, :]
-    assert np.allclose(seeded.real, seeded.imag)
+    z = np.asarray(grid.z, dtype=float)
+    z_period = _gx_periodic_zp(z)
+    expected = np.cos(cfg.init.kpar_init * z / z_period)
+    assert np.allclose(seeded.real, expected)
+    assert np.allclose(seeded.imag, 0.0)
+
+
+def test_runtime_full_ky_initial_condition_mirrors_negative_ky_block() -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        grid=GridConfig(Nx=10, Ny=22, Nz=16, Lx=1.25, Ly=6.28, boundary="linked", y0=0.2, ntheta=16, nperiod=1),
+        init=InitializationConfig(
+            init_field="density",
+            init_amp=1.0,
+            gaussian_init=True,
+            gaussian_width=0.5,
+            init_single=True,
+            init_electrons_only=True,
+        ),
+        species=(
+            RuntimeSpeciesConfig(name="ion", charge=1.0, kinetic=True),
+            RuntimeSpeciesConfig(name="electron", charge=-1.0, kinetic=True),
+        ),
+    )
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    grid = build_spectral_grid(cfg.grid)
+    ky_index = int(np.argmin(np.abs(np.asarray(grid.ky) - 5.0)))
+
+    g0 = np.asarray(_build_initial_condition(grid, geom, cfg, ky_index=ky_index, kx_index=0, Nl=3, Nm=4, nspecies=2))
+
+    neg_ky = g0.shape[3] - ky_index
+    kx_neg = np.concatenate(([0], np.arange(g0.shape[4] - 1, 0, -1)))
+    expected = np.conj(g0[1, 0, 0, ky_index, :, :])[kx_neg, :]
+    assert np.allclose(g0[1, 0, 0, neg_ky, :, :], expected)
+    assert np.allclose(g0[0], 0.0)
 
 
 def test_runtime_nonlinear_dealias_toggle_executes() -> None:

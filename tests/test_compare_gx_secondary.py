@@ -11,7 +11,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
 
-from compare_gx_secondary import _load_gx_modes, _load_gx_readme_targets, build_parser
+from compare_gx_secondary import _load_gx_modes, _load_gx_readme_targets, _load_gx_time_max, build_parser
 
 
 def test_load_gx_readme_targets_parses_sidebands_and_zero_modes(tmp_path: Path) -> None:
@@ -57,7 +57,7 @@ def test_compare_gx_secondary_parser_defaults_to_readme_source() -> None:
     assert args.gx_source == "readme"
     assert args.gx_out is None
     assert args.gx_tail_fraction == pytest.approx(0.5)
-    assert args.stage2_tmax == pytest.approx(100.0)
+    assert args.stage2_tmax is None
     assert args.fit_fraction == pytest.approx(0.5)
 
 
@@ -82,3 +82,14 @@ def test_load_gx_modes_uses_tail_mean_for_out_nc(tmp_path: Path) -> None:
     row = df.iloc[0]
     assert float(row["omega_gx"]) == pytest.approx(0.25)
     assert float(row["gamma_gx"]) == pytest.approx(5.05)
+
+
+def test_load_gx_time_max_reads_final_sample(tmp_path: Path) -> None:
+    path = tmp_path / "kh01a.out.nc"
+    root = Dataset(path, "w")
+    grids = root.createGroup("Grids")
+    root.createDimension("time", 3)
+    grids.createVariable("time", "f8", ("time",))[:] = np.array([0.1, 0.3, 0.7])
+    root.close()
+
+    assert _load_gx_time_max(path) == pytest.approx(0.7)
