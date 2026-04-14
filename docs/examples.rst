@@ -65,7 +65,7 @@ under ``tools_out/`` by default:
 Those diagnostics and their matching ``*.summary.json`` files are the intended
 inputs for the parity helpers under ``tools/``.
 The direct Python runtime wrappers now route through the same artifact-aware
-nonlinear path as the CLI, so long adaptive runs update that bundle as each
+nonlinear path as the executable, so long adaptive runs update that bundle as each
 chunk completes.
 
 Runtime TOML entry points
@@ -84,7 +84,7 @@ lanes:
    python examples/utilities/runtime_from_toml.py --config examples/linear/axisymmetric/runtime_kbm.toml
    python examples/linear/axisymmetric/etg_linear_auto.py --outdir tools_out/etg_auto
 
-   python -m spectraxgk.cli run-runtime-linear \
+   spectrax-gk run-runtime-linear \
      --config examples/linear/non-axisymmetric/runtime_w7x_linear_imported_geometry.toml
 
    spectrax-gk examples/linear/axisymmetric/runtime_cyclone.toml
@@ -100,11 +100,13 @@ distributed linear RK2 loop:
    python examples/utilities/strong_scaling_sweep.py \
      --ny 128 --nz 256 --nl 8 --nm 8 --steps 120 \
      --devices 1,2,4,8 \
-     --backend cpu_sharded_large \
+     --backend cpu_parallel_large \
      --out tools_out/strong_scaling_cpu.csv
 
 On multi-GPU systems, point ``--devices`` at the available accelerators and
-update ``--backend`` accordingly (for example ``cuda_sharded_large``).
+update ``--backend`` accordingly (for example ``cuda_parallel_large``). The
+backend labels are just sweep names for the output table; they do not change
+the runtime physics or solver path.
 
 Plotting outputs
 ----------------

@@ -94,7 +94,7 @@ tests:
   on tiny grids.
 - ``tests/test_diffrax_integrators_core.py`` hardens branch coverage for
   diffrax helper paths (solver selection, save modes, streaming fits, IMEX
-  branches, sharding, and validation errors).
+  branches, parallelization, and validation errors).
 - ``tests/test_linear_krylov_core.py`` hardens matrix-free Krylov internals
   (mode-family targeting, shift-invert preconditioner selection, fallback
   policy, and dominant eigenpair wrappers).
