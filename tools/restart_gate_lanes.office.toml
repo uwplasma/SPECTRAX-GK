@@ -5,13 +5,13 @@
 # benchmark figures.
 
 [lane.cyclone_miller]
-config = "../examples/linear/axisymmetric/runtime_cyclone_nonlinear_gx_miller.toml"
+config = "../examples/linear/axisymmetric/runtime_cyclone_nonlinear_miller.toml"
 steps_first = 8
 steps_second = 8
 fixed_dt = true
 
 [lane.kbm_salpha]
-config = "../examples/nonlinear/axisymmetric/runtime_kbm_nonlinear_gx_t100.toml"
+config = "../examples/nonlinear/axisymmetric/runtime_kbm_nonlinear_t100.toml"
 steps_first = 8
 steps_second = 8
 fixed_dt = true

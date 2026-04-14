@@ -340,7 +340,7 @@ Current nonlinear-lane status at the handoff point:
       SPECTRAX replay still carried the longer production `damp_ends_amp = 0.1`
       contract
   - Re-running the short replay with the explicit short contract
-    (`examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_gx_short.toml`)
+    (`examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_short.toml`)
     improves the comparison against the GX `.out.nc` to:
     - `mean_rel_abs(Wg) ~= 2.61e-1`
     - `mean_rel_abs(Wphi) ~= 2.11e-1`
@@ -492,7 +492,7 @@ Current nonlinear-lane status at the handoff point:
     physics comparison:
     - both `tools/exact_state_lanes.office.toml` and
       `tools/restart_gate_lanes.office.toml` still pointed at the nonexistent
-      `examples/linear/axisymmetric/runtime_kbm_nonlinear_gx_t100.toml`
+      `examples/linear/axisymmetric/runtime_kbm_nonlinear_t100.toml`
       instead of the shipped nonlinear config under
       `examples/nonlinear/axisymmetric/`
   - Those office manifests are now corrected and covered by tests.

@@ -57,7 +57,7 @@ def test_exact_state_office_manifest_kbm_config_resolves_to_real_example() -> No
     data = tomllib.loads(manifest.read_text(encoding="utf-8"))
     config = data["lane"]["kbm_salpha"]["config"]
     resolved = _resolve_manifest_path(config, manifest_dir=manifest.parent)
-    assert resolved == (repo / "examples" / "nonlinear" / "axisymmetric" / "runtime_kbm_nonlinear_gx_t100.toml")
+    assert resolved == (repo / "examples" / "nonlinear" / "axisymmetric" / "runtime_kbm_nonlinear_t100.toml")
     assert resolved.is_file()
 
 

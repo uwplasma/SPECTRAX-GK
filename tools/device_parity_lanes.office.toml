@@ -1,7 +1,7 @@
 # Office CPU/GPU parity manifest for representative nonlinear lanes.
 
 [lane.cyclone_miller]
-config = "../examples/linear/axisymmetric/runtime_cyclone_nonlinear_gx_miller.toml"
+config = "../examples/linear/axisymmetric/runtime_cyclone_nonlinear_miller.toml"
 steps = 8
 fixed_dt = true
 required_nonzero = ["state_norm", "Wphi"]

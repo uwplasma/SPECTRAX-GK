@@ -144,7 +144,7 @@ import the sampled field-line geometry first, prove solver/diagnostic parity on
 that contract, and only then add a native VMEC path that generates the same
 contract inside SPECTRAX-GK.
 
-Runtime and CLI paths can now construct that bridge directly from config with
+Runtime and executable paths can now construct that bridge directly from config with
 ``geometry.model = "gx-netcdf"`` and
 ``geometry.geometry_file = "/path/to/geometry.nc"``. Analytic s-alpha remains
 the default with ``geometry.model = "s-alpha"``. For slab cases use
@@ -292,7 +292,7 @@ Miller geometry runs:
 .. code-block:: bash
 
    spectrax-gk run-runtime-nonlinear \
-     --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_gx_miller.toml \
+     --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml \
      --steps 200 \
      --out tools_out/cyclone_miller.out.nc
 

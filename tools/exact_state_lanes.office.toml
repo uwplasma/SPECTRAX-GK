@@ -18,7 +18,7 @@
 # dump artifacts exist.
 
 [lane.cyclone_miller]
-config = "../examples/linear/axisymmetric/runtime_cyclone_nonlinear_gx_miller.toml"
+config = "../examples/linear/axisymmetric/runtime_cyclone_nonlinear_miller.toml"
 gx_out = "$HOME/gx_runs/cyclone_diag160/cyclone_diag160.out.nc"
 
 [lane.cyclone_miller.diag_state]
@@ -26,7 +26,7 @@ gx_dir = "$HOME/gx_runs/cyclone_diag160"
 time_index = 47
 
 [lane.cyclone_runtime_salpha]
-config = "../examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_gx.toml"
+config = "../examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml"
 gx_out = "$HOME/gx_runs/cyclone_local_match/cyclone_local_match_dense.out.nc"
 
 [lane.cyclone_runtime_salpha.startup]
@@ -39,7 +39,7 @@ gx_dir = "$HOME/gx_runs/cyclone_local_match_dense_diag_t47"
 time_index = 47
 
 [lane.kbm_salpha]
-config = "../examples/nonlinear/axisymmetric/runtime_kbm_nonlinear_gx_t100.toml"
+config = "../examples/nonlinear/axisymmetric/runtime_kbm_nonlinear_t100.toml"
 gx_out = "$HOME/gx_refs/main_clean_20260312/nonlinear/kbm/kbm_salpha_nonlinear.out.nc"
 
 [lane.kbm_salpha.startup]

@@ -117,7 +117,7 @@ Recent GX parity spot checks are tracked outside the automated test suite:
 - **Cyclone nonlinear short replay**: the GX `cyclone_salpha_short.in` replay
   (`dt=0.05`, `t_max=5`, collisions off, diagnostics stride 1) now uses the
   explicit short-reference runtime contract in
-  ``examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_gx_short.toml``.
+  ``examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_short.toml``.
   The main short-run drift turned out to be configuration-level: the replay
   needed ``p_hyper = 2`` and no end damping to match the public GX short input.
   With that contract restored, the tracked comparison improves to
