@@ -41,7 +41,7 @@ name = "imported-linear-cyclone-miller"
 description = "Refresh the Cyclone Miller imported linear scan using internally generated Miller geometry."
 cwd = "{root}"
 requires_env = ["CYCLONE_MILLER_IMPORTED_ARGS"]
-command = "PYTHONPATH=src python tools/compare_gx_imported_linear.py ${CYCLONE_MILLER_IMPORTED_ARGS} --runtime-config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_gx_miller.toml --out docs/_static/cyclone_miller_linear_scan.csv && python tools/derive_imported_linear_lastvalue_table.py --scan docs/_static/cyclone_miller_linear_scan.csv --out docs/_static/cyclone_miller_linear_mismatch.csv"
+command = "PYTHONPATH=src python tools/compare_gx_imported_linear.py ${CYCLONE_MILLER_IMPORTED_ARGS} --runtime-config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml --out docs/_static/cyclone_miller_linear_scan.csv && python tools/derive_imported_linear_lastvalue_table.py --scan docs/_static/cyclone_miller_linear_scan.csv --out docs/_static/cyclone_miller_linear_mismatch.csv"
 outputs = ["docs/_static/cyclone_miller_linear_scan.csv", "docs/_static/cyclone_miller_linear_mismatch.csv"]
 
 [[job]]

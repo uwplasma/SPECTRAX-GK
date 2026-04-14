@@ -124,12 +124,12 @@ path = "tools_out/runtime_case"
 def test_gx_aligned_kbm_runtime_examples_keep_end_damping_enabled() -> None:
     cfg_dir = Path(__file__).resolve().parents[1] / "examples" / "nonlinear" / "axisymmetric"
     paths = [
-        cfg_dir / "runtime_kbm_nonlinear_gx.toml",
-        cfg_dir / "runtime_kbm_nonlinear_gx_seed.toml",
-        cfg_dir / "runtime_kbm_nonlinear_gx_short.toml",
-        cfg_dir / "runtime_kbm_nonlinear_gx_short_lockin.toml",
-        cfg_dir / "runtime_kbm_nonlinear_gx_t100.toml",
-        cfg_dir / "runtime_kbm_nonlinear_gx_t100_nx4ny8_dt9e4.toml",
+        cfg_dir / "runtime_kbm_nonlinear.toml",
+        cfg_dir / "runtime_kbm_nonlinear_seed.toml",
+        cfg_dir / "runtime_kbm_nonlinear_short.toml",
+        cfg_dir / "runtime_kbm_nonlinear_short_lockin.toml",
+        cfg_dir / "runtime_kbm_nonlinear_t100.toml",
+        cfg_dir / "runtime_kbm_nonlinear_t100_nx4ny8_dt9e4.toml",
     ]
     for path in paths:
         cfg, _ = load_runtime_from_toml(path)
@@ -512,7 +512,7 @@ def test_cyclone_nonlinear_gx_miller_example_toml_loads() -> None:
         / "examples"
         / "nonlinear"
         / "axisymmetric"
-        / "runtime_cyclone_nonlinear_gx_miller.toml"
+        / "runtime_cyclone_nonlinear_miller.toml"
     )
 
     cfg, data = load_runtime_from_toml(path)

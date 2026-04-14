@@ -6,18 +6,12 @@ Install
 
 .. code-block:: bash
 
+   git clone https://github.com/uwplasma/SPECTRAX-GK
+   cd SPECTRAX-GK
    pip install -e .
 
-For parity-sensitive benchmark work, use the tested stack declared in the
-package metadata and ``requirements.txt``. The code may execute on newer JAX or
-NumPy releases, but the tracked benchmark figures are currently validated on
-the pinned ``jax/jaxlib/numpy/diffrax/equinox`` ranges shipped with the repo.
-For direct reproduction of parity-sensitive runtime-example outputs, also set
-``JAX_ENABLE_X64=1``. The default precision policy can be faster on some
-devices, but it can shift linear example outputs materially.
-
-CLI demo
---------
+Executable demo
+---------------
 
 .. code-block:: bash
 
@@ -26,11 +20,11 @@ CLI demo
    cd examples/linear/axisymmetric && spectrax-gk cyclone.toml
    spectrax-gk scan-runtime-linear --config examples/linear/axisymmetric/runtime_etg.toml --plot --outdir docs/_static
    spectrax-gk run-runtime-linear --config examples/linear/axisymmetric/cyclone.toml --out tools_out/cyclone_runtime
-   spectrax-gk run-runtime-nonlinear --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_gx.toml --steps 50 --out tools_out/cyclone_nonlinear
-   spectrax-gk run-runtime-nonlinear --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_gx.toml --steps 50 --out tools_out/cyclone_nonlinear.out.nc
+   spectrax-gk run-runtime-nonlinear --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml --steps 50 --out tools_out/cyclone_nonlinear
+   spectrax-gk run-runtime-nonlinear --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml --steps 50 --out tools_out/cyclone_nonlinear.out.nc
    spectrax-gk examples/nonlinear/axisymmetric/runtime_cetg_reference.toml --steps 100
 
-When ``--out`` is provided for runtime-configured single-point runs, the CLI writes
+When ``--out`` is provided for runtime-configured single-point runs, the executable writes
 a JSON summary plus sidecar time-series/state artifacts using the supplied path
 as a prefix.
 

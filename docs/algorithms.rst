@@ -59,5 +59,5 @@ Data layout and memory
 
 We store Laguerre and Hermite indices in the leading axes and use FFT-friendly
 ordering for the perpendicular Fourier grid. The layout is optimized for vector
-operations and will be extended with sharding strategies once nonlinear terms
-are added.
+operations and for the current JAX parallelization path that partitions the
+packed state across device meshes when ``state_sharding`` is enabled.

@@ -72,7 +72,7 @@ Runtime TOML entry points
 -------------------------
 
 When you want the full config surface instead of the thin case wrappers, use
-the CLI or the generic example drivers directly. These runtime utilities are
+the executable or the generic example drivers directly. These runtime utilities are
 best treated as solver-smoke and exploration entry points; the benchmark
 examples remain the audited parity surface for ETG and the other validation
 lanes:
@@ -92,8 +92,8 @@ lanes:
 Scaling utilities
 -----------------
 
-Use the strong-scaling sweep helper to collect multi-device timings for the
-sharded linear RK2 loop:
+Use the strong-scaling sweep helper to collect parallelization timings for the
+distributed linear RK2 loop:
 
 .. code-block:: bash
 
@@ -132,12 +132,12 @@ One-shot nonlinear bundle write:
 .. code-block:: bash
 
    spectrax-gk run-runtime-nonlinear \
-     --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_gx.toml \
+     --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml \
      --steps 200 \
      --out tools_out/cyclone_release.out.nc
 
 For the short GX-reference Cyclone replay (`t_max = 5`, no collisions), use
-``examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_gx_short.toml``.
+``examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_short.toml``.
 That file pins the short-run dissipation contract explicitly
 (``p_hyper = 2``, ``damp_ends_amp = 0``) instead of relying on the longer
 production defaults.
@@ -176,7 +176,7 @@ Miller inputs when the external helper scripts are available:
      --config examples/nonlinear/non-axisymmetric/runtime_hsx_nonlinear_vmec_geometry.toml
 
    python tools/generate_gx_miller_eik.py \
-     --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_gx_miller.toml
+     --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml
 
 Benchmark and scan helpers
 --------------------------

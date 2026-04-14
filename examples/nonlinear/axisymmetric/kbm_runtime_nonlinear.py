@@ -8,7 +8,7 @@ from pathlib import Path
 
 from spectraxgk.runtime import run_nonlinear_case
 
-CONFIG = Path(__file__).resolve().parent / "runtime_kbm_nonlinear_gx_short.toml"
+CONFIG = Path(__file__).resolve().parent / "runtime_kbm_nonlinear_short.toml"
 
 
 def main() -> int:

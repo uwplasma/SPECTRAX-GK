@@ -308,7 +308,7 @@ Planned optimizations
 ---------------------
 
 - ``vmap`` over species and parameter scans
-- ``pjit``/sharding for multi-device acceleration
+- JAX mesh-based parallelization for multi-device acceleration
 - FFT acceleration and layout tuning
 - operator fusion for nonlinear terms
 

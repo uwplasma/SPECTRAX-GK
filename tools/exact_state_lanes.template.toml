@@ -15,7 +15,7 @@
 # dump flags enabled (no GX physics changes required).
 
 [lane.cyclone_miller]
-config = "examples/linear/axisymmetric/runtime_cyclone_nonlinear_gx_miller.toml"
+config = "examples/linear/axisymmetric/runtime_cyclone_nonlinear_miller.toml"
 gx_out = "/ABS/PATH/TO/GX/itg_miller_adiabatic_electrons_correct.out.nc"
 
 [lane.cyclone_miller.startup]

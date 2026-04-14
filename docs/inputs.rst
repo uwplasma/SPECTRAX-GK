@@ -1,9 +1,9 @@
-Input Files and CLI
-===================
+Input Files and Executable
+==========================
 
 SPECTRAX-GK supports lightweight TOML inputs that map directly onto the
 ``GridConfig``, ``TimeConfig``, ``GeometryConfig``, and ``ModelConfig`` dataclasses.
-You can use these inputs from the CLI or from a Python driver.
+You can use these inputs from the executable or from a Python driver.
 
 Unified Runtime Schema
 ----------------------
@@ -126,11 +126,12 @@ Use ``nonlinear_dealias = false`` to disable nonlinear dealias masking for
 reference/debug runs where you want to preserve all configured base modes.
 When ``nonlinear_dealias = true``, nonlinear runtime mode selection is
 dealias-aware: if the requested ``ky`` is filtered out by the 2/3 mask, the
-runner automatically picks the nearest retained ``ky``. The CLI prints the
+runner automatically picks the nearest retained ``ky``. The executable prints the
 effective ``ky_sel``/``kx_sel`` used by diagnostics.
 For benchmark-locked runs, leaving ``dt_max`` unset keeps ``dt_max = dt``.
-Set ``state_sharding = "auto"`` (or ``"ky"``) to shard the packed state array
-over multiple JAX devices. This is honored by the diffrax integrators only and
+Set ``state_sharding = "auto"`` (or ``"ky"``) to enable distributed
+parallelization of the packed state array over multiple JAX devices. This is
+honored by the diffrax integrators only and
 falls back to single-device execution if only one device is visible. Other
 valid values are ``"kx"``, ``"z"``, ``"l"``, ``"m"``, and ``"species"``.
 Increase ``dt_max`` explicitly only when you intentionally trade strict
@@ -207,8 +208,8 @@ For large ky scans, ``scan-runtime-linear --batch-ky`` integrates all ky values
 in a single time integration pass (time integrator only) and then extracts the
 growth rates from the per-ky traces.
 
-CLI usage
----------
+Executable usage
+----------------
 
 .. code-block:: bash
 
@@ -216,11 +217,11 @@ CLI usage
   spectrax-gk scan-runtime-linear --config examples/linear/axisymmetric/runtime_etg.toml --plot --outdir docs/_static
   spectrax-gk run-runtime-linear --config examples/linear/axisymmetric/cyclone.toml --out tools_out/cyclone_runtime
    spectrax-gk scan-runtime-linear --config examples/linear/axisymmetric/runtime_etg.toml --batch-ky
-   spectrax-gk run-runtime-nonlinear --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_gx.toml --sample-stride 5 --out docs/_static/nonlinear_cyclone_diag.csv
+   spectrax-gk run-runtime-nonlinear --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml --sample-stride 5 --out docs/_static/nonlinear_cyclone_diag.csv
    spectrax-gk examples/nonlinear/axisymmetric/runtime_cetg_reference.toml --steps 100
 
 For ``run-runtime-nonlinear``, omit ``--steps`` when ``fixed_dt = false`` unless
-you explicitly want a capped step count. The CLI now preserves ``steps = None``
+you explicitly want a capped step count. The executable now preserves ``steps = None``
 for adaptive nonlinear runs so the runtime can keep integrating in chunks until
 it reaches the requested ``t_max`` instead of silently reverting to the old
 ``round(t_max / dt)`` ceiling.
