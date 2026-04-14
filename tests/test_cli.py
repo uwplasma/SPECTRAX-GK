@@ -14,7 +14,7 @@ from spectraxgk.runtime import RuntimeLinearResult, RuntimeNonlinearResult
 
 def test_version_exposed():
     """Version string should be exported from the package."""
-    assert __version__ == "0.0.0"
+    assert __version__ == "1.0"
 
 
 def test_cli_cyclone_info(capsys, monkeypatch):

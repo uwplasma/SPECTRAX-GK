@@ -19,6 +19,7 @@ from spectraxgk.runtime_config import (
 )
 from spectraxgk.secondary import (
     _leading_finite_prefix,
+    _tail_mean_pair,
     build_secondary_stage2_config,
     run_secondary_modes,
     run_secondary_seed,
@@ -88,7 +89,17 @@ def test_run_secondary_modes_uses_requested_targets(monkeypatch) -> None:
     assert rows[1].omega == -0.25
 
 
-def test_run_secondary_modes_prefers_mode_trace_fit(monkeypatch) -> None:
+def test_tail_mean_pair_averages_late_time_window() -> None:
+    gamma, omega = _tail_mean_pair(
+        np.array([1.0, 2.0, 3.0, 5.0]),
+        np.array([0.0, 0.5, 1.0, 1.5]),
+        tail_fraction=0.5,
+    )
+    assert gamma == pytest.approx(4.0)
+    assert omega == pytest.approx(1.25)
+
+
+def test_run_secondary_modes_uses_phi_fit_for_gamma_and_tail_for_omega(monkeypatch) -> None:
     class _Result:
         def __init__(self) -> None:
             t = np.array([0.0, 1.0, 2.0], dtype=float)
@@ -97,8 +108,8 @@ def test_run_secondary_modes_prefers_mode_trace_fit(monkeypatch) -> None:
                 t=t,
                 dt_t=np.full_like(t, 1.0),
                 dt_mean=1.0,
-                gamma_t=np.array([0.0, 0.0, 0.0]),
-                omega_t=np.array([0.0, 0.0, 0.0]),
+                gamma_t=np.array([1.0, 2.0, 3.0]),
+                omega_t=np.array([-0.1, -0.2, -0.3]),
                 Wg_t=t * 0.0,
                 Wphi_t=t * 0.0,
                 Wapar_t=t * 0.0,
@@ -111,10 +122,10 @@ def test_run_secondary_modes_prefers_mode_trace_fit(monkeypatch) -> None:
     monkeypatch.setattr("spectraxgk.secondary.run_runtime_nonlinear", lambda *args, **kwargs: _Result())
     row = run_secondary_modes(_base_cfg(), modes=((0.1, 0.05),), Nl=3, Nm=8, fit_fraction=1.0)[0]
     assert row.gamma == pytest.approx(2.0)
-    assert row.omega == pytest.approx(0.25)
+    assert row.omega == pytest.approx(-0.2)
 
 
-def test_run_secondary_modes_fits_leading_finite_prefix(monkeypatch) -> None:
+def test_run_secondary_modes_fits_mode_trace_when_diagnostics_invalid(monkeypatch) -> None:
     class _Result:
         def __init__(self) -> None:
             t = np.array([0.0, 1.0, 2.0, 3.0], dtype=float)
@@ -124,8 +135,8 @@ def test_run_secondary_modes_fits_leading_finite_prefix(monkeypatch) -> None:
                 t=t,
                 dt_t=np.full_like(t, 1.0),
                 dt_mean=1.0,
-                gamma_t=np.array([0.0, 0.0, 0.0, 0.0]),
-                omega_t=np.array([0.0, 0.0, 0.0, 0.0]),
+                gamma_t=np.array([np.nan, np.nan, np.nan, np.nan]),
+                omega_t=np.array([np.nan, np.nan, np.nan, np.nan]),
                 Wg_t=t * 0.0,
                 Wphi_t=t * 0.0,
                 Wapar_t=t * 0.0,

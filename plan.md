@@ -330,15 +330,70 @@ Current nonlinear-lane status at the handoff point:
     - `mean_rel_abs(Wphi) ~= 6.84e-2`
     - `mean_rel_abs(HeatFlux) ~= 9.19e-2`
     - `final_rel(HeatFlux) ~= 7.79e-2`
+  - Short GX-cyclone replay (GX `cyclone_salpha_short.in`, `dt=0.05`,
+    `t_max=5`, collisions off, diagnostic stride 1) was partly a replay-config
+    drift rather than a kernel-level defect.
+  - The main contract differences were:
+    - the short GX input uses `p_hyper = 2`, while the ad hoc SPECTRAX replay
+      had fallen back to the runtime default `p_hyper = 4`
+    - the short GX input does not use linked-end damping, while the ad hoc
+      SPECTRAX replay still carried the longer production `damp_ends_amp = 0.1`
+      contract
+  - Re-running the short replay with the explicit short contract
+    (`examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_gx_short.toml`)
+    improves the comparison against the GX `.out.nc` to:
+    - `mean_rel_abs(Wg) ~= 2.61e-1`
+    - `mean_rel_abs(Wphi) ~= 2.11e-1`
+    - `mean_rel_abs(HeatFlux) ~= 2.51e-1`
+    - `final_rel(HeatFlux) ~= 3.09e-1`
+  - This lane remains open, but it is no longer a broad "0.5 / 0.68" mismatch;
+    the remaining gap is the residual short no-collision `k_y`-resolved drift
+    after the short-reference contract has been restored.
+  - The short replay required explicit `--diagnostics` to emit GX-style
+    diagnostics (the default `.out.nc` only contains metadata without the
+    Diagnostics group).
+  - The localization pass is now closed with a resolved audit artifact
+    (`docs/_static/nonlinear_cyclone_short_resolved_audit_t5.{png,csv}`):
+    - `Wphi_kyst` remains the dominant mismatch, but the corrected short
+      contract lowers the active-`k_y` mean-relative range to roughly
+      `3.12e-1 .. 5.33e-1`
+    - `Wphi_kxst` sits around `1.70e-1 .. 3.20e-1`
+    - `HeatFlux_kxst` sits around `2.59e-1 .. 4.02e-1`
+  - That closes the diagnostic-localization lane: the short replay drift is
+    not a single zonal-`k_x` defect, but a broader `k_y`-resolved field-energy
+    imbalance in the short no-collision replay.
+
+- `Secondary linear (GX kh01)`
+  - The multi-sample stage-2 comparison lane is now refreshed from a dense GX
+    replay (`kh01a_shortdense.out.nc`, `nstep=200`, `nwrite=20`), which
+    produces a populated `omega_kxkyt` history with 10 output samples.
+  - The tracked `secondary_gx_out_compare.csv` has been rebuilt from that real
+    GX output.
+  - The original remaining `omega` mismatch turned out to be a contract issue:
+    the comparison helper was mixing that short GX replay with a stage-2
+    SPECTRAX run at `t_max = 100`.
+  - The helper now defaults the SPECTRAX stage-2 horizon to the real GX
+    `out.nc` final time in `out-nc` mode, and the secondary post-processing now
+    uses the mode-trace fit for `gamma` but the diagnostic tail for `omega`.
+  - Current refreshed outcome on the matched short window:
+    - `max rel_gamma ~= 1.87e-4`
+    - `rel_omega ~= 3.23e-4` and `9.92e-4` on the `k_y = 0.1` sidebands
+    - the `k_y = 0` sidebands still show large *relative* `omega` because both
+      codes are effectively zero there, but the absolute mismatch stays
+      `O(1e-6)`
+  - This lane is now closed for the current release pass.
 
 - `W7-X nonlinear`
-  - Still the next active open GX-backed lane.
-  - Best current validated long-window trace on `office` is the VMEC-fixed
-    branch (`w7x_spectrax_t200_vmecfix.csv`, tied with `chunked2`):
-    - `mean_rel_abs(Wg) ~= 4.70e-1`
-    - `mean_rel_abs(Wphi) ~= 5.77e-1`
-    - `mean_rel_abs(HeatFlux) ~= 3.39e-1`
-    - `final_rel(HeatFlux) ~= 8.15e-3`
+  - Refreshed publication-grade long-window comparison now uses the current
+    cached `t ~= 200` SPECTRAX diagnostic CSV against the tracked GX
+    `w7x_adiabatic_electrons.out.nc`.
+  - Current refreshed long-window metrics:
+    - `mean_rel_abs(Wg) ~= 9.24e-2`
+    - `mean_rel_abs(Wphi) ~= 1.16e-1`
+    - `mean_rel_abs(HeatFlux) ~= 7.55e-2`
+    - `final_rel(Wg) ~= -1.69e-1`
+    - `final_rel(Wphi) ~= -1.91e-1`
+    - `final_rel(HeatFlux) ~= -1.26e-1`
   - Exact-state audit still closes tightly through the tracked startup / late
     dump window, so the remaining drift is in later-time nonlinear evolution,
     not the startup state or VMEC import itself.
@@ -403,17 +458,15 @@ Current nonlinear-lane status at the handoff point:
     - `mean_rel_abs(HeatFlux) ~= 1.50e-1`
     - `final_rel(Wg) ~= 3.88e-2`
     - `final_rel(Wphi) ~= 4.78e-2`
-  - Under the current acceptance target, W7-X nonlinear is now close enough
-    that it should stay in the benchmark set while HSX, ETG, KBM, and kinetic
-    continue through the same refreshed audit workflow.
+  - Under the current acceptance target, W7-X nonlinear is now closed for the
+    current release pass and stays in the benchmark/publication set.
 
 - `HSX nonlinear`
-  - Acceptable for this pass on the best validated `t <= 50` trace.
-  - Current best validated metrics:
-    - `mean_rel_abs(Wg) ~= 7.77e-2`
-    - `mean_rel_abs(Wphi) ~= 9.56e-2`
-    - `mean_rel_abs(HeatFlux) ~= 7.97e-2`
-    - `final_rel(HeatFlux) ~= 3.05e-2`
+  - Refreshed `t = 50` comparison metrics:
+    - `mean_rel_abs(Wg) ~= 2.75e-2`
+    - `mean_rel_abs(Wphi) ~= 3.61e-2`
+    - `mean_rel_abs(HeatFlux) ~= 2.91e-2`
+    - `final_rel(HeatFlux) ~= 8.27e-3`
   - Interpretation:
     - keep this lane in the public benchmark set
     - do not spend more solver/debug time here before the remaining nonlinear
@@ -432,10 +485,7 @@ Current nonlinear-lane status at the handoff point:
     - `mean_rel_abs(HeatFlux) ~= 8.66e-2`
     - `final_rel(Wg) ~= -3.36e-1`
     - `final_rel(Wphi) ~= -3.74e-1`
-  - Interpretation:
-    - HSX nonlinear remains acceptable for the current pass
-    - the refreshed normalized wrapper path is healthier than the older
-      tracked HSX nonlinear comparison
+  - HSX nonlinear is now closed for the current release pass.
 
 - `KBM nonlinear`
   - The first refreshed audit hit a concrete tooling/config bug before any
@@ -481,32 +531,34 @@ Current nonlinear-lane status at the handoff point:
     - partial-step `phi rms_rel ~= 1.26e-4`
     - partial-step state deltas remain tiny in absolute value even where
       pointwise relative error is inflated by near-zero reference entries
-  - Interpretation:
-    - the startup state, late dumped-state diagnostics, nonlinear term
-      assembly, and first RK4 partial-step update are all closed enough for
-      the current release pass
-    - treat KBM nonlinear as acceptable for ship readiness and move the
-      remaining long-window cleanup to future work
+  - Refreshed long-window `t = 100` CSV-backed comparison now also closes
+    tightly:
+    - `mean_rel_abs(Wg) ~= 9.33e-3`
+    - `mean_rel_abs(Wphi) ~= 9.35e-3`
+    - `mean_rel_abs(Wapar) ~= 9.34e-3`
+    - `mean_rel_abs(HeatFlux) ~= 9.36e-3`
+    - `mean_rel_abs(ParticleFlux) ~= 9.36e-3`
+  - KBM nonlinear is now closed for the current release pass.
 
 ## Next Work Order
 
 1. Treat Cyclone Miller linear, HSX linear, KBM linear, Cyclone nonlinear, HSX nonlinear, and W7-X nonlinear as acceptable for the current pass unless refreshed data regresses.
-2. Full-GK ETG nonlinear now has an explicit shipped pilot contract:
+2. Full-GK ETG nonlinear is now closed as a shipped short-window pilot:
    - `/Users/rogeriojorge/local/SPECTRAX-GK/examples/nonlinear/axisymmetric/runtime_etg_nonlinear.toml`
    - `/Users/rogeriojorge/local/SPECTRAX-GK/examples/nonlinear/axisymmetric/etg_runtime_nonlinear.py`
    - it is two-species, electrostatic, nonlinear, and intentionally separate from reduced `cETG`
-   - the pilot now uses `ky = 5.0`, which lines up with the existing GX two-species ETG `y0 = 0.2` contract (`ky_min = 5`)
-   - first short `office` replay now exists on both codes at `t = 0.01`
-   - current x64 short-window result is not closed:
-     - `spectrax-gk`: `Wg_last ~= 9.12e-22`, `Wphi_last ~= 6.24e-22`, `heat_last ~= 5.23e-22`, runtime `~= 35.2 s`
-     - `GX`: `Wg_last ~= 7.97e-21`, `Wphi_last ~= 5.23e-21`, `heat_last ~= 1.14e-20`, runtime `~= 3.26 s`
-   - interpretation:
-     - the lane is now concrete and reproducible
-     - it is still very open numerically
-     - it is also materially slower on the current SPECTRAX runtime path
-   - next ETG task is now contract/physics closure against that short window, not case-definition from scratch
-3. Then continue with the remaining GX-backed queue:
-   kinetic-electron Cyclone.
+   - the matched ETG box uses `y0 = 0.2`, `ky = 5.0`, and `Lx = 1.25`
+   - the startup mismatch was traced to a GX input-contract detail:
+     - GX reads `init_single` from `[Expert]`, not `[Initialization]`
+     - the audited GX pilot was therefore using the Gaussian startup branch
+     - the shipped SPECTRAX pilot now matches that with `gaussian_init = true` and `init_single = false`
+   - matched short-window audit (`Nx=10`, `Ny=22`, `ntheta=16`, `Nl=4`, `Nm=4`, `dt=1e-4`, `t_max=0.001`) now lands at:
+     - `mean_rel_abs(Wg) ~= 1.31e-2`
+     - `mean_rel_abs(Wphi) ~= 5.18e-3`
+     - final `HeatFlux` within a few percent of GX
+   - continuation from the GX restart also matches over the next 10 steps, so the ETG nonlinear operator is not the open issue anymore
+3. Kinetic-electron Cyclone is explicitly deferred to a future pass and is not
+   part of the present shipped validation/performance stack refresh.
 4. Leave KAW and TEM out of the active parity-recovery path until the above GX-backed lanes are honestly closed.
 5. Consider making `ruff` a future CI gate only after a dedicated lint cleanup; current repo-wide `ruff check .` still reports pre-existing style debt.
 

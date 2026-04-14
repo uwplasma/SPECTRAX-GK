@@ -25,7 +25,7 @@ def build_w7x_nonlinear_cfg(geometry_file: str, *, dt: float, t_max: float) -> R
             Nz=48,
             Lx=62.8,
             Ly=62.8,
-            boundary="linked",
+            boundary="fix aspect",
             y0=21.0,
             ntheta=48,
             nperiod=1,

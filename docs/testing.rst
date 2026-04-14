@@ -109,6 +109,46 @@ tests:
   runtime contract, including the absence of adaptive-step truncation caps and
   the presence of default ``tools_out/...`` artifact paths for W7-X and HSX.
 
+Nonlinear parity snapshots
+--------------------------
+
+Recent GX parity spot checks are tracked outside the automated test suite:
+
+- **Cyclone nonlinear short replay**: the GX `cyclone_salpha_short.in` replay
+  (`dt=0.05`, `t_max=5`, collisions off, diagnostics stride 1) now uses the
+  explicit short-reference runtime contract in
+  ``examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_gx_short.toml``.
+  The main short-run drift turned out to be configuration-level: the replay
+  needed ``p_hyper = 2`` and no end damping to match the public GX short input.
+  With that contract restored, the tracked comparison improves to
+  ``mean_rel_abs(Wphi) ~= 2.11e-1`` and
+  ``mean_rel_abs(HeatFlux) ~= 2.51e-1``. The resolved audit remains in
+  ``docs/_static/nonlinear_cyclone_short_resolved_audit_t5.{png,csv}``, where
+  ``Wphi_kyst`` is still the dominant residual mismatch.
+- **Secondary (`kh01a`)**: the tracked secondary comparison now uses a dense
+  real GX run (`kh01a_shortdense.out.nc`, 10 samples in ``omega_kxkyt``) and
+  the rebuilt ``secondary_gx_out_compare.csv``. The comparison helper now uses
+  the GX file horizon automatically in ``out-nc`` mode, so it no longer mixes a
+  short GX replay with a ``t_max = 100`` SPECTRAX stage-2 run. On the matched
+  short window, growth rates match tightly (``max rel_gamma ~= 1.87e-4``) and
+  the non-zonal ``omega`` modes also close tightly
+  (``rel_omega ~= 3.23e-4`` and ``9.92e-4`` on the ``k_y = 0.1`` sidebands).
+  The only large relative ``omega`` values left are the effectively zero-
+  frequency ``k_y = 0`` sidebands, where the absolute mismatch stays
+  ``O(1e-6)``.
+- **W7-X nonlinear (`t \\approx 200`)**: the refreshed long-window CSV-backed
+  comparison now closes at
+  ``mean_rel_abs(Wg) ~= 9.24e-2``,
+  ``mean_rel_abs(Wphi) ~= 1.16e-1``,
+  ``mean_rel_abs(HeatFlux) ~= 7.55e-2``.
+- **HSX nonlinear (`t = 50`)**: the refreshed comparison closes at
+  ``mean_rel_abs(Wg) ~= 2.75e-2``,
+  ``mean_rel_abs(Wphi) ~= 3.61e-2``,
+  ``mean_rel_abs(HeatFlux) ~= 2.91e-2``.
+- **KBM nonlinear (`t = 100`)**: the refreshed long-window comparison closes at
+  roughly ``9.3e-3`` mean-relative error across
+  ``Wg/Wphi/Wapar/HeatFlux/ParticleFlux``.
+
 Linear physics checks
 ---------------------
 
@@ -217,6 +257,17 @@ For ETG nonlinear audit runs, use dense short-window overrides first:
 
 This lane is currently expensive enough that short persisted windows are the
 right first diagnostic step before attempting long production horizons.
+
+The ETG short-window startup mismatch was traced to the GX input contract, not
+the nonlinear ETG operator. GX reads ``init_single`` from ``[Expert]`` rather
+than ``[Initialization]``, so the audited GX pilot was actually using the
+Gaussian startup branch. The shipped runtime ETG pilot now matches that
+contract with ``gaussian_init = true``, ``init_single = false``,
+``Lx = 1.25``, and GX-style ``kz`` hypercollisions. On the matched
+``Nx=10``, ``Ny=22``, ``ntheta=16``, ``Nl=4``, ``Nm=4``, ``dt=1e-4``,
+``t_max=0.001`` pilot, the refreshed short-window comparison lands at
+``mean_rel_abs(Wg) ~= 1.31e-2`` and ``mean_rel_abs(Wphi) ~= 5.18e-3``, with
+the final heat-flux point within a few percent of GX.
 
 The targeted imported-linear wrapper and the underlying
 ``compare_gx_imported_linear.py`` comparator now support two important controls

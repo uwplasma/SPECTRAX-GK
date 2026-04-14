@@ -1,5 +1,9 @@
 # Full-GK nonlinear ETG pilot lane.
-# This is the starting point for the GX-backed nonlinear ETG parity lane.
+# This is the shipped full-GK ETG nonlinear pilot contract.
+# The matched GX startup path is Gaussian, not single-mode:
+# in GX the `init_single` toggle lives under `[Expert]`, so keeping
+# `gaussian_init = true` and `init_single = false` here reproduces the
+# audited GX pilot startup state.
 # For parity-sensitive reproduction, prefer:
 #   JAX_ENABLE_X64=1 spectrax-gk examples/nonlinear/axisymmetric/runtime_etg_nonlinear.toml
 # For faster exploratory runs, leave JAX_ENABLE_X64 unset.
@@ -30,7 +34,7 @@ kinetic = true
 Nx = 24
 Ny = 24
 Nz = 48
-Lx = 6.28
+Lx = 1.25
 Ly = 6.28
 boundary = "linked"
 y0 = 0.2
@@ -59,7 +63,7 @@ init_field = "density"
 init_amp = 1.0e-10
 gaussian_init = true
 gaussian_width = 0.5
-init_single = true
+init_single = false
 init_electrons_only = true
 
 [physics]
@@ -78,8 +82,8 @@ nu_hermite = 1.0
 nu_laguerre = 2.0
 nu_hyper = 0.0
 p_hyper = 4.0
-hypercollisions_const = 1.0
-hypercollisions_kz = 0.0
+hypercollisions_const = 0.0
+hypercollisions_kz = 1.0
 damp_ends_amp = 0.0
 damp_ends_widthfrac = 0.0
 
