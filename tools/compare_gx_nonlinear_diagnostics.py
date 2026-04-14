@@ -264,6 +264,12 @@ def main() -> int:
         help="Output figure path",
     )
     parser.add_argument(
+        "--title",
+        type=str,
+        default="Nonlinear diagnostics: GX vs SPECTRAX-GK",
+        help="Figure title.",
+    )
+    parser.add_argument(
         "--resolved-out",
         type=Path,
         default=None,
@@ -288,38 +294,43 @@ def main() -> int:
         for key in sp:
             sp[key] = sp[key][sp_mask]
 
-    fig, axes = plt.subplots(3, 2, figsize=(9.5, 8.5), sharex=True)
+    gx_style = {"color": "#111827", "linewidth": 2.1, "linestyle": "--", "zorder": 2}
+    sp_style = {"color": "#2563eb", "linewidth": 2.3, "marker": "o", "markevery": max(len(sp["t"]) // 14, 1), "ms": 3.2, "zorder": 3}
+    fig, axes = plt.subplots(3, 2, figsize=(10.6, 8.9), sharex=True, constrained_layout=True)
     axes = axes.ravel()
 
-    axes[0].plot(gx["t"], gx["Wg"], label="GX", lw=2)
-    axes[0].plot(sp["t"], sp["Wg"], label="SPECTRAX-GK", lw=2)
+    axes[0].plot(gx["t"], gx["Wg"], label="GX", **gx_style)
+    axes[0].plot(sp["t"], sp["Wg"], label="SPECTRAX-GK", **sp_style)
     axes[0].set_ylabel("Wg")
-    axes[0].legend(frameon=False)
+    axes[0].legend(frameon=False, ncol=2, loc="upper right")
 
-    axes[1].plot(gx["t"], gx["Wphi"], label="GX", lw=2)
-    axes[1].plot(sp["t"], sp["Wphi"], label="SPECTRAX-GK", lw=2)
+    axes[1].plot(gx["t"], gx["Wphi"], label="GX", **gx_style)
+    axes[1].plot(sp["t"], sp["Wphi"], label="SPECTRAX-GK", **sp_style)
     axes[1].set_ylabel("Wphi")
 
-    axes[2].plot(gx["t"], gx["Wapar"], label="GX", lw=2)
-    axes[2].plot(sp["t"], sp["Wapar"], label="SPECTRAX-GK", lw=2)
+    axes[2].plot(gx["t"], gx["Wapar"], label="GX", **gx_style)
+    axes[2].plot(sp["t"], sp["Wapar"], label="SPECTRAX-GK", **sp_style)
     axes[2].set_ylabel("Wapar")
 
-    axes[3].plot(gx["t"], gx["energy"], label="GX", lw=2)
-    axes[3].plot(sp["t"], sp["energy"], label="SPECTRAX-GK", lw=2)
+    axes[3].plot(gx["t"], gx["energy"], label="GX", **gx_style)
+    axes[3].plot(sp["t"], sp["energy"], label="SPECTRAX-GK", **sp_style)
     axes[3].set_ylabel("Wtot")
 
-    axes[4].plot(gx["t"], gx["heat_flux"], label="GX", lw=2)
-    axes[4].plot(sp["t"], sp["heat_flux"], label="SPECTRAX-GK", lw=2)
+    axes[4].plot(gx["t"], gx["heat_flux"], label="GX", **gx_style)
+    axes[4].plot(sp["t"], sp["heat_flux"], label="SPECTRAX-GK", **sp_style)
     axes[4].set_ylabel("Heat flux")
     axes[4].set_xlabel("t")
 
-    axes[5].plot(gx["t"], gx["particle_flux"], label="GX", lw=2)
-    axes[5].plot(sp["t"], sp["particle_flux"], label="SPECTRAX-GK", lw=2)
+    axes[5].plot(gx["t"], gx["particle_flux"], label="GX", **gx_style)
+    axes[5].plot(sp["t"], sp["particle_flux"], label="SPECTRAX-GK", **sp_style)
     axes[5].set_ylabel("Particle flux")
     axes[5].set_xlabel("t")
 
-    fig.suptitle("Nonlinear Cyclone diagnostics: GX vs SPECTRAX-GK", fontsize=12)
-    fig.tight_layout()
+    for ax in axes:
+        ax.grid(True, alpha=0.25)
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+    fig.suptitle(args.title, fontsize=13, fontweight="bold")
     args.out.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(args.out, dpi=200)
     print(f"saved {args.out}")

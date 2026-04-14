@@ -283,6 +283,12 @@ def main() -> int:
     parser.add_argument("--spectrax", type=Path, required=True, help="SPECTRAX diagnostics CSV")
     parser.add_argument("--out", type=Path, default=Path("docs/_static/nonlinear_cyclone_compare.png"))
     parser.add_argument(
+        "--title",
+        type=str,
+        default="Nonlinear diagnostics: GX vs SPECTRAX-GK",
+        help="Figure title.",
+    )
+    parser.add_argument(
         "--avg-fraction",
         type=float,
         default=0.2,
@@ -448,28 +454,44 @@ def main() -> int:
     )
     print(f"Tolerance check: early={'PASS' if early_ok else 'FAIL'} late={'PASS' if late_ok else 'FAIL'}")
 
-    fig, ax = plt.subplots(3, 1, figsize=(7.0, 8.0), sharex=True)
+    gx_style = {"color": "#111827", "linewidth": 2.2, "linestyle": "--", "zorder": 2}
+    sp_style = {"color": "#2563eb", "linewidth": 2.4, "marker": "o", "markevery": max(len(t) // 12, 1), "ms": 3.8, "zorder": 3}
+    fig, ax = plt.subplots(3, 1, figsize=(8.2, 8.6), sharex=True, constrained_layout=True)
     mask = np.isfinite(sp["Wphi"]) & np.isfinite(gx_interp["Wphi"])
-    ax[0].plot(t[mask], sp["Wphi"][mask], label="SPECTRAX Wphi")
-    ax[0].plot(t[mask], gx_interp["Wphi"][mask], label="GX Wphi", linestyle="--")
+    ax[0].plot(t[mask], sp["Wphi"][mask], label="SPECTRAX-GK", **sp_style)
+    ax[0].plot(t[mask], gx_interp["Wphi"][mask], label="GX", **gx_style)
     ax[0].set_ylabel("Wphi")
-    ax[0].legend(frameon=False)
+    ax[0].legend(frameon=False, ncol=2, loc="upper right")
     if "gamma" in gx_interp and "omega" in gx_interp:
         mask_g = np.isfinite(sp["gamma"]) & np.isfinite(gx_interp["gamma"])
         mask_o = np.isfinite(sp["omega"]) & np.isfinite(gx_interp["omega"])
-        ax[1].plot(t[mask_g], sp["gamma"][mask_g], label="SPECTRAX gamma")
-        ax[1].plot(t[mask_g], gx_interp["gamma"][mask_g], label="GX gamma", linestyle="--")
-        ax[1].plot(t[mask_o], sp["omega"][mask_o], label="SPECTRAX omega")
-        ax[1].plot(t[mask_o], gx_interp["omega"][mask_o], label="GX omega", linestyle="--")
+        ax[1].plot(t[mask_g], sp["gamma"][mask_g], label="SPECTRAX γ", **sp_style)
+        ax[1].plot(t[mask_g], gx_interp["gamma"][mask_g], label="GX γ", **gx_style)
+        ax[1].plot(
+            t[mask_o],
+            sp["omega"][mask_o],
+            label="SPECTRAX ω",
+            color="#059669",
+            linewidth=2.0,
+            marker="s",
+            markevery=max(len(t) // 12, 1),
+            ms=3.5,
+            zorder=3,
+        )
+        ax[1].plot(t[mask_o], gx_interp["omega"][mask_o], label="GX ω", color="#f97316", linewidth=2.0, linestyle=":")
         ax[1].set_ylabel("gamma / omega")
-        ax[1].legend(frameon=False, ncol=2, fontsize=8)
+        ax[1].legend(frameon=False, ncol=2, fontsize=8, loc="upper right")
     mask_h = np.isfinite(sp["heat"]) & np.isfinite(gx_interp["heat"])
-    ax[2].plot(t[mask_h], sp["heat"][mask_h], label="SPECTRAX Q")
-    ax[2].plot(t[mask_h], gx_interp["heat"][mask_h], label="GX Q", linestyle="--")
+    ax[2].plot(t[mask_h], sp["heat"][mask_h], label="SPECTRAX-GK", **sp_style)
+    ax[2].plot(t[mask_h], gx_interp["heat"][mask_h], label="GX", **gx_style)
     ax[2].set_ylabel("Heat flux")
     ax[2].set_xlabel("t")
-    ax[2].legend(frameon=False)
-    fig.tight_layout()
+    ax[2].legend(frameon=False, ncol=2, loc="upper right")
+    for axis in ax:
+        axis.grid(True, alpha=0.25)
+        axis.spines["top"].set_visible(False)
+        axis.spines["right"].set_visible(False)
+    fig.suptitle(args.title, fontsize=13, fontweight="bold")
     args.out.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(args.out, dpi=200)
     print(f"saved {args.out}")

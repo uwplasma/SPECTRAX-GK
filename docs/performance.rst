@@ -128,15 +128,11 @@ gather/scatter-heavy kernels in the bracket assembly path.
 Multi-device scaling (diffrax + sharded linear loop)
 ----------------------------------------------------
 
-We record two scaling sweeps to validate multi-device execution. The first
-captures the diffrax integrator path on CPU (macOS) and GPU (`office`) for a
-fixed linear ITG configuration (Ny=64, Nz=128, Nl=6, Nm=6), comparing one vs
-two devices across several time horizons. GPU runs use ``sample_stride=5`` to
-limit memory pressure. The second sweep uses the sharded linear RK2 loop at a
-larger grid (Ny=128, Nz=256, Nl=8, Nm=8) to measure strong scaling on CPU
-(1/2/4/8 devices) and GPU (1/2 devices). The GPU curve highlights the current
-communication overhead at this size; follow-on work will focus on reducing
-cross-device transfers in the bracket and field solve paths.
+The shipped scaling figure is intentionally limited to the release-grade
+2-device diffrax speedup sweep. It captures CPU (macOS) and GPU (``office``)
+performance for a fixed linear ITG configuration (Ny=64, Nz=128, Nl=6, Nm=6),
+comparing one vs two devices across several time horizons. GPU runs use
+``sample_stride=5`` to limit memory pressure.
 
 .. image:: _static/scaling_speedup.png
    :alt: SPECTRAX-GK scaling speedup
@@ -148,6 +144,11 @@ be replotted with:
 .. code-block:: bash
 
    python tools/plot_scaling_speedup.py
+
+The exploratory sharded-RK2 strong-scaling data is still tracked in the CSV
+for engineering work, but it is intentionally not presented as a headline
+publication figure because the current curve is dominated by communication
+overhead rather than near-ideal scaling.
 
 Spectral nonlinear mode (fast toggle)
 -------------------------------------

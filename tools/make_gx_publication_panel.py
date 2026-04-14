@@ -94,13 +94,13 @@ def main() -> None:
     w7x_linear = _load_imported_linear(w7x_linear_csv)
     hsx_linear = _load_imported_linear(hsx_linear_csv)
 
-    cyclone_img = _autocrop_image(mpimg.imread(cyclone_kbm), pad_pixels=16)
-    w7x_img = _autocrop_image(mpimg.imread(w7x_panel), pad_pixels=10)
-    hsx_img = _autocrop_image(mpimg.imread(hsx_panel), pad_pixels=10)
-    etg_img = _autocrop_image(mpimg.imread(etg_panel), pad_pixels=10)
+    cyclone_img = _autocrop_image(mpimg.imread(cyclone_kbm), pad_pixels=4)
+    w7x_img = _autocrop_image(mpimg.imread(w7x_panel), pad_pixels=4)
+    hsx_img = _autocrop_image(mpimg.imread(hsx_panel), pad_pixels=4)
+    etg_img = _autocrop_image(mpimg.imread(etg_panel), pad_pixels=4)
 
-    fig = plt.figure(figsize=(18, 20), constrained_layout=True)
-    gs = fig.add_gridspec(4, 2, height_ratios=[1.15, 0.95, 0.9, 0.92])
+    fig = plt.figure(figsize=(20.5, 23.0), constrained_layout=True)
+    gs = fig.add_gridspec(4, 2, height_ratios=[1.55, 1.15, 1.0, 1.0])
 
     ax0 = fig.add_subplot(gs[0, :])
     ax0.imshow(cyclone_img)
