@@ -104,12 +104,12 @@ def main() -> None:
     args = build_parser().parse_args()
     cyclone_linear = _load_linear_mismatch(_resolve(args.cyclone_linear))
     kbm_linear = _load_linear_mismatch(_resolve(args.kbm_linear))
-    cyclone_img = _autocrop_image(mpimg.imread(_resolve(args.cyclone_nonlinear_panel)), pad_pixels=8)
-    kbm_img = _autocrop_image(mpimg.imread(_resolve(args.kbm_nonlinear_panel)), pad_pixels=8)
+    cyclone_img = _autocrop_image(mpimg.imread(_resolve(args.cyclone_nonlinear_panel)), pad_pixels=4)
+    kbm_img = _autocrop_image(mpimg.imread(_resolve(args.kbm_nonlinear_panel)), pad_pixels=4)
     out = _resolve(args.out)
 
-    fig = plt.figure(figsize=(18, 11), constrained_layout=True)
-    gs = fig.add_gridspec(2, 4, height_ratios=[0.95, 1.25])
+    fig = plt.figure(figsize=(19.5, 12.6), constrained_layout=True)
+    gs = fig.add_gridspec(2, 4, height_ratios=[0.9, 1.45])
 
     _plot_linear_metric(fig.add_subplot(gs[0, 0]), cyclone_linear, metric="gamma", title="Cyclone (Miller) Linear γ")
     _plot_linear_metric(fig.add_subplot(gs[0, 1]), cyclone_linear, metric="omega", title="Cyclone (Miller) Linear ω")

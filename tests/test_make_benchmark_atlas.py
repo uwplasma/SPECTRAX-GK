@@ -19,5 +19,5 @@ def test_benchmark_atlas_manifest_resolves_tracked_assets() -> None:
     assert assets["core_linear"]["cyclone"].name == "cyclone_mismatch_table.csv"
     assert assets["core_linear"]["kaw"].name == "kaw_exact_growth_dump.csv"
     assert assets["core_nonlinear"]["hsx"].name == "hsx_nonlinear_compare_t50_true.png"
-    assert assets["core_nonlinear"]["cetg"].name == "cetg_gx_compare.csv"
+    assert assets["core_nonlinear"]["etg"].name == "etg_fullgk_pilot_compare_dt1e4_gaussian_match.png"
     assert assets["convergence"]["cyclone_scan"].name == "cyclone_scan_convergence.csv"

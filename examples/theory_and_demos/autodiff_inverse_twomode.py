@@ -10,6 +10,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.patches import Ellipse
 
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
@@ -32,6 +33,55 @@ def _estimate_growth(phi_t: jnp.ndarray, t: jnp.ndarray, start_idx: int) -> tupl
     gamma = jnp.sum(t_centered * log_centered) / denom
     omega = -jnp.sum(t_centered * phase_centered) / denom
     return gamma, omega
+
+
+def _gauss_newton_solve(
+    obs_fn,
+    target: np.ndarray,
+    params_init: np.ndarray,
+    *,
+    steps: int,
+    damping: float,
+    max_step: float,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    jac_fn = jax.jit(jax.jacobian(obs_fn))
+    params = np.asarray(params_init, dtype=float)
+    path = [params.copy()]
+
+    for _ in range(steps):
+        obs = np.asarray(obs_fn(jnp.asarray(params)))
+        residual = obs - target
+        loss = float(residual @ residual)
+        if not np.isfinite(loss) or loss < 1.0e-14:
+            break
+
+        jac = np.asarray(jac_fn(jnp.asarray(params)))
+        lhs = jac.T @ jac + damping * np.eye(jac.shape[1])
+        rhs = jac.T @ residual
+        step = np.linalg.solve(lhs, rhs)
+        step_norm = float(np.linalg.norm(step))
+        if step_norm > max_step:
+            step *= max_step / max(step_norm, 1.0e-12)
+
+        alpha = 1.0
+        accepted = False
+        for _ in range(10):
+            candidate = params - alpha * step
+            cand_obs = np.asarray(obs_fn(jnp.asarray(candidate)))
+            cand_residual = cand_obs - target
+            cand_loss = float(cand_residual @ cand_residual)
+            if np.isfinite(cand_loss) and cand_loss <= loss:
+                params = candidate
+                path.append(params.copy())
+                accepted = True
+                break
+            alpha *= 0.5
+        if not accepted:
+            break
+
+    obs_final = np.asarray(obs_fn(jnp.asarray(params)))
+    residual_final = obs_final - target
+    return params, obs_final, residual_final, np.asarray(path, dtype=float)
 
 
 def _growth_from_params(
@@ -135,29 +185,18 @@ def run_demo(
         obs = growth_fn(params_vec)
         return jnp.sum((obs - target) ** 2)
 
-    grad_fn = jax.grad(loss_fn)
-
-    tprim_hist = []
-    fprim_hist = []
-    loss_hist = []
-    params_vec = jnp.asarray([tprim_init, fprim_init])
-    max_step = 0.5
-    for _ in range(gd_steps):
-        loss_val = loss_fn(params_vec)
-        grad_val = grad_fn(params_vec)
-        if not jnp.isfinite(loss_val) or not jnp.all(jnp.isfinite(grad_val)):
-            break
-        tprim_hist.append(float(params_vec[0]))
-        fprim_hist.append(float(params_vec[1]))
-        loss_hist.append(float(loss_val))
-        grad_norm = jnp.linalg.norm(grad_val) + 1.0e-8
-        step = gd_lr * grad_val / grad_norm
-        step = jnp.clip(step, -max_step, max_step)
-        params_vec = params_vec - step
-
-    tprim_hist = np.asarray(tprim_hist)
-    fprim_hist = np.asarray(fprim_hist)
-    loss_hist = np.asarray(loss_hist)
+    params_init = np.asarray([tprim_init, fprim_init], dtype=float)
+    params_final, obs_final, residual, path = _gauss_newton_solve(
+        growth_fn,
+        target,
+        params_init,
+        steps=gd_steps,
+        damping=max(1.0e-6, 1.0e-2 * gd_lr),
+        max_step=max(0.25, gd_lr),
+    )
+    tprim_hist = path[:, 0]
+    fprim_hist = path[:, 1]
+    loss_hist = np.sum((np.asarray([np.asarray(growth_fn(jnp.asarray(p))) for p in path]) - target[None, :]) ** 2, axis=1)
 
     sweep_tprim = np.linspace(1.2, 3.8, 16)
     sweep_tprim_vals = np.asarray(
@@ -180,8 +219,6 @@ def run_demo(
         jac_fd[:, idx] = (obs_plus - obs_minus) / (2.0 * eps)
     rel_err_cols = np.linalg.norm(jac_ad - jac_fd, axis=0) / (np.linalg.norm(jac_fd, axis=0) + 1.0e-12)
 
-    obs_final = np.asarray(growth_fn(params_vec))
-    residual = obs_final - target
     sigma2 = float(np.mean(residual**2) + 1.0e-12)
     jtj = jac_ad.T @ jac_ad + 1.0e-9 * np.eye(2)
     cov = sigma2 * np.linalg.inv(jtj)
@@ -190,11 +227,12 @@ def run_demo(
         "target_observables": target.tolist(),
         "tprim_init": float(tprim_init),
         "fprim_init": float(fprim_init),
-        "tprim_final": float(tprim_hist[-1]) if tprim_hist.size else float(tprim_init),
-        "fprim_final": float(fprim_hist[-1]) if fprim_hist.size else float(fprim_init),
-        "loss_final": float(loss_hist[-1])
-        if loss_hist.size
-        else float(loss_fn(jnp.asarray([tprim_init, fprim_init]))),
+        "tprim_final": float(params_final[0]),
+        "fprim_final": float(params_final[1]),
+        "observable_final": obs_final.tolist(),
+        "observable_abs_error": np.abs(residual).tolist(),
+        "parameter_abs_error": [float(abs(params_final[0] - tprim_true)), float(abs(params_final[1] - fprim_true))],
+        "loss_final": float(loss_hist[-1]) if loss_hist.size else float(loss_fn(jnp.asarray(params_init))),
         "jac_autodiff": jac_ad.tolist(),
         "jac_finite_diff": jac_fd.tolist(),
         "jac_rel_error": rel_err_cols.tolist(),
@@ -234,7 +272,7 @@ def run_demo(
         ax0.set_xlabel(r"$R/L_{Ti}$")
         ax0.set_ylabel(r"Observable")
         ax0.set_title("Sensitivity vs $R/L_{Ti}$")
-        ax0.legend(loc="best", ncol=2)
+        ax0.legend(loc="best", ncol=2, fontsize=9)
 
         ax1 = axes[0, 1]
         ax1.plot(sweep_fprim, sweep_fprim_vals[:, 0], marker="o", color="#1f77b4", label="ky0 $\\gamma$")
@@ -244,29 +282,49 @@ def run_demo(
         ax1.set_xlabel(r"$R/L_{n}$")
         ax1.set_ylabel(r"Observable")
         ax1.set_title("Sensitivity vs $R/L_{n}$")
-        ax1.legend(loc="best", ncol=2)
+        ax1.legend(loc="best", ncol=2, fontsize=9)
 
         ax2 = axes[1, 0]
-        ax2.plot(tprim_hist, fprim_hist, marker="o", color="#2ca02c")
-        ax2.scatter([tprim_true], [fprim_true], color="#d62728", marker="x", s=60, label="target")
+        tprim_grid = np.linspace(1.2, 3.8, 80)
+        fprim_grid = np.linspace(0.4, 1.6, 80)
+        dt_grid, df_grid = np.meshgrid(tprim_grid - tprim_true, fprim_grid - fprim_true)
+        quad_grid = np.zeros_like(dt_grid)
+        for row in jac_ad:
+            quad_grid += (row[0] * dt_grid + row[1] * df_grid) ** 2
+        levels = np.geomspace(max(float(np.nanmin(quad_grid[quad_grid > 0.0])), 1.0e-10), max(float(np.nanmax(quad_grid)), 1.0e-4), 8)
+        ax2.contour(tprim_grid, fprim_grid, quad_grid, levels=levels, colors="#cbd5e1", linewidths=1.0)
+        ax2.plot(tprim_hist, fprim_hist, marker="o", color="#2ca02c", label="Gauss-Newton path")
+        ax2.scatter([tprim_init], [fprim_init], color="#111827", marker="s", s=36, label="initial")
+        ax2.scatter([tprim_true], [fprim_true], color="#d62728", marker="x", s=80, label="target")
+        ax2.scatter([params_final[0]], [params_final[1]], color="#7c3aed", marker="o", s=42, label="recovered")
         vals, vecs = np.linalg.eigh(cov)
         angle = np.degrees(np.arctan2(vecs[1, 0], vecs[0, 0]))
         width, height = 2.0 * np.sqrt(np.maximum(vals, 0.0))
-        from matplotlib.patches import Ellipse
-        ellipse = Ellipse((summary["tprim_final"], summary["fprim_final"]), width, height, angle=angle, fill=False, color="#9467bd")
+        ellipse = Ellipse((params_final[0], params_final[1]), width, height, angle=angle, fill=False, color="#9467bd")
         ax2.add_patch(ellipse)
         ax2.set_xlabel(r"$R/L_{Ti}$")
         ax2.set_ylabel(r"$R/L_{n}$")
-        ax2.set_title("Inverse solve + 1σ ellipse")
-        ax2.legend(loc="best")
+        ax2.set_title("Inverse solve + loss contours")
+        ax2.legend(loc="best", fontsize=8)
 
         ax3 = axes[1, 1]
         ax3.bar(["$R/L_{Ti}$", "$R/L_{n}$"], rel_err_cols, color=["#9467bd", "#8c564b"])
         ax3.set_ylabel("Jacobian rel. error")
         ax3.set_title("Autodiff vs finite diff")
+        ax3.text(
+            0.03,
+            0.95,
+            f"|Δp| = ({abs(params_final[0]-tprim_true):.2e}, {abs(params_final[1]-fprim_true):.2e})\n"
+            f"max |Δobs| = {np.max(np.abs(residual)):.2e}",
+            transform=ax3.transAxes,
+            va="top",
+            ha="left",
+            fontsize=9,
+            bbox={"boxstyle": "round,pad=0.25", "fc": "white", "ec": "0.7", "alpha": 0.9},
+        )
 
         fig.suptitle("Autodiff inverse demo (two-mode observables)")
-        fig.tight_layout()
+        fig.tight_layout(rect=(0.0, 0.0, 1.0, 0.97))
 
         fig_path = outdir / "autodiff_inverse_twomode.png"
         fig.savefig(fig_path, dpi=200)

@@ -24,7 +24,9 @@ def test_autodiff_twomode_demo_summary(tmp_path: Path):
         plot=False,
         write_files=False,
     )
-    assert max(summary["jac_rel_error"]) < 0.5
+    assert max(summary["jac_rel_error"]) < 0.05
+    assert max(summary["parameter_abs_error"]) < 1.0e-2
+    assert max(summary["observable_abs_error"]) < 1.0e-4
     cov = summary["covariance"]
     assert cov[0][0] > 0.0
     assert cov[1][1] > 0.0

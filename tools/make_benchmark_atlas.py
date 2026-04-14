@@ -31,7 +31,7 @@ LEGEND_SIZE = 13
 PANEL_WIDTH = 18.0
 LINEAR_PANEL_HEIGHT = 8.8
 ATLAS_HEIGHT = 14.2
-README_HEIGHT = 24.0
+README_HEIGHT = 27.0
 CONVERGENCE_HEIGHT = 6.8
 
 plt.rcParams.update(
@@ -288,40 +288,6 @@ def _image_tile_plain(ax: plt.Axes, image: np.ndarray) -> None:
     ax.axis("off")
 
 
-def _plot_cetg_trace_panel(ax: plt.Axes, df: pd.DataFrame) -> None:
-    t = np.asarray(df["t"], dtype=float)
-    metrics = [
-        ("free energy", "W_spectrax", "W_gx", "#1d4ed8"),
-        ("electrostatic field energy", "Phi2_spectrax", "Phi2_gx", "#ea580c"),
-        ("heat flux", "qflux_spectrax", "qflux_gx", "#15803d"),
-    ]
-    _style_axis(ax)
-    for label, sp_col, gx_col, color in metrics:
-        sp = np.asarray(df[sp_col], dtype=float)
-        gx = np.asarray(df[gx_col], dtype=float)
-        finite = np.isfinite(sp) & np.isfinite(gx) & (np.abs(sp) > 0.0) & (np.abs(gx) > 0.0)
-        if not np.any(finite):
-            continue
-        ax.plot(t[finite], gx[finite], color=color, linewidth=2.0, label=f"{label} GX")
-        ax.plot(t[finite], sp[finite], color=color, linewidth=1.8, linestyle="--", label=f"{label} SPECTRAX-GK")
-    ax.set_title("ETG Nonlinear (cETG Reduced Model)", fontsize=TILE_TITLE_SIZE, color=TITLE_COLOR, fontweight="bold")
-    ax.set_xlabel("t")
-    ax.set_ylabel("signal")
-    ax.set_yscale("log")
-    ax.legend(frameon=False, fontsize=10, ncol=2, loc="upper left")
-    ax.text(
-        0.03,
-        0.05,
-        "legacy reduced-model comparison",
-        transform=ax.transAxes,
-        fontsize=NOTE_SIZE,
-        color=TEXT_COLOR,
-        ha="left",
-        va="bottom",
-        bbox={"facecolor": "white", "edgecolor": "#cbd5e1", "boxstyle": "round,pad=0.25"},
-    )
-
-
 def _build_convergence_panel(path: Path, assets: dict[str, Path]) -> None:
     scan = pd.read_csv(assets["cyclone_scan"]).sort_values("ky")
     rhostar = pd.read_csv(assets["cyclone_rhostar"]).sort_values("rho_star")
@@ -527,7 +493,7 @@ def _build_core_linear_atlas(path: Path, assets: dict[str, Path]) -> None:
     kaw = pd.read_csv(assets["kaw"]).sort_values("ky")
     kbm_miller = pd.read_csv(assets["kbm_miller"]).sort_values("ky")
 
-    fig = plt.figure(figsize=(20.5, 16.0), constrained_layout=True)
+    fig = plt.figure(figsize=(21.5, 16.8), constrained_layout=True)
     outer = fig.add_gridspec(2, 4)
 
     def add_case(idx: int) -> tuple[plt.Axes, plt.Axes]:
@@ -575,21 +541,19 @@ def _build_core_linear_atlas(path: Path, assets: dict[str, Path]) -> None:
         rel_omega="rel_omega_sp_vs_gx_dump",
     )
 
-    handles, labels = axg.get_legend_handles_labels()
-    fig.legend(handles, labels, loc="upper center", ncol=2, frameon=False, bbox_to_anchor=(0.5, 1.01), fontsize=LEGEND_SIZE)
-    fig.suptitle("Linear Benchmark Master Panel", fontsize=SUPTITLE_SIZE, fontweight="bold")
+    fig.suptitle("Linear Benchmark Master Panel", fontsize=SUPTITLE_SIZE, fontweight="bold", y=1.03)
     _save(fig, path)
 
 
 def _build_core_nonlinear_atlas(path: Path, assets: dict[str, Path]) -> None:
-    cyclone = _load_image(assets["cyclone"], pad_pixels=8)
-    kbm = _load_image(assets["kbm"], pad_pixels=8)
-    w7x = _load_image(assets["w7x"], pad_pixels=8)
-    hsx = _load_image(assets["hsx"], pad_pixels=8)
-    miller = _load_image(assets["miller"], pad_pixels=8)
-    cetg = pd.read_csv(assets["cetg"])
+    cyclone = _load_image(assets["cyclone"], pad_pixels=4)
+    kbm = _load_image(assets["kbm"], pad_pixels=4)
+    w7x = _load_image(assets["w7x"], pad_pixels=4)
+    hsx = _load_image(assets["hsx"], pad_pixels=4)
+    miller = _load_image(assets["miller"], pad_pixels=4)
+    etg = _load_image(assets["etg"], pad_pixels=4)
 
-    fig = plt.figure(figsize=(20.5, 17.5), constrained_layout=True)
+    fig = plt.figure(figsize=(22.0, 21.5), constrained_layout=True)
     outer = fig.add_gridspec(3, 2)
 
     tiles = [
@@ -614,9 +578,20 @@ def _build_core_nonlinear_atlas(path: Path, assets: dict[str, Path]) -> None:
             bbox={"facecolor": "white", "edgecolor": "#cbd5e1", "boxstyle": "round,pad=0.2"},
         )
 
-    ax_cetg = fig.add_subplot(outer[2, 1])
-    _plot_cetg_trace_panel(ax_cetg, cetg)
-    fig.suptitle("Nonlinear Benchmark Master Panel", fontsize=SUPTITLE_SIZE, fontweight="bold")
+    ax_etg = fig.add_subplot(outer[2, 1])
+    _image_tile_plain(ax_etg, etg)
+    ax_etg.text(
+        0.01,
+        0.99,
+        "ETG Nonlinear Pilot",
+        transform=ax_etg.transAxes,
+        va="top",
+        ha="left",
+        fontsize=14,
+        color=TITLE_COLOR,
+        bbox={"facecolor": "white", "edgecolor": "#cbd5e1", "boxstyle": "round,pad=0.2"},
+    )
+    fig.suptitle("Nonlinear Benchmark Master Panel", fontsize=SUPTITLE_SIZE, fontweight="bold", y=1.02)
     _save(fig, path)
 
 
@@ -631,14 +606,14 @@ def _build_readme_panel(
     core_linear = _load_image(core_linear_path, pad_pixels=2)
     core_nonlinear = _load_image(core_nonlinear_path, pad_pixels=2)
 
-    fig = plt.figure(figsize=(18.5, 22.0))
+    fig = plt.figure(figsize=(20.0, 25.5))
     gs = fig.add_gridspec(3, 1, height_ratios=[0.78, 1.52, 1.58], hspace=0.02)
 
     for idx, image in enumerate((convergence, core_linear, core_nonlinear)):
         ax = fig.add_subplot(gs[idx, 0])
         _image_tile_plain(ax, image)
 
-    fig.suptitle("SPECTRAX-GK Benchmark and Convergence Atlas", fontsize=SUPTITLE_SIZE + 1, fontweight="bold", y=0.995)
+    fig.suptitle("SPECTRAX-GK Benchmark and Convergence Atlas", fontsize=SUPTITLE_SIZE + 1, fontweight="bold", y=0.998)
     fig.subplots_adjust(top=0.985, bottom=0.015, left=0.02, right=0.98)
     _save(fig, path)
 
