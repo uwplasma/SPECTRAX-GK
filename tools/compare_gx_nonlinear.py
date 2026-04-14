@@ -454,19 +454,43 @@ def main() -> int:
     )
     print(f"Tolerance check: early={'PASS' if early_ok else 'FAIL'} late={'PASS' if late_ok else 'FAIL'}")
 
-    gx_style = {"color": "#111827", "linewidth": 2.2, "linestyle": "--", "zorder": 2}
-    sp_style = {"color": "#2563eb", "linewidth": 2.4, "marker": "o", "markevery": max(len(t) // 12, 1), "ms": 3.8, "zorder": 3}
-    fig, ax = plt.subplots(3, 1, figsize=(8.2, 8.6), sharex=True, constrained_layout=True)
+    import matplotlib.patheffects as pe
+
+    gx_style = {
+        "color": "#111827",
+        "linewidth": 2.3,
+        "linestyle": "--",
+        "marker": "s",
+        "markevery": max(len(t) // 12, 1),
+        "ms": 3.2,
+        "zorder": 4,
+    }
+    sp_style = {
+        "color": "#2563eb",
+        "linewidth": 2.2,
+        "marker": "o",
+        "markevery": max(len(t) // 12, 1),
+        "ms": 3.6,
+        "alpha": 0.92,
+        "zorder": 3,
+    }
+    has_mode_traces = "gamma" in gx_interp and "omega" in gx_interp
+    rows = 3 if has_mode_traces else 2
+    fig, ax = plt.subplots(rows, 1, figsize=(8.4, 2.8 * rows + 0.8), sharex=True, constrained_layout=True)
+    if rows == 1:
+        ax = [ax]
     mask = np.isfinite(sp["Wphi"]) & np.isfinite(gx_interp["Wphi"])
     ax[0].plot(t[mask], sp["Wphi"][mask], label="SPECTRAX-GK", **sp_style)
-    ax[0].plot(t[mask], gx_interp["Wphi"][mask], label="GX", **gx_style)
+    gx_line = ax[0].plot(t[mask], gx_interp["Wphi"][mask], label="GX", **gx_style)[0]
+    gx_line.set_path_effects([pe.Stroke(linewidth=3.4, foreground="white"), pe.Normal()])
     ax[0].set_ylabel("Wphi")
     ax[0].legend(frameon=False, ncol=2, loc="upper right")
-    if "gamma" in gx_interp and "omega" in gx_interp:
+    if has_mode_traces:
         mask_g = np.isfinite(sp["gamma"]) & np.isfinite(gx_interp["gamma"])
         mask_o = np.isfinite(sp["omega"]) & np.isfinite(gx_interp["omega"])
         ax[1].plot(t[mask_g], sp["gamma"][mask_g], label="SPECTRAX γ", **sp_style)
-        ax[1].plot(t[mask_g], gx_interp["gamma"][mask_g], label="GX γ", **gx_style)
+        gx_gamma = ax[1].plot(t[mask_g], gx_interp["gamma"][mask_g], label="GX γ", **gx_style)[0]
+        gx_gamma.set_path_effects([pe.Stroke(linewidth=3.4, foreground="white"), pe.Normal()])
         ax[1].plot(
             t[mask_o],
             sp["omega"][mask_o],
@@ -478,15 +502,31 @@ def main() -> int:
             ms=3.5,
             zorder=3,
         )
-        ax[1].plot(t[mask_o], gx_interp["omega"][mask_o], label="GX ω", color="#f97316", linewidth=2.0, linestyle=":")
+        gx_omega = ax[1].plot(
+            t[mask_o],
+            gx_interp["omega"][mask_o],
+            label="GX ω",
+            color="#f97316",
+            linewidth=2.0,
+            linestyle=":",
+            marker="^",
+            markevery=max(len(t) // 12, 1),
+            ms=3.0,
+            zorder=4,
+        )[0]
+        gx_omega.set_path_effects([pe.Stroke(linewidth=3.2, foreground="white"), pe.Normal()])
         ax[1].set_ylabel("gamma / omega")
         ax[1].legend(frameon=False, ncol=2, fontsize=8, loc="upper right")
+        heat_ax = ax[2]
+    else:
+        heat_ax = ax[1]
     mask_h = np.isfinite(sp["heat"]) & np.isfinite(gx_interp["heat"])
-    ax[2].plot(t[mask_h], sp["heat"][mask_h], label="SPECTRAX-GK", **sp_style)
-    ax[2].plot(t[mask_h], gx_interp["heat"][mask_h], label="GX", **gx_style)
-    ax[2].set_ylabel("Heat flux")
-    ax[2].set_xlabel("t")
-    ax[2].legend(frameon=False, ncol=2, loc="upper right")
+    heat_ax.plot(t[mask_h], sp["heat"][mask_h], label="SPECTRAX-GK", **sp_style)
+    gx_heat = heat_ax.plot(t[mask_h], gx_interp["heat"][mask_h], label="GX", **gx_style)[0]
+    gx_heat.set_path_effects([pe.Stroke(linewidth=3.4, foreground="white"), pe.Normal()])
+    heat_ax.set_ylabel("Heat flux")
+    heat_ax.set_xlabel("t")
+    heat_ax.legend(frameon=False, ncol=2, loc="upper right")
     for axis in ax:
         axis.grid(True, alpha=0.25)
         axis.spines["top"].set_visible(False)

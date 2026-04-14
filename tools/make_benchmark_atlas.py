@@ -551,17 +551,15 @@ def _build_core_nonlinear_atlas(path: Path, assets: dict[str, Path]) -> None:
     w7x = _load_image(assets["w7x"], pad_pixels=4)
     hsx = _load_image(assets["hsx"], pad_pixels=4)
     miller = _load_image(assets["miller"], pad_pixels=4)
-    etg = _load_image(assets["etg"], pad_pixels=4)
 
-    fig = plt.figure(figsize=(22.0, 21.5), constrained_layout=True)
-    outer = fig.add_gridspec(3, 2)
+    fig = plt.figure(figsize=(22.0, 18.8), constrained_layout=True)
+    outer = fig.add_gridspec(3, 2, height_ratios=[1.0, 1.0, 1.08])
 
     tiles = [
         (cyclone, "Cyclone ITG Nonlinear"),
         (kbm, "KBM Nonlinear"),
         (w7x, "W7-X Nonlinear"),
         (hsx, "HSX Nonlinear"),
-        (miller, "Cyclone Miller Nonlinear"),
     ]
     for idx, (image, title) in enumerate(tiles):
         ax = fig.add_subplot(outer[idx // 2, idx % 2])
@@ -578,13 +576,13 @@ def _build_core_nonlinear_atlas(path: Path, assets: dict[str, Path]) -> None:
             bbox={"facecolor": "white", "edgecolor": "#cbd5e1", "boxstyle": "round,pad=0.2"},
         )
 
-    ax_etg = fig.add_subplot(outer[2, 1])
-    _image_tile_plain(ax_etg, etg)
-    ax_etg.text(
+    ax_miller = fig.add_subplot(outer[2, :])
+    _image_tile_plain(ax_miller, miller)
+    ax_miller.text(
         0.01,
         0.99,
-        "ETG Nonlinear Pilot",
-        transform=ax_etg.transAxes,
+        "Cyclone Miller Nonlinear",
+        transform=ax_miller.transAxes,
         va="top",
         ha="left",
         fontsize=14,

@@ -294,42 +294,47 @@ def main() -> int:
         for key in sp:
             sp[key] = sp[key][sp_mask]
 
-    gx_style = {"color": "#111827", "linewidth": 2.1, "linestyle": "--", "zorder": 2}
-    sp_style = {"color": "#2563eb", "linewidth": 2.3, "marker": "o", "markevery": max(len(sp["t"]) // 14, 1), "ms": 3.2, "zorder": 3}
-    fig, axes = plt.subplots(3, 2, figsize=(10.6, 8.9), sharex=True, constrained_layout=True)
-    axes = axes.ravel()
+    import matplotlib.patheffects as pe
 
-    axes[0].plot(gx["t"], gx["Wg"], label="GX", **gx_style)
-    axes[0].plot(sp["t"], sp["Wg"], label="SPECTRAX-GK", **sp_style)
-    axes[0].set_ylabel("Wg")
-    axes[0].legend(frameon=False, ncol=2, loc="upper right")
+    gx_style = {"color": "#111827", "linewidth": 2.2, "linestyle": "--", "marker": "s", "markevery": max(len(sp["t"]) // 14, 1), "ms": 3.0, "zorder": 4}
+    sp_style = {"color": "#2563eb", "linewidth": 2.2, "marker": "o", "markevery": max(len(sp["t"]) // 14, 1), "ms": 3.2, "alpha": 0.92, "zorder": 3}
+    metric_specs = [
+        ("Wg", gx["Wg"], sp["Wg"]),
+        ("Wphi", gx["Wphi"], sp["Wphi"]),
+        ("Wapar", gx["Wapar"], sp["Wapar"]),
+        ("Wtot", gx["energy"], sp["energy"]),
+        ("Heat flux", gx["heat_flux"], sp["heat_flux"]),
+        ("Particle flux", gx["particle_flux"], sp["particle_flux"]),
+    ]
+    keep_specs = []
+    for label, gx_y, sp_y in metric_specs:
+        if label in {"Wg", "Wphi", "Wtot", "Heat flux"}:
+            keep_specs.append((label, gx_y, sp_y))
+            continue
+        if max(float(np.nanmax(np.abs(gx_y))), float(np.nanmax(np.abs(sp_y)))) > 1.0e-10:
+            keep_specs.append((label, gx_y, sp_y))
 
-    axes[1].plot(gx["t"], gx["Wphi"], label="GX", **gx_style)
-    axes[1].plot(sp["t"], sp["Wphi"], label="SPECTRAX-GK", **sp_style)
-    axes[1].set_ylabel("Wphi")
+    ncols = 2
+    nrows = int(np.ceil(len(keep_specs) / ncols))
+    fig, axes = plt.subplots(nrows, ncols, figsize=(10.8, 2.9 * nrows + 0.8), sharex=True, constrained_layout=True)
+    axes = np.atleast_1d(axes).ravel()
 
-    axes[2].plot(gx["t"], gx["Wapar"], label="GX", **gx_style)
-    axes[2].plot(sp["t"], sp["Wapar"], label="SPECTRAX-GK", **sp_style)
-    axes[2].set_ylabel("Wapar")
-
-    axes[3].plot(gx["t"], gx["energy"], label="GX", **gx_style)
-    axes[3].plot(sp["t"], sp["energy"], label="SPECTRAX-GK", **sp_style)
-    axes[3].set_ylabel("Wtot")
-
-    axes[4].plot(gx["t"], gx["heat_flux"], label="GX", **gx_style)
-    axes[4].plot(sp["t"], sp["heat_flux"], label="SPECTRAX-GK", **sp_style)
-    axes[4].set_ylabel("Heat flux")
-    axes[4].set_xlabel("t")
-
-    axes[5].plot(gx["t"], gx["particle_flux"], label="GX", **gx_style)
-    axes[5].plot(sp["t"], sp["particle_flux"], label="SPECTRAX-GK", **sp_style)
-    axes[5].set_ylabel("Particle flux")
-    axes[5].set_xlabel("t")
-
-    for ax in axes:
+    for ax, (label, gx_y, sp_y) in zip(axes, keep_specs):
+        ax.plot(sp["t"], sp_y, label="SPECTRAX-GK", **sp_style)
+        gx_line = ax.plot(gx["t"], gx_y, label="GX", **gx_style)[0]
+        gx_line.set_path_effects([pe.Stroke(linewidth=3.4, foreground="white"), pe.Normal()])
+        ax.set_ylabel(label)
         ax.grid(True, alpha=0.25)
         ax.spines["top"].set_visible(False)
         ax.spines["right"].set_visible(False)
+
+    for ax in axes[len(keep_specs):]:
+        ax.remove()
+
+    if len(keep_specs) > 0:
+        axes[0].legend(frameon=False, ncol=2, loc="upper right")
+    for ax in axes[max(0, len(keep_specs) - ncols):len(keep_specs)]:
+        ax.set_xlabel("t")
     fig.suptitle(args.title, fontsize=13, fontweight="bold")
     args.out.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(args.out, dpi=200)
