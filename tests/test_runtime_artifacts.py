@@ -28,6 +28,8 @@ def test_write_runtime_linear_artifacts_writes_bundle(tmp_path: Path) -> None:
         t=np.asarray([0.1, 0.2, 0.3]),
         signal=np.asarray([1.0, 2.0, 4.0]),
         state=np.zeros((1, 2, 3), dtype=np.complex64),
+        z=np.asarray([-1.0, 0.0, 1.0]),
+        eigenfunction=np.asarray([0.5 + 0.0j, 1.0 + 0.2j, 0.5 + 0.1j]),
         fit_window_tmin=0.1,
         fit_window_tmax=0.3,
         fit_signal_used="phi",
@@ -41,10 +43,12 @@ def test_write_runtime_linear_artifacts_writes_bundle(tmp_path: Path) -> None:
     assert summary["fit_window_tmin"] == 0.1
     assert summary["fit_window_tmax"] == 0.3
     assert summary["fit_signal_used"] == "phi"
+    assert summary["has_eigenfunction"] is True
     assert summary["selection"]["ky_index"] == 1
     csv_lines = Path(paths["timeseries"]).read_text(encoding="utf-8").splitlines()
     assert csv_lines[0] == "t,signal_real,signal_imag,signal_abs"
     assert Path(paths["timeseries"]).exists()
+    assert Path(paths["eigenfunction"]).exists()
     assert Path(paths["state"]).exists()
 
 

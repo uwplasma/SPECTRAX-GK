@@ -6,6 +6,12 @@ Install
 
 .. code-block:: bash
 
+   pip install spectraxgk
+
+or install the development checkout:
+
+.. code-block:: bash
+
    git clone https://github.com/uwplasma/SPECTRAX-GK
    cd SPECTRAX-GK
    pip install -e .
@@ -15,18 +21,23 @@ Executable demo
 
 .. code-block:: bash
 
-   spectrax-gk cyclone-info
-   spectrax-gk cyclone-kperp --kx0 0.0 --ky 0.3
-   cd examples/linear/axisymmetric && spectrax-gk cyclone.toml
-   spectrax-gk scan-runtime-linear --config examples/linear/axisymmetric/runtime_etg.toml --plot --outdir docs/_static
-   spectrax-gk run-runtime-linear --config examples/linear/axisymmetric/cyclone.toml --out tools_out/cyclone_runtime
-   spectrax-gk run-runtime-nonlinear --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml --steps 50 --out tools_out/cyclone_nonlinear
-   spectrax-gk run-runtime-nonlinear --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml --steps 50 --out tools_out/cyclone_nonlinear.out.nc
-   spectrax-gk examples/nonlinear/axisymmetric/runtime_cetg_reference.toml --steps 100
+   spectraxgk
+   spectrax-gk
+   spectraxgk examples/linear/axisymmetric/cyclone.toml
+   spectraxgk run-runtime-linear --config examples/linear/axisymmetric/runtime_cyclone.toml --out tools_out/cyclone_runtime
+   spectraxgk run-runtime-nonlinear --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml --steps 50 --out tools_out/cyclone_nonlinear.out.nc
+   spectraxgk --plot tools_out/cyclone_nonlinear.out.nc
+   spectraxgk --plot tools_out/spectraxgk_default_linear.summary.json
 
-When ``--out`` is provided for runtime-configured single-point runs, the executable writes
-a JSON summary plus sidecar time-series/state artifacts using the supplied path
-as a prefix.
+Running ``spectraxgk`` with no TOML launches the default Cyclone linear example
+and writes ``tools_out/spectraxgk_default_linear.png``. That plot is the
+standard two-panel linear quickstart view: the log-scale ``|\phi|^2`` history
+with fitted ``(\gamma, \omega)`` on the left, and the normalized real/imaginary
+eigenfunction on the right.
+
+When ``--out`` is provided for runtime-configured single-point runs, the
+executable writes a JSON summary plus sidecar time-series/state artifacts using
+the supplied path as a prefix.
 
 If the nonlinear target ends in ``.out.nc`` or another ``.nc`` suffix, the
 runtime writes a restartable NetCDF bundle instead:
@@ -62,8 +73,8 @@ Plot diagnostics directly from the output:
 
 .. code-block:: bash
 
-   python examples/utilities/plot_runtime_outputs.py tools_out/cyclone_nonlinear.out.nc \
-     --out tools_out/cyclone_nonlinear_diagnostics.png
+   spectraxgk --plot tools_out/cyclone_nonlinear.out.nc
+   spectraxgk --plot tools_out/spectraxgk_default_linear.summary.json
 
 Python demo
 -----------

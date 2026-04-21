@@ -201,7 +201,7 @@ Each row may also carry a ``host`` so the same runner can execute local and
 remote measurements through one manifest while still collecting wall time and
 peak RSS from the target machine.
 
-The checked-in case inventory for the 1.1 release panel covers the shipped
+The checked-in case inventory for the current release panel covers the shipped
 runtime families:
 
 - Cyclone ITG linear and nonlinear

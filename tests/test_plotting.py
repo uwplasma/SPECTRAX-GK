@@ -15,6 +15,9 @@ from spectraxgk.plotting import (
     growth_rate_heatmap,
     linear_validation_figure,
     LinearValidationPanel,
+    linear_runtime_panel_figure,
+    nonlinear_runtime_panel_figure,
+    plot_saved_output,
 )
 
 
@@ -134,4 +137,73 @@ def test_linear_validation_multiple_panels(tmp_path):
     out = tmp_path / "summary_multi.png"
     fig.savefig(out)
     plt.close(fig)
+    assert out.exists()
+
+
+def test_linear_runtime_panel_figure(tmp_path):
+    t = np.linspace(0.1, 1.0, 8)
+    signal = np.exp((0.2 - 0.3j) * t)
+    z = np.linspace(-np.pi, np.pi, 16)
+    eigen = np.cos(z) + 1j * np.sin(z)
+    fig, _axes = linear_runtime_panel_figure(
+        t=t,
+        signal=signal,
+        z=z,
+        eigenfunction=eigen,
+        gamma=0.2,
+        omega=-0.3,
+    )
+    out = tmp_path / "linear_runtime_panel.png"
+    fig.savefig(out)
+    plt.close(fig)
+    assert out.exists()
+
+
+def test_nonlinear_runtime_panel_figure(tmp_path):
+    t = np.linspace(0.1, 1.0, 8)
+    fig, _axes = nonlinear_runtime_panel_figure(
+        t=t,
+        phi2=np.exp(t),
+        wphi=np.linspace(1.0, 2.0, 8),
+        heat_flux=np.linspace(0.1, 0.8, 8),
+        gamma=np.linspace(0.01, 0.08, 8),
+        omega=np.linspace(-0.1, -0.8, 8),
+    )
+    out = tmp_path / "nonlinear_runtime_panel.png"
+    fig.savefig(out)
+    plt.close(fig)
+    assert out.exists()
+
+
+def test_plot_saved_output_linear_bundle(tmp_path):
+    base = tmp_path / "linear_case"
+    (tmp_path / "linear_case.summary.json").write_text(
+        '{"kind":"linear","gamma":0.2,"omega":-0.3}',
+        encoding="utf-8",
+    )
+    (tmp_path / "linear_case.timeseries.csv").write_text(
+        "t,signal_real,signal_imag,signal_abs\n0.1,1.0,0.0,1.0\n0.2,1.2,0.1,1.204159\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "linear_case.eigenfunction.csv").write_text(
+        "z,eigen_real,eigen_imag,eigen_abs\n-1.0,0.5,-0.2,0.538516\n0.0,1.0,0.0,1.0\n1.0,0.5,0.2,0.538516\n",
+        encoding="utf-8",
+    )
+    out = plot_saved_output(base.with_suffix(".summary.json"))
+    assert out.exists()
+
+
+def test_plot_saved_output_nonlinear_csv_bundle(tmp_path):
+    base = tmp_path / "nonlinear_case"
+    (tmp_path / "nonlinear_case.summary.json").write_text(
+        '{"kind":"nonlinear"}',
+        encoding="utf-8",
+    )
+    (tmp_path / "nonlinear_case.diagnostics.csv").write_text(
+        "t,dt,gamma,omega,Wg,Wphi,Wapar,energy,heat_flux,particle_flux\n"
+        "0.1,0.1,0.01,-0.02,1.0,2.0,0.0,3.0,0.4,0.0\n"
+        "0.2,0.1,0.02,-0.03,1.1,2.1,0.0,3.2,0.5,0.0\n",
+        encoding="utf-8",
+    )
+    out = plot_saved_output(base.with_suffix(".summary.json"))
     assert out.exists()
