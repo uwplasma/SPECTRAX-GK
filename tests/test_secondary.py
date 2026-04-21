@@ -18,6 +18,7 @@ from spectraxgk.runtime_config import (
     RuntimeTermsConfig,
 )
 from spectraxgk.secondary import (
+    _embed_linear_seed_on_full_grid,
     _leading_finite_prefix,
     _tail_mean_pair,
     build_secondary_stage2_config,
@@ -99,6 +100,13 @@ def test_tail_mean_pair_averages_late_time_window() -> None:
     assert omega == pytest.approx(1.25)
 
 
+def test_tail_mean_pair_handles_none_and_last_sample() -> None:
+    assert _tail_mean_pair(np.array([np.nan]), np.array([np.nan]), tail_fraction=0.5) is None
+    gamma, omega = _tail_mean_pair(np.array([1.0, 2.0]), np.array([-1.0, -2.0]), tail_fraction=None)
+    assert gamma == pytest.approx(2.0)
+    assert omega == pytest.approx(-2.0)
+
+
 def test_run_secondary_modes_uses_phi_fit_for_gamma_and_tail_for_omega(monkeypatch) -> None:
     class _Result:
         def __init__(self) -> None:
@@ -158,6 +166,69 @@ def test_leading_finite_prefix_stops_before_first_nan() -> None:
     t_out, sig_out = _leading_finite_prefix(t, sig)
     assert np.allclose(t_out, np.array([0.0, 1.0]))
     assert np.allclose(sig_out, np.array([1.0 + 0.0j, 2.0 + 0.0j]))
+
+
+def test_leading_finite_prefix_all_invalid_returns_empty() -> None:
+    t = np.array([0.0, 1.0], dtype=float)
+    sig = np.array([np.nan + 0.0j, np.nan + 0.0j], dtype=np.complex128)
+    t_out, sig_out = _leading_finite_prefix(t, sig)
+    assert t_out.size == 0
+    assert sig_out.size == 0
+
+
+def test_embed_linear_seed_on_full_grid_passthrough_and_invalid_shape() -> None:
+    cfg = _base_cfg()
+    full_shape = (1, 3, 8, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz)
+    full_state = np.ones(full_shape, dtype=np.complex64)
+    embedded = _embed_linear_seed_on_full_grid(cfg, full_state, ky_target=0.1)
+    assert embedded.shape == full_shape
+    assert np.allclose(embedded, full_state)
+
+    with pytest.raises(ValueError):
+        _embed_linear_seed_on_full_grid(cfg, np.ones((1, 3, 8, 2, cfg.grid.Nz), dtype=np.complex64), ky_target=0.1)
+
+
+def test_run_secondary_seed_requires_final_state(monkeypatch, tmp_path: Path) -> None:
+    class _Result:
+        state = None
+
+    monkeypatch.setattr("spectraxgk.secondary.run_runtime_linear", lambda *args, **kwargs: _Result())
+    with pytest.raises(RuntimeError):
+        run_secondary_seed(_base_cfg(), restart_path=tmp_path / "seed.bin", ky_target=0.1, Nl=3, Nm=8)
+
+
+def test_run_secondary_modes_requires_diagnostics(monkeypatch) -> None:
+    class _Result:
+        diagnostics = None
+
+    monkeypatch.setattr("spectraxgk.secondary.run_runtime_nonlinear", lambda *args, **kwargs: _Result())
+    with pytest.raises(RuntimeError):
+        run_secondary_modes(_base_cfg(), modes=((0.1, 0.05),), Nl=3, Nm=8)
+
+
+def test_run_secondary_modes_uses_tail_when_phi_mode_missing(monkeypatch) -> None:
+    class _Result:
+        def __init__(self) -> None:
+            t = np.array([0.0, 1.0, 2.0], dtype=float)
+            self.diagnostics = SimulationDiagnostics(
+                t=t,
+                dt_t=np.full_like(t, 1.0),
+                dt_mean=1.0,
+                gamma_t=np.array([0.5, 0.7, 0.9]),
+                omega_t=np.array([-0.1, -0.2, -0.3]),
+                Wg_t=t * 0.0,
+                Wphi_t=t * 0.0,
+                Wapar_t=t * 0.0,
+                heat_flux_t=t * 0.0,
+                particle_flux_t=t * 0.0,
+                energy_t=t * 0.0,
+                phi_mode_t=None,
+            )
+
+    monkeypatch.setattr("spectraxgk.secondary.run_runtime_nonlinear", lambda *args, **kwargs: _Result())
+    row = run_secondary_modes(_base_cfg(), modes=((0.1, 0.05),), Nl=3, Nm=8, fit_fraction=None)[0]
+    assert row.gamma == pytest.approx(0.9)
+    assert row.omega == pytest.approx(-0.3)
 
 
 def test_secondary_stage2_sideband_grows_on_short_window() -> None:
