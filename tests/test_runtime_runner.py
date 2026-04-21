@@ -2269,3 +2269,76 @@ def test_run_nonlinear_case_uses_toml_output_path(
     assert f"saved {tmp_path / 'nonlinear_case.summary.json'}" in out
     assert (tmp_path / "nonlinear_case.summary.json").exists()
     assert (tmp_path / "nonlinear_case.diagnostics.csv").exists()
+
+
+def test_run_linear_case_without_output_path_prints_summary_only(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    import spectraxgk.runtime as runtime
+
+    cfg = _base_runtime_cfg()
+
+    def fake_load_runtime_from_toml(_path):
+        return cfg, {"run": {"ky": 0.25}}
+
+    def fake_run_runtime_linear(*_args, **_kwargs):
+        return runtime.RuntimeLinearResult(
+            ky=0.25,
+            gamma=0.11,
+            omega=0.22,
+            selection=runtime.ModeSelection(ky_index=0, kx_index=0, z_index=0),
+        )
+
+    monkeypatch.setattr("spectraxgk.io.load_runtime_from_toml", fake_load_runtime_from_toml)
+    monkeypatch.setattr(runtime, "run_runtime_linear", fake_run_runtime_linear)
+
+    rc = run_linear_case(tmp_path / "dummy.toml", show_progress=False)
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "saved" not in out
+    assert "ky=0.250000 gamma=0.11000000 omega=0.22000000" in out
+
+
+def test_run_nonlinear_case_without_output_path_and_without_diagnostics(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    import spectraxgk.runtime as runtime
+
+    cfg = _base_runtime_cfg()
+
+    def fake_load_runtime_from_toml(_path):
+        return cfg, {"run": {"ky": 0.3}, "time": {"dt": 0.1}}
+
+    captured: dict[str, object] = {}
+
+    def fake_run_runtime_nonlinear(*_args, **_kwargs):
+        captured.update(_kwargs)
+        return runtime.RuntimeNonlinearResult(
+            t=np.asarray([0.1]),
+            diagnostics=None,
+            ky_selected=None,
+            kx_selected=0.0,
+        )
+
+    monkeypatch.setattr("spectraxgk.io.load_runtime_from_toml", fake_load_runtime_from_toml)
+    monkeypatch.setattr(runtime, "run_runtime_nonlinear", fake_run_runtime_nonlinear)
+
+    rc = run_nonlinear_case(tmp_path / "dummy.toml", show_progress=False)
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert captured["diagnostics"] is True
+    assert "completed without streamed diagnostics" in out
+
+
+def test_run_runtime_scan_batch_ky_rejects_krylov() -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        species=(RuntimeSpeciesConfig(name="ion"),),
+        normalization=RuntimeNormalizationConfig(contract="cyclone"),
+    )
+    with pytest.raises(ValueError):
+        run_runtime_scan(cfg, ky_values=[0.1, 0.2], solver="krylov", batch_ky=True)
