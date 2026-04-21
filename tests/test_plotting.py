@@ -8,16 +8,23 @@ import numpy as np
 
 from spectraxgk.benchmarks import CycloneReference, CycloneScanResult
 import matplotlib.pyplot as plt
+import pytest
 from spectraxgk.plotting import (
     cyclone_comparison_figure,
     cyclone_reference_figure,
     etg_trend_figure,
     growth_rate_heatmap,
+    growth_fit_figure,
     linear_validation_figure,
+    linear_validation_multi_reference_figure,
     LinearValidationPanel,
+    MultiReferenceValidationPanel,
+    ReferenceSeries,
     linear_runtime_panel_figure,
     nonlinear_runtime_panel_figure,
     plot_saved_output,
+    scan_comparison_figure,
+    scan_multi_reference_figure,
 )
 
 
@@ -206,4 +213,125 @@ def test_plot_saved_output_nonlinear_csv_bundle(tmp_path):
         encoding="utf-8",
     )
     out = plot_saved_output(base.with_suffix(".summary.json"))
+    assert out.exists()
+
+
+def test_scan_comparison_figure_with_reference_and_log_scale(tmp_path):
+    x = np.array([0.1, 0.2, 0.4])
+    fig, axes = scan_comparison_figure(
+        x,
+        np.array([0.2, 0.3, 0.4]),
+        np.array([-0.1, -0.2, -0.3]),
+        r"$k_y$",
+        "Scan",
+        x_ref=x,
+        gamma_ref=np.array([0.21, 0.31, 0.41]),
+        omega_ref=np.array([-0.11, -0.21, -0.31]),
+        log_x=True,
+    )
+    out = tmp_path / "scan_comparison.png"
+    fig.savefig(out)
+    plt.close(fig)
+    assert out.exists()
+    assert axes[0].get_xscale() == "log"
+
+
+def test_linear_validation_multi_reference_figure(tmp_path):
+    z = np.linspace(-1.0, 1.0, 8)
+    panel = MultiReferenceValidationPanel(
+        name="Cyclone",
+        z=z,
+        eigenfunction=np.exp(1j * z),
+        x=np.array([0.2, 0.3]),
+        gamma=np.array([0.1, 0.2]),
+        omega=np.array([0.3, 0.4]),
+        x_label=r"$k_y$",
+        references=[
+            ReferenceSeries(
+                label="RefA",
+                x=np.array([0.2, 0.3]),
+                gamma=np.array([0.11, 0.21]),
+                omega=np.array([0.31, 0.41]),
+                color="#1f77b4",
+            )
+        ],
+        log_x=True,
+    )
+    fig, axes = linear_validation_multi_reference_figure([panel])
+    out = tmp_path / "linear_validation_multi.png"
+    fig.savefig(out)
+    plt.close(fig)
+    assert out.exists()
+    assert axes[0, 1].get_xscale() == "log"
+
+
+def test_linear_validation_multi_reference_figure_empty():
+    with np.testing.assert_raises(ValueError):
+        linear_validation_multi_reference_figure([])
+
+
+def test_scan_multi_reference_figure(tmp_path):
+    x = np.array([0.1, 0.2, 0.4])
+    refs = [
+        ReferenceSeries(
+            label="GX",
+            x=x,
+            gamma=np.array([0.21, 0.31, 0.41]),
+            omega=np.array([-0.11, -0.21, -0.31]),
+            color="#1f77b4",
+        )
+    ]
+    fig, axes = scan_multi_reference_figure(
+        x,
+        np.array([0.2, 0.3, 0.4]),
+        np.array([-0.1, -0.2, -0.3]),
+        r"$k_y$",
+        "Multi-ref",
+        refs,
+        log_x=True,
+    )
+    out = tmp_path / "scan_multi_reference.png"
+    fig.savefig(out)
+    plt.close(fig)
+    assert out.exists()
+    assert axes[0].get_xscale() == "log"
+
+
+def test_growth_fit_figure_with_window(tmp_path):
+    t = np.linspace(0.0, 4.0, 32)
+    signal = np.exp((0.2 - 0.1j) * t)
+    fig, _axes = growth_fit_figure(t, signal, tmin=1.0, tmax=3.0)
+    out = tmp_path / "growth_fit.png"
+    fig.savefig(out)
+    plt.close(fig)
+    assert out.exists()
+
+
+def test_plot_saved_output_missing_summary_and_bad_kind(tmp_path):
+    with np.testing.assert_raises(FileNotFoundError):
+        plot_saved_output(tmp_path / "missing.summary.json")
+
+    (tmp_path / "unknown.summary.json").write_text('{"kind":"mystery"}', encoding="utf-8")
+    with np.testing.assert_raises(ValueError):
+        plot_saved_output(tmp_path / "unknown.summary.json")
+
+
+def test_plot_saved_output_nonlinear_netcdf_bundle(tmp_path):
+    netcdf4 = pytest.importorskip("netCDF4")
+    dataset = netcdf4.Dataset
+    path = tmp_path / "nonlinear_case.out.nc"
+    with dataset(path, "w") as root:
+        diag = root.createGroup("Diagnostics")
+        diag.createDimension("time", 2)
+        diag.createDimension("species", 1)
+        t_var = diag.createVariable("t", "f8", ("time",))
+        t_var[:] = np.array([0.1, 0.2])
+        phi2 = diag.createVariable("Phi2_t", "f8", ("time",))
+        phi2[:] = np.array([1.0, 2.0])
+        wphi = diag.createVariable("Wphi_st", "f8", ("time", "species"))
+        wphi[:] = np.array([[2.0], [3.0]])
+        heat = diag.createVariable("HeatFlux_st", "f8", ("time", "species"))
+        heat[:] = np.array([[0.4], [0.5]])
+
+    out = plot_saved_output(path)
     assert out.exists()
