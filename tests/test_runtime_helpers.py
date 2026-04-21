@@ -32,6 +32,7 @@ from spectraxgk.runtime import (
     _stride_gx_diagnostics,
     _truncate_gx_diagnostics,
     _zero_kx_index,
+    _run_runtime_scan_batch,
     build_runtime_geometry,
 )
 from spectraxgk.runtime_config import (
@@ -269,3 +270,137 @@ def test_runtime_initial_state_helpers(tmp_path: Path, monkeypatch: pytest.Monke
     np.ones(7, dtype=np.complex64).tofile(bad_path)
     with pytest.raises(ValueError):
         _load_initial_state_from_file(bad_path, nspecies=1, Nl=2, Nm=3, ny=ny, nx=nx, nz=nz)
+
+
+def test_run_runtime_scan_batch_validation_and_selection(monkeypatch: pytest.MonkeyPatch) -> None:
+    cfg = _base_cfg()
+    with pytest.raises(ValueError):
+        _run_runtime_scan_batch(
+            cfg,
+            np.asarray([], dtype=float),
+            Nl=2,
+            Nm=3,
+            method="rk2",
+            dt=0.1,
+            steps=2,
+            sample_stride=1,
+            auto_window=True,
+            tmin=None,
+            tmax=None,
+            window_fraction=0.4,
+            min_points=2,
+            start_fraction=0.0,
+            growth_weight=0.0,
+            require_positive=False,
+            min_amp_fraction=0.0,
+            mode_method="project",
+            fit_signal="phi",
+            show_progress=False,
+        )
+
+    grid = build_spectral_grid(cfg.grid)
+    geom = object()
+    params = type("Params", (), {"rho_star": np.asarray(1.0)})()
+    monkeypatch.setattr("spectraxgk.runtime.build_runtime_geometry", lambda _cfg: geom)
+    monkeypatch.setattr("spectraxgk.runtime.apply_geometry_grid_defaults", lambda _geom, grid_cfg: grid_cfg)
+    monkeypatch.setattr("spectraxgk.runtime.build_spectral_grid", lambda _cfg: grid)
+    monkeypatch.setattr("spectraxgk.runtime.build_runtime_linear_params", lambda *_args, **_kwargs: params)
+    monkeypatch.setattr("spectraxgk.runtime.build_runtime_linear_terms", lambda _cfg: object())
+    monkeypatch.setattr(
+        "spectraxgk.runtime._build_initial_condition",
+        lambda *_args, **_kwargs: np.ones((1, 2, 3, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.runtime.integrate_linear_diagnostics",
+        lambda *_args, **_kwargs: (
+            None,
+            np.ones((3, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64),
+            2.0 * np.ones((3, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64),
+        ),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.runtime.extract_mode_time_series",
+        lambda arr, sel, method="project": np.asarray(arr[:, sel.ky_index, sel.kx_index, 0]),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.runtime.fit_growth_rate_auto_with_stats",
+        lambda t, signal, **kwargs: (0.2, 0.3, 0.0, 0.2, 2.0 if np.max(np.abs(signal)) < 1.5 else 1.0, 0.0),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.runtime.fit_growth_rate_auto",
+        lambda *args, **kwargs: (0.4, 0.5, 0.0, 0.2),
+    )
+    monkeypatch.setattr("spectraxgk.runtime.fit_growth_rate", lambda *args, **kwargs: (0.6, 0.7))
+    monkeypatch.setattr("spectraxgk.runtime.apply_diagnostic_normalization", lambda g, o, **kwargs: (g, o))
+
+    scan_auto = _run_runtime_scan_batch(
+        cfg,
+        np.asarray([0.1, 0.2], dtype=float),
+        Nl=2,
+        Nm=3,
+        method="rk2",
+        dt=0.1,
+        steps=2,
+        sample_stride=1,
+        auto_window=True,
+        tmin=None,
+        tmax=None,
+        window_fraction=0.4,
+        min_points=2,
+        start_fraction=0.0,
+        growth_weight=0.0,
+        require_positive=False,
+        min_amp_fraction=0.0,
+        mode_method="project",
+        fit_signal="auto",
+        show_progress=False,
+    )
+    assert scan_auto.gamma.shape == (2,)
+
+    scan_density = _run_runtime_scan_batch(
+        cfg,
+        np.asarray([0.1], dtype=float),
+        Nl=2,
+        Nm=3,
+        method="rk2",
+        dt=0.1,
+        steps=2,
+        sample_stride=1,
+        auto_window=False,
+        tmin=0.0,
+        tmax=0.2,
+        window_fraction=0.4,
+        min_points=2,
+        start_fraction=0.0,
+        growth_weight=0.0,
+        require_positive=False,
+        min_amp_fraction=0.0,
+        mode_method="project",
+        fit_signal="density",
+        show_progress=False,
+    )
+    assert np.allclose(scan_density.gamma, np.array([0.6]))
+
+    with pytest.raises(ValueError):
+        _run_runtime_scan_batch(
+            cfg,
+            np.asarray([0.1], dtype=float),
+            Nl=2,
+            Nm=3,
+            method="rk2",
+            dt=0.1,
+            steps=2,
+            sample_stride=1,
+            auto_window=True,
+            tmin=None,
+            tmax=None,
+            window_fraction=0.4,
+            min_points=2,
+            start_fraction=0.0,
+            growth_weight=0.0,
+            require_positive=False,
+            min_amp_fraction=0.0,
+            mode_method="project",
+            fit_signal="invalid",
+            show_progress=False,
+        )
