@@ -4,6 +4,11 @@ SPECTRAX-GK
 SPECTRAX-GK is a JAX-native gyrokinetic solver using Hermite-Laguerre velocity
 space, Fourier perpendicular coordinates, and field-aligned flux-tube geometry.
 
+Install with ``pip install spectraxgk`` and run ``spectraxgk`` in a terminal to
+launch the default linear Cyclone demo. The same executable also accepts
+checked-in TOMLs directly and can plot saved runtime outputs with
+``spectraxgk --plot <artifact>``.
+
 Documentation map
 -----------------
 

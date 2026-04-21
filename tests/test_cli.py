@@ -14,7 +14,58 @@ from spectraxgk.runtime import RuntimeLinearResult, RuntimeNonlinearResult
 
 def test_version_exposed():
     """Version string should be exported from the package."""
-    assert __version__ == "1.1"
+    assert __version__ == "1.2.0"
+
+
+def test_cli_version_flag(capsys, monkeypatch) -> None:
+    monkeypatch.setattr(sys, "argv", ["spectraxgk", "--version"])
+    try:
+        main()
+    except SystemExit as exc:
+        assert exc.code == 0
+    out = capsys.readouterr().out
+    assert "spectraxgk 1.2.0" in out
+
+
+def test_cli_without_args_runs_default_demo(capsys, monkeypatch, tmp_path: Path) -> None:
+    class _FakeFigure:
+        def savefig(self, path, **_kwargs):
+            Path(path).write_bytes(b"fake-image")
+
+    class _FakeResult:
+        t = np.asarray([0.1, 0.2])
+        phi_t = np.asarray([[[[1.0 + 0.0j, 0.5 + 0.1j]]], [[[1.2 + 0.1j, 0.6 + 0.2j]]]])
+        gamma = 0.12
+        omega = -0.34
+        ky = 0.3
+        selection = ModeSelection(ky_index=0, kx_index=0, z_index=0)
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr("spectraxgk.cli._default_example_config_path", lambda: None)
+    monkeypatch.setattr("spectraxgk.cli.run_cyclone_linear", lambda **_kwargs: _FakeResult())
+    monkeypatch.setattr("spectraxgk.cli.extract_mode_time_series", lambda *_args, **_kwargs: np.asarray([1.0 + 0.0j, 1.2 + 0.1j]))
+    monkeypatch.setattr("spectraxgk.cli.extract_eigenfunction", lambda *_args, **_kwargs: np.asarray([1.0 + 0.0j, 0.5 + 0.2j]))
+    monkeypatch.setattr("spectraxgk.cli.normalize_eigenfunction", lambda eigen, _z: np.asarray(eigen))
+    monkeypatch.setattr("spectraxgk.cli.build_spectral_grid", lambda _cfg: type("Grid", (), {"z": np.asarray([-1.0, 1.0])})())
+    monkeypatch.setattr("spectraxgk.cli.linear_runtime_panel_figure", lambda **_kwargs: (_FakeFigure(), None))
+    monkeypatch.setattr("matplotlib.pyplot.close", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(sys, "argv", ["spectraxgk"])
+
+    code = main()
+    out = capsys.readouterr().out
+    assert code == 0
+    assert "No input file specified" in out
+    assert (tmp_path / "tools_out" / "spectraxgk_default_linear.png").exists()
+
+
+def test_cli_global_plot_uses_saved_output_renderer(capsys, monkeypatch, tmp_path: Path) -> None:
+    rendered = tmp_path / "rendered.png"
+    monkeypatch.setattr("spectraxgk.cli.plot_saved_output", lambda path, out=None: rendered)
+    monkeypatch.setattr(sys, "argv", ["spectraxgk", "--plot", "tools_out/linear_case.summary.json"])
+    code = main()
+    out = capsys.readouterr().out
+    assert code == 0
+    assert f"saved {rendered}" in out
 
 
 def test_cli_cyclone_info(capsys, monkeypatch):
