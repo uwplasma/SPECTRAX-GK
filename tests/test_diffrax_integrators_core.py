@@ -105,8 +105,10 @@ def test_density_from_G_cached_all_branches() -> None:
     assert out6_one.shape == out5.shape
 
     cache_no_species = replace(cache, Jl=cache.Jl[0])
+    out5_no_species = _density_from_G_cached(G5, cache_no_species, density_species_index=None)
     out6_no_species_all = _density_from_G_cached(G6, cache_no_species, density_species_index=None)
     out6_no_species_one = _density_from_G_cached(G6, cache_no_species, density_species_index=0)
+    assert out5_no_species.shape == out5.shape
     assert out6_no_species_all.shape == out5.shape
     assert out6_no_species_one.shape == out5.shape
 
@@ -205,6 +207,23 @@ def test_integrate_linear_diffrax_mode_and_field_branches() -> None:
     assert mode_single_z.shape[0] == 1
     assert mode_single_max.shape[0] == 1
 
+    _, mode_batch_z = integrate_linear_diffrax(
+        G,
+        grid,
+        geom,
+        params,
+        dt=0.05,
+        steps=1,
+        method="Tsit5",
+        adaptive=False,
+        progress_bar=False,
+        save_mode=ModeSelectionBatch(ky_indices=[0, 1], kx_index=0, z_index=0),
+        mode_method="z_index",
+        jit=False,
+        return_state=False,
+    )
+    assert mode_batch_z.shape[0] == 1
+
     # phi+density with return_state=True
     _, pair_state = integrate_linear_diffrax(
         G,
@@ -256,6 +275,30 @@ def test_integrate_linear_diffrax_mode_and_field_branches() -> None:
         state_sharding=sharding,
     )
     assert phi_jit_auto.shape[0] == 1
+
+    G6 = jnp.stack([G, 1.5 * G], axis=0)
+    params_multi = build_linear_params(
+        [
+            Species(charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=0.0, fprim=0.0),
+            Species(charge=-1.0, mass=0.1, density=1.0, temperature=1.0, tprim=0.0, fprim=0.0),
+        ],
+        omega_d_scale=0.0,
+        omega_star_scale=0.0,
+    )
+    _, phi_multi = integrate_linear_diffrax(
+        G6,
+        grid,
+        geom,
+        params_multi,
+        dt=0.05,
+        steps=1,
+        method="Tsit5",
+        adaptive=False,
+        progress_bar=False,
+        jit=False,
+        return_state=False,
+    )
+    assert phi_multi.shape[0] == 1
 
 
 def test_integrate_linear_diffrax_error_paths() -> None:
@@ -369,6 +412,24 @@ def test_integrate_linear_diffrax_streaming_phi_and_density_paths() -> None:
     assert gamma_d.shape[0] == 1
     assert omega_d.shape[0] == 1
 
+    _, gamma_dmax, omega_dmax = integrate_linear_diffrax_streaming(
+        G,
+        grid,
+        geom,
+        params,
+        dt=0.05,
+        steps=1,
+        method="Euler",
+        fit_signal="density",
+        mode_method="max",
+        mode_ky_indices=[0],
+        progress_bar=False,
+        jit=False,
+        return_state=False,
+    )
+    assert gamma_dmax.shape[0] == 1
+    assert omega_dmax.shape[0] == 1
+
     G_last, gamma_p, omega_p = integrate_linear_diffrax_streaming(
         G,
         grid,
@@ -469,6 +530,14 @@ def test_integrate_linear_diffrax_streaming_error_paths() -> None:
 
 def test_integrate_nonlinear_diffrax_explicit_and_imex() -> None:
     grid, geom, params, G = _tiny_diffrax_setup(nx=1, ny=2, nz=8)
+    params_multi = build_linear_params(
+        [
+            Species(charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=0.0, fprim=0.0),
+            Species(charge=-1.0, mass=0.1, density=1.0, temperature=1.0, tprim=0.0, fprim=0.0),
+        ],
+        omega_d_scale=0.0,
+        omega_star_scale=0.0,
+    )
     # explicit/full branch
     G_last, fields = integrate_nonlinear_diffrax(
         G,
@@ -506,6 +575,25 @@ def test_integrate_nonlinear_diffrax_explicit_and_imex() -> None:
 
     # jit=None and state-sharding branches
     sharding = jax.sharding.SingleDeviceSharding(jax.devices()[0])
+    _, gamma_auto, omega_auto = integrate_linear_diffrax_streaming(
+        G,
+        grid,
+        geom,
+        params,
+        dt=0.05,
+        steps=1,
+        method="Euler",
+        fit_signal="phi",
+        mode_method="z_index",
+        mode_ky_indices=[0],
+        progress_bar=False,
+        jit=None,
+        return_state=False,
+        state_sharding=sharding,
+    )
+    assert gamma_auto.shape[0] == 1
+    assert omega_auto.shape[0] == 1
+
     G_last3, fields3 = integrate_nonlinear_diffrax(
         G,
         grid,
@@ -523,6 +611,23 @@ def test_integrate_nonlinear_diffrax_explicit_and_imex() -> None:
     assert G_last3.shape == G.shape
     assert fields3.phi.shape[0] == 1
 
+    G6 = jnp.stack([G, 2.0 * G], axis=0)
+    G_last4, fields4 = integrate_nonlinear_diffrax(
+        G6,
+        grid,
+        geom,
+        params_multi,
+        dt=0.05,
+        steps=1,
+        method="KenCarp4",
+        terms=TermConfig(nonlinear=0.0),
+        adaptive=True,
+        progress_bar=False,
+        jit=False,
+    )
+    assert G_last4.shape == G6.shape
+    assert fields4.phi.shape[0] == 1
+
     with pytest.raises(ValueError):
         integrate_nonlinear_diffrax(
             jnp.zeros((2, 3, 4), dtype=jnp.complex64),
@@ -531,6 +636,19 @@ def test_integrate_nonlinear_diffrax_explicit_and_imex() -> None:
             params,
             dt=0.05,
             steps=2,
+            progress_bar=False,
+            jit=False,
+        )
+
+    with pytest.raises(ValueError):
+        integrate_linear_diffrax_streaming(
+            jnp.zeros((2, 3, 4), dtype=jnp.complex64),
+            grid,
+            geom,
+            params,
+            dt=0.05,
+            steps=2,
+            method="Euler",
             progress_bar=False,
             jit=False,
         )
