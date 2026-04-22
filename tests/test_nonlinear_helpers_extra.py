@@ -15,6 +15,7 @@ from spectraxgk.nonlinear import (
     _collision_damping,
     _gx_nonlinear_omega_components,
     _gx_omega_mode_mask,
+    _integrate_nonlinear_gx_diagnostics_impl,
     _make_fixed_mode_projector,
     _make_hermitian_projector,
     _pack_resolved_diagnostics,
@@ -405,6 +406,170 @@ def test_integrate_nonlinear_gx_diagnostics_imex_forwarding_contracts(monkeypatc
     assert captured["fixed_mode_ky_index"] == 1
     assert captured["fixed_mode_kx_index"] == 0
     assert captured["show_progress"] is True
+
+
+def test_explicit_gx_diagnostics_impl_applies_fixed_mode_collision_and_stride(monkeypatch) -> None:
+    grid = SimpleNamespace(
+        ky=np.array([0.0, 0.2], dtype=float),
+        kx=np.array([0.0], dtype=float),
+        z=np.array([0.0, 1.0], dtype=float),
+        dealias_mask=np.ones((2, 1), dtype=bool),
+    )
+    cache = SimpleNamespace(
+        ky=jnp.asarray(grid.ky),
+        kx=jnp.asarray(grid.kx),
+        kxfac=1.0,
+        l=jnp.asarray([0], dtype=jnp.int32),
+        m=jnp.asarray([[0]], dtype=jnp.int32),
+        lb_lam=jnp.ones((1, 1, 1, 2, 1, 2), dtype=jnp.float32),
+    )
+    params = SimpleNamespace(tz=jnp.asarray([1.0]), vth=jnp.asarray([1.0]), nu=0.2)
+    phi = jnp.ones((2, 1, 2), dtype=jnp.complex64)
+    fields = FieldState(phi=phi, apar=None, bpar=None)
+
+    def _resolved_tuple():
+        return (
+            jnp.asarray(1.0),
+            jnp.ones((1,), dtype=jnp.float32),
+            jnp.ones((1,), dtype=jnp.float32),
+            jnp.ones((1,), dtype=jnp.float32),
+            jnp.ones((1,), dtype=jnp.float32),
+            jnp.ones((1,), dtype=jnp.float32),
+            jnp.ones((1,), dtype=jnp.float32),
+            jnp.ones((1,), dtype=jnp.float32),
+        )
+
+    def _split_flux_tuple():
+        return (
+            jnp.ones((1,), dtype=jnp.float32),
+            jnp.ones((1, 1), dtype=jnp.float32),
+            jnp.ones((1, 1), dtype=jnp.float32),
+            jnp.ones((1, 1), dtype=jnp.float32),
+            jnp.ones((1, 1), dtype=jnp.float32),
+        )
+
+    monkeypatch.setattr("spectraxgk.nonlinear.ensure_flux_tube_geometry_data", lambda geom, z: geom)
+    monkeypatch.setattr("spectraxgk.nonlinear.gx_volume_factors", lambda geom, grid: (jnp.asarray(1.0), jnp.asarray(1.0)))
+    monkeypatch.setattr("spectraxgk.nonlinear._gx_omega_mode_mask", lambda grid, cache, **kwargs: jnp.ones((2, 1), dtype=bool))
+    monkeypatch.setattr("spectraxgk.nonlinear._gx_linear_omega_max", lambda *args, **kwargs: np.array([0.0, 0.0, 0.0], dtype=float))
+    monkeypatch.setattr("spectraxgk.nonlinear._gx_laguerre_vmax", lambda nl: 0.0)
+    monkeypatch.setattr(
+        "spectraxgk.nonlinear.nonlinear_rhs_cached",
+        lambda G, cache, params, terms, **kwargs: (jnp.ones_like(G), fields),
+    )
+    monkeypatch.setattr("spectraxgk.nonlinear.compute_fields_cached", lambda *args, **kwargs: fields)
+
+    def _fake_growth(phi, phi_prev, dt_step, z_index, mask):
+        return (
+            jnp.ones((2, 1), dtype=jnp.float32) * 2.0,
+            jnp.ones((2, 1), dtype=jnp.float32) * -3.0,
+        )
+
+    monkeypatch.setattr("spectraxgk.nonlinear._gx_growth_rate_step", _fake_growth)
+    monkeypatch.setattr("spectraxgk.nonlinear.gx_phi2_resolved", lambda *args, **kwargs: _resolved_tuple())
+    monkeypatch.setattr(
+        "spectraxgk.nonlinear.gx_Wg_resolved",
+        lambda *args, **kwargs: (
+            jnp.ones((1,), dtype=jnp.float32),
+            jnp.ones((1, 1), dtype=jnp.float32),
+            jnp.ones((1, 1), dtype=jnp.float32),
+            jnp.ones((1, 1), dtype=jnp.float32),
+            jnp.ones((1, 1), dtype=jnp.float32),
+            jnp.ones((1, 1), dtype=jnp.float32),
+        ),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.nonlinear.gx_Wphi_resolved",
+        lambda *args, **kwargs: (
+            jnp.ones((1,), dtype=jnp.float32),
+            jnp.ones((1, 1), dtype=jnp.float32),
+            jnp.ones((1, 1), dtype=jnp.float32),
+            jnp.ones((1, 1), dtype=jnp.float32),
+            jnp.ones((1, 1), dtype=jnp.float32),
+        ),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.nonlinear.gx_Wapar_resolved",
+        lambda *args, **kwargs: (
+            jnp.ones((1,), dtype=jnp.float32),
+            jnp.ones((1, 1), dtype=jnp.float32),
+            jnp.ones((1, 1), dtype=jnp.float32),
+            jnp.ones((1, 1), dtype=jnp.float32),
+            jnp.ones((1, 1), dtype=jnp.float32),
+        ),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.nonlinear.gx_heat_flux_resolved_species",
+        lambda *args, **kwargs: (
+            jnp.ones((1,), dtype=jnp.float32),
+            jnp.ones((1, 1), dtype=jnp.float32),
+            jnp.ones((1, 1), dtype=jnp.float32),
+            jnp.ones((1, 1), dtype=jnp.float32),
+            jnp.ones((1, 1), dtype=jnp.float32),
+        ),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.nonlinear.gx_heat_flux_split_resolved_species",
+        lambda *args, **kwargs: (_split_flux_tuple(), _split_flux_tuple(), _split_flux_tuple()),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.nonlinear.gx_particle_flux_resolved_species",
+        lambda *args, **kwargs: (
+            jnp.ones((1,), dtype=jnp.float32),
+            jnp.ones((1, 1), dtype=jnp.float32),
+            jnp.ones((1, 1), dtype=jnp.float32),
+            jnp.ones((1, 1), dtype=jnp.float32),
+            jnp.ones((1, 1), dtype=jnp.float32),
+        ),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.nonlinear.gx_particle_flux_split_resolved_species",
+        lambda *args, **kwargs: (_split_flux_tuple(), _split_flux_tuple(), _split_flux_tuple()),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.nonlinear.gx_turbulent_heating_resolved_species",
+        lambda *args, **kwargs: (
+            jnp.ones((1,), dtype=jnp.float32),
+            jnp.ones((1, 1), dtype=jnp.float32),
+            jnp.ones((1, 1), dtype=jnp.float32),
+            jnp.ones((1, 1), dtype=jnp.float32),
+            jnp.ones((1, 1), dtype=jnp.float32),
+        ),
+    )
+    monkeypatch.setattr("spectraxgk.nonlinear._collision_damping", lambda *args, **kwargs: jnp.ones((1, 1, 2, 1, 2), dtype=jnp.float32))
+
+    def _fake_collision_split(G_state, damping, dt_local, scheme):
+        assert scheme == "exp"
+        return G_state + 5.0
+
+    monkeypatch.setattr("spectraxgk.nonlinear._apply_collision_split", _fake_collision_split)
+
+    G0 = jnp.zeros((1, 1, 2, 1, 2), dtype=jnp.complex64)
+    G0 = G0.at[..., 1:2, 0:1, :].set(7.0 + 0.0j)
+
+    t, diag, G_final, fields_final = _integrate_nonlinear_gx_diagnostics_impl(
+        G0,
+        grid,
+        SimpleNamespace(),
+        params,
+        dt=0.1,
+        steps=3,
+        method="euler",
+        cache=cache,
+        terms=TermConfig(collisions=1.0, hypercollisions=0.0),
+        sample_stride=1,
+        diagnostics_stride=2,
+        collision_split=True,
+        collision_scheme="exp",
+        fixed_mode_ky_index=1,
+        fixed_mode_kx_index=0,
+    )
+
+    np.testing.assert_allclose(np.asarray(t), [0.1, 0.3])
+    np.testing.assert_allclose(np.asarray(diag.gamma_t), [2.0, 2.0])
+    np.testing.assert_allclose(np.asarray(G_final[..., 1:2, 0:1, :]), 7.0)
+    assert np.all(np.asarray(G_final[..., 0:1, 0:1, :]) > 0.0)
+    assert fields_final.phi.shape == (2, 1, 2)
 
 
 def test_integrate_nonlinear_imex_gx_diagnostics_rejects_bad_shape(monkeypatch) -> None:
