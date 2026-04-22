@@ -319,6 +319,60 @@ def test_integrate_nonlinear_gx_diagnostics_explicit_and_state_routes(monkeypatc
     assert out_state == payload
 
 
+def test_integrate_nonlinear_gx_diagnostics_forwarding_contracts(monkeypatch) -> None:
+    captured: dict[str, object] = {}
+
+    def _fake_impl(*args, **kwargs):
+        captured.update(kwargs)
+        return ("t", "diag", "G_final", "fields_final")
+
+    monkeypatch.setattr("spectraxgk.nonlinear._integrate_nonlinear_gx_diagnostics_impl", _fake_impl)
+
+    out = integrate_nonlinear_gx_diagnostics(
+        jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64),
+        SimpleNamespace(),
+        SimpleNamespace(),
+        SimpleNamespace(),
+        dt=0.1,
+        steps=2,
+        method="rk4",
+        fixed_dt=False,
+        dt_min=1.0e-4,
+        dt_max=0.2,
+        cfl=0.7,
+        cfl_fac=0.5,
+        collision_split=True,
+        collision_scheme="exp",
+        fixed_mode_ky_index=1,
+        fixed_mode_kx_index=0,
+    )
+
+    assert out == ("t", "diag")
+    assert captured["fixed_dt"] is False
+    assert captured["collision_split"] is True
+    assert captured["collision_scheme"] == "exp"
+    assert captured["fixed_mode_ky_index"] == 1
+    assert captured["fixed_mode_kx_index"] == 0
+
+    captured.clear()
+    out_state = integrate_nonlinear_gx_diagnostics_state(
+        jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64),
+        SimpleNamespace(),
+        SimpleNamespace(),
+        SimpleNamespace(),
+        dt=0.1,
+        steps=2,
+        method="rk4",
+        fixed_dt=False,
+        fixed_mode_ky_index=0,
+        fixed_mode_kx_index=1,
+    )
+    assert out_state == ("t", "diag", "G_final", "fields_final")
+    assert captured["fixed_dt"] is False
+    assert captured["fixed_mode_ky_index"] == 0
+    assert captured["fixed_mode_kx_index"] == 1
+
+
 def test_integrate_nonlinear_imex_gx_diagnostics_rejects_bad_shape(monkeypatch) -> None:
     monkeypatch.setattr("spectraxgk.nonlinear.ensure_flux_tube_geometry_data", lambda geom, z: geom)
     with pytest.raises(ValueError):
