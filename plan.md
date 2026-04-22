@@ -41,6 +41,37 @@ Additional optimization/stellarator anchors:
   <https://github.com/hiddenSymmetries/simsopt>
 - PORTALS-style optimization/surrogate loop motivation:
   <https://arxiv.org/abs/2312.12610>
+- linear multispecies shaped-tokamak benchmark set:
+  <https://crppwww.epfl.ch/~sauter/benchmark/>
+- ETG benchmark operating-point literature:
+  Nevins et al., *Characterizing electron temperature gradient turbulence*,
+  Phys. Plasmas 13, 122306 (2006)  
+  <https://w3.pppl.gov/~hammett/gyrofluid/papers/2006/Nevins-ETG-Benchmark.pdf>
+- stellarator residual-zonal-flow theory:
+  Monreal et al., *Residual zonal flows in tokamaks and stellarators at
+  arbitrary wavelengths*  
+  <https://arxiv.org/abs/1505.03000>
+
+#### Literature baselines reviewed directly for figure planning
+
+The plan below is based on direct inspection of the published figure sets, not
+only on abstracts:
+
+- GX JPP 2024:
+  - nonlinear CBC heat-flux traces (figure 5),
+  - W7-X linear `gamma(k_y)` / `omega(k_y)` panel (figure 6),
+  - velocity-space convergence spectra (figure 9),
+  - performance/scaling panels (figures 10-12).
+- W7-X stella/GENE benchmark JPP 2022:
+  - linear ITG/TEM scan panels,
+  - zonal-flow response section,
+  - nonlinear ITG heat-flux trace (figure 12 as cited by GX).
+- gyaradax 2026:
+  - inverse-problem and sensitivity-analysis figures are the immediate
+    precedent for the autodiff validation narrative.
+
+These reviewed figure families define what SPECTRAX-GK should reproduce or
+adapt for a credible future manuscript.
 
 ### Planning Principles
 
@@ -276,6 +307,8 @@ For each linear lane:
 - `gamma(k_y)`
 - `omega(k_y)`
 - selected eigenfunction shape in `z`
+- branch continuity under parameter continuation where relevant
+- residual-zonal-flow level and damping envelope for zonal-flow response lanes
 - branch identity and window used for the fit
 
 For each nonlinear lane:
@@ -343,6 +376,110 @@ Needs explicit closure or demotion:
 - one published W7-X linear TEM example matching the stella/GENE benchmark paper
 - one kinetic-electron Cyclone audit deck with a frozen accepted horizon
 
+#### Additional literature-anchored tests to add
+
+These are not optional "nice to have" items if the goal is a stronger paper.
+They come directly from what the benchmark and verification literature actually
+uses as evidence.
+
+1. **W7-X zonal-flow response**
+   - The W7-X benchmark paper explicitly includes linear zonal-flow response
+     calculations, not only ITG/TEM growth rates and nonlinear heat flux.
+   - Add:
+     - a reproducible zonal-flow response example,
+     - a comparison metric on residual level / damping envelope,
+     - tests on the extracted residual and damping timescale.
+
+2. **Multiple W7-X flux tubes**
+   - The published W7-X benchmark is not a single-point story.
+   - Add:
+     - multiple flux-tube cases,
+     - at least one near-threshold flux tube,
+     - a figure/table showing branch ordering across tubes.
+
+3. **Cyclone/Dimits-threshold evidence**
+   - The CBC literature and later GX benchmarking both rely on nonlinear heat
+     flux and threshold behavior, not only one nonlinear trace.
+   - Add:
+     - a small `R/LTi` threshold or Dimits-shift style scan,
+     - a reduced but explicit zonal-flow suppression benchmark,
+     - tests on threshold ordering and qualitative regime separation.
+
+4. **Velocity-space convergence**
+   - The GX paper explicitly shows Laguerre/Hermite free-energy spectra and
+     convergence tables for nonlinear CBC.
+   - Add:
+     - spectra-based convergence tests,
+     - manuscript figures showing convergence of heat flux and free-energy
+       spectra with `(Nl, Nm)`,
+     - tests that the convergence trend is monotone enough in the resolved
+       ranges.
+
+5. **Eigenfunction-overlap metrics**
+   - Reviewers will not be satisfied with gamma/omega only if mode-branch
+     ambiguity exists.
+   - Add:
+     - normalized complex overlap,
+     - phase-aligned `Re/Im` eigenfunction panels,
+     - tests on overlap thresholds for accepted linear lanes.
+
+6. **Electromagnetic branch-following**
+   - For KBM and KAW-like cases, add tests that the tracked branch is actually
+     the intended branch under parameter continuation.
+   - Use:
+     - continuation in `beta`,
+     - overlap continuity,
+     - frequency-sign and parity diagnostics.
+
+7. **Secondary-instability growth extraction**
+   - Keep the existing secondary lane, but add:
+     - mode-by-mode uncertainty/fit-window sensitivity,
+     - explicit sideband envelope checks,
+     - documentation of the zero-frequency sideband handling.
+
+8. **Stellarator geometry-response tests**
+   - Add at least one test class around quasi-symmetry / zonal-flow behavior
+     motivated by Sugama-Watanabe and later stellarator zonal-flow papers.
+   - These need not be full expensive runs; reduced response calculations are
+     enough if they are literature anchored.
+
+9. **Shaped multispecies tokamak linear benchmark**
+   - Add at least one literature-backed shaped-tokamak linear lane beyond
+     circular CBC, using the published benchmark collection referenced by
+     Sauter et al.
+   - The point is not just more scans; it is to verify that geometry import,
+     multispecies response, and branch tracking remain correct away from the
+     simplified CBC limit.
+
+10. **Published ETG operating-point benchmark**
+    - The short-window ETG lane should be tied to a recognized ETG benchmark
+      operating point and its expected transport/growth observables, not only
+      to internal reference files.
+    - Add at least one explicit validation note and figure against the
+      established ETG benchmark literature.
+
+11. **Stellarator nonlinear fluctuation diagnostics**
+    - The W7-X literature increasingly reports not only heat flux but also
+      fluctuation spectra and zonal components.
+    - Add a future lane for frequency-spectrum or zonal-component comparison on
+      nonlinear W7-X once the core heat-flux lane is frozen.
+
+#### Other codes to mine for benchmark structure
+
+Use these codebases/papers as structural references for what to compare and how
+to present it:
+
+- **GX**: linear CBC, KBM, KAW, W7-X; nonlinear Cyclone, KBM, W7-X, secondary
+- **stella/GENE W7-X benchmark**: ITG, TEM, zonal-flow response, nonlinear heat flux
+- **GYRO/GS2 historical CBC literature**: Dimits / threshold framing and
+  electromagnetic CBC reference conventions
+- **XGC-S / EUTERPE / GENE-3D stellarator papers**:
+  useful for future geometry-response and electromagnetic-stellarator tests
+
+The plan should explicitly prefer benchmarks that are reproducible locally from
+GX or from published open-access datasets over tests that rely on digitized
+figures alone.
+
 ### Workstream 3: Differentiable Physics / Autodiff Validation
 
 #### Objective
@@ -406,6 +543,142 @@ Every differentiated observable must have:
      - one end-to-end optimization example,
      - gradient verification,
      - documented failure modes and regularization.
+
+#### Additional differentiable research tasks to add
+
+1. **Derivative validation hierarchy**
+   - for each public differentiated quantity:
+     - finite-difference check,
+     - complex-step check when applicable,
+     - tangent/adjoint consistency check when both are available.
+
+2. **Uncertainty quantification examples**
+   - one local Laplace-approximation example around a two-mode inverse problem,
+   - one propagated uncertainty example on `gamma(k_y)` or on nonlinear windowed
+     heat flux.
+
+3. **Stellarator-shape sensitivity prototype**
+   - start with a low-dimensional geometry parameterization,
+   - compute sensitivities of linear growth rate and at least one nonlinear
+     proxy,
+   - show conditioning and regularization explicitly.
+
+4. **Optimization workflow comparison**
+   - align interfaces with DESC/SIMSOPT-style objective + constraint APIs so
+     SPECTRAX-GK can be embedded cleanly in a larger optimization stack.
+
+### Workstream 4A: Manuscript Figure Plan
+
+The manuscript should be planned now, not after the tests are done.
+
+The literature pass implies a concrete figure philosophy:
+
+- tokamak claims should be anchored in CBC/ETG/KBM-style benchmark panels and
+  threshold/convergence evidence, not just isolated traces;
+- stellarator claims should be anchored in the W7-X benchmark paper's actual
+  observable mix: linear scans, zonal-flow response, and nonlinear heat flux;
+- autodiff claims should separate sensitivity/gradient correctness from inverse
+  recovery and from optimization.
+
+#### Core validation figures
+
+1. **Linear benchmark master panel**
+   - `gamma(k_y)` and `omega(k_y)` for:
+     - Cyclone ITG
+     - ETG
+     - KBM
+     - W7-X
+     - HSX
+     - one shaped multispecies tokamak lane if closed
+   - accepted/demoted lanes clearly marked
+   - manuscript note:
+     this is the benchmark-summary figure that should visually match the
+     conventions used in GX and the W7-X stella/GENE paper.
+
+2. **Eigenfunction validation panel**
+   - representative `Re(phi)` / `Im(phi)` and `|phi|` or overlap for:
+     - Cyclone ITG
+     - W7-X
+     - KBM or Miller
+   - include normalized overlap numbers and phase alignment in the caption
+
+3. **Nonlinear transport panel**
+   - heat flux traces for:
+     - Cyclone
+     - Cyclone Miller
+     - KBM
+     - W7-X
+     - HSX
+   - use matched windows and make both curves visible even when overlapping
+
+4. **Windowed-statistics summary**
+   - bar/table/point plot of windowed mean/std/RMS mismatch for the nonlinear
+     closed lanes
+   - this should carry the actual manuscript acceptance story, because it is
+     more robust than eyeballing traces
+
+5. **Velocity-space convergence panel**
+   - Laguerre/Hermite free-energy spectra plus scalar convergence of transport
+     for the nonlinear CBC/kinetic-electron case or best-available surrogate
+   - this is directly motivated by the GX paper's convergence evidence and is
+     stronger than just a resolution table
+
+6. **Stellarator-specific validation panel**
+   - W7-X multi-flux-tube linear comparisons
+   - W7-X zonal-flow response
+   - HSX linear/nonlinear summary if that lane remains in the paper
+   - if zonal-flow is not closed, the paper should say so explicitly instead of
+     silently omitting it
+
+7. **Performance panel**
+   - runtime/memory on the closed benchmark set only
+   - no weak figures that do not show meaningful speedup
+   - keep CPU/GPU/parallelization panels separate from validation panels
+
+#### Differentiable-physics figures
+
+8. **Sensitivity-analysis figure**
+   - local derivatives of `gamma` / `omega` or transport metrics with respect to
+     key physical parameters
+
+9. **Inverse/UQ figure**
+   - two-mode inverse recovery,
+   - covariance ellipse or uncertainty bands,
+   - gradient validation inset
+
+10. **Optimization figure**
+   - low-dimensional stellarator objective reduction,
+   - objective vs iteration,
+   - gradient-consistency evidence
+
+#### Figure-to-script ownership
+
+Before manuscript drafting starts, each target figure must have one owning
+script path and one artifact path. At minimum:
+
+- linear master panel: `tools/make_benchmark_atlas.py`
+- nonlinear transport panel: `tools/make_gx_summary_panel.py` and
+  `tools/make_gx_publication_panel.py`
+- windowed-statistics summary: add a dedicated script under `tools/`
+- stellarator-specific validation panel: add a dedicated script under `tools/`
+- sensitivity/inverse/UQ figures:
+  `examples/theory_and_demos/autodiff_inverse_growth.py`,
+  `examples/theory_and_demos/autodiff_inverse_twomode.py`, plus follow-on
+  scripts for UQ and optimization
+
+#### Figure policy
+
+- every figure must have a script in `examples/` or `tools/`,
+- every figure must state:
+  - case,
+  - model,
+  - horizon/window,
+  - reference code or paper,
+  - acceptance status,
+- do not include empty or redundant subplots,
+- if curves overlap, make both visible through line style / ordering / insets.
+- captions should explicitly say what is expected, what was measured, and what
+  level of agreement was found.
 
 ### Workstream 4: Stellarator-Optimization Architecture
 
@@ -477,10 +750,14 @@ Make the code publishable as a research tool, not just runnable.
      - benchmark matrix,
      - acceptance tolerances,
      - open vs closed lanes.
+   - add a subsection called `Literature Baselines Reviewed` listing the
+     published benchmark papers and what observable each contributes.
 
 2. `docs/theory.rst` / `docs/numerics.rst`
    - explicitly connect each operator and discretization choice to the tests
      that validate it.
+   - add a table mapping equations/operators to source files and validation
+     tests.
 
 3. `docs/examples.rst`
    - mark each example as:
@@ -488,6 +765,8 @@ Make the code publishable as a research tool, not just runnable.
      - validated differentiable demo,
      - exploratory demo,
      - deprecated/demoted.
+   - add a short note for each benchmark example stating whether its reference
+     comes from literature, GX, stella/GENE, or internal frozen artifacts.
 
 4. new `docs/autodiff.rst`
    - sensitivity analysis,
@@ -496,6 +775,30 @@ Make the code publishable as a research tool, not just runnable.
    - optimization workflows,
    - gradient-validation methodology.
 
+4a. new `docs/verification_matrix.rst`
+   - one table per benchmark family,
+   - closed/open/demoted status,
+   - observable,
+   - reference,
+   - acceptance threshold,
+   - artifact path.
+
+4b. new `docs/code_structure.rst`
+   - module boundaries,
+   - runtime flow,
+   - where each operator, diagnostic, and artifact writer lives,
+   - how refactored modules map to tests.
+   - include a `public API vs internal modules` section so future refactors do
+     not leak unstable internals into examples/tests.
+
+4c. new `docs/manuscript_figures.rst`
+   - target paper figures,
+   - owning scripts,
+   - artifact paths,
+   - data provenance,
+   - acceptance status,
+   - open issues before submission.
+
 5. artifact discipline
    - every figure in README/docs must be reproducible from checked-in scripts
    - every published benchmark figure must declare:
@@ -503,6 +806,22 @@ Make the code publishable as a research tool, not just runnable.
      - horizon/window,
      - reference,
      - acceptance status.
+
+6. testing/code-structure documentation expansion
+   - `docs/testing.rst` should become research-facing:
+     - verification vs validation,
+     - literature anchors,
+     - benchmark-observable definitions,
+     - numerical verification methodology,
+     - gradient verification methodology.
+   - `docs/architecture.rst` should be expanded with a real source-tree map and
+     ownership of physics/numerics/IO layers.
+   - add a `testing taxonomy` section:
+     - unit tests,
+     - numerical verification tests,
+     - benchmark/validation tests,
+     - autodiff tests,
+     - regression tests.
 
 ### Workstream 6: Source-Tree Modularization and Testability Refactor
 
