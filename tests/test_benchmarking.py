@@ -291,6 +291,98 @@ def test_windowed_nonlinear_metrics_rejects_missing_or_empty_diagnostics() -> No
         windowed_nonlinear_metrics(bad)
 
 
+def test_late_time_linear_metrics_without_signal_uses_tail_stats() -> None:
+    t = np.linspace(0.0, 4.0, 5)
+    result = SimpleNamespace(
+        t=t,
+        gamma=0.2,
+        omega=-0.1,
+        gamma_t=np.array([np.nan, 0.1, 0.2, 0.3, 0.4]),
+        omega_t=np.array([np.nan, -0.2, -0.3, -0.4, -0.5]),
+    )
+
+    metrics = late_time_linear_metrics(result, tail_fraction=0.4)
+
+    assert metrics.signal_source == "scalar"
+    assert metrics.gamma_fit == pytest.approx(0.2)
+    assert metrics.omega_fit == pytest.approx(-0.1)
+    assert metrics.gamma_tail_mean == pytest.approx(0.35)
+    assert metrics.omega_tail_mean == pytest.approx(-0.45)
+    assert metrics.gamma_tail_std == pytest.approx(0.05)
+    assert metrics.omega_tail_std == pytest.approx(0.05)
+
+
+def test_late_time_linear_and_windowed_nonlinear_metrics_validate_inputs() -> None:
+    with pytest.raises(ValueError):
+        late_time_linear_metrics(SimpleNamespace(t=np.array([0.0, 1.0]), gamma=0.1, omega=0.2), tail_fraction=0.0)
+    with pytest.raises(ValueError):
+        late_time_linear_metrics(SimpleNamespace(t=np.array([[0.0, 1.0]]), gamma=0.1, omega=0.2))
+    with pytest.raises(ValueError):
+        late_time_linear_metrics(SimpleNamespace(t=np.array([]), gamma=0.1, omega=0.2))
+
+    bad_t = SimulationDiagnostics(
+        t=np.array([[0.0, 1.0]]),
+        dt_t=np.full(2, 0.1),
+        dt_mean=np.full(2, 0.1),
+        gamma_t=np.zeros(2),
+        omega_t=np.zeros(2),
+        Wg_t=np.ones(2),
+        Wphi_t=np.ones(2),
+        Wapar_t=np.zeros(2),
+        heat_flux_t=np.ones(2),
+        particle_flux_t=np.zeros(2),
+        energy_t=np.zeros(2),
+    )
+    with pytest.raises(ValueError):
+        windowed_nonlinear_metrics(bad_t)
+    with pytest.raises(ValueError):
+        windowed_nonlinear_metrics(
+            SimpleNamespace(
+                diagnostics=SimulationDiagnostics(
+                    t=np.array([0.0, 1.0]),
+                    dt_t=np.full(2, 0.1),
+                    dt_mean=np.full(2, 0.1),
+                    gamma_t=np.zeros(2),
+                    omega_t=np.zeros(2),
+                    Wg_t=np.ones(2),
+                    Wphi_t=np.ones(2),
+                    Wapar_t=np.zeros(2),
+                    heat_flux_t=np.ones(2),
+                    particle_flux_t=np.zeros(2),
+                    energy_t=np.zeros(2),
+                )
+            ),
+            start_fraction=1.0,
+        )
+
+
+def test_windowed_nonlinear_metrics_ignores_nonfinite_phi_envelope_and_keeps_window_stats() -> None:
+    diagnostics = SimulationDiagnostics(
+        t=np.array([0.0, 1.0, 2.0, 3.0]),
+        dt_t=np.full(4, 0.1),
+        dt_mean=np.full(4, 0.1),
+        gamma_t=np.zeros(4),
+        omega_t=np.zeros(4),
+        Wg_t=np.array([0.0, 1.0, 2.0, 3.0]),
+        Wphi_t=np.array([0.0, 0.5, 1.0, 1.5]),
+        Wapar_t=np.zeros(4),
+        heat_flux_t=np.array([0.0, 0.2, 0.4, 0.6]),
+        particle_flux_t=np.zeros(4),
+        energy_t=np.zeros(4),
+        phi_mode_t=np.array([np.nan + 0.0j, 1.0 + 0.0j, np.nan + 0.0j, 2.0 + 0.0j]),
+    )
+
+    metrics = windowed_nonlinear_metrics(diagnostics, start_fraction=0.5)
+
+    assert metrics.nsamples == 2
+    assert metrics.heat_flux_mean == pytest.approx(0.5)
+    assert metrics.wphi_mean == pytest.approx(1.25)
+    assert metrics.wg_mean == pytest.approx(2.5)
+    assert metrics.phi_mode_envelope_mean == pytest.approx(2.0)
+    assert metrics.phi_mode_envelope_std == pytest.approx(0.0)
+    assert metrics.phi_mode_envelope_max == pytest.approx(2.0)
+
+
 def test_estimate_observed_order_returns_asymptotic_pairwise_orders() -> None:
     step_sizes = np.array([0.4, 0.2, 0.1, 0.05])
     errors = 3.0 * step_sizes**2
@@ -304,3 +396,9 @@ def test_estimate_observed_order_returns_asymptotic_pairwise_orders() -> None:
         estimate_observed_order(np.array([0.1]), np.array([0.01]))
     with pytest.raises(ValueError):
         estimate_observed_order(np.array([0.2, 0.2]), np.array([0.1, 0.025]))
+    with pytest.raises(ValueError):
+        estimate_observed_order(np.array([0.2, np.nan]), np.array([0.1, 0.025]))
+    with pytest.raises(ValueError):
+        estimate_observed_order(np.array([0.2, -0.1]), np.array([0.1, 0.025]))
+    with pytest.raises(ValueError):
+        estimate_observed_order(np.array([0.2, 0.1]), np.array([0.1, 0.0]))
