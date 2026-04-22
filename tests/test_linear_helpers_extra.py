@@ -395,6 +395,40 @@ def test_integrate_linear_diagnostics_builds_cache_and_uses_imex2(monkeypatch) -
     assert density_t.shape[0] == 2
 
 
+def test_integrate_linear_diagnostics_imex_sampled_multispecies(monkeypatch) -> None:
+    G0 = jnp.zeros((2, 2, 2, 1, 1, 2), dtype=jnp.complex64)
+    cache = SimpleNamespace(
+        lb_lam=jnp.zeros((2, 2, 2, 1, 1, 2), dtype=jnp.float32),
+        Jl=jnp.ones((2, 2, 1, 1, 2), dtype=jnp.float32),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.linear.hypercollision_damping",
+        lambda cache, params, dtype: jnp.zeros_like(cache.lb_lam, dtype=dtype),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.linear.linear_rhs_cached",
+        lambda G, cache, params, **kwargs: (jnp.zeros_like(G), jnp.ones((1, 1, 2), dtype=jnp.complex64)),
+    )
+
+    G_out, phi_t, density_t = integrate_linear_diagnostics(
+        G0,
+        object(),
+        object(),
+        SimpleNamespace(nu=jnp.asarray([0.1, 0.2], dtype=jnp.float32)),
+        dt=0.1,
+        steps=4,
+        method="imex",
+        cache=cache,
+        sample_stride=2,
+        species_index=None,
+        record_hl_energy=False,
+    )
+
+    assert G_out.shape == G0.shape
+    assert phi_t.shape[0] == 2
+    assert density_t.shape == (2, 1, 1, 2)
+
+
 def test_integrate_linear_diagnostics_species_none_and_5d_density_paths(monkeypatch) -> None:
     cache6 = SimpleNamespace(
         lb_lam=jnp.zeros((2, 2, 2, 1, 1, 2), dtype=jnp.float32),

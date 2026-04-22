@@ -392,6 +392,25 @@ def test_runtime_linear_gx_time_rejects_return_state() -> None:
         )
 
 
+def test_runtime_linear_rejects_invalid_fit_signal() -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        species=(RuntimeSpeciesConfig(name="ion"),),
+        normalization=RuntimeNormalizationConfig(contract="cyclone", diagnostic_norm="none"),
+    )
+    with pytest.raises(ValueError, match="fit_signal"):
+        run_runtime_linear(
+            cfg,
+            ky_target=0.1,
+            Nl=3,
+            Nm=4,
+            solver="time",
+            fit_signal="bad-signal",
+            dt=0.01,
+            steps=2,
+        )
+
+
 def test_runtime_linear_auto_fit_prefers_density_signal(monkeypatch: pytest.MonkeyPatch) -> None:
     import spectraxgk.runtime as runtime
 
@@ -551,6 +570,28 @@ def test_runtime_linear_cetg_mocked_time_path_and_krylov_rejection(monkeypatch: 
         run_runtime_linear(cfg, ky_target=0.1, Nl=2, Nm=3, solver="krylov")
 
 
+def test_runtime_linear_cetg_validates_solver_and_time_inputs(monkeypatch: pytest.MonkeyPatch) -> None:
+    import spectraxgk.runtime as runtime
+
+    base = _base_runtime_cfg()
+    cfg = replace(base, physics=replace(base.physics, reduced_model="cetg"))
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    grid = build_spectral_grid(cfg.grid)
+
+    monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: geom)
+    monkeypatch.setattr(runtime, "validate_cetg_runtime_config", lambda *args, **kwargs: None)
+    monkeypatch.setattr(runtime, "_build_initial_condition", lambda *args, **kwargs: np.zeros((2, 3, 1, 1, grid.z.size), dtype=np.complex64))
+    monkeypatch.setattr(runtime, "build_runtime_term_config", lambda _cfg: object())
+    monkeypatch.setattr(runtime, "build_cetg_model_params", lambda *args, **kwargs: object())
+
+    with pytest.raises(ValueError):
+        run_runtime_linear(cfg, ky_target=0.1, Nl=2, Nm=3, solver="mystery")
+    with pytest.raises(ValueError, match="dt must be > 0"):
+        run_runtime_linear(cfg, ky_target=0.1, Nl=2, Nm=3, solver="time", dt=0.0, steps=2)
+    with pytest.raises(ValueError, match="steps must be >= 1"):
+        run_runtime_linear(cfg, ky_target=0.1, Nl=2, Nm=3, solver="time", dt=0.1, steps=0)
+
+
 def test_runtime_nonlinear_smoke() -> None:
     cfg = replace(
         _base_runtime_cfg(),
@@ -603,6 +644,62 @@ def test_runtime_nonlinear_cetg_diagnostics_disabled_returns_state(monkeypatch: 
         return_state=True,
     )
 
+    assert out.diagnostics is None
+    assert out.state is not None
+    assert out.phi2 is not None
+
+
+def test_runtime_nonlinear_cetg_adaptive_chunks_without_diagnostics(monkeypatch: pytest.MonkeyPatch) -> None:
+    import spectraxgk.runtime as runtime
+
+    base = _base_runtime_cfg()
+    cfg = replace(
+        base,
+        physics=replace(base.physics, reduced_model="cetg", nonlinear=True),
+        time=replace(base.time, fixed_dt=False, t_max=0.25, dt=0.1),
+    )
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    calls = {"n": 0}
+
+    monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: geom)
+    monkeypatch.setattr(runtime, "validate_cetg_runtime_config", lambda *args, **kwargs: None)
+    monkeypatch.setattr(runtime, "_select_nonlinear_mode_indices", lambda *args, **kwargs: (0, 0))
+    monkeypatch.setattr(runtime, "_build_initial_condition", lambda *args, **kwargs: np.zeros((2, 3, 1, 1, grid.z.size), dtype=np.complex64))
+    monkeypatch.setattr(runtime, "build_cetg_model_params", lambda *args, **kwargs: object())
+    monkeypatch.setattr(runtime, "build_runtime_term_config", lambda *args, **kwargs: object())
+
+    def _fake_integrator(*args, **kwargs):
+        calls["n"] += 1
+        t = np.asarray([0.15], dtype=float)
+        diag = SimulationDiagnostics(
+            t=t,
+            dt_t=t,
+            dt_mean=0.15,
+            gamma_t=np.asarray([0.0]),
+            omega_t=np.asarray([0.0]),
+            Wg_t=np.asarray([0.0]),
+            Wphi_t=np.asarray([0.0]),
+            Wapar_t=np.asarray([0.0]),
+            heat_flux_t=np.asarray([0.0]),
+            particle_flux_t=np.asarray([0.0]),
+            energy_t=np.asarray([0.0]),
+        )
+        fields = FieldState(phi=jnp.ones((1, 1, grid.z.size), dtype=jnp.complex64), apar=None, bpar=None)
+        return t, diag, np.ones((2, 3, 1, 1, grid.z.size), dtype=np.complex64), fields
+
+    monkeypatch.setattr(runtime, "integrate_cetg_gx_diagnostics_state", _fake_integrator)
+
+    out = run_runtime_nonlinear(
+        cfg,
+        ky_target=0.1,
+        Nl=2,
+        Nm=3,
+        diagnostics=False,
+        return_state=True,
+    )
+
+    assert calls["n"] >= 2
     assert out.diagnostics is None
     assert out.state is not None
     assert out.phi2 is not None
@@ -721,6 +818,121 @@ def test_runtime_nonlinear_disable_diagnostics() -> None:
     )
     assert res.diagnostics is None
     assert res.phi2 is not None
+
+
+def test_runtime_nonlinear_disable_diagnostics_uses_final_state_integrator(monkeypatch: pytest.MonkeyPatch) -> None:
+    import spectraxgk.runtime as runtime
+
+    cfg = replace(
+        _base_runtime_cfg(),
+        species=(RuntimeSpeciesConfig(name="ion"),),
+        normalization=RuntimeNormalizationConfig(contract="cyclone"),
+        physics=RuntimePhysicsConfig(adiabatic_electrons=True, nonlinear=True),
+        terms=RuntimeTermsConfig(nonlinear=1.0, hypercollisions=0.0, end_damping=0.0),
+    )
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    captured: dict[str, object] = {}
+
+    monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: geom)
+    monkeypatch.setattr(runtime, "build_runtime_linear_params", lambda *args, **kwargs: SimpleNamespace())
+    monkeypatch.setattr(runtime, "build_runtime_term_config", lambda _cfg: object())
+    monkeypatch.setattr(runtime, "_select_nonlinear_mode_indices", lambda *args, **kwargs: (1, 0))
+    monkeypatch.setattr(runtime, "_build_initial_condition", lambda *args, **kwargs: np.zeros((1, 3, 4, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64))
+
+    def _fake_final_state(*args, **kwargs):
+        captured["show_progress"] = kwargs.get("show_progress")
+        return (
+            np.zeros((1, 3, 4, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64),
+            FieldState(phi=jnp.ones((grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64), apar=None, bpar=None),
+        )
+
+    monkeypatch.setattr(runtime, "integrate_nonlinear_from_config", _fake_final_state)
+
+    out = run_runtime_nonlinear(
+        cfg,
+        ky_target=0.2,
+        Nl=3,
+        Nm=4,
+        diagnostics=False,
+        show_progress=True,
+    )
+
+    assert captured["show_progress"] is True
+    assert out.diagnostics is None
+    assert out.phi2 is not None
+
+
+def test_runtime_nonlinear_validates_dt_steps_and_fixed_mode_contract() -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        species=(RuntimeSpeciesConfig(name="ion"),),
+        normalization=RuntimeNormalizationConfig(contract="cyclone"),
+        physics=RuntimePhysicsConfig(adiabatic_electrons=True, nonlinear=True),
+        terms=RuntimeTermsConfig(nonlinear=1.0, hypercollisions=0.0, end_damping=0.0),
+    )
+
+    with pytest.raises(ValueError, match="dt must be > 0"):
+        run_runtime_nonlinear(cfg, ky_target=0.2, Nl=3, Nm=4, dt=0.0, steps=2)
+
+    with pytest.raises(ValueError, match="steps must be >= 1"):
+        run_runtime_nonlinear(cfg, ky_target=0.2, Nl=3, Nm=4, dt=0.1, steps=0)
+
+    fixed_cfg = replace(
+        cfg,
+        expert=RuntimeExpertConfig(fixed_mode=True, iky_fixed=None, ikx_fixed=None),
+    )
+    with pytest.raises(ValueError, match="expert.iky_fixed and expert.ikx_fixed"):
+        run_runtime_nonlinear(fixed_cfg, ky_target=0.2, Nl=3, Nm=4, dt=0.1, steps=2)
+
+
+def test_runtime_nonlinear_adaptive_chunk_no_progress_raises(monkeypatch: pytest.MonkeyPatch) -> None:
+    import spectraxgk.runtime as runtime
+
+    cfg = replace(
+        _base_runtime_cfg(),
+        species=(RuntimeSpeciesConfig(name="ion"),),
+        normalization=RuntimeNormalizationConfig(contract="cyclone"),
+        physics=RuntimePhysicsConfig(adiabatic_electrons=True, nonlinear=True),
+        terms=RuntimeTermsConfig(nonlinear=1.0, hypercollisions=0.0, end_damping=0.0),
+        time=replace(_base_runtime_cfg().time, fixed_dt=False, t_max=0.2, dt=0.1),
+    )
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+
+    monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: geom)
+    monkeypatch.setattr(runtime, "build_runtime_linear_params", lambda *args, **kwargs: SimpleNamespace())
+    monkeypatch.setattr(runtime, "build_runtime_term_config", lambda _cfg: object())
+    monkeypatch.setattr(runtime, "_select_nonlinear_mode_indices", lambda *args, **kwargs: (1, 0))
+    monkeypatch.setattr(runtime, "_build_initial_condition", lambda *args, **kwargs: np.zeros((1, 3, 4, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64))
+
+    zero_diag = SimulationDiagnostics(
+        t=np.asarray([0.0]),
+        dt_t=np.asarray([0.0]),
+        dt_mean=0.0,
+        gamma_t=np.asarray([0.0]),
+        omega_t=np.asarray([0.0]),
+        Wg_t=np.asarray([0.0]),
+        Wphi_t=np.asarray([0.0]),
+        Wapar_t=np.asarray([0.0]),
+        heat_flux_t=np.asarray([0.0]),
+        particle_flux_t=np.asarray([0.0]),
+        energy_t=np.asarray([0.0]),
+    )
+
+    monkeypatch.setattr(
+        runtime,
+        "integrate_nonlinear_gx_diagnostics_state",
+        lambda *args, **kwargs: (
+            np.asarray([0.0]),
+            zero_diag,
+            np.zeros((1, 3, 4, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64),
+            FieldState(phi=jnp.ones((grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64), apar=None, bpar=None),
+        ),
+    )
+
+    with pytest.raises(RuntimeError, match="made no time-step progress"):
+        run_runtime_nonlinear(cfg, ky_target=0.2, Nl=3, Nm=4, diagnostics=True)
 
 
 def test_runtime_init_file_replace_mode_scales_loaded_state(tmp_path) -> None:

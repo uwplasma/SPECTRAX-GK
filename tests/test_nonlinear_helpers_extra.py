@@ -105,6 +105,35 @@ def test_collision_damping_and_imex_operator_builder(monkeypatch) -> None:
     assert op.squeeze_species is True
 
 
+def test_build_nonlinear_imex_operator_forwards_preconditioner(monkeypatch) -> None:
+    captured: dict[str, object] = {}
+
+    def _fake_build(G0, cache, params, dt, terms, implicit_preconditioner):
+        captured["preconditioner"] = implicit_preconditioner
+        captured["terms"] = terms
+        return (
+            jnp.zeros((1, 2, 2, 1, 1, 1), dtype=jnp.complex64),
+            (1, 2, 2, 1, 1, 1),
+            4,
+            jnp.asarray(0.2, dtype=jnp.float32),
+            lambda x: x,
+            lambda x: x,
+            False,
+        )
+
+    monkeypatch.setattr("spectraxgk.nonlinear._build_implicit_operator", _fake_build)
+    op = build_nonlinear_imex_operator(
+        jnp.zeros((1, 2, 2, 1, 1, 1), dtype=jnp.complex64),
+        SimpleNamespace(),
+        SimpleNamespace(),
+        dt=0.2,
+        terms=TermConfig(nonlinear=1.0),
+        implicit_preconditioner="identity",
+    )
+    assert captured["preconditioner"] == "identity"
+    assert op.shape == (1, 2, 2, 1, 1, 1)
+
+
 def test_gx_nonlinear_omega_components_zero_and_finite() -> None:
     grid_cfg = GridConfig(Nx=2, Ny=4, Nz=4, Lx=6.0, Ly=6.0)
     cfg = CycloneBaseCase(grid=grid_cfg)
@@ -258,6 +287,36 @@ def test_nonlinear_gx_diagnostics_route_and_state_reject_imex(monkeypatch) -> No
             steps=2,
             method="imex",
         )
+
+
+def test_integrate_nonlinear_gx_diagnostics_explicit_and_state_routes(monkeypatch) -> None:
+    payload = ("t_explicit", "diag_explicit", "G_final", "fields_final")
+    monkeypatch.setattr(
+        "spectraxgk.nonlinear._integrate_nonlinear_gx_diagnostics_impl",
+        lambda *args, **kwargs: payload,
+    )
+
+    out = integrate_nonlinear_gx_diagnostics(
+        jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64),
+        SimpleNamespace(),
+        SimpleNamespace(),
+        SimpleNamespace(),
+        dt=0.1,
+        steps=2,
+        method="rk3",
+    )
+    assert out == ("t_explicit", "diag_explicit")
+
+    out_state = integrate_nonlinear_gx_diagnostics_state(
+        jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64),
+        SimpleNamespace(),
+        SimpleNamespace(),
+        SimpleNamespace(),
+        dt=0.1,
+        steps=2,
+        method="rk3",
+    )
+    assert out_state == payload
 
 
 def test_integrate_nonlinear_imex_gx_diagnostics_rejects_bad_shape(monkeypatch) -> None:
