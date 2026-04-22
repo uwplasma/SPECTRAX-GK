@@ -21,6 +21,10 @@ from spectraxgk.nonlinear import (
     build_nonlinear_imex_operator,
     integrate_nonlinear,
     integrate_nonlinear_cached,
+    integrate_nonlinear_gx_diagnostics,
+    integrate_nonlinear_gx_diagnostics_state,
+    integrate_nonlinear_imex_cached,
+    integrate_nonlinear_imex_gx_diagnostics,
 )
 from spectraxgk.terms.config import FieldState, TermConfig
 
@@ -227,3 +231,121 @@ def test_integrate_nonlinear_builds_cache_and_rejects_bad_shape(monkeypatch) -> 
 
     with pytest.raises(ValueError):
         integrate_nonlinear(jnp.zeros((2, 2), dtype=jnp.complex64), SimpleNamespace(z=np.array([0.0])), object(), object(), dt=0.1, steps=2)
+
+
+def test_nonlinear_gx_diagnostics_route_and_state_reject_imex(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "spectraxgk.nonlinear.integrate_nonlinear_imex_gx_diagnostics",
+        lambda *args, **kwargs: ("t_imex", "diag_imex"),
+    )
+    assert integrate_nonlinear_gx_diagnostics(
+        jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64),
+        SimpleNamespace(),
+        SimpleNamespace(),
+        SimpleNamespace(),
+        dt=0.1,
+        steps=2,
+        method="semi-implicit",
+    ) == ("t_imex", "diag_imex")
+
+    with pytest.raises(ValueError):
+        integrate_nonlinear_gx_diagnostics_state(
+            jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64),
+            SimpleNamespace(),
+            SimpleNamespace(),
+            SimpleNamespace(),
+            dt=0.1,
+            steps=2,
+            method="imex",
+        )
+
+
+def test_integrate_nonlinear_imex_gx_diagnostics_rejects_bad_shape(monkeypatch) -> None:
+    monkeypatch.setattr("spectraxgk.nonlinear.ensure_flux_tube_geometry_data", lambda geom, z: geom)
+    with pytest.raises(ValueError):
+        integrate_nonlinear_imex_gx_diagnostics(
+            jnp.zeros((2, 2), dtype=jnp.complex64),
+            SimpleNamespace(z=np.array([0.0])),
+            object(),
+            object(),
+            dt=0.1,
+            steps=2,
+        )
+
+
+def test_integrate_nonlinear_imex_cached_shape_mismatch_and_zero_nonlinear(monkeypatch) -> None:
+    G0 = jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64)
+    implicit_operator = SimpleNamespace(
+        shape=(1, 2, 2, 1, 1, 2),
+        dt_val=jnp.asarray(0.1, dtype=jnp.float32),
+        precond_op=lambda x: x,
+        matvec=lambda x: x,
+        squeeze_species=False,
+        state_dtype=jnp.complex64,
+    )
+    with pytest.raises(ValueError):
+        integrate_nonlinear_imex_cached(
+            G0,
+            SimpleNamespace(),
+            SimpleNamespace(),
+            dt=0.1,
+            steps=2,
+            implicit_operator=implicit_operator,
+        )
+
+    cache = SimpleNamespace(
+        Jl=None,
+        JlB=None,
+        sqrt_m=None,
+        sqrt_m_p1=None,
+        kx_grid=None,
+        ky_grid=None,
+        dealias_mask=None,
+        kxfac=1.0,
+        laguerre_to_grid=None,
+        laguerre_to_spectral=None,
+        laguerre_roots=None,
+        laguerre_j0=None,
+        laguerre_j1_over_alpha=None,
+        b=None,
+    )
+    good_operator = SimpleNamespace(
+        shape=G0.shape,
+        dt_val=jnp.asarray(0.1, dtype=jnp.float32),
+        precond_op=lambda x: x,
+        matvec=lambda x: x,
+        squeeze_species=False,
+        state_dtype=jnp.complex64,
+    )
+
+    gmres_calls: list[int] = []
+
+    monkeypatch.setattr(
+        "spectraxgk.nonlinear.jax.scipy.sparse.linalg.gmres",
+        lambda matvec, rhs, **kwargs: (gmres_calls.append(rhs.size) or rhs, SimpleNamespace(success=True)),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.nonlinear.assemble_rhs_cached_jit",
+        lambda G, cache, params, terms: (
+            jnp.zeros_like(G),
+            FieldState(phi=jnp.zeros((1, 1, 2), dtype=jnp.complex64), apar=None, bpar=None),
+        ),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.nonlinear.compute_fields_cached",
+        lambda G, cache, params, terms=None: (_ for _ in ()).throw(AssertionError("nonlinear path should stay off")),
+    )
+
+    G_out, fields_t = integrate_nonlinear_imex_cached(
+        G0,
+        cache,
+        SimpleNamespace(tz=jnp.asarray([1.0]), vth=jnp.asarray([1.0])),
+        dt=0.1,
+        steps=2,
+        terms=TermConfig(nonlinear=0.0),
+        implicit_operator=good_operator,
+    )
+
+    assert gmres_calls
+    assert G_out.shape == G0.shape
+    assert fields_t.phi.shape[0] == 2
