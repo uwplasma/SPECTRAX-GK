@@ -9,6 +9,7 @@ import pytest
 
 from spectraxgk.from_gx.vmec import (
     _booz_xform_jax_search_paths,
+    _import_booz_backend,
     _import_module_with_search_paths,
     dermv,
     internal_vmec_backend_available,
@@ -33,6 +34,29 @@ def test_import_module_with_search_paths_loads_temp_module(tmp_path: Path) -> No
     mod = _import_module_with_search_paths("demo_mod", [pkg])
     assert mod.VALUE == 7
     sys.modules.pop("demo_mod", None)
+
+
+def test_import_module_with_search_paths_raises_on_missing(tmp_path: Path) -> None:
+    with pytest.raises(ImportError):
+        _import_module_with_search_paths("missing_demo_mod", [tmp_path / "missing"])
+
+
+def test_import_booz_backend_falls_back_to_booz_xform(monkeypatch) -> None:
+    monkeypatch.setattr("spectraxgk.from_gx.vmec._booz_xform_jax_search_paths", lambda: [])
+    monkeypatch.setattr(
+        "spectraxgk.from_gx.vmec._import_module_with_search_paths",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(ImportError("jax backend missing")),
+    )
+
+    marker = SimpleNamespace(name="fallback")
+
+    def _import_module(name: str):
+        if name == "booz_xform":
+            return marker
+        raise ImportError(name)
+
+    monkeypatch.setattr("spectraxgk.from_gx.vmec.importlib.import_module", _import_module)
+    assert _import_booz_backend() is marker
 
 
 def test_internal_vmec_backend_available_uses_backend_probe(monkeypatch) -> None:

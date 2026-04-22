@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -13,14 +14,24 @@ from spectraxgk.runtime import RuntimeLinearResult, RuntimeNonlinearResult
 from spectraxgk.runtime_config import RuntimeConfig, RuntimeOutputConfig
 from spectraxgk.runtime_artifacts import (
     _artifact_base,
+    _condense_kx,
+    _condense_ky,
+    _condense_kykx,
     _condense_gx_diagnostics_for_output,
     _condense_resolved_for_output,
     _flatten_series,
+    _gx_active_field,
+    _gx_active_ky_count,
+    _gx_active_ky_indices,
+    _gx_active_ky_values,
     _gx_active_kx_count,
     _gx_active_kx_indices,
+    _gx_active_kx_values,
     _gx_bundle_base,
     _is_gx_netcdf_target,
     _maybe_var,
+    _particle_moments,
+    _real_space_axis,
     _read_optional_var,
     _resolved_species_time,
     _resolve_restart_path,
@@ -30,6 +41,8 @@ from spectraxgk.runtime_artifacts import (
     _state_basis_moments,
     _spectral_to_ri,
     _spectral_to_xy,
+    _take_axis,
+    _write_runtime_root_metadata,
     load_runtime_nonlinear_gx_diagnostics,
     run_runtime_nonlinear_with_artifacts,
     write_runtime_linear_artifacts,
@@ -233,6 +246,85 @@ def test_runtime_artifact_small_helpers() -> None:
     group = _Group()
     _maybe_var(group, "foo", "f4", ("x",), np.array([1.0, 2.0], dtype=np.float32))
     assert np.allclose(group.created["foo"], np.array([1.0, 2.0], dtype=np.float32))
+
+
+def test_runtime_artifact_axis_and_condense_helpers() -> None:
+    axis = _real_space_axis(4, 2.0)
+    np.testing.assert_allclose(axis, np.array([0.0, 0.5, 1.0, 1.5], dtype=np.float32))
+
+    ky = np.array([0.0, 0.2, 0.4, -0.4, -0.2], dtype=np.float32)
+    kx = np.array([0.0, 0.1, 0.2, 0.3, -0.3, -0.2, -0.1], dtype=np.float32)
+    assert _gx_active_ky_count(ky.size) == 2
+    np.testing.assert_array_equal(_gx_active_ky_indices(ky.size), np.array([0, 1], dtype=np.int32))
+    np.testing.assert_allclose(_gx_active_ky_values(ky), np.array([0.0, 0.2], dtype=np.float32))
+    np.testing.assert_allclose(_gx_active_kx_values(kx), np.array([-0.2, -0.1, 0.0, 0.1, 0.2], dtype=np.float32))
+
+    arr_kx = np.arange(7, dtype=np.float32)
+    np.testing.assert_allclose(_condense_kx(arr_kx), np.array([5, 6, 0, 1, 2], dtype=np.float32))
+
+    arr_ky = np.arange(10, dtype=np.float32).reshape(2, 5)
+    np.testing.assert_allclose(_condense_ky(arr_ky), arr_ky[..., :2])
+
+    arr_kykx = np.arange(35, dtype=np.float32).reshape(5, 7)
+    np.testing.assert_allclose(_condense_kykx(arr_kykx), arr_kykx[:2][:, [5, 6, 0, 1, 2]])
+
+    arr = np.arange(24, dtype=np.float32).reshape(2, 3, 4)
+    np.testing.assert_allclose(_take_axis(arr, np.array([2, 0]), axis=1), arr[:, [2, 0], :])
+
+
+def test_runtime_artifact_root_metadata_and_active_field() -> None:
+    class _Var:
+        def __init__(self):
+            self.values = None
+            self.attrs = {}
+
+        def __setitem__(self, _idx, value):
+            self.values = np.asarray(value)
+
+        def setncattr(self, key, value):
+            self.attrs[key] = value
+
+    class _Root:
+        def __init__(self):
+            self.vars = {}
+
+        def createVariable(self, name, _dtype, _dims=()):
+            var = _Var()
+            self.vars[name] = var
+            return var
+
+    cfg = SimpleNamespace(grid=SimpleNamespace(Ny=5, Nx=7, Nz=8, ntheta=None, nperiod=None))
+    root = _Root()
+    _write_runtime_root_metadata(root, cfg, nspecies=2, nl=3, nm=4)
+    assert int(root.vars["ny"].values) == 5
+    assert int(root.vars["nx"].values) == 7
+    assert int(root.vars["ntheta"].values) == 8
+    assert int(root.vars["nperiod"].values) == 1
+    assert root.vars["code_info"].attrs["value"] == "spectrax-gk"
+
+    field = np.arange(5 * 7 * 2, dtype=np.float32).reshape(5, 7, 2)
+    active = _gx_active_field(field, ky_axis=0, kx_axis=1)
+    np.testing.assert_allclose(active, field[:2][:, [5, 6, 0, 1, 2], :])
+
+
+def test_runtime_artifact_particle_moments(monkeypatch) -> None:
+    state = np.ones((1, 2, 3, 2, 4, 3), dtype=np.complex64)
+    cfg = SimpleNamespace(grid=SimpleNamespace())
+    cache = SimpleNamespace(
+        Jl=np.ones((1, 2, 2, 4, 3), dtype=np.float32),
+        JlB=np.ones((1, 2, 2, 4, 3), dtype=np.float32),
+        kperp2=np.ones((2, 4, 3), dtype=np.float32),
+    )
+    monkeypatch.setattr("spectraxgk.runtime_artifacts.build_spectral_grid", lambda _grid: object())
+    monkeypatch.setattr("spectraxgk.runtime_artifacts.build_runtime_geometry", lambda _cfg: object())
+    monkeypatch.setattr("spectraxgk.runtime_artifacts.build_runtime_linear_params", lambda _cfg, **_kwargs: object())
+    monkeypatch.setattr("spectraxgk.runtime_artifacts.build_linear_cache", lambda *_args, **_kwargs: cache)
+
+    moments = _particle_moments(state, cfg)
+    np.testing.assert_allclose(moments["ParticleDensity"], np.full((1, 2, 4, 3), 2.0))
+    np.testing.assert_allclose(moments["ParticleUpar"], np.full((1, 2, 4, 3), 2.0))
+    np.testing.assert_allclose(moments["ParticleUperp"], np.full((1, 2, 4, 3), 2.0))
+    np.testing.assert_allclose(moments["ParticleTemp"], np.full((1, 2, 4, 3), 2.0 * np.sqrt(2.0)))
 
 
 def test_write_runtime_nonlinear_artifacts_preserves_csv_target(tmp_path: Path) -> None:
