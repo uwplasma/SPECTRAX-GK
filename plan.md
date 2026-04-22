@@ -73,6 +73,25 @@ only on abstracts:
 These reviewed figure families define what SPECTRAX-GK should reproduce or
 adapt for a credible future manuscript.
 
+#### Frozen raw-reference status (2026-04-22)
+
+The repository now includes compact frozen GX raw-mode bundles for two closed
+linear lanes:
+
+- `docs/_static/reference_modes/kbm_linear_gx_ky0p3000.npz`
+- `docs/_static/reference_modes/w7x_linear_gx_ky0p3000.npz`
+
+These are extracted from real GX `.big.nc` field histories and are the first
+checked-in raw eigenfunction references suitable for manuscript-grade overlay
+figures. The remaining blocker for the first raw overlay panel is now only the
+SPECTRAX side of the matched extraction, not reference availability.
+
+The first full-resolution matched KBM SPECTRAX extraction on `office` using the
+tracked GX contract and selected fit window did not finish inside a `420 s`
+wall-clock budget. The next pass should therefore target a bounded raw-overlay
+extraction path with the same physics contract but lower runtime cost, staying
+below the hard `600 s` ceiling.
+
 ### Planning Principles
 
 - Tests must target **physics contracts**, **numerical contracts**, or
@@ -299,6 +318,34 @@ validation matrix with publishable acceptance gates.
 6. **Additional response tests from the literature**
    - linear zonal-flow response
    - branch-following scans in near-marginal cases
+
+#### Existing and near-ready figure inventory
+
+Existing figure families that are already plausible paper inputs and should be
+preserved as manuscript candidates:
+
+- `docs/_static/benchmark_core_linear_atlas.png`
+- `docs/_static/benchmark_core_nonlinear_atlas.png`
+- `docs/_static/gx_summary_panel.png`
+- `docs/_static/gx_publication_panel.png`
+- `docs/_static/kbm_eigenfunction_overlap_summary.png`
+- `docs/_static/nonlinear_w7x_diag_compare_t200.png`
+
+New raw-reference assets now available:
+
+- `docs/_static/reference_modes/kbm_linear_gx_ky0p3000.npz`
+- `docs/_static/reference_modes/w7x_linear_gx_ky0p3000.npz`
+
+Immediate next manuscript-facing deliverables:
+
+1. First raw phase-aligned KBM overlay figure from:
+   - `docs/_static/reference_modes/kbm_linear_gx_ky0p3000.npz`
+   - a bounded-cost matched SPECTRAX eigenfunction extraction.
+2. First raw phase-aligned W7-X overlay figure from:
+   - `docs/_static/reference_modes/w7x_linear_gx_ky0p3000.npz`
+   - a bounded-cost matched SPECTRAX eigenfunction extraction.
+3. Windowed nonlinear-statistics figure summarizing the already-closed
+   nonlinear lanes.
 
 #### Validation observables
 
