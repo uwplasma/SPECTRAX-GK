@@ -18,6 +18,7 @@ from spectraxgk.linear import (
     _integrate_linear_cached_impl,
     _resolve_implicit_preconditioner,
     _signed_to_index,
+    _integrate_linear_implicit_cached,
     integrate_linear,
     integrate_linear_diagnostics,
     linear_terms_to_term_config,
@@ -153,6 +154,64 @@ def test_build_implicit_operator_handles_species_squeeze(monkeypatch) -> None:
     assert float(dt_val) == pytest.approx(0.2)
 
 
+def test_build_implicit_operator_preconditioner_aliases_and_errors(monkeypatch) -> None:
+    G0 = jnp.zeros((1, 2, 2, 1, 1, 2), dtype=jnp.complex64)
+    cache = SimpleNamespace(
+        lb_lam=jnp.ones((1, 2, 2, 1, 1, 2), dtype=jnp.float32),
+        l=jnp.ones((1, 2, 2, 1, 1, 2), dtype=jnp.float32),
+        m=jnp.ones((1, 2, 2, 1, 1, 2), dtype=jnp.float32),
+        cv_d=jnp.ones((1, 1, 2), dtype=jnp.float32),
+        gb_d=jnp.ones((1, 1, 2), dtype=jnp.float32),
+        bgrad=jnp.ones((2,), dtype=jnp.float32),
+        sqrt_m_ladder=jnp.ones((2,), dtype=jnp.float32),
+        sqrt_p=jnp.ones((2,), dtype=jnp.float32),
+        kz=jnp.array([0.0, 1.0], dtype=jnp.float32),
+        linked_indices=(),
+        linked_kz=(),
+        use_twist_shift=False,
+    )
+    params = SimpleNamespace(
+        nu=jnp.asarray([0.1], dtype=jnp.float32),
+        tz=jnp.asarray([1.0], dtype=jnp.float32),
+        vth=jnp.asarray([1.0], dtype=jnp.float32),
+        omega_d_scale=1.0,
+        kpar_scale=1.0,
+    )
+    monkeypatch.setattr(
+        "spectraxgk.linear.hypercollision_damping",
+        lambda cache, params, dtype: jnp.zeros_like(cache.lb_lam, dtype=dtype),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.linear.linear_rhs_cached",
+        lambda G, cache, params, **kwargs: (jnp.ones_like(G), None),
+    )
+
+    size = int(np.prod(np.asarray(G0.shape)))
+    x = jnp.ones((size,), dtype=G0.dtype)
+    for key in ("pas-coarse", "hermite-line-coarse", "identity"):
+        _G, _shape, _size, _dt_val, precond_op, _matvec, _squeeze = _build_implicit_operator(
+            G0,
+            cache,
+            params,
+            dt=0.2,
+            terms=LinearTerms(),
+            implicit_preconditioner=key,
+        )
+        y = precond_op(x)
+        assert y.shape == x.shape
+        assert np.isfinite(np.asarray(y)).all()
+
+    with pytest.raises(ValueError):
+        _build_implicit_operator(
+            G0,
+            cache,
+            params,
+            dt=0.2,
+            terms=LinearTerms(),
+            implicit_preconditioner="not-a-preconditioner",
+        )
+
+
 def test_integrate_linear_wrapper_routes_methods(monkeypatch) -> None:
     G0 = jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64)
     grid = geom = params = object()
@@ -212,6 +271,45 @@ def test_integrate_linear_cached_impl_invalid_and_sampled(monkeypatch) -> None:
         method="euler",
         sample_stride=2,
     )
+    assert G_out.shape == G0.shape
+    assert phi_t.shape[0] == 2
+
+
+def test_integrate_linear_implicit_cached_sampled_path(monkeypatch) -> None:
+    G0 = jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64)
+    cache = SimpleNamespace()
+    params = SimpleNamespace()
+
+    monkeypatch.setattr(
+        "spectraxgk.linear._build_implicit_operator",
+        lambda *args, **kwargs: (
+            G0,
+            G0.shape,
+            G0.size,
+            jnp.asarray(0.1, dtype=jnp.float32),
+            (lambda x: x),
+            (lambda x: x),
+            False,
+        ),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.linear.gmres",
+        lambda matvec, rhs, **kwargs: (rhs, SimpleNamespace(success=True)),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.linear.linear_rhs_cached",
+        lambda G, cache, params, **kwargs: (jnp.ones_like(G), jnp.ones((1, 1, 2), dtype=jnp.complex64)),
+    )
+
+    G_out, phi_t = _integrate_linear_implicit_cached(
+        G0,
+        cache,
+        params,
+        dt=0.1,
+        steps=4,
+        sample_stride=2,
+    )
+
     assert G_out.shape == G0.shape
     assert phi_t.shape[0] == 2
 
