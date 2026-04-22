@@ -19,6 +19,10 @@ Test categories
 - **Operator tests**: Hermite ladder streaming and mode extraction.
 - **Benchmark tests**: loading reference data and growth-rate fitting.
 - **Physics sanity checks**: conservation properties under simplified limits.
+- **Response-function tests**: zonal-flow residuals, GAM damping, and late-time
+  envelopes.
+- **Spectral tests**: fluctuation spectra and windowed nonlinear statistics.
+- **Autodiff tests**: tangent, finite-difference, and inverse/UQ consistency.
 
 Unit tests (numerical invariants)
 ---------------------------------
@@ -83,6 +87,26 @@ growth-rate extraction pipeline:
 - Reduced ky regression with tightened tolerances on the field-aligned grid.
 
 These tests live in ``tests/test_benchmarks.py`` and ``tests/test_full_operator.py``.
+
+Literature-anchored response and spectrum tests
+-----------------------------------------------
+
+The next research-facing additions should follow the published benchmark
+observables rather than inventing repo-local metrics:
+
+- **Rosenbluth-Hinton / GAM response in shaped tokamaks**: use the shaped
+  benchmark conventions summarized by Merlo et al. to track residual levels and
+  GAM damping alongside the linear shaping scan.
+- **W7-X zonal-flow response**: use the stella/GENE W7-X benchmark conventions
+  for residual level and damping envelope.
+- **W7-X fluctuation spectra**: follow the W7-X Doppler-reflectometry
+  comparison work for density and zonal-flow frequency spectra.
+- **Electromagnetic stellarator verification**: adopt a heavy-electron
+  electromagnetic lane before realistic-mass claims, following the GENE-3D
+  verification pattern.
+
+These should be implemented as reproducible, script-owned figure/artifact
+lanes, not as ad hoc notebooks.
 
 Diffrax and nonlinear smoke tests
 ---------------------------------

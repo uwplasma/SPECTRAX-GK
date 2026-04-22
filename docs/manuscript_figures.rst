@@ -38,6 +38,14 @@ Core Validation Figures
      - dedicated script to add
      - Open
      - this should be the acceptance-summary figure for nonlinear parity
+   * - Zonal-flow / GAM response panel
+     - dedicated script to add
+     - Open
+     - should combine shaped-tokamak Rosenbluth-Hinton-style residuals with W7-X residual/damping envelopes using one figure convention
+   * - W7-X fluctuation-spectrum panel
+     - dedicated script to add
+     - Open
+     - should follow the W7-X Doppler-reflectometry comparison figure family for density and zonal-flow spectra
    * - Velocity-space convergence panel
      - dedicated script to add
      - Open
@@ -45,7 +53,7 @@ Core Validation Figures
    * - Stellarator validation panel
      - dedicated script to add
      - Open
-     - W7-X multi-flux-tube + zonal-flow response + HSX summary as needed
+     - W7-X multi-flux-tube + zonal-flow response + HSX summary as needed; add heavy-electron EM verification before realistic-electron EM claims
    * - Performance panel
      - existing performance tooling
      - Open
@@ -90,8 +98,10 @@ Open Issues Before Drafting
 ---------------------------
 
 - close or explicitly defer W7-X zonal-flow response
+- add shaped-tokamak Rosenbluth-Hinton / GAM response benchmarks
+- add W7-X fluctuation-spectrum figures tied to the DR-comparison conventions
 - add eigenfunction-overlap metrics to the linear figure stack
 - freeze representative reference mode bundles under ``docs/_static/reference_modes/`` before drafting raw overlay figures
 - add windowed nonlinear statistics as first-class manuscript artifacts
 - tie ETG nonlinear claims to the benchmark literature or keep them framed as a pilot
-- add publication-ready figure scripts for eigenfunction-overlap and stellarator zonal-flow panels
+- add publication-ready figure scripts for eigenfunction-overlap, zonal-flow, and fluctuation-spectrum panels

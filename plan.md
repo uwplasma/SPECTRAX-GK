@@ -51,6 +51,14 @@ Additional optimization/stellarator anchors:
   Monreal et al., *Residual zonal flows in tokamaks and stellarators at
   arbitrary wavelengths*  
   <https://arxiv.org/abs/1505.03000>
+- W7-X fluctuation-spectrum / Doppler-reflectometry comparison:
+  González-Jerez et al., *Electrostatic microturbulence in W7-X: comparison of
+  local gyrokinetic simulations with Doppler reflectometry measurements*  
+  <https://arxiv.org/abs/2312.10221>
+- global electromagnetic stellarator verification:
+  Maurer et al., *Global electromagnetic turbulence simulations of W7-X-like
+  plasmas with GENE-3D*  
+  <https://www.cambridge.org/core/journals/journal-of-plasma-physics/article/global-electromagnetic-turbulence-simulations-of-w7xlike-plasmas-with-gene3d/AFF0F24A1A52D397D7983BAB2E872E9F>
 
 #### Literature baselines reviewed directly for figure planning
 
@@ -66,6 +74,16 @@ only on abstracts:
   - linear ITG/TEM scan panels,
   - zonal-flow response section,
   - nonlinear ITG heat-flux trace (figure 12 as cited by GX).
+- W7-X Doppler-reflectometry comparison preprint 2023:
+  - density-fluctuation amplitude trends,
+  - fluctuation-frequency spectra,
+  - zonal-flow spectral characterization.
+- shaped multispecies tokamak benchmark / Rosenbluth-Hinton tests:
+  - linear shaping scan,
+  - non-zero ballooning-angle handling,
+  - zonal-flow residual and GAM damping.
+- GENE-3D electromagnetic stellarator verification:
+  - heavy-electron linear/nonlinear verification before realistic-mass runs.
 - gyaradax 2026:
   - inverse-problem and sensitivity-analysis figures are the immediate
     precedent for the autodiff validation narrative.
@@ -377,6 +395,12 @@ Immediate next manuscript-facing deliverables:
    - a bounded-cost matched SPECTRAX eigenfunction extraction.
 3. Windowed nonlinear-statistics figure summarizing the already-closed
    nonlinear lanes.
+4. Zonal-flow / GAM response figure family with:
+   - shaped tokamak Rosenbluth-Hinton residuals,
+   - W7-X residual and damping envelopes,
+   - one figure convention shared across geometries.
+5. W7-X fluctuation-spectrum figure family aligned with the Doppler-
+   reflectometry comparison literature.
 
 #### Validation observables
 
@@ -388,6 +412,8 @@ For each linear lane:
 - branch continuity under parameter continuation where relevant
 - residual-zonal-flow level and damping envelope for zonal-flow response lanes
 - branch identity and window used for the fit
+- phase-aligned eigenfunction overlap and relative `L^2`
+- where relevant, Rosenbluth-Hinton residual and GAM damping
 
 For each nonlinear lane:
 
@@ -422,6 +448,11 @@ Use references in this order:
 
 Do not treat digitized literature curves as equivalent to direct code-backed
 reference data when a reference code is available.
+
+When a published paper introduces an observable that is not already encoded in
+the repo, prefer implementing that observable explicitly (for example zonal-flow
+residuals, damping envelopes, or fluctuation spectra) rather than approximating
+it from a visually similar existing figure.
 
 #### Example-to-validation ownership
 
