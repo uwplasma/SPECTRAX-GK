@@ -685,6 +685,20 @@ The branch is ready to merge only when:
    - parity regressions,
    - docstrings/comments for every newly extracted API.
 
+Status on this branch:
+
+- completed first extraction step:
+  - startup/loading/build helpers moved from `src/spectraxgk/runtime.py`
+    into `src/spectraxgk/runtime_startup.py`
+  - `runtime.py` remains the public compatibility surface
+  - compatibility aliases/wrappers were kept for geometry generation and
+    restart loading so the existing regression tests and patch points remain
+    stable
+- validated locally after extraction:
+  - `tests/test_runtime_helpers.py`
+  - `tests/test_runtime_runner.py`
+  - `tests/test_runtime_artifacts.py`
+
 ### Workstream 7: Concrete Execution Order
 
 #### Phase 1: Close the measurement layer
