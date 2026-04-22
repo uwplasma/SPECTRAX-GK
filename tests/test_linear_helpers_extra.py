@@ -7,6 +7,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
+from spectraxgk.benchmarking import estimate_observed_order
 from spectraxgk.linear import (
     LinearParams,
     LinearTerms,
@@ -482,3 +483,56 @@ def test_integrate_linear_diagnostics_species_none_and_5d_density_paths(monkeypa
     assert G5_out.shape == G5.shape
     assert phi5_t.shape[0] == 2
     assert density5_t.shape[0] == 2
+
+
+@pytest.mark.parametrize(
+    ("method", "rate", "damping", "min_order"),
+    [
+        ("rk2", -0.7 + 0.3j, 0.0, 1.75),
+        ("rk4", -0.7 + 0.3j, 0.0, 3.2),
+        ("sspx3", -0.7 + 0.3j, 0.0, 2.6),
+        ("imex", -0.7 + 0.3j, 0.8, 0.95),
+        ("imex2", -0.7 + 0.3j, 0.0, 1.9),
+    ],
+)
+def test_integrate_linear_cached_impl_observed_order_against_exact_solution(
+    monkeypatch,
+    method: str,
+    rate: complex,
+    damping: float,
+    min_order: float,
+) -> None:
+    cache = SimpleNamespace(lb_lam=jnp.ones((1, 1, 1, 1, 1), dtype=jnp.float32))
+    G0 = jnp.asarray([[[[[1.0 + 0.25j]]]]], dtype=jnp.complex64)
+    params = LinearParams(nu=0.0)
+    monkeypatch.setattr(
+        "spectraxgk.linear.hypercollision_damping",
+        lambda cache, params, dtype: jnp.ones_like(cache.lb_lam, dtype=dtype) * damping,
+    )
+    monkeypatch.setattr(
+        "spectraxgk.linear.linear_rhs_cached",
+        lambda G, cache, params, **kwargs: (
+            jnp.asarray(rate * G, dtype=G.dtype),
+            jnp.asarray(G[0, 0], dtype=G.dtype),
+        ),
+    )
+
+    t_final = 0.8
+    step_sizes: list[float] = []
+    errors: list[float] = []
+    exact = np.exp(rate * t_final) * np.asarray(G0)
+    for steps in (1, 2, 4, 8):
+        dt = t_final / steps
+        G_out, _phi_t = _integrate_linear_cached_impl(
+            G0,
+            cache,
+            params,
+            dt=dt,
+            steps=steps,
+            method=method,
+        )
+        errors.append(float(np.max(np.abs(np.asarray(G_out) - exact))))
+        step_sizes.append(dt)
+
+    metrics = estimate_observed_order(np.array(step_sizes), np.array(errors))
+    assert metrics.asymptotic_order >= min_order

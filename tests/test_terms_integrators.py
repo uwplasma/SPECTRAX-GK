@@ -6,6 +6,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
+from spectraxgk.benchmarking import estimate_observed_order
 from spectraxgk.terms.config import FieldState
 from spectraxgk.terms.integrators import integrate_nonlinear
 from spectraxgk.terms.nonlinear import exb_nonlinear_contribution, placeholder_nonlinear_contribution
@@ -97,8 +98,11 @@ def test_integrate_nonlinear_rk3_alias_matches_gx_variant() -> None:
 @pytest.mark.parametrize(
     ("method", "expected_order", "min_observed_order"),
     [
+        ("euler", 1.0, 0.9),
         ("rk2", 2.0, 1.75),
         ("rk3", 3.0, 2.6),
+        ("rk3_gx", 3.0, 2.6),
+        ("rk3_classic", 3.0, 2.6),
         ("rk4", 4.0, 3.3),
         ("sspx3", 3.0, 2.6),
     ],
@@ -122,14 +126,10 @@ def test_integrate_nonlinear_observed_order_against_exact_solution(
         errors.append(err)
         dts.append(dt)
 
-    observed_orders = [
-        np.log(errors[i] / errors[i + 1]) / np.log(dts[i] / dts[i + 1])
-        for i in range(len(errors) - 1)
-        if errors[i] > 0.0 and errors[i + 1] > 0.0
-    ]
-    assert observed_orders, "expected non-zero errors to estimate convergence order"
-    assert observed_orders[-1] >= min_observed_order
-    assert observed_orders[-1] <= expected_order + 0.6
+    metrics = estimate_observed_order(np.asarray(dts), np.asarray(errors))
+    assert metrics.orders.size > 0
+    assert metrics.asymptotic_order >= min_observed_order
+    assert metrics.asymptotic_order <= expected_order + 0.6
 
 
 def test_nonlinear_placeholders() -> None:
