@@ -20,6 +20,7 @@ from spectraxgk.benchmarks import (
     run_cyclone_linear,
     run_cyclone_scan,
     run_etg_linear,
+    run_etg_scan,
     run_kinetic_scan,
     run_kinetic_linear,
     run_kbm_beta_scan,
@@ -656,3 +657,65 @@ def test_run_tem_scan_rejects_invalid_batch_and_species_indices() -> None:
         run_tem_scan(np.array([0.2]), init_species_index=-1)
     with pytest.raises(ValueError):
         run_tem_scan(np.array([0.2]), density_species_index=2)
+
+
+def test_run_etg_scan_rejects_invalid_batch_and_fit_signal() -> None:
+    with pytest.raises(ValueError):
+        run_etg_scan(np.array([1.0]), ky_batch=0)
+    with pytest.raises(ValueError):
+        run_etg_scan(np.array([1.0]), fit_signal="bad")
+
+
+def test_run_etg_scan_auto_solver_uses_time_with_zero_reference_fallback(monkeypatch) -> None:
+    cfg0 = ETGBaseCase()
+    cfg = replace(
+        cfg0,
+        time=replace(cfg0.time, use_diffrax=False, dt=0.1, t_max=0.2, sample_stride=1),
+    )
+    monkeypatch.setattr("spectraxgk.benchmarks.build_spectral_grid", lambda cfg: _grid_full())
+    monkeypatch.setattr("spectraxgk.benchmarks.select_ky_grid", lambda grid, idx: _grid_sel())
+    monkeypatch.setattr(
+        "spectraxgk.benchmarks.SAlphaGeometry.from_config",
+        lambda cfg: SimpleNamespace(gradpar=lambda: 1.0, s_hat=0.8),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.benchmarks._build_initial_condition",
+        lambda *args, **kwargs: np.zeros((1, 2, 2, 1, 1, 3), dtype=np.complex64),
+    )
+    monkeypatch.setattr("spectraxgk.benchmarks.build_linear_cache", lambda *args, **kwargs: SimpleNamespace())
+    monkeypatch.setattr(
+        "spectraxgk.benchmarks.integrate_linear",
+        lambda *args, **kwargs: (
+            np.zeros((2, 1, 2, 2, 1, 1, 3), dtype=np.complex64),
+            np.ones((2, 1, 1, 3), dtype=np.complex64),
+        ),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.benchmarks.extract_mode_time_series",
+        lambda arr, sel, method: np.array([1.0 + 0.0j, 2.0 + 0.0j], dtype=np.complex64),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.benchmarks.fit_growth_rate",
+        lambda *args, **kwargs: (_ for _ in ()).throw(ValueError("forced fallback")),
+    )
+    monkeypatch.setattr("spectraxgk.benchmarks.fit_growth_rate_auto", lambda *args, **kwargs: (0.18, -0.06, 0.0, 0.2))
+    monkeypatch.setattr("spectraxgk.benchmarks._normalize_growth_rate", lambda g, o, params, norm: (g, o))
+
+    scan = run_etg_scan(
+        np.array([2.0]),
+        cfg=cfg,
+        solver="auto",
+        params=SimpleNamespace(charge_sign=np.array([-1.0]), rho_star=1.0),
+        terms=LinearTerms(),
+        Nl=2,
+        Nm=2,
+        dt=0.1,
+        steps=2,
+        fit_signal="phi",
+        auto_window=False,
+        tmin=0.0,
+        tmax=0.0,
+    )
+
+    np.testing.assert_allclose(scan.gamma, [0.18])
+    np.testing.assert_allclose(scan.omega, [-0.06])

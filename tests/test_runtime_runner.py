@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 from pathlib import Path
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -2758,3 +2759,86 @@ def test_run_runtime_scan_batch_ky_rejects_krylov() -> None:
     )
     with pytest.raises(ValueError):
         run_runtime_scan(cfg, ky_values=[0.1, 0.2], solver="krylov", batch_ky=True)
+
+
+def test_run_runtime_scan_serial_forwards_per_ky(monkeypatch: pytest.MonkeyPatch) -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        species=(RuntimeSpeciesConfig(name="ion"),),
+        normalization=RuntimeNormalizationConfig(contract="cyclone"),
+    )
+    calls: list[dict[str, object]] = []
+
+    def _fake_run_runtime_linear(_cfg, **kwargs):
+        calls.append(kwargs)
+        ky = float(kwargs["ky_target"])
+        return RuntimeLinearResult(
+            ky=ky,
+            gamma=ky + 1.0,
+            omega=-(ky + 2.0),
+            selection=runtime.ModeSelection(ky_index=0, kx_index=0, z_index=0),
+        )
+
+    import spectraxgk.runtime as runtime
+
+    monkeypatch.setattr(runtime, "run_runtime_linear", _fake_run_runtime_linear)
+
+    out = run_runtime_scan(
+        cfg,
+        ky_values=[0.15, 0.35],
+        solver="time",
+        method="rk2",
+        dt=0.05,
+        steps=4,
+        sample_stride=2,
+        fit_signal="phi",
+    )
+
+    assert len(calls) == 2
+    assert calls[0]["ky_target"] == pytest.approx(0.15)
+    assert calls[1]["ky_target"] == pytest.approx(0.35)
+    assert calls[0]["sample_stride"] == 2
+    np.testing.assert_allclose(out.gamma, [1.15, 1.35])
+    np.testing.assert_allclose(out.omega, [-2.15, -2.35])
+
+
+def test_run_runtime_scan_batch_empty_raises(monkeypatch: pytest.MonkeyPatch) -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        species=(RuntimeSpeciesConfig(name="ion"),),
+        normalization=RuntimeNormalizationConfig(contract="cyclone"),
+    )
+    import spectraxgk.runtime as runtime
+
+    monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: object())
+    monkeypatch.setattr(runtime, "apply_geometry_grid_defaults", lambda _geom, grid: grid)
+    monkeypatch.setattr(runtime, "build_spectral_grid", lambda _grid: SimpleNamespace(ky=np.array([0.0, 0.2]), z=np.array([0.0]), kx=np.array([0.0])))
+    monkeypatch.setattr(runtime, "build_runtime_linear_params", lambda _cfg, **_kwargs: SimpleNamespace(rho_star=1.0))
+    monkeypatch.setattr(runtime, "build_runtime_linear_terms", lambda _cfg: object())
+
+    with pytest.raises(ValueError):
+        run_runtime_scan(cfg, ky_values=[], solver="time", batch_ky=True)
+
+
+def test_runtime_linear_gx_time_rejects_return_state(monkeypatch: pytest.MonkeyPatch) -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        species=(RuntimeSpeciesConfig(name="ion"),),
+        normalization=RuntimeNormalizationConfig(contract="cyclone", diagnostic_norm="none"),
+    )
+    import spectraxgk.runtime as runtime
+
+    monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: SimpleNamespace())
+    monkeypatch.setattr(runtime, "apply_geometry_grid_defaults", lambda _geom, grid: grid)
+    monkeypatch.setattr(
+        runtime,
+        "build_spectral_grid",
+        lambda _grid: SimpleNamespace(ky=np.array([0.0, 0.2]), kx=np.array([0.0]), z=np.array([-1.0, 0.0, 1.0])),
+    )
+    monkeypatch.setattr(runtime, "build_runtime_linear_params", lambda _cfg, **_kwargs: SimpleNamespace(rho_star=1.0))
+    monkeypatch.setattr(runtime, "build_runtime_linear_terms", lambda _cfg: object())
+    monkeypatch.setattr(runtime, "select_ky_grid", lambda grid, _idx: SimpleNamespace(ky=np.array([0.2]), kx=grid.kx, z=grid.z))
+    monkeypatch.setattr(runtime, "_build_initial_condition", lambda *args, **kwargs: np.zeros((2, 2, 1, 1, 3), dtype=np.complex64))
+
+    with pytest.raises(ValueError):
+        run_runtime_linear(cfg, ky_target=0.2, Nl=2, Nm=2, solver="gx_time", return_state=True)
