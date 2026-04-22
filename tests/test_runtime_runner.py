@@ -11,6 +11,7 @@ import pytest
 
 pytestmark = pytest.mark.integration
 
+from spectraxgk.benchmarking import late_time_linear_metrics
 from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, TimeConfig
 from spectraxgk.diagnostics import SimulationDiagnostics, ResolvedDiagnostics
 from spectraxgk.geometry import SAlphaGeometry, apply_geometry_grid_defaults, sample_flux_tube_geometry
@@ -466,6 +467,55 @@ def test_runtime_linear_auto_fit_prefers_density_signal(monkeypatch: pytest.Monk
     assert np.allclose(res.signal, np.array([1.0, 2.0, 4.0]))
     assert res.fit_window_tmin == pytest.approx(0.01)
     assert res.fit_window_tmax == pytest.approx(0.03)
+
+
+def test_runtime_linear_diffrax_project_mode_keeps_full_field_history(monkeypatch: pytest.MonkeyPatch) -> None:
+    import spectraxgk.runtime as runtime
+
+    cfg0 = _base_runtime_cfg()
+    cfg = replace(
+        cfg0,
+        time=replace(cfg0.time, use_diffrax=True, sample_stride=1, dt=0.01, t_max=0.03),
+    )
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+
+    monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: geom)
+    monkeypatch.setattr(
+        runtime,
+        "_build_initial_condition",
+        lambda *args, **kwargs: np.zeros((1, 3, 4, 1, 1, grid.z.size), dtype=np.complex64),
+    )
+
+    def _fake_integrate_linear_from_config(*args, **kwargs):
+        assert kwargs["save_mode"] is None
+        phi_t = np.ones((3, 1, 1, grid.z.size), dtype=np.complex64)
+        return np.zeros((1, 3, 4, 1, 1, grid.z.size), dtype=np.complex64), phi_t
+
+    monkeypatch.setattr(runtime, "integrate_linear_from_config", _fake_integrate_linear_from_config)
+    monkeypatch.setattr(
+        runtime,
+        "extract_mode_time_series",
+        lambda phi_t, sel, method="project": np.asarray([1.0, 2.0, 4.0], dtype=np.complex128),
+    )
+    monkeypatch.setattr(runtime, "fit_growth_rate_auto", lambda *args, **kwargs: (0.25, -0.12, 0.01, 0.03))
+    monkeypatch.setattr(runtime, "extract_eigenfunction", lambda *args, **kwargs: np.ones(grid.z.size, dtype=np.complex128))
+    monkeypatch.setattr(runtime, "apply_diagnostic_normalization", lambda gamma, omega, **kwargs: (gamma, omega))
+
+    res = run_runtime_linear(
+        cfg,
+        ky_target=0.1,
+        Nl=3,
+        Nm=4,
+        solver="time",
+        fit_signal="phi",
+        mode_method="project",
+    )
+
+    assert res.fit_signal_used == "phi"
+    metrics = late_time_linear_metrics(res, tail_fraction=2.0 / 3.0)
+    assert metrics.gamma_fit == pytest.approx(0.25)
+    assert metrics.omega_fit == pytest.approx(-0.12)
 
 
 def test_runtime_linear_auto_solver_falls_back_to_krylov(monkeypatch: pytest.MonkeyPatch) -> None:

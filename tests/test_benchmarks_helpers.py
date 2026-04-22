@@ -169,6 +169,7 @@ def test_select_fit_signal_and_auto(monkeypatch) -> None:
         return signals["density" if arr is density_t else "phi"]
 
     def fake_score(t, signal, **kwargs):
+        assert kwargs["num_windows"] == 4
         if np.allclose(signal, signals["phi"]):
             return 0.1, 0.2, 0.3
         return 0.4, 0.5, 0.8
@@ -209,9 +210,14 @@ def test_select_fit_signal_and_auto(monkeypatch) -> None:
 
 
 def test_score_fit_signal_auto_filters_invalid(monkeypatch) -> None:
+    captured: dict[str, object] = {}
+    def _fake_fit(*args, **kwargs):
+        captured["num_windows"] = kwargs["num_windows"]
+        return (0.3, -0.2, 0.0, 1.0, 0.95, 0.9)
+
     monkeypatch.setattr(
         "spectraxgk.benchmarks.fit_growth_rate_auto_with_stats",
-        lambda *args, **kwargs: (0.3, -0.2, 0.0, 1.0, 0.95, 0.9),
+        _fake_fit,
     )
     gamma, omega, score = _score_fit_signal_auto(
         np.array([0.0, 1.0, 2.0]),
@@ -240,6 +246,7 @@ def test_score_fit_signal_auto_filters_invalid(monkeypatch) -> None:
     assert gamma == 0.3
     assert omega == -0.2
     assert score > 0.0
+    assert captured["num_windows"] == 6
 
     monkeypatch.setattr(
         "spectraxgk.benchmarks.fit_growth_rate_auto_with_stats",
