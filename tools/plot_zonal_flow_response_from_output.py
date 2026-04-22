@@ -21,7 +21,19 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--var",
         default="Phi2_zonal_t",
-        help="Diagnostics variable to extract. Default is the tracked zonal-energy proxy.",
+        help="Diagnostics variable to extract. Use Phi_zonal_mode_kxt for the signed zonal mode history.",
+    )
+    parser.add_argument("--kx-index", type=int, default=None, help="Select kx index for 2D time-by-kx diagnostics.")
+    parser.add_argument(
+        "--component",
+        choices=("real", "imag", "abs", "complex"),
+        default="real",
+        help="Component to extract from complex diagnostics.",
+    )
+    parser.add_argument(
+        "--align-phase",
+        action="store_true",
+        help="Rotate complex diagnostics so the first nonzero sample is real and positive.",
     )
     parser.add_argument(
         "--out",
@@ -57,7 +69,15 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    series = load_diagnostic_time_series(args.output, variable=args.var)
+    series = load_diagnostic_time_series(
+        args.output,
+        variable=args.var,
+        kx_index=args.kx_index,
+        component=args.component,
+        align_phase=bool(args.align_phase),
+    )
+    if np.iscomplexobj(series.values):
+        raise ValueError("zonal-response plotting requires a real-valued extracted series; choose component real/imag/abs")
     metrics = zonal_flow_response_metrics(
         series.t,
         series.values,
@@ -98,8 +118,8 @@ def main() -> int:
                 "tmin": metrics.tmin,
                 "tmax": metrics.tmax,
                 "notes": (
-                    "If variable=Phi2_zonal_t, interpret this as a zonal-energy proxy. "
-                    "A manuscript-grade Rosenbluth-Hinton/GAM lane still requires a signed zonal observable."
+                    "Phi2_zonal_t is a zonal-energy proxy. For manuscript-grade Rosenbluth-Hinton/GAM work, "
+                    "prefer Phi_zonal_mode_kxt with --kx-index and --align-phase."
                 ),
             },
             indent=2,

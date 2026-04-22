@@ -39,6 +39,7 @@ from spectraxgk.runtime_artifacts import (
     _spectral_species_to_ri,
     _species_matrix,
     _state_basis_moments,
+    _complex_to_ri,
     _spectral_to_ri,
     _spectral_to_xy,
     _take_axis,
@@ -174,12 +175,29 @@ def test_runtime_artifact_spectral_helpers() -> None:
     with pytest.raises(ValueError):
         _state_basis_moments(np.ones((2, 2), dtype=np.complex64))
 
+    ri_series = _complex_to_ri(np.array([[1.0 + 2.0j, 3.0 + 4.0j]], dtype=np.complex64))
+    assert ri_series.shape == (1, 2, 2)
+
 
 def test_runtime_artifact_read_optional_var() -> None:
     class _Group:
         variables = {"present": np.array([1.0, 2.0])}
 
     assert _read_optional_var(_Group, "missing") is None
+
+
+def test_runtime_artifact_read_optional_var_converts_ri_dimension() -> None:
+    class _Var:
+        dimensions = ("time", "ri")
+
+        def __getitem__(self, _key):
+            return np.array([[1.0, 2.0], [3.0, 4.0]])
+
+    class _Group:
+        variables = {"present": _Var()}
+
+    out = _read_optional_var(_Group, "present")
+    assert np.allclose(out, np.array([1.0 + 2.0j, 3.0 + 4.0j]))
 
 
 def test_runtime_artifact_condense_helpers() -> None:
@@ -193,6 +211,7 @@ def test_runtime_artifact_condense_helpers() -> None:
         Phi2_zonal_t=np.ones((2,), dtype=float),
         Phi2_zonal_kxt=np.ones((2, 8), dtype=float),
         Phi2_zonal_zt=np.ones((2, 6), dtype=float),
+        Phi_zonal_mode_kxt=np.ones((2, 8), dtype=np.complex64),
         Wg_kxst=np.ones((2, 1, 8), dtype=float),
         Wg_kyst=np.ones((2, 1, 8), dtype=float),
         Wg_kxkyst=np.ones((2, 1, 8, 8), dtype=float),
@@ -206,6 +225,7 @@ def test_runtime_artifact_condense_helpers() -> None:
     condensed = _condense_resolved_for_output(resolved)
     assert condensed is not None
     assert condensed.Wg_kxst.shape[-1] <= resolved.Wg_kxst.shape[-1]
+    assert condensed.Phi_zonal_mode_kxt.shape[-1] <= resolved.Phi_zonal_mode_kxt.shape[-1]
     diag = SimulationDiagnostics(
         t=np.asarray([0.0, 0.1]),
         dt_t=np.asarray([0.1, 0.1]),

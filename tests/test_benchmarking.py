@@ -163,6 +163,39 @@ def test_load_diagnostic_time_series_rejects_missing_variable(tmp_path) -> None:
         load_diagnostic_time_series(path, variable="Phi2_zonal_t")
 
 
+def test_load_diagnostic_time_series_extracts_complex_kx_trace_with_phase_alignment(tmp_path) -> None:
+    import netCDF4 as nc
+
+    path = tmp_path / "diag.out.nc"
+    with nc.Dataset(path, "w") as ds:
+        ds.createDimension("time", 3)
+        ds.createDimension("kx", 2)
+        ds.createDimension("ri", 2)
+        grids = ds.createGroup("Grids")
+        diag = ds.createGroup("Diagnostics")
+        grids.createVariable("time", "f8", ("time",))[:] = np.array([0.0, 1.0, 2.0])
+        raw = np.array(
+            [
+                [[0.0, 0.0], [0.0, 1.0]],
+                [[0.0, 0.0], [0.0, 0.5]],
+                [[0.0, 0.0], [0.0, -0.25]],
+            ],
+            dtype=float,
+        )
+        diag.createVariable("Phi_zonal_mode_kxt", "f8", ("time", "kx", "ri"))[:] = raw
+
+    series = load_diagnostic_time_series(
+        path,
+        variable="Phi_zonal_mode_kxt",
+        kx_index=1,
+        component="real",
+        align_phase=True,
+    )
+
+    assert np.allclose(series.t, [0.0, 1.0, 2.0])
+    assert np.allclose(series.values, [1.0, 0.5, -0.25])
+
+
 def test_run_linear_scan_applies_resolution_and_krylov_policies() -> None:
     calls: list[dict[str, object]] = []
 

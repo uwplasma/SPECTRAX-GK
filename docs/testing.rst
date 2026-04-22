@@ -116,11 +116,12 @@ The first reusable tooling for this lane now exists:
 - ``tools/plot_zonal_flow_response.py``
 - ``tools/plot_zonal_flow_response_from_output.py``
 
-At present the tracked ``out.nc`` workflow uses ``Diagnostics/Phi2_zonal_t`` as
-the reproducible zonal-energy proxy. That is good enough for residual/envelope
-workflows, but a manuscript-grade Rosenbluth-Hinton / GAM claim still requires
-a signed zonal observable analogous to GX's ``avg_zvE`` or a frozen zonal
-potential mode history.
+The diagnostics stream now also carries ``Diagnostics/Phi_zonal_mode_kxt``, a
+signed complex zonal-potential history reduced over ``z`` with the same volume
+weights used elsewhere. That is the primitive to use for manuscript-grade
+Rosenbluth-Hinton / GAM work. ``Diagnostics/Phi2_zonal_t`` remains useful as a
+zonal-energy proxy for intermediate checks, but it is no longer the target
+observable for the final paper lane.
 
 Diffrax and nonlinear smoke tests
 ---------------------------------

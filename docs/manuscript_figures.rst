@@ -41,7 +41,7 @@ Core Validation Figures
    * - Zonal-flow / GAM response panel
      - ``tools/plot_zonal_flow_response.py`` and ``tools/plot_zonal_flow_response_from_output.py`` plus case-specific generators to add
      - Open
-     - should combine shaped-tokamak Rosenbluth-Hinton-style residuals with W7-X residual/damping envelopes using one figure convention; current ``Phi2_zonal_t`` workflow is only the provisional zonal-energy-proxy path
+     - should combine shaped-tokamak Rosenbluth-Hinton-style residuals with W7-X residual/damping envelopes using one figure convention; use signed ``Phi_zonal_mode_kxt`` for publication claims and keep ``Phi2_zonal_t`` only as an intermediate cross-check
    * - W7-X fluctuation-spectrum panel
      - dedicated script to add
      - Open
