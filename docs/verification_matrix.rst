@@ -30,6 +30,17 @@ The current matrix is anchored on these published baselines:
   ETG operating-point conventions.
 - Monreal et al., *Residual zonal flows in tokamaks and stellarators at arbitrary wavelengths*:
   residual-zonal-flow metrics and damping interpretation.
+- Merlo et al., *Linear multispecies gyrokinetic flux tube benchmarks in shaped
+  tokamak plasmas*:
+  shaping scans, ballooning-angle handling, Rosenbluth-Hinton residuals, and
+  GAM damping.
+- González-Jerez et al., *Electrostatic microturbulence in W7-X: comparison of
+  local gyrokinetic simulations with Doppler reflectometry measurements*:
+  fluctuation amplitudes, frequency spectra, and zonal-flow spectral content.
+- Maurer et al., *Global electromagnetic turbulence simulations of W7-X-like
+  plasmas with GENE-3D*:
+  heavy-electron electromagnetic verification before realistic-mass stellarator
+  production runs.
 
 Status Legend
 -------------
@@ -80,6 +91,11 @@ Tokamak Linear
      - Sauter benchmark set
      - Open
      - literature-backed operating point and overlap gate required
+   * - Shaped tokamak zonal-flow / GAM
+     - residual level, damping rate, GAM envelope
+     - Merlo et al. + analytical Rosenbluth-Hinton estimates where applicable
+     - Open
+     - residual and damping must match literature/code-backed references before publication use
 
 Frozen artifact paths for the currently closed tokamak linear lanes:
 
@@ -125,11 +141,21 @@ Stellarator Linear
      - stella/GENE benchmark paper + zonal-flow literature
      - Open
      - residual and damping metrics must be defined before acceptance
+   * - W7-X fluctuation spectra
+     - density and zonal-flow frequency spectra
+     - W7-X Doppler-reflectometry comparison paper
+     - Open
+     - requires a reproducible spectral estimator and windowing policy
    * - HSX
      - ``gamma(k_y)``, ``omega(k_y)``
      - GX / internal frozen references
      - Closed
      - near-marginal deviations documented explicitly
+   * - Electromagnetic stellarator verification
+     - heavy-electron linear/nonlinear EM response
+     - GENE-3D verification conventions
+     - Open
+     - close heavy-electron EM lane before realistic-mass claims
 
 Frozen artifact paths for the currently closed stellarator linear lanes:
 
@@ -232,3 +258,8 @@ Notes
   frozen reference bundles checked into ``docs/_static/reference_modes/``.
   Do not build publication figures from transient external files or ad hoc
   office-machine outputs.
+- Experimental-facing figures such as W7-X fluctuation spectra should be marked
+  as literature-aligned unless the diagnostic transfer function and access
+  model are encoded directly in the repo.
+- Electromagnetic stellarator claims should be split explicitly into
+  heavy-electron verification and realistic-electron research runs.
