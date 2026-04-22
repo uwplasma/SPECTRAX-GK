@@ -101,7 +101,18 @@ first matched SPECTRAX-side raw-mode artifacts:
 The run stayed within the explicit `600 s` budget only narrowly and the result
 is **not** yet manuscript-ready: the current bounded extraction gives roughly
 `0.63` normalized overlap and `1.74` relative `L^2` mismatch against the frozen
-GX raw mode. This now makes the remaining task concrete:
+GX raw mode.
+
+That first bounded attempt was then tightened in two ways:
+
+1. the exact KBM transverse-grid contract was restored by inferring `Ny` from
+   the GX `k_y` grid (`Ny = 3 * (nky - 1) + 1`),
+2. the eigenfunction extraction window was corrected to use a late-time tail
+   instead of the growth-fit window from `kbm_gx_candidates.csv`.
+
+Even after those fixes, the bounded exact-contract run under the `600 s`
+ceiling still gives only about `0.63` normalized overlap and `0.79` relative
+`L^2` mismatch. That makes the remaining task concrete:
 
 1. improve the SPECTRAX-side raw eigenfunction extraction quality without
    changing the KBM physics contract,
@@ -360,6 +371,7 @@ Immediate next manuscript-facing deliverables:
    - `docs/_static/reference_modes/kbm_linear_gx_ky0p3000.npz`
    - `docs/_static/reference_modes/kbm_linear_spectrax_ky0p3000.csv`
    - `docs/_static/kbm_eigenfunction_reference_overlay_ky0p3000.png`
+   - `tools/generate_kbm_reference_overlay.py`
 2. First raw phase-aligned W7-X overlay figure from:
    - `docs/_static/reference_modes/w7x_linear_gx_ky0p3000.npz`
    - a bounded-cost matched SPECTRAX eigenfunction extraction.
