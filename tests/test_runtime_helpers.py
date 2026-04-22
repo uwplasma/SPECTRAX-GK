@@ -6,6 +6,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from spectraxgk.benchmarking import late_time_linear_metrics
 from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, TimeConfig
 from spectraxgk.diagnostics import ResolvedDiagnostics, SimulationDiagnostics
 from spectraxgk.grids import build_spectral_grid
@@ -36,6 +37,8 @@ from spectraxgk.runtime import (
     _zero_kx_index,
     _run_runtime_scan_batch,
     build_runtime_geometry,
+    run_runtime_linear,
+    run_runtime_nonlinear,
 )
 from spectraxgk.runtime_config import (
     RuntimeConfig,
@@ -44,6 +47,7 @@ from spectraxgk.runtime_config import (
     RuntimePhysicsConfig,
     RuntimeSpeciesConfig,
 )
+from spectraxgk.terms.config import FieldState
 
 
 def _base_cfg() -> RuntimeConfig:
@@ -457,3 +461,181 @@ def test_run_runtime_scan_batch_validation_and_selection(monkeypatch: pytest.Mon
             fit_signal="invalid",
             show_progress=False,
         )
+
+
+def test_run_runtime_linear_diffrax_contract_paths(monkeypatch: pytest.MonkeyPatch) -> None:
+    import spectraxgk.runtime as runtime
+
+    cfg0 = _base_cfg()
+    cfg = replace(cfg0, time=replace(cfg0.time, use_diffrax=True, dt=0.01, t_max=0.03, sample_stride=1))
+    geom = build_runtime_geometry(cfg)
+    grid = build_spectral_grid(cfg.grid)
+    gamma_ref = 0.25
+    omega_ref = -0.12
+    t_saved = np.asarray([0.01, 0.02, 0.03], dtype=float)
+
+    monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: geom)
+    monkeypatch.setattr(
+        runtime,
+        "_build_initial_condition",
+        lambda *args, **kwargs: np.zeros((1, 3, 4, 1, 1, grid.z.size), dtype=np.complex64),
+    )
+
+    calls: list[tuple[object, str]] = []
+
+    def _fake_integrate(*args, **kwargs):
+        calls.append((kwargs["save_mode"], kwargs["save_field"]))
+        if kwargs["save_field"] == "phi+density":
+            phi_t = np.ones((3, 1, 1, grid.z.size), dtype=np.complex64)
+            density_t = 3.0 * np.ones((3, 1, 1, grid.z.size), dtype=np.complex64)
+            return np.zeros((1, 3, 4, 1, 1, grid.z.size), dtype=np.complex64), (phi_t, density_t)
+        phi_t = np.ones((3, 1, 1, grid.z.size), dtype=np.complex64)
+        return np.zeros((1, 3, 4, 1, 1, grid.z.size), dtype=np.complex64), phi_t
+
+    monkeypatch.setattr(runtime, "integrate_linear_from_config", _fake_integrate)
+    monkeypatch.setattr(
+        runtime,
+        "extract_mode_time_series",
+        lambda arr, sel, method="project": np.exp((gamma_ref - 1j * omega_ref) * t_saved).astype(np.complex128)
+        if np.max(np.abs(arr)) < 2.0
+        else np.asarray([1.0, 2.0, 4.0], dtype=np.complex128),
+    )
+    monkeypatch.setattr(
+        runtime,
+        "fit_growth_rate_auto_with_stats",
+        lambda t, signal, **kwargs: (0.05, -0.02, 0.01, 0.03, 1.0, 0.0)
+        if np.max(np.abs(signal)) < 2.0
+        else (0.2, -0.08, 0.01, 0.03, 2.0, 0.0),
+    )
+    monkeypatch.setattr(runtime, "extract_eigenfunction", lambda *args, **kwargs: np.ones(grid.z.size, dtype=np.complex128))
+    monkeypatch.setattr(runtime, "apply_diagnostic_normalization", lambda gamma, omega, **kwargs: (gamma, omega))
+
+    res_phi = run_runtime_linear(
+        cfg,
+        ky_target=0.1,
+        Nl=3,
+        Nm=4,
+        solver="time",
+        fit_signal="phi",
+        mode_method="project",
+    )
+    res_auto = run_runtime_linear(
+        cfg,
+        ky_target=0.1,
+        Nl=3,
+        Nm=4,
+        solver="time",
+        fit_signal="auto",
+        mode_method="project",
+    )
+
+    assert calls[0] == (None, "phi")
+    assert calls[1] == (None, "phi+density")
+    metrics = late_time_linear_metrics(res_phi, tail_fraction=2.0 / 3.0)
+    assert res_phi.fit_signal_used == "phi"
+    assert metrics.gamma_fit == pytest.approx(gamma_ref, rel=1.0e-3)
+    assert metrics.omega_fit == pytest.approx(omega_ref, rel=1.0e-3)
+    assert res_auto.fit_signal_used == "density"
+    np.testing.assert_allclose(res_auto.signal, [1.0, 2.0, 4.0])
+
+
+def test_run_runtime_nonlinear_final_state_contract(monkeypatch: pytest.MonkeyPatch) -> None:
+    import spectraxgk.runtime as runtime
+
+    cfg = replace(
+        _base_cfg(),
+        physics=RuntimePhysicsConfig(adiabatic_electrons=True, nonlinear=True),
+    )
+    geom = build_runtime_geometry(cfg)
+    grid = build_spectral_grid(cfg.grid)
+    captured: dict[str, object] = {}
+
+    monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: geom)
+    monkeypatch.setattr(runtime, "build_runtime_linear_params", lambda *args, **kwargs: type("P", (), {"rho_star": np.asarray(1.0)})())
+    monkeypatch.setattr(runtime, "build_runtime_term_config", lambda _cfg: object())
+    monkeypatch.setattr(runtime, "_select_nonlinear_mode_indices", lambda *args, **kwargs: (1, 0))
+    monkeypatch.setattr(
+        runtime,
+        "_build_initial_condition",
+        lambda *args, **kwargs: np.zeros((1, 3, 4, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64),
+    )
+
+    def _fake_final_state(*args, **kwargs):
+        captured["show_progress"] = kwargs.get("show_progress")
+        return (
+            np.ones((1, 3, 4, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64),
+            FieldState(phi=np.ones((grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64), apar=None, bpar=None),
+        )
+
+    monkeypatch.setattr(runtime, "integrate_nonlinear_from_config", _fake_final_state)
+
+    out = run_runtime_nonlinear(
+        cfg,
+        ky_target=0.2,
+        Nl=3,
+        Nm=4,
+        diagnostics=False,
+        show_progress=True,
+    )
+
+    assert captured["show_progress"] is True
+    assert out.diagnostics is None
+    assert out.phi2 is not None
+    assert out.state is None
+
+
+def test_run_runtime_nonlinear_return_state_uses_diagnostics_path(monkeypatch: pytest.MonkeyPatch) -> None:
+    import spectraxgk.runtime as runtime
+
+    cfg = replace(
+        _base_cfg(),
+        physics=RuntimePhysicsConfig(adiabatic_electrons=True, nonlinear=True),
+    )
+    geom = build_runtime_geometry(cfg)
+    grid = build_spectral_grid(cfg.grid)
+
+    monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: geom)
+    monkeypatch.setattr(runtime, "build_runtime_linear_params", lambda *args, **kwargs: type("P", (), {"rho_star": np.asarray(1.0)})())
+    monkeypatch.setattr(runtime, "build_runtime_term_config", lambda _cfg: object())
+    monkeypatch.setattr(runtime, "_select_nonlinear_mode_indices", lambda *args, **kwargs: (1, 0))
+    monkeypatch.setattr(
+        runtime,
+        "_build_initial_condition",
+        lambda *args, **kwargs: np.zeros((1, 3, 4, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64),
+    )
+
+    def _fake_diag_integrator(*args, **kwargs):
+        t = np.asarray([0.1, 0.2], dtype=float)
+        diag = SimulationDiagnostics(
+            t=t,
+            dt_t=t,
+            dt_mean=float(t[-1]),
+            gamma_t=np.zeros_like(t),
+            omega_t=np.zeros_like(t),
+            Wg_t=np.zeros_like(t),
+            Wphi_t=np.zeros_like(t),
+            Wapar_t=np.zeros_like(t),
+            heat_flux_t=np.zeros_like(t),
+            particle_flux_t=np.zeros_like(t),
+            energy_t=np.zeros_like(t),
+        )
+        return t, diag, np.ones((1, 3, 4, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64), FieldState(
+            phi=np.ones((grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64),
+            apar=None,
+            bpar=None,
+        )
+
+    monkeypatch.setattr(runtime, "integrate_nonlinear_gx_diagnostics_state", _fake_diag_integrator)
+
+    out = run_runtime_nonlinear(
+        cfg,
+        ky_target=0.2,
+        Nl=3,
+        Nm=4,
+        diagnostics=False,
+        return_state=True,
+    )
+
+    assert out.diagnostics is None
+    assert out.state is not None
+    assert out.phi2 is not None
