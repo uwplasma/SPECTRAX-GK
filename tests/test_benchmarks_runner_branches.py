@@ -437,6 +437,35 @@ def test_run_kbm_scan_forwards_per_mode_arrays(monkeypatch) -> None:
     np.testing.assert_allclose(scan.omega, [-2.2, -2.4])
 
 
+def test_run_kbm_scan_uses_cfg_beta_and_sequence_pick(monkeypatch) -> None:
+    calls: list[dict[str, object]] = []
+
+    def _fake_run_kbm_beta_scan(**kwargs):
+        calls.append(kwargs)
+        return SimpleNamespace(gamma=np.array([3.0]), omega=np.array([-4.0]))
+
+    cfg = replace(KBMBaseCase(), model=replace(KBMBaseCase().model, beta=2.5e-3))
+    monkeypatch.setattr("spectraxgk.benchmarks.run_kbm_beta_scan", _fake_run_kbm_beta_scan)
+
+    scan = run_kbm_scan(
+        np.array([0.15, 0.35]),
+        cfg=cfg,
+        dt=[0.05, 0.1],
+        steps=(5, 6),
+        tmin=[0.2, 0.4],
+        tmax=(0.8, 1.2),
+    )
+
+    assert len(calls) == 2
+    assert calls[0]["betas"][0] == pytest.approx(2.5e-3)
+    assert calls[1]["dt"] == 0.1
+    assert calls[0]["steps"] == 5
+    assert calls[1]["tmin"] == 0.4
+    assert calls[0]["tmax"] == 0.8
+    np.testing.assert_allclose(scan.gamma, [3.0, 3.0])
+    np.testing.assert_allclose(scan.omega, [-4.0, -4.0])
+
+
 def test_run_kbm_beta_scan_rejects_invalid_species_indices() -> None:
     with pytest.raises(ValueError):
         run_kbm_beta_scan(np.array([1.0e-4]), init_species_index=-1)
@@ -555,6 +584,15 @@ def test_run_kinetic_scan_diffrax_streaming_density_batch(monkeypatch) -> None:
     np.testing.assert_allclose(scan.omega, [-0.03, -0.04])
 
 
+def test_run_kinetic_scan_rejects_invalid_batch_and_species_indices() -> None:
+    with pytest.raises(ValueError):
+        run_kinetic_scan(np.array([0.2]), ky_batch=0)
+    with pytest.raises(ValueError):
+        run_kinetic_scan(np.array([0.2]), init_species_index=2)
+    with pytest.raises(ValueError):
+        run_kinetic_scan(np.array([0.2]), density_species_index=-1)
+
+
 def test_run_tem_scan_time_config_mode_only_extracts_columns(monkeypatch) -> None:
     cfg0 = TEMBaseCase()
     cfg = replace(
@@ -609,3 +647,12 @@ def test_run_tem_scan_time_config_mode_only_extracts_columns(monkeypatch) -> Non
     np.testing.assert_allclose(scan.ky, [0.2, 0.3])
     np.testing.assert_allclose(scan.gamma, [0.1, 0.2])
     np.testing.assert_allclose(scan.omega, [-0.2, -0.2])
+
+
+def test_run_tem_scan_rejects_invalid_batch_and_species_indices() -> None:
+    with pytest.raises(ValueError):
+        run_tem_scan(np.array([0.2]), ky_batch=0)
+    with pytest.raises(ValueError):
+        run_tem_scan(np.array([0.2]), init_species_index=-1)
+    with pytest.raises(ValueError):
+        run_tem_scan(np.array([0.2]), density_species_index=2)
