@@ -87,6 +87,7 @@ Frozen artifact paths for the currently closed tokamak linear lanes:
 - ``docs/_static/etg_comparison.png``
 - ``docs/_static/kbm_comparison.png``
 - ``docs/_static/kbm_eigenfunction_overlap_summary.png``
+- ``docs/_static/reference_modes/kbm_linear_gx_ky0p3000.npz``
 - ``docs/_static/benchmark_core_linear_atlas.png``
 
 Stellarator Linear
@@ -120,6 +121,7 @@ Frozen artifact paths for the currently closed stellarator linear lanes:
 
 - ``docs/_static/w7x_linear_t2_scan.csv``
 - ``docs/_static/hsx_linear_t2_scan.csv``
+- ``docs/_static/reference_modes/w7x_linear_gx_ky0p3000.npz``
 - ``docs/_static/benchmark_core_linear_atlas.png``
 
 Nonlinear Validation

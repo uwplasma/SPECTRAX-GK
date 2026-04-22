@@ -29,7 +29,7 @@ Core Validation Figures
    * - Eigenfunction validation panel
      - ``tools/plot_eigenfunction_overlap_summary.py`` and ``tools/plot_eigenfunction_reference_overlay.py``
      - Open
-     - first shipped overlap artifact is ``docs/_static/kbm_eigenfunction_overlap_summary.png``; the final paper should add raw phase-aligned overlays from frozen reference bundles stored under ``docs/_static/reference_modes/``
+     - first shipped overlap artifact is ``docs/_static/kbm_eigenfunction_overlap_summary.png``; frozen GX raw-mode bundles now exist for KBM and W7-X under ``docs/_static/reference_modes/``, but the first full raw overlay still needs a bounded matched SPECTRAX extraction pass
    * - Nonlinear transport panel
      - ``tools/make_gx_summary_panel.py`` / ``tools/make_gx_publication_panel.py``
      - Open
