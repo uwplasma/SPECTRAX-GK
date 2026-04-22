@@ -90,6 +90,16 @@ Frozen artifact paths for the currently closed tokamak linear lanes:
 - ``docs/_static/reference_modes/kbm_linear_gx_ky0p3000.npz``
 - ``docs/_static/benchmark_core_linear_atlas.png``
 
+Open raw-overlay diagnostic artifacts for the KBM lane:
+
+- ``docs/_static/reference_modes/kbm_linear_spectrax_ky0p3000.csv``
+- ``docs/_static/kbm_eigenfunction_reference_overlay_ky0p3000.png``
+
+These are useful for manuscript drafting and debugging, but they are not yet
+accepted as closed validation artifacts. The current bounded-cost extraction
+produces approximately ``0.63`` normalized overlap and ``1.74`` relative
+``L^2`` mismatch against the frozen GX raw mode at ``k_y \approx 0.3``.
+
 Stellarator Linear
 ------------------
 
