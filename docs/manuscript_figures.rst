@@ -39,7 +39,7 @@ Core Validation Figures
      - Open
      - this should be the acceptance-summary figure for nonlinear parity
    * - Zonal-flow / GAM response panel
-     - dedicated script to add
+     - ``tools/plot_zonal_flow_response.py`` plus case-specific generators to add
      - Open
      - should combine shaped-tokamak Rosenbluth-Hinton-style residuals with W7-X residual/damping envelopes using one figure convention
    * - W7-X fluctuation-spectrum panel
