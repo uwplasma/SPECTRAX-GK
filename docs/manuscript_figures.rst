@@ -25,7 +25,7 @@ Core Validation Figures
    * - Linear benchmark master panel
      - ``tools/make_benchmark_atlas.py``
      - Open
-     - Cyclone ITG, ETG, KBM, W7-X, HSX, plus shaped tokamak lane if closed
+     - Cyclone ITG, ETG, KBM, W7-X, HSX, plus shaped tokamak lane if closed. Current artifact base: ``docs/_static/benchmark_core_linear_atlas.png``.
    * - Eigenfunction validation panel
      - dedicated script to add
      - Open
@@ -33,7 +33,7 @@ Core Validation Figures
    * - Nonlinear transport panel
      - ``tools/make_gx_summary_panel.py`` / ``tools/make_gx_publication_panel.py``
      - Open
-     - Cyclone, Miller, KBM, W7-X, HSX with matched windows
+     - Cyclone, Miller, KBM, W7-X, HSX with matched windows. Current component artifacts: ``docs/_static/nonlinear_cyclone_diag_compare_t400.png``, ``docs/_static/nonlinear_cyclone_miller_diag_compare_t122.png``, ``docs/_static/nonlinear_kbm_diag_compare_t400_stats.png``, ``docs/_static/nonlinear_w7x_diag_compare_t200.png``, ``docs/_static/hsx_nonlinear_compare_t50_true.png``.
    * - Windowed-statistics summary
      - dedicated script to add
      - Open
@@ -93,3 +93,4 @@ Open Issues Before Drafting
 - add eigenfunction-overlap metrics to the linear figure stack
 - add windowed nonlinear statistics as first-class manuscript artifacts
 - tie ETG nonlinear claims to the benchmark literature or keep them framed as a pilot
+- add publication-ready figure scripts for eigenfunction-overlap and stellarator zonal-flow panels

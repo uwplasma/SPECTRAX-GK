@@ -81,6 +81,13 @@ Tokamak Linear
      - Open
      - literature-backed operating point and overlap gate required
 
+Frozen artifact paths for the currently closed tokamak linear lanes:
+
+- ``docs/_static/cyclone_comparison.png``
+- ``docs/_static/etg_comparison.png``
+- ``docs/_static/kbm_comparison.png``
+- ``docs/_static/benchmark_core_linear_atlas.png``
+
 Stellarator Linear
 ------------------
 
@@ -107,6 +114,12 @@ Stellarator Linear
      - GX / internal frozen references
      - Closed
      - near-marginal deviations documented explicitly
+
+Frozen artifact paths for the currently closed stellarator linear lanes:
+
+- ``docs/_static/w7x_linear_t2_scan.csv``
+- ``docs/_static/hsx_linear_t2_scan.csv``
+- ``docs/_static/benchmark_core_linear_atlas.png``
 
 Nonlinear Validation
 --------------------
@@ -154,6 +167,15 @@ Nonlinear Validation
      - GX
      - Deferred
      - keep out of the paper until branch identity and runtime cost are closed
+
+Frozen artifact paths for the currently closed nonlinear lanes:
+
+- ``docs/_static/nonlinear_cyclone_diag_compare_t400.png``
+- ``docs/_static/nonlinear_cyclone_miller_diag_compare_t122.png``
+- ``docs/_static/nonlinear_kbm_diag_compare_t400_stats.png``
+- ``docs/_static/nonlinear_w7x_diag_compare_t200.png``
+- ``docs/_static/hsx_nonlinear_compare_t50_true.png``
+- ``docs/_static/benchmark_core_nonlinear_atlas.png``
 
 Autodiff Validation
 -------------------
