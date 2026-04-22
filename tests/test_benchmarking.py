@@ -3,10 +3,20 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 import numpy as np
+import pytest
 
 from spectraxgk.analysis import ModeSelection
-from spectraxgk.benchmarking import normalize_eigenfunction, run_linear_scan, run_scan_and_mode
+from spectraxgk.benchmarking import (
+    estimate_observed_order,
+    late_time_linear_metrics,
+    normalize_eigenfunction,
+    run_linear_scan,
+    run_scan_and_mode,
+    windowed_nonlinear_metrics,
+)
 from spectraxgk.benchmarks import LinearRunResult, LinearScanResult
+from spectraxgk.diagnostics import SimulationDiagnostics
+from spectraxgk.runtime import RuntimeLinearResult, RuntimeNonlinearResult
 
 
 def test_normalize_eigenfunction_uses_nearest_zero() -> None:
@@ -173,3 +183,124 @@ def test_run_scan_and_mode_short_trace_skips_fit(monkeypatch) -> None:
     assert result.tmin is None
     assert result.tmax is None
     np.testing.assert_allclose(result.eigenfunction, [1.0, -1.0])
+
+
+def test_late_time_linear_metrics_from_linear_run_result() -> None:
+    gamma = 0.35
+    omega = -0.18
+    t = np.linspace(0.0, 4.0, 9)
+    z_profile = np.array([1.0, 0.5 - 0.25j])
+    signal = np.exp((gamma - 1j * omega) * t)
+    phi_t = signal[:, None, None, None] * z_profile[None, None, None, :]
+    run = LinearRunResult(
+        t=t,
+        phi_t=phi_t,
+        gamma=gamma,
+        omega=omega,
+        ky=0.3,
+        selection=ModeSelection(ky_index=0, kx_index=0, z_index=0),
+        gamma_t=np.full_like(t, gamma, dtype=float),
+        omega_t=np.full_like(t, omega, dtype=float),
+    )
+
+    metrics = late_time_linear_metrics(run, tail_fraction=0.5)
+
+    assert metrics.signal_source == "phi_t:project"
+    assert metrics.nsamples == 5
+    assert metrics.gamma_fit == pytest.approx(gamma, rel=1.0e-3)
+    assert metrics.omega_fit == pytest.approx(omega, rel=1.0e-3)
+    assert metrics.gamma_tail_mean == pytest.approx(gamma)
+    assert metrics.omega_tail_mean == pytest.approx(omega)
+    assert metrics.tmin == pytest.approx(2.0)
+    assert metrics.tmax == pytest.approx(4.0)
+
+
+def test_late_time_linear_metrics_runtime_signal_and_scalar_fallback() -> None:
+    gamma = 0.22
+    omega = -0.07
+    t = np.linspace(0.0, 2.0, 5)
+    signal = np.exp((gamma - 1j * omega) * t)
+    runtime = RuntimeLinearResult(
+        ky=0.2,
+        gamma=gamma,
+        omega=omega,
+        selection=ModeSelection(ky_index=0, kx_index=0),
+        t=t,
+        signal=signal,
+    )
+
+    metrics = late_time_linear_metrics(runtime, tail_fraction=0.4)
+    assert metrics.signal_source == "signal"
+    assert metrics.gamma_fit == pytest.approx(gamma, rel=1.0e-3)
+    assert metrics.omega_fit == pytest.approx(omega, rel=1.0e-3)
+    assert metrics.nsamples == 2
+
+    scalar_only = late_time_linear_metrics(SimpleNamespace(gamma=0.1, omega=-0.2))
+    assert scalar_only.signal_source == "scalar"
+    assert scalar_only.gamma_fit == pytest.approx(0.1)
+    assert scalar_only.omega_fit == pytest.approx(-0.2)
+    assert scalar_only.nsamples == 1
+
+
+def test_windowed_nonlinear_metrics_from_runtime_result() -> None:
+    diagnostics = SimulationDiagnostics(
+        t=np.array([0.0, 1.0, 2.0, 3.0, 4.0]),
+        dt_t=np.full(5, 0.1),
+        dt_mean=np.full(5, 0.1),
+        gamma_t=np.zeros(5),
+        omega_t=np.zeros(5),
+        Wg_t=np.array([1.0, 1.5, 2.0, 2.5, 3.0]),
+        Wphi_t=np.array([0.5, 0.75, 1.0, 1.25, 1.5]),
+        Wapar_t=np.zeros(5),
+        heat_flux_t=np.array([0.0, 0.2, 0.4, 0.6, 0.8]),
+        particle_flux_t=np.zeros(5),
+        energy_t=np.zeros(5),
+        phi_mode_t=np.array([0.0, 1.0 + 0.0j, 1.0 + 1.0j, 2.0 + 0.0j, 2.0 + 1.0j]),
+    )
+    result = RuntimeNonlinearResult(t=np.asarray(diagnostics.t), diagnostics=diagnostics)
+
+    metrics = windowed_nonlinear_metrics(result, start_fraction=0.6)
+
+    assert metrics.nsamples == 2
+    assert metrics.tmin == pytest.approx(3.0)
+    assert metrics.tmax == pytest.approx(4.0)
+    assert metrics.heat_flux_mean == pytest.approx(0.7)
+    assert metrics.wphi_mean == pytest.approx(1.375)
+    assert metrics.wg_mean == pytest.approx(2.75)
+    assert metrics.phi_mode_envelope_max == pytest.approx(np.sqrt(5.0))
+
+
+def test_windowed_nonlinear_metrics_rejects_missing_or_empty_diagnostics() -> None:
+    with pytest.raises(ValueError):
+        windowed_nonlinear_metrics(RuntimeNonlinearResult(t=np.array([]), diagnostics=None))
+
+    bad = SimulationDiagnostics(
+        t=np.array([0.0, 1.0]),
+        dt_t=np.full(2, 0.1),
+        dt_mean=np.full(2, 0.1),
+        gamma_t=np.zeros(2),
+        omega_t=np.zeros(2),
+        Wg_t=np.array([np.nan, np.nan]),
+        Wphi_t=np.array([1.0, 2.0]),
+        Wapar_t=np.zeros(2),
+        heat_flux_t=np.array([1.0, 2.0]),
+        particle_flux_t=np.zeros(2),
+        energy_t=np.zeros(2),
+    )
+    with pytest.raises(ValueError):
+        windowed_nonlinear_metrics(bad)
+
+
+def test_estimate_observed_order_returns_asymptotic_pairwise_orders() -> None:
+    step_sizes = np.array([0.4, 0.2, 0.1, 0.05])
+    errors = 3.0 * step_sizes**2
+
+    metrics = estimate_observed_order(step_sizes, errors)
+
+    np.testing.assert_allclose(metrics.orders, [2.0, 2.0, 2.0], atol=1.0e-12)
+    assert metrics.asymptotic_order == pytest.approx(2.0)
+
+    with pytest.raises(ValueError):
+        estimate_observed_order(np.array([0.1]), np.array([0.01]))
+    with pytest.raises(ValueError):
+        estimate_observed_order(np.array([0.2, 0.2]), np.array([0.1, 0.025]))
