@@ -95,7 +95,7 @@ Tokamak Linear
      - residual level, damping rate, GAM envelope
      - Merlo et al. + analytical Rosenbluth-Hinton estimates where applicable
      - Open
-     - residual and damping must match literature/code-backed references before publication use
+     - residual and damping must match literature/code-backed references before publication use; current ``Phi2_zonal_t`` extraction is only the provisional zonal-energy-proxy workflow until a signed zonal observable is frozen
 
 Frozen artifact paths for the currently closed tokamak linear lanes:
 
@@ -140,7 +140,7 @@ Stellarator Linear
      - residual level, damping envelope
      - stella/GENE benchmark paper + zonal-flow literature
      - Open
-     - residual and damping metrics must be defined before acceptance
+     - residual and damping metrics must be defined before acceptance; the present ``Phi2_zonal_t`` tooling is only the provisional zonal-energy-proxy path
    * - W7-X fluctuation spectra
      - density and zonal-flow frequency spectra
      - W7-X Doppler-reflectometry comparison paper

@@ -8,11 +8,12 @@ import pytest
 from spectraxgk.analysis import ModeSelection
 from spectraxgk.benchmarking import (
     compare_eigenfunctions,
-    load_eigenfunction_reference_bundle,
     estimate_observed_order,
     infer_triple_dealiased_ny,
     late_time_linear_metrics,
     late_time_window,
+    load_diagnostic_time_series,
+    load_eigenfunction_reference_bundle,
     normalize_eigenfunction,
     phase_align_eigenfunction,
     run_linear_scan,
@@ -128,6 +129,38 @@ def test_zonal_flow_response_metrics_validate_input_and_handle_nonoscillatory_si
     metrics = zonal_flow_response_metrics(t, response)
     assert np.isnan(metrics.gam_frequency)
     assert np.isnan(metrics.gam_damping_rate)
+
+
+def test_load_diagnostic_time_series_reads_gx_style_netcdf(tmp_path) -> None:
+    import netCDF4 as nc
+
+    path = tmp_path / "diag.out.nc"
+    with nc.Dataset(path, "w") as ds:
+        ds.createDimension("time", 4)
+        grids = ds.createGroup("Grids")
+        diag = ds.createGroup("Diagnostics")
+        grids.createVariable("time", "f8", ("time",))[:] = np.array([0.0, 1.0, 2.0, 3.0])
+        diag.createVariable("Phi2_zonal_t", "f8", ("time",))[:] = np.array([1.0, 0.7, 0.5, 0.4])
+
+    series = load_diagnostic_time_series(path, variable="Phi2_zonal_t")
+
+    assert np.allclose(series.t, [0.0, 1.0, 2.0, 3.0])
+    assert np.allclose(series.values, [1.0, 0.7, 0.5, 0.4])
+    assert series.variable == "Phi2_zonal_t"
+
+
+def test_load_diagnostic_time_series_rejects_missing_variable(tmp_path) -> None:
+    import netCDF4 as nc
+
+    path = tmp_path / "diag.out.nc"
+    with nc.Dataset(path, "w") as ds:
+        ds.createDimension("time", 2)
+        grids = ds.createGroup("Grids")
+        ds.createGroup("Diagnostics")
+        grids.createVariable("time", "f8", ("time",))[:] = np.array([0.0, 1.0])
+
+    with pytest.raises(ValueError):
+        load_diagnostic_time_series(path, variable="Phi2_zonal_t")
 
 
 def test_run_linear_scan_applies_resolution_and_krylov_policies() -> None:
