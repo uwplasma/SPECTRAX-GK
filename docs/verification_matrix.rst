@@ -94,11 +94,15 @@ Open raw-overlay diagnostic artifacts for the KBM lane:
 
 - ``docs/_static/reference_modes/kbm_linear_spectrax_ky0p3000.csv``
 - ``docs/_static/kbm_eigenfunction_reference_overlay_ky0p3000.png``
+- ``tools/generate_kbm_reference_overlay.py``
 
 These are useful for manuscript drafting and debugging, but they are not yet
 accepted as closed validation artifacts. The current bounded-cost extraction
-produces approximately ``0.63`` normalized overlap and ``1.74`` relative
-``L^2`` mismatch against the frozen GX raw mode at ``k_y \approx 0.3``.
+produces approximately ``0.63`` normalized overlap and ``0.79`` relative
+``L^2`` mismatch against the frozen GX raw mode at ``k_y \approx 0.3`` when
+run with the exact KBM grid contract, the selected growth-fit window, and a
+late-time eigenfunction tail window. This indicates the bounded short-horizon
+raw overlay is still not converged enough for paper use.
 
 Stellarator Linear
 ------------------

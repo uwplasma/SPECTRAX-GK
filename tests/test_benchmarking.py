@@ -10,7 +10,9 @@ from spectraxgk.benchmarking import (
     compare_eigenfunctions,
     load_eigenfunction_reference_bundle,
     estimate_observed_order,
+    infer_triple_dealiased_ny,
     late_time_linear_metrics,
+    late_time_window,
     normalize_eigenfunction,
     phase_align_eigenfunction,
     run_linear_scan,
@@ -84,6 +86,22 @@ def test_eigenfunction_reference_bundle_roundtrip(tmp_path) -> None:
     assert bundle.source == "GX"
     assert bundle.case == "kbm_linear"
     assert bundle.metadata == {"ky": 0.2, "note": "frozen"}
+
+
+def test_late_time_window_returns_tail_bounds() -> None:
+    t = np.array([0.0, 1.0, 2.0, 3.0, 4.0])
+
+    tmin, tmax = late_time_window(t, tail_fraction=0.4)
+
+    assert tmin == pytest.approx(3.0)
+    assert tmax == pytest.approx(4.0)
+
+
+def test_infer_triple_dealiased_ny_matches_gx_grid_convention() -> None:
+    assert infer_triple_dealiased_ny(5) == 13
+    assert infer_triple_dealiased_ny(9) == 25
+    with pytest.raises(ValueError):
+        infer_triple_dealiased_ny(1)
 
 
 def test_run_linear_scan_applies_resolution_and_krylov_policies() -> None:
