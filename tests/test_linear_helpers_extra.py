@@ -13,8 +13,11 @@ from spectraxgk.linear import (
     _build_linked_end_damping_profile,
     _check_nonnegative,
     _check_positive,
+    _integrate_linear_cached_impl,
     _resolve_implicit_preconditioner,
     _signed_to_index,
+    integrate_linear,
+    integrate_linear_diagnostics,
 )
 
 
@@ -130,3 +133,147 @@ def test_build_implicit_operator_handles_species_squeeze(monkeypatch) -> None:
     assert np.isfinite(np.asarray(precond_op(G))).all()
     assert np.isfinite(np.asarray(matvec(G))).all()
     assert float(dt_val) == pytest.approx(0.2)
+
+
+def test_integrate_linear_wrapper_routes_methods(monkeypatch) -> None:
+    G0 = jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64)
+    grid = geom = params = object()
+    calls: list[tuple[str, str]] = []
+
+    monkeypatch.setattr("spectraxgk.linear.build_linear_cache", lambda *args, **kwargs: "cache")
+    monkeypatch.setattr(
+        "spectraxgk.linear._integrate_linear_cached",
+        lambda *args, **kwargs: calls.append(("cached", kwargs["method"])) or ("G", "phi"),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.linear._integrate_linear_cached_donate",
+        lambda *args, **kwargs: calls.append(("donate", kwargs["method"])) or ("Gd", "phid"),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.linear._integrate_linear_implicit_cached",
+        lambda *args, **kwargs: calls.append(("implicit", "implicit")) or ("Gi", "phii"),
+    )
+
+    assert integrate_linear(G0, grid, geom, params, dt=0.1, steps=2, method="semi-implicit") == ("G", "phi")
+    assert integrate_linear(G0, grid, geom, params, dt=0.1, steps=2, method="rk2", donate=True) == ("Gd", "phid")
+    assert integrate_linear(G0, grid, geom, params, dt=0.1, steps=2, method="implicit") == ("Gi", "phii")
+    assert ("cached", "imex") in calls
+    assert ("donate", "rk2") in calls
+    assert ("implicit", "implicit") in calls
+
+    with pytest.raises(ValueError):
+        integrate_linear(G0, grid, geom, params, dt=0.1, steps=2, sample_stride=0)
+    with pytest.raises(ValueError):
+        integrate_linear(G0, grid, geom, params, dt=0.1, steps=3, sample_stride=2)
+    with pytest.raises(ValueError):
+        integrate_linear(jnp.zeros((2, 2)), grid, geom, params, dt=0.1, steps=2)
+
+
+def test_integrate_linear_cached_impl_invalid_and_sampled(monkeypatch) -> None:
+    G0 = jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64)
+    cache = SimpleNamespace(lb_lam=jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.float32))
+    params = SimpleNamespace(nu=0.0)
+    monkeypatch.setattr(
+        "spectraxgk.linear.hypercollision_damping",
+        lambda cache, params, dtype: jnp.zeros_like(cache.lb_lam, dtype=dtype),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.linear.linear_rhs_cached",
+        lambda G, cache, params, **kwargs: (jnp.ones_like(G), jnp.zeros((1, 1, 2), dtype=jnp.complex64)),
+    )
+
+    with pytest.raises(ValueError):
+        _integrate_linear_cached_impl(G0, cache, params, dt=0.1, steps=2, method="bad")
+
+    G_out, phi_t = _integrate_linear_cached_impl(
+        G0,
+        cache,
+        params,
+        dt=0.1,
+        steps=4,
+        method="euler",
+        sample_stride=2,
+    )
+    assert G_out.shape == G0.shape
+    assert phi_t.shape[0] == 2
+
+
+def test_integrate_linear_diagnostics_validates_and_records_energy(monkeypatch) -> None:
+    G0 = jnp.zeros((1, 2, 2, 1, 1, 2), dtype=jnp.complex64)
+    grid = geom = params = object()
+    cache = SimpleNamespace(
+        lb_lam=jnp.zeros((1, 2, 2, 1, 1, 2), dtype=jnp.float32),
+        Jl=jnp.ones((1, 2, 1, 1, 2), dtype=jnp.float32),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.linear.hypercollision_damping",
+        lambda cache, params, dtype: jnp.zeros_like(cache.lb_lam, dtype=dtype),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.linear.linear_rhs_cached",
+        lambda G, cache, params, **kwargs: (jnp.ones_like(G), jnp.ones((1, 1, 2), dtype=jnp.complex64)),
+    )
+
+    with pytest.raises(ValueError):
+        integrate_linear_diagnostics(G0, grid, geom, params, dt=0.1, steps=2, sample_stride=0, cache=cache)
+    with pytest.raises(ValueError):
+        integrate_linear_diagnostics(G0, grid, geom, params, dt=0.1, steps=3, sample_stride=2, cache=cache)
+
+    G_out, phi_t, density_t, hl_t = integrate_linear_diagnostics(
+        G0,
+        grid,
+        geom,
+        SimpleNamespace(nu=0.0),
+        dt=0.1,
+        steps=4,
+        method="rk2",
+        cache=cache,
+        sample_stride=2,
+        species_index=0,
+        record_hl_energy=True,
+    )
+    assert G_out.shape == G0.shape
+    assert phi_t.shape[0] == 2
+    assert density_t.shape[0] == 2
+    assert hl_t.shape[0] == 2
+
+
+def test_integrate_linear_diagnostics_builds_cache_and_uses_imex2(monkeypatch) -> None:
+    G0 = jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64)
+    cache = SimpleNamespace(
+        lb_lam=jnp.zeros((1, 2, 2, 1, 1, 2), dtype=jnp.float32),
+        Jl=jnp.ones((1, 2, 1, 1, 2), dtype=jnp.float32),
+    )
+    build_calls: list[tuple[int, int]] = []
+
+    monkeypatch.setattr(
+        "spectraxgk.linear.build_linear_cache",
+        lambda grid, geom, params, Nl, Nm: build_calls.append((Nl, Nm)) or cache,
+    )
+    monkeypatch.setattr(
+        "spectraxgk.linear.hypercollision_damping",
+        lambda cache, params, dtype: jnp.zeros_like(cache.lb_lam, dtype=dtype),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.linear.linear_rhs_cached",
+        lambda G, cache, params, **kwargs: (jnp.ones_like(G), jnp.ones((1, 1, 2), dtype=jnp.complex64)),
+    )
+
+    G_out, phi_t, density_t = integrate_linear_diagnostics(
+        G0,
+        object(),
+        object(),
+        SimpleNamespace(nu=0.0),
+        dt=0.1,
+        steps=2,
+        method="imex2",
+        cache=None,
+        sample_stride=1,
+        species_index=None,
+        record_hl_energy=False,
+    )
+
+    assert build_calls == [(2, 2)]
+    assert G_out.shape == G0.shape
+    assert phi_t.shape[0] == 2
+    assert density_t.shape[0] == 2
