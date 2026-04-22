@@ -111,8 +111,16 @@ lanes, not as ad hoc notebooks.
 The first reusable tooling for this lane now exists:
 
 - :func:`spectraxgk.benchmarking.zonal_flow_response_metrics`
+- :func:`spectraxgk.benchmarking.load_diagnostic_time_series`
 - :func:`spectraxgk.plotting.zonal_flow_response_figure`
 - ``tools/plot_zonal_flow_response.py``
+- ``tools/plot_zonal_flow_response_from_output.py``
+
+At present the tracked ``out.nc`` workflow uses ``Diagnostics/Phi2_zonal_t`` as
+the reproducible zonal-energy proxy. That is good enough for residual/envelope
+workflows, but a manuscript-grade Rosenbluth-Hinton / GAM claim still requires
+a signed zonal observable analogous to GX's ``avg_zvE`` or a frozen zonal
+potential mode history.
 
 Diffrax and nonlinear smoke tests
 ---------------------------------
