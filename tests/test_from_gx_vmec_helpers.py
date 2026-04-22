@@ -8,7 +8,9 @@ import numpy as np
 import pytest
 
 from spectraxgk.from_gx.vmec import (
+    _apply_flux_tube_cut,
     _booz_xform_jax_search_paths,
+    _equal_arc_remap,
     _import_booz_backend,
     _import_module_with_search_paths,
     dermv,
@@ -87,3 +89,82 @@ def test_nperiod_set_and_dermv(monkeypatch) -> None:
         dermv(np.ones((2, 2)), np.ones((2, 2)))
     with pytest.raises(ValueError):
         dermv(np.ones(2), np.ones(3))
+
+
+def test_apply_flux_tube_cut_none_and_unknown() -> None:
+    theta = np.linspace(-np.pi, np.pi, 7)
+    base = np.linspace(1.0, 2.0, theta.size)
+    geo = SimpleNamespace(
+        bmag=base[None, None, :],
+        gradpar_theta_b=np.abs(base)[None, None, :],
+        cvdrift=base[None, None, :],
+        gbdrift=base[None, None, :],
+        cvdrift0=base[None, None, :],
+        gbdrift0=base[None, None, :],
+        gds2=(base + 1.0)[None, None, :],
+        gds21=np.linspace(-1.0, 1.0, theta.size)[None, None, :],
+        gds22=(base + 2.0)[None, None, :],
+        grho=base[None, None, :],
+        R_b=(base + 3.0)[None, None, :],
+        Z_b=(base - 1.0)[None, None, :],
+        grad_x=np.stack([base, base + 1.0, base + 2.0])[:, None, None, :],
+        grad_y=np.stack([base + 3.0, base + 4.0, base + 5.0])[:, None, None, :],
+        s_hat_input=0.8,
+    )
+
+    theta_cut, arrays = _apply_flux_tube_cut(
+        theta,
+        geo,
+        ntheta=theta.size,
+        flux_tube_cut="none",
+        npol_min=None,
+        which_crossing=0,
+        y0=1.0,
+        x0=1.0,
+        jtwist_in=None,
+    )
+    np.testing.assert_allclose(theta_cut, theta)
+    assert arrays["grad_x"].shape == (3, theta.size)
+    assert arrays["b_vec"].shape == (3, theta.size)
+
+    with pytest.raises(ValueError):
+        _apply_flux_tube_cut(
+            theta,
+            geo,
+            ntheta=theta.size,
+            flux_tube_cut="bad",
+            npol_min=None,
+            which_crossing=0,
+            y0=1.0,
+            x0=1.0,
+            jtwist_in=None,
+        )
+
+
+def test_equal_arc_remap_returns_constant_gradpar() -> None:
+    theta = np.linspace(-np.pi, np.pi, 7)
+    arrays = {
+        "theta_PEST": theta.copy(),
+        "bmag": np.linspace(1.0, 2.0, theta.size),
+        "gradpar": np.full(theta.size, 2.0),
+        "cvdrift": np.linspace(0.0, 1.0, theta.size),
+        "gbdrift": np.linspace(1.0, 0.0, theta.size),
+        "cvdrift0": np.linspace(0.5, 1.5, theta.size),
+        "gbdrift0": np.linspace(1.5, 0.5, theta.size),
+        "gds2": np.linspace(2.0, 3.0, theta.size),
+        "gds21": np.linspace(-0.5, 0.5, theta.size),
+        "gds22": np.linspace(3.0, 4.0, theta.size),
+        "grho": np.linspace(0.8, 1.2, theta.size),
+        "Rplot": np.linspace(5.0, 6.0, theta.size),
+        "Zplot": np.linspace(-1.0, 1.0, theta.size),
+        "grad_x": np.vstack([np.ones(theta.size), 2.0 * np.ones(theta.size), 3.0 * np.ones(theta.size)]),
+        "grad_y": np.vstack([4.0 * np.ones(theta.size), 5.0 * np.ones(theta.size), 6.0 * np.ones(theta.size)]),
+    }
+
+    gradpar_eqarc, out = _equal_arc_remap(theta, arrays, ntheta=9)
+    assert np.isfinite(gradpar_eqarc)
+    np.testing.assert_allclose(out["gradpar"], np.full(9, gradpar_eqarc))
+    assert out["theta"].shape == (9,)
+    assert out["grad_x"].shape == (3, 9)
+    assert out["b_vec"].shape == (3, 9)
+    assert np.isfinite(out["scale"])

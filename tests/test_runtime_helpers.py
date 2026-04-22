@@ -14,6 +14,7 @@ from spectraxgk.runtime import (
     _concat_gx_diagnostics,
     _enforce_full_ky_hermitian,
     _expand_ky,
+    _gx_centered_random_pairs,
     _gx_default_p_hyper_m,
     _gx_init_mode_pairs,
     _gx_periodic_zp,
@@ -99,6 +100,15 @@ def test_runtime_small_helper_functions() -> None:
     assert _gx_default_p_hyper_m(3) == 1.0
     assert _gx_default_p_hyper_m(40) == 20.0
     assert _runtime_model_key(cfg) == "gyrokinetic"
+
+
+def test_runtime_random_pair_edge_cases() -> None:
+    empty = _gx_centered_random_pairs(3, 0)
+    assert empty.shape == (0, 2)
+
+    seed_zero = _gx_centered_random_pairs(0, 3)
+    seed_one = _gx_centered_random_pairs(1, 3)
+    np.testing.assert_allclose(seed_zero, seed_one)
 
 
 def test_runtime_mode_index_selection_and_step_inference() -> None:
