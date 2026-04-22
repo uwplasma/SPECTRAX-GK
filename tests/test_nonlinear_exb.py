@@ -5,14 +5,24 @@ from spectraxgk.config import GridConfig
 from spectraxgk.gyroaverage import bessel_j0, bessel_j1, gx_laguerre_transform
 from spectraxgk.grids import build_spectral_grid, real_fft_mesh
 from spectraxgk.terms.nonlinear import (
+    _apply_flutter,
     exb_nonlinear_contribution,
     nonlinear_em_contribution,
     nonlinear_em_components,
     _apply_mask_xy,
-    _apply_flutter,
+    _broadcast_grid,
+    _broadcast_mask,
+    _broadcast_to_G,
+    _gx_bpar_term,
+    _gx_bpar_term_precomputed,
+    _gx_j0_field,
+    _gx_j0_field_precomputed,
+    _laguerre_to_grid,
+    _laguerre_to_spectral,
     _spectral_bracket,
     _spectral_bracket_multi,
     _stack_fields,
+    placeholder_nonlinear_contribution,
 )
 
 
@@ -697,3 +707,77 @@ def test_exb_bracket_energy_conserves():
         gx_real_fft=False,
     )
     assert np.max(np.abs(np.asarray(dG))) < 1.0e-6
+
+
+def test_nonlinear_broadcast_helpers_cover_shape_contracts():
+    mask = jnp.asarray([[1.0, 0.0], [0.0, 1.0]], dtype=jnp.float32)
+    grid = jnp.asarray([[0.1, 0.2], [0.3, 0.4]], dtype=jnp.float32)
+    field = jnp.ones((2, 2, 3), dtype=jnp.complex64)
+    G = jnp.zeros((1, 2, 3, 2, 2, 3), dtype=jnp.complex64)
+
+    mask_b = _broadcast_mask(mask, 5)
+    grid_b = _broadcast_grid(grid, 5)
+    assert mask_b.shape == (1, 1, 2, 2, 1)
+    assert grid_b.shape == (1, 1, 2, 2, 1)
+
+    masked = _apply_mask_xy(field, mask)
+    assert masked.shape == field.shape
+    assert np.allclose(np.asarray(masked[0, 1, :]), 0.0)
+    assert np.allclose(np.asarray(_apply_mask_xy(field, None)), np.asarray(field))
+
+    same = _broadcast_to_G(G, G)
+    assert same.shape == G.shape
+    assert _broadcast_to_G(field, G).shape == (1, 1, 1, 2, 2, 3)
+    assert _broadcast_to_G(jnp.ones((2, 3), dtype=jnp.float32), G).shape == (1, 1, 1, 1, 2, 3)
+
+
+def test_laguerre_transform_helpers_roundtrip():
+    rng = np.random.default_rng(1234)
+    G = rng.normal(size=(1, 2, 3, 2, 2, 1)) + 1j * rng.normal(size=(1, 2, 3, 2, 2, 1))
+    laguerre_to_grid = np.asarray([[1.0, 0.25], [0.0, 1.0]], dtype=np.float64)
+    laguerre_to_spectral = np.linalg.inv(laguerre_to_grid)
+
+    g_mu = _laguerre_to_grid(jnp.asarray(G), jnp.asarray(laguerre_to_grid))
+    restored = _laguerre_to_spectral(g_mu, jnp.asarray(laguerre_to_spectral))
+    assert g_mu.shape == (1, 2, 3, 2, 2, 1)
+    assert np.allclose(np.asarray(restored), G, rtol=1.0e-6, atol=1.0e-6)
+
+
+def test_gx_precomputed_bessel_helpers_match_direct():
+    field = jnp.asarray([[[1.0 + 0.5j]]], dtype=jnp.complex64)
+    b = jnp.asarray([[[0.05]]], dtype=jnp.float32)
+    roots = jnp.asarray([0.0, 1.5], dtype=jnp.float32)
+    tz = jnp.asarray([1.0], dtype=jnp.float32)
+
+    direct_j0 = _gx_j0_field(field, b, roots, 1.0)
+    b_species = b[None, ...]
+    alpha = jnp.sqrt(
+        jnp.maximum(0.0, 2.0 * roots[None, :, None, None, None] * b_species[:, None, ...])
+    )
+    from spectraxgk.gyroaverage import bessel_j0 as _b0, bessel_j1 as _b1
+
+    j0 = _b0(alpha)
+    j1 = _b1(alpha)
+    j1_over_alpha = jnp.where(alpha < 1.0e-8, 0.5, j1 / alpha)
+    cached_j0 = _gx_j0_field_precomputed(field, j0, 1.0)
+    assert np.allclose(np.asarray(direct_j0), np.asarray(cached_j0), rtol=1.0e-6, atol=1.0e-6)
+
+    bpar = jnp.asarray([[[0.3 + 0.1j]]], dtype=jnp.complex64)
+    direct_bpar = _gx_bpar_term(bpar, b, roots, tz, 1.0)
+    cached_bpar = _gx_bpar_term_precomputed(bpar, j1_over_alpha, roots, tz, 1.0)
+    assert np.allclose(np.asarray(direct_bpar), np.asarray(cached_bpar), rtol=1.0e-6, atol=1.0e-6)
+
+
+def test_stack_fields_and_placeholder_output_contract():
+    G = jnp.zeros((1, 2, 3, 4, 5, 1), dtype=jnp.complex64)
+    phi = jnp.ones((4, 5, 1), dtype=jnp.complex64)
+    apar = 2.0 * jnp.ones((1, 1, 4, 5, 1), dtype=jnp.complex64)
+
+    stacked = _stack_fields(G, [phi, apar])
+    assert stacked.shape == (2, 1, 1, 1, 4, 5, 1)
+    assert np.allclose(np.asarray(stacked[0, 0, 0, 0]), np.asarray(phi))
+    assert np.allclose(np.asarray(stacked[1, 0, 0, 0]), 2.0)
+
+    out = placeholder_nonlinear_contribution(G, weight=jnp.asarray(3.0))
+    assert out.shape == G.shape
+    assert np.allclose(np.asarray(out), 0.0)

@@ -1,5 +1,6 @@
 import numpy as np
 import jax.numpy as jnp
+import pytest
 
 from spectraxgk.config import GridConfig
 from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
@@ -9,6 +10,7 @@ from spectraxgk.terms.assembly import (
     assemble_rhs,
     assemble_rhs_cached,
     assemble_rhs_terms_cached,
+    compute_fields_cached,
 )
 from spectraxgk.terms.config import TermConfig
 
@@ -81,3 +83,57 @@ def test_assemble_rhs_accepts_sampled_geometry_contract() -> None:
     )
     assert rhs.shape == G0.shape
     assert fields.phi.shape == (grid.ky.size, grid.kx.size, grid.z.size)
+
+
+def test_assemble_rhs_cached_validates_state_shape_and_species_match() -> None:
+    grid_full = build_spectral_grid(GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.28, Ly=6.28))
+    grid = select_ky_grid(grid_full, 1)
+    geom = SAlphaGeometry(q=1.4, s_hat=0.8, epsilon=0.18, R0=2.77778, drift_scale=1.0)
+    params = LinearParams(
+        R_over_Ln=0.8,
+        R_over_LTi=2.49,
+        R_over_LTe=0.0,
+        omega_d_scale=1.0,
+        omega_star_scale=1.0,
+        rho_star=1.0,
+        kpar_scale=float(geom.gradpar()),
+        nu=0.0,
+    )
+    cache = build_linear_cache(grid, geom, params, 3, 3)
+
+    with pytest.raises(ValueError):
+        assemble_rhs_cached(jnp.ones((2, 3, 4, 5), dtype=jnp.complex64), cache, params)
+
+    G_species = jnp.ones((2, 3, 3, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64)
+    with pytest.raises(ValueError):
+        assemble_rhs_cached(G_species, cache, params)
+
+
+def test_compute_fields_cached_matches_rhs_fields_and_validation() -> None:
+    grid_full = build_spectral_grid(GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.28, Ly=6.28))
+    grid = select_ky_grid(grid_full, 1)
+    geom = SAlphaGeometry(q=1.4, s_hat=0.8, epsilon=0.18, R0=2.77778, drift_scale=1.0)
+    params = LinearParams(
+        R_over_Ln=0.8,
+        R_over_LTi=2.49,
+        R_over_LTe=0.0,
+        omega_d_scale=1.0,
+        omega_star_scale=1.0,
+        rho_star=1.0,
+        kpar_scale=float(geom.gradpar()),
+        nu=0.0,
+    )
+    cache = build_linear_cache(grid, geom, params, 3, 3)
+    rng = np.random.default_rng(2)
+    G0 = rng.normal(size=(3, 3, grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
+        size=(3, 3, grid.ky.size, grid.kx.size, grid.z.size)
+    )
+    G0 = jnp.asarray(G0)
+
+    rhs, fields_rhs = assemble_rhs_cached(G0, cache, params, use_custom_vjp=False, dt=0.1)
+    fields_only = compute_fields_cached(G0, cache, params, use_custom_vjp=False)
+    assert rhs.shape == G0.shape
+    assert np.allclose(np.asarray(fields_only.phi), np.asarray(fields_rhs.phi), rtol=1.0e-6, atol=1.0e-6)
+
+    with pytest.raises(ValueError):
+        compute_fields_cached(jnp.ones((2, 3, 4, 5), dtype=jnp.complex64), cache, params)
