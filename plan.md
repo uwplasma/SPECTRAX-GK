@@ -500,8 +500,8 @@ uses as evidence.
      - tests on the extracted residual and damping timescale.
    - Current status:
       - reusable ``Phi2_zonal_t`` extraction/plotting tooling exists,
-      - this is only a provisional zonal-energy-proxy path,
-      - manuscript-grade closure still requires a signed zonal observable.
+      - signed ``Phi_zonal_mode_kxt`` now exists in the diagnostics/output path,
+      - manuscript-grade closure now depends on freezing case-specific reference runs rather than inventing a new observable.
 
 2. **Multiple W7-X flux tubes**
    - The published W7-X benchmark is not a single-point story.

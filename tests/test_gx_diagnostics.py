@@ -25,6 +25,7 @@ from spectraxgk.diagnostics import (
     gx_particle_flux_split_resolved_species,
     gx_particle_flux_split_species,
     gx_particle_flux_species,
+    gx_phi_zonal_mode_kxt,
     gx_volume_factors,
     gx_turbulent_heating,
     gx_turbulent_heating_resolved_species,
@@ -118,6 +119,22 @@ def test_gx_volume_factors_accept_sampled_geometry_contract():
 
     assert np.allclose(np.asarray(vol_s), np.asarray(vol_ref))
     assert np.allclose(np.asarray(flux_s), np.asarray(flux_ref))
+
+
+def test_gx_phi_zonal_mode_kxt_recovers_signed_zonal_average() -> None:
+    cfg = CycloneBaseCase()
+    grid = build_spectral_grid(replace(cfg.grid, Ny=8, Nx=4))
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    vol_fac, _flux_fac = gx_volume_factors(geom, grid)
+    phi = jnp.zeros((grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64)
+    zonal_profile = (0.3 - 0.1j) + (0.2 + 0.05j) * jnp.cos(grid.z)
+    phi = phi.at[0, 1, :].set(zonal_profile)
+
+    out = gx_phi_zonal_mode_kxt(phi, grid, vol_fac)
+
+    expected = jnp.sum(zonal_profile * vol_fac)
+    assert np.allclose(np.asarray(out[1]), np.asarray(expected))
+    assert np.allclose(np.asarray(out[0]), 0.0)
 
 
 def test_gx_volume_factors_use_grho_for_flux_weights():
