@@ -12,6 +12,7 @@ import pytest
 from spectraxgk.plotting import (
     cyclone_comparison_figure,
     cyclone_reference_figure,
+    eigenfunction_reference_overlay_figure,
     eigenfunction_overlap_summary_figure,
     etg_trend_figure,
     growth_rate_heatmap,
@@ -181,6 +182,35 @@ def test_nonlinear_runtime_panel_figure(tmp_path):
     fig.savefig(out)
     plt.close(fig)
     assert out.exists()
+
+
+def test_eigenfunction_reference_overlay_figure(tmp_path):
+    theta = np.linspace(-np.pi, np.pi, 32)
+    reference = np.cos(theta) + 1j * 0.25 * np.sin(theta)
+    trial = reference * np.exp(1j * 0.41)
+
+    fig, _axes = eigenfunction_reference_overlay_figure(
+        theta,
+        trial,
+        theta,
+        reference,
+        title="KBM overlay",
+    )
+    out = tmp_path / "eigenfunction_overlay.png"
+    fig.savefig(out)
+    plt.close(fig)
+    assert out.exists()
+
+
+def test_eigenfunction_reference_overlay_figure_rejects_shape_mismatch():
+    theta = np.linspace(-1.0, 1.0, 8)
+    with pytest.raises(ValueError):
+        eigenfunction_reference_overlay_figure(
+            theta,
+            np.ones(8, dtype=np.complex128),
+            theta[:-1],
+            np.ones(7, dtype=np.complex128),
+        )
 
 
 def test_plot_saved_output_linear_bundle(tmp_path):

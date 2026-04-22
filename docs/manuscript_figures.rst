@@ -27,9 +27,9 @@ Core Validation Figures
      - Open
      - Cyclone ITG, ETG, KBM, W7-X, HSX, plus shaped tokamak lane if closed. Current artifact base: ``docs/_static/benchmark_core_linear_atlas.png``.
    * - Eigenfunction validation panel
-     - ``tools/plot_eigenfunction_overlap_summary.py`` plus a future raw-overlay script
+     - ``tools/plot_eigenfunction_overlap_summary.py`` and ``tools/plot_eigenfunction_reference_overlay.py``
      - Open
-     - first shipped overlap artifact is ``docs/_static/kbm_eigenfunction_overlap_summary.png``; the final paper should still add raw phase-aligned overlays for representative closed lanes
+     - first shipped overlap artifact is ``docs/_static/kbm_eigenfunction_overlap_summary.png``; the final paper should add raw phase-aligned overlays from frozen reference bundles stored under ``docs/_static/reference_modes/``
    * - Nonlinear transport panel
      - ``tools/make_gx_summary_panel.py`` / ``tools/make_gx_publication_panel.py``
      - Open
@@ -91,6 +91,7 @@ Open Issues Before Drafting
 
 - close or explicitly defer W7-X zonal-flow response
 - add eigenfunction-overlap metrics to the linear figure stack
+- freeze representative reference mode bundles under ``docs/_static/reference_modes/`` before drafting raw overlay figures
 - add windowed nonlinear statistics as first-class manuscript artifacts
 - tie ETG nonlinear claims to the benchmark literature or keep them framed as a pilot
 - add publication-ready figure scripts for eigenfunction-overlap and stellarator zonal-flow panels

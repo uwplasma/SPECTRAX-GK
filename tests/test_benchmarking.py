@@ -8,12 +8,14 @@ import pytest
 from spectraxgk.analysis import ModeSelection
 from spectraxgk.benchmarking import (
     compare_eigenfunctions,
+    load_eigenfunction_reference_bundle,
     estimate_observed_order,
     late_time_linear_metrics,
     normalize_eigenfunction,
     phase_align_eigenfunction,
     run_linear_scan,
     run_scan_and_mode,
+    save_eigenfunction_reference_bundle,
     windowed_nonlinear_metrics,
 )
 from spectraxgk.benchmarks import LinearRunResult, LinearScanResult
@@ -59,6 +61,29 @@ def test_compare_eigenfunctions_handles_shape_and_zero_norm() -> None:
     metrics = compare_eigenfunctions(np.zeros(3, dtype=np.complex128), np.ones(3, dtype=np.complex128))
     assert np.isnan(metrics.overlap)
     assert np.isnan(metrics.relative_l2)
+
+
+def test_eigenfunction_reference_bundle_roundtrip(tmp_path) -> None:
+    theta = np.linspace(-2.0, 2.0, 7)
+    mode = np.exp(1j * theta)
+    path = tmp_path / "reference_mode.npz"
+
+    out = save_eigenfunction_reference_bundle(
+        path,
+        theta=theta,
+        mode=mode,
+        source="GX",
+        case="kbm_linear",
+        metadata={"ky": 0.2, "note": "frozen"},
+    )
+    bundle = load_eigenfunction_reference_bundle(out)
+
+    assert out == path
+    np.testing.assert_allclose(bundle.theta, theta)
+    np.testing.assert_allclose(bundle.mode, mode)
+    assert bundle.source == "GX"
+    assert bundle.case == "kbm_linear"
+    assert bundle.metadata == {"ky": 0.2, "note": "frozen"}
 
 
 def test_run_linear_scan_applies_resolution_and_krylov_policies() -> None:

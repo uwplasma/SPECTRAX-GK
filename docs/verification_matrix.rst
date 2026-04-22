@@ -212,3 +212,7 @@ Notes
   frozen artifact path, and literature/reference statement.
 - README figures should use only ``Closed`` lanes unless a panel is explicitly
   marked exploratory.
+- Raw eigenfunction overlays for manuscript use should be rendered only from
+  frozen reference bundles checked into ``docs/_static/reference_modes/``.
+  Do not build publication figures from transient external files or ad hoc
+  office-machine outputs.
