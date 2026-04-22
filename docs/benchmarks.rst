@@ -208,6 +208,11 @@ headline atlas tiles. Current examples include:
 - ``docs/_static/etg_fullgk_pilot_compare_dt1e4_gaussian_match.png`` for the
   closed short-window full-GK ETG nonlinear pilot that now appears in the
   shipped summary/publication panels.
+- ``docs/_static/kbm_eigenfunction_overlap_summary.png`` for the current
+  eigenfunction-overlap summary on the tracked KBM GX candidate table. This is
+  the first compact overlap artifact in the manuscript-facing stack and should
+  be read as a branch-identity diagnostic, not as a replacement for the raw
+  eigenfunction overlays that will be added later.
 
 Extended stress matrix
 ----------------------

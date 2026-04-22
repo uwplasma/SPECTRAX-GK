@@ -27,9 +27,9 @@ Core Validation Figures
      - Open
      - Cyclone ITG, ETG, KBM, W7-X, HSX, plus shaped tokamak lane if closed. Current artifact base: ``docs/_static/benchmark_core_linear_atlas.png``.
    * - Eigenfunction validation panel
-     - dedicated script to add
+     - ``tools/plot_eigenfunction_overlap_summary.py`` plus a future raw-overlay script
      - Open
-     - must report normalized overlap, not only show curves
+     - first shipped overlap artifact is ``docs/_static/kbm_eigenfunction_overlap_summary.png``; the final paper should still add raw phase-aligned overlays for representative closed lanes
    * - Nonlinear transport panel
      - ``tools/make_gx_summary_panel.py`` / ``tools/make_gx_publication_panel.py``
      - Open

@@ -86,6 +86,7 @@ Frozen artifact paths for the currently closed tokamak linear lanes:
 - ``docs/_static/cyclone_comparison.png``
 - ``docs/_static/etg_comparison.png``
 - ``docs/_static/kbm_comparison.png``
+- ``docs/_static/kbm_eigenfunction_overlap_summary.png``
 - ``docs/_static/benchmark_core_linear_atlas.png``
 
 Stellarator Linear

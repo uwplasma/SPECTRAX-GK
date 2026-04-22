@@ -7,9 +7,11 @@ import pytest
 
 from spectraxgk.analysis import ModeSelection
 from spectraxgk.benchmarking import (
+    compare_eigenfunctions,
     estimate_observed_order,
     late_time_linear_metrics,
     normalize_eigenfunction,
+    phase_align_eigenfunction,
     run_linear_scan,
     run_scan_and_mode,
     windowed_nonlinear_metrics,
@@ -35,6 +37,28 @@ def test_normalize_eigenfunction_leaves_zero_scale_unchanged() -> None:
     out = normalize_eigenfunction(eig, z)
 
     np.testing.assert_allclose(out, eig)
+
+
+def test_phase_align_and_compare_eigenfunctions() -> None:
+    ref = np.array([1.0 + 0.0j, 0.5 + 0.2j, -0.2 + 0.1j])
+    trial = ref * np.exp(1j * 0.37)
+
+    aligned, phase_shift = phase_align_eigenfunction(trial, ref)
+    np.testing.assert_allclose(aligned, ref, atol=1.0e-12)
+    assert phase_shift == pytest.approx(-0.37, abs=1.0e-12)
+
+    metrics = compare_eigenfunctions(trial, ref)
+    assert metrics.overlap == pytest.approx(1.0, abs=1.0e-12)
+    assert metrics.relative_l2 == pytest.approx(0.0, abs=1.0e-12)
+
+
+def test_compare_eigenfunctions_handles_shape_and_zero_norm() -> None:
+    with pytest.raises(ValueError):
+        compare_eigenfunctions(np.ones(3), np.ones(4))
+
+    metrics = compare_eigenfunctions(np.zeros(3, dtype=np.complex128), np.ones(3, dtype=np.complex128))
+    assert np.isnan(metrics.overlap)
+    assert np.isnan(metrics.relative_l2)
 
 
 def test_run_linear_scan_applies_resolution_and_krylov_policies() -> None:

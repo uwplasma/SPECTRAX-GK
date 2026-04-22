@@ -12,6 +12,7 @@ import pytest
 from spectraxgk.plotting import (
     cyclone_comparison_figure,
     cyclone_reference_figure,
+    eigenfunction_overlap_summary_figure,
     etg_trend_figure,
     growth_rate_heatmap,
     growth_fit_figure,
@@ -305,6 +306,21 @@ def test_growth_fit_figure_with_window(tmp_path):
     fig.savefig(out)
     plt.close(fig)
     assert out.exists()
+
+
+def test_eigenfunction_overlap_summary_figure(tmp_path):
+    ky = np.array([0.1, 0.2, 0.4])
+    fig, axes = eigenfunction_overlap_summary_figure(
+        ky,
+        np.array([0.98, 0.95, 0.93]),
+        np.array([0.05, 0.08, 0.10]),
+        title="KBM overlap audit",
+    )
+    out = tmp_path / "eig_overlap.png"
+    fig.savefig(out)
+    plt.close(fig)
+    assert out.exists()
+    assert axes[0].get_xscale() == "log"
 
 
 def test_plot_saved_output_missing_summary_and_bad_kind(tmp_path):
