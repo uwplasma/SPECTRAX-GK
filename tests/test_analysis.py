@@ -639,6 +639,47 @@ def test_select_fit_window_loglinear_additional_validation_and_fallbacks() -> No
     assert tmax > tmin
 
 
+def test_select_fit_window_loglinear_prefers_clean_late_growth_branch() -> None:
+    t = np.linspace(0.0, 9.0, 181)
+    omega = 0.35
+    gamma_profile = np.where(t < 2.0, -0.04, np.where(t < 5.0, 0.05, 0.18))
+    dt = t[1] - t[0]
+    log_amp = np.cumsum(gamma_profile) * dt
+    signal = np.exp(log_amp - 1j * omega * t)
+    signal[:40] *= 1.0 + 0.12 * np.sin(6.0 * t[:40])
+
+    tmin, tmax = select_fit_window_loglinear(
+        t,
+        signal,
+        min_points=20,
+        start_fraction=0.0,
+        require_positive=True,
+        min_amp_fraction=0.2,
+        min_slope_frac=0.8,
+        growth_weight=0.5,
+        slope_var_weight=0.2,
+        late_penalty=0.05,
+    )
+
+    assert tmax > tmin
+    assert tmin >= 4.5
+
+
+def test_select_fit_window_loglinear_handles_zero_amplitude_reference() -> None:
+    t = np.linspace(0.0, 3.0, 24)
+    signal = np.zeros_like(t, dtype=np.complex128)
+
+    tmin, tmax = select_fit_window_loglinear(
+        t,
+        signal,
+        min_points=8,
+        min_amp_fraction=0.2,
+        max_amp_fraction=0.8,
+    )
+
+    assert tmax > tmin
+
+
 def test_fit_growth_rate_auto_validation_and_nonfinite_paths() -> None:
     with pytest.raises(ValueError):
         fit_growth_rate_auto(np.array([[0.0, 1.0]]), np.array([1.0 + 0.0j, 2.0 + 0.0j]))
@@ -667,6 +708,20 @@ def test_fit_growth_rate_auto_invalid_window_method_and_stats_fallback(monkeypat
     assert tmax > tmin
     assert r2_log == -np.inf
     assert r2_phase == -np.inf
+
+
+def test_fit_growth_rate_with_stats_applies_tmax_and_handles_flat_signal() -> None:
+    t = np.linspace(0.0, 2.0, 9)
+    signal = np.ones_like(t, dtype=np.complex128)
+
+    gamma, omega, r2_log, r2_phase = fit_growth_rate_with_stats(t, signal, tmax=1.0)
+    assert np.isfinite(gamma)
+    assert np.isfinite(omega)
+    assert r2_log == -np.inf
+    assert r2_phase == -np.inf
+
+    with pytest.raises(ValueError):
+        fit_growth_rate_with_stats(t, signal, tmax=0.0)
 
 
 def test_gx_growth_rate_from_phi_uses_default_time_axis() -> None:
