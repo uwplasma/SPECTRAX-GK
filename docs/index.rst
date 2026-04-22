@@ -54,6 +54,9 @@ the same order they appear in the code.
    codes
    performance
    testing
+   verification_matrix
+   code_structure
+   manuscript_figures
    references
    roadmap
    api
