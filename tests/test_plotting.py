@@ -27,6 +27,7 @@ from spectraxgk.plotting import (
     plot_saved_output,
     scan_comparison_figure,
     scan_multi_reference_figure,
+    zonal_flow_response_figure,
 )
 
 
@@ -211,6 +212,22 @@ def test_eigenfunction_reference_overlay_figure_rejects_shape_mismatch():
             theta[:-1],
             np.ones(7, dtype=np.complex128),
         )
+
+
+def test_zonal_flow_response_figure(tmp_path):
+    t = np.linspace(0.0, 20.0, 2001)
+    response = 0.15 + np.exp(-0.08 * t) * np.cos(1.5 * t)
+
+    fig, _axes = zonal_flow_response_figure(t, response, title="ZF response")
+    out = tmp_path / "zf_response.png"
+    fig.savefig(out)
+    plt.close(fig)
+    assert out.exists()
+
+
+def test_zonal_flow_response_figure_rejects_shape_mismatch():
+    with pytest.raises(ValueError):
+        zonal_flow_response_figure(np.array([0.0, 1.0]), np.array([1.0]))
 
 
 def test_plot_saved_output_linear_bundle(tmp_path):

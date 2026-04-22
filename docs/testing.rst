@@ -108,6 +108,12 @@ observables rather than inventing repo-local metrics:
 These should be implemented as reproducible, script-owned figure/artifact
 lanes, not as ad hoc notebooks.
 
+The first reusable tooling for this lane now exists:
+
+- :func:`spectraxgk.benchmarking.zonal_flow_response_metrics`
+- :func:`spectraxgk.plotting.zonal_flow_response_figure`
+- ``tools/plot_zonal_flow_response.py``
+
 Diffrax and nonlinear smoke tests
 ---------------------------------
 

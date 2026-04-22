@@ -19,6 +19,7 @@ from spectraxgk.benchmarking import (
     run_scan_and_mode,
     save_eigenfunction_reference_bundle,
     windowed_nonlinear_metrics,
+    zonal_flow_response_metrics,
 )
 from spectraxgk.benchmarks import LinearRunResult, LinearScanResult
 from spectraxgk.diagnostics import SimulationDiagnostics
@@ -102,6 +103,31 @@ def test_infer_triple_dealiased_ny_matches_gx_grid_convention() -> None:
     assert infer_triple_dealiased_ny(9) == 25
     with pytest.raises(ValueError):
         infer_triple_dealiased_ny(1)
+
+
+def test_zonal_flow_response_metrics_recover_residual_and_gam_envelope() -> None:
+    t = np.linspace(0.0, 30.0, 3001)
+    response = 0.2 + np.exp(-0.1 * t) * np.cos(2.0 * t)
+
+    metrics = zonal_flow_response_metrics(t, response, tail_fraction=0.25, initial_fraction=0.05)
+
+    assert metrics.residual_level * metrics.initial_level == pytest.approx(0.2, abs=0.05)
+    assert metrics.gam_frequency == pytest.approx(2.0, rel=0.1)
+    assert metrics.gam_damping_rate == pytest.approx(0.1, rel=0.2)
+    assert metrics.peak_count >= 3
+
+
+def test_zonal_flow_response_metrics_validate_input_and_handle_nonoscillatory_signal() -> None:
+    with pytest.raises(ValueError):
+        zonal_flow_response_metrics(np.array([0.0, 1.0, 2.0]), np.array([1.0, 2.0]))
+    with pytest.raises(ValueError):
+        zonal_flow_response_metrics(np.array([0.0, 1.0, 2.0]), np.array([0.0, 0.0, 0.0]))
+
+    t = np.linspace(0.0, 5.0, 101)
+    response = np.exp(-t)
+    metrics = zonal_flow_response_metrics(t, response)
+    assert np.isnan(metrics.gam_frequency)
+    assert np.isnan(metrics.gam_damping_rate)
 
 
 def test_run_linear_scan_applies_resolution_and_krylov_policies() -> None:
