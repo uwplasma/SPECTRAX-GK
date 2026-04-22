@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import jax.numpy as jnp
+import numpy as np
 import pytest
 
 from spectraxgk.terms.config import FieldState
@@ -91,6 +92,44 @@ def test_integrate_nonlinear_rk3_alias_matches_gx_variant() -> None:
     out_rk3, _ = integrate_nonlinear(_linear_rhs(0.3 - 0.2j), jnp.array(G0), 0.1, 3, method="rk3")
     out_gx, _ = integrate_nonlinear(_linear_rhs(0.3 - 0.2j), jnp.array(G0), 0.1, 3, method="rk3_gx")
     assert jnp.allclose(out_rk3, out_gx)
+
+
+@pytest.mark.parametrize(
+    ("method", "expected_order", "min_observed_order"),
+    [
+        ("rk2", 2.0, 1.75),
+        ("rk3", 3.0, 2.6),
+        ("rk4", 4.0, 3.3),
+        ("sspx3", 3.0, 2.6),
+    ],
+)
+def test_integrate_nonlinear_observed_order_against_exact_solution(
+    method: str,
+    expected_order: float,
+    min_observed_order: float,
+) -> None:
+    rate = -1.1 + 0.7j
+    t_final = 0.8
+    G0 = jnp.asarray([[1.0 + 0.1j, -0.4 + 0.2j]], dtype=jnp.complex64)
+    exact = np.exp(rate * t_final) * np.asarray(G0)
+
+    errors: list[float] = []
+    dts: list[float] = []
+    for steps in (2, 4, 8, 16):
+        dt = t_final / steps
+        out, _ = integrate_nonlinear(_linear_rhs(rate), jnp.array(G0), dt, steps, method=method)
+        err = float(np.max(np.abs(np.asarray(out) - exact)))
+        errors.append(err)
+        dts.append(dt)
+
+    observed_orders = [
+        np.log(errors[i] / errors[i + 1]) / np.log(dts[i] / dts[i + 1])
+        for i in range(len(errors) - 1)
+        if errors[i] > 0.0 and errors[i + 1] > 0.0
+    ]
+    assert observed_orders, "expected non-zero errors to estimate convergence order"
+    assert observed_orders[-1] >= min_observed_order
+    assert observed_orders[-1] <= expected_order + 0.6
 
 
 def test_nonlinear_placeholders() -> None:

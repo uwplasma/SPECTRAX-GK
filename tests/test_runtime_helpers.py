@@ -10,6 +10,7 @@ from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, 
 from spectraxgk.diagnostics import ResolvedDiagnostics, SimulationDiagnostics
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.runtime import (
+    _build_initial_condition,
     _build_gaussian_profile,
     _concat_gx_diagnostics,
     _enforce_full_ky_hermitian,
@@ -280,6 +281,48 @@ def test_runtime_initial_state_helpers(tmp_path: Path, monkeypatch: pytest.Monke
     np.ones(7, dtype=np.complex64).tofile(bad_path)
     with pytest.raises(ValueError):
         _load_initial_state_from_file(bad_path, nspecies=1, Nl=2, Nm=3, ny=ny, nx=nx, nz=nz)
+
+
+def test_runtime_initial_condition_validation_branches() -> None:
+    cfg = _base_cfg()
+    geom = build_runtime_geometry(cfg)
+    grid = build_spectral_grid(cfg.grid)
+
+    with pytest.raises(ValueError):
+        _build_initial_condition(
+            grid,
+            geom,
+            replace(cfg, init=replace(cfg.init, gaussian_width=0.0)),
+            ky_index=1,
+            kx_index=0,
+            Nl=2,
+            Nm=2,
+            nspecies=1,
+        )
+
+    with pytest.raises(ValueError):
+        _build_initial_condition(
+            grid,
+            geom,
+            replace(cfg, init=replace(cfg.init, init_file_mode="bad")),
+            ky_index=1,
+            kx_index=0,
+            Nl=2,
+            Nm=2,
+            nspecies=1,
+        )
+
+    with pytest.raises(ValueError):
+        _build_initial_condition(
+            grid,
+            geom,
+            replace(cfg, init=replace(cfg.init, init_field="bad")),
+            ky_index=1,
+            kx_index=0,
+            Nl=2,
+            Nm=2,
+            nspecies=1,
+        )
 
 
 def test_run_runtime_scan_batch_validation_and_selection(monkeypatch: pytest.MonkeyPatch) -> None:
