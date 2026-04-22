@@ -39,6 +39,7 @@ from spectraxgk.runtime_config import (
     RuntimeSpeciesConfig,
     RuntimeTermsConfig,
 )
+from spectraxgk.terms.config import FieldState
 
 
 def _base_runtime_cfg() -> RuntimeConfig:
@@ -391,6 +392,165 @@ def test_runtime_linear_gx_time_rejects_return_state() -> None:
         )
 
 
+def test_runtime_linear_auto_fit_prefers_density_signal(monkeypatch: pytest.MonkeyPatch) -> None:
+    import spectraxgk.runtime as runtime
+
+    cfg = replace(
+        _base_runtime_cfg(),
+        species=(RuntimeSpeciesConfig(name="ion"),),
+        normalization=RuntimeNormalizationConfig(contract="cyclone", diagnostic_norm="none"),
+    )
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+
+    monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: geom)
+    monkeypatch.setattr(runtime, "_build_initial_condition", lambda *args, **kwargs: np.zeros((1, 3, 4, 1, 1, grid.z.size), dtype=np.complex64))
+    monkeypatch.setattr(
+        runtime,
+        "integrate_linear_diagnostics",
+        lambda *args, **kwargs: (
+            np.zeros((1, 3, 4, 1, 1, grid.z.size), dtype=np.complex64),
+            np.ones((3, 1, 1, grid.z.size), dtype=np.complex64),
+            3.0 * np.ones((3, 1, 1, grid.z.size), dtype=np.complex64),
+        ),
+    )
+    monkeypatch.setattr(
+        runtime,
+        "extract_mode_time_series",
+        lambda arr, sel, method="project": np.asarray([1.0, 1.1, 1.2], dtype=np.complex128)
+        if np.max(np.abs(arr)) < 2.0
+        else np.asarray([1.0, 2.0, 4.0], dtype=np.complex128),
+    )
+    monkeypatch.setattr(
+        runtime,
+        "fit_growth_rate_auto_with_stats",
+        lambda t, signal, **kwargs: (0.05, -0.02, 0.01, 0.03, 1.0, 0.0)
+        if np.max(np.abs(signal)) < 2.0
+        else (0.2, -0.08, 0.01, 0.03, 2.0, 0.0),
+    )
+    monkeypatch.setattr(runtime, "extract_eigenfunction", lambda *args, **kwargs: np.ones(grid.z.size, dtype=np.complex128))
+    monkeypatch.setattr(runtime, "apply_diagnostic_normalization", lambda gamma, omega, **kwargs: (gamma, omega))
+
+    res = run_runtime_linear(
+        cfg,
+        ky_target=0.1,
+        Nl=3,
+        Nm=4,
+        solver="time",
+        fit_signal="auto",
+        dt=0.01,
+        steps=3,
+    )
+
+    assert res.fit_signal_used == "density"
+    assert np.allclose(res.signal, np.array([1.0, 2.0, 4.0]))
+    assert res.fit_window_tmin == pytest.approx(0.01)
+    assert res.fit_window_tmax == pytest.approx(0.03)
+
+
+def test_runtime_linear_auto_solver_falls_back_to_krylov(monkeypatch: pytest.MonkeyPatch) -> None:
+    import spectraxgk.runtime as runtime
+
+    cfg = replace(
+        _base_runtime_cfg(),
+        species=(RuntimeSpeciesConfig(name="ion"),),
+        normalization=RuntimeNormalizationConfig(contract="cyclone", diagnostic_norm="none"),
+    )
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    status: list[str] = []
+
+    monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: geom)
+    monkeypatch.setattr(runtime, "_build_initial_condition", lambda *args, **kwargs: np.zeros((1, 3, 4, 1, 1, grid.z.size), dtype=np.complex64))
+    monkeypatch.setattr(
+        runtime,
+        "integrate_linear_from_config",
+        lambda *args, **kwargs: (
+            np.zeros((1, 3, 4, 1, 1, grid.z.size), dtype=np.complex64),
+            np.ones((3, 1, 1, grid.z.size), dtype=np.complex64),
+        ),
+    )
+    monkeypatch.setattr(runtime, "extract_mode_time_series", lambda *args, **kwargs: np.asarray([1.0, 0.9, 0.8], dtype=np.complex128))
+    monkeypatch.setattr(runtime, "fit_growth_rate_auto", lambda *args, **kwargs: (-0.1, 0.2, 0.01, 0.03))
+    monkeypatch.setattr(runtime, "build_linear_cache", lambda *args, **kwargs: SimpleNamespace())
+    monkeypatch.setattr(
+        runtime,
+        "dominant_eigenpair",
+        lambda *args, **kwargs: (np.asarray(0.3 + 0.4j, dtype=np.complex64), np.zeros((1, 3, 4, 1, 1, grid.z.size), dtype=np.complex64)),
+    )
+    monkeypatch.setattr(runtime, "apply_diagnostic_normalization", lambda gamma, omega, **kwargs: (gamma, omega))
+
+    res = run_runtime_linear(
+        cfg,
+        ky_target=0.1,
+        Nl=3,
+        Nm=4,
+        solver="auto",
+        fit_signal="phi",
+        dt=0.01,
+        steps=3,
+        status_callback=status.append,
+    )
+
+    assert res.gamma == pytest.approx(0.3)
+    assert res.omega == pytest.approx(-0.4)
+    assert any("falling back to Krylov solve" in msg for msg in status)
+
+
+def test_runtime_linear_cetg_mocked_time_path_and_krylov_rejection(monkeypatch: pytest.MonkeyPatch) -> None:
+    import spectraxgk.runtime as runtime
+
+    base = _base_runtime_cfg()
+    cfg = replace(base, physics=replace(base.physics, reduced_model="cetg"))
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+
+    monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: geom)
+    monkeypatch.setattr(runtime, "validate_cetg_runtime_config", lambda *args, **kwargs: None)
+    monkeypatch.setattr(runtime, "_build_initial_condition", lambda *args, **kwargs: np.zeros((2, 3, 1, 1, grid.z.size), dtype=np.complex64))
+    monkeypatch.setattr(runtime, "build_runtime_term_config", lambda _cfg: object())
+    monkeypatch.setattr(runtime, "build_cetg_model_params", lambda *args, **kwargs: object())
+    monkeypatch.setattr(
+        runtime,
+        "integrate_cetg_gx_diagnostics_state",
+        lambda *args, **kwargs: (
+            np.asarray([0.1, 0.2, 0.3]),
+            type(
+                "Diag",
+                (),
+                {
+                    "t": np.asarray([0.1, 0.2, 0.3]),
+                    "phi_mode_t": np.asarray([1.0 + 0.0j, 1.2 + 0.1j, 1.4 + 0.2j]),
+                    "gamma_t": np.asarray([0.1, 0.2, 0.3]),
+                    "omega_t": np.asarray([-0.1, -0.2, -0.3]),
+                },
+            )(),
+            np.ones((2, 3, 1, 1, grid.z.size), dtype=np.complex64),
+            FieldState(phi=jnp.ones((1, 1, grid.z.size), dtype=jnp.complex64), apar=None, bpar=None),
+        ),
+    )
+    monkeypatch.setattr(runtime, "fit_growth_rate_auto", lambda *args, **kwargs: (0.25, -0.12, 0.1, 0.3))
+
+    out = run_runtime_linear(
+        cfg,
+        ky_target=0.1,
+        Nl=2,
+        Nm=3,
+        solver="time",
+        dt=0.1,
+        steps=3,
+        return_state=True,
+    )
+
+    assert out.gamma == pytest.approx(0.25)
+    assert out.omega == pytest.approx(-0.12)
+    assert out.state is not None
+    assert out.fit_signal_used == "phi"
+
+    with pytest.raises(NotImplementedError):
+        run_runtime_linear(cfg, ky_target=0.1, Nl=2, Nm=3, solver="krylov")
+
+
 def test_runtime_nonlinear_smoke() -> None:
     cfg = replace(
         _base_runtime_cfg(),
@@ -402,6 +562,50 @@ def test_runtime_nonlinear_smoke() -> None:
     res = run_runtime_nonlinear(cfg, ky_target=0.2, Nl=3, Nm=4, dt=0.01, steps=3, sample_stride=1)
     assert res.diagnostics is not None
     assert res.diagnostics.t.size == 3
+
+
+def test_runtime_nonlinear_cetg_diagnostics_disabled_returns_state(monkeypatch: pytest.MonkeyPatch) -> None:
+    import spectraxgk.runtime as runtime
+
+    base = _base_runtime_cfg()
+    cfg = replace(
+        base,
+        physics=replace(base.physics, reduced_model="cetg", nonlinear=True),
+    )
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+
+    monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: geom)
+    monkeypatch.setattr(runtime, "validate_cetg_runtime_config", lambda *args, **kwargs: None)
+    monkeypatch.setattr(runtime, "_select_nonlinear_mode_indices", lambda *args, **kwargs: (0, 0))
+    monkeypatch.setattr(runtime, "_build_initial_condition", lambda *args, **kwargs: np.zeros((2, 3, 1, 1, grid.z.size), dtype=np.complex64))
+    monkeypatch.setattr(runtime, "build_cetg_model_params", lambda *args, **kwargs: object())
+    monkeypatch.setattr(runtime, "build_runtime_term_config", lambda *args, **kwargs: object())
+    monkeypatch.setattr(
+        runtime,
+        "integrate_cetg_gx_diagnostics_state",
+        lambda *args, **kwargs: (
+            np.asarray([0.1, 0.2]),
+            type("Diag", (), {"t": np.asarray([0.1, 0.2])})(),
+            np.ones((2, 3, 1, 1, grid.z.size), dtype=np.complex64),
+            FieldState(phi=jnp.ones((1, 1, grid.z.size), dtype=jnp.complex64), apar=None, bpar=None),
+        ),
+    )
+
+    out = run_runtime_nonlinear(
+        cfg,
+        ky_target=0.1,
+        Nl=2,
+        Nm=3,
+        dt=0.1,
+        steps=2,
+        diagnostics=False,
+        return_state=True,
+    )
+
+    assert out.diagnostics is None
+    assert out.state is not None
+    assert out.phi2 is not None
 
 
 def test_runtime_nonlinear_diagnostics_stride() -> None:
