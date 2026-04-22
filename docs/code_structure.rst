@@ -28,6 +28,8 @@ remain unchanged:
 - ``spectraxgk.terms.*``
 - ``spectraxgk.runtime_startup``
 - ``spectraxgk.runtime_diagnostics``
+- ``spectraxgk.runtime_chunks``
+- ``spectraxgk.runtime_results``
 - ``spectraxgk.from_gx.*``
 - low-level geometry adapters and import bridges
 
@@ -47,6 +49,7 @@ The executable-facing runtime path is split conceptually into four layers:
 3. **diagnostics and artifacts**
    - ``diagnostics.py``
    - ``runtime_diagnostics.py``
+   - ``runtime_results.py``
    - ``runtime_artifacts.py``
    - ``plotting.py``
 4. **benchmark and validation tooling**
@@ -98,12 +101,16 @@ Completed extractions:
   ``runtime_startup.py``
 - GX-style runtime diagnostic chunk helpers:
   ``runtime_diagnostics.py``
+- adaptive GX-style chunk execution:
+  ``runtime_chunks.py``
+- runtime result containers and nonlinear result assembly:
+  ``runtime_results.py``
 
 Next planned extractions:
 
-- adaptive chunk execution helpers
-- result/diagnostic assembly helpers
 - benchmark-family runners and fit-policy helpers
+- remaining linear result-assembly helpers
+- runtime output/artifact handoff helpers
 
 Testing Taxonomy
 ----------------
