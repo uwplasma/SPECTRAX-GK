@@ -1,7 +1,793 @@
 # SPECTRAX-GK Ship Readiness Plan
 
-Last updated: 2026-04-11
+Last updated: 2026-04-22
 Current public baseline under review: `fb6fabc add large-grid scaling sweep and fix tools imports`
+
+## Research Validation / 95% Coverage / Differentiable Optimization Roadmap (2026-04-22)
+
+This section supersedes the older ship-only focus when deciding what to build
+next. The target is no longer just "release-ready"; it is:
+
+1. package-wide line coverage at or above 95% on the wide-coverage lane,
+2. a benchmark and verification suite that is publishable and reviewer-proof,
+3. differentiable workflows that support sensitivity analysis, inverse
+   problems, uncertainty quantification, and stellarator optimization.
+
+This roadmap is anchored on four external baselines:
+
+- **Verification methodology**:
+  Tronko et al., *Verification of Gyrokinetic codes: theoretical background and applications*  
+  <https://arxiv.org/abs/1703.07582>
+- **Modern tokamak/stellarator benchmark set and solver behavior**:
+  Mandell et al., *GX: a GPU-native gyrokinetic turbulence code for tokamak and stellarator design*  
+  <https://arxiv.org/abs/2209.06731>
+- **Published stellarator benchmark set**:
+  González-Jerez et al., *Electrostatic gyrokinetic simulations in W7-X geometry: benchmark between the codes stella and GENE*  
+  <https://arxiv.org/abs/2107.06060>
+- **Differentiable-JAX gyrokinetic precedent**:
+  *gyaradax: Local Gyrokinetics JAX Code*  
+  <https://arxiv.org/abs/2604.06085>
+
+Additional optimization/stellarator anchors:
+
+- stella documentation and code structure: <https://stellagk.github.io/stella/>
+- GX documentation: <https://gx.readthedocs.io/>
+- DESC stellarator optimization / autodiff:
+  <https://arxiv.org/abs/2203.17173>,
+  <https://arxiv.org/abs/2204.00078>
+- turbulence optimization in stellarators with GX + DESC:
+  <https://arxiv.org/abs/2310.18842>
+- SIMSOPT repository for optimization workflow patterns:
+  <https://github.com/hiddenSymmetries/simsopt>
+- PORTALS-style optimization/surrogate loop motivation:
+  <https://arxiv.org/abs/2312.12610>
+
+### Planning Principles
+
+- Tests must target **physics contracts**, **numerical contracts**, or
+  **differentiation contracts**. Coverage-only tests are not sufficient.
+- Every benchmark lane must define:
+  - the governing model,
+  - the observable being compared,
+  - the reference code or literature source,
+  - the time/window used for the comparison,
+  - the acceptance tolerance.
+- Every autodiff-facing workflow must define:
+  - what quantity is differentiated,
+  - what variable is differentiated with respect to,
+  - how the gradient is validated,
+  - what optimization or inference task that derivative enables.
+- Every public example must be either:
+  - **validated** and included in the research claim, or
+  - **demoted** to demonstration status with that stated explicitly.
+
+### Current Gap Map
+
+#### A. Coverage gaps
+
+The present wide-package bottlenecks are not in the already-hardened helper
+layers; they are in the large solver and infrastructure modules:
+
+- `src/spectraxgk/runtime.py`
+- `src/spectraxgk/linear.py`
+- `src/spectraxgk/nonlinear.py`
+- `src/spectraxgk/benchmarks.py`
+- `src/spectraxgk/diffrax_integrators.py`
+- `src/spectraxgk/runtime_artifacts.py`
+- `src/spectraxgk/diagnostics.py`
+- `src/spectraxgk/from_gx/vmec.py`
+- `src/spectraxgk/terms/assembly.py`
+- `src/spectraxgk/terms/nonlinear.py`
+- `src/spectraxgk/terms/operators.py`
+
+Low-value ways to chase 95%:
+
+- more integration-only solves,
+- asserting incidental internal arrays,
+- branch pokes without physics or numerical meaning.
+
+High-value ways to reach 95%:
+
+- manufactured solutions,
+- observed-order tests,
+- invariant and symmetry tests,
+- regression tests on benchmark observables,
+- runtime/result contract tests with monkeypatched kernels,
+- gradient-consistency tests for differentiable paths.
+
+#### B. Benchmark/validation gaps
+
+The repo has many benchmark-facing assets, but the **research claim** is still
+narrower than the inventory.
+
+Current validated/publicly defensible lanes:
+
+- Cyclone ITG linear
+- ETG linear
+- KBM linear
+- W7-X linear
+- HSX linear
+- Cyclone nonlinear
+- Cyclone Miller nonlinear
+- KBM nonlinear
+- W7-X nonlinear
+- HSX nonlinear
+- short-window full-GK ETG nonlinear pilot
+- secondary instability short-window lane
+
+Open or demoted lanes:
+
+- TEM
+- KAW runtime lane
+- kinetic-electron Cyclone
+- reduced `cETG` as a physics-complete benchmark
+
+Missing validation dimensions relative to the literature:
+
+- linear zonal-flow response,
+- explicit eigenfunction-shape comparisons in addition to gamma/omega,
+- multi-window nonlinear statistics instead of single traces only,
+- cross-geometry trend tests,
+- clearer electromagnetic validation progression for KBM / KAW / kinetic-electron cases.
+
+#### C. Autodiff and optimization gaps
+
+What exists now:
+
+- `examples/theory_and_demos/autodiff_inverse_growth.py`
+- `examples/theory_and_demos/autodiff_inverse_twomode.py`
+
+What is still missing for a research-grade differentiable story:
+
+- gradient tests against finite differences for all public differentiated observables,
+- local sensitivity maps over physical parameters,
+- uncertainty quantification with a documented covariance or posterior approximation,
+- geometry-to-transport derivatives for non-axisymmetric configurations,
+- optimization loops that actually drive a design variable,
+- a staged path from local inverse demo to stellarator optimization.
+
+### Workstream 1: Wide-Package 95% Coverage
+
+#### Objective
+
+Raise package-wide coverage to at least 95% without turning the suite into a
+slow or fragile branch-chasing exercise.
+
+#### Acceptance criteria
+
+- `wide-coverage` CI job passes with **package-wide** coverage `>= 95%`.
+- Each newly covered module has at least one test of one of these forms:
+  - exact/manufactured solution,
+  - symmetry/invariant test,
+  - benchmark-observable regression,
+  - contract/serialization test,
+  - gradient-consistency test.
+- no test file exceeds the local 5-minute cap.
+
+#### Coverage plan by module
+
+1. `runtime.py`
+   - add startup/import/output path tests for:
+     - default runtime loading,
+     - imported geometry,
+     - restart/restart-append behavior,
+     - diagnostics off/on,
+     - adaptive chunking truncation,
+     - fixed-mode routing,
+     - artifact writing and output path handling.
+   - use monkeypatched solver kernels so these stay cheap.
+
+2. `linear.py`
+   - add manufactured linear systems with known growth rate and exact mode
+     evolution.
+   - extend observed-order tests for all explicit and IMEX time paths used
+     publicly.
+   - add symmetry-limit tests:
+     - zero drive,
+     - zero curvature,
+     - purely streaming,
+     - `k_y = 0`,
+     - electrostatic/electromagnetic toggles.
+
+3. `nonlinear.py`
+   - deepen actual-step tests for:
+     - diagnostics stride and windowing,
+     - fixed-mode projection,
+     - collision split,
+     - adaptive vs fixed-step agreement on manufactured problems,
+     - explicit vs IMEX contract agreement.
+   - add conservation/sanity tests in reduced nonlinear settings where the
+     expected qualitative behavior is known.
+
+4. `benchmarks.py`
+   - convert more runner tests from ad hoc assertions to the new
+     `late_time_linear_metrics()` and `windowed_nonlinear_metrics()` gate
+     utilities.
+   - cover all scan families with:
+     - invalid input branches,
+     - solver fallback logic,
+     - exact reference loading,
+     - benchmark-observable extraction.
+
+5. `diffrax_integrators.py`
+   - extend observed-order tests from explicit ODEs to save-mode/state-return
+     branches and streaming-fit branches.
+   - add parity tests between small diffrax and native explicit paths on tiny
+     manufactured systems.
+
+6. `runtime_artifacts.py`, `diagnostics.py`, `plotting.py`, `io.py`
+   - cover all artifact serialization, reload, and plotting code with
+     lightweight synthetic diagnostics bundles.
+   - these modules should be near-complete because they define the research
+     artifact surface.
+
+7. geometry/import bridge layers
+   - `from_gx/vmec.py`
+   - `from_gx/miller.py`
+   - `geometry/*`
+   - add parser, remap, normalization, and cut/remesh tests using tiny
+     fixtures and synthetic equilibrium metadata.
+
+#### Sequence
+
+1. artifact + diagnostics + plotting
+2. runtime + linear
+3. nonlinear + diffrax
+4. benchmarks
+5. geometry/import bridges
+
+### Workstream 2: Benchmark and Validation Matrix
+
+#### Objective
+
+Turn the current collection of examples and comparison scripts into an explicit
+validation matrix with publishable acceptance gates.
+
+#### Benchmark families to support
+
+1. **Tokamak electrostatic linear**
+   - Cyclone ITG
+   - ETG
+   - TEM
+2. **Tokamak electromagnetic linear**
+   - KBM
+   - KAW
+   - kinetic-electron Cyclone
+3. **Tokamak nonlinear**
+   - Cyclone ITG
+   - Cyclone Miller
+   - KBM
+   - ETG pilot
+   - secondary instability
+4. **Stellarator linear**
+   - W7-X ITG/TEM family
+   - HSX
+5. **Stellarator nonlinear**
+   - W7-X
+   - HSX
+6. **Additional response tests from the literature**
+   - linear zonal-flow response
+   - branch-following scans in near-marginal cases
+
+#### Validation observables
+
+For each linear lane:
+
+- `gamma(k_y)`
+- `omega(k_y)`
+- selected eigenfunction shape in `z`
+- branch identity and window used for the fit
+
+For each nonlinear lane:
+
+- windowed mean/std/RMS of heat flux
+- `Wphi`, `Wg`, optionally `Wapar`
+- mode-envelope statistics
+- where relevant, resolved spectra by `k_x` / `k_y`
+
+#### Acceptance gates
+
+Linear:
+
+- baseline target: `rtol <= 1e-2`
+- accepted near-marginal / low-`k_y` exceptions must be documented explicitly
+- eigenfunction normalized overlap should be reported, not just plotted
+
+Nonlinear:
+
+- compare windowed statistics, not only pointwise traces
+- baseline target:
+  - `<= 1e-1` for release-level parity
+  - `<= 5e-2` for mature lanes
+- also require visual agreement of saturation trends and mode envelopes
+
+#### Reference hierarchy
+
+Use references in this order:
+
+1. **published benchmark datasets**,
+2. **GX / stella / GENE / SIMSOPT-adjacent reproducible runs**,
+3. **repo-checked reference tables generated from those runs**.
+
+Do not treat digitized literature curves as equivalent to direct code-backed
+reference data when a reference code is available.
+
+#### Example-to-validation ownership
+
+Validate and retain:
+
+- `examples/linear/axisymmetric/cyclone.toml`
+- `examples/linear/axisymmetric/etg.toml`
+- `examples/linear/axisymmetric/runtime_kbm.toml`
+- `examples/linear/axisymmetric/runtime_kaw.toml`
+- `examples/linear/non-axisymmetric/runtime_w7x_linear_imported_geometry.toml`
+- `examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml`
+- `examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml`
+- `examples/nonlinear/axisymmetric/runtime_kbm_nonlinear_t100.toml`
+- `examples/nonlinear/axisymmetric/runtime_etg_nonlinear.toml`
+- `examples/nonlinear/non-axisymmetric/runtime_w7x_nonlinear_imported_geometry.toml`
+- `examples/nonlinear/non-axisymmetric/runtime_hsx_nonlinear_vmec_geometry.toml`
+- `examples/benchmarks/secondary_slab_workflow.py`
+
+Needs explicit closure or demotion:
+
+- `examples/benchmarks/tem_linear_benchmark.py`
+- `examples/linear/axisymmetric/runtime_kaw.toml`
+- kinetic-electron Cyclone reference/helper paths in `src/spectraxgk/benchmarks.py`
+- reduced `cETG` examples as a benchmark claim
+
+#### Missing benchmark assets to add
+
+- linear zonal-flow response example
+- explicit eigenfunction-comparison example
+- one published W7-X linear TEM example matching the stella/GENE benchmark paper
+- one kinetic-electron Cyclone audit deck with a frozen accepted horizon
+
+### Workstream 3: Differentiable Physics / Autodiff Validation
+
+#### Objective
+
+Move from "autodiff is possible" to "autodiff is validated and useful for
+research."
+
+#### Acceptance criteria
+
+Every differentiated observable must have:
+
+- a finite-difference gradient check,
+- a complex-step check where applicable,
+- a statement of conditioning/identifiability,
+- a reproducible example with saved figure and numeric summary.
+
+#### Differentiable task ladder
+
+1. **Sensitivity analysis**
+   - gradients of `gamma`, `omega`, and selected nonlinear windowed metrics
+     with respect to:
+     - `a/LTi`, `a/LTe`, `a/Ln`,
+     - `beta`,
+     - collisionality,
+     - geometry scalars (`q`, `s_hat`, Miller shaping),
+     - selected VMEC/geometry descriptors.
+   - deliverables:
+     - local sensitivity curves,
+     - gradient validation tables,
+     - doc page with interpretation.
+
+2. **Inverse problems**
+   - current two-mode inverse demo becomes the baseline.
+   - add:
+     - three-parameter inverse with regularization,
+     - noisy-observation case,
+     - branch-aware fitting window.
+   - deliverables:
+     - recovery plot,
+     - Hessian / covariance estimate,
+     - identifiability discussion.
+
+3. **Uncertainty quantification**
+   - start with local Gaussian/Laplace UQ:
+     - Jacobian-based covariance,
+     - Hessian-vector products,
+     - propagated uncertainty on `gamma`, `omega`, and transport windows.
+   - then add ensemble or unscented transform tests on reduced problems.
+   - deliverables:
+     - confidence intervals,
+     - parameter posterior approximation,
+     - propagated output uncertainty plots.
+
+4. **Stellarator optimization**
+   - stage 1: optimize cheap proxy objectives on imported geometry or small
+     local descriptors.
+   - stage 2: couple to a differentiable geometry backend (`vmec_jax` where
+     available, or DESC/SIMSOPT-compatible descriptors).
+   - stage 3: optimize turbulence proxies or nonlinear windowed metrics.
+   - deliverables:
+     - one end-to-end optimization example,
+     - gradient verification,
+     - documented failure modes and regularization.
+
+### Workstream 4: Stellarator-Optimization Architecture
+
+#### Objective
+
+Make SPECTRAX-GK usable inside a modern optimization loop for stellarators.
+
+#### External pattern to follow
+
+- **DESC** shows how to expose geometry and equilibrium quantities through an
+  autodiff-friendly stack.
+- **SIMSOPT** shows practical optimization orchestration, constraints, and
+  objective composition.
+- **GX + DESC optimization** shows that turbulence metrics can be used inside
+  stellarator design loops.
+
+#### Architecture plan
+
+1. **Geometry differentiation layer**
+   - standardize geometry inputs into differentiable parameter vectors
+   - prefer `vmec_jax` or DESC-derived differentiable geometry paths where
+     available
+   - keep imported `*.eik.nc` paths as non-differentiable frozen references
+
+2. **Objective layer**
+   - expose scalar objectives:
+     - linear growth rate,
+     - real frequency,
+     - heat-flux window mean,
+     - weighted multi-objective turbulence score
+   - expose constraints:
+     - geometry validity,
+     - profile bounds,
+     - resolution adequacy,
+     - optimization trust region
+
+3. **Derivative layer**
+   - support:
+     - `grad`,
+     - `jacfwd/jacrev`,
+     - Hessian-vector products,
+     - checkpointed differentiation for memory control
+
+4. **Optimization layer**
+   - start with local deterministic optimizers:
+     - L-BFGS-B
+     - trust-constr
+     - projected gradient
+   - then add robust/noisy alternatives for nonlinear objectives.
+
+5. **Research examples**
+   - sensitivity map on W7-X or HSX local geometry
+   - inverse fit to a target `gamma(k_y)` spectrum
+   - uncertainty propagation through a linear scan
+   - small stellarator shape optimization loop using a low-dimensional geometry
+     parameterization
+
+### Workstream 5: Documentation and Research Artifact Discipline
+
+#### Objective
+
+Make the code publishable as a research tool, not just runnable.
+
+#### Deliverables
+
+1. `docs/testing.rst`
+   - split into:
+     - verification methodology,
+     - benchmark matrix,
+     - acceptance tolerances,
+     - open vs closed lanes.
+
+2. `docs/theory.rst` / `docs/numerics.rst`
+   - explicitly connect each operator and discretization choice to the tests
+     that validate it.
+
+3. `docs/examples.rst`
+   - mark each example as:
+     - validated benchmark,
+     - validated differentiable demo,
+     - exploratory demo,
+     - deprecated/demoted.
+
+4. new `docs/autodiff.rst`
+   - sensitivity analysis,
+   - inverse design,
+   - UQ,
+   - optimization workflows,
+   - gradient-validation methodology.
+
+5. artifact discipline
+   - every figure in README/docs must be reproducible from checked-in scripts
+   - every published benchmark figure must declare:
+     - case,
+     - horizon/window,
+     - reference,
+     - acceptance status.
+
+### Workstream 6: Source-Tree Modularization and Testability Refactor
+
+#### Objective
+
+Create a dedicated refactor track that splits the current large source files
+into smaller, testable, reviewable modules that match standard software
+engineering practice, while keeping solver functionality, numerical behavior,
+and parity contracts unchanged.
+
+This work must happen on the dedicated branch:
+
+- `refactor/modularize-core-for-validation`
+
+#### Non-negotiable constraints
+
+- no intentional physics-model change,
+- no intentional numerical-contract change,
+- no intentional benchmark-reference change,
+- no intentional public parity drift against the currently accepted GX-backed
+  lanes,
+- no silent API break on the public executable/runtime surface.
+
+Every refactor PR or checkpoint on this branch must satisfy:
+
+- targeted unit tests for the extracted module,
+- regression tests against the pre-refactor behavior,
+- parity tests unchanged or tighter,
+- docs/comments/docstrings updated together with the code move.
+
+#### Modules that should be decomposed first
+
+1. `src/spectraxgk/runtime.py`
+   split into likely submodules such as:
+   - runtime loading / startup
+   - runtime execution wrappers
+   - adaptive chunking helpers
+   - diagnostics/result assembly
+   - restart/output handling
+
+2. `src/spectraxgk/benchmarks.py`
+   split into:
+   - reference data loading
+   - scan-family runners (Cyclone / ETG / KBM / TEM / kinetic / stellarator)
+   - fit-signal and fallback policies
+   - benchmark result dataclasses
+
+3. `src/spectraxgk/linear.py`
+   split into:
+   - linear parameter/cache setup
+   - linear RHS/assembly-facing helpers
+   - explicit integrators
+   - diagnostics extractors
+   - runtime-facing wrappers
+
+4. `src/spectraxgk/nonlinear.py`
+   split into:
+   - nonlinear parameter/config setup
+   - explicit step helpers
+   - IMEX step helpers
+   - diagnostics accumulation
+   - GX-style resolved outputs
+
+5. `src/spectraxgk/runtime_artifacts.py`
+   split into:
+   - serialization schema/dataclasses
+   - NetCDF/HDF5/JSON writers
+   - summary builders
+   - plotting-facing artifact readers
+
+6. `src/spectraxgk/diffrax_integrators.py`
+   split into:
+   - diffrax linear wrappers
+   - diffrax nonlinear wrappers
+   - save-mode adapters
+   - helper utilities
+
+7. `src/spectraxgk/diagnostics.py`
+   split into:
+   - scalar diagnostics
+   - resolved diagnostics
+   - flux diagnostics
+   - window/statistics helpers
+
+8. `src/spectraxgk/from_gx/vmec.py`
+   split into:
+   - file loading / dependency detection
+   - geometry remap/cut helpers
+   - VMEC/Boozer transforms
+   - normalization/output adapters
+
+#### Refactor method
+
+For each file family:
+
+1. freeze current behavior with regression tests,
+2. identify cohesive internal APIs,
+3. extract pure helpers first,
+4. extract dataclasses/config structures next,
+5. extract runtime/IO wrappers last,
+6. preserve compatibility shims until the whole tree is migrated,
+7. only remove old compatibility paths after all tests and docs are updated.
+
+#### Test strategy for the refactor branch
+
+Each extraction must be covered by four test layers:
+
+1. **unit tests**
+   - pure functions
+   - validators
+   - dataclass conversions
+   - shape/contract checks
+
+2. **numerical tests**
+   - manufactured solutions
+   - observed-order tests
+   - symmetry/invariant limits
+
+3. **physics/literature tests**
+   - gamma/omega benchmark observables
+   - nonlinear windowed transport observables
+   - eigenfunction or mode-envelope behavior
+
+4. **regression tests**
+   - artifact compatibility
+   - CLI/runtime contracts
+   - unchanged outputs on tracked benchmark cases
+
+#### Documentation/comments/docstrings policy
+
+This refactor branch should also raise the internal documentation quality of
+the codebase.
+
+Requirements:
+
+- every public function/class gets a concise docstring with:
+  - purpose,
+  - expected shapes/contracts,
+  - units or normalization assumptions where relevant
+- every internal helper that is nontrivial gets either:
+  - a docstring, or
+  - a short local comment explaining the algorithmic role
+- comments should explain **why** the step exists, not restate the code
+- physics-facing routines should identify the operator or equation term they
+  implement
+- benchmark-facing routines should identify the benchmark family and reference
+  contract they correspond to
+
+#### Acceptance criteria for the refactor branch
+
+The branch is ready to merge only when:
+
+- package-wide coverage is at or above 95%,
+- the benchmark matrix still passes within the accepted tolerances,
+- the current shipped examples still run,
+- public artifact formats remain readable,
+- autodiff demos still validate gradients and inverse recovery,
+- docstrings/comments are present on all refactored public APIs,
+- the source tree is materially easier to navigate:
+  - smaller files,
+  - fewer mixed responsibilities,
+  - clearer module boundaries.
+
+#### Concrete first refactor tranche
+
+1. `runtime.py`
+   - extract startup/loading helpers
+   - extract adaptive chunk helpers
+   - extract result assembly helpers
+
+2. `benchmarks.py`
+   - extract fit-window/signal policy helpers
+   - extract scan-runner families into separate modules
+
+3. `linear.py`
+   - extract explicit integrator helpers and diagnostics helpers
+
+4. carry over:
+   - targeted unit tests,
+   - parity regressions,
+   - docstrings/comments for every newly extracted API.
+
+### Workstream 7: Concrete Execution Order
+
+#### Phase 1: Close the measurement layer
+
+- raise `runtime_artifacts.py`, `diagnostics.py`, `io.py`, and plotting to
+  near-complete coverage,
+- ensure every benchmark and autodiff example writes a stable machine-readable
+  artifact bundle,
+- make benchmark gate utilities the standard way to evaluate runs.
+
+#### Phase 2: Close the solver-core coverage
+
+- `runtime.py`
+- `linear.py`
+- `nonlinear.py`
+- `diffrax_integrators.py`
+- `terms/assembly.py`
+- `terms/nonlinear.py`
+
+Target after Phase 2:
+
+- all core solver modules above 85%,
+- package-wide coverage above 75%,
+- no known untested runtime-result contracts.
+
+#### Phase 3: Close the benchmark matrix
+
+- freeze accepted reference datasets,
+- add missing zonal-flow/eigenfunction/near-marginal cases,
+- decide TEM/KAW/kinetic-electron Cyclone status honestly:
+  - close,
+  - or demote from headline validation.
+
+Target after Phase 3:
+
+- full benchmark matrix with acceptance tables,
+- README/docs only claim closed lanes.
+
+#### Phase 4: Validate differentiated observables
+
+- sensitivity gradients,
+- inverse problem recovery,
+- covariance/UQ,
+- gradient checks on geometry parameters.
+
+Target after Phase 4:
+
+- `docs/autodiff.rst` complete,
+- research-grade autodiff examples shipped,
+- every public derivative backed by a validation test.
+
+#### Phase 5: Stellarator optimization prototype
+
+- one small but end-to-end differentiable optimization example
+  using imported or differentiable geometry,
+- compare with DESC/SIMSOPT workflow expectations,
+- document performance and conditioning limits.
+
+Target after Phase 5:
+
+- SPECTRAX-GK is usable as a validated local differentiable turbulence engine
+  inside a stellarator optimization workflow.
+
+#### Phase 6: Merge the modular refactor branch
+
+- land the source-tree decomposition once the coverage and parity gates hold,
+- remove compatibility shims only after the new module boundaries are stable,
+- treat this as the software-engineering consolidation phase that makes future
+  validation and optimization work sustainable.
+
+### Immediate Next Actions
+
+1. **Coverage**
+   - keep pushing on:
+     - `runtime.py`
+     - `linear.py`
+     - `nonlinear.py`
+     - `benchmarks.py`
+     - `diffrax_integrators.py`
+     - `runtime_artifacts.py`
+     - `diagnostics.py`
+     - `from_gx/vmec.py`
+
+2. **Benchmark closure**
+   - formalize the current closed matrix in a machine-readable manifest,
+   - add missing linear zonal-flow and eigenfunction overlap checks,
+   - decide whether TEM and KAW remain public examples or become experimental.
+
+3. **Autodiff**
+   - add a sensitivity-analysis example before adding more inverse demos,
+   - add gradient-vs-finite-difference tests for the current two-mode inverse,
+   - add local covariance/UQ around the existing inverse examples.
+
+4. **Optimization**
+   - define the first low-dimensional stellarator objective and geometry
+     parameterization,
+   - prototype the geometry derivative path using a differentiable backend,
+     preferring `vmec_jax`/DESC-compatible routes over legacy VMEC-only paths.
+
+5. **Documentation**
+   - split validated vs exploratory examples,
+   - add benchmark acceptance tables,
+   - add an autodiff/UQ/optimization documentation chapter.
 
 ## Current Ship Status
 
