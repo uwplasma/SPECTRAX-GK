@@ -42,6 +42,7 @@ from spectraxgk.runtime import (
 )
 from spectraxgk.runtime_config import (
     RuntimeConfig,
+    RuntimeExpertConfig,
     RuntimeNormalizationConfig,
     RuntimeOutputConfig,
     RuntimePhysicsConfig,
@@ -639,3 +640,134 @@ def test_run_runtime_nonlinear_return_state_uses_diagnostics_path(monkeypatch: p
     assert out.diagnostics is None
     assert out.state is not None
     assert out.phi2 is not None
+
+
+def test_run_runtime_nonlinear_fixed_mode_requires_indices() -> None:
+    cfg = replace(
+        _base_cfg(),
+        physics=RuntimePhysicsConfig(adiabatic_electrons=True, nonlinear=True),
+        expert=RuntimeExpertConfig(fixed_mode=True, iky_fixed=None, ikx_fixed=None),
+    )
+    with pytest.raises(ValueError, match="expert.iky_fixed and expert.ikx_fixed"):
+        run_runtime_nonlinear(cfg, ky_target=0.2, Nl=3, Nm=4)
+
+
+def test_run_runtime_nonlinear_adaptive_chunk_requires_progress(monkeypatch: pytest.MonkeyPatch) -> None:
+    import spectraxgk.runtime as runtime
+
+    cfg = replace(
+        _base_cfg(),
+        physics=RuntimePhysicsConfig(adiabatic_electrons=True, nonlinear=True),
+        time=replace(_base_cfg().time, fixed_dt=False, t_max=0.3, dt=0.1, diagnostics=True),
+    )
+    geom = build_runtime_geometry(cfg)
+    grid = build_spectral_grid(cfg.grid)
+
+    monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: geom)
+    monkeypatch.setattr(runtime, "build_runtime_linear_params", lambda *args, **kwargs: type("P", (), {"rho_star": np.asarray(1.0)})())
+    monkeypatch.setattr(runtime, "build_runtime_term_config", lambda _cfg: object())
+    monkeypatch.setattr(runtime, "_select_nonlinear_mode_indices", lambda *args, **kwargs: (1, 0))
+    monkeypatch.setattr(
+        runtime,
+        "_build_initial_condition",
+        lambda *args, **kwargs: np.zeros((1, 3, 4, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64),
+    )
+
+    def _fake_diag_integrator(*args, **kwargs):
+        t = np.asarray([0.0], dtype=float)
+        diag = SimulationDiagnostics(
+            t=t,
+            dt_t=np.asarray([0.1], dtype=float),
+            dt_mean=float(0.1),
+            gamma_t=np.zeros_like(t),
+            omega_t=np.zeros_like(t),
+            Wg_t=np.zeros_like(t),
+            Wphi_t=np.zeros_like(t),
+            Wapar_t=np.zeros_like(t),
+            heat_flux_t=np.zeros_like(t),
+            particle_flux_t=np.zeros_like(t),
+            energy_t=np.zeros_like(t),
+        )
+        return t, diag, np.zeros((1, 3, 4, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64), FieldState(
+            phi=np.ones((grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64),
+            apar=None,
+            bpar=None,
+        )
+
+    monkeypatch.setattr(runtime, "integrate_nonlinear_gx_diagnostics_state", _fake_diag_integrator)
+
+    with pytest.raises(RuntimeError, match="made no time-step progress"):
+        run_runtime_nonlinear(cfg, ky_target=0.2, Nl=3, Nm=4, diagnostics=True)
+
+
+def test_run_runtime_nonlinear_adaptive_chunk_forwards_fixed_mode_and_collision_split(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import spectraxgk.runtime as runtime
+
+    base = _base_cfg()
+    cfg = replace(
+        base,
+        physics=RuntimePhysicsConfig(adiabatic_electrons=True, nonlinear=True),
+        time=replace(
+            base.time,
+            fixed_dt=False,
+            t_max=0.35,
+            dt=0.1,
+            diagnostics=True,
+            collision_split=True,
+            collision_scheme="exp",
+        ),
+        expert=RuntimeExpertConfig(fixed_mode=True, iky_fixed=1, ikx_fixed=0),
+    )
+    geom = build_runtime_geometry(cfg)
+    grid = build_spectral_grid(cfg.grid)
+    captured: list[dict[str, object]] = []
+
+    monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: geom)
+    monkeypatch.setattr(runtime, "build_runtime_linear_params", lambda *args, **kwargs: type("P", (), {"rho_star": np.asarray(1.0)})())
+    monkeypatch.setattr(runtime, "build_runtime_term_config", lambda _cfg: object())
+    monkeypatch.setattr(runtime, "_select_nonlinear_mode_indices", lambda *args, **kwargs: (1, 0))
+    monkeypatch.setattr(
+        runtime,
+        "_build_initial_condition",
+        lambda *args, **kwargs: np.zeros((1, 3, 4, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64),
+    )
+
+    def _fake_diag_integrator(*args, **kwargs):
+        captured.append(dict(kwargs))
+        t = np.asarray([0.1, 0.2], dtype=float)
+        diag = SimulationDiagnostics(
+            t=t,
+            dt_t=np.asarray([0.1, 0.1], dtype=float),
+            dt_mean=float(0.1),
+            gamma_t=np.asarray([0.0, 0.0], dtype=float),
+            omega_t=np.asarray([0.0, 0.0], dtype=float),
+            Wg_t=np.asarray([0.0, 0.0], dtype=float),
+            Wphi_t=np.asarray([1.0, 1.2], dtype=float),
+            Wapar_t=np.asarray([0.0, 0.0], dtype=float),
+            heat_flux_t=np.asarray([0.0, 0.0], dtype=float),
+            particle_flux_t=np.asarray([0.0, 0.0], dtype=float),
+            energy_t=np.asarray([0.0, 0.0], dtype=float),
+        )
+        return t, diag, np.ones((1, 3, 4, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64), FieldState(
+            phi=np.ones((grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64),
+            apar=None,
+            bpar=None,
+        )
+
+    monkeypatch.setattr(runtime, "integrate_nonlinear_gx_diagnostics_state", _fake_diag_integrator)
+
+    out = run_runtime_nonlinear(cfg, ky_target=0.2, Nl=3, Nm=4, diagnostics=True, show_progress=True)
+
+    assert len(captured) == 2
+    assert captured[0]["fixed_dt"] is False
+    assert captured[0]["collision_split"] is True
+    assert captured[0]["collision_scheme"] == "exp"
+    assert captured[0]["fixed_mode_ky_index"] == 1
+    assert captured[0]["fixed_mode_kx_index"] == 0
+    assert captured[0]["show_progress"] is True
+    assert out.diagnostics is not None
+    assert out.state is None
+    assert out.fields is not None
+    np.testing.assert_allclose(out.diagnostics.t, [0.1, 0.2, 0.3, 0.4])

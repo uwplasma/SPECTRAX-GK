@@ -373,6 +373,40 @@ def test_integrate_nonlinear_gx_diagnostics_forwarding_contracts(monkeypatch) ->
     assert captured["fixed_mode_kx_index"] == 1
 
 
+def test_integrate_nonlinear_gx_diagnostics_imex_forwarding_contracts(monkeypatch) -> None:
+    captured: dict[str, object] = {}
+
+    def _fake_imex(*args, **kwargs):
+        captured.update(kwargs)
+        return ("t_imex", "diag_imex")
+
+    monkeypatch.setattr("spectraxgk.nonlinear.integrate_nonlinear_imex_gx_diagnostics", _fake_imex)
+
+    out = integrate_nonlinear_gx_diagnostics(
+        jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64),
+        SimpleNamespace(),
+        SimpleNamespace(),
+        SimpleNamespace(),
+        dt=0.1,
+        steps=2,
+        method="semi-implicit",
+        collision_split=True,
+        collision_scheme="exp",
+        implicit_preconditioner="identity",
+        fixed_mode_ky_index=1,
+        fixed_mode_kx_index=0,
+        show_progress=True,
+    )
+
+    assert out == ("t_imex", "diag_imex")
+    assert captured["collision_split"] is True
+    assert captured["collision_scheme"] == "exp"
+    assert captured["implicit_preconditioner"] == "identity"
+    assert captured["fixed_mode_ky_index"] == 1
+    assert captured["fixed_mode_kx_index"] == 0
+    assert captured["show_progress"] is True
+
+
 def test_integrate_nonlinear_imex_gx_diagnostics_rejects_bad_shape(monkeypatch) -> None:
     monkeypatch.setattr("spectraxgk.nonlinear.ensure_flux_tube_geometry_data", lambda geom, z: geom)
     with pytest.raises(ValueError):
