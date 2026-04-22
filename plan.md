@@ -92,6 +92,23 @@ wall-clock budget. The next pass should therefore target a bounded raw-overlay
 extraction path with the same physics contract but lower runtime cost, staying
 below the hard `600 s` ceiling.
 
+That bounded-cost KBM raw-overlay pass has now been run once and produced the
+first matched SPECTRAX-side raw-mode artifacts:
+
+- `docs/_static/reference_modes/kbm_linear_spectrax_ky0p3000.csv`
+- `docs/_static/kbm_eigenfunction_reference_overlay_ky0p3000.png`
+
+The run stayed within the explicit `600 s` budget only narrowly and the result
+is **not** yet manuscript-ready: the current bounded extraction gives roughly
+`0.63` normalized overlap and `1.74` relative `L^2` mismatch against the frozen
+GX raw mode. This now makes the remaining task concrete:
+
+1. improve the SPECTRAX-side raw eigenfunction extraction quality without
+   changing the KBM physics contract,
+2. keep the bounded runtime below `600 s`,
+3. only then promote the raw overlay figure from an open diagnostic to a paper
+   figure.
+
 ### Planning Principles
 
 - Tests must target **physics contracts**, **numerical contracts**, or
@@ -338,9 +355,11 @@ New raw-reference assets now available:
 
 Immediate next manuscript-facing deliverables:
 
-1. First raw phase-aligned KBM overlay figure from:
+1. Improve the bounded-cost KBM raw overlay until the overlap/mismatch metrics
+   are publication quality, using:
    - `docs/_static/reference_modes/kbm_linear_gx_ky0p3000.npz`
-   - a bounded-cost matched SPECTRAX eigenfunction extraction.
+   - `docs/_static/reference_modes/kbm_linear_spectrax_ky0p3000.csv`
+   - `docs/_static/kbm_eigenfunction_reference_overlay_ky0p3000.png`
 2. First raw phase-aligned W7-X overlay figure from:
    - `docs/_static/reference_modes/w7x_linear_gx_ky0p3000.npz`
    - a bounded-cost matched SPECTRAX eigenfunction extraction.
