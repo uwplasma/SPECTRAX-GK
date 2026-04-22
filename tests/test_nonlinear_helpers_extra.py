@@ -11,6 +11,7 @@ from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.linear import LinearParams, build_linear_cache
 from spectraxgk.nonlinear import (
+    _apply_collision_split,
     _collision_damping,
     _gx_nonlinear_omega_components,
     _gx_omega_mode_mask,
@@ -18,6 +19,8 @@ from spectraxgk.nonlinear import (
     _make_hermitian_projector,
     _pack_resolved_diagnostics,
     build_nonlinear_imex_operator,
+    integrate_nonlinear,
+    integrate_nonlinear_cached,
 )
 from spectraxgk.terms.config import FieldState, TermConfig
 
@@ -141,3 +144,86 @@ def test_gx_nonlinear_omega_components_zero_and_finite() -> None:
     assert np.isfinite(float(oy))
     assert float(ox) >= 0.0
     assert float(oy) >= 0.0
+
+
+def test_apply_collision_split_and_nonlinear_wrapper_routing(monkeypatch) -> None:
+    G = jnp.ones((2, 2, 1, 1, 1), dtype=jnp.complex64)
+    damping = jnp.ones_like(G.real)
+    implicit = _apply_collision_split(G, damping, jnp.asarray(0.1, dtype=jnp.float32), "implicit")
+    exp = _apply_collision_split(G, damping, jnp.asarray(0.1, dtype=jnp.float32), "exp")
+    assert np.all(np.isfinite(np.asarray(implicit)))
+    assert np.all(np.isfinite(np.asarray(exp)))
+    with pytest.raises(ValueError):
+        _apply_collision_split(G, damping, jnp.asarray(0.1, dtype=jnp.float32), "bad")
+
+    monkeypatch.setattr(
+        "spectraxgk.nonlinear.integrate_nonlinear_imex_cached",
+        lambda *args, **kwargs: ("imex", "fields"),
+    )
+    assert integrate_nonlinear_cached(
+        G,
+        SimpleNamespace(ky=jnp.asarray([0.0, 0.2]), kx=jnp.asarray([0.0]), Jl=None, JlB=None, laguerre_to_grid=None, laguerre_to_spectral=None, laguerre_roots=None, laguerre_j0=None, laguerre_j1_over_alpha=None, b=None, dealias_mask=None, kxfac=1.0),
+        SimpleNamespace(),
+        dt=0.1,
+        steps=2,
+        method="semi-implicit",
+    ) == ("imex", "fields")
+
+    captured: dict[str, object] = {}
+
+    def _fake_scan(rhs_fn, G0, dt, steps, **kwargs):
+        captured["project_state"] = kwargs.get("project_state")
+        return G0, FieldState(phi=jnp.zeros((4, 2, 2), dtype=jnp.complex64), apar=None, bpar=None)
+
+    monkeypatch.setattr("spectraxgk.nonlinear.integrate_nonlinear_scan", _fake_scan)
+    out_G, out_fields = integrate_nonlinear_cached(
+        jnp.zeros((1, 4, 2, 2), dtype=jnp.complex64),
+        SimpleNamespace(
+            ky=jnp.asarray([0.0, 0.2, -0.2, -0.4]),
+            kx=jnp.asarray([0.0, 0.5]),
+            Jl=None,
+            JlB=None,
+            laguerre_to_grid=None,
+            laguerre_to_spectral=None,
+            laguerre_roots=None,
+            laguerre_j0=None,
+            laguerre_j1_over_alpha=None,
+            b=None,
+            dealias_mask=jnp.ones((4, 2), dtype=bool),
+            kxfac=1.0,
+        ),
+        SimpleNamespace(),
+        dt=0.1,
+        steps=2,
+        method="rk2",
+        gx_real_fft=True,
+    )
+    assert out_G.shape == (1, 4, 2, 2)
+    assert captured["project_state"] is not None
+    assert out_fields.phi.shape == (4, 2, 2)
+
+
+def test_integrate_nonlinear_builds_cache_and_rejects_bad_shape(monkeypatch) -> None:
+    calls: list[tuple[int, int]] = []
+    monkeypatch.setattr("spectraxgk.nonlinear.ensure_flux_tube_geometry_data", lambda geom, z: "geom_eff")
+    monkeypatch.setattr(
+        "spectraxgk.nonlinear.build_linear_cache",
+        lambda grid, geom, params, Nl, Nm: calls.append((Nl, Nm)) or "cache",
+    )
+    monkeypatch.setattr(
+        "spectraxgk.nonlinear.integrate_nonlinear_cached",
+        lambda G0, cache, params, dt, steps, **kwargs: ("G_out", "fields_out"),
+    )
+
+    assert integrate_nonlinear(
+        jnp.zeros((2, 3, 1, 1, 4), dtype=jnp.complex64),
+        SimpleNamespace(z=np.array([-1.0, 0.0, 1.0, 2.0])),
+        object(),
+        object(),
+        dt=0.1,
+        steps=2,
+    ) == ("G_out", "fields_out")
+    assert calls == [(2, 3)]
+
+    with pytest.raises(ValueError):
+        integrate_nonlinear(jnp.zeros((2, 2), dtype=jnp.complex64), SimpleNamespace(z=np.array([0.0])), object(), object(), dt=0.1, steps=2)

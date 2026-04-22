@@ -2,11 +2,13 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
+import jax
 import jax.numpy as jnp
 import numpy as np
 import pytest
 
 from spectraxgk.linear import (
+    LinearParams,
     LinearTerms,
     _as_species_array,
     _build_implicit_operator,
@@ -18,6 +20,8 @@ from spectraxgk.linear import (
     _signed_to_index,
     integrate_linear,
     integrate_linear_diagnostics,
+    linear_terms_to_term_config,
+    term_config_to_linear_terms,
 )
 
 
@@ -47,6 +51,20 @@ def test_as_species_array_and_preconditioner_resolution() -> None:
     assert _resolve_implicit_preconditioner("  Damping ") == "damping"
     fn = lambda x: x
     assert _resolve_implicit_preconditioner(fn) is fn
+
+
+def test_linear_params_and_terms_roundtrip() -> None:
+    params = LinearParams(charge_sign=jnp.asarray([1.0, -1.0]), nu=jnp.asarray([0.1, 0.2]), beta=0.3)
+    leaves, treedef = jax.tree_util.tree_flatten(params)
+    restored = jax.tree_util.tree_unflatten(treedef, leaves)
+    np.testing.assert_allclose(np.asarray(restored.charge_sign), [1.0, -1.0])
+    np.testing.assert_allclose(np.asarray(restored.nu), [0.1, 0.2])
+    assert float(restored.beta) == pytest.approx(0.3)
+
+    terms = LinearTerms(apar=0.0, bpar=0.0, hyperdiffusion=1.0)
+    term_cfg = linear_terms_to_term_config(terms, nonlinear=0.25)
+    assert float(term_cfg.nonlinear) == pytest.approx(0.25)
+    assert term_config_to_linear_terms(term_cfg) == terms
 
 
 def test_signed_to_index_and_linked_end_damping_profile() -> None:
@@ -277,3 +295,58 @@ def test_integrate_linear_diagnostics_builds_cache_and_uses_imex2(monkeypatch) -
     assert G_out.shape == G0.shape
     assert phi_t.shape[0] == 2
     assert density_t.shape[0] == 2
+
+
+def test_integrate_linear_diagnostics_species_none_and_5d_density_paths(monkeypatch) -> None:
+    cache6 = SimpleNamespace(
+        lb_lam=jnp.zeros((2, 2, 2, 1, 1, 2), dtype=jnp.float32),
+        Jl=jnp.ones((2, 2, 1, 1, 2), dtype=jnp.float32),
+    )
+    cache5 = SimpleNamespace(
+        lb_lam=jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.float32),
+        Jl=jnp.ones((2, 1, 1, 2), dtype=jnp.float32),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.linear.hypercollision_damping",
+        lambda cache, params, dtype: jnp.zeros_like(cache.lb_lam, dtype=dtype),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.linear.linear_rhs_cached",
+        lambda G, cache, params, **kwargs: (jnp.ones_like(G), jnp.ones((1, 1, 2), dtype=jnp.complex64)),
+    )
+
+    G6 = jnp.zeros((2, 2, 2, 1, 1, 2), dtype=jnp.complex64)
+    G6_out, phi6_t, density6_t = integrate_linear_diagnostics(
+        G6,
+        object(),
+        object(),
+        SimpleNamespace(nu=jnp.asarray([0.0, 0.0])),
+        dt=0.1,
+        steps=2,
+        method="sspx3",
+        cache=cache6,
+        sample_stride=1,
+        species_index=None,
+        record_hl_energy=False,
+    )
+    assert G6_out.shape == G6.shape
+    assert phi6_t.shape[0] == 2
+    assert density6_t.shape[0] == 2
+
+    G5 = jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64)
+    G5_out, phi5_t, density5_t = integrate_linear_diagnostics(
+        G5,
+        object(),
+        object(),
+        SimpleNamespace(nu=0.0),
+        dt=0.1,
+        steps=2,
+        method="rk4",
+        cache=cache5,
+        sample_stride=1,
+        species_index=0,
+        record_hl_energy=False,
+    )
+    assert G5_out.shape == G5.shape
+    assert phi5_t.shape[0] == 2
+    assert density5_t.shape[0] == 2

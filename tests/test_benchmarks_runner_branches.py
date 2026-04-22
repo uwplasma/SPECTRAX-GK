@@ -4,6 +4,7 @@ from dataclasses import replace
 from types import SimpleNamespace
 
 import numpy as np
+import pytest
 
 from spectraxgk.config import CycloneBaseCase, ETGBaseCase, KBMBaseCase, TimeConfig
 from spectraxgk.linear import LinearTerms
@@ -13,7 +14,9 @@ from spectraxgk.benchmarks import (
     run_cyclone_scan,
     run_etg_linear,
     run_kinetic_linear,
+    run_kbm_beta_scan,
     run_kbm_linear,
+    run_kbm_scan,
     run_tem_linear,
 )
 
@@ -381,3 +384,93 @@ def test_run_cyclone_scan_auto_gx_time_falls_back_to_krylov(monkeypatch) -> None
 
     np.testing.assert_allclose(scan.gamma, [0.25])
     np.testing.assert_allclose(scan.omega, [0.4])
+
+
+def test_run_kbm_scan_forwards_per_mode_arrays(monkeypatch) -> None:
+    calls: list[dict[str, object]] = []
+
+    def _fake_run_kbm_beta_scan(**kwargs):
+        calls.append(kwargs)
+        ky = float(kwargs["ky_target"])
+        return SimpleNamespace(gamma=np.array([ky + 1.0]), omega=np.array([-ky - 2.0]))
+
+    monkeypatch.setattr("spectraxgk.benchmarks.run_kbm_beta_scan", _fake_run_kbm_beta_scan)
+
+    scan = run_kbm_scan(
+        np.array([0.2, 0.4]),
+        beta_value=1.0e-4,
+        dt=np.array([0.1, 0.2]),
+        steps=np.array([3, 4]),
+        tmin=np.array([0.0, 1.0]),
+        tmax=np.array([2.0, 3.0]),
+    )
+
+    assert len(calls) == 2
+    assert calls[0]["dt"] == 0.1
+    assert calls[1]["dt"] == 0.2
+    assert calls[0]["steps"] == 3
+    assert calls[1]["steps"] == 4
+    assert calls[0]["tmin"] == 0.0
+    assert calls[1]["tmin"] == 1.0
+    assert calls[0]["tmax"] == 2.0
+    assert calls[1]["tmax"] == 3.0
+    np.testing.assert_allclose(scan.gamma, [1.2, 1.4])
+    np.testing.assert_allclose(scan.omega, [-2.2, -2.4])
+
+
+def test_run_kbm_beta_scan_rejects_invalid_species_indices() -> None:
+    with pytest.raises(ValueError):
+        run_kbm_beta_scan(np.array([1.0e-4]), init_species_index=-1)
+    with pytest.raises(ValueError):
+        run_kbm_beta_scan(np.array([1.0e-4]), density_species_index=2)
+
+
+def test_run_kbm_beta_scan_auto_krylov_invalid_growth_falls_back_to_time(monkeypatch) -> None:
+    monkeypatch.setattr("spectraxgk.benchmarks.build_spectral_grid", lambda cfg: _grid_full())
+    monkeypatch.setattr("spectraxgk.benchmarks.select_ky_grid", lambda grid, idx: _grid_sel())
+    monkeypatch.setattr(
+        "spectraxgk.benchmarks.SAlphaGeometry.from_config",
+        lambda cfg: SimpleNamespace(gradpar=lambda: 1.0),
+    )
+    monkeypatch.setattr("spectraxgk.benchmarks.build_linear_cache", lambda *args, **kwargs: SimpleNamespace())
+    monkeypatch.setattr(
+        "spectraxgk.benchmarks._two_species_params",
+        lambda *args, **kwargs: SimpleNamespace(rho_star=1.0, nu=0.0),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.benchmarks._build_initial_condition",
+        lambda *args, **kwargs: np.zeros((2, 2, 1, 1, 3), dtype=np.complex64),
+    )
+    monkeypatch.setattr("spectraxgk.benchmarks.select_kbm_solver_auto", lambda *args, **kwargs: "krylov")
+    monkeypatch.setattr(
+        "spectraxgk.benchmarks.dominant_eigenpair",
+        lambda *args, **kwargs: (-0.1 + 0.2j, np.zeros((2, 2, 2, 1, 1, 3), dtype=np.complex64)),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.benchmarks.integrate_linear_diagnostics",
+        lambda *args, **kwargs: (
+            np.zeros((2, 2, 2, 1, 1, 3), dtype=np.complex64),
+            np.ones((2, 1, 1, 3), dtype=np.complex64),
+            2.0 * np.ones((2, 1, 1, 3), dtype=np.complex64),
+        ),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.benchmarks._select_fit_signal",
+        lambda *args, **kwargs: np.array([1.0 + 0.0j, 2.0 + 0.0j]),
+    )
+    monkeypatch.setattr("spectraxgk.benchmarks.fit_growth_rate_auto", lambda *args, **kwargs: (0.15, -0.07, 0.0, 1.0))
+    monkeypatch.setattr("spectraxgk.benchmarks._normalize_growth_rate", lambda g, o, params, norm: (g, o))
+
+    scan = run_kbm_beta_scan(
+        np.array([1.0e-4]),
+        solver="auto",
+        fit_signal="density",
+        gx_reference=False,
+        Nl=2,
+        Nm=2,
+        dt=0.1,
+        steps=2,
+    )
+
+    np.testing.assert_allclose(scan.gamma, [0.15])
+    np.testing.assert_allclose(scan.omega, [-0.07])
