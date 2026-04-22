@@ -493,12 +493,14 @@ def test_runtime_linear_diffrax_project_mode_keeps_full_field_history(monkeypatc
         return np.zeros((1, 3, 4, 1, 1, grid.z.size), dtype=np.complex64), phi_t
 
     monkeypatch.setattr(runtime, "integrate_linear_from_config", _fake_integrate_linear_from_config)
+    gamma_ref = 0.25
+    omega_ref = -0.12
+    t_saved = np.asarray([0.01, 0.02, 0.03], dtype=float)
     monkeypatch.setattr(
         runtime,
         "extract_mode_time_series",
-        lambda phi_t, sel, method="project": np.asarray([1.0, 2.0, 4.0], dtype=np.complex128),
+        lambda phi_t, sel, method="project": np.exp((gamma_ref - 1j * omega_ref) * t_saved).astype(np.complex128),
     )
-    monkeypatch.setattr(runtime, "fit_growth_rate_auto", lambda *args, **kwargs: (0.25, -0.12, 0.01, 0.03))
     monkeypatch.setattr(runtime, "extract_eigenfunction", lambda *args, **kwargs: np.ones(grid.z.size, dtype=np.complex128))
     monkeypatch.setattr(runtime, "apply_diagnostic_normalization", lambda gamma, omega, **kwargs: (gamma, omega))
 
@@ -514,8 +516,10 @@ def test_runtime_linear_diffrax_project_mode_keeps_full_field_history(monkeypatc
 
     assert res.fit_signal_used == "phi"
     metrics = late_time_linear_metrics(res, tail_fraction=2.0 / 3.0)
-    assert metrics.gamma_fit == pytest.approx(0.25)
-    assert metrics.omega_fit == pytest.approx(-0.12)
+    assert res.gamma == pytest.approx(gamma_ref, rel=1.0e-3)
+    assert res.omega == pytest.approx(omega_ref, rel=1.0e-3)
+    assert metrics.gamma_fit == pytest.approx(gamma_ref, rel=1.0e-3)
+    assert metrics.omega_fit == pytest.approx(omega_ref, rel=1.0e-3)
 
 
 def test_runtime_linear_diffrax_auto_fit_with_density_keeps_full_fields(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -952,7 +956,7 @@ def test_runtime_nonlinear_disable_diagnostics_uses_final_state_integrator(monke
         captured["show_progress"] = kwargs.get("show_progress")
         return (
             np.zeros((1, 3, 4, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64),
-            FieldState(phi=jnp.ones((grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64), apar=None, bpar=None),
+            FieldState(phi=np.ones((grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64), apar=None, bpar=None),
         )
 
     monkeypatch.setattr(runtime, "integrate_nonlinear_from_config", _fake_final_state)
