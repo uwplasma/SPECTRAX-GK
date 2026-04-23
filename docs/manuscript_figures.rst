@@ -41,7 +41,7 @@ Core Validation Figures
    * - Zonal-flow / GAM response panel
      - ``tools/plot_zonal_flow_response.py``, ``tools/plot_zonal_flow_response_from_output.py``, and ``tools/generate_miller_zonal_response_pilot.py``
      - Open
-     - should combine shaped-tokamak Rosenbluth-Hinton-style residuals with W7-X residual/damping envelopes using one figure convention; use signed ``Phi_zonal_mode_kxt`` for publication claims and keep ``Phi2_zonal_t`` only as an intermediate cross-check. The current stepping-stone artifact is ``docs/_static/miller_zonal_response_pilot.png`` from the Merlo-style Miller run on the GX-like ``phiext_full`` contract (`ω_GAM≈0.66`, `~20` envelope peaks), but it remains explicitly pending because the current trace does not settle to a clean stationary residual window.
+     - should combine shaped-tokamak Rosenbluth-Hinton-style residuals with W7-X residual/damping envelopes using one figure convention; use signed ``Phi_zonal_mode_kxt`` for publication claims and keep ``Phi2_zonal_t`` only as an intermediate cross-check. The current stepping-stone artifact is ``docs/_static/miller_zonal_response_pilot.png`` from the Merlo Case-III initial-density setup (``residual≈0.745``, ``ω_GAM≈0.827`` in current units), but it remains explicitly pending because the target residual read from Merlo et al. Figs. 12/16 is about ``0.19`` and the current trace does not settle to the published stationary window.
    * - W7-X fluctuation-spectrum panel
      - dedicated script to add
      - Open
@@ -98,7 +98,11 @@ Open Issues Before Drafting
 ---------------------------
 
 - close or explicitly defer W7-X zonal-flow response
-- add shaped-tokamak Rosenbluth-Hinton / GAM response benchmarks
+- close the shaped-tokamak Rosenbluth-Hinton / GAM response benchmark; the
+  Merlo Case-III artifact is now explicit but remains a failing diagnostic
+  lane, not a publication claim
+- fix and test restart/checkpoint continuation for zonal initial-density
+  runs before using chunked long-window RH/GAM artifacts
 - add W7-X fluctuation-spectrum figures tied to the DR-comparison conventions
 - add eigenfunction-overlap metrics to the linear figure stack
 - freeze representative reference mode bundles under ``docs/_static/reference_modes/`` before drafting raw overlay figures

@@ -410,7 +410,8 @@ Immediate next manuscript-facing deliverables:
    - one figure convention shared across geometries.
    - current stepping-stone artifact: `docs/_static/miller_zonal_response_pilot.png`
      from `tools/generate_miller_zonal_response_pilot.py`; keep it in the paper
-     inventory as pending until the excitation contract is literature-grade.
+     inventory only as a pending/failing diagnostic until the residual and GAM
+     envelope match the Merlo Case-III acceptance window.
 5. W7-X fluctuation-spectrum figure family aligned with the Doppler-
    reflectometry comparison literature.
 
@@ -516,12 +517,19 @@ uses as evidence.
       - the first case-specific stepping-stone artifact exists via
         ``examples/benchmarks/runtime_miller_zonal_response.toml`` and
         ``tools/generate_miller_zonal_response_pilot.py``,
-      - the current frozen Miller artifact now uses a Merlo-style
-        zero-gradient GX-like ``phiext_full`` contract and reaches ``t≈100`` with
-        ``ω_GAM≈0.66`` and roughly ``20`` envelope peaks, but the trace is
-        still only weakly damped and does not settle to a clean stationary
-        residual window,
-      - manuscript-grade closure now depends on freezing case-specific reference runs rather than inventing a new observable.
+      - the current frozen Miller artifact is now pinned to the actual Merlo
+        Case-III Table-III parameters with an initial ion-density perturbation,
+        zero gradients, adiabatic electrons, ``kxρ_i≈0.05``, and ``ky=0``; it
+        runs to ``t≈150`` at ``Nz=32``, ``Nl=4``, ``Nm=16``, and ``dt=0.01``,
+      - this lane is explicitly open/failing: the current trace gives
+        ``residual≈0.745`` with a broad oscillatory window, while the Merlo
+        Case-III residual read from Figs. 12/16 is about ``0.19``,
+      - the external ``phiext_full`` source path remains covered as a runtime
+        contract, but it is not the Merlo RH/GAM validation protocol,
+      - a restart-checkpoint issue was exposed for this zonal initial-density
+        run: default ``nsave=10000`` chunking zeroed the second chunk in this
+        artifact, so the benchmark disables checkpoint chunking until the
+        restart-state path is fixed and tested.
 
 2. **Multiple W7-X flux tubes**
    - The published W7-X benchmark is not a single-point story.

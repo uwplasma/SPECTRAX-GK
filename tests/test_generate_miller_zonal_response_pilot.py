@@ -119,4 +119,9 @@ diagnostics = true
     meta = json.loads(out_png.with_suffix(".json").read_text())
     assert meta["variable"] == "Phi_zonal_mode_kxt"
     assert meta["kx_selected"] == 0.1
-    assert "GX-style phiext_full source contract" in meta["notes"]
+    assert meta["literature_reference"]["case"] == "III"
+    assert meta["literature_reference"]["residual_phi_over_phi0"] == 0.19
+    assert meta["setup"] == "initial density perturbation"
+    assert meta["validation_status"] == "open"
+    assert "Merlo Case-III" in meta["notes"]
+    assert "initial density perturbation" in meta["notes"]
