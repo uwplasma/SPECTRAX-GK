@@ -179,6 +179,10 @@ schema. The current frozen summary intentionally remains open because the
 largest adjacent growth-rate jump is still slightly above the default
 ``0.5`` branch-continuity threshold, while the frequency and overlap gates
 pass.
+``tools/make_validation_gate_index.py`` scans tracked JSON metadata and writes
+``docs/_static/validation_gate_index.json``, ``.csv``, and ``.png`` so the docs
+always have one compact pass/open view of the currently materialized validation
+gates.
 
 The diagnostics stream now also carries ``Diagnostics/Phi_zonal_mode_kxt``, a
 signed complex zonal-potential history reduced over ``z`` with the same volume
