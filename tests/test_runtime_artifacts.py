@@ -13,6 +13,7 @@ from spectraxgk.diagnostics import SimulationDiagnostics, ResolvedDiagnostics
 from spectraxgk.runtime import RuntimeLinearResult, RuntimeNonlinearResult
 from spectraxgk.runtime_config import RuntimeConfig, RuntimeOutputConfig
 from spectraxgk.runtime_artifacts import (
+    _ensure_parent,
     _artifact_base,
     _condense_kx,
     _condense_ky,
@@ -30,9 +31,11 @@ from spectraxgk.runtime_artifacts import (
     _gx_bundle_base,
     _is_gx_netcdf_target,
     _maybe_var,
+    _nonlinear_summary,
     _particle_moments,
     _real_space_axis,
     _read_optional_var,
+    _require_netcdf4,
     _resolved_species_time,
     _resolve_restart_path,
     _restart_to_gx_layout,
@@ -43,7 +46,13 @@ from spectraxgk.runtime_artifacts import (
     _spectral_to_ri,
     _spectral_to_xy,
     _take_axis,
+    _write_csv,
+    _write_gx_geometry_group,
+    _write_gx_inputs_group,
+    _write_json,
+    _write_runtime_nonlinear_gx_artifacts,
     _write_runtime_root_metadata,
+    _write_state,
     load_runtime_nonlinear_gx_diagnostics,
     run_runtime_nonlinear_with_artifacts,
     write_runtime_linear_artifacts,
@@ -82,6 +91,67 @@ def test_write_runtime_linear_artifacts_writes_bundle(tmp_path: Path) -> None:
     assert Path(paths["timeseries"]).exists()
     assert Path(paths["eigenfunction"]).exists()
     assert Path(paths["state"]).exists()
+
+
+def test_runtime_artifact_file_helpers_and_nonlinear_summary(tmp_path: Path) -> None:
+    json_path = tmp_path / "nested" / "run.summary.json"
+    csv_path = tmp_path / "nested" / "run.timeseries.csv"
+    base = tmp_path / "nested" / "run"
+    payload = {"beta": 0.1, "alpha": 2.0}
+
+    _ensure_parent(json_path)
+    assert json_path.parent.exists()
+
+    _write_json(json_path, payload)
+    assert json.loads(json_path.read_text(encoding="utf-8")) == payload
+
+    _write_csv(csv_path, ["t", "value"], [np.asarray([0.0, 1.0]), np.asarray([2.0, 3.0])])
+    csv_data = np.loadtxt(csv_path, delimiter=",", skiprows=1)
+    np.testing.assert_allclose(csv_data, np.asarray([[0.0, 2.0], [1.0, 3.0]]))
+
+    state = np.asarray([[1.0 + 2.0j]], dtype=np.complex64)
+    state_path = _write_state(base, state)
+    assert state_path is not None
+    np.testing.assert_allclose(np.load(state_path), state)
+    assert _write_state(base, None) is None
+
+    diag = SimulationDiagnostics(
+        t=np.asarray([0.1, 0.2]),
+        dt_t=np.asarray([0.1, 0.1]),
+        dt_mean=np.asarray(0.1),
+        gamma_t=np.asarray([0.01, 0.02]),
+        omega_t=np.asarray([0.03, 0.04]),
+        Wg_t=np.asarray([1.0, 1.1]),
+        Wphi_t=np.asarray([2.0, 2.1]),
+        Wapar_t=np.asarray([0.5, 0.6]),
+        heat_flux_t=np.asarray([3.0, 3.1]),
+        particle_flux_t=np.asarray([4.0, 4.1]),
+        energy_t=np.asarray([3.5, 3.8]),
+    )
+    summary = _nonlinear_summary(
+        SimpleNamespace(
+            diagnostics=diag,
+            state=np.zeros((1, 2, 3), dtype=np.complex64),
+            ky_selected=0.2,
+            kx_selected=0.1,
+            phi2=None,
+        )
+    )
+    assert summary["kind"] == "nonlinear"
+    assert summary["n_samples"] == 2
+    assert summary["heat_flux_last"] == pytest.approx(3.1)
+    assert summary["n_state_shape"] == [1, 2, 3]
+
+    scalar_only = _nonlinear_summary(
+        SimpleNamespace(
+            diagnostics=None,
+            state=None,
+            ky_selected=0.2,
+            kx_selected=0.0,
+            phi2=np.asarray(7.0),
+        )
+    )
+    assert scalar_only["phi2_last"] == pytest.approx(7.0)
 
 
 def test_write_runtime_linear_artifacts_splits_complex_signal_columns(tmp_path: Path) -> None:
@@ -327,6 +397,81 @@ def test_runtime_artifact_root_metadata_and_active_field() -> None:
     np.testing.assert_allclose(active, field[:2][:, [5, 6, 0, 1, 2], :])
 
 
+def test_runtime_artifact_geometry_and_input_group_writers(monkeypatch: pytest.MonkeyPatch) -> None:
+    class _Var:
+        def __init__(self, store, key):
+            self._store = store
+            self._key = key
+
+        def __setitem__(self, _idx, value):
+            self._store[self._key] = np.asarray(value)
+
+    class _Group:
+        def __init__(self):
+            self.values = {}
+
+        def createVariable(self, name, _dtype, _dims=()):
+            return _Var(self.values, name)
+
+    grid = SimpleNamespace(
+        z=np.asarray([-1.0, 0.0, 1.0], dtype=np.float32),
+        kx=np.asarray([-0.2, 0.0, 0.2], dtype=np.float32),
+        ky=np.asarray([0.0, 0.3, -0.3], dtype=np.float32),
+    )
+    geom = SimpleNamespace(
+        bmag_profile=np.asarray([1.0, 1.1, 1.2], dtype=np.float32),
+        bgrad_profile=np.asarray([0.1, 0.2, 0.3], dtype=np.float32),
+        gb_profile=np.asarray([0.4, 0.5, 0.6], dtype=np.float32),
+        gb0_profile=np.asarray([0.7, 0.8, 0.9], dtype=np.float32),
+        cv_profile=np.asarray([1.0, 1.1, 1.2], dtype=np.float32),
+        cv0_profile=np.asarray([1.3, 1.4, 1.5], dtype=np.float32),
+        gds2_profile=np.asarray([1.6, 1.7, 1.8], dtype=np.float32),
+        gds21_profile=np.asarray([1.9, 2.0, 2.1], dtype=np.float32),
+        gds22_profile=np.asarray([2.2, 2.3, 2.4], dtype=np.float32),
+        grho_profile=np.asarray([0.9, 1.0, 1.1], dtype=np.float32),
+        jacobian_profile=np.asarray([1.0, 1.5, 2.0], dtype=np.float32),
+        gradpar_value=0.75,
+        q=1.4,
+        s_hat=0.6,
+        R0=3.0,
+        epsilon=0.2,
+        kxfac=1.1,
+        theta_scale=1.0,
+        nfp=5,
+        alpha=0.3,
+        B0=2.5,
+    )
+    cfg = SimpleNamespace(
+        grid=SimpleNamespace(nperiod=2),
+        geometry=SimpleNamespace(model="miller", shift=0.15, kappa=1.7, akappri=0.05, tri=0.2, tripri=0.03),
+        physics=SimpleNamespace(beta=0.02),
+    )
+    monkeypatch.setattr("spectraxgk.runtime_artifacts.build_spectral_grid", lambda _cfg: grid)
+    monkeypatch.setattr("spectraxgk.runtime_artifacts.build_runtime_geometry", lambda _cfg: object())
+    monkeypatch.setattr("spectraxgk.runtime_artifacts.ensure_flux_tube_geometry_data", lambda _geom, _theta: geom)
+    monkeypatch.setattr("spectraxgk.runtime_artifacts.real_fft_ordered_kx", lambda arr: np.asarray([-0.2, 0.0, 0.2], dtype=np.float32))
+    monkeypatch.setattr("spectraxgk.runtime_artifacts.real_fft_unique_ky", lambda arr: np.asarray([0.0, 0.3], dtype=np.float32))
+
+    geom_group = _Group()
+    theta, kx_vals, ky_vals, geom_out = _write_gx_geometry_group(geom_group, cfg)
+    np.testing.assert_allclose(theta, grid.z)
+    np.testing.assert_allclose(kx_vals, np.asarray([-0.2, 0.0, 0.2], dtype=np.float32))
+    np.testing.assert_allclose(ky_vals, np.asarray([0.0, 0.3], dtype=np.float32))
+    assert geom_out is geom
+    np.testing.assert_allclose(geom_group.values["bmag"], geom.bmag_profile)
+    assert float(geom_group.values["gradpar"]) == pytest.approx(0.75)
+    assert int(geom_group.values["nfp"]) == 5
+
+    inputs_group = _Group()
+    _write_gx_inputs_group(inputs_group, cfg, geom)
+    assert int(inputs_group.values["igeo"]) == 0
+    assert int(inputs_group.values["slab"]) == 0
+    assert float(inputs_group.values["kxfac"]) == pytest.approx(1.1)
+    assert float(inputs_group.values["beta"]) == pytest.approx(0.02)
+    assert int(inputs_group.values["zero_shat"]) == 0
+    assert float(inputs_group.values["grhoavg"]) == pytest.approx(np.mean(geom.grho_profile))
+
+
 def test_runtime_artifact_particle_moments(monkeypatch) -> None:
     state = np.ones((1, 2, 3, 2, 4, 3), dtype=np.complex64)
     cfg = SimpleNamespace(grid=SimpleNamespace())
@@ -565,6 +710,26 @@ def test_write_runtime_nonlinear_artifacts_writes_gx_netcdf_bundle(tmp_path: Pat
     assert loaded.resolved is not None
     assert loaded.resolved.HeatFluxApar_kxst is not None
     assert loaded.resolved.TurbulentHeating_kxst is not None
+
+
+def test_write_runtime_nonlinear_gx_artifacts_requires_diagnostics(tmp_path: Path) -> None:
+    pytest.importorskip("netCDF4")
+    cfg = RuntimeConfig(
+        grid=GridConfig(Nx=4, Ny=4, Nz=4, Lx=1.0, Ly=1.0),
+        time=TimeConfig(gx_real_fft=True),
+    )
+    result = RuntimeNonlinearResult(
+        t=np.asarray([0.0]),
+        diagnostics=None,
+        state=np.zeros((1, 1, 1, 1, 1, 1), dtype=np.complex64),
+        ky_selected=0.2,
+        kx_selected=0.0,
+    )
+
+    Dataset = _require_netcdf4()
+    assert Dataset.__name__ == "Dataset"
+    with pytest.raises(ValueError, match="require nonlinear diagnostics"):
+        _write_runtime_nonlinear_gx_artifacts(tmp_path / "probe.out.nc", result, cfg)
 
 
 def test_run_runtime_nonlinear_with_artifacts_uses_restart_if_exists(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
