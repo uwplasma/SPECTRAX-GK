@@ -142,6 +142,13 @@ The tracked Cyclone resolution pilot
 coarse-to-mid pair has a negative observed order, even though the final-grid
 relative growth-rate error is about ``1.3e-2``.
 
+The current materialized gate reports are indexed by
+``tools/make_validation_gate_index.py`` in
+``docs/_static/validation_gate_index.json`` and
+``docs/_static/validation_gate_index.png``. At this stage the index is an audit
+artifact: it should expand as each validation lane gets its own frozen gate
+metadata.
+
 Stellarator Linear
 ------------------
 

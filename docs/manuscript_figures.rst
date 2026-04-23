@@ -38,6 +38,10 @@ Core Validation Figures
      - dedicated script to add
      - Open
      - this should be the acceptance-summary figure for nonlinear parity
+   * - Validation gate index
+     - ``tools/make_validation_gate_index.py``
+     - Open
+     - current artifact base: ``docs/_static/validation_gate_index.png`` and ``docs/_static/validation_gate_index.json``. This is not a physics result by itself; it is the audit panel that reports which tracked gate artifacts are closed or open before manuscript drafting.
    * - Zonal-flow / GAM response panel
      - ``tools/plot_zonal_flow_response.py``, ``tools/plot_zonal_flow_response_from_output.py``, ``tools/generate_miller_zonal_response_pilot.py``, and ``tools/generate_w7x_zonal_response_panel.py``
      - Open

@@ -1,0 +1,4 @@
+artifact,case,source,passed,n_gates,n_failed,failed_metrics,max_abs_error,max_rel_error
+docs/_static/cyclone_resolution_observed_order.json,cyclone_resolution_observed_order,tracked Cyclone resolution subset,False,3,1,min_pairwise_order_deficit,1.6084267074670973,0.0
+docs/_static/kbm_branch_gate_summary.json,kbm_linear_branch_continuity,selected KBM comparison rows,False,3,1,max_rel_gamma_jump,0.5962518807577922,0.0
+docs/_static/miller_zonal_response_pilot.json,merlo_case_iii_zonal_response,Merlo et al. paper-scale read-off,True,3,0,,0.03671330516346405,0.03242887795802641
