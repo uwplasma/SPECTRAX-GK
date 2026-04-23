@@ -127,8 +127,11 @@ only with parity and coverage gates attached to each extraction.
      one reference source, one fit/window policy, and one numeric gate.
    - First-class scalar gates now exist for late-time linear metrics, windowed
      nonlinear statistics, and zonal response; next connect them to artifact
-     refresh scripts and add eigenfunction-overlap, velocity-space convergence,
-     and branch-continuation gate reports.
+     refresh scripts and add velocity-space convergence and branch-continuation
+     gate reports.
+   - Eigenfunction-overlap gates now exist and the KBM raw-overlay generator
+     writes them into its JSON metadata, with the current bounded artifact kept
+     explicitly open until it reaches the overlap/relative-L2 thresholds.
 
 3. **Close the next physics gates in this order.**
    - W7-X zonal-response artifact using VMEC-backed geometry and the same

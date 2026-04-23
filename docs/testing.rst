@@ -133,6 +133,7 @@ The first reusable tooling for this lane now exists:
 - :func:`spectraxgk.benchmarking.zonal_flow_response_metrics`
 - :func:`spectraxgk.benchmarking.load_diagnostic_time_series`
 - :func:`spectraxgk.benchmarking.evaluate_scalar_gate`
+- :func:`spectraxgk.benchmarking.eigenfunction_gate_report`
 - :func:`spectraxgk.benchmarking.linear_metrics_gate_report`
 - :func:`spectraxgk.benchmarking.nonlinear_window_gate_report`
 - :func:`spectraxgk.benchmarking.zonal_response_gate_report`
@@ -148,6 +149,10 @@ observable, reference, absolute/relative tolerance, and pass/fail convention.
 ``tools/generate_miller_zonal_response_pilot.py`` now writes the first such
 gate report into its JSON metadata for the residual, GAM frequency, and signed
 GAM growth/damping comparison against the Merlo Case-III paper-scale read-off.
+``tools/generate_kbm_reference_overlay.py`` writes the same gate structure for
+the raw KBM eigenfunction overlay, using a strict overlap/relative-L2 policy so
+the figure can remain in the manuscript stack as an open diagnostic until the
+gate passes.
 
 The diagnostics stream now also carries ``Diagnostics/Phi_zonal_mode_kxt``, a
 signed complex zonal-potential history reduced over ``z`` with the same volume
