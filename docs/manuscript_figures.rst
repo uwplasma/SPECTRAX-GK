@@ -49,7 +49,7 @@ Core Validation Figures
    * - Velocity-space convergence panel
      - dedicated script to add
      - Open
-     - should follow GX-style convergence evidence
+     - should follow GX-style convergence evidence and write an observed-order gate report through ``spectraxgk.benchmarking.observed_order_gate_report`` so convergence rate and final-grid error are tracked explicitly. The current atlas summary already records a machine-readable high-vs-low Cyclone grid convergence gate for the tracked convergence tile.
    * - Stellarator validation panel
      - dedicated script to add
      - Open

@@ -10,6 +10,7 @@ from spectraxgk.benchmarking import (
     _analytic_signal,
     _explicit_time_window,
     _leading_window,
+    BranchContinuationMetrics,
     GateReport,
     EigenfunctionComparisonMetrics,
     LateTimeLinearMetrics,
@@ -17,6 +18,8 @@ from spectraxgk.benchmarking import (
     ScalarGateResult,
     ZonalFlowResponseMetrics,
     compare_eigenfunctions,
+    branch_continuity_gate_report,
+    branch_continuity_metrics,
     eigenfunction_gate_report,
     evaluate_scalar_gate,
     estimate_observed_order,
@@ -30,6 +33,7 @@ from spectraxgk.benchmarking import (
     load_eigenfunction_reference_bundle,
     nonlinear_window_gate_report,
     normalize_eigenfunction,
+    observed_order_gate_report,
     phase_align_eigenfunction,
     run_linear_scan,
     run_scan_and_mode,
@@ -909,3 +913,92 @@ def test_estimate_observed_order_returns_asymptotic_pairwise_orders() -> None:
         estimate_observed_order(np.array([0.2, -0.1]), np.array([0.1, 0.025]))
     with pytest.raises(ValueError):
         estimate_observed_order(np.array([0.2, 0.1]), np.array([0.1, 0.0]))
+
+
+def test_observed_order_gate_report_tracks_rate_and_final_error() -> None:
+    metrics = estimate_observed_order(np.array([0.4, 0.2, 0.1]), 2.0 * np.array([0.4, 0.2, 0.1]) ** 2)
+
+    report = observed_order_gate_report(
+        metrics,
+        case="rk2_manufactured",
+        source="closed-form",
+        min_asymptotic_order=1.95,
+        max_final_error=0.03,
+    )
+
+    assert report.passed is True
+    assert [gate.metric for gate in report.gates] == ["observed_order_deficit", "final_error"]
+
+    failed = observed_order_gate_report(
+        metrics,
+        case="rk2_manufactured",
+        source="closed-form",
+        min_asymptotic_order=2.5,
+        max_final_error=0.01,
+    )
+    assert failed.passed is False
+
+    with pytest.raises(ValueError):
+        observed_order_gate_report(metrics, case="bad", source="closed-form", min_asymptotic_order=-1.0)
+    with pytest.raises(ValueError):
+        observed_order_gate_report(metrics, case="bad", source="closed-form", min_asymptotic_order=1.0, max_final_error=-1.0)
+
+
+def test_branch_continuity_metrics_and_gate_report() -> None:
+    metrics = branch_continuity_metrics(
+        ky=np.array([0.1, 0.2, 0.3]),
+        gamma=np.array([0.10, 0.105, 0.110]),
+        omega=np.array([-0.30, -0.31, -0.32]),
+        successive_overlap=np.array([0.98, 0.97]),
+    )
+
+    assert isinstance(metrics, BranchContinuationMetrics)
+    assert metrics.max_rel_gamma_jump < 0.06
+    assert metrics.max_rel_omega_jump < 0.04
+    assert metrics.min_successive_overlap == pytest.approx(0.97)
+
+    report = branch_continuity_gate_report(
+        metrics,
+        case="kbm_branch",
+        source="candidate table",
+        max_rel_gamma_jump=0.1,
+        max_rel_omega_jump=0.1,
+        min_successive_overlap=0.95,
+    )
+    assert report.passed is True
+
+    jump = branch_continuity_metrics(
+        ky=np.array([0.1, 0.2, 0.3]),
+        gamma=np.array([0.10, 0.40, 0.11]),
+        omega=np.array([-0.30, 0.80, -0.32]),
+        successive_overlap=np.array([0.7, 0.6]),
+    )
+    failed = branch_continuity_gate_report(
+        jump,
+        case="kbm_branch",
+        source="candidate table",
+        max_rel_gamma_jump=0.1,
+        max_rel_omega_jump=0.1,
+        min_successive_overlap=0.95,
+    )
+    assert failed.passed is False
+
+    with pytest.raises(ValueError):
+        branch_continuity_metrics(np.array([0.1]), np.array([0.1]), np.array([0.2]))
+    with pytest.raises(ValueError):
+        branch_continuity_metrics(np.array([0.1, 0.2]), np.array([0.1, np.nan]), np.array([0.2, 0.3]))
+    with pytest.raises(ValueError):
+        branch_continuity_metrics(
+            np.array([0.1, 0.2]),
+            np.array([0.1, 0.2]),
+            np.array([0.2, 0.3]),
+            successive_overlap=np.array([0.9, 0.8]),
+        )
+    with pytest.raises(ValueError):
+        branch_continuity_gate_report(
+            metrics,
+            case="bad",
+            source="candidate table",
+            max_rel_gamma_jump=-1.0,
+            max_rel_omega_jump=0.1,
+        )

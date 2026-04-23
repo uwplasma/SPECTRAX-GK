@@ -123,6 +123,11 @@ writes a machine-readable gate report with ``overlap >= 0.95`` and
 ``relative L^2 <= 0.25`` as the acceptance policy for closing this raw-overlay
 artifact.
 
+Branch-followed scan tables should use the same gate-report convention:
+observed-order gates for resolution or velocity-space convergence, and
+branch-continuity gates for adjacent ``gamma``/``omega`` jumps and successive
+eigenfunction overlap when overlap data are available.
+
 Stellarator Linear
 ------------------
 

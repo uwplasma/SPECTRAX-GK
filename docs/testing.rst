@@ -133,6 +133,8 @@ The first reusable tooling for this lane now exists:
 - :func:`spectraxgk.benchmarking.zonal_flow_response_metrics`
 - :func:`spectraxgk.benchmarking.load_diagnostic_time_series`
 - :func:`spectraxgk.benchmarking.evaluate_scalar_gate`
+- :func:`spectraxgk.benchmarking.observed_order_gate_report`
+- :func:`spectraxgk.benchmarking.branch_continuity_gate_report`
 - :func:`spectraxgk.benchmarking.eigenfunction_gate_report`
 - :func:`spectraxgk.benchmarking.linear_metrics_gate_report`
 - :func:`spectraxgk.benchmarking.nonlinear_window_gate_report`
@@ -156,6 +158,9 @@ gate passes.
 ``tools/compare_gx_nonlinear_diagnostics.py --summary-json`` now emits a
 matching gate report for nonlinear diagnostic comparison figures, using the
 window mean relative mismatch as the scalar acceptance metric.
+Observed-order and branch-continuity gate helpers are also available so
+velocity-space convergence panels and branch-followed scan tables can use the
+same JSON-ready acceptance convention.
 
 The diagnostics stream now also carries ``Diagnostics/Phi_zonal_mode_kxt``, a
 signed complex zonal-potential history reduced over ``z`` with the same volume
