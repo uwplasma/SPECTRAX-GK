@@ -284,17 +284,31 @@ def test_mode_signal_batch_and_window_helpers() -> None:
     np.testing.assert_allclose(_extract_mode_only_signal(arr, local_idx=2), [2, 6, 10])
     arr3 = np.arange(24).reshape(2, 3, 4)
     np.testing.assert_allclose(_extract_mode_only_signal(arr3, local_idx=1, species_index=1), [5, 17])
+    np.testing.assert_allclose(_extract_mode_only_signal(np.array(3.0 + 1.0j), local_idx=0), [3.0 + 1.0j])
+    np.testing.assert_allclose(_extract_mode_only_signal(np.array([1.0, 2.0]), local_idx=1), [1.0, 2.0])
     assert _is_array_like([1, 2]) is True
     assert _is_array_like(np.array([1, 2])) is True
     assert _is_array_like(1.0) is False
+
+    single_batches = list(_iter_ky_batches(np.array([0.1, 0.2]), ky_batch=1, fixed_batch_shape=False))
+    assert len(single_batches) == 2
+    assert single_batches[0][0] == 0
+    np.testing.assert_allclose(single_batches[0][1], [0.1])
+    assert single_batches[0][2] == 1
 
     batches = list(_iter_ky_batches(np.array([0.1, 0.2, 0.3]), ky_batch=2, fixed_batch_shape=True))
     assert batches[0][0] == 0
     np.testing.assert_allclose(batches[0][1], [0.1, 0.2])
     np.testing.assert_allclose(batches[1][1], [0.3, 0.3])
     assert batches[1][2] == 1
+
+    ragged_batches = list(_iter_ky_batches(np.array([0.1, 0.2, 0.3]), ky_batch=2, fixed_batch_shape=False))
+    np.testing.assert_allclose(ragged_batches[1][1], [0.3])
+    assert ragged_batches[1][2] == 1
+
     assert _resolve_streaming_window(10.0, None, None, 0.2, 0.1, 0.9) == (2.0, 3.0)
     assert _resolve_streaming_window(10.0, 1.0, 4.0, 0.2, 0.1, 0.9) == (1.0, 4.0)
+    assert _resolve_streaming_window(10.0, None, None, 0.9, 0.05, 0.2) == (9.0, 10.0)
 
 
 def test_normalization_and_initial_profiles() -> None:
@@ -330,6 +344,10 @@ def test_build_initial_condition_supports_all_and_invalid_fields() -> None:
     assert G0.shape == (2, 4, 2, 2, 5)
     assert np.count_nonzero(np.asarray(G0)[:, :, 0, 1, :]) == 0
     assert np.count_nonzero(np.asarray(G0)[:, :, 1, 1, :]) > 0
+
+    too_small = InitializationConfig(init_field="qpar", init_amp=1.0, gaussian_init=False)
+    with pytest.raises(ValueError, match="moment exceeds"):
+        _build_initial_condition(grid, geom, ky_index=1, kx_index=1, Nl=1, Nm=1, init_cfg=too_small)
 
     bad = InitializationConfig(init_field="banana")
     with pytest.raises(ValueError):
@@ -409,3 +427,69 @@ def test_species_param_builders() -> None:
             omega_star_scale=1.0,
             rho_star=1.0,
         )
+
+
+def test_score_fit_signal_auto_rejects_nonfinite_and_negative_growth(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "spectraxgk.benchmarks.fit_growth_rate_auto_with_stats",
+        lambda *args, **kwargs: (np.nan, -0.2, 0.0, 1.0, 0.95, 0.9),
+    )
+    gamma, omega, score = _score_fit_signal_auto(
+        np.array([0.0, 1.0]),
+        np.array([1.0, 2.0], dtype=np.complex128),
+        tmin=None,
+        tmax=None,
+        window_fraction=0.5,
+        min_points=2,
+        start_fraction=0.2,
+        growth_weight=1.0,
+        require_positive=True,
+        min_amp_fraction=0.0,
+        max_amp_fraction=1.0,
+        window_method="rolling",
+        max_fraction=1.0,
+        end_fraction=1.0,
+        num_windows=4,
+        phase_weight=0.5,
+        length_weight=0.5,
+        min_r2=0.8,
+        late_penalty=0.0,
+        min_slope=None,
+        min_slope_frac=0.0,
+        slope_var_weight=0.0,
+    )
+    assert np.isnan(gamma)
+    assert omega == pytest.approx(-0.2)
+    assert score == -np.inf
+
+    monkeypatch.setattr(
+        "spectraxgk.benchmarks.fit_growth_rate_auto_with_stats",
+        lambda *args, **kwargs: (-0.1, -0.2, 0.0, 1.0, 0.95, 0.9),
+    )
+    gamma, omega, score = _score_fit_signal_auto(
+        np.array([0.0, 1.0]),
+        np.array([1.0, 2.0], dtype=np.complex128),
+        tmin=None,
+        tmax=None,
+        window_fraction=0.5,
+        min_points=2,
+        start_fraction=0.2,
+        growth_weight=1.0,
+        require_positive=True,
+        min_amp_fraction=0.0,
+        max_amp_fraction=1.0,
+        window_method="rolling",
+        max_fraction=1.0,
+        end_fraction=1.0,
+        num_windows=4,
+        phase_weight=0.5,
+        length_weight=0.5,
+        min_r2=0.8,
+        late_penalty=0.0,
+        min_slope=None,
+        min_slope_frac=0.0,
+        slope_var_weight=0.0,
+    )
+    assert gamma == pytest.approx(-0.1)
+    assert omega == pytest.approx(-0.2)
+    assert score == -np.inf
