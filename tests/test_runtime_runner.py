@@ -10,20 +10,20 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-pytestmark = pytest.mark.integration
-
 from spectraxgk.benchmarking import late_time_linear_metrics
 from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, TimeConfig
 from spectraxgk.diagnostics import SimulationDiagnostics, ResolvedDiagnostics
 from spectraxgk.geometry import SAlphaGeometry, apply_geometry_grid_defaults, sample_flux_tube_geometry
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.io import load_runtime_from_toml
+from spectraxgk.linear import build_linear_cache
 from spectraxgk.runtime import (
     _build_initial_condition,
     _gx_centered_random_pairs,
     _gx_init_mode_pairs,
     _gx_periodic_zp,
     _infer_runtime_nonlinear_steps,
+    RuntimeLinearResult,
     build_runtime_geometry,
     build_runtime_linear_params,
     build_runtime_linear_terms,
@@ -42,7 +42,10 @@ from spectraxgk.runtime_config import (
     RuntimeSpeciesConfig,
     RuntimeTermsConfig,
 )
+from spectraxgk.terms.assembly import compute_fields_cached
 from spectraxgk.terms.config import FieldState
+
+pytestmark = pytest.mark.integration
 
 
 def _base_runtime_cfg() -> RuntimeConfig:
@@ -1148,6 +1151,54 @@ def test_runtime_single_mode_init_applies_gx_kpar_phase() -> None:
     seeded = g0[0, 0, 0, ky_index, 0, :]
     assert np.allclose(seeded.real, expected, atol=1.0e-6)
     assert np.allclose(seeded.imag, 0.0)
+
+
+def test_runtime_phi_init_inverts_adiabatic_zonal_quasineutrality() -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        grid=GridConfig(Nx=4, Ny=4, Nz=16, Lx=2.0 * np.pi, Ly=2.0 * np.pi, boundary="periodic"),
+        init=InitializationConfig(
+            init_field="phi",
+            init_amp=0.25,
+            gaussian_init=False,
+            init_single=True,
+            kpar_init=1.0,
+        ),
+        physics=RuntimePhysicsConfig(adiabatic_electrons=True, tau_e=1.0),
+        species=(RuntimeSpeciesConfig(name="ion", charge=1.0, density=1.0, temperature=1.0, kinetic=True),),
+    )
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    ky_index = 0
+    kx_index = 1
+
+    g0 = _build_initial_condition(grid, geom, cfg, ky_index=ky_index, kx_index=kx_index, Nl=2, Nm=2, nspecies=1)
+    params = build_runtime_linear_params(cfg, Nm=2, geom=geom)
+    cache = build_linear_cache(grid, geom, params, Nl=2, Nm=2)
+    fields = compute_fields_cached(jnp.asarray(g0), cache, params, use_custom_vjp=False)
+
+    z = np.asarray(grid.z, dtype=float)
+    expected_phi = cfg.init.init_amp * np.cos(float(cfg.init.kpar_init) * z / _gx_periodic_zp(z))
+    recovered_phi = np.asarray(fields.phi[ky_index, kx_index, :])
+    seeded_density = np.asarray(g0)[0, 0, 0, ky_index, kx_index, :]
+
+    assert np.allclose(recovered_phi.real, expected_phi, rtol=1.0e-5, atol=1.0e-6)
+    assert np.allclose(recovered_phi.imag, 0.0, atol=1.0e-7)
+    assert not np.allclose(seeded_density.real, expected_phi)
+
+
+def test_runtime_phi_init_rejects_masked_gauge_mode() -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        grid=GridConfig(Nx=4, Ny=4, Nz=8, Lx=2.0 * np.pi, Ly=2.0 * np.pi, boundary="periodic"),
+        init=InitializationConfig(init_field="phi", init_amp=0.25, gaussian_init=False, init_single=True),
+        physics=RuntimePhysicsConfig(adiabatic_electrons=True, tau_e=1.0),
+    )
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+
+    with pytest.raises(ValueError, match="gauge mode"):
+        _build_initial_condition(grid, geom, cfg, ky_index=0, kx_index=0, Nl=2, Nm=2, nspecies=1)
 
 
 def test_runtime_nonlinear_fixed_mode_returns_frozen_state() -> None:
@@ -2946,7 +2997,7 @@ def test_run_runtime_scan_batch_empty_raises(monkeypatch: pytest.MonkeyPatch) ->
         run_runtime_scan(cfg, ky_values=[], solver="time", batch_ky=True)
 
 
-def test_runtime_linear_gx_time_rejects_return_state(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_runtime_linear_gx_time_rejects_return_state_before_setup(monkeypatch: pytest.MonkeyPatch) -> None:
     cfg = replace(
         _base_runtime_cfg(),
         species=(RuntimeSpeciesConfig(name="ion"),),

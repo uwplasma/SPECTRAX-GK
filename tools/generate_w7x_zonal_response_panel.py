@@ -33,6 +33,7 @@ W7X_TEST4_REFERENCE = {
     "a_over_Ln": 0.0,
     "ky": 0.0,
     "kx_rhoi_values": [0.05, 0.07, 0.10, 0.30],
+    "observable": "unweighted line-averaged electrostatic potential",
     "nperiod": 4,
     "nz_reference": 512,
     "nvpar_reference": 256,
@@ -248,7 +249,7 @@ def main() -> int:
             )
         series = load_diagnostic_time_series(
             out_bundle,
-            variable="Phi_zonal_mode_kxt",
+            variable="Phi_zonal_line_kxt",
             kx_index=kx_index,
             component="real",
             align_phase=True,
@@ -338,7 +339,10 @@ def main() -> int:
                 "notes": (
                     "This panel follows the W7-X stella/GENE benchmark test-4 contract: "
                     "bean flux tube, torflux=0.64, alpha=0, adiabatic electrons, zero gradients, ky=0, "
-                    "and Gaussian initial perturbations at four kx rho_i values. "
+                    "and Gaussian electrostatic-potential initial perturbations at four kx rho_i values. "
+                    "It uses the unweighted line-averaged signed potential observable requested by the paper; "
+                    "the volume-weighted Phi_zonal_mode_kxt diagnostic remains available for shaped-tokamak "
+                    "and energy-consistency checks. "
                     "For consistency with the shaped-tokamak Merlo lane, each trace is normalized with the "
                     "first-sample convention and the initial GAM is extracted with separate positive/negative-extrema "
                     "damping fits plus a Hilbert-phase frequency estimate over a common early-time window. "

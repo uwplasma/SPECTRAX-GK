@@ -198,10 +198,15 @@ The active pre-merge sequence is:
      `gate_index_include=false`.
 
 3. **Close the next physics gates in this order.**
-   - W7-X zonal-response artifact using VMEC-backed geometry and the same
-     branchwise-extrema/Hilbert extraction used for Merlo.
-   - KBM raw eigenfunction overlay, because the current bounded artifact has
-     only about `0.63` overlap and is not manuscript-ready.
+   - W7-X zonal-response long-window audit: the short VMEC-backed artifact now
+     uses the paper-faithful `init_field="phi"` potential initializer, a
+     periodic radial box, and the signed line-average diagnostic
+     `Phi_zonal_line_kxt`; a `kx rho_i=0.30`, `t≈2000` pilot gives
+     residual `≈0.107` but still has a slow sign-changing oscillation that the
+     paper says should be missing at that wavelength.
+   - KBM raw eigenfunction overlay is closed for the tracked `ky=0.3` artifact
+     with overlap `≈0.999985`; keep broader KBM nonlinear and branch-continuity
+     extensions as separate future gates.
    - Windowed nonlinear-statistics panel for Cyclone, Miller, KBM, W7-X, and
      HSX.
    - W7-X multi-flux-tube linear/TEM extension and fluctuation-spectrum lane.
@@ -805,6 +810,8 @@ uses as evidence.
    - Current status:
       - reusable ``Phi2_zonal_t`` extraction/plotting tooling exists,
       - signed ``Phi_zonal_mode_kxt`` now exists in the diagnostics/output path,
+      - signed ``Phi_zonal_line_kxt`` now exists for W7-X-style unweighted
+        line-averaged electrostatic-potential traces,
       - the first case-specific stepping-stone artifact exists via
         ``examples/benchmarks/runtime_miller_zonal_response.toml`` and
         ``tools/generate_miller_zonal_response_pilot.py``,
@@ -843,7 +850,16 @@ uses as evidence.
       - the restart-checkpoint issue exposed by this zonal initial-density run
         is fixed and covered: NetCDF restart loading now scatters active
         radial modes using the same order used by the writer, so chunked
-        long-window artifacts no longer zero the post-checkpoint zonal signal.
+        long-window artifacts no longer zero the post-checkpoint zonal signal,
+      - W7-X test 4 now has a dedicated VMEC-backed runtime contract and panel
+        generator using `init_field="phi"` for the prescribed
+        `hat phi_kperp(t=0)` Gaussian. The bounded `t≈60` panel reports
+        residuals `≈0.172`, `0.356`, `0.469`, and `0.594` for
+        `kx rho_i = 0.05`, `0.07`, `0.10`, and `0.30`, respectively. A longer
+        `kx rho_i=0.30` audit gives a late residual near `0.107` but retains a
+        slow sign-changing oscillation; this lane remains open pending a
+        reference-backed observable/normalization audit against digitized or
+        regenerated stella/GENE traces.
 
 2. **Multiple W7-X flux tubes**
    - The published W7-X benchmark is not a single-point story.
