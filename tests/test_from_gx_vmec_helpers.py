@@ -13,6 +13,8 @@ from spectraxgk.from_gx.vmec import (
     _equal_arc_remap,
     _import_booz_backend,
     _import_module_with_search_paths,
+    _vmec_fieldlines,
+    _vmec_splines,
     dermv,
     generate_vmec_eik_internal,
     internal_vmec_backend_available,
@@ -195,6 +197,96 @@ def _mock_geo_for_cut(theta: np.ndarray, *, gds21: np.ndarray | None = None, gbd
     )
 
 
+class _ScalarWithData:
+    def __init__(self, value: float | int) -> None:
+        self.data = np.array(value)
+
+
+class _FakeVar:
+    def __init__(self, data: object, *, with_data: bool = False) -> None:
+        self._data = np.asarray(data)
+        self._with_data = with_data
+
+    def __getitem__(self, item: object) -> object:
+        if self._data.ndim == 0:
+            out = self._data
+        else:
+            out = self._data[item]
+        if self._with_data:
+            return _ScalarWithData(out)
+        return out
+
+
+class _FakeNCScalarVar:
+    def __init__(self, value: float | int) -> None:
+        self.value = value
+
+    def __getitem__(self, _item: object) -> np.ndarray:
+        return np.array(self.value)
+
+
+class _FakeNCDataset:
+    def __init__(self, mpol: int = 2, ntor: int = 1) -> None:
+        self.variables = {
+            "mpol": _FakeNCScalarVar(mpol),
+            "ntor": _FakeNCScalarVar(ntor),
+        }
+        self.closed = False
+
+    def close(self) -> None:
+        self.closed = True
+
+
+class _FakeBoozXform:
+    def __init__(self) -> None:
+        self.verbose = 0
+        self.mboz: int | None = None
+        self.nboz: int | None = None
+        self.read_path: str | None = None
+        self.ran = False
+
+    def read_wout(self, path: str) -> None:
+        self.read_path = path
+
+    def run(self) -> None:
+        self.ran = True
+
+
+def _const_callable(value: float):
+    def _inner(s: object, _value: float = value) -> np.ndarray:
+        return np.full_like(np.asarray(s, dtype=float), _value, dtype=float)
+
+    return _inner
+
+
+def _fake_vmec_spline_struct() -> SimpleNamespace:
+    return SimpleNamespace(
+        d_pressure_d_s=_const_callable(0.2),
+        iota=_const_callable(0.8),
+        d_iota_d_s=_const_callable(0.1),
+        Gfun=_const_callable(1.5),
+        Ifun=_const_callable(0.3),
+        phiedge=-2.0 * np.pi,
+        Aminor_p=1.2,
+        nfp=5,
+        raxis_cc=np.array([3.0]),
+        xm_b=np.array([0.0, 1.0]),
+        xn_b=np.array([0.0, 0.0]),
+        mnbooz=2,
+        mboz=4,
+        nboz=2,
+        rmnc_b=[_const_callable(4.0), _const_callable(0.2)],
+        zmns_b=[_const_callable(0.0), _const_callable(0.1)],
+        numns_b=[_const_callable(0.0), _const_callable(0.05)],
+        d_rmnc_b_d_s=[_const_callable(0.0), _const_callable(0.0)],
+        d_zmns_b_d_s=[_const_callable(0.0), _const_callable(0.0)],
+        d_numns_b_d_s=[_const_callable(0.0), _const_callable(0.0)],
+        gmnc_b=[_const_callable(1.0), _const_callable(0.0)],
+        bmnc_b=[_const_callable(1.3), _const_callable(0.1)],
+        d_bmnc_b_d_s=[_const_callable(0.0), _const_callable(0.0)],
+    )
+
+
 @pytest.mark.parametrize(
     ("flux_tube_cut", "geo", "expected_cut", "jtwist_in"),
     [
@@ -276,6 +368,93 @@ def test_write_vmec_eik_netcdf_writes_expected_variables(tmp_path: Path) -> None
         assert int(ds.variables["nfp"].getValue()) == 5
         expected_jacob = 1.0 / abs((1.0 / abs(profiles["dpsidrho"])) * gradpar[0] * bmag)
         np.testing.assert_allclose(ds.variables["jacob"][:], expected_jacob)
+
+
+def test_vmec_splines_builds_interpolants_and_metadata() -> None:
+    s_half = np.array([0.125, 0.375, 0.625, 0.875])
+    booz_obj = SimpleNamespace(
+        mnboz=2,
+        rmnc_b=np.vstack([1.0 + s_half, 2.0 * s_half]),
+        zmns_b=np.vstack([0.5 * s_half, -s_half]),
+        numns_b=np.vstack([0.2 * s_half, 0.3 + 0.1 * s_half]),
+        gmnc_b=np.vstack([1.0 + 0.5 * s_half, 0.1 * s_half]),
+        bmnc_b=np.vstack([2.0 + 2.0 * s_half, 0.5 - 0.25 * s_half]),
+        Boozer_G=5.0 + 0.2 * s_half,
+        Boozer_I=1.0 - 0.1 * s_half,
+        xm_b=np.array([0, 1]),
+        xn_b=np.array([0, 5]),
+        mboz=8,
+        nboz=6,
+    )
+    nc_obj = SimpleNamespace(
+        variables={
+            "ns": _FakeVar(5, with_data=True),
+            "pres": _FakeVar([0.0, 1.0, 2.0, 3.0, 4.0]),
+            "phi": _FakeVar([0.0, 2.0 * np.pi, 4.0 * np.pi, 6.0 * np.pi, 8.0 * np.pi]),
+            "iotas": _FakeVar([0.0, 0.5, 0.6, 0.7, 0.8]),
+            "Aminor_p": _FakeVar(1.7),
+            "nfp": _FakeVar(5),
+            "raxis_cc": _FakeVar([3.2, 0.1]),
+        }
+    )
+
+    out = _vmec_splines(nc_obj, booz_obj)
+
+    assert out.mnbooz == 2
+    assert out.mboz == 8
+    assert out.nboz == 6
+    assert out.nfp == 5
+    np.testing.assert_allclose(out.raxis_cc, [3.2, 0.1])
+    assert out.Aminor_p == pytest.approx(1.7)
+    assert out.phiedge == pytest.approx(8.0 * np.pi)
+    assert out.rmnc_b[0](0.5) == pytest.approx(1.5, abs=1.0e-10)
+    assert out.d_rmnc_b_d_s[0](0.5) == pytest.approx(1.0, abs=1.0e-10)
+    assert out.bmnc_b[1](0.5) == pytest.approx(0.375, abs=1.0e-10)
+    assert out.d_bmnc_b_d_s[1](0.5) == pytest.approx(-0.25, abs=1.0e-10)
+    assert out.psi(0.5) == pytest.approx(2.5, abs=1.0e-10)
+    assert out.d_psi_d_s(0.5) == pytest.approx(4.0, abs=1.0e-10)
+    assert out.iota(0.5) == pytest.approx(0.65, abs=1.0e-10)
+    assert out.d_iota_d_s(0.5) == pytest.approx(0.4, abs=1.0e-10)
+
+
+def test_vmec_fieldlines_respects_overrides_and_closes_dataset(monkeypatch: pytest.MonkeyPatch) -> None:
+    fake_nc = _FakeNCDataset(mpol=3, ntor=2)
+    fake_backend = SimpleNamespace(Booz_xform=_FakeBoozXform)
+
+    monkeypatch.setitem(sys.modules, "netCDF4", SimpleNamespace(Dataset=lambda *_args, **_kwargs: fake_nc))
+    monkeypatch.setattr("spectraxgk.from_gx.vmec._import_booz_backend", lambda: fake_backend)
+    monkeypatch.setattr("spectraxgk.from_gx.vmec._vmec_splines", lambda _nc, _booz: _fake_vmec_spline_struct())
+
+    out = _vmec_fieldlines(
+        vmec_fname="dummy.nc",
+        s_val=0.5,
+        betaprim=0.01,
+        alpha=0.2,
+        include_shear_variation=False,
+        include_pressure_variation=False,
+        theta1d=np.linspace(-np.pi, np.pi, 9),
+        isaxisym=True,
+        iota_input=0.9,
+        s_hat_input=0.0,
+        res_theta=21,
+        res_phi=21,
+    )
+
+    assert fake_nc.closed is True
+    assert out.iota_input == pytest.approx(0.9)
+    assert out.s_hat_input == pytest.approx(1.0e-8)
+    assert out.zeta_center == pytest.approx(-0.2 / 0.8)
+    assert out.nfp == 5
+    assert out.L_reference == pytest.approx(1.2)
+    assert out.B_reference == pytest.approx(2.0 / (1.2**2))
+    assert out.dpsidrho == pytest.approx(np.sqrt(2.0))
+    assert out.theta_b.shape == (1, 1, 9)
+    assert out.theta_PEST.shape == (1, 1, 9)
+    assert out.grad_x.shape == (3, 1, 1, 9)
+    assert out.grad_y.shape == (3, 1, 1, 9)
+    assert np.isfinite(out.bmag).all()
+    assert np.isfinite(out.gds2).all()
+    assert np.isfinite(out.gbdrift).all()
 
 
 def test_generate_vmec_eik_internal_maps_boundary_and_computes_betaprim(
