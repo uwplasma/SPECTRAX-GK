@@ -516,9 +516,11 @@ uses as evidence.
       - the first case-specific stepping-stone artifact exists via
         ``examples/benchmarks/runtime_miller_zonal_response.toml`` and
         ``tools/generate_miller_zonal_response_pilot.py``,
-      - the current frozen Miller pilot reaches ``t≈10`` with
-        ``residual≈0.69``, ``ω_GAM≈0.69``, and ``γ_damp≈0.45`` from only two
-        envelope peaks, so it is useful but still explicitly pending,
+      - the current frozen Miller artifact now uses a Merlo-style
+        zero-gradient density-seeded contract and reaches ``t≈100`` with
+        ``ω_GAM≈0.66`` and roughly ``20`` envelope peaks, but the trace is
+        still only weakly damped and does not settle to a clean stationary
+        residual window,
       - manuscript-grade closure now depends on freezing case-specific reference runs rather than inventing a new observable.
 
 2. **Multiple W7-X flux tubes**

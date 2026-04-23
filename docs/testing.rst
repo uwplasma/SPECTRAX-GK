@@ -126,14 +126,14 @@ observable for the final paper lane.
 The first case-specific shaped-Miller pilot for this lane is now reproducible
 through ``examples/benchmarks/runtime_miller_zonal_response.toml`` and
 ``tools/generate_miller_zonal_response_pilot.py``. Its frozen artifact lives in
-``docs/_static/miller_zonal_response_pilot.png``. This is intentionally kept as
-an intermediate density-seeded pilot until the excitation contract is upgraded
-to the literature-grade Rosenbluth-Hinton / collisionless-GAM setup. The
-current frozen run reaches ``t≈10`` with a signed-zonal residual of about
-``0.69`` and a two-peak envelope fit of ``ω_GAM≈0.69`` and
-``γ_damp≈0.45``. Those numbers are useful for workflow validation, but the
-trace is still too short and the excitation too provisional to count as a
-closed research benchmark.
+``docs/_static/miller_zonal_response_pilot.png``. The current frozen artifact
+is a Merlo-style density-seeded zonal-relaxation run with zero gradients,
+adiabatic electrons, and ``k_xρ_i≈0.05``. It remains open because the present
+trace is only weakly damped: the long run reaches ``t≈100`` with
+``ω_GAM≈0.66`` and about ``20`` envelope peaks, but it does **not** settle to
+a clean stationary residual window yet. That makes it a useful research-grade
+diagnostic artifact and a real stepping-stone, but not a closed
+Rosenbluth-Hinton residual benchmark.
 
 Diffrax and nonlinear smoke tests
 ---------------------------------

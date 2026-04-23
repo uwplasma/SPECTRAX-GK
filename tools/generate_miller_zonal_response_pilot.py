@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Generate a shaped-Miller signed zonal-response pilot artifact.
+"""Generate a shaped-Miller signed zonal-response artifact.
 
-This is a stepping-stone benchmark lane for a future manuscript-grade
-Rosenbluth-Hinton / GAM validation. It uses the real signed zonal observable
-``Phi_zonal_mode_kxt`` written by the runtime path, but the current excitation
-contract is still density-seeded rather than a frozen literature-grade zonal
-potential drive.
+This uses a Merlo-style density-seeded zonal relaxation setup with adiabatic
+electrons, zero gradients, ``k_y = 0``, and a signed zonal observable
+``Phi_zonal_mode_kxt`` written by the runtime path. The artifact is still kept
+as pending until cross-code and/or analytic closure is frozen, but the runtime
+contract itself is no longer ITG-like.
 """
 
 from __future__ import annotations
@@ -124,7 +124,7 @@ def main() -> int:
         tail_fraction=float(args.tail_fraction),
         initial_fraction=float(args.initial_fraction),
     )
-    title = f"Shaped Miller zonal-response pilot (ky={ky_target:.3f}, kx={kx_selected:.3f})"
+    title = f"Shaped Miller zonal-response (ky={ky_target:.3f}, kx={kx_selected:.3f})"
     fig, _axes = zonal_flow_response_figure(
         series.t,
         np.asarray(series.values, dtype=float),
@@ -166,10 +166,10 @@ def main() -> int:
                 "tmin": float(metrics.tmin),
                 "tmax": float(metrics.tmax),
                 "notes": (
-                    "This is a density-seeded shaped-Miller pilot built from the signed zonal "
-                    "observable Phi_zonal_mode_kxt. It is a real stepping-stone artifact for the "
-                    "future Rosenbluth-Hinton/GAM lane, but not yet the final literature-grade "
-                    "excitation contract."
+                    "This is a Merlo-style density-seeded shaped-Miller zonal-relaxation run "
+                    "built from the signed zonal observable Phi_zonal_mode_kxt with zero gradients "
+                    "and adiabatic electrons. It remains pending until cross-code and/or analytic "
+                    "closure is frozen."
                 ),
                 "references": [
                     "Merlo et al. 2016 shaped-tokamak collisionless GAM benchmark",
