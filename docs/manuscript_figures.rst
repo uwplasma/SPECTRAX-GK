@@ -101,8 +101,6 @@ Open Issues Before Drafting
 - close the shaped-tokamak Rosenbluth-Hinton / GAM response benchmark; the
   Merlo Case-III artifact is now explicit but remains a failing diagnostic
   lane, not a publication claim
-- fix and test restart/checkpoint continuation for zonal initial-density
-  runs before using chunked long-window RH/GAM artifacts
 - add W7-X fluctuation-spectrum figures tied to the DR-comparison conventions
 - add eigenfunction-overlap metrics to the linear figure stack
 - freeze representative reference mode bundles under ``docs/_static/reference_modes/`` before drafting raw overlay figures
