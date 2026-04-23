@@ -246,6 +246,39 @@ the atlas carries growth/frequency and nonlinear transport/energy comparisons,
 while the runtime figure carries CPU/GPU/reference wall time and peak RSS for
 the shipped runtime cases.
 
+Interpretation of short nonlinear GPU rows
+------------------------------------------
+
+The shipped runtime panel reports cold wall time. For the JAX backends, this
+includes startup and compilation, so short nonlinear cases can look worse than
+their steady-state throughput would suggest.
+
+Targeted ``office`` GPU profiles on the same shipped short nonlinear configs
+measured:
+
+.. code-block:: text
+
+   Cyclone nonlinear: warmup_time_s=30.776  run_time_s=14.081
+   KBM nonlinear:     warmup_time_s=25.413  run_time_s= 9.449
+
+Compared with the cold runtime panel rows:
+
+- Cyclone nonlinear GPU: ``35.33 s`` in the shipped panel, versus ``14.08 s``
+  for the second run on the same compiled executable.
+- KBM nonlinear GPU: ``43.74 s`` in the shipped panel, versus ``9.45 s`` for
+  the second run on the same compiled executable.
+
+This changes the optimization reading:
+
+- the current short-run Cyclone GPU deficit in the shipped panel is primarily a
+  cold-start effect, since the warm run is already faster than the tracked GX
+  row,
+- the current short-run KBM GPU gap is mostly compile amortization, with warm
+  performance already close to GX.
+
+The highest-value performance work for these short nonlinear lanes is therefore
+compile/startup reduction and executable reuse, not just per-step kernel work.
+
 Cached basis indices
 --------------------
 

@@ -2169,6 +2169,17 @@ Current nonlinear-lane status at the handoff point:
   values on the fly inside the temp copy so the performance panel compares
   runtime-equivalent workloads instead of mixing short SPECTRAX runtime examples
   with full reference benchmark horizons.
+- Follow-up GPU profiling on the same shipped short nonlinear cases now makes
+  the cold-vs-warm picture explicit:
+  - Cyclone nonlinear GPU: `warmup_time_s = 30.776`, `run_time_s = 14.081`
+    versus the shipped cold panel row `35.33 s`
+  - KBM nonlinear GPU: `warmup_time_s = 25.413`, `run_time_s = 9.449`
+    versus the shipped cold panel row `43.74 s`
+  - interpretation: these two short nonlinear runtime gaps are dominated by
+    JAX startup/compile latency rather than by steady-state timestep throughput
+  - concrete next optimization target: reduce compile/startup cost and expose
+    cold-vs-warm accounting in the runtime methodology, while keeping the
+    current cold wall-time panel for honest end-to-end reproducibility
 
 ## CI/CD Status (2026-04-09)
 
