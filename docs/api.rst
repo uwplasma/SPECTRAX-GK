@@ -49,6 +49,12 @@ Benchmarking
 .. automodule:: spectraxgk.benchmarking
    :members:
 
+Validation Gates
+----------------
+
+.. automodule:: spectraxgk.validation_gates
+   :members:
+
 Analysis
 --------
 

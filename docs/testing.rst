@@ -132,13 +132,13 @@ The first reusable tooling for this lane now exists:
 
 - :func:`spectraxgk.benchmarking.zonal_flow_response_metrics`
 - :func:`spectraxgk.benchmarking.load_diagnostic_time_series`
-- :func:`spectraxgk.benchmarking.evaluate_scalar_gate`
-- :func:`spectraxgk.benchmarking.observed_order_gate_report`
-- :func:`spectraxgk.benchmarking.branch_continuity_gate_report`
-- :func:`spectraxgk.benchmarking.eigenfunction_gate_report`
-- :func:`spectraxgk.benchmarking.linear_metrics_gate_report`
-- :func:`spectraxgk.benchmarking.nonlinear_window_gate_report`
-- :func:`spectraxgk.benchmarking.zonal_response_gate_report`
+- :func:`spectraxgk.validation_gates.evaluate_scalar_gate`
+- :func:`spectraxgk.validation_gates.observed_order_gate_report`
+- :func:`spectraxgk.validation_gates.branch_continuity_gate_report`
+- :func:`spectraxgk.validation_gates.eigenfunction_gate_report`
+- :func:`spectraxgk.validation_gates.linear_metrics_gate_report`
+- :func:`spectraxgk.validation_gates.nonlinear_window_gate_report`
+- :func:`spectraxgk.validation_gates.zonal_response_gate_report`
 - :func:`spectraxgk.plotting.zonal_flow_response_figure`
 - ``tools/plot_zonal_flow_response.py``
 - ``tools/plot_zonal_flow_response_from_output.py``

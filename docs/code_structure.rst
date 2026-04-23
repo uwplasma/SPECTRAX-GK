@@ -85,7 +85,7 @@ Physics / Numerics / IO Map
      - ``runtime_artifacts.py``, ``plotting.py``
      - serialization, reload, plotting contract tests
    * - Benchmark harness
-     - ``benchmarking.py``, ``benchmarks.py``
+     - ``benchmarking.py``, ``benchmarks.py``, ``validation_gates.py``
      - late-time/windowed gate tests, reference loading, fallback policy tests
 
 Refactor Mapping
@@ -105,6 +105,8 @@ Completed extractions:
   ``runtime_chunks.py``
 - runtime result containers and nonlinear result assembly:
   ``runtime_results.py``
+- validation gate dataclasses and JSON-ready gate helpers:
+  ``validation_gates.py``
 
 Next planned extractions:
 
