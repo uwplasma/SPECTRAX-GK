@@ -153,6 +153,9 @@ GAM growth/damping comparison against the Merlo Case-III paper-scale read-off.
 the raw KBM eigenfunction overlay, using a strict overlap/relative-L2 policy so
 the figure can remain in the manuscript stack as an open diagnostic until the
 gate passes.
+``tools/compare_gx_nonlinear_diagnostics.py --summary-json`` now emits a
+matching gate report for nonlinear diagnostic comparison figures, using the
+window mean relative mismatch as the scalar acceptance metric.
 
 The diagnostics stream now also carries ``Diagnostics/Phi_zonal_mode_kxt``, a
 signed complex zonal-potential history reduced over ``z`` with the same volume
