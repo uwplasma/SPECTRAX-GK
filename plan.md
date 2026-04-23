@@ -521,13 +521,19 @@ uses as evidence.
         Case-III Table-III parameters with an initial ion-density perturbation,
         zero gradients, adiabatic electrons, ``kxρ_i≈0.05``, and ``ky=0``; it
         runs to ``t≈150`` at ``Nz=32``, ``Nl=4``, ``Nm=16``, and ``dt=0.01``,
-      - this lane is still open, but the residual normalization issue is now
-        isolated: using the Rosenbluth-Hinton first-sample convention gives
-        ``residual≈0.205`` against the Merlo Case-III Figs. 12/16 read-off of
-        about ``0.19``; the code-unit ``ω_GAM≈0.827`` maps to
-        ``ω_GAM R0 / v_i≈2.30`` against the paper-scale read-off near ``2.24``,
-      - the remaining blocker is the damping/envelope extraction and a frozen
-        reference acceptance band for this Merlo artifact,
+      - the artifact has moved off the old ``Nm=16``, ``dt=0.01``, ``t≈150``
+        pilot and onto a better-resolved ``Nm=24``, ``dt=0.005``, ``t≈60``
+        setup because the old trace's late peaks were recurrence-contaminated,
+      - using the Rosenbluth-Hinton first-sample convention now gives
+        ``residual≈0.192`` against the Merlo Case-III Figs. 12/16 read-off of
+        about ``0.19``; the code-unit ``ω_GAM≈0.834`` maps to
+        ``ω_GAM R0 / v_i≈2.32`` against the paper-scale read-off near ``2.24``,
+      - using a first-five-extrema pre-recurrence fit for the strongly shaped
+        GAM envelope gives ``γ_GAM R0 / v_i≈-0.166`` against the Merlo
+        read-off near ``-0.17``,
+      - the remaining numerical follow-up item is long-time recurrence in
+        finite moment runs rather than the benchmark-scale Merlo
+        residual/frequency/damping gate,
       - the external ``phiext_full`` source path remains covered as a runtime
         contract, but it is not the Merlo RH/GAM validation protocol,
       - the restart-checkpoint issue exposed by this zonal initial-density run

@@ -544,6 +544,7 @@ def test_miller_zonal_response_example_uses_merlo_case_iii_contract() -> None:
     assert cfg.geometry.shift == pytest.approx(-0.1569)
     assert cfg.grid.Nz == 32
     assert data["run"]["Nl"] == 4
-    assert data["run"]["Nm"] == 16
+    assert data["run"]["Nm"] == 24
+    assert data["run"]["dt"] == pytest.approx(0.005)
     assert data["run"]["kx"] == pytest.approx(0.05)
     assert data["run"]["ky"] == pytest.approx(0.0)

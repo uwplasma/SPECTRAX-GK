@@ -95,7 +95,7 @@ Tokamak Linear
      - residual level, damping rate, GAM envelope
      - Merlo et al. + analytical Rosenbluth-Hinton estimates where applicable
      - Open
-     - residual and damping must match literature/code-backed references before publication use; signed ``Phi_zonal_mode_kxt`` is now available. The current stepping-stone artifact is ``docs/_static/miller_zonal_response_pilot.png`` from ``tools/generate_miller_zonal_response_pilot.py`` using Merlo Case-III Table-III parameters and an initial density perturbation. With Rosenbluth-Hinton first-sample normalization it gives ``residual≈0.205`` against a paper-scale target of about ``0.19`` and ``ω_GAM R0 / v_i≈2.30`` against a figure read-off near ``2.24``. It remains explicitly pending until the damping/envelope extraction and frozen acceptance band are closed
+     - residual and damping must match literature/code-backed references before publication use; signed ``Phi_zonal_mode_kxt`` is now available. The current artifact is ``docs/_static/miller_zonal_response_pilot.png`` from ``tools/generate_miller_zonal_response_pilot.py`` using Merlo Case-III Table-III parameters, an initial density perturbation, and a first-five-extrema pre-recurrence damping fit. It gives ``residual≈0.192`` against a paper-scale target of about ``0.19``, ``ω_GAM R0 / v_i≈2.32`` against a figure read-off near ``2.24``, and ``γ_GAM R0 / v_i≈-0.166`` against a figure read-off near ``-0.17``. The remaining explicit follow-up item is the later finite-moment recurrence rather than the benchmark-scale Merlo gate
 
 Frozen artifact paths for the currently closed tokamak linear lanes:
 

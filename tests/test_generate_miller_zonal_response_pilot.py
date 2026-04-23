@@ -125,8 +125,10 @@ diagnostics = true
     assert "gam_frequency_R0_over_vi" in meta
     assert "gam_growth_rate_R0_over_vi" in meta
     assert "omega_abs_error_vs_literature_R0_over_vi" in meta
+    assert "peak_fit_count" in meta
     assert meta["setup"] == "initial density perturbation"
     assert meta["validation_status"] == "open"
     assert "Merlo Case-III" in meta["notes"]
     assert "Rosenbluth-Hinton first-sample" in meta["notes"]
+    assert "envelope extrema" in meta["notes"]
     assert "initial density perturbation" in meta["notes"]
