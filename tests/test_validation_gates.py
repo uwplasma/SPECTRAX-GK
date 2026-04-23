@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 import numpy as np
 import pytest
 
@@ -36,7 +38,8 @@ def test_validation_gate_primitives_are_public_and_backward_compatible() -> None
 def test_scalar_gate_and_json_report_are_strict_and_serializable() -> None:
     passed = evaluate_scalar_gate("gamma", 1.01, 1.0, atol=0.0, rtol=0.02)
     failed = evaluate_scalar_gate("omega", 0.7, 1.0, atol=0.0, rtol=0.02)
-    report = gate_report("case", "reference", [passed, failed])
+    near_zero = evaluate_scalar_gate("zonal_residual", 1.0e-4, 0.0, atol=2.0e-4, rtol=0.0)
+    report = gate_report("case", "reference", [passed, failed, near_zero])
     payload = gate_report_to_dict(report)
 
     assert isinstance(passed, ScalarGateResult)
@@ -44,6 +47,8 @@ def test_scalar_gate_and_json_report_are_strict_and_serializable() -> None:
     assert report.passed is False
     assert payload["gates"][0]["metric"] == "gamma"
     assert payload["gates"][1]["passed"] is False
+    assert payload["gates"][2]["rel_error"] is None
+    json.dumps(payload, allow_nan=False)
 
     with pytest.raises(ValueError):
         gate_report("empty", "reference", [])

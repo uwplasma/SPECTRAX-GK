@@ -40,6 +40,9 @@ def _write_gate(path: Path, *, case: str, passed: bool) -> None:
 def test_collect_gate_entries_reads_top_level_gate_report(tmp_path: Path) -> None:
     mod = _load_tool_module()
     _write_gate(tmp_path / "pass.json", case="passed_case", passed=True)
+    nested = tmp_path / "nested"
+    nested.mkdir()
+    _write_gate(nested / "nested_pass.json", case="nested_passed_case", passed=True)
     _write_gate(tmp_path / "open.json", case="open_case", passed=False)
     (tmp_path / "ignored.json").write_text(json.dumps({"case": "no_gate"}))
     (tmp_path / "exploratory.json").write_text(
@@ -56,14 +59,15 @@ def test_collect_gate_entries_reads_top_level_gate_report(tmp_path: Path) -> Non
         )
     )
 
-    index = mod.build_index([str(tmp_path / "*.json")])
+    index = mod.build_index([str(tmp_path / "**" / "*.json")])
 
-    assert index["n_reports"] == 2
-    assert index["n_passed"] == 1
+    assert index["n_reports"] == 3
+    assert index["n_passed"] == 2
     assert index["n_open"] == 1
     rows = {row["case"]: row for row in index["reports"]}
     assert rows["open_case"]["failed_metrics"] == "metric_a"
     assert rows["passed_case"]["n_failed"] == 0
+    assert rows["nested_passed_case"]["n_failed"] == 0
     assert "exploratory_case" not in rows
 
 

@@ -83,12 +83,10 @@ The next physics lanes should be closed in this order:
    stella/GENE reference traces. The VMEC-backed SPECTRAX-GK artifact is now
    frozen, but it should not be counted as a closed gate until the published
    residual/frequency envelope has explicit pass/fail thresholds.
-2. KBM raw eigenfunction overlay, because the current bounded artifact is not
-   yet strong enough for manuscript use.
-3. Windowed nonlinear-statistics panel for Cyclone, Miller, KBM, W7-X, and HSX.
-4. W7-X multi-flux-tube ITG/TEM extension and fluctuation-spectrum lane.
-5. Shaped multispecies tokamak linear lane.
-6. ETG nonlinear only after its benchmark operating point and observable
+2. Windowed nonlinear-statistics panel for Cyclone, Miller, KBM, W7-X, and HSX.
+3. W7-X multi-flux-tube ITG/TEM extension and fluctuation-spectrum lane.
+4. Shaped multispecies tokamak linear lane.
+5. ETG nonlinear only after its benchmark operating point and observable
    contract are explicit.
 
 Performance and memory

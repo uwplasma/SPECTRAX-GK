@@ -152,9 +152,9 @@ observable, reference, absolute/relative tolerance, and pass/fail convention.
 gate report into its JSON metadata for the residual, GAM frequency, and signed
 GAM growth/damping comparison against the Merlo Case-III paper-scale read-off.
 ``tools/generate_kbm_reference_overlay.py`` writes the same gate structure for
-the raw KBM eigenfunction overlay, using a strict overlap/relative-L2 policy so
-the figure can remain in the manuscript stack as an open diagnostic until the
-gate passes.
+the raw KBM eigenfunction overlay, using a strict overlap/relative-L2 policy.
+The current refreshed KBM overlay passes that policy with overlap ``0.999985``
+and relative ``L^2`` mismatch ``0.00721`` against the frozen GX raw mode.
 ``tools/compare_gx_nonlinear_diagnostics.py --summary-json`` now emits a
 matching gate report for nonlinear diagnostic comparison figures, using the
 window mean relative mismatch as the scalar acceptance metric. The summary
