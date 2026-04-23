@@ -18,7 +18,13 @@ from pathlib import Path
 import netCDF4 as nc
 import numpy as np
 
-from spectraxgk.benchmarking import load_diagnostic_time_series, zonal_flow_response_metrics
+from spectraxgk.benchmarking import (
+    evaluate_scalar_gate,
+    gate_report,
+    gate_report_to_dict,
+    load_diagnostic_time_series,
+    zonal_flow_response_metrics,
+)
 from spectraxgk.io import load_runtime_from_toml
 from spectraxgk.plotting import zonal_flow_response_figure
 from spectraxgk.runtime_artifacts import run_runtime_nonlinear_with_artifacts
@@ -46,6 +52,12 @@ MERLO_CASE_III_REFERENCE = {
     "residual_phi_over_phi0": 0.190,
     "omega_gam_R0_over_vi": 2.24,
     "gamma_gam_R0_over_vi": -0.17,
+}
+
+MERLO_CASE_III_GATE_TOLERANCES = {
+    "residual_atol": 0.015,
+    "omega_atol_R0_over_vi": 0.10,
+    "gamma_atol_R0_over_vi": 0.03,
 }
 
 
@@ -196,6 +208,36 @@ def main() -> int:
     residual_abs_error = abs(float(metrics.residual_level) - ref_residual)
     omega_abs_error = abs(omega_r0_over_vi - ref_omega)
     gamma_abs_error = abs(gamma_r0_over_vi - ref_gamma)
+    validation_gate_report = gate_report(
+        "merlo_case_iii_zonal_response",
+        "Merlo et al. paper-scale read-off",
+        (
+            evaluate_scalar_gate(
+                "residual_level",
+                metrics.residual_level,
+                ref_residual,
+                atol=float(MERLO_CASE_III_GATE_TOLERANCES["residual_atol"]),
+                rtol=0.0,
+            ),
+            evaluate_scalar_gate(
+                "gam_frequency_R0_over_vi",
+                omega_r0_over_vi,
+                ref_omega,
+                atol=float(MERLO_CASE_III_GATE_TOLERANCES["omega_atol_R0_over_vi"]),
+                rtol=0.0,
+                units="R0/vi",
+            ),
+            evaluate_scalar_gate(
+                "gam_growth_rate_R0_over_vi",
+                gamma_r0_over_vi,
+                ref_gamma,
+                atol=float(MERLO_CASE_III_GATE_TOLERANCES["gamma_atol_R0_over_vi"]),
+                rtol=0.0,
+                units="R0/vi",
+                notes="Signed growth-rate convention; negative values correspond to damping.",
+            ),
+        ),
+    )
     title = f"Merlo Case III zonal-response (ky={ky_target:.3f}, kx={kx_selected:.3f})"
     fig, _axes = zonal_flow_response_figure(
         series.t,
@@ -256,6 +298,9 @@ def main() -> int:
                 "fit_tmin": float(metrics.fit_tmin),
                 "fit_tmax": float(metrics.fit_tmax),
                 "literature_reference": dict(MERLO_CASE_III_REFERENCE),
+                "gate_tolerances": dict(MERLO_CASE_III_GATE_TOLERANCES),
+                "gate_report": gate_report_to_dict(validation_gate_report),
+                "paper_scale_gate_passed": bool(validation_gate_report.passed),
                 "residual_abs_error_vs_literature": float(residual_abs_error),
                 "omega_abs_error_vs_literature_R0_over_vi": float(omega_abs_error),
                 "gamma_abs_error_vs_literature_R0_over_vi": float(gamma_abs_error),

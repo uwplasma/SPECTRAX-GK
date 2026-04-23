@@ -145,6 +145,9 @@ The first reusable tooling for this lane now exists:
 The gate-report helpers are intentionally small and JSON-ready. They should be
 used by manuscript refresh scripts so every reported artifact has the same
 observable, reference, absolute/relative tolerance, and pass/fail convention.
+``tools/generate_miller_zonal_response_pilot.py`` now writes the first such
+gate report into its JSON metadata for the residual, GAM frequency, and signed
+GAM growth/damping comparison against the Merlo Case-III paper-scale read-off.
 
 The diagnostics stream now also carries ``Diagnostics/Phi_zonal_mode_kxt``, a
 signed complex zonal-potential history reduced over ``z`` with the same volume
