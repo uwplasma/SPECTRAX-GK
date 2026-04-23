@@ -125,10 +125,14 @@ diagnostics = true
     assert "gam_frequency_R0_over_vi" in meta
     assert "gam_growth_rate_R0_over_vi" in meta
     assert "omega_abs_error_vs_literature_R0_over_vi" in meta
+    assert meta["damping_method"] == "branchwise_extrema"
+    assert meta["frequency_method"] == "hilbert_phase"
     assert "peak_fit_count" in meta
+    assert "fit_tmax" in meta
     assert meta["setup"] == "initial density perturbation"
     assert meta["validation_status"] == "open"
     assert "Merlo Case-III" in meta["notes"]
     assert "Rosenbluth-Hinton first-sample" in meta["notes"]
-    assert "envelope extrema" in meta["notes"]
+    assert "positive and negative extrema separately" in meta["notes"]
+    assert "Hilbert-transform analytic signal" in meta["notes"]
     assert "initial density perturbation" in meta["notes"]

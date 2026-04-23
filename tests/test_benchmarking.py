@@ -156,6 +156,34 @@ def test_zonal_flow_response_metrics_can_limit_damping_fit_to_early_peaks() -> N
     assert metrics_early.gam_damping_rate == pytest.approx(0.22, abs=0.08)
 
 
+def test_zonal_flow_response_metrics_support_branchwise_merlo_style_fits() -> None:
+    t = np.linspace(0.0, 60.0, 6001)
+    base = 0.2 + np.exp(-0.06 * t) * np.cos(0.8 * t)
+    recurrence = np.where(
+        t > 30.0,
+        0.18 * (1.0 - np.exp(-0.12 * (t - 30.0))) * np.cos(0.8 * t + 0.2),
+        0.0,
+    )
+    response = base + recurrence
+
+    metrics = zonal_flow_response_metrics(
+        t,
+        response,
+        initial_policy="first_abs",
+        damping_fit_mode="branchwise_extrema",
+        frequency_fit_mode="hilbert_phase",
+        fit_window_tmax=30.0,
+        peak_fit_max_peaks=4,
+    )
+
+    assert metrics.damping_method == "branchwise_extrema"
+    assert metrics.frequency_method == "hilbert_phase"
+    assert metrics.gam_damping_rate == pytest.approx(0.06, abs=0.01)
+    assert metrics.gam_frequency == pytest.approx(0.8, abs=0.05)
+    assert metrics.peak_fit_count == 7
+    assert metrics.fit_tmax == pytest.approx(30.0, abs=0.1)
+
+
 def test_zonal_flow_response_metrics_validate_input_and_handle_nonoscillatory_signal() -> None:
     with pytest.raises(ValueError):
         zonal_flow_response_metrics(np.array([0.0, 1.0, 2.0]), np.array([1.0, 2.0]))
@@ -165,6 +193,12 @@ def test_zonal_flow_response_metrics_validate_input_and_handle_nonoscillatory_si
         zonal_flow_response_metrics(np.arange(5.0), np.ones(5), initial_policy="unknown")
     with pytest.raises(ValueError):
         zonal_flow_response_metrics(np.arange(5.0), np.ones(5), peak_fit_max_peaks=0)
+    with pytest.raises(ValueError):
+        zonal_flow_response_metrics(np.arange(5.0), np.ones(5), damping_fit_mode="unknown")
+    with pytest.raises(ValueError):
+        zonal_flow_response_metrics(np.arange(5.0), np.ones(5), frequency_fit_mode="unknown")
+    with pytest.raises(ValueError):
+        zonal_flow_response_metrics(np.arange(5.0), np.ones(5), hilbert_trim_fraction=0.5)
 
     t = np.linspace(0.0, 5.0, 101)
     response = np.exp(-t)

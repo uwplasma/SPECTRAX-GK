@@ -526,10 +526,13 @@ uses as evidence.
         setup because the old trace's late peaks were recurrence-contaminated,
       - using the Rosenbluth-Hinton first-sample convention now gives
         ``residual≈0.192`` against the Merlo Case-III Figs. 12/16 read-off of
-        about ``0.19``; the code-unit ``ω_GAM≈0.834`` maps to
-        ``ω_GAM R0 / v_i≈2.32`` against the paper-scale read-off near ``2.24``,
-      - using a first-five-extrema pre-recurrence fit for the strongly shaped
-        GAM envelope gives ``γ_GAM R0 / v_i≈-0.166`` against the Merlo
+        about ``0.19``,
+      - the extractor now follows the paper more closely with a common
+        pre-recurrence window ``t≈30``, separate positive/negative-extrema
+        damping fits, and Hilbert-phase frequency extraction on that same
+        window,
+      - this gives ``ω_GAM R0 / v_i≈2.20`` against the paper-scale read-off
+        near ``2.24`` and ``γ_GAM R0 / v_i≈-0.176`` against the Merlo
         read-off near ``-0.17``,
       - the remaining numerical follow-up item is long-time recurrence in
         finite moment runs rather than the benchmark-scale Merlo

@@ -41,7 +41,7 @@ Core Validation Figures
    * - Zonal-flow / GAM response panel
      - ``tools/plot_zonal_flow_response.py``, ``tools/plot_zonal_flow_response_from_output.py``, and ``tools/generate_miller_zonal_response_pilot.py``
      - Open
-     - should combine shaped-tokamak Rosenbluth-Hinton-style residuals with W7-X residual/damping envelopes using one figure convention; use signed ``Phi_zonal_mode_kxt`` for publication claims and keep ``Phi2_zonal_t`` only as an intermediate cross-check. The current Merlo Case-III artifact is ``docs/_static/miller_zonal_response_pilot.png`` from the initial-density setup at ``Nz=32``, ``Nl=4``, ``Nm=24``, ``dt=0.005``, and ``t≈60``. With Rosenbluth-Hinton first-sample normalization it gives ``residual≈0.192`` against the Merlo et al. Figs. 12/16 read-off of about ``0.19``; ``ω_GAM≈0.834`` in code units maps to about ``2.32`` in the paper's ``R0 / v_i`` normalization; and a first-five-extrema pre-recurrence fit gives ``γ_GAM R0 / v_i≈-0.166`` against the paper-scale read-off near ``-0.17``. The remaining open numerical item is the later finite-moment recurrence rather than the benchmark-scale Merlo gate.
+     - should combine shaped-tokamak Rosenbluth-Hinton-style residuals with W7-X residual/damping envelopes using one figure convention; use signed ``Phi_zonal_mode_kxt`` for publication claims and keep ``Phi2_zonal_t`` only as an intermediate cross-check. The current Merlo Case-III artifact is ``docs/_static/miller_zonal_response_pilot.png`` from the initial-density setup at ``Nz=32``, ``Nl=4``, ``Nm=24``, ``dt=0.005``, and ``t≈60``. With Rosenbluth-Hinton first-sample normalization it gives ``residual≈0.192`` against the Merlo et al. Figs. 12/16 read-off of about ``0.19``; a literature-faithful common fit window ``t≈30`` with separate positive/negative-extrema damping fits gives ``γ_GAM R0 / v_i≈-0.176`` against the paper-scale read-off near ``-0.17``; and Hilbert-phase frequency extraction on that same window gives ``ω_GAM R0 / v_i≈2.20`` against the paper-scale read-off near ``2.24``. The remaining open numerical item is the later finite-moment recurrence rather than the benchmark-scale Merlo gate.
    * - W7-X fluctuation-spectrum panel
      - dedicated script to add
      - Open
@@ -98,9 +98,10 @@ Open Issues Before Drafting
 ---------------------------
 
 - close or explicitly defer W7-X zonal-flow response
-- close the shaped-tokamak Rosenbluth-Hinton / GAM response benchmark; the
-  Merlo Case-III artifact is now explicit but remains a failing diagnostic
-  lane, not a publication claim
+- either close the long-time recurrence follow-up for the shaped-tokamak
+  Rosenbluth-Hinton / GAM response benchmark or explicitly scope publication
+  claims to the benchmark-scale pre-recurrence metrics now frozen in the
+  Merlo Case-III artifact
 - add W7-X fluctuation-spectrum figures tied to the DR-comparison conventions
 - add eigenfunction-overlap metrics to the linear figure stack
 - freeze representative reference mode bundles under ``docs/_static/reference_modes/`` before drafting raw overlay figures
