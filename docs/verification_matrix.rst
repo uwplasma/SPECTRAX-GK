@@ -137,17 +137,19 @@ successive-overlap deficit.
 Observed-order convergence tables should also gate both the asymptotic finest
 refinement and the full set of pairwise refinement orders. The generic
 ``tools/generate_observed_order_gate.py`` path now records this policy in JSON.
-The tracked Cyclone resolution pilot
-``docs/_static/cyclone_resolution_observed_order.json`` is open because the
-coarse-to-mid pair has a negative observed order, even though the final-grid
-relative growth-rate error is about ``1.3e-2``.
+The tracked Cyclone velocity-space convergence artifact
+``docs/_static/cyclone_resolution_observed_order.json`` is closed on an
+office/GPU ``ky=0.30`` time-path sweep with all pairwise orders positive,
+final-pair order above ``4.8``, and finest-grid relative growth-rate error
+about ``1.1e-3``.
 
 The current materialized gate reports are indexed by
 ``tools/make_validation_gate_index.py`` in
 ``docs/_static/validation_gate_index.json`` and
-``docs/_static/validation_gate_index.png``. At this stage the index is an audit
-artifact: it should expand as each validation lane gets its own frozen gate
-metadata.
+``docs/_static/validation_gate_index.png``. Exploratory diagnostics can set
+``gate_index_include=false`` so they remain documented but do not count as
+release blockers. The current release-gate index has ``8/8`` tracked reports
+passing.
 
 Stellarator Linear
 ------------------
@@ -269,8 +271,12 @@ subset:
 - ``docs/_static/nonlinear_w7x_gate_summary.json``: passed at the current
   ``0.10`` mean-relative release gate after the corrected adaptive state
   continuation and GX-style ``Phi2`` artifact refresh.
-- ``docs/_static/nonlinear_cyclone_short_gate_summary.json``: open because this
-  short diagnostic window is not a mature transport-window acceptance run.
+- ``docs/_static/nonlinear_cyclone_gate_summary.json``: passed on the mature
+  Cyclone ``t=100..400`` transport window at the current ``0.10``
+  mean-relative release gate.
+- ``docs/_static/nonlinear_cyclone_short_gate_summary.json``: retained only as
+  an exploratory ``t=5`` startup/resolved-spectrum audit and excluded from the
+  release-gate index.
 
 Autodiff Validation
 -------------------

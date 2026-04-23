@@ -1,7 +1,7 @@
 artifact,case,source,passed,n_gates,n_failed,failed_metrics,max_abs_error,max_rel_error
 /Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/nonlinear_cyclone_miller_gate_summary.json,cyclone_miller_nonlinear_window,GX nonlinear diagnostics,True,5,0,,0.0919106981841409,0.0
-/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/cyclone_resolution_observed_order.json,cyclone_resolution_observed_order,tracked Cyclone resolution subset,False,3,1,min_pairwise_order_deficit,1.6084267074670973,0.0
-/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/nonlinear_cyclone_short_gate_summary.json,cyclone_short_nonlinear_window,GX nonlinear diagnostics,False,6,4,"Phi2_mean_rel_abs,Wg_mean_rel_abs,Wphi_mean_rel_abs,HeatFlux_mean_rel_abs",1.2475408051938597,0.0
+/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/nonlinear_cyclone_gate_summary.json,cyclone_nonlinear_long_window,GX nonlinear diagnostics,True,5,0,,0.0955304396196123,0.0
+/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/cyclone_resolution_observed_order.json,cyclone_velocity_space_observed_order,office GPU Cyclone ky=0.30 time-path velocity-space sweep,True,3,0,,0.0011368721705758,0.0
 /Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/nonlinear_hsx_gate_summary.json,hsx_nonlinear_window,GX nonlinear diagnostics,True,5,0,,0.035790363972650306,0.0
 /Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/kbm_branch_gate_summary.json,kbm_linear_branch_continuity,selected KBM comparison rows,True,3,0,,0.3879740373283112,0.0
 /Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/nonlinear_kbm_gate_summary.json,kbm_nonlinear_window,GX nonlinear diagnostics,True,5,0,,0.009363342524391386,

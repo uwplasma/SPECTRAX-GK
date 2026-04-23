@@ -158,35 +158,36 @@ gate passes.
 ``tools/compare_gx_nonlinear_diagnostics.py --summary-json`` now emits a
 matching gate report for nonlinear diagnostic comparison figures, using the
 window mean relative mismatch as the scalar acceptance metric. The summary
-writer now accepts case/source labels and writes strict JSON, replacing
-nonfinite absolute-gate relative errors with ``null``. The first tracked
-nonlinear window summaries cover Cyclone Miller, KBM, HSX, W7-X, and a short
-Cyclone diagnostic window.
+writer now accepts case/source labels, explicit ``tmin/tmax`` windows, and
+writes strict JSON, replacing nonfinite absolute-gate relative errors with
+``null``. The tracked release-window summaries cover Cyclone, Cyclone Miller,
+KBM, HSX, and W7-X. The older short Cyclone diagnostic remains available as an
+exploratory startup/resolved-spectrum audit, but it is not counted in the
+release-gate index.
 Observed-order and branch-continuity gate helpers are also available so
 velocity-space convergence panels and branch-followed scan tables can use the
 same JSON-ready acceptance convention.
 ``tools/generate_observed_order_gate.py`` is the generic no-rerun path for
 CSV-backed convergence studies: it reads either an explicit step column or a
 resolution column, writes an observed-order JSON gate report, and can generate
-a log-log convergence figure. The first tracked Cyclone resolution pilot lives
-at ``docs/_static/cyclone_resolution_observed_order.json`` and
-``docs/_static/cyclone_resolution_observed_order.png``. It is deliberately
-marked open because the coarse-to-mid pair is nonmonotone even though the final
-grid error is small.
+a log-log convergence figure. The tracked Cyclone velocity-space convergence
+artifact lives at ``docs/_static/cyclone_resolution_observed_order.json`` and
+``docs/_static/cyclone_resolution_observed_order.png``. It uses an office/GPU
+``ky=0.30`` time-path sweep through ``(Nl,Nm)=(4,8),(6,12),(12,24),(16,32)``
+with ``tmax=150`` and passes the strict pairwise-order and final-error gates.
 ``tools/compare_gx_kbm.py --branch-summary-json`` wires that convention into
 the KBM branch-following workflow by summarizing adjacent ``gamma``/``omega``
 jumps and successive eigenfunction-overlap continuity for the selected branch.
 ``tools/generate_kbm_branch_gate_summary.py`` provides the corresponding
 no-rerun artifact path: it reads the existing selected KBM candidate table and
 writes ``docs/_static/kbm_branch_gate_summary.json`` with the same strict gate
-schema. The current frozen summary intentionally remains open because the
-largest adjacent growth-rate jump is still slightly above the default
-``0.5`` branch-continuity threshold, while the frequency and overlap gates
-pass.
+schema. The current continuity-first selected branch passes the adjacent
+growth/frequency jump and successive-overlap gates.
 ``tools/make_validation_gate_index.py`` scans tracked JSON metadata and writes
 ``docs/_static/validation_gate_index.json``, ``.csv``, and ``.png`` so the docs
-always have one compact pass/open view of the currently materialized validation
-gates.
+always have one compact pass/open view of the currently materialized release
+validation gates. Exploratory diagnostics can set ``gate_index_include=false``
+to remain documented without being treated as release blockers.
 
 The diagnostics stream now also carries ``Diagnostics/Phi_zonal_mode_kxt``, a
 signed complex zonal-potential history reduced over ``z`` with the same volume

@@ -159,13 +159,14 @@ The active pre-merge sequence is:
      `tools/compare_gx_nonlinear_diagnostics.py --summary-json`, giving the
      publication plots a machine-readable mean-relative-mismatch acceptance
      record.
-   - The nonlinear summary writer now supports explicit case/source labels and
-     strict JSON serialization. The first tracked nonlinear window gate JSONs
-     cover Cyclone Miller, KBM, HSX, W7-X, and a short Cyclone diagnostic
-     window. At the current `0.10` mean-relative release gate, Cyclone Miller,
-     KBM, HSX, and the refreshed W7-X `t <= 200` window pass; the short
-     Cyclone diagnostic remains open because it is not yet the mature
-     long-window transport acceptance artifact.
+   - The nonlinear summary writer now supports explicit case/source labels,
+     explicit `tmin/tmax` transport windows, and strict JSON serialization.
+     The tracked release-window gate JSONs cover Cyclone, Cyclone Miller, KBM,
+     HSX, and W7-X. At the current `0.10` mean-relative release gate, the
+     Cyclone `t=100..400`, Cyclone Miller, KBM, HSX, and refreshed W7-X
+     `t<=200` windows pass. The older `t=5` Cyclone diagnostic is retained as
+     an exploratory startup/resolved-spectrum audit and is excluded from the
+     release-gate index.
    - Observed-order and branch-continuity gate reports now exist for
      velocity-space convergence panels and branch-followed scan tables; the
      benchmark atlas summary already writes a high-vs-low Cyclone grid
@@ -173,18 +174,12 @@ The active pre-merge sequence is:
      branch-continuity helpers into the relevant velocity-space and
      branch-following artifact refresh scripts.
    - `tools/generate_observed_order_gate.py` now provides the generic
-     CSV-backed observed-order artifact path and writes the first tracked
-     Cyclone resolution pilot to
-     `docs/_static/cyclone_resolution_observed_order.json/png`. The tightened
-     gate checks both final-pair order and all pairwise orders, so the current
-     pilot is honestly marked open due a nonmonotone coarse-to-mid refinement
-     even though the final-grid relative growth-rate error is small.
-   - A bounded local Krylov probe for replacing that pilot was attempted at
-     `ky=0.45` for `(Nl,Nm)=(4,8),(6,12),(8,16),...` and hit the 300-second
-     cap before the higher-resolution points finished. The completed points
-     were still nonmonotone in growth rate, so the replacement artifact should
-     be generated from an office/GPU or cached manifest with explicit branch
-     locking rather than another local compile-heavy sweep.
+     CSV-backed observed-order artifact path. The tracked Cyclone
+     velocity-space convergence artifact has been replaced with an office/GPU
+     `ky=0.30`, `tmax=150` time-path sweep over
+     `(Nl,Nm)=(4,8),(6,12),(12,24),(16,32)`. The strict gate now passes with
+     all pairwise orders positive, final-pair order above `4.8`, and finest-grid
+     relative growth-rate error about `1.1e-3`.
    - KBM branch-following now has a `--branch-summary-json` path in
      `tools/compare_gx_kbm.py`, so selected branch tables can record adjacent
      `gamma`/`omega` jump gates and successive eigenfunction-overlap gates.
@@ -197,10 +192,10 @@ The active pre-merge sequence is:
      successive-overlap deficit.
    - `tools/make_validation_gate_index.py` now scans tracked JSON metadata and
      writes `docs/_static/validation_gate_index.json/csv/png`, giving the
-     manuscript/docs one compact audit view of currently materialized
-     pass/open gate reports. The current index contains Merlo zonal response
-     and KBM branch continuity as passed; the Cyclone resolution pilot and
-     short Cyclone nonlinear diagnostic remain open.
+     manuscript/docs one compact audit view of currently materialized release
+     gate reports. The current index has `8/8` release gates passed; explicitly
+     exploratory short-window diagnostics can opt out with
+     `gate_index_include=false`.
 
 3. **Close the next physics gates in this order.**
    - W7-X zonal-response artifact using VMEC-backed geometry and the same

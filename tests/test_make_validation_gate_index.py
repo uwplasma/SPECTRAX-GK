@@ -42,6 +42,19 @@ def test_collect_gate_entries_reads_top_level_gate_report(tmp_path: Path) -> Non
     _write_gate(tmp_path / "pass.json", case="passed_case", passed=True)
     _write_gate(tmp_path / "open.json", case="open_case", passed=False)
     (tmp_path / "ignored.json").write_text(json.dumps({"case": "no_gate"}))
+    (tmp_path / "exploratory.json").write_text(
+        json.dumps(
+            {
+                "gate_index_include": False,
+                "gate_report": {
+                    "case": "exploratory_case",
+                    "source": "synthetic",
+                    "passed": False,
+                    "gates": [{"metric": "metric_a", "passed": False}],
+                },
+            }
+        )
+    )
 
     index = mod.build_index([str(tmp_path / "*.json")])
 
@@ -51,6 +64,7 @@ def test_collect_gate_entries_reads_top_level_gate_report(tmp_path: Path) -> Non
     rows = {row["case"]: row for row in index["reports"]}
     assert rows["open_case"]["failed_metrics"] == "metric_a"
     assert rows["passed_case"]["n_failed"] == 0
+    assert "exploratory_case" not in rows
 
 
 def test_make_validation_gate_index_main_writes_json_csv_and_plot(tmp_path: Path) -> None:

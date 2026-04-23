@@ -103,6 +103,10 @@ def test_compare_gx_nonlinear_diagnostics_plot(tmp_path: Path) -> None:
             str(gx_path),
             "--spectrax",
             str(sp_path),
+            "--tmin",
+            "0.25",
+            "--tmax",
+            "1.0",
             "--out",
             str(out_path),
             "--summary-json",
@@ -130,6 +134,8 @@ def test_compare_gx_nonlinear_diagnostics_plot(tmp_path: Path) -> None:
     assert summary["gate_mean_rel"] == 2.0
     assert summary["case"] == "cyclone_nonlinear_window"
     assert summary["source"] == "minimal GX fixture"
+    assert summary["tmin"] == 0.25
+    assert summary["tmax"] == 1.0
     assert summary["gate_report"]["case"] == "cyclone_nonlinear_window"
     assert summary["gate_report"]["source"] == "minimal GX fixture"
     assert {row["metric"] for row in summary["summary"]} >= {"Wg", "Wphi", "HeatFlux"}
@@ -205,3 +211,21 @@ def test_compare_gx_nonlinear_diagnostics_interp_summary() -> None:
     assert np.isclose(mean_rel, 1.0)
     assert np.isclose(max_rel, 1.0)
     assert np.isclose(final_rel, 1.0)
+
+
+def test_compare_gx_nonlinear_diagnostics_apply_time_window() -> None:
+    tools_dir = Path(__file__).resolve().parents[1] / "tools"
+    sys.path.insert(0, str(tools_dir))
+    try:
+        import compare_gx_nonlinear_diagnostics as mod
+
+        series = {
+            "t": np.array([0.0, 1.0, 2.0, 3.0]),
+            "Wg": np.array([10.0, 11.0, 12.0, 13.0]),
+        }
+        windowed = mod._apply_time_window(series, tmin=1.0, tmax=2.0)
+    finally:
+        sys.path.remove(str(tools_dir))
+
+    assert np.allclose(windowed["t"], [1.0, 2.0])
+    assert np.allclose(windowed["Wg"], [11.0, 12.0])
