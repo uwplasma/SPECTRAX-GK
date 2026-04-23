@@ -37,6 +37,12 @@ def parse_args() -> argparse.Namespace:
         help="Leading fraction used to normalize the initial amplitude.",
     )
     parser.add_argument(
+        "--initial-policy",
+        choices=("window_abs_mean", "first_abs"),
+        default="window_abs_mean",
+        help="Initial normalization convention for the response metrics.",
+    )
+    parser.add_argument(
         "--title",
         default="Zonal-flow response",
         help="Figure title.",
@@ -58,6 +64,7 @@ def main() -> None:
         response,
         tail_fraction=float(args.tail_fraction),
         initial_fraction=float(args.initial_fraction),
+        initial_policy=str(args.initial_policy),
     )
     fig, _axes = zonal_flow_response_figure(t, response, metrics=metrics, title=args.title)
     args.out.parent.mkdir(parents=True, exist_ok=True)
@@ -70,6 +77,7 @@ def main() -> None:
         json.dumps(
             {
                 "initial_level": metrics.initial_level,
+                "initial_policy": metrics.initial_policy,
                 "residual_level": metrics.residual_level,
                 "residual_std": metrics.residual_std,
                 "response_rms": metrics.response_rms,

@@ -60,6 +60,12 @@ def parse_args() -> argparse.Namespace:
         help="Leading fraction used to normalize the initial amplitude.",
     )
     parser.add_argument(
+        "--initial-policy",
+        choices=("window_abs_mean", "first_abs"),
+        default="window_abs_mean",
+        help="Initial normalization convention for the response metrics.",
+    )
+    parser.add_argument(
         "--title",
         default=None,
         help="Optional figure title. Defaults to '<var> response'.",
@@ -83,6 +89,7 @@ def main() -> int:
         series.values,
         tail_fraction=float(args.tail_fraction),
         initial_fraction=float(args.initial_fraction),
+        initial_policy=str(args.initial_policy),
     )
 
     title = args.title or f"{args.var} response"
@@ -109,6 +116,7 @@ def main() -> int:
                 "source_path": series.source_path,
                 "variable": series.variable,
                 "initial_level": metrics.initial_level,
+                "initial_policy": metrics.initial_policy,
                 "residual_level": metrics.residual_level,
                 "residual_std": metrics.residual_std,
                 "response_rms": metrics.response_rms,

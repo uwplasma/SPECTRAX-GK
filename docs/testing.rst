@@ -131,11 +131,14 @@ is pinned to Merlo et al. Case III: adiabatic electrons, zero gradients,
 ``k_xρ_i≈0.05``, ``k_y=0``, and an initial ion-density perturbation.  It uses
 ``Nz=32``, ``Nl=4``, ``Nm=16``, ``dt=0.01``, and runs to ``t≈150`` through the
 same checkpoint-capable artifact writer used by long nonlinear runs.  It
-remains open: the current SPECTRAX-GK trace gives a late
-residual of about ``0.745`` with a broad oscillatory window, whereas the
-Merlo Case-III residual read from the published figures is about ``0.19``.
-The artifact is therefore a concrete failure/diagnostic lane, not a closed
-Rosenbluth-Hinton residual benchmark.
+remains open, but the residual normalization issue is now isolated: using the
+Rosenbluth-Hinton convention ``phi(t -> infinity) / phi(0)`` gives a late
+residual of about ``0.205``, close to the Merlo Case-III figure read-off of
+about ``0.19``.  The GAM frequency is also close after converting the code
+frequency to the paper's ``R0 / v_i`` normalization.  The remaining open part
+of this lane is the damping/envelope extraction and a frozen reference trace
+for the acceptance band, so the artifact is still a diagnostic lane rather
+than a closed Rosenbluth-Hinton residual benchmark.
 
 Diffrax and nonlinear smoke tests
 ---------------------------------
