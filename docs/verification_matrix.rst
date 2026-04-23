@@ -257,6 +257,20 @@ Frozen artifact paths for the currently closed nonlinear lanes:
 - ``docs/_static/hsx_nonlinear_compare_t50_true.png``
 - ``docs/_static/benchmark_core_nonlinear_atlas.png``
 
+Machine-readable nonlinear window gates are now tracked for the first refreshed
+subset:
+
+- ``docs/_static/nonlinear_cyclone_miller_gate_summary.json``: passed at the
+  current ``0.10`` mean-relative release gate.
+- ``docs/_static/nonlinear_kbm_gate_summary.json``: passed at the current
+  ``0.10`` mean-relative release gate.
+- ``docs/_static/nonlinear_hsx_gate_summary.json``: passed at the current
+  ``0.10`` mean-relative release gate.
+- ``docs/_static/nonlinear_w7x_gate_summary.json``: open because
+  ``Wphi`` mean-relative mismatch is about ``0.116``.
+- ``docs/_static/nonlinear_cyclone_short_gate_summary.json``: open because this
+  short diagnostic window is not a mature transport-window acceptance run.
+
 Autodiff Validation
 -------------------
 

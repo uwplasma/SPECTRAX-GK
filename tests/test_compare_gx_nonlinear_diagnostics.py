@@ -107,6 +107,10 @@ def test_compare_gx_nonlinear_diagnostics_plot(tmp_path: Path) -> None:
             str(out_path),
             "--summary-json",
             str(summary_path),
+            "--summary-case",
+            "cyclone_nonlinear_window",
+            "--summary-source",
+            "minimal GX fixture",
             "--gate-mean-rel",
             "2.0",
         ]
@@ -124,9 +128,14 @@ def test_compare_gx_nonlinear_diagnostics_plot(tmp_path: Path) -> None:
     assert summary_path.exists()
     summary = json.loads(summary_path.read_text(encoding="utf-8"))
     assert summary["gate_mean_rel"] == 2.0
-    assert summary["gate_report"]["case"] == "nonlinear_diagnostics_window"
+    assert summary["case"] == "cyclone_nonlinear_window"
+    assert summary["source"] == "minimal GX fixture"
+    assert summary["gate_report"]["case"] == "cyclone_nonlinear_window"
+    assert summary["gate_report"]["source"] == "minimal GX fixture"
     assert {row["metric"] for row in summary["summary"]} >= {"Wg", "Wphi", "HeatFlux"}
     assert isinstance(summary["gate_passed"], bool)
+    assert "Infinity" not in summary_path.read_text(encoding="utf-8")
+    assert "NaN" not in summary_path.read_text(encoding="utf-8")
 
 
 def test_compare_gx_nonlinear_diagnostics_uses_single_species_wapar(tmp_path: Path) -> None:

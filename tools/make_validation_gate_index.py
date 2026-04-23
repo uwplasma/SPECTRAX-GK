@@ -7,6 +7,7 @@ import argparse
 import glob
 import json
 import math
+import textwrap
 from pathlib import Path
 from typing import Any
 
@@ -122,6 +123,7 @@ def write_index_plot(rows: list[dict[str, object]], out_png: Path) -> None:
     for idx, row in enumerate(rows):
         failed = str(row["failed_metrics"]).replace("_", " ")
         status = "passed" if bool(row["passed"]) else f"open: {failed}"
+        status = textwrap.shorten(status, width=64, placeholder="...")
         ax.text(0.02, idx, status, va="center", ha="left", color="white", fontsize=9)
     for spine in ax.spines.values():
         spine.set_visible(False)

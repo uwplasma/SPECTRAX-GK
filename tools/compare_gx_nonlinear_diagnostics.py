@@ -5,7 +5,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -13,6 +15,18 @@ import pandas as pd
 from netCDF4 import Dataset
 
 from spectraxgk.benchmarking import evaluate_scalar_gate, gate_report, gate_report_to_dict
+
+
+def _json_clean(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {str(key): _json_clean(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_clean(item) for item in value]
+    if isinstance(value, np.generic):
+        return _json_clean(value.item())
+    if isinstance(value, float):
+        return value if math.isfinite(value) else None
+    return value
 
 
 def _reduce_species_time(arr: np.ndarray, name: str) -> np.ndarray:
@@ -291,6 +305,18 @@ def main() -> int:
         help="Optional JSON summary with scalar gate results for the plotted nonlinear diagnostics.",
     )
     parser.add_argument(
+        "--summary-case",
+        type=str,
+        default="nonlinear_diagnostics_window",
+        help="Case name stored in --summary-json gate metadata.",
+    )
+    parser.add_argument(
+        "--summary-source",
+        type=str,
+        default="GX diagnostics",
+        help="Reference/source label stored in --summary-json gate metadata.",
+    )
+    parser.add_argument(
         "--gate-mean-rel",
         type=float,
         default=0.10,
@@ -385,8 +411,8 @@ def main() -> int:
         if threshold < 0.0:
             raise ValueError("--gate-mean-rel must be non-negative")
         report = gate_report(
-            "nonlinear_diagnostics_window",
-            "GX diagnostics",
+            args.summary_case,
+            args.summary_source,
             [
                 evaluate_scalar_gate(
                     f"{row['metric']}_mean_rel_abs",
@@ -400,19 +426,23 @@ def main() -> int:
             ],
         )
         args.summary_json.parent.mkdir(parents=True, exist_ok=True)
+        payload = {
+            "gx": str(args.gx),
+            "spectrax": str(args.spectrax),
+            "case": str(args.summary_case),
+            "source": str(args.summary_source),
+            "tmax": None if args.tmax is None else float(args.tmax),
+            "gate_mean_rel": threshold,
+            "summary": summary_rows,
+            "gate_report": gate_report_to_dict(report),
+            "gate_passed": bool(report.passed),
+        }
         args.summary_json.write_text(
             json.dumps(
-                {
-                    "gx": str(args.gx),
-                    "spectrax": str(args.spectrax),
-                    "tmax": None if args.tmax is None else float(args.tmax),
-                    "gate_mean_rel": threshold,
-                    "summary": summary_rows,
-                    "gate_report": gate_report_to_dict(report),
-                    "gate_passed": bool(report.passed),
-                },
+                _json_clean(payload),
                 indent=2,
                 sort_keys=True,
+                allow_nan=False,
             ),
             encoding="utf-8",
         )

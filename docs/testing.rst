@@ -157,7 +157,11 @@ the figure can remain in the manuscript stack as an open diagnostic until the
 gate passes.
 ``tools/compare_gx_nonlinear_diagnostics.py --summary-json`` now emits a
 matching gate report for nonlinear diagnostic comparison figures, using the
-window mean relative mismatch as the scalar acceptance metric.
+window mean relative mismatch as the scalar acceptance metric. The summary
+writer now accepts case/source labels and writes strict JSON, replacing
+nonfinite absolute-gate relative errors with ``null``. The first tracked
+nonlinear window summaries cover Cyclone Miller, KBM, HSX, W7-X, and a short
+Cyclone diagnostic window.
 Observed-order and branch-continuity gate helpers are also available so
 velocity-space convergence panels and branch-followed scan tables can use the
 same JSON-ready acceptance convention.
