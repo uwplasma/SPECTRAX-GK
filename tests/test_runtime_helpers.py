@@ -258,14 +258,61 @@ def test_runtime_initial_state_helpers(tmp_path: Path, monkeypatch: pytest.Monke
     assert expanded.shape[-3] == 4
     assert _expand_ky(np.ones((1, 2, 3, 4, 5), dtype=np.complex64), nyc=2).shape[-3] == 3
 
+
+def test_runtime_single_mode_init_populates_zonal_ky0_branch() -> None:
+    cfg = replace(
+        _base_cfg(),
+        grid=GridConfig(Nx=6, Ny=8, Nz=8, Lx=6.28, Ly=6.28, boundary="periodic"),
+        init=InitializationConfig(
+            init_field="density",
+            init_amp=1.0,
+            gaussian_init=False,
+            init_single=True,
+        ),
+    )
+    geom = build_runtime_geometry(cfg)
+    grid = build_spectral_grid(cfg.grid)
+    g0 = np.asarray(_build_initial_condition(grid, geom, cfg, ky_index=0, kx_index=1, Nl=1, Nm=1, nspecies=1))
+
+    assert np.max(np.abs(g0)) > 0.0
+    assert np.max(np.abs(g0[0, 0, 0, 0, 1, :])) > 0.0
+
+
+def test_runtime_gaussian_single_mode_init_populates_zonal_ky0_branch() -> None:
+    cfg = replace(
+        _base_cfg(),
+        grid=GridConfig(Nx=6, Ny=8, Nz=8, Lx=6.28, Ly=6.28, boundary="periodic"),
+        init=InitializationConfig(
+            init_field="density",
+            init_amp=1.0,
+            gaussian_init=True,
+            init_single=True,
+            gaussian_width=0.35,
+        ),
+    )
+    geom = build_runtime_geometry(cfg)
+    grid = build_spectral_grid(cfg.grid)
+    g0 = np.asarray(_build_initial_condition(grid, geom, cfg, ky_index=0, kx_index=1, Nl=1, Nm=1, nspecies=1))
+
+    assert np.max(np.abs(g0)) > 0.0
+    assert np.max(np.abs(g0[0, 0, 0, 0, 1, :])) > 0.0
+
+
+def test_runtime_initial_state_loading_helpers(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     full = np.zeros((1, 1, 1, 4, 4, 2), dtype=np.complex64)
     full[..., 1, :, :] = 1.0 + 2.0j
     herm = _enforce_full_ky_hermitian(full)
     assert herm.shape == full.shape
-    assert np.allclose(_enforce_full_ky_hermitian(np.ones((1, 1, 1, 1, 2), dtype=np.complex64)), np.ones((1, 1, 1, 1, 2), dtype=np.complex64))
+    assert np.allclose(
+        _enforce_full_ky_hermitian(np.ones((1, 1, 1, 1, 2), dtype=np.complex64)),
+        np.ones((1, 1, 1, 1, 2), dtype=np.complex64),
+    )
 
     nc_path = tmp_path / "restart.nc"
-    monkeypatch.setattr("spectraxgk.runtime.load_gx_restart_state", lambda *_args, **_kwargs: np.ones((1, 2, 3, 4, 4, 5), dtype=np.complex64))
+    monkeypatch.setattr(
+        "spectraxgk.runtime.load_gx_restart_state",
+        lambda *_args, **_kwargs: np.ones((1, 2, 3, 4, 4, 5), dtype=np.complex64),
+    )
     assert _load_initial_state_from_file(nc_path, nspecies=1, Nl=2, Nm=3, ny=4, nx=4, nz=5).shape == (1, 2, 3, 4, 4, 5)
 
     ny = 4

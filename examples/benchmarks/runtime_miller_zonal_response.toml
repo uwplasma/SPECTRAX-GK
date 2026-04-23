@@ -1,0 +1,97 @@
+[[species]]
+name = "ion"
+charge = 1.0
+mass = 1.0
+density = 1.0
+temperature = 1.0
+tprim = 2.49
+fprim = 0.8
+nu = 0.0
+kinetic = true
+
+[grid]
+Nx = 6
+Ny = 8
+Nz = 16
+Lx = 62.8
+Ly = 62.8
+boundary = "periodic"
+
+[time]
+t_max = 10.0
+dt = 0.01
+method = "rk2"
+sample_stride = 5
+diagnostics_stride = 5
+use_diffrax = false
+fixed_dt = true
+diagnostics = true
+
+[geometry]
+model = "miller"
+q = 1.4
+s_hat = 0.8
+epsilon = 0.18
+R0 = 2.77778
+shift = 0.0
+akappa = 1.5
+akappri = 0.0
+tri = 0.25
+tripri = 0.0
+
+[init]
+init_field = "density"
+init_amp = 1.0e-4
+gaussian_init = false
+init_single = true
+init_electrons_only = false
+
+[physics]
+linear = false
+nonlinear = false
+electrostatic = true
+electromagnetic = false
+adiabatic_electrons = true
+adiabatic_ions = false
+collisions = false
+hypercollisions = false
+
+[collisions]
+nu_hermite = 0.0
+nu_laguerre = 0.0
+nu_hyper = 0.0
+p_hyper = 4.0
+hypercollisions_const = 0.0
+hypercollisions_kz = 0.0
+D_hyper = 0.0
+p_hyper_kperp = 2.0
+damp_ends_amp = 0.0
+damp_ends_widthfrac = 0.125
+
+[normalization]
+contract = "cyclone"
+diagnostic_norm = "gx"
+
+[terms]
+streaming = 1.0
+mirror = 1.0
+curvature = 1.0
+gradb = 1.0
+diamagnetic = 1.0
+collisions = 0.0
+hypercollisions = 0.0
+hyperdiffusion = 0.0
+end_damping = 0.0
+apar = 0.0
+bpar = 0.0
+nonlinear = 0.0
+
+[run]
+ky = 0.0
+kx = 0.1
+Nl = 2
+Nm = 2
+dt = 0.01
+steps = 1000
+sample_stride = 5
+diagnostics = true

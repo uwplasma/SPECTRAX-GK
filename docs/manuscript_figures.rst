@@ -39,9 +39,9 @@ Core Validation Figures
      - Open
      - this should be the acceptance-summary figure for nonlinear parity
    * - Zonal-flow / GAM response panel
-     - ``tools/plot_zonal_flow_response.py`` and ``tools/plot_zonal_flow_response_from_output.py`` plus case-specific generators to add
+     - ``tools/plot_zonal_flow_response.py``, ``tools/plot_zonal_flow_response_from_output.py``, and ``tools/generate_miller_zonal_response_pilot.py``
      - Open
-     - should combine shaped-tokamak Rosenbluth-Hinton-style residuals with W7-X residual/damping envelopes using one figure convention; use signed ``Phi_zonal_mode_kxt`` for publication claims and keep ``Phi2_zonal_t`` only as an intermediate cross-check
+     - should combine shaped-tokamak Rosenbluth-Hinton-style residuals with W7-X residual/damping envelopes using one figure convention; use signed ``Phi_zonal_mode_kxt`` for publication claims and keep ``Phi2_zonal_t`` only as an intermediate cross-check. The current stepping-stone artifact is ``docs/_static/miller_zonal_response_pilot.png`` from the density-seeded Miller pilot (`residual≈0.69`, `ω_GAM≈0.69`, `γ_damp≈0.45`, only two envelope peaks), so it remains explicitly pending.
    * - W7-X fluctuation-spectrum panel
      - dedicated script to add
      - Open

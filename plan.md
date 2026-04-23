@@ -59,6 +59,10 @@ Additional optimization/stellarator anchors:
   Maurer et al., *Global electromagnetic turbulence simulations of W7-X-like
   plasmas with GENE-3D*  
   <https://www.cambridge.org/core/journals/journal-of-plasma-physics/article/global-electromagnetic-turbulence-simulations-of-w7xlike-plasmas-with-gene3d/AFF0F24A1A52D397D7983BAB2E872E9F>
+- low-dimensional geometry learning for stellarator turbulence optimization:
+  Wei et al., *Low-dimensional geometry learning for turbulence prediction in
+  optimized stellarators*  
+  <https://arxiv.org/abs/2603.17366>
 
 #### Literature baselines reviewed directly for figure planning
 
@@ -78,6 +82,11 @@ only on abstracts:
   - density-fluctuation amplitude trends,
   - fluctuation-frequency spectra,
   - zonal-flow spectral characterization.
+- Merlo et al. shaped-tokamak benchmark:
+  - residual-potential panel (figure 12),
+  - GAM time-trace / envelope extraction (figure 13),
+  - GAM frequency and damping summary (figure 14),
+  - shaping dependence of residual and GAM metrics (figures 15-16).
 - shaped multispecies tokamak benchmark / Rosenbluth-Hinton tests:
   - linear shaping scan,
   - non-zero ballooning-angle handling,
@@ -399,6 +408,9 @@ Immediate next manuscript-facing deliverables:
    - shaped tokamak Rosenbluth-Hinton residuals,
    - W7-X residual and damping envelopes,
    - one figure convention shared across geometries.
+   - current stepping-stone artifact: `docs/_static/miller_zonal_response_pilot.png`
+     from `tools/generate_miller_zonal_response_pilot.py`; keep it in the paper
+     inventory as pending until the excitation contract is literature-grade.
 5. W7-X fluctuation-spectrum figure family aligned with the Doppler-
    reflectometry comparison literature.
 
@@ -501,6 +513,12 @@ uses as evidence.
    - Current status:
       - reusable ``Phi2_zonal_t`` extraction/plotting tooling exists,
       - signed ``Phi_zonal_mode_kxt`` now exists in the diagnostics/output path,
+      - the first case-specific stepping-stone artifact exists via
+        ``examples/benchmarks/runtime_miller_zonal_response.toml`` and
+        ``tools/generate_miller_zonal_response_pilot.py``,
+      - the current frozen Miller pilot reaches ``t≈10`` with
+        ``residual≈0.69``, ``ω_GAM≈0.69``, and ``γ_damp≈0.45`` from only two
+        envelope peaks, so it is useful but still explicitly pending,
       - manuscript-grade closure now depends on freezing case-specific reference runs rather than inventing a new observable.
 
 2. **Multiple W7-X flux tubes**

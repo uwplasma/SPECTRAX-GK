@@ -123,6 +123,18 @@ Rosenbluth-Hinton / GAM work. ``Diagnostics/Phi2_zonal_t`` remains useful as a
 zonal-energy proxy for intermediate checks, but it is no longer the target
 observable for the final paper lane.
 
+The first case-specific shaped-Miller pilot for this lane is now reproducible
+through ``examples/benchmarks/runtime_miller_zonal_response.toml`` and
+``tools/generate_miller_zonal_response_pilot.py``. Its frozen artifact lives in
+``docs/_static/miller_zonal_response_pilot.png``. This is intentionally kept as
+an intermediate density-seeded pilot until the excitation contract is upgraded
+to the literature-grade Rosenbluth-Hinton / collisionless-GAM setup. The
+current frozen run reaches ``t≈10`` with a signed-zonal residual of about
+``0.69`` and a two-peak envelope fit of ``ω_GAM≈0.69`` and
+``γ_damp≈0.45``. Those numbers are useful for workflow validation, but the
+trace is still too short and the excitation too provisional to count as a
+closed research benchmark.
+
 Diffrax and nonlinear smoke tests
 ---------------------------------
 

@@ -1,0 +1,22 @@
+{
+  "config": "/Users/rogeriojorge/local/SPECTRAX-GK/examples/benchmarks/runtime_miller_zonal_response.toml",
+  "gam_damping_rate": 0.452496571262691,
+  "gam_frequency": 0.6904441932105534,
+  "initial_level": 0.005380455550434647,
+  "kx_index": 2,
+  "kx_selected": 0.10005072504281998,
+  "ky_target": 0.0,
+  "notes": "This is a density-seeded shaped-Miller pilot built from the signed zonal observable Phi_zonal_mode_kxt. It is a real stepping-stone artifact for the future Rosenbluth-Hinton/GAM lane, but not yet the final literature-grade excitation contract.",
+  "peak_count": 2,
+  "references": [
+    "Merlo et al. 2016 shaped-tokamak collisionless GAM benchmark",
+    "W7-X stella/GENE benchmark 2022 for zonal-flow observable conventions"
+  ],
+  "residual_level": 0.6883739419264571,
+  "residual_std": 0.15174219222112306,
+  "response_rms": 0.7049002601953281,
+  "source_path": "/Users/rogeriojorge/local/SPECTRAX-GK/tools_out/zonal_response/miller_pilot_1000.out.nc",
+  "tmax": 9.960132598876953,
+  "tmin": 7.01006555557251,
+  "variable": "Phi_zonal_mode_kxt"
+}
