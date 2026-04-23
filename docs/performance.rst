@@ -57,6 +57,23 @@ corresponding ``*.xplane.pb`` metadata; the same directory can be opened in
 XProf, while the optional ``memory.prof`` snapshot can be inspected with
 ``pprof`` or XProf's memory tooling.
 
+JAX/XProf operational notes
+---------------------------
+
+Two JAX runtime details matter when reading short-run performance numbers:
+
+- JAX's persistent compilation cache can remove repeated recompilation cost for
+  fixed signatures. For repeated local profiling runs, set
+  ``JAX_COMPILATION_CACHE_DIR`` before the first compilation. This is useful
+  for engineering sweeps, but the shipped runtime panel should remain a cold
+  end-to-end measurement unless stated otherwise.
+- JAX GPU runs preallocate most device memory by default. When diagnosing an
+  out-of-memory failure on a shared machine, use
+  ``XLA_PYTHON_CLIENT_PREALLOCATE=false`` or a reduced
+  ``XLA_PYTHON_CLIENT_MEM_FRACTION`` during the profiling run. Those knobs are
+  useful for debugging and tracing, but they should not silently change the
+  published benchmark contract.
+
 Recent nonlinear profiling (Cyclone, benchmark-locked config)
 -------------------------------------------------------------
 
