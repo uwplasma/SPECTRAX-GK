@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Generate a shaped-Miller signed zonal-response artifact.
 
-This uses a Merlo-style density-seeded zonal relaxation setup with adiabatic
-electrons, zero gradients, ``k_y = 0``, and a signed zonal observable
-``Phi_zonal_mode_kxt`` written by the runtime path. The artifact is still kept
-as pending until cross-code and/or analytic closure is frozen, but the runtime
-contract itself is no longer ITG-like.
+This uses a Merlo-style zonal relaxation setup with adiabatic electrons, zero
+gradients, ``k_y = 0``, GX-style ``source="phiext_full"`` plus ``phi_ext``, and
+a signed zonal observable ``Phi_zonal_mode_kxt`` written by the runtime path.
+The artifact is still kept as pending until cross-code and/or analytic closure
+is frozen, but the runtime contract itself is no longer ITG-like.
 """
 
 from __future__ import annotations
@@ -36,7 +36,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--out-bundle",
         type=Path,
-        default=ROOT / "tools_out" / "zonal_response" / "miller_pilot_1000.out.nc",
+        default=ROOT / "tools_out" / "zonal_response" / "miller_phiext_merlo_5000.out.nc",
         help="GX-style runtime output bundle path.",
     )
     parser.add_argument(
@@ -166,10 +166,10 @@ def main() -> int:
                 "tmin": float(metrics.tmin),
                 "tmax": float(metrics.tmax),
                 "notes": (
-                    "This is a Merlo-style density-seeded shaped-Miller zonal-relaxation run "
-                    "built from the signed zonal observable Phi_zonal_mode_kxt with zero gradients "
-                    "and adiabatic electrons. It remains pending until cross-code and/or analytic "
-                    "closure is frozen."
+                    "This is a Merlo-style shaped-Miller zonal-relaxation run "
+                    "built from the signed zonal observable Phi_zonal_mode_kxt with zero gradients, "
+                    "adiabatic electrons, and a GX-style phiext_full source contract. "
+                    "It remains pending until cross-code and/or analytic closure is frozen."
                 ),
                 "references": [
                     "Merlo et al. 2016 shaped-tokamak collisionless GAM benchmark",

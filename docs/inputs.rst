@@ -368,6 +368,12 @@ Notable runtime-only keys:
 * ``[expert] fixed_mode`` with ``iky_fixed`` / ``ikx_fixed``: keep one Fourier
   mode exactly frozen during nonlinear evolution, matching GX's ``eqfix``
   behavior used by the ``secondary`` benchmark.
+* ``[expert] source`` / ``phi_ext``: runtime-only benchmark hooks for
+  GX-style external electrostatic forcing. ``source = "phiext_full"`` with a
+  small ``phi_ext`` is the contract used for Rosenbluth-Hinton / GAM response
+  work; the source is injected into the solved ``phi`` field before the RHS is
+  assembled, so it changes the actual evolution rather than only the saved
+  diagnostics.
 * ``[time] nstep_restart``: when writing a nonlinear NetCDF bundle,
   checkpoint every ``nstep_restart`` steps instead of waiting for the end of
   the run. This is useful for long adaptive runs and batch jobs.
