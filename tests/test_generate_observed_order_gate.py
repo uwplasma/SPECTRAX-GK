@@ -9,7 +9,7 @@ import pytest
 
 
 def _load_tool_module():
-    path = Path("/Users/rogeriojorge/local/SPECTRAX-GK/tools/generate_observed_order_gate.py")
+    path = Path(__file__).resolve().parents[1] / "tools" / "generate_observed_order_gate.py"
     spec = importlib.util.spec_from_file_location("generate_observed_order_gate", path)
     assert spec is not None
     assert spec.loader is not None

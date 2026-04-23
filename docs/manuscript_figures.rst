@@ -41,7 +41,7 @@ Core Validation Figures
    * - Validation gate index
      - ``tools/make_validation_gate_index.py``
      - Open
-     - current artifact base: ``docs/_static/validation_gate_index.png`` and ``docs/_static/validation_gate_index.json``. This is not a physics result by itself; it is the audit panel for release-window gates, currently ``8/8`` passed.
+     - current artifact base: ``docs/_static/validation_gate_index.png`` and ``docs/_static/validation_gate_index.json``. This is not a physics result by itself; it is the audit panel for release-window gates, currently ``9/9`` passed.
    * - Zonal-flow / GAM response panel
      - ``tools/plot_zonal_flow_response.py``, ``tools/plot_zonal_flow_response_from_output.py``, ``tools/generate_miller_zonal_response_pilot.py``, and ``tools/generate_w7x_zonal_response_panel.py``
      - Open

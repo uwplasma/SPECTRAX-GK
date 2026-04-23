@@ -28,9 +28,9 @@ Hermite ladder is taken.
 
 Source mapping:
 
-- [/Users/rogeriojorge/local/SPECTRAX-GK/src/spectraxgk/linear.py](/Users/rogeriojorge/local/SPECTRAX-GK/src/spectraxgk/linear.py)
-- [/Users/rogeriojorge/local/SPECTRAX-GK/src/spectraxgk/terms/fields.py](/Users/rogeriojorge/local/SPECTRAX-GK/src/spectraxgk/terms/fields.py)
-- [/Users/rogeriojorge/local/SPECTRAX-GK/src/spectraxgk/terms/assembly.py](/Users/rogeriojorge/local/SPECTRAX-GK/src/spectraxgk/terms/assembly.py)
+- ``src/spectraxgk/linear.py``
+- ``src/spectraxgk/terms/fields.py``
+- ``src/spectraxgk/terms/assembly.py``
 
 Implemented Linear Operator
 ---------------------------
@@ -70,8 +70,8 @@ Nonlinear electromagnetic terms additionally use :math:`J_0(\alpha)` and
 
 Source mapping:
 
-- [/Users/rogeriojorge/local/SPECTRAX-GK/src/spectraxgk/gyroaverage.py](/Users/rogeriojorge/local/SPECTRAX-GK/src/spectraxgk/gyroaverage.py)
-- [/Users/rogeriojorge/local/SPECTRAX-GK/src/spectraxgk/terms/nonlinear.py](/Users/rogeriojorge/local/SPECTRAX-GK/src/spectraxgk/terms/nonlinear.py)
+- ``src/spectraxgk/gyroaverage.py``
+- ``src/spectraxgk/terms/nonlinear.py``
 
 Streaming
 ---------
@@ -308,15 +308,15 @@ Source Mapping
 --------------
 
 - linear term kernels:
-  [/Users/rogeriojorge/local/SPECTRAX-GK/src/spectraxgk/terms/linear_terms.py](/Users/rogeriojorge/local/SPECTRAX-GK/src/spectraxgk/terms/linear_terms.py)
+  ``src/spectraxgk/terms/linear_terms.py``
 - nonlinear term kernels:
-  [/Users/rogeriojorge/local/SPECTRAX-GK/src/spectraxgk/terms/nonlinear.py](/Users/rogeriojorge/local/SPECTRAX-GK/src/spectraxgk/terms/nonlinear.py)
+  ``src/spectraxgk/terms/nonlinear.py``
 - assembly:
-  [/Users/rogeriojorge/local/SPECTRAX-GK/src/spectraxgk/terms/assembly.py](/Users/rogeriojorge/local/SPECTRAX-GK/src/spectraxgk/terms/assembly.py)
+  ``src/spectraxgk/terms/assembly.py``
 - low-level parameter container:
-  [/Users/rogeriojorge/local/SPECTRAX-GK/src/spectraxgk/linear.py](/Users/rogeriojorge/local/SPECTRAX-GK/src/spectraxgk/linear.py)
+  ``src/spectraxgk/linear.py``
 - runtime parameter surface:
-  [/Users/rogeriojorge/local/SPECTRAX-GK/src/spectraxgk/runtime_config.py](/Users/rogeriojorge/local/SPECTRAX-GK/src/spectraxgk/runtime_config.py)
+  ``src/spectraxgk/runtime_config.py``
 
 Parameter Surface
 -----------------

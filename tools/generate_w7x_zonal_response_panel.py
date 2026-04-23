@@ -123,6 +123,16 @@ def _kx_token(kx: float) -> str:
     return f"{int(round(1000.0 * float(kx))):03d}"
 
 
+def _artifact_path(path: Path | str) -> str:
+    """Return a stable repo-relative path for tracked metadata when possible."""
+
+    candidate = Path(path)
+    try:
+        return candidate.resolve().relative_to(ROOT.resolve()).as_posix()
+    except ValueError:
+        return str(path)
+
+
 def _finite_or_none(value: float) -> float | None:
     val = float(value)
     return val if np.isfinite(val) else None
@@ -275,7 +285,7 @@ def main() -> int:
             "kx_target": float(kx_target),
             "kx_selected": float(kx_selected),
             "kx_index": int(kx_index),
-            "source_path": str(out_bundle),
+            "source_path": _artifact_path(out_bundle),
             "initial_level": float(metrics.initial_level),
             "residual_level": float(metrics.residual_level),
             "residual_std": float(metrics.residual_std),
@@ -328,7 +338,7 @@ def main() -> int:
     meta_out.write_text(
         json.dumps(
             {
-                "config": str(args.config),
+                "config": _artifact_path(args.config),
                 "initial_policy": str(args.initial_policy),
                 "damping_method": "branchwise_extrema",
                 "frequency_method": "hilbert_phase",

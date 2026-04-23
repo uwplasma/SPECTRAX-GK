@@ -27,6 +27,23 @@ DEFAULT_CSV = REPO_ROOT / "docs" / "_static" / "validation_gate_index.csv"
 DEFAULT_PNG = REPO_ROOT / "docs" / "_static" / "validation_gate_index.png"
 
 
+def _repo_relative_path(path: Path) -> str:
+    """Return a stable repo-relative path when ``path`` is inside the checkout."""
+
+    try:
+        return path.resolve().relative_to(REPO_ROOT.resolve()).as_posix()
+    except ValueError:
+        return str(path)
+
+
+def _repo_relative_pattern(pattern: str) -> str:
+    """Return a stable repo-relative glob pattern when possible."""
+
+    repo = str(REPO_ROOT.resolve())
+    raw = str(pattern)
+    return raw[len(repo) + 1 :] if raw.startswith(repo + "/") else raw
+
+
 def _json_clean(value: Any) -> Any:
     if isinstance(value, dict):
         return {str(key): _json_clean(item) for key, item in value.items()}
@@ -69,7 +86,7 @@ def _report_entries(path: Path, data: dict[str, object]) -> list[dict[str, objec
         ]
         entries.append(
             {
-                "artifact": str(path),
+                "artifact": _repo_relative_path(path),
                 "case": str(report.get("case", data.get("case", path.stem))),
                 "source": str(report.get("source", data.get("source", ""))),
                 "passed": bool(report.get("passed", False)),
@@ -100,7 +117,7 @@ def build_index(patterns: list[str]) -> dict[str, object]:
     entries = collect_gate_entries(patterns)
     n_passed = sum(1 for row in entries if bool(row["passed"]))
     payload = {
-        "patterns": patterns,
+        "patterns": [_repo_relative_pattern(pattern) for pattern in patterns],
         "n_reports": len(entries),
         "n_passed": n_passed,
         "n_open": len(entries) - n_passed,

@@ -10,7 +10,7 @@ import numpy as np
 
 
 def _load_tool_module():
-    path = Path("/Users/rogeriojorge/local/SPECTRAX-GK/tools/plot_zonal_flow_response_from_output.py")
+    path = Path(__file__).resolve().parents[1] / "tools" / "plot_zonal_flow_response_from_output.py"
     spec = importlib.util.spec_from_file_location("plot_zonal_flow_response_from_output", path)
     assert spec is not None
     assert spec.loader is not None

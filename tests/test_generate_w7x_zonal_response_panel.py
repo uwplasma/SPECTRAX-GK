@@ -10,7 +10,7 @@ import numpy as np
 
 
 def _load_tool_module():
-    path = Path("/Users/rogeriojorge/local/SPECTRAX-GK/tools/generate_w7x_zonal_response_panel.py")
+    path = Path(__file__).resolve().parents[1] / "tools" / "generate_w7x_zonal_response_panel.py"
     spec = importlib.util.spec_from_file_location("generate_w7x_zonal_response_panel", path)
     assert spec is not None
     assert spec.loader is not None

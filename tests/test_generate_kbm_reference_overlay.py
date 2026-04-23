@@ -10,7 +10,7 @@ from spectraxgk.benchmarking import EigenfunctionComparisonMetrics
 
 
 def _load_tool_module():
-    path = Path("/Users/rogeriojorge/local/SPECTRAX-GK/tools/generate_kbm_reference_overlay.py")
+    path = Path(__file__).resolve().parents[1] / "tools" / "generate_kbm_reference_overlay.py"
     spec = importlib.util.spec_from_file_location("generate_kbm_reference_overlay", path)
     assert spec is not None
     assert spec.loader is not None
