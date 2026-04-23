@@ -144,6 +144,12 @@ only with parity and coverage gates attached to each extraction.
    - KBM branch-following now has a `--branch-summary-json` path in
      `tools/compare_gx_kbm.py`, so selected branch tables can record adjacent
      `gamma`/`omega` jump gates and successive eigenfunction-overlap gates.
+   - The tracked KBM selected-branch table now also has a no-rerun refresh
+     script, `tools/generate_kbm_branch_gate_summary.py`, which writes
+     `docs/_static/kbm_branch_gate_summary.json`. The current summary keeps
+     this lane open because the largest adjacent growth-rate jump is about
+     `0.60` against the strict `0.50` gate, while the adjacent frequency and
+     successive-overlap gates pass.
 
 3. **Close the next physics gates in this order.**
    - W7-X zonal-response artifact using VMEC-backed geometry and the same
