@@ -18,8 +18,9 @@
 # dump artifacts exist.
 
 [lane.cyclone_miller]
-config = "../examples/linear/axisymmetric/runtime_cyclone_nonlinear_miller.toml"
+config = "../examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml"
 gx_out = "$HOME/gx_runs/cyclone_diag160/cyclone_diag160.out.nc"
+env.JAX_PLATFORMS = "cpu"
 
 [lane.cyclone_miller.diag_state]
 gx_dir = "$HOME/gx_runs/cyclone_diag160"
