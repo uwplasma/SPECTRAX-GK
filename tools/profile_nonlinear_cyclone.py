@@ -13,6 +13,11 @@ import os
 import time
 from pathlib import Path
 
+try:
+    from tools._profiler_options import make_profile_options
+except ModuleNotFoundError:  # pragma: no cover - direct script execution fallback
+    from _profiler_options import make_profile_options
+
 
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Profile nonlinear Cyclone runtime.")
@@ -33,6 +38,8 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--memory-profile", type=Path, default=None)
     parser.add_argument("--xla-dump-dir", type=Path, default=None)
     parser.add_argument("--xla-hlo-pass-re", type=str, default=".*")
+    parser.add_argument("--python-tracer-level", type=int, default=0)
+    parser.add_argument("--host-tracer-level", type=int, default=0)
     parser.add_argument("--warmup-only", action="store_true", default=False)
     return parser.parse_args()
 
@@ -85,7 +92,13 @@ def main() -> None:
 
     if args.trace_dir is not None:
         args.trace_dir.mkdir(parents=True, exist_ok=True)
-        profiler.start_trace(str(args.trace_dir))
+        profiler.start_trace(
+            str(args.trace_dir),
+            profiler_options=make_profile_options(
+                python_tracer_level=args.python_tracer_level,
+                host_tracer_level=args.host_tracer_level,
+            ),
+        )
     t2 = time.perf_counter()
     try:
         with profiler.TraceAnnotation("spectrax_profiled_run"):

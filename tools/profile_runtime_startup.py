@@ -12,6 +12,11 @@ from pathlib import Path
 import time
 from typing import Any, Callable
 
+try:
+    from tools._profiler_options import make_profile_options
+except ModuleNotFoundError:  # pragma: no cover - direct script execution fallback
+    from _profiler_options import make_profile_options
+
 
 @dataclass(frozen=True)
 class PhaseTiming:
@@ -41,6 +46,8 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--memory-profile", type=Path, default=None)
     parser.add_argument("--xla-dump-dir", type=Path, default=None)
     parser.add_argument("--xla-hlo-pass-re", type=str, default=".*")
+    parser.add_argument("--python-tracer-level", type=int, default=0)
+    parser.add_argument("--host-tracer-level", type=int, default=0)
     parser.add_argument("--debug-log-cache", action="store_true", default=False)
     parser.add_argument("--explain-cache-misses", action="store_true", default=False)
     parser.add_argument("--csv-out", type=Path, default=None)
@@ -139,7 +146,13 @@ def main() -> None:
 
     if args.trace_dir is not None:
         args.trace_dir.mkdir(parents=True, exist_ok=True)
-        profiler.start_trace(str(args.trace_dir))
+        profiler.start_trace(
+            str(args.trace_dir),
+            profiler_options=make_profile_options(
+                python_tracer_level=args.python_tracer_level,
+                host_tracer_level=args.host_tracer_level,
+            ),
+        )
 
     try:
         cfg_loaded = _time_phase(
