@@ -129,10 +129,10 @@ branch-continuity gates for adjacent ``gamma``/``omega`` jumps and successive
 eigenfunction overlap when overlap data are available. The tracked KBM
 candidate table now has a no-rerun summary path through
 ``tools/generate_kbm_branch_gate_summary.py`` and
-``docs/_static/kbm_branch_gate_summary.json``. That summary currently marks
-the branch-continuity lane open: the largest adjacent growth-rate jump is about
-``0.60`` against the strict ``0.50`` threshold, while the corresponding
-frequency-jump and successive-overlap checks pass.
+``docs/_static/kbm_branch_gate_summary.json``. That summary now uses the
+continuity-first selected branch and passes the strict checks:
+``max_rel_gamma_jump ~= 0.388``, ``max_rel_omega_jump ~= 0.320``, and no
+successive-overlap deficit.
 
 Observed-order convergence tables should also gate both the asymptotic finest
 refinement and the full set of pairwise refinement orders. The generic

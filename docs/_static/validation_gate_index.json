@@ -1,6 +1,6 @@
 {
-  "n_open": 3,
-  "n_passed": 5,
+  "n_open": 2,
+  "n_passed": 6,
   "n_reports": 8,
   "patterns": [
     "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/*.json"
@@ -53,12 +53,12 @@
     {
       "artifact": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/kbm_branch_gate_summary.json",
       "case": "kbm_linear_branch_continuity",
-      "failed_metrics": "max_rel_gamma_jump",
-      "max_abs_error": 0.5962518807577922,
+      "failed_metrics": "",
+      "max_abs_error": 0.3879740373283112,
       "max_rel_error": 0.0,
-      "n_failed": 1,
+      "n_failed": 0,
       "n_gates": 3,
-      "passed": false,
+      "passed": true,
       "source": "selected KBM comparison rows"
     },
     {

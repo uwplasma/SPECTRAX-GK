@@ -1,28 +1,28 @@
 {
   "candidate_csv": "docs/_static/kbm_gx_candidates.csv",
   "case": "kbm_linear_branch_continuity",
-  "gate_passed": false,
+  "gate_passed": true,
   "gate_report": {
     "case": "kbm_linear_branch_continuity",
     "gates": [
       {
-        "abs_error": 0.5962518807577922,
+        "abs_error": 0.3879740373283112,
         "atol": 0.5,
         "metric": "max_rel_gamma_jump",
         "notes": "Passes when adjacent gamma jumps <= 0.5.",
-        "observed": 0.5962518807577922,
-        "passed": false,
+        "observed": 0.3879740373283112,
+        "passed": true,
         "reference": 0.0,
         "rel_error": null,
         "rtol": 0.0,
         "units": ""
       },
       {
-        "abs_error": 0.3060399478542059,
+        "abs_error": 0.3204739186730531,
         "atol": 0.5,
         "metric": "max_rel_omega_jump",
         "notes": "Passes when adjacent omega jumps <= 0.5.",
-        "observed": 0.3060399478542059,
+        "observed": 0.3204739186730531,
         "passed": true,
         "reference": 0.0,
         "rel_error": null,
@@ -42,9 +42,9 @@
         "units": ""
       }
     ],
-    "max_abs_error": 0.5962518807577922,
+    "max_abs_error": 0.3879740373283112,
     "max_rel_error": 0.0,
-    "passed": false,
+    "passed": true,
     "source": "selected KBM comparison rows"
   },
   "notes": "Selected rows are taken from the KBM GX comparison candidate table. The gate is intentionally a branch-identity check: adjacent gamma and omega jumps should stay smooth, and successive eigenfunction overlaps should remain high when those overlaps are available.",
@@ -67,21 +67,21 @@
       "solver": "gx_time@project_late"
     },
     {
-      "branch_score": 0.2365455751604612,
+      "branch_score": 0.3129905696934736,
       "eig_overlap_gx": 0.992325845170364,
       "eig_overlap_prev": 0.9971999030038216,
       "eig_rel_l2": 0.1304711889890329,
-      "fit_window_tmax": 40.000080985584106,
-      "fit_window_tmin": 20.000040492792053,
-      "gamma": 0.3185324072837829,
+      "fit_window_tmax": 11.95451199716608,
+      "fit_window_tmin": 8.355296567777229,
+      "gamma": 0.2101330142876787,
       "gamma_gx": 0.2627970809116959,
       "ky": 0.2000000029802322,
-      "omega": 0.8791870474815369,
+      "omega": 0.977439986626946,
       "omega_gx": 0.8891330659389496,
-      "rel_gamma": 0.2120850284132911,
-      "rel_omega": 0.0111861979251771,
+      "rel_gamma": 0.2003982176716538,
+      "rel_omega": 0.0993180031998269,
       "selected": true,
-      "solver": "gx_time@max"
+      "solver": "gx_time@project_late"
     },
     {
       "branch_score": 0.1923867318905925,

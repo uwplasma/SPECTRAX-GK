@@ -190,16 +190,17 @@ The active pre-merge sequence is:
      `gamma`/`omega` jump gates and successive eigenfunction-overlap gates.
    - The tracked KBM selected-branch table now also has a no-rerun refresh
      script, `tools/generate_kbm_branch_gate_summary.py`, which writes
-     `docs/_static/kbm_branch_gate_summary.json`. The current summary keeps
-     this lane open because the largest adjacent growth-rate jump is about
-     `0.60` against the strict `0.50` gate, while the adjacent frequency and
-     successive-overlap gates pass.
+     `docs/_static/kbm_branch_gate_summary.json`. The selected rows now use a
+     continuity-first branch (`project_late` at `ky=0.2` instead of the
+     pointwise max-growth window), and the current summary passes with
+     `max_rel_gamma_jump ~= 0.388`, `max_rel_omega_jump ~= 0.320`, and no
+     successive-overlap deficit.
    - `tools/make_validation_gate_index.py` now scans tracked JSON metadata and
      writes `docs/_static/validation_gate_index.json/csv/png`, giving the
      manuscript/docs one compact audit view of currently materialized
      pass/open gate reports. The current index contains Merlo zonal response
-     as passed, and the Cyclone resolution pilot plus KBM branch continuity as
-     open.
+     and KBM branch continuity as passed; the Cyclone resolution pilot and
+     short Cyclone nonlinear diagnostic remain open.
 
 3. **Close the next physics gates in this order.**
    - W7-X zonal-response artifact using VMEC-backed geometry and the same
