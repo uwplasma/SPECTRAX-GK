@@ -1,7 +1,7 @@
 {
   "config": "/Users/rogeriojorge/local/SPECTRAX-GK/examples/benchmarks/runtime_miller_zonal_response.toml",
-  "gam_damping_rate": -0.000654934208479284,
-  "gam_frequency": 0.8267483020916665,
+  "gam_damping_rate": -0.0006559273888708165,
+  "gam_frequency": 0.8272458780808106,
   "initial_level": 5.970311311712495e-05,
   "kx_index": 2,
   "kx_selected": 0.05002536252140999,
@@ -38,8 +38,8 @@
   "response_rms": 1.073525402783487,
   "setup": "initial density perturbation",
   "source_path": "tools_out/zonal_response/miller_caseIII_initial_density_Nl4_Nm16_Nz32_dt001_t150.out.nc",
-  "tmax": 149.90689086914062,
-  "tmin": 105.01402282714844,
+  "tmax": 149.820556640625,
+  "tmin": 104.9229507446289,
   "validation_status": "open",
   "variable": "Phi_zonal_mode_kxt"
 }

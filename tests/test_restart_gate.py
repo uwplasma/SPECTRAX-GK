@@ -7,9 +7,10 @@ import numpy as np
 import pytest
 
 from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, TimeConfig
-from spectraxgk.restart import write_gx_restart_state
+from spectraxgk.restart import load_gx_restart_state, write_gx_restart_state
 from spectraxgk.runtime import run_runtime_nonlinear
 from spectraxgk.runtime_artifacts import (
+    _restart_to_gx_layout,
     load_runtime_nonlinear_gx_diagnostics,
     run_runtime_nonlinear_with_artifacts,
     write_runtime_nonlinear_artifacts,
@@ -64,6 +65,30 @@ def _restart_base_cfg() -> RuntimeConfig:
         normalization=RuntimeNormalizationConfig(contract="cyclone", diagnostic_norm="none"),
         terms=RuntimeTermsConfig(nonlinear=1.0, end_damping=0.0, hypercollisions=0.0),
     )
+
+
+def test_netcdf_restart_roundtrips_zonal_radial_modes(tmp_path: Path) -> None:
+    nc = pytest.importorskip("netCDF4")
+
+    state = np.zeros((1, 3, 4, 8, 8, 6), dtype=np.complex64)
+    state[0, 0, 0, 0, 1, :] = (1.0 + 0.25j) * np.arange(1, 7, dtype=np.float32)
+    state[0, 1, 2, 0, 7, :] = (-0.5 + 0.75j) * np.arange(1, 7, dtype=np.float32)
+    gx_state = _restart_to_gx_layout(state)
+
+    path = tmp_path / "zonal_restart.nc"
+    with nc.Dataset(path, "w") as root:
+        root.createDimension("Nspecies", gx_state.shape[0])
+        root.createDimension("Nm", gx_state.shape[1])
+        root.createDimension("Nl", gx_state.shape[2])
+        root.createDimension("Nz", gx_state.shape[3])
+        root.createDimension("Nkx", gx_state.shape[4])
+        root.createDimension("Nky", gx_state.shape[5])
+        root.createDimension("ri", 2)
+        root.createVariable("G", "f4", ("Nspecies", "Nm", "Nl", "Nz", "Nkx", "Nky", "ri"))[:] = gx_state
+
+    loaded = load_gx_restart_state(path, nspecies=1, Nl=3, Nm=4, ny=8, nx=8, nz=6)
+
+    np.testing.assert_array_equal(loaded, state)
 
 
 def test_restart_gate_nonlinear_matches_continuous(tmp_path: Path) -> None:
@@ -269,4 +294,3 @@ def test_restart_gate_append_on_restart_preserves_full_history(tmp_path: Path) -
     np.testing.assert_allclose(np.asarray(loaded.particle_flux_t), np.asarray(full.diagnostics.particle_flux_t), rtol=1.0e-6, atol=1.0e-6)
     assert full.diagnostics.turbulent_heating_t is not None
     np.testing.assert_allclose(np.asarray(loaded.turbulent_heating_t), np.asarray(full.diagnostics.turbulent_heating_t), rtol=1.0e-6, atol=1.0e-6)
-

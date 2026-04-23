@@ -536,7 +536,7 @@ def test_miller_zonal_response_example_uses_merlo_case_iii_contract() -> None:
     assert cfg.expert.phi_ext == pytest.approx(0.0)
     assert cfg.init.init_field == "density"
     assert cfg.init.init_amp == pytest.approx(1.0e-6)
-    assert cfg.output.save_for_restart is False
+    assert cfg.output.save_for_restart is True
     assert cfg.geometry.q == pytest.approx(1.389)
     assert cfg.geometry.s_hat == pytest.approx(0.751)
     assert cfg.geometry.akappa == pytest.approx(1.4723)

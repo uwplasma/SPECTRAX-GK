@@ -526,10 +526,10 @@ uses as evidence.
         Case-III residual read from Figs. 12/16 is about ``0.19``,
       - the external ``phiext_full`` source path remains covered as a runtime
         contract, but it is not the Merlo RH/GAM validation protocol,
-      - a restart-checkpoint issue was exposed for this zonal initial-density
-        run: default ``nsave=10000`` chunking zeroed the second chunk in this
-        artifact, so the benchmark disables checkpoint chunking until the
-        restart-state path is fixed and tested.
+      - the restart-checkpoint issue exposed by this zonal initial-density run
+        is fixed and covered: NetCDF restart loading now scatters active
+        radial modes using the same order used by the writer, so chunked
+        long-window artifacts no longer zero the post-checkpoint zonal signal.
 
 2. **Multiple W7-X flux tubes**
    - The published W7-X benchmark is not a single-point story.

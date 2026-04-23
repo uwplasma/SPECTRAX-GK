@@ -102,9 +102,6 @@ nonlinear = 0.0
 source = "default"
 phi_ext = 0.0
 
-[output]
-save_for_restart = false
-
 [run]
 ky = 0.0
 kx = 0.05

@@ -129,9 +129,9 @@ through ``examples/benchmarks/runtime_miller_zonal_response.toml`` and
 ``docs/_static/miller_zonal_response_pilot.png``. The current frozen artifact
 is pinned to Merlo et al. Case III: adiabatic electrons, zero gradients,
 ``k_xρ_i≈0.05``, ``k_y=0``, and an initial ion-density perturbation.  It uses
-``Nz=32``, ``Nl=4``, ``Nm=16``, ``dt=0.01``, and runs to ``t≈150`` with
-checkpoint chunking disabled so the residual window is not polluted by restart
-state handling.  It remains open: the current SPECTRAX-GK trace gives a late
+``Nz=32``, ``Nl=4``, ``Nm=16``, ``dt=0.01``, and runs to ``t≈150`` through the
+same checkpoint-capable artifact writer used by long nonlinear runs.  It
+remains open: the current SPECTRAX-GK trace gives a late
 residual of about ``0.745`` with a broad oscillatory window, whereas the
 Merlo Case-III residual read from the published figures is about ``0.19``.
 The artifact is therefore a concrete failure/diagnostic lane, not a closed
