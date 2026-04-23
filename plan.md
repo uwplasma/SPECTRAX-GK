@@ -179,6 +179,12 @@ The active pre-merge sequence is:
      gate checks both final-pair order and all pairwise orders, so the current
      pilot is honestly marked open due a nonmonotone coarse-to-mid refinement
      even though the final-grid relative growth-rate error is small.
+   - A bounded local Krylov probe for replacing that pilot was attempted at
+     `ky=0.45` for `(Nl,Nm)=(4,8),(6,12),(8,16),...` and hit the 300-second
+     cap before the higher-resolution points finished. The completed points
+     were still nonmonotone in growth rate, so the replacement artifact should
+     be generated from an office/GPU or cached manifest with explicit branch
+     locking rather than another local compile-heavy sweep.
    - KBM branch-following now has a `--branch-summary-json` path in
      `tools/compare_gx_kbm.py`, so selected branch tables can record adjacent
      `gamma`/`omega` jump gates and successive eigenfunction-overlap gates.
