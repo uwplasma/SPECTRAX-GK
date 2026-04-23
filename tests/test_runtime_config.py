@@ -548,3 +548,33 @@ def test_miller_zonal_response_example_uses_merlo_case_iii_contract() -> None:
     assert data["run"]["dt"] == pytest.approx(0.005)
     assert data["run"]["kx"] == pytest.approx(0.05)
     assert data["run"]["ky"] == pytest.approx(0.0)
+
+
+def test_w7x_zonal_response_vmec_example_uses_test4_contract() -> None:
+    path = Path(__file__).resolve().parents[1] / "examples" / "benchmarks" / "runtime_w7x_zonal_response_vmec.toml"
+
+    cfg, data = load_runtime_from_toml(path)
+
+    assert isinstance(data, dict)
+    assert cfg.geometry.model == "vmec"
+    assert cfg.geometry.vmec_file == "$W7X_VMEC_FILE"
+    assert cfg.geometry.torflux == pytest.approx(0.64)
+    assert cfg.geometry.alpha == pytest.approx(0.0)
+    assert cfg.geometry.R0 == pytest.approx(5.485)
+    assert cfg.grid.boundary == "linked"
+    assert cfg.grid.nperiod == 4
+    assert cfg.grid.Nz == 256
+    assert cfg.init.gaussian_init is True
+    assert cfg.init.gaussian_width == pytest.approx(0.5)
+    assert cfg.init.init_field == "density"
+    assert cfg.physics.adiabatic_electrons is True
+    assert cfg.physics.nonlinear is False
+    assert cfg.physics.collisions is False
+    assert cfg.physics.hypercollisions is False
+    assert cfg.species[0].tprim == pytest.approx(0.0)
+    assert cfg.species[0].fprim == pytest.approx(0.0)
+    assert data["run"]["ky"] == pytest.approx(0.0)
+    assert data["run"]["kx"] == pytest.approx(0.05)
+    assert data["run"]["Nl"] == 8
+    assert data["run"]["Nm"] == 32
+    assert data["run"]["dt"] == pytest.approx(0.05)

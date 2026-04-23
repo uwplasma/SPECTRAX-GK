@@ -519,11 +519,12 @@ uses as evidence.
         ``tools/generate_miller_zonal_response_pilot.py``,
       - the current frozen Miller artifact is now pinned to the actual Merlo
         Case-III Table-III parameters with an initial ion-density perturbation,
-        zero gradients, adiabatic electrons, ``kxρ_i≈0.05``, and ``ky=0``; it
-        runs to ``t≈150`` at ``Nz=32``, ``Nl=4``, ``Nm=16``, and ``dt=0.01``,
-      - the artifact has moved off the old ``Nm=16``, ``dt=0.01``, ``t≈150``
-        pilot and onto a better-resolved ``Nm=24``, ``dt=0.005``, ``t≈60``
-        setup because the old trace's late peaks were recurrence-contaminated,
+        zero gradients, adiabatic electrons, and ``kxρ_i≈0.05`` with
+        ``ky=0``,
+      - the artifact has moved off the old ``Nm=16``, ``dt=0.01``,
+        ``t≈150`` pilot and onto the current better-resolved
+        ``Nm=24``, ``dt=0.005``, ``t≈60`` setup because the old trace's late
+        peaks were recurrence-contaminated,
       - using the Rosenbluth-Hinton first-sample convention now gives
         ``residual≈0.192`` against the Merlo Case-III Figs. 12/16 read-off of
         about ``0.19``,
@@ -534,6 +535,15 @@ uses as evidence.
       - this gives ``ω_GAM R0 / v_i≈2.20`` against the paper-scale read-off
         near ``2.24`` and ``γ_GAM R0 / v_i≈-0.176`` against the Merlo
         read-off near ``-0.17``,
+      - a follow-up recurrence audit now shows that pushing the same case to
+        ``Nm=28``, ``Nl=4`` improves the late-time recurrence ratio from about
+        ``0.60`` to about ``0.54`` and moves the frequency closer to the paper
+        read-off, but it also over-damps the GAM to roughly
+        ``γ_GAM R0 / v_i≈-0.192``,
+      - a minimal ``hypercollisions_const`` ladder through ``10^{-4}`` is
+        effectively inert for this case, and even ``10^{-3}`` only nudges the
+        recurrence ratio to about ``0.589``, so weak hypercollisions do not
+        outperform the clean higher-moment run,
       - the remaining numerical follow-up item is long-time recurrence in
         finite moment runs rather than the benchmark-scale Merlo
         residual/frequency/damping gate,
@@ -779,7 +789,15 @@ The literature pass implies a concrete figure philosophy:
 
 6. **Stellarator-specific validation panel**
    - W7-X multi-flux-tube linear comparisons
-   - W7-X zonal-flow response
+   - W7-X zonal-flow response:
+     - runtime contract now exists via
+       ``examples/benchmarks/runtime_w7x_zonal_response_vmec.toml``
+     - panel generator now exists via
+       ``tools/generate_w7x_zonal_response_panel.py``
+     - the tool uses the same first-sample / branchwise-extrema /
+       Hilbert-phase extraction policy as the Merlo lane
+     - still needs a frozen VMEC-backed artifact and acceptance window on a
+       machine with W7-X geometry access
    - HSX linear/nonlinear summary if that lane remains in the paper
    - if zonal-flow is not closed, the paper should say so explicitly instead of
      silently omitting it

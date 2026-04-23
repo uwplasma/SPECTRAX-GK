@@ -115,6 +115,8 @@ The first reusable tooling for this lane now exists:
 - :func:`spectraxgk.plotting.zonal_flow_response_figure`
 - ``tools/plot_zonal_flow_response.py``
 - ``tools/plot_zonal_flow_response_from_output.py``
+- ``tools/generate_miller_zonal_response_pilot.py``
+- ``tools/generate_w7x_zonal_response_panel.py``
 
 The diagnostics stream now also carries ``Diagnostics/Phi_zonal_mode_kxt``, a
 signed complex zonal-potential history reduced over ``z`` with the same volume
@@ -142,6 +144,29 @@ gives ``ω_GAM R0 / v_i≈2.20`` and ``γ_GAM R0 / v_i≈-0.176``, both close to
 the Merlo figure read-off.  The explicit remaining follow-up item is the
 long-time recurrence visible in finite moment runs, rather than the
 benchmark-scale residual/frequency/damping gate itself.
+
+An additional recurrence audit now brackets the numerical trade-off more
+explicitly: increasing the resolution to ``Nm=28`` and ``Nl=4`` lowers the
+late-time recurrence ratio from about ``0.60`` to about ``0.54`` and brings
+``ω_GAM R0 / v_i`` nearly onto the Merlo read-off, but it also pushes the
+damping to roughly ``γ_GAM R0 / v_i≈-0.192``, which is more damped than the
+paper-scale target near ``-0.17``. A minimal ``hypercollisions_const`` ladder
+through ``10^{-4}`` is effectively inert for this case, while ``10^{-3}``
+only lowers the recurrence ratio to roughly ``0.589`` and still does not beat
+the clean higher-moment run. The shipped artifact therefore remains on the
+``Nm=24``, ``Nl=4`` baseline until the long-time recurrence can be reduced
+without moving the benchmark-scale damping gate.
+
+The next literature lane now has a dedicated runtime contract as well:
+``examples/benchmarks/runtime_w7x_zonal_response_vmec.toml`` and
+``tools/generate_w7x_zonal_response_panel.py`` define the W7-X high-mirror
+bean-tube zonal-flow relaxation benchmark from the stella/GENE paper. The
+tool sweeps ``k_x rho_i`` over ``[0.05, 0.07, 0.10, 0.30]`` and applies the
+same first-sample normalization, branchwise damping fit, and Hilbert-phase
+frequency extraction used in the Merlo lane. The default early-time fit-window
+cap is an explicit analysis policy chosen to isolate the initial GAM before
+the slower stellarator-specific oscillation; the final frozen artifact for
+this lane still needs to be generated on a machine with W7-X VMEC access.
 
 Diffrax and nonlinear smoke tests
 ---------------------------------
