@@ -517,7 +517,7 @@ uses as evidence.
         ``examples/benchmarks/runtime_miller_zonal_response.toml`` and
         ``tools/generate_miller_zonal_response_pilot.py``,
       - the current frozen Miller artifact now uses a Merlo-style
-        zero-gradient density-seeded contract and reaches ``t≈100`` with
+        zero-gradient GX-like ``phiext_full`` contract and reaches ``t≈100`` with
         ``ω_GAM≈0.66`` and roughly ``20`` envelope peaks, but the trace is
         still only weakly damped and does not settle to a clean stationary
         residual window,

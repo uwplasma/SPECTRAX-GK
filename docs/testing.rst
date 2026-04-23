@@ -127,9 +127,10 @@ The first case-specific shaped-Miller pilot for this lane is now reproducible
 through ``examples/benchmarks/runtime_miller_zonal_response.toml`` and
 ``tools/generate_miller_zonal_response_pilot.py``. Its frozen artifact lives in
 ``docs/_static/miller_zonal_response_pilot.png``. The current frozen artifact
-is a Merlo-style density-seeded zonal-relaxation run with zero gradients,
-adiabatic electrons, and ``k_xρ_i≈0.05``. It remains open because the present
-trace is only weakly damped: the long run reaches ``t≈100`` with
+is a Merlo-style source-driven zonal-relaxation run with zero gradients,
+adiabatic electrons, ``k_xρ_i≈0.05``, and a GX-style ``phiext_full`` forcing
+contract. It remains open because the present trace is only weakly damped: the
+long run reaches ``t≈100`` with
 ``ω_GAM≈0.66`` and about ``20`` envelope peaks, but it does **not** settle to
 a clean stationary residual window yet. That makes it a useful research-grade
 diagnostic artifact and a real stepping-stone, but not a closed

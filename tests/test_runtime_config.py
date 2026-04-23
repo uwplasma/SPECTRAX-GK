@@ -524,3 +524,14 @@ def test_cyclone_nonlinear_gx_miller_example_toml_loads() -> None:
     assert cfg.geometry.rhoc == pytest.approx(0.5)
     assert cfg.physics.nonlinear is True
     assert cfg.physics.adiabatic_electrons is True
+
+
+def test_miller_zonal_response_example_uses_phiext_runtime_contract() -> None:
+    path = Path(__file__).resolve().parents[1] / "examples" / "benchmarks" / "runtime_miller_zonal_response.toml"
+
+    cfg, data = load_runtime_from_toml(path)
+
+    assert isinstance(data, dict)
+    assert cfg.expert.source == "phiext_full"
+    assert cfg.expert.phi_ext == pytest.approx(1.0e-6)
+    assert cfg.init.init_amp == pytest.approx(0.0)
