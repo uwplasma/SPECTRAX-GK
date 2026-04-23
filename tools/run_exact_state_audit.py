@@ -56,7 +56,7 @@ def _run_tool(cmd: list[str], *, cwd: Path | None, log_path: Path, env: dict[str
     )
     env_lines: list[str] = []
     if env is not None:
-        for key in ("PYTHONPATH", "W7X_VMEC_FILE", "HSX_VMEC_FILE"):
+        for key in ("PYTHONPATH", "W7X_VMEC_FILE", "HSX_VMEC_FILE", "JAX_PLATFORMS"):
             if key in env:
                 env_lines.append(f"{key}={env[key]}")
     log_path.write_text(
