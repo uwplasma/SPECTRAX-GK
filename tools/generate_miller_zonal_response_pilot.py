@@ -93,11 +93,17 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--peak-fit-max-peaks",
         type=int,
-        default=5,
+        default=4,
         help=(
-            "Maximum number of early GAM-envelope extrema to use for the damping fit. "
-            "Merlo notes that strongly shaped cases contain only a few usable oscillations."
+            "Maximum number of positive and negative extrema used per branch for the "
+            "Merlo-style damping fit."
         ),
+    )
+    parser.add_argument(
+        "--fit-window-tmax",
+        type=float,
+        default=30.0,
+        help="Upper time bound for the common pre-recurrence GAM fit window.",
     )
     parser.add_argument(
         "--reuse-output",
@@ -174,6 +180,10 @@ def main() -> int:
         initial_fraction=float(args.initial_fraction),
         initial_policy=str(args.initial_policy),
         peak_fit_max_peaks=int(args.peak_fit_max_peaks) if args.peak_fit_max_peaks is not None else None,
+        damping_fit_mode="branchwise_extrema",
+        frequency_fit_mode="hilbert_phase",
+        fit_window_tmax=float(args.fit_window_tmax),
+        hilbert_trim_fraction=0.2,
     )
     setup_note = _setup_note(cfg)
     ref_residual = float(MERLO_CASE_III_REFERENCE["residual_phi_over_phi0"])
@@ -237,10 +247,14 @@ def main() -> int:
                 "gam_frequency_R0_over_vi": float(omega_r0_over_vi),
                 "gam_damping_rate_R0_over_vi": float(damping_r0_over_vi),
                 "gam_growth_rate_R0_over_vi": float(gamma_r0_over_vi),
+                "damping_method": str(metrics.damping_method),
+                "frequency_method": str(metrics.frequency_method),
                 "peak_count": int(metrics.peak_count),
                 "peak_fit_count": int(metrics.peak_fit_count),
                 "tmin": float(metrics.tmin),
                 "tmax": float(metrics.tmax),
+                "fit_tmin": float(metrics.fit_tmin),
+                "fit_tmax": float(metrics.fit_tmax),
                 "literature_reference": dict(MERLO_CASE_III_REFERENCE),
                 "residual_abs_error_vs_literature": float(residual_abs_error),
                 "omega_abs_error_vs_literature_R0_over_vi": float(omega_abs_error),
@@ -253,10 +267,11 @@ def main() -> int:
                     f"adiabatic electrons, and an {setup_note}. "
                     "The literature reference values are read from Merlo et al. Figs. 12, 14, and 16; "
                     "the residual is normalized with the Rosenbluth-Hinton first-sample convention. "
-                    f"The GAM damping fit is restricted to the first {metrics.peak_fit_count} envelope extrema, "
-                    "consistent with Merlo's note that the strongly shaped cases contain only a few usable oscillations "
-                    "before late-time recurrence contaminates a finite-resolution trace. "
-                    "The residual and GAM frequency are now close to the paper-scale read-off; the long-time recurrence "
+                    f"The GAM damping follows the paper convention by fitting positive and negative extrema separately "
+                    f"over the common pre-recurrence window t in [{metrics.fit_tmin:.1f}, {metrics.fit_tmax:.1f}] "
+                    f"using up to {args.peak_fit_max_peaks} extrema per branch, while the frequency is obtained from "
+                    "the instantaneous phase of the same window via a Hilbert-transform analytic signal. "
+                    "The residual, damping, and GAM frequency are now close to the paper-scale read-off; the long-time recurrence "
                     "behavior still remains an explicit numerical follow-up item."
                 ),
                 "references": [

@@ -133,14 +133,15 @@ is pinned to Merlo et al. Case III: adiabatic electrons, zero gradients,
 same checkpoint-capable artifact writer used by long nonlinear runs.  Using the
 Rosenbluth-Hinton convention ``phi(t -> infinity) / phi(0)`` gives a residual
 of about ``0.192`` against the Merlo Case-III figure read-off of about
-``0.19``.  The GAM frequency is also close after converting the code frequency
-to the paper's ``R0 / v_i`` normalization.  For the damping fit, the artifact
-uses only the first five envelope extrema, consistent with Merlo's remark that
-the strongly shaped cases contain only a few usable oscillations.  With that
-pre-recurrence fit the current artifact gives ``γ_GAM R0 / v_i≈-0.166``,
-matching the paper-scale read-off near ``-0.17``.  The explicit remaining
-follow-up item is the long-time recurrence visible in finite moment runs,
-rather than the benchmark-scale residual/frequency/damping gate itself.
+``0.19``.  The shipped extraction now follows the paper convention more
+closely: positive and negative extrema of the signed residual-subtracted trace
+are fit separately over a common pre-recurrence window, and the GAM frequency
+is extracted from the instantaneous phase of that same window via a Hilbert
+analytic signal.  With the current ``t≈30`` pre-recurrence window the artifact
+gives ``ω_GAM R0 / v_i≈2.20`` and ``γ_GAM R0 / v_i≈-0.176``, both close to
+the Merlo figure read-off.  The explicit remaining follow-up item is the
+long-time recurrence visible in finite moment runs, rather than the
+benchmark-scale residual/frequency/damping gate itself.
 
 Diffrax and nonlinear smoke tests
 ---------------------------------

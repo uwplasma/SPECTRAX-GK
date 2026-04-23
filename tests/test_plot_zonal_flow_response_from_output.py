@@ -49,6 +49,8 @@ def test_plot_zonal_flow_response_from_output_main(tmp_path, monkeypatch) -> Non
     meta = json.loads(out.with_suffix(".json").read_text())
     assert meta["variable"] == "Phi2_zonal_t"
     assert meta["initial_policy"] == "window_abs_mean"
+    assert meta["damping_method"] == "combined_envelope"
+    assert meta["frequency_method"] == "peak_spacing"
     assert "peak_fit_count" in meta
     assert "zonal-energy proxy" in meta["notes"]
 
@@ -92,4 +94,6 @@ def test_plot_zonal_flow_response_from_output_complex_mode_history(tmp_path, mon
     meta = json.loads(out.with_suffix(".json").read_text())
     assert meta["variable"] == "Phi_zonal_mode_kxt"
     assert meta["initial_policy"] == "window_abs_mean"
+    assert meta["damping_method"] == "combined_envelope"
+    assert meta["frequency_method"] == "peak_spacing"
     assert "peak_fit_count" in meta
