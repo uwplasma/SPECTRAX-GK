@@ -2171,15 +2171,21 @@ Current nonlinear-lane status at the handoff point:
   with full reference benchmark horizons.
 - Follow-up GPU profiling on the same shipped short nonlinear cases now makes
   the cold-vs-warm picture explicit:
-  - Cyclone nonlinear GPU: `warmup_time_s = 30.776`, `run_time_s = 14.081`
+  - Cyclone nonlinear GPU: `warmup_time_s = 33.251`, `run_time_s = 14.428`
     versus the shipped cold panel row `35.33 s`
-  - KBM nonlinear GPU: `warmup_time_s = 25.413`, `run_time_s = 9.449`
+  - KBM nonlinear GPU: `warmup_time_s = 24.005`, `run_time_s = 9.271`
     versus the shipped cold panel row `43.74 s`
   - interpretation: these two short nonlinear runtime gaps are dominated by
     JAX startup/compile latency rather than by steady-state timestep throughput
-  - concrete next optimization target: reduce compile/startup cost and expose
-    cold-vs-warm accounting in the runtime methodology, while keeping the
-    current cold wall-time panel for honest end-to-end reproducibility
+  - the shipped runtime panel now overlays warm second-run timings as explicit
+    markers on top of the cold wall-time bars wherever `run_time_s` is present
+  - compile-side collision prefactors have been hoisted out of the jitted RHS
+    assembly path so the previous slow XLA constant-fold warning at
+    `terms/linear_terms.py:272` no longer appears in the tracked Cyclone GPU
+    split profile
+  - concrete next optimization target: reduce the remaining compile/startup
+    cost beyond the collision prefactor path, while keeping the current cold
+    wall-time panel for honest end-to-end reproducibility
 
 ## CI/CD Status (2026-04-09)
 

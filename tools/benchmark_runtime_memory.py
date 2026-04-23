@@ -251,6 +251,7 @@ def _load_summary_rows(patterns: list[str]) -> list[dict[str, object]]:
 
 def _plot_results(csv_path: Path, png_path: Path, pdf_path: Path) -> None:
     import matplotlib.pyplot as plt
+    from matplotlib.lines import Line2D
     import pandas as pd
 
     plt.rcParams.update(
@@ -281,6 +282,7 @@ def _plot_results(csv_path: Path, png_path: Path, pdf_path: Path) -> None:
     x = list(range(len(order)))
     width = 0.24
     fig, axes = plt.subplots(1, 2, figsize=(max(15.5, 1.45 * len(order) + 6.5), 7.4), constrained_layout=True)
+    warm_handles: list[Line2D] = []
 
     for idx, backend in enumerate(BACKEND_ORDER):
         sub = ok[ok["backend"] == backend].set_index("case")
@@ -289,6 +291,40 @@ def _plot_results(csv_path: Path, png_path: Path, pdf_path: Path) -> None:
         offset = (idx - 1) * width
         axes[0].bar([v + offset for v in x], runtime_vals, width=width, color=BACKEND_COLORS[backend], label=BACKEND_LABELS[backend])
         axes[1].bar([v + offset for v in x], memory_vals, width=width, color=BACKEND_COLORS[backend], label=BACKEND_LABELS[backend])
+        if "run_time_s" in sub.columns:
+            warm_vals = [
+                float(sub.loc[case, "run_time_s"])
+                if case in sub.index and not pd.isna(sub.loc[case, "run_time_s"])
+                else float("nan")
+                for case in order
+            ]
+            warm_x = [v + offset for v, warm in zip(x, warm_vals) if not pd.isna(warm)]
+            warm_y = [warm for warm in warm_vals if not pd.isna(warm)]
+            if warm_x:
+                axes[0].scatter(
+                    warm_x,
+                    warm_y,
+                    marker="D",
+                    s=42,
+                    facecolors="white",
+                    edgecolors=BACKEND_COLORS[backend],
+                    linewidths=1.4,
+                    zorder=4,
+                )
+                if not warm_handles:
+                    warm_handles.append(
+                        Line2D(
+                            [0],
+                            [0],
+                            marker="D",
+                            color="none",
+                            markerfacecolor="white",
+                            markeredgecolor="#222222",
+                            markersize=6,
+                            linewidth=0,
+                            label="Warm run",
+                        )
+                    )
 
     tick_labels = [labels[case] for case in order]
     for ax, title, ylabel in (
@@ -300,7 +336,8 @@ def _plot_results(csv_path: Path, png_path: Path, pdf_path: Path) -> None:
         ax.set_ylabel(ylabel)
         ax.grid(axis="y", alpha=0.25, linewidth=0.6)
     axes[0].set_yscale("log")
-    axes[0].legend(loc="upper left", ncols=3, frameon=False)
+    handles, labels_ = axes[0].get_legend_handles_labels()
+    axes[0].legend(handles + warm_handles, labels_ + [h.get_label() for h in warm_handles], loc="upper left", ncols=4, frameon=False)
     fig.suptitle("Runtime and Memory Comparison", fontsize=21)
     png_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(png_path, dpi=220)

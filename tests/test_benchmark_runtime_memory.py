@@ -6,6 +6,7 @@ from tools.benchmark_runtime_memory import (
     _load_summary_rows,
     _parse_profile_times,
     _parse_peak_rss_mb,
+    _plot_results,
     _render,
     _run_command,
     _select_runs,
@@ -163,3 +164,25 @@ def test_runtime_memory_summary_is_written(tmp_path: Path) -> None:
     out = tmp_path / "summary.json"
     _write_summary(out, rows)
     assert '"case": "a"' in out.read_text(encoding="utf-8")
+
+
+def test_runtime_memory_plot_supports_warm_runtime_markers(tmp_path: Path) -> None:
+    csv_path = tmp_path / "runtime.csv"
+    csv_path.write_text(
+        "\n".join(
+            [
+                "case,label,backend,status,returncode,runtime_s,warmup_time_s,run_time_s,peak_rss_mb,host,cwd,command,stdout_log,stderr_log",
+                "cyclone-nonlinear,Cyclone ITG Nonlinear,spectrax_gpu,success,0,35.3,33.2,14.4,1878.4,office,/tmp,cmd,out,err",
+                "cyclone-nonlinear,Cyclone ITG Nonlinear,gx,success,0,21.1,,,1900.0,office,/tmp,cmd,out,err",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    png_path = tmp_path / "runtime.png"
+    pdf_path = tmp_path / "runtime.pdf"
+
+    _plot_results(csv_path, png_path, pdf_path)
+
+    assert png_path.exists()
+    assert pdf_path.exists()
