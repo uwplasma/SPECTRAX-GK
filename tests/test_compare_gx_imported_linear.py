@@ -176,6 +176,9 @@ def test_load_gx_input_contract_reads_fix_aspect_and_species_contract(tmp_path: 
     assert contract.Ny == 96
     assert contract.nperiod == 1
     assert contract.ntheta == 48
+    assert contract.npol is None
+    assert contract.alpha is None
+    assert contract.torflux is None
     assert contract.nlaguerre == 8
     assert contract.nhermite == 16
     assert contract.boundary == "fix aspect"
@@ -307,6 +310,38 @@ scale = 0.125
     assert contract.s_hat == pytest.approx(1.0e-8)
     assert contract.zero_shat is True
     assert _resolve_imported_boundary(contract.boundary, zero_shat=contract.zero_shat) == "periodic"
+
+
+def test_load_gx_input_contract_reads_vmec_geometry_contract(tmp_path: Path) -> None:
+    path = tmp_path / "w7x.in"
+    path.write_text(
+        """
+[Dimensions]
+ ntheta = 256
+ nperiod = 1
+ nky = 28
+ nkx = 1
+
+[Domain]
+ y0 = 10.0
+ boundary = "linked"
+
+[Geometry]
+ geo_option = "nc"
+ alpha = 0.0
+ torflux = 0.64
+ npol = 6.0
+""".strip()
+    )
+
+    contract = _load_gx_input_contract(path)
+    assert contract.Nx == 1
+    assert contract.Ny == 28
+    assert contract.nperiod == 1
+    assert contract.ntheta == 256
+    assert contract.alpha == pytest.approx(0.0)
+    assert contract.torflux == pytest.approx(0.64)
+    assert contract.npol == pytest.approx(6.0)
 
 
 def test_load_gx_input_contract_parses_restart_contract(tmp_path: Path) -> None:
@@ -472,6 +507,9 @@ def _dummy_gx_contract(*, init_single: bool) -> GXInputContract:
         Ny=8,
         nperiod=1,
         ntheta=8,
+        npol=1.0,
+        alpha=0.0,
+        torflux=0.5,
         nlaguerre=8,
         nhermite=16,
         boundary="periodic",
@@ -705,6 +743,65 @@ def test_resolve_internal_geometry_source_uses_gx_grid_contract_for_internal_mil
         "y0": 20.0,
         "ntheta": 32,
         "nperiod": 2,
+        "force": True,
+    }
+
+
+def test_resolve_internal_geometry_source_uses_gx_vmec_geometry_contract(monkeypatch) -> None:
+    runtime_path = Path("/tmp/runtime_vmec.toml")
+    captured: dict[str, object] = {}
+    cfg = RuntimeConfig(
+        grid=GridConfig(boundary="fix aspect", y0=21.0, ntheta=48, nperiod=1),
+        geometry=GeometryConfig(
+            model="vmec",
+            vmec_file="/tmp/wout.nc",
+            alpha=0.25,
+            torflux=0.5,
+            npol=1.0,
+        ),
+    )
+    gx_contract = replace(
+        _dummy_gx_contract(init_single=False),
+        boundary="linked",
+        y0=10.0,
+        ntheta=256,
+        nperiod=1,
+        alpha=0.0,
+        torflux=0.64,
+        npol=6.0,
+    )
+    out = Path("/tmp/internal_vmec.eiknc.nc").resolve()
+
+    monkeypatch.setattr(imported_linear, "load_runtime_from_toml", lambda _path: (cfg, {}))
+
+    def _fake_generate_runtime_vmec_eik(runtime_cfg, *, force):
+        captured["boundary"] = runtime_cfg.grid.boundary
+        captured["y0"] = runtime_cfg.grid.y0
+        captured["ntheta"] = runtime_cfg.grid.ntheta
+        captured["nperiod"] = runtime_cfg.grid.nperiod
+        captured["alpha"] = runtime_cfg.geometry.alpha
+        captured["torflux"] = runtime_cfg.geometry.torflux
+        captured["npol"] = runtime_cfg.geometry.npol
+        captured["force"] = force
+        return out
+
+    monkeypatch.setattr(imported_linear, "generate_runtime_vmec_eik", _fake_generate_runtime_vmec_eik)
+
+    resolved = _resolve_internal_geometry_source(
+        geometry_file=None,
+        runtime_config=runtime_path,
+        gx_contract=gx_contract,
+    )
+
+    assert resolved == out
+    assert captured == {
+        "boundary": "linked",
+        "y0": 10.0,
+        "ntheta": 256,
+        "nperiod": 1,
+        "alpha": 0.0,
+        "torflux": 0.64,
+        "npol": 6.0,
         "force": True,
     }
 

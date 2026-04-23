@@ -58,6 +58,9 @@ class GXInputContract:
     Ny: int
     nperiod: int
     ntheta: int
+    npol: float | None
+    alpha: float | None
+    torflux: float | None
     nlaguerre: int
     nhermite: int
     boundary: str
@@ -272,6 +275,9 @@ def _load_gx_input_contract(path: Path) -> GXInputContract:
         Ny=int(dims.get("nky", dims.get("ny", 0))),
         nperiod=int(dims.get("nperiod", 1)),
         ntheta=int(dims.get("ntheta", 0)),
+        npol=float(geometry["npol"]) if "npol" in geometry else None,
+        alpha=float(geometry["alpha"]) if "alpha" in geometry else None,
+        torflux=float(geometry["torflux"]) if "torflux" in geometry else None,
         nlaguerre=int(dims.get("nlaguerre", 8)),
         nhermite=int(dims.get("nhermite", 16)),
         boundary=str(domain.get("boundary", "linked")),
@@ -339,6 +345,16 @@ def _resolve_internal_geometry_source(
                     nperiod=nperiod if nperiod > 0 else cfg.grid.nperiod,
                 ),
             )
+            if str(cfg.geometry.model).strip().lower() == "vmec":
+                cfg = replace(
+                    cfg,
+                    geometry=replace(
+                        cfg.geometry,
+                        alpha=float(gx_contract.alpha) if gx_contract.alpha is not None else cfg.geometry.alpha,
+                        torflux=float(gx_contract.torflux) if gx_contract.torflux is not None else cfg.geometry.torflux,
+                        npol=float(gx_contract.npol) if gx_contract.npol is not None else cfg.geometry.npol,
+                    ),
+                )
         model = str(cfg.geometry.model).strip().lower()
         if model == "vmec":
             return generate_runtime_vmec_eik(cfg, force=True).expanduser().resolve()
