@@ -399,6 +399,11 @@ path is:
      --manifest tools/exact_state_lanes.office.toml \
      --outdir tools_out/exact_state_audit_office
 
+The tracked ``office`` manifest now pins these audit lanes to
+``JAX_PLATFORMS=cpu``. These are parity/reference jobs, not performance runs,
+and CPU pinning avoids spurious GPU ``RESOURCE_EXHAUSTED`` failures when
+``booz_xform_jax`` or grid-default assembly would otherwise grab a busy device.
+
 The restart/continuation gate uses the same environment model and should be
 run against the tracked nonlinear lanes with ``PYTHONPATH`` set to the source
 tree so the office venv does not pick up a stale installed package:

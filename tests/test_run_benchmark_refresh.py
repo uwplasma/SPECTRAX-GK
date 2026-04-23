@@ -13,6 +13,9 @@ def test_refresh_manifest_loads_jobs() -> None:
     assert "cyclone-core-assets" in names
     assert "benchmark-atlas" in names
     assert any(job.requires_env for job in jobs)
+    commands = {job.name: job.command for job in jobs}
+    assert commands["imported-linear-w7x"].startswith("JAX_PLATFORMS=cpu ")
+    assert commands["imported-linear-hsx"].startswith("JAX_PLATFORMS=cpu ")
 
 
 def test_refresh_job_selection_filters_named_jobs(tmp_path: Path) -> None:

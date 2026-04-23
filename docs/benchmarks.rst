@@ -51,6 +51,11 @@ The refresh runner executes the benchmark matrix in manifest order from
 ``tools/benchmark_refresh_manifest.toml`` and writes a summary to
 ``tools_out/benchmark_refresh_summary.json``. Jobs that depend on reference data declare explicit environment-variable requirements for their argument bundles, so the refresh pipeline can be rerun without editing the Python scripts themselves.
 
+The VMEC-backed imported-linear refresh jobs are intentionally pinned to
+``JAX_PLATFORMS=cpu`` in the manifest. That keeps the refresh workflow stable
+on shared machines such as ``office`` where the geometry helper stack can
+otherwise fail with GPU out-of-memory errors that are unrelated to parity.
+
 Example:
 
 .. code-block:: bash
