@@ -75,7 +75,8 @@ def main() -> None:
         )
 
     t0 = time.perf_counter()
-    _run()
+    with profiler.TraceAnnotation("spectrax_warmup"):
+        _run()
     t1 = time.perf_counter()
 
     if args.warmup_only:
@@ -86,13 +87,17 @@ def main() -> None:
         args.trace_dir.mkdir(parents=True, exist_ok=True)
         profiler.start_trace(str(args.trace_dir))
     t2 = time.perf_counter()
-    _run()
-    t3 = time.perf_counter()
-    if args.trace_dir is not None:
-        profiler.stop_trace()
+    try:
+        with profiler.TraceAnnotation("spectrax_profiled_run"):
+            _run()
+        t3 = time.perf_counter()
+    finally:
+        if args.trace_dir is not None:
+            profiler.stop_trace()
 
     if args.memory_profile is not None:
-        profiler.save_device_memory_profile(str(args.memory_profile))
+        with profiler.TraceAnnotation("spectrax_memory_snapshot"):
+            profiler.save_device_memory_profile(str(args.memory_profile))
 
     print(f"warmup_time_s={t1 - t0:.3f} run_time_s={t3 - t2:.3f}")
 
