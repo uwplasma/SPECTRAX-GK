@@ -27,6 +27,7 @@ from spectraxgk.runtime import (
     _require_full_gk_runtime_model,
     _resolve_runtime_hl_dims,
     _reshape_gx_state,
+    _runtime_external_phi,
     _runtime_default_krylov_config,
     _runtime_model_key,
     _select_nonlinear_mode_indices,
@@ -37,6 +38,9 @@ from spectraxgk.runtime import (
     _zero_kx_index,
     _run_runtime_scan_batch,
     build_runtime_geometry,
+    build_runtime_linear_params,
+    build_runtime_linear_terms,
+    build_runtime_term_config,
     run_runtime_linear,
     run_runtime_nonlinear,
 )
@@ -214,6 +218,59 @@ def test_runtime_species_and_model_helpers() -> None:
         _require_full_gk_runtime_model(replace(cfg, physics=replace(cfg.physics, reduced_model="krehm")))
     with pytest.raises(ValueError):
         _require_full_gk_runtime_model(replace(cfg, physics=replace(cfg.physics, reduced_model="mystery")))
+
+
+def test_runtime_wrapper_patch_surfaces(monkeypatch: pytest.MonkeyPatch) -> None:
+    cfg = _base_cfg()
+    captured: dict[str, object] = {}
+    geom = object()
+
+    def _fake_build_geom(_cfg):
+        captured["geom_called"] = True
+        return geom
+
+    def _fake_build_params(_cfg, *, Nm, geom):
+        captured["params"] = {"Nm": Nm, "geom": geom}
+        return "params"
+
+    def _fake_build_terms(_cfg):
+        captured["terms"] = _cfg
+        return "terms"
+
+    def _fake_build_term_config(_cfg):
+        captured["term_cfg"] = _cfg
+        return "term_cfg"
+
+    monkeypatch.setattr("spectraxgk.runtime.build_runtime_geometry", _fake_build_geom)
+    monkeypatch.setattr("spectraxgk.runtime_startup.build_runtime_linear_params", _fake_build_params)
+    monkeypatch.setattr("spectraxgk.runtime_startup.build_runtime_linear_terms", _fake_build_terms)
+    monkeypatch.setattr("spectraxgk.runtime_startup.build_runtime_term_config", _fake_build_term_config)
+
+    assert build_runtime_linear_params(cfg, Nm=7) == "params"
+    assert captured["geom_called"] is True
+    assert captured["params"] == {"Nm": 7, "geom": geom}
+
+    captured.clear()
+    explicit_geom = object()
+    assert build_runtime_linear_params(cfg, Nm=5, geom=explicit_geom) == "params"
+    assert "geom_called" not in captured
+    assert captured["params"] == {"Nm": 5, "geom": explicit_geom}
+
+    assert build_runtime_linear_terms(cfg) == "terms"
+    assert captured["terms"] is cfg
+    assert build_runtime_term_config(cfg) == "term_cfg"
+    assert captured["term_cfg"] is cfg
+
+
+def test_runtime_external_phi_helper() -> None:
+    cfg = _base_cfg()
+
+    assert _runtime_external_phi(cfg) is None
+    assert _runtime_external_phi(replace(cfg, expert=RuntimeExpertConfig(source=" default "))) is None
+    assert _runtime_external_phi(replace(cfg, expert=RuntimeExpertConfig(source="phiext_full", phi_ext=0.375))) == pytest.approx(0.375)
+
+    with pytest.raises(ValueError, match="unsupported expert.source"):
+        _runtime_external_phi(replace(cfg, expert=RuntimeExpertConfig(source="bad_source", phi_ext=1.0)))
 
 
 def test_runtime_build_geometry_vmec_and_miller_branches(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
