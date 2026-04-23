@@ -163,8 +163,8 @@ The active pre-merge sequence is:
      strict JSON serialization. The first tracked nonlinear window gate JSONs
      cover Cyclone Miller, KBM, HSX, W7-X, and a short Cyclone diagnostic
      window. At the current `0.10` mean-relative release gate, Cyclone Miller,
-     KBM, and HSX pass; W7-X remains open on `Wphi` at about `0.116`, and the
-     short Cyclone diagnostic remains open because it is not yet the mature
+     KBM, HSX, and the refreshed W7-X `t <= 200` window pass; the short
+     Cyclone diagnostic remains open because it is not yet the mature
      long-window transport acceptance artifact.
    - Observed-order and branch-continuity gate reports now exist for
      velocity-space convergence panels and branch-followed scan tables; the
@@ -2271,7 +2271,23 @@ Current nonlinear-lane status at the handoff point:
     - `mean_rel_abs(HeatFlux) ~= 1.50e-1`
     - `final_rel(Wg) ~= 3.88e-2`
     - `final_rel(Wphi) ~= 4.78e-2`
-  - Under the current acceptance target, W7-X nonlinear is now closed for the
+  - The later full `t <= 200` office rerun exposed and fixed two runtime
+    issues:
+    - adaptive artifact runs were inheriting `output.nsave = 10000` as an
+      explicit `steps` value, disabling the runtime's `t_max`-bounded adaptive
+      chunk loop;
+    - the adaptive nonlinear/cETG chunk closures were not feeding each returned
+      state into the next chunk.
+  - A fresh GPU rerun on `office` with the corrected path reached
+    `t_last ~= 197.77` in 386 s and closes the tracked W7-X nonlinear gate:
+    - `mean_rel_abs(Phi2) ~= 9.74e-2`
+    - `mean_rel_abs(Wg) ~= 3.20e-2`
+    - `mean_rel_abs(Wphi) ~= 3.02e-2`
+    - `mean_rel_abs(HeatFlux) ~= 4.53e-2`
+  - The GX-style artifact writer now derives `Phi2_t`, `Phi2_kxt`, and
+    `Phi2_kyt` from the condensed positive-`ky` `Phi2_kxkyt` view so the
+    stored NetCDF spectra are self-consistent with the GX/rFFT convention.
+  - Under the current acceptance target, W7-X nonlinear is closed for the
     current release pass and stays in the benchmark/publication set.
 
 - `HSX nonlinear`

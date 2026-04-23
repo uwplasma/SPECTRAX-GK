@@ -1,16 +1,16 @@
 {
   "case": "w7x_nonlinear_window",
   "gate_mean_rel": 0.1,
-  "gate_passed": false,
+  "gate_passed": true,
   "gate_report": {
     "case": "w7x_nonlinear_window",
     "gates": [
       {
-        "abs_error": 0.09238172772593538,
+        "abs_error": 0.0974184040271887,
         "atol": 0.1,
-        "metric": "Wg_mean_rel_abs",
+        "metric": "Phi2_mean_rel_abs",
         "notes": "Passes when mean relative mismatch <= 0.1.",
-        "observed": 0.09238172772593538,
+        "observed": 0.0974184040271887,
         "passed": true,
         "reference": 0.0,
         "rel_error": null,
@@ -18,12 +18,24 @@
         "units": ""
       },
       {
-        "abs_error": 0.11606807415371641,
+        "abs_error": 0.03204378942369863,
+        "atol": 0.1,
+        "metric": "Wg_mean_rel_abs",
+        "notes": "Passes when mean relative mismatch <= 0.1.",
+        "observed": 0.03204378942369863,
+        "passed": true,
+        "reference": 0.0,
+        "rel_error": null,
+        "rtol": 0.0,
+        "units": ""
+      },
+      {
+        "abs_error": 0.030196842428410697,
         "atol": 0.1,
         "metric": "Wphi_mean_rel_abs",
         "notes": "Passes when mean relative mismatch <= 0.1.",
-        "observed": 0.11606807415371641,
-        "passed": false,
+        "observed": 0.030196842428410697,
+        "passed": true,
         "reference": 0.0,
         "rel_error": null,
         "rtol": 0.0,
@@ -42,11 +54,11 @@
         "units": ""
       },
       {
-        "abs_error": 0.07554068941190871,
+        "abs_error": 0.04528038649753451,
         "atol": 0.1,
         "metric": "HeatFlux_mean_rel_abs",
         "notes": "Passes when mean relative mismatch <= 0.1.",
-        "observed": 0.07554068941190871,
+        "observed": 0.04528038649753451,
         "passed": true,
         "reference": 0.0,
         "rel_error": null,
@@ -66,25 +78,31 @@
         "units": ""
       }
     ],
-    "max_abs_error": 0.11606807415371641,
+    "max_abs_error": 0.0974184040271887,
     "max_rel_error": 0.0,
-    "passed": false,
+    "passed": true,
     "source": "GX nonlinear diagnostics"
   },
   "gx": "tools_out/final_nonlinear_audit/w7x_gx.out.nc",
   "source": "GX nonlinear diagnostics",
-  "spectrax": "tools_out/final_nonlinear_audit/w7x_spectrax_t200_fdddedf.csv",
+  "spectrax": "tools_out/final_nonlinear_audit/w7x_spectrax_current_adaptive_t200.out.nc",
   "summary": [
     {
-      "final_rel": -0.1694778956496528,
-      "max_rel_abs": 0.19302433168647298,
-      "mean_rel_abs": 0.09238172772593538,
+      "final_rel": 0.012163664979830026,
+      "max_rel_abs": 0.37439907681995976,
+      "mean_rel_abs": 0.0974184040271887,
+      "metric": "Phi2"
+    },
+    {
+      "final_rel": 0.02168069744395782,
+      "max_rel_abs": 0.09083898554122356,
+      "mean_rel_abs": 0.03204378942369863,
       "metric": "Wg"
     },
     {
-      "final_rel": -0.191372243592657,
-      "max_rel_abs": 0.21677170342438368,
-      "mean_rel_abs": 0.11606807415371641,
+      "final_rel": -0.006989764977406517,
+      "max_rel_abs": 0.09056001248346038,
+      "mean_rel_abs": 0.030196842428410697,
       "metric": "Wphi"
     },
     {
@@ -94,9 +112,9 @@
       "metric": "Wapar"
     },
     {
-      "final_rel": -0.1256906687321546,
-      "max_rel_abs": 0.17949569641792024,
-      "mean_rel_abs": 0.07554068941190871,
+      "final_rel": -0.0536119345181319,
+      "max_rel_abs": 0.14021055847156355,
+      "mean_rel_abs": 0.04528038649753451,
       "metric": "HeatFlux"
     },
     {
@@ -106,5 +124,5 @@
       "metric": "ParticleFlux"
     }
   ],
-  "tmax": 198.7
+  "tmax": null
 }
