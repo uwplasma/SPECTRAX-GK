@@ -4,6 +4,7 @@ from tools.benchmark_runtime_memory import (
     RuntimeBenchRun,
     _load_manifest,
     _load_summary_rows,
+    _parse_profile_times,
     _parse_peak_rss_mb,
     _render,
     _run_command,
@@ -53,6 +54,11 @@ enabled = false
 def test_parse_peak_rss_mb_supports_macos_and_linux_formats() -> None:
     assert _parse_peak_rss_mb("peak memory footprint: 1048576") == 1.0
     assert _parse_peak_rss_mb("Maximum resident set size (kbytes): 2048") == 2.0
+
+
+def test_parse_profile_times_extracts_warmup_and_run_fields() -> None:
+    parsed = _parse_profile_times("warmup_time_s=30.776 run_time_s=14.081")
+    assert parsed == {"warmup_time_s": 30.776, "run_time_s": 14.081}
 
 
 def test_load_summary_rows_merges_matching_json_files(tmp_path: Path) -> None:
@@ -120,6 +126,24 @@ def test_remote_runtime_memory_runs_disable_x11_forwarding(monkeypatch) -> None:
     row = _run_command(run)
     assert row["status"] == "success"
     assert captured["cmd"][:2] == ["ssh", "-x"]
+
+
+def test_runtime_memory_command_captures_profile_times(monkeypatch) -> None:
+    def fake_run(cmd, shell, cwd, capture_output, text):  # type: ignore[no-untyped-def]
+        class Proc:
+            returncode = 0
+            stdout = "warmup_time_s=12.5 run_time_s=3.25\n"
+            stderr = "Maximum resident set size (kbytes): 2048\n"
+
+        return Proc()
+
+    monkeypatch.setattr("tools.benchmark_runtime_memory.subprocess.run", fake_run)
+    run = RuntimeBenchRun(case="c", label="C", backend="spectrax_cpu", command="echo hi", cwd="/tmp", wrap_time=False)
+    row = _run_command(run)
+    assert row["runtime_s"] >= 0.0
+    assert row["peak_rss_mb"] == 2.0
+    assert row["warmup_time_s"] == 12.5
+    assert row["run_time_s"] == 3.25
 
 
 def test_runtime_memory_row_logs_are_written(tmp_path: Path) -> None:
