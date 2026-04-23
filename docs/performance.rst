@@ -283,14 +283,14 @@ measured:
 
 .. code-block:: text
 
-   Cyclone nonlinear: warmup_time_s=30.776  run_time_s=14.081
-   KBM nonlinear:     warmup_time_s=25.413  run_time_s= 9.449
+   Cyclone nonlinear: warmup_time_s=33.251  run_time_s=14.428
+   KBM nonlinear:     warmup_time_s=24.005  run_time_s= 9.271
 
 Compared with the cold runtime panel rows:
 
-- Cyclone nonlinear GPU: ``35.33 s`` in the shipped panel, versus ``14.08 s``
+- Cyclone nonlinear GPU: ``35.33 s`` in the shipped panel, versus ``14.43 s``
   for the second run on the same compiled executable.
-- KBM nonlinear GPU: ``43.74 s`` in the shipped panel, versus ``9.45 s`` for
+- KBM nonlinear GPU: ``43.74 s`` in the shipped panel, versus ``9.27 s`` for
   the second run on the same compiled executable.
 
 This changes the optimization reading:
@@ -300,6 +300,10 @@ This changes the optimization reading:
   row,
 - the current short-run KBM GPU gap is mostly compile amortization, with warm
   performance already close to GX.
+
+The runtime figure now overlays those warm second-run measurements as hollow
+diamond markers on the runtime bars wherever ``run_time_s`` is present in the
+summary input.
 
 The highest-value performance work for these short nonlinear lanes is therefore
 compile/startup reduction and executable reuse, not just per-step kernel work.

@@ -239,7 +239,7 @@ def test_collisions_include_gx_conservation_correction():
         JlB=JlB,
         b=jnp.full((1, 1, 1, 1), 4.0, dtype=jnp.float32),
         nu=jnp.array([0.5], dtype=jnp.float32),
-        lb_lam=jnp.zeros((1, 1, 3, 1, 1, 1), dtype=jnp.float32),
+        collision_lam=jnp.zeros((1, 1, 3, 1, 1, 1), dtype=jnp.float32),
         weight=jnp.asarray(1.0, dtype=jnp.float32),
     )
 
