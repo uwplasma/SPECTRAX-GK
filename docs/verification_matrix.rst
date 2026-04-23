@@ -266,8 +266,9 @@ subset:
   ``0.10`` mean-relative release gate.
 - ``docs/_static/nonlinear_hsx_gate_summary.json``: passed at the current
   ``0.10`` mean-relative release gate.
-- ``docs/_static/nonlinear_w7x_gate_summary.json``: open because
-  ``Wphi`` mean-relative mismatch is about ``0.116``.
+- ``docs/_static/nonlinear_w7x_gate_summary.json``: passed at the current
+  ``0.10`` mean-relative release gate after the corrected adaptive state
+  continuation and GX-style ``Phi2`` artifact refresh.
 - ``docs/_static/nonlinear_cyclone_short_gate_summary.json``: open because this
   short diagnostic window is not a mature transport-window acceptance run.
 

@@ -678,6 +678,19 @@ def test_write_runtime_nonlinear_artifacts_writes_gx_netcdf_bundle(tmp_path: Pat
         assert root.dimensions["ky"].size == 3
         assert "Phi2_t" in root.groups["Diagnostics"].variables
         assert "Phi2_kxt" in root.groups["Diagnostics"].variables
+        np.testing.assert_allclose(root.groups["Diagnostics"].variables["Phi2_t"][:], np.full(2, 15.0))
+        np.testing.assert_allclose(
+            root.groups["Diagnostics"].variables["Phi2_kxt"][:],
+            np.full((2, 5), 3.0),
+        )
+        np.testing.assert_allclose(
+            root.groups["Diagnostics"].variables["Phi2_kyt"][:],
+            np.full((2, 3), 5.0),
+        )
+        np.testing.assert_allclose(
+            root.groups["Diagnostics"].variables["Phi2_kxkyt"][:],
+            np.ones((2, 3, 5)),
+        )
         assert "Wg_st" in root.groups["Diagnostics"].variables
         assert "Wg_kyst" in root.groups["Diagnostics"].variables
         assert "Wg_lmst" in root.groups["Diagnostics"].variables
@@ -804,6 +817,48 @@ def test_run_runtime_nonlinear_with_artifacts_uses_restart_if_exists(monkeypatch
     assert calls[1]["init_file"] == str(restart_path)
     assert calls[1]["init_file_mode"] == "replace"
     assert calls[1]["init_file_scale"] == 1.0
+
+
+def test_run_runtime_nonlinear_with_artifacts_keeps_adaptive_steps_none(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    out_path = tmp_path / "adaptive.out.nc"
+    cfg = RuntimeConfig(
+        time=TimeConfig(dt=0.1, t_max=0.3, fixed_dt=False, diagnostics=True),
+        output=RuntimeOutputConfig(path=str(out_path), save_for_restart=True, nsave=10000),
+    )
+    diag = SimulationDiagnostics(
+        t=np.asarray([0.1, 0.2, 0.3]),
+        dt_t=np.asarray([0.1, 0.1, 0.1]),
+        dt_mean=np.asarray(0.1),
+        gamma_t=np.zeros(3),
+        omega_t=np.zeros(3),
+        Wg_t=np.ones(3),
+        Wphi_t=np.ones(3),
+        Wapar_t=np.zeros(3),
+        heat_flux_t=np.zeros(3),
+        particle_flux_t=np.zeros(3),
+        energy_t=2.0 * np.ones(3),
+    )
+    captured_steps: list[int | None] = []
+
+    def _fake_run_runtime_nonlinear(_cfg, **kwargs):
+        captured_steps.append(kwargs.get("steps"))
+        return RuntimeNonlinearResult(
+            t=np.asarray(diag.t),
+            diagnostics=diag,
+            state=np.zeros((1, 1, 1, 1, 1, 1), dtype=np.complex64),
+        )
+
+    monkeypatch.setattr("spectraxgk.runtime_artifacts.run_runtime_nonlinear", _fake_run_runtime_nonlinear)
+    monkeypatch.setattr(
+        "spectraxgk.runtime_artifacts.write_runtime_nonlinear_artifacts",
+        lambda *_args, **_kwargs: {"out": str(out_path)},
+    )
+
+    run_runtime_nonlinear_with_artifacts(cfg, out=out_path, ky_target=0.2, diagnostics=True)
+
+    assert captured_steps == [None]
 
 
 def test_write_runtime_nonlinear_artifacts_requires_cfg_and_diagnostics_for_gx_target(tmp_path: Path) -> None:

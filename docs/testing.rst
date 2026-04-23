@@ -290,11 +290,12 @@ Recent GX parity spot checks are tracked outside the automated test suite:
   The only large relative ``omega`` values left are the effectively zero-
   frequency ``k_y = 0`` sidebands, where the absolute mismatch stays
   ``O(1e-6)``.
-- **W7-X nonlinear (`t \\approx 200`)**: the refreshed long-window CSV-backed
+- **W7-X nonlinear (`t \\approx 200`)**: the refreshed long-window NetCDF-backed
   comparison now closes at
-  ``mean_rel_abs(Wg) ~= 9.24e-2``,
-  ``mean_rel_abs(Wphi) ~= 1.16e-1``,
-  ``mean_rel_abs(HeatFlux) ~= 7.55e-2``.
+  ``mean_rel_abs(Phi2) ~= 9.74e-2``,
+  ``mean_rel_abs(Wg) ~= 3.20e-2``,
+  ``mean_rel_abs(Wphi) ~= 3.02e-2``,
+  ``mean_rel_abs(HeatFlux) ~= 4.53e-2``.
 - **HSX nonlinear (`t = 50`)**: the refreshed comparison closes at
   ``mean_rel_abs(Wg) ~= 2.75e-2``,
   ``mean_rel_abs(Wphi) ~= 3.61e-2``,

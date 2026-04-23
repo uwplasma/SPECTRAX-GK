@@ -6,6 +6,7 @@ from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 
+import jax.numpy as jnp
 import numpy as np
 import pytest
 
@@ -731,7 +732,7 @@ def test_runtime_nonlinear_cetg_diagnostics_disabled_returns_state(monkeypatch: 
     monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: geom)
     monkeypatch.setattr(runtime, "validate_cetg_runtime_config", lambda *args, **kwargs: None)
     monkeypatch.setattr(runtime, "_select_nonlinear_mode_indices", lambda *args, **kwargs: (0, 0))
-    monkeypatch.setattr(runtime, "_build_initial_condition", lambda *args, **kwargs: np.zeros((2, 3, 1, 1, grid.z.size), dtype=np.complex64))
+    monkeypatch.setattr(runtime, "_build_initial_condition", lambda *args, **kwargs: np.zeros((2, 1, 1, 1, grid.z.size), dtype=np.complex64))
     monkeypatch.setattr(runtime, "build_cetg_model_params", lambda *args, **kwargs: object())
     monkeypatch.setattr(runtime, "build_runtime_term_config", lambda *args, **kwargs: object())
     monkeypatch.setattr(
@@ -740,7 +741,7 @@ def test_runtime_nonlinear_cetg_diagnostics_disabled_returns_state(monkeypatch: 
         lambda *args, **kwargs: (
             np.asarray([0.1, 0.2]),
             type("Diag", (), {"t": np.asarray([0.1, 0.2])})(),
-            np.ones((2, 3, 1, 1, grid.z.size), dtype=np.complex64),
+            np.ones((2, 1, 1, 1, grid.z.size), dtype=np.complex64),
             FieldState(phi=jnp.ones((1, 1, grid.z.size), dtype=jnp.complex64), apar=None, bpar=None),
         ),
     )
@@ -749,7 +750,7 @@ def test_runtime_nonlinear_cetg_diagnostics_disabled_returns_state(monkeypatch: 
         cfg,
         ky_target=0.1,
         Nl=2,
-        Nm=3,
+        Nm=1,
         dt=0.1,
         steps=2,
         diagnostics=False,
@@ -777,12 +778,14 @@ def test_runtime_nonlinear_cetg_adaptive_chunks_without_diagnostics(monkeypatch:
     monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: geom)
     monkeypatch.setattr(runtime, "validate_cetg_runtime_config", lambda *args, **kwargs: None)
     monkeypatch.setattr(runtime, "_select_nonlinear_mode_indices", lambda *args, **kwargs: (0, 0))
-    monkeypatch.setattr(runtime, "_build_initial_condition", lambda *args, **kwargs: np.zeros((2, 3, 1, 1, grid.z.size), dtype=np.complex64))
+    monkeypatch.setattr(runtime, "_build_initial_condition", lambda *args, **kwargs: np.zeros((2, 1, 1, 1, grid.z.size), dtype=np.complex64))
     monkeypatch.setattr(runtime, "build_cetg_model_params", lambda *args, **kwargs: object())
     monkeypatch.setattr(runtime, "build_runtime_term_config", lambda *args, **kwargs: object())
+    input_means: list[float] = []
 
     def _fake_integrator(*args, **kwargs):
         calls["n"] += 1
+        input_means.append(float(np.mean(np.real(np.asarray(args[0])))))
         t = np.asarray([0.15], dtype=float)
         diag = SimulationDiagnostics(
             t=t,
@@ -798,7 +801,7 @@ def test_runtime_nonlinear_cetg_adaptive_chunks_without_diagnostics(monkeypatch:
             energy_t=np.asarray([0.0]),
         )
         fields = FieldState(phi=jnp.ones((1, 1, grid.z.size), dtype=jnp.complex64), apar=None, bpar=None)
-        return t, diag, np.ones((2, 3, 1, 1, grid.z.size), dtype=np.complex64), fields
+        return t, diag, np.asarray(args[0]) + 1.0, fields
 
     monkeypatch.setattr(runtime, "integrate_cetg_gx_diagnostics_state", _fake_integrator)
 
@@ -806,14 +809,16 @@ def test_runtime_nonlinear_cetg_adaptive_chunks_without_diagnostics(monkeypatch:
         cfg,
         ky_target=0.1,
         Nl=2,
-        Nm=3,
+        Nm=1,
         diagnostics=False,
         return_state=True,
     )
 
     assert calls["n"] >= 2
+    assert input_means[1] > input_means[0] + 0.5
     assert out.diagnostics is None
     assert out.state is not None
+    assert float(np.mean(np.real(np.asarray(out.state)))) >= 2.0
     assert out.phi2 is not None
 
 
@@ -1253,6 +1258,7 @@ def test_runtime_nonlinear_adaptive_default_steps_chunk_until_tmax(monkeypatch) 
     )
 
     calls: list[tuple[int, int, int]] = []
+    input_means: list[float] = []
 
     def _fake_integrator(
         G0,
@@ -1290,8 +1296,10 @@ def test_runtime_nonlinear_adaptive_default_steps_chunk_until_tmax(monkeypatch) 
         implicit_preconditioner=None,
         fixed_mode_ky_index=None,
         fixed_mode_kx_index=None,
+        external_phi=None,
     ):
         calls.append((int(steps), int(sample_stride), int(diagnostics_stride)))
+        input_means.append(float(np.mean(np.real(np.asarray(G0)))))
         t = np.asarray([0.04, 0.08, 0.12], dtype=float)
         dt_t = np.asarray([0.04, 0.04, 0.04], dtype=float)
         gamma_t = np.asarray([1.0, 2.0, 3.0], dtype=float) + 3.0 * (len(calls) - 1)
@@ -1309,7 +1317,12 @@ def test_runtime_nonlinear_adaptive_default_steps_chunk_until_tmax(monkeypatch) 
             particle_flux_t=zeros,
             energy_t=gamma_t,
         )
-        return t, diag, np.asarray(G0), None
+        fields = FieldState(
+            phi=np.ones((grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64),
+            apar=None,
+            bpar=None,
+        )
+        return t, diag, np.asarray(G0) + 1.0, fields
 
     monkeypatch.setattr("spectraxgk.runtime.integrate_nonlinear_gx_diagnostics_state", _fake_integrator)
 
@@ -1317,6 +1330,8 @@ def test_runtime_nonlinear_adaptive_default_steps_chunk_until_tmax(monkeypatch) 
 
     assert res.diagnostics is not None
     assert calls == [(3, 1, 1), (3, 1, 1), (3, 1, 1)]
+    assert input_means[1] > input_means[0] + 0.5
+    assert input_means[2] > input_means[1] + 0.5
     assert np.allclose(np.asarray(res.diagnostics.t), np.asarray([0.04, 0.12, 0.20, 0.28]))
     assert np.allclose(np.asarray(res.diagnostics.gamma_t), np.asarray([1.0, 3.0, 5.0, 7.0]))
     assert float(np.asarray(res.diagnostics.t)[-1]) >= float(cfg.time.t_max)
