@@ -51,6 +51,11 @@ driver. It supports Perfetto traces, XLA HLO dumps, and memory snapshots.
 
 The trace directory can be opened with Perfetto. For GPU profiling, set
 ``JAX_PLATFORM_NAME=gpu`` before invoking the script.
+JAX writes the trace under
+``<trace-dir>/plugins/profile/<timestamp>/*.trace.json.gz`` together with the
+corresponding ``*.xplane.pb`` metadata; the same directory can be opened in
+XProf, while the optional ``memory.prof`` snapshot can be inspected with
+``pprof`` or XProf's memory tooling.
 
 Recent nonlinear profiling (Cyclone, benchmark-locked config)
 -------------------------------------------------------------
@@ -200,6 +205,9 @@ The manifest is designed to hold three rows per case:
 Each row may also carry a ``host`` so the same runner can execute local and
 remote measurements through one manifest while still collecting wall time and
 peak RSS from the target machine.
+If a profiling command prints ``warmup_time_s=...`` or ``run_time_s=...``, the
+runner also records those fields in the CSV/JSON summary so cold and warm JAX
+timings can be tracked without a separate sidecar note.
 
 The checked-in case inventory for the current release panel covers the shipped
 runtime families:
