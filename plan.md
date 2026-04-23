@@ -1,7 +1,225 @@
 # SPECTRAX-GK Ship Readiness Plan
 
-Last updated: 2026-04-22
+Last updated: 2026-04-23
 Current public baseline under review: `fb6fabc add large-grid scaling sweep and fix tools imports`
+
+## Strategic Audit and Next-Step Roadmap (2026-04-23)
+
+This section is the current decision layer for the project. It is based on:
+
+- local git history through `678c3dd Reduce collision cache startup cost`,
+- the current source/docs/tests layout on `refactor/modularize-core-for-validation`,
+- live CI status on GitHub, where the latest `main` CI run observed in this
+  audit completed successfully,
+- the local `office` GX checkout under `/home/rjorge/GX`,
+- local `vmec_jax` and `booz_xform_jax` checkouts under
+  `/Users/rogeriojorge/local/`,
+- a renewed literature/source pass over GX, stella/GENE W7-X benchmarks,
+  Merlo/Rosenbluth-Hinton/GAM response, Tronko-style verification, ETG
+  benchmark literature, DESC/TORAX differentiable-design patterns, and JAX
+  performance/autodiff documentation.
+
+### Main project goals
+
+SPECTRAX-GK should become a research-grade, JAX-native gyrokinetic code that is:
+
+1. accurate against literature and independent-code benchmarks,
+2. end-to-end differentiable for sensitivity analysis, inverse design,
+   uncertainty quantification, and stellarator optimization,
+3. fast enough that cold-start, warm throughput, memory use, and multi-device
+   scaling are all measured and actively optimized,
+4. easy to run from `pip install spectraxgk` with a documented executable,
+   plotting workflow, examples, and artifact format,
+5. maintainable by researchers who need readable equations, tests, diagnostics,
+   and failure modes, not just black-box benchmark figures.
+
+### External anchors from the renewed pass
+
+- GX remains the closest algorithmic and parity reference: it uses
+  Fourier-Hermite-Laguerre phase-space methods, GPU-native CUDA kernels, and
+  benchmark panels for CBC, KBM, W7-X, nonlinear transport, velocity-space
+  convergence, and performance/scaling. The local GX source confirms several
+  implementation lessons worth carrying into SPECTRAX-GK: preallocated work
+  buffers, fused CUDA kernels for linear/nonlinear RHS paths, explicit linked
+  parallel-gradient operators, and old but still useful unit-test topics
+  around grids, geometry, gradients, Laguerre transforms, linear RHS,
+  nonlinear RHS, moments, and solvers.
+- The stella/GENE W7-X benchmark is still the canonical stellarator validation
+  ladder: multiple flux tubes, linear ITG/TEM scans, zonal-flow response, and
+  nonlinear ITG heat flux. SPECTRAX-GK should not present W7-X as closed from
+  one flux tube alone when making paper-level claims.
+- Merlo/Rosenbluth-Hinton/GAM remains the strongest shaped-tokamak response
+  benchmark. The current Merlo Case-III artifact is close on benchmark-scale
+  residual/frequency/damping; the remaining long-time recurrence work should
+  be framed as a numerical-resolution/closure study rather than a replacement
+  for the accepted extraction protocol.
+- Tronko-style verification argues that equation verification and numerical
+  verification have to be tied together. This means every solver refactor
+  should be covered by tests on invariants, manufactured/closed-form limits,
+  observed order, conservation/free-energy behavior, and benchmark observables.
+- The ETG benchmark literature gives a real operating-point and transport
+  context. Current ETG nonlinear work should stay framed as a pilot until it is
+  tied to a recognized ETG benchmark window and transport observable.
+- DESC and TORAX show the bar for differentiable plasma codes: exact or
+  validated derivatives, clearly separated static/dynamic state, reusable
+  objective APIs, progress/logging, persistent compilation cache guidance, and
+  examples that solve real inverse/optimization tasks.
+- JAX's official guidance reinforces the current performance direction:
+  profile first, separate cold compile from warm throughput, use persistent
+  compilation cache as an engineering option, manage GPU preallocation
+  explicitly for memory/OOM work, use `shard_map`/SPMD patterns for real
+  multi-device decomposition, and reserve Pallas for measured hotspots where
+  XLA cannot generate the needed kernel.
+- Equinox is a good fit for future typed PyTree model/config objects because
+  `filter_jit` and related filtered transforms handle mixed static/dynamic
+  PyTrees cleanly. Lineax is a plausible future path for differentiable
+  matrix-free linear solves and adjoint-friendly linear algebra, but it should
+  be introduced only behind a narrow solver adapter after a benchmark against
+  the existing `jax.scipy.sparse.linalg.gmres` path.
+
+### Current state from git and source layout
+
+Recent work has closed real issues, not just documentation:
+
+- runtime ETA/live output and adaptive chunk reporting were added in
+  `c837a72`;
+- imported W7-X linear geometry propagation was fixed in `3b6506f`;
+- office/GX audits were stabilized and W7-X/HSX late-time linear reductions
+  were tracked in `a6aed79` and `67dd533`;
+- cold/warm runtime accounting, profiling tools, and trace defaults were added
+  across `92952f5` through `a6e3dd1`;
+- the most recent performance patch, `678c3dd`, reduced Cyclone
+  `build_linear_cache` from about `7.74 s` to `6.92 s` on `office` GPU by
+  storing the collision cache in low-rank form.
+
+The source tree is now organized around a credible target architecture:
+
+- public user surfaces: `cli.py`, `runtime.py`, `runtime_config.py`,
+  `runtime_artifacts.py`, `plotting.py`, examples, and documented tools;
+- modular numerical kernels: `terms/*`, `linear.py`, `linear_krylov.py`,
+  `nonlinear.py`, `diffrax_integrators.py`;
+- runtime decomposition: `runtime_startup.py`, `runtime_diagnostics.py`,
+  `runtime_chunks.py`, `runtime_results.py`;
+- validation and artifact tools: `benchmarking.py`, `benchmarks.py`,
+  `tools/compare_*`, `tools/make_*`, `tools/profile_*`;
+- geometry bridge layer: `geometry`, `miller_eik.py`, `vmec_eik.py`,
+  `from_gx/vmec.py`, `from_gx/miller.py`.
+
+The remaining structure issue is that several large modules still mix physics,
+numerics, user I/O, and benchmark policy. The refactor should continue, but
+only with parity and coverage gates attached to each extraction.
+
+### Best next steps by priority
+
+1. **Finish the refactor/testing lane before new feature expansion.**
+   - Keep public behavior unchanged.
+   - Continue splitting large modules only when each extraction gains tests.
+   - Highest-value remaining slices: `runtime.py`, `linear.py`,
+     `nonlinear.py`, `benchmarks.py`, `plotting.py`, and geometry adapters.
+
+2. **Turn validation into a gated artifact matrix.**
+   - Every paper-facing lane needs one owning script, one frozen artifact path,
+     one reference source, one fit/window policy, and one numeric gate.
+   - Add first-class gates for eigenfunction overlap, windowed nonlinear
+     statistics, zonal response, velocity-space convergence, and branch
+     continuation.
+
+3. **Close the next physics gates in this order.**
+   - W7-X zonal-response artifact using VMEC-backed geometry and the same
+     branchwise-extrema/Hilbert extraction used for Merlo.
+   - KBM raw eigenfunction overlay, because the current bounded artifact has
+     only about `0.63` overlap and is not manuscript-ready.
+   - Windowed nonlinear-statistics panel for Cyclone, Miller, KBM, W7-X, and
+     HSX.
+   - W7-X multi-flux-tube linear/TEM extension and fluctuation-spectrum lane.
+   - Shaped multispecies tokamak linear lane.
+   - ETG nonlinear only after its benchmark operating point and observable
+     contract are explicit.
+
+4. **Make the test suite research-grade, not only coverage-heavy.**
+   - Keep the 95% wide-package target, but require tests to map to:
+     equations, numerical schemes, diagnostics, artifact contracts, benchmark
+     observables, or gradients.
+   - Add manufactured/closed-form tests for streaming, field solve,
+     collision/hypercollision damping, linked-boundary gradients, ExB bracket
+     antisymmetry, and reduced IMEX solves.
+   - Add regression tests for every bug recently found: VMEC contract
+     propagation, `s_hat_input` return, nonlinear diagnostics horizon mixing,
+     restart zonal scatter order, default geometry scalar allocation, and
+     low-rank collision-cache shape handling.
+   - Keep local default tests under the 5-minute expectation; move
+     office/GX/reference-data runs to explicit manifests and CI/manual tiers.
+
+5. **Attack performance from measured bottlenecks.**
+   - Current cold-start priority: `compile_first_integrator_run`, then
+     `gyro_bessel_cache` and `laguerre_cache`.
+   - Current memory priority: avoid large closed-over constants, avoid
+     materialized full-history traces by default, stream diagnostics, and
+     expose memory allocator guidance.
+   - Current warm-throughput priority: fuse nonlinear FFT/gradient/bracket
+     paths, reduce gather/scatter density, donate buffers where possible, and
+     keep scan shapes stable.
+   - Use persistent compilation cache for engineering/repeated sweeps, but keep
+     published cold and warm timings separate.
+   - Evaluate Pallas only after XProf/HLO shows a stable kernel hotspot that
+     XLA cannot fuse well.
+
+6. **Define a real multi-device parallelization target.**
+   - Stop treating sharding as a figure-only feature.
+   - Define one production decomposition first: likely `ky` or batch/scan
+     sharding for independent linear scans and ensemble/UQ; nonlinear domain
+     sharding should come later because it requires communication in FFT and
+     nonlinear bracket paths.
+   - Use `shard_map`/SPMD-style tests on CPU locally and two-GPU `office`
+     validation for GPU.
+   - Gate on speedup, memory per device, and numerical identity.
+
+7. **Move differentiability from demos to validated workflows.**
+   - For each differentiated observable, add finite-difference checks,
+     tangent/adjoint consistency where available, and conditioning diagnostics.
+   - Promote the two-mode inverse example as the current identifiable baseline.
+   - Add a UQ/Laplace example with covariance and propagated uncertainty.
+   - Add a sensitivity-map example for `gamma`, `omega`, and one windowed
+     nonlinear metric.
+   - After the refactor/testing lane, start the `vmec_jax` Phase A bridge:
+     in-memory `vmec_jax` output into the existing SPECTRAX-GK geometry
+     contract, no `wout` write/read step.
+   - Then add direct `vmec_jax -> booz_xform_jax.jax_api -> SPECTRAX-GK`
+     geometry, with geometry parity and gradient checks before optimization
+     claims.
+
+8. **Tighten docs and examples around user workflows.**
+   - Keep top-level docs focused on install, run, plot, inspect outputs, and
+     reproduce shipped figures.
+   - Move long benchmark caveats into `verification_matrix.rst` and
+     `benchmarks.rst`.
+   - Add example pages for:
+     - plotting from output files,
+     - Miller geometry,
+     - VMEC imported geometry,
+     - W7-X/HSX nonlinear runs,
+     - autodiff inverse/UQ,
+     - performance profiling,
+     - parallelization.
+
+9. **Keep CI/CD and PyPI boring and automatic.**
+   - Current PyPI version observed in this audit is `1.2.0`.
+   - Release workflow uses trusted publishing through `release.yml`; keep it
+     tag-driven and verify metadata before publish.
+   - CI should stay layered:
+     - PR: type checks, fast shards, docs/package build, release-surface
+       coverage;
+     - main/manual: wide package coverage;
+     - workflow-dispatch/manual: full suite and core coverage;
+     - office/manual: GX parity, VMEC/W7-X, runtime/memory, multi-GPU scaling.
+
+10. **Do not overclaim.**
+    - Closed release lanes can be advertised.
+    - Open paper lanes should stay labeled as open until their numeric gates
+      and artifact scripts are frozen.
+    - Digitized literature figures are acceptable for planning and sanity
+      checks, but direct code-backed or published-table references should be
+      preferred for gates.
 
 ## Research Validation / 95% Coverage / Differentiable Optimization Roadmap (2026-04-22)
 
