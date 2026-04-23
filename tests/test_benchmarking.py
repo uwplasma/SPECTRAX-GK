@@ -10,19 +10,30 @@ from spectraxgk.benchmarking import (
     _analytic_signal,
     _explicit_time_window,
     _leading_window,
+    GateReport,
+    LateTimeLinearMetrics,
+    NonlinearWindowMetrics,
+    ScalarGateResult,
+    ZonalFlowResponseMetrics,
     compare_eigenfunctions,
+    evaluate_scalar_gate,
     estimate_observed_order,
+    gate_report,
+    gate_report_to_dict,
     infer_triple_dealiased_ny,
     late_time_linear_metrics,
     late_time_window,
+    linear_metrics_gate_report,
     load_diagnostic_time_series,
     load_eigenfunction_reference_bundle,
+    nonlinear_window_gate_report,
     normalize_eigenfunction,
     phase_align_eigenfunction,
     run_linear_scan,
     run_scan_and_mode,
     save_eigenfunction_reference_bundle,
     windowed_nonlinear_metrics,
+    zonal_response_gate_report,
     zonal_flow_response_metrics,
 )
 from spectraxgk.benchmarks import LinearRunResult, LinearScanResult
@@ -146,6 +157,182 @@ def test_infer_triple_dealiased_ny_matches_gx_grid_convention() -> None:
     assert infer_triple_dealiased_ny(9) == 25
     with pytest.raises(ValueError):
         infer_triple_dealiased_ny(1)
+
+
+def test_scalar_gate_reports_near_zero_and_failure_modes() -> None:
+    gate = evaluate_scalar_gate("omega", 1.0e-4, 0.0, atol=2.0e-4, rtol=0.0, units="v_t/R")
+
+    assert isinstance(gate, ScalarGateResult)
+    assert gate.passed is True
+    assert gate.rel_error == float("inf")
+    assert gate.units == "v_t/R"
+
+    failed = evaluate_scalar_gate("gamma", 1.3, 1.0, atol=0.0, rtol=0.1)
+    assert failed.passed is False
+    assert failed.abs_error == pytest.approx(0.3)
+    assert failed.rel_error == pytest.approx(0.3)
+
+    with pytest.raises(ValueError):
+        evaluate_scalar_gate("bad", 1.0, 1.0, atol=-1.0, rtol=0.0)
+    with pytest.raises(ValueError):
+        evaluate_scalar_gate("bad", 1.0, 1.0, atol=0.0, rtol=-1.0)
+
+
+def test_gate_report_is_json_ready_and_requires_gates() -> None:
+    passed = evaluate_scalar_gate("gamma", 1.01, 1.0, atol=0.0, rtol=0.02)
+    failed = evaluate_scalar_gate("omega", 0.7, 1.0, atol=0.0, rtol=0.02)
+    report = gate_report("cyclone_linear", "GX", [passed, failed])
+
+    assert isinstance(report, GateReport)
+    assert report.passed is False
+    assert report.max_abs_error == pytest.approx(0.3)
+    as_dict = gate_report_to_dict(report)
+    assert as_dict["case"] == "cyclone_linear"
+    assert as_dict["source"] == "GX"
+    assert as_dict["passed"] is False
+    assert len(as_dict["gates"]) == 2
+
+    with pytest.raises(ValueError):
+        gate_report("empty", "none", [])
+
+
+def test_linear_metrics_gate_report_uses_growth_and_frequency() -> None:
+    ref = LateTimeLinearMetrics(
+        gamma_fit=0.1,
+        omega_fit=0.3,
+        gamma_tail_mean=0.1,
+        omega_tail_mean=0.3,
+        gamma_tail_std=0.0,
+        omega_tail_std=0.0,
+        tmin=5.0,
+        tmax=10.0,
+        nsamples=20,
+        signal_source="reference",
+    )
+    obs = LateTimeLinearMetrics(
+        gamma_fit=0.104,
+        omega_fit=0.298,
+        gamma_tail_mean=0.104,
+        omega_tail_mean=0.298,
+        gamma_tail_std=0.001,
+        omega_tail_std=0.002,
+        tmin=5.0,
+        tmax=10.0,
+        nsamples=20,
+        signal_source="spectrax",
+    )
+
+    report = linear_metrics_gate_report(obs, ref, case="cyclone_linear", source="GX", gamma_rtol=0.05, omega_rtol=0.01)
+
+    assert report.passed is True
+    assert [gate.metric for gate in report.gates] == ["gamma_fit", "omega_fit"]
+
+
+def test_nonlinear_and_zonal_gate_reports_cover_publication_metrics() -> None:
+    ref_nonlin = NonlinearWindowMetrics(
+        tmin=20.0,
+        tmax=50.0,
+        nsamples=12,
+        heat_flux_mean=4.0,
+        heat_flux_std=0.4,
+        heat_flux_rms=4.1,
+        wphi_mean=2.0,
+        wphi_std=0.2,
+        wg_mean=3.0,
+        wg_std=0.3,
+        phi_mode_envelope_mean=0.5,
+        phi_mode_envelope_std=0.05,
+        phi_mode_envelope_max=0.7,
+    )
+    obs_nonlin = NonlinearWindowMetrics(
+        tmin=20.0,
+        tmax=50.0,
+        nsamples=12,
+        heat_flux_mean=4.2,
+        heat_flux_std=0.5,
+        heat_flux_rms=4.25,
+        wphi_mean=2.1,
+        wphi_std=0.25,
+        wg_mean=3.1,
+        wg_std=0.35,
+        phi_mode_envelope_mean=0.52,
+        phi_mode_envelope_std=0.05,
+        phi_mode_envelope_max=0.72,
+    )
+
+    nonlin_report = nonlinear_window_gate_report(
+        obs_nonlin,
+        ref_nonlin,
+        case="w7x_nonlinear",
+        source="GX",
+        rtol=0.1,
+    )
+    assert nonlin_report.passed is True
+    assert "heat_flux_mean" in {gate.metric for gate in nonlin_report.gates}
+    assert "phi_mode_envelope_mean" in {gate.metric for gate in nonlin_report.gates}
+
+    ref_zonal = ZonalFlowResponseMetrics(
+        initial_level=1.0,
+        initial_policy="first_abs",
+        residual_level=0.19,
+        residual_std=0.01,
+        response_rms=0.2,
+        gam_frequency=2.24,
+        gam_damping_rate=0.17,
+        damping_method="branchwise_extrema",
+        frequency_method="hilbert_phase",
+        peak_count=6,
+        peak_fit_count=4,
+        tmin=30.0,
+        tmax=60.0,
+        fit_tmin=0.0,
+        fit_tmax=30.0,
+        peak_times=np.array([1.0, 2.0]),
+        peak_envelope=np.array([0.5, 0.4]),
+        max_peak_times=np.array([1.0]),
+        max_peak_values=np.array([0.5]),
+        min_peak_times=np.array([2.0]),
+        min_peak_values=np.array([-0.4]),
+    )
+    obs_zonal = ZonalFlowResponseMetrics(
+        initial_level=1.0,
+        initial_policy="first_abs",
+        residual_level=0.192,
+        residual_std=0.012,
+        response_rms=0.21,
+        gam_frequency=2.20,
+        gam_damping_rate=0.176,
+        damping_method="branchwise_extrema",
+        frequency_method="hilbert_phase",
+        peak_count=6,
+        peak_fit_count=4,
+        tmin=30.0,
+        tmax=60.0,
+        fit_tmin=0.0,
+        fit_tmax=30.0,
+        peak_times=np.array([1.0, 2.0]),
+        peak_envelope=np.array([0.5, 0.4]),
+        max_peak_times=np.array([1.0]),
+        max_peak_values=np.array([0.5]),
+        min_peak_times=np.array([2.0]),
+        min_peak_values=np.array([-0.4]),
+    )
+
+    zonal_report = zonal_response_gate_report(
+        obs_zonal,
+        ref_zonal,
+        case="merlo_case_iii",
+        source="Merlo et al.",
+        residual_atol=0.01,
+        frequency_atol=0.1,
+        damping_atol=0.02,
+    )
+    assert zonal_report.passed is True
+    assert [gate.metric for gate in zonal_report.gates] == [
+        "residual_level",
+        "gam_frequency",
+        "gam_damping_rate",
+    ]
 
 
 def test_zonal_flow_response_metrics_recover_residual_and_gam_envelope() -> None:

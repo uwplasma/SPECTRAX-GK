@@ -43,6 +43,12 @@ Benchmarks
 .. automodule:: spectraxgk.benchmarks
    :members:
 
+Benchmarking
+------------
+
+.. automodule:: spectraxgk.benchmarking
+   :members:
+
 Analysis
 --------
 
