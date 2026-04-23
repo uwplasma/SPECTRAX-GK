@@ -908,6 +908,233 @@ Make SPECTRAX-GK usable inside a modern optimization loop for stellarators.
    - small stellarator shape optimization loop using a low-dimensional geometry
      parameterization
 
+#### Post-refactor differentiable equilibrium/geometry program
+
+This starts only after the current SPECTRAX-GK refactor/testing-creation lane
+has landed. The point is not to add another geometry adapter. The point is to
+replace the current host/file-oriented VMEC helper path with a JAX-native,
+end-to-end differentiable geometry chain while preserving the frozen
+`vmec-eik`/`gx-netcdf` paths as reference and fallback modes.
+
+Current state to plan against:
+
+- SPECTRAX-GK still builds VMEC geometry through
+  `src/spectraxgk/from_gx/vmec.py`, i.e. a GX-style helper path around
+  `wout_*.nc`-compatible data and `booz_xform(_jax)` object APIs.
+- `vmec_jax` already exposes the exact seams we need:
+  - `run_fixed_boundary`
+  - `wout_from_fixed_boundary_run`
+  - `state_from_wout`
+  - `booz_xform_inputs_from_state`
+- `booz_xform_jax` already exposes both:
+  - an in-memory object path via `Booz_xform.read_wout_data(...).run_jax()`
+  - a lower-level JAX path in `booz_xform_jax.jax_api`
+- Therefore the correct long-term target is:
+  `vmec_jax state -> booz_xform_inputs_from_state -> booz_xform_jax.jax_api -> SPECTRAX-GK geometry bundle`
+  with no required NetCDF round-trip on the hot path.
+
+#### Concrete integration phases
+
+1. **Phase A: compatibility bridge**
+   - Add an optional in-memory geometry path that accepts `vmec_jax` output
+     (`FixedBoundaryRun`, `wout`, or `VMECState`) and feeds the current
+     SPECTRAX-GK imported-geometry contract without writing a `wout_*.nc` file.
+   - Keep the public runtime behavior conservative:
+     - current `geometry.model = "vmec-eik"` path remains valid,
+     - new differentiable path is opt-in,
+     - existing frozen `*.eik.nc` and `gx-netcdf` artifacts remain the gold
+       references for regression tests.
+   - Goal:
+     remove file I/O from local optimization/sensitivity loops before changing
+     the core geometry numerics.
+
+2. **Phase B: direct JAX Boozer geometry path**
+   - Add a new module such as `src/spectraxgk/geometry/vmec_jax.py`.
+   - Input:
+     `vmec_jax` state or a `BoozXformInputs` bundle.
+   - Internal path:
+     - `vmec_jax.booz_xform_inputs_from_state(...)`
+     - `booz_xform_jax.prepare_booz_xform_constants_from_inputs(...)`
+     - `booz_xform_jax.booz_xform_jax_impl(...)`
+   - Output:
+     a JAX-native flux-tube geometry bundle that populates the same physical
+     quantities currently produced by the VMEC/GX adapter:
+     - `bmag`
+     - `gradpar`
+     - `gds2`, `gds21`, `gds22`
+     - `gbdrift`, `gbdrift0`
+     - `cvdrift`, `cvdrift0`
+     - `jacob`
+     - geometry metadata (`alpha`, `nfp`, field-line labels, etc.)
+   - Keep the geometry output contract aligned with
+     `FluxTubeGeometryData` so the solver stack does not need to care whether
+     the geometry came from a file, GX-style adapter, or a differentiable JAX
+     pipeline.
+
+3. **Phase C: optimization-ready geometry API**
+   - Expose a stable geometry-objective interface that maps:
+     low-dimensional equilibrium parameters -> flux-tube geometry ->
+     linear/nonlinear observables.
+   - Add memory-control hooks needed for serious optimization:
+     - checkpointing / rematerialization for long traces,
+     - selective `jit`,
+     - batching/vmap over surfaces, `k_y`, and parameter ensembles,
+     - explicit cold/warm compile accounting.
+   - Keep `vmec_jax` and `booz_xform_jax` as optional extras so the package
+     remains usable in file-based mode on systems that only want frozen
+     benchmarks.
+
+#### Validation gates
+
+1. **Equilibrium parity inheritance**
+   - Do not duplicate the entire VMEC validation program inside SPECTRAX-GK.
+   - Instead, explicitly inherit `vmec_jax` equilibrium parity from its
+     VMEC2000-backed validation cases and document which upstream references are
+     being relied on:
+     - axisymmetric tokamak
+     - QH
+     - QA
+     - QI
+     - `lasym=True` coverage where available
+   - SPECTRAX-GK should only re-test the geometry quantities and solver
+     observables that sit downstream of equilibrium generation.
+
+2. **Geometry parity**
+   - For a fixed set of axisymmetric and stellarator cases, compare the new
+     differentiable path against the current `from_gx/vmec.py` adapter and
+     frozen `*.eik.nc` references.
+   - Minimum case set:
+     - circular/shaped tokamak
+     - one QA/QH stellarator
+     - HSX-like VMEC case
+     - W7-X-like VMEC case
+   - Minimum quantities:
+     - `bmag`
+     - `gradpar`
+     - `gds2`, `gds21`, `gds22`
+     - `gbdrift`, `gbdrift0`
+     - `cvdrift`, `cvdrift0`
+     - `jacob`
+   - Acceptance policy:
+     combine pointwise tolerances, weighted relative norms, and convention-aware
+     checks for sign/phase/field-line shifts so we do not confuse coordinate
+     conventions with actual physics errors.
+
+3. **Derivative validation**
+   - For geometry-derived scalars and solver outputs, require:
+     - finite-difference checks,
+     - complex-step checks where the path is holomorphic enough,
+     - tangent/reverse consistency,
+     - first-order Taylor remainder tests over a ladder of perturbation sizes.
+   - Start with low-dimensional parameters:
+     - boundary Fourier amplitudes,
+     - `s`, `alpha`, or field-line labels where physically meaningful,
+     - selected Miller-shaping surrogates for cross-validation against analytic
+       geometry lanes.
+
+4. **End-to-end physics validation**
+   - Demonstrate that geometry derivatives propagate correctly into physics:
+     - linear `gamma` and `omega` sensitivities on W7-X/HSX-like cases,
+     - one reduced nonlinear windowed transport metric on a small stellarator
+       case once the linear path is stable.
+   - Acceptance must be based on observable agreement, not just internal
+     geometry coefficient agreement.
+
+5. **Performance and scaling**
+   - Benchmark:
+     - cold vs warm geometry generation,
+     - cold vs warm end-to-end linear runs,
+     - CPU and GPU paths separately,
+     - memory footprint,
+     - compile/runtime split.
+   - Compare:
+     - current file-backed VMEC path,
+     - in-memory compatibility bridge,
+     - fully JAX-native geometry path.
+
+#### Research-grade example and figure program
+
+1. **Geometry-to-growth sensitivity map**
+   - Example:
+     perturb a small set of equilibrium/boundary coefficients and report the
+     Jacobian of `gamma(k_y)` and `omega(k_y)` for a stellarator case.
+   - Deliverables:
+     - sensitivity heatmap,
+     - gradient-validation table,
+     - figure-ready caption stating conditioning and trusted perturbation range.
+
+2. **Inverse or target-matching geometry demo**
+   - Example:
+     recover a low-dimensional equilibrium perturbation that best matches a
+     target `gamma(k_y)` or `omega(k_y)` signature.
+   - This should be a real optimization over equilibrium parameters, not only a
+     local transport coefficient fit.
+
+3. **Uncertainty propagation**
+   - Example:
+     propagate uncertainty in boundary coefficients or equilibrium descriptors
+     into `gamma(k_y)` and a small number of transport proxies using local
+     covariance propagation first, then stochastic sampling if needed.
+   - This should connect directly to the robust/stochastic stellarator
+     optimization literature, not just to generic autodiff demos.
+
+4. **Pilot turbulence-informed equilibrium optimization**
+   - First objective:
+     reduced linear growth proxy on a stellarator case.
+   - Second objective after linear closure:
+     windowed nonlinear transport proxy on a reduced case.
+   - This is the clean SPECTRAX-GK analogue of the published GX+DESC
+     turbulence-in-the-loop optimization work, but with a fully differentiable
+     local geometry chain instead of a black-box equilibrium subprocess.
+
+5. **Boozer-coordinate diagnostics example**
+   - Add one example that uses `booz_xform_jax` outputs directly to visualize
+     the geometry features that correlate with the gyrokinetic objective.
+   - This is where Boozer harmonics, symmetry-breaking content, and turbulence
+     response should be shown on the same page instead of as disconnected
+     diagnostics.
+
+#### Documentation, testing, and artifact requirements
+
+- Add a dedicated doc chapter for differentiable geometry backends:
+  - architecture,
+  - dependency model,
+  - validated cases,
+  - unsupported modes / failure cases.
+- Add a geometry validation page that maps:
+  equilibrium source -> Boozer transform -> flux-tube coefficients -> solver
+  observables -> tests / figures.
+- Every research-grade example above must ship with:
+  - a runnable script under `examples/` or `tools/`,
+  - a saved JSON/NetCDF numeric summary,
+  - a publication-ready figure path under `docs/_static/`,
+  - at least one fast regression test and one slower marked integration test.
+
+#### Literature-anchored use cases to keep explicit
+
+- `vmec_jax` validation/optimization docs and examples define the equilibrium
+  parity and exact-derivative baseline we should inherit, not re-invent.
+- `booz_xform_jax` defines the in-memory Boozer transform route and the
+  differentiable Boozer-spectrum API.
+- DESC quasi-symmetry optimization is the model for exact-derivative,
+  optimization-ready equilibrium workflows.
+- GX + DESC nonlinear turbulence optimization is the model for where the
+  turbulence objective layer should ultimately go.
+- Adjoint and stochastic stellarator-optimization literature should guide the
+  sensitivity, robustness, and uncertainty examples so they read as actual
+  plasma-physics validation rather than generic autodiff demonstrations.
+
+#### Sequencing rule
+
+- Do not start this program before the current SPECTRAX-GK refactor/testing
+  lane is stable.
+- Once that lane is closed, start with Phase A and geometry parity before
+  attempting a fully end-to-end optimization demo.
+- Do not claim a fully differentiable stellarator-optimization workflow until:
+  - geometry parity is frozen,
+  - derivative checks pass on real equilibrium parameters,
+  - at least one observable-level stellarator sensitivity figure is closed.
+
 ### Workstream 5: Documentation and Research Artifact Discipline
 
 #### Objective
