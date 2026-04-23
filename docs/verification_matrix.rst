@@ -140,7 +140,7 @@ Stellarator Linear
      - residual level, damping envelope
      - stella/GENE benchmark paper + zonal-flow literature
      - Open
-     - residual and damping metrics must be defined before acceptance; signed ``Phi_zonal_mode_kxt`` is now available, but the case-specific W7-X artifact lane is still open
+     - a case-specific runtime/tool path now exists through ``examples/benchmarks/runtime_w7x_zonal_response_vmec.toml`` and ``tools/generate_w7x_zonal_response_panel.py`` using the same first-sample / branchwise-extrema / Hilbert-phase extraction policy as the Merlo lane. The remaining open item is generation of a frozen VMEC-backed artifact and acceptance metrics on an actual W7-X geometry file
    * - W7-X fluctuation spectra
      - density and zonal-flow frequency spectra
      - W7-X Doppler-reflectometry comparison paper
