@@ -86,8 +86,10 @@ diagnostics = true
 
     out_dir = tmp_path / "w7x_out"
     out_png = tmp_path / "w7x_panel.png"
+    run_grids = []
 
     def _fake_run(cfg, *, out, kx_target, **kwargs):
+        run_grids.append((float(kx_target), cfg.grid))
         path = Path(out)
         path.parent.mkdir(parents=True, exist_ok=True)
         t = np.linspace(0.0, 10.0, 41)
@@ -134,3 +136,19 @@ diagnostics = true
     assert meta["literature_reference"]["flux_tube"] == "bean"
     assert "slower stellarator-specific oscillation" in meta["notes"]
     assert "manuscript-policy inference" in meta["notes"]
+    assert "reference tolerances" in meta["notes"]
+    assert len(run_grids) == 4
+    for kx_target, grid in run_grids:
+        assert grid.boundary == "periodic"
+        assert grid.non_twist is True
+        assert grid.jtwist is None
+        assert np.isclose(grid.Lx, 2.0 * np.pi / kx_target)
+
+
+def test_generate_w7x_zonal_response_formats_unresolved_damping() -> None:
+    mod = _load_tool_module()
+
+    assert mod._finite_or_none(float("nan")) is None
+    assert mod._format_metric(None) == "not fitted"
+    assert mod._format_metric(float("nan")) == "not fitted"
+    assert mod._format_metric(1.23456) == "1.235"

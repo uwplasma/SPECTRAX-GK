@@ -79,8 +79,10 @@ Near-term physics priorities
 
 The next physics lanes should be closed in this order:
 
-1. W7-X zonal-response artifact using VMEC-backed geometry and the same
-   extraction protocol as the shaped-tokamak response lane.
+1. W7-X zonal-response acceptance tolerances against digitized or regenerated
+   stella/GENE reference traces. The VMEC-backed SPECTRAX-GK artifact is now
+   frozen, but it should not be counted as a closed gate until the published
+   residual/frequency envelope has explicit pass/fail thresholds.
 2. KBM raw eigenfunction overlay, because the current bounded artifact is not
    yet strong enough for manuscript use.
 3. Windowed nonlinear-statistics panel for Cyclone, Miller, KBM, W7-X, and HSX.

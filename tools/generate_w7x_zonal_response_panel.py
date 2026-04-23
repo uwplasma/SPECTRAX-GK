@@ -122,6 +122,20 @@ def _kx_token(kx: float) -> str:
     return f"{int(round(1000.0 * float(kx))):03d}"
 
 
+def _finite_or_none(value: float) -> float | None:
+    val = float(value)
+    return val if np.isfinite(val) else None
+
+
+def _format_metric(value: object, *, fmt: str = ".3f", missing: str = "not fitted") -> str:
+    if value is None:
+        return missing
+    val = float(value)
+    if not np.isfinite(val):
+        return missing
+    return f"{val:{fmt}}"
+
+
 def _plot_panel(
     cases: list[dict[str, object]],
     *,
@@ -163,8 +177,8 @@ def _plot_panel(
             0.97,
             (
                 f"residual = {float(metrics.residual_level):.4f}\n"
-                f"ω_GAM = {float(case['omega_R0_over_vi']):.3f} R0/vti\n"
-                f"γ_GAM = {float(case['gamma_R0_over_vi']):.3f} R0/vti"
+                rf"$\omega_{{GAM}}R_0/v_{{ti}}$ = {_format_metric(case['omega_R0_over_vi'])}" + "\n"
+                rf"$\gamma_{{GAM}}R_0/v_{{ti}}$ = {_format_metric(case['gamma_R0_over_vi'])}"
             ),
             transform=axis.transAxes,
             va="top",
@@ -203,7 +217,13 @@ def main() -> int:
         if not args.reuse_output or not out_bundle.exists():
             cfg_case = replace(
                 cfg,
-                grid=replace(cfg.grid, Lx=float(2.0 * np.pi / kx_target)),
+                grid=replace(
+                    cfg.grid,
+                    Lx=float(2.0 * np.pi / kx_target),
+                    boundary="periodic",
+                    jtwist=None,
+                    non_twist=True,
+                ),
             )
             run_runtime_nonlinear_with_artifacts(
                 cfg_case,
@@ -220,6 +240,12 @@ def main() -> int:
             )
 
         kx_index, kx_selected = _nearest_kx_index(out_bundle, kx_target)
+        kx_tol = max(5.0e-4, 2.0e-2 * abs(float(kx_target)))
+        if abs(float(kx_selected) - float(kx_target)) > kx_tol:
+            raise ValueError(
+                f"selected kx={kx_selected:.6g} differs from target {kx_target:.6g}; "
+                "check the radial box and boundary settings for this zonal run"
+            )
         series = load_diagnostic_time_series(
             out_bundle,
             variable="Phi_zonal_mode_kxt",
@@ -240,8 +266,10 @@ def main() -> int:
             fit_window_tmax=float(args.fit_window_tmax),
             hilbert_trim_fraction=0.2,
         )
-        omega_r0_over_vi = float(metrics.gam_frequency) * r0
-        gamma_r0_over_vi = -float(metrics.gam_damping_rate) * r0
+        gam_frequency = _finite_or_none(metrics.gam_frequency)
+        gam_damping_rate = _finite_or_none(metrics.gam_damping_rate)
+        omega_r0_over_vi = None if gam_frequency is None else float(gam_frequency) * r0
+        gamma_r0_over_vi = None if gam_damping_rate is None else -float(gam_damping_rate) * r0
         row = {
             "kx_target": float(kx_target),
             "kx_selected": float(kx_selected),
@@ -251,10 +279,10 @@ def main() -> int:
             "residual_level": float(metrics.residual_level),
             "residual_std": float(metrics.residual_std),
             "response_rms": float(metrics.response_rms),
-            "gam_frequency": float(metrics.gam_frequency),
-            "gam_damping_rate": float(metrics.gam_damping_rate),
-            "omega_R0_over_vi": float(omega_r0_over_vi),
-            "gamma_R0_over_vi": float(gamma_r0_over_vi),
+            "gam_frequency": gam_frequency,
+            "gam_damping_rate": gam_damping_rate,
+            "omega_R0_over_vi": omega_r0_over_vi,
+            "gamma_R0_over_vi": gamma_r0_over_vi,
             "peak_count": int(metrics.peak_count),
             "peak_fit_count": int(metrics.peak_fit_count),
             "tmin": float(metrics.tmin),
@@ -316,8 +344,8 @@ def main() -> int:
                     "damping fits plus a Hilbert-phase frequency estimate over a common early-time window. "
                     "The default fit window cap isolates the initial GAM before the slower stellarator-specific "
                     "oscillation described in section 4.4 of the benchmark paper; this cutoff is a manuscript-policy "
-                    "inference, not a quoted number from the paper itself. A frozen VMEC-backed artifact still needs "
-                    "to be generated on a machine with W7-X geometry access."
+                    "inference, not a quoted number from the paper itself. The metadata remains open until "
+                    "reference tolerances are frozen against the published stella/GENE traces."
                 ),
                 "references": [
                     "Gonzalez-Jerez et al. 2022 W7-X test-4 zonal-flow relaxation benchmark",

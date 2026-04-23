@@ -10,6 +10,7 @@ import pytest
 from spectraxgk.analysis import ModeSelection
 from spectraxgk.config import GridConfig, TimeConfig
 from spectraxgk.diagnostics import SimulationDiagnostics, ResolvedDiagnostics
+from spectraxgk.geometry import FluxTubeGeometryData
 from spectraxgk.runtime import RuntimeLinearResult, RuntimeNonlinearResult
 from spectraxgk.runtime_config import RuntimeConfig, RuntimeOutputConfig
 from spectraxgk.runtime_artifacts import (
@@ -446,6 +447,7 @@ def test_runtime_artifact_geometry_and_input_group_writers(monkeypatch: pytest.M
         geometry=SimpleNamespace(model="miller", shift=0.15, kappa=1.7, akappri=0.05, tri=0.2, tripri=0.03),
         physics=SimpleNamespace(beta=0.02),
     )
+    monkeypatch.setattr("spectraxgk.runtime_artifacts.apply_geometry_grid_defaults", lambda _geom, grid_cfg: grid_cfg)
     monkeypatch.setattr("spectraxgk.runtime_artifacts.build_spectral_grid", lambda _cfg: grid)
     monkeypatch.setattr("spectraxgk.runtime_artifacts.build_runtime_geometry", lambda _cfg: object())
     monkeypatch.setattr("spectraxgk.runtime_artifacts.ensure_flux_tube_geometry_data", lambda _geom, _theta: geom)
@@ -472,16 +474,79 @@ def test_runtime_artifact_geometry_and_input_group_writers(monkeypatch: pytest.M
     assert float(inputs_group.values["grhoavg"]) == pytest.approx(np.mean(geom.grho_profile))
 
 
+def test_runtime_artifact_geometry_writer_applies_imported_grid_defaults(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class _Var:
+        def __init__(self, store, key):
+            self._store = store
+            self._key = key
+
+        def __setitem__(self, _idx, value):
+            self._store[self._key] = np.asarray(value)
+
+    class _Group:
+        def __init__(self):
+            self.values = {}
+
+        def createVariable(self, name, _dtype, _dims=()):
+            return _Var(self.values, name)
+
+    theta_closed = np.linspace(-1.0, 1.0, 5, dtype=np.float64)
+    geom = FluxTubeGeometryData(
+        theta=theta_closed,
+        gradpar_value=0.5,
+        bmag_profile=np.linspace(1.0, 1.4, theta_closed.size),
+        bgrad_profile=np.linspace(0.1, 0.5, theta_closed.size),
+        gds2_profile=np.linspace(2.0, 2.4, theta_closed.size),
+        gds21_profile=np.linspace(-0.2, 0.2, theta_closed.size),
+        gds22_profile=np.linspace(0.7, 0.9, theta_closed.size),
+        cv_profile=np.linspace(0.3, 0.7, theta_closed.size),
+        gb_profile=np.linspace(0.4, 0.8, theta_closed.size),
+        cv0_profile=np.linspace(-0.1, 0.1, theta_closed.size),
+        gb0_profile=np.linspace(-0.2, 0.2, theta_closed.size),
+        jacobian_profile=np.linspace(3.0, 3.4, theta_closed.size),
+        grho_profile=np.linspace(1.0, 1.2, theta_closed.size),
+        q=1.6,
+        s_hat=0.0,
+        epsilon=0.12,
+        R0=5.5,
+        kxfac=1.25,
+        nfp=5,
+        theta_closed_interval=True,
+        source_model="gx-netcdf",
+    )
+    cfg = SimpleNamespace(
+        grid=GridConfig(Nx=4, Ny=4, Nz=17, Lx=6.28, Ly=6.28, boundary="periodic"),
+        geometry=SimpleNamespace(model="vmec", shift=0.0),
+        physics=SimpleNamespace(beta=0.0),
+    )
+    monkeypatch.setattr("spectraxgk.runtime_artifacts.build_runtime_geometry", lambda _cfg: geom)
+
+    group = _Group()
+    theta, _kx, _ky, geom_out = _write_gx_geometry_group(group, cfg)
+
+    assert theta.shape == (theta_closed.size - 1,)
+    np.testing.assert_allclose(theta, theta_closed[:-1].astype(np.float32))
+    np.testing.assert_allclose(group.values["bmag"], np.asarray(geom.bmag_profile[:-1], dtype=np.float32))
+    assert geom_out.theta_closed_interval is False
+    assert float(group.values["kxfac"]) == pytest.approx(1.25)
+
+
 def test_runtime_artifact_particle_moments(monkeypatch) -> None:
     state = np.ones((1, 2, 3, 2, 4, 3), dtype=np.complex64)
     cfg = SimpleNamespace(grid=SimpleNamespace())
+    grid = SimpleNamespace(z=np.asarray([-1.0, 0.0, 1.0], dtype=np.float32))
+    geom = object()
     cache = SimpleNamespace(
         Jl=np.ones((1, 2, 2, 4, 3), dtype=np.float32),
         JlB=np.ones((1, 2, 2, 4, 3), dtype=np.float32),
         kperp2=np.ones((2, 4, 3), dtype=np.float32),
     )
-    monkeypatch.setattr("spectraxgk.runtime_artifacts.build_spectral_grid", lambda _grid: object())
-    monkeypatch.setattr("spectraxgk.runtime_artifacts.build_runtime_geometry", lambda _cfg: object())
+    monkeypatch.setattr("spectraxgk.runtime_artifacts.apply_geometry_grid_defaults", lambda _geom, grid_cfg: grid_cfg)
+    monkeypatch.setattr("spectraxgk.runtime_artifacts.build_spectral_grid", lambda _grid: grid)
+    monkeypatch.setattr("spectraxgk.runtime_artifacts.build_runtime_geometry", lambda _cfg: geom)
+    monkeypatch.setattr("spectraxgk.runtime_artifacts.ensure_flux_tube_geometry_data", lambda _geom, _theta: geom)
     monkeypatch.setattr("spectraxgk.runtime_artifacts.build_runtime_linear_params", lambda _cfg, **_kwargs: object())
     monkeypatch.setattr("spectraxgk.runtime_artifacts.build_linear_cache", lambda *_args, **_kwargs: cache)
 
