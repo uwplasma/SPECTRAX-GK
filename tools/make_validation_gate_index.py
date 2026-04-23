@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_GLOB = str(REPO_ROOT / "docs" / "_static" / "*.json")
+DEFAULT_GLOB = str(REPO_ROOT / "docs" / "_static" / "**" / "*.json")
 DEFAULT_JSON = REPO_ROOT / "docs" / "_static" / "validation_gate_index.json"
 DEFAULT_CSV = REPO_ROOT / "docs" / "_static" / "validation_gate_index.csv"
 DEFAULT_PNG = REPO_ROOT / "docs" / "_static" / "validation_gate_index.png"
@@ -88,7 +88,7 @@ def collect_gate_entries(patterns: list[str]) -> list[dict[str, object]]:
 
     paths: list[Path] = []
     for pattern in patterns:
-        paths.extend(Path(item) for item in glob.glob(pattern))
+        paths.extend(Path(item) for item in glob.glob(pattern, recursive=True))
     entries: list[dict[str, object]] = []
     for path in sorted(set(paths)):
         data = _load_json(path)
