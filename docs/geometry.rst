@@ -179,12 +179,12 @@ locks both root-level contracts explicitly:
 - imported GX Miller ``*.eiknc.nc`` files must stay on their already-open theta
   grid without a spurious terminal-point trim.
 
-With the corrected GX-time damping contract, that imported-geometry bridge now
-also reproduces the corrected GX W7-X linear ITG ``t=2`` reference on the same
-sampled field line. The tracked short-window scan in
-``docs/_static/w7x_linear_t2_scan.csv`` shows mean absolute ``omega`` errors of
-about ``7e-6`` to ``9e-6`` and mean relative ``gamma`` errors of about
-``0.4%`` to ``4.2%`` across ``ky = 0.1, 0.2, 0.3, 0.4``.
+With the corrected imported-VMEC contract, that imported-geometry bridge now
+also reproduces the GX W7-X linear ITG ``t=2`` reference on the same sampled
+field line over the tracked ``ky`` range. The refreshed scan in
+``docs/_static/w7x_linear_t2_scan.csv`` shows mean relative ``gamma`` errors of
+about ``2.3%`` to ``3.5%`` and mean relative ``omega`` errors of about
+``0.02%`` to ``0.27%`` across ``ky = 0.1`` through ``0.8``.
 
 That same imported contract now has a first-class nonlinear runtime workflow:
 ``examples/nonlinear/non-axisymmetric/w7x_nonlinear_imported_geometry.py`` and

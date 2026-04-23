@@ -63,6 +63,14 @@ def test_exact_state_office_manifest_cyclone_miller_config_resolves_to_real_exam
     assert lane["env"]["JAX_PLATFORMS"] == "cpu"
 
 
+def test_exact_state_office_manifest_pins_all_office_audit_lanes_to_cpu() -> None:
+    repo = Path(__file__).resolve().parents[1]
+    manifest = repo / "tools" / "exact_state_lanes.office.toml"
+    data = tomllib.loads(manifest.read_text(encoding="utf-8"))
+    for lane_name, lane in data["lane"].items():
+        assert lane["env"]["JAX_PLATFORMS"] == "cpu", lane_name
+
+
 def test_exact_state_office_manifest_kbm_config_resolves_to_real_example() -> None:
     repo = Path(__file__).resolve().parents[1]
     manifest = repo / "tools" / "exact_state_lanes.office.toml"

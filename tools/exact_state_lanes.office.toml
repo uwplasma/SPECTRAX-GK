@@ -29,6 +29,7 @@ time_index = 47
 [lane.cyclone_runtime_salpha]
 config = "../examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml"
 gx_out = "$HOME/gx_runs/cyclone_local_match/cyclone_local_match_dense.out.nc"
+env.JAX_PLATFORMS = "cpu"
 
 [lane.cyclone_runtime_salpha.startup]
 gx_dir = "$HOME/gx_runs/cyclone_local_match_dense_call1"
@@ -42,6 +43,7 @@ time_index = 47
 [lane.kbm_salpha]
 config = "../examples/nonlinear/axisymmetric/runtime_kbm_nonlinear_t100.toml"
 gx_out = "$HOME/gx_refs/main_clean_20260312/nonlinear/kbm/kbm_salpha_nonlinear.out.nc"
+env.JAX_PLATFORMS = "cpu"
 
 [lane.kbm_salpha.startup]
 gx_dir = "$HOME/gx_runs/kbm_t100_dense_call1_clean"
@@ -55,6 +57,7 @@ time_index = 130
 [lane.w7x_vmec]
 config = "../examples/nonlinear/non-axisymmetric/runtime_w7x_nonlinear_vmec_geometry.toml"
 gx_out = "$HOME/gx_refs/main_clean_20260312/nonlinear/w7x/w7x_adiabatic_electrons.out.nc"
+env.JAX_PLATFORMS = "cpu"
 env.W7X_VMEC_FILE = "$HOME/gx_refs/main_clean_20260312/nonlinear/w7x/wout_w7x.nc"
 
 [lane.w7x_vmec.startup]
@@ -69,6 +72,7 @@ time_index = 10
 [lane.hsx_vmec]
 config = "../examples/nonlinear/non-axisymmetric/runtime_hsx_nonlinear_vmec_geometry.toml"
 gx_out = "$HOME/gx_refs/main_clean_20260312/nonlinear/hsx/hsx_nonlinear.out.nc"
+env.JAX_PLATFORMS = "cpu"
 env.HSX_VMEC_FILE = "$HOME/gx_refs/main_clean_20260312/nonlinear/hsx/wout_HSX_QHS_vac.nc"
 
 [lane.hsx_vmec.startup]
