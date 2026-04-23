@@ -161,6 +161,9 @@ window mean relative mismatch as the scalar acceptance metric.
 Observed-order and branch-continuity gate helpers are also available so
 velocity-space convergence panels and branch-followed scan tables can use the
 same JSON-ready acceptance convention.
+``tools/compare_gx_kbm.py --branch-summary-json`` wires that convention into
+the KBM branch-following workflow by summarizing adjacent ``gamma``/``omega``
+jumps and successive eigenfunction-overlap continuity for the selected branch.
 
 The diagnostics stream now also carries ``Diagnostics/Phi_zonal_mode_kxt``, a
 signed complex zonal-potential history reduced over ``z`` with the same volume
