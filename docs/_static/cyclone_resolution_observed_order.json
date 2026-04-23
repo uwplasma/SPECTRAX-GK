@@ -1,0 +1,131 @@
+{
+  "absolute_error": true,
+  "asymptotic_order": 6.832152420489169,
+  "case": "cyclone_resolution_observed_order",
+  "csv": "docs/_static/cyclone_resolution_subset.csv",
+  "error_column": "rel_gamma",
+  "errors": [
+    0.16745605,
+    0.26598408,
+    0.090580076,
+    0.01268914
+  ],
+  "final_error": 0.01268914,
+  "gate_passed": false,
+  "gate_report": {
+    "case": "cyclone_resolution_observed_order",
+    "gates": [
+      {
+        "abs_error": 0.0,
+        "atol": 1e-12,
+        "metric": "observed_order_deficit",
+        "notes": "Passes when asymptotic observed order >= 1.",
+        "observed": 0.0,
+        "passed": true,
+        "reference": 0.0,
+        "rel_error": 0.0,
+        "rtol": 0.0,
+        "units": ""
+      },
+      {
+        "abs_error": 1.6084267074670973,
+        "atol": 1e-12,
+        "metric": "min_pairwise_order_deficit",
+        "notes": "Passes when every pairwise observed order >= 0.",
+        "observed": 1.6084267074670973,
+        "passed": false,
+        "reference": 0.0,
+        "rel_error": null,
+        "rtol": 0.0,
+        "units": ""
+      },
+      {
+        "abs_error": 0.01268914,
+        "atol": 0.05,
+        "metric": "final_error",
+        "notes": "Passes when final-grid error <= 0.05.",
+        "observed": 0.01268914,
+        "passed": true,
+        "reference": 0.0,
+        "rel_error": null,
+        "rtol": 0.0,
+        "units": ""
+      }
+    ],
+    "max_abs_error": 1.6084267074670973,
+    "max_rel_error": 0.0,
+    "passed": false,
+    "source": "tracked Cyclone resolution subset"
+  },
+  "min_pairwise_order": -1.6084267074670973,
+  "pairwise_orders": [
+    -1.6084267074670973,
+    2.6567074667105186,
+    6.832152420489169
+  ],
+  "rows": [
+    {
+      "Nl": 6,
+      "Nm": 12,
+      "effective_step": 0.08333333333333333,
+      "error_for_gate": 0.16745605,
+      "gamma": 0.057018937,
+      "gamma_ref": 0.0684876,
+      "ky": 0.45000002,
+      "omega": 0.47434944,
+      "omega_ref": 0.41535741,
+      "rel_gamma": -0.16745605,
+      "rel_omega": 0.14202716,
+      "step_source": "1/Nm"
+    },
+    {
+      "Nl": 8,
+      "Nm": 16,
+      "effective_step": 0.0625,
+      "error_for_gate": 0.26598408,
+      "gamma": 0.086704211,
+      "gamma_ref": 0.0684876,
+      "ky": 0.45000002,
+      "omega": 0.41405505,
+      "omega_ref": 0.41535741,
+      "rel_gamma": 0.26598408,
+      "rel_omega": -0.0031355248,
+      "step_source": "1/Nm"
+    },
+    {
+      "Nl": 12,
+      "Nm": 24,
+      "effective_step": 0.041666666666666664,
+      "error_for_gate": 0.090580076,
+      "gamma": 0.074691212,
+      "gamma_ref": 0.0684876,
+      "ky": 0.45000002,
+      "omega": 0.44892843,
+      "omega_ref": 0.41535741,
+      "rel_gamma": 0.090580076,
+      "rel_omega": 0.080824426,
+      "step_source": "1/Nm"
+    },
+    {
+      "Nl": 16,
+      "Nm": 32,
+      "effective_step": 0.03125,
+      "error_for_gate": 0.01268914,
+      "gamma": 0.069356649,
+      "gamma_ref": 0.0684876,
+      "ky": 0.45000002,
+      "omega": 0.40551784,
+      "omega_ref": 0.41535741,
+      "rel_gamma": 0.01268914,
+      "rel_omega": -0.023689416,
+      "step_source": "1/Nm"
+    }
+  ],
+  "source": "tracked Cyclone resolution subset",
+  "step_sizes": [
+    0.08333333333333333,
+    0.0625,
+    0.041666666666666664,
+    0.03125
+  ]
+}

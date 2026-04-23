@@ -134,6 +134,14 @@ the branch-continuity lane open: the largest adjacent growth-rate jump is about
 ``0.60`` against the strict ``0.50`` threshold, while the corresponding
 frequency-jump and successive-overlap checks pass.
 
+Observed-order convergence tables should also gate both the asymptotic finest
+refinement and the full set of pairwise refinement orders. The generic
+``tools/generate_observed_order_gate.py`` path now records this policy in JSON.
+The tracked Cyclone resolution pilot
+``docs/_static/cyclone_resolution_observed_order.json`` is open because the
+coarse-to-mid pair has a negative observed order, even though the final-grid
+relative growth-rate error is about ``1.3e-2``.
+
 Stellarator Linear
 ------------------
 

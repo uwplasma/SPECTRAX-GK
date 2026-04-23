@@ -141,6 +141,13 @@ only with parity and coverage gates attached to each extraction.
      convergence gate, and the remaining step is wiring the observed-order and
      branch-continuity helpers into the relevant velocity-space and
      branch-following artifact refresh scripts.
+   - `tools/generate_observed_order_gate.py` now provides the generic
+     CSV-backed observed-order artifact path and writes the first tracked
+     Cyclone resolution pilot to
+     `docs/_static/cyclone_resolution_observed_order.json/png`. The tightened
+     gate checks both final-pair order and all pairwise orders, so the current
+     pilot is honestly marked open due a nonmonotone coarse-to-mid refinement
+     even though the final-grid relative growth-rate error is small.
    - KBM branch-following now has a `--branch-summary-json` path in
      `tools/compare_gx_kbm.py`, so selected branch tables can record adjacent
      `gamma`/`omega` jump gates and successive eigenfunction-overlap gates.
