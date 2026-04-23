@@ -26,6 +26,8 @@ from compare_gx_kbm import (
 from spectraxgk.analysis import extract_eigenfunction
 from spectraxgk.benchmarking import (
     compare_eigenfunctions,
+    eigenfunction_gate_report,
+    gate_report_to_dict,
     infer_triple_dealiased_ny,
     late_time_window,
     save_eigenfunction_reference_bundle,
@@ -34,6 +36,11 @@ from spectraxgk.benchmarks import run_kbm_linear
 from spectraxgk.plotting import eigenfunction_reference_overlay_figure
 
 ROOT = Path(__file__).resolve().parents[1]
+
+KBM_EIGENFUNCTION_GATE_TOLERANCES = {
+    "min_overlap": 0.95,
+    "max_relative_l2": 0.25,
+}
 
 
 def _parse_args() -> argparse.Namespace:
@@ -109,6 +116,16 @@ def _steps_for_fit_window(*, fit_tmax: float, dt: float, fit_padding: float, sam
     if rem != 0:
         steps += stride - rem
     return steps
+
+
+def _kbm_eigenfunction_gate_report(metrics):
+    return eigenfunction_gate_report(
+        metrics,
+        case="kbm_linear_eigenfunction_ky0p3000",
+        source="GX raw eigenfunction bundle",
+        min_overlap=float(KBM_EIGENFUNCTION_GATE_TOLERANCES["min_overlap"]),
+        max_relative_l2=float(KBM_EIGENFUNCTION_GATE_TOLERANCES["max_relative_l2"]),
+    )
 
 
 def main() -> None:
@@ -197,6 +214,7 @@ def main() -> None:
     )
     mode_sp = _normalize_mode(theta_gx, np.asarray(mode_sp, dtype=np.complex128))
     metrics = compare_eigenfunctions(mode_sp, mode_gx)
+    validation_gate_report = _kbm_eigenfunction_gate_report(metrics)
 
     args.out_csv.parent.mkdir(parents=True, exist_ok=True)
     pd.DataFrame(
@@ -238,6 +256,10 @@ def main() -> None:
                 "overlap": float(metrics.overlap),
                 "relative_l2": float(metrics.relative_l2),
                 "phase_shift": float(metrics.phase_shift),
+                "gate_tolerances": dict(KBM_EIGENFUNCTION_GATE_TOLERANCES),
+                "gate_report": gate_report_to_dict(validation_gate_report),
+                "eigenfunction_gate_passed": bool(validation_gate_report.passed),
+                "validation_status": "closed" if validation_gate_report.passed else "open",
                 "t_final": float(t_arr[-1]),
                 "nsamples": int(t_arr.size),
             },

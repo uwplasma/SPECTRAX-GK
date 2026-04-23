@@ -29,7 +29,7 @@ Core Validation Figures
    * - Eigenfunction validation panel
      - ``tools/plot_eigenfunction_overlap_summary.py`` and ``tools/plot_eigenfunction_reference_overlay.py``
      - Open
-     - first shipped overlap artifact is ``docs/_static/kbm_eigenfunction_overlap_summary.png``; raw GX bundles now exist for KBM and W7-X under ``docs/_static/reference_modes/`` and the first bounded-cost raw overlay is ``docs/_static/kbm_eigenfunction_reference_overlay_ky0p3000.png``. The reproducible generator for that artifact is now ``tools/generate_kbm_reference_overlay.py``. The raw KBM overlay remains an open validation figure because the bounded exact-contract extraction still shows only about ``0.63`` overlap and ``0.79`` relative ``L^2`` mismatch.
+     - first shipped overlap artifact is ``docs/_static/kbm_eigenfunction_overlap_summary.png``; raw GX bundles now exist for KBM and W7-X under ``docs/_static/reference_modes/`` and the first bounded-cost raw overlay is ``docs/_static/kbm_eigenfunction_reference_overlay_ky0p3000.png``. The reproducible generator for that artifact is now ``tools/generate_kbm_reference_overlay.py`` and writes a JSON gate report with ``overlap >= 0.95`` and ``relative L^2 <= 0.25`` requirements. The raw KBM overlay remains an open validation figure because the bounded exact-contract extraction still shows only about ``0.63`` overlap and ``0.79`` relative ``L^2`` mismatch.
    * - Nonlinear transport panel
      - ``tools/make_gx_summary_panel.py`` / ``tools/make_gx_publication_panel.py``
      - Open

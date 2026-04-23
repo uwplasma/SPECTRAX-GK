@@ -118,7 +118,10 @@ produces approximately ``0.63`` normalized overlap and ``0.79`` relative
 ``L^2`` mismatch against the frozen GX raw mode at ``k_y \approx 0.3`` when
 run with the exact KBM grid contract, the selected growth-fit window, and a
 late-time eigenfunction tail window. This indicates the bounded short-horizon
-raw overlay is still not converged enough for paper use.
+raw overlay is still not converged enough for paper use. The generator now
+writes a machine-readable gate report with ``overlap >= 0.95`` and
+``relative L^2 <= 0.25`` as the acceptance policy for closing this raw-overlay
+artifact.
 
 Stellarator Linear
 ------------------

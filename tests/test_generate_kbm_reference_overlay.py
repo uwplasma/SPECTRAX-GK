@@ -6,6 +6,8 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
+from spectraxgk.benchmarking import EigenfunctionComparisonMetrics
+
 
 def _load_tool_module():
     path = Path("/Users/rogeriojorge/local/SPECTRAX-GK/tools/generate_kbm_reference_overlay.py")
@@ -58,3 +60,17 @@ def test_steps_for_fit_window_respects_stride_alignment() -> None:
 
     assert steps == 1020
     assert steps % 2 == 0
+
+
+def test_kbm_eigenfunction_gate_report_uses_strict_publication_thresholds() -> None:
+    mod = _load_tool_module()
+
+    report = mod._kbm_eigenfunction_gate_report(
+        EigenfunctionComparisonMetrics(overlap=0.63, relative_l2=0.79, phase_shift=0.0)
+    )
+
+    assert report.case == "kbm_linear_eigenfunction_ky0p3000"
+    assert report.source == "GX raw eigenfunction bundle"
+    assert report.passed is False
+    assert mod.KBM_EIGENFUNCTION_GATE_TOLERANCES["min_overlap"] == 0.95
+    assert mod.KBM_EIGENFUNCTION_GATE_TOLERANCES["max_relative_l2"] == 0.25

@@ -11,11 +11,13 @@ from spectraxgk.benchmarking import (
     _explicit_time_window,
     _leading_window,
     GateReport,
+    EigenfunctionComparisonMetrics,
     LateTimeLinearMetrics,
     NonlinearWindowMetrics,
     ScalarGateResult,
     ZonalFlowResponseMetrics,
     compare_eigenfunctions,
+    eigenfunction_gate_report,
     evaluate_scalar_gate,
     estimate_observed_order,
     gate_report,
@@ -333,6 +335,47 @@ def test_nonlinear_and_zonal_gate_reports_cover_publication_metrics() -> None:
         "gam_frequency",
         "gam_damping_rate",
     ]
+
+
+def test_eigenfunction_gate_report_handles_open_and_closed_artifacts() -> None:
+    closed = eigenfunction_gate_report(
+        EigenfunctionComparisonMetrics(overlap=0.97, relative_l2=0.12, phase_shift=0.4),
+        case="kbm_eigenfunction",
+        source="GX",
+        min_overlap=0.95,
+        max_relative_l2=0.25,
+    )
+    assert closed.passed is True
+    assert [gate.metric for gate in closed.gates] == [
+        "eigenfunction_overlap",
+        "eigenfunction_relative_l2",
+    ]
+
+    open_report = eigenfunction_gate_report(
+        EigenfunctionComparisonMetrics(overlap=0.63, relative_l2=0.79, phase_shift=0.0),
+        case="kbm_eigenfunction",
+        source="GX",
+        min_overlap=0.95,
+        max_relative_l2=0.25,
+    )
+    assert open_report.passed is False
+    assert open_report.gates[0].passed is False
+    assert open_report.gates[1].passed is False
+
+    with pytest.raises(ValueError):
+        eigenfunction_gate_report(
+            EigenfunctionComparisonMetrics(overlap=1.0, relative_l2=0.0, phase_shift=0.0),
+            case="bad",
+            source="GX",
+            min_overlap=1.2,
+        )
+    with pytest.raises(ValueError):
+        eigenfunction_gate_report(
+            EigenfunctionComparisonMetrics(overlap=1.0, relative_l2=0.0, phase_shift=0.0),
+            case="bad",
+            source="GX",
+            max_relative_l2=-1.0,
+        )
 
 
 def test_zonal_flow_response_metrics_recover_residual_and_gam_envelope() -> None:
