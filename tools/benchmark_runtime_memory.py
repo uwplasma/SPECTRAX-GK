@@ -58,8 +58,10 @@ class RuntimeBenchRun:
     command: str
     cwd: str
     host: str | None = None
+    profile_command: str | None = None
     enabled: bool = True
     wrap_time: bool = True
+    profile_wrap_time: bool = False
 
 
 def _resolve(path: str | Path) -> Path:
@@ -84,8 +86,12 @@ def _load_manifest(path: Path) -> list[RuntimeBenchRun]:
                 command=str(item["command"]),
                 cwd=str(item.get("cwd", "{root}")),
                 host=None if item.get("host") in (None, "") else str(item.get("host")),
+                profile_command=None
+                if item.get("profile_command") in (None, "")
+                else str(item.get("profile_command")),
                 enabled=bool(item.get("enabled", True)),
                 wrap_time=bool(item.get("wrap_time", True)),
+                profile_wrap_time=bool(item.get("profile_wrap_time", False)),
             )
         )
     return runs
@@ -149,35 +155,48 @@ def _write_row_logs(log_dir: Path, row: dict[str, object]) -> dict[str, str]:
     return {"stdout_log": str(stdout_path), "stderr_log": str(stderr_path)}
 
 
+def _execute_command(
+    *,
+    host: str | None,
+    cwd: str,
+    command: str,
+    wrap_time: bool,
+) -> subprocess.CompletedProcess[str]:
+    rendered_host = _render(host) if host else None
+    rendered_cwd = _render(cwd)
+    rendered_command = _render(command)
+    if rendered_host:
+        shell_cmd = rendered_command
+        if wrap_time:
+            prefix = " ".join(shlex.quote(x) for x in _time_wrapper_prefix("linux"))
+            shell_cmd = f"{prefix} /bin/sh -lc {shlex.quote(rendered_command)}"
+        remote_cmd = f"cd {shlex.quote(rendered_cwd)} && {shell_cmd}"
+        return subprocess.run(
+            ["ssh", "-x", rendered_host, remote_cmd],
+            capture_output=True,
+            text=True,
+        )
+
+    resolved_cwd = _resolve(rendered_cwd)
+    shell_cmd = rendered_command
+    if wrap_time:
+        prefix = " ".join(shlex.quote(x) for x in _time_wrapper_prefix())
+        shell_cmd = f"{prefix} /bin/sh -lc {shlex.quote(rendered_command)}"
+    return subprocess.run(
+        shell_cmd,
+        shell=True,
+        cwd=resolved_cwd,
+        capture_output=True,
+        text=True,
+    )
+
+
 def _run_command(run: RuntimeBenchRun) -> dict[str, object]:
     rendered_host = _render(run.host) if run.host else None
     rendered_cwd = _render(run.cwd)
     rendered_command = _render(run.command)
     start = time.perf_counter()
-    if rendered_host:
-        shell_cmd = rendered_command
-        if run.wrap_time:
-            prefix = " ".join(shlex.quote(x) for x in _time_wrapper_prefix("linux"))
-            shell_cmd = f"{prefix} /bin/sh -lc {shlex.quote(rendered_command)}"
-        remote_cmd = f"cd {shlex.quote(rendered_cwd)} && {shell_cmd}"
-        proc = subprocess.run(
-            ["ssh", "-x", rendered_host, remote_cmd],
-            capture_output=True,
-            text=True,
-        )
-    else:
-        resolved_cwd = _resolve(rendered_cwd)
-        shell_cmd = rendered_command
-        if run.wrap_time:
-            prefix = " ".join(shlex.quote(x) for x in _time_wrapper_prefix())
-            shell_cmd = f"{prefix} /bin/sh -lc {shlex.quote(rendered_command)}"
-        proc = subprocess.run(
-            shell_cmd,
-            shell=True,
-            cwd=resolved_cwd,
-            capture_output=True,
-            text=True,
-        )
+    proc = _execute_command(host=run.host, cwd=run.cwd, command=run.command, wrap_time=run.wrap_time)
     elapsed = time.perf_counter() - start
     combined = (proc.stdout or "") + "\n" + (proc.stderr or "")
     peak_rss_mb = _parse_peak_rss_mb(combined)
@@ -197,6 +216,29 @@ def _run_command(run: RuntimeBenchRun) -> dict[str, object]:
         "stderr": proc.stderr,
     }
     row.update(_parse_profile_times(combined))
+
+    if proc.returncode == 0 and run.profile_command:
+        profile_proc = _execute_command(
+            host=run.host,
+            cwd=run.cwd,
+            command=run.profile_command,
+            wrap_time=run.profile_wrap_time,
+        )
+        profile_combined = (profile_proc.stdout or "") + "\n" + (profile_proc.stderr or "")
+        row["stdout"] = (
+            f"{proc.stdout}\n--- profile stdout ---\n{profile_proc.stdout}"
+            if (proc.stdout or profile_proc.stdout)
+            else ""
+        )
+        row["stderr"] = (
+            f"{proc.stderr}\n--- profile stderr ---\n{profile_proc.stderr}"
+            if (proc.stderr or profile_proc.stderr)
+            else ""
+        )
+        row.update(_parse_profile_times(profile_combined))
+        if profile_proc.returncode != 0:
+            row["status"] = "failed"
+            row["returncode"] = profile_proc.returncode
     return row
 
 

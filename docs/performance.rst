@@ -222,6 +222,9 @@ The manifest is designed to hold three rows per case:
 Each row may also carry a ``host`` so the same runner can execute local and
 remote measurements through one manifest while still collecting wall time and
 peak RSS from the target machine.
+Rows may also carry a ``profile_command``. When that secondary command succeeds
+and prints ``warmup_time_s=...`` / ``run_time_s=...``, the runner merges those
+warm measurements back into the same CSV/JSON summary row as the cold pass.
 If a profiling command prints ``warmup_time_s=...`` or ``run_time_s=...``, the
 runner also records those fields in the CSV/JSON summary so cold and warm JAX
 timings can be tracked without a separate sidecar note.
@@ -283,14 +286,14 @@ measured:
 
 .. code-block:: text
 
-   Cyclone nonlinear: warmup_time_s=33.251  run_time_s=14.428
-   KBM nonlinear:     warmup_time_s=24.005  run_time_s= 9.271
+   Cyclone nonlinear: warmup_time_s=33.957  run_time_s=15.054
+   KBM nonlinear:     warmup_time_s=27.485  run_time_s= 9.725
 
 Compared with the cold runtime panel rows:
 
-- Cyclone nonlinear GPU: ``35.33 s`` in the shipped panel, versus ``14.43 s``
+- Cyclone nonlinear GPU: ``38.27 s`` in the shipped panel, versus ``15.05 s``
   for the second run on the same compiled executable.
-- KBM nonlinear GPU: ``43.74 s`` in the shipped panel, versus ``9.27 s`` for
+- KBM nonlinear GPU: ``44.33 s`` in the shipped panel, versus ``9.73 s`` for
   the second run on the same compiled executable.
 
 This changes the optimization reading:
@@ -307,6 +310,52 @@ summary input.
 
 The highest-value performance work for these short nonlinear lanes is therefore
 compile/startup reduction and executable reuse, not just per-step kernel work.
+
+Startup phase profiler
+----------------------
+
+For cold-start deep dives, use the dedicated startup profiler:
+
+.. code-block:: bash
+
+   python tools/profile_runtime_startup.py \
+     --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml \
+     --ky 0.3 --Nl 4 --Nm 8 --compile-steps 1 \
+     --json-out tools_out/startup_cyclone_gpu.json \
+     --csv-out tools_out/startup_cyclone_gpu.csv
+
+The profiler breaks the cold path into the main setup and first-compile phases:
+
+- runtime config load
+- geometry resolution
+- grid/default construction
+- parameter and term setup
+- initial-condition construction
+- linear-cache construction
+- first field solve compile+execute
+- first linear/full RHS compile+execute
+- first nonlinear integrator compile+execute
+
+It supports ``--trace-dir`` and ``--memory-profile`` for XProf/Perfetto
+inspection with phase-level annotations, and ``--debug-log-cache`` /
+``--explain-cache-misses`` for JAX cache diagnostics when a repeated compile
+path looks suspicious.
+
+The current ``office`` GPU startup profiles for the shipped short nonlinear
+cases show the same dominant structure:
+
+- Cyclone nonlinear startup total: ``41.47 s``
+- KBM nonlinear startup total: ``32.23 s``
+- dominant phases in both cases:
+
+  - ``compile_first_integrator_run``: ``24.82 s`` (Cyclone), ``19.28 s`` (KBM)
+  - ``build_linear_cache``: ``7.57 s`` (Cyclone), ``7.73 s`` (KBM)
+  - ``compile_first_linear_rhs`` / ``compile_first_full_rhs``: another
+    ``3.6 + 3.6 s`` (Cyclone) or ``1.7 + 1.7 s`` (KBM)
+
+So the next high-value performance work is no longer the analytic geometry
+startup path or the collision prefactor path; it is cache-construction cost and
+the first compiled nonlinear integrator path.
 
 Cached basis indices
 --------------------
