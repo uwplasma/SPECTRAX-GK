@@ -340,6 +340,11 @@ It supports ``--trace-dir`` and ``--memory-profile`` for XProf/Perfetto
 inspection with phase-level annotations, and ``--debug-log-cache`` /
 ``--explain-cache-misses`` for JAX cache diagnostics when a repeated compile
 path looks suspicious.
+By default the trace tools now start JAX profiling with
+``python_tracer_level=0`` and ``host_tracer_level=0``. On the lightweight
+``office`` environment this avoids the optional TensorFlow Python-hook import
+path, so traces are emitted cleanly without installing TensorFlow just to
+silence profiler startup noise.
 
 The current ``office`` GPU startup profiles for the shipped short nonlinear
 cases show the same dominant structure:
@@ -356,6 +361,30 @@ cases show the same dominant structure:
 So the next high-value performance work is no longer the analytic geometry
 startup path or the collision prefactor path; it is cache-construction cost and
 the first compiled nonlinear integrator path.
+
+To break the cache-construction lump down further, use:
+
+.. code-block:: bash
+
+   python tools/profile_linear_cache_build.py \
+     --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml \
+     --Nl 4 --Nm 8 \
+     --json-out tools_out/linear_cache_cyclone_gpu.json \
+     --csv-out tools_out/linear_cache_cyclone_gpu.csv
+
+The current ``office`` GPU decomposition for the shipped Cyclone short
+nonlinear lane is:
+
+- total measured decomposition: ``8.19 s``
+- dominant subphases:
+
+  - ``collision_and_damping_cache``: ``2.71 s``
+  - ``gyro_bessel_cache``: ``1.30 s``
+  - ``laguerre_cache``: ``1.13 s``
+  - ``kperp_and_drifts``: ``0.79 s``
+
+That means the next cache-build optimization work should start with collision
+and damping array construction, then the gyro/Laguerre cache path.
 
 Cached basis indices
 --------------------

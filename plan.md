@@ -2193,6 +2193,18 @@ Current nonlinear-lane status at the handoff point:
     - next runtime-performance tranche should therefore decompose
       `build_linear_cache` and the first nonlinear integrator compile path,
       not geometry/default setup
+  - the `office` profiler environment is now fixed without adding TensorFlow:
+    trace tools default to `python_tracer_level=0` and `host_tracer_level=0`,
+    which removes the optional TensorFlow profiler-hook import noise while still
+    emitting `.trace.json.gz` and `.xplane.pb` artifacts
+  - the first `build_linear_cache` decomposition on `office` GPU for the shipped
+    Cyclone short nonlinear case is now available:
+    - `collision_and_damping_cache`: `2.71 s`
+    - `gyro_bessel_cache`: `1.30 s`
+    - `laguerre_cache`: `1.13 s`
+    - `kperp_and_drifts`: `0.79 s`
+    - next cache-build optimization should begin with collision/damping array
+      construction, then the gyro/Laguerre cache path
     split profile
   - concrete next optimization target: reduce the remaining compile/startup
     cost beyond the collision prefactor path, while keeping the current cold
