@@ -11,6 +11,7 @@ from spectraxgk.benchmarking import estimate_observed_order
 from spectraxgk.linear import (
     LinearParams,
     LinearTerms,
+    _is_tracer,
     _as_species_array,
     _build_implicit_operator,
     _build_linked_end_damping_profile,
@@ -22,6 +23,7 @@ from spectraxgk.linear import (
     _integrate_linear_implicit_cached,
     integrate_linear,
     integrate_linear_diagnostics,
+    lenard_bernstein_eigenvalues,
     linear_terms_to_term_config,
     term_config_to_linear_terms,
 )
@@ -53,6 +55,16 @@ def test_as_species_array_and_preconditioner_resolution() -> None:
     assert _resolve_implicit_preconditioner("  Damping ") == "damping"
     fn = lambda x: x
     assert _resolve_implicit_preconditioner(fn) is fn
+
+
+def test_is_tracer_and_lenard_bernstein_eigenvalues() -> None:
+    assert _is_tracer(1.0) is False
+    traced_flag = jax.jit(lambda x: jnp.asarray(1 if _is_tracer(x) else 0, dtype=jnp.int32))(1.0)
+    assert int(traced_flag) == 1
+
+    expected = np.asarray([[0.0, 0.3, 0.6], [0.7, 1.0, 1.3]], dtype=np.float32)
+    got = np.asarray(lenard_bernstein_eigenvalues(2, 3, nu_hermite=0.3, nu_laguerre=0.7), dtype=np.float32)
+    np.testing.assert_allclose(got, expected)
 
 
 def test_linear_params_and_terms_roundtrip() -> None:
