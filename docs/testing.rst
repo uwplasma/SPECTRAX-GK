@@ -12,6 +12,26 @@ to be:
 - **deterministic**: no stochastic outcomes or tolerance drift
 - **future-proof**: targeted at invariants and well-posed regressions
 
+Current testing target
+----------------------
+
+The package-wide target is 95% coverage, but the coverage number is a guardrail
+rather than the scientific objective. New tests should be accepted because they
+protect one of the following contracts:
+
+- an implemented equation or reduced physical limit;
+- a numerical method, convergence rate, or conservation/free-energy identity;
+- a geometry, normalization, or diagnostic convention;
+- a benchmark artifact and its documented fit/window policy;
+- an autodiff contract checked against finite differences, tangent tests, or an
+  adjoint consistency relation;
+- a regression for a bug found in parity, restart, runtime, plotting, or
+  geometry-adapter work.
+
+Long reference-code runs and office/GPU comparisons should not be hidden inside
+the default local suite. They should live behind explicit manifests or CI/manual
+lanes so local tests remain fast enough for routine development.
+
 Test categories
 ---------------
 
