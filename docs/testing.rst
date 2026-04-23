@@ -164,6 +164,13 @@ same JSON-ready acceptance convention.
 ``tools/compare_gx_kbm.py --branch-summary-json`` wires that convention into
 the KBM branch-following workflow by summarizing adjacent ``gamma``/``omega``
 jumps and successive eigenfunction-overlap continuity for the selected branch.
+``tools/generate_kbm_branch_gate_summary.py`` provides the corresponding
+no-rerun artifact path: it reads the existing selected KBM candidate table and
+writes ``docs/_static/kbm_branch_gate_summary.json`` with the same strict gate
+schema. The current frozen summary intentionally remains open because the
+largest adjacent growth-rate jump is still slightly above the default
+``0.5`` branch-continuity threshold, while the frequency and overlap gates
+pass.
 
 The diagnostics stream now also carries ``Diagnostics/Phi_zonal_mode_kxt``, a
 signed complex zonal-potential history reduced over ``z`` with the same volume
