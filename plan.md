@@ -96,6 +96,10 @@ Recent work has closed real issues, not just documentation:
   residual/frequency/damping metrics, with tests and API documentation; the
   Merlo/Miller zonal-response generator is now the first artifact script to
   write this gate report into its JSON metadata.
+- the first refactor slice in the post-audit ship plan moved validation gate
+  dataclasses and scalar acceptance-policy helpers into
+  `src/spectraxgk/validation_gates.py`, while keeping the old
+  `spectraxgk.benchmarking` and top-level compatibility exports intact.
 
 The source tree is now organized around a credible target architecture:
 
@@ -113,6 +117,26 @@ The source tree is now organized around a credible target architecture:
 The remaining structure issue is that several large modules still mix physics,
 numerics, user I/O, and benchmark policy. The refactor should continue, but
 only with parity and coverage gates attached to each extraction.
+
+### Current open-lane ordering before merge/tag/ship
+
+The active pre-merge sequence is:
+
+1. code refactoring with behavior-preserving compatibility exports,
+2. better physics gates and validation artifacts,
+3. 95% package-wide coverage with literature-anchored tests,
+4. stronger multi-CPU and multi-GPU algorithms with numerical-identity gates,
+5. `vmec_jax` / `booz_xform_jax` integration for differentiable geometry,
+6. broader GX comparison examples and tracked reference artifacts,
+7. documentation expansion for physics, equations, numerics, examples, and
+   validation status,
+8. close manuscript validation lanes: KBM branch continuity, real Cyclone
+   velocity-space convergence, W7-X zonal response, W7-X fluctuation spectra,
+   nonlinear window-statistics acceptance, autodiff FD/tangent/UQ gates,
+   differentiable stellarator optimization, and nonlinear profiling/performance
+   improvements,
+9. merge to `main`, tag, publish, and ship only after the release branch has a
+   clean CI/CD and artifact-gate story.
 
 ### Best next steps by priority
 
