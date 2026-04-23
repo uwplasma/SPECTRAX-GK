@@ -161,8 +161,16 @@ Frozen artifact paths for the currently closed stellarator linear lanes:
 
 - ``docs/_static/w7x_linear_t2_scan.csv``
 - ``docs/_static/hsx_linear_t2_scan.csv``
+- ``docs/_static/w7x_linear_t2_lastvalue.csv``
+- ``docs/_static/hsx_linear_t2_lastvalue.csv``
 - ``docs/_static/reference_modes/w7x_linear_gx_ky0p3000.npz``
 - ``docs/_static/benchmark_core_linear_atlas.png``
+
+For W7-X, the whole-window scan and the late-time last-value reduction tell the
+same story. For HSX, the whole-window ``mean_rel_gamma`` metric is kept as an
+honest near-marginal stress signal, but the late-time closure should be read
+from ``docs/_static/hsx_linear_t2_lastvalue.csv`` because the final
+``(gamma, omega)`` values are much tighter than the whole-window average.
 
 Nonlinear Validation
 --------------------

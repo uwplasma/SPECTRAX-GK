@@ -16,6 +16,9 @@ def test_refresh_manifest_loads_jobs() -> None:
     commands = {job.name: job.command for job in jobs}
     assert commands["imported-linear-w7x"].startswith("JAX_PLATFORMS=cpu ")
     assert commands["imported-linear-hsx"].startswith("JAX_PLATFORMS=cpu ")
+    outputs = {job.name: job.outputs for job in jobs}
+    assert "docs/_static/w7x_linear_t2_lastvalue.csv" in outputs["imported-linear-w7x"]
+    assert "docs/_static/hsx_linear_t2_lastvalue.csv" in outputs["imported-linear-hsx"]
 
 
 def test_refresh_job_selection_filters_named_jobs(tmp_path: Path) -> None:
