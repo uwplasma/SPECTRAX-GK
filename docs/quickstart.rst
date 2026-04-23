@@ -35,6 +35,12 @@ standard two-panel linear quickstart view: the log-scale ``|\phi|^2`` history
 with fitted ``(\gamma, \omega)`` on the left, and the normalized real/imaginary
 eigenfunction on the right.
 
+When progress output is enabled (for example on a TTY or with the explicit
+progress flags), the executable prints live status lines with step/time
+progress, wall elapsed time, and an estimated wall-clock time remaining. Long
+adaptive nonlinear runs also report chunk-level elapsed/ETA updates at the
+runtime layer.
+
 When ``--out`` is provided for runtime-configured single-point runs, the
 executable writes a JSON summary plus sidecar time-series/state artifacts using
 the supplied path as a prefix.
