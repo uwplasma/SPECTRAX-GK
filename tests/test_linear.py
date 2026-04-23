@@ -248,6 +248,19 @@ def test_collisions_include_gx_conservation_correction():
     assert jnp.allclose(out[0, 0, 2, 0, 0, 0], 5.0)
 
 
+def test_collisions_contribution_accepts_low_rank_lb_lam():
+    H = jnp.ones((1, 1, 2, 1, 1, 1), dtype=jnp.complex64)
+    out = collisions_contribution(
+        H,
+        nu=jnp.array([0.5], dtype=jnp.float32),
+        lb_lam=jnp.array([[0.0, 1.0]], dtype=jnp.float32),
+        b=jnp.full((1, 1, 1, 1), 2.0, dtype=jnp.float32),
+        weight=jnp.asarray(1.0, dtype=jnp.float32),
+    )
+
+    np.testing.assert_allclose(np.asarray(out[0, 0, :, 0, 0, 0]), [-1.0, -1.5])
+
+
 def test_build_H_adds_bpar_to_m0():
     """Bpar term should enter H at m=0 with J_l + J_{l-1}."""
     G = jnp.zeros((1, 3, 2, 1, 1, 1))

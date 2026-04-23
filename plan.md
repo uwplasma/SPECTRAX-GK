@@ -2186,8 +2186,9 @@ Current nonlinear-lane status at the handoff point:
     `terms/linear_terms.py:272` no longer appears in the tracked Cyclone GPU
   - the new startup profiler now shows the remaining cold-path bottlenecks
     explicitly on `office` GPU:
-    - Cyclone startup total `41.47 s`, dominated by `compile_first_integrator_run`
-      (`24.82 s`) and `build_linear_cache` (`7.57 s`)
+    - Cyclone startup total `36.78 s` after the low-rank collision-cache pass,
+      dominated by `compile_first_integrator_run` (`22.39 s`) and
+      `build_linear_cache` (`6.92 s`)
     - KBM startup total `32.23 s`, dominated by `compile_first_integrator_run`
       (`19.28 s`) and `build_linear_cache` (`7.73 s`)
     - next runtime-performance tranche should therefore decompose
@@ -2199,13 +2200,16 @@ Current nonlinear-lane status at the handoff point:
     emitting `.trace.json.gz` and `.xplane.pb` artifacts
   - the first `build_linear_cache` decomposition on `office` GPU for the shipped
     Cyclone short nonlinear case is now available:
-    - `collision_and_damping_cache`: `2.71 s`
-    - `gyro_bessel_cache`: `1.30 s`
-    - `laguerre_cache`: `1.13 s`
-    - `kperp_and_drifts`: `0.79 s`
-    - next cache-build optimization should begin with collision/damping array
-      construction, then the gyro/Laguerre cache path
-    split profile
+    - low-rank collision caching reduced `collision_and_damping_cache` from
+      `2.71 s` to `2.20 s`
+    - the same pass reduced `build_linear_cache` from `7.74 s` to `6.92 s`
+    - updated dominant subphases are now:
+      - `gyro_bessel_cache`: `1.38 s`
+      - `laguerre_cache`: `0.96 s`
+      - `kperp_and_drifts`: `0.91 s`
+    - next cache-build optimization should therefore move to the gyro/Laguerre
+      cache path, while the broader startup path still needs first-integrator
+      compile-surface reduction
   - concrete next optimization target: reduce the remaining compile/startup
     cost beyond the collision prefactor path, while keeping the current cold
     wall-time panel for honest end-to-end reproducibility

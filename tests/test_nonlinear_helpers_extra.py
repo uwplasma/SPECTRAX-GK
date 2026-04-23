@@ -31,11 +31,11 @@ from spectraxgk.terms.config import FieldState, TermConfig
 
 
 def test_pack_resolved_diagnostics_and_fixed_mode_projector() -> None:
-    resolved = tuple(np.full((1,), i, dtype=float) for i in range(56))
+    resolved = tuple(np.full((1,), i, dtype=float) for i in range(57))
     packed = _pack_resolved_diagnostics(resolved)
     np.testing.assert_allclose(packed.Phi2_kxt, [0.0])
-    np.testing.assert_allclose(packed.Wapar_zst, [19.0])
-    np.testing.assert_allclose(packed.TurbulentHeating_zst, [55.0])
+    np.testing.assert_allclose(packed.Wapar_zst, [20.0])
+    np.testing.assert_allclose(packed.TurbulentHeating_zst, [56.0])
 
     projector = _make_fixed_mode_projector(
         jnp.arange(24, dtype=jnp.float32).reshape(1, 3, 2, 4),
@@ -83,6 +83,24 @@ def test_collision_damping_and_imex_operator_builder(monkeypatch) -> None:
     monkeypatch.setattr("spectraxgk.nonlinear.hypercollision_damping", lambda cache, params, dtype: jnp.ones_like(cache.lb_lam, dtype=dtype))
     squeezed = _collision_damping(cache6, SimpleNamespace(nu=0.4), TermConfig(collisions=1.0, hypercollisions=1.0), jnp.float32, squeeze_species=True)
     assert squeezed.shape == (2, 2, 1, 1, 1)
+
+    cache_low_rank = SimpleNamespace(
+        lb_lam=jnp.ones((2, 2), dtype=jnp.float32),
+        b=jnp.zeros((1, 1, 1, 1), dtype=jnp.float32),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.nonlinear.hypercollision_damping",
+        lambda cache, params, dtype: jnp.ones((1, 2, 2, 1, 1, 1), dtype=dtype),
+    )
+    squeezed_low_rank = _collision_damping(
+        cache_low_rank,
+        SimpleNamespace(nu=jnp.asarray([0.4], dtype=jnp.float32)),
+        TermConfig(collisions=1.0, hypercollisions=1.0),
+        jnp.float32,
+        squeeze_species=True,
+    )
+    assert squeezed_low_rank.shape == (2, 2, 1, 1, 1)
+    np.testing.assert_allclose(np.asarray(squeezed_low_rank), 1.4)
 
     monkeypatch.setattr(
         "spectraxgk.nonlinear._build_implicit_operator",
@@ -449,7 +467,10 @@ def test_explicit_gx_diagnostics_impl_applies_fixed_mode_collision_and_stride(mo
         )
 
     monkeypatch.setattr("spectraxgk.nonlinear.ensure_flux_tube_geometry_data", lambda geom, z: geom)
-    monkeypatch.setattr("spectraxgk.nonlinear.gx_volume_factors", lambda geom, grid: (jnp.asarray(1.0), jnp.asarray(1.0)))
+    monkeypatch.setattr(
+        "spectraxgk.nonlinear.gx_volume_factors",
+        lambda geom, grid: (jnp.ones((grid.z.size,), dtype=jnp.float32), jnp.asarray(1.0)),
+    )
     monkeypatch.setattr("spectraxgk.nonlinear._gx_omega_mode_mask", lambda grid, cache, **kwargs: jnp.ones((2, 1), dtype=bool))
     monkeypatch.setattr("spectraxgk.nonlinear._gx_linear_omega_max", lambda *args, **kwargs: np.array([0.0, 0.0, 0.0], dtype=float))
     monkeypatch.setattr("spectraxgk.nonlinear._gx_laguerre_vmax", lambda nl: 0.0)
@@ -638,7 +659,7 @@ def test_integrate_nonlinear_imex_cached_shape_mismatch_and_zero_nonlinear(monke
     )
     monkeypatch.setattr(
         "spectraxgk.nonlinear.assemble_rhs_cached_jit",
-        lambda G, cache, params, terms: (
+        lambda G, cache, params, terms, **kwargs: (
             jnp.zeros_like(G),
             FieldState(phi=jnp.zeros((1, 1, 2), dtype=jnp.complex64), apar=None, bpar=None),
         ),
