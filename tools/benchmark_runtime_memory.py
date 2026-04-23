@@ -129,6 +129,16 @@ def _parse_peak_rss_mb(text: str) -> float | None:
     return None
 
 
+def _parse_profile_times(text: str) -> dict[str, float]:
+    fields = ("warmup_time_s", "run_time_s")
+    out: dict[str, float] = {}
+    for field in fields:
+        match = re.search(rf"(?mi)(?:^|\s){re.escape(field)}=([-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)", text)
+        if match:
+            out[field] = float(match.group(1))
+    return out
+
+
 def _write_row_logs(log_dir: Path, row: dict[str, object]) -> dict[str, str]:
     log_dir.mkdir(parents=True, exist_ok=True)
     stem = f"{row['case']}__{row['backend']}"
@@ -171,7 +181,7 @@ def _run_command(run: RuntimeBenchRun) -> dict[str, object]:
     elapsed = time.perf_counter() - start
     combined = (proc.stdout or "") + "\n" + (proc.stderr or "")
     peak_rss_mb = _parse_peak_rss_mb(combined)
-    return {
+    row = {
         "case": run.case,
         "label": run.label,
         "backend": run.backend,
@@ -186,6 +196,8 @@ def _run_command(run: RuntimeBenchRun) -> dict[str, object]:
         "stdout": proc.stdout,
         "stderr": proc.stderr,
     }
+    row.update(_parse_profile_times(combined))
+    return row
 
 
 def _write_csv(path: Path, rows: list[dict[str, object]]) -> None:
@@ -197,6 +209,8 @@ def _write_csv(path: Path, rows: list[dict[str, object]]) -> None:
         "status",
         "returncode",
         "runtime_s",
+        "warmup_time_s",
+        "run_time_s",
         "peak_rss_mb",
         "host",
         "cwd",

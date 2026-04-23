@@ -152,6 +152,32 @@ def test_kx_effective_shear_shift():
     assert jnp.isclose(kx_eff[0], kx0[0] - shear[0] * ky[0])
 
 
+def test_twist_shift_params_for_analytic_geometry_avoids_metric_coeffs(monkeypatch: pytest.MonkeyPatch):
+    """Analytic twist/shift defaults should stay on host scalars."""
+
+    geom = SAlphaGeometry(q=1.4, s_hat=0.8, epsilon=0.0, alpha=0.2)
+    grid = GridConfig(Nx=4, Ny=4, Nz=16, Lx=6.28, Ly=6.28, boundary="linked", y0=10.0, ntheta=16, nperiod=2)
+
+    def _fail(self, _theta):
+        raise AssertionError("metric_coeffs should not be called for analytic twist-shift defaults")
+
+    monkeypatch.setattr(SAlphaGeometry, "metric_coeffs", _fail)
+
+    jtwist, x0 = twist_shift_params(geom, grid)
+
+    theta_min = -np.pi * (2 * int(grid.nperiod) - 1)
+    shear = float(geom.s_hat) * theta_min - float(geom.alpha) * np.sin(theta_min)
+    expected_fac = 2.0 * float(geom.s_hat) * (-float(geom.s_hat) * shear) / (float(geom.s_hat) ** 2)
+    expected_jtwist = int(round(expected_fac))
+    if expected_jtwist == 0:
+        expected_jtwist = 1
+    expected_y0 = float(grid.y0)
+    expected_x0 = expected_y0 * abs(expected_jtwist) / abs(expected_fac)
+
+    assert jtwist == expected_jtwist
+    assert x0 == pytest.approx(expected_x0)
+
+
 def test_geometry_tree_roundtrip():
     """Geometry pytree should round-trip through flatten/unflatten."""
     geom = SAlphaGeometry(q=1.5, s_hat=0.8, epsilon=0.2, R0=3.0, B0=1.8, alpha=0.1)
