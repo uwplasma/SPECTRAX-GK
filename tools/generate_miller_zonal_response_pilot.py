@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Generate a shaped-Miller signed zonal-response artifact.
+"""Generate a Merlo Case-III shaped-Miller signed zonal-response artifact.
 
-This uses a Merlo-style zonal relaxation setup with adiabatic electrons, zero
-gradients, ``k_y = 0``, GX-style ``source="phiext_full"`` plus ``phi_ext``, and
-a signed zonal observable ``Phi_zonal_mode_kxt`` written by the runtime path.
-The artifact is still kept as pending until cross-code and/or analytic closure
-is frozen, but the runtime contract itself is no longer ITG-like.
+This uses the Merlo et al. Phys. Plasmas 23, 032104 (2016) Case-III
+Rosenbluth-Hinton/GAM setup with adiabatic electrons, zero gradients,
+``k_y = 0``, ``k_x rho_i = 0.05``, a small initial density perturbation by
+default, and a signed zonal observable ``Phi_zonal_mode_kxt`` written by the
+runtime path.  The artifact is kept as pending unless the generated
+residual/GAM metrics land in the literature envelope.
 """
 
 from __future__ import annotations
@@ -24,6 +25,29 @@ from spectraxgk.runtime_artifacts import run_runtime_nonlinear_with_artifacts
 
 ROOT = Path(__file__).resolve().parents[1]
 
+MERLO_CASE_III_REFERENCE = {
+    "paper": "Merlo et al., Phys. Plasmas 23, 032104 (2016)",
+    "case": "III",
+    "q_s": 1.389,
+    "s_hat": 0.751,
+    "epsilon": 0.18,
+    "kappa": 1.4723,
+    "delta": -0.0070,
+    "D": -0.0139,
+    "a_MHD": 0.5425,
+    "dRgeom_dr": -0.1569,
+    "dkappa_dr": -0.0728,
+    "ddelta_dr": -0.0140,
+    "kx_rhoi": 0.05,
+    "ky": 0.0,
+    "tmax_R0_over_vi": 150.0,
+    # Values digitized/visually read from Figs. 12, 14, and 16; use as a
+    # paper-scale gate, not as a replacement for a frozen cross-code trace.
+    "residual_phi_over_phi0": 0.190,
+    "omega_gam_R0_over_vi": 2.24,
+    "gamma_gam_R0_over_vi": -0.17,
+}
+
 
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
@@ -36,8 +60,8 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--out-bundle",
         type=Path,
-        default=ROOT / "tools_out" / "zonal_response" / "miller_phiext_merlo_5000.out.nc",
-        help="GX-style runtime output bundle path.",
+        default=ROOT / "tools_out" / "zonal_response" / "miller_caseIII_initial_density_Nl4_Nm16_Nz32_dt001_t150.out.nc",
+        help="Runtime output bundle path.",
     )
     parser.add_argument(
         "--out-png",
@@ -75,6 +99,13 @@ def _nearest_kx_index(path: Path, target_kx: float) -> tuple[int, float]:
         raise ValueError(f"invalid kx grid in {path}")
     idx = int(np.argmin(np.abs(kx - float(target_kx))))
     return idx, float(kx[idx])
+
+
+def _setup_note(cfg) -> str:
+    source = str(getattr(cfg.expert, "source", "default")).strip().lower()
+    if source == "phiext_full":
+        return "external phiext_full source"
+    return f"initial {cfg.init.init_field} perturbation"
 
 
 def main() -> int:
@@ -124,7 +155,10 @@ def main() -> int:
         tail_fraction=float(args.tail_fraction),
         initial_fraction=float(args.initial_fraction),
     )
-    title = f"Shaped Miller zonal-response (ky={ky_target:.3f}, kx={kx_selected:.3f})"
+    setup_note = _setup_note(cfg)
+    ref_residual = float(MERLO_CASE_III_REFERENCE["residual_phi_over_phi0"])
+    residual_abs_error = abs(float(metrics.residual_level) - ref_residual)
+    title = f"Merlo Case III zonal-response (ky={ky_target:.3f}, kx={kx_selected:.3f})"
     fig, _axes = zonal_flow_response_figure(
         series.t,
         np.asarray(series.values, dtype=float),
@@ -132,6 +166,15 @@ def main() -> int:
         title=title,
         y_label="phase-aligned zonal potential",
     )
+    ax0 = _axes[0]
+    ax0.axhline(
+        ref_residual,
+        color="#7b2cbf",
+        linestyle=":",
+        linewidth=2.1,
+        label="Merlo Case III residual",
+    )
+    ax0.legend(loc="best", frameon=False)
 
     args.out_png.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(args.out_png, dpi=220, bbox_inches="tight")
@@ -165,14 +208,20 @@ def main() -> int:
                 "peak_count": int(metrics.peak_count),
                 "tmin": float(metrics.tmin),
                 "tmax": float(metrics.tmax),
+                "literature_reference": dict(MERLO_CASE_III_REFERENCE),
+                "residual_abs_error_vs_literature": float(residual_abs_error),
+                "setup": setup_note,
+                "validation_status": "open",
                 "notes": (
-                    "This is a Merlo-style shaped-Miller zonal-relaxation run "
-                    "built from the signed zonal observable Phi_zonal_mode_kxt with zero gradients, "
-                    "adiabatic electrons, and a GX-style phiext_full source contract. "
-                    "It remains pending until cross-code and/or analytic closure is frozen."
+                    "This is a Merlo Case-III shaped-Miller zonal-relaxation run "
+                    f"built from the signed zonal observable Phi_zonal_mode_kxt with zero gradients, "
+                    f"adiabatic electrons, and an {setup_note}. "
+                    "The literature reference values are read from Merlo et al. Figs. 12, 14, and 16; "
+                    "this artifact remains pending because the generated residual/GAM envelope is not yet "
+                    "within the literature acceptance band."
                 ),
                 "references": [
-                    "Merlo et al. 2016 shaped-tokamak collisionless GAM benchmark",
+                    "Merlo et al. 2016 shaped-tokamak collisionless GAM benchmark, Case III",
                     "W7-X stella/GENE benchmark 2022 for zonal-flow observable conventions",
                 ],
             },

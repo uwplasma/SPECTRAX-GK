@@ -127,13 +127,14 @@ The first case-specific shaped-Miller pilot for this lane is now reproducible
 through ``examples/benchmarks/runtime_miller_zonal_response.toml`` and
 ``tools/generate_miller_zonal_response_pilot.py``. Its frozen artifact lives in
 ``docs/_static/miller_zonal_response_pilot.png``. The current frozen artifact
-is a Merlo-style source-driven zonal-relaxation run with zero gradients,
-adiabatic electrons, ``k_xρ_i≈0.05``, and a GX-style ``phiext_full`` forcing
-contract. It remains open because the present trace is only weakly damped: the
-long run reaches ``t≈100`` with
-``ω_GAM≈0.66`` and about ``20`` envelope peaks, but it does **not** settle to
-a clean stationary residual window yet. That makes it a useful research-grade
-diagnostic artifact and a real stepping-stone, but not a closed
+is pinned to Merlo et al. Case III: adiabatic electrons, zero gradients,
+``k_xρ_i≈0.05``, ``k_y=0``, and an initial ion-density perturbation.  It uses
+``Nz=32``, ``Nl=4``, ``Nm=16``, ``dt=0.01``, and runs to ``t≈150`` with
+checkpoint chunking disabled so the residual window is not polluted by restart
+state handling.  It remains open: the current SPECTRAX-GK trace gives a late
+residual of about ``0.745`` with a broad oscillatory window, whereas the
+Merlo Case-III residual read from the published figures is about ``0.19``.
+The artifact is therefore a concrete failure/diagnostic lane, not a closed
 Rosenbluth-Hinton residual benchmark.
 
 Diffrax and nonlinear smoke tests

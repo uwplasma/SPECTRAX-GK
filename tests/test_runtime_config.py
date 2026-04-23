@@ -526,12 +526,24 @@ def test_cyclone_nonlinear_gx_miller_example_toml_loads() -> None:
     assert cfg.physics.adiabatic_electrons is True
 
 
-def test_miller_zonal_response_example_uses_phiext_runtime_contract() -> None:
+def test_miller_zonal_response_example_uses_merlo_case_iii_contract() -> None:
     path = Path(__file__).resolve().parents[1] / "examples" / "benchmarks" / "runtime_miller_zonal_response.toml"
 
     cfg, data = load_runtime_from_toml(path)
 
     assert isinstance(data, dict)
-    assert cfg.expert.source == "phiext_full"
-    assert cfg.expert.phi_ext == pytest.approx(1.0e-6)
-    assert cfg.init.init_amp == pytest.approx(0.0)
+    assert cfg.expert.source == "default"
+    assert cfg.expert.phi_ext == pytest.approx(0.0)
+    assert cfg.init.init_field == "density"
+    assert cfg.init.init_amp == pytest.approx(1.0e-6)
+    assert cfg.output.save_for_restart is False
+    assert cfg.geometry.q == pytest.approx(1.389)
+    assert cfg.geometry.s_hat == pytest.approx(0.751)
+    assert cfg.geometry.akappa == pytest.approx(1.4723)
+    assert cfg.geometry.tri == pytest.approx(-0.0070)
+    assert cfg.geometry.shift == pytest.approx(-0.1569)
+    assert cfg.grid.Nz == 32
+    assert data["run"]["Nl"] == 4
+    assert data["run"]["Nm"] == 16
+    assert data["run"]["kx"] == pytest.approx(0.05)
+    assert data["run"]["ky"] == pytest.approx(0.0)
