@@ -51,10 +51,20 @@ from spectraxgk.linear import (
 )
 from spectraxgk.gx_integrators import (
     ExplicitTimeConfig,
+    _apply_gx_state_mask,
     _gx_growth_mask,
     _gx_linear_omega_max,
     _gx_growth_rate_step,
+    _gx_eta_max,
+    _gx_geometry_maxima,
+    _gx_k_arrays,
+    _gx_m0_max_ntft,
+    _gx_midplane_index,
+    _gx_state_mask,
+    _gx_term_config,
+    _gx_zp_from_grid,
     _rk4_step,
+    _rk3_gx_step,
     integrate_linear_gx_diagnostics,
 )
 from spectraxgk.species import Species, build_linear_params
@@ -70,6 +80,25 @@ def test_gx_flux_fac_nonzero_matches_positive_ky_convention() -> None:
     pos = ky > 0.0
     assert np.allclose(fac[pos], 1.0)
     assert np.allclose(fac[~pos], 0.0)
+
+
+def test_gx_state_mask_and_apply_mask_remove_dealiased_and_zonal00_modes() -> None:
+    cache = SimpleNamespace(
+        ky=jnp.asarray([0.0, 0.25], dtype=jnp.float32),
+        kx=jnp.asarray([0.0, 0.5], dtype=jnp.float32),
+        dealias_mask=jnp.asarray([[1, 1], [0, 1]], dtype=bool),
+    )
+    state = jnp.asarray(np.arange(2 * 2 * 3, dtype=np.float32).reshape(2, 2, 3) + 1.0j, dtype=jnp.complex64)
+
+    mask = np.asarray(_gx_state_mask(cache))
+    expected_mask = np.asarray([[False, True], [False, True]])
+    np.testing.assert_array_equal(mask, expected_mask)
+
+    masked = np.asarray(_apply_gx_state_mask(state, cache))
+    np.testing.assert_allclose(masked[0, 0], 0.0)
+    np.testing.assert_allclose(masked[1, 0], 0.0)
+    np.testing.assert_allclose(masked[0, 1], np.asarray(state[0, 1]))
+    np.testing.assert_allclose(masked[1, 1], np.asarray(state[1, 1]))
 
 
 def test_gx_fac_mask_cached_matches_full_and_one_sided_conventions() -> None:
@@ -90,6 +119,56 @@ def test_gx_fac_mask_cached_matches_full_and_one_sided_conventions() -> None:
         np.asarray(_gx_fac_mask_cached(one_sided_cache, use_dealias=False)),
         np.asarray([[1.0, 1.0], [2.0, 2.0], [2.0, 2.0]], dtype=np.float32),
     )
+
+
+def test_gx_grid_helper_contracts_preserve_selected_ky_and_fft_ordering() -> None:
+    grid = SimpleNamespace(
+        kx=jnp.asarray([-1.0, 0.0, 1.0], dtype=jnp.float32),
+        ky=jnp.asarray([-0.3], dtype=jnp.float32),
+        z=jnp.asarray([-np.pi, -0.5 * np.pi, 0.0, 0.5 * np.pi], dtype=jnp.float32),
+        ky_mode=np.asarray([2], dtype=np.int32),
+    )
+
+    assert _gx_zp_from_grid(grid) == pytest.approx(1.0)
+    kx, ky, kz = _gx_k_arrays(grid)
+    np.testing.assert_allclose(kx, [-1.0, 0.0, 1.0])
+    np.testing.assert_allclose(ky, [0.3])
+    np.testing.assert_allclose(kz, [0.0, 1.0, 2.0, -1.0])
+
+    assert _gx_zp_from_grid(SimpleNamespace(z=jnp.asarray([0.0], dtype=jnp.float32))) == pytest.approx(1.0)
+
+
+def test_gx_eta_geometry_and_ntft_helpers_match_manual_limits() -> None:
+    assert _gx_eta_max(np.asarray([2.0, 4.0]), np.asarray([1.0, 0.0])) == pytest.approx(1.0e6)
+    assert _gx_midplane_index(1) == 0
+    assert _gx_midplane_index(4) == 3
+
+    cfg = CycloneBaseCase()
+    grid = build_spectral_grid(replace(cfg.grid, Nx=4, Ny=8, Nz=8, ntheta=None, nperiod=None, non_twist=True))
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    theta = np.asarray(grid.z, dtype=float)
+    cv_j, gb_j, cv0_j, gb0_j = geom.drift_coeffs(jnp.asarray(theta))
+    bmag_j = geom.bmag(jnp.asarray(theta))
+
+    maxima = _gx_geometry_maxima(geom, theta)
+    np.testing.assert_allclose(
+        np.asarray(maxima),
+        np.asarray(
+            [
+                np.max(np.abs(np.asarray(bmag_j))),
+                np.max(np.abs(np.asarray(cv_j))),
+                np.max(np.abs(np.asarray(gb_j))),
+                np.max(np.abs(np.asarray(cv0_j))),
+                np.max(np.abs(np.asarray(gb0_j))),
+                float(geom.gradpar()),
+            ]
+        ),
+    )
+
+    m0_max, cv0_max, gb0_max = _gx_m0_max_ntft(geom, grid, ky_max=0.0, vpar_max=2.0, muB_max=1.5)
+    assert m0_max == pytest.approx(0.0)
+    assert cv0_max == pytest.approx(float(np.max(np.abs(np.asarray(cv0_j)))))
+    assert gb0_max == pytest.approx(float(np.max(np.abs(np.asarray(gb0_j)))))
 
 
 def _small_setup():
@@ -855,6 +934,42 @@ def test_integrate_linear_gx_diagnostics_honors_rk3_method(
 
     assert calls
     assert set(calls) == {"rk3"}
+
+
+def test_gx_term_config_and_rk3_wrapper_delegate_to_linear_step(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    terms = LinearTerms(apar=0.0, bpar=1.0, hyperdiffusion=1.0)
+    assert _gx_term_config(terms) == linear_terms_to_term_config(terms)
+
+    captured: dict[str, object] = {}
+
+    def _fake_step(G, cache, params, term_cfg, dt, *, method):
+        captured["G"] = G
+        captured["cache"] = cache
+        captured["params"] = params
+        captured["term_cfg"] = term_cfg
+        captured["dt"] = dt
+        captured["method"] = method
+        return G, FieldState(phi=G[0, 0])
+
+    monkeypatch.setattr(gx_integrators, "_linear_explicit_step", _fake_step)
+
+    G0 = jnp.ones((1, 1, 1, 1, 1), dtype=jnp.complex64)
+    cache = SimpleNamespace()
+    params = object()
+    term_cfg = linear_terms_to_term_config(terms)
+
+    G_next, fields = _rk3_gx_step(G0, cache, params, term_cfg, 0.125)
+
+    assert captured["G"] is G0
+    assert captured["cache"] is cache
+    assert captured["params"] is params
+    assert captured["term_cfg"] is term_cfg
+    assert captured["dt"] == pytest.approx(0.125)
+    assert captured["method"] == "rk3"
+    assert G_next is G0
+    np.testing.assert_allclose(np.asarray(fields.phi), np.asarray(G0[0, 0]))
 
 
 def test_linear_explicit_step_applies_gx_post_step_mask(
