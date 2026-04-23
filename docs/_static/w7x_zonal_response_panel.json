@@ -81,7 +81,7 @@
       "tmin": 42.049644470214844
     }
   ],
-  "config": "/home/rjorge/spectrax-current-run/examples/benchmarks/runtime_w7x_zonal_response_vmec.toml",
+  "config": "examples/benchmarks/runtime_w7x_zonal_response_vmec.toml",
   "damping_method": "branchwise_extrema",
   "fit_window_tmax": 12.0,
   "frequency_method": "hilbert_phase",

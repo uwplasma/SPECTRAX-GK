@@ -144,6 +144,16 @@ def _setup_note(cfg) -> str:
     return f"initial {cfg.init.init_field} perturbation"
 
 
+def _artifact_path(path: Path | str) -> str:
+    """Return a stable repo-relative path for tracked metadata when possible."""
+
+    candidate = Path(path)
+    try:
+        return candidate.resolve().relative_to(ROOT.resolve()).as_posix()
+    except ValueError:
+        return str(path)
+
+
 def main() -> int:
     args = _parse_args()
     cfg, raw = load_runtime_from_toml(args.config)
@@ -273,8 +283,8 @@ def main() -> int:
     meta_out.write_text(
         json.dumps(
             {
-                "config": str(args.config),
-                "source_path": series.source_path,
+                "config": _artifact_path(args.config),
+                "source_path": _artifact_path(series.source_path),
                 "variable": "Phi_zonal_mode_kxt",
                 "kx_index": int(kx_index),
                 "kx_selected": float(kx_selected),

@@ -8,7 +8,7 @@ import pandas as pd
 
 
 def _load_tool_module():
-    path = Path("/Users/rogeriojorge/local/SPECTRAX-GK/tools/generate_kbm_branch_gate_summary.py")
+    path = Path(__file__).resolve().parents[1] / "tools" / "generate_kbm_branch_gate_summary.py"
     spec = importlib.util.spec_from_file_location("generate_kbm_branch_gate_summary", path)
     assert spec is not None
     assert spec.loader is not None

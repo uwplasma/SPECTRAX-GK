@@ -1,5 +1,5 @@
 {
-  "config": "/Users/rogeriojorge/local/SPECTRAX-GK/examples/benchmarks/runtime_miller_zonal_response.toml",
+  "config": "examples/benchmarks/runtime_miller_zonal_response.toml",
   "damping_method": "branchwise_extrema",
   "fit_tmax": 29.95297622680664,
   "fit_tmin": 0.004999999888241291,

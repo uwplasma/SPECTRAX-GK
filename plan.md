@@ -193,7 +193,7 @@ The active pre-merge sequence is:
    - `tools/make_validation_gate_index.py` now scans tracked JSON metadata and
      writes `docs/_static/validation_gate_index.json/csv/png`, giving the
      manuscript/docs one compact audit view of currently materialized release
-     gate reports. The current index has `8/8` release gates passed; explicitly
+     gate reports. The current index has `9/9` release gates passed; explicitly
      exploratory short-window diagnostics can opt out with
      `gate_index_include=false`.
 
@@ -2385,8 +2385,8 @@ Current nonlinear-lane status at the handoff point:
 
 1. Treat Cyclone Miller linear, HSX linear, KBM linear, Cyclone nonlinear, HSX nonlinear, and W7-X nonlinear as acceptable for the current pass unless refreshed data regresses.
 2. Full-GK ETG nonlinear is now closed as a shipped short-window pilot:
-   - `/Users/rogeriojorge/local/SPECTRAX-GK/examples/nonlinear/axisymmetric/runtime_etg_nonlinear.toml`
-   - `/Users/rogeriojorge/local/SPECTRAX-GK/examples/nonlinear/axisymmetric/etg_runtime_nonlinear.py`
+   - `examples/nonlinear/axisymmetric/runtime_etg_nonlinear.toml`
+   - `examples/nonlinear/axisymmetric/etg_runtime_nonlinear.py`
    - it is two-species, electrostatic, nonlinear, and intentionally separate from reduced `cETG`
    - the matched ETG box uses `y0 = 0.2`, `ky = 5.0`, and `Lx = 1.25`
    - the startup mismatch was traced to a GX input-contract detail:

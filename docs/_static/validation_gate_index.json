@@ -3,11 +3,11 @@
   "n_passed": 9,
   "n_reports": 9,
   "patterns": [
-    "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/**/*.json"
+    "docs/_static/**/*.json"
   ],
   "reports": [
     {
-      "artifact": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/nonlinear_cyclone_miller_gate_summary.json",
+      "artifact": "docs/_static/nonlinear_cyclone_miller_gate_summary.json",
       "case": "cyclone_miller_nonlinear_window",
       "failed_metrics": "",
       "max_abs_error": 0.0919106981841409,
@@ -18,7 +18,7 @@
       "source": "GX nonlinear diagnostics"
     },
     {
-      "artifact": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/nonlinear_cyclone_gate_summary.json",
+      "artifact": "docs/_static/nonlinear_cyclone_gate_summary.json",
       "case": "cyclone_nonlinear_long_window",
       "failed_metrics": "",
       "max_abs_error": 0.0955304396196123,
@@ -29,7 +29,7 @@
       "source": "GX nonlinear diagnostics"
     },
     {
-      "artifact": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/cyclone_resolution_observed_order.json",
+      "artifact": "docs/_static/cyclone_resolution_observed_order.json",
       "case": "cyclone_velocity_space_observed_order",
       "failed_metrics": "",
       "max_abs_error": 0.0011368721705758,
@@ -40,7 +40,7 @@
       "source": "office GPU Cyclone ky=0.30 time-path velocity-space sweep"
     },
     {
-      "artifact": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/nonlinear_hsx_gate_summary.json",
+      "artifact": "docs/_static/nonlinear_hsx_gate_summary.json",
       "case": "hsx_nonlinear_window",
       "failed_metrics": "",
       "max_abs_error": 0.035790363972650306,
@@ -51,7 +51,7 @@
       "source": "GX nonlinear diagnostics"
     },
     {
-      "artifact": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/kbm_branch_gate_summary.json",
+      "artifact": "docs/_static/kbm_branch_gate_summary.json",
       "case": "kbm_linear_branch_continuity",
       "failed_metrics": "",
       "max_abs_error": 0.3879740373283112,
@@ -62,7 +62,7 @@
       "source": "selected KBM comparison rows"
     },
     {
-      "artifact": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/reference_modes/kbm_eigenfunction_reference_overlay_ky0p3000.json",
+      "artifact": "docs/_static/reference_modes/kbm_eigenfunction_reference_overlay_ky0p3000.json",
       "case": "kbm_linear_eigenfunction_ky0p3000",
       "failed_metrics": "",
       "max_abs_error": 0.007208594542278349,
@@ -73,7 +73,7 @@
       "source": "GX raw eigenfunction bundle"
     },
     {
-      "artifact": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/nonlinear_kbm_gate_summary.json",
+      "artifact": "docs/_static/nonlinear_kbm_gate_summary.json",
       "case": "kbm_nonlinear_window",
       "failed_metrics": "",
       "max_abs_error": 0.009363342524391386,
@@ -84,7 +84,7 @@
       "source": "GX nonlinear diagnostics"
     },
     {
-      "artifact": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/miller_zonal_response_pilot.json",
+      "artifact": "docs/_static/miller_zonal_response_pilot.json",
       "case": "merlo_case_iii_zonal_response",
       "failed_metrics": "",
       "max_abs_error": 0.03671330516346405,
@@ -95,7 +95,7 @@
       "source": "Merlo et al. paper-scale read-off"
     },
     {
-      "artifact": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/nonlinear_w7x_gate_summary.json",
+      "artifact": "docs/_static/nonlinear_w7x_gate_summary.json",
       "case": "w7x_nonlinear_window",
       "failed_metrics": "",
       "max_abs_error": 0.0974184040271887,

@@ -10,7 +10,7 @@ import numpy as np
 
 
 def _load_tool_module():
-    path = Path("/Users/rogeriojorge/local/SPECTRAX-GK/tools/generate_miller_zonal_response_pilot.py")
+    path = Path(__file__).resolve().parents[1] / "tools" / "generate_miller_zonal_response_pilot.py"
     spec = importlib.util.spec_from_file_location("generate_miller_zonal_response_pilot", path)
     assert spec is not None
     assert spec.loader is not None

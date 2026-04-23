@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 def _load_tool_module():
-    path = Path("/Users/rogeriojorge/local/SPECTRAX-GK/tools/make_validation_gate_index.py")
+    path = Path(__file__).resolve().parents[1] / "tools" / "make_validation_gate_index.py"
     spec = importlib.util.spec_from_file_location("make_validation_gate_index", path)
     assert spec is not None
     assert spec.loader is not None
@@ -39,6 +39,8 @@ def _write_gate(path: Path, *, case: str, passed: bool) -> None:
 
 def test_collect_gate_entries_reads_top_level_gate_report(tmp_path: Path) -> None:
     mod = _load_tool_module()
+    old_root = mod.REPO_ROOT
+    mod.REPO_ROOT = tmp_path
     _write_gate(tmp_path / "pass.json", case="passed_case", passed=True)
     nested = tmp_path / "nested"
     nested.mkdir()
@@ -59,15 +61,22 @@ def test_collect_gate_entries_reads_top_level_gate_report(tmp_path: Path) -> Non
         )
     )
 
-    index = mod.build_index([str(tmp_path / "**" / "*.json")])
+    try:
+        index = mod.build_index([str(tmp_path / "**" / "*.json")])
+    finally:
+        mod.REPO_ROOT = old_root
 
     assert index["n_reports"] == 3
     assert index["n_passed"] == 2
     assert index["n_open"] == 1
+    assert index["patterns"] == ["**/*.json"]
     rows = {row["case"]: row for row in index["reports"]}
     assert rows["open_case"]["failed_metrics"] == "metric_a"
+    assert rows["open_case"]["artifact"] == "open.json"
     assert rows["passed_case"]["n_failed"] == 0
+    assert rows["passed_case"]["artifact"] == "pass.json"
     assert rows["nested_passed_case"]["n_failed"] == 0
+    assert rows["nested_passed_case"]["artifact"] == "nested/nested_pass.json"
     assert "exploratory_case" not in rows
 
 
