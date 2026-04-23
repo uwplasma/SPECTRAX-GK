@@ -159,6 +159,13 @@ The active pre-merge sequence is:
      `tools/compare_gx_nonlinear_diagnostics.py --summary-json`, giving the
      publication plots a machine-readable mean-relative-mismatch acceptance
      record.
+   - The nonlinear summary writer now supports explicit case/source labels and
+     strict JSON serialization. The first tracked nonlinear window gate JSONs
+     cover Cyclone Miller, KBM, HSX, W7-X, and a short Cyclone diagnostic
+     window. At the current `0.10` mean-relative release gate, Cyclone Miller,
+     KBM, and HSX pass; W7-X remains open on `Wphi` at about `0.116`, and the
+     short Cyclone diagnostic remains open because it is not yet the mature
+     long-window transport acceptance artifact.
    - Observed-order and branch-continuity gate reports now exist for
      velocity-space convergence panels and branch-followed scan tables; the
      benchmark atlas summary already writes a high-vs-low Cyclone grid

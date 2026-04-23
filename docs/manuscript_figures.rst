@@ -33,11 +33,11 @@ Core Validation Figures
    * - Nonlinear transport panel
      - ``tools/make_gx_summary_panel.py`` / ``tools/make_gx_publication_panel.py``
      - Open
-     - Cyclone, Miller, KBM, W7-X, HSX with matched windows. Current component artifacts: ``docs/_static/nonlinear_cyclone_diag_compare_t400.png``, ``docs/_static/nonlinear_cyclone_miller_diag_compare_t122.png``, ``docs/_static/nonlinear_kbm_diag_compare_t400_stats.png``, ``docs/_static/nonlinear_w7x_diag_compare_t200.png``, ``docs/_static/hsx_nonlinear_compare_t50_true.png``. ``tools/compare_gx_nonlinear_diagnostics.py --summary-json`` now writes machine-readable mean-relative-mismatch gates for each plotted diagnostic, so refreshed panels can carry a JSON acceptance record instead of only printed console output.
+     - Cyclone, Miller, KBM, W7-X, HSX with matched windows. Current component artifacts: ``docs/_static/nonlinear_cyclone_diag_compare_t400.png``, ``docs/_static/nonlinear_cyclone_miller_diag_compare_t122.png``, ``docs/_static/nonlinear_kbm_diag_compare_t400_stats.png``, ``docs/_static/nonlinear_w7x_diag_compare_t200.png``, ``docs/_static/hsx_nonlinear_compare_t50_true.png``. ``tools/compare_gx_nonlinear_diagnostics.py --summary-json`` now writes machine-readable mean-relative-mismatch gates for each plotted diagnostic, so refreshed panels can carry a JSON acceptance record instead of only printed console output. The first materialized window-gate metadata are ``docs/_static/nonlinear_cyclone_miller_gate_summary.json``, ``docs/_static/nonlinear_kbm_gate_summary.json``, ``docs/_static/nonlinear_hsx_gate_summary.json``, ``docs/_static/nonlinear_w7x_gate_summary.json``, and ``docs/_static/nonlinear_cyclone_short_gate_summary.json``; with the current ``0.10`` mean-relative release gate, Cyclone Miller, KBM, and HSX pass, while W7-X and the short Cyclone diagnostic remain open.
    * - Windowed-statistics summary
-     - dedicated script to add
+     - ``tools/compare_gx_nonlinear_diagnostics.py`` plus ``tools/make_validation_gate_index.py``
      - Open
-     - this should be the acceptance-summary figure for nonlinear parity
+     - per-case nonlinear gate JSONs are now indexed by ``docs/_static/validation_gate_index.png``. The next step is a dedicated nonlinear-only summary panel with mature-lane thresholds separated from exploratory/short-run diagnostics.
    * - Validation gate index
      - ``tools/make_validation_gate_index.py``
      - Open

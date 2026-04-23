@@ -1,11 +1,22 @@
 {
-  "n_open": 2,
-  "n_passed": 1,
-  "n_reports": 3,
+  "n_open": 4,
+  "n_passed": 4,
+  "n_reports": 8,
   "patterns": [
     "docs/_static/*.json"
   ],
   "reports": [
+    {
+      "artifact": "docs/_static/nonlinear_cyclone_miller_gate_summary.json",
+      "case": "cyclone_miller_nonlinear_window",
+      "failed_metrics": "",
+      "max_abs_error": 0.0919106981841409,
+      "max_rel_error": 0.0,
+      "n_failed": 0,
+      "n_gates": 5,
+      "passed": true,
+      "source": "GX nonlinear diagnostics"
+    },
     {
       "artifact": "docs/_static/cyclone_resolution_observed_order.json",
       "case": "cyclone_resolution_observed_order",
@@ -16,6 +27,28 @@
       "n_gates": 3,
       "passed": false,
       "source": "tracked Cyclone resolution subset"
+    },
+    {
+      "artifact": "docs/_static/nonlinear_cyclone_short_gate_summary.json",
+      "case": "cyclone_short_nonlinear_window",
+      "failed_metrics": "Phi2_mean_rel_abs,Wg_mean_rel_abs,Wphi_mean_rel_abs,HeatFlux_mean_rel_abs",
+      "max_abs_error": 1.2475408051938597,
+      "max_rel_error": 0.0,
+      "n_failed": 4,
+      "n_gates": 6,
+      "passed": false,
+      "source": "GX nonlinear diagnostics"
+    },
+    {
+      "artifact": "docs/_static/nonlinear_hsx_gate_summary.json",
+      "case": "hsx_nonlinear_window",
+      "failed_metrics": "",
+      "max_abs_error": 0.035790363972650306,
+      "max_rel_error": 0.0,
+      "n_failed": 0,
+      "n_gates": 5,
+      "passed": true,
+      "source": "GX nonlinear diagnostics"
     },
     {
       "artifact": "docs/_static/kbm_branch_gate_summary.json",
@@ -29,6 +62,17 @@
       "source": "selected KBM comparison rows"
     },
     {
+      "artifact": "docs/_static/nonlinear_kbm_gate_summary.json",
+      "case": "kbm_nonlinear_window",
+      "failed_metrics": "",
+      "max_abs_error": 0.009363342524391386,
+      "max_rel_error": null,
+      "n_failed": 0,
+      "n_gates": 5,
+      "passed": true,
+      "source": "GX nonlinear diagnostics"
+    },
+    {
       "artifact": "docs/_static/miller_zonal_response_pilot.json",
       "case": "merlo_case_iii_zonal_response",
       "failed_metrics": "",
@@ -38,6 +82,17 @@
       "n_gates": 3,
       "passed": true,
       "source": "Merlo et al. paper-scale read-off"
+    },
+    {
+      "artifact": "docs/_static/nonlinear_w7x_gate_summary.json",
+      "case": "w7x_nonlinear_window",
+      "failed_metrics": "Wphi_mean_rel_abs",
+      "max_abs_error": 0.11606807415371641,
+      "max_rel_error": 0.0,
+      "n_failed": 1,
+      "n_gates": 5,
+      "passed": false,
+      "source": "GX nonlinear diagnostics"
     }
   ]
 }
