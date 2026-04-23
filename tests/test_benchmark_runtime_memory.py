@@ -39,6 +39,7 @@ case = "b"
 label = "B"
 backend = "gx"
 command = "echo b"
+profile_command = "echo profile"
 host = "office"
 enabled = false
 """,
@@ -46,6 +47,7 @@ enabled = false
     )
     runs = _load_manifest(manifest)
     assert runs[1].host == "office"
+    assert runs[1].profile_command == "echo profile"
     selected = _select_runs(runs, {"a"}, {"spectrax_cpu"})
     assert len(selected) == 1
     assert selected[0].case == "a"
@@ -111,6 +113,17 @@ def test_gpu_runtime_memory_manifest_pins_configured_cuda_device() -> None:
         assert "CUDA_VISIBLE_DEVICES=${SPECTRAX_BENCH_CUDA_DEVICE}" in run.command
 
 
+def test_short_nonlinear_gpu_rows_request_warm_profile_pass() -> None:
+    runs = _load_manifest(ROOT / "tools" / "runtime_memory_manifest.toml")
+    selected = {
+        (run.case, run.backend): run.profile_command
+        for run in runs
+        if run.backend == "spectrax_gpu" and run.case in {"cyclone-nonlinear", "kbm-nonlinear"}
+    }
+    assert "profile_nonlinear_cyclone.py" in str(selected[("cyclone-nonlinear", "spectrax_gpu")])
+    assert "profile_nonlinear_cyclone.py" in str(selected[("kbm-nonlinear", "spectrax_gpu")])
+
+
 def test_remote_runtime_memory_runs_disable_x11_forwarding(monkeypatch) -> None:
     captured = {}
 
@@ -145,6 +158,37 @@ def test_runtime_memory_command_captures_profile_times(monkeypatch) -> None:
     assert row["peak_rss_mb"] == 2.0
     assert row["warmup_time_s"] == 12.5
     assert row["run_time_s"] == 3.25
+
+
+def test_runtime_memory_command_runs_profile_subcommand(monkeypatch) -> None:
+    calls = []
+
+    def fake_run(cmd, shell, cwd, capture_output, text):  # type: ignore[no-untyped-def]
+        calls.append(cmd)
+
+        class Proc:
+            returncode = 0
+            stdout = "main\n" if len(calls) == 1 else "warmup_time_s=20 run_time_s=7\n"
+            stderr = "Maximum resident set size (kbytes): 2048\n" if len(calls) == 1 else ""
+
+        return Proc()
+
+    monkeypatch.setattr("tools.benchmark_runtime_memory.subprocess.run", fake_run)
+    run = RuntimeBenchRun(
+        case="c",
+        label="C",
+        backend="spectrax_gpu",
+        command="echo cold",
+        profile_command="echo warm",
+        cwd="/tmp",
+        wrap_time=False,
+    )
+    row = _run_command(run)
+    assert len(calls) == 2
+    assert row["status"] == "success"
+    assert row["warmup_time_s"] == 20.0
+    assert row["run_time_s"] == 7.0
+    assert "--- profile stdout ---" in row["stdout"]
 
 
 def test_runtime_memory_row_logs_are_written(tmp_path: Path) -> None:

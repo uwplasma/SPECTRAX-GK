@@ -2171,17 +2171,28 @@ Current nonlinear-lane status at the handoff point:
   with full reference benchmark horizons.
 - Follow-up GPU profiling on the same shipped short nonlinear cases now makes
   the cold-vs-warm picture explicit:
-  - Cyclone nonlinear GPU: `warmup_time_s = 33.251`, `run_time_s = 14.428`
-    versus the shipped cold panel row `35.33 s`
-  - KBM nonlinear GPU: `warmup_time_s = 24.005`, `run_time_s = 9.271`
-    versus the shipped cold panel row `43.74 s`
+  - Cyclone nonlinear GPU: `warmup_time_s = 33.957`, `run_time_s = 15.054`
+    versus the shipped cold panel row `38.27 s`
+  - KBM nonlinear GPU: `warmup_time_s = 27.485`, `run_time_s = 9.725`
+    versus the shipped cold panel row `44.33 s`
   - interpretation: these two short nonlinear runtime gaps are dominated by
     JAX startup/compile latency rather than by steady-state timestep throughput
   - the shipped runtime panel now overlays warm second-run timings as explicit
     markers on top of the cold wall-time bars wherever `run_time_s` is present
+  - the runtime harness now carries manifest-level `profile_command` entries,
+    so those warm timings come from the tracked benchmark contract itself
   - compile-side collision prefactors have been hoisted out of the jitted RHS
     assembly path so the previous slow XLA constant-fold warning at
     `terms/linear_terms.py:272` no longer appears in the tracked Cyclone GPU
+  - the new startup profiler now shows the remaining cold-path bottlenecks
+    explicitly on `office` GPU:
+    - Cyclone startup total `41.47 s`, dominated by `compile_first_integrator_run`
+      (`24.82 s`) and `build_linear_cache` (`7.57 s`)
+    - KBM startup total `32.23 s`, dominated by `compile_first_integrator_run`
+      (`19.28 s`) and `build_linear_cache` (`7.73 s`)
+    - next runtime-performance tranche should therefore decompose
+      `build_linear_cache` and the first nonlinear integrator compile path,
+      not geometry/default setup
     split profile
   - concrete next optimization target: reduce the remaining compile/startup
     cost beyond the collision prefactor path, while keeping the current cold
