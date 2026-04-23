@@ -129,16 +129,18 @@ through ``examples/benchmarks/runtime_miller_zonal_response.toml`` and
 ``docs/_static/miller_zonal_response_pilot.png``. The current frozen artifact
 is pinned to Merlo et al. Case III: adiabatic electrons, zero gradients,
 ``k_xρ_i≈0.05``, ``k_y=0``, and an initial ion-density perturbation.  It uses
-``Nz=32``, ``Nl=4``, ``Nm=16``, ``dt=0.01``, and runs to ``t≈150`` through the
-same checkpoint-capable artifact writer used by long nonlinear runs.  It
-remains open, but the residual normalization issue is now isolated: using the
-Rosenbluth-Hinton convention ``phi(t -> infinity) / phi(0)`` gives a late
-residual of about ``0.205``, close to the Merlo Case-III figure read-off of
-about ``0.19``.  The GAM frequency is also close after converting the code
-frequency to the paper's ``R0 / v_i`` normalization.  The remaining open part
-of this lane is the damping/envelope extraction and a frozen reference trace
-for the acceptance band, so the artifact is still a diagnostic lane rather
-than a closed Rosenbluth-Hinton residual benchmark.
+``Nz=32``, ``Nl=4``, ``Nm=24``, ``dt=0.005``, and runs to ``t≈60`` through the
+same checkpoint-capable artifact writer used by long nonlinear runs.  Using the
+Rosenbluth-Hinton convention ``phi(t -> infinity) / phi(0)`` gives a residual
+of about ``0.192`` against the Merlo Case-III figure read-off of about
+``0.19``.  The GAM frequency is also close after converting the code frequency
+to the paper's ``R0 / v_i`` normalization.  For the damping fit, the artifact
+uses only the first five envelope extrema, consistent with Merlo's remark that
+the strongly shaped cases contain only a few usable oscillations.  With that
+pre-recurrence fit the current artifact gives ``γ_GAM R0 / v_i≈-0.166``,
+matching the paper-scale read-off near ``-0.17``.  The explicit remaining
+follow-up item is the long-time recurrence visible in finite moment runs,
+rather than the benchmark-scale residual/frequency/damping gate itself.
 
 Diffrax and nonlinear smoke tests
 ---------------------------------

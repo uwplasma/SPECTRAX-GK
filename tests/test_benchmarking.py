@@ -136,6 +136,26 @@ def test_zonal_flow_response_metrics_support_first_sample_rh_normalization() -> 
     assert metrics.residual_level == pytest.approx(0.2, abs=0.03)
 
 
+def test_zonal_flow_response_metrics_can_limit_damping_fit_to_early_peaks() -> None:
+    t = np.linspace(0.0, 24.0, 2401)
+    envelope = np.exp(-0.22 * np.minimum(t, 9.0)) * np.exp(0.08 * np.maximum(t - 9.0, 0.0))
+    response = 0.2 + envelope * np.cos(2.2 * t)
+
+    metrics_all = zonal_flow_response_metrics(t, response, tail_fraction=0.25, initial_policy="first_abs")
+    metrics_early = zonal_flow_response_metrics(
+        t,
+        response,
+        tail_fraction=0.25,
+        initial_policy="first_abs",
+        peak_fit_max_peaks=5,
+    )
+
+    assert metrics_all.peak_count >= metrics_early.peak_fit_count
+    assert metrics_early.peak_fit_count == 5
+    assert metrics_early.gam_damping_rate > metrics_all.gam_damping_rate
+    assert metrics_early.gam_damping_rate == pytest.approx(0.22, abs=0.08)
+
+
 def test_zonal_flow_response_metrics_validate_input_and_handle_nonoscillatory_signal() -> None:
     with pytest.raises(ValueError):
         zonal_flow_response_metrics(np.array([0.0, 1.0, 2.0]), np.array([1.0, 2.0]))
@@ -143,6 +163,8 @@ def test_zonal_flow_response_metrics_validate_input_and_handle_nonoscillatory_si
         zonal_flow_response_metrics(np.array([0.0, 1.0, 2.0]), np.array([0.0, 0.0, 0.0]))
     with pytest.raises(ValueError):
         zonal_flow_response_metrics(np.arange(5.0), np.ones(5), initial_policy="unknown")
+    with pytest.raises(ValueError):
+        zonal_flow_response_metrics(np.arange(5.0), np.ones(5), peak_fit_max_peaks=0)
 
     t = np.linspace(0.0, 5.0, 101)
     response = np.exp(-t)

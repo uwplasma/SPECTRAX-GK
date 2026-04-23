@@ -43,6 +43,12 @@ def parse_args() -> argparse.Namespace:
         help="Initial normalization convention for the response metrics.",
     )
     parser.add_argument(
+        "--peak-fit-max-peaks",
+        type=int,
+        default=None,
+        help="Optional maximum number of early envelope peaks to use for the GAM damping fit.",
+    )
+    parser.add_argument(
         "--title",
         default="Zonal-flow response",
         help="Figure title.",
@@ -65,6 +71,7 @@ def main() -> None:
         tail_fraction=float(args.tail_fraction),
         initial_fraction=float(args.initial_fraction),
         initial_policy=str(args.initial_policy),
+        peak_fit_max_peaks=args.peak_fit_max_peaks,
     )
     fig, _axes = zonal_flow_response_figure(t, response, metrics=metrics, title=args.title)
     args.out.parent.mkdir(parents=True, exist_ok=True)
@@ -84,6 +91,7 @@ def main() -> None:
                 "gam_frequency": metrics.gam_frequency,
                 "gam_damping_rate": metrics.gam_damping_rate,
                 "peak_count": metrics.peak_count,
+                "peak_fit_count": metrics.peak_fit_count,
                 "tmin": metrics.tmin,
                 "tmax": metrics.tmax,
             },

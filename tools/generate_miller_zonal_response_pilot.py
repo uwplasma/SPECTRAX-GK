@@ -60,7 +60,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--out-bundle",
         type=Path,
-        default=ROOT / "tools_out" / "zonal_response" / "miller_caseIII_initial_density_Nl4_Nm16_Nz32_dt001_t150.out.nc",
+        default=ROOT / "tools_out" / "zonal_response" / "miller_caseIII_initial_density_Nl4_Nm24_Nz32_dt0005_t60.out.nc",
         help="Runtime output bundle path.",
     )
     parser.add_argument(
@@ -88,6 +88,15 @@ def _parse_args() -> argparse.Namespace:
         help=(
             "Initial normalization convention. Merlo/Rosenbluth-Hinton residuals "
             "are quoted as phi(t->infinity)/phi(0), so this tool defaults to first_abs."
+        ),
+    )
+    parser.add_argument(
+        "--peak-fit-max-peaks",
+        type=int,
+        default=5,
+        help=(
+            "Maximum number of early GAM-envelope extrema to use for the damping fit. "
+            "Merlo notes that strongly shaped cases contain only a few usable oscillations."
         ),
     )
     parser.add_argument(
@@ -164,6 +173,7 @@ def main() -> int:
         tail_fraction=float(args.tail_fraction),
         initial_fraction=float(args.initial_fraction),
         initial_policy=str(args.initial_policy),
+        peak_fit_max_peaks=int(args.peak_fit_max_peaks) if args.peak_fit_max_peaks is not None else None,
     )
     setup_note = _setup_note(cfg)
     ref_residual = float(MERLO_CASE_III_REFERENCE["residual_phi_over_phi0"])
@@ -228,6 +238,7 @@ def main() -> int:
                 "gam_damping_rate_R0_over_vi": float(damping_r0_over_vi),
                 "gam_growth_rate_R0_over_vi": float(gamma_r0_over_vi),
                 "peak_count": int(metrics.peak_count),
+                "peak_fit_count": int(metrics.peak_fit_count),
                 "tmin": float(metrics.tmin),
                 "tmax": float(metrics.tmax),
                 "literature_reference": dict(MERLO_CASE_III_REFERENCE),
@@ -242,9 +253,11 @@ def main() -> int:
                     f"adiabatic electrons, and an {setup_note}. "
                     "The literature reference values are read from Merlo et al. Figs. 12, 14, and 16; "
                     "the residual is normalized with the Rosenbluth-Hinton first-sample convention. "
-                    "The residual and GAM frequency are now close to the paper-scale read-off, but this "
-                    "artifact remains open until the damping/envelope extraction and acceptance band are "
-                    "closed against a frozen reference trace."
+                    f"The GAM damping fit is restricted to the first {metrics.peak_fit_count} envelope extrema, "
+                    "consistent with Merlo's note that the strongly shaped cases contain only a few usable oscillations "
+                    "before late-time recurrence contaminates a finite-resolution trace. "
+                    "The residual and GAM frequency are now close to the paper-scale read-off; the long-time recurrence "
+                    "behavior still remains an explicit numerical follow-up item."
                 ),
                 "references": [
                     "Merlo et al. 2016 shaped-tokamak collisionless GAM benchmark, Case III",
