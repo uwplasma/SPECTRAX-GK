@@ -161,6 +161,14 @@ window mean relative mismatch as the scalar acceptance metric.
 Observed-order and branch-continuity gate helpers are also available so
 velocity-space convergence panels and branch-followed scan tables can use the
 same JSON-ready acceptance convention.
+``tools/generate_observed_order_gate.py`` is the generic no-rerun path for
+CSV-backed convergence studies: it reads either an explicit step column or a
+resolution column, writes an observed-order JSON gate report, and can generate
+a log-log convergence figure. The first tracked Cyclone resolution pilot lives
+at ``docs/_static/cyclone_resolution_observed_order.json`` and
+``docs/_static/cyclone_resolution_observed_order.png``. It is deliberately
+marked open because the coarse-to-mid pair is nonmonotone even though the final
+grid error is small.
 ``tools/compare_gx_kbm.py --branch-summary-json`` wires that convention into
 the KBM branch-following workflow by summarizing adjacent ``gamma``/``omega``
 jumps and successive eigenfunction-overlap continuity for the selected branch.

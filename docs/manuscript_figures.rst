@@ -47,9 +47,9 @@ Core Validation Figures
      - Open
      - should follow the W7-X Doppler-reflectometry comparison figure family for density and zonal-flow spectra
    * - Velocity-space convergence panel
-     - dedicated script to add
+     - ``tools/generate_observed_order_gate.py`` plus dedicated full convergence refresh script to add
      - Open
-     - should follow GX-style convergence evidence and write an observed-order gate report through ``spectraxgk.benchmarking.observed_order_gate_report`` so convergence rate and final-grid error are tracked explicitly. The current atlas summary already records a machine-readable high-vs-low Cyclone grid convergence gate for the tracked convergence tile.
+     - should follow GX-style convergence evidence and write an observed-order gate report through ``spectraxgk.benchmarking.observed_order_gate_report`` so convergence rate and final-grid error are tracked explicitly. The current atlas summary already records a machine-readable high-vs-low Cyclone grid convergence gate for the tracked convergence tile. The first generic CSV-backed pilot is ``docs/_static/cyclone_resolution_observed_order.png`` with metadata in ``docs/_static/cyclone_resolution_observed_order.json``; it is correctly open because the coarse-to-mid refinement is nonmonotone, so it is a gate-path validation artifact rather than final manuscript evidence.
    * - Stellarator validation panel
      - dedicated script to add
      - Open

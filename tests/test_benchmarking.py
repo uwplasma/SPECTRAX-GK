@@ -923,25 +923,41 @@ def test_observed_order_gate_report_tracks_rate_and_final_error() -> None:
         case="rk2_manufactured",
         source="closed-form",
         min_asymptotic_order=1.95,
+        min_pairwise_order=1.95,
         max_final_error=0.03,
     )
 
     assert report.passed is True
-    assert [gate.metric for gate in report.gates] == ["observed_order_deficit", "final_error"]
+    assert [gate.metric for gate in report.gates] == [
+        "observed_order_deficit",
+        "min_pairwise_order_deficit",
+        "final_error",
+    ]
 
     failed = observed_order_gate_report(
         metrics,
         case="rk2_manufactured",
         source="closed-form",
         min_asymptotic_order=2.5,
+        min_pairwise_order=2.5,
         max_final_error=0.01,
     )
     assert failed.passed is False
+    nonmonotone = observed_order_gate_report(
+        estimate_observed_order(np.array([0.4, 0.2, 0.1]), np.array([0.01, 0.02, 0.002])),
+        case="nonmonotone",
+        source="synthetic",
+        min_asymptotic_order=1.0,
+        min_pairwise_order=0.0,
+    )
+    assert nonmonotone.passed is False
 
     with pytest.raises(ValueError):
         observed_order_gate_report(metrics, case="bad", source="closed-form", min_asymptotic_order=-1.0)
     with pytest.raises(ValueError):
         observed_order_gate_report(metrics, case="bad", source="closed-form", min_asymptotic_order=1.0, max_final_error=-1.0)
+    with pytest.raises(ValueError):
+        observed_order_gate_report(metrics, case="bad", source="closed-form", min_asymptotic_order=1.0, min_pairwise_order=-1.0)
 
 
 def test_branch_continuity_metrics_and_gate_report() -> None:
