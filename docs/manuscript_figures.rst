@@ -101,7 +101,9 @@ caption:
 Open Issues Before Drafting
 ---------------------------
 
-- close or explicitly defer W7-X zonal-flow response
+- freeze W7-X zonal-flow response acceptance tolerances against digitized or
+  regenerated stella/GENE traces; the SPECTRAX-GK VMEC artifact is now
+  generated at ``docs/_static/w7x_zonal_response_panel.png``
 - either close the long-time recurrence follow-up for the shaped-tokamak
   Rosenbluth-Hinton / GAM response benchmark or explicitly scope publication
   claims to the benchmark-scale pre-recurrence metrics now frozen in the

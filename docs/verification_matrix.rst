@@ -170,8 +170,8 @@ Stellarator Linear
    * - W7-X zonal flow
      - residual level, damping envelope
      - stella/GENE benchmark paper + zonal-flow literature
-     - Open
-     - a case-specific runtime/tool path now exists through ``examples/benchmarks/runtime_w7x_zonal_response_vmec.toml`` and ``tools/generate_w7x_zonal_response_panel.py`` using the same first-sample / branchwise-extrema / Hilbert-phase extraction policy as the Merlo lane. The remaining open item is generation of a frozen VMEC-backed artifact and acceptance metrics on an actual W7-X geometry file
+     - Open; artifact frozen
+     - a case-specific runtime/tool path exists through ``examples/benchmarks/runtime_w7x_zonal_response_vmec.toml`` and ``tools/generate_w7x_zonal_response_panel.py`` using the same first-sample / branchwise-extrema / Hilbert-phase extraction policy as the Merlo lane. The frozen VMEC-backed artifact now lives at ``docs/_static/w7x_zonal_response_panel.png`` with metadata in ``docs/_static/w7x_zonal_response_panel.json``. It enforces the intended test-4 ``k_x rho_i`` values ``[0.05, 0.07, 0.10, 0.30]`` with a periodic radial box for the ``k_y=0`` zonal run, reports residuals around ``0.171``, ``0.354``, ``0.464``, and ``0.553``, and records unresolved early-time damping as ``null`` rather than ``NaN``. The remaining open item is a digitized stella/GENE/literature tolerance table for pass/fail acceptance
    * - W7-X fluctuation spectra
      - density and zonal-flow frequency spectra
      - W7-X Doppler-reflectometry comparison paper

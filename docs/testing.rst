@@ -236,8 +236,27 @@ tool sweeps ``k_x rho_i`` over ``[0.05, 0.07, 0.10, 0.30]`` and applies the
 same first-sample normalization, branchwise damping fit, and Hilbert-phase
 frequency extraction used in the Merlo lane. The default early-time fit-window
 cap is an explicit analysis policy chosen to isolate the initial GAM before
-the slower stellarator-specific oscillation; the final frozen artifact for
-this lane still needs to be generated on a machine with W7-X VMEC access.
+the slower stellarator-specific oscillation. The frozen VMEC-backed artifact
+now lives at ``docs/_static/w7x_zonal_response_panel.png`` with strict JSON
+metadata at ``docs/_static/w7x_zonal_response_panel.json``. The generator
+forces a periodic radial box for this ``k_y=0`` zonal response so the selected
+``k_x rho_i`` values match the published test-4 targets exactly; this avoids
+the linked-boundary aspect-ratio override that is appropriate for drift-wave
+flux-tube runs but wrong for this radial zonal scan. The current figure reports
+residuals of about ``0.171``, ``0.354``, ``0.464``, and ``0.553`` for
+``k_x rho_i = 0.05``, ``0.07``, ``0.10``, and ``0.30``. Early-time damping is
+not robustly fitted on this bounded horizon, so the metadata records it as
+``null`` and the panel labels it as ``not fitted``. The remaining research
+gate is to digitize or regenerate the stella/GENE reference traces and assign
+explicit acceptance tolerances.
+
+.. figure:: _static/w7x_zonal_response_panel.png
+   :alt: W7-X high-mirror bean-tube zonal-flow response panel
+
+   W7-X high-mirror bean-tube zonal-flow response for the stella/GENE test-4
+   target ``k_x rho_i`` values. The red dashed line is the late-window
+   residual estimate and the shaded band is the common initial-GAM extraction
+   window.
 
 Diffrax and nonlinear smoke tests
 ---------------------------------
