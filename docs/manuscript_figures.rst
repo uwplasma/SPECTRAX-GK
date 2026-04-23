@@ -41,7 +41,7 @@ Core Validation Figures
    * - Zonal-flow / GAM response panel
      - ``tools/plot_zonal_flow_response.py``, ``tools/plot_zonal_flow_response_from_output.py``, and ``tools/generate_miller_zonal_response_pilot.py``
      - Open
-     - should combine shaped-tokamak Rosenbluth-Hinton-style residuals with W7-X residual/damping envelopes using one figure convention; use signed ``Phi_zonal_mode_kxt`` for publication claims and keep ``Phi2_zonal_t`` only as an intermediate cross-check. The current stepping-stone artifact is ``docs/_static/miller_zonal_response_pilot.png`` from the Merlo Case-III initial-density setup (``residual≈0.745``, ``ω_GAM≈0.827`` in current units), but it remains explicitly pending because the target residual read from Merlo et al. Figs. 12/16 is about ``0.19`` and the current trace does not settle to the published stationary window.
+     - should combine shaped-tokamak Rosenbluth-Hinton-style residuals with W7-X residual/damping envelopes using one figure convention; use signed ``Phi_zonal_mode_kxt`` for publication claims and keep ``Phi2_zonal_t`` only as an intermediate cross-check. The current stepping-stone artifact is ``docs/_static/miller_zonal_response_pilot.png`` from the Merlo Case-III initial-density setup. With Rosenbluth-Hinton first-sample normalization it gives ``residual≈0.205`` against the Merlo et al. Figs. 12/16 read-off of about ``0.19``; ``ω_GAM≈0.827`` in code units maps to about ``2.30`` in the paper's ``R0 / v_i`` normalization. It remains explicitly pending until the damping/envelope extraction and acceptance band are frozen.
    * - W7-X fluctuation-spectrum panel
      - dedicated script to add
      - Open

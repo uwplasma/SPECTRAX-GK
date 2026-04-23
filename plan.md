@@ -521,9 +521,13 @@ uses as evidence.
         Case-III Table-III parameters with an initial ion-density perturbation,
         zero gradients, adiabatic electrons, ``kxρ_i≈0.05``, and ``ky=0``; it
         runs to ``t≈150`` at ``Nz=32``, ``Nl=4``, ``Nm=16``, and ``dt=0.01``,
-      - this lane is explicitly open/failing: the current trace gives
-        ``residual≈0.745`` with a broad oscillatory window, while the Merlo
-        Case-III residual read from Figs. 12/16 is about ``0.19``,
+      - this lane is still open, but the residual normalization issue is now
+        isolated: using the Rosenbluth-Hinton first-sample convention gives
+        ``residual≈0.205`` against the Merlo Case-III Figs. 12/16 read-off of
+        about ``0.19``; the code-unit ``ω_GAM≈0.827`` maps to
+        ``ω_GAM R0 / v_i≈2.30`` against the paper-scale read-off near ``2.24``,
+      - the remaining blocker is the damping/envelope extraction and a frozen
+        reference acceptance band for this Merlo artifact,
       - the external ``phiext_full`` source path remains covered as a runtime
         contract, but it is not the Merlo RH/GAM validation protocol,
       - the restart-checkpoint issue exposed by this zonal initial-density run

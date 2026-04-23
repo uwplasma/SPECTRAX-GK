@@ -82,6 +82,15 @@ def _parse_args() -> argparse.Namespace:
         help="Leading fraction used for the initial normalization window.",
     )
     parser.add_argument(
+        "--initial-policy",
+        choices=("first_abs", "window_abs_mean"),
+        default="first_abs",
+        help=(
+            "Initial normalization convention. Merlo/Rosenbluth-Hinton residuals "
+            "are quoted as phi(t->infinity)/phi(0), so this tool defaults to first_abs."
+        ),
+    )
+    parser.add_argument(
         "--reuse-output",
         action="store_true",
         help="Reuse an existing out.nc bundle instead of rerunning the pilot.",
@@ -154,17 +163,26 @@ def main() -> int:
         np.asarray(series.values, dtype=float),
         tail_fraction=float(args.tail_fraction),
         initial_fraction=float(args.initial_fraction),
+        initial_policy=str(args.initial_policy),
     )
     setup_note = _setup_note(cfg)
     ref_residual = float(MERLO_CASE_III_REFERENCE["residual_phi_over_phi0"])
+    ref_omega = float(MERLO_CASE_III_REFERENCE["omega_gam_R0_over_vi"])
+    ref_gamma = float(MERLO_CASE_III_REFERENCE["gamma_gam_R0_over_vi"])
+    r0 = float(getattr(cfg.geometry, "R0", 1.0))
+    omega_r0_over_vi = float(metrics.gam_frequency) * r0
+    damping_r0_over_vi = float(metrics.gam_damping_rate) * r0
+    gamma_r0_over_vi = -damping_r0_over_vi
     residual_abs_error = abs(float(metrics.residual_level) - ref_residual)
+    omega_abs_error = abs(omega_r0_over_vi - ref_omega)
+    gamma_abs_error = abs(gamma_r0_over_vi - ref_gamma)
     title = f"Merlo Case III zonal-response (ky={ky_target:.3f}, kx={kx_selected:.3f})"
     fig, _axes = zonal_flow_response_figure(
         series.t,
         np.asarray(series.values, dtype=float),
         metrics=metrics,
         title=title,
-        y_label="phase-aligned zonal potential",
+        y_label=r"$\phi_\mathrm{zonal}/|\phi_\mathrm{zonal}(0)|$",
     )
     ax0 = _axes[0]
     ax0.axhline(
@@ -200,16 +218,22 @@ def main() -> int:
                 "kx_selected": float(kx_selected),
                 "ky_target": float(ky_target),
                 "initial_level": float(metrics.initial_level),
+                "initial_policy": str(metrics.initial_policy),
                 "residual_level": float(metrics.residual_level),
                 "residual_std": float(metrics.residual_std),
                 "response_rms": float(metrics.response_rms),
                 "gam_frequency": float(metrics.gam_frequency),
                 "gam_damping_rate": float(metrics.gam_damping_rate),
+                "gam_frequency_R0_over_vi": float(omega_r0_over_vi),
+                "gam_damping_rate_R0_over_vi": float(damping_r0_over_vi),
+                "gam_growth_rate_R0_over_vi": float(gamma_r0_over_vi),
                 "peak_count": int(metrics.peak_count),
                 "tmin": float(metrics.tmin),
                 "tmax": float(metrics.tmax),
                 "literature_reference": dict(MERLO_CASE_III_REFERENCE),
                 "residual_abs_error_vs_literature": float(residual_abs_error),
+                "omega_abs_error_vs_literature_R0_over_vi": float(omega_abs_error),
+                "gamma_abs_error_vs_literature_R0_over_vi": float(gamma_abs_error),
                 "setup": setup_note,
                 "validation_status": "open",
                 "notes": (
@@ -217,8 +241,10 @@ def main() -> int:
                     f"built from the signed zonal observable Phi_zonal_mode_kxt with zero gradients, "
                     f"adiabatic electrons, and an {setup_note}. "
                     "The literature reference values are read from Merlo et al. Figs. 12, 14, and 16; "
-                    "this artifact remains pending because the generated residual/GAM envelope is not yet "
-                    "within the literature acceptance band."
+                    "the residual is normalized with the Rosenbluth-Hinton first-sample convention. "
+                    "The residual and GAM frequency are now close to the paper-scale read-off, but this "
+                    "artifact remains open until the damping/envelope extraction and acceptance band are "
+                    "closed against a frozen reference trace."
                 ),
                 "references": [
                     "Merlo et al. 2016 shaped-tokamak collisionless GAM benchmark, Case III",
