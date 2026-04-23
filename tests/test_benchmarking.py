@@ -7,6 +7,9 @@ import pytest
 
 from spectraxgk.analysis import ModeSelection
 from spectraxgk.benchmarking import (
+    _analytic_signal,
+    _explicit_time_window,
+    _leading_window,
     compare_eigenfunctions,
     estimate_observed_order,
     infer_triple_dealiased_ny,
@@ -97,6 +100,45 @@ def test_late_time_window_returns_tail_bounds() -> None:
 
     assert tmin == pytest.approx(3.0)
     assert tmax == pytest.approx(4.0)
+
+
+def test_benchmarking_window_helpers_respect_bounds_and_validation() -> None:
+    t = np.array([0.0, 1.0, 2.0, 3.0, 4.0])
+
+    mask, tmin, tmax = _leading_window(t, 0.4)
+    np.testing.assert_array_equal(mask, np.array([True, True, False, False, False]))
+    assert tmin == pytest.approx(0.0)
+    assert tmax == pytest.approx(1.0)
+
+    mask_explicit, window_tmin, window_tmax = _explicit_time_window(t, tmin=1.2, tmax=3.1)
+    np.testing.assert_array_equal(mask_explicit, np.array([False, False, True, True, False]))
+    assert window_tmin == pytest.approx(2.0)
+    assert window_tmax == pytest.approx(3.0)
+
+    with pytest.raises(ValueError):
+        _leading_window(t.reshape(1, -1), 0.5)
+    with pytest.raises(ValueError):
+        _leading_window(np.array([]), 0.5)
+    with pytest.raises(ValueError):
+        _leading_window(t, 0.0)
+    with pytest.raises(ValueError):
+        _explicit_time_window(t, tmin=5.0, tmax=6.0)
+
+
+def test_analytic_signal_recovers_quadrature_for_periodic_cosine() -> None:
+    t = np.linspace(0.0, 2.0 * np.pi, 128, endpoint=False)
+    signal = np.cos(3.0 * t)
+
+    analytic = _analytic_signal(signal)
+
+    np.testing.assert_allclose(np.real(analytic), signal, atol=1.0e-12)
+    np.testing.assert_allclose(np.imag(analytic), np.sin(3.0 * t), atol=1.0e-12)
+    np.testing.assert_allclose(np.abs(analytic), 1.0, atol=1.0e-12)
+
+    with pytest.raises(ValueError):
+        _analytic_signal(np.array([]))
+    with pytest.raises(ValueError):
+        _analytic_signal(np.ones((2, 2)))
 
 
 def test_infer_triple_dealiased_ny_matches_gx_grid_convention() -> None:
