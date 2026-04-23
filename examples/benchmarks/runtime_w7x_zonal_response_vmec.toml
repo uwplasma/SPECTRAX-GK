@@ -1,9 +1,9 @@
 # Gonzalez-Jerez et al., J. Plasma Phys. 88, 905880310 (2022), test 4:
 # collisionless W7-X bean-tube zonal-flow relaxation in the high-mirror
 # configuration at torflux = 0.64 with adiabatic electrons, zero gradients,
-# ky = 0, and a Gaussian initial perturbation. The publication tool sweeps
-# kx rho_i in [0.05, 0.07, 0.10, 0.30] and applies one common extraction
-# protocol to each trace.
+# ky = 0, and a Gaussian electrostatic-potential initial perturbation. The
+# publication tool sweeps kx rho_i in [0.05, 0.07, 0.10, 0.30] and applies one
+# common extraction protocol to each trace.
 [[species]]
 name = "ion"
 charge = 1.0
@@ -45,7 +45,7 @@ npol = 1.0
 R0 = 5.485
 
 [init]
-init_field = "density"
+init_field = "phi"
 init_amp = 1.0e-6
 gaussian_init = true
 gaussian_width = 0.5

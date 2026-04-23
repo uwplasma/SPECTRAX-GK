@@ -60,7 +60,7 @@ alpha = 0.0
 R0 = 5.485
 
 [init]
-init_field = "density"
+init_field = "phi"
 init_amp = 1.0e-6
 gaussian_init = true
 gaussian_width = 0.5
@@ -104,7 +104,7 @@ diagnostics = true
             grids.createVariable("kx", "f8", ("kx",))[:] = np.array([-float(kx_target), 0.0, float(kx_target)])
             raw = np.zeros((t.size, 3, 2), dtype=float)
             raw[:, 2, 0] = signal
-            diag.createVariable("Phi_zonal_mode_kxt", "f8", ("time", "kx", "ri"))[:] = raw
+            diag.createVariable("Phi_zonal_line_kxt", "f8", ("time", "kx", "ri"))[:] = raw
         return object(), {"out": str(path)}
 
     monkeypatch.setattr(mod, "run_runtime_nonlinear_with_artifacts", _fake_run)
@@ -134,6 +134,7 @@ diagnostics = true
     assert len(meta["cases"]) == 4
     assert meta["literature_reference"]["test"] == 4
     assert meta["literature_reference"]["flux_tube"] == "bean"
+    assert meta["literature_reference"]["observable"] == "unweighted line-averaged electrostatic potential"
     assert "slower stellarator-specific oscillation" in meta["notes"]
     assert "manuscript-policy inference" in meta["notes"]
     assert "reference tolerances" in meta["notes"]

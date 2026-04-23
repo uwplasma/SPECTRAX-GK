@@ -33,6 +33,7 @@ from spectraxgk.diagnostics import (
     gx_particle_flux_split_resolved_species,
     gx_particle_flux_split_species,
     gx_particle_flux_species,
+    gx_phi_zonal_line_kxt,
     gx_phi_zonal_mode_kxt,
     gx_volume_factors,
     gx_turbulent_heating,
@@ -316,10 +317,14 @@ def test_gx_phi_zonal_mode_kxt_recovers_signed_zonal_average() -> None:
     phi = phi.at[0, 1, :].set(zonal_profile)
 
     out = gx_phi_zonal_mode_kxt(phi, grid, vol_fac)
+    out_line = gx_phi_zonal_line_kxt(phi, grid)
 
     expected = jnp.sum(zonal_profile * vol_fac)
+    expected_line = jnp.mean(zonal_profile)
     assert np.allclose(np.asarray(out[1]), np.asarray(expected))
+    assert np.allclose(np.asarray(out_line[1]), np.asarray(expected_line))
     assert np.allclose(np.asarray(out[0]), 0.0)
+    assert np.allclose(np.asarray(out_line[0]), 0.0)
 
 
 def test_gx_volume_factors_use_grho_for_flux_weights():

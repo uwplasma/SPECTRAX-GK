@@ -348,6 +348,11 @@ Notable runtime-only keys:
 * ``[init] init_field = "all"``: the runtime/TOML path follows GX moment
   scaling for this initializer, using reduced amplitudes for ``tpar``
   (``1/sqrt(2)``) and ``qpar`` (``1/sqrt(6)``).
+* ``[init] init_field = "phi"``: initialize a requested electrostatic
+  potential profile by inverting the same quasineutrality solve used during
+  time advance. This is the appropriate contract for zonal-response
+  literature tests that prescribe ``phi(t=0)`` rather than a density-moment
+  perturbation; the masked ``ky=0, kx=0`` gauge mode remains unavailable.
 * ``[init] init_electrons_only``: if ``true`` in multispecies runs, initialize
   only electron species (GX ``init_electrons_only`` behavior). If ``false``
   (default), initialize all kinetic species.
