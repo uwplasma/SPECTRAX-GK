@@ -91,6 +91,9 @@ Recent work has closed real issues, not just documentation:
 - the most recent performance patch, `678c3dd`, reduced Cyclone
   `build_linear_cache` from about `7.74 s` to `6.92 s` on `office` GPU by
   storing the collision cache in low-rank form.
+- the current validation-gate tranche adds JSON-ready scalar gate reports for
+  late-time linear metrics, windowed nonlinear metrics, and zonal-response
+  residual/frequency/damping metrics, with tests and API documentation.
 
 The source tree is now organized around a credible target architecture:
 
@@ -120,9 +123,10 @@ only with parity and coverage gates attached to each extraction.
 2. **Turn validation into a gated artifact matrix.**
    - Every paper-facing lane needs one owning script, one frozen artifact path,
      one reference source, one fit/window policy, and one numeric gate.
-   - Add first-class gates for eigenfunction overlap, windowed nonlinear
-     statistics, zonal response, velocity-space convergence, and branch
-     continuation.
+   - First-class scalar gates now exist for late-time linear metrics, windowed
+     nonlinear statistics, and zonal response; next connect them to artifact
+     refresh scripts and add eigenfunction-overlap, velocity-space convergence,
+     and branch-continuation gate reports.
 
 3. **Close the next physics gates in this order.**
    - W7-X zonal-response artifact using VMEC-backed geometry and the same

@@ -132,11 +132,19 @@ The first reusable tooling for this lane now exists:
 
 - :func:`spectraxgk.benchmarking.zonal_flow_response_metrics`
 - :func:`spectraxgk.benchmarking.load_diagnostic_time_series`
+- :func:`spectraxgk.benchmarking.evaluate_scalar_gate`
+- :func:`spectraxgk.benchmarking.linear_metrics_gate_report`
+- :func:`spectraxgk.benchmarking.nonlinear_window_gate_report`
+- :func:`spectraxgk.benchmarking.zonal_response_gate_report`
 - :func:`spectraxgk.plotting.zonal_flow_response_figure`
 - ``tools/plot_zonal_flow_response.py``
 - ``tools/plot_zonal_flow_response_from_output.py``
 - ``tools/generate_miller_zonal_response_pilot.py``
 - ``tools/generate_w7x_zonal_response_panel.py``
+
+The gate-report helpers are intentionally small and JSON-ready. They should be
+used by manuscript refresh scripts so every reported artifact has the same
+observable, reference, absolute/relative tolerance, and pass/fail convention.
 
 The diagnostics stream now also carries ``Diagnostics/Phi_zonal_mode_kxt``, a
 signed complex zonal-potential history reduced over ``z`` with the same volume
