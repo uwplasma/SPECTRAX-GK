@@ -93,7 +93,9 @@ Recent work has closed real issues, not just documentation:
   storing the collision cache in low-rank form.
 - the current validation-gate tranche adds JSON-ready scalar gate reports for
   late-time linear metrics, windowed nonlinear metrics, and zonal-response
-  residual/frequency/damping metrics, with tests and API documentation.
+  residual/frequency/damping metrics, with tests and API documentation; the
+  Merlo/Miller zonal-response generator is now the first artifact script to
+  write this gate report into its JSON metadata.
 
 The source tree is now organized around a credible target architecture:
 

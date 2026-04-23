@@ -122,6 +122,14 @@ diagnostics = true
     assert meta["initial_policy"] == "first_abs"
     assert meta["literature_reference"]["case"] == "III"
     assert meta["literature_reference"]["residual_phi_over_phi0"] == 0.19
+    assert meta["gate_tolerances"]["residual_atol"] == 0.015
+    assert meta["gate_report"]["case"] == "merlo_case_iii_zonal_response"
+    assert {gate["metric"] for gate in meta["gate_report"]["gates"]} == {
+        "residual_level",
+        "gam_frequency_R0_over_vi",
+        "gam_growth_rate_R0_over_vi",
+    }
+    assert isinstance(meta["paper_scale_gate_passed"], bool)
     assert "gam_frequency_R0_over_vi" in meta
     assert "gam_growth_rate_R0_over_vi" in meta
     assert "omega_abs_error_vs_literature_R0_over_vi" in meta
