@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import json
 import sys
 from pathlib import Path
 
@@ -86,6 +87,7 @@ def test_compare_gx_nonlinear_diagnostics_plot(tmp_path: Path) -> None:
     gx_path = tmp_path / "gx.out.nc"
     sp_path = tmp_path / "spectrax.csv"
     out_path = tmp_path / "diag_compare.png"
+    summary_path = tmp_path / "diag_compare.summary.json"
 
     _write_minimal_gx_nc(gx_path)
     _write_minimal_spectrax_csv(sp_path)
@@ -103,6 +105,10 @@ def test_compare_gx_nonlinear_diagnostics_plot(tmp_path: Path) -> None:
             str(sp_path),
             "--out",
             str(out_path),
+            "--summary-json",
+            str(summary_path),
+            "--gate-mean-rel",
+            "2.0",
         ]
         old_argv = sys.argv
         sys.argv = argv
@@ -115,6 +121,12 @@ def test_compare_gx_nonlinear_diagnostics_plot(tmp_path: Path) -> None:
 
     assert out_path.exists()
     assert out_path.stat().st_size > 0
+    assert summary_path.exists()
+    summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    assert summary["gate_mean_rel"] == 2.0
+    assert summary["gate_report"]["case"] == "nonlinear_diagnostics_window"
+    assert {row["metric"] for row in summary["summary"]} >= {"Wg", "Wphi", "HeatFlux"}
+    assert isinstance(summary["gate_passed"], bool)
 
 
 def test_compare_gx_nonlinear_diagnostics_uses_single_species_wapar(tmp_path: Path) -> None:

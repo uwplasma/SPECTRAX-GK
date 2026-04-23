@@ -132,6 +132,10 @@ only with parity and coverage gates attached to each extraction.
    - Eigenfunction-overlap gates now exist and the KBM raw-overlay generator
      writes them into its JSON metadata, with the current bounded artifact kept
      explicitly open until it reaches the overlap/relative-L2 thresholds.
+   - Nonlinear diagnostic comparison runs can now write JSON gate reports via
+     `tools/compare_gx_nonlinear_diagnostics.py --summary-json`, giving the
+     publication plots a machine-readable mean-relative-mismatch acceptance
+     record.
 
 3. **Close the next physics gates in this order.**
    - W7-X zonal-response artifact using VMEC-backed geometry and the same
