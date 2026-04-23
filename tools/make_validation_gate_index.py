@@ -47,6 +47,9 @@ def _load_json(path: Path) -> dict[str, object]:
 
 
 def _report_entries(path: Path, data: dict[str, object]) -> list[dict[str, object]]:
+    if data.get("gate_index_include") is False:
+        return []
+
     reports: list[dict[str, object]] = []
     report = data.get("gate_report")
     if isinstance(report, dict):

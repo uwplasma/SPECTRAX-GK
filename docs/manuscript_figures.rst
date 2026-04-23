@@ -33,15 +33,15 @@ Core Validation Figures
    * - Nonlinear transport panel
      - ``tools/make_gx_summary_panel.py`` / ``tools/make_gx_publication_panel.py``
      - Open
-     - Cyclone, Miller, KBM, W7-X, HSX with matched windows. Current component artifacts: ``docs/_static/nonlinear_cyclone_diag_compare_t400.png``, ``docs/_static/nonlinear_cyclone_miller_diag_compare_t122.png``, ``docs/_static/nonlinear_kbm_diag_compare_t400_stats.png``, ``docs/_static/nonlinear_w7x_diag_compare_t200.png``, ``docs/_static/hsx_nonlinear_compare_t50_true.png``. ``tools/compare_gx_nonlinear_diagnostics.py --summary-json`` now writes machine-readable mean-relative-mismatch gates for each plotted diagnostic, so refreshed panels can carry a JSON acceptance record instead of only printed console output. The first materialized window-gate metadata are ``docs/_static/nonlinear_cyclone_miller_gate_summary.json``, ``docs/_static/nonlinear_kbm_gate_summary.json``, ``docs/_static/nonlinear_hsx_gate_summary.json``, ``docs/_static/nonlinear_w7x_gate_summary.json``, and ``docs/_static/nonlinear_cyclone_short_gate_summary.json``; with the current ``0.10`` mean-relative release gate, Cyclone Miller, KBM, HSX, and W7-X pass, while the short Cyclone diagnostic remains open.
+     - Cyclone, Miller, KBM, W7-X, HSX with matched windows. Current component artifacts: ``docs/_static/nonlinear_cyclone_diag_compare_t400.png``, ``docs/_static/nonlinear_cyclone_miller_diag_compare_t122.png``, ``docs/_static/nonlinear_kbm_diag_compare_t400_stats.png``, ``docs/_static/nonlinear_w7x_diag_compare_t200.png``, ``docs/_static/hsx_nonlinear_compare_t50_true.png``. ``tools/compare_gx_nonlinear_diagnostics.py --summary-json`` now writes machine-readable mean-relative-mismatch gates for each plotted diagnostic with explicit transport-window bounds. The materialized release-window metadata are ``docs/_static/nonlinear_cyclone_gate_summary.json``, ``docs/_static/nonlinear_cyclone_miller_gate_summary.json``, ``docs/_static/nonlinear_kbm_gate_summary.json``, ``docs/_static/nonlinear_hsx_gate_summary.json``, and ``docs/_static/nonlinear_w7x_gate_summary.json``; all pass the current ``0.10`` mean-relative release gate. The older short Cyclone ``t=5`` diagnostic remains documented as an exploratory startup/resolved-spectrum audit, not a release gate.
    * - Windowed-statistics summary
      - ``tools/compare_gx_nonlinear_diagnostics.py`` plus ``tools/make_validation_gate_index.py``
      - Open
-     - per-case nonlinear gate JSONs are now indexed by ``docs/_static/validation_gate_index.png``. The next step is a dedicated nonlinear-only summary panel with mature-lane thresholds separated from exploratory/short-run diagnostics.
+     - per-case nonlinear gate JSONs are now indexed by ``docs/_static/validation_gate_index.png``. Exploratory/short-run diagnostics are explicitly excluded from the release-gate index with ``gate_index_include=false``.
    * - Validation gate index
      - ``tools/make_validation_gate_index.py``
      - Open
-     - current artifact base: ``docs/_static/validation_gate_index.png`` and ``docs/_static/validation_gate_index.json``. This is not a physics result by itself; it is the audit panel that reports which tracked gate artifacts are closed or open before manuscript drafting.
+     - current artifact base: ``docs/_static/validation_gate_index.png`` and ``docs/_static/validation_gate_index.json``. This is not a physics result by itself; it is the audit panel for release-window gates, currently ``8/8`` passed.
    * - Zonal-flow / GAM response panel
      - ``tools/plot_zonal_flow_response.py``, ``tools/plot_zonal_flow_response_from_output.py``, ``tools/generate_miller_zonal_response_pilot.py``, and ``tools/generate_w7x_zonal_response_panel.py``
      - Open
@@ -53,7 +53,7 @@ Core Validation Figures
    * - Velocity-space convergence panel
      - ``tools/generate_observed_order_gate.py`` plus dedicated full convergence refresh script to add
      - Open
-     - should follow GX-style convergence evidence and write an observed-order gate report through ``spectraxgk.benchmarking.observed_order_gate_report`` so convergence rate and final-grid error are tracked explicitly. The current atlas summary already records a machine-readable high-vs-low Cyclone grid convergence gate for the tracked convergence tile. The first generic CSV-backed pilot is ``docs/_static/cyclone_resolution_observed_order.png`` with metadata in ``docs/_static/cyclone_resolution_observed_order.json``; it is correctly open because the coarse-to-mid refinement is nonmonotone, so it is a gate-path validation artifact rather than final manuscript evidence.
+     - should follow GX-style convergence evidence and write an observed-order gate report through ``spectraxgk.benchmarking.observed_order_gate_report`` so convergence rate and final-grid error are tracked explicitly. The current atlas summary already records a machine-readable high-vs-low Cyclone grid convergence gate for the tracked convergence tile. The CSV-backed Cyclone velocity-space artifact is ``docs/_static/cyclone_resolution_observed_order.png`` with metadata in ``docs/_static/cyclone_resolution_observed_order.json``; the current office/GPU ``ky=0.30`` sweep passes the strict pairwise-order and final-error gate.
    * - Stellarator validation panel
      - dedicated script to add
      - Open

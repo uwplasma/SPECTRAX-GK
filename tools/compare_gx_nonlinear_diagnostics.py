@@ -134,6 +134,25 @@ def _load_spectrax(path: Path) -> dict[str, np.ndarray]:
     return _load_spectrax_csv(path)
 
 
+def _apply_time_window(
+    series: dict[str, np.ndarray],
+    *,
+    tmin: float | None,
+    tmax: float | None,
+) -> dict[str, np.ndarray]:
+    """Return a copy restricted to a common diagnostic time window."""
+
+    t = np.asarray(series["t"], dtype=float)
+    mask = np.ones(t.shape, dtype=bool)
+    if tmin is not None:
+        mask &= t >= float(tmin)
+    if tmax is not None:
+        mask &= t <= float(tmax)
+    if int(np.count_nonzero(mask)) < 2:
+        raise ValueError("time window must retain at least two diagnostic samples")
+    return {key: np.asarray(value)[mask] for key, value in series.items()}
+
+
 def _reduce_species_resolved(arr: np.ndarray, name: str) -> np.ndarray:
     if arr.ndim != 3:
         raise ValueError(f"expected resolved array with shape (time, species, mode), got {arr.shape} for {name}")
@@ -203,14 +222,23 @@ def _write_resolved_audit(
     sp_path: Path,
     out_png: Path,
     out_csv: Path | None,
+    tmin: float | None,
     tmax: float | None,
 ) -> None:
     gx = _load_resolved_diag(gx_path)
     sp = _load_resolved_diag(sp_path)
 
-    if tmax is not None:
-        gx_mask = gx["t"] <= tmax
-        sp_mask = sp["t"] <= tmax
+    if tmin is not None or tmax is not None:
+        gx_mask = np.ones(gx["t"].shape, dtype=bool)
+        sp_mask = np.ones(sp["t"].shape, dtype=bool)
+        if tmin is not None:
+            gx_mask &= gx["t"] >= float(tmin)
+            sp_mask &= sp["t"] >= float(tmin)
+        if tmax is not None:
+            gx_mask &= gx["t"] <= float(tmax)
+            sp_mask &= sp["t"] <= float(tmax)
+        if int(np.count_nonzero(gx_mask)) < 2 or int(np.count_nonzero(sp_mask)) < 2:
+            raise ValueError("resolved audit time window must retain at least two samples")
         gx["t"] = gx["t"][gx_mask]
         sp["t"] = sp["t"][sp_mask]
         for key in ("Wphi_kx", "Wphi_ky", "HeatFlux_kx"):
@@ -273,6 +301,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--gx", type=Path, required=True, help="GX .out.nc file with diagnostics")
     parser.add_argument("--spectrax", type=Path, required=True, help="SPECTRAX nonlinear CSV or GX-style .out.nc")
+    parser.add_argument("--tmin", type=float, default=None, help="Optional min time for plotting and metrics")
     parser.add_argument("--tmax", type=float, default=None, help="Optional max time for plotting")
     parser.add_argument(
         "--out",
@@ -327,13 +356,9 @@ def main() -> int:
     gx = _load_gx_diag(args.gx)
     sp = _load_spectrax(args.spectrax)
 
-    if args.tmax is not None:
-        gx_mask = gx["t"] <= args.tmax
-        sp_mask = sp["t"] <= args.tmax
-        for key in gx:
-            gx[key] = gx[key][gx_mask]
-        for key in sp:
-            sp[key] = sp[key][sp_mask]
+    if args.tmin is not None or args.tmax is not None:
+        gx = _apply_time_window(gx, tmin=args.tmin, tmax=args.tmax)
+        sp = _apply_time_window(sp, tmin=args.tmin, tmax=args.tmax)
 
     import matplotlib.patheffects as pe
 
@@ -431,6 +456,7 @@ def main() -> int:
             "spectrax": str(args.spectrax),
             "case": str(args.summary_case),
             "source": str(args.summary_source),
+            "tmin": None if args.tmin is None else float(args.tmin),
             "tmax": None if args.tmax is None else float(args.tmax),
             "gate_mean_rel": threshold,
             "summary": summary_rows,
@@ -455,6 +481,7 @@ def main() -> int:
             sp_path=args.spectrax,
             out_png=args.resolved_out,
             out_csv=args.resolved_csv,
+            tmin=args.tmin,
             tmax=args.tmax,
         )
     return 0
