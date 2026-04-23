@@ -95,7 +95,7 @@ Tokamak Linear
      - residual level, damping rate, GAM envelope
      - Merlo et al. + analytical Rosenbluth-Hinton estimates where applicable
      - Open
-     - residual and damping must match literature/code-backed references before publication use; signed ``Phi_zonal_mode_kxt`` is now available. The current stepping-stone artifact is ``docs/_static/miller_zonal_response_pilot.png`` from ``tools/generate_miller_zonal_response_pilot.py`` (`residual≈0.69`, `ω_GAM≈0.69`, `γ_damp≈0.45`, two-peak fit only), but it remains explicitly pending until the excitation contract is literature-grade
+     - residual and damping must match literature/code-backed references before publication use; signed ``Phi_zonal_mode_kxt`` is now available. The current stepping-stone artifact is ``docs/_static/miller_zonal_response_pilot.png`` from ``tools/generate_miller_zonal_response_pilot.py`` using a Merlo-style zero-gradient contract. It remains explicitly pending because the current trace is only weakly damped and does not yet show a clean stationary residual window
 
 Frozen artifact paths for the currently closed tokamak linear lanes:
 

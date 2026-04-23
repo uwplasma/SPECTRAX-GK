@@ -41,7 +41,7 @@ Core Validation Figures
    * - Zonal-flow / GAM response panel
      - ``tools/plot_zonal_flow_response.py``, ``tools/plot_zonal_flow_response_from_output.py``, and ``tools/generate_miller_zonal_response_pilot.py``
      - Open
-     - should combine shaped-tokamak Rosenbluth-Hinton-style residuals with W7-X residual/damping envelopes using one figure convention; use signed ``Phi_zonal_mode_kxt`` for publication claims and keep ``Phi2_zonal_t`` only as an intermediate cross-check. The current stepping-stone artifact is ``docs/_static/miller_zonal_response_pilot.png`` from the density-seeded Miller pilot (`residual≈0.69`, `ω_GAM≈0.69`, `γ_damp≈0.45`, only two envelope peaks), so it remains explicitly pending.
+     - should combine shaped-tokamak Rosenbluth-Hinton-style residuals with W7-X residual/damping envelopes using one figure convention; use signed ``Phi_zonal_mode_kxt`` for publication claims and keep ``Phi2_zonal_t`` only as an intermediate cross-check. The current stepping-stone artifact is ``docs/_static/miller_zonal_response_pilot.png`` from the Merlo-style Miller run (`ω_GAM≈0.66`, `~20` envelope peaks), but it remains explicitly pending because the current trace does not settle to a clean stationary residual window.
    * - W7-X fluctuation-spectrum panel
      - dedicated script to add
      - Open

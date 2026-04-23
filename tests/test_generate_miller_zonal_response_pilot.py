@@ -119,4 +119,4 @@ diagnostics = true
     meta = json.loads(out_png.with_suffix(".json").read_text())
     assert meta["variable"] == "Phi_zonal_mode_kxt"
     assert meta["kx_selected"] == 0.1
-    assert "density-seeded shaped-Miller pilot" in meta["notes"]
+    assert "Merlo-style density-seeded shaped-Miller zonal-relaxation run" in meta["notes"]
