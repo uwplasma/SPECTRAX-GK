@@ -141,6 +141,9 @@ only with parity and coverage gates attached to each extraction.
      convergence gate, and the remaining step is wiring the observed-order and
      branch-continuity helpers into the relevant velocity-space and
      branch-following artifact refresh scripts.
+   - KBM branch-following now has a `--branch-summary-json` path in
+     `tools/compare_gx_kbm.py`, so selected branch tables can record adjacent
+     `gamma`/`omega` jump gates and successive eigenfunction-overlap gates.
 
 3. **Close the next physics gates in this order.**
    - W7-X zonal-response artifact using VMEC-backed geometry and the same

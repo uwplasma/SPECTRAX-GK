@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 from dataclasses import dataclass, fields, is_dataclass, replace
 from pathlib import Path
 from types import SimpleNamespace
@@ -23,6 +24,11 @@ from spectraxgk.analysis import (
     select_ky_index,
 )
 from spectraxgk.benchmarks import KBM_KRYLOV_DEFAULT, run_kbm_linear
+from spectraxgk.benchmarking import (
+    branch_continuity_gate_report,
+    branch_continuity_metrics,
+    gate_report_to_dict,
+)
 from spectraxgk.config import KBMBaseCase, GeometryConfig, GridConfig, KineticElectronModelConfig
 from spectraxgk.grids import build_spectral_grid, select_ky_grid
 from spectraxgk.io import load_toml
@@ -784,6 +790,40 @@ def _write_rows(path: Path, rows: list[dict[str, float | str]]) -> None:
     pd.DataFrame(rows).to_csv(path, index=False)
 
 
+def _branch_gate_report_from_rows(
+    rows: list[dict[str, object]],
+    *,
+    max_rel_gamma_jump: float = 0.5,
+    max_rel_omega_jump: float = 0.5,
+    min_successive_overlap: float | None = 0.95,
+) -> dict[str, object] | None:
+    """Build a branch-continuity gate report from selected KBM scan rows."""
+
+    if len(rows) < 2:
+        return None
+    table = pd.DataFrame(rows).sort_values("ky")
+    overlap: np.ndarray | None = None
+    if "eig_overlap_prev" in table.columns:
+        overlap_values = np.asarray(table["eig_overlap_prev"], dtype=float)[1:]
+        if overlap_values.size == table.shape[0] - 1 and np.all(np.isfinite(overlap_values)):
+            overlap = overlap_values
+    metrics = branch_continuity_metrics(
+        np.asarray(table["ky"], dtype=float),
+        np.asarray(table["gamma"], dtype=float),
+        np.asarray(table["omega"], dtype=float),
+        successive_overlap=overlap,
+    )
+    report = branch_continuity_gate_report(
+        metrics,
+        case="kbm_linear_branch_continuity",
+        source="selected KBM comparison rows",
+        max_rel_gamma_jump=float(max_rel_gamma_jump),
+        max_rel_omega_jump=float(max_rel_omega_jump),
+        min_successive_overlap=min_successive_overlap if overlap is not None else None,
+    )
+    return gate_report_to_dict(report)
+
+
 def _candidate_row(
     *,
     ky: float,
@@ -940,6 +980,15 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Optional CSV path for per-candidate branch metrics (one row per ky/solver).",
     )
+    parser.add_argument(
+        "--branch-summary-json",
+        type=Path,
+        default=None,
+        help="Optional JSON branch-continuity gate report for the selected KBM scan rows.",
+    )
+    parser.add_argument("--branch-max-rel-gamma-jump", type=float, default=0.5)
+    parser.add_argument("--branch-max-rel-omega-jump", type=float, default=0.5)
+    parser.add_argument("--branch-min-successive-overlap", type=float, default=0.95)
     return parser
 
 
@@ -1205,6 +1254,31 @@ def main() -> None:
         _write_rows(args.out, rows)
     if args.candidate_out is not None:
         _write_rows(args.candidate_out, candidate_rows)
+    if args.branch_summary_json is not None:
+        report = _branch_gate_report_from_rows(
+            rows,
+            max_rel_gamma_jump=float(args.branch_max_rel_gamma_jump),
+            max_rel_omega_jump=float(args.branch_max_rel_omega_jump),
+            min_successive_overlap=float(args.branch_min_successive_overlap),
+        )
+        args.branch_summary_json.parent.mkdir(parents=True, exist_ok=True)
+        args.branch_summary_json.write_text(
+            json.dumps(
+                {
+                    "rows": rows,
+                    "gate_report": report,
+                    "gate_passed": None if report is None else bool(report["passed"]),
+                    "notes": (
+                        "Branch-continuity gate built from selected KBM rows. "
+                        "A null gate_report means fewer than two ky samples were available."
+                    ),
+                },
+                indent=2,
+                sort_keys=True,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
 
 
 if __name__ == "__main__":

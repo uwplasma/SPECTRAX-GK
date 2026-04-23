@@ -800,6 +800,39 @@ def test_compare_gx_kbm_candidate_row_captures_fit_window() -> None:
     assert row["fit_window_tmax"] == pytest.approx(9.6)
 
 
+def test_compare_gx_kbm_branch_gate_report_from_rows() -> None:
+    tools_dir = Path(__file__).resolve().parents[1] / "tools"
+    sys.path.insert(0, str(tools_dir))
+    try:
+        import compare_gx_kbm as mod
+    finally:
+        sys.path.remove(str(tools_dir))
+
+    rows = [
+        {"ky": 0.1, "gamma": 0.10, "omega": 0.60, "eig_overlap_prev": np.nan},
+        {"ky": 0.2, "gamma": 0.105, "omega": 0.62, "eig_overlap_prev": 0.98},
+        {"ky": 0.3, "gamma": 0.110, "omega": 0.64, "eig_overlap_prev": 0.97},
+    ]
+
+    report = mod._branch_gate_report_from_rows(
+        rows,
+        max_rel_gamma_jump=0.1,
+        max_rel_omega_jump=0.1,
+        min_successive_overlap=0.95,
+    )
+
+    assert report is not None
+    assert report["case"] == "kbm_linear_branch_continuity"
+    assert report["passed"] is True
+    assert {gate["metric"] for gate in report["gates"]} == {
+        "max_rel_gamma_jump",
+        "max_rel_omega_jump",
+        "successive_overlap_deficit",
+    }
+
+    assert mod._branch_gate_report_from_rows(rows[:1]) is None
+
+
 def test_compare_gx_kbm_parse_candidate_spec_supports_mode_override() -> None:
     tools_dir = Path(__file__).resolve().parents[1] / "tools"
     sys.path.insert(0, str(tools_dir))
