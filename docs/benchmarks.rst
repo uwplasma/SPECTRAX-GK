@@ -27,6 +27,9 @@ The atlas builder now reads its inputs from
 ``tools/benchmark_atlas_manifest.toml`` and writes a machine-readable summary to
 ``tools_out/benchmark_atlas_summary.json`` so the panel provenance stays
 explicit.
+The summary also includes gate metadata for the tracked high-vs-low Cyclone
+grid convergence tile, and future velocity-space convergence panels should use
+the same JSON-ready gate-report convention.
 
 This produces the tracked atlas panels:
 

@@ -13,6 +13,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+from spectraxgk.benchmarking import evaluate_scalar_gate, gate_report, gate_report_to_dict
+
 
 ROOT = Path(__file__).resolve().parents[1]
 STATIC = ROOT / "docs" / "_static"
@@ -83,6 +85,7 @@ def _write_summary(
     manifest_path: Path,
     resolved_assets: dict[str, dict[str, Path]],
     outputs: dict[str, Path],
+    gate_reports: dict[str, dict[str, object]] | None = None,
 ) -> None:
     payload = {
         "manifest": str(manifest_path),
@@ -92,6 +95,8 @@ def _write_summary(
         },
         "outputs": {name: str(path) for name, path in outputs.items()},
     }
+    if gate_reports is not None:
+        payload["gate_reports"] = gate_reports
     summary_path.parent.mkdir(parents=True, exist_ok=True)
     summary_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
@@ -365,6 +370,42 @@ def _build_convergence_panel(path: Path, assets: dict[str, Path]) -> None:
 
     fig.suptitle("Representative Convergence and Sensitivity Checks", fontsize=SUPTITLE_SIZE, fontweight="bold")
     _save(fig, path)
+
+
+def _build_convergence_gate_reports(
+    assets: dict[str, Path],
+    *,
+    max_rel_change: float = 0.05,
+) -> dict[str, dict[str, object]]:
+    """Build machine-readable gates for tracked convergence-panel inputs."""
+
+    scan = pd.read_csv(assets["cyclone_scan"]).sort_values("ky")
+    threshold = float(max_rel_change)
+    if threshold < 0.0:
+        raise ValueError("max_rel_change must be non-negative")
+    report = gate_report(
+        "cyclone_resolution_convergence",
+        "tracked high-vs-low production grid",
+        (
+            evaluate_scalar_gate(
+                "max_rel_gamma_change",
+                float(np.nanmax(np.asarray(scan["rel_gamma_change"], dtype=float))),
+                0.0,
+                atol=threshold,
+                rtol=0.0,
+                notes=f"Passes when high-vs-low grid gamma change <= {threshold:.6g}.",
+            ),
+            evaluate_scalar_gate(
+                "max_rel_omega_change",
+                float(np.nanmax(np.asarray(scan["rel_omega_change"], dtype=float))),
+                0.0,
+                atol=threshold,
+                rtol=0.0,
+                notes=f"Passes when high-vs-low grid omega change <= {threshold:.6g}.",
+            ),
+        ),
+    )
+    return {"cyclone_resolution_convergence": gate_report_to_dict(report)}
 
 
 def _build_imported_linear_panel(path: Path, assets: dict[str, Path]) -> None:
@@ -706,6 +747,7 @@ def main() -> None:
             "convergence": convergence_out,
             "readme": readme_out,
         },
+        gate_reports=_build_convergence_gate_reports(assets["convergence"]),
     )
 
 
