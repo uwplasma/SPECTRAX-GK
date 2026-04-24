@@ -2265,7 +2265,17 @@ Current nonlinear-lane status at the handoff point:
     - `Wg/Wphi/heat/pflux` restart diagnostics all `abs = rel = 0`
   - Direct startup replay on the same corrected head also matches GX tightly:
     - `g_state max_rel ~= 1.33e-7`
-    - `phi max_rel ~= 1.54e-6`
+    - `phi max_rel ~= 7.36e-7`
+  - New tracked exact-state convention artifact:
+    - script: `tools/plot_w7x_exact_state_audit.py`
+    - artifact: `docs/_static/w7x_exact_state_audit.{csv,json,png,pdf}`
+    - maximum finite pointwise relative error is `4.62e-5` under the explicit
+      `1e-4` convention gate; the same late `phi` array has RMS relative error
+      `3.77e-7`, and scalar diagnostics are below `1.8e-7`
+    - interpretation: the W7-X nonlinear VMEC startup, grid/field geometry,
+      fieldsolve, and scalar diagnostic reconstruction layers are closed
+      against GX exact-state dumps; the separate W7-X zonal-response residual
+      and late-envelope issue remains a recurrence/moment-closure lane
   - So the remaining open W7-X nonlinear issue is now narrowed further:
     long-window evolution drift remains, but it is not a startup-state bug and
     it is not a restart/continuation bug.
