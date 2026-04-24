@@ -1,6 +1,6 @@
 # SPECTRAX-GK Ship Readiness Plan
 
-Last updated: 2026-04-23
+Last updated: 2026-04-24
 Current public baseline under review: `fb6fabc add large-grid scaling sweep and fix tools imports`
 
 ## Strategic Audit and Next-Step Roadmap (2026-04-23)
@@ -100,6 +100,12 @@ Recent work has closed real issues, not just documentation:
   dataclasses and scalar acceptance-policy helpers into
   `src/spectraxgk/validation_gates.py`, while keeping the old
   `spectraxgk.benchmarking` and top-level compatibility exports intact.
+- the refactor branch now has a machine-readable traceability manifest,
+  `tools/validation_coverage_manifest.toml`, checked by
+  `tools/check_validation_coverage_manifest.py`. It maps high-priority modules
+  to reference anchors, physics/numerics contracts, fast tests, artifacts, and
+  next tests so the 95% package-wide coverage lane cannot drift into shallow
+  line-coverage work.
 
 The source tree is now organized around a credible target architecture:
 
@@ -145,10 +151,16 @@ The active pre-merge sequence is:
    - Continue splitting large modules only when each extraction gains tests.
    - Highest-value remaining slices: `runtime.py`, `linear.py`,
      `nonlinear.py`, `benchmarks.py`, `plotting.py`, and geometry adapters.
+   - Keep `tools/validation_coverage_manifest.toml` current on every slice:
+     each extracted module must list reference anchors, physics contracts,
+     numerics contracts, fast tests, artifacts, and next tests.
 
 2. **Turn validation into a gated artifact matrix.**
    - Every paper-facing lane needs one owning script, one frozen artifact path,
      one reference source, one fit/window policy, and one numeric gate.
+   - Use `tools/make_validation_gate_index.py` for completed gate reports and
+     `tools/check_validation_coverage_manifest.py` for forward traceability
+     from modules to tests and artifacts.
    - First-class scalar gates now exist for late-time linear metrics, windowed
      nonlinear statistics, and zonal response; next connect them to artifact
      refresh scripts.
