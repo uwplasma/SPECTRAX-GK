@@ -37,3 +37,21 @@ def test_integrate_linear_sharded_runs_with_mocked_pjit(monkeypatch) -> None:
     assert calls["rhs"] >= 2
     assert calls["put"] == 1
     assert calls["shard"] >= 3
+
+
+def test_integrate_linear_sharded_no_sharding_path(monkeypatch) -> None:
+    calls = {"rhs": 0}
+
+    def fake_rhs(G, cache, params, terms=None, dt=None):
+        calls["rhs"] += 1
+        return jnp.ones_like(G), None
+
+    monkeypatch.setattr("spectraxgk.sharded_integrators.linear_rhs_cached", fake_rhs)
+    monkeypatch.setattr("spectraxgk.sharded_integrators.pjit", lambda fn, **kwargs: fn)
+
+    G0 = jnp.zeros((1, 1, 1, 1, 1), dtype=jnp.complex64)
+    out = integrate_linear_sharded(G0, SimpleNamespace(), SimpleNamespace(), dt=0.25, steps=2)
+
+    assert out.shape == G0.shape
+    assert calls["rhs"] == 2
+    assert jnp.allclose(out, 0.5)
