@@ -125,6 +125,18 @@ def _parse_args() -> argparse.Namespace:
         help="Override the diagnostic sample stride without editing the tracked benchmark TOML.",
     )
     parser.add_argument(
+        "--Nl",
+        type=int,
+        default=None,
+        help="Override the Laguerre moment count without editing the tracked benchmark TOML.",
+    )
+    parser.add_argument(
+        "--Nm",
+        type=int,
+        default=None,
+        help="Override the Hermite moment count without editing the tracked benchmark TOML.",
+    )
+    parser.add_argument(
         "--show-progress",
         action="store_true",
         help="Print runtime progress while generating missing per-kx bundles.",
@@ -234,8 +246,8 @@ def main() -> int:
     cfg, raw = load_runtime_from_toml(args.config)
     run_cfg = dict(raw.get("run", {}))
     ky_target = float(run_cfg.get("ky", 0.0))
-    nl = int(run_cfg.get("Nl", 8))
-    nm = int(run_cfg.get("Nm", 32))
+    nl = int(args.Nl) if args.Nl is not None else int(run_cfg.get("Nl", 8))
+    nm = int(args.Nm) if args.Nm is not None else int(run_cfg.get("Nm", 32))
     dt = float(args.dt) if args.dt is not None else float(run_cfg.get("dt", cfg.time.dt))
     steps = (
         int(args.steps)
@@ -253,6 +265,10 @@ def main() -> int:
         raise ValueError("--steps must be positive")
     if sample_stride <= 0:
         raise ValueError("--sample-stride must be positive")
+    if nl <= 0:
+        raise ValueError("--Nl must be positive")
+    if nm <= 0:
+        raise ValueError("--Nm must be positive")
     diagnostics = bool(run_cfg.get("diagnostics", cfg.time.diagnostics))
     r0 = float(getattr(cfg.geometry, "R0", 1.0))
 
@@ -387,6 +403,8 @@ def main() -> int:
                     "diagnostics": bool(diagnostics),
                     "show_progress": bool(args.show_progress),
                     "expected_tmax": float(dt) * float(steps),
+                    "Nl": int(nl),
+                    "Nm": int(nm),
                 },
                 "literature_reference": dict(W7X_TEST4_REFERENCE),
                 "cases": summary_rows,

@@ -125,6 +125,10 @@ diagnostics = true
             "80",
             "--sample-stride",
             "2",
+            "--Nl",
+            "6",
+            "--Nm",
+            "10",
             "--show-progress",
         ],
     )
@@ -152,6 +156,8 @@ diagnostics = true
         "diagnostics": True,
         "show_progress": True,
         "expected_tmax": 16.0,
+        "Nl": 6,
+        "Nm": 10,
     }
     assert len(run_calls) == 4
     for kx_target, grid, kwargs in run_calls:
@@ -163,6 +169,8 @@ diagnostics = true
         assert kwargs["steps"] == 80
         assert kwargs["sample_stride"] == 2
         assert kwargs["show_progress"] is True
+        assert kwargs["Nl"] == 6
+        assert kwargs["Nm"] == 10
 
 
 def test_generate_w7x_zonal_response_formats_unresolved_damping() -> None:
