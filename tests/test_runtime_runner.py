@@ -642,7 +642,7 @@ def test_runtime_linear_cetg_mocked_time_path_and_krylov_rejection(monkeypatch: 
 
     monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: geom)
     monkeypatch.setattr(runtime, "validate_cetg_runtime_config", lambda *args, **kwargs: None)
-    monkeypatch.setattr(runtime, "_build_initial_condition", lambda *args, **kwargs: np.zeros((2, 3, 1, 1, grid.z.size), dtype=np.complex64))
+    monkeypatch.setattr(runtime, "_build_initial_condition", lambda *args, **kwargs: np.zeros((2, 1, 1, 1, grid.z.size), dtype=np.complex64))
     monkeypatch.setattr(runtime, "build_runtime_term_config", lambda _cfg: object())
     monkeypatch.setattr(runtime, "build_cetg_model_params", lambda *args, **kwargs: object())
     monkeypatch.setattr(
@@ -660,7 +660,7 @@ def test_runtime_linear_cetg_mocked_time_path_and_krylov_rejection(monkeypatch: 
                     "omega_t": np.asarray([-0.1, -0.2, -0.3]),
                 },
             )(),
-            np.ones((2, 3, 1, 1, grid.z.size), dtype=np.complex64),
+            np.ones((2, 1, 1, 1, grid.z.size), dtype=np.complex64),
             FieldState(phi=jnp.ones((1, 1, grid.z.size), dtype=jnp.complex64), apar=None, bpar=None),
         ),
     )
@@ -670,7 +670,7 @@ def test_runtime_linear_cetg_mocked_time_path_and_krylov_rejection(monkeypatch: 
         cfg,
         ky_target=0.1,
         Nl=2,
-        Nm=3,
+        Nm=1,
         solver="time",
         dt=0.1,
         steps=3,
@@ -683,7 +683,7 @@ def test_runtime_linear_cetg_mocked_time_path_and_krylov_rejection(monkeypatch: 
     assert out.fit_signal_used == "phi"
 
     with pytest.raises(NotImplementedError):
-        run_runtime_linear(cfg, ky_target=0.1, Nl=2, Nm=3, solver="krylov")
+        run_runtime_linear(cfg, ky_target=0.1, Nl=2, Nm=1, solver="krylov")
 
 
 def test_runtime_linear_cetg_validates_solver_and_time_inputs(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -696,16 +696,16 @@ def test_runtime_linear_cetg_validates_solver_and_time_inputs(monkeypatch: pytes
 
     monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: geom)
     monkeypatch.setattr(runtime, "validate_cetg_runtime_config", lambda *args, **kwargs: None)
-    monkeypatch.setattr(runtime, "_build_initial_condition", lambda *args, **kwargs: np.zeros((2, 3, 1, 1, grid.z.size), dtype=np.complex64))
+    monkeypatch.setattr(runtime, "_build_initial_condition", lambda *args, **kwargs: np.zeros((2, 1, 1, 1, grid.z.size), dtype=np.complex64))
     monkeypatch.setattr(runtime, "build_runtime_term_config", lambda _cfg: object())
     monkeypatch.setattr(runtime, "build_cetg_model_params", lambda *args, **kwargs: object())
 
     with pytest.raises(ValueError):
-        run_runtime_linear(cfg, ky_target=0.1, Nl=2, Nm=3, solver="mystery")
+        run_runtime_linear(cfg, ky_target=0.1, Nl=2, Nm=1, solver="mystery")
     with pytest.raises(ValueError, match="dt must be > 0"):
-        run_runtime_linear(cfg, ky_target=0.1, Nl=2, Nm=3, solver="time", dt=0.0, steps=2)
+        run_runtime_linear(cfg, ky_target=0.1, Nl=2, Nm=1, solver="time", dt=0.0, steps=2)
     with pytest.raises(ValueError, match="steps must be >= 1"):
-        run_runtime_linear(cfg, ky_target=0.1, Nl=2, Nm=3, solver="time", dt=0.1, steps=0)
+        run_runtime_linear(cfg, ky_target=0.1, Nl=2, Nm=1, solver="time", dt=0.1, steps=0)
 
 
 def test_runtime_nonlinear_smoke() -> None:
@@ -1581,6 +1581,7 @@ def test_runtime_nonlinear_uses_gx_method_default_cfl_fac(monkeypatch: pytest.Mo
         implicit_preconditioner=None,
         fixed_mode_ky_index=None,
         fixed_mode_kx_index=None,
+        external_phi=None,
     ):
         captured["cfl_fac"] = float(cfl_fac)
         t = np.asarray([0.1], dtype=float)
@@ -1662,6 +1663,7 @@ def test_runtime_nonlinear_preserves_explicit_cfl_fac(monkeypatch: pytest.Monkey
         implicit_preconditioner=None,
         fixed_mode_ky_index=None,
         fixed_mode_kx_index=None,
+        external_phi=None,
     ):
         captured["cfl_fac"] = float(cfl_fac)
         t = np.asarray([0.1], dtype=float)
@@ -2518,6 +2520,12 @@ def test_runtime_random_multimode_init_matches_gx_c_rand_sequence() -> None:
         expected[ky_i, kx_i, :] = vals
         if kx_i != 0:
             expected[ky_i, expected.shape[1] - kx_i, :] = (rb + 1j * ra) * z_phase
+    ny = expected.shape[0]
+    nyc = ny // 2 + 1
+    neg_hi = nyc - 1 if (ny % 2) == 0 else nyc
+    neg = np.conj(expected[1:neg_hi])[::-1]
+    kx_neg = np.concatenate(([0], np.arange(expected.shape[1] - 1, 0, -1)))
+    expected[nyc:] = neg[:, kx_neg, :]
 
     assert np.allclose(g0, expected, atol=1.0e-6)
 
@@ -2687,6 +2695,7 @@ def test_runtime_nonlinear_mode_selection_respects_dealias(monkeypatch) -> None:
         implicit_preconditioner=None,
         fixed_mode_ky_index=None,
         fixed_mode_kx_index=None,
+        external_phi=None,
     ):
         captured["omega_ky_index"] = int(omega_ky_index)
         captured["omega_kx_index"] = int(omega_kx_index)
@@ -2782,6 +2791,7 @@ def test_runtime_nonlinear_mode_selection_honors_kx_target(monkeypatch) -> None:
         implicit_preconditioner=None,
         fixed_mode_ky_index=None,
         fixed_mode_kx_index=None,
+        external_phi=None,
     ):
         captured["omega_ky_index"] = int(omega_ky_index)
         captured["omega_kx_index"] = int(omega_kx_index)

@@ -792,9 +792,10 @@ physics rigor:
   subsets (fundamentals, linear core, runtime/nonlinear). This catches solver
   and dtype regressions quickly.
 - **Wide coverage tier**: ``tools/run_wide_coverage_gate.py`` runs top-level
-  test files in bounded shards, combines coverage data, and enforces the
-  package-wide ``>=95%`` target. Each shard has its own timeout so a single
-  slow validation slice cannot become an unbounded release job.
+  test files in bounded shards, explicitly includes integration-marked solver
+  files, combines coverage data, and enforces the package-wide ``>=95%``
+  target. Each shard has its own timeout so a single slow validation slice
+  cannot become an unbounded release job.
 - **Manual full tier**: full ``pytest`` suite plus strict coverage gates:
   ``spectraxgk.terms >= 90%`` and per-module core gates for
   ``linear_krylov.py`` and ``diffrax_integrators.py``.
@@ -806,7 +807,12 @@ The same wide gate can be run locally with:
 
 .. code-block:: bash
 
-   python tools/run_wide_coverage_gate.py --shards 6 --timeout 300 --fail-under 95
+   python tools/run_wide_coverage_gate.py \
+     --shards 12 \
+     --timeout 300 \
+     --fail-under 95 \
+     --pytest-arg=-o \
+     --pytest-arg=addopts=
 
 Core modular coverage gate
 --------------------------

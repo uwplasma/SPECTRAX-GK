@@ -132,6 +132,16 @@ def test_integrate_nonlinear_observed_order_against_exact_solution(
     assert metrics.asymptotic_order <= expected_order + 0.6
 
 
+def test_integrate_nonlinear_k10_branch_is_finite_and_shape_preserving() -> None:
+    G0 = jnp.asarray([[1.0 + 0.0j, 0.5 + 0.25j]], dtype=jnp.complex64)
+
+    G_final, fields = integrate_nonlinear(_linear_rhs(0.3 - 0.2j), G0, 0.1, 2, method="k10")
+
+    assert G_final.shape == G0.shape
+    assert fields.phi.shape[0] == 2
+    assert np.all(np.isfinite(np.asarray(G_final)))
+
+
 def test_nonlinear_placeholders() -> None:
     G = jnp.ones((3, 4, 1), dtype=jnp.complex64)
     out = placeholder_nonlinear_contribution(G, weight=jnp.asarray(2.0))
