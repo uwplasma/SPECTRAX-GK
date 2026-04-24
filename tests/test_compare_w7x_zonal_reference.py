@@ -49,7 +49,13 @@ def _write_reference(tmp_path: Path) -> tuple[Path, Path]:
     return trace_csv, residual_csv
 
 
-def _write_summary(tmp_path: Path, *, tmax_scale: float = 1.0, residual_shift: float = 0.0) -> Path:
+def _write_summary(
+    tmp_path: Path,
+    *,
+    tmax_scale: float = 1.0,
+    residual_shift: float = 0.0,
+    initial_level: float = 1.0,
+) -> Path:
     rows = []
     for kx in (0.05, 0.07, 0.10, 0.30):
         ref_tmax = 3500.0 if kx == 0.05 else 2000.0
@@ -59,6 +65,7 @@ def _write_summary(tmp_path: Path, *, tmax_scale: float = 1.0, residual_shift: f
                 "residual_level": 0.1 + kx + residual_shift,
                 "residual_std": 0.01,
                 "tmax": ref_tmax * tmax_scale,
+                "initial_level": initial_level,
             }
         )
     path = tmp_path / "spectrax_summary.csv"
@@ -97,6 +104,38 @@ def test_w7x_zonal_reference_comparison_fails_short_window(tmp_path: Path) -> No
     assert rows["coverage_ratio"].max() < 0.98
     failed = [gate.metric for gate in report.gates if not gate.passed]
     assert "time_coverage_kx050" in failed
+
+
+def test_w7x_zonal_reference_trace_metrics_use_summary_initial_level(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    ref_traces, ref_residuals = _write_reference(tmp_path)
+    initial_level = 2.0
+    summary = _write_summary(tmp_path, initial_level=initial_level)
+    trace_dir = tmp_path / "traces"
+    trace_dir.mkdir()
+    refs = pd.read_csv(ref_traces)
+    for kx, group in refs.groupby("kx_rhoi"):
+        mean_trace = group.pivot_table(index="t_vti_over_a", columns="code", values="response", aggfunc="mean")
+        mean_trace = mean_trace.sort_index().mean(axis=1)
+        token = mod._kx_token(float(kx))
+        pd.DataFrame(
+            {
+                "t": np.asarray(mean_trace.index, dtype=float),
+                "phi_zonal_real": initial_level * np.asarray(mean_trace, dtype=float),
+            }
+        ).to_csv(trace_dir / f"w7x_test4_kx{token}.csv", index=False)
+
+    rows, report = mod.build_comparison(
+        spectrax_summary=summary,
+        reference_traces=ref_traces,
+        reference_residuals=ref_residuals,
+        spectrax_trace_dir=trace_dir,
+        envelope_atol=1.0e-12,
+    )
+
+    assert report.passed is True
+    assert rows["trace_available"].min() == 1
+    assert rows["tail_mean_abs_error"].max() <= 1.0e-12
 
 
 def test_w7x_zonal_reference_main_writes_open_json(tmp_path: Path) -> None:

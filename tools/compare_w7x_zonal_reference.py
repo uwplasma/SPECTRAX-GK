@@ -65,6 +65,16 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--coverage-fraction", type=float, default=0.98)
     parser.add_argument("--tail-fraction", type=float, default=0.10)
     parser.add_argument("--envelope-atol", type=float, default=0.03)
+    parser.add_argument(
+        "--trace-normalization",
+        choices=("summary_initial_level", "first_nonzero"),
+        default="summary_initial_level",
+        help=(
+            "Normalization for optional trace-shape gates. summary_initial_level "
+            "keeps the envelope metric consistent with the residual normalization "
+            "recorded by generate_w7x_zonal_response_panel.py."
+        ),
+    )
     parser.add_argument("--gate-index-include", action="store_true")
     return parser.parse_args(argv)
 
@@ -131,7 +141,7 @@ def _trace_path(trace_dir: Path, kx: float) -> Path:
     return trace_dir / f"w7x_test4_kx{_kx_token(kx)}.csv"
 
 
-def _normalize_trace(t: np.ndarray, y: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+def _normalize_trace(t: np.ndarray, y: np.ndarray, *, initial_level: float | None = None) -> tuple[np.ndarray, np.ndarray]:
     order = np.argsort(t)
     t_sorted = np.asarray(t, dtype=float)[order]
     y_sorted = np.asarray(y, dtype=float)[order]
@@ -140,8 +150,13 @@ def _normalize_trace(t: np.ndarray, y: np.ndarray) -> tuple[np.ndarray, np.ndarr
     y_sorted = y_sorted[finite]
     if t_sorted.size == 0:
         raise ValueError("trace is empty after finite filtering")
-    nz = np.flatnonzero(np.abs(y_sorted) > 1.0e-30)
-    scale = float(abs(y_sorted[nz[0]])) if nz.size else 1.0
+    if initial_level is None:
+        nz = np.flatnonzero(np.abs(y_sorted) > 1.0e-30)
+        scale = float(abs(y_sorted[nz[0]])) if nz.size else 1.0
+    else:
+        scale = float(initial_level)
+    if not np.isfinite(scale) or scale <= 0.0:
+        raise ValueError("trace normalization level must be finite and positive")
     return t_sorted, y_sorted / scale
 
 
@@ -151,6 +166,7 @@ def _optional_trace_metrics(
     reference_traces: pd.DataFrame,
     kx: float,
     tail_fraction: float,
+    initial_level: float | None,
 ) -> dict[str, float | int | None]:
     if trace_dir is None:
         return {
@@ -172,7 +188,11 @@ def _optional_trace_metrics(
     trace = pd.read_csv(path)
     if not {"t", "phi_zonal_real"}.issubset(trace.columns):
         raise ValueError(f"{path} must contain t,phi_zonal_real columns")
-    t_obs, y_obs = _normalize_trace(np.asarray(trace["t"], dtype=float), np.asarray(trace["phi_zonal_real"], dtype=float))
+    t_obs, y_obs = _normalize_trace(
+        np.asarray(trace["t"], dtype=float),
+        np.asarray(trace["phi_zonal_real"], dtype=float),
+        initial_level=initial_level,
+    )
     ref_subset = reference_traces[np.isclose(reference_traces["kx_rhoi"], float(kx))]
     ref_pivot = ref_subset.pivot_table(index="t_vti_over_a", columns="code", values="response", aggfunc="mean").sort_index()
     ref_t = np.asarray(ref_pivot.index, dtype=float)
@@ -211,6 +231,7 @@ def build_comparison(
     coverage_fraction: float = 0.98,
     tail_fraction: float = 0.10,
     envelope_atol: float = 0.03,
+    trace_normalization: str = "summary_initial_level",
 ):
     summary = _load_spectrax_summary(spectrax_summary)
     ref_traces = pd.read_csv(reference_traces)
@@ -251,11 +272,22 @@ def build_comparison(
             notes=f"Passes when SPECTRAX reaches at least {coverage_fraction:.0%} of the digitized reference window.",
         )
         gates.extend([coverage_gate, residual_gate])
+        trace_initial_level = None
+        if str(trace_normalization).strip().lower().replace("-", "_") == "summary_initial_level":
+            if spectrax_trace_dir is not None and "initial_level" not in obs.index:
+                raise ValueError(
+                    "summary_initial_level trace normalization requires an initial_level column "
+                    "in the SPECTRAX summary CSV"
+                )
+            trace_initial_level = None if spectrax_trace_dir is None else float(obs["initial_level"])
+        elif str(trace_normalization).strip().lower().replace("-", "_") != "first_nonzero":
+            raise ValueError("trace_normalization must be one of {'summary_initial_level', 'first_nonzero'}")
         trace_metrics = _optional_trace_metrics(
             trace_dir=spectrax_trace_dir,
             reference_traces=ref_traces,
             kx=kx,
             tail_fraction=float(tail_fraction),
+            initial_level=trace_initial_level,
         )
         if trace_metrics["tail_std"] is not None and trace_metrics["reference_tail_std"] is not None:
             gates.append(
@@ -342,6 +374,7 @@ def main(argv: list[str] | None = None) -> int:
         coverage_fraction=float(args.coverage_fraction),
         tail_fraction=float(args.tail_fraction),
         envelope_atol=float(args.envelope_atol),
+        trace_normalization=str(args.trace_normalization),
     )
     args.out_csv.parent.mkdir(parents=True, exist_ok=True)
     rows.to_csv(args.out_csv, index=False)
@@ -357,11 +390,13 @@ def main(argv: list[str] | None = None) -> int:
         "reference_residuals": _repo_relative(args.reference_residuals),
         "comparison_csv": _repo_relative(args.out_csv),
         "comparison_png": _repo_relative(args.out_png),
+        "trace_normalization": str(args.trace_normalization),
         "notes": (
             "This gate compares SPECTRAX-GK W7-X test-4 zonal-flow residuals and, when trace CSVs are available, "
             "late-window oscillation envelopes against digitized stella/GENE Figure 11 references. The current "
-            "short-window SPECTRAX panel is expected to fail the time-coverage gate; closure requires long-window "
-            "runs reaching the reference windows."
+            "long-window Gaussian-potential artifact closes the residual and time-coverage gates, but the overall "
+            "status remains open while the late-window envelope mismatch is tracked as a velocity-space recurrence "
+            "and closure follow-up."
         ),
     }
     args.out_json.parent.mkdir(parents=True, exist_ok=True)

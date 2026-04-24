@@ -87,6 +87,16 @@ def _parse_args() -> argparse.Namespace:
         help="Initial normalization convention for the residual/GAM metrics.",
     )
     parser.add_argument(
+        "--initial-normalization",
+        choices=("init_amp", "line_first"),
+        default="init_amp",
+        help=(
+            "Reference normalization for the plotted response. The W7-X paper "
+            "normalizes the line-averaged response to the maximum initial "
+            "Gaussian potential, so the default uses init.init_amp."
+        ),
+    )
+    parser.add_argument(
         "--peak-fit-max-peaks",
         type=int,
         default=4,
@@ -182,6 +192,22 @@ def _format_metric(value: object, *, fmt: str = ".3f", missing: str = "not fitte
     return f"{val:{fmt}}"
 
 
+def _initial_level_override(args: argparse.Namespace, cfg: object) -> float | None:
+    if str(args.initial_normalization) == "line_first":
+        return None
+    init = getattr(cfg, "init", None)
+    init_amp = float(getattr(init, "init_amp", 1.0))
+    if not np.isfinite(init_amp) or init_amp == 0.0:
+        raise ValueError("init.init_amp must be finite and non-zero for --initial-normalization=init_amp")
+    return abs(init_amp)
+
+
+def _normalization_label(args: argparse.Namespace) -> str:
+    if str(args.initial_normalization) == "init_amp":
+        return r"$\langle\phi\rangle_z/|\phi_0|_{\max}$"
+    return r"$\phi_\mathrm{zonal}/|\phi_\mathrm{zonal}(0)|$"
+
+
 def _plot_panel(
     cases: list[dict[str, object]],
     *,
@@ -271,6 +297,7 @@ def main() -> int:
         raise ValueError("--Nm must be positive")
     diagnostics = bool(run_cfg.get("diagnostics", cfg.time.diagnostics))
     r0 = float(getattr(cfg.geometry, "R0", 1.0))
+    initial_override = _initial_level_override(args, cfg)
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
     cases: list[dict[str, object]] = []
@@ -324,6 +351,7 @@ def main() -> int:
             tail_fraction=float(args.tail_fraction),
             initial_fraction=float(args.initial_fraction),
             initial_policy=str(args.initial_policy),
+            initial_level_override=initial_override,
             peak_fit_max_peaks=int(args.peak_fit_max_peaks),
             damping_fit_mode="branchwise_extrema",
             frequency_fit_mode="hilbert_phase",
@@ -340,6 +368,8 @@ def main() -> int:
             "kx_index": int(kx_index),
             "source_path": _artifact_path(out_bundle),
             "initial_level": float(metrics.initial_level),
+            "initial_normalization": str(args.initial_normalization),
+            "initial_level_override": None if initial_override is None else float(initial_override),
             "residual_level": float(metrics.residual_level),
             "residual_std": float(metrics.residual_std),
             "response_rms": float(metrics.response_rms),
@@ -375,7 +405,7 @@ def main() -> int:
     fig = _plot_panel(
         cases,
         title="W7-X bean-tube zonal-flow relaxation (test 4)",
-        y_label=r"$\phi_\mathrm{zonal}/|\phi_\mathrm{zonal}(0)|$",
+        y_label=_normalization_label(args),
     )
     args.out_png.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(args.out_png, dpi=220, bbox_inches="tight")
@@ -393,6 +423,8 @@ def main() -> int:
             {
                 "config": _artifact_path(args.config),
                 "initial_policy": str(args.initial_policy),
+                "initial_normalization": str(args.initial_normalization),
+                "initial_level_override": None if initial_override is None else float(initial_override),
                 "damping_method": "branchwise_extrema",
                 "frequency_method": "hilbert_phase",
                 "fit_window_tmax": float(args.fit_window_tmax),
@@ -416,13 +448,15 @@ def main() -> int:
                     "It uses the unweighted line-averaged signed potential observable requested by the paper; "
                     "the volume-weighted Phi_zonal_mode_kxt diagnostic remains available for shaped-tokamak "
                     "and energy-consistency checks. "
-                    "For consistency with the shaped-tokamak Merlo lane, each trace is normalized with the "
-                    "first-sample convention and the initial GAM is extracted with separate positive/negative-extrema "
+                    "Each trace is normalized to the maximum initial potential amplitude when "
+                    "--initial-normalization=init_amp, matching the published W7-X caption; "
+                    "the line_first option is retained for first-sample extraction audits. "
+                    "The initial GAM is extracted with separate positive/negative-extrema "
                     "damping fits plus a Hilbert-phase frequency estimate over a common early-time window. "
                     "The default fit window cap isolates the initial GAM before the slower stellarator-specific "
                     "oscillation described in section 4.4 of the benchmark paper; this cutoff is a manuscript-policy "
-                    "inference, not a quoted number from the paper itself. The metadata remains open until "
-                    "reference tolerances are frozen against the published stella/GENE traces."
+                    "inference, not a quoted number from the paper itself. The metadata remains open until the "
+                    "separate digitized-reference gate closes both residual and late-envelope tolerances."
                 ),
                 "references": [
                     "Gonzalez-Jerez et al. 2022 W7-X test-4 zonal-flow relaxation benchmark",

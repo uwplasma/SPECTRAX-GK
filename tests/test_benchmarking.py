@@ -412,6 +412,23 @@ def test_zonal_flow_response_metrics_support_first_sample_rh_normalization() -> 
     assert metrics.residual_level == pytest.approx(0.2, abs=0.03)
 
 
+def test_zonal_flow_response_metrics_support_external_initial_level_override() -> None:
+    t = np.linspace(0.0, 12.0, 241)
+    response = 0.6 + np.exp(-0.7 * t) * np.cos(1.5 * t)
+
+    metrics = zonal_flow_response_metrics(
+        t,
+        response,
+        tail_fraction=0.25,
+        initial_policy="first_abs",
+        initial_level_override=3.0,
+    )
+
+    assert metrics.initial_policy == "first_abs"
+    assert metrics.initial_level == pytest.approx(3.0)
+    assert metrics.residual_level == pytest.approx(0.2, abs=0.02)
+
+
 def test_zonal_flow_response_metrics_can_limit_damping_fit_to_early_peaks() -> None:
     t = np.linspace(0.0, 24.0, 2401)
     envelope = np.exp(-0.22 * np.minimum(t, 9.0)) * np.exp(0.08 * np.maximum(t - 9.0, 0.0))
@@ -475,6 +492,8 @@ def test_zonal_flow_response_metrics_validate_input_and_handle_nonoscillatory_si
         zonal_flow_response_metrics(np.arange(5.0), np.ones(5), frequency_fit_mode="unknown")
     with pytest.raises(ValueError):
         zonal_flow_response_metrics(np.arange(5.0), np.ones(5), hilbert_trim_fraction=0.5)
+    with pytest.raises(ValueError):
+        zonal_flow_response_metrics(np.arange(5.0), np.ones(5), initial_level_override=0.0)
 
     t = np.linspace(0.0, 5.0, 101)
     response = np.exp(-t)
