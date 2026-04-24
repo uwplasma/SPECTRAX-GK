@@ -139,11 +139,14 @@ The first reusable tooling for this lane now exists:
 - :func:`spectraxgk.validation_gates.linear_metrics_gate_report`
 - :func:`spectraxgk.validation_gates.nonlinear_window_gate_report`
 - :func:`spectraxgk.validation_gates.zonal_response_gate_report`
+- :func:`spectraxgk.zonal_validation.reference_residual_table`
+- :func:`spectraxgk.zonal_validation.tail_trace_metrics`
 - :func:`spectraxgk.plotting.zonal_flow_response_figure`
 - ``tools/plot_zonal_flow_response.py``
 - ``tools/plot_zonal_flow_response_from_output.py``
 - ``tools/generate_miller_zonal_response_pilot.py``
 - ``tools/generate_w7x_zonal_response_panel.py``
+- ``tools/plot_w7x_zonal_contract_audit.py``
 
 The gate-report helpers are intentionally small and JSON-ready. They should be
 used by manuscript refresh scripts so every reported artifact has the same
@@ -262,11 +265,14 @@ wrong for this radial zonal scan.
 
 The current frozen VMEC-backed artifact lives at
 ``docs/_static/w7x_zonal_response_panel.png`` with strict JSON metadata at
-``docs/_static/w7x_zonal_response_panel.json``. It is a long-window run:
-``k_x rho_i=0.05`` reaches ``t≈3460`` and the other three wavelengths reach
-``t≈1980``. After the paper-faithful line-first normalization, the late
-residuals are about ``0.0189``, ``0.137``, ``0.0938``, and ``0.526`` for
-``k_x rho_i = 0.05``, ``0.07``, ``0.10``, and ``0.30``.
+``docs/_static/w7x_zonal_response_panel.json``. The tracked combined trace CSV
+``docs/_static/w7x_zonal_response_panel.traces.csv`` is written next to the
+figure so comparison and audit scripts can be rerun without office-only
+per-``k_x`` directories. It is a long-window run: ``k_x rho_i=0.05`` reaches
+``t≈3460`` and the other three wavelengths reach ``t≈1980``. After the
+paper-faithful line-first normalization, the late residuals are about
+``0.0189``, ``0.137``, ``0.0938``, and ``0.526`` for ``k_x rho_i = 0.05``,
+``0.07``, ``0.10``, and ``0.30``.
 ``tools/digitize_w7x_zonal_reference.py`` now extracts the stella/GENE Fig. 11
 main traces and inset residual levels from the arXiv source ``figs/ZF.pdf``.
 The resulting reference artifacts are
@@ -312,6 +318,11 @@ low-moment audit reached the digitized windows but flipped the residual sign at
 therefore not restart diagnostic continuity; it is the W7-X zonal damping,
 closure, and velocity-space recurrence behavior under the paper-facing
 line-first normalization.
+``tools/plot_w7x_zonal_contract_audit.py`` turns the same tracked CSV/JSON
+artifacts into ``docs/_static/w7x_zonal_contract_audit.png``. That panel is a
+publication-facing diagnostic of the open mismatch rather than a release gate;
+its JSON metadata has ``gate_index_include=false`` so the validation index does
+not count it as closed.
 
 .. figure:: _static/w7x_zonal_response_panel.png
    :alt: W7-X high-mirror bean-tube zonal-flow response panel
@@ -336,6 +347,15 @@ line-first normalization.
    Current W7-X zonal comparison gate. Time coverage passes for all four
    wavelengths, but the paper-normalized residuals and late-window envelopes
    remain open validation issues.
+
+.. figure:: _static/w7x_zonal_contract_audit.png
+   :alt: W7-X zonal-response literature-contract audit
+
+   Publication-facing audit of the open W7-X test-4 zonal-response lane. The
+   top row separates residual and late-envelope discrepancies; the bottom row
+   overlays representative paper-normalized traces against the digitized
+   stella/GENE mean. This figure is intended to localize the remaining
+   velocity-space recurrence / closure problem, not to claim validation closure.
 
 Diffrax and nonlinear smoke tests
 ---------------------------------

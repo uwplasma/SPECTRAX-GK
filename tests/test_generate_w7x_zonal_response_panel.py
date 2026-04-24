@@ -141,7 +141,10 @@ diagnostics = true
     assert out_png.exists()
     assert out_png.with_suffix(".pdf").exists()
     assert out_png.with_suffix(".csv").exists()
+    assert out_png.with_suffix(".traces.csv").exists()
     meta = json.loads(out_png.with_suffix(".json").read_text())
+    assert meta["summary_csv"].endswith("w7x_panel.csv")
+    assert meta["traces_csv"].endswith("w7x_panel.traces.csv")
     assert meta["initial_policy"] == "first_abs"
     assert meta["initial_normalization"] == "line_first"
     assert meta["initial_level_override"] is None
@@ -174,6 +177,10 @@ diagnostics = true
     assert len(run_calls) == 4
     trace = np.loadtxt(out_dir / "w7x_test4_kx050.csv", delimiter=",", skiprows=1)
     assert np.isclose(trace[-1, 0], 30.0)
+    combined = np.genfromtxt(out_png.with_suffix(".traces.csv"), delimiter=",", names=True)
+    assert combined.size == 4 * 41
+    assert np.isclose(np.max(combined["t_reference"]), 30.0)
+    assert "response_normalized" in combined.dtype.names
     for kx_target, grid, nstep_restart, output, kwargs in run_calls:
         assert grid.boundary == "periodic"
         assert grid.non_twist is True

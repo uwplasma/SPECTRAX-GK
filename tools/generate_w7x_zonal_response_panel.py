@@ -18,6 +18,7 @@ from spectraxgk.benchmarking import load_diagnostic_time_series, zonal_flow_resp
 from spectraxgk.io import load_runtime_from_toml
 from spectraxgk.plotting import set_plot_style
 from spectraxgk.runtime_artifacts import run_runtime_nonlinear_with_artifacts
+from spectraxgk.zonal_validation import kx_token
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -194,10 +195,6 @@ def _nearest_kx_index(path: Path, target_kx: float) -> tuple[int, float]:
     return idx, float(kx[idx])
 
 
-def _kx_token(kx: float) -> str:
-    return f"{int(round(1000.0 * float(kx))):03d}"
-
-
 def _artifact_path(path: Path | str) -> str:
     """Return a stable repo-relative path for tracked metadata when possible."""
 
@@ -297,6 +294,40 @@ def _plot_panel(
     return fig
 
 
+def _write_combined_trace_csv(cases: list[dict[str, object]], out_csv: Path) -> None:
+    fieldnames = [
+        "kx_target",
+        "kx_selected",
+        "t_reference",
+        "phi_zonal_real",
+        "response_normalized",
+        "initial_level",
+        "initial_normalization",
+        "source_path",
+    ]
+    out_csv.parent.mkdir(parents=True, exist_ok=True)
+    with out_csv.open("w", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        for case in cases:
+            t = np.asarray(case["t"], dtype=float)
+            response = np.asarray(case["response"], dtype=float)
+            initial_level = float(case["initial_level"])
+            for time_value, response_value in zip(t, response, strict=True):
+                writer.writerow(
+                    {
+                        "kx_target": float(case["kx_target"]),
+                        "kx_selected": float(case["kx_selected"]),
+                        "t_reference": float(time_value),
+                        "phi_zonal_real": float(response_value),
+                        "response_normalized": float(response_value) / initial_level,
+                        "initial_level": initial_level,
+                        "initial_normalization": str(case["initial_normalization"]),
+                        "source_path": str(case["source_path"]),
+                    }
+                )
+
+
 def main() -> int:
     args = _parse_args()
     cfg, raw = load_runtime_from_toml(args.config)
@@ -339,7 +370,7 @@ def main() -> int:
     cases: list[dict[str, object]] = []
     summary_rows: list[dict[str, object]] = []
     for kx_target in [float(val) for val in args.kx_values]:
-        token = _kx_token(kx_target)
+        token = kx_token(kx_target)
         out_bundle = args.out_dir / f"w7x_test4_kx{token}.out.nc"
         if bool(args.resume_output) or not args.reuse_output or not out_bundle.exists():
             cfg_case = replace(
@@ -465,11 +496,16 @@ def main() -> int:
         writer.writeheader()
         writer.writerows(summary_rows)
 
+    traces_csv = args.out_png.with_suffix(".traces.csv")
+    _write_combined_trace_csv(cases, traces_csv)
+
     meta_out = args.out_png.with_suffix(".json")
     meta_out.write_text(
         json.dumps(
             {
                 "config": _artifact_path(args.config),
+                "summary_csv": _artifact_path(summary_csv),
+                "traces_csv": _artifact_path(traces_csv),
                 "initial_policy": str(args.initial_policy),
                 "initial_normalization": str(args.initial_normalization),
                 "initial_level_override": None if initial_override is None else float(initial_override),

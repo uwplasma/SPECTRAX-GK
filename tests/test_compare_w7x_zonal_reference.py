@@ -114,10 +114,11 @@ def test_w7x_zonal_reference_trace_metrics_use_summary_initial_level(tmp_path: P
     trace_dir = tmp_path / "traces"
     trace_dir.mkdir()
     refs = pd.read_csv(ref_traces)
+    combined_rows = []
     for kx, group in refs.groupby("kx_rhoi"):
         mean_trace = group.pivot_table(index="t_vti_over_a", columns="code", values="response", aggfunc="mean")
         mean_trace = mean_trace.sort_index().mean(axis=1)
-        token = mod._kx_token(float(kx))
+        token = mod.kx_token(float(kx))
         time_col = "t_reference" if np.isclose(float(kx), 0.05) else "t"
         pd.DataFrame(
             {
@@ -125,6 +126,16 @@ def test_w7x_zonal_reference_trace_metrics_use_summary_initial_level(tmp_path: P
                 "phi_zonal_real": initial_level * np.asarray(mean_trace, dtype=float),
             }
         ).to_csv(trace_dir / f"w7x_test4_kx{token}.csv", index=False)
+        for time_value, value in zip(mean_trace.index, mean_trace, strict=True):
+            combined_rows.append(
+                {
+                    "kx_target": float(kx),
+                    "t_reference": float(time_value),
+                    "phi_zonal_real": initial_level * float(value),
+                }
+            )
+    combined_trace = tmp_path / "combined_traces.csv"
+    pd.DataFrame(combined_rows).to_csv(combined_trace, index=False)
 
     rows, report = mod.build_comparison(
         spectrax_summary=summary,
@@ -137,6 +148,16 @@ def test_w7x_zonal_reference_trace_metrics_use_summary_initial_level(tmp_path: P
     assert report.passed is True
     assert rows["trace_available"].min() == 1
     assert rows["tail_mean_abs_error"].max() <= 1.0e-12
+
+    combined_rows_out, combined_report = mod.build_comparison(
+        spectrax_summary=summary,
+        reference_traces=ref_traces,
+        reference_residuals=ref_residuals,
+        spectrax_traces=combined_trace,
+        envelope_atol=1.0e-12,
+    )
+    assert combined_report.passed is True
+    assert combined_rows_out["tail_mean_abs_error"].max() <= 1.0e-12
 
 
 def test_w7x_zonal_reference_main_writes_open_json(tmp_path: Path) -> None:
