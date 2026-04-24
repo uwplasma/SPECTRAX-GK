@@ -8,8 +8,11 @@ import pytest
 from spectraxgk.config import GeometryConfig, GridConfig
 from spectraxgk.geometry import (
     ZERO_SHAT_THRESHOLD,
+    FluxTubeGeometryData,
     SAlphaGeometry,
     SlabGeometry,
+    _gx_bgrad_from_bmag,
+    _periodic_spectral_derivative,
     apply_geometry_grid_defaults,
     build_flux_tube_geometry,
     ensure_flux_tube_geometry_data,
@@ -74,6 +77,24 @@ def test_slab_geometry_matches_gx_contract():
     assert jnp.allclose(gds2, 1.0 + (0.4 * theta) ** 2)
     assert jnp.allclose(gds21, -(0.4 * 0.4) * theta)
     assert jnp.allclose(gds22, jnp.full_like(theta, 0.16))
+
+    kx = jnp.array([0.0, 0.2])
+    ky = jnp.array([0.1, 0.3])
+    assert geom.kx_effective(kx, ky, theta[:2]).shape == (2,)
+    assert geom.k_perp2(kx[None, :, None], ky[:, None, None], theta[None, None, :]).shape == (2, 2, 3)
+    cv_d, gb_d = geom.drift_components(kx, ky, theta)
+    assert cv_d.shape == (2, 2, 3)
+    assert gb_d.shape == (2, 2, 3)
+    assert geom.omega_d(kx, ky, theta).shape == (2, 2, 3)
+
+
+def test_slab_geometry_pytree_roundtrip_and_z0_default() -> None:
+    geom = SlabGeometry(s_hat=0.2, z0=None, zero_shat=False)
+    children, aux = geom.tree_flatten()
+    restored = SlabGeometry.tree_unflatten(aux, children)
+
+    assert restored.s_hat == pytest.approx(geom.s_hat)
+    assert restored.gradpar() == pytest.approx(1.0)
 
 
 def test_zero_shat_slab_geometry_matches_gx_override():
@@ -271,6 +292,39 @@ def test_ensure_flux_tube_geometry_data_trims_closed_theta_interval():
     assert ensured.theta.shape == theta_solver.shape
     assert jnp.allclose(ensured.theta, theta_solver)
     assert jnp.allclose(ensured.bmag_profile, sampled.bmag_profile[:-1])
+
+
+def test_sampled_geometry_rejects_mismatched_theta_and_trim_too_short() -> None:
+    geom = sample_flux_tube_geometry(SAlphaGeometry(q=1.0, s_hat=0.0, epsilon=0.0), jnp.asarray([0.0]))
+
+    with pytest.raises(ValueError, match="fewer than two"):
+        geom.trim_terminal_theta_point()
+    with pytest.raises(ValueError, match="same last dimension"):
+        geom.bmag(jnp.asarray([0.0, 1.0]))
+    with pytest.raises(ValueError, match="does not match"):
+        geom.bmag(jnp.asarray([1.0]))
+
+
+def test_sampled_geometry_broadcasts_profiles_on_batched_theta() -> None:
+    theta = jnp.linspace(-jnp.pi, jnp.pi, 5)
+    geom = sample_flux_tube_geometry(SAlphaGeometry(q=1.0, s_hat=0.0, epsilon=0.0), theta)
+    theta_batched = jnp.stack([theta, theta], axis=0)
+
+    bmag = geom.bmag(theta_batched)
+
+    assert bmag.shape == theta_batched.shape
+    assert jnp.allclose(bmag[0], geom.bmag(theta))
+
+
+def test_periodic_derivative_and_bgrad_validation_paths() -> None:
+    assert np.allclose(_periodic_spectral_derivative(np.asarray([1.0]), 1.0), [0.0])
+    with pytest.raises(ValueError, match="one-dimensional"):
+        _periodic_spectral_derivative(np.ones((2, 2)), 1.0)
+    with pytest.raises(ValueError, match="one-dimensional"):
+        _gx_bgrad_from_bmag(np.ones((2, 2)), np.ones(2), 1.0, closed=False)
+    with pytest.raises(ValueError, match="same shape"):
+        _gx_bgrad_from_bmag(np.ones(3), np.ones(2), 1.0, closed=False)
+    assert np.allclose(_gx_bgrad_from_bmag(np.asarray([0.0]), np.asarray([1.0]), 1.0, closed=False), [0.0])
 
 
 def test_load_gx_geometry_netcdf_reads_sampled_contract(tmp_path):
@@ -517,6 +571,48 @@ def test_build_flux_tube_geometry_loads_gx_netcdf(tmp_path):
     loaded = build_flux_tube_geometry(GeometryConfig(model="gx-netcdf", geometry_file=str(path)))
 
     assert loaded.source_model == "gx-netcdf"
+
+
+def test_build_flux_tube_geometry_rejects_missing_import_file_and_unknown_model() -> None:
+    with pytest.raises(ValueError, match="geometry_file"):
+        build_flux_tube_geometry(GeometryConfig(model="gx-netcdf"))
+    with pytest.raises(ValueError, match="geometry.model"):
+        build_flux_tube_geometry(GeometryConfig(model="banana"))
+
+
+def test_twist_shift_params_slab_and_imported_geometry_branches() -> None:
+    slab = SlabGeometry(s_hat=0.0)
+    jtwist, x0 = twist_shift_params(slab, GridConfig(Nx=4, Ny=4, Nz=8, Lx=6.0, Ly=6.0, jtwist=0))
+    assert jtwist == 1
+    assert x0 == pytest.approx(6.0 / (2.0 * np.pi))
+
+    theta = jnp.linspace(-jnp.pi, jnp.pi, 5)
+    imported = FluxTubeGeometryData(
+        theta=theta,
+        gradpar_value=1.0,
+        bmag_profile=jnp.ones(5),
+        bgrad_profile=jnp.zeros(5),
+        gds2_profile=jnp.ones(5),
+        gds21_profile=jnp.full(5, -0.3),
+        gds22_profile=jnp.full(5, 0.4),
+        cv_profile=jnp.zeros(5),
+        gb_profile=jnp.zeros(5),
+        cv0_profile=jnp.zeros(5),
+        gb0_profile=jnp.zeros(5),
+        jacobian_profile=jnp.ones(5),
+        grho_profile=jnp.ones(5),
+        q=1.0,
+        s_hat=0.7,
+        epsilon=0.0,
+        R0=1.0,
+    )
+    jtwist, x0 = twist_shift_params(
+        imported,
+        GridConfig(Nx=4, Ny=4, Nz=8, Lx=6.0, Ly=6.0, y0=2.0, jtwist=None),
+    )
+
+    assert jtwist != 0
+    assert x0 > 0.0
 
 
 @pytest.mark.parametrize("model", ["gx-eik", "vmec-eik", "desc-eik", "eik"])

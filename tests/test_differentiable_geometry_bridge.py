@@ -9,6 +9,8 @@ import pytest
 
 import spectraxgk
 from spectraxgk.geometry.differentiable import (
+    _candidate_paths,
+    _find_importable_module,
     discover_differentiable_geometry_backends,
     flux_tube_geometry_from_mapping,
 )
@@ -67,6 +69,43 @@ def test_flux_tube_geometry_from_mapping_rejects_bad_contracts() -> None:
     bad["gradpar"] = gradpar
     with pytest.raises(ValueError, match="gradpar"):
         flux_tube_geometry_from_mapping(bad)
+
+    bad = _sample_mapping()
+    bad["gds21"] = np.ones(7)
+    with pytest.raises(ValueError, match="length"):
+        flux_tube_geometry_from_mapping(bad)
+
+    bad = _sample_mapping()
+    bmag = np.asarray(bad["bmag"]).copy()
+    bmag[2] = np.nan
+    bad["bmag"] = bmag
+    with pytest.raises(ValueError, match="non-finite"):
+        flux_tube_geometry_from_mapping(bad)
+
+
+def test_flux_tube_geometry_from_mapping_uses_jax_native_defaults_and_shat_alias() -> None:
+    data = _sample_mapping()
+    data.pop("jacobian")
+    data.pop("grho")
+    data["shat"] = data.pop("s_hat")
+
+    geom = flux_tube_geometry_from_mapping(data)
+
+    expected_jacobian = 1.0 / np.asarray(data["gradpar"]) / np.asarray(data["bmag"])
+    assert np.allclose(np.asarray(geom.jacobian_profile), expected_jacobian)
+    assert np.allclose(np.asarray(geom.grho_profile), 1.0)
+    assert geom.s_hat == pytest.approx(0.4)
+
+
+def test_differentiable_backend_path_helpers_handle_missing_modules(tmp_path: Path, monkeypatch) -> None:
+    existing = tmp_path / "backend"
+    (existing / "src").mkdir(parents=True)
+    monkeypatch.setenv("SPECTRAX_VMEC_JAX_PATH", str(existing))
+
+    paths = _candidate_paths(("SPECTRAX_VMEC_JAX_PATH",), (existing, tmp_path / "missing"))
+
+    assert paths == [existing.resolve(), (existing / "src").resolve()]
+    assert _find_importable_module("spectraxgk_definitely_missing_backend", paths) is None
 
 
 def test_discover_differentiable_geometry_backends_reports_optional_apis(tmp_path: Path, monkeypatch) -> None:

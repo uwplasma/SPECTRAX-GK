@@ -38,6 +38,36 @@ def test_pad_to_multiple_preserves_prefix_and_reports_original_size() -> None:
     assert np.allclose(np.asarray(padded), np.asarray([1.0, 2.0, 3.0, 3.0]))
 
 
+def test_pad_to_multiple_noops_when_already_aligned_and_split_empty() -> None:
+    values = jnp.asarray([1.0, 2.0, 3.0, 4.0])
+    padded, original_n = parallel.pad_to_multiple(values, 2)
+
+    assert original_n == 4
+    assert np.allclose(np.asarray(padded), np.asarray(values))
+    assert parallel.split_evenly(np.asarray([]), 3) == []
+
+
+def test_batch_map_multi_device_branch_preserves_vmap_identity(monkeypatch) -> None:
+    def fake_pmap(fn, devices):
+        assert len(devices) == 2
+
+        def mapped(sharded):
+            return jnp.stack([fn(shard) for shard in sharded], axis=0)
+
+        return mapped
+
+    monkeypatch.setattr(parallel.jax, "pmap", fake_pmap)
+    values = jnp.linspace(0.0, 1.0, 5)
+
+    def fn(x):
+        return jnp.asarray([x, x + 1.0])
+
+    observed = parallel.batch_map(fn, values, batch_size=3, devices=[object(), object()])
+    expected = jax.vmap(fn)(values)
+
+    assert np.allclose(np.asarray(observed), np.asarray(expected))
+
+
 def test_parallel_helpers_reject_invalid_inputs() -> None:
     with pytest.raises(ValueError):
         parallel.split_evenly(np.arange(3), 0)
@@ -46,4 +76,8 @@ def test_parallel_helpers_reject_invalid_inputs() -> None:
     with pytest.raises(ValueError):
         parallel.batch_map(lambda x: x, jnp.asarray([]))
     with pytest.raises(ValueError):
+        parallel.batch_map(lambda x: x, jnp.asarray([1.0]), batch_size=0)
+    with pytest.raises(ValueError):
         parallel.pad_to_multiple(jnp.asarray([1.0]), 0)
+    with pytest.raises(ValueError):
+        parallel.pad_to_multiple(jnp.asarray([]), 2)

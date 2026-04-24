@@ -7,9 +7,7 @@ import pytest
 
 from spectraxgk.analysis import ModeSelection
 from spectraxgk.benchmarks import (
-    ETGBaseCase,
     InitializationConfig,
-    KineticElectronBaseCase,
     KrylovConfig,
     _apply_gx_hypercollisions,
     _build_gaussian_profile,
@@ -38,7 +36,6 @@ from spectraxgk.benchmarks import (
     select_kbm_solver_auto,
 )
 from spectraxgk.config import KineticElectronBaseCase as KineticBaseConfig
-from spectraxgk.grids import SpectralGrid
 from spectraxgk.linear import LinearParams
 
 
@@ -155,10 +152,32 @@ def test_select_fit_signal_and_auto(monkeypatch) -> None:
     signal = _select_fit_signal(phi_t, density_t, sel, fit_signal="phi", mode_method="project")
     np.testing.assert_allclose(signal, [1.0, 2.0, 3.0, 4.0])
 
+    queue = [
+        np.array([np.nan, np.nan, np.nan, np.nan], dtype=np.complex128),
+        np.array([1.0, 2.0, 3.0, 4.0], dtype=np.complex128),
+    ]
+    monkeypatch.setattr("spectraxgk.benchmarks.extract_mode_time_series", lambda *args, **kwargs: queue.pop(0))
+    signal = _select_fit_signal(density_t, phi_t, sel, fit_signal="density", mode_method="project")
+    np.testing.assert_allclose(signal, [1.0, 2.0, 3.0, 4.0])
+
+    queue = [np.array([np.nan, np.nan, np.nan, np.nan], dtype=np.complex128)]
+    monkeypatch.setattr("spectraxgk.benchmarks.extract_mode_time_series", lambda *args, **kwargs: queue.pop(0))
+    with pytest.warns(RuntimeWarning, match="insufficient finite"):
+        signal = _select_fit_signal(phi_t, None, sel, fit_signal="phi", mode_method="project")
+    np.testing.assert_allclose(signal, np.zeros(4))
+
+    queue = [np.array([np.nan, np.nan, np.nan, np.nan], dtype=np.complex128)]
+    monkeypatch.setattr("spectraxgk.benchmarks.extract_mode_time_series", lambda *args, **kwargs: queue.pop(0))
+    with pytest.warns(RuntimeWarning, match="insufficient finite"):
+        signal = _select_fit_signal(phi_t, density_t, sel, fit_signal="density", mode_method="project", fallback=False)
+    np.testing.assert_allclose(signal, np.zeros(4))
+
     queue = [np.array([1.0, 2.0], dtype=np.complex128)]
     monkeypatch.setattr("spectraxgk.benchmarks.extract_mode_time_series", lambda *args, **kwargs: queue.pop(0))
     with pytest.raises(ValueError):
         _select_fit_signal(phi_t, None, sel, fit_signal="density", mode_method="project")
+    with pytest.raises(ValueError):
+        _select_fit_signal(phi_t, density_t, sel, fit_signal="bad", mode_method="project")
 
     signals = {
         "phi": np.array([1.0, 2.0, 3.0], dtype=np.complex128),
@@ -284,6 +303,8 @@ def test_mode_signal_batch_and_window_helpers() -> None:
     np.testing.assert_allclose(_extract_mode_only_signal(arr, local_idx=2), [2, 6, 10])
     arr3 = np.arange(24).reshape(2, 3, 4)
     np.testing.assert_allclose(_extract_mode_only_signal(arr3, local_idx=1, species_index=1), [5, 17])
+    arr4 = np.arange(48).reshape(2, 2, 3, 4)
+    np.testing.assert_allclose(_extract_mode_only_signal(arr4, local_idx=4), [4, 28])
     np.testing.assert_allclose(_extract_mode_only_signal(np.array(3.0 + 1.0j), local_idx=0), [3.0 + 1.0j])
     np.testing.assert_allclose(_extract_mode_only_signal(np.array([1.0, 2.0]), local_idx=1), [1.0, 2.0])
     assert _is_array_like([1, 2]) is True
@@ -368,6 +389,15 @@ def test_kinetic_init_and_kbm_target_helpers() -> None:
     assert _kbm_use_multi_target_krylov(kcfg, None, shift=None) is False
     assert _kbm_use_multi_target_krylov(kcfg, [0.1], shift=1.0 + 0.0j) is False
     assert _kbm_use_multi_target_krylov(KrylovConfig(method="arnoldi", mode_family="kbm"), [0.1], shift=None) is False
+    assert _kbm_use_multi_target_krylov(KrylovConfig(method="shift_invert", mode_family="etg"), [0.1], shift=None) is False
+    assert (
+        _kbm_use_multi_target_krylov(
+            KrylovConfig(method="shift_invert", mode_family="kbm", shift_selection="shift"),
+            [0.1],
+            shift=None,
+        )
+        is False
+    )
 
 
 def test_species_param_builders() -> None:
@@ -394,6 +424,9 @@ def test_species_param_builders() -> None:
         damp_ends_amp=0.1,
         damp_ends_widthfrac=0.2,
         nhermite=10,
+        apar_beta_scale=0.7,
+        ampere_g0_scale=0.8,
+        bpar_beta_scale=0.9,
     )
     assert np.asarray(params.charge_sign).shape == (2,)
     assert params.beta == pytest.approx(1.0e-3)
@@ -406,9 +439,16 @@ def test_species_param_builders() -> None:
         omega_d_scale=1.0,
         omega_star_scale=1.0,
         rho_star=1.0,
+        beta_override=0.0,
+        fapar_override=0.25,
+        damp_ends_amp=0.05,
+        damp_ends_widthfrac=0.15,
     )
     assert np.asarray(eparams.charge_sign).shape == (1,)
     assert eparams.tau_e == pytest.approx(model.Te_over_Ti)
+    assert eparams.beta == pytest.approx(0.0)
+    assert eparams.fapar == pytest.approx(0.25)
+    assert eparams.damp_ends_widthfrac == pytest.approx(0.15)
 
     for bad_mass in (0.0, -1.0):
         with pytest.raises(ValueError):
@@ -422,6 +462,22 @@ def test_species_param_builders() -> None:
     with pytest.raises(ValueError):
         _electron_only_params(
             SimpleNamespace(**{**model.__dict__, "Te_over_Ti": 0.0}),
+            kpar_scale=1.0,
+            omega_d_scale=1.0,
+            omega_star_scale=1.0,
+            rho_star=1.0,
+        )
+    with pytest.raises(ValueError):
+        _two_species_params(
+            SimpleNamespace(**{**model.__dict__, "Te_over_Ti": -1.0}),
+            kpar_scale=1.0,
+            omega_d_scale=1.0,
+            omega_star_scale=1.0,
+            rho_star=1.0,
+        )
+    with pytest.raises(ValueError):
+        _electron_only_params(
+            SimpleNamespace(**{**model.__dict__, "mass_ratio": 0.0}),
             kpar_scale=1.0,
             omega_d_scale=1.0,
             omega_star_scale=1.0,

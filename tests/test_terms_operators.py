@@ -83,8 +83,45 @@ def test_grad_z_linked_fft_with_inverse_permutation_matches_scatter_path() -> No
         linked_indices=(idx_map,),
         linked_kz=(kz_link,),
         linked_inverse_permutation=inv,
+        linked_full_cover=True,
     )
     assert jnp.allclose(out_perm, out_scatter, atol=1.0e-5)
+
+
+def test_linked_fft_gather_paths_match_scatter_for_derivative_and_abs() -> None:
+    ny, nx, nz = 1, 2, 8
+    z = jnp.linspace(0.0, 2.0 * jnp.pi, nz, endpoint=False)
+    dz = z[1] - z[0]
+    f = jnp.zeros((ny, nx, nz), dtype=jnp.complex64)
+    f = f.at[0, 0, :].set(jnp.exp(1j * z))
+    f = f.at[0, 1, :].set((0.5 + 0.25j) * jnp.exp(1j * 2.0 * z))
+    idx_map = jnp.asarray([[0, 1]], dtype=jnp.int32)
+    kz_link = 2.0 * jnp.pi * jnp.fft.fftfreq(2 * nz, d=dz)
+    gather_map = jnp.asarray([0, 1], dtype=jnp.int32)
+    gather_mask = jnp.asarray([True, True])
+
+    grad_scatter = grad_z_linked_fft(f, dz=dz, linked_indices=(idx_map,), linked_kz=(kz_link,))
+    grad_gather = grad_z_linked_fft(
+        f,
+        dz=dz,
+        linked_indices=(idx_map,),
+        linked_kz=(kz_link,),
+        linked_gather_map=gather_map,
+        linked_gather_mask=gather_mask,
+        linked_use_gather=True,
+    )
+    abs_scatter = abs_z_linked_fft(f, linked_indices=(idx_map,), linked_kz=(kz_link,))
+    abs_gather = abs_z_linked_fft(
+        f,
+        linked_indices=(idx_map,),
+        linked_kz=(kz_link,),
+        linked_gather_map=gather_map,
+        linked_gather_mask=gather_mask,
+        linked_use_gather=True,
+    )
+
+    assert jnp.allclose(grad_gather, grad_scatter, atol=1.0e-5)
+    assert jnp.allclose(abs_gather, abs_scatter, atol=1.0e-5)
 
 
 def test_grad_z_linked_fft_restores_negative_ky_rows_by_conjugate_symmetry() -> None:
@@ -131,7 +168,7 @@ def test_abs_z_linked_fft_restores_negative_ky_rows_by_conjugate_symmetry() -> N
     assert jnp.allclose(out[7], jnp.conj(jnp.take(out[1], kx_neg, axis=0)), atol=1.0e-5)
 
 
-def test_grad_z_linked_fft_validates_inputs() -> None:
+def test_linked_fft_validates_inputs() -> None:
     f = jnp.ones((1, 2, 8), dtype=jnp.complex64)
     dz = jnp.asarray(0.1)
     kz = 2.0 * jnp.pi * jnp.fft.fftfreq(16, d=dz)
@@ -150,6 +187,35 @@ def test_grad_z_linked_fft_validates_inputs() -> None:
             dz=dz,
             linked_indices=(jnp.asarray([0, 1], dtype=jnp.int32),),
             linked_kz=(kz,),
+        )
+    with pytest.raises(ValueError):
+        grad_z_linked_fft(
+            f,
+            dz=dz,
+            linked_indices=(jnp.asarray([[0, 1]], dtype=jnp.int32),),
+            linked_kz=(kz,),
+            linked_full_cover=True,
+        )
+    with pytest.raises(ValueError):
+        abs_z_linked_fft(f, linked_indices=(), linked_kz=())
+    with pytest.raises(ValueError):
+        abs_z_linked_fft(
+            f,
+            linked_indices=(jnp.asarray([[0, 1]], dtype=jnp.int32),),
+            linked_kz=(),
+        )
+    with pytest.raises(ValueError):
+        abs_z_linked_fft(
+            f,
+            linked_indices=(jnp.asarray([0, 1], dtype=jnp.int32),),
+            linked_kz=(kz,),
+        )
+    with pytest.raises(ValueError):
+        abs_z_linked_fft(
+            f,
+            linked_indices=(jnp.asarray([[0, 1]], dtype=jnp.int32),),
+            linked_kz=(kz,),
+            linked_full_cover=True,
         )
 
 
