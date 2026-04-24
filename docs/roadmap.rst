@@ -52,8 +52,10 @@ Current pre-release status snapshot:
   Gauss-Newton covariance checks, rank-deficient sensitivity-map checks, and an
   explicit rejection path for empty parameter maps;
 - the Phase-A differentiable-geometry bridge is an in-memory sampled
-  flux-tube contract with 100% targeted coverage and optional
-  ``vmec_jax`` / ``booz_xform_jax`` discovery;
+  flux-tube contract with 100% targeted coverage, optional
+  ``vmec_jax`` / ``booz_xform_jax`` discovery, tracer-safe mapping into
+  ``FluxTubeGeometryData``, and a tracked AD-vs-finite-difference inverse/UQ
+  artifact at ``docs/_static/differentiable_geometry_bridge.png``;
 - production parallelization is currently claimed only for independent
   ``k_y``/batch/UQ-style workloads and the sharded linear RK2 identity path,
   not nonlinear domain decomposition;

@@ -79,9 +79,12 @@ The remaining work should be closed in this order.
 
 5. **Validate differentiability explicitly.**
    Autodiff examples should carry finite-difference or tangent checks, inverse
-   recovery diagnostics, and covariance/uncertainty estimates. The later
-   ``vmec_jax`` and ``booz_xform_jax`` bridge should add geometry-gradient
-   checks before claiming optimization readiness.
+   recovery diagnostics, and covariance/uncertainty estimates. The Phase-A
+   ``vmec_jax`` and ``booz_xform_jax`` bridge now carries a tracer-safe
+   geometry-observable sensitivity check, a two-parameter inverse design, and
+   local UQ covariance diagnostics. Growth-rate and transport derivatives must
+   get the same finite-difference checks before they are used for optimization
+   claims.
 
 6. **Keep performance measurements separated from validation.**
    Performance panels should report cold compile, warm runtime, memory, output

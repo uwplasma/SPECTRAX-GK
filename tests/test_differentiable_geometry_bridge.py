@@ -12,7 +12,11 @@ from spectraxgk.geometry.differentiable import (
     _candidate_paths,
     _find_importable_module,
     discover_differentiable_geometry_backends,
+    finite_difference_jacobian,
     flux_tube_geometry_from_mapping,
+    flux_tube_geometry_observables,
+    geometry_observable_names,
+    geometry_sensitivity_report,
 )
 
 
@@ -43,6 +47,8 @@ def _sample_mapping() -> dict[str, object]:
 
 def test_flux_tube_geometry_from_mapping_builds_solver_contract() -> None:
     assert spectraxgk.flux_tube_geometry_from_mapping is flux_tube_geometry_from_mapping
+    assert spectraxgk.geometry_observable_names is geometry_observable_names
+    assert spectraxgk.flux_tube_geometry_observables is flux_tube_geometry_observables
     geom = flux_tube_geometry_from_mapping(_sample_mapping(), source_model="vmec_jax:test")
 
     assert geom.source_model == "vmec_jax:test"
@@ -50,6 +56,9 @@ def test_flux_tube_geometry_from_mapping_builds_solver_contract() -> None:
     assert geom.nfp == 5
     assert geom.gradpar() == pytest.approx(0.7)
     assert np.allclose(np.asarray(geom.bmag(jnp.asarray(geom.theta))), np.asarray(geom.bmag_profile))
+    observables = np.asarray(flux_tube_geometry_observables(geom))
+    assert observables.shape == (len(geometry_observable_names()),)
+    assert np.all(np.isfinite(observables))
 
 
 def test_flux_tube_geometry_from_mapping_rejects_bad_contracts() -> None:
@@ -128,5 +137,61 @@ def test_discover_differentiable_geometry_backends_reports_optional_apis(tmp_pat
     info = discover_differentiable_geometry_backends()
 
     assert info["vmec_jax_available"] is True
+    assert info["vmec_jax_boundary_api_available"] is False
     assert info["booz_xform_jax_available"] is True
     assert info["booz_xform_jax_api_available"] is True
+
+
+def _differentiable_mapping(params: jnp.ndarray) -> dict[str, object]:
+    theta = jnp.linspace(-jnp.pi, jnp.pi, 16, endpoint=False)
+    ripple, elongation = params
+    ones = jnp.ones_like(theta)
+    shear = 0.35 + 0.1 * elongation
+    bmag = 1.0 + ripple * jnp.cos(theta) + 0.03 * jnp.cos(2.0 * theta)
+    return {
+        "theta": theta,
+        "gradpar": (0.8 + 0.02 * ripple) * ones,
+        "bmag": bmag,
+        "bgrad": -ripple * jnp.sin(theta),
+        "gds2": 1.0 + (shear * theta - 0.2 * elongation * jnp.sin(theta)) ** 2,
+        "gds21": -shear * (shear * theta - 0.2 * elongation * jnp.sin(theta)),
+        "gds22": (shear * shear) * ones,
+        "cvdrift": jnp.cos(theta) + 0.1 * elongation * jnp.sin(theta) ** 2,
+        "gbdrift": jnp.cos(theta) + 0.1 * elongation * jnp.sin(theta) ** 2,
+        "cvdrift0": -shear * jnp.sin(theta),
+        "gbdrift0": -shear * jnp.sin(theta),
+        "jacobian": 1.0 / ((0.8 + 0.02 * ripple) * bmag),
+        "grho": ones,
+        "q": 1.4 + 0.05 * elongation,
+        "s_hat": shear,
+        "epsilon": ripple,
+        "R0": 1.0,
+        "nfp": 5,
+    }
+
+
+def test_flux_tube_geometry_from_mapping_is_tracer_safe_for_geometry_sensitivities() -> None:
+    params = jnp.asarray([0.08, 0.4], dtype=jnp.float64)
+
+    report = geometry_sensitivity_report(_differentiable_mapping, params, fd_step=2.0e-5)
+
+    assert spectraxgk.geometry_sensitivity_report is geometry_sensitivity_report
+    assert report["observable_names"] == list(geometry_observable_names())
+    assert np.asarray(report["jacobian_ad"]).shape == (len(geometry_observable_names()), 2)
+    assert np.asarray(report["jacobian_fd"]).shape == (len(geometry_observable_names()), 2)
+    assert float(report["max_abs_ad_fd_error"]) < 5.0e-6
+    assert float(report["max_rel_ad_fd_error"]) < 5.0e-4
+
+
+def test_finite_difference_jacobian_matches_closed_form_linear_map() -> None:
+    assert spectraxgk.finite_difference_jacobian is finite_difference_jacobian
+
+    def fn(params: jnp.ndarray) -> jnp.ndarray:
+        return jnp.asarray([2.0 * params[0] - params[1], params[0] + 3.0 * params[1]])
+
+    jac = finite_difference_jacobian(fn, jnp.asarray([0.2, -0.5]), step=1.0e-5)
+
+    np.testing.assert_allclose(np.asarray(jac), np.asarray([[2.0, -1.0], [1.0, 3.0]]), rtol=1.0e-10, atol=1.0e-10)
+
+    with pytest.raises(ValueError, match="one-dimensional"):
+        finite_difference_jacobian(fn, jnp.ones((2, 1)))

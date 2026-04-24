@@ -50,6 +50,27 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--test-dir", type=Path, default=DEFAULT_TEST_DIR, help="Directory containing test_*.py files.")
     parser.add_argument("--dry-run", action="store_true", help="Print shard membership without running tests.")
     parser.add_argument(
+        "--only-shard",
+        type=int,
+        default=None,
+        help="Run only one 1-based shard. Useful for local bounded shard execution.",
+    )
+    parser.add_argument(
+        "--keep-existing-coverage",
+        action="store_true",
+        help="Do not erase existing .coverage data before running selected shard(s).",
+    )
+    parser.add_argument(
+        "--skip-combine",
+        action="store_true",
+        help="Run selected shard(s) without combining/reporting coverage data.",
+    )
+    parser.add_argument(
+        "--combine-only",
+        action="store_true",
+        help="Skip pytest execution and only combine/report existing shard coverage data.",
+    )
+    parser.add_argument(
         "--pytest-arg",
         action="append",
         default=[],
@@ -74,8 +95,27 @@ def main() -> None:
     if args.dry_run:
         return
 
-    _run([sys.executable, "-m", "coverage", "erase"], timeout=None, cwd=REPO_ROOT)
-    for idx, shard in enumerate(shards):
+    if args.combine_only:
+        _run([sys.executable, "-m", "coverage", "combine"], timeout=120, cwd=REPO_ROOT)
+        _run([sys.executable, "-m", "coverage", "xml", "-o", str(args.xml)], timeout=120, cwd=REPO_ROOT)
+        _run(
+            [sys.executable, "-m", "coverage", "report", f"--fail-under={float(args.fail_under):.6g}"],
+            timeout=120,
+            cwd=REPO_ROOT,
+        )
+        return
+
+    if args.only_shard is not None and not (1 <= int(args.only_shard) <= len(shards)):
+        raise SystemExit(f"--only-shard must be in [1, {len(shards)}]")
+    selected = (
+        [(int(args.only_shard) - 1, shards[int(args.only_shard) - 1])]
+        if args.only_shard is not None
+        else list(enumerate(shards))
+    )
+
+    if not args.keep_existing_coverage:
+        _run([sys.executable, "-m", "coverage", "erase"], timeout=None, cwd=REPO_ROOT)
+    for idx, shard in selected:
         if not shard:
             continue
         rel = [str(path.relative_to(REPO_ROOT)) for path in shard]
@@ -96,6 +136,9 @@ def main() -> None:
         ]
         print(f"running coverage shard {idx + 1}/{len(shards)}", flush=True)
         _run(cmd, timeout=int(args.timeout), cwd=REPO_ROOT)
+
+    if args.skip_combine:
+        return
 
     _run([sys.executable, "-m", "coverage", "combine"], timeout=120, cwd=REPO_ROOT)
     _run([sys.executable, "-m", "coverage", "xml", "-o", str(args.xml)], timeout=120, cwd=REPO_ROOT)
