@@ -112,6 +112,16 @@ def _parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--time-scale",
+        type=float,
+        default=2.0,
+        help=(
+            "Scale applied to runtime times before plotting/extraction. "
+            "The W7-X Fig. 11 digitized axis is in the paper's t v_ti/a units; "
+            "the current VMEC runtime traces align to that axis with a factor of 2."
+        ),
+    )
+    parser.add_argument(
         "--reuse-output",
         action="store_true",
         help="Reuse any existing per-kx out.nc bundles instead of rerunning them.",
@@ -308,6 +318,8 @@ def main() -> int:
         raise ValueError("--steps must be positive")
     if sample_stride <= 0:
         raise ValueError("--sample-stride must be positive")
+    if float(args.time_scale) <= 0.0:
+        raise ValueError("--time-scale must be positive")
     if args.checkpoint_steps is not None and int(args.checkpoint_steps) <= 0:
         raise ValueError("--checkpoint-steps must be positive when provided")
     if bool(args.reuse_output) and bool(args.resume_output):
@@ -377,8 +389,9 @@ def main() -> int:
             align_phase=True,
         )
         values = np.asarray(series.values, dtype=float)
+        t_scaled = np.asarray(series.t, dtype=float) * float(args.time_scale)
         metrics = zonal_flow_response_metrics(
-            series.t,
+            t_scaled,
             values,
             tail_fraction=float(args.tail_fraction),
             initial_fraction=float(args.initial_fraction),
@@ -420,7 +433,7 @@ def main() -> int:
         cases.append(
             {
                 **row,
-                "t": np.asarray(series.t, dtype=float),
+                "t": t_scaled,
                 "response": values,
                 "metrics": metrics,
             }
@@ -428,9 +441,9 @@ def main() -> int:
         trace_csv = args.out_dir / f"w7x_test4_kx{token}.csv"
         np.savetxt(
             trace_csv,
-            np.column_stack([np.asarray(series.t, dtype=float), values]),
+            np.column_stack([t_scaled, values]),
             delimiter=",",
-            header="t,phi_zonal_real",
+            header="t_reference,phi_zonal_real",
             comments="",
         )
 
@@ -466,6 +479,7 @@ def main() -> int:
                     "sample_stride": int(sample_stride),
                     "checkpoint_steps": None if args.checkpoint_steps is None else int(args.checkpoint_steps),
                     "resume_output": bool(args.resume_output),
+                    "time_scale": float(args.time_scale),
                     "diagnostics": bool(diagnostics),
                     "show_progress": bool(args.show_progress),
                     "expected_tmax": float(dt) * float(steps),
@@ -487,6 +501,8 @@ def main() -> int:
                     "the line_first option is retained for first-sample extraction audits. "
                     "The initial GAM is extracted with separate positive/negative-extrema "
                     "damping fits plus a Hilbert-phase frequency estimate over a common early-time window. "
+                    "Runtime times are multiplied by the metadata time_scale before plotting and reference "
+                    "comparison so the traces use the digitized W7-X figure's t v_ti/a axis. "
                     "The default fit window cap isolates the initial GAM before the slower stellarator-specific "
                     "oscillation described in section 4.4 of the benchmark paper; this cutoff is a manuscript-policy "
                     "inference, not a quoted number from the paper itself. The metadata remains open until the "

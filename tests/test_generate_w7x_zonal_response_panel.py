@@ -125,6 +125,8 @@ diagnostics = true
             "80",
             "--sample-stride",
             "2",
+            "--time-scale",
+            "3",
             "--checkpoint-steps",
             "20",
             "--Nl",
@@ -160,6 +162,7 @@ diagnostics = true
         "sample_stride": 2,
         "checkpoint_steps": 20,
         "resume_output": False,
+        "time_scale": 3.0,
         "diagnostics": True,
         "show_progress": True,
         "expected_tmax": 16.0,
@@ -167,6 +170,8 @@ diagnostics = true
         "Nm": 10,
     }
     assert len(run_calls) == 4
+    trace = np.loadtxt(out_dir / "w7x_test4_kx050.csv", delimiter=",", skiprows=1)
+    assert np.isclose(trace[-1, 0], 30.0)
     for kx_target, grid, nstep_restart, output, kwargs in run_calls:
         assert grid.boundary == "periodic"
         assert grid.non_twist is True
@@ -282,6 +287,7 @@ diagnostics = true
     assert seen == [(True, True, out_dir / "w7x_test4_kx070.out.nc", out_dir / "w7x_test4_kx070.out.nc")]
     meta = json.loads(out_png.with_suffix(".json").read_text())
     assert meta["runtime"]["resume_output"] is True
+    assert meta["runtime"]["time_scale"] == 2.0
 
 
 def test_generate_w7x_zonal_response_formats_unresolved_damping() -> None:
