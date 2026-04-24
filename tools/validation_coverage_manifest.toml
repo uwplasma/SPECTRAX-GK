@@ -238,14 +238,18 @@ fast_tests = [
   "tests/test_compare_w7x_zonal_reference.py",
   "tests/test_generate_w7x_zonal_response_panel.py",
   "tests/test_plot_w7x_zonal_closure_ladder.py",
+  "tests/test_plot_w7x_zonal_state_convention_audit.py",
+  "tests/test_plot_w7x_zonal_recurrence_sweep.py",
 ]
 artifact_paths = [
   "docs/_static/w7x_zonal_response_panel.json",
   "docs/_static/w7x_zonal_closure_ladder_kx070.json",
+  "docs/_static/w7x_zonal_state_convention_audit.json",
+  "docs/_static/w7x_zonal_recurrence_sweep_kx070.json",
 ]
 next_tests = [
-  "add state-level zonal convention tests once the recurrence issue is isolated",
-  "promote the final W7-X closure method into a release gate when it matches the literature trace",
+  "promote the final W7-X recurrence/closure method into a release gate when it matches the literature trace",
+  "add a VMEC/eik-cache concurrency regression once W7-X geometry generation uses process-safe cache writes",
 ]
 
 [[modules]]

@@ -255,9 +255,32 @@ The active pre-merge sequence is:
      mean absolute error moves from `0.283` to `0.292`. This is useful negative
      evidence: weak moment closure mitigates tails but does not close the
      literature trace mismatch.
-     The next closure step is not a documentation change; it is a velocity-space
-     recurrence / moment-closure sweep plus a state-level convention comparison
-     against stella/GENE/GX for the paper-facing normalization.
+     The state-level convention comparison now lives at
+     `docs/_static/w7x_zonal_state_convention_audit.{csv,json,png,pdf}`. It
+     closes the paper-facing initializer/observable layer at `kx rho_i=0.07`:
+     the recovered Gaussian potential has relative `L2` error `1.85e-6`,
+     off-target spectral potential content is zero to reported precision, and
+     the line/mode helper diagnostics match manual reductions at `~2e-16`.
+     It also records the normalization difference that matters for the paper:
+     the signed line-first initial level is `0.28209 init_amp`, while the
+     volume-weighted initial level is `0.28450 init_amp`.
+     The bounded recurrence sweep requested for the paper lane now lives at
+     `docs/_static/w7x_zonal_recurrence_sweep_kx070.{csv,json,png,pdf}`. It
+     varies moment resolution and closure source separately over the common
+     `t v_t/a <= 100` window. The no-closure rows give mean absolute reference
+     errors `0.295` (`Nl=8,Nm=32`), `0.276` (`Nl=12,Nm=48`), and `0.283`
+     (`Nl=16,Nm=64`). At fixed `Nl=16,Nm=64`, constant-source closure lowers
+     the final Hermite-tail fraction from `0.388` to `0.062` but worsens the
+     trace error to `0.291`; the `kz` closure remains close to no closure. The
+     current conclusion is therefore precise: the convention layer is closed,
+     while the W7-X zonal damping/recurrence closure remains a real open
+     physics/numerics lane.
+     A workflow issue was also found while running the bounded W7-X probes:
+     concurrent VMEC/eik generation can race on the shared
+     `.cache/spectrax/vmec_eik` path. The two new runs completed after
+     clearing the cache and running sequentially. A later infrastructure fix
+     should make VMEC/eik cache writes process-safe before broad parallel W7-X
+     sweeps are launched.
    - KBM raw eigenfunction overlay is closed for the tracked `ky=0.3` artifact
      with overlap `≈0.999985`; keep broader KBM nonlinear and branch-continuity
      extensions as separate future gates.
