@@ -138,5 +138,7 @@
     "steps": 35000,
     "time_scale": 1.0
   },
+  "summary_csv": "docs/_static/w7x_zonal_response_panel.csv",
+  "traces_csv": "docs/_static/w7x_zonal_response_panel.traces.csv",
   "validation_status": "open"
 }

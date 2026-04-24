@@ -198,21 +198,26 @@ The active pre-merge sequence is:
      `gate_index_include=false`.
 
 3. **Close the next physics gates in this order.**
-   - W7-X zonal-response long-window audit: the short VMEC-backed artifact now
-     uses the paper-faithful `init_field="phi"` potential initializer, a
-     periodic radial box, and the signed line-average diagnostic
-     `Phi_zonal_line_kxt`. The stella/GENE Fig. 11 reference traces and inset
-     residuals are now digitized by `tools/digitize_w7x_zonal_reference.py`
-     into `docs/_static/w7x_zonal_reference_digitized*.{csv,json,png,pdf}`.
-     The residual/time-coverage comparison gate is now implemented in
-     `tools/compare_w7x_zonal_reference.py` and materialized at
-     `docs/_static/w7x_zonal_reference_compare.{csv,json,png,pdf}`; the current
-     short `t≈60` SPECTRAX artifact fails that gate by design.
-     A `kx rho_i=0.30`, `t≈2000` pilot gives residual `≈0.107` but still has a
-     slow sign-changing oscillation that the paper says should be missing at
-     that wavelength, so the next closure step is a long-window SPECTRAX
-     regeneration for all four wavelengths compared directly to the digitized
-     stella/GENE traces.
+   - W7-X zonal-response long-window audit: the VMEC-backed artifact now uses
+     the paper-faithful `init_field="phi"` potential initializer, a periodic
+     radial box, the signed line-average diagnostic `Phi_zonal_line_kxt`,
+     `gaussian_width=1`, `--initial-normalization=line_first`, and
+     `--time-scale=1`. The stella/GENE Fig. 11 reference traces and inset
+     residuals are digitized by `tools/digitize_w7x_zonal_reference.py` into
+     `docs/_static/w7x_zonal_reference_digitized*.{csv,json,png,pdf}`.
+     `tools/generate_w7x_zonal_response_panel.py` now also writes the tracked
+     combined trace table `docs/_static/w7x_zonal_response_panel.traces.csv`,
+     and `tools/compare_w7x_zonal_reference.py` can replay the comparison from
+     that table without office-only per-`kx` directories. The current
+     long-window artifact reaches the digitized time windows (`t≈3460` for
+     `kx rho_i=0.05`, `t≈1980` for the other wavelengths), passes only the
+     `kx rho_i=0.05` residual gate, and fails all late-envelope gates. The new
+     paper-facing audit panel lives at
+     `docs/_static/w7x_zonal_contract_audit.{csv,json,png,pdf}` with
+     `gate_index_include=false`. The next closure step is not a documentation
+     change; it is a velocity-space recurrence / moment-closure audit plus a
+     state-level convention comparison against stella/GENE/GX for the
+     paper-facing normalization.
    - KBM raw eigenfunction overlay is closed for the tracked `ky=0.3` artifact
      with overlap `≈0.999985`; keep broader KBM nonlinear and branch-continuity
      extensions as separate future gates.

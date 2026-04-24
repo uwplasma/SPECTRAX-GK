@@ -55,6 +55,12 @@ Validation Gates
 .. automodule:: spectraxgk.validation_gates
    :members:
 
+Zonal Validation
+----------------
+
+.. automodule:: spectraxgk.zonal_validation
+   :members:
+
 Analysis
 --------
 

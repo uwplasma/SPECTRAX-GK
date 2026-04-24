@@ -67,14 +67,14 @@
         "units": ""
       },
       {
-        "abs_error": 0.2731378143905087,
+        "abs_error": 0.27313781439050877,
         "atol": 0.03,
         "metric": "tail_envelope_std_kx070",
         "notes": "Late-window oscillation envelope compared against digitized stella/GENE mean trace.",
-        "observed": 0.27564285273790257,
+        "observed": 0.2756428527379026,
         "passed": false,
         "reference": 0.002505038347393846,
-        "rel_error": 109.03538250209691,
+        "rel_error": 109.03538250209692,
         "rtol": 0.0,
         "units": ""
       },
@@ -156,11 +156,12 @@
     "passed": false,
     "source": "digitized stella/GENE W7-X test-4 Fig. 11"
   },
-  "notes": "This gate compares SPECTRAX-GK W7-X test-4 zonal-flow residuals and, when trace CSVs are available, late-window oscillation envelopes against digitized stella/GENE Figure 11 references. The current long-window Gaussian-potential artifact closes the residual and time-coverage gates, but the overall status remains open while the late-window envelope mismatch is tracked as a velocity-space recurrence and closure follow-up.",
+  "notes": "This gate compares SPECTRAX-GK W7-X test-4 zonal-flow residuals and, when trace CSVs are available, late-window oscillation envelopes against digitized stella/GENE Figure 11 references. The current paper-normalized long-window artifact closes the time-coverage gates, but residuals remain open at three wavelengths and the late-window envelope gates remain open. This is tracked as a physics/numerics closure lane rather than a documentation-only mismatch.",
   "reference_residuals": "docs/_static/w7x_zonal_reference_digitized_residuals.csv",
   "reference_traces": "docs/_static/w7x_zonal_reference_digitized.csv",
-  "spectrax_summary": "tools_out/zonal_response/w7x_test4_line_gaussian_probe/w7x_zonal_response_linefirst_t1_panel.csv",
-  "spectrax_trace_dir": "tools_out/zonal_response/w7x_test4_line_gaussian_probe",
+  "spectrax_summary": "docs/_static/w7x_zonal_response_panel.csv",
+  "spectrax_trace_dir": null,
+  "spectrax_traces": "docs/_static/w7x_zonal_response_panel.traces.csv",
   "trace_normalization": "summary_initial_level",
   "validation_status": "open"
 }
