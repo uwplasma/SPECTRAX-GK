@@ -27,15 +27,13 @@ The atlas builder now reads its inputs from
 ``tools/benchmark_atlas_manifest.toml`` and writes a machine-readable summary to
 ``tools_out/benchmark_atlas_summary.json`` so the panel provenance stays
 explicit.
-The summary also includes gate metadata for the tracked high-vs-low Cyclone
-grid convergence tile, and future velocity-space convergence panels should use
-the same JSON-ready gate-report convention.
+Future velocity-space convergence panels should use the same JSON-ready
+gate-report convention before they are promoted into the publication stack.
 
 This produces the tracked atlas panels:
 
 - ``docs/_static/benchmark_core_linear_atlas.png``
 - ``docs/_static/benchmark_core_nonlinear_atlas.png``
-- ``docs/_static/benchmark_convergence_panel.png``
 - ``docs/_static/benchmark_readme_panel.png``
 - ``docs/_static/benchmark_extended_linear_panel.png``
 
@@ -84,26 +82,6 @@ answers two questions:
 
 - which branches and diagnostics are being tracked for validation,
 - which shipped cases have measured CPU/GPU/runtime-memory coverage.
-
-Representative convergence gate
--------------------------------
-
-The benchmark suite makes convergence explicit instead of leaving it implicit
-in the chosen production grids. The tracked convergence tile uses the Cyclone
-ITG lane to show:
-
-- grid convergence on the production linear scan at representative
-  ``k_y`` values,
-- response sensitivity to the benchmark-normalized ``rho_star`` scaling.
-
-.. figure:: _static/benchmark_convergence_panel.png
-   :width: 100%
-   :align: center
-   :alt: Representative convergence panel
-
-   Representative convergence and sensitivity gate. This panel is included in
-   the README publication summary so convergence is visible alongside the validation
-   figures rather than being left implicit.
 
 Primary publication set
 -----------------------
