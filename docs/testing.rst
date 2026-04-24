@@ -775,12 +775,22 @@ physics rigor:
 - **Fast PR/push tier**: three parallel shards run mypy and targeted test
   subsets (fundamentals, linear core, runtime/nonlinear). This catches solver
   and dtype regressions quickly.
+- **Wide coverage tier**: ``tools/run_wide_coverage_gate.py`` runs top-level
+  test files in bounded shards, combines coverage data, and enforces the
+  package-wide ``>=95%`` target. Each shard has its own timeout so a single
+  slow validation slice cannot become an unbounded release job.
 - **Manual full tier**: full ``pytest`` suite plus strict coverage gates:
   ``spectraxgk.terms >= 90%`` and per-module core gates for
   ``linear_krylov.py`` and ``diffrax_integrators.py``.
 
 This keeps iteration latency low for development and still enforces complete
 coverage and regression checks on demand without relying on scheduled runners.
+
+The same wide gate can be run locally with:
+
+.. code-block:: bash
+
+   python tools/run_wide_coverage_gate.py --shards 6 --timeout 300 --fail-under 95
 
 Core modular coverage gate
 --------------------------
