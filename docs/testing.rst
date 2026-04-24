@@ -243,49 +243,51 @@ The next literature lane now has a dedicated runtime contract as well:
 ``examples/benchmarks/runtime_w7x_zonal_response_vmec.toml`` and
 ``tools/generate_w7x_zonal_response_panel.py`` define the W7-X high-mirror
 bean-tube zonal-flow relaxation benchmark from the stella/GENE paper. The
-tool sweeps ``k_x rho_i`` over ``[0.05, 0.07, 0.10, 0.30]`` and applies the
-same first-sample normalization, branchwise damping fit, and Hilbert-phase
-frequency extraction used in the Merlo lane. The default early-time fit-window
-cap is an explicit analysis policy chosen to isolate the initial GAM before
-the slower stellarator-specific oscillation. The runtime contract now seeds the
-published electrostatic-potential perturbation with ``init_field = "phi"`` and
-the panel extracts the unweighted signed line-average diagnostic
-``Phi_zonal_line_kxt``. The frozen VMEC-backed artifact now lives at
+tool sweeps ``k_x rho_i`` over ``[0.05, 0.07, 0.10, 0.30]``. The runtime
+contract seeds the published electrostatic-potential perturbation with
+``init_field = "phi"`` and a Gaussian profile, while the panel extracts the
+unweighted signed line-average diagnostic ``Phi_zonal_line_kxt``. For this
+paper-facing W7-X artifact, the line-average response is normalized to the
+maximum initial potential amplitude, ``init.init_amp``, matching the benchmark
+caption; the generator also keeps a ``line_first`` option for first-sample
+audits. The default early-time fit-window cap is an explicit analysis policy
+chosen to isolate the initial GAM before the slower stellarator-specific
+oscillation. The generator forces a periodic radial box for this ``k_y=0``
+zonal response so the selected ``k_x rho_i`` values match the published test-4
+targets exactly; this avoids the linked-boundary aspect-ratio override that is
+appropriate for drift-wave flux-tube runs but wrong for this radial zonal scan.
+
+The current frozen VMEC-backed artifact lives at
 ``docs/_static/w7x_zonal_response_panel.png`` with strict JSON metadata at
-``docs/_static/w7x_zonal_response_panel.json``. The generator forces a periodic
-radial box for this ``k_y=0`` zonal response so the selected ``k_x rho_i`` values
-match the published test-4 targets exactly; this avoids the linked-boundary
-aspect-ratio override that is appropriate for drift-wave flux-tube runs but
-wrong for this radial zonal scan. The current bounded ``t≈60`` figure reports
-residuals of about ``0.172``, ``0.356``, ``0.469``, and ``0.594`` for
-``k_x rho_i = 0.05``, ``0.07``, ``0.10``, and ``0.30``. A longer
-``k_x rho_i=0.30`` audit to ``t≈2000`` gives a late-window residual around
-``0.107`` but still shows a slow sign-changing oscillation, whereas the paper
-states that the lower-frequency oscillation is missing for that wavelength.
+``docs/_static/w7x_zonal_response_panel.json``. It is a long-window run:
+``k_x rho_i=0.05`` reaches ``t≈3460`` and the other three wavelengths reach
+``t≈1980``. After the paper-faithful normalization, the late residuals are
+about ``0.0053``, ``0.0387``, ``0.0265``, and ``0.1484`` for
+``k_x rho_i = 0.05``, ``0.07``, ``0.10``, and ``0.30``.
 ``tools/digitize_w7x_zonal_reference.py`` now extracts the stella/GENE Fig. 11
 main traces and inset residual levels from the arXiv source ``figs/ZF.pdf``.
 The resulting reference artifacts are
 ``docs/_static/w7x_zonal_reference_digitized.csv``,
 ``docs/_static/w7x_zonal_reference_digitized_residuals.csv``,
 ``docs/_static/w7x_zonal_reference_digitized.json``, and
-``docs/_static/w7x_zonal_reference_digitized.png``. The remaining research gate
-is therefore a long-window SPECTRAX regeneration and residual/envelope
-comparison against these digitized stella/GENE traces. The comparison contract
-is now implemented in ``tools/compare_w7x_zonal_reference.py`` and materialized
-for the current short SPECTRAX artifact at
+``docs/_static/w7x_zonal_reference_digitized.png``. The comparison contract is
+implemented in ``tools/compare_w7x_zonal_reference.py`` and materialized at
 ``docs/_static/w7x_zonal_reference_compare.png`` with JSON metadata in
-``docs/_static/w7x_zonal_reference_compare.json``. That short-window comparison
-is intentionally open: it fails both the residual gates and the time-coverage
-gates because the tracked SPECTRAX panel only reaches ``t≈60`` while the
-published reference windows extend to ``t≈2000`` or ``t≈3500``.
+``docs/_static/w7x_zonal_reference_compare.json``. The long-window artifact now
+passes every residual and time-coverage gate against the digitized stella/GENE
+reference. The lane remains open only because the late-window envelope
+standard deviations, roughly ``0.341``, ``0.0778``, ``0.102``, and ``0.0367``,
+are still larger than the digitized reference envelope of order ``2.5e-3``.
+That is now tracked as a velocity-space recurrence / closure issue rather than
+as a geometry, initializer, or normalization mismatch.
 
 .. figure:: _static/w7x_zonal_response_panel.png
    :alt: W7-X high-mirror bean-tube zonal-flow response panel
 
    W7-X high-mirror bean-tube zonal-flow response for the stella/GENE test-4
-   target ``k_x rho_i`` values. The red dashed line is the late-window
-   residual estimate and the shaded band is the common initial-GAM extraction
-   window.
+   target ``k_x rho_i`` values. The response is normalized to the maximum
+   initial Gaussian potential. The red dashed line is the late-window residual
+   estimate and the shaded band is the common initial-GAM extraction window.
 
 .. figure:: _static/w7x_zonal_reference_digitized.png
    :alt: Digitized W7-X test-4 stella and GENE zonal-flow reference traces
@@ -298,9 +300,10 @@ published reference windows extend to ``t≈2000`` or ``t≈3500``.
 .. figure:: _static/w7x_zonal_reference_compare.png
    :alt: Current W7-X zonal SPECTRAX comparison against digitized references
 
-   Current W7-X zonal comparison gate. The short SPECTRAX artifact is useful as
-   a setup check, but it is not a closure artifact because it does not cover the
-   late-time stella/GENE residual windows.
+   Current W7-X zonal comparison gate. The residual and time-coverage gates now
+   pass for all four wavelengths; the overall gate remains open because the
+   late-window envelope has more residual oscillatory content than the digitized
+   stella/GENE traces.
 
 Diffrax and nonlinear smoke tests
 ---------------------------------

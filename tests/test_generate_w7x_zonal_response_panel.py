@@ -139,6 +139,8 @@ diagnostics = true
     assert out_png.with_suffix(".csv").exists()
     meta = json.loads(out_png.with_suffix(".json").read_text())
     assert meta["initial_policy"] == "first_abs"
+    assert meta["initial_normalization"] == "init_amp"
+    assert meta["initial_level_override"] == 1.0e-6
     assert meta["damping_method"] == "branchwise_extrema"
     assert meta["frequency_method"] == "hilbert_phase"
     assert meta["validation_status"] == "open"
@@ -147,8 +149,9 @@ diagnostics = true
     assert meta["literature_reference"]["flux_tube"] == "bean"
     assert meta["literature_reference"]["observable"] == "unweighted line-averaged electrostatic potential"
     assert "slower stellarator-specific oscillation" in meta["notes"]
+    assert "maximum initial potential amplitude" in meta["notes"]
     assert "manuscript-policy inference" in meta["notes"]
-    assert "reference tolerances" in meta["notes"]
+    assert "digitized-reference gate" in meta["notes"]
     assert meta["runtime"] == {
         "dt": 0.2,
         "steps": 80,

@@ -79,12 +79,13 @@ Near-term physics priorities
 
 The next physics lanes should be closed in this order:
 
-1. W7-X zonal-response acceptance tolerances against digitized or regenerated
-   stella/GENE reference traces. The VMEC-backed SPECTRAX-GK artifact now uses
-   the paper-faithful potential initializer and signed line-average observable,
-   but it should not be counted as a closed gate until the long-window
-   ``k_x rho_i=0.30`` slow-oscillation mismatch is resolved and the published
-   residual/frequency envelope has explicit pass/fail thresholds.
+1. W7-X zonal-response late-envelope closure. The VMEC-backed SPECTRAX-GK
+   artifact now uses the paper-faithful potential initializer, signed
+   line-average observable, and initial-Gaussian-maximum normalization, and the
+   long-window comparison passes the digitized stella/GENE residual and
+   time-coverage gates for all four wavelengths. The remaining open item is the
+   excessive late-window envelope, which should be treated as a velocity-space
+   recurrence / moment-closure audit.
 2. Tighten the now-materialized windowed nonlinear-statistics panel beyond the current ``0.10`` release gate where the literature/reference windows justify stricter tolerances.
 3. W7-X multi-flux-tube ITG/TEM extension and fluctuation-spectrum lane.
 4. Shaped multispecies tokamak linear lane.
