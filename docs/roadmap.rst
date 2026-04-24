@@ -21,6 +21,38 @@ validated codebase with:
 - clear module boundaries so equations, numerics, runtime I/O, plotting, and
   benchmark policy can be tested independently.
 
+Pre-release scope
+-----------------
+
+The pre-release lane is limited to work that can be bounded, tested, and
+documented without changing the physics claim surface:
+
+- keep the refreshed runtime/memory panel complete for Cyclone, Cyclone
+  Miller, KBM, W7-X, and HSX release rows;
+- tighten case-specific nonlinear window-statistics gates where the frozen
+  reference windows support it;
+- strengthen autodiff validation with finite-difference checks, sensitivity
+  map conditioning, and UQ covariance metadata;
+- add the Phase-A ``vmec_jax`` / ``booz_xform_jax`` bridge contract into the
+  existing sampled flux-tube geometry interface;
+- land production parallelization first for independent ``k_y`` scans and UQ
+  ensembles, with serial numerical-identity gates;
+- keep nonlinear hot-path optimization profiling-driven and tied to existing
+  window-statistics and exact-state gates.
+
+Post-release scope
+------------------
+
+The following remain post-release manuscript lanes until their literature
+contracts and gates close:
+
+- W7-X zonal long-window damping, recurrence, and closure under paper-facing
+  normalization;
+- W7-X fluctuation-spectrum panel with a reproducible estimator and observable
+  definition;
+- W7-X multi-flux-tube and TEM extension before broad stellarator-validation
+  claims.
+
 Active refactor lane
 --------------------
 
@@ -77,7 +109,8 @@ Autodiff gates:
 Near-term physics priorities
 ----------------------------
 
-The next physics lanes should be closed in this order:
+The next physics lanes should be closed in this order after the pre-release
+scope above is stable:
 
 1. W7-X zonal-response residual and late-envelope closure. The VMEC-backed
    SPECTRAX-GK artifact now uses the paper-facing potential initializer,

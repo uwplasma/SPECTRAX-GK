@@ -286,11 +286,11 @@ maximum relative mismatch for each diagnostic, excluding exploratory summaries
 with ``gate_index_include=false``.
 
 - ``docs/_static/nonlinear_cyclone_miller_gate_summary.json``: passed at the
-  current ``0.10`` mean-relative release gate.
-- ``docs/_static/nonlinear_kbm_gate_summary.json``: passed at the current
-  ``0.10`` mean-relative release gate.
-- ``docs/_static/nonlinear_hsx_gate_summary.json``: passed at the current
-  ``0.10`` mean-relative release gate.
+  tightened case gate ``0.095``.
+- ``docs/_static/nonlinear_kbm_gate_summary.json``: passed at the tightened
+  case gate ``0.02``.
+- ``docs/_static/nonlinear_hsx_gate_summary.json``: passed at the tightened
+  case gate ``0.05``.
 - ``docs/_static/nonlinear_w7x_gate_summary.json``: passed at the current
   ``0.10`` mean-relative release gate after the corrected adaptive state
   continuation and GX-style ``Phi2`` artifact refresh.
@@ -327,6 +327,15 @@ Autodiff Validation
      - low-dimensional objective reduction
      - gradient consistency + constrained solve behavior
      - Open
+
+The single-mode inverse figure is intentionally a sensitivity and
+non-identifiability demonstration. The two-mode figure is the closed
+parameter-recovery validation. Both examples now write finite-difference
+Jacobian checks, Jacobian rank/condition number, covariance, standard
+deviations, correlations, and one-sigma UQ ellipse area into their summary
+JSON files. Those metadata are part of the validation gate: differentiated
+observables are not promoted to inverse-design or UQ claims unless the
+derivative check is conditioned and the inverse problem is identifiable.
 
 Notes
 -----

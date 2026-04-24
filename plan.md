@@ -1,7 +1,33 @@
 # SPECTRAX-GK Ship Readiness Plan
 
 Last updated: 2026-04-24
-Current public baseline under review: `fb6fabc add large-grid scaling sweep and fix tools imports`
+Current public baseline under review: `refactor/modularize-core-for-validation` after the runtime-panel and pre-release gate refresh.
+
+## Current Pre-Release Scope Update (2026-04-24)
+
+- The shipped runtime/memory panel has been regenerated from
+  `tools_out/runtime_memory_summary_ship_refresh.json`, restoring the W7-X and
+  HSX nonlinear rows that were missing when the older interrupted summary was
+  used.
+- Nonlinear release-window statistics now carry case-specific mean-relative
+  gates in `docs/_static/nonlinear_window_statistics.json`: KBM `0.02`, HSX
+  `0.05`, Cyclone Miller `0.095`, and the broad `0.10` release envelope for
+  Cyclone and W7-X while their paper-level tightening remains open.
+- Autodiff inverse examples now report covariance, parameter standard
+  deviations, correlations, one-sigma UQ ellipse area, Jacobian rank, and
+  conditioning, in addition to finite-difference derivative checks.
+- The differentiable-geometry Phase-A bridge is explicitly scoped to an
+  in-memory `FluxTubeGeometryData` contract plus optional `vmec_jax` /
+  `booz_xform_jax` API discovery. Full
+  `vmec_jax -> booz_xform_jax -> SPECTRAX-GK` parity and geometry-gradient
+  checks remain the next implementation step.
+- Production parallelization starts with independent `k_y` scans, sensitivity
+  sweeps, and UQ ensembles through `spectraxgk.batch_map` and
+  `spectraxgk.ky_scan_batches`; nonlinear domain sharding remains out of the
+  release claim until communication and numerical-identity gates exist.
+- W7-X zonal long-window damping/recurrence, W7-X fluctuation spectra, and
+  W7-X multi-flux-tube/TEM extension are post-release manuscript lanes, not
+  blockers for the pre-release package refresh.
 
 ## Strategic Audit and Next-Step Roadmap (2026-04-23)
 

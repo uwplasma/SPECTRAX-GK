@@ -7,11 +7,14 @@
     "spectraxgk.diagnostics",
     "spectraxgk.validation_gates",
     "spectraxgk.zonal_validation",
+    "spectraxgk.autodiff_validation",
     "spectraxgk.from_gx.vmec",
-    "spectraxgk.runtime_artifacts"
+    "spectraxgk.geometry.differentiable",
+    "spectraxgk.runtime_artifacts",
+    "spectraxgk.parallel"
   ],
-  "n_high_priority_open": 9,
-  "n_modules": 11,
+  "n_high_priority_open": 12,
+  "n_modules": 14,
   "package_coverage_target_percent": 95.0,
   "rows": [
     {
@@ -107,6 +110,19 @@
     },
     {
       "coverage_priority": "high",
+      "coverage_target_percent": 98.0,
+      "module": "spectraxgk.autodiff_validation",
+      "n_artifacts": 2,
+      "n_fast_tests": 3,
+      "n_next_tests": 2,
+      "n_numerics_contracts": 2,
+      "n_physics_contracts": 2,
+      "n_reference_anchors": 2,
+      "path": "src/spectraxgk/autodiff_validation.py",
+      "status": "active"
+    },
+    {
+      "coverage_priority": "high",
       "coverage_target_percent": 95.0,
       "module": "spectraxgk.from_gx.vmec",
       "n_artifacts": 3,
@@ -116,6 +132,19 @@
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/from_gx/vmec.py",
+      "status": "active"
+    },
+    {
+      "coverage_priority": "high",
+      "coverage_target_percent": 95.0,
+      "module": "spectraxgk.geometry.differentiable",
+      "n_artifacts": 2,
+      "n_fast_tests": 3,
+      "n_next_tests": 2,
+      "n_numerics_contracts": 2,
+      "n_physics_contracts": 2,
+      "n_reference_anchors": 2,
+      "path": "src/spectraxgk/geometry/differentiable.py",
       "status": "active"
     },
     {
@@ -136,12 +165,25 @@
       "coverage_target_percent": 90.0,
       "module": "spectraxgk.sharding",
       "n_artifacts": 2,
-      "n_fast_tests": 2,
+      "n_fast_tests": 3,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/sharding.py",
+      "status": "active"
+    },
+    {
+      "coverage_priority": "high",
+      "coverage_target_percent": 95.0,
+      "module": "spectraxgk.parallel",
+      "n_artifacts": 2,
+      "n_fast_tests": 1,
+      "n_next_tests": 2,
+      "n_numerics_contracts": 2,
+      "n_physics_contracts": 2,
+      "n_reference_anchors": 2,
+      "path": "src/spectraxgk/parallel.py",
       "status": "active"
     },
     {

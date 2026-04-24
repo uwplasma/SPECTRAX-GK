@@ -211,6 +211,19 @@ SPECTRAX at it through ``BOOZ_XFORM_JAX_PATH`` or
 ``SPECTRAX_BOOZ_XFORM_JAX_PATH``. The internal backend is preferred. A legacy
 ``booz_xform`` install is only needed as fallback compatibility for older
 helper environments.
+The first differentiable-geometry bridge is now explicit in
+``spectraxgk.geometry.differentiable``. Use
+``discover_differentiable_geometry_backends()`` to audit optional
+``vmec_jax`` / ``booz_xform_jax`` availability and
+``flux_tube_geometry_from_mapping(...)`` to validate an in-memory,
+solver-ready field-line geometry bundle before passing it into the existing
+``FluxTubeGeometryData`` contract. This is a real contract boundary, not a
+proxy equilibrium: the upstream differentiable pipeline must still supply the
+sampled ``theta``, ``bmag``, ``gradpar``, metric, drift, Jacobian, and
+``grho`` arrays. The next implementation step is an office-only
+``vmec_jax -> booz_xform_jax -> FluxTubeGeometryData`` parity fixture against
+the already validated VMEC/eik path, followed by geometry-gradient checks for
+growth-rate observables.
 The VMEC bridge now also expands environment variables in ``geometry.vmec_file``.
 Tracked portable runtime TOMLs should therefore pass external VMEC equilibria
 through explicit environment variables such as ``$W7X_VMEC_FILE`` and

@@ -92,6 +92,22 @@ lanes:
 Scaling utilities
 -----------------
 
+For production parallelization of independent scans and UQ ensembles, prefer
+the package helpers:
+
+.. code-block:: python
+
+   import jax.numpy as jnp
+   import spectraxgk as sgk
+
+   ky = jnp.asarray([0.1, 0.2, 0.3, 0.4])
+   chunks = sgk.ky_scan_batches(ky, n_batches=2)
+   values = sgk.batch_map(lambda x: jnp.asarray([x, x**2]), ky, batch_size=2)
+
+These helpers preserve serial ordering and fall back to a one-device ``vmap``
+path on laptops. Multi-device runs should still be checked against the serial
+result before publication speedups are claimed.
+
 Use the strong-scaling sweep helper to collect parallelization timings for the
 distributed linear RK2 loop:
 
