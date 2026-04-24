@@ -270,8 +270,14 @@ The resulting reference artifacts are
 ``docs/_static/w7x_zonal_reference_digitized.json``, and
 ``docs/_static/w7x_zonal_reference_digitized.png``. The remaining research gate
 is therefore a long-window SPECTRAX regeneration and residual/envelope
-comparison against these digitized stella/GENE traces, not a plotting or
-initialization issue.
+comparison against these digitized stella/GENE traces. The comparison contract
+is now implemented in ``tools/compare_w7x_zonal_reference.py`` and materialized
+for the current short SPECTRAX artifact at
+``docs/_static/w7x_zonal_reference_compare.png`` with JSON metadata in
+``docs/_static/w7x_zonal_reference_compare.json``. That short-window comparison
+is intentionally open: it fails both the residual gates and the time-coverage
+gates because the tracked SPECTRAX panel only reaches ``t≈60`` while the
+published reference windows extend to ``t≈2000`` or ``t≈3500``.
 
 .. figure:: _static/w7x_zonal_response_panel.png
    :alt: W7-X high-mirror bean-tube zonal-flow response panel
@@ -288,6 +294,13 @@ initialization issue.
    Fig. 11. The horizontal lines are residual levels read from the figure
    insets and are the reference targets for the next long-window SPECTRAX
    zonal-response gate.
+
+.. figure:: _static/w7x_zonal_reference_compare.png
+   :alt: Current W7-X zonal SPECTRAX comparison against digitized references
+
+   Current W7-X zonal comparison gate. The short SPECTRAX artifact is useful as
+   a setup check, but it is not a closure artifact because it does not cover the
+   late-time stella/GENE residual windows.
 
 Diffrax and nonlinear smoke tests
 ---------------------------------

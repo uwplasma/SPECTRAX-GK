@@ -204,6 +204,10 @@ The active pre-merge sequence is:
      `Phi_zonal_line_kxt`. The stella/GENE Fig. 11 reference traces and inset
      residuals are now digitized by `tools/digitize_w7x_zonal_reference.py`
      into `docs/_static/w7x_zonal_reference_digitized*.{csv,json,png,pdf}`.
+     The residual/time-coverage comparison gate is now implemented in
+     `tools/compare_w7x_zonal_reference.py` and materialized at
+     `docs/_static/w7x_zonal_reference_compare.{csv,json,png,pdf}`; the current
+     short `t≈60` SPECTRAX artifact fails that gate by design.
      A `kx rho_i=0.30`, `t≈2000` pilot gives residual `≈0.107` but still has a
      slow sign-changing oscillation that the paper says should be missing at
      that wavelength, so the next closure step is a long-window SPECTRAX

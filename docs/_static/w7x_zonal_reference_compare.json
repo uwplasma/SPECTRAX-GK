@@ -1,0 +1,117 @@
+{
+  "case": "w7x_zonal_response_reference",
+  "comparison_csv": "docs/_static/w7x_zonal_reference_compare.csv",
+  "comparison_png": "docs/_static/w7x_zonal_reference_compare.png",
+  "gate_index_include": false,
+  "gate_report": {
+    "case": "w7x_zonal_response_reference",
+    "gates": [
+      {
+        "abs_error": 0.9829001791817802,
+        "atol": 0.020000000000000018,
+        "metric": "time_coverage_kx050",
+        "notes": "Passes when SPECTRAX reaches at least 98% of the digitized reference window.",
+        "observed": 0.017099820818219865,
+        "passed": false,
+        "reference": 1.0,
+        "rel_error": 0.9829001791817802,
+        "rtol": 0.0,
+        "units": ""
+      },
+      {
+        "abs_error": 0.1629026986590317,
+        "atol": 0.0205639097744361,
+        "metric": "residual_kx050",
+        "notes": "Residual compared with the mean of digitized stella/GENE inset values; absolute tolerance includes the inter-code spread.",
+        "observed": 0.171737285125197,
+        "passed": false,
+        "reference": 0.0088345864661653,
+        "rel_error": 18.439199082256593,
+        "rtol": 0.1,
+        "units": ""
+      },
+      {
+        "abs_error": 0.9700753135681153,
+        "atol": 0.020000000000000018,
+        "metric": "time_coverage_kx070",
+        "notes": "Passes when SPECTRAX reaches at least 98% of the digitized reference window.",
+        "observed": 0.029924686431884766,
+        "passed": false,
+        "reference": 1.0,
+        "rel_error": 0.9700753135681153,
+        "rtol": 0.0,
+        "units": ""
+      },
+      {
+        "abs_error": 0.3395128641333736,
+        "atol": 0.0250751879699248,
+        "metric": "residual_kx070",
+        "notes": "Residual compared with the mean of digitized stella/GENE inset values; absolute tolerance includes the inter-code spread.",
+        "observed": 0.3562421874416442,
+        "passed": false,
+        "reference": 0.0167293233082706,
+        "rel_error": 20.29447682235456,
+        "rtol": 0.1,
+        "units": ""
+      },
+      {
+        "abs_error": 0.9700753135681153,
+        "atol": 0.020000000000000018,
+        "metric": "time_coverage_kx100",
+        "notes": "Passes when SPECTRAX reaches at least 98% of the digitized reference window.",
+        "observed": 0.029924686431884766,
+        "passed": false,
+        "reference": 1.0,
+        "rel_error": 0.9700753135681153,
+        "rtol": 0.0,
+        "units": ""
+      },
+      {
+        "abs_error": 0.43923662144329667,
+        "atol": 0.025075187969924802,
+        "metric": "residual_kx100",
+        "notes": "Residual compared with the mean of digitized stella/GENE inset values; absolute tolerance includes the inter-code spread.",
+        "observed": 0.4694997793380335,
+        "passed": false,
+        "reference": 0.030263157894736797,
+        "rel_error": 14.51390575203939,
+        "rtol": 0.1,
+        "units": ""
+      },
+      {
+        "abs_error": 0.9700753135681153,
+        "atol": 0.020000000000000018,
+        "metric": "time_coverage_kx300",
+        "notes": "Passes when SPECTRAX reaches at least 98% of the digitized reference window.",
+        "observed": 0.029924686431884766,
+        "passed": false,
+        "reference": 1.0,
+        "rel_error": 0.9700753135681153,
+        "rtol": 0.0,
+        "units": ""
+      },
+      {
+        "abs_error": 0.4479078664962141,
+        "atol": 0.025075187969924816,
+        "metric": "residual_kx300",
+        "notes": "Residual compared with the mean of digitized stella/GENE inset values; absolute tolerance includes the inter-code spread.",
+        "observed": 0.5943364379247855,
+        "passed": false,
+        "reference": 0.1464285714285714,
+        "rel_error": 3.058882990705853,
+        "rtol": 0.1,
+        "units": ""
+      }
+    ],
+    "max_abs_error": 0.9829001791817802,
+    "max_rel_error": 20.29447682235456,
+    "passed": false,
+    "source": "digitized stella/GENE W7-X test-4 Fig. 11"
+  },
+  "notes": "This gate compares SPECTRAX-GK W7-X test-4 zonal-flow residuals and, when trace CSVs are available, late-window oscillation envelopes against digitized stella/GENE Figure 11 references. The current short-window SPECTRAX panel is expected to fail the time-coverage gate; closure requires long-window runs reaching the reference windows.",
+  "reference_residuals": "docs/_static/w7x_zonal_reference_digitized_residuals.csv",
+  "reference_traces": "docs/_static/w7x_zonal_reference_digitized.csv",
+  "spectrax_summary": "docs/_static/w7x_zonal_response_panel.csv",
+  "spectrax_trace_dir": null,
+  "validation_status": "open"
+}
