@@ -118,9 +118,10 @@ def test_w7x_zonal_reference_trace_metrics_use_summary_initial_level(tmp_path: P
         mean_trace = group.pivot_table(index="t_vti_over_a", columns="code", values="response", aggfunc="mean")
         mean_trace = mean_trace.sort_index().mean(axis=1)
         token = mod._kx_token(float(kx))
+        time_col = "t_reference" if np.isclose(float(kx), 0.05) else "t"
         pd.DataFrame(
             {
-                "t": np.asarray(mean_trace.index, dtype=float),
+                time_col: np.asarray(mean_trace.index, dtype=float),
                 "phi_zonal_real": initial_level * np.asarray(mean_trace, dtype=float),
             }
         ).to_csv(trace_dir / f"w7x_test4_kx{token}.csv", index=False)
