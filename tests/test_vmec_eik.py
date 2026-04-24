@@ -3,8 +3,8 @@ from __future__ import annotations
 import os
 from pathlib import Path
 import sys
+import netCDF4 as nc
 import pytest
-import numpy as np
 from unittest.mock import MagicMock
 from dataclasses import replace
 
@@ -21,6 +21,7 @@ from spectraxgk.vmec_eik import (
     default_vmec_eik_output_path,
     generate_runtime_vmec_eik,
 )
+import spectraxgk.from_gx.vmec as vmec_backend
 from spectraxgk.from_gx.vmec import internal_vmec_backend_available
 
 
@@ -62,6 +63,15 @@ def _vmec_runtime_cfg(tmp_path: Path, *, geometry_file: str | None = None) -> Ru
         ),
         normalization=RuntimeNormalizationConfig(contract="kinetic", diagnostic_norm="gx"),
     )
+
+
+def _write_minimal_eik_cache(path: Path) -> None:
+    with nc.Dataset(path, "w") as ds:
+        ds.createDimension("z", 1)
+        for name in ("theta", "bmag", "gradpar"):
+            ds.createVariable(name, "f8", ("z",))[:] = [1.0]
+        ds.createVariable("q", "f8").assignValue(1.4)
+        ds.createVariable("shat", "f8").assignValue(0.8)
 
 
 def test_build_vmec_geometry_request_creates_expected_request(tmp_path: Path) -> None:
@@ -125,6 +135,26 @@ def test_default_vmec_eik_output_path_tracks_vmec_file_metadata(tmp_path: Path) 
     assert first != second
 
 
+def test_atomic_vmec_eik_write_replaces_final_path(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    out_path = tmp_path / "geom.eik.nc"
+    out_path.write_text("old", encoding="utf-8")
+    temp_paths: list[Path] = []
+
+    def fake_write(path: Path, _profiles: dict, *, request: object) -> None:
+        assert request == "request"
+        assert path != out_path
+        temp_paths.append(path)
+        path.write_text("new", encoding="utf-8")
+
+    monkeypatch.setattr(vmec_backend, "write_vmec_eik_netcdf", fake_write)
+
+    vmec_backend._write_vmec_eik_netcdf_atomically(out_path, {}, request="request")
+
+    assert out_path.read_text(encoding="utf-8") == "new"
+    assert temp_paths
+    assert not temp_paths[0].exists()
+
+
 def test_generate_runtime_vmec_eik_invokes_internal_generator(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -143,6 +173,42 @@ def test_generate_runtime_vmec_eik_invokes_internal_generator(
     request = kwargs["request"]
     assert request.ntheta == 32
     assert request.vmec_file == str(Path(cfg.geometry.vmec_file).resolve())
+
+
+def test_generate_runtime_vmec_eik_reuses_default_cache_without_backend(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    cfg = _vmec_runtime_cfg(tmp_path, geometry_file=None)
+    expected_out = tmp_path / "cached.eik.nc"
+    _write_minimal_eik_cache(expected_out)
+
+    monkeypatch.setattr("spectraxgk.vmec_eik.default_vmec_eik_output_path", lambda _request: expected_out)
+    monkeypatch.setattr("spectraxgk.vmec_eik.internal_vmec_backend_available", lambda: False)
+    mock_gen = MagicMock(side_effect=AssertionError("cached VMEC geometry should be reused"))
+    monkeypatch.setattr("spectraxgk.vmec_eik.generate_vmec_eik_internal", mock_gen)
+
+    out = generate_runtime_vmec_eik(cfg)
+
+    assert out == expected_out.resolve()
+    assert not mock_gen.called
+
+
+def test_generate_runtime_vmec_eik_regenerates_invalid_default_cache(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    cfg = _vmec_runtime_cfg(tmp_path, geometry_file=None)
+    expected_out = tmp_path / "cached.eik.nc"
+    expected_out.write_text("partial-not-netcdf", encoding="utf-8")
+
+    monkeypatch.setattr("spectraxgk.vmec_eik.default_vmec_eik_output_path", lambda _request: expected_out)
+    monkeypatch.setattr("spectraxgk.vmec_eik.internal_vmec_backend_available", lambda: True)
+    mock_gen = MagicMock(return_value=expected_out.resolve())
+    monkeypatch.setattr("spectraxgk.vmec_eik.generate_vmec_eik_internal", mock_gen)
+
+    out = generate_runtime_vmec_eik(cfg)
+
+    assert out == expected_out.resolve()
+    assert mock_gen.called
 
 
 def test_generate_runtime_vmec_eik_uses_default_output_when_none(
