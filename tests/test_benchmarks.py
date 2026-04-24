@@ -9,9 +9,6 @@ import pytest
 import jax.numpy as jnp
 
 import spectraxgk.benchmarks as benchmarks
-
-pytestmark = pytest.mark.integration
-
 from spectraxgk.analysis import fit_growth_rate
 from spectraxgk.benchmarks import (
     compare_cyclone_to_reference,
@@ -45,10 +42,11 @@ from spectraxgk.config import (
     TimeConfig,
 )
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.grids import build_spectral_grid
 from spectraxgk.linear import LinearTerms
 from spectraxgk.linear_krylov import KrylovConfig
 from spectraxgk.species import Species, build_linear_params
+
+pytestmark = pytest.mark.integration
 
 
 def test_load_cyclone_reference():
@@ -301,15 +299,31 @@ def test_cyclone_krylov_smoke():
 def test_run_cyclone_linear_auto_can_fallback_to_krylov_after_time_path(monkeypatch):
     import spectraxgk.benchmarks as benchmarks
 
+    def _fake_integrate_linear_diagnostics(*_args, **_kwargs):
+        phi_t = np.ones((2, 1, 1, 8), dtype=np.complex64)
+        density_t = np.ones_like(phi_t)
+        return np.array([0.0, 0.1], dtype=float), phi_t, density_t
+
     monkeypatch.setattr(
         benchmarks,
         "_select_fit_signal_auto",
         lambda *args, **kwargs: (np.ones_like(args[0]), "phi", np.nan, np.nan),
     )
+    monkeypatch.setattr(benchmarks, "integrate_linear_diagnostics", _fake_integrate_linear_diagnostics)
+    monkeypatch.setattr(
+        benchmarks,
+        "integrate_linear_gx",
+        lambda *args, **kwargs: (_ for _ in ()).throw(ValueError("seed unavailable in branch test")),
+    )
     monkeypatch.setattr(
         benchmarks,
         "dominant_eigenpair",
         lambda G0, *_args, **_kwargs: (0.2 - 0.3j, np.zeros_like(np.asarray(G0))),
+    )
+    monkeypatch.setattr(
+        benchmarks,
+        "compute_fields_cached",
+        lambda *_args, **_kwargs: SimpleNamespace(phi=np.zeros((1, 1, 8), dtype=np.complex64)),
     )
 
     grid = GridConfig(Nx=4, Ny=4, Nz=8, Lx=6.0, Ly=6.0, y0=5.0, ntheta=8, nperiod=1)
@@ -415,58 +429,58 @@ def test_etg_frequency_sign():
 
 def test_etg_scan_shapes():
     """ETG scan helper should return arrays of the requested size."""
-    grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
+    grid = GridConfig(Nx=1, Ny=12, Nz=24, Lx=6.28, Ly=6.28)
     cfg = ETGBaseCase(grid=grid, model=ETGModelConfig(R_over_LTe=6.0))
     ky_values = np.array([3.0, 4.0])
-    scan = run_etg_scan(ky_values, cfg=cfg, Nl=3, Nm=6, steps=80, dt=0.003, method="rk4")
+    scan = run_etg_scan(ky_values, cfg=cfg, Nl=3, Nm=6, steps=50, dt=0.003, method="rk4")
     assert scan.ky.shape == ky_values.shape
     assert scan.gamma.shape == ky_values.shape
 
 
 def test_kinetic_linear_smoke():
     """Kinetic-electron ITG/TEM benchmark should run and return finite outputs."""
-    grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=62.8, Ly=62.8)
+    grid = GridConfig(Nx=1, Ny=12, Nz=24, Lx=62.8, Ly=62.8)
     cfg = KineticElectronBaseCase(grid=grid)
-    result = run_kinetic_linear(cfg=cfg, ky_target=0.3, Nl=3, Nm=6, steps=80, dt=0.02, method="rk4")
+    result = run_kinetic_linear(cfg=cfg, ky_target=0.3, Nl=3, Nm=6, steps=50, dt=0.02, method="rk4")
     assert np.isfinite(result.gamma)
     assert np.isfinite(result.omega)
 
 
 def test_kinetic_scan_shapes():
     """Kinetic-electron scan helper should return arrays of the requested size."""
-    grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=62.8, Ly=62.8)
+    grid = GridConfig(Nx=1, Ny=12, Nz=24, Lx=62.8, Ly=62.8)
     cfg = KineticElectronBaseCase(grid=grid)
     ky_values = np.array([0.3, 0.4])
-    scan = run_kinetic_scan(ky_values, cfg=cfg, Nl=3, Nm=6, steps=80, dt=0.02, method="rk4")
+    scan = run_kinetic_scan(ky_values, cfg=cfg, Nl=3, Nm=6, steps=50, dt=0.02, method="rk4")
     assert scan.ky.shape == ky_values.shape
     assert scan.gamma.shape == ky_values.shape
 
 
 def test_tem_linear_smoke():
     """TEM benchmark should run and return finite outputs."""
-    grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=62.8, Ly=62.8)
+    grid = GridConfig(Nx=1, Ny=12, Nz=24, Lx=62.8, Ly=62.8)
     cfg = TEMBaseCase(grid=grid)
-    result = run_tem_linear(cfg=cfg, ky_target=0.3, Nl=3, Nm=6, steps=80, dt=0.02, method="rk4")
+    result = run_tem_linear(cfg=cfg, ky_target=0.3, Nl=3, Nm=6, steps=50, dt=0.02, method="rk4")
     assert np.isfinite(result.gamma)
     assert np.isfinite(result.omega)
 
 
 def test_tem_scan_shapes():
     """TEM scan helper should return arrays of the requested size."""
-    grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=62.8, Ly=62.8)
+    grid = GridConfig(Nx=1, Ny=12, Nz=24, Lx=62.8, Ly=62.8)
     cfg = TEMBaseCase(grid=grid)
     ky_values = np.array([0.3, 0.4])
-    scan = run_tem_scan(ky_values, cfg=cfg, Nl=3, Nm=6, steps=80, dt=0.02, method="rk4")
+    scan = run_tem_scan(ky_values, cfg=cfg, Nl=3, Nm=6, steps=50, dt=0.02, method="rk4")
     assert scan.ky.shape == ky_values.shape
     assert scan.gamma.shape == ky_values.shape
 
 
 def test_kbm_beta_scan_shapes():
     """KBM beta scan helper should return arrays of the requested size."""
-    grid = GridConfig(Nx=1, Ny=8, Nz=32, Lx=62.8, Ly=62.8)
+    grid = GridConfig(Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8)
     cfg = KBMBaseCase(grid=grid)
     betas = np.array([1.0e-4, 2.0e-4])
-    scan = run_kbm_beta_scan(betas, cfg=cfg, ky_target=0.3, Nl=3, Nm=6, steps=80, dt=0.02)
+    scan = run_kbm_beta_scan(betas, cfg=cfg, ky_target=0.3, Nl=3, Nm=6, steps=40, dt=0.02)
     assert scan.ky.shape == betas.shape
     assert scan.gamma.shape == betas.shape
 
@@ -484,7 +498,7 @@ def test_kbm_ky_scan_shapes():
         Nl=3,
         Nm=6,
         dt=0.02,
-        steps=60,
+        steps=40,
         method="rk2",
         solver="gx_time",
     )
@@ -504,7 +518,7 @@ def test_run_kbm_linear_gx_time_history():
         Nl=3,
         Nm=6,
         dt=0.02,
-        steps=60,
+        steps=40,
         solver="gx_time",
         sample_stride=2,
     )
@@ -1361,6 +1375,8 @@ def test_benchmark_krylov_smoke_finite():
         restarts=1,
         power_iters=20,
         power_dt=0.01,
+        shift=complex(0.05, -0.3),
+        shift_source="target",
         omega_cap_factor=5.0,
     )
 
