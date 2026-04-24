@@ -1,0 +1,27 @@
+case,case_label,metric,mean_rel_abs,max_rel_abs,final_rel,gate_mean_rel,case_gate_mean_rel,gate_passed,source,artifact
+cyclone_nonlinear_long_window,Cyclone,HeatFlux,0.07564723781481682,0.21886673484618854,-0.05767020799848635,0.1,0.1,True,GX nonlinear diagnostics,docs/_static/nonlinear_cyclone_gate_summary.json
+cyclone_nonlinear_long_window,Cyclone,ParticleFlux,0.0,0.0,0.0,0.1,0.1,True,GX nonlinear diagnostics,docs/_static/nonlinear_cyclone_gate_summary.json
+cyclone_nonlinear_long_window,Cyclone,Wapar,0.0,0.0,0.0,0.1,0.1,True,GX nonlinear diagnostics,docs/_static/nonlinear_cyclone_gate_summary.json
+cyclone_nonlinear_long_window,Cyclone,Wg,0.0955304396196123,0.26332757979196786,-0.1266124885533909,0.1,0.1,True,GX nonlinear diagnostics,docs/_static/nonlinear_cyclone_gate_summary.json
+cyclone_nonlinear_long_window,Cyclone,Wphi,0.08602029156980276,0.2400725508914539,-0.040282535242186376,0.1,0.1,True,GX nonlinear diagnostics,docs/_static/nonlinear_cyclone_gate_summary.json
+cyclone_miller_nonlinear_window,Cyclone Miller,HeatFlux,0.0919106981841409,1.0665298205599536,0.07791662351964992,0.1,0.095,True,GX nonlinear diagnostics,docs/_static/nonlinear_cyclone_miller_gate_summary.json
+cyclone_miller_nonlinear_window,Cyclone Miller,ParticleFlux,0.0,0.0,0.0,0.1,0.095,True,GX nonlinear diagnostics,docs/_static/nonlinear_cyclone_miller_gate_summary.json
+cyclone_miller_nonlinear_window,Cyclone Miller,Wapar,0.0,0.0,0.0,0.1,0.095,True,GX nonlinear diagnostics,docs/_static/nonlinear_cyclone_miller_gate_summary.json
+cyclone_miller_nonlinear_window,Cyclone Miller,Wg,0.06625960199393849,0.16888708064849128,0.14079562855918157,0.1,0.095,True,GX nonlinear diagnostics,docs/_static/nonlinear_cyclone_miller_gate_summary.json
+cyclone_miller_nonlinear_window,Cyclone Miller,Wphi,0.06835079481287083,0.20078496492480227,0.10945865041799796,0.1,0.095,True,GX nonlinear diagnostics,docs/_static/nonlinear_cyclone_miller_gate_summary.json
+kbm_nonlinear_window,KBM,HeatFlux,0.009358802200184847,0.042153975440727444,-0.042153975440727444,0.1,0.02,True,GX nonlinear diagnostics,docs/_static/nonlinear_kbm_gate_summary.json
+kbm_nonlinear_window,KBM,ParticleFlux,0.009363342524391386,0.04216047274495935,-0.04216047274495935,0.1,0.02,True,GX nonlinear diagnostics,docs/_static/nonlinear_kbm_gate_summary.json
+kbm_nonlinear_window,KBM,Wapar,0.009342827603638847,0.0421726206067833,-0.0421726206067833,0.1,0.02,True,GX nonlinear diagnostics,docs/_static/nonlinear_kbm_gate_summary.json
+kbm_nonlinear_window,KBM,Wg,0.009326088797890937,0.0421713057045188,-0.0421713057045188,0.1,0.02,True,GX nonlinear diagnostics,docs/_static/nonlinear_kbm_gate_summary.json
+kbm_nonlinear_window,KBM,Wphi,0.00934571077977974,0.042171608505401165,-0.042171608505401165,0.1,0.02,True,GX nonlinear diagnostics,docs/_static/nonlinear_kbm_gate_summary.json
+w7x_nonlinear_window,W7-X,HeatFlux,0.04528038649753451,0.14021055847156355,-0.0536119345181319,0.1,0.1,True,GX nonlinear diagnostics,docs/_static/nonlinear_w7x_gate_summary.json
+w7x_nonlinear_window,W7-X,ParticleFlux,0.0,0.0,0.0,0.1,0.1,True,GX nonlinear diagnostics,docs/_static/nonlinear_w7x_gate_summary.json
+w7x_nonlinear_window,W7-X,Phi2,0.0974184040271887,0.37439907681995976,0.012163664979830026,0.1,0.1,True,GX nonlinear diagnostics,docs/_static/nonlinear_w7x_gate_summary.json
+w7x_nonlinear_window,W7-X,Wapar,0.0,0.0,0.0,0.1,0.1,True,GX nonlinear diagnostics,docs/_static/nonlinear_w7x_gate_summary.json
+w7x_nonlinear_window,W7-X,Wg,0.03204378942369863,0.09083898554122356,0.02168069744395782,0.1,0.1,True,GX nonlinear diagnostics,docs/_static/nonlinear_w7x_gate_summary.json
+w7x_nonlinear_window,W7-X,Wphi,0.030196842428410697,0.09056001248346038,-0.006989764977406517,0.1,0.1,True,GX nonlinear diagnostics,docs/_static/nonlinear_w7x_gate_summary.json
+hsx_nonlinear_window,HSX,HeatFlux,0.03010640472255274,0.12310437259369555,0.12310437259369555,0.1,0.05,True,GX nonlinear diagnostics,docs/_static/nonlinear_hsx_gate_summary.json
+hsx_nonlinear_window,HSX,ParticleFlux,0.0,0.0,0.0,0.1,0.05,True,GX nonlinear diagnostics,docs/_static/nonlinear_hsx_gate_summary.json
+hsx_nonlinear_window,HSX,Wapar,0.0,0.0,0.0,0.1,0.05,True,GX nonlinear diagnostics,docs/_static/nonlinear_hsx_gate_summary.json
+hsx_nonlinear_window,HSX,Wg,0.02786339708527333,0.0829789424018699,0.018411088384644492,0.1,0.05,True,GX nonlinear diagnostics,docs/_static/nonlinear_hsx_gate_summary.json
+hsx_nonlinear_window,HSX,Wphi,0.035790363972650306,0.12009852463979573,-0.04860474220046443,0.1,0.05,True,GX nonlinear diagnostics,docs/_static/nonlinear_hsx_gate_summary.json

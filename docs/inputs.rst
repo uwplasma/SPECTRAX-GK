@@ -344,10 +344,19 @@ Notable runtime-only keys:
   initialize a Gaussian envelope across the same GX startup loop
   bounds.
 * ``[init] init_single = true``:
-  initialize only the selected ``(ky,kx)`` mode.
+  initialize only the selected ``(ky,kx)`` mode. When combined with
+  ``init_field = "phi"`` and ``gaussian_init = true``, the selected
+  electrostatic-potential mode is initialized with a Gaussian profile along the
+  flux tube; this is the contract used by the W7-X zonal-flow response
+  benchmark.
 * ``[init] init_field = "all"``: the runtime/TOML path follows GX moment
   scaling for this initializer, using reduced amplitudes for ``tpar``
   (``1/sqrt(2)``) and ``qpar`` (``1/sqrt(6)``).
+* ``[init] init_field = "phi"``: initialize a requested electrostatic
+  potential profile by inverting the same quasineutrality solve used during
+  time advance. This is the appropriate contract for zonal-response
+  literature tests that prescribe ``phi(t=0)`` rather than a density-moment
+  perturbation; the masked ``ky=0, kx=0`` gauge mode remains unavailable.
 * ``[init] init_electrons_only``: if ``true`` in multispecies runs, initialize
   only electron species (GX ``init_electrons_only`` behavior). If ``false``
   (default), initialize all kinetic species.
@@ -368,6 +377,13 @@ Notable runtime-only keys:
 * ``[expert] fixed_mode`` with ``iky_fixed`` / ``ikx_fixed``: keep one Fourier
   mode exactly frozen during nonlinear evolution, matching GX's ``eqfix``
   behavior used by the ``secondary`` benchmark.
+* ``[expert] source`` / ``phi_ext``: runtime-only benchmark hooks for
+  external electrostatic forcing. ``source = "phiext_full"`` with a small
+  ``phi_ext`` injects the source into the solved ``phi`` field before the RHS is
+  assembled, so it changes the actual evolution rather than only the saved
+  diagnostics.  The Merlo Case-III Rosenbluth-Hinton/GAM example uses the
+  literature protocol instead: ``source = "default"`` plus an initial ion
+  density perturbation.
 * ``[time] nstep_restart``: when writing a nonlinear NetCDF bundle,
   checkpoint every ``nstep_restart`` steps instead of waiting for the end of
   the run. This is useful for long adaptive runs and batch jobs.

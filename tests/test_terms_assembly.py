@@ -137,3 +137,29 @@ def test_compute_fields_cached_matches_rhs_fields_and_validation() -> None:
 
     with pytest.raises(ValueError):
         compute_fields_cached(jnp.ones((2, 3, 4, 5), dtype=jnp.complex64), cache, params)
+
+
+def test_external_phi_source_shifts_fields_and_rhs() -> None:
+    grid_full = build_spectral_grid(GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.28, Ly=6.28))
+    grid = select_ky_grid(grid_full, 1)
+    geom = SAlphaGeometry(q=1.4, s_hat=0.8, epsilon=0.18, R0=2.77778, drift_scale=1.0)
+    params = LinearParams(
+        R_over_Ln=0.0,
+        R_over_LTi=0.0,
+        R_over_LTe=0.0,
+        omega_d_scale=1.0,
+        omega_star_scale=1.0,
+        rho_star=1.0,
+        kpar_scale=float(geom.gradpar()),
+        nu=0.0,
+    )
+    cache = build_linear_cache(grid, geom, params, 2, 2)
+    G0 = jnp.zeros((2, 2, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64)
+
+    fields0 = compute_fields_cached(G0, cache, params, use_custom_vjp=False)
+    fields_src = compute_fields_cached(G0, cache, params, use_custom_vjp=False, external_phi=0.25)
+    np.testing.assert_allclose(np.asarray(fields_src.phi - fields0.phi), 0.25, atol=1.0e-7)
+
+    rhs0, _ = assemble_rhs_cached(G0, cache, params, use_custom_vjp=False)
+    rhs_src, _ = assemble_rhs_cached(G0, cache, params, use_custom_vjp=False, external_phi=0.25)
+    assert not np.allclose(np.asarray(rhs_src), np.asarray(rhs0))

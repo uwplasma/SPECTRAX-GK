@@ -27,12 +27,13 @@ The atlas builder now reads its inputs from
 ``tools/benchmark_atlas_manifest.toml`` and writes a machine-readable summary to
 ``tools_out/benchmark_atlas_summary.json`` so the panel provenance stays
 explicit.
+Future velocity-space convergence panels should use the same JSON-ready
+gate-report convention before they are promoted into the publication stack.
 
 This produces the tracked atlas panels:
 
 - ``docs/_static/benchmark_core_linear_atlas.png``
 - ``docs/_static/benchmark_core_nonlinear_atlas.png``
-- ``docs/_static/benchmark_convergence_panel.png``
 - ``docs/_static/benchmark_readme_panel.png``
 - ``docs/_static/benchmark_extended_linear_panel.png``
 
@@ -50,6 +51,11 @@ The tracked atlas is now paired with a refresh manifest:
 The refresh runner executes the benchmark matrix in manifest order from
 ``tools/benchmark_refresh_manifest.toml`` and writes a summary to
 ``tools_out/benchmark_refresh_summary.json``. Jobs that depend on reference data declare explicit environment-variable requirements for their argument bundles, so the refresh pipeline can be rerun without editing the Python scripts themselves.
+
+The VMEC-backed imported-linear refresh jobs are intentionally pinned to
+``JAX_PLATFORMS=cpu`` in the manifest. That keeps the refresh workflow stable
+on shared machines such as ``office`` where the geometry helper stack can
+otherwise fail with GPU out-of-memory errors that are unrelated to parity.
 
 Example:
 
@@ -76,26 +82,6 @@ answers two questions:
 
 - which branches and diagnostics are being tracked for validation,
 - which shipped cases have measured CPU/GPU/runtime-memory coverage.
-
-Representative convergence gate
--------------------------------
-
-The benchmark suite makes convergence explicit instead of leaving it implicit
-in the chosen production grids. The tracked convergence tile uses the Cyclone
-ITG lane to show:
-
-- grid convergence on the production linear scan at representative
-  ``k_y`` values,
-- response sensitivity to the benchmark-normalized ``rho_star`` scaling.
-
-.. figure:: _static/benchmark_convergence_panel.png
-   :width: 100%
-   :align: center
-   :alt: Representative convergence panel
-
-   Representative convergence and sensitivity gate. This panel is included in
-   the README publication summary so convergence is visible alongside the validation
-   figures rather than being left implicit.
 
 Primary publication set
 -----------------------
@@ -208,6 +194,13 @@ headline atlas tiles. Current examples include:
 - ``docs/_static/etg_fullgk_pilot_compare_dt1e4_gaussian_match.png`` for the
   closed short-window full-GK ETG nonlinear pilot that now appears in the
   shipped summary/publication panels.
+- ``docs/_static/kbm_eigenfunction_overlap_summary.png`` for the current
+  eigenfunction-overlap summary on the tracked KBM GX candidate table. This is
+  the first compact overlap artifact in the manuscript-facing stack and should
+  be read as a branch-identity diagnostic. The raw mode-shape overlays are now
+  tracked separately as ``docs/_static/kbm_eigenfunction_reference_overlay_ky0p3000.png``
+  and ``docs/_static/w7x_eigenfunction_reference_overlay_ky0p3000.png`` with
+  JSON gate reports under ``docs/_static/reference_modes/``.
 
 Extended stress matrix
 ----------------------

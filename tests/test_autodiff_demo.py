@@ -30,3 +30,7 @@ def test_autodiff_demo_summary(tmp_path: Path):
     cov = summary["covariance"]
     assert cov[0][0] > 0.0
     assert cov[1][1] > 0.0
+    assert summary["sensitivity_map_rank"] >= 1
+    assert summary["jacobian_condition_number"] > 0.0
+    assert len(summary["covariance_std"]) == 2
+    assert summary["uq_ellipse_area_1sigma"] >= 0.0

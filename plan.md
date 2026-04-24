@@ -1,7 +1,2005 @@
 # SPECTRAX-GK Ship Readiness Plan
 
-Last updated: 2026-04-11
-Current public baseline under review: `fb6fabc add large-grid scaling sweep and fix tools imports`
+Last updated: 2026-04-24
+Current public baseline under review: `refactor/modularize-core-for-validation` after the runtime-panel and pre-release gate refresh.
+
+## Current Pre-Release Scope Update (2026-04-24)
+
+- The shipped runtime/memory panel has been regenerated from
+  `tools_out/runtime_memory_summary_ship_refresh.json`, restoring the W7-X and
+  HSX nonlinear rows that were missing when the older interrupted summary was
+  used.
+- Nonlinear release-window statistics now carry case-specific mean-relative
+  gates in `docs/_static/nonlinear_window_statistics.json`: KBM `0.02`, HSX
+  `0.05`, Cyclone Miller `0.095`, and the broad `0.10` release envelope for
+  Cyclone and W7-X while their paper-level tightening remains open.
+- Autodiff inverse examples now report covariance, parameter standard
+  deviations, correlations, one-sigma UQ ellipse area, Jacobian rank, and
+  conditioning, in addition to finite-difference derivative checks.
+- The differentiable-geometry Phase-A bridge is explicitly scoped to an
+  in-memory `FluxTubeGeometryData` contract plus optional `vmec_jax` /
+  `booz_xform_jax` API discovery. Full
+  `vmec_jax -> booz_xform_jax -> SPECTRAX-GK` parity and geometry-gradient
+  checks remain the next implementation step.
+- Production parallelization starts with independent `k_y` scans, sensitivity
+  sweeps, and UQ ensembles through `spectraxgk.batch_map` and
+  `spectraxgk.ky_scan_batches`; nonlinear domain sharding remains out of the
+  release claim until communication and numerical-identity gates exist.
+- The first real solver-backed parallelization gate is now
+  `tools/generate_parallel_ky_scan_gate.py`, which writes
+  `docs/_static/parallel_ky_scan_gate.{png,pdf,csv,json}` from a Cyclone
+  serial-vs-fixed-shape-batched `k_y` scan. It caught and fixed a true
+  batched-scan bug: selected multi-`k_y` linear grids were inheriting the
+  nonlinear two-thirds dealias mask and zeroing high-`k_y` linear rows.
+- W7-X zonal long-window damping/recurrence, W7-X fluctuation spectra, and
+  W7-X multi-flux-tube/TEM extension are post-release manuscript lanes, not
+  blockers for the pre-release package refresh.
+
+## Strategic Audit and Next-Step Roadmap (2026-04-23)
+
+This section is the current decision layer for the project. It is based on:
+
+- local git history through `678c3dd Reduce collision cache startup cost`,
+- the current source/docs/tests layout on `refactor/modularize-core-for-validation`,
+- live CI status on GitHub, where the latest `main` CI run observed in this
+  audit completed successfully,
+- the local `office` GX checkout under `/home/rjorge/GX`,
+- local `vmec_jax` and `booz_xform_jax` checkouts under
+  `/Users/rogeriojorge/local/`,
+- a renewed literature/source pass over GX, stella/GENE W7-X benchmarks,
+  Merlo/Rosenbluth-Hinton/GAM response, Tronko-style verification, ETG
+  benchmark literature, DESC/TORAX differentiable-design patterns, and JAX
+  performance/autodiff documentation.
+
+### Main project goals
+
+SPECTRAX-GK should become a research-grade, JAX-native gyrokinetic code that is:
+
+1. accurate against literature and independent-code benchmarks,
+2. end-to-end differentiable for sensitivity analysis, inverse design,
+   uncertainty quantification, and stellarator optimization,
+3. fast enough that cold-start, warm throughput, memory use, and multi-device
+   scaling are all measured and actively optimized,
+4. easy to run from `pip install spectraxgk` with a documented executable,
+   plotting workflow, examples, and artifact format,
+5. maintainable by researchers who need readable equations, tests, diagnostics,
+   and failure modes, not just black-box benchmark figures.
+
+### External anchors from the renewed pass
+
+- GX remains the closest algorithmic and parity reference: it uses
+  Fourier-Hermite-Laguerre phase-space methods, GPU-native CUDA kernels, and
+  benchmark panels for CBC, KBM, W7-X, nonlinear transport, velocity-space
+  convergence, and performance/scaling. The local GX source confirms several
+  implementation lessons worth carrying into SPECTRAX-GK: preallocated work
+  buffers, fused CUDA kernels for linear/nonlinear RHS paths, explicit linked
+  parallel-gradient operators, and old but still useful unit-test topics
+  around grids, geometry, gradients, Laguerre transforms, linear RHS,
+  nonlinear RHS, moments, and solvers.
+- The stella/GENE W7-X benchmark is still the canonical stellarator validation
+  ladder: multiple flux tubes, linear ITG/TEM scans, zonal-flow response, and
+  nonlinear ITG heat flux. SPECTRAX-GK should not present W7-X as closed from
+  one flux tube alone when making paper-level claims.
+- Merlo/Rosenbluth-Hinton/GAM remains the strongest shaped-tokamak response
+  benchmark. The current Merlo Case-III artifact is close on benchmark-scale
+  residual/frequency/damping; the remaining long-time recurrence work should
+  be framed as a numerical-resolution/closure study rather than a replacement
+  for the accepted extraction protocol.
+- Tronko-style verification argues that equation verification and numerical
+  verification have to be tied together. This means every solver refactor
+  should be covered by tests on invariants, manufactured/closed-form limits,
+  observed order, conservation/free-energy behavior, and benchmark observables.
+- The ETG benchmark literature gives a real operating-point and transport
+  context. Current ETG nonlinear work should stay framed as a pilot until it is
+  tied to a recognized ETG benchmark window and transport observable.
+- DESC and TORAX show the bar for differentiable plasma codes: exact or
+  validated derivatives, clearly separated static/dynamic state, reusable
+  objective APIs, progress/logging, persistent compilation cache guidance, and
+  examples that solve real inverse/optimization tasks.
+- JAX's official guidance reinforces the current performance direction:
+  profile first, separate cold compile from warm throughput, use persistent
+  compilation cache as an engineering option, manage GPU preallocation
+  explicitly for memory/OOM work, use `shard_map`/SPMD patterns for real
+  multi-device decomposition, and reserve Pallas for measured hotspots where
+  XLA cannot generate the needed kernel.
+- Equinox is a good fit for future typed PyTree model/config objects because
+  `filter_jit` and related filtered transforms handle mixed static/dynamic
+  PyTrees cleanly. Lineax is a plausible future path for differentiable
+  matrix-free linear solves and adjoint-friendly linear algebra, but it should
+  be introduced only behind a narrow solver adapter after a benchmark against
+  the existing `jax.scipy.sparse.linalg.gmres` path.
+
+### Current state from git and source layout
+
+Recent work has closed real issues, not just documentation:
+
+- runtime ETA/live output and adaptive chunk reporting were added in
+  `c837a72`;
+- imported W7-X linear geometry propagation was fixed in `3b6506f`;
+- office/GX audits were stabilized and W7-X/HSX late-time linear reductions
+  were tracked in `a6aed79` and `67dd533`;
+- cold/warm runtime accounting, profiling tools, and trace defaults were added
+  across `92952f5` through `a6e3dd1`;
+- the most recent performance patch, `678c3dd`, reduced Cyclone
+  `build_linear_cache` from about `7.74 s` to `6.92 s` on `office` GPU by
+  storing the collision cache in low-rank form.
+- the current validation-gate tranche adds JSON-ready scalar gate reports for
+  late-time linear metrics, windowed nonlinear metrics, and zonal-response
+  residual/frequency/damping metrics, with tests and API documentation; the
+  Merlo/Miller zonal-response generator is now the first artifact script to
+  write this gate report into its JSON metadata.
+- the first refactor slice in the post-audit ship plan moved validation gate
+  dataclasses and scalar acceptance-policy helpers into
+  `src/spectraxgk/validation_gates.py`, while keeping the old
+  `spectraxgk.benchmarking` and top-level compatibility exports intact.
+- the refactor branch now has a machine-readable traceability manifest,
+  `tools/validation_coverage_manifest.toml`, checked by
+  `tools/check_validation_coverage_manifest.py`. It maps high-priority modules
+  to reference anchors, physics/numerics contracts, fast tests, artifacts, and
+  next tests so the 95% package-wide coverage lane cannot drift into shallow
+  line-coverage work.
+
+The source tree is now organized around a credible target architecture:
+
+- public user surfaces: `cli.py`, `runtime.py`, `runtime_config.py`,
+  `runtime_artifacts.py`, `plotting.py`, examples, and documented tools;
+- modular numerical kernels: `terms/*`, `linear.py`, `linear_krylov.py`,
+  `nonlinear.py`, `diffrax_integrators.py`;
+- runtime decomposition: `runtime_startup.py`, `runtime_diagnostics.py`,
+  `runtime_chunks.py`, `runtime_results.py`;
+- validation and artifact tools: `benchmarking.py`, `benchmarks.py`,
+  `tools/compare_*`, `tools/make_*`, `tools/profile_*`;
+- geometry bridge layer: `geometry`, `miller_eik.py`, `vmec_eik.py`,
+  `from_gx/vmec.py`, `from_gx/miller.py`.
+
+The remaining structure issue is that several large modules still mix physics,
+numerics, user I/O, and benchmark policy. The refactor should continue, but
+only with parity and coverage gates attached to each extraction.
+
+### Current open-lane ordering before merge/tag/ship
+
+The active pre-merge sequence is:
+
+1. code refactoring with behavior-preserving compatibility exports,
+2. better physics gates and validation artifacts,
+3. 95% package-wide coverage with literature-anchored tests,
+4. stronger multi-CPU and multi-GPU algorithms with numerical-identity gates,
+5. `vmec_jax` / `booz_xform_jax` integration for differentiable geometry,
+6. broader GX comparison examples and tracked reference artifacts,
+7. documentation expansion for physics, equations, numerics, examples, and
+   validation status,
+8. close manuscript validation lanes: KBM branch continuity, real Cyclone
+   velocity-space convergence, W7-X zonal response, W7-X fluctuation spectra,
+   nonlinear window-statistics acceptance, autodiff FD/tangent/UQ gates,
+   differentiable stellarator optimization, and nonlinear profiling/performance
+   improvements,
+9. merge to `main`, tag, publish, and ship only after the release branch has a
+   clean CI/CD and artifact-gate story.
+
+### Best next steps by priority
+
+1. **Finish the refactor/testing lane before new feature expansion.**
+   - Keep public behavior unchanged.
+   - Continue splitting large modules only when each extraction gains tests.
+   - Highest-value remaining slices: `runtime.py`, `linear.py`,
+     `nonlinear.py`, `benchmarks.py`, `plotting.py`, and geometry adapters.
+   - Keep `tools/validation_coverage_manifest.toml` current on every slice:
+     each extracted module must list reference anchors, physics contracts,
+     numerics contracts, fast tests, artifacts, and next tests.
+
+2. **Turn validation into a gated artifact matrix.**
+   - Every paper-facing lane needs one owning script, one frozen artifact path,
+     one reference source, one fit/window policy, and one numeric gate.
+   - Use `tools/make_validation_gate_index.py` for completed gate reports and
+     `tools/check_validation_coverage_manifest.py` for forward traceability
+     from modules to tests and artifacts.
+   - First-class scalar gates now exist for late-time linear metrics, windowed
+     nonlinear statistics, and zonal response; next connect them to artifact
+     refresh scripts.
+   - Eigenfunction-overlap gates now exist and the KBM raw-overlay generator
+     writes them into its JSON metadata, with the current bounded artifact kept
+     explicitly open until it reaches the overlap/relative-L2 thresholds.
+   - Nonlinear diagnostic comparison runs can now write JSON gate reports via
+     `tools/compare_gx_nonlinear_diagnostics.py --summary-json`, giving the
+     publication plots a machine-readable mean-relative-mismatch acceptance
+     record.
+   - The nonlinear summary writer now supports explicit case/source labels,
+     explicit `tmin/tmax` transport windows, and strict JSON serialization.
+     The tracked release-window gate JSONs cover Cyclone, Cyclone Miller, KBM,
+     HSX, and W7-X. At the current `0.10` mean-relative release gate, the
+     Cyclone `t=100..400`, Cyclone Miller, KBM, HSX, and refreshed W7-X
+     `t<=200` windows pass. The older `t=5` Cyclone diagnostic is retained as
+     an exploratory startup/resolved-spectrum audit and is excluded from the
+     release-gate index.
+   - Observed-order and branch-continuity gate reports now exist for
+     velocity-space convergence panels and branch-followed scan tables; the
+     benchmark atlas summary already writes a high-vs-low Cyclone grid
+     convergence gate, and the remaining step is wiring the observed-order and
+     branch-continuity helpers into the relevant velocity-space and
+     branch-following artifact refresh scripts.
+   - `tools/generate_observed_order_gate.py` now provides the generic
+     CSV-backed observed-order artifact path. The tracked Cyclone
+     velocity-space convergence artifact has been replaced with an office/GPU
+     `ky=0.30`, `tmax=150` time-path sweep over
+     `(Nl,Nm)=(4,8),(6,12),(12,24),(16,32)`. The strict gate now passes with
+     all pairwise orders positive, final-pair order above `4.8`, and finest-grid
+     relative growth-rate error about `1.1e-3`.
+   - KBM branch-following now has a `--branch-summary-json` path in
+     `tools/compare_gx_kbm.py`, so selected branch tables can record adjacent
+     `gamma`/`omega` jump gates and successive eigenfunction-overlap gates.
+   - The tracked KBM selected-branch table now also has a no-rerun refresh
+     script, `tools/generate_kbm_branch_gate_summary.py`, which writes
+     `docs/_static/kbm_branch_gate_summary.json`. The selected rows now use a
+     continuity-first branch (`project_late` at `ky=0.2` instead of the
+     pointwise max-growth window), and the current summary passes with
+     `max_rel_gamma_jump ~= 0.388`, `max_rel_omega_jump ~= 0.320`, and no
+     successive-overlap deficit.
+   - `tools/make_validation_gate_index.py` now scans tracked JSON metadata and
+     writes `docs/_static/validation_gate_index.json/csv/png`, giving the
+     manuscript/docs one compact audit view of currently materialized release
+     gate reports. The current index has `10/10` release gates passed; explicitly
+     exploratory short-window diagnostics can opt out with
+     `gate_index_include=false`.
+
+3. **Close the next physics gates in this order.**
+   - W7-X zonal-response long-window audit: the VMEC-backed artifact now uses
+     the paper-faithful `init_field="phi"` potential initializer, a periodic
+     radial box, the signed line-average diagnostic `Phi_zonal_line_kxt`,
+     `gaussian_width=1`, `--initial-normalization=line_first`, and
+     `--time-scale=1`. The stella/GENE Fig. 11 reference traces and inset
+     residuals are digitized by `tools/digitize_w7x_zonal_reference.py` into
+     `docs/_static/w7x_zonal_reference_digitized*.{csv,json,png,pdf}`.
+     `tools/generate_w7x_zonal_response_panel.py` now also writes the tracked
+     combined trace table `docs/_static/w7x_zonal_response_panel.traces.csv`,
+     and `tools/compare_w7x_zonal_reference.py` can replay the comparison from
+     that table without office-only per-`kx` directories. The current
+     long-window artifact reaches the digitized time windows (`t≈3460` for
+     `kx rho_i=0.05`, `t≈1980` for the other wavelengths), passes only the
+     `kx rho_i=0.05` residual gate, and fails all late-envelope gates. The new
+     paper-facing audit panel lives at
+     `docs/_static/w7x_zonal_contract_audit.{csv,json,png,pdf}` with
+     `gate_index_include=false`. The companion velocity-space audit
+     `docs/_static/w7x_zonal_moment_tail_audit.{csv,json,png,pdf}` shows that
+     the long `Nl=8`, `Nm=32` traces have large late normalized-trace standard
+     deviations and non-negligible high-Hermite/high-Laguerre free-energy tail
+     fractions. A single `kx rho_i=0.07`, `t≈200` kz-hypercollision diagnostic
+     probe with `nu_hyper_m=0.05` reduced early tail standard deviation but did
+     not close the reference trace error, so this should remain a bounded
+     recurrence/closure investigation rather than a hidden validation setting.
+     `tools/plot_w7x_zonal_closure_ladder.py` now materializes that conclusion
+     for `kx rho_i=0.07` at
+     `docs/_static/w7x_zonal_closure_ladder_kx070.{csv,json,png,pdf}`. The
+     paper-contract high-moment probes reduce the late envelope only partially,
+     the weak-closure audit reduces the envelope without closing the early
+     trace mismatch, and the best short-window trace match comes from a
+     non-contract width-four initializer that must remain excluded from
+     validation claims.
+     `tools/generate_w7x_zonal_response_panel.py` now exposes explicit
+     `--nu-hyper-l`, `--nu-hyper-m`, `--nu-hyper-lm`, `--p-hyper-*`,
+     `--enable-hypercollisions`, and `--gaussian-width` CLI overrides, so the
+     next recurrence/closure probes can be launched from the tracked W7-X tool
+     and audited in metadata instead of relying on local TOML edits.
+     A corrected paper-width `Nl=16`, `Nm=64`, `nu_hyper_m=3e-3`,
+     `hypercollisions_const=1` probe was run on `office` to `t ~= 100` and
+     added to the closure ladder. It reduces the final Hermite-tail fraction
+     from `0.388` to `0.064` relative to the no-closure high-moment probe and
+     drops the free-energy last/first ratio to `0.348`, but the reference-trace
+     mean absolute error moves from `0.283` to `0.292`. This is useful negative
+     evidence: weak moment closure mitigates tails but does not close the
+     literature trace mismatch.
+     The state-level convention comparison now lives at
+     `docs/_static/w7x_zonal_state_convention_audit.{csv,json,png,pdf}`. It
+     closes the paper-facing initializer/observable layer at `kx rho_i=0.07`:
+     the recovered Gaussian potential has relative `L2` error `1.85e-6`,
+     off-target spectral potential content is zero to reported precision, and
+     the line/mode helper diagnostics match manual reductions at `~2e-16`.
+     It also records the normalization difference that matters for the paper:
+     the signed line-first initial level is `0.28209 init_amp`, while the
+     volume-weighted initial level is `0.28450 init_amp`.
+     The bounded recurrence sweep requested for the paper lane now lives at
+     `docs/_static/w7x_zonal_recurrence_sweep_kx070.{csv,json,png,pdf}`. It
+     varies moment resolution and closure source separately over the common
+     `t v_t/a <= 100` window. The no-closure rows give mean absolute reference
+     errors `0.295` (`Nl=8,Nm=32`), `0.276` (`Nl=12,Nm=48`), and `0.283`
+     (`Nl=16,Nm=64`). At fixed `Nl=16,Nm=64`, constant-source closure lowers
+     the final Hermite-tail fraction from `0.388` to `0.062` but worsens the
+     trace error to `0.291`; the `kz` closure remains close to no closure. The
+     current conclusion is therefore precise: the convention layer is closed,
+     while the W7-X zonal damping/recurrence closure remains a real open
+     physics/numerics lane.
+     A workflow issue was also found while running the bounded W7-X probes:
+     concurrent VMEC/eik generation could race on the shared
+     `.cache/spectrax/vmec_eik` path. The runtime VMEC path now reuses valid
+     default cache outputs and writes new cache files through a unique
+     temporary netCDF followed by atomic replacement. This closes the immediate
+     partial-cache corruption risk before broader parallel W7-X sweeps are
+     relaunched. A bounded `office` smoke launched two simultaneous W7-X
+     geometry-generation requests against
+     `examples/benchmarks/runtime_w7x_zonal_response_vmec.toml`; both returned
+     the same cache path, and the final netCDF opened with the required
+     variables (`theta`, `bmag`, `gradpar`, `q`, `shat`) and 65 theta samples.
+   - KBM raw eigenfunction overlay is closed for the tracked `ky=0.3` artifact
+     with overlap `≈0.999985`; keep broader KBM nonlinear and branch-continuity
+     extensions as separate future gates.
+   - W7-X raw eigenfunction overlay is closed for the tracked `ky=0.3` finite
+     GX `t≈2` artifact with overlap `≈0.9999999994` and relative `L^2`
+     mismatch `≈3.33e-5`; keep W7-X zonal long-window and fluctuation-spectrum
+     acceptance as separate gates.
+   - Windowed nonlinear-statistics panel for Cyclone, Miller, KBM, W7-X, and
+     HSX is now materialized by `tools/plot_nonlinear_window_statistics.py`
+     with `docs/_static/nonlinear_window_statistics.{png,pdf,csv,json}`; next
+     tighten case-specific tolerances beyond the current `0.10` release gate
+     where the reference windows justify it.
+   - W7-X multi-flux-tube linear/TEM extension and fluctuation-spectrum lane.
+   - Shaped multispecies tokamak linear lane.
+   - ETG nonlinear only after its benchmark operating point and observable
+     contract are explicit.
+
+4. **Make the test suite research-grade, not only coverage-heavy.**
+   - Keep the 95% wide-package target, but require tests to map to:
+     equations, numerical schemes, diagnostics, artifact contracts, benchmark
+     observables, or gradients.
+   - Add manufactured/closed-form tests for streaming, field solve,
+     collision/hypercollision damping, linked-boundary gradients, ExB bracket
+     antisymmetry, and reduced IMEX solves.
+   - Add regression tests for every bug recently found: VMEC contract
+     propagation, `s_hat_input` return, nonlinear diagnostics horizon mixing,
+     restart zonal scatter order, default geometry scalar allocation, and
+     low-rank collision-cache shape handling.
+   - Keep local default tests under the 5-minute expectation; move
+     office/GX/reference-data runs to explicit manifests and CI/manual tiers.
+
+5. **Attack performance from measured bottlenecks.**
+   - The profiling/optimization procedure is now tracked by
+     `tools/performance_optimization_manifest.toml` and validated by
+     `tools/check_performance_optimization_manifest.py`. Treat it like the
+     validation coverage manifest: every performance claim must map to
+     platforms, benchmark cases, profiling tools, metrics, artifacts,
+     bottleneck hypotheses, optimization actions, and gates.
+   - Current cold-start priority: `compile_first_integrator_run`, then
+     `laguerre_cache` and `kperp_and_drifts`.
+   - Current memory priority: avoid large closed-over constants, avoid
+     materialized full-history traces by default, stream diagnostics, and
+     expose memory allocator guidance.
+   - Current warm-throughput priority: fuse nonlinear FFT/gradient/bracket
+     paths, reduce gather/scatter density, donate buffers where possible, and
+     keep scan shapes stable.
+   - Use persistent compilation cache for engineering/repeated sweeps, but keep
+     published cold and warm timings separate.
+   - Evaluate Pallas only after XProf/HLO shows a stable kernel hotspot that
+     XLA cannot fuse well.
+   - Work in five explicit lanes:
+     end-to-end runtime/memory, cold-start compilation, nonlinear warm
+     throughput, memory efficiency, and parallel scaling. Each lane must report
+     before/after JSON or CSV artifacts before any README/publication panel is
+     refreshed.
+   - CPU and GPU optimization gates are separate: a CPU improvement cannot be
+     used to claim GPU speedup, and a GPU compile-cache improvement cannot be
+     mixed with honest cold-start timings.
+   - Do not merge a performance optimization unless the relevant physics gate
+     remains unchanged: exact-state audits, linear growth/frequency gates,
+     nonlinear window-statistics gates, or device-parity gates depending on the
+     changed code path.
+   - Local CPU smoke for the manifest-backed startup lane now runs in under the
+     local budget with reduced Cyclone nonlinear moments (`Nl=2`, `Nm=4`):
+     `startup_total_s=12.77`, dominated by `compile_first_integrator_run=6.40`
+     and `build_linear_cache=3.98`. This gives a cheap local regression point
+     before larger `office` CPU/GPU profiling sweeps.
+   - The cache-build profiler has been corrected to match the production
+     low-rank moment cache contract: `lb_lam` is a small `(Nl, Nm)` factor and
+     `collision_lam` remains empty, with collision expansion left inside the
+     RHS. Older profiler rows that timed a full
+     `(species, l, m, ky, kx, z)` collision allocation should be treated as
+     attribution aids only, not as production-equivalent bottleneck numbers.
+     The corrected local CPU cache decomposition has
+     `collision_and_damping_cache=0.071 s`; the remaining measurable cache
+     subphases are gyro/Bessel, Laguerre, and kperp/drift construction.
+   - The first host-build cache cleanup now builds the small moment-space and
+     end-damping factors as host arrays before a single JAX transfer. On the
+     local CPU Cyclone startup smoke, the measured `build_linear_cache` phase
+     moved from `3.98 s` to `2.63 s` and total cold startup moved from
+     `12.77 s` to `11.78 s`. This is a small cold-start improvement, not a
+     broad warm-throughput claim.
+   - The same host-build cleanup has a bounded `office` GPU confirmation on
+     the reduced Cyclone nonlinear startup smoke: cold startup is now
+     `35.19 s` with `build_linear_cache=5.58 s`, compared with the previously
+     tracked post-low-rank startup of `36.78 s` and `build_linear_cache=6.92 s`.
+     The first integrator compile remains the dominant cold-start cost.
+   - The next gyroaverage cache cleanup removes a Python-level species `vmap`
+     from `J_l_all` by using the existing broadcasted coefficient formula and
+     restoring the species-major axis with `moveaxis`. The helper is regression
+     tested against the previous `vmap` convention. Local CPU Cyclone startup
+     smoke moved from `11.78 s` to `9.88 s`, with `build_linear_cache`
+     `2.63 s -> 2.38 s`. The corrected local cache decomposition moved from
+     `3.41 s` to `2.78 s`, with `gyro_bessel_cache` `0.83 s -> 0.68 s`.
+     `office` GPU cache-only profiling improved relative to the older
+     corrected cache profile (`8.17 s -> 6.86 s`), but the full cold-start
+     smoke remained compile-noise dominated (`35-36 s`), so this is not claimed
+     as a GPU startup speedup.
+
+6. **Define a real multi-device parallelization target.**
+   - Stop treating sharding as a figure-only feature.
+   - Define one production decomposition first: likely `ky` or batch/scan
+     sharding for independent linear scans and ensemble/UQ; nonlinear domain
+     sharding should come later because it requires communication in FFT and
+     nonlinear bracket paths.
+   - Use `shard_map`/SPMD-style tests on CPU locally and two-GPU `office`
+     validation for GPU.
+   - Gate on speedup, memory per device, and numerical identity.
+
+7. **Move differentiability from demos to validated workflows.**
+   - For each differentiated observable, add finite-difference checks,
+     tangent/adjoint consistency where available, and conditioning diagnostics.
+   - Promote the two-mode inverse example as the current identifiable baseline.
+   - Add a UQ/Laplace example with covariance and propagated uncertainty.
+   - Add a sensitivity-map example for `gamma`, `omega`, and one windowed
+     nonlinear metric.
+   - After the refactor/testing lane, start the `vmec_jax` Phase A bridge:
+     in-memory `vmec_jax` output into the existing SPECTRAX-GK geometry
+     contract, no `wout` write/read step.
+   - Then add direct `vmec_jax -> booz_xform_jax.jax_api -> SPECTRAX-GK`
+     geometry, with geometry parity and gradient checks before optimization
+     claims.
+
+8. **Tighten docs and examples around user workflows.**
+   - Keep top-level docs focused on install, run, plot, inspect outputs, and
+     reproduce shipped figures.
+   - Move long benchmark caveats into `verification_matrix.rst` and
+     `benchmarks.rst`.
+   - Add example pages for:
+     - plotting from output files,
+     - Miller geometry,
+     - VMEC imported geometry,
+     - W7-X/HSX nonlinear runs,
+     - autodiff inverse/UQ,
+     - performance profiling,
+     - parallelization.
+
+9. **Keep CI/CD and PyPI boring and automatic.**
+   - Current PyPI version observed in this audit is `1.2.0`.
+   - Release workflow uses trusted publishing through `release.yml`; keep it
+     tag-driven and verify metadata before publish.
+   - CI should stay layered:
+     - PR: type checks, fast shards, docs/package build, release-surface
+       coverage;
+     - main/manual: sharded wide package coverage with a combined 95% gate;
+     - workflow-dispatch/manual: mypy, quick shards, fast coverage,
+       sharded wide coverage, and docs/package build on the selected branch;
+     - workflow-dispatch with `run_nightly=true`: full suite and core
+       coverage;
+     - office/manual: GX parity, VMEC/W7-X, runtime/memory, multi-GPU scaling.
+   - Local release-hygiene coverage checks on this branch found two real test
+     issues and fixed them: the VMEC atomic-write unit mock now creates the
+     temp file that production atomically replaces, and the GX restart test now
+     follows the active reduced-`kx` order used by the restart writer/reader.
+     The monolithic package-wide coverage command still hit the local 300 s cap
+     near the late tests, so the CI wide lane now uses
+     `tools/run_wide_coverage_gate.py` to shard test files with per-shard
+     timeouts before combining and enforcing the 95% package gate.
+   - Manual branch CI was corrected so release branches can run the normal
+     release gates without accidentally launching the long nightly tier. The
+     clean Linux mypy job also needs `pandas` treated as an untyped optional
+     import unless we decide to add `pandas-stubs` to the dev dependency set.
+
+10. **Do not overclaim.**
+    - Closed release lanes can be advertised.
+    - Open paper lanes should stay labeled as open until their numeric gates
+      and artifact scripts are frozen.
+    - Digitized literature figures are acceptable for planning and sanity
+      checks, but direct code-backed or published-table references should be
+      preferred for gates.
+
+## Research Validation / 95% Coverage / Differentiable Optimization Roadmap (2026-04-22)
+
+This section supersedes the older ship-only focus when deciding what to build
+next. The target is no longer just "release-ready"; it is:
+
+1. package-wide line coverage at or above 95% on the wide-coverage lane,
+2. a benchmark and verification suite that is publishable and reviewer-proof,
+3. differentiable workflows that support sensitivity analysis, inverse
+   problems, uncertainty quantification, and stellarator optimization.
+
+This roadmap is anchored on four external baselines:
+
+- **Verification methodology**:
+  Tronko et al., *Verification of Gyrokinetic codes: theoretical background and applications*  
+  <https://arxiv.org/abs/1703.07582>
+- **Modern tokamak/stellarator benchmark set and solver behavior**:
+  Mandell et al., *GX: a GPU-native gyrokinetic turbulence code for tokamak and stellarator design*  
+  <https://arxiv.org/abs/2209.06731>
+- **Published stellarator benchmark set**:
+  González-Jerez et al., *Electrostatic gyrokinetic simulations in W7-X geometry: benchmark between the codes stella and GENE*  
+  <https://arxiv.org/abs/2107.06060>
+- **Differentiable-JAX gyrokinetic precedent**:
+  *gyaradax: Local Gyrokinetics JAX Code*  
+  <https://arxiv.org/abs/2604.06085>
+
+Additional optimization/stellarator anchors:
+
+- stella documentation and code structure: <https://stellagk.github.io/stella/>
+- GX documentation: <https://gx.readthedocs.io/>
+- DESC stellarator optimization / autodiff:
+  <https://arxiv.org/abs/2203.17173>,
+  <https://arxiv.org/abs/2204.00078>
+- turbulence optimization in stellarators with GX + DESC:
+  <https://arxiv.org/abs/2310.18842>
+- SIMSOPT repository for optimization workflow patterns:
+  <https://github.com/hiddenSymmetries/simsopt>
+- PORTALS-style optimization/surrogate loop motivation:
+  <https://arxiv.org/abs/2312.12610>
+- linear multispecies shaped-tokamak benchmark set:
+  <https://crppwww.epfl.ch/~sauter/benchmark/>
+- ETG benchmark operating-point literature:
+  Nevins et al., *Characterizing electron temperature gradient turbulence*,
+  Phys. Plasmas 13, 122306 (2006)  
+  <https://w3.pppl.gov/~hammett/gyrofluid/papers/2006/Nevins-ETG-Benchmark.pdf>
+- stellarator residual-zonal-flow theory:
+  Monreal et al., *Residual zonal flows in tokamaks and stellarators at
+  arbitrary wavelengths*  
+  <https://arxiv.org/abs/1505.03000>
+- W7-X fluctuation-spectrum / Doppler-reflectometry comparison:
+  González-Jerez et al., *Electrostatic microturbulence in W7-X: comparison of
+  local gyrokinetic simulations with Doppler reflectometry measurements*  
+  <https://arxiv.org/abs/2312.10221>
+- global electromagnetic stellarator verification:
+  Maurer et al., *Global electromagnetic turbulence simulations of W7-X-like
+  plasmas with GENE-3D*  
+  <https://www.cambridge.org/core/journals/journal-of-plasma-physics/article/global-electromagnetic-turbulence-simulations-of-w7xlike-plasmas-with-gene3d/AFF0F24A1A52D397D7983BAB2E872E9F>
+- low-dimensional geometry learning for stellarator turbulence optimization:
+  Wei et al., *Low-dimensional geometry learning for turbulence prediction in
+  optimized stellarators*  
+  <https://arxiv.org/abs/2603.17366>
+
+#### Literature baselines reviewed directly for figure planning
+
+The plan below is based on direct inspection of the published figure sets, not
+only on abstracts:
+
+- GX JPP 2024:
+  - nonlinear CBC heat-flux traces (figure 5),
+  - W7-X linear `gamma(k_y)` / `omega(k_y)` panel (figure 6),
+  - velocity-space convergence spectra (figure 9),
+  - performance/scaling panels (figures 10-12).
+- W7-X stella/GENE benchmark JPP 2022:
+  - linear ITG/TEM scan panels,
+  - zonal-flow response section,
+  - nonlinear ITG heat-flux trace (figure 12 as cited by GX).
+- W7-X Doppler-reflectometry comparison preprint 2023:
+  - density-fluctuation amplitude trends,
+  - fluctuation-frequency spectra,
+  - zonal-flow spectral characterization.
+- Merlo et al. shaped-tokamak benchmark:
+  - residual-potential panel (figure 12),
+  - GAM time-trace / envelope extraction (figure 13),
+  - GAM frequency and damping summary (figure 14),
+  - shaping dependence of residual and GAM metrics (figures 15-16).
+- shaped multispecies tokamak benchmark / Rosenbluth-Hinton tests:
+  - linear shaping scan,
+  - non-zero ballooning-angle handling,
+  - zonal-flow residual and GAM damping.
+- GENE-3D electromagnetic stellarator verification:
+  - heavy-electron linear/nonlinear verification before realistic-mass runs.
+- gyaradax 2026:
+  - inverse-problem and sensitivity-analysis figures are the immediate
+    precedent for the autodiff validation narrative.
+
+These reviewed figure families define what SPECTRAX-GK should reproduce or
+adapt for a credible future manuscript.
+
+#### Frozen raw-reference status (2026-04-22)
+
+The repository includes compact frozen GX raw-mode bundles and matched
+SPECTRAX-GK overlay artifacts for two closed linear lanes:
+
+- `docs/_static/reference_modes/kbm_linear_gx_ky0p3000.npz`
+- `docs/_static/reference_modes/w7x_linear_gx_ky0p3000.npz`
+
+These are extracted from real GX `.big.nc` field histories. The W7-X bundle was
+refreshed from a finite `t≈2` raw field history because the older late-time
+bundle source contained non-finite fields. The closed matched SPECTRAX-side
+raw-mode artifacts are:
+
+- `docs/_static/reference_modes/kbm_linear_spectrax_ky0p3000.csv`
+- `docs/_static/kbm_eigenfunction_reference_overlay_ky0p3000.png`
+- `docs/_static/reference_modes/kbm_eigenfunction_reference_overlay_ky0p3000.json`
+- `docs/_static/reference_modes/w7x_linear_spectrax_ky0p3000.csv`
+- `docs/_static/w7x_eigenfunction_reference_overlay_ky0p3000.png`
+- `docs/_static/reference_modes/w7x_eigenfunction_reference_overlay_ky0p3000.json`
+
+The KBM overlay is closed with normalized overlap `≈0.999985` and relative
+`L^2` mismatch `≈0.00721` against the frozen GX raw mode. The W7-X overlay is
+closed with normalized overlap `≈0.9999999994` and relative `L^2` mismatch
+`≈3.33e-5` against the finite GX raw mode. Both use JSON gate reports requiring
+`overlap >= 0.95` and `relative L^2 <= 0.25`.
+
+### Planning Principles
+
+- Tests must target **physics contracts**, **numerical contracts**, or
+  **differentiation contracts**. Coverage-only tests are not sufficient.
+- Every benchmark lane must define:
+  - the governing model,
+  - the observable being compared,
+  - the reference code or literature source,
+  - the time/window used for the comparison,
+  - the acceptance tolerance.
+- Every autodiff-facing workflow must define:
+  - what quantity is differentiated,
+  - what variable is differentiated with respect to,
+  - how the gradient is validated,
+  - what optimization or inference task that derivative enables.
+- Every public example must be either:
+  - **validated** and included in the research claim, or
+  - **demoted** to demonstration status with that stated explicitly.
+
+### Current Gap Map
+
+#### A. Coverage gaps
+
+The present wide-package bottlenecks are not in the already-hardened helper
+layers; they are in the large solver and infrastructure modules:
+
+- `src/spectraxgk/runtime.py`
+- `src/spectraxgk/linear.py`
+- `src/spectraxgk/nonlinear.py`
+- `src/spectraxgk/benchmarks.py`
+- `src/spectraxgk/diffrax_integrators.py`
+- `src/spectraxgk/runtime_artifacts.py`
+- `src/spectraxgk/diagnostics.py`
+- `src/spectraxgk/from_gx/vmec.py`
+- `src/spectraxgk/terms/assembly.py`
+- `src/spectraxgk/terms/nonlinear.py`
+- `src/spectraxgk/terms/operators.py`
+
+Low-value ways to chase 95%:
+
+- more integration-only solves,
+- asserting incidental internal arrays,
+- branch pokes without physics or numerical meaning.
+
+High-value ways to reach 95%:
+
+- manufactured solutions,
+- observed-order tests,
+- invariant and symmetry tests,
+- regression tests on benchmark observables,
+- runtime/result contract tests with monkeypatched kernels,
+- gradient-consistency tests for differentiable paths.
+
+#### B. Benchmark/validation gaps
+
+The repo has many benchmark-facing assets, but the **research claim** is still
+narrower than the inventory.
+
+Current validated/publicly defensible lanes:
+
+- Cyclone ITG linear
+- ETG linear
+- KBM linear
+- W7-X linear
+- HSX linear
+- Cyclone nonlinear
+- Cyclone Miller nonlinear
+- KBM nonlinear
+- W7-X nonlinear
+- HSX nonlinear
+- short-window full-GK ETG nonlinear pilot
+- secondary instability short-window lane
+
+Open or demoted lanes:
+
+- TEM
+- KAW runtime lane
+- kinetic-electron Cyclone
+- reduced `cETG` as a physics-complete benchmark
+
+Missing validation dimensions relative to the literature:
+
+- linear zonal-flow response,
+- explicit eigenfunction-shape comparisons in addition to gamma/omega,
+- multi-window nonlinear statistics instead of single traces only,
+- cross-geometry trend tests,
+- clearer electromagnetic validation progression for KBM / KAW / kinetic-electron cases.
+
+#### C. Autodiff and optimization gaps
+
+What exists now:
+
+- `examples/theory_and_demos/autodiff_inverse_growth.py`
+- `examples/theory_and_demos/autodiff_inverse_twomode.py`
+
+What is still missing for a research-grade differentiable story:
+
+- gradient tests against finite differences for all public differentiated observables,
+- local sensitivity maps over physical parameters,
+- uncertainty quantification with a documented covariance or posterior approximation,
+- geometry-to-transport derivatives for non-axisymmetric configurations,
+- optimization loops that actually drive a design variable,
+- a staged path from local inverse demo to stellarator optimization.
+
+### Workstream 1: Wide-Package 95% Coverage
+
+#### Objective
+
+Raise package-wide coverage to at least 95% without turning the suite into a
+slow or fragile branch-chasing exercise.
+
+#### Acceptance criteria
+
+- `wide-coverage` CI job passes with **package-wide** coverage `>= 95%`.
+- Each newly covered module has at least one test of one of these forms:
+  - exact/manufactured solution,
+  - symmetry/invariant test,
+  - benchmark-observable regression,
+  - contract/serialization test,
+  - gradient-consistency test.
+- no test file exceeds the local 5-minute cap.
+
+#### Coverage plan by module
+
+1. `runtime.py`
+   - add startup/import/output path tests for:
+     - default runtime loading,
+     - imported geometry,
+     - restart/restart-append behavior,
+     - diagnostics off/on,
+     - adaptive chunking truncation,
+     - fixed-mode routing,
+     - artifact writing and output path handling.
+   - use monkeypatched solver kernels so these stay cheap.
+
+2. `linear.py`
+   - add manufactured linear systems with known growth rate and exact mode
+     evolution.
+   - extend observed-order tests for all explicit and IMEX time paths used
+     publicly.
+   - add symmetry-limit tests:
+     - zero drive,
+     - zero curvature,
+     - purely streaming,
+     - `k_y = 0`,
+     - electrostatic/electromagnetic toggles.
+
+3. `nonlinear.py`
+   - deepen actual-step tests for:
+     - diagnostics stride and windowing,
+     - fixed-mode projection,
+     - collision split,
+     - adaptive vs fixed-step agreement on manufactured problems,
+     - explicit vs IMEX contract agreement.
+   - add conservation/sanity tests in reduced nonlinear settings where the
+     expected qualitative behavior is known.
+
+4. `benchmarks.py`
+   - convert more runner tests from ad hoc assertions to the new
+     `late_time_linear_metrics()` and `windowed_nonlinear_metrics()` gate
+     utilities.
+   - cover all scan families with:
+     - invalid input branches,
+     - solver fallback logic,
+     - exact reference loading,
+     - benchmark-observable extraction.
+
+5. `diffrax_integrators.py`
+   - extend observed-order tests from explicit ODEs to save-mode/state-return
+     branches and streaming-fit branches.
+   - add parity tests between small diffrax and native explicit paths on tiny
+     manufactured systems.
+
+6. `runtime_artifacts.py`, `diagnostics.py`, `plotting.py`, `io.py`
+   - cover all artifact serialization, reload, and plotting code with
+     lightweight synthetic diagnostics bundles.
+   - these modules should be near-complete because they define the research
+     artifact surface.
+
+7. geometry/import bridge layers
+   - `from_gx/vmec.py`
+   - `from_gx/miller.py`
+   - `geometry/*`
+   - add parser, remap, normalization, and cut/remesh tests using tiny
+     fixtures and synthetic equilibrium metadata.
+
+#### Sequence
+
+1. artifact + diagnostics + plotting
+2. runtime + linear
+3. nonlinear + diffrax
+4. benchmarks
+5. geometry/import bridges
+
+### Workstream 2: Benchmark and Validation Matrix
+
+#### Objective
+
+Turn the current collection of examples and comparison scripts into an explicit
+validation matrix with publishable acceptance gates.
+
+#### Benchmark families to support
+
+1. **Tokamak electrostatic linear**
+   - Cyclone ITG
+   - ETG
+   - TEM
+2. **Tokamak electromagnetic linear**
+   - KBM
+   - KAW
+   - kinetic-electron Cyclone
+3. **Tokamak nonlinear**
+   - Cyclone ITG
+   - Cyclone Miller
+   - KBM
+   - ETG pilot
+   - secondary instability
+4. **Stellarator linear**
+   - W7-X ITG/TEM family
+   - HSX
+5. **Stellarator nonlinear**
+   - W7-X
+   - HSX
+6. **Additional response tests from the literature**
+   - linear zonal-flow response
+   - branch-following scans in near-marginal cases
+
+#### Existing and near-ready figure inventory
+
+Existing figure families that are already plausible paper inputs and should be
+preserved as manuscript candidates:
+
+- `docs/_static/benchmark_core_linear_atlas.png`
+- `docs/_static/benchmark_core_nonlinear_atlas.png`
+- `docs/_static/gx_summary_panel.png`
+- `docs/_static/gx_publication_panel.png`
+- `docs/_static/kbm_eigenfunction_overlap_summary.png`
+- `docs/_static/nonlinear_w7x_diag_compare_t200.png`
+
+New raw-reference assets now available:
+
+- `docs/_static/reference_modes/kbm_linear_gx_ky0p3000.npz`
+- `docs/_static/reference_modes/w7x_linear_gx_ky0p3000.npz`
+
+Immediate next manuscript-facing deliverables:
+
+1. Keep the closed KBM raw overlay in the manuscript figure stack using:
+   - `docs/_static/reference_modes/kbm_linear_gx_ky0p3000.npz`
+   - `docs/_static/reference_modes/kbm_linear_spectrax_ky0p3000.csv`
+   - `docs/_static/kbm_eigenfunction_reference_overlay_ky0p3000.png`
+   - `tools/generate_kbm_reference_overlay.py`
+2. Keep the closed W7-X raw overlay in the manuscript figure stack using:
+   - `docs/_static/reference_modes/w7x_linear_gx_ky0p3000.npz`
+   - `docs/_static/reference_modes/w7x_linear_spectrax_ky0p3000.csv`
+   - `docs/_static/w7x_eigenfunction_reference_overlay_ky0p3000.png`
+   - `tools/generate_w7x_reference_overlay.py`
+3. Tighten the materialized windowed nonlinear-statistics figure
+   (`docs/_static/nonlinear_window_statistics.png`) as per-case reference
+   windows mature.
+4. Zonal-flow / GAM response figure family with:
+   - shaped tokamak Rosenbluth-Hinton residuals,
+   - W7-X residual and damping envelopes,
+   - one figure convention shared across geometries.
+   - current stepping-stone artifact: `docs/_static/miller_zonal_response_pilot.png`
+     from `tools/generate_miller_zonal_response_pilot.py`; keep it in the paper
+     inventory only as a pending/failing diagnostic until the residual and GAM
+     envelope match the Merlo Case-III acceptance window.
+5. W7-X fluctuation-spectrum figure family aligned with the Doppler-
+   reflectometry comparison literature.
+
+#### Validation observables
+
+For each linear lane:
+
+- `gamma(k_y)`
+- `omega(k_y)`
+- selected eigenfunction shape in `z`
+- branch continuity under parameter continuation where relevant
+- residual-zonal-flow level and damping envelope for zonal-flow response lanes
+- branch identity and window used for the fit
+- phase-aligned eigenfunction overlap and relative `L^2`
+- where relevant, Rosenbluth-Hinton residual and GAM damping
+
+For each nonlinear lane:
+
+- windowed mean/std/RMS of heat flux
+- `Wphi`, `Wg`, optionally `Wapar`
+- mode-envelope statistics
+- where relevant, resolved spectra by `k_x` / `k_y`
+
+#### Acceptance gates
+
+Linear:
+
+- baseline target: `rtol <= 1e-2`
+- accepted near-marginal / low-`k_y` exceptions must be documented explicitly
+- eigenfunction normalized overlap should be reported, not just plotted
+
+Nonlinear:
+
+- compare windowed statistics, not only pointwise traces
+- baseline target:
+  - `<= 1e-1` for release-level parity
+  - `<= 5e-2` for mature lanes
+- also require visual agreement of saturation trends and mode envelopes
+
+#### Reference hierarchy
+
+Use references in this order:
+
+1. **published benchmark datasets**,
+2. **GX / stella / GENE / SIMSOPT-adjacent reproducible runs**,
+3. **repo-checked reference tables generated from those runs**.
+
+Do not treat digitized literature curves as equivalent to direct code-backed
+reference data when a reference code is available.
+
+When a published paper introduces an observable that is not already encoded in
+the repo, prefer implementing that observable explicitly (for example zonal-flow
+residuals, damping envelopes, or fluctuation spectra) rather than approximating
+it from a visually similar existing figure.
+
+#### Example-to-validation ownership
+
+Validate and retain:
+
+- `examples/linear/axisymmetric/cyclone.toml`
+- `examples/linear/axisymmetric/etg.toml`
+- `examples/linear/axisymmetric/runtime_kbm.toml`
+- `examples/linear/axisymmetric/runtime_kaw.toml`
+- `examples/linear/non-axisymmetric/runtime_w7x_linear_imported_geometry.toml`
+- `examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml`
+- `examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml`
+- `examples/nonlinear/axisymmetric/runtime_kbm_nonlinear_t100.toml`
+- `examples/nonlinear/axisymmetric/runtime_etg_nonlinear.toml`
+- `examples/nonlinear/non-axisymmetric/runtime_w7x_nonlinear_imported_geometry.toml`
+- `examples/nonlinear/non-axisymmetric/runtime_hsx_nonlinear_vmec_geometry.toml`
+- `examples/benchmarks/secondary_slab_workflow.py`
+
+Needs explicit closure or demotion:
+
+- `examples/benchmarks/tem_linear_benchmark.py`
+- `examples/linear/axisymmetric/runtime_kaw.toml`
+- kinetic-electron Cyclone reference/helper paths in `src/spectraxgk/benchmarks.py`
+- reduced `cETG` examples as a benchmark claim
+
+#### Missing benchmark assets to add
+
+- linear zonal-flow response example
+- explicit eigenfunction-comparison example
+- one published W7-X linear TEM example matching the stella/GENE benchmark paper
+- one kinetic-electron Cyclone audit deck with a frozen accepted horizon
+
+#### Additional literature-anchored tests to add
+
+These are not optional "nice to have" items if the goal is a stronger paper.
+They come directly from what the benchmark and verification literature actually
+uses as evidence.
+
+1. **W7-X zonal-flow response**
+   - The W7-X benchmark paper explicitly includes linear zonal-flow response
+     calculations, not only ITG/TEM growth rates and nonlinear heat flux.
+   - Add:
+     - a reproducible zonal-flow response example,
+     - a comparison metric on residual level / damping envelope,
+     - tests on the extracted residual and damping timescale.
+   - Current status:
+      - reusable ``Phi2_zonal_t`` extraction/plotting tooling exists,
+      - signed ``Phi_zonal_mode_kxt`` now exists in the diagnostics/output path,
+      - signed ``Phi_zonal_line_kxt`` now exists for W7-X-style unweighted
+        line-averaged electrostatic-potential traces,
+      - the first case-specific stepping-stone artifact exists via
+        ``examples/benchmarks/runtime_miller_zonal_response.toml`` and
+        ``tools/generate_miller_zonal_response_pilot.py``,
+      - the current frozen Miller artifact is now pinned to the actual Merlo
+        Case-III Table-III parameters with an initial ion-density perturbation,
+        zero gradients, adiabatic electrons, and ``kxρ_i≈0.05`` with
+        ``ky=0``,
+      - the artifact has moved off the old ``Nm=16``, ``dt=0.01``,
+        ``t≈150`` pilot and onto the current better-resolved
+        ``Nm=24``, ``dt=0.005``, ``t≈60`` setup because the old trace's late
+        peaks were recurrence-contaminated,
+      - using the Rosenbluth-Hinton first-sample convention now gives
+        ``residual≈0.192`` against the Merlo Case-III Figs. 12/16 read-off of
+        about ``0.19``,
+      - the extractor now follows the paper more closely with a common
+        pre-recurrence window ``t≈30``, separate positive/negative-extrema
+        damping fits, and Hilbert-phase frequency extraction on that same
+        window,
+      - this gives ``ω_GAM R0 / v_i≈2.20`` against the paper-scale read-off
+        near ``2.24`` and ``γ_GAM R0 / v_i≈-0.176`` against the Merlo
+        read-off near ``-0.17``,
+      - a follow-up recurrence audit now shows that pushing the same case to
+        ``Nm=28``, ``Nl=4`` improves the late-time recurrence ratio from about
+        ``0.60`` to about ``0.54`` and moves the frequency closer to the paper
+        read-off, but it also over-damps the GAM to roughly
+        ``γ_GAM R0 / v_i≈-0.192``,
+      - a minimal ``hypercollisions_const`` ladder through ``10^{-4}`` is
+        effectively inert for this case, and even ``10^{-3}`` only nudges the
+        recurrence ratio to about ``0.589``, so weak hypercollisions do not
+        outperform the clean higher-moment run,
+      - the remaining numerical follow-up item is long-time recurrence in
+        finite moment runs rather than the benchmark-scale Merlo
+        residual/frequency/damping gate,
+      - the external ``phiext_full`` source path remains covered as a runtime
+        contract, but it is not the Merlo RH/GAM validation protocol,
+      - the restart-checkpoint issue exposed by this zonal initial-density run
+        is fixed and covered: NetCDF restart loading now scatters active
+        radial modes using the same order used by the writer, so chunked
+        long-window artifacts no longer zero the post-checkpoint zonal signal,
+      - W7-X test 4 now has a dedicated VMEC-backed runtime contract and panel
+        generator using `init_field="phi"` for the prescribed
+        `hat phi_kperp(t=0)` Gaussian. The bounded `t≈60` panel reports
+        residuals `≈0.172`, `0.356`, `0.469`, and `0.594` for
+        `kx rho_i = 0.05`, `0.07`, `0.10`, and `0.30`, respectively. A longer
+        `kx rho_i=0.30` audit gives a late residual near `0.107` but retains a
+        slow sign-changing oscillation; this lane remains open pending a
+        reference-backed observable/normalization audit against digitized or
+        regenerated stella/GENE traces.
+
+2. **Multiple W7-X flux tubes**
+   - The published W7-X benchmark is not a single-point story.
+   - Add:
+     - multiple flux-tube cases,
+     - at least one near-threshold flux tube,
+     - a figure/table showing branch ordering across tubes.
+
+3. **Cyclone/Dimits-threshold evidence**
+   - The CBC literature and later GX benchmarking both rely on nonlinear heat
+     flux and threshold behavior, not only one nonlinear trace.
+   - Add:
+     - a small `R/LTi` threshold or Dimits-shift style scan,
+     - a reduced but explicit zonal-flow suppression benchmark,
+     - tests on threshold ordering and qualitative regime separation.
+
+4. **Velocity-space convergence**
+   - The GX paper explicitly shows Laguerre/Hermite free-energy spectra and
+     convergence tables for nonlinear CBC.
+   - Add:
+     - spectra-based convergence tests,
+     - manuscript figures showing convergence of heat flux and free-energy
+       spectra with `(Nl, Nm)`,
+     - tests that the convergence trend is monotone enough in the resolved
+       ranges.
+
+5. **Eigenfunction-overlap metrics**
+   - Reviewers will not be satisfied with gamma/omega only if mode-branch
+     ambiguity exists.
+   - Add:
+     - normalized complex overlap,
+     - phase-aligned `Re/Im` eigenfunction panels,
+     - tests on overlap thresholds for accepted linear lanes.
+
+6. **Electromagnetic branch-following**
+   - For KBM and KAW-like cases, add tests that the tracked branch is actually
+     the intended branch under parameter continuation.
+   - Use:
+     - continuation in `beta`,
+     - overlap continuity,
+     - frequency-sign and parity diagnostics.
+
+7. **Secondary-instability growth extraction**
+   - Keep the existing secondary lane, but add:
+     - mode-by-mode uncertainty/fit-window sensitivity,
+     - explicit sideband envelope checks,
+     - documentation of the zero-frequency sideband handling.
+
+8. **Stellarator geometry-response tests**
+   - Add at least one test class around quasi-symmetry / zonal-flow behavior
+     motivated by Sugama-Watanabe and later stellarator zonal-flow papers.
+   - These need not be full expensive runs; reduced response calculations are
+     enough if they are literature anchored.
+
+9. **Shaped multispecies tokamak linear benchmark**
+   - Add at least one literature-backed shaped-tokamak linear lane beyond
+     circular CBC, using the published benchmark collection referenced by
+     Sauter et al.
+   - The point is not just more scans; it is to verify that geometry import,
+     multispecies response, and branch tracking remain correct away from the
+     simplified CBC limit.
+
+10. **Published ETG operating-point benchmark**
+    - The short-window ETG lane should be tied to a recognized ETG benchmark
+      operating point and its expected transport/growth observables, not only
+      to internal reference files.
+    - Add at least one explicit validation note and figure against the
+      established ETG benchmark literature.
+
+11. **Stellarator nonlinear fluctuation diagnostics**
+    - The W7-X literature increasingly reports not only heat flux but also
+      fluctuation spectra and zonal components.
+    - Add a future lane for frequency-spectrum or zonal-component comparison on
+      nonlinear W7-X once the core heat-flux lane is frozen.
+
+#### Other codes to mine for benchmark structure
+
+Use these codebases/papers as structural references for what to compare and how
+to present it:
+
+- **GX**: linear CBC, KBM, KAW, W7-X; nonlinear Cyclone, KBM, W7-X, secondary
+- **stella/GENE W7-X benchmark**: ITG, TEM, zonal-flow response, nonlinear heat flux
+- **GYRO/GS2 historical CBC literature**: Dimits / threshold framing and
+  electromagnetic CBC reference conventions
+- **XGC-S / EUTERPE / GENE-3D stellarator papers**:
+  useful for future geometry-response and electromagnetic-stellarator tests
+
+The plan should explicitly prefer benchmarks that are reproducible locally from
+GX or from published open-access datasets over tests that rely on digitized
+figures alone.
+
+### Workstream 3: Differentiable Physics / Autodiff Validation
+
+#### Objective
+
+Move from "autodiff is possible" to "autodiff is validated and useful for
+research."
+
+#### Acceptance criteria
+
+Every differentiated observable must have:
+
+- a finite-difference gradient check,
+- a complex-step check where applicable,
+- a statement of conditioning/identifiability,
+- a reproducible example with saved figure and numeric summary.
+
+#### Differentiable task ladder
+
+1. **Sensitivity analysis**
+   - gradients of `gamma`, `omega`, and selected nonlinear windowed metrics
+     with respect to:
+     - `a/LTi`, `a/LTe`, `a/Ln`,
+     - `beta`,
+     - collisionality,
+     - geometry scalars (`q`, `s_hat`, Miller shaping),
+     - selected VMEC/geometry descriptors.
+   - deliverables:
+     - local sensitivity curves,
+     - gradient validation tables,
+     - doc page with interpretation.
+
+2. **Inverse problems**
+   - current two-mode inverse demo becomes the baseline.
+   - add:
+     - three-parameter inverse with regularization,
+     - noisy-observation case,
+     - branch-aware fitting window.
+   - deliverables:
+     - recovery plot,
+     - Hessian / covariance estimate,
+     - identifiability discussion.
+
+3. **Uncertainty quantification**
+   - start with local Gaussian/Laplace UQ:
+     - Jacobian-based covariance,
+     - Hessian-vector products,
+     - propagated uncertainty on `gamma`, `omega`, and transport windows.
+   - then add ensemble or unscented transform tests on reduced problems.
+   - deliverables:
+     - confidence intervals,
+     - parameter posterior approximation,
+     - propagated output uncertainty plots.
+
+4. **Stellarator optimization**
+   - stage 1: optimize cheap proxy objectives on imported geometry or small
+     local descriptors.
+   - stage 2: couple to a differentiable geometry backend (`vmec_jax` where
+     available, or DESC/SIMSOPT-compatible descriptors).
+   - stage 3: optimize turbulence proxies or nonlinear windowed metrics.
+   - deliverables:
+     - one end-to-end optimization example,
+     - gradient verification,
+     - documented failure modes and regularization.
+
+#### Additional differentiable research tasks to add
+
+1. **Derivative validation hierarchy**
+   - for each public differentiated quantity:
+     - finite-difference check,
+     - complex-step check when applicable,
+     - tangent/adjoint consistency check when both are available.
+
+2. **Uncertainty quantification examples**
+   - one local Laplace-approximation example around a two-mode inverse problem,
+   - one propagated uncertainty example on `gamma(k_y)` or on nonlinear windowed
+     heat flux.
+
+3. **Stellarator-shape sensitivity prototype**
+   - start with a low-dimensional geometry parameterization,
+   - compute sensitivities of linear growth rate and at least one nonlinear
+     proxy,
+   - show conditioning and regularization explicitly.
+
+4. **Optimization workflow comparison**
+   - align interfaces with DESC/SIMSOPT-style objective + constraint APIs so
+     SPECTRAX-GK can be embedded cleanly in a larger optimization stack.
+
+### Workstream 4A: Manuscript Figure Plan
+
+The manuscript should be planned now, not after the tests are done.
+
+The literature pass implies a concrete figure philosophy:
+
+- tokamak claims should be anchored in CBC/ETG/KBM-style benchmark panels and
+  threshold/convergence evidence, not just isolated traces;
+- stellarator claims should be anchored in the W7-X benchmark paper's actual
+  observable mix: linear scans, zonal-flow response, and nonlinear heat flux;
+- autodiff claims should separate sensitivity/gradient correctness from inverse
+  recovery and from optimization.
+
+#### Core validation figures
+
+1. **Linear benchmark master panel**
+   - `gamma(k_y)` and `omega(k_y)` for:
+     - Cyclone ITG
+     - ETG
+     - KBM
+     - W7-X
+     - HSX
+     - one shaped multispecies tokamak lane if closed
+   - accepted/demoted lanes clearly marked
+   - manuscript note:
+     this is the benchmark-summary figure that should visually match the
+     conventions used in GX and the W7-X stella/GENE paper.
+
+2. **Eigenfunction validation panel**
+   - representative `Re(phi)` / `Im(phi)` and `|phi|` or overlap for:
+     - Cyclone ITG
+     - W7-X
+     - KBM or Miller
+   - include normalized overlap numbers and phase alignment in the caption
+
+3. **Nonlinear transport panel**
+   - heat flux traces for:
+     - Cyclone
+     - Cyclone Miller
+     - KBM
+     - W7-X
+     - HSX
+   - use matched windows and make both curves visible even when overlapping
+
+4. **Windowed-statistics summary**
+   - materialized by `tools/plot_nonlinear_window_statistics.py` from the
+     nonlinear gate-summary JSONs
+   - current artifacts:
+     `docs/_static/nonlinear_window_statistics.{png,pdf,csv,json}`
+   - this should carry the actual manuscript acceptance story, because it is
+     more robust than eyeballing traces
+
+5. **Velocity-space convergence panel**
+   - Laguerre/Hermite free-energy spectra plus scalar convergence of transport
+     for the nonlinear CBC/kinetic-electron case or best-available surrogate
+   - this is directly motivated by the GX paper's convergence evidence and is
+     stronger than just a resolution table
+
+6. **Stellarator-specific validation panel**
+   - W7-X multi-flux-tube linear comparisons
+   - W7-X zonal-flow response:
+     - runtime contract now exists via
+       ``examples/benchmarks/runtime_w7x_zonal_response_vmec.toml``
+     - panel generator now exists via
+       ``tools/generate_w7x_zonal_response_panel.py``
+     - the tool uses the same first-sample / branchwise-extrema /
+       Hilbert-phase extraction policy as the Merlo lane
+     - still needs a frozen VMEC-backed artifact and acceptance window on a
+       machine with W7-X geometry access
+   - HSX linear/nonlinear summary if that lane remains in the paper
+   - if zonal-flow is not closed, the paper should say so explicitly instead of
+     silently omitting it
+
+7. **Performance panel**
+   - runtime/memory on the closed benchmark set only
+   - no weak figures that do not show meaningful speedup
+   - keep CPU/GPU/parallelization panels separate from validation panels
+
+#### Differentiable-physics figures
+
+8. **Sensitivity-analysis figure**
+   - local derivatives of `gamma` / `omega` or transport metrics with respect to
+     key physical parameters
+
+9. **Inverse/UQ figure**
+   - two-mode inverse recovery,
+   - covariance ellipse or uncertainty bands,
+   - gradient validation inset
+
+10. **Optimization figure**
+   - low-dimensional stellarator objective reduction,
+   - objective vs iteration,
+   - gradient-consistency evidence
+
+#### Figure-to-script ownership
+
+Before manuscript drafting starts, each target figure must have one owning
+script path and one artifact path. At minimum:
+
+- linear master panel: `tools/make_benchmark_atlas.py`
+- nonlinear transport panel: `tools/make_gx_summary_panel.py` and
+  `tools/make_gx_publication_panel.py`
+- windowed-statistics summary: `tools/plot_nonlinear_window_statistics.py`
+- stellarator-specific validation panel: add a dedicated script under `tools/`
+- sensitivity/inverse/UQ figures:
+  `examples/theory_and_demos/autodiff_inverse_growth.py`,
+  `examples/theory_and_demos/autodiff_inverse_twomode.py`, plus follow-on
+  scripts for UQ and optimization
+
+#### Figure policy
+
+- every figure must have a script in `examples/` or `tools/`,
+- every figure must state:
+  - case,
+  - model,
+  - horizon/window,
+  - reference code or paper,
+  - acceptance status,
+- do not include empty or redundant subplots,
+- if curves overlap, make both visible through line style / ordering / insets.
+- captions should explicitly say what is expected, what was measured, and what
+  level of agreement was found.
+
+### Workstream 4: Stellarator-Optimization Architecture
+
+#### Objective
+
+Make SPECTRAX-GK usable inside a modern optimization loop for stellarators.
+
+#### External pattern to follow
+
+- **DESC** shows how to expose geometry and equilibrium quantities through an
+  autodiff-friendly stack.
+- **SIMSOPT** shows practical optimization orchestration, constraints, and
+  objective composition.
+- **GX + DESC optimization** shows that turbulence metrics can be used inside
+  stellarator design loops.
+
+#### Architecture plan
+
+1. **Geometry differentiation layer**
+   - standardize geometry inputs into differentiable parameter vectors
+   - prefer `vmec_jax` or DESC-derived differentiable geometry paths where
+     available
+   - keep imported `*.eik.nc` paths as non-differentiable frozen references
+
+2. **Objective layer**
+   - expose scalar objectives:
+     - linear growth rate,
+     - real frequency,
+     - heat-flux window mean,
+     - weighted multi-objective turbulence score
+   - expose constraints:
+     - geometry validity,
+     - profile bounds,
+     - resolution adequacy,
+     - optimization trust region
+
+3. **Derivative layer**
+   - support:
+     - `grad`,
+     - `jacfwd/jacrev`,
+     - Hessian-vector products,
+     - checkpointed differentiation for memory control
+
+4. **Optimization layer**
+   - start with local deterministic optimizers:
+     - L-BFGS-B
+     - trust-constr
+     - projected gradient
+   - then add robust/noisy alternatives for nonlinear objectives.
+
+5. **Research examples**
+   - sensitivity map on W7-X or HSX local geometry
+   - inverse fit to a target `gamma(k_y)` spectrum
+   - uncertainty propagation through a linear scan
+   - small stellarator shape optimization loop using a low-dimensional geometry
+     parameterization
+
+#### Post-refactor differentiable equilibrium/geometry program
+
+This starts only after the current SPECTRAX-GK refactor/testing-creation lane
+has landed. The point is not to add another geometry adapter. The point is to
+replace the current host/file-oriented VMEC helper path with a JAX-native,
+end-to-end differentiable geometry chain while preserving the frozen
+`vmec-eik`/`gx-netcdf` paths as reference and fallback modes.
+
+Current state to plan against:
+
+- SPECTRAX-GK still builds VMEC geometry through
+  `src/spectraxgk/from_gx/vmec.py`, i.e. a GX-style helper path around
+  `wout_*.nc`-compatible data and `booz_xform(_jax)` object APIs.
+- `vmec_jax` already exposes the exact seams we need:
+  - `run_fixed_boundary`
+  - `wout_from_fixed_boundary_run`
+  - `state_from_wout`
+  - `booz_xform_inputs_from_state`
+- `booz_xform_jax` already exposes both:
+  - an in-memory object path via `Booz_xform.read_wout_data(...).run_jax()`
+  - a lower-level JAX path in `booz_xform_jax.jax_api`
+- Therefore the correct long-term target is:
+  `vmec_jax state -> booz_xform_inputs_from_state -> booz_xform_jax.jax_api -> SPECTRAX-GK geometry bundle`
+  with no required NetCDF round-trip on the hot path.
+
+#### Concrete integration phases
+
+1. **Phase A: compatibility bridge**
+   - Add an optional in-memory geometry path that accepts `vmec_jax` output
+     (`FixedBoundaryRun`, `wout`, or `VMECState`) and feeds the current
+     SPECTRAX-GK imported-geometry contract without writing a `wout_*.nc` file.
+   - Keep the public runtime behavior conservative:
+     - current `geometry.model = "vmec-eik"` path remains valid,
+     - new differentiable path is opt-in,
+     - existing frozen `*.eik.nc` and `gx-netcdf` artifacts remain the gold
+       references for regression tests.
+   - Goal:
+     remove file I/O from local optimization/sensitivity loops before changing
+     the core geometry numerics.
+
+2. **Phase B: direct JAX Boozer geometry path**
+   - Add a new module such as `src/spectraxgk/geometry/vmec_jax.py`.
+   - Input:
+     `vmec_jax` state or a `BoozXformInputs` bundle.
+   - Internal path:
+     - `vmec_jax.booz_xform_inputs_from_state(...)`
+     - `booz_xform_jax.prepare_booz_xform_constants_from_inputs(...)`
+     - `booz_xform_jax.booz_xform_jax_impl(...)`
+   - Output:
+     a JAX-native flux-tube geometry bundle that populates the same physical
+     quantities currently produced by the VMEC/GX adapter:
+     - `bmag`
+     - `gradpar`
+     - `gds2`, `gds21`, `gds22`
+     - `gbdrift`, `gbdrift0`
+     - `cvdrift`, `cvdrift0`
+     - `jacob`
+     - geometry metadata (`alpha`, `nfp`, field-line labels, etc.)
+   - Keep the geometry output contract aligned with
+     `FluxTubeGeometryData` so the solver stack does not need to care whether
+     the geometry came from a file, GX-style adapter, or a differentiable JAX
+     pipeline.
+
+3. **Phase C: optimization-ready geometry API**
+   - Expose a stable geometry-objective interface that maps:
+     low-dimensional equilibrium parameters -> flux-tube geometry ->
+     linear/nonlinear observables.
+   - Add memory-control hooks needed for serious optimization:
+     - checkpointing / rematerialization for long traces,
+     - selective `jit`,
+     - batching/vmap over surfaces, `k_y`, and parameter ensembles,
+     - explicit cold/warm compile accounting.
+   - Keep `vmec_jax` and `booz_xform_jax` as optional extras so the package
+     remains usable in file-based mode on systems that only want frozen
+     benchmarks.
+
+#### Validation gates
+
+1. **Equilibrium parity inheritance**
+   - Do not duplicate the entire VMEC validation program inside SPECTRAX-GK.
+   - Instead, explicitly inherit `vmec_jax` equilibrium parity from its
+     VMEC2000-backed validation cases and document which upstream references are
+     being relied on:
+     - axisymmetric tokamak
+     - QH
+     - QA
+     - QI
+     - `lasym=True` coverage where available
+   - SPECTRAX-GK should only re-test the geometry quantities and solver
+     observables that sit downstream of equilibrium generation.
+
+2. **Geometry parity**
+   - For a fixed set of axisymmetric and stellarator cases, compare the new
+     differentiable path against the current `from_gx/vmec.py` adapter and
+     frozen `*.eik.nc` references.
+   - Minimum case set:
+     - circular/shaped tokamak
+     - one QA/QH stellarator
+     - HSX-like VMEC case
+     - W7-X-like VMEC case
+   - Minimum quantities:
+     - `bmag`
+     - `gradpar`
+     - `gds2`, `gds21`, `gds22`
+     - `gbdrift`, `gbdrift0`
+     - `cvdrift`, `cvdrift0`
+     - `jacob`
+   - Acceptance policy:
+     combine pointwise tolerances, weighted relative norms, and convention-aware
+     checks for sign/phase/field-line shifts so we do not confuse coordinate
+     conventions with actual physics errors.
+
+3. **Derivative validation**
+   - For geometry-derived scalars and solver outputs, require:
+     - finite-difference checks,
+     - complex-step checks where the path is holomorphic enough,
+     - tangent/reverse consistency,
+     - first-order Taylor remainder tests over a ladder of perturbation sizes.
+   - Start with low-dimensional parameters:
+     - boundary Fourier amplitudes,
+     - `s`, `alpha`, or field-line labels where physically meaningful,
+     - selected Miller-shaping surrogates for cross-validation against analytic
+       geometry lanes.
+
+4. **End-to-end physics validation**
+   - Demonstrate that geometry derivatives propagate correctly into physics:
+     - linear `gamma` and `omega` sensitivities on W7-X/HSX-like cases,
+     - one reduced nonlinear windowed transport metric on a small stellarator
+       case once the linear path is stable.
+   - Acceptance must be based on observable agreement, not just internal
+     geometry coefficient agreement.
+
+5. **Performance and scaling**
+   - Benchmark:
+     - cold vs warm geometry generation,
+     - cold vs warm end-to-end linear runs,
+     - CPU and GPU paths separately,
+     - memory footprint,
+     - compile/runtime split.
+   - Compare:
+     - current file-backed VMEC path,
+     - in-memory compatibility bridge,
+     - fully JAX-native geometry path.
+
+#### Research-grade example and figure program
+
+1. **Geometry-to-growth sensitivity map**
+   - Example:
+     perturb a small set of equilibrium/boundary coefficients and report the
+     Jacobian of `gamma(k_y)` and `omega(k_y)` for a stellarator case.
+   - Deliverables:
+     - sensitivity heatmap,
+     - gradient-validation table,
+     - figure-ready caption stating conditioning and trusted perturbation range.
+
+2. **Inverse or target-matching geometry demo**
+   - Example:
+     recover a low-dimensional equilibrium perturbation that best matches a
+     target `gamma(k_y)` or `omega(k_y)` signature.
+   - This should be a real optimization over equilibrium parameters, not only a
+     local transport coefficient fit.
+
+3. **Uncertainty propagation**
+   - Example:
+     propagate uncertainty in boundary coefficients or equilibrium descriptors
+     into `gamma(k_y)` and a small number of transport proxies using local
+     covariance propagation first, then stochastic sampling if needed.
+   - This should connect directly to the robust/stochastic stellarator
+     optimization literature, not just to generic autodiff demos.
+
+4. **Pilot turbulence-informed equilibrium optimization**
+   - First objective:
+     reduced linear growth proxy on a stellarator case.
+   - Second objective after linear closure:
+     windowed nonlinear transport proxy on a reduced case.
+   - This is the clean SPECTRAX-GK analogue of the published GX+DESC
+     turbulence-in-the-loop optimization work, but with a fully differentiable
+     local geometry chain instead of a black-box equilibrium subprocess.
+
+5. **Boozer-coordinate diagnostics example**
+   - Add one example that uses `booz_xform_jax` outputs directly to visualize
+     the geometry features that correlate with the gyrokinetic objective.
+   - This is where Boozer harmonics, symmetry-breaking content, and turbulence
+     response should be shown on the same page instead of as disconnected
+     diagnostics.
+
+#### Documentation, testing, and artifact requirements
+
+- Add a dedicated doc chapter for differentiable geometry backends:
+  - architecture,
+  - dependency model,
+  - validated cases,
+  - unsupported modes / failure cases.
+- Add a geometry validation page that maps:
+  equilibrium source -> Boozer transform -> flux-tube coefficients -> solver
+  observables -> tests / figures.
+- Every research-grade example above must ship with:
+  - a runnable script under `examples/` or `tools/`,
+  - a saved JSON/NetCDF numeric summary,
+  - a publication-ready figure path under `docs/_static/`,
+  - at least one fast regression test and one slower marked integration test.
+
+#### Literature-anchored use cases to keep explicit
+
+- `vmec_jax` validation/optimization docs and examples define the equilibrium
+  parity and exact-derivative baseline we should inherit, not re-invent.
+- `booz_xform_jax` defines the in-memory Boozer transform route and the
+  differentiable Boozer-spectrum API.
+- DESC quasi-symmetry optimization is the model for exact-derivative,
+  optimization-ready equilibrium workflows.
+- GX + DESC nonlinear turbulence optimization is the model for where the
+  turbulence objective layer should ultimately go.
+- Adjoint and stochastic stellarator-optimization literature should guide the
+  sensitivity, robustness, and uncertainty examples so they read as actual
+  plasma-physics validation rather than generic autodiff demonstrations.
+
+#### Sequencing rule
+
+- Do not start this program before the current SPECTRAX-GK refactor/testing
+  lane is stable.
+- Once that lane is closed, start with Phase A and geometry parity before
+  attempting a fully end-to-end optimization demo.
+- Do not claim a fully differentiable stellarator-optimization workflow until:
+  - geometry parity is frozen,
+  - derivative checks pass on real equilibrium parameters,
+  - at least one observable-level stellarator sensitivity figure is closed.
+
+### Workstream 5: Documentation and Research Artifact Discipline
+
+#### Objective
+
+Make the code publishable as a research tool, not just runnable.
+
+#### Deliverables
+
+1. `docs/testing.rst`
+   - split into:
+     - verification methodology,
+     - benchmark matrix,
+     - acceptance tolerances,
+     - open vs closed lanes.
+   - add a subsection called `Literature Baselines Reviewed` listing the
+     published benchmark papers and what observable each contributes.
+
+2. `docs/theory.rst` / `docs/numerics.rst`
+   - explicitly connect each operator and discretization choice to the tests
+     that validate it.
+   - add a table mapping equations/operators to source files and validation
+     tests.
+
+3. `docs/examples.rst`
+   - mark each example as:
+     - validated benchmark,
+     - validated differentiable demo,
+     - exploratory demo,
+     - deprecated/demoted.
+   - add a short note for each benchmark example stating whether its reference
+     comes from literature, GX, stella/GENE, or internal frozen artifacts.
+
+4. new `docs/autodiff.rst`
+   - sensitivity analysis,
+   - inverse design,
+   - UQ,
+   - optimization workflows,
+   - gradient-validation methodology.
+
+4a. new `docs/verification_matrix.rst`
+   - one table per benchmark family,
+   - closed/open/demoted status,
+   - observable,
+   - reference,
+   - acceptance threshold,
+   - artifact path.
+
+4b. new `docs/code_structure.rst`
+   - module boundaries,
+   - runtime flow,
+   - where each operator, diagnostic, and artifact writer lives,
+   - how refactored modules map to tests.
+   - include a `public API vs internal modules` section so future refactors do
+     not leak unstable internals into examples/tests.
+
+4c. new `docs/manuscript_figures.rst`
+   - target paper figures,
+   - owning scripts,
+   - artifact paths,
+   - data provenance,
+   - acceptance status,
+   - open issues before submission.
+
+5. artifact discipline
+   - every figure in README/docs must be reproducible from checked-in scripts
+   - every published benchmark figure must declare:
+     - case,
+     - horizon/window,
+     - reference,
+     - acceptance status.
+
+6. testing/code-structure documentation expansion
+   - `docs/testing.rst` should become research-facing:
+     - verification vs validation,
+     - literature anchors,
+     - benchmark-observable definitions,
+     - numerical verification methodology,
+     - gradient verification methodology.
+   - `docs/architecture.rst` should be expanded with a real source-tree map and
+     ownership of physics/numerics/IO layers.
+   - add a `testing taxonomy` section:
+     - unit tests,
+     - numerical verification tests,
+     - benchmark/validation tests,
+     - autodiff tests,
+     - regression tests.
+
+### Workstream 6: Source-Tree Modularization and Testability Refactor
+
+#### Objective
+
+Create a dedicated refactor track that splits the current large source files
+into smaller, testable, reviewable modules that match standard software
+engineering practice, while keeping solver functionality, numerical behavior,
+and parity contracts unchanged.
+
+This work must happen on the dedicated branch:
+
+- `refactor/modularize-core-for-validation`
+
+#### Non-negotiable constraints
+
+- no intentional physics-model change,
+- no intentional numerical-contract change,
+- no intentional benchmark-reference change,
+- no intentional public parity drift against the currently accepted GX-backed
+  lanes,
+- no silent API break on the public executable/runtime surface.
+
+Every refactor PR or checkpoint on this branch must satisfy:
+
+- targeted unit tests for the extracted module,
+- regression tests against the pre-refactor behavior,
+- parity tests unchanged or tighter,
+- docs/comments/docstrings updated together with the code move.
+
+#### Modules that should be decomposed first
+
+1. `src/spectraxgk/runtime.py`
+   split into likely submodules such as:
+   - runtime loading / startup
+   - runtime execution wrappers
+   - adaptive chunking helpers
+   - diagnostics/result assembly
+   - restart/output handling
+
+2. `src/spectraxgk/benchmarks.py`
+   split into:
+   - reference data loading
+   - scan-family runners (Cyclone / ETG / KBM / TEM / kinetic / stellarator)
+   - fit-signal and fallback policies
+   - benchmark result dataclasses
+
+3. `src/spectraxgk/linear.py`
+   split into:
+   - linear parameter/cache setup
+   - linear RHS/assembly-facing helpers
+   - explicit integrators
+   - diagnostics extractors
+   - runtime-facing wrappers
+
+4. `src/spectraxgk/nonlinear.py`
+   split into:
+   - nonlinear parameter/config setup
+   - explicit step helpers
+   - IMEX step helpers
+   - diagnostics accumulation
+   - GX-style resolved outputs
+
+5. `src/spectraxgk/runtime_artifacts.py`
+   split into:
+   - serialization schema/dataclasses
+   - NetCDF/HDF5/JSON writers
+   - summary builders
+   - plotting-facing artifact readers
+
+6. `src/spectraxgk/diffrax_integrators.py`
+   split into:
+   - diffrax linear wrappers
+   - diffrax nonlinear wrappers
+   - save-mode adapters
+   - helper utilities
+
+7. `src/spectraxgk/diagnostics.py`
+   split into:
+   - scalar diagnostics
+   - resolved diagnostics
+   - flux diagnostics
+   - window/statistics helpers
+
+8. `src/spectraxgk/from_gx/vmec.py`
+   split into:
+   - file loading / dependency detection
+   - geometry remap/cut helpers
+   - VMEC/Boozer transforms
+   - normalization/output adapters
+
+#### Refactor method
+
+For each file family:
+
+1. freeze current behavior with regression tests,
+2. identify cohesive internal APIs,
+3. extract pure helpers first,
+4. extract dataclasses/config structures next,
+5. extract runtime/IO wrappers last,
+6. preserve compatibility shims until the whole tree is migrated,
+7. only remove old compatibility paths after all tests and docs are updated.
+
+#### Test strategy for the refactor branch
+
+Each extraction must be covered by four test layers:
+
+1. **unit tests**
+   - pure functions
+   - validators
+   - dataclass conversions
+   - shape/contract checks
+
+2. **numerical tests**
+   - manufactured solutions
+   - observed-order tests
+   - symmetry/invariant limits
+
+3. **physics/literature tests**
+   - gamma/omega benchmark observables
+   - nonlinear windowed transport observables
+   - eigenfunction or mode-envelope behavior
+
+4. **regression tests**
+   - artifact compatibility
+   - CLI/runtime contracts
+   - unchanged outputs on tracked benchmark cases
+
+#### Documentation/comments/docstrings policy
+
+This refactor branch should also raise the internal documentation quality of
+the codebase.
+
+Requirements:
+
+- every public function/class gets a concise docstring with:
+  - purpose,
+  - expected shapes/contracts,
+  - units or normalization assumptions where relevant
+- every internal helper that is nontrivial gets either:
+  - a docstring, or
+  - a short local comment explaining the algorithmic role
+- comments should explain **why** the step exists, not restate the code
+- physics-facing routines should identify the operator or equation term they
+  implement
+- benchmark-facing routines should identify the benchmark family and reference
+  contract they correspond to
+
+#### Acceptance criteria for the refactor branch
+
+The branch is ready to merge only when:
+
+- package-wide coverage is at or above 95%,
+- the benchmark matrix still passes within the accepted tolerances,
+- the current shipped examples still run,
+- public artifact formats remain readable,
+- autodiff demos still validate gradients and inverse recovery,
+- docstrings/comments are present on all refactored public APIs,
+- the source tree is materially easier to navigate:
+  - smaller files,
+  - fewer mixed responsibilities,
+  - clearer module boundaries.
+
+#### Concrete first refactor tranche
+
+1. `runtime.py`
+   - extract startup/loading helpers
+   - extract adaptive chunk helpers
+   - extract result assembly helpers
+
+2. `benchmarks.py`
+   - extract fit-window/signal policy helpers
+   - extract scan-runner families into separate modules
+
+3. `linear.py`
+   - extract explicit integrator helpers and diagnostics helpers
+
+4. carry over:
+   - targeted unit tests,
+   - parity regressions,
+   - docstrings/comments for every newly extracted API.
+
+Status on this branch:
+
+- completed first extraction step:
+  - startup/loading/build helpers moved from `src/spectraxgk/runtime.py`
+    into `src/spectraxgk/runtime_startup.py`
+  - `runtime.py` remains the public compatibility surface
+  - compatibility aliases/wrappers were kept for geometry generation and
+    restart loading so the existing regression tests and patch points remain
+    stable
+- validated locally after extraction:
+  - `tests/test_runtime_helpers.py`
+  - `tests/test_runtime_runner.py`
+  - `tests/test_runtime_artifacts.py`
+
+### Workstream 7: Concrete Execution Order
+
+#### Phase 1: Close the measurement layer
+
+- raise `runtime_artifacts.py`, `diagnostics.py`, `io.py`, and plotting to
+  near-complete coverage,
+- ensure every benchmark and autodiff example writes a stable machine-readable
+  artifact bundle,
+- make benchmark gate utilities the standard way to evaluate runs.
+
+#### Phase 2: Close the solver-core coverage
+
+- `runtime.py`
+- `linear.py`
+- `nonlinear.py`
+- `diffrax_integrators.py`
+- `terms/assembly.py`
+- `terms/nonlinear.py`
+
+Target after Phase 2:
+
+- all core solver modules above 85%,
+- package-wide coverage above 75%,
+- no known untested runtime-result contracts.
+
+#### Phase 3: Close the benchmark matrix
+
+- freeze accepted reference datasets,
+- add missing zonal-flow/eigenfunction/near-marginal cases,
+- decide TEM/KAW/kinetic-electron Cyclone status honestly:
+  - close,
+  - or demote from headline validation.
+
+Target after Phase 3:
+
+- full benchmark matrix with acceptance tables,
+- README/docs only claim closed lanes.
+
+#### Phase 4: Validate differentiated observables
+
+- sensitivity gradients,
+- inverse problem recovery,
+- covariance/UQ,
+- gradient checks on geometry parameters.
+
+Target after Phase 4:
+
+- `docs/autodiff.rst` complete,
+- research-grade autodiff examples shipped,
+- every public derivative backed by a validation test.
+
+#### Phase 5: Stellarator optimization prototype
+
+- one small but end-to-end differentiable optimization example
+  using imported or differentiable geometry,
+- compare with DESC/SIMSOPT workflow expectations,
+- document performance and conditioning limits.
+
+Target after Phase 5:
+
+- SPECTRAX-GK is usable as a validated local differentiable turbulence engine
+  inside a stellarator optimization workflow.
+
+#### Phase 6: Merge the modular refactor branch
+
+- land the source-tree decomposition once the coverage and parity gates hold,
+- remove compatibility shims only after the new module boundaries are stable,
+- treat this as the software-engineering consolidation phase that makes future
+  validation and optimization work sustainable.
+
+### Immediate Next Actions
+
+1. **Coverage**
+   - keep pushing on:
+     - `runtime.py`
+     - `linear.py`
+     - `nonlinear.py`
+     - `benchmarks.py`
+     - `diffrax_integrators.py`
+     - `runtime_artifacts.py`
+     - `diagnostics.py`
+     - `from_gx/vmec.py`
+
+2. **Benchmark closure**
+   - formalize the current closed matrix in a machine-readable manifest,
+   - add missing linear zonal-flow and eigenfunction overlap checks,
+   - decide whether TEM and KAW remain public examples or become experimental.
+
+3. **Autodiff**
+   - add a sensitivity-analysis example before adding more inverse demos,
+   - add gradient-vs-finite-difference tests for the current two-mode inverse,
+   - add local covariance/UQ around the existing inverse examples.
+
+4. **Optimization**
+   - define the first low-dimensional stellarator objective and geometry
+     parameterization,
+   - prototype the geometry derivative path using a differentiable backend,
+     preferring `vmec_jax`/DESC-compatible routes over legacy VMEC-only paths.
+
+5. **Documentation**
+   - split validated vs exploratory examples,
+   - add benchmark acceptance tables,
+   - add an autodiff/UQ/optimization documentation chapter.
 
 ## Current Ship Status
 
@@ -421,7 +2419,17 @@ Current nonlinear-lane status at the handoff point:
     - `Wg/Wphi/heat/pflux` restart diagnostics all `abs = rel = 0`
   - Direct startup replay on the same corrected head also matches GX tightly:
     - `g_state max_rel ~= 1.33e-7`
-    - `phi max_rel ~= 1.54e-6`
+    - `phi max_rel ~= 7.36e-7`
+  - New tracked exact-state convention artifact:
+    - script: `tools/plot_w7x_exact_state_audit.py`
+    - artifact: `docs/_static/w7x_exact_state_audit.{csv,json,png,pdf}`
+    - maximum finite pointwise relative error is `4.62e-5` under the explicit
+      `1e-4` convention gate; the same late `phi` array has RMS relative error
+      `3.77e-7`, and scalar diagnostics are below `1.8e-7`
+    - interpretation: the W7-X nonlinear VMEC startup, grid/field geometry,
+      fieldsolve, and scalar diagnostic reconstruction layers are closed
+      against GX exact-state dumps; the separate W7-X zonal-response residual
+      and late-envelope issue remains a recurrence/moment-closure lane
   - So the remaining open W7-X nonlinear issue is now narrowed further:
     long-window evolution drift remains, but it is not a startup-state bug and
     it is not a restart/continuation bug.
@@ -458,7 +2466,23 @@ Current nonlinear-lane status at the handoff point:
     - `mean_rel_abs(HeatFlux) ~= 1.50e-1`
     - `final_rel(Wg) ~= 3.88e-2`
     - `final_rel(Wphi) ~= 4.78e-2`
-  - Under the current acceptance target, W7-X nonlinear is now closed for the
+  - The later full `t <= 200` office rerun exposed and fixed two runtime
+    issues:
+    - adaptive artifact runs were inheriting `output.nsave = 10000` as an
+      explicit `steps` value, disabling the runtime's `t_max`-bounded adaptive
+      chunk loop;
+    - the adaptive nonlinear/cETG chunk closures were not feeding each returned
+      state into the next chunk.
+  - A fresh GPU rerun on `office` with the corrected path reached
+    `t_last ~= 197.77` in 386 s and closes the tracked W7-X nonlinear gate:
+    - `mean_rel_abs(Phi2) ~= 9.74e-2`
+    - `mean_rel_abs(Wg) ~= 3.20e-2`
+    - `mean_rel_abs(Wphi) ~= 3.02e-2`
+    - `mean_rel_abs(HeatFlux) ~= 4.53e-2`
+  - The GX-style artifact writer now derives `Phi2_t`, `Phi2_kxt`, and
+    `Phi2_kyt` from the condensed positive-`ky` `Phi2_kxkyt` view so the
+    stored NetCDF spectra are self-consistent with the GX/rFFT convention.
+  - Under the current acceptance target, W7-X nonlinear is closed for the
     current release pass and stays in the benchmark/publication set.
 
 - `HSX nonlinear`
@@ -544,8 +2568,8 @@ Current nonlinear-lane status at the handoff point:
 
 1. Treat Cyclone Miller linear, HSX linear, KBM linear, Cyclone nonlinear, HSX nonlinear, and W7-X nonlinear as acceptable for the current pass unless refreshed data regresses.
 2. Full-GK ETG nonlinear is now closed as a shipped short-window pilot:
-   - `/Users/rogeriojorge/local/SPECTRAX-GK/examples/nonlinear/axisymmetric/runtime_etg_nonlinear.toml`
-   - `/Users/rogeriojorge/local/SPECTRAX-GK/examples/nonlinear/axisymmetric/etg_runtime_nonlinear.py`
+   - `examples/nonlinear/axisymmetric/runtime_etg_nonlinear.toml`
+   - `examples/nonlinear/axisymmetric/etg_runtime_nonlinear.py`
    - it is two-species, electrostatic, nonlinear, and intentionally separate from reduced `cETG`
    - the matched ETG box uses `y0 = 0.2`, `ky = 5.0`, and `Lx = 1.25`
    - the startup mismatch was traced to a GX input-contract detail:
@@ -651,6 +2675,66 @@ Current nonlinear-lane status at the handoff point:
   values on the fly inside the temp copy so the performance panel compares
   runtime-equivalent workloads instead of mixing short SPECTRAX runtime examples
   with full reference benchmark horizons.
+- Follow-up GPU profiling on the same shipped short nonlinear cases now makes
+  the cold-vs-warm picture explicit:
+  - Cyclone nonlinear GPU: `warmup_time_s = 33.957`, `run_time_s = 15.054`
+    versus the shipped cold panel row `38.27 s`
+  - KBM nonlinear GPU: `warmup_time_s = 27.485`, `run_time_s = 9.725`
+    versus the shipped cold panel row `44.33 s`
+  - interpretation: these two short nonlinear runtime gaps are dominated by
+    JAX startup/compile latency rather than by steady-state timestep throughput
+  - the shipped runtime panel now overlays warm second-run timings as explicit
+    markers on top of the cold wall-time bars wherever `run_time_s` is present
+  - the runtime harness now carries manifest-level `profile_command` entries,
+    so those warm timings come from the tracked benchmark contract itself
+  - compile-side collision prefactors have been hoisted out of the jitted RHS
+    assembly path so the previous slow XLA constant-fold warning at
+    `terms/linear_terms.py:272` no longer appears in the tracked Cyclone GPU
+  - the new startup profiler now shows the remaining cold-path bottlenecks
+    explicitly on `office` GPU:
+    - Cyclone startup total `36.78 s` after the low-rank collision-cache pass,
+      dominated by `compile_first_integrator_run` (`22.39 s`) and
+      `build_linear_cache` (`6.92 s`)
+    - KBM startup total `32.23 s`, dominated by `compile_first_integrator_run`
+      (`19.28 s`) and `build_linear_cache` (`7.73 s`)
+    - next runtime-performance tranche should therefore decompose
+      `build_linear_cache` and the first nonlinear integrator compile path,
+      not geometry/default setup
+  - the `office` profiler environment is now fixed without adding TensorFlow:
+    trace tools default to `python_tracer_level=0` and `host_tracer_level=0`,
+    which removes the optional TensorFlow profiler-hook import noise while still
+    emitting `.trace.json.gz` and `.xplane.pb` artifacts
+  - the first `build_linear_cache` decomposition on `office` GPU for the shipped
+    Cyclone short nonlinear case is now available:
+    - low-rank collision caching reduced `collision_and_damping_cache` from
+      `2.71 s` to `2.20 s`
+    - the same pass reduced `build_linear_cache` from `7.74 s` to `6.92 s`
+    - updated dominant subphases are now:
+      - `gyro_bessel_cache`: `1.38 s`
+      - `laguerre_cache`: `0.96 s`
+      - `kperp_and_drifts`: `0.91 s`
+    - next cache-build optimization should therefore move to the gyro/Laguerre
+      cache path, while the broader startup path still needs first-integrator
+      compile-surface reduction
+  - the cache-build profiler now matches the production low-rank collision
+    contract instead of timing an obsolete full collision-array allocation;
+    the corrected profiler test locks `lb_lam.shape == (Nl, Nm)` and an empty
+    `collision_lam`, and the local CPU cache decomposition now reports
+    `collision_and_damping_cache=0.071 s`
+  - the first host-build cleanup for moment-space and end-damping factors is a
+    measured small cold-start win:
+    - local CPU Cyclone startup smoke: `build_linear_cache` `3.98 s -> 2.63 s`
+      and total cold startup `12.77 s -> 11.78 s`
+    - `office` GPU Cyclone startup smoke: `build_linear_cache` `6.92 s -> 5.58 s`
+      and total cold startup `36.78 s -> 35.19 s`
+  - the gyroaverage cache now uses the broadcasted `J_l_all` path instead of a
+    Python-level species `vmap`; the local CPU Cyclone startup smoke improved
+    to `9.88 s` total with `build_linear_cache=2.38 s`, while the office GPU
+    cache-only profile improved to `6.86 s` but full cold startup remains
+    dominated by first-integrator compilation noise
+  - concrete next optimization target: reduce the remaining compile/startup
+    cost beyond the collision prefactor path, while keeping the current cold
+    wall-time panel for honest end-to-end reproducibility
 
 ## CI/CD Status (2026-04-09)
 

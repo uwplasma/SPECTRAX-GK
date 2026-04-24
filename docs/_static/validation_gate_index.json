@@ -1,0 +1,120 @@
+{
+  "n_open": 0,
+  "n_passed": 10,
+  "n_reports": 10,
+  "patterns": [
+    "docs/_static/**/*.json"
+  ],
+  "reports": [
+    {
+      "artifact": "docs/_static/nonlinear_cyclone_miller_gate_summary.json",
+      "case": "cyclone_miller_nonlinear_window",
+      "failed_metrics": "",
+      "max_abs_error": 0.0919106981841409,
+      "max_rel_error": 0.0,
+      "n_failed": 0,
+      "n_gates": 5,
+      "passed": true,
+      "source": "GX nonlinear diagnostics"
+    },
+    {
+      "artifact": "docs/_static/nonlinear_cyclone_gate_summary.json",
+      "case": "cyclone_nonlinear_long_window",
+      "failed_metrics": "",
+      "max_abs_error": 0.0955304396196123,
+      "max_rel_error": 0.0,
+      "n_failed": 0,
+      "n_gates": 5,
+      "passed": true,
+      "source": "GX nonlinear diagnostics"
+    },
+    {
+      "artifact": "docs/_static/cyclone_resolution_observed_order.json",
+      "case": "cyclone_velocity_space_observed_order",
+      "failed_metrics": "",
+      "max_abs_error": 0.0011368721705758,
+      "max_rel_error": 0.0,
+      "n_failed": 0,
+      "n_gates": 3,
+      "passed": true,
+      "source": "office GPU Cyclone ky=0.30 time-path velocity-space sweep"
+    },
+    {
+      "artifact": "docs/_static/nonlinear_hsx_gate_summary.json",
+      "case": "hsx_nonlinear_window",
+      "failed_metrics": "",
+      "max_abs_error": 0.035790363972650306,
+      "max_rel_error": 0.0,
+      "n_failed": 0,
+      "n_gates": 5,
+      "passed": true,
+      "source": "GX nonlinear diagnostics"
+    },
+    {
+      "artifact": "docs/_static/kbm_branch_gate_summary.json",
+      "case": "kbm_linear_branch_continuity",
+      "failed_metrics": "",
+      "max_abs_error": 0.3879740373283112,
+      "max_rel_error": 0.0,
+      "n_failed": 0,
+      "n_gates": 3,
+      "passed": true,
+      "source": "selected KBM comparison rows"
+    },
+    {
+      "artifact": "docs/_static/reference_modes/kbm_eigenfunction_reference_overlay_ky0p3000.json",
+      "case": "kbm_linear_eigenfunction_ky0p3000",
+      "failed_metrics": "",
+      "max_abs_error": 0.007208594542278349,
+      "max_rel_error": 1.5458590091999014e-05,
+      "n_failed": 0,
+      "n_gates": 2,
+      "passed": true,
+      "source": "GX raw eigenfunction bundle"
+    },
+    {
+      "artifact": "docs/_static/nonlinear_kbm_gate_summary.json",
+      "case": "kbm_nonlinear_window",
+      "failed_metrics": "",
+      "max_abs_error": 0.009363342524391386,
+      "max_rel_error": null,
+      "n_failed": 0,
+      "n_gates": 5,
+      "passed": true,
+      "source": "GX nonlinear diagnostics"
+    },
+    {
+      "artifact": "docs/_static/miller_zonal_response_pilot.json",
+      "case": "merlo_case_iii_zonal_response",
+      "failed_metrics": "",
+      "max_abs_error": 0.03671330516346405,
+      "max_rel_error": 0.03242887795802641,
+      "n_failed": 0,
+      "n_gates": 3,
+      "passed": true,
+      "source": "Merlo et al. paper-scale read-off"
+    },
+    {
+      "artifact": "docs/_static/reference_modes/w7x_eigenfunction_reference_overlay_ky0p3000.json",
+      "case": "w7x_linear_eigenfunction_ky0p3000",
+      "failed_metrics": "",
+      "max_abs_error": 3.332895535477314e-05,
+      "max_rel_error": 5.501344935154862e-10,
+      "n_failed": 0,
+      "n_gates": 2,
+      "passed": true,
+      "source": "GX raw eigenfunction bundle"
+    },
+    {
+      "artifact": "docs/_static/nonlinear_w7x_gate_summary.json",
+      "case": "w7x_nonlinear_window",
+      "failed_metrics": "",
+      "max_abs_error": 0.0974184040271887,
+      "max_rel_error": 0.0,
+      "n_failed": 0,
+      "n_gates": 6,
+      "passed": true,
+      "source": "GX nonlinear diagnostics"
+    }
+  ]
+}

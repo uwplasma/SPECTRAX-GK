@@ -1,0 +1,199 @@
+[metadata]
+schema_version = 1
+branch = "refactor/modularize-core-for-validation"
+default_test_budget_seconds = 300
+target = "lower cold runtime, improve warm throughput, and reduce peak memory on CPU and GPU without changing validated physics outputs"
+
+[[lanes]]
+name = "end_to_end_runtime_memory"
+owner = "runtime/memory benchmark panel"
+status = "active"
+priority = "high"
+platforms = ["cpu", "gpu"]
+cases = [
+  "cyclone-linear",
+  "cyclone-nonlinear",
+  "kbm-linear",
+  "kbm-nonlinear",
+  "w7x-linear",
+  "w7x-nonlinear",
+  "hsx-linear",
+  "hsx-nonlinear",
+]
+profiling_tools = [
+  "tools/benchmark_runtime_memory.py",
+  "tools/profile_nonlinear_cyclone.py",
+]
+metrics = [
+  "cold_runtime_s",
+  "warmup_time_s",
+  "warm_run_time_s",
+  "peak_rss_mb",
+  "status",
+]
+artifact_paths = [
+  "tools/runtime_memory_manifest.toml",
+  "docs/_static/runtime_memory_benchmark.png",
+  "docs/_static/runtime_memory_benchmark.pdf",
+]
+bottleneck_hypotheses = [
+  "short nonlinear GPU cases are dominated by JAX startup and first-integrator compilation",
+  "stellarator nonlinear CPU cases are memory and warm-throughput sensitive",
+]
+optimization_actions = [
+  "keep cold and warm timings separate in all publication panels",
+  "run CPU and GPU rows through the same manifest contract before claiming speedups",
+  "stream diagnostics and persist per-row summaries to survive interrupted long sweeps",
+]
+gates = [
+  "no optimized row may regress validated diagnostics beyond its physics gate",
+  "runtime and memory comparisons must use equivalent t_max/grid/workload settings",
+]
+
+[[lanes]]
+name = "cold_start_compile"
+owner = "startup and first-compile path"
+status = "active"
+priority = "high"
+platforms = ["cpu", "gpu"]
+cases = ["cyclone-nonlinear", "kbm-nonlinear"]
+profiling_tools = [
+  "tools/profile_runtime_startup.py",
+  "tools/profile_linear_cache_build.py",
+]
+metrics = [
+  "startup_total_s",
+  "compile_first_integrator_run_s",
+  "build_linear_cache_s",
+  "compile_first_full_rhs_s",
+]
+artifact_paths = [
+  "docs/performance.rst",
+  "tools/profile_runtime_startup.py",
+  "tools/profile_linear_cache_build.py",
+]
+bottleneck_hypotheses = [
+  "compile_first_integrator_run is the largest remaining cold-start cost",
+  "build_linear_cache is dominated by gyro/Bessel and Laguerre cache construction after the low-rank collision-cache pass",
+]
+optimization_actions = [
+  "decompose build_linear_cache into stable subphases before changing kernels",
+  "reduce closed-over constants and shape polymorphism in first nonlinear integrator compilation",
+  "evaluate persistent compilation cache separately from honest cold-start timings",
+]
+gates = [
+  "startup subphase totals must be written to JSON before and after each optimization tranche",
+  "optimized startup must preserve exact-state and nonlinear window-statistics gates",
+]
+
+[[lanes]]
+name = "nonlinear_warm_throughput"
+owner = "nonlinear RHS and diagnostics kernels"
+status = "active"
+priority = "high"
+platforms = ["cpu", "gpu"]
+cases = ["cyclone-nonlinear", "kbm-nonlinear", "w7x-nonlinear", "hsx-nonlinear"]
+profiling_tools = [
+  "tools/profile_nonlinear_step_split.py",
+  "tools/profile_nonlinear_cyclone.py",
+  "tools/profile_linear_rhs_terms.py",
+]
+metrics = [
+  "field_solve_s",
+  "nonlinear_bracket_s",
+  "linear_rhs_s",
+  "full_rhs_s",
+  "diagnostic_sample_s",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_window_statistics.json",
+  "tools/runtime_memory_manifest.toml",
+]
+bottleneck_hypotheses = [
+  "nonlinear bracket throughput depends on FFT/gradient fusion and gather/scatter density",
+  "resolved diagnostics can dominate short sampled runs if full spectral histories are materialized",
+]
+optimization_actions = [
+  "profile field solve, nonlinear bracket, linear RHS, and full RHS separately",
+  "donate buffers where safe and keep scan shapes stable",
+  "avoid materializing full-history diagnostics unless a publication artifact requires them",
+]
+gates = [
+  "windowed nonlinear transport statistics must remain within accepted parity envelopes",
+  "mode-resolved diagnostics must remain finite and schema-compatible",
+]
+
+[[lanes]]
+name = "memory_efficiency"
+owner = "runtime artifacts and diagnostics memory budget"
+status = "active"
+priority = "high"
+platforms = ["cpu", "gpu"]
+cases = ["cyclone-nonlinear", "kbm-nonlinear", "w7x-nonlinear", "hsx-nonlinear"]
+profiling_tools = [
+  "tools/benchmark_runtime_memory.py",
+  "tools/profile_runtime_startup.py",
+]
+metrics = [
+  "peak_rss_mb",
+  "history_buffer_bytes",
+  "diagnostic_buffer_bytes",
+  "device_memory_profile",
+]
+artifact_paths = [
+  "docs/_static/runtime_memory_benchmark.png",
+  "docs/_static/runtime_memory_benchmark.pdf",
+  "docs/outputs.rst",
+]
+bottleneck_hypotheses = [
+  "full-history diagnostic arrays and closed-over constants are the main avoidable memory risks",
+  "long nonlinear stellarator runs need streaming diagnostics and checkpointed artifact persistence",
+]
+optimization_actions = [
+  "stream diagnostics by default and keep full histories opt-in",
+  "use checkpoint chunks for long nonlinear artifacts",
+  "add explicit allocator guidance for GPU runs in docs once validated",
+]
+gates = [
+  "peak RSS must not increase on shipped benchmark rows unless accuracy improves and the tradeoff is documented",
+  "artifact schemas must remain reloadable after streaming changes",
+]
+
+[[lanes]]
+name = "parallel_scaling"
+owner = "multi-CPU and multi-GPU parallelization"
+status = "active"
+priority = "medium"
+platforms = ["multi_cpu", "multi_gpu"]
+cases = ["linear-scans", "ensemble-uq", "autodiff-sensitivities", "nonlinear-pilot"]
+profiling_tools = [
+  "tools/run_device_parity_gate.py",
+  "tools/plot_scaling_speedup.py",
+  "tools/generate_parallel_ky_scan_gate.py",
+]
+metrics = [
+  "strong_scaling_speedup",
+  "parallel_efficiency",
+  "memory_per_device_mb",
+  "device_parity_error",
+]
+artifact_paths = [
+  "docs/_static/scaling_speedup.png",
+  "docs/_static/scaling_speedup_data.csv",
+  "docs/_static/parallel_ky_scan_gate.png",
+  "docs/_static/parallel_ky_scan_gate.json",
+]
+bottleneck_hypotheses = [
+  "independent ky/batch/ensemble sharding should scale before nonlinear domain sharding",
+  "nonlinear domain sharding requires explicit communication design around FFT and bracket paths",
+]
+optimization_actions = [
+  "prioritize sharded linear scans, UQ ensembles, and autodiff sensitivity batches",
+  "use tools/generate_parallel_ky_scan_gate.py as the release identity gate for fixed-shape ky batching",
+  "gate CPU sharding locally and two-GPU sharding on office",
+  "only publish strong-scaling plots when speedup is meaningful and numerically identical",
+]
+gates = [
+  "parallel outputs must match single-device outputs within numerical-identity tolerances",
+  "publication scaling panels must show both speedup and efficiency or be kept out of the README",
+]

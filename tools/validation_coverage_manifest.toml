@@ -1,0 +1,496 @@
+[metadata]
+schema_version = 1
+package_coverage_target_percent = 95.0
+default_test_budget_seconds = 300
+wide_coverage_ci_job = "wide-coverage"
+branch = "refactor/modularize-core-for-validation"
+
+[[modules]]
+module = "spectraxgk.runtime"
+path = "src/spectraxgk/runtime.py"
+owner_lane = "runtime orchestration, executable behavior, restart/output contracts"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "GX-style runtime diagnostics and exact-state parity audits",
+  "Cyclone Base Case and W7-X/HSX runtime artifact regressions",
+]
+physics_contracts = [
+  "runtime inputs preserve configured geometry, species, fields, and diagnostics",
+  "restart continuation preserves final samples and signed zonal diagnostics",
+]
+numerics_contracts = [
+  "adaptive and fixed-step time paths report equivalent sampled diagnostics within gate tolerances",
+  "nonfinite diagnostic chunks abort artifact generation instead of silently writing corrupt panels",
+]
+fast_tests = [
+  "tests/test_runtime_config.py",
+  "tests/test_runtime_helpers.py",
+  "tests/test_runtime_runner.py",
+  "tests/test_runtime_artifacts.py",
+  "tests/test_restart.py",
+]
+artifact_paths = [
+  "docs/_static/validation_gate_index.json",
+  "docs/_static/w7x_exact_state_audit.json",
+]
+next_tests = [
+  "split remaining runtime orchestration helpers behind compatibility exports",
+  "add branch coverage for fixed_dt/adaptive/restart output handoff paths",
+]
+
+[[modules]]
+module = "spectraxgk.linear"
+path = "src/spectraxgk/linear.py"
+owner_lane = "linear gyrokinetic operators, field solve, growth/frequency diagnostics"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "Cyclone Base Case linear ITG benchmark",
+  "KBM branch-continuity and W7-X stella/GENE linear benchmark observables",
+]
+physics_contracts = [
+  "late-time growth and real-frequency fits are invariant under harmless phase/sign changes",
+  "eigenfunction overlays compare normalized complex structure, not only scalar growth rates",
+]
+numerics_contracts = [
+  "Hermite-Laguerre recurrence operators satisfy ladder identities",
+  "velocity-space and field-line resolution studies use observed-order gates",
+]
+fast_tests = [
+  "tests/test_linear.py",
+  "tests/test_linear_helpers_extra.py",
+  "tests/test_terms_assembly.py",
+  "tests/test_terms_fields.py",
+  "tests/test_generate_observed_order_gate.py",
+]
+artifact_paths = [
+  "docs/_static/cyclone_resolution_observed_order.json",
+  "docs/_static/kbm_branch_gate_summary.json",
+  "docs/_static/w7x_eigenfunction_reference_overlay_ky0p3000.png",
+]
+next_tests = [
+  "extract linear cache/diagnostic helpers and preserve public imports",
+  "replace remaining convergence pilots with monotone velocity-space sweeps",
+]
+
+[[modules]]
+module = "spectraxgk.nonlinear"
+path = "src/spectraxgk/nonlinear.py"
+owner_lane = "nonlinear bracket, collisions, resolved diagnostics, transport windows"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "Cyclone and Cyclone-Miller nonlinear GX transport windows",
+  "KBM, HSX, and W7-X nonlinear GX parity envelopes",
+]
+physics_contracts = [
+  "nonlinear acceptance uses window statistics rather than one-time samples",
+  "mode-resolved Wphi and heat-flux spectra localize transport mismatches",
+]
+numerics_contracts = [
+  "Poisson-bracket paths preserve expected antisymmetry in reduced tests",
+  "late-time fixed-mode frequency diagnostics remain conditioned when amplitudes are small",
+]
+fast_tests = [
+  "tests/test_nonlinear.py",
+  "tests/test_nonlinear_exb.py",
+  "tests/test_terms_assembly.py",
+  "tests/test_plot_nonlinear_window_statistics.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_window_statistics.json",
+  "docs/_static/nonlinear_w7x_gate_summary.json",
+  "docs/_static/nonlinear_kbm_gate_summary.json",
+]
+next_tests = [
+  "add more unit coverage for resolved spectral diagnostics",
+  "add reduced free-energy/conservation tests for nonlinear-only limits",
+]
+
+[[modules]]
+module = "spectraxgk.benchmarks"
+path = "src/spectraxgk/benchmarks.py"
+owner_lane = "reference loading, scan runners, fit policies, benchmark atlas"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "Cyclone Base Case and Dimits-shift benchmark literature",
+  "ETG, TEM, KBM, W7-X, HSX, and nonlinear GX comparison artifacts",
+]
+physics_contracts = [
+  "benchmark cases expose explicit observable, window, tolerance, and reference source",
+  "near-marginal and branch-followed cases report ambiguity instead of hiding it",
+]
+numerics_contracts = [
+  "growth-rate fallback policy is deterministic and tested on synthetic signals",
+  "scan runners preserve ky ordering, finite filtering, and table schema",
+]
+fast_tests = [
+  "tests/test_benchmarks.py",
+  "tests/test_benchmarks_helpers.py",
+  "tests/test_benchmarks_runner_branches.py",
+  "tests/test_benchmarking.py",
+]
+artifact_paths = [
+  "docs/_static/benchmark_core_linear_atlas.png",
+  "docs/_static/benchmark_core_nonlinear_atlas.png",
+  "docs/_static/validation_gate_index.json",
+]
+next_tests = [
+  "split reference loading from run execution",
+  "add manifest-backed tests that every published benchmark figure has a gate source",
+]
+
+[[modules]]
+module = "spectraxgk.diagnostics"
+path = "src/spectraxgk/diagnostics.py"
+owner_lane = "scalar, resolved, flux, and zonal diagnostics"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "GX exact-state diagnostics for scalar and resolved W7-X nonlinear quantities",
+  "W7-X stella/GENE zonal-flow benchmark observable definitions",
+]
+physics_contracts = [
+  "diagnostic normalizations match the documented flux and free-energy conventions",
+  "signed zonal mode and line diagnostics are preserved separately from energy proxies",
+]
+numerics_contracts = [
+  "zero-denominator and zero-reference metrics report finite/null JSON values explicitly",
+  "resolved diagnostic reductions preserve shape and mode indexing",
+]
+fast_tests = [
+  "tests/test_gx_diagnostics.py",
+  "tests/test_compare_gx_nonlinear_diagnostics.py",
+  "tests/test_compare_gx_runtime_diag_state.py",
+  "tests/test_plot_zonal_flow_response_from_output.py",
+]
+artifact_paths = [
+  "docs/_static/w7x_exact_state_audit.json",
+  "docs/_static/w7x_zonal_contract_audit.json",
+]
+next_tests = [
+  "extract resolved diagnostic shape helpers",
+  "add direct tests for every public diagnostic written to NetCDF",
+]
+
+[[modules]]
+module = "spectraxgk.validation_gates"
+path = "src/spectraxgk/validation_gates.py"
+owner_lane = "JSON-ready acceptance metrics for linear, nonlinear, eigenfunction, and response gates"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 98.0
+reference_anchors = [
+  "Merlo shaped-tokamak zonal response and Rosenbluth-Hinton/GAM conventions",
+  "W7-X stella/GENE zonal-flow and linear benchmark gate structure",
+]
+physics_contracts = [
+  "gate reports preserve observable names, references, tolerances, and pass/fail details",
+  "open exploratory artifacts can be documented without entering the release gate index",
+]
+numerics_contracts = [
+  "absolute/relative gates handle zero references and nonfinite values deterministically",
+  "observed-order gates use pairwise slopes and final-error thresholds",
+]
+fast_tests = [
+  "tests/test_validation_gates.py",
+  "tests/test_make_validation_gate_index.py",
+  "tests/test_generate_observed_order_gate.py",
+  "tests/test_generate_kbm_branch_gate_summary.py",
+]
+artifact_paths = [
+  "docs/_static/validation_gate_index.json",
+  "docs/_static/miller_zonal_response_pilot.json",
+]
+next_tests = [
+  "add branch coverage for failed-gate JSON serialization",
+  "add regression tests for open exploratory gate exclusion",
+]
+
+[[modules]]
+module = "spectraxgk.zonal_validation"
+path = "src/spectraxgk/zonal_validation.py"
+owner_lane = "W7-X/Miller zonal-response trace normalization, reference loading, and tails"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "W7-X stella/GENE JPP zonal-flow benchmark",
+  "Merlo shaped-tokamak Rosenbluth-Hinton/GAM response read-off",
+]
+physics_contracts = [
+  "line-first and mode-first normalizations remain explicit",
+  "tail metrics distinguish residual error, recurrence, and velocity-space moment pile-up",
+]
+numerics_contracts = [
+  "trace loaders sort, finite-filter, normalize, and window data deterministically",
+  "closure probes expose hypercollision source and strength explicitly",
+]
+fast_tests = [
+  "tests/test_zonal_validation.py",
+  "tests/test_compare_w7x_zonal_reference.py",
+  "tests/test_generate_w7x_zonal_response_panel.py",
+  "tests/test_plot_w7x_zonal_closure_ladder.py",
+  "tests/test_plot_w7x_zonal_state_convention_audit.py",
+  "tests/test_plot_w7x_zonal_recurrence_sweep.py",
+]
+artifact_paths = [
+  "docs/_static/w7x_zonal_response_panel.json",
+  "docs/_static/w7x_zonal_closure_ladder_kx070.json",
+  "docs/_static/w7x_zonal_state_convention_audit.json",
+  "docs/_static/w7x_zonal_recurrence_sweep_kx070.json",
+]
+next_tests = [
+  "promote the final W7-X recurrence/closure method into a release gate when it matches the literature trace",
+  "rerun parallel W7-X recurrence sweeps after the VMEC/eik cache fix to verify the office workflow",
+]
+
+[[modules]]
+module = "spectraxgk.autodiff_validation"
+path = "src/spectraxgk/autodiff_validation.py"
+owner_lane = "autodiff inverse, sensitivity-map, and UQ covariance validation"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 98.0
+reference_anchors = [
+  "JAX autodiff finite-difference/tangent consistency checks",
+  "Gyaradax-style inverse and uncertainty quantification workflows",
+]
+physics_contracts = [
+  "observable derivatives report conditioning and rank before optimization claims",
+  "covariance metadata distinguishes identifiable inverse problems from local sensitivity demos",
+]
+numerics_contracts = [
+  "Gauss-Newton covariance is symmetric positive semidefinite under regularized normal equations",
+  "finite-difference and autodiff Jacobians agree within explicit tolerances",
+]
+fast_tests = [
+  "tests/test_autodiff_validation.py",
+  "tests/test_autodiff_demo.py",
+  "tests/test_autodiff_twomode_demo.py",
+]
+artifact_paths = [
+  "docs/_static/autodiff_inverse_growth.png",
+  "docs/_static/autodiff_inverse_twomode.png",
+  "docs/_static/differentiable_geometry_bridge.png",
+]
+next_tests = [
+  "add tangent-linear checks for differentiated nonlinear transport observables",
+  "promote geometry-parameter sensitivity checks from geometry observables to growth-rate and transport observables",
+]
+
+[[modules]]
+module = "spectraxgk.from_gx.vmec"
+path = "src/spectraxgk/from_gx/vmec.py"
+owner_lane = "VMEC import/remap geometry and future differentiable geometry bridge"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "W7-X and HSX imported-geometry GX parity lanes",
+  "planned vmec_jax and booz_xform_jax differentiable-geometry bridge",
+]
+physics_contracts = [
+  "metric, curvature, and magnetic-field arrays preserve flux-tube conventions",
+  "VMEC-file and future in-memory vmec_jax paths produce equivalent geometry contracts",
+]
+numerics_contracts = [
+  "periodic remaps and interpolation preserve shape, handedness, and finite values",
+  "roundtrip geometry gates report max and RMS field mismatches",
+  "default VMEC eik cache reuse and atomic writes prevent partial-file races in parallel sweeps",
+]
+fast_tests = [
+  "tests/test_from_gx_vmec_helpers.py",
+  "tests/test_vmec_eik.py",
+  "tests/test_vmec_roundtrip_gate.py",
+  "tests/test_run_vmec_roundtrip_gate.py",
+]
+artifact_paths = [
+  "docs/_static/w7x_exact_state_audit.json",
+  "docs/_static/w7x_linear_t2_scan.csv",
+  "docs/_static/hsx_linear_t2_scan.csv",
+]
+next_tests = [
+  "split file loading from coordinate remap helpers",
+  "add vmec_jax in-memory parity fixtures after the core refactor lands",
+  "add a multi-process VMEC cache stress test when the slow backend is available in CI",
+]
+
+[[modules]]
+module = "spectraxgk.geometry.differentiable"
+path = "src/spectraxgk/geometry/differentiable.py"
+owner_lane = "in-memory vmec_jax/booz_xform_jax bridge into the flux-tube geometry contract"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "vmec_jax differentiable VMEC fixed-boundary state and wout-like output APIs",
+  "booz_xform_jax in-memory read_wout_data and jax_api Boozer transform path",
+]
+physics_contracts = [
+  "differentiable geometry backends must produce the same solver-ready metric and drift arrays as imported VMEC/eik files",
+  "stellarator optimization claims require geometry parity and gradient checks before publication",
+]
+numerics_contracts = [
+  "in-memory geometry arrays must be finite, one-dimensional, shape-aligned, and use a constant gradpar field-line contract",
+  "optional backend discovery must not force vmec_jax or booz_xform_jax imports on users who only run analytic geometry",
+  "JAX-traced geometry mappings must preserve autodiff and match central finite differences for geometry observables",
+]
+fast_tests = [
+  "tests/test_differentiable_geometry_bridge.py",
+  "tests/test_from_gx_vmec_helpers.py",
+  "tests/test_vmec_eik.py",
+]
+artifact_paths = [
+  "docs/_static/w7x_exact_state_audit.json",
+  "docs/_static/w7x_linear_t2_scan.csv",
+  "docs/_static/differentiable_geometry_bridge.json",
+  "docs/_static/differentiable_geometry_bridge.png",
+]
+next_tests = [
+  "add an office-only vmec_jax -> booz_xform_jax -> FluxTubeGeometryData parity fixture",
+  "promote the finite-difference geometry-gradient check from geometry observables to linear growth observables",
+]
+
+[[modules]]
+module = "spectraxgk.runtime_artifacts"
+path = "src/spectraxgk/runtime_artifacts.py"
+owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "publication panel scripts and docs artifact refresh workflow",
+  "runtime examples for linear, nonlinear, Miller, VMEC, autodiff, and plotting",
+]
+physics_contracts = [
+  "artifact metadata records model, fields, species, geometry, and diagnostics needed to reproduce figures",
+  "plotting from output files is independent of the run process",
+]
+numerics_contracts = [
+  "sample stride and final-sample policies preserve late-time metrics",
+  "JSON summaries are strict and avoid nonfinite values",
+]
+fast_tests = [
+  "tests/test_runtime_artifacts.py",
+  "tests/test_runtime_runner.py",
+  "tests/test_cli.py",
+  "tests/test_plotting.py",
+]
+artifact_paths = [
+  "docs/_static/benchmark_readme_panel.png",
+  "docs/_static/runtime_memory_benchmark.png",
+]
+next_tests = [
+  "split serialization schema from writer implementation",
+  "add backward-compatibility tests for reading shipped artifacts",
+]
+
+[[modules]]
+module = "spectraxgk.sharding"
+path = "src/spectraxgk/sharding.py"
+owner_lane = "JAX parallelization policy for CPU/GPU scans and ensemble workloads"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 90.0
+reference_anchors = [
+  "JAX pmap/pjit/sharding documentation and production scan/ensemble workflows",
+  "multi-CPU local and multi-GPU office scaling sweeps",
+]
+physics_contracts = [
+  "parallel execution is numerically identical to serial execution for independent cases",
+  "scan, UQ, and sensitivity batches preserve case ordering and metadata",
+]
+numerics_contracts = [
+  "device-count fallbacks are deterministic on one-device machines",
+  "strong-scaling panels separate compile, transfer, and warm runtime",
+]
+fast_tests = [
+  "tests/test_sharding.py",
+  "tests/test_sharded_integrators.py",
+  "tests/test_parallel.py",
+  "tests/test_generate_parallel_ky_scan_gate.py",
+]
+artifact_paths = [
+  "docs/_static/scaling_speedup_data.csv",
+  "docs/_static/scaling_speedup.png",
+  "docs/_static/parallel_ky_scan_gate.json",
+  "docs/_static/parallel_ky_scan_gate.png",
+]
+next_tests = [
+  "add GPU-office benchmark manifest for two-device validation",
+  "add UQ ensemble parallelization gate using the same identity-policy format",
+]
+
+[[modules]]
+module = "spectraxgk.parallel"
+path = "src/spectraxgk/parallel.py"
+owner_lane = "production ky/batch scan and UQ ensemble parallelization"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "JAX vmap/pmap independent batch workflows",
+  "multi-device linear scan and UQ ensemble scaling targets",
+]
+physics_contracts = [
+  "parallel ky scans and UQ ensembles preserve serial ordering and numerical identity",
+  "nonlinear domain sharding remains out of release scope until communication gates exist",
+]
+numerics_contracts = [
+  "single-device fallback matches vmap exactly",
+  "multi-device batches pad only by edge repetition and drop padded outputs deterministically",
+]
+fast_tests = [
+  "tests/test_parallel.py",
+  "tests/test_generate_parallel_ky_scan_gate.py",
+]
+artifact_paths = [
+  "docs/_static/parallel_ky_scan_gate.json",
+  "docs/_static/parallel_ky_scan_gate.png",
+]
+next_tests = [
+  "add office two-GPU identity and speedup gates for UQ ensembles",
+]
+
+[[modules]]
+module = "spectraxgk.plotting"
+path = "src/spectraxgk/plotting.py"
+owner_lane = "publication-quality plotting from outputs, gates, and benchmark summaries"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "README/docs publication panels and manuscript figure stack",
+  "autodiff inverse/UQ validation figures",
+]
+physics_contracts = [
+  "figures reveal overlapping reference and SPECTRAX-GK curves instead of hiding parity",
+  "captions and metadata state target, method, and result for every validation panel",
+]
+numerics_contracts = [
+  "log/linear axes and normalized eigenfunctions are chosen by observable type",
+  "empty panels are removed instead of shipped",
+]
+fast_tests = [
+  "tests/test_plotting.py",
+  "tests/test_autodiff_demo.py",
+  "tests/test_autodiff_twomode_demo.py",
+  "tests/test_make_gx_publication_panel.py",
+]
+artifact_paths = [
+  "docs/_static/autodiff_inverse_growth_summary.json",
+  "docs/_static/autodiff_inverse_twomode_summary.json",
+  "docs/_static/gx_publication_panel.png",
+]
+next_tests = [
+  "add finite-difference/tangent checks to autodiff figure scripts",
+  "add image-content smoke tests for key publication panels where practical",
+]

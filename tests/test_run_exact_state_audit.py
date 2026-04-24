@@ -51,6 +51,26 @@ def test_exact_state_office_manifest_w7x_config_resolves_to_real_example() -> No
     assert resolved.is_file()
 
 
+def test_exact_state_office_manifest_cyclone_miller_config_resolves_to_real_example() -> None:
+    repo = Path(__file__).resolve().parents[1]
+    manifest = repo / "tools" / "exact_state_lanes.office.toml"
+    data = tomllib.loads(manifest.read_text(encoding="utf-8"))
+    lane = data["lane"]["cyclone_miller"]
+    config = lane["config"]
+    resolved = _resolve_manifest_path(config, manifest_dir=manifest.parent)
+    assert resolved == (repo / "examples" / "nonlinear" / "axisymmetric" / "runtime_cyclone_nonlinear_miller.toml")
+    assert resolved.is_file()
+    assert lane["env"]["JAX_PLATFORMS"] == "cpu"
+
+
+def test_exact_state_office_manifest_pins_all_office_audit_lanes_to_cpu() -> None:
+    repo = Path(__file__).resolve().parents[1]
+    manifest = repo / "tools" / "exact_state_lanes.office.toml"
+    data = tomllib.loads(manifest.read_text(encoding="utf-8"))
+    for lane_name, lane in data["lane"].items():
+        assert lane["env"]["JAX_PLATFORMS"] == "cpu", lane_name
+
+
 def test_exact_state_office_manifest_kbm_config_resolves_to_real_example() -> None:
     repo = Path(__file__).resolve().parents[1]
     manifest = repo / "tools" / "exact_state_lanes.office.toml"

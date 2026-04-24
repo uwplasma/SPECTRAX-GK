@@ -8,6 +8,7 @@ from spectraxgk.grids import (
     build_spectral_grid,
     real_fft_ordered_kx,
     real_fft_unique_ky,
+    select_ky_grid,
     select_real_fft_ky_grid,
 )
 
@@ -120,3 +121,17 @@ def test_twothirds_mask_matches_gx_strict_cutoff():
     assert int(mask[0, :].sum()) == 63
     assert bool(mask[0, 31])
     assert not bool(mask[0, 32])
+
+
+def test_select_ky_grid_disables_nonlinear_dealias_mask_for_linear_slices():
+    """Linear ky slices should not zero modes dealiased only for nonlinear products."""
+
+    cfg = GridConfig(Nx=1, Ny=12, Nz=4, Lx=2.0 * jnp.pi, y0=10.0)
+    grid = build_spectral_grid(cfg)
+    # The strict nonlinear two-thirds mask removes the boundary shell at ky index 4.
+    assert not bool(grid.dealias_mask[4, 0])
+
+    sliced = select_ky_grid(grid, [3, 4])
+
+    assert jnp.allclose(sliced.ky, grid.ky[jnp.asarray([3, 4])])
+    assert jnp.all(sliced.dealias_mask)

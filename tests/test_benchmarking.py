@@ -7,12 +7,40 @@ import pytest
 
 from spectraxgk.analysis import ModeSelection
 from spectraxgk.benchmarking import (
+    _analytic_signal,
+    _explicit_time_window,
+    _leading_window,
+    BranchContinuationMetrics,
+    GateReport,
+    EigenfunctionComparisonMetrics,
+    LateTimeLinearMetrics,
+    NonlinearWindowMetrics,
+    ScalarGateResult,
+    ZonalFlowResponseMetrics,
+    compare_eigenfunctions,
+    branch_continuity_gate_report,
+    branch_continuity_metrics,
+    eigenfunction_gate_report,
+    evaluate_scalar_gate,
     estimate_observed_order,
+    gate_report,
+    gate_report_to_dict,
+    infer_triple_dealiased_ny,
     late_time_linear_metrics,
+    late_time_window,
+    linear_metrics_gate_report,
+    load_diagnostic_time_series,
+    load_eigenfunction_reference_bundle,
+    nonlinear_window_gate_report,
     normalize_eigenfunction,
+    observed_order_gate_report,
+    phase_align_eigenfunction,
     run_linear_scan,
     run_scan_and_mode,
+    save_eigenfunction_reference_bundle,
     windowed_nonlinear_metrics,
+    zonal_response_gate_report,
+    zonal_flow_response_metrics,
 )
 from spectraxgk.benchmarks import LinearRunResult, LinearScanResult
 from spectraxgk.diagnostics import SimulationDiagnostics
@@ -35,6 +63,508 @@ def test_normalize_eigenfunction_leaves_zero_scale_unchanged() -> None:
     out = normalize_eigenfunction(eig, z)
 
     np.testing.assert_allclose(out, eig)
+
+
+def test_phase_align_and_compare_eigenfunctions() -> None:
+    ref = np.array([1.0 + 0.0j, 0.5 + 0.2j, -0.2 + 0.1j])
+    trial = ref * np.exp(1j * 0.37)
+
+    aligned, phase_shift = phase_align_eigenfunction(trial, ref)
+    np.testing.assert_allclose(aligned, ref, atol=1.0e-12)
+    assert phase_shift == pytest.approx(-0.37, abs=1.0e-12)
+
+    metrics = compare_eigenfunctions(trial, ref)
+    assert metrics.overlap == pytest.approx(1.0, abs=1.0e-12)
+    assert metrics.relative_l2 == pytest.approx(0.0, abs=1.0e-12)
+
+
+def test_compare_eigenfunctions_handles_shape_and_zero_norm() -> None:
+    with pytest.raises(ValueError):
+        compare_eigenfunctions(np.ones(3), np.ones(4))
+
+    metrics = compare_eigenfunctions(np.zeros(3, dtype=np.complex128), np.ones(3, dtype=np.complex128))
+    assert np.isnan(metrics.overlap)
+    assert np.isnan(metrics.relative_l2)
+
+
+def test_eigenfunction_reference_bundle_roundtrip(tmp_path) -> None:
+    theta = np.linspace(-2.0, 2.0, 7)
+    mode = np.exp(1j * theta)
+    path = tmp_path / "reference_mode.npz"
+
+    out = save_eigenfunction_reference_bundle(
+        path,
+        theta=theta,
+        mode=mode,
+        source="GX",
+        case="kbm_linear",
+        metadata={"ky": 0.2, "note": "frozen"},
+    )
+    bundle = load_eigenfunction_reference_bundle(out)
+
+    assert out == path
+    np.testing.assert_allclose(bundle.theta, theta)
+    np.testing.assert_allclose(bundle.mode, mode)
+    assert bundle.source == "GX"
+    assert bundle.case == "kbm_linear"
+    assert bundle.metadata == {"ky": 0.2, "note": "frozen"}
+
+
+def test_late_time_window_returns_tail_bounds() -> None:
+    t = np.array([0.0, 1.0, 2.0, 3.0, 4.0])
+
+    tmin, tmax = late_time_window(t, tail_fraction=0.4)
+
+    assert tmin == pytest.approx(3.0)
+    assert tmax == pytest.approx(4.0)
+
+
+def test_benchmarking_window_helpers_respect_bounds_and_validation() -> None:
+    t = np.array([0.0, 1.0, 2.0, 3.0, 4.0])
+
+    mask, tmin, tmax = _leading_window(t, 0.4)
+    np.testing.assert_array_equal(mask, np.array([True, True, False, False, False]))
+    assert tmin == pytest.approx(0.0)
+    assert tmax == pytest.approx(1.0)
+
+    mask_explicit, window_tmin, window_tmax = _explicit_time_window(t, tmin=1.2, tmax=3.1)
+    np.testing.assert_array_equal(mask_explicit, np.array([False, False, True, True, False]))
+    assert window_tmin == pytest.approx(2.0)
+    assert window_tmax == pytest.approx(3.0)
+
+    with pytest.raises(ValueError):
+        _leading_window(t.reshape(1, -1), 0.5)
+    with pytest.raises(ValueError):
+        _leading_window(np.array([]), 0.5)
+    with pytest.raises(ValueError):
+        _leading_window(t, 0.0)
+    with pytest.raises(ValueError):
+        _explicit_time_window(t, tmin=5.0, tmax=6.0)
+
+
+def test_analytic_signal_recovers_quadrature_for_periodic_cosine() -> None:
+    t = np.linspace(0.0, 2.0 * np.pi, 128, endpoint=False)
+    signal = np.cos(3.0 * t)
+
+    analytic = _analytic_signal(signal)
+
+    np.testing.assert_allclose(np.real(analytic), signal, atol=1.0e-12)
+    np.testing.assert_allclose(np.imag(analytic), np.sin(3.0 * t), atol=1.0e-12)
+    np.testing.assert_allclose(np.abs(analytic), 1.0, atol=1.0e-12)
+
+    with pytest.raises(ValueError):
+        _analytic_signal(np.array([]))
+    with pytest.raises(ValueError):
+        _analytic_signal(np.ones((2, 2)))
+
+
+def test_infer_triple_dealiased_ny_matches_gx_grid_convention() -> None:
+    assert infer_triple_dealiased_ny(5) == 13
+    assert infer_triple_dealiased_ny(9) == 25
+    with pytest.raises(ValueError):
+        infer_triple_dealiased_ny(1)
+
+
+def test_scalar_gate_reports_near_zero_and_failure_modes() -> None:
+    gate = evaluate_scalar_gate("omega", 1.0e-4, 0.0, atol=2.0e-4, rtol=0.0, units="v_t/R")
+
+    assert isinstance(gate, ScalarGateResult)
+    assert gate.passed is True
+    assert gate.rel_error == float("inf")
+    assert gate.units == "v_t/R"
+
+    failed = evaluate_scalar_gate("gamma", 1.3, 1.0, atol=0.0, rtol=0.1)
+    assert failed.passed is False
+    assert failed.abs_error == pytest.approx(0.3)
+    assert failed.rel_error == pytest.approx(0.3)
+
+    with pytest.raises(ValueError):
+        evaluate_scalar_gate("bad", 1.0, 1.0, atol=-1.0, rtol=0.0)
+    with pytest.raises(ValueError):
+        evaluate_scalar_gate("bad", 1.0, 1.0, atol=0.0, rtol=-1.0)
+
+
+def test_gate_report_is_json_ready_and_requires_gates() -> None:
+    passed = evaluate_scalar_gate("gamma", 1.01, 1.0, atol=0.0, rtol=0.02)
+    failed = evaluate_scalar_gate("omega", 0.7, 1.0, atol=0.0, rtol=0.02)
+    report = gate_report("cyclone_linear", "GX", [passed, failed])
+
+    assert isinstance(report, GateReport)
+    assert report.passed is False
+    assert report.max_abs_error == pytest.approx(0.3)
+    as_dict = gate_report_to_dict(report)
+    assert as_dict["case"] == "cyclone_linear"
+    assert as_dict["source"] == "GX"
+    assert as_dict["passed"] is False
+    assert len(as_dict["gates"]) == 2
+
+    with pytest.raises(ValueError):
+        gate_report("empty", "none", [])
+
+
+def test_linear_metrics_gate_report_uses_growth_and_frequency() -> None:
+    ref = LateTimeLinearMetrics(
+        gamma_fit=0.1,
+        omega_fit=0.3,
+        gamma_tail_mean=0.1,
+        omega_tail_mean=0.3,
+        gamma_tail_std=0.0,
+        omega_tail_std=0.0,
+        tmin=5.0,
+        tmax=10.0,
+        nsamples=20,
+        signal_source="reference",
+    )
+    obs = LateTimeLinearMetrics(
+        gamma_fit=0.104,
+        omega_fit=0.298,
+        gamma_tail_mean=0.104,
+        omega_tail_mean=0.298,
+        gamma_tail_std=0.001,
+        omega_tail_std=0.002,
+        tmin=5.0,
+        tmax=10.0,
+        nsamples=20,
+        signal_source="spectrax",
+    )
+
+    report = linear_metrics_gate_report(obs, ref, case="cyclone_linear", source="GX", gamma_rtol=0.05, omega_rtol=0.01)
+
+    assert report.passed is True
+    assert [gate.metric for gate in report.gates] == ["gamma_fit", "omega_fit"]
+
+
+def test_nonlinear_and_zonal_gate_reports_cover_publication_metrics() -> None:
+    ref_nonlin = NonlinearWindowMetrics(
+        tmin=20.0,
+        tmax=50.0,
+        nsamples=12,
+        heat_flux_mean=4.0,
+        heat_flux_std=0.4,
+        heat_flux_rms=4.1,
+        wphi_mean=2.0,
+        wphi_std=0.2,
+        wg_mean=3.0,
+        wg_std=0.3,
+        phi_mode_envelope_mean=0.5,
+        phi_mode_envelope_std=0.05,
+        phi_mode_envelope_max=0.7,
+    )
+    obs_nonlin = NonlinearWindowMetrics(
+        tmin=20.0,
+        tmax=50.0,
+        nsamples=12,
+        heat_flux_mean=4.2,
+        heat_flux_std=0.5,
+        heat_flux_rms=4.25,
+        wphi_mean=2.1,
+        wphi_std=0.25,
+        wg_mean=3.1,
+        wg_std=0.35,
+        phi_mode_envelope_mean=0.52,
+        phi_mode_envelope_std=0.05,
+        phi_mode_envelope_max=0.72,
+    )
+
+    nonlin_report = nonlinear_window_gate_report(
+        obs_nonlin,
+        ref_nonlin,
+        case="w7x_nonlinear",
+        source="GX",
+        rtol=0.1,
+    )
+    assert nonlin_report.passed is True
+    assert "heat_flux_mean" in {gate.metric for gate in nonlin_report.gates}
+    assert "phi_mode_envelope_mean" in {gate.metric for gate in nonlin_report.gates}
+
+    ref_zonal = ZonalFlowResponseMetrics(
+        initial_level=1.0,
+        initial_policy="first_abs",
+        residual_level=0.19,
+        residual_std=0.01,
+        response_rms=0.2,
+        gam_frequency=2.24,
+        gam_damping_rate=0.17,
+        damping_method="branchwise_extrema",
+        frequency_method="hilbert_phase",
+        peak_count=6,
+        peak_fit_count=4,
+        tmin=30.0,
+        tmax=60.0,
+        fit_tmin=0.0,
+        fit_tmax=30.0,
+        peak_times=np.array([1.0, 2.0]),
+        peak_envelope=np.array([0.5, 0.4]),
+        max_peak_times=np.array([1.0]),
+        max_peak_values=np.array([0.5]),
+        min_peak_times=np.array([2.0]),
+        min_peak_values=np.array([-0.4]),
+    )
+    obs_zonal = ZonalFlowResponseMetrics(
+        initial_level=1.0,
+        initial_policy="first_abs",
+        residual_level=0.192,
+        residual_std=0.012,
+        response_rms=0.21,
+        gam_frequency=2.20,
+        gam_damping_rate=0.176,
+        damping_method="branchwise_extrema",
+        frequency_method="hilbert_phase",
+        peak_count=6,
+        peak_fit_count=4,
+        tmin=30.0,
+        tmax=60.0,
+        fit_tmin=0.0,
+        fit_tmax=30.0,
+        peak_times=np.array([1.0, 2.0]),
+        peak_envelope=np.array([0.5, 0.4]),
+        max_peak_times=np.array([1.0]),
+        max_peak_values=np.array([0.5]),
+        min_peak_times=np.array([2.0]),
+        min_peak_values=np.array([-0.4]),
+    )
+
+    zonal_report = zonal_response_gate_report(
+        obs_zonal,
+        ref_zonal,
+        case="merlo_case_iii",
+        source="Merlo et al.",
+        residual_atol=0.01,
+        frequency_atol=0.1,
+        damping_atol=0.02,
+    )
+    assert zonal_report.passed is True
+    assert [gate.metric for gate in zonal_report.gates] == [
+        "residual_level",
+        "gam_frequency",
+        "gam_damping_rate",
+    ]
+
+
+def test_eigenfunction_gate_report_handles_open_and_closed_artifacts() -> None:
+    closed = eigenfunction_gate_report(
+        EigenfunctionComparisonMetrics(overlap=0.97, relative_l2=0.12, phase_shift=0.4),
+        case="kbm_eigenfunction",
+        source="GX",
+        min_overlap=0.95,
+        max_relative_l2=0.25,
+    )
+    assert closed.passed is True
+    assert [gate.metric for gate in closed.gates] == [
+        "eigenfunction_overlap",
+        "eigenfunction_relative_l2",
+    ]
+
+    open_report = eigenfunction_gate_report(
+        EigenfunctionComparisonMetrics(overlap=0.63, relative_l2=0.79, phase_shift=0.0),
+        case="kbm_eigenfunction",
+        source="GX",
+        min_overlap=0.95,
+        max_relative_l2=0.25,
+    )
+    assert open_report.passed is False
+    assert open_report.gates[0].passed is False
+    assert open_report.gates[1].passed is False
+
+    with pytest.raises(ValueError):
+        eigenfunction_gate_report(
+            EigenfunctionComparisonMetrics(overlap=1.0, relative_l2=0.0, phase_shift=0.0),
+            case="bad",
+            source="GX",
+            min_overlap=1.2,
+        )
+    with pytest.raises(ValueError):
+        eigenfunction_gate_report(
+            EigenfunctionComparisonMetrics(overlap=1.0, relative_l2=0.0, phase_shift=0.0),
+            case="bad",
+            source="GX",
+            max_relative_l2=-1.0,
+        )
+
+
+def test_zonal_flow_response_metrics_recover_residual_and_gam_envelope() -> None:
+    t = np.linspace(0.0, 30.0, 3001)
+    response = 0.2 + np.exp(-0.1 * t) * np.cos(2.0 * t)
+
+    metrics = zonal_flow_response_metrics(t, response, tail_fraction=0.25, initial_fraction=0.05)
+
+    assert metrics.initial_policy == "window_abs_mean"
+    assert metrics.residual_level * metrics.initial_level == pytest.approx(0.2, abs=0.05)
+    assert metrics.gam_frequency == pytest.approx(2.0, rel=0.1)
+    assert metrics.gam_damping_rate == pytest.approx(0.1, rel=0.2)
+    assert metrics.peak_count >= 3
+
+
+def test_zonal_flow_response_metrics_support_first_sample_rh_normalization() -> None:
+    t = np.linspace(0.0, 10.0, 101)
+    response = 5.0 * (0.2 + 0.8 * np.exp(-0.7 * t) * np.cos(1.5 * t))
+
+    metrics = zonal_flow_response_metrics(
+        t,
+        response,
+        tail_fraction=0.2,
+        initial_fraction=0.2,
+        initial_policy="first-abs",
+    )
+
+    assert metrics.initial_policy == "first_abs"
+    assert metrics.initial_level == pytest.approx(abs(response[0]))
+    assert metrics.residual_level == pytest.approx(0.2, abs=0.03)
+
+
+def test_zonal_flow_response_metrics_support_external_initial_level_override() -> None:
+    t = np.linspace(0.0, 12.0, 241)
+    response = 0.6 + np.exp(-0.7 * t) * np.cos(1.5 * t)
+
+    metrics = zonal_flow_response_metrics(
+        t,
+        response,
+        tail_fraction=0.25,
+        initial_policy="first_abs",
+        initial_level_override=3.0,
+    )
+
+    assert metrics.initial_policy == "first_abs"
+    assert metrics.initial_level == pytest.approx(3.0)
+    assert metrics.residual_level == pytest.approx(0.2, abs=0.02)
+
+
+def test_zonal_flow_response_metrics_can_limit_damping_fit_to_early_peaks() -> None:
+    t = np.linspace(0.0, 24.0, 2401)
+    envelope = np.exp(-0.22 * np.minimum(t, 9.0)) * np.exp(0.08 * np.maximum(t - 9.0, 0.0))
+    response = 0.2 + envelope * np.cos(2.2 * t)
+
+    metrics_all = zonal_flow_response_metrics(t, response, tail_fraction=0.25, initial_policy="first_abs")
+    metrics_early = zonal_flow_response_metrics(
+        t,
+        response,
+        tail_fraction=0.25,
+        initial_policy="first_abs",
+        peak_fit_max_peaks=5,
+    )
+
+    assert metrics_all.peak_count >= metrics_early.peak_fit_count
+    assert metrics_early.peak_fit_count == 5
+    assert metrics_early.gam_damping_rate > metrics_all.gam_damping_rate
+    assert metrics_early.gam_damping_rate == pytest.approx(0.22, abs=0.08)
+
+
+def test_zonal_flow_response_metrics_support_branchwise_merlo_style_fits() -> None:
+    t = np.linspace(0.0, 60.0, 6001)
+    base = 0.2 + np.exp(-0.06 * t) * np.cos(0.8 * t)
+    recurrence = np.where(
+        t > 30.0,
+        0.18 * (1.0 - np.exp(-0.12 * (t - 30.0))) * np.cos(0.8 * t + 0.2),
+        0.0,
+    )
+    response = base + recurrence
+
+    metrics = zonal_flow_response_metrics(
+        t,
+        response,
+        initial_policy="first_abs",
+        damping_fit_mode="branchwise_extrema",
+        frequency_fit_mode="hilbert_phase",
+        fit_window_tmax=30.0,
+        peak_fit_max_peaks=4,
+    )
+
+    assert metrics.damping_method == "branchwise_extrema"
+    assert metrics.frequency_method == "hilbert_phase"
+    assert metrics.gam_damping_rate == pytest.approx(0.06, abs=0.01)
+    assert metrics.gam_frequency == pytest.approx(0.8, abs=0.05)
+    assert metrics.peak_fit_count == 7
+    assert metrics.fit_tmax == pytest.approx(30.0, abs=0.1)
+
+
+def test_zonal_flow_response_metrics_validate_input_and_handle_nonoscillatory_signal() -> None:
+    with pytest.raises(ValueError):
+        zonal_flow_response_metrics(np.array([0.0, 1.0, 2.0]), np.array([1.0, 2.0]))
+    with pytest.raises(ValueError):
+        zonal_flow_response_metrics(np.array([0.0, 1.0, 2.0]), np.array([0.0, 0.0, 0.0]))
+    with pytest.raises(ValueError):
+        zonal_flow_response_metrics(np.arange(5.0), np.ones(5), initial_policy="unknown")
+    with pytest.raises(ValueError):
+        zonal_flow_response_metrics(np.arange(5.0), np.ones(5), peak_fit_max_peaks=0)
+    with pytest.raises(ValueError):
+        zonal_flow_response_metrics(np.arange(5.0), np.ones(5), damping_fit_mode="unknown")
+    with pytest.raises(ValueError):
+        zonal_flow_response_metrics(np.arange(5.0), np.ones(5), frequency_fit_mode="unknown")
+    with pytest.raises(ValueError):
+        zonal_flow_response_metrics(np.arange(5.0), np.ones(5), hilbert_trim_fraction=0.5)
+    with pytest.raises(ValueError):
+        zonal_flow_response_metrics(np.arange(5.0), np.ones(5), initial_level_override=0.0)
+
+    t = np.linspace(0.0, 5.0, 101)
+    response = np.exp(-t)
+    metrics = zonal_flow_response_metrics(t, response)
+    assert np.isnan(metrics.gam_frequency)
+    assert np.isnan(metrics.gam_damping_rate)
+
+
+def test_load_diagnostic_time_series_reads_gx_style_netcdf(tmp_path) -> None:
+    import netCDF4 as nc
+
+    path = tmp_path / "diag.out.nc"
+    with nc.Dataset(path, "w") as ds:
+        ds.createDimension("time", 4)
+        grids = ds.createGroup("Grids")
+        diag = ds.createGroup("Diagnostics")
+        grids.createVariable("time", "f8", ("time",))[:] = np.array([0.0, 1.0, 2.0, 3.0])
+        diag.createVariable("Phi2_zonal_t", "f8", ("time",))[:] = np.array([1.0, 0.7, 0.5, 0.4])
+
+    series = load_diagnostic_time_series(path, variable="Phi2_zonal_t")
+
+    assert np.allclose(series.t, [0.0, 1.0, 2.0, 3.0])
+    assert np.allclose(series.values, [1.0, 0.7, 0.5, 0.4])
+    assert series.variable == "Phi2_zonal_t"
+
+
+def test_load_diagnostic_time_series_rejects_missing_variable(tmp_path) -> None:
+    import netCDF4 as nc
+
+    path = tmp_path / "diag.out.nc"
+    with nc.Dataset(path, "w") as ds:
+        ds.createDimension("time", 2)
+        grids = ds.createGroup("Grids")
+        ds.createGroup("Diagnostics")
+        grids.createVariable("time", "f8", ("time",))[:] = np.array([0.0, 1.0])
+
+    with pytest.raises(ValueError):
+        load_diagnostic_time_series(path, variable="Phi2_zonal_t")
+
+
+def test_load_diagnostic_time_series_extracts_complex_kx_trace_with_phase_alignment(tmp_path) -> None:
+    import netCDF4 as nc
+
+    path = tmp_path / "diag.out.nc"
+    with nc.Dataset(path, "w") as ds:
+        ds.createDimension("time", 3)
+        ds.createDimension("kx", 2)
+        ds.createDimension("ri", 2)
+        grids = ds.createGroup("Grids")
+        diag = ds.createGroup("Diagnostics")
+        grids.createVariable("time", "f8", ("time",))[:] = np.array([0.0, 1.0, 2.0])
+        raw = np.array(
+            [
+                [[0.0, 0.0], [0.0, 1.0]],
+                [[0.0, 0.0], [0.0, 0.5]],
+                [[0.0, 0.0], [0.0, -0.25]],
+            ],
+            dtype=float,
+        )
+        diag.createVariable("Phi_zonal_mode_kxt", "f8", ("time", "kx", "ri"))[:] = raw
+
+    series = load_diagnostic_time_series(
+        path,
+        variable="Phi_zonal_mode_kxt",
+        kx_index=1,
+        component="real",
+        align_phase=True,
+    )
+
+    assert np.allclose(series.t, [0.0, 1.0, 2.0])
+    assert np.allclose(series.values, [1.0, 0.5, -0.25])
 
 
 def test_run_linear_scan_applies_resolution_and_krylov_policies() -> None:
@@ -402,3 +932,108 @@ def test_estimate_observed_order_returns_asymptotic_pairwise_orders() -> None:
         estimate_observed_order(np.array([0.2, -0.1]), np.array([0.1, 0.025]))
     with pytest.raises(ValueError):
         estimate_observed_order(np.array([0.2, 0.1]), np.array([0.1, 0.0]))
+
+
+def test_observed_order_gate_report_tracks_rate_and_final_error() -> None:
+    metrics = estimate_observed_order(np.array([0.4, 0.2, 0.1]), 2.0 * np.array([0.4, 0.2, 0.1]) ** 2)
+
+    report = observed_order_gate_report(
+        metrics,
+        case="rk2_manufactured",
+        source="closed-form",
+        min_asymptotic_order=1.95,
+        min_pairwise_order=1.95,
+        max_final_error=0.03,
+    )
+
+    assert report.passed is True
+    assert [gate.metric for gate in report.gates] == [
+        "observed_order_deficit",
+        "min_pairwise_order_deficit",
+        "final_error",
+    ]
+
+    failed = observed_order_gate_report(
+        metrics,
+        case="rk2_manufactured",
+        source="closed-form",
+        min_asymptotic_order=2.5,
+        min_pairwise_order=2.5,
+        max_final_error=0.01,
+    )
+    assert failed.passed is False
+    nonmonotone = observed_order_gate_report(
+        estimate_observed_order(np.array([0.4, 0.2, 0.1]), np.array([0.01, 0.02, 0.002])),
+        case="nonmonotone",
+        source="synthetic",
+        min_asymptotic_order=1.0,
+        min_pairwise_order=0.0,
+    )
+    assert nonmonotone.passed is False
+
+    with pytest.raises(ValueError):
+        observed_order_gate_report(metrics, case="bad", source="closed-form", min_asymptotic_order=-1.0)
+    with pytest.raises(ValueError):
+        observed_order_gate_report(metrics, case="bad", source="closed-form", min_asymptotic_order=1.0, max_final_error=-1.0)
+    with pytest.raises(ValueError):
+        observed_order_gate_report(metrics, case="bad", source="closed-form", min_asymptotic_order=1.0, min_pairwise_order=-1.0)
+
+
+def test_branch_continuity_metrics_and_gate_report() -> None:
+    metrics = branch_continuity_metrics(
+        ky=np.array([0.1, 0.2, 0.3]),
+        gamma=np.array([0.10, 0.105, 0.110]),
+        omega=np.array([-0.30, -0.31, -0.32]),
+        successive_overlap=np.array([0.98, 0.97]),
+    )
+
+    assert isinstance(metrics, BranchContinuationMetrics)
+    assert metrics.max_rel_gamma_jump < 0.06
+    assert metrics.max_rel_omega_jump < 0.04
+    assert metrics.min_successive_overlap == pytest.approx(0.97)
+
+    report = branch_continuity_gate_report(
+        metrics,
+        case="kbm_branch",
+        source="candidate table",
+        max_rel_gamma_jump=0.1,
+        max_rel_omega_jump=0.1,
+        min_successive_overlap=0.95,
+    )
+    assert report.passed is True
+
+    jump = branch_continuity_metrics(
+        ky=np.array([0.1, 0.2, 0.3]),
+        gamma=np.array([0.10, 0.40, 0.11]),
+        omega=np.array([-0.30, 0.80, -0.32]),
+        successive_overlap=np.array([0.7, 0.6]),
+    )
+    failed = branch_continuity_gate_report(
+        jump,
+        case="kbm_branch",
+        source="candidate table",
+        max_rel_gamma_jump=0.1,
+        max_rel_omega_jump=0.1,
+        min_successive_overlap=0.95,
+    )
+    assert failed.passed is False
+
+    with pytest.raises(ValueError):
+        branch_continuity_metrics(np.array([0.1]), np.array([0.1]), np.array([0.2]))
+    with pytest.raises(ValueError):
+        branch_continuity_metrics(np.array([0.1, 0.2]), np.array([0.1, np.nan]), np.array([0.2, 0.3]))
+    with pytest.raises(ValueError):
+        branch_continuity_metrics(
+            np.array([0.1, 0.2]),
+            np.array([0.1, 0.2]),
+            np.array([0.2, 0.3]),
+            successive_overlap=np.array([0.9, 0.8]),
+        )
+    with pytest.raises(ValueError):
+        branch_continuity_gate_report(
+            metrics,
+            case="bad",
+            source="candidate table",
+            max_rel_gamma_jump=-1.0,
+            max_rel_omega_jump=0.1,
+        )

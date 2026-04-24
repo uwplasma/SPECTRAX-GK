@@ -107,8 +107,24 @@ def test_build_linear_cache_single_selected_ky_ignores_nonlinear_dealias_mask():
 
     cache = build_linear_cache(grid, geom, params, Nl=2, Nm=2)
 
-    assert np.asarray(grid.dealias_mask).item() is False
+    assert np.asarray(grid_full.dealias_mask)[6, 0].item() is False
+    assert np.asarray(grid.dealias_mask).item() is True
     assert float(np.nanmax(np.asarray(cache.kperp2))) > 0.0
+
+
+def test_build_linear_cache_multi_selected_ky_ignores_nonlinear_dealias_mask():
+    grid_cfg = GridConfig(Nx=1, Ny=16, Nz=32, Lx=2.0 * np.pi, Ly=0.628, boundary="periodic", y0=0.2)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid_full = build_spectral_grid(cfg.grid)
+    grid = select_ky_grid(grid_full, [5, 6])
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams()
+
+    cache = build_linear_cache(grid, geom, params, Nl=2, Nm=2)
+
+    assert not bool(np.asarray(grid_full.dealias_mask)[6, 0])
+    assert np.all(np.asarray(grid.dealias_mask))
+    assert float(np.nanmin(np.asarray(cache.kperp2[:, 0, :]))) > 0.0
 
 
 def test_linked_fft_derivative_matches_periodic_for_one_link_chains():
@@ -239,13 +255,26 @@ def test_collisions_include_gx_conservation_correction():
         JlB=JlB,
         b=jnp.full((1, 1, 1, 1), 4.0, dtype=jnp.float32),
         nu=jnp.array([0.5], dtype=jnp.float32),
-        lb_lam=jnp.zeros((1, 1, 3, 1, 1, 1), dtype=jnp.float32),
+        collision_lam=jnp.zeros((1, 1, 3, 1, 1, 1), dtype=jnp.float32),
         weight=jnp.asarray(1.0, dtype=jnp.float32),
     )
 
     assert jnp.allclose(out[0, 0, 0, 0, 0, 0], 4.0)
     assert jnp.allclose(out[0, 0, 1, 0, 0, 0], 1.5)
     assert jnp.allclose(out[0, 0, 2, 0, 0, 0], 5.0)
+
+
+def test_collisions_contribution_accepts_low_rank_lb_lam():
+    H = jnp.ones((1, 1, 2, 1, 1, 1), dtype=jnp.complex64)
+    out = collisions_contribution(
+        H,
+        nu=jnp.array([0.5], dtype=jnp.float32),
+        lb_lam=jnp.array([[0.0, 1.0]], dtype=jnp.float32),
+        b=jnp.full((1, 1, 1, 1), 2.0, dtype=jnp.float32),
+        weight=jnp.asarray(1.0, dtype=jnp.float32),
+    )
+
+    np.testing.assert_allclose(np.asarray(out[0, 0, :, 0, 0, 0]), [-1.0, -1.5])
 
 
 def test_build_H_adds_bpar_to_m0():

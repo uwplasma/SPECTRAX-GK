@@ -17,6 +17,7 @@ from make_gx_summary_panel import (
     _autocrop_image,
     _linear_table_rows,
     _load_imported_linear,
+    _load_imported_linear_lastvalue,
     _plot_imported_linear,
     _plot_secondary,
     _load_secondary,
@@ -73,6 +74,13 @@ def test_load_imported_linear_requires_expected_columns(tmp_path: Path) -> None:
         _load_imported_linear(path)
 
 
+def test_load_imported_linear_lastvalue_requires_expected_columns(tmp_path: Path) -> None:
+    path = tmp_path / "linear_lastvalue.csv"
+    pd.DataFrame({"ky": [0.1], "rel_gamma": [1.0e-3]}).to_csv(path, index=False)
+    with pytest.raises(ValueError):
+        _load_imported_linear_lastvalue(path)
+
+
 def test_linear_table_rows_formats_scan_metrics(tmp_path: Path) -> None:
     path = tmp_path / "linear.csv"
     pd.DataFrame(
@@ -95,18 +103,30 @@ def test_plot_imported_linear_adds_lines_and_log_axis() -> None:
     df = pd.DataFrame(
         {
             "ky": [0.1, 0.2],
-            "mean_abs_omega": [1.0e-6, 2.0e-6],
-            "mean_abs_gamma": [3.0e-6, 4.0e-6],
+            "mean_rel_omega": [1.0e-3, 2.0e-3],
+            "mean_rel_gamma": [3.0e-2, 4.0e-2],
             "mean_rel_Wg": [5.0e-5, 6.0e-5],
             "mean_rel_Wphi": [7.0e-5, 8.0e-5],
             "mean_rel_Wapar": [0.0, 0.0],
         }
     )
+    lastvalue = pd.DataFrame(
+        {
+            "ky": [0.1, 0.2],
+            "rel_gamma": [5.0e-3, 6.0e-3],
+            "rel_omega": [7.0e-4, 8.0e-4],
+            "gamma": [0.1, 0.2],
+            "gamma_gx": [0.1, 0.2],
+            "omega": [-0.2, -0.3],
+            "omega_gx": [-0.2, -0.3],
+        }
+    )
     fig, ax = plt.subplots()
     try:
-        _plot_imported_linear(ax, df, "Imported")
+        _plot_imported_linear(ax, df, "Imported", lastvalue=lastvalue, note="late-time closure")
         assert ax.get_yscale() == "log"
-        assert len(ax.lines) == 4
+        assert len(ax.lines) == 6
+        assert any(text.get_text() == "late-time closure" for text in ax.texts)
     finally:
         plt.close(fig)
 

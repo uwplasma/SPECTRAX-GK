@@ -51,6 +51,28 @@ driver. It supports Perfetto traces, XLA HLO dumps, and memory snapshots.
 
 The trace directory can be opened with Perfetto. For GPU profiling, set
 ``JAX_PLATFORM_NAME=gpu`` before invoking the script.
+JAX writes the trace under
+``<trace-dir>/plugins/profile/<timestamp>/*.trace.json.gz`` together with the
+corresponding ``*.xplane.pb`` metadata; the same directory can be opened in
+XProf, while the optional ``memory.prof`` snapshot can be inspected with
+``pprof`` or XProf's memory tooling.
+
+JAX/XProf operational notes
+---------------------------
+
+Two JAX runtime details matter when reading short-run performance numbers:
+
+- JAX's persistent compilation cache can remove repeated recompilation cost for
+  fixed signatures. For repeated local profiling runs, set
+  ``JAX_COMPILATION_CACHE_DIR`` before the first compilation. This is useful
+  for engineering sweeps, but the shipped runtime panel should remain a cold
+  end-to-end measurement unless stated otherwise.
+- JAX GPU runs preallocate most device memory by default. When diagnosing an
+  out-of-memory failure on a shared machine, use
+  ``XLA_PYTHON_CLIENT_PREALLOCATE=false`` or a reduced
+  ``XLA_PYTHON_CLIENT_MEM_FRACTION`` during the profiling run. Those knobs are
+  useful for debugging and tracing, but they should not silently change the
+  published benchmark contract.
 
 Recent nonlinear profiling (Cyclone, benchmark-locked config)
 -------------------------------------------------------------
@@ -150,6 +172,34 @@ for engineering work, but it is intentionally not presented as a headline
 publication figure because the current curve is dominated by communication
 overhead rather than near-ideal scaling.
 
+Production parallelization should start with independent work rather than
+nonlinear domain decomposition. The public helpers
+``spectraxgk.ky_scan_batches`` and ``spectraxgk.batch_map`` split ``k_y``
+scans, sensitivity sweeps, and UQ ensembles while preserving serial ordering.
+On one device they reduce to batched ``vmap`` execution; on multiple devices
+they use JAX device batching and trim padded edge samples deterministically.
+Every performance claim from this path should include a numerical-identity
+gate against the serial result before a speedup plot is promoted.
+
+The first release-grade gate for this policy is a real Cyclone linear
+``k_y``-scan comparison:
+
+.. image:: _static/parallel_ky_scan_gate.png
+   :alt: SPECTRAX-GK ky-batch parallelization identity gate
+   :align: center
+
+It is regenerated with:
+
+.. code-block:: bash
+
+   python tools/generate_parallel_ky_scan_gate.py
+
+This gate runs the same linear solver serially and with fixed-shape
+``k_y`` batching, checks ``gamma`` and ``omega`` numerical identity, and
+reports observed speedup as an engineering metric. The gate intentionally does
+not claim nonlinear domain scaling; that remains a separate communication and
+FFT-decomposition problem.
+
 Spectral nonlinear mode (fast toggle)
 -------------------------------------
 
@@ -200,6 +250,12 @@ The manifest is designed to hold three rows per case:
 Each row may also carry a ``host`` so the same runner can execute local and
 remote measurements through one manifest while still collecting wall time and
 peak RSS from the target machine.
+Rows may also carry a ``profile_command``. When that secondary command succeeds
+and prints ``warmup_time_s=...`` / ``run_time_s=...``, the runner merges those
+warm measurements back into the same CSV/JSON summary row as the cold pass.
+If a profiling command prints ``warmup_time_s=...`` or ``run_time_s=...``, the
+runner also records those fields in the CSV/JSON summary so cold and warm JAX
+timings can be tracked without a separate sidecar note.
 
 The checked-in case inventory for the current release panel covers the shipped
 runtime families:
@@ -241,10 +297,144 @@ The assembled figure is generated from the collected per-case summaries with
 - ``docs/_static/runtime_memory_benchmark.png``
 - ``docs/_static/runtime_memory_benchmark.pdf``
 
+For the shipped refresh shown here, use the successful release summary rather
+than the older interrupted summary that contains failed W7-X/HSX nonlinear
+rows:
+
+.. code-block:: bash
+
+   python tools/benchmark_runtime_memory.py \
+     --summary-glob tools_out/runtime_memory_summary_ship_refresh.json \
+     --csv-out tools_out/runtime_memory_results_ship_refresh_regenerated.csv \
+     --summary-out tools_out/runtime_memory_summary_ship_refresh_regenerated.json \
+     --plot-out docs/_static/runtime_memory_benchmark.png
+
 The published runtime figure complements the atlas instead of duplicating it:
 the atlas carries growth/frequency and nonlinear transport/energy comparisons,
 while the runtime figure carries CPU/GPU/reference wall time and peak RSS for
 the shipped runtime cases.
+
+Interpretation of short nonlinear GPU rows
+------------------------------------------
+
+The shipped runtime panel reports cold wall time. For the JAX backends, this
+includes startup and compilation, so short nonlinear cases can look worse than
+their steady-state throughput would suggest.
+
+Targeted ``office`` GPU profiles on the same shipped short nonlinear configs
+measured:
+
+.. code-block:: text
+
+   Cyclone nonlinear: warmup_time_s=33.957  run_time_s=15.054
+   KBM nonlinear:     warmup_time_s=27.485  run_time_s= 9.725
+
+Compared with the cold runtime panel rows:
+
+- Cyclone nonlinear GPU: ``38.27 s`` in the shipped panel, versus ``15.05 s``
+  for the second run on the same compiled executable.
+- KBM nonlinear GPU: ``44.33 s`` in the shipped panel, versus ``9.73 s`` for
+  the second run on the same compiled executable.
+
+This changes the optimization reading:
+
+- the current short-run Cyclone GPU deficit in the shipped panel is primarily a
+  cold-start effect, since the warm run is already faster than the tracked GX
+  row,
+- the current short-run KBM GPU gap is mostly compile amortization, with warm
+  performance already close to GX.
+
+The runtime figure now overlays those warm second-run measurements as hollow
+diamond markers on the runtime bars wherever ``run_time_s`` is present in the
+summary input.
+
+The highest-value performance work for these short nonlinear lanes is therefore
+compile/startup reduction and executable reuse, not just per-step kernel work.
+
+Startup phase profiler
+----------------------
+
+For cold-start deep dives, use the dedicated startup profiler:
+
+.. code-block:: bash
+
+   python tools/profile_runtime_startup.py \
+     --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml \
+     --ky 0.3 --Nl 4 --Nm 8 --compile-steps 1 \
+     --json-out tools_out/startup_cyclone_gpu.json \
+     --csv-out tools_out/startup_cyclone_gpu.csv
+
+The profiler breaks the cold path into the main setup and first-compile phases:
+
+- runtime config load
+- geometry resolution
+- grid/default construction
+- parameter and term setup
+- initial-condition construction
+- linear-cache construction
+- first field solve compile+execute
+- first linear/full RHS compile+execute
+- first nonlinear integrator compile+execute
+
+It supports ``--trace-dir`` and ``--memory-profile`` for XProf/Perfetto
+inspection with phase-level annotations, and ``--debug-log-cache`` /
+``--explain-cache-misses`` for JAX cache diagnostics when a repeated compile
+path looks suspicious.
+By default the trace tools now start JAX profiling with
+``python_tracer_level=0`` and ``host_tracer_level=0``. On the lightweight
+``office`` environment this avoids the optional TensorFlow Python-hook import
+path, so traces are emitted cleanly without installing TensorFlow just to
+silence profiler startup noise.
+
+The current ``office`` GPU startup profiles for the shipped short nonlinear
+cases show the same dominant structure:
+
+- Cyclone nonlinear startup total: ``35-36 s`` after the low-rank
+  collision-cache and host-cache cleanup passes (previously ``41.47 s`` on the
+  earlier office snapshot)
+- KBM nonlinear startup total: ``32.23 s``
+- dominant phases in both cases:
+
+  - ``compile_first_integrator_run``: about ``22 s`` (Cyclone), ``19.28 s`` (KBM)
+  - ``build_linear_cache``: about ``5.6 s`` (Cyclone), ``7.73 s`` (KBM)
+  - ``compile_first_linear_rhs`` / ``compile_first_full_rhs``: another
+    ``3.0 + 3.0 s`` (Cyclone) or ``1.7 + 1.7 s`` (KBM)
+
+So the next high-value performance work is no longer the analytic geometry
+startup path or the collision prefactor path; it is the first compiled
+nonlinear integrator path, followed by the remaining Laguerre and drift/cache
+construction subphases.
+
+To break the cache-construction lump down further, use:
+
+.. code-block:: bash
+
+   python tools/profile_linear_cache_build.py \
+     --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml \
+     --Nl 4 --Nm 8 \
+     --json-out tools_out/linear_cache_cyclone_gpu.json \
+     --csv-out tools_out/linear_cache_cyclone_gpu.csv
+
+The current ``office`` GPU decomposition for the shipped Cyclone short
+nonlinear lane is:
+
+- total measured decomposition: ``6.86 s`` after the low-rank collision-cache,
+  host-cache, and broadcasted-gyroaverage passes
+- dominant subphases:
+
+  - ``gyro_bessel_cache``: ``1.33 s``
+  - ``laguerre_cache``: ``1.21 s``
+  - ``kperp_and_drifts``: ``0.99 s``
+  - ``geometry_coefficients``: ``0.68 s``
+  - ``collision_and_damping_cache``: ``0.17 s``
+
+The low-rank collision cache, host-built moment/damping factors, and
+broadcasted gyroaverage construction remove the old collision/damping
+bottleneck from the cache profile. The overall cold-start wall clock is still
+dominated by the first nonlinear integrator compile. The next cache-build
+optimization work should therefore focus on Laguerre and drift/cache
+construction, while the broader startup campaign should prioritize the first
+integrator compile surface.
 
 Cached basis indices
 --------------------

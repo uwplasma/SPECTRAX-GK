@@ -27,6 +27,7 @@ from spectraxgk.runtime import (
     _require_full_gk_runtime_model,
     _resolve_runtime_hl_dims,
     _reshape_gx_state,
+    _runtime_external_phi,
     _runtime_default_krylov_config,
     _runtime_model_key,
     _select_nonlinear_mode_indices,
@@ -37,6 +38,9 @@ from spectraxgk.runtime import (
     _zero_kx_index,
     _run_runtime_scan_batch,
     build_runtime_geometry,
+    build_runtime_linear_params,
+    build_runtime_linear_terms,
+    build_runtime_term_config,
     run_runtime_linear,
     run_runtime_nonlinear,
 )
@@ -216,6 +220,59 @@ def test_runtime_species_and_model_helpers() -> None:
         _require_full_gk_runtime_model(replace(cfg, physics=replace(cfg.physics, reduced_model="mystery")))
 
 
+def test_runtime_wrapper_patch_surfaces(monkeypatch: pytest.MonkeyPatch) -> None:
+    cfg = _base_cfg()
+    captured: dict[str, object] = {}
+    geom = object()
+
+    def _fake_build_geom(_cfg):
+        captured["geom_called"] = True
+        return geom
+
+    def _fake_build_params(_cfg, *, Nm, geom):
+        captured["params"] = {"Nm": Nm, "geom": geom}
+        return "params"
+
+    def _fake_build_terms(_cfg):
+        captured["terms"] = _cfg
+        return "terms"
+
+    def _fake_build_term_config(_cfg):
+        captured["term_cfg"] = _cfg
+        return "term_cfg"
+
+    monkeypatch.setattr("spectraxgk.runtime.build_runtime_geometry", _fake_build_geom)
+    monkeypatch.setattr("spectraxgk.runtime_startup.build_runtime_linear_params", _fake_build_params)
+    monkeypatch.setattr("spectraxgk.runtime_startup.build_runtime_linear_terms", _fake_build_terms)
+    monkeypatch.setattr("spectraxgk.runtime_startup.build_runtime_term_config", _fake_build_term_config)
+
+    assert build_runtime_linear_params(cfg, Nm=7) == "params"
+    assert captured["geom_called"] is True
+    assert captured["params"] == {"Nm": 7, "geom": geom}
+
+    captured.clear()
+    explicit_geom = object()
+    assert build_runtime_linear_params(cfg, Nm=5, geom=explicit_geom) == "params"
+    assert "geom_called" not in captured
+    assert captured["params"] == {"Nm": 5, "geom": explicit_geom}
+
+    assert build_runtime_linear_terms(cfg) == "terms"
+    assert captured["terms"] is cfg
+    assert build_runtime_term_config(cfg) == "term_cfg"
+    assert captured["term_cfg"] is cfg
+
+
+def test_runtime_external_phi_helper() -> None:
+    cfg = _base_cfg()
+
+    assert _runtime_external_phi(cfg) is None
+    assert _runtime_external_phi(replace(cfg, expert=RuntimeExpertConfig(source=" default "))) is None
+    assert _runtime_external_phi(replace(cfg, expert=RuntimeExpertConfig(source="phiext_full", phi_ext=0.375))) == pytest.approx(0.375)
+
+    with pytest.raises(ValueError, match="unsupported expert.source"):
+        _runtime_external_phi(replace(cfg, expert=RuntimeExpertConfig(source="bad_source", phi_ext=1.0)))
+
+
 def test_runtime_build_geometry_vmec_and_miller_branches(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     cfg = _base_cfg()
     captured: list[tuple[str, str | None]] = []
@@ -258,14 +315,61 @@ def test_runtime_initial_state_helpers(tmp_path: Path, monkeypatch: pytest.Monke
     assert expanded.shape[-3] == 4
     assert _expand_ky(np.ones((1, 2, 3, 4, 5), dtype=np.complex64), nyc=2).shape[-3] == 3
 
+
+def test_runtime_single_mode_init_populates_zonal_ky0_branch() -> None:
+    cfg = replace(
+        _base_cfg(),
+        grid=GridConfig(Nx=6, Ny=8, Nz=8, Lx=6.28, Ly=6.28, boundary="periodic"),
+        init=InitializationConfig(
+            init_field="density",
+            init_amp=1.0,
+            gaussian_init=False,
+            init_single=True,
+        ),
+    )
+    geom = build_runtime_geometry(cfg)
+    grid = build_spectral_grid(cfg.grid)
+    g0 = np.asarray(_build_initial_condition(grid, geom, cfg, ky_index=0, kx_index=1, Nl=1, Nm=1, nspecies=1))
+
+    assert np.max(np.abs(g0)) > 0.0
+    assert np.max(np.abs(g0[0, 0, 0, 0, 1, :])) > 0.0
+
+
+def test_runtime_gaussian_single_mode_init_populates_zonal_ky0_branch() -> None:
+    cfg = replace(
+        _base_cfg(),
+        grid=GridConfig(Nx=6, Ny=8, Nz=8, Lx=6.28, Ly=6.28, boundary="periodic"),
+        init=InitializationConfig(
+            init_field="density",
+            init_amp=1.0,
+            gaussian_init=True,
+            init_single=True,
+            gaussian_width=0.35,
+        ),
+    )
+    geom = build_runtime_geometry(cfg)
+    grid = build_spectral_grid(cfg.grid)
+    g0 = np.asarray(_build_initial_condition(grid, geom, cfg, ky_index=0, kx_index=1, Nl=1, Nm=1, nspecies=1))
+
+    assert np.max(np.abs(g0)) > 0.0
+    assert np.max(np.abs(g0[0, 0, 0, 0, 1, :])) > 0.0
+
+
+def test_runtime_initial_state_loading_helpers(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     full = np.zeros((1, 1, 1, 4, 4, 2), dtype=np.complex64)
     full[..., 1, :, :] = 1.0 + 2.0j
     herm = _enforce_full_ky_hermitian(full)
     assert herm.shape == full.shape
-    assert np.allclose(_enforce_full_ky_hermitian(np.ones((1, 1, 1, 1, 2), dtype=np.complex64)), np.ones((1, 1, 1, 1, 2), dtype=np.complex64))
+    assert np.allclose(
+        _enforce_full_ky_hermitian(np.ones((1, 1, 1, 1, 2), dtype=np.complex64)),
+        np.ones((1, 1, 1, 1, 2), dtype=np.complex64),
+    )
 
     nc_path = tmp_path / "restart.nc"
-    monkeypatch.setattr("spectraxgk.runtime.load_gx_restart_state", lambda *_args, **_kwargs: np.ones((1, 2, 3, 4, 4, 5), dtype=np.complex64))
+    monkeypatch.setattr(
+        "spectraxgk.runtime.load_gx_restart_state",
+        lambda *_args, **_kwargs: np.ones((1, 2, 3, 4, 4, 5), dtype=np.complex64),
+    )
     assert _load_initial_state_from_file(nc_path, nspecies=1, Nl=2, Nm=3, ny=4, nx=4, nz=5).shape == (1, 2, 3, 4, 4, 5)
 
     ny = 4
@@ -652,6 +756,16 @@ def test_run_runtime_nonlinear_fixed_mode_requires_indices() -> None:
         run_runtime_nonlinear(cfg, ky_target=0.2, Nl=3, Nm=4)
 
 
+def test_run_runtime_nonlinear_rejects_unknown_external_source() -> None:
+    cfg = replace(
+        _base_cfg(),
+        physics=RuntimePhysicsConfig(adiabatic_electrons=True, nonlinear=True),
+        expert=RuntimeExpertConfig(source="bad_source"),
+    )
+    with pytest.raises(ValueError, match="unsupported expert.source"):
+        run_runtime_nonlinear(cfg, ky_target=0.2, Nl=3, Nm=4)
+
+
 def test_run_runtime_nonlinear_adaptive_chunk_requires_progress(monkeypatch: pytest.MonkeyPatch) -> None:
     import spectraxgk.runtime as runtime
 
@@ -698,6 +812,59 @@ def test_run_runtime_nonlinear_adaptive_chunk_requires_progress(monkeypatch: pyt
 
     with pytest.raises(RuntimeError, match="made no time-step progress"):
         run_runtime_nonlinear(cfg, ky_target=0.2, Nl=3, Nm=4, diagnostics=True)
+
+
+def test_run_runtime_nonlinear_phiext_source_uses_diagnostics_path(monkeypatch: pytest.MonkeyPatch) -> None:
+    import spectraxgk.runtime as runtime
+
+    cfg = replace(
+        _base_cfg(),
+        physics=RuntimePhysicsConfig(adiabatic_electrons=True, nonlinear=True),
+        expert=RuntimeExpertConfig(source="phiext_full", phi_ext=0.25),
+    )
+    geom = build_runtime_geometry(cfg)
+    grid = build_spectral_grid(cfg.grid)
+    captured: dict[str, object] = {}
+
+    monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: geom)
+    monkeypatch.setattr(runtime, "build_runtime_linear_params", lambda *args, **kwargs: type("P", (), {"rho_star": np.asarray(1.0)})())
+    monkeypatch.setattr(runtime, "build_runtime_term_config", lambda _cfg: object())
+    monkeypatch.setattr(runtime, "_select_nonlinear_mode_indices", lambda *args, **kwargs: (1, 0))
+    monkeypatch.setattr(
+        runtime,
+        "_build_initial_condition",
+        lambda *args, **kwargs: np.zeros((1, 3, 4, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64),
+    )
+
+    def _fake_diag_integrator(*args, **kwargs):
+        captured.update(kwargs)
+        t = np.asarray([0.1, 0.2], dtype=float)
+        diag = SimulationDiagnostics(
+            t=t,
+            dt_t=t,
+            dt_mean=float(t[-1]),
+            gamma_t=np.zeros_like(t),
+            omega_t=np.zeros_like(t),
+            Wg_t=np.zeros_like(t),
+            Wphi_t=np.asarray([1.0, 1.1]),
+            Wapar_t=np.zeros_like(t),
+            heat_flux_t=np.zeros_like(t),
+            particle_flux_t=np.zeros_like(t),
+            energy_t=np.zeros_like(t),
+        )
+        return t, diag, np.ones((1, 3, 4, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64), FieldState(
+            phi=np.ones((grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex64),
+            apar=None,
+            bpar=None,
+        )
+
+    monkeypatch.setattr(runtime, "integrate_nonlinear_gx_diagnostics_state", _fake_diag_integrator)
+
+    out = run_runtime_nonlinear(cfg, ky_target=0.2, Nl=3, Nm=4, diagnostics=False)
+
+    assert captured["external_phi"] == pytest.approx(0.25)
+    assert out.diagnostics is None
+    assert out.phi2 is not None
 
 
 def test_run_runtime_nonlinear_adaptive_chunk_forwards_fixed_mode_and_collision_split(

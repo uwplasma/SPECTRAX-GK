@@ -14,6 +14,7 @@ try:
         STATIC,
         _autocrop_image,
         _load_imported_linear,
+        _load_imported_linear_lastvalue,
         _plot_imported_linear,
         _resolve,
     )
@@ -22,6 +23,7 @@ except ModuleNotFoundError:  # Allows PYTHONPATH=tools execution in tests.
         STATIC,
         _autocrop_image,
         _load_imported_linear,
+        _load_imported_linear_lastvalue,
         _plot_imported_linear,
         _resolve,
     )
@@ -60,6 +62,18 @@ def build_parser() -> argparse.ArgumentParser:
         help="Tracked linear HSX imported-geometry comparison CSV.",
     )
     parser.add_argument(
+        "--w7x-linear-lastvalue-csv",
+        type=Path,
+        default=STATIC / "w7x_linear_t2_lastvalue.csv",
+        help="Tracked late-time W7-X imported-geometry comparison CSV.",
+    )
+    parser.add_argument(
+        "--hsx-linear-lastvalue-csv",
+        type=Path,
+        default=STATIC / "hsx_linear_t2_lastvalue.csv",
+        help="Tracked late-time HSX imported-geometry comparison CSV.",
+    )
+    parser.add_argument(
         "--out",
         type=Path,
         default=STATIC / "gx_publication_panel.png",
@@ -81,11 +95,15 @@ def main() -> None:
     hsx_panel = _resolve(args.hsx_panel)
     w7x_linear_csv = _resolve(args.w7x_linear_csv)
     hsx_linear_csv = _resolve(args.hsx_linear_csv)
+    w7x_linear_lastvalue_csv = _resolve(args.w7x_linear_lastvalue_csv)
+    hsx_linear_lastvalue_csv = _resolve(args.hsx_linear_lastvalue_csv)
     out = _resolve(args.out)
     pdf_out = _resolve(args.pdf_out)
 
     w7x_linear = _load_imported_linear(w7x_linear_csv)
     hsx_linear = _load_imported_linear(hsx_linear_csv)
+    w7x_linear_lastvalue = _load_imported_linear_lastvalue(w7x_linear_lastvalue_csv)
+    hsx_linear_lastvalue = _load_imported_linear_lastvalue(hsx_linear_lastvalue_csv)
 
     cyclone_img = _autocrop_image(mpimg.imread(cyclone_kbm), pad_pixels=4)
     w7x_img = _autocrop_image(mpimg.imread(w7x_panel), pad_pixels=4)
@@ -109,10 +127,22 @@ def main() -> None:
     ax2.axis("off")
 
     ax3 = fig.add_subplot(gs[2, 0])
-    _plot_imported_linear(ax3, w7x_linear, "W7-X Linear VMEC")
+    _plot_imported_linear(
+        ax3,
+        w7x_linear,
+        "W7-X Linear VMEC",
+        lastvalue=w7x_linear_lastvalue,
+        note="late-time closure tracks the whole-window scan",
+    )
 
     ax4 = fig.add_subplot(gs[2, 1])
-    _plot_imported_linear(ax4, hsx_linear, "HSX Linear VMEC")
+    _plot_imported_linear(
+        ax4,
+        hsx_linear,
+        "HSX Linear VMEC",
+        lastvalue=hsx_linear_lastvalue,
+        note="near marginality inflates the whole-window γ average; late-time closure remains tight",
+    )
 
     fig.suptitle("GX-Aligned Validation: Publication Panel", fontsize=18, fontweight="bold")
     out.parent.mkdir(parents=True, exist_ok=True)
