@@ -157,6 +157,8 @@ The first reusable tooling for this lane now exists:
 - ``tools/plot_w7x_zonal_contract_audit.py``
 - ``tools/plot_w7x_zonal_moment_tail_audit.py``
 - ``tools/plot_w7x_zonal_closure_ladder.py``
+- ``tools/plot_w7x_zonal_state_convention_audit.py``
+- ``tools/plot_w7x_zonal_recurrence_sweep.py``
 
 The gate-report helpers are intentionally small and JSON-ready. They should be
 used by manuscript refresh scripts so every reported artifact has the same
@@ -357,6 +359,27 @@ normalization. The newest paper-width ``Nl=16``, ``Nm=64``,
 reference-trace mean absolute error worsens slightly from ``0.283`` to
 ``0.292``; that supports a moment-tail mitigation hypothesis but not a closed
 validation claim.
+``tools/plot_w7x_zonal_state_convention_audit.py`` closes the state-level
+initializer and observable convention layer for the same paper-facing setup.
+At ``k_x rho_i=0.07``, ``Nl=16``, and ``Nm=64``, the recovered Gaussian
+potential has relative ``L2`` error ``1.85e-6``, off-target spectral potential
+content is zero to the reported precision, and the signed line-average and
+volume-average helper diagnostics agree with manual reductions to about
+``2e-16``. The line-first initial level is ``0.28209 init_amp`` while the
+volume-weighted level is ``0.28450 init_amp``; that explicit difference is why
+the paper-facing observable must remain ``Phi_zonal_line_kxt`` normalized by
+its first nonzero sample.
+``tools/plot_w7x_zonal_recurrence_sweep.py`` then performs the bounded
+recurrence sweep requested for the paper lane without changing initializer or
+normalization conventions. Moment resolution and closure source are varied
+separately at ``k_x rho_i=0.07`` over the common ``t v_t/a <= 100`` window.
+The no-closure rows give mean absolute reference errors ``0.295`` for
+``Nl=8,Nm=32``, ``0.276`` for ``Nl=12,Nm=48``, and ``0.283`` for
+``Nl=16,Nm=64``. At fixed ``Nl=16,Nm=64``, constant-source closure suppresses
+the final Hermite-tail fraction from ``0.388`` to ``0.062`` but worsens the
+trace mean absolute error to ``0.291``; the ``k_z``-weighted closure remains
+close to no closure. This separates the remaining recurrence/closure problem
+from a state-convention error.
 ``tools/generate_w7x_zonal_response_panel.py`` now exposes explicit
 ``--nu-hyper``, ``--nu-hyper-l``, ``--nu-hyper-m``, ``--nu-hyper-lm``,
 ``--p-hyper-*``, ``--hypercollisions-const``, ``--hypercollisions-kz``,
@@ -415,6 +438,23 @@ audits, not validation defaults.
    are shown separately. The non-contract width-four high-resolution probe
    improves the short early window, but it is not a validation result because
    the benchmark source specifies the width-one Gaussian potential initializer.
+
+.. figure:: _static/w7x_zonal_state_convention_audit.png
+   :alt: W7-X zonal-response state convention audit at kx rho_i 0.07
+
+   State-level W7-X test-4 convention audit. The runtime path recovers the
+   paper Gaussian potential initializer, selects only the requested zonal
+   spectral mode, and verifies that the signed line-average and
+   volume-weighted zonal observables are intentionally distinct but internally
+   consistent.
+
+.. figure:: _static/w7x_zonal_recurrence_sweep_kx070.png
+   :alt: W7-X zonal-response recurrence sweep at kx rho_i 0.07
+
+   Bounded W7-X test-4 recurrence sweep at ``k_x rho_i=0.07``. The left trace
+   panel varies moment resolution with no closure; the right trace panel varies
+   closure source at fixed high resolution. The bottom panels show that tail
+   suppression alone does not yet close the literature-trace mismatch.
 
 Diffrax and nonlinear smoke tests
 ---------------------------------
