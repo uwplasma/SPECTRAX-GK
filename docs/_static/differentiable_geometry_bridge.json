@@ -1,0 +1,261 @@
+{
+  "backend_info": {
+    "booz_xform_jax_api_available": true,
+    "booz_xform_jax_available": true,
+    "booz_xform_jax_paths": [
+      "/Users/rogeriojorge/local/booz_xform_jax",
+      "/Users/rogeriojorge/local/booz_xform_jax/src"
+    ],
+    "vmec_jax_available": true,
+    "vmec_jax_boundary_api_available": true,
+    "vmec_jax_paths": [
+      "/Users/rogeriojorge/local/vmec_jax"
+    ]
+  },
+  "booz_xform_jax_api_available": true,
+  "initial_params": [
+    0.035,
+    0.12
+  ],
+  "inverse_final_observables": [
+    0.06176080850358888,
+    1.5505567586513118
+  ],
+  "inverse_final_params": [
+    0.085,
+    0.3399999999999989
+  ],
+  "inverse_history": [
+    {
+      "objective": 0.0013942535146144563,
+      "params": [
+        0.035,
+        0.12
+      ],
+      "residual_norm": 0.05280631618688159,
+      "step": 0
+    },
+    {
+      "objective": 1.2533285049560724e-05,
+      "params": [
+        0.09137179592668995,
+        0.3450857463343012
+      ],
+      "residual_norm": 0.005006652584224458,
+      "step": 1
+    },
+    {
+      "objective": 1.1893166657852975e-10,
+      "params": [
+        0.08502101612874077,
+        0.34000023092943515
+      ],
+      "residual_norm": 1.5422818586661115e-05,
+      "step": 2
+    },
+    {
+      "objective": 2.722767285005691e-20,
+      "params": [
+        0.08500000034585782,
+        0.33999999943406356
+      ],
+      "residual_norm": 2.333566919977094e-10,
+      "step": 3
+    },
+    {
+      "objective": 4.7059038929632695e-29,
+      "params": [
+        0.08500000000000707,
+        0.3399999999999211
+      ],
+      "residual_norm": 9.701447204374479e-15,
+      "step": 4
+    },
+    {
+      "objective": 6.018531076210112e-34,
+      "params": [
+        0.08499999999999994,
+        0.339999999999999
+      ],
+      "residual_norm": 3.469446951953614e-17,
+      "step": 5
+    },
+    {
+      "objective": 2.407412430484045e-35,
+      "params": [
+        0.08499999999999999,
+        0.3399999999999989
+      ],
+      "residual_norm": 6.938893903907228e-18,
+      "step": 6
+    },
+    {
+      "objective": 0.0,
+      "params": [
+        0.085,
+        0.3399999999999989
+      ],
+      "residual_norm": 0.0,
+      "step": 7
+    },
+    {
+      "objective": 0.0,
+      "params": [
+        0.085,
+        0.3399999999999989
+      ],
+      "residual_norm": 0.0,
+      "step": 8
+    }
+  ],
+  "inverse_observable_residual": [
+    0.0,
+    0.0
+  ],
+  "inverse_target_observables": [
+    0.06176080850358888,
+    1.5505567586513118
+  ],
+  "notes": "This is a bounded differentiable-geometry bridge validation. The high-fidelity VMEC/Boozer pipeline must provide the same solver-ready field-line arrays; this artifact validates the JAX tracing, AD-vs-FD sensitivities, inverse recovery, and UQ machinery at that contract boundary.",
+  "observable_names": [
+    "mean_bmag",
+    "relative_bmag_ripple",
+    "metric_frobenius_rms",
+    "drift_rms",
+    "mean_jacobian",
+    "mean_gradpar"
+  ],
+  "sensitivity": {
+    "fd_step": 2e-05,
+    "jacobian_ad": [
+      [
+        -0.08219542239195957,
+        0.0
+      ],
+      [
+        0.6705196412860555,
+        0.0
+      ],
+      [
+        0.2967350498572432,
+        0.1354122368343313
+      ],
+      [
+        -0.16169856644503167,
+        -0.013281426164734567
+      ],
+      [
+        0.07852390355861849,
+        0.0
+      ],
+      [
+        0.015000000000000008,
+        0.0
+      ]
+    ],
+    "jacobian_fd": [
+      [
+        -0.08219542238507849,
+        0.0
+      ],
+      [
+        0.6705196399975355,
+        0.0
+      ],
+      [
+        0.2967350498928045,
+        0.13541223684021553
+      ],
+      [
+        -0.16169856644765446,
+        -0.013281426164413189
+      ],
+      [
+        0.0785239036127372,
+        0.0
+      ],
+      [
+        0.015000000000431333,
+        0.0
+      ]
+    ],
+    "max_abs_ad_fd_error": 1.2885199573986483e-09,
+    "max_rel_ad_fd_error": 1.9216736998238924e-09,
+    "observable_names": [
+      "mean_bmag",
+      "relative_bmag_ripple",
+      "metric_frobenius_rms",
+      "drift_rms",
+      "mean_jacobian",
+      "mean_gradpar"
+    ],
+    "observables": [
+      0.9962000968738421,
+      0.06176080850358888,
+      1.5505567586513118,
+      1.0343246009092888,
+      1.2222634287747918,
+      0.821275
+    ],
+    "params": [
+      0.085,
+      0.3399999999999989
+    ],
+    "source_model": "vmec_jax:in-memory"
+  },
+  "target_params": [
+    0.085,
+    0.34
+  ],
+  "uq": {
+    "covariance": [
+      [
+        2.224215874048371e-12,
+        -4.874023675916465e-12
+      ],
+      [
+        -4.874023675916465e-12,
+        6.521674858429286e-11
+      ]
+    ],
+    "covariance_correlation": [
+      [
+        1.0000000000000002,
+        -0.40468731818637144
+      ],
+      [
+        -0.40468731818637144,
+        1.0
+      ]
+    ],
+    "covariance_eigenvalues": [
+      1.8493212665354495e-12,
+      6.559164319180579e-11
+    ],
+    "covariance_std": [
+      1.491380526240158e-06,
+      8.075688737457187e-06
+    ],
+    "jacobian_condition_number": 5.955499765930326,
+    "jacobian_singular_values": [
+      0.7353495212726023,
+      0.12347402404065602
+    ],
+    "sensitivity_map_rank": 2,
+    "sigma2": 1e-12,
+    "uq_ellipse_area_1sigma": 3.460033551533961e-11
+  },
+  "vmec_boundary": {
+    "aspect": 3.767939406405612,
+    "available": true,
+    "grad_ad": [
+      -1.8071651829283506,
+      -1.4059475397035874
+    ],
+    "grad_fd": [
+      -1.8071651830986466,
+      -1.4059475399008645
+    ],
+    "max_abs_ad_fd_error": 1.9727708355787854e-10
+  }
+}

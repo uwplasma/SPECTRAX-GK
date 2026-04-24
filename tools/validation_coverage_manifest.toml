@@ -279,10 +279,11 @@ fast_tests = [
 artifact_paths = [
   "docs/_static/autodiff_inverse_growth.png",
   "docs/_static/autodiff_inverse_twomode.png",
+  "docs/_static/differentiable_geometry_bridge.png",
 ]
 next_tests = [
   "add tangent-linear checks for differentiated nonlinear transport observables",
-  "add geometry-parameter sensitivity maps after the vmec_jax bridge lands",
+  "promote geometry-parameter sensitivity checks from geometry observables to growth-rate and transport observables",
 ]
 
 [[modules]]
@@ -340,6 +341,7 @@ physics_contracts = [
 numerics_contracts = [
   "in-memory geometry arrays must be finite, one-dimensional, shape-aligned, and use a constant gradpar field-line contract",
   "optional backend discovery must not force vmec_jax or booz_xform_jax imports on users who only run analytic geometry",
+  "JAX-traced geometry mappings must preserve autodiff and match central finite differences for geometry observables",
 ]
 fast_tests = [
   "tests/test_differentiable_geometry_bridge.py",
@@ -349,10 +351,12 @@ fast_tests = [
 artifact_paths = [
   "docs/_static/w7x_exact_state_audit.json",
   "docs/_static/w7x_linear_t2_scan.csv",
+  "docs/_static/differentiable_geometry_bridge.json",
+  "docs/_static/differentiable_geometry_bridge.png",
 ]
 next_tests = [
   "add an office-only vmec_jax -> booz_xform_jax -> FluxTubeGeometryData parity fixture",
-  "add finite-difference geometry-gradient checks for linear growth observables",
+  "promote the finite-difference geometry-gradient check from geometry observables to linear growth observables",
 ]
 
 [[modules]]
