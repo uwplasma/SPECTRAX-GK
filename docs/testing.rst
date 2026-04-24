@@ -148,6 +148,7 @@ The first reusable tooling for this lane now exists:
 - ``tools/generate_w7x_zonal_response_panel.py``
 - ``tools/plot_w7x_zonal_contract_audit.py``
 - ``tools/plot_w7x_zonal_moment_tail_audit.py``
+- ``tools/plot_w7x_zonal_closure_ladder.py``
 
 The gate-report helpers are intentionally small and JSON-ready. They should be
 used by manuscript refresh scripts so every reported artifact has the same
@@ -332,6 +333,14 @@ fractions. The existing ``Nl=16``, ``Nm=64``, ``t≈100`` audit lowers the early
 trace standard deviation but already carries a large high-Hermite tail, so the
 next closure experiment should be a bounded moment/closure or recurrence
 control sweep, not a change to the paper normalization.
+``tools/plot_w7x_zonal_closure_ladder.py`` makes that bounded sweep explicit
+for ``k_x rho_i=0.07`` in
+``docs/_static/w7x_zonal_closure_ladder_kx070.png``. The ladder separates
+paper-contract resolution changes from weak-closure and non-contract
+initializer audits. The current result is useful but not closed:
+higher moments and weak closure reduce some envelope metrics, while the
+early-window trace mismatch remains too large under the paper-facing
+normalization.
 
 .. figure:: _static/w7x_zonal_response_panel.png
    :alt: W7-X high-mirror bean-tube zonal-flow response panel
@@ -374,6 +383,15 @@ control sweep, not a change to the paper normalization.
    visible Hermite/Laguerre tail content. The short ``Nl=16``, ``Nm=64`` run
    reduces the early trace envelope but does not by itself close the
    long-window recurrence question.
+
+.. figure:: _static/w7x_zonal_closure_ladder_kx070.png
+   :alt: W7-X zonal-response closure ladder at kx rho_i 0.07
+
+   Bounded closure ladder for ``k_x rho_i=0.07``. Paper-contract resolution
+   changes, weak velocity-space closure, and non-contract initializer probes
+   are shown separately. The non-contract width-four high-resolution probe
+   improves the short early window, but it is not a validation result because
+   the benchmark source specifies the width-one Gaussian potential initializer.
 
 Diffrax and nonlinear smoke tests
 ---------------------------------
