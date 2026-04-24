@@ -181,8 +181,11 @@ diagnostics = true
     assert "digitized-reference gate" in meta["notes"]
     assert meta["audit_overrides"]["enable_hypercollisions"] is True
     assert meta["audit_overrides"]["gaussian_width"] == 1.25
+    assert meta["audit_overrides"]["nu_hyper"] is None
     assert meta["audit_overrides"]["nu_hyper_m"] == 0.01
     assert meta["audit_overrides"]["p_hyper_m"] == 4.0
+    assert meta["audit_overrides"]["hypercollisions_const"] == 1.0
+    assert meta["audit_overrides"]["hypercollisions_kz"] is None
     assert meta["runtime"] == {
         "dt": 0.2,
         "steps": 80,
@@ -217,6 +220,8 @@ diagnostics = true
         assert terms.hypercollisions == 1.0
         assert collisions.nu_hyper_m == 0.01
         assert collisions.p_hyper_m == 4.0
+        assert collisions.hypercollisions_const == 1.0
+        assert collisions.hypercollisions_kz == 1.0
         assert kwargs["dt"] == 0.2
         assert kwargs["steps"] == 80
         assert kwargs["sample_stride"] == 2

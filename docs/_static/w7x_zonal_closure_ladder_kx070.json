@@ -91,6 +91,26 @@
     {
       "Nl": 16,
       "Nm": 64,
+      "family": "closure-audit",
+      "final_window_tmax": 100.00020599365234,
+      "free_energy_last_over_first": 0.34822087309525634,
+      "hermite_tail_last": 0.0640257966759284,
+      "kx_selected": 0.07000000029802322,
+      "kx_target": 0.07,
+      "label": "weak closure: Nl16 Nm64 nu_hyper_m=3e-3",
+      "laguerre_tail_last": 0.03427478296453432,
+      "max_abs_error": 0.5738397575010933,
+      "mean_abs_error": 0.2921150328773958,
+      "n_time": 60,
+      "source_path": "tools_out/zonal_response/w7x_closure_probe_nl16_nm64_nuhm003_const_t100/w7x_test4_kx070.out.nc",
+      "tail_abs_max": 0.43663860178343744,
+      "tail_mean": 0.20360975711371376,
+      "tail_std": 0.12808129289879217,
+      "tmax": 100.00020599365234
+    },
+    {
+      "Nl": 16,
+      "Nm": 64,
       "family": "initializer-audit",
       "final_window_tmax": 99.99961853027344,
       "free_energy_last_over_first": 2.1369920599683234,
@@ -149,6 +169,11 @@
       "family": "closure-audit",
       "label": "weak closure: nu_hyper_m=1e-2",
       "path": "tools_out/zonal_response/w7x_test4_line_hyper_nu1e2/w7x_test4_kx070.out.nc"
+    },
+    {
+      "family": "closure-audit",
+      "label": "weak closure: Nl16 Nm64 nu_hyper_m=3e-3",
+      "path": "tools_out/zonal_response/w7x_closure_probe_nl16_nm64_nuhm003_const_t100/w7x_test4_kx070.out.nc"
     },
     {
       "family": "initializer-audit",

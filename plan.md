@@ -235,6 +235,14 @@ The active pre-merge sequence is:
      `--enable-hypercollisions`, and `--gaussian-width` CLI overrides, so the
      next recurrence/closure probes can be launched from the tracked W7-X tool
      and audited in metadata instead of relying on local TOML edits.
+     A corrected paper-width `Nl=16`, `Nm=64`, `nu_hyper_m=3e-3`,
+     `hypercollisions_const=1` probe was run on `office` to `t ~= 100` and
+     added to the closure ladder. It reduces the final Hermite-tail fraction
+     from `0.388` to `0.064` relative to the no-closure high-moment probe and
+     drops the free-energy last/first ratio to `0.348`, but the reference-trace
+     mean absolute error moves from `0.283` to `0.292`. This is useful negative
+     evidence: weak moment closure mitigates tails but does not close the
+     literature trace mismatch.
      The next closure step is not a documentation change; it is a velocity-space
      recurrence / moment-closure sweep plus a state-level convention comparison
      against stella/GENE/GX for the paper-facing normalization.

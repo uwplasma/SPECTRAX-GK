@@ -54,6 +54,15 @@ DEFAULT_RUNS = (
         ROOT / "tools_out" / "zonal_response" / "w7x_test4_line_hyper_nu1e2" / "w7x_test4_kx070.out.nc",
     ),
     (
+        "weak closure: Nl16 Nm64 nu_hyper_m=3e-3",
+        "closure-audit",
+        ROOT
+        / "tools_out"
+        / "zonal_response"
+        / "w7x_closure_probe_nl16_nm64_nuhm003_const_t100"
+        / "w7x_test4_kx070.out.nc",
+    ),
+    (
         "non-contract: width=4 high moment",
         "initializer-audit",
         ROOT / "tools_out" / "zonal_response" / "w7x_width4_nl16_nm64_dt005_kx070_t100" / "w7x_test4_kx070.out.nc",
