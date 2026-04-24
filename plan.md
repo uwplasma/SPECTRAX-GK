@@ -430,9 +430,17 @@ The active pre-merge sequence is:
    - CI should stay layered:
      - PR: type checks, fast shards, docs/package build, release-surface
        coverage;
-     - main/manual: wide package coverage;
+     - main/manual: sharded wide package coverage with a combined 95% gate;
      - workflow-dispatch/manual: full suite and core coverage;
      - office/manual: GX parity, VMEC/W7-X, runtime/memory, multi-GPU scaling.
+   - Local release-hygiene coverage checks on this branch found two real test
+     issues and fixed them: the VMEC atomic-write unit mock now creates the
+     temp file that production atomically replaces, and the GX restart test now
+     follows the active reduced-`kx` order used by the restart writer/reader.
+     The monolithic package-wide coverage command still hit the local 300 s cap
+     near the late tests, so the CI wide lane now uses
+     `tools/run_wide_coverage_gate.py` to shard test files with per-shard
+     timeouts before combining and enforcing the 95% package gate.
 
 10. **Do not overclaim.**
     - Closed release lanes can be advertised.

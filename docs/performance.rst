@@ -349,19 +349,21 @@ silence profiler startup noise.
 The current ``office`` GPU startup profiles for the shipped short nonlinear
 cases show the same dominant structure:
 
-- Cyclone nonlinear startup total: ``36.78 s`` after the low-rank collision-cache
-  reduction pass (previously ``41.47 s`` on the earlier office snapshot)
+- Cyclone nonlinear startup total: ``35-36 s`` after the low-rank
+  collision-cache and host-cache cleanup passes (previously ``41.47 s`` on the
+  earlier office snapshot)
 - KBM nonlinear startup total: ``32.23 s``
 - dominant phases in both cases:
 
-  - ``compile_first_integrator_run``: ``22.39 s`` (Cyclone), ``19.28 s`` (KBM)
-  - ``build_linear_cache``: ``6.92 s`` (Cyclone), ``7.73 s`` (KBM)
+  - ``compile_first_integrator_run``: about ``22 s`` (Cyclone), ``19.28 s`` (KBM)
+  - ``build_linear_cache``: about ``5.6 s`` (Cyclone), ``7.73 s`` (KBM)
   - ``compile_first_linear_rhs`` / ``compile_first_full_rhs``: another
     ``3.0 + 3.0 s`` (Cyclone) or ``1.7 + 1.7 s`` (KBM)
 
 So the next high-value performance work is no longer the analytic geometry
-startup path or the collision prefactor path; it is cache-construction cost and
-the first compiled nonlinear integrator path.
+startup path or the collision prefactor path; it is the first compiled
+nonlinear integrator path, followed by the remaining Laguerre and drift/cache
+construction subphases.
 
 To break the cache-construction lump down further, use:
 
@@ -376,21 +378,23 @@ To break the cache-construction lump down further, use:
 The current ``office`` GPU decomposition for the shipped Cyclone short
 nonlinear lane is:
 
-- total measured decomposition: ``8.08 s`` after the low-rank collision-cache
-  reduction pass
+- total measured decomposition: ``6.86 s`` after the low-rank collision-cache,
+  host-cache, and broadcasted-gyroaverage passes
 - dominant subphases:
 
-  - ``collision_and_damping_cache``: ``2.20 s`` (down from ``2.71 s``)
-  - ``gyro_bessel_cache``: ``1.38 s``
-  - ``laguerre_cache``: ``0.96 s``
-  - ``kperp_and_drifts``: ``0.91 s``
+  - ``gyro_bessel_cache``: ``1.33 s``
+  - ``laguerre_cache``: ``1.21 s``
+  - ``kperp_and_drifts``: ``0.99 s``
+  - ``geometry_coefficients``: ``0.68 s``
+  - ``collision_and_damping_cache``: ``0.17 s``
 
-The low-rank collision cache removes about ``19%`` from the collision/damping
-subphase and about ``11%`` from the measured ``build_linear_cache`` startup
-phase, but the overall cold-start wall clock is still dominated by the first
-nonlinear integrator compile. The next cache-build optimization work should
-therefore move to the gyro/Bessel and Laguerre cache paths, while the broader
-startup campaign should prioritize the first integrator compile surface.
+The low-rank collision cache, host-built moment/damping factors, and
+broadcasted gyroaverage construction remove the old collision/damping
+bottleneck from the cache profile. The overall cold-start wall clock is still
+dominated by the first nonlinear integrator compile. The next cache-build
+optimization work should therefore focus on Laguerre and drift/cache
+construction, while the broader startup campaign should prioritize the first
+integrator compile surface.
 
 Cached basis indices
 --------------------

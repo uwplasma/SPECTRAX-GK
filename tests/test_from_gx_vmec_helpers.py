@@ -505,6 +505,7 @@ def test_generate_vmec_eik_internal_maps_boundary_and_computes_betaprim(
 
     def _mock_write(path: Path, profiles: dict[str, object], *, request: object) -> None:
         calls["write"] = {"path": path, "profiles": profiles, "request": request}
+        Path(path).write_bytes(b"mock eik data")
 
     monkeypatch.setattr("spectraxgk.from_gx.vmec._vmec_fieldlines", _mock_fieldlines)
     monkeypatch.setattr("spectraxgk.from_gx.vmec._apply_flux_tube_cut", _mock_cut)

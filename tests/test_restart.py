@@ -29,5 +29,9 @@ def test_load_gx_restart_state_accepts_full_ky_reduced_kx_layout(tmp_path: Path)
     state = load_gx_restart_state(path, nspecies=1, Nl=2, Nm=2, ny=4, nx=4, nz=3)
 
     assert state.shape == (1, 2, 2, 4, 4, 3)
-    assert state[0, 0, 0, 1, 0, 0] == np.complex64(1.5 + 0.0j)
-    assert state[0, 0, 0, 3, 3, 1] == np.complex64(0.0 - 0.25j)
+    # GX's reduced kx axis is stored in active spectral order [negative, zero,
+    # positive]. For nx=4 that maps active Nkx indices [0, 1, 2] to full kx
+    # indices [3, 0, 1], matching the restart writer.
+    assert state[0, 0, 0, 1, 3, 0] == np.complex64(1.5 + 0.0j)
+    assert state[0, 0, 0, 3, 1, 1] == np.complex64(0.0 - 0.25j)
+    assert state[0, 0, 0, 1, 0, 0] == np.complex64(0.0 + 0.0j)
