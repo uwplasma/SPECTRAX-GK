@@ -340,9 +340,15 @@ paper-contract resolution changes from weak-closure and non-contract
 initializer audits. The current result is useful but not closed:
 higher moments and weak closure reduce some envelope metrics, while the
 early-window trace mismatch remains too large under the paper-facing
-normalization.
+normalization. The newest paper-width ``Nl=16``, ``Nm=64``,
+``nu_hyper_m=3e-3`` row reduces the final Hermite-tail fraction from
+``0.388`` to ``0.064`` relative to the no-closure high-moment probe, but the
+reference-trace mean absolute error worsens slightly from ``0.283`` to
+``0.292``; that supports a moment-tail mitigation hypothesis but not a closed
+validation claim.
 ``tools/generate_w7x_zonal_response_panel.py`` now exposes explicit
-``--nu-hyper-l``, ``--nu-hyper-m``, ``--nu-hyper-lm``, ``--p-hyper-*``,
+``--nu-hyper``, ``--nu-hyper-l``, ``--nu-hyper-m``, ``--nu-hyper-lm``,
+``--p-hyper-*``, ``--hypercollisions-const``, ``--hypercollisions-kz``,
 ``--enable-hypercollisions``, and ``--gaussian-width`` overrides so future
 closure probes can be launched from the tracked benchmark tool rather than from
 unrecorded local TOML edits. Non-unit Gaussian widths remain initializer

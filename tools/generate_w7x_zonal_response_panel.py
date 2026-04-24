@@ -194,9 +194,25 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--nu-hyper-l", type=float, default=None, help="Override Laguerre hypercollision strength.")
     parser.add_argument("--nu-hyper-m", type=float, default=None, help="Override Hermite hypercollision strength.")
     parser.add_argument("--nu-hyper-lm", type=float, default=None, help="Override mixed Laguerre-Hermite hypercollision strength.")
+    parser.add_argument("--nu-hyper", type=float, default=None, help="Override isotropic high-order hypercollision strength.")
     parser.add_argument("--p-hyper-l", type=float, default=None, help="Override Laguerre hypercollision exponent.")
     parser.add_argument("--p-hyper-m", type=float, default=None, help="Override Hermite hypercollision exponent.")
     parser.add_argument("--p-hyper-lm", type=float, default=None, help="Override mixed Laguerre-Hermite hypercollision exponent.")
+    parser.add_argument(
+        "--hypercollisions-const",
+        type=float,
+        default=None,
+        help=(
+            "Override the constant velocity-space hypercollision source. When a nu_hyper_* closure strength is "
+            "provided and neither source is set, this defaults to 1 so the requested closure is active."
+        ),
+    )
+    parser.add_argument(
+        "--hypercollisions-kz",
+        type=float,
+        default=None,
+        help="Override the |k_parallel| Hermite hypercollision source.",
+    )
     parser.add_argument(
         "--show-progress",
         action="store_true",
@@ -256,19 +272,27 @@ def _normalization_label(args: argparse.Namespace) -> str:
 
 
 def _closure_overrides(args: argparse.Namespace) -> dict[str, float | bool | None]:
+    nu = None if args.nu_hyper is None else float(args.nu_hyper)
     nu_l = None if args.nu_hyper_l is None else float(args.nu_hyper_l)
     nu_m = None if args.nu_hyper_m is None else float(args.nu_hyper_m)
     nu_lm = None if args.nu_hyper_lm is None else float(args.nu_hyper_lm)
-    has_nonzero_nu = any(value is not None and value != 0.0 for value in (nu_l, nu_m, nu_lm))
+    has_nonzero_nu = any(value is not None and value != 0.0 for value in (nu, nu_l, nu_m, nu_lm))
+    hyper_const = None if args.hypercollisions_const is None else float(args.hypercollisions_const)
+    hyper_kz = None if args.hypercollisions_kz is None else float(args.hypercollisions_kz)
+    if has_nonzero_nu and hyper_const is None and hyper_kz is None:
+        hyper_const = 1.0
     return {
         "enable_hypercollisions": bool(args.enable_hypercollisions or has_nonzero_nu),
         "gaussian_width": None if args.gaussian_width is None else float(args.gaussian_width),
+        "nu_hyper": nu,
         "nu_hyper_l": nu_l,
         "nu_hyper_m": nu_m,
         "nu_hyper_lm": nu_lm,
         "p_hyper_l": None if args.p_hyper_l is None else float(args.p_hyper_l),
         "p_hyper_m": None if args.p_hyper_m is None else float(args.p_hyper_m),
         "p_hyper_lm": None if args.p_hyper_lm is None else float(args.p_hyper_lm),
+        "hypercollisions_const": hyper_const,
+        "hypercollisions_kz": hyper_kz,
     }
 
 
@@ -280,7 +304,18 @@ def _apply_audit_overrides(cfg: object, args: argparse.Namespace) -> object:
     collision_updates = {
         name: float(value)
         for name, value in overrides.items()
-        if name in {"nu_hyper_l", "nu_hyper_m", "nu_hyper_lm", "p_hyper_l", "p_hyper_m", "p_hyper_lm"}
+        if name
+        in {
+            "nu_hyper",
+            "nu_hyper_l",
+            "nu_hyper_m",
+            "nu_hyper_lm",
+            "p_hyper_l",
+            "p_hyper_m",
+            "p_hyper_lm",
+            "hypercollisions_const",
+            "hypercollisions_kz",
+        }
         and value is not None
     }
     collision_cfg = replace(cfg.collisions, **collision_updates) if collision_updates else cfg.collisions
