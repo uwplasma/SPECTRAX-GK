@@ -42,6 +42,25 @@ documented without changing the physics claim surface:
 - keep nonlinear hot-path optimization profiling-driven and tied to existing
   window-statistics and exact-state gates.
 
+Current pre-release status snapshot:
+
+- runtime/memory and nonlinear atlas figures include W7-X and HSX release rows;
+- targeted nonlinear coverage now exercises explicit diagnostic branches,
+  Hermitian projection, fixed-mode frequency extraction, IMEX nonlinear terms,
+  and scalar/gyroaveraged electromagnetic bracket components;
+- autodiff UQ validation includes finite-difference demo checks, closed-form
+  Gauss-Newton covariance checks, rank-deficient sensitivity-map checks, and an
+  explicit rejection path for empty parameter maps;
+- the Phase-A differentiable-geometry bridge is an in-memory sampled
+  flux-tube contract with 100% targeted coverage and optional
+  ``vmec_jax`` / ``booz_xform_jax`` discovery;
+- production parallelization is currently claimed only for independent
+  ``k_y``/batch/UQ-style workloads and the sharded linear RK2 identity path,
+  not nonlinear domain decomposition;
+- profiling remains manifest-driven through
+  ``tools/performance_optimization_manifest.toml`` and the runtime/cold-start
+  profilers before any hot-path optimization claim is made.
+
 Post-release scope
 ------------------
 

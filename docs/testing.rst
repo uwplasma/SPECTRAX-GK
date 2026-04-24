@@ -477,7 +477,14 @@ tests:
 - ``tests/test_example_smoke.py`` verifies the config-driven runner (diffrax
   enabled) and a short nonlinear scan with placeholder nonlinear terms.
 - ``tests/test_nonlinear_exb.py`` exercises the nonlinear bracket sign,
-  real-FFT path, flutter coupling, and EM toggle behavior.
+  real-FFT path, flutter coupling, scalar/precomputed gyroaverage paths, and
+  EM component accounting. The targeted nonlinear-term tranche covers the
+  pseudo-spectral bracket and electromagnetic decomposition branches without
+  launching benchmark-size turbulence runs.
+- ``tests/test_nonlinear_helpers_extra.py`` locks the higher-level nonlinear
+  diagnostic contracts: Hermitian real-FFT projection, signed-mode masks,
+  explicit Runge-Kutta variants, fixed-mode frequency extraction, collision
+  splitting, and IMEX nonlinear terms.
 - ``tests/test_runtime_config.py`` and ``tests/test_runtime_runner.py`` verify
   unified runtime TOML loading and case-agnostic linear runs (Cyclone/ETG/KBM)
   through the same solver path.
@@ -493,6 +500,10 @@ performance claims:
 
 - ``tests/test_parallel.py`` locks the ``batch_map`` / ``ky_scan_batches``
   helper semantics, including deterministic padding and one-device fallback.
+- ``tests/test_sharded_integrators.py`` locks the sharded linear RK2 wrapper in
+  both no-sharding and explicit-sharding modes using a mocked RHS and mocked
+  ``pjit``. This is a numerical-identity and control-flow gate, not a speedup
+  claim.
 - ``tests/test_generate_parallel_ky_scan_gate.py`` tests the artifact writer
   for the real Cyclone ``k_y``-batch gate.
 - ``tools/generate_parallel_ky_scan_gate.py`` runs the actual linear solver
