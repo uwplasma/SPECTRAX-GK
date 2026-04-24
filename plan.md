@@ -325,7 +325,7 @@ The active pre-merge sequence is:
      platforms, benchmark cases, profiling tools, metrics, artifacts,
      bottleneck hypotheses, optimization actions, and gates.
    - Current cold-start priority: `compile_first_integrator_run`, then
-     `gyro_bessel_cache` and `laguerre_cache`.
+     `laguerre_cache` and `kperp_and_drifts`.
    - Current memory priority: avoid large closed-over constants, avoid
      materialized full-history traces by default, stream diagnostics, and
      expose memory allocator guidance.
@@ -373,6 +373,17 @@ The active pre-merge sequence is:
      `35.19 s` with `build_linear_cache=5.58 s`, compared with the previously
      tracked post-low-rank startup of `36.78 s` and `build_linear_cache=6.92 s`.
      The first integrator compile remains the dominant cold-start cost.
+   - The next gyroaverage cache cleanup removes a Python-level species `vmap`
+     from `J_l_all` by using the existing broadcasted coefficient formula and
+     restoring the species-major axis with `moveaxis`. The helper is regression
+     tested against the previous `vmap` convention. Local CPU Cyclone startup
+     smoke moved from `11.78 s` to `9.88 s`, with `build_linear_cache`
+     `2.63 s -> 2.38 s`. The corrected local cache decomposition moved from
+     `3.41 s` to `2.78 s`, with `gyro_bessel_cache` `0.83 s -> 0.68 s`.
+     `office` GPU cache-only profiling improved relative to the older
+     corrected cache profile (`8.17 s -> 6.86 s`), but the full cold-start
+     smoke remained compile-noise dominated (`35-36 s`), so this is not claimed
+     as a GPU startup speedup.
 
 6. **Define a real multi-device parallelization target.**
    - Stop treating sharding as a figure-only feature.
@@ -2669,6 +2680,11 @@ Current nonlinear-lane status at the handoff point:
       and total cold startup `12.77 s -> 11.78 s`
     - `office` GPU Cyclone startup smoke: `build_linear_cache` `6.92 s -> 5.58 s`
       and total cold startup `36.78 s -> 35.19 s`
+  - the gyroaverage cache now uses the broadcasted `J_l_all` path instead of a
+    Python-level species `vmap`; the local CPU Cyclone startup smoke improved
+    to `9.88 s` total with `build_linear_cache=2.38 s`, while the office GPU
+    cache-only profile improved to `6.86 s` but full cold startup remains
+    dominated by first-integrator compilation noise
   - concrete next optimization target: reduce the remaining compile/startup
     cost beyond the collision prefactor path, while keeping the current cold
     wall-time panel for honest end-to-end reproducibility

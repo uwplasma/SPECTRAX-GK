@@ -8,6 +8,7 @@ import numpy as np
 import pytest
 
 from spectraxgk.benchmarking import estimate_observed_order
+from spectraxgk.gyroaverage import J_l_all
 from spectraxgk.linear import (
     LinearParams,
     LinearTerms,
@@ -15,6 +16,7 @@ from spectraxgk.linear import (
     _as_species_array,
     _build_implicit_operator,
     _build_end_damping_profile_array,
+    _build_gyroaverage_cache_arrays,
     _build_linked_end_damping_profile,
     _build_low_rank_moment_cache_arrays,
     _check_nonnegative,
@@ -88,6 +90,23 @@ def test_low_rank_moment_and_damping_cache_match_expected_shapes_and_values() ->
     np.testing.assert_allclose(periodic, np.zeros(8, dtype=np.float32))
     assert linked[0] > 0.0
     assert linked[-1] > 0.0
+
+
+def test_gyroaverage_cache_helper_matches_species_vmap_convention() -> None:
+    b = jnp.asarray(
+        [
+            [[[0.0, 0.2], [0.4, 0.6]]],
+            [[[0.1, 0.3], [0.5, 0.7]]],
+        ],
+        dtype=jnp.float32,
+    )
+    Jl, JlB = _build_gyroaverage_cache_arrays(b, Nl=3, real_dtype=jnp.float32)
+    expected = jax.vmap(lambda bs: J_l_all(bs, l_max=2))(b).astype(jnp.float32)
+
+    np.testing.assert_allclose(np.asarray(Jl), np.asarray(expected), rtol=1e-6)
+    assert Jl.shape == (2, 3, 1, 2, 2)
+    assert JlB.shape == Jl.shape
+    np.testing.assert_allclose(np.asarray(JlB[:, 0]), np.asarray(Jl[:, 0]), rtol=1e-6)
 
 
 def test_linear_params_and_terms_roundtrip() -> None:
