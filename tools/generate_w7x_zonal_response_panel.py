@@ -106,6 +106,29 @@ def _parse_args() -> argparse.Namespace:
         action="store_true",
         help="Reuse any existing per-kx out.nc bundles instead of rerunning them.",
     )
+    parser.add_argument(
+        "--dt",
+        type=float,
+        default=None,
+        help="Override the runtime time step without editing the tracked benchmark TOML.",
+    )
+    parser.add_argument(
+        "--steps",
+        type=int,
+        default=None,
+        help="Override the number of fixed RK steps without editing the tracked benchmark TOML.",
+    )
+    parser.add_argument(
+        "--sample-stride",
+        type=int,
+        default=None,
+        help="Override the diagnostic sample stride without editing the tracked benchmark TOML.",
+    )
+    parser.add_argument(
+        "--show-progress",
+        action="store_true",
+        help="Print runtime progress while generating missing per-kx bundles.",
+    )
     return parser.parse_args()
 
 
@@ -213,9 +236,23 @@ def main() -> int:
     ky_target = float(run_cfg.get("ky", 0.0))
     nl = int(run_cfg.get("Nl", 8))
     nm = int(run_cfg.get("Nm", 32))
-    dt = float(run_cfg.get("dt", cfg.time.dt))
-    steps = int(run_cfg.get("steps", max(int(round(float(cfg.time.t_max) / dt)), 1)))
-    sample_stride = int(run_cfg.get("sample_stride", cfg.time.sample_stride))
+    dt = float(args.dt) if args.dt is not None else float(run_cfg.get("dt", cfg.time.dt))
+    steps = (
+        int(args.steps)
+        if args.steps is not None
+        else int(run_cfg.get("steps", max(int(round(float(cfg.time.t_max) / dt)), 1)))
+    )
+    sample_stride = (
+        int(args.sample_stride)
+        if args.sample_stride is not None
+        else int(run_cfg.get("sample_stride", cfg.time.sample_stride))
+    )
+    if dt <= 0.0:
+        raise ValueError("--dt must be positive")
+    if steps <= 0:
+        raise ValueError("--steps must be positive")
+    if sample_stride <= 0:
+        raise ValueError("--sample-stride must be positive")
     diagnostics = bool(run_cfg.get("diagnostics", cfg.time.diagnostics))
     r0 = float(getattr(cfg.geometry, "R0", 1.0))
 
@@ -247,7 +284,7 @@ def main() -> int:
                 steps=steps,
                 sample_stride=sample_stride,
                 diagnostics=diagnostics,
-                show_progress=False,
+                show_progress=bool(args.show_progress),
             )
 
         kx_index, kx_selected = _nearest_kx_index(out_bundle, kx_target)
@@ -343,6 +380,14 @@ def main() -> int:
                 "damping_method": "branchwise_extrema",
                 "frequency_method": "hilbert_phase",
                 "fit_window_tmax": float(args.fit_window_tmax),
+                "runtime": {
+                    "dt": float(dt),
+                    "steps": int(steps),
+                    "sample_stride": int(sample_stride),
+                    "diagnostics": bool(diagnostics),
+                    "show_progress": bool(args.show_progress),
+                    "expected_tmax": float(dt) * float(steps),
+                },
                 "literature_reference": dict(W7X_TEST4_REFERENCE),
                 "cases": summary_rows,
                 "validation_status": "open",

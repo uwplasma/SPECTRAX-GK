@@ -86,10 +86,10 @@ diagnostics = true
 
     out_dir = tmp_path / "w7x_out"
     out_png = tmp_path / "w7x_panel.png"
-    run_grids = []
+    run_calls = []
 
     def _fake_run(cfg, *, out, kx_target, **kwargs):
-        run_grids.append((float(kx_target), cfg.grid))
+        run_calls.append((float(kx_target), cfg.grid, dict(kwargs)))
         path = Path(out)
         path.parent.mkdir(parents=True, exist_ok=True)
         t = np.linspace(0.0, 10.0, 41)
@@ -119,6 +119,13 @@ diagnostics = true
             str(out_dir),
             "--out-png",
             str(out_png),
+            "--dt",
+            "0.2",
+            "--steps",
+            "80",
+            "--sample-stride",
+            "2",
+            "--show-progress",
         ],
     )
 
@@ -138,12 +145,24 @@ diagnostics = true
     assert "slower stellarator-specific oscillation" in meta["notes"]
     assert "manuscript-policy inference" in meta["notes"]
     assert "reference tolerances" in meta["notes"]
-    assert len(run_grids) == 4
-    for kx_target, grid in run_grids:
+    assert meta["runtime"] == {
+        "dt": 0.2,
+        "steps": 80,
+        "sample_stride": 2,
+        "diagnostics": True,
+        "show_progress": True,
+        "expected_tmax": 16.0,
+    }
+    assert len(run_calls) == 4
+    for kx_target, grid, kwargs in run_calls:
         assert grid.boundary == "periodic"
         assert grid.non_twist is True
         assert grid.jtwist is None
         assert np.isclose(grid.Lx, 2.0 * np.pi / kx_target)
+        assert kwargs["dt"] == 0.2
+        assert kwargs["steps"] == 80
+        assert kwargs["sample_stride"] == 2
+        assert kwargs["show_progress"] is True
 
 
 def test_generate_w7x_zonal_response_formats_unresolved_damping() -> None:
