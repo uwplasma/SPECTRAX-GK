@@ -431,7 +431,10 @@ The active pre-merge sequence is:
      - PR: type checks, fast shards, docs/package build, release-surface
        coverage;
      - main/manual: sharded wide package coverage with a combined 95% gate;
-     - workflow-dispatch/manual: full suite and core coverage;
+     - workflow-dispatch/manual: mypy, quick shards, fast coverage,
+       sharded wide coverage, and docs/package build on the selected branch;
+     - workflow-dispatch with `run_nightly=true`: full suite and core
+       coverage;
      - office/manual: GX parity, VMEC/W7-X, runtime/memory, multi-GPU scaling.
    - Local release-hygiene coverage checks on this branch found two real test
      issues and fixed them: the VMEC atomic-write unit mock now creates the
@@ -441,6 +444,10 @@ The active pre-merge sequence is:
      near the late tests, so the CI wide lane now uses
      `tools/run_wide_coverage_gate.py` to shard test files with per-shard
      timeouts before combining and enforcing the 95% package gate.
+   - Manual branch CI was corrected so release branches can run the normal
+     release gates without accidentally launching the long nightly tier. The
+     clean Linux mypy job also needs `pandas` treated as an untyped optional
+     import unless we decide to add `pandas-stubs` to the dev dependency set.
 
 10. **Do not overclaim.**
     - Closed release lanes can be advertised.
