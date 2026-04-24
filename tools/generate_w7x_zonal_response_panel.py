@@ -178,6 +178,26 @@ def _parse_args() -> argparse.Namespace:
         help="Override the Hermite moment count without editing the tracked benchmark TOML.",
     )
     parser.add_argument(
+        "--gaussian-width",
+        type=float,
+        default=None,
+        help=(
+            "Override the Gaussian potential-initializer width. The paper-facing default is the TOML value "
+            "width=1; non-unit widths are initializer audits, not validation defaults."
+        ),
+    )
+    parser.add_argument(
+        "--enable-hypercollisions",
+        action="store_true",
+        help="Enable the runtime hypercollision term for explicit recurrence/closure audits.",
+    )
+    parser.add_argument("--nu-hyper-l", type=float, default=None, help="Override Laguerre hypercollision strength.")
+    parser.add_argument("--nu-hyper-m", type=float, default=None, help="Override Hermite hypercollision strength.")
+    parser.add_argument("--nu-hyper-lm", type=float, default=None, help="Override mixed Laguerre-Hermite hypercollision strength.")
+    parser.add_argument("--p-hyper-l", type=float, default=None, help="Override Laguerre hypercollision exponent.")
+    parser.add_argument("--p-hyper-m", type=float, default=None, help="Override Hermite hypercollision exponent.")
+    parser.add_argument("--p-hyper-lm", type=float, default=None, help="Override mixed Laguerre-Hermite hypercollision exponent.")
+    parser.add_argument(
         "--show-progress",
         action="store_true",
         help="Print runtime progress while generating missing per-kx bundles.",
@@ -233,6 +253,46 @@ def _normalization_label(args: argparse.Namespace) -> str:
     if str(args.initial_normalization) == "init_amp":
         return r"$\langle\phi\rangle_z/|\phi_0|_{\max}$"
     return r"$\phi_\mathrm{zonal}/|\phi_\mathrm{zonal}(0)|$"
+
+
+def _closure_overrides(args: argparse.Namespace) -> dict[str, float | bool | None]:
+    nu_l = None if args.nu_hyper_l is None else float(args.nu_hyper_l)
+    nu_m = None if args.nu_hyper_m is None else float(args.nu_hyper_m)
+    nu_lm = None if args.nu_hyper_lm is None else float(args.nu_hyper_lm)
+    has_nonzero_nu = any(value is not None and value != 0.0 for value in (nu_l, nu_m, nu_lm))
+    return {
+        "enable_hypercollisions": bool(args.enable_hypercollisions or has_nonzero_nu),
+        "gaussian_width": None if args.gaussian_width is None else float(args.gaussian_width),
+        "nu_hyper_l": nu_l,
+        "nu_hyper_m": nu_m,
+        "nu_hyper_lm": nu_lm,
+        "p_hyper_l": None if args.p_hyper_l is None else float(args.p_hyper_l),
+        "p_hyper_m": None if args.p_hyper_m is None else float(args.p_hyper_m),
+        "p_hyper_lm": None if args.p_hyper_lm is None else float(args.p_hyper_lm),
+    }
+
+
+def _apply_audit_overrides(cfg: object, args: argparse.Namespace) -> object:
+    overrides = _closure_overrides(args)
+    init_cfg = cfg.init
+    if overrides["gaussian_width"] is not None:
+        init_cfg = replace(init_cfg, gaussian_width=float(overrides["gaussian_width"]))
+    collision_updates = {
+        name: float(value)
+        for name, value in overrides.items()
+        if name in {"nu_hyper_l", "nu_hyper_m", "nu_hyper_lm", "p_hyper_l", "p_hyper_m", "p_hyper_lm"}
+        and value is not None
+    }
+    collision_cfg = replace(cfg.collisions, **collision_updates) if collision_updates else cfg.collisions
+    if bool(overrides["enable_hypercollisions"]):
+        return replace(
+            cfg,
+            init=init_cfg,
+            collisions=collision_cfg,
+            physics=replace(cfg.physics, hypercollisions=True),
+            terms=replace(cfg.terms, hypercollisions=1.0),
+        )
+    return replace(cfg, init=init_cfg, collisions=collision_cfg)
 
 
 def _plot_panel(
@@ -331,6 +391,8 @@ def _write_combined_trace_csv(cases: list[dict[str, object]], out_csv: Path) -> 
 def main() -> int:
     args = _parse_args()
     cfg, raw = load_runtime_from_toml(args.config)
+    cfg = _apply_audit_overrides(cfg, args)
+    audit_overrides = _closure_overrides(args)
     run_cfg = dict(raw.get("run", {}))
     ky_target = float(run_cfg.get("ky", 0.0))
     nl = int(args.Nl) if args.Nl is not None else int(run_cfg.get("Nl", 8))
@@ -525,6 +587,7 @@ def main() -> int:
                     "Nl": int(nl),
                     "Nm": int(nm),
                 },
+                "audit_overrides": audit_overrides,
                 "literature_reference": dict(W7X_TEST4_REFERENCE),
                 "cases": summary_rows,
                 "validation_status": "open",

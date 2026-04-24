@@ -341,6 +341,12 @@ initializer audits. The current result is useful but not closed:
 higher moments and weak closure reduce some envelope metrics, while the
 early-window trace mismatch remains too large under the paper-facing
 normalization.
+``tools/generate_w7x_zonal_response_panel.py`` now exposes explicit
+``--nu-hyper-l``, ``--nu-hyper-m``, ``--nu-hyper-lm``, ``--p-hyper-*``,
+``--enable-hypercollisions``, and ``--gaussian-width`` overrides so future
+closure probes can be launched from the tracked benchmark tool rather than from
+unrecorded local TOML edits. Non-unit Gaussian widths remain initializer
+audits, not validation defaults.
 
 .. figure:: _static/w7x_zonal_response_panel.png
    :alt: W7-X high-mirror bean-tube zonal-flow response panel
