@@ -27,9 +27,9 @@ Core Validation Figures
      - Open
      - Cyclone ITG, ETG, KBM, W7-X, HSX, plus shaped tokamak lane if closed. Current artifact base: ``docs/_static/benchmark_core_linear_atlas.png``.
    * - Eigenfunction validation panel
-     - ``tools/plot_eigenfunction_overlap_summary.py`` and ``tools/plot_eigenfunction_reference_overlay.py``
-     - Closed for KBM
-     - first shipped overlap artifact is ``docs/_static/kbm_eigenfunction_overlap_summary.png``; raw GX bundles now exist for KBM and W7-X under ``docs/_static/reference_modes/`` and the first bounded-cost raw overlay is ``docs/_static/kbm_eigenfunction_reference_overlay_ky0p3000.png``. The reproducible generator for that artifact is ``tools/generate_kbm_reference_overlay.py`` and writes a JSON gate report with ``overlap >= 0.95`` and ``relative L^2 <= 0.25`` requirements. ``tools/compare_gx_kbm.py --branch-summary-json`` writes branch-continuity gate metadata for selected KBM scans, and ``tools/generate_kbm_branch_gate_summary.py`` refreshes the no-rerun tracked artifact ``docs/_static/kbm_branch_gate_summary.json`` from ``docs/_static/kbm_gx_candidates.csv``. The current continuity-first branch summary passes the strict adjacent growth/frequency jump and successive-overlap gates; the refreshed raw KBM overlay is now closed with overlap ``0.999985`` and relative ``L^2`` mismatch ``0.00721`` against the frozen GX raw mode.
+     - ``tools/plot_eigenfunction_overlap_summary.py``, ``tools/plot_eigenfunction_reference_overlay.py``, ``tools/generate_kbm_reference_overlay.py``, and ``tools/generate_w7x_reference_overlay.py``
+     - Closed for KBM and W7-X raw overlays
+     - first shipped overlap artifact is ``docs/_static/kbm_eigenfunction_overlap_summary.png``; frozen raw GX bundles now exist for KBM and W7-X under ``docs/_static/reference_modes/``. The closed KBM raw overlay is ``docs/_static/kbm_eigenfunction_reference_overlay_ky0p3000.png`` with overlap ``0.999985`` and relative ``L^2`` mismatch ``0.00721``. The closed W7-X raw overlay is ``docs/_static/w7x_eigenfunction_reference_overlay_ky0p3000.png`` with overlap ``0.9999999994`` and relative ``L^2`` mismatch ``3.33e-5`` against the finite GX ``t≈2`` raw-mode bundle. Both overlay generators write JSON gate reports with ``overlap >= 0.95`` and ``relative L^2 <= 0.25`` requirements. ``tools/compare_gx_kbm.py --branch-summary-json`` writes branch-continuity gate metadata for selected KBM scans, and ``tools/generate_kbm_branch_gate_summary.py`` refreshes the no-rerun tracked artifact ``docs/_static/kbm_branch_gate_summary.json`` from ``docs/_static/kbm_gx_candidates.csv``. The current continuity-first branch summary passes the strict adjacent growth/frequency jump and successive-overlap gates.
    * - Nonlinear transport panel
      - ``tools/make_gx_summary_panel.py`` / ``tools/make_gx_publication_panel.py``
      - Open
@@ -40,8 +40,8 @@ Core Validation Figures
      - current artifact base: ``docs/_static/nonlinear_window_statistics.png`` with CSV/JSON/PDF companions. It summarizes the per-diagnostic ``mean_rel_abs`` and ``max_rel_abs`` statistics from the frozen nonlinear GX comparison gate JSONs for Cyclone, Cyclone Miller, KBM, W7-X, and HSX. Exploratory/short-run diagnostics are explicitly excluded with ``gate_index_include=false``.
    * - Validation gate index
      - ``tools/make_validation_gate_index.py``
-     - Open
-     - current artifact base: ``docs/_static/validation_gate_index.png`` and ``docs/_static/validation_gate_index.json``. This is not a physics result by itself; it is the audit panel for release-window gates, currently ``9/9`` passed.
+     - Closed for currently tracked gates
+     - current artifact base: ``docs/_static/validation_gate_index.png`` and ``docs/_static/validation_gate_index.json``. This is not a physics result by itself; it is the audit panel for release-window gates, currently ``10/10`` passed.
    * - Zonal-flow / GAM response panel
      - ``tools/plot_zonal_flow_response.py``, ``tools/plot_zonal_flow_response_from_output.py``, ``tools/generate_miller_zonal_response_pilot.py``, and ``tools/generate_w7x_zonal_response_panel.py``
      - Open
@@ -109,8 +109,8 @@ Open Issues Before Drafting
   claims to the benchmark-scale pre-recurrence metrics now frozen in the
   Merlo Case-III artifact
 - add W7-X fluctuation-spectrum figures tied to the DR-comparison conventions
-- add eigenfunction-overlap metrics to the linear figure stack
-- freeze representative reference mode bundles under ``docs/_static/reference_modes/`` before drafting raw overlay figures
+- extend eigenfunction-overlap metrics beyond the closed KBM and W7-X raw
+  overlays where additional literature-backed mode-shape references are useful
 - tighten the current windowed nonlinear statistics panel with stricter case-specific gates where reference windows justify them
 - tie ETG nonlinear claims to the benchmark literature or keep them framed as a pilot
-- add publication-ready figure scripts for eigenfunction-overlap, zonal-flow, and fluctuation-spectrum panels
+- add publication-ready figure scripts for zonal-flow and fluctuation-spectrum panels

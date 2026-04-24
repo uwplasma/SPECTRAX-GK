@@ -155,6 +155,12 @@ GAM growth/damping comparison against the Merlo Case-III paper-scale read-off.
 the raw KBM eigenfunction overlay, using a strict overlap/relative-L2 policy.
 The current refreshed KBM overlay passes that policy with overlap ``0.999985``
 and relative ``L^2`` mismatch ``0.00721`` against the frozen GX raw mode.
+``tools/generate_w7x_reference_overlay.py`` applies the same raw-mode policy to
+the imported W7-X linear benchmark at ``k_y rho_i = 0.3``. It refreshes the
+frozen finite GX raw-mode bundle when a matching ``.big.nc`` file is supplied
+and writes ``docs/_static/w7x_eigenfunction_reference_overlay_ky0p3000.png``
+plus JSON/CSV companions. The current artifact passes with overlap
+``0.9999999994`` and relative ``L^2`` mismatch ``3.33e-5``.
 ``tools/compare_gx_nonlinear_diagnostics.py --summary-json`` now emits a
 matching gate report for nonlinear diagnostic comparison figures, using the
 window mean relative mismatch as the scalar acceptance metric. The summary
@@ -186,7 +192,8 @@ growth/frequency jump and successive-overlap gates.
 ``tools/make_validation_gate_index.py`` scans tracked JSON metadata and writes
 ``docs/_static/validation_gate_index.json``, ``.csv``, and ``.png`` so the docs
 always have one compact pass/open view of the currently materialized release
-validation gates. Exploratory diagnostics can set ``gate_index_include=false``
+validation gates. The current index has ``10/10`` tracked reports passing.
+Exploratory diagnostics can set ``gate_index_include=false``
 to remain documented without being treated as release blockers.
 ``tools/plot_nonlinear_window_statistics.py`` provides the companion
 manuscript-facing statistics panel for the nonlinear GX comparison gates by
