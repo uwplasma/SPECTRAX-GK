@@ -32,6 +32,14 @@ Long reference-code runs and office/GPU comparisons should not be hidden inside
 the default local suite. They should live behind explicit manifests or CI/manual
 lanes so local tests remain fast enough for routine development.
 
+The refactor branch also carries a machine-readable validation/coverage
+manifest at ``tools/validation_coverage_manifest.toml``. It is checked by
+``tools/check_validation_coverage_manifest.py`` and maps each critical module
+to reference anchors, physics contracts, numerical contracts, fast tests,
+tracked artifacts, and next tests. This is the working guardrail for reaching
+95% package-wide coverage without adding shallow tests that do not validate the
+implemented physics or numerics.
+
 Test categories
 ---------------
 
@@ -153,6 +161,9 @@ The first reusable tooling for this lane now exists:
 The gate-report helpers are intentionally small and JSON-ready. They should be
 used by manuscript refresh scripts so every reported artifact has the same
 observable, reference, absolute/relative tolerance, and pass/fail convention.
+The companion coverage manifest should be updated when a new gate helper,
+artifact script, or refactor extraction changes module ownership or test
+responsibility.
 ``tools/generate_miller_zonal_response_pilot.py`` now writes the first such
 gate report into its JSON metadata for the residual, GAM frequency, and signed
 GAM growth/damping comparison against the Merlo Case-III paper-scale read-off.

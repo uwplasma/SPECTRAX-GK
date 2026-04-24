@@ -116,6 +116,16 @@ Next planned extractions:
 - remaining linear result-assembly helpers
 - runtime output/artifact handoff helpers
 
+Traceability For Refactors
+--------------------------
+
+Refactor work is tracked in ``tools/validation_coverage_manifest.toml``. The
+manifest is checked by ``tools/check_validation_coverage_manifest.py`` and
+requires every high-priority module to name its source path, owning lane,
+reference anchors, physics and numerics contracts, fast tests, artifacts, and
+next coverage tests. Update it whenever a source extraction changes module
+ownership or validation responsibility.
+
 Testing Taxonomy
 ----------------
 
