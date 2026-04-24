@@ -79,21 +79,22 @@ Near-term physics priorities
 
 The next physics lanes should be closed in this order:
 
-1. W7-X zonal-response late-envelope closure. The VMEC-backed SPECTRAX-GK
-   artifact now uses the paper-faithful potential initializer, signed
-   line-average observable, and initial-Gaussian-maximum normalization, and the
-   long-window comparison passes the digitized stella/GENE residual and
-   time-coverage gates for all four wavelengths. The remaining open item is the
-   excessive late-window envelope after applying the explicit comparison
-   contracts: ``gaussian_width=4`` for the initial potential and
-   ``time_scale=2`` for the digitized ``t v_ti/a`` reference axis. The runtime
-   now preserves final samples under strided diagnostics, aborts checkpointed
-   artifact runs on the first non-finite diagnostic chunk, and preserves signed
-   zonal line/mode diagnostics across external restart continuation. A
-   four-wavelength ``Nl=16``, ``Nm=64``, ``dt=0.05`` refresh reached raw
-   runtime ``t≈100`` with finite signed traces, so longer restart-continued
-   W7-X traces can now be used to study the remaining physics/numerics issue
-   directly.
+1. W7-X zonal-response residual and late-envelope closure. The VMEC-backed
+   SPECTRAX-GK artifact now uses the paper-facing potential initializer,
+   signed line-average observable, line-first normalization, and no hidden
+   time-axis scaling. The long-window comparison reaches the digitized
+   stella/GENE time windows for all four wavelengths, but residuals fail at
+   ``k_x rho_i=0.07``, ``0.10``, and ``0.30`` and the late envelopes are much
+   larger than the digitized traces. The tracked TOML keeps
+   ``gaussian_width=1`` because the benchmark source writes the initializer as
+   ``exp[-(z-z0)^2]``; wider profiles and non-unit time scales are explicit
+   audits only. The runtime now preserves final samples under strided
+   diagnostics, aborts checkpointed artifact runs on the first non-finite
+   diagnostic chunk, and preserves signed zonal line/mode diagnostics across
+   external restart continuation. A four-wavelength ``Nl=16``, ``Nm=64``,
+   ``dt=0.05`` refresh reached raw runtime ``t≈100`` with finite signed traces,
+   so longer restart-continued W7-X traces can now be used to study the
+   remaining physics/numerics issue directly.
 2. Tighten the now-materialized windowed nonlinear-statistics panel beyond the current ``0.10`` release gate where the literature/reference windows justify stricter tolerances.
 3. W7-X multi-flux-tube ITG/TEM extension and fluctuation-spectrum lane.
 4. Shaped multispecies tokamak linear lane.

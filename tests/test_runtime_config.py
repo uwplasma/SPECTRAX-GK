@@ -565,7 +565,7 @@ def test_w7x_zonal_response_vmec_example_uses_test4_contract() -> None:
     assert cfg.grid.nperiod == 4
     assert cfg.grid.Nz == 256
     assert cfg.init.gaussian_init is True
-    assert cfg.init.gaussian_width == pytest.approx(4.0)
+    assert cfg.init.gaussian_width == pytest.approx(1.0)
     assert cfg.init.init_field == "phi"
     assert cfg.physics.adiabatic_electrons is True
     assert cfg.physics.nonlinear is False

@@ -246,23 +246,26 @@ bean-tube zonal-flow relaxation benchmark from the stella/GENE paper. The
 tool sweeps ``k_x rho_i`` over ``[0.05, 0.07, 0.10, 0.30]``. The runtime
 contract seeds the published electrostatic-potential perturbation with
 ``init_field = "phi"`` and a Gaussian profile, while the panel extracts the
-unweighted signed line-average diagnostic ``Phi_zonal_line_kxt``. For this
-paper-facing W7-X artifact, the line-average response is normalized to the
-maximum initial potential amplitude, ``init.init_amp``, matching the benchmark
-caption; the generator also keeps a ``line_first`` option for first-sample
-audits. The default early-time fit-window cap is an explicit analysis policy
-chosen to isolate the initial GAM before the slower stellarator-specific
-oscillation. The generator forces a periodic radial box for this ``k_y=0``
-zonal response so the selected ``k_x rho_i`` values match the published test-4
-targets exactly; this avoids the linked-boundary aspect-ratio override that is
-appropriate for drift-wave flux-tube runs but wrong for this radial zonal scan.
+unweighted signed line-average diagnostic ``Phi_zonal_line_kxt``. The paper
+text states that the line-average trace is normalized to its value at ``t=0``;
+the caption also mentions the maximum value, but the source figure is clipped
+at the initial point. The paper-facing default is therefore
+``--initial-normalization=line_first`` and ``--time-scale=1``. The ``init_amp``
+normalization and non-unit time-scale options are retained as explicit audits,
+not as the validation contract. The default early-time fit-window cap is an
+explicit analysis policy chosen to isolate the initial GAM before the slower
+stellarator-specific oscillation. The generator forces a periodic radial box
+for this ``k_y=0`` zonal response so the selected ``k_x rho_i`` values match
+the published test-4 targets exactly; this avoids the linked-boundary
+aspect-ratio override that is appropriate for drift-wave flux-tube runs but
+wrong for this radial zonal scan.
 
 The current frozen VMEC-backed artifact lives at
 ``docs/_static/w7x_zonal_response_panel.png`` with strict JSON metadata at
 ``docs/_static/w7x_zonal_response_panel.json``. It is a long-window run:
 ``k_x rho_i=0.05`` reaches ``t≈3460`` and the other three wavelengths reach
-``t≈1980``. After the paper-faithful normalization, the late residuals are
-about ``0.0053``, ``0.0387``, ``0.0265``, and ``0.1484`` for
+``t≈1980``. After the paper-faithful line-first normalization, the late
+residuals are about ``0.0189``, ``0.137``, ``0.0938``, and ``0.526`` for
 ``k_x rho_i = 0.05``, ``0.07``, ``0.10``, and ``0.30``.
 ``tools/digitize_w7x_zonal_reference.py`` now extracts the stella/GENE Fig. 11
 main traces and inset residual levels from the arXiv source ``figs/ZF.pdf``.
@@ -273,17 +276,17 @@ The resulting reference artifacts are
 ``docs/_static/w7x_zonal_reference_digitized.png``. The comparison contract is
 implemented in ``tools/compare_w7x_zonal_reference.py`` and materialized at
 ``docs/_static/w7x_zonal_reference_compare.png`` with JSON metadata in
-``docs/_static/w7x_zonal_reference_compare.json``. The long-window artifact now
-passes every residual and time-coverage gate against the digitized stella/GENE
-reference. The lane remains open only because the late-window envelope
-standard deviations, roughly ``0.341``, ``0.0778``, ``0.102``, and ``0.0367``,
-are still larger than the digitized reference envelope of order ``2.5e-3``.
-That is tracked as a velocity-space recurrence / closure issue, with two
-resolved comparison-contract updates: a ``gaussian_width=4`` probe matches the
-digitized initial line-average level much better than the earlier
-``gaussian_width=1`` setting, and the W7-X plotting tool now records an
-explicit ``time_scale=2`` that maps runtime samples onto the digitized
-``t v_ti/a`` axis before plotting/reference comparison.
+``docs/_static/w7x_zonal_reference_compare.json``. The current long-window
+artifact passes the time-coverage gate for all four wavelengths, but the
+residual gate only passes at ``k_x rho_i=0.05`` and the late-envelope gate
+fails by orders of magnitude. A previous ``init_amp``-normalized audit happened
+to pass residual values for all four wavelengths, but that comparison is no
+longer treated as a validation result because it does not follow the paper text
+normalization. A later ``gaussian_width=4`` probe matched the clipped apparent
+initial level of Fig. 11 better than the tracked width-1 profile, but the
+source figure shows that the apparent ``0.8`` start is a plot-limit artifact,
+not a reliable normalization target. The tracked TOML therefore keeps
+``gaussian_width=1``, matching the source expression ``exp[-(z-z0)^2]``.
 
 The runtime path now has two safeguards for this lane. First, strided nonlinear
 diagnostics always retain the final step, so long traces do not silently stop
@@ -303,24 +306,21 @@ with ``Nl=16``, ``Nm=64``, ``dt=0.05`` then restart-continued the
 ``k_x rho_i=0.07`` trace to ``t≈100`` with finite diagnostics and nonzero
 signed line/mode samples across the post-restart tail. A full four-wavelength
 refresh at the same moment resolution also reached ``t≈100`` with finite,
-nonzero signed traces for every target ``k_x rho_i``. A width scan showed that
-``gaussian_width=4`` gives an initial ``k_x rho_i=0.07`` line average of about
-``0.827`` versus the digitized stella/GENE start near ``0.89``; however, the
-same high-moment run decayed to about ``0.323`` by raw runtime ``t≈50`` and
-slightly negative by raw runtime ``t≈100``. Comparing the same trace on the
-scaled reference axis, ``t_ref≈2 t_runtime``, reduces the ``k_x rho_i=0.07``
-early-window mean absolute error from about ``0.251`` to about ``0.043``. The
-remaining open item is therefore not restart diagnostic continuity; it is the
-longer-time W7-X zonal damping/closure behavior after the now-explicit
-initializer and time-axis conventions are applied.
+nonzero signed traces for every target ``k_x rho_i``. A width-4 full-window
+low-moment audit reached the digitized windows but flipped the residual sign at
+``k_x rho_i=0.07``, ``0.10``, and ``0.30``. The remaining open item is
+therefore not restart diagnostic continuity; it is the W7-X zonal damping,
+closure, and velocity-space recurrence behavior under the paper-facing
+line-first normalization.
 
 .. figure:: _static/w7x_zonal_response_panel.png
    :alt: W7-X high-mirror bean-tube zonal-flow response panel
 
    W7-X high-mirror bean-tube zonal-flow response for the stella/GENE test-4
-   target ``k_x rho_i`` values. The response is normalized to the maximum
-   initial Gaussian potential. The red dashed line is the late-window residual
-   estimate and the shaded band is the common initial-GAM extraction window.
+   target ``k_x rho_i`` values. The response is normalized to the first
+   nonzero line-average sample, following the paper text. The red dashed line
+   is the late-window residual estimate and the shaded band is the common
+   initial-GAM extraction window.
 
 .. figure:: _static/w7x_zonal_reference_digitized.png
    :alt: Digitized W7-X test-4 stella and GENE zonal-flow reference traces
@@ -333,10 +333,9 @@ initializer and time-axis conventions are applied.
 .. figure:: _static/w7x_zonal_reference_compare.png
    :alt: Current W7-X zonal SPECTRAX comparison against digitized references
 
-   Current W7-X zonal comparison gate. The residual and time-coverage gates now
-   pass for all four wavelengths; the overall gate remains open because the
-   late-window envelope has more residual oscillatory content than the digitized
-   stella/GENE traces.
+   Current W7-X zonal comparison gate. Time coverage passes for all four
+   wavelengths, but the paper-normalized residuals and late-window envelopes
+   remain open validation issues.
 
 Diffrax and nonlinear smoke tests
 ---------------------------------

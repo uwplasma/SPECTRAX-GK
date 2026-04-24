@@ -38,6 +38,7 @@ W7X_TEST4_REFERENCE = {
     "nz_reference": 512,
     "nvpar_reference": 256,
     "nmu_reference": 32,
+    "normalization": "line-averaged potential normalized to its t=0 line-average value",
 }
 
 
@@ -89,11 +90,12 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--initial-normalization",
         choices=("init_amp", "line_first"),
-        default="init_amp",
+        default="line_first",
         help=(
-            "Reference normalization for the plotted response. The W7-X paper "
-            "normalizes the line-averaged response to the maximum initial "
-            "Gaussian potential, so the default uses init.init_amp."
+            "Reference normalization for the plotted response. The W7-X test-4 "
+            "text normalizes the line-averaged response to its t=0 value, so "
+            "the default uses the first nonzero line-average sample. init_amp "
+            "is retained for explicit normalization audits."
         ),
     )
     parser.add_argument(
@@ -114,11 +116,12 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--time-scale",
         type=float,
-        default=2.0,
+        default=1.0,
         help=(
             "Scale applied to runtime times before plotting/extraction. "
-            "The W7-X Fig. 11 digitized axis is in the paper's t v_ti/a units; "
-            "the current VMEC runtime traces align to that axis with a factor of 2."
+            "The default is 1 because runtime samples are already interpreted "
+            "on the paper's t v_ti/a axis; non-unit values are for explicit "
+            "axis-calibration audits only."
         ),
     )
     parser.add_argument(
@@ -496,13 +499,15 @@ def main() -> int:
                     "It uses the unweighted line-averaged signed potential observable requested by the paper; "
                     "the volume-weighted Phi_zonal_mode_kxt diagnostic remains available for shaped-tokamak "
                     "and energy-consistency checks. "
-                    "Each trace is normalized to the maximum initial potential amplitude when "
-                    "--initial-normalization=init_amp, matching the published W7-X caption; "
-                    "the line_first option is retained for first-sample extraction audits. "
+                    "The paper text normalizes the line-averaged response to its t=0 value; "
+                    "therefore the default --initial-normalization=line_first follows that convention. "
+                    "The init_amp option is retained for explicit audits of the caption wording and "
+                    "the clipped initial portion of Fig. 11, but it is not the default validation contract. "
                     "The initial GAM is extracted with separate positive/negative-extrema "
                     "damping fits plus a Hilbert-phase frequency estimate over a common early-time window. "
                     "Runtime times are multiplied by the metadata time_scale before plotting and reference "
-                    "comparison so the traces use the digitized W7-X figure's t v_ti/a axis. "
+                    "comparison; the default time_scale=1 keeps the runtime axis on the paper's t v_ti/a "
+                    "axis and non-unit values are treated as calibration probes. "
                     "The default fit window cap isolates the initial GAM before the slower stellarator-specific "
                     "oscillation described in section 4.4 of the benchmark paper; this cutoff is a manuscript-policy "
                     "inference, not a quoted number from the paper itself. The metadata remains open until the "
