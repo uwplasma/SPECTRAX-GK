@@ -14,7 +14,9 @@ from spectraxgk.linear import (
     _is_tracer,
     _as_species_array,
     _build_implicit_operator,
+    _build_end_damping_profile_array,
     _build_linked_end_damping_profile,
+    _build_low_rank_moment_cache_arrays,
     _check_nonnegative,
     _check_positive,
     _integrate_linear_cached_impl,
@@ -53,7 +55,10 @@ def test_as_species_array_and_preconditioner_resolution() -> None:
 
     assert _resolve_implicit_preconditioner(None) == "auto"
     assert _resolve_implicit_preconditioner("  Damping ") == "damping"
-    fn = lambda x: x
+
+    def fn(x):
+        return x
+
     assert _resolve_implicit_preconditioner(fn) is fn
 
 
@@ -65,6 +70,24 @@ def test_is_tracer_and_lenard_bernstein_eigenvalues() -> None:
     expected = np.asarray([[0.0, 0.3, 0.6], [0.7, 1.0, 1.3]], dtype=np.float32)
     got = np.asarray(lenard_bernstein_eigenvalues(2, 3, nu_hermite=0.3, nu_laguerre=0.7), dtype=np.float32)
     np.testing.assert_allclose(got, expected)
+
+
+def test_low_rank_moment_and_damping_cache_match_expected_shapes_and_values() -> None:
+    params = LinearParams(nu_hermite=0.3, nu_laguerre=0.7, p_hyper=2, p_hyper_l=3, p_hyper_m=4)
+    cache = _build_low_rank_moment_cache_arrays(2, 3, params, jnp.float32)
+
+    expected_lb = np.asarray([[0.0, 0.3, 0.6], [0.7, 1.0, 1.3]], dtype=np.float32)
+    np.testing.assert_allclose(np.asarray(cache["lb_lam"]), expected_lb, rtol=1e-6)
+    assert cache["lb_lam"].shape == (2, 3)
+    assert cache["hyper_ratio"].shape == (2, 3, 1, 1, 1)
+    assert cache["sqrt_p"].shape == (1, 1, 3, 1, 1, 1)
+    assert cache["mask_const"].dtype == jnp.bool_
+
+    periodic = np.asarray(_build_end_damping_profile_array(8, 0.25, "periodic", jnp.float32))
+    linked = np.asarray(_build_end_damping_profile_array(8, 0.25, "linked", jnp.float32))
+    np.testing.assert_allclose(periodic, np.zeros(8, dtype=np.float32))
+    assert linked[0] > 0.0
+    assert linked[-1] > 0.0
 
 
 def test_linear_params_and_terms_roundtrip() -> None:

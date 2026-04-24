@@ -24,6 +24,31 @@ class CachePhaseTiming:
     note: str = ""
 
 
+def build_low_rank_moment_cache(
+    *,
+    nl: int,
+    nm: int,
+    params: Any,
+    real_dtype: Any,
+) -> dict[str, Any]:
+    """Build the small moment-space factors used by ``build_linear_cache``.
+
+    The production cache stores Lenard-Bernstein factors in low-rank form:
+    ``lb_lam`` has shape ``(Nl, Nm)`` and collision expansion happens inside
+    the RHS. The profiler must preserve that convention; otherwise it times an
+    obsolete full ``(species, l, m, ky, kx, z)`` allocation and points
+    optimization work at the wrong bottleneck.
+    """
+
+    import jax.numpy as jnp
+    from spectraxgk.linear import _build_low_rank_moment_cache_arrays
+
+    return {
+        **_build_low_rank_moment_cache_arrays(nl, nm, params, real_dtype),
+        "collision_lam": jnp.asarray([], dtype=real_dtype),
+    }
+
+
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -100,17 +125,16 @@ def main() -> None:
     import jax.numpy as jnp
     import numpy as np
     from jax import profiler
-    from spectraxgk.basis import hermite_ladder_coeffs
     from spectraxgk.geometry import apply_gx_geometry_grid_defaults, ensure_flux_tube_geometry_data
     from spectraxgk.grids import build_spectral_grid
     from spectraxgk.gyroaverage import J_l_all, bessel_j0, bessel_j1, gx_laguerre_transform
     from spectraxgk.io import load_runtime_from_toml
     from spectraxgk.linear import (
+        _build_end_damping_profile_array,
         _build_linked_end_damping_profile,
         _build_linked_fft_maps,
         _x64_enabled,
         build_linear_cache,
-        lenard_bernstein_eigenvalues,
         shift_axis,
     )
     from spectraxgk.runtime import build_runtime_geometry, build_runtime_linear_params
@@ -353,76 +377,26 @@ def main() -> None:
 
         def _collision_cache():
             mask0 = (grid.ky == 0.0)[:, None, None] & (grid.kx == 0.0)[None, :, None]
-            lb_base = lenard_bernstein_eigenvalues(args.Nl, args.Nm, params.nu_hermite, params.nu_laguerre)[None, :, :, None, None, None]
-            lb_lam = lb_base + ctx["b"][:, None, None, ...]
-            nu_arr = jnp.asarray(params.nu, dtype=ctx["real_dtype"])
-            if nu_arr.ndim == 0:
-                nu_arr = nu_arr[None]
-            collision_lam = nu_arr[:, None, None, None, None, None] * lb_lam
-            l = jnp.arange(args.Nl, dtype=ctx["real_dtype"])[:, None, None, None, None]
-            m = jnp.arange(args.Nm, dtype=ctx["real_dtype"])[None, :, None, None, None]
-            l4 = jnp.arange(args.Nl, dtype=ctx["real_dtype"])[:, None, None, None]
-            m_p1 = m + 1.0
-            sqrt_m = jnp.sqrt(m)
-            sqrt_m_p1 = jnp.sqrt(m_p1)
-            sqrt_p, sqrt_m_ladder = hermite_ladder_coeffs(args.Nm - 1)
-            sqrt_shape = [1] * 6
-            sqrt_shape[2] = args.Nm
-            sqrt_p = sqrt_p[: args.Nm].reshape(sqrt_shape).astype(ctx["real_dtype"])
-            sqrt_m_ladder = sqrt_m_ladder[: args.Nm].reshape(sqrt_shape).astype(ctx["real_dtype"])
-            l_norm = jnp.maximum(args.Nl - 1, 1)
-            m_norm = jnp.maximum(args.Nm - 1, 1)
-            hyper_ratio = (l / l_norm) ** params.p_hyper + (m / m_norm) ** params.p_hyper
-            l_norm_full = jnp.asarray(max(args.Nl, 1), dtype=ctx["real_dtype"])
-            m_norm_full = jnp.asarray(max(args.Nm, 1), dtype=ctx["real_dtype"])
-            m_norm_kz = jnp.asarray(max(args.Nm - 1, 1), dtype=ctx["real_dtype"])
-            p_hyper_l = jnp.asarray(params.p_hyper_l, dtype=ctx["real_dtype"])
-            p_hyper_m = jnp.asarray(params.p_hyper_m, dtype=ctx["real_dtype"])
-            p_hyper_lm = jnp.asarray(params.p_hyper_lm, dtype=ctx["real_dtype"])
-            ratio_l = (l / l_norm_full) ** p_hyper_l
-            ratio_m = (m / m_norm_full) ** p_hyper_m
-            ratio_lm = ((2.0 * l + m) / (2.0 * l_norm_full + m_norm_full)) ** p_hyper_lm
-            mask_const = (m > 2.0) | (l > 1.0)
-            mask_kz = m > 2.0
-            m_pow = m ** p_hyper_m
-            m_norm_kz_factor = (p_hyper_m + 0.5) / (m_norm_kz ** (p_hyper_m + 0.5))
-            Nz = grid.z.size
-            width = jnp.maximum(1, jnp.asarray(jnp.floor(params.damp_ends_widthfrac * Nz), dtype=jnp.int32))
-            idx = jnp.arange(Nz, dtype=jnp.float32)
-            width_f = jnp.asarray(width, dtype=jnp.float32)
-            left_mask = idx <= width_f
-            right_mask = idx >= (Nz - width_f)
-            x_left = jnp.where(left_mask, idx / width_f, 0.0)
-            x_right = jnp.where(right_mask, (Nz - idx) / width_f, 0.0)
-            nu_left = jnp.where(left_mask, 1.0 - 2.0 * x_left * x_left / (1.0 + x_left**4), 0.0)
-            nu_right = jnp.where(right_mask, 1.0 - 2.0 * x_right * x_right / (1.0 + x_right**4), 0.0)
-            damp_profile = jnp.maximum(nu_left, nu_right).astype(ctx["real_dtype"])
-            if ctx["boundary"] == "periodic":
-                damp_profile = jnp.zeros_like(damp_profile)
+            moment = build_low_rank_moment_cache(
+                nl=args.Nl,
+                nm=args.Nm,
+                params=params,
+                real_dtype=ctx["real_dtype"],
+            )
+            damp_profile = _build_end_damping_profile_array(
+                int(grid.z.size),
+                float(params.damp_ends_widthfrac),
+                str(ctx["boundary"]),
+                ctx["real_dtype"],
+            )
             ctx.update(
                 dict(
                     mask0=mask0,
-                    lb_lam=lb_lam,
-                    collision_lam=collision_lam,
-                    l=l,
-                    m=m,
-                    l4=l4,
-                    sqrt_m=sqrt_m,
-                    sqrt_m_p1=sqrt_m_p1,
-                    sqrt_p=sqrt_p,
-                    sqrt_m_ladder=sqrt_m_ladder,
-                    hyper_ratio=hyper_ratio,
-                    ratio_l=ratio_l,
-                    ratio_m=ratio_m,
-                    ratio_lm=ratio_lm,
-                    mask_const=mask_const,
-                    mask_kz=mask_kz,
-                    m_pow=m_pow,
-                    m_norm_kz_factor=m_norm_kz_factor,
                     damp_profile=damp_profile,
+                    **moment,
                 )
             )
-            return lb_lam, collision_lam, damp_profile
+            return moment["lb_lam"], moment["collision_lam"], damp_profile
 
         _time_phase(timings, "collision_and_damping_cache", _collision_cache)
 

@@ -353,6 +353,26 @@ The active pre-merge sequence is:
      `startup_total_s=12.77`, dominated by `compile_first_integrator_run=6.40`
      and `build_linear_cache=3.98`. This gives a cheap local regression point
      before larger `office` CPU/GPU profiling sweeps.
+   - The cache-build profiler has been corrected to match the production
+     low-rank moment cache contract: `lb_lam` is a small `(Nl, Nm)` factor and
+     `collision_lam` remains empty, with collision expansion left inside the
+     RHS. Older profiler rows that timed a full
+     `(species, l, m, ky, kx, z)` collision allocation should be treated as
+     attribution aids only, not as production-equivalent bottleneck numbers.
+     The corrected local CPU cache decomposition has
+     `collision_and_damping_cache=0.071 s`; the remaining measurable cache
+     subphases are gyro/Bessel, Laguerre, and kperp/drift construction.
+   - The first host-build cache cleanup now builds the small moment-space and
+     end-damping factors as host arrays before a single JAX transfer. On the
+     local CPU Cyclone startup smoke, the measured `build_linear_cache` phase
+     moved from `3.98 s` to `2.63 s` and total cold startup moved from
+     `12.77 s` to `11.78 s`. This is a small cold-start improvement, not a
+     broad warm-throughput claim.
+   - The same host-build cleanup has a bounded `office` GPU confirmation on
+     the reduced Cyclone nonlinear startup smoke: cold startup is now
+     `35.19 s` with `build_linear_cache=5.58 s`, compared with the previously
+     tracked post-low-rank startup of `36.78 s` and `build_linear_cache=6.92 s`.
+     The first integrator compile remains the dominant cold-start cost.
 
 6. **Define a real multi-device parallelization target.**
    - Stop treating sharding as a figure-only feature.
@@ -2638,6 +2658,17 @@ Current nonlinear-lane status at the handoff point:
     - next cache-build optimization should therefore move to the gyro/Laguerre
       cache path, while the broader startup path still needs first-integrator
       compile-surface reduction
+  - the cache-build profiler now matches the production low-rank collision
+    contract instead of timing an obsolete full collision-array allocation;
+    the corrected profiler test locks `lb_lam.shape == (Nl, Nm)` and an empty
+    `collision_lam`, and the local CPU cache decomposition now reports
+    `collision_and_damping_cache=0.071 s`
+  - the first host-build cleanup for moment-space and end-damping factors is a
+    measured small cold-start win:
+    - local CPU Cyclone startup smoke: `build_linear_cache` `3.98 s -> 2.63 s`
+      and total cold startup `12.77 s -> 11.78 s`
+    - `office` GPU Cyclone startup smoke: `build_linear_cache` `6.92 s -> 5.58 s`
+      and total cold startup `36.78 s -> 35.19 s`
   - concrete next optimization target: reduce the remaining compile/startup
     cost beyond the collision prefactor path, while keeping the current cold
     wall-time panel for honest end-to-end reproducibility
