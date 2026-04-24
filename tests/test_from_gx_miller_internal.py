@@ -7,8 +7,10 @@ import numpy as np
 import pytest
 
 from spectraxgk.from_gx.miller import (
+    MillerCoreParams,
     _request_attr,
     _safe_denom,
+    build_collocation_surfaces,
     cumulative_trapezoid,
     generate_miller_eik_internal,
     internal_miller_backend_available,
@@ -66,6 +68,32 @@ def test_cumulative_trapezoid_supports_1d_and_2d() -> None:
         cumulative_trapezoid(np.ones((2, 2)), np.ones(2), axis=0)
     with pytest.raises(ValueError):
         cumulative_trapezoid(np.ones((2, 2, 2)), np.ones((2, 2, 2)))
+
+
+def test_miller_collocation_preserves_signed_shift_derivative() -> None:
+    params = MillerCoreParams(
+        ntgrid=8,
+        nperiod=1,
+        rhoc=0.5,
+        qinp=1.4,
+        shat=0.8,
+        rmaj=3.0,
+        r_geo=3.0,
+        shift=-0.2,
+        akappa=1.0,
+        tri=0.0,
+        akappri=0.0,
+        tripri=0.0,
+        betaprim=0.0,
+        delrho=1.0e-3,
+    )
+
+    state = build_collocation_surfaces(params)
+    r_midplane = np.asarray(state["r"])[:, 0]
+    rho = np.asarray(state["rho"])
+    d_rgeom_drho = np.gradient(r_midplane - rho, rho)[1]
+
+    assert d_rgeom_drho == pytest.approx(params.shift, rel=1.0e-6)
 
 
 def test_generate_miller_eik_internal_requires_request() -> None:

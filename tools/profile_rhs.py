@@ -9,6 +9,11 @@ import jax
 import jax.numpy as jnp
 import jax.profiler as jprof
 
+try:
+    from tools._profiler_options import make_profile_options
+except ModuleNotFoundError:  # pragma: no cover - direct script execution fallback
+    from _profiler_options import make_profile_options
+
 from spectraxgk.benchmarks import (
     CYCLONE_OMEGA_D_SCALE,
     CYCLONE_OMEGA_STAR_SCALE,
@@ -68,7 +73,7 @@ def main() -> None:
     jit_rhs(G0).block_until_ready()
 
     args.trace_dir.mkdir(parents=True, exist_ok=True)
-    jprof.start_trace(str(args.trace_dir))
+    jprof.start_trace(str(args.trace_dir), profiler_options=make_profile_options())
     for _ in range(args.steps):
         jit_rhs(G0).block_until_ready()
     jprof.stop_trace()

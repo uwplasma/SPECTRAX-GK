@@ -58,8 +58,10 @@ class RuntimeBenchRun:
     command: str
     cwd: str
     host: str | None = None
+    profile_command: str | None = None
     enabled: bool = True
     wrap_time: bool = True
+    profile_wrap_time: bool = False
 
 
 def _resolve(path: str | Path) -> Path:
@@ -84,8 +86,12 @@ def _load_manifest(path: Path) -> list[RuntimeBenchRun]:
                 command=str(item["command"]),
                 cwd=str(item.get("cwd", "{root}")),
                 host=None if item.get("host") in (None, "") else str(item.get("host")),
+                profile_command=None
+                if item.get("profile_command") in (None, "")
+                else str(item.get("profile_command")),
                 enabled=bool(item.get("enabled", True)),
                 wrap_time=bool(item.get("wrap_time", True)),
+                profile_wrap_time=bool(item.get("profile_wrap_time", False)),
             )
         )
     return runs
@@ -129,6 +135,16 @@ def _parse_peak_rss_mb(text: str) -> float | None:
     return None
 
 
+def _parse_profile_times(text: str) -> dict[str, float]:
+    fields = ("warmup_time_s", "run_time_s")
+    out: dict[str, float] = {}
+    for field in fields:
+        match = re.search(rf"(?mi)(?:^|\s){re.escape(field)}=([-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)", text)
+        if match:
+            out[field] = float(match.group(1))
+    return out
+
+
 def _write_row_logs(log_dir: Path, row: dict[str, object]) -> dict[str, str]:
     log_dir.mkdir(parents=True, exist_ok=True)
     stem = f"{row['case']}__{row['backend']}"
@@ -139,39 +155,52 @@ def _write_row_logs(log_dir: Path, row: dict[str, object]) -> dict[str, str]:
     return {"stdout_log": str(stdout_path), "stderr_log": str(stderr_path)}
 
 
+def _execute_command(
+    *,
+    host: str | None,
+    cwd: str,
+    command: str,
+    wrap_time: bool,
+) -> subprocess.CompletedProcess[str]:
+    rendered_host = _render(host) if host else None
+    rendered_cwd = _render(cwd)
+    rendered_command = _render(command)
+    if rendered_host:
+        shell_cmd = rendered_command
+        if wrap_time:
+            prefix = " ".join(shlex.quote(x) for x in _time_wrapper_prefix("linux"))
+            shell_cmd = f"{prefix} /bin/sh -lc {shlex.quote(rendered_command)}"
+        remote_cmd = f"cd {shlex.quote(rendered_cwd)} && {shell_cmd}"
+        return subprocess.run(
+            ["ssh", "-x", rendered_host, remote_cmd],
+            capture_output=True,
+            text=True,
+        )
+
+    resolved_cwd = _resolve(rendered_cwd)
+    shell_cmd = rendered_command
+    if wrap_time:
+        prefix = " ".join(shlex.quote(x) for x in _time_wrapper_prefix())
+        shell_cmd = f"{prefix} /bin/sh -lc {shlex.quote(rendered_command)}"
+    return subprocess.run(
+        shell_cmd,
+        shell=True,
+        cwd=resolved_cwd,
+        capture_output=True,
+        text=True,
+    )
+
+
 def _run_command(run: RuntimeBenchRun) -> dict[str, object]:
     rendered_host = _render(run.host) if run.host else None
     rendered_cwd = _render(run.cwd)
     rendered_command = _render(run.command)
     start = time.perf_counter()
-    if rendered_host:
-        shell_cmd = rendered_command
-        if run.wrap_time:
-            prefix = " ".join(shlex.quote(x) for x in _time_wrapper_prefix("linux"))
-            shell_cmd = f"{prefix} /bin/sh -lc {shlex.quote(rendered_command)}"
-        remote_cmd = f"cd {shlex.quote(rendered_cwd)} && {shell_cmd}"
-        proc = subprocess.run(
-            ["ssh", "-x", rendered_host, remote_cmd],
-            capture_output=True,
-            text=True,
-        )
-    else:
-        resolved_cwd = _resolve(rendered_cwd)
-        shell_cmd = rendered_command
-        if run.wrap_time:
-            prefix = " ".join(shlex.quote(x) for x in _time_wrapper_prefix())
-            shell_cmd = f"{prefix} /bin/sh -lc {shlex.quote(rendered_command)}"
-        proc = subprocess.run(
-            shell_cmd,
-            shell=True,
-            cwd=resolved_cwd,
-            capture_output=True,
-            text=True,
-        )
+    proc = _execute_command(host=run.host, cwd=run.cwd, command=run.command, wrap_time=run.wrap_time)
     elapsed = time.perf_counter() - start
     combined = (proc.stdout or "") + "\n" + (proc.stderr or "")
     peak_rss_mb = _parse_peak_rss_mb(combined)
-    return {
+    row = {
         "case": run.case,
         "label": run.label,
         "backend": run.backend,
@@ -186,6 +215,31 @@ def _run_command(run: RuntimeBenchRun) -> dict[str, object]:
         "stdout": proc.stdout,
         "stderr": proc.stderr,
     }
+    row.update(_parse_profile_times(combined))
+
+    if proc.returncode == 0 and run.profile_command:
+        profile_proc = _execute_command(
+            host=run.host,
+            cwd=run.cwd,
+            command=run.profile_command,
+            wrap_time=run.profile_wrap_time,
+        )
+        profile_combined = (profile_proc.stdout or "") + "\n" + (profile_proc.stderr or "")
+        row["stdout"] = (
+            f"{proc.stdout}\n--- profile stdout ---\n{profile_proc.stdout}"
+            if (proc.stdout or profile_proc.stdout)
+            else ""
+        )
+        row["stderr"] = (
+            f"{proc.stderr}\n--- profile stderr ---\n{profile_proc.stderr}"
+            if (proc.stderr or profile_proc.stderr)
+            else ""
+        )
+        row.update(_parse_profile_times(profile_combined))
+        if profile_proc.returncode != 0:
+            row["status"] = "failed"
+            row["returncode"] = profile_proc.returncode
+    return row
 
 
 def _write_csv(path: Path, rows: list[dict[str, object]]) -> None:
@@ -197,6 +251,8 @@ def _write_csv(path: Path, rows: list[dict[str, object]]) -> None:
         "status",
         "returncode",
         "runtime_s",
+        "warmup_time_s",
+        "run_time_s",
         "peak_rss_mb",
         "host",
         "cwd",
@@ -237,6 +293,7 @@ def _load_summary_rows(patterns: list[str]) -> list[dict[str, object]]:
 
 def _plot_results(csv_path: Path, png_path: Path, pdf_path: Path) -> None:
     import matplotlib.pyplot as plt
+    from matplotlib.lines import Line2D
     import pandas as pd
 
     plt.rcParams.update(
@@ -267,6 +324,7 @@ def _plot_results(csv_path: Path, png_path: Path, pdf_path: Path) -> None:
     x = list(range(len(order)))
     width = 0.24
     fig, axes = plt.subplots(1, 2, figsize=(max(15.5, 1.45 * len(order) + 6.5), 7.4), constrained_layout=True)
+    warm_handles: list[Line2D] = []
 
     for idx, backend in enumerate(BACKEND_ORDER):
         sub = ok[ok["backend"] == backend].set_index("case")
@@ -275,6 +333,40 @@ def _plot_results(csv_path: Path, png_path: Path, pdf_path: Path) -> None:
         offset = (idx - 1) * width
         axes[0].bar([v + offset for v in x], runtime_vals, width=width, color=BACKEND_COLORS[backend], label=BACKEND_LABELS[backend])
         axes[1].bar([v + offset for v in x], memory_vals, width=width, color=BACKEND_COLORS[backend], label=BACKEND_LABELS[backend])
+        if "run_time_s" in sub.columns:
+            warm_vals = [
+                float(sub.loc[case, "run_time_s"])
+                if case in sub.index and not pd.isna(sub.loc[case, "run_time_s"])
+                else float("nan")
+                for case in order
+            ]
+            warm_x = [v + offset for v, warm in zip(x, warm_vals) if not pd.isna(warm)]
+            warm_y = [warm for warm in warm_vals if not pd.isna(warm)]
+            if warm_x:
+                axes[0].scatter(
+                    warm_x,
+                    warm_y,
+                    marker="D",
+                    s=42,
+                    facecolors="white",
+                    edgecolors=BACKEND_COLORS[backend],
+                    linewidths=1.4,
+                    zorder=4,
+                )
+                if not warm_handles:
+                    warm_handles.append(
+                        Line2D(
+                            [0],
+                            [0],
+                            marker="D",
+                            color="none",
+                            markerfacecolor="white",
+                            markeredgecolor="#222222",
+                            markersize=6,
+                            linewidth=0,
+                            label="Warm run",
+                        )
+                    )
 
     tick_labels = [labels[case] for case in order]
     for ax, title, ylabel in (
@@ -286,7 +378,8 @@ def _plot_results(csv_path: Path, png_path: Path, pdf_path: Path) -> None:
         ax.set_ylabel(ylabel)
         ax.grid(axis="y", alpha=0.25, linewidth=0.6)
     axes[0].set_yscale("log")
-    axes[0].legend(loc="upper left", ncols=3, frameon=False)
+    handles, labels_ = axes[0].get_legend_handles_labels()
+    axes[0].legend(handles + warm_handles, labels_ + [h.get_label() for h in warm_handles], loc="upper left", ncols=4, frameon=False)
     fig.suptitle("Runtime and Memory Comparison", fontsize=21)
     png_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(png_path, dpi=220)

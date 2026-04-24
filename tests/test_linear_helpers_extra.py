@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from types import SimpleNamespace
 
 import jax
@@ -8,20 +9,33 @@ import numpy as np
 import pytest
 
 from spectraxgk.benchmarking import estimate_observed_order
+from spectraxgk.config import GridConfig
+from spectraxgk.geometry import SAlphaGeometry
+from spectraxgk.grids import build_spectral_grid
+from spectraxgk.gyroaverage import J_l_all
 from spectraxgk.linear import (
     LinearParams,
     LinearTerms,
+    build_linear_cache,
+    _is_tracer,
     _as_species_array,
     _build_implicit_operator,
+    _build_end_damping_profile_array,
+    _build_gyroaverage_cache_arrays,
+    _build_linked_fft_maps,
     _build_linked_end_damping_profile,
+    _build_low_rank_moment_cache_arrays,
     _check_nonnegative,
     _check_positive,
     _integrate_linear_cached_impl,
     _resolve_implicit_preconditioner,
     _signed_to_index,
     _integrate_linear_implicit_cached,
+    build_H,
     integrate_linear,
     integrate_linear_diagnostics,
+    linear_rhs,
+    lenard_bernstein_eigenvalues,
     linear_terms_to_term_config,
     term_config_to_linear_terms,
 )
@@ -43,6 +57,16 @@ def test_linear_validation_helpers_scalar_and_array() -> None:
         _check_nonnegative(jnp.asarray([0.0, -1.0]), "arr")
 
 
+def test_linear_validation_helpers_accept_traced_values() -> None:
+    @jax.jit
+    def _checked(x):
+        _check_positive(x, "x")
+        _check_nonnegative(x, "x")
+        return x
+
+    assert float(_checked(jnp.asarray(1.0))) == pytest.approx(1.0)
+
+
 def test_as_species_array_and_preconditioner_resolution() -> None:
     np.testing.assert_allclose(np.asarray(_as_species_array(2.0, 3, "nu")), [2.0, 2.0, 2.0])
     np.testing.assert_allclose(np.asarray(_as_species_array(jnp.asarray([1.0, 2.0]), 2, "nu")), [1.0, 2.0])
@@ -51,8 +75,56 @@ def test_as_species_array_and_preconditioner_resolution() -> None:
 
     assert _resolve_implicit_preconditioner(None) == "auto"
     assert _resolve_implicit_preconditioner("  Damping ") == "damping"
-    fn = lambda x: x
+
+    def fn(x):
+        return x
+
     assert _resolve_implicit_preconditioner(fn) is fn
+
+
+def test_is_tracer_and_lenard_bernstein_eigenvalues() -> None:
+    assert _is_tracer(1.0) is False
+    traced_flag = jax.jit(lambda x: jnp.asarray(1 if _is_tracer(x) else 0, dtype=jnp.int32))(1.0)
+    assert int(traced_flag) == 1
+
+    expected = np.asarray([[0.0, 0.3, 0.6], [0.7, 1.0, 1.3]], dtype=np.float32)
+    got = np.asarray(lenard_bernstein_eigenvalues(2, 3, nu_hermite=0.3, nu_laguerre=0.7), dtype=np.float32)
+    np.testing.assert_allclose(got, expected)
+
+
+def test_low_rank_moment_and_damping_cache_match_expected_shapes_and_values() -> None:
+    params = LinearParams(nu_hermite=0.3, nu_laguerre=0.7, p_hyper=2, p_hyper_l=3, p_hyper_m=4)
+    cache = _build_low_rank_moment_cache_arrays(2, 3, params, jnp.float32)
+
+    expected_lb = np.asarray([[0.0, 0.3, 0.6], [0.7, 1.0, 1.3]], dtype=np.float32)
+    np.testing.assert_allclose(np.asarray(cache["lb_lam"]), expected_lb, rtol=1e-6)
+    assert cache["lb_lam"].shape == (2, 3)
+    assert cache["hyper_ratio"].shape == (2, 3, 1, 1, 1)
+    assert cache["sqrt_p"].shape == (1, 1, 3, 1, 1, 1)
+    assert cache["mask_const"].dtype == jnp.bool_
+
+    periodic = np.asarray(_build_end_damping_profile_array(8, 0.25, "periodic", jnp.float32))
+    linked = np.asarray(_build_end_damping_profile_array(8, 0.25, "linked", jnp.float32))
+    np.testing.assert_allclose(periodic, np.zeros(8, dtype=np.float32))
+    assert linked[0] > 0.0
+    assert linked[-1] > 0.0
+
+
+def test_gyroaverage_cache_helper_matches_species_vmap_convention() -> None:
+    b = jnp.asarray(
+        [
+            [[[0.0, 0.2], [0.4, 0.6]]],
+            [[[0.1, 0.3], [0.5, 0.7]]],
+        ],
+        dtype=jnp.float32,
+    )
+    Jl, JlB = _build_gyroaverage_cache_arrays(b, Nl=3, real_dtype=jnp.float32)
+    expected = jax.vmap(lambda bs: J_l_all(bs, l_max=2))(b).astype(jnp.float32)
+
+    np.testing.assert_allclose(np.asarray(Jl), np.asarray(expected), rtol=1e-6)
+    assert Jl.shape == (2, 3, 1, 2, 2)
+    assert JlB.shape == Jl.shape
+    np.testing.assert_allclose(np.asarray(JlB[:, 0]), np.asarray(Jl[:, 0]), rtol=1e-6)
 
 
 def test_linear_params_and_terms_roundtrip() -> None:
@@ -106,6 +178,141 @@ def test_signed_to_index_and_linked_end_damping_profile() -> None:
             widthfrac=0.5,
             ky_mode=np.asarray([0, 1], dtype=np.int32),
         )
+
+    profile_zero_width = _build_linked_end_damping_profile(
+        linked_indices=(jnp.asarray([[1]], dtype=jnp.int32),),
+        ny=2,
+        nx=1,
+        nz=4,
+        widthfrac=0.01,
+    )
+    assert np.allclose(profile_zero_width, 0.0)
+
+
+def test_linked_fft_maps_validate_ky_mode_and_empty_maps() -> None:
+    empty_indices, empty_kz = _build_linked_fft_maps(
+        ky=np.asarray([]),
+        kx=np.asarray([]),
+        y0=1.0,
+        nz=4,
+        dz=0.5,
+        jtwist=1,
+        real_dtype=jnp.float32,
+    )
+    assert empty_indices == ()
+    assert empty_kz == ()
+
+    indices, kz = _build_linked_fft_maps(
+        ky=np.asarray([0.0, 0.1, 0.2]),
+        kx=np.asarray([0.0, 0.2, -0.2, 0.4]),
+        y0=1.0,
+        nz=4,
+        dz=0.5,
+        jtwist=1,
+        real_dtype=jnp.float32,
+        ky_mode=np.asarray([0, 1, 2]),
+    )
+    assert len(indices) == len(kz)
+    assert all(idx.ndim == 2 for idx in indices)
+
+    profile = _build_linked_end_damping_profile(
+        linked_indices=(jnp.asarray([1, 2], dtype=jnp.int32),),
+        ny=3,
+        nx=2,
+        nz=4,
+        widthfrac=0.5,
+    )
+    assert np.allclose(profile, 0.0)
+
+
+def test_build_linear_cache_linked_non_twist_contract() -> None:
+    grid = build_spectral_grid(
+        GridConfig(
+            Nx=4,
+            Ny=4,
+            Nz=8,
+            Lx=2.0 * np.pi,
+            Ly=2.0 * np.pi,
+            y0=1.0,
+            boundary="linked",
+            jtwist=1,
+            non_twist=True,
+        )
+    )
+    geom = SAlphaGeometry(q=1.4, s_hat=1.0, epsilon=0.1)
+    params = LinearParams(nu_hyper=0.0, nu_hyper_m=0.0, damp_ends_widthfrac=0.25)
+
+    cache = build_linear_cache(grid, geom, params, Nl=2, Nm=3)
+
+    assert cache.use_twist_shift is True
+    assert cache.jtwist == 1
+    assert cache.kperp2.shape == (grid.ky.size, grid.kx.size, grid.z.size)
+    assert len(cache.linked_indices) == len(cache.linked_kz)
+    assert cache.linked_damp_profile.shape == (grid.ky.size, grid.kx.size, grid.z.size)
+    assert np.all(np.isfinite(np.asarray(cache.kperp2)))
+    if cache.linked_indices:
+        assert cache.linked_use_gather is True
+        assert cache.linked_gather_map.shape == (grid.ky.size * grid.kx.size,)
+
+
+def test_build_linear_cache_y0_default_and_zero_twist_branches() -> None:
+    grid = build_spectral_grid(
+        GridConfig(
+            Nx=4,
+            Ny=4,
+            Nz=8,
+            Lx=2.0 * np.pi,
+            Ly=2.0 * np.pi,
+            boundary="linked",
+            jtwist=None,
+        )
+    )
+    params = LinearParams(nu_hyper=0.0, nu_hyper_m=0.0, damp_ends_widthfrac=0.0)
+    geom = SAlphaGeometry(q=1.4, s_hat=0.0, epsilon=0.1)
+
+    cache = build_linear_cache(replace(grid, y0=None), geom, params, Nl=2, Nm=2)
+
+    assert cache.use_twist_shift is True
+    assert cache.jtwist == 1
+    assert cache.linked_damp_profile.shape == (grid.ky.size, grid.kx.size, grid.z.size)
+    assert np.allclose(np.asarray(cache.linked_damp_profile), 0.0)
+    assert np.all(np.isfinite(np.asarray(cache.kperp2)))
+
+
+def test_build_H_field_couplings_and_errors() -> None:
+    G5 = jnp.zeros((2, 2, 1, 1, 3), dtype=jnp.complex64)
+    Jl4 = jnp.ones((2, 1, 1, 3), dtype=jnp.float32)
+    phi = jnp.ones((1, 1, 3), dtype=jnp.complex64)
+    apar = 0.5 * phi
+    bpar = 0.25 * phi
+
+    H = build_H(G5, Jl4, phi, tz=jnp.asarray(2.0), apar=apar, vth=jnp.asarray(3.0), bpar=bpar, JlB=Jl4)
+
+    assert H.shape == G5.shape
+    assert np.max(np.abs(np.asarray(H[0, 0]))) > 0.0
+    assert np.max(np.abs(np.asarray(H[0, 1]))) > 0.0
+    with pytest.raises(ValueError, match="vth"):
+        build_H(G5, Jl4, phi, tz=1.0, apar=apar)
+    with pytest.raises(ValueError, match="JlB"):
+        build_H(G5, Jl4, phi, tz=1.0, bpar=bpar)
+
+
+def test_linear_rhs_rejects_invalid_state_rank() -> None:
+    with pytest.raises(ValueError, match="G must have shape"):
+        linear_rhs(jnp.zeros((2, 2), dtype=jnp.complex64), object(), object(), LinearParams())
+
+
+def test_linear_rhs_accepts_multispecies_state() -> None:
+    grid = build_spectral_grid(GridConfig(Nx=2, Ny=2, Nz=4, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
+    geom = SAlphaGeometry(q=1.4, s_hat=0.8, epsilon=0.1)
+    params = LinearParams(charge_sign=jnp.asarray([1.0]), nu_hyper=0.0, nu_hyper_m=0.0)
+    G = jnp.zeros((1, 2, 2, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64)
+
+    dG, phi = linear_rhs(G, grid, geom, params, terms=LinearTerms())
+
+    assert dG.shape == G.shape
+    assert phi.shape == (grid.ky.size, grid.kx.size, grid.z.size)
+    assert np.all(np.isfinite(np.asarray(dG)))
 
 
 def test_build_implicit_operator_handles_species_squeeze(monkeypatch) -> None:
@@ -202,6 +409,16 @@ def test_build_implicit_operator_preconditioner_aliases_and_errors(monkeypatch) 
         assert y.shape == x.shape
         assert np.isfinite(np.asarray(y)).all()
 
+    _G, _shape, _size, _dt_val, callable_precond, _matvec, _squeeze = _build_implicit_operator(
+        G0,
+        cache,
+        params,
+        dt=0.2,
+        terms=LinearTerms(),
+        implicit_preconditioner=lambda x: 2.0 * x,
+    )
+    np.testing.assert_allclose(np.asarray(callable_precond(x)), np.asarray(2.0 * x))
+
     with pytest.raises(ValueError):
         _build_implicit_operator(
             G0,
@@ -211,6 +428,65 @@ def test_build_implicit_operator_preconditioner_aliases_and_errors(monkeypatch) 
             terms=LinearTerms(),
             implicit_preconditioner="not-a-preconditioner",
         )
+
+
+def test_build_implicit_operator_linked_hermite_line_preconditioner(monkeypatch) -> None:
+    G0 = jnp.zeros((1, 1, 2, 1, 1, 2), dtype=jnp.complex64)
+    kz_link = 2.0 * jnp.pi * jnp.fft.fftfreq(2, d=1.0)
+    cache = SimpleNamespace(
+        lb_lam=jnp.ones((1, 1, 2, 1, 1, 2), dtype=jnp.float32),
+        l=jnp.ones((1, 1, 2, 1, 1, 2), dtype=jnp.float32),
+        m=jnp.ones((1, 1, 2, 1, 1, 2), dtype=jnp.float32),
+        cv_d=jnp.ones((1, 1, 2), dtype=jnp.float32),
+        gb_d=jnp.ones((1, 1, 2), dtype=jnp.float32),
+        bgrad=jnp.ones((2,), dtype=jnp.float32),
+        sqrt_m_ladder=jnp.asarray([0.0, 1.0], dtype=jnp.float32),
+        sqrt_p=jnp.asarray([1.0, 0.0], dtype=jnp.float32),
+        kz=jnp.asarray([0.0, np.pi], dtype=jnp.float32),
+        linked_indices=(jnp.asarray([[0]], dtype=jnp.int32),),
+        linked_kz=(kz_link,),
+        use_twist_shift=True,
+    )
+    params = SimpleNamespace(
+        nu=jnp.asarray([0.1], dtype=jnp.float32),
+        tz=jnp.asarray([1.0], dtype=jnp.float32),
+        vth=jnp.asarray([1.0], dtype=jnp.float32),
+        omega_d_scale=1.0,
+        kpar_scale=1.0,
+    )
+    monkeypatch.setattr(
+        "spectraxgk.linear.hypercollision_damping",
+        lambda cache, params, dtype: jnp.zeros_like(cache.lb_lam, dtype=dtype),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.linear.linear_rhs_cached",
+        lambda G, cache, params, **kwargs: (jnp.ones_like(G), None),
+    )
+
+    _G, _shape, _size, _dt_val, precond_op, _matvec, _squeeze = _build_implicit_operator(
+        G0,
+        cache,
+        params,
+        dt=0.1,
+        terms=LinearTerms(),
+        implicit_preconditioner="hermite-line",
+    )
+    y = precond_op(jnp.ones((G0.size,), dtype=G0.dtype))
+
+    assert y.shape == (G0.size,)
+    assert np.all(np.isfinite(np.asarray(y)))
+
+    _G, _shape, _size, _dt_val, coarse_precond, _matvec, _squeeze = _build_implicit_operator(
+        G0,
+        cache,
+        params,
+        dt=0.1,
+        terms=LinearTerms(),
+        implicit_preconditioner="hermite-line-coarse",
+    )
+    y_coarse = coarse_precond(jnp.ones((G0.size,), dtype=G0.dtype))
+    assert y_coarse.shape == (G0.size,)
+    assert np.all(np.isfinite(np.asarray(y_coarse)))
 
 
 def test_integrate_linear_wrapper_routes_methods(monkeypatch) -> None:
@@ -353,6 +629,86 @@ def test_integrate_linear_diagnostics_validates_and_records_energy(monkeypatch) 
     assert phi_t.shape[0] == 2
     assert density_t.shape[0] == 2
     assert hl_t.shape[0] == 2
+
+
+@pytest.mark.parametrize("method", ["euler", "rk2", "sspx3", "rk4"])
+def test_integrate_linear_diagnostics_explicit_method_branches(monkeypatch, method: str) -> None:
+    G0 = jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64)
+    cache = SimpleNamespace(
+        lb_lam=jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.float32),
+        Jl=jnp.ones((2, 1, 1, 2), dtype=jnp.float32),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.linear.hypercollision_damping",
+        lambda cache, params, dtype: jnp.zeros_like(cache.lb_lam, dtype=dtype),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.linear.linear_rhs_cached",
+        lambda G, cache, params, **kwargs: (jnp.ones_like(G), jnp.ones((1, 1, 2), dtype=jnp.complex64)),
+    )
+
+    G_out, phi_t, density_t = integrate_linear_diagnostics(
+        G0,
+        object(),
+        object(),
+        SimpleNamespace(nu=0.0),
+        dt=0.1,
+        steps=2,
+        method=method,
+        cache=cache,
+        sample_stride=1,
+        species_index=0,
+    )
+
+    assert G_out.shape == G0.shape
+    assert phi_t.shape[0] == 2
+    assert density_t.shape[0] == 2
+
+
+def test_integrate_linear_diagnostics_multispecies_density_and_invalid_method(monkeypatch) -> None:
+    G0 = jnp.zeros((2, 2, 2, 1, 1, 2), dtype=jnp.complex64)
+    cache = SimpleNamespace(
+        lb_lam=jnp.zeros((2, 2, 2, 1, 1, 2), dtype=jnp.float32),
+        Jl=jnp.ones((2, 2, 1, 1, 2), dtype=jnp.float32),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.linear.hypercollision_damping",
+        lambda cache, params, dtype: jnp.zeros_like(cache.lb_lam, dtype=dtype),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.linear.linear_rhs_cached",
+        lambda G, cache, params, **kwargs: (jnp.ones_like(G), jnp.ones((1, 1, 2), dtype=jnp.complex64)),
+    )
+
+    G_out, phi_t, density_t, hl_t = integrate_linear_diagnostics(
+        G0,
+        object(),
+        object(),
+        SimpleNamespace(nu=jnp.asarray([0.0, 0.0])),
+        dt=0.1,
+        steps=2,
+        method="rk4",
+        cache=cache,
+        sample_stride=1,
+        species_index=None,
+        record_hl_energy=True,
+    )
+
+    assert G_out.shape == G0.shape
+    assert phi_t.shape[0] == 2
+    assert density_t.shape[0] == 2
+    assert hl_t.shape[0] == 2
+    with pytest.raises(ValueError, match="Unsupported method"):
+        integrate_linear_diagnostics(
+            G0,
+            object(),
+            object(),
+            SimpleNamespace(nu=jnp.asarray([0.0, 0.0])),
+            dt=0.1,
+            steps=1,
+            method="bad",
+            cache=cache,
+        )
 
 
 def test_integrate_linear_diagnostics_builds_cache_and_uses_imex2(monkeypatch) -> None:

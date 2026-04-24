@@ -91,6 +91,15 @@ def _load_imported_linear(path: Path) -> pd.DataFrame:
     return df.sort_values("ky").reset_index(drop=True)
 
 
+def _load_imported_linear_lastvalue(path: Path) -> pd.DataFrame:
+    df = pd.read_csv(path)
+    required = {"ky", "rel_gamma", "rel_omega", "gamma", "gamma_gx", "omega", "omega_gx"}
+    missing = required.difference(df.columns)
+    if missing:
+        raise ValueError(f"{path} missing columns {sorted(missing)}")
+    return df.sort_values("ky").reset_index(drop=True)
+
+
 def _linear_table_rows(df: pd.DataFrame) -> list[list[str]]:
     rows: list[list[str]] = []
     for row in df.itertuples(index=False):
@@ -118,18 +127,25 @@ def _mean_rel(lhs: np.ndarray, rhs: np.ndarray, floor_fraction: float = 1.0e-8) 
     return float(np.nanmean(np.abs(lhs_f[finite] - rhs_sel) / denom))
 
 
-def _plot_imported_linear(ax: Axes, df: pd.DataFrame, title: str) -> None:
+def _plot_imported_linear(
+    ax: Axes,
+    df: pd.DataFrame,
+    title: str,
+    *,
+    lastvalue: pd.DataFrame | None = None,
+    note: str | None = None,
+) -> None:
     ky = np.asarray(df["ky"], dtype=float)
-    ax.plot(ky, np.asarray(df["mean_abs_omega"], dtype=float), marker="o", linewidth=2.0, label="abs ω")
-    ax.plot(ky, np.asarray(df["mean_abs_gamma"], dtype=float), marker="s", linewidth=2.0, label="abs γ")
-    ax.plot(ky, np.asarray(df["mean_rel_Wg"], dtype=float), marker="^", linewidth=2.0, linestyle="--", label="rel Wg")
+    ax.plot(ky, np.asarray(df["mean_rel_omega"], dtype=float), marker="o", linewidth=2.0, label="window rel ω")
+    ax.plot(ky, np.asarray(df["mean_rel_gamma"], dtype=float), marker="s", linewidth=2.0, label="window rel γ")
+    ax.plot(ky, np.asarray(df["mean_rel_Wg"], dtype=float), marker="^", linewidth=2.0, linestyle="--", label="window rel Wg")
     ax.plot(
         ky,
         np.asarray(df["mean_rel_Wphi"], dtype=float),
         marker="d",
         linewidth=2.0,
         linestyle="--",
-        label="rel Wphi",
+        label="window rel Wphi",
     )
     if "mean_rel_Wapar" in df.columns and np.any(np.asarray(df["mean_rel_Wapar"], dtype=float) > 0.0):
         ax.plot(
@@ -138,14 +154,46 @@ def _plot_imported_linear(ax: Axes, df: pd.DataFrame, title: str) -> None:
             marker="x",
             linewidth=1.8,
             linestyle=":",
-            label="rel Wapar",
+            label="window rel Wapar",
+        )
+    if lastvalue is not None:
+        ky_last = np.asarray(lastvalue["ky"], dtype=float)
+        ax.plot(
+            ky_last,
+            np.abs(np.asarray(lastvalue["rel_omega"], dtype=float)),
+            marker="o",
+            linewidth=2.2,
+            linestyle=":",
+            color="#c2410c",
+            label="late rel ω",
+        )
+        ax.plot(
+            ky_last,
+            np.abs(np.asarray(lastvalue["rel_gamma"], dtype=float)),
+            marker="s",
+            linewidth=2.2,
+            linestyle=":",
+            color="#7c3aed",
+            label="late rel γ",
         )
     ax.set_title(title, fontsize=14, fontweight="bold")
     ax.set_xlabel("ky")
     ax.set_yscale("log")
-    ax.set_ylabel("error")
+    ax.set_ylabel("relative mismatch")
     ax.grid(True, which="both", alpha=0.25)
     ax.legend(fontsize=8, ncol=2, frameon=False, loc="upper left")
+    if note:
+        ax.text(
+            0.03,
+            0.03,
+            note,
+            transform=ax.transAxes,
+            va="bottom",
+            ha="left",
+            fontsize=8,
+            color="#334155",
+            bbox={"facecolor": "white", "edgecolor": "#cbd5e1", "boxstyle": "round,pad=0.25"},
+        )
 
 
 def _plot_secondary(ax: Axes, df: pd.DataFrame, title: str) -> None:
@@ -212,6 +260,18 @@ def build_parser() -> argparse.ArgumentParser:
         help="Tracked linear HSX imported-geometry comparison CSV.",
     )
     parser.add_argument(
+        "--w7x-linear-lastvalue-csv",
+        type=Path,
+        default=STATIC / "w7x_linear_t2_lastvalue.csv",
+        help="Tracked late-time W7-X imported-geometry comparison CSV.",
+    )
+    parser.add_argument(
+        "--hsx-linear-lastvalue-csv",
+        type=Path,
+        default=STATIC / "hsx_linear_t2_lastvalue.csv",
+        help="Tracked late-time HSX imported-geometry comparison CSV.",
+    )
+    parser.add_argument(
         "--out",
         type=Path,
         default=STATIC / "gx_summary_panel.png",
@@ -228,11 +288,15 @@ def main() -> None:
     secondary_csv = _resolve(args.secondary_csv)
     w7x_linear_csv = _resolve(args.w7x_linear_csv)
     hsx_linear_csv = _resolve(args.hsx_linear_csv)
+    w7x_linear_lastvalue_csv = _resolve(args.w7x_linear_lastvalue_csv)
+    hsx_linear_lastvalue_csv = _resolve(args.hsx_linear_lastvalue_csv)
     out = _resolve(args.out)
 
     secondary = _load_secondary(secondary_csv)
     w7x_linear = _load_imported_linear(w7x_linear_csv)
     hsx_linear = _load_imported_linear(hsx_linear_csv)
+    w7x_linear_lastvalue = _load_imported_linear_lastvalue(w7x_linear_lastvalue_csv)
+    hsx_linear_lastvalue = _load_imported_linear_lastvalue(hsx_linear_lastvalue_csv)
     fig = plt.figure(figsize=(20.5, 21.0), constrained_layout=True)
     gs = fig.add_gridspec(4, 2, height_ratios=[1.45, 1.15, 0.95, 0.9])
 
@@ -255,10 +319,22 @@ def main() -> None:
     ax2.axis("off")
 
     ax3 = fig.add_subplot(gs[2, 0])
-    _plot_imported_linear(ax3, w7x_linear, "W7-X Linear VMEC")
+    _plot_imported_linear(
+        ax3,
+        w7x_linear,
+        "W7-X Linear VMEC",
+        lastvalue=w7x_linear_lastvalue,
+        note="window and late-time metrics remain aligned across the tracked ky range",
+    )
 
     ax4 = fig.add_subplot(gs[2, 1])
-    _plot_imported_linear(ax4, hsx_linear, "HSX Linear VMEC")
+    _plot_imported_linear(
+        ax4,
+        hsx_linear,
+        "HSX Linear VMEC",
+        lastvalue=hsx_linear_lastvalue,
+        note="near-marginal lane: whole-window rel γ is stress-only, late-time closure is tighter",
+    )
 
     ax5 = fig.add_subplot(gs[3, :])
     _plot_secondary(ax5, secondary, "Secondary Slab (GX kh01a.out.nc)")

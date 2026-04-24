@@ -4,12 +4,29 @@
 from __future__ import annotations
 
 import argparse
+import json
+import math
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 from netCDF4 import Dataset
+
+from spectraxgk.benchmarking import evaluate_scalar_gate, gate_report, gate_report_to_dict
+
+
+def _json_clean(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {str(key): _json_clean(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_clean(item) for item in value]
+    if isinstance(value, np.generic):
+        return _json_clean(value.item())
+    if isinstance(value, float):
+        return value if math.isfinite(value) else None
+    return value
 
 
 def _reduce_species_time(arr: np.ndarray, name: str) -> np.ndarray:
@@ -117,6 +134,25 @@ def _load_spectrax(path: Path) -> dict[str, np.ndarray]:
     return _load_spectrax_csv(path)
 
 
+def _apply_time_window(
+    series: dict[str, np.ndarray],
+    *,
+    tmin: float | None,
+    tmax: float | None,
+) -> dict[str, np.ndarray]:
+    """Return a copy restricted to a common diagnostic time window."""
+
+    t = np.asarray(series["t"], dtype=float)
+    mask = np.ones(t.shape, dtype=bool)
+    if tmin is not None:
+        mask &= t >= float(tmin)
+    if tmax is not None:
+        mask &= t <= float(tmax)
+    if int(np.count_nonzero(mask)) < 2:
+        raise ValueError("time window must retain at least two diagnostic samples")
+    return {key: np.asarray(value)[mask] for key, value in series.items()}
+
+
 def _reduce_species_resolved(arr: np.ndarray, name: str) -> np.ndarray:
     if arr.ndim != 3:
         raise ValueError(f"expected resolved array with shape (time, species, mode), got {arr.shape} for {name}")
@@ -186,14 +222,23 @@ def _write_resolved_audit(
     sp_path: Path,
     out_png: Path,
     out_csv: Path | None,
+    tmin: float | None,
     tmax: float | None,
 ) -> None:
     gx = _load_resolved_diag(gx_path)
     sp = _load_resolved_diag(sp_path)
 
-    if tmax is not None:
-        gx_mask = gx["t"] <= tmax
-        sp_mask = sp["t"] <= tmax
+    if tmin is not None or tmax is not None:
+        gx_mask = np.ones(gx["t"].shape, dtype=bool)
+        sp_mask = np.ones(sp["t"].shape, dtype=bool)
+        if tmin is not None:
+            gx_mask &= gx["t"] >= float(tmin)
+            sp_mask &= sp["t"] >= float(tmin)
+        if tmax is not None:
+            gx_mask &= gx["t"] <= float(tmax)
+            sp_mask &= sp["t"] <= float(tmax)
+        if int(np.count_nonzero(gx_mask)) < 2 or int(np.count_nonzero(sp_mask)) < 2:
+            raise ValueError("resolved audit time window must retain at least two samples")
         gx["t"] = gx["t"][gx_mask]
         sp["t"] = sp["t"][sp_mask]
         for key in ("Wphi_kx", "Wphi_ky", "HeatFlux_kx"):
@@ -256,6 +301,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--gx", type=Path, required=True, help="GX .out.nc file with diagnostics")
     parser.add_argument("--spectrax", type=Path, required=True, help="SPECTRAX nonlinear CSV or GX-style .out.nc")
+    parser.add_argument("--tmin", type=float, default=None, help="Optional min time for plotting and metrics")
     parser.add_argument("--tmax", type=float, default=None, help="Optional max time for plotting")
     parser.add_argument(
         "--out",
@@ -281,18 +327,38 @@ def main() -> int:
         default=None,
         help="Optional CSV summary for the resolved-diagnostic audit",
     )
+    parser.add_argument(
+        "--summary-json",
+        type=Path,
+        default=None,
+        help="Optional JSON summary with scalar gate results for the plotted nonlinear diagnostics.",
+    )
+    parser.add_argument(
+        "--summary-case",
+        type=str,
+        default="nonlinear_diagnostics_window",
+        help="Case name stored in --summary-json gate metadata.",
+    )
+    parser.add_argument(
+        "--summary-source",
+        type=str,
+        default="GX diagnostics",
+        help="Reference/source label stored in --summary-json gate metadata.",
+    )
+    parser.add_argument(
+        "--gate-mean-rel",
+        type=float,
+        default=0.10,
+        help="Mean relative-mismatch tolerance used in --summary-json gate metadata.",
+    )
     args = parser.parse_args()
 
     gx = _load_gx_diag(args.gx)
     sp = _load_spectrax(args.spectrax)
 
-    if args.tmax is not None:
-        gx_mask = gx["t"] <= args.tmax
-        sp_mask = sp["t"] <= args.tmax
-        for key in gx:
-            gx[key] = gx[key][gx_mask]
-        for key in sp:
-            sp[key] = sp[key][sp_mask]
+    if args.tmin is not None or args.tmax is not None:
+        gx = _apply_time_window(gx, tmin=args.tmin, tmax=args.tmax)
+        sp = _apply_time_window(sp, tmin=args.tmin, tmax=args.tmax)
 
     import matplotlib.patheffects as pe
 
@@ -353,9 +419,60 @@ def main() -> int:
         ]
     )
     print("metric mean_rel_abs max_rel_abs final_rel")
+    summary_rows: list[dict[str, float | str]] = []
     for name, sp_y, gx_y in summary_pairs:
         mean_rel, max_rel, final_rel = _interp_summary(sp["t"], sp_y, gx["t"], gx_y)
         print(f"{name} {mean_rel:.6e} {max_rel:.6e} {final_rel:.6e}")
+        summary_rows.append(
+            {
+                "metric": name,
+                "mean_rel_abs": float(mean_rel),
+                "max_rel_abs": float(max_rel),
+                "final_rel": float(final_rel),
+            }
+        )
+    if args.summary_json is not None:
+        threshold = float(args.gate_mean_rel)
+        if threshold < 0.0:
+            raise ValueError("--gate-mean-rel must be non-negative")
+        report = gate_report(
+            args.summary_case,
+            args.summary_source,
+            [
+                evaluate_scalar_gate(
+                    f"{row['metric']}_mean_rel_abs",
+                    float(row["mean_rel_abs"]),
+                    0.0,
+                    atol=threshold,
+                    rtol=0.0,
+                    notes=f"Passes when mean relative mismatch <= {threshold:.6g}.",
+                )
+                for row in summary_rows
+            ],
+        )
+        args.summary_json.parent.mkdir(parents=True, exist_ok=True)
+        payload = {
+            "gx": str(args.gx),
+            "spectrax": str(args.spectrax),
+            "case": str(args.summary_case),
+            "source": str(args.summary_source),
+            "tmin": None if args.tmin is None else float(args.tmin),
+            "tmax": None if args.tmax is None else float(args.tmax),
+            "gate_mean_rel": threshold,
+            "summary": summary_rows,
+            "gate_report": gate_report_to_dict(report),
+            "gate_passed": bool(report.passed),
+        }
+        args.summary_json.write_text(
+            json.dumps(
+                _json_clean(payload),
+                indent=2,
+                sort_keys=True,
+                allow_nan=False,
+            ),
+            encoding="utf-8",
+        )
+        print(f"saved {args.summary_json}")
     if args.resolved_out is not None:
         if args.gx.suffix != ".nc" or args.spectrax.suffix != ".nc":
             raise ValueError("--resolved-out requires both --gx and --spectrax to be .nc files")
@@ -364,6 +481,7 @@ def main() -> int:
             sp_path=args.spectrax,
             out_png=args.resolved_out,
             out_csv=args.resolved_csv,
+            tmin=args.tmin,
             tmax=args.tmax,
         )
     return 0

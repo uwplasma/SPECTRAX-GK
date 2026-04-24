@@ -5,8 +5,6 @@ import jax
 import jax.numpy as jnp
 import pytest
 
-pytestmark = pytest.mark.integration
-
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.geometry import SAlphaGeometry, ensure_flux_tube_geometry_data
 from spectraxgk.gx_integrators import _gx_linear_omega_max
@@ -22,6 +20,8 @@ from spectraxgk.nonlinear import (
     integrate_nonlinear_imex_cached,
 )
 from spectraxgk.terms.config import TermConfig
+
+pytestmark = pytest.mark.integration
 
 
 def test_integrate_nonlinear_checkpoint_runs():
@@ -325,9 +325,24 @@ def test_nonlinear_gx_gamma_omega_use_previous_step_not_previous_diagnostic(meth
         diagnostics_stride=2,
     )
 
-    assert np.allclose(np.asarray(t_dense)[::2], np.asarray(t_sparse))
-    assert np.allclose(np.asarray(diag_dense.gamma_t)[::2], np.asarray(diag_sparse.gamma_t))
-    assert np.allclose(np.asarray(diag_dense.omega_t)[::2], np.asarray(diag_sparse.omega_t))
+    t_dense_arr = np.asarray(t_dense)
+    t_sparse_arr = np.asarray(t_sparse)
+    gamma_dense = np.asarray(diag_dense.gamma_t)
+    omega_dense = np.asarray(diag_dense.omega_t)
+    gamma_sparse = np.asarray(diag_sparse.gamma_t)
+    omega_sparse = np.asarray(diag_sparse.omega_t)
+
+    stride_indices = list(range(0, len(t_dense_arr), 2))
+    forced_final = bool(t_sparse_arr[-1] == pytest.approx(t_dense_arr[-1]) and stride_indices[-1] != len(t_dense_arr) - 1)
+    compared_sparse = slice(None, -1 if forced_final else None)
+    compared_indices = stride_indices[: len(t_sparse_arr[compared_sparse])]
+
+    assert np.allclose(t_dense_arr[compared_indices], t_sparse_arr[compared_sparse])
+    assert np.allclose(gamma_dense[compared_indices], gamma_sparse[compared_sparse])
+    assert np.allclose(omega_dense[compared_indices], omega_sparse[compared_sparse])
+    if forced_final:
+        assert gamma_sparse[-1] == pytest.approx(gamma_sparse[-2])
+        assert omega_sparse[-1] == pytest.approx(omega_sparse[-2])
 
 
 def test_nonlinear_imex_gx_diagnostics_match_operator_dtype_under_x64():

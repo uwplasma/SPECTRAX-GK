@@ -19,13 +19,13 @@ Term-level source mapping
 
 - streaming, mirror, curvature, grad-B, diamagnetic, collisions,
   hypercollisions, hyperdiffusion, end damping:
-  [/Users/rogeriojorge/local/SPECTRAX-GK/src/spectraxgk/terms/linear_terms.py](/Users/rogeriojorge/local/SPECTRAX-GK/src/spectraxgk/terms/linear_terms.py)
+  ``src/spectraxgk/terms/linear_terms.py``
 - field solves:
-  [/Users/rogeriojorge/local/SPECTRAX-GK/src/spectraxgk/terms/fields.py](/Users/rogeriojorge/local/SPECTRAX-GK/src/spectraxgk/terms/fields.py)
+  ``src/spectraxgk/terms/fields.py``
 - nonlinear E×B, flutter, and Bessel-grid transforms:
-  [/Users/rogeriojorge/local/SPECTRAX-GK/src/spectraxgk/terms/nonlinear.py](/Users/rogeriojorge/local/SPECTRAX-GK/src/spectraxgk/terms/nonlinear.py)
+  ``src/spectraxgk/terms/nonlinear.py``
 - assembled RHS:
-  [/Users/rogeriojorge/local/SPECTRAX-GK/src/spectraxgk/terms/assembly.py](/Users/rogeriojorge/local/SPECTRAX-GK/src/spectraxgk/terms/assembly.py)
+  ``src/spectraxgk/terms/assembly.py``
 
 For the full operator equations, see :doc:`operators`.
 

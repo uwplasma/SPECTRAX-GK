@@ -6,9 +6,12 @@ from dataclasses import replace
 
 import jax.numpy as jnp
 import numpy as np
+import pytest
 
 from spectraxgk.cetg import (
+    _from_internal_state,
     _cetg_linear_omega_max,
+    _kz_grid,
     _project_state,
     _to_internal_state,
     build_cetg_model_params,
@@ -125,6 +128,55 @@ def test_build_cetg_model_params_matches_gx_defaults() -> None:
     assert params.nu_hyper == 2.0
     assert params.D_hyper == 5.0e-4
     assert params.dealias_kz is True
+
+
+def test_validate_cetg_runtime_config_rejects_non_cetg_contracts() -> None:
+    cfg = _base_cetg_cfg()
+    geom = SlabGeometry.from_config(cfg.geometry)
+
+    with pytest.raises(ValueError, match="reduced_model"):
+        validate_cetg_runtime_config(replace(cfg, physics=replace(cfg.physics, reduced_model="")), geom, Nl=2, Nm=1)
+    with pytest.raises(ValueError, match="Nl=2 and Nm=1"):
+        validate_cetg_runtime_config(cfg, geom, Nl=3, Nm=1)
+    with pytest.raises(ValueError, match="slab"):
+        validate_cetg_runtime_config(cfg, object(), Nl=2, Nm=1)  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="electrostatic-only"):
+        validate_cetg_runtime_config(
+            replace(cfg, physics=replace(cfg.physics, electrostatic=False)),
+            geom,
+            Nl=2,
+            Nm=1,
+        )
+    with pytest.raises(ValueError, match="adiabatic_ions"):
+        validate_cetg_runtime_config(
+            replace(cfg, physics=replace(cfg.physics, adiabatic_ions=False)),
+            geom,
+            Nl=2,
+            Nm=1,
+        )
+    with pytest.raises(ValueError, match="exactly one kinetic"):
+        validate_cetg_runtime_config(replace(cfg, species=()), geom, Nl=2, Nm=1)
+    bad_species = (replace(cfg.species[0], charge=1.0),)
+    with pytest.raises(ValueError, match="electron"):
+        validate_cetg_runtime_config(replace(cfg, species=bad_species), geom, Nl=2, Nm=1)
+
+
+def test_cetg_state_conversion_and_single_z_derivative_contracts() -> None:
+    internal = jnp.ones((2, 3, 2, 1), dtype=jnp.complex64)
+    external = _from_internal_state(internal)
+
+    assert external.shape == (1, 2, 1, 3, 2, 1)
+    assert np.allclose(np.asarray(_to_internal_state(external)), np.asarray(internal))
+    assert np.allclose(np.asarray(_to_internal_state(internal)), np.asarray(internal))
+
+    with pytest.raises(ValueError, match="cETG state"):
+        _to_internal_state(jnp.ones((1, 1, 1), dtype=jnp.complex64))
+    with pytest.raises(ValueError, match="internal cETG"):
+        _from_internal_state(jnp.ones((1, 3, 2, 1), dtype=jnp.complex64))
+
+    cfg = replace(_base_cetg_cfg(), grid=replace(_base_cetg_cfg().grid, Nz=1, ntheta=1))
+    grid = build_spectral_grid(cfg.grid)
+    assert np.allclose(np.asarray(_kz_grid(grid)), 0.0)
 
 
 def test_cetg_linear_omega_max_matches_legacy_gx_formula() -> None:
@@ -285,3 +337,51 @@ def test_cetg_sspx3_scan_matches_manual_one_step_with_carried_startup_field() ->
 
     assert np.allclose(np.asarray(diag.dt_t), np.asarray([float(cfg.time.dt)]))
     assert np.allclose(np.asarray(G_scan)[0, :, 0], np.asarray(G_manual), rtol=1.0e-6, atol=1.0e-6)
+
+
+@pytest.mark.parametrize("method", ["euler", "rk2", "rk3_classic", "rk3", "rk4", "k10"])
+def test_cetg_explicit_method_branches_return_finite_diagnostics(method: str) -> None:
+    base = _base_cetg_cfg()
+    cfg = replace(
+        base,
+        grid=replace(base.grid, Nx=4, Ny=4, Nz=4, ntheta=4),
+        time=replace(base.time, dt=1.0e-4, t_max=1.0e-4, fixed_dt=True),
+        terms=replace(base.terms, nonlinear=0.0),
+    )
+    geom = SlabGeometry.from_config(cfg.geometry)
+    grid = build_spectral_grid(cfg.grid)
+    params = build_cetg_model_params(cfg, geom, Nl=2, Nm=1)
+    terms = TermConfig(
+        streaming=float(cfg.terms.streaming),
+        mirror=float(cfg.terms.mirror),
+        curvature=float(cfg.terms.curvature),
+        gradb=float(cfg.terms.gradb),
+        diamagnetic=float(cfg.terms.diamagnetic),
+        collisions=float(cfg.terms.collisions),
+        hypercollisions=float(cfg.terms.hypercollisions),
+        hyperdiffusion=float(cfg.terms.hyperdiffusion),
+        end_damping=float(cfg.terms.end_damping),
+        apar=float(cfg.terms.apar),
+        bpar=float(cfg.terms.bpar),
+        nonlinear=float(cfg.terms.nonlinear),
+    )
+    g0 = jnp.ones((1, 2, 1, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64) * 1.0e-5
+
+    t, diag, state, fields = integrate_cetg_gx_diagnostics_state(
+        g0,
+        grid,
+        params,
+        terms,
+        dt=float(cfg.time.dt),
+        steps=1,
+        method=method,
+        sample_stride=1,
+        diagnostics_stride=1,
+        gx_real_fft=False,
+        fixed_dt=True,
+    )
+
+    assert np.allclose(np.asarray(t), [float(cfg.time.dt)])
+    assert state.shape[0:3] == (1, 2, 1)
+    assert fields.phi.shape == (grid.ky.size, grid.kx.size, grid.z.size)
+    assert np.all(np.isfinite(np.asarray(diag.Wg_t)))

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import fields
 from types import SimpleNamespace
 
 import jax.numpy as jnp
@@ -7,6 +8,7 @@ import numpy as np
 import pytest
 
 from spectraxgk.config import CycloneBaseCase, GridConfig
+from spectraxgk.diagnostics import ResolvedDiagnostics
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.linear import LinearParams, build_linear_cache
@@ -19,6 +21,7 @@ from spectraxgk.nonlinear import (
     _make_fixed_mode_projector,
     _make_hermitian_projector,
     _pack_resolved_diagnostics,
+    _sample_indices_with_final,
     build_nonlinear_imex_operator,
     integrate_nonlinear,
     integrate_nonlinear_cached,
@@ -31,11 +34,11 @@ from spectraxgk.terms.config import FieldState, TermConfig
 
 
 def test_pack_resolved_diagnostics_and_fixed_mode_projector() -> None:
-    resolved = tuple(np.full((1,), i, dtype=float) for i in range(56))
+    names = [field.name for field in fields(ResolvedDiagnostics)]
+    resolved = tuple(np.full((1,), i, dtype=float) for i in range(len(names)))
     packed = _pack_resolved_diagnostics(resolved)
-    np.testing.assert_allclose(packed.Phi2_kxt, [0.0])
-    np.testing.assert_allclose(packed.Wapar_zst, [19.0])
-    np.testing.assert_allclose(packed.TurbulentHeating_zst, [55.0])
+    for index, name in enumerate(names):
+        np.testing.assert_allclose(getattr(packed, name), [float(index)])
 
     projector = _make_fixed_mode_projector(
         jnp.arange(24, dtype=jnp.float32).reshape(1, 3, 2, 4),
@@ -46,6 +49,12 @@ def test_pack_resolved_diagnostics_and_fixed_mode_projector() -> None:
     out = projector(G)
     np.testing.assert_allclose(np.asarray(out[..., 1:2, 0:1, :]), np.asarray(jnp.arange(24, dtype=jnp.float32).reshape(1, 3, 2, 4)[..., 1:2, 0:1, :]))
     assert _make_fixed_mode_projector(None, ky_index=0, kx_index=0) is None
+
+
+def test_sample_indices_with_final_preserves_last_step() -> None:
+    np.testing.assert_array_equal(_sample_indices_with_final(6, 4), np.asarray([0, 4, 5]))
+    np.testing.assert_array_equal(_sample_indices_with_final(6, 5), np.asarray([0, 5]))
+    assert isinstance(_sample_indices_with_final(6, 1), slice)
 
 
 def test_make_hermitian_projector_and_mode_mask() -> None:
@@ -61,12 +70,24 @@ def test_make_hermitian_projector_and_mode_mask() -> None:
     same = no_project(state[..., :2, :1, :])
     np.testing.assert_allclose(np.asarray(same), np.asarray(state[..., :2, :1, :]))
 
+    single_kx_projector = _make_hermitian_projector(np.array([0.0, 0.2, 0.4, -0.4, -0.2], dtype=float), nx=1)
+    single_kx_state = jnp.arange(5, dtype=jnp.float32).reshape(1, 5, 1, 1).astype(jnp.complex64)
+    single_kx_out = single_kx_projector(single_kx_state)
+    np.testing.assert_allclose(
+        np.asarray(single_kx_out[..., 3:, :, :]),
+        np.asarray(jnp.conj(single_kx_out[..., 1:3, :, :])[..., ::-1, :, :]),
+    )
+
     grid = SimpleNamespace(ky=np.array([0.0, 0.2, -0.2, -0.4]), kx=np.array([0.0, 0.5]), dealias_mask=np.array([[True, False], [True, True], [True, True], [False, True]]))
     cache = SimpleNamespace(ky=jnp.asarray(grid.ky))
     mask = _gx_omega_mode_mask(grid, cache, gx_real_fft=True)
     assert mask.shape == (4, 2)
     assert bool(mask[0, 0]) is True
     assert bool(mask[3, 1]) is False
+
+    signed_mask = _gx_omega_mode_mask(grid, cache, gx_real_fft=False)
+    assert bool(signed_mask[1, 0]) is True
+    assert bool(signed_mask[2, 0]) is False
 
 
 def test_collision_damping_and_imex_operator_builder(monkeypatch) -> None:
@@ -83,6 +104,24 @@ def test_collision_damping_and_imex_operator_builder(monkeypatch) -> None:
     monkeypatch.setattr("spectraxgk.nonlinear.hypercollision_damping", lambda cache, params, dtype: jnp.ones_like(cache.lb_lam, dtype=dtype))
     squeezed = _collision_damping(cache6, SimpleNamespace(nu=0.4), TermConfig(collisions=1.0, hypercollisions=1.0), jnp.float32, squeeze_species=True)
     assert squeezed.shape == (2, 2, 1, 1, 1)
+
+    cache_low_rank = SimpleNamespace(
+        lb_lam=jnp.ones((2, 2), dtype=jnp.float32),
+        b=jnp.zeros((1, 1, 1, 1), dtype=jnp.float32),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.nonlinear.hypercollision_damping",
+        lambda cache, params, dtype: jnp.ones((1, 2, 2, 1, 1, 1), dtype=dtype),
+    )
+    squeezed_low_rank = _collision_damping(
+        cache_low_rank,
+        SimpleNamespace(nu=jnp.asarray([0.4], dtype=jnp.float32)),
+        TermConfig(collisions=1.0, hypercollisions=1.0),
+        jnp.float32,
+        squeeze_species=True,
+    )
+    assert squeezed_low_rank.shape == (2, 2, 1, 1, 1)
+    np.testing.assert_allclose(np.asarray(squeezed_low_rank), 1.4)
 
     monkeypatch.setattr(
         "spectraxgk.nonlinear._build_implicit_operator",
@@ -257,7 +296,15 @@ def test_integrate_nonlinear_builds_cache_and_rejects_bad_shape(monkeypatch) -> 
         dt=0.1,
         steps=2,
     ) == ("G_out", "fields_out")
-    assert calls == [(2, 3)]
+    assert integrate_nonlinear(
+        jnp.zeros((1, 2, 3, 1, 1, 4), dtype=jnp.complex64),
+        SimpleNamespace(z=np.array([-1.0, 0.0, 1.0, 2.0])),
+        object(),
+        object(),
+        dt=0.1,
+        steps=2,
+    ) == ("G_out", "fields_out")
+    assert calls == [(2, 3), (2, 3)]
 
     with pytest.raises(ValueError):
         integrate_nonlinear(jnp.zeros((2, 2), dtype=jnp.complex64), SimpleNamespace(z=np.array([0.0])), object(), object(), dt=0.1, steps=2)
@@ -318,6 +365,35 @@ def test_integrate_nonlinear_gx_diagnostics_explicit_and_state_routes(monkeypatc
         method="rk3",
     )
     assert out_state == payload
+
+
+def test_explicit_gx_diagnostics_impl_rejects_imex_and_bad_state_rank(monkeypatch) -> None:
+    monkeypatch.setattr("spectraxgk.nonlinear.ensure_flux_tube_geometry_data", lambda geom, z: geom)
+    grid = SimpleNamespace(z=np.array([0.0]))
+
+    with pytest.raises(ValueError, match="Final-state GX diagnostics helper only supports explicit methods"):
+        _integrate_nonlinear_gx_diagnostics_impl(
+            jnp.zeros((1, 1, 1, 1, 1), dtype=jnp.complex64),
+            grid,
+            object(),
+            object(),
+            dt=0.1,
+            steps=1,
+            method="imex",
+            cache=object(),
+        )
+
+    with pytest.raises(ValueError, match="G0 must have shape"):
+        _integrate_nonlinear_gx_diagnostics_impl(
+            jnp.zeros((2, 2), dtype=jnp.complex64),
+            grid,
+            object(),
+            object(),
+            dt=0.1,
+            steps=1,
+            method="rk2",
+            cache=None,
+        )
 
 
 def test_integrate_nonlinear_gx_diagnostics_forwarding_contracts(monkeypatch) -> None:
@@ -449,7 +525,10 @@ def test_explicit_gx_diagnostics_impl_applies_fixed_mode_collision_and_stride(mo
         )
 
     monkeypatch.setattr("spectraxgk.nonlinear.ensure_flux_tube_geometry_data", lambda geom, z: geom)
-    monkeypatch.setattr("spectraxgk.nonlinear.gx_volume_factors", lambda geom, grid: (jnp.asarray(1.0), jnp.asarray(1.0)))
+    monkeypatch.setattr(
+        "spectraxgk.nonlinear.gx_volume_factors",
+        lambda geom, grid: (jnp.ones((grid.z.size,), dtype=jnp.float32), jnp.asarray(1.0)),
+    )
     monkeypatch.setattr("spectraxgk.nonlinear._gx_omega_mode_mask", lambda grid, cache, **kwargs: jnp.ones((2, 1), dtype=bool))
     monkeypatch.setattr("spectraxgk.nonlinear._gx_linear_omega_max", lambda *args, **kwargs: np.array([0.0, 0.0, 0.0], dtype=float))
     monkeypatch.setattr("spectraxgk.nonlinear._gx_laguerre_vmax", lambda nl: 0.0)
@@ -547,6 +626,38 @@ def test_explicit_gx_diagnostics_impl_applies_fixed_mode_collision_and_stride(mo
     G0 = jnp.zeros((1, 1, 2, 1, 2), dtype=jnp.complex64)
     G0 = G0.at[..., 1:2, 0:1, :].set(7.0 + 0.0j)
 
+    for method in ("rk3_classic", "rk4", "k10"):
+        t_branch, diag_branch, G_branch, _fields_branch = _integrate_nonlinear_gx_diagnostics_impl(
+            G0,
+            grid,
+            SimpleNamespace(),
+            params,
+            dt=0.1,
+            steps=1,
+            method=method,
+            cache=cache,
+            terms=TermConfig(),
+            sample_stride=1,
+            diagnostics_stride=1,
+            omega_ky_index=1,
+            omega_kx_index=0,
+        )
+        np.testing.assert_allclose(np.asarray(t_branch), [0.1])
+        np.testing.assert_allclose(np.asarray(diag_branch.gamma_t), [2.0])
+        assert G_branch.shape == G0.shape
+
+    with pytest.raises(ValueError):
+        _integrate_nonlinear_gx_diagnostics_impl(
+            G0,
+            grid,
+            SimpleNamespace(),
+            params,
+            dt=0.1,
+            steps=1,
+            method="not-a-method",
+            cache=cache,
+        )
+
     t, diag, G_final, fields_final = _integrate_nonlinear_gx_diagnostics_impl(
         G0,
         grid,
@@ -638,7 +749,7 @@ def test_integrate_nonlinear_imex_cached_shape_mismatch_and_zero_nonlinear(monke
     )
     monkeypatch.setattr(
         "spectraxgk.nonlinear.assemble_rhs_cached_jit",
-        lambda G, cache, params, terms: (
+        lambda G, cache, params, terms, **kwargs: (
             jnp.zeros_like(G),
             FieldState(phi=jnp.zeros((1, 1, 2), dtype=jnp.complex64), apar=None, bpar=None),
         ),
@@ -660,4 +771,69 @@ def test_integrate_nonlinear_imex_cached_shape_mismatch_and_zero_nonlinear(monke
 
     assert gmres_calls
     assert G_out.shape == G0.shape
+    assert fields_t.phi.shape[0] == 2
+
+
+def test_integrate_nonlinear_imex_cached_builds_operator_and_nonlinear_term(monkeypatch) -> None:
+    G0 = jnp.zeros((1, 1, 1, 1, 2), dtype=jnp.complex64)
+    cache = SimpleNamespace(
+        Jl=None,
+        JlB=None,
+        sqrt_m=None,
+        sqrt_m_p1=None,
+        kx_grid=None,
+        ky_grid=None,
+        dealias_mask=None,
+        kxfac=1.0,
+        laguerre_to_grid=None,
+        laguerre_to_spectral=None,
+        laguerre_roots=None,
+        laguerre_j0=None,
+        laguerre_j1_over_alpha=None,
+        b=None,
+    )
+    params = SimpleNamespace(tz=jnp.asarray([1.0]), vth=jnp.asarray([1.0]))
+    fields = FieldState(phi=jnp.zeros((1, 1, 2), dtype=jnp.complex64), apar=None, bpar=None)
+
+    build_calls: list[float] = []
+    nonlinear_calls: list[bool] = []
+
+    def _fake_build_operator(G_in, cache_in, params_in, dt, linear_terms, implicit_preconditioner):
+        del cache_in, params_in, linear_terms, implicit_preconditioner
+        build_calls.append(float(dt))
+        return G_in, tuple(G_in.shape), G_in.size, jnp.asarray(dt, dtype=jnp.float32), None, lambda x: x, False
+
+    monkeypatch.setattr("spectraxgk.nonlinear._build_implicit_operator", _fake_build_operator)
+    monkeypatch.setattr(
+        "spectraxgk.nonlinear.compute_fields_cached",
+        lambda G, cache, params, terms=None, external_phi=None: fields,
+    )
+
+    def _fake_nonlinear_em(G, **kwargs):
+        assert kwargs["weight"].shape == ()
+        nonlinear_calls.append(True)
+        return jnp.ones_like(G)
+
+    monkeypatch.setattr("spectraxgk.nonlinear.nonlinear_em_contribution", _fake_nonlinear_em)
+    monkeypatch.setattr(
+        "spectraxgk.nonlinear.assemble_rhs_cached_jit",
+        lambda G, cache, params, terms, **kwargs: (jnp.zeros_like(G), fields),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.nonlinear.jax.scipy.sparse.linalg.gmres",
+        lambda matvec, rhs, **kwargs: (rhs, SimpleNamespace(success=True)),
+    )
+
+    G_out, fields_t = integrate_nonlinear_imex_cached(
+        G0,
+        cache,
+        params,
+        dt=0.2,
+        steps=2,
+        terms=TermConfig(nonlinear=0.5),
+    )
+
+    assert build_calls == [0.2]
+    assert nonlinear_calls == [True]
+    np.testing.assert_allclose(np.asarray(G_out), 0.4)
     assert fields_t.phi.shape[0] == 2

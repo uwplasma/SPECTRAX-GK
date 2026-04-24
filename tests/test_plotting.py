@@ -12,6 +12,8 @@ import pytest
 from spectraxgk.plotting import (
     cyclone_comparison_figure,
     cyclone_reference_figure,
+    eigenfunction_reference_overlay_figure,
+    eigenfunction_overlap_summary_figure,
     etg_trend_figure,
     growth_rate_heatmap,
     growth_fit_figure,
@@ -25,6 +27,7 @@ from spectraxgk.plotting import (
     plot_saved_output,
     scan_comparison_figure,
     scan_multi_reference_figure,
+    zonal_flow_response_figure,
 )
 
 
@@ -182,6 +185,51 @@ def test_nonlinear_runtime_panel_figure(tmp_path):
     assert out.exists()
 
 
+def test_eigenfunction_reference_overlay_figure(tmp_path):
+    theta = np.linspace(-np.pi, np.pi, 32)
+    reference = np.cos(theta) + 1j * 0.25 * np.sin(theta)
+    trial = reference * np.exp(1j * 0.41)
+
+    fig, _axes = eigenfunction_reference_overlay_figure(
+        theta,
+        trial,
+        theta,
+        reference,
+        title="KBM overlay",
+    )
+    out = tmp_path / "eigenfunction_overlay.png"
+    fig.savefig(out)
+    plt.close(fig)
+    assert out.exists()
+
+
+def test_eigenfunction_reference_overlay_figure_rejects_shape_mismatch():
+    theta = np.linspace(-1.0, 1.0, 8)
+    with pytest.raises(ValueError):
+        eigenfunction_reference_overlay_figure(
+            theta,
+            np.ones(8, dtype=np.complex128),
+            theta[:-1],
+            np.ones(7, dtype=np.complex128),
+        )
+
+
+def test_zonal_flow_response_figure(tmp_path):
+    t = np.linspace(0.0, 20.0, 2001)
+    response = 0.15 + np.exp(-0.08 * t) * np.cos(1.5 * t)
+
+    fig, _axes = zonal_flow_response_figure(t, response, title="ZF response")
+    out = tmp_path / "zf_response.png"
+    fig.savefig(out)
+    plt.close(fig)
+    assert out.exists()
+
+
+def test_zonal_flow_response_figure_rejects_shape_mismatch():
+    with pytest.raises(ValueError):
+        zonal_flow_response_figure(np.array([0.0, 1.0]), np.array([1.0]))
+
+
 def test_plot_saved_output_linear_bundle(tmp_path):
     base = tmp_path / "linear_case"
     (tmp_path / "linear_case.summary.json").write_text(
@@ -305,6 +353,21 @@ def test_growth_fit_figure_with_window(tmp_path):
     fig.savefig(out)
     plt.close(fig)
     assert out.exists()
+
+
+def test_eigenfunction_overlap_summary_figure(tmp_path):
+    ky = np.array([0.1, 0.2, 0.4])
+    fig, axes = eigenfunction_overlap_summary_figure(
+        ky,
+        np.array([0.98, 0.95, 0.93]),
+        np.array([0.05, 0.08, 0.10]),
+        title="KBM overlap audit",
+    )
+    out = tmp_path / "eig_overlap.png"
+    fig.savefig(out)
+    plt.close(fig)
+    assert out.exists()
+    assert axes[0].get_xscale() == "log"
 
 
 def test_plot_saved_output_missing_summary_and_bad_kind(tmp_path):
