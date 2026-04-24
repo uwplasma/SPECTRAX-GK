@@ -222,6 +222,14 @@ The active pre-merge sequence is:
      probe with `nu_hyper_m=0.05` reduced early tail standard deviation but did
      not close the reference trace error, so this should remain a bounded
      recurrence/closure investigation rather than a hidden validation setting.
+     `tools/plot_w7x_zonal_closure_ladder.py` now materializes that conclusion
+     for `kx rho_i=0.07` at
+     `docs/_static/w7x_zonal_closure_ladder_kx070.{csv,json,png,pdf}`. The
+     paper-contract high-moment probes reduce the late envelope only partially,
+     the weak-closure audit reduces the envelope without closing the early
+     trace mismatch, and the best short-window trace match comes from a
+     non-contract width-four initializer that must remain excluded from
+     validation claims.
      The next closure step is not a documentation change; it is a velocity-space
      recurrence / moment-closure sweep plus a state-level convention comparison
      against stella/GENE/GX for the paper-facing normalization.
