@@ -819,7 +819,7 @@ The same wide gate can be run locally with:
 .. code-block:: bash
 
    python tools/run_wide_coverage_gate.py \
-     --shards 12 \
+     --shards 24 \
      --timeout 300 \
      --fail-under 95 \
      --pytest-arg=-o \
@@ -831,9 +831,9 @@ release timeout, run one shard at a time and combine afterward:
 .. code-block:: bash
 
    python -m coverage erase
-   for shard in $(seq 1 12); do
+   for shard in $(seq 1 24); do
      python tools/run_wide_coverage_gate.py \
-       --shards 12 \
+       --shards 24 \
        --timeout 300 \
        --only-shard "${shard}" \
        --keep-existing-coverage \
@@ -842,7 +842,7 @@ release timeout, run one shard at a time and combine afterward:
        --pytest-arg=addopts=
    done
    python tools/run_wide_coverage_gate.py \
-     --shards 12 \
+     --shards 24 \
      --combine-only \
      --fail-under 95 \
      --pytest-arg=-o \
