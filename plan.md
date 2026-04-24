@@ -230,6 +230,11 @@ The active pre-merge sequence is:
      trace mismatch, and the best short-window trace match comes from a
      non-contract width-four initializer that must remain excluded from
      validation claims.
+     `tools/generate_w7x_zonal_response_panel.py` now exposes explicit
+     `--nu-hyper-l`, `--nu-hyper-m`, `--nu-hyper-lm`, `--p-hyper-*`,
+     `--enable-hypercollisions`, and `--gaussian-width` CLI overrides, so the
+     next recurrence/closure probes can be launched from the tracked W7-X tool
+     and audited in metadata instead of relying on local TOML edits.
      The next closure step is not a documentation change; it is a velocity-space
      recurrence / moment-closure sweep plus a state-level convention comparison
      against stella/GENE/GX for the paper-facing normalization.

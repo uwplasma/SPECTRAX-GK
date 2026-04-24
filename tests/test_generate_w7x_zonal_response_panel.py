@@ -89,7 +89,19 @@ diagnostics = true
     run_calls = []
 
     def _fake_run(cfg, *, out, kx_target, **kwargs):
-        run_calls.append((float(kx_target), cfg.grid, cfg.time.nstep_restart, cfg.output, dict(kwargs)))
+        run_calls.append(
+            (
+                float(kx_target),
+                cfg.grid,
+                cfg.time.nstep_restart,
+                cfg.output,
+                cfg.init,
+                cfg.physics,
+                cfg.terms,
+                cfg.collisions,
+                dict(kwargs),
+            )
+        )
         path = Path(out)
         path.parent.mkdir(parents=True, exist_ok=True)
         t = np.linspace(0.0, 10.0, 41)
@@ -133,6 +145,12 @@ diagnostics = true
             "6",
             "--Nm",
             "10",
+            "--gaussian-width",
+            "1.25",
+            "--nu-hyper-m",
+            "0.01",
+            "--p-hyper-m",
+            "4",
             "--show-progress",
         ],
     )
@@ -161,6 +179,10 @@ diagnostics = true
     assert "clipped initial portion of Fig. 11" in meta["notes"]
     assert "manuscript-policy inference" in meta["notes"]
     assert "digitized-reference gate" in meta["notes"]
+    assert meta["audit_overrides"]["enable_hypercollisions"] is True
+    assert meta["audit_overrides"]["gaussian_width"] == 1.25
+    assert meta["audit_overrides"]["nu_hyper_m"] == 0.01
+    assert meta["audit_overrides"]["p_hyper_m"] == 4.0
     assert meta["runtime"] == {
         "dt": 0.2,
         "steps": 80,
@@ -181,7 +203,7 @@ diagnostics = true
     assert combined.size == 4 * 41
     assert np.isclose(np.max(combined["t_reference"]), 30.0)
     assert "response_normalized" in combined.dtype.names
-    for kx_target, grid, nstep_restart, output, kwargs in run_calls:
+    for kx_target, grid, nstep_restart, output, init, physics, terms, collisions, kwargs in run_calls:
         assert grid.boundary == "periodic"
         assert grid.non_twist is True
         assert grid.jtwist is None
@@ -190,6 +212,11 @@ diagnostics = true
         assert output.restart_if_exists is False
         assert output.append_on_restart is True
         assert output.save_for_restart is True
+        assert init.gaussian_width == 1.25
+        assert physics.hypercollisions is True
+        assert terms.hypercollisions == 1.0
+        assert collisions.nu_hyper_m == 0.01
+        assert collisions.p_hyper_m == 4.0
         assert kwargs["dt"] == 0.2
         assert kwargs["steps"] == 80
         assert kwargs["sample_stride"] == 2
