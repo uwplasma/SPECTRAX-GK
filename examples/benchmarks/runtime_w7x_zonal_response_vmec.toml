@@ -48,7 +48,7 @@ R0 = 5.485
 init_field = "phi"
 init_amp = 1.0e-6
 gaussian_init = true
-gaussian_width = 0.5
+gaussian_width = 1.0
 init_single = true
 init_electrons_only = false
 

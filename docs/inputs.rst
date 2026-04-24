@@ -344,7 +344,11 @@ Notable runtime-only keys:
   initialize a Gaussian envelope across the same GX startup loop
   bounds.
 * ``[init] init_single = true``:
-  initialize only the selected ``(ky,kx)`` mode.
+  initialize only the selected ``(ky,kx)`` mode. When combined with
+  ``init_field = "phi"`` and ``gaussian_init = true``, the selected
+  electrostatic-potential mode is initialized with a Gaussian profile along the
+  flux tube; this is the contract used by the W7-X zonal-flow response
+  benchmark.
 * ``[init] init_field = "all"``: the runtime/TOML path follows GX moment
   scaling for this initializer, using reduced amplitudes for ``tpar``
   (``1/sqrt(2)``) and ``qpar`` (``1/sqrt(6)``).
