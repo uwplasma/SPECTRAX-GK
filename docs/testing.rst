@@ -278,8 +278,10 @@ passes every residual and time-coverage gate against the digitized stella/GENE
 reference. The lane remains open only because the late-window envelope
 standard deviations, roughly ``0.341``, ``0.0778``, ``0.102``, and ``0.0367``,
 are still larger than the digitized reference envelope of order ``2.5e-3``.
-That is now tracked as a velocity-space recurrence / closure issue rather than
-as a geometry, initializer, or normalization mismatch.
+That is tracked as a velocity-space recurrence / closure issue, with one
+additional initializer-contract nuance: a ``gaussian_width=4`` probe matches
+the digitized initial line-average level much better than the tracked
+``gaussian_width=1`` setting, but it still damps too rapidly by ``t≈50-100``.
 
 The runtime path now has two safeguards for this lane. First, strided nonlinear
 diagnostics always retain the final step, so long traces do not silently stop
@@ -297,9 +299,16 @@ resume smoke verified nonzero ``Phi_zonal_line_kxt`` and
 ``Phi_zonal_mode_kxt`` throughout the appended tail. A higher-moment follow-up
 with ``Nl=16``, ``Nm=64``, ``dt=0.05`` then restart-continued the
 ``k_x rho_i=0.07`` trace to ``t≈100`` with finite diagnostics and nonzero
-signed line/mode samples across the post-restart tail. The remaining open
-zonal-response item is therefore the late-window velocity-space
-recurrence/closure envelope, not restart diagnostic continuity.
+signed line/mode samples across the post-restart tail. A full four-wavelength
+refresh at the same moment resolution also reached ``t≈100`` with finite,
+nonzero signed traces for every target ``k_x rho_i``. A width scan showed that
+``gaussian_width=4`` gives an initial ``k_x rho_i=0.07`` line average of about
+``0.827`` versus the digitized stella/GENE start near ``0.89``; however, the
+same high-moment run decayed to about ``0.323`` by ``t≈50`` and slightly
+negative by ``t≈100`` while the digitized mean remains near ``0.589`` and
+``0.394``. The remaining open item is therefore not restart diagnostic
+continuity; it is the too-fast W7-X zonal damping/closure behavior, plus the
+final choice of literature-faithful Gaussian-width convention.
 
 .. figure:: _static/w7x_zonal_response_panel.png
    :alt: W7-X high-mirror bean-tube zonal-flow response panel
