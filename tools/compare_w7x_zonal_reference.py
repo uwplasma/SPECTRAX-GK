@@ -186,10 +186,11 @@ def _optional_trace_metrics(
             "tail_max_abs_error": None,
         }
     trace = pd.read_csv(path)
-    if not {"t", "phi_zonal_real"}.issubset(trace.columns):
-        raise ValueError(f"{path} must contain t,phi_zonal_real columns")
+    time_col = "t_reference" if "t_reference" in trace.columns else "t"
+    if "phi_zonal_real" not in trace.columns or time_col not in trace.columns:
+        raise ValueError(f"{path} must contain phi_zonal_real and either t or t_reference columns")
     t_obs, y_obs = _normalize_trace(
-        np.asarray(trace["t"], dtype=float),
+        np.asarray(trace[time_col], dtype=float),
         np.asarray(trace["phi_zonal_real"], dtype=float),
         initial_level=initial_level,
     )
