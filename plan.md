@@ -281,7 +281,11 @@ The active pre-merge sequence is:
      default cache outputs and writes new cache files through a unique
      temporary netCDF followed by atomic replacement. This closes the immediate
      partial-cache corruption risk before broader parallel W7-X sweeps are
-     relaunched.
+     relaunched. A bounded `office` smoke launched two simultaneous W7-X
+     geometry-generation requests against
+     `examples/benchmarks/runtime_w7x_zonal_response_vmec.toml`; both returned
+     the same cache path, and the final netCDF opened with the required
+     variables (`theta`, `bmag`, `gradpar`, `q`, `shat`) and 65 theta samples.
    - KBM raw eigenfunction overlay is closed for the tracked `ky=0.3` artifact
      with overlap `≈0.999985`; keep broader KBM nonlinear and branch-continuity
      extensions as separate future gates.
