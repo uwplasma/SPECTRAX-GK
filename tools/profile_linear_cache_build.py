@@ -127,15 +127,15 @@ def main() -> None:
     from jax import profiler
     from spectraxgk.geometry import apply_gx_geometry_grid_defaults, ensure_flux_tube_geometry_data
     from spectraxgk.grids import build_spectral_grid
-    from spectraxgk.gyroaverage import J_l_all, bessel_j0, bessel_j1, gx_laguerre_transform
+    from spectraxgk.gyroaverage import bessel_j0, bessel_j1, gx_laguerre_transform
     from spectraxgk.io import load_runtime_from_toml
     from spectraxgk.linear import (
         _build_end_damping_profile_array,
+        _build_gyroaverage_cache_arrays,
         _build_linked_end_damping_profile,
         _build_linked_fft_maps,
         _x64_enabled,
         build_linear_cache,
-        shift_axis,
     )
     from spectraxgk.runtime import build_runtime_geometry, build_runtime_linear_params
 
@@ -341,8 +341,7 @@ def main() -> None:
             if bessel_bmag_power != 0.0:
                 bmag_factor = ctx["bmag"][None, None, None, :] ** (-bessel_bmag_power)
                 b = b * bmag_factor
-            Jl = jax.vmap(lambda bs: J_l_all(bs, l_max=args.Nl - 1))(b).astype(ctx["real_dtype"])
-            JlB = Jl + shift_axis(Jl, -1, axis=1)
+            Jl, JlB = _build_gyroaverage_cache_arrays(b, args.Nl, ctx["real_dtype"])
             ctx.update(dict(rho=rho, b=b, Jl=Jl, JlB=JlB))
             return b, Jl, JlB
 
