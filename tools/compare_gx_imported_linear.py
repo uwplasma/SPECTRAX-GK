@@ -22,7 +22,6 @@ from spectraxgk.geometry import (
     SlabGeometry,
     apply_gx_geometry_grid_defaults,
     ensure_flux_tube_geometry_data,
-    gx_effective_boundary,
     gx_zero_shat_enabled,
     load_gx_geometry_netcdf,
 )
@@ -36,7 +35,6 @@ from spectraxgk.gx_integrators import (
     _gx_midplane_index,
     _gx_term_config,
     _linear_explicit_step,
-    integrate_linear_gx_diagnostics,
 )
 from spectraxgk.io import load_toml
 from spectraxgk.linear import LinearTerms, build_linear_cache
@@ -562,7 +560,8 @@ def _integrate_target_mode_series(
     kx_index: int,
     reference_times: np.ndarray,
     output_steps: np.ndarray,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    return_phi_samples: bool = False,
+) -> tuple[np.ndarray, ...]:
     if mode_method not in {"z_index", "max", "project", "svd"}:
         raise ValueError("mode_method must be one of {'z_index', 'max', 'project', 'svd'}")
 
@@ -634,9 +633,10 @@ def _integrate_target_mode_series(
     Wphi_list: list[float] = []
     Wapar_list: list[float] = []
     Phi2_list: list[float] = []
+    collect_phi_samples = bool(return_phi_samples) or mode_method in {"project", "svd"}
     phi_samples: list[np.ndarray] = []
     phi_sample_times: list[float] = []
-    if mode_method in {"project", "svd"}:
+    if collect_phi_samples:
         phi0_sel = np.asarray(fields0.phi)[ky_index : ky_index + 1, kx_index : kx_index + 1, :]
         phi_samples.append(np.asarray(phi0_sel, dtype=np.complex64))
         phi_sample_times.append(float(t))
@@ -684,7 +684,7 @@ def _integrate_target_mode_series(
             Wphi_list.append(float(np.asarray(Wphi)[ky_index]))
             Wapar_list.append(float(np.asarray(Wapar)[ky_index]))
             Phi2_list.append(float(np.asarray(Phi2)[ky_index]))
-            if mode_method in {"project", "svd"}:
+            if collect_phi_samples:
                 phi_sel = np.asarray(phi)[ky_index : ky_index + 1, kx_index : kx_index + 1, :]
                 phi_samples.append(np.asarray(phi_sel, dtype=np.complex64))
                 phi_sample_times.append(float(t))
@@ -716,7 +716,7 @@ def _integrate_target_mode_series(
     Wphi_arr = np.asarray(Wphi_list, dtype=float)
     Wapar_arr = np.asarray(Wapar_list, dtype=float)
     Phi2_arr = np.asarray(Phi2_list, dtype=float)
-    return (
+    out = (
         gamma_arr[output_idx],
         omega_arr[output_idx],
         Wg_arr[output_idx],
@@ -724,6 +724,9 @@ def _integrate_target_mode_series(
         Wapar_arr[output_idx],
         Phi2_arr[output_idx],
     )
+    if return_phi_samples:
+        return (*out, np.asarray(phi_sample_times, dtype=float), np.asarray(phi_samples, dtype=np.complex64))
+    return out
 
 
 def _run_single_ky(
@@ -743,7 +746,8 @@ def _run_single_ky(
     kx_index: int,
     terms: LinearTerms,
     G0_override: jnp.ndarray | None = None,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    return_phi_samples: bool = False,
+) -> tuple[np.ndarray, ...]:
     ky_index = select_ky_index(np.asarray(grid_full.ky), ky_target)
     if G0_override is None:
         G0_full = _build_imported_initial_condition(
@@ -781,6 +785,7 @@ def _run_single_ky(
         kx_index=kx_index,
         reference_times=reference_times,
         output_steps=output_steps,
+        return_phi_samples=return_phi_samples,
     )
 
 
@@ -1028,7 +1033,6 @@ def main() -> None:
         max_samples=args.max_samples,
         sample_window=str(args.sample_window),
     )
-    sample_times = np.asarray(gx_time[sample_steps], dtype=float)
     ref_stop = int(sample_steps[-1]) + 1
     reference_times = np.asarray(gx_time[:ref_stop], dtype=float)
 
@@ -1070,7 +1074,6 @@ def main() -> None:
             max_samples=args.max_samples,
             sample_window=str(args.sample_window),
         )
-        sample_times = np.asarray(gx_time[sample_steps], dtype=float)
         ref_stop = int(sample_steps[-1]) + 1
         reference_times = np.asarray(gx_time[:ref_stop], dtype=float)
     dt = _infer_gx_linear_dt(gx_time, gx_contract)

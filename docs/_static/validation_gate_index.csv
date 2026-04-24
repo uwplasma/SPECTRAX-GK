@@ -7,4 +7,5 @@ docs/_static/kbm_branch_gate_summary.json,kbm_linear_branch_continuity,selected 
 docs/_static/reference_modes/kbm_eigenfunction_reference_overlay_ky0p3000.json,kbm_linear_eigenfunction_ky0p3000,GX raw eigenfunction bundle,True,2,0,,0.007208594542278349,1.5458590091999014e-05
 docs/_static/nonlinear_kbm_gate_summary.json,kbm_nonlinear_window,GX nonlinear diagnostics,True,5,0,,0.009363342524391386,
 docs/_static/miller_zonal_response_pilot.json,merlo_case_iii_zonal_response,Merlo et al. paper-scale read-off,True,3,0,,0.03671330516346405,0.03242887795802641
+docs/_static/reference_modes/w7x_eigenfunction_reference_overlay_ky0p3000.json,w7x_linear_eigenfunction_ky0p3000,GX raw eigenfunction bundle,True,2,0,,3.332895535477314e-05,5.501344935154862e-10
 docs/_static/nonlinear_w7x_gate_summary.json,w7x_nonlinear_window,GX nonlinear diagnostics,True,6,0,,0.0974184040271887,0.0

@@ -146,7 +146,7 @@ The current materialized gate reports are indexed by
 ``docs/_static/validation_gate_index.json`` and
 ``docs/_static/validation_gate_index.png``. Exploratory diagnostics can set
 ``gate_index_include=false`` so they remain documented but do not count as
-release blockers. The current release-gate index has ``9/9`` tracked reports
+release blockers. The current release-gate index has ``10/10`` tracked reports
 passing.
 
 Stellarator Linear
@@ -193,6 +193,9 @@ Frozen artifact paths for the currently closed stellarator linear lanes:
 - ``docs/_static/w7x_linear_t2_lastvalue.csv``
 - ``docs/_static/hsx_linear_t2_lastvalue.csv``
 - ``docs/_static/reference_modes/w7x_linear_gx_ky0p3000.npz``
+- ``docs/_static/reference_modes/w7x_linear_spectrax_ky0p3000.csv``
+- ``docs/_static/w7x_eigenfunction_reference_overlay_ky0p3000.png``
+- ``docs/_static/reference_modes/w7x_eigenfunction_reference_overlay_ky0p3000.json``
 - ``docs/_static/benchmark_core_linear_atlas.png``
 
 For W7-X, the whole-window scan and the late-time last-value reduction tell the
@@ -200,6 +203,18 @@ same story. For HSX, the whole-window ``mean_rel_gamma`` metric is kept as an
 honest near-marginal stress signal, but the late-time closure should be read
 from ``docs/_static/hsx_linear_t2_lastvalue.csv`` because the final
 ``(gamma, omega)`` values are much tighter than the whole-window average.
+
+The W7-X raw eigenfunction overlay is now closed at ``k_y rho_i = 0.3`` using
+``tools/generate_w7x_reference_overlay.py``. The frozen GX bundle was refreshed
+from the finite ``t≈2`` raw field history because the older bundle source
+contained non-finite late-time fields. The matched imported-geometry
+SPECTRAX-GK extraction uses the validated ``z_index`` diagnostic contract and
+gives normalized overlap ``0.9999999994`` and relative ``L^2`` mismatch
+``3.33e-5`` against the frozen GX raw mode.
+
+.. image:: _static/w7x_eigenfunction_reference_overlay_ky0p3000.png
+   :alt: W7-X raw eigenfunction overlay against the frozen GX reference
+   :width: 100%
 
 Nonlinear Validation
 --------------------

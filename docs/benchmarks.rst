@@ -219,8 +219,10 @@ headline atlas tiles. Current examples include:
 - ``docs/_static/kbm_eigenfunction_overlap_summary.png`` for the current
   eigenfunction-overlap summary on the tracked KBM GX candidate table. This is
   the first compact overlap artifact in the manuscript-facing stack and should
-  be read as a branch-identity diagnostic, not as a replacement for the raw
-  eigenfunction overlays that will be added later.
+  be read as a branch-identity diagnostic. The raw mode-shape overlays are now
+  tracked separately as ``docs/_static/kbm_eigenfunction_reference_overlay_ky0p3000.png``
+  and ``docs/_static/w7x_eigenfunction_reference_overlay_ky0p3000.png`` with
+  JSON gate reports under ``docs/_static/reference_modes/``.
 
 Extended stress matrix
 ----------------------

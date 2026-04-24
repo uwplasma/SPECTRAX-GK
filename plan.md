@@ -193,7 +193,7 @@ The active pre-merge sequence is:
    - `tools/make_validation_gate_index.py` now scans tracked JSON metadata and
      writes `docs/_static/validation_gate_index.json/csv/png`, giving the
      manuscript/docs one compact audit view of currently materialized release
-     gate reports. The current index has `9/9` release gates passed; explicitly
+     gate reports. The current index has `10/10` release gates passed; explicitly
      exploratory short-window diagnostics can opt out with
      `gate_index_include=false`.
 
@@ -207,6 +207,10 @@ The active pre-merge sequence is:
    - KBM raw eigenfunction overlay is closed for the tracked `ky=0.3` artifact
      with overlap `≈0.999985`; keep broader KBM nonlinear and branch-continuity
      extensions as separate future gates.
+   - W7-X raw eigenfunction overlay is closed for the tracked `ky=0.3` finite
+     GX `t≈2` artifact with overlap `≈0.9999999994` and relative `L^2`
+     mismatch `≈3.33e-5`; keep W7-X zonal long-window and fluctuation-spectrum
+     acceptance as separate gates.
    - Windowed nonlinear-statistics panel for Cyclone, Miller, KBM, W7-X, and
      HSX is now materialized by `tools/plot_nonlinear_window_statistics.py`
      with `docs/_static/nonlinear_window_statistics.{png,pdf,csv,json}`; next
@@ -401,50 +405,29 @@ adapt for a credible future manuscript.
 
 #### Frozen raw-reference status (2026-04-22)
 
-The repository now includes compact frozen GX raw-mode bundles for two closed
-linear lanes:
+The repository includes compact frozen GX raw-mode bundles and matched
+SPECTRAX-GK overlay artifacts for two closed linear lanes:
 
 - `docs/_static/reference_modes/kbm_linear_gx_ky0p3000.npz`
 - `docs/_static/reference_modes/w7x_linear_gx_ky0p3000.npz`
 
-These are extracted from real GX `.big.nc` field histories and are the first
-checked-in raw eigenfunction references suitable for manuscript-grade overlay
-figures. The remaining blocker for the first raw overlay panel is now only the
-SPECTRAX side of the matched extraction, not reference availability.
-
-The first full-resolution matched KBM SPECTRAX extraction on `office` using the
-tracked GX contract and selected fit window did not finish inside a `420 s`
-wall-clock budget. The next pass should therefore target a bounded raw-overlay
-extraction path with the same physics contract but lower runtime cost, staying
-below the hard `600 s` ceiling.
-
-That bounded-cost KBM raw-overlay pass has now been run once and produced the
-first matched SPECTRAX-side raw-mode artifacts:
+These are extracted from real GX `.big.nc` field histories. The W7-X bundle was
+refreshed from a finite `t≈2` raw field history because the older late-time
+bundle source contained non-finite fields. The closed matched SPECTRAX-side
+raw-mode artifacts are:
 
 - `docs/_static/reference_modes/kbm_linear_spectrax_ky0p3000.csv`
 - `docs/_static/kbm_eigenfunction_reference_overlay_ky0p3000.png`
+- `docs/_static/reference_modes/kbm_eigenfunction_reference_overlay_ky0p3000.json`
+- `docs/_static/reference_modes/w7x_linear_spectrax_ky0p3000.csv`
+- `docs/_static/w7x_eigenfunction_reference_overlay_ky0p3000.png`
+- `docs/_static/reference_modes/w7x_eigenfunction_reference_overlay_ky0p3000.json`
 
-The run stayed within the explicit `600 s` budget only narrowly and the result
-is **not** yet manuscript-ready: the current bounded extraction gives roughly
-`0.63` normalized overlap and `1.74` relative `L^2` mismatch against the frozen
-GX raw mode.
-
-That first bounded attempt was then tightened in two ways:
-
-1. the exact KBM transverse-grid contract was restored by inferring `Ny` from
-   the GX `k_y` grid (`Ny = 3 * (nky - 1) + 1`),
-2. the eigenfunction extraction window was corrected to use a late-time tail
-   instead of the growth-fit window from `kbm_gx_candidates.csv`.
-
-Even after those fixes, the bounded exact-contract run under the `600 s`
-ceiling still gives only about `0.63` normalized overlap and `0.79` relative
-`L^2` mismatch. That makes the remaining task concrete:
-
-1. improve the SPECTRAX-side raw eigenfunction extraction quality without
-   changing the KBM physics contract,
-2. keep the bounded runtime below `600 s`,
-3. only then promote the raw overlay figure from an open diagnostic to a paper
-   figure.
+The KBM overlay is closed with normalized overlap `≈0.999985` and relative
+`L^2` mismatch `≈0.00721` against the frozen GX raw mode. The W7-X overlay is
+closed with normalized overlap `≈0.9999999994` and relative `L^2` mismatch
+`≈3.33e-5` against the finite GX raw mode. Both use JSON gate reports requiring
+`overlap >= 0.95` and `relative L^2 <= 0.25`.
 
 ### Planning Principles
 
@@ -692,15 +675,16 @@ New raw-reference assets now available:
 
 Immediate next manuscript-facing deliverables:
 
-1. Improve the bounded-cost KBM raw overlay until the overlap/mismatch metrics
-   are publication quality, using:
+1. Keep the closed KBM raw overlay in the manuscript figure stack using:
    - `docs/_static/reference_modes/kbm_linear_gx_ky0p3000.npz`
    - `docs/_static/reference_modes/kbm_linear_spectrax_ky0p3000.csv`
    - `docs/_static/kbm_eigenfunction_reference_overlay_ky0p3000.png`
    - `tools/generate_kbm_reference_overlay.py`
-2. First raw phase-aligned W7-X overlay figure from:
+2. Keep the closed W7-X raw overlay in the manuscript figure stack using:
    - `docs/_static/reference_modes/w7x_linear_gx_ky0p3000.npz`
-   - a bounded-cost matched SPECTRAX eigenfunction extraction.
+   - `docs/_static/reference_modes/w7x_linear_spectrax_ky0p3000.csv`
+   - `docs/_static/w7x_eigenfunction_reference_overlay_ky0p3000.png`
+   - `tools/generate_w7x_reference_overlay.py`
 3. Tighten the materialized windowed nonlinear-statistics figure
    (`docs/_static/nonlinear_window_statistics.png`) as per-case reference
    windows mature.

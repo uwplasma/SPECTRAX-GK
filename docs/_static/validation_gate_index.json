@@ -1,7 +1,7 @@
 {
   "n_open": 0,
-  "n_passed": 9,
-  "n_reports": 9,
+  "n_passed": 10,
+  "n_reports": 10,
   "patterns": [
     "docs/_static/**/*.json"
   ],
@@ -93,6 +93,17 @@
       "n_gates": 3,
       "passed": true,
       "source": "Merlo et al. paper-scale read-off"
+    },
+    {
+      "artifact": "docs/_static/reference_modes/w7x_eigenfunction_reference_overlay_ky0p3000.json",
+      "case": "w7x_linear_eigenfunction_ky0p3000",
+      "failed_metrics": "",
+      "max_abs_error": 3.332895535477314e-05,
+      "max_rel_error": 5.501344935154862e-10,
+      "n_failed": 0,
+      "n_gates": 2,
+      "passed": true,
+      "source": "GX raw eigenfunction bundle"
     },
     {
       "artifact": "docs/_static/nonlinear_w7x_gate_summary.json",
