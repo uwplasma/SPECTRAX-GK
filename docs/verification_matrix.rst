@@ -246,7 +246,7 @@ Nonlinear Validation
      - heat-flux windows, saturation trend
      - GX + W7-X benchmark conventions
      - Closed
-     - release gate ``<= 1e-1``; manuscript target tighter where feasible
+     - release gate ``<= 1e-1``; manuscript target tighter where feasible. The exact-state convention audit at ``docs/_static/w7x_exact_state_audit.png`` separately closes startup state, late geometry/field arrays, and scalar diagnostic reconstruction against GX dumps with maximum finite pointwise relative error ``4.62e-5`` under a ``1e-4`` gate and scalar diagnostics below ``1.8e-7``.
    * - HSX
      - heat-flux windows, saturation trend
      - GX / internal frozen references

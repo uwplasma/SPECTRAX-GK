@@ -218,12 +218,15 @@ through explicit environment variables such as ``$W7X_VMEC_FILE`` and
 The nonlinear W7-X and HSX startup audits now confirm that this VMEC runtime
 path reproduces GX startup ``g_state`` and ``phi`` to roundoff when the
 generated ``*.eik.nc`` is rebuilt from the same VMEC input.
-The late-time W7-X diagnostic-state audit now also matches GX to roundoff on
-the exact dumped nonlinear state once the comparison tool reconstructs the
-compressed real-FFT positive-``ky`` dump grid directly from
-``diag_state_ky_t*.bin``. That closes the remaining imported-geometry
-diagnostic-contract gap for nonlinear VMEC cases: startup, ``phi``, ``kperp2``,
-``fluxfac``, ``Wg``, ``Wphi``, and heat flux all agree on the same GX state.
+The late-time W7-X diagnostic-state audit now also matches GX on the exact
+dumped nonlinear state once the comparison tool reconstructs the compressed
+real-FFT positive-``ky`` dump grid directly from ``diag_state_ky_t*.bin``. The
+tracked exact-state panel ``docs/_static/w7x_exact_state_audit.png`` records a
+maximum finite pointwise relative error of ``4.62e-5`` under the explicit
+``1e-4`` convention gate, with late scalar diagnostics below ``1.8e-7``. That
+closes the remaining imported-geometry diagnostic-contract gap for nonlinear
+VMEC cases: startup, ``phi``, ``kperp2``, ``fluxfac``, ``Wg``, ``Wphi``, and
+heat flux all agree on the same GX state.
 The follow-on exact-state linear audit on that same W7-X dump now also matches
 GX to roundoff. The remaining operator-level fixes were:
 
