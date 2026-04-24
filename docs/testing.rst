@@ -309,12 +309,16 @@ source figure shows that the apparent ``0.8`` start is a plot-limit artifact,
 not a reliable normalization target. The tracked TOML therefore keeps
 ``gaussian_width=1``, matching the source expression ``exp[-(z-z0)^2]``.
 
-The runtime path now has two safeguards for this lane. First, strided nonlinear
+The runtime path now has three safeguards for this lane. First, strided nonlinear
 diagnostics always retain the final step, so long traces do not silently stop
 one stride before the intended horizon. Second, checkpointed artifact
 generation validates each chunk for non-finite diagnostics, state, and fields
 before writing or continuing. This makes high-moment W7-X recurrence sweeps
-fail fast instead of running thousands of extra steps after a NaN. A bounded
+fail fast instead of running thousands of extra steps after a NaN. Third,
+default VMEC/eik cache outputs are reused when valid and generated through a
+unique temporary netCDF followed by atomic replacement, so parallel W7-X
+validation sweeps cannot observe or corrupt a partially written geometry file.
+A bounded
 ``k_x rho_i=0.07``, ``Nl=16``, ``Nm=64``, ``dt=0.05`` probe remained finite to
 ``t≈200`` and a post-fix ``t≈50`` rerun verified nonzero signed line-average
 diagnostics through the retained final sample. A separate external-restart

@@ -249,7 +249,7 @@ artifact_paths = [
 ]
 next_tests = [
   "promote the final W7-X recurrence/closure method into a release gate when it matches the literature trace",
-  "add a VMEC/eik-cache concurrency regression once W7-X geometry generation uses process-safe cache writes",
+  "rerun parallel W7-X recurrence sweeps after the VMEC/eik cache fix to verify the office workflow",
 ]
 
 [[modules]]
@@ -270,6 +270,7 @@ physics_contracts = [
 numerics_contracts = [
   "periodic remaps and interpolation preserve shape, handedness, and finite values",
   "roundtrip geometry gates report max and RMS field mismatches",
+  "default VMEC eik cache reuse and atomic writes prevent partial-file races in parallel sweeps",
 ]
 fast_tests = [
   "tests/test_from_gx_vmec_helpers.py",
@@ -285,6 +286,7 @@ artifact_paths = [
 next_tests = [
   "split file loading from coordinate remap helpers",
   "add vmec_jax in-memory parity fixtures after the core refactor lands",
+  "add a multi-process VMEC cache stress test when the slow backend is available in CI",
 ]
 
 [[modules]]

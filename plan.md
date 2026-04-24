@@ -276,11 +276,12 @@ The active pre-merge sequence is:
      while the W7-X zonal damping/recurrence closure remains a real open
      physics/numerics lane.
      A workflow issue was also found while running the bounded W7-X probes:
-     concurrent VMEC/eik generation can race on the shared
-     `.cache/spectrax/vmec_eik` path. The two new runs completed after
-     clearing the cache and running sequentially. A later infrastructure fix
-     should make VMEC/eik cache writes process-safe before broad parallel W7-X
-     sweeps are launched.
+     concurrent VMEC/eik generation could race on the shared
+     `.cache/spectrax/vmec_eik` path. The runtime VMEC path now reuses valid
+     default cache outputs and writes new cache files through a unique
+     temporary netCDF followed by atomic replacement. This closes the immediate
+     partial-cache corruption risk before broader parallel W7-X sweeps are
+     relaunched.
    - KBM raw eigenfunction overlay is closed for the tracked `ky=0.3` artifact
      with overlap `≈0.999985`; keep broader KBM nonlinear and branch-continuity
      extensions as separate future gates.
