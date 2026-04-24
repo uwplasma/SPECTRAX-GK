@@ -49,10 +49,10 @@ init_field = "phi"
 init_amp = 1.0e-6
 gaussian_init = true
 # Width of the Gaussian electrostatic-potential perturbation along theta.
-# The W7-X Fig. 11 digitization starts near a line-averaged response of
-# 0.8-0.9 when normalized to max(phi_0); width=4 reproduces that initial
-# line-average level, whereas width=1 starts near 0.28.
-gaussian_width = 4.0
+# The arXiv source for Gonzalez-Jerez et al. writes the test-4 initializer as
+# exp[-(z-z0)^2], so width=1 is the tracked paper-facing contract. Wider
+# profiles are useful audits but should not be treated as validation defaults.
+gaussian_width = 1.0
 init_single = true
 init_electrons_only = false
 

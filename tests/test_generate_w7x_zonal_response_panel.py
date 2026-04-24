@@ -143,8 +143,8 @@ diagnostics = true
     assert out_png.with_suffix(".csv").exists()
     meta = json.loads(out_png.with_suffix(".json").read_text())
     assert meta["initial_policy"] == "first_abs"
-    assert meta["initial_normalization"] == "init_amp"
-    assert meta["initial_level_override"] == 1.0e-6
+    assert meta["initial_normalization"] == "line_first"
+    assert meta["initial_level_override"] is None
     assert meta["damping_method"] == "branchwise_extrema"
     assert meta["frequency_method"] == "hilbert_phase"
     assert meta["validation_status"] == "open"
@@ -152,8 +152,10 @@ diagnostics = true
     assert meta["literature_reference"]["test"] == 4
     assert meta["literature_reference"]["flux_tube"] == "bean"
     assert meta["literature_reference"]["observable"] == "unweighted line-averaged electrostatic potential"
+    assert "t=0 line-average" in meta["literature_reference"]["normalization"]
     assert "slower stellarator-specific oscillation" in meta["notes"]
-    assert "maximum initial potential amplitude" in meta["notes"]
+    assert "default --initial-normalization=line_first" in meta["notes"]
+    assert "clipped initial portion of Fig. 11" in meta["notes"]
     assert "manuscript-policy inference" in meta["notes"]
     assert "digitized-reference gate" in meta["notes"]
     assert meta["runtime"] == {
@@ -287,7 +289,7 @@ diagnostics = true
     assert seen == [(True, True, out_dir / "w7x_test4_kx070.out.nc", out_dir / "w7x_test4_kx070.out.nc")]
     meta = json.loads(out_png.with_suffix(".json").read_text())
     assert meta["runtime"]["resume_output"] is True
-    assert meta["runtime"]["time_scale"] == 2.0
+    assert meta["runtime"]["time_scale"] == 1.0
 
 
 def test_generate_w7x_zonal_response_formats_unresolved_damping() -> None:
