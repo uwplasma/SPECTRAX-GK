@@ -201,9 +201,14 @@ The active pre-merge sequence is:
    - W7-X zonal-response long-window audit: the short VMEC-backed artifact now
      uses the paper-faithful `init_field="phi"` potential initializer, a
      periodic radial box, and the signed line-average diagnostic
-     `Phi_zonal_line_kxt`; a `kx rho_i=0.30`, `t≈2000` pilot gives
-     residual `≈0.107` but still has a slow sign-changing oscillation that the
-     paper says should be missing at that wavelength.
+     `Phi_zonal_line_kxt`. The stella/GENE Fig. 11 reference traces and inset
+     residuals are now digitized by `tools/digitize_w7x_zonal_reference.py`
+     into `docs/_static/w7x_zonal_reference_digitized*.{csv,json,png,pdf}`.
+     A `kx rho_i=0.30`, `t≈2000` pilot gives residual `≈0.107` but still has a
+     slow sign-changing oscillation that the paper says should be missing at
+     that wavelength, so the next closure step is a long-window SPECTRAX
+     regeneration for all four wavelengths compared directly to the digitized
+     stella/GENE traces.
    - KBM raw eigenfunction overlay is closed for the tracked `ky=0.3` artifact
      with overlap `≈0.999985`; keep broader KBM nonlinear and branch-continuity
      extensions as separate future gates.

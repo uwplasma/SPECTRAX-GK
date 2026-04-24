@@ -262,9 +262,16 @@ residuals of about ``0.172``, ``0.356``, ``0.469``, and ``0.594`` for
 ``k_x rho_i=0.30`` audit to ``t≈2000`` gives a late-window residual around
 ``0.107`` but still shows a slow sign-changing oscillation, whereas the paper
 states that the lower-frequency oscillation is missing for that wavelength.
-The remaining research gate is therefore a long-window observable/normalization
-audit against digitized or regenerated stella/GENE traces, not just a plotting
-or initialization issue.
+``tools/digitize_w7x_zonal_reference.py`` now extracts the stella/GENE Fig. 11
+main traces and inset residual levels from the arXiv source ``figs/ZF.pdf``.
+The resulting reference artifacts are
+``docs/_static/w7x_zonal_reference_digitized.csv``,
+``docs/_static/w7x_zonal_reference_digitized_residuals.csv``,
+``docs/_static/w7x_zonal_reference_digitized.json``, and
+``docs/_static/w7x_zonal_reference_digitized.png``. The remaining research gate
+is therefore a long-window SPECTRAX regeneration and residual/envelope
+comparison against these digitized stella/GENE traces, not a plotting or
+initialization issue.
 
 .. figure:: _static/w7x_zonal_response_panel.png
    :alt: W7-X high-mirror bean-tube zonal-flow response panel
@@ -273,6 +280,14 @@ or initialization issue.
    target ``k_x rho_i`` values. The red dashed line is the late-window
    residual estimate and the shaded band is the common initial-GAM extraction
    window.
+
+.. figure:: _static/w7x_zonal_reference_digitized.png
+   :alt: Digitized W7-X test-4 stella and GENE zonal-flow reference traces
+
+   Digitized stella/GENE reference traces from the W7-X benchmark paper's
+   Fig. 11. The horizontal lines are residual levels read from the figure
+   insets and are the reference targets for the next long-window SPECTRAX
+   zonal-response gate.
 
 Diffrax and nonlinear smoke tests
 ---------------------------------
