@@ -113,7 +113,7 @@ Performance work should stay measurement-driven. The current priorities are:
 - stream diagnostics rather than materializing full histories by default;
 - expose JAX memory-allocation and persistent-cache guidance for production
   sweeps;
-- use multi-device parallelization first for independent scans, UQ ensembles,
+- use distributed parallelization first for independent scans, UQ ensembles,
   and linear batches before attempting nonlinear domain decomposition;
 - only introduce custom kernels after profiling shows a persistent XLA
   bottleneck.
