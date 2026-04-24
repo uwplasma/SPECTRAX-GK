@@ -188,6 +188,10 @@ growth/frequency jump and successive-overlap gates.
 always have one compact pass/open view of the currently materialized release
 validation gates. Exploratory diagnostics can set ``gate_index_include=false``
 to remain documented without being treated as release blockers.
+``tools/plot_nonlinear_window_statistics.py`` provides the companion
+manuscript-facing statistics panel for the nonlinear GX comparison gates by
+plotting the per-diagnostic ``mean_rel_abs`` and ``max_rel_abs`` values from
+those same tracked JSON summaries.
 
 The diagnostics stream now also carries ``Diagnostics/Phi_zonal_mode_kxt``, a
 signed complex zonal-potential history reduced over ``z`` with the same volume

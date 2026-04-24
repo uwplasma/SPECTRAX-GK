@@ -208,7 +208,10 @@ The active pre-merge sequence is:
      with overlap `≈0.999985`; keep broader KBM nonlinear and branch-continuity
      extensions as separate future gates.
    - Windowed nonlinear-statistics panel for Cyclone, Miller, KBM, W7-X, and
-     HSX.
+     HSX is now materialized by `tools/plot_nonlinear_window_statistics.py`
+     with `docs/_static/nonlinear_window_statistics.{png,pdf,csv,json}`; next
+     tighten case-specific tolerances beyond the current `0.10` release gate
+     where the reference windows justify it.
    - W7-X multi-flux-tube linear/TEM extension and fluctuation-spectrum lane.
    - Shaped multispecies tokamak linear lane.
    - ETG nonlinear only after its benchmark operating point and observable
@@ -698,8 +701,9 @@ Immediate next manuscript-facing deliverables:
 2. First raw phase-aligned W7-X overlay figure from:
    - `docs/_static/reference_modes/w7x_linear_gx_ky0p3000.npz`
    - a bounded-cost matched SPECTRAX eigenfunction extraction.
-3. Windowed nonlinear-statistics figure summarizing the already-closed
-   nonlinear lanes.
+3. Tighten the materialized windowed nonlinear-statistics figure
+   (`docs/_static/nonlinear_window_statistics.png`) as per-case reference
+   windows mature.
 4. Zonal-flow / GAM response figure family with:
    - shaped tokamak Rosenbluth-Hinton residuals,
    - W7-X residual and damping envelopes,
@@ -1083,8 +1087,10 @@ The literature pass implies a concrete figure philosophy:
    - use matched windows and make both curves visible even when overlapping
 
 4. **Windowed-statistics summary**
-   - bar/table/point plot of windowed mean/std/RMS mismatch for the nonlinear
-     closed lanes
+   - materialized by `tools/plot_nonlinear_window_statistics.py` from the
+     nonlinear gate-summary JSONs
+   - current artifacts:
+     `docs/_static/nonlinear_window_statistics.{png,pdf,csv,json}`
    - this should carry the actual manuscript acceptance story, because it is
      more robust than eyeballing traces
 
@@ -1138,7 +1144,7 @@ script path and one artifact path. At minimum:
 - linear master panel: `tools/make_benchmark_atlas.py`
 - nonlinear transport panel: `tools/make_gx_summary_panel.py` and
   `tools/make_gx_publication_panel.py`
-- windowed-statistics summary: add a dedicated script under `tools/`
+- windowed-statistics summary: `tools/plot_nonlinear_window_statistics.py`
 - stellarator-specific validation panel: add a dedicated script under `tools/`
 - sensitivity/inverse/UQ figures:
   `examples/theory_and_demos/autodiff_inverse_growth.py`,

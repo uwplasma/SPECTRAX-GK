@@ -85,7 +85,7 @@ The next physics lanes should be closed in this order:
    but it should not be counted as a closed gate until the long-window
    ``k_x rho_i=0.30`` slow-oscillation mismatch is resolved and the published
    residual/frequency envelope has explicit pass/fail thresholds.
-2. Windowed nonlinear-statistics panel for Cyclone, Miller, KBM, W7-X, and HSX.
+2. Tighten the now-materialized windowed nonlinear-statistics panel beyond the current ``0.10`` release gate where the literature/reference windows justify stricter tolerances.
 3. W7-X multi-flux-tube ITG/TEM extension and fluctuation-spectrum lane.
 4. Shaped multispecies tokamak linear lane.
 5. ETG nonlinear only after its benchmark operating point and observable
