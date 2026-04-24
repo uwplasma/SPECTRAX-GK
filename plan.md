@@ -318,6 +318,12 @@ The active pre-merge sequence is:
      office/GX/reference-data runs to explicit manifests and CI/manual tiers.
 
 5. **Attack performance from measured bottlenecks.**
+   - The profiling/optimization procedure is now tracked by
+     `tools/performance_optimization_manifest.toml` and validated by
+     `tools/check_performance_optimization_manifest.py`. Treat it like the
+     validation coverage manifest: every performance claim must map to
+     platforms, benchmark cases, profiling tools, metrics, artifacts,
+     bottleneck hypotheses, optimization actions, and gates.
    - Current cold-start priority: `compile_first_integrator_run`, then
      `gyro_bessel_cache` and `laguerre_cache`.
    - Current memory priority: avoid large closed-over constants, avoid
@@ -330,6 +336,18 @@ The active pre-merge sequence is:
      published cold and warm timings separate.
    - Evaluate Pallas only after XProf/HLO shows a stable kernel hotspot that
      XLA cannot fuse well.
+   - Work in five explicit lanes:
+     end-to-end runtime/memory, cold-start compilation, nonlinear warm
+     throughput, memory efficiency, and parallel scaling. Each lane must report
+     before/after JSON or CSV artifacts before any README/publication panel is
+     refreshed.
+   - CPU and GPU optimization gates are separate: a CPU improvement cannot be
+     used to claim GPU speedup, and a GPU compile-cache improvement cannot be
+     mixed with honest cold-start timings.
+   - Do not merge a performance optimization unless the relevant physics gate
+     remains unchanged: exact-state audits, linear growth/frequency gates,
+     nonlinear window-statistics gates, or device-parity gates depending on the
+     changed code path.
 
 6. **Define a real multi-device parallelization target.**
    - Stop treating sharding as a figure-only feature.
