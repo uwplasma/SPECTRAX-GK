@@ -214,10 +214,17 @@ The active pre-merge sequence is:
      `kx rho_i=0.05` residual gate, and fails all late-envelope gates. The new
      paper-facing audit panel lives at
      `docs/_static/w7x_zonal_contract_audit.{csv,json,png,pdf}` with
-     `gate_index_include=false`. The next closure step is not a documentation
-     change; it is a velocity-space recurrence / moment-closure audit plus a
-     state-level convention comparison against stella/GENE/GX for the
-     paper-facing normalization.
+     `gate_index_include=false`. The companion velocity-space audit
+     `docs/_static/w7x_zonal_moment_tail_audit.{csv,json,png,pdf}` shows that
+     the long `Nl=8`, `Nm=32` traces have large late normalized-trace standard
+     deviations and non-negligible high-Hermite/high-Laguerre free-energy tail
+     fractions. A single `kx rho_i=0.07`, `t≈200` kz-hypercollision diagnostic
+     probe with `nu_hyper_m=0.05` reduced early tail standard deviation but did
+     not close the reference trace error, so this should remain a bounded
+     recurrence/closure investigation rather than a hidden validation setting.
+     The next closure step is not a documentation change; it is a velocity-space
+     recurrence / moment-closure sweep plus a state-level convention comparison
+     against stella/GENE/GX for the paper-facing normalization.
    - KBM raw eigenfunction overlay is closed for the tracked `ky=0.3` artifact
      with overlap `≈0.999985`; keep broader KBM nonlinear and branch-continuity
      extensions as separate future gates.
