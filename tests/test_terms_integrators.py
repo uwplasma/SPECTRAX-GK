@@ -142,6 +142,35 @@ def test_integrate_nonlinear_k10_branch_is_finite_and_shape_preserving() -> None
     assert np.all(np.isfinite(np.asarray(G_final)))
 
 
+def test_integrate_nonlinear_show_progress_callback_path(monkeypatch) -> None:
+    from spectraxgk.utils import callbacks
+
+    callback_calls: list[int] = []
+
+    monkeypatch.setattr(callbacks, "should_emit_progress", lambda idx, steps: jnp.asarray(True))
+
+    def _fake_print_callback(state, idx, *args):
+        del idx, args
+        callback_calls.append(0)
+        return state
+
+    monkeypatch.setattr(callbacks, "print_callback", _fake_print_callback)
+
+    G0 = jnp.asarray([[1.0 + 0.0j]], dtype=jnp.complex64)
+    G_final, fields = integrate_nonlinear(
+        _linear_rhs(0.0 + 0.0j),
+        G0,
+        0.1,
+        1,
+        method="euler",
+        show_progress=True,
+    )
+
+    assert callback_calls == [0]
+    assert G_final.shape == G0.shape
+    assert fields.phi.shape[0] == 1
+
+
 def test_nonlinear_placeholders() -> None:
     G = jnp.ones((3, 4, 1), dtype=jnp.complex64)
     out = placeholder_nonlinear_contribution(G, weight=jnp.asarray(2.0))
