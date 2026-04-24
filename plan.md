@@ -348,6 +348,11 @@ The active pre-merge sequence is:
      remains unchanged: exact-state audits, linear growth/frequency gates,
      nonlinear window-statistics gates, or device-parity gates depending on the
      changed code path.
+   - Local CPU smoke for the manifest-backed startup lane now runs in under the
+     local budget with reduced Cyclone nonlinear moments (`Nl=2`, `Nm=4`):
+     `startup_total_s=12.77`, dominated by `compile_first_integrator_run=6.40`
+     and `build_linear_cache=3.98`. This gives a cheap local regression point
+     before larger `office` CPU/GPU profiling sweeps.
 
 6. **Define a real multi-device parallelization target.**
    - Stop treating sharding as a figure-only feature.
