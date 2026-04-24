@@ -253,6 +253,39 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.autodiff_validation"
+path = "src/spectraxgk/autodiff_validation.py"
+owner_lane = "autodiff inverse, sensitivity-map, and UQ covariance validation"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 98.0
+reference_anchors = [
+  "JAX autodiff finite-difference/tangent consistency checks",
+  "Gyaradax-style inverse and uncertainty quantification workflows",
+]
+physics_contracts = [
+  "observable derivatives report conditioning and rank before optimization claims",
+  "covariance metadata distinguishes identifiable inverse problems from local sensitivity demos",
+]
+numerics_contracts = [
+  "Gauss-Newton covariance is symmetric positive semidefinite under regularized normal equations",
+  "finite-difference and autodiff Jacobians agree within explicit tolerances",
+]
+fast_tests = [
+  "tests/test_autodiff_validation.py",
+  "tests/test_autodiff_demo.py",
+  "tests/test_autodiff_twomode_demo.py",
+]
+artifact_paths = [
+  "docs/_static/autodiff_inverse_growth.png",
+  "docs/_static/autodiff_inverse_twomode.png",
+]
+next_tests = [
+  "add tangent-linear checks for differentiated nonlinear transport observables",
+  "add geometry-parameter sensitivity maps after the vmec_jax bridge lands",
+]
+
+[[modules]]
 module = "spectraxgk.from_gx.vmec"
 path = "src/spectraxgk/from_gx/vmec.py"
 owner_lane = "VMEC import/remap geometry and future differentiable geometry bridge"
@@ -287,6 +320,39 @@ next_tests = [
   "split file loading from coordinate remap helpers",
   "add vmec_jax in-memory parity fixtures after the core refactor lands",
   "add a multi-process VMEC cache stress test when the slow backend is available in CI",
+]
+
+[[modules]]
+module = "spectraxgk.geometry.differentiable"
+path = "src/spectraxgk/geometry/differentiable.py"
+owner_lane = "in-memory vmec_jax/booz_xform_jax bridge into the flux-tube geometry contract"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "vmec_jax differentiable VMEC fixed-boundary state and wout-like output APIs",
+  "booz_xform_jax in-memory read_wout_data and jax_api Boozer transform path",
+]
+physics_contracts = [
+  "differentiable geometry backends must produce the same solver-ready metric and drift arrays as imported VMEC/eik files",
+  "stellarator optimization claims require geometry parity and gradient checks before publication",
+]
+numerics_contracts = [
+  "in-memory geometry arrays must be finite, one-dimensional, shape-aligned, and use a constant gradpar field-line contract",
+  "optional backend discovery must not force vmec_jax or booz_xform_jax imports on users who only run analytic geometry",
+]
+fast_tests = [
+  "tests/test_differentiable_geometry_bridge.py",
+  "tests/test_from_gx_vmec_helpers.py",
+  "tests/test_vmec_eik.py",
+]
+artifact_paths = [
+  "docs/_static/w7x_exact_state_audit.json",
+  "docs/_static/w7x_linear_t2_scan.csv",
+]
+next_tests = [
+  "add an office-only vmec_jax -> booz_xform_jax -> FluxTubeGeometryData parity fixture",
+  "add finite-difference geometry-gradient checks for linear growth observables",
 ]
 
 [[modules]]
@@ -345,6 +411,7 @@ numerics_contracts = [
 fast_tests = [
   "tests/test_sharding.py",
   "tests/test_sharded_integrators.py",
+  "tests/test_parallel.py",
 ]
 artifact_paths = [
   "docs/_static/scaling_speedup_data.csv",
@@ -353,6 +420,37 @@ artifact_paths = [
 next_tests = [
   "replace non-scaling RK2 demo with scan/ensemble parallelization gates",
   "add GPU-office benchmark manifest for two-device validation",
+]
+
+[[modules]]
+module = "spectraxgk.parallel"
+path = "src/spectraxgk/parallel.py"
+owner_lane = "production ky/batch scan and UQ ensemble parallelization"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "JAX vmap/pmap independent batch workflows",
+  "multi-device linear scan and UQ ensemble scaling targets",
+]
+physics_contracts = [
+  "parallel ky scans and UQ ensembles preserve serial ordering and numerical identity",
+  "nonlinear domain sharding remains out of release scope until communication gates exist",
+]
+numerics_contracts = [
+  "single-device fallback matches vmap exactly",
+  "multi-device batches pad only by edge repetition and drop padded outputs deterministically",
+]
+fast_tests = [
+  "tests/test_parallel.py",
+]
+artifact_paths = [
+  "docs/_static/scaling_speedup_data.csv",
+  "docs/_static/scaling_speedup.png",
+]
+next_tests = [
+  "wire batch_map into a manifest-backed linear ky scan example",
+  "add office two-GPU identity and speedup gates for UQ ensembles",
 ]
 
 [[modules]]

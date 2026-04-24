@@ -31,6 +31,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_GLOB = str(ROOT / "docs" / "_static" / "nonlinear_*_gate_summary.json")
 DEFAULT_OUT = ROOT / "docs" / "_static" / "nonlinear_window_statistics.png"
 DEFAULT_METRICS = ("Phi2", "Wg", "Wphi", "Wapar", "HeatFlux", "ParticleFlux")
+DEFAULT_RELEASE_GATE = 0.10
 CASE_LABELS = {
     "cyclone_nonlinear_long_window": "Cyclone",
     "cyclone_miller_nonlinear_window": "Cyclone Miller",
@@ -52,6 +53,16 @@ METRIC_COLORS = {
     "Wapar": "#6c757d",
     "HeatFlux": "#c44e52",
     "ParticleFlux": "#f4a261",
+}
+CASE_MEAN_REL_GATES = {
+    # Keep the broad release envelope for cases where the accepted window is
+    # close to the current 0.10 parity boundary; those are paper-tightening
+    # targets rather than hidden release blockers.
+    "cyclone_nonlinear_long_window": 0.10,
+    "cyclone_miller_nonlinear_window": 0.095,
+    "kbm_nonlinear_window": 0.02,
+    "w7x_nonlinear_window": 0.10,
+    "hsx_nonlinear_window": 0.05,
 }
 
 
@@ -84,6 +95,16 @@ def _case_label(case: str) -> str:
     return CASE_LABELS.get(case, case.replace("_nonlinear_window", "").replace("_", " ").title())
 
 
+def _case_mean_rel_gate(case: str, fallback: float | None) -> float:
+    """Return the release mean-relative gate for one nonlinear window case."""
+
+    if case in CASE_MEAN_REL_GATES:
+        return float(CASE_MEAN_REL_GATES[case])
+    if fallback is not None and np.isfinite(float(fallback)):
+        return float(fallback)
+    return float(DEFAULT_RELEASE_GATE)
+
+
 def load_window_rows(paths: list[Path], metrics: tuple[str, ...] = DEFAULT_METRICS) -> list[dict[str, object]]:
     """Load per-case/per-diagnostic windowed mismatch rows from gate summaries."""
 
@@ -114,6 +135,7 @@ def load_window_rows(paths: list[Path], metrics: tuple[str, ...] = DEFAULT_METRI
                     "max_rel_abs": float(item.get("max_rel_abs", np.nan)),
                     "final_rel": float(item.get("final_rel", np.nan)),
                     "gate_mean_rel": float(data.get("gate_mean_rel", np.nan)),
+                    "case_gate_mean_rel": _case_mean_rel_gate(case, float(data.get("gate_mean_rel", np.nan))),
                     "gate_passed": bool(data.get("gate_passed", False)),
                     "source": str(data.get("source", "")),
                     "artifact": _repo_relative_path(path),
@@ -132,7 +154,7 @@ def _metric_offsets(metrics: list[str]) -> dict[str, float]:
 def window_statistics_figure(
     rows: list[dict[str, object]],
     *,
-    gate_threshold: float = 0.10,
+    gate_threshold: float = DEFAULT_RELEASE_GATE,
     title: str = "Windowed nonlinear diagnostic agreement",
 ) -> plt.Figure:
     """Create the two-panel windowed nonlinear statistics summary figure."""
@@ -175,7 +197,19 @@ def window_statistics_figure(
                     zorder=3,
                 )
         if threshold is not None:
-            ax.axvline(float(threshold), color="#c2410c", linestyle="--", linewidth=1.7, label="release gate")
+            labeled_gate = False
+            for case in cases:
+                case_threshold = _case_mean_rel_gate(case, threshold)
+                ax.plot(
+                    [case_threshold, case_threshold],
+                    [y_base[case] - 0.34, y_base[case] + 0.34],
+                    color="#c2410c",
+                    linestyle="--",
+                    linewidth=1.9,
+                    label="case gate" if not labeled_gate else None,
+                    zorder=2,
+                )
+                labeled_gate = True
         ax.set_yticks(range(len(cases)), labels)
         ax.invert_yaxis()
         ax.set_xlabel(xlabel)
@@ -205,12 +239,13 @@ def write_rows_csv(rows: list[dict[str, object]], path: Path) -> None:
         "max_rel_abs",
         "final_rel",
         "gate_mean_rel",
+        "case_gate_mean_rel",
         "gate_passed",
         "source",
         "artifact",
     ]
     with path.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer = csv.DictWriter(handle, fieldnames=fieldnames, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
 
@@ -228,6 +263,11 @@ def write_summary_json(rows: list[dict[str, object]], path: Path, *, gate_thresh
         )
         for case in cases
     }
+    case_gate_thresholds = {case: _case_mean_rel_gate(case, gate_threshold) for case in cases}
+    case_gate_passed = {
+        case: bool(max_mean_by_case[case] <= case_gate_thresholds[case])
+        for case in cases
+    }
     payload = {
         "n_cases": len(cases),
         "n_rows": len(rows),
@@ -235,12 +275,17 @@ def write_summary_json(rows: list[dict[str, object]], path: Path, *, gate_thresh
         "metrics": metrics,
         "gate_threshold": float(gate_threshold),
         "all_cases_pass_gate": all(value <= float(gate_threshold) for value in max_mean_by_case.values()),
+        "case_gate_thresholds": case_gate_thresholds,
+        "case_gate_passed": case_gate_passed,
+        "all_cases_pass_case_gates": all(case_gate_passed.values()),
         "max_mean_rel_abs_by_case": max_mean_by_case,
         "patterns": [_repo_relative_pattern(pattern) for pattern in patterns],
         "rows": rows,
         "notes": (
             "This artifact summarizes frozen nonlinear release-window gate JSONs. "
-            "It excludes exploratory summaries with gate_index_include=false and does not rerun simulations."
+            "It excludes exploratory summaries with gate_index_include=false and does not rerun simulations. "
+            "Case-specific mean-relative gates tighten KBM/HSX and the closed Cyclone-Miller window while "
+            "leaving Cyclone and W7-X at the broad release envelope pending paper-level retuning."
         ),
     }
     path.write_text(json.dumps(_json_clean(payload), indent=2, sort_keys=True, allow_nan=False) + "\n", encoding="utf-8")
@@ -250,7 +295,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--glob", action="append", dest="patterns", default=None, help="Input gate-summary JSON glob.")
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT, help="Output PNG path.")
-    parser.add_argument("--gate-threshold", type=float, default=0.10, help="Mean-relative release gate threshold.")
+    parser.add_argument("--gate-threshold", type=float, default=DEFAULT_RELEASE_GATE, help="Fallback mean-relative release gate threshold.")
     parser.add_argument("--title", default="Windowed nonlinear diagnostic agreement", help="Figure title.")
     return parser
 

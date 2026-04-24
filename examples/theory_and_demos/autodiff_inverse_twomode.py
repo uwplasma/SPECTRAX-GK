@@ -12,6 +12,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
 
+from spectraxgk.autodiff_validation import covariance_diagnostics
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid
@@ -219,9 +220,8 @@ def run_demo(
         jac_fd[:, idx] = (obs_plus - obs_minus) / (2.0 * eps)
     rel_err_cols = np.linalg.norm(jac_ad - jac_fd, axis=0) / (np.linalg.norm(jac_fd, axis=0) + 1.0e-12)
 
-    sigma2 = float(np.mean(residual**2) + 1.0e-12)
-    jtj = jac_ad.T @ jac_ad + 1.0e-9 * np.eye(2)
-    cov = sigma2 * np.linalg.inv(jtj)
+    uq = covariance_diagnostics(jac_ad, residual, regularization=1.0e-9)
+    cov = np.asarray(uq["covariance"], dtype=float)
 
     summary = {
         "target_observables": target.tolist(),
@@ -236,8 +236,7 @@ def run_demo(
         "jac_autodiff": jac_ad.tolist(),
         "jac_finite_diff": jac_fd.tolist(),
         "jac_rel_error": rel_err_cols.tolist(),
-        "covariance": cov.tolist(),
-        "sigma2": sigma2,
+        **uq,
     }
 
     if write_files:

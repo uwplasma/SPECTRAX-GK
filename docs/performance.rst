@@ -172,6 +172,15 @@ for engineering work, but it is intentionally not presented as a headline
 publication figure because the current curve is dominated by communication
 overhead rather than near-ideal scaling.
 
+Production parallelization should start with independent work rather than
+nonlinear domain decomposition. The public helpers
+``spectraxgk.ky_scan_batches`` and ``spectraxgk.batch_map`` split ``k_y``
+scans, sensitivity sweeps, and UQ ensembles while preserving serial ordering.
+On one device they reduce to batched ``vmap`` execution; on multiple devices
+they use JAX device batching and trim padded edge samples deterministically.
+Every performance claim from this path should include a numerical-identity
+gate against the serial result before a speedup plot is promoted.
+
 Spectral nonlinear mode (fast toggle)
 -------------------------------------
 
@@ -268,6 +277,18 @@ The assembled figure is generated from the collected per-case summaries with
 
 - ``docs/_static/runtime_memory_benchmark.png``
 - ``docs/_static/runtime_memory_benchmark.pdf``
+
+For the shipped refresh shown here, use the successful release summary rather
+than the older interrupted summary that contains failed W7-X/HSX nonlinear
+rows:
+
+.. code-block:: bash
+
+   python tools/benchmark_runtime_memory.py \
+     --summary-glob tools_out/runtime_memory_summary_ship_refresh.json \
+     --csv-out tools_out/runtime_memory_results_ship_refresh_regenerated.csv \
+     --summary-out tools_out/runtime_memory_summary_ship_refresh_regenerated.json \
+     --plot-out docs/_static/runtime_memory_benchmark.png
 
 The published runtime figure complements the atlas instead of duplicating it:
 the atlas carries growth/frequency and nonlinear transport/energy comparisons,
