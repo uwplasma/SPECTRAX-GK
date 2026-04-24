@@ -281,6 +281,20 @@ are still larger than the digitized reference envelope of order ``2.5e-3``.
 That is now tracked as a velocity-space recurrence / closure issue rather than
 as a geometry, initializer, or normalization mismatch.
 
+The runtime path now has two safeguards for this lane. First, strided nonlinear
+diagnostics always retain the final step, so long traces do not silently stop
+one stride before the intended horizon. Second, checkpointed artifact
+generation validates each chunk for non-finite diagnostics, state, and fields
+before writing or continuing. This makes high-moment W7-X recurrence sweeps
+fail fast instead of running thousands of extra steps after a NaN. A bounded
+``k_x rho_i=0.07``, ``Nl=16``, ``Nm=64``, ``dt=0.05`` probe remained finite to
+``t≈200`` and a post-fix ``t≈50`` rerun verified nonzero signed line-average
+diagnostics through the retained final sample. A longer ``Nl=8``, ``Nm=32``
+restart-continuation attempt reached ``t≈2500`` in the energy channels, but it
+zeroed the signed zonal line/mode diagnostics after the restart path; that
+restart diagnostic continuity issue is intentionally not used for the frozen
+publication panel and remains a separate QA item.
+
 .. figure:: _static/w7x_zonal_response_panel.png
    :alt: W7-X high-mirror bean-tube zonal-flow response panel
 

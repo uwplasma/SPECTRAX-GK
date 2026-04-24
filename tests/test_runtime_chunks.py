@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from types import SimpleNamespace
+from dataclasses import replace
 
 import numpy as np
 import pytest
@@ -84,6 +84,23 @@ def test_run_adaptive_gx_chunk_loop_rejects_stalled_time_progress() -> None:
             integrate_chunk=lambda _show_progress: (
                 np.asarray([0.0]),
                 _diag([0.0]),
+                np.asarray([0.0]),
+                FieldState(phi=np.asarray([0.0 + 0.0j])),
+            ),
+            t_max=1.0,
+            chunk_steps=8,
+            label="test",
+        )
+
+
+def test_run_adaptive_gx_chunk_loop_rejects_nonfinite_diagnostics() -> None:
+    bad = replace(_diag([0.5]), Wphi_t=np.asarray([np.nan]))
+
+    with pytest.raises(RuntimeError, match=r"non-finite diagnostics in Wphi_t at sample 0"):
+        run_adaptive_gx_chunk_loop(
+            integrate_chunk=lambda _show_progress: (
+                np.asarray([0.5]),
+                bad,
                 np.asarray([0.0]),
                 FieldState(phi=np.asarray([0.0 + 0.0j])),
             ),

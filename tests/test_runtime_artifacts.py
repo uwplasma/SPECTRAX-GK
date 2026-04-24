@@ -926,6 +926,50 @@ def test_run_runtime_nonlinear_with_artifacts_keeps_adaptive_steps_none(
     assert captured_steps == [None]
 
 
+def test_run_runtime_nonlinear_with_artifacts_rejects_nonfinite_chunk(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    out_path = tmp_path / "bad.out.nc"
+    cfg = RuntimeConfig(
+        time=TimeConfig(dt=0.1, t_max=0.2, fixed_dt=True, diagnostics=True),
+        output=RuntimeOutputConfig(path=str(out_path), save_for_restart=True, nsave=1),
+    )
+    bad_diag = SimulationDiagnostics(
+        t=np.asarray([0.1]),
+        dt_t=np.asarray([0.1]),
+        dt_mean=np.asarray(0.1),
+        gamma_t=np.zeros(1),
+        omega_t=np.zeros(1),
+        Wg_t=np.asarray([np.nan]),
+        Wphi_t=np.ones(1),
+        Wapar_t=np.zeros(1),
+        heat_flux_t=np.zeros(1),
+        particle_flux_t=np.zeros(1),
+        energy_t=np.asarray([np.nan]),
+    )
+    calls = {"run": 0, "write": 0}
+
+    def _fake_run_runtime_nonlinear(_cfg, **_kwargs):
+        calls["run"] += 1
+        return RuntimeNonlinearResult(
+            t=np.asarray(bad_diag.t),
+            diagnostics=bad_diag,
+            state=np.zeros((1, 1, 1, 1, 1, 1), dtype=np.complex64),
+        )
+
+    def _fake_write(*_args, **_kwargs):
+        calls["write"] += 1
+        return {"out": str(out_path)}
+
+    monkeypatch.setattr("spectraxgk.runtime_artifacts.run_runtime_nonlinear", _fake_run_runtime_nonlinear)
+    monkeypatch.setattr("spectraxgk.runtime_artifacts.write_runtime_nonlinear_artifacts", _fake_write)
+
+    with pytest.raises(RuntimeError, match=r"non-finite diagnostics in Wg_t at sample 0"):
+        run_runtime_nonlinear_with_artifacts(cfg, out=out_path, ky_target=0.2, steps=2, diagnostics=True)
+
+    assert calls == {"run": 1, "write": 0}
+
+
 def test_write_runtime_nonlinear_artifacts_requires_cfg_and_diagnostics_for_gx_target(tmp_path: Path) -> None:
     with pytest.raises(ValueError):
         write_runtime_nonlinear_artifacts(
