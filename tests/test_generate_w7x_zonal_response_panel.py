@@ -89,7 +89,7 @@ diagnostics = true
     run_calls = []
 
     def _fake_run(cfg, *, out, kx_target, **kwargs):
-        run_calls.append((float(kx_target), cfg.grid, cfg.time.nstep_restart, dict(kwargs)))
+        run_calls.append((float(kx_target), cfg.grid, cfg.time.nstep_restart, cfg.output, dict(kwargs)))
         path = Path(out)
         path.parent.mkdir(parents=True, exist_ok=True)
         t = np.linspace(0.0, 10.0, 41)
@@ -159,6 +159,7 @@ diagnostics = true
         "steps": 80,
         "sample_stride": 2,
         "checkpoint_steps": 20,
+        "resume_output": False,
         "diagnostics": True,
         "show_progress": True,
         "expected_tmax": 16.0,
@@ -166,18 +167,121 @@ diagnostics = true
         "Nm": 10,
     }
     assert len(run_calls) == 4
-    for kx_target, grid, nstep_restart, kwargs in run_calls:
+    for kx_target, grid, nstep_restart, output, kwargs in run_calls:
         assert grid.boundary == "periodic"
         assert grid.non_twist is True
         assert grid.jtwist is None
         assert np.isclose(grid.Lx, 2.0 * np.pi / kx_target)
         assert nstep_restart == 20
+        assert output.restart_if_exists is False
+        assert output.append_on_restart is True
+        assert output.save_for_restart is True
         assert kwargs["dt"] == 0.2
         assert kwargs["steps"] == 80
         assert kwargs["sample_stride"] == 2
         assert kwargs["show_progress"] is True
         assert kwargs["Nl"] == 6
         assert kwargs["Nm"] == 10
+
+
+def test_generate_w7x_zonal_response_panel_resume_output(tmp_path, monkeypatch) -> None:
+    mod = _load_tool_module()
+
+    config = tmp_path / "w7x_test4.toml"
+    config.write_text(
+        """
+[[species]]
+name = "ion"
+charge = 1.0
+mass = 1.0
+density = 1.0
+temperature = 1.0
+
+[grid]
+Nx = 6
+Ny = 4
+Nz = 16
+Lx = 125.66370614359172
+Ly = 62.8
+boundary = "linked"
+
+[time]
+t_max = 1.0
+dt = 0.1
+method = "rk4"
+sample_stride = 1
+diagnostics = true
+fixed_dt = true
+
+[geometry]
+model = "s-alpha"
+R0 = 5.485
+
+[init]
+init_field = "phi"
+init_amp = 1.0e-6
+gaussian_init = true
+init_single = true
+
+[physics]
+adiabatic_electrons = true
+nonlinear = false
+
+[run]
+ky = 0.0
+Nl = 2
+Nm = 4
+dt = 0.1
+steps = 4
+sample_stride = 1
+diagnostics = true
+""".strip()
+    )
+
+    out_dir = tmp_path / "w7x_out"
+    out_png = tmp_path / "w7x_panel.png"
+    seen = []
+
+    def _fake_run(cfg, *, out, kx_target, **_kwargs):
+        seen.append((cfg.output.restart_if_exists, cfg.output.append_on_restart, Path(cfg.output.path), Path(out)))
+        path = Path(out)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        t = np.linspace(0.0, 1.0, 8)
+        with nc.Dataset(path, "w") as ds:
+            ds.createDimension("time", t.size)
+            ds.createDimension("kx", 3)
+            ds.createDimension("ri", 2)
+            grids = ds.createGroup("Grids")
+            diag = ds.createGroup("Diagnostics")
+            grids.createVariable("time", "f8", ("time",))[:] = t
+            grids.createVariable("kx", "f8", ("kx",))[:] = np.array([-float(kx_target), 0.0, float(kx_target)])
+            raw = np.zeros((t.size, 3, 2), dtype=float)
+            raw[:, 2, 0] = 1.0 + 0.01 * t
+            diag.createVariable("Phi_zonal_line_kxt", "f8", ("time", "kx", "ri"))[:] = raw
+        return object(), {"out": str(path)}
+
+    monkeypatch.setattr(mod, "run_runtime_nonlinear_with_artifacts", _fake_run)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            str(mod.__file__),
+            "--config",
+            str(config),
+            "--out-dir",
+            str(out_dir),
+            "--out-png",
+            str(out_png),
+            "--kx-values",
+            "0.07",
+            "--resume-output",
+        ],
+    )
+
+    assert mod.main() == 0
+    assert seen == [(True, True, out_dir / "w7x_test4_kx070.out.nc", out_dir / "w7x_test4_kx070.out.nc")]
+    meta = json.loads(out_png.with_suffix(".json").read_text())
+    assert meta["runtime"]["resume_output"] is True
 
 
 def test_generate_w7x_zonal_response_formats_unresolved_damping() -> None:

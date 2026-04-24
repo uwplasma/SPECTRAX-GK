@@ -250,6 +250,69 @@ def test_runtime_artifact_spectral_helpers() -> None:
     assert ri_series.shape == (1, 2, 2)
 
 
+def test_write_runtime_nonlinear_artifacts_preserves_active_resolved_axes(tmp_path: Path) -> None:
+    nc = pytest.importorskip("netCDF4")
+
+    cfg = RuntimeConfig(
+        grid=GridConfig(Nx=6, Ny=4, Nz=4, Lx=6.0, Ly=6.0, boundary="periodic"),
+        time=TimeConfig(dt=0.1, t_max=0.2, diagnostics=True, fixed_dt=True),
+        output=RuntimeOutputConfig(path=str(tmp_path / "active.out.nc"), save_for_restart=False),
+    )
+    active_kx = _gx_active_kx_count(cfg.grid.Nx)
+    active_ky = _gx_active_ky_count(cfg.grid.Ny)
+    line = np.asarray(
+        [
+            [1.0 + 0.5j, 2.0 + 0.25j, 3.0 + 0.125j],
+            [4.0 + 0.5j, 5.0 + 0.25j, 6.0 + 0.125j],
+        ],
+        dtype=np.complex64,
+    )
+    phi2_kykx = np.arange(2 * active_ky * active_kx, dtype=np.float32).reshape(2, active_ky, active_kx)
+    wg_kxst = np.arange(2 * active_kx, dtype=np.float32).reshape(2, 1, active_kx)
+    diag = SimulationDiagnostics(
+        t=np.asarray([0.1, 0.2]),
+        dt_t=np.asarray([0.1, 0.1]),
+        dt_mean=np.asarray(0.1),
+        gamma_t=np.zeros(2),
+        omega_t=np.zeros(2),
+        Wg_t=np.asarray([1.0, 2.0]),
+        Wphi_t=np.asarray([0.5, 0.6]),
+        Wapar_t=np.zeros(2),
+        heat_flux_t=np.zeros(2),
+        particle_flux_t=np.zeros(2),
+        energy_t=np.asarray([1.5, 2.6]),
+        resolved=ResolvedDiagnostics(
+            Phi2_kxkyt=phi2_kykx,
+            Phi_zonal_line_kxt=line,
+            Phi_zonal_mode_kxt=2.0 * line,
+            Wg_kxst=wg_kxst,
+        ),
+    )
+    result = RuntimeNonlinearResult(
+        t=np.asarray(diag.t),
+        diagnostics=diag,
+        state=None,
+        fields=None,
+        ky_selected=0.0,
+        kx_selected=0.0,
+    )
+
+    paths = write_runtime_nonlinear_artifacts(tmp_path / "active.out.nc", result, cfg)
+
+    with nc.Dataset(paths["out"], "r") as root:
+        assert root.dimensions["kx"].size == active_kx
+        assert root.dimensions["ky"].size == active_ky
+        diagnostics = root.groups["Diagnostics"]
+        stored_line_ri = np.asarray(diagnostics.variables["Phi_zonal_line_kxt"][:])
+        stored_line = stored_line_ri[..., 0] + 1j * stored_line_ri[..., 1]
+        stored_wg = np.asarray(diagnostics.variables["Wg_kxst"][:])
+        stored_phi2 = np.asarray(diagnostics.variables["Phi2_kxkyt"][:])
+
+    np.testing.assert_allclose(stored_line, line)
+    np.testing.assert_allclose(stored_wg, wg_kxst)
+    np.testing.assert_allclose(stored_phi2, phi2_kykx)
+
+
 def test_runtime_artifact_read_optional_var() -> None:
     class _Group:
         variables = {"present": np.array([1.0, 2.0])}

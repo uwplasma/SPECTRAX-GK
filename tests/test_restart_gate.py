@@ -10,6 +10,8 @@ from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, 
 from spectraxgk.restart import load_gx_restart_state, write_gx_restart_state
 from spectraxgk.runtime import run_runtime_nonlinear
 from spectraxgk.runtime_artifacts import (
+    _condense_kx,
+    _condense_kykx,
     _restart_to_gx_layout,
     load_runtime_nonlinear_gx_diagnostics,
     run_runtime_nonlinear_with_artifacts,
@@ -294,3 +296,23 @@ def test_restart_gate_append_on_restart_preserves_full_history(tmp_path: Path) -
     np.testing.assert_allclose(np.asarray(loaded.particle_flux_t), np.asarray(full.diagnostics.particle_flux_t), rtol=1.0e-6, atol=1.0e-6)
     assert full.diagnostics.turbulent_heating_t is not None
     np.testing.assert_allclose(np.asarray(loaded.turbulent_heating_t), np.asarray(full.diagnostics.turbulent_heating_t), rtol=1.0e-6, atol=1.0e-6)
+    assert loaded.resolved is not None
+    assert full.diagnostics.resolved is not None
+    np.testing.assert_allclose(
+        np.asarray(loaded.resolved.Phi_zonal_line_kxt),
+        _condense_kx(np.asarray(full.diagnostics.resolved.Phi_zonal_line_kxt)),
+        rtol=1.0e-6,
+        atol=1.0e-8,
+    )
+    np.testing.assert_allclose(
+        np.asarray(loaded.resolved.Phi_zonal_mode_kxt),
+        _condense_kx(np.asarray(full.diagnostics.resolved.Phi_zonal_mode_kxt)),
+        rtol=1.0e-6,
+        atol=1.0e-8,
+    )
+    np.testing.assert_allclose(
+        np.asarray(loaded.resolved.Phi2_kxkyt),
+        _condense_kykx(np.asarray(full.diagnostics.resolved.Phi2_kxkyt)),
+        rtol=1.0e-6,
+        atol=1.0e-8,
+    )

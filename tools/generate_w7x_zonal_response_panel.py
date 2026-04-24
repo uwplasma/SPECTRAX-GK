@@ -117,6 +117,14 @@ def _parse_args() -> argparse.Namespace:
         help="Reuse any existing per-kx out.nc bundles instead of rerunning them.",
     )
     parser.add_argument(
+        "--resume-output",
+        action="store_true",
+        help=(
+            "Continue each per-kx bundle from its matching restart file when it exists, "
+            "appending diagnostics to the existing out.nc history."
+        ),
+    )
+    parser.add_argument(
         "--dt",
         type=float,
         default=None,
@@ -302,6 +310,8 @@ def main() -> int:
         raise ValueError("--sample-stride must be positive")
     if args.checkpoint_steps is not None and int(args.checkpoint_steps) <= 0:
         raise ValueError("--checkpoint-steps must be positive when provided")
+    if bool(args.reuse_output) and bool(args.resume_output):
+        raise ValueError("--reuse-output and --resume-output are mutually exclusive")
     if nl <= 0:
         raise ValueError("--Nl must be positive")
     if nm <= 0:
@@ -316,7 +326,7 @@ def main() -> int:
     for kx_target in [float(val) for val in args.kx_values]:
         token = _kx_token(kx_target)
         out_bundle = args.out_dir / f"w7x_test4_kx{token}.out.nc"
-        if not args.reuse_output or not out_bundle.exists():
+        if bool(args.resume_output) or not args.reuse_output or not out_bundle.exists():
             cfg_case = replace(
                 cfg,
                 grid=replace(
@@ -329,6 +339,13 @@ def main() -> int:
                 time=replace(
                     cfg.time,
                     nstep_restart=None if args.checkpoint_steps is None else int(args.checkpoint_steps),
+                ),
+                output=replace(
+                    cfg.output,
+                    path=str(out_bundle),
+                    restart_if_exists=bool(args.resume_output),
+                    append_on_restart=True,
+                    save_for_restart=True,
                 ),
             )
             run_runtime_nonlinear_with_artifacts(
@@ -448,6 +465,7 @@ def main() -> int:
                     "steps": int(steps),
                     "sample_stride": int(sample_stride),
                     "checkpoint_steps": None if args.checkpoint_steps is None else int(args.checkpoint_steps),
+                    "resume_output": bool(args.resume_output),
                     "diagnostics": bool(diagnostics),
                     "show_progress": bool(args.show_progress),
                     "expected_tmax": float(dt) * float(steps),
