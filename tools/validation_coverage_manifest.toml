@@ -412,14 +412,17 @@ fast_tests = [
   "tests/test_sharding.py",
   "tests/test_sharded_integrators.py",
   "tests/test_parallel.py",
+  "tests/test_generate_parallel_ky_scan_gate.py",
 ]
 artifact_paths = [
   "docs/_static/scaling_speedup_data.csv",
   "docs/_static/scaling_speedup.png",
+  "docs/_static/parallel_ky_scan_gate.json",
+  "docs/_static/parallel_ky_scan_gate.png",
 ]
 next_tests = [
-  "replace non-scaling RK2 demo with scan/ensemble parallelization gates",
   "add GPU-office benchmark manifest for two-device validation",
+  "add UQ ensemble parallelization gate using the same identity-policy format",
 ]
 
 [[modules]]
@@ -443,13 +446,13 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/test_parallel.py",
+  "tests/test_generate_parallel_ky_scan_gate.py",
 ]
 artifact_paths = [
-  "docs/_static/scaling_speedup_data.csv",
-  "docs/_static/scaling_speedup.png",
+  "docs/_static/parallel_ky_scan_gate.json",
+  "docs/_static/parallel_ky_scan_gate.png",
 ]
 next_tests = [
-  "wire batch_map into a manifest-backed linear ky scan example",
   "add office two-GPU identity and speedup gates for UQ ensembles",
 ]
 

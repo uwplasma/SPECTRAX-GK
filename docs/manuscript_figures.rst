@@ -66,6 +66,10 @@ Core Validation Figures
      - existing performance tooling
      - Open
      - keep separate from validation figures
+   * - Parallelization identity gate
+     - ``tools/generate_parallel_ky_scan_gate.py``
+     - Closed for independent Cyclone ``k_y`` batching
+     - current artifact base: ``docs/_static/parallel_ky_scan_gate.png`` with CSV/JSON/PDF companions. This is a real linear-solver gate: it compares serial and fixed-shape ``k_y``-batched Cyclone scans, requires numerical identity for ``gamma`` and ``omega``, and reports batch speedup separately from the acceptance criterion.
 
 Differentiable-Physics Figures
 ------------------------------

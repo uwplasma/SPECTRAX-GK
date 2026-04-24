@@ -33,9 +33,8 @@ metrics = [
 ]
 artifact_paths = [
   "tools/runtime_memory_manifest.toml",
-  "tools_out/runtime_memory_summary_final.json",
-  "tools_out/runtime_memory_results_final.csv",
   "docs/_static/runtime_memory_benchmark.png",
+  "docs/_static/runtime_memory_benchmark.pdf",
 ]
 bottleneck_hypotheses = [
   "short nonlinear GPU cases are dominated by JAX startup and first-integrator compilation",
@@ -69,9 +68,9 @@ metrics = [
   "compile_first_full_rhs_s",
 ]
 artifact_paths = [
-  "tools_out/startup_cyclone_gpu.json",
-  "tools_out/startup_kbm_gpu.json",
-  "tools_out/linear_cache_cyclone_gpu.json",
+  "docs/performance.rst",
+  "tools/profile_runtime_startup.py",
+  "tools/profile_linear_cache_build.py",
 ]
 bottleneck_hypotheses = [
   "compile_first_integrator_run is the largest remaining cold-start cost",
@@ -142,8 +141,9 @@ metrics = [
   "device_memory_profile",
 ]
 artifact_paths = [
-  "tools_out/runtime_memory_summary_final.json",
   "docs/_static/runtime_memory_benchmark.png",
+  "docs/_static/runtime_memory_benchmark.pdf",
+  "docs/outputs.rst",
 ]
 bottleneck_hypotheses = [
   "full-history diagnostic arrays and closed-over constants are the main avoidable memory risks",
@@ -169,6 +169,7 @@ cases = ["linear-scans", "ensemble-uq", "autodiff-sensitivities", "nonlinear-pil
 profiling_tools = [
   "tools/run_device_parity_gate.py",
   "tools/plot_scaling_speedup.py",
+  "tools/generate_parallel_ky_scan_gate.py",
 ]
 metrics = [
   "strong_scaling_speedup",
@@ -179,6 +180,8 @@ metrics = [
 artifact_paths = [
   "docs/_static/scaling_speedup.png",
   "docs/_static/scaling_speedup_data.csv",
+  "docs/_static/parallel_ky_scan_gate.png",
+  "docs/_static/parallel_ky_scan_gate.json",
 ]
 bottleneck_hypotheses = [
   "independent ky/batch/ensemble sharding should scale before nonlinear domain sharding",
@@ -186,6 +189,7 @@ bottleneck_hypotheses = [
 ]
 optimization_actions = [
   "prioritize sharded linear scans, UQ ensembles, and autodiff sensitivity batches",
+  "use tools/generate_parallel_ky_scan_gate.py as the release identity gate for fixed-shape ky batching",
   "gate CPU sharding locally and two-GPU sharding on office",
   "only publish strong-scaling plots when speedup is meaningful and numerically identical",
 ]

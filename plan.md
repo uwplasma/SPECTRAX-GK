@@ -25,6 +25,12 @@ Current public baseline under review: `refactor/modularize-core-for-validation` 
   sweeps, and UQ ensembles through `spectraxgk.batch_map` and
   `spectraxgk.ky_scan_batches`; nonlinear domain sharding remains out of the
   release claim until communication and numerical-identity gates exist.
+- The first real solver-backed parallelization gate is now
+  `tools/generate_parallel_ky_scan_gate.py`, which writes
+  `docs/_static/parallel_ky_scan_gate.{png,pdf,csv,json}` from a Cyclone
+  serial-vs-fixed-shape-batched `k_y` scan. It caught and fixed a true
+  batched-scan bug: selected multi-`k_y` linear grids were inheriting the
+  nonlinear two-thirds dealias mask and zeroing high-`k_y` linear rows.
 - W7-X zonal long-window damping/recurrence, W7-X fluctuation spectra, and
   W7-X multi-flux-tube/TEM extension are post-release manuscript lanes, not
   blockers for the pre-release package refresh.
