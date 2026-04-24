@@ -485,6 +485,22 @@ tests:
   runtime contract, including the absence of adaptive-step truncation caps and
   the presence of default ``tools_out/...`` artifact paths for W7-X and HSX.
 
+Parallelization identity gates
+------------------------------
+
+Independent scan and ensemble parallelization is tested before it is used for
+performance claims:
+
+- ``tests/test_parallel.py`` locks the ``batch_map`` / ``ky_scan_batches``
+  helper semantics, including deterministic padding and one-device fallback.
+- ``tests/test_generate_parallel_ky_scan_gate.py`` tests the artifact writer
+  for the real Cyclone ``k_y``-batch gate.
+- ``tools/generate_parallel_ky_scan_gate.py`` runs the actual linear solver
+  serially and with fixed-shape ``k_y`` batching, then writes
+  ``docs/_static/parallel_ky_scan_gate.{png,pdf,csv,json}``. The JSON gate
+  requires numerical identity for growth rate and frequency; the speedup value
+  is reported separately for engineering tracking.
+
 Nonlinear parity snapshots
 --------------------------
 

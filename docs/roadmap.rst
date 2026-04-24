@@ -36,7 +36,9 @@ documented without changing the physics claim surface:
 - add the Phase-A ``vmec_jax`` / ``booz_xform_jax`` bridge contract into the
   existing sampled flux-tube geometry interface;
 - land production parallelization first for independent ``k_y`` scans and UQ
-  ensembles, with serial numerical-identity gates;
+  ensembles, with serial numerical-identity gates. The first closed artifact
+  is ``docs/_static/parallel_ky_scan_gate.png`` from
+  ``tools/generate_parallel_ky_scan_gate.py``;
 - keep nonlinear hot-path optimization profiling-driven and tied to existing
   window-statistics and exact-state gates.
 

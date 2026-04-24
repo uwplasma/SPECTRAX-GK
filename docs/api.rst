@@ -19,6 +19,12 @@ Geometry
 .. automodule:: spectraxgk.geometry
    :members:
 
+Differentiable Geometry
+-----------------------
+
+.. automodule:: spectraxgk.geometry.differentiable
+   :members:
+
 Grids
 -----
 
@@ -53,6 +59,18 @@ Validation Gates
 ----------------
 
 .. automodule:: spectraxgk.validation_gates
+   :members:
+
+Autodiff Validation
+-------------------
+
+.. automodule:: spectraxgk.autodiff_validation
+   :members:
+
+Parallelization
+---------------
+
+.. automodule:: spectraxgk.parallel
    :members:
 
 Zonal Validation

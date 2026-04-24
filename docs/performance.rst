@@ -181,6 +181,25 @@ they use JAX device batching and trim padded edge samples deterministically.
 Every performance claim from this path should include a numerical-identity
 gate against the serial result before a speedup plot is promoted.
 
+The first release-grade gate for this policy is a real Cyclone linear
+``k_y``-scan comparison:
+
+.. image:: _static/parallel_ky_scan_gate.png
+   :alt: SPECTRAX-GK ky-batch parallelization identity gate
+   :align: center
+
+It is regenerated with:
+
+.. code-block:: bash
+
+   python tools/generate_parallel_ky_scan_gate.py
+
+This gate runs the same linear solver serially and with fixed-shape
+``k_y`` batching, checks ``gamma`` and ``omega`` numerical identity, and
+reports observed speedup as an engineering metric. The gate intentionally does
+not claim nonlinear domain scaling; that remains a separate communication and
+FFT-decomposition problem.
+
 Spectral nonlinear mode (fast toggle)
 -------------------------------------
 

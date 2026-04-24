@@ -337,6 +337,19 @@ JSON files. Those metadata are part of the validation gate: differentiated
 observables are not promoted to inverse-design or UQ claims unless the
 derivative check is conditioned and the inverse problem is identifiable.
 
+Parallelization Validation
+--------------------------
+
+Independent ``k_y`` and ensemble parallelization is accepted only when a
+serial numerical-identity gate accompanies the timing data. The current closed
+artifact is ``docs/_static/parallel_ky_scan_gate.png`` with metadata in
+``docs/_static/parallel_ky_scan_gate.json``. It runs the real Cyclone linear
+solver with ``ky_batch=1`` and a fixed-shape batched scan, then requires
+``max_gamma_rel_error <= 1e-8`` and ``max_omega_abs_error <= 1e-8``. The
+observed speedup is reported as an engineering metric, not as the gate itself.
+Nonlinear domain parallelization remains outside the release claim until it has
+communication, conservation, and exact-state identity gates.
+
 Notes
 -----
 

@@ -108,6 +108,20 @@ These helpers preserve serial ordering and fall back to a one-device ``vmap``
 path on laptops. Multi-device runs should still be checked against the serial
 result before publication speedups are claimed.
 
+For a solver-backed identity gate, run the Cyclone ``k_y``-batch scan artifact:
+
+.. code-block:: bash
+
+   python tools/generate_parallel_ky_scan_gate.py
+
+.. figure:: _static/parallel_ky_scan_gate.png
+   :alt: SPECTRAX-GK ky-batch parallelization identity gate
+   :width: 100%
+
+   Real Cyclone linear solver comparison between serial and fixed-shape
+   ``k_y``-batched scans. The figure verifies that ``gamma`` and ``omega``
+   are identical while reporting the observed batch speedup separately.
+
 Use the strong-scaling sweep helper to collect parallelization timings for the
 distributed linear RK2 loop:
 
