@@ -135,6 +135,15 @@ def _parse_args() -> argparse.Namespace:
         help="Override the diagnostic sample stride without editing the tracked benchmark TOML.",
     )
     parser.add_argument(
+        "--checkpoint-steps",
+        type=int,
+        default=None,
+        help=(
+            "Split fixed-step runtime generation into restartable chunks. "
+            "This enables fail-fast nonfinite checks during long stability sweeps."
+        ),
+    )
+    parser.add_argument(
         "--Nl",
         type=int,
         default=None,
@@ -291,6 +300,8 @@ def main() -> int:
         raise ValueError("--steps must be positive")
     if sample_stride <= 0:
         raise ValueError("--sample-stride must be positive")
+    if args.checkpoint_steps is not None and int(args.checkpoint_steps) <= 0:
+        raise ValueError("--checkpoint-steps must be positive when provided")
     if nl <= 0:
         raise ValueError("--Nl must be positive")
     if nm <= 0:
@@ -314,6 +325,10 @@ def main() -> int:
                     boundary="periodic",
                     jtwist=None,
                     non_twist=True,
+                ),
+                time=replace(
+                    cfg.time,
+                    nstep_restart=None if args.checkpoint_steps is None else int(args.checkpoint_steps),
                 ),
             )
             run_runtime_nonlinear_with_artifacts(
@@ -432,6 +447,7 @@ def main() -> int:
                     "dt": float(dt),
                     "steps": int(steps),
                     "sample_stride": int(sample_stride),
+                    "checkpoint_steps": None if args.checkpoint_steps is None else int(args.checkpoint_steps),
                     "diagnostics": bool(diagnostics),
                     "show_progress": bool(args.show_progress),
                     "expected_tmax": float(dt) * float(steps),

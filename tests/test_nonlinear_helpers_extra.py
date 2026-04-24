@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import fields
 from types import SimpleNamespace
 
 import jax.numpy as jnp
@@ -7,6 +8,7 @@ import numpy as np
 import pytest
 
 from spectraxgk.config import CycloneBaseCase, GridConfig
+from spectraxgk.diagnostics import ResolvedDiagnostics
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.linear import LinearParams, build_linear_cache
@@ -19,6 +21,7 @@ from spectraxgk.nonlinear import (
     _make_fixed_mode_projector,
     _make_hermitian_projector,
     _pack_resolved_diagnostics,
+    _sample_indices_with_final,
     build_nonlinear_imex_operator,
     integrate_nonlinear,
     integrate_nonlinear_cached,
@@ -31,11 +34,11 @@ from spectraxgk.terms.config import FieldState, TermConfig
 
 
 def test_pack_resolved_diagnostics_and_fixed_mode_projector() -> None:
-    resolved = tuple(np.full((1,), i, dtype=float) for i in range(57))
+    names = [field.name for field in fields(ResolvedDiagnostics)]
+    resolved = tuple(np.full((1,), i, dtype=float) for i in range(len(names)))
     packed = _pack_resolved_diagnostics(resolved)
-    np.testing.assert_allclose(packed.Phi2_kxt, [0.0])
-    np.testing.assert_allclose(packed.Wapar_zst, [20.0])
-    np.testing.assert_allclose(packed.TurbulentHeating_zst, [56.0])
+    for index, name in enumerate(names):
+        np.testing.assert_allclose(getattr(packed, name), [float(index)])
 
     projector = _make_fixed_mode_projector(
         jnp.arange(24, dtype=jnp.float32).reshape(1, 3, 2, 4),
@@ -46,6 +49,12 @@ def test_pack_resolved_diagnostics_and_fixed_mode_projector() -> None:
     out = projector(G)
     np.testing.assert_allclose(np.asarray(out[..., 1:2, 0:1, :]), np.asarray(jnp.arange(24, dtype=jnp.float32).reshape(1, 3, 2, 4)[..., 1:2, 0:1, :]))
     assert _make_fixed_mode_projector(None, ky_index=0, kx_index=0) is None
+
+
+def test_sample_indices_with_final_preserves_last_step() -> None:
+    np.testing.assert_array_equal(_sample_indices_with_final(6, 4), np.asarray([0, 4, 5]))
+    np.testing.assert_array_equal(_sample_indices_with_final(6, 5), np.asarray([0, 5]))
+    assert isinstance(_sample_indices_with_final(6, 1), slice)
 
 
 def test_make_hermitian_projector_and_mode_mask() -> None:

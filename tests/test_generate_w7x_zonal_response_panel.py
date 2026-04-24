@@ -89,7 +89,7 @@ diagnostics = true
     run_calls = []
 
     def _fake_run(cfg, *, out, kx_target, **kwargs):
-        run_calls.append((float(kx_target), cfg.grid, dict(kwargs)))
+        run_calls.append((float(kx_target), cfg.grid, cfg.time.nstep_restart, dict(kwargs)))
         path = Path(out)
         path.parent.mkdir(parents=True, exist_ok=True)
         t = np.linspace(0.0, 10.0, 41)
@@ -125,6 +125,8 @@ diagnostics = true
             "80",
             "--sample-stride",
             "2",
+            "--checkpoint-steps",
+            "20",
             "--Nl",
             "6",
             "--Nm",
@@ -156,6 +158,7 @@ diagnostics = true
         "dt": 0.2,
         "steps": 80,
         "sample_stride": 2,
+        "checkpoint_steps": 20,
         "diagnostics": True,
         "show_progress": True,
         "expected_tmax": 16.0,
@@ -163,11 +166,12 @@ diagnostics = true
         "Nm": 10,
     }
     assert len(run_calls) == 4
-    for kx_target, grid, kwargs in run_calls:
+    for kx_target, grid, nstep_restart, kwargs in run_calls:
         assert grid.boundary == "periodic"
         assert grid.non_twist is True
         assert grid.jtwist is None
         assert np.isclose(grid.Lx, 2.0 * np.pi / kx_target)
+        assert nstep_restart == 20
         assert kwargs["dt"] == 0.2
         assert kwargs["steps"] == 80
         assert kwargs["sample_stride"] == 2

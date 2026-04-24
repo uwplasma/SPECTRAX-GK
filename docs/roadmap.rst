@@ -85,7 +85,11 @@ The next physics lanes should be closed in this order:
    long-window comparison passes the digitized stella/GENE residual and
    time-coverage gates for all four wavelengths. The remaining open item is the
    excessive late-window envelope, which should be treated as a velocity-space
-   recurrence / moment-closure audit.
+   recurrence / moment-closure audit. The runtime now preserves final samples
+   under strided diagnostics and aborts checkpointed artifact runs on the first
+   non-finite diagnostic chunk. Before using restart continuation for this
+   figure, close the signed zonal line/mode diagnostic continuity issue found
+   in a long W7-X restart probe.
 2. Tighten the now-materialized windowed nonlinear-statistics panel beyond the current ``0.10`` release gate where the literature/reference windows justify stricter tolerances.
 3. W7-X multi-flux-tube ITG/TEM extension and fluctuation-spectrum lane.
 4. Shaped multispecies tokamak linear lane.
