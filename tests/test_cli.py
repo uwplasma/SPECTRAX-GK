@@ -2,6 +2,7 @@
 
 import argparse
 import sys
+import tomllib
 from pathlib import Path
 
 import numpy as np
@@ -11,7 +12,6 @@ from spectraxgk import __version__
 from spectraxgk.analysis import ModeSelection
 from spectraxgk.cli import (
     _cmd_default_demo,
-    _cmd_plot_saved_output,
     _cmd_run,
     _cmd_run_linear,
     _cmd_run_runtime_linear,
@@ -31,9 +31,13 @@ from spectraxgk.runtime import RuntimeLinearResult, RuntimeNonlinearResult
 from spectraxgk.runtime_config import RuntimeConfig
 
 
+def _project_version() -> str:
+    return tomllib.loads((Path(__file__).resolve().parents[1] / "pyproject.toml").read_text())["project"]["version"]
+
+
 def test_version_exposed():
     """Version string should be exported from the package."""
-    assert __version__ == "1.2.0"
+    assert __version__ == _project_version()
 
 
 def test_cli_version_flag(capsys, monkeypatch) -> None:
@@ -43,7 +47,7 @@ def test_cli_version_flag(capsys, monkeypatch) -> None:
     except SystemExit as exc:
         assert exc.code == 0
     out = capsys.readouterr().out
-    assert "spectraxgk 1.2.0" in out
+    assert f"spectraxgk {__version__}" in out
 
 
 def test_cli_without_args_runs_default_demo(capsys, monkeypatch, tmp_path: Path) -> None:
