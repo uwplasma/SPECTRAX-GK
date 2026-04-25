@@ -98,6 +98,7 @@ profiling_tools = [
   "tools/profile_nonlinear_cyclone.py",
   "tools/profile_nonlinear_sharding.py",
   "tools/profile_linear_rhs_terms.py",
+  "tools/gate_laguerre_nonlinear_modes.py",
 ]
 metrics = [
   "field_solve_s",
@@ -109,6 +110,11 @@ metrics = [
 ]
 artifact_paths = [
   "docs/_static/nonlinear_window_statistics.json",
+  "docs/_static/nonlinear_rhs_profile.png",
+  "docs/_static/nonlinear_rhs_profile_cpu.csv",
+  "docs/_static/nonlinear_rhs_profile_gpu.csv",
+  "docs/_static/laguerre_mode_gate_gpu.json",
+  "docs/_static/laguerre_mode_gate_gpu.png",
   "docs/_static/nonlinear_sharding_profile.json",
   "docs/_static/nonlinear_sharding_profile_office_gpu.json",
   "tools/runtime_memory_manifest.toml",
@@ -124,6 +130,7 @@ optimization_actions = [
 ]
 gates = [
   "windowed nonlinear transport statistics must remain within accepted parity envelopes",
+  "spectral Laguerre nonlinear mode must pass case-level scalar diagnostics before any speedup claim",
   "mode-resolved diagnostics must remain finite and schema-compatible",
   "two-GPU nonlinear state sharding must preserve the serial final state before any throughput claim is made",
 ]

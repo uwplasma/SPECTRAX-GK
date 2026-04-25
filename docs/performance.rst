@@ -122,7 +122,11 @@ benchmark harness:
    python tools/benchmark_nonlinear_suite.py --steps 200 --dt 0.0377 \
      --out /tmp/spectrax_nl_bench.csv
 
-To test the faster spectral nonlinear mode (no Laguerre quadrature grid):
+The harness records scalar diagnostics through the compact diagnostics path, so
+it measures runtime without materializing mode-resolved history arrays unless a
+separate publication artifact explicitly requests them.
+
+To test the optional spectral nonlinear mode (no Laguerre quadrature grid):
 
 .. code-block:: bash
 
@@ -134,15 +138,38 @@ You can optionally pass a reference-code log file to compare runtime per step:
 
    python tools/benchmark_nonlinear_suite.py --gx-log /path/to/gx_run.out
 
-Runtime comparison (nonlinear Cyclone)
+RHS kernel profile (nonlinear Cyclone)
 --------------------------------------
 
-Using the same profiling setup (400 steps):
+The RHS split profiler measures field solve, nonlinear bracket, linear RHS, and
+full RHS kernels after compilation:
+
+.. code-block:: bash
+
+   python tools/profile_nonlinear_step_split.py \
+     --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_short.toml \
+     --repeats 10 \
+     --out docs/_static/nonlinear_rhs_profile_gpu.csv
+
+.. image:: _static/nonlinear_rhs_profile.png
+   :alt: SPECTRAX-GK nonlinear RHS kernel profile
+   :align: center
+
+The current bounded Cyclone profile separates CPU and ``office`` GPU timings
+for default grid-mode and optional spectral-mode nonlinear brackets. The GPU
+grid-mode split is:
 
 .. code-block:: text
 
-   SPECTRAX CPU: 0.27287 s / step
-   SPECTRAX GPU: 0.05338 s / step
+   field_solve=2.89e-4 s
+   nonlinear_bracket=2.78e-3 s
+   linear_rhs=6.97e-3 s
+   full_rhs=1.06e-2 s
+
+The same GPU profile with ``laguerre_mode="spectral"`` measured
+``nonlinear_bracket=2.04e-3 s`` and ``full_rhs=5.29e-3 s``. CPU full-RHS
+timings are mixed on this small case, so the spectral mode is not promoted as a
+default; it remains an opt-in mode guarded by the case-level parity gate below.
 
 The dominant remaining cost is still the nonlinear FFT pipeline with
 gather/scatter-heavy kernels in the bracket assembly path.
@@ -232,27 +259,44 @@ axes, while showing no speedup on the bounded profiling grid. Do not promote new
 nonlinear runtime speedup claims until this tool is rerun on matched
 benchmark-size CPU and GPU cases and the runtime/memory panel is refreshed.
 
-Spectral nonlinear mode (fast toggle)
--------------------------------------
+Spectral nonlinear mode (gated fast toggle)
+-------------------------------------------
 
 The spectral nonlinear mode skips Laguerre quadrature for the nonlinear bracket
-(``laguerre_nonlinear_mode = "spectral"`` or ``"fast"``). On the same Cyclone
-setup, the observed runtimes were:
+(``laguerre_nonlinear_mode = "spectral"`` or ``"fast"``). It is not the default
+mode because the speedup is case and backend dependent. The release gate runs
+the same bounded nonlinear case twice, once with default grid-mode brackets and
+once with spectral brackets, then compares end-of-run scalar diagnostics.
 
-.. code-block:: text
+.. code-block:: bash
 
-   SPECTRAX GPU: 0.09617 s / step  (≈1.18× faster than grid mode)
-   SPECTRAX CPU: 0.76575 s / step  (≈0.88×, slower than grid mode)
+   python tools/gate_laguerre_nonlinear_modes.py \
+     --case cyclone --case kbm --case w7x --case hsx \
+     --out-json docs/_static/laguerre_mode_gate_gpu.json \
+     --out-csv docs/_static/laguerre_mode_gate_gpu.csv \
+     --plot-out docs/_static/laguerre_mode_gate_gpu.png
 
-Cyclone comparison impact (benchmark diagnostics, t≤7.6):
+For W7-X/HSX runs, pass ``--w7x-geometry-file`` and
+``--hsx-geometry-file`` if the local pre-generated ``*.eik.nc`` files live
+outside the default cache paths.
 
-- Wg mean abs rel: 5.4%
-- Wphi mean abs rel: 11.2%
-- Heat flux mean abs rel: 10.7%
+.. image:: _static/laguerre_mode_gate_gpu.png
+   :alt: SPECTRAX-GK spectral Laguerre nonlinear mode gate on GPU
+   :align: center
 
-The diagnostics agreement is essentially unchanged relative to grid mode for this case, but
-the speedup is modest; larger gains will require further FFT fusion and scatter
-elimination.
+On the bounded ``office`` GPU gate, Cyclone, KBM, W7-X, and HSX all passed the
+scalar-diagnostic parity threshold with maximum relative differences below
+``2.2e-5``. The measured grid/spectral runtime ratios were:
+
+- Cyclone: ``1.66``
+- KBM: ``2.69``
+- W7-X: ``1.63``
+- HSX: ``0.74``
+
+Because HSX is slower in this bounded gate and CPU full-RHS timings are mixed,
+the spectral mode should be treated as a validated optional engineering mode,
+not a global fast default. Production use should rerun the gate on the target
+case and backend before claiming speedup.
 
 Runtime and memory comparison workflow
 --------------------------------------
