@@ -34,7 +34,7 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument(
         "--config",
         type=Path,
-        default=Path("examples/linear/axisymmetric/runtime_cyclone_nonlinear.toml"),
+        default=Path("examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml"),
     )
     p.add_argument("--ky", type=float, default=0.3)
     p.add_argument("--kx", type=float, default=None)
