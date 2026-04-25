@@ -1,6 +1,7 @@
 """Executable tests for basic command execution."""
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -1375,3 +1376,214 @@ Nm = 4
     assert "nonlinear:" in out
     assert "t=0.1" in out
     assert captured["steps"] is None
+
+
+_RUNTIME_LINEAR_TOML_WITH_VMEC = """
+[[species]]
+name = "ion"
+charge = 1.0
+mass = 1.0
+density = 1.0
+temperature = 1.0
+tprim = 2.49
+fprim = 0.8
+kinetic = true
+
+[grid]
+Nx = 1
+Ny = 6
+Nz = 16
+Lx = 62.8
+Ly = 62.8
+boundary = "periodic"
+
+[time]
+t_max = 0.2
+dt = 0.01
+method = "rk2"
+use_diffrax = false
+
+[geometry]
+q = 1.4
+s_hat = 0.8
+epsilon = 0.18
+R0 = 2.77778
+vmec_file = "toml_wout.nc"
+
+[init]
+init_field = "density"
+init_amp = 1e-8
+gaussian_init = false
+
+[physics]
+electrostatic = true
+electromagnetic = false
+adiabatic_electrons = true
+tau_e = 1.0
+
+[normalization]
+contract = "cyclone"
+diagnostic_norm = "none"
+"""
+
+
+_RUNTIME_NONLINEAR_TOML_MIN = """
+[[species]]
+name = "ion"
+charge = 1.0
+mass = 1.0
+density = 1.0
+temperature = 1.0
+tprim = 2.49
+fprim = 0.8
+kinetic = true
+
+[grid]
+Nx = 1
+Ny = 6
+Nz = 16
+Lx = 62.8
+Ly = 62.8
+boundary = "periodic"
+
+[time]
+t_max = 0.2
+dt = 0.01
+method = "rk2"
+use_diffrax = false
+
+[geometry]
+q = 1.4
+s_hat = 0.8
+epsilon = 0.18
+R0 = 2.77778
+vmec_file = "toml_wout.nc"
+
+[init]
+init_field = "density"
+init_amp = 1e-8
+gaussian_init = false
+
+[physics]
+electrostatic = true
+electromagnetic = false
+adiabatic_electrons = true
+tau_e = 1.0
+nonlinear = true
+
+[terms]
+nonlinear = 1.0
+
+[normalization]
+contract = "cyclone"
+diagnostic_norm = "none"
+
+[run]
+ky = 0.2
+Nl = 3
+Nm = 4
+steps = 1
+"""
+
+
+def test_cli_run_runtime_linear_cli_vmec_file_resolves_against_cwd(monkeypatch, tmp_path: Path) -> None:
+    """--vmec-file override lands on cfg.geometry.vmec_file, resolved relative to shell cwd."""
+    config_dir = tmp_path / "configs"
+    config_dir.mkdir()
+    config_path = config_dir / "runtime.toml"
+    config_path.write_text(_RUNTIME_LINEAR_TOML_WITH_VMEC, encoding="utf-8")
+
+    shell_cwd = tmp_path / "shellwd"
+    (shell_cwd / "sub").mkdir(parents=True)
+    (shell_cwd / "sub" / "cli_wout.nc").write_text("", encoding="utf-8")
+    monkeypatch.chdir(shell_cwd)
+
+    captured: dict[str, object] = {}
+
+    def _fake_run_runtime_linear(cfg, **_kwargs):
+        captured["vmec_file"] = cfg.geometry.vmec_file
+        return RuntimeLinearResult(
+            ky=0.2,
+            gamma=0.3,
+            omega=-0.4,
+            selection=ModeSelection(ky_index=0, kx_index=0, z_index=1),
+            t=np.asarray([0.1, 0.2]),
+            signal=np.asarray([1.0, 2.0]),
+        )
+
+    monkeypatch.setattr("spectraxgk.cli.run_runtime_linear", _fake_run_runtime_linear)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "spectrax-gk",
+            "run-runtime-linear",
+            "--config",
+            str(config_path),
+            "--vmec-file",
+            "sub/cli_wout.nc",
+        ],
+    )
+    assert main() == 0
+    expected_cwd_resolved = str((shell_cwd / "sub" / "cli_wout.nc").resolve())
+    assert captured["vmec_file"] == expected_cwd_resolved
+    # Regression guard: must NOT resolve against the config file's parent directory.
+    assert captured["vmec_file"] != str((config_dir / "sub" / "cli_wout.nc"))
+
+
+def test_cli_run_runtime_nonlinear_init_file_expands_home(monkeypatch, tmp_path: Path) -> None:
+    """--init-file with leading ~ should expand to $HOME (regression guard for prior bypass)."""
+    config_path = tmp_path / "runtime.toml"
+    config_path.write_text(_RUNTIME_NONLINEAR_TOML_MIN, encoding="utf-8")
+
+    captured: dict[str, object] = {}
+
+    def _fake_run_runtime_nonlinear_with_artifacts(cfg, **_kwargs):
+        captured["init_file"] = cfg.init.init_file
+        diag = SimulationDiagnostics(
+            t=np.asarray([0.1]),
+            dt_t=np.asarray([0.01]),
+            dt_mean=np.asarray(0.01),
+            gamma_t=np.asarray([0.0]),
+            omega_t=np.asarray([0.0]),
+            Wg_t=np.asarray([1.0]),
+            Wphi_t=np.asarray([0.5]),
+            Wapar_t=np.asarray([0.0]),
+            heat_flux_t=np.asarray([0.0]),
+            particle_flux_t=np.asarray([0.0]),
+            energy_t=np.asarray([1.5]),
+        )
+        return (
+            RuntimeNonlinearResult(
+                t=np.asarray([0.1]),
+                diagnostics=diag,
+                ky_selected=0.2,
+                kx_selected=0.0,
+            ),
+            {},
+        )
+
+    monkeypatch.setattr(
+        "spectraxgk.cli.run_runtime_nonlinear_with_artifacts",
+        _fake_run_runtime_nonlinear_with_artifacts,
+    )
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "spectrax-gk",
+            "run-runtime-nonlinear",
+            "--config",
+            str(config_path),
+            "--init-file",
+            "~/spectraxgk_test/g_state.h5",
+            "--steps",
+            "1",
+        ],
+    )
+    assert main() == 0
+    init_file = captured["init_file"]
+    assert init_file is not None
+    assert init_file.startswith(os.path.expanduser("~"))
+    assert init_file.endswith("g_state.h5")
+    assert "~" not in init_file
