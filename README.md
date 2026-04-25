@@ -45,6 +45,12 @@ spectraxgk run-runtime-nonlinear \
   --steps 200 \
   --out tools_out/cyclone_release.out.nc
 
+# Point the same config at a different VMEC equilibrium without editing the TOML.
+spectrax-gk run \
+  --config examples/nonlinear/non-axisymmetric/runtime_hsx_nonlinear_vmec_geometry.toml \
+  --vmec-file /path/to/wout_HSX_QHS_vacuum_ns201.nc \
+  --out tools_out/hsx_run
+
 # Turn any saved runtime bundle into a polished figure.
 spectraxgk --plot tools_out/cyclone_release.out.nc
 spectraxgk --plot tools_out/spectraxgk_default_linear.summary.json
