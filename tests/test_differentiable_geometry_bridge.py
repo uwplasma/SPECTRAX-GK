@@ -3,6 +3,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+import jax
 import jax.numpy as jnp
 import numpy as np
 import pytest
@@ -171,27 +172,35 @@ def _differentiable_mapping(params: jnp.ndarray) -> dict[str, object]:
 
 
 def test_flux_tube_geometry_from_mapping_is_tracer_safe_for_geometry_sensitivities() -> None:
-    params = jnp.asarray([0.08, 0.4], dtype=jnp.float64)
+    x64_enabled = bool(jax.config.jax_enable_x64)
+    fd_step = 2.0e-5 if x64_enabled else 1.0e-3
+    abs_tol = 5.0e-6 if x64_enabled else 1.0e-3
+    rel_tol = 5.0e-4 if x64_enabled else 2.0e-3
+    params = jnp.asarray([0.08, 0.4], dtype=jnp.float64 if x64_enabled else jnp.float32)
 
-    report = geometry_sensitivity_report(_differentiable_mapping, params, fd_step=2.0e-5)
+    report = geometry_sensitivity_report(_differentiable_mapping, params, fd_step=fd_step)
 
     assert spectraxgk.geometry_sensitivity_report is geometry_sensitivity_report
     assert report["observable_names"] == list(geometry_observable_names())
     assert np.asarray(report["jacobian_ad"]).shape == (len(geometry_observable_names()), 2)
     assert np.asarray(report["jacobian_fd"]).shape == (len(geometry_observable_names()), 2)
-    assert float(report["max_abs_ad_fd_error"]) < 5.0e-6
-    assert float(report["max_rel_ad_fd_error"]) < 5.0e-4
+    assert float(report["max_abs_ad_fd_error"]) < abs_tol
+    assert float(report["max_rel_ad_fd_error"]) < rel_tol
 
 
 def test_finite_difference_jacobian_matches_closed_form_linear_map() -> None:
     assert spectraxgk.finite_difference_jacobian is finite_difference_jacobian
+    x64_enabled = bool(jax.config.jax_enable_x64)
+    fd_step = 1.0e-5 if x64_enabled else 1.0e-3
+    rtol = 1.0e-10 if x64_enabled else 2.0e-4
+    atol = 1.0e-10 if x64_enabled else 2.0e-4
 
     def fn(params: jnp.ndarray) -> jnp.ndarray:
         return jnp.asarray([2.0 * params[0] - params[1], params[0] + 3.0 * params[1]])
 
-    jac = finite_difference_jacobian(fn, jnp.asarray([0.2, -0.5]), step=1.0e-5)
+    jac = finite_difference_jacobian(fn, jnp.asarray([0.2, -0.5]), step=fd_step)
 
-    np.testing.assert_allclose(np.asarray(jac), np.asarray([[2.0, -1.0], [1.0, 3.0]]), rtol=1.0e-10, atol=1.0e-10)
+    np.testing.assert_allclose(np.asarray(jac), np.asarray([[2.0, -1.0], [1.0, 3.0]]), rtol=rtol, atol=atol)
 
     with pytest.raises(ValueError, match="one-dimensional"):
         finite_difference_jacobian(fn, jnp.ones((2, 1)))

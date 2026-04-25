@@ -137,6 +137,7 @@ def test_fit_growth_rate_invalid():
         fit_growth_rate(np.array([0.0, 1.0]), np.array([1.0 + 0j, 2.0 + 0j]), tmin=2.0)
 
 
+@pytest.mark.slow
 def test_run_cyclone_linear_shapes():
     """Smoke test for the Cyclone linear runner on a tiny grid."""
     grid = GridConfig(Nx=8, Ny=8, Nz=16, Lx=62.8, Ly=62.8)
@@ -147,6 +148,7 @@ def test_run_cyclone_linear_shapes():
     assert np.isfinite(result.omega)
 
 
+@pytest.mark.slow
 def test_run_cyclone_linear_defaults():
     """Default cfg/params path should run without error."""
     grid = GridConfig(Nx=6, Ny=6, Nz=8, Lx=62.8, Ly=62.8)
@@ -173,6 +175,7 @@ def test_run_cyclone_linear_manual_window():
     assert np.isfinite(result.gamma)
 
 
+@pytest.mark.slow
 def test_run_cyclone_linear_full_operator_smoke():
     """Full operator path should execute without NaNs on a tiny run."""
     grid = GridConfig(Nx=6, Ny=6, Nz=8, Lx=62.8, Ly=62.8)
@@ -182,6 +185,7 @@ def test_run_cyclone_linear_full_operator_smoke():
     assert np.isfinite(result.omega)
 
 
+@pytest.mark.slow
 def test_cyclone_scan_and_compare():
     """Scan helper should return arrays and comparison should report errors."""
     grid = GridConfig(Nx=6, Ny=12, Nz=8, Lx=62.8, Ly=62.8)
@@ -240,6 +244,7 @@ def test_cyclone_scan_manual_window():
     assert scan.ky.shape == ky_values.shape
 
 
+@pytest.mark.slow
 def test_cyclone_physics_regression():
     """Cyclone growth rates should track published values at ky rho_i = 0.3."""
     cfg = CycloneBaseCase()
@@ -259,6 +264,7 @@ def test_cyclone_physics_regression():
     assert np.isclose(result.omega, ref.omega[idx], rtol=0.2)
 
 
+@pytest.mark.slow
 def test_cyclone_scan_regression():
     """Reduced ky scan should remain within reference trends."""
     cfg = CycloneBaseCase()
@@ -279,6 +285,7 @@ def test_cyclone_scan_regression():
         assert np.isclose(omega, ref.omega[idx], rtol=0.2)
 
 
+@pytest.mark.slow
 def test_cyclone_krylov_smoke():
     """Krylov solver should return finite eigenvalues on a small scan."""
     grid = GridConfig(Nx=1, Ny=24, Nz=96, Lx=62.8, Ly=62.8)
@@ -388,6 +395,7 @@ def test_cyclone_scan_gx_time_falls_back_to_krylov_when_gx_growth_is_unavailable
     assert np.isclose(scan.omega[0], 0.8)
 
 
+@pytest.mark.slow
 def test_etg_growth_positive_for_gradients():
     """ETG growth rate should remain positive across R/LTe variations."""
     grid = GridConfig(Nx=1, Ny=12, Nz=32, Lx=6.28, Ly=6.28)
@@ -475,6 +483,7 @@ def test_tem_scan_shapes():
     assert scan.gamma.shape == ky_values.shape
 
 
+@pytest.mark.slow
 def test_kbm_beta_scan_shapes():
     """KBM beta scan helper should return arrays of the requested size."""
     grid = GridConfig(Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8)
@@ -485,6 +494,7 @@ def test_kbm_beta_scan_shapes():
     assert scan.gamma.shape == betas.shape
 
 
+@pytest.mark.slow
 def test_kbm_ky_scan_shapes():
     """KBM ky-scan wrapper should return arrays of the requested size."""
     grid = GridConfig(Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2)
@@ -508,6 +518,7 @@ def test_kbm_ky_scan_shapes():
     assert np.isfinite(scan.omega).all()
 
 
+@pytest.mark.slow
 def test_run_kbm_linear_gx_time_history():
     """Single-point KBM runs should return a usable field history."""
     grid = GridConfig(Nx=1, Ny=8, Nz=24, Lx=62.8, Ly=62.8, y0=10.0, ntheta=16, nperiod=2)
@@ -534,6 +545,7 @@ def test_run_kbm_linear_gx_time_history():
     assert np.isfinite(result.omega)
 
 
+@pytest.mark.slow
 def test_run_kbm_linear_accepts_gx_netcdf_geometry(tmp_path: Path):
     """KBM linear benchmark entry point should accept imported GX geometry."""
 
@@ -1367,6 +1379,7 @@ def test_tem_linear_defaults_to_bpar_disabled_terms(monkeypatch):
     assert terms.bpar == 0.0
 
 
+@pytest.mark.slow
 def test_benchmark_krylov_smoke_finite():
     """Krylov solves should return finite gamma/omega for core benchmarks."""
     krylov_cfg = KrylovConfig(

@@ -823,7 +823,9 @@ The same wide gate can be run locally with:
      --timeout 300 \
      --fail-under 95 \
      --pytest-arg=-o \
-     --pytest-arg=addopts=
+     --pytest-arg=addopts= \
+     --pytest-arg=-m \
+     --pytest-arg="not slow"
 
 On local machines where every pytest process must stay below the five-minute
 release timeout, run one shard at a time and combine afterward:
@@ -839,14 +841,18 @@ release timeout, run one shard at a time and combine afterward:
        --keep-existing-coverage \
        --skip-combine \
        --pytest-arg=-o \
-       --pytest-arg=addopts=
+       --pytest-arg=addopts= \
+       --pytest-arg=-m \
+       --pytest-arg="not slow"
    done
    python tools/run_wide_coverage_gate.py \
      --shards 24 \
      --combine-only \
      --fail-under 95 \
      --pytest-arg=-o \
-     --pytest-arg=addopts=
+     --pytest-arg=addopts= \
+     --pytest-arg=-m \
+     --pytest-arg="not slow"
 
 Core modular coverage gate
 --------------------------
