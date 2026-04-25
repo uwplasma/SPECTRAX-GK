@@ -492,6 +492,39 @@ def test_bracket_multi_matches_separate():
     assert np.allclose(np.asarray(brackets[1]), np.asarray(bracket_bpar), rtol=1.0e-6, atol=1.0e-6)
 
 
+def test_single_field_bracket_fast_path_matches_multi_reference():
+    grid = build_spectral_grid(GridConfig(Nx=4, Ny=6, Nz=2, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
+    rng = np.random.default_rng(41)
+    G = rng.normal(size=(1, 2, 3, grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
+        size=(1, 2, 3, grid.ky.size, grid.kx.size, grid.z.size)
+    )
+    chi = rng.normal(size=(grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
+        size=(grid.ky.size, grid.kx.size, grid.z.size)
+    )
+    chi_stack = _stack_fields(jnp.asarray(G), [jnp.asarray(chi)])
+
+    for gx_real_fft in (False, True):
+        single = _spectral_bracket(
+            jnp.asarray(G),
+            jnp.asarray(chi),
+            kx_grid=grid.kx_grid,
+            ky_grid=grid.ky_grid,
+            dealias_mask=grid.dealias_mask,
+            kxfac=jnp.asarray(1.0),
+            gx_real_fft=gx_real_fft,
+        )
+        multi = _spectral_bracket_multi(
+            jnp.asarray(G),
+            chi_stack,
+            kx_grid=grid.kx_grid,
+            ky_grid=grid.ky_grid,
+            dealias_mask=grid.dealias_mask,
+            kxfac=jnp.asarray(1.0),
+            gx_real_fft=gx_real_fft,
+        )[0]
+        assert np.allclose(np.asarray(single), np.asarray(multi), rtol=1.0e-6, atol=1.0e-6)
+
+
 def test_laguerre_precompute_matches_direct():
     grid = build_spectral_grid(GridConfig(Nx=4, Ny=4, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
     rng = np.random.default_rng(21)
@@ -602,6 +635,58 @@ def test_laguerre_mode_spectral_matches_identity_grid():
     dG_grid = nonlinear_em_contribution(jnp.asarray(G), laguerre_mode="grid", **common)
     dG_spec = nonlinear_em_contribution(jnp.asarray(G), laguerre_mode="spectral", **common)
     assert np.allclose(np.asarray(dG_grid), np.asarray(dG_spec), rtol=1.0e-6, atol=1.0e-6)
+
+
+def test_laguerre_grid_electrostatic_fast_path_matches_component_reference():
+    grid = build_spectral_grid(GridConfig(Nx=4, Ny=4, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
+    rng = np.random.default_rng(42)
+    Ns, Nl, Nm = 1, 2, 2
+    G = rng.normal(size=(Ns, Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
+        size=(Ns, Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size)
+    )
+    phi = rng.normal(size=(grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
+        size=(grid.ky.size, grid.kx.size, grid.z.size)
+    )
+    lag_to_grid, lag_to_spec, lag_roots = gx_laguerre_transform(Nl)
+    b = jnp.full((Ns, grid.ky.size, grid.kx.size, grid.z.size), 0.04, dtype=jnp.float32)
+    laguerre_roots = jnp.asarray(lag_roots, dtype=jnp.float32)
+    alpha = jnp.sqrt(
+        jnp.maximum(
+            0.0,
+            2.0 * laguerre_roots[None, :, None, None, None] * b[:, None, ...],
+        )
+    )
+    j0 = bessel_j0(alpha)
+
+    common = dict(
+        phi=jnp.asarray(phi),
+        apar=None,
+        bpar=None,
+        Jl=jnp.ones((Ns, Nl, grid.ky.size, grid.kx.size, grid.z.size)),
+        JlB=jnp.ones((Ns, Nl, grid.ky.size, grid.kx.size, grid.z.size)),
+        tz=jnp.asarray([1.0]),
+        vth=jnp.asarray([1.0]),
+        sqrt_m=jnp.sqrt(jnp.arange(Nm, dtype=jnp.float32))[None, :, None, None, None],
+        sqrt_m_p1=jnp.sqrt(jnp.arange(1, Nm + 1, dtype=jnp.float32))[None, :, None, None, None],
+        kx_grid=grid.kx_grid,
+        ky_grid=grid.ky_grid,
+        dealias_mask=grid.dealias_mask,
+        kxfac=jnp.asarray(1.0),
+        weight=jnp.asarray(1.0),
+        apar_weight=0.0,
+        bpar_weight=0.0,
+        laguerre_to_grid=jnp.asarray(lag_to_grid, dtype=jnp.float32),
+        laguerre_to_spectral=jnp.asarray(lag_to_spec, dtype=jnp.float32),
+        laguerre_roots=laguerre_roots,
+        laguerre_j0=j0,
+        laguerre_j1_over_alpha=None,
+        b=b,
+        gx_real_fft=False,
+    )
+
+    contribution = nonlinear_em_contribution(jnp.asarray(G), laguerre_mode="grid", **common)
+    components = nonlinear_em_components(jnp.asarray(G), laguerre_mode="grid", **common)
+    assert np.allclose(np.asarray(contribution), np.asarray(components["total"]), rtol=1.0e-6, atol=1.0e-6)
 
 
 def test_nonlinear_components_total_matches_contribution():

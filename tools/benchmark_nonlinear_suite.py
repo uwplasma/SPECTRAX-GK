@@ -69,10 +69,11 @@ def main() -> None:
             diagnostics_stride=args.diagnostics_stride,
             laguerre_mode=args.laguerre_mode,
             diagnostics=True,
+            resolved_diagnostics=False,
         )
 
     t0 = time.perf_counter()
-    warmup = _run()
+    _warmup = _run()
     t1 = time.perf_counter()
 
     t2 = time.perf_counter()
