@@ -107,6 +107,36 @@ def test_integrate_nonlinear_sharded_runs_with_mocked_pjit(monkeypatch) -> None:
     assert calls["shard"] >= 3
 
 
+@pytest.mark.parametrize("method", ["euler", "rk2", "rk3", "rk3_gx", "rk3_classic", "rk4", "sspx3"])
+def test_integrate_nonlinear_sharded_explicit_methods_constant_rhs(monkeypatch, method: str) -> None:
+    """All explicit nonlinear sharded methods should preserve a constant RHS update."""
+
+    calls = {"rhs": 0}
+
+    def fake_rhs(G, cache, params, terms=None, *, gx_real_fft=True, laguerre_mode="grid", external_phi=None):
+        calls["rhs"] += 1
+        return jnp.ones_like(G), FieldState(phi=jnp.ones((1, 1, 1), dtype=G.dtype))
+
+    monkeypatch.setattr("spectraxgk.sharded_integrators.nonlinear_rhs_cached", fake_rhs)
+    monkeypatch.setattr("spectraxgk.sharded_integrators.pjit", lambda fn, **kwargs: fn)
+
+    G0 = jnp.zeros((1, 1, 1, 1, 1), dtype=jnp.complex64)
+    G_final, fields_t = integrate_nonlinear_sharded(
+        G0,
+        _cache_stub(),
+        SimpleNamespace(),
+        dt=0.1,
+        steps=1,
+        method=method,
+        gx_real_fft=False,
+    )
+
+    assert G_final.shape == G0.shape
+    assert fields_t.phi.shape[0] == 1
+    assert jnp.allclose(G_final, 0.1)
+    assert calls["rhs"] >= 2
+
+
 def test_integrate_nonlinear_sharded_final_only_path(monkeypatch) -> None:
     def fake_rhs(G, cache, params, terms=None, *, gx_real_fft=True, laguerre_mode="grid", external_phi=None):
         return 2.0 * jnp.ones_like(G), FieldState(phi=jnp.ones((1, 1, 1), dtype=G.dtype))

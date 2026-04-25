@@ -12,6 +12,7 @@ import spectraxgk
 from spectraxgk.geometry.differentiable import (
     _candidate_paths,
     _find_importable_module,
+    _is_traced,
     discover_differentiable_geometry_backends,
     finite_difference_jacobian,
     flux_tube_geometry_from_mapping,
@@ -84,6 +85,11 @@ def test_flux_tube_geometry_from_mapping_rejects_bad_contracts() -> None:
     bad = _sample_mapping()
     bad["gds21"] = np.ones(7)
     with pytest.raises(ValueError, match="length"):
+        flux_tube_geometry_from_mapping(bad)
+
+    bad = _sample_mapping()
+    bad["q"] = np.ones(2)
+    with pytest.raises(ValueError, match="q"):
         flux_tube_geometry_from_mapping(bad)
 
     bad = _sample_mapping()
@@ -189,6 +195,13 @@ def test_flux_tube_geometry_from_mapping_is_tracer_safe_for_geometry_sensitiviti
     assert float(report["max_rel_ad_fd_error"]) < rel_tol
 
 
+def test_geometry_tracer_detection_recurses_through_containers() -> None:
+    """Container tracer detection keeps validation JAX-transform safe."""
+
+    assert bool(jax.jit(lambda x: _is_traced([x]))(jnp.asarray(1.0)))
+    assert bool(jax.jit(lambda x: _is_traced({"x": x}))(jnp.asarray(1.0)))
+
+
 def test_finite_difference_jacobian_matches_closed_form_linear_map() -> None:
     assert spectraxgk.finite_difference_jacobian is finite_difference_jacobian
     x64_enabled = bool(jax.config.jax_enable_x64)
@@ -205,6 +218,11 @@ def test_finite_difference_jacobian_matches_closed_form_linear_map() -> None:
 
     with pytest.raises(ValueError, match="one-dimensional"):
         finite_difference_jacobian(fn, jnp.ones((2, 1)))
+
+
+def test_geometry_sensitivity_report_rejects_nondesign_parameter_array() -> None:
+    with pytest.raises(ValueError, match="params"):
+        geometry_sensitivity_report(_differentiable_mapping, jnp.ones((2, 1)))
 
 
 def test_geometry_inverse_design_report_recovers_selected_observables() -> None:
@@ -241,7 +259,29 @@ def test_geometry_inverse_design_report_recovers_selected_observables() -> None:
 def test_geometry_inverse_design_report_rejects_invalid_contracts() -> None:
     with pytest.raises(ValueError, match="initial_params"):
         geometry_inverse_design_report(_differentiable_mapping, jnp.ones((2, 1)), jnp.ones(2), observable_indices=[1, 2])
+    with pytest.raises(ValueError, match="max_steps"):
+        geometry_inverse_design_report(_differentiable_mapping, jnp.ones(2), jnp.ones(2), observable_indices=[1, 2], max_steps=-1)
+    with pytest.raises(ValueError, match="damping"):
+        geometry_inverse_design_report(_differentiable_mapping, jnp.ones(2), jnp.ones(2), observable_indices=[1, 2], damping=-1.0)
+    with pytest.raises(ValueError, match="observable_indices"):
+        geometry_inverse_design_report(_differentiable_mapping, jnp.ones(2), jnp.ones(2), observable_indices=[])
     with pytest.raises(ValueError, match="target_observables"):
         geometry_inverse_design_report(_differentiable_mapping, jnp.ones(2), jnp.ones(1), observable_indices=[1, 2])
     with pytest.raises(ValueError, match="out-of-range"):
         geometry_inverse_design_report(_differentiable_mapping, jnp.ones(2), jnp.ones(1), observable_indices=[99])
+
+
+def test_geometry_inverse_design_report_defaults_to_all_observables_for_square_problem() -> None:
+    initial = jnp.asarray([0.08, 0.40])
+    target = flux_tube_geometry_observables(flux_tube_geometry_from_mapping(_differentiable_mapping(initial), validate_finite=False))
+
+    report = geometry_inverse_design_report(
+        _differentiable_mapping,
+        initial,
+        target,
+        max_steps=0,
+    )
+
+    assert report["observable_names"] == list(geometry_observable_names())
+    assert report["history"][0]["step"] == 0
+    assert float(report["history"][0]["residual_norm"]) == pytest.approx(0.0)

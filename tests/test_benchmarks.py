@@ -42,7 +42,8 @@ from spectraxgk.config import (
     TimeConfig,
 )
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.linear import LinearTerms
+from spectraxgk.grids import build_spectral_grid
+from spectraxgk.linear import LinearParams, LinearTerms
 from spectraxgk.linear_krylov import KrylovConfig
 from spectraxgk.species import Species, build_linear_params
 
@@ -92,6 +93,15 @@ def test_load_tem_reference():
     assert np.isfinite(ref.gamma).all()
 
 
+def test_load_reference_with_header_helper_contract():
+    """Header-driven reference loader should preserve ky/gamma/omega column semantics."""
+    ref = benchmarks._load_reference_with_header("tem_reference.csv")
+    raw = np.genfromtxt("src/spectraxgk/data/tem_reference.csv", delimiter=",", names=True, dtype=float)
+    np.testing.assert_allclose(ref.ky[:3], raw["ky"][:3])
+    np.testing.assert_allclose(ref.gamma[:3], raw["gamma"][:3])
+    np.testing.assert_allclose(ref.omega[:3], raw["omega"][:3])
+
+
 def test_fit_growth_rate_exact():
     """Exact exponential signal should be recovered by the fitter."""
     t = np.linspace(0.0, 10.0, 200)
@@ -135,6 +145,303 @@ def test_fit_growth_rate_invalid():
         fit_growth_rate(np.array([0.0, 1.0]), np.array([[1.0 + 0j, 2.0 + 0j]]))
     with pytest.raises(ValueError):
         fit_growth_rate(np.array([0.0, 1.0]), np.array([1.0 + 0j, 2.0 + 0j]), tmin=2.0)
+
+
+def test_benchmark_small_policy_helpers_cover_branch_contracts() -> None:
+    """Fast policy helpers should stay deterministic without launching solvers."""
+
+    params = benchmarks._apply_gx_hypercollisions(LinearParams(), nhermite=None)
+    assert params.p_hyper_m == pytest.approx(benchmarks.REFERENCE_P_HYPER_M)
+    assert benchmarks._gx_p_hyper_m(1) == pytest.approx(1.0)
+    assert benchmarks._gx_linked_end_damping(True) == (
+        benchmarks.REFERENCE_DAMP_ENDS_AMP,
+        benchmarks.REFERENCE_DAMP_ENDS_WIDTHFRAC,
+    )
+    assert benchmarks._gx_linked_end_damping(False) == (0.0, 0.0)
+    assert benchmarks._midplane_index(SimpleNamespace(z=np.zeros(1))) == 0
+    assert benchmarks._midplane_index(SimpleNamespace(z=np.zeros(4))) == 3
+    assert select_kbm_solver_auto("auto", ky_target=0.22, gx_reference=True) == "gx_time"
+
+    batches = list(benchmarks._iter_ky_batches(np.array([0.1, 0.2, 0.3]), ky_batch=2, fixed_batch_shape=True))
+    assert batches[0][0] == 0
+    np.testing.assert_allclose(batches[0][1], [0.1, 0.2])
+    assert batches[0][2] == 2
+    assert batches[1][0] == 2
+    np.testing.assert_allclose(batches[1][1], [0.3, 0.3])
+    assert batches[1][2] == 1
+    singles = list(benchmarks._iter_ky_batches(np.array([0.4, 0.5]), ky_batch=1, fixed_batch_shape=False))
+    assert [(start, valid) for start, _batch, valid in singles] == [(0, 1), (1, 1)]
+
+    assert benchmarks._resolve_streaming_window(10.0, 2.0, 4.0, 0.1, 0.2, 0.8) == (2.0, 4.0)
+    assert benchmarks._resolve_streaming_window(10.0, None, None, 0.9, 0.2, 0.8) == (9.0, 10.0)
+
+
+def test_benchmark_fit_signal_helper_fallbacks(monkeypatch) -> None:
+    """Fit-signal selection should prefer the requested observable and fall back safely."""
+
+    sel = benchmarks.ModeSelection(ky_index=0, kx_index=0, z_index=0)
+    phi = np.zeros((3, 1, 1, 1), dtype=np.complex128)
+    density = np.ones_like(phi)
+    valid = np.array([1.0 + 0.0j, 2.0 + 0.1j, 3.0 + 0.2j])
+    invalid = np.array([np.nan + 0.0j, np.inf + 0.0j, np.nan + 0.0j])
+
+    def fake_extract(arr, selection, method="z_index"):
+        assert selection is sel
+        assert method == "z_index"
+        return valid if arr is density else invalid
+
+    monkeypatch.setattr(benchmarks, "extract_mode_time_series", fake_extract)
+    np.testing.assert_allclose(
+        benchmarks._select_fit_signal(phi, density, sel, fit_signal="phi", mode_method="z_index"),
+        valid,
+    )
+
+    with pytest.warns(RuntimeWarning, match="insufficient finite"):
+        zero_signal = benchmarks._select_fit_signal(phi, None, sel, fit_signal="phi", mode_method="z_index")
+    np.testing.assert_allclose(zero_signal, np.zeros(3, dtype=np.complex128))
+
+    with pytest.raises(ValueError, match="density_t"):
+        benchmarks._select_fit_signal(phi, None, sel, fit_signal="density", mode_method="z_index")
+
+    def fake_density_invalid(arr, selection, method="z_index"):
+        return invalid if arr is density else valid
+
+    monkeypatch.setattr(benchmarks, "extract_mode_time_series", fake_density_invalid)
+    np.testing.assert_allclose(
+        benchmarks._select_fit_signal(phi, density, sel, fit_signal="density", mode_method="z_index"),
+        valid,
+    )
+
+    monkeypatch.setattr(benchmarks, "extract_mode_time_series", lambda *_args, **_kwargs: invalid)
+    with pytest.warns(RuntimeWarning, match="insufficient finite"):
+        zero_density = benchmarks._select_fit_signal(phi, density, sel, fit_signal="density", mode_method="z_index")
+    np.testing.assert_allclose(zero_density, np.zeros(3, dtype=np.complex128))
+
+    with pytest.raises(ValueError, match="fit_signal"):
+        benchmarks._select_fit_signal(phi, density, sel, fit_signal="bad", mode_method="z_index")
+
+
+def test_benchmark_auto_fit_signal_scoring_rejects_bad_windows(monkeypatch) -> None:
+    """Automatic branch scoring should make invalid fits unselectable."""
+
+    kwargs = dict(
+        tmin=None,
+        tmax=None,
+        window_fraction=0.5,
+        min_points=2,
+        start_fraction=0.0,
+        growth_weight=1.0,
+        require_positive=True,
+        min_amp_fraction=0.0,
+        max_amp_fraction=1.0,
+        window_method="grid",
+        max_fraction=1.0,
+        end_fraction=1.0,
+        num_windows=4,
+        phase_weight=0.1,
+        length_weight=0.0,
+        min_r2=0.8,
+        late_penalty=0.0,
+        min_slope=None,
+        min_slope_frac=0.0,
+        slope_var_weight=0.0,
+    )
+    t = np.array([0.0, 1.0, 2.0])
+    signal = np.exp(0.1 * t)
+
+    monkeypatch.setattr(
+        benchmarks,
+        "fit_growth_rate_auto_with_stats",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(ValueError("bad window")),
+    )
+    assert benchmarks._score_fit_signal_auto(t, signal, **kwargs) == (0.0, 0.0, -np.inf)
+
+    monkeypatch.setattr(
+        benchmarks,
+        "fit_growth_rate_auto_with_stats",
+        lambda *_args, **_kwargs: (np.nan, 1.0, 0.0, 1.0, 1.0, 1.0),
+    )
+    gamma, _omega, score = benchmarks._score_fit_signal_auto(t, signal, **kwargs)
+    assert np.isnan(gamma)
+    assert score == -np.inf
+
+    monkeypatch.setattr(
+        benchmarks,
+        "fit_growth_rate_auto_with_stats",
+        lambda *_args, **_kwargs: (-0.1, 1.0, 0.0, 1.0, 1.0, 1.0),
+    )
+    assert benchmarks._score_fit_signal_auto(t, signal, **kwargs) == (-0.1, 1.0, -np.inf)
+
+    monkeypatch.setattr(
+        benchmarks,
+        "fit_growth_rate_auto_with_stats",
+        lambda *_args, **_kwargs: (0.1, 1.0, 0.0, 1.0, 0.7, 1.0),
+    )
+    assert benchmarks._score_fit_signal_auto(t, signal, **kwargs) == (0.1, 1.0, -np.inf)
+
+    monkeypatch.setattr(
+        benchmarks,
+        "fit_growth_rate_auto_with_stats",
+        lambda *_args, **_kwargs: (0.2, 1.0, 0.0, 1.0, 0.9, 0.5),
+    )
+    gamma, omega, score = benchmarks._score_fit_signal_auto(t, signal, **kwargs)
+    assert gamma == pytest.approx(0.2)
+    assert omega == pytest.approx(1.0)
+    assert score == pytest.approx(0.9 + 0.1 * 0.5 + 0.2)
+
+
+def test_benchmark_reduced_trace_and_initialization_helpers() -> None:
+    """Reduced diagnostics and analytic initializers should handle edge cases deterministically."""
+
+    scalar = np.asarray(2.0 + 1.0j)
+    np.testing.assert_allclose(benchmarks._extract_mode_only_signal(scalar, local_idx=0), [2.0 + 1.0j])
+    vector = np.array([1.0, 2.0])
+    assert benchmarks._extract_mode_only_signal(vector, local_idx=0) is vector
+    two_dim = np.arange(6).reshape(3, 2)
+    np.testing.assert_allclose(benchmarks._extract_mode_only_signal(two_dim, local_idx=5), [1, 3, 5])
+    three_dim = np.arange(24).reshape(3, 2, 4)
+    np.testing.assert_allclose(
+        benchmarks._extract_mode_only_signal(three_dim, local_idx=3, species_index=1),
+        [7, 15, 23],
+    )
+    four_dim = np.arange(48).reshape(3, 2, 2, 4)
+    np.testing.assert_allclose(benchmarks._extract_mode_only_signal(four_dim, local_idx=99), [15, 31, 47])
+
+    grid = build_spectral_grid(GridConfig(Nx=3, Ny=3, Nz=5, Lx=6.0, Ly=6.0, y0=5.0, ntheta=5, nperiod=1))
+    geom = SAlphaGeometry.from_config(CycloneBaseCase(grid=GridConfig()).geometry)
+    init = InitializationConfig(init_field="all", init_amp=0.25, gaussian_init=False)
+    state = benchmarks._build_initial_condition(grid, geom, ky_index=[1], kx_index=0, Nl=2, Nm=4, init_cfg=init)
+    assert state.shape == (2, 4, grid.ky.size, grid.kx.size, grid.z.size)
+    assert np.count_nonzero(np.asarray(state)) > 0
+
+    with pytest.raises(ValueError, match="init_field"):
+        benchmarks._build_initial_condition(
+            grid,
+            geom,
+            ky_index=1,
+            kx_index=0,
+            Nl=1,
+            Nm=1,
+            init_cfg=InitializationConfig(init_field="bad"),
+        )
+    with pytest.raises(ValueError, match="moment exceeds"):
+        benchmarks._build_initial_condition(
+            grid,
+            geom,
+            ky_index=1,
+            kx_index=0,
+            Nl=1,
+            Nm=1,
+            init_cfg=InitializationConfig(init_field="qpar"),
+        )
+    with pytest.raises(ValueError, match="gaussian_width"):
+        benchmarks._build_gaussian_profile(
+            np.asarray(grid.z),
+            kx=float(grid.kx[0]),
+            ky=float(grid.ky[1]),
+            s_hat=geom.s_hat,
+            init_cfg=InitializationConfig(gaussian_width=0.0),
+        )
+    np.testing.assert_allclose(
+        benchmarks._build_gaussian_profile(
+            np.asarray(grid.z),
+            kx=float(grid.kx[0]),
+            ky=0.0,
+            s_hat=geom.s_hat,
+            init_cfg=InitializationConfig(),
+        ),
+        np.zeros_like(np.asarray(grid.z)),
+    )
+
+
+def test_benchmark_kinetic_parameter_helpers_validate_and_override() -> None:
+    """Kinetic benchmark parameter builders should reject unphysical inputs and apply explicit overrides."""
+
+    base = SimpleNamespace(
+        mass_ratio=1836.0,
+        Te_over_Ti=1.2,
+        R_over_Ln=2.0,
+        R_over_Lni=1.8,
+        R_over_Lne=2.2,
+        R_over_LTi=6.0,
+        R_over_LTe=7.0,
+        nu_i=0.01,
+        nu_e=0.02,
+        beta=1.0e-4,
+    )
+    kwargs = dict(kpar_scale=0.7, omega_d_scale=1.1, omega_star_scale=0.9, rho_star=0.01)
+
+    def with_model(**updates):
+        return SimpleNamespace(**{**vars(base), **updates})
+
+    with pytest.raises(ValueError, match="mass_ratio"):
+        benchmarks._two_species_params(with_model(mass_ratio=0.0), **kwargs)
+    with pytest.raises(ValueError, match="Te_over_Ti"):
+        benchmarks._two_species_params(with_model(Te_over_Ti=0.0), **kwargs)
+    two_species = benchmarks._two_species_params(
+        base,
+        beta_override=0.0,
+        fapar_override=0.25,
+        damp_ends_amp=0.3,
+        damp_ends_widthfrac=0.4,
+        nhermite=8,
+        **kwargs,
+    )
+    assert two_species.fapar == pytest.approx(0.25)
+    assert two_species.damp_ends_amp == pytest.approx(0.3)
+    assert two_species.damp_ends_widthfrac == pytest.approx(0.4)
+    assert two_species.p_hyper_m == pytest.approx(4.0)
+
+    with pytest.raises(ValueError, match="mass_ratio"):
+        benchmarks._electron_only_params(with_model(mass_ratio=0.0), **kwargs)
+    with pytest.raises(ValueError, match="Te_over_Ti"):
+        benchmarks._electron_only_params(with_model(Te_over_Ti=0.0), **kwargs)
+    electron_only = benchmarks._electron_only_params(
+        base,
+        beta_override=0.0,
+        fapar_override=0.5,
+        damp_ends_amp=0.6,
+        damp_ends_widthfrac=0.7,
+        nhermite=6,
+        **kwargs,
+    )
+    assert electron_only.fapar == pytest.approx(0.5)
+    assert electron_only.damp_ends_amp == pytest.approx(0.6)
+    assert electron_only.damp_ends_widthfrac == pytest.approx(0.7)
+    assert electron_only.p_hyper_m == pytest.approx(3.0)
+
+
+def test_benchmark_kbm_multi_target_and_kinetic_init_policy() -> None:
+    """KBM branch-continuity and kinetic initialization policies should be explicit."""
+
+    kcfg = benchmarks.KBM_KRYLOV_DEFAULT
+    assert benchmarks._kbm_use_multi_target_krylov(kcfg, [0.8, 1.0], shift=None)
+    assert not benchmarks._kbm_use_multi_target_krylov(kcfg, None, shift=None)
+    assert not benchmarks._kbm_use_multi_target_krylov(replace(kcfg, mode_family="cyclone"), [1.0], shift=None)
+    assert not benchmarks._kbm_use_multi_target_krylov(replace(kcfg, method="power"), [1.0], shift=None)
+    assert not benchmarks._kbm_use_multi_target_krylov(kcfg, [1.0], shift=1.0 + 0.0j)
+    assert not benchmarks._kbm_use_multi_target_krylov(replace(kcfg, shift_selection="shift"), [1.0], shift=None)
+
+    default_init = KineticElectronBaseCase().init
+    assert benchmarks._kinetic_reference_init_cfg(default_init, gx_reference=False) is default_init
+    explicit = replace(default_init, init_amp=2.0e-3)
+    assert benchmarks._kinetic_reference_init_cfg(explicit, gx_reference=True) is explicit
+    gx_init = benchmarks._kinetic_reference_init_cfg(default_init, gx_reference=True)
+    assert gx_init.init_field == "density"
+    assert gx_init.init_amp == pytest.approx(1.0e-3)
+    assert not gx_init.gaussian_init
+
+
+def test_benchmark_linear_entrypoints_reject_invalid_scan_options() -> None:
+    """Entry points should reject invalid fit and batching options before launching solves."""
+
+    cfg = CycloneBaseCase(grid=GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.0, Ly=6.0, y0=5.0, ntheta=8, nperiod=1))
+    with pytest.raises(ValueError, match="fit_signal"):
+        run_cyclone_linear(cfg=cfg, ky_target=0.2, Nl=2, Nm=2, fit_signal="bad")
+    with pytest.raises(ValueError, match="fit_signal"):
+        run_cyclone_scan(np.array([0.2]), cfg=cfg, Nl=2, Nm=2, fit_signal="bad")
+    with pytest.raises(ValueError, match="ky_batch"):
+        run_cyclone_scan(np.array([0.2]), cfg=cfg, Nl=2, Nm=2, ky_batch=0)
 
 
 @pytest.mark.slow
