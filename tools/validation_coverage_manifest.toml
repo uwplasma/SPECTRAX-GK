@@ -410,6 +410,7 @@ physics_contracts = [
 ]
 numerics_contracts = [
   "device-count fallbacks are deterministic on one-device machines",
+  "fixed-step nonlinear state sharding preserves the serial final state before any speedup claim is made",
   "strong-scaling panels separate compile, transfer, and warm runtime",
 ]
 fast_tests = [
@@ -423,9 +424,10 @@ artifact_paths = [
   "docs/_static/scaling_speedup.png",
   "docs/_static/parallel_ky_scan_gate.json",
   "docs/_static/parallel_ky_scan_gate.png",
+  "docs/_static/nonlinear_sharding_profile.json",
 ]
 next_tests = [
-  "add GPU-office benchmark manifest for two-device validation",
+  "rerun tools/profile_nonlinear_sharding.py on office with two GPUs for a benchmark-size nonlinear identity/profile artifact",
   "add UQ ensemble parallelization gate using the same identity-policy format",
 ]
 

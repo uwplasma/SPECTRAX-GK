@@ -1,6 +1,6 @@
 [metadata]
 schema_version = 1
-branch = "refactor/modularize-core-for-validation"
+branch = "main"
 default_test_budget_seconds = 300
 target = "lower cold runtime, improve warm throughput, and reduce peak memory on CPU and GPU without changing validated physics outputs"
 
@@ -96,6 +96,7 @@ cases = ["cyclone-nonlinear", "kbm-nonlinear", "w7x-nonlinear", "hsx-nonlinear"]
 profiling_tools = [
   "tools/profile_nonlinear_step_split.py",
   "tools/profile_nonlinear_cyclone.py",
+  "tools/profile_nonlinear_sharding.py",
   "tools/profile_linear_rhs_terms.py",
 ]
 metrics = [
@@ -104,9 +105,11 @@ metrics = [
   "linear_rhs_s",
   "full_rhs_s",
   "diagnostic_sample_s",
+  "nonlinear_state_sharding_identity_error",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_window_statistics.json",
+  "docs/_static/nonlinear_sharding_profile.json",
   "tools/runtime_memory_manifest.toml",
 ]
 bottleneck_hypotheses = [
@@ -170,18 +173,21 @@ profiling_tools = [
   "tools/run_device_parity_gate.py",
   "tools/plot_scaling_speedup.py",
   "tools/generate_parallel_ky_scan_gate.py",
+  "tools/profile_nonlinear_sharding.py",
 ]
 metrics = [
   "strong_scaling_speedup",
   "parallel_efficiency",
   "memory_per_device_mb",
   "device_parity_error",
+  "nonlinear_state_sharding_identity_error",
 ]
 artifact_paths = [
   "docs/_static/scaling_speedup.png",
   "docs/_static/scaling_speedup_data.csv",
   "docs/_static/parallel_ky_scan_gate.png",
   "docs/_static/parallel_ky_scan_gate.json",
+  "docs/_static/nonlinear_sharding_profile.json",
 ]
 bottleneck_hypotheses = [
   "independent ky/batch/ensemble sharding should scale before nonlinear domain sharding",
@@ -191,9 +197,11 @@ optimization_actions = [
   "prioritize sharded linear scans, UQ ensembles, and autodiff sensitivity batches",
   "use tools/generate_parallel_ky_scan_gate.py as the release identity gate for fixed-shape ky batching",
   "gate CPU sharding locally and two-GPU sharding on office",
+  "profile fixed-step nonlinear state sharding and keep the identity artifact attached to the manifest",
   "only publish strong-scaling plots when speedup is meaningful and numerically identical",
 ]
 gates = [
   "parallel outputs must match single-device outputs within numerical-identity tolerances",
+  "fixed-step nonlinear state sharding must preserve the final state within the recorded identity gate",
   "publication scaling panels must show both speedup and efficiency or be kept out of the README",
 ]

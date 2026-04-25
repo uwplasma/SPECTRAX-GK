@@ -502,8 +502,10 @@ performance claims:
   helper semantics, including deterministic padding and one-device fallback.
 - ``tests/test_sharded_integrators.py`` locks the sharded linear RK2 wrapper in
   both no-sharding and explicit-sharding modes using a mocked RHS and mocked
-  ``pjit``. This is a numerical-identity and control-flow gate, not a speedup
-  claim.
+  ``pjit``. It also locks the fixed-step nonlinear state-sharded wrapper,
+  including final-state-only profiling mode and the config-runner route through
+  ``TimeConfig.state_sharding``. These are numerical-identity and control-flow
+  gates, not speedup claims.
 - ``tests/test_generate_parallel_ky_scan_gate.py`` tests the artifact writer
   for the real Cyclone ``k_y``-batch gate.
 - ``tools/generate_parallel_ky_scan_gate.py`` runs the actual linear solver
@@ -511,6 +513,11 @@ performance claims:
   ``docs/_static/parallel_ky_scan_gate.{png,pdf,csv,json}``. The JSON gate
   requires numerical identity for growth rate and frequency; the speedup value
   is reported separately for engineering tracking.
+- ``tools/profile_nonlinear_sharding.py`` runs a bounded fixed-step nonlinear
+  serial-vs-sharded final-state comparison and writes
+  ``docs/_static/nonlinear_sharding_profile.json``. This keeps nonlinear
+  state-sharding work profiler-backed while preventing unsupported runtime
+  claims from entering the README.
 
 Nonlinear parity snapshots
 --------------------------

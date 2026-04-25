@@ -73,6 +73,12 @@ Parallelization
 .. automodule:: spectraxgk.parallel
    :members:
 
+Sharded Integrators
+-------------------
+
+.. automodule:: spectraxgk.sharded_integrators
+   :members:
+
 Zonal Validation
 ----------------
 
