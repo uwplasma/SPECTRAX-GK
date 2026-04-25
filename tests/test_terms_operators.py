@@ -31,6 +31,28 @@ def test_grad_z_periodic_with_dz_and_kz_match() -> None:
     assert jnp.allclose(df_dz, df_kz, atol=1.0e-10)
 
 
+def test_fft_z_operators_preserve_complex64_with_float64_wavenumbers() -> None:
+    """FFT multipliers must not promote complex64 states under x64/sharding."""
+
+    nz = 8
+    z = jnp.linspace(0.0, 2.0 * jnp.pi, nz, endpoint=False)
+    dz = z[1] - z[0]
+    f = jnp.exp(1j * z).astype(jnp.complex64)
+    kz = jnp.asarray(2.0 * jnp.pi * jnp.fft.fftfreq(nz, d=dz), dtype=jnp.float64)
+
+    out_periodic = grad_z_periodic(f, kz=kz)
+
+    linked_f = jnp.stack([f, 0.5j * f], axis=0)[None, ...]
+    idx_map = jnp.asarray([[0, 1]], dtype=jnp.int32)
+    kz_link = jnp.asarray(2.0 * jnp.pi * jnp.fft.fftfreq(2 * nz, d=dz), dtype=jnp.float64)
+    out_linked = grad_z_linked_fft(linked_f, dz=dz, linked_indices=(idx_map,), linked_kz=(kz_link,))
+    out_abs = abs_z_linked_fft(linked_f, linked_indices=(idx_map,), linked_kz=(kz_link,))
+
+    assert out_periodic.dtype == jnp.complex64
+    assert out_linked.dtype == jnp.complex64
+    assert out_abs.dtype == jnp.complex64
+
+
 def test_grad_z_periodic_requires_dz_or_kz() -> None:
     with pytest.raises(ValueError):
         grad_z_periodic(jnp.ones((8,)))
