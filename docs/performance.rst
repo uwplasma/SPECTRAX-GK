@@ -200,6 +200,30 @@ reports observed speedup as an engineering metric. The gate intentionally does
 not claim nonlinear domain scaling; that remains a separate communication and
 FFT-decomposition problem.
 
+Fixed-step nonlinear state sharding
+-----------------------------------
+
+The fixed-step nonlinear runner now has the same full-state sharding contract
+as the linear path. Set ``TimeConfig.state_sharding = "auto"`` (or a concrete
+axis such as ``"ky"`` or ``"kx"``) with ``use_diffrax = false`` to route
+through ``spectraxgk.integrate_nonlinear_sharded``. The implementation uses a
+``pjit`` scan and preserves the serial Runge-Kutta update; it is therefore an
+identity-gated state-sharding primitive, not a halo-exchange FFT domain
+decomposition claim.
+
+The profiler/identity artifact is generated with:
+
+.. code-block:: bash
+
+   python tools/profile_nonlinear_sharding.py \
+     --out-json docs/_static/nonlinear_sharding_profile.json
+
+The JSON records device count, requested sharding axis, warm serial/sharded
+timings, and final-state errors. The current checked-in artifact is deliberately
+small and only establishes the control-flow and identity gate. Do not promote
+new nonlinear runtime speedup claims until this tool is rerun on matched
+benchmark-size CPU and GPU cases and the runtime/memory panel is refreshed.
+
 Spectral nonlinear mode (fast toggle)
 -------------------------------------
 

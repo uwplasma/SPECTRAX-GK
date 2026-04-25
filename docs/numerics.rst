@@ -112,9 +112,10 @@ integration from input configuration without changing call sites. By default,
 
 For distributed parallelization, set ``TimeConfig.state_sharding = "auto"``
 (or ``"ky"``) to partition the packed state array over multiple JAX devices.
-This is honored only by diffrax-based integrations; when only one device is
-visible, the parallelization request is ignored and the run proceeds on a
-single device.
+This is honored by diffrax integrations and by the fixed-step nonlinear scan
+through ``integrate_nonlinear_sharded``. When only one device is visible, the
+parallelization request is ignored and the run proceeds on a single device
+while preserving the same control-flow path for identity testing.
 On macOS you can emulate multiple CPU devices with
 ``XLA_FLAGS=--xla_force_host_platform_device_count=2`` to validate the parallelization
 path without a multi-GPU host.

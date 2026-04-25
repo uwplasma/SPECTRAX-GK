@@ -36,6 +36,7 @@ from spectraxgk.geometry.differentiable import (
     finite_difference_jacobian,
     flux_tube_geometry_from_mapping,
     flux_tube_geometry_observables,
+    geometry_inverse_design_report,
     geometry_observable_names,
     geometry_sensitivity_report,
 )
@@ -268,6 +269,15 @@ def main(argv: list[str] | None = None) -> int:
     residual = final_obs - target_obs
     jac = np.asarray(jax.jacfwd(lambda p: _observable_fn(p)[jnp.asarray([1, 2])])(jnp.asarray(final_params)))
     uq = covariance_diagnostics(jac, residual, regularization=1.0e-8)
+    workflow_report = geometry_inverse_design_report(
+        _mapping_from_boundary_params,
+        initial,
+        jnp.asarray(target_obs),
+        observable_indices=(1, 2),
+        max_steps=8,
+        damping=2.0e-6,
+        fd_step=2.0e-5,
+    )
     backend_info = discover_differentiable_geometry_backends()
     vmec_boundary = _vmec_boundary_panel(jnp.asarray(final_params))
 
@@ -285,6 +295,7 @@ def main(argv: list[str] | None = None) -> int:
         "inverse_observable_residual": residual.tolist(),
         "sensitivity": sensitivity,
         "uq": uq,
+        "geometry_inverse_design_report": workflow_report,
         "notes": (
             "This is a bounded differentiable-geometry bridge validation. The high-fidelity VMEC/Boozer "
             "pipeline must provide the same solver-ready field-line arrays; this artifact validates the "

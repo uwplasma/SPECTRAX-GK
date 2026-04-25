@@ -16,6 +16,7 @@ from spectraxgk.geometry.differentiable import (
     finite_difference_jacobian,
     flux_tube_geometry_from_mapping,
     flux_tube_geometry_observables,
+    geometry_inverse_design_report,
     geometry_observable_names,
     geometry_sensitivity_report,
 )
@@ -204,3 +205,43 @@ def test_finite_difference_jacobian_matches_closed_form_linear_map() -> None:
 
     with pytest.raises(ValueError, match="one-dimensional"):
         finite_difference_jacobian(fn, jnp.ones((2, 1)))
+
+
+def test_geometry_inverse_design_report_recovers_selected_observables() -> None:
+    x64_enabled = bool(jax.config.jax_enable_x64)
+    dtype = jnp.float64 if x64_enabled else jnp.float32
+    fd_step = 2.0e-5 if x64_enabled else 1.0e-3
+    rel_tol = 5.0e-4 if x64_enabled else 3.0e-3
+    initial = jnp.asarray([0.035, 0.12], dtype=dtype)
+    target_params = jnp.asarray([0.085, 0.34], dtype=dtype)
+    target_geom = flux_tube_geometry_from_mapping(
+        _differentiable_mapping(target_params),
+        validate_finite=False,
+    )
+    target = flux_tube_geometry_observables(target_geom)[jnp.asarray([1, 2])]
+
+    report = geometry_inverse_design_report(
+        _differentiable_mapping,
+        initial,
+        target,
+        observable_indices=[1, 2],
+        max_steps=6,
+        damping=1.0e-8,
+        fd_step=fd_step,
+    )
+
+    assert spectraxgk.geometry_inverse_design_report is geometry_inverse_design_report
+    assert report["observable_names"] == ["relative_bmag_ripple", "metric_frobenius_rms"]
+    assert len(report["history"]) == 7
+    assert float(report["final_residual_norm"]) < 1.0e-5
+    assert float(report["max_rel_ad_fd_error"]) < rel_tol
+    assert report["uq"]["sensitivity_map_rank"] == 2
+
+
+def test_geometry_inverse_design_report_rejects_invalid_contracts() -> None:
+    with pytest.raises(ValueError, match="initial_params"):
+        geometry_inverse_design_report(_differentiable_mapping, jnp.ones((2, 1)), jnp.ones(2), observable_indices=[1, 2])
+    with pytest.raises(ValueError, match="target_observables"):
+        geometry_inverse_design_report(_differentiable_mapping, jnp.ones(2), jnp.ones(1), observable_indices=[1, 2])
+    with pytest.raises(ValueError, match="out-of-range"):
+        geometry_inverse_design_report(_differentiable_mapping, jnp.ones(2), jnp.ones(1), observable_indices=[99])

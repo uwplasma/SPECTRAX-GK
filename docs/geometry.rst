@@ -239,6 +239,14 @@ It writes ``docs/_static/differentiable_geometry_bridge.png`` and
 difference sensitivity errors, inverse-design convergence, and local UQ
 covariance diagnostics.
 
+The reusable API entry point for this workflow is
+``geometry_inverse_design_report(mapping_fn, initial_params, target_observables, ...)``:
+it runs a bounded Gauss-Newton inverse design on selected solver-ready
+geometry observables, checks the final sensitivity Jacobian against central
+finite differences, and records local covariance diagnostics. High-fidelity
+``vmec_jax`` / ``booz_xform_jax`` optimization examples should use the same
+contract once their in-memory field-line mapping is available.
+
 .. figure:: _static/differentiable_geometry_bridge.png
    :width: 95%
    :align: center
