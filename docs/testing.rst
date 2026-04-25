@@ -515,9 +515,13 @@ performance claims:
   is reported separately for engineering tracking.
 - ``tools/profile_nonlinear_sharding.py`` runs a bounded fixed-step nonlinear
   serial-vs-sharded final-state comparison and writes
-  ``docs/_static/nonlinear_sharding_profile.json``. This keeps nonlinear
-  state-sharding work profiler-backed while preventing unsupported runtime
-  claims from entering the README.
+  ``docs/_static/nonlinear_sharding_profile.json`` locally and
+  ``docs/_static/nonlinear_sharding_profile_office_gpu.json`` for the two-GPU
+  office run. The release-gated nonlinear axes are ``auto``/``ky`` and ``kx``;
+  ``z``-axis FFT sharding remains an exploratory domain-decomposition lane and
+  must pass its own identity gate before it can be exposed as a runtime option.
+  This keeps nonlinear state-sharding work profiler-backed while preventing
+  unsupported runtime claims from entering the README.
 
 Nonlinear parity snapshots
 --------------------------
@@ -809,11 +813,13 @@ physics rigor:
 - **Fast PR/push tier**: three parallel shards run mypy and targeted test
   subsets (fundamentals, linear core, runtime/nonlinear). This catches solver
   and dtype regressions quickly.
-- **Wide coverage tier**: ``tools/run_wide_coverage_gate.py`` runs top-level
-  test files in bounded shards, explicitly includes integration-marked solver
-  files, combines coverage data, and enforces the package-wide ``>=95%``
-  target. Each shard has its own timeout so a single slow validation slice
-  cannot become an unbounded release job.
+- **Wide coverage tier**: CI runs the 24 top-level coverage shards as a matrix,
+  uploads the per-shard ``coverage.py`` data, then combines the artifacts in one
+  final ``wide-coverage`` check that enforces the package-wide ``>=95%`` target.
+  The same helper, ``tools/run_wide_coverage_gate.py``, is used locally and in
+  CI so the threshold is not weakened when the job is parallelized. Each shard
+  has its own timeout so a single slow validation slice cannot become an
+  unbounded release job.
 - **Manual full tier**: full ``pytest`` suite plus strict coverage gates:
   ``spectraxgk.terms >= 90%`` and per-module core gates for
   ``linear_krylov.py`` and ``diffrax_integrators.py``.
@@ -821,7 +827,7 @@ physics rigor:
 This keeps iteration latency low for development and still enforces complete
 coverage and regression checks on demand without relying on scheduled runners.
 
-The same wide gate can be run locally with:
+The same wide gate can be run locally in one process with:
 
 .. code-block:: bash
 
@@ -835,7 +841,10 @@ The same wide gate can be run locally with:
      --pytest-arg="not slow"
 
 On local machines where every pytest process must stay below the five-minute
-release timeout, run one shard at a time and combine afterward:
+release timeout, run one shard at a time and combine afterward. This is the
+same data-flow used by CI, except CI runs the ``--only-shard`` jobs in
+parallel and downloads the resulting coverage artifacts before the
+``--combine-only`` gate:
 
 .. code-block:: bash
 

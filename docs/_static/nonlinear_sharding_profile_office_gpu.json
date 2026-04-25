@@ -1,0 +1,91 @@
+{
+  "case": "cyclone_nonlinear_fixed_step",
+  "claim_scope": "Profiler/identity artifact for fixed-step nonlinear state sharding and candidate state-axis decompositions. Do not use as a published runtime claim without a larger matched CPU/GPU sweep and profiler trace review.",
+  "default_backend": "gpu",
+  "device_count": 2,
+  "devices": [
+    "cuda:0",
+    "cuda:1"
+  ],
+  "dt": 0.02,
+  "engineering_speedup": 0.7928050107984479,
+  "identity_gate_pass": true,
+  "laguerre_mode": "grid",
+  "max_abs_state_error": 0.0,
+  "max_rel_state_error": 0.0,
+  "method": "rk2",
+  "profiler_trace": {
+    "error": null,
+    "path": "tools_out/profiles/office_gpu_nonlinear_sharding_trace",
+    "requested": true
+  },
+  "repeats": 2,
+  "serial_stats_s": {
+    "max": 1.8538533539976925,
+    "mean": 1.7933406359516084,
+    "median": 1.7933406359516084,
+    "min": 1.7328279179055244,
+    "std": 0.060512718046084046
+  },
+  "serial_times_s": [
+    1.7328279179055244,
+    1.8538533539976925
+  ],
+  "serial_warm_s": 1.7933406359516084,
+  "sharded_results": {
+    "auto": {
+      "engineering_speedup_median": 0.7928050107984479,
+      "error": null,
+      "identity_gate_pass": true,
+      "max_abs_state_error": 0.0,
+      "max_rel_state_error": 0.0,
+      "state_sharding_active": true,
+      "stats_s": {
+        "max": 2.3123790610115975,
+        "mean": 2.2620198050281033,
+        "median": 2.2620198050281033,
+        "min": 2.211660549044609,
+        "std": 0.05035925598349422
+      },
+      "times_s": [
+        2.3123790610115975,
+        2.211660549044609
+      ]
+    },
+    "kx": {
+      "engineering_speedup_median": 0.7647049815862371,
+      "error": null,
+      "identity_gate_pass": true,
+      "max_abs_state_error": 0.0,
+      "max_rel_state_error": 0.0,
+      "state_sharding_active": true,
+      "stats_s": {
+        "max": 2.389676740160212,
+        "mean": 2.345140517107211,
+        "median": 2.345140517107211,
+        "min": 2.30060429405421,
+        "std": 0.04453622305300087
+      },
+      "times_s": [
+        2.389676740160212,
+        2.30060429405421
+      ]
+    }
+  },
+  "sharded_warm_s": 2.2620198050281033,
+  "sharding_options": [
+    "auto",
+    "kx"
+  ],
+  "state_shape": [
+    3,
+    4,
+    8,
+    8,
+    16
+  ],
+  "state_sharding_active": true,
+  "state_sharding_requested": "auto",
+  "steps": 3,
+  "warmups": 1
+}

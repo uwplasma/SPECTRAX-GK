@@ -1,6 +1,7 @@
 """Config-driven runner tests."""
 
 import jax.numpy as jnp
+import pytest
 
 import spectraxgk.runners as runners
 from spectraxgk.config import CycloneBaseCase, GridConfig, TimeConfig
@@ -58,3 +59,18 @@ def test_integrate_nonlinear_from_config_routes_fixed_step_state_sharding(monkey
     assert captured["kwargs"]["return_fields"] is True
     assert G_out.shape == G.shape
     assert fields.phi.shape[0] == 2
+
+
+def test_integrate_nonlinear_from_config_rejects_ungated_z_state_sharding():
+    """The config path should not expose exploratory z-FFT sharding as release-grade."""
+
+    grid_cfg = GridConfig(Nx=1, Ny=2, Nz=4, Lx=6.0, Ly=6.0)
+    time_cfg = TimeConfig(t_max=0.2, dt=0.1, method="rk2", use_diffrax=False, state_sharding="z")
+    cfg = CycloneBaseCase(grid=grid_cfg, time=time_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams()
+    G = jnp.zeros((2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz), dtype=jnp.complex64)
+
+    with pytest.raises(ValueError, match="z FFT axis"):
+        integrate_nonlinear_from_config(G, grid, geom, params, cfg.time)
