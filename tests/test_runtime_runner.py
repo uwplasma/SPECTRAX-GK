@@ -847,6 +847,101 @@ def test_runtime_nonlinear_diagnostics_stride() -> None:
     assert res.diagnostics.t.size == 3
 
 
+def test_runtime_nonlinear_sampled_diagnostics_match_full_scan() -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        species=(RuntimeSpeciesConfig(name="ion"),),
+        normalization=RuntimeNormalizationConfig(contract="cyclone"),
+        physics=RuntimePhysicsConfig(adiabatic_electrons=True, nonlinear=True),
+        terms=RuntimeTermsConfig(nonlinear=1.0, hypercollisions=0.0, end_damping=0.0),
+    )
+
+    full = run_runtime_nonlinear(
+        cfg,
+        ky_target=0.2,
+        Nl=2,
+        Nm=3,
+        dt=0.01,
+        steps=5,
+        sample_stride=1,
+        diagnostics_stride=1,
+    )
+    sampled = run_runtime_nonlinear(
+        cfg,
+        ky_target=0.2,
+        Nl=2,
+        Nm=3,
+        dt=0.01,
+        steps=5,
+        sample_stride=2,
+        diagnostics_stride=2,
+    )
+
+    assert full.diagnostics is not None
+    assert sampled.diagnostics is not None
+    sample_idx = np.asarray([0, 2, 4], dtype=int)
+    for name in ("t", "dt_t", "gamma_t", "omega_t", "Wg_t", "Wphi_t", "heat_flux_t"):
+        np.testing.assert_allclose(
+            np.asarray(getattr(sampled.diagnostics, name)),
+            np.asarray(getattr(full.diagnostics, name))[sample_idx],
+            rtol=1.0e-6,
+            atol=1.0e-8,
+        )
+    assert full.diagnostics.resolved is not None
+    assert sampled.diagnostics.resolved is not None
+    np.testing.assert_allclose(
+        np.asarray(sampled.diagnostics.resolved.Wphi_kyst),
+        np.asarray(full.diagnostics.resolved.Wphi_kyst)[sample_idx],
+        rtol=1.0e-6,
+        atol=1.0e-8,
+    )
+
+
+def test_runtime_nonlinear_compact_diagnostics_match_scalar_channels() -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        species=(RuntimeSpeciesConfig(name="ion"),),
+        normalization=RuntimeNormalizationConfig(contract="cyclone"),
+        physics=RuntimePhysicsConfig(adiabatic_electrons=True, nonlinear=True),
+        terms=RuntimeTermsConfig(nonlinear=1.0, hypercollisions=0.0, end_damping=0.0),
+    )
+
+    full = run_runtime_nonlinear(
+        cfg,
+        ky_target=0.2,
+        Nl=2,
+        Nm=3,
+        dt=0.01,
+        steps=4,
+        sample_stride=2,
+        diagnostics_stride=2,
+        resolved_diagnostics=True,
+    )
+    compact = run_runtime_nonlinear(
+        cfg,
+        ky_target=0.2,
+        Nl=2,
+        Nm=3,
+        dt=0.01,
+        steps=4,
+        sample_stride=2,
+        diagnostics_stride=2,
+        resolved_diagnostics=False,
+    )
+
+    assert full.diagnostics is not None
+    assert compact.diagnostics is not None
+    assert full.diagnostics.resolved is not None
+    assert compact.diagnostics.resolved is None
+    for name in ("t", "dt_t", "gamma_t", "omega_t", "Wg_t", "Wphi_t", "heat_flux_t", "particle_flux_t"):
+        np.testing.assert_allclose(
+            np.asarray(getattr(compact.diagnostics, name)),
+            np.asarray(getattr(full.diagnostics, name)),
+            rtol=1.0e-6,
+            atol=1.0e-8,
+        )
+
+
 def test_runtime_nonlinear_em_flux_channels_sum_to_total() -> None:
     ion = RuntimeSpeciesConfig(
         name="ion",
