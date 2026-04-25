@@ -159,6 +159,7 @@ def main() -> int:
         Nm=int(args.Nm),
         dt=float(args.dt),
         steps=steps,
+        resolved_diagnostics=False,
     )
     if result.diagnostics is None or result.ky_selected is None:
         raise RuntimeError("Nonlinear runtime did not produce diagnostics")
