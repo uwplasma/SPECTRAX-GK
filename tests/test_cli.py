@@ -1427,6 +1427,99 @@ diagnostic_norm = "none"
 """
 
 
+_RUNTIME_LINEAR_TOML_IMPORTED_GEOMETRY = """
+[[species]]
+name = "ion"
+charge = 1.0
+mass = 1.0
+density = 1.0
+temperature = 1.0
+tprim = 2.49
+fprim = 0.8
+kinetic = true
+
+[grid]
+Nx = 1
+Ny = 6
+Nz = 16
+Lx = 62.8
+Ly = 62.8
+boundary = "periodic"
+
+[time]
+t_max = 0.2
+dt = 0.01
+method = "rk2"
+use_diffrax = false
+
+[geometry]
+model = "vmec-eik"
+geometry_file = "from_config.eik.nc"
+
+[init]
+init_field = "density"
+init_amp = 1e-8
+gaussian_init = false
+
+[physics]
+electrostatic = true
+electromagnetic = false
+adiabatic_electrons = true
+tau_e = 1.0
+
+[normalization]
+contract = "cyclone"
+diagnostic_norm = "none"
+"""
+
+
+_RUNTIME_LINEAR_TOML_VMEC_MODEL = """
+[[species]]
+name = "ion"
+charge = 1.0
+mass = 1.0
+density = 1.0
+temperature = 1.0
+tprim = 2.49
+fprim = 0.8
+kinetic = true
+
+[grid]
+Nx = 1
+Ny = 6
+Nz = 16
+Lx = 62.8
+Ly = 62.8
+boundary = "periodic"
+
+[time]
+t_max = 0.2
+dt = 0.01
+method = "rk2"
+use_diffrax = false
+
+[geometry]
+model = "vmec"
+vmec_file = "wout_from_config.nc"
+geometry_file = "generated_from_config.eik.nc"
+
+[init]
+init_field = "density"
+init_amp = 1e-8
+gaussian_init = false
+
+[physics]
+electrostatic = true
+electromagnetic = false
+adiabatic_electrons = true
+tau_e = 1.0
+
+[normalization]
+contract = "cyclone"
+diagnostic_norm = "none"
+"""
+
+
 _RUNTIME_NONLINEAR_TOML_MIN = """
 [[species]]
 name = "ion"
@@ -1587,3 +1680,101 @@ def test_cli_run_runtime_nonlinear_init_file_expands_home(monkeypatch, tmp_path:
     assert init_file.startswith(os.path.expanduser("~"))
     assert init_file.endswith("g_state.h5")
     assert "~" not in init_file
+
+
+def test_cli_run_runtime_linear_cli_geometry_file_resolves_against_cwd_for_imported_geometry(
+    monkeypatch, tmp_path: Path
+) -> None:
+    """--geometry-file overrides [geometry].geometry_file (cwd-resolved) without touching [geometry].model."""
+    config_dir = tmp_path / "configs"
+    config_dir.mkdir()
+    config_path = config_dir / "runtime.toml"
+    config_path.write_text(_RUNTIME_LINEAR_TOML_IMPORTED_GEOMETRY, encoding="utf-8")
+
+    shell_cwd = tmp_path / "shellwd"
+    (shell_cwd / "sub").mkdir(parents=True)
+    (shell_cwd / "sub" / "cli.eik.nc").write_text("", encoding="utf-8")
+    monkeypatch.chdir(shell_cwd)
+
+    captured: dict[str, object] = {}
+
+    def _fake_run_runtime_linear(cfg, **_kwargs):
+        captured["geometry_file"] = cfg.geometry.geometry_file
+        captured["model"] = cfg.geometry.model
+        return RuntimeLinearResult(
+            ky=0.2,
+            gamma=0.3,
+            omega=-0.4,
+            selection=ModeSelection(ky_index=0, kx_index=0, z_index=1),
+            t=np.asarray([0.1, 0.2]),
+            signal=np.asarray([1.0, 2.0]),
+        )
+
+    monkeypatch.setattr("spectraxgk.cli.run_runtime_linear", _fake_run_runtime_linear)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "spectrax-gk",
+            "run-runtime-linear",
+            "--config",
+            str(config_path),
+            "--geometry-file",
+            "sub/cli.eik.nc",
+        ],
+    )
+    assert main() == 0
+    expected_cwd_resolved = str((shell_cwd / "sub" / "cli.eik.nc").resolve())
+    assert captured["geometry_file"] == expected_cwd_resolved
+    # Override resolves against shell cwd, not the config file's parent directory.
+    assert captured["geometry_file"] != str(config_dir / "sub" / "cli.eik.nc")
+    # --geometry-file must not change [geometry].model: imported-geometry stays imported.
+    assert captured["model"] == "vmec-eik"
+
+
+def test_cli_run_runtime_linear_cli_geometry_file_does_not_change_vmec_model(
+    monkeypatch, tmp_path: Path
+) -> None:
+    """--geometry-file on a model="vmec" TOML must not flip the model to imported-EIK."""
+    config_dir = tmp_path / "configs"
+    config_dir.mkdir()
+    config_path = config_dir / "runtime.toml"
+    config_path.write_text(_RUNTIME_LINEAR_TOML_VMEC_MODEL, encoding="utf-8")
+
+    shell_cwd = tmp_path / "shellwd"
+    (shell_cwd / "cache").mkdir(parents=True)
+    monkeypatch.chdir(shell_cwd)
+
+    captured: dict[str, object] = {}
+
+    def _fake_run_runtime_linear(cfg, **_kwargs):
+        captured["geometry_file"] = cfg.geometry.geometry_file
+        captured["vmec_file"] = cfg.geometry.vmec_file
+        captured["model"] = cfg.geometry.model
+        return RuntimeLinearResult(
+            ky=0.2,
+            gamma=0.3,
+            omega=-0.4,
+            selection=ModeSelection(ky_index=0, kx_index=0, z_index=1),
+            t=np.asarray([0.1, 0.2]),
+            signal=np.asarray([1.0, 2.0]),
+        )
+
+    monkeypatch.setattr("spectraxgk.cli.run_runtime_linear", _fake_run_runtime_linear)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "spectrax-gk",
+            "run-runtime-linear",
+            "--config",
+            str(config_path),
+            "--geometry-file",
+            "cache/generated_cli.eik.nc",
+        ],
+    )
+    assert main() == 0
+    expected_cwd_resolved = str((shell_cwd / "cache" / "generated_cli.eik.nc").resolve())
+    assert captured["geometry_file"] == expected_cwd_resolved
+    # --geometry-file must not promote a VMEC-backed run into imported-geometry mode.
+    assert captured["model"] == "vmec"
