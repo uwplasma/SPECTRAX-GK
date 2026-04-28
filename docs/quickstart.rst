@@ -82,6 +82,38 @@ Plot diagnostics directly from the output:
    spectraxgk --plot tools_out/cyclone_nonlinear.out.nc
    spectraxgk --plot tools_out/spectraxgk_default_linear.summary.json
 
+Geometry path overrides
+-----------------------
+
+The executable can override geometry paths without editing the TOML. These
+command-line paths are resolved from the shell's current working directory,
+while paths written in the TOML remain resolved from the TOML location.
+
+Use ``--vmec-file`` when the runtime config already uses a VMEC-backed geometry
+model:
+
+.. code-block:: bash
+
+   spectrax-gk run \
+     --config examples/nonlinear/non-axisymmetric/runtime_hsx_nonlinear_vmec_geometry.toml \
+     --vmec-file /path/to/wout_HSX_QHS_vacuum_ns201.nc \
+     --out tools_out/hsx_vmec_run
+
+Use ``--geometry-file`` when the runtime config already uses an imported
+geometry model such as ``model = "vmec-eik"``, ``model = "gx-eik"``, or
+``model = "gx-netcdf"``:
+
+.. code-block:: bash
+
+   spectrax-gk run \
+     --config examples/nonlinear/non-axisymmetric/runtime_w7x_nonlinear_imported_geometry.toml \
+     --geometry-file /path/to/w7x_adiabatic_electrons.eik.nc \
+     --out tools_out/w7x_imported_run
+
+``--geometry-file`` only replaces ``[geometry].geometry_file``; it does not
+switch ``model = "vmec"`` into imported-geometry mode. For ``model = "vmec"``,
+``geometry_file`` remains the generated ``*.eik.nc`` target/cache path.
+
 Python demo
 -----------
 

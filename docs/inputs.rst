@@ -183,7 +183,7 @@ does not inject ``x0`` from the runtime ``Lx``. That keeps the generated
 
 For Miller tokamak workflows, the runtime also accepts ``model = "miller"``.
 In that mode SPECTRAX-GK calls the Miller geometry helper
-helper to generate a matching root-level ``*.eiknc.nc`` file, then immediately
+to generate a matching root-level ``*.eiknc.nc`` file, then immediately
 re-enters the same imported geometry path used for VMEC ``eik.nc`` files.
 Set the Miller inputs directly in ``[geometry]``:
 ``rhoc``, ``q``, ``s_hat``, ``R0``, optional ``R_geo``, ``shift``,
@@ -191,6 +191,26 @@ Set the Miller inputs directly in ``[geometry]``:
 ``geometry_file`` can be used as an explicit output path for the generated
 Miller ``*.eiknc.nc`` file, and ``gx_python`` applies here as well when the GX
 helper must run in a different Python environment.
+
+Executable path overrides
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``spectraxgk`` and ``spectrax-gk`` executables accept path overrides for
+runtime-configured runs:
+
+.. code-block:: bash
+
+   spectrax-gk run --config case.toml --vmec-file /path/to/wout.nc
+   spectrax-gk run --config case.toml --geometry-file /path/to/geometry.eik.nc
+   spectrax-gk run-runtime-nonlinear --config case.toml --init-file ~/restart.nc
+
+These override paths expand ``~`` and environment variables and are resolved
+against the shell's current working directory. TOML paths still resolve against
+the config file directory. ``--vmec-file`` replaces ``[geometry].vmec_file`` for
+VMEC-backed configs. ``--geometry-file`` replaces ``[geometry].geometry_file``
+only; it does not change ``[geometry].model``. For imported-geometry configs,
+that file is the imported EIK/NetCDF input. For ``model = "vmec"``, it remains
+the generated EIK target/cache path.
 
 Solver and fit-signal keys
 --------------------------
