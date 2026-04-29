@@ -744,6 +744,54 @@ linear spectrum-shape diagnostics can pass for HSX, W7-X, and Cyclone Miller,
 but absolute-flux prediction needs a richer saturation/intensity model than any
 one-scalar Cyclone fit tested here.
 
+Shape-aware saturation diagnostic
+---------------------------------
+
+The next diagnostic tests whether the missing information can be captured by a
+single low-dimensional shape envelope. It first forms the normalized nonlinear
+to quasilinear spectrum-shape ratio,
+
+.. math::
+
+   R_j(k_y) =
+   \frac{P^{\mathrm{NL}}_j(k_y)}
+        {P^{\mathrm{QL}}_j(k_y) + \epsilon},
+   \qquad
+   P(k_y) = \frac{Q(k_y)}{\sum_{k_y} Q(k_y)},
+
+and fits a shared exponent with per-case intercepts,
+
+.. math::
+
+   \log R_j(k_y) = a_j
+      + p \log\left(\frac{k_y}{k_{y,\mathrm{ref}}}\right) + \epsilon_j .
+
+The held-out prediction uses only training nonlinear shapes, training scalar
+fluxes, and the held-out linear spectrum. It then fits the absolute heat-flux
+scale on the training cases and scores the held-out nonlinear window. The
+tracked figure uses ``--passed-shape-only`` for the exponent fit, so the
+failed Cyclone shape gate does not contaminate the shape correction used for
+the other geometries.
+
+.. code-block:: bash
+
+   python tools/plot_quasilinear_shape_aware_saturation.py \
+     --passed-shape-only \
+     --out docs/_static/quasilinear_shape_aware_saturation.png
+
+.. image:: _static/quasilinear_shape_aware_saturation.png
+   :alt: Shape-aware quasilinear saturation diagnostic
+   :width: 100%
+
+This is a useful negative result. The shape-aware power law gives mean
+leave-one-geometry-out absolute relative error about ``0.664``, while the
+linear-weight baseline gives about ``0.624``. Both fail the ``0.35`` absolute
+transport gate, and the shape-aware model does not improve the mean held-out
+score. HSX improves slightly, but Cyclone Miller and W7-X do not. This closes
+the one-exponent saturation-envelope test and motivates a richer calibrated
+model with branch/state features, uncertainty diagnostics, and electromagnetic
+extensions before any absolute quasilinear transport or optimization claim.
+
 The normalized W7-X spectrum-shape gate does pass when the linear
 heat-flux-weight distribution is compared with the resolved nonlinear
 ``HeatFlux_kyst`` spectrum from the NetCDF output:

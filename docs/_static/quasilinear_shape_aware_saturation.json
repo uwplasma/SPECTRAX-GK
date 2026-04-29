@@ -1,0 +1,177 @@
+{
+  "all_case_shape_fit": {
+    "exponent": -0.137472756339381,
+    "n_samples": 17,
+    "passed_only": true,
+    "rms_log_shape_residual": 0.24239528591659842,
+    "used_cases": [
+      "cyclone_miller_long_window",
+      "hsx_nonlinear_window",
+      "w7x_nonlinear_window"
+    ]
+  },
+  "cases": [
+    {
+      "case": "cyclone_long_window",
+      "geometry": "cyclone",
+      "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/nonlinear_cyclone_gate_summary.json",
+      "observed_heat_flux": 6.6689961798985795,
+      "observed_heat_flux_std": 0.6486446261822355,
+      "shape_cosine": 0.8964299105687351,
+      "shape_gate": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_cyclone_spectrum_shape_gate.json",
+      "shape_passed": false,
+      "shape_tv": 0.21473341652286174,
+      "spectrum": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_cyclone_spectrum_scan.quasilinear_spectrum.csv"
+    },
+    {
+      "case": "cyclone_miller_long_window",
+      "geometry": "cyclone_miller",
+      "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/nonlinear_cyclone_miller_gate_summary.json",
+      "observed_heat_flux": 4.259822065746515,
+      "observed_heat_flux_std": 4.2116774700305175,
+      "shape_cosine": 0.9825396600130925,
+      "shape_gate": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_cyclone_miller_spectrum_shape_gate.json",
+      "shape_passed": true,
+      "shape_tv": 0.09394928384219987,
+      "spectrum": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_cyclone_miller_spectrum_scan.quasilinear_spectrum.csv"
+    },
+    {
+      "case": "hsx_nonlinear_window",
+      "geometry": "hsx",
+      "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/nonlinear_hsx_gate_summary.json",
+      "observed_heat_flux": 5.089605487565396,
+      "observed_heat_flux_std": 6.284535110439706,
+      "shape_cosine": 0.9709889879217466,
+      "shape_gate": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_hsx_spectrum_shape_gate.json",
+      "shape_passed": true,
+      "shape_tv": 0.11157506481268943,
+      "spectrum": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_hsx_spectrum_scan.quasilinear_spectrum.csv"
+    },
+    {
+      "case": "w7x_nonlinear_window",
+      "geometry": "w7x",
+      "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/nonlinear_w7x_gate_summary.json",
+      "observed_heat_flux": 5.378544112072135,
+      "observed_heat_flux_std": 3.295746205851981,
+      "shape_cosine": 0.9916731122648941,
+      "shape_gate": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_w7x_spectrum_shape_gate.json",
+      "shape_passed": true,
+      "shape_tv": 0.05564144523893508,
+      "spectrum": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_w7x_spectrum_scan.quasilinear_spectrum.csv"
+    }
+  ],
+  "claim_level": "leave_one_geometry_out_model_development",
+  "kind": "quasilinear_shape_aware_saturation_report",
+  "leave_one_out": [
+    {
+      "absolute_relative_error": 0.9628273047033561,
+      "baseline_linear_weight_absolute_relative_error": 0.9630414801064947,
+      "baseline_linear_weight_predicted_heat_flux": 0.24647622798449176,
+      "exponent": -0.137472756339381,
+      "holdout_case": "cyclone_long_window",
+      "observed_heat_flux": 6.6689961798985795,
+      "predicted_heat_flux": 0.24790456292985205,
+      "scale": 3.0750325908626,
+      "shape_fit": {
+        "exponent": -0.137472756339381,
+        "n_samples": 17,
+        "passed_only": true,
+        "rms_log_shape_residual": 0.24239528591659842,
+        "used_cases": [
+          "cyclone_miller_long_window",
+          "hsx_nonlinear_window",
+          "w7x_nonlinear_window"
+        ]
+      },
+      "train_cases": [
+        "cyclone_miller_long_window",
+        "hsx_nonlinear_window",
+        "w7x_nonlinear_window"
+      ]
+    },
+    {
+      "absolute_relative_error": 1.0859499114794207,
+      "baseline_linear_weight_absolute_relative_error": 0.9343760262535095,
+      "baseline_linear_weight_predicted_heat_flux": 8.240097680085759,
+      "exponent": -0.3024501523068321,
+      "holdout_case": "cyclone_miller_long_window",
+      "observed_heat_flux": 4.259822065746515,
+      "predicted_heat_flux": 8.885775460962025,
+      "scale": 4.631725643006346,
+      "shape_fit": {
+        "exponent": -0.3024501523068321,
+        "n_samples": 12,
+        "passed_only": true,
+        "rms_log_shape_residual": 0.16337301167079835,
+        "used_cases": [
+          "hsx_nonlinear_window",
+          "w7x_nonlinear_window"
+        ]
+      },
+      "train_cases": [
+        "cyclone_long_window",
+        "hsx_nonlinear_window",
+        "w7x_nonlinear_window"
+      ]
+    },
+    {
+      "absolute_relative_error": 0.26132030264118483,
+      "baseline_linear_weight_absolute_relative_error": 0.2688310760113941,
+      "baseline_linear_weight_predicted_heat_flux": 3.721361367869694,
+      "exponent": 0.05758307820691909,
+      "holdout_case": "hsx_nonlinear_window",
+      "observed_heat_flux": 5.089605487565396,
+      "predicted_heat_flux": 3.7595882412305714,
+      "scale": 2.7670181546837376,
+      "shape_fit": {
+        "exponent": 0.05758307820691909,
+        "n_samples": 11,
+        "passed_only": true,
+        "rms_log_shape_residual": 0.20718040399665846,
+        "used_cases": [
+          "cyclone_miller_long_window",
+          "w7x_nonlinear_window"
+        ]
+      },
+      "train_cases": [
+        "cyclone_long_window",
+        "cyclone_miller_long_window",
+        "w7x_nonlinear_window"
+      ]
+    },
+    {
+      "absolute_relative_error": 0.3474344272056631,
+      "baseline_linear_weight_absolute_relative_error": 0.3290236303034063,
+      "baseline_linear_weight_predicted_heat_flux": 3.6088760025711504,
+      "exponent": -0.1424432270248392,
+      "holdout_case": "w7x_nonlinear_window",
+      "observed_heat_flux": 5.378544112072135,
+      "predicted_heat_flux": 3.5098527192939613,
+      "scale": 2.818588541172598,
+      "shape_fit": {
+        "exponent": -0.1424432270248392,
+        "n_samples": 11,
+        "passed_only": true,
+        "rms_log_shape_residual": 0.29242493414960785,
+        "used_cases": [
+          "cyclone_miller_long_window",
+          "hsx_nonlinear_window"
+        ]
+      },
+      "train_cases": [
+        "cyclone_long_window",
+        "cyclone_miller_long_window",
+        "hsx_nonlinear_window"
+      ]
+    }
+  ],
+  "metrics": {
+    "baseline_linear_weight_max_abs_relative_error": 0.9630414801064947,
+    "baseline_linear_weight_mean_abs_relative_error": 0.6238180531687011,
+    "shape_aware_max_abs_relative_error": 1.0859499114794207,
+    "shape_aware_mean_abs_relative_error": 0.6643829865074062
+  },
+  "notes": "The power-law exponent is fitted from training nonlinear spectrum-shape gates only; the held-out nonlinear shape is not used for that held-out prediction. This is a model-development diagnostic, not a validated transport claim.",
+  "observed_floor": 1e-12,
+  "passed_shape_only": true
+}

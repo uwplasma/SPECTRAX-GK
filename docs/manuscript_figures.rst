@@ -58,6 +58,10 @@ Core Validation Figures
      - ``tools/plot_quasilinear_saturation_rule_sweep.py``
      - Initial model-development diagnostic closed as a negative result
      - current artifact base: ``docs/_static/quasilinear_saturation_rule_sweep.png`` with JSON/PDF companions. It fits one scalar on Cyclone and scores Cyclone Miller, HSX, and W7-X for three simple rules: positive-growth mixing length, raw linear heat-flux weight, and an absolute-growth diagnostic. All three fail the held-out absolute-flux gate; the raw linear-weight rule is least bad with holdout mean relative error about ``25``. This supports the next saturation-model lane while preventing premature absolute quasilinear transport claims.
+   * - Shape-aware quasilinear saturation diagnostic
+     - ``tools/plot_quasilinear_shape_aware_saturation.py``
+     - Initial leave-one-geometry-out diagnostic closed as a negative result
+     - current artifact base: ``docs/_static/quasilinear_shape_aware_saturation.png`` with JSON/PDF companions. It fits a shared nonlinear/quasilinear spectrum-shape exponent with per-case intercepts, uses only passed shape gates for the exponent fit, then fits the absolute heat-flux scale on training cases and scores each held-out geometry. The shape-aware model gives mean absolute relative error about ``0.664`` versus ``0.624`` for the linear-weight baseline, so it fails the ``0.35`` transport gate and is not a validated saturation model. This is retained as a manuscript-facing negative result because it rules out a too-simple one-exponent envelope before stellarator optimization claims.
    * - Quasilinear spectrum-shape gate
      - ``tools/plot_quasilinear_spectrum_shape_gate.py``
      - HSX, W7-X, and Cyclone Miller gates closed; Cyclone retained as a failed model gate

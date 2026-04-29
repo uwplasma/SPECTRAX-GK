@@ -858,3 +858,16 @@ Exit gate:
 - Current next best steps:
   - connect the saturation-rule sweep tool to the core rule names instead of duplicating formulas;
   - then move to a true low-dimensional shape-aware model with leave-one-geometry-out validation and AD checks.
+- Completed the first low-dimensional shape-aware saturation diagnostic:
+  - added `shape_aware_power_law_objective` to `spectraxgk.quasilinear` for a differentiable shape-envelope objective using feature vectors `[gamma, kperp_eff2, flux_weight]` and a geometric `ky` reference;
+  - added finite-difference derivative coverage for the objective so future geometry/optimization work does not rely on unchecked autodiff plumbing;
+  - added `tools/plot_quasilinear_shape_aware_saturation.py` and fast synthetic/replay tests;
+  - generated `docs/_static/quasilinear_shape_aware_saturation.{png,pdf,json}` with the `--passed-shape-only` exponent fit so the failed Cyclone shape gate is not used to define the training shape correction.
+- Result:
+  - the one-exponent nonlinear/quasilinear shape envelope is not sufficient for absolute heat-flux transfer;
+  - mean leave-one-geometry-out relative error is about `0.664`, compared with about `0.624` for the linear-weight baseline, so both fail the `0.35` transport gate;
+  - the result is a research-grade negative diagnostic, not a validated quasilinear transport claim.
+- Current next best steps:
+  - replace the one-exponent shape envelope with a richer but still low-dimensional model that can include branch/state features, stellarator-vs-axisymmetric family features, and uncertainty diagnostics;
+  - require leave-one-geometry-out improvement over the linear-weight baseline before exposing any calibrated saturation mode in user-facing TOML;
+  - connect the accepted objective to finite-difference/implicit AD checks and then to the `vmec_jax` / `booz_xform_jax` differentiable-geometry bridge.

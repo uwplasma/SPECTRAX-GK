@@ -8,6 +8,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
+import spectraxgk
 from spectraxgk.geometry import SAlphaGeometry, apply_geometry_grid_defaults
 from spectraxgk.grids import build_spectral_grid, select_ky_grid
 from spectraxgk.linear import build_linear_cache, linear_terms_to_term_config
@@ -18,6 +19,7 @@ from spectraxgk.quasilinear import (
     phi_norm2,
     quasilinear_feature_objective,
     saturation_amplitude2,
+    shape_aware_power_law_objective,
 )
 from spectraxgk.runtime import build_runtime_linear_params, build_runtime_linear_terms, run_runtime_linear, run_runtime_scan
 from spectraxgk.runtime_config import (
@@ -97,6 +99,16 @@ def test_quasilinear_feature_objective_supports_sweep_rules() -> None:
     ) == pytest.approx(1.2)
     with pytest.raises(NotImplementedError):
         quasilinear_feature_objective(features, rule="not_a_rule")
+
+
+def test_shape_aware_power_law_objective_uses_geometric_ky_reference() -> None:
+    features = jnp.asarray([[0.1, 0.5, 2.0], [0.2, 0.7, 3.0]])
+    ky = jnp.asarray([0.1, 0.4])
+    out = shape_aware_power_law_objective(features, ky, exponent=0.5, csat=2.0)
+    ky_ref = float(np.exp(np.mean(np.log(np.asarray(ky)))))
+    expected = 2.0 * np.asarray([2.0, 3.0]) * (np.asarray(ky) / ky_ref) ** 0.5
+    np.testing.assert_allclose(np.asarray(out), expected, rtol=1.0e-6)
+    assert spectraxgk.shape_aware_power_law_objective is shape_aware_power_law_objective
 
 
 def test_quasilinear_channel_validation_rejects_unvalidated_em_channels() -> None:
