@@ -168,8 +168,44 @@ def calibration_figure(
     ax.grid(True, which="both", alpha=0.22)
 
     y = np.arange(len(labels))
-    residual_ax.barh(y, rel_errors, color=colors, edgecolor="white", linewidth=0.8)
+    rel_arr = np.asarray(rel_errors, dtype=float)
+    positive_rel = rel_arr[np.isfinite(rel_arr) & (rel_arr > 0.0)]
     gate = float(report.get("holdout_mean_rel_gate", 0.35))
+    use_log_error_axis = bool(
+        positive_rel.size
+        and (
+            float(np.max(positive_rel)) / max(float(np.min(positive_rel)), 1.0e-300) > 50.0
+            or float(np.max(positive_rel)) > 10.0
+        )
+    )
+    if use_log_error_axis:
+        error_floor = min(float(np.min(positive_rel)), max(gate, 1.0e-12)) * 0.35
+        plot_rel = np.where((rel_arr > 0.0) & np.isfinite(rel_arr), rel_arr, error_floor)
+        for yi, value, raw_value, color in zip(y, plot_rel, rel_arr, colors, strict=True):
+            residual_ax.hlines(yi, error_floor, value, color=color, linewidth=3.0, alpha=0.9)
+            residual_ax.plot(
+                value,
+                yi,
+                marker="o",
+                markersize=7.0,
+                color=color,
+                markerfacecolor="none" if raw_value <= 0.0 else color,
+                markeredgewidth=1.2,
+            )
+        residual_ax.set_xscale("log")
+        residual_ax.set_xlim(error_floor * 0.7, max(float(np.max(plot_rel)), gate) * 1.5)
+        residual_ax.text(
+            0.03,
+            0.04,
+            f"log error axis; zero errors plotted at {error_floor:.2e}",
+            transform=residual_ax.transAxes,
+            ha="left",
+            va="bottom",
+            fontsize=8,
+            bbox={"boxstyle": "round,pad=0.25", "fc": "white", "ec": "0.75", "alpha": 0.92},
+        )
+    else:
+        residual_ax.barh(y, rel_errors, color=colors, edgecolor="white", linewidth=0.8)
     residual_ax.axvline(gate, color="#c2410c", linestyle="--", linewidth=1.6, label="holdout gate")
     residual_ax.set_yticks(y, labels)
     residual_ax.invert_yaxis()

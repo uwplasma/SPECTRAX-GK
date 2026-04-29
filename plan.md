@@ -822,3 +822,16 @@ Exit gate:
   - run the W7-X VMEC-backed quasilinear scan on a machine with `W7X_VMEC_FILE` available and commit the resulting spectrum/report only if the input provenance is replayable;
   - add the W7-X holdout calibration artifact through the new NetCDF nonlinear window path;
   - then implement the first shape-aware saturation-model sweep: compare linear weights, nonlinear `HeatFlux_kyst`, and one- or two-parameter intensity rules across Cyclone, Cyclone Miller, HSX, and W7-X.
+- Completed the first W7-X quasilinear NetCDF calibration artifact:
+  - ran the six-point W7-X VMEC-backed quasilinear scan on `ssh office` from a fresh `main` clone with `W7X_VMEC_FILE=/home/rjorge/gx_refs/main_clean_20260312/nonlinear/w7x/wout_w7x.nc`;
+  - tracked `docs/_static/quasilinear_w7x_spectrum*` and `docs/_static/quasilinear_w7x_spectrum_scan*`;
+  - generated `docs/_static/quasilinear_w7x_train_holdout_report.json` and `docs/_static/quasilinear_w7x_train_holdout.{png,pdf,json}` using the NetCDF nonlinear-window ingestion path;
+  - generated `docs/_static/quasilinear_w7x_spectrum_shape_gate.{png,pdf,json}`;
+  - W7-X absolute flux remains a negative holdout: all six short-window linear branches are stable under `gamma_floor=0`, so the uncalibrated saturated heat-flux prediction is zero against a finite nonlinear window mean of about `5.38`;
+  - W7-X normalized spectrum shape passes with `TV=0.05564` and cosine `0.99167`.
+- Improved calibration plotting:
+  - the relative-error panel now switches to a log axis when point errors span orders of magnitude, so small failed holdouts remain visible beside very large failed holdouts.
+- Current next best steps:
+  - implement a shape-aware saturation-model sweep that uses linear weights plus nonlinear `HeatFlux_kyst` intensity information instead of only one constant `C_sat`;
+  - add finite-difference/implicit sensitivity checks for the shape-aware quasilinear objective before using it in optimization;
+  - keep KBM out of quasilinear claims until electromagnetic quasilinear channels have separate validation gates.
