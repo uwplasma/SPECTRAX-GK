@@ -62,6 +62,10 @@ Core Validation Figures
      - ``tools/plot_quasilinear_shape_aware_saturation.py``
      - Initial leave-one-geometry-out diagnostic closed as a negative result
      - current artifact base: ``docs/_static/quasilinear_shape_aware_saturation.png`` with JSON/PDF companions. It fits a shared nonlinear/quasilinear spectrum-shape exponent with per-case intercepts, uses only passed shape gates for the exponent fit, then fits the absolute heat-flux scale on training cases and scores each held-out geometry. The shape-aware model gives mean absolute relative error about ``0.664`` versus ``0.624`` for the linear-weight baseline and ``0.170`` for a deliberately simple training-mean null baseline. The JSON ``promotion_gate`` is false because the model fails the ``0.35`` transport gate and does not beat the null baseline on the current four-case dataset. This is retained as a manuscript-facing negative result because it rules out a too-simple one-exponent envelope before stellarator optimization claims.
+   * - Quasilinear candidate uncertainty gate
+     - ``tools/plot_quasilinear_candidate_uncertainty.py``
+     - Initial uncertainty-aware candidate gate closed as a negative result
+     - current artifact base: ``docs/_static/quasilinear_candidate_uncertainty.png`` with JSON/PDF companions. It adds training-residual ``95%`` prediction intervals to leave-one-geometry-out candidate scoring. The calibrated linear-weight candidate has mean relative error about ``0.624`` and interval coverage ``0.75``; the shape-power-law candidate has mean relative error about ``0.664`` and interval coverage ``0.75``; the training-mean null remains about ``0.170``. The JSON ``promotion_gate`` is false with no accepted candidates, so no candidate is promoted into runtime/TOML saturation options.
    * - Quasilinear spectrum-shape gate
      - ``tools/plot_quasilinear_spectrum_shape_gate.py``
      - HSX, W7-X, and Cyclone Miller gates closed; Cyclone retained as a failed model gate
