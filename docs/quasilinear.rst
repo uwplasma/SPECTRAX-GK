@@ -905,6 +905,21 @@ linear quasilinear scan, a matched nonlinear heat-flux window, and a passed
 nonlinear comparison/physics gate before entering the leave-one-out
 calibration reports above.
 
+The first full-``ky`` follow-up kept the same W7-X-style VMEC runtime TOML but
+used ``Nl = 4``, ``Nm = 8``, and ``400`` explicit time steps over the six-point
+stellarator ``ky`` grid used elsewhere in this documentation. Li383 remains
+stable over that short linear scan, with ``gamma`` decreasing from about
+``-0.022`` to ``-0.078``. The nfp4 QH fixture is more useful for the next
+validation lane: it is stable at low ``ky`` and crosses to positive growth for
+the three highest sampled modes, reaching ``gamma = 0.0328`` at
+``ky = 0.2857``. The figure below is still a linear-feasibility artifact only;
+it motivates a matched nonlinear QH window but does not validate an absolute
+quasilinear saturation rule.
+
+.. image:: _static/quasilinear_vmec_jax_qh_linear_spectrum.png
+   :alt: External nfp4 QH VMEC linear quasilinear feasibility spectrum
+   :width: 100%
+
 The normalized W7-X spectrum-shape gate does pass when the linear
 heat-flux-weight distribution is compared with the resolved nonlinear
 ``HeatFlux_kyst`` spectrum from the NetCDF output:

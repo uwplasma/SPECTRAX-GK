@@ -974,3 +974,12 @@ Exit gate:
   - promote Li383 and nfp4 QH to production-resolution linear scans only if branch selection remains finite and interpretable over the full `ky` grid;
   - then generate matched nonlinear windows for the same cases and add them to the leave-one-out calibration reports only if nonlinear comparison/physics gates pass;
   - separately harden the VMEC-EIK geometry path with explicit user-facing errors for degenerate reference scales and no-crossing flux-tube cuts before exposing arbitrary external VMEC files as a polished workflow.
+- Completed first full-`ky` external-VMEC linear feasibility scans:
+  - Li383 full-`ky` scan stays stable over the six-point stellarator grid (`gamma=-0.0222,-0.0429,-0.0573,-0.0700,-0.0769,-0.0783`);
+  - nfp4 QH has stable low-`ky` modes and positive growth at high `ky` (`gamma=-0.0199,-0.0180,-0.0108,+0.00850,+0.0206,+0.0328`), making it the stronger next nonlinear-window candidate;
+  - tracked `docs/_static/quasilinear_vmec_jax_qh_linear_spectrum.{png,pdf,json}` plus source CSV companions as a linear-feasibility artifact, explicitly not a transport-validation or calibrated quasilinear claim.
+  - added regression coverage for VMEC-EIK invalid-reference-scale and no-crossing errors so arbitrary external VMEC fixtures produce actionable user messages.
+- Current next best steps:
+  - run a bounded nfp4 QH nonlinear adiabatic-electron pilot with the same VMEC fixture and enough diagnostics to form a window-statistics gate;
+  - if QH nonlinear is finite and interpretable, add a QH spectrum-shape gate and leave-one-geometry-out calibration point; otherwise record the failure mode and use Li383/CTH-like as the next production candidate;
+  - keep arbitrary external VMEC files behind explicit feasibility and nonlinear-window gates until the geometry cut conventions are validated case by case.
