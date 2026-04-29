@@ -278,9 +278,14 @@ repository:
      --out docs/_static/vmec_jax_equilibrium_inventory.png
 
 This writes ``docs/_static/vmec_jax_equilibrium_inventory.{png,pdf,json}``.
-The artifact is an equilibrium-selection aid only; it does not validate
-quasilinear transport until each selected VMEC equilibrium also has matched
-linear and nonlinear SPECTRAX-GK runs and physics gates.
+The artifact is an equilibrium-selection aid only. It excludes VMEC files with
+degenerate reference-scale metadata from the recommended follow-up list, but it
+still does not validate quasilinear transport until each selected VMEC
+equilibrium also has matched linear and nonlinear SPECTRAX-GK runs and physics
+gates. The first bounded smoke checks have finite stable linear branches for
+Li383, nfp4 QH, CTH-like, and shaped-tokamak fixtures from
+``vmec_jax/examples/data``; those checks only validate the runtime geometry and
+quasilinear-feature plumbing, not nonlinear transport.
 The nonlinear W7-X and HSX startup audits now confirm that this VMEC runtime
 path reproduces GX startup ``g_state`` and ``phi`` to roundoff when the
 generated ``*.eik.nc`` is rebuilt from the same VMEC input.

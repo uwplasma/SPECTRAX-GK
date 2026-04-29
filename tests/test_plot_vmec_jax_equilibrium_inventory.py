@@ -21,7 +21,17 @@ def _load_tool_module():
     return module
 
 
-def _write_wout(path: Path, *, nfp: int, ntor: int, aspect: float, iota_edge: float) -> None:
+def _write_wout(
+    path: Path,
+    *,
+    nfp: int,
+    ntor: int,
+    aspect: float,
+    iota_edge: float,
+    aminor: float = 0.3,
+    rmajor: float = 1.2,
+    volume: float = 2.0,
+) -> None:
     with Dataset(path, "w") as ds:
         ds.createDimension("radius", 3)
         ds.createVariable("nfp", "i4").assignValue(nfp)
@@ -29,9 +39,9 @@ def _write_wout(path: Path, *, nfp: int, ntor: int, aspect: float, iota_edge: fl
         ds.createVariable("mpol", "i4").assignValue(4)
         ds.createVariable("ntor", "i4").assignValue(ntor)
         ds.createVariable("aspect", "f8").assignValue(aspect)
-        ds.createVariable("Aminor_p", "f8").assignValue(0.3)
-        ds.createVariable("Rmajor_p", "f8").assignValue(1.2)
-        ds.createVariable("volume_p", "f8").assignValue(2.0)
+        ds.createVariable("Aminor_p", "f8").assignValue(aminor)
+        ds.createVariable("Rmajor_p", "f8").assignValue(rmajor)
+        ds.createVariable("volume_p", "f8").assignValue(volume)
         ds.createVariable("betatotal", "f8").assignValue(0.01)
         iota = ds.createVariable("iotaf", "f8", ("radius",))
         iota[:] = [0.4, 0.5, iota_edge]
@@ -56,3 +66,26 @@ def test_vmec_jax_inventory_report_and_figure_are_replayable(tmp_path: Path) -> 
     assert Path(paths["pdf"]).exists()
     payload = json.loads(Path(paths["json"]).read_text(encoding="utf-8"))
     assert payload["rows"][0]["validation_role"].startswith("external_vmec_fixture")
+
+
+def test_vmec_jax_inventory_defers_degenerate_reference_scales(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    _write_wout(tmp_path / "wout_nfp4_QH_warm_start.nc", nfp=4, ntor=2, aspect=7.0, iota_edge=-1.1)
+    _write_wout(
+        tmp_path / "wout_LandremanPaul2021_QA_lowres.nc",
+        nfp=2,
+        ntor=8,
+        aspect=0.0,
+        iota_edge=0.4,
+        aminor=0.0,
+        rmajor=0.0,
+        volume=0.0,
+    )
+
+    report = mod.build_inventory(tmp_path)
+    degenerate = next(row for row in report["rows"] if row["name"] == "wout_LandremanPaul2021_QA_lowres.nc")
+
+    assert degenerate["reference_scale_valid"] is False
+    assert degenerate["geometry_contract_status"] == "deferred_degenerate_vmec_reference_scale"
+    assert degenerate["candidate_score"] == 0.0
+    assert "wout_LandremanPaul2021_QA_lowres.nc" not in report["recommended_next_linear_portfolio"]

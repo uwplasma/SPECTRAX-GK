@@ -320,6 +320,42 @@ def test_apply_flux_tube_cut_branch_specific_roots(
     assert arrays["grad_x"].shape == (3, 11)
 
 
+def test_apply_flux_tube_cut_reports_missing_crossings() -> None:
+    theta = np.linspace(-2.0, 2.0, 9)
+    geo = _mock_geo_for_cut(theta, gds21=np.ones_like(theta))
+
+    with pytest.raises(ValueError, match="No positive gds21 flux-tube crossing"):
+        _apply_flux_tube_cut(
+            theta,
+            geo,
+            ntheta=11,
+            flux_tube_cut="gds21",
+            npol_min=None,
+            which_crossing=0,
+            y0=1.0,
+            x0=1.0,
+            jtwist_in=None,
+        )
+
+
+def test_apply_flux_tube_cut_reports_out_of_range_crossing() -> None:
+    theta = np.linspace(-2.0, 2.0, 9)
+    geo = _mock_geo_for_cut(theta, gds21=theta - 0.5)
+
+    with pytest.raises(ValueError, match="which_crossing=2"):
+        _apply_flux_tube_cut(
+            theta,
+            geo,
+            ntheta=11,
+            flux_tube_cut="gds21",
+            npol_min=None,
+            which_crossing=2,
+            y0=1.0,
+            x0=1.0,
+            jtwist_in=None,
+        )
+
+
 def test_write_vmec_eik_netcdf_writes_expected_variables(tmp_path: Path) -> None:
     netcdf4 = pytest.importorskip("netCDF4")
     path = tmp_path / "geom.eik.nc"
@@ -455,6 +491,34 @@ def test_vmec_fieldlines_respects_overrides_and_closes_dataset(monkeypatch: pyte
     assert np.isfinite(out.bmag).all()
     assert np.isfinite(out.gds2).all()
     assert np.isfinite(out.gbdrift).all()
+
+
+def test_vmec_fieldlines_rejects_degenerate_reference_length(monkeypatch: pytest.MonkeyPatch) -> None:
+    fake_nc = _FakeNCDataset(mpol=3, ntor=2)
+    fake_backend = SimpleNamespace(Booz_xform=_FakeBoozXform)
+    bad_vs = _fake_vmec_spline_struct()
+    bad_vs.Aminor_p = 0.0
+
+    monkeypatch.setitem(sys.modules, "netCDF4", SimpleNamespace(Dataset=lambda *_args, **_kwargs: fake_nc))
+    monkeypatch.setattr("spectraxgk.from_gx.vmec._import_booz_backend", lambda: fake_backend)
+    monkeypatch.setattr("spectraxgk.from_gx.vmec._vmec_splines", lambda _nc, _booz: bad_vs)
+
+    with pytest.raises(ValueError, match="Aminor_p"):
+        _vmec_fieldlines(
+            vmec_fname="dummy.nc",
+            s_val=0.5,
+            betaprim=0.01,
+            alpha=0.2,
+            include_shear_variation=False,
+            include_pressure_variation=False,
+            theta1d=np.linspace(-np.pi, np.pi, 9),
+            isaxisym=True,
+            iota_input=0.9,
+            s_hat_input=0.0,
+            res_theta=21,
+            res_phi=21,
+        )
+    assert fake_nc.closed is True
 
 
 def test_generate_vmec_eik_internal_maps_boundary_and_computes_betaprim(

@@ -98,7 +98,19 @@ def _family(path: Path, nfp: int | None, ntor: int | None, betatotal: float | No
     return "general"
 
 
+def _positive_finite(value: Any) -> bool:
+    if value is None:
+        return False
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError):
+        return False
+    return math.isfinite(numeric) and numeric > 0.0
+
+
 def _priority_score(row: dict[str, Any]) -> float:
+    if not row.get("reference_scale_valid", False):
+        return 0.0
     score = 0.0
     size = float(row["size_bytes"])
     if size <= 1_000_000:
@@ -163,6 +175,14 @@ def read_vmec_equilibrium_metadata(path: str | Path, *, root: str | Path | None 
         "pressure_edge": pres_edge,
     }
     row["family"] = _family(target, row["nfp"], row["ntor"], row["betatotal"])
+    row["reference_scale_valid"] = all(
+        _positive_finite(row.get(name)) for name in ("aminor", "rmajor", "aspect", "volume")
+    )
+    row["geometry_contract_status"] = (
+        "ready_for_vmec_eik_smoke"
+        if row["reference_scale_valid"]
+        else "deferred_degenerate_vmec_reference_scale"
+    )
     row["candidate_score"] = _priority_score(row)
     row["validation_role"] = (
         "external_vmec_fixture_for_linear_geometry_and_future_nonlinear_holdout; "
@@ -188,7 +208,7 @@ def build_inventory(data_dir: str | Path = DEFAULT_DATA_DIR, *, max_files: int |
     recommended = [
         row["name"]
         for row in rows
-        if float(row["candidate_score"]) >= 3.0 and int(row["size_bytes"]) <= 1_100_000
+        if row["reference_scale_valid"] and float(row["candidate_score"]) >= 3.0 and int(row["size_bytes"]) <= 1_100_000
     ][:8]
     return {
         "kind": "vmec_jax_equilibrium_inventory",
@@ -260,6 +280,8 @@ def write_inventory_figure(report: dict[str, Any], *, out: str | Path = DEFAULT_
     bars = ax1.barh(y, scores, color=[color_map[str(row["family"])] for row in top])
     for bar, row in zip(bars, top, strict=True):
         text = f"nfp={row['nfp']} ns={row['ns']} {row['size_bytes'] / 1e6:.2f} MB"
+        if not row.get("reference_scale_valid", False):
+            text += " deferred"
         ax1.text(bar.get_width() + 0.03, bar.get_y() + bar.get_height() / 2.0, text, va="center", fontsize=8)
     ax1.set_yticks(y, labels)
     ax1.invert_yaxis()
