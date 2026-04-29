@@ -949,3 +949,13 @@ Exit gate:
   - move release-only PDF/high-resolution companions to GitHub release assets once stable asset URLs exist, then update `tools/release_artifact_manifest.toml`;
   - avoid any git-history rewrite until after non-destructive trimming is complete and collaborators explicitly agree to a coordinated reclone/reset window;
   - continue the quasilinear model-development lane only with rejected-or-promoted reports that include uncertainty intervals, leave-one-geometry-out scoring, and a null-baseline comparison.
+- Added a branch/state quasilinear candidate without promoting it:
+  - extended `tools/plot_quasilinear_candidate_uncertainty.py` with a `linear_state_ridge` candidate based only on linear-spectrum features: `log_linear_weight`, `log_abs_growth_mixing_length`, `unstable_weight_fraction`, and `log_weighted_ky_centroid`;
+  - added candidate-specific eligibility diagnostics for training cases per fitted parameter and ridge normal-matrix conditioning;
+  - regenerated `docs/_static/quasilinear_candidate_uncertainty.{png,pdf,json}`;
+  - the linear-state ridge candidate has mean leave-one-geometry-out relative error about `0.173` and interval coverage `1.0`, but `promotion_eligible=false` because the current four-case dataset is under-sampled for the five-parameter ridge fit;
+  - `promotion_gate.passed=false` remains unchanged, preventing user-facing runtime/TOML exposure.
+- Current next best steps:
+  - add at least two additional nonlinear holdout cases before attempting to promote any branch/state quasilinear saturation candidate;
+  - keep the next quasilinear model-development figure focused on whether new cases reduce uncertainty and beat the training-mean null without overfitting;
+  - perform release-only PDF migration only after GitHub Release asset URLs are available.

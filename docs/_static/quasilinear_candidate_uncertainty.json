@@ -1,10 +1,212 @@
 {
   "candidates": {
+    "linear_state_ridge": {
+      "eligibility_failures": [
+        "insufficient_train_to_parameter_ratio"
+      ],
+      "label": "linear-state ridge",
+      "max_abs_relative_error": 0.36824127055789385,
+      "mean_abs_relative_error": 0.17286488567317473,
+      "prediction_interval_coverage": 1.0,
+      "promotion_eligible": false,
+      "rows": [
+        {
+          "absolute_relative_error": 0.1912667522649733,
+          "coefficients": [
+            1.5862818124739224,
+            -0.03166022173957678,
+            0.01213361530130232,
+            -0.031201804085458862,
+            -0.030844440790092742
+          ],
+          "condition_gate": 1000000.0,
+          "condition_number": 11.295905233520296,
+          "eligibility_failures": [
+            "insufficient_train_to_parameter_ratio"
+          ],
+          "feature_names": [
+            "log_linear_weight",
+            "log_abs_growth_mixing_length",
+            "unstable_weight_fraction",
+            "log_weighted_ky_centroid"
+          ],
+          "feature_values": [
+            -2.4906681644671225,
+            -6.355749480214041,
+            1.0,
+            -1.0585533605594588
+          ],
+          "holdout_case": "cyclone_long_window",
+          "min_train_to_parameter_ratio": 2.0,
+          "n_parameters": 5,
+          "n_train": 3,
+          "observed_heat_flux": 6.6689961798985795,
+          "predicted_heat_flux": 5.3934389397018645,
+          "prediction_interval_contains_observed": true,
+          "prediction_interval_high": 38.28978703889513,
+          "prediction_interval_low": 0.7597112923804799,
+          "promotion_eligible": false,
+          "ridge_lambda": 1.0,
+          "train_cases": [
+            "cyclone_miller_long_window",
+            "hsx_nonlinear_window",
+            "w7x_nonlinear_window"
+          ],
+          "train_log_residual_mean": 1.4802973661668753e-16,
+          "train_log_residual_sigma": 1.0,
+          "train_log_residual_sigma_fit": 0.020080569469352008,
+          "train_to_parameter_ratio": 0.6
+        },
+        {
+          "absolute_relative_error": 0.36824127055789385,
+          "coefficients": [
+            1.7356957991507342,
+            -0.027640585576429167,
+            -0.02194364969025305,
+            0.027509938194885054,
+            0.02819265959950845
+          ],
+          "condition_gate": 1000000.0,
+          "condition_number": 12.985328420862446,
+          "eligibility_failures": [
+            "insufficient_train_to_parameter_ratio"
+          ],
+          "feature_names": [
+            "log_linear_weight",
+            "log_abs_growth_mixing_length",
+            "unstable_weight_fraction",
+            "log_weighted_ky_centroid"
+          ],
+          "feature_values": [
+            0.6966963737330812,
+            -0.26098533130221574,
+            0.8905778115390067,
+            -1.0504675738836509
+          ],
+          "holdout_case": "cyclone_miller_long_window",
+          "min_train_to_parameter_ratio": 2.0,
+          "n_parameters": 5,
+          "n_train": 3,
+          "observed_heat_flux": 4.259822065746515,
+          "predicted_heat_flux": 5.828464355587563,
+          "prediction_interval_contains_observed": true,
+          "prediction_interval_high": 41.37817474792351,
+          "prediction_interval_low": 0.8209882855226603,
+          "promotion_eligible": false,
+          "ridge_lambda": 1.0,
+          "train_cases": [
+            "cyclone_long_window",
+            "hsx_nonlinear_window",
+            "w7x_nonlinear_window"
+          ],
+          "train_log_residual_mean": 0.0,
+          "train_log_residual_sigma": 1.0,
+          "train_log_residual_sigma_fit": 0.031354126172008855,
+          "train_to_parameter_ratio": 0.6
+        },
+        {
+          "absolute_relative_error": 0.053683850092166675,
+          "coefficients": [
+            1.676371489351001,
+            -0.08713711248192249,
+            -0.0780084966380177,
+            -0.02576580123754179,
+            -0.03875131382319149
+          ],
+          "condition_gate": 1000000.0,
+          "condition_number": 9.85633782937791,
+          "eligibility_failures": [
+            "insufficient_train_to_parameter_ratio"
+          ],
+          "feature_names": [
+            "log_linear_weight",
+            "log_abs_growth_mixing_length",
+            "unstable_weight_fraction",
+            "log_weighted_ky_centroid"
+          ],
+          "feature_values": [
+            0.28286125810574525,
+            -0.8422608869723802,
+            0.0,
+            -1.490453450064713
+          ],
+          "holdout_case": "hsx_nonlinear_window",
+          "min_train_to_parameter_ratio": 2.0,
+          "n_parameters": 5,
+          "n_train": 3,
+          "observed_heat_flux": 5.089605487565396,
+          "predicted_heat_flux": 5.362835105588125,
+          "prediction_interval_contains_observed": true,
+          "prediction_interval_high": 38.0725204110739,
+          "prediction_interval_low": 0.7554004846330891,
+          "promotion_eligible": false,
+          "ridge_lambda": 1.0,
+          "train_cases": [
+            "cyclone_long_window",
+            "cyclone_miller_long_window",
+            "w7x_nonlinear_window"
+          ],
+          "train_log_residual_mean": -7.401486830834377e-17,
+          "train_log_residual_sigma": 1.0,
+          "train_log_residual_sigma_fit": 0.04753442285822481,
+          "train_to_parameter_ratio": 0.6
+        },
+        {
+          "absolute_relative_error": 0.0782676697776651,
+          "coefficients": [
+            1.6579656872813873,
+            -0.08339164381636593,
+            -0.08132893840826977,
+            -0.01301606601995921,
+            -0.02477788379094154
+          ],
+          "condition_gate": 1000000.0,
+          "condition_number": 9.667074218442272,
+          "eligibility_failures": [
+            "insufficient_train_to_parameter_ratio"
+          ],
+          "feature_names": [
+            "log_linear_weight",
+            "log_abs_growth_mixing_length",
+            "unstable_weight_fraction",
+            "log_weighted_ky_centroid"
+          ],
+          "feature_values": [
+            0.2770302223485594,
+            -0.3311386685294196,
+            0.0,
+            -1.4857222305112636
+          ],
+          "holdout_case": "w7x_nonlinear_window",
+          "min_train_to_parameter_ratio": 2.0,
+          "n_parameters": 5,
+          "n_train": 3,
+          "observed_heat_flux": 5.378544112072135,
+          "predicted_heat_flux": 4.9575779976238685,
+          "prediction_interval_contains_observed": true,
+          "prediction_interval_high": 35.19546765615615,
+          "prediction_interval_low": 0.6983166083382143,
+          "promotion_eligible": false,
+          "ridge_lambda": 1.0,
+          "train_cases": [
+            "cyclone_long_window",
+            "cyclone_miller_long_window",
+            "hsx_nonlinear_window"
+          ],
+          "train_log_residual_mean": -1.4802973661668753e-16,
+          "train_log_residual_sigma": 1.0,
+          "train_log_residual_sigma_fit": 0.04214115452772681,
+          "train_to_parameter_ratio": 0.6
+        }
+      ]
+    },
     "linear_weight": {
+      "eligibility_failures": [],
       "label": "$\\hat Q$ calibrated",
       "max_abs_relative_error": 0.9630414811257385,
       "mean_abs_relative_error": 0.6238180038123338,
       "prediction_interval_coverage": 0.75,
+      "promotion_eligible": true,
       "rows": [
         {
           "absolute_relative_error": 0.9630414811257385,
@@ -81,10 +283,12 @@
       ]
     },
     "shape_power_law": {
+      "eligibility_failures": [],
       "label": "shape power law",
       "max_abs_relative_error": 1.0859499114794207,
       "mean_abs_relative_error": 0.6643829865074062,
       "prediction_interval_coverage": 0.75,
+      "promotion_eligible": true,
       "rows": [
         {
           "absolute_relative_error": 0.9628273047033561,
@@ -251,6 +455,7 @@
     "passed": false,
     "requires_beating_linear_weight_baseline": true,
     "requires_beating_training_mean_null": true,
+    "requires_candidate_eligibility": true,
     "requires_interval_coverage": true,
     "transport_mean_relative_error_gate": 0.35
   },
