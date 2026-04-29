@@ -170,6 +170,18 @@ def test_linear_axisymmetric_runtime_examples_keep_parity_collision_contract() -
         assert cfg.collisions.hypercollisions_kz == pytest.approx(hyper_kz), name
 
 
+def test_nonaxisymmetric_quasilinear_examples_keep_electrostatic_contract() -> None:
+    cfg_dir = Path(__file__).resolve().parents[1] / "examples" / "linear" / "non-axisymmetric"
+    for name in ("runtime_hsx_linear_quasilinear.toml", "runtime_w7x_linear_quasilinear_vmec.toml"):
+        cfg, _ = load_runtime_from_toml(cfg_dir / name)
+        assert cfg.quasilinear.enabled is True, name
+        assert cfg.quasilinear.channels == ("es",), name
+        assert cfg.physics.electrostatic is True, name
+        assert cfg.physics.electromagnetic is False, name
+        assert cfg.terms.apar == pytest.approx(0.0), name
+        assert cfg.terms.bpar == pytest.approx(0.0), name
+
+
 def test_etg_nonlinear_pilot_example_keeps_two_species_full_gk_contract() -> None:
     path = (
         Path(__file__).resolve().parents[1]

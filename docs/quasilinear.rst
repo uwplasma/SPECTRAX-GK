@@ -627,6 +627,48 @@ are plotted at the documented log-axis floor. The HSX point has a finite
 nonlinear heat-flux window mean but zero current mixing-length prediction, so
 the relative error is one by construction.
 
+W7-X NetCDF nonlinear-window path
+---------------------------------
+
+W7-X uses the same calibration machinery, but the tracked nonlinear window is a
+runtime NetCDF file rather than a diagnostics CSV. The report builder therefore
+uses the NetCDF ingestion path described above. A reproducible linear
+quasilinear spectrum should be generated from a VMEC source, not from an
+ignored local ``tools_out/*.eik.nc`` file:
+
+.. code-block:: bash
+
+   export W7X_VMEC_FILE=/path/to/wout_w7x.nc
+   spectraxgk scan-runtime-linear \
+     --config examples/linear/non-axisymmetric/runtime_w7x_linear_quasilinear_vmec.toml \
+     --ky-values 0.047619047619047616,0.09523809523809523,0.14285714285714285,0.19047619047619047,0.23809523809523808,0.2857142857142857 \
+     --Nl 4 --Nm 8 --solver time --dt 0.005 --steps 400 \
+     --quasilinear \
+     --out docs/_static/quasilinear_w7x_spectrum_scan \
+     --no-progress
+
+Once that spectrum exists, the W7-X nonlinear NetCDF window can be added to the
+same train/holdout report:
+
+.. code-block:: bash
+
+   python tools/build_quasilinear_calibration_report.py \
+     --points docs/_static/quasilinear_cyclone_miller_train_holdout_points.json \
+     --spectrum docs/_static/quasilinear_w7x_spectrum_scan.quasilinear_spectrum.csv \
+     --nonlinear-summary docs/_static/nonlinear_w7x_gate_summary.json \
+     --split holdout \
+     --case w7x_nonlinear_window \
+     --geometry w7x \
+     --electron-model adiabatic \
+     --fit-train-scale \
+     --out docs/_static/quasilinear_w7x_train_holdout_report.json
+
+No paper-facing W7-X quasilinear calibration artifact is currently claimed in
+this documentation because the reproducible W7-X linear spectrum is not tracked
+yet. This keeps the validation ladder honest: the NetCDF nonlinear observable
+path is implemented and tested, while W7-X absolute/spectrum-shape claims wait
+for a replayable VMEC-backed spectrum.
+
 The same HSX artifacts also close the first real spectrum-shape gate. This gate
 does **not** use the saturated flux, because the current stable-branch
 mixing-length rule would erase the spectrum. Instead it compares the normalized
