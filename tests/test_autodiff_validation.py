@@ -10,13 +10,15 @@ from spectraxgk.autodiff_validation import (
     central_finite_difference_jacobian,
     covariance_diagnostics,
     explicit_complex_operator_matrix,
+    isolated_eigenpair_observable_sensitivity_report,
     isolated_eigenvalue_sensitivity_report,
 )
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid, select_ky_grid
 from spectraxgk.linear import LinearParams, LinearTerms, build_linear_cache, linear_rhs_cached
-from spectraxgk.quasilinear import quasilinear_feature_objective
+from spectraxgk.diagnostics import gx_volume_factors
+from spectraxgk.quasilinear import effective_kperp2, quasilinear_feature_objective
 
 
 def test_covariance_diagnostics_reports_uq_and_sensitivity_metadata() -> None:
@@ -217,6 +219,95 @@ def test_actual_linear_rhs_eigenvalue_derivative_gate() -> None:
     jac_ad = np.asarray(report["jacobian_ad"])
     jac_fd = np.asarray(report["jacobian_fd"])
     np.testing.assert_allclose(jac_ad, jac_fd, rtol=2.0e-2, atol=2.0e-4)
+
+
+def test_actual_linear_rhs_branch_objective_derivative_gate() -> None:
+    """Gate a phase-invariant reduced quasilinear objective on the RHS branch."""
+
+    assert spectraxgk.isolated_eigenpair_observable_sensitivity_report is (
+        isolated_eigenpair_observable_sensitivity_report
+    )
+    cfg = CycloneBaseCase(grid=GridConfig(Nx=1, Ny=6, Nz=4, Lx=6.0, Ly=12.0))
+    grid = select_ky_grid(build_spectral_grid(cfg.grid), 1)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    n_laguerre = 2
+    n_hermite = 1
+    state_shape = (n_laguerre, n_hermite, grid.ky.size, grid.kx.size, grid.z.size)
+    base_params = LinearParams(
+        R_over_Ln=2.2,
+        R_over_LTi=6.9,
+        nu=0.0,
+        nu_hyper=0.0,
+        hypercollisions_const=0.0,
+        hypercollisions_kz=0.0,
+        D_hyper=0.0,
+        beta=0.0,
+        fapar=0.0,
+    )
+    cache = build_linear_cache(grid, geom, base_params, n_laguerre, n_hermite)
+    vol_fac, _flux_fac = gx_volume_factors(geom, grid)
+    terms = LinearTerms(
+        streaming=1.0,
+        mirror=1.0,
+        curvature=1.0,
+        gradb=1.0,
+        diamagnetic=1.0,
+        collisions=0.0,
+        hypercollisions=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+    )
+
+    def params_from_features(x):
+        return LinearParams(
+            R_over_Ln=x[0],
+            R_over_LTi=x[1],
+            nu=0.0,
+            nu_hyper=0.0,
+            hypercollisions_const=0.0,
+            hypercollisions_kz=0.0,
+            D_hyper=0.0,
+            beta=0.0,
+            fapar=0.0,
+        )
+
+    def rhs_with_params(state, params):
+        return linear_rhs_cached(
+            state,
+            cache,
+            params,
+            terms=terms,
+            use_jit=False,
+            use_custom_vjp=False,
+        )
+
+    def matrix_fn(x):
+        params = params_from_features(x)
+        return explicit_complex_operator_matrix(lambda state: rhs_with_params(state, params)[0], state_shape)
+
+    def objective_fn(eigenvalue, eigenvector, x):
+        params = params_from_features(x)
+        state = jnp.reshape(eigenvector, state_shape)
+        _rhs, phi = rhs_with_params(state, params)
+        kperp_eff = effective_kperp2(phi, cache, vol_fac)
+        gamma = jnp.real(eigenvalue)
+        return jnp.asarray([gamma, kperp_eff, gamma / jnp.maximum(kperp_eff, 1.0e-12)])
+
+    report = isolated_eigenpair_observable_sensitivity_report(
+        matrix_fn,
+        objective_fn,
+        jnp.asarray([2.2, 6.9]),
+        step=1.0e-3,
+        rtol=2.5e-2,
+        atol=5.0e-4,
+        gap_floor=1.0e-6,
+    )
+
+    assert report["passed"] is False
+    assert report["ad_supported"] is False
+    assert report["branch_isolated"] is True
+    assert "non-symmetric eigenvectors" in str(report["failure_reason"])
 
 
 def test_isolated_eigenvalue_sensitivity_report_flags_small_gaps() -> None:
