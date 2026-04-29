@@ -121,6 +121,19 @@ def test_quasilinear_feature_objective_derivative_gate() -> None:
     np.testing.assert_allclose(jac, expected, rtol=1.0e-6)
 
 
+def test_quasilinear_sweep_rule_objectives_have_fd_checked_derivatives() -> None:
+    features = jnp.asarray([-0.25, 0.8, 1.5])
+    for rule in ("linear_weight", "absolute_growth_mixing_length"):
+        report = autodiff_finite_difference_report(
+            lambda x, rule=rule: quasilinear_feature_objective(x, rule=rule, csat=0.7),
+            features,
+            step=1.0e-3,
+            rtol=2.0e-4,
+            atol=1.0e-5,
+        )
+        assert report["passed"] is True
+
+
 def test_isolated_eigenvalue_sensitivity_report_tracks_branch_derivatives() -> None:
     assert spectraxgk.isolated_eigenvalue_sensitivity_report is isolated_eigenvalue_sensitivity_report
 
