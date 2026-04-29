@@ -63,6 +63,43 @@ Only make claims at the level supported by gates:
 
 Do not claim universal nonlinear flux prediction. Do not claim production stellarator optimization until multi-surface, multi-alpha, kinetic-electron and nonlinear audit gates pass.
 
+## Repository Trim and Artifact Hygiene Plan
+
+Current audit command:
+
+```bash
+python tools/audit_repository_size.py --top 30
+```
+
+Current local snapshot from 2026-04-29:
+
+- tracked HEAD payload: about `38.8 MB` across `742` files;
+- `.git` history payload: about `154 MB`;
+- ignored local artifact roots dominate the checkout size: `tools_out` about `657 MB`, `.venv` about `511 MB`, `.mypy_cache` about `167 MB`, `docs/_build` about `71 MB`, and `dist` about `24 MB`;
+- largest tracked payloads are documentation/release assets, especially `docs/_static` about `30.5 MB` and `examples/wout_HSX_QHS_vacuum_ns201.nc` about `3.9 MB`.
+
+Non-destructive trim steps:
+
+1. Keep source code, tests, small input TOMLs, small JSON/CSV gate reports, and figure-generation scripts in Git.
+2. Move high-resolution PNG/PDF panels, raw NetCDF outputs, profiler traces, and nonessential VMEC/raw reference data to GitHub Releases or another artifact store with checksums and replay commands.
+3. Keep only lightweight README/docs figures in Git, preferably compressed publication previews; link high-resolution PDF/PNG artifacts from releases.
+4. Add a repository-size CI gate after the first trim pass: fail if a newly tracked file exceeds an agreed threshold unless it is whitelisted in a manifest.
+5. Add a release-artifact manifest mapping each moved artifact to a release URL, checksum, generating command, and validation gate.
+
+History rewrite policy:
+
+- Do not rewrite history during ordinary development.
+- If clone size remains too large after non-destructive trimming, coordinate a dedicated maintenance window.
+- Before rewriting, tag a backup ref, freeze merges, publish migration instructions, and verify PyPI/release artifacts remain reproducible.
+- Use path-specific `git filter-repo` rules rather than broad deletion where possible; then force-push only after collaborators agree to reclone or reset local branches.
+
+Exit gate:
+
+- fresh clone excluding optional release artifacts should stay below the agreed size budget;
+- docs and examples must still render without downloading heavy raw outputs;
+- all publication figures must be regenerable from scripts plus release-manifest artifacts;
+- CI must enforce future artifact-size hygiene automatically.
+
 ## Quasilinear Model Design
 
 ### Tier 1: Linear Transport Weights
@@ -871,3 +908,13 @@ Exit gate:
   - replace the one-exponent shape envelope with a richer but still low-dimensional model that can include branch/state features, stellarator-vs-axisymmetric family features, and uncertainty diagnostics;
   - require any next saturation model to beat both the linear-weight baseline and the training-mean null baseline in leave-one-geometry-out scoring before exposing it in user-facing TOML;
   - connect the accepted objective to finite-difference/implicit AD checks and then to the `vmec_jax` / `booz_xform_jax` differentiable-geometry bridge.
+- Tightened the saturation-rule sweep and started repository-trim hygiene:
+  - added a training-mean null baseline to `tools/plot_quasilinear_saturation_rule_sweep.py`;
+  - regenerated `docs/_static/quasilinear_saturation_rule_sweep.{png,pdf,json}`;
+  - the Cyclone-trained null has holdout mean relative error about `0.372`, far better than the tested one-scalar quasilinear rules, so future saturation candidates must beat it before promotion;
+  - added `tools/audit_repository_size.py` and a fast test so tracked-file and local-artifact size audits are reproducible;
+  - added the repository trim/history-rewrite policy above.
+- Current next best steps:
+  - design the next saturation candidate around physically meaningful branch/state features and uncertainty intervals, then require improvement over both the linear-weight baseline and the null baseline;
+  - perform the first non-destructive repo trim by moving nonessential high-resolution docs/static artifacts to a release manifest while preserving lightweight docs previews;
+  - add a CI size guard after the manifest exists.

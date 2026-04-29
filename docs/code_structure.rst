@@ -144,3 +144,23 @@ The source tree should be validated through five distinct test classes:
 
 Every future source extraction should update this page if module ownership
 changes materially.
+
+Repository Artifact Hygiene
+---------------------------
+
+The repository should keep reproducible source inputs, tests, small gate
+reports, and lightweight documentation previews in Git. Heavy runtime outputs,
+profiler traces, raw NetCDF comparisons, and high-resolution publication
+exports should live in release artifacts with checksums and replay commands.
+
+Use the non-destructive audit helper before release cleanups:
+
+.. code-block:: bash
+
+   python tools/audit_repository_size.py --top 30
+
+The report separates tracked file size from ignored local artifact roots such
+as ``tools_out/``, ``docs/_build/``, ``dist/``, virtual environments, and caches.
+History rewrites are not part of routine development; they require a coordinated
+maintenance window because every collaborator must reclone or reset local
+branches after a force push.

@@ -75,7 +75,24 @@
   ],
   "claim_level": "model_comparison_not_validated_transport",
   "kind": "quasilinear_saturation_rule_sweep",
-  "notes": "One scalar per rule is fitted on train cases only. The sweep is a diagnostic for saturation-model development, not a validated absolute-flux claim.",
+  "notes": "One scalar per rule is fitted on train cases only. The sweep is a diagnostic for saturation-model development, not a validated absolute-flux claim. Candidate rules should beat the training-mean null baseline before being promoted.",
+  "null_training_mean_baseline": {
+    "absolute_relative_error": [
+      0.0,
+      0.5655574521584783,
+      0.3103169187065386,
+      0.2399259057725354
+    ],
+    "holdout_max_abs_relative_error": 0.5655574521584783,
+    "holdout_mean_abs_relative_error": 0.3719334255458508,
+    "label": "training-mean null",
+    "predicted_heat_flux": [
+      6.6689961798985795,
+      6.6689961798985795,
+      6.6689961798985795,
+      6.6689961798985795
+    ]
+  },
   "observed_floor": 1e-12,
   "rules": {
     "absolute_growth_mixing_length": {
