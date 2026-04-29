@@ -749,3 +749,14 @@ Exit gate:
   - add a second held-out axisymmetric/non-axisymmetric electrostatic case with a validated nonlinear CSV window before attempting any multi-parameter saturation model;
   - connect quasilinear objective derivatives to a tiny SPECTRAX-GK linear-operator fixture, then to the existing differentiable geometry bridge;
   - add spectrum-shape gates that compare normalized quasilinear spectra against nonlinear spectral heat-flux distributions where those diagnostics are available.
+- Completed the first actual-linear-operator derivative gate:
+  - added `explicit_complex_operator_matrix` for tiny validation fixtures that materialize matrix-free operators without changing production solvers;
+  - added a SPECTRAX-GK linear-RHS eigenvalue sensitivity test that differentiates through a small dense operator with `use_custom_vjp=false` and compares AD against finite differences;
+  - this closes the gap between toy eigenvalue derivative gates and the real linear RHS path, while keeping production field-solve custom VJPs untouched.
+- Validation:
+  - `pytest -q tests/test_autodiff_validation.py` passed.
+  - `ruff check src/spectraxgk/autodiff_validation.py tests/test_autodiff_validation.py src/spectraxgk/__init__.py` passed.
+- Next best steps:
+  - wire the dense linear-RHS derivative gate to a reduced quasilinear objective from the resulting eigenvector/state, not just the eigenvalue;
+  - connect the derivative gate to the existing differentiable geometry bridge so geometry parameters perturb linear weights and quasilinear objectives;
+  - create a second train/holdout calibration artifact with a non-axisymmetric electrostatic case once a CSV-backed nonlinear heat-flux window is available.
