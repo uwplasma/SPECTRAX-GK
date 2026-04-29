@@ -647,8 +647,22 @@ ignored local ``tools_out/*.eik.nc`` file:
      --out docs/_static/quasilinear_w7x_spectrum_scan \
      --no-progress
 
-Once that spectrum exists, the W7-X nonlinear NetCDF window can be added to the
-same train/holdout report:
+The tracked W7-X spectrum artifact was generated from the W7-X benchmark VMEC
+equilibrium available on the office machine at
+``/home/rjorge/gx_refs/main_clean_20260312/nonlinear/w7x/wout_w7x.nc``. The
+equilibrium itself is not shipped in the repository, so users who want to
+regenerate the artifact must point ``W7X_VMEC_FILE`` at an equivalent W7-X VMEC
+file.
+
+.. image:: _static/quasilinear_w7x_spectrum.png
+   :alt: W7-X quasilinear spectrum
+   :width: 100%
+
+All six short-window W7-X linear branches in the tracked electrostatic
+adiabatic-electron scan are stable under the current ``gamma_floor = 0`` rule.
+As for HSX, this makes the uncalibrated saturated mixing-length flux zero even
+though the nonlinear heat-flux window is finite. The W7-X nonlinear NetCDF
+window is added to the same train/holdout report with:
 
 .. code-block:: bash
 
@@ -663,11 +677,40 @@ same train/holdout report:
      --fit-train-scale \
      --out docs/_static/quasilinear_w7x_train_holdout_report.json
 
-No paper-facing W7-X quasilinear calibration artifact is currently claimed in
-this documentation because the reproducible W7-X linear spectrum is not tracked
-yet. This keeps the validation ladder honest: the NetCDF nonlinear observable
-path is implemented and tested, while W7-X absolute/spectrum-shape claims wait
-for a replayable VMEC-backed spectrum.
+.. image:: _static/quasilinear_w7x_train_holdout.png
+   :alt: Quasilinear train/holdout calibration including W7-X
+   :width: 100%
+
+The report remains ``calibration_dataset`` and ``passed = false``. The
+Cyclone-fitted one-constant rule overpredicts Cyclone Miller, while the W7-X
+stable branches underpredict the finite nonlinear window by construction. This
+is retained as a negative absolute-flux result and should not be presented as a
+validated W7-X transport model.
+
+The normalized W7-X spectrum-shape gate does pass when the linear
+heat-flux-weight distribution is compared with the resolved nonlinear
+``HeatFlux_kyst`` spectrum from the NetCDF output:
+
+.. code-block:: bash
+
+   python tools/plot_quasilinear_spectrum_shape_gate.py \
+     --spectrum docs/_static/quasilinear_w7x_spectrum_scan.quasilinear_spectrum.csv \
+     --nonlinear tools_out/final_nonlinear_audit/w7x_spectrax_current_adaptive_t200.out.nc \
+     --out docs/_static/quasilinear_w7x_spectrum_shape_gate.png \
+     --ql-column heat_flux_weight_total \
+     --nonlinear-variable Diagnostics/HeatFlux_kyst \
+     --tv-gate 0.2 \
+     --cosine-gate 0.95 \
+     --title "W7-X quasilinear/nonlinear ky-spectrum shape gate"
+
+.. image:: _static/quasilinear_w7x_spectrum_shape_gate.png
+   :alt: W7-X quasilinear and nonlinear ky-spectrum shape gate
+   :width: 100%
+
+The tracked W7-X shape gate passes with total-variation distance about
+``0.056`` and cosine similarity about ``0.992``. This supports the
+linear-spectrum shape diagnostic for W7-X under the current setup, while the
+absolute saturated-flux model remains rejected by the train/holdout report.
 
 The same HSX artifacts also close the first real spectrum-shape gate. This gate
 does **not** use the saturated flux, because the current stable-branch
