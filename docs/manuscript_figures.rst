@@ -54,6 +54,10 @@ Core Validation Figures
      - ``tools/build_quasilinear_calibration_report.py`` and ``tools/plot_quasilinear_calibration.py``
      - Initial train/holdout artifact closed as a failed model-transfer gate
      - current artifact bases: ``docs/_static/quasilinear_cyclone_calibration_audit.png``, ``docs/_static/quasilinear_cyclone_miller_calibration_audit.png``, ``docs/_static/quasilinear_cyclone_miller_train_holdout.png``, and ``docs/_static/quasilinear_hsx_train_holdout.png`` with JSON/PDF companions. The one-constant train/holdout report fits the heat-flux scale on Cyclone and scores Cyclone Miller plus HSX as held-out geometries; it intentionally remains ``calibration_dataset`` with ``passed = false`` because held-out errors exceed the ``0.35`` gate. HSX is a useful negative stellarator holdout: the current short linear spectrum is stable under ``gamma_floor = 0`` and therefore predicts zero mixing-length flux while the nonlinear window is finite. This closes the second calibration machinery gate but not a calibrated absolute-flux claim.
+   * - Quasilinear spectrum-shape gate
+     - ``tools/plot_quasilinear_spectrum_shape_gate.py``
+     - Initial HSX gate closed
+     - current artifact base: ``docs/_static/quasilinear_hsx_spectrum_shape_gate.png`` with JSON/PDF companions. It compares the normalized HSX linear heat-flux-weight spectrum against the normalized nonlinear resolved ``HeatFlux_kyst`` spectrum and passes the initial ``TV <= 0.2`` and ``cosine >= 0.95`` gates. This supports spectrum-shape diagnostics while absolute saturated-flux calibration remains open.
    * - Zonal-flow / GAM response panel
      - ``tools/plot_zonal_flow_response.py``, ``tools/plot_zonal_flow_response_from_output.py``, ``tools/generate_miller_zonal_response_pilot.py``, ``tools/generate_w7x_zonal_response_panel.py``, ``tools/digitize_w7x_zonal_reference.py``, ``tools/compare_w7x_zonal_reference.py``, ``tools/plot_w7x_zonal_contract_audit.py``, ``tools/plot_w7x_zonal_moment_tail_audit.py``, ``tools/plot_w7x_zonal_closure_ladder.py``, ``tools/plot_w7x_zonal_state_convention_audit.py``, and ``tools/plot_w7x_zonal_recurrence_sweep.py``
      - Open
