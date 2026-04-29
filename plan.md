@@ -983,3 +983,11 @@ Exit gate:
   - run a bounded nfp4 QH nonlinear adiabatic-electron pilot with the same VMEC fixture and enough diagnostics to form a window-statistics gate;
   - if QH nonlinear is finite and interpretable, add a QH spectrum-shape gate and leave-one-geometry-out calibration point; otherwise record the failure mode and use Li383/CTH-like as the next production candidate;
   - keep arbitrary external VMEC files behind explicit feasibility and nonlinear-window gates until the geometry cut conventions are validated case by case.
+- Completed reduced-grid nfp4 QH nonlinear pilots:
+  - local `Nx=Ny=32`, `Nz=24`, `Nl=4`, `Nm=8`, `dt=0.05` run is finite to `t=5` and `t=20`;
+  - the `t=20` late-half window has mean heat flux `1.78e-4`, final heat flux `3.58e-4`, and a positive late-half heat-flux slope of about `3.1e-5` per time unit;
+  - this is a stability/geometry-feasibility result only, not a saturated nonlinear transport window and not a calibration point.
+- Current next best steps:
+  - run the nfp4 QH nonlinear lane on office or a bounded local restart to a longer time/window only if it remains under the simulation time cap and produces signs of saturation;
+  - otherwise move to CTH-like or shaped tokamak as the next external VMEC nonlinear pilot, because Li383 is linearly stable over the current full-`ky` scan;
+  - after a saturated external-VMEC nonlinear window exists, add a QH/CTH/shape spectrum-shape gate and only then consider extending the leave-one-geometry-out quasilinear calibration set.
