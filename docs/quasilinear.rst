@@ -146,6 +146,11 @@ The fast test suite currently checks:
   matrix-free operator, disables the production custom-VJP field solve for
   forward-mode validation, and checks an isolated eigenvalue derivative against
   central finite differences.
+* an explicit failing gate for non-Hermitian eigenfunction objectives: JAX
+  currently differentiates non-Hermitian eigenvalues but not the corresponding
+  eigenvectors, so phase-invariant quasilinear eigenfunction objectives need an
+  adjoint/implicit eigenvector-sensitivity path before being called
+  end-to-end differentiable.
 
 The manuscript-level validation plan adds nonlinear calibration and holdout
 studies across axisymmetric and stellarator cases before making absolute

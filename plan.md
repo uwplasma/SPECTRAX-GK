@@ -760,3 +760,11 @@ Exit gate:
   - wire the dense linear-RHS derivative gate to a reduced quasilinear objective from the resulting eigenvector/state, not just the eigenvalue;
   - connect the derivative gate to the existing differentiable geometry bridge so geometry parameters perturb linear weights and quasilinear objectives;
   - create a second train/holdout calibration artifact with a non-axisymmetric electrostatic case once a CSV-backed nonlinear heat-flux window is available.
+- Added the first branch-objective differentiability guard:
+  - added `isolated_eigenpair_observable_sensitivity_report` for isolated-branch observables;
+  - the actual SPECTRAX-GK linear-RHS phase-invariant objective currently reports `ad_supported=false`, because JAX does not support forward-mode derivatives of non-Hermitian eigenvectors;
+  - this prevents false end-to-end differentiability claims for eigenfunction-dependent quasilinear objectives.
+- Updated next best steps:
+  - implement an adjoint/implicit eigenvector-sensitivity path for isolated non-Hermitian branches, then re-open the quasilinear objective AD gate;
+  - in parallel, continue calibration/validation on observable values that do not rely on differentiating eigenvectors;
+  - keep eigenvalue-only growth/frequency sensitivities as the currently validated differentiable branch.
