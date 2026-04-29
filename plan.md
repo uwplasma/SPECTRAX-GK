@@ -995,3 +995,12 @@ Exit gate:
   - run CTH-like as the next reduced-grid nonlinear pilot because its linear branch is stronger than QH on the current grid and it may saturate more clearly;
   - run the nfp4 QH nonlinear lane on office or a bounded local restart to a longer time/window only if it remains under the simulation time cap and produces signs of saturation;
   - after a saturated external-VMEC nonlinear window exists, add a QH/CTH/shape spectrum-shape gate and only then consider extending the leave-one-geometry-out quasilinear calibration set.
+- Completed CTH-like reduced-grid nonlinear pilots:
+  - local `Nx=Ny=32`, `Nz=24`, `Nl=4`, `Nm=8`, `dt=0.05` run is finite to `t=20` and `t=50`;
+  - the `t=20` late-half heat-flux mean is `3.76e-4`, but the positive slope `8.33e-5` per time unit shows startup/growth rather than saturation;
+  - the `t=50` run remains finite but is still strongly growing, with late-half mean heat flux `0.627`, final heat flux `3.15`, and late-half slope `0.102` per time unit;
+  - CTH-like is therefore the strongest current external-VMEC nonlinear candidate, but it is not yet a saturated transport-calibration window.
+- Current next best steps:
+  - move the CTH-like nonlinear lane to office or a stabilized longer local protocol only if the goal is a true saturation window; the current reduced-grid pilot already answers the feasibility question;
+  - before longer runs, decide whether to adjust nonlinear damping/hypercollision or grid size based on the literature/benchmark target, because the current reduced-grid signal is rapidly growing at `t=50`;
+  - continue keeping these external-VMEC pilots out of quasilinear calibration until a saturated nonlinear window and spectrum-shape gate pass.
