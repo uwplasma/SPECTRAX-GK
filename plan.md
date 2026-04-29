@@ -795,3 +795,22 @@ Exit gate:
 - Current next best steps:
   - add a NetCDF nonlinear-window ingestion path so W7-X can enter the same quasilinear calibration machinery without manual CSV conversion.
   - extend the spectrum-shape gate to Cyclone/Cyclone Miller/KBM where resolved `HeatFlux_kyst` artifacts are available and document case-specific gates.
+- Completed NetCDF nonlinear-window ingestion:
+  - `calibration_point_from_nonlinear_window_summary` now supports diagnostics CSV and runtime NetCDF summaries;
+  - NetCDF summaries read `Grids/time` and map `heat_flux` to `Diagnostics/HeatFlux_st`, with species summed by default and optional `species_index` for single-species nonlinear targets;
+  - `tools/build_quasilinear_calibration_report.py` now exposes `--species-index`;
+  - added a synthetic NetCDF calibration test so W7-X-style `.out.nc` summaries are covered by the fast suite.
+- Validation:
+  - `ruff check src/spectraxgk/quasilinear_calibration.py tests/test_quasilinear_calibration.py tools/build_quasilinear_calibration_report.py` passed.
+  - `pytest -q tests/test_quasilinear_calibration.py` passed.
+  - `sphinx-build -b html docs docs/_build/html -W -q` passed.
+- Completed additional electrostatic spectrum-shape gates:
+  - generated `docs/_static/quasilinear_cyclone_miller_spectrum_shape_gate.{png,pdf,json}`;
+  - generated `docs/_static/quasilinear_cyclone_spectrum_shape_gate.{png,pdf,json}`;
+  - Cyclone Miller passes the initial shape gate with `TV=0.09395` and cosine `0.98254`;
+  - Cyclone is intentionally retained as a failed model/window gate with `TV=0.21473` and cosine `0.89643`, just outside the initial thresholds;
+  - KBM remains deferred from quasilinear shape-gate claims because the current quasilinear diagnostic validates electrostatic channels only and the KBM lane is electromagnetic.
+- Current next best steps:
+  - generate a reproducible W7-X electrostatic quasilinear spectrum only after the W7-X imported geometry source is either tracked or regenerated from a tracked recipe;
+  - use the new NetCDF nonlinear-window path to add W7-X to the calibration report once that spectrum exists;
+  - start the next saturation-model sweep with shape-aware calibration features, because one-constant mixing length fails absolute-flux transfer and Cyclone shape matching.

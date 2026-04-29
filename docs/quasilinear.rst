@@ -654,3 +654,41 @@ The tracked HSX shape gate passes with total-variation distance about ``0.11``
 and cosine similarity about ``0.97``. This supports the linear spectrum-shape
 diagnostic while still rejecting any absolute saturated-flux claim from the
 current uncalibrated rule.
+
+Axisymmetric spectrum-shape gates
+---------------------------------
+
+The same spectrum-shape extraction is also tracked for the electrostatic
+axisymmetric adiabatic-electron nonlinear windows. These gates compare only the
+normalized ``ky`` distribution of the linear heat-flux weight against the
+resolved nonlinear ``HeatFlux_kyst`` spectrum. They do not test the absolute
+mixing-length heat-flux level.
+
+.. image:: _static/quasilinear_cyclone_miller_spectrum_shape_gate.png
+   :alt: Cyclone Miller quasilinear and nonlinear ky-spectrum shape gate
+   :width: 100%
+
+Cyclone Miller passes the initial shape gate with total-variation distance
+about ``0.094`` and cosine similarity about ``0.983``. This is a useful positive
+gate: the linear heat-flux-weight spectrum and the resolved nonlinear heat-flux
+spectrum place comparable weight across the scanned ``ky`` range under the
+current window.
+
+.. image:: _static/quasilinear_cyclone_spectrum_shape_gate.png
+   :alt: Cyclone quasilinear and nonlinear ky-spectrum shape gate
+   :width: 100%
+
+The long-window Cyclone shape gate is intentionally retained as a failed gate:
+it gives total-variation distance about ``0.215`` and cosine similarity about
+``0.896`` against the current ``TV <= 0.2`` and ``cosine >= 0.95`` criteria.
+The mismatch is concentrated in the low- and high-``ky`` tails, which points to
+a saturation/intensity-model limitation or a window/branch-selection issue
+rather than a failed file-ingestion path. This is a paper-facing negative
+result and should guide the next quasilinear saturation-model sweep.
+
+KBM is not included in the current spectrum-shape quasilinear gate because the
+tracked KBM validation lane is electromagnetic, while the implemented
+quasilinear diagnostic currently validates only electrostatic field channels.
+KBM should enter this section only after electromagnetic quasilinear weights
+for ``A_parallel`` and ``B_parallel`` have independent normalization and
+finite-difference/linear-diagnostic gates.
