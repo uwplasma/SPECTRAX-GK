@@ -36,6 +36,13 @@ The diagnostic writes:
 * ``*.quasilinear_spectrum.csv`` for serial ``scan-runtime-linear`` runs with
   quasilinear diagnostics enabled.
 
+For linked-boundary or imported-geometry scans, ``*.quasilinear_spectrum.csv``
+stores two perpendicular-mode coordinates: ``ky`` is the requested scan
+coordinate used for ordering and plotting, while ``mode_ky`` is the selected
+signed grid-mode coordinate used internally by the linear solve. This prevents
+negative-branch aliases from corrupting publication spectra while preserving
+the exact selected mode metadata.
+
 Executable usage
 ----------------
 
@@ -75,6 +82,21 @@ Then render the spectrum:
    python tools/plot_quasilinear_spectrum.py \
      --spectrum tools_out/cyclone_quasilinear_scan.quasilinear_spectrum.csv \
      --out docs/_static/quasilinear_cyclone_spectrum.png
+
+The shaped-tokamak Miller companion uses the same pattern, with the positive
+``ky`` range resolved by the nonlinear run's ``Ny=64`` grid:
+
+.. code-block:: bash
+
+   spectraxgk scan-runtime-linear \
+     --config examples/linear/axisymmetric/runtime_cyclone_miller_quasilinear.toml \
+     --ky-values 0.1,0.2,0.3,0.4,0.5 \
+     --quasilinear \
+     --out docs/_static/quasilinear_cyclone_miller_spectrum_scan
+
+.. image:: _static/quasilinear_cyclone_miller_spectrum.png
+   :alt: Cyclone Miller quasilinear spectrum
+   :width: 100%
 
 Model details
 -------------
@@ -183,3 +205,37 @@ a nonlinear gate summary:
    python tools/plot_quasilinear_calibration.py \
      --report docs/_static/quasilinear_cyclone_calibration_audit_report.json \
      --out docs/_static/quasilinear_cyclone_calibration_audit.png
+
+Train/holdout transfer
+----------------------
+
+The first geometry-transfer gate fits a single multiplicative heat-flux scale
+on the Cyclone long-window nonlinear diagnostic and holds out the Cyclone
+Miller nonlinear window. This is the minimal one-constant calibration expected
+of a simple mixing-length saturation rule: if it fails, the missing ingredient
+is not just a constant ``C_sat``.
+
+.. image:: _static/quasilinear_cyclone_miller_train_holdout.png
+   :alt: Quasilinear train/holdout calibration from Cyclone to Cyclone Miller
+   :width: 100%
+
+The tracked report is ``calibration_dataset`` and ``passed = false``. The
+Cyclone-fitted scale is ``C_sat = 3839.966`` for the current normalization, but
+the held-out Cyclone Miller error is much larger than the ``0.35`` mean
+relative gate. That failure is retained as a manuscript-facing result: it
+demonstrates that the implemented linear weights and nonlinear-window ingestion
+are working, while a transferable saturation model remains an open research
+task.
+
+The report is generated with:
+
+.. code-block:: bash
+
+   python tools/build_quasilinear_calibration_report.py \
+     --points docs/_static/quasilinear_cyclone_miller_train_holdout_points.json \
+     --fit-train-scale \
+     --out docs/_static/quasilinear_cyclone_miller_train_holdout_report.json
+
+   python tools/plot_quasilinear_calibration.py \
+     --report docs/_static/quasilinear_cyclone_miller_train_holdout_report.json \
+     --out docs/_static/quasilinear_cyclone_miller_train_holdout.png

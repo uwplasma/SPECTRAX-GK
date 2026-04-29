@@ -735,3 +735,17 @@ Exit gate:
   - connect the eigenvalue derivative gate to a tiny actual SPECTRAX-GK linear operator fixture;
   - create matching quasilinear spectra for Cyclone Miller/KBM/HSX/W7-X so calibration can move from audit-only to train/holdout;
   - start `vmec_jax`/`booz_xform_jax` bridge interfaces for differentiable geometry inputs.
+- Completed the first shaped-tokamak quasilinear transfer slice:
+  - added `examples/linear/axisymmetric/runtime_cyclone_miller_quasilinear.toml`;
+  - fixed scan quasilinear spectra so `ky` is the requested scan coordinate and `mode_ky` retains the selected signed grid-mode coordinate, which prevents linked-boundary aliases from corrupting publication x-axes;
+  - regenerated `docs/_static/quasilinear_cyclone_miller_spectrum*` with the nonlinear Miller `Ny=64` positive-ky grid;
+  - added train-fitted multiplicative heat-flux scaling utilities to `spectraxgk.quasilinear_calibration`;
+  - generated `docs/_static/quasilinear_cyclone_miller_calibration_audit*` and the first Cyclone-to-Cyclone-Miller train/holdout artifact `docs/_static/quasilinear_cyclone_miller_train_holdout*`.
+- Current calibration outcome:
+  - fitting one constant on Cyclone gives `C_sat = 3839.966` in the current normalization;
+  - the held-out Cyclone Miller mean-relative heat-flux error is `612.9`, so the report correctly stays at `calibration_dataset` with `passed = false`;
+  - this is a useful research result, not a release failure: it shows that absolute quasilinear flux prediction needs a richer saturation/normalization model before optimization claims.
+- Next best steps:
+  - add a second held-out axisymmetric/non-axisymmetric electrostatic case with a validated nonlinear CSV window before attempting any multi-parameter saturation model;
+  - connect quasilinear objective derivatives to a tiny SPECTRAX-GK linear-operator fixture, then to the existing differentiable geometry bridge;
+  - add spectrum-shape gates that compare normalized quasilinear spectra against nonlinear spectral heat-flux distributions where those diagnostics are available.

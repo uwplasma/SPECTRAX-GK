@@ -12,8 +12,10 @@ import pytest
 import spectraxgk
 from spectraxgk.quasilinear_calibration import (
     QuasilinearCalibrationPoint,
+    apply_heat_flux_scale,
     calibration_point_from_nonlinear_window_summary,
     calibration_point_from_spectrum_and_nonlinear_window,
+    fit_train_heat_flux_scale,
     integrated_quasilinear_flux_from_spectrum,
     quasilinear_calibration_report,
     write_quasilinear_calibration_report,
@@ -107,6 +109,50 @@ def test_quasilinear_calibration_report_demotes_missing_holdout_or_failed_gate()
     assert failed["passed"] is False
     assert failed["claim_level"] == "calibration_dataset"
     assert failed["by_split"]["holdout"]["max_abs_relative_error"] == pytest.approx(1.0)
+
+
+def test_quasilinear_calibration_report_can_fit_one_train_scale() -> None:
+    points = [
+        QuasilinearCalibrationPoint(
+            case="train",
+            split="train",
+            predicted_heat_flux=0.25,
+            observed_heat_flux=1.0,
+            saturation_rule="mixing_length",
+        ),
+        QuasilinearCalibrationPoint(
+            case="holdout",
+            split="holdout",
+            predicted_heat_flux=0.5,
+            observed_heat_flux=2.2,
+            saturation_rule="mixing_length",
+        ),
+    ]
+
+    scale_fit = fit_train_heat_flux_scale(points)
+    assert spectraxgk.fit_train_heat_flux_scale is fit_train_heat_flux_scale
+    assert scale_fit["scale"] == pytest.approx(4.0)
+    scaled = apply_heat_flux_scale(points, scale=scale_fit["scale"])
+    assert spectraxgk.apply_heat_flux_scale is apply_heat_flux_scale
+    assert scaled[0].predicted_heat_flux == pytest.approx(1.0)
+    assert scaled[0].raw_predicted_heat_flux == pytest.approx(0.25)
+    assert scaled[0].calibration_scale == pytest.approx(4.0)
+
+    report = quasilinear_calibration_report(
+        points,
+        saturation_rule="mixing_length",
+        holdout_mean_rel_gate=0.1,
+        fit_train_scale=True,
+    )
+
+    assert report["passed"] is True
+    assert report["claim_level"] == "calibrated_absolute_flux"
+    assert report["metadata"]["heat_flux_scale_fit"]["scale"] == pytest.approx(4.0)
+    assert report["points"][1]["predicted_heat_flux"] == pytest.approx(2.0)
+    assert report["points"][1]["raw_predicted_heat_flux"] == pytest.approx(0.5)
+    assert report["by_split"]["holdout"]["mean_abs_relative_error"] == pytest.approx(0.2 / 2.2)
+    with pytest.raises(ValueError):
+        apply_heat_flux_scale(points, scale=-1.0)
 
 
 def test_quasilinear_calibration_report_rejects_bad_inputs() -> None:
@@ -255,6 +301,52 @@ def test_build_calibration_report_tool_can_generate_point_from_artifacts(tmp_pat
     assert report["claim_level"] == "training_or_audit_only"
     assert report["points"][0]["predicted_heat_flux"] == pytest.approx(3.0)
     assert report["points"][0]["observed_heat_flux"] == pytest.approx(5.0)
+
+
+def test_build_calibration_report_tool_can_fit_train_scale(tmp_path: Path) -> None:
+    mod = _load_build_tool_module()
+    points = tmp_path / "points.json"
+    points.write_text(
+        json.dumps(
+            [
+                {
+                    "case": "train",
+                    "split": "train",
+                    "predicted_heat_flux": 0.25,
+                    "observed_heat_flux": 1.0,
+                    "saturation_rule": "mixing_length",
+                },
+                {
+                    "case": "holdout",
+                    "split": "holdout",
+                    "predicted_heat_flux": 0.5,
+                    "observed_heat_flux": 2.2,
+                    "saturation_rule": "mixing_length",
+                },
+            ]
+        ),
+        encoding="utf-8",
+    )
+    out = tmp_path / "report.json"
+
+    assert (
+        mod.main(
+            [
+                "--points",
+                str(points),
+                "--fit-train-scale",
+                "--holdout-mean-rel-gate",
+                "0.1",
+                "--out",
+                str(out),
+            ]
+        )
+        == 0
+    )
+
+    report = json.loads(out.read_text(encoding="utf-8"))
+    assert report["passed"] is True
+    assert report["metadata"]["heat_flux_scale_fit"]["scale"] == pytest.approx(4.0)
 
 
 def test_calibration_point_from_nonlinear_window_summary_rejects_unsupported_sources(tmp_path: Path) -> None:

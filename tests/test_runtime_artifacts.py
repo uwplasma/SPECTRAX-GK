@@ -223,7 +223,7 @@ def test_write_runtime_linear_scan_artifacts_with_quasilinear_spectrum(tmp_path:
                 "saturated_particle_flux_total": None,
             },
             {
-                "ky": 0.3,
+                "ky": -0.3,
                 "gamma": 0.2,
                 "omega": -0.5,
                 "kperp_eff2": 1.0,
@@ -243,9 +243,10 @@ def test_write_runtime_linear_scan_artifacts_with_quasilinear_spectrum(tmp_path:
     assert Path(paths["quasilinear_spectrum"]).exists()
     spectrum = np.loadtxt(paths["quasilinear_spectrum"], delimiter=",", skiprows=1)
     np.testing.assert_allclose(spectrum[:, 0], [0.2, 0.3])
-    np.testing.assert_allclose(spectrum[:, 4], [1.2, 1.5])
-    assert np.isnan(spectrum[0, 6])
-    assert spectrum[1, 7] == pytest.approx(0.6)
+    np.testing.assert_allclose(spectrum[:, 1], [0.2, -0.3])
+    np.testing.assert_allclose(spectrum[:, 5], [1.2, 1.5])
+    assert np.isnan(spectrum[0, 7])
+    assert spectrum[1, 8] == pytest.approx(0.6)
 
 
 def test_runtime_artifact_helper_paths_and_flattening(tmp_path: Path) -> None:
