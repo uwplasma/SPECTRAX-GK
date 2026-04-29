@@ -687,6 +687,20 @@ stable branches underpredict the finite nonlinear window by construction. This
 is retained as a negative absolute-flux result and should not be presented as a
 validated W7-X transport model.
 
+The manuscript-facing combined holdout panel puts Cyclone training, Cyclone
+Miller holdout, HSX holdout, and W7-X holdout in one report:
+
+.. image:: _static/quasilinear_stellarator_train_holdout.png
+   :alt: Combined quasilinear train/holdout calibration including HSX and W7-X
+   :width: 100%
+
+This combined report is also ``calibration_dataset`` and ``passed = false``.
+It is the clearest current figure for the absolute-flux story: one-constant
+mixing length does not transfer from Cyclone to shaped tokamak and stellarator
+nonlinear windows. The result is useful precisely because it blocks premature
+absolute quasilinear transport claims and motivates the next saturation-model
+sweep.
+
 The normalized W7-X spectrum-shape gate does pass when the linear
 heat-flux-weight distribution is compared with the resolved nonlinear
 ``HeatFlux_kyst`` spectrum from the NetCDF output:

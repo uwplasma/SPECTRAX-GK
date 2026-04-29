@@ -829,6 +829,11 @@ Exit gate:
   - generated `docs/_static/quasilinear_w7x_spectrum_shape_gate.{png,pdf,json}`;
   - W7-X absolute flux remains a negative holdout: all six short-window linear branches are stable under `gamma_floor=0`, so the uncalibrated saturated heat-flux prediction is zero against a finite nonlinear window mean of about `5.38`;
   - W7-X normalized spectrum shape passes with `TV=0.05564` and cosine `0.99167`.
+- Added combined stellarator holdout artifact:
+  - generated `docs/_static/quasilinear_stellarator_train_holdout_points.json`;
+  - generated `docs/_static/quasilinear_stellarator_train_holdout_report.json`;
+  - generated `docs/_static/quasilinear_stellarator_train_holdout.{png,pdf,json}`;
+  - the combined panel uses Cyclone as the single training point and holds out Cyclone Miller, HSX, and W7-X, preserving the failed `calibration_dataset` result in one manuscript-facing figure.
 - Improved calibration plotting:
   - the relative-error panel now switches to a log axis when point errors span orders of magnitude, so small failed holdouts remain visible beside very large failed holdouts.
 - Current next best steps:
