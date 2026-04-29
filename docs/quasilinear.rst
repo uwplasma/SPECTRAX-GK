@@ -909,15 +909,20 @@ The first full-``ky`` follow-up kept the same W7-X-style VMEC runtime TOML but
 used ``Nl = 4``, ``Nm = 8``, and ``400`` explicit time steps over the six-point
 stellarator ``ky`` grid used elsewhere in this documentation. Li383 remains
 stable over that short linear scan, with ``gamma`` decreasing from about
-``-0.022`` to ``-0.078``. The nfp4 QH fixture is more useful for the next
-validation lane: it is stable at low ``ky`` and crosses to positive growth for
-the three highest sampled modes, reaching ``gamma = 0.0328`` at
-``ky = 0.2857``. The figure below is still a linear-feasibility artifact only;
-it motivates a matched nonlinear QH window but does not validate an absolute
-quasilinear saturation rule.
+``-0.022`` to ``-0.078``. The shaped-tokamak fixture is also stable over the
+same grid, with ``gamma`` increasing from about ``-0.080`` to ``-0.0186`` but
+not crossing zero. The nfp4 QH and CTH-like fixtures are more useful for the
+next validation lane: QH reaches ``gamma = 0.0328`` at ``ky = 0.2857``, while
+CTH-like reaches ``gamma = 0.0488`` at the same sampled ``ky``. The figures
+below are still linear-feasibility artifacts only; they motivate matched
+nonlinear windows but do not validate an absolute quasilinear saturation rule.
 
 .. image:: _static/quasilinear_vmec_jax_qh_linear_spectrum.png
    :alt: External nfp4 QH VMEC linear quasilinear feasibility spectrum
+   :width: 100%
+
+.. image:: _static/quasilinear_vmec_jax_cth_like_linear_spectrum.png
+   :alt: External CTH-like VMEC linear quasilinear feasibility spectrum
    :width: 100%
 
 A reduced-grid nonlinear QH pilot has also been run locally at
