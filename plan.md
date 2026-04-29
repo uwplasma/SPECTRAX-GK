@@ -918,3 +918,13 @@ Exit gate:
   - design the next saturation candidate around physically meaningful branch/state features and uncertainty intervals, then require improvement over both the linear-weight baseline and the null baseline;
   - perform the first non-destructive repo trim by moving nonessential high-resolution docs/static artifacts to a release manifest while preserving lightweight docs previews;
   - add a CI size guard after the manifest exists.
+- Added executable promotion and repository-size gates:
+  - `tools/plot_quasilinear_saturation_rule_sweep.py` now writes a `promotion_gate` with `accepted_rules=[]` for the current one-scalar sweep;
+  - `tools/plot_quasilinear_shape_aware_saturation.py` now writes a `promotion_gate` requiring the shape-aware model to beat the linear-weight and training-mean null baselines;
+  - regenerated both quasilinear saturation JSON/PNG/PDF artifacts with those machine-readable rejection gates;
+  - added `tools/repository_size_manifest.toml` and `tools/check_repository_size_manifest.py`;
+  - wired the repository-size manifest checker into CI as `repo-hygiene` and added the checker tests to the fast matrix.
+- Current next best steps:
+  - implement the release-artifact manifest for moving high-resolution documentation panels out of Git while keeping lightweight previews;
+  - prototype the next saturation candidate only as a rejected-or-promoted report, with uncertainty intervals and leave-one-geometry-out scoring against both baselines;
+  - keep unvalidated quasilinear candidates out of TOML/runtime user-facing options until `promotion_gate.passed` is true.

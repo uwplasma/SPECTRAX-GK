@@ -744,10 +744,11 @@ training-mean null baseline using the Cyclone nonlinear heat-flux level for the
 holdouts; that null gives holdout mean relative error about ``0.372``. It is
 not a quasilinear model, but it is a necessary sanity check: no calibrated
 saturation rule should be promoted unless it beats this null baseline as well
-as the linear-weight baseline. This narrows the next research task: the linear
-spectrum-shape diagnostics can pass for HSX, W7-X, and Cyclone Miller, but
-absolute-flux prediction needs a richer saturation/intensity model than any
-one-scalar Cyclone fit tested here.
+as the linear-weight baseline. The JSON companion carries the same
+``promotion_gate`` and currently has no accepted rules. This narrows the next
+research task: the linear spectrum-shape diagnostics can pass for HSX, W7-X,
+and Cyclone Miller, but absolute-flux prediction needs a richer
+saturation/intensity model than any one-scalar Cyclone fit tested here.
 
 Shape-aware saturation diagnostic
 ---------------------------------
@@ -800,7 +801,8 @@ check: a calibrated saturation model should beat this baseline before being
 used for absolute transport or optimization claims. This closes the
 one-exponent saturation-envelope test and motivates a richer calibrated model
 with branch/state features, uncertainty diagnostics, and electromagnetic
-extensions.
+extensions. Its JSON companion also carries ``promotion_gate.passed = false``
+so the rejected model cannot be accidentally promoted by downstream scripts.
 
 The normalized W7-X spectrum-shape gate does pass when the linear
 heat-flux-weight distribution is compared with the resolved nonlinear
