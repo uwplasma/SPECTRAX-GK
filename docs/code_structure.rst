@@ -159,6 +159,7 @@ Use the non-destructive audit helper before release cleanups:
 
    python tools/audit_repository_size.py --top 30
    python tools/check_repository_size_manifest.py
+   python tools/check_release_artifact_manifest.py
 
 The report separates tracked file size from ignored local artifact roots such
 as ``tools_out/``, ``docs/_build/``, ``dist/``, virtual environments, and caches.
@@ -166,6 +167,11 @@ The checked manifest is ``tools/repository_size_manifest.toml``. It defines the
 tracked-size budget, the maximum size of any unlisted tracked file, and the
 temporary whitelist for existing large preview artifacts that are planned for a
 future GitHub-release move.
+
+The release migration manifest is ``tools/release_artifact_manifest.toml``. It
+records checksums, replay commands, and planned destinations for high-resolution
+panels and other large assets. The checker validates provenance only; it does
+not upload or delete artifacts.
 
 History rewrites are not part of routine development; they require a coordinated
 maintenance window because every collaborator must reclone or reset local

@@ -1,0 +1,113 @@
+[policy]
+release_series = "v1.x"
+default_destination = "GitHub Releases"
+status = "planned"
+
+[[artifacts]]
+path = "examples/wout_HSX_QHS_vacuum_ns201.nc"
+size_bytes = 3924584
+sha256 = "a666187e934128dad37683cb7d19551622a58a638fdbd71c4da7943473be0671"
+action = "keep_in_repo"
+artifact_type = "vmec_fixture"
+release_asset_name = "wout_HSX_QHS_vacuum_ns201.nc"
+reason = "Small HSX VMEC fixture used by non-axisymmetric examples and tests; keep in Git until a smaller synthetic fixture replaces it."
+replay_command = "pytest -q tests/test_example_smoke.py tests/test_geometry.py"
+
+[[artifacts]]
+path = "docs/_static/benchmark_readme_panel.png"
+size_bytes = 3174529
+sha256 = "ae67be66ab0381cc97f82235cb3e5535c97898b0dad4c1535b79f427365aba87"
+action = "move_to_release"
+artifact_type = "documentation_preview"
+release_asset_name = "benchmark_readme_panel.png"
+reason = "High-resolution README benchmark panel should move to a release asset after a lightweight preview is generated."
+preview_strategy = "replace with compressed docs/_static preview below 500 kB"
+replay_command = "python tools/make_benchmark_atlas.py"
+
+[[artifacts]]
+path = "docs/_static/benchmark_readme_panel.pdf"
+size_bytes = 1001986
+sha256 = "0790c502aeb222759fe6429543193d01ec94f34ec7de9ca4f0672e81f484914f"
+action = "move_to_release"
+artifact_type = "high_resolution_panel"
+release_asset_name = "benchmark_readme_panel.pdf"
+reason = "PDF companion belongs in release assets once docs link to the release artifact."
+preview_strategy = "release-only high-resolution PDF"
+replay_command = "python tools/make_benchmark_atlas.py"
+
+[[artifacts]]
+path = "docs/_static/benchmark_core_nonlinear_atlas.png"
+size_bytes = 2309404
+sha256 = "1f20ab27e735f1a85b31091bf32fbe59a607ce85307c4836dbfe40ba25017f90"
+action = "move_to_release"
+artifact_type = "documentation_preview"
+release_asset_name = "benchmark_core_nonlinear_atlas.png"
+reason = "Large nonlinear atlas preview should move to release assets after a smaller docs preview exists."
+preview_strategy = "replace with compressed docs/_static preview below 500 kB"
+replay_command = "python tools/make_benchmark_atlas.py"
+
+[[artifacts]]
+path = "docs/_static/benchmark_core_nonlinear_atlas.pdf"
+size_bytes = 697345
+sha256 = "21ee083bc565d81dbb092fbf6f2d0c68d12380c784db0d8e9ee03ec89d290413"
+action = "move_to_release"
+artifact_type = "high_resolution_panel"
+release_asset_name = "benchmark_core_nonlinear_atlas.pdf"
+reason = "High-resolution nonlinear atlas PDF should be release-hosted."
+preview_strategy = "release-only high-resolution PDF"
+replay_command = "python tools/make_benchmark_atlas.py"
+
+[[artifacts]]
+path = "docs/_static/benchmark_core_linear_atlas.png"
+size_bytes = 1235422
+sha256 = "2cb20ef52423880d0d2c615d393230e081eb6d4408cae8715284076273f08680"
+action = "move_to_release"
+artifact_type = "documentation_preview"
+release_asset_name = "benchmark_core_linear_atlas.png"
+reason = "Large linear atlas preview should move to release assets after a smaller docs preview exists."
+preview_strategy = "replace with compressed docs/_static preview below 500 kB"
+replay_command = "python tools/make_benchmark_atlas.py"
+
+[[artifacts]]
+path = "docs/_static/gx_publication_panel.png"
+size_bytes = 1456638
+sha256 = "b77c68b19cc945af4df857293b120bcf4db6c40fb14ce176fd9f2bd15ff9e797"
+action = "move_to_release"
+artifact_type = "comparison_panel"
+release_asset_name = "gx_publication_panel.png"
+reason = "Large comparison panel should move to release assets with a lightweight preview kept in docs."
+preview_strategy = "replace with compressed docs/_static preview below 500 kB"
+replay_command = "python tools/make_benchmark_atlas.py"
+
+[[artifacts]]
+path = "docs/_static/gx_publication_panel.pdf"
+size_bytes = 372218
+sha256 = "421a77c3b44b9052f06efb3e08f849f385b8585998e0f1d93d39bd8599b43f30"
+action = "move_to_release"
+artifact_type = "high_resolution_panel"
+release_asset_name = "gx_publication_panel.pdf"
+reason = "PDF comparison panel should be release-hosted."
+preview_strategy = "release-only high-resolution PDF"
+replay_command = "python tools/make_benchmark_atlas.py"
+
+[[artifacts]]
+path = "docs/_static/gx_summary_panel.png"
+size_bytes = 1307367
+sha256 = "c7a033cae7f320b56f33d33bc64f625d9587ac571690542ff2e778092600b99c"
+action = "move_to_release"
+artifact_type = "comparison_panel"
+release_asset_name = "gx_summary_panel.png"
+reason = "Large comparison summary should move to release assets with a lightweight docs preview."
+preview_strategy = "replace with compressed docs/_static preview below 500 kB"
+replay_command = "python tools/make_benchmark_atlas.py"
+
+[[artifacts]]
+path = "docs/_static/gx_cyclone_kbm_panel.png"
+size_bytes = 1003371
+sha256 = "2959f0e584204deffc0d1447388dc643e3bf449cc820167a5e89baa6e921298d"
+action = "move_to_release"
+artifact_type = "comparison_panel"
+release_asset_name = "gx_cyclone_kbm_panel.png"
+reason = "Large comparison panel should move to release assets with a lightweight docs preview."
+preview_strategy = "replace with compressed docs/_static preview below 500 kB"
+replay_command = "python tools/make_benchmark_atlas.py"

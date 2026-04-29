@@ -1,0 +1,258 @@
+{
+  "candidates": {
+    "linear_weight": {
+      "label": "$\\hat Q$ calibrated",
+      "max_abs_relative_error": 0.9630414811257385,
+      "mean_abs_relative_error": 0.6238180038123338,
+      "prediction_interval_coverage": 0.75,
+      "rows": [
+        {
+          "absolute_relative_error": 0.9630414811257385,
+          "holdout_case": "cyclone_long_window",
+          "observed_heat_flux": 6.6689961798985795,
+          "predicted_heat_flux": 0.24647622118715937,
+          "prediction_interval_contains_observed": false,
+          "prediction_interval_high": 0.5398429591404554,
+          "prediction_interval_low": 0.1313327707507472,
+          "raw_estimate": 0.08285458758473396,
+          "scale": 2.9748047558029587,
+          "train_cases": [
+            "cyclone_miller_long_window",
+            "hsx_nonlinear_window",
+            "w7x_nonlinear_window"
+          ],
+          "train_log_residual_mean": 0.07724078586923089,
+          "train_log_residual_sigma": 0.36059794486213453
+        },
+        {
+          "absolute_relative_error": 0.9343759004914719,
+          "holdout_case": "cyclone_miller_long_window",
+          "observed_heat_flux": 4.259822065746515,
+          "predicted_heat_flux": 8.240097144361856,
+          "prediction_interval_contains_observed": true,
+          "prediction_interval_high": 656.1241365645603,
+          "prediction_interval_low": 0.715780873232719,
+          "raw_estimate": 2.0071109980344772,
+          "scale": 4.105451642899279,
+          "train_cases": [
+            "cyclone_long_window",
+            "hsx_nonlinear_window",
+            "w7x_nonlinear_window"
+          ],
+          "train_log_residual_mean": 0.9669722676720762,
+          "train_log_residual_sigma": 1.739982450368126
+        },
+        {
+          "absolute_relative_error": 0.26883101881855664,
+          "holdout_case": "hsx_nonlinear_window",
+          "observed_heat_flux": 5.089605487565396,
+          "predicted_heat_flux": 3.7213616589586738,
+          "prediction_interval_contains_observed": true,
+          "prediction_interval_high": 525.2272441760576,
+          "prediction_interval_low": 0.2634027258142863,
+          "raw_estimate": 1.3269210495054722,
+          "scale": 2.804508723669416,
+          "train_cases": [
+            "cyclone_long_window",
+            "cyclone_miller_long_window",
+            "w7x_nonlinear_window"
+          ],
+          "train_log_residual_mean": 1.1507902982545553,
+          "train_log_residual_sigma": 1.9382403459549316
+        },
+        {
+          "absolute_relative_error": 0.3290236148135678,
+          "holdout_case": "w7x_nonlinear_window",
+          "observed_heat_flux": 5.378544112072135,
+          "predicted_heat_flux": 3.60887608588393,
+          "prediction_interval_contains_observed": true,
+          "prediction_interval_high": 524.3564404422818,
+          "prediction_interval_low": 0.2503806693271854,
+          "raw_estimate": 1.3192062399432951,
+          "scale": 2.7356420676414133,
+          "train_cases": [
+            "cyclone_long_window",
+            "cyclone_miller_long_window",
+            "hsx_nonlinear_window"
+          ],
+          "train_log_residual_mean": 1.1553030301859584,
+          "train_log_residual_sigma": 1.9507511542933798
+        }
+      ]
+    },
+    "shape_power_law": {
+      "label": "shape power law",
+      "max_abs_relative_error": 1.0859499114794207,
+      "mean_abs_relative_error": 0.6643829865074062,
+      "prediction_interval_coverage": 0.75,
+      "rows": [
+        {
+          "absolute_relative_error": 0.9628273047033561,
+          "exponent": -0.137472756339381,
+          "holdout_case": "cyclone_long_window",
+          "observed_heat_flux": 6.6689961798985795,
+          "predicted_heat_flux": 0.24790456292985205,
+          "prediction_interval_contains_observed": false,
+          "prediction_interval_high": 0.5693118075638999,
+          "prediction_interval_low": 0.12894457103982176,
+          "raw_estimate": 0.08061851561069489,
+          "scale": 3.0750325908626,
+          "shape_fit": {
+            "exponent": -0.137472756339381,
+            "n_samples": 17,
+            "passed_only": true,
+            "rms_log_shape_residual": 0.24239528591659842,
+            "used_cases": [
+              "cyclone_miller_long_window",
+              "hsx_nonlinear_window",
+              "w7x_nonlinear_window"
+            ]
+          },
+          "train_cases": [
+            "cyclone_miller_long_window",
+            "hsx_nonlinear_window",
+            "w7x_nonlinear_window"
+          ],
+          "train_log_residual_mean": 0.08886160799427063,
+          "train_log_residual_sigma": 0.37883817501964345
+        },
+        {
+          "absolute_relative_error": 1.0859499114794207,
+          "exponent": -0.3024501523068321,
+          "holdout_case": "cyclone_miller_long_window",
+          "observed_heat_flux": 4.259822065746515,
+          "predicted_heat_flux": 8.885775460962025,
+          "prediction_interval_contains_observed": true,
+          "prediction_interval_high": 643.8660264748839,
+          "prediction_interval_low": 0.8098054198065973,
+          "raw_estimate": 1.9184589385986328,
+          "scale": 4.631725643006346,
+          "shape_fit": {
+            "exponent": -0.3024501523068321,
+            "n_samples": 12,
+            "passed_only": true,
+            "rms_log_shape_residual": 0.16337301167079835,
+            "used_cases": [
+              "hsx_nonlinear_window",
+              "w7x_nonlinear_window"
+            ]
+          },
+          "train_cases": [
+            "cyclone_long_window",
+            "hsx_nonlinear_window",
+            "w7x_nonlinear_window"
+          ],
+          "train_log_residual_mean": 0.9438129588615086,
+          "train_log_residual_sigma": 1.703686722875762
+        },
+        {
+          "absolute_relative_error": 0.26132030264118483,
+          "exponent": 0.05758307820691909,
+          "holdout_case": "hsx_nonlinear_window",
+          "observed_heat_flux": 5.089605487565396,
+          "predicted_heat_flux": 3.7595882412305714,
+          "prediction_interval_contains_observed": true,
+          "prediction_interval_high": 531.3067001796358,
+          "prediction_interval_low": 0.2644484630889199,
+          "raw_estimate": 1.3587146997451782,
+          "scale": 2.7670181546837376,
+          "shape_fit": {
+            "exponent": 0.05758307820691909,
+            "n_samples": 11,
+            "passed_only": true,
+            "rms_log_shape_residual": 0.20718040399665846,
+            "used_cases": [
+              "cyclone_miller_long_window",
+              "w7x_nonlinear_window"
+            ]
+          },
+          "train_cases": [
+            "cyclone_long_window",
+            "cyclone_miller_long_window",
+            "w7x_nonlinear_window"
+          ],
+          "train_log_residual_mean": 1.1483058344457828,
+          "train_log_residual_sigma": 1.9401653922211426
+        },
+        {
+          "absolute_relative_error": 0.3474344272056631,
+          "exponent": -0.1424432270248392,
+          "holdout_case": "w7x_nonlinear_window",
+          "observed_heat_flux": 5.378544112072135,
+          "predicted_heat_flux": 3.5098527192939613,
+          "prediction_interval_contains_observed": true,
+          "prediction_interval_high": 508.84827361448566,
+          "prediction_interval_low": 0.24731007244225356,
+          "raw_estimate": 1.2452518939971924,
+          "scale": 2.818588541172598,
+          "shape_fit": {
+            "exponent": -0.1424432270248392,
+            "n_samples": 11,
+            "passed_only": true,
+            "rms_log_shape_residual": 0.29242493414960785,
+            "used_cases": [
+              "cyclone_miller_long_window",
+              "hsx_nonlinear_window"
+            ]
+          },
+          "train_cases": [
+            "cyclone_long_window",
+            "cyclone_miller_long_window",
+            "hsx_nonlinear_window"
+          ],
+          "train_log_residual_mean": 1.1619446783563594,
+          "train_log_residual_sigma": 1.946240372588589
+        }
+      ]
+    }
+  },
+  "claim_level": "candidate_model_development_not_runtime_option",
+  "interval_coverage_gate": 0.75,
+  "interval_z": 1.96,
+  "kind": "quasilinear_candidate_uncertainty_report",
+  "notes": "Candidate predictions are leave-one-geometry-out. Prediction intervals are estimated from training log residuals only. Candidates remain unavailable as runtime saturation rules unless promotion_gate.passed is true.",
+  "null_training_mean_baseline": {
+    "max_abs_relative_error": 0.34099073584449524,
+    "mean_abs_relative_error": 0.17003269672297722,
+    "rows": [
+      {
+        "absolute_relative_error": 0.2638586443850672,
+        "holdout_case": "cyclone_long_window",
+        "observed_heat_flux": 6.6689961798985795,
+        "predicted_heat_flux": 4.909323888461349
+      },
+      {
+        "absolute_relative_error": 0.34099073584449524,
+        "holdout_case": "cyclone_miller_long_window",
+        "observed_heat_flux": 4.259822065746515,
+        "predicted_heat_flux": 5.712381926512037
+      },
+      {
+        "absolute_relative_error": 0.06801744572399246,
+        "holdout_case": "hsx_nonlinear_window",
+        "observed_heat_flux": 5.089605487565396,
+        "predicted_heat_flux": 5.435787452572409
+      },
+      {
+        "absolute_relative_error": 0.0072639609383539005,
+        "holdout_case": "w7x_nonlinear_window",
+        "observed_heat_flux": 5.378544112072135,
+        "predicted_heat_flux": 5.33947457773683
+      }
+    ]
+  },
+  "observed_floor": 1e-12,
+  "passed_shape_only": true,
+  "promotion_gate": {
+    "accepted_candidates": [],
+    "interval_coverage_gate": 0.75,
+    "linear_weight_mean_abs_relative_error": 0.6238180038123338,
+    "null_training_mean_mean_abs_relative_error": 0.17003269672297722,
+    "passed": false,
+    "requires_beating_linear_weight_baseline": true,
+    "requires_beating_training_mean_null": true,
+    "requires_interval_coverage": true,
+    "transport_mean_relative_error_gate": 0.35
+  },
+  "transport_gate": 0.35
+}

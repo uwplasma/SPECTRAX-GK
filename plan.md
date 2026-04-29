@@ -928,3 +928,14 @@ Exit gate:
   - implement the release-artifact manifest for moving high-resolution documentation panels out of Git while keeping lightweight previews;
   - prototype the next saturation candidate only as a rejected-or-promoted report, with uncertainty intervals and leave-one-geometry-out scoring against both baselines;
   - keep unvalidated quasilinear candidates out of TOML/runtime user-facing options until `promotion_gate.passed` is true.
+- Added the release-artifact and uncertainty-candidate gates:
+  - added `tools/release_artifact_manifest.toml` and `tools/check_release_artifact_manifest.py`;
+  - the release manifest currently tracks 10 large assets, with about `12.6 MB` planned for GitHub-release migration and the `3.9 MB` HSX VMEC fixture explicitly kept in-repo until a smaller fixture exists;
+  - wired the release-artifact checker into CI `repo-hygiene` and the fast test matrix;
+  - added `tools/plot_quasilinear_candidate_uncertainty.py`;
+  - generated `docs/_static/quasilinear_candidate_uncertainty.{png,pdf,json}`;
+  - candidate uncertainty gate result: calibrated linear-weight mean error is about `0.624` with `0.75` interval coverage; shape-power-law mean error is about `0.664` with `0.75` interval coverage; training-mean null remains about `0.170`; `promotion_gate.passed=false` and no candidates are accepted.
+- Current next best steps:
+  - create compressed lightweight previews for the release-manifest assets, then move high-resolution companions to a GitHub release in a dedicated artifact migration commit;
+  - expand the quasilinear candidate family only after adding more held-out nonlinear cases or additional physics features, because the current four-case set is too small for a trustworthy calibrated saturation claim;
+  - keep the next candidate report focused on branch/state features and uncertainty intervals rather than adding runtime/TOML exposure.
