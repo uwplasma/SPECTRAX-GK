@@ -723,3 +723,15 @@ Exit gate:
   - add full-output derivative gates through a tiny differentiable linear/eigen solve;
   - build the first train/holdout quasilinear calibration dataset across Cyclone/Cyclone Miller/KBM/HSX/W7-X once matching linear spectra exist;
   - start the `vmec_jax` in-memory geometry bridge so quasilinear objectives can be differentiated with respect to boundary parameters.
+- Completed branch-isolated eigenvalue derivative gate slice:
+  - added `isolated_eigenvalue_sensitivity_report` to `spectraxgk.autodiff_validation`;
+  - the gate selects an eigenvalue branch at the base point, checks the eigenvalue gap, and compares AD Jacobians against central finite differences for `[real(lambda), imag(lambda)]`;
+  - this is the lightweight precursor to differentiating full linear growth/frequency and quasilinear objectives through geometry.
+- Validation for eigenvalue derivative slice:
+  - `pytest -q tests/test_autodiff_validation.py tests/test_quasilinear.py tests/test_quasilinear_calibration.py` passed.
+  - `ruff check src/spectraxgk/autodiff_validation.py tests/test_autodiff_validation.py src/spectraxgk/__init__.py` passed.
+  - `sphinx-build -b html docs docs/_build/html -q` passed.
+- Next best steps:
+  - connect the eigenvalue derivative gate to a tiny actual SPECTRAX-GK linear operator fixture;
+  - create matching quasilinear spectra for Cyclone Miller/KBM/HSX/W7-X so calibration can move from audit-only to train/holdout;
+  - start `vmec_jax`/`booz_xform_jax` bridge interfaces for differentiable geometry inputs.

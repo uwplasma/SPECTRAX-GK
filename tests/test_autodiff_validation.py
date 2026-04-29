@@ -9,6 +9,7 @@ from spectraxgk.autodiff_validation import (
     autodiff_finite_difference_report,
     central_finite_difference_jacobian,
     covariance_diagnostics,
+    isolated_eigenvalue_sensitivity_report,
 )
 from spectraxgk.quasilinear import quasilinear_feature_objective
 
@@ -110,6 +111,49 @@ def test_quasilinear_feature_objective_derivative_gate() -> None:
     jac = np.asarray(report["jacobian_ad"]).reshape(3)
     expected = np.asarray([0.7 * 1.5 / 0.8, -0.7 * 1.5 * 0.2 / 0.8**2, 0.7 * 0.2 / 0.8])
     np.testing.assert_allclose(jac, expected, rtol=1.0e-6)
+
+
+def test_isolated_eigenvalue_sensitivity_report_tracks_branch_derivatives() -> None:
+    assert spectraxgk.isolated_eigenvalue_sensitivity_report is isolated_eigenvalue_sensitivity_report
+
+    def matrix_fn(x):
+        return jnp.asarray(
+            [
+                [0.30 + x[0], 0.02],
+                [0.00, -0.40 + 0.50 * x[1]],
+            ]
+        )
+
+    report = isolated_eigenvalue_sensitivity_report(
+        matrix_fn,
+        jnp.asarray([0.1, -0.2]),
+        step=1.0e-3,
+        rtol=1.0e-4,
+        atol=1.0e-5,
+    )
+
+    assert report["passed"] is True
+    assert report["branch_isolated"] is True
+    assert report["selected_index"] == 0
+    jac = np.asarray(report["jacobian_ad"])
+    np.testing.assert_allclose(jac, np.asarray([[1.0, 0.0], [0.0, 0.0]]), rtol=1.0e-6)
+
+
+def test_isolated_eigenvalue_sensitivity_report_flags_small_gaps() -> None:
+    def matrix_fn(x):
+        return jnp.diag(jnp.asarray([x[0], x[0] + 1.0e-9]))
+
+    report = isolated_eigenvalue_sensitivity_report(
+        matrix_fn,
+        jnp.asarray([0.2]),
+        step=1.0e-3,
+        gap_floor=1.0e-6,
+    )
+
+    assert report["branch_isolated"] is False
+    assert report["passed"] is False
+    with pytest.raises(ValueError):
+        isolated_eigenvalue_sensitivity_report(matrix_fn, jnp.asarray([0.2]), selector="index:4")
 
 
 def test_autodiff_finite_difference_report_rejects_bad_inputs() -> None:
