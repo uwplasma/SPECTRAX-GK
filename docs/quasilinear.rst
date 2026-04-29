@@ -117,6 +117,9 @@ The fast test suite currently checks:
 * a small Krylov runtime smoke test.
 * autodiff-vs-finite-difference and tangent checks for the reduced
   mixing-length objective ``[gamma, kperp_eff2, flux_weight]``.
+* branch-isolated eigenvalue AD-vs-finite-difference checks, which are the
+  lightweight gate used before differentiating full linear growth/frequency
+  outputs.
 
 The manuscript-level validation plan adds nonlinear calibration and holdout
 studies across axisymmetric and stellarator cases before making absolute
