@@ -920,6 +920,15 @@ quasilinear saturation rule.
    :alt: External nfp4 QH VMEC linear quasilinear feasibility spectrum
    :width: 100%
 
+A reduced-grid nonlinear QH pilot has also been run locally at
+``Nx = Ny = 32``, ``Nz = 24``, ``Nl = 4``, ``Nm = 8``, ``dt = 0.05``, and
+``t = 20`` using the same VMEC fixture. It remains finite, with late-half mean
+heat flux about ``1.78e-4`` and final heat flux about ``3.58e-4``, but the
+late-half heat-flux slope is still positive (about ``3.1e-5`` per time unit).
+That means the run is a stability and geometry-feasibility pilot only. It is
+not a saturated nonlinear transport window and is not included in the
+quasilinear calibration reports.
+
 The normalized W7-X spectrum-shape gate does pass when the linear
 heat-flux-weight distribution is compared with the resolved nonlinear
 ``HeatFlux_kyst`` spectrum from the NetCDF output:
