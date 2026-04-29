@@ -45,6 +45,7 @@ the same order they appear in the code.
    operators
    numerics
    normalization
+   quasilinear
    geometry
    algorithms
    solvers

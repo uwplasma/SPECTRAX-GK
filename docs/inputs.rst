@@ -60,6 +60,47 @@ Minimal runtime TOML example
    solver = "auto"
    fit_signal = "auto"
 
+Quasilinear diagnostics
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Linear runtime runs can compute electrostatic quasilinear transport weights
+directly from the final linear state or Krylov eigenvector:
+
+.. code-block:: toml
+
+   [quasilinear]
+   enabled = true
+   mode = "weights"                    # weights | saturated
+   saturation_rule = "none"            # none | mixing_length | lapillonne_2011
+   amplitude_normalization = "phi_rms" # phi_rms | phi_midplane | field_energy
+   kperp_average = "phi_weighted"
+   csat = 1.0
+   gamma_floor = 0.0
+   include_stable_modes = false
+   channels = ["es"]
+
+The current validated output level is **linear weights** plus optional
+uncalibrated electrostatic saturation rules. Electromagnetic quasilinear
+channels are intentionally rejected until their channel normalization and
+nonlinear calibration gates are added. The runtime writes
+``*.quasilinear.summary.json`` and ``*.quasilinear_species.csv`` when
+``[output].path`` or ``--out`` is set. Serial ``scan-runtime-linear`` runs also
+write ``*.quasilinear_spectrum.csv``; batched scans are intentionally disabled
+for quasilinear output until per-ky state extraction has a numerical identity
+gate.
+
+Equivalent executable flags are available for single-point runtime runs:
+
+.. code-block:: bash
+
+   spectraxgk run-runtime-linear \
+     --config examples/linear/axisymmetric/runtime_cyclone.toml \
+     --quasilinear \
+     --ql-mode saturated \
+     --ql-saturation-rule mixing_length \
+     --ql-csat 1.0 \
+     --out tools_out/cyclone_quasilinear
+
 Minimal TOML example
 --------------------
 

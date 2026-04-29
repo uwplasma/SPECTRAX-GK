@@ -635,3 +635,77 @@ Exit gate:
   - calibration/holdout split for any absolute flux claim;
   - nonlinear audit of optimized stellarators before broad optimization claims;
   - SAT3/SAT3-NN style spectrum-aware saturation as future calibrated work, not the first implementation step.
+- Removed the stale untracked `.cache_w7x_jpp_2022.pdf` from the active repo checkout.
+- Started Milestone A implementation:
+  - added `src/spectraxgk/quasilinear.py` with electrostatic linear heat/particle flux weights, `kperp_eff2`, amplitude normalizations, and explicit saturation-rule metadata;
+  - added `[quasilinear]` to the runtime TOML schema and executable flags (`--quasilinear`, `--ql-mode`, `--ql-saturation-rule`, `--ql-csat`, `--ql-normalization`, `--ql-output`);
+  - wired Krylov/time linear states into quasilinear artifacts without forcing state artifacts unless requested;
+  - added `*.quasilinear.summary.json` and `*.quasilinear_species.csv` writers;
+  - added `examples/linear/axisymmetric/runtime_cyclone_quasilinear.toml`, README usage, and docs page `docs/quasilinear.rst`.
+- Fast validation run:
+  - `pytest -q tests/test_quasilinear.py tests/test_runtime_config.py::test_runtime_config_to_dict_contains_sections tests/test_runtime_config.py::test_load_runtime_from_toml_roundtrip tests/test_runtime_artifacts.py::test_write_runtime_linear_artifacts_writes_bundle tests/test_cli.py::test_cmd_run_runtime_linear_applies_quasilinear_flags` passed.
+  - Broader adjacent shard with runtime/CLI/artifact tests passed (`31` tests).
+  - Example smoke passed: `spectraxgk run-runtime-linear --config examples/linear/axisymmetric/runtime_cyclone_quasilinear.toml --out tools_out/ql_smoke --no-progress`.
+- Next best steps:
+  - add quasilinear scan aggregation so `scan-runtime-linear` can produce `*.quasilinear_spectrum.csv`;
+  - add nonlinear calibration table scaffolding and holdout metadata before any absolute flux claims;
+  - add finite-difference vs autodiff checks for `kperp_eff2`, linear weights, and mixing-length objective;
+  - then start nonlinear Cyclone/Cyclone Miller calibration comparisons for the first publication panel.
+- Completed the first scan-level quasilinear spectrum slice:
+  - serial `run_runtime_scan` now collects per-ky quasilinear payloads;
+  - `scan-runtime-linear --quasilinear --out ...` writes `*.scan.csv` and `*.quasilinear_spectrum.csv`;
+  - batched quasilinear scans are rejected until per-ky state extraction has a numerical-identity gate.
+- Validation for scan slice:
+  - `pytest -q tests/test_quasilinear.py tests/test_runtime_artifacts.py::test_write_runtime_linear_artifacts_writes_bundle tests/test_runtime_artifacts.py::test_write_runtime_linear_scan_artifacts_with_quasilinear_spectrum tests/test_cli.py::test_cmd_run_runtime_linear_applies_quasilinear_flags tests/test_cli.py::test_cmd_scan_runtime_linear_writes_quasilinear_spectrum tests/test_cli.py::test_cmd_scan_runtime_linear_branches tests/test_runtime_config.py::test_load_runtime_from_toml_roundtrip` passed.
+  - Example scan smoke passed: `spectraxgk scan-runtime-linear --config examples/linear/axisymmetric/runtime_cyclone_quasilinear.toml --ky-values 0.2,0.3 --quasilinear --out tools_out/ql_scan_smoke --no-progress`.
+  - `sphinx-build -b html docs docs/_build/html -q` passed.
+- Updated next best steps:
+  - add differentiable quasilinear objective helpers and AD-vs-finite-difference validation;
+  - add calibration/holdout artifact schema and nonlinear comparison script skeleton;
+  - produce the first publication-ready quasilinear spectrum figure from the Cyclone scan.
+- Completed first differentiability gate slice:
+  - added JAX-native `mixing_length_amplitude2_jax`, `saturated_flux_from_linear_weight`, and `quasilinear_feature_objective`;
+  - added generic `central_finite_difference_jacobian` and `autodiff_finite_difference_report` validation helpers;
+  - added derivative tests for a closed-form vector function and the quasilinear reduced objective, including directional tangent diagnostics.
+- Validation for differentiability slice:
+  - `pytest -q tests/test_autodiff_validation.py tests/test_quasilinear.py` passed.
+  - `ruff check src/spectraxgk/quasilinear.py src/spectraxgk/autodiff_validation.py tests/test_quasilinear.py tests/test_autodiff_validation.py` passed.
+- Next best steps:
+  - add nonlinear calibration/holdout artifact schema and scripts;
+  - add the first quasilinear spectrum figure generator for Cyclone;
+  - then wire finite-difference derivative gates to full linear-run outputs, not only reduced features.
+- Completed calibration/holdout artifact schema slice:
+  - added `QuasilinearCalibrationPoint`, `quasilinear_calibration_report`, and `write_quasilinear_calibration_report`;
+  - added `tools/build_quasilinear_calibration_report.py` for JSON point lists;
+  - reports are promoted to `calibrated_absolute_flux` only when train and holdout points exist and the holdout mean-relative gate passes.
+- Validation for calibration slice:
+  - `pytest -q tests/test_quasilinear_calibration.py tests/test_autodiff_validation.py tests/test_quasilinear.py` passed.
+  - `ruff check src/spectraxgk/quasilinear.py src/spectraxgk/quasilinear_calibration.py src/spectraxgk/autodiff_validation.py tests/test_quasilinear.py tests/test_quasilinear_calibration.py tests/test_autodiff_validation.py tools/build_quasilinear_calibration_report.py` passed.
+  - Tool smoke with temporary train/holdout points produced a valid JSON report.
+- Next best steps:
+  - implement the first publication-ready quasilinear spectrum plotting script;
+  - generate a Cyclone spectrum figure from `runtime_cyclone_quasilinear.toml`;
+  - then add nonlinear comparison ingestion that maps existing nonlinear window summaries into calibration points.
+- Completed first quasilinear spectrum figure slice:
+  - added `tools/plot_quasilinear_spectrum.py`;
+  - generated tracked artifacts under `docs/_static/quasilinear_cyclone_spectrum*`;
+  - added the figure to README, docs, and the manuscript figure index with the nonlinear-calibration caveat.
+- Validation for figure slice:
+  - `pytest -q tests/test_plot_quasilinear_spectrum.py tests/test_quasilinear_calibration.py tests/test_autodiff_validation.py tests/test_quasilinear.py` passed.
+  - `ruff check src/spectraxgk/quasilinear.py src/spectraxgk/quasilinear_calibration.py src/spectraxgk/autodiff_validation.py tests/test_quasilinear.py tests/test_quasilinear_calibration.py tests/test_autodiff_validation.py tests/test_plot_quasilinear_spectrum.py tools/build_quasilinear_calibration_report.py tools/plot_quasilinear_spectrum.py` passed.
+  - `sphinx-build -b html docs docs/_build/html -q` passed.
+- Next best steps:
+  - add nonlinear-window-summary ingestion into calibration points;
+  - add a light calibration figure once actual nonlinear holdout data are mapped;
+  - add full-output derivative gates that differentiate through a small linear solve, then connect to `vmec_jax` geometry parameters.
+- Completed nonlinear-window ingestion slice:
+  - added `calibration_point_from_nonlinear_window_summary`;
+  - the helper reads tracked nonlinear window JSON, applies the summary `tmin`/`tmax`, and records mean/std heat flux from diagnostics CSVs;
+  - NetCDF-only ingestion remains explicitly unsupported until it has the same observable/window contract.
+- Validation for ingestion slice:
+  - `pytest -q tests/test_quasilinear_calibration.py tests/test_plot_quasilinear_spectrum.py tests/test_autodiff_validation.py tests/test_quasilinear.py` passed.
+  - targeted `ruff check` passed for the new quasilinear/autodiff/tool files.
+- Next best steps:
+  - add full-output derivative gates through a tiny differentiable linear solve;
+  - start `vmec_jax` bridge planning/implementation from in-memory geometry arrays;
+  - add a light nonlinear-calibration figure once calibration points are produced from real nonlinear windows.

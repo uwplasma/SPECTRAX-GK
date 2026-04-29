@@ -566,6 +566,62 @@ def test_cmd_scan_runtime_linear_branches(monkeypatch, capsys) -> None:
         _cmd_scan_runtime_linear(args)
 
 
+def test_cmd_scan_runtime_linear_writes_quasilinear_spectrum(monkeypatch, capsys) -> None:
+    cfg = RuntimeConfig()
+    scan = type(
+        "Scan",
+        (),
+        {
+            "ky": np.array([0.1]),
+            "gamma": np.array([0.2]),
+            "omega": np.array([-0.3]),
+            "quasilinear": ({"ky": 0.1, "heat_flux_weight_total": 1.0},),
+        },
+    )()
+    captured: dict[str, object] = {}
+
+    def _fake_run_runtime_scan(cfg_in, *_args, **kwargs):
+        captured["quasilinear"] = cfg_in.quasilinear
+        captured["kwargs"] = kwargs
+        return scan
+
+    monkeypatch.setattr("spectraxgk.cli.load_runtime_from_toml", lambda _path: (cfg, {"scan": {"ky": [0.1]}, "fit": {}}))
+    monkeypatch.setattr("spectraxgk.cli.run_runtime_scan", _fake_run_runtime_scan)
+    monkeypatch.setattr(
+        "spectraxgk.cli.write_runtime_linear_scan_artifacts",
+        lambda *_args, **_kwargs: {
+            "summary": "scan.summary.json",
+            "scan": "scan.csv",
+            "quasilinear_spectrum": "scan.ql.csv",
+        },
+    )
+    args = argparse.Namespace(
+        config="case.toml",
+        ky_values="0.1",
+        Nl=None,
+        Nm=None,
+        solver=None,
+        fit_signal=None,
+        method=None,
+        dt=None,
+        steps=None,
+        sample_stride=None,
+        batch_ky=False,
+        progress=False,
+        no_progress=True,
+        out="scan_bundle",
+        quasilinear=True,
+        ql_mode="weights",
+        ql_saturation_rule=None,
+        ql_csat=None,
+        ql_normalization=None,
+        ql_output=None,
+    )
+    assert _cmd_scan_runtime_linear(args) == 0
+    assert captured["quasilinear"].enabled is True
+    assert "saved scan.ql.csv" in capsys.readouterr().out
+
+
 def test_cmd_run_runtime_nonlinear_branches(monkeypatch, capsys, tmp_path: Path) -> None:
     cfg = RuntimeConfig()
     diag = SimulationDiagnostics(
@@ -663,6 +719,65 @@ def test_cmd_run_runtime_linear_prints_optional_artifact_paths(monkeypatch, caps
     out = capsys.readouterr().out
     assert "saved eig.csv" in out
     assert "saved state.npy" in out
+
+
+def test_cmd_run_runtime_linear_applies_quasilinear_flags(monkeypatch, capsys) -> None:
+    cfg = RuntimeConfig()
+    captured: dict[str, object] = {}
+
+    def _fake_run_runtime_linear(cfg_in, **kwargs):
+        captured["quasilinear"] = cfg_in.quasilinear
+        captured["kwargs"] = kwargs
+        return RuntimeLinearResult(
+            ky=0.2,
+            gamma=0.3,
+            omega=-0.4,
+            selection=ModeSelection(ky_index=0, kx_index=0, z_index=0),
+            quasilinear={
+                "species": ["ion"],
+                "heat_flux_weight_species": [1.0],
+                "particle_flux_weight_species": [0.0],
+            },
+        )
+
+    monkeypatch.setattr("spectraxgk.cli.load_runtime_from_toml", lambda _path: (cfg, {"run": {}}))
+    monkeypatch.setattr("spectraxgk.cli.run_runtime_linear", _fake_run_runtime_linear)
+    monkeypatch.setattr(
+        "spectraxgk.cli.write_quasilinear_artifacts",
+        lambda *_args, **_kwargs: {"quasilinear_summary": "ql.json", "quasilinear_species": "ql.csv"},
+    )
+
+    args = argparse.Namespace(
+        config="case.toml",
+        ky=None,
+        Nl=None,
+        Nm=None,
+        dt=None,
+        steps=None,
+        method=None,
+        sample_stride=None,
+        solver=None,
+        fit_signal=None,
+        progress=False,
+        no_progress=False,
+        out=None,
+        vmec_file=None,
+        geometry_file=None,
+        quasilinear=True,
+        ql_mode="saturated",
+        ql_saturation_rule="mixing_length",
+        ql_csat=0.5,
+        ql_normalization="field_energy",
+        ql_output="ql_out",
+    )
+    assert _cmd_run_runtime_linear(args) == 0
+    ql_cfg = captured["quasilinear"]
+    assert ql_cfg.enabled is True
+    assert ql_cfg.mode == "saturated"
+    assert ql_cfg.saturation_rule == "mixing_length"
+    assert ql_cfg.csat == pytest.approx(0.5)
+    assert ql_cfg.amplitude_normalization == "field_energy"
+    assert "saved ql.json" in capsys.readouterr().out
 
 
 def test_cmd_run_runtime_nonlinear_fixed_dt_and_explicit_diagnostics(monkeypatch, capsys) -> None:
