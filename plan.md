@@ -987,7 +987,11 @@ Exit gate:
   - local `Nx=Ny=32`, `Nz=24`, `Nl=4`, `Nm=8`, `dt=0.05` run is finite to `t=5` and `t=20`;
   - the `t=20` late-half window has mean heat flux `1.78e-4`, final heat flux `3.58e-4`, and a positive late-half heat-flux slope of about `3.1e-5` per time unit;
   - this is a stability/geometry-feasibility result only, not a saturated nonlinear transport window and not a calibration point.
+- Completed additional full-`ky` external-VMEC linear feasibility scans:
+  - CTH-like has a useful unstable high-`ky` branch (`gamma=-0.0227,-0.0161,+0.00418,+0.0114,+0.0309,+0.0488`);
+  - shaped tokamak remains stable over the sampled grid (`gamma=-0.0799,-0.0692,-0.0488,-0.0396,-0.0292,-0.0186`);
+  - tracked `docs/_static/quasilinear_vmec_jax_cth_like_linear_spectrum.{png,pdf,json}` plus source CSV companions as another linear-feasibility artifact.
 - Current next best steps:
+  - run CTH-like as the next reduced-grid nonlinear pilot because its linear branch is stronger than QH on the current grid and it may saturate more clearly;
   - run the nfp4 QH nonlinear lane on office or a bounded local restart to a longer time/window only if it remains under the simulation time cap and produces signs of saturation;
-  - otherwise move to CTH-like or shaped tokamak as the next external VMEC nonlinear pilot, because Li383 is linearly stable over the current full-`ky` scan;
   - after a saturated external-VMEC nonlinear window exists, add a QH/CTH/shape spectrum-shape gate and only then consider extending the leave-one-geometry-out quasilinear calibration set.
