@@ -51,6 +51,7 @@ from spectraxgk.runtime_artifacts import (
     _write_gx_geometry_group,
     _write_gx_inputs_group,
     _write_json,
+    write_runtime_linear_scan_artifacts,
     _write_runtime_nonlinear_gx_artifacts,
     _write_runtime_root_metadata,
     _write_state,
@@ -75,6 +76,29 @@ def test_write_runtime_linear_artifacts_writes_bundle(tmp_path: Path) -> None:
         fit_window_tmin=0.1,
         fit_window_tmax=0.3,
         fit_signal_used="phi",
+        quasilinear={
+            "ky": 0.2,
+            "gamma": 0.3,
+            "omega": -0.4,
+            "mode": "saturated",
+            "saturation_rule": "mixing_length",
+            "amplitude_normalization": "phi_rms",
+            "channels": ["es"],
+            "kperp_average": "phi_weighted",
+            "kperp_eff2": 0.5,
+            "phi_norm2": 2.0,
+            "amplitude2": 0.6,
+            "species": ["ion"],
+            "heat_flux_weight_species": [1.5],
+            "particle_flux_weight_species": [0.25],
+            "heat_flux_weight_total": 1.5,
+            "particle_flux_weight_total": 0.25,
+            "saturated_heat_flux_species": [0.9],
+            "saturated_particle_flux_species": [0.15],
+            "saturated_heat_flux_total": 0.9,
+            "saturated_particle_flux_total": 0.15,
+            "metadata": {"claim_level": "uncalibrated_saturation_rule"},
+        },
     )
 
     paths = write_runtime_linear_artifacts(tmp_path / "linear_run", result)
@@ -86,12 +110,16 @@ def test_write_runtime_linear_artifacts_writes_bundle(tmp_path: Path) -> None:
     assert summary["fit_window_tmax"] == 0.3
     assert summary["fit_signal_used"] == "phi"
     assert summary["has_eigenfunction"] is True
+    assert summary["has_quasilinear"] is True
+    assert summary["quasilinear"]["heat_flux_weight_total"] == pytest.approx(1.5)
     assert summary["selection"]["ky_index"] == 1
     csv_lines = Path(paths["timeseries"]).read_text(encoding="utf-8").splitlines()
     assert csv_lines[0] == "t,signal_real,signal_imag,signal_abs"
     assert Path(paths["timeseries"]).exists()
     assert Path(paths["eigenfunction"]).exists()
     assert Path(paths["state"]).exists()
+    assert Path(paths["quasilinear_summary"]).exists()
+    assert Path(paths["quasilinear_species"]).exists()
 
 
 def test_runtime_artifact_file_helpers_and_nonlinear_summary(tmp_path: Path) -> None:
@@ -175,6 +203,49 @@ def test_write_runtime_linear_artifacts_splits_complex_signal_columns(tmp_path: 
     np.testing.assert_allclose(data[:, 1], np.asarray([1.0, 3.0]))
     np.testing.assert_allclose(data[:, 2], np.asarray([2.0, 4.0]))
     np.testing.assert_allclose(data[:, 3], np.abs(np.asarray([1.0 + 2.0j, 3.0 + 4.0j])))
+
+
+def test_write_runtime_linear_scan_artifacts_with_quasilinear_spectrum(tmp_path: Path) -> None:
+    result = SimpleNamespace(
+        ky=np.asarray([0.2, 0.3]),
+        gamma=np.asarray([0.1, 0.2]),
+        omega=np.asarray([-0.4, -0.5]),
+        quasilinear=(
+            {
+                "ky": 0.2,
+                "gamma": 0.1,
+                "omega": -0.4,
+                "kperp_eff2": 0.8,
+                "heat_flux_weight_total": 1.2,
+                "particle_flux_weight_total": 0.1,
+                "amplitude2": None,
+                "saturated_heat_flux_total": None,
+                "saturated_particle_flux_total": None,
+            },
+            {
+                "ky": 0.3,
+                "gamma": 0.2,
+                "omega": -0.5,
+                "kperp_eff2": 1.0,
+                "heat_flux_weight_total": 1.5,
+                "particle_flux_weight_total": 0.2,
+                "amplitude2": 0.4,
+                "saturated_heat_flux_total": 0.6,
+                "saturated_particle_flux_total": 0.08,
+            },
+        ),
+    )
+
+    paths = write_runtime_linear_scan_artifacts(tmp_path / "scan_bundle", result)
+
+    assert Path(paths["summary"]).exists()
+    assert Path(paths["scan"]).exists()
+    assert Path(paths["quasilinear_spectrum"]).exists()
+    spectrum = np.loadtxt(paths["quasilinear_spectrum"], delimiter=",", skiprows=1)
+    np.testing.assert_allclose(spectrum[:, 0], [0.2, 0.3])
+    np.testing.assert_allclose(spectrum[:, 4], [1.2, 1.5])
+    assert np.isnan(spectrum[0, 6])
+    assert spectrum[1, 7] == pytest.approx(0.6)
 
 
 def test_runtime_artifact_helper_paths_and_flattening(tmp_path: Path) -> None:

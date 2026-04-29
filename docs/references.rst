@@ -29,3 +29,8 @@ References
 .. [GENE] F. Jenko et al., "The GENE code," Journal of Computational Physics
    230, 6979 (2011).
 
+.. [Stephens21] C. D. Stephens et al., "Quasilinear gyrokinetic theory: A
+   derivation of QuaLiKiz," arXiv:2103.10569 (2021).
+
+.. [Parker23] J. B. Parker et al., "Comparison of Saturation Rules Used for
+   Gyrokinetic Quasilinear Transport Modeling," Plasma 6, 652 (2023).

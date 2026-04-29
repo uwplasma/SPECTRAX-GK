@@ -46,6 +46,10 @@ Core Validation Figures
      - ``tools/make_validation_gate_index.py``
      - Closed for currently tracked gates
      - current artifact base: ``docs/_static/validation_gate_index.png`` and ``docs/_static/validation_gate_index.json``. This is not a physics result by itself; it is the audit panel for release-window gates, currently ``10/10`` passed.
+   * - Quasilinear spectrum panel
+     - ``tools/plot_quasilinear_spectrum.py``
+     - Initial diagnostic closed; nonlinear calibration open
+     - current artifact base: ``docs/_static/quasilinear_cyclone_spectrum.png`` with CSV/JSON/PDF companions. It shows the electrostatic linear weights and an explicitly uncalibrated mixing-length output from ``examples/linear/axisymmetric/runtime_cyclone_quasilinear.toml``. Absolute saturated-flux claims remain open until the train/holdout nonlinear calibration report passes.
    * - Zonal-flow / GAM response panel
      - ``tools/plot_zonal_flow_response.py``, ``tools/plot_zonal_flow_response_from_output.py``, ``tools/generate_miller_zonal_response_pilot.py``, ``tools/generate_w7x_zonal_response_panel.py``, ``tools/digitize_w7x_zonal_reference.py``, ``tools/compare_w7x_zonal_reference.py``, ``tools/plot_w7x_zonal_contract_audit.py``, ``tools/plot_w7x_zonal_moment_tail_audit.py``, ``tools/plot_w7x_zonal_closure_ladder.py``, ``tools/plot_w7x_zonal_state_convention_audit.py``, and ``tools/plot_w7x_zonal_recurrence_sweep.py``
      - Open

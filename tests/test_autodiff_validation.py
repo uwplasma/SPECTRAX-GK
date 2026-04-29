@@ -2,9 +2,15 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+import jax.numpy as jnp
 
 import spectraxgk
-from spectraxgk.autodiff_validation import covariance_diagnostics
+from spectraxgk.autodiff_validation import (
+    autodiff_finite_difference_report,
+    central_finite_difference_jacobian,
+    covariance_diagnostics,
+)
+from spectraxgk.quasilinear import quasilinear_feature_objective
 
 
 def test_covariance_diagnostics_reports_uq_and_sensitivity_metadata() -> None:
@@ -72,3 +78,46 @@ def test_covariance_diagnostics_rejects_inconsistent_shapes() -> None:
         covariance_diagnostics(np.ones((2, 2)), np.ones(3))
     with pytest.raises(ValueError):
         covariance_diagnostics(np.ones((2, 2)), np.ones(2), regularization=-1.0)
+
+
+def test_autodiff_finite_difference_report_matches_closed_form_jacobian() -> None:
+    assert spectraxgk.autodiff_finite_difference_report is autodiff_finite_difference_report
+    assert spectraxgk.central_finite_difference_jacobian is central_finite_difference_jacobian
+
+    def fn(x):
+        return jnp.asarray([x[0] ** 2 + 3.0 * x[1], x[0] * x[1]])
+
+    p = jnp.asarray([0.4, -0.2])
+    report = autodiff_finite_difference_report(fn, p, step=1.0e-3, rtol=5.0e-4, atol=5.0e-6)
+
+    assert report["passed"] is True
+    jac_ad = np.asarray(report["jacobian_ad"])
+    np.testing.assert_allclose(jac_ad, np.asarray([[0.8, 3.0], [-0.2, 0.4]]), rtol=1.0e-6)
+    assert float(report["tangent_max_abs_error"]) < 1.0e-4
+
+
+def test_quasilinear_feature_objective_derivative_gate() -> None:
+    features = jnp.asarray([0.2, 0.8, 1.5])
+    report = autodiff_finite_difference_report(
+        lambda x: quasilinear_feature_objective(x, csat=0.7),
+        features,
+        step=1.0e-3,
+        rtol=1.0e-4,
+        atol=1.0e-5,
+    )
+
+    assert report["passed"] is True
+    jac = np.asarray(report["jacobian_ad"]).reshape(3)
+    expected = np.asarray([0.7 * 1.5 / 0.8, -0.7 * 1.5 * 0.2 / 0.8**2, 0.7 * 0.2 / 0.8])
+    np.testing.assert_allclose(jac, expected, rtol=1.0e-6)
+
+
+def test_autodiff_finite_difference_report_rejects_bad_inputs() -> None:
+    with pytest.raises(ValueError):
+        central_finite_difference_jacobian(lambda x: x, jnp.ones((2, 1)))
+    with pytest.raises(ValueError):
+        central_finite_difference_jacobian(lambda x: x, jnp.ones(2), step=0.0)
+    with pytest.raises(ValueError):
+        autodiff_finite_difference_report(lambda x: x, jnp.ones((2, 1)))
+    with pytest.raises(ValueError):
+        autodiff_finite_difference_report(lambda x: x, jnp.ones(2), direction=jnp.ones(3))

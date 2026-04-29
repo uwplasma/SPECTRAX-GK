@@ -85,6 +85,10 @@ lanes:
    python examples/linear/axisymmetric/etg_linear_auto.py --outdir tools_out/etg_auto
 
    spectrax-gk run-runtime-linear \
+     --config examples/linear/axisymmetric/runtime_cyclone_quasilinear.toml \
+     --out tools_out/cyclone_quasilinear
+
+   spectrax-gk run-runtime-linear \
      --config examples/linear/non-axisymmetric/runtime_w7x_linear_imported_geometry.toml
 
    spectrax-gk examples/linear/axisymmetric/runtime_cyclone.toml

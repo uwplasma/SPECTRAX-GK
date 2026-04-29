@@ -35,6 +35,7 @@ def test_runtime_config_to_dict_contains_sections() -> None:
         "terms",
         "expert",
         "output",
+        "quasilinear",
     }
     assert len(d["species"]) == 1
 
@@ -98,6 +99,15 @@ omega_star_scale = 0.7
 
 [output]
 path = "tools_out/runtime_case"
+
+[quasilinear]
+enabled = true
+mode = "saturated"
+saturation_rule = "mixing_length"
+amplitude_normalization = "phi_rms"
+csat = 0.7
+channels = ["es"]
+output_path = "tools_out/ql_case"
 """
     path = tmp_path / "runtime.toml"
     path.write_text(toml, encoding="utf-8")
@@ -117,6 +127,12 @@ path = "tools_out/runtime_case"
     assert cfg.init.init_file_scale == pytest.approx(5.0)
     assert cfg.init.init_file_mode == "add"
     assert cfg.output.path == str((tmp_path / "tools_out" / "runtime_case").resolve())
+    assert cfg.quasilinear.enabled is True
+    assert cfg.quasilinear.mode == "saturated"
+    assert cfg.quasilinear.saturation_rule == "mixing_length"
+    assert cfg.quasilinear.csat == pytest.approx(0.7)
+    assert cfg.quasilinear.channels == ("es",)
+    assert cfg.quasilinear.output_path == str((tmp_path / "tools_out" / "ql_case").resolve())
     assert len(cfg.species) == 2
     assert cfg.species[1].charge == pytest.approx(-1.0)
 
