@@ -221,6 +221,10 @@ def build_shape_aware_saturation_report(
     baseline_errors = np.asarray([row["baseline_linear_weight_absolute_relative_error"] for row in loo_rows], dtype=float)
     null_errors = np.asarray([row["null_training_mean_absolute_relative_error"] for row in loo_rows], dtype=float)
     all_fit = fit_power_law_shape_exponent(cases, passed_only=passed_shape_only)
+    shape_mean = float(np.nanmean(shape_errors))
+    baseline_mean = float(np.nanmean(baseline_errors))
+    null_mean = float(np.nanmean(null_errors))
+    transport_gate = 0.35
     return {
         "kind": "quasilinear_shape_aware_saturation_report",
         "claim_level": "leave_one_geometry_out_model_development",
@@ -228,12 +232,21 @@ def build_shape_aware_saturation_report(
         "passed_shape_only": bool(passed_shape_only),
         "all_case_shape_fit": all_fit,
         "metrics": {
-            "shape_aware_mean_abs_relative_error": float(np.nanmean(shape_errors)),
+            "shape_aware_mean_abs_relative_error": shape_mean,
             "shape_aware_max_abs_relative_error": float(np.nanmax(shape_errors)),
-            "baseline_linear_weight_mean_abs_relative_error": float(np.nanmean(baseline_errors)),
+            "baseline_linear_weight_mean_abs_relative_error": baseline_mean,
             "baseline_linear_weight_max_abs_relative_error": float(np.nanmax(baseline_errors)),
-            "null_training_mean_mean_abs_relative_error": float(np.nanmean(null_errors)),
+            "null_training_mean_mean_abs_relative_error": null_mean,
             "null_training_mean_max_abs_relative_error": float(np.nanmax(null_errors)),
+        },
+        "promotion_gate": {
+            "passed": bool(shape_mean <= transport_gate and shape_mean < baseline_mean and shape_mean < null_mean),
+            "transport_mean_relative_error_gate": transport_gate,
+            "requires_beating_linear_weight_baseline": True,
+            "requires_beating_training_mean_null": True,
+            "shape_aware_mean_abs_relative_error": shape_mean,
+            "baseline_linear_weight_mean_abs_relative_error": baseline_mean,
+            "null_training_mean_mean_abs_relative_error": null_mean,
         },
         "cases": case_rows,
         "leave_one_out": loo_rows,

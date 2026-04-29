@@ -67,6 +67,8 @@ def test_saturation_rule_sweep_fits_train_scale_and_scores_holdout(tmp_path: Pat
     assert report["rules"]["linear_weight"]["predicted_heat_flux"][1] == pytest.approx(9.0)
     assert report["null_training_mean_baseline"]["predicted_heat_flux"] == pytest.approx([9.0, 9.0])
     assert report["null_training_mean_baseline"]["holdout_mean_abs_relative_error"] == pytest.approx(1.0)
+    assert report["promotion_gate"]["passed"] is False
+    assert report["promotion_gate"]["accepted_rules"] == []
 
 
 def test_saturation_rule_sweep_writes_artifacts(tmp_path: Path) -> None:
@@ -90,3 +92,4 @@ def test_saturation_rule_sweep_writes_artifacts(tmp_path: Path) -> None:
     payload = json.loads(Path(paths["json"]).read_text(encoding="utf-8"))
     assert payload["kind"] == "quasilinear_saturation_rule_sweep"
     assert "null_training_mean_baseline" in payload
+    assert "promotion_gate" in payload

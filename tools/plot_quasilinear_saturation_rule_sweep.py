@@ -236,6 +236,16 @@ def build_saturation_rule_sweep(
     null_predicted = np.full_like(observed, float(np.nanmean(observed[train_mask])))
     null_rel_error = np.abs(null_predicted - observed) / np.maximum(np.abs(observed), observed_floor)
     null_holdout = null_rel_error[~train_mask]
+    null_holdout_mean = None if null_holdout.size == 0 else float(np.nanmean(null_holdout))
+    transport_gate = 0.35
+    accepted_rules = []
+    for rule, payload in rules.items():
+        mean_error = payload["holdout_mean_abs_relative_error"]
+        if mean_error is None:
+            continue
+        beats_null = null_holdout_mean is None or float(mean_error) < float(null_holdout_mean)
+        if float(mean_error) <= transport_gate and beats_null:
+            accepted_rules.append(rule)
 
     return {
         "kind": "quasilinear_saturation_rule_sweep",
@@ -247,8 +257,27 @@ def build_saturation_rule_sweep(
             "label": "training-mean null",
             "predicted_heat_flux": null_predicted.tolist(),
             "absolute_relative_error": null_rel_error.tolist(),
-            "holdout_mean_abs_relative_error": None if null_holdout.size == 0 else float(np.nanmean(null_holdout)),
+            "holdout_mean_abs_relative_error": null_holdout_mean,
             "holdout_max_abs_relative_error": None if null_holdout.size == 0 else float(np.nanmax(null_holdout)),
+        },
+        "promotion_gate": {
+            "passed": bool(accepted_rules),
+            "accepted_rules": accepted_rules,
+            "transport_mean_relative_error_gate": transport_gate,
+            "requires_beating_training_mean_null": True,
+            "null_training_mean_holdout_mean_abs_relative_error": null_holdout_mean,
+            "best_rule": min(
+                rules,
+                key=lambda name: float("inf")
+                if rules[name]["holdout_mean_abs_relative_error"] is None
+                else float(rules[name]["holdout_mean_abs_relative_error"]),
+            ),
+            "best_rule_holdout_mean_abs_relative_error": min(
+                float("inf")
+                if payload["holdout_mean_abs_relative_error"] is None
+                else float(payload["holdout_mean_abs_relative_error"])
+                for payload in rules.values()
+            ),
         },
         "cases": case_rows,
         "notes": (

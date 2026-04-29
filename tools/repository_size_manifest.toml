@@ -1,0 +1,51 @@
+[policy]
+max_tracked_total_bytes = 45000000
+max_unlisted_tracked_file_bytes = 1000000
+
+[[allowed_large_files]]
+path = "examples/wout_HSX_QHS_vacuum_ns201.nc"
+max_bytes = 4500000
+reason = "Small checked-in HSX VMEC fixture used by non-axisymmetric geometry examples and tests."
+release_destination = "keep-in-repo-fixture"
+
+[[allowed_large_files]]
+path = "docs/_static/benchmark_readme_panel.png"
+max_bytes = 3600000
+reason = "README benchmark preview retained until release-artifact previews are split from high-resolution figures."
+release_destination = "planned-github-release-preview-trim"
+
+[[allowed_large_files]]
+path = "docs/_static/benchmark_core_nonlinear_atlas.png"
+max_bytes = 2700000
+reason = "Documentation nonlinear atlas preview retained until release-artifact previews are split from high-resolution figures."
+release_destination = "planned-github-release-preview-trim"
+
+[[allowed_large_files]]
+path = "docs/_static/gx_publication_panel.png"
+max_bytes = 1700000
+reason = "Comparison preview retained until release-artifact previews are split from high-resolution figures."
+release_destination = "planned-github-release-preview-trim"
+
+[[allowed_large_files]]
+path = "docs/_static/gx_summary_panel.png"
+max_bytes = 1600000
+reason = "Comparison summary preview retained until release-artifact previews are split from high-resolution figures."
+release_destination = "planned-github-release-preview-trim"
+
+[[allowed_large_files]]
+path = "docs/_static/benchmark_core_linear_atlas.png"
+max_bytes = 1500000
+reason = "Documentation linear atlas preview retained until release-artifact previews are split from high-resolution figures."
+release_destination = "planned-github-release-preview-trim"
+
+[[allowed_large_files]]
+path = "docs/_static/gx_cyclone_kbm_panel.png"
+max_bytes = 1200000
+reason = "Comparison preview retained until release-artifact previews are split from high-resolution figures."
+release_destination = "planned-github-release-preview-trim"
+
+[[allowed_large_files]]
+path = "docs/_static/benchmark_readme_panel.pdf"
+max_bytes = 1200000
+reason = "High-resolution README panel companion retained until release-artifact move."
+release_destination = "planned-github-release-highres"
