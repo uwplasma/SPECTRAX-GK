@@ -814,3 +814,11 @@ Exit gate:
   - generate a reproducible W7-X electrostatic quasilinear spectrum only after the W7-X imported geometry source is either tracked or regenerated from a tracked recipe;
   - use the new NetCDF nonlinear-window path to add W7-X to the calibration report once that spectrum exists;
   - start the next saturation-model sweep with shape-aware calibration features, because one-constant mixing length fails absolute-flux transfer and Cyclone shape matching.
+- Added the reproducible W7-X quasilinear example entry point:
+  - added `examples/linear/non-axisymmetric/runtime_w7x_linear_quasilinear_vmec.toml`;
+  - the example uses `geometry.model = "vmec"` and `vmec_file = "$W7X_VMEC_FILE"` so the VMEC-derived geometry cache is regenerated from a declared source instead of relying on ignored local `tools_out` geometry;
+  - added a fast config contract test covering HSX and W7-X non-axisymmetric electrostatic quasilinear examples.
+- Current next best steps:
+  - run the W7-X VMEC-backed quasilinear scan on a machine with `W7X_VMEC_FILE` available and commit the resulting spectrum/report only if the input provenance is replayable;
+  - add the W7-X holdout calibration artifact through the new NetCDF nonlinear window path;
+  - then implement the first shape-aware saturation-model sweep: compare linear weights, nonlinear `HeatFlux_kyst`, and one- or two-parameter intensity rules across Cyclone, Cyclone Miller, HSX, and W7-X.
