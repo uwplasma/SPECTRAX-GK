@@ -46,3 +46,39 @@ def test_plot_quasilinear_calibration_writes_artifacts(tmp_path: Path) -> None:
     assert meta["claim_level"] == "training_or_audit_only"
     assert meta["n_points"] == 1
     assert meta["mean_abs_relative_error"] == 0.9
+
+
+def test_plot_quasilinear_calibration_handles_zero_prediction_on_log_axes(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    report = {
+        "kind": "quasilinear_calibration_report",
+        "claim_level": "calibration_dataset",
+        "passed": False,
+        "holdout_mean_rel_gate": 0.35,
+        "observed_floor": 1.0e-12,
+        "points": [
+            {
+                "case": "train",
+                "split": "train",
+                "predicted_heat_flux": 0.2,
+                "observed_heat_flux": 0.3,
+                "observed_heat_flux_std": 0.02,
+            },
+            {
+                "case": "stable_holdout",
+                "split": "holdout",
+                "predicted_heat_flux": 0.0,
+                "observed_heat_flux": 0.4,
+                "observed_heat_flux_std": 0.5,
+            },
+        ],
+    }
+    report_path = tmp_path / "zero_report.json"
+    report_path.write_text(json.dumps(report), encoding="utf-8")
+
+    paths = mod.write_calibration_figure(report_path, out=tmp_path / "zero_calibration.png", title="QL audit")
+
+    assert Path(paths["png"]).exists()
+    meta = json.loads(Path(paths["json"]).read_text(encoding="utf-8"))
+    assert meta["n_points"] == 2
+    assert meta["max_abs_relative_error"] == 1.0

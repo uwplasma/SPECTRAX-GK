@@ -307,6 +307,33 @@ def test_gx_volume_factors_accept_sampled_geometry_contract():
     assert np.allclose(np.asarray(flux_s), np.asarray(flux_ref))
 
 
+def test_gx_volume_factors_trim_closed_sampled_geometry_contract():
+    _cfg, grid, geom, _params, _cache = _small_setup()
+    sampled = sample_flux_tube_geometry(geom, grid.z)
+    closed = replace(
+        sampled,
+        theta=jnp.concatenate([sampled.theta, jnp.asarray([jnp.pi])]),
+        bmag_profile=jnp.concatenate([sampled.bmag_profile, sampled.bmag_profile[:1]]),
+        bgrad_profile=jnp.concatenate([sampled.bgrad_profile, sampled.bgrad_profile[:1]]),
+        gds2_profile=jnp.concatenate([sampled.gds2_profile, sampled.gds2_profile[:1]]),
+        gds21_profile=jnp.concatenate([sampled.gds21_profile, sampled.gds21_profile[:1]]),
+        gds22_profile=jnp.concatenate([sampled.gds22_profile, sampled.gds22_profile[:1]]),
+        cv_profile=jnp.concatenate([sampled.cv_profile, sampled.cv_profile[:1]]),
+        gb_profile=jnp.concatenate([sampled.gb_profile, sampled.gb_profile[:1]]),
+        cv0_profile=jnp.concatenate([sampled.cv0_profile, sampled.cv0_profile[:1]]),
+        gb0_profile=jnp.concatenate([sampled.gb0_profile, sampled.gb0_profile[:1]]),
+        jacobian_profile=jnp.concatenate([sampled.jacobian_profile, sampled.jacobian_profile[:1]]),
+        grho_profile=jnp.concatenate([sampled.grho_profile, sampled.grho_profile[:1]]),
+        theta_closed_interval=True,
+    )
+
+    vol_ref, flux_ref = gx_volume_factors(sampled, grid)
+    vol_closed, flux_closed = gx_volume_factors(closed, grid)
+
+    assert np.allclose(np.asarray(vol_closed), np.asarray(vol_ref))
+    assert np.allclose(np.asarray(flux_closed), np.asarray(flux_ref))
+
+
 def test_gx_phi_zonal_mode_kxt_recovers_signed_zonal_average() -> None:
     cfg = CycloneBaseCase()
     grid = build_spectral_grid(replace(cfg.grid, Ny=8, Nx=4))

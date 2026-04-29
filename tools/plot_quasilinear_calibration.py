@@ -87,10 +87,12 @@ def calibration_figure(
     ax = axes[0]
     residual_ax = axes[1]
 
-    pos = finite & (predicted > 0.0) & (observed > 0.0)
-    if np.any(pos):
-        lo = float(min(np.min(predicted[pos]), np.min(observed[pos]))) * 0.7
-        hi = float(max(np.max(predicted[pos]), np.max(observed[pos]))) * 1.4
+    positive_values = np.concatenate([predicted[finite & (predicted > 0.0)], observed[finite & (observed > 0.0)]])
+    log_floor = None
+    if positive_values.size:
+        log_floor = float(np.min(positive_values)) * 0.35
+        lo = log_floor * 0.7
+        hi = float(np.max(positive_values)) * 1.4
         ax.set_xscale("log")
         ax.set_yscale("log")
         ax.plot([lo, hi], [lo, hi], color="#333333", linestyle="--", linewidth=1.6, label="1:1")
@@ -104,19 +106,38 @@ def calibration_figure(
     labels = []
     rel_errors = []
     colors = []
+    clipped_nonpositive = False
     for point, pred, obs, err in zip(points, predicted, observed, std, strict=True):
         if not np.isfinite(pred) or not np.isfinite(obs):
             continue
         split = str(point["split"])
         color = SPLIT_COLORS.get(split, "#6c757d")
+        plot_pred = pred
+        plot_obs = obs
+        marker_face = color
+        marker_edge = "white"
+        if log_floor is not None and (pred <= 0.0 or obs <= 0.0):
+            plot_pred = pred if pred > 0.0 else log_floor
+            plot_obs = obs if obs > 0.0 else log_floor
+            marker_face = "none"
+            marker_edge = color
+            clipped_nonpositive = True
+        yerr = None
+        if np.isfinite(err):
+            if log_floor is not None:
+                lower = max(min(err, plot_obs - log_floor), 0.0)
+                yerr = np.asarray([[lower], [err]], dtype=float)
+            else:
+                yerr = err
         ax.errorbar(
-            pred,
-            obs,
-            yerr=None if not np.isfinite(err) else err,
+            plot_pred,
+            plot_obs,
+            yerr=yerr,
             marker="o",
             markersize=8,
             color=color,
-            markeredgecolor="white",
+            markerfacecolor=marker_face,
+            markeredgecolor=marker_edge,
             markeredgewidth=0.8,
             capsize=3.0,
             linestyle="None",
@@ -130,6 +151,17 @@ def calibration_figure(
     ax.set_title("Absolute flux comparison")
     ax.set_xlabel("quasilinear estimate")
     ax.set_ylabel("nonlinear window mean")
+    if clipped_nonpositive and log_floor is not None:
+        ax.text(
+            0.03,
+            0.03,
+            f"open marker: non-positive estimate\nplotted at floor {log_floor:.2e}",
+            transform=ax.transAxes,
+            ha="left",
+            va="bottom",
+            fontsize=8,
+            bbox={"boxstyle": "round,pad=0.25", "fc": "white", "ec": "0.75", "alpha": 0.92},
+        )
     handles, legend_labels = ax.get_legend_handles_labels()
     legend = dict(zip(legend_labels, handles, strict=False))
     ax.legend(legend.values(), legend.keys())
