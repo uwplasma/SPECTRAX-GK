@@ -851,3 +851,10 @@ Exit gate:
   - formulate the next saturation model using actual shape-aware information instead of one global scalar, for example a low-dimensional intensity envelope constrained by nonlinear `HeatFlux_kyst` and tested by leave-one-geometry-out validation;
   - add differentiability checks for any new quasilinear objective before connecting it to `vmec_jax`/`booz_xform_jax`;
   - keep expanding tests around these tools so each publication artifact has a fast synthetic replay gate.
+- Promoted sweep diagnostic rules into the differentiable quasilinear objective path:
+  - `saturation_amplitude2` now supports `linear_weight` and `absolute_growth_mixing_length` / `abs_growth_mixing_length`;
+  - `quasilinear_feature_objective` now supports those rules for feature vectors `[gamma, kperp_eff2, flux_weight]`;
+  - added finite-difference derivative gates for the new differentiable rules.
+- Current next best steps:
+  - connect the saturation-rule sweep tool to the core rule names instead of duplicating formulas;
+  - then move to a true low-dimensional shape-aware model with leave-one-geometry-out validation and AD checks.

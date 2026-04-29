@@ -251,6 +251,13 @@ Supported saturation rules are:
 * ``mixing_length``: ``A^2 = C_sat max(gamma - gamma_floor, 0) / kperp_eff2``;
 * ``lapillonne_2011``: currently the same audited scaling contract as
   ``mixing_length`` until the broader model-specific validation suite is added.
+* ``linear_weight``: ``A^2 = C_sat``. This is a diagnostic intensity rule used
+  to test whether the linear flux-weight spectrum alone transfers across
+  geometries.
+* ``absolute_growth_mixing_length``: ``A^2 = C_sat |gamma| / kperp_eff2``.
+  This gives stable short-window branches nonzero diagnostic intensity and is
+  included only for saturation-model stress tests, not as a validated physical
+  rule.
 
 The current mixing-length output is
 
@@ -272,6 +279,13 @@ software validation and sensitivity studies, but Parker-style saturation-rule
 comparisons [Parker23]_, SAT3/SAT3-NN-style spectrum-aware rules
 [Dudding22]_ [Sar26]_, and nonlinear holdout tests are required before it can
 be used as a predictive absolute-flux model.
+
+The reduced objective helper
+``spectraxgk.quasilinear.quasilinear_feature_objective`` supports the same
+diagnostic rules for differentiability tests from feature vectors
+``[gamma, kperp_eff2, flux_weight]``. The fast suite checks the resulting
+Jacobians against central finite differences before these objectives are used
+in optimization examples.
 
 Implementation map
 ------------------

@@ -16,6 +16,7 @@ from spectraxgk.quasilinear import (
     effective_kperp2,
     normalize_quasilinear_channels,
     phi_norm2,
+    quasilinear_feature_objective,
     saturation_amplitude2,
 )
 from spectraxgk.runtime import build_runtime_linear_params, build_runtime_linear_terms, run_runtime_linear, run_runtime_scan
@@ -74,8 +75,28 @@ def test_saturation_amplitude_rules_are_explicit() -> None:
         kperp_eff2_value=0.5,
         rule="mixing_length",
     ) == pytest.approx(0.0)
+    assert saturation_amplitude2(gamma=-0.2, kperp_eff2_value=0.5, rule="linear_weight") == pytest.approx(1.0)
+    assert saturation_amplitude2(
+        gamma=-0.2,
+        kperp_eff2_value=0.5,
+        rule="absolute_growth_mixing_length",
+        csat=2.0,
+    ) == pytest.approx(0.8)
     with pytest.raises(NotImplementedError):
         saturation_amplitude2(gamma=0.2, kperp_eff2_value=0.5, rule="calibrated_spectral")
+
+
+def test_quasilinear_feature_objective_supports_sweep_rules() -> None:
+    features = jnp.asarray([-0.2, 0.5, 1.5])
+
+    assert quasilinear_feature_objective(features, rule="linear_weight", csat=2.0) == pytest.approx(3.0)
+    assert quasilinear_feature_objective(
+        features,
+        rule="absolute_growth_mixing_length",
+        csat=2.0,
+    ) == pytest.approx(1.2)
+    with pytest.raises(NotImplementedError):
+        quasilinear_feature_objective(features, rule="not_a_rule")
 
 
 def test_quasilinear_channel_validation_rejects_unvalidated_em_channels() -> None:

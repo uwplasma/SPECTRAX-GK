@@ -20,6 +20,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 
 from spectraxgk.plotting import set_plot_style  # noqa: E402
 from spectraxgk.quasilinear_calibration import calibration_point_from_nonlinear_window_summary  # noqa: E402
+from spectraxgk.quasilinear import saturation_amplitude2  # noqa: E402
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -114,18 +115,42 @@ def raw_rule_estimates(spectrum_csv: str | Path, *, floor: float = 1.0e-300) -> 
     gamma = _required_column(data, path, "gamma")
     kperp2 = np.maximum(_required_column(data, path, "kperp_eff2"), float(floor))
     weight = _required_column(data, path, "heat_flux_weight_total")
-    saturated = _required_column(data, path, "saturated_heat_flux_total")
-    finite = np.isfinite(gamma) & np.isfinite(kperp2) & np.isfinite(weight) & np.isfinite(saturated)
+    finite = np.isfinite(gamma) & np.isfinite(kperp2) & np.isfinite(weight)
     if not np.any(finite):
         raise ValueError(f"{path} contains no finite quasilinear samples")
     gamma = gamma[finite]
     kperp2 = kperp2[finite]
     weight = weight[finite]
-    saturated = saturated[finite]
+    amplitudes = {
+        "positive_mixing_length": np.asarray(
+            [
+                saturation_amplitude2(gamma=float(g), kperp_eff2_value=float(k2), rule="mixing_length")
+                for g, k2 in zip(gamma, kperp2, strict=True)
+            ],
+            dtype=float,
+        ),
+        "linear_weight": np.asarray(
+            [
+                saturation_amplitude2(gamma=float(g), kperp_eff2_value=float(k2), rule="linear_weight")
+                for g, k2 in zip(gamma, kperp2, strict=True)
+            ],
+            dtype=float,
+        ),
+        "absolute_growth_mixing_length": np.asarray(
+            [
+                saturation_amplitude2(
+                    gamma=float(g),
+                    kperp_eff2_value=float(k2),
+                    rule="absolute_growth_mixing_length",
+                )
+                for g, k2 in zip(gamma, kperp2, strict=True)
+            ],
+            dtype=float,
+        ),
+    }
     return {
-        "positive_mixing_length": float(np.sum(np.maximum(saturated, 0.0))),
-        "linear_weight": float(np.sum(np.maximum(weight, 0.0))),
-        "absolute_growth_mixing_length": float(np.sum(np.maximum(weight, 0.0) * np.abs(gamma) / kperp2)),
+        rule: float(np.sum(np.maximum(weight, 0.0) * np.maximum(amp, 0.0)))
+        for rule, amp in amplitudes.items()
     }
 
 

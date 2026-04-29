@@ -43,7 +43,7 @@
       "observed_heat_flux": 5.089605487565396,
       "observed_heat_flux_std": 6.284535110439706,
       "raw_estimates": {
-        "absolute_growth_mixing_length": 0.4307355772676522,
+        "absolute_growth_mixing_length": 0.4307355772676523,
         "linear_weight": 1.3269210495054722,
         "positive_mixing_length": 0.0
       },
@@ -82,7 +82,7 @@
       "absolute_relative_error": [
         0.0,
         693.370798035986,
-        323.9780442431835,
+        323.97804424318355,
         511.6854176439925
       ],
       "holdout_max_abs_relative_error": 693.370798035986,
@@ -91,7 +91,7 @@
       "predicted_heat_flux": [
         6.6689961798985795,
         2957.89604728371,
-        1654.0100373183766,
+        1654.010037318377,
         2757.5011344143395
       ],
       "scale": 3839.9661523445534
