@@ -865,9 +865,9 @@ Exit gate:
   - generated `docs/_static/quasilinear_shape_aware_saturation.{png,pdf,json}` with the `--passed-shape-only` exponent fit so the failed Cyclone shape gate is not used to define the training shape correction.
 - Result:
   - the one-exponent nonlinear/quasilinear shape envelope is not sufficient for absolute heat-flux transfer;
-  - mean leave-one-geometry-out relative error is about `0.664`, compared with about `0.624` for the linear-weight baseline, so both fail the `0.35` transport gate;
+  - mean leave-one-geometry-out relative error is about `0.664`, compared with about `0.624` for the linear-weight baseline and about `0.170` for a deliberately simple training-mean null baseline, so the quasilinear variants fail the `0.35` transport gate and do not beat the null baseline;
   - the result is a research-grade negative diagnostic, not a validated quasilinear transport claim.
 - Current next best steps:
   - replace the one-exponent shape envelope with a richer but still low-dimensional model that can include branch/state features, stellarator-vs-axisymmetric family features, and uncertainty diagnostics;
-  - require leave-one-geometry-out improvement over the linear-weight baseline before exposing any calibrated saturation mode in user-facing TOML;
+  - require any next saturation model to beat both the linear-weight baseline and the training-mean null baseline in leave-one-geometry-out scoring before exposing it in user-facing TOML;
   - connect the accepted objective to finite-difference/implicit AD checks and then to the `vmec_jax` / `booz_xform_jax` differentiable-geometry bridge.
