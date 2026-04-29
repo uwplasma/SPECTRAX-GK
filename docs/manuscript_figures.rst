@@ -57,7 +57,7 @@ Core Validation Figures
    * - Quasilinear saturation-rule sweep
      - ``tools/plot_quasilinear_saturation_rule_sweep.py``
      - Initial model-development diagnostic closed as a negative result
-     - current artifact base: ``docs/_static/quasilinear_saturation_rule_sweep.png`` with JSON/PDF companions. It fits one scalar on Cyclone and scores Cyclone Miller, HSX, and W7-X for three simple rules: positive-growth mixing length, raw linear heat-flux weight, and an absolute-growth diagnostic. All three fail the held-out absolute-flux gate; the raw linear-weight rule is least bad with holdout mean relative error about ``25``. This supports the next saturation-model lane while preventing premature absolute quasilinear transport claims.
+     - current artifact base: ``docs/_static/quasilinear_saturation_rule_sweep.png`` with JSON/PDF companions. It fits one scalar on Cyclone and scores Cyclone Miller, HSX, and W7-X for three simple rules: positive-growth mixing length, raw linear heat-flux weight, and an absolute-growth diagnostic. All three fail the held-out absolute-flux gate; the raw linear-weight rule is least bad with holdout mean relative error about ``25``. The panel also includes a Cyclone-training-mean null baseline with holdout mean relative error about ``0.372``, so future calibrated rules must beat both the quasilinear baselines and this null baseline before being promoted. This supports the next saturation-model lane while preventing premature absolute quasilinear transport claims.
    * - Shape-aware quasilinear saturation diagnostic
      - ``tools/plot_quasilinear_shape_aware_saturation.py``
      - Initial leave-one-geometry-out diagnostic closed as a negative result

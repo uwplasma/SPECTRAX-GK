@@ -233,16 +233,28 @@ def build_saturation_rule_sweep(
             "holdout_max_abs_relative_error": None if holdout.size == 0 else float(np.nanmax(holdout)),
         }
 
+    null_predicted = np.full_like(observed, float(np.nanmean(observed[train_mask])))
+    null_rel_error = np.abs(null_predicted - observed) / np.maximum(np.abs(observed), observed_floor)
+    null_holdout = null_rel_error[~train_mask]
+
     return {
         "kind": "quasilinear_saturation_rule_sweep",
         "claim_level": "model_comparison_not_validated_transport",
         "observed_floor": float(observed_floor),
         "train_cases": [row["case"] for row in case_rows if row["split"] == "train"],
         "rules": rules,
+        "null_training_mean_baseline": {
+            "label": "training-mean null",
+            "predicted_heat_flux": null_predicted.tolist(),
+            "absolute_relative_error": null_rel_error.tolist(),
+            "holdout_mean_abs_relative_error": None if null_holdout.size == 0 else float(np.nanmean(null_holdout)),
+            "holdout_max_abs_relative_error": None if null_holdout.size == 0 else float(np.nanmax(null_holdout)),
+        },
         "cases": case_rows,
         "notes": (
             "One scalar per rule is fitted on train cases only. The sweep is a diagnostic "
-            "for saturation-model development, not a validated absolute-flux claim."
+            "for saturation-model development, not a validated absolute-flux claim. Candidate "
+            "rules should beat the training-mean null baseline before being promoted."
         ),
     }
 
@@ -254,6 +266,7 @@ def write_saturation_rule_sweep_figure(report: dict[str, Any], *, out: str | Pat
     out_path.parent.mkdir(parents=True, exist_ok=True)
     cases = list(report["cases"])
     rules = dict(report["rules"])
+    null_baseline = dict(report["null_training_mean_baseline"])
     labels = [str(row["case"]) for row in cases]
     y = np.arange(len(labels))
 
@@ -282,6 +295,20 @@ def write_saturation_rule_sweep_figure(report: dict[str, Any], *, out: str | Pat
             linewidth=0.7,
             zorder=3,
         )
+    null_err = np.asarray(null_baseline["absolute_relative_error"], dtype=float)
+    null_plot_err = np.where((null_err > 0.0) & np.isfinite(null_err), null_err, floor)
+    max_err = max(max_err, float(np.nanmax(null_plot_err)))
+    ax0.scatter(
+        null_plot_err,
+        y + 0.34,
+        s=64,
+        marker="^",
+        color="#b45309",
+        label=null_baseline["label"],
+        edgecolor="white",
+        linewidth=0.7,
+        zorder=3,
+    )
     ax0.axvline(0.35, color="#c2410c", linestyle="--", linewidth=1.5, label="0.35 gate")
     ax0.set_xscale("log")
     ax0.set_xlim(floor * 0.7, max(max_err, 0.35) * 1.5)
@@ -338,6 +365,11 @@ def main(argv: list[str] | None = None) -> int:
                 mean=payload["holdout_mean_abs_relative_error"],
             )
         )
+    print(
+        "training_mean_null: holdout_mean_abs_relative_error={mean}".format(
+            mean=report["null_training_mean_baseline"]["holdout_mean_abs_relative_error"],
+        )
+    )
     return 0
 
 

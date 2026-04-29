@@ -739,9 +739,14 @@ All tested one-scalar rules fail the held-out absolute-flux gate. The current
 positive-growth mixing-length rule has holdout mean absolute relative error
 about ``205``; the raw linear-weight rule improves that to about ``25`` but is
 still far outside the ``0.35`` gate; the absolute-growth diagnostic is worse,
-with holdout mean error about ``510``. This narrows the next research task: the
-linear spectrum-shape diagnostics can pass for HSX, W7-X, and Cyclone Miller,
-but absolute-flux prediction needs a richer saturation/intensity model than any
+with holdout mean error about ``510``. The figure also reports a
+training-mean null baseline using the Cyclone nonlinear heat-flux level for the
+holdouts; that null gives holdout mean relative error about ``0.372``. It is
+not a quasilinear model, but it is a necessary sanity check: no calibrated
+saturation rule should be promoted unless it beats this null baseline as well
+as the linear-weight baseline. This narrows the next research task: the linear
+spectrum-shape diagnostics can pass for HSX, W7-X, and Cyclone Miller, but
+absolute-flux prediction needs a richer saturation/intensity model than any
 one-scalar Cyclone fit tested here.
 
 Shape-aware saturation diagnostic
