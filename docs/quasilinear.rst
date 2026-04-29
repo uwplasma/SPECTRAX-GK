@@ -617,3 +617,31 @@ absolute-flux panel, open markers denote non-positive quasilinear estimates that
 are plotted at the documented log-axis floor. The HSX point has a finite
 nonlinear heat-flux window mean but zero current mixing-length prediction, so
 the relative error is one by construction.
+
+The same HSX artifacts also close the first real spectrum-shape gate. This gate
+does **not** use the saturated flux, because the current stable-branch
+mixing-length rule would erase the spectrum. Instead it compares the normalized
+linear heat-flux-weight spectrum against the normalized nonlinear
+``HeatFlux_kyst`` spectrum averaged over the resolved nonlinear diagnostics:
+
+.. code-block:: bash
+
+   python tools/plot_quasilinear_spectrum_shape_gate.py \
+     --spectrum docs/_static/quasilinear_hsx_spectrum_scan.quasilinear_spectrum.csv \
+     --nonlinear tools_out/final_nonlinear_audit/hsx_nonlinear_t50.out.nc \
+     --out docs/_static/quasilinear_hsx_spectrum_shape_gate.png \
+     --ql-column heat_flux_weight_total \
+     --nonlinear-variable Diagnostics/HeatFlux_kyst \
+     --time-max 49.2 \
+     --tv-gate 0.2 \
+     --cosine-gate 0.95 \
+     --title "HSX quasilinear/nonlinear ky-spectrum shape gate"
+
+.. image:: _static/quasilinear_hsx_spectrum_shape_gate.png
+   :alt: HSX quasilinear and nonlinear ky-spectrum shape gate
+   :width: 100%
+
+The tracked HSX shape gate passes with total-variation distance about ``0.11``
+and cosine similarity about ``0.97``. This supports the linear spectrum-shape
+diagnostic while still rejecting any absolute saturated-flux claim from the
+current uncalibrated rule.

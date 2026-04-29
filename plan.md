@@ -787,6 +787,11 @@ Exit gate:
   - generated `docs/_static/quasilinear_hsx_spectrum.*` and `docs/_static/quasilinear_hsx_spectrum_scan.*` from a six-point HSX adiabatic-electron linear spectrum;
   - generated `docs/_static/quasilinear_hsx_train_holdout_report.json` and `docs/_static/quasilinear_hsx_train_holdout.*` by adding HSX as a non-axisymmetric held-out nonlinear heat-flux window;
   - the HSX point is a negative result: the current short HSX linear spectrum is stable under the uncalibrated `gamma_floor=0` mixing-length rule, giving zero predicted saturated heat flux against a finite nonlinear window.
+- Completed first spectrum-shape gate:
+  - added `tools/plot_quasilinear_spectrum_shape_gate.py`;
+  - added tests with a synthetic resolved nonlinear NetCDF fixture;
+  - generated `docs/_static/quasilinear_hsx_spectrum_shape_gate.{png,pdf,json}`;
+  - the HSX gate compares normalized `heat_flux_weight_total` to nonlinear `Diagnostics/HeatFlux_kyst` and passes with total-variation distance about `0.11` and cosine similarity about `0.97`.
 - Current next best steps:
-  - start spectrum-shape gates that compare normalized quasilinear spectra with nonlinear resolved heat-flux spectra where archived diagnostics are available;
   - add a NetCDF nonlinear-window ingestion path so W7-X can enter the same quasilinear calibration machinery without manual CSV conversion.
+  - extend the spectrum-shape gate to Cyclone/Cyclone Miller/KBM where resolved `HeatFlux_kyst` artifacts are available and document case-specific gates.
