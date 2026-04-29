@@ -868,11 +868,41 @@ The current inventory finds ``10`` local VMEC equilibria. The best immediate
 linear/nonlinear holdout candidates are ``wout_li383_low_res.nc``,
 ``wout_nfp4_QH_warm_start.nc``, ``wout_cth_like_fixed_bdy.nc``,
 ``wout_shaped_tokamak_pressure.nc``, ``wout_circular_tokamak.nc``,
-``wout_DSHAPE.nc``, ``wout_LandremanPaul2021_QA_lowres.nc``, and
-``wout_purely_toroidal_field.nc``. These are **not** accepted quasilinear
-transport calibration points yet. Each candidate must first get a reproducible
-SPECTRAX-GK linear quasilinear scan, a matched nonlinear heat-flux window, and
-a passed nonlinear comparison/physics gate before entering the leave-one-out
+``wout_DSHAPE.nc``, and ``wout_purely_toroidal_field.nc``. The
+``wout_LandremanPaul2021_QA_lowres.nc`` fixture is deliberately deferred by the
+inventory gate because its VMEC reference scale metadata are degenerate
+(``Aminor_p = Rmajor_p = aspect = volume = 0``), which is not a valid input to
+the current VMEC-to-EIK runtime path.
+
+The first bounded smoke scans use ``ky = 0.10, 0.20``, ``Nl = 2``,
+``Nm = 4``, ``dt = 0.005``, and ``80`` explicit time steps to check only that
+the geometry path, linear solve, and quasilinear-feature writer are finite.
+They are intentionally short and should not be interpreted as optimized
+physics scans:
+
+.. list-table::
+   :header-rows: 1
+
+   * - VMEC fixture
+     - smoke result
+     - sampled growth rates
+   * - ``wout_li383_low_res.nc``
+     - finite stable branches
+     - ``-0.0258, -0.0297``
+   * - ``wout_nfp4_QH_warm_start.nc``
+     - finite stable branches
+     - ``-0.0243, -0.0186``
+   * - ``wout_cth_like_fixed_bdy.nc``
+     - finite stable branches
+     - ``-0.0230, -0.0282``
+   * - ``wout_shaped_tokamak_pressure.nc``
+     - finite stable branches
+     - ``-0.0669, -0.0562``
+
+These are **not** accepted quasilinear transport calibration points yet. Each
+candidate must first get a reproducible production-resolution SPECTRAX-GK
+linear quasilinear scan, a matched nonlinear heat-flux window, and a passed
+nonlinear comparison/physics gate before entering the leave-one-out
 calibration reports above.
 
 The normalized W7-X spectrum-shape gate does pass when the linear

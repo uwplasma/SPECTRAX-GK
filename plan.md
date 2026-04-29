@@ -962,9 +962,15 @@ Exit gate:
 - Added external VMEC equilibrium portfolio inventory for the next holdout campaign:
   - added `tools/plot_vmec_jax_equilibrium_inventory.py` and a synthetic NetCDF replay test;
   - generated `docs/_static/vmec_jax_equilibrium_inventory.{png,pdf,json}` from `/Users/rogeriojorge/local/vmec_jax/examples/data`;
-  - the inventory finds `10` local VMEC equilibria and recommends Li383, nfp4 QH, CTH-like, shaped tokamak, circular tokamak, DSHAPE, low-resolution QA, and purely toroidal cases as the next linear/nonlinear holdout candidates;
+  - the inventory finds `10` local VMEC equilibria and recommends Li383, nfp4 QH, CTH-like, shaped tokamak, circular tokamak, DSHAPE, and purely toroidal cases as the next linear/nonlinear holdout candidates;
+  - the low-resolution QA fixture is now explicitly deferred because its VMEC reference-scale metadata are degenerate and trigger the current VMEC-EIK path's reference-length division guard;
   - the JSON explicitly marks this as `equilibrium_selection_not_transport_validation`, so none of these cases enter quasilinear calibration until matched nonlinear heat-flux windows and physics gates exist.
+- Completed bounded external-VMEC linear smoke checks:
+  - used `examples/linear/non-axisymmetric/runtime_w7x_linear_quasilinear_vmec.toml` with `W7X_VMEC_FILE` pointed at `vmec_jax/examples/data`, `ky=0.10,0.20`, `Nl=2`, `Nm=4`, `dt=0.005`, and `80` steps;
+  - finite stable branches were obtained for `wout_li383_low_res.nc` (`gamma=-0.0258,-0.0297`), `wout_nfp4_QH_warm_start.nc` (`gamma=-0.0243,-0.0186`), `wout_cth_like_fixed_bdy.nc` (`gamma=-0.0230,-0.0282`), and `wout_shaped_tokamak_pressure.nc` (`gamma=-0.0669,-0.0562`);
+  - `wout_basic_non_stellsym_simsopt.nc` is not yet a holdout candidate because the current centered flux-tube cut finds no crossing for that fixture;
+  - all successful smoke checks are stable under the current short setup, so their positive-growth mixing-length saturated flux is zero by construction and they are not quasilinear transport validation points.
 - Current next best steps:
-  - choose two small external VMEC candidates for bounded SPECTRAX-GK linear quasilinear scans first: `wout_nfp4_QH_warm_start.nc` and `wout_li383_low_res.nc`;
-  - generate matched nonlinear windows for the same two only after the linear spectra are finite, interpretable, and cheap enough;
-  - add those cases to the leave-one-out calibration reports only if the nonlinear windows pass their comparison/physics gates.
+  - promote Li383 and nfp4 QH to production-resolution linear scans only if branch selection remains finite and interpretable over the full `ky` grid;
+  - then generate matched nonlinear windows for the same cases and add them to the leave-one-out calibration reports only if nonlinear comparison/physics gates pass;
+  - separately harden the VMEC-EIK geometry path with explicit user-facing errors for degenerate reference scales and no-crossing flux-tube cuts before exposing arbitrary external VMEC files as a polished workflow.
