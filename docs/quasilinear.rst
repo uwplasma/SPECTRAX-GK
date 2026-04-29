@@ -142,6 +142,10 @@ The fast test suite currently checks:
 * branch-isolated eigenvalue AD-vs-finite-difference checks, which are the
   lightweight gate used before differentiating full linear growth/frequency
   outputs.
+* a tiny dense SPECTRAX-GK linear-RHS fixture that materializes the otherwise
+  matrix-free operator, disables the production custom-VJP field solve for
+  forward-mode validation, and checks an isolated eigenvalue derivative against
+  central finite differences.
 
 The manuscript-level validation plan adds nonlinear calibration and holdout
 studies across axisymmetric and stellarator cases before making absolute

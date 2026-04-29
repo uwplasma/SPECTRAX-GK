@@ -9,8 +9,13 @@ from spectraxgk.autodiff_validation import (
     autodiff_finite_difference_report,
     central_finite_difference_jacobian,
     covariance_diagnostics,
+    explicit_complex_operator_matrix,
     isolated_eigenvalue_sensitivity_report,
 )
+from spectraxgk.config import CycloneBaseCase, GridConfig
+from spectraxgk.geometry import SAlphaGeometry
+from spectraxgk.grids import build_spectral_grid, select_ky_grid
+from spectraxgk.linear import LinearParams, LinearTerms, build_linear_cache, linear_rhs_cached
 from spectraxgk.quasilinear import quasilinear_feature_objective
 
 
@@ -139,6 +144,81 @@ def test_isolated_eigenvalue_sensitivity_report_tracks_branch_derivatives() -> N
     np.testing.assert_allclose(jac, np.asarray([[1.0, 0.0], [0.0, 0.0]]), rtol=1.0e-6)
 
 
+def test_actual_linear_rhs_eigenvalue_derivative_gate() -> None:
+    """Gate AD through a tiny SPECTRAX-GK linear RHS dense fixture."""
+
+    assert spectraxgk.explicit_complex_operator_matrix is explicit_complex_operator_matrix
+    cfg = CycloneBaseCase(grid=GridConfig(Nx=1, Ny=4, Nz=4, Lx=6.0, Ly=6.0))
+    grid = select_ky_grid(build_spectral_grid(cfg.grid), 1)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    n_laguerre = 1
+    n_hermite = 1
+    state_shape = (n_laguerre, n_hermite, grid.ky.size, grid.kx.size, grid.z.size)
+    base_params = LinearParams(
+        R_over_Ln=2.2,
+        R_over_LTi=6.9,
+        nu=0.0,
+        nu_hyper=0.0,
+        hypercollisions_const=0.0,
+        hypercollisions_kz=0.0,
+        D_hyper=0.0,
+        beta=0.0,
+        fapar=0.0,
+    )
+    cache = build_linear_cache(grid, geom, base_params, n_laguerre, n_hermite)
+    terms = LinearTerms(
+        streaming=0.0,
+        mirror=0.0,
+        curvature=1.0,
+        gradb=1.0,
+        diamagnetic=1.0,
+        collisions=0.0,
+        hypercollisions=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+    )
+
+    def matrix_fn(x):
+        params = LinearParams(
+            R_over_Ln=x[0],
+            R_over_LTi=x[1],
+            nu=0.0,
+            nu_hyper=0.0,
+            hypercollisions_const=0.0,
+            hypercollisions_kz=0.0,
+            D_hyper=0.0,
+            beta=0.0,
+            fapar=0.0,
+        )
+        return explicit_complex_operator_matrix(
+            lambda state: linear_rhs_cached(
+                state,
+                cache,
+                params,
+                terms=terms,
+                use_jit=False,
+                use_custom_vjp=False,
+            )[0],
+            state_shape,
+        )
+
+    report = isolated_eigenvalue_sensitivity_report(
+        matrix_fn,
+        jnp.asarray([2.2, 6.9]),
+        step=1.0e-3,
+        rtol=2.0e-2,
+        atol=2.0e-4,
+        gap_floor=1.0e-6,
+    )
+
+    assert report["passed"] is True
+    assert report["branch_isolated"] is True
+    jac_ad = np.asarray(report["jacobian_ad"])
+    jac_fd = np.asarray(report["jacobian_fd"])
+    np.testing.assert_allclose(jac_ad, jac_fd, rtol=2.0e-2, atol=2.0e-4)
+
+
 def test_isolated_eigenvalue_sensitivity_report_flags_small_gaps() -> None:
     def matrix_fn(x):
         return jnp.diag(jnp.asarray([x[0], x[0] + 1.0e-9]))
@@ -165,3 +245,7 @@ def test_autodiff_finite_difference_report_rejects_bad_inputs() -> None:
         autodiff_finite_difference_report(lambda x: x, jnp.ones((2, 1)))
     with pytest.raises(ValueError):
         autodiff_finite_difference_report(lambda x: x, jnp.ones(2), direction=jnp.ones(3))
+    with pytest.raises(ValueError):
+        explicit_complex_operator_matrix(lambda x: x, (0,))
+    with pytest.raises(ValueError):
+        explicit_complex_operator_matrix(lambda x: jnp.zeros((2,), dtype=x.dtype), (1,))
