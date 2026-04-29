@@ -54,6 +54,10 @@ Core Validation Figures
      - ``tools/build_quasilinear_calibration_report.py`` and ``tools/plot_quasilinear_calibration.py``
      - Initial train/holdout artifact closed as a failed model-transfer gate
      - current artifact bases: ``docs/_static/quasilinear_cyclone_calibration_audit.png``, ``docs/_static/quasilinear_cyclone_miller_calibration_audit.png``, ``docs/_static/quasilinear_cyclone_miller_train_holdout.png``, ``docs/_static/quasilinear_hsx_train_holdout.png``, ``docs/_static/quasilinear_w7x_train_holdout.png``, and the manuscript-facing combined panel ``docs/_static/quasilinear_stellarator_train_holdout.png`` with JSON/PDF companions. The one-constant train/holdout report fits the heat-flux scale on Cyclone and scores Cyclone Miller plus HSX/W7-X as held-out geometries; it intentionally remains ``calibration_dataset`` with ``passed = false`` because held-out errors exceed the ``0.35`` gate. HSX and W7-X are useful negative stellarator holdouts: the current short linear spectra are stable under ``gamma_floor = 0`` and therefore predict zero mixing-length flux while the nonlinear windows are finite. This closes the NetCDF calibration machinery gate but not a calibrated absolute-flux claim.
+   * - Quasilinear saturation-rule sweep
+     - ``tools/plot_quasilinear_saturation_rule_sweep.py``
+     - Initial model-development diagnostic closed as a negative result
+     - current artifact base: ``docs/_static/quasilinear_saturation_rule_sweep.png`` with JSON/PDF companions. It fits one scalar on Cyclone and scores Cyclone Miller, HSX, and W7-X for three simple rules: positive-growth mixing length, raw linear heat-flux weight, and an absolute-growth diagnostic. All three fail the held-out absolute-flux gate; the raw linear-weight rule is least bad with holdout mean relative error about ``25``. This supports the next saturation-model lane while preventing premature absolute quasilinear transport claims.
    * - Quasilinear spectrum-shape gate
      - ``tools/plot_quasilinear_spectrum_shape_gate.py``
      - HSX, W7-X, and Cyclone Miller gates closed; Cyclone retained as a failed model gate

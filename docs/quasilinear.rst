@@ -701,6 +701,35 @@ nonlinear windows. The result is useful precisely because it blocks premature
 absolute quasilinear transport claims and motivates the next saturation-model
 sweep.
 
+Saturation-rule sweep
+---------------------
+
+The first saturation-rule sweep compares three one-scalar intensity rules using
+the same train/holdout split: fit one multiplicative scale on Cyclone and score
+Cyclone Miller, HSX, and W7-X as holdouts. The tested rules are the current
+positive-growth mixing-length rule, the raw linear heat-flux weight, and an
+absolute-growth mixing-length diagnostic that gives stable branches nonzero
+intensity. The last rule is included only as a diagnostic stress test; it is not
+a validated physical saturation rule.
+
+.. code-block:: bash
+
+   python tools/plot_quasilinear_saturation_rule_sweep.py \
+     --out docs/_static/quasilinear_saturation_rule_sweep.png
+
+.. image:: _static/quasilinear_saturation_rule_sweep.png
+   :alt: Quasilinear saturation-rule sweep across Cyclone, Cyclone Miller, HSX, and W7-X
+   :width: 100%
+
+All tested one-scalar rules fail the held-out absolute-flux gate. The current
+positive-growth mixing-length rule has holdout mean absolute relative error
+about ``205``; the raw linear-weight rule improves that to about ``25`` but is
+still far outside the ``0.35`` gate; the absolute-growth diagnostic is worse,
+with holdout mean error about ``510``. This narrows the next research task: the
+linear spectrum-shape diagnostics can pass for HSX, W7-X, and Cyclone Miller,
+but absolute-flux prediction needs a richer saturation/intensity model than any
+one-scalar Cyclone fit tested here.
+
 The normalized W7-X spectrum-shape gate does pass when the linear
 heat-flux-weight distribution is compared with the resolved nonlinear
 ``HeatFlux_kyst`` spectrum from the NetCDF output:

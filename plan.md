@@ -840,3 +840,14 @@ Exit gate:
   - implement a shape-aware saturation-model sweep that uses linear weights plus nonlinear `HeatFlux_kyst` intensity information instead of only one constant `C_sat`;
   - add finite-difference/implicit sensitivity checks for the shape-aware quasilinear objective before using it in optimization;
   - keep KBM out of quasilinear claims until electromagnetic quasilinear channels have separate validation gates.
+- Completed first saturation-rule sweep diagnostic:
+  - added `tools/plot_quasilinear_saturation_rule_sweep.py`;
+  - added `tests/test_plot_quasilinear_saturation_rule_sweep.py`;
+  - generated `docs/_static/quasilinear_saturation_rule_sweep.{png,pdf,json}`;
+  - the sweep fits one scalar on Cyclone and scores Cyclone Miller, HSX, and W7-X for positive-growth mixing length, raw linear heat-flux weight, and an absolute-growth diagnostic;
+  - all three rules fail the held-out absolute-flux gate: holdout mean relative errors are about `205`, `25`, and `510`, respectively;
+  - the result is a negative model-development diagnostic, not a validated transport model.
+- Current next best steps:
+  - formulate the next saturation model using actual shape-aware information instead of one global scalar, for example a low-dimensional intensity envelope constrained by nonlinear `HeatFlux_kyst` and tested by leave-one-geometry-out validation;
+  - add differentiability checks for any new quasilinear objective before connecting it to `vmec_jax`/`booz_xform_jax`;
+  - keep expanding tests around these tools so each publication artifact has a fast synthetic replay gate.
