@@ -43,6 +43,35 @@ signed grid-mode coordinate used internally by the linear solve. This prevents
 negative-branch aliases from corrupting publication spectra while preserving
 the exact selected mode metadata.
 
+Literature anchors and claim policy
+-----------------------------------
+
+The SPECTRAX-GK quasilinear layer follows the same separation used in modern
+reduced gyrokinetic transport workflows:
+
+* the linear gyrokinetic eigenproblem determines growth rates, frequencies,
+  eigenfunctions, cross-phases, and species-resolved flux weights;
+* a separate saturation rule converts those linear quantities into fluctuation
+  amplitudes;
+* nonlinear simulations or experimental transport databases are required before
+  claiming calibrated absolute fluxes.
+
+This separation is central to early nonlinear tests of quasilinear transport
+models [Waltz09]_, to the QuaLiKiz derivation [Stephens21]_, to profile-
+evolution use cases [Citrin17]_, and to broader quasilinear-model validation
+reviews [Staebler24]_. Parker et al. [Parker23]_ show why saturation rules must
+be treated as model assumptions rather than consequences of the linear solve
+alone. SAT3 [Dudding22]_ and SAT3-NN [Sar26]_ are useful longer term targets
+because they use spectrum-aware, database-calibrated saturation information
+instead of a single uncalibrated mixing-length constant.
+
+For stellarator optimization, SPECTRAX-GK currently treats quasilinear fluxes as
+research diagnostics and optimization proxies, following the microstability
+optimization motivation in [Jorge24]_. The present release does **not** claim a
+validated absolute nonlinear flux predictor: the first Cyclone-to-Cyclone-Miller
+train/holdout gate deliberately fails, and that failure is preserved as a
+model-development constraint.
+
 Executable usage
 ----------------
 
@@ -101,6 +130,82 @@ The shaped-tokamak Miller companion uses the same pattern, with the positive
 Model details
 -------------
 
+Linear eigenproblem
+^^^^^^^^^^^^^^^^^^^
+
+For a fixed flux-tube geometry and perpendicular mode, the linear runtime solves
+the matrix-free system
+
+.. math::
+
+   \frac{\partial G}{\partial t} = \mathcal{L}(\mathbf{p}) G,
+   \qquad
+   \mathcal{L} v_j = \lambda_j v_j,
+
+where ``G`` is the Hermite-Laguerre gyrocenter moment state, ``v_j`` is a right
+eigenvector, and
+
+.. math::
+
+   \lambda_j = \gamma_j - i\omega_j.
+
+The sign convention above matches the runtime output: ``gamma`` is the growth
+rate and ``omega`` is the physical mode frequency reported by the executable.
+The operator is assembled by :mod:`spectraxgk.linear`,
+:mod:`spectraxgk.terms.assembly`, and the individual term modules under
+:mod:`spectraxgk.terms`.
+
+Field solve and linear weights
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Given a linear state ``G``, SPECTRAX-GK first reconstructs fields with
+``compute_fields_cached``. In the currently validated electrostatic path the
+quasilinear diagnostic uses ``phi`` and sets ``A_parallel = B_parallel = 0``.
+Electromagnetic quasilinear channels remain disabled until the field-channel
+normalization and nonlinear-calibration gates are complete.
+
+The species heat and particle weights are computed with the same diagnostic
+kernels used for nonlinear runtime outputs. For the electrostatic heat-flux
+channel, the code contracts the radial ``E x B`` velocity factor with the
+Hermite-Laguerre pressure moment:
+
+.. math::
+
+   v_{E,x,k} = i k_y \phi_k,
+
+.. math::
+
+   \overline{p}_{s,k} =
+   \sum_\ell \left(J_{\ell s}^{(\mathrm{fac})} G_{\ell,0,s,k}
+   + \frac{1}{\sqrt{2}} J_{\ell s} G_{\ell,2,s,k}\right),
+
+.. math::
+
+   Q_{s,k}^{(\mathrm{ES})} =
+   \Re\left[v_{E,x,k}^* \overline{p}_{s,k}\right] W_k.
+
+Here ``W_k`` includes the positive-ky Hermitian factor, the dealias mask, the
+flux-surface Jacobian/``grad rho`` weight, species density/temperature factors,
+and the selected diagnostic flux scale. The particle-flux channel uses the
+density moment
+
+.. math::
+
+   \overline{n}_{s,k} = \sum_\ell J_{\ell s} G_{\ell,0,s,k},
+   \qquad
+   \Gamma_{s,k}^{(\mathrm{ES})} =
+   \Re\left[v_{E,x,k}^* \overline{n}_{s,k}\right] W_{\Gamma,k},
+
+but it is zero for the one-ion adiabatic-electron cases because there is no
+kinetic electron species carrying particle transport. The implemented formulas
+live in :func:`spectraxgk.diagnostics.gx_heat_flux_species`,
+:func:`spectraxgk.diagnostics.gx_particle_flux_species`, and
+``_gx_heat_flux_channel_contrib_species`` in
+:mod:`spectraxgk.diagnostics`.
+
+Amplitude normalization and effective scale
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 The implemented effective perpendicular scale is
 
 .. math::
@@ -114,6 +219,26 @@ and particle flux weights are divided by the selected amplitude normalization,
 making them invariant under eigenfunction phase rotations and amplitude
 rescalings.
 
+The normalized linear weights are therefore
+
+.. math::
+
+   \widehat{Q}_{s} =
+   \frac{\sum_k Q_{s,k}^{(\mathrm{ES})}}{\mathcal{N}_\phi},
+   \qquad
+   \widehat{\Gamma}_{s} =
+   \frac{\sum_k \Gamma_{s,k}^{(\mathrm{ES})}}{\mathcal{N}_\phi}.
+
+The default normalization is
+
+.. math::
+
+   \mathcal{N}_\phi =
+   \sum_{k_x,k_y,z} w_{k_x,k_y,z} |\phi_{k_x,k_y}(z)|^2,
+
+with the same Hermitian and flux-tube weights used by
+:func:`spectraxgk.quasilinear.spectral_phi_weights`.
+
 Supported amplitude normalizations are:
 
 * ``phi_rms``: weighted ``|\phi|^2`` average;
@@ -126,6 +251,147 @@ Supported saturation rules are:
 * ``mixing_length``: ``A^2 = C_sat max(gamma - gamma_floor, 0) / kperp_eff2``;
 * ``lapillonne_2011``: currently the same audited scaling contract as
   ``mixing_length`` until the broader model-specific validation suite is added.
+
+The current mixing-length output is
+
+.. math::
+
+   A_k^2 =
+   C_{\mathrm{sat}}\,
+   \frac{\max(\gamma_k-\gamma_{\mathrm{floor}},0)}
+        {k_{\perp,\mathrm{eff},k}^2},
+
+.. math::
+
+   Q_{s,k}^{(\mathrm{sat})} = A_k^2 \widehat{Q}_{s,k},
+   \qquad
+   \Gamma_{s,k}^{(\mathrm{sat})} = A_k^2 \widehat{\Gamma}_{s,k}.
+
+This is intentionally the simplest possible baseline. It is useful for
+software validation and sensitivity studies, but Parker-style saturation-rule
+comparisons [Parker23]_, SAT3/SAT3-NN-style spectrum-aware rules
+[Dudding22]_ [Sar26]_, and nonlinear holdout tests are required before it can
+be used as a predictive absolute-flux model.
+
+Implementation map
+------------------
+
+.. list-table::
+   :header-rows: 1
+
+   * - Layer
+     - Source
+     - Responsibility
+   * - Quasilinear weights
+     - :mod:`spectraxgk.quasilinear`
+     - phase/amplitude-invariant ``k_perp`` scale, heat and particle weights,
+       and saturated outputs
+   * - Diagnostic kernels
+     - :mod:`spectraxgk.diagnostics`
+     - heat, particle, field-energy, volume-factor, and resolved flux
+       contractions shared by linear and nonlinear paths
+   * - Runtime plumbing
+     - :mod:`spectraxgk.runtime`, :mod:`spectraxgk.runtime_artifacts`
+     - single-run and scan execution, TOML/executable overrides, JSON/CSV
+       artifact writing
+   * - Input schema
+     - :mod:`spectraxgk.runtime_config`, :mod:`spectraxgk.io`
+     - ``[quasilinear]`` configuration and round-trip serialization
+   * - Calibration reports
+     - :mod:`spectraxgk.quasilinear_calibration`
+     - train/holdout/audit schemas, nonlinear-window ingestion, scale fitting,
+       and report scoring
+   * - Plotting tools
+     - ``tools/plot_quasilinear_spectrum.py`` and
+       ``tools/plot_quasilinear_calibration.py``
+     - publication-facing spectrum and calibration figures
+   * - Differentiability gates
+     - :mod:`spectraxgk.autodiff_validation`
+     - finite-difference checks, covariance diagnostics, dense operator
+       fixtures, and implicit isolated-eigenpair sensitivities
+
+Algorithmic workflow
+--------------------
+
+For one linear mode:
+
+.. code-block:: text
+
+   build grid, geometry, species, and linear cache
+   solve the linear eigenproblem or fit the late-time linear state
+   reconstruct phi from the eigenvector/state
+   compute kperp_eff2 from |phi|^2 weights
+   compute heat and particle flux contractions using runtime diagnostic kernels
+   divide by the requested amplitude normalization
+   optionally apply a named saturation rule
+   write summary JSON and species CSV artifacts
+
+For a serial ``ky`` scan:
+
+.. code-block:: text
+
+   for requested ky in ky_values:
+       select the closest grid mode
+       run the single-mode linear solve
+       compute quasilinear payload
+       store requested ky and selected signed mode_ky
+   write *.scan.csv and *.quasilinear_spectrum.csv
+
+For nonlinear calibration:
+
+.. code-block:: text
+
+   integrate or load nonlinear diagnostic CSV over a declared time window
+   integrate/sum the linear quasilinear spectrum
+   create train, holdout, or audit calibration points
+   optionally fit one multiplicative scale on train points only
+   score holdout points against an explicit mean-relative-error gate
+
+Numerics and differentiability
+------------------------------
+
+SPECTRAX-GK production linear solves remain matrix-free. Dense matrices are
+only materialized in tiny validation fixtures through
+:func:`spectraxgk.autodiff_validation.explicit_complex_operator_matrix`.
+
+Eigenvalue sensitivities use JAX derivatives of the matrix entries and the
+standard isolated-branch relation
+
+.. math::
+
+   \frac{\partial \lambda}{\partial p_i}
+   =
+   w^\dagger
+   \frac{\partial \mathcal{L}}{\partial p_i}
+   v,
+   \qquad
+   w^\dagger v = 1,
+
+where ``v`` and ``w`` are right and left eigenvectors. Eigenfunction-dependent
+observables use the implicit perturbation system
+
+.. math::
+
+   \begin{bmatrix}
+   \mathcal{L} - \lambda I & -v \\
+   w^\dagger & 0
+   \end{bmatrix}
+   \begin{bmatrix}
+   \partial_i v \\
+   \partial_i \lambda
+   \end{bmatrix}
+   =
+   \begin{bmatrix}
+   -(\partial_i \mathcal{L})v \\
+   0
+   \end{bmatrix}.
+
+The gauge condition ``w^\dagger \partial_i v = 0`` makes the derivative unique
+for phase-invariant observables. This path is now tested on a tiny
+SPECTRAX-GK linear-RHS fixture and compared against branch-fixed central finite
+differences. Direct JAX differentiation through non-Hermitian eigenvectors is
+still explicitly guarded because JAX does not provide that JVP; the implicit
+path is the supported validation route.
 
 Validation gates
 ----------------
@@ -146,11 +412,11 @@ The fast test suite currently checks:
   matrix-free operator, disables the production custom-VJP field solve for
   forward-mode validation, and checks an isolated eigenvalue derivative against
   central finite differences.
-* an explicit failing gate for non-Hermitian eigenfunction objectives: JAX
-  currently differentiates non-Hermitian eigenvalues but not the corresponding
-  eigenvectors, so phase-invariant quasilinear eigenfunction objectives need an
-  adjoint/implicit eigenvector-sensitivity path before being called
-  end-to-end differentiable.
+* an explicit guard showing that direct JAX differentiation through
+  non-Hermitian eigenvectors is unsupported;
+* an implicit left/right eigenpair sensitivity gate for phase-invariant
+  eigenfunction observables, including a tiny SPECTRAX-GK linear-RHS
+  quasilinear-style objective checked against finite differences.
 
 The manuscript-level validation plan adds nonlinear calibration and holdout
 studies across axisymmetric and stellarator cases before making absolute

@@ -768,3 +768,15 @@ Exit gate:
   - implement an adjoint/implicit eigenvector-sensitivity path for isolated non-Hermitian branches, then re-open the quasilinear objective AD gate;
   - in parallel, continue calibration/validation on observable values that do not rely on differentiating eigenvectors;
   - keep eigenvalue-only growth/frequency sensitivities as the currently validated differentiable branch.
+- Completed implicit non-Hermitian eigenpair sensitivity slice:
+  - added `implicit_eigenpair_observable_sensitivity_report`;
+  - the helper differentiates matrix entries with JAX, solves the left/right eigenvector perturbation system with `w^H v = 1` and `w^H dv = 0`, and compares phase-invariant observables against branch-fixed central finite differences;
+  - added a closed-form non-Hermitian branch test and a tiny SPECTRAX-GK linear-RHS quasilinear-style objective test.
+- Expanded quasilinear documentation:
+  - added equations for the linear eigenproblem, electrostatic heat/particle weights, amplitude normalization, effective `k_perp`, mixing-length saturation, calibration scoring, and implicit eigenpair sensitivities;
+  - added source-code implementation map linking the quasilinear, diagnostic, runtime, calibration, plotting, and autodiff modules;
+  - converted quasilinear references to clickable links in `docs/references.rst`, including QuaLiKiz, Parker saturation-rule comparisons, SAT3/SAT3-NN, Waltz/Casati/Staebler, and microstability optimization references.
+- Next best steps:
+  - connect implicit eigenpair sensitivities to a user-facing small quasilinear-gradient example with a saved JSON/figure artifact;
+  - add the second held-out electrostatic calibration case, preferably non-axisymmetric with a CSV-backed nonlinear heat-flux window;
+  - start spectrum-shape gates that compare normalized quasilinear spectra with nonlinear resolved heat-flux spectra where archived diagnostics are available.
