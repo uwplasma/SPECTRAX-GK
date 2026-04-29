@@ -939,3 +939,13 @@ Exit gate:
   - create compressed lightweight previews for the release-manifest assets, then move high-resolution companions to a GitHub release in a dedicated artifact migration commit;
   - expand the quasilinear candidate family only after adding more held-out nonlinear cases or additional physics features, because the current four-case set is too small for a trustworthy calibrated saturation claim;
   - keep the next candidate report focused on branch/state features and uncertainty intervals rather than adding runtime/TOML exposure.
+- Completed first non-destructive documentation-preview trim:
+  - added `tools/compress_release_previews.py` plus a fast compression test;
+  - extended `tools/check_release_artifact_manifest.py` with `keep_preview_in_repo` so lightweight docs previews can be tracked separately from release-only high-resolution artifacts;
+  - compressed six checked-in PNG documentation previews from `10,486,731` bytes to `1,784,130` bytes while keeping the rendered README/docs figures available in Git;
+  - removed those compressed PNGs from the repository-size whitelist because they are now below the `1 MB` per-file guard;
+  - documented the reproducible preview-compression command in `docs/code_structure.rst`.
+- Current next best steps:
+  - move release-only PDF/high-resolution companions to GitHub release assets once stable asset URLs exist, then update `tools/release_artifact_manifest.toml`;
+  - avoid any git-history rewrite until after non-destructive trimming is complete and collaborators explicitly agree to a coordinated reclone/reset window;
+  - continue the quasilinear model-development lane only with rejected-or-promoted reports that include uncertainty intervals, leave-one-geometry-out scoring, and a null-baseline comparison.

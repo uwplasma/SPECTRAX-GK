@@ -20,7 +20,7 @@ def _load_tool_module():
     return module
 
 
-def _manifest(tmp_path: Path, *, sha: str, size: int) -> Path:
+def _manifest(tmp_path: Path, *, sha: str, size: int, action: str = "move_to_release") -> Path:
     manifest = tmp_path / "release_artifacts.toml"
     manifest.write_text(
         textwrap.dedent(
@@ -34,7 +34,7 @@ def _manifest(tmp_path: Path, *, sha: str, size: int) -> Path:
             path = "panel.png"
             size_bytes = {size}
             sha256 = "{sha}"
-            action = "move_to_release"
+            action = "{action}"
             artifact_type = "panel"
             release_asset_name = "panel.png"
             reason = "test panel"
@@ -58,6 +58,24 @@ def test_release_artifact_manifest_validates_size_and_sha(tmp_path: Path) -> Non
 
     assert report["passed"] is True
     assert report["move_to_release_bytes"] == len(payload)
+
+
+def test_release_artifact_manifest_accepts_kept_preview_action(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    payload = b"preview"
+    (tmp_path / "panel.png").write_bytes(payload)
+    manifest = _manifest(
+        tmp_path,
+        sha=hashlib.sha256(payload).hexdigest(),
+        size=len(payload),
+        action="keep_preview_in_repo",
+    )
+
+    report = mod.check_release_artifact_manifest(root=tmp_path, manifest=manifest)
+
+    assert report["passed"] is True
+    assert report["move_to_release_bytes"] == 0
+    assert report["artifacts"][0]["action"] == "keep_preview_in_repo"
 
 
 def test_release_artifact_manifest_fails_on_sha_mismatch(tmp_path: Path) -> None:

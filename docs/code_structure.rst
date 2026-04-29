@@ -165,13 +165,23 @@ The report separates tracked file size from ignored local artifact roots such
 as ``tools_out/``, ``docs/_build/``, ``dist/``, virtual environments, and caches.
 The checked manifest is ``tools/repository_size_manifest.toml``. It defines the
 tracked-size budget, the maximum size of any unlisted tracked file, and the
-temporary whitelist for existing large preview artifacts that are planned for a
-future GitHub-release move.
+temporary whitelist for any intentionally retained large files.
 
 The release migration manifest is ``tools/release_artifact_manifest.toml``. It
 records checksums, replay commands, and planned destinations for high-resolution
 panels and other large assets. The checker validates provenance only; it does
 not upload or delete artifacts.
+
+Documentation figures should use lightweight checked-in previews, with
+high-resolution publication exports regenerated from the replay commands or
+hosted as release assets. The reproducible preview-compression command is:
+
+.. code-block:: bash
+
+   python tools/compress_release_previews.py --max-width 2200 --colors 192
+
+After compressing previews, update ``tools/release_artifact_manifest.toml`` with
+the new sizes and checksums and rerun both manifest checkers.
 
 History rewrites are not part of routine development; they require a coordinated
 maintenance window because every collaborator must reclone or reset local
