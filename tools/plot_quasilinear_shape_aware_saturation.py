@@ -198,6 +198,8 @@ def build_shape_aware_saturation_report(
         baseline_scale = _fit_scale(baseline_raw_train, train_observed, floor=observed_floor)
         baseline_predicted = float(baseline_scale * shape_aware_raw_estimate(holdout_case.spectrum, exponent=0.0))
         baseline_rel_error = abs(baseline_predicted - observed) / max(abs(observed), observed_floor)
+        null_predicted = float(np.mean(train_observed))
+        null_rel_error = abs(null_predicted - observed) / max(abs(observed), observed_floor)
         loo_rows.append(
             {
                 "holdout_case": holdout_case.case,
@@ -209,12 +211,15 @@ def build_shape_aware_saturation_report(
                 "absolute_relative_error": float(rel_error),
                 "baseline_linear_weight_predicted_heat_flux": baseline_predicted,
                 "baseline_linear_weight_absolute_relative_error": float(baseline_rel_error),
+                "null_training_mean_predicted_heat_flux": null_predicted,
+                "null_training_mean_absolute_relative_error": float(null_rel_error),
                 "shape_fit": fit,
             }
         )
 
     shape_errors = np.asarray([row["absolute_relative_error"] for row in loo_rows], dtype=float)
     baseline_errors = np.asarray([row["baseline_linear_weight_absolute_relative_error"] for row in loo_rows], dtype=float)
+    null_errors = np.asarray([row["null_training_mean_absolute_relative_error"] for row in loo_rows], dtype=float)
     all_fit = fit_power_law_shape_exponent(cases, passed_only=passed_shape_only)
     return {
         "kind": "quasilinear_shape_aware_saturation_report",
@@ -227,6 +232,8 @@ def build_shape_aware_saturation_report(
             "shape_aware_max_abs_relative_error": float(np.nanmax(shape_errors)),
             "baseline_linear_weight_mean_abs_relative_error": float(np.nanmean(baseline_errors)),
             "baseline_linear_weight_max_abs_relative_error": float(np.nanmax(baseline_errors)),
+            "null_training_mean_mean_abs_relative_error": float(np.nanmean(null_errors)),
+            "null_training_mean_max_abs_relative_error": float(np.nanmax(null_errors)),
         },
         "cases": case_rows,
         "leave_one_out": loo_rows,
@@ -249,17 +256,22 @@ def write_shape_aware_saturation_figure(report: dict[str, Any], *, out: str | Pa
     observed = np.asarray([row["observed_heat_flux"] for row in rows], dtype=float)
     predicted = np.asarray([row["predicted_heat_flux"] for row in rows], dtype=float)
     baseline = np.asarray([row["baseline_linear_weight_predicted_heat_flux"] for row in rows], dtype=float)
+    null = np.asarray([row["null_training_mean_predicted_heat_flux"] for row in rows], dtype=float)
     shape_err = np.asarray([row["absolute_relative_error"] for row in rows], dtype=float)
     baseline_err = np.asarray([row["baseline_linear_weight_absolute_relative_error"] for row in rows], dtype=float)
+    null_err = np.asarray([row["null_training_mean_absolute_relative_error"] for row in rows], dtype=float)
 
     set_plot_style()
     fig, axes = plt.subplots(1, 2, figsize=(12.8, 5.2), constrained_layout=True)
     ax0, ax1 = axes
-    positive = np.concatenate([observed[observed > 0.0], predicted[predicted > 0.0], baseline[baseline > 0.0]])
+    positive = np.concatenate(
+        [observed[observed > 0.0], predicted[predicted > 0.0], baseline[baseline > 0.0], null[null > 0.0]]
+    )
     lo = float(np.min(positive)) * 0.6
     hi = float(np.max(positive)) * 1.7
     ax0.plot([lo, hi], [lo, hi], color="0.25", linestyle="--", linewidth=1.5, label="1:1")
     ax0.scatter(observed, baseline, s=70, facecolors="none", edgecolors="#6b7280", linewidth=1.5, label="linear-weight LOO")
+    ax0.scatter(observed, null, s=65, marker="^", color="#b45309", edgecolor="white", linewidth=0.8, label="train-mean null")
     ax0.scatter(observed, predicted, s=75, color="#0f4c81", edgecolor="white", linewidth=0.8, label="shape-aware LOO")
     for label, xval, yval in zip(short_labels, observed, predicted, strict=True):
         ax0.annotate(label, (xval, yval), xytext=(5, 4), textcoords="offset points", fontsize=7)
@@ -274,9 +286,10 @@ def write_shape_aware_saturation_figure(report: dict[str, Any], *, out: str | Pa
     ax0.grid(True, which="both", alpha=0.24)
 
     y = np.arange(len(labels))
-    height = 0.36
-    ax1.barh(y - height / 2.0, baseline_err, height=height, color="#9ca3af", label="linear-weight baseline")
-    ax1.barh(y + height / 2.0, shape_err, height=height, color="#0f4c81", label="shape-aware")
+    height = 0.25
+    ax1.barh(y - height, baseline_err, height=height, color="#9ca3af", label="linear-weight baseline")
+    ax1.barh(y, null_err, height=height, color="#b45309", label="train-mean null")
+    ax1.barh(y + height, shape_err, height=height, color="#0f4c81", label="shape-aware")
     ax1.axvline(0.35, color="#c2410c", linestyle="--", linewidth=1.5, label="0.35 gate")
     ax1.set_xscale("log")
     ax1.set_yticks(y, short_labels)
@@ -317,9 +330,12 @@ def main(argv: list[str] | None = None) -> int:
     print(f"saved {paths['pdf']}")
     print(f"saved {paths['json']}")
     print(
-        "shape_aware_mean_abs_relative_error={shape:.6g} baseline_mean_abs_relative_error={base:.6g}".format(
+        "shape_aware_mean_abs_relative_error={shape:.6g} "
+        "baseline_mean_abs_relative_error={base:.6g} "
+        "null_mean_abs_relative_error={null:.6g}".format(
             shape=report["metrics"]["shape_aware_mean_abs_relative_error"],
             base=report["metrics"]["baseline_linear_weight_mean_abs_relative_error"],
+            null=report["metrics"]["null_training_mean_mean_abs_relative_error"],
         )
     )
     return 0

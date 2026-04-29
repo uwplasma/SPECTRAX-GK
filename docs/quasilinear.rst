@@ -787,10 +787,15 @@ This is a useful negative result. The shape-aware power law gives mean
 leave-one-geometry-out absolute relative error about ``0.664``, while the
 linear-weight baseline gives about ``0.624``. Both fail the ``0.35`` absolute
 transport gate, and the shape-aware model does not improve the mean held-out
-score. HSX improves slightly, but Cyclone Miller and W7-X do not. This closes
-the one-exponent saturation-envelope test and motivates a richer calibrated
-model with branch/state features, uncertainty diagnostics, and electromagnetic
-extensions before any absolute quasilinear transport or optimization claim.
+score. The figure also includes a deliberately simple training-mean null
+baseline; it gives mean relative error about ``0.170`` on this small dataset
+because the archived nonlinear windows have similar absolute heat-flux levels.
+That null baseline is not a quasilinear model, but it is the right reviewer
+check: a calibrated saturation model should beat this baseline before being
+used for absolute transport or optimization claims. This closes the
+one-exponent saturation-envelope test and motivates a richer calibrated model
+with branch/state features, uncertainty diagnostics, and electromagnetic
+extensions.
 
 The normalized W7-X spectrum-shape gate does pass when the linear
 heat-flux-weight distribution is compared with the resolved nonlinear
