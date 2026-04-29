@@ -87,7 +87,10 @@ nonlinear calibration gates are added. The runtime writes
 ``[output].path`` or ``--out`` is set. Serial ``scan-runtime-linear`` runs also
 write ``*.quasilinear_spectrum.csv``; batched scans are intentionally disabled
 for quasilinear output until per-ky state extraction has a numerical identity
-gate.
+gate. In scan spectra, the ``ky`` column is the requested scan coordinate and
+``mode_ky`` records the signed selected grid-mode coordinate; they can differ
+for linked-boundary grids, so publication plots should use ``ky`` while audits
+can inspect ``mode_ky``.
 
 Equivalent executable flags are available for single-point runtime runs:
 

@@ -39,6 +39,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--saturation-rule", default="mixing_length")
     parser.add_argument("--holdout-mean-rel-gate", type=float, default=0.35)
     parser.add_argument("--observed-floor", type=float, default=1.0e-12)
+    parser.add_argument(
+        "--fit-train-scale",
+        action="store_true",
+        help="Fit one multiplicative heat-flux scale from train points before scoring holdout points.",
+    )
     parser.add_argument("--version", default="0.1")
     return parser
 
@@ -73,6 +78,7 @@ def main(argv: list[str] | None = None) -> int:
         version=args.version,
         holdout_mean_rel_gate=args.holdout_mean_rel_gate,
         observed_floor=args.observed_floor,
+        fit_train_scale=args.fit_train_scale,
         metadata={
             "source_points": None if args.points is None else str(Path(args.points)),
             "source_spectrum": args.spectrum,
