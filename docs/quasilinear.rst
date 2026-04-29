@@ -147,3 +147,36 @@ records the mean and standard deviation of the selected heat-flux column.
      --points docs/_static/quasilinear_calibration_points.json \
      --out docs/_static/quasilinear_calibration_report.json \
      --saturation-rule mixing_length
+
+The first tracked audit point maps the Cyclone quasilinear spectrum above to
+the long-window nonlinear Cyclone heat-flux diagnostic. It is intentionally an
+``audit`` point, not a calibrated transport claim:
+
+.. image:: _static/quasilinear_cyclone_calibration_audit.png
+   :alt: Cyclone quasilinear calibration audit against nonlinear heat flux
+   :width: 100%
+
+With ``C_sat = 1`` the simple mixing-length rule underpredicts the absolute
+nonlinear heat flux by orders of magnitude. This is the expected outcome for an
+uncalibrated saturation rule and is precisely why the report remains at
+``training_or_audit_only``. A paper-level absolute-flux claim requires a
+documented training set, held-out nonlinear cases, and passed holdout gates.
+
+The same report can also be generated directly from a quasilinear spectrum and
+a nonlinear gate summary:
+
+.. code-block:: bash
+
+   python tools/build_quasilinear_calibration_report.py \
+     --spectrum docs/_static/quasilinear_cyclone_spectrum_scan.quasilinear_spectrum.csv \
+     --nonlinear-summary docs/_static/nonlinear_cyclone_gate_summary.json \
+     --split audit \
+     --case cyclone_long_window \
+     --geometry cyclone \
+     --electron-model adiabatic \
+     --saturation-rule mixing_length \
+     --out docs/_static/quasilinear_cyclone_calibration_audit_report.json
+
+   python tools/plot_quasilinear_calibration.py \
+     --report docs/_static/quasilinear_cyclone_calibration_audit_report.json \
+     --out docs/_static/quasilinear_cyclone_calibration_audit.png

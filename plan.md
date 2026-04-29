@@ -709,3 +709,17 @@ Exit gate:
   - add full-output derivative gates through a tiny differentiable linear solve;
   - start `vmec_jax` bridge planning/implementation from in-memory geometry arrays;
   - add a light nonlinear-calibration figure once calibration points are produced from real nonlinear windows.
+- Completed first nonlinear-calibration audit slice:
+  - added quasilinear spectrum integration into `spectraxgk.quasilinear_calibration`;
+  - extended `tools/build_quasilinear_calibration_report.py` so it can generate an audit point directly from a quasilinear spectrum CSV and nonlinear window-summary JSON;
+  - added `tools/plot_quasilinear_calibration.py`;
+  - generated the tracked Cyclone audit artifacts `docs/_static/quasilinear_cyclone_calibration_audit*` from the current quasilinear spectrum and long-window nonlinear heat-flux summary;
+  - kept the claim level at `training_or_audit_only` because the current artifact has no train/holdout split and uses uncalibrated `C_sat = 1`.
+- Validation for calibration-audit slice:
+  - `pytest -q tests/test_quasilinear_calibration.py tests/test_plot_quasilinear_calibration.py tests/test_plot_quasilinear_spectrum.py tests/test_quasilinear.py` passed.
+  - `ruff check src/spectraxgk/quasilinear_calibration.py tests/test_quasilinear_calibration.py tests/test_plot_quasilinear_calibration.py tools/build_quasilinear_calibration_report.py tools/plot_quasilinear_calibration.py` passed.
+  - `sphinx-build -b html docs docs/_build/html -q` passed.
+- Next best steps:
+  - add full-output derivative gates through a tiny differentiable linear/eigen solve;
+  - build the first train/holdout quasilinear calibration dataset across Cyclone/Cyclone Miller/KBM/HSX/W7-X once matching linear spectra exist;
+  - start the `vmec_jax` in-memory geometry bridge so quasilinear objectives can be differentiated with respect to boundary parameters.
