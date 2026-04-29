@@ -66,6 +66,10 @@ Core Validation Figures
      - ``tools/plot_quasilinear_candidate_uncertainty.py``
      - Initial uncertainty-aware candidate gate closed as a negative result
      - current artifact base: ``docs/_static/quasilinear_candidate_uncertainty.png`` with JSON/PDF companions. It adds training-residual ``95%`` prediction intervals to leave-one-geometry-out candidate scoring. The calibrated linear-weight candidate has mean relative error about ``0.624`` and interval coverage ``0.75``; the shape-power-law candidate has mean relative error about ``0.664`` and interval coverage ``0.75``. The linear-state ridge candidate uses only linear-spectrum branch/state features and reaches mean relative error about ``0.173`` with full interval coverage, but is explicitly marked ineligible because the current four-case dataset leaves too few training cases per fitted parameter. The training-mean null remains about ``0.170``. The JSON ``promotion_gate`` is false with no accepted candidates, so no candidate is promoted into runtime/TOML saturation options.
+   * - VMEC equilibrium portfolio for future quasilinear holdouts
+     - ``tools/plot_vmec_jax_equilibrium_inventory.py``
+     - Planning artifact closed; transport validation open
+     - current artifact base: ``docs/_static/vmec_jax_equilibrium_inventory.png`` with JSON/PDF companions. It inventories external VMEC files from ``vmec_jax/examples/data`` without checking them into SPECTRAX-GK. The recommended next candidates include Li383, nfp4 QH, CTH-like, shaped tokamak, circular tokamak, DSHAPE, low-resolution QA, and purely toroidal equilibria. This is explicitly an equilibrium-selection artifact, not a quasilinear transport validation figure; each candidate still needs a matched nonlinear window and acceptance gate before entering calibration reports.
    * - Quasilinear spectrum-shape gate
      - ``tools/plot_quasilinear_spectrum_shape_gate.py``
      - HSX, W7-X, and Cyclone Miller gates closed; Cyclone retained as a failed model gate

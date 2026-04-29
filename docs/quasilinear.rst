@@ -843,6 +843,38 @@ available as a user-facing saturation rule. This is the intended behavior:
 uncertainty intervals document model risk, but they do not rescue a model that
 fails held-out predictive skill or data-volume/conditioning checks.
 
+VMEC equilibrium portfolio for future holdouts
+----------------------------------------------
+
+The next quasilinear promotion attempt needs more matched nonlinear holdout
+windows, not more fit parameters. The local ``vmec_jax`` checkout includes a
+useful portfolio of small VMEC equilibria that can seed those future linear
+scans and nonlinear validation runs without adding the VMEC files to the
+SPECTRAX-GK repository. The inventory tool records file sizes, checksums,
+``nfp``, resolution, aspect ratio, edge rotational transform, beta, and a
+selection score for follow-up cases:
+
+.. code-block:: bash
+
+   python tools/plot_vmec_jax_equilibrium_inventory.py \
+     --data-dir /Users/rogeriojorge/local/vmec_jax/examples/data \
+     --out docs/_static/vmec_jax_equilibrium_inventory.png
+
+.. image:: _static/vmec_jax_equilibrium_inventory.png
+   :alt: vmec_jax equilibrium inventory for future validation holdouts
+   :width: 100%
+
+The current inventory finds ``10`` local VMEC equilibria. The best immediate
+linear/nonlinear holdout candidates are ``wout_li383_low_res.nc``,
+``wout_nfp4_QH_warm_start.nc``, ``wout_cth_like_fixed_bdy.nc``,
+``wout_shaped_tokamak_pressure.nc``, ``wout_circular_tokamak.nc``,
+``wout_DSHAPE.nc``, ``wout_LandremanPaul2021_QA_lowres.nc``, and
+``wout_purely_toroidal_field.nc``. These are **not** accepted quasilinear
+transport calibration points yet. Each candidate must first get a reproducible
+SPECTRAX-GK linear quasilinear scan, a matched nonlinear heat-flux window, and
+a passed nonlinear comparison/physics gate before entering the leave-one-out
+calibration reports above.
+
 The normalized W7-X spectrum-shape gate does pass when the linear
 heat-flux-weight distribution is compared with the resolved nonlinear
 ``HeatFlux_kyst`` spectrum from the NetCDF output:
