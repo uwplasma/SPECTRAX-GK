@@ -14,7 +14,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = ROOT / "tools/release_artifact_manifest.toml"
-VALID_ACTIONS = {"keep_in_repo", "move_to_release"}
+VALID_ACTIONS = {"keep_in_repo", "keep_preview_in_repo", "move_to_release"}
 
 
 def _sha256(path: Path) -> str:
@@ -53,10 +53,10 @@ def _load_manifest(path: Path) -> dict[str, Any]:
             raise ValueError(f"{path} artifacts[{idx}].sha256 must be a hex sha256 string")
         if item["action"] not in VALID_ACTIONS:
             raise ValueError(f"{path} artifacts[{idx}].action must be one of {sorted(VALID_ACTIONS)}")
-        if item["action"] == "move_to_release":
+        if item["action"] in {"move_to_release", "keep_preview_in_repo"}:
             for key in ("release_asset_name", "preview_strategy"):
                 if not isinstance(item.get(key), str) or not item[key].strip():
-                    raise ValueError(f"{path} artifacts[{idx}] move_to_release entries need {key!r}")
+                    raise ValueError(f"{path} artifacts[{idx}] {item['action']} entries need {key!r}")
     return data
 
 
