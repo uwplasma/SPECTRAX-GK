@@ -19,7 +19,7 @@ from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid, select_ky_grid
 from spectraxgk.linear import LinearParams, LinearTerms, build_linear_cache, linear_rhs_cached
 from spectraxgk.diagnostics import gx_volume_factors
-from spectraxgk.quasilinear import effective_kperp2, quasilinear_feature_objective
+from spectraxgk.quasilinear import effective_kperp2, quasilinear_feature_objective, shape_aware_power_law_objective
 
 
 def test_covariance_diagnostics_reports_uq_and_sensitivity_metadata() -> None:
@@ -132,6 +132,26 @@ def test_quasilinear_sweep_rule_objectives_have_fd_checked_derivatives() -> None
             atol=1.0e-5,
         )
         assert report["passed"] is True
+
+
+def test_shape_aware_power_law_objective_has_fd_checked_derivatives() -> None:
+    ky = jnp.asarray([0.1, 0.2, 0.4])
+
+    def objective(x):
+        features = jnp.stack(
+            [
+                jnp.asarray([0.1, 0.2, 0.3]),
+                jnp.asarray([0.5, 0.6, 0.7]),
+                x[:3],
+            ],
+            axis=-1,
+        )
+        return jnp.sum(shape_aware_power_law_objective(features, ky, exponent=x[3], csat=0.8))
+
+    x0 = jnp.asarray([1.0, 1.5, 2.0, -0.3])
+    report = autodiff_finite_difference_report(objective, x0, step=1.0e-3, rtol=2.0e-4, atol=1.0e-5)
+
+    assert report["passed"] is True
 
 
 def test_isolated_eigenvalue_sensitivity_report_tracks_branch_derivatives() -> None:
