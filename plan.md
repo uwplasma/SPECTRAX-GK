@@ -959,3 +959,12 @@ Exit gate:
   - add at least two additional nonlinear holdout cases before attempting to promote any branch/state quasilinear saturation candidate;
   - keep the next quasilinear model-development figure focused on whether new cases reduce uncertainty and beat the training-mean null without overfitting;
   - perform release-only PDF migration only after GitHub Release asset URLs are available.
+- Added external VMEC equilibrium portfolio inventory for the next holdout campaign:
+  - added `tools/plot_vmec_jax_equilibrium_inventory.py` and a synthetic NetCDF replay test;
+  - generated `docs/_static/vmec_jax_equilibrium_inventory.{png,pdf,json}` from `/Users/rogeriojorge/local/vmec_jax/examples/data`;
+  - the inventory finds `10` local VMEC equilibria and recommends Li383, nfp4 QH, CTH-like, shaped tokamak, circular tokamak, DSHAPE, low-resolution QA, and purely toroidal cases as the next linear/nonlinear holdout candidates;
+  - the JSON explicitly marks this as `equilibrium_selection_not_transport_validation`, so none of these cases enter quasilinear calibration until matched nonlinear heat-flux windows and physics gates exist.
+- Current next best steps:
+  - choose two small external VMEC candidates for bounded SPECTRAX-GK linear quasilinear scans first: `wout_nfp4_QH_warm_start.nc` and `wout_li383_low_res.nc`;
+  - generate matched nonlinear windows for the same two only after the linear spectra are finite, interpretable, and cheap enough;
+  - add those cases to the leave-one-out calibration reports only if the nonlinear windows pass their comparison/physics gates.

@@ -267,6 +267,20 @@ The VMEC bridge now also expands environment variables in ``geometry.vmec_file``
 Tracked portable runtime TOMLs should therefore pass external VMEC equilibria
 through explicit environment variables such as ``$W7X_VMEC_FILE`` and
 ``$HSX_VMEC_FILE`` instead of relying on a machine-local checkout layout.
+For future validation-lane selection, the external ``vmec_jax`` example-data
+portfolio can be inventoried without copying those VMEC files into this
+repository:
+
+.. code-block:: bash
+
+   python tools/plot_vmec_jax_equilibrium_inventory.py \
+     --data-dir /Users/rogeriojorge/local/vmec_jax/examples/data \
+     --out docs/_static/vmec_jax_equilibrium_inventory.png
+
+This writes ``docs/_static/vmec_jax_equilibrium_inventory.{png,pdf,json}``.
+The artifact is an equilibrium-selection aid only; it does not validate
+quasilinear transport until each selected VMEC equilibrium also has matched
+linear and nonlinear SPECTRAX-GK runs and physics gates.
 The nonlinear W7-X and HSX startup audits now confirm that this VMEC runtime
 path reproduces GX startup ``g_state`` and ``phi`` to roundoff when the
 generated ``*.eik.nc`` is rebuilt from the same VMEC input.
