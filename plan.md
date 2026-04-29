@@ -776,14 +776,17 @@ Exit gate:
   - added equations for the linear eigenproblem, electrostatic heat/particle weights, amplitude normalization, effective `k_perp`, mixing-length saturation, calibration scoring, and implicit eigenpair sensitivities;
   - added source-code implementation map linking the quasilinear, diagnostic, runtime, calibration, plotting, and autodiff modules;
   - converted quasilinear references to clickable links in `docs/references.rst`, including QuaLiKiz, Parker saturation-rule comparisons, SAT3/SAT3-NN, Waltz/Casati/Staebler, and microstability optimization references.
-- Next best steps:
-  - add the second held-out electrostatic calibration case, preferably non-axisymmetric with a CSV-backed nonlinear heat-flux window;
-  - start spectrum-shape gates that compare normalized quasilinear spectra with nonlinear resolved heat-flux spectra where archived diagnostics are available.
 - Completed user-facing implicit quasilinear sensitivity example:
   - added `examples/theory_and_demos/quasilinear_implicit_sensitivity.py`;
   - the example differentiates `[gamma, omega, kperp_eff^2, Qhat_i, Q_i^ML]` with respect to `[R/Ln, R/LTi]` on a tiny Cyclone linear-RHS fixture;
   - fixed the implicit eigenpair finite-difference validation protocol to follow the nearest isolated eigenvalue branch instead of raw eigensolver index order;
   - generated `docs/_static/quasilinear_implicit_sensitivity.{png,pdf,json}` and documented the figure in `docs/quasilinear.rst` and `docs/manuscript_figures.rst`.
-- Next best steps:
-  - add the second held-out electrostatic calibration case, preferably non-axisymmetric with a CSV-backed nonlinear heat-flux window;
-  - start spectrum-shape gates that compare normalized quasilinear spectra with nonlinear resolved heat-flux spectra where archived diagnostics are available.
+- Completed second electrostatic calibration/holdout machinery gate:
+  - fixed `gx_volume_factors` for closed-interval sampled/imported geometries by reusing the existing terminal-theta trim contract;
+  - added `examples/linear/non-axisymmetric/runtime_hsx_linear_quasilinear.toml`;
+  - generated `docs/_static/quasilinear_hsx_spectrum.*` and `docs/_static/quasilinear_hsx_spectrum_scan.*` from a six-point HSX adiabatic-electron linear spectrum;
+  - generated `docs/_static/quasilinear_hsx_train_holdout_report.json` and `docs/_static/quasilinear_hsx_train_holdout.*` by adding HSX as a non-axisymmetric held-out nonlinear heat-flux window;
+  - the HSX point is a negative result: the current short HSX linear spectrum is stable under the uncalibrated `gamma_floor=0` mixing-length rule, giving zero predicted saturated heat flux against a finite nonlinear window.
+- Current next best steps:
+  - start spectrum-shape gates that compare normalized quasilinear spectra with nonlinear resolved heat-flux spectra where archived diagnostics are available;
+  - add a NetCDF nonlinear-window ingestion path so W7-X can enter the same quasilinear calibration machinery without manual CSV conversion.

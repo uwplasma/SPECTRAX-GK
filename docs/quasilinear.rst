@@ -558,3 +558,62 @@ The report is generated with:
    python tools/plot_quasilinear_calibration.py \
      --report docs/_static/quasilinear_cyclone_miller_train_holdout_report.json \
      --out docs/_static/quasilinear_cyclone_miller_train_holdout.png
+
+Non-axisymmetric HSX holdout
+----------------------------
+
+The first non-axisymmetric quasilinear calibration audit uses the same HSX
+adiabatic-electron ITG setup as the tracked nonlinear window gate. The linear
+quasilinear spectrum is generated from the checked-in VMEC equilibrium:
+
+.. code-block:: bash
+
+   spectraxgk scan-runtime-linear \
+     --config examples/linear/non-axisymmetric/runtime_hsx_linear_quasilinear.toml \
+     --ky-values 0.047619047619047616,0.09523809523809523,0.14285714285714285,0.19047619047619047,0.23809523809523808,0.2857142857142857 \
+     --Nl 4 --Nm 8 --solver time --dt 0.005 --steps 400 \
+     --quasilinear \
+     --out docs/_static/quasilinear_hsx_spectrum_scan \
+     --no-progress
+
+.. image:: _static/quasilinear_hsx_spectrum.png
+   :alt: HSX quasilinear spectrum
+   :width: 100%
+
+All scanned HSX branches in this short linear spectrum are stable under the
+current ``gamma_floor = 0`` mixing-length rule, so the uncalibrated saturated
+heat-flux estimate is exactly zero even though the nonlinear HSX heat-flux
+window is finite. This is a useful negative result: it shows that the current
+one-constant mixing-length rule is not a transferable stellarator transport
+model and that branch coverage/saturation physics must be improved before
+absolute stellarator quasilinear-flux claims.
+
+The combined Cyclone-train, Cyclone-Miller-holdout, and HSX-holdout report is
+generated with:
+
+.. code-block:: bash
+
+   python tools/build_quasilinear_calibration_report.py \
+     --points docs/_static/quasilinear_cyclone_miller_train_holdout_points.json \
+     --spectrum docs/_static/quasilinear_hsx_spectrum_scan.quasilinear_spectrum.csv \
+     --nonlinear-summary docs/_static/nonlinear_hsx_gate_summary.json \
+     --split holdout \
+     --case hsx_nonlinear_window \
+     --geometry hsx \
+     --electron-model adiabatic \
+     --fit-train-scale \
+     --out docs/_static/quasilinear_hsx_train_holdout_report.json
+
+   python tools/plot_quasilinear_calibration.py \
+     --report docs/_static/quasilinear_hsx_train_holdout_report.json \
+     --out docs/_static/quasilinear_hsx_train_holdout.png
+
+.. image:: _static/quasilinear_hsx_train_holdout.png
+   :alt: Quasilinear train/holdout calibration including HSX
+   :width: 100%
+
+The report remains ``calibration_dataset`` and ``passed = false``. In the
+absolute-flux panel, open markers denote non-positive quasilinear estimates that
+are plotted at the documented log-axis floor. The HSX point has a finite
+nonlinear heat-flux window mean but zero current mixing-length prediction, so
+the relative error is one by construction.
