@@ -235,6 +235,57 @@ def test_calibration_point_from_nonlinear_window_summary(tmp_path: Path) -> None
     assert point.nonlinear_artifact == str(diag)
 
 
+def test_calibration_point_from_nonlinear_netcdf_window_summary(tmp_path: Path) -> None:
+    netCDF4 = pytest.importorskip("netCDF4")
+    diag = tmp_path / "run.out.nc"
+    with netCDF4.Dataset(diag, "w") as root:
+        root.createDimension("time", 3)
+        root.createDimension("species", 2)
+        grids = root.createGroup("Grids")
+        diagnostics = root.createGroup("Diagnostics")
+        time = grids.createVariable("time", "f8", ("time",))
+        heat = diagnostics.createVariable("HeatFlux_st", "f8", ("time", "species"))
+        time[:] = np.asarray([0.0, 1.0, 2.0])
+        heat[:, :] = np.asarray([[1.0, 10.0], [2.0, 20.0], [4.0, 40.0]])
+    summary = tmp_path / "summary.json"
+    summary.write_text(
+        json.dumps(
+            {
+                "case": "w7x_window",
+                "spectrax": str(diag),
+                "tmin": 0.5,
+                "tmax": 2.0,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    summed = calibration_point_from_nonlinear_window_summary(
+        summary,
+        predicted_heat_flux=1.0,
+        split="holdout",
+        saturation_rule="mixing_length",
+        geometry="w7x",
+        electron_model="adiabatic",
+    )
+    ion = calibration_point_from_nonlinear_window_summary(
+        summary,
+        predicted_heat_flux=1.0,
+        split="holdout",
+        saturation_rule="mixing_length",
+        geometry="w7x",
+        electron_model="adiabatic",
+        species_index=0,
+    )
+
+    assert summed.observed_heat_flux == pytest.approx(33.0)
+    assert summed.observed_heat_flux_std == pytest.approx(11.0)
+    assert "nonlinear_variable=Diagnostics/HeatFlux_st" in str(summed.notes)
+    assert "nonlinear_window_samples=2" in str(summed.notes)
+    assert ion.observed_heat_flux == pytest.approx(3.0)
+    assert ion.observed_heat_flux_std == pytest.approx(1.0)
+
+
 def test_integrated_quasilinear_flux_from_spectrum_and_window_point(tmp_path: Path) -> None:
     spectrum = tmp_path / "ql.csv"
     spectrum.write_text(
@@ -365,11 +416,11 @@ def test_calibration_point_from_nonlinear_window_summary_rejects_unsupported_sou
             saturation_rule="mixing_length",
         )
 
-    nc_summary = tmp_path / "summary_nc.json"
-    nc_summary.write_text(json.dumps({"case": "c", "spectrax": str(tmp_path / "run.out.nc")}), encoding="utf-8")
+    txt_summary = tmp_path / "summary_txt.json"
+    txt_summary.write_text(json.dumps({"case": "c", "spectrax": str(tmp_path / "run.txt")}), encoding="utf-8")
     with pytest.raises(NotImplementedError):
         calibration_point_from_nonlinear_window_summary(
-            nc_summary,
+            txt_summary,
             predicted_heat_flux=1.0,
             split="audit",
             saturation_rule="mixing_length",

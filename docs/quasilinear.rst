@@ -482,8 +482,17 @@ saturation rule.
 
 Existing nonlinear window summaries can be converted into calibration points
 with ``calibration_point_from_nonlinear_window_summary`` when the summary points
-to a diagnostics CSV. The helper uses the summary's ``tmin``/``tmax`` window and
-records the mean and standard deviation of the selected heat-flux column.
+to either a diagnostics CSV or a SPECTRAX-GK runtime NetCDF file. CSV inputs use
+the ``t`` column and the selected heat-flux column, usually ``heat_flux``.
+NetCDF inputs use ``Grids/time`` and map ``heat_flux`` to
+``Diagnostics/HeatFlux_st``; ``heat_flux_es``, ``heat_flux_apar``, and
+``heat_flux_bpar`` map to the corresponding ``Diagnostics/HeatFlux*_st``
+variables. Species are summed by default for NetCDF variables with shape
+``(time, species)``; pass ``--species-index`` to the report builder when an
+ion-only or electron-only nonlinear target is needed. The helper uses the
+summary's ``tmin``/``tmax`` window when present, otherwise the full finite time
+range, and records the mean and standard deviation of the selected heat-flux
+observable.
 
 .. code-block:: bash
 
