@@ -29,7 +29,15 @@ from plot_quasilinear_shape_aware_saturation import (  # noqa: E402
 CANDIDATE_LABELS = {
     "linear_weight": r"$\hat Q$ calibrated",
     "shape_power_law": r"shape power law",
+    "linear_state_ridge": r"linear-state ridge",
 }
+
+STATE_FEATURE_NAMES = (
+    "log_linear_weight",
+    "log_abs_growth_mixing_length",
+    "unstable_weight_fraction",
+    "log_weighted_ky_centroid",
+)
 
 
 def _json_clean(value: Any) -> Any:
@@ -58,6 +66,134 @@ def _linear_raw(case: SaturationCase) -> float:
     return float(raw_rule_estimates(case.spectrum)["linear_weight"])
 
 
+def _load_spectrum_table(path: Path) -> np.ndarray:
+    data = np.genfromtxt(path, delimiter=",", names=True)
+    if data.shape == ():
+        data = np.asarray([data], dtype=data.dtype)
+    return data
+
+
+def _required_column(data: np.ndarray, path: Path, column: str) -> np.ndarray:
+    names = set(data.dtype.names or ())
+    if column not in names:
+        raise ValueError(f"{path} is missing required column '{column}'")
+    return np.asarray(data[column], dtype=float)
+
+
+def _state_feature_vector(case: SaturationCase, *, floor: float) -> np.ndarray:
+    """Return linear-only branch/state features for transport-candidate scoring."""
+
+    spectrum = Path(case.spectrum)
+    data = _load_spectrum_table(spectrum)
+    ky = _required_column(data, spectrum, "ky")
+    gamma = _required_column(data, spectrum, "gamma")
+    weight = np.maximum(_required_column(data, spectrum, "heat_flux_weight_total"), 0.0)
+    finite = np.isfinite(ky) & np.isfinite(gamma) & np.isfinite(weight) & (ky > 0.0)
+    if not np.any(finite):
+        raise ValueError(f"{spectrum} contains no finite linear-state samples")
+    ky = ky[finite]
+    gamma = gamma[finite]
+    weight = weight[finite]
+    total_weight = float(np.sum(weight))
+    rules = raw_rule_estimates(spectrum, floor=floor)
+    if total_weight > floor:
+        unstable_fraction = float(np.sum(weight[gamma > 0.0]) / total_weight)
+        weighted_ky = float(np.sum(ky * weight) / total_weight)
+    else:
+        unstable_fraction = 0.0
+        weighted_ky = float(np.mean(ky))
+    return np.asarray(
+        [
+            math.log(max(float(rules["linear_weight"]), floor)),
+            math.log(max(float(rules["absolute_growth_mixing_length"]), floor)),
+            unstable_fraction,
+            math.log(max(weighted_ky, floor)),
+        ],
+        dtype=float,
+    )
+
+
+def _state_feature_matrix(cases: tuple[SaturationCase, ...], *, floor: float) -> np.ndarray:
+    return np.vstack([_state_feature_vector(case, floor=floor) for case in cases])
+
+
+def _ridge_loglinear_holdout_row(
+    *,
+    case: SaturationCase,
+    train_cases: tuple[SaturationCase, ...],
+    features_all: np.ndarray,
+    observed_all: np.ndarray,
+    holdout_idx: int,
+    train_indices: list[int],
+    observed_floor: float,
+    interval_z: float,
+    ridge_lambda: float = 1.0,
+    condition_gate: float = 1.0e6,
+    min_train_to_parameter_ratio: float = 2.0,
+) -> dict[str, Any]:
+    """Fit a ridge log-linear model on training cases and score one holdout."""
+
+    x_train_raw = np.asarray(features_all[train_indices], dtype=float)
+    x_hold_raw = np.asarray(features_all[holdout_idx], dtype=float)
+    feature_mean = np.mean(x_train_raw, axis=0)
+    feature_scale = np.std(x_train_raw, axis=0, ddof=0)
+    feature_scale = np.where(feature_scale > 1.0e-12, feature_scale, 1.0)
+    x_train = (x_train_raw - feature_mean) / feature_scale
+    x_hold = (x_hold_raw - feature_mean) / feature_scale
+    design = np.column_stack([np.ones(x_train.shape[0]), x_train])
+    hold_design = np.concatenate([[1.0], x_hold])
+    y_train = np.log(np.maximum(observed_all[train_indices], observed_floor))
+    penalty = np.eye(design.shape[1]) * ridge_lambda
+    penalty[0, 0] = 0.0
+    normal_matrix = design.T @ design + penalty
+    coef = np.linalg.solve(normal_matrix, design.T @ y_train)
+    train_log_pred = design @ coef
+    residual = y_train - train_log_pred
+    residual_mean = float(np.mean(residual))
+    residual_sigma_fit = float(np.std(residual, ddof=1)) if residual.size > 1 else 0.0
+    parameters = design.shape[1]
+    train_to_parameter_ratio = float(len(train_indices) / parameters)
+    eligibility_failures = []
+    if train_to_parameter_ratio < min_train_to_parameter_ratio:
+        eligibility_failures.append("insufficient_train_to_parameter_ratio")
+    condition_number = float(np.linalg.cond(normal_matrix))
+    if condition_number > condition_gate:
+        eligibility_failures.append("ill_conditioned_normal_matrix")
+    # Under-sampled fits get a conservative residual floor so intervals do not imply false precision.
+    residual_sigma = max(residual_sigma_fit, 1.0 if eligibility_failures else 0.0)
+    holdout_log_pred = float(hold_design @ coef + residual_mean)
+    predicted = float(math.exp(holdout_log_pred))
+    lo = float(math.exp(holdout_log_pred - interval_z * residual_sigma))
+    hi = float(math.exp(holdout_log_pred + interval_z * residual_sigma))
+    holdout_observed = float(observed_all[holdout_idx])
+    rel_error = abs(predicted - holdout_observed) / max(abs(holdout_observed), observed_floor)
+    return {
+        "holdout_case": case.case,
+        "train_cases": [item.case for item in train_cases],
+        "feature_names": list(STATE_FEATURE_NAMES),
+        "feature_values": x_hold_raw.tolist(),
+        "coefficients": coef.tolist(),
+        "ridge_lambda": float(ridge_lambda),
+        "condition_number": condition_number,
+        "condition_gate": float(condition_gate),
+        "n_train": int(len(train_indices)),
+        "n_parameters": int(parameters),
+        "train_to_parameter_ratio": train_to_parameter_ratio,
+        "min_train_to_parameter_ratio": float(min_train_to_parameter_ratio),
+        "promotion_eligible": not eligibility_failures,
+        "eligibility_failures": eligibility_failures,
+        "predicted_heat_flux": predicted,
+        "observed_heat_flux": holdout_observed,
+        "absolute_relative_error": float(rel_error),
+        "prediction_interval_low": lo,
+        "prediction_interval_high": hi,
+        "prediction_interval_contains_observed": bool(lo <= holdout_observed <= hi),
+        "train_log_residual_mean": residual_mean,
+        "train_log_residual_sigma": residual_sigma,
+        "train_log_residual_sigma_fit": residual_sigma_fit,
+    }
+
+
 def _candidate_raw_values(
     candidate: str,
     cases: tuple[SaturationCase, ...],
@@ -80,7 +216,7 @@ def _candidate_raw_values(
 def build_candidate_uncertainty_report(
     cases: tuple[SaturationCase, ...] = DEFAULT_CASES,
     *,
-    candidates: tuple[str, ...] = ("linear_weight", "shape_power_law"),
+    candidates: tuple[str, ...] = ("linear_weight", "shape_power_law", "linear_state_ridge"),
     observed_floor: float = 1.0e-12,
     passed_shape_only: bool = True,
     interval_z: float = 1.96,
@@ -90,6 +226,7 @@ def build_candidate_uncertainty_report(
     """Build a leave-one-geometry-out uncertainty report for candidate models."""
 
     observed = np.asarray([_observed_flux(case)[0] for case in cases], dtype=float)
+    features_all = _state_feature_matrix(cases, floor=observed_floor) if "linear_state_ridge" in candidates else None
     null_rows = []
     candidate_rows: dict[str, list[dict[str, Any]]] = {candidate: [] for candidate in candidates}
     for holdout_idx, holdout_case in enumerate(cases):
@@ -109,6 +246,22 @@ def build_candidate_uncertainty_report(
         )
 
         for candidate in candidates:
+            if candidate == "linear_state_ridge":
+                if features_all is None:
+                    raise AssertionError("linear_state_ridge requires precomputed features")
+                candidate_rows[candidate].append(
+                    _ridge_loglinear_holdout_row(
+                        case=holdout_case,
+                        train_cases=train_cases,
+                        features_all=features_all,
+                        observed_all=observed,
+                        holdout_idx=holdout_idx,
+                        train_indices=train_indices,
+                        observed_floor=observed_floor,
+                        interval_z=interval_z,
+                    )
+                )
+                continue
             raw_all, metadata = _candidate_raw_values(
                 candidate,
                 cases,
@@ -153,6 +306,14 @@ def build_candidate_uncertainty_report(
         errors = np.asarray([row["absolute_relative_error"] for row in rows], dtype=float)
         coverage = float(np.mean([bool(row["prediction_interval_contains_observed"]) for row in rows]))
         mean_error = float(np.nanmean(errors))
+        promotion_eligible = all(bool(row.get("promotion_eligible", True)) for row in rows)
+        eligibility_failures = sorted(
+            {
+                str(failure)
+                for row in rows
+                for failure in row.get("eligibility_failures", [])
+            }
+        )
         if candidate == "linear_weight":
             linear_mean = mean_error
         candidates_report[candidate] = {
@@ -160,6 +321,8 @@ def build_candidate_uncertainty_report(
             "mean_abs_relative_error": mean_error,
             "max_abs_relative_error": float(np.nanmax(errors)),
             "prediction_interval_coverage": coverage,
+            "promotion_eligible": promotion_eligible,
+            "eligibility_failures": eligibility_failures,
             "rows": rows,
         }
 
@@ -168,7 +331,8 @@ def build_candidate_uncertainty_report(
         mean_error = float(payload["mean_abs_relative_error"])
         beats_linear = linear_mean is None or candidate == "linear_weight" or mean_error < linear_mean
         if (
-            mean_error <= transport_gate
+            bool(payload.get("promotion_eligible", True))
+            and mean_error <= transport_gate
             and mean_error < null_mean
             and beats_linear
             and float(payload["prediction_interval_coverage"]) >= interval_coverage_gate
@@ -195,6 +359,7 @@ def build_candidate_uncertainty_report(
             "requires_beating_training_mean_null": True,
             "requires_beating_linear_weight_baseline": True,
             "requires_interval_coverage": True,
+            "requires_candidate_eligibility": True,
             "transport_mean_relative_error_gate": float(transport_gate),
             "interval_coverage_gate": float(interval_coverage_gate),
             "null_training_mean_mean_abs_relative_error": null_mean,
@@ -220,8 +385,8 @@ def write_candidate_uncertainty_figure(report: dict[str, Any], *, out: str | Pat
 
     fig, axes = plt.subplots(1, 2, figsize=(13.2, 5.4), constrained_layout=True)
     ax0, ax1 = axes
-    colors = {"linear_weight": "#6b7280", "shape_power_law": "#0f4c81"}
-    markers = {"linear_weight": "o", "shape_power_law": "s"}
+    colors = {"linear_weight": "#6b7280", "shape_power_law": "#0f4c81", "linear_state_ridge": "#047857"}
+    markers = {"linear_weight": "o", "shape_power_law": "s", "linear_state_ridge": "^"}
     observed_all = np.asarray([row["observed_heat_flux"] for row in null_rows], dtype=float)
     positive = [observed_all[observed_all > 0.0]]
     for payload in candidates.values():
@@ -251,13 +416,16 @@ def write_candidate_uncertainty_figure(report: dict[str, Any], *, out: str | Pat
             label=payload["label"],
             linewidth=1.2,
         )
-    for label, xval, yval in zip(
+    label_offset_cycle = ((4, 4), (8, 10), (10, -10), (10, 18))
+    label_offsets = [label_offset_cycle[i % len(label_offset_cycle)] for i in range(len(case_labels))]
+    for label, xval, yval, offset in zip(
         case_labels,
         observed_all,
         [row["predicted_heat_flux"] for row in candidates[next(iter(candidates))]["rows"]],
+        label_offsets,
         strict=True,
     ):
-        ax0.annotate(label, (xval, yval), xytext=(4, 4), textcoords="offset points", fontsize=7)
+        ax0.annotate(label, (xval, yval), xytext=offset, textcoords="offset points", fontsize=7)
     ax0.set_xscale("log")
     ax0.set_yscale("log")
     ax0.set_xlim(lim_lo, lim_hi)
@@ -271,15 +439,25 @@ def write_candidate_uncertainty_figure(report: dict[str, Any], *, out: str | Pat
     labels = []
     mean_errors = []
     coverages = []
+    promotion_eligible = []
     for candidate, payload in candidates.items():
         labels.append(candidate.replace("_", "\n"))
         mean_errors.append(float(payload["mean_abs_relative_error"]))
         coverages.append(float(payload["prediction_interval_coverage"]))
+        promotion_eligible.append(bool(payload.get("promotion_eligible", True)))
     labels.append("train-mean\nnull")
     mean_errors.append(float(report["null_training_mean_baseline"]["mean_abs_relative_error"]))
     coverages.append(float("nan"))
+    promotion_eligible.append(True)
     x = np.arange(len(labels))
-    ax1.bar(x, mean_errors, color=["#6b7280", "#0f4c81", "#b45309"][: len(labels)])
+    bar_colors = [colors.get(candidate, "0.3") for candidate in candidates]
+    bar_colors.append("#b45309")
+    bars = ax1.bar(x, mean_errors, color=bar_colors)
+    for bar, eligible in zip(bars, promotion_eligible, strict=True):
+        if not eligible:
+            bar.set_hatch("//")
+            bar.set_edgecolor("black")
+            bar.set_linewidth(0.8)
     ax1.axhline(report["transport_gate"], color="#c2410c", linestyle="--", linewidth=1.4, label="0.35 transport gate")
     ax1.set_yscale("log")
     ax1.set_xticks(x, labels)
@@ -287,8 +465,10 @@ def write_candidate_uncertainty_figure(report: dict[str, Any], *, out: str | Pat
     ax1.set_title("Promotion metrics")
     ax1.set_ylim(min(mean_errors) * 0.7, max(mean_errors) * 1.45)
     ax1.grid(True, axis="y", alpha=0.24)
-    for xpos, err, cov in zip(x, mean_errors, coverages, strict=True):
+    for xpos, err, cov, eligible in zip(x, mean_errors, coverages, promotion_eligible, strict=True):
         text = f"{err:.2g}" if not math.isfinite(cov) else f"{err:.2g}\ncoverage {cov:.2g}"
+        if not eligible:
+            text = f"{err:.2g}\nineligible"
         ax1.text(xpos, err / 1.08, text, ha="center", va="top", fontsize=8, color="white", fontweight="bold")
     ax1.legend(loc="upper right", fontsize=8)
     fig.suptitle(title, y=1.03, fontsize=14, fontweight="bold")

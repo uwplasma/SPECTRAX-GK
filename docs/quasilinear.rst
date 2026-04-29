@@ -816,7 +816,9 @@ nonlinear heat-flux window. A candidate is promoted only if it:
 * passes the ``0.35`` mean-relative transport gate;
 * beats the training-mean null baseline;
 * beats the linear-weight baseline when it is a new non-baseline model;
-* reaches the interval-coverage gate.
+* reaches the interval-coverage gate;
+* passes candidate-specific eligibility checks such as minimum training-set
+  size relative to the number of fitted parameters and matrix conditioning.
 
 .. code-block:: bash
 
@@ -830,10 +832,16 @@ nonlinear heat-flux window. A candidate is promoted only if it:
 The current candidates remain rejected. The calibrated linear-weight candidate
 has mean relative error about ``0.624`` with interval coverage ``0.75``; the
 shape-power-law candidate has mean relative error about ``0.664`` with the same
-coverage. The training-mean null baseline is about ``0.170``, so
-``promotion_gate.passed = false`` and no candidate is available as a user-facing
-saturation rule. This is the intended behavior: uncertainty intervals document
-model risk, but they do not rescue a model that fails held-out predictive skill.
+coverage. The linear-state ridge candidate uses only linear-spectrum features
+(``log_linear_weight``, ``log_abs_growth_mixing_length``,
+``unstable_weight_fraction``, and ``log_weighted_ky_centroid``). It reaches mean
+relative error about ``0.173`` with full interval coverage, but is marked
+``promotion_eligible = false`` because each leave-one-out fit has too few
+training cases for the five fitted parameters. The training-mean null baseline
+is about ``0.170``, so ``promotion_gate.passed = false`` and no candidate is
+available as a user-facing saturation rule. This is the intended behavior:
+uncertainty intervals document model risk, but they do not rescue a model that
+fails held-out predictive skill or data-volume/conditioning checks.
 
 The normalized W7-X spectrum-shape gate does pass when the linear
 heat-flux-weight distribution is compared with the resolved nonlinear
