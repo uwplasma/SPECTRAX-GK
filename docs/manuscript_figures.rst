@@ -90,9 +90,9 @@ Differentiable-Physics Figures
      - Status
      - Notes
    * - Sensitivity-analysis figure
-     - dedicated script to add
-     - Open
-     - local derivatives of linear/nonlinear observables
+     - ``examples/theory_and_demos/quasilinear_implicit_sensitivity.py``
+     - Initial quasilinear eigenbranch gate closed
+     - current artifact base: ``docs/_static/quasilinear_implicit_sensitivity.png`` with JSON/PDF companions. It differentiates a tiny Cyclone linear-RHS quasilinear objective ``[gamma, omega, kperp_eff^2, Qhat_i, Q_i^ML]`` with respect to ``[R/Ln, R/LTi]`` using the implicit left/right eigenpair system and checks the result against nearest-branch central finite differences. This is a differentiability/conditioning gate, not an absolute nonlinear-flux validation.
    * - Inverse/UQ figure
      - ``examples/theory_and_demos/autodiff_inverse_twomode.py`` plus UQ follow-on
      - Open
