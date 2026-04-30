@@ -7,12 +7,12 @@ import pytest
 from tools.run_wide_coverage_gate import discover_test_files, split_shards
 
 
-def test_split_shards_is_contiguous_and_complete() -> None:
+def test_split_shards_is_round_robin_and_complete() -> None:
     files = [Path(f"tests/test_{idx}.py") for idx in range(7)]
     shards = split_shards(files, 3)
 
-    assert shards == [files[:3], files[3:6], files[6:]]
-    assert [path for shard in shards for path in shard] == files
+    assert shards == [files[0::3], files[1::3], files[2::3]]
+    assert sorted(path for shard in shards for path in shard) == files
 
 
 def test_split_shards_rejects_nonpositive_count() -> None:

@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import math
 from pathlib import Path
 import subprocess
 import sys
@@ -21,14 +20,20 @@ def discover_test_files(test_dir: Path = DEFAULT_TEST_DIR) -> list[Path]:
 
 
 def split_shards(items: list[Path], nshards: int) -> list[list[Path]]:
-    """Split paths into contiguous shards with near-equal file counts."""
+    """Split paths into round-robin shards with near-equal file counts.
+
+    Alphabetical test discovery groups related plotting tests together. A
+    round-robin split keeps deterministic membership while spreading expensive
+    modules across CI workers, which makes the package-wide coverage gate less
+    sensitive to runner memory and shutdown pressure.
+    """
 
     if nshards < 1:
         raise ValueError("nshards must be >= 1")
-    if not items:
-        return [[] for _ in range(nshards)]
-    shard_size = int(math.ceil(len(items) / float(nshards)))
-    return [items[i * shard_size : (i + 1) * shard_size] for i in range(nshards)]
+    shards: list[list[Path]] = [[] for _ in range(nshards)]
+    for idx, item in enumerate(items):
+        shards[idx % nshards].append(item)
+    return shards
 
 
 def _run(cmd: list[str], *, timeout: int | None, cwd: Path) -> None:
