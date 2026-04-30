@@ -266,9 +266,9 @@ that audit matches the imported convention for ``bmag``, the solver Jacobian,
 ``4.5e-3`` and ``2.4e-3``; the derivative-like ``bgrad`` check is recorded
 separately and is ``2.3e-2``. The same JAX-native path now reconstructs the
 zero-beta Boozer metric profiles ``gds2``, ``gds21``, ``gds22``, and ``grho``
-with worst normalized mismatch ``3.44e-2`` and the loaded-convention zero-beta
+with worst normalized mismatch ``3.45e-2`` and the loaded-convention zero-beta
 drift profiles ``cvdrift``, ``gbdrift``, ``cvdrift0``, and ``gbdrift0`` with
-worst normalized mismatch ``3.45e-2``. The remaining promotion gap is broad
+worst normalized mismatch ``3.49e-2``. The remaining promotion gap is broad
 finite-beta and multi-equilibrium drift parity, not the Boozer equal-arc
 field-line or zero-beta metric/drift normalization on the tracked fixture.
 The Boozer gates evaluate
