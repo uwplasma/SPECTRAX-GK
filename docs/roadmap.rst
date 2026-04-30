@@ -59,9 +59,10 @@ Current pre-release status snapshot:
   ``vmec_jax.geom`` plus ``vmec_jax.vmec_bcovar``, a direct VMEC
   tensor-derived flux-tube mapping derivative, a direct-VMEC-tensor vs
   imported-VMEC/EIK array-parity audit, a Boozer equal-arc core parity audit
-  that closes the ``bmag``/``bgrad``/``gradpar``/Jacobian convention at
-  release tolerance, a real ``vmec_jax`` ``VMECState`` to ``booz_xform_jax``
-  to SPECTRAX-GK derivative gate, and a
+  that closes the ``bmag``/``bgrad``/``gradpar``/Jacobian and zero-beta
+  ``gds*``/``grho`` metric convention at release tolerance, a real
+  ``vmec_jax`` ``VMECState`` to ``booz_xform_jax`` to SPECTRAX-GK derivative
+  gate, and a
   tracked AD-vs-finite-difference inverse/UQ artifact at
   ``docs/_static/differentiable_geometry_bridge.png``;
 - production parallelization is currently claimed only for independent
@@ -238,12 +239,10 @@ Differentiable geometry and optimization
 
 After the refactor/testing lane is stable, the differentiable geometry plan is:
 
-1. Extend the now-matched Boozer equal-arc core convention to the full
-   ``gds*``/``grho`` metric reconstruction.
-2. Replace the remaining local grad-:math:`B` drift closure with the
+1. Replace the remaining local grad-:math:`B` drift closure with the
    production VMEC/EIK drift convention.
-3. Add gradient checks for geometry-to-observable paths.
-4. Promote examples from sensitivity analysis to inverse design, uncertainty
+2. Add gradient checks for geometry-to-observable paths.
+3. Promote examples from sensitivity analysis to inverse design, uncertainty
    quantification, and stellarator optimization only after the derivative
    checks and benchmark artifacts are frozen.
 

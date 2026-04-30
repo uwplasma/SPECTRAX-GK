@@ -264,9 +264,11 @@ Boozer equal-arc core audit. On the tracked ``nfp4_QH_warm_start`` fixture,
 that audit matches the imported convention for ``bmag``, the solver Jacobian,
 ``gradpar``, ``q``, and ``s_hat`` with worst normalized/scalar errors
 ``4.5e-3`` and ``2.4e-3``; the derivative-like ``bgrad`` check is recorded
-separately and is ``2.3e-2``. The remaining production gap is therefore the
-full ``gds*``/``grho`` metric reconstruction and Hegna-Nakajima drift
-convention, not the Boozer equal-arc core field-line normalization.
+separately and is ``2.3e-2``. The same JAX-native path now reconstructs the
+zero-beta Boozer metric profiles ``gds2``, ``gds21``, ``gds22``, and ``grho``
+with worst normalized mismatch ``3.44e-2``. The remaining production gap is
+therefore the Hegna-Nakajima curvature/drift convention, not the Boozer
+equal-arc field-line or zero-beta metric normalization.
 The Boozer gates evaluate
 the JAX-native Boozer ``|B|``
 spectrum along a field line, build the ``FluxTubeGeometryData`` input mapping,
@@ -295,8 +297,8 @@ contract once their in-memory field-line mapping is available.
    boundary-aspect derivative check and sampled VMEC metric-tensor derivative
    check, plus a real VMEC field-line tensor check for a non-axisymmetric
    fixture, a direct VMEC tensor-derived flux-tube mapping check, and a
-   Boozer equal-arc core parity check against the imported VMEC/EIK geometry;
-   when
+   Boozer equal-arc core/metric parity check against the imported VMEC/EIK
+   geometry; when
    ``booz_xform_jax`` is available, it runs a bounded JAX-native
    Boozer spectral transform, samples that spectrum onto a field-line
    flux-tube mapping, checks both autodiff derivative paths against central
@@ -304,9 +306,9 @@ contract once their in-memory field-line mapping is available.
    from a real ``vmec_jax`` ``VMECState`` before converting through
    ``booz_xform_jax`` into the SPECTRAX-GK field-line contract.
 
-The next implementation step is to reuse this equal-arc core convention for
-the full ``gds*``/``grho`` metric and Hegna-Nakajima drift reconstruction,
-then add geometry-gradient checks for growth-rate and transport observables.
+The next implementation step is to add the Hegna-Nakajima curvature/drift
+reconstruction to the same equal-arc path, then add geometry-gradient checks
+for growth-rate and transport observables.
 The VMEC bridge now also expands environment variables in ``geometry.vmec_file``.
 Tracked portable runtime TOMLs should therefore pass external VMEC equilibria
 through explicit environment variables such as ``$W7X_VMEC_FILE`` and
