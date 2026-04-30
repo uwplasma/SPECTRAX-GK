@@ -963,6 +963,27 @@ passes a case-specific tolerance.
    :alt: Higher-grid external CTH-like VMEC nonlinear feasibility pilot
    :width: 100%
 
+The explicit convergence gate follows the same evidence chain used in
+nonlinear gyrokinetic benchmark papers: time traces and saturated heat-flux
+windows are compared, and the candidate is not promoted unless the heat flux is
+robust to resolution and window choice. This mirrors the Cyclone and W7-X
+time-trace/convergence practice in [Dimits00]_ and [GX]_, while the
+stellarator-domain sensitivity documented by [Sanchez21]_ motivates keeping
+external-VMEC cases behind a conservative gate until flux-tube and resolution
+choices are fixed. The current CTH-like pair fails the common-window stationarity
+and grid-refinement requirements: the common-window symmetric relative
+heat-flux difference is about ``0.571`` and the least-trending-window
+difference is about ``0.453``, both above the ``0.15`` production threshold.
+That threshold is intentionally strict enough to match the order of
+nonlinear heat-flux convergence tolerances reported for Laguerre-Hermite
+gyrokinetic calculations in [GX]_. Long turbulent time series can still be
+physically informative, as emphasized by W7-X heat-flux time-series analyses
+[Papadopoulos23]_, but they are not calibration data until this gate passes.
+
+.. image:: _static/external_vmec_cth_like_grid_convergence_gate.png
+   :alt: External CTH-like VMEC nonlinear grid convergence gate
+   :width: 100%
+
 The normalized W7-X spectrum-shape gate does pass when the linear
 heat-flux-weight distribution is compared with the resolved nonlinear
 ``HeatFlux_kyst`` spectrum from the NetCDF output:

@@ -224,6 +224,15 @@ with explicit ``claim_level`` and ``promotion_gate.passed = false`` metadata,
 so exploratory external-VMEC runs can be documented without being promoted to
 transport validation claims.
 
+``tools/plot_external_vmec_nonlinear_convergence_gate.py`` is the promotion
+gate for those pilots once at least two grid levels exist. It replays the
+pilot JSON/CSV traces, compares common and least-trending late windows,
+requires enough samples, bounds relative heat-flux trend and coefficient of
+variation, and finally checks pairwise grid-refined heat-flux agreement. The
+tracked CTH-like external-VMEC artifact intentionally fails this gate and sets
+``gate_index_include=false`` because it is a research-planning negative result,
+not a release-blocking validation gate.
+
 The diagnostics stream now also carries ``Diagnostics/Phi_zonal_mode_kxt``, a
 signed complex zonal-potential history reduced over ``z`` with the same volume
 weights used elsewhere. That is the primitive to use for manuscript-grade
