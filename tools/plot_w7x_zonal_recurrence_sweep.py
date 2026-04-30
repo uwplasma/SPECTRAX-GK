@@ -162,6 +162,9 @@ def load_run(
     diff = response[mask] - ref_interp
     tail_start = tmax - float(tail_fraction) * (tmax - float(np.nanmin(t[mask])))
     tail_mask = mask & (t >= tail_start)
+    reference_tail_std = float(np.std(ref_interp[t[mask] >= tail_start]))
+    tail_std = float(np.std(response[tail_mask]))
+    tail_std_ratio = None if reference_tail_std <= 0.0 else tail_std / reference_tail_std
     total = np.sum(wg_lm, axis=(1, 2))
     safe = np.maximum(total, 1.0e-300)
     nm = int(wg_lm.shape[1])
@@ -188,9 +191,10 @@ def load_run(
         "mean_abs_error": float(np.mean(np.abs(diff))),
         "max_abs_error": float(np.max(np.abs(diff))),
         "tail_mean": float(np.mean(response[tail_mask])),
-        "tail_std": float(np.std(response[tail_mask])),
+        "tail_std": tail_std,
         "tail_abs_max": float(np.max(np.abs(response[tail_mask]))),
-        "reference_tail_std": float(np.std(ref_interp[t[mask] >= tail_start])),
+        "reference_tail_std": reference_tail_std,
+        "tail_std_ratio": tail_std_ratio,
         "hermite_tail_at_tmax": float(hermite_tail[last_idx]),
         "laguerre_tail_at_tmax": float(laguerre_tail[last_idx]),
         "free_energy_at_tmax_over_initial": float(total[last_idx] / safe[0]),
