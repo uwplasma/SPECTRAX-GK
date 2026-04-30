@@ -61,7 +61,7 @@
     "sensitivity_method": "implicit_left_right_eigenpair",
     "step": 1e-06
   },
-  "elapsed_seconds": 33.657101041055284,
+  "elapsed_seconds": 34.639969833078794,
   "grid": {
     "Nx": 1,
     "Ny": 4,
@@ -153,5 +153,6 @@
   "passed": true,
   "quasilinear_weight_gradient_gate": true,
   "source_scope": "mode21_vmec_boozer_state",
-  "state_size": 24
+  "state_size": 24,
+  "surface_stencil_width": null
 }
