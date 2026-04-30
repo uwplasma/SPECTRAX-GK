@@ -3,7 +3,7 @@ schema_version = 1
 package_coverage_target_percent = 95.0
 default_test_budget_seconds = 300
 wide_coverage_ci_job = "wide-coverage"
-branch = "refactor/modularize-core-for-validation"
+branch = "main"
 
 [[modules]]
 module = "spectraxgk.runtime"
@@ -240,12 +240,14 @@ fast_tests = [
   "tests/test_plot_w7x_zonal_closure_ladder.py",
   "tests/test_plot_w7x_zonal_state_convention_audit.py",
   "tests/test_plot_w7x_zonal_recurrence_sweep.py",
+  "tests/test_build_open_research_lane_status.py",
 ]
 artifact_paths = [
   "docs/_static/w7x_zonal_response_panel.json",
   "docs/_static/w7x_zonal_closure_ladder_kx070.json",
   "docs/_static/w7x_zonal_state_convention_audit.json",
   "docs/_static/w7x_zonal_recurrence_sweep_kx070.json",
+  "docs/_static/open_research_lane_status.json",
 ]
 next_tests = [
   "promote the final W7-X recurrence/closure method into a release gate when it matches the literature trace",

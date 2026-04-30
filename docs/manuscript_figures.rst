@@ -46,6 +46,10 @@ Core Validation Figures
      - ``tools/make_validation_gate_index.py``
      - Closed for currently tracked gates
      - current artifact base: ``docs/_static/validation_gate_index.png`` and ``docs/_static/validation_gate_index.json``. This is not a physics result by itself; it is the audit panel for release-window gates, currently ``10/10`` passed.
+   * - Open research lane status
+     - ``tools/build_open_research_lane_status.py``
+     - Closed as a claim-scope audit; underlying physics lanes remain scoped
+     - current artifact base: ``docs/_static/open_research_lane_status.png`` with CSV/JSON/PDF companions. It reads the W7-X zonal recurrence, W7-X fluctuation-spectrum, quasilinear holdout, differentiable-geometry, and nonlinear-profiler artifacts and records which lanes are closed, partial, open, or blocked. The current status is intentionally conservative: W7-X long-window zonal recurrence/damping and absolute quasilinear flux promotion are open; W7-X fluctuation spectra, differentiable geometry, and profiler identity artifacts are partial diagnostics. This panel is useful for the paper plan and release notes because it prevents partial diagnostics from being described as completed physics claims.
    * - Quasilinear spectrum panel
      - ``tools/plot_quasilinear_spectrum.py``
      - Initial diagnostic closed; nonlinear calibration open

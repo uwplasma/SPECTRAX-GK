@@ -63,6 +63,26 @@ Current pre-release status snapshot:
   ``tools/performance_optimization_manifest.toml`` and the runtime/cold-start
   profilers before any hot-path optimization claim is made.
 
+Executable open-lane status
+---------------------------
+
+The active post-``v1.5`` research lanes are now summarized by
+``tools/build_open_research_lane_status.py``. The generated artifact is a
+claim-scope gate, not a substitute for the underlying physics figures. It reads
+the W7-X zonal, W7-X fluctuation-spectrum, quasilinear holdout, differentiable
+geometry, and nonlinear-profiler artifacts and reports whether each lane is
+closed, partial, open, or blocked.
+
+.. image:: _static/open_research_lane_status.png
+   :alt: Open research lane status summary
+
+The current snapshot has no closed broad manuscript lanes in this group:
+W7-X fluctuation spectra, differentiable geometry, and profiler identity checks
+are partial bounded diagnostics, while W7-X long-window zonal recurrence and
+absolute quasilinear flux promotion remain open. This keeps the README/docs
+claim surface honest while still preserving publication-ready diagnostic panels
+for the pieces that are already reproducible.
+
 Post-release scope
 ------------------
 
