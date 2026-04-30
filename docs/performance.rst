@@ -161,13 +161,13 @@ grid-mode split is:
 
 .. code-block:: text
 
-   field_solve=2.89e-4 s
-   nonlinear_bracket=2.78e-3 s
-   linear_rhs=6.97e-3 s
-   full_rhs=1.06e-2 s
+   field_solve=3.19e-4 s
+   nonlinear_bracket=3.15e-3 s
+   linear_rhs=6.89e-3 s
+   full_rhs=1.14e-2 s
 
 The same GPU profile with ``laguerre_mode="spectral"`` measured
-``nonlinear_bracket=2.04e-3 s`` and ``full_rhs=5.29e-3 s``. CPU full-RHS
+``nonlinear_bracket=1.52e-3 s`` and ``full_rhs=7.29e-3 s``. CPU full-RHS
 timings were refreshed locally with a bounded five-repeat run:
 ``full_rhs=8.14e-2 s`` for grid mode and ``7.97e-2 s`` for spectral mode.
 That small CPU improvement is not a production speedup claim. The spectral mode

@@ -1107,3 +1107,11 @@ Exit gate:
 - Current next best steps:
   - run the matching GPU profiler refresh on office for the same script/config before changing performance claims;
   - use those traces to decide whether to optimize bracket FFT/gather paths, field-solve assembly, or cold-start cache construction first.
+- Refreshed the matched office GPU nonlinear RHS split profile sequentially after a first parallel attempt showed host/GPU contention:
+  - reran grid and spectral Laguerre profiles on one office GPU at a time with `10` warm kernel repeats and `300 s` timeouts;
+  - regenerated `docs/_static/nonlinear_rhs_profile_gpu.csv`, `docs/_static/nonlinear_rhs_profile_gpu_spectral.csv`, and the combined `docs/_static/nonlinear_rhs_profile.{png,pdf}`;
+  - current office GPU numbers: grid `full_rhs≈1.14e-2 s`, spectral `full_rhs≈7.29e-3 s`, nonlinear bracket `3.15e-3 s` vs `1.52e-3 s`;
+  - kept the claim scoped: this supports bracket/spectral-mode profiling, but production speedup claims still require case-level parity gates and larger matched CPU/GPU sweeps.
+- Current next best steps:
+  - start the TEM branch/frequency audit by comparing the existing reference table, runtime parameters, and fitted signals term by term;
+  - if no bounded code fix is obvious, create a machine-readable TEM blocker artifact like the W7-X status artifacts so kinetic-electron W7-X remains gated.
