@@ -471,6 +471,20 @@
   "vmec_boundary": {
     "aspect": 3.767939406405612,
     "available": true,
+    "backend_info": {
+      "booz_xform_jax_api_available": true,
+      "booz_xform_jax_available": true,
+      "booz_xform_jax_paths": [
+        "/Users/rogeriojorge/local/booz_xform_jax",
+        "/Users/rogeriojorge/local/booz_xform_jax/src"
+      ],
+      "vmec_jax_available": true,
+      "vmec_jax_boundary_api_available": true,
+      "vmec_jax_paths": [
+        "/Users/rogeriojorge/local/vmec_jax"
+      ]
+    },
+    "fd_step": 2e-05,
     "grad_ad": [
       -1.8071651829283506,
       -1.4059475397035874
@@ -479,6 +493,11 @@
       -1.8071651830986466,
       -1.4059475399008645
     ],
-    "max_abs_ad_fd_error": 1.9727708355787854e-10
+    "max_abs_ad_fd_error": 1.9727708355787854e-10,
+    "mpol": 2,
+    "nfp": 1,
+    "nphi": 1,
+    "ntheta": 96,
+    "ntor": 0
   }
 }

@@ -1132,3 +1132,12 @@ Exit gate:
   - if the W7-X source NetCDFs are needed for a refreshed plot, rerun the bounded recurrence sweep on office or restore the release artifacts from external storage;
   - test a physically motivated velocity-space closure/operator rather than increasing constant Hermite damping;
   - continue the differentiable geometry bridge and keep W7-X zonal closure open until residual, late-envelope, and moment-tail gates pass together.
+- Advanced the differentiable geometry bridge:
+  - promoted the real `vmec_jax` boundary-aspect AD-vs-finite-difference check into `spectraxgk.geometry.differentiable.vmec_boundary_aspect_sensitivity_report`;
+  - expanded backend auto-discovery to check `~/vmec_jax`, `~/local/vmec_jax`, `~/booz_xform_jax`, and `~/local/booz_xform_jax` in addition to sibling checkouts and explicit environment variables;
+  - updated the example to use the package API and refreshed `docs/_static/differentiable_geometry_bridge.json` with the real local `vmec_jax`/`booz_xform_jax` APIs discovered; current real boundary-aspect derivative AD/FD max absolute error is `≈1.97e-10`;
+  - added CI-safe fake-backend tests for the VMEC boundary sensitivity bridge, so the API contract is tested even when the real optional backends are not installed.
+- Current next best steps:
+  - connect a real `vmec_jax` equilibrium output to the sampled `FluxTubeGeometryData` contract, then compare against the existing VMEC/eik import path on a small equilibrium;
+  - add a gradient gate for a solver-facing geometric observable after geometry parity passes;
+  - keep full stellarator optimization claims scoped until both geometry parity and geometry-gradient gates pass.
