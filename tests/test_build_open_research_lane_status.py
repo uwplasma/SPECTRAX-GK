@@ -86,6 +86,16 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
             "dominant_heat_flux_ky": 0.4,
         },
     )
+    _write_json(
+        tmp_path,
+        "docs/_static/w7x_tem_extension_status.json",
+        {
+            "rows": [
+                {"lane": "W7-X nonlinear fluctuation spectrum", "status": "closed"},
+                {"lane": "TEM / kinetic-electron linear parity", "status": "open"},
+            ]
+        },
+    )
     _write_json(tmp_path, "docs/_static/quasilinear_validated_calibration_inputs.json", {"passed": True})
     _write_json(
         tmp_path,
@@ -137,6 +147,9 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
     assert lanes["Nonlinear holdouts for quasilinear absolute-flux promotion"]["claim_level"] == (
         "diagnostic_calibration_dataset_not_absolute_flux"
     )
+    assert lanes["W7-X fluctuation spectrum and TEM/multi-flux extension"]["key_metrics"]["open_extension_rows"] == [
+        "TEM / kinetic-electron linear parity"
+    ]
     assert lanes["Nonlinear holdouts for quasilinear absolute-flux promotion"]["key_metrics"][
         "cth_like_external_vmec_converged"
     ] is False

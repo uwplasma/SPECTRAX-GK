@@ -100,15 +100,20 @@ fast_tests = [
   "tests/test_nonlinear_exb.py",
   "tests/test_terms_assembly.py",
   "tests/test_plot_nonlinear_window_statistics.py",
+  "tests/test_plot_w7x_fluctuation_spectrum_panel.py",
+  "tests/test_build_w7x_tem_extension_status.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_window_statistics.json",
   "docs/_static/nonlinear_w7x_gate_summary.json",
   "docs/_static/nonlinear_kbm_gate_summary.json",
+  "docs/_static/w7x_fluctuation_spectrum_panel.json",
+  "docs/_static/w7x_tem_extension_status.json",
 ]
 next_tests = [
   "add more unit coverage for resolved spectral diagnostics",
   "add reduced free-energy/conservation tests for nonlinear-only limits",
+  "close TEM branch/frequency parity before kinetic-electron W7-X nonlinear gates",
 ]
 
 [[modules]]
