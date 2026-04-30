@@ -1000,7 +1000,14 @@ Exit gate:
   - the `t=20` late-half heat-flux mean is `3.76e-4`, but the positive slope `8.33e-5` per time unit shows startup/growth rather than saturation;
   - the `t=50` run remains finite but is still strongly growing, with late-half mean heat flux `0.627`, final heat flux `3.15`, and late-half slope `0.102` per time unit;
   - CTH-like is therefore the strongest current external-VMEC nonlinear candidate, but it is not yet a saturated transport-calibration window.
+- Completed office-backed long CTH-like nonlinear feasibility pilot:
+  - ran fresh `Nx=Ny=32`, `Nz=24`, `Nl=4`, `Nm=8`, `dt=0.05`, `t=100` and `t=150` fixed-step RK3 pilots on office GPU from the clean `main` clone at `/home/rjorge/spectraxgk_main_runs`;
+  - the `t=100` run is finite and enters a high-heat-flux state, but late-window slope diagnostics were mixed across windows;
+  - the `t=150` run is finite with `61` samples, final heat flux `26.27`, final `Wphi=7.80`, and least-trending window `t=75.05..150.00` with mean heat flux `23.06`, standard deviation `1.79`, and relative heat-flux trend `1.20e-3` per time unit;
+  - added `tools/plot_nonlinear_feasibility_pilot.py`, tests, and tracked `docs/_static/external_vmec_cth_like_nonlinear_t150_pilot.{png,pdf,json,traces.csv}`;
+  - the panel is deliberately labeled `finite_long_nonlinear_feasibility_not_transport_validation`; the promotion gate remains false until a production-resolution convergence/reference acceptance protocol is defined and passed.
 - Current next best steps:
-  - move the CTH-like nonlinear lane to office or a stabilized longer local protocol only if the goal is a true saturation window; the current reduced-grid pilot already answers the feasibility question;
-  - before longer runs, decide whether to adjust nonlinear damping/hypercollision or grid size based on the literature/benchmark target, because the current reduced-grid signal is rapidly growing at `t=50`;
+  - define the external-VMEC nonlinear acceptance protocol for CTH-like: production grid, window-start rule, trend tolerance, resolved-spectrum shape gate, and optional independent reference;
+  - run a bounded CTH-like convergence check (`32^2x24` vs `48^2x32`, same `Nl/Nm`, same `dt`) before admitting it as a quasilinear calibration holdout;
+  - only after that, add a CTH-like spectrum-shape gate against the linear quasilinear spectrum and a leave-one-geometry-out calibration point;
   - continue keeping these external-VMEC pilots out of quasilinear calibration until a saturated nonlinear window and spectrum-shape gate pass.

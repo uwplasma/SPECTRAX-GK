@@ -934,13 +934,20 @@ That means the run is a stability and geometry-feasibility pilot only. It is
 not a saturated nonlinear transport window and is not included in the
 quasilinear calibration reports.
 
-The same reduced-grid protocol was then applied to the CTH-like fixture. It is
-finite to ``t = 50`` but still strongly growing: the final heat flux is about
-``3.15`` and the late-half linear trend in heat flux is about ``0.10`` per time
-unit. CTH-like is therefore the strongest current external-VMEC nonlinear
-candidate, but it also needs either a longer/stabilized production run or a
-careful saturation-window study before it can become a transport-calibration
-holdout.
+The same reduced-grid protocol was then applied to the CTH-like fixture and
+extended on the office GPU to ``t = 150``. The run remains finite and develops a
+clear late nonlinear state: the least-trending tracked window is
+``t = 75.05`` to ``150.00`` with mean heat flux about ``23.1``, standard
+deviation about ``1.79``, and relative linear trend about ``1.2e-3`` per time
+unit. This is the strongest current external-VMEC nonlinear candidate. It is
+still kept as a feasibility pilot, not a transport-calibration holdout, because
+no external-VMEC nonlinear acceptance gate has been defined for this fixture
+and no independent reference or production-resolution convergence check has
+passed yet.
+
+.. image:: _static/external_vmec_cth_like_nonlinear_t150_pilot.png
+   :alt: External CTH-like VMEC nonlinear feasibility pilot
+   :width: 100%
 
 The normalized W7-X spectrum-shape gate does pass when the linear
 heat-flux-weight distribution is compared with the resolved nonlinear
