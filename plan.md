@@ -1176,3 +1176,35 @@ Exit gate:
   - replace the smooth metric/drift closure with sampled VMEC/Boozer metric tensors for a small equilibrium and compare against the existing imported VMEC/eik contract;
   - add geometry-gradient gates through one production linear solve after sampled-array parity passes;
   - then connect quasilinear objective gradients to the full geometry bridge before any nonlinear optimization promotion.
+- Advanced the differentiable geometry bridge all the way back to a real
+  ``vmec_jax`` state:
+  - added ``spectraxgk.geometry.differentiable.vmec_jax_boozer_flux_tube_sensitivity_report``;
+  - the new optional gate loads the local ``vmec_jax`` ``circular_tokamak``
+    example, perturbs two ``VMECState`` Fourier coefficients
+    ``[Rcos(radial_index, mode_index), Zsin(radial_index, mode_index)]``,
+    converts the traced state through ``vmec_jax.booz_input`` and
+    ``booz_xform_jax``, samples the resulting Boozer ``|B|`` along a field
+    line, builds the SPECTRAX-GK ``FluxTubeGeometryData`` input mapping, and
+    checks geometry-observable sensitivities against central finite
+    differences;
+  - refreshed ``docs/_static/differentiable_geometry_bridge.{png,json}``;
+    current VMEC-state-to-Boozer-to-SPECTRAX AD/FD max absolute error is
+    ``5.77e-7`` and max relative error is ``1.39e-8``;
+  - updated the open-lane dashboard so the remaining differentiable-geometry
+    action is sampled VMEC/Boozer metric/drift parity and solver-observable
+    gradient gates, not the initial VMEC-state plumbing.
+- Scope note:
+  - this is now a real ``vmec_jax -> booz_xform_jax -> SPECTRAX-GK``
+    differentiability gate for the tracked geometry observables;
+  - it still uses the current smooth metric/drift closure, so it is not yet a
+    production VMEC/Boozer metric-parity claim and not yet a nonlinear
+    stellarator-optimization claim.
+- Current next best steps:
+  - replace the smooth closure in the bridge with sampled VMEC/Boozer metric
+    tensors for a small equilibrium;
+  - compare sampled arrays against the imported VMEC/eik runtime path;
+  - add finite-difference or implicit-eigenpair checks for linear growth,
+    frequency, and quasilinear weights through the production solver cache;
+  - only then connect the QA optimization examples to the full geometry bridge
+    and keep nonlinear heat-flux optimization gated on converged nonlinear
+    windows.

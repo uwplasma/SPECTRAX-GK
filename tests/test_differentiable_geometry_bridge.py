@@ -10,10 +10,10 @@ import pytest
 
 import spectraxgk
 from spectraxgk.geometry.differentiable import (
-    booz_xform_flux_tube_sensitivity_report,
     _candidate_paths,
     _find_importable_module,
     _is_traced,
+    booz_xform_flux_tube_sensitivity_report,
     booz_xform_spectral_sensitivity_report,
     discover_differentiable_geometry_backends,
     finite_difference_jacobian,
@@ -22,6 +22,7 @@ from spectraxgk.geometry.differentiable import (
     geometry_inverse_design_report,
     geometry_observable_names,
     geometry_sensitivity_report,
+    vmec_jax_boozer_flux_tube_sensitivity_report,
     vmec_boundary_aspect_sensitivity_report,
 )
 
@@ -221,6 +222,37 @@ def test_booz_xform_flux_tube_sensitivity_report_is_bounded_when_available() -> 
     assert float(sensitivity["max_abs_ad_fd_error"]) < 2.0e-6
     assert float(sensitivity["max_rel_ad_fd_error"]) < 2.0e-4
     assert np.asarray(report["bmnc_b"]).shape == (5,)
+
+
+def test_vmec_jax_boozer_flux_tube_sensitivity_report_starts_from_real_vmec_state_when_available() -> None:
+    for name in (
+        "vmec_jax",
+        "vmec_jax.driver",
+        "vmec_jax.config",
+        "vmec_jax.static",
+        "vmec_jax.wout",
+        "vmec_jax.booz_input",
+        "booz_xform_jax",
+        "booz_xform_jax.jax_api",
+    ):
+        sys.modules.pop(name, None)
+
+    report = vmec_jax_boozer_flux_tube_sensitivity_report(ntheta=16, fd_step=2.0e-5)
+
+    assert spectraxgk.vmec_jax_boozer_flux_tube_sensitivity_report is vmec_jax_boozer_flux_tube_sensitivity_report
+    assert "available" in report
+    if not report["available"]:
+        assert report["sensitivity"] is None
+        return
+
+    sensitivity = report["sensitivity"]
+    assert report["case_name"] == "circular_tokamak"
+    assert report["param_names"] == ["delta_Rcos", "delta_Zsin"]
+    assert sensitivity["observable_names"] == list(geometry_observable_names())
+    assert np.asarray(sensitivity["jacobian_ad"]).shape == (len(geometry_observable_names()), 2)
+    assert float(sensitivity["max_abs_ad_fd_error"]) < 2.0e-5
+    assert float(sensitivity["max_rel_ad_fd_error"]) < 2.0e-4
+    assert np.asarray(report["bmnc_b"]).shape == (2,)
 
 
 def _differentiable_mapping(params: jnp.ndarray) -> dict[str, object]:

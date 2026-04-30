@@ -237,12 +237,16 @@ It writes ``docs/_static/differentiable_geometry_bridge.png`` and
 ``docs/_static/differentiable_geometry_bridge.json``. The JSON records
 ``vmec_jax`` and ``booz_xform_jax`` API availability, autodiff-vs-finite
 difference sensitivity errors, inverse-design convergence, local UQ covariance
-diagnostics, and two optional real-backend derivative gates: a ``vmec_jax``
-boundary-aspect check, a tiny ``booz_xform_jax`` Boozer-spectrum check, and a
-bounded Boozer-spectrum-to-flux-tube mapping check. The last gate evaluates
-the JAX-native Boozer ``|B|`` spectrum along a field line, builds the
-``FluxTubeGeometryData`` input mapping, and compares geometry-observable
-sensitivities against central finite differences.
+diagnostics, and four optional real-backend derivative gates: a ``vmec_jax``
+boundary-aspect check, a tiny ``booz_xform_jax`` Boozer-spectrum check, a
+bounded Boozer-spectrum-to-flux-tube mapping check, and a real
+``vmec_jax`` ``VMECState`` to ``booz_xform_jax`` to SPECTRAX-GK field-line
+geometry check. The Boozer gates evaluate the JAX-native Boozer ``|B|``
+spectrum along a field line, build the ``FluxTubeGeometryData`` input mapping,
+and compare geometry-observable sensitivities against central finite
+differences. In the current artifact the VMEC-state path has max absolute
+AD-vs-finite-difference error about ``5.8e-7`` and max relative error about
+``1.4e-8`` for the tracked geometry observables.
 
 The reusable API entry point for this workflow is
 ``geometry_inverse_design_report(mapping_fn, initial_params, target_observables, ...)``:
@@ -263,13 +267,15 @@ contract once their in-memory field-line mapping is available.
    ``vmec_jax`` is available, the panel/JSON also includes a real VMEC
    boundary-aspect derivative check; when ``booz_xform_jax`` is available, it
    runs a bounded JAX-native Boozer spectral transform, samples that spectrum
-   onto a field-line flux-tube mapping, and checks both autodiff derivative
-   paths against central finite differences.
+   onto a field-line flux-tube mapping, checks both autodiff derivative paths
+   against central finite differences, and, when both optional backends are
+   available, starts from a real ``vmec_jax`` ``VMECState`` before converting
+   through ``booz_xform_jax`` into the SPECTRAX-GK field-line contract.
 
-The next implementation step is an office-only
-``vmec_jax -> booz_xform_jax -> FluxTubeGeometryData`` parity fixture against
-the already validated VMEC/eik path, followed by geometry-gradient checks for
-growth-rate and transport observables.
+The next implementation step is to replace the bridge's smooth metric/drift
+closure with sampled VMEC/Boozer metric tensors for a small equilibrium,
+compare those arrays against the already validated imported VMEC/eik path, and
+then add geometry-gradient checks for growth-rate and transport observables.
 The VMEC bridge now also expands environment variables in ``geometry.vmec_file``.
 Tracked portable runtime TOMLs should therefore pass external VMEC equilibria
 through explicit environment variables such as ``$W7X_VMEC_FILE`` and

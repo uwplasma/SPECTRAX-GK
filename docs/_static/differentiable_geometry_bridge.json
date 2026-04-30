@@ -515,7 +515,7 @@
     0.06176080850358888,
     1.5505567586513118
   ],
-  "notes": "This is a bounded differentiable-geometry bridge validation. The high-fidelity VMEC/Boozer pipeline must provide the same solver-ready field-line arrays; this artifact validates the JAX tracing, AD-vs-FD sensitivities, inverse recovery, UQ machinery, and the first real Boozer-spectrum-to-flux-tube mapping at that contract boundary.",
+  "notes": "This is a bounded differentiable-geometry bridge validation. The high-fidelity VMEC/Boozer pipeline must provide the same solver-ready field-line arrays; this artifact validates the JAX tracing, AD-vs-FD sensitivities, inverse recovery, UQ machinery, and the first real Boozer-spectrum-to-flux-tube plus vmec_jax-state-to-Boozer mapping gates at that contract boundary.",
   "observable_names": [
     "mean_bmag",
     "relative_bmag_ripple",
@@ -675,5 +675,134 @@
     "nphi": 1,
     "ntheta": 96,
     "ntor": 0
+  },
+  "vmec_jax_boozer_flux_tube": {
+    "available": true,
+    "backend_info": {
+      "booz_xform_jax_api_available": true,
+      "booz_xform_jax_available": true,
+      "booz_xform_jax_paths": [
+        "/Users/rogeriojorge/local/booz_xform_jax",
+        "/Users/rogeriojorge/local/booz_xform_jax/src"
+      ],
+      "vmec_jax_available": true,
+      "vmec_jax_boundary_api_available": true,
+      "vmec_jax_paths": [
+        "/Users/rogeriojorge/local/vmec_jax"
+      ]
+    },
+    "bmnc_b": [
+      5.444417753013283,
+      -1.2179947567757892
+    ],
+    "case_name": "circular_tokamak",
+    "fd_step": 1e-05,
+    "input_path": "/Users/rogeriojorge/local/vmec_jax/examples/data/input.circular_tokamak",
+    "iota_b": 0.5953125,
+    "ixm_b": [
+      0,
+      1
+    ],
+    "ixn_b": [
+      0,
+      0
+    ],
+    "mboz": 2,
+    "mode_index": 1,
+    "nboz": 0,
+    "ntheta": 32,
+    "param_names": [
+      "delta_Rcos",
+      "delta_Zsin"
+    ],
+    "params": [
+      0.001,
+      0.001
+    ],
+    "radial_index": 8,
+    "sensitivity": {
+      "fd_step": 1e-05,
+      "jacobian_ad": [
+        [
+          -40.174108119060286,
+          -43.36982476446881
+        ],
+        [
+          -1.5494521076394006,
+          2.356826445185399
+        ],
+        [
+          0.43253326093650163,
+          -0.6579137378763453
+        ],
+        [
+          -0.38573739647495336,
+          0.5867339122176418
+        ],
+        [
+          2.396606664535764,
+          2.587248751415602
+        ],
+        [
+          0.0,
+          0.0
+        ]
+      ],
+      "jacobian_fd": [
+        [
+          -40.174108679114084,
+          -43.369825341788015
+        ],
+        [
+          -1.5494521073369791,
+          2.356826461767658
+        ],
+        [
+          0.4325332606747167,
+          -0.6579137430073878
+        ],
+        [
+          -0.3857373963689347,
+          0.5867339161191865
+        ],
+        [
+          2.396606671833945,
+          2.5872487570632874
+        ],
+        [
+          0.0,
+          0.0
+        ]
+      ],
+      "max_abs_ad_fd_error": 5.773192057745291e-07,
+      "max_rel_ad_fd_error": 1.3940665202206006e-08,
+      "observable_names": [
+        "mean_bmag",
+        "relative_bmag_ripple",
+        "metric_frobenius_rms",
+        "drift_rms",
+        "mean_jacobian",
+        "mean_gradpar"
+      ],
+      "observables": [
+        5.306427559271196,
+        0.1612586398142461,
+        1.813613380749408,
+        1.0971047391437456,
+        0.3165576100839916,
+        0.5953125
+      ],
+      "params": [
+        0.001,
+        0.001
+      ],
+      "source_model": "vmec_jax:state->booz_xform_jax:field-line-bmag"
+    },
+    "state_shape": [
+      17,
+      8
+    ],
+    "surface_index": 7,
+    "wout_path": "/Users/rogeriojorge/local/vmec_jax/examples/data/wout_circular_tokamak.nc"
   }
 }

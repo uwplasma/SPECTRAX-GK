@@ -96,10 +96,12 @@
         "inverse_residual_norm": 0.0,
         "max_abs_ad_fd_error": 1.2885199573986483e-09,
         "sensitivity_rank": 2,
-        "vmec_jax_available": true
+        "vmec_jax_available": true,
+        "vmec_state_boozer_flux_tube_max_abs_ad_fd_error": 5.773192057745291e-07,
+        "vmec_state_boozer_flux_tube_max_rel_ad_fd_error": 1.3940665202206006e-08
       },
       "lane": "vmec_jax / booz_xform_jax differentiable geometry bridge",
-      "next_action": "Connect a real in-memory vmec_jax/booz_xform_jax output to FluxTubeGeometryData and add parity plus geometry-gradient gates before optimization claims.",
+      "next_action": "Replace the smooth metric/drift closure with sampled VMEC/Boozer tensors, compare against the imported VMEC/EIK path, then add production growth-rate/quasilinear geometry-gradient gates.",
       "primary_artifacts": [
         "docs/_static/differentiable_geometry_bridge.json"
       ],

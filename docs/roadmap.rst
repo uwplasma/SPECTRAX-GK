@@ -54,8 +54,10 @@ Current pre-release status snapshot:
 - the Phase-A differentiable-geometry bridge is an in-memory sampled
   flux-tube contract with 100% targeted coverage, optional
   ``vmec_jax`` / ``booz_xform_jax`` discovery, tracer-safe mapping into
-  ``FluxTubeGeometryData``, and a tracked AD-vs-finite-difference inverse/UQ
-  artifact at ``docs/_static/differentiable_geometry_bridge.png``;
+  ``FluxTubeGeometryData``, a real ``vmec_jax`` ``VMECState`` to
+  ``booz_xform_jax`` to SPECTRAX-GK derivative gate, and a tracked
+  AD-vs-finite-difference inverse/UQ artifact at
+  ``docs/_static/differentiable_geometry_bridge.png``;
 - production parallelization is currently claimed only for independent
   ``k_y``/batch/UQ-style workloads and the sharded linear RK2 identity path,
   not nonlinear domain decomposition;
@@ -230,12 +232,12 @@ Differentiable geometry and optimization
 
 After the refactor/testing lane is stable, the differentiable geometry plan is:
 
-1. Add an in-memory ``vmec_jax`` bridge into the existing SPECTRAX-GK geometry
-   contract without writing or reading ``wout`` files.
+1. Replace the current smooth metric/drift closure in the
+   ``vmec_jax -> booz_xform_jax -> SPECTRAX-GK`` bridge with sampled
+   VMEC/Boozer tensors.
 2. Validate geometry fields against the existing VMEC-file path.
-3. Add ``booz_xform_jax`` where Boozer-coordinate quantities are needed.
-4. Add gradient checks for geometry-to-observable paths.
-5. Promote examples from sensitivity analysis to inverse design, uncertainty
+3. Add gradient checks for geometry-to-observable paths.
+4. Promote examples from sensitivity analysis to inverse design, uncertainty
    quantification, and stellarator optimization only after the derivative
    checks and benchmark artifacts are frozen.
 
