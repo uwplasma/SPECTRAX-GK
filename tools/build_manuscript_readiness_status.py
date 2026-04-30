@@ -127,6 +127,7 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
     geom_matrix = _read_json(root, "docs/_static/vmec_boozer_parity_matrix.json")
     opt = _read_json(root, "docs/_static/stellarator_itg_optimization_comparison.json")
     solver_grad = _read_json(root, "docs/_static/solver_objective_gradient_gate.json")
+    vmec_solver_grad = _read_json(root, "docs/_static/vmec_boozer_solver_frequency_gradient_gate.json")
     profile = _read_json(root, "docs/_static/nonlinear_sharding_profile_office_gpu.json")
 
     ql_inputs_passed = bool((ql_inputs or {}).get("passed", False))
@@ -159,8 +160,10 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
     opt_reduced_objectives_passed = _all_optimization_objectives_passed(opt)
     solver_gradient_passed = bool((solver_grad or {}).get("passed", False))
     solver_gradient_source = str((solver_grad or {}).get("source_scope", "missing"))
-    solver_gradient_full_vmec = solver_gradient_passed and solver_gradient_source == "mode21_vmec_boozer_state"
-    solver_gradient_status = "closed" if solver_gradient_full_vmec else "partial" if solver_gradient_passed else "open"
+    solver_gradient_full_vmec_frequency = bool((vmec_solver_grad or {}).get("passed", False)) and str(
+        (vmec_solver_grad or {}).get("source_scope", "missing")
+    ) == "mode21_vmec_boozer_state"
+    solver_gradient_status = "partial" if solver_gradient_passed else "open"
 
     lanes: list[dict[str, Any]] = [
         {
@@ -232,20 +235,31 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
             "lane": "Production solver-objective geometry gradients",
             "status": solver_gradient_status,
             "claim_level": "required_for_full_end_to_end_stellarator_optimization_claim",
-            "primary_artifacts": ["docs/_static/solver_objective_gradient_gate.json"] if solver_grad else [],
+            "primary_artifacts": [
+                path
+                for path, payload in (
+                    ("docs/_static/solver_objective_gradient_gate.json", solver_grad),
+                    ("docs/_static/vmec_boozer_solver_frequency_gradient_gate.json", vmec_solver_grad),
+                )
+                if payload
+            ],
             "key_metrics": {
                 "source_scope": solver_gradient_source,
                 "solver_ready_gradient_gate": solver_gradient_passed,
-                "full_vmec_boozer_gradient_gate": solver_gradient_full_vmec,
+                "full_vmec_boozer_frequency_gradient_gate": solver_gradient_full_vmec_frequency,
+                "full_vmec_boozer_quasilinear_gradient_gate": False,
                 "linear_growth_gradient_gate": bool((solver_grad or {}).get("linear_growth_gradient_gate", False)),
                 "quasilinear_weight_gradient_gate": bool(
                     (solver_grad or {}).get("quasilinear_weight_gradient_gate", False)
                 ),
+                "vmec_boozer_frequency_rel_error": _finite_float(
+                    (vmec_solver_grad or {}).get("eigenpair_gate", {}).get("max_rel_error")
+                ),
                 "nonlinear_window_gradient_gate": bool((solver_grad or {}).get("nonlinear_window_gradient_gate", False)),
             },
             "next_action": (
-                "Promote the passed solver-ready geometry-gradient gate to actual mode-21 VMEC/Boozer state "
-                "coefficients, then add nonlinear-window objective gradients."
+                "The mode-21 VMEC/Boozer state-to-solver eigenfrequency gate is now in place; next promote the "
+                "heavy quasilinear flux-weight state-gradient diagnostic after profiling/conditioning."
             ),
         },
         {
@@ -359,7 +373,7 @@ def write_manuscript_readiness_artifacts(payload: dict[str, Any], *, out: str | 
         elif str(lane["lane"]).startswith("Production"):
             metric = (
                 f"solver-ready: {km.get('solver_ready_gradient_gate')}; "
-                f"full VMEC: {km.get('full_vmec_boozer_gradient_gate')}"
+                f"VMEC freq: {km.get('full_vmec_boozer_frequency_gradient_gate')}"
             )
         elif str(lane["lane"]).startswith("Profiler"):
             speed = km.get("engineering_speedup")

@@ -74,6 +74,7 @@ def write_solver_objective_gradient_artifacts(
     parameter_labels = {
         "bmag_ripple": r"$|B|$ ripple",
         "curvature_drift_scale": "drift scale",
+        "Rcos_mid_surface_m1": r"$R_{m=1}$",
     }
     raw_gate = payload.get("eigenpair_gate", {})
     gate = raw_gate if isinstance(raw_gate, dict) else {}
@@ -109,12 +110,22 @@ def write_solver_objective_gradient_artifacts(
     cbar = fig.colorbar(image, ax=ax_heat, fraction=0.046, pad=0.04)
     cbar.set_label(r"$\log_{10}$ relative error")
 
+    source_scope = str(payload.get("source_scope", "solver_ready_geometry_contract"))
     status = "passed" if payload.get("passed") else "open"
-    fig.suptitle(f"Solver-objective geometry-gradient gate: {status}")
-    caption = (
-        "Actual linear-RHS eigenpair observables are differentiated with respect to solver-ready geometry arrays. "
-        "This is a production solver gate, not yet the full VMEC/Boozer state-gradient claim."
-    )
+    if source_scope == "mode21_vmec_boozer_state":
+        fig.suptitle(f"VMEC/Boozer state-to-solver frequency-gradient gate: {status}")
+    else:
+        fig.suptitle(f"Solver-objective geometry-gradient gate: {status}")
+    if source_scope == "mode21_vmec_boozer_state":
+        caption = (
+            "Actual linear-RHS eigenfrequency is differentiated through vmec_jax state coefficients, "
+            "booz_xform_jax mode-21 Boozer geometry, and the solver cache."
+        )
+    else:
+        caption = (
+            "Actual linear-RHS eigenpair observables are differentiated with respect to solver-ready geometry arrays. "
+            "This is a production solver gate, not yet the full VMEC/Boozer state-gradient claim."
+        )
     fig.text(0.5, 0.02, caption, ha="center", fontsize=8.2, color="#333333")
     fig.subplots_adjust(left=0.09, right=0.97, top=0.86, bottom=0.22, wspace=0.30)
     fig.savefig(out_path, dpi=220)

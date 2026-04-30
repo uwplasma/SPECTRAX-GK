@@ -460,10 +460,12 @@ reference_anchors = [
 physics_contracts = [
   "actual linear-RHS growth/frequency and quasilinear-weight observables must be differentiated before optimization claims",
   "solver-ready geometry gates are not full vmec_jax/booz_xform_jax state-gradient claims",
+  "mode-21 VMEC/Boozer state-to-solver eigenfrequency gradients must pass before quasilinear state-gradient promotion",
 ]
 numerics_contracts = [
   "implicit eigenpair sensitivities match nearest-branch central finite differences",
   "branch isolation and biorthogonal left/right eigenvector conditioning are recorded",
+  "VMEC/Boozer finite differences use a conditioned step recorded in the artifact",
 ]
 fast_tests = [
   "tests/test_solver_objective_gradients.py",
@@ -471,9 +473,11 @@ fast_tests = [
 artifact_paths = [
   "docs/_static/solver_objective_gradient_gate.json",
   "docs/_static/solver_objective_gradient_gate.png",
+  "docs/_static/vmec_boozer_solver_frequency_gradient_gate.json",
+  "docs/_static/vmec_boozer_solver_frequency_gradient_gate.png",
 ]
 next_tests = [
-  "promote the solver-ready geometry-gradient gate to actual mode-21 VMEC/Boozer state coefficients",
+  "profile and condition the full-chain quasilinear flux-weight state-gradient diagnostic",
   "add nonlinear-window objective gradient or estimator gates after linear/quasilinear VMEC gates pass",
 ]
 
