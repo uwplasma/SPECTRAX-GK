@@ -1,0 +1,5 @@
+lane,status,claim_level,primary_artifact,next_action
+W7-X nonlinear fluctuation spectrum,closed,validated_simulation_spectrum_not_experimental_validation,docs/_static/w7x_fluctuation_spectrum_panel.json,Keep as the released simulation-spectrum diagnostic; do not use as an experimental density-spectrum claim.
+TEM / kinetic-electron linear parity,open,open_linear_mismatch_blocks_tem_extension,docs/_static/tem_mismatch_table.csv,Fix the TEM branch/frequency mismatch before using kinetic-electron W7-X scans for validation or optimization.
+W7-X multi-flux-tube and multi-surface scan,open,untracked_required_manuscript_extension,,"Run alpha/surface-resolved W7-X ITG scans and promote only after linear branch, nonlinear window, and resolved-spectrum gates pass."
+W7-X kinetic-electron/TEM nonlinear window,open,not_started,,"After TEM linear parity closes, run bounded kinetic-electron W7-X pilots and add matched nonlinear gates."

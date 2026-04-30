@@ -93,6 +93,14 @@ step is therefore a physically motivated velocity-space closure/operator
 study, not a normalization change or another single-parameter constant-damping
 scan.
 
+The W7-X fluctuation/TEM extension lane is tracked by
+``docs/_static/w7x_tem_extension_status.png``. The nonlinear fluctuation
+spectrum estimator is closed as a simulation diagnostic with ``76`` samples,
+but the TEM table remains far outside any publication parity envelope and no
+multi-alpha, multi-surface, or kinetic-electron W7-X nonlinear windows are
+admitted yet. These are now explicit blockers before broad W7-X/TEM validation
+or optimization claims.
+
 Post-release scope
 ------------------
 
@@ -187,7 +195,10 @@ scope above is stable:
    trace residual or late envelope, so the next sweep should vary the
    closure/operator physics rather than simply increasing constant damping.
 2. Tighten the now-materialized windowed nonlinear-statistics panel beyond the current ``0.10`` release gate where the literature/reference windows justify stricter tolerances.
-3. W7-X multi-flux-tube ITG/TEM extension and fluctuation-spectrum lane.
+3. W7-X multi-flux-tube ITG/TEM extension and fluctuation-spectrum lane. The
+   simulation-spectrum estimator is closed, while TEM linear parity,
+   alpha/surface-resolved scans, and kinetic-electron nonlinear windows remain
+   open in ``docs/_static/w7x_tem_extension_status.json``.
 4. Shaped multispecies tokamak linear lane.
 5. ETG nonlinear only after its benchmark operating point and observable
    contract are explicit.

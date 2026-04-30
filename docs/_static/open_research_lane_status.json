@@ -45,6 +45,11 @@
       "key_metrics": {
         "dominant_heat_flux_ky": 1.2857143878936768,
         "dominant_phi_ky": 0.1904762089252472,
+        "open_extension_rows": [
+          "TEM / kinetic-electron linear parity",
+          "W7-X multi-flux-tube and multi-surface scan",
+          "W7-X kinetic-electron/TEM nonlinear window"
+        ],
         "time_samples": 76,
         "time_window": [
           0.06476377695798874,
@@ -55,6 +60,7 @@
       "next_action": "Add W7-X multi-alpha/multi-surface ITG and kinetic-electron density-gradient/TEM scans before broad stellarator-validation claims.",
       "primary_artifacts": [
         "docs/_static/w7x_fluctuation_spectrum_panel.json",
+        "docs/_static/w7x_tem_extension_status.json",
         "docs/_static/tem_mismatch_table.csv"
       ],
       "status": "partial"

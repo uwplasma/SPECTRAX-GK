@@ -612,6 +612,14 @@ Recent GX parity spot checks are tracked outside the automated test suite:
   ``k_y``, dominant zonal ``k_x``, and ``claim_level``. This is a reproducible
   simulation diagnostic and explicitly not a Doppler-reflectometry transfer-
   function validation.
+- **W7-X/TEM extension status**:
+  ``tools/build_w7x_tem_extension_status.py`` reads the W7-X fluctuation panel
+  and the current TEM mismatch table and writes
+  ``docs/_static/w7x_tem_extension_status.{png,pdf,json,csv}``. It closes only
+  the simulation-spectrum estimator. TEM linear parity remains open with
+  maximum absolute relative growth-rate mismatch about ``4.25`` and frequency
+  mismatch about ``3.52e2`` in the tracked table, while W7-X multi-alpha,
+  multi-surface, and kinetic-electron nonlinear windows remain unstarted.
 - **HSX nonlinear (`t = 50`)**: the refreshed comparison closes at
   ``mean_rel_abs(Wg) ~= 2.75e-2``,
   ``mean_rel_abs(Wphi) ~= 3.61e-2``,
@@ -627,6 +635,15 @@ Recent GX parity spot checks are tracked outside the automated test suite:
    W7-X nonlinear fluctuation-spectrum diagnostic from the gated ``t≈200``
    VMEC-backed run. The panel summarizes resolved simulation spectra and is
    intentionally scoped below an experimental Doppler-reflectometry comparison.
+
+.. figure:: _static/w7x_tem_extension_status.png
+   :alt: W7-X fluctuation/TEM extension validation status
+   :width: 100%
+
+   Executable status of the W7-X fluctuation/TEM extension lane. The released
+   simulation-spectrum diagnostic is closed, but TEM linear parity,
+   alpha/surface-resolved W7-X scans, and kinetic-electron nonlinear windows
+   remain open before broad W7-X/TEM validation claims.
 
 Linear physics checks
 ---------------------

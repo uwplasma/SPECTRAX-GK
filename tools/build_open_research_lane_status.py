@@ -153,6 +153,13 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
     best_recurrence = _best_recurrence_candidate(zonal_recurrence)
     best_hypercollision = _best_hypercollision_probe(zonal_hypercollision)
     zonal_status = "closed" if zonal_ref and not zonal_failures and zonal_ref.get("validation_status") == "closed" else "open"
+    w7x_tem_extension = _read_json(root, "docs/_static/w7x_tem_extension_status.json")
+    w7x_tem_rows = (w7x_tem_extension or {}).get("rows", [])
+    w7x_tem_open = [
+        row.get("lane", "unknown")
+        for row in w7x_tem_rows
+        if isinstance(row, dict) and str(row.get("status")) == "open"
+    ]
 
     train_count, holdout_count, holdout_names = _holdout_counts(ql_report)
     ql_passed = bool(ql_report.get("passed", False)) if ql_report else False
@@ -192,12 +199,17 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
             "lane": "W7-X fluctuation spectrum and TEM/multi-flux extension",
             "status": "partial" if bool(fluct and fluct.get("source_gate_passed")) else "open",
             "claim_level": "validated_simulation_spectrum_tem_extension_open",
-            "primary_artifacts": ["docs/_static/w7x_fluctuation_spectrum_panel.json", "docs/_static/tem_mismatch_table.csv"],
+            "primary_artifacts": [
+                "docs/_static/w7x_fluctuation_spectrum_panel.json",
+                "docs/_static/w7x_tem_extension_status.json",
+                "docs/_static/tem_mismatch_table.csv",
+            ],
             "key_metrics": {
                 "time_samples": (fluct or {}).get("time_samples"),
                 "time_window": [(fluct or {}).get("time_min"), (fluct or {}).get("time_max")],
                 "dominant_phi_ky": (fluct or {}).get("dominant_phi_ky"),
                 "dominant_heat_flux_ky": (fluct or {}).get("dominant_heat_flux_ky"),
+                "open_extension_rows": w7x_tem_open,
             },
             "next_action": (
                 "Add W7-X multi-alpha/multi-surface ITG and kinetic-electron density-gradient/TEM scans before "

@@ -1089,3 +1089,13 @@ Exit gate:
   - quasilinear holdouts: add a new nonlinear holdout only after pilot, window, grid-convergence, and spectrum-shape gates pass; keep failed CTH-like external VMEC out of calibration;
   - differentiable geometry: connect a real in-memory `vmec_jax`/`booz_xform_jax` state into `FluxTubeGeometryData` and add geometry parity plus gradient gates before optimization claims;
   - performance: collect matched CPU/GPU profiler traces for nonlinear bracket/field-solve hot paths before making any speedup claim.
+- Added an executable W7-X fluctuation/TEM extension-status gate:
+  - added `tools/build_w7x_tem_extension_status.py` and `tests/test_build_w7x_tem_extension_status.py`;
+  - generated `docs/_static/w7x_tem_extension_status.{png,pdf,json,csv}` from the current W7-X nonlinear fluctuation panel and `docs/_static/tem_mismatch_table.csv`;
+  - current result: W7-X simulation-spectrum estimator is closed (`76` samples, dominant nonzonal `ky rho_i≈0.190`), but TEM linear parity remains open with max absolute relative growth mismatch `4.254` and frequency mismatch `351.534`; multi-alpha/multi-surface W7-X scans and kinetic-electron nonlinear windows are explicitly not admitted yet;
+  - wired this artifact into `tools/build_open_research_lane_status.py`, docs, and the validation coverage manifest so broad W7-X/TEM claims stay blocked until the missing physics gates exist.
+- Current next best steps:
+  - fix the TEM branch/frequency mismatch before starting kinetic-electron W7-X nonlinear validation;
+  - then run W7-X alpha/surface-resolved linear scans and only promote nonlinear windows after branch, transport-window, and resolved-spectrum gates pass;
+  - continue nonlinear holdout expansion through the existing pilot -> convergence -> validation -> calibration-admission path, not by adding unconverged external VMEC runs;
+  - continue geometry bridge and profiler lanes with real parity/gradient/profiler artifacts rather than claim-only docs.
