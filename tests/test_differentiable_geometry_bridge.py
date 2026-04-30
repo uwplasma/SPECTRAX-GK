@@ -13,6 +13,7 @@ from spectraxgk.geometry.differentiable import (
     _candidate_paths,
     _find_importable_module,
     _is_traced,
+    booz_xform_spectral_sensitivity_report,
     discover_differentiable_geometry_backends,
     finite_difference_jacobian,
     flux_tube_geometry_from_mapping,
@@ -135,6 +136,7 @@ def test_discover_differentiable_geometry_backends_reports_optional_apis(tmp_pat
     (booz_root / "__init__.py").write_text("marker = 'booz'\n", encoding="utf-8")
     (booz_root / "jax_api.py").write_text(
         "def prepare_booz_xform_constants_from_inputs(*args, **kwargs): return None\n"
+        "def booz_xform_from_inputs(*args, **kwargs): return None\n"
         "def booz_xform_jax_impl(*args, **kwargs): return None\n",
         encoding="utf-8",
     )
@@ -181,6 +183,23 @@ def test_vmec_boundary_aspect_sensitivity_report_uses_discovered_jax_api(tmp_pat
 def test_vmec_boundary_aspect_sensitivity_report_validates_parameter_shape() -> None:
     with pytest.raises(ValueError, match="length-2"):
         vmec_boundary_aspect_sensitivity_report(jnp.ones(3))
+
+
+def test_booz_xform_spectral_sensitivity_report_is_bounded_when_available() -> None:
+    for name in ("booz_xform_jax", "booz_xform_jax.jax_api"):
+        sys.modules.pop(name, None)
+
+    report = booz_xform_spectral_sensitivity_report(ripple=0.05, fd_step=2.0e-5)
+
+    assert spectraxgk.booz_xform_spectral_sensitivity_report is booz_xform_spectral_sensitivity_report
+    assert "available" in report
+    if not report["available"]:
+        assert report["objective"] is None
+        return
+
+    assert float(report["objective"]) > 0.0
+    assert float(report["max_abs_ad_fd_error"]) < 1.0e-7
+    assert np.asarray(report["bmnc_b"]).shape == (1, 2)
 
 
 def _differentiable_mapping(params: jnp.ndarray) -> dict[str, object]:
