@@ -369,6 +369,11 @@ def test_vmec_jax_flux_tube_array_parity_report_tracks_production_gap_when_avail
         assert float(report["equal_arc_drift_worst_normalized_max_abs"]) < 1.2e-1
 
 
+def test_vmec_jax_flux_tube_array_parity_report_enforces_boozer_resolution_floor() -> None:
+    with pytest.raises(ValueError, match="mboz and nboz"):
+        vmec_jax_flux_tube_array_parity_report(mboz=20, nboz=21)
+
+
 def test_vmec_jax_metric_tensor_sensitivity_report_checks_real_metric_tensors_when_available() -> None:
     for name in (
         "vmec_jax",

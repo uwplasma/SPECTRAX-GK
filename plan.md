@@ -1358,10 +1358,10 @@ Exit gate:
     equal-arc remap, and the same root-level drift-loader factor used by
     ``load_gx_geometry_netcdf``;
   - the tracked ``nfp4_QH_warm_start`` artifact now passes a separate drift
-    subgate with worst normalized mismatch ``3.49e-2`` after raising the
-    default Boozer parity mode count to ``mboz=nboz=12``:
-    ``cvdrift=3.49e-2``, ``gbdrift=3.49e-2``, ``cvdrift0=3.04e-2``, and
-    ``gbdrift0=3.04e-2``;
+    subgate with worst normalized mismatch ``3.50e-2`` after raising and
+    enforcing the default Boozer parity mode count to ``mboz=nboz=21``:
+    ``cvdrift=3.50e-2``, ``gbdrift=3.50e-2``, ``cvdrift0=3.03e-2``, and
+    ``gbdrift0=3.03e-2``;
   - the release claim is now closed for the tracked zero-beta Boozer
     equal-arc field-line, metric, and drift convention, while finite-beta,
     multi-equilibrium drift parity and solver-objective gradients remain
@@ -1375,9 +1375,11 @@ Exit gate:
     of ``7.10e-3``;
   - ``nfp3_QI_fixed_resolution_final`` passes core/metric smoke gates but fails
     the drift smoke gate with ``mboz=nboz=8`` at worst normalized mismatch
-    ``1.82e-1``; increasing the Boozer parity mode count to ``12`` reduces the
-    QI drift mismatch to ``7.03e-2`` and passes the release drift tolerance,
+    ``1.82e-1``; increasing the Boozer parity mode count to ``21`` reduces the
+    QI drift mismatch to ``7.13e-2`` and passes the release drift tolerance,
     which identifies the immediate issue as spectral truncation rather than a
     normalization change;
   - a trial shear-HNGC correction using the wrong input-convention factor was
     explicitly rejected because it worsened the tracked QH metric gate.
+- Enforced ``mboz,nboz >= 21`` for the VMEC/Boozer equal-arc parity helpers so
+  future runs do not silently fall back to the under-resolved QI drift setting.
