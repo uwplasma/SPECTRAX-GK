@@ -71,8 +71,10 @@ contracts and gates close:
 
 - W7-X zonal long-window damping, recurrence, and closure under paper-facing
   normalization;
-- W7-X fluctuation-spectrum panel with a reproducible estimator and observable
-  definition;
+- W7-X fluctuation-spectrum experimental extension: the simulation-spectrum
+  panel now has a reproducible estimator and gated artifact, but density and
+  zonal-frequency comparison through a Doppler-reflectometry transfer function
+  remains post-release;
 - W7-X multi-flux-tube and TEM extension before broad stellarator-validation
   claims.
 

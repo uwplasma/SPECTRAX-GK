@@ -56,6 +56,10 @@ def _canonical_artifact_key(raw: object) -> str | None:
         try:
             return path.resolve().relative_to(ROOT.resolve()).as_posix()
         except ValueError:
+            parts = path.parts
+            for anchor in ("tools_out", "docs", "examples"):
+                if anchor in parts:
+                    return Path(*parts[parts.index(anchor) :]).as_posix()
             return path.as_posix()
     return path.as_posix().lstrip("./")
 

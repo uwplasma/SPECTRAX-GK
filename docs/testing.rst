@@ -128,7 +128,9 @@ observables rather than inventing repo-local metrics:
 - **W7-X zonal-flow response**: use the stella/GENE W7-X benchmark conventions
   for residual level and damping envelope.
 - **W7-X fluctuation spectra**: follow the W7-X Doppler-reflectometry
-  comparison work for density and zonal-flow frequency spectra.
+  comparison work for density and zonal-flow frequency spectra. The current
+  closed artifact is a simulation-spectrum diagnostic; experimental transfer
+  functions remain outside the release claim.
 - **Electromagnetic stellarator verification**: adopt a heavy-electron
   electromagnetic lane before realistic-mass claims, following the GENE-3D
   verification pattern.
@@ -159,6 +161,7 @@ The first reusable tooling for this lane now exists:
 - ``tools/plot_w7x_zonal_closure_ladder.py``
 - ``tools/plot_w7x_zonal_state_convention_audit.py``
 - ``tools/plot_w7x_zonal_recurrence_sweep.py``
+- ``tools/plot_w7x_fluctuation_spectrum_panel.py``
 
 The gate-report helpers are intentionally small and JSON-ready. They should be
 used by manuscript refresh scripts so every reported artifact has the same
@@ -584,6 +587,13 @@ Recent GX parity spot checks are tracked outside the automated test suite:
   ``mean_rel_abs(Wg) ~= 3.20e-2``,
   ``mean_rel_abs(Wphi) ~= 3.02e-2``,
   ``mean_rel_abs(HeatFlux) ~= 4.53e-2``.
+- **W7-X fluctuation spectrum**: ``tools/plot_w7x_fluctuation_spectrum_panel.py``
+  reuses the same gated nonlinear NetCDF artifact and writes
+  ``docs/_static/w7x_fluctuation_spectrum_panel.{png,pdf,json,csv}``. The JSON
+  records the time window, dominant nonzonal ``k_y``, dominant heat-flux
+  ``k_y``, dominant zonal ``k_x``, and ``claim_level``. This is a reproducible
+  simulation diagnostic and explicitly not a Doppler-reflectometry transfer-
+  function validation.
 - **HSX nonlinear (`t = 50`)**: the refreshed comparison closes at
   ``mean_rel_abs(Wg) ~= 2.75e-2``,
   ``mean_rel_abs(Wphi) ~= 3.61e-2``,
@@ -591,6 +601,14 @@ Recent GX parity spot checks are tracked outside the automated test suite:
 - **KBM nonlinear (`t = 100`)**: the refreshed long-window comparison closes at
   roughly ``9.3e-3`` mean-relative error across
   ``Wg/Wphi/Wapar/HeatFlux/ParticleFlux``.
+
+.. figure:: _static/w7x_fluctuation_spectrum_panel.png
+   :alt: W7-X nonlinear fluctuation-spectrum diagnostic panel
+   :width: 100%
+
+   W7-X nonlinear fluctuation-spectrum diagnostic from the gated ``t≈200``
+   VMEC-backed run. The panel summarizes resolved simulation spectra and is
+   intentionally scoped below an experimental Doppler-reflectometry comparison.
 
 Linear physics checks
 ---------------------

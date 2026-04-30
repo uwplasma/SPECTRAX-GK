@@ -171,10 +171,10 @@ Stellarator Linear
      - Open; time coverage closed, residual and late-envelope gates open
      - a case-specific runtime/tool path exists through ``examples/benchmarks/runtime_w7x_zonal_response_vmec.toml`` and ``tools/generate_w7x_zonal_response_panel.py``. The runtime now supports the paper-facing ``init_field="phi"`` Gaussian potential initializer and writes both the older volume-weighted ``Phi_zonal_mode_kxt`` diagnostic and the W7-X line-average ``Phi_zonal_line_kxt`` observable. The frozen VMEC-backed artifact now lives at ``docs/_static/w7x_zonal_response_panel.png`` with metadata in ``docs/_static/w7x_zonal_response_panel.json`` and replayable traces in ``docs/_static/w7x_zonal_response_panel.traces.csv``; it uses line-first normalization, following the paper text. The stella/GENE Fig. 11 reference traces and inset residuals are digitized by ``tools/digitize_w7x_zonal_reference.py`` into ``docs/_static/w7x_zonal_reference_digitized.csv`` and ``docs/_static/w7x_zonal_reference_digitized_residuals.csv``. ``tools/compare_w7x_zonal_reference.py`` writes the residual/time-coverage/envelope artifact ``docs/_static/w7x_zonal_reference_compare.json`` and can now replay the comparison from the tracked combined trace CSV. ``tools/plot_w7x_zonal_contract_audit.py`` writes ``docs/_static/w7x_zonal_contract_audit.png`` as a publication-facing open-lane diagnostic, ``tools/plot_w7x_zonal_moment_tail_audit.py`` writes ``docs/_static/w7x_zonal_moment_tail_audit.png`` to track the velocity-space recurrence / moment-tail hypothesis, ``tools/plot_w7x_zonal_closure_ladder.py`` writes ``docs/_static/w7x_zonal_closure_ladder_kx070.png`` to compare bounded closure attempts at ``k_x rho_i=0.07``, ``tools/plot_w7x_zonal_state_convention_audit.py`` writes ``docs/_static/w7x_zonal_state_convention_audit.png`` to close the initializer/observable convention layer, and ``tools/plot_w7x_zonal_recurrence_sweep.py`` writes ``docs/_static/w7x_zonal_recurrence_sweep_kx070.png`` to separate moment-resolution and closure-source effects. The current SPECTRAX artifact enforces the intended test-4 ``k_x rho_i`` values ``[0.05, 0.07, 0.10, 0.30]`` with a periodic radial box for the ``k_y=0`` zonal run and reaches ``t≈3460`` for ``k_x rho_i=0.05`` and ``t≈1980`` for the other three wavelengths. Under the paper-facing normalization, residuals fail at ``k_x rho_i=0.07``, ``0.10``, and ``0.30`` and late envelopes fail for all wavelengths. The state-level audit closes the convention question with Gaussian-profile relative ``L2`` error ``1.85e-6`` and helper/manual observable agreement near ``2e-16``. The bounded recurrence sweep shows that ``Nl=12,Nm=48`` has the best no-closure trace error on ``t v_t/a <= 100`` and that constant-source closure suppresses the final Hermite tail but worsens the trace error. The remaining closure step is therefore a physical velocity-space recurrence / damping fix rather than a documentation or normalization change
    * - W7-X fluctuation spectra
-     - density and zonal-flow frequency spectra
-     - W7-X Doppler-reflectometry comparison paper
-     - Open
-     - requires a reproducible spectral estimator and windowing policy
+     - resolved ``k_y`` spectra, ``k_x``-``k_y`` fluctuation power, and temporal spectra
+     - W7-X nonlinear gate plus Doppler-reflectometry comparison conventions
+     - Initial simulation diagnostic closed; experimental transfer-function validation deferred
+     - ``tools/plot_w7x_fluctuation_spectrum_panel.py`` writes ``docs/_static/w7x_fluctuation_spectrum_panel.png`` with CSV/JSON/PDF companions from the gated W7-X ``t≈200`` nonlinear NetCDF output. The script refuses failed nonlinear gate summaries by default and marks the JSON with ``claim_level = "validated_nonlinear_simulation_spectrum_not_experimental_validation"`` and ``gate_index_include = false``. It therefore closes the reproducible spectrum-estimator layer while leaving density/zonal-frequency comparison through a Doppler-reflectometry transfer function as a future manuscript extension
    * - HSX
      - ``gamma(k_y)``, ``omega(k_y)``
      - GX / internal frozen references
@@ -371,8 +371,8 @@ Notes
   frozen reference bundles checked into ``docs/_static/reference_modes/``.
   Do not build publication figures from transient external files or ad hoc
   office-machine outputs.
-- Experimental-facing figures such as W7-X fluctuation spectra should be marked
-  as literature-aligned unless the diagnostic transfer function and access
-  model are encoded directly in the repo.
+- Experimental-facing figures such as W7-X fluctuation spectra should remain
+  scoped as simulation diagnostics unless the diagnostic transfer function and
+  access model are encoded directly in the repo.
 - Electromagnetic stellarator claims should be split explicitly into
   heavy-electron verification and realistic-electron research runs.

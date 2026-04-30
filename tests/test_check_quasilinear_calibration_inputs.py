@@ -59,6 +59,31 @@ def test_audit_passes_when_required_point_matches_passed_gate(tmp_path: Path) ->
     assert payload["reports"][0]["points"][0]["reason"] == "matched passed nonlinear gate"
 
 
+def test_audit_normalizes_absolute_artifact_paths_from_other_checkouts(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    gate = tmp_path / "gate.json"
+    gate.write_text(
+        json.dumps(
+            {
+                "case": "synthetic_nonlinear_window",
+                "spectrax": "tools_out/synthetic.csv",
+                "gate_report": {"case": "synthetic_nonlinear_window", "passed": True, "gates": []},
+            }
+        ),
+        encoding="utf-8",
+    )
+    report = tmp_path / "report.json"
+    _write_report(report, "/Users/example/local/SPECTRAX-GK/tools_out/synthetic.csv")
+
+    paths = mod.write_audit([report], gate_patterns=[str(gate)], out_json=tmp_path / "audit.json", no_plot=True)
+
+    payload = json.loads(Path(paths["json"]).read_text(encoding="utf-8"))
+    point = payload["reports"][0]["points"][0]
+    assert payload["passed"] is True
+    assert point["nonlinear_artifact"] == "tools_out/synthetic.csv"
+    assert point["reason"] == "matched passed nonlinear gate"
+
+
 def test_audit_fails_when_required_point_uses_failed_gate(tmp_path: Path) -> None:
     mod = _load_tool_module()
     gate = tmp_path / "external_gate.json"
