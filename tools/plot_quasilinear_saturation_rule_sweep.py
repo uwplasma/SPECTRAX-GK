@@ -178,13 +178,79 @@ def _shape_payload(path: Path | None) -> dict[str, Any]:
     }
 
 
+def _summary_gate_passed(payload: dict[str, Any]) -> bool:
+    if isinstance(payload.get("gate_report"), dict):
+        return bool(payload["gate_report"].get("passed", False))
+    if isinstance(payload.get("promotion_gate"), dict):
+        return bool(payload["promotion_gate"].get("passed", False))
+    if "gate_passed" in payload:
+        return bool(payload.get("gate_passed"))
+    return False
+
+
+def nonlinear_input_validation_report(
+    cases: tuple[SaturationCase, ...],
+    *,
+    required_splits: tuple[str, ...] = ("train", "holdout"),
+) -> dict[str, Any]:
+    """Return gate provenance for nonlinear summaries used by model diagnostics."""
+
+    rows = []
+    passed = True
+    for case in cases:
+        path = Path(case.nonlinear_summary)
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        required = case.split in required_splits
+        gate_passed = _summary_gate_passed(payload)
+        row_passed = (not required) or gate_passed
+        if not row_passed:
+            passed = False
+        gate_report = payload.get("gate_report") if isinstance(payload.get("gate_report"), dict) else {}
+        rows.append(
+            {
+                "case": case.case,
+                "split": case.split,
+                "required": required,
+                "nonlinear_summary": str(path),
+                "passed": row_passed,
+                "gate_passed": gate_passed,
+                "gate_case": str(gate_report.get("case", payload.get("case", path.stem))),
+                "reason": "matched passed nonlinear summary gate"
+                if row_passed and required
+                else ("not required split" if row_passed else "nonlinear summary gate is missing or failed"),
+            }
+        )
+    return {
+        "kind": "quasilinear_model_input_validation",
+        "passed": passed,
+        "required_splits": list(required_splits),
+        "cases": rows,
+    }
+
+
+def require_validated_nonlinear_inputs(cases: tuple[SaturationCase, ...]) -> dict[str, Any]:
+    """Raise if any train/holdout case lacks a passed nonlinear summary gate."""
+
+    report = nonlinear_input_validation_report(cases)
+    if not bool(report["passed"]):
+        failed = [row["case"] for row in report["cases"] if not bool(row["passed"])]
+        raise ValueError(f"unvalidated nonlinear train/holdout input(s): {', '.join(failed)}")
+    return report
+
+
 def build_saturation_rule_sweep(
     cases: tuple[SaturationCase, ...] = DEFAULT_CASES,
     *,
     observed_floor: float = 1.0e-12,
+    require_validated_inputs: bool = True,
 ) -> dict[str, Any]:
     """Fit one scalar per rule on train cases and score all cases."""
 
+    input_validation = (
+        require_validated_nonlinear_inputs(cases)
+        if require_validated_inputs
+        else {"kind": "quasilinear_model_input_validation", "passed": None, "required": False}
+    )
     case_rows = []
     rule_names = tuple(RULE_LABELS)
     for case in cases:
@@ -260,6 +326,7 @@ def build_saturation_rule_sweep(
             "holdout_mean_abs_relative_error": null_holdout_mean,
             "holdout_max_abs_relative_error": None if null_holdout.size == 0 else float(np.nanmax(null_holdout)),
         },
+        "input_validation": input_validation,
         "promotion_gate": {
             "passed": bool(accepted_rules),
             "accepted_rules": accepted_rules,

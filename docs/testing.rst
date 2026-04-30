@@ -241,6 +241,10 @@ be documented in the docs, but they cannot silently become calibration or
 optimization data. The public CI runs this audit during the docs/packaging
 job, and the fast test suite checks the current tracked train/holdout reports
 against the same gate index.
+The model-development figure scripts for saturation-rule sweeps,
+shape-aware saturation, and uncertainty-aware candidate scoring also validate
+their nonlinear summary inputs by default and serialize an ``input_validation``
+block into the tracked JSON artifacts.
 
 The diagnostics stream now also carries ``Diagnostics/Phi_zonal_mode_kxt``, a
 signed complex zonal-potential history reduced over ``z`` with the same volume

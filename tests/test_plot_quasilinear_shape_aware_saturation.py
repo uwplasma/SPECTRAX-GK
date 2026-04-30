@@ -41,7 +41,16 @@ def _write_case(
     diag = tmp_path / f"{name}_diag.csv"
     diag.write_text(f"t,heat_flux\n0.0,{observed}\n1.0,{observed}\n", encoding="utf-8")
     summary = tmp_path / f"{name}_summary.json"
-    summary.write_text(json.dumps({"case": name, "spectrax": str(diag)}), encoding="utf-8")
+    summary.write_text(
+        json.dumps(
+            {
+                "case": name,
+                "spectrax": str(diag),
+                "gate_report": {"case": name, "passed": True, "gates": []},
+            }
+        ),
+        encoding="utf-8",
+    )
     ql_dist = (1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0)
     shape = tmp_path / f"{name}_shape.json"
     shape.write_text(
@@ -92,6 +101,7 @@ def test_shape_aware_report_and_figure_are_replayable(tmp_path: Path) -> None:
     paths = mod.write_shape_aware_saturation_figure(report, out=tmp_path / "shape.png", title="Shape")
 
     assert report["kind"] == "quasilinear_shape_aware_saturation_report"
+    assert report["input_validation"]["passed"] is True
     assert len(report["leave_one_out"]) == 3
     assert "null_training_mean_mean_abs_relative_error" in report["metrics"]
     assert report["promotion_gate"]["requires_beating_training_mean_null"] is True

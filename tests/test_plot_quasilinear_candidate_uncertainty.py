@@ -32,7 +32,16 @@ def _write_case(tmp_path: Path, name: str, *, observed: float, weight: float) ->
     diag = tmp_path / f"{name}_diag.csv"
     diag.write_text(f"t,heat_flux\n0.0,{observed}\n1.0,{observed}\n", encoding="utf-8")
     summary = tmp_path / f"{name}_summary.json"
-    summary.write_text(json.dumps({"case": name, "spectrax": str(diag)}), encoding="utf-8")
+    summary.write_text(
+        json.dumps(
+            {
+                "case": name,
+                "spectrax": str(diag),
+                "gate_report": {"case": name, "passed": True, "gates": []},
+            }
+        ),
+        encoding="utf-8",
+    )
     return spectrum, summary
 
 
@@ -47,6 +56,7 @@ def test_candidate_uncertainty_report_and_figure_are_replayable(tmp_path: Path) 
     paths = mod.write_candidate_uncertainty_figure(report, out=tmp_path / "candidate.png", title="Candidate")
 
     assert report["kind"] == "quasilinear_candidate_uncertainty_report"
+    assert report["input_validation"]["passed"] is True
     assert "linear_weight" in report["candidates"]
     assert report["promotion_gate"]["requires_interval_coverage"] is True
     assert Path(paths["png"]).exists()

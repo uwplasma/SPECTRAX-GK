@@ -856,6 +856,14 @@ available as a user-facing saturation rule. This is the intended behavior:
 uncertainty intervals document model risk, but they do not rescue a model that
 fails held-out predictive skill or data-volume/conditioning checks.
 
+All three model-development reports above now carry an ``input_validation``
+block. It is generated from the nonlinear summary gates before model fitting,
+so these figures can only be regenerated from nonlinear windows that already
+passed their validation gates. This is intentionally stricter than a finite-run
+check: exploratory external-VMEC pilots remain useful for planning, but they
+cannot enter these quasilinear model diagnostics until their convergence and
+validation gates pass.
+
 VMEC equilibrium portfolio for future holdouts
 ----------------------------------------------
 

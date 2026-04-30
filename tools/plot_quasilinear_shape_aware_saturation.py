@@ -21,7 +21,11 @@ from spectraxgk.plotting import set_plot_style  # noqa: E402
 from spectraxgk.quasilinear import shape_aware_power_law_objective  # noqa: E402
 from spectraxgk.quasilinear_calibration import calibration_point_from_nonlinear_window_summary  # noqa: E402
 
-from plot_quasilinear_saturation_rule_sweep import DEFAULT_CASES, SaturationCase  # noqa: E402
+from plot_quasilinear_saturation_rule_sweep import (  # noqa: E402
+    DEFAULT_CASES,
+    SaturationCase,
+    require_validated_nonlinear_inputs,
+)
 
 
 def _json_clean(value: Any) -> Any:
@@ -159,9 +163,15 @@ def build_shape_aware_saturation_report(
     *,
     observed_floor: float = 1.0e-12,
     passed_shape_only: bool = False,
+    require_validated_inputs: bool = True,
 ) -> dict[str, Any]:
     """Run leave-one-case-out validation for the power-law shape-aware model."""
 
+    input_validation = (
+        require_validated_nonlinear_inputs(cases)
+        if require_validated_inputs
+        else {"kind": "quasilinear_model_input_validation", "passed": None, "required": False}
+    )
     case_rows = []
     for case in cases:
         observed, observed_std = _observed_flux(case)
@@ -230,6 +240,7 @@ def build_shape_aware_saturation_report(
         "claim_level": "leave_one_geometry_out_model_development",
         "observed_floor": float(observed_floor),
         "passed_shape_only": bool(passed_shape_only),
+        "input_validation": input_validation,
         "all_case_shape_fit": all_fit,
         "metrics": {
             "shape_aware_mean_abs_relative_error": shape_mean,
