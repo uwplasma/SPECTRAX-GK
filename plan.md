@@ -1473,3 +1473,34 @@ Exit gate:
   - then connect the differentiable stellarator optimization examples to the
     passed full-chain linear gate while keeping quasilinear and nonlinear
     optimization claims scoped until their gates pass.
+- Closed the full-chain VMEC/Boozer quasilinear-gradient gate for reduced
+  stellarator objectives:
+  - replaced the implicit eigenpair observable Jacobian with a split chain
+    rule in ``spectraxgk.autodiff_validation``. The math is unchanged, but the
+    expensive VMEC/Boozer parameter derivative is now evaluated only along the
+    actual parameter directions instead of being carried through every
+    eigenvector-component tangent;
+  - added ``mode21_vmec_boozer_quasilinear_gradient_report`` and
+    ``tools/build_vmec_boozer_quasilinear_gradient_gate.py``;
+  - generated
+    ``docs/_static/vmec_boozer_quasilinear_gradient_gate.{png,pdf,json,csv}``;
+  - the tracked gate uses ``mboz=nboz=21`` and a richer ``Nl=2, Nm=3`` moment
+    basis so the electrostatic heat-flux weight is nonzero;
+  - the gate checks ``gamma``, ``omega``, ``<k_perp^2>``, linear ion
+    heat-flux weight, and ``gamma Q_i/k_perp^2`` against nearest-branch
+    central finite differences and passes with maximum relative error
+    ``4.28e-3`` in about 34 seconds on the local CPU.
+- Scope note:
+  - this closes the reduced linear/quasilinear full-chain stellarator
+    objective-gradient path from a real ``vmec_jax`` state coefficient through
+    ``booz_xform_jax`` and the SPECTRAX-GK linear solver;
+  - it still does **not** close full nonlinear-window heat-flux gradients or
+    broad multi-equilibrium stellarator transport-gradient optimization.
+- Current next best steps:
+  - add a second VMEC/Boozer equilibrium to the quasilinear-gradient gate
+    before making broad stellarator-transport-gradient claims;
+  - connect the stellarator optimization examples to the passed full-chain
+    linear/quasilinear gate while preserving the reduced/nonlinear claim
+    boundary;
+  - keep W7-X zonal recurrence/damping and TEM/kinetic-electron validation
+    deferred for the current manuscript as previously agreed.

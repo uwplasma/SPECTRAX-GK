@@ -51,7 +51,7 @@
         "worst_reduction_factor": 0.14944986630532714
       },
       "lane": "Reduced differentiable stellarator ITG optimization",
-      "next_action": "Use as the current optimization figure only with scoped wording; production VMEC/Boozer/GK solver gradients remain the next priority before claiming end-to-end stellarator heat-flux optimization.",
+      "next_action": "Use as the current optimization figure only with scoped wording; nonlinear-window VMEC/Boozer/GK gradients and optimized-geometry nonlinear audits remain future requirements before claiming end-to-end stellarator heat-flux optimization.",
       "primary_artifacts": [
         "docs/_static/stellarator_itg_optimization_comparison.json",
         "docs/_static/stellarator_itg_optimization_comparison.png"
@@ -62,19 +62,21 @@
       "claim_level": "required_for_full_end_to_end_stellarator_optimization_claim",
       "key_metrics": {
         "full_vmec_boozer_frequency_gradient_gate": true,
-        "full_vmec_boozer_quasilinear_gradient_gate": false,
+        "full_vmec_boozer_quasilinear_gradient_gate": true,
         "linear_growth_gradient_gate": true,
         "nonlinear_window_gradient_gate": false,
         "quasilinear_weight_gradient_gate": true,
         "solver_ready_gradient_gate": true,
         "source_scope": "solver_ready_geometry_contract",
-        "vmec_boozer_frequency_rel_error": 0.004892743510544424
+        "vmec_boozer_frequency_rel_error": 0.004892743510544424,
+        "vmec_boozer_quasilinear_rel_error": 0.004282152564851315
       },
       "lane": "Production solver-objective geometry gradients",
-      "next_action": "The mode-21 VMEC/Boozer state-to-solver eigenfrequency gate is now in place; next promote the heavy quasilinear flux-weight state-gradient diagnostic after profiling/conditioning.",
+      "next_action": "Full VMEC/Boozer eigenfrequency and quasilinear gradients are closed; keep nonlinear-window VMEC/Boozer gradients as the future step before full nonlinear stellarator-optimization claims.",
       "primary_artifacts": [
         "docs/_static/solver_objective_gradient_gate.json",
-        "docs/_static/vmec_boozer_solver_frequency_gradient_gate.json"
+        "docs/_static/vmec_boozer_solver_frequency_gradient_gate.json",
+        "docs/_static/vmec_boozer_quasilinear_gradient_gate.json"
       ],
       "status": "partial"
     },

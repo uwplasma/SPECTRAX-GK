@@ -255,10 +255,22 @@ flux-weight or nonlinear-window state-gradient promotion gate.
    Full-chain VMEC/Boozer eigenfrequency-gradient gate. A real ``vmec_jax``
    state coefficient is perturbed, converted through ``booz_xform_jax`` with
    ``mboz=nboz=21``, mapped into the SPECTRAX-GK linear solver, and checked
-   against central finite differences. The current full-chain quasilinear
-   flux-weight diagnostic remains an offline optimization lane because the
-   higher-dimensional eigenvector observable is still too expensive for the
-   release test budget.
+   against central finite differences.
+
+.. figure:: _static/vmec_boozer_quasilinear_gradient_gate.png
+   :width: 90%
+   :align: center
+   :alt: VMEC/Boozer state-to-solver quasilinear-gradient validation gate
+
+   Full-chain VMEC/Boozer quasilinear-gradient gate. The same state
+   coefficient is mapped through ``vmec_jax`` and ``booz_xform_jax`` with
+   ``mboz=nboz=21`` and a richer ``Nl=2, Nm=3`` SPECTRAX-GK moment basis.
+   The implicit left/right eigenpair sensitivity of ``gamma``, ``omega``,
+   ``<k_perp^2>``, the electrostatic heat-flux weight, and
+   ``gamma Q_i/k_perp^2`` agrees with central finite differences to
+   ``4.3e-3`` relative error in the tracked artifact. This closes the
+   linear/quasilinear full-chain gradient gate for reduced stellarator
+   objectives; it is still not a nonlinear-window heat-flux gradient claim.
 
 Promotion Gates for Full VMEC/Boozer/GK Optimization
 ----------------------------------------------------
@@ -296,7 +308,9 @@ the following pass:
    linear-RHS fixture. The full mode-21 VMEC/Boozer state-to-solver
    eigenfrequency gate is also closed by
    ``docs/_static/vmec_boozer_solver_frequency_gradient_gate.json``. The
-   remaining promotion step is full-chain quasilinear flux-weight gradients.
+   full mode-21 VMEC/Boozer state-to-solver quasilinear heat-flux-weight gate
+   is closed by
+   ``docs/_static/vmec_boozer_quasilinear_gradient_gate.json``.
 5. Host scalar materialization in production runtime caches is removed or
    isolated so geometry parameters remain traceable.
 6. A nonlinear heat-flux objective has a validated adjoint, VJP, or robust

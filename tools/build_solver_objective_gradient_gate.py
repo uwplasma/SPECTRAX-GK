@@ -111,12 +111,20 @@ def write_solver_objective_gradient_artifacts(
     cbar.set_label(r"$\log_{10}$ relative error")
 
     source_scope = str(payload.get("source_scope", "solver_ready_geometry_contract"))
+    kind = str(payload.get("kind", "linear_solver_geometry_gradient_gate"))
     status = "passed" if payload.get("passed") else "open"
-    if source_scope == "mode21_vmec_boozer_state":
+    if kind == "mode21_vmec_boozer_quasilinear_gradient_gate":
+        fig.suptitle(f"VMEC/Boozer state-to-solver quasilinear-gradient gate: {status}")
+    elif source_scope == "mode21_vmec_boozer_state":
         fig.suptitle(f"VMEC/Boozer state-to-solver frequency-gradient gate: {status}")
     else:
         fig.suptitle(f"Solver-objective geometry-gradient gate: {status}")
-    if source_scope == "mode21_vmec_boozer_state":
+    if kind == "mode21_vmec_boozer_quasilinear_gradient_gate":
+        caption = (
+            "Actual linear-RHS quasilinear observables are differentiated through vmec_jax state coefficients, "
+            "booz_xform_jax mode-21 Boozer geometry, and the solver cache."
+        )
+    elif source_scope == "mode21_vmec_boozer_state":
         caption = (
             "Actual linear-RHS eigenfrequency is differentiated through vmec_jax state coefficients, "
             "booz_xform_jax mode-21 Boozer geometry, and the solver cache."
