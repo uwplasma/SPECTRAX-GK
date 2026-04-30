@@ -245,10 +245,10 @@ the following pass:
    same artifact now records a direct-VMEC-tensor vs imported-VMEC/EIK
    array-parity audit plus a Boozer equal-arc core audit. The core audit now
    matches the imported ``bmag``, ``bgrad``, ``gradpar``, ``q``, ``s_hat``,
-   and Jacobian convention at release tolerance. The remaining gap is full
-   production parity: the ``gds*``/``grho`` metric reconstruction and
-   Hegna-Nakajima drift convention must match the imported VMEC/EIK runtime
-   path before transport gradients are promoted.
+   Jacobian, and zero-beta ``gds*``/``grho`` metric convention at release
+   tolerance. The remaining gap is full production parity for the
+   Hegna-Nakajima curvature/drift convention before transport gradients are
+   promoted.
 2. The sampled field-line arrays match the existing imported-VMEC/EIK runtime
    path for at least one small equilibrium.
 3. Geometry-observable gradients match central finite differences for the

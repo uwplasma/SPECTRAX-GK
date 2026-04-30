@@ -1330,11 +1330,24 @@ Exit gate:
     the open-lane dashboard so the bridge now distinguishes the closed
     Boozer equal-arc core convention from the still-open full metric/drift
     production parity gap.
+- Follow-up from this entry: reconstructing ``gds*``/``grho`` from the
+  matched equal-arc path is now closed by the metric subgate below.
+- Extended the Boozer equal-arc parity gate to zero-beta metric profiles:
+  - ``vmec_jax_boozer_equal_arc_core_profiles_from_state`` now reconstructs
+    ``gds2``, ``gds21``, ``gds22``, and ``grho`` from the real
+    ``booz_xform_jax`` Boozer ``R/Z/nu/B`` spectra, radial derivatives, and
+    the same equal-arc remap used by the imported VMEC/EIK path;
+  - the tracked ``nfp4_QH_warm_start`` artifact now passes a separate metric
+    subgate with worst normalized mismatch ``3.44e-2``:
+    ``gds2=2.48e-2``, ``gds21=3.44e-2``, ``gds22=3.10e-2``, and
+    ``grho=1.58e-2``;
+  - this closes the release-tolerance field-line normalization and zero-beta
+    metric convention for the differentiable VMEC/Boozer bridge while keeping
+    the production Hegna-Nakajima curvature/drift parity gap explicit.
 - Current next best steps:
-  - use the matched equal-arc core path to reconstruct ``gds*`` and ``grho``
-    from Boozer/VMEC metric tensors in the same coordinate convention;
-  - replace the remaining local grad-``B`` closure with the production
-    Hegna-Nakajima drift convention;
-  - once full array parity passes, add production solver gradients for linear
+  - port the Hegna-Nakajima curvature/drift reconstruction into the same
+    JAX-native Boozer equal-arc path and compare ``cvdrift``, ``gbdrift``,
+    ``cvdrift0``, and ``gbdrift0`` against imported VMEC/EIK;
+  - once drift parity passes, add production solver gradients for linear
     growth/frequency, quasilinear weights, and then nonlinear-window
     objectives before making stellarator optimization claims.

@@ -211,7 +211,12 @@ def make_figure(payload: dict[str, Any], out_png: Path) -> None:
             core_worst = float(vmec_array_parity.get("equal_arc_core_worst_normalized_max_abs", np.nan))
             bgrad_status = "pass" if vmec_array_parity.get("equal_arc_derivative_passed") else "open"
             bgrad_worst = float(vmec_array_parity.get("equal_arc_derivative_worst_normalized_max_abs", np.nan))
-            equal_arc_status = f"Boozer core {core_status} {core_worst:.1e}, bgrad {bgrad_status} {bgrad_worst:.1e}"
+            metric_status = "pass" if vmec_array_parity.get("equal_arc_metric_passed") else "open"
+            metric_worst = float(vmec_array_parity.get("equal_arc_metric_worst_normalized_max_abs", np.nan))
+            equal_arc_status = (
+                f"Boozer core {core_status} {core_worst:.1e}, "
+                f"bgrad {bgrad_status} {bgrad_worst:.1e}, metric {metric_status} {metric_worst:.1e}"
+            )
         vmec_parity_text = (
             "VMEC/EIK array parity: "
             f"{status}, worst {float(vmec_array_parity['worst_core_normalized_max_abs']):.1e}; "
