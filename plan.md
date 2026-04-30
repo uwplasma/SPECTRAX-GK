@@ -1365,3 +1365,16 @@ Exit gate:
     equal-arc field-line, metric, and drift convention, while finite-beta,
     multi-equilibrium drift parity and solver-objective gradients remain
     required before stellarator heat-flux optimization claims.
+- Bounded follow-up probe after the drift subgate:
+  - ``LandremanPaul2021_QA_lowres`` is not usable for this runtime EIK parity
+    path as shipped in ``vmec_jax`` because its bundled ``wout`` reports
+    ``Aminor_p=0`` and the runtime generator correctly rejects it;
+  - ``shaped_tokamak_pressure`` passes the small ``ntheta=8`` equal-arc
+    core/metric/drift smoke gate, including a drift worst normalized mismatch
+    of ``7.10e-3``;
+  - ``nfp3_QI_fixed_resolution_final`` passes core/metric smoke gates but still
+    fails the drift smoke gate with worst normalized mismatch ``1.82e-1``;
+  - a trial shear-HNGC correction using the wrong input-convention factor was
+    explicitly rejected because it worsened the tracked QH metric gate. The QI
+    drift mismatch should therefore remain a real broader-equilibrium drift
+    lane, not be hidden with a normalization change.
