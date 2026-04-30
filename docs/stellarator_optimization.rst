@@ -234,8 +234,12 @@ the following pass:
    in memory without writing intermediate VMEC or EIK files.
    The current bridge already validates the optional ``vmec_jax`` boundary
    derivative, a real ``booz_xform_jax`` spectral derivative, and a bounded
-   Boozer-``|B|``-to-flux-tube mapping derivative, but it still uses a smooth
-   metric/drift closure rather than production VMEC/Boozer metric tensors.
+   Boozer-``|B|``-to-flux-tube mapping derivative. It now also starts from a
+   real ``vmec_jax`` ``VMECState``, perturbs VMEC Fourier coefficients,
+   converts through ``booz_xform_jax``, and checks SPECTRAX-GK field-line
+   geometry-observable derivatives against central finite differences. The
+   remaining gap is the smooth metric/drift closure: production promotion
+   still requires sampled VMEC/Boozer metric tensors.
 2. The sampled field-line arrays match the existing imported-VMEC/EIK runtime
    path for at least one small equilibrium.
 3. Geometry-observable gradients match central finite differences for the

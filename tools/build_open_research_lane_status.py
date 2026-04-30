@@ -103,6 +103,7 @@ def _best_hypercollision_probe(payload: dict[str, Any] | None) -> dict[str, Any]
     tail_std = _finite_float(best.get("tail_std"), 0.0) or 0.0
     ref_tail_std = _finite_float(best.get("reference_tail_std"), 0.0) or 0.0
     ratio = None if ref_tail_std <= 0.0 else tail_std / ref_tail_std
+    validation_status = None if payload is None else payload.get("validation_status")
     return {
         "label": str(best.get("label", "unknown")),
         "mean_abs_error": _finite_float(best.get("mean_abs_error")),
@@ -110,7 +111,7 @@ def _best_hypercollision_probe(payload: dict[str, Any] | None) -> dict[str, Any]
         "hermite_tail": _finite_float(best.get("hermite_tail_at_tmax")),
         "free_energy_ratio": _finite_float(best.get("free_energy_at_tmax_over_initial")),
         "source_path": best.get("source_path"),
-        "validation_status": payload.get("validation_status"),
+        "validation_status": validation_status,
     }
 
 
@@ -166,16 +167,26 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
     cth_passed = bool((cth_gate or {}).get("gate_report", {}).get("passed", False))
 
     geom_sensitivity = (geom or {}).get("sensitivity", {}) if isinstance((geom or {}).get("sensitivity", {}), dict) else {}
+    geom_vmec_state = (
+        (geom or {}).get("vmec_jax_boozer_flux_tube", {})
+        if isinstance((geom or {}).get("vmec_jax_boozer_flux_tube", {}), dict)
+        else {}
+    )
+    geom_vmec_state_sensitivity = (
+        geom_vmec_state.get("sensitivity", {}) if isinstance(geom_vmec_state.get("sensitivity", {}), dict) else {}
+    )
     geom_inverse = (geom or {}).get("geometry_inverse_design_report", {})
     geom_uq = (geom or {}).get("uq", {})
     geom_max_abs = _finite_float(geom_sensitivity.get("max_abs_ad_fd_error"))
     geom_inverse_res = _finite_float(geom_inverse.get("final_residual_norm")) if isinstance(geom_inverse, dict) else None
     geom_rank = int(geom_uq.get("sensitivity_map_rank", 0)) if isinstance(geom_uq, dict) else 0
+    geom_vmec_state_abs = _finite_float(geom_vmec_state_sensitivity.get("max_abs_ad_fd_error"))
+    geom_vmec_state_rel = _finite_float(geom_vmec_state_sensitivity.get("max_rel_ad_fd_error"))
 
     profile_identity = bool((profile or {}).get("identity_gate_pass", False))
     profile_speedup = _finite_float((profile or {}).get("engineering_speedup"))
 
-    lanes = [
+    lanes: list[dict[str, Any]] = [
         {
             "lane": "W7-X zonal long-window recurrence/damping",
             "status": zonal_status,
@@ -246,14 +257,16 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
             "primary_artifacts": ["docs/_static/differentiable_geometry_bridge.json"],
             "key_metrics": {
                 "max_abs_ad_fd_error": geom_max_abs,
+                "vmec_state_boozer_flux_tube_max_abs_ad_fd_error": geom_vmec_state_abs,
+                "vmec_state_boozer_flux_tube_max_rel_ad_fd_error": geom_vmec_state_rel,
                 "inverse_residual_norm": geom_inverse_res,
                 "sensitivity_rank": geom_rank,
                 "vmec_jax_available": (geom or {}).get("backend_info", {}).get("vmec_jax_available"),
                 "booz_xform_jax_api_available": (geom or {}).get("booz_xform_jax_api_available"),
             },
             "next_action": (
-                "Connect a real in-memory vmec_jax/booz_xform_jax output to FluxTubeGeometryData and add parity plus "
-                "geometry-gradient gates before optimization claims."
+                "Replace the smooth metric/drift closure with sampled VMEC/Boozer tensors, compare against the imported "
+                "VMEC/EIK path, then add production growth-rate/quasilinear geometry-gradient gates."
             ),
         },
         {
@@ -342,11 +355,15 @@ def write_status_artifacts(payload: dict[str, Any], *, out_png: Path = DEFAULT_O
         elif lane["lane"].startswith("Nonlinear holdouts"):
             metric = f"holdouts: {key_metrics.get('holdout_points')}, promoted: {key_metrics.get('calibration_report_passed')}"
         elif lane["lane"].startswith("vmec_jax"):
-            metric = f"AD-FD max: {key_metrics.get('max_abs_ad_fd_error'):.1e}"
+            state_abs = key_metrics.get("vmec_state_boozer_flux_tube_max_abs_ad_fd_error")
+            if state_abs is None:
+                metric = f"AD-FD max: {key_metrics.get('max_abs_ad_fd_error'):.1e}"
+            else:
+                metric = f"VMEC-state AD-FD: {state_abs:.1e}"
         elif lane["lane"].startswith("Profiler"):
             speed = key_metrics.get("engineering_speedup")
             metric = "speedup: n/a" if speed is None else f"speedup: {speed:.2f}x"
-        ax.text(min(value + 0.06, 3.05), yi, metric, va="center", ha="left", fontsize=8.2)
+        ax.text(min(value + 0.06, 3.05), float(yi), metric, va="center", ha="left", fontsize=8.2)
 
     caption = (
         "Partial means a bounded diagnostic/gate exists, but the broader manuscript claim remains scoped. "
