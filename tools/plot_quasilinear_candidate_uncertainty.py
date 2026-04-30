@@ -385,7 +385,14 @@ def build_candidate_uncertainty_report(
     }
 
 
-def write_candidate_uncertainty_figure(report: dict[str, Any], *, out: str | Path, title: str) -> dict[str, str]:
+def write_candidate_uncertainty_figure(
+    report: dict[str, Any],
+    *,
+    out: str | Path,
+    title: str,
+    dpi: int = 220,
+    write_pdf: bool = True,
+) -> dict[str, str]:
     """Write PNG/PDF/JSON artifacts for a candidate uncertainty report."""
 
     out_path = Path(out)
@@ -484,14 +491,18 @@ def write_candidate_uncertainty_figure(report: dict[str, Any], *, out: str | Pat
         ax1.text(xpos, err / 1.08, text, ha="center", va="top", fontsize=8, color="white", fontweight="bold")
     ax1.legend(loc="upper right", fontsize=8)
     fig.suptitle(title, y=1.03, fontsize=14, fontweight="bold")
-    fig.savefig(out_path, dpi=220, bbox_inches="tight")
-    pdf_path = out_path.with_suffix(".pdf")
-    fig.savefig(pdf_path, bbox_inches="tight")
+    fig.savefig(out_path, dpi=dpi, bbox_inches="tight")
+    paths = {"png": str(out_path)}
+    if write_pdf:
+        pdf_path = out_path.with_suffix(".pdf")
+        fig.savefig(pdf_path, bbox_inches="tight")
+        paths["pdf"] = str(pdf_path)
     plt.close(fig)
 
     json_path = out_path.with_suffix(".json")
     json_path.write_text(json.dumps(_json_clean(report), indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    return {"png": str(out_path), "pdf": str(pdf_path), "json": str(json_path)}
+    paths["json"] = str(json_path)
+    return paths
 
 
 def build_parser() -> argparse.ArgumentParser:
