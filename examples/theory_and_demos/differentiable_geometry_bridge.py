@@ -13,8 +13,9 @@ The example validates the Phase-A geometry contract used by
 
 When ``vmec_jax`` is available, the figure also includes an independent
 boundary-aspect derivative and real VMEC metric-tensor derivatives through the
-``vmec_jax`` state/geometry APIs. The Boozer bridge is audited by
-differentiating both a bounded spectral objective and a
+``vmec_jax`` state/geometry APIs, plus a stellarator field-line tensor gate
+that samples real VMEC ``|B|`` and metric tensors from a ``VMECState``. The
+Boozer bridge is audited by differentiating both a bounded spectral objective and a
 Boozer-spectrum-to-flux-tube mapping through the real ``booz_xform_jax``
 functional API. A final optional gate starts from a real ``vmec_jax``
 ``VMECState`` and differentiates VMEC Fourier coefficients through
@@ -45,6 +46,7 @@ from spectraxgk.geometry.differentiable import (
     geometry_observable_names,
     geometry_sensitivity_report,
     vmec_jax_boozer_flux_tube_sensitivity_report,
+    vmec_jax_field_line_tensor_sensitivity_report,
     vmec_jax_metric_tensor_sensitivity_report,
     vmec_boundary_aspect_sensitivity_report,
 )
@@ -176,6 +178,7 @@ def make_figure(payload: dict[str, Any], out_png: Path) -> None:
     axes[0, 0].legend(frameon=True, fontsize=9)
     vmec = payload.get("vmec_boundary", {})
     vmec_metric = payload.get("vmec_jax_metric_tensor", {})
+    vmec_field_line = payload.get("vmec_jax_field_line_tensor", {})
     vmec_state = payload.get("vmec_jax_boozer_flux_tube", {})
     booz = payload.get("booz_xform_spectral", {})
     booz_flux = payload.get("booz_xform_flux_tube", {})
@@ -185,6 +188,9 @@ def make_figure(payload: dict[str, Any], out_png: Path) -> None:
     vmec_metric_text = "VMEC metric AD/FD: n/a"
     if isinstance(vmec_metric, dict) and vmec_metric.get("available"):
         vmec_metric_text = f"VMEC metric AD/FD: {float(vmec_metric['max_abs_ad_fd_error']):.1e}"
+    vmec_field_line_text = "VMEC field-line AD/FD: n/a"
+    if isinstance(vmec_field_line, dict) and vmec_field_line.get("available"):
+        vmec_field_line_text = f"VMEC field-line AD/FD: {float(vmec_field_line['max_abs_ad_fd_error']):.1e}"
     booz_text = "Boozer spectral AD/FD: n/a"
     if isinstance(booz, dict) and booz.get("available"):
         booz_text = f"Boozer spectral AD/FD: {float(booz['max_abs_ad_fd_error']):.1e}"
@@ -203,9 +209,12 @@ def make_figure(payload: dict[str, Any], out_png: Path) -> None:
     axes[0, 0].text(
         0.03,
         0.04,
-        f"{vmec_text}\n{vmec_metric_text}\n{booz_text}\n{booz_flux_text}\n{vmec_state_text}",
+        (
+            f"{vmec_text}\n{vmec_metric_text}\n{vmec_field_line_text}\n"
+            f"{booz_text}\n{booz_flux_text}\n{vmec_state_text}"
+        ),
         transform=axes[0, 0].transAxes,
-        fontsize=6.8,
+        fontsize=6.15,
         bbox={"boxstyle": "round,pad=0.25", "facecolor": "white", "alpha": 0.82, "edgecolor": "#c9c9c9"},
     )
 
@@ -285,6 +294,7 @@ def main(argv: list[str] | None = None) -> int:
     backend_info = discover_differentiable_geometry_backends()
     vmec_boundary = vmec_boundary_aspect_sensitivity_report(jnp.asarray(final_params))
     vmec_metric_tensor = vmec_jax_metric_tensor_sensitivity_report()
+    vmec_field_line_tensor = vmec_jax_field_line_tensor_sensitivity_report()
     booz_spectral = booz_xform_spectral_sensitivity_report()
     booz_flux_tube = booz_xform_flux_tube_sensitivity_report()
     vmec_state_boozer_flux_tube = vmec_jax_boozer_flux_tube_sensitivity_report()
@@ -295,6 +305,7 @@ def main(argv: list[str] | None = None) -> int:
         "booz_xform_flux_tube": booz_flux_tube,
         "booz_xform_spectral": booz_spectral,
         "vmec_jax_boozer_flux_tube": vmec_state_boozer_flux_tube,
+        "vmec_jax_field_line_tensor": vmec_field_line_tensor,
         "vmec_jax_metric_tensor": vmec_metric_tensor,
         "vmec_boundary": vmec_boundary,
         "observable_names": list(geometry_observable_names()),
@@ -312,8 +323,8 @@ def main(argv: list[str] | None = None) -> int:
             "This is a bounded differentiable-geometry bridge validation. The high-fidelity VMEC/Boozer "
             "pipeline must provide the same solver-ready field-line arrays; this artifact validates the "
             "JAX tracing, AD-vs-FD sensitivities, inverse recovery, UQ machinery, and the first real "
-            "VMEC metric-tensor, Boozer-spectrum-to-flux-tube, and vmec_jax-state-to-Boozer mapping gates "
-            "at that contract boundary."
+            "VMEC metric-tensor, VMEC field-line tensor, Boozer-spectrum-to-flux-tube, and "
+            "vmec_jax-state-to-Boozer mapping gates at that contract boundary."
         ),
     }
 

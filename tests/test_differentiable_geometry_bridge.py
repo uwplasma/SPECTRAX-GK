@@ -23,8 +23,10 @@ from spectraxgk.geometry.differentiable import (
     geometry_observable_names,
     geometry_sensitivity_report,
     vmec_jax_boozer_flux_tube_sensitivity_report,
+    vmec_jax_field_line_tensor_sensitivity_report,
     vmec_jax_metric_tensor_sensitivity_report,
     vmec_boundary_aspect_sensitivity_report,
+    vmec_field_line_tensor_observable_names,
     vmec_metric_tensor_observable_names,
 )
 
@@ -284,6 +286,38 @@ def test_vmec_jax_metric_tensor_sensitivity_report_checks_real_metric_tensors_wh
     assert float(report["max_abs_ad_fd_error"]) < 2.0e-5
     assert float(report["max_rel_ad_fd_error"]) < 2.0e-4
     assert len(report["metric_grid_shape"]) == 3
+
+
+def test_vmec_jax_field_line_tensor_sensitivity_report_checks_stellarator_tensors_when_available() -> None:
+    for name in (
+        "vmec_jax",
+        "vmec_jax.driver",
+        "vmec_jax.config",
+        "vmec_jax.static",
+        "vmec_jax.wout",
+        "vmec_jax.geom",
+        "vmec_jax.vmec_bcovar",
+        "vmec_jax.field",
+    ):
+        sys.modules.pop(name, None)
+
+    report = vmec_jax_field_line_tensor_sensitivity_report(ntheta=24, fd_step=1.0e-6)
+
+    assert spectraxgk.vmec_jax_field_line_tensor_sensitivity_report is vmec_jax_field_line_tensor_sensitivity_report
+    assert spectraxgk.vmec_field_line_tensor_observable_names is vmec_field_line_tensor_observable_names
+    assert "available" in report
+    if not report["available"]:
+        assert report["sensitivity"] is None
+        return
+
+    assert report["case_name"] == "nfp4_QH_warm_start"
+    assert report["param_names"] == ["delta_Rcos", "delta_Zsin"]
+    assert report["observable_names"] == list(vmec_field_line_tensor_observable_names())
+    assert np.asarray(report["jacobian_ad"]).shape == (len(vmec_field_line_tensor_observable_names()), 2)
+    assert float(report["max_abs_ad_fd_error"]) < 5.0e-3
+    assert float(report["max_rel_ad_fd_error"]) < 5.0e-4
+    assert len(report["metric_grid_shape"]) == 3
+    assert int(report["metric_grid_shape"][2]) > 1
 
 
 def _differentiable_mapping(params: jnp.ndarray) -> dict[str, object]:
