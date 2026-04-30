@@ -17,7 +17,7 @@ import numpy as np
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
-from spectraxgk.plotting import set_plot_style  # noqa: E402
+from spectraxgk.plotting import set_plot_style  # type: ignore[import-untyped]  # noqa: E402
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -148,6 +148,7 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
     ql_report = _read_json(root, "docs/_static/quasilinear_stellarator_train_holdout_report.json")
     cth_gate = _read_json(root, "docs/_static/external_vmec_cth_like_grid_convergence_gate.json")
     geom = _read_json(root, "docs/_static/differentiable_geometry_bridge.json")
+    geom_matrix = _read_json(root, "docs/_static/vmec_boozer_parity_matrix.json")
     profile = _read_json(root, "docs/_static/nonlinear_sharding_profile_office_gpu.json")
 
     zonal_failures = _gate_failures(zonal_ref.get("gate_report") if zonal_ref else None)
@@ -232,6 +233,27 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
     geom_vmec_equal_arc_drift_passed = bool(geom_vmec_array_parity.get("equal_arc_drift_passed", False))
     geom_vmec_state_abs = _finite_float(geom_vmec_state_sensitivity.get("max_abs_ad_fd_error"))
     geom_vmec_state_rel = _finite_float(geom_vmec_state_sensitivity.get("max_rel_ad_fd_error"))
+    geom_matrix_summary = geom_matrix.get("summary", {}) if isinstance(geom_matrix, dict) else {}
+    geom_matrix_rows = geom_matrix.get("rows", []) if isinstance(geom_matrix, dict) else []
+    geom_matrix_all_equal_arc_passed = bool(geom_matrix_summary.get("all_equal_arc_passed", False))
+    geom_matrix_min_mode = int(geom_matrix.get("minimum_boozer_mode_count", 0)) if isinstance(geom_matrix, dict) else 0
+    geom_matrix_limiting_drift = None
+    if isinstance(geom_matrix_rows, list):
+        finite_drift_rows = [
+            row
+            for row in geom_matrix_rows
+            if isinstance(row, dict)
+            and _finite_float(row.get("equal_arc_drift_worst_normalized_max_abs")) is not None
+        ]
+        if finite_drift_rows:
+            limiting = max(
+                finite_drift_rows,
+                key=lambda row: float(row["equal_arc_drift_worst_normalized_max_abs"]),
+            )
+            geom_matrix_limiting_drift = {
+                "case_name": limiting.get("case_name"),
+                "value": _finite_float(limiting.get("equal_arc_drift_worst_normalized_max_abs")),
+            }
 
     profile_identity = bool((profile or {}).get("identity_gate_pass", False))
     profile_speedup = _finite_float((profile or {}).get("engineering_speedup"))
@@ -304,7 +326,10 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
             "lane": "vmec_jax / booz_xform_jax differentiable geometry bridge",
             "status": "partial" if geom_max_abs is not None and geom_rank >= 2 else "open",
             "claim_level": "contract_gradient_gate_not_full_stellarator_optimization",
-            "primary_artifacts": ["docs/_static/differentiable_geometry_bridge.json"],
+            "primary_artifacts": [
+                "docs/_static/differentiable_geometry_bridge.json",
+                "docs/_static/vmec_boozer_parity_matrix.json",
+            ],
             "key_metrics": {
                 "max_abs_ad_fd_error": geom_max_abs,
                 "vmec_metric_tensor_max_abs_ad_fd_error": geom_vmec_metric_abs,
@@ -324,6 +349,10 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
                 "vmec_boozer_equal_arc_bgrad_passed": geom_vmec_equal_arc_derivative_passed,
                 "vmec_boozer_equal_arc_metric_passed": geom_vmec_equal_arc_metric_passed,
                 "vmec_boozer_equal_arc_drift_passed": geom_vmec_equal_arc_drift_passed,
+                "vmec_boozer_matrix_minimum_mode_count": geom_matrix_min_mode,
+                "vmec_boozer_matrix_all_equal_arc_passed": geom_matrix_all_equal_arc_passed,
+                "vmec_boozer_matrix_n_cases": geom_matrix_summary.get("n_cases"),
+                "vmec_boozer_matrix_limiting_drift": geom_matrix_limiting_drift,
                 "vmec_state_boozer_flux_tube_max_abs_ad_fd_error": geom_vmec_state_abs,
                 "vmec_state_boozer_flux_tube_max_rel_ad_fd_error": geom_vmec_state_rel,
                 "inverse_residual_norm": geom_inverse_res,
@@ -333,7 +362,7 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
             },
             "next_action": (
                 "Generalize the now-matched zero-beta Boozer equal-arc core/metric/drift convention across "
-                "finite-beta and additional stellarator equilibria, then add growth-rate/quasilinear geometry-gradient gates."
+                "finite-beta pressure corrections and solver-objective geometry gradients for growth-rate/quasilinear gates."
             ),
         },
         {
