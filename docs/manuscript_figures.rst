@@ -121,6 +121,10 @@ Differentiable-Physics Figures
      - ``examples/theory_and_demos/quasilinear_implicit_sensitivity.py``
      - Initial quasilinear eigenbranch gate closed
      - current artifact base: ``docs/_static/quasilinear_implicit_sensitivity.png`` with JSON/PDF companions. It differentiates a tiny Cyclone linear-RHS quasilinear objective ``[gamma, omega, kperp_eff^2, Qhat_i, Q_i^ML]`` with respect to ``[R/Ln, R/LTi]`` using the implicit left/right eigenpair system and checks the result against nearest-branch central finite differences. This is a differentiability/conditioning gate, not an absolute nonlinear-flux validation.
+   * - Solver-objective geometry-gradient gate
+     - ``tools/build_solver_objective_gradient_gate.py``
+     - Solver-ready production linear-RHS gradient gate closed; full VMEC/Boozer state-gradient promotion open
+     - current artifact base: ``docs/_static/solver_objective_gradient_gate.png`` with CSV/JSON/PDF companions. It differentiates actual electrostatic linear-RHS eigenpair observables with respect to solver-ready geometry arrays using the implicit left/right eigenpair system and checks ``gamma``, ``omega``, ``<k_perp^2>``, linear heat/particle-flux weights, and a mixing-length heat-flux proxy against nearest-branch central finite differences. This is a production solver-objective gradient gate at the ``FluxTubeGeometryData`` contract, not yet a full ``vmec_jax`` state to ``booz_xform_jax`` to solver-gradient claim.
    * - Inverse/UQ figure
      - ``examples/theory_and_demos/autodiff_inverse_twomode.py`` plus UQ follow-on
      - Open
