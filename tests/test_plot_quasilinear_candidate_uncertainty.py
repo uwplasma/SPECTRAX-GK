@@ -53,14 +53,20 @@ def test_candidate_uncertainty_report_and_figure_are_replayable(tmp_path: Path) 
         cases.append(mod.SaturationCase(name, "holdout", name, spectrum, summary, None))
 
     report = mod.build_candidate_uncertainty_report(tuple(cases), candidates=("linear_weight",))
-    paths = mod.write_candidate_uncertainty_figure(report, out=tmp_path / "candidate.png", title="Candidate")
+    paths = mod.write_candidate_uncertainty_figure(
+        report,
+        out=tmp_path / "candidate.png",
+        title="Candidate",
+        dpi=80,
+        write_pdf=False,
+    )
 
     assert report["kind"] == "quasilinear_candidate_uncertainty_report"
     assert report["input_validation"]["passed"] is True
     assert "linear_weight" in report["candidates"]
     assert report["promotion_gate"]["requires_interval_coverage"] is True
     assert Path(paths["png"]).exists()
-    assert Path(paths["pdf"]).exists()
+    assert "pdf" not in paths
     payload = json.loads(Path(paths["json"]).read_text(encoding="utf-8"))
     assert payload["claim_level"] == "candidate_model_development_not_runtime_option"
 
