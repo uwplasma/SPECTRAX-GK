@@ -67,9 +67,10 @@ The remaining work should be closed in this order.
 3. **Turn open physics lanes into explicit gates.**
    Literature-facing lanes should produce JSON/CSV/PNG/PDF artifacts with the
    same observable, window, tolerance, and source recorded in metadata. The
-   current priority list is W7-X zonal response, W7-X fluctuation spectra,
-   monotone Cyclone velocity-space convergence, KBM branch continuity,
-   nonlinear window statistics, and Merlo/Rosenbluth-Hinton response panels.
+   current priority list is W7-X zonal response, W7-X fluctuation-spectrum
+   experimental extension, monotone Cyclone velocity-space convergence, KBM
+   branch continuity, nonlinear window statistics, and
+   Merlo/Rosenbluth-Hinton response panels.
 
 4. **Replace coverage gaps with physics or numerics tests.**
    Do not add shallow import-only tests to chase the number. Prefer tests for

@@ -1057,3 +1057,13 @@ Exit gate:
   - proceed to the next quasilinear saturation-candidate improvement only within the validated four-case dataset;
   - add at least one additional converged nonlinear holdout before promoting any higher-parameter candidate beyond a negative/model-development result;
   - keep the finalization plan split into release-ready validated tooling versus post-release external-VMEC/stellarator-optimization expansion.
+- Added the W7-X fluctuation-spectrum simulation diagnostic panel:
+  - added `tools/plot_w7x_fluctuation_spectrum_panel.py` plus a synthetic NetCDF regression test;
+  - generated `docs/_static/w7x_fluctuation_spectrum_panel.{png,pdf,json,csv}` from the gated W7-X nonlinear `t≈200` NetCDF artifact;
+  - the report requires the W7-X nonlinear gate summary to pass by default, records `claim_level="validated_nonlinear_simulation_spectrum_not_experimental_validation"`, and sets `gate_index_include=false`;
+  - the current diagnostic has `76` samples over `t≈0.065..197.77`, dominant nonzonal `|\phi|^2` at `k_y rho_i≈0.190`, dominant heat-flux power near `k_y rho_i≈1.286`, and dominant zonal `k_x rho_i≈-0.100`;
+  - documentation now treats the simulation-spectrum estimator as closed while leaving Doppler-reflectometry transfer-function validation as a post-release manuscript extension.
+- Current next best steps:
+  - explicitly keep W7-X zonal long-window recurrence/damping as a deferred manuscript blocker rather than a release blocker;
+  - run bounded docs/build/package checks for the new spectrum artifact and push the release-scope updates;
+  - wait for GitHub CI to go green before any version bump, tag, or PyPI release.
