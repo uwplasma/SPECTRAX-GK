@@ -10,13 +10,14 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
+import spectraxgk.runtime_startup as startup
 from spectraxgk.benchmarking import late_time_linear_metrics
 from spectraxgk.config import GeometryConfig, GridConfig, InitializationConfig, TimeConfig
 from spectraxgk.diagnostics import SimulationDiagnostics, ResolvedDiagnostics
 from spectraxgk.geometry import SAlphaGeometry, apply_geometry_grid_defaults, sample_flux_tube_geometry
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.io import load_runtime_from_toml
-from spectraxgk.linear import build_linear_cache
+from spectraxgk.linear import LinearParams, build_linear_cache
 from spectraxgk.runtime import (
     _build_initial_condition,
     _gx_centered_random_pairs,
@@ -244,6 +245,74 @@ def test_runtime_end_damping_can_explicitly_scale_by_dt() -> None:
     params = build_runtime_linear_params(cfg, Nm=8)
     assert float(params.damp_ends_amp) == pytest.approx(0.5)
     assert float(params.damp_ends_widthfrac) == pytest.approx(0.125)
+
+
+def test_runtime_startup_model_and_geometry_branches(monkeypatch, tmp_path: Path) -> None:
+    base = _base_runtime_cfg()
+    captured = []
+
+    def fake_build_flux_tube_geometry(geom_cfg):
+        captured.append(geom_cfg)
+        return SimpleNamespace(s_hat=0.8, gradpar=lambda: 1.0)
+
+    monkeypatch.setattr(startup, "build_flux_tube_geometry", fake_build_flux_tube_geometry)
+    monkeypatch.setattr(startup, "generate_runtime_vmec_eik", lambda _cfg: tmp_path / "vmec.eik.nc")
+    monkeypatch.setattr(startup, "generate_runtime_miller_eik", lambda _cfg: tmp_path / "miller.eik.nc")
+
+    vmec_cfg = replace(base, geometry=replace(base.geometry, model="vmec"))
+    miller_cfg = replace(base, geometry=replace(base.geometry, model="miller"))
+    default_cfg = replace(base, geometry=replace(base.geometry, model="s-alpha"))
+
+    assert startup.build_runtime_geometry(vmec_cfg).s_hat == pytest.approx(0.8)
+    assert captured[-1].model == "vmec-eik"
+    assert captured[-1].geometry_file.endswith("vmec.eik.nc")
+    assert startup.build_runtime_geometry(miller_cfg).s_hat == pytest.approx(0.8)
+    assert captured[-1].model == "gx-eik"
+    assert captured[-1].geometry_file.endswith("miller.eik.nc")
+    assert startup.build_runtime_geometry(default_cfg).s_hat == pytest.approx(0.8)
+    assert captured[-1].model == "s-alpha"
+
+
+def test_runtime_startup_reduced_model_and_species_validation(monkeypatch) -> None:
+    no_kinetic = replace(_base_runtime_cfg(), species=(RuntimeSpeciesConfig(name="adiabatic", kinetic=False),))
+    with pytest.raises(ValueError, match="kinetic species"):
+        startup._species_to_linear(no_kinetic.species)
+
+    cetg = replace(_base_runtime_cfg(), physics=RuntimePhysicsConfig(reduced_model="cetg"))
+    assert startup._resolve_runtime_hl_dims(cetg, Nl=None, Nm=None) == (2, 1)
+    with pytest.raises(ValueError, match="cETG"):
+        startup._resolve_runtime_hl_dims(cetg, Nl=3, Nm=1)
+    with pytest.raises(NotImplementedError, match="cetg"):
+        startup._require_full_gk_runtime_model(cetg)
+
+    krehm = replace(_base_runtime_cfg(), physics=RuntimePhysicsConfig(reduced_model="krehm"))
+    with pytest.raises(NotImplementedError, match="krehm"):
+        startup._resolve_runtime_hl_dims(krehm, Nl=None, Nm=None)
+    with pytest.raises(NotImplementedError, match="krehm"):
+        startup._require_full_gk_runtime_model(krehm)
+
+    unknown = replace(_base_runtime_cfg(), physics=RuntimePhysicsConfig(reduced_model="not-a-model"))
+    with pytest.raises(ValueError, match="Unknown physics.reduced_model"):
+        startup._resolve_runtime_hl_dims(unknown, Nl=None, Nm=None)
+    with pytest.raises(ValueError, match="Unknown physics.reduced_model"):
+        startup._require_full_gk_runtime_model(unknown)
+
+    fake_geom = SimpleNamespace(s_hat=0.8, gradpar=lambda: 1.25)
+    monkeypatch.setattr(startup, "build_runtime_geometry", lambda _cfg: fake_geom)
+    ion_cfg = replace(_base_runtime_cfg(), species=(RuntimeSpeciesConfig(name="ion", charge=1.0, kinetic=True),))
+    params = startup.build_runtime_linear_params(ion_cfg, Nm=2)
+    assert float(params.kpar_scale) == pytest.approx(1.25)
+
+    conflict = replace(
+        _base_runtime_cfg(),
+        physics=RuntimePhysicsConfig(adiabatic_electrons=True, tau_e=1.0),
+        species=(
+            RuntimeSpeciesConfig(name="ion", charge=1.0, kinetic=True),
+            RuntimeSpeciesConfig(name="electron", charge=-1.0, kinetic=True),
+        ),
+    )
+    with pytest.raises(ValueError, match="adiabatic_electrons"):
+        startup.build_runtime_linear_params(conflict, Nm=2, geom=fake_geom)
 
 
 def test_runtime_hypercollision_explicit_override_is_preserved() -> None:
@@ -1328,6 +1397,112 @@ def test_runtime_phi_init_rejects_masked_gauge_mode() -> None:
 
     with pytest.raises(ValueError, match="gauge mode"):
         _build_initial_condition(grid, geom, cfg, ky_index=0, kx_index=0, Nl=2, Nm=2, nspecies=1)
+
+
+def test_runtime_startup_phi_density_seed_validation_paths() -> None:
+    cache = SimpleNamespace(
+        Jl=np.ones((1, 1, 1, 1, 3), dtype=float),
+        jacobian=np.ones(3, dtype=float),
+        mask0=np.zeros((1, 1, 3), dtype=bool),
+        ky=np.asarray([0.2]),
+    )
+    params = LinearParams(
+        charge_sign=np.asarray([1.0]),
+        density=np.asarray([1.0]),
+        tz=np.asarray([1.0]),
+        tau_e=0.0,
+    )
+    phi = np.asarray([1.0, 0.5, 0.25], dtype=np.complex64)
+
+    with pytest.raises(ValueError, match="at least one kinetic"):
+        startup._density_moments_for_target_phi(phi, cache=cache, params=params, ky_i=0, kx_i=0, species_targets=())
+    with pytest.raises(ValueError, match="out of range"):
+        startup._density_moments_for_target_phi(phi, cache=cache, params=params, ky_i=0, kx_i=0, species_targets=(1,))
+
+    bad_params = replace(params, density=np.asarray([np.nan]))
+    with pytest.raises(ValueError, match="non-finite"):
+        startup._density_moments_for_target_phi(phi, cache=cache, params=bad_params, ky_i=0, kx_i=0, species_targets=(0,))
+
+    zero_coupling_cache = SimpleNamespace(
+        Jl=np.zeros((1, 1, 1, 1, 3), dtype=float),
+        jacobian=np.ones(3, dtype=float),
+        mask0=np.zeros((1, 1, 3), dtype=bool),
+        ky=np.asarray([0.2]),
+    )
+    tau_params = replace(params, tau_e=1.0)
+    with pytest.raises(ValueError, match="cannot be represented"):
+        startup._density_moments_for_target_phi(
+            phi,
+            cache=zero_coupling_cache,
+            params=tau_params,
+            ky_i=0,
+            kx_i=0,
+            species_targets=(0,),
+        )
+
+    zero_phi = np.zeros(3, dtype=np.complex64)
+    masked_cache = SimpleNamespace(
+        Jl=np.ones((1, 1, 1, 1, 3), dtype=float),
+        jacobian=np.ones(3, dtype=float),
+        mask0=np.ones((1, 1, 3), dtype=bool),
+        ky=np.asarray([0.0]),
+    )
+    seed = startup._density_moments_for_target_phi(
+        zero_phi,
+        cache=masked_cache,
+        params=params,
+        ky_i=0,
+        kx_i=0,
+        species_targets=(0,),
+    )
+    np.testing.assert_allclose(seed[0], zero_phi)
+
+    assert startup._gx_periodic_zp(np.asarray([0.0])) == pytest.approx(1.0)
+    assert startup._gx_periodic_zp(np.asarray([1.0, 1.0])) == pytest.approx(1.0)
+    np.testing.assert_allclose(startup._as_runtime_species_array(2.0, 3, "density"), [2.0, 2.0, 2.0])
+    np.testing.assert_allclose(startup._as_runtime_species_array(np.asarray([1.0, 2.0]), 2, "density"), [1.0, 2.0])
+    with pytest.raises(ValueError, match="length 2"):
+        startup._as_runtime_species_array(np.asarray([1.0, 2.0, 3.0]), 2, "density")
+
+    z = np.linspace(-1.0, 1.0, 5)
+    direct_phi = startup._build_single_phi_gaussian_profile(
+        z,
+        kx=0.1,
+        ky=0.2,
+        s_hat=0.8,
+        width=1.0,
+        envelope_constant=1.0,
+        envelope_sine=0.0,
+    )
+    delegated = startup._build_gaussian_profile(
+        z,
+        kx=0.1,
+        ky=0.2,
+        s_hat=0.8,
+        width=1.0,
+        envelope_constant=1.0,
+        envelope_sine=0.0,
+    )
+    np.testing.assert_allclose(direct_phi, delegated)
+    assert startup._expand_ky(np.zeros((1, 1, 1, 2, 1, 1), dtype=np.complex64), nyc=1).shape[-3] == 2
+    assert startup._enforce_full_ky_hermitian(np.zeros((1, 1, 1, 2, 1, 1), dtype=np.complex64)).shape[-3] == 2
+
+
+def test_runtime_startup_initial_condition_resolution_errors() -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        grid=GridConfig(Nx=4, Ny=4, Nz=8, Lx=2.0 * np.pi, Ly=2.0 * np.pi, boundary="periodic"),
+        init=InitializationConfig(init_field="qpar", init_amp=0.25, gaussian_init=False, init_single=True),
+        physics=RuntimePhysicsConfig(adiabatic_electrons=True, tau_e=1.0),
+    )
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    with pytest.raises(ValueError, match="moment exceeds"):
+        _build_initial_condition(grid, geom, cfg, ky_index=1, kx_index=0, Nl=1, Nm=2, nspecies=1)
+
+    phi_cfg = replace(cfg, init=replace(cfg.init, init_field="phi"))
+    with pytest.raises(ValueError, match="requires at least one"):
+        _build_initial_condition(grid, geom, phi_cfg, ky_index=1, kx_index=0, Nl=0, Nm=1, nspecies=1)
 
 
 def test_runtime_nonlinear_fixed_mode_returns_frozen_state() -> None:

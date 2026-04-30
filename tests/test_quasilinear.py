@@ -84,6 +84,8 @@ def test_saturation_amplitude_rules_are_explicit() -> None:
         rule="absolute_growth_mixing_length",
         csat=2.0,
     ) == pytest.approx(0.8)
+    assert saturation_amplitude2(gamma=0.2, kperp_eff2_value=0.0, rule="mixing_length") == pytest.approx(0.0)
+    assert saturation_amplitude2(gamma=0.2, kperp_eff2_value=np.nan, rule="mixing_length") == pytest.approx(0.0)
     with pytest.raises(NotImplementedError):
         saturation_amplitude2(gamma=0.2, kperp_eff2_value=0.5, rule="calibrated_spectral")
 
@@ -91,6 +93,8 @@ def test_saturation_amplitude_rules_are_explicit() -> None:
 def test_quasilinear_feature_objective_supports_sweep_rules() -> None:
     features = jnp.asarray([-0.2, 0.5, 1.5])
 
+    with pytest.raises(ValueError, match="features"):
+        quasilinear_feature_objective(jnp.asarray([0.1, 0.2]))
     assert quasilinear_feature_objective(features, rule="linear_weight", csat=2.0) == pytest.approx(3.0)
     assert quasilinear_feature_objective(
         features,
@@ -108,10 +112,16 @@ def test_shape_aware_power_law_objective_uses_geometric_ky_reference() -> None:
     ky_ref = float(np.exp(np.mean(np.log(np.asarray(ky)))))
     expected = 2.0 * np.asarray([2.0, 3.0]) * (np.asarray(ky) / ky_ref) ** 0.5
     np.testing.assert_allclose(np.asarray(out), expected, rtol=1.0e-6)
+    explicit_ref = shape_aware_power_law_objective(features, ky, exponent=1.0, csat=1.0, ky_ref=0.2)
+    np.testing.assert_allclose(np.asarray(explicit_ref), np.asarray([1.0, 6.0]), rtol=1.0e-6)
+    with pytest.raises(ValueError, match="features"):
+        shape_aware_power_law_objective(jnp.asarray([0.1, 0.2]), ky, exponent=1.0)
     assert spectraxgk.shape_aware_power_law_objective is shape_aware_power_law_objective
 
 
 def test_quasilinear_channel_validation_rejects_unvalidated_em_channels() -> None:
+    assert normalize_quasilinear_channels("") == ("es",)
+    assert normalize_quasilinear_channels("es") == ("es",)
     assert normalize_quasilinear_channels(["es"]) == ("es",)
     with pytest.raises(NotImplementedError):
         normalize_quasilinear_channels(["es", "apar"])
@@ -127,6 +137,10 @@ def test_phi_norm_and_kperp_are_phase_and_amplitude_invariant() -> None:
     assert phi_norm2(scaled, cache, params, vol_fac, normalization="phi_rms") == pytest.approx(
         9.0 * float(phi_norm2(phi, cache, params, vol_fac, normalization="phi_rms"))
     )
+    assert phi_norm2(phi, cache, params, vol_fac, normalization="phi_midplane") == pytest.approx(1.0)
+    assert phi_norm2(phi, cache, params, vol_fac, normalization="field_energy") > 0.0
+    with pytest.raises(ValueError, match="normalization"):
+        phi_norm2(phi, cache, params, vol_fac, normalization="not_a_norm")
 
 
 def test_quasilinear_weights_are_phase_and_amplitude_invariant() -> None:
@@ -158,6 +172,49 @@ def test_quasilinear_weights_are_phase_and_amplitude_invariant() -> None:
     np.testing.assert_allclose(ql_scaled.heat_flux_weight_species, ql.heat_flux_weight_species, rtol=1e-5)
     np.testing.assert_allclose(ql_scaled.particle_flux_weight_species, ql.particle_flux_weight_species, rtol=1e-5)
     assert ql.to_dict()["metadata"]["claim_level"] == "linear_weights"
+
+    saturated = compute_quasilinear_from_linear_state(
+        state,
+        cache=cache,
+        grid=grid,
+        geom=geom,
+        params=params,
+        ky=float(grid.ky[0]),
+        gamma=0.1,
+        omega=-0.2,
+        terms=linear_terms_to_term_config(terms),
+        mode="saturated",
+        saturation_rule="mixing_length",
+        species_names=["wrong", "length"],
+    )
+    assert saturated.saturated_heat_flux_species is not None
+    assert saturated.species == ("s0",)
+    with pytest.raises(ValueError, match="mode"):
+        compute_quasilinear_from_linear_state(
+            state,
+            cache=cache,
+            grid=grid,
+            geom=geom,
+            params=params,
+            ky=float(grid.ky[0]),
+            gamma=0.1,
+            omega=-0.2,
+            terms=linear_terms_to_term_config(terms),
+            mode="invalid",
+        )
+    with pytest.raises(NotImplementedError, match="kperp"):
+        compute_quasilinear_from_linear_state(
+            state,
+            cache=cache,
+            grid=grid,
+            geom=geom,
+            params=params,
+            ky=float(grid.ky[0]),
+            gamma=0.1,
+            omega=-0.2,
+            terms=linear_terms_to_term_config(terms),
+            kperp_average="arithmetic",
+        )
 
 
 def test_runtime_linear_quasilinear_krylov_smoke() -> None:

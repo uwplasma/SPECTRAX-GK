@@ -78,6 +78,15 @@ def test_phase_align_and_compare_eigenfunctions() -> None:
     assert metrics.relative_l2 == pytest.approx(0.0, abs=1.0e-12)
 
 
+def test_phase_align_validates_shape_and_handles_zero_overlap() -> None:
+    with pytest.raises(ValueError, match="same shape"):
+        phase_align_eigenfunction(np.ones(2), np.ones(3))
+
+    aligned, phase_shift = phase_align_eigenfunction(np.array([1.0 + 0.0j, 0.0j]), np.array([0.0j, 1.0 + 0.0j]))
+    np.testing.assert_allclose(aligned, np.array([1.0 + 0.0j, 0.0j]))
+    assert phase_shift == pytest.approx(0.0)
+
+
 def test_compare_eigenfunctions_handles_shape_and_zero_norm() -> None:
     with pytest.raises(ValueError):
         compare_eigenfunctions(np.ones(3), np.ones(4))
@@ -502,6 +511,14 @@ def test_zonal_flow_response_metrics_validate_input_and_handle_nonoscillatory_si
     assert np.isnan(metrics.gam_damping_rate)
 
 
+def test_zonal_flow_response_metrics_rejects_insufficient_finite_samples() -> None:
+    with pytest.raises(ValueError, match="four finite samples"):
+        zonal_flow_response_metrics(
+            np.array([0.0, 1.0, 2.0, 3.0, 4.0]),
+            np.array([1.0, np.nan, 0.8, np.nan, 0.6]),
+        )
+
+
 def test_load_diagnostic_time_series_reads_gx_style_netcdf(tmp_path) -> None:
     import netCDF4 as nc
 
@@ -565,6 +582,63 @@ def test_load_diagnostic_time_series_extracts_complex_kx_trace_with_phase_alignm
 
     assert np.allclose(series.t, [0.0, 1.0, 2.0])
     assert np.allclose(series.values, [1.0, 0.5, -0.25])
+
+
+def test_load_diagnostic_time_series_covers_components_and_validation(tmp_path) -> None:
+    import netCDF4 as nc
+
+    path = tmp_path / "diagnostics.out.nc"
+    with nc.Dataset(path, "w") as ds:
+        ds.createDimension("time", 3)
+        ds.createDimension("kx", 2)
+        ds.createDimension("ri", 2)
+        ds.createDimension("extra", 2)
+        ds.createVariable("time", "f8", ("time",))[:] = np.array([0.0, 1.0, 2.0])
+        diag = ds.createGroup("Diagnostics")
+        diag.createVariable("Real2D", "f8", ("time", "kx"))[:, :] = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
+        diag.createVariable("Real3D", "f8", ("time", "kx", "extra"))[:, :, :] = np.ones((3, 2, 2))
+        raw = np.array(
+            [
+                [[1.0, 0.0], [0.0, 1.0]],
+                [[2.0, 0.0], [0.0, -2.0]],
+                [[4.0, 0.0], [3.0, 4.0]],
+            ],
+            dtype=float,
+        )
+        diag.createVariable("ComplexMode", "f8", ("time", "kx", "ri"))[:, :, :] = raw
+
+    real_abs = load_diagnostic_time_series(path, variable="Real2D", kx_index=1, component="abs")
+    np.testing.assert_allclose(real_abs.values, [2.0, 4.0, 6.0])
+    complex_series = load_diagnostic_time_series(path, variable="ComplexMode", kx_index=1, component="complex")
+    np.testing.assert_allclose(complex_series.values, [1.0j, -2.0j, 3.0 + 4.0j])
+    imag = load_diagnostic_time_series(path, variable="ComplexMode", kx_index=1, component="imag")
+    np.testing.assert_allclose(imag.values, [1.0, -2.0, 4.0])
+    magnitude = load_diagnostic_time_series(path, variable="ComplexMode", kx_index=1, component="abs")
+    np.testing.assert_allclose(magnitude.values, [1.0, 2.0, 5.0])
+
+    with pytest.raises(ValueError, match="requires kx_index"):
+        load_diagnostic_time_series(path, variable="Real2D")
+    with pytest.raises(ValueError, match="1D time series"):
+        load_diagnostic_time_series(path, variable="Real3D")
+    with pytest.raises(ValueError, match="real diagnostics"):
+        load_diagnostic_time_series(path, variable="Real2D", kx_index=0, component="imag")
+    with pytest.raises(ValueError, match="component"):
+        load_diagnostic_time_series(path, variable="ComplexMode", kx_index=0, component="phase")
+
+    missing_group = tmp_path / "missing_group.out.nc"
+    with nc.Dataset(missing_group, "w") as ds:
+        ds.createDimension("time", 1)
+        ds.createVariable("time", "f8", ("time",))[:] = np.array([0.0])
+    with pytest.raises(ValueError, match="missing NetCDF group"):
+        load_diagnostic_time_series(missing_group, variable="Real2D")
+
+    missing_time = tmp_path / "missing_time.out.nc"
+    with nc.Dataset(missing_time, "w") as ds:
+        ds.createDimension("time", 1)
+        diag = ds.createGroup("Diagnostics")
+        diag.createVariable("Real1D", "f8", ("time",))[:] = np.array([1.0])
+    with pytest.raises(ValueError, match="missing time variable"):
+        load_diagnostic_time_series(missing_time, variable="Real1D")
 
 
 def test_run_linear_scan_applies_resolution_and_krylov_policies() -> None:
@@ -1021,13 +1095,31 @@ def test_branch_continuity_metrics_and_gate_report() -> None:
     with pytest.raises(ValueError):
         branch_continuity_metrics(np.array([0.1]), np.array([0.1]), np.array([0.2]))
     with pytest.raises(ValueError):
+        branch_continuity_metrics(np.array([[0.1, 0.2]]), np.array([0.1, 0.2]), np.array([0.2, 0.3]))
+    with pytest.raises(ValueError):
+        branch_continuity_metrics(np.array([0.1, 0.2]), np.array([0.1]), np.array([0.2, 0.3]))
+    with pytest.raises(ValueError):
         branch_continuity_metrics(np.array([0.1, 0.2]), np.array([0.1, np.nan]), np.array([0.2, 0.3]))
     with pytest.raises(ValueError):
         branch_continuity_metrics(
             np.array([0.1, 0.2]),
             np.array([0.1, 0.2]),
             np.array([0.2, 0.3]),
+            floor_fraction=-1.0e-3,
+        )
+    with pytest.raises(ValueError):
+        branch_continuity_metrics(
+            np.array([0.1, 0.2]),
+            np.array([0.1, 0.2]),
+            np.array([0.2, 0.3]),
             successive_overlap=np.array([0.9, 0.8]),
+        )
+    with pytest.raises(ValueError):
+        branch_continuity_metrics(
+            np.array([0.1, 0.2]),
+            np.array([0.1, 0.2]),
+            np.array([0.2, 0.3]),
+            successive_overlap=np.array([np.nan]),
         )
     with pytest.raises(ValueError):
         branch_continuity_gate_report(

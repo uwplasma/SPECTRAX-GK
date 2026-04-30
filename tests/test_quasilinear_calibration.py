@@ -10,6 +10,7 @@ import numpy as np
 import pytest
 
 import spectraxgk
+import spectraxgk.quasilinear_calibration as qlc
 from spectraxgk.quasilinear_calibration import (
     QuasilinearCalibrationPoint,
     apply_heat_flux_scale,
@@ -201,6 +202,63 @@ def test_quasilinear_calibration_report_rejects_bad_inputs() -> None:
     assert np.isfinite(float(metrics["mean_abs_relative_error"]))
 
 
+def test_quasilinear_scale_fit_rejects_unphysical_training_sets() -> None:
+    with pytest.raises(ValueError, match="no finite nonzero"):
+        fit_train_heat_flux_scale(
+            [
+                QuasilinearCalibrationPoint(
+                    case="zero",
+                    split="train",
+                    predicted_heat_flux=0.0,
+                    observed_heat_flux=1.0,
+                    saturation_rule="mixing_length",
+                )
+            ]
+        )
+
+    with pytest.raises(ValueError, match="too small"):
+        fit_train_heat_flux_scale(
+            [
+                QuasilinearCalibrationPoint(
+                    case="ill_conditioned",
+                    split="train",
+                    predicted_heat_flux=1.0e-4,
+                    observed_heat_flux=1.0,
+                    saturation_rule="mixing_length",
+                )
+            ],
+            prediction_floor=1.0e-5,
+        )
+
+    with pytest.raises(ValueError, match="negative"):
+        fit_train_heat_flux_scale(
+            [
+                QuasilinearCalibrationPoint(
+                    case="wrong_sign",
+                    split="train",
+                    predicted_heat_flux=1.0,
+                    observed_heat_flux=-1.0,
+                    saturation_rule="mixing_length",
+                )
+            ]
+        )
+
+    with pytest.raises(ValueError, match="holdout_mean_rel_gate"):
+        quasilinear_calibration_report(
+            [
+                QuasilinearCalibrationPoint(
+                    case="gate",
+                    split="audit",
+                    predicted_heat_flux=1.0,
+                    observed_heat_flux=1.0,
+                    saturation_rule="mixing_length",
+                )
+            ],
+            saturation_rule="mixing_length",
+            holdout_mean_rel_gate=0.0,
+        )
+
+
 def test_calibration_point_from_nonlinear_window_summary(tmp_path: Path) -> None:
     diag = tmp_path / "diag.csv"
     diag.write_text(
@@ -286,6 +344,110 @@ def test_calibration_point_from_nonlinear_netcdf_window_summary(tmp_path: Path) 
     assert ion.observed_heat_flux_std == pytest.approx(1.0)
 
 
+def test_calibration_point_from_nonlinear_netcdf_window_validation(tmp_path: Path) -> None:
+    netCDF4 = pytest.importorskip("netCDF4")
+    assert qlc._netcdf_heat_flux_variable("Diagnostics/HeatFlux_st") == "Diagnostics/HeatFlux_st"
+    assert qlc._netcdf_heat_flux_variable("DiagnosticsHeatFlux_st") == "DiagnosticsHeatFlux_st"
+    assert qlc._netcdf_heat_flux_variable("HeatFluxES_st") == "Diagnostics/HeatFluxES_st"
+    with pytest.raises(ValueError, match="unknown NetCDF heat-flux"):
+        qlc._netcdf_heat_flux_variable("not_a_heat_flux")
+
+    diag = tmp_path / "run.out.nc"
+    with netCDF4.Dataset(diag, "w") as root:
+        root.createDimension("time", 3)
+        root.createDimension("species", 2)
+        grids = root.createGroup("Grids")
+        diagnostics = root.createGroup("Diagnostics")
+        grids.createVariable("time", "f8", ("time",))[:] = np.asarray([0.0, 1.0, 2.0])
+        diagnostics.createVariable("HeatFluxES_st", "f8", ("time",))[:] = np.asarray([1.0, 2.0, 5.0])
+        diagnostics.createVariable("HeatFlux_st", "f8", ("time", "species"))[:, :] = np.asarray(
+            [[1.0, 10.0], [2.0, 20.0], [4.0, 40.0]]
+        )
+    summary = tmp_path / "summary.json"
+    summary.write_text(json.dumps({"spectrax": str(diag), "tmin": 0.5, "tmax": 2.0}), encoding="utf-8")
+
+    es = calibration_point_from_nonlinear_window_summary(
+        summary,
+        predicted_heat_flux=1.0,
+        split="audit",
+        saturation_rule="mixing_length",
+        heat_flux_column="HeatFluxES_st",
+    )
+    assert es.observed_heat_flux == pytest.approx(3.5)
+    assert "nonlinear_variable=Diagnostics/HeatFluxES_st" in str(es.notes)
+
+    with pytest.raises(ValueError, match="species_index"):
+        calibration_point_from_nonlinear_window_summary(
+            summary,
+            predicted_heat_flux=1.0,
+            split="audit",
+            saturation_rule="mixing_length",
+            species_index=4,
+        )
+
+    with netCDF4.Dataset(diag) as root:
+        with pytest.raises(ValueError, match="must not be empty"):
+            qlc._netcdf_variable(root, "")
+        with pytest.raises(KeyError, match="group"):
+            qlc._netcdf_variable(root, "Missing/HeatFlux_st")
+        with pytest.raises(KeyError, match="variable"):
+            qlc._netcdf_variable(root, "Diagnostics/Missing")
+
+    mismatch = tmp_path / "mismatch.out.nc"
+    with netCDF4.Dataset(mismatch, "w") as root:
+        root.createDimension("time", 3)
+        root.createDimension("short_time", 2)
+        grids = root.createGroup("Grids")
+        diagnostics = root.createGroup("Diagnostics")
+        grids.createVariable("time", "f8", ("time",))[:] = np.asarray([0.0, 1.0, 2.0])
+        diagnostics.createVariable("HeatFlux_st", "f8", ("short_time",))[:] = np.asarray([1.0, 2.0])
+    mismatch_summary = tmp_path / "mismatch_summary.json"
+    mismatch_summary.write_text(json.dumps({"spectrax": str(mismatch)}), encoding="utf-8")
+    with pytest.raises(ValueError, match="first dimension"):
+        calibration_point_from_nonlinear_window_summary(
+            mismatch_summary,
+            predicted_heat_flux=1.0,
+            split="audit",
+            saturation_rule="mixing_length",
+        )
+
+    rank3 = tmp_path / "rank3.out.nc"
+    with netCDF4.Dataset(rank3, "w") as root:
+        root.createDimension("time", 3)
+        root.createDimension("species", 2)
+        root.createDimension("field", 2)
+        grids = root.createGroup("Grids")
+        diagnostics = root.createGroup("Diagnostics")
+        grids.createVariable("time", "f8", ("time",))[:] = np.asarray([0.0, 1.0, 2.0])
+        diagnostics.createVariable("HeatFlux_st", "f8", ("time", "species", "field"))[:, :, :] = np.ones((3, 2, 2))
+    rank3_summary = tmp_path / "rank3_summary.json"
+    rank3_summary.write_text(json.dumps({"spectrax": str(rank3)}), encoding="utf-8")
+    with pytest.raises(ValueError, match="must have shape"):
+        calibration_point_from_nonlinear_window_summary(
+            rank3_summary,
+            predicted_heat_flux=1.0,
+            split="audit",
+            saturation_rule="mixing_length",
+        )
+
+    no_window = tmp_path / "no_window.out.nc"
+    with netCDF4.Dataset(no_window, "w") as root:
+        root.createDimension("time", 2)
+        grids = root.createGroup("Grids")
+        diagnostics = root.createGroup("Diagnostics")
+        grids.createVariable("time", "f8", ("time",))[:] = np.asarray([0.0, 1.0])
+        diagnostics.createVariable("HeatFlux_st", "f8", ("time",))[:] = np.asarray([np.nan, np.nan])
+    no_window_summary = tmp_path / "no_window_summary.json"
+    no_window_summary.write_text(json.dumps({"spectrax": str(no_window), "tmin": 0.0, "tmax": 1.0}), encoding="utf-8")
+    with pytest.raises(ValueError, match="no finite heat-flux samples"):
+        calibration_point_from_nonlinear_window_summary(
+            no_window_summary,
+            predicted_heat_flux=1.0,
+            split="audit",
+            saturation_rule="mixing_length",
+        )
+
+
 def test_integrated_quasilinear_flux_from_spectrum_and_window_point(tmp_path: Path) -> None:
     spectrum = tmp_path / "ql.csv"
     spectrum.write_text(
@@ -320,6 +482,85 @@ def test_integrated_quasilinear_flux_from_spectrum_and_window_point(tmp_path: Pa
     assert point.observed_heat_flux == pytest.approx(3.0)
     assert point.quasilinear_artifact == str(spectrum)
     assert "observed_to_predicted" in str(point.notes)
+
+
+def test_integrated_quasilinear_flux_from_spectrum_variants_and_validation(tmp_path: Path) -> None:
+    single = tmp_path / "single.csv"
+    single.write_text("saturated_heat_flux_total\n2.5\n", encoding="utf-8")
+    one_point = integrated_quasilinear_flux_from_spectrum(single, delta_ky=0.2)
+    assert one_point["estimate"] == pytest.approx(0.5)
+    assert one_point["ky_min"] == pytest.approx(0.0)
+    assert one_point["ky_max"] == pytest.approx(0.0)
+
+    spectrum = tmp_path / "spectrum.csv"
+    spectrum.write_text(
+        "ky,saturated_heat_flux_total\n0.1,1.0\n0.2,nan\n0.4,5.0\n",
+        encoding="utf-8",
+    )
+    averaged = integrated_quasilinear_flux_from_spectrum(spectrum, method="mean")
+    assert averaged["estimate"] == pytest.approx(3.0)
+    assert averaged["n_samples"] == 2
+
+    no_finite = tmp_path / "no_finite.csv"
+    no_finite.write_text("ky,saturated_heat_flux_total\n0.1,nan\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="no finite samples"):
+        integrated_quasilinear_flux_from_spectrum(no_finite)
+    with pytest.raises(ValueError, match="trapezoid"):
+        integrated_quasilinear_flux_from_spectrum(single, method="trapezoid")
+    with pytest.raises(ValueError, match="method"):
+        integrated_quasilinear_flux_from_spectrum(spectrum, method="simpson")
+
+
+def test_calibration_summary_ingestion_validates_csv_windows_and_relative_paths(tmp_path: Path) -> None:
+    diag = tmp_path / "diag.csv"
+    diag.write_text("t,heat_flux\n0.0,1.0\n1.0,3.0\n", encoding="utf-8")
+    summaries = tmp_path / "summaries"
+    summaries.mkdir()
+    summary = summaries / "summary.json"
+    summary.write_text(json.dumps({"case": "relative", "spectrax": "../diag.csv"}), encoding="utf-8")
+
+    point = calibration_point_from_nonlinear_window_summary(
+        summary,
+        predicted_heat_flux=2.0,
+        split="audit",
+        saturation_rule="mixing_length",
+    )
+    assert point.observed_heat_flux == pytest.approx(2.0)
+    assert point.nonlinear_artifact == str(diag.resolve())
+
+    missing_source = tmp_path / "missing_source.json"
+    missing_source.write_text(json.dumps({"case": "missing"}), encoding="utf-8")
+    with pytest.raises(ValueError, match="diagnostics source"):
+        calibration_point_from_nonlinear_window_summary(
+            missing_source,
+            predicted_heat_flux=1.0,
+            split="audit",
+            saturation_rule="mixing_length",
+        )
+
+    missing_t = tmp_path / "missing_t.csv"
+    missing_t.write_text("heat_flux\n1.0\n", encoding="utf-8")
+    summary_missing_t = tmp_path / "summary_missing_t.json"
+    summary_missing_t.write_text(json.dumps({"spectrax": str(missing_t)}), encoding="utf-8")
+    with pytest.raises(ValueError, match="'t' column"):
+        calibration_point_from_nonlinear_window_summary(
+            summary_missing_t,
+            predicted_heat_flux=1.0,
+            split="audit",
+            saturation_rule="mixing_length",
+        )
+
+    no_window = tmp_path / "no_window.csv"
+    no_window.write_text("t,heat_flux\n0.0,nan\n1.0,nan\n", encoding="utf-8")
+    summary_no_window = tmp_path / "summary_no_window.json"
+    summary_no_window.write_text(json.dumps({"spectrax": str(no_window), "tmin": 0.0, "tmax": 1.0}), encoding="utf-8")
+    with pytest.raises(ValueError, match="no finite heat-flux samples"):
+        calibration_point_from_nonlinear_window_summary(
+            summary_no_window,
+            predicted_heat_flux=1.0,
+            split="audit",
+            saturation_rule="mixing_length",
+        )
 
 
 def test_build_calibration_report_tool_can_generate_point_from_artifacts(tmp_path: Path) -> None:
