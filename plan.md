@@ -1383,3 +1383,9 @@ Exit gate:
     explicitly rejected because it worsened the tracked QH metric gate.
 - Enforced ``mboz,nboz >= 21`` for the VMEC/Boozer equal-arc parity helpers so
   future runs do not silently fall back to the under-resolved QI drift setting.
+- Added ``tools/build_vmec_boozer_parity_matrix.py`` and
+  ``docs/_static/vmec_boozer_parity_matrix.{png,pdf,json,csv}`` to make the
+  mode-21 result replayable across the tracked QH, QI, and shaped-tokamak
+  examples. All three current rows pass the equal-arc core, scalar, ``bgrad``,
+  metric, and drift subgates at ``mboz=nboz=21``; the QI drift row remains the
+  limiting release-level value at ``7.13e-2`` against the ``8e-2`` tolerance.

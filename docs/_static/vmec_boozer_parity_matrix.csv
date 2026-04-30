@@ -1,0 +1,4 @@
+case_name,label,family,ntheta,mboz,nboz,available,equal_arc_all_passed,equal_arc_core_worst_normalized_max_abs,equal_arc_core_worst_scalar_rel,equal_arc_derivative_worst_normalized_max_abs,equal_arc_metric_worst_normalized_max_abs,equal_arc_drift_worst_normalized_max_abs,status,reason,error
+nfp4_QH_warm_start,QH warm start,quasi-helical,16,21,21,True,True,0.0045333009497922905,0.002371666376645776,0.02293812612720306,0.03450681072966357,0.03495826655465857,diagnostic_open,,
+nfp3_QI_fixed_resolution_final,QI fixed resolution,quasi-isodynamic,8,21,21,True,True,0.006933309853403706,0.001716318615044855,0.0035286583489193626,0.009115858765054436,0.07126818847704412,diagnostic_open,,
+shaped_tokamak_pressure,shaped tokamak,axisymmetric finite-beta,8,21,21,True,True,1.7908884338306613e-05,2.96396981262495e-06,7.133377608359881e-05,0.00386170973247463,0.006748546428069926,diagnostic_open,,

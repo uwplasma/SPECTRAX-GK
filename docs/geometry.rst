@@ -308,6 +308,41 @@ contract once their in-memory field-line mapping is available.
    from a real ``vmec_jax`` ``VMECState`` before converting through
    ``booz_xform_jax`` into the SPECTRAX-GK field-line contract.
 
+Multi-Equilibrium Boozer Parity Matrix
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The single-fixture bridge artifact is complemented by a replayable
+multi-equilibrium matrix:
+
+.. code-block:: bash
+
+   JAX_ENABLE_X64=1 PYTHONPATH=src \
+     python tools/build_vmec_boozer_parity_matrix.py
+
+It writes ``docs/_static/vmec_boozer_parity_matrix.{png,pdf,json,csv}``.
+The builder enforces ``mboz,nboz >= 21`` before calling the real optional
+backend path, because the QI drift gate is under-resolved at lower Boozer mode
+counts. The tracked matrix covers the ``nfp4_QH_warm_start``,
+``nfp3_QI_fixed_resolution_final``, and ``shaped_tokamak_pressure`` examples.
+At ``mboz=nboz=21`` all three pass the current Boozer equal-arc core, scalar,
+``bgrad``, zero-beta metric, and loaded-convention drift subgates. The worst
+tracked drift mismatch is the QI case at about ``7.13e-2`` against an
+``8e-2`` release tolerance. This closes the current multi-equilibrium
+zero-beta field-line convention gate while keeping finite-beta drift parity,
+solver-objective geometry gradients, and nonlinear transport optimization
+claims explicitly scoped as follow-up work.
+
+.. figure:: _static/vmec_boozer_parity_matrix.png
+   :width: 95%
+   :align: center
+   :alt: VMEC/Boozer equal-arc parity matrix
+
+   VMEC/Boozer equal-arc parity matrix. Each cell reports the absolute
+   mismatch for one subgate, while the color shows mismatch divided by the
+   relevant tolerance. The matrix is generated from the actual optional
+   ``vmec_jax`` and ``booz_xform_jax`` bridge path and rejects Boozer mode
+   counts below 21.
+
 The next implementation step is to add the Hegna-Nakajima curvature/drift
 reconstruction to the same equal-arc path, then add geometry-gradient checks
 for growth-rate and transport observables.

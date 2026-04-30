@@ -61,7 +61,8 @@ Current pre-release status snapshot:
   imported-VMEC/EIK array-parity audit, a Boozer equal-arc core parity audit
   that closes the ``bmag``/``bgrad``/``gradpar``/Jacobian, zero-beta
   ``gds*``/``grho`` metric convention, and zero-beta loaded drift convention at
-  release tolerance, a real
+  release tolerance, a separate ``mboz=nboz=21`` QH/QI/tokamak parity matrix
+  artifact at ``docs/_static/vmec_boozer_parity_matrix.png``, a real
   ``vmec_jax`` ``VMECState`` to ``booz_xform_jax`` to SPECTRAX-GK derivative
   gate, and a
   tracked AD-vs-finite-difference inverse/UQ artifact at
