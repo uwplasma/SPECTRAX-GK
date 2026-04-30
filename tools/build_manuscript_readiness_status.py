@@ -128,6 +128,7 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
     opt = _read_json(root, "docs/_static/stellarator_itg_optimization_comparison.json")
     solver_grad = _read_json(root, "docs/_static/solver_objective_gradient_gate.json")
     vmec_solver_grad = _read_json(root, "docs/_static/vmec_boozer_solver_frequency_gradient_gate.json")
+    vmec_ql_grad = _read_json(root, "docs/_static/vmec_boozer_quasilinear_gradient_gate.json")
     profile = _read_json(root, "docs/_static/nonlinear_sharding_profile_office_gpu.json")
 
     ql_inputs_passed = bool((ql_inputs or {}).get("passed", False))
@@ -162,6 +163,9 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
     solver_gradient_source = str((solver_grad or {}).get("source_scope", "missing"))
     solver_gradient_full_vmec_frequency = bool((vmec_solver_grad or {}).get("passed", False)) and str(
         (vmec_solver_grad or {}).get("source_scope", "missing")
+    ) == "mode21_vmec_boozer_state"
+    solver_gradient_full_vmec_quasilinear = bool((vmec_ql_grad or {}).get("passed", False)) and str(
+        (vmec_ql_grad or {}).get("source_scope", "missing")
     ) == "mode21_vmec_boozer_state"
     solver_gradient_status = "partial" if solver_gradient_passed else "open"
 
@@ -227,8 +231,9 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                 "all_objective_gradient_gates_passed": opt_reduced_objectives_passed,
             },
             "next_action": (
-                "Use as the current optimization figure only with scoped wording; production VMEC/Boozer/GK solver "
-                "gradients remain the next priority before claiming end-to-end stellarator heat-flux optimization."
+                "Use as the current optimization figure only with scoped wording; nonlinear-window VMEC/Boozer/GK "
+                "gradients and optimized-geometry nonlinear audits remain future requirements before claiming "
+                "end-to-end stellarator heat-flux optimization."
             ),
         },
         {
@@ -240,6 +245,7 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                 for path, payload in (
                     ("docs/_static/solver_objective_gradient_gate.json", solver_grad),
                     ("docs/_static/vmec_boozer_solver_frequency_gradient_gate.json", vmec_solver_grad),
+                    ("docs/_static/vmec_boozer_quasilinear_gradient_gate.json", vmec_ql_grad),
                 )
                 if payload
             ],
@@ -247,7 +253,7 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                 "source_scope": solver_gradient_source,
                 "solver_ready_gradient_gate": solver_gradient_passed,
                 "full_vmec_boozer_frequency_gradient_gate": solver_gradient_full_vmec_frequency,
-                "full_vmec_boozer_quasilinear_gradient_gate": False,
+                "full_vmec_boozer_quasilinear_gradient_gate": solver_gradient_full_vmec_quasilinear,
                 "linear_growth_gradient_gate": bool((solver_grad or {}).get("linear_growth_gradient_gate", False)),
                 "quasilinear_weight_gradient_gate": bool(
                     (solver_grad or {}).get("quasilinear_weight_gradient_gate", False)
@@ -255,11 +261,14 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                 "vmec_boozer_frequency_rel_error": _finite_float(
                     (vmec_solver_grad or {}).get("eigenpair_gate", {}).get("max_rel_error")
                 ),
+                "vmec_boozer_quasilinear_rel_error": _finite_float(
+                    (vmec_ql_grad or {}).get("eigenpair_gate", {}).get("max_rel_error")
+                ),
                 "nonlinear_window_gradient_gate": bool((solver_grad or {}).get("nonlinear_window_gradient_gate", False)),
             },
             "next_action": (
-                "The mode-21 VMEC/Boozer state-to-solver eigenfrequency gate is now in place; next promote the "
-                "heavy quasilinear flux-weight state-gradient diagnostic after profiling/conditioning."
+                "Full VMEC/Boozer eigenfrequency and quasilinear gradients are closed; keep nonlinear-window "
+                "VMEC/Boozer gradients as the future step before full nonlinear stellarator-optimization claims."
             ),
         },
         {
@@ -373,7 +382,8 @@ def write_manuscript_readiness_artifacts(payload: dict[str, Any], *, out: str | 
         elif str(lane["lane"]).startswith("Production"):
             metric = (
                 f"solver-ready: {km.get('solver_ready_gradient_gate')}; "
-                f"VMEC freq: {km.get('full_vmec_boozer_frequency_gradient_gate')}"
+                f"VMEC freq: {km.get('full_vmec_boozer_frequency_gradient_gate')}; "
+                f"VMEC QL: {km.get('full_vmec_boozer_quasilinear_gradient_gate')}"
             )
         elif str(lane["lane"]).startswith("Profiler"):
             speed = km.get("engineering_speedup")

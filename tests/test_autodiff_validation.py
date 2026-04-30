@@ -382,6 +382,7 @@ def test_implicit_eigenpair_observable_gate_matches_closed_form_branch() -> None
     assert report["passed"] is True
     assert report["ad_supported"] is True
     assert report["sensitivity_method"] == "implicit_left_right_eigenpair"
+    assert report["observable_chain_rule"] == "split_eigenpair_and_explicit_parameter"
     jac_impl = np.asarray(report["jacobian_implicit"])
     jac_fd = np.asarray(report["jacobian_fd"])
     np.testing.assert_allclose(jac_impl, jac_fd, rtol=1.0e-3, atol=2.0e-5)
@@ -412,6 +413,7 @@ def test_implicit_eigenpair_observable_gate_handles_complex_observables() -> Non
     )
 
     assert report["passed"] is True
+    assert report["observable_chain_rule"] == "split_eigenpair_and_explicit_parameter"
     assert np.asarray(report["jacobian_implicit"]).shape == (2, 2)
     np.testing.assert_allclose(report["jacobian_implicit"], report["jacobian_fd"], rtol=1.0e-3, atol=3.0e-5)
 
@@ -496,6 +498,7 @@ def test_actual_linear_rhs_branch_objective_implicit_derivative_gate() -> None:
 
     assert report["passed"] is True
     assert report["branch_isolated"] is True
+    assert report["observable_chain_rule"] == "split_eigenpair_and_explicit_parameter"
     jac_impl = np.asarray(report["jacobian_implicit"])
     jac_fd = np.asarray(report["jacobian_fd"])
     np.testing.assert_allclose(jac_impl, jac_fd, rtol=3.0e-2, atol=7.5e-4)
