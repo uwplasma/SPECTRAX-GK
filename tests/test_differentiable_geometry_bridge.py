@@ -22,6 +22,7 @@ from spectraxgk.geometry.differentiable import (
     geometry_inverse_design_report,
     geometry_observable_names,
     geometry_sensitivity_report,
+    vmec_jax_boozer_equal_arc_core_profiles_from_state,
     vmec_jax_boozer_flux_tube_sensitivity_report,
     vmec_jax_field_line_tensor_sensitivity_report,
     vmec_jax_flux_tube_array_parity_report,
@@ -343,9 +344,21 @@ def test_vmec_jax_flux_tube_array_parity_report_tracks_production_gap_when_avail
     assert report["status"] in {"diagnostic_open", "passed"}
     assert set(report["array_metrics"]) >= {"bmag", "gds2", "gds21", "gds22", "gbdrift", "jacobian", "grho"}
     assert set(report["scalar_metrics"]) == {"gradpar", "q", "s_hat"}
+    assert "equal_arc_core_array_metrics" in report
+    assert "equal_arc_core_scalar_metrics" in report
     assert np.isfinite(float(report["worst_core_normalized_max_abs"]))
     assert np.isfinite(float(report["worst_scalar_rel"]))
     assert bool(report["array_metrics"]["bmag"]["shape_match"])
+    if report["equal_arc_core_array_metrics"]:
+        assert spectraxgk.vmec_jax_boozer_equal_arc_core_profiles_from_state is vmec_jax_boozer_equal_arc_core_profiles_from_state
+        assert set(report["equal_arc_core_array_metrics"]) >= {"bmag", "bgrad", "jacobian"}
+        assert set(report["equal_arc_core_scalar_metrics"]) == {"gradpar", "q", "s_hat"}
+        assert np.isfinite(float(report["equal_arc_core_worst_normalized_max_abs"]))
+        assert np.isfinite(float(report["equal_arc_core_worst_scalar_rel"]))
+        assert np.isfinite(float(report["equal_arc_derivative_worst_normalized_max_abs"]))
+        assert float(report["equal_arc_core_worst_normalized_max_abs"]) < 5.0e-2
+        assert float(report["equal_arc_core_worst_scalar_rel"]) < 5.0e-2
+        assert float(report["equal_arc_derivative_worst_normalized_max_abs"]) < 1.0e-1
 
 
 def test_vmec_jax_metric_tensor_sensitivity_report_checks_real_metric_tensors_when_available() -> None:

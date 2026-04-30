@@ -205,9 +205,17 @@ def make_figure(payload: dict[str, Any], out_png: Path) -> None:
     vmec_parity_text = "VMEC/EIK array parity: n/a"
     if isinstance(vmec_array_parity, dict) and vmec_array_parity.get("available"):
         status = "pass" if vmec_array_parity.get("production_parity_passed") else "open"
+        equal_arc_status = "core n/a"
+        if vmec_array_parity.get("equal_arc_core_array_metrics"):
+            core_status = "pass" if vmec_array_parity.get("equal_arc_core_passed") else "open"
+            core_worst = float(vmec_array_parity.get("equal_arc_core_worst_normalized_max_abs", np.nan))
+            bgrad_status = "pass" if vmec_array_parity.get("equal_arc_derivative_passed") else "open"
+            bgrad_worst = float(vmec_array_parity.get("equal_arc_derivative_worst_normalized_max_abs", np.nan))
+            equal_arc_status = f"Boozer core {core_status} {core_worst:.1e}, bgrad {bgrad_status} {bgrad_worst:.1e}"
         vmec_parity_text = (
             "VMEC/EIK array parity: "
-            f"{status}, worst {float(vmec_array_parity['worst_core_normalized_max_abs']):.1e}"
+            f"{status}, worst {float(vmec_array_parity['worst_core_normalized_max_abs']):.1e}; "
+            f"{equal_arc_status}"
         )
     booz_text = "Boozer spectral AD/FD: n/a"
     if isinstance(booz, dict) and booz.get("available"):

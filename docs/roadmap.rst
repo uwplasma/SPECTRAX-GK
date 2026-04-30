@@ -58,8 +58,10 @@ Current pre-release status snapshot:
   real non-axisymmetric VMEC field-line tensor derivative through
   ``vmec_jax.geom`` plus ``vmec_jax.vmec_bcovar``, a direct VMEC
   tensor-derived flux-tube mapping derivative, a direct-VMEC-tensor vs
-  imported-VMEC/EIK array-parity audit, a real ``vmec_jax``
-  ``VMECState`` to ``booz_xform_jax`` to SPECTRAX-GK derivative gate, and a
+  imported-VMEC/EIK array-parity audit, a Boozer equal-arc core parity audit
+  that closes the ``bmag``/``bgrad``/``gradpar``/Jacobian convention at
+  release tolerance, a real ``vmec_jax`` ``VMECState`` to ``booz_xform_jax``
+  to SPECTRAX-GK derivative gate, and a
   tracked AD-vs-finite-difference inverse/UQ artifact at
   ``docs/_static/differentiable_geometry_bridge.png``;
 - production parallelization is currently claimed only for independent
@@ -236,8 +238,8 @@ Differentiable geometry and optimization
 
 After the refactor/testing lane is stable, the differentiable geometry plan is:
 
-1. Close the direct VMEC tensor-derived flux-tube vs imported VMEC/EIK
-   array-parity audit by matching the Boozer equal-arc metric convention.
+1. Extend the now-matched Boozer equal-arc core convention to the full
+   ``gds*``/``grho`` metric reconstruction.
 2. Replace the remaining local grad-:math:`B` drift closure with the
    production VMEC/EIK drift convention.
 3. Add gradient checks for geometry-to-observable paths.
