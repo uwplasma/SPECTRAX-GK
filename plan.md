@@ -1338,8 +1338,8 @@ Exit gate:
     ``booz_xform_jax`` Boozer ``R/Z/nu/B`` spectra, radial derivatives, and
     the same equal-arc remap used by the imported VMEC/EIK path;
   - the tracked ``nfp4_QH_warm_start`` artifact now passes a separate metric
-    subgate with worst normalized mismatch ``3.44e-2``:
-    ``gds2=2.48e-2``, ``gds21=3.44e-2``, ``gds22=3.10e-2``, and
+    subgate with worst normalized mismatch ``3.45e-2``:
+    ``gds2=2.49e-2``, ``gds21=3.45e-2``, ``gds22=3.10e-2``, and
     ``grho=1.58e-2``;
   - this closes the release-tolerance field-line normalization and zero-beta
     metric convention for the differentiable VMEC/Boozer bridge while keeping
@@ -1358,9 +1358,10 @@ Exit gate:
     equal-arc remap, and the same root-level drift-loader factor used by
     ``load_gx_geometry_netcdf``;
   - the tracked ``nfp4_QH_warm_start`` artifact now passes a separate drift
-    subgate with worst normalized mismatch ``3.45e-2``:
-    ``cvdrift=3.45e-2``, ``gbdrift=3.45e-2``, ``cvdrift0=3.10e-2``, and
-    ``gbdrift0=3.10e-2``;
+    subgate with worst normalized mismatch ``3.49e-2`` after raising the
+    default Boozer parity mode count to ``mboz=nboz=12``:
+    ``cvdrift=3.49e-2``, ``gbdrift=3.49e-2``, ``cvdrift0=3.04e-2``, and
+    ``gbdrift0=3.04e-2``;
   - the release claim is now closed for the tracked zero-beta Boozer
     equal-arc field-line, metric, and drift convention, while finite-beta,
     multi-equilibrium drift parity and solver-objective gradients remain
@@ -1372,9 +1373,11 @@ Exit gate:
   - ``shaped_tokamak_pressure`` passes the small ``ntheta=8`` equal-arc
     core/metric/drift smoke gate, including a drift worst normalized mismatch
     of ``7.10e-3``;
-  - ``nfp3_QI_fixed_resolution_final`` passes core/metric smoke gates but still
-    fails the drift smoke gate with worst normalized mismatch ``1.82e-1``;
+  - ``nfp3_QI_fixed_resolution_final`` passes core/metric smoke gates but fails
+    the drift smoke gate with ``mboz=nboz=8`` at worst normalized mismatch
+    ``1.82e-1``; increasing the Boozer parity mode count to ``12`` reduces the
+    QI drift mismatch to ``7.03e-2`` and passes the release drift tolerance,
+    which identifies the immediate issue as spectral truncation rather than a
+    normalization change;
   - a trial shear-HNGC correction using the wrong input-convention factor was
-    explicitly rejected because it worsened the tracked QH metric gate. The QI
-    drift mismatch should therefore remain a real broader-equilibrium drift
-    lane, not be hidden with a normalization change.
+    explicitly rejected because it worsened the tracked QH metric gate.
