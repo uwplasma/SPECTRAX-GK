@@ -192,7 +192,7 @@ def main() -> None:
     if args.out is not None:
         args.out.parent.mkdir(parents=True, exist_ok=True)
         with args.out.open("w", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=["kernel", "seconds", "repeats", "norm"])
+            writer = csv.DictWriter(f, fieldnames=["kernel", "seconds", "repeats", "norm"], lineterminator="\n")
             writer.writeheader()
             writer.writerows(rows)
         print(f"saved {args.out}")

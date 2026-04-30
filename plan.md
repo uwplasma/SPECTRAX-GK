@@ -1099,3 +1099,11 @@ Exit gate:
   - then run W7-X alpha/surface-resolved linear scans and only promote nonlinear windows after branch, transport-window, and resolved-spectrum gates pass;
   - continue nonlinear holdout expansion through the existing pilot -> convergence -> validation -> calibration-admission path, not by adding unconverged external VMEC runs;
   - continue geometry bridge and profiler lanes with real parity/gradient/profiler artifacts rather than claim-only docs.
+- Refreshed the bounded local CPU nonlinear RHS split profile:
+  - reran `tools/profile_nonlinear_step_split.py` for Cyclone grid and spectral Laguerre modes with a hard `240 s` process timeout and `5` warm kernel repeats;
+  - regenerated `docs/_static/nonlinear_rhs_profile_cpu.csv`, `docs/_static/nonlinear_rhs_profile_cpu_spectral.csv`, and `docs/_static/nonlinear_rhs_profile.{png,pdf}`;
+  - current local CPU numbers: grid `full_rhs≈8.14e-2 s`, spectral `full_rhs≈7.97e-2 s`, nonlinear bracket `3.93e-2 s` vs `2.38e-2 s`; this is useful profiler evidence but not a production speedup claim;
+  - documented the bounded CPU refresh in `docs/performance.rst` while keeping spectral Laguerre as opt-in until case-level parity and larger matched CPU/GPU profiler gates support broader claims.
+- Current next best steps:
+  - run the matching GPU profiler refresh on office for the same script/config before changing performance claims;
+  - use those traces to decide whether to optimize bracket FFT/gather paths, field-solve assembly, or cold-start cache construction first.
