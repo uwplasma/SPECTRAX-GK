@@ -1,0 +1,120 @@
+{
+  "claim_scope": "post_v1_5_development_tracking_no_unvalidated_promotion",
+  "kind": "open_research_lane_status",
+  "lanes": [
+    {
+      "claim_level": "open_physical_closure_not_normalization",
+      "key_metrics": {
+        "best_bounded_candidate": {
+          "hermite_tail": 0.3101830131688138,
+          "label": "Nl12 Nm48 none",
+          "mean_abs_error": 0.2761868293295642,
+          "source_path": "tools_out/zonal_response/w7x_recurrence_nl12_nm48_none_t100/w7x_test4_kx070.out.nc",
+          "tail_std_ratio": 3.78054920131388
+        },
+        "failed_reference_gates": [
+          "tail_envelope_std_kx050",
+          "residual_kx070",
+          "tail_envelope_std_kx070",
+          "residual_kx100",
+          "tail_envelope_std_kx100",
+          "residual_kx300",
+          "tail_envelope_std_kx300"
+        ]
+      },
+      "lane": "W7-X zonal long-window recurrence/damping",
+      "next_action": "Run a longer paper-normalized hypercollision/moment-resolution sweep and promote only if residual, tail-envelope, and moment-tail gates pass together.",
+      "primary_artifacts": [
+        "docs/_static/w7x_zonal_reference_compare.json",
+        "docs/_static/w7x_zonal_recurrence_sweep_kx070.json"
+      ],
+      "status": "open"
+    },
+    {
+      "claim_level": "validated_simulation_spectrum_tem_extension_open",
+      "key_metrics": {
+        "dominant_heat_flux_ky": 1.2857143878936768,
+        "dominant_phi_ky": 0.1904762089252472,
+        "time_samples": 76,
+        "time_window": [
+          0.06476377695798874,
+          197.77346801757812
+        ]
+      },
+      "lane": "W7-X fluctuation spectrum and TEM/multi-flux extension",
+      "next_action": "Add W7-X multi-alpha/multi-surface ITG and kinetic-electron density-gradient/TEM scans before broad stellarator-validation claims.",
+      "primary_artifacts": [
+        "docs/_static/w7x_fluctuation_spectrum_panel.json",
+        "docs/_static/tem_mismatch_table.csv"
+      ],
+      "status": "partial"
+    },
+    {
+      "claim_level": "diagnostic_calibration_dataset_not_absolute_flux",
+      "key_metrics": {
+        "calibration_report_passed": false,
+        "cth_like_external_vmec_converged": false,
+        "holdout_cases": [
+          "cyclone_miller_long_window",
+          "hsx_nonlinear_window",
+          "w7x_nonlinear_window"
+        ],
+        "holdout_points": 3,
+        "train_points": 1,
+        "validated_inputs_passed": true
+      },
+      "lane": "Nonlinear holdouts for quasilinear absolute-flux promotion",
+      "next_action": "Add at least one more grid/window-converged nonlinear holdout; keep CTH-like external VMEC excluded until its common-window and grid-refinement gates pass.",
+      "primary_artifacts": [
+        "docs/_static/quasilinear_validated_calibration_inputs.json",
+        "docs/_static/quasilinear_stellarator_train_holdout_report.json",
+        "docs/_static/external_vmec_cth_like_grid_convergence_gate.json"
+      ],
+      "status": "open"
+    },
+    {
+      "claim_level": "contract_gradient_gate_not_full_stellarator_optimization",
+      "key_metrics": {
+        "booz_xform_jax_api_available": true,
+        "inverse_residual_norm": 0.0,
+        "max_abs_ad_fd_error": 1.2885199573986483e-09,
+        "sensitivity_rank": 2,
+        "vmec_jax_available": true
+      },
+      "lane": "vmec_jax / booz_xform_jax differentiable geometry bridge",
+      "next_action": "Connect a real in-memory vmec_jax/booz_xform_jax output to FluxTubeGeometryData and add parity plus geometry-gradient gates before optimization claims.",
+      "primary_artifacts": [
+        "docs/_static/differentiable_geometry_bridge.json"
+      ],
+      "status": "partial"
+    },
+    {
+      "claim_level": "profile_identity_artifact_no_speedup_claim",
+      "key_metrics": {
+        "backend": "gpu",
+        "device_count": 2,
+        "engineering_speedup": 0.7928050107984479,
+        "identity_gate_pass": true
+      },
+      "lane": "Profiler-backed nonlinear hot-path optimization",
+      "next_action": "Collect matched CPU/GPU profiler traces and optimize only persistent nonlinear bracket/field-solve hot paths; do not publish speedup claims until fresh profiler artifacts pass identity gates.",
+      "primary_artifacts": [
+        "docs/_static/nonlinear_sharding_profile_office_gpu.json"
+      ],
+      "status": "partial"
+    }
+  ],
+  "status_order": {
+    "blocked": 3,
+    "closed": 0,
+    "open": 2,
+    "partial": 1
+  },
+  "summary": {
+    "n_blocked": 0,
+    "n_closed": 0,
+    "n_lanes": 5,
+    "n_open": 2,
+    "n_partial": 3
+  }
+}

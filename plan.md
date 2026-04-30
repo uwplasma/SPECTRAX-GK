@@ -1067,3 +1067,14 @@ Exit gate:
   - explicitly keep W7-X zonal long-window recurrence/damping as a deferred manuscript blocker rather than a release blocker;
   - run bounded docs/build/package checks for the new spectrum artifact and push the release-scope updates;
   - wait for GitHub CI to go green before any version bump, tag, or PyPI release.
+- Started the post-v1.5 open-lane execution pass:
+  - added `tools/build_open_research_lane_status.py` to read the current W7-X zonal, W7-X fluctuation-spectrum, quasilinear holdout, differentiable-geometry, and nonlinear-profiler artifacts and summarize each lane as `closed`, `partial`, `open`, or `blocked`;
+  - generated `docs/_static/open_research_lane_status.{png,pdf,json,csv}` as a claim-scope figure and machine-readable dashboard;
+  - current executable status: W7-X long-window zonal recurrence/damping is open with seven failed reference/envelope gates; quasilinear absolute-flux promotion is open with three current holdouts but `passed=false`; W7-X fluctuation spectra, the differentiable-geometry bridge, and nonlinear profiler identity artifacts are partial bounded diagnostics;
+  - updated the validation coverage manifest, roadmap, and manuscript figure index so these lanes cannot be accidentally described as closed physics claims.
+- Current next best steps:
+  - run the next W7-X zonal physical closure sweep on office using one controlled knob at a time (moment resolution, Hermite/Laguerre hypercollision source, then time horizon) and admit a candidate only if residual, late-envelope, and moment-tail gates improve together;
+  - keep CTH-like external VMEC excluded and choose either a higher-grid CTH run or a different VMEC candidate for the next converged nonlinear holdout;
+  - extend the W7-X fluctuation/TEM lane with multi-alpha/multi-surface kinetic-electron scans before broad W7-X claims;
+  - connect real in-memory `vmec_jax`/`booz_xform_jax` output into `FluxTubeGeometryData` and add parity plus gradient gates before optimization claims;
+  - collect matched CPU/GPU profiler traces before making any new speedup claim.
