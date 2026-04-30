@@ -415,6 +415,15 @@ the final Hermite-tail fraction from ``0.388`` to ``0.062`` but worsens the
 trace mean absolute error to ``0.291``; the ``k_z``-weighted closure remains
 close to no closure. This separates the remaining recurrence/closure problem
 from a state-convention error.
+The newest constant-hypercollision follow-up keeps the paper-facing
+normalization and compares ``nu_hyper_m=0.01`` and ``0.03`` at
+``Nl=16,Nm=64`` to ``t v_t/a=100``. Increasing ``nu_hyper_m`` lowers the final
+Hermite-tail fraction from ``0.220`` to ``0.099`` and lowers the free-energy
+ratio from ``0.759`` to ``0.600``, but the mean trace error remains
+``0.289`` and the late-window standard deviation remains more than four times
+the digitized reference. The W7-X zonal lane therefore remains a physical
+closure/recurrence problem, not a normalization problem and not a simple
+constant-damping fix.
 ``tools/generate_w7x_zonal_response_panel.py`` now exposes explicit
 ``--nu-hyper``, ``--nu-hyper-l``, ``--nu-hyper-m``, ``--nu-hyper-lm``,
 ``--p-hyper-*``, ``--hypercollisions-const``, ``--hypercollisions-kz``,
@@ -490,6 +499,15 @@ audits, not validation defaults.
    panel varies moment resolution with no closure; the right trace panel varies
    closure source at fixed high resolution. The bottom panels show that tail
    suppression alone does not yet close the literature-trace mismatch.
+
+.. figure:: _static/w7x_zonal_hypercollision_probe_kx070.png
+   :alt: W7-X zonal-response constant hypercollision probe at kx rho_i 0.07
+
+   Constant-Hermite-hypercollision follow-up for ``k_x rho_i=0.07``. Stronger
+   constant damping reduces Hermite-tail and free-energy metrics but does not
+   reduce the long-window trace error or recurrence envelope enough to match
+   the digitized stella/GENE reference. This is a documented negative result
+   that motivates a more physical closure/operator study.
 
 Diffrax and nonlinear smoke tests
 ---------------------------------

@@ -240,7 +240,7 @@ def recurrence_figure(
     if not rows:
         raise ValueError("no recurrence sweep rows to plot")
     set_plot_style()
-    label_palette = ["#0f4c81", "#2a9d8f", "#4f46e5", "#6b7280", "#c2410c", "#7b2cbf"]
+    label_palette = ["#0f4c81", "#2a9d8f", "#4f46e5", "#6b7280", "#c2410c", "#7b2cbf", "#d1495b", "#edae49"]
     label_colors = {str(row["label"]): label_palette[idx % len(label_palette)] for idx, row in enumerate(rows)}
     plot_ids = {str(row["label"]): chr(ord("A") + idx) for idx, row in enumerate(rows)}
     display_labels = {str(row["label"]): f"{plot_ids[str(row['label'])]}  {row['label']}" for row in rows}
@@ -251,9 +251,11 @@ def recurrence_figure(
     ):
         ref_mask = reference_t <= float(analysis_tmax)
         axis.plot(reference_t[ref_mask], reference_y[ref_mask], color="#111827", linewidth=2.4, label="stella/GENE mean")
+        n_family_rows = 0
         for row in rows:
             if str(row["sweep"]) != sweep:
                 continue
+            n_family_rows += 1
             trace = traces[str(row["label"])]
             color = label_colors[str(row["label"])]
             axis.plot(
@@ -268,6 +270,18 @@ def recurrence_figure(
         axis.set_ylabel(r"$\phi_z/\phi_z(0)$")
         axis.set_title(title)
         axis.grid(True, alpha=0.25)
+        if n_family_rows == 0:
+            axis.text(
+                0.5,
+                0.52,
+                "No rows varied\nin this artifact",
+                transform=axis.transAxes,
+                ha="center",
+                va="center",
+                fontsize=9,
+                color="#6b7280",
+                bbox={"boxstyle": "round,pad=0.35", "facecolor": "white", "edgecolor": "#d1d5db", "alpha": 0.92},
+            )
         axis.legend(frameon=True, framealpha=0.92, fontsize=8)
 
     ax = axes[1, 0]
@@ -294,8 +308,9 @@ def recurrence_figure(
         linewidth=0.9,
         zorder=3,
     )
-    offsets = [(5, 6), (5, -13), (5, 8), (-24, -18), (6, 12), (-12, 10)]
-    for row, offset in zip(rows, offsets, strict=False):
+    offsets = [(5, 6), (5, -13), (5, 8), (-24, -18), (6, 12), (-12, 10), (8, -8), (-18, 14)]
+    for idx, row in enumerate(rows):
+        offset = offsets[idx % len(offsets)]
         ax.annotate(
             plot_ids[str(row["label"])],
             (float(row["hermite_tail_at_tmax"]), float(row["tail_std"])),

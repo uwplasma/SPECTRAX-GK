@@ -51,6 +51,31 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
     )
     _write_json(
         tmp_path,
+        "docs/_static/w7x_zonal_hypercollision_probe_kx070.json",
+        {
+            "validation_status": "open",
+            "rows": [
+                {
+                    "label": "const nuhm0.01",
+                    "mean_abs_error": 0.3,
+                    "tail_std": 0.12,
+                    "reference_tail_std": 0.03,
+                    "hermite_tail_at_tmax": 0.22,
+                    "free_energy_at_tmax_over_initial": 0.75,
+                },
+                {
+                    "label": "const nuhm0.03",
+                    "mean_abs_error": 0.28,
+                    "tail_std": 0.13,
+                    "reference_tail_std": 0.03,
+                    "hermite_tail_at_tmax": 0.10,
+                    "free_energy_at_tmax_over_initial": 0.60,
+                },
+            ],
+        },
+    )
+    _write_json(
+        tmp_path,
         "docs/_static/w7x_fluctuation_spectrum_panel.json",
         {
             "source_gate_passed": True,
@@ -104,6 +129,11 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
         "residual_kx070"
     ]
     assert lanes["W7-X zonal long-window recurrence/damping"]["key_metrics"]["best_bounded_candidate"]["label"] == "best"
+    hyper = lanes["W7-X zonal long-window recurrence/damping"]["key_metrics"][
+        "best_constant_hypercollision_probe"
+    ]
+    assert hyper["label"] == "const nuhm0.03"
+    assert hyper["validation_status"] == "open"
     assert lanes["Nonlinear holdouts for quasilinear absolute-flux promotion"]["claim_level"] == (
         "diagnostic_calibration_dataset_not_absolute_flux"
     )

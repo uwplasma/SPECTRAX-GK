@@ -114,3 +114,31 @@ def test_w7x_zonal_recurrence_sweep_builds_rows_and_main(tmp_path: Path) -> None
     payload = json.loads(out_png.with_suffix(".json").read_text(encoding="utf-8"))
     assert payload["validation_status"] == "open"
     assert payload["gate_index_include"] is False
+
+
+def test_w7x_zonal_recurrence_sweep_allows_one_sweep_family(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    reference = tmp_path / "reference.csv"
+    out_nc = tmp_path / "closure" / "b.out.nc"
+    _write_reference(reference)
+    _write_output(out_nc, nm=12, nl=6, offset=0.01)
+
+    out_png = tmp_path / "closure_only.png"
+    rc = mod.main(
+        [
+            "--reference-traces",
+            str(reference),
+            "--run",
+            "closure",
+            "closure_source",
+            "const",
+            str(out_nc),
+            "--out-png",
+            str(out_png),
+        ]
+    )
+
+    assert rc == 0
+    assert out_png.exists()
+    payload = json.loads(out_png.with_suffix(".json").read_text(encoding="utf-8"))
+    assert payload["rows"][0]["sweep"] == "closure_source"
