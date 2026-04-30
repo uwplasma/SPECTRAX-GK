@@ -1022,3 +1022,13 @@ Exit gate:
   - decide the production CTH-like nonlinear protocol before more long runs: either increase grid again, adjust dissipation/hypercollision with a documented physics rationale, or defer external-VMEC transport holdouts until a reference exists;
   - if continuing CTH-like, run one controlled parameter at a time and require late-window heat flux to be stable under both window choice and grid refinement;
   - otherwise return to the core quasilinear model lane with the current four validated nonlinear cases and keep external VMEC as a documented future holdout campaign.
+- Closed the first explicit external-VMEC nonlinear convergence-gate slice:
+  - added `tools/plot_external_vmec_nonlinear_convergence_gate.py` plus fast synthetic tests;
+  - generated `docs/_static/external_vmec_cth_like_grid_convergence_gate.{png,pdf,json,csv}` from the existing `32^2x24` and `48^2x32` CTH-like `t=150` pilots;
+  - the gate is intentionally excluded from the release validation index (`gate_index_include=false`) because it documents a negative research result rather than a release blocker;
+  - gate outcome: common-window heat-flux symmetric relative difference `0.571`, least-trending-window difference `0.453`, threshold `0.15`; common-window relative trend also fails (`5.42e-3` per time unit versus `2e-3`);
+  - conclusion unchanged but now machine-readable: CTH-like is finite and promising, but it is not admitted into quasilinear calibration until the grid/window protocol passes.
+- Current next best steps:
+  - return to the core quasilinear saturation-model lane using the currently validated nonlinear holdouts, because the external CTH-like holdout failed convergence;
+  - if external-VMEC holdouts remain a priority, choose one controlled next run: either increase the CTH-like grid again, vary hypercollision/dissipation with a documented physics rationale, or choose a different VMEC candidate with a stronger reference basis;
+  - add any future external-VMEC nonlinear candidate through the same pilot -> convergence-gate -> spectrum-shape-gate path before using it for calibration or optimization claims.

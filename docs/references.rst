@@ -30,6 +30,17 @@ References
    tokamak and stellarator design," Journal of Plasma Physics (2022).
    `DOI <https://doi.org/10.1017/S0022377822000617>`__.
 
+.. [Sanchez21] E. Sánchez et al., "Gyrokinetic simulations in stellarators
+   using different computational domains," Nuclear Fusion 61, 116074 (2021).
+   `arXiv <https://arxiv.org/abs/2106.02828>`__,
+   `DOI <https://doi.org/10.1088/1741-4326/ac2a87>`__.
+
+.. [Papadopoulos23] A. D. Papadopoulos, J. Anderson, E.-j. Kim,
+   M. Mavridis, and H. Isliker, "Statistical Analysis of Plasma Dynamics in
+   Gyrokinetic Simulations of Stellarator Turbulence," Entropy 25, 942 (2023).
+   `article <https://www.mdpi.com/1099-4300/25/6/942>`__,
+   `DOI <https://doi.org/10.3390/e25060942>`__.
+
 .. [GENE] F. Jenko et al., "The GENE code," Journal of Computational Physics
    230, 6979 (2011). `DOI <https://doi.org/10.1016/j.jcp.2011.05.034>`__.
 
