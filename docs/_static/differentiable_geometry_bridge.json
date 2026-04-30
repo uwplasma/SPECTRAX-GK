@@ -515,7 +515,7 @@
     0.06176080850358888,
     1.5505567586513118
   ],
-  "notes": "This is a bounded differentiable-geometry bridge validation. The high-fidelity VMEC/Boozer pipeline must provide the same solver-ready field-line arrays; this artifact validates the JAX tracing, AD-vs-FD sensitivities, inverse recovery, UQ machinery, and the first real Boozer-spectrum-to-flux-tube plus vmec_jax-state-to-Boozer mapping gates at that contract boundary.",
+  "notes": "This is a bounded differentiable-geometry bridge validation. The high-fidelity VMEC/Boozer pipeline must provide the same solver-ready field-line arrays; this artifact validates the JAX tracing, AD-vs-FD sensitivities, inverse recovery, UQ machinery, and the first real VMEC metric-tensor, Boozer-spectrum-to-flux-tube, and vmec_jax-state-to-Boozer mapping gates at that contract boundary.",
   "observable_names": [
     "mean_bmag",
     "relative_bmag_ripple",
@@ -798,6 +798,128 @@
       ],
       "source_model": "vmec_jax:state->booz_xform_jax:field-line-bmag"
     },
+    "state_shape": [
+      17,
+      8
+    ],
+    "surface_index": 7,
+    "wout_path": "/Users/rogeriojorge/local/vmec_jax/examples/data/wout_circular_tokamak.nc"
+  },
+  "vmec_jax_metric_tensor": {
+    "available": true,
+    "backend_info": {
+      "booz_xform_jax_api_available": true,
+      "booz_xform_jax_available": true,
+      "booz_xform_jax_paths": [
+        "/Users/rogeriojorge/local/booz_xform_jax",
+        "/Users/rogeriojorge/local/booz_xform_jax/src"
+      ],
+      "vmec_jax_available": true,
+      "vmec_jax_boundary_api_available": true,
+      "vmec_jax_paths": [
+        "/Users/rogeriojorge/local/vmec_jax"
+      ]
+    },
+    "case_name": "circular_tokamak",
+    "fd_step": 1e-05,
+    "input_path": "/Users/rogeriojorge/local/vmec_jax/examples/data/input.circular_tokamak",
+    "jacobian_ad": [
+      [
+        47.107653258623216,
+        46.16400443771231
+      ],
+      [
+        17.27967044152082,
+        17.328055661796398
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.44655409775293214,
+        0.45078824891698843
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ]
+    ],
+    "jacobian_fd": [
+      [
+        47.10765324125176,
+        46.16400442172263
+      ],
+      [
+        17.279670441427974,
+        17.32805566174722
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.4465540405430845,
+        0.4507881901046062
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ]
+    ],
+    "max_abs_ad_fd_error": 5.8812382242035e-08,
+    "max_rel_ad_fd_error": 1.3046566776351664e-07,
+    "metric_grid_shape": [
+      17,
+      22,
+      1
+    ],
+    "mode_index": 1,
+    "observable_names": [
+      "sqrtg_rms",
+      "mean_g_ss",
+      "mean_g_tt",
+      "mean_g_pp",
+      "g_st_rms",
+      "g_sp_rms",
+      "g_tp_rms"
+    ],
+    "observables": [
+      12.443385967643161,
+      2.351568302918944,
+      1.7939891397719199,
+      37.97785399391237,
+      0.10500328460534353,
+      1e-12,
+      1e-12
+    ],
+    "param_names": [
+      "delta_Rcos",
+      "delta_Zsin"
+    ],
+    "params": [
+      0.001,
+      0.001
+    ],
+    "radial_index": 8,
+    "rms_epsilon": 1e-24,
+    "source_model": "vmec_jax:state->metric-tensors",
     "state_shape": [
       17,
       8

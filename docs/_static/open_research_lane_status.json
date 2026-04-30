@@ -97,6 +97,8 @@
         "max_abs_ad_fd_error": 1.2885199573986483e-09,
         "sensitivity_rank": 2,
         "vmec_jax_available": true,
+        "vmec_metric_tensor_max_abs_ad_fd_error": 5.8812382242035e-08,
+        "vmec_metric_tensor_max_rel_ad_fd_error": 1.3046566776351664e-07,
         "vmec_state_boozer_flux_tube_max_abs_ad_fd_error": 5.773192057745291e-07,
         "vmec_state_boozer_flux_tube_max_rel_ad_fd_error": 1.3940665202206006e-08
       },

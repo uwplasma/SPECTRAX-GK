@@ -1208,3 +1208,29 @@ Exit gate:
   - only then connect the QA optimization examples to the full geometry bridge
     and keep nonlinear heat-flux optimization gated on converged nonlinear
     windows.
+- Added the upstream VMEC metric-tensor differentiability gate:
+  - added ``spectraxgk.geometry.differentiable.vmec_jax_metric_tensor_sensitivity_report`` and
+    ``vmec_metric_tensor_observable_names``;
+  - the gate loads the same real ``vmec_jax`` ``circular_tokamak`` state,
+    perturbs the VMEC Fourier coefficients, evaluates
+    ``vmec_jax.geom.eval_geom``, and checks sampled covariant metric/Jacobian
+    observables ``[sqrtg_rms, mean_g_ss, mean_g_tt, mean_g_pp, g_st_rms,
+    g_sp_rms, g_tp_rms]`` against central finite differences;
+  - refreshed ``docs/_static/differentiable_geometry_bridge.{png,json}``;
+    current VMEC metric-tensor AD/FD max absolute error is ``5.88e-8`` and max
+    relative error is ``1.30e-7``;
+  - updated the open-lane dashboard and docs so the bridge status records both
+    real VMEC metric derivatives and real VMEC-state-to-Boozer derivatives.
+- Scope note:
+  - the path now differentiates through real ``vmec_jax`` state geometry and
+    real ``booz_xform_jax`` spectra, but the SPECTRAX-GK field-line mapping
+    still uses a smooth placeholder for metric/drift closure;
+  - production stellarator optimization remains gated on replacing that closure
+    with sampled VMEC/Boozer field-line tensors and matching the imported
+    VMEC/eik runtime path.
+- Current next best steps:
+  - build a small-equilibrium sampled field-line tensor fixture from the VMEC
+    metric output plus Boozer straight-field-line coordinates;
+  - compare ``bmag``, ``gradpar``, ``gds2``, ``gds21``, ``gds22``, drifts,
+    Jacobian, and ``grho`` against the imported VMEC/eik runtime path;
+  - then add production linear/quasilinear AD-vs-FD gates through this fixture.
