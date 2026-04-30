@@ -1141,3 +1141,19 @@ Exit gate:
   - connect a real `vmec_jax` equilibrium output to the sampled `FluxTubeGeometryData` contract, then compare against the existing VMEC/eik import path on a small equilibrium;
   - add a gradient gate for a solver-facing geometric observable after geometry parity passes;
   - keep full stellarator optimization claims scoped until both geometry parity and geometry-gradient gates pass.
+- Added the differentiable QA stellarator ITG objective-reduction gate:
+  - added `src/spectraxgk/stellarator_optimization.py` with a JAX-native max-mode-1 QA control map targeting aspect `7`, mean iota `0.41`, and smooth quasisymmetry/ITG observables;
+  - added three optimization objectives: linear ITG growth rate, differentiable quasilinear ITG heat-flux proxy, and a differentiable nonlinear heat-flux envelope with late-window mean/CV/trend diagnostics;
+  - added example scripts under `examples/optimization/` for growth-rate, quasilinear-flux, nonlinear-window, and three-objective comparison workflows;
+  - generated `docs/_static/stellarator_itg_growth_optimization.{png,pdf,json,history.csv}`, `docs/_static/stellarator_itg_quasilinear_optimization.{png,pdf,json,history.csv}`, `docs/_static/stellarator_itg_nonlinear_optimization.{png,pdf,json,history.csv}`, and `docs/_static/stellarator_itg_optimization_comparison.{png,pdf,json}`;
+  - current result: all three objectives pass AD-vs-finite-difference gates, keep the optimized state near the target aspect/iota constraints, reduce growth to about `57%` of its initial value, and reduce quasilinear plus nonlinear-window heat-flux observables to about `41%` of their initial values;
+  - added `tests/test_stellarator_optimization.py` so the objective contracts, gradient gates, nonlinear window metrics, optimizer reduction, UQ/covariance diagnostics, and comparison payload shape remain covered in the fast test suite;
+  - documented the workflow in `docs/stellarator_optimization.rst`, README, and `docs/manuscript_figures.rst`.
+- Scope note:
+  - this closes a differentiable optimization and UQ gate, not the full production `vmec_jax -> booz_xform_jax -> SPECTRAX-GK` nonlinear optimization claim;
+  - the full claim still requires in-memory VMEC/Boozer-to-`FluxTubeGeometryData` parity, geometry-gradient gates through production solver caches, removal or isolation of host scalar materialization in traced geometry paths, and converged nonlinear audits of optimized geometries.
+- Current next best steps:
+  - implement the real `vmec_jax VMECState -> booz_xform_jax -> FluxTubeGeometryData` bridge using a small equilibrium and compare sampled field-line arrays against the existing VMEC/eik import path;
+  - add finite-difference and implicit-eigenpair gradient checks for growth rate, frequency, and quasilinear weights through that bridge;
+  - replace the reduced nonlinear envelope with either a trace-safe production nonlinear objective or a documented stochastic/window estimator only after nonlinear identity, convergence, and profiler gates pass;
+  - keep W7-X zonal long-window recurrence/damping and TEM branch/frequency blockers deferred while the differentiability lane advances.

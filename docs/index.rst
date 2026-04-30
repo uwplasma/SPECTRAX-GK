@@ -46,6 +46,7 @@ the same order they appear in the code.
    numerics
    normalization
    quasilinear
+   stellarator_optimization
    geometry
    algorithms
    solvers
