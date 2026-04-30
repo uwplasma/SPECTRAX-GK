@@ -32,7 +32,16 @@ def _write_case(tmp_path: Path, name: str, *, observed: float, gamma_sign: float
     diag = tmp_path / f"{name}_diag.csv"
     diag.write_text(f"t,heat_flux\n0.0,{observed}\n1.0,{observed}\n", encoding="utf-8")
     summary = tmp_path / f"{name}_summary.json"
-    summary.write_text(json.dumps({"case": name, "spectrax": str(diag)}), encoding="utf-8")
+    summary.write_text(
+        json.dumps(
+            {
+                "case": name,
+                "spectrax": str(diag),
+                "gate_report": {"case": name, "passed": True, "gates": []},
+            }
+        ),
+        encoding="utf-8",
+    )
     return spectrum, summary
 
 
@@ -60,6 +69,7 @@ def test_saturation_rule_sweep_fits_train_scale_and_scores_holdout(tmp_path: Pat
     report = mod.build_saturation_rule_sweep(cases)
 
     assert report["claim_level"] == "model_comparison_not_validated_transport"
+    assert report["input_validation"]["passed"] is True
     assert report["rules"]["positive_mixing_length"]["scale"] == pytest.approx(10.0)
     assert report["rules"]["positive_mixing_length"]["predicted_heat_flux"][0] == pytest.approx(9.0)
     assert report["rules"]["positive_mixing_length"]["predicted_heat_flux"][1] == pytest.approx(0.0)
@@ -93,3 +103,23 @@ def test_saturation_rule_sweep_writes_artifacts(tmp_path: Path) -> None:
     assert payload["kind"] == "quasilinear_saturation_rule_sweep"
     assert "null_training_mean_baseline" in payload
     assert "promotion_gate" in payload
+
+
+def test_saturation_rule_sweep_rejects_failed_nonlinear_summary_gate(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    spectrum, summary = _write_case(tmp_path, "train", observed=9.0)
+    data = json.loads(summary.read_text(encoding="utf-8"))
+    data["gate_report"]["passed"] = False
+    summary.write_text(json.dumps(data), encoding="utf-8")
+    cases = (
+        mod.SaturationCase(
+            case="train",
+            split="train",
+            geometry="cyclone",
+            spectrum=spectrum,
+            nonlinear_summary=summary,
+        ),
+    )
+
+    with pytest.raises(ValueError, match="unvalidated nonlinear train/holdout input"):
+        mod.build_saturation_rule_sweep(cases)

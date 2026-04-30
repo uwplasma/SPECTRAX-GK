@@ -1049,3 +1049,11 @@ Exit gate:
   - build the next saturation-model diagnostic on the validated four-case set, with the CI admission gate as a precondition;
   - keep external VMEC candidates out of calibration until a new candidate passes pilot, convergence, and validation gates;
   - when adding any new nonlinear reference, update both the nonlinear gate JSON and the quasilinear input audit before using it in a model figure.
+- Propagated validated-input enforcement into quasilinear model-development scripts:
+  - `tools/plot_quasilinear_saturation_rule_sweep.py`, `tools/plot_quasilinear_shape_aware_saturation.py`, and `tools/plot_quasilinear_candidate_uncertainty.py` now require passed nonlinear summary gates by default;
+  - regenerated `docs/_static/quasilinear_saturation_rule_sweep.json`, `docs/_static/quasilinear_shape_aware_saturation.json`, and `docs/_static/quasilinear_candidate_uncertainty.json` with `input_validation.passed=true` for the validated four-case set;
+  - added tests proving failed nonlinear summary gates are rejected and synthetic tests carry explicit passed gates.
+- Current next best steps:
+  - proceed to the next quasilinear saturation-candidate improvement only within the validated four-case dataset;
+  - add at least one additional converged nonlinear holdout before promoting any higher-parameter candidate beyond a negative/model-development result;
+  - keep the finalization plan split into release-ready validated tooling versus post-release external-VMEC/stellarator-optimization expansion.

@@ -18,7 +18,12 @@ import matplotlib.pyplot as plt  # noqa: E402
 
 from spectraxgk.plotting import set_plot_style  # noqa: E402
 
-from plot_quasilinear_saturation_rule_sweep import DEFAULT_CASES, SaturationCase, raw_rule_estimates  # noqa: E402
+from plot_quasilinear_saturation_rule_sweep import (  # noqa: E402
+    DEFAULT_CASES,
+    SaturationCase,
+    raw_rule_estimates,
+    require_validated_nonlinear_inputs,
+)
 from plot_quasilinear_shape_aware_saturation import (  # noqa: E402
     _observed_flux,
     fit_power_law_shape_exponent,
@@ -222,9 +227,15 @@ def build_candidate_uncertainty_report(
     interval_z: float = 1.96,
     transport_gate: float = 0.35,
     interval_coverage_gate: float = 0.75,
+    require_validated_inputs: bool = True,
 ) -> dict[str, Any]:
     """Build a leave-one-geometry-out uncertainty report for candidate models."""
 
+    input_validation = (
+        require_validated_nonlinear_inputs(cases)
+        if require_validated_inputs
+        else {"kind": "quasilinear_model_input_validation", "passed": None, "required": False}
+    )
     observed = np.asarray([_observed_flux(case)[0] for case in cases], dtype=float)
     features_all = _state_feature_matrix(cases, floor=observed_floor) if "linear_state_ridge" in candidates else None
     null_rows = []
@@ -347,6 +358,7 @@ def build_candidate_uncertainty_report(
         "interval_z": float(interval_z),
         "transport_gate": float(transport_gate),
         "interval_coverage_gate": float(interval_coverage_gate),
+        "input_validation": input_validation,
         "null_training_mean_baseline": {
             "mean_abs_relative_error": null_mean,
             "max_abs_relative_error": float(np.nanmax(null_errors)),

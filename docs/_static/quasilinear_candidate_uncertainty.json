@@ -411,6 +411,56 @@
     }
   },
   "claim_level": "candidate_model_development_not_runtime_option",
+  "input_validation": {
+    "cases": [
+      {
+        "case": "cyclone_long_window",
+        "gate_case": "cyclone_nonlinear_long_window",
+        "gate_passed": true,
+        "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/nonlinear_cyclone_gate_summary.json",
+        "passed": true,
+        "reason": "matched passed nonlinear summary gate",
+        "required": true,
+        "split": "train"
+      },
+      {
+        "case": "cyclone_miller_long_window",
+        "gate_case": "cyclone_miller_nonlinear_window",
+        "gate_passed": true,
+        "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/nonlinear_cyclone_miller_gate_summary.json",
+        "passed": true,
+        "reason": "matched passed nonlinear summary gate",
+        "required": true,
+        "split": "holdout"
+      },
+      {
+        "case": "hsx_nonlinear_window",
+        "gate_case": "hsx_nonlinear_window",
+        "gate_passed": true,
+        "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/nonlinear_hsx_gate_summary.json",
+        "passed": true,
+        "reason": "matched passed nonlinear summary gate",
+        "required": true,
+        "split": "holdout"
+      },
+      {
+        "case": "w7x_nonlinear_window",
+        "gate_case": "w7x_nonlinear_window",
+        "gate_passed": true,
+        "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/nonlinear_w7x_gate_summary.json",
+        "passed": true,
+        "reason": "matched passed nonlinear summary gate",
+        "required": true,
+        "split": "holdout"
+      }
+    ],
+    "kind": "quasilinear_model_input_validation",
+    "passed": true,
+    "required_splits": [
+      "train",
+      "holdout"
+    ]
+  },
   "interval_coverage_gate": 0.75,
   "interval_z": 1.96,
   "kind": "quasilinear_candidate_uncertainty_report",
