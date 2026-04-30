@@ -1518,6 +1518,10 @@ Exit gate:
     published QH artifact;
   - a mocked backend regression test checks that the selected Boozer surfaces
     are passed through and recorded in the returned metadata.
+- Exposed ``radial_index``, ``mode_index``, and ``surface_index`` controls in
+  the VMEC/Boozer frequency and quasilinear gradient-gate APIs/tools. This is
+  needed for reviewer-proof conditioning scans because a broad VMEC/Boozer
+  gradient claim should not depend on one hard-coded Fourier coefficient.
 - Office GPU holdout diagnostics:
   - ``nfp3_QI_fixed_resolution_final`` now runs with the stencil and
     ``mboz=nboz=21`` without the earlier all-surface OOM, but both the

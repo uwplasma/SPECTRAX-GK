@@ -258,6 +258,10 @@ transport-gradient promotion or nonlinear-window state-gradient gates.
    state coefficient is perturbed, converted through ``booz_xform_jax`` with
    ``mboz=nboz=21``, mapped into the SPECTRAX-GK linear solver, and checked
    against central finite differences.
+   The artifact tools also accept explicit VMEC ``radial_index``,
+   ``mode_index``, and ``surface_index`` controls so conditioning scans can
+   choose physically meaningful state perturbations without changing source
+   code.
 
 .. figure:: _static/vmec_boozer_quasilinear_gradient_gate.png
    :width: 90%

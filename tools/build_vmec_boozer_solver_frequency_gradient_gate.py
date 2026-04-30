@@ -22,6 +22,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     parser.add_argument("--case-name", default="nfp4_QH_warm_start")
+    parser.add_argument("--radial-index", type=int, default=None)
+    parser.add_argument("--mode-index", type=int, default=1)
+    parser.add_argument("--surface-index", type=int, default=None)
     parser.add_argument("--fd-step", type=float, default=1.0e-6)
     parser.add_argument("--rtol", type=float, default=5.0e-2)
     parser.add_argument("--atol", type=float, default=2.0e-2)
@@ -42,6 +45,9 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     payload = mode21_vmec_boozer_linear_frequency_gradient_report(
         case_name=args.case_name,
+        radial_index=args.radial_index,
+        mode_index=args.mode_index,
+        surface_index=args.surface_index,
         fd_step=args.fd_step,
         rtol=args.rtol,
         atol=args.atol,
