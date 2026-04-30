@@ -24,6 +24,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUT = ROOT / "docs" / "_static" / "w7x_tem_extension_status.png"
 DEFAULT_W7X_SPECTRUM = ROOT / "docs" / "_static" / "w7x_fluctuation_spectrum_panel.json"
 DEFAULT_TEM_TABLE = ROOT / "docs" / "_static" / "tem_mismatch_table.csv"
+DEFAULT_TEM_AUDIT = ROOT / "docs" / "_static" / "tem_branch_parity_audit.json"
 
 STATUS_ORDER = {"closed": 0, "partial": 1, "open": 2}
 STATUS_COLORS = {"closed": "#2a9d8f", "partial": "#e9c46a", "open": "#f4a261"}
@@ -58,10 +59,33 @@ def _json_clean(value: Any) -> Any:
     return value
 
 
-def _tem_metrics(path: Path) -> dict[str, Any]:
+def _tem_metrics(path: Path, *, audit_path: Path | None = None) -> dict[str, Any]:
+    if audit_path is not None and audit_path.exists():
+        audit = _read_json(audit_path)
+        metrics = audit.get("metrics", {}) if audit else {}
+        if not isinstance(metrics, dict):
+            metrics = {}
+        return {
+            "available": True,
+            "audit_available": True,
+            "audit_status": audit.get("status") if audit else None,
+            "audit_claim_level": audit.get("claim_level") if audit else None,
+            "n_rows": metrics.get("n_ky"),
+            "max_abs_rel_gamma": metrics.get("max_abs_rel_gamma"),
+            "max_abs_rel_omega": metrics.get("max_abs_rel_omega_ref_ge_0p2"),
+            "max_abs_rel_omega_raw": metrics.get("max_abs_rel_omega_raw"),
+            "max_abs_gamma_error": metrics.get("max_abs_gamma_error"),
+            "max_abs_omega_error": metrics.get("max_abs_omega_error"),
+            "gamma_sign_mismatch_count": metrics.get("gamma_sign_mismatch_count"),
+            "omega_sign_mismatch_count": metrics.get("omega_sign_mismatch_count"),
+            "omega_spearman": metrics.get("omega_spearman"),
+            "omega_branch_inversion": metrics.get("omega_branch_inversion"),
+            "source": str(audit_path),
+        }
     if not path.exists():
         return {
             "available": False,
+            "audit_available": False,
             "n_rows": 0,
             "max_abs_rel_gamma": None,
             "max_abs_rel_omega": None,
@@ -83,6 +107,7 @@ def _tem_metrics(path: Path) -> dict[str, Any]:
     worst_omega = max(omega_values, key=lambda item: item[1]) if omega_values else (None, None)
     return {
         "available": True,
+        "audit_available": False,
         "n_rows": len(rows),
         "max_abs_rel_gamma": worst_gamma[1],
         "max_abs_rel_omega": worst_omega[1],
@@ -95,15 +120,19 @@ def build_status_payload(
     *,
     w7x_spectrum: Path = DEFAULT_W7X_SPECTRUM,
     tem_table: Path = DEFAULT_TEM_TABLE,
+    tem_audit: Path = DEFAULT_TEM_AUDIT,
 ) -> dict[str, Any]:
     """Return a JSON-ready W7-X/TEM validation extension status payload."""
 
     spectrum = _read_json(Path(w7x_spectrum))
-    tem = _tem_metrics(Path(tem_table))
+    tem = _tem_metrics(Path(tem_table), audit_path=Path(tem_audit))
     spectrum_closed = bool(spectrum and spectrum.get("source_gate_passed") is True)
     tem_gamma = _finite_float(tem.get("max_abs_rel_gamma"))
     tem_omega = _finite_float(tem.get("max_abs_rel_omega"))
-    tem_open = tem_gamma is None or tem_omega is None or tem_gamma > 0.2 or tem_omega > 0.2
+    if bool(tem.get("audit_available")):
+        tem_open = str(tem.get("audit_status")) != "closed"
+    else:
+        tem_open = tem_gamma is None or tem_omega is None or tem_gamma > 0.2 or tem_omega > 0.2
     rows = [
         {
             "lane": "W7-X nonlinear fluctuation spectrum",
@@ -123,10 +152,15 @@ def build_status_payload(
             "lane": "TEM / kinetic-electron linear parity",
             "status": "open" if tem_open else "closed",
             "claim_level": "open_linear_mismatch_blocks_tem_extension",
-            "primary_artifact": "docs/_static/tem_mismatch_table.csv",
+            "primary_artifact": (
+                "docs/_static/tem_branch_parity_audit.json"
+                if bool(tem.get("audit_available"))
+                else "docs/_static/tem_mismatch_table.csv"
+            ),
             "key_metrics": tem,
             "next_action": (
-                "Fix the TEM branch/frequency mismatch before using kinetic-electron W7-X scans for validation or optimization."
+                "Reconstruct the TEM case definition or obtain an independent reference dump, then fix the branch/frequency "
+                "mismatch before using kinetic-electron W7-X scans for validation or optimization."
             ),
         },
         {
@@ -212,7 +246,14 @@ def write_artifacts(payload: dict[str, Any], *, out_png: Path = DEFAULT_OUT) -> 
         if row["lane"].startswith("W7-X nonlinear"):
             text = f"samples={metrics.get('time_samples')}, ky_phi={metrics.get('dominant_phi_ky'):.3g}"
         elif row["lane"].startswith("TEM"):
-            text = f"TEM max |rel gamma|={metrics.get('max_abs_rel_gamma'):.2g}"
+            gamma = _finite_float(metrics.get("max_abs_rel_gamma"))
+            omega = _finite_float(metrics.get("max_abs_rel_omega"))
+            if gamma is None:
+                text = "TEM audit missing"
+            elif omega is None:
+                text = f"TEM max |rel gamma|={gamma:.2g}"
+            else:
+                text = f"TEM |rel gamma|={gamma:.2g}, |rel omega|={omega:.2g}"
         elif row["lane"].startswith("W7-X multi"):
             text = "alpha/surface missing"
         else:
@@ -243,6 +284,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--w7x-spectrum", type=Path, default=DEFAULT_W7X_SPECTRUM)
     parser.add_argument("--tem-table", type=Path, default=DEFAULT_TEM_TABLE)
+    parser.add_argument("--tem-audit", type=Path, default=DEFAULT_TEM_AUDIT)
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     parser.add_argument("--json-only", action="store_true")
     return parser
@@ -250,7 +292,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    payload = build_status_payload(w7x_spectrum=args.w7x_spectrum, tem_table=args.tem_table)
+    payload = build_status_payload(w7x_spectrum=args.w7x_spectrum, tem_table=args.tem_table, tem_audit=args.tem_audit)
     if args.json_only:
         print(json.dumps(_json_clean(payload), indent=2, sort_keys=True))
         return 0

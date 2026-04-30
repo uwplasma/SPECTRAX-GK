@@ -94,12 +94,16 @@ study, not a normalization change or another single-parameter constant-damping
 scan.
 
 The W7-X fluctuation/TEM extension lane is tracked by
-``docs/_static/w7x_tem_extension_status.png``. The nonlinear fluctuation
+``docs/_static/w7x_tem_extension_status.png`` and the TEM branch audit
+``docs/_static/tem_branch_parity_audit.png``. The nonlinear fluctuation
 spectrum estimator is closed as a simulation diagnostic with ``76`` samples,
-but the TEM table remains far outside any publication parity envelope and no
-multi-alpha, multi-surface, or kinetic-electron W7-X nonlinear windows are
-admitted yet. These are now explicit blockers before broad W7-X/TEM validation
-or optimization claims.
+but the TEM branch audit remains far outside any publication parity envelope:
+``max |rel gamma|≈4.25``, ``max |rel omega|≈3.3`` away from the near-zero
+reference denominator, one growth-rate sign mismatch, three frequency sign
+mismatches, and an inverted frequency-branch ordering. No multi-alpha,
+multi-surface, or kinetic-electron W7-X nonlinear windows are admitted yet.
+These are now explicit blockers before broad W7-X/TEM validation or
+optimization claims.
 
 Post-release scope
 ------------------
@@ -198,7 +202,8 @@ scope above is stable:
 3. W7-X multi-flux-tube ITG/TEM extension and fluctuation-spectrum lane. The
    simulation-spectrum estimator is closed, while TEM linear parity,
    alpha/surface-resolved scans, and kinetic-electron nonlinear windows remain
-   open in ``docs/_static/w7x_tem_extension_status.json``.
+   open in ``docs/_static/w7x_tem_extension_status.json`` and
+   ``docs/_static/tem_branch_parity_audit.json``.
 4. Shaped multispecies tokamak linear lane.
 5. ETG nonlinear only after its benchmark operating point and observable
    contract are explicit.

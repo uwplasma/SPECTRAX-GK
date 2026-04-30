@@ -34,7 +34,7 @@ def test_w7x_tem_extension_status_tracks_open_tem_and_multiflux(tmp_path: Path) 
         encoding="utf-8",
     )
 
-    payload = mod.build_status_payload(w7x_spectrum=spectrum, tem_table=tem)
+    payload = mod.build_status_payload(w7x_spectrum=spectrum, tem_table=tem, tem_audit=tmp_path / "missing.json")
     rows = {row["lane"]: row for row in payload["rows"]}
 
     assert payload["summary"] == {"n_rows": 4, "n_closed": 1, "n_partial": 0, "n_open": 3}
@@ -43,6 +43,41 @@ def test_w7x_tem_extension_status_tracks_open_tem_and_multiflux(tmp_path: Path) 
     assert rows["TEM / kinetic-electron linear parity"]["key_metrics"]["max_abs_rel_gamma"] == 0.5
     assert rows["W7-X multi-flux-tube and multi-surface scan"]["status"] == "open"
     assert rows["W7-X kinetic-electron/TEM nonlinear window"]["status"] == "open"
+
+
+def test_w7x_tem_extension_status_prefers_tem_audit_when_available(tmp_path: Path) -> None:
+    spectrum = tmp_path / "w7x_spectrum.json"
+    spectrum.write_text(json.dumps({"source_gate_passed": True}), encoding="utf-8")
+    tem = tmp_path / "tem.csv"
+    tem.write_text(
+        "ky,gamma_ref,omega_ref,gamma_spectrax,omega_spectrax,rel_gamma,rel_omega\n"
+        "0.2,2.0,1.0,2.0,1.0,0.0,0.0\n",
+        encoding="utf-8",
+    )
+    audit = tmp_path / "tem_audit.json"
+    audit.write_text(
+        json.dumps(
+            {
+                "status": "open",
+                "claim_level": "provisional",
+                "metrics": {
+                    "n_ky": 1,
+                    "max_abs_rel_gamma": 4.0,
+                    "max_abs_rel_omega_ref_ge_0p2": 2.0,
+                    "omega_branch_inversion": True,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    payload = mod.build_status_payload(w7x_spectrum=spectrum, tem_table=tem, tem_audit=audit)
+    row = {row["lane"]: row for row in payload["rows"]}["TEM / kinetic-electron linear parity"]
+
+    assert row["status"] == "open"
+    assert row["primary_artifact"] == "docs/_static/tem_branch_parity_audit.json"
+    assert row["key_metrics"]["audit_available"] is True
+    assert row["key_metrics"]["max_abs_rel_gamma"] == 4.0
 
 
 def test_w7x_tem_extension_status_writes_artifacts(tmp_path: Path) -> None:

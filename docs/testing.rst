@@ -614,11 +614,18 @@ Recent GX parity spot checks are tracked outside the automated test suite:
   function validation.
 - **W7-X/TEM extension status**:
   ``tools/build_w7x_tem_extension_status.py`` reads the W7-X fluctuation panel
-  and the current TEM mismatch table and writes
+  plus the current TEM branch audit and writes
   ``docs/_static/w7x_tem_extension_status.{png,pdf,json,csv}``. It closes only
-  the simulation-spectrum estimator. TEM linear parity remains open with
-  maximum absolute relative growth-rate mismatch about ``4.25`` and frequency
-  mismatch about ``3.52e2`` in the tracked table, while W7-X multi-alpha,
+  the simulation-spectrum estimator. ``tools/build_tem_branch_parity_audit.py``
+  writes ``docs/_static/tem_branch_parity_audit.{png,pdf,json,csv}`` from the
+  tracked TEM mismatch table. TEM linear parity remains open with maximum
+  absolute relative growth-rate mismatch about ``4.25``, maximum absolute
+  relative frequency mismatch about ``3.3`` when near-zero reference
+  denominators are excluded, one growth-rate sign mismatch, three frequency
+  sign mismatches, and an inverted frequency-branch rank ordering
+  (Spearman ``≈ -0.986``). Because this reference is a provisional literature
+  digitization rather than a direct case dump, the audit blocks broad TEM
+  claims but is not a standalone tuning target. W7-X multi-alpha,
   multi-surface, and kinetic-electron nonlinear windows remain unstarted.
 - **HSX nonlinear (`t = 50`)**: the refreshed comparison closes at
   ``mean_rel_abs(Wg) ~= 2.75e-2``,
@@ -635,6 +642,14 @@ Recent GX parity spot checks are tracked outside the automated test suite:
    W7-X nonlinear fluctuation-spectrum diagnostic from the gated ``t≈200``
    VMEC-backed run. The panel summarizes resolved simulation spectra and is
    intentionally scoped below an experimental Doppler-reflectometry comparison.
+
+.. figure:: _static/tem_branch_parity_audit.png
+   :alt: TEM branch parity audit
+   :width: 100%
+
+   Executable TEM branch audit. The growth-rate and frequency branches fail
+   simultaneously, with the frequency branch ordered oppositely to the
+   digitized reference over the tracked low-``k_y`` interval.
 
 .. figure:: _static/w7x_tem_extension_status.png
    :alt: W7-X fluctuation/TEM extension validation status
