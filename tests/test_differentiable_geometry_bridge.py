@@ -20,6 +20,7 @@ from spectraxgk.geometry.differentiable import (
     geometry_inverse_design_report,
     geometry_observable_names,
     geometry_sensitivity_report,
+    vmec_boundary_aspect_sensitivity_report,
 )
 
 
@@ -148,6 +149,38 @@ def test_discover_differentiable_geometry_backends_reports_optional_apis(tmp_pat
     assert info["vmec_jax_boundary_api_available"] is False
     assert info["booz_xform_jax_available"] is True
     assert info["booz_xform_jax_api_available"] is True
+
+
+def test_vmec_boundary_aspect_sensitivity_report_uses_discovered_jax_api(tmp_path: Path, monkeypatch) -> None:
+    vmec_root = tmp_path / "vmec_jax" / "src" / "vmec_jax"
+    vmec_root.mkdir(parents=True)
+    (vmec_root / "__init__.py").write_text(
+        "import jax.numpy as jnp\n"
+        "class BoundaryCoeffs:\n"
+        "    def __init__(self, R_cos, R_sin, Z_cos, Z_sin):\n"
+        "        self.R_cos = R_cos; self.R_sin = R_sin; self.Z_cos = Z_cos; self.Z_sin = Z_sin\n"
+        "class _Modes:\n"
+        "    K = 2\n"
+        "def vmec_mode_table(*args, **kwargs): return _Modes()\n"
+        "def make_angle_grid(*args, **kwargs): return object()\n"
+        "def build_helical_basis(*args, **kwargs): return object()\n"
+        "def boundary_aspect_ratio(boundary, basis):\n"
+        "    return 2.0 * boundary.R_cos[1] + 0.5 * boundary.Z_sin[1]\n",
+        encoding="utf-8",
+    )
+    sys.modules.pop("vmec_jax", None)
+    monkeypatch.setenv("SPECTRAX_VMEC_JAX_PATH", str(tmp_path / "vmec_jax"))
+
+    report = vmec_boundary_aspect_sensitivity_report(jnp.asarray([0.08, 0.2]), fd_step=1.0e-3)
+
+    assert report["available"] is True
+    assert report["backend_info"]["vmec_jax_boundary_api_available"] is True
+    assert float(report["max_abs_ad_fd_error"]) < 2.0e-5
+
+
+def test_vmec_boundary_aspect_sensitivity_report_validates_parameter_shape() -> None:
+    with pytest.raises(ValueError, match="length-2"):
+        vmec_boundary_aspect_sensitivity_report(jnp.ones(3))
 
 
 def _differentiable_mapping(params: jnp.ndarray) -> dict[str, object]:

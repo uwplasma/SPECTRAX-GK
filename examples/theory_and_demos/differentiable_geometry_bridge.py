@@ -33,12 +33,12 @@ import numpy as np
 from spectraxgk.autodiff_validation import covariance_diagnostics
 from spectraxgk.geometry.differentiable import (
     discover_differentiable_geometry_backends,
-    finite_difference_jacobian,
     flux_tube_geometry_from_mapping,
     flux_tube_geometry_observables,
     geometry_inverse_design_report,
     geometry_observable_names,
     geometry_sensitivity_report,
+    vmec_boundary_aspect_sensitivity_report,
 )
 
 
@@ -126,44 +126,6 @@ def _inverse_design(
         delta = jnp.linalg.solve(normal, jac.T @ residual)
         params = params - delta
     return np.asarray(params), history
-
-
-def _vmec_boundary_panel(params: jnp.ndarray) -> dict[str, Any]:
-    info = discover_differentiable_geometry_backends()
-    if not info.get("vmec_jax_boundary_api_available", False):
-        return {
-            "available": False,
-            "aspect": None,
-            "grad_ad": None,
-            "grad_fd": None,
-            "max_abs_ad_fd_error": None,
-        }
-
-    import vmec_jax as vj  # type: ignore[import-not-found]
-
-    modes = vj.vmec_mode_table(2, 0)
-    grid = vj.make_angle_grid(96, 1, 1)
-    basis = vj.build_helical_basis(modes, grid)
-
-    def aspect_fn(x: jnp.ndarray) -> jnp.ndarray:
-        ripple, elongation = x
-        r0 = 1.0
-        minor = 0.22 * (1.0 + 0.5 * ripple)
-        r_cos = jnp.zeros(modes.K, dtype=jnp.float64).at[0].set(r0).at[1].set(minor)
-        z_sin = jnp.zeros(modes.K, dtype=jnp.float64).at[1].set(minor * (1.0 + elongation))
-        zeros = jnp.zeros_like(r_cos)
-        boundary = vj.BoundaryCoeffs(R_cos=r_cos, R_sin=zeros, Z_cos=zeros, Z_sin=z_sin)
-        return vj.boundary_aspect_ratio(boundary, basis)
-
-    grad_ad = jax.grad(aspect_fn)(params)
-    grad_fd = finite_difference_jacobian(lambda x: jnp.asarray([aspect_fn(x)]), params, step=2.0e-5)[0]
-    return {
-        "available": True,
-        "aspect": float(aspect_fn(params)),
-        "grad_ad": np.asarray(grad_ad).tolist(),
-        "grad_fd": np.asarray(grad_fd).tolist(),
-        "max_abs_ad_fd_error": float(np.max(np.abs(np.asarray(grad_ad - grad_fd)))),
-    }
 
 
 def _covariance_ellipse(cov: np.ndarray, center: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
@@ -279,7 +241,7 @@ def main(argv: list[str] | None = None) -> int:
         fd_step=2.0e-5,
     )
     backend_info = discover_differentiable_geometry_backends()
-    vmec_boundary = _vmec_boundary_panel(jnp.asarray(final_params))
+    vmec_boundary = vmec_boundary_aspect_sensitivity_report(jnp.asarray(final_params))
 
     payload: dict[str, Any] = {
         "backend_info": backend_info,
