@@ -235,8 +235,10 @@ finite differences for ``gamma``, ``omega``, ``<k_perp^2>``, linear
 heat/particle-flux weights, and a mixing-length heat-flux proxy. This closes
 the ``FluxTubeGeometryData`` contract-level solver-gradient check and the first
 full ``vmec_jax`` state-coefficient to ``booz_xform_jax`` to solver
-eigenfrequency-gradient gate. It does not yet close the full quasilinear
-flux-weight or nonlinear-window state-gradient promotion gate.
+eigenfrequency-gradient gate. The companion QH all-surface artifact also closes
+the reduced full-chain quasilinear heat-flux-weight gradient gate for the
+tracked manuscript fixture. It does not yet close multi-equilibrium
+transport-gradient promotion or nonlinear-window state-gradient gates.
 
 .. figure:: _static/solver_objective_gradient_gate.png
    :width: 90%
@@ -270,7 +272,11 @@ flux-weight or nonlinear-window state-gradient promotion gate.
    ``gamma Q_i/k_perp^2`` agrees with central finite differences to
    ``4.3e-3`` relative error in the tracked artifact. This closes the
    linear/quasilinear full-chain gradient gate for reduced stellarator
-   objectives; it is still not a nonlinear-window heat-flux gradient claim.
+   objectives on the all-surface QH fixture. The optional Boozer surface-stencil
+   path is a memory-bounded diagnostic for larger equilibria, not the published
+   accuracy gate; QI/QA multi-equilibrium transport-gradient promotion remains
+   open until all-surface or otherwise accuracy-equivalent gates pass. This is
+   still not a nonlinear-window heat-flux gradient claim.
 
 Promotion Gates for Full VMEC/Boozer/GK Optimization
 ----------------------------------------------------
@@ -296,7 +302,7 @@ the following pass:
    Jacobian, zero-beta ``gds*``/``grho`` metric convention, and zero-beta
    loaded ``cvdrift``/``gbdrift`` drift convention at release tolerance. The
    remaining gap is broad finite-beta and multi-equilibrium drift parity before
-   transport gradients are promoted.
+   broad transport-gradient claims are promoted.
 2. The sampled field-line arrays match the existing imported-VMEC/EIK runtime
    path for at least one small equilibrium.
 3. Geometry-observable gradients match central finite differences for the
@@ -310,7 +316,11 @@ the following pass:
    ``docs/_static/vmec_boozer_solver_frequency_gradient_gate.json``. The
    full mode-21 VMEC/Boozer state-to-solver quasilinear heat-flux-weight gate
    is closed by
-   ``docs/_static/vmec_boozer_quasilinear_gradient_gate.json``.
+   ``docs/_static/vmec_boozer_quasilinear_gradient_gate.json`` on the tracked
+   all-surface QH fixture. Larger QI/QA holdouts are still promotion work:
+   QI is currently conditioning-limited when forced through the narrow
+   diagnostic stencil, while the QA low-resolution all-surface Boozer transform
+   exceeds the available office GPU memory at ``mboz=nboz=21``.
 5. Host scalar materialization in production runtime caches is removed or
    isolated so geometry parameters remain traceable.
 6. A nonlinear heat-flux objective has a validated adjoint, VJP, or robust

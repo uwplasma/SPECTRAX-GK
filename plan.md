@@ -1,6 +1,6 @@
 # SPECTRAX-GK Quasilinear Transport and Optimization Plan
 
-Last updated: 2026-04-29
+Last updated: 2026-04-30
 Active repository: `uwplasma/SPECTRAX-GK`
 Historical planning archive: private repo `rogeriojorge/spectraxgk_plan`
 Current public baseline: `main` at v1.4.0, with the historical ship-readiness log archived before this file was reset.
@@ -718,7 +718,8 @@ Exit gate:
 - Validation for calibration slice:
   - `pytest -q tests/test_quasilinear_calibration.py tests/test_autodiff_validation.py tests/test_quasilinear.py` passed.
   - `ruff check src/spectraxgk/quasilinear.py src/spectraxgk/quasilinear_calibration.py src/spectraxgk/autodiff_validation.py tests/test_quasilinear.py tests/test_quasilinear_calibration.py tests/test_autodiff_validation.py tools/build_quasilinear_calibration_report.py` passed.
-  - Tool smoke with temporary train/holdout points produced a valid JSON report.
+
+- Tool smoke with temporary train/holdout points produced a valid JSON report.
 - Next best steps:
   - implement the first publication-ready quasilinear spectrum plotting script;
   - generate a Cyclone spectrum figure from `runtime_cyclone_quasilinear.toml`;
@@ -1389,6 +1390,9 @@ Exit gate:
   examples. All three current rows pass the equal-arc core, scalar, ``bgrad``,
   metric, and drift subgates at ``mboz=nboz=21``; the QI drift row remains the
   limiting release-level value at ``7.13e-2`` against the ``8e-2`` tolerance.
+
+### 2026-04-30
+
 - Added the manuscript-scope readiness dashboard:
   - ``tools/build_manuscript_readiness_status.py`` now reads the quasilinear
     calibration/model-selection artifacts, the differentiable-geometry bridge,
@@ -1504,3 +1508,44 @@ Exit gate:
     boundary;
   - keep W7-X zonal recurrence/damping and TEM/kinetic-electron validation
     deferred for the current manuscript as previously agreed.
+- Added memory-bounded Boozer surface-stencil support for large-equilibrium
+  diagnostics:
+  - ``vmec_jax_boozer_equal_arc_core_profiles_from_state`` now accepts
+    ``surface_stencil_width`` and forwards a local radial stencil to
+    ``booz_xform_jax`` when requested;
+  - the VMEC/Boozer frequency and quasilinear gradient-gate tools expose the
+    same option, while preserving the all-surface default used by the
+    published QH artifact;
+  - a mocked backend regression test checks that the selected Boozer surfaces
+    are passed through and recorded in the returned metadata.
+- Office GPU holdout diagnostics:
+  - ``nfp3_QI_fixed_resolution_final`` now runs with the stencil and
+    ``mboz=nboz=21`` without the earlier all-surface OOM, but both the
+    frequency and quasilinear AD-vs-FD gates fail by order-unity relative
+    errors. Enabling ``JAX_ENABLE_X64=1`` does not change the result, so this
+    is a stencil/conditioning blocker rather than float32 finite-difference
+    noise.
+  - ``LandremanPaul2021_QA_lowres`` is a better small bundled QA holdout by
+    radial count, but the all-surface Boozer transform still exceeds the
+    available office GPU memory at ``mboz=nboz=21``. It should be retried only
+    after a memory-reduced Boozer transform or bounded CPU/offline artifact
+    path is available.
+- Current manuscript stance:
+  - reduced full-chain linear/quasilinear differentiability is closed for the
+    tracked all-surface QH fixture;
+  - multi-equilibrium transport-gradient promotion remains open;
+  - nonlinear-window VMEC/Boozer gradients remain future work;
+  - W7-X zonal and TEM remain explicitly deferred for this manuscript.
+- Validation for this slice:
+  - ``python -m ruff check src/spectraxgk/geometry/differentiable.py src/spectraxgk/solver_objective_gradients.py tools/build_vmec_boozer_quasilinear_gradient_gate.py tools/build_vmec_boozer_solver_frequency_gradient_gate.py tests/test_differentiable_geometry_bridge.py tests/test_solver_objective_gradients.py``
+  - ``PYTHONPATH=src python -m mypy src/spectraxgk/geometry/differentiable.py src/spectraxgk/solver_objective_gradients.py tools/build_vmec_boozer_quasilinear_gradient_gate.py tools/build_vmec_boozer_solver_frequency_gradient_gate.py``
+  - ``python -m pytest tests/test_differentiable_geometry_bridge.py::test_vmec_jax_boozer_equal_arc_core_profiles_supports_surface_stencil tests/test_solver_objective_gradients.py tests/test_build_manuscript_readiness_status.py -q``
+  - ``PYTHONPATH=src python -m sphinx -b html -W docs docs/_build/html``
+- Current next best steps:
+  - build a memory-aware multi-equilibrium VMEC/Boozer gradient artifact path
+    before broadening transport-gradient claims beyond QH;
+  - continue quasilinear nonlinear-holdout validation and saturation-model
+    calibration with explicit train/holdout splits;
+  - strengthen the stellarator optimization examples by adding nonlinear
+    audit bars for optimized geometries and finite-difference conditioning
+    reports for each differentiated observable.
