@@ -255,7 +255,13 @@ flux-tube gate inverts the sampled VMEC metric tensor, derives ``gds*``,
 ``gradpar``, Jacobian, ``grho``, and a local grad-:math:`B` drift closure, and
 checks the resulting solver-ready geometry observables; the current max
 relative AD-vs-finite-difference error is about ``1.3e-4`` on the
-``nfp4_QH_warm_start`` fixture. The Boozer gates evaluate
+``nfp4_QH_warm_start`` fixture. The same artifact now also records a bounded
+VMEC/EIK array-parity audit for that direct tensor path. That audit currently
+keeps the production gate open: ``q`` and magnetic shear are close, but the
+metric, Jacobian, ``grho``, and drift arrays still differ because the direct
+path uses a VMEC-coordinate/equal-theta sampling and local grad-:math:`B`
+closure rather than the imported Boozer equal-arc/Hegna-Nakajima convention.
+The Boozer gates evaluate
 the JAX-native Boozer ``|B|``
 spectrum along a field line, build the ``FluxTubeGeometryData`` input mapping,
 and compare geometry-observable sensitivities against central finite
@@ -290,11 +296,10 @@ contract once their in-memory field-line mapping is available.
    from a real ``vmec_jax`` ``VMECState`` before converting through
    ``booz_xform_jax`` into the SPECTRAX-GK field-line contract.
 
-The next implementation step is to compare the direct VMEC tensor-derived
-``bmag``, ``gradpar``, ``gds*``, Jacobian, and ``grho`` arrays against the
-already validated imported VMEC/eik path, replace the remaining local
-grad-:math:`B` drift closure with the production drift convention, and then
-add geometry-gradient checks for growth-rate and transport observables.
+The next implementation step is to close the direct VMEC tensor-derived vs
+imported VMEC/eik array-parity audit by matching the Boozer equal-arc metric
+and production drift convention, then add geometry-gradient checks for
+growth-rate and transport observables.
 The VMEC bridge now also expands environment variables in ``geometry.vmec_file``.
 Tracked portable runtime TOMLs should therefore pass external VMEC equilibria
 through explicit environment variables such as ``$W7X_VMEC_FILE`` and

@@ -515,7 +515,7 @@
     0.06176080850358888,
     1.5505567586513118
   ],
-  "notes": "This is a bounded differentiable-geometry bridge validation. The high-fidelity VMEC/Boozer pipeline must provide the same solver-ready field-line arrays; this artifact validates the JAX tracing, AD-vs-FD sensitivities, inverse recovery, UQ machinery, and the first real VMEC metric-tensor, VMEC field-line tensor, VMEC tensor-to-flux-tube, Boozer-spectrum-to-flux-tube, and vmec_jax-state-to-Boozer mapping gates at that contract boundary.",
+  "notes": "This is a bounded differentiable-geometry bridge validation. The high-fidelity VMEC/Boozer pipeline must provide the same solver-ready field-line arrays; this artifact validates the JAX tracing, AD-vs-FD sensitivities, inverse recovery, UQ machinery, and the first real VMEC metric-tensor, VMEC field-line tensor, VMEC tensor-to-flux-tube, Boozer-spectrum-to-flux-tube, and vmec_jax-state-to-Boozer mapping gates at that contract boundary. The VMEC/EIK array-parity audit is intentionally recorded separately because production stellarator transport gradients must match the imported Boozer equal-arc metric and drift convention before promotion.",
   "observable_names": [
     "mean_bmag",
     "relative_bmag_ripple",
@@ -1051,6 +1051,290 @@
       8
     ],
     "surface_index": 17,
+    "wout_path": "/Users/rogeriojorge/local/vmec_jax/examples/data/wout_nfp4_QH_warm_start.nc"
+  },
+  "vmec_jax_flux_tube_array_parity": {
+    "alpha": 0.0,
+    "array_metrics": {
+      "bgrad": {
+        "candidate_max": 0.7371068207394633,
+        "candidate_min": -0.7453910691806575,
+        "candidate_shape": [
+          16
+        ],
+        "max_abs": 0.77423423667966,
+        "max_rel_pointwise": 62394064831.28758,
+        "normalized_max_abs": 11.525890960440517,
+        "reference_max": 0.0671734826693232,
+        "reference_min": -0.06717348266932299,
+        "reference_scale": 0.0671734826693232,
+        "reference_shape": [
+          16
+        ],
+        "rms_abs": 0.4913950463729617,
+        "rms_rel_pointwise": 17530992003.37235,
+        "shape_match": true
+      },
+      "bmag": {
+        "candidate_max": 1.0751370644914642,
+        "candidate_min": 0.9646977626386197,
+        "candidate_shape": [
+          16
+        ],
+        "max_abs": 0.27388294287879145,
+        "max_rel_pointwise": 0.21788002327286135,
+        "normalized_max_abs": 0.2105222950746191,
+        "reference_max": 1.3009688250914913,
+        "reference_min": 0.9814113236928025,
+        "reference_scale": 1.3009688250914913,
+        "reference_shape": [
+          16
+        ],
+        "rms_abs": 0.16479387247541483,
+        "rms_rel_pointwise": 0.13515310218813598,
+        "shape_match": true
+      },
+      "cvdrift": {
+        "candidate_max": 0.2626226514679445,
+        "candidate_min": -0.34935234304709656,
+        "candidate_shape": [
+          16
+        ],
+        "max_abs": 0.53392565637851,
+        "max_rel_pointwise": 16.609068980049628,
+        "normalized_max_abs": 1.3590735385147448,
+        "reference_max": 0.3928600191583506,
+        "reference_min": -0.07583232357588074,
+        "reference_scale": 0.3928600191583506,
+        "reference_shape": [
+          16
+        ],
+        "rms_abs": 0.28872180904052464,
+        "rms_rel_pointwise": 5.197462261677725,
+        "shape_match": true
+      },
+      "cvdrift0": {
+        "candidate_max": -2.8920252710373537,
+        "candidate_min": -10.499187755187748,
+        "candidate_shape": [
+          16
+        ],
+        "max_abs": 10.516230038294497,
+        "max_rel_pointwise": 2892025271037.354,
+        "normalized_max_abs": 268.98187776870225,
+        "reference_max": 0.03909642584671601,
+        "reference_min": -0.03909642584671597,
+        "reference_scale": 0.03909642584671601,
+        "reference_shape": [
+          16
+        ],
+        "rms_abs": 5.847576792129668,
+        "rms_rel_pointwise": 723006317759.3385,
+        "shape_match": true
+      },
+      "gbdrift": {
+        "candidate_max": 0.2626226514679445,
+        "candidate_min": -0.34935234304709656,
+        "candidate_shape": [
+          16
+        ],
+        "max_abs": 0.53392565637851,
+        "max_rel_pointwise": 16.609068980049628,
+        "normalized_max_abs": 1.3590735385147448,
+        "reference_max": 0.3928600191583506,
+        "reference_min": -0.07583232357588074,
+        "reference_scale": 0.3928600191583506,
+        "reference_shape": [
+          16
+        ],
+        "rms_abs": 0.28872180904052464,
+        "rms_rel_pointwise": 5.197462261677725,
+        "shape_match": true
+      },
+      "gbdrift0": {
+        "candidate_max": -2.8920252710373537,
+        "candidate_min": -10.499187755187748,
+        "candidate_shape": [
+          16
+        ],
+        "max_abs": 10.516230038294497,
+        "max_rel_pointwise": 2892025271037.354,
+        "normalized_max_abs": 268.98187776870225,
+        "reference_max": 0.03909642584671601,
+        "reference_min": -0.03909642584671597,
+        "reference_scale": 0.03909642584671601,
+        "reference_shape": [
+          16
+        ],
+        "rms_abs": 5.847576792129668,
+        "rms_rel_pointwise": 723006317759.3385,
+        "shape_match": true
+      },
+      "gds2": {
+        "candidate_max": 4.668745517087656,
+        "candidate_min": 0.3702447025487252,
+        "candidate_shape": [
+          16
+        ],
+        "max_abs": 4.136733559816551,
+        "max_rel_pointwise": 7.7756401962005866,
+        "normalized_max_abs": 0.9727376398639529,
+        "reference_max": 4.252671419597903,
+        "reference_min": 0.5320119572711047,
+        "reference_scale": 4.252671419597903,
+        "reference_shape": [
+          16
+        ],
+        "rms_abs": 2.4347521162291716,
+        "rms_rel_pointwise": 2.141922141745679,
+        "shape_match": true
+      },
+      "gds21": {
+        "candidate_max": 11.885994089789316,
+        "candidate_min": -14.758663465180186,
+        "candidate_shape": [
+          16
+        ],
+        "max_abs": 14.847655371048452,
+        "max_rel_pointwise": 3946728256863.612,
+        "normalized_max_abs": 36.59296585813516,
+        "reference_max": 0.4057516252880497,
+        "reference_min": -0.3842800297392541,
+        "reference_scale": 0.4057516252880497,
+        "reference_shape": [
+          16
+        ],
+        "rms_abs": 8.065340454104053,
+        "rms_rel_pointwise": 986682064215.903,
+        "shape_match": true
+      },
+      "gds22": {
+        "candidate_max": 415.33887284089155,
+        "candidate_min": 50.01606469231913,
+        "candidate_shape": [
+          16
+        ],
+        "max_abs": 415.2656088152249,
+        "max_rel_pointwise": 52249.87069490901,
+        "normalized_max_abs": 5668.069765980051,
+        "reference_max": 0.07326402566666756,
+        "reference_min": 0.004362757864539117,
+        "reference_scale": 0.07326402566666756,
+        "reference_shape": [
+          16
+        ],
+        "rms_abs": 216.1985414604504,
+        "rms_rel_pointwise": 24705.713824834424,
+        "shape_match": true
+      },
+      "grho": {
+        "candidate_max": 186.15006228358465,
+        "candidate_min": 64.5976404576389,
+        "candidate_shape": [
+          16
+        ],
+        "max_abs": 183.6761914015052,
+        "max_rel_pointwise": 234.2280152925958,
+        "normalized_max_abs": 74.2464745157251,
+        "reference_max": 2.473870882079436,
+        "reference_min": 0.6036328006112853,
+        "reference_scale": 2.473870882079436,
+        "reference_shape": [
+          16
+        ],
+        "rms_abs": 125.09291445770626,
+        "rms_rel_pointwise": 135.0683294028498,
+        "shape_match": true
+      },
+      "jacobian": {
+        "candidate_max": 1.2489511296284974,
+        "candidate_min": 0.7853589411772419,
+        "candidate_shape": [
+          16
+        ],
+        "max_abs": 1.1853056914620994,
+        "max_rel_pointwise": 18.623576576897392,
+        "normalized_max_abs": 14.049059891148254,
+        "reference_max": 0.08436903968278424,
+        "reference_min": 0.06364543816639791,
+        "reference_scale": 0.08436903968278424,
+        "reference_shape": [
+          16
+        ],
+        "rms_abs": 0.9398315826322768,
+        "rms_rel_pointwise": 12.982061030595903,
+        "shape_match": true
+      },
+      "theta": {
+        "candidate_max": 2.748893571891069,
+        "candidate_min": -3.141592653589793,
+        "candidate_shape": [
+          16
+        ],
+        "max_abs": 4.440892098500626e-16,
+        "max_rel_pointwise": 3.7695462891419474e-16,
+        "normalized_max_abs": 1.4135798584282297e-16,
+        "reference_max": 2.7488935718910685,
+        "reference_min": -3.141592653589793,
+        "reference_scale": 3.141592653589793,
+        "reference_shape": [
+          16
+        ],
+        "rms_abs": 2.0770370905276122e-16,
+        "rms_rel_pointwise": 1.2933971507188485e-16,
+        "shape_match": true
+      }
+    },
+    "available": true,
+    "backend_info": {
+      "booz_xform_jax_api_available": true,
+      "booz_xform_jax_available": true,
+      "booz_xform_jax_paths": [
+        "/Users/rogeriojorge/local/booz_xform_jax",
+        "/Users/rogeriojorge/local/booz_xform_jax/src"
+      ],
+      "vmec_jax_available": true,
+      "vmec_jax_boundary_api_available": true,
+      "vmec_jax_paths": [
+        "/Users/rogeriojorge/local/vmec_jax"
+      ]
+    },
+    "boundary": "none",
+    "case_name": "nfp4_QH_warm_start",
+    "core_tolerance": 0.05,
+    "include_pressure_variation": true,
+    "include_shear_variation": true,
+    "input_path": "/Users/rogeriojorge/local/vmec_jax/examples/data/input.nfp4_QH_warm_start",
+    "interpretation": "The direct VMEC tensor path proves state-level differentiability. Production transport optimization still requires matching the imported VMEC/EIK Boozer equal-arc metric and drift convention.",
+    "ntheta": 16,
+    "production_parity_passed": false,
+    "scalar_metrics": {
+      "gradpar": {
+        "abs": 12.969655397894366,
+        "candidate": 13.100134871621915,
+        "reference": 0.13047947372754817,
+        "rel": 99.39996711648354
+      },
+      "q": {
+        "abs": 0.0015226600546465185,
+        "candidate": 0.9467396708387883,
+        "reference": 0.9452170107841418,
+        "rel": 0.0016109105499311066
+      },
+      "s_hat": {
+        "abs": 6.79783284473906e-05,
+        "candidate": -0.1094808357677159,
+        "reference": -0.10941285743926851,
+        "rel": 0.0006213010978634128
+      }
+    },
+    "scalar_tolerance": 0.005,
+    "source_model": "vmec_jax:state->tensor-flux-tube vs imported-vmec-eik",
+    "status": "diagnostic_open",
+    "surface_index": 17,
+    "torflux": 0.5,
+    "worst_core_normalized_max_abs": 5668.069765980051,
+    "worst_scalar_rel": 99.39996711648354,
     "wout_path": "/Users/rogeriojorge/local/vmec_jax/examples/data/wout_nfp4_QH_warm_start.nc"
   },
   "vmec_jax_metric_tensor": {

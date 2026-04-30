@@ -48,6 +48,7 @@ from spectraxgk.geometry.differentiable import (
     geometry_sensitivity_report,
     vmec_jax_boozer_flux_tube_sensitivity_report,
     vmec_jax_field_line_tensor_sensitivity_report,
+    vmec_jax_flux_tube_array_parity_report,
     vmec_jax_flux_tube_sensitivity_report,
     vmec_jax_metric_tensor_sensitivity_report,
     vmec_boundary_aspect_sensitivity_report,
@@ -182,6 +183,7 @@ def make_figure(payload: dict[str, Any], out_png: Path) -> None:
     vmec_metric = payload.get("vmec_jax_metric_tensor", {})
     vmec_field_line = payload.get("vmec_jax_field_line_tensor", {})
     vmec_flux_tube = payload.get("vmec_jax_flux_tube", {})
+    vmec_array_parity = payload.get("vmec_jax_flux_tube_array_parity", {})
     vmec_state = payload.get("vmec_jax_boozer_flux_tube", {})
     booz = payload.get("booz_xform_spectral", {})
     booz_flux = payload.get("booz_xform_flux_tube", {})
@@ -199,6 +201,13 @@ def make_figure(payload: dict[str, Any], out_png: Path) -> None:
         vmec_flux_tube_text = (
             "VMEC tensor flux-tube AD/FD: "
             f"{float(vmec_flux_tube['sensitivity']['max_rel_ad_fd_error']):.1e} rel"
+        )
+    vmec_parity_text = "VMEC/EIK array parity: n/a"
+    if isinstance(vmec_array_parity, dict) and vmec_array_parity.get("available"):
+        status = "pass" if vmec_array_parity.get("production_parity_passed") else "open"
+        vmec_parity_text = (
+            "VMEC/EIK array parity: "
+            f"{status}, worst {float(vmec_array_parity['worst_core_normalized_max_abs']):.1e}"
         )
     booz_text = "Boozer spectral AD/FD: n/a"
     if isinstance(booz, dict) and booz.get("available"):
@@ -220,7 +229,8 @@ def make_figure(payload: dict[str, Any], out_png: Path) -> None:
         0.04,
         (
             f"{vmec_text}\n{vmec_metric_text}\n{vmec_field_line_text}\n"
-            f"{vmec_flux_tube_text}\n{booz_text}\n{booz_flux_text}\n{vmec_state_text}"
+            f"{vmec_flux_tube_text}\n{vmec_parity_text}\n"
+            f"{booz_text}\n{booz_flux_text}\n{vmec_state_text}"
         ),
         transform=axes[0, 0].transAxes,
         fontsize=5.75,
@@ -305,6 +315,7 @@ def main(argv: list[str] | None = None) -> int:
     vmec_metric_tensor = vmec_jax_metric_tensor_sensitivity_report()
     vmec_field_line_tensor = vmec_jax_field_line_tensor_sensitivity_report()
     vmec_flux_tube = vmec_jax_flux_tube_sensitivity_report()
+    vmec_flux_tube_array_parity = vmec_jax_flux_tube_array_parity_report()
     booz_spectral = booz_xform_spectral_sensitivity_report()
     booz_flux_tube = booz_xform_flux_tube_sensitivity_report()
     vmec_state_boozer_flux_tube = vmec_jax_boozer_flux_tube_sensitivity_report()
@@ -317,6 +328,7 @@ def main(argv: list[str] | None = None) -> int:
         "vmec_jax_boozer_flux_tube": vmec_state_boozer_flux_tube,
         "vmec_jax_field_line_tensor": vmec_field_line_tensor,
         "vmec_jax_flux_tube": vmec_flux_tube,
+        "vmec_jax_flux_tube_array_parity": vmec_flux_tube_array_parity,
         "vmec_jax_metric_tensor": vmec_metric_tensor,
         "vmec_boundary": vmec_boundary,
         "observable_names": list(geometry_observable_names()),
@@ -335,7 +347,9 @@ def main(argv: list[str] | None = None) -> int:
             "pipeline must provide the same solver-ready field-line arrays; this artifact validates the "
             "JAX tracing, AD-vs-FD sensitivities, inverse recovery, UQ machinery, and the first real "
             "VMEC metric-tensor, VMEC field-line tensor, VMEC tensor-to-flux-tube, Boozer-spectrum-to-flux-tube, and "
-            "vmec_jax-state-to-Boozer mapping gates at that contract boundary."
+            "vmec_jax-state-to-Boozer mapping gates at that contract boundary. The VMEC/EIK array-parity "
+            "audit is intentionally recorded separately because production stellarator transport gradients "
+            "must match the imported Boozer equal-arc metric and drift convention before promotion."
         ),
     }
 

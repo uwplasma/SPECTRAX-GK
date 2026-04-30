@@ -24,6 +24,7 @@ from spectraxgk.geometry.differentiable import (
     geometry_sensitivity_report,
     vmec_jax_boozer_flux_tube_sensitivity_report,
     vmec_jax_field_line_tensor_sensitivity_report,
+    vmec_jax_flux_tube_array_parity_report,
     vmec_jax_flux_tube_sensitivity_report,
     vmec_jax_metric_tensor_sensitivity_report,
     vmec_boundary_aspect_sensitivity_report,
@@ -313,6 +314,38 @@ def test_vmec_jax_flux_tube_sensitivity_report_starts_from_real_vmec_state_when_
     assert int(report["surface_index"]) > 0
     assert float(report["reference_length"]) > 0.0
     assert float(report["reference_b"]) > 0.0
+
+
+def test_vmec_jax_flux_tube_array_parity_report_tracks_production_gap_when_available() -> None:
+    for name in (
+        "vmec_jax",
+        "vmec_jax.driver",
+        "vmec_jax.config",
+        "vmec_jax.static",
+        "vmec_jax.wout",
+        "vmec_jax.geom",
+        "vmec_jax.vmec_bcovar",
+        "vmec_jax.field",
+        "booz_xform_jax",
+        "booz_xform_jax.jax_api",
+    ):
+        sys.modules.pop(name, None)
+
+    report = vmec_jax_flux_tube_array_parity_report(ntheta=8)
+
+    assert spectraxgk.vmec_jax_flux_tube_array_parity_report is vmec_jax_flux_tube_array_parity_report
+    assert "available" in report
+    if not report["available"]:
+        assert "reason" in report or "error" in report
+        return
+
+    assert report["case_name"] == "nfp4_QH_warm_start"
+    assert report["status"] in {"diagnostic_open", "passed"}
+    assert set(report["array_metrics"]) >= {"bmag", "gds2", "gds21", "gds22", "gbdrift", "jacobian", "grho"}
+    assert set(report["scalar_metrics"]) == {"gradpar", "q", "s_hat"}
+    assert np.isfinite(float(report["worst_core_normalized_max_abs"]))
+    assert np.isfinite(float(report["worst_scalar_rel"]))
+    assert bool(report["array_metrics"]["bmag"]["shape_match"])
 
 
 def test_vmec_jax_metric_tensor_sensitivity_report_checks_real_metric_tensors_when_available() -> None:

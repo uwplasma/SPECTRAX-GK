@@ -104,10 +104,12 @@
         "vmec_state_boozer_flux_tube_max_abs_ad_fd_error": 5.773192057745291e-07,
         "vmec_state_boozer_flux_tube_max_rel_ad_fd_error": 1.3940665202206006e-08,
         "vmec_tensor_flux_tube_max_abs_ad_fd_error": 9.916271416819654,
-        "vmec_tensor_flux_tube_max_rel_ad_fd_error": 0.00011329869001865003
+        "vmec_tensor_flux_tube_max_rel_ad_fd_error": 0.00011329869001865003,
+        "vmec_tensor_vs_eik_array_parity_passed": false,
+        "vmec_tensor_vs_eik_array_parity_worst_core_norm": 5668.069765980051
       },
       "lane": "vmec_jax / booz_xform_jax differentiable geometry bridge",
-      "next_action": "Compare the direct VMEC tensor-derived flux tube against the imported VMEC/EIK path, replace the remaining local grad-B drift closure with the production drift convention, then add growth-rate/quasilinear geometry-gradient gates.",
+      "next_action": "Close the direct VMEC tensor-derived vs imported VMEC/EIK array-parity audit by matching the Boozer equal-arc metric and production drift convention, then add growth-rate/quasilinear geometry-gradient gates.",
       "primary_artifacts": [
         "docs/_static/differentiable_geometry_bridge.json"
       ],

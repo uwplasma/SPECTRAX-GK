@@ -1292,3 +1292,25 @@ Exit gate:
     solver cache;
   - only after those gates pass connect the QA optimization examples to the
     production ``vmec_jax`` geometry bridge for stellarator optimization.
+- Added the first direct VMEC tensor-vs-imported-VMEC/EIK array parity audit:
+  - added ``spectraxgk.geometry.differentiable.vmec_jax_flux_tube_array_parity_report``;
+  - the audit starts from the same real ``nfp4_QH_warm_start`` ``VMECState``, builds the direct
+    ``vmec_jax`` tensor-derived SPECTRAX-GK flux-tube mapping, generates the existing imported
+    VMEC/EIK geometry on the same surface, trims the closed endpoint, and compares solver-facing
+    arrays ``bmag``, ``bgrad``, ``gds*``, drifts, Jacobian, and ``grho`` plus scalar ``gradpar``,
+    ``q``, and ``s_hat``;
+  - the current result is intentionally reported as ``diagnostic_open``: ``q`` and ``s_hat`` are
+    close, while the metric/Jacobian/``grho``/drift arrays are not yet production-parity because the
+    direct path still uses a VMEC-coordinate/equal-theta convention and a local grad-``B`` closure
+    rather than the imported Boozer equal-arc/Hegna-Nakajima geometry convention;
+  - refreshed the differentiable-geometry artifact and open-lane dashboard so this open production
+    gap is visible instead of being hidden behind the successful AD/FD gate.
+- Current next best steps:
+  - derive the direct JAX path in the same Boozer equal-arc coordinate convention as the imported
+    VMEC/EIK generator, or reuse the JAX-native Boozer coefficients with the full metric/drift
+    reconstruction instead of only the ``|B|`` spectrum;
+  - replace the local grad-``B`` drift closure with the production Hegna-Nakajima/imported-VMEC
+    drift convention;
+  - rerun the array-parity audit until ``bmag``, ``gradpar``, ``gds*``, Jacobian, ``grho``, and
+    drift profiles pass field-level tolerances; only then promote growth-rate, quasilinear-flux,
+    and nonlinear-window gradients through the production solver cache.
