@@ -1439,3 +1439,37 @@ Exit gate:
   - only after linear/quasilinear state-gradient gates pass, add nonlinear
     window objective gradients or a documented stochastic/finite-difference
     estimator with convergence diagnostics.
+- Added the first full VMEC/Boozer state-to-solver gradient gate:
+  - fixed a real traceability bug in ``build_linear_cache`` where sampled
+    magnetic shear was host-materialized with ``float(...)`` even on
+    non-twist-shift grids; periodic sampled geometry now remains
+    differentiable in traced ``s_hat``, while traced shear under twist-shift is
+    rejected explicitly because that path still changes host topology
+    (``jtwist``/``x0``);
+  - added ``mode21_vmec_boozer_linear_frequency_gradient_report`` and
+    ``tools/build_vmec_boozer_solver_frequency_gradient_gate.py``;
+  - generated
+    ``docs/_static/vmec_boozer_solver_frequency_gradient_gate.{png,pdf,json,csv}``;
+  - the gate starts from a real ``vmec_jax`` ``VMECState`` coefficient,
+    converts through ``booz_xform_jax`` with ``mboz=nboz=21``, builds the
+    SPECTRAX-GK linear RHS, and checks the eigenfrequency gradient with the
+    implicit left/right eigenpair method against central finite differences;
+  - the current artifact passes with maximum relative AD/FD error
+    ``4.89e-3`` for the frequency derivative at conditioned step ``1e-6``.
+- Scope note:
+  - this closes the full-chain linear eigenfrequency-gradient trace from
+    ``vmec_jax`` state coefficients through the solver;
+  - it does **not** yet close full-chain quasilinear flux-weight gradients or
+    nonlinear-window gradients. Two bounded quasilinear-observable attempts
+    timed out at 180--240 seconds, so the next step is profiling/conditioning
+    that heavier eigenvector-dependent diagnostic before using it in the
+    manuscript.
+- Current next best steps:
+  - profile and reduce the full-chain quasilinear flux-weight state-gradient
+    gate, likely by caching/reusing VMEC/Boozer geometry products and reducing
+    repeated objective-time geometry reconstruction;
+  - add a publication figure comparing solver-ready versus full-chain
+    frequency-gradient conditioning;
+  - then connect the differentiable stellarator optimization examples to the
+    passed full-chain linear gate while keeping quasilinear and nonlinear
+    optimization claims scoped until their gates pass.

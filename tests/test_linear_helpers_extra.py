@@ -10,7 +10,7 @@ import pytest
 
 from spectraxgk.benchmarking import estimate_observed_order
 from spectraxgk.config import GridConfig
-from spectraxgk.geometry import SAlphaGeometry
+from spectraxgk.geometry import FluxTubeGeometryData, SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.gyroaverage import J_l_all
 from spectraxgk.linear import (
@@ -277,6 +277,73 @@ def test_build_linear_cache_y0_default_and_zero_twist_branches() -> None:
     assert cache.linked_damp_profile.shape == (grid.ky.size, grid.kx.size, grid.z.size)
     assert np.allclose(np.asarray(cache.linked_damp_profile), 0.0)
     assert np.all(np.isfinite(np.asarray(cache.kperp2)))
+
+
+def _sampled_geometry_with_shear(theta: jnp.ndarray, s_hat: jnp.ndarray) -> FluxTubeGeometryData:
+    shear = s_hat * theta
+    ones = jnp.ones_like(theta)
+    zeros = jnp.zeros_like(theta)
+    return FluxTubeGeometryData(
+        theta=theta,
+        gradpar_value=1.0,
+        bmag_profile=ones,
+        bgrad_profile=zeros,
+        gds2_profile=1.0 + shear * shear,
+        gds21_profile=-s_hat * shear,
+        gds22_profile=s_hat * s_hat * ones,
+        cv_profile=jnp.cos(theta) + shear * jnp.sin(theta),
+        gb_profile=jnp.cos(theta) + shear * jnp.sin(theta),
+        cv0_profile=-s_hat * jnp.sin(theta),
+        gb0_profile=-s_hat * jnp.sin(theta),
+        jacobian_profile=ones,
+        grho_profile=ones,
+        q=1.4,
+        s_hat=s_hat,
+        epsilon=0.1,
+        R0=1.0,
+        source_model="sampled-test",
+    )
+
+
+def test_build_linear_cache_allows_traced_shear_for_periodic_sampled_geometry() -> None:
+    grid = build_spectral_grid(
+        GridConfig(Nx=2, Ny=4, Nz=4, Lx=2.0 * np.pi, Ly=2.0 * np.pi, boundary="periodic")
+    )
+    theta = jnp.asarray(grid.z, dtype=jnp.float32)
+    params = LinearParams(nu_hyper=0.0, nu_hyper_m=0.0)
+
+    def objective(s_hat: jnp.ndarray) -> jnp.ndarray:
+        geom = _sampled_geometry_with_shear(theta, s_hat)
+        cache = build_linear_cache(grid, geom, params, Nl=1, Nm=1)
+        return jnp.sum(cache.kperp2)
+
+    grad = jax.grad(objective)(jnp.asarray(0.8, dtype=jnp.float32))
+
+    assert np.isfinite(float(grad))
+
+
+def test_build_linear_cache_rejects_traced_shear_for_twist_shift_geometry() -> None:
+    grid = build_spectral_grid(
+        GridConfig(
+            Nx=2,
+            Ny=4,
+            Nz=4,
+            Lx=2.0 * np.pi,
+            Ly=2.0 * np.pi,
+            boundary="linked",
+            jtwist=1,
+        )
+    )
+    theta = jnp.asarray(grid.z, dtype=jnp.float32)
+    params = LinearParams(nu_hyper=0.0, nu_hyper_m=0.0)
+
+    def objective(s_hat: jnp.ndarray) -> jnp.ndarray:
+        geom = _sampled_geometry_with_shear(theta, s_hat)
+        cache = build_linear_cache(grid, geom, params, Nl=1, Nm=1)
+        return jnp.sum(cache.kperp2)
+
+    with pytest.raises(ValueError, match="traced magnetic shear is not supported with twist-shift"):
+        jax.grad(objective)(jnp.asarray(0.8, dtype=jnp.float32))
 
 
 def test_build_H_field_couplings_and_errors() -> None:

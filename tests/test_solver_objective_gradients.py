@@ -12,8 +12,11 @@ import spectraxgk
 from spectraxgk.solver_objective_gradients import (
     SOLVER_GEOMETRY_PARAMETER_NAMES,
     SOLVER_OBJECTIVE_NAMES,
+    VMEC_BOOZER_FREQUENCY_OBJECTIVE_NAMES,
+    VMEC_BOOZER_STATE_PARAMETER_NAMES,
     default_solver_geometry_design_params,
     linear_solver_geometry_gradient_report,
+    mode21_vmec_boozer_linear_frequency_gradient_report,
     solver_ready_geometry_mapping,
 )
 
@@ -52,6 +55,14 @@ def test_linear_solver_geometry_gradient_report_passes_actual_rhs_gate() -> None
         len(SOLVER_OBJECTIVE_NAMES),
         len(SOLVER_GEOMETRY_PARAMETER_NAMES),
     )
+
+
+def test_mode21_vmec_boozer_frequency_gate_exports_and_scope() -> None:
+    assert spectraxgk.mode21_vmec_boozer_linear_frequency_gradient_report is (
+        mode21_vmec_boozer_linear_frequency_gradient_report
+    )
+    assert tuple(VMEC_BOOZER_STATE_PARAMETER_NAMES) == ("Rcos_mid_surface_m1",)
+    assert tuple(VMEC_BOOZER_FREQUENCY_OBJECTIVE_NAMES) == ("gamma", "omega")
 
 
 def test_write_solver_objective_gradient_artifacts(tmp_path: Path) -> None:

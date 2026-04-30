@@ -233,9 +233,10 @@ geometry arrays. The gate uses the implicit left/right non-Hermitian eigenpair
 sensitivity system and compares the result against nearest-branch central
 finite differences for ``gamma``, ``omega``, ``<k_perp^2>``, linear
 heat/particle-flux weights, and a mixing-length heat-flux proxy. This closes
-the ``FluxTubeGeometryData`` contract-level solver-gradient check. It does not
-yet close the full ``vmec_jax`` state-coefficient to ``booz_xform_jax`` to
-solver-gradient promotion gate.
+the ``FluxTubeGeometryData`` contract-level solver-gradient check and the first
+full ``vmec_jax`` state-coefficient to ``booz_xform_jax`` to solver
+eigenfrequency-gradient gate. It does not yet close the full quasilinear
+flux-weight or nonlinear-window state-gradient promotion gate.
 
 .. figure:: _static/solver_objective_gradient_gate.png
    :width: 90%
@@ -245,6 +246,19 @@ solver-gradient promotion gate.
    Solver-ready geometry-gradient gate. The left panel compares implicit
    eigenpair sensitivities with central finite differences; the right panel
    shows per-observable relative errors for the two geometry controls.
+
+.. figure:: _static/vmec_boozer_solver_frequency_gradient_gate.png
+   :width: 90%
+   :align: center
+   :alt: VMEC/Boozer state-to-solver frequency-gradient validation gate
+
+   Full-chain VMEC/Boozer eigenfrequency-gradient gate. A real ``vmec_jax``
+   state coefficient is perturbed, converted through ``booz_xform_jax`` with
+   ``mboz=nboz=21``, mapped into the SPECTRAX-GK linear solver, and checked
+   against central finite differences. The current full-chain quasilinear
+   flux-weight diagnostic remains an offline optimization lane because the
+   higher-dimensional eigenvector observable is still too expensive for the
+   release test budget.
 
 Promotion Gates for Full VMEC/Boozer/GK Optimization
 ----------------------------------------------------
@@ -277,10 +291,12 @@ the following pass:
    in-memory bridge.
 4. Linear growth-rate, frequency, and quasilinear-weight gradients through the
    solver-ready geometry contract pass finite-difference or implicit-eigenpair
-   checks. This is now closed by
+   checks. This is closed by
    ``docs/_static/solver_objective_gradient_gate.json`` for a small actual
-   linear-RHS fixture; the remaining promotion step is to run the same gate on
-   actual mode-21 VMEC/Boozer state coefficients.
+   linear-RHS fixture. The full mode-21 VMEC/Boozer state-to-solver
+   eigenfrequency gate is also closed by
+   ``docs/_static/vmec_boozer_solver_frequency_gradient_gate.json``. The
+   remaining promotion step is full-chain quasilinear flux-weight gradients.
 5. Host scalar materialization in production runtime caches is removed or
    isolated so geometry parameters remain traceable.
 6. A nonlinear heat-flux objective has a validated adjoint, VJP, or robust

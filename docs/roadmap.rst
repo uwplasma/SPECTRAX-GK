@@ -54,7 +54,10 @@ Current pre-release status snapshot:
 - solver-objective geometry-gradient validation now includes an actual
   electrostatic linear-RHS implicit-eigenpair gate for growth rate, real
   frequency, ``<k_perp^2>``, linear heat/particle-flux weights, and a
-  mixing-length heat-flux proxy with respect to solver-ready geometry arrays;
+  mixing-length heat-flux proxy with respect to solver-ready geometry arrays,
+  plus a mode-21 full-chain ``vmec_jax`` state-coefficient to
+  ``booz_xform_jax`` to SPECTRAX-GK eigenfrequency-gradient artifact at
+  ``docs/_static/vmec_boozer_solver_frequency_gradient_gate.png``;
 - the Phase-A differentiable-geometry bridge is an in-memory sampled
   flux-tube contract with 100% targeted coverage, optional
   ``vmec_jax`` / ``booz_xform_jax`` discovery, tracer-safe mapping into
@@ -107,8 +110,10 @@ predictor, VMEC/Boozer equal-arc geometry parity is closed at
 ``mboz=nboz=21``, and the reduced differentiable stellarator ITG optimization
 examples are closed with AD/FD gates. The production solver-objective gradient
 lane now has a passed actual linear-RHS gate at the solver-ready geometry
-contract, so the remaining promotion step is to move that same gate from
-solver-ready arrays to actual mode-21 VMEC/Boozer state coefficients.
+contract and a passed mode-21 VMEC/Boozer state-to-solver eigenfrequency gate.
+The remaining promotion step is to make the full-chain quasilinear flux-weight
+state-gradient diagnostic fast and conditioned enough for release/paper use,
+then add nonlinear-window gradients or a documented estimator gate.
 
 .. image:: _static/manuscript_readiness_status.png
    :alt: Manuscript-scope readiness status summary

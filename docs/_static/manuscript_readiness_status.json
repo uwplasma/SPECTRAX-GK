@@ -61,17 +61,20 @@
     {
       "claim_level": "required_for_full_end_to_end_stellarator_optimization_claim",
       "key_metrics": {
-        "full_vmec_boozer_gradient_gate": false,
+        "full_vmec_boozer_frequency_gradient_gate": true,
+        "full_vmec_boozer_quasilinear_gradient_gate": false,
         "linear_growth_gradient_gate": true,
         "nonlinear_window_gradient_gate": false,
         "quasilinear_weight_gradient_gate": true,
         "solver_ready_gradient_gate": true,
-        "source_scope": "solver_ready_geometry_contract"
+        "source_scope": "solver_ready_geometry_contract",
+        "vmec_boozer_frequency_rel_error": 0.004892743510544424
       },
       "lane": "Production solver-objective geometry gradients",
-      "next_action": "Promote the passed solver-ready geometry-gradient gate to actual mode-21 VMEC/Boozer state coefficients, then add nonlinear-window objective gradients.",
+      "next_action": "The mode-21 VMEC/Boozer state-to-solver eigenfrequency gate is now in place; next promote the heavy quasilinear flux-weight state-gradient diagnostic after profiling/conditioning.",
       "primary_artifacts": [
-        "docs/_static/solver_objective_gradient_gate.json"
+        "docs/_static/solver_objective_gradient_gate.json",
+        "docs/_static/vmec_boozer_solver_frequency_gradient_gate.json"
       ],
       "status": "partial"
     },
