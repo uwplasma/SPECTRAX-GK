@@ -167,6 +167,11 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
     cth_passed = bool((cth_gate or {}).get("gate_report", {}).get("passed", False))
 
     geom_sensitivity = (geom or {}).get("sensitivity", {}) if isinstance((geom or {}).get("sensitivity", {}), dict) else {}
+    geom_vmec_metric = (
+        (geom or {}).get("vmec_jax_metric_tensor", {})
+        if isinstance((geom or {}).get("vmec_jax_metric_tensor", {}), dict)
+        else {}
+    )
     geom_vmec_state = (
         (geom or {}).get("vmec_jax_boozer_flux_tube", {})
         if isinstance((geom or {}).get("vmec_jax_boozer_flux_tube", {}), dict)
@@ -180,6 +185,8 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
     geom_max_abs = _finite_float(geom_sensitivity.get("max_abs_ad_fd_error"))
     geom_inverse_res = _finite_float(geom_inverse.get("final_residual_norm")) if isinstance(geom_inverse, dict) else None
     geom_rank = int(geom_uq.get("sensitivity_map_rank", 0)) if isinstance(geom_uq, dict) else 0
+    geom_vmec_metric_abs = _finite_float(geom_vmec_metric.get("max_abs_ad_fd_error"))
+    geom_vmec_metric_rel = _finite_float(geom_vmec_metric.get("max_rel_ad_fd_error"))
     geom_vmec_state_abs = _finite_float(geom_vmec_state_sensitivity.get("max_abs_ad_fd_error"))
     geom_vmec_state_rel = _finite_float(geom_vmec_state_sensitivity.get("max_rel_ad_fd_error"))
 
@@ -257,6 +264,8 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
             "primary_artifacts": ["docs/_static/differentiable_geometry_bridge.json"],
             "key_metrics": {
                 "max_abs_ad_fd_error": geom_max_abs,
+                "vmec_metric_tensor_max_abs_ad_fd_error": geom_vmec_metric_abs,
+                "vmec_metric_tensor_max_rel_ad_fd_error": geom_vmec_metric_rel,
                 "vmec_state_boozer_flux_tube_max_abs_ad_fd_error": geom_vmec_state_abs,
                 "vmec_state_boozer_flux_tube_max_rel_ad_fd_error": geom_vmec_state_rel,
                 "inverse_residual_norm": geom_inverse_res,
@@ -355,8 +364,11 @@ def write_status_artifacts(payload: dict[str, Any], *, out_png: Path = DEFAULT_O
         elif lane["lane"].startswith("Nonlinear holdouts"):
             metric = f"holdouts: {key_metrics.get('holdout_points')}, promoted: {key_metrics.get('calibration_report_passed')}"
         elif lane["lane"].startswith("vmec_jax"):
+            metric_abs = key_metrics.get("vmec_metric_tensor_max_abs_ad_fd_error")
             state_abs = key_metrics.get("vmec_state_boozer_flux_tube_max_abs_ad_fd_error")
-            if state_abs is None:
+            if metric_abs is not None:
+                metric = f"VMEC metric AD-FD: {metric_abs:.1e}"
+            elif state_abs is None:
                 metric = f"AD-FD max: {key_metrics.get('max_abs_ad_fd_error'):.1e}"
             else:
                 metric = f"VMEC-state AD-FD: {state_abs:.1e}"

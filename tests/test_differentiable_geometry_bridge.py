@@ -23,7 +23,9 @@ from spectraxgk.geometry.differentiable import (
     geometry_observable_names,
     geometry_sensitivity_report,
     vmec_jax_boozer_flux_tube_sensitivity_report,
+    vmec_jax_metric_tensor_sensitivity_report,
     vmec_boundary_aspect_sensitivity_report,
+    vmec_metric_tensor_observable_names,
 )
 
 
@@ -253,6 +255,35 @@ def test_vmec_jax_boozer_flux_tube_sensitivity_report_starts_from_real_vmec_stat
     assert float(sensitivity["max_abs_ad_fd_error"]) < 2.0e-5
     assert float(sensitivity["max_rel_ad_fd_error"]) < 2.0e-4
     assert np.asarray(report["bmnc_b"]).shape == (2,)
+
+
+def test_vmec_jax_metric_tensor_sensitivity_report_checks_real_metric_tensors_when_available() -> None:
+    for name in (
+        "vmec_jax",
+        "vmec_jax.driver",
+        "vmec_jax.config",
+        "vmec_jax.static",
+        "vmec_jax.wout",
+        "vmec_jax.geom",
+    ):
+        sys.modules.pop(name, None)
+
+    report = vmec_jax_metric_tensor_sensitivity_report(fd_step=2.0e-5)
+
+    assert spectraxgk.vmec_jax_metric_tensor_sensitivity_report is vmec_jax_metric_tensor_sensitivity_report
+    assert spectraxgk.vmec_metric_tensor_observable_names is vmec_metric_tensor_observable_names
+    assert "available" in report
+    if not report["available"]:
+        assert report["sensitivity"] is None
+        return
+
+    assert report["case_name"] == "circular_tokamak"
+    assert report["param_names"] == ["delta_Rcos", "delta_Zsin"]
+    assert report["observable_names"] == list(vmec_metric_tensor_observable_names())
+    assert np.asarray(report["jacobian_ad"]).shape == (len(vmec_metric_tensor_observable_names()), 2)
+    assert float(report["max_abs_ad_fd_error"]) < 2.0e-5
+    assert float(report["max_rel_ad_fd_error"]) < 2.0e-4
+    assert len(report["metric_grid_shape"]) == 3
 
 
 def _differentiable_mapping(params: jnp.ndarray) -> dict[str, object]:
