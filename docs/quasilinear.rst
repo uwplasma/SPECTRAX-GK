@@ -494,6 +494,19 @@ passes. Otherwise the claim is demoted to ``calibration_dataset`` or
 claiming absolute nonlinear transport prediction from an uncalibrated
 saturation rule.
 
+Train and holdout points must also be tied to a passed nonlinear validation
+gate before they can be used in calibration. The audit tool
+``tools/check_quasilinear_calibration_inputs.py`` enforces that rule by matching
+each point's ``nonlinear_artifact`` to tracked nonlinear gate metadata. It
+passes for the current Cyclone, Cyclone Miller, HSX, and W7-X calibration
+inputs, and it would fail if an exploratory or non-converged pilot such as the
+CTH-like external-VMEC feasibility trace were inserted as a train/holdout
+point.
+
+.. image:: _static/quasilinear_validated_calibration_inputs.png
+   :alt: Quasilinear calibration inputs matched to passed nonlinear gates
+   :width: 100%
+
 Existing nonlinear window summaries can be converted into calibration points
 with ``calibration_point_from_nonlinear_window_summary`` when the summary points
 to either a diagnostics CSV or a SPECTRAX-GK runtime NetCDF file. CSV inputs use

@@ -1,0 +1,106 @@
+"""Tests for quasilinear calibration input validation gates."""
+
+from __future__ import annotations
+
+import importlib.util
+import json
+from pathlib import Path
+import sys
+
+
+def _load_tool_module():
+    path = Path(__file__).resolve().parents[1] / "tools" / "check_quasilinear_calibration_inputs.py"
+    spec = importlib.util.spec_from_file_location("check_quasilinear_calibration_inputs", path)
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def _write_report(path: Path, artifact: str, *, split: str = "holdout") -> None:
+    payload = {
+        "kind": "quasilinear_calibration_report",
+        "points": [
+            {
+                "case": "synthetic",
+                "split": split,
+                "predicted_heat_flux": 1.0,
+                "observed_heat_flux": 1.1,
+                "saturation_rule": "linear_weight",
+                "nonlinear_artifact": artifact,
+            }
+        ],
+    }
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+
+def test_audit_passes_when_required_point_matches_passed_gate(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    gate = tmp_path / "gate.json"
+    gate.write_text(
+        json.dumps(
+            {
+                "case": "synthetic_nonlinear_window",
+                "spectrax": "tools_out/synthetic.csv",
+                "gate_report": {"case": "synthetic_nonlinear_window", "passed": True, "gates": []},
+            }
+        ),
+        encoding="utf-8",
+    )
+    report = tmp_path / "report.json"
+    _write_report(report, "tools_out/synthetic.csv")
+
+    paths = mod.write_audit([report], gate_patterns=[str(gate)], out_json=tmp_path / "audit.json", no_plot=True)
+
+    payload = json.loads(Path(paths["json"]).read_text(encoding="utf-8"))
+    assert payload["passed"] is True
+    assert payload["reports"][0]["points"][0]["reason"] == "matched passed nonlinear gate"
+
+
+def test_audit_fails_when_required_point_uses_failed_gate(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    gate = tmp_path / "external_gate.json"
+    gate.write_text(
+        json.dumps(
+            {
+                "case": "external_cth_like",
+                "promotion_gate": {"passed": False},
+                "runs": [{"csv": "docs/_static/external_vmec_cth_like_nonlinear_t150_pilot.traces.csv"}],
+            }
+        ),
+        encoding="utf-8",
+    )
+    report = tmp_path / "report.json"
+    _write_report(report, "docs/_static/external_vmec_cth_like_nonlinear_t150_pilot.traces.csv")
+
+    paths = mod.write_audit([report], gate_patterns=[str(gate)], out_json=tmp_path / "audit.json", no_plot=True)
+
+    payload = json.loads(Path(paths["json"]).read_text(encoding="utf-8"))
+    assert payload["passed"] is False
+    assert payload["reports"][0]["points"][0]["reason"] == "matching nonlinear gate is not passed"
+
+
+def test_audit_fails_when_required_point_has_no_gate(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    report = tmp_path / "report.json"
+    _write_report(report, "tools_out/missing.csv")
+
+    paths = mod.write_audit([report], gate_patterns=[], out_json=tmp_path / "audit.json", no_plot=True)
+
+    payload = json.loads(Path(paths["json"]).read_text(encoding="utf-8"))
+    assert payload["passed"] is False
+    assert payload["reports"][0]["points"][0]["reason"] == "no matching nonlinear validation/convergence gate"
+
+
+def test_audit_ignores_non_required_audit_split_without_gate(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    report = tmp_path / "report.json"
+    _write_report(report, "tools_out/missing.csv", split="audit")
+
+    paths = mod.write_audit([report], gate_patterns=[], out_json=tmp_path / "audit.json", no_plot=True)
+
+    payload = json.loads(Path(paths["json"]).read_text(encoding="utf-8"))
+    assert payload["passed"] is True
+    assert payload["reports"][0]["points"][0]["reason"] == "not required split"

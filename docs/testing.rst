@@ -233,6 +233,13 @@ tracked CTH-like external-VMEC artifact intentionally fails this gate and sets
 ``gate_index_include=false`` because it is a research-planning negative result,
 not a release-blocking validation gate.
 
+``tools/check_quasilinear_calibration_inputs.py`` is the corresponding
+calibration-admission guard. It scans quasilinear train/holdout reports and
+requires every non-audit nonlinear artifact to match a passed nonlinear gate.
+This makes validation provenance executable: finite-but-unconverged pilots can
+be documented in the docs, but they cannot silently become calibration or
+optimization data.
+
 The diagnostics stream now also carries ``Diagnostics/Phi_zonal_mode_kxt``, a
 signed complex zonal-potential history reduced over ``z`` with the same volume
 weights used elsewhere. That is the primitive to use for manuscript-grade
