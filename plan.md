@@ -1011,3 +1011,14 @@ Exit gate:
   - run a bounded CTH-like convergence check (`32^2x24` vs `48^2x32`, same `Nl/Nm`, same `dt`) before admitting it as a quasilinear calibration holdout;
   - only after that, add a CTH-like spectrum-shape gate against the linear quasilinear spectrum and a leave-one-geometry-out calibration point;
   - continue keeping these external-VMEC pilots out of quasilinear calibration until a saturated nonlinear window and spectrum-shape gate pass.
+- Completed first CTH-like grid-convergence check:
+  - ran office GPU `Nx=Ny=48`, `Nz=32`, `Nl=4`, `Nm=8`, `dt=0.05`, `t=150` with the same external VMEC fixture;
+  - run completed in about `211 s`, stayed finite, and produced `61` diagnostic samples;
+  - on the common `t=75.05..150.00` window, higher-grid mean heat flux is `12.82` versus `23.06` on the `32^2x24` run;
+  - the higher-grid least-trending `t=120.05..150.00` window has mean heat flux `14.54`, standard deviation `0.271`, and relative trend `5.77e-4` per time unit;
+  - tracked `docs/_static/external_vmec_cth_like_nonlinear_t150_n48_pilot.{png,pdf,json,traces.csv}`;
+  - conclusion: CTH-like is finite and promising but not grid-converged; it remains excluded from quasilinear calibration.
+- Current next best steps:
+  - decide the production CTH-like nonlinear protocol before more long runs: either increase grid again, adjust dissipation/hypercollision with a documented physics rationale, or defer external-VMEC transport holdouts until a reference exists;
+  - if continuing CTH-like, run one controlled parameter at a time and require late-window heat flux to be stable under both window choice and grid refinement;
+  - otherwise return to the core quasilinear model lane with the current four validated nonlinear cases and keep external VMEC as a documented future holdout campaign.

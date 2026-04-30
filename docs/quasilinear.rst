@@ -949,6 +949,20 @@ passed yet.
    :alt: External CTH-like VMEC nonlinear feasibility pilot
    :width: 100%
 
+The first bounded grid check repeats the same run at ``Nx = Ny = 48`` and
+``Nz = 32``. It is also finite to ``t = 150`` and has a flatter late trace, but
+the transport level changes materially: the common ``t = 75.05`` to ``150.00``
+window has mean heat flux about ``12.8`` rather than ``23.1``, and the
+least-trending ``t = 120.05`` to ``150.00`` window has mean heat flux about
+``14.5``. This is a useful negative convergence result. CTH-like should not be
+used as a quasilinear calibration holdout until the grid, hypercollision, and
+window-selection protocol are frozen and the production-resolution comparison
+passes a case-specific tolerance.
+
+.. image:: _static/external_vmec_cth_like_nonlinear_t150_n48_pilot.png
+   :alt: Higher-grid external CTH-like VMEC nonlinear feasibility pilot
+   :width: 100%
+
 The normalized W7-X spectrum-shape gate does pass when the linear
 heat-flux-weight distribution is compared with the resolved nonlinear
 ``HeatFlux_kyst`` spectrum from the NetCDF output:
