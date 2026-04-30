@@ -1041,3 +1041,11 @@ Exit gate:
   - use the validated-input audit as a required precondition for future quasilinear saturation-model figures and optimization examples;
   - continue the saturation-model lane only on the validated four-case set unless a new nonlinear case passes pilot, convergence, and validation gates;
   - add the next candidate model only with a null baseline, leave-one-geometry-out scoring, prediction intervals, and finite-difference/autodiff checks before making any optimization-facing claim.
+- Promoted the validated-input policy into CI:
+  - added a tracked-regression test that recomputes the current quasilinear train/holdout input audit and requires all `12/12` train/holdout usages to map to passed nonlinear gates;
+  - added a docs/packaging CI step that runs `tools/check_quasilinear_calibration_inputs.py --no-plot` on the current quasilinear train/holdout reports before building docs;
+  - this makes the rule enforceable for future pull requests: calibration docs and figures cannot be rebuilt successfully if a non-converged or exploratory nonlinear artifact is inserted as train/holdout data.
+- Current next best steps:
+  - build the next saturation-model diagnostic on the validated four-case set, with the CI admission gate as a precondition;
+  - keep external VMEC candidates out of calibration until a new candidate passes pilot, convergence, and validation gates;
+  - when adding any new nonlinear reference, update both the nonlinear gate JSON and the quasilinear input audit before using it in a model figure.

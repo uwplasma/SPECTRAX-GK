@@ -104,3 +104,34 @@ def test_audit_ignores_non_required_audit_split_without_gate(tmp_path: Path) -> 
     payload = json.loads(Path(paths["json"]).read_text(encoding="utf-8"))
     assert payload["passed"] is True
     assert payload["reports"][0]["points"][0]["reason"] == "not required split"
+
+
+def test_tracked_quasilinear_train_holdout_reports_use_passed_nonlinear_gates() -> None:
+    mod = _load_tool_module()
+    root = Path(__file__).resolve().parents[1]
+    reports = [
+        root / "docs/_static/quasilinear_cyclone_miller_train_holdout_report.json",
+        root / "docs/_static/quasilinear_hsx_train_holdout_report.json",
+        root / "docs/_static/quasilinear_w7x_train_holdout_report.json",
+        root / "docs/_static/quasilinear_stellarator_train_holdout_report.json",
+    ]
+
+    payload = mod.audit_calibration_inputs(reports)
+
+    assert payload["passed"] is True
+    required_rows = [
+        point
+        for report in payload["reports"]
+        for point in report["points"]
+        if point["required"]
+    ]
+    assert len(required_rows) == 12
+    assert all(point["matched_gate"] is not None for point in required_rows)
+    matched_cases = {point["matched_gate"]["case"] for point in required_rows}
+    assert matched_cases == {
+        "cyclone_nonlinear_long_window",
+        "cyclone_miller_nonlinear_window",
+        "hsx_nonlinear_window",
+        "w7x_nonlinear_window",
+    }
+    assert all("external_vmec" not in str(point["matched_gate"]["artifact"]) for point in required_rows)
