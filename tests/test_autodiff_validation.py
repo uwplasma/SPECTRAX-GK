@@ -5,6 +5,7 @@ import pytest
 import jax.numpy as jnp
 
 import spectraxgk
+import spectraxgk.autodiff_validation as adv
 from spectraxgk.autodiff_validation import (
     autodiff_finite_difference_report,
     central_finite_difference_jacobian,
@@ -103,6 +104,12 @@ def test_autodiff_finite_difference_report_matches_closed_form_jacobian() -> Non
     jac_ad = np.asarray(report["jacobian_ad"])
     np.testing.assert_allclose(jac_ad, np.asarray([[0.8, 3.0], [-0.2, 0.4]]), rtol=1.0e-6)
     assert float(report["tangent_max_abs_error"]) < 1.0e-4
+
+
+def test_central_finite_difference_handles_empty_parameter_vector() -> None:
+    jac = central_finite_difference_jacobian(lambda x: jnp.asarray([1.0, 2.0]), jnp.asarray([]))
+    assert jac.shape == (2, 0)
+    assert jac.dtype == jnp.asarray([]).dtype
 
 
 def test_quasilinear_feature_objective_derivative_gate() -> None:
@@ -380,6 +387,35 @@ def test_implicit_eigenpair_observable_gate_matches_closed_form_branch() -> None
     np.testing.assert_allclose(jac_impl, jac_fd, rtol=1.0e-3, atol=2.0e-5)
 
 
+def test_implicit_eigenpair_observable_gate_handles_complex_observables() -> None:
+    def matrix_fn(x):
+        return jnp.asarray(
+            [
+                [0.8 + x[0] + 0.1j, 0.05 + 0.03j * x[1]],
+                [0.0, -0.2 + 0.2 * x[1] - 0.05j],
+            ],
+            dtype=jnp.complex64,
+        )
+
+    def observable_fn(eigenvalue, eigenvector, x):
+        norm = jnp.sum(jnp.abs(eigenvector) ** 2)
+        phase_invariant_weight = jnp.abs(eigenvector[0]) ** 2 / norm
+        return jnp.asarray([eigenvalue + 0.1 * x[0] + 1j * phase_invariant_weight])
+
+    report = implicit_eigenpair_observable_sensitivity_report(
+        matrix_fn,
+        observable_fn,
+        jnp.asarray([0.1, -0.2]),
+        step=1.0e-3,
+        rtol=1.0e-3,
+        atol=3.0e-5,
+    )
+
+    assert report["passed"] is True
+    assert np.asarray(report["jacobian_implicit"]).shape == (2, 2)
+    np.testing.assert_allclose(report["jacobian_implicit"], report["jacobian_fd"], rtol=1.0e-3, atol=3.0e-5)
+
+
 def test_actual_linear_rhs_branch_objective_implicit_derivative_gate() -> None:
     cfg = CycloneBaseCase(grid=GridConfig(Nx=1, Ny=6, Nz=4, Lx=6.0, Ly=12.0))
     grid = select_ky_grid(build_spectral_grid(cfg.grid), 1)
@@ -480,6 +516,122 @@ def test_isolated_eigenvalue_sensitivity_report_flags_small_gaps() -> None:
     assert report["passed"] is False
     with pytest.raises(ValueError):
         isolated_eigenvalue_sensitivity_report(matrix_fn, jnp.asarray([0.2]), selector="index:4")
+
+
+def test_eigen_sensitivity_reports_validate_selectors_and_scalar_branches() -> None:
+    def scalar_matrix_fn(x):
+        return jnp.asarray([[0.5 + x[0] + 0.2j * x[1]]], dtype=jnp.complex64)
+
+    value_report = isolated_eigenvalue_sensitivity_report(
+        scalar_matrix_fn,
+        jnp.asarray([0.1, -0.2]),
+        selector="index:0",
+        step=1.0e-3,
+        rtol=1.0e-3,
+        atol=2.0e-5,
+    )
+    assert value_report["passed"] is True
+    assert value_report["eigenvalue_gap"] == float("inf")
+
+    pair_report = isolated_eigenpair_observable_sensitivity_report(
+        scalar_matrix_fn,
+        lambda eigenvalue, eigenvector, x: jnp.asarray([jnp.real(eigenvalue) + jnp.abs(eigenvector[0]) ** 2]),
+        jnp.asarray([0.1, -0.2]),
+        selector="index:0",
+        step=1.0e-3,
+        rtol=1.0e-3,
+        atol=2.0e-5,
+    )
+    assert pair_report["ad_supported"] is False
+    assert pair_report["eigenvalue_gap"] == float("inf")
+
+    with pytest.raises(ValueError):
+        isolated_eigenvalue_sensitivity_report(scalar_matrix_fn, jnp.asarray([[0.1]]))
+    with pytest.raises(ValueError):
+        isolated_eigenvalue_sensitivity_report(scalar_matrix_fn, jnp.asarray([0.1]), selector="min_abs")
+    with pytest.raises(ValueError):
+        isolated_eigenpair_observable_sensitivity_report(scalar_matrix_fn, lambda *_: jnp.asarray([1.0]), jnp.asarray([[0.1]]))
+    with pytest.raises(ValueError):
+        isolated_eigenpair_observable_sensitivity_report(
+            scalar_matrix_fn,
+            lambda *_: jnp.asarray([1.0]),
+            jnp.asarray([0.1]),
+            selector="index:3",
+        )
+
+
+def test_eigen_sensitivity_reports_cover_empty_matrices_and_ad_fallbacks(monkeypatch) -> None:
+    def empty_matrix(x):
+        return jnp.zeros((0, 0), dtype=jnp.complex64)
+    with pytest.raises(ValueError, match="at least one eigenvalue"):
+        isolated_eigenvalue_sensitivity_report(empty_matrix, jnp.asarray([0.1]))
+    with pytest.raises(ValueError, match="at least one eigenvalue"):
+        isolated_eigenpair_observable_sensitivity_report(empty_matrix, lambda *_: jnp.asarray([1.0]), jnp.asarray([0.1]))
+    with pytest.raises(ValueError, match="at least one eigenvalue"):
+        implicit_eigenpair_observable_sensitivity_report(empty_matrix, lambda *_: jnp.asarray([1.0]), jnp.asarray([0.1]))
+
+    def matrix_fn(x):
+        return jnp.asarray([[1.0 + x[0], 0.0], [0.0, -0.5 + x[0]]], dtype=jnp.complex64)
+
+    def raise_not_implemented(*_args, **_kwargs):
+        raise NotImplementedError("forced derivative fallback")
+
+    monkeypatch.setattr(adv, "autodiff_finite_difference_report", raise_not_implemented)
+    fallback = adv.isolated_eigenvalue_sensitivity_report(matrix_fn, jnp.asarray([0.1]))
+    assert fallback["ad_supported"] is False
+    assert "forced derivative fallback" in str(fallback["failure_reason"])
+
+
+def test_isolated_eigenpair_report_realifies_complex_observable(monkeypatch) -> None:
+    def matrix_fn(x):
+        return jnp.asarray([[1.0 + x[0] + 0.1j, 0.0], [0.0, -0.5 + 0.2j]], dtype=jnp.complex64)
+
+    captured = {}
+
+    def fake_fd_report(fn, params, **kwargs):
+        values = fn(params)
+        captured["values"] = np.asarray(values)
+        return {
+            "passed": True,
+            "step": kwargs["step"],
+            "rtol": kwargs["rtol"],
+            "atol": kwargs["atol"],
+            "max_abs_error": 0.0,
+            "max_rel_error": 0.0,
+            "tangent_max_abs_error": 0.0,
+            "jacobian_ad": [[1.0], [0.0]],
+            "jacobian_fd": [[1.0], [0.0]],
+            "tangent_ad": [1.0, 0.0],
+            "tangent_fd": [1.0, 0.0],
+        }
+
+    monkeypatch.setattr(adv, "autodiff_finite_difference_report", fake_fd_report)
+    report = adv.isolated_eigenpair_observable_sensitivity_report(
+        matrix_fn,
+        lambda eigenvalue, eigenvector, x: jnp.asarray([eigenvalue + 0.1j * jnp.abs(eigenvector[0]) ** 2]),
+        jnp.asarray([0.2]),
+    )
+
+    assert report["passed"] is True
+    assert report["ad_supported"] is True
+    assert captured["values"].shape == (2,)
+
+
+def test_implicit_eigenpair_observable_report_validates_inputs() -> None:
+    def matrix_fn(x):
+        return jnp.asarray([[1.0 + x[0], 0.0], [0.0, -1.0 + x[0]]], dtype=jnp.complex64)
+
+    def observable(eigenvalue, eigenvector, x):
+        return jnp.asarray([jnp.real(eigenvalue)])
+
+    with pytest.raises(ValueError):
+        implicit_eigenpair_observable_sensitivity_report(matrix_fn, observable, jnp.asarray([[0.1]]))
+    with pytest.raises(ValueError):
+        implicit_eigenpair_observable_sensitivity_report(lambda x: jnp.ones((2, 3)), observable, jnp.asarray([0.1]))
+    with pytest.raises(ValueError):
+        implicit_eigenpair_observable_sensitivity_report(matrix_fn, observable, jnp.asarray([0.1]), selector="min_abs")
+    with pytest.raises(ValueError):
+        implicit_eigenpair_observable_sensitivity_report(matrix_fn, observable, jnp.asarray([0.1]), selector="index:9")
 
 
 def test_autodiff_finite_difference_report_rejects_bad_inputs() -> None:
