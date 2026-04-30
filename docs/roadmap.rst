@@ -59,8 +59,9 @@ Current pre-release status snapshot:
   ``vmec_jax.geom`` plus ``vmec_jax.vmec_bcovar``, a direct VMEC
   tensor-derived flux-tube mapping derivative, a direct-VMEC-tensor vs
   imported-VMEC/EIK array-parity audit, a Boozer equal-arc core parity audit
-  that closes the ``bmag``/``bgrad``/``gradpar``/Jacobian and zero-beta
-  ``gds*``/``grho`` metric convention at release tolerance, a real
+  that closes the ``bmag``/``bgrad``/``gradpar``/Jacobian, zero-beta
+  ``gds*``/``grho`` metric convention, and zero-beta loaded drift convention at
+  release tolerance, a real
   ``vmec_jax`` ``VMECState`` to ``booz_xform_jax`` to SPECTRAX-GK derivative
   gate, and a
   tracked AD-vs-finite-difference inverse/UQ artifact at

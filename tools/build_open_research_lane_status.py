@@ -223,9 +223,13 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
     geom_vmec_equal_arc_metric_worst = _finite_float(
         geom_vmec_array_parity.get("equal_arc_metric_worst_normalized_max_abs")
     )
+    geom_vmec_equal_arc_drift_worst = _finite_float(
+        geom_vmec_array_parity.get("equal_arc_drift_worst_normalized_max_abs")
+    )
     geom_vmec_equal_arc_core_passed = bool(geom_vmec_array_parity.get("equal_arc_core_passed", False))
     geom_vmec_equal_arc_derivative_passed = bool(geom_vmec_array_parity.get("equal_arc_derivative_passed", False))
     geom_vmec_equal_arc_metric_passed = bool(geom_vmec_array_parity.get("equal_arc_metric_passed", False))
+    geom_vmec_equal_arc_drift_passed = bool(geom_vmec_array_parity.get("equal_arc_drift_passed", False))
     geom_vmec_state_abs = _finite_float(geom_vmec_state_sensitivity.get("max_abs_ad_fd_error"))
     geom_vmec_state_rel = _finite_float(geom_vmec_state_sensitivity.get("max_rel_ad_fd_error"))
 
@@ -315,9 +319,11 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
                 "vmec_boozer_equal_arc_core_worst_scalar_rel": geom_vmec_equal_arc_core_scalar,
                 "vmec_boozer_equal_arc_bgrad_worst_norm": geom_vmec_equal_arc_derivative_worst,
                 "vmec_boozer_equal_arc_metric_worst_norm": geom_vmec_equal_arc_metric_worst,
+                "vmec_boozer_equal_arc_drift_worst_norm": geom_vmec_equal_arc_drift_worst,
                 "vmec_boozer_equal_arc_core_passed": geom_vmec_equal_arc_core_passed,
                 "vmec_boozer_equal_arc_bgrad_passed": geom_vmec_equal_arc_derivative_passed,
                 "vmec_boozer_equal_arc_metric_passed": geom_vmec_equal_arc_metric_passed,
+                "vmec_boozer_equal_arc_drift_passed": geom_vmec_equal_arc_drift_passed,
                 "vmec_state_boozer_flux_tube_max_abs_ad_fd_error": geom_vmec_state_abs,
                 "vmec_state_boozer_flux_tube_max_rel_ad_fd_error": geom_vmec_state_rel,
                 "inverse_residual_norm": geom_inverse_res,
@@ -326,8 +332,8 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
                 "booz_xform_jax_api_available": (geom or {}).get("booz_xform_jax_api_available"),
             },
             "next_action": (
-                "Use the now-matched Boozer equal-arc core/metric convention to close the remaining drift "
-                "array-parity gap, then add growth-rate/quasilinear geometry-gradient gates."
+                "Generalize the now-matched zero-beta Boozer equal-arc core/metric/drift convention across "
+                "finite-beta and additional stellarator equilibria, then add growth-rate/quasilinear geometry-gradient gates."
             ),
         },
         {

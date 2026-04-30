@@ -346,6 +346,7 @@ def test_vmec_jax_flux_tube_array_parity_report_tracks_production_gap_when_avail
     assert set(report["scalar_metrics"]) == {"gradpar", "q", "s_hat"}
     assert "equal_arc_core_array_metrics" in report
     assert "equal_arc_metric_array_metrics" in report
+    assert "equal_arc_drift_array_metrics" in report
     assert "equal_arc_core_scalar_metrics" in report
     assert np.isfinite(float(report["worst_core_normalized_max_abs"]))
     assert np.isfinite(float(report["worst_scalar_rel"]))
@@ -354,15 +355,18 @@ def test_vmec_jax_flux_tube_array_parity_report_tracks_production_gap_when_avail
         assert spectraxgk.vmec_jax_boozer_equal_arc_core_profiles_from_state is vmec_jax_boozer_equal_arc_core_profiles_from_state
         assert set(report["equal_arc_core_array_metrics"]) >= {"bmag", "bgrad", "jacobian"}
         assert set(report["equal_arc_metric_array_metrics"]) == {"gds2", "gds21", "gds22", "grho"}
+        assert set(report["equal_arc_drift_array_metrics"]) == {"cvdrift", "gbdrift", "cvdrift0", "gbdrift0"}
         assert set(report["equal_arc_core_scalar_metrics"]) == {"gradpar", "q", "s_hat"}
         assert np.isfinite(float(report["equal_arc_core_worst_normalized_max_abs"]))
         assert np.isfinite(float(report["equal_arc_core_worst_scalar_rel"]))
         assert np.isfinite(float(report["equal_arc_derivative_worst_normalized_max_abs"]))
         assert np.isfinite(float(report["equal_arc_metric_worst_normalized_max_abs"]))
+        assert np.isfinite(float(report["equal_arc_drift_worst_normalized_max_abs"]))
         assert float(report["equal_arc_core_worst_normalized_max_abs"]) < 5.0e-2
         assert float(report["equal_arc_core_worst_scalar_rel"]) < 5.0e-2
         assert float(report["equal_arc_derivative_worst_normalized_max_abs"]) < 1.0e-1
         assert float(report["equal_arc_metric_worst_normalized_max_abs"]) < 1.2e-1
+        assert float(report["equal_arc_drift_worst_normalized_max_abs"]) < 1.2e-1
 
 
 def test_vmec_jax_metric_tensor_sensitivity_report_checks_real_metric_tensors_when_available() -> None:

@@ -1345,9 +1345,23 @@ Exit gate:
     metric convention for the differentiable VMEC/Boozer bridge while keeping
     the production Hegna-Nakajima curvature/drift parity gap explicit.
 - Current next best steps:
-  - port the Hegna-Nakajima curvature/drift reconstruction into the same
-    JAX-native Boozer equal-arc path and compare ``cvdrift``, ``gbdrift``,
-    ``cvdrift0``, and ``gbdrift0`` against imported VMEC/EIK;
-  - once drift parity passes, add production solver gradients for linear
-    growth/frequency, quasilinear weights, and then nonlinear-window
-    objectives before making stellarator optimization claims.
+  - broaden the JAX-native Boozer equal-arc drift parity gate beyond the
+    current zero-beta tracked fixture to finite-beta pressure corrections and
+    additional stellarator equilibria;
+  - after the broader finite-beta drift gates pass, add production solver
+    gradients for linear growth/frequency, quasilinear weights, and then
+    nonlinear-window objectives before making stellarator optimization claims.
+- Added the first zero-beta Boozer equal-arc drift parity subgate:
+  - ``vmec_jax_boozer_equal_arc_core_profiles_from_state`` now reconstructs
+    loaded-convention ``cvdrift``, ``gbdrift``, ``cvdrift0``, and
+    ``gbdrift0`` from the real Boozer ``B`` spectrum, radial ``dB/ds``,
+    equal-arc remap, and the same root-level drift-loader factor used by
+    ``load_gx_geometry_netcdf``;
+  - the tracked ``nfp4_QH_warm_start`` artifact now passes a separate drift
+    subgate with worst normalized mismatch ``3.45e-2``:
+    ``cvdrift=3.45e-2``, ``gbdrift=3.45e-2``, ``cvdrift0=3.10e-2``, and
+    ``gbdrift0=3.10e-2``;
+  - the release claim is now closed for the tracked zero-beta Boozer
+    equal-arc field-line, metric, and drift convention, while finite-beta,
+    multi-equilibrium drift parity and solver-objective gradients remain
+    required before stellarator heat-flux optimization claims.
