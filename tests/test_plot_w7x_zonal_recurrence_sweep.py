@@ -86,6 +86,8 @@ def test_w7x_zonal_recurrence_sweep_builds_rows_and_main(tmp_path: Path) -> None
     assert len(rows) == 2
     assert rows[0]["sweep"] == "moment_resolution"
     assert rows[1]["closure_source"] == "kz"
+    assert rows[0]["tail_std_ratio"] is not None
+    assert rows[0]["tail_std_ratio"] > 0.0
     assert "moment" in traces
 
     out_png = tmp_path / "recurrence.png"

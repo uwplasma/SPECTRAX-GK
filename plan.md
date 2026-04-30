@@ -1124,3 +1124,11 @@ Exit gate:
   - keep W7-X/TEM kinetic-electron validation blocked until the full TEM case definition or an independent reference dump is available;
   - resume W7-X zonal physical closure under the paper-facing initializer/observable convention;
   - advance the real `vmec_jax`/`booz_xform_jax` geometry bridge with parity and gradient gates.
+- Tightened the W7-X zonal bounded-recurrence artifact:
+  - added explicit `tail_std_ratio = tail_std/reference_tail_std` to `tools/plot_w7x_zonal_recurrence_sweep.py` rows and its focused tests;
+  - repaired the tracked `docs/_static/w7x_zonal_recurrence_sweep_kx070.{json,csv}` metadata from existing stored row values because the source NetCDF sweep outputs are not present in the local checkout;
+  - current best bounded candidate remains `Nl12 Nm48 none` with `mean_abs_error≈0.276`, `tail_std_ratio≈3.78`, and Hermite-tail fraction `≈0.310`; the best constant hypercollision probe still worsens trace error while suppressing Hermite tail, so the lane remains a physical closure issue, not a normalization/doc issue.
+- Current next best steps:
+  - if the W7-X source NetCDFs are needed for a refreshed plot, rerun the bounded recurrence sweep on office or restore the release artifacts from external storage;
+  - test a physically motivated velocity-space closure/operator rather than increasing constant Hermite damping;
+  - continue the differentiable geometry bridge and keep W7-X zonal closure open until residual, late-envelope, and moment-tail gates pass together.
