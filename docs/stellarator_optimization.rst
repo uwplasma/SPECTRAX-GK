@@ -234,6 +234,8 @@ the following pass:
    in memory without writing intermediate VMEC or EIK files.
    The current bridge already validates the optional ``vmec_jax`` boundary
    derivative, real ``vmec_jax`` metric-tensor derivatives, a real
+   non-axisymmetric VMEC field-line tensor derivative through
+   ``vmec_jax.geom`` plus ``vmec_jax.vmec_bcovar``, a real
    ``booz_xform_jax`` spectral derivative, and a bounded
    Boozer-``|B|``-to-flux-tube mapping derivative. It now also starts from a
    real ``vmec_jax`` ``VMECState``, perturbs VMEC Fourier coefficients,

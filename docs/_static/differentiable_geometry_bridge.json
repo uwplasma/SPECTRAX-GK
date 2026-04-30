@@ -515,7 +515,7 @@
     0.06176080850358888,
     1.5505567586513118
   ],
-  "notes": "This is a bounded differentiable-geometry bridge validation. The high-fidelity VMEC/Boozer pipeline must provide the same solver-ready field-line arrays; this artifact validates the JAX tracing, AD-vs-FD sensitivities, inverse recovery, UQ machinery, and the first real VMEC metric-tensor, Boozer-spectrum-to-flux-tube, and vmec_jax-state-to-Boozer mapping gates at that contract boundary.",
+  "notes": "This is a bounded differentiable-geometry bridge validation. The high-fidelity VMEC/Boozer pipeline must provide the same solver-ready field-line arrays; this artifact validates the JAX tracing, AD-vs-FD sensitivities, inverse recovery, UQ machinery, and the first real VMEC metric-tensor, VMEC field-line tensor, Boozer-spectrum-to-flux-tube, and vmec_jax-state-to-Boozer mapping gates at that contract boundary.",
   "observable_names": [
     "mean_bmag",
     "relative_bmag_ripple",
@@ -804,6 +804,133 @@
     ],
     "surface_index": 7,
     "wout_path": "/Users/rogeriojorge/local/vmec_jax/examples/data/wout_circular_tokamak.nc"
+  },
+  "vmec_jax_field_line_tensor": {
+    "alpha": 0.0,
+    "available": true,
+    "b2_floor": 1e-24,
+    "backend_info": {
+      "booz_xform_jax_api_available": true,
+      "booz_xform_jax_available": true,
+      "booz_xform_jax_paths": [
+        "/Users/rogeriojorge/local/booz_xform_jax",
+        "/Users/rogeriojorge/local/booz_xform_jax/src"
+      ],
+      "vmec_jax_available": true,
+      "vmec_jax_boundary_api_available": true,
+      "vmec_jax_paths": [
+        "/Users/rogeriojorge/local/vmec_jax"
+      ]
+    },
+    "case_name": "nfp4_QH_warm_start",
+    "fd_step": 1e-06,
+    "field_line_convention": "VMEC theta, zeta=(theta-alpha)/iota with periodic bilinear sampling",
+    "input_path": "/Users/rogeriojorge/local/vmec_jax/examples/data/input.nfp4_QH_warm_start",
+    "iota": -1.0562565727429847,
+    "jacobian_ad": [
+      [
+        -133.8512330315098,
+        -153.27565387468943
+      ],
+      [
+        -87.8520747083142,
+        -39.61586194265315
+      ],
+      [
+        0.0007586585747385313,
+        1.801320683113458e-19
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        2.887071764265196,
+        2.713891917190304
+      ],
+      [
+        0.29343289037395803,
+        0.2638365609657376
+      ],
+      [
+        0.0,
+        0.0
+      ]
+    ],
+    "jacobian_fd": [
+      [
+        -133.85126157250406,
+        -153.27567511974615
+      ],
+      [
+        -87.849983256982,
+        -39.61533687637728
+      ],
+      [
+        0.000758658575197857,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        2.887071764434701,
+        2.713891917194289
+      ],
+      [
+        0.29343289036434794,
+        0.2638365609528015
+      ],
+      [
+        0.0,
+        0.0
+      ]
+    ],
+    "max_abs_ad_fd_error": 0.0020914513322054518,
+    "max_rel_ad_fd_error": 2.380707718617408e-05,
+    "metric_grid_shape": [
+      35,
+      10,
+      8
+    ],
+    "mode_index": 1,
+    "ntheta": 32,
+    "observable_names": [
+      "mean_bmag",
+      "relative_bmag_ripple",
+      "sqrtg_rms",
+      "mean_g_tt",
+      "mean_g_pp",
+      "g_tp_rms",
+      "mean_g_ss"
+    ],
+    "observables": [
+      0.7435577805414061,
+      0.023512887782979698,
+      0.011676959894477777,
+      0.0180394617312018,
+      1.2329918150609103,
+      0.032472705096688106,
+      0.02327467716570495
+    ],
+    "param_names": [
+      "delta_Rcos",
+      "delta_Zsin"
+    ],
+    "params": [
+      0.0001,
+      0.0001
+    ],
+    "radial_index": 17,
+    "rms_epsilon": 1e-24,
+    "source_model": "vmec_jax:state->field-line-metric-and-b",
+    "state_shape": [
+      35,
+      8
+    ],
+    "surface_index": 17,
+    "wout_path": "/Users/rogeriojorge/local/vmec_jax/examples/data/wout_nfp4_QH_warm_start.nc"
   },
   "vmec_jax_metric_tensor": {
     "available": true,

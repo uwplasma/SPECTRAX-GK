@@ -55,8 +55,10 @@ Current pre-release status snapshot:
   flux-tube contract with 100% targeted coverage, optional
   ``vmec_jax`` / ``booz_xform_jax`` discovery, tracer-safe mapping into
   ``FluxTubeGeometryData``, real ``vmec_jax`` metric-tensor derivatives, a
-  real ``vmec_jax`` ``VMECState`` to ``booz_xform_jax`` to SPECTRAX-GK
-  derivative gate, and a tracked AD-vs-finite-difference inverse/UQ artifact at
+  real non-axisymmetric VMEC field-line tensor derivative through
+  ``vmec_jax.geom`` plus ``vmec_jax.vmec_bcovar``, a real ``vmec_jax``
+  ``VMECState`` to ``booz_xform_jax`` to SPECTRAX-GK derivative gate, and a
+  tracked AD-vs-finite-difference inverse/UQ artifact at
   ``docs/_static/differentiable_geometry_bridge.png``;
 - production parallelization is currently claimed only for independent
   ``k_y``/batch/UQ-style workloads and the sharded linear RK2 identity path,

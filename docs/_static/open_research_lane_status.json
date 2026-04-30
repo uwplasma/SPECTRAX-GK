@@ -96,6 +96,8 @@
         "inverse_residual_norm": 0.0,
         "max_abs_ad_fd_error": 1.2885199573986483e-09,
         "sensitivity_rank": 2,
+        "vmec_field_line_tensor_max_abs_ad_fd_error": 0.0020914513322054518,
+        "vmec_field_line_tensor_max_rel_ad_fd_error": 2.380707718617408e-05,
         "vmec_jax_available": true,
         "vmec_metric_tensor_max_abs_ad_fd_error": 5.8812382242035e-08,
         "vmec_metric_tensor_max_rel_ad_fd_error": 1.3046566776351664e-07,

@@ -1234,3 +1234,25 @@ Exit gate:
   - compare ``bmag``, ``gradpar``, ``gds2``, ``gds21``, ``gds22``, drifts,
     Jacobian, and ``grho`` against the imported VMEC/eik runtime path;
   - then add production linear/quasilinear AD-vs-FD gates through this fixture.
+- Added the first non-axisymmetric VMEC field-line tensor differentiability gate:
+  - added ``spectraxgk.geometry.differentiable.vmec_jax_field_line_tensor_sensitivity_report`` and
+    ``vmec_field_line_tensor_observable_names``;
+  - the gate loads the real ``vmec_jax`` ``nfp4_QH_warm_start`` stellarator
+    fixture, perturbs VMEC Fourier coefficients, evaluates
+    ``vmec_jax.geom.eval_geom`` plus ``vmec_jax.vmec_bcovar``, samples a fixed
+    VMEC field-line convention, and checks ``|B|`` ripple plus raw metric
+    tensor observables ``[mean_bmag, relative_bmag_ripple, sqrtg_rms,
+    mean_g_tt, mean_g_pp, g_tp_rms, mean_g_ss]`` against central finite
+    differences;
+  - this explicitly addresses the optimization requirement that
+    differentiability reaches the VMEC state and field-line tensors, not only
+    the Boozer spectral adapter;
+  - refreshed ``docs/_static/differentiable_geometry_bridge.{png,json}`` and
+    the open-lane dashboard to record this field-line tensor gate.
+- Scope note:
+  - this is a real upstream VMEC field-line tensor check, but it intentionally
+    does not relabel the current smooth SPECTRAX-GK metric/drift closure as
+    production-ready;
+  - the next production step remains deriving the SPECTRAX-GK ``gds*``, drift,
+    Jacobian, ``gradpar``, and ``grho`` arrays from sampled VMEC/Boozer tensors
+    and matching those arrays against the imported VMEC/eik path.
