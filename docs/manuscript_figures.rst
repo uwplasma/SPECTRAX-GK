@@ -50,6 +50,10 @@ Core Validation Figures
      - ``tools/build_open_research_lane_status.py``
      - Closed as a claim-scope audit; underlying physics lanes remain scoped
      - current artifact base: ``docs/_static/open_research_lane_status.png`` with CSV/JSON/PDF companions. It reads the W7-X zonal recurrence, W7-X hypercollision probe, W7-X fluctuation/TEM extension status, quasilinear holdout, differentiable-geometry, and nonlinear-profiler artifacts and records which lanes are closed, partial, open, or blocked. The current status is intentionally conservative: W7-X long-window zonal recurrence/damping and absolute quasilinear flux promotion are open; W7-X fluctuation spectra, differentiable geometry, and profiler identity artifacts are partial diagnostics. This panel is useful for the paper plan and release notes because it prevents partial diagnostics from being described as completed physics claims.
+   * - Manuscript-readiness status panel
+     - ``tools/build_manuscript_readiness_status.py``
+     - Current manuscript scope with W7-X zonal and TEM deferred
+     - current artifact base: ``docs/_static/manuscript_readiness_status.png`` with CSV/JSON/PDF companions. It records the narrower manuscript scope where W7-X zonal recurrence and TEM/kinetic-electron extensions are deferred. In that scope, quasilinear diagnostics and saturation-model selection are closed as a validated negative/model-selection result rather than as an absolute-flux predictor; VMEC/Boozer zero-beta equal-arc geometry parity is closed at ``mboz=nboz=21``; reduced differentiable stellarator ITG optimization is closed with AD/FD gates; the remaining active blocker is production solver-objective geometry gradients through the mode-21 VMEC/Boozer bridge.
    * - Quasilinear spectrum panel
      - ``tools/plot_quasilinear_spectrum.py``
      - Initial diagnostic closed; nonlinear calibration open

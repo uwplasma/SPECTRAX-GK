@@ -94,6 +94,20 @@ absolute quasilinear flux promotion remain open. This keeps the README/docs
 claim surface honest while still preserving publication-ready diagnostic panels
 for the pieces that are already reproducible.
 
+Current manuscript-scope readiness is tracked separately by
+``tools/build_manuscript_readiness_status.py`` because W7-X zonal recurrence
+and TEM/kinetic-electron extensions are intentionally deferred from this
+manuscript. In that narrower scope, the quasilinear lane is closed as a
+validated diagnostic/model-selection result rather than as an absolute-flux
+predictor, VMEC/Boozer equal-arc geometry parity is closed at
+``mboz=nboz=21``, and the reduced differentiable stellarator ITG optimization
+examples are closed with AD/FD gates. The active manuscript blocker is now the
+production solver-objective gradient gate through the mode-21 VMEC/Boozer
+bridge.
+
+.. image:: _static/manuscript_readiness_status.png
+   :alt: Manuscript-scope readiness status summary
+
 The latest W7-X zonal follow-up is
 ``docs/_static/w7x_zonal_hypercollision_probe_kx070.png``. It varies constant
 Hermite hypercollision at fixed paper-facing initializer and normalization.
