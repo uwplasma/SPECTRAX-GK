@@ -10,6 +10,7 @@ import pytest
 
 import spectraxgk
 from spectraxgk.geometry.differentiable import (
+    booz_xform_flux_tube_sensitivity_report,
     _candidate_paths,
     _find_importable_module,
     _is_traced,
@@ -200,6 +201,26 @@ def test_booz_xform_spectral_sensitivity_report_is_bounded_when_available() -> N
     assert float(report["objective"]) > 0.0
     assert float(report["max_abs_ad_fd_error"]) < 1.0e-7
     assert np.asarray(report["bmnc_b"]).shape == (1, 2)
+
+
+def test_booz_xform_flux_tube_sensitivity_report_is_bounded_when_available() -> None:
+    for name in ("booz_xform_jax", "booz_xform_jax.jax_api"):
+        sys.modules.pop(name, None)
+
+    report = booz_xform_flux_tube_sensitivity_report(ntheta=32, fd_step=2.0e-5)
+
+    assert spectraxgk.booz_xform_flux_tube_sensitivity_report is booz_xform_flux_tube_sensitivity_report
+    assert "available" in report
+    if not report["available"]:
+        assert report["sensitivity"] is None
+        return
+
+    sensitivity = report["sensitivity"]
+    assert sensitivity["observable_names"] == list(geometry_observable_names())
+    assert np.asarray(sensitivity["jacobian_ad"]).shape == (len(geometry_observable_names()), 2)
+    assert float(sensitivity["max_abs_ad_fd_error"]) < 2.0e-6
+    assert float(sensitivity["max_rel_ad_fd_error"]) < 2.0e-4
+    assert np.asarray(report["bmnc_b"]).shape == (5,)
 
 
 def _differentiable_mapping(params: jnp.ndarray) -> dict[str, object]:

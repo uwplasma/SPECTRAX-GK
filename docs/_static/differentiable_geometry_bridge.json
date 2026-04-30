@@ -12,6 +12,130 @@
       "/Users/rogeriojorge/local/vmec_jax"
     ]
   },
+  "booz_xform_flux_tube": {
+    "available": true,
+    "backend_info": {
+      "booz_xform_jax_api_available": true,
+      "booz_xform_jax_available": true,
+      "booz_xform_jax_paths": [
+        "/Users/rogeriojorge/local/booz_xform_jax",
+        "/Users/rogeriojorge/local/booz_xform_jax/src"
+      ],
+      "vmec_jax_available": true,
+      "vmec_jax_boundary_api_available": true,
+      "vmec_jax_paths": [
+        "/Users/rogeriojorge/local/vmec_jax"
+      ]
+    },
+    "bmnc_b": [
+      1.0,
+      -2.8362497535757335e-16,
+      -2.375877272697835e-17,
+      0.050000000000000426,
+      0.020000000000000014
+    ],
+    "fd_step": 2e-05,
+    "iota_b": 0.41,
+    "ixm_b": [
+      0,
+      0,
+      1,
+      1,
+      1
+    ],
+    "ixn_b": [
+      0,
+      2,
+      -2,
+      0,
+      2
+    ],
+    "mboz": 2,
+    "nboz": 1,
+    "ntheta": 64,
+    "params": [
+      0.05,
+      0.02
+    ],
+    "sensitivity": {
+      "fd_step": 2e-05,
+      "jacobian_ad": [
+        [
+          -0.05155011195414615,
+          -0.05319589593815853
+        ],
+        [
+          0.6641019642133877,
+          0.2954052818610827
+        ],
+        [
+          0.21331301102490838,
+          0.003976095838508442
+        ],
+        [
+          -0.16806831160598745,
+          -0.04608116826372961
+        ],
+        [
+          0.12626687907556525,
+          0.1302980634787852
+        ],
+        [
+          0.0,
+          0.0
+        ]
+      ],
+      "jacobian_fd": [
+        [
+          -0.051550111937470604,
+          -0.053195895952096166
+        ],
+        [
+          0.6641019587073221,
+          0.29540526647695714
+        ],
+        [
+          0.21331301105487196,
+          0.0039760958359114085
+        ],
+        [
+          -0.1680683116067616,
+          -0.04608116827564678
+        ],
+        [
+          0.12626687913019907,
+          0.13029806356090745
+        ],
+        [
+          0.0,
+          0.0
+        ]
+      ],
+      "max_abs_ad_fd_error": 1.5384125584549935e-08,
+      "max_rel_ad_fd_error": 5.2078034247740675e-08,
+      "observable_names": [
+        "mean_bmag",
+        "relative_bmag_ripple",
+        "metric_frobenius_rms",
+        "drift_rms",
+        "mean_jacobian",
+        "mean_gradpar"
+      ],
+      "observables": [
+        0.9978796244968109,
+        0.03895338306239589,
+        1.8702522713896965,
+        1.04684237899007,
+        2.4442070269485665,
+        0.4100000000000001
+      ],
+      "params": [
+        0.05,
+        0.02
+      ],
+      "source_model": "booz_xform_jax:field-line-bmag"
+    }
+  },
   "booz_xform_jax_api_available": true,
   "booz_xform_spectral": {
     "available": true,
@@ -391,7 +515,7 @@
     0.06176080850358888,
     1.5505567586513118
   ],
-  "notes": "This is a bounded differentiable-geometry bridge validation. The high-fidelity VMEC/Boozer pipeline must provide the same solver-ready field-line arrays; this artifact validates the JAX tracing, AD-vs-FD sensitivities, inverse recovery, and UQ machinery at that contract boundary.",
+  "notes": "This is a bounded differentiable-geometry bridge validation. The high-fidelity VMEC/Boozer pipeline must provide the same solver-ready field-line arrays; this artifact validates the JAX tracing, AD-vs-FD sensitivities, inverse recovery, UQ machinery, and the first real Boozer-spectrum-to-flux-tube mapping at that contract boundary.",
   "observable_names": [
     "mean_bmag",
     "relative_bmag_ripple",

@@ -238,7 +238,11 @@ It writes ``docs/_static/differentiable_geometry_bridge.png`` and
 ``vmec_jax`` and ``booz_xform_jax`` API availability, autodiff-vs-finite
 difference sensitivity errors, inverse-design convergence, local UQ covariance
 diagnostics, and two optional real-backend derivative gates: a ``vmec_jax``
-boundary-aspect check and a tiny ``booz_xform_jax`` Boozer-spectrum check.
+boundary-aspect check, a tiny ``booz_xform_jax`` Boozer-spectrum check, and a
+bounded Boozer-spectrum-to-flux-tube mapping check. The last gate evaluates
+the JAX-native Boozer ``|B|`` spectrum along a field line, builds the
+``FluxTubeGeometryData`` input mapping, and compares geometry-observable
+sensitivities against central finite differences.
 
 The reusable API entry point for this workflow is
 ``geometry_inverse_design_report(mapping_fn, initial_params, target_observables, ...)``:
@@ -258,8 +262,9 @@ contract once their in-memory field-line mapping is available.
    and local UQ covariance at the in-memory flux-tube contract boundary. When
    ``vmec_jax`` is available, the panel/JSON also includes a real VMEC
    boundary-aspect derivative check; when ``booz_xform_jax`` is available, it
-   runs a bounded JAX-native Boozer spectral transform and checks its
-   autodiff derivative against central finite differences.
+   runs a bounded JAX-native Boozer spectral transform, samples that spectrum
+   onto a field-line flux-tube mapping, and checks both autodiff derivative
+   paths against central finite differences.
 
 The next implementation step is an office-only
 ``vmec_jax -> booz_xform_jax -> FluxTubeGeometryData`` parity fixture against

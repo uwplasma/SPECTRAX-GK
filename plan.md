@@ -1165,3 +1165,14 @@ Exit gate:
   - implement the real `vmec_jax VMECState -> booz_xform_jax -> FluxTubeGeometryData` bridge with a small equilibrium and compare sampled field-line arrays against the existing VMEC/eik import path;
   - after parity passes, add growth-rate/frequency/quasilinear-weight gradient gates through the production linear solver cache;
   - only then promote full stellarator optimization claims beyond the reduced objective-reduction gate.
+- Advanced the Boozer-to-flux-tube differentiability bridge:
+  - added `evaluate_boozer_bmag_on_field_line`, `booz_xform_flux_tube_mapping_from_inputs`, and `booz_xform_flux_tube_sensitivity_report`;
+  - the new bounded gate runs the real `booz_xform_jax` functional transform, samples the Boozer `|B|` spectrum on a field line, builds the solver-ready `FluxTubeGeometryData` mapping, and checks geometry-observable sensitivities against central finite differences;
+  - refreshed `docs/_static/differentiable_geometry_bridge.{png,json}` so the publication artifact now reports VMEC boundary AD/FD `≈1.97e-10`, Boozer spectral AD/FD `≈2.88e-12`, and Boozer flux-tube AD/FD max absolute error `≈1.54e-08` / relative error `≈5.21e-08`;
+  - added fast tests and public exports for the new bridge.
+- Scope note:
+  - this is a real `booz_xform_jax` derivative path into the SPECTRAX-GK geometry contract, but it still uses a smooth metric/drift closure; it is not yet full VMEC/Boozer metric parity or a production nonlinear optimization claim.
+- Current next best steps:
+  - replace the smooth metric/drift closure with sampled VMEC/Boozer metric tensors for a small equilibrium and compare against the existing imported VMEC/eik contract;
+  - add geometry-gradient gates through one production linear solve after sampled-array parity passes;
+  - then connect quasilinear objective gradients to the full geometry bridge before any nonlinear optimization promotion.

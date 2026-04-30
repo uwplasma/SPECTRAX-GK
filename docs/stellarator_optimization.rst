@@ -232,6 +232,10 @@ the following pass:
 
 1. ``vmec_jax`` state to ``booz_xform_jax`` to ``FluxTubeGeometryData`` works
    in memory without writing intermediate VMEC or EIK files.
+   The current bridge already validates the optional ``vmec_jax`` boundary
+   derivative, a real ``booz_xform_jax`` spectral derivative, and a bounded
+   Boozer-``|B|``-to-flux-tube mapping derivative, but it still uses a smooth
+   metric/drift closure rather than production VMEC/Boozer metric tensors.
 2. The sampled field-line arrays match the existing imported-VMEC/EIK runtime
    path for at least one small equilibrium.
 3. Geometry-observable gradients match central finite differences for the
