@@ -24,6 +24,7 @@ from spectraxgk.geometry.differentiable import (
     geometry_sensitivity_report,
     vmec_jax_boozer_flux_tube_sensitivity_report,
     vmec_jax_field_line_tensor_sensitivity_report,
+    vmec_jax_flux_tube_sensitivity_report,
     vmec_jax_metric_tensor_sensitivity_report,
     vmec_boundary_aspect_sensitivity_report,
     vmec_field_line_tensor_observable_names,
@@ -131,6 +132,28 @@ def test_differentiable_backend_path_helpers_handle_missing_modules(tmp_path: Pa
 
     assert paths == [existing.resolve(), (existing / "src").resolve()]
     assert _find_importable_module("spectraxgk_definitely_missing_backend", paths) is None
+
+
+def test_differentiable_backend_path_helpers_prefer_configured_checkout(tmp_path: Path, monkeypatch) -> None:
+    installed_root = tmp_path / "installed"
+    local_root = tmp_path / "local_vmec"
+    installed_pkg = installed_root / "vmec_jax"
+    local_pkg = local_root / "vmec_jax"
+    installed_pkg.mkdir(parents=True)
+    local_pkg.mkdir(parents=True)
+    (installed_pkg / "__init__.py").write_text("marker = 'installed'\n", encoding="utf-8")
+    (local_pkg / "__init__.py").write_text("marker = 'local'\n", encoding="utf-8")
+    monkeypatch.syspath_prepend(str(installed_root))
+    sys.modules.pop("vmec_jax", None)
+
+    installed = __import__("vmec_jax")
+    assert installed.marker == "installed"
+
+    module = _find_importable_module("vmec_jax", [local_root])
+
+    assert module is not None
+    assert module.marker == "local"
+    assert str(local_pkg) in str(module.__file__)
 
 
 def test_discover_differentiable_geometry_backends_reports_optional_apis(tmp_path: Path, monkeypatch) -> None:
@@ -257,6 +280,39 @@ def test_vmec_jax_boozer_flux_tube_sensitivity_report_starts_from_real_vmec_stat
     assert float(sensitivity["max_abs_ad_fd_error"]) < 2.0e-5
     assert float(sensitivity["max_rel_ad_fd_error"]) < 2.0e-4
     assert np.asarray(report["bmnc_b"]).shape == (2,)
+
+
+def test_vmec_jax_flux_tube_sensitivity_report_starts_from_real_vmec_state_when_available() -> None:
+    for name in (
+        "vmec_jax",
+        "vmec_jax.driver",
+        "vmec_jax.config",
+        "vmec_jax.static",
+        "vmec_jax.wout",
+        "vmec_jax.geom",
+        "vmec_jax.vmec_bcovar",
+        "vmec_jax.field",
+    ):
+        sys.modules.pop(name, None)
+
+    report = vmec_jax_flux_tube_sensitivity_report(ntheta=12, fd_step=2.0e-6)
+
+    assert spectraxgk.vmec_jax_flux_tube_sensitivity_report is vmec_jax_flux_tube_sensitivity_report
+    assert "available" in report
+    if not report["available"]:
+        assert report["sensitivity"] is None
+        return
+
+    sensitivity = report["sensitivity"]
+    assert report["case_name"] == "nfp4_QH_warm_start"
+    assert report["param_names"] == ["delta_Rcos", "delta_Zsin"]
+    assert sensitivity["observable_names"] == list(geometry_observable_names())
+    assert np.asarray(sensitivity["jacobian_ad"]).shape == (len(geometry_observable_names()), 2)
+    assert float(sensitivity["max_abs_ad_fd_error"]) < 1.0e1
+    assert float(sensitivity["max_rel_ad_fd_error"]) < 1.0e-3
+    assert int(report["surface_index"]) > 0
+    assert float(report["reference_length"]) > 0.0
+    assert float(report["reference_b"]) > 0.0
 
 
 def test_vmec_jax_metric_tensor_sensitivity_report_checks_real_metric_tensors_when_available() -> None:

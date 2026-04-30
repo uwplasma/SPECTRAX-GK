@@ -236,13 +236,16 @@ the following pass:
    derivative, real ``vmec_jax`` metric-tensor derivatives, a real
    non-axisymmetric VMEC field-line tensor derivative through
    ``vmec_jax.geom`` plus ``vmec_jax.vmec_bcovar``, a real
+   VMEC tensor-derived flux-tube mapping derivative, a real
    ``booz_xform_jax`` spectral derivative, and a bounded
    Boozer-``|B|``-to-flux-tube mapping derivative. It now also starts from a
    real ``vmec_jax`` ``VMECState``, perturbs VMEC Fourier coefficients,
    converts through ``booz_xform_jax``, and checks SPECTRAX-GK field-line
    geometry-observable derivatives against central finite differences. The
-   remaining gap is the smooth metric/drift closure: production promotion
-   still requires sampled VMEC/Boozer field-line metric and drift tensors.
+   remaining gap is production parity: the direct VMEC tensor-derived
+   ``bmag``, ``gradpar``, ``gds*``, Jacobian, ``grho``, and drift convention
+   must match the imported VMEC/EIK runtime path before transport gradients are
+   promoted.
 2. The sampled field-line arrays match the existing imported-VMEC/EIK runtime
    path for at least one small equilibrium.
 3. Geometry-observable gradients match central finite differences for the

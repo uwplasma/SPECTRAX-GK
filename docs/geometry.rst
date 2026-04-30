@@ -237,10 +237,11 @@ It writes ``docs/_static/differentiable_geometry_bridge.png`` and
 ``docs/_static/differentiable_geometry_bridge.json``. The JSON records
 ``vmec_jax`` and ``booz_xform_jax`` API availability, autodiff-vs-finite
 difference sensitivity errors, inverse-design convergence, local UQ covariance
-diagnostics, and six optional real-backend derivative gates: a ``vmec_jax``
+diagnostics, and seven optional real-backend derivative gates: a ``vmec_jax``
 boundary-aspect check, a ``vmec_jax`` metric-tensor check through
 ``vmec_jax.geom.eval_geom``, a stellarator VMEC field-line tensor check through
-``vmec_jax.geom`` plus ``vmec_jax.vmec_bcovar``, a tiny ``booz_xform_jax``
+``vmec_jax.geom`` plus ``vmec_jax.vmec_bcovar``, a direct VMEC
+tensor-derived flux-tube mapping check, a tiny ``booz_xform_jax``
 Boozer-spectrum check, a bounded Boozer-spectrum-to-flux-tube mapping check, and a real
 ``vmec_jax`` ``VMECState`` to ``booz_xform_jax`` to SPECTRAX-GK field-line
 geometry check. The metric-tensor gate currently has max absolute
@@ -249,7 +250,12 @@ AD-vs-finite-difference error about ``5.9e-8`` and max relative error about
 ``nfp4_QH_warm_start`` fixture and checks ``|B|`` ripple plus sampled VMEC
 metric observables before any reduced SPECTRAX-GK metric/drift closure is
 applied; its current max absolute AD-vs-finite-difference error is about
-``2.1e-3`` and max relative error is about ``2.4e-5``. The Boozer gates evaluate
+``2.1e-3`` and max relative error is about ``2.4e-5``. The direct VMEC
+flux-tube gate inverts the sampled VMEC metric tensor, derives ``gds*``,
+``gradpar``, Jacobian, ``grho``, and a local grad-:math:`B` drift closure, and
+checks the resulting solver-ready geometry observables; the current max
+relative AD-vs-finite-difference error is about ``1.3e-4`` on the
+``nfp4_QH_warm_start`` fixture. The Boozer gates evaluate
 the JAX-native Boozer ``|B|``
 spectrum along a field line, build the ``FluxTubeGeometryData`` input mapping,
 and compare geometry-observable sensitivities against central finite
@@ -276,18 +282,19 @@ contract once their in-memory field-line mapping is available.
    ``vmec_jax`` is available, the panel/JSON also includes a real VMEC
    boundary-aspect derivative check and sampled VMEC metric-tensor derivative
    check, plus a real VMEC field-line tensor check for a non-axisymmetric
-   fixture; when ``booz_xform_jax`` is available, it runs a bounded JAX-native
+   fixture and a direct VMEC tensor-derived flux-tube mapping check; when
+   ``booz_xform_jax`` is available, it runs a bounded JAX-native
    Boozer spectral transform, samples that spectrum onto a field-line
    flux-tube mapping, checks both autodiff derivative paths against central
    finite differences, and, when both optional backends are available, starts
    from a real ``vmec_jax`` ``VMECState`` before converting through
    ``booz_xform_jax`` into the SPECTRAX-GK field-line contract.
 
-The next implementation step is to replace the bridge's smooth metric/drift
-closure with sampled VMEC/Boozer metric and drift tensors for a small
-equilibrium, compare those arrays against the already validated imported
-VMEC/eik path, and then add geometry-gradient checks for growth-rate and
-transport observables.
+The next implementation step is to compare the direct VMEC tensor-derived
+``bmag``, ``gradpar``, ``gds*``, Jacobian, and ``grho`` arrays against the
+already validated imported VMEC/eik path, replace the remaining local
+grad-:math:`B` drift closure with the production drift convention, and then
+add geometry-gradient checks for growth-rate and transport observables.
 The VMEC bridge now also expands environment variables in ``geometry.vmec_file``.
 Tracked portable runtime TOMLs should therefore pass external VMEC equilibria
 through explicit environment variables such as ``$W7X_VMEC_FILE`` and
