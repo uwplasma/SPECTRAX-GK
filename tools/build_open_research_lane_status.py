@@ -92,6 +92,28 @@ def _best_recurrence_candidate(payload: dict[str, Any] | None) -> dict[str, Any]
     }
 
 
+def _best_hypercollision_probe(payload: dict[str, Any] | None) -> dict[str, Any] | None:
+    rows = [] if payload is None else payload.get("rows", [])
+    if not isinstance(rows, list) or not rows:
+        return None
+    finite_rows = [row for row in rows if isinstance(row, dict) and _finite_float(row.get("mean_abs_error")) is not None]
+    if not finite_rows:
+        return None
+    best = min(finite_rows, key=lambda row: float(row["mean_abs_error"]))
+    tail_std = _finite_float(best.get("tail_std"), 0.0) or 0.0
+    ref_tail_std = _finite_float(best.get("reference_tail_std"), 0.0) or 0.0
+    ratio = None if ref_tail_std <= 0.0 else tail_std / ref_tail_std
+    return {
+        "label": str(best.get("label", "unknown")),
+        "mean_abs_error": _finite_float(best.get("mean_abs_error")),
+        "tail_std_ratio": ratio,
+        "hermite_tail": _finite_float(best.get("hermite_tail_at_tmax")),
+        "free_energy_ratio": _finite_float(best.get("free_energy_at_tmax_over_initial")),
+        "source_path": best.get("source_path"),
+        "validation_status": payload.get("validation_status"),
+    }
+
+
 def _holdout_counts(report: dict[str, Any] | None) -> tuple[int, int, list[str]]:
     if report is None:
         return 0, 0, []
@@ -119,6 +141,7 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
     root = Path(root)
     zonal_ref = _read_json(root, "docs/_static/w7x_zonal_reference_compare.json")
     zonal_recurrence = _read_json(root, "docs/_static/w7x_zonal_recurrence_sweep_kx070.json")
+    zonal_hypercollision = _read_json(root, "docs/_static/w7x_zonal_hypercollision_probe_kx070.json")
     fluct = _read_json(root, "docs/_static/w7x_fluctuation_spectrum_panel.json")
     ql_inputs = _read_json(root, "docs/_static/quasilinear_validated_calibration_inputs.json")
     ql_report = _read_json(root, "docs/_static/quasilinear_stellarator_train_holdout_report.json")
@@ -128,6 +151,7 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
 
     zonal_failures = _gate_failures(zonal_ref.get("gate_report") if zonal_ref else None)
     best_recurrence = _best_recurrence_candidate(zonal_recurrence)
+    best_hypercollision = _best_hypercollision_probe(zonal_hypercollision)
     zonal_status = "closed" if zonal_ref and not zonal_failures and zonal_ref.get("validation_status") == "closed" else "open"
 
     train_count, holdout_count, holdout_names = _holdout_counts(ql_report)
@@ -152,13 +176,15 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
             "primary_artifacts": [
                 "docs/_static/w7x_zonal_reference_compare.json",
                 "docs/_static/w7x_zonal_recurrence_sweep_kx070.json",
+                "docs/_static/w7x_zonal_hypercollision_probe_kx070.json",
             ],
             "key_metrics": {
                 "failed_reference_gates": zonal_failures,
                 "best_bounded_candidate": best_recurrence,
+                "best_constant_hypercollision_probe": best_hypercollision,
             },
             "next_action": (
-                "Run a longer paper-normalized hypercollision/moment-resolution sweep and promote only if "
+                "Move beyond constant Hermite damping: test a physically motivated closure/operator and promote only if "
                 "residual, tail-envelope, and moment-tail gates pass together."
             ),
         },
@@ -262,7 +288,7 @@ def write_status_artifacts(payload: dict[str, Any], *, out_png: Path = DEFAULT_O
     out_json.write_text(json.dumps(_json_clean(payload), indent=2, sort_keys=True) + "\n", encoding="utf-8")
     fieldnames = ["lane", "status", "claim_level", "primary_artifacts", "next_action"]
     with out_csv.open("w", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer = csv.DictWriter(handle, fieldnames=fieldnames, lineterminator="\n")
         writer.writeheader()
         for lane in payload["lanes"]:
             writer.writerow(

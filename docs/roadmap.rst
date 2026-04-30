@@ -83,6 +83,16 @@ absolute quasilinear flux promotion remain open. This keeps the README/docs
 claim surface honest while still preserving publication-ready diagnostic panels
 for the pieces that are already reproducible.
 
+The latest W7-X zonal follow-up is
+``docs/_static/w7x_zonal_hypercollision_probe_kx070.png``. It varies constant
+Hermite hypercollision at fixed paper-facing initializer and normalization.
+The stronger ``nu_hyper_m=0.03`` row reduces the final Hermite-tail fraction to
+about ``0.099`` but leaves the mean trace error near ``0.289`` and the
+late-window envelope about ``4.3`` times the digitized reference. The next
+step is therefore a physically motivated velocity-space closure/operator
+study, not a normalization change or another single-parameter constant-damping
+scan.
+
 Post-release scope
 ------------------
 
@@ -172,7 +182,10 @@ scope above is stable:
    external restart continuation. A four-wavelength ``Nl=16``, ``Nm=64``,
    ``dt=0.05`` refresh reached raw runtime ``t≈100`` with finite signed traces,
    so longer restart-continued W7-X traces can now be used to study the
-   remaining physics/numerics issue directly.
+   remaining physics/numerics issue directly. A constant-Hermite
+   hypercollision follow-up reduced moment-tail energy but did not close the
+   trace residual or late envelope, so the next sweep should vary the
+   closure/operator physics rather than simply increasing constant damping.
 2. Tighten the now-materialized windowed nonlinear-statistics panel beyond the current ``0.10`` release gate where the literature/reference windows justify stricter tolerances.
 3. W7-X multi-flux-tube ITG/TEM extension and fluctuation-spectrum lane.
 4. Shaped multispecies tokamak linear lane.

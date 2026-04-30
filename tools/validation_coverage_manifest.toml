@@ -247,6 +247,7 @@ artifact_paths = [
   "docs/_static/w7x_zonal_closure_ladder_kx070.json",
   "docs/_static/w7x_zonal_state_convention_audit.json",
   "docs/_static/w7x_zonal_recurrence_sweep_kx070.json",
+  "docs/_static/w7x_zonal_hypercollision_probe_kx070.json",
   "docs/_static/open_research_lane_status.json",
 ]
 next_tests = [

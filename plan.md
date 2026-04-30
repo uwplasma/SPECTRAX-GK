@@ -1078,3 +1078,14 @@ Exit gate:
   - extend the W7-X fluctuation/TEM lane with multi-alpha/multi-surface kinetic-electron scans before broad W7-X claims;
   - connect real in-memory `vmec_jax`/`booz_xform_jax` output into `FluxTubeGeometryData` and add parity plus gradient gates before optimization claims;
   - collect matched CPU/GPU profiler traces before making any new speedup claim.
+- Advanced the W7-X zonal physical-closure lane with a bounded office-GPU constant-Hermite-hypercollision probe:
+  - ran paper-facing W7-X test-4 `k_x rho_i=0.07`, `Nl=16`, `Nm=64`, `dt=0.05`, `t v_t/a=100` for `nu_hyper_m=0.01` and `0.03` with constant hypercollision source;
+  - generated `docs/_static/w7x_zonal_hypercollision_probe_kx070.{png,pdf,json,csv}` and wired the result into `tools/build_open_research_lane_status.py`;
+  - result is negative but useful: `nu_hyper_m=0.03` lowers final Hermite-tail fraction to about `0.099` and free-energy ratio to about `0.600`, but mean trace error remains about `0.289` and the late-window standard-deviation ratio is about `4.28`, so the W7-X zonal lane remains open physically;
+  - updated roadmap/testing/manuscript docs and the validation coverage manifest so the result is tracked as an open recurrence/closure diagnostic, not a validation closure.
+- Current next best steps:
+  - W7-X zonal: stop increasing constant damping alone; test one physically motivated closure/operator change at a time and require residual, late-envelope, and moment-tail gates to improve together before promotion;
+  - W7-X fluctuation/TEM: extend the existing simulation-spectrum panel to multi-alpha/multi-surface and kinetic-electron/TEM scans before broad W7-X claims;
+  - quasilinear holdouts: add a new nonlinear holdout only after pilot, window, grid-convergence, and spectrum-shape gates pass; keep failed CTH-like external VMEC out of calibration;
+  - differentiable geometry: connect a real in-memory `vmec_jax`/`booz_xform_jax` state into `FluxTubeGeometryData` and add geometry parity plus gradient gates before optimization claims;
+  - performance: collect matched CPU/GPU profiler traces for nonlinear bracket/field-solve hot paths before making any speedup claim.

@@ -12,6 +12,15 @@
           "source_path": "tools_out/zonal_response/w7x_recurrence_nl12_nm48_none_t100/w7x_test4_kx070.out.nc",
           "tail_std_ratio": 3.78054920131388
         },
+        "best_constant_hypercollision_probe": {
+          "free_energy_ratio": 0.5995926659677548,
+          "hermite_tail": 0.09923573863156468,
+          "label": "Nl16 Nm64 const nuhm0.03",
+          "mean_abs_error": 0.28925894943488784,
+          "source_path": "tools_out/zonal_response/w7x_probe_nl16_nm64_nuhm0p03_const_t100/w7x_test4_kx070.out.nc",
+          "tail_std_ratio": 4.279647778235477,
+          "validation_status": "open"
+        },
         "failed_reference_gates": [
           "tail_envelope_std_kx050",
           "residual_kx070",
@@ -23,10 +32,11 @@
         ]
       },
       "lane": "W7-X zonal long-window recurrence/damping",
-      "next_action": "Run a longer paper-normalized hypercollision/moment-resolution sweep and promote only if residual, tail-envelope, and moment-tail gates pass together.",
+      "next_action": "Move beyond constant Hermite damping: test a physically motivated closure/operator and promote only if residual, tail-envelope, and moment-tail gates pass together.",
       "primary_artifacts": [
         "docs/_static/w7x_zonal_reference_compare.json",
-        "docs/_static/w7x_zonal_recurrence_sweep_kx070.json"
+        "docs/_static/w7x_zonal_recurrence_sweep_kx070.json",
+        "docs/_static/w7x_zonal_hypercollision_probe_kx070.json"
       ],
       "status": "open"
     },
