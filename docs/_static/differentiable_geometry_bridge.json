@@ -13,6 +13,58 @@
     ]
   },
   "booz_xform_jax_api_available": true,
+  "booz_xform_spectral": {
+    "available": true,
+    "backend_info": {
+      "booz_xform_jax_api_available": true,
+      "booz_xform_jax_available": true,
+      "booz_xform_jax_paths": [
+        "/Users/rogeriojorge/local/booz_xform_jax",
+        "/Users/rogeriojorge/local/booz_xform_jax/src"
+      ],
+      "vmec_jax_available": true,
+      "vmec_jax_boundary_api_available": true,
+      "vmec_jax_paths": [
+        "/Users/rogeriojorge/local/vmec_jax"
+      ]
+    },
+    "bmnc_b": [
+      [
+        1.0,
+        0.050000000000000135
+      ]
+    ],
+    "fd_step": 2e-05,
+    "grad_ad": 0.10000000000000045,
+    "grad_fd": 0.10000000000287555,
+    "iota_b": [
+      0.41
+    ],
+    "ixm_b": [
+      0,
+      1
+    ],
+    "ixn_b": [
+      0,
+      0
+    ],
+    "max_abs_ad_fd_error": 2.8751029335083444e-12,
+    "mboz": 2,
+    "nboz": 0,
+    "objective": 1.0025,
+    "rmnc_b": [
+      [
+        1.0,
+        0.22000000000000008
+      ]
+    ],
+    "zmns_b": [
+      [
+        0.0,
+        0.22000000000000003
+      ]
+    ]
+  },
   "geometry_inverse_design_report": {
     "backend_info": {
       "booz_xform_jax_api_available": true,

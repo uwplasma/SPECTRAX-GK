@@ -1157,3 +1157,11 @@ Exit gate:
   - add finite-difference and implicit-eigenpair gradient checks for growth rate, frequency, and quasilinear weights through that bridge;
   - replace the reduced nonlinear envelope with either a trace-safe production nonlinear objective or a documented stochastic/window estimator only after nonlinear identity, convergence, and profiler gates pass;
   - keep W7-X zonal long-window recurrence/damping and TEM branch/frequency blockers deferred while the differentiability lane advances.
+- Strengthened the differentiable Boozer bridge beyond import discovery:
+  - added `spectraxgk.geometry.differentiable.booz_xform_spectral_sensitivity_report`, a bounded real-API `booz_xform_jax` spectral transform gate on a one-surface axisymmetric bundle;
+  - the gate checks the derivative of a Boozer magnetic-spectrum norm with respect to a ripple coefficient against central finite differences when `booz_xform_jax` is available, and reports an explicit unavailable status otherwise;
+  - wired the report into the differentiable-geometry example JSON/panel, README, docs, package exports, and fast tests.
+- Current next best steps:
+  - implement the real `vmec_jax VMECState -> booz_xform_jax -> FluxTubeGeometryData` bridge with a small equilibrium and compare sampled field-line arrays against the existing VMEC/eik import path;
+  - after parity passes, add growth-rate/frequency/quasilinear-weight gradient gates through the production linear solver cache;
+  - only then promote full stellarator optimization claims beyond the reduced objective-reduction gate.
