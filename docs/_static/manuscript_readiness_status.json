@@ -61,14 +61,19 @@
     {
       "claim_level": "required_for_full_end_to_end_stellarator_optimization_claim",
       "key_metrics": {
-        "linear_growth_gradient_gate": false,
+        "full_vmec_boozer_gradient_gate": false,
+        "linear_growth_gradient_gate": true,
         "nonlinear_window_gradient_gate": false,
-        "quasilinear_weight_gradient_gate": false
+        "quasilinear_weight_gradient_gate": true,
+        "solver_ready_gradient_gate": true,
+        "source_scope": "solver_ready_geometry_contract"
       },
       "lane": "Production solver-objective geometry gradients",
-      "next_action": "Add finite-difference/implicit-eigenpair gates for growth rate, frequency, and quasilinear weights through the mode-21 VMEC/Boozer geometry bridge.",
-      "primary_artifacts": [],
-      "status": "open"
+      "next_action": "Promote the passed solver-ready geometry-gradient gate to actual mode-21 VMEC/Boozer state coefficients, then add nonlinear-window objective gradients.",
+      "primary_artifacts": [
+        "docs/_static/solver_objective_gradient_gate.json"
+      ],
+      "status": "partial"
     },
     {
       "claim_level": "identity_gate_present_no_new_speedup_claim",
@@ -118,7 +123,7 @@
     "n_closed": 3,
     "n_deferred": 2,
     "n_lanes": 7,
-    "n_open": 1,
-    "n_partial": 1
+    "n_open": 0,
+    "n_partial": 2
   }
 }

@@ -126,6 +126,7 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
     geom = _read_json(root, "docs/_static/differentiable_geometry_bridge.json")
     geom_matrix = _read_json(root, "docs/_static/vmec_boozer_parity_matrix.json")
     opt = _read_json(root, "docs/_static/stellarator_itg_optimization_comparison.json")
+    solver_grad = _read_json(root, "docs/_static/solver_objective_gradient_gate.json")
     profile = _read_json(root, "docs/_static/nonlinear_sharding_profile_office_gpu.json")
 
     ql_inputs_passed = bool((ql_inputs or {}).get("passed", False))
@@ -156,7 +157,10 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
 
     opt_reductions = _optimization_reduction_summary(opt)
     opt_reduced_objectives_passed = _all_optimization_objectives_passed(opt)
-    production_solver_gradient_gate_exists = False
+    solver_gradient_passed = bool((solver_grad or {}).get("passed", False))
+    solver_gradient_source = str((solver_grad or {}).get("source_scope", "missing"))
+    solver_gradient_full_vmec = solver_gradient_passed and solver_gradient_source == "mode21_vmec_boozer_state"
+    solver_gradient_status = "closed" if solver_gradient_full_vmec else "partial" if solver_gradient_passed else "open"
 
     lanes: list[dict[str, Any]] = [
         {
@@ -226,17 +230,22 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
         },
         {
             "lane": "Production solver-objective geometry gradients",
-            "status": "closed" if production_solver_gradient_gate_exists else "open",
+            "status": solver_gradient_status,
             "claim_level": "required_for_full_end_to_end_stellarator_optimization_claim",
-            "primary_artifacts": [],
+            "primary_artifacts": ["docs/_static/solver_objective_gradient_gate.json"] if solver_grad else [],
             "key_metrics": {
-                "linear_growth_gradient_gate": False,
-                "quasilinear_weight_gradient_gate": False,
-                "nonlinear_window_gradient_gate": False,
+                "source_scope": solver_gradient_source,
+                "solver_ready_gradient_gate": solver_gradient_passed,
+                "full_vmec_boozer_gradient_gate": solver_gradient_full_vmec,
+                "linear_growth_gradient_gate": bool((solver_grad or {}).get("linear_growth_gradient_gate", False)),
+                "quasilinear_weight_gradient_gate": bool(
+                    (solver_grad or {}).get("quasilinear_weight_gradient_gate", False)
+                ),
+                "nonlinear_window_gradient_gate": bool((solver_grad or {}).get("nonlinear_window_gradient_gate", False)),
             },
             "next_action": (
-                "Add finite-difference/implicit-eigenpair gates for growth rate, frequency, and quasilinear weights "
-                "through the mode-21 VMEC/Boozer geometry bridge."
+                "Promote the passed solver-ready geometry-gradient gate to actual mode-21 VMEC/Boozer state "
+                "coefficients, then add nonlinear-window objective gradients."
             ),
         },
         {
@@ -348,7 +357,10 @@ def write_manuscript_readiness_artifacts(payload: dict[str, Any], *, out: str | 
             worst = km.get("worst_reduction_factor")
             metric = "gradient gates passed" if worst is None else f"worst final/initial: {float(worst):.2f}"
         elif str(lane["lane"]).startswith("Production"):
-            metric = "next active blocker"
+            metric = (
+                f"solver-ready: {km.get('solver_ready_gradient_gate')}; "
+                f"full VMEC: {km.get('full_vmec_boozer_gradient_gate')}"
+            )
         elif str(lane["lane"]).startswith("Profiler"):
             speed = km.get("engineering_speedup")
             metric = "speedup: n/a" if speed is None else f"speedup: {float(speed):.2f}x"

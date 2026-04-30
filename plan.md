@@ -1414,3 +1414,28 @@ Exit gate:
     promoting any full end-to-end stellarator heat-flux optimization claim;
   - keep W7-X zonal recurrence/damping and TEM/kinetic-electron stellarator
     validation as post-manuscript lanes unless the manuscript scope changes.
+- Added the first production-adjacent solver-objective geometry-gradient gate:
+  - ``src/spectraxgk/solver_objective_gradients.py`` differentiates actual
+    electrostatic linear-RHS eigenpair observables with respect to
+    solver-ready ``FluxTubeGeometryData`` arrays;
+  - ``tools/build_solver_objective_gradient_gate.py`` writes
+    ``docs/_static/solver_objective_gradient_gate.{png,pdf,json,csv}``;
+  - the gate uses the implicit left/right eigenpair sensitivity system and
+    checks ``gamma``, ``omega``, ``<k_perp^2>``, linear heat/particle-flux
+    weights, and a mixing-length heat-flux proxy against nearest-branch
+    central finite differences;
+  - the current gate passes with maximum relative AD/FD error below ``5e-3``
+    on the tracked small electrostatic linear-RHS fixture, and the manuscript
+    readiness dashboard now marks production solver-objective gradients as
+    ``partial`` rather than ``open``;
+  - this is intentionally scoped as a solver-ready geometry-gradient gate, not
+    yet a full ``vmec_jax -> booz_xform_jax -> SPECTRAX-GK``
+    state-coefficient gradient claim.
+- Current next best steps:
+  - feed actual mode-21 VMEC/Boozer equal-arc state-coefficient perturbations
+    into the same solver-objective gradient gate;
+  - add a small stellarator linear/quasilinear objective fixture once that
+    state-gradient path passes;
+  - only after linear/quasilinear state-gradient gates pass, add nonlinear
+    window objective gradients or a documented stochastic/finite-difference
+    estimator with convergence diagnostics.

@@ -224,6 +224,28 @@ as an absolute flux predictor. The correct next step is to replace the reduced
 feature map with a parity-checked in-memory geometry pipeline and then audit
 the optimized shapes with converged nonlinear SPECTRAX-GK runs.
 
+Solver-objective Geometry Gradients
+-----------------------------------
+
+The first production-adjacent solver-gradient gate now differentiates actual
+electrostatic linear-RHS eigenpair observables with respect to solver-ready
+geometry arrays. The gate uses the implicit left/right non-Hermitian eigenpair
+sensitivity system and compares the result against nearest-branch central
+finite differences for ``gamma``, ``omega``, ``<k_perp^2>``, linear
+heat/particle-flux weights, and a mixing-length heat-flux proxy. This closes
+the ``FluxTubeGeometryData`` contract-level solver-gradient check. It does not
+yet close the full ``vmec_jax`` state-coefficient to ``booz_xform_jax`` to
+solver-gradient promotion gate.
+
+.. figure:: _static/solver_objective_gradient_gate.png
+   :width: 90%
+   :align: center
+   :alt: Solver-objective geometry-gradient validation gate
+
+   Solver-ready geometry-gradient gate. The left panel compares implicit
+   eigenpair sensitivities with central finite differences; the right panel
+   shows per-observable relative errors for the two geometry controls.
+
 Promotion Gates for Full VMEC/Boozer/GK Optimization
 ----------------------------------------------------
 
@@ -254,7 +276,11 @@ the following pass:
 3. Geometry-observable gradients match central finite differences for the
    in-memory bridge.
 4. Linear growth-rate, frequency, and quasilinear-weight gradients through the
-   bridge pass finite-difference or implicit-eigenpair checks.
+   solver-ready geometry contract pass finite-difference or implicit-eigenpair
+   checks. This is now closed by
+   ``docs/_static/solver_objective_gradient_gate.json`` for a small actual
+   linear-RHS fixture; the remaining promotion step is to run the same gate on
+   actual mode-21 VMEC/Boozer state coefficients.
 5. Host scalar materialization in production runtime caches is removed or
    isolated so geometry parameters remain traceable.
 6. A nonlinear heat-flux objective has a validated adjoint, VJP, or robust

@@ -51,6 +51,10 @@ Current pre-release status snapshot:
 - autodiff UQ validation includes finite-difference demo checks, closed-form
   Gauss-Newton covariance checks, rank-deficient sensitivity-map checks, and an
   explicit rejection path for empty parameter maps;
+- solver-objective geometry-gradient validation now includes an actual
+  electrostatic linear-RHS implicit-eigenpair gate for growth rate, real
+  frequency, ``<k_perp^2>``, linear heat/particle-flux weights, and a
+  mixing-length heat-flux proxy with respect to solver-ready geometry arrays;
 - the Phase-A differentiable-geometry bridge is an in-memory sampled
   flux-tube contract with 100% targeted coverage, optional
   ``vmec_jax`` / ``booz_xform_jax`` discovery, tracer-safe mapping into
@@ -101,9 +105,10 @@ manuscript. In that narrower scope, the quasilinear lane is closed as a
 validated diagnostic/model-selection result rather than as an absolute-flux
 predictor, VMEC/Boozer equal-arc geometry parity is closed at
 ``mboz=nboz=21``, and the reduced differentiable stellarator ITG optimization
-examples are closed with AD/FD gates. The active manuscript blocker is now the
-production solver-objective gradient gate through the mode-21 VMEC/Boozer
-bridge.
+examples are closed with AD/FD gates. The production solver-objective gradient
+lane now has a passed actual linear-RHS gate at the solver-ready geometry
+contract, so the remaining promotion step is to move that same gate from
+solver-ready arrays to actual mode-21 VMEC/Boozer state coefficients.
 
 .. image:: _static/manuscript_readiness_status.png
    :alt: Manuscript-scope readiness status summary

@@ -447,6 +447,37 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.solver_objective_gradients"
+path = "src/spectraxgk/solver_objective_gradients.py"
+owner_lane = "production solver-objective geometry-gradient validation"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "implicit left/right non-Hermitian eigenpair sensitivity theory",
+  "finite-difference validation for geometry-parameter transport objectives",
+]
+physics_contracts = [
+  "actual linear-RHS growth/frequency and quasilinear-weight observables must be differentiated before optimization claims",
+  "solver-ready geometry gates are not full vmec_jax/booz_xform_jax state-gradient claims",
+]
+numerics_contracts = [
+  "implicit eigenpair sensitivities match nearest-branch central finite differences",
+  "branch isolation and biorthogonal left/right eigenvector conditioning are recorded",
+]
+fast_tests = [
+  "tests/test_solver_objective_gradients.py",
+]
+artifact_paths = [
+  "docs/_static/solver_objective_gradient_gate.json",
+  "docs/_static/solver_objective_gradient_gate.png",
+]
+next_tests = [
+  "promote the solver-ready geometry-gradient gate to actual mode-21 VMEC/Boozer state coefficients",
+  "add nonlinear-window objective gradient or estimator gates after linear/quasilinear VMEC gates pass",
+]
+
+[[modules]]
 module = "spectraxgk.parallel"
 path = "src/spectraxgk/parallel.py"
 owner_lane = "production ky/batch scan and UQ ensemble parallelization"
