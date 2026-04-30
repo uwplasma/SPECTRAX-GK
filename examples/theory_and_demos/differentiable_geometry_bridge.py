@@ -13,8 +13,9 @@ The example validates the Phase-A geometry contract used by
 
 When ``vmec_jax`` is available, the figure also includes an independent
 boundary-aspect derivative through the real ``vmec_jax`` boundary Fourier API.
-The Boozer bridge is audited by checking that ``booz_xform_jax`` exposes the
-JAX-native functional transform API used by high-fidelity follow-up workflows.
+The Boozer bridge is audited by differentiating both a bounded spectral
+objective and a Boozer-spectrum-to-flux-tube mapping through the real
+``booz_xform_jax`` functional API.
 """
 
 from __future__ import annotations
@@ -32,6 +33,7 @@ import numpy as np
 
 from spectraxgk.autodiff_validation import covariance_diagnostics
 from spectraxgk.geometry.differentiable import (
+    booz_xform_flux_tube_sensitivity_report,
     booz_xform_spectral_sensitivity_report,
     discover_differentiable_geometry_backends,
     flux_tube_geometry_from_mapping,
@@ -169,16 +171,23 @@ def make_figure(payload: dict[str, Any], out_png: Path) -> None:
     axes[0, 0].legend(frameon=True, fontsize=9)
     vmec = payload.get("vmec_boundary", {})
     booz = payload.get("booz_xform_spectral", {})
+    booz_flux = payload.get("booz_xform_flux_tube", {})
     vmec_text = "VMEC boundary AD/FD: n/a"
     if isinstance(vmec, dict) and vmec.get("available"):
         vmec_text = f"VMEC boundary AD/FD: {float(vmec['max_abs_ad_fd_error']):.1e}"
     booz_text = "Boozer spectral AD/FD: n/a"
     if isinstance(booz, dict) and booz.get("available"):
         booz_text = f"Boozer spectral AD/FD: {float(booz['max_abs_ad_fd_error']):.1e}"
+    booz_flux_text = "Boozer flux-tube AD/FD: n/a"
+    if isinstance(booz_flux, dict) and booz_flux.get("available"):
+        booz_flux_text = (
+            "Boozer flux-tube AD/FD: "
+            f"{float(booz_flux['sensitivity']['max_abs_ad_fd_error']):.1e}"
+        )
     axes[0, 0].text(
         0.03,
         0.04,
-        f"{vmec_text}\n{booz_text}",
+        f"{vmec_text}\n{booz_text}\n{booz_flux_text}",
         transform=axes[0, 0].transAxes,
         fontsize=8,
         bbox={"boxstyle": "round,pad=0.25", "facecolor": "white", "alpha": 0.82, "edgecolor": "#c9c9c9"},
@@ -260,10 +269,12 @@ def main(argv: list[str] | None = None) -> int:
     backend_info = discover_differentiable_geometry_backends()
     vmec_boundary = vmec_boundary_aspect_sensitivity_report(jnp.asarray(final_params))
     booz_spectral = booz_xform_spectral_sensitivity_report()
+    booz_flux_tube = booz_xform_flux_tube_sensitivity_report()
 
     payload: dict[str, Any] = {
         "backend_info": backend_info,
         "booz_xform_jax_api_available": bool(backend_info.get("booz_xform_jax_api_available", False)),
+        "booz_xform_flux_tube": booz_flux_tube,
         "booz_xform_spectral": booz_spectral,
         "vmec_boundary": vmec_boundary,
         "observable_names": list(geometry_observable_names()),
@@ -280,7 +291,8 @@ def main(argv: list[str] | None = None) -> int:
         "notes": (
             "This is a bounded differentiable-geometry bridge validation. The high-fidelity VMEC/Boozer "
             "pipeline must provide the same solver-ready field-line arrays; this artifact validates the "
-            "JAX tracing, AD-vs-FD sensitivities, inverse recovery, and UQ machinery at that contract boundary."
+            "JAX tracing, AD-vs-FD sensitivities, inverse recovery, UQ machinery, and the first real "
+            "Boozer-spectrum-to-flux-tube mapping at that contract boundary."
         ),
     }
 
