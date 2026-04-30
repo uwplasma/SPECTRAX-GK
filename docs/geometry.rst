@@ -257,10 +257,16 @@ checks the resulting solver-ready geometry observables; the current max
 relative AD-vs-finite-difference error is about ``1.3e-4`` on the
 ``nfp4_QH_warm_start`` fixture. The same artifact now also records a bounded
 VMEC/EIK array-parity audit for that direct tensor path. That audit currently
-keeps the production gate open: ``q`` and magnetic shear are close, but the
-metric, Jacobian, ``grho``, and drift arrays still differ because the direct
-path uses a VMEC-coordinate/equal-theta sampling and local grad-:math:`B`
-closure rather than the imported Boozer equal-arc/Hegna-Nakajima convention.
+keeps the full production gate open because the direct tensor path still uses
+a VMEC-coordinate/equal-theta sampling and local grad-:math:`B` closure.
+The same report now also runs a JAX-native ``vmec_jax -> booz_xform_jax``
+Boozer equal-arc core audit. On the tracked ``nfp4_QH_warm_start`` fixture,
+that audit matches the imported convention for ``bmag``, the solver Jacobian,
+``gradpar``, ``q``, and ``s_hat`` with worst normalized/scalar errors
+``4.5e-3`` and ``2.4e-3``; the derivative-like ``bgrad`` check is recorded
+separately and is ``2.3e-2``. The remaining production gap is therefore the
+full ``gds*``/``grho`` metric reconstruction and Hegna-Nakajima drift
+convention, not the Boozer equal-arc core field-line normalization.
 The Boozer gates evaluate
 the JAX-native Boozer ``|B|``
 spectrum along a field line, build the ``FluxTubeGeometryData`` input mapping,
@@ -288,7 +294,9 @@ contract once their in-memory field-line mapping is available.
    ``vmec_jax`` is available, the panel/JSON also includes a real VMEC
    boundary-aspect derivative check and sampled VMEC metric-tensor derivative
    check, plus a real VMEC field-line tensor check for a non-axisymmetric
-   fixture and a direct VMEC tensor-derived flux-tube mapping check; when
+   fixture, a direct VMEC tensor-derived flux-tube mapping check, and a
+   Boozer equal-arc core parity check against the imported VMEC/EIK geometry;
+   when
    ``booz_xform_jax`` is available, it runs a bounded JAX-native
    Boozer spectral transform, samples that spectrum onto a field-line
    flux-tube mapping, checks both autodiff derivative paths against central
@@ -296,10 +304,9 @@ contract once their in-memory field-line mapping is available.
    from a real ``vmec_jax`` ``VMECState`` before converting through
    ``booz_xform_jax`` into the SPECTRAX-GK field-line contract.
 
-The next implementation step is to close the direct VMEC tensor-derived vs
-imported VMEC/eik array-parity audit by matching the Boozer equal-arc metric
-and production drift convention, then add geometry-gradient checks for
-growth-rate and transport observables.
+The next implementation step is to reuse this equal-arc core convention for
+the full ``gds*``/``grho`` metric and Hegna-Nakajima drift reconstruction,
+then add geometry-gradient checks for growth-rate and transport observables.
 The VMEC bridge now also expands environment variables in ``geometry.vmec_file``.
 Tracked portable runtime TOMLs should therefore pass external VMEC equilibria
 through explicit environment variables such as ``$W7X_VMEC_FILE`` and

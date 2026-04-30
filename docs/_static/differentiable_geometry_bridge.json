@@ -1302,10 +1302,118 @@
     "boundary": "none",
     "case_name": "nfp4_QH_warm_start",
     "core_tolerance": 0.05,
+    "equal_arc_core_array_metrics": {
+      "bgrad": {
+        "candidate_max": 0.06826943916354944,
+        "candidate_min": -0.06826943916354938,
+        "candidate_shape": [
+          16
+        ],
+        "max_abs": 0.001519469334286809,
+        "max_rel_pointwise": 0.07534456641875713,
+        "normalized_max_abs": 0.022620076761044886,
+        "reference_max": 0.0671734826693232,
+        "reference_min": -0.06717348266932299,
+        "reference_scale": 0.0671734826693232,
+        "reference_shape": [
+          16
+        ],
+        "rms_abs": 0.0009088066813814987,
+        "rms_rel_pointwise": 0.03661818399927794,
+        "shape_match": true
+      },
+      "bmag": {
+        "candidate_max": 1.3028560930267112,
+        "candidate_min": 0.9816514490466389,
+        "candidate_shape": [
+          16
+        ],
+        "max_abs": 0.0031416505189931776,
+        "max_rel_pointwise": 0.0027222745464550303,
+        "normalized_max_abs": 0.0024148545748375176,
+        "reference_max": 1.3009688250914913,
+        "reference_min": 0.9814113236928025,
+        "reference_scale": 1.3009688250914913,
+        "reference_shape": [
+          16
+        ],
+        "rms_abs": 0.0020612860758743782,
+        "rms_rel_pointwise": 0.001790389334730369,
+        "shape_match": true
+      },
+      "jacobian": {
+        "candidate_max": 0.08415034124154867,
+        "candidate_min": 0.06340401281436214,
+        "candidate_shape": [
+          16
+        ],
+        "max_abs": 0.00037651277485785395,
+        "max_rel_pointwise": 0.005056634361269935,
+        "normalized_max_abs": 0.004462688875842243,
+        "reference_max": 0.08436903968278424,
+        "reference_min": 0.06364543816639791,
+        "reference_scale": 0.08436903968278424,
+        "reference_shape": [
+          16
+        ],
+        "rms_abs": 0.00026935189389198325,
+        "rms_rel_pointwise": 0.0036549636520545833,
+        "shape_match": true
+      },
+      "theta": {
+        "candidate_max": 2.748893571891069,
+        "candidate_min": -3.141592653589793,
+        "candidate_shape": [
+          16
+        ],
+        "max_abs": 4.440892098500626e-16,
+        "max_rel_pointwise": 3.7695462891419474e-16,
+        "normalized_max_abs": 1.4135798584282297e-16,
+        "reference_max": 2.7488935718910685,
+        "reference_min": -3.141592653589793,
+        "reference_scale": 3.141592653589793,
+        "reference_shape": [
+          16
+        ],
+        "rms_abs": 2.0770370905276122e-16,
+        "rms_rel_pointwise": 1.2933971507188485e-16,
+        "shape_match": true
+      }
+    },
+    "equal_arc_core_error": null,
+    "equal_arc_core_passed": true,
+    "equal_arc_core_scalar_metrics": {
+      "gradpar": {
+        "abs": 0.00030710327845434593,
+        "candidate": 0.13078657700600252,
+        "reference": 0.13047947372754817,
+        "rel": 0.0023536520318560047
+      },
+      "q": {
+        "abs": 4.2574117042892823e-07,
+        "candidate": 0.9452165850429713,
+        "reference": 0.9452170107841418,
+        "rel": 4.5041632299416403e-07
+      },
+      "s_hat": {
+        "abs": 5.061765630974546e-05,
+        "candidate": -0.10936223978295877,
+        "reference": -0.10941285743926851,
+        "rel": 0.0004626298727079828
+      }
+    },
+    "equal_arc_core_tolerance": 0.01,
+    "equal_arc_core_worst_normalized_max_abs": 0.004462688875842243,
+    "equal_arc_core_worst_scalar_rel": 0.0023536520318560047,
+    "equal_arc_derivative_passed": true,
+    "equal_arc_derivative_tolerance": 0.03,
+    "equal_arc_derivative_worst_normalized_max_abs": 0.022620076761044886,
     "include_pressure_variation": true,
     "include_shear_variation": true,
     "input_path": "/Users/rogeriojorge/local/vmec_jax/examples/data/input.nfp4_QH_warm_start",
-    "interpretation": "The direct VMEC tensor path proves state-level differentiability. Production transport optimization still requires matching the imported VMEC/EIK Boozer equal-arc metric and drift convention.",
+    "interpretation": "The direct VMEC tensor path proves state-level differentiability. The Boozer equal-arc core audit narrows the production gap to the full imported VMEC/EIK metric and drift convention when it passes.",
+    "mboz": 8,
+    "nboz": 8,
     "ntheta": 16,
     "production_parity_passed": false,
     "scalar_metrics": {

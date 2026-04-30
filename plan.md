@@ -1314,3 +1314,27 @@ Exit gate:
   - rerun the array-parity audit until ``bmag``, ``gradpar``, ``gds*``, Jacobian, ``grho``, and
     drift profiles pass field-level tolerances; only then promote growth-rate, quasilinear-flux,
     and nonlinear-window gradients through the production solver cache.
+- Added a Boozer equal-arc core parity gate for the differentiable VMEC bridge:
+  - added ``spectraxgk.geometry.differentiable.vmec_jax_boozer_equal_arc_core_profiles_from_state``;
+  - the gate starts from a real ``vmec_jax`` ``VMECState``, converts to
+    ``booz_xform_jax`` inputs, evaluates the JAX-native Boozer magnetic
+    spectrum, applies the imported VMEC/EIK equal-arc remap, and compares
+    ``theta``, ``bmag``, ``bgrad``, Jacobian, scalar ``gradpar``, ``q``, and
+    ``s_hat`` against the existing imported VMEC/EIK runtime path on the same
+    ``nfp4_QH_warm_start`` surface;
+  - current artifact result: equal-arc core normalized worst error is
+    ``4.46e-3``, scalar worst relative error is ``2.35e-3``, and the
+    derivative-like ``bgrad`` worst normalized error is ``2.26e-2`` under its
+    separate derivative tolerance;
+  - refreshed ``docs/_static/differentiable_geometry_bridge.{png,json}`` and
+    the open-lane dashboard so the bridge now distinguishes the closed
+    Boozer equal-arc core convention from the still-open full metric/drift
+    production parity gap.
+- Current next best steps:
+  - use the matched equal-arc core path to reconstruct ``gds*`` and ``grho``
+    from Boozer/VMEC metric tensors in the same coordinate convention;
+  - replace the remaining local grad-``B`` closure with the production
+    Hegna-Nakajima drift convention;
+  - once full array parity passes, add production solver gradients for linear
+    growth/frequency, quasilinear weights, and then nonlinear-window
+    objectives before making stellarator optimization claims.
