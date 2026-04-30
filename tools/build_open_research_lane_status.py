@@ -177,9 +177,19 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
         if isinstance((geom or {}).get("vmec_jax_field_line_tensor", {}), dict)
         else {}
     )
+    geom_vmec_flux_tube = (
+        (geom or {}).get("vmec_jax_flux_tube", {})
+        if isinstance((geom or {}).get("vmec_jax_flux_tube", {}), dict)
+        else {}
+    )
     geom_vmec_state = (
         (geom or {}).get("vmec_jax_boozer_flux_tube", {})
         if isinstance((geom or {}).get("vmec_jax_boozer_flux_tube", {}), dict)
+        else {}
+    )
+    geom_vmec_flux_tube_sensitivity = (
+        geom_vmec_flux_tube.get("sensitivity", {})
+        if isinstance(geom_vmec_flux_tube.get("sensitivity", {}), dict)
         else {}
     )
     geom_vmec_state_sensitivity = (
@@ -194,6 +204,8 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
     geom_vmec_metric_rel = _finite_float(geom_vmec_metric.get("max_rel_ad_fd_error"))
     geom_vmec_field_line_abs = _finite_float(geom_vmec_field_line.get("max_abs_ad_fd_error"))
     geom_vmec_field_line_rel = _finite_float(geom_vmec_field_line.get("max_rel_ad_fd_error"))
+    geom_vmec_flux_tube_abs = _finite_float(geom_vmec_flux_tube_sensitivity.get("max_abs_ad_fd_error"))
+    geom_vmec_flux_tube_rel = _finite_float(geom_vmec_flux_tube_sensitivity.get("max_rel_ad_fd_error"))
     geom_vmec_state_abs = _finite_float(geom_vmec_state_sensitivity.get("max_abs_ad_fd_error"))
     geom_vmec_state_rel = _finite_float(geom_vmec_state_sensitivity.get("max_rel_ad_fd_error"))
 
@@ -275,6 +287,8 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
                 "vmec_metric_tensor_max_rel_ad_fd_error": geom_vmec_metric_rel,
                 "vmec_field_line_tensor_max_abs_ad_fd_error": geom_vmec_field_line_abs,
                 "vmec_field_line_tensor_max_rel_ad_fd_error": geom_vmec_field_line_rel,
+                "vmec_tensor_flux_tube_max_abs_ad_fd_error": geom_vmec_flux_tube_abs,
+                "vmec_tensor_flux_tube_max_rel_ad_fd_error": geom_vmec_flux_tube_rel,
                 "vmec_state_boozer_flux_tube_max_abs_ad_fd_error": geom_vmec_state_abs,
                 "vmec_state_boozer_flux_tube_max_rel_ad_fd_error": geom_vmec_state_rel,
                 "inverse_residual_norm": geom_inverse_res,
@@ -283,8 +297,9 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
                 "booz_xform_jax_api_available": (geom or {}).get("booz_xform_jax_api_available"),
             },
             "next_action": (
-                "Replace the smooth metric/drift closure with sampled VMEC/Boozer tensors, compare against the imported "
-                "VMEC/EIK path, then add production growth-rate/quasilinear geometry-gradient gates."
+                "Compare the direct VMEC tensor-derived flux tube against the imported VMEC/EIK path, replace the "
+                "remaining local grad-B drift closure with the production drift convention, then add growth-rate/"
+                "quasilinear geometry-gradient gates."
             ),
         },
         {
@@ -374,9 +389,12 @@ def write_status_artifacts(payload: dict[str, Any], *, out_png: Path = DEFAULT_O
             metric = f"holdouts: {key_metrics.get('holdout_points')}, promoted: {key_metrics.get('calibration_report_passed')}"
         elif lane["lane"].startswith("vmec_jax"):
             field_line_abs = key_metrics.get("vmec_field_line_tensor_max_abs_ad_fd_error")
+            flux_tube_rel = key_metrics.get("vmec_tensor_flux_tube_max_rel_ad_fd_error")
             metric_abs = key_metrics.get("vmec_metric_tensor_max_abs_ad_fd_error")
             state_abs = key_metrics.get("vmec_state_boozer_flux_tube_max_abs_ad_fd_error")
-            if field_line_abs is not None:
+            if flux_tube_rel is not None:
+                metric = f"VMEC flux-tube AD-FD: {flux_tube_rel:.1e} rel"
+            elif field_line_abs is not None:
                 metric = f"VMEC field-line AD-FD: {field_line_abs:.1e}"
             elif metric_abs is not None:
                 metric = f"VMEC metric AD-FD: {metric_abs:.1e}"

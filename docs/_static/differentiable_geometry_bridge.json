@@ -515,7 +515,7 @@
     0.06176080850358888,
     1.5505567586513118
   ],
-  "notes": "This is a bounded differentiable-geometry bridge validation. The high-fidelity VMEC/Boozer pipeline must provide the same solver-ready field-line arrays; this artifact validates the JAX tracing, AD-vs-FD sensitivities, inverse recovery, UQ machinery, and the first real VMEC metric-tensor, VMEC field-line tensor, Boozer-spectrum-to-flux-tube, and vmec_jax-state-to-Boozer mapping gates at that contract boundary.",
+  "notes": "This is a bounded differentiable-geometry bridge validation. The high-fidelity VMEC/Boozer pipeline must provide the same solver-ready field-line arrays; this artifact validates the JAX tracing, AD-vs-FD sensitivities, inverse recovery, UQ machinery, and the first real VMEC metric-tensor, VMEC field-line tensor, VMEC tensor-to-flux-tube, Boozer-spectrum-to-flux-tube, and vmec_jax-state-to-Boozer mapping gates at that contract boundary.",
   "observable_names": [
     "mean_bmag",
     "relative_bmag_ripple",
@@ -925,6 +925,127 @@
     "radial_index": 17,
     "rms_epsilon": 1e-24,
     "source_model": "vmec_jax:state->field-line-metric-and-b",
+    "state_shape": [
+      35,
+      8
+    ],
+    "surface_index": 17,
+    "wout_path": "/Users/rogeriojorge/local/vmec_jax/examples/data/wout_nfp4_QH_warm_start.nc"
+  },
+  "vmec_jax_flux_tube": {
+    "alpha": 0.0,
+    "available": true,
+    "backend_info": {
+      "booz_xform_jax_api_available": true,
+      "booz_xform_jax_available": true,
+      "booz_xform_jax_paths": [
+        "/Users/rogeriojorge/local/booz_xform_jax",
+        "/Users/rogeriojorge/local/booz_xform_jax/src"
+      ],
+      "vmec_jax_available": true,
+      "vmec_jax_boundary_api_available": true,
+      "vmec_jax_paths": [
+        "/Users/rogeriojorge/local/vmec_jax"
+      ]
+    },
+    "case_name": "nfp4_QH_warm_start",
+    "fd_step": 2e-06,
+    "field_line_convention": "VMEC theta, zeta=(theta-alpha)/iota with periodic bilinear sampling",
+    "input_path": "/Users/rogeriojorge/local/vmec_jax/examples/data/input.nfp4_QH_warm_start",
+    "iota": -1.0562565727429847,
+    "mode_index": 1,
+    "ntheta": 24,
+    "param_names": [
+      "delta_Rcos",
+      "delta_Zsin"
+    ],
+    "params": [
+      0.0001,
+      0.0001
+    ],
+    "radial_index": 17,
+    "reference_b": 0.7536225660026323,
+    "reference_length": 0.14238647392276876,
+    "scope": "VMEC-native metric and grad-B flux-tube mapping; full imported-VMEC/EIK drift parity and production transport-gradient gates remain separate.",
+    "sensitivity": {
+      "fd_step": 2e-06,
+      "jacobian_ad": [
+        [
+          -199.71441443081446,
+          -205.34427245879394
+        ],
+        [
+          -100.136572612515,
+          -24.921147649727864
+        ],
+        [
+          210.97882198007468,
+          -15.885283709131622
+        ],
+        [
+          533532.3363653139,
+          243558.7483423502
+        ],
+        [
+          -6.476300976980079e-17,
+          2.4395112628904986e-33
+        ],
+        [
+          2184.453692882052,
+          2705.0950414907275
+        ]
+      ],
+      "jacobian_fd": [
+        [
+          -199.71458751838477,
+          -205.34437719604838
+        ],
+        [
+          -100.12522855528186,
+          -24.91991449374547
+        ],
+        [
+          210.9788219826214,
+          -15.88528370888298
+        ],
+        [
+          533522.420093897,
+          243554.90239406665
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          2184.4537536299667,
+          2705.0951170179974
+        ]
+      ],
+      "max_abs_ad_fd_error": 9.916271416819654,
+      "max_rel_ad_fd_error": 0.00011329869001865003,
+      "observable_names": [
+        "mean_bmag",
+        "relative_bmag_ripple",
+        "metric_frobenius_rms",
+        "drift_rms",
+        "mean_jacobian",
+        "mean_gradpar"
+      ],
+      "observables": [
+        0.9893311813298558,
+        0.022484758812630873,
+        228.13643872447977,
+        58.25173841574489,
+        1.0,
+        13.592297618277598
+      ],
+      "params": [
+        0.0001,
+        0.0001
+      ],
+      "source_model": "vmec_jax:state->tensor-flux-tube"
+    },
+    "source_model": "vmec_jax:state->tensor-flux-tube",
     "state_shape": [
       35,
       8

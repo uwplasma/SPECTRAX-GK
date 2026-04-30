@@ -56,7 +56,8 @@ Current pre-release status snapshot:
   ``vmec_jax`` / ``booz_xform_jax`` discovery, tracer-safe mapping into
   ``FluxTubeGeometryData``, real ``vmec_jax`` metric-tensor derivatives, a
   real non-axisymmetric VMEC field-line tensor derivative through
-  ``vmec_jax.geom`` plus ``vmec_jax.vmec_bcovar``, a real ``vmec_jax``
+  ``vmec_jax.geom`` plus ``vmec_jax.vmec_bcovar``, a direct VMEC
+  tensor-derived flux-tube mapping derivative, a real ``vmec_jax``
   ``VMECState`` to ``booz_xform_jax`` to SPECTRAX-GK derivative gate, and a
   tracked AD-vs-finite-difference inverse/UQ artifact at
   ``docs/_static/differentiable_geometry_bridge.png``;
@@ -234,10 +235,10 @@ Differentiable geometry and optimization
 
 After the refactor/testing lane is stable, the differentiable geometry plan is:
 
-1. Replace the current smooth metric/drift closure in the
-   ``vmec_jax -> booz_xform_jax -> SPECTRAX-GK`` bridge with sampled
-   VMEC/Boozer tensors.
-2. Validate geometry fields against the existing VMEC-file path.
+1. Validate the direct VMEC tensor-derived flux-tube fields against the
+   existing VMEC-file path.
+2. Replace the remaining local grad-:math:`B` drift closure with the
+   production VMEC/EIK drift convention.
 3. Add gradient checks for geometry-to-observable paths.
 4. Promote examples from sensitivity analysis to inverse design, uncertainty
    quantification, and stellarator optimization only after the derivative

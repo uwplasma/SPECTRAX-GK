@@ -1256,3 +1256,39 @@ Exit gate:
   - the next production step remains deriving the SPECTRAX-GK ``gds*``, drift,
     Jacobian, ``gradpar``, and ``grho`` arrays from sampled VMEC/Boozer tensors
     and matching those arrays against the imported VMEC/eik path.
+- Added the first direct VMEC tensor-to-SPECTRAX flux-tube differentiability gate:
+  - fixed optional-backend discovery so explicitly configured/local
+    ``vmec_jax`` and ``booz_xform_jax`` checkouts are preferred over globally
+    installed packages; this matters because the local ``vmec_jax`` checkout
+    carries the example ``wout`` files used by real derivative gates;
+  - added ``spectraxgk.geometry.differentiable.vmec_jax_flux_tube_mapping_from_state``
+    and ``vmec_jax_flux_tube_sensitivity_report``;
+  - the new gate starts from the real ``nfp4_QH_warm_start`` ``VMECState``,
+    evaluates ``vmec_jax.geom`` and ``vmec_jax.vmec_bcovar``, samples a fixed
+    VMEC field line, inverts the sampled VMEC metric tensor, derives
+    SPECTRAX-GK ``bmag``, ``gradpar``, ``gds*``, Jacobian, ``grho``, and a
+    local grad-``B`` drift closure, builds the ``FluxTubeGeometryData`` mapping,
+    and checks geometry-observable sensitivities against central finite
+    differences;
+  - focused local gate result: max relative AD/FD error is ``≈1.35e-4`` with
+    ``fd_step=2e-6`` on the tracked geometry observables;
+  - refreshed the differentiable-geometry example/status tooling so the JSON,
+    panel, docs, and open-lane dashboard report the direct VMEC tensor
+    flux-tube derivative gate.
+- Scope note:
+  - this addresses the requirement that differentiability reaches back to
+    ``vmec_jax`` state coefficients and not only ``booz_xform_jax`` spectra;
+  - this still is not a full production stellarator transport optimization
+    claim: the direct VMEC tensor-derived arrays must be compared against the
+    imported VMEC/eik runtime path, and the local grad-``B`` drift closure must
+    be replaced or matched to the production VMEC/EIK drift convention before
+    solver-observable gradient gates are promoted.
+- Current next best steps:
+  - build a small array-parity harness comparing direct VMEC tensor-derived
+    ``bmag``, ``gradpar``, ``gds2``, ``gds21``, ``gds22``, Jacobian, ``grho``,
+    and drifts against the imported VMEC/eik path on the same equilibrium;
+  - once array parity passes, add finite-difference/implicit-eigenpair gates
+    for growth rate, frequency, and quasilinear weights through the production
+    solver cache;
+  - only after those gates pass connect the QA optimization examples to the
+    production ``vmec_jax`` geometry bridge for stellarator optimization.
