@@ -182,6 +182,11 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
         if isinstance((geom or {}).get("vmec_jax_flux_tube", {}), dict)
         else {}
     )
+    geom_vmec_array_parity = (
+        (geom or {}).get("vmec_jax_flux_tube_array_parity", {})
+        if isinstance((geom or {}).get("vmec_jax_flux_tube_array_parity", {}), dict)
+        else {}
+    )
     geom_vmec_state = (
         (geom or {}).get("vmec_jax_boozer_flux_tube", {})
         if isinstance((geom or {}).get("vmec_jax_boozer_flux_tube", {}), dict)
@@ -206,6 +211,8 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
     geom_vmec_field_line_rel = _finite_float(geom_vmec_field_line.get("max_rel_ad_fd_error"))
     geom_vmec_flux_tube_abs = _finite_float(geom_vmec_flux_tube_sensitivity.get("max_abs_ad_fd_error"))
     geom_vmec_flux_tube_rel = _finite_float(geom_vmec_flux_tube_sensitivity.get("max_rel_ad_fd_error"))
+    geom_vmec_array_parity_worst = _finite_float(geom_vmec_array_parity.get("worst_core_normalized_max_abs"))
+    geom_vmec_array_parity_passed = bool(geom_vmec_array_parity.get("production_parity_passed", False))
     geom_vmec_state_abs = _finite_float(geom_vmec_state_sensitivity.get("max_abs_ad_fd_error"))
     geom_vmec_state_rel = _finite_float(geom_vmec_state_sensitivity.get("max_rel_ad_fd_error"))
 
@@ -289,6 +296,8 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
                 "vmec_field_line_tensor_max_rel_ad_fd_error": geom_vmec_field_line_rel,
                 "vmec_tensor_flux_tube_max_abs_ad_fd_error": geom_vmec_flux_tube_abs,
                 "vmec_tensor_flux_tube_max_rel_ad_fd_error": geom_vmec_flux_tube_rel,
+                "vmec_tensor_vs_eik_array_parity_worst_core_norm": geom_vmec_array_parity_worst,
+                "vmec_tensor_vs_eik_array_parity_passed": geom_vmec_array_parity_passed,
                 "vmec_state_boozer_flux_tube_max_abs_ad_fd_error": geom_vmec_state_abs,
                 "vmec_state_boozer_flux_tube_max_rel_ad_fd_error": geom_vmec_state_rel,
                 "inverse_residual_norm": geom_inverse_res,
@@ -297,9 +306,9 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
                 "booz_xform_jax_api_available": (geom or {}).get("booz_xform_jax_api_available"),
             },
             "next_action": (
-                "Compare the direct VMEC tensor-derived flux tube against the imported VMEC/EIK path, replace the "
-                "remaining local grad-B drift closure with the production drift convention, then add growth-rate/"
-                "quasilinear geometry-gradient gates."
+                "Close the direct VMEC tensor-derived vs imported VMEC/EIK array-parity audit by matching the "
+                "Boozer equal-arc metric and production drift convention, then add growth-rate/quasilinear "
+                "geometry-gradient gates."
             ),
         },
         {
@@ -390,9 +399,12 @@ def write_status_artifacts(payload: dict[str, Any], *, out_png: Path = DEFAULT_O
         elif lane["lane"].startswith("vmec_jax"):
             field_line_abs = key_metrics.get("vmec_field_line_tensor_max_abs_ad_fd_error")
             flux_tube_rel = key_metrics.get("vmec_tensor_flux_tube_max_rel_ad_fd_error")
+            array_worst = key_metrics.get("vmec_tensor_vs_eik_array_parity_worst_core_norm")
             metric_abs = key_metrics.get("vmec_metric_tensor_max_abs_ad_fd_error")
             state_abs = key_metrics.get("vmec_state_boozer_flux_tube_max_abs_ad_fd_error")
-            if flux_tube_rel is not None:
+            if flux_tube_rel is not None and array_worst is not None:
+                metric = f"VMEC flux-tube AD-FD: {flux_tube_rel:.1e} rel; arrays: {array_worst:.1e}"
+            elif flux_tube_rel is not None:
                 metric = f"VMEC flux-tube AD-FD: {flux_tube_rel:.1e} rel"
             elif field_line_abs is not None:
                 metric = f"VMEC field-line AD-FD: {field_line_abs:.1e}"
