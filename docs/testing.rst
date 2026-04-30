@@ -217,6 +217,12 @@ to remain documented without being treated as release blockers.
 manuscript-facing statistics panel for the nonlinear GX comparison gates by
 plotting the per-diagnostic ``mean_rel_abs`` and ``max_rel_abs`` values from
 those same tracked JSON summaries.
+``tools/plot_nonlinear_feasibility_pilot.py`` is the analogous tool for new
+finite nonlinear pilots that do not yet have a reference comparison or
+production-resolution convergence gate. It writes PNG/PDF/JSON/CSV artifacts
+with explicit ``claim_level`` and ``promotion_gate.passed = false`` metadata,
+so exploratory external-VMEC runs can be documented without being promoted to
+transport validation claims.
 
 The diagnostics stream now also carries ``Diagnostics/Phi_zonal_mode_kxt``, a
 signed complex zonal-potential history reduced over ``z`` with the same volume
