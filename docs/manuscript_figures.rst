@@ -122,9 +122,9 @@ Differentiable-Physics Figures
      - Open
      - must separate identifiability from recovery quality
    * - Optimization figure
-     - dedicated script to add
-     - Open
-     - low-dimensional stellarator objective reduction with validated gradients
+     - ``examples/optimization/compare_stellarator_itg_optimizations.py``
+     - Initial differentiable objective-reduction gate closed; full VMEC/Boozer/GK optimization open
+     - current artifact base: ``docs/_static/stellarator_itg_optimization_comparison.png`` with JSON/PDF companions and individual objective panels ``docs/_static/stellarator_itg_growth_optimization.png``, ``docs/_static/stellarator_itg_quasilinear_optimization.png``, and ``docs/_static/stellarator_itg_nonlinear_optimization.png``. The examples optimize a QA max-mode-1 control vector with ``A = 7`` and ``iota = 0.41`` constraints for growth-rate, quasilinear-flux, and nonlinear-window objectives. All three pass AD-vs-finite-difference gates and reduce the tracked ITG observables from the shared initial point. This is a differentiable optimization and UQ gate, not a full production stellarator-transport optimization claim; the latter remains open pending in-memory ``vmec_jax -> booz_xform_jax -> FluxTubeGeometryData`` parity, geometry-gradient checks, and converged nonlinear audits of optimized equilibria.
 
 Caption Policy
 --------------

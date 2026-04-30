@@ -85,3 +85,9 @@ References
    stellarator devices," Physical Review E 110, 035201 (2024).
    `arXiv <https://arxiv.org/abs/2301.09356>`__,
    `DOI <https://doi.org/10.1103/PhysRevE.110.035201>`__.
+
+.. [Kim24] P. Kim et al., "Optimization of nonlinear turbulence in
+   stellarators," Journal of Plasma Physics 90, 905900210 (2024).
+   `Cambridge Core <https://www.cambridge.org/core/journals/journal-of-plasma-physics/article/optimization-of-nonlinear-turbulence-in-stellarators/916FCC56452B5B166C14868F56D99AF5>`__,
+   `arXiv <https://arxiv.org/abs/2310.18842>`__,
+   `DOI <https://doi.org/10.1017/S0022377824000369>`__.
