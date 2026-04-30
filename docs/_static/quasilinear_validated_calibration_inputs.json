@@ -1,0 +1,231 @@
+{
+  "claim_level": "calibration_inputs_validated_by_passed_nonlinear_gates",
+  "gate_patterns": [
+    "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/*.json"
+  ],
+  "kind": "quasilinear_calibration_input_audit",
+  "n_gate_artifact_matches": 16,
+  "passed": true,
+  "reports": [
+    {
+      "n_points": 2,
+      "n_required": 2,
+      "n_required_passed": 2,
+      "passed": true,
+      "points": [
+        {
+          "case": "cyclone_long_window",
+          "matched_gate": {
+            "artifact": "docs/_static/nonlinear_cyclone_gate_summary.json",
+            "case": "cyclone_nonlinear_long_window",
+            "claim_level": "",
+            "kind": "",
+            "passed": true
+          },
+          "nonlinear_artifact": "tools_out/cyclone_long_audit/cyclone_nonlinear_diag_t400.csv",
+          "passed": true,
+          "reason": "matched passed nonlinear gate",
+          "required": true,
+          "split": "train"
+        },
+        {
+          "case": "cyclone_miller_long_window",
+          "matched_gate": {
+            "artifact": "docs/_static/nonlinear_cyclone_miller_gate_summary.json",
+            "case": "cyclone_miller_nonlinear_window",
+            "claim_level": "",
+            "kind": "",
+            "passed": true
+          },
+          "nonlinear_artifact": "tools_out/office_refresh_cyclone_miller_t122.csv",
+          "passed": true,
+          "reason": "matched passed nonlinear gate",
+          "required": true,
+          "split": "holdout"
+        }
+      ],
+      "report": "docs/_static/quasilinear_cyclone_miller_train_holdout_report.json"
+    },
+    {
+      "n_points": 3,
+      "n_required": 3,
+      "n_required_passed": 3,
+      "passed": true,
+      "points": [
+        {
+          "case": "cyclone_long_window",
+          "matched_gate": {
+            "artifact": "docs/_static/nonlinear_cyclone_gate_summary.json",
+            "case": "cyclone_nonlinear_long_window",
+            "claim_level": "",
+            "kind": "",
+            "passed": true
+          },
+          "nonlinear_artifact": "tools_out/cyclone_long_audit/cyclone_nonlinear_diag_t400.csv",
+          "passed": true,
+          "reason": "matched passed nonlinear gate",
+          "required": true,
+          "split": "train"
+        },
+        {
+          "case": "cyclone_miller_long_window",
+          "matched_gate": {
+            "artifact": "docs/_static/nonlinear_cyclone_miller_gate_summary.json",
+            "case": "cyclone_miller_nonlinear_window",
+            "claim_level": "",
+            "kind": "",
+            "passed": true
+          },
+          "nonlinear_artifact": "tools_out/office_refresh_cyclone_miller_t122.csv",
+          "passed": true,
+          "reason": "matched passed nonlinear gate",
+          "required": true,
+          "split": "holdout"
+        },
+        {
+          "case": "hsx_nonlinear_window",
+          "matched_gate": {
+            "artifact": "docs/_static/nonlinear_hsx_gate_summary.json",
+            "case": "hsx_nonlinear_window",
+            "claim_level": "",
+            "kind": "",
+            "passed": true
+          },
+          "nonlinear_artifact": "tools_out/final_nonlinear_audit/hsx_spectrax_true_t50.csv",
+          "passed": true,
+          "reason": "matched passed nonlinear gate",
+          "required": true,
+          "split": "holdout"
+        }
+      ],
+      "report": "docs/_static/quasilinear_hsx_train_holdout_report.json"
+    },
+    {
+      "n_points": 3,
+      "n_required": 3,
+      "n_required_passed": 3,
+      "passed": true,
+      "points": [
+        {
+          "case": "cyclone_long_window",
+          "matched_gate": {
+            "artifact": "docs/_static/nonlinear_cyclone_gate_summary.json",
+            "case": "cyclone_nonlinear_long_window",
+            "claim_level": "",
+            "kind": "",
+            "passed": true
+          },
+          "nonlinear_artifact": "tools_out/cyclone_long_audit/cyclone_nonlinear_diag_t400.csv",
+          "passed": true,
+          "reason": "matched passed nonlinear gate",
+          "required": true,
+          "split": "train"
+        },
+        {
+          "case": "cyclone_miller_long_window",
+          "matched_gate": {
+            "artifact": "docs/_static/nonlinear_cyclone_miller_gate_summary.json",
+            "case": "cyclone_miller_nonlinear_window",
+            "claim_level": "",
+            "kind": "",
+            "passed": true
+          },
+          "nonlinear_artifact": "tools_out/office_refresh_cyclone_miller_t122.csv",
+          "passed": true,
+          "reason": "matched passed nonlinear gate",
+          "required": true,
+          "split": "holdout"
+        },
+        {
+          "case": "w7x_nonlinear_window",
+          "matched_gate": {
+            "artifact": "docs/_static/nonlinear_w7x_gate_summary.json",
+            "case": "w7x_nonlinear_window",
+            "claim_level": "",
+            "kind": "",
+            "passed": true
+          },
+          "nonlinear_artifact": "tools_out/final_nonlinear_audit/w7x_spectrax_current_adaptive_t200.out.nc",
+          "passed": true,
+          "reason": "matched passed nonlinear gate",
+          "required": true,
+          "split": "holdout"
+        }
+      ],
+      "report": "docs/_static/quasilinear_w7x_train_holdout_report.json"
+    },
+    {
+      "n_points": 4,
+      "n_required": 4,
+      "n_required_passed": 4,
+      "passed": true,
+      "points": [
+        {
+          "case": "cyclone_long_window",
+          "matched_gate": {
+            "artifact": "docs/_static/nonlinear_cyclone_gate_summary.json",
+            "case": "cyclone_nonlinear_long_window",
+            "claim_level": "",
+            "kind": "",
+            "passed": true
+          },
+          "nonlinear_artifact": "tools_out/cyclone_long_audit/cyclone_nonlinear_diag_t400.csv",
+          "passed": true,
+          "reason": "matched passed nonlinear gate",
+          "required": true,
+          "split": "train"
+        },
+        {
+          "case": "cyclone_miller_long_window",
+          "matched_gate": {
+            "artifact": "docs/_static/nonlinear_cyclone_miller_gate_summary.json",
+            "case": "cyclone_miller_nonlinear_window",
+            "claim_level": "",
+            "kind": "",
+            "passed": true
+          },
+          "nonlinear_artifact": "tools_out/office_refresh_cyclone_miller_t122.csv",
+          "passed": true,
+          "reason": "matched passed nonlinear gate",
+          "required": true,
+          "split": "holdout"
+        },
+        {
+          "case": "hsx_nonlinear_window",
+          "matched_gate": {
+            "artifact": "docs/_static/nonlinear_hsx_gate_summary.json",
+            "case": "hsx_nonlinear_window",
+            "claim_level": "",
+            "kind": "",
+            "passed": true
+          },
+          "nonlinear_artifact": "tools_out/final_nonlinear_audit/hsx_spectrax_true_t50.csv",
+          "passed": true,
+          "reason": "matched passed nonlinear gate",
+          "required": true,
+          "split": "holdout"
+        },
+        {
+          "case": "w7x_nonlinear_window",
+          "matched_gate": {
+            "artifact": "docs/_static/nonlinear_w7x_gate_summary.json",
+            "case": "w7x_nonlinear_window",
+            "claim_level": "",
+            "kind": "",
+            "passed": true
+          },
+          "nonlinear_artifact": "tools_out/final_nonlinear_audit/w7x_spectrax_current_adaptive_t200.out.nc",
+          "passed": true,
+          "reason": "matched passed nonlinear gate",
+          "required": true,
+          "split": "holdout"
+        }
+      ],
+      "report": "docs/_static/quasilinear_stellarator_train_holdout_report.json"
+    }
+  ],
+  "required_splits": [
+    "train",
+    "holdout"
+  ]
+}

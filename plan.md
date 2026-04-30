@@ -1032,3 +1032,12 @@ Exit gate:
   - return to the core quasilinear saturation-model lane using the currently validated nonlinear holdouts, because the external CTH-like holdout failed convergence;
   - if external-VMEC holdouts remain a priority, choose one controlled next run: either increase the CTH-like grid again, vary hypercollision/dissipation with a documented physics rationale, or choose a different VMEC candidate with a stronger reference basis;
   - add any future external-VMEC nonlinear candidate through the same pilot -> convergence-gate -> spectrum-shape-gate path before using it for calibration or optimization claims.
+- Added a calibration-admission guard so the workflow always uses validated nonlinear inputs:
+  - added `tools/check_quasilinear_calibration_inputs.py` and tests covering passed gates, missing gates, non-required audit points, and failed external-pilot promotion gates;
+  - generated `docs/_static/quasilinear_validated_calibration_inputs.{png,pdf,json}` from the current Cyclone/Cyclone-Miller/HSX/W7-X train-holdout reports;
+  - current audit passes: every train/holdout point maps to a passed nonlinear gate (`cyclone_nonlinear_long_window`, `cyclone_miller_nonlinear_window`, `hsx_nonlinear_window`, `w7x_nonlinear_window`);
+  - this makes the validation/convergence policy executable: failed finite pilots can be documented, but they cannot silently enter quasilinear calibration.
+- Current next best steps:
+  - use the validated-input audit as a required precondition for future quasilinear saturation-model figures and optimization examples;
+  - continue the saturation-model lane only on the validated four-case set unless a new nonlinear case passes pilot, convergence, and validation gates;
+  - add the next candidate model only with a null baseline, leave-one-geometry-out scoring, prediction intervals, and finite-difference/autodiff checks before making any optimization-facing claim.
