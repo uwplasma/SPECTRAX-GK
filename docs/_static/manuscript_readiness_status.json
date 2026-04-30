@@ -1,0 +1,124 @@
+{
+  "claim_scope": "current_manuscript_excludes_w7x_zonal_recurrence_and_tem_kinetic_electron_extension; quasilinear absolute-flux models are validated as diagnostics/model-selection results only",
+  "kind": "manuscript_readiness_status",
+  "lanes": [
+    {
+      "claim_level": "validated_diagnostics_negative_absolute_flux_promotion",
+      "key_metrics": {
+        "absolute_flux_promoted": false,
+        "holdout_mean_abs_relative_error": 204.96643050481953,
+        "holdout_points": 3,
+        "null_training_mean_error": 0.17003269672297722,
+        "shape_aware_promotion_passed": false,
+        "simple_rule_promotion_passed": false,
+        "train_points": 1,
+        "uq_candidate_promotion_passed": false,
+        "validated_inputs_passed": true
+      },
+      "lane": "Quasilinear diagnostics and saturation-model selection",
+      "next_action": "Use these as manuscript-grade diagnostics and negative model-selection results; do not expose an absolute-flux runtime model until a future candidate beats the null baseline on held-out nonlinear data.",
+      "primary_artifacts": [
+        "docs/_static/quasilinear_validated_calibration_inputs.json",
+        "docs/_static/quasilinear_stellarator_train_holdout_report.json",
+        "docs/_static/quasilinear_saturation_rule_sweep.json",
+        "docs/_static/quasilinear_shape_aware_saturation.json",
+        "docs/_static/quasilinear_candidate_uncertainty.json"
+      ],
+      "status": "closed"
+    },
+    {
+      "claim_level": "zero_beta_equal_arc_geometry_bridge_closed",
+      "key_metrics": {
+        "bridge_ad_fd_available": true,
+        "matrix_all_equal_arc_passed": true,
+        "matrix_n_cases": 3,
+        "minimum_boozer_mode_count": 21
+      },
+      "lane": "VMEC/Boozer differentiable geometry parity",
+      "next_action": "Keep finite-beta pressure-correction drift parity as a future extension unless the manuscript claims finite-beta transport-gradient optimization.",
+      "primary_artifacts": [
+        "docs/_static/differentiable_geometry_bridge.json",
+        "docs/_static/vmec_boozer_parity_matrix.json"
+      ],
+      "status": "closed"
+    },
+    {
+      "claim_level": "reduced_objective_optimization_closed_not_full_production_vmec_gk",
+      "key_metrics": {
+        "all_objective_gradient_gates_passed": true,
+        "best_reduction_factor": 0.052821491572730694,
+        "n_objectives": 3,
+        "worst_reduction_factor": 0.14944986630532714
+      },
+      "lane": "Reduced differentiable stellarator ITG optimization",
+      "next_action": "Use as the current optimization figure only with scoped wording; production VMEC/Boozer/GK solver gradients remain the next priority before claiming end-to-end stellarator heat-flux optimization.",
+      "primary_artifacts": [
+        "docs/_static/stellarator_itg_optimization_comparison.json",
+        "docs/_static/stellarator_itg_optimization_comparison.png"
+      ],
+      "status": "closed"
+    },
+    {
+      "claim_level": "required_for_full_end_to_end_stellarator_optimization_claim",
+      "key_metrics": {
+        "linear_growth_gradient_gate": false,
+        "nonlinear_window_gradient_gate": false,
+        "quasilinear_weight_gradient_gate": false
+      },
+      "lane": "Production solver-objective geometry gradients",
+      "next_action": "Add finite-difference/implicit-eigenpair gates for growth rate, frequency, and quasilinear weights through the mode-21 VMEC/Boozer geometry bridge.",
+      "primary_artifacts": [],
+      "status": "open"
+    },
+    {
+      "claim_level": "identity_gate_present_no_new_speedup_claim",
+      "key_metrics": {
+        "engineering_speedup": 0.7928050107984479,
+        "identity_gate_pass": true
+      },
+      "lane": "Profiler-backed nonlinear performance claims",
+      "next_action": "Keep runtime claims conservative until fresh CPU/GPU profiler artifacts support a speedup.",
+      "primary_artifacts": [
+        "docs/_static/nonlinear_sharding_profile_office_gpu.json"
+      ],
+      "status": "partial"
+    },
+    {
+      "claim_level": "deferred_out_of_current_manuscript_scope",
+      "key_metrics": {},
+      "lane": "W7-X zonal recurrence/damping",
+      "next_action": "Post-manuscript lane.",
+      "primary_artifacts": [
+        "docs/_static/w7x_zonal_reference_compare.json"
+      ],
+      "status": "deferred"
+    },
+    {
+      "claim_level": "deferred_out_of_current_manuscript_scope",
+      "key_metrics": {},
+      "lane": "TEM / kinetic-electron stellarator extension",
+      "next_action": "Post-manuscript lane.",
+      "primary_artifacts": [
+        "docs/_static/w7x_tem_extension_status.json"
+      ],
+      "status": "deferred"
+    }
+  ],
+  "status_order": {
+    "blocked": 4,
+    "closed": 0,
+    "deferred": 3,
+    "open": 2,
+    "partial": 1
+  },
+  "summary": {
+    "active_fraction_closed": 0.6,
+    "n_active": 5,
+    "n_blocked": 0,
+    "n_closed": 3,
+    "n_deferred": 2,
+    "n_lanes": 7,
+    "n_open": 1,
+    "n_partial": 1
+  }
+}

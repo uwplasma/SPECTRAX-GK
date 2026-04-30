@@ -1389,3 +1389,28 @@ Exit gate:
   examples. All three current rows pass the equal-arc core, scalar, ``bgrad``,
   metric, and drift subgates at ``mboz=nboz=21``; the QI drift row remains the
   limiting release-level value at ``7.13e-2`` against the ``8e-2`` tolerance.
+- Added the manuscript-scope readiness dashboard:
+  - ``tools/build_manuscript_readiness_status.py`` now reads the quasilinear
+    calibration/model-selection artifacts, the differentiable-geometry bridge,
+    the mode-21 VMEC/Boozer parity matrix, the reduced stellarator ITG
+    optimization comparison, and the nonlinear sharding profiler artifact;
+  - ``docs/_static/manuscript_readiness_status.{png,pdf,json,csv}`` records
+    the current manuscript claim surface with W7-X zonal recurrence/damping
+    and TEM/kinetic-electron stellarator extension explicitly deferred;
+  - in this narrower scope, the quasilinear lane is closed as a validated
+    diagnostic/model-selection negative result rather than as an absolute-flux
+    predictor, VMEC/Boozer equal-arc geometry parity is closed at
+    ``mboz=nboz=21``, and reduced differentiable stellarator ITG optimization
+    is closed with AD/FD gates;
+  - the active manuscript blocker is now production solver-objective geometry
+    gradients through the mode-21 VMEC/Boozer bridge, while profiler-backed
+    nonlinear speedup claims remain partial and require fresh CPU/GPU profiler
+    artifacts before any new performance claim.
+- Current next best steps:
+  - add a finite-difference/implicit-eigenpair gate for linear growth rate,
+    real frequency, and electrostatic quasilinear weights through the matched
+    mode-21 VMEC/Boozer geometry bridge;
+  - connect that gate to a small, replayable stellarator fixture before
+    promoting any full end-to-end stellarator heat-flux optimization claim;
+  - keep W7-X zonal recurrence/damping and TEM/kinetic-electron stellarator
+    validation as post-manuscript lanes unless the manuscript scope changes.

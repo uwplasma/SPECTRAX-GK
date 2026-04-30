@@ -500,11 +500,14 @@ fast_tests = [
   "tests/test_plotting.py",
   "tests/test_autodiff_demo.py",
   "tests/test_autodiff_twomode_demo.py",
+  "tests/test_build_manuscript_readiness_status.py",
   "tests/test_make_gx_publication_panel.py",
 ]
 artifact_paths = [
   "docs/_static/autodiff_inverse_growth_summary.json",
   "docs/_static/autodiff_inverse_twomode_summary.json",
+  "docs/_static/manuscript_readiness_status.json",
+  "docs/_static/manuscript_readiness_status.png",
   "docs/_static/gx_publication_panel.png",
 ]
 next_tests = [
