@@ -1115,3 +1115,12 @@ Exit gate:
 - Current next best steps:
   - start the TEM branch/frequency audit by comparing the existing reference table, runtime parameters, and fitted signals term by term;
   - if no bounded code fix is obvious, create a machine-readable TEM blocker artifact like the W7-X status artifacts so kinetic-electron W7-X remains gated.
+- Added the TEM branch/frequency blocker artifact:
+  - added `tools/build_tem_branch_parity_audit.py` and `tests/test_build_tem_branch_parity_audit.py`;
+  - regenerated `docs/_static/tem_branch_parity_audit.{png,pdf,json,csv}`, `docs/_static/w7x_tem_extension_status.{png,pdf,json,csv}`, and `docs/_static/open_research_lane_status.{png,pdf,json,csv}`;
+  - current audit result: TEM remains open with `max |rel gamma|≈4.254`, `max |rel omega|≈3.3` away from the near-zero reference denominator, `max |Delta gamma|≈1.815`, `max |Delta omega|≈3.976`, one growth-rate sign mismatch, three frequency sign mismatches, and an inverted frequency branch (`Spearman≈-0.986`);
+  - quick reduced-moment local probe at `ky=0.3` showed signal choice matters (`phi` gives the wrong frequency sign, electron-density signal is closer but still misses the digitized target), so the next fix must reconstruct the exact TEM case/reference before changing solver physics.
+- Current next best steps:
+  - keep W7-X/TEM kinetic-electron validation blocked until the full TEM case definition or an independent reference dump is available;
+  - resume W7-X zonal physical closure under the paper-facing initializer/observable convention;
+  - advance the real `vmec_jax`/`booz_xform_jax` geometry bridge with parity and gradient gates.

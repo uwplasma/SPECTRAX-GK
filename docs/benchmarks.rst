@@ -227,7 +227,13 @@ The current extended panel covers:
 The TEM row is provisional. The shipped ``tem_reference.csv`` is digitized from
 the literature rather than sourced from a GX benchmark dump, and the exact case
 definition behind that digitized curve is still being reassembled. It should be
-read as a tracked stress lane, not as a closed GX-parity result.
+read as a tracked stress lane, not as a closed parity result. The executable
+audit ``docs/_static/tem_branch_parity_audit.{png,pdf,json,csv}`` records the
+open branch mismatch explicitly: maximum absolute relative growth-rate
+mismatch ``4.25``, maximum absolute relative frequency mismatch ``3.3`` after
+excluding the near-zero reference denominator, one growth-rate sign mismatch,
+three frequency sign mismatches, and a frequency-branch Spearman coefficient
+near ``-0.986``.
 
 Case groups
 -----------

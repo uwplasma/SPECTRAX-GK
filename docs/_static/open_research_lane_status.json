@@ -61,6 +61,7 @@
       "primary_artifacts": [
         "docs/_static/w7x_fluctuation_spectrum_panel.json",
         "docs/_static/w7x_tem_extension_status.json",
+        "docs/_static/tem_branch_parity_audit.json",
         "docs/_static/tem_mismatch_table.csv"
       ],
       "status": "partial"

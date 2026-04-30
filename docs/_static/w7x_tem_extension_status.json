@@ -18,16 +18,25 @@
     {
       "claim_level": "open_linear_mismatch_blocks_tem_extension",
       "key_metrics": {
+        "audit_available": true,
+        "audit_claim_level": "provisional_literature_digitization_not_closed_parity",
+        "audit_status": "open",
         "available": true,
+        "gamma_sign_mismatch_count": 1,
+        "max_abs_gamma_error": 1.815449,
+        "max_abs_omega_error": 3.976386,
         "max_abs_rel_gamma": 4.254,
-        "max_abs_rel_omega": 351.534,
+        "max_abs_rel_omega": 3.3,
+        "max_abs_rel_omega_raw": 351.534,
         "n_rows": 6,
-        "worst_gamma_ky": 0.45,
-        "worst_omega_ky": 0.4
+        "omega_branch_inversion": true,
+        "omega_sign_mismatch_count": 3,
+        "omega_spearman": -0.9856107606091623,
+        "source": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/tem_branch_parity_audit.json"
       },
       "lane": "TEM / kinetic-electron linear parity",
-      "next_action": "Fix the TEM branch/frequency mismatch before using kinetic-electron W7-X scans for validation or optimization.",
-      "primary_artifact": "docs/_static/tem_mismatch_table.csv",
+      "next_action": "Reconstruct the TEM case definition or obtain an independent reference dump, then fix the branch/frequency mismatch before using kinetic-electron W7-X scans for validation or optimization.",
+      "primary_artifact": "docs/_static/tem_branch_parity_audit.json",
       "status": "open"
     },
     {
