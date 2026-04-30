@@ -168,8 +168,10 @@ grid-mode split is:
 
 The same GPU profile with ``laguerre_mode="spectral"`` measured
 ``nonlinear_bracket=2.04e-3 s`` and ``full_rhs=5.29e-3 s``. CPU full-RHS
-timings are mixed on this small case, so the spectral mode is not promoted as a
-default; it remains an opt-in mode guarded by the case-level parity gate below.
+timings were refreshed locally with a bounded five-repeat run:
+``full_rhs=8.14e-2 s`` for grid mode and ``7.97e-2 s`` for spectral mode.
+That small CPU improvement is not a production speedup claim. The spectral mode
+therefore remains an opt-in mode guarded by the case-level parity gate below.
 
 The dominant remaining cost is still the nonlinear FFT pipeline with
 gather/scatter-heavy kernels in the bracket assembly path.
