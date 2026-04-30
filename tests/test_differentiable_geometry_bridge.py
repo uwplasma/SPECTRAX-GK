@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+import types
 from pathlib import Path
 
 import jax
@@ -9,6 +10,7 @@ import numpy as np
 import pytest
 
 import spectraxgk
+import spectraxgk.geometry.differentiable as diff_geom
 from spectraxgk.geometry.differentiable import (
     _candidate_paths,
     _find_importable_module,
@@ -372,6 +374,84 @@ def test_vmec_jax_flux_tube_array_parity_report_tracks_production_gap_when_avail
 def test_vmec_jax_flux_tube_array_parity_report_enforces_boozer_resolution_floor() -> None:
     with pytest.raises(ValueError, match="mboz and nboz"):
         vmec_jax_flux_tube_array_parity_report(mboz=20, nboz=21)
+
+
+def test_vmec_jax_boozer_equal_arc_core_profiles_supports_surface_stencil(monkeypatch) -> None:
+    vmec_pkg = types.ModuleType("vmec_jax")
+    vmec_pkg.__path__ = []  # type: ignore[attr-defined]
+    booz_pkg = types.ModuleType("booz_xform_jax")
+    booz_pkg.__path__ = []  # type: ignore[attr-defined]
+    booz_input = types.ModuleType("vmec_jax.booz_input")
+    booz_api = types.ModuleType("booz_xform_jax.jax_api")
+    captured: dict[str, list[int] | None] = {}
+
+    def booz_xform_inputs_from_state(*args, **kwargs):
+        return types.SimpleNamespace(bmns=None)
+
+    def prepare_booz_xform_constants_from_inputs(*args, **kwargs):
+        return object(), object()
+
+    def booz_xform_from_inputs(*, surface_indices=None, **kwargs):
+        if surface_indices is None:
+            idx = jnp.arange(5, dtype=jnp.int32)
+            captured["surface_indices"] = None
+        else:
+            idx = jnp.asarray(surface_indices, dtype=jnp.int32)
+            captured["surface_indices"] = [int(x) for x in np.asarray(idx)]
+        s = idx.astype(jnp.float64)
+        rows = idx.size
+        return {
+            "bmnc_b": jnp.stack((1.0 + 0.01 * s, 0.04 + 0.002 * s), axis=1),
+            "rmnc_b": jnp.stack((2.0 + 0.02 * s, 0.03 + 0.001 * s), axis=1),
+            "zmns_b": jnp.stack((jnp.zeros(rows), 0.12 + 0.003 * s), axis=1),
+            "pmns_b": jnp.stack((jnp.zeros(rows), 0.01 + 0.001 * s), axis=1),
+            "iota_b": 0.42 + 0.01 * s,
+            "buco_b": 0.08 + 0.002 * s,
+            "bvco_b": 1.1 + 0.01 * s,
+            "ixm_b": jnp.asarray([0, 1], dtype=jnp.int32),
+            "ixn_b": jnp.asarray([0, 0], dtype=jnp.int32),
+            "ns_b": 5,
+            "jlist": idx + 1,
+        }
+
+    booz_input.booz_xform_inputs_from_state = booz_xform_inputs_from_state
+    booz_api.prepare_booz_xform_constants_from_inputs = prepare_booz_xform_constants_from_inputs
+    booz_api.booz_xform_from_inputs = booz_xform_from_inputs
+    monkeypatch.setitem(sys.modules, "vmec_jax", vmec_pkg)
+    monkeypatch.setitem(sys.modules, "vmec_jax.booz_input", booz_input)
+    monkeypatch.setitem(sys.modules, "booz_xform_jax", booz_pkg)
+    monkeypatch.setitem(sys.modules, "booz_xform_jax.jax_api", booz_api)
+    monkeypatch.setattr(
+        diff_geom,
+        "discover_differentiable_geometry_backends",
+        lambda: {"vmec_jax_available": True, "booz_xform_jax_api_available": True},
+    )
+
+    state = types.SimpleNamespace(Rcos=jnp.ones((6, 2), dtype=jnp.float64))
+    wout = types.SimpleNamespace(signgs=1, Aminor_p=1.0, phi=np.asarray([0.0, -np.pi]), nfp=4)
+    mapping = vmec_jax_boozer_equal_arc_core_profiles_from_state(
+        state,
+        static=object(),
+        indata=object(),
+        wout=wout,
+        ntheta=8,
+        surface_stencil_width=3,
+    )
+
+    assert captured["surface_indices"] == [1, 2, 3]
+    assert mapping["surface_stencil_width"] == 3
+    assert mapping["boozer_surface_indices"] == [1, 2, 3]
+    assert np.all(np.isfinite(np.asarray(mapping["bmag"])))
+
+    with pytest.raises(ValueError, match="surface_stencil_width"):
+        vmec_jax_boozer_equal_arc_core_profiles_from_state(
+            state,
+            static=object(),
+            indata=object(),
+            wout=wout,
+            ntheta=8,
+            surface_stencil_width=2,
+        )
 
 
 def test_vmec_jax_metric_tensor_sensitivity_report_checks_real_metric_tensors_when_available() -> None:

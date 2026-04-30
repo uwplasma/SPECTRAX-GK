@@ -28,6 +28,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--ntheta", type=int, default=4)
     parser.add_argument("--mboz", type=int, default=21)
     parser.add_argument("--nboz", type=int, default=21)
+    parser.add_argument(
+        "--surface-stencil-width",
+        type=int,
+        default=0,
+        help="Boozer radial stencil width; 0 transforms all radial surfaces.",
+    )
     parser.add_argument("--json-only", action="store_true")
     return parser
 
@@ -42,6 +48,7 @@ def main(argv: list[str] | None = None) -> int:
         ntheta=args.ntheta,
         mboz=args.mboz,
         nboz=args.nboz,
+        surface_stencil_width=None if args.surface_stencil_width <= 0 else args.surface_stencil_width,
     )
     if args.json_only:
         print(json.dumps(_json_clean(payload), indent=2, sort_keys=True))
