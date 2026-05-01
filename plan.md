@@ -1634,3 +1634,7 @@ Exit gate:
   - keep this as localization evidence only: zero-norm rows must not be skipped
     in production until a state-window identity gate shows they remain inactive
     after nonlinear evolution.
+  - added a linked-``|k_z|`` hypercollision guardrail test showing the profiled
+    zero norm is an initial-state property: constant-in-``z`` states remain
+    zero, while resolved ``z``-varying states activate the term when
+    ``hypercollisions_kz`` is nonzero.
