@@ -1,5 +1,5 @@
 import math
-import numpy as np
+
 import jax.numpy as jnp
 
 from spectraxgk.geometry import SAlphaGeometry
@@ -8,18 +8,18 @@ from spectraxgk.terms import linear_terms as linear_terms_module
 from spectraxgk.terms.linear_terms import hypercollisions_contribution
 
 
-def _gx_jflr(l: int, b: jnp.ndarray) -> jnp.ndarray:
-    """GX Jflr: exp(-b/2) * (-b/2)^l / l!."""
+def _gx_jflr(ell: int, b: jnp.ndarray) -> jnp.ndarray:
+    """GX Jflr: exp(-b/2) * (-b/2)^ell / ell!."""
 
-    return jnp.exp(-0.5 * b) * ((-0.5 * b) ** l) / jnp.asarray(math.factorial(l), dtype=b.dtype)
+    return jnp.exp(-0.5 * b) * ((-0.5 * b) ** ell) / jnp.asarray(math.factorial(ell), dtype=b.dtype)
 
 
 def test_gyroaverage_matches_gx_jflr():
     b = jnp.asarray([0.0, 0.3, 1.0], dtype=jnp.float32)
     Jl = J_l_all(b, l_max=4)
-    for l in range(5):
-        expected = _gx_jflr(l, b)
-        assert jnp.allclose(Jl[l], expected, rtol=1.0e-6, atol=1.0e-7)
+    for ell in range(5):
+        expected = _gx_jflr(ell, b)
+        assert jnp.allclose(Jl[ell], expected, rtol=1.0e-6, atol=1.0e-7)
 
 
 def test_gx_factorial_matches_stirling_branch():
@@ -36,10 +36,10 @@ def test_gx_factorial_matches_stirling_branch():
 
 def test_gyroaverage_matches_gx_jflr_stirling_branch():
     b = jnp.asarray([0.3, 1.0, 2.5], dtype=jnp.float32)
-    l = 7
-    expected = jnp.exp(-0.5 * b) * ((-0.5 * b) ** l) / gx_factorial(jnp.asarray(float(l), dtype=b.dtype))
-    Jl = J_l_all(b, l_max=l)
-    assert jnp.allclose(Jl[l], expected, rtol=1.0e-7, atol=1.0e-8)
+    ell = 7
+    expected = jnp.exp(-0.5 * b) * ((-0.5 * b) ** ell) / gx_factorial(jnp.asarray(float(ell), dtype=b.dtype))
+    Jl = J_l_all(b, l_max=ell)
+    assert jnp.allclose(Jl[ell], expected, rtol=1.0e-7, atol=1.0e-8)
 
 
 def test_salpha_geometry_matches_gx_formulas():
@@ -115,7 +115,7 @@ def test_salpha_geometry_kperp2_matches_alternate_formula():
 def test_hypercollisions_matches_gx_formula():
     Nl, Nm = 6, 12
     G = jnp.ones((1, Nl, Nm, 1, 1, 1), dtype=jnp.complex64)
-    l = jnp.arange(Nl, dtype=jnp.float32)[:, None, None, None, None]
+    ell = jnp.arange(Nl, dtype=jnp.float32)[:, None, None, None, None]
     m = jnp.arange(Nm, dtype=jnp.float32)[None, :, None, None, None]
     vth = jnp.asarray([1.0], dtype=jnp.float32)
     nu_hyper_l = jnp.asarray(0.5, dtype=jnp.float32)
@@ -126,10 +126,10 @@ def test_hypercollisions_matches_gx_formula():
     p_hyper_lm = jnp.asarray(6.0, dtype=jnp.float32)
     nu_hyper = jnp.asarray(0.0, dtype=jnp.float32)
     hyper_ratio = jnp.zeros((Nl, Nm, 1, 1, 1), dtype=jnp.float32)
-    ratio_l = (l / float(Nl)) ** p_hyper_l
+    ratio_l = (ell / float(Nl)) ** p_hyper_l
     ratio_m = (m / float(Nm)) ** p_hyper_m
-    ratio_lm = ((2.0 * l + m) / (2.0 * float(Nl) + float(Nm))) ** p_hyper_lm
-    mask_const = (m > 2.0) | (l > 1.0)
+    ratio_lm = ((2.0 * ell + m) / (2.0 * float(Nl) + float(Nm))) ** p_hyper_lm
+    mask_const = (m > 2.0) | (ell > 1.0)
     mask_kz = jnp.zeros_like(mask_const)
     m_pow = m ** p_hyper_m
     m_norm_kz = float(max(Nm - 1, 1))
@@ -213,3 +213,43 @@ def test_hypercollisions_skips_linked_abs_kz_when_kz_weight_is_zero(monkeypatch)
     )
 
     assert jnp.allclose(out, jnp.zeros_like(G))
+
+
+def test_linked_kz_hypercollisions_activate_for_z_varying_state():
+    Nl, Nm, Nz = 2, 4, 4
+    zeros_lm = jnp.zeros((Nl, Nm, 1, 1, 1), dtype=jnp.float32)
+    mask_const = jnp.zeros((1, Nl, Nm, 1, 1, 1), dtype=bool)
+    mask_kz = jnp.ones((1, Nl, Nm, 1, 1, 1), dtype=bool)
+    kwargs = dict(
+        vth=jnp.asarray([1.0], dtype=jnp.float32),
+        nu_hyper=jnp.asarray([0.0], dtype=jnp.float32),
+        nu_hyper_l=jnp.asarray(0.0, dtype=jnp.float32),
+        nu_hyper_m=jnp.asarray(1.0, dtype=jnp.float32),
+        nu_hyper_lm=jnp.asarray(0.0, dtype=jnp.float32),
+        hyper_ratio=zeros_lm,
+        ratio_l=zeros_lm,
+        ratio_m=zeros_lm,
+        ratio_lm=zeros_lm,
+        mask_const=mask_const,
+        mask_kz=mask_kz,
+        m_pow=jnp.ones((1, Nl, Nm, 1, 1, 1), dtype=jnp.float32),
+        m_norm_kz_factor=jnp.asarray(1.0, dtype=jnp.float32),
+        kz=jnp.asarray([0.0, 1.0, -2.0, -1.0], dtype=jnp.float32),
+        kpar_scale=jnp.asarray(1.0, dtype=jnp.float32),
+        hypercollisions_const=jnp.asarray(0.0, dtype=jnp.float32),
+        hypercollisions_kz=jnp.asarray(1.0, dtype=jnp.float32),
+        weight=jnp.asarray(1.0, dtype=jnp.float32),
+        linked_indices=(jnp.asarray([[0]], dtype=jnp.int32),),
+        linked_kz=(jnp.asarray([0.0, 1.0, -2.0, -1.0], dtype=jnp.float32),),
+        linked_inverse_permutation=jnp.asarray([0], dtype=jnp.int32),
+        linked_full_cover=True,
+    )
+
+    constant = jnp.ones((1, Nl, Nm, 1, 1, Nz), dtype=jnp.complex64)
+    z_varying = constant * jnp.asarray([0.0, 1.0, 0.0, -1.0], dtype=jnp.complex64)
+
+    constant_out = hypercollisions_contribution(constant, **kwargs)
+    varying_out = hypercollisions_contribution(z_varying, **kwargs)
+
+    assert jnp.linalg.norm(constant_out) < 1.0e-6
+    assert jnp.linalg.norm(varying_out) > 1.0e-3
