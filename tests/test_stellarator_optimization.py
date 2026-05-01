@@ -18,6 +18,8 @@ from spectraxgk.stellarator_optimization import (
     optimize_stellarator_itg,
     qa_observable_vector,
     stellarator_itg_objective,
+    stellarator_itg_objective_residual_names,
+    stellarator_itg_objective_residual_vector,
 )
 
 
@@ -76,7 +78,11 @@ def test_stellarator_itg_objectives_have_fd_checked_gradients() -> None:
 
     for kind in ("growth", "quasilinear_flux", "nonlinear_heat_flux"):
         value = stellarator_itg_objective(params, kind, cfg)
+        residual = stellarator_itg_objective_residual_vector(params, kind, cfg)
         assert float(value) > 0.0
+        assert residual.shape == (3 + len(PARAMETER_NAMES) + 1,)
+        assert len(stellarator_itg_objective_residual_names(kind)) == residual.size
+        np.testing.assert_allclose(float(value), float(jnp.dot(residual, residual)), rtol=1.0e-6)
         report = autodiff_finite_difference_report(
             lambda x, kind=kind: stellarator_itg_objective(x, kind, cfg),
             params,
@@ -112,6 +118,8 @@ def test_optimize_stellarator_itg_reduces_nonlinear_window_objective(monkeypatch
     assert result.objective_kind == "nonlinear_heat_flux"
     assert result.final_objective < 0.20 * result.initial_objective
     assert result.gradient_gate["passed"] is True
+    assert result.covariance["source"] == "weighted_objective_residual"
+    assert len(result.covariance["residual_names"]) == 3 + len(PARAMETER_NAMES) + 1
     assert result.covariance["sensitivity_map_rank"] >= 3
     assert result.nonlinear_trace is not None
     assert result.nonlinear_trace["final_window"]["cv"] < 0.05
