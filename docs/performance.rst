@@ -252,13 +252,17 @@ The profiler/identity artifact is generated with:
      --out-json docs/_static/nonlinear_sharding_profile.json
 
 The JSON records device count, requested sharding axis, warm serial/sharded
-timings, profiler-trace status, and final-state errors. The local checked-in
-artifact is deliberately small and only establishes the control-flow and
-single-device identity gate. The two-GPU office artifact at
+timings, profiler-trace status, final-state errors, and the fastest
+identity-preserving candidate among the requested state-axis options. The
+local checked-in artifact is deliberately small and only establishes the
+control-flow and single-device identity gate. The two-GPU office artifact at
 ``docs/_static/nonlinear_sharding_profile_office_gpu.json`` records active
 ``auto``/``kx`` state sharding with zero final-state error on both candidate
-axes, while showing no speedup on the bounded profiling grid. Do not promote new
-nonlinear runtime speedup claims until this tool is rerun on matched
+axes. In the current bounded run the requested ``auto`` path is slower
+(``0.86x``), while the best identity-preserving candidate is explicit ``kx``
+sharding at about ``1.03x``. That is not enough for a publication speedup
+claim. Do not promote new nonlinear runtime speedup claims until this tool is
+rerun on matched
 benchmark-size CPU and GPU cases and the runtime/memory panel is refreshed.
 
 Spectral nonlinear mode (gated fast toggle)

@@ -257,6 +257,11 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
 
     profile_identity = bool((profile or {}).get("identity_gate_pass", False))
     profile_speedup = _finite_float((profile or {}).get("engineering_speedup"))
+    profile_best = (
+        (profile or {}).get("best_identity_preserving_candidate", {})
+        if isinstance((profile or {}).get("best_identity_preserving_candidate", {}), dict)
+        else {}
+    )
 
     lanes: list[dict[str, Any]] = [
         {
@@ -373,6 +378,8 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
             "key_metrics": {
                 "identity_gate_pass": profile_identity,
                 "engineering_speedup": profile_speedup,
+                "best_identity_candidate": profile_best.get("spec"),
+                "best_identity_candidate_speedup": _finite_float(profile_best.get("engineering_speedup_median")),
                 "device_count": (profile or {}).get("device_count"),
                 "backend": (profile or {}).get("default_backend"),
             },
@@ -470,7 +477,11 @@ def write_status_artifacts(payload: dict[str, Any], *, out_png: Path = DEFAULT_O
                 metric = f"VMEC-state AD-FD: {state_abs:.1e}"
         elif lane["lane"].startswith("Profiler"):
             speed = key_metrics.get("engineering_speedup")
-            metric = "speedup: n/a" if speed is None else f"speedup: {speed:.2f}x"
+            best = key_metrics.get("best_identity_candidate")
+            best_speed = key_metrics.get("best_identity_candidate_speedup")
+            metric = "primary: n/a" if speed is None else f"primary: {speed:.2f}x"
+            if best_speed is not None:
+                metric += f"; best {best}: {best_speed:.2f}x"
         ax.text(min(value + 0.06, 3.05), float(yi), metric, va="center", ha="left", fontsize=8.2)
 
     caption = (
