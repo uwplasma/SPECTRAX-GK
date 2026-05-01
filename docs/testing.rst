@@ -40,6 +40,16 @@ tracked artifacts, and next tests. This is the working guardrail for reaching
 95% package-wide coverage without adding shallow tests that do not validate the
 implemented physics or numerics.
 
+Optional external-backend artifact builders that require local ``vmec_jax`` or
+``booz_xform_jax`` checkouts are kept out of the default package-wide coverage
+denominator when the public CI cannot install or execute those repositories.
+Their fast contracts are still covered by mocked backend tests and low-level
+geometry/numerics tests, while the real physics claims are validated by the
+tracked JSON/PDF artifact gates documented below. This avoids treating
+unavailable optional backends as missing unit coverage while preserving the
+requirement that every differentiable-geometry claim has an explicit
+finite-difference or parity artifact.
+
 Test categories
 ---------------
 
@@ -916,6 +926,9 @@ physics rigor:
   CI so the threshold is not weakened when the job is parallelized. Each shard
   has its own timeout so a single slow validation slice cannot become an
   unbounded release job.
+  Optional VMEC/Boozer artifact builders remain validated by their tracked
+  offline artifact gates and mocked CI contracts, not by importing unavailable
+  external repositories in the public coverage job.
 - **Manual full tier**: full ``pytest`` suite plus strict coverage gates:
   ``spectraxgk.terms >= 90%`` and per-module core gates for
   ``linear_krylov.py`` and ``diffrax_integrators.py``.

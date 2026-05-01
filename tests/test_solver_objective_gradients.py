@@ -15,6 +15,7 @@ from spectraxgk.solver_objective_gradients import (
     VMEC_BOOZER_FREQUENCY_OBJECTIVE_NAMES,
     VMEC_BOOZER_QUASILINEAR_OBJECTIVE_NAMES,
     VMEC_BOOZER_STATE_PARAMETER_NAMES,
+    _vmec_boozer_state_parameter_name,
     default_solver_geometry_design_params,
     linear_solver_geometry_gradient_report,
     mode21_vmec_boozer_linear_frequency_gradient_report,
@@ -43,6 +44,11 @@ def test_solver_ready_geometry_mapping_validates_contract() -> None:
         solver_ready_geometry_mapping(jnp.ones(3), theta)
 
 
+def test_vmec_boozer_state_parameter_name_tracks_default_and_explicit_modes() -> None:
+    assert _vmec_boozer_state_parameter_name(17, 1, default_mid_surface=17) == "Rcos_mid_surface_m1"
+    assert _vmec_boozer_state_parameter_name(11, 2, default_mid_surface=17) == "Rcos_r11_m2"
+
+
 def test_linear_solver_geometry_gradient_report_passes_actual_rhs_gate() -> None:
     report = linear_solver_geometry_gradient_report(fd_step=1.0e-3, rtol=1.0e-1, atol=2.0e-3)
 
@@ -57,6 +63,9 @@ def test_linear_solver_geometry_gradient_report_passes_actual_rhs_gate() -> None
         len(SOLVER_OBJECTIVE_NAMES),
         len(SOLVER_GEOMETRY_PARAMETER_NAMES),
     )
+
+    with pytest.raises(ValueError, match="length-2"):
+        linear_solver_geometry_gradient_report(jnp.ones(3))
 
 
 def test_mode21_vmec_boozer_frequency_gate_exports_and_scope() -> None:

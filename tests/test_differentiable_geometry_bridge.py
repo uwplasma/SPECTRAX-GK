@@ -12,9 +12,16 @@ import pytest
 import spectraxgk
 import spectraxgk.geometry.differentiable as diff_geom
 from spectraxgk.geometry.differentiable import (
+    _array_parity_metrics,
     _candidate_paths,
+    _cumulative_trapezoid,
     _find_importable_module,
+    _interp_radial,
     _is_traced,
+    _periodic_bilinear_sample_2d,
+    _radial_derivative_array,
+    _radial_derivative_profile,
+    _scalar_parity_metrics,
     booz_xform_flux_tube_sensitivity_report,
     booz_xform_spectral_sensitivity_report,
     discover_differentiable_geometry_backends,
@@ -583,6 +590,78 @@ def test_finite_difference_jacobian_matches_closed_form_linear_map() -> None:
 
     with pytest.raises(ValueError, match="one-dimensional"):
         finite_difference_jacobian(fn, jnp.ones((2, 1)))
+
+
+def test_low_level_radial_and_sampling_helpers_cover_edge_contracts() -> None:
+    s_grid = jnp.asarray([0.0, 0.5, 1.0])
+    profile = jnp.asarray([1.0, 2.0, 5.0])
+    modes = jnp.asarray([[1.0, 10.0], [2.0, 20.0], [5.0, 50.0]])
+
+    assert float(_interp_radial(profile, s_grid, 0.25)) == pytest.approx(1.5)
+    assert np.allclose(np.asarray(_interp_radial(modes, s_grid, 0.25)), [1.5, 15.0])
+    with pytest.raises(ValueError, match="radial interpolation"):
+        _interp_radial(jnp.ones((2, 2, 2)), s_grid[:2], 0.25)
+
+    assert np.allclose(np.asarray(_radial_derivative_profile(profile, 0.5)), [2.0, 4.0, 6.0])
+    assert np.allclose(np.asarray(_radial_derivative_profile(jnp.asarray([3.0]), 0.5)), [0.0])
+    with pytest.raises(ValueError, match="one-dimensional"):
+        _radial_derivative_profile(jnp.ones((2, 2)), 0.5)
+
+    assert np.allclose(np.asarray(_radial_derivative_array(modes, 0.5)), [[2.0, 20.0], [4.0, 40.0], [6.0, 60.0]])
+    assert np.allclose(np.asarray(_radial_derivative_array(jnp.ones((1, 2)), 0.5)), [[0.0, 0.0]])
+    with pytest.raises(ValueError, match="two-dimensional"):
+        _radial_derivative_array(jnp.ones(2), 0.5)
+
+    cumulative = _cumulative_trapezoid(jnp.asarray([0.0, 2.0, 2.0]), jnp.asarray([0.0, 1.0, 3.0]))
+    assert np.allclose(np.asarray(cumulative), [0.0, 1.0, 5.0])
+    assert np.allclose(np.asarray(_cumulative_trapezoid(jnp.asarray([7.0]), jnp.asarray([0.0]))), [0.0])
+    with pytest.raises(ValueError, match="cumulative trapezoid"):
+        _cumulative_trapezoid(jnp.ones((2, 1)), jnp.ones(2))
+
+    grid = jnp.asarray([[0.0, 1.0], [2.0, 3.0]])
+    sampled = _periodic_bilinear_sample_2d(
+        grid,
+        jnp.asarray([0.0, jnp.pi / 2.0]),
+        jnp.asarray([0.0, jnp.pi / 2.0]),
+    )
+    assert sampled.shape == (2,)
+    assert np.all(np.isfinite(np.asarray(sampled)))
+    with pytest.raises(ValueError, match="two-dimensional"):
+        _periodic_bilinear_sample_2d(jnp.ones(2), jnp.ones(2), jnp.ones(2))
+    with pytest.raises(ValueError, match="same shape"):
+        _periodic_bilinear_sample_2d(grid, jnp.ones(2), jnp.ones(3))
+    with pytest.raises(ValueError, match="non-empty"):
+        _periodic_bilinear_sample_2d(jnp.ones((0, 2)), jnp.ones(1), jnp.ones(1))
+
+
+def test_parity_metric_helpers_report_shape_and_error_scales() -> None:
+    mismatch = _array_parity_metrics(np.ones((2,)), np.ones((2, 1)))
+    assert mismatch["shape_match"] is False
+    assert mismatch["candidate_shape"] == [2]
+
+    metrics = _array_parity_metrics(np.asarray([1.0, 3.0]), np.asarray([1.0, 2.0]))
+    assert metrics["shape_match"] is True
+    assert metrics["max_abs"] == pytest.approx(1.0)
+    assert metrics["normalized_max_abs"] == pytest.approx(0.5)
+    assert metrics["candidate_max"] == pytest.approx(3.0)
+
+    scalar = _scalar_parity_metrics(3.0, 2.0)
+    assert scalar["abs"] == pytest.approx(1.0)
+    assert scalar["rel"] == pytest.approx(0.5)
+
+
+def test_optional_vmec_boundary_report_unavailable_path(monkeypatch) -> None:
+    monkeypatch.setattr(
+        diff_geom,
+        "discover_differentiable_geometry_backends",
+        lambda: {"vmec_jax_boundary_api_available": False},
+    )
+
+    report = vmec_boundary_aspect_sensitivity_report(jnp.asarray([0.1, 0.2]))
+
+    assert report["available"] is False
+    assert report["aspect"] is None
+    assert report["grad_ad"] is None
 
 
 def test_geometry_sensitivity_report_rejects_nondesign_parameter_array() -> None:
