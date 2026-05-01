@@ -1641,6 +1641,12 @@ Exit gate:
     ``docs/_static/linear_rhs_terms_profile_z_wave_cpu.{csv,json}``, where
     resolved parallel variation activates hypercollisions and linked
     ``|k_z|`` with norm ``2.35e-4`` and linked-operator cost ``2.02e-3 s``;
+  - refreshed the matching ``office`` GPU profiles after the profiler-source
+    fix: the initial-state artifact records ``full_linear_rhs≈6.53e-3 s`` and
+    measured terms summing to ``3.61e-3 s``, while
+    ``docs/_static/linear_rhs_terms_profile_z_wave_gpu.{csv,json}`` activates
+    the same linked ``|k_z|``/hypercollision pair with matched norm
+    ``2.35e-4`` and linked-operator cost ``3.59e-4 s``;
   - keep this as localization evidence only: zero-norm rows must not be skipped
     in production until a state-window identity gate shows they remain inactive
     after nonlinear evolution.
