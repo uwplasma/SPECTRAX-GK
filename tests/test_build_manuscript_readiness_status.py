@@ -46,6 +46,19 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(tmp_path: Pat
         )
     _write_json(
         tmp_path,
+        "docs/_static/quasilinear_dataset_sufficiency.json",
+        {
+            "promotion_gate": {"passed": False, "blockers": ["minimum_total_electrostatic_cases"]},
+            "requirements": {
+                "current_total_cases": 4,
+                "min_total_electrostatic_cases": 6,
+                "current_explicit_train_geometries": 1,
+                "min_explicit_train_geometries": 2,
+            },
+        },
+    )
+    _write_json(
+        tmp_path,
         "docs/_static/differentiable_geometry_bridge.json",
         {"sensitivity": {"max_abs_ad_fd_error": 1.0e-9}, "uq": {"sensitivity_map_rank": 2}},
     )
@@ -85,6 +98,12 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(tmp_path: Pat
     assert payload["summary"]["n_deferred"] == 2
     assert lanes["Quasilinear diagnostics and saturation-model selection"]["status"] == "closed"
     assert lanes["Quasilinear diagnostics and saturation-model selection"]["key_metrics"]["absolute_flux_promoted"] is False
+    assert (
+        lanes["Quasilinear diagnostics and saturation-model selection"]["key_metrics"][
+            "dataset_sufficiency_promotion_passed"
+        ]
+        is False
+    )
     assert lanes["VMEC/Boozer differentiable geometry parity"]["status"] == "closed"
     assert lanes["Reduced differentiable stellarator ITG optimization"]["status"] == "closed"
     assert lanes["Production solver-objective geometry gradients"]["status"] == "open"
