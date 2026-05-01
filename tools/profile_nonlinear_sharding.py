@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import time
 from pathlib import Path
 import statistics
@@ -95,6 +96,33 @@ def _sharding_specs(primary: str, extra: str | None) -> list[str]:
     if primary not in specs:
         specs.insert(0, primary)
     return specs
+
+
+def _best_identity_preserving_candidate(sharded_results: dict[str, dict[str, Any]]) -> dict[str, Any]:
+    """Return the fastest identity-preserving candidate from a profile payload."""
+
+    candidates: list[tuple[float, str, dict[str, Any]]] = []
+    for spec, result in sharded_results.items():
+        speedup = result.get("engineering_speedup_median")
+        if not bool(result.get("identity_gate_pass", False)) or speedup is None:
+            continue
+        speedup_float = float(speedup)
+        if math.isfinite(speedup_float):
+            candidates.append((speedup_float, str(spec), result))
+    if not candidates:
+        return {
+            "spec": None,
+            "engineering_speedup_median": None,
+            "state_sharding_active": False,
+            "identity_gate_pass": False,
+        }
+    speedup, spec, result = max(candidates, key=lambda item: item[0])
+    return {
+        "spec": spec,
+        "engineering_speedup_median": float(speedup),
+        "state_sharding_active": bool(result.get("state_sharding_active", False)),
+        "identity_gate_pass": bool(result.get("identity_gate_pass", False)),
+    }
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -244,6 +272,7 @@ def main(argv: list[str] | None = None) -> int:
         identity_passes.append(identity_pass)
 
     primary = sharded_results[str(args.sharding)]
+    best_candidate = _best_identity_preserving_candidate(sharded_results)
     payload = {
         "case": "cyclone_nonlinear_fixed_step",
         "device_count": int(jax.device_count()),
@@ -262,6 +291,7 @@ def main(argv: list[str] | None = None) -> int:
         "serial_times_s": serial_times,
         "serial_stats_s": serial_stats,
         "sharded_results": sharded_results,
+        "best_identity_preserving_candidate": best_candidate,
         "profiler_trace": trace_status,
         "serial_warm_s": serial_stats["median"],
         "sharded_warm_s": primary["stats_s"]["median"] if primary["stats_s"] else None,

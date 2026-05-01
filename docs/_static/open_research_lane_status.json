@@ -136,8 +136,10 @@
       "claim_level": "profile_identity_artifact_no_speedup_claim",
       "key_metrics": {
         "backend": "gpu",
+        "best_identity_candidate": "kx",
+        "best_identity_candidate_speedup": 1.034710337461593,
         "device_count": 2,
-        "engineering_speedup": 0.7928050107984479,
+        "engineering_speedup": 0.8555105284923791,
         "identity_gate_pass": true
       },
       "lane": "Profiler-backed nonlinear hot-path optimization",

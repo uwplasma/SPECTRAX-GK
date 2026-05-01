@@ -1,4 +1,10 @@
 {
+  "best_identity_preserving_candidate": {
+    "engineering_speedup_median": 1.1511627317350575,
+    "identity_gate_pass": true,
+    "spec": "kx",
+    "state_sharding_active": false
+  },
   "case": "cyclone_nonlinear_fixed_step",
   "claim_scope": "Profiler/identity artifact for fixed-step nonlinear state sharding and candidate state-axis decompositions. Do not use as a published runtime claim without a larger matched CPU/GPU sweep and profiler trace review.",
   "default_backend": "cpu",

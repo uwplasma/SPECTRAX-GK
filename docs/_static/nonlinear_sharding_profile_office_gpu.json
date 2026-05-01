@@ -1,4 +1,10 @@
 {
+  "best_identity_preserving_candidate": {
+    "engineering_speedup_median": 1.034710337461593,
+    "identity_gate_pass": true,
+    "spec": "kx",
+    "state_sharding_active": true
+  },
   "case": "cyclone_nonlinear_fixed_step",
   "claim_scope": "Profiler/identity artifact for fixed-step nonlinear state sharding and candidate state-axis decompositions. Do not use as a published runtime claim without a larger matched CPU/GPU sweep and profiler trace review.",
   "default_backend": "gpu",
@@ -7,8 +13,8 @@
     "cuda:0",
     "cuda:1"
   ],
-  "dt": 0.02,
-  "engineering_speedup": 0.7928050107984479,
+  "dt": 0.01,
+  "engineering_speedup": 0.8555105284923791,
   "identity_gate_pass": true,
   "laguerre_mode": "grid",
   "max_abs_state_error": 0.0,
@@ -16,76 +22,79 @@
   "method": "rk2",
   "profiler_trace": {
     "error": null,
-    "path": "tools_out/profiles/office_gpu_nonlinear_sharding_trace",
+    "path": "tools_out/profiles/office_gpu_nonlinear_sharding_trace_20260501",
     "requested": true
   },
-  "repeats": 2,
+  "repeats": 3,
   "serial_stats_s": {
-    "max": 1.8538533539976925,
-    "mean": 1.7933406359516084,
-    "median": 1.7933406359516084,
-    "min": 1.7328279179055244,
-    "std": 0.060512718046084046
+    "max": 1.814258944010362,
+    "mean": 1.7530006769423683,
+    "median": 1.7495342178735882,
+    "min": 1.6952088689431548,
+    "std": 0.048663760282394705
   },
   "serial_times_s": [
-    1.7328279179055244,
-    1.8538533539976925
+    1.7495342178735882,
+    1.814258944010362,
+    1.6952088689431548
   ],
-  "serial_warm_s": 1.7933406359516084,
+  "serial_warm_s": 1.7495342178735882,
   "sharded_results": {
     "auto": {
-      "engineering_speedup_median": 0.7928050107984479,
+      "engineering_speedup_median": 0.8555105284923791,
       "error": null,
       "identity_gate_pass": true,
       "max_abs_state_error": 0.0,
       "max_rel_state_error": 0.0,
       "state_sharding_active": true,
       "stats_s": {
-        "max": 2.3123790610115975,
-        "mean": 2.2620198050281033,
-        "median": 2.2620198050281033,
-        "min": 2.211660549044609,
-        "std": 0.05035925598349422
+        "max": 2.1164088977966458,
+        "mean": 2.0687670153565705,
+        "median": 2.0450177520979196,
+        "min": 2.044874396175146,
+        "std": 0.03368794897838705
       },
       "times_s": [
-        2.3123790610115975,
-        2.211660549044609
+        2.1164088977966458,
+        2.0450177520979196,
+        2.044874396175146
       ]
     },
     "kx": {
-      "engineering_speedup_median": 0.7647049815862371,
+      "engineering_speedup_median": 1.034710337461593,
       "error": null,
       "identity_gate_pass": true,
       "max_abs_state_error": 0.0,
       "max_rel_state_error": 0.0,
       "state_sharding_active": true,
       "stats_s": {
-        "max": 2.389676740160212,
-        "mean": 2.345140517107211,
-        "median": 2.345140517107211,
-        "min": 2.30060429405421,
-        "std": 0.04453622305300087
+        "max": 1.710650549037382,
+        "mean": 1.6865202646392088,
+        "median": 1.6908444368746132,
+        "min": 1.658065808005631,
+        "std": 0.02168428918956706
       },
       "times_s": [
-        2.389676740160212,
-        2.30060429405421
+        1.710650549037382,
+        1.658065808005631,
+        1.6908444368746132
       ]
     }
   },
-  "sharded_warm_s": 2.2620198050281033,
+  "sharded_warm_s": 2.0450177520979196,
   "sharding_options": [
     "auto",
     "kx"
   ],
   "state_shape": [
-    3,
     4,
+    6,
     8,
-    8,
+    4,
     16
   ],
   "state_sharding_active": true,
   "state_sharding_requested": "auto",
-  "steps": 3,
+  "steps": 16,
   "warmups": 1
 }

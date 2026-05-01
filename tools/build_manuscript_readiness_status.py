@@ -207,6 +207,11 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
         and solver_gradient_multi_equilibrium
     )
     solver_gradient_status = "closed" if solver_gradient_closed else ("partial" if solver_gradient_passed else "open")
+    profile_best = (
+        (profile or {}).get("best_identity_preserving_candidate", {})
+        if isinstance((profile or {}).get("best_identity_preserving_candidate", {}), dict)
+        else {}
+    )
 
     lanes: list[dict[str, Any]] = [
         {
@@ -336,6 +341,8 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
             "key_metrics": {
                 "identity_gate_pass": bool((profile or {}).get("identity_gate_pass", False)),
                 "engineering_speedup": _finite_float((profile or {}).get("engineering_speedup")),
+                "best_identity_candidate": profile_best.get("spec"),
+                "best_identity_candidate_speedup": _finite_float(profile_best.get("engineering_speedup_median")),
             },
             "next_action": "Keep runtime claims conservative until fresh CPU/GPU profiler artifacts support a speedup.",
         },
@@ -447,7 +454,11 @@ def write_manuscript_readiness_artifacts(payload: dict[str, Any], *, out: str | 
             )
         elif str(lane["lane"]).startswith("Profiler"):
             speed = km.get("engineering_speedup")
-            metric = "speedup: n/a" if speed is None else f"speedup: {float(speed):.2f}x"
+            best = km.get("best_identity_candidate")
+            best_speed = km.get("best_identity_candidate_speedup")
+            primary = "primary: n/a" if speed is None else f"primary: {float(speed):.2f}x"
+            best_text = "" if best_speed is None else f"; best {best}: {float(best_speed):.2f}x"
+            metric = primary + best_text
         text_x = max(float(value) + 0.06, 0.18)
         ax.text(min(text_x, 4.05), float(yi), metric, va="center", ha="left", fontsize=8.0)
 

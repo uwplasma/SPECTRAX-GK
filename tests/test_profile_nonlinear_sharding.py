@@ -36,3 +36,34 @@ def test_profile_nonlinear_sharding_helpers_report_stats_and_unique_specs() -> N
     assert stats["mean"] == 2.0
     assert stats["max"] == 3.0
     assert mod._sharding_specs("auto", "ky,kx,ky,z") == ["auto", "ky", "kx", "z"]
+
+
+def test_profile_nonlinear_sharding_reports_best_identity_candidate() -> None:
+    mod = _load_tool_module()
+
+    best = mod._best_identity_preserving_candidate(
+        {
+            "auto": {
+                "identity_gate_pass": True,
+                "engineering_speedup_median": 0.8,
+                "state_sharding_active": True,
+            },
+            "kx": {
+                "identity_gate_pass": True,
+                "engineering_speedup_median": 1.2,
+                "state_sharding_active": True,
+            },
+            "z": {
+                "identity_gate_pass": False,
+                "engineering_speedup_median": 3.0,
+                "state_sharding_active": True,
+            },
+        }
+    )
+
+    assert best == {
+        "spec": "kx",
+        "engineering_speedup_median": 1.2,
+        "state_sharding_active": True,
+        "identity_gate_pass": True,
+    }
