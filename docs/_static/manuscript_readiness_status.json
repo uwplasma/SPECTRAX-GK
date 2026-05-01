@@ -6,6 +6,16 @@
       "claim_level": "validated_diagnostics_negative_absolute_flux_promotion",
       "key_metrics": {
         "absolute_flux_promoted": false,
+        "dataset_blockers": [
+          "minimum_total_electrostatic_cases",
+          "minimum_explicit_train_geometries",
+          "downstream_candidate_skill_gates_not_passed"
+        ],
+        "dataset_current_total_cases": 4,
+        "dataset_current_train_geometries": 1,
+        "dataset_min_total_cases": 6,
+        "dataset_min_train_geometries": 2,
+        "dataset_sufficiency_promotion_passed": false,
         "holdout_mean_abs_relative_error": 204.96643050481953,
         "holdout_points": 3,
         "null_training_mean_error": 0.17003269672297722,
@@ -22,7 +32,8 @@
         "docs/_static/quasilinear_stellarator_train_holdout_report.json",
         "docs/_static/quasilinear_saturation_rule_sweep.json",
         "docs/_static/quasilinear_shape_aware_saturation.json",
-        "docs/_static/quasilinear_candidate_uncertainty.json"
+        "docs/_static/quasilinear_candidate_uncertainty.json",
+        "docs/_static/quasilinear_dataset_sufficiency.json"
       ],
       "status": "closed"
     },

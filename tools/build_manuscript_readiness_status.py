@@ -134,6 +134,7 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
     ql_sweep = _read_json(root, "docs/_static/quasilinear_saturation_rule_sweep.json")
     ql_shape = _read_json(root, "docs/_static/quasilinear_shape_aware_saturation.json")
     ql_uq = _read_json(root, "docs/_static/quasilinear_candidate_uncertainty.json")
+    ql_dataset = _read_json(root, "docs/_static/quasilinear_dataset_sufficiency.json")
     geom = _read_json(root, "docs/_static/differentiable_geometry_bridge.json")
     geom_matrix = _read_json(root, "docs/_static/vmec_boozer_parity_matrix.json")
     opt = _read_json(root, "docs/_static/stellarator_itg_optimization_comparison.json")
@@ -149,16 +150,28 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
     ql_sweep_gate = (ql_sweep or {}).get("promotion_gate", {}) if isinstance((ql_sweep or {}).get("promotion_gate", {}), dict) else {}
     ql_shape_gate = (ql_shape or {}).get("promotion_gate", {}) if isinstance((ql_shape or {}).get("promotion_gate", {}), dict) else {}
     ql_uq_gate = (ql_uq or {}).get("promotion_gate", {}) if isinstance((ql_uq or {}).get("promotion_gate", {}), dict) else {}
+    ql_dataset_gate = (
+        (ql_dataset or {}).get("promotion_gate", {})
+        if isinstance((ql_dataset or {}).get("promotion_gate", {}), dict)
+        else {}
+    )
+    ql_dataset_requirements = (
+        (ql_dataset or {}).get("requirements", {})
+        if isinstance((ql_dataset or {}).get("requirements", {}), dict)
+        else {}
+    )
     ql_negative_closed = bool(
         ql_inputs_passed
         and ql_holdout is not None
         and ql_sweep is not None
         and ql_shape is not None
         and ql_uq is not None
+        and ql_dataset is not None
         and not ql_holdout_promoted
         and not bool(ql_sweep_gate.get("passed", False))
         and not bool(ql_shape_gate.get("passed", False))
         and not bool(ql_uq_gate.get("passed", False))
+        and not bool(ql_dataset_gate.get("passed", False))
     )
 
     matrix_summary = (geom_matrix or {}).get("summary", {}) if isinstance((geom_matrix or {}).get("summary", {}), dict) else {}
@@ -193,6 +206,7 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                 "docs/_static/quasilinear_saturation_rule_sweep.json",
                 "docs/_static/quasilinear_shape_aware_saturation.json",
                 "docs/_static/quasilinear_candidate_uncertainty.json",
+                "docs/_static/quasilinear_dataset_sufficiency.json",
             ],
             "key_metrics": {
                 "validated_inputs_passed": ql_inputs_passed,
@@ -203,6 +217,14 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                 "simple_rule_promotion_passed": bool(ql_sweep_gate.get("passed", False)),
                 "shape_aware_promotion_passed": bool(ql_shape_gate.get("passed", False)),
                 "uq_candidate_promotion_passed": bool(ql_uq_gate.get("passed", False)),
+                "dataset_sufficiency_promotion_passed": bool(ql_dataset_gate.get("passed", False)),
+                "dataset_current_total_cases": ql_dataset_requirements.get("current_total_cases"),
+                "dataset_min_total_cases": ql_dataset_requirements.get("min_total_electrostatic_cases"),
+                "dataset_current_train_geometries": ql_dataset_requirements.get(
+                    "current_explicit_train_geometries"
+                ),
+                "dataset_min_train_geometries": ql_dataset_requirements.get("min_explicit_train_geometries"),
+                "dataset_blockers": ql_dataset_gate.get("blockers", []),
                 "null_training_mean_error": _finite_float(
                     ql_uq_gate.get("null_training_mean_mean_abs_relative_error")
                 ),
@@ -387,6 +409,7 @@ def write_manuscript_readiness_artifacts(payload: dict[str, Any], *, out: str | 
         km = lane.get("key_metrics", {})
         if str(lane["lane"]).startswith("Quasilinear"):
             metric = (
+                f"dataset: {km.get('dataset_current_total_cases')}/{km.get('dataset_min_total_cases')}; "
                 f"holdouts: {km.get('holdout_points')}; "
                 f"absolute flux promoted: {km.get('absolute_flux_promoted')}"
             )
