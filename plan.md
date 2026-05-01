@@ -1583,3 +1583,17 @@ Exit gate:
   - updated README, manuscript-figure docs, and stellarator-optimization docs
     to keep the claim scoped to reduced optimization/UQ plumbing until
     production VMEC/Boozer/GK nonlinear audits pass.
+- Quasilinear dataset-sufficiency promotion gate:
+  - added ``tools/plot_quasilinear_dataset_sufficiency.py`` and
+    ``docs/_static/quasilinear_dataset_sufficiency.{png,pdf,json}``;
+  - the gate validates that every current quasilinear model-development input
+    maps to a passed nonlinear summary gate, records the four
+    electrostatic-compatible cases, and explicitly lists KBM as validated but
+    excluded because the present quasilinear diagnostics are electrostatic;
+  - the tracked promotion gate is intentionally blocked: current total cases
+    are ``4`` versus a ``6``-case minimum, explicit training geometries are
+    ``1`` versus a ``2``-geometry minimum, and downstream candidate skill gates
+    remain false;
+  - the figure and JSON now prevent the docs/README from accidentally
+    promoting richer quasilinear absolute-flux candidates before more
+    converged nonlinear holdouts exist.

@@ -864,6 +864,41 @@ check: exploratory external-VMEC pilots remain useful for planning, but they
 cannot enter these quasilinear model diagnostics until their convergence and
 validation gates pass.
 
+Dataset-sufficiency gate
+------------------------
+
+The current four electrostatic-compatible nonlinear windows are enough to test
+and reject simple saturation-rule hypotheses, but they are not enough to
+promote a richer absolute-flux predictor. The dataset-sufficiency gate makes
+that reviewer-facing scope explicit before any model fit is attempted. It
+requires:
+
+* nonlinear input summaries that have already passed their validation gates;
+* at least six electrostatic-compatible calibration cases;
+* at least two explicit training geometries and three held-out geometries;
+* enough leave-one-out training cases per fitted parameter for richer
+  candidates;
+* passed downstream saturation-rule and uncertainty/skill gates.
+
+.. code-block:: bash
+
+   python tools/plot_quasilinear_dataset_sufficiency.py \
+     --out docs/_static/quasilinear_dataset_sufficiency.png
+
+.. image:: _static/quasilinear_dataset_sufficiency.png
+   :alt: Quasilinear dataset-sufficiency promotion gate
+   :width: 100%
+
+The tracked gate is intentionally blocked. The current dataset has four
+electrostatic-compatible cases, one explicit training geometry, and three
+held-out geometries. The linear-weight candidate has enough leave-one-out
+training volume for a one-parameter scale but fails the downstream skill gates;
+the shape-power-law and linear-state ridge candidates are under-sampled for
+their fitted parameter counts. KBM is listed as a validated but excluded
+nonlinear case because the present quasilinear diagnostics are electrostatic;
+electromagnetic quasilinear field-channel normalization and calibration remain
+separate future work.
+
 VMEC equilibrium portfolio for future holdouts
 ----------------------------------------------
 
