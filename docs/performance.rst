@@ -156,7 +156,10 @@ full RHS kernels after compilation:
    :align: center
 
 The current bounded Cyclone profile separates CPU and ``office`` GPU timings
-for default grid-mode and optional spectral-mode nonlinear brackets. The GPU
+for default grid-mode and optional spectral-mode nonlinear brackets. The
+machine-readable companion ``docs/_static/nonlinear_rhs_profile.json`` records
+the dominant measured kernel, kernel fractions relative to the full RHS, and
+grid-to-spectral speedups for each backend. The GPU
 grid-mode split is:
 
 .. code-block:: text

@@ -5,7 +5,10 @@ from __future__ import annotations
 
 import argparse
 import csv
+import json
+import math
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 
@@ -21,12 +24,79 @@ DEFAULT_INPUTS = {
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", type=Path, default=Path("docs/_static/nonlinear_rhs_profile.png"))
+    parser.add_argument(
+        "--summary-json",
+        type=Path,
+        default=None,
+        help="Optional JSON summary path. Defaults to the plot path with a .json suffix.",
+    )
     return parser.parse_args()
 
 
 def _read_profile(path: Path) -> dict[str, float]:
     with path.open(newline="") as f:
         return {row["kernel"]: float(row["seconds"]) for row in csv.DictReader(f)}
+
+
+def _safe_ratio(numerator: float | None, denominator: float | None) -> float | None:
+    if numerator is None or denominator is None or denominator <= 0.0:
+        return None
+    ratio = float(numerator) / float(denominator)
+    return ratio if math.isfinite(ratio) else None
+
+
+def _build_summary(profiles: dict[str, dict[str, float]]) -> dict[str, Any]:
+    """Return a machine-readable summary of RHS split-profile CSV files."""
+
+    rows: dict[str, dict[str, Any]] = {}
+    for label, profile in profiles.items():
+        full_rhs = profile.get("full_rhs")
+        timed_kernels = {key: value for key, value in profile.items() if key != "full_rhs"}
+        dominant = max(timed_kernels, key=lambda key: timed_kernels[key]) if timed_kernels else None
+        rows[label] = {
+            "seconds": profile,
+            "dominant_measured_kernel": dominant,
+            "field_solve_fraction_of_full_rhs": _safe_ratio(profile.get("field_solve"), full_rhs),
+            "linear_rhs_fraction_of_full_rhs": _safe_ratio(profile.get("linear_rhs"), full_rhs),
+            "nonlinear_bracket_fraction_of_full_rhs": _safe_ratio(profile.get("nonlinear_bracket"), full_rhs),
+        }
+
+    spectral_speedups: dict[str, dict[str, float | None]] = {}
+    for backend in ("CPU", "GPU"):
+        grid = profiles.get(f"{backend} grid")
+        spectral = profiles.get(f"{backend} spectral")
+        if grid is None or spectral is None:
+            continue
+        spectral_speedups[backend.lower()] = {
+            "full_rhs_grid_over_spectral": _safe_ratio(grid.get("full_rhs"), spectral.get("full_rhs")),
+            "nonlinear_bracket_grid_over_spectral": _safe_ratio(
+                grid.get("nonlinear_bracket"), spectral.get("nonlinear_bracket")
+            ),
+        }
+
+    full_rhs_candidates = [
+        (profile["full_rhs"], label)
+        for label, profile in profiles.items()
+        if "full_rhs" in profile and math.isfinite(float(profile["full_rhs"]))
+    ]
+    fastest = min(full_rhs_candidates, default=(None, None), key=lambda item: float(item[0]))
+    return {
+        "kind": "nonlinear_rhs_profile_summary",
+        "case": "cyclone_short",
+        "rows": rows,
+        "spectral_speedups": spectral_speedups,
+        "fastest_full_rhs_label": fastest[1],
+        "fastest_full_rhs_seconds": fastest[0],
+        "claim_scope": (
+            "RHS split profile for hot-path localization. Treat speedups as bounded engineering "
+            "measurements; production runtime claims require matched benchmark-size CPU/GPU sweeps."
+        ),
+    }
+
+
+def _write_summary_json(payload: dict[str, Any], path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
 def main() -> int:
@@ -60,7 +130,10 @@ def main() -> int:
     if args.out.suffix.lower() != ".pdf":
         fig.savefig(args.out.with_suffix(".pdf"))
     plt.close(fig)
+    summary_path = args.summary_json if args.summary_json is not None else args.out.with_suffix(".json")
+    _write_summary_json(_build_summary(profiles), summary_path)
     print(f"saved {args.out}")
+    print(f"saved {summary_path}")
     return 0
 
 
