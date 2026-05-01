@@ -98,6 +98,7 @@ profiling_tools = [
   "tools/profile_nonlinear_cyclone.py",
   "tools/profile_nonlinear_sharding.py",
   "tools/profile_linear_rhs_terms.py",
+  "tools/gate_linear_rhs_zero_norm_state_window.py",
   "tools/gate_laguerre_nonlinear_modes.py",
 ]
 metrics = [
@@ -105,6 +106,7 @@ metrics = [
   "nonlinear_bracket_s",
   "linear_rhs_s",
   "linear_rhs_term_s",
+  "linear_rhs_zero_norm_skip_error",
   "full_rhs_s",
   "diagnostic_sample_s",
   "nonlinear_state_sharding_identity_error",
@@ -117,6 +119,7 @@ artifact_paths = [
   "docs/_static/nonlinear_rhs_profile_gpu.csv",
   "docs/_static/linear_rhs_terms_profile.json",
   "docs/_static/linear_rhs_terms_profile_cpu.csv",
+  "docs/_static/linear_rhs_zero_norm_state_window_gate.json",
   "docs/_static/laguerre_mode_gate_gpu.json",
   "docs/_static/laguerre_mode_gate_gpu.png",
   "docs/_static/nonlinear_sharding_profile.json",
