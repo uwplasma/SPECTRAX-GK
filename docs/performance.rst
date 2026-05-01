@@ -210,6 +210,24 @@ recorded in ``docs/_static/linear_rhs_terms_profile.json`` but are not removed
 from production until a state-window identity gate proves they remain inactive
 after nonlinear evolution.
 
+The companion state-window gate is generated with:
+
+.. code-block:: bash
+
+   python tools/gate_linear_rhs_zero_norm_state_window.py \
+     --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml \
+     --ky 0.3 \
+     --Nl 4 \
+     --Nm 8 \
+     --out-json docs/_static/linear_rhs_zero_norm_state_window_gate.json
+
+The current gate passes by accepting the zero-collision skip for this
+``nu=0`` Cyclone window while rejecting a hypercollision skip: the initial
+state has zero relative hypercollision skip error, but the resolved
+``z``-varying state reaches ``3.59e-3``. This protects the optimization path
+from incorrectly disabling linked ``|k_z|`` hypercollisions based only on the
+initial-state profile.
+
 Parallelization scaling (diffrax + distributed linear loop)
 -----------------------------------------------------------
 

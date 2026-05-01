@@ -1638,3 +1638,11 @@ Exit gate:
     zero norm is an initial-state property: constant-in-``z`` states remain
     zero, while resolved ``z``-varying states activate the term when
     ``hypercollisions_kz`` is nonzero.
+  - added ``tools/gate_linear_rhs_zero_norm_state_window.py`` and
+    ``docs/_static/linear_rhs_zero_norm_state_window_gate.json``;
+  - the gate directly compares the full RHS with candidate skip configurations
+    over initial, linear-kick, ``z``-wave, and ``z``-wave-kick states;
+  - current result: zero-collision skip is identity-safe for this ``nu=0``
+    Cyclone window, while skipping hypercollisions is correctly rejected with a
+    maximum relative RHS error of ``3.59e-3`` on the resolved ``z``-varying
+    state.
