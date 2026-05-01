@@ -1620,3 +1620,17 @@ Exit gate:
   - this supports the existing scoped performance stance: spectral nonlinear
     mode is a validated opt-in engineering mode for selected cases, not a
     global default or broad runtime claim.
+- Linear RHS term-profile follow-up:
+  - fixed the standalone linear RHS profiler default config path and added a
+    JSON companion artifact so term-level timings, dominant nonzero terms, and
+    zero-norm initial-state rows are machine-readable;
+  - regenerated ``docs/_static/linear_rhs_terms_profile_cpu.csv`` and
+    ``docs/_static/linear_rhs_terms_profile.json`` for the Cyclone nonlinear
+    runtime state at ``ky=0.3, Nl=4, Nm=8``;
+  - the current bounded CPU profile records ``full_linear_rhs≈2.06e-1 s`` in
+    the profiler harness, independently measured term kernels summing to
+    ``4.70e-2 s``, ``linked_grad_z`` as the dominant nonzero standalone term,
+    and zero-norm initial-state rows led by ``linked_abs_kz``;
+  - keep this as localization evidence only: zero-norm rows must not be skipped
+    in production until a state-window identity gate shows they remain inactive
+    after nonlinear evolution.

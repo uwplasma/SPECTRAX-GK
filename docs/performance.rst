@@ -176,8 +176,39 @@ timings were refreshed locally with a bounded five-repeat run:
 That small CPU improvement is not a production speedup claim. The spectral mode
 therefore remains an opt-in mode guarded by the case-level parity gate below.
 
-The dominant remaining cost is still the nonlinear FFT pipeline with
-gather/scatter-heavy kernels in the bracket assembly path.
+The dominant remaining warm-throughput costs are the compiled linear RHS and
+the nonlinear FFT pipeline with gather/scatter-heavy bracket kernels. The
+spectral Laguerre mode reduces the measured bracket cost on the profiled GPU
+case, which makes the linear RHS path the next profiling target.
+
+Linear RHS term profile
+-----------------------
+
+The linear RHS split profiler drills into the compiled linear contribution used
+inside nonlinear runs:
+
+.. code-block:: bash
+
+   python tools/profile_linear_rhs_terms.py \
+     --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml \
+     --ky 0.3 \
+     --Nl 4 \
+     --Nm 8 \
+     --repeats 8 \
+     --out docs/_static/linear_rhs_terms_profile_cpu.csv \
+     --summary-json docs/_static/linear_rhs_terms_profile.json
+
+The tracked CPU Cyclone artifact reports ``full_linear_rhs=2.06e-1 s`` for the
+compiled full linear RHS call in this profiling harness. The independently
+timed term kernels sum to ``4.70e-2 s``; this gap is a localization signal, not
+a speedup claim, because the full path recomputes the field solve, ``H``
+assembly, and all weighted contributions as one compiled graph. The dominant
+nonzero-norm standalone term is the linked parallel-gradient path
+(``linked_grad_z=5.80e-3 s``), while the largest zero-norm row for the profiled
+initial state is ``linked_abs_kz=1.68e-2 s``. Zero-norm rows are explicitly
+recorded in ``docs/_static/linear_rhs_terms_profile.json`` but are not removed
+from production until a state-window identity gate proves they remain inactive
+after nonlinear evolution.
 
 Parallelization scaling (diffrax + distributed linear loop)
 -----------------------------------------------------------
