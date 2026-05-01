@@ -211,6 +211,14 @@ largest zero-norm row for the profiled initial state is
 production until a state-window identity gate proves they remain inactive after
 nonlinear evolution.
 
+The matching ``office`` GPU profile is tracked in
+``docs/_static/linear_rhs_terms_profile_gpu.json`` and
+``docs/_static/linear_rhs_terms_profile_gpu.csv``. On one RTX A4000 it reports
+``full_linear_rhs=6.44e-3 s`` and independently timed terms summing to
+``4.18e-3 s``. The largest profiled zero-norm row remains
+``linked_abs_kz=1.02e-3 s``, which is why the state-window gate below remains a
+hard precondition before any further linked-``|k_z|`` fast path.
+
 The companion state-window gate is generated with:
 
 .. code-block:: bash
