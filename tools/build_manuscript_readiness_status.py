@@ -142,6 +142,7 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
     solver_grad = _read_json(root, "docs/_static/solver_objective_gradient_gate.json")
     vmec_solver_grad = _read_json(root, "docs/_static/vmec_boozer_solver_frequency_gradient_gate.json")
     vmec_ql_grad = _read_json(root, "docs/_static/vmec_boozer_quasilinear_gradient_gate.json")
+    vmec_gradient_matrix = _read_json(root, "docs/_static/vmec_boozer_gradient_holdout_matrix.json")
     profile = _read_json(root, "docs/_static/nonlinear_sharding_profile_office_gpu.json")
 
     ql_inputs_passed = bool((ql_inputs or {}).get("passed", False))
@@ -193,7 +194,19 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
     solver_gradient_full_vmec_quasilinear = bool((vmec_ql_grad or {}).get("passed", False)) and str(
         (vmec_ql_grad or {}).get("source_scope", "missing")
     ) == "mode21_vmec_boozer_state"
-    solver_gradient_status = "partial" if solver_gradient_passed else "open"
+    gradient_matrix_summary = (
+        (vmec_gradient_matrix or {}).get("summary", {})
+        if isinstance((vmec_gradient_matrix or {}).get("summary", {}), dict)
+        else {}
+    )
+    solver_gradient_multi_equilibrium = bool((vmec_gradient_matrix or {}).get("passed", False))
+    solver_gradient_closed = bool(
+        solver_gradient_passed
+        and solver_gradient_full_vmec_frequency
+        and solver_gradient_full_vmec_quasilinear
+        and solver_gradient_multi_equilibrium
+    )
+    solver_gradient_status = "closed" if solver_gradient_closed else ("partial" if solver_gradient_passed else "open")
 
     lanes: list[dict[str, Any]] = [
         {
@@ -284,6 +297,7 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                     ("docs/_static/solver_objective_gradient_gate.json", solver_grad),
                     ("docs/_static/vmec_boozer_solver_frequency_gradient_gate.json", vmec_solver_grad),
                     ("docs/_static/vmec_boozer_quasilinear_gradient_gate.json", vmec_ql_grad),
+                    ("docs/_static/vmec_boozer_gradient_holdout_matrix.json", vmec_gradient_matrix),
                 )
                 if payload
             ],
@@ -292,6 +306,11 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                 "solver_ready_gradient_gate": solver_gradient_passed,
                 "full_vmec_boozer_frequency_gradient_gate": solver_gradient_full_vmec_frequency,
                 "full_vmec_boozer_quasilinear_gradient_gate": solver_gradient_full_vmec_quasilinear,
+                "multi_equilibrium_gradient_holdout_matrix": solver_gradient_multi_equilibrium,
+                "multi_equilibrium_gradient_cases": gradient_matrix_summary.get("n_cases"),
+                "multi_equilibrium_gradient_max_rel_error": _finite_float(
+                    gradient_matrix_summary.get("max_relative_error")
+                ),
                 "linear_growth_gradient_gate": bool((solver_grad or {}).get("linear_growth_gradient_gate", False)),
                 "quasilinear_weight_gradient_gate": bool(
                     (solver_grad or {}).get("quasilinear_weight_gradient_gate", False)
@@ -419,10 +438,12 @@ def write_manuscript_readiness_artifacts(payload: dict[str, Any], *, out: str | 
             worst = km.get("worst_reduction_factor")
             metric = "gradient gates passed" if worst is None else f"worst final/initial: {float(worst):.2f}"
         elif str(lane["lane"]).startswith("Production"):
+            max_err = km.get("multi_equilibrium_gradient_max_rel_error")
+            err_text = "n/a" if max_err is None else f"{float(max_err):.1e}"
             metric = (
                 f"solver-ready: {km.get('solver_ready_gradient_gate')}; "
-                f"VMEC freq: {km.get('full_vmec_boozer_frequency_gradient_gate')}; "
-                f"VMEC QL: {km.get('full_vmec_boozer_quasilinear_gradient_gate')}"
+                f"holdouts: {km.get('multi_equilibrium_gradient_cases')}; "
+                f"max err: {err_text}"
             )
         elif str(lane["lane"]).startswith("Profiler"):
             speed = km.get("engineering_speedup")

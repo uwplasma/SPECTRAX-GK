@@ -277,10 +277,15 @@ finite differences for ``gamma``, ``omega``, ``<k_perp^2>``, linear
 heat/particle-flux weights, and a mixing-length heat-flux proxy. This closes
 the ``FluxTubeGeometryData`` contract-level solver-gradient check and the first
 full ``vmec_jax`` state-coefficient to ``booz_xform_jax`` to solver
-eigenfrequency-gradient gate. The companion QH all-surface artifact also closes
-the reduced full-chain quasilinear heat-flux-weight gradient gate for the
-tracked manuscript fixture. It does not yet close multi-equilibrium
-transport-gradient promotion or nonlinear-window state-gradient gates.
+eigenfrequency-gradient gate. The companion QH all-surface artifact closes the
+reduced full-chain quasilinear heat-flux-weight gradient gate for the tracked
+manuscript fixture. A second Li383 low-resolution holdout now verifies the
+same frequency and quasilinear gradient contracts at ``mboz=nboz=21``; the
+combined holdout matrix has maximum relative AD/finite-difference mismatch
+``4.9e-3`` across the reduced linear/quasilinear objectives. This closes the
+multi-equilibrium reduced solver-objective gradient gate, but it does not yet
+close nonlinear-window state-gradient gates or broad optimized-equilibrium
+nonlinear transport claims.
 
 .. figure:: _static/solver_objective_gradient_gate.png
    :width: 90%
@@ -324,6 +329,17 @@ transport-gradient promotion or nonlinear-window state-gradient gates.
    open until all-surface or otherwise accuracy-equivalent gates pass. This is
    still not a nonlinear-window heat-flux gradient claim.
 
+.. figure:: _static/vmec_boozer_gradient_holdout_matrix.png
+   :width: 100%
+   :align: center
+   :alt: VMEC/Boozer multi-equilibrium gradient holdout matrix
+
+   Multi-equilibrium VMEC/Boozer gradient holdout matrix. QH and Li383
+   frequency and quasilinear solver-objective gates all pass with
+   ``mboz=nboz=21``. The matrix is a reduced linear/quasilinear
+   differentiability gate; nonlinear-window gradients remain a separate
+   promotion requirement.
+
 Promotion Gates for Full VMEC/Boozer/GK Optimization
 ----------------------------------------------------
 
@@ -363,10 +379,14 @@ the following pass:
    full mode-21 VMEC/Boozer state-to-solver quasilinear heat-flux-weight gate
    is closed by
    ``docs/_static/vmec_boozer_quasilinear_gradient_gate.json`` on the tracked
-   all-surface QH fixture. Larger QI/QA holdouts are still promotion work:
-   QI is currently conditioning-limited when forced through the narrow
-   diagnostic stencil, while the QA low-resolution all-surface Boozer transform
-   exceeds the available office GPU memory at ``mboz=nboz=21``.
+   all-surface QH fixture. The multi-equilibrium reduced linear/quasilinear
+   holdout gate is closed by
+   ``docs/_static/vmec_boozer_gradient_holdout_matrix.json`` for QH and
+   Li383 at ``mboz=nboz=21``. Larger QI/QA nonlinear-window transport holdouts
+   are still promotion work: QI is currently conditioning-limited when forced
+   through the narrow diagnostic stencil, while the QA low-resolution
+   all-surface Boozer transform exceeds the available office GPU memory at
+   ``mboz=nboz=21``.
 5. Host scalar materialization in production runtime caches is removed or
    isolated so geometry parameters remain traceable.
 6. A nonlinear heat-flux objective has a validated adjoint, VJP, or robust
