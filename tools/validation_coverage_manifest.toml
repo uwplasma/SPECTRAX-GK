@@ -119,6 +119,85 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.quasilinear"
+path = "src/spectraxgk/quasilinear.py"
+owner_lane = "linear-response quasilinear weights and saturation-model diagnostics"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "mixing-length and quasilinear transport diagnostics used in reduced turbulent transport modeling",
+  "linear-spectrum shape and saturation-rule validation before absolute nonlinear-flux claims",
+]
+physics_contracts = [
+  "linear heat and particle weights are diagnostics until nonlinear train/holdout gates promote a saturation rule",
+  "electrostatic quasilinear channels cannot be reused for electromagnetic KBM claims without field-channel calibration",
+  "spectrum-shape gates compare normalized resolved spectra separately from absolute-flux calibration",
+]
+numerics_contracts = [
+  "signed growth rates, positive-growth floors, and kperp floors are handled deterministically",
+  "candidate models must beat null baselines and pass data-volume/conditioning gates before runtime exposure",
+]
+fast_tests = [
+  "tests/test_quasilinear.py",
+  "tests/test_plot_quasilinear_spectrum.py",
+  "tests/test_plot_quasilinear_spectrum_shape_gate.py",
+  "tests/test_plot_quasilinear_saturation_rule_sweep.py",
+  "tests/test_plot_quasilinear_shape_aware_saturation.py",
+  "tests/test_plot_quasilinear_candidate_uncertainty.py",
+  "tests/test_plot_quasilinear_dataset_sufficiency.py",
+]
+artifact_paths = [
+  "docs/_static/quasilinear_cyclone_spectrum.png",
+  "docs/_static/quasilinear_hsx_spectrum.png",
+  "docs/_static/quasilinear_w7x_spectrum.png",
+  "docs/_static/quasilinear_saturation_rule_sweep.json",
+  "docs/_static/quasilinear_shape_aware_saturation.json",
+  "docs/_static/quasilinear_candidate_uncertainty.json",
+  "docs/_static/quasilinear_dataset_sufficiency.json",
+]
+next_tests = [
+  "add at least two more converged electrostatic nonlinear holdout windows before promoting richer saturation candidates",
+  "add electromagnetic quasilinear channel tests before using KBM in calibration reports",
+]
+
+[[modules]]
+module = "spectraxgk.quasilinear_calibration"
+path = "src/spectraxgk/quasilinear_calibration.py"
+owner_lane = "nonlinear-window calibration and train/holdout quasilinear reports"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "held-out nonlinear heat-flux calibration for quasilinear transport models",
+  "case-specific nonlinear window statistics as acceptance data for reduced models",
+]
+physics_contracts = [
+  "calibration points retain split, geometry, electron model, nonlinear artifact, and quasilinear artifact provenance",
+  "absolute-flux reports remain unpromoted unless held-out nonlinear windows pass explicit transport gates",
+]
+numerics_contracts = [
+  "window means and uncertainties are finite-filtered and serialized with null-safe JSON fields",
+  "zero or non-positive quasilinear predictions remain visible in plots instead of being hidden by log axes",
+]
+fast_tests = [
+  "tests/test_quasilinear_calibration.py",
+  "tests/test_check_quasilinear_calibration_inputs.py",
+  "tests/test_plot_quasilinear_calibration.py",
+]
+artifact_paths = [
+  "docs/_static/quasilinear_validated_calibration_inputs.json",
+  "docs/_static/quasilinear_cyclone_miller_train_holdout_report.json",
+  "docs/_static/quasilinear_hsx_train_holdout_report.json",
+  "docs/_static/quasilinear_w7x_train_holdout_report.json",
+  "docs/_static/quasilinear_stellarator_train_holdout_report.json",
+]
+next_tests = [
+  "add per-species ion/electron calibration points once kinetic-electron nonlinear holdouts are validated",
+  "tighten transport-window uncertainty propagation before any absolute saturated-flux model is promoted",
+]
+
+[[modules]]
 module = "spectraxgk.benchmarks"
 path = "src/spectraxgk/benchmarks.py"
 owner_lane = "reference loading, scan runners, fit policies, benchmark atlas"
