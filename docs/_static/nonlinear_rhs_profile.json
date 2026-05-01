@@ -2,66 +2,66 @@
   "case": "cyclone_short",
   "claim_scope": "RHS split profile for hot-path localization. Treat speedups as bounded engineering measurements; production runtime claims require matched benchmark-size CPU/GPU sweeps.",
   "fastest_full_rhs_label": "GPU spectral",
-  "fastest_full_rhs_seconds": 0.007291096495464444,
+  "fastest_full_rhs_seconds": 0.005667607812210917,
   "kind": "nonlinear_rhs_profile_summary",
   "rows": {
     "CPU grid": {
-      "dominant_measured_kernel": "nonlinear_bracket",
-      "field_solve_fraction_of_full_rhs": 0.008802322953208373,
-      "linear_rhs_fraction_of_full_rhs": 0.4663869318677105,
-      "nonlinear_bracket_fraction_of_full_rhs": 0.4824538553782625,
+      "dominant_measured_kernel": "linear_rhs",
+      "field_solve_fraction_of_full_rhs": 0.004986886840809171,
+      "linear_rhs_fraction_of_full_rhs": 0.5558278953557685,
+      "nonlinear_bracket_fraction_of_full_rhs": 0.4796221028781901,
       "seconds": {
-        "field_solve": 0.0007165833958424628,
-        "full_rhs": 0.08140844180015847,
-        "linear_rhs": 0.03796783339930698,
-        "nonlinear_bracket": 0.039275816606823354
+        "field_solve": 0.0003579668002203107,
+        "full_rhs": 0.07178161679767073,
+        "linear_rhs": 0.0398982249898836,
+        "nonlinear_bracket": 0.03442804999649525
       }
     },
     "CPU spectral": {
       "dominant_measured_kernel": "linear_rhs",
-      "field_solve_fraction_of_full_rhs": 0.004381998087580198,
-      "linear_rhs_fraction_of_full_rhs": 0.5100253549529842,
-      "nonlinear_bracket_fraction_of_full_rhs": 0.29823520242446633,
+      "field_solve_fraction_of_full_rhs": 0.0056226407678694286,
+      "linear_rhs_fraction_of_full_rhs": 0.46429013797024116,
+      "nonlinear_bracket_fraction_of_full_rhs": 0.25577764631453287,
       "seconds": {
-        "field_solve": 0.0003490667906589806,
-        "full_rhs": 0.07965927498880773,
-        "linear_rhs": 0.04062825000146404,
-        "nonlinear_bracket": 0.023757200001273304
+        "field_solve": 0.0004566668067127466,
+        "full_rhs": 0.08121927499305456,
+        "linear_rhs": 0.03770930839236826,
+        "nonlinear_bracket": 0.020774074993096293
       }
     },
     "GPU grid": {
       "dominant_measured_kernel": "linear_rhs",
-      "field_solve_fraction_of_full_rhs": 0.027859728796754118,
-      "linear_rhs_fraction_of_full_rhs": 0.6018733766931748,
-      "nonlinear_bracket_fraction_of_full_rhs": 0.27472646220393954,
+      "field_solve_fraction_of_full_rhs": 0.03103237575562357,
+      "linear_rhs_fraction_of_full_rhs": 0.7218260302777708,
+      "nonlinear_bracket_fraction_of_full_rhs": 0.3107667656514512,
       "seconds": {
-        "field_solve": 0.00031896180007606745,
-        "full_rhs": 0.011448847991414369,
-        "linear_rhs": 0.006890756799839437,
-        "nonlinear_bracket": 0.0031453015049919485
+        "field_solve": 0.0002764674136415124,
+        "full_rhs": 0.008908999292179942,
+        "linear_rhs": 0.006430747592821718,
+        "nonlinear_bracket": 0.0027686208952218292
       }
     },
     "GPU spectral": {
       "dominant_measured_kernel": "linear_rhs",
-      "field_solve_fraction_of_full_rhs": 0.308152688130083,
-      "linear_rhs_fraction_of_full_rhs": 1.0803031778263856,
-      "nonlinear_bracket_fraction_of_full_rhs": 0.2090160086432642,
+      "field_solve_fraction_of_full_rhs": 0.03870572829555822,
+      "linear_rhs_fraction_of_full_rhs": 1.117174760223507,
+      "nonlinear_bracket_fraction_of_full_rhs": 0.24736369449615095,
       "seconds": {
-        "field_solve": 0.002246770984493196,
-        "full_rhs": 0.007291096495464444,
-        "linear_rhs": 0.007876594713889063,
-        "nonlinear_bracket": 0.0015239558881148696
+        "field_solve": 0.00021936888806521891,
+        "full_rhs": 0.005667607812210917,
+        "linear_rhs": 0.006331708398647606,
+        "nonlinear_bracket": 0.0014019604073837399
       }
     }
   },
   "spectral_speedups": {
     "cpu": {
-      "full_rhs_grid_over_spectral": 1.0219581060911802,
-      "nonlinear_bracket_grid_over_spectral": 1.6532174079739324
+      "full_rhs_grid_over_spectral": 0.883800265439566,
+      "nonlinear_bracket_grid_over_spectral": 1.6572603116112987
     },
     "gpu": {
-      "full_rhs_grid_over_spectral": 1.5702505101305857,
-      "nonlinear_bracket_grid_over_spectral": 2.063905871240591
+      "full_rhs_grid_over_spectral": 1.5719152749040637,
+      "nonlinear_bracket_grid_over_spectral": 1.974821029638401
     }
   }
 }

@@ -1614,9 +1614,12 @@ Exit gate:
   - added a JSON companion for the nonlinear RHS split profile so kernel
     fractions, dominant kernels, and grid-to-spectral speedups are
     machine-readable rather than only plotted;
-  - the current tracked Cyclone profile reports GPU spectral as the fastest
-    full-RHS row, with grid/spectral full-RHS ratio ``1.57`` on GPU and only
-    ``1.02`` on CPU;
+  - after the zero-collision fast path, the current tracked Cyclone profile
+    reports GPU spectral as the fastest full-RHS row, with grid/spectral
+    full-RHS ratio ``1.57`` on GPU and ``0.88`` on CPU;
+  - the CPU spectral bracket remains faster, but the full CPU RHS is slower in
+    the short bounded harness, so the opt-in claim is GPU-backed rather than a
+    global CPU/GPU speedup claim;
   - this supports the existing scoped performance stance: spectral nonlinear
     mode is a validated opt-in engineering mode for selected cases, not a
     global default or broad runtime claim.
