@@ -1597,3 +1597,16 @@ Exit gate:
   - the figure and JSON now prevent the docs/README from accidentally
     promoting richer quasilinear absolute-flux candidates before more
     converged nonlinear holdouts exist.
+- Multi-equilibrium VMEC/Boozer solver-objective gradient holdout:
+  - added Li383 low-resolution holdouts for both the mode-21 full-chain
+    eigenfrequency gate and the full-chain quasilinear heat-flux-weight gate;
+  - both Li383 gates use ``mboz=nboz=21`` and pass the same AD-vs-central-
+    finite-difference objective checks as the tracked QH fixture;
+  - added ``tools/build_vmec_boozer_gradient_holdout_matrix.py`` and
+    ``docs/_static/vmec_boozer_gradient_holdout_matrix.{png,pdf,json,csv}``
+    to summarize QH plus Li383 frequency/quasilinear gate status;
+  - the matrix closes the reduced multi-equilibrium linear/quasilinear
+    VMEC/Boozer gradient gate with maximum relative mismatch ``4.9e-3``;
+  - this is still not a nonlinear-window heat-flux gradient or broad
+    optimized-equilibrium nonlinear transport claim, so those remain future
+    promotion gates.

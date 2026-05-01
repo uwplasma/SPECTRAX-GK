@@ -91,6 +91,41 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(tmp_path: Pat
         "docs/_static/nonlinear_sharding_profile_office_gpu.json",
         {"identity_gate_pass": True, "engineering_speedup": 0.8},
     )
+    _write_json(
+        tmp_path,
+        "docs/_static/solver_objective_gradient_gate.json",
+        {
+            "passed": True,
+            "source_scope": "solver_ready_geometry_contract",
+            "linear_growth_gradient_gate": True,
+            "quasilinear_weight_gradient_gate": True,
+        },
+    )
+    for name in (
+        "vmec_boozer_solver_frequency_gradient_gate",
+        "vmec_boozer_quasilinear_gradient_gate",
+    ):
+        _write_json(
+            tmp_path,
+            f"docs/_static/{name}.json",
+            {
+                "passed": True,
+                "source_scope": "mode21_vmec_boozer_state",
+                "eigenpair_gate": {"max_rel_error": 1.0e-3},
+            },
+        )
+    _write_json(
+        tmp_path,
+        "docs/_static/vmec_boozer_gradient_holdout_matrix.json",
+        {
+            "passed": True,
+            "summary": {
+                "n_cases": 2,
+                "max_relative_error": 4.9e-3,
+                "all_gates_passed": True,
+            },
+        },
+    )
 
     payload = mod.build_manuscript_readiness_payload(tmp_path)
     lanes = {lane["lane"]: lane for lane in payload["lanes"]}
@@ -106,7 +141,13 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(tmp_path: Pat
     )
     assert lanes["VMEC/Boozer differentiable geometry parity"]["status"] == "closed"
     assert lanes["Reduced differentiable stellarator ITG optimization"]["status"] == "closed"
-    assert lanes["Production solver-objective geometry gradients"]["status"] == "open"
+    assert lanes["Production solver-objective geometry gradients"]["status"] == "closed"
+    assert (
+        lanes["Production solver-objective geometry gradients"]["key_metrics"][
+            "multi_equilibrium_gradient_holdout_matrix"
+        ]
+        is True
+    )
     assert lanes["W7-X zonal recurrence/damping"]["status"] == "deferred"
     assert lanes["TEM / kinetic-electron stellarator extension"]["status"] == "deferred"
 

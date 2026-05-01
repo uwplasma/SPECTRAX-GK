@@ -1,0 +1,127 @@
+{
+  "claim_level": "multi_equilibrium_reduced_linear_quasilinear_gradient_gate_not_nonlinear_window_optimization",
+  "kind": "vmec_boozer_gradient_holdout_matrix",
+  "notes": "This matrix checks differentiability from vmec_jax state coefficients through booz_xform_jax mode-21 equal-arc geometry into SPECTRAX-GK linear and quasilinear solver observables. It does not validate nonlinear-window heat-flux gradients or optimized-equilibrium nonlinear transport.",
+  "passed": true,
+  "rows": [
+    {
+      "case_name": "nfp4_QH_warm_start",
+      "elapsed_seconds": null,
+      "gate_type": "frequency",
+      "label": "QH warm start",
+      "max_abs_error": 24.453645789556504,
+      "max_rel_error": 0.004892743510544424,
+      "mboz": 21,
+      "n_objectives": 2,
+      "nboz": 21,
+      "objective_rel_error": {
+        "gamma": 0.0,
+        "omega": 0.004892743510544424
+      },
+      "objectives": {
+        "gamma": true,
+        "omega": true
+      },
+      "passed": true,
+      "path": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/vmec_boozer_solver_frequency_gradient_gate.json",
+      "source_scope": "mode21_vmec_boozer_state",
+      "surface_stencil_width": null
+    },
+    {
+      "case_name": "nfp4_QH_warm_start",
+      "elapsed_seconds": 36.5628223340027,
+      "gate_type": "quasilinear",
+      "label": "QH warm start",
+      "max_abs_error": 650.3192862369178,
+      "max_rel_error": 0.004282152564851315,
+      "mboz": 21,
+      "n_objectives": 5,
+      "nboz": 21,
+      "objective_rel_error": {
+        "gamma": 0.003616698901232464,
+        "kperp_eff2": 0.0032565773849284395,
+        "linear_heat_flux_weight": 0.004282152564851315,
+        "mixing_length_heat_flux_proxy": 0.0023823390795556488,
+        "omega": 0.004071070193671142
+      },
+      "objectives": {
+        "gamma": true,
+        "kperp_eff2": true,
+        "linear_heat_flux_weight": true,
+        "mixing_length_heat_flux_proxy": true,
+        "omega": true
+      },
+      "passed": true,
+      "path": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/vmec_boozer_quasilinear_gradient_gate.json",
+      "source_scope": "mode21_vmec_boozer_state",
+      "surface_stencil_width": null
+    },
+    {
+      "case_name": "li383_low_res",
+      "elapsed_seconds": null,
+      "gate_type": "frequency",
+      "label": "Li383",
+      "max_abs_error": 0.0002873166097288049,
+      "max_rel_error": 3.7339872970093304e-07,
+      "mboz": 21,
+      "n_objectives": 2,
+      "nboz": 21,
+      "objective_rel_error": {
+        "gamma": 0.0,
+        "omega": 3.7339872970093304e-07
+      },
+      "objectives": {
+        "gamma": true,
+        "omega": true
+      },
+      "passed": true,
+      "path": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/vmec_boozer_li383_solver_frequency_gradient_gate.json",
+      "source_scope": "mode21_vmec_boozer_state",
+      "surface_stencil_width": null
+    },
+    {
+      "case_name": "li383_low_res",
+      "elapsed_seconds": 20.2818357499782,
+      "gate_type": "quasilinear",
+      "label": "Li383",
+      "max_abs_error": 14.484947470104089,
+      "max_rel_error": 0.00019153199827205613,
+      "mboz": 21,
+      "n_objectives": 5,
+      "nboz": 21,
+      "objective_rel_error": {
+        "gamma": 7.860839446475073e-05,
+        "kperp_eff2": 5.378921604594628e-05,
+        "linear_heat_flux_weight": 0.00018863804358507634,
+        "mixing_length_heat_flux_proxy": 0.00019153199827205613,
+        "omega": 1.006103897726763e-05
+      },
+      "objectives": {
+        "gamma": true,
+        "kperp_eff2": true,
+        "linear_heat_flux_weight": true,
+        "mixing_length_heat_flux_proxy": true,
+        "omega": true
+      },
+      "passed": true,
+      "path": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/vmec_boozer_li383_quasilinear_gradient_gate.json",
+      "source_scope": "mode21_vmec_boozer_state",
+      "surface_stencil_width": null
+    }
+  ],
+  "summary": {
+    "all_gates_passed": true,
+    "all_mboz_nboz_at_least_21": true,
+    "all_mode21_source_scope": true,
+    "cases": [
+      "li383_low_res",
+      "nfp4_QH_warm_start"
+    ],
+    "gate_types": [
+      "frequency",
+      "quasilinear"
+    ],
+    "max_relative_error": 0.004892743510544424,
+    "n_cases": 2
+  }
+}

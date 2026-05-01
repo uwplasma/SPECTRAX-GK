@@ -78,6 +78,9 @@
         "full_vmec_boozer_frequency_gradient_gate": true,
         "full_vmec_boozer_quasilinear_gradient_gate": true,
         "linear_growth_gradient_gate": true,
+        "multi_equilibrium_gradient_cases": 2,
+        "multi_equilibrium_gradient_holdout_matrix": true,
+        "multi_equilibrium_gradient_max_rel_error": 0.004892743510544424,
         "nonlinear_window_gradient_gate": false,
         "quasilinear_weight_gradient_gate": true,
         "solver_ready_gradient_gate": true,
@@ -90,9 +93,10 @@
       "primary_artifacts": [
         "docs/_static/solver_objective_gradient_gate.json",
         "docs/_static/vmec_boozer_solver_frequency_gradient_gate.json",
-        "docs/_static/vmec_boozer_quasilinear_gradient_gate.json"
+        "docs/_static/vmec_boozer_quasilinear_gradient_gate.json",
+        "docs/_static/vmec_boozer_gradient_holdout_matrix.json"
       ],
-      "status": "partial"
+      "status": "closed"
     },
     {
       "claim_level": "identity_gate_present_no_new_speedup_claim",
@@ -136,13 +140,13 @@
     "partial": 1
   },
   "summary": {
-    "active_fraction_closed": 0.6,
+    "active_fraction_closed": 0.8,
     "n_active": 5,
     "n_blocked": 0,
-    "n_closed": 3,
+    "n_closed": 4,
     "n_deferred": 2,
     "n_lanes": 7,
     "n_open": 0,
-    "n_partial": 2
+    "n_partial": 1
   }
 }
