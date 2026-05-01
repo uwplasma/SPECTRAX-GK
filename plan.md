@@ -1610,3 +1610,13 @@ Exit gate:
   - this is still not a nonlinear-window heat-flux gradient or broad
     optimized-equilibrium nonlinear transport claim, so those remain future
     promotion gates.
+- Profiler-backed nonlinear performance artifact tightening:
+  - added a JSON companion for the nonlinear RHS split profile so kernel
+    fractions, dominant kernels, and grid-to-spectral speedups are
+    machine-readable rather than only plotted;
+  - the current tracked Cyclone profile reports GPU spectral as the fastest
+    full-RHS row, with grid/spectral full-RHS ratio ``1.57`` on GPU and only
+    ``1.02`` on CPU;
+  - this supports the existing scoped performance stance: spectral nonlinear
+    mode is a validated opt-in engineering mode for selected cases, not a
+    global default or broad runtime claim.

@@ -111,6 +111,7 @@ metrics = [
 artifact_paths = [
   "docs/_static/nonlinear_window_statistics.json",
   "docs/_static/nonlinear_rhs_profile.png",
+  "docs/_static/nonlinear_rhs_profile.json",
   "docs/_static/nonlinear_rhs_profile_cpu.csv",
   "docs/_static/nonlinear_rhs_profile_gpu.csv",
   "docs/_static/laguerre_mode_gate_gpu.json",
