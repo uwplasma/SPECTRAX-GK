@@ -200,17 +200,26 @@ inside nonlinear runs:
      --summary-json docs/_static/linear_rhs_terms_profile.json
 
 After the zero-collision fast path, the tracked CPU Cyclone artifact reports
-``full_linear_rhs=4.94e-2 s`` for the compiled full linear RHS call in this
-profiling harness. The independently timed term kernels sum to ``2.50e-2 s``;
+``full_linear_rhs=5.13e-2 s`` for the compiled full linear RHS call in this
+profiling harness. The independently timed term kernels sum to ``1.67e-2 s``;
 this remaining gap is a localization signal, not a speedup claim, because the
 full path recomputes the field solve, ``H`` assembly, and all weighted
-contributions as one compiled graph. The dominant nonzero-norm standalone term
-is the linked parallel-gradient path (``linked_grad_z=4.10e-3 s``), while the
-largest zero-norm row for the profiled initial state is
-``linked_abs_kz=9.39e-3 s``. Zero-norm rows are explicitly recorded in
+contributions as one compiled graph. The dominant standalone term is the
+streaming path (``streaming=2.65e-3 s``), while the largest zero-norm rows for
+the profiled initial state are the hypercollision path
+(``hypercollisions=2.15e-3 s``) and linked ``|k_z|`` operator
+(``linked_abs_kz=2.13e-3 s``). Zero-norm rows are explicitly recorded in
 ``docs/_static/linear_rhs_terms_profile.json`` but are not removed from
 production until a state-window identity gate proves they remain inactive after
 nonlinear evolution.
+
+The active-state CPU companion
+``docs/_static/linear_rhs_terms_profile_z_wave_cpu.json`` profiles the same
+state after injecting a resolved parallel perturbation. There the hypercollision
+and linked ``|k_z|`` norms are both ``2.35e-4`` and the linked operator costs
+``2.02e-3 s``. This is the artifact that should be used for linked-``|k_z|``
+optimization decisions; the initial-state profile is only a zero-source
+baseline.
 
 The matching ``office`` GPU profile is tracked in
 ``docs/_static/linear_rhs_terms_profile_gpu.json`` and

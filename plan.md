@@ -1630,11 +1630,17 @@ Exit gate:
   - regenerated ``docs/_static/linear_rhs_terms_profile_cpu.csv`` and
     ``docs/_static/linear_rhs_terms_profile.json`` for the Cyclone nonlinear
     runtime state at ``ky=0.3, Nl=4, Nm=8``;
+  - fixed the standalone linked-``|k_z|`` profiling source to match the
+    production hypercollision formula
+    ``nu_hyper_m * m_norm_kz_factor * 2.3 * vth * |kpar_scale|`` rather than
+    the unrelated ``nu_hyper`` path;
   - after the zero-collision fast path, the current bounded CPU profile records
-    ``full_linear_rhs≈4.94e-2 s`` in the profiler harness, independently
-    measured term kernels summing to ``2.50e-2 s``, ``linked_grad_z`` as the
-    dominant nonzero standalone term, and zero-norm initial-state rows led by
-    ``linked_abs_kz``;
+    ``full_linear_rhs≈5.13e-2 s`` in the profiler harness and independently
+    measured term kernels summing to ``1.67e-2 s``;
+  - added the active-state CPU profile
+    ``docs/_static/linear_rhs_terms_profile_z_wave_cpu.{csv,json}``, where
+    resolved parallel variation activates hypercollisions and linked
+    ``|k_z|`` with norm ``2.35e-4`` and linked-operator cost ``2.02e-3 s``;
   - keep this as localization evidence only: zero-norm rows must not be skipped
     in production until a state-window identity gate shows they remain inactive
     after nonlinear evolution.

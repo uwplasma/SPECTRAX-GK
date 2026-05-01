@@ -52,6 +52,15 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--Nl", type=int, default=4)
     p.add_argument("--Nm", type=int, default=8)
     p.add_argument("--repeats", type=int, default=10)
+    p.add_argument(
+        "--state",
+        choices=("initial", "z_wave", "z_wave_linear_kick"),
+        default="initial",
+        help="State to profile. z_wave variants activate resolved parallel variation.",
+    )
+    p.add_argument("--z-mode", type=int, default=1)
+    p.add_argument("--z-wave-amplitude", type=float, default=1.0e-3)
+    p.add_argument("--kick-dt", type=float, default=1.0e-3)
     p.add_argument("--out", type=Path, default=None)
     p.add_argument(
         "--summary-json",
@@ -79,6 +88,57 @@ def _time_callable(fn, *args, repeats: int):
     return (t1 - t0) / float(repeats), last
 
 
+def _z_variation_norm(state: jnp.ndarray) -> float:
+    mean_z = jnp.mean(state, axis=-1, keepdims=True)
+    return float(np.asarray(jnp.linalg.norm(state - mean_z)))
+
+
+def _inject_z_wave(
+    state: jnp.ndarray,
+    *,
+    ky_index: int,
+    kx_index: int,
+    amplitude: float,
+    z_mode: int,
+) -> jnp.ndarray:
+    """Inject a deterministic resolved parallel wave into one Hermite mode."""
+
+    state = jnp.asarray(state)
+    Nz = state.shape[-1]
+    Nm = state.shape[-4]
+    m_index = min(max(1, Nm - 1), 3)
+    z = jnp.arange(Nz, dtype=jnp.float32)
+    phase = 2.0 * jnp.pi * float(z_mode) * z / float(Nz)
+    wave = amplitude * jnp.exp(1j * phase).astype(state.dtype)
+    perturbation = jnp.zeros_like(state)
+    if state.ndim == 6:
+        perturbation = perturbation.at[:, 0, m_index, ky_index, kx_index, :].set(wave)
+    elif state.ndim == 5:
+        perturbation = perturbation.at[0, m_index, ky_index, kx_index, :].set(wave)
+    else:  # pragma: no cover - runtime state builder controls dimensionality.
+        raise ValueError("state must have 5 or 6 dimensions")
+    return state + perturbation
+
+
+def _hypercollision_kz_source(
+    G: jnp.ndarray,
+    *,
+    weight: jnp.ndarray,
+    hypercollisions_kz: jnp.ndarray,
+    nu_hyper_m: jnp.ndarray,
+    m_norm_kz_factor: jnp.ndarray,
+    vth: jnp.ndarray,
+    kpar_scale: jnp.ndarray,
+    mask_kz: jnp.ndarray,
+    m_pow: jnp.ndarray,
+) -> jnp.ndarray:
+    """Return the pre-``|k_z|`` source used by production hypercollisions."""
+
+    vth_s = vth[:, None, None, None, None, None]
+    nu_hyp_m = nu_hyper_m * m_norm_kz_factor * 2.3 * vth_s * jnp.abs(kpar_scale)
+    return weight * hypercollisions_kz * jnp.where(mask_kz, -nu_hyp_m * m_pow, 0.0) * G
+
+
 def _safe_ratio(numerator: float | None, denominator: float | None) -> float | None:
     if numerator is None or denominator is None or denominator <= 0.0:
         return None
@@ -96,6 +156,8 @@ def _build_summary(
     nm: int,
     repeats: int,
     backend: str,
+    state: str = "initial",
+    z_variation_norm: float | None = None,
     zero_norm_threshold: float = 1.0e-13,
 ) -> dict[str, Any]:
     """Build a machine-readable summary for the linear RHS split profile."""
@@ -146,6 +208,8 @@ def _build_summary(
         "Nl": int(nl),
         "Nm": int(nm),
         "repeats": int(repeats),
+        "state": state,
+        "z_variation_norm": None if z_variation_norm is None else float(z_variation_norm),
         "zero_norm_threshold": float(zero_norm_threshold),
         "rows": term_rows,
         "dominant_measured_term": dominant[0],
@@ -193,12 +257,24 @@ def main() -> None:
     )
     cache = build_linear_cache(grid, geom, params, args.Nl, args.Nm)
     G0 = jnp.asarray(G0)
+    if args.state != "initial":
+        G0 = _inject_z_wave(
+            G0,
+            ky_index=int(ky_index),
+            kx_index=int(kx_index),
+            amplitude=float(args.z_wave_amplitude),
+            z_mode=int(args.z_mode),
+        )
+        if args.state == "z_wave_linear_kick":
+            kick_rhs, _kick_fields = assemble_rhs_cached_jit(G0, cache, params, term_cfg)
+            _block_tree(kick_rhs)
+            G0 = G0 + float(args.kick_dt) * kick_rhs
+    state_z_variation_norm = _z_variation_norm(G0)
     out_dtype = jnp.result_type(G0, jnp.complex64)
     real_dtype = jnp.real(jnp.empty((), dtype=out_dtype)).dtype
     imag = jnp.asarray(1j, dtype=out_dtype)
     ns = int(G0.shape[0])
 
-    mass = _as_species_array(params.mass, ns, "mass").astype(real_dtype)
     tz = _as_species_array(params.tz, ns, "tz").astype(real_dtype)
     vth = _as_species_array(params.vth, ns, "vth").astype(real_dtype)
     tprim = _as_species_array(params.R_over_LTi, ns, "R_over_LTi").astype(real_dtype)
@@ -254,17 +330,16 @@ def main() -> None:
             field_rhs = field_rhs + (m_idx == 2).astype(field_rhs.dtype) * drive_m2[:, :, None, ...]
         streaming_rhs_pre_grad = kpar_scale * (streaming_rhs_pre_grad + field_rhs)
 
-        nu_hyp_m = (
-            nu_hyper[:, None, None, None, None, None]
-            * cache.hyper_ratio[None, :, None, None, None, None]
-            * jnp.sqrt(mass)[:, None, None, None, None, None]
-            * jnp.abs(kpar_scale)
-        )
-        hyper_kz_source = (
-            jnp.asarray(term_cfg.hypercollisions, dtype=real_dtype)
-            * hypercollisions_kz
-            * jnp.where(cache.mask_kz, -nu_hyp_m * cache.m_pow, 0.0)
-            * G0
+        hyper_kz_source = _hypercollision_kz_source(
+            G0,
+            weight=jnp.asarray(term_cfg.hypercollisions, dtype=real_dtype),
+            hypercollisions_kz=hypercollisions_kz,
+            nu_hyper_m=nu_hyper_m,
+            m_norm_kz_factor=cache.m_norm_kz_factor,
+            vth=vth,
+            kpar_scale=kpar_scale,
+            mask_kz=cache.mask_kz,
+            m_pow=cache.m_pow,
         )
 
     kernel_fns = {
@@ -482,6 +557,8 @@ def main() -> None:
                 nm=args.Nm,
                 repeats=args.repeats,
                 backend=jax.default_backend(),
+                state=args.state,
+                z_variation_norm=state_z_variation_norm,
             ),
             summary_path,
         )
