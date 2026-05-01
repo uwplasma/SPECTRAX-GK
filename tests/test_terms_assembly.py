@@ -28,6 +28,7 @@ def test_assemble_rhs_terms_sum_matches_total() -> None:
         rho_star=1.0,
         kpar_scale=float(geom.gradpar()),
         nu=0.0,
+        D_hyper=0.07,
     )
     Nl, Nm = 4, 4
     cache = build_linear_cache(grid, geom, params, Nl, Nm)
@@ -36,7 +37,7 @@ def test_assemble_rhs_terms_sum_matches_total() -> None:
         size=(Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size)
     )
     G0 = jnp.asarray(G0)
-    term_cfg = TermConfig()
+    term_cfg = TermConfig(hyperdiffusion=1.0)
     rhs_total, _fields = assemble_rhs_cached(G0, cache, params, terms=term_cfg)
     rhs_terms, _fields_terms, contrib = assemble_rhs_terms_cached(G0, cache, params, terms=term_cfg)
     rhs_sum = (
@@ -47,6 +48,7 @@ def test_assemble_rhs_terms_sum_matches_total() -> None:
         + contrib["diamagnetic"]
         + contrib["collisions"]
         + contrib["hypercollisions"]
+        + contrib["hyperdiffusion"]
         + contrib["end_damping"]
     )
     assert np.allclose(np.asarray(rhs_terms), np.asarray(rhs_total), rtol=1.0e-6, atol=1.0e-8)
