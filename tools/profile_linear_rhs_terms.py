@@ -5,8 +5,11 @@ from __future__ import annotations
 
 import argparse
 import csv
+import json
+import math
 import time
 from pathlib import Path
+from typing import Any
 
 import jax
 import jax.numpy as jnp
@@ -42,7 +45,7 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument(
         "--config",
         type=Path,
-        default=Path("examples/linear/axisymmetric/runtime_cyclone_nonlinear.toml"),
+        default=Path("examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml"),
     )
     p.add_argument("--ky", type=float, default=0.3)
     p.add_argument("--kx", type=float, default=None)
@@ -50,6 +53,12 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--Nm", type=int, default=8)
     p.add_argument("--repeats", type=int, default=10)
     p.add_argument("--out", type=Path, default=None)
+    p.add_argument(
+        "--summary-json",
+        type=Path,
+        default=None,
+        help="Optional JSON summary path. Defaults to the CSV path with a .json suffix.",
+    )
     return p.parse_args()
 
 
@@ -68,6 +77,94 @@ def _time_callable(fn, *args, repeats: int):
         _block_tree(last)
     t1 = time.perf_counter()
     return (t1 - t0) / float(repeats), last
+
+
+def _safe_ratio(numerator: float | None, denominator: float | None) -> float | None:
+    if numerator is None or denominator is None or denominator <= 0.0:
+        return None
+    ratio = float(numerator) / float(denominator)
+    return ratio if math.isfinite(ratio) else None
+
+
+def _build_summary(
+    rows: list[dict[str, Any]],
+    *,
+    config: str,
+    ky: float,
+    kx: float | None,
+    nl: int,
+    nm: int,
+    repeats: int,
+    backend: str,
+    zero_norm_threshold: float = 1.0e-13,
+) -> dict[str, Any]:
+    """Build a machine-readable summary for the linear RHS split profile."""
+
+    term_rows = {
+        str(row["term"]): {
+            "seconds": float(row["seconds"]),
+            "norm": float(row["norm"]),
+        }
+        for row in rows
+    }
+    measured_terms = [
+        (term, values)
+        for term, values in term_rows.items()
+        if term not in {"full_linear_rhs"} and math.isfinite(values["seconds"])
+    ]
+    measured_nonzero_terms = [
+        (term, values)
+        for term, values in measured_terms
+        if abs(values["norm"]) > zero_norm_threshold
+    ]
+    dominant = max(measured_terms, default=(None, None), key=lambda item: float(item[1]["seconds"]))
+    dominant_nonzero = max(
+        measured_nonzero_terms,
+        default=(None, None),
+        key=lambda item: float(item[1]["seconds"]),
+    )
+    zero_norm_terms: list[dict[str, Any]] = [
+        {
+            "term": term,
+            "seconds": values["seconds"],
+            "norm": values["norm"],
+        }
+        for term, values in measured_terms
+        if abs(values["norm"]) <= zero_norm_threshold
+    ]
+    zero_norm_terms.sort(key=lambda row: float(row["seconds"]), reverse=True)
+
+    full_seconds = term_rows.get("full_linear_rhs", {}).get("seconds")
+    measured_sum = sum(values["seconds"] for _, values in measured_terms)
+    return {
+        "kind": "linear_rhs_terms_profile_summary",
+        "case": Path(config).stem,
+        "config": config,
+        "backend": backend,
+        "ky": float(ky),
+        "kx": None if kx is None else float(kx),
+        "Nl": int(nl),
+        "Nm": int(nm),
+        "repeats": int(repeats),
+        "zero_norm_threshold": float(zero_norm_threshold),
+        "rows": term_rows,
+        "dominant_measured_term": dominant[0],
+        "dominant_nonzero_norm_term": dominant_nonzero[0],
+        "zero_norm_terms_by_time": zero_norm_terms,
+        "full_linear_rhs_seconds": full_seconds,
+        "sum_independently_measured_components_seconds": measured_sum,
+        "full_over_sum_independently_measured_components": _safe_ratio(full_seconds, measured_sum),
+        "claim_scope": (
+            "Linear RHS split profile for hot-path localization. Zero-norm rows describe the "
+            "profiled initial state only and must not be skipped in production unless a "
+            "state-window identity gate proves the term remains inactive."
+        ),
+    }
+
+
+def _write_summary_json(payload: dict[str, Any], path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
 def main() -> None:
@@ -101,10 +198,7 @@ def main() -> None:
     imag = jnp.asarray(1j, dtype=out_dtype)
     ns = int(G0.shape[0])
 
-    charge = _as_species_array(params.charge_sign, ns, "charge_sign").astype(real_dtype)
-    density = _as_species_array(params.density, ns, "density").astype(real_dtype)
     mass = _as_species_array(params.mass, ns, "mass").astype(real_dtype)
-    temp = _as_species_array(params.temp, ns, "temp").astype(real_dtype)
     tz = _as_species_array(params.tz, ns, "tz").astype(real_dtype)
     vth = _as_species_array(params.vth, ns, "vth").astype(real_dtype)
     tprim = _as_species_array(params.R_over_LTi, ns, "R_over_LTi").astype(real_dtype)
@@ -370,10 +464,28 @@ def main() -> None:
     if args.out is not None:
         args.out.parent.mkdir(parents=True, exist_ok=True)
         with args.out.open("w", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=["term", "seconds", "norm"])
+            writer = csv.DictWriter(f, fieldnames=["term", "seconds", "norm"], lineterminator="\n")
             writer.writeheader()
             writer.writerows(rows)
         print(f"saved {args.out}")
+    summary_path = args.summary_json
+    if summary_path is None and args.out is not None:
+        summary_path = args.out.with_suffix(".json")
+    if summary_path is not None:
+        _write_summary_json(
+            _build_summary(
+                rows,
+                config=str(args.config),
+                ky=args.ky,
+                kx=args.kx,
+                nl=args.Nl,
+                nm=args.Nm,
+                repeats=args.repeats,
+                backend=jax.default_backend(),
+            ),
+            summary_path,
+        )
+        print(f"saved {summary_path}")
 
 
 if __name__ == "__main__":
