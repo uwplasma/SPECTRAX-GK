@@ -43,7 +43,7 @@ def _write_history_csv(payload: dict[str, Any], path: Path) -> None:
     params = list(payload["parameter_names"])
     with path.open("w", newline="", encoding="utf-8") as fh:
         fieldnames = ["step", "objective", "gradient_norm"] + params + names
-        writer = csv.DictWriter(fh, fieldnames=fieldnames)
+        writer = csv.DictWriter(fh, fieldnames=fieldnames, lineterminator="\n")
         writer.writeheader()
         for row in payload["history"]:
             out = {

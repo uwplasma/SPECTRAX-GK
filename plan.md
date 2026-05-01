@@ -1567,3 +1567,19 @@ Exit gate:
   - local focused coverage for the affected modules is now ``96%`` for
     ``geometry/differentiable.py`` and ``100%`` for
     ``solver_objective_gradients.py`` on the bounded targeted test pair.
+- Differentiable stellarator optimization UQ tightening:
+  - while adding a paper-facing UQ/sensitivity panel, found that the previous
+    optimization covariance estimate used the initial-to-final observable
+    displacement as the residual, which measures optimizer travel rather than
+    local uncertainty at the optimized point;
+  - added ``stellarator_itg_objective_residual_vector`` and residual-name
+    metadata so the covariance is now computed from the final weighted
+    objective residual Jacobian, whose squared norm is the scalar objective;
+  - added ``tools/plot_stellarator_optimization_uq.py`` and
+    ``docs/_static/stellarator_itg_optimization_uq.{png,pdf,json}`` showing
+    AD/FD derivative parity, local control uncertainty, covariance projection,
+    and rank/conditioning diagnostics for the growth, quasilinear, and
+    nonlinear-window reduced objectives;
+  - updated README, manuscript-figure docs, and stellarator-optimization docs
+    to keep the claim scoped to reduced optimization/UQ plumbing until
+    production VMEC/Boozer/GK nonlinear audits pass.

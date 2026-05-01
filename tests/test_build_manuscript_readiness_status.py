@@ -66,6 +66,15 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(tmp_path: Pat
     )
     _write_json(
         tmp_path,
+        "docs/_static/stellarator_itg_optimization_uq.json",
+        {
+            "claim_level": "reduced_objective_uq_and_sensitivity_validation_not_full_vmec_gk_optimization",
+            "all_gradient_gates_passed": True,
+            "all_sensitivity_maps_full_rank": True,
+        },
+    )
+    _write_json(
+        tmp_path,
         "docs/_static/nonlinear_sharding_profile_office_gpu.json",
         {"identity_gate_pass": True, "engineering_speedup": 0.8},
     )

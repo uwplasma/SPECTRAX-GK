@@ -137,7 +137,8 @@ a bounded Adam update with clipped controls. Every shipped artifact records:
 - the full objective history;
 - the parameter and observable histories;
 - an autodiff-vs-central-finite-difference Jacobian report;
-- a Gauss-Newton covariance diagnostic from the final observable Jacobian;
+- a Gauss-Newton covariance diagnostic from the final weighted objective
+  residual Jacobian;
 - for the nonlinear-window objective, the initial and optimized heat-flux
   traces, averaging window, coefficient of variation, and trend.
 
@@ -151,6 +152,33 @@ The finite-difference gate is
    < \epsilon_{rel},
 
 with tighter tolerances when JAX x64 is enabled.
+
+The UQ diagnostic uses the weighted residual vector whose squared norm is the
+reported objective:
+
+.. math::
+
+   r =
+   \left[
+   \sqrt{w_A}\frac{A-A_*}{A_*},\
+   \sqrt{w_\iota}(\iota-\iota_*),\
+   \sqrt{w_{QS}}R_{QS},\
+   \sqrt{w_r}p,\
+   \sqrt{w_T T_k}
+   \right].
+
+The local covariance is then
+
+.. math::
+
+   C_p =
+   \sigma^2
+   \left(J_r^T J_r + \lambda I\right)^{-1},
+
+where ``J_r = dr/dp`` and ``sigma^2`` is estimated from the final residual.
+This is intentionally tied to the optimization objective. It is not computed
+from the initial-to-final parameter displacement, which would measure optimizer
+travel rather than local uncertainty at the optimized point.
 
 Results
 -------
@@ -168,6 +196,7 @@ Generate the comparison panel with:
 .. code-block:: bash
 
    JAX_ENABLE_X64=1 python examples/optimization/compare_stellarator_itg_optimizations.py
+   JAX_ENABLE_X64=1 python tools/plot_stellarator_optimization_uq.py
 
 .. figure:: _static/stellarator_itg_optimization_comparison.png
    :width: 95%
@@ -182,6 +211,19 @@ Generate the comparison panel with:
    about ``41%`` of their initial values. The comparison is a gradient and
    objective-reduction validation, not a claim that these reduced objectives
    replace converged nonlinear transport simulations.
+
+.. figure:: _static/stellarator_itg_optimization_uq.png
+   :width: 95%
+   :align: center
+   :alt: Stellarator ITG optimization UQ and sensitivity diagnostics
+
+   UQ and sensitivity diagnostics for the same three reduced objectives. The
+   first panel verifies AD/FD derivative parity for every active control. The
+   covariance panels use the weighted objective residual map above, so the
+   reported uncertainty is a local identifiability diagnostic at the optimized
+   point. All three reduced objectives remain full-rank and finite-difference
+   checked in this artifact; the claim is still limited to optimization
+   plumbing, not full VMEC/Boozer/GK nonlinear optimization.
 
 .. figure:: _static/stellarator_itg_growth_optimization.png
    :width: 90%

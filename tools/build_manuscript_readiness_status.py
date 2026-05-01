@@ -114,6 +114,17 @@ def _optimization_reduction_summary(payload: dict[str, Any] | None) -> dict[str,
     }
 
 
+def _optimization_uq_gate_passed(payload: dict[str, Any] | None) -> bool:
+    if not payload:
+        return False
+    return bool(
+        payload.get("all_gradient_gates_passed", False)
+        and payload.get("all_sensitivity_maps_full_rank", False)
+        and payload.get("claim_level")
+        == "reduced_objective_uq_and_sensitivity_validation_not_full_vmec_gk_optimization"
+    )
+
+
 def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
     """Return a JSON-ready manuscript-scope readiness payload."""
 
@@ -126,6 +137,7 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
     geom = _read_json(root, "docs/_static/differentiable_geometry_bridge.json")
     geom_matrix = _read_json(root, "docs/_static/vmec_boozer_parity_matrix.json")
     opt = _read_json(root, "docs/_static/stellarator_itg_optimization_comparison.json")
+    opt_uq = _read_json(root, "docs/_static/stellarator_itg_optimization_uq.json")
     solver_grad = _read_json(root, "docs/_static/solver_objective_gradient_gate.json")
     vmec_solver_grad = _read_json(root, "docs/_static/vmec_boozer_solver_frequency_gradient_gate.json")
     vmec_ql_grad = _read_json(root, "docs/_static/vmec_boozer_quasilinear_gradient_gate.json")
@@ -159,6 +171,7 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
 
     opt_reductions = _optimization_reduction_summary(opt)
     opt_reduced_objectives_passed = _all_optimization_objectives_passed(opt)
+    opt_uq_passed = _optimization_uq_gate_passed(opt_uq)
     solver_gradient_passed = bool((solver_grad or {}).get("passed", False))
     solver_gradient_source = str((solver_grad or {}).get("source_scope", "missing"))
     solver_gradient_full_vmec_frequency = bool((vmec_solver_grad or {}).get("passed", False)) and str(
@@ -220,15 +233,18 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
         },
         {
             "lane": "Reduced differentiable stellarator ITG optimization",
-            "status": "closed" if opt_reduced_objectives_passed else "open",
+            "status": "closed" if opt_reduced_objectives_passed and opt_uq_passed else "open",
             "claim_level": "reduced_objective_optimization_closed_not_full_production_vmec_gk",
             "primary_artifacts": [
                 "docs/_static/stellarator_itg_optimization_comparison.json",
                 "docs/_static/stellarator_itg_optimization_comparison.png",
+                "docs/_static/stellarator_itg_optimization_uq.json",
+                "docs/_static/stellarator_itg_optimization_uq.png",
             ],
             "key_metrics": {
                 **opt_reductions,
                 "all_objective_gradient_gates_passed": opt_reduced_objectives_passed,
+                "weighted_residual_uq_gate_passed": opt_uq_passed,
             },
             "next_action": (
                 "Use as the current optimization figure only with scoped wording; nonlinear-window VMEC/Boozer/GK "
