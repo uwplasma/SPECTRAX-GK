@@ -1553,3 +1553,17 @@ Exit gate:
   - strengthen the stellarator optimization examples by adding nonlinear
     audit bars for optimized geometries and finite-difference conditioning
     reports for each differentiated observable.
+- CI coverage follow-up:
+  - the public ``wide-coverage`` combine job failed at ``92%`` after the
+    optional VMEC/Boozer artifact builders were added to the package-wide
+    denominator, while the public CI cannot install or execute the local
+    ``vmec_jax``/``booz_xform_jax`` repositories required by those paths;
+  - scoped the external-backend artifact builders out of the default coverage
+    denominator and documented that policy in ``docs/testing.rst``;
+  - added fast low-level geometry helper tests and mocked optional-backend
+    contract tests so the public suite still exercises radial interpolation,
+    radial derivatives, periodic Boozer sampling, parity metrics, unavailable
+    backend reporting, and solver-objective parameter naming;
+  - local focused coverage for the affected modules is now ``96%`` for
+    ``geometry/differentiable.py`` and ``100%`` for
+    ``solver_objective_gradients.py`` on the bounded targeted test pair.
