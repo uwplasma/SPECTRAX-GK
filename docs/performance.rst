@@ -224,10 +224,14 @@ baseline.
 The matching ``office`` GPU profile is tracked in
 ``docs/_static/linear_rhs_terms_profile_gpu.json`` and
 ``docs/_static/linear_rhs_terms_profile_gpu.csv``. On one RTX A4000 it reports
-``full_linear_rhs=6.44e-3 s`` and independently timed terms summing to
-``4.18e-3 s``. The largest profiled zero-norm row remains
-``linked_abs_kz=1.02e-3 s``, which is why the state-window gate below remains a
-hard precondition before any further linked-``|k_z|`` fast path.
+``full_linear_rhs=6.53e-3 s`` and independently timed terms summing to
+``3.61e-3 s``. The largest profiled zero-norm rows are hypercollisions
+(``4.81e-4 s``) and linked ``|k_z|`` (``4.68e-4 s``), which is why the
+state-window gate below remains a hard precondition before any further
+linked-``|k_z|`` fast path. The active-state GPU companion
+``docs/_static/linear_rhs_terms_profile_z_wave_gpu.json`` activates the same
+operator pair with matched norms ``2.35e-4`` and records linked ``|k_z|`` at
+``3.59e-4 s``.
 
 The companion state-window gate is generated with:
 
