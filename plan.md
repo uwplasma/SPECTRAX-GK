@@ -1654,6 +1654,10 @@ Exit gate:
     zero norm is an initial-state property: constant-in-``z`` states remain
     zero, while resolved ``z``-varying states activate the term when
     ``hypercollisions_kz`` is nonzero.
+  - fixed the term-resolved diagnostic assembly total so active
+    perpendicular hyperdiffusion is included in ``assemble_rhs_terms_cached``;
+    added the regression by enabling ``D_hyper`` and ``hyperdiffusion`` in the
+    total-vs-term-sum test.
   - added ``tools/gate_linear_rhs_zero_norm_state_window.py`` and
     ``docs/_static/linear_rhs_zero_norm_state_window_gate.json``;
   - the gate directly compares the full RHS with candidate skip configurations
