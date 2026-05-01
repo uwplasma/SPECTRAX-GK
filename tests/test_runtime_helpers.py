@@ -48,7 +48,6 @@ from spectraxgk.runtime_config import (
     RuntimeConfig,
     RuntimeExpertConfig,
     RuntimeNormalizationConfig,
-    RuntimeOutputConfig,
     RuntimePhysicsConfig,
     RuntimeSpeciesConfig,
 )
@@ -92,6 +91,21 @@ def _diag(offset: float = 0.0, *, resolved: bool = True) -> SimulationDiagnostic
         phi_mode_t=np.asarray([1.0 + 0.0j, 1.1 + 0.1j]),
         resolved=res,
     )
+
+
+def test_runtime_linear_terms_disable_zero_collision_frequency() -> None:
+    cfg_zero = replace(
+        _base_cfg(),
+        species=(RuntimeSpeciesConfig(name="ion", nu=0.0),),
+        physics=RuntimePhysicsConfig(collisions=True, hypercollisions=False),
+    )
+    cfg_nonzero = replace(
+        cfg_zero,
+        species=(RuntimeSpeciesConfig(name="ion", nu=0.05),),
+    )
+
+    assert build_runtime_linear_terms(cfg_zero).collisions == 0.0
+    assert build_runtime_linear_terms(cfg_nonzero).collisions == 1.0
 
 
 def test_runtime_small_helper_functions() -> None:

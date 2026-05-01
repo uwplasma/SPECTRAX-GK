@@ -212,6 +212,21 @@ def test_runtime_terms_and_params_follow_toggles() -> None:
     assert terms.hypercollisions == 0.0
 
 
+def test_runtime_terms_disable_collisions_when_species_nu_is_zero() -> None:
+    cfg_zero = replace(
+        _base_runtime_cfg(),
+        species=(RuntimeSpeciesConfig(name="ion", nu=0.0),),
+        physics=RuntimePhysicsConfig(collisions=True, hypercollisions=False),
+    )
+    cfg_nonzero = replace(
+        cfg_zero,
+        species=(RuntimeSpeciesConfig(name="ion", nu=0.05),),
+    )
+
+    assert build_runtime_linear_terms(cfg_zero).collisions == 0.0
+    assert build_runtime_linear_terms(cfg_nonzero).collisions == 1.0
+
+
 def test_runtime_hypercollision_default_tracks_hermite_count() -> None:
     cfg = replace(
         _base_runtime_cfg(),
