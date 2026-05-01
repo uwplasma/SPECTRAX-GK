@@ -277,6 +277,31 @@ def test_collisions_contribution_accepts_low_rank_lb_lam():
     np.testing.assert_allclose(np.asarray(out[0, 0, :, 0, 0, 0]), [-1.0, -1.5])
 
 
+def test_collisions_contribution_skips_zero_nu_low_rank_path():
+    H = jnp.ones((1, 1, 2, 1, 1, 1), dtype=jnp.complex64)
+    out = collisions_contribution(
+        H,
+        nu=jnp.array([0.0], dtype=jnp.float32),
+        lb_lam=jnp.array([[2.0, 3.0]], dtype=jnp.float32),
+        b=jnp.full((1, 1, 1, 1), 2.0, dtype=jnp.float32),
+        weight=jnp.asarray(1.0, dtype=jnp.float32),
+    )
+
+    assert jnp.allclose(out, jnp.zeros_like(H))
+
+
+def test_collisions_contribution_preserves_preexpanded_collision_lam_when_nu_zero():
+    H = jnp.ones((1, 1, 2, 1, 1, 1), dtype=jnp.complex64)
+    out = collisions_contribution(
+        H,
+        nu=jnp.array([0.0], dtype=jnp.float32),
+        collision_lam=jnp.full((1, 1, 2, 1, 1, 1), 2.0, dtype=jnp.float32),
+        weight=jnp.asarray(1.0, dtype=jnp.float32),
+    )
+
+    assert jnp.allclose(out, -2.0 * H)
+
+
 def test_build_H_adds_bpar_to_m0():
     """Bpar term should enter H at m=0 with J_l + J_{l-1}."""
     G = jnp.zeros((1, 3, 2, 1, 1, 1))

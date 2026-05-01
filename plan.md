@@ -1627,10 +1627,11 @@ Exit gate:
   - regenerated ``docs/_static/linear_rhs_terms_profile_cpu.csv`` and
     ``docs/_static/linear_rhs_terms_profile.json`` for the Cyclone nonlinear
     runtime state at ``ky=0.3, Nl=4, Nm=8``;
-  - the current bounded CPU profile records ``full_linear_rhs≈2.06e-1 s`` in
-    the profiler harness, independently measured term kernels summing to
-    ``4.70e-2 s``, ``linked_grad_z`` as the dominant nonzero standalone term,
-    and zero-norm initial-state rows led by ``linked_abs_kz``;
+  - after the zero-collision fast path, the current bounded CPU profile records
+    ``full_linear_rhs≈4.94e-2 s`` in the profiler harness, independently
+    measured term kernels summing to ``2.50e-2 s``, ``linked_grad_z`` as the
+    dominant nonzero standalone term, and zero-norm initial-state rows led by
+    ``linked_abs_kz``;
   - keep this as localization evidence only: zero-norm rows must not be skipped
     in production until a state-window identity gate shows they remain inactive
     after nonlinear evolution.
@@ -1646,3 +1647,7 @@ Exit gate:
     Cyclone window, while skipping hypercollisions is correctly rejected with a
     maximum relative RHS error of ``3.59e-3`` on the resolved ``z``-varying
     state.
+  - implemented the accepted zero-collision fast path by disabling runtime
+    collision terms when every species has ``nu=0`` and returning early from
+    the low-rank collision contribution for static zero-weight/zero-``nu``
+    cases while preserving pre-expanded collision matrices.

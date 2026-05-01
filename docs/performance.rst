@@ -198,17 +198,18 @@ inside nonlinear runs:
      --out docs/_static/linear_rhs_terms_profile_cpu.csv \
      --summary-json docs/_static/linear_rhs_terms_profile.json
 
-The tracked CPU Cyclone artifact reports ``full_linear_rhs=2.06e-1 s`` for the
-compiled full linear RHS call in this profiling harness. The independently
-timed term kernels sum to ``4.70e-2 s``; this gap is a localization signal, not
-a speedup claim, because the full path recomputes the field solve, ``H``
-assembly, and all weighted contributions as one compiled graph. The dominant
-nonzero-norm standalone term is the linked parallel-gradient path
-(``linked_grad_z=5.80e-3 s``), while the largest zero-norm row for the profiled
-initial state is ``linked_abs_kz=1.68e-2 s``. Zero-norm rows are explicitly
-recorded in ``docs/_static/linear_rhs_terms_profile.json`` but are not removed
-from production until a state-window identity gate proves they remain inactive
-after nonlinear evolution.
+After the zero-collision fast path, the tracked CPU Cyclone artifact reports
+``full_linear_rhs=4.94e-2 s`` for the compiled full linear RHS call in this
+profiling harness. The independently timed term kernels sum to ``2.50e-2 s``;
+this remaining gap is a localization signal, not a speedup claim, because the
+full path recomputes the field solve, ``H`` assembly, and all weighted
+contributions as one compiled graph. The dominant nonzero-norm standalone term
+is the linked parallel-gradient path (``linked_grad_z=4.10e-3 s``), while the
+largest zero-norm row for the profiled initial state is
+``linked_abs_kz=9.39e-3 s``. Zero-norm rows are explicitly recorded in
+``docs/_static/linear_rhs_terms_profile.json`` but are not removed from
+production until a state-window identity gate proves they remain inactive after
+nonlinear evolution.
 
 The companion state-window gate is generated with:
 
