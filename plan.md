@@ -1684,3 +1684,14 @@ Exit gate:
   - release-artifact provenance passes for ``10`` tracked assets, with
     ``2.07 MB`` still planned for GitHub Releases and the HSX VMEC fixture
     intentionally kept in the repo.
+- Readiness dashboard profiler-source tightening:
+  - updated the manuscript-readiness and open-research-lane dashboards to
+    consume ``docs/_static/nonlinear_rhs_profile.json`` alongside the
+    nonlinear sharding identity artifact;
+  - the dashboard JSON/CSV/PNG/PDF artifacts now expose the current RHS split
+    profile metrics, including GPU full-RHS grid/spectral ratio ``1.66``, GPU
+    nonlinear-bracket ratio ``2.25``, CPU full-RHS ratio ``1.11``, and CPU
+    nonlinear-bracket ratio ``1.66``;
+  - the profiler lanes intentionally remain ``partial`` because these are
+    bounded split-profile and identity artifacts, not broad nonlinear runtime
+    claims.

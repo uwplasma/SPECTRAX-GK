@@ -144,6 +144,7 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
     vmec_ql_grad = _read_json(root, "docs/_static/vmec_boozer_quasilinear_gradient_gate.json")
     vmec_gradient_matrix = _read_json(root, "docs/_static/vmec_boozer_gradient_holdout_matrix.json")
     profile = _read_json(root, "docs/_static/nonlinear_sharding_profile_office_gpu.json")
+    rhs_profile = _read_json(root, "docs/_static/nonlinear_rhs_profile.json")
 
     ql_inputs_passed = bool((ql_inputs or {}).get("passed", False))
     ql_holdout_promoted = bool((ql_holdout or {}).get("passed", False))
@@ -212,6 +213,13 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
         if isinstance((profile or {}).get("best_identity_preserving_candidate", {}), dict)
         else {}
     )
+    rhs_speedups = (
+        (rhs_profile or {}).get("spectral_speedups", {})
+        if isinstance((rhs_profile or {}).get("spectral_speedups", {}), dict)
+        else {}
+    )
+    rhs_cpu = rhs_speedups.get("cpu", {}) if isinstance(rhs_speedups.get("cpu", {}), dict) else {}
+    rhs_gpu = rhs_speedups.get("gpu", {}) if isinstance(rhs_speedups.get("gpu", {}), dict) else {}
 
     lanes: list[dict[str, Any]] = [
         {
@@ -337,12 +345,24 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
             "lane": "Profiler-backed nonlinear performance claims",
             "status": "partial" if bool((profile or {}).get("identity_gate_pass", False)) else "open",
             "claim_level": "identity_gate_present_no_new_speedup_claim",
-            "primary_artifacts": ["docs/_static/nonlinear_sharding_profile_office_gpu.json"],
+            "primary_artifacts": [
+                "docs/_static/nonlinear_sharding_profile_office_gpu.json",
+                "docs/_static/nonlinear_rhs_profile.json",
+            ],
             "key_metrics": {
                 "identity_gate_pass": bool((profile or {}).get("identity_gate_pass", False)),
                 "engineering_speedup": _finite_float((profile or {}).get("engineering_speedup")),
                 "best_identity_candidate": profile_best.get("spec"),
                 "best_identity_candidate_speedup": _finite_float(profile_best.get("engineering_speedup_median")),
+                "rhs_fastest_full_label": (rhs_profile or {}).get("fastest_full_rhs_label"),
+                "rhs_cpu_full_grid_over_spectral": _finite_float(rhs_cpu.get("full_rhs_grid_over_spectral")),
+                "rhs_gpu_full_grid_over_spectral": _finite_float(rhs_gpu.get("full_rhs_grid_over_spectral")),
+                "rhs_cpu_bracket_grid_over_spectral": _finite_float(
+                    rhs_cpu.get("nonlinear_bracket_grid_over_spectral")
+                ),
+                "rhs_gpu_bracket_grid_over_spectral": _finite_float(
+                    rhs_gpu.get("nonlinear_bracket_grid_over_spectral")
+                ),
             },
             "next_action": "Keep runtime claims conservative until fresh CPU/GPU profiler artifacts support a speedup.",
         },
@@ -456,9 +476,11 @@ def write_manuscript_readiness_artifacts(payload: dict[str, Any], *, out: str | 
             speed = km.get("engineering_speedup")
             best = km.get("best_identity_candidate")
             best_speed = km.get("best_identity_candidate_speedup")
+            rhs_gpu_speed = km.get("rhs_gpu_full_grid_over_spectral")
             primary = "primary: n/a" if speed is None else f"primary: {float(speed):.2f}x"
             best_text = "" if best_speed is None else f"; best {best}: {float(best_speed):.2f}x"
-            metric = primary + best_text
+            rhs_text = "" if rhs_gpu_speed is None else f"; RHS GPU split: {float(rhs_gpu_speed):.2f}x"
+            metric = primary + best_text + rhs_text
         text_x = max(float(value) + 0.06, 0.18)
         ax.text(min(text_x, 4.05), float(yi), metric, va="center", ha="left", fontsize=8.0)
 

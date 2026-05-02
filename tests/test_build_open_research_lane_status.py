@@ -127,7 +127,30 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
     _write_json(
         tmp_path,
         "docs/_static/nonlinear_sharding_profile_office_gpu.json",
-        {"identity_gate_pass": True, "engineering_speedup": 0.8, "device_count": 2, "default_backend": "gpu"},
+        {
+            "identity_gate_pass": True,
+            "engineering_speedup": 0.8,
+            "device_count": 2,
+            "default_backend": "gpu",
+            "best_identity_preserving_candidate": {"spec": "kx", "engineering_speedup_median": 1.03},
+        },
+    )
+    _write_json(
+        tmp_path,
+        "docs/_static/nonlinear_rhs_profile.json",
+        {
+            "fastest_full_rhs_label": "GPU spectral",
+            "spectral_speedups": {
+                "cpu": {
+                    "full_rhs_grid_over_spectral": 1.11,
+                    "nonlinear_bracket_grid_over_spectral": 1.66,
+                },
+                "gpu": {
+                    "full_rhs_grid_over_spectral": 1.64,
+                    "nonlinear_bracket_grid_over_spectral": 2.20,
+                },
+            },
+        },
     )
 
     payload = mod.build_status_payload(tmp_path)
@@ -153,6 +176,13 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
     assert lanes["Nonlinear holdouts for quasilinear absolute-flux promotion"]["key_metrics"][
         "cth_like_external_vmec_converged"
     ] is False
+    profiler = lanes["Profiler-backed nonlinear hot-path optimization"]
+    assert profiler["status"] == "partial"
+    assert "docs/_static/nonlinear_rhs_profile.json" in profiler["primary_artifacts"]
+    assert profiler["key_metrics"]["best_identity_candidate"] == "kx"
+    assert profiler["key_metrics"]["rhs_fastest_full_label"] == "GPU spectral"
+    assert profiler["key_metrics"]["rhs_gpu_full_grid_over_spectral"] == 1.64
+    assert profiler["key_metrics"]["rhs_gpu_bracket_grid_over_spectral"] == 2.20
 
 
 def test_write_status_artifacts_writes_all_formats(tmp_path: Path) -> None:

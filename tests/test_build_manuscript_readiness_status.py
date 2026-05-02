@@ -89,7 +89,28 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(tmp_path: Pat
     _write_json(
         tmp_path,
         "docs/_static/nonlinear_sharding_profile_office_gpu.json",
-        {"identity_gate_pass": True, "engineering_speedup": 0.8},
+        {
+            "identity_gate_pass": True,
+            "engineering_speedup": 0.8,
+            "best_identity_preserving_candidate": {"spec": "kx", "engineering_speedup_median": 1.03},
+        },
+    )
+    _write_json(
+        tmp_path,
+        "docs/_static/nonlinear_rhs_profile.json",
+        {
+            "fastest_full_rhs_label": "GPU spectral",
+            "spectral_speedups": {
+                "cpu": {
+                    "full_rhs_grid_over_spectral": 1.11,
+                    "nonlinear_bracket_grid_over_spectral": 1.66,
+                },
+                "gpu": {
+                    "full_rhs_grid_over_spectral": 1.64,
+                    "nonlinear_bracket_grid_over_spectral": 2.20,
+                },
+            },
+        },
     )
     _write_json(
         tmp_path,
@@ -150,6 +171,13 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(tmp_path: Pat
     )
     assert lanes["W7-X zonal recurrence/damping"]["status"] == "deferred"
     assert lanes["TEM / kinetic-electron stellarator extension"]["status"] == "deferred"
+    profiler = lanes["Profiler-backed nonlinear performance claims"]
+    assert profiler["status"] == "partial"
+    assert "docs/_static/nonlinear_rhs_profile.json" in profiler["primary_artifacts"]
+    assert profiler["key_metrics"]["best_identity_candidate"] == "kx"
+    assert profiler["key_metrics"]["rhs_fastest_full_label"] == "GPU spectral"
+    assert profiler["key_metrics"]["rhs_gpu_full_grid_over_spectral"] == 1.64
+    assert profiler["key_metrics"]["rhs_cpu_bracket_grid_over_spectral"] == 1.66
 
 
 def test_write_manuscript_readiness_artifacts_writes_all_formats(tmp_path: Path) -> None:

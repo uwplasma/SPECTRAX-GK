@@ -104,12 +104,18 @@
         "best_identity_candidate": "kx",
         "best_identity_candidate_speedup": 1.034710337461593,
         "engineering_speedup": 0.8555105284923791,
-        "identity_gate_pass": true
+        "identity_gate_pass": true,
+        "rhs_cpu_bracket_grid_over_spectral": 1.6589148858389904,
+        "rhs_cpu_full_grid_over_spectral": 1.108921941356894,
+        "rhs_fastest_full_label": "GPU spectral",
+        "rhs_gpu_bracket_grid_over_spectral": 2.245002128793795,
+        "rhs_gpu_full_grid_over_spectral": 1.6637891963914468
       },
       "lane": "Profiler-backed nonlinear performance claims",
       "next_action": "Keep runtime claims conservative until fresh CPU/GPU profiler artifacts support a speedup.",
       "primary_artifacts": [
-        "docs/_static/nonlinear_sharding_profile_office_gpu.json"
+        "docs/_static/nonlinear_sharding_profile_office_gpu.json",
+        "docs/_static/nonlinear_rhs_profile.json"
       ],
       "status": "partial"
     },
