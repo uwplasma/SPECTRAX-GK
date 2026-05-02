@@ -128,6 +128,36 @@ def test_solve_fields_bpar_and_apar_toggles() -> None:
     assert jnp.allclose(out_beta0.bpar, 0.0)
 
 
+def test_electrostatic_field_solve_allows_single_hermite_moment() -> None:
+    grid_cfg = GridConfig(Nx=2, Ny=4, Nz=8, Lx=12.0, Ly=12.0)
+    cfg = CycloneBaseCase(grid=grid_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams(beta=0.0, fapar=0.0, tau_e=1.0)
+    cache = build_linear_cache(grid, geom, params, Nl=2, Nm=1)
+    G = jnp.zeros((1, 2, 1, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64)
+    G = G.at[0, 0, 0, 1, 0, :].set(0.1 + 0.2j)
+
+    out = _solve_fields_impl(
+        G,
+        cache,
+        params,
+        charge=jnp.asarray([1.0], dtype=jnp.float32),
+        density=jnp.asarray([1.0], dtype=jnp.float32),
+        temp=jnp.asarray([1.0], dtype=jnp.float32),
+        mass=jnp.asarray([1.0], dtype=jnp.float32),
+        tz=jnp.asarray([1.0], dtype=jnp.float32),
+        vth=jnp.asarray([1.0], dtype=jnp.float32),
+        fapar=jnp.asarray(0.0, dtype=jnp.float32),
+        w_bpar=jnp.asarray(0.0, dtype=jnp.float32),
+    )
+
+    assert out.phi.shape == (grid.ky.size, grid.kx.size, grid.z.size)
+    assert jnp.allclose(out.apar, 0.0)
+    assert jnp.allclose(out.bpar, 0.0)
+    assert jnp.all(jnp.isfinite(out.phi))
+
+
 def test_solve_fields_custom_vjp_gradient_matches_impl() -> None:
     cache, params, G, charge, density, temp, mass, tz, vth = _build_case(beta=0.05, fapar=1.0)
     fapar = jnp.asarray(1.0, dtype=jnp.float32)
