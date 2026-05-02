@@ -1676,9 +1676,3 @@ Exit gate:
     collision terms when every species has ``nu=0`` and returning early from
     the low-rank collision contribution for static zero-weight/zero-``nu``
     cases while preserving pre-expanded collision matrices.
-  - refreshed the matching ``office`` GPU linear RHS term profile on one RTX
-    A4000 from a clean shallow clone at ``290d577``;
-  - tracked ``docs/_static/linear_rhs_terms_profile_gpu.{csv,json}``; current
-    GPU result is ``full_linear_rhs≈6.44e-3 s``, independently measured terms
-    summing to ``4.18e-3 s``, and ``linked_abs_kz≈1.02e-3 s`` as the largest
-    zero-norm initial-state row.
