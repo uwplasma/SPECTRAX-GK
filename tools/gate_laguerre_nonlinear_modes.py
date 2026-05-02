@@ -18,10 +18,10 @@ from typing import Any
 
 import numpy as np
 
-from spectraxgk.config import GeometryConfig
-from spectraxgk.io import load_runtime_from_toml
-from spectraxgk.runtime import run_runtime_nonlinear
-from spectraxgk.runtime_config import RuntimeConfig
+from spectraxgk.config import GeometryConfig  # type: ignore[import-untyped]
+from spectraxgk.io import load_runtime_from_toml  # type: ignore[import-untyped]
+from spectraxgk.runtime import run_runtime_nonlinear  # type: ignore[import-untyped]
+from spectraxgk.runtime_config import RuntimeConfig  # type: ignore[import-untyped]
 
 
 @dataclass(frozen=True)
@@ -253,7 +253,7 @@ def _write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
     for key in DIAGNOSTIC_KEYS:
         fieldnames.extend([f"grid_{key}", f"spectral_{key}", f"{key}_rel_diff"])
     with path.open("w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer = csv.DictWriter(f, fieldnames=fieldnames, lineterminator="\n")
         writer.writeheader()
         for row in rows:
             grid = row.get("grid", {})

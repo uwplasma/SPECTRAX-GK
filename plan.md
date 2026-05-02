@@ -1695,3 +1695,13 @@ Exit gate:
   - the profiler lanes intentionally remain ``partial`` because these are
     bounded split-profile and identity artifacts, not broad nonlinear runtime
     claims.
+- Spectral Laguerre nonlinear-mode gate refresh:
+  - regenerated the local CPU ``docs/_static/laguerre_mode_gate.{png,pdf,json,csv}``
+    artifact across Cyclone, KBM, W7-X, and HSX with a bounded two-step paired
+    grid/spectral comparison;
+  - all four cases pass the scalar-diagnostic parity threshold, with maximum
+    relative differences ``8.9e-4`` (Cyclone), ``0`` (KBM), ``5.1e-6``
+    (W7-X), and ``2.2e-5`` (HSX);
+  - grid/spectral runtime ratios are ``2.90`` (Cyclone), ``3.31`` (KBM),
+    ``1.67`` (W7-X), and ``0.66`` (HSX), so the documentation keeps spectral
+    Laguerre mode as opt-in rather than a global default.

@@ -126,6 +126,8 @@ artifact_paths = [
   "docs/_static/linear_rhs_terms_profile_z_wave_gpu.json",
   "docs/_static/linear_rhs_terms_profile_z_wave_gpu.csv",
   "docs/_static/linear_rhs_zero_norm_state_window_gate.json",
+  "docs/_static/laguerre_mode_gate.json",
+  "docs/_static/laguerre_mode_gate.png",
   "docs/_static/laguerre_mode_gate_gpu.json",
   "docs/_static/laguerre_mode_gate_gpu.png",
   "docs/_static/nonlinear_sharding_profile.json",
