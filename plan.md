@@ -1676,3 +1676,11 @@ Exit gate:
     collision terms when every species has ``nu=0`` and returning early from
     the low-rank collision contribution for static zero-weight/zero-``nu``
     cases while preserving pre-expanded collision matrices.
+- Repository/release artifact hygiene audit:
+  - reran ``tools/audit_repository_size.py --top 30`` and the checked
+    repository/release artifact manifests after the profiler refreshes;
+  - current tracked size is ``39.55 MB`` across ``913`` tracked files, below
+    the ``45 MB`` gate, with no unlisted large tracked files;
+  - release-artifact provenance passes for ``10`` tracked assets, with
+    ``2.07 MB`` still planned for GitHub Releases and the HSX VMEC fixture
+    intentionally kept in the repo.
