@@ -112,10 +112,18 @@ predictor, VMEC/Boozer equal-arc geometry parity is closed at
 ``mboz=nboz=21``, and the reduced differentiable stellarator ITG optimization
 examples are closed with AD/FD gates. The production solver-objective gradient
 lane now has a passed actual linear-RHS gate at the solver-ready geometry
-contract and a passed mode-21 VMEC/Boozer state-to-solver eigenfrequency gate.
-The remaining promotion step is to make the full-chain quasilinear flux-weight
-state-gradient diagnostic fast and conditioned enough for release/paper use,
-then add nonlinear-window gradients or a documented estimator gate.
+contract plus passed mode-21 VMEC/Boozer state-to-solver eigenfrequency and
+quasilinear heat-flux-weight gates on QH and Li383 holdouts. The remaining
+promotion step is now the nonlinear-window state-gradient gate and converged
+nonlinear audits of optimized equilibria; those are required before claiming a
+production nonlinear heat-flux stellarator optimizer.
+
+The latest public CI run for commit ``5790e0e`` passed repo hygiene, mypy,
+quick shards, docs/packaging, fast coverage, and the full wide-coverage matrix.
+The combined wide-coverage job reported ``TOTAL 16134 787 95%`` package-wide
+coverage. Some individual modules still sit below ``95%`` because the gate is
+package-wide; notably ``nonlinear.py`` and ``zonal_validation.py`` remain useful
+targets for future targeted physics tests.
 
 .. image:: _static/manuscript_readiness_status.png
    :alt: Manuscript-scope readiness status summary
