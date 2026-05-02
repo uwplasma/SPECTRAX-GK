@@ -200,15 +200,14 @@ inside nonlinear runs:
      --summary-json docs/_static/linear_rhs_terms_profile.json
 
 After the zero-collision fast path, the tracked CPU Cyclone artifact reports
-``full_linear_rhs=5.13e-2 s`` for the compiled full linear RHS call in this
-profiling harness. The independently timed term kernels sum to ``1.67e-2 s``;
+``full_linear_rhs=5.04e-2 s`` for the compiled full linear RHS call in this
+profiling harness. The independently timed term kernels sum to ``1.71e-2 s``;
 this remaining gap is a localization signal, not a speedup claim, because the
 full path recomputes the field solve, ``H`` assembly, and all weighted
 contributions as one compiled graph. The dominant standalone term is the
-streaming path (``streaming=2.65e-3 s``), while the largest zero-norm rows for
-the profiled initial state are the hypercollision path
-(``hypercollisions=2.15e-3 s``) and linked ``|k_z|`` operator
-(``linked_abs_kz=2.13e-3 s``). Zero-norm rows are explicitly recorded in
+streaming path (``streaming=2.58e-3 s``), while the largest zero-norm rows for
+the profiled initial state are linked ``|k_z|`` (``2.33e-3 s``) and the
+hypercollision path (``2.32e-3 s``). Zero-norm rows are explicitly recorded in
 ``docs/_static/linear_rhs_terms_profile.json`` but are not removed from
 production until a state-window identity gate proves they remain inactive after
 nonlinear evolution.
@@ -217,21 +216,21 @@ The active-state CPU companion
 ``docs/_static/linear_rhs_terms_profile_z_wave_cpu.json`` profiles the same
 state after injecting a resolved parallel perturbation. There the hypercollision
 and linked ``|k_z|`` norms are both ``2.35e-4`` and the linked operator costs
-``2.02e-3 s``. This is the artifact that should be used for linked-``|k_z|``
+``2.09e-3 s``. This is the artifact that should be used for linked-``|k_z|``
 optimization decisions; the initial-state profile is only a zero-source
 baseline.
 
 The matching ``office`` GPU profile is tracked in
 ``docs/_static/linear_rhs_terms_profile_gpu.json`` and
 ``docs/_static/linear_rhs_terms_profile_gpu.csv``. On one RTX A4000 it reports
-``full_linear_rhs=6.53e-3 s`` and independently timed terms summing to
-``3.61e-3 s``. The largest profiled zero-norm rows are hypercollisions
-(``4.81e-4 s``) and linked ``|k_z|`` (``4.68e-4 s``), which is why the
+``full_linear_rhs=6.52e-3 s`` and independently timed terms summing to
+``3.94e-3 s``. The largest profiled zero-norm rows are hypercollisions
+(``6.13e-4 s``) and linked ``|k_z|`` (``3.59e-4 s``), which is why the
 state-window gate below remains a hard precondition before any further
 linked-``|k_z|`` fast path. The active-state GPU companion
 ``docs/_static/linear_rhs_terms_profile_z_wave_gpu.json`` activates the same
 operator pair with matched norms ``2.35e-4`` and records linked ``|k_z|`` at
-``3.59e-4 s``.
+``3.62e-4 s``.
 
 The companion state-window gate is generated with:
 

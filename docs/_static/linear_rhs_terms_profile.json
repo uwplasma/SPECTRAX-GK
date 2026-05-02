@@ -7,8 +7,8 @@
   "config": "examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml",
   "dominant_measured_term": "streaming",
   "dominant_nonzero_norm_term": "streaming",
-  "full_linear_rhs_seconds": 0.05125105212209746,
-  "full_over_sum_independently_measured_components": 3.074432881502638,
+  "full_linear_rhs_seconds": 0.05044881775393151,
+  "full_over_sum_independently_measured_components": 2.9529034504656253,
   "kind": "linear_rhs_terms_profile_summary",
   "kx": null,
   "ky": 0.3,
@@ -16,74 +16,74 @@
   "rows": {
     "build_H": {
       "norm": 0.1280190646648407,
-      "seconds": 0.0012096613791072741
+      "seconds": 0.0013191874895710498
     },
     "collisions": {
       "norm": 0.0,
-      "seconds": 0.0012756562500726432
+      "seconds": 0.0010417500016046688
     },
     "curvature_gradb": {
       "norm": 0.0525895431637764,
-      "seconds": 0.0007974322506925091
+      "seconds": 0.0008093124924926087
     },
     "diamagnetic": {
       "norm": 0.03662170097231865,
-      "seconds": 0.0010170312452828512
+      "seconds": 0.001176119883893989
     },
     "end_damping": {
       "norm": 0.003601919626817107,
-      "seconds": 0.0008129322523018345
+      "seconds": 0.0009090989915421233
     },
     "field_solve": {
       "norm": 0.053106486797332764,
-      "seconds": 0.0004709115019068122
+      "seconds": 0.0002917812525993213
     },
     "full_linear_rhs": {
       "norm": 0.06520643085241318,
-      "seconds": 0.05125105212209746
+      "seconds": 0.05044881775393151
     },
     "hypercollisions": {
       "norm": 0.0,
-      "seconds": 0.002145474005374126
+      "seconds": 0.0023211041261674836
     },
     "hyperdiffusion": {
       "norm": 0.001077004591934383,
-      "seconds": 0.000878104125149548
+      "seconds": 0.0010154687479371205
     },
     "linked_abs_kz": {
       "norm": 0.0,
-      "seconds": 0.0021333906188374385
+      "seconds": 0.0023328125098487362
     },
     "linked_grad_z": {
       "norm": 0.028866907581686974,
-      "seconds": 0.002126692750607617
+      "seconds": 0.002148448009393178
     },
     "mirror": {
       "norm": 0.0003229873545933515,
-      "seconds": 0.0011542187567101792
+      "seconds": 0.0011384687531972304
     },
     "streaming": {
       "norm": 0.028866907581686974,
-      "seconds": 0.002648578127264045
+      "seconds": 0.002580927000963129
     }
   },
   "state": "initial",
-  "sum_independently_measured_components_seconds": 0.01667008326330688,
+  "sum_independently_measured_components_seconds": 0.01708447925921064,
   "z_variation_norm": 1.4943747572715438e-08,
   "zero_norm_terms_by_time": [
     {
       "norm": 0.0,
-      "seconds": 0.002145474005374126,
-      "term": "hypercollisions"
-    },
-    {
-      "norm": 0.0,
-      "seconds": 0.0021333906188374385,
+      "seconds": 0.0023328125098487362,
       "term": "linked_abs_kz"
     },
     {
       "norm": 0.0,
-      "seconds": 0.0012756562500726432,
+      "seconds": 0.0023211041261674836,
+      "term": "hypercollisions"
+    },
+    {
+      "norm": 0.0,
+      "seconds": 0.0010417500016046688,
       "term": "collisions"
     }
   ],

@@ -1635,18 +1635,18 @@ Exit gate:
     ``nu_hyper_m * m_norm_kz_factor * 2.3 * vth * |kpar_scale|`` rather than
     the unrelated ``nu_hyper`` path;
   - after the zero-collision fast path, the current bounded CPU profile records
-    ``full_linear_rhs≈5.13e-2 s`` in the profiler harness and independently
-    measured term kernels summing to ``1.67e-2 s``;
+    ``full_linear_rhs≈5.04e-2 s`` in the profiler harness and independently
+    measured term kernels summing to ``1.71e-2 s``;
   - added the active-state CPU profile
     ``docs/_static/linear_rhs_terms_profile_z_wave_cpu.{csv,json}``, where
     resolved parallel variation activates hypercollisions and linked
-    ``|k_z|`` with norm ``2.35e-4`` and linked-operator cost ``2.02e-3 s``;
+    ``|k_z|`` with norm ``2.35e-4`` and linked-operator cost ``2.09e-3 s``;
   - refreshed the matching ``office`` GPU profiles after the profiler-source
-    fix: the initial-state artifact records ``full_linear_rhs≈6.53e-3 s`` and
-    measured terms summing to ``3.61e-3 s``, while
+    fix: the initial-state artifact records ``full_linear_rhs≈6.52e-3 s`` and
+    measured terms summing to ``3.94e-3 s``, while
     ``docs/_static/linear_rhs_terms_profile_z_wave_gpu.{csv,json}`` activates
     the same linked ``|k_z|``/hypercollision pair with matched norm
-    ``2.35e-4`` and linked-operator cost ``3.59e-4 s``;
+    ``2.35e-4`` and linked-operator cost ``3.62e-4 s``;
   - keep this as localization evidence only: zero-norm rows must not be skipped
     in production until a state-window identity gate shows they remain inactive
     after nonlinear evolution.
