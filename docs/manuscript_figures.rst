@@ -12,6 +12,28 @@ figure is only ready for manuscript use when it has:
 - a declared reference,
 - a declared acceptance status.
 
+Current Readiness Snapshot
+--------------------------
+
+The current scoped manuscript stack is ready for claims about validated
+quasilinear diagnostics/model selection, nonlinear-window comparison gates,
+mode-21 VMEC/Boozer geometry parity, reduced differentiable stellarator ITG
+optimization examples, and linear/quasilinear VMEC/Boozer AD-vs-finite-
+difference gradient gates on QH and Li383. The latest public CI run for commit
+``5790e0e`` passed the quick shards, docs/packaging, mypy, repo hygiene, fast
+coverage, and the full wide-coverage matrix with ``95%`` package-wide coverage.
+
+The broader plan is not fully closed. The current quasilinear figures are
+publication-ready as diagnostics, model-selection evidence, and explicit
+negative promotion gates, but they do not support a calibrated absolute-flux
+predictor. The stellarator optimization figures are publication-ready for
+reduced differentiable optimization/UQ plumbing and gradient validation, but
+not yet for production nonlinear heat-flux optimization. Those stronger claims
+require more converged electrostatic nonlinear holdouts, nonlinear-window
+state-gradient gates, and nonlinear audits of optimized equilibria. W7-X zonal
+recurrence and TEM/kinetic-electron stellarator validation remain deferred from
+the current manuscript scope.
+
 Core Validation Figures
 -----------------------
 
@@ -53,7 +75,7 @@ Core Validation Figures
    * - Manuscript-readiness status panel
      - ``tools/build_manuscript_readiness_status.py``
      - Current manuscript scope with W7-X zonal and TEM deferred
-     - current artifact base: ``docs/_static/manuscript_readiness_status.png`` with CSV/JSON/PDF companions. It records the narrower manuscript scope where W7-X zonal recurrence and TEM/kinetic-electron extensions are deferred. In that scope, quasilinear diagnostics and saturation-model selection are closed as a validated negative/model-selection result rather than as an absolute-flux predictor; VMEC/Boozer zero-beta equal-arc geometry parity is closed at ``mboz=nboz=21``; reduced differentiable stellarator ITG optimization is closed with AD/FD gates; the remaining active blocker is production solver-objective geometry gradients through the mode-21 VMEC/Boozer bridge.
+     - current artifact base: ``docs/_static/manuscript_readiness_status.png`` with CSV/JSON/PDF companions. It records the narrower manuscript scope where W7-X zonal recurrence and TEM/kinetic-electron extensions are deferred. In that scope, quasilinear diagnostics and saturation-model selection are closed as a validated negative/model-selection result rather than as an absolute-flux predictor; VMEC/Boozer zero-beta equal-arc geometry parity is closed at ``mboz=nboz=21``; reduced differentiable stellarator ITG optimization is closed with AD/FD gates; and production solver-objective geometry gradients are closed for solver-ready arrays plus mode-21 VMEC/Boozer eigenfrequency and quasilinear heat-flux-weight gates on QH and Li383. The remaining active blocker is the nonlinear-window state-gradient and optimized-equilibrium nonlinear audit needed before production nonlinear heat-flux optimization claims.
    * - Quasilinear spectrum panel
      - ``tools/plot_quasilinear_spectrum.py``
      - Initial diagnostic closed; nonlinear calibration open

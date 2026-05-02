@@ -1705,3 +1705,24 @@ Exit gate:
   - grid/spectral runtime ratios are ``2.90`` (Cyclone), ``3.31`` (KBM),
     ``1.67`` (W7-X), and ``0.66`` (HSX), so the documentation keeps spectral
     Laguerre mode as opt-in rather than a global default.
+- CI-backed readiness and claim-scope update:
+  - latest public CI for commit ``5790e0e`` passed repo hygiene, mypy, quick
+    shards, docs/packaging, fast coverage, and all 24 wide-coverage shards;
+  - the wide-coverage combine job reported ``TOTAL 16134 787 95%`` package-wide
+    coverage, so the current package-wide 95% lane is green even though
+    targeted follow-up remains valuable for modules below the threshold such as
+    ``nonlinear.py`` and ``zonal_validation.py``;
+  - updated ``docs/roadmap.rst``, ``docs/manuscript_figures.rst``, and
+    ``README.md`` so the claim surface matches the artifacts: quasilinear
+    diagnostics/model-selection, nonlinear-window release gates, VMEC/Boozer
+    parity, reduced stellarator ITG optimization/UQ, and QH+Li383
+    linear/quasilinear VMEC/Boozer gradient gates are ready for the scoped
+    manuscript/release narrative;
+  - explicitly kept calibrated absolute quasilinear flux prediction, production
+    nonlinear heat-flux stellarator optimization, W7-X zonal recurrence, and
+    TEM/kinetic-electron stellarator validation out of the finished claim
+    surface;
+  - next highest-value blockers before stronger claims are at least two more
+    converged electrostatic nonlinear holdouts, a nonlinear-window
+    VMEC/Boozer state-gradient gate, nonlinear audits of optimized equilibria,
+    and the deferred W7-X zonal/TEM lanes.
