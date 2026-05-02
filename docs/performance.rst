@@ -164,18 +164,19 @@ grid-mode split is:
 
 .. code-block:: text
 
-   field_solve=3.19e-4 s
-   nonlinear_bracket=2.77e-3 s
-   linear_rhs=6.43e-3 s
-   full_rhs=8.91e-3 s
+   field_solve=1.25e-4 s
+   nonlinear_bracket=2.88e-3 s
+   linear_rhs=6.40e-3 s
+   full_rhs=9.16e-3 s
 
 The same GPU profile with ``laguerre_mode="spectral"`` measured
-``nonlinear_bracket=1.40e-3 s`` and ``full_rhs=5.67e-3 s``. CPU full-RHS
+``nonlinear_bracket=1.28e-3 s`` and ``full_rhs=5.50e-3 s``. CPU full-RHS
 timings were refreshed locally with a bounded five-repeat run:
-``full_rhs=7.18e-2 s`` for grid mode and ``8.12e-2 s`` for spectral mode.
-The CPU spectral bracket is faster, but the full CPU RHS is not faster in this
-short harness. The spectral mode therefore remains an opt-in mode guarded by
-the case-level parity gate below rather than a global default.
+``full_rhs=7.08e-2 s`` for grid mode and ``6.38e-2 s`` for spectral mode.
+The short-harness spectral full-RHS ratios are now ``1.11`` on CPU and
+``1.66`` on GPU for this Cyclone case. The spectral mode therefore remains an
+opt-in mode guarded by the case-level parity gate below rather than a global
+default.
 
 The dominant remaining warm-throughput costs are the compiled linear RHS and
 the nonlinear FFT pipeline with gather/scatter-heavy bracket kernels. The
