@@ -1658,6 +1658,11 @@ Exit gate:
     perpendicular hyperdiffusion is included in ``assemble_rhs_terms_cached``;
     added the regression by enabling ``D_hyper`` and ``hyperdiffusion`` in the
     total-vs-term-sum test.
+  - refactored the field solve so electrostatic runs avoid the electromagnetic
+    ``A_parallel``/``B_parallel`` branches when ``beta`` or the field toggles
+    disable them; this is a correctness/performance guard rather than a new
+    speedup claim, and it adds a regression showing electrostatic ``Nm=1``
+    states no longer need the absent ``m=1`` moment.
   - added ``tools/gate_linear_rhs_zero_norm_state_window.py`` and
     ``docs/_static/linear_rhs_zero_norm_state_window_gate.json``;
   - the gate directly compares the full RHS with candidate skip configurations
