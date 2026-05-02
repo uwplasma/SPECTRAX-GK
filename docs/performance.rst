@@ -353,6 +353,17 @@ once with spectral brackets, then compares end-of-run scalar diagnostics.
 
    python tools/gate_laguerre_nonlinear_modes.py \
      --case cyclone --case kbm --case w7x --case hsx \
+     --out-json docs/_static/laguerre_mode_gate.json \
+     --out-csv docs/_static/laguerre_mode_gate.csv \
+     --plot-out docs/_static/laguerre_mode_gate.png
+
+For a GPU reference artifact, run the same command on the target GPU node with
+GPU-specific output paths, for example:
+
+.. code-block:: bash
+
+   python tools/gate_laguerre_nonlinear_modes.py \
+     --case cyclone --case kbm --case w7x --case hsx \
      --out-json docs/_static/laguerre_mode_gate_gpu.json \
      --out-csv docs/_static/laguerre_mode_gate_gpu.csv \
      --plot-out docs/_static/laguerre_mode_gate_gpu.png
@@ -361,23 +372,36 @@ For W7-X/HSX runs, pass ``--w7x-geometry-file`` and
 ``--hsx-geometry-file`` if the local pre-generated ``*.eik.nc`` files live
 outside the default cache paths.
 
+.. image:: _static/laguerre_mode_gate.png
+   :alt: SPECTRAX-GK spectral Laguerre nonlinear mode gate on CPU
+   :align: center
+
 .. image:: _static/laguerre_mode_gate_gpu.png
    :alt: SPECTRAX-GK spectral Laguerre nonlinear mode gate on GPU
    :align: center
 
-On the bounded ``office`` GPU gate, Cyclone, KBM, W7-X, and HSX all passed the
+On the bounded local CPU gate, Cyclone, KBM, W7-X, and HSX all passed the
 scalar-diagnostic parity threshold with maximum relative differences below
-``2.2e-5``. The measured grid/spectral runtime ratios were:
+``8.9e-4``. The measured grid/spectral runtime ratios were:
+
+- Cyclone: ``2.90``
+- KBM: ``3.31``
+- W7-X: ``1.67``
+- HSX: ``0.66``
+
+On the bounded ``office`` GPU gate, all four cases also passed with maximum
+relative differences below ``2.2e-5``. The measured grid/spectral runtime
+ratios were:
 
 - Cyclone: ``1.66``
 - KBM: ``2.69``
 - W7-X: ``1.63``
 - HSX: ``0.74``
 
-Because HSX is slower in this bounded gate and CPU full-RHS timings are mixed,
-the spectral mode should be treated as a validated optional engineering mode,
-not a global fast default. Production use should rerun the gate on the target
-case and backend before claiming speedup.
+Because HSX is slower in both bounded gates, the spectral mode should be
+treated as a validated optional engineering mode, not a global fast default.
+Production use should rerun the gate on the target case and backend before
+claiming speedup.
 
 Runtime and memory comparison workflow
 --------------------------------------
