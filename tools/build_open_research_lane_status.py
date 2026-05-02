@@ -150,6 +150,7 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
     geom = _read_json(root, "docs/_static/differentiable_geometry_bridge.json")
     geom_matrix = _read_json(root, "docs/_static/vmec_boozer_parity_matrix.json")
     profile = _read_json(root, "docs/_static/nonlinear_sharding_profile_office_gpu.json")
+    rhs_profile = _read_json(root, "docs/_static/nonlinear_rhs_profile.json")
 
     zonal_failures = _gate_failures(zonal_ref.get("gate_report") if zonal_ref else None)
     best_recurrence = _best_recurrence_candidate(zonal_recurrence)
@@ -262,6 +263,13 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
         if isinstance((profile or {}).get("best_identity_preserving_candidate", {}), dict)
         else {}
     )
+    rhs_speedups = (
+        (rhs_profile or {}).get("spectral_speedups", {})
+        if isinstance((rhs_profile or {}).get("spectral_speedups", {}), dict)
+        else {}
+    )
+    rhs_cpu = rhs_speedups.get("cpu", {}) if isinstance(rhs_speedups.get("cpu", {}), dict) else {}
+    rhs_gpu = rhs_speedups.get("gpu", {}) if isinstance(rhs_speedups.get("gpu", {}), dict) else {}
 
     lanes: list[dict[str, Any]] = [
         {
@@ -374,12 +382,24 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
             "lane": "Profiler-backed nonlinear hot-path optimization",
             "status": "partial" if profile_identity else "open",
             "claim_level": "profile_identity_artifact_no_speedup_claim",
-            "primary_artifacts": ["docs/_static/nonlinear_sharding_profile_office_gpu.json"],
+            "primary_artifacts": [
+                "docs/_static/nonlinear_sharding_profile_office_gpu.json",
+                "docs/_static/nonlinear_rhs_profile.json",
+            ],
             "key_metrics": {
                 "identity_gate_pass": profile_identity,
                 "engineering_speedup": profile_speedup,
                 "best_identity_candidate": profile_best.get("spec"),
                 "best_identity_candidate_speedup": _finite_float(profile_best.get("engineering_speedup_median")),
+                "rhs_fastest_full_label": (rhs_profile or {}).get("fastest_full_rhs_label"),
+                "rhs_cpu_full_grid_over_spectral": _finite_float(rhs_cpu.get("full_rhs_grid_over_spectral")),
+                "rhs_gpu_full_grid_over_spectral": _finite_float(rhs_gpu.get("full_rhs_grid_over_spectral")),
+                "rhs_cpu_bracket_grid_over_spectral": _finite_float(
+                    rhs_cpu.get("nonlinear_bracket_grid_over_spectral")
+                ),
+                "rhs_gpu_bracket_grid_over_spectral": _finite_float(
+                    rhs_gpu.get("nonlinear_bracket_grid_over_spectral")
+                ),
                 "device_count": (profile or {}).get("device_count"),
                 "backend": (profile or {}).get("default_backend"),
             },
@@ -479,9 +499,12 @@ def write_status_artifacts(payload: dict[str, Any], *, out_png: Path = DEFAULT_O
             speed = key_metrics.get("engineering_speedup")
             best = key_metrics.get("best_identity_candidate")
             best_speed = key_metrics.get("best_identity_candidate_speedup")
+            rhs_gpu_speed = key_metrics.get("rhs_gpu_full_grid_over_spectral")
             metric = "primary: n/a" if speed is None else f"primary: {speed:.2f}x"
             if best_speed is not None:
                 metric += f"; best {best}: {best_speed:.2f}x"
+            if rhs_gpu_speed is not None:
+                metric += f"; RHS GPU split: {rhs_gpu_speed:.2f}x"
         ax.text(min(value + 0.06, 3.05), float(yi), metric, va="center", ha="left", fontsize=8.2)
 
     caption = (
