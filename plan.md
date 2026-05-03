@@ -1732,6 +1732,8 @@ Exit gate:
     out after ``300`` seconds during shutdown/reporting;
   - kept the per-shard timeout at ``300`` seconds and split the matrix into
     ``48`` shards instead of increasing the timeout;
+  - raised the wide-coverage matrix concurrency from ``2`` to ``8`` so the
+    safer shard split does not make the package-wide gate slower overall;
   - locally checked the two new heavy descendants under coverage: shard
     ``3/48`` passed in about ``74`` seconds and shard ``27/48`` passed in about
     ``46`` seconds;
