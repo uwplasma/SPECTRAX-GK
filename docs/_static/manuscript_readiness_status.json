@@ -83,6 +83,11 @@
         "multi_equilibrium_gradient_holdout_matrix": true,
         "multi_equilibrium_gradient_max_rel_error": 0.026774412331418387,
         "multi_equilibrium_reduced_nonlinear_window_gradient_gate": true,
+        "production_nonlinear_observable_fd_path_gate": true,
+        "production_nonlinear_observable_max_window_cv": 0.09509712103158827,
+        "production_nonlinear_observable_max_window_trend": 0.3125158414254592,
+        "production_nonlinear_observable_repeatability_rel_error": 0.0,
+        "production_nonlinear_observable_response_fraction": 0.11085605870343603,
         "production_nonlinear_window_gradient_gate": false,
         "quasilinear_weight_gradient_gate": true,
         "reduced_nonlinear_window_gradient_gate": true,
@@ -94,14 +99,16 @@
         "vmec_boozer_reduced_nonlinear_window_rel_error": 0.026774412331418387
       },
       "lane": "Production solver-objective geometry gradients",
-      "next_action": "Full VMEC/Boozer eigenfrequency, quasilinear, and multi-equilibrium reduced nonlinear-window estimator gradients are closed. Converged nonlinear-window VMEC/Boozer turbulence gradients and optimized-equilibrium nonlinear audits remain required before full nonlinear stellarator-optimization claims.",
+      "next_action": "Full VMEC/Boozer eigenfrequency, quasilinear, and multi-equilibrium reduced nonlinear-window estimator gradients are closed. A compact production nonlinear-window finite-difference observable audit is tracked when present, but converged nonlinear-window VMEC/Boozer turbulence gradients and optimized-equilibrium nonlinear audits remain required before full nonlinear stellarator-optimization claims.",
       "primary_artifacts": [
         "docs/_static/solver_objective_gradient_gate.json",
         "docs/_static/vmec_boozer_solver_frequency_gradient_gate.json",
         "docs/_static/vmec_boozer_quasilinear_gradient_gate.json",
         "docs/_static/vmec_boozer_nonlinear_window_gradient_gate.json",
         "docs/_static/vmec_boozer_li383_nonlinear_window_gradient_gate.json",
-        "docs/_static/vmec_boozer_gradient_holdout_matrix.json"
+        "docs/_static/vmec_boozer_gradient_holdout_matrix.json",
+        "docs/_static/nonlinear_window_fd_audit.json",
+        "docs/_static/nonlinear_window_fd_audit.png"
       ],
       "status": "closed"
     },

@@ -62,7 +62,12 @@ Current pre-release status snapshot:
   ``docs/_static/vmec_boozer_quasilinear_gradient_gate.png``, plus a bounded
   reduced nonlinear-window estimator-gradient artifacts for QH and Li383 at
   ``docs/_static/vmec_boozer_nonlinear_window_gradient_gate.png`` and
-  ``docs/_static/vmec_boozer_li383_nonlinear_window_gradient_gate.png``;
+  ``docs/_static/vmec_boozer_li383_nonlinear_window_gradient_gate.png``; the
+  companion compact production nonlinear-window finite-difference observable
+  audit at ``docs/_static/nonlinear_window_fd_audit.png`` / ``.json`` closes
+  the actual nonlinear-window extraction and conditioning path, but leaves
+  VMEC/Boozer nonlinear turbulence gradients and optimized-equilibrium
+  nonlinear audits as promotion requirements;
 - the Phase-A differentiable-geometry bridge is an in-memory sampled
   flux-tube contract with 100% targeted coverage, optional
   ``vmec_jax`` / ``booz_xform_jax`` discovery, tracer-safe mapping into
@@ -116,10 +121,12 @@ predictor, VMEC/Boozer equal-arc geometry parity is closed at
 examples are closed with AD/FD gates. The production solver-objective gradient
 lane now has a passed actual linear-RHS gate at the solver-ready geometry
 contract plus passed mode-21 VMEC/Boozer state-to-solver eigenfrequency and
-quasilinear heat-flux-weight gates on QH and Li383 holdouts. The remaining
-promotion step is now the nonlinear-window state-gradient gate and converged
-nonlinear audits of optimized equilibria; those are required before claiming a
-production nonlinear heat-flux stellarator optimizer.
+quasilinear heat-flux-weight gates on QH and Li383 holdouts. A compact
+production nonlinear-window finite-difference observable audit is also tracked
+at ``docs/_static/nonlinear_window_fd_audit.png`` / ``.json``. The remaining
+promotion step is now the VMEC/Boozer nonlinear-window state-gradient gate and
+converged nonlinear audits of optimized equilibria; those are required before
+claiming a production nonlinear heat-flux stellarator optimizer.
 
 The latest public CI run for commit ``5790e0e`` passed repo hygiene, mypy,
 quick shards, docs/packaging, fast coverage, and the full wide-coverage matrix.

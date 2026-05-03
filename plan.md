@@ -1740,3 +1740,29 @@ Exit gate:
   - confirmed on GitHub CI at commit ``6dbfddb``: all quick shards,
     docs/packaging, fast coverage, all ``48`` wide-coverage shards, and the
     final wide-coverage combine passed with ``TOTAL 16134 787 95%``.
+- Production nonlinear-window finite-difference observable audit:
+  - added ``tools/build_nonlinear_window_fd_audit.py`` and
+    ``docs/_static/nonlinear_window_fd_audit.{png,pdf,json,csv}``;
+  - the tool runs actual compact SPECTRAX-GK nonlinear Cyclone windows at
+    ``R/LTi = base +/- step`` plus a repeated base point and checks finite
+    outputs, exact repeatability for the deterministic repeated run, monotonic
+    drive response, late-window coefficient of variation, late-window trend,
+    and resolved central finite-difference response;
+  - current artifact passes the observable-path gate with response/base
+    ``0.1109``, repeatability relative error ``0``, maximum late-window
+    coefficient of variation ``0.095``, and maximum normalized window trend
+    ``0.313``;
+  - wired the result into the manuscript-readiness dashboard and validation
+    coverage manifest as a production nonlinear-window observable extraction
+    and FD-conditioning gate;
+  - this intentionally does not claim a VMEC/Boozer nonlinear
+    state-gradient, converged nonlinear turbulence gradient, or
+    optimized-equilibrium nonlinear heat-flux optimization result.
+- Next promotion steps:
+  - connect the nonlinear-window FD audit to VMEC/Boozer perturbations after
+    production geometry-gradient parity is stable on the relevant equilibria;
+  - run converged nonlinear-window audits on optimized-equilibrium candidates
+    before any production nonlinear stellarator-transport optimization claim;
+  - keep W7-X zonal recurrence and TEM/kinetic-electron stellarator lanes
+    deferred from the current manuscript scope unless they are reopened
+    explicitly.

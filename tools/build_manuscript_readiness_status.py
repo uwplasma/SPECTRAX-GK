@@ -148,6 +148,7 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
         "docs/_static/vmec_boozer_li383_nonlinear_window_gradient_gate.json",
     )
     vmec_gradient_matrix = _read_json(root, "docs/_static/vmec_boozer_gradient_holdout_matrix.json")
+    nonlinear_fd_audit = _read_json(root, "docs/_static/nonlinear_window_fd_audit.json")
     profile = _read_json(root, "docs/_static/nonlinear_sharding_profile_office_gpu.json")
     rhs_profile = _read_json(root, "docs/_static/nonlinear_rhs_profile.json")
 
@@ -214,6 +215,14 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
         else {}
     )
     solver_gradient_multi_equilibrium = bool((vmec_gradient_matrix or {}).get("passed", False))
+    nonlinear_fd_metrics = (
+        (nonlinear_fd_audit or {}).get("metrics", {})
+        if isinstance((nonlinear_fd_audit or {}).get("metrics", {}), dict)
+        else {}
+    )
+    production_nonlinear_observable_fd_path_gate = bool(
+        (nonlinear_fd_audit or {}).get("production_nonlinear_observable_fd_path_gate", False)
+    )
     solver_gradient_closed = bool(
         solver_gradient_passed
         and solver_gradient_full_vmec_frequency
@@ -329,6 +338,8 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                         vmec_li383_nl_window_grad,
                     ),
                     ("docs/_static/vmec_boozer_gradient_holdout_matrix.json", vmec_gradient_matrix),
+                    ("docs/_static/nonlinear_window_fd_audit.json", nonlinear_fd_audit),
+                    ("docs/_static/nonlinear_window_fd_audit.png", nonlinear_fd_audit),
                 )
                 if payload
             ],
@@ -365,11 +376,25 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                 "reduced_nonlinear_window_gradient_gate": bool(
                     (vmec_nl_window_grad or solver_grad or {}).get("nonlinear_window_gradient_gate", False)
                 ),
+                "production_nonlinear_observable_fd_path_gate": production_nonlinear_observable_fd_path_gate,
+                "production_nonlinear_observable_response_fraction": _finite_float(
+                    nonlinear_fd_metrics.get("response_fraction")
+                ),
+                "production_nonlinear_observable_repeatability_rel_error": _finite_float(
+                    nonlinear_fd_metrics.get("repeatability_relative_error")
+                ),
+                "production_nonlinear_observable_max_window_cv": _finite_float(
+                    nonlinear_fd_metrics.get("max_window_cv")
+                ),
+                "production_nonlinear_observable_max_window_trend": _finite_float(
+                    nonlinear_fd_metrics.get("max_window_trend")
+                ),
                 "production_nonlinear_window_gradient_gate": False,
             },
             "next_action": (
                 "Full VMEC/Boozer eigenfrequency, quasilinear, and multi-equilibrium reduced nonlinear-window "
-                "estimator gradients are closed. Converged nonlinear-window VMEC/Boozer turbulence gradients and "
+                "estimator gradients are closed. A compact production nonlinear-window finite-difference observable "
+                "audit is tracked when present, but converged nonlinear-window VMEC/Boozer turbulence gradients and "
                 "optimized-equilibrium nonlinear audits remain required before full nonlinear stellarator-optimization claims."
             ),
         },
@@ -502,7 +527,8 @@ def write_manuscript_readiness_artifacts(payload: dict[str, Any], *, out: str | 
             metric = (
                 f"solver-ready: {km.get('solver_ready_gradient_gate')}; "
                 f"holdouts: {km.get('multi_equilibrium_gradient_cases')}; "
-                f"max err: {err_text}"
+                f"max err: {err_text}; "
+                f"NL FD: {km.get('production_nonlinear_observable_fd_path_gate')}"
             )
         elif str(lane["lane"]).startswith("Profiler"):
             speed = km.get("engineering_speedup")

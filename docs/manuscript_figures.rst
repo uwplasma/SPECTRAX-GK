@@ -16,7 +16,8 @@ Current Readiness Snapshot
 --------------------------
 
 The current scoped manuscript stack is ready for claims about validated
-quasilinear diagnostics/model selection, nonlinear-window comparison gates,
+quasilinear diagnostics/model selection, nonlinear-window comparison gates, a
+compact production nonlinear-window observable finite-difference audit,
 mode-21 VMEC/Boozer geometry parity, reduced differentiable stellarator ITG
 optimization examples, and linear/quasilinear VMEC/Boozer AD-vs-finite-
 difference gradient gates on QH and Li383. The latest public CI run for commit
@@ -29,8 +30,9 @@ negative promotion gates, but they do not support a calibrated absolute-flux
 predictor. The stellarator optimization figures are publication-ready for
 reduced differentiable optimization/UQ plumbing and gradient validation, but
 not yet for production nonlinear heat-flux optimization. Those stronger claims
-require more converged electrostatic nonlinear holdouts, nonlinear-window
-state-gradient gates, and nonlinear audits of optimized equilibria. W7-X zonal
+require more converged electrostatic nonlinear holdouts, VMEC/Boozer
+nonlinear-window state-gradient gates, and nonlinear audits of optimized
+equilibria. W7-X zonal
 recurrence and TEM/kinetic-electron stellarator validation remain deferred from
 the current manuscript scope.
 
@@ -64,6 +66,10 @@ Core Validation Figures
      - ``tools/plot_nonlinear_window_statistics.py``
      - Closed for current release-window gates
      - current artifact base: ``docs/_static/nonlinear_window_statistics.png`` with CSV/JSON/PDF companions. It summarizes the per-diagnostic ``mean_rel_abs`` and ``max_rel_abs`` statistics from the frozen nonlinear GX comparison gate JSONs for Cyclone, Cyclone Miller, KBM, W7-X, and HSX. Exploratory/short-run diagnostics are explicitly excluded with ``gate_index_include=false``.
+   * - Nonlinear-window finite-difference audit
+     - ``tools/build_nonlinear_window_fd_audit.py``
+     - Closed for compact production nonlinear observable path; gradient promotion open
+     - current artifact base: ``docs/_static/nonlinear_window_fd_audit.png`` with CSV/JSON/PDF companions. It runs actual compact SPECTRAX-GK nonlinear Cyclone windows at ``R/LTi = base +/- step`` plus a repeated base point, then checks finite outputs, repeatability, monotonic drive response, late-window coefficient of variation, late-window trend, and resolved central finite-difference response. The tracked response/base fraction is about ``0.111``. This is a production nonlinear-window observable extraction and conditioning audit, not a VMEC/Boozer nonlinear state-gradient or optimized-equilibrium transport claim.
    * - Validation gate index
      - ``tools/make_validation_gate_index.py``
      - Closed for currently tracked gates
@@ -75,7 +81,7 @@ Core Validation Figures
    * - Manuscript-readiness status panel
      - ``tools/build_manuscript_readiness_status.py``
      - Current manuscript scope with W7-X zonal and TEM deferred
-     - current artifact base: ``docs/_static/manuscript_readiness_status.png`` with CSV/JSON/PDF companions. It records the narrower manuscript scope where W7-X zonal recurrence and TEM/kinetic-electron extensions are deferred. In that scope, quasilinear diagnostics and saturation-model selection are closed as a validated negative/model-selection result rather than as an absolute-flux predictor; VMEC/Boozer zero-beta equal-arc geometry parity is closed at ``mboz=nboz=21``; reduced differentiable stellarator ITG optimization is closed with AD/FD gates; and production solver-objective geometry gradients are closed for solver-ready arrays plus mode-21 VMEC/Boozer eigenfrequency, quasilinear heat-flux-weight, and reduced nonlinear-window estimator gates on QH and Li383. Converged nonlinear-window state-gradient and optimized-equilibrium nonlinear audits remain required before production nonlinear heat-flux optimization claims.
+     - current artifact base: ``docs/_static/manuscript_readiness_status.png`` with CSV/JSON/PDF companions. It records the narrower manuscript scope where W7-X zonal recurrence and TEM/kinetic-electron extensions are deferred. In that scope, quasilinear diagnostics and saturation-model selection are closed as a validated negative/model-selection result rather than as an absolute-flux predictor; VMEC/Boozer zero-beta equal-arc geometry parity is closed at ``mboz=nboz=21``; reduced differentiable stellarator ITG optimization is closed with AD/FD gates; and production solver-objective geometry gradients are closed for solver-ready arrays plus mode-21 VMEC/Boozer eigenfrequency, quasilinear heat-flux-weight, reduced nonlinear-window estimator gates on QH and Li383, and a compact production nonlinear-window FD observable audit. Converged VMEC/Boozer nonlinear-window state-gradient and optimized-equilibrium nonlinear audits remain required before production nonlinear heat-flux optimization claims.
    * - Quasilinear spectrum panel
      - ``tools/plot_quasilinear_spectrum.py``
      - Initial diagnostic closed; nonlinear calibration open
@@ -148,9 +154,9 @@ Differentiable-Physics Figures
      - Initial quasilinear eigenbranch gate closed
      - current artifact base: ``docs/_static/quasilinear_implicit_sensitivity.png`` with JSON/PDF companions. It differentiates a tiny Cyclone linear-RHS quasilinear objective ``[gamma, omega, kperp_eff^2, Qhat_i, Q_i^ML]`` with respect to ``[R/Ln, R/LTi]`` using the implicit left/right eigenpair system and checks the result against nearest-branch central finite differences. This is a differentiability/conditioning gate, not an absolute nonlinear-flux validation.
    * - Solver-objective geometry-gradient gate
-     - ``tools/build_solver_objective_gradient_gate.py``, ``tools/build_vmec_boozer_solver_frequency_gradient_gate.py``, ``tools/build_vmec_boozer_quasilinear_gradient_gate.py``, ``tools/build_vmec_boozer_nonlinear_window_gradient_gate.py``, and ``tools/build_vmec_boozer_gradient_holdout_matrix.py``
-     - Solver-ready production linear-RHS gradient gate closed; mode-21 VMEC/Boozer state-to-solver eigenfrequency, quasilinear heat-flux-weight, and reduced nonlinear-window estimator gates closed for QH plus Li383; production nonlinear-window turbulence-gradient promotion open
-     - current artifact bases: ``docs/_static/solver_objective_gradient_gate.png``, ``docs/_static/vmec_boozer_solver_frequency_gradient_gate.png``, ``docs/_static/vmec_boozer_quasilinear_gradient_gate.png``, ``docs/_static/vmec_boozer_nonlinear_window_gradient_gate.png``, ``docs/_static/vmec_boozer_li383_nonlinear_window_gradient_gate.png``, and ``docs/_static/vmec_boozer_gradient_holdout_matrix.png`` with CSV/JSON/PDF companions. The first differentiates actual electrostatic linear-RHS eigenpair observables with respect to solver-ready geometry arrays using the implicit left/right eigenpair system and checks ``gamma``, ``omega``, ``<k_perp^2>``, linear heat/particle-flux weights, and a mixing-length heat-flux proxy against nearest-branch central finite differences. The VMEC/Boozer frequency gate starts from a real ``vmec_jax`` state coefficient, maps through ``booz_xform_jax`` with ``mboz=nboz=21``, builds the SPECTRAX-GK linear RHS, and verifies the eigenfrequency gradient. The VMEC/Boozer quasilinear gate uses a richer ``Nl=2, Nm=3`` moment basis and checks ``gamma``, ``omega``, ``<k_perp^2>``, ``Q_i`` weight, and ``gamma Q_i/k_perp^2`` against finite differences. The nonlinear-window estimator gates feed those observables into a smooth RK2 late-window envelope and check heat-flux mean, coefficient of variation, and normalized trend gradients. The multi-equilibrium matrix repeats the frequency, quasilinear, and estimator gates on the tracked QH and Li383 fixtures. A surface-stencil path is available for memory-bounded diagnostics; converged nonlinear-window turbulence gradients remain a separate promotion gate.
+     - ``tools/build_solver_objective_gradient_gate.py``, ``tools/build_vmec_boozer_solver_frequency_gradient_gate.py``, ``tools/build_vmec_boozer_quasilinear_gradient_gate.py``, ``tools/build_vmec_boozer_nonlinear_window_gradient_gate.py``, ``tools/build_vmec_boozer_gradient_holdout_matrix.py``, and ``tools/build_nonlinear_window_fd_audit.py``
+     - Solver-ready production linear-RHS gradient gate closed; mode-21 VMEC/Boozer state-to-solver eigenfrequency, quasilinear heat-flux-weight, and reduced nonlinear-window estimator gates closed for QH plus Li383; compact production nonlinear-window observable FD audit closed; production nonlinear-window turbulence-gradient promotion open
+     - current artifact bases: ``docs/_static/solver_objective_gradient_gate.png``, ``docs/_static/vmec_boozer_solver_frequency_gradient_gate.png``, ``docs/_static/vmec_boozer_quasilinear_gradient_gate.png``, ``docs/_static/vmec_boozer_nonlinear_window_gradient_gate.png``, ``docs/_static/vmec_boozer_li383_nonlinear_window_gradient_gate.png``, ``docs/_static/vmec_boozer_gradient_holdout_matrix.png``, and ``docs/_static/nonlinear_window_fd_audit.png`` with CSV/JSON/PDF companions. The first differentiates actual electrostatic linear-RHS eigenpair observables with respect to solver-ready geometry arrays using the implicit left/right eigenpair system and checks ``gamma``, ``omega``, ``<k_perp^2>``, linear heat/particle-flux weights, and a mixing-length heat-flux proxy against nearest-branch central finite differences. The VMEC/Boozer frequency gate starts from a real ``vmec_jax`` state coefficient, maps through ``booz_xform_jax`` with ``mboz=nboz=21``, builds the SPECTRAX-GK linear RHS, and verifies the eigenfrequency gradient. The VMEC/Boozer quasilinear gate uses a richer ``Nl=2, Nm=3`` moment basis and checks ``gamma``, ``omega``, ``<k_perp^2>``, ``Q_i`` weight, and ``gamma Q_i/k_perp^2`` against finite differences. The nonlinear-window estimator gates feed those observables into a smooth RK2 late-window envelope and check heat-flux mean, coefficient of variation, and normalized trend gradients. The multi-equilibrium matrix repeats the frequency, quasilinear, and estimator gates on the tracked QH and Li383 fixtures. The compact production nonlinear-window FD audit runs actual nonlinear Cyclone windows and verifies late-window conditioning and drive response; it is not a VMEC/Boozer state-gradient claim. A surface-stencil path is available for memory-bounded diagnostics; converged nonlinear-window turbulence gradients remain a separate promotion gate.
    * - Inverse/UQ figure
      - ``examples/theory_and_demos/autodiff_inverse_twomode.py`` plus UQ follow-on
      - Open
