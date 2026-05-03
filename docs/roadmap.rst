@@ -59,7 +59,9 @@ Current pre-release status snapshot:
   ``booz_xform_jax`` to SPECTRAX-GK eigenfrequency-gradient artifact at
   ``docs/_static/vmec_boozer_solver_frequency_gradient_gate.png`` and a
   matching quasilinear heat-flux-weight gradient artifact at
-  ``docs/_static/vmec_boozer_quasilinear_gradient_gate.png``;
+  ``docs/_static/vmec_boozer_quasilinear_gradient_gate.png``, plus a bounded
+  reduced nonlinear-window estimator-gradient artifact at
+  ``docs/_static/vmec_boozer_nonlinear_window_gradient_gate.png``;
 - the Phase-A differentiable-geometry bridge is an in-memory sampled
   flux-tube contract with 100% targeted coverage, optional
   ``vmec_jax`` / ``booz_xform_jax`` discovery, tracer-safe mapping into

@@ -4,6 +4,7 @@ import importlib.util
 import json
 from pathlib import Path
 
+import jax
 import jax.numpy as jnp
 import numpy as np
 import pytest
@@ -13,12 +14,15 @@ from spectraxgk.solver_objective_gradients import (
     SOLVER_GEOMETRY_PARAMETER_NAMES,
     SOLVER_OBJECTIVE_NAMES,
     VMEC_BOOZER_FREQUENCY_OBJECTIVE_NAMES,
+    VMEC_BOOZER_NONLINEAR_WINDOW_OBJECTIVE_NAMES,
     VMEC_BOOZER_QUASILINEAR_OBJECTIVE_NAMES,
     VMEC_BOOZER_STATE_PARAMETER_NAMES,
+    _reduced_nonlinear_window_metrics_from_linear_observables,
     _vmec_boozer_state_parameter_name,
     default_solver_geometry_design_params,
     linear_solver_geometry_gradient_report,
     mode21_vmec_boozer_linear_frequency_gradient_report,
+    mode21_vmec_boozer_nonlinear_window_gradient_report,
     mode21_vmec_boozer_quasilinear_gradient_report,
     solver_ready_geometry_mapping,
 )
@@ -68,12 +72,51 @@ def test_linear_solver_geometry_gradient_report_passes_actual_rhs_gate() -> None
         linear_solver_geometry_gradient_report(jnp.ones(3))
 
 
+def test_reduced_nonlinear_window_metrics_are_smooth_and_fd_checked() -> None:
+    x0 = jnp.asarray([0.22, 0.75, 1.10], dtype=jnp.float32)
+
+    def metric_fn(x: jnp.ndarray) -> jnp.ndarray:
+        return _reduced_nonlinear_window_metrics_from_linear_observables(
+            x[0],
+            x[1],
+            x[2],
+            dt=0.08,
+            steps=18,
+            tail_fraction=0.40,
+        )
+
+    metrics = np.asarray(metric_fn(x0))
+    assert metrics.shape == (3,)
+    assert np.all(np.isfinite(metrics))
+    assert metrics[0] > 0.0
+    assert metrics[1] >= 0.0
+
+    ad = np.asarray(jax.jacfwd(metric_fn)(x0))
+    fd_columns = []
+    step = 1.0e-3
+    eye = np.eye(3, dtype=np.float32)
+    for direction in eye:
+        forward = np.asarray(metric_fn(x0 + step * jnp.asarray(direction)))
+        backward = np.asarray(metric_fn(x0 - step * jnp.asarray(direction)))
+        fd_columns.append((forward - backward) / (2.0 * step))
+    fd = np.stack(fd_columns, axis=1)
+    np.testing.assert_allclose(ad, fd, rtol=2.0e-2, atol=5.0e-3)
+
+    with pytest.raises(ValueError, match="steps"):
+        _reduced_nonlinear_window_metrics_from_linear_observables(0.1, 1.0, 1.0, steps=3)
+    with pytest.raises(ValueError, match="tail_fraction"):
+        _reduced_nonlinear_window_metrics_from_linear_observables(0.1, 1.0, 1.0, tail_fraction=0.0)
+
+
 def test_mode21_vmec_boozer_frequency_gate_exports_and_scope() -> None:
     assert spectraxgk.mode21_vmec_boozer_linear_frequency_gradient_report is (
         mode21_vmec_boozer_linear_frequency_gradient_report
     )
     assert spectraxgk.mode21_vmec_boozer_quasilinear_gradient_report is (
         mode21_vmec_boozer_quasilinear_gradient_report
+    )
+    assert spectraxgk.mode21_vmec_boozer_nonlinear_window_gradient_report is (
+        mode21_vmec_boozer_nonlinear_window_gradient_report
     )
     assert tuple(VMEC_BOOZER_STATE_PARAMETER_NAMES) == ("Rcos_mid_surface_m1",)
     assert tuple(VMEC_BOOZER_FREQUENCY_OBJECTIVE_NAMES) == ("gamma", "omega")
@@ -83,6 +126,16 @@ def test_mode21_vmec_boozer_frequency_gate_exports_and_scope() -> None:
         "kperp_eff2",
         "linear_heat_flux_weight",
         "mixing_length_heat_flux_proxy",
+    )
+    assert tuple(VMEC_BOOZER_NONLINEAR_WINDOW_OBJECTIVE_NAMES) == (
+        "gamma",
+        "omega",
+        "kperp_eff2",
+        "linear_heat_flux_weight",
+        "mixing_length_heat_flux_proxy",
+        "nonlinear_window_heat_flux_mean",
+        "nonlinear_window_heat_flux_cv",
+        "nonlinear_window_heat_flux_trend",
     )
 
 

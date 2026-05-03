@@ -125,6 +125,7 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(tmp_path: Pat
     for name in (
         "vmec_boozer_solver_frequency_gradient_gate",
         "vmec_boozer_quasilinear_gradient_gate",
+        "vmec_boozer_nonlinear_window_gradient_gate",
     ):
         _write_json(
             tmp_path,
@@ -132,6 +133,7 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(tmp_path: Pat
             {
                 "passed": True,
                 "source_scope": "mode21_vmec_boozer_state",
+                "nonlinear_window_gradient_gate": name.endswith("nonlinear_window_gradient_gate"),
                 "eigenpair_gate": {"max_rel_error": 1.0e-3},
             },
         )
@@ -168,6 +170,24 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(tmp_path: Pat
             "multi_equilibrium_gradient_holdout_matrix"
         ]
         is True
+    )
+    assert (
+        lanes["Production solver-objective geometry gradients"]["key_metrics"][
+            "full_vmec_boozer_reduced_nonlinear_window_gradient_gate"
+        ]
+        is True
+    )
+    assert (
+        lanes["Production solver-objective geometry gradients"]["key_metrics"][
+            "reduced_nonlinear_window_gradient_gate"
+        ]
+        is True
+    )
+    assert (
+        lanes["Production solver-objective geometry gradients"]["key_metrics"][
+            "production_nonlinear_window_gradient_gate"
+        ]
+        is False
     )
     assert lanes["W7-X zonal recurrence/damping"]["status"] == "deferred"
     assert lanes["TEM / kinetic-electron stellarator extension"]["status"] == "deferred"

@@ -70,6 +70,9 @@ def write_solver_objective_gradient_artifacts(
         "linear_heat_flux_weight": r"$Q_i$ weight",
         "linear_particle_flux_weight": r"$\Gamma_i$ weight",
         "mixing_length_heat_flux_proxy": r"$\gamma Q_i/k_\perp^2$",
+        "nonlinear_window_heat_flux_mean": r"$\langle Q_i\rangle_\mathrm{win}$",
+        "nonlinear_window_heat_flux_cv": "window CV",
+        "nonlinear_window_heat_flux_trend": "window trend",
     }
     parameter_labels = {
         "bmag_ripple": r"$|B|$ ripple",
@@ -113,13 +116,20 @@ def write_solver_objective_gradient_artifacts(
     source_scope = str(payload.get("source_scope", "solver_ready_geometry_contract"))
     kind = str(payload.get("kind", "linear_solver_geometry_gradient_gate"))
     status = "passed" if payload.get("passed") else "open"
-    if kind == "mode21_vmec_boozer_quasilinear_gradient_gate":
+    if kind == "mode21_vmec_boozer_nonlinear_window_gradient_gate":
+        fig.suptitle(f"VMEC/Boozer state-to-solver nonlinear-window estimator-gradient gate: {status}")
+    elif kind == "mode21_vmec_boozer_quasilinear_gradient_gate":
         fig.suptitle(f"VMEC/Boozer state-to-solver quasilinear-gradient gate: {status}")
     elif source_scope == "mode21_vmec_boozer_state":
         fig.suptitle(f"VMEC/Boozer state-to-solver frequency-gradient gate: {status}")
     else:
         fig.suptitle(f"Solver-objective geometry-gradient gate: {status}")
-    if kind == "mode21_vmec_boozer_quasilinear_gradient_gate":
+    if kind == "mode21_vmec_boozer_nonlinear_window_gradient_gate":
+        caption = (
+            "A reduced late-window heat-flux estimator is differentiated through vmec_jax state coefficients, "
+            "booz_xform_jax mode-21 Boozer geometry, and the SPECTRAX-GK linear-RHS eigenpair path."
+        )
+    elif kind == "mode21_vmec_boozer_quasilinear_gradient_gate":
         caption = (
             "Actual linear-RHS quasilinear observables are differentiated through vmec_jax state coefficients, "
             "booz_xform_jax mode-21 Boozer geometry, and the solver cache."
