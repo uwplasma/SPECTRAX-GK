@@ -95,11 +95,14 @@
         "source_scope": "solver_ready_geometry_contract",
         "vmec_boozer_frequency_rel_error": 0.004892743510544424,
         "vmec_boozer_li383_reduced_nonlinear_window_rel_error": 0.0009180110087433277,
+        "vmec_boozer_production_nonlinear_derivative_asymmetry": 2.8552511209300935,
+        "vmec_boozer_production_nonlinear_observable_fd_path_gate": true,
+        "vmec_boozer_production_nonlinear_response_fraction": 0.04008881189273438,
         "vmec_boozer_quasilinear_rel_error": 0.004282152564851315,
         "vmec_boozer_reduced_nonlinear_window_rel_error": 0.026774412331418387
       },
       "lane": "Production solver-objective geometry gradients",
-      "next_action": "Full VMEC/Boozer eigenfrequency, quasilinear, and multi-equilibrium reduced nonlinear-window estimator gradients are closed. A compact production nonlinear-window finite-difference observable audit is tracked when present, but converged nonlinear-window VMEC/Boozer turbulence gradients and optimized-equilibrium nonlinear audits remain required before full nonlinear stellarator-optimization claims.",
+      "next_action": "Full VMEC/Boozer eigenfrequency, quasilinear, and multi-equilibrium reduced nonlinear-window estimator gradients are closed. A compact production nonlinear-window finite-difference observable audit is tracked when present, and a VMEC/Boozer-perturbed production nonlinear-window FD observable audit is tracked when available. Converged nonlinear-window VMEC/Boozer turbulence gradients, local-gradient conditioning, and optimized-equilibrium nonlinear audits remain required before full nonlinear stellarator-optimization claims.",
       "primary_artifacts": [
         "docs/_static/solver_objective_gradient_gate.json",
         "docs/_static/vmec_boozer_solver_frequency_gradient_gate.json",
@@ -108,7 +111,9 @@
         "docs/_static/vmec_boozer_li383_nonlinear_window_gradient_gate.json",
         "docs/_static/vmec_boozer_gradient_holdout_matrix.json",
         "docs/_static/nonlinear_window_fd_audit.json",
-        "docs/_static/nonlinear_window_fd_audit.png"
+        "docs/_static/nonlinear_window_fd_audit.png",
+        "docs/_static/vmec_boozer_nonlinear_window_fd_audit.json",
+        "docs/_static/vmec_boozer_nonlinear_window_fd_audit.png"
       ],
       "status": "closed"
     },

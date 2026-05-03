@@ -1766,3 +1766,27 @@ Exit gate:
   - keep W7-X zonal recurrence and TEM/kinetic-electron stellarator lanes
     deferred from the current manuscript scope unless they are reopened
     explicitly.
+- VMEC/Boozer-perturbed production nonlinear-window FD audit:
+  - added ``tools/build_vmec_boozer_nonlinear_window_fd_audit.py`` and
+    ``docs/_static/vmec_boozer_nonlinear_window_fd_audit.{png,pdf,json,csv}``;
+  - the tool starts from the real mode-21
+    ``vmec_jax -> booz_xform_jax`` QH state bridge, perturbs
+    ``Rcos_mid_surface_m1`` by ``+/- 1e-5``, writes temporary sampled-geometry
+    NetCDF files, and runs compact production nonlinear windows with
+    ``dt=0.002`` and ``16`` fixed RK2 steps;
+  - current artifact passes the observable-path gate with finite outputs,
+    deterministic repeated-base agreement, maximum window CV ``0.101``,
+    maximum normalized trend ``0.286``, resolved central response/base
+    ``0.0401``, and resolved geometry perturbation;
+  - the forward/backward response is asymmetric and not monotone, so the
+    artifact is explicitly scoped as a VMEC/Boozer geometry-perturbed
+    nonlinear-window observable audit, not as a local nonlinear gradient,
+    optimized-equilibrium audit, or production heat-flux optimization claim.
+- Next promotion steps:
+  - turn the VMEC/Boozer nonlinear FD audit into a local-gradient conditioning
+    gate only after a better-conditioned perturbation basis and longer
+    converged nonlinear windows are available;
+  - add optimized-equilibrium nonlinear-window audits before any production
+    nonlinear stellarator optimization claim;
+  - keep the current reduced optimization figures scoped to objective-plumbing
+    and UQ validation.

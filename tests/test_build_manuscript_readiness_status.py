@@ -165,6 +165,19 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(tmp_path: Pat
             },
         },
     )
+    _write_json(
+        tmp_path,
+        "docs/_static/vmec_boozer_nonlinear_window_fd_audit.json",
+        {
+            "passed": True,
+            "vmec_boozer_production_nonlinear_observable_fd_path_gate": True,
+            "production_nonlinear_window_gradient_gate": False,
+            "metrics": {
+                "response_fraction": 0.04,
+                "derivative_asymmetry": 2.8,
+            },
+        },
+    )
 
     payload = mod.build_manuscript_readiness_payload(tmp_path)
     lanes = {lane["lane"]: lane for lane in payload["lanes"]}
@@ -229,6 +242,22 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(tmp_path: Pat
     )
     assert (
         "docs/_static/nonlinear_window_fd_audit.png"
+        in lanes["Production solver-objective geometry gradients"]["primary_artifacts"]
+    )
+    assert (
+        lanes["Production solver-objective geometry gradients"]["key_metrics"][
+            "vmec_boozer_production_nonlinear_observable_fd_path_gate"
+        ]
+        is True
+    )
+    assert (
+        lanes["Production solver-objective geometry gradients"]["key_metrics"][
+            "vmec_boozer_production_nonlinear_response_fraction"
+        ]
+        == 0.04
+    )
+    assert (
+        "docs/_static/vmec_boozer_nonlinear_window_fd_audit.json"
         in lanes["Production solver-objective geometry gradients"]["primary_artifacts"]
     )
     assert lanes["W7-X zonal recurrence/damping"]["status"] == "deferred"
