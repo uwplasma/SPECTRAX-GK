@@ -541,14 +541,17 @@ physics_contracts = [
   "solver-ready geometry gates are complemented by full vmec_jax/booz_xform_jax state-gradient gates before optimization claims",
   "mode-21 VMEC/Boozer state-to-solver eigenfrequency and quasilinear heat-flux-weight gradients must pass before reduced stellarator objective promotion",
   "multi-equilibrium reduced linear/quasilinear VMEC/Boozer state-gradient holdouts must pass before broadening differentiable stellarator-objective claims beyond one fixture",
+  "reduced nonlinear-window estimator gradients may be validated as bounded differentiability gates, but not promoted as converged nonlinear heat-flux optimization claims",
 ]
 numerics_contracts = [
   "implicit eigenpair sensitivities match nearest-branch central finite differences",
   "branch isolation and biorthogonal left/right eigenvector conditioning are recorded",
   "VMEC/Boozer finite differences use a conditioned step recorded in the artifact",
+  "late-window envelope metrics are smooth under JAX AD and agree with central finite differences",
 ]
 fast_tests = [
   "tests/test_solver_objective_gradients.py",
+  "tests/test_build_vmec_boozer_nonlinear_window_gradient_gate.py",
   "tests/test_build_vmec_boozer_gradient_holdout_matrix.py",
 ]
 artifact_paths = [
@@ -558,6 +561,8 @@ artifact_paths = [
   "docs/_static/vmec_boozer_solver_frequency_gradient_gate.png",
   "docs/_static/vmec_boozer_quasilinear_gradient_gate.json",
   "docs/_static/vmec_boozer_quasilinear_gradient_gate.png",
+  "docs/_static/vmec_boozer_nonlinear_window_gradient_gate.json",
+  "docs/_static/vmec_boozer_nonlinear_window_gradient_gate.png",
   "docs/_static/vmec_boozer_li383_solver_frequency_gradient_gate.json",
   "docs/_static/vmec_boozer_li383_solver_frequency_gradient_gate.png",
   "docs/_static/vmec_boozer_li383_quasilinear_gradient_gate.json",
@@ -566,7 +571,7 @@ artifact_paths = [
   "docs/_static/vmec_boozer_gradient_holdout_matrix.png",
 ]
 next_tests = [
-  "add nonlinear-window objective gradient or estimator gates after linear/quasilinear VMEC gates pass",
+  "extend reduced nonlinear-window estimator-gradient gates to multi-equilibrium holdouts after the single-fixture gate is profiled",
   "extend the multi-equilibrium holdout matrix to optimized-equilibrium nonlinear-window objectives before broad stellarator transport-gradient claims",
 ]
 
