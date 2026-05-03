@@ -85,4 +85,7 @@ def test_gradient_holdout_matrix_writes_artifacts(tmp_path: Path) -> None:
     for path in paths.values():
         assert Path(path).exists()
     saved = json.loads((tmp_path / "matrix.json").read_text(encoding="utf-8"))
-    assert saved["claim_level"] == "multi_equilibrium_reduced_linear_quasilinear_gradient_gate_not_nonlinear_window_optimization"
+    assert saved["claim_level"] == (
+        "multi_equilibrium_reduced_linear_quasilinear_and_nonlinear_window_estimator_gradient_gate_"
+        "not_production_nonlinear_optimization"
+    )
