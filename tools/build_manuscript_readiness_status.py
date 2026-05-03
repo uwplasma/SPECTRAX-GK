@@ -149,6 +149,7 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
     )
     vmec_gradient_matrix = _read_json(root, "docs/_static/vmec_boozer_gradient_holdout_matrix.json")
     nonlinear_fd_audit = _read_json(root, "docs/_static/nonlinear_window_fd_audit.json")
+    vmec_nonlinear_fd_audit = _read_json(root, "docs/_static/vmec_boozer_nonlinear_window_fd_audit.json")
     profile = _read_json(root, "docs/_static/nonlinear_sharding_profile_office_gpu.json")
     rhs_profile = _read_json(root, "docs/_static/nonlinear_rhs_profile.json")
 
@@ -222,6 +223,14 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
     )
     production_nonlinear_observable_fd_path_gate = bool(
         (nonlinear_fd_audit or {}).get("production_nonlinear_observable_fd_path_gate", False)
+    )
+    vmec_nonlinear_fd_metrics = (
+        (vmec_nonlinear_fd_audit or {}).get("metrics", {})
+        if isinstance((vmec_nonlinear_fd_audit or {}).get("metrics", {}), dict)
+        else {}
+    )
+    vmec_boozer_production_nonlinear_observable_fd_path_gate = bool(
+        (vmec_nonlinear_fd_audit or {}).get("vmec_boozer_production_nonlinear_observable_fd_path_gate", False)
     )
     solver_gradient_closed = bool(
         solver_gradient_passed
@@ -340,6 +349,8 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                     ("docs/_static/vmec_boozer_gradient_holdout_matrix.json", vmec_gradient_matrix),
                     ("docs/_static/nonlinear_window_fd_audit.json", nonlinear_fd_audit),
                     ("docs/_static/nonlinear_window_fd_audit.png", nonlinear_fd_audit),
+                    ("docs/_static/vmec_boozer_nonlinear_window_fd_audit.json", vmec_nonlinear_fd_audit),
+                    ("docs/_static/vmec_boozer_nonlinear_window_fd_audit.png", vmec_nonlinear_fd_audit),
                 )
                 if payload
             ],
@@ -389,13 +400,24 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                 "production_nonlinear_observable_max_window_trend": _finite_float(
                     nonlinear_fd_metrics.get("max_window_trend")
                 ),
+                "vmec_boozer_production_nonlinear_observable_fd_path_gate": (
+                    vmec_boozer_production_nonlinear_observable_fd_path_gate
+                ),
+                "vmec_boozer_production_nonlinear_response_fraction": _finite_float(
+                    vmec_nonlinear_fd_metrics.get("response_fraction")
+                ),
+                "vmec_boozer_production_nonlinear_derivative_asymmetry": _finite_float(
+                    vmec_nonlinear_fd_metrics.get("derivative_asymmetry")
+                ),
                 "production_nonlinear_window_gradient_gate": False,
             },
             "next_action": (
                 "Full VMEC/Boozer eigenfrequency, quasilinear, and multi-equilibrium reduced nonlinear-window "
                 "estimator gradients are closed. A compact production nonlinear-window finite-difference observable "
-                "audit is tracked when present, but converged nonlinear-window VMEC/Boozer turbulence gradients and "
-                "optimized-equilibrium nonlinear audits remain required before full nonlinear stellarator-optimization claims."
+                "audit is tracked when present, and a VMEC/Boozer-perturbed production nonlinear-window FD observable "
+                "audit is tracked when available. Converged nonlinear-window VMEC/Boozer turbulence gradients, "
+                "local-gradient conditioning, and optimized-equilibrium nonlinear audits remain required before full "
+                "nonlinear stellarator-optimization claims."
             ),
         },
         {
@@ -528,7 +550,8 @@ def write_manuscript_readiness_artifacts(payload: dict[str, Any], *, out: str | 
                 f"solver-ready: {km.get('solver_ready_gradient_gate')}; "
                 f"holdouts: {km.get('multi_equilibrium_gradient_cases')}; "
                 f"max err: {err_text}; "
-                f"NL FD: {km.get('production_nonlinear_observable_fd_path_gate')}"
+                f"NL FD: {km.get('production_nonlinear_observable_fd_path_gate')}; "
+                f"VMEC FD: {km.get('vmec_boozer_production_nonlinear_observable_fd_path_gate')}"
             )
         elif str(lane["lane"]).startswith("Profiler"):
             speed = km.get("engineering_speedup")

@@ -65,9 +65,14 @@ Current pre-release status snapshot:
   ``docs/_static/vmec_boozer_li383_nonlinear_window_gradient_gate.png``; the
   companion compact production nonlinear-window finite-difference observable
   audit at ``docs/_static/nonlinear_window_fd_audit.png`` / ``.json`` closes
-  the actual nonlinear-window extraction and conditioning path, but leaves
-  VMEC/Boozer nonlinear turbulence gradients and optimized-equilibrium
-  nonlinear audits as promotion requirements;
+  the actual nonlinear-window extraction and conditioning path; the companion
+  VMEC/Boozer-perturbed production nonlinear-window FD audit at
+  ``docs/_static/vmec_boozer_nonlinear_window_fd_audit.png`` / ``.json``
+  starts from a real mode-21 ``vmec_jax -> booz_xform_jax`` state perturbation
+  and closes the imported-geometry nonlinear observable path while recording
+  that the local forward/backward response is asymmetric; VMEC/Boozer nonlinear
+  turbulence gradients and optimized-equilibrium nonlinear audits remain
+  promotion requirements;
 - the Phase-A differentiable-geometry bridge is an in-memory sampled
   flux-tube contract with 100% targeted coverage, optional
   ``vmec_jax`` / ``booz_xform_jax`` discovery, tracer-safe mapping into
@@ -123,10 +128,13 @@ lane now has a passed actual linear-RHS gate at the solver-ready geometry
 contract plus passed mode-21 VMEC/Boozer state-to-solver eigenfrequency and
 quasilinear heat-flux-weight gates on QH and Li383 holdouts. A compact
 production nonlinear-window finite-difference observable audit is also tracked
-at ``docs/_static/nonlinear_window_fd_audit.png`` / ``.json``. The remaining
-promotion step is now the VMEC/Boozer nonlinear-window state-gradient gate and
-converged nonlinear audits of optimized equilibria; those are required before
-claiming a production nonlinear heat-flux stellarator optimizer.
+at ``docs/_static/nonlinear_window_fd_audit.png`` / ``.json``. A
+VMEC/Boozer-perturbed production nonlinear-window FD observable audit is now
+tracked at ``docs/_static/vmec_boozer_nonlinear_window_fd_audit.png`` /
+``.json``. The remaining promotion step is now the VMEC/Boozer nonlinear-window
+state-gradient gate with local-gradient conditioning and converged nonlinear
+audits of optimized equilibria; those are required before claiming a production
+nonlinear heat-flux stellarator optimizer.
 
 The latest public CI run for commit ``5790e0e`` passed repo hygiene, mypy,
 quick shards, docs/packaging, fast coverage, and the full wide-coverage matrix.

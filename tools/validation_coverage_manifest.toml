@@ -543,6 +543,7 @@ physics_contracts = [
   "multi-equilibrium reduced linear/quasilinear VMEC/Boozer state-gradient holdouts must pass before broadening differentiable stellarator-objective claims beyond one fixture",
   "multi-equilibrium reduced nonlinear-window estimator gradients may be validated as bounded differentiability gates, but not promoted as converged nonlinear heat-flux optimization claims",
   "production nonlinear-window observable finite-difference audits must pass before nonlinear-state-gradient promotion, but they do not replace VMEC/Boozer optimized-equilibrium gradient gates",
+  "VMEC/Boozer-perturbed production nonlinear-window finite-difference audits must pass before end-to-end nonlinear optimization claims, but local-gradient conditioning and optimized-equilibrium audits remain separate gates",
 ]
 numerics_contracts = [
   "implicit eigenpair sensitivities match nearest-branch central finite differences",
@@ -550,12 +551,14 @@ numerics_contracts = [
   "VMEC/Boozer finite differences use a conditioned step recorded in the artifact",
   "late-window envelope metrics are smooth under JAX AD and agree with central finite differences",
   "production nonlinear heat-flux window finite differences require repeatability, monotonic drive response, bounded coefficient of variation, bounded trend, and resolved response fraction",
+  "VMEC/Boozer nonlinear finite-difference audits require finite imported-geometry nonlinear runs, deterministic repeatability, resolved geometry perturbation, and resolved central response; forward/backward asymmetry is diagnostic until a gradient gate is promoted",
 ]
 fast_tests = [
   "tests/test_solver_objective_gradients.py",
   "tests/test_build_vmec_boozer_nonlinear_window_gradient_gate.py",
   "tests/test_build_vmec_boozer_gradient_holdout_matrix.py",
   "tests/test_build_nonlinear_window_fd_audit.py",
+  "tests/test_build_vmec_boozer_nonlinear_window_fd_audit.py",
 ]
 artifact_paths = [
   "docs/_static/solver_objective_gradient_gate.json",
@@ -576,11 +579,14 @@ artifact_paths = [
   "docs/_static/vmec_boozer_gradient_holdout_matrix.png",
   "docs/_static/nonlinear_window_fd_audit.json",
   "docs/_static/nonlinear_window_fd_audit.png",
+  "docs/_static/vmec_boozer_nonlinear_window_fd_audit.json",
+  "docs/_static/vmec_boozer_nonlinear_window_fd_audit.png",
 ]
 next_tests = [
   "extend the reduced nonlinear-window estimator-gradient matrix to optimized-equilibrium holdouts before broad stellarator transport-gradient claims",
   "replace reduced nonlinear-window estimator gates with converged nonlinear-window turbulence-gradient or robust finite-difference audits before production nonlinear optimization claims",
   "connect the production nonlinear-window finite-difference audit to VMEC/Boozer perturbations and optimized-equilibrium nonlinear windows",
+  "tighten VMEC/Boozer nonlinear-window finite-difference audits into local-gradient conditioning gates after converged windows and optimized-equilibrium audits exist",
 ]
 
 [[modules]]
