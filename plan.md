@@ -1726,3 +1726,13 @@ Exit gate:
     converged electrostatic nonlinear holdouts, a nonlinear-window
     VMEC/Boozer state-gradient gate, nonlinear audits of optimized equilibria,
     and the deferred W7-X zonal/TEM lanes.
+- Wide-coverage CI rebalance:
+  - commit ``5f16b11`` exposed that wide-coverage shard ``3/24`` was too close
+    to the bounded test budget: the tests passed but the coverage command timed
+    out after ``300`` seconds during shutdown/reporting;
+  - kept the per-shard timeout at ``300`` seconds and split the matrix into
+    ``48`` shards instead of increasing the timeout;
+  - locally checked the two new heavy descendants under coverage: shard
+    ``3/48`` passed in about ``74`` seconds and shard ``27/48`` passed in about
+    ``46`` seconds;
+  - next step is to let the pushed CI confirm the full 48-shard combine gate.
