@@ -150,6 +150,21 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(tmp_path: Pat
             },
         },
     )
+    _write_json(
+        tmp_path,
+        "docs/_static/nonlinear_window_fd_audit.json",
+        {
+            "passed": True,
+            "production_nonlinear_observable_fd_path_gate": True,
+            "production_nonlinear_window_gradient_gate": False,
+            "metrics": {
+                "response_fraction": 0.11,
+                "repeatability_relative_error": 0.0,
+                "max_window_cv": 0.09,
+                "max_window_trend": 0.31,
+            },
+        },
+    )
 
     payload = mod.build_manuscript_readiness_payload(tmp_path)
     lanes = {lane["lane"]: lane for lane in payload["lanes"]}
@@ -195,6 +210,26 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(tmp_path: Pat
             "production_nonlinear_window_gradient_gate"
         ]
         is False
+    )
+    assert (
+        lanes["Production solver-objective geometry gradients"]["key_metrics"][
+            "production_nonlinear_observable_fd_path_gate"
+        ]
+        is True
+    )
+    assert (
+        lanes["Production solver-objective geometry gradients"]["key_metrics"][
+            "production_nonlinear_observable_response_fraction"
+        ]
+        == 0.11
+    )
+    assert (
+        "docs/_static/nonlinear_window_fd_audit.json"
+        in lanes["Production solver-objective geometry gradients"]["primary_artifacts"]
+    )
+    assert (
+        "docs/_static/nonlinear_window_fd_audit.png"
+        in lanes["Production solver-objective geometry gradients"]["primary_artifacts"]
     )
     assert lanes["W7-X zonal recurrence/damping"]["status"] == "deferred"
     assert lanes["TEM / kinetic-electron stellarator extension"]["status"] == "deferred"
