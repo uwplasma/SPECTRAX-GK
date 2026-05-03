@@ -1737,4 +1737,6 @@ Exit gate:
   - locally checked the two new heavy descendants under coverage: shard
     ``3/48`` passed in about ``74`` seconds and shard ``27/48`` passed in about
     ``46`` seconds;
-  - next step is to let the pushed CI confirm the full 48-shard combine gate.
+  - confirmed on GitHub CI at commit ``6dbfddb``: all quick shards,
+    docs/packaging, fast coverage, all ``48`` wide-coverage shards, and the
+    final wide-coverage combine passed with ``TOTAL 16134 787 95%``.
