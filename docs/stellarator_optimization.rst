@@ -282,13 +282,14 @@ reduced full-chain quasilinear heat-flux-weight gradient gate for the tracked
 manuscript fixture. A second Li383 low-resolution holdout now verifies the
 same frequency and quasilinear gradient contracts at ``mboz=nboz=21``; the
 combined holdout matrix has maximum relative AD/finite-difference mismatch
-``4.9e-3`` across the reduced linear/quasilinear objectives. This closes the
-multi-equilibrium reduced solver-objective gradient gate. A companion
-single-fixture reduced nonlinear-window estimator gate now differentiates a
-smooth late-window heat-flux envelope through the same VMEC/Boozer state path.
-That closes a bounded estimator-gradient check for nonlinear-window-style
-objectives, but it does not close converged nonlinear-window turbulence
-gradients or broad optimized-equilibrium nonlinear transport claims.
+``4.9e-3`` across the reduced linear/quasilinear objectives. Companion QH and
+Li383 reduced nonlinear-window estimator gates now differentiate a smooth
+late-window heat-flux envelope through the same VMEC/Boozer state path; the
+expanded matrix including those estimator rows has maximum relative mismatch
+``2.7e-2``. This closes a multi-equilibrium bounded estimator-gradient check for
+nonlinear-window-style reduced objectives, but it does not close converged
+nonlinear-window turbulence gradients or broad optimized-equilibrium nonlinear
+transport claims.
 
 .. figure:: _static/solver_objective_gradient_gate.png
    :width: 90%
@@ -337,13 +338,14 @@ gradients or broad optimized-equilibrium nonlinear transport claims.
    :align: center
    :alt: VMEC/Boozer state-to-solver reduced nonlinear-window-gradient validation gate
 
-   Reduced nonlinear-window estimator-gradient gate. The full VMEC/Boozer
-   state-to-solver path produces linear-RHS observables, then a smooth RK2
-   late-window envelope maps those observables to mean heat flux, window
-   coefficient of variation, and normalized trend. The plot compares implicit
-   eigenpair AD sensitivities against central finite differences. It is a
-   differentiability and conditioning gate for reduced objectives, not a
-   converged nonlinear-turbulence heat-flux-gradient claim.
+   Reduced nonlinear-window estimator-gradient gate for the QH fixture. The
+   full VMEC/Boozer state-to-solver path produces linear-RHS observables, then
+   a smooth RK2 late-window envelope maps those observables to mean heat flux,
+   window coefficient of variation, and normalized trend. The plot compares
+   implicit eigenpair AD sensitivities against central finite differences. The
+   companion Li383 artifact is included in the holdout matrix. These are
+   differentiability and conditioning gates for reduced objectives, not
+   converged nonlinear-turbulence heat-flux-gradient claims.
 
 .. figure:: _static/vmec_boozer_gradient_holdout_matrix.png
    :width: 100%
@@ -351,10 +353,10 @@ gradients or broad optimized-equilibrium nonlinear transport claims.
    :alt: VMEC/Boozer multi-equilibrium gradient holdout matrix
 
    Multi-equilibrium VMEC/Boozer gradient holdout matrix. QH and Li383
-   frequency and quasilinear solver-objective gates all pass with
-   ``mboz=nboz=21``. The matrix is a reduced linear/quasilinear
-   differentiability gate; nonlinear-window gradients remain a separate
-   promotion requirement.
+   frequency, quasilinear, and reduced nonlinear-window estimator gates all
+   pass with ``mboz=nboz=21``. The matrix is a reduced differentiability gate;
+   converged nonlinear-window turbulence gradients remain a separate promotion
+   requirement.
 
 Promotion Gates for Full VMEC/Boozer/GK Optimization
 ----------------------------------------------------
@@ -396,7 +398,7 @@ the following pass:
    is closed by
    ``docs/_static/vmec_boozer_quasilinear_gradient_gate.json`` on the tracked
    all-surface QH fixture. The multi-equilibrium reduced linear/quasilinear
-   holdout gate is closed by
+   and nonlinear-window estimator holdout gate is closed by
    ``docs/_static/vmec_boozer_gradient_holdout_matrix.json`` for QH and
    Li383 at ``mboz=nboz=21``. Larger QI/QA nonlinear-window transport holdouts
    are still promotion work: QI is currently conditioning-limited when forced
@@ -408,10 +410,12 @@ the following pass:
 6. A nonlinear heat-flux objective has a validated adjoint, VJP, or robust
    stochastic/finite-difference estimator with a documented window rule. The
    reduced estimator-gradient gate at
-   ``docs/_static/vmec_boozer_nonlinear_window_gradient_gate.json`` covers the
-   first bounded estimator path; production claims still need converged
-   nonlinear-window turbulence gradients or robust optimized-equilibrium
-   finite-difference audits.
+   ``docs/_static/vmec_boozer_nonlinear_window_gradient_gate.json`` and the
+   Li383 holdout at
+   ``docs/_static/vmec_boozer_li383_nonlinear_window_gradient_gate.json``
+   cover the first multi-equilibrium bounded estimator path; production claims
+   still need converged nonlinear-window turbulence gradients or robust
+   optimized-equilibrium finite-difference audits.
 7. Optimized geometries pass multi-field-line, multi-surface, grid/window
    convergence, and nonlinear holdout gates before being used for transport
    claims.

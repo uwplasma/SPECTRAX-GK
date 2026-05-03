@@ -143,6 +143,10 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
     vmec_solver_grad = _read_json(root, "docs/_static/vmec_boozer_solver_frequency_gradient_gate.json")
     vmec_ql_grad = _read_json(root, "docs/_static/vmec_boozer_quasilinear_gradient_gate.json")
     vmec_nl_window_grad = _read_json(root, "docs/_static/vmec_boozer_nonlinear_window_gradient_gate.json")
+    vmec_li383_nl_window_grad = _read_json(
+        root,
+        "docs/_static/vmec_boozer_li383_nonlinear_window_gradient_gate.json",
+    )
     vmec_gradient_matrix = _read_json(root, "docs/_static/vmec_boozer_gradient_holdout_matrix.json")
     profile = _read_json(root, "docs/_static/nonlinear_sharding_profile_office_gpu.json")
     rhs_profile = _read_json(root, "docs/_static/nonlinear_rhs_profile.json")
@@ -199,6 +203,11 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
     solver_gradient_reduced_nonlinear_window = bool((vmec_nl_window_grad or {}).get("passed", False)) and str(
         (vmec_nl_window_grad or {}).get("source_scope", "missing")
     ) == "mode21_vmec_boozer_state"
+    solver_gradient_reduced_nonlinear_window_multi_equilibrium = bool(
+        solver_gradient_reduced_nonlinear_window
+        and bool((vmec_li383_nl_window_grad or {}).get("passed", False))
+        and str((vmec_li383_nl_window_grad or {}).get("source_scope", "missing")) == "mode21_vmec_boozer_state"
+    )
     gradient_matrix_summary = (
         (vmec_gradient_matrix or {}).get("summary", {})
         if isinstance((vmec_gradient_matrix or {}).get("summary", {}), dict)
@@ -315,6 +324,10 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                     ("docs/_static/vmec_boozer_solver_frequency_gradient_gate.json", vmec_solver_grad),
                     ("docs/_static/vmec_boozer_quasilinear_gradient_gate.json", vmec_ql_grad),
                     ("docs/_static/vmec_boozer_nonlinear_window_gradient_gate.json", vmec_nl_window_grad),
+                    (
+                        "docs/_static/vmec_boozer_li383_nonlinear_window_gradient_gate.json",
+                        vmec_li383_nl_window_grad,
+                    ),
                     ("docs/_static/vmec_boozer_gradient_holdout_matrix.json", vmec_gradient_matrix),
                 )
                 if payload
@@ -325,6 +338,9 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                 "full_vmec_boozer_frequency_gradient_gate": solver_gradient_full_vmec_frequency,
                 "full_vmec_boozer_quasilinear_gradient_gate": solver_gradient_full_vmec_quasilinear,
                 "full_vmec_boozer_reduced_nonlinear_window_gradient_gate": solver_gradient_reduced_nonlinear_window,
+                "multi_equilibrium_reduced_nonlinear_window_gradient_gate": (
+                    solver_gradient_reduced_nonlinear_window_multi_equilibrium
+                ),
                 "multi_equilibrium_gradient_holdout_matrix": solver_gradient_multi_equilibrium,
                 "multi_equilibrium_gradient_cases": gradient_matrix_summary.get("n_cases"),
                 "multi_equilibrium_gradient_max_rel_error": _finite_float(
@@ -343,14 +359,17 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                 "vmec_boozer_reduced_nonlinear_window_rel_error": _finite_float(
                     (vmec_nl_window_grad or {}).get("eigenpair_gate", {}).get("max_rel_error")
                 ),
+                "vmec_boozer_li383_reduced_nonlinear_window_rel_error": _finite_float(
+                    (vmec_li383_nl_window_grad or {}).get("eigenpair_gate", {}).get("max_rel_error")
+                ),
                 "reduced_nonlinear_window_gradient_gate": bool(
                     (vmec_nl_window_grad or solver_grad or {}).get("nonlinear_window_gradient_gate", False)
                 ),
                 "production_nonlinear_window_gradient_gate": False,
             },
             "next_action": (
-                "Full VMEC/Boozer eigenfrequency and quasilinear gradients are closed. The reduced nonlinear-window "
-                "estimator gate is recorded when available, but converged nonlinear-window VMEC/Boozer gradients and "
+                "Full VMEC/Boozer eigenfrequency, quasilinear, and multi-equilibrium reduced nonlinear-window "
+                "estimator gradients are closed. Converged nonlinear-window VMEC/Boozer turbulence gradients and "
                 "optimized-equilibrium nonlinear audits remain required before full nonlinear stellarator-optimization claims."
             ),
         },

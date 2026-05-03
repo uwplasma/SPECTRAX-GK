@@ -206,7 +206,7 @@
       "coverage_priority": "high",
       "coverage_target_percent": 95.0,
       "module": "spectraxgk.solver_objective_gradients",
-      "n_artifacts": 14,
+      "n_artifacts": 16,
       "n_fast_tests": 3,
       "n_next_tests": 2,
       "n_numerics_contracts": 4,

@@ -34,6 +34,11 @@ DEFAULT_GATES = (
         ROOT / "docs/_static/vmec_boozer_quasilinear_gradient_gate.json",
     ),
     (
+        "QH warm start",
+        "nonlinear-window estimator",
+        ROOT / "docs/_static/vmec_boozer_nonlinear_window_gradient_gate.json",
+    ),
+    (
         "Li383",
         "frequency",
         ROOT / "docs/_static/vmec_boozer_li383_solver_frequency_gradient_gate.json",
@@ -43,6 +48,11 @@ DEFAULT_GATES = (
         "quasilinear",
         ROOT / "docs/_static/vmec_boozer_li383_quasilinear_gradient_gate.json",
     ),
+    (
+        "Li383",
+        "nonlinear-window estimator",
+        ROOT / "docs/_static/vmec_boozer_li383_nonlinear_window_gradient_gate.json",
+    ),
 )
 
 OBJECTIVE_ORDER = (
@@ -51,6 +61,9 @@ OBJECTIVE_ORDER = (
     "kperp_eff2",
     "linear_heat_flux_weight",
     "mixing_length_heat_flux_proxy",
+    "nonlinear_window_heat_flux_mean",
+    "nonlinear_window_heat_flux_cv",
+    "nonlinear_window_heat_flux_trend",
 )
 
 OBJECTIVE_LABELS = {
@@ -59,6 +72,9 @@ OBJECTIVE_LABELS = {
     "kperp_eff2": r"$\langle k_\perp^2\rangle$",
     "linear_heat_flux_weight": r"$\hat Q_i$",
     "mixing_length_heat_flux_proxy": r"$\gamma\hat Q_i/k_\perp^2$",
+    "nonlinear_window_heat_flux_mean": r"$\langle Q_i\rangle_\mathrm{win}$",
+    "nonlinear_window_heat_flux_cv": "window CV",
+    "nonlinear_window_heat_flux_trend": "window trend",
 }
 
 
@@ -138,7 +154,10 @@ def build_gradient_holdout_matrix(
     gate_types = sorted({str(row["gate_type"]) for row in rows})
     return {
         "kind": "vmec_boozer_gradient_holdout_matrix",
-        "claim_level": "multi_equilibrium_reduced_linear_quasilinear_gradient_gate_not_nonlinear_window_optimization",
+        "claim_level": (
+            "multi_equilibrium_reduced_linear_quasilinear_and_nonlinear_window_estimator_gradient_gate_"
+            "not_production_nonlinear_optimization"
+        ),
         "passed": bool(all_passed and all_mode21 and all_mode_counts),
         "summary": {
             "n_cases": len(cases),
@@ -155,8 +174,9 @@ def build_gradient_holdout_matrix(
         "notes": (
             "This matrix checks differentiability from vmec_jax state coefficients through "
             "booz_xform_jax mode-21 equal-arc geometry into SPECTRAX-GK linear and "
-            "quasilinear solver observables. It does not validate nonlinear-window "
-            "heat-flux gradients or optimized-equilibrium nonlinear transport."
+            "quasilinear solver observables plus a reduced nonlinear-window estimator. "
+            "It does not validate converged nonlinear-window turbulence gradients or "
+            "optimized-equilibrium nonlinear transport."
         ),
     }
 
@@ -206,11 +226,12 @@ def write_gradient_holdout_matrix(
         dtype=float,
     )
     colors = ["#2a9d8f" if bool(row["passed"]) else "#d1495b" for row in rows]
-    fig, axes = plt.subplots(1, 2, figsize=(13.6, 5.4), constrained_layout=True)
+    fig, axes = plt.subplots(1, 2, figsize=(15.4, 6.8), constrained_layout=True)
     ax0, ax1 = axes
     ax0.barh(y, max_rel, color=colors, edgecolor="#1f2937")
     ax0.axvline(2.0e-2, color="#111827", linestyle="--", linewidth=1.2, label="2e-2 QL gate")
     ax0.axvline(5.0e-2, color="#6b7280", linestyle=":", linewidth=1.2, label="5e-2 frequency gate")
+    ax0.axvline(7.5e-2, color="#8b5e34", linestyle="-.", linewidth=1.2, label="7.5e-2 estimator gate")
     for yi, value in zip(y, max_rel, strict=True):
         ax0.text(value * 1.15, yi, f"{value:.2g}", va="center", fontsize=8)
     ax0.set_xscale("log")
@@ -257,7 +278,7 @@ def write_gradient_holdout_matrix(
     fig.text(
         0.5,
         -0.015,
-        "Closed for reduced linear/quasilinear VMEC/Boozer solver objectives; nonlinear-window gradients remain a separate gate.",
+        "Closed for reduced linear/quasilinear VMEC/Boozer objectives and reduced nonlinear-window estimators; production nonlinear gradients remain separate.",
         ha="center",
         fontsize=8.8,
         color="#333333",
