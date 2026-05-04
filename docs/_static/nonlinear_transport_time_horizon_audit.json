@@ -5,7 +5,22 @@
   "records": [
     {
       "artifact": "docs/_static/external_vmec_cth_like_grid_convergence_gate.json",
-      "case": "CTH-like external VMEC grid convergence",
+      "case": "CTH-like external VMEC nonlinear grid convergence",
+      "claim_level": "negative_grid_convergence_result_not_transport_validation",
+      "convergence_gate_passed": false,
+      "effective_tmax": 150.00454711914062,
+      "gate_passed": false,
+      "kind": "external_vmec_nonlinear_grid_convergence_gate",
+      "notes": "long nonlinear pilots exist, but grid/window convergence gate fails",
+      "requires_longer_or_convergence_action": true,
+      "source_tmax": null,
+      "status": "long_but_failed_convergence",
+      "summary_tmax": 150.00454711914062,
+      "tmax": 150.00454711914062
+    },
+    {
+      "artifact": "docs/_static/external_vmec_qh_grid_convergence_gate.json",
+      "case": "nfp4 QH external VMEC nonlinear grid convergence",
       "claim_level": "negative_grid_convergence_result_not_transport_validation",
       "convergence_gate_passed": false,
       "effective_tmax": 150.00454711914062,
@@ -37,6 +52,21 @@
       "artifact": "docs/_static/external_vmec_cth_like_nonlinear_t150_n48_pilot.json",
       "case": "CTH-like external VMEC, Nx=Ny=48, Nz=32, t=150",
       "claim_level": "finite_higher_grid_nonlinear_feasibility_not_transport_validation",
+      "effective_tmax": 150.00454711914062,
+      "gate_passed": false,
+      "kind": "nonlinear_feasibility_pilot",
+      "notes": "feasibility pilot only; no external nonlinear transport acceptance gate is defined",
+      "promotion_gate_passed": false,
+      "requires_longer_or_convergence_action": true,
+      "source_tmax": 150.00454711914062,
+      "status": "long_feasibility_pending_convergence",
+      "summary_tmax": 150.00454711914062,
+      "tmax": 150.00454711914062
+    },
+    {
+      "artifact": "docs/_static/external_vmec_qh_nonlinear_t150_n48_pilot.json",
+      "case": "nfp4 QH external VMEC, Nx=Ny=48, Nz=32, t=150",
+      "claim_level": "finite_higher_grid_long_nonlinear_feasibility_not_yet_transport_validation",
       "effective_tmax": 150.00454711914062,
       "gate_passed": false,
       "kind": "nonlinear_feasibility_pilot",
@@ -210,12 +240,12 @@
     }
   ],
   "summary": {
-    "n_records": 14,
+    "n_records": 16,
     "release_transport_gate_passed": 5,
     "short_or_reduced_not_transport": 5,
     "status_counts": {
-      "long_but_failed_convergence": 1,
-      "long_feasibility_pending_convergence": 3,
+      "long_but_failed_convergence": 2,
+      "long_feasibility_pending_convergence": 4,
       "reduced_estimator_not_transport_average": 3,
       "release_transport_gate_passed": 5,
       "short_or_startup_not_transport_average": 2

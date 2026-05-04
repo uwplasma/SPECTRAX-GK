@@ -1827,3 +1827,19 @@ Exit gate:
     post-transient nonlinear transport averages;
   - QH is now a useful long-window feasibility candidate but remains outside
     quasilinear calibration until a grid/window convergence gate passes.
+- QH external-VMEC grid/window convergence check:
+  - ran a higher-grid QH companion on office GPU at ``Nx = Ny = 48``,
+    ``Nz = 32``, ``Nl = 4``, ``Nm = 8``, ``dt = 0.05`` to ``t = 150``;
+  - the run is finite with a flat late trace, but the late heat-flux level is
+    not grid converged: the common-window means are ``19.76`` and ``11.56``,
+    while the least-trending-window means are ``19.64`` and ``12.03``;
+  - generated
+    ``docs/_static/external_vmec_qh_nonlinear_t150_n48_pilot.{png,pdf,json,traces.csv}``
+    and
+    ``docs/_static/external_vmec_qh_grid_convergence_gate.{png,pdf,json,csv}``;
+  - the QH convergence gate fails with common-window symmetric relative
+    heat-flux difference ``0.523`` and least-window difference ``0.480`` against
+    the ``0.15`` gate, plus a marginal common-window trend excess
+    ``2.29e-3`` against ``2.0e-3``;
+  - conclusion: QH now joins CTH-like as a finite long external-VMEC feasibility
+    and negative convergence result, not a quasilinear calibration holdout.

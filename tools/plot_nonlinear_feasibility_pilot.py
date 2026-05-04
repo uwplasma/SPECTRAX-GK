@@ -112,7 +112,7 @@ def write_trace_csv(path: str | Path, trace: dict[str, np.ndarray]) -> None:
     out_path.parent.mkdir(parents=True, exist_ok=True)
     keys = ["t", "heat_flux", "wphi", "wg"]
     with out_path.open("w", newline="", encoding="utf-8") as fh:
-        writer = csv.writer(fh)
+        writer = csv.writer(fh, lineterminator="\n")
         writer.writerow(keys)
         for values in zip(*(np.asarray(trace[key], dtype=float) for key in keys), strict=True):
             writer.writerow([f"{float(value):.16e}" for value in values])

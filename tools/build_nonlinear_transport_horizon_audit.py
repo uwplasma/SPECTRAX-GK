@@ -194,6 +194,7 @@ def _pilot_records(root: Path) -> list[dict[str, Any]]:
     records: list[dict[str, Any]] = []
     for relative in [
         "docs/_static/external_vmec_qh_nonlinear_t150_pilot.json",
+        "docs/_static/external_vmec_qh_nonlinear_t150_n48_pilot.json",
         "docs/_static/external_vmec_cth_like_nonlinear_t150_pilot.json",
         "docs/_static/external_vmec_cth_like_nonlinear_t150_n48_pilot.json",
     ]:
@@ -216,28 +217,38 @@ def _pilot_records(root: Path) -> list[dict[str, Any]]:
                 "notes": str((promotion or {}).get("reason", "feasibility pilot")),
             }
         )
-    cth_gate = _read_json(root / "docs/_static/external_vmec_cth_like_grid_convergence_gate.json")
-    if cth_gate is not None:
-        gate_report = cth_gate.get("gate_report", {})
-        runs = cth_gate.get("runs", [])
+    for relative in [
+        "docs/_static/external_vmec_qh_grid_convergence_gate.json",
+        "docs/_static/external_vmec_cth_like_grid_convergence_gate.json",
+    ]:
+        gate_payload = _read_json(root / relative)
+        if gate_payload is None:
+            continue
+        gate_report = gate_payload.get("gate_report", {})
+        runs = gate_payload.get("runs", [])
         run_tmax = [
             _finite_float(run.get("tmax"))
             for run in runs
             if isinstance(run, dict) and _finite_float(run.get("tmax")) is not None
         ]
+        passed = bool(gate_report.get("passed", False))
         records.append(
             {
-                "case": "CTH-like external VMEC grid convergence",
-                "artifact": "docs/_static/external_vmec_cth_like_grid_convergence_gate.json",
-                "claim_level": str(cth_gate.get("claim_level", "")),
-                "kind": str(cth_gate.get("kind", "external_vmec_nonlinear_grid_convergence_gate")),
-                "gate_passed": bool(gate_report.get("passed", False)),
-                "convergence_gate_passed": bool(gate_report.get("passed", False)),
+                "case": str(gate_payload.get("case", Path(relative).stem)),
+                "artifact": relative,
+                "claim_level": str(gate_payload.get("claim_level", "")),
+                "kind": str(gate_payload.get("kind", "external_vmec_nonlinear_grid_convergence_gate")),
+                "gate_passed": passed,
+                "convergence_gate_passed": passed,
                 "summary_tmax": max(run_tmax) if run_tmax else None,
                 "source_tmax": None,
                 "effective_tmax": max(run_tmax) if run_tmax else None,
                 "tmax": max(run_tmax) if run_tmax else None,
-                "notes": "long nonlinear pilots exist, but grid/window convergence gate fails",
+                "notes": (
+                    "long nonlinear pilots pass the grid/window convergence gate"
+                    if passed
+                    else "long nonlinear pilots exist, but grid/window convergence gate fails"
+                ),
             }
         )
     return records
@@ -355,7 +366,7 @@ def _write_csv(path: Path, records: list[dict[str, Any]]) -> None:
         "notes",
     ]
     with path.open("w", newline="", encoding="utf-8") as fh:
-        writer = csv.DictWriter(fh, fieldnames=fields)
+        writer = csv.DictWriter(fh, fieldnames=fields, lineterminator="\n")
         writer.writeheader()
         for record in records:
             writer.writerow({field: record.get(field) for field in fields})

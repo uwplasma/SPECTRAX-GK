@@ -56,10 +56,17 @@ def test_convergence_gate_passes_for_flat_nearby_traces(tmp_path: Path) -> None:
     first = _write_pilot(tmp_path, "n32", 1.0)
     second = _write_pilot(tmp_path, "n48", 1.05)
 
-    paths = mod.write_convergence_gate([first, second], out=tmp_path / "gate.png", labels=["n32", "n48"])
+    paths = mod.write_convergence_gate(
+        [first, second],
+        out=tmp_path / "gate.png",
+        labels=["n32", "n48"],
+        case="synthetic external VMEC convergence",
+    )
 
     payload = json.loads(Path(paths["json"]).read_text(encoding="utf-8"))
     assert payload["promotion_gate"]["passed"] is True
+    assert payload["claim_level"] == "passed_grid_convergence_candidate_for_transport_holdout"
+    assert payload["promotion_gate"]["reason"].startswith("synthetic external VMEC convergence passed")
     assert payload["gate_report"]["passed"] is True
     assert Path(paths["png"]).exists()
     assert Path(paths["pdf"]).exists()
@@ -71,10 +78,17 @@ def test_convergence_gate_fails_large_grid_shift(tmp_path: Path) -> None:
     first = _write_pilot(tmp_path, "n32", 1.0)
     second = _write_pilot(tmp_path, "n48", 1.6)
 
-    paths = mod.write_convergence_gate([first, second], out=tmp_path / "gate.png", labels=["n32", "n48"])
+    paths = mod.write_convergence_gate(
+        [first, second],
+        out=tmp_path / "gate.png",
+        labels=["n32", "n48"],
+        case="synthetic external VMEC convergence",
+    )
 
     payload = json.loads(Path(paths["json"]).read_text(encoding="utf-8"))
     failed = {gate["metric"] for gate in payload["gate_report"]["gates"] if not gate["passed"]}
     assert payload["promotion_gate"]["passed"] is False
+    assert payload["claim_level"] == "negative_grid_convergence_result_not_transport_validation"
+    assert payload["promotion_gate"]["reason"].startswith("synthetic external VMEC convergence is finite")
     assert "common_window_pairwise_heat_flux_symmetric_relative_difference" in failed
     assert "least_window_pairwise_heat_flux_symmetric_relative_difference" in failed
