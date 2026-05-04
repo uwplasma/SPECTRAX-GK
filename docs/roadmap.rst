@@ -63,16 +63,17 @@ Current pre-release status snapshot:
   reduced nonlinear-window estimator-gradient artifacts for QH and Li383 at
   ``docs/_static/vmec_boozer_nonlinear_window_gradient_gate.png`` and
   ``docs/_static/vmec_boozer_li383_nonlinear_window_gradient_gate.png``; the
-  companion compact production nonlinear-window finite-difference observable
+  companion compact nonlinear startup-window finite-difference observable
   audit at ``docs/_static/nonlinear_window_fd_audit.png`` / ``.json`` closes
-  the actual nonlinear-window extraction and conditioning path; the companion
-  VMEC/Boozer-perturbed production nonlinear-window FD audit at
+  only the startup-response plumbing and conditioning path; the companion
+  VMEC/Boozer-perturbed nonlinear startup-window FD audit at
   ``docs/_static/vmec_boozer_nonlinear_window_fd_audit.png`` / ``.json``
   starts from a real mode-21 ``vmec_jax -> booz_xform_jax`` state perturbation
-  and closes the imported-geometry nonlinear observable path while recording
-  that the local forward/backward response is asymmetric; VMEC/Boozer nonlinear
-  turbulence gradients and optimized-equilibrium nonlinear audits remain
-  promotion requirements;
+  and closes the imported-geometry startup observable path while recording that
+  the local forward/backward response is asymmetric. Both short FD artifacts
+  explicitly keep their transport-average gates false; VMEC/Boozer nonlinear
+  turbulence gradients, long post-transient running-average heat-flux windows,
+  and optimized-equilibrium nonlinear audits remain promotion requirements;
 - the Phase-A differentiable-geometry bridge is an in-memory sampled
   flux-tube contract with 100% targeted coverage, optional
   ``vmec_jax`` / ``booz_xform_jax`` discovery, tracer-safe mapping into
@@ -127,12 +128,14 @@ examples are closed with AD/FD gates. The production solver-objective gradient
 lane now has a passed actual linear-RHS gate at the solver-ready geometry
 contract plus passed mode-21 VMEC/Boozer state-to-solver eigenfrequency and
 quasilinear heat-flux-weight gates on QH and Li383 holdouts. A compact
-production nonlinear-window finite-difference observable audit is also tracked
-at ``docs/_static/nonlinear_window_fd_audit.png`` / ``.json``. A
-VMEC/Boozer-perturbed production nonlinear-window FD observable audit is now
+nonlinear startup-window finite-difference observable audit is also tracked at
+``docs/_static/nonlinear_window_fd_audit.png`` / ``.json``. A
+VMEC/Boozer-perturbed nonlinear startup-window FD observable audit is now
 tracked at ``docs/_static/vmec_boozer_nonlinear_window_fd_audit.png`` /
-``.json``. The remaining promotion step is now the VMEC/Boozer nonlinear-window
-state-gradient gate with local-gradient conditioning and converged nonlinear
+``.json``. These short artifacts validate plumbing only and are not heat-flux
+transport averages. The remaining promotion step is now the VMEC/Boozer
+nonlinear-window state-gradient gate with local-gradient conditioning,
+converged long post-transient running-average heat-flux windows, and nonlinear
 audits of optimized equilibria; those are required before claiming a production
 nonlinear heat-flux stellarator optimizer.
 

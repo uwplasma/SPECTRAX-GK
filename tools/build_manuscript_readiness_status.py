@@ -221,6 +221,10 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
         if isinstance((nonlinear_fd_audit or {}).get("metrics", {}), dict)
         else {}
     )
+    startup_nonlinear_plumbing_fd_path_gate = bool(
+        (nonlinear_fd_audit or {}).get("startup_nonlinear_plumbing_fd_path_gate", False)
+    )
+    nonlinear_transport_average_gate = bool((nonlinear_fd_audit or {}).get("transport_average_gate", False))
     production_nonlinear_observable_fd_path_gate = bool(
         (nonlinear_fd_audit or {}).get("production_nonlinear_observable_fd_path_gate", False)
     )
@@ -228,6 +232,12 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
         (vmec_nonlinear_fd_audit or {}).get("metrics", {})
         if isinstance((vmec_nonlinear_fd_audit or {}).get("metrics", {}), dict)
         else {}
+    )
+    vmec_boozer_startup_nonlinear_plumbing_fd_path_gate = bool(
+        (vmec_nonlinear_fd_audit or {}).get("vmec_boozer_startup_nonlinear_plumbing_fd_path_gate", False)
+    )
+    vmec_boozer_nonlinear_transport_average_gate = bool(
+        (vmec_nonlinear_fd_audit or {}).get("transport_average_gate", False)
     )
     vmec_boozer_production_nonlinear_observable_fd_path_gate = bool(
         (vmec_nonlinear_fd_audit or {}).get("vmec_boozer_production_nonlinear_observable_fd_path_gate", False)
@@ -387,37 +397,43 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                 "reduced_nonlinear_window_gradient_gate": bool(
                     (vmec_nl_window_grad or solver_grad or {}).get("nonlinear_window_gradient_gate", False)
                 ),
-                "production_nonlinear_observable_fd_path_gate": production_nonlinear_observable_fd_path_gate,
-                "production_nonlinear_observable_response_fraction": _finite_float(
+                "startup_nonlinear_plumbing_fd_path_gate": startup_nonlinear_plumbing_fd_path_gate,
+                "startup_nonlinear_plumbing_response_fraction": _finite_float(
                     nonlinear_fd_metrics.get("response_fraction")
                 ),
-                "production_nonlinear_observable_repeatability_rel_error": _finite_float(
+                "startup_nonlinear_plumbing_repeatability_rel_error": _finite_float(
                     nonlinear_fd_metrics.get("repeatability_relative_error")
                 ),
-                "production_nonlinear_observable_max_window_cv": _finite_float(
+                "startup_nonlinear_plumbing_max_window_cv": _finite_float(
                     nonlinear_fd_metrics.get("max_window_cv")
                 ),
-                "production_nonlinear_observable_max_window_trend": _finite_float(
+                "startup_nonlinear_plumbing_max_window_trend": _finite_float(
                     nonlinear_fd_metrics.get("max_window_trend")
                 ),
-                "vmec_boozer_production_nonlinear_observable_fd_path_gate": (
-                    vmec_boozer_production_nonlinear_observable_fd_path_gate
+                "nonlinear_transport_average_gate": nonlinear_transport_average_gate,
+                "production_nonlinear_observable_fd_path_gate": production_nonlinear_observable_fd_path_gate,
+                "vmec_boozer_startup_nonlinear_plumbing_fd_path_gate": (
+                    vmec_boozer_startup_nonlinear_plumbing_fd_path_gate
                 ),
-                "vmec_boozer_production_nonlinear_response_fraction": _finite_float(
+                "vmec_boozer_startup_nonlinear_response_fraction": _finite_float(
                     vmec_nonlinear_fd_metrics.get("response_fraction")
                 ),
-                "vmec_boozer_production_nonlinear_derivative_asymmetry": _finite_float(
+                "vmec_boozer_startup_nonlinear_derivative_asymmetry": _finite_float(
                     vmec_nonlinear_fd_metrics.get("derivative_asymmetry")
+                ),
+                "vmec_boozer_nonlinear_transport_average_gate": vmec_boozer_nonlinear_transport_average_gate,
+                "vmec_boozer_production_nonlinear_observable_fd_path_gate": (
+                    vmec_boozer_production_nonlinear_observable_fd_path_gate
                 ),
                 "production_nonlinear_window_gradient_gate": False,
             },
             "next_action": (
                 "Full VMEC/Boozer eigenfrequency, quasilinear, and multi-equilibrium reduced nonlinear-window "
-                "estimator gradients are closed. A compact production nonlinear-window finite-difference observable "
-                "audit is tracked when present, and a VMEC/Boozer-perturbed production nonlinear-window FD observable "
-                "audit is tracked when available. Converged nonlinear-window VMEC/Boozer turbulence gradients, "
-                "local-gradient conditioning, and optimized-equilibrium nonlinear audits remain required before full "
-                "nonlinear stellarator-optimization claims."
+                "estimator gradients are closed. The compact nonlinear FD audits are tracked only as startup "
+                "plumbing checks; they do not validate transport heat-flux averages. Converged post-transient "
+                "running-average nonlinear windows, VMEC/Boozer turbulence gradients, local-gradient conditioning, "
+                "and optimized-equilibrium nonlinear audits remain required before full nonlinear stellarator-"
+                "optimization claims."
             ),
         },
         {
@@ -550,8 +566,9 @@ def write_manuscript_readiness_artifacts(payload: dict[str, Any], *, out: str | 
                 f"solver-ready: {km.get('solver_ready_gradient_gate')}; "
                 f"holdouts: {km.get('multi_equilibrium_gradient_cases')}; "
                 f"max err: {err_text}; "
-                f"NL FD: {km.get('production_nonlinear_observable_fd_path_gate')}; "
-                f"VMEC FD: {km.get('vmec_boozer_production_nonlinear_observable_fd_path_gate')}"
+                f"startup FD: {km.get('startup_nonlinear_plumbing_fd_path_gate')}; "
+                f"transport avg: {km.get('nonlinear_transport_average_gate')}; "
+                f"VMEC startup: {km.get('vmec_boozer_startup_nonlinear_plumbing_fd_path_gate')}"
             )
         elif str(lane["lane"]).startswith("Profiler"):
             speed = km.get("engineering_speedup")

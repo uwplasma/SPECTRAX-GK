@@ -542,16 +542,17 @@ physics_contracts = [
   "mode-21 VMEC/Boozer state-to-solver eigenfrequency and quasilinear heat-flux-weight gradients must pass before reduced stellarator objective promotion",
   "multi-equilibrium reduced linear/quasilinear VMEC/Boozer state-gradient holdouts must pass before broadening differentiable stellarator-objective claims beyond one fixture",
   "multi-equilibrium reduced nonlinear-window estimator gradients may be validated as bounded differentiability gates, but not promoted as converged nonlinear heat-flux optimization claims",
-  "production nonlinear-window observable finite-difference audits must pass before nonlinear-state-gradient promotion, but they do not replace VMEC/Boozer optimized-equilibrium gradient gates",
-  "VMEC/Boozer-perturbed production nonlinear-window finite-difference audits must pass before end-to-end nonlinear optimization claims, but local-gradient conditioning and optimized-equilibrium audits remain separate gates",
+  "compact nonlinear finite-difference audits may validate startup plumbing and conditioning, but must not be promoted as transport heat-flux averages",
+  "production nonlinear heat-flux claims require long post-transient running-average windows, block/window stability, repeatability, and VMEC/Boozer optimized-equilibrium gradient gates",
 ]
 numerics_contracts = [
   "implicit eigenpair sensitivities match nearest-branch central finite differences",
   "branch isolation and biorthogonal left/right eigenvector conditioning are recorded",
   "VMEC/Boozer finite differences use a conditioned step recorded in the artifact",
   "late-window envelope metrics are smooth under JAX AD and agree with central finite differences",
-  "production nonlinear heat-flux window finite differences require repeatability, monotonic drive response, bounded coefficient of variation, bounded trend, and resolved response fraction",
-  "VMEC/Boozer nonlinear finite-difference audits require finite imported-geometry nonlinear runs, deterministic repeatability, resolved geometry perturbation, and resolved central response; forward/backward asymmetry is diagnostic until a gradient gate is promoted",
+  "startup nonlinear heat-flux window finite differences require repeatability, monotonic drive response, bounded coefficient of variation, bounded trend, and resolved response fraction",
+  "production nonlinear heat-flux averages additionally require a discarded transient, enough post-transient samples, cumulative running-mean convergence, stable independent late blocks, and finite flux above the startup/noise floor",
+  "VMEC/Boozer nonlinear finite-difference startup audits require finite imported-geometry nonlinear runs, deterministic repeatability, resolved geometry perturbation, and resolved central response; forward/backward asymmetry is diagnostic until a long-window gradient gate is promoted",
 ]
 fast_tests = [
   "tests/test_solver_objective_gradients.py",
@@ -585,8 +586,8 @@ artifact_paths = [
 next_tests = [
   "extend the reduced nonlinear-window estimator-gradient matrix to optimized-equilibrium holdouts before broad stellarator transport-gradient claims",
   "replace reduced nonlinear-window estimator gates with converged nonlinear-window turbulence-gradient or robust finite-difference audits before production nonlinear optimization claims",
-  "connect the production nonlinear-window finite-difference audit to VMEC/Boozer perturbations and optimized-equilibrium nonlinear windows",
-  "tighten VMEC/Boozer nonlinear-window finite-difference audits into local-gradient conditioning gates after converged windows and optimized-equilibrium audits exist",
+  "replace startup nonlinear finite-difference audits with converged long-window transport-average audits before any production nonlinear heat-flux optimization claim",
+  "tighten VMEC/Boozer nonlinear-window finite-difference audits into local-gradient conditioning gates only after converged post-transient windows and optimized-equilibrium audits exist",
 ]
 
 [[modules]]
