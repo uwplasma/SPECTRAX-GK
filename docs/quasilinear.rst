@@ -998,6 +998,24 @@ grid/window convergence gate passes.
    :alt: External nfp4 QH VMEC nonlinear feasibility pilot
    :width: 100%
 
+A higher-grid QH companion run at ``Nx = Ny = 48`` and ``Nz = 32`` was then
+run on the office GPU to the same ``t = 150`` horizon. It is finite and has a
+flat late trace, but the late heat-flux level changes materially: the common
+late-window mean is about ``11.6`` instead of ``19.8``, and the independently
+selected least-trending means are about ``12.0`` instead of ``19.6``. The
+resulting symmetric relative grid differences are about ``0.523`` on the
+common window and ``0.480`` on the least-trending windows, both above the
+``0.15`` gate. QH therefore becomes a useful negative convergence result, not a
+new quasilinear calibration holdout.
+
+.. image:: _static/external_vmec_qh_nonlinear_t150_n48_pilot.png
+   :alt: Higher-grid external nfp4 QH VMEC nonlinear feasibility pilot
+   :width: 100%
+
+.. image:: _static/external_vmec_qh_grid_convergence_gate.png
+   :alt: External nfp4 QH VMEC nonlinear grid convergence gate
+   :width: 100%
+
 The same reduced-grid protocol was then applied to the CTH-like fixture and
 extended on the office GPU to ``t = 150``. The run remains finite and develops a
 clear late nonlinear state: the least-trending tracked window is

@@ -146,6 +146,7 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
     fluct = _read_json(root, "docs/_static/w7x_fluctuation_spectrum_panel.json")
     ql_inputs = _read_json(root, "docs/_static/quasilinear_validated_calibration_inputs.json")
     ql_report = _read_json(root, "docs/_static/quasilinear_stellarator_train_holdout_report.json")
+    qh_gate = _read_json(root, "docs/_static/external_vmec_qh_grid_convergence_gate.json")
     cth_gate = _read_json(root, "docs/_static/external_vmec_cth_like_grid_convergence_gate.json")
     geom = _read_json(root, "docs/_static/differentiable_geometry_bridge.json")
     geom_matrix = _read_json(root, "docs/_static/vmec_boozer_parity_matrix.json")
@@ -166,6 +167,7 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
 
     train_count, holdout_count, holdout_names = _holdout_counts(ql_report)
     ql_passed = bool(ql_report.get("passed", False)) if ql_report else False
+    qh_passed = bool((qh_gate or {}).get("gate_report", {}).get("passed", False))
     cth_passed = bool((cth_gate or {}).get("gate_report", {}).get("passed", False))
 
     geom_sensitivity = (geom or {}).get("sensitivity", {}) if isinstance((geom or {}).get("sensitivity", {}), dict) else {}
@@ -320,6 +322,7 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
             "primary_artifacts": [
                 "docs/_static/quasilinear_validated_calibration_inputs.json",
                 "docs/_static/quasilinear_stellarator_train_holdout_report.json",
+                "docs/_static/external_vmec_qh_grid_convergence_gate.json",
                 "docs/_static/external_vmec_cth_like_grid_convergence_gate.json",
             ],
             "key_metrics": {
@@ -328,11 +331,12 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
                 "holdout_points": holdout_count,
                 "holdout_cases": holdout_names,
                 "calibration_report_passed": ql_passed,
+                "qh_external_vmec_converged": qh_passed,
                 "cth_like_external_vmec_converged": cth_passed,
             },
             "next_action": (
-                "Add at least one more grid/window-converged nonlinear holdout; keep CTH-like external VMEC excluded "
-                "until its common-window and grid-refinement gates pass."
+                "Add at least one more grid/window-converged nonlinear holdout; keep QH and CTH-like external VMEC "
+                "excluded until their common-window and grid-refinement gates pass."
             ),
         },
         {

@@ -322,11 +322,16 @@ def build_convergence_payload(
             "wphi_std": stats.wphi_std,
         }
 
+    passed = bool(report.passed)
     payload = {
         "kind": "external_vmec_nonlinear_grid_convergence_gate",
         "case": case,
         "gate_index_include": False,
-        "claim_level": "negative_grid_convergence_result_not_transport_validation",
+        "claim_level": (
+            "passed_grid_convergence_candidate_for_transport_holdout"
+            if passed
+            else "negative_grid_convergence_result_not_transport_validation"
+        ),
         "literature_policy": {
             "summary": (
                 "Nonlinear gyrokinetic heat-flux claims require finite late-time traces, "
@@ -384,11 +389,11 @@ def build_convergence_payload(
         ],
         "gate_report": gate_report_to_dict(report),
         "promotion_gate": {
-            "passed": bool(report.passed),
+            "passed": passed,
             "reason": (
-                "passed external-VMEC nonlinear grid-convergence gate"
-                if report.passed
-                else "CTH-like pilot is finite but not grid/window converged enough for quasilinear calibration"
+                f"{case} passed external-VMEC nonlinear grid-convergence gate"
+                if passed
+                else f"{case} is finite but not grid/window converged enough for quasilinear calibration"
             ),
         },
     }
@@ -414,7 +419,7 @@ def write_summary_csv(path: Path, payload: dict[str, Any]) -> None:
         "wphi_std",
     ]
     with path.open("w", newline="", encoding="utf-8") as fh:
-        writer = csv.DictWriter(fh, fieldnames=fields)
+        writer = csv.DictWriter(fh, fieldnames=fields, lineterminator="\n")
         writer.writeheader()
         for run in payload["runs"]:
             for window in ("least_trending_window", "common_window"):
@@ -442,7 +447,7 @@ def write_convergence_panel(runs: list[PilotRun], payload: dict[str, Any], *, ou
     ax_trace.axvspan(float(common["tmin"]), float(common["tmax"]), color="#111827", alpha=0.08, label="common gate window")
     ax_trace.set_xlabel("time")
     ax_trace.set_ylabel("heat flux")
-    ax_trace.set_title("CTH-like nonlinear traces")
+    ax_trace.set_title("Nonlinear traces")
     ax_trace.grid(True, alpha=0.25)
     ax_trace.legend(frameon=False, fontsize=8)
 
@@ -497,7 +502,7 @@ def write_convergence_panel(runs: list[PilotRun], payload: dict[str, Any], *, ou
     )
     ax_text.axis("off")
     ax_text.text(0.02, 0.98, "\n".join(lines), va="top", ha="left", fontsize=10.5, family="monospace")
-    fig.suptitle("External VMEC CTH-like nonlinear convergence gate", fontsize=14)
+    fig.suptitle(str(payload["case"]), fontsize=14)
     fig.savefig(out_path, dpi=220, bbox_inches="tight")
     pdf_path = out_path.with_suffix(".pdf")
     fig.savefig(pdf_path, bbox_inches="tight")
