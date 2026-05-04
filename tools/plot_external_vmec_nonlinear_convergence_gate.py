@@ -465,6 +465,7 @@ def write_convergence_panel(runs: list[PilotRun], payload: dict[str, Any], *, ou
 
     gate = payload["gate_report"]
     failed = [item for item in gate["gates"] if not bool(item["passed"])]
+    passed = bool(payload["promotion_gate"]["passed"])
     metric_labels = {
         "common_window_max_relative_slope_per_time": "common trend",
         "least_window_max_relative_slope_per_time": "least-window trend",
@@ -476,7 +477,7 @@ def write_convergence_panel(runs: list[PilotRun], payload: dict[str, Any], *, ou
         "least_window_pairwise_heat_flux_symmetric_relative_difference": "least-window grid difference",
     }
     lines = [
-        "Gate status: " + ("PASS" if payload["promotion_gate"]["passed"] else "FAIL"),
+        "Gate status: " + ("PASS" if passed else "FAIL"),
         f"common rel. grid diff: {float(common['max_pairwise_heat_flux_symmetric_relative_difference']):.3f}",
         f"least-window rel. grid diff: {float(payload['least_windows']['max_pairwise_heat_flux_symmetric_relative_difference']):.3f}",
         f"allowed grid diff: {float(payload['thresholds']['max_pairwise_relative_difference']):.3f}",
@@ -491,15 +492,25 @@ def write_convergence_panel(runs: list[PilotRun], payload: dict[str, Any], *, ou
     )
     if not failed:
         lines.append("- none")
-    lines.extend(
-        [
-            "",
-            "Interpretation:",
-            "finite external-VMEC pilot,",
-            "but not a transport holdout until",
-            "late-window and grid agreement pass.",
-        ]
-    )
+    lines.extend(["", "Interpretation:"])
+    if passed:
+        lines.extend(
+            [
+                "finite external-VMEC pilot",
+                "with passing late-window and",
+                "grid agreement; candidate",
+                "transport holdout pending",
+                "calibration admission.",
+            ]
+        )
+    else:
+        lines.extend(
+            [
+                "finite external-VMEC pilot,",
+                "but not a transport holdout until",
+                "late-window and grid agreement pass.",
+            ]
+        )
     ax_text.axis("off")
     ax_text.text(0.02, 0.98, "\n".join(lines), va="top", ha="left", fontsize=10.5, family="monospace")
     fig.suptitle(str(payload["case"]), fontsize=14)

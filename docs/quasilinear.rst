@@ -981,6 +981,47 @@ nonlinear windows but do not validate an absolute quasilinear saturation rule.
    :alt: External CTH-like VMEC linear quasilinear feasibility spectrum
    :width: 100%
 
+The QH convergence failure triggered a broader candidate screen before any
+additional nonlinear promotion. The five-point screen uses
+``ky = 0.095, 0.190, 0.286, 0.381, 0.476``, ``Nx = Ny = 48``, ``Nz = 32``,
+``Nl = 4``, ``Nm = 8``, and ``400`` explicit RK4 steps. Among the finite
+external-VMEC candidates, ``wout_DSHAPE.nc`` is the strongest unstable branch
+with ``gamma = 0.096`` at ``ky = 0.476``. Circular tokamak and ITER-model
+fixtures are close behind, while QI/QA/QH reference fixtures are stable or fail
+the current geometry screen. The screen output is tracked as
+``docs/_static/external_vmec_candidate_linear_screen.csv``.
+
+.. image:: _static/quasilinear_vmec_dshape_linear_spectrum.png
+   :alt: External D-shaped tokamak VMEC linear quasilinear feasibility spectrum
+   :width: 100%
+
+D-shaped tokamak nonlinear pilots were then run on the office GPUs with the
+same ITG/adiabatic-electron physics as the QH and CTH-like pilots. The
+``t = 150`` low-to-mid-grid gate passes immediately: ``Nx = Ny = 32``,
+``Nz = 24`` and ``Nx = Ny = 48``, ``Nz = 32`` differ by only ``0.039`` on the
+common late-window mean and ``0.050`` on the least-trending-window mean. The
+``t = 150`` mid-to-high-grid gate is close but not acceptable, with
+``0.201`` common-window and ``0.262`` least-window relative differences. This
+is exactly why the time-window check is required before promoting a run.
+
+Extending the ``48x48x32`` and ``64x64x40`` runs from ``t = 150`` to
+``t = 250`` closes the gate. The common-window means are about ``16.1`` and
+``18.5`` with symmetric relative difference ``0.139``; the independently
+selected least-trending-window means are about ``15.9`` and ``17.7`` with
+relative difference ``0.108``. Both are below the ``0.15`` threshold, and the
+trend/CV/sample-count gates also pass. D-shaped tokamak is therefore the first
+external-VMEC nonlinear transport holdout candidate from this campaign; it
+still needs calibration-report admission before any absolute quasilinear-flux
+model is promoted.
+
+.. image:: _static/external_vmec_dshape_grid_convergence_gate.png
+   :alt: External D-shaped tokamak VMEC nonlinear low-to-mid-grid convergence gate
+   :width: 100%
+
+.. image:: _static/external_vmec_dshape_t250_high_grid_convergence_gate.png
+   :alt: External D-shaped tokamak VMEC nonlinear t250 high-grid convergence gate
+   :width: 100%
+
 A reduced-grid nonlinear QH pilot has also been run locally at
 ``Nx = Ny = 32``, ``Nz = 24``, ``Nl = 4``, ``Nm = 8``, and ``dt = 0.05`` using
 the same VMEC fixture. The original ``t = 20`` trace was intentionally not
@@ -1084,8 +1125,10 @@ The nonlinear time-horizon audit below is a guardrail for the manuscript and
 documentation. It classifies archived heat-flux artifacts by their actual time
 coverage and claim level. The long matched nonlinear gates for Cyclone,
 Cyclone Miller, KBM, W7-X, and HSX pass the current release comparison
-envelopes. The QH and CTH-like external-VMEC traces are long feasibility
-pilots that still need convergence gates. The compact finite-difference audits
+envelopes. D-shaped tokamak now passes the external-VMEC ``t = 250`` high-grid
+convergence gate and is ready for calibration-report admission. The QH and
+CTH-like external-VMEC traces are long feasibility pilots that still need
+convergence gates. The compact finite-difference audits
 remain startup plumbing checks, and the differentiable nonlinear-window
 optimization examples remain reduced-envelope estimators rather than production
 nonlinear transport averages.
