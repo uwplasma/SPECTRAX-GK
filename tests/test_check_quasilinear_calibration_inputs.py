@@ -150,7 +150,7 @@ def test_tracked_quasilinear_train_holdout_reports_use_passed_nonlinear_gates() 
         for point in report["points"]
         if point["required"]
     ]
-    assert len(required_rows) == 12
+    assert len(required_rows) == 13
     assert all(point["matched_gate"] is not None for point in required_rows)
     matched_cases = {point["matched_gate"]["case"] for point in required_rows}
     assert matched_cases == {
@@ -158,5 +158,9 @@ def test_tracked_quasilinear_train_holdout_reports_use_passed_nonlinear_gates() 
         "cyclone_miller_nonlinear_window",
         "hsx_nonlinear_window",
         "w7x_nonlinear_window",
+        "D-shaped tokamak external VMEC nonlinear t250 high-grid convergence",
     }
-    assert all("external_vmec" not in str(point["matched_gate"]["artifact"]) for point in required_rows)
+    external_rows = [
+        point for point in required_rows if "external_vmec" in str(point["matched_gate"]["artifact"])
+    ]
+    assert [point["case"] for point in external_rows] == ["dshape_external_vmec_t250_window"]

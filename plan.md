@@ -1883,3 +1883,24 @@ Exit gate:
     candidate from this correction campaign that passes time-window and
     high-grid convergence. Next step is calibration-report admission and a
     quasilinear model gate; QH and CTH-like remain excluded.
+- Admitted the converged DSHAPE holdout into the quasilinear calibration gate:
+  - added ``docs/_static/external_vmec_dshape_t250_n64_transport_window.json``
+    as the high-grid common-window summary tied to the passed ``t = 250``
+    convergence gate;
+  - appended ``dshape_external_vmec_t250_window`` to
+    ``docs/_static/quasilinear_stellarator_train_holdout_points.json`` and
+    regenerated ``docs/_static/quasilinear_stellarator_train_holdout.*`` plus
+    ``docs/_static/quasilinear_validated_calibration_inputs.*``;
+  - input provenance still passes: all train/holdout nonlinear artifacts now map
+    to passed gates, including the admitted DSHAPE external-VMEC CSV, while QH
+    and CTH-like remain excluded;
+  - result: the one-constant Cyclone-trained mixing-length absolute-flux model
+    remains rejected. DSHAPE has observed late-window heat flux about ``18.5``
+    but a scaled estimate about ``3.49e3``, giving a stronger negative transfer
+    constraint for the next saturation-model development step.
+  - regenerated the saturation-rule and dataset-sufficiency diagnostics with
+    DSHAPE included as a fourth holdout. The best one-scalar rule is still raw
+    linear weight with holdout mean relative error about ``21``; the
+    training-mean null is about ``0.439``. Dataset sufficiency is improved to
+    five validated electrostatic cases but still fails the six-case and
+    two-training-geometry promotion requirements.

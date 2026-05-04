@@ -194,6 +194,7 @@ artifact_paths = [
   "docs/_static/quasilinear_hsx_train_holdout_report.json",
   "docs/_static/quasilinear_w7x_train_holdout_report.json",
   "docs/_static/quasilinear_stellarator_train_holdout_report.json",
+  "docs/_static/external_vmec_dshape_t250_n64_transport_window.json",
   "docs/_static/external_vmec_dshape_t250_high_grid_convergence_gate.json",
   "docs/_static/external_vmec_qh_grid_convergence_gate.json",
   "docs/_static/external_vmec_qh_high_grid_convergence_gate.json",

@@ -71,6 +71,20 @@
       "shape_tv": 0.05564144523893508,
       "spectrum": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_w7x_spectrum_scan.quasilinear_spectrum.csv",
       "split": "holdout"
+    },
+    {
+      "case": "dshape_external_vmec_t250_window",
+      "geometry": "dshape_external_vmec",
+      "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/external_vmec_dshape_t250_n64_transport_window.json",
+      "observed_heat_flux": 18.479456131274883,
+      "observed_heat_flux_std": 2.1065149048808203,
+      "raw_estimates": {
+        "absolute_growth_mixing_length": 1.2224976297995087,
+        "linear_weight": 2.2930220564131654,
+        "positive_mixing_length": 0.909198613989148
+      },
+      "spectrum": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_vmec_dshape_linear_spectrum_scan.quasilinear_spectrum.csv",
+      "split": "holdout"
     }
   ],
   "claim_level": "model_comparison_not_validated_transport",
@@ -115,6 +129,16 @@
         "reason": "matched passed nonlinear summary gate",
         "required": true,
         "split": "holdout"
+      },
+      {
+        "case": "dshape_external_vmec_t250_window",
+        "gate_case": "D-shaped tokamak external VMEC nonlinear t250 high-grid convergence",
+        "gate_passed": true,
+        "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/external_vmec_dshape_t250_n64_transport_window.json",
+        "passed": true,
+        "reason": "matched passed nonlinear summary gate",
+        "required": true,
+        "split": "holdout"
       }
     ],
     "kind": "quasilinear_model_input_validation",
@@ -131,12 +155,14 @@
       0.0,
       0.5655574521584783,
       0.3103169187065386,
-      0.2399259057725354
+      0.2399259057725354,
+      0.6391129623878985
     ],
-    "holdout_max_abs_relative_error": 0.5655574521584783,
-    "holdout_mean_abs_relative_error": 0.3719334255458508,
+    "holdout_max_abs_relative_error": 0.6391129623878985,
+    "holdout_mean_abs_relative_error": 0.4387283097563627,
     "label": "training-mean null",
     "predicted_heat_flux": [
+      6.6689961798985795,
       6.6689961798985795,
       6.6689961798985795,
       6.6689961798985795,
@@ -147,8 +173,8 @@
   "promotion_gate": {
     "accepted_rules": [],
     "best_rule": "linear_weight",
-    "best_rule_holdout_mean_abs_relative_error": 25.21722732626795,
-    "null_training_mean_holdout_mean_abs_relative_error": 0.3719334255458508,
+    "best_rule_holdout_mean_abs_relative_error": 21.15983092911675,
+    "null_training_mean_holdout_mean_abs_relative_error": 0.4387283097563627,
     "passed": false,
     "requires_beating_training_mean_null": true,
     "transport_mean_relative_error_gate": 0.35
@@ -159,16 +185,18 @@
         0.0,
         693.370798035986,
         323.97804424318355,
-        511.6854176439925
+        511.6854176439925,
+        253.03071856680754
       ],
       "holdout_max_abs_relative_error": 693.370798035986,
-      "holdout_mean_abs_relative_error": 509.678086641054,
+      "holdout_mean_abs_relative_error": 445.51624462249237,
       "label": "$|\\gamma|\\,\\hat Q/k_\\perp^2$",
       "predicted_heat_flux": [
         6.6689961798985795,
         2957.89604728371,
         1654.010037318377,
-        2757.5011344143395
+        2757.5011344143395,
+        4694.349519751556
       ],
       "scale": 3839.9661523445534
     },
@@ -177,16 +205,18 @@
         0.0,
         36.92484727618244,
         19.984801827378977,
-        18.742032875242426
+        18.742032875242426,
+        8.987641737663157
       ],
       "holdout_max_abs_relative_error": 36.92484727618244,
-      "holdout_mean_abs_relative_error": 25.21722732626795,
+      "holdout_mean_abs_relative_error": 21.15983092911675,
       "label": "$\\hat Q$",
       "predicted_heat_flux": [
         6.6689961798985795,
         161.55310126714855,
         106.80436253610038,
-        106.18339468146968
+        106.18339468146968,
+        184.56618734603634
       ],
       "scale": 80.49036721205464
     },
@@ -195,16 +225,18 @@
         0.0,
         612.8992915144586,
         1.0,
-        1.0
+        1.0,
+        187.92828223273304
       ],
       "holdout_max_abs_relative_error": 612.8992915144586,
-      "holdout_mean_abs_relative_error": 204.96643050481953,
+      "holdout_mean_abs_relative_error": 200.7068934367979,
       "label": "$\\max(\\gamma,0)\\,\\hat Q/k_\\perp^2$",
       "predicted_heat_flux": [
         6.6689961798985795,
         2615.101748139443,
         0.0,
-        0.0
+        0.0,
+        3491.2919034769097
       ],
       "scale": 3839.9661523445534
     }

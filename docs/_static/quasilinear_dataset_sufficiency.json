@@ -4,28 +4,28 @@
       "candidate": "linear_weight",
       "data_volume_passed": true,
       "label": "linear weight",
-      "leave_one_out_train_cases_per_fold": 3,
+      "leave_one_out_train_cases_per_fold": 4,
       "min_train_to_parameter_ratio": 2.0,
       "n_parameters": 1,
-      "train_to_parameter_ratio": 3.0
+      "train_to_parameter_ratio": 4.0
     },
     {
       "candidate": "shape_power_law",
-      "data_volume_passed": false,
+      "data_volume_passed": true,
       "label": "shape power law",
-      "leave_one_out_train_cases_per_fold": 3,
+      "leave_one_out_train_cases_per_fold": 4,
       "min_train_to_parameter_ratio": 2.0,
       "n_parameters": 2,
-      "train_to_parameter_ratio": 1.5
+      "train_to_parameter_ratio": 2.0
     },
     {
       "candidate": "linear_state_ridge",
       "data_volume_passed": false,
       "label": "linear-state ridge",
-      "leave_one_out_train_cases_per_fold": 3,
+      "leave_one_out_train_cases_per_fold": 4,
       "min_train_to_parameter_ratio": 2.0,
       "n_parameters": 5,
-      "train_to_parameter_ratio": 0.6
+      "train_to_parameter_ratio": 0.8
     }
   ],
   "cases": [
@@ -68,6 +68,16 @@
       "shape_gate_passed": true,
       "spectrum": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_w7x_spectrum_scan.quasilinear_spectrum.csv",
       "split": "holdout"
+    },
+    {
+      "case": "dshape_external_vmec_t250_window",
+      "gate_case": "D-shaped tokamak external VMEC nonlinear t250 high-grid convergence",
+      "geometry": "dshape_external_vmec",
+      "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/external_vmec_dshape_t250_n64_transport_window.json",
+      "shape_gate": null,
+      "shape_gate_passed": null,
+      "spectrum": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_vmec_dshape_linear_spectrum_scan.quasilinear_spectrum.csv",
+      "split": "holdout"
     }
   ],
   "claim_level": "promotion_blocked_until_more_converged_electrostatic_holdouts",
@@ -96,11 +106,13 @@
   "geometries": [
     "cyclone",
     "cyclone_miller",
+    "dshape_external_vmec",
     "hsx",
     "w7x"
   ],
   "holdout_geometries": [
     "cyclone_miller",
+    "dshape_external_vmec",
     "hsx",
     "w7x"
   ],
@@ -145,6 +157,16 @@
         "reason": "matched passed nonlinear summary gate",
         "required": true,
         "split": "holdout"
+      },
+      {
+        "case": "dshape_external_vmec_t250_window",
+        "gate_case": "D-shaped tokamak external VMEC nonlinear t250 high-grid convergence",
+        "gate_passed": true,
+        "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/external_vmec_dshape_t250_n64_transport_window.json",
+        "passed": true,
+        "reason": "matched passed nonlinear summary gate",
+        "required": true,
+        "split": "holdout"
       }
     ],
     "kind": "quasilinear_model_input_validation",
@@ -175,9 +197,9 @@
       "validated_input_gates": true
     },
     "current_explicit_train_geometries": 1,
-    "current_holdout_geometries": 3,
-    "current_leave_one_out_train_cases_per_fold": 3,
-    "current_total_cases": 4,
+    "current_holdout_geometries": 4,
+    "current_leave_one_out_train_cases_per_fold": 4,
+    "current_total_cases": 5,
     "min_explicit_train_geometries": 2,
     "min_holdout_geometries": 3,
     "min_leave_one_out_train_to_parameter_ratio": 2.0,

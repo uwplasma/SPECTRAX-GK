@@ -343,9 +343,9 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
                 "cth_like_external_vmec_converged": cth_passed,
             },
             "next_action": (
-                "Admit the passed D-shaped tokamak external-VMEC t=250 nonlinear holdout into the quasilinear "
-                "calibration report, then keep QH and CTH-like excluded until their common-window and "
-                "grid-refinement gates pass."
+                "Use the admitted D-shaped tokamak external-VMEC t=250 holdout as a negative transfer "
+                "constraint while developing richer saturation models; keep QH and CTH-like excluded until "
+                "their common-window and grid-refinement gates pass."
             ),
         },
         {
