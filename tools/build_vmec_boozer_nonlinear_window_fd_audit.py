@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
-"""Build a VMEC/Boozer-perturbed nonlinear-window finite-difference audit.
+"""Build a VMEC/Boozer-perturbed nonlinear startup FD audit.
 
-This is a bounded production-path audit.  It starts from the existing
-mode-21 ``vmec_jax -> booz_xform_jax`` geometry bridge, perturbs one VMEC
-state coefficient, materializes the resulting sampled geometry to temporary
-GX-style NetCDF files, and runs compact SPECTRAX-GK nonlinear windows at
+This is a bounded startup-path audit.  It starts from the existing mode-21
+``vmec_jax -> booz_xform_jax`` geometry bridge, perturbs one VMEC state
+coefficient, materializes the resulting sampled geometry to temporary NetCDF
+files, and runs compact SPECTRAX-GK nonlinear startup windows at
 ``x = base +/- step`` plus a repeated base point.  Passing this gate validates
-the finite-difference observable path from VMEC/Boozer geometry perturbations
-into production nonlinear-window diagnostics.  It is not a promoted
-optimized-equilibrium nonlinear heat-flux gradient claim.
+the finite-difference plumbing from VMEC/Boozer geometry perturbations into
+short nonlinear diagnostics.  It is not a transport-average, promoted
+optimized-equilibrium nonlinear heat-flux gradient, or stellarator heat-flux
+optimization claim.
 """
 
 from __future__ import annotations
@@ -45,7 +46,10 @@ from spectraxgk.runtime_config import (  # noqa: E402
 )
 from spectraxgk.solver_objective_gradients import _mode21_vmec_boozer_linear_context  # noqa: E402
 
-from tools.build_nonlinear_window_fd_audit import late_window_metrics  # noqa: E402
+from tools.build_nonlinear_window_fd_audit import (  # noqa: E402
+    late_window_metrics,
+    transport_average_requirements as late_transport_requirements,
+)
 
 
 DEFAULT_OUT = ROOT / "docs" / "_static" / "vmec_boozer_nonlinear_window_fd_audit.png"
@@ -166,7 +170,7 @@ def vmec_boozer_runtime_config(
     nz: int,
     dt: float,
 ) -> RuntimeConfig:
-    """Return a compact imported-geometry nonlinear audit configuration."""
+    """Return a compact imported-geometry nonlinear startup-audit configuration."""
 
     return RuntimeConfig(
         grid=GridConfig(Nx=int(nx), Ny=int(ny), Nz=int(nz), Lx=20.0, Ly=20.0, boundary="periodic"),
@@ -215,7 +219,7 @@ def run_vmec_boozer_window(
     fprim: float,
     init_amp: float,
 ) -> dict[str, Any]:
-    """Run one VMEC/Boozer-perturbed compact nonlinear window."""
+    """Run one VMEC/Boozer-perturbed compact nonlinear startup window."""
 
     geom = context["geometry_for"](jnp.asarray([float(perturbation)]))
     geometry_metrics = geometry_response_metrics(base_geom, geom)
@@ -272,7 +276,7 @@ def build_vmec_boozer_audit_payload(
     min_response_fraction: float,
     min_geometry_relative_change: float,
 ) -> dict[str, Any]:
-    """Build a JSON-ready VMEC/Boozer nonlinear-window FD audit payload."""
+    """Build a JSON-ready VMEC/Boozer nonlinear startup FD audit payload."""
 
     by_label = {str(run["label"]): run for run in runs}
     required = {"minus", "base", "plus", "base_repeat"}
@@ -313,15 +317,18 @@ def build_vmec_boozer_audit_payload(
         "resolved_fd_response": bool(response_fraction >= float(min_response_fraction)),
         "geometry_perturbation_resolved": bool(min_geom_change >= float(min_geometry_relative_change)),
     }
-    observable_gate = bool(all(gates.values()))
+    startup_gate = bool(all(gates.values()))
+    transport_gate = late_transport_requirements(runs)
     return {
-        "kind": "vmec_boozer_nonlinear_window_finite_difference_audit",
-        "case": "mode21_qh_vmec_boozer_imported_geometry_compact_nonlinear_window",
+        "kind": "vmec_boozer_nonlinear_startup_finite_difference_audit",
+        "case": "mode21_qh_vmec_boozer_imported_geometry_compact_startup_window",
         "case_name": str(case_name),
         "parameter_name": str(parameter_name),
-        "claim_level": "vmec_boozer_geometry_perturbed_production_nonlinear_observable_fd_path_not_optimization_claim",
-        "passed": observable_gate,
-        "vmec_boozer_production_nonlinear_observable_fd_path_gate": observable_gate,
+        "claim_level": "vmec_boozer_geometry_perturbed_startup_plumbing_fd_audit_not_transport_average",
+        "passed": startup_gate,
+        "vmec_boozer_startup_nonlinear_plumbing_fd_path_gate": startup_gate,
+        "transport_average_gate": bool(transport_gate["passed"]),
+        "vmec_boozer_production_nonlinear_observable_fd_path_gate": False,
         "production_nonlinear_window_gradient_gate": False,
         "perturbation_step": step,
         "tail_fraction": float(tail_fraction),
@@ -348,17 +355,19 @@ def build_vmec_boozer_audit_payload(
             "forward_backward_same_sign": bool((forward >= 0.0 and backward >= 0.0) or (forward <= 0.0 and backward <= 0.0)),
         },
         "gates": gates,
+        "transport_average_requirements": transport_gate,
         "runs": runs,
         "next_action": (
-            "Use this only as a VMEC/Boozer-perturbed production nonlinear-window observable FD audit. "
-            "Promoted nonlinear stellarator optimization still requires converged nonlinear windows, "
-            "optimized-equilibrium audits, and a validated gradient/adjoint strategy."
+            "Use this only as a VMEC/Boozer-perturbed startup-response plumbing FD audit. "
+            "Promoted nonlinear stellarator optimization still requires long post-transient "
+            "running-average heat-flux windows, optimized-equilibrium audits, and a validated "
+            "gradient/adjoint strategy."
         ),
     }
 
 
 def audit_figure(payload: dict[str, Any]) -> plt.Figure:
-    """Create the publication-style VMEC/Boozer nonlinear FD audit figure."""
+    """Create the VMEC/Boozer nonlinear startup FD audit figure."""
 
     set_plot_style()
     runs = list(payload["runs"])
@@ -373,7 +382,7 @@ def audit_figure(payload: dict[str, Any]) -> plt.Figure:
         window = run["window"]
         ax0.plot(t, q, linewidth=2.0, color=colors.get(label, "#333333"), label=labels.get(label, label))
         ax0.axvspan(float(window["t_min"]), float(window["t_max"]), color=colors.get(label, "#333333"), alpha=0.055)
-    ax0.set_title("VMEC/Boozer-perturbed nonlinear windows")
+    ax0.set_title("VMEC/Boozer-perturbed startup windows")
     ax0.set_xlabel("time")
     ax0.set_ylabel("heat flux")
     ax0.grid(True, alpha=0.25)
@@ -385,7 +394,7 @@ def audit_figure(payload: dict[str, Any]) -> plt.Figure:
     stds = [float(next(run for run in runs if str(run["label"]) == label)["window"]["std"]) for label in order]
     ax1.bar(x, means, yerr=stds, capsize=4, color=[colors[label] for label in order], edgecolor="#222222", linewidth=0.7)
     ax1.set_xticks(x, [labels[label] for label in order], rotation=18, ha="right")
-    ax1.set_ylabel("late-window heat-flux mean")
+    ax1.set_ylabel("startup-window heat-flux mean")
     ax1.set_title("VMEC-state FD conditioning")
     ax1.grid(True, axis="y", alpha=0.25)
     metrics = payload["metrics"]
@@ -396,7 +405,8 @@ def audit_figure(payload: dict[str, Any]) -> plt.Figure:
             f"repeat rel. err.: {float(metrics['repeatability_relative_error']):.1e}",
             f"max CV/trend: {float(metrics['max_window_cv']):.3f}/{float(metrics['max_window_trend']):.3f}",
             f"geom response: {float(metrics['min_geometry_relative_change']):.1e}",
-            f"observable gate: {'PASS' if payload['passed'] else 'BLOCKED'}",
+            f"startup gate: {'PASS' if payload['passed'] else 'BLOCKED'}",
+            f"transport gate: {'PASS' if payload['transport_average_gate'] else 'not claimed'}",
             "gradient claim: not promoted",
         ]
     )
@@ -410,7 +420,7 @@ def audit_figure(payload: dict[str, Any]) -> plt.Figure:
         fontsize=8.6,
         bbox={"facecolor": "white", "edgecolor": "#cccccc", "alpha": 0.9, "boxstyle": "round,pad=0.35"},
     )
-    fig.suptitle("VMEC/Boozer nonlinear-window finite-difference audit", y=1.04, fontsize=14, fontweight="bold")
+    fig.suptitle("VMEC/Boozer nonlinear startup finite-difference audit", y=1.04, fontsize=14, fontweight="bold")
     return fig
 
 

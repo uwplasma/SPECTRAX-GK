@@ -65,10 +65,13 @@ def test_build_audit_payload_passes_conditioned_monotone_runs() -> None:
     )
 
     assert payload["passed"] is True
-    assert payload["production_nonlinear_observable_fd_path_gate"] is True
+    assert payload["startup_nonlinear_plumbing_fd_path_gate"] is True
+    assert payload["transport_average_gate"] is False
+    assert payload["production_nonlinear_observable_fd_path_gate"] is False
     assert payload["production_nonlinear_window_gradient_gate"] is False
     assert payload["gates"]["monotonic_drive_response"] is True
     assert payload["metrics"]["central_fd_dq_dtprim"] > 0.0
+    assert payload["transport_average_requirements"]["passed"] is False
 
 
 def test_build_audit_payload_blocks_unresolved_response() -> None:
@@ -121,4 +124,5 @@ def test_main_writes_artifacts_without_running_solver(monkeypatch, tmp_path: Pat
     assert out.with_suffix(".csv").exists()
     meta = json.loads(out.with_suffix(".json").read_text(encoding="utf-8"))
     assert meta["passed"] is True
-    assert meta["claim_level"] == "production_nonlinear_window_observable_fd_path_not_vmec_boozer_gradient_claim"
+    assert meta["claim_level"] == "startup_transient_nonlinear_plumbing_fd_audit_not_transport_average"
+    assert meta["transport_average_gate"] is False

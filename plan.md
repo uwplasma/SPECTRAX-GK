@@ -1740,52 +1740,62 @@ Exit gate:
   - confirmed on GitHub CI at commit ``6dbfddb``: all quick shards,
     docs/packaging, fast coverage, all ``48`` wide-coverage shards, and the
     final wide-coverage combine passed with ``TOTAL 16134 787 95%``.
-- Production nonlinear-window finite-difference observable audit:
+- Nonlinear startup-window finite-difference plumbing audit:
   - added ``tools/build_nonlinear_window_fd_audit.py`` and
     ``docs/_static/nonlinear_window_fd_audit.{png,pdf,json,csv}``;
-  - the tool runs actual compact SPECTRAX-GK nonlinear Cyclone windows at
+  - the tool runs actual compact SPECTRAX-GK nonlinear Cyclone startup windows at
     ``R/LTi = base +/- step`` plus a repeated base point and checks finite
     outputs, exact repeatability for the deterministic repeated run, monotonic
-    drive response, late-window coefficient of variation, late-window trend,
+    drive response, startup-window coefficient of variation, startup-window trend,
     and resolved central finite-difference response;
-  - current artifact passes the observable-path gate with response/base
-    ``0.1109``, repeatability relative error ``0``, maximum late-window
+  - current artifact passes the startup plumbing gate with response/base
+    ``0.1109``, repeatability relative error ``0``, maximum startup-window
     coefficient of variation ``0.095``, and maximum normalized window trend
     ``0.313``;
-  - wired the result into the manuscript-readiness dashboard and validation
-    coverage manifest as a production nonlinear-window observable extraction
-    and FD-conditioning gate;
-  - this intentionally does not claim a VMEC/Boozer nonlinear
-    state-gradient, converged nonlinear turbulence gradient, or
-    optimized-equilibrium nonlinear heat-flux optimization result.
+  - correction after heat-flux QA: the run reaches only ``t <= 0.64`` and is not
+    a post-transient transport average; the artifact is now wired as
+    ``startup_nonlinear_plumbing_fd_path_gate = true`` with
+    ``transport_average_gate = false`` and
+    ``production_nonlinear_observable_fd_path_gate = false``;
+  - this intentionally does not claim a production nonlinear heat-flux average,
+    VMEC/Boozer nonlinear state-gradient, converged nonlinear turbulence
+    gradient, or optimized-equilibrium nonlinear heat-flux optimization result.
 - Next promotion steps:
-  - connect the nonlinear-window FD audit to VMEC/Boozer perturbations after
-    production geometry-gradient parity is stable on the relevant equilibria;
+  - replace the startup FD audit with long post-transient transport windows that
+    discard the initial transient, retain enough late samples, pass cumulative
+    running-mean and block-window stability gates, and compare the same window
+    against tracked nonlinear reference cases;
   - run converged nonlinear-window audits on optimized-equilibrium candidates
     before any production nonlinear stellarator-transport optimization claim;
   - keep W7-X zonal recurrence and TEM/kinetic-electron stellarator lanes
     deferred from the current manuscript scope unless they are reopened
     explicitly.
-- VMEC/Boozer-perturbed production nonlinear-window FD audit:
+- VMEC/Boozer-perturbed nonlinear startup-window FD audit:
   - added ``tools/build_vmec_boozer_nonlinear_window_fd_audit.py`` and
     ``docs/_static/vmec_boozer_nonlinear_window_fd_audit.{png,pdf,json,csv}``;
   - the tool starts from the real mode-21
     ``vmec_jax -> booz_xform_jax`` QH state bridge, perturbs
     ``Rcos_mid_surface_m1`` by ``+/- 1e-5``, writes temporary sampled-geometry
-    NetCDF files, and runs compact production nonlinear windows with
+    NetCDF files, and runs compact nonlinear startup windows with
     ``dt=0.002`` and ``16`` fixed RK2 steps;
-  - current artifact passes the observable-path gate with finite outputs,
+  - current artifact passes the startup plumbing gate with finite outputs,
     deterministic repeated-base agreement, maximum window CV ``0.101``,
     maximum normalized trend ``0.286``, resolved central response/base
     ``0.0401``, and resolved geometry perturbation;
+  - correction after heat-flux QA: the run reaches only ``t <= 0.032`` and is
+    not a post-transient transport average; the artifact is now wired as
+    ``vmec_boozer_startup_nonlinear_plumbing_fd_path_gate = true`` with
+    ``transport_average_gate = false`` and
+    ``vmec_boozer_production_nonlinear_observable_fd_path_gate = false``;
   - the forward/backward response is asymmetric and not monotone, so the
     artifact is explicitly scoped as a VMEC/Boozer geometry-perturbed
-    nonlinear-window observable audit, not as a local nonlinear gradient,
-    optimized-equilibrium audit, or production heat-flux optimization claim.
+    nonlinear startup observable audit, not as a local nonlinear gradient,
+    transport average, optimized-equilibrium audit, or production heat-flux
+    optimization claim.
 - Next promotion steps:
   - turn the VMEC/Boozer nonlinear FD audit into a local-gradient conditioning
-    gate only after a better-conditioned perturbation basis and longer
-    converged nonlinear windows are available;
+    gate only after a better-conditioned perturbation basis and longer converged
+    post-transient running-average nonlinear windows are available;
   - add optimized-equilibrium nonlinear-window audits before any production
     nonlinear stellarator optimization claim;
   - keep the current reduced optimization figures scoped to objective-plumbing

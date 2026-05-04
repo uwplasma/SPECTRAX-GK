@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Build a bounded production nonlinear-window finite-difference audit.
+"""Build a bounded nonlinear startup-response finite-difference audit.
 
-This tool intentionally audits a narrow observable path: a real SPECTRAX-GK
+This tool intentionally audits a narrow plumbing path: a real SPECTRAX-GK
 nonlinear Cyclone runtime is run at ``R/LTi = base +/- step`` plus a repeated
-base point.  The output checks that the late-window heat-flux observable is
-finite, repeatable, window-conditioned, and has a resolved central
-finite-difference response.  It is not a VMEC/Boozer optimized-equilibrium
-transport-gradient claim.
+base point, but only for a compact startup window.  The output checks that this
+startup-window heat-flux response is finite, repeatable, conditioned, and has a
+resolved central finite-difference response.  It is not a transport-average,
+VMEC/Boozer optimized-equilibrium, or nonlinear heat-flux optimization claim.
 """
 
 from __future__ import annotations
@@ -38,6 +38,11 @@ from spectraxgk.runtime_config import (  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUT = ROOT / "docs" / "_static" / "nonlinear_window_fd_audit.png"
+DEFAULT_TRANSPORT_MIN_TOTAL_TIME = 50.0
+DEFAULT_TRANSPORT_TRANSIENT_TIME = 20.0
+DEFAULT_TRANSPORT_MIN_POST_TRANSIENT_SAMPLES = 64
+DEFAULT_TRANSPORT_MAX_RUNNING_MEAN_REL_CHANGE = 0.05
+DEFAULT_TRANSPORT_MIN_ABS_MEAN_HEAT_FLUX = 1.0e-6
 
 
 def _json_clean(value: Any) -> Any:
@@ -63,7 +68,7 @@ def cyclone_runtime_config(
     nz: int = 12,
     dt: float = 0.01,
 ) -> RuntimeConfig:
-    """Return the compact production nonlinear Cyclone audit configuration."""
+    """Return the compact nonlinear Cyclone startup-audit configuration."""
 
     return RuntimeConfig(
         grid=GridConfig(Nx=int(nx), Ny=int(ny), Nz=int(nz), Lx=20.0, Ly=20.0, boundary="periodic"),
@@ -133,6 +138,72 @@ def late_window_metrics(
     }
 
 
+def transport_average_requirements(
+    runs: list[dict[str, Any]],
+    *,
+    min_total_time: float = DEFAULT_TRANSPORT_MIN_TOTAL_TIME,
+    transient_time: float = DEFAULT_TRANSPORT_TRANSIENT_TIME,
+    min_post_transient_samples: int = DEFAULT_TRANSPORT_MIN_POST_TRANSIENT_SAMPLES,
+    max_running_mean_rel_change: float = DEFAULT_TRANSPORT_MAX_RUNNING_MEAN_REL_CHANGE,
+    min_abs_mean_heat_flux: float = DEFAULT_TRANSPORT_MIN_ABS_MEAN_HEAT_FLUX,
+) -> dict[str, Any]:
+    """Return long-window transport-average acceptance diagnostics.
+
+    A meaningful nonlinear heat flux must be averaged after the initial
+    transient, and the running mean over that post-transient window must be
+    stable.  The compact FD audit defaults intentionally do not satisfy this
+    contract; this helper records that fact in the artifact so startup-response
+    checks cannot be mistaken for transport validation.
+    """
+
+    per_run: list[dict[str, Any]] = []
+    for run in runs:
+        time = np.asarray(run["time"], dtype=float)
+        heat = np.asarray(run["heat_flux"], dtype=float)
+        post_mask = time >= float(transient_time)
+        post_heat = heat[post_mask]
+        total_time = float(time[-1] - time[0]) if time.size else 0.0
+        n_post = int(post_heat.size)
+        final_mean = float(np.mean(post_heat)) if n_post else None
+        running_change = None
+        if n_post >= 4:
+            running = np.cumsum(post_heat) / np.arange(1, n_post + 1, dtype=float)
+            midpoint = max(1, n_post // 2) - 1
+            running_change = float(abs(running[-1] - running[midpoint]) / max(abs(running[-1]), 1.0e-300))
+        gates = {
+            "total_time": bool(total_time >= float(min_total_time)),
+            "post_transient_samples": bool(n_post >= int(min_post_transient_samples)),
+            "running_mean_converged": bool(
+                running_change is not None and running_change <= float(max_running_mean_rel_change)
+            ),
+            "mean_heat_flux_above_noise_floor": bool(
+                final_mean is not None and abs(final_mean) >= float(min_abs_mean_heat_flux)
+            ),
+        }
+        per_run.append(
+            {
+                "label": str(run.get("label", "")),
+                "total_time": total_time,
+                "post_transient_samples": n_post,
+                "post_transient_mean": final_mean,
+                "running_mean_rel_change": running_change,
+                "gates": gates,
+                "passed": bool(all(gates.values())),
+            }
+        )
+    return {
+        "passed": bool(per_run and all(bool(item["passed"]) for item in per_run)),
+        "requirements": {
+            "min_total_time": float(min_total_time),
+            "transient_time": float(transient_time),
+            "min_post_transient_samples": int(min_post_transient_samples),
+            "max_running_mean_rel_change": float(max_running_mean_rel_change),
+            "min_abs_mean_heat_flux": float(min_abs_mean_heat_flux),
+        },
+        "runs": per_run,
+    }
+
+
 def run_cyclone_window(
     *,
     label: str,
@@ -148,7 +219,7 @@ def run_cyclone_window(
     ny: int,
     nz: int,
 ) -> dict[str, Any]:
-    """Run one compact nonlinear Cyclone point and return JSON-ready metrics."""
+    """Run one compact nonlinear Cyclone startup point and return metrics."""
 
     cfg = cyclone_runtime_config(tprim=tprim, random_seed=random_seed, nx=nx, ny=ny, nz=nz, dt=dt)
     result = run_runtime_nonlinear(
@@ -188,7 +259,7 @@ def build_audit_payload(
     max_window_trend: float,
     min_response_fraction: float,
 ) -> dict[str, Any]:
-    """Build a production nonlinear-window FD audit from completed runs."""
+    """Build a startup-window nonlinear FD audit from completed runs."""
 
     by_label = {str(run["label"]): run for run in runs}
     required = {"minus", "base", "plus", "base_repeat"}
@@ -226,13 +297,16 @@ def build_audit_payload(
         "window_trend": bool(max_trend <= float(max_window_trend)),
         "resolved_fd_response": bool(response_fraction >= float(min_response_fraction)),
     }
-    observable_gate = bool(all(gates.values()))
+    startup_gate = bool(all(gates.values()))
+    transport_gate = transport_average_requirements(runs)
     return {
-        "kind": "nonlinear_window_finite_difference_audit",
-        "case": "compact_cyclone_production_nonlinear_window",
-        "claim_level": "production_nonlinear_window_observable_fd_path_not_vmec_boozer_gradient_claim",
-        "passed": observable_gate,
-        "production_nonlinear_observable_fd_path_gate": observable_gate,
+        "kind": "nonlinear_startup_window_finite_difference_audit",
+        "case": "compact_cyclone_startup_nonlinear_window",
+        "claim_level": "startup_transient_nonlinear_plumbing_fd_audit_not_transport_average",
+        "passed": startup_gate,
+        "startup_nonlinear_plumbing_fd_path_gate": startup_gate,
+        "transport_average_gate": bool(transport_gate["passed"]),
+        "production_nonlinear_observable_fd_path_gate": False,
         "production_nonlinear_window_gradient_gate": False,
         "base_tprim": float(base_tprim),
         "perturbation_step": step,
@@ -254,17 +328,19 @@ def build_audit_payload(
             "max_window_trend": float(max_trend),
         },
         "gates": gates,
+        "transport_average_requirements": transport_gate,
         "runs": runs,
         "next_action": (
-            "Promote this only as a production nonlinear-window observable and FD-conditioning audit. "
-            "Full stellarator transport-gradient claims still require VMEC/Boozer perturbations, "
-            "optimized-equilibrium nonlinear windows, and convergence/repeatability gates."
+            "Use this only as a compact startup-response plumbing and FD-conditioning audit. "
+            "Meaningful nonlinear heat-flux claims require long post-transient simulations, "
+            "running-average convergence, block/window stability, and comparison against the "
+            "tracked long-window nonlinear reference gates before optimization or manuscript use."
         ),
     }
 
 
 def audit_figure(payload: dict[str, Any]) -> plt.Figure:
-    """Create the publication-style nonlinear-window FD audit figure."""
+    """Create the nonlinear startup-response FD audit figure."""
 
     set_plot_style()
     runs = list(payload["runs"])
@@ -289,7 +365,7 @@ def audit_figure(payload: dict[str, Any]) -> plt.Figure:
         window = run["window"]
         ax0.plot(t, q, linewidth=2.0, color=colors.get(label, "#333333"), label=labels.get(label, label))
         ax0.axvspan(float(window["t_min"]), float(window["t_max"]), color=colors.get(label, "#333333"), alpha=0.055)
-    ax0.set_title("Production nonlinear heat-flux traces")
+    ax0.set_title("Startup nonlinear heat-flux traces")
     ax0.set_xlabel("time")
     ax0.set_ylabel("heat flux")
     ax0.grid(True, alpha=0.25)
@@ -301,7 +377,7 @@ def audit_figure(payload: dict[str, Any]) -> plt.Figure:
     stds = [float(next(run for run in runs if str(run["label"]) == label)["window"]["std"]) for label in order]
     ax1.bar(x, means, yerr=stds, capsize=4, color=[colors[label] for label in order], edgecolor="#222222", linewidth=0.7)
     ax1.set_xticks(x, [labels[label] for label in order], rotation=18, ha="right")
-    ax1.set_ylabel("late-window heat-flux mean")
+    ax1.set_ylabel("startup-window heat-flux mean")
     ax1.set_title("Finite-difference conditioning")
     ax1.grid(True, axis="y", alpha=0.25)
     metrics = payload["metrics"]
@@ -312,7 +388,8 @@ def audit_figure(payload: dict[str, Any]) -> plt.Figure:
             f"response/base: {float(metrics['response_fraction']):.3f}",
             f"repeat rel. err.: {float(metrics['repeatability_relative_error']):.1e}",
             f"max CV/trend: {float(metrics['max_window_cv']):.3f}/{float(metrics['max_window_trend']):.3f}",
-            f"observable gate: {'PASS' if payload['passed'] else 'BLOCKED'}",
+            f"startup gate: {'PASS' if payload['passed'] else 'BLOCKED'}",
+            f"transport gate: {'PASS' if payload['transport_average_gate'] else 'not claimed'}",
             f"gradient claim: {'PASS' if gates.get('vmec_boozer_gradient', False) else 'not claimed'}",
         ]
     )
@@ -326,7 +403,7 @@ def audit_figure(payload: dict[str, Any]) -> plt.Figure:
         fontsize=9,
         bbox={"facecolor": "white", "edgecolor": "#cccccc", "alpha": 0.9, "boxstyle": "round,pad=0.35"},
     )
-    fig.suptitle("Nonlinear-window finite-difference audit", y=1.04, fontsize=14, fontweight="bold")
+    fig.suptitle("Nonlinear startup-window finite-difference audit", y=1.04, fontsize=14, fontweight="bold")
     return fig
 
 

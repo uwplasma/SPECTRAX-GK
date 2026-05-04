@@ -1,7 +1,7 @@
 {
-  "case": "mode21_qh_vmec_boozer_imported_geometry_compact_nonlinear_window",
+  "case": "mode21_qh_vmec_boozer_imported_geometry_compact_startup_window",
   "case_name": "nfp4_QH_warm_start",
-  "claim_level": "vmec_boozer_geometry_perturbed_production_nonlinear_observable_fd_path_not_optimization_claim",
+  "claim_level": "vmec_boozer_geometry_perturbed_startup_plumbing_fd_audit_not_transport_average",
   "diagnostics": {
     "forward_backward_same_sign": false,
     "observable_ordered_response": false
@@ -14,7 +14,7 @@
     "window_cv": true,
     "window_trend": true
   },
-  "kind": "vmec_boozer_nonlinear_window_finite_difference_audit",
+  "kind": "vmec_boozer_nonlinear_startup_finite_difference_audit",
   "metrics": {
     "backward_dq_dparameter": 2.934990035699126e-07,
     "central_fd_dq_dparameter": 1.2089961827296324e-07,
@@ -26,7 +26,7 @@
     "repeatability_relative_error": 0.0,
     "response_fraction": 0.04008881189273438
   },
-  "next_action": "Use this only as a VMEC/Boozer-perturbed production nonlinear-window observable FD audit. Promoted nonlinear stellarator optimization still requires converged nonlinear windows, optimized-equilibrium audits, and a validated gradient/adjoint strategy.",
+  "next_action": "Use this only as a VMEC/Boozer-perturbed startup-response plumbing FD audit. Promoted nonlinear stellarator optimization still requires long post-transient running-average heat-flux windows, optimized-equilibrium audits, and a validated gradient/adjoint strategy.",
   "parameter_name": "Rcos_mid_surface_m1",
   "passed": true,
   "perturbation_step": 1e-05,
@@ -345,5 +345,75 @@
     "min_response_fraction": 0.03,
     "repeatability_rtol": 1e-06
   },
-  "vmec_boozer_production_nonlinear_observable_fd_path_gate": true
+  "transport_average_gate": false,
+  "transport_average_requirements": {
+    "passed": false,
+    "requirements": {
+      "max_running_mean_rel_change": 0.05,
+      "min_abs_mean_heat_flux": 1e-06,
+      "min_post_transient_samples": 64,
+      "min_total_time": 50.0,
+      "transient_time": 20.0
+    },
+    "runs": [
+      {
+        "gates": {
+          "mean_heat_flux_above_noise_floor": false,
+          "post_transient_samples": false,
+          "running_mean_converged": false,
+          "total_time": false
+        },
+        "label": "minus",
+        "passed": false,
+        "post_transient_mean": null,
+        "post_transient_samples": 0,
+        "running_mean_rel_change": null,
+        "total_time": 0.03000000142492354
+      },
+      {
+        "gates": {
+          "mean_heat_flux_above_noise_floor": false,
+          "post_transient_samples": false,
+          "running_mean_converged": false,
+          "total_time": false
+        },
+        "label": "base",
+        "passed": false,
+        "post_transient_mean": null,
+        "post_transient_samples": 0,
+        "running_mean_rel_change": null,
+        "total_time": 0.03000000142492354
+      },
+      {
+        "gates": {
+          "mean_heat_flux_above_noise_floor": false,
+          "post_transient_samples": false,
+          "running_mean_converged": false,
+          "total_time": false
+        },
+        "label": "plus",
+        "passed": false,
+        "post_transient_mean": null,
+        "post_transient_samples": 0,
+        "running_mean_rel_change": null,
+        "total_time": 0.03000000142492354
+      },
+      {
+        "gates": {
+          "mean_heat_flux_above_noise_floor": false,
+          "post_transient_samples": false,
+          "running_mean_converged": false,
+          "total_time": false
+        },
+        "label": "base_repeat",
+        "passed": false,
+        "post_transient_mean": null,
+        "post_transient_samples": 0,
+        "running_mean_rel_change": null,
+        "total_time": 0.03000000142492354
+      }
+    ]
+  },
+  "vmec_boozer_production_nonlinear_observable_fd_path_gate": false,
+  "vmec_boozer_startup_nonlinear_plumbing_fd_path_gate": true
 }

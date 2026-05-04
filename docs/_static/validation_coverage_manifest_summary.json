@@ -209,7 +209,7 @@
       "n_artifacts": 20,
       "n_fast_tests": 5,
       "n_next_tests": 4,
-      "n_numerics_contracts": 6,
+      "n_numerics_contracts": 7,
       "n_physics_contracts": 7,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/solver_objective_gradients.py",

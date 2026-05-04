@@ -1,7 +1,7 @@
 {
   "base_tprim": 2.49,
-  "case": "compact_cyclone_production_nonlinear_window",
-  "claim_level": "production_nonlinear_window_observable_fd_path_not_vmec_boozer_gradient_claim",
+  "case": "compact_cyclone_startup_nonlinear_window",
+  "claim_level": "startup_transient_nonlinear_plumbing_fd_audit_not_transport_average",
   "gates": {
     "finite_outputs": true,
     "monotonic_drive_response": true,
@@ -10,7 +10,7 @@
     "window_cv": true,
     "window_trend": true
   },
-  "kind": "nonlinear_window_finite_difference_audit",
+  "kind": "nonlinear_startup_window_finite_difference_audit",
   "metrics": {
     "backward_dq_dtprim": 3.3048662896647034e-10,
     "central_fd_dq_dtprim": 3.3079619696473665e-10,
@@ -21,10 +21,10 @@
     "repeatability_relative_error": 0.0,
     "response_fraction": 0.11085605870343603
   },
-  "next_action": "Promote this only as a production nonlinear-window observable and FD-conditioning audit. Full stellarator transport-gradient claims still require VMEC/Boozer perturbations, optimized-equilibrium nonlinear windows, and convergence/repeatability gates.",
+  "next_action": "Use this only as a compact startup-response plumbing and FD-conditioning audit. Meaningful nonlinear heat-flux claims require long post-transient simulations, running-average convergence, block/window stability, and comparison against the tracked long-window nonlinear reference gates before optimization or manuscript use.",
   "passed": true,
   "perturbation_step": 0.18,
-  "production_nonlinear_observable_fd_path_gate": true,
+  "production_nonlinear_observable_fd_path_gate": false,
   "production_nonlinear_window_gradient_gate": false,
   "runs": [
     {
@@ -624,11 +624,81 @@
       }
     }
   ],
+  "startup_nonlinear_plumbing_fd_path_gate": true,
   "tail_fraction": 0.3,
   "thresholds": {
     "max_window_cv": 0.15,
     "max_window_trend": 0.4,
     "min_response_fraction": 0.03,
     "repeatability_rtol": 1e-06
+  },
+  "transport_average_gate": false,
+  "transport_average_requirements": {
+    "passed": false,
+    "requirements": {
+      "max_running_mean_rel_change": 0.05,
+      "min_abs_mean_heat_flux": 1e-06,
+      "min_post_transient_samples": 64,
+      "min_total_time": 50.0,
+      "transient_time": 20.0
+    },
+    "runs": [
+      {
+        "gates": {
+          "mean_heat_flux_above_noise_floor": false,
+          "post_transient_samples": false,
+          "running_mean_converged": false,
+          "total_time": false
+        },
+        "label": "minus",
+        "passed": false,
+        "post_transient_mean": null,
+        "post_transient_samples": 0,
+        "running_mean_rel_change": null,
+        "total_time": 0.6299996878951788
+      },
+      {
+        "gates": {
+          "mean_heat_flux_above_noise_floor": false,
+          "post_transient_samples": false,
+          "running_mean_converged": false,
+          "total_time": false
+        },
+        "label": "base",
+        "passed": false,
+        "post_transient_mean": null,
+        "post_transient_samples": 0,
+        "running_mean_rel_change": null,
+        "total_time": 0.6299996878951788
+      },
+      {
+        "gates": {
+          "mean_heat_flux_above_noise_floor": false,
+          "post_transient_samples": false,
+          "running_mean_converged": false,
+          "total_time": false
+        },
+        "label": "plus",
+        "passed": false,
+        "post_transient_mean": null,
+        "post_transient_samples": 0,
+        "running_mean_rel_change": null,
+        "total_time": 0.6299996878951788
+      },
+      {
+        "gates": {
+          "mean_heat_flux_above_noise_floor": false,
+          "post_transient_samples": false,
+          "running_mean_converged": false,
+          "total_time": false
+        },
+        "label": "base_repeat",
+        "passed": false,
+        "post_transient_mean": null,
+        "post_transient_samples": 0,
+        "running_mean_rel_change": null,
+        "total_time": 0.6299996878951788
+      }
+    ]
   }
 }

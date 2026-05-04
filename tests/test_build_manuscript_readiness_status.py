@@ -155,7 +155,9 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(tmp_path: Pat
         "docs/_static/nonlinear_window_fd_audit.json",
         {
             "passed": True,
-            "production_nonlinear_observable_fd_path_gate": True,
+            "startup_nonlinear_plumbing_fd_path_gate": True,
+            "transport_average_gate": False,
+            "production_nonlinear_observable_fd_path_gate": False,
             "production_nonlinear_window_gradient_gate": False,
             "metrics": {
                 "response_fraction": 0.11,
@@ -170,7 +172,9 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(tmp_path: Pat
         "docs/_static/vmec_boozer_nonlinear_window_fd_audit.json",
         {
             "passed": True,
-            "vmec_boozer_production_nonlinear_observable_fd_path_gate": True,
+            "vmec_boozer_startup_nonlinear_plumbing_fd_path_gate": True,
+            "transport_average_gate": False,
+            "vmec_boozer_production_nonlinear_observable_fd_path_gate": False,
             "production_nonlinear_window_gradient_gate": False,
             "metrics": {
                 "response_fraction": 0.04,
@@ -226,15 +230,21 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(tmp_path: Pat
     )
     assert (
         lanes["Production solver-objective geometry gradients"]["key_metrics"][
-            "production_nonlinear_observable_fd_path_gate"
+            "startup_nonlinear_plumbing_fd_path_gate"
         ]
         is True
     )
     assert (
         lanes["Production solver-objective geometry gradients"]["key_metrics"][
-            "production_nonlinear_observable_response_fraction"
+            "startup_nonlinear_plumbing_response_fraction"
         ]
         == 0.11
+    )
+    assert (
+        lanes["Production solver-objective geometry gradients"]["key_metrics"][
+            "nonlinear_transport_average_gate"
+        ]
+        is False
     )
     assert (
         "docs/_static/nonlinear_window_fd_audit.json"
@@ -246,15 +256,21 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(tmp_path: Pat
     )
     assert (
         lanes["Production solver-objective geometry gradients"]["key_metrics"][
-            "vmec_boozer_production_nonlinear_observable_fd_path_gate"
+            "vmec_boozer_startup_nonlinear_plumbing_fd_path_gate"
         ]
         is True
     )
     assert (
         lanes["Production solver-objective geometry gradients"]["key_metrics"][
-            "vmec_boozer_production_nonlinear_response_fraction"
+            "vmec_boozer_startup_nonlinear_response_fraction"
         ]
         == 0.04
+    )
+    assert (
+        lanes["Production solver-objective geometry gradients"]["key_metrics"][
+            "vmec_boozer_nonlinear_transport_average_gate"
+        ]
+        is False
     )
     assert (
         "docs/_static/vmec_boozer_nonlinear_window_fd_audit.json"

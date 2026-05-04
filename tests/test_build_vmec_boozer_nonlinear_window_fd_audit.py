@@ -94,7 +94,9 @@ def test_build_vmec_boozer_audit_payload_passes_conditioned_response() -> None:
     )
 
     assert payload["passed"] is True
-    assert payload["vmec_boozer_production_nonlinear_observable_fd_path_gate"] is True
+    assert payload["vmec_boozer_startup_nonlinear_plumbing_fd_path_gate"] is True
+    assert payload["transport_average_gate"] is False
+    assert payload["vmec_boozer_production_nonlinear_observable_fd_path_gate"] is False
     assert payload["production_nonlinear_window_gradient_gate"] is False
     assert payload["gates"]["geometry_perturbation_resolved"] is True
     assert payload["metrics"]["central_fd_dq_dparameter"] > 0.0
@@ -151,5 +153,6 @@ def test_main_writes_artifacts_without_running_solver(monkeypatch, tmp_path: Pat
     assert meta["passed"] is True
     assert (
         meta["claim_level"]
-        == "vmec_boozer_geometry_perturbed_production_nonlinear_observable_fd_path_not_optimization_claim"
+        == "vmec_boozer_geometry_perturbed_startup_plumbing_fd_audit_not_transport_average"
     )
+    assert meta["transport_average_gate"] is False
