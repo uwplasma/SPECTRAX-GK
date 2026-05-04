@@ -1859,3 +1859,27 @@ Exit gate:
     grid/window/hypercollision protocol. The next quasilinear-calibration step
     should prioritize another holdout candidate or a redesigned QH convergence
     campaign rather than promoting this result.
+- Broader external-VMEC convergence correction and DSHAPE holdout:
+  - after QH/CTH-like grid failures, ran a five-point linear candidate screen
+    over additional ``vmec_jax`` equilibria at ``Nx = Ny = 48``, ``Nz = 32``,
+    ``Nl = 4``, ``Nm = 8`` and ``ky = 0.095..0.476``;
+  - strongest finite unstable candidates were DSHAPE
+    (``gamma = 0.096`` at ``ky = 0.476``), circular tokamak
+    (``gamma = 0.089``), and ITER-model (``gamma = 0.089``); QI/QA/QH
+    reference fixtures were stable or failed the current geometry screen;
+  - ran DSHAPE nonlinear ``t = 150`` pilots at ``32x32x24``, ``48x48x32``,
+    and ``64x64x40``; the low-to-mid gate passed but the ``t = 150`` mid-to-high
+    gate was close and failed (common-window difference ``0.201`` and
+    least-window difference ``0.262``);
+  - extended ``48x48x32`` and ``64x64x40`` DSHAPE from restart to ``t = 250``;
+    the high-grid gate then passed with common-window means ``16.07`` and
+    ``18.48`` (relative difference ``0.139``) and least-window means ``15.86``
+    and ``17.66`` (relative difference ``0.108``);
+  - generated
+    ``docs/_static/quasilinear_vmec_dshape_linear_spectrum.{png,pdf,json}``,
+    ``docs/_static/external_vmec_dshape_*`` nonlinear pilot/gate artifacts, and
+    ``docs/_static/external_vmec_candidate_linear_screen.csv``;
+  - conclusion: DSHAPE is the first external-VMEC nonlinear transport holdout
+    candidate from this correction campaign that passes time-window and
+    high-grid convergence. Next step is calibration-report admission and a
+    quasilinear model gate; QH and CTH-like remain excluded.

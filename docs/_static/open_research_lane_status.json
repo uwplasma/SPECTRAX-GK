@@ -71,6 +71,7 @@
       "key_metrics": {
         "calibration_report_passed": false,
         "cth_like_external_vmec_converged": false,
+        "dshape_external_vmec_t250_converged": true,
         "holdout_cases": [
           "cyclone_miller_long_window",
           "hsx_nonlinear_window",
@@ -83,10 +84,11 @@
         "validated_inputs_passed": true
       },
       "lane": "Nonlinear holdouts for quasilinear absolute-flux promotion",
-      "next_action": "Add at least one more grid/window-converged nonlinear holdout; keep QH and CTH-like external VMEC excluded until their common-window and grid-refinement gates pass.",
+      "next_action": "Admit the passed D-shaped tokamak external-VMEC t=250 nonlinear holdout into the quasilinear calibration report, then keep QH and CTH-like excluded until their common-window and grid-refinement gates pass.",
       "primary_artifacts": [
         "docs/_static/quasilinear_validated_calibration_inputs.json",
         "docs/_static/quasilinear_stellarator_train_holdout_report.json",
+        "docs/_static/external_vmec_dshape_t250_high_grid_convergence_gate.json",
         "docs/_static/external_vmec_qh_grid_convergence_gate.json",
         "docs/_static/external_vmec_qh_high_grid_convergence_gate.json",
         "docs/_static/external_vmec_cth_like_grid_convergence_gate.json"
