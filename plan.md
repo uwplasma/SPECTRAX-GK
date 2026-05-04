@@ -987,15 +987,18 @@ Exit gate:
 - Completed reduced-grid nfp4 QH nonlinear pilots:
   - local `Nx=Ny=32`, `Nz=24`, `Nl=4`, `Nm=8`, `dt=0.05` run is finite to `t=5` and `t=20`;
   - the `t=20` late-half window has mean heat flux `1.78e-4`, final heat flux `3.58e-4`, and a positive late-half heat-flux slope of about `3.1e-5` per time unit;
-  - this is a stability/geometry-feasibility result only, not a saturated nonlinear transport window and not a calibration point.
+  - follow-up QA extended the same reduced-grid QH lane to `t=150`; the late
+    window is no longer startup-scale (mean heat flux about `19.6`), but QH is
+    still a feasibility result until a grid/window convergence gate passes.
 - Completed additional full-`ky` external-VMEC linear feasibility scans:
   - CTH-like has a useful unstable high-`ky` branch (`gamma=-0.0227,-0.0161,+0.00418,+0.0114,+0.0309,+0.0488`);
   - shaped tokamak remains stable over the sampled grid (`gamma=-0.0799,-0.0692,-0.0488,-0.0396,-0.0292,-0.0186`);
   - tracked `docs/_static/quasilinear_vmec_jax_cth_like_linear_spectrum.{png,pdf,json}` plus source CSV companions as another linear-feasibility artifact.
 - Current next best steps:
   - run CTH-like as the next reduced-grid nonlinear pilot because its linear branch is stronger than QH on the current grid and it may saturate more clearly;
-  - run the nfp4 QH nonlinear lane on office or a bounded local restart to a longer time/window only if it remains under the simulation time cap and produces signs of saturation;
-  - after a saturated external-VMEC nonlinear window exists, add a QH/CTH/shape spectrum-shape gate and only then consider extending the leave-one-geometry-out quasilinear calibration set.
+  - after saturated external-VMEC nonlinear windows exist, add QH/CTH/shape
+    grid/window convergence and spectrum-shape gates before extending the
+    leave-one-geometry-out quasilinear calibration set.
 - Completed CTH-like reduced-grid nonlinear pilots:
   - local `Nx=Ny=32`, `Nz=24`, `Nl=4`, `Nm=8`, `dt=0.05` run is finite to `t=20` and `t=50`;
   - the `t=20` late-half heat-flux mean is `3.76e-4`, but the positive slope `8.33e-5` per time unit shows startup/growth rather than saturation;
@@ -1800,3 +1803,27 @@ Exit gate:
     nonlinear stellarator optimization claim;
   - keep the current reduced optimization figures scoped to objective-plumbing
     and UQ validation.
+- Nonlinear transport time-horizon QA and QH long-window extension:
+  - audited the earlier nonlinear artifacts after the heat-flux scale concern:
+    the compact Cyclone FD audit reaches only ``t <= 0.64`` and the VMEC/Boozer
+    FD audit reaches only ``t <= 0.032``, so both remain startup plumbing checks;
+  - identified the nfp4 QH external-VMEC nonlinear pilot as the earlier case that
+    genuinely needed a longer simulation rather than only demotion: the original
+    ``t = 20`` run was finite but still startup/growth scale with final heat flux
+    ``3.58e-4``;
+  - ran a targeted reduced-grid QH extension locally at ``Nx = Ny = 32``,
+    ``Nz = 24``, ``Nl = 4``, ``Nm = 8``, ``dt = 0.05`` to ``t = 100`` and then
+    continued from restart to ``t = 150``;
+  - the ``t = 150`` trace is finite and reaches a meaningful late heat-flux
+    level: the least-trending window is ``t = 77.55..150.00`` with mean heat
+    flux ``19.64``, standard deviation ``1.14``, and relative trend
+    ``-3.25e-4`` per time unit;
+  - generated
+    ``docs/_static/external_vmec_qh_nonlinear_t150_pilot.{png,pdf,json,traces.csv}``
+    and ``docs/_static/nonlinear_transport_time_horizon_audit.{png,pdf,json,csv}``;
+  - the audit separates release transport gates, long feasibility pilots,
+    failed convergence results, startup plumbing audits, and reduced-envelope
+    estimators so startup/noise-floor heat fluxes cannot be confused with
+    post-transient nonlinear transport averages;
+  - QH is now a useful long-window feasibility candidate but remains outside
+    quasilinear calibration until a grid/window convergence gate passes.

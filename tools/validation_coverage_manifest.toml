@@ -544,6 +544,7 @@ physics_contracts = [
   "multi-equilibrium reduced nonlinear-window estimator gradients may be validated as bounded differentiability gates, but not promoted as converged nonlinear heat-flux optimization claims",
   "compact nonlinear finite-difference audits may validate startup plumbing and conditioning, but must not be promoted as transport heat-flux averages",
   "production nonlinear heat-flux claims require long post-transient running-average windows, block/window stability, repeatability, and VMEC/Boozer optimized-equilibrium gradient gates",
+  "the nonlinear time-horizon audit must classify startup, reduced-estimator, feasibility, and release transport artifacts separately",
 ]
 numerics_contracts = [
   "implicit eigenpair sensitivities match nearest-branch central finite differences",
@@ -553,6 +554,7 @@ numerics_contracts = [
   "startup nonlinear heat-flux window finite differences require repeatability, monotonic drive response, bounded coefficient of variation, bounded trend, and resolved response fraction",
   "production nonlinear heat-flux averages additionally require a discarded transient, enough post-transient samples, cumulative running-mean convergence, stable independent late blocks, and finite flux above the startup/noise floor",
   "VMEC/Boozer nonlinear finite-difference startup audits require finite imported-geometry nonlinear runs, deterministic repeatability, resolved geometry perturbation, and resolved central response; forward/backward asymmetry is diagnostic until a long-window gradient gate is promoted",
+  "long external-VMEC feasibility traces require a separate grid/window convergence gate before entering quasilinear calibration",
 ]
 fast_tests = [
   "tests/test_solver_objective_gradients.py",
@@ -560,6 +562,7 @@ fast_tests = [
   "tests/test_build_vmec_boozer_gradient_holdout_matrix.py",
   "tests/test_build_nonlinear_window_fd_audit.py",
   "tests/test_build_vmec_boozer_nonlinear_window_fd_audit.py",
+  "tests/test_build_nonlinear_transport_horizon_audit.py",
 ]
 artifact_paths = [
   "docs/_static/solver_objective_gradient_gate.json",
@@ -582,6 +585,10 @@ artifact_paths = [
   "docs/_static/nonlinear_window_fd_audit.png",
   "docs/_static/vmec_boozer_nonlinear_window_fd_audit.json",
   "docs/_static/vmec_boozer_nonlinear_window_fd_audit.png",
+  "docs/_static/external_vmec_qh_nonlinear_t150_pilot.json",
+  "docs/_static/external_vmec_qh_nonlinear_t150_pilot.png",
+  "docs/_static/nonlinear_transport_time_horizon_audit.json",
+  "docs/_static/nonlinear_transport_time_horizon_audit.png",
 ]
 next_tests = [
   "extend the reduced nonlinear-window estimator-gradient matrix to optimized-equilibrium holdouts before broad stellarator transport-gradient claims",

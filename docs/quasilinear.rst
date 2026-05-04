@@ -982,13 +982,21 @@ nonlinear windows but do not validate an absolute quasilinear saturation rule.
    :width: 100%
 
 A reduced-grid nonlinear QH pilot has also been run locally at
-``Nx = Ny = 32``, ``Nz = 24``, ``Nl = 4``, ``Nm = 8``, ``dt = 0.05``, and
-``t = 20`` using the same VMEC fixture. It remains finite, with late-half mean
-heat flux about ``1.78e-4`` and final heat flux about ``3.58e-4``, but the
-late-half heat-flux slope is still positive (about ``3.1e-5`` per time unit).
-That means the run is a stability and geometry-feasibility pilot only. It is
-not a saturated nonlinear transport window and is not included in the
-quasilinear calibration reports.
+``Nx = Ny = 32``, ``Nz = 24``, ``Nl = 4``, ``Nm = 8``, and ``dt = 0.05`` using
+the same VMEC fixture. The original ``t = 20`` trace was intentionally not
+promoted: its late-half mean heat flux was only about ``1.78e-4`` and still
+growing. The lane has now been extended from the saved nonlinear state to
+``t = 150``. The longer trace reaches a meaningful post-transient heat-flux
+level: the least-trending window is ``t = 77.55`` to ``150.00``, with mean heat
+flux about ``19.6``, standard deviation about ``1.14``, and relative linear
+trend about ``-3.25e-4`` per time unit. This closes the specific concern that
+the QH pilot was only measuring a startup/noise-floor heat flux. It is still a
+reduced-grid feasibility result, not a calibrated transport holdout, until a
+grid/window convergence gate passes.
+
+.. image:: _static/external_vmec_qh_nonlinear_t150_pilot.png
+   :alt: External nfp4 QH VMEC nonlinear feasibility pilot
+   :width: 100%
 
 The same reduced-grid protocol was then applied to the CTH-like fixture and
 extended on the office GPU to ``t = 150``. The run remains finite and develops a
@@ -1038,6 +1046,20 @@ physically informative, as emphasized by W7-X heat-flux time-series analyses
 
 .. image:: _static/external_vmec_cth_like_grid_convergence_gate.png
    :alt: External CTH-like VMEC nonlinear grid convergence gate
+   :width: 100%
+
+The nonlinear time-horizon audit below is a guardrail for the manuscript and
+documentation. It classifies archived heat-flux artifacts by their actual time
+coverage and claim level. The long matched nonlinear gates for Cyclone,
+Cyclone Miller, KBM, W7-X, and HSX pass the current release comparison
+envelopes. The QH and CTH-like external-VMEC traces are long feasibility
+pilots that still need convergence gates. The compact finite-difference audits
+remain startup plumbing checks, and the differentiable nonlinear-window
+optimization examples remain reduced-envelope estimators rather than production
+nonlinear transport averages.
+
+.. image:: _static/nonlinear_transport_time_horizon_audit.png
+   :alt: Nonlinear transport time-horizon audit
    :width: 100%
 
 The normalized W7-X spectrum-shape gate does pass when the linear
