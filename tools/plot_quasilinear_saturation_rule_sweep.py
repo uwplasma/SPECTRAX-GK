@@ -71,6 +71,14 @@ DEFAULT_CASES = (
         nonlinear_summary=ROOT / "docs/_static/nonlinear_w7x_gate_summary.json",
         shape_gate=ROOT / "docs/_static/quasilinear_w7x_spectrum_shape_gate.json",
     ),
+    SaturationCase(
+        case="dshape_external_vmec_t250_window",
+        split="holdout",
+        geometry="dshape_external_vmec",
+        spectrum=ROOT / "docs/_static/quasilinear_vmec_dshape_linear_spectrum_scan.quasilinear_spectrum.csv",
+        nonlinear_summary=ROOT / "docs/_static/external_vmec_dshape_t250_n64_transport_window.json",
+        shape_gate=None,
+    ),
 )
 
 
@@ -78,6 +86,14 @@ RULE_LABELS = {
     "positive_mixing_length": r"$\max(\gamma,0)\,\hat Q/k_\perp^2$",
     "linear_weight": r"$\hat Q$",
     "absolute_growth_mixing_length": r"$|\gamma|\,\hat Q/k_\perp^2$",
+}
+
+CASE_LABELS = {
+    "cyclone_long_window": "Cyclone train",
+    "cyclone_miller_long_window": "Cyclone Miller",
+    "hsx_nonlinear_window": "HSX",
+    "w7x_nonlinear_window": "W7-X",
+    "dshape_external_vmec_t250_window": "D-shaped VMEC",
 }
 
 
@@ -98,6 +114,10 @@ def _load_table(path: Path) -> np.ndarray:
     if data.shape == ():
         data = np.asarray([data], dtype=data.dtype)
     return data
+
+
+def _case_label(case: object) -> str:
+    return CASE_LABELS.get(str(case), str(case).replace("_", " "))
 
 
 def _required_column(data: np.ndarray, path: Path, column: str) -> np.ndarray:
@@ -363,7 +383,7 @@ def write_saturation_rule_sweep_figure(report: dict[str, Any], *, out: str | Pat
     cases = list(report["cases"])
     rules = dict(report["rules"])
     null_baseline = dict(report["null_training_mean_baseline"])
-    labels = [str(row["case"]) for row in cases]
+    labels = [_case_label(row["case"]) for row in cases]
     y = np.arange(len(labels))
 
     set_plot_style()
@@ -413,7 +433,7 @@ def write_saturation_rule_sweep_figure(report: dict[str, Any], *, out: str | Pat
     ax0.set_xlabel("absolute relative error after Cyclone scale fit")
     ax0.set_title("Absolute-flux transfer")
     ax0.grid(True, axis="x", alpha=0.25)
-    ax0.legend(loc="upper right", fontsize=8)
+    ax0.legend(loc="lower left", fontsize=8, framealpha=0.92)
 
     shape_tv = np.asarray([np.nan if row.get("shape_tv") is None else float(row["shape_tv"]) for row in cases])
     shape_cos = np.asarray([np.nan if row.get("shape_cosine") is None else float(row["shape_cosine"]) for row in cases])
@@ -421,6 +441,17 @@ def write_saturation_rule_sweep_figure(report: dict[str, Any], *, out: str | Pat
     width = 0.38
     ax1.bar(x - width / 2.0, shape_tv, width=width, label="TV distance", color="#f97316")
     ax1.bar(x + width / 2.0, 1.0 - shape_cos, width=width, label="1 - cosine", color="#2a9d8f")
+    for xi, tv, cosine in zip(x, shape_tv, shape_cos, strict=True):
+        if not np.isfinite(tv) and not np.isfinite(cosine):
+            ax1.text(
+                xi,
+                0.012,
+                "shape gate\npending",
+                ha="center",
+                va="bottom",
+                fontsize=8,
+                color="0.35",
+            )
     ax1.axhline(0.2, color="#f97316", linestyle=":", linewidth=1.2)
     ax1.axhline(0.05, color="#2a9d8f", linestyle=":", linewidth=1.2)
     ax1.set_xticks(x, labels, rotation=25, ha="right")

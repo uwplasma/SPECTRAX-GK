@@ -498,7 +498,8 @@ Train and holdout points must also be tied to a passed nonlinear validation
 gate before they can be used in calibration. The audit tool
 ``tools/check_quasilinear_calibration_inputs.py`` enforces that rule by matching
 each point's ``nonlinear_artifact`` to tracked nonlinear gate metadata. It
-passes for the current Cyclone, Cyclone Miller, HSX, and W7-X calibration
+passes for the current Cyclone, Cyclone Miller, HSX, W7-X, and D-shaped
+external-VMEC calibration
 inputs, and it would fail if an exploratory or non-converged pilot such as the
 CTH-like external-VMEC feasibility trace were inserted as a train/holdout
 point.
@@ -715,29 +716,32 @@ is retained as a negative absolute-flux result and should not be presented as a
 validated W7-X transport model.
 
 The manuscript-facing combined holdout panel puts Cyclone training, Cyclone
-Miller holdout, HSX holdout, and W7-X holdout in one report:
+Miller holdout, HSX holdout, W7-X holdout, and the admitted D-shaped
+external-VMEC holdout in one report:
 
 .. image:: _static/quasilinear_stellarator_train_holdout.png
-   :alt: Combined quasilinear train/holdout calibration including HSX and W7-X
+   :alt: Combined quasilinear train/holdout calibration including HSX, W7-X, and D-shaped external VMEC
    :width: 100%
 
 This combined report is also ``calibration_dataset`` and ``passed = false``.
 It is the clearest current figure for the absolute-flux story: one-constant
 mixing length does not transfer from Cyclone to shaped tokamak and stellarator
-nonlinear windows. The result is useful precisely because it blocks premature
-absolute quasilinear transport claims and motivates the next saturation-model
-sweep.
+nonlinear windows. The D-shaped external-VMEC point is included only after its
+``t = 250`` high-grid gate passed; its common-window nonlinear heat-flux mean
+is about ``18.5``, while the Cyclone-fitted mixing-length estimate is about
+``3.49e3``. The result is useful precisely because it blocks premature absolute
+quasilinear transport claims and motivates the next saturation-model sweep.
 
 Saturation-rule sweep
 ---------------------
 
 The first saturation-rule sweep compares three one-scalar intensity rules using
 the same train/holdout split: fit one multiplicative scale on Cyclone and score
-Cyclone Miller, HSX, and W7-X as holdouts. The tested rules are the current
-positive-growth mixing-length rule, the raw linear heat-flux weight, and an
-absolute-growth mixing-length diagnostic that gives stable branches nonzero
-intensity. The last rule is included only as a diagnostic stress test; it is not
-a validated physical saturation rule.
+Cyclone Miller, HSX, W7-X, and the D-shaped external-VMEC case as holdouts. The
+tested rules are the current positive-growth mixing-length rule, the raw linear
+heat-flux weight, and an absolute-growth mixing-length diagnostic that gives
+stable branches nonzero intensity. The last rule is included only as a
+diagnostic stress test; it is not a validated physical saturation rule.
 
 .. code-block:: bash
 
@@ -745,22 +749,23 @@ a validated physical saturation rule.
      --out docs/_static/quasilinear_saturation_rule_sweep.png
 
 .. image:: _static/quasilinear_saturation_rule_sweep.png
-   :alt: Quasilinear saturation-rule sweep across Cyclone, Cyclone Miller, HSX, and W7-X
+   :alt: Quasilinear saturation-rule sweep across Cyclone, Cyclone Miller, HSX, W7-X, and D-shaped external VMEC
    :width: 100%
 
 All tested one-scalar rules fail the held-out absolute-flux gate. The current
 positive-growth mixing-length rule has holdout mean absolute relative error
-about ``205``; the raw linear-weight rule improves that to about ``25`` but is
+about ``201``; the raw linear-weight rule improves that to about ``21`` but is
 still far outside the ``0.35`` gate; the absolute-growth diagnostic is worse,
-with holdout mean error about ``510``. The figure also reports a
+with holdout mean error about ``446``. The figure also reports a
 training-mean null baseline using the Cyclone nonlinear heat-flux level for the
-holdouts; that null gives holdout mean relative error about ``0.372``. It is
+holdouts; that null gives holdout mean relative error about ``0.439``. It is
 not a quasilinear model, but it is a necessary sanity check: no calibrated
 saturation rule should be promoted unless it beats this null baseline as well
 as the linear-weight baseline. The JSON companion carries the same
 ``promotion_gate`` and currently has no accepted rules. This narrows the next
 research task: the linear spectrum-shape diagnostics can pass for HSX, W7-X,
-and Cyclone Miller, but absolute-flux prediction needs a richer
+and Cyclone Miller, while the D-shaped point currently has no nonlinear
+spectrum-shape artifact. Absolute-flux prediction needs a richer
 saturation/intensity model than any one-scalar Cyclone fit tested here.
 
 Shape-aware saturation diagnostic
@@ -1010,9 +1015,10 @@ Extending the ``48x48x32`` and ``64x64x40`` runs from ``t = 150`` to
 selected least-trending-window means are about ``15.9`` and ``17.7`` with
 relative difference ``0.108``. Both are below the ``0.15`` threshold, and the
 trend/CV/sample-count gates also pass. D-shaped tokamak is therefore the first
-external-VMEC nonlinear transport holdout candidate from this campaign; it
-still needs calibration-report admission before any absolute quasilinear-flux
-model is promoted.
+external-VMEC nonlinear transport holdout from this campaign admitted into the
+quasilinear calibration report. Admission does not promote the current
+absolute-flux model: the Cyclone-trained one-constant mixing-length estimate
+overpredicts this D-shaped holdout by about two orders of magnitude.
 
 .. image:: _static/external_vmec_dshape_grid_convergence_gate.png
    :alt: External D-shaped tokamak VMEC nonlinear low-to-mid-grid convergence gate

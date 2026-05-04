@@ -7,6 +7,7 @@ import argparse
 import json
 import math
 from pathlib import Path
+import textwrap
 from typing import Any
 import sys
 
@@ -24,6 +25,14 @@ SPLIT_COLORS = {
     "train": "#0f4c81",
     "holdout": "#2a9d8f",
     "audit": "#c44e52",
+}
+
+CASE_LABELS = {
+    "cyclone_long_window": "Cyclone train",
+    "cyclone_miller_long_window": "Cyclone Miller",
+    "hsx_nonlinear_window": "HSX",
+    "w7x_nonlinear_window": "W7-X",
+    "dshape_external_vmec_t250_window": "D-shaped VMEC",
 }
 
 
@@ -69,6 +78,12 @@ def _point_arrays(points: list[dict[str, Any]]) -> tuple[np.ndarray, np.ndarray,
     return predicted, observed, std
 
 
+def _case_label(case: object) -> str:
+    raw = str(case)
+    label = CASE_LABELS.get(raw, raw.replace("_", " "))
+    return textwrap.fill(label, width=22)
+
+
 def calibration_figure(
     report: dict[str, Any],
     *,
@@ -83,7 +98,8 @@ def calibration_figure(
         raise ValueError("no finite calibration points to plot")
 
     set_plot_style()
-    fig, axes = plt.subplots(1, 2, figsize=(12.0, 5.0), constrained_layout=True)
+    fig_height = max(5.2, 0.62 * len(points) + 2.4)
+    fig, axes = plt.subplots(1, 2, figsize=(12.2, fig_height), constrained_layout=True)
     ax = axes[0]
     residual_ax = axes[1]
 
@@ -143,7 +159,7 @@ def calibration_figure(
             linestyle="None",
             label=split,
         )
-        labels.append(str(point["case"]))
+        labels.append(_case_label(point["case"]))
         denom = max(abs(obs), float(report.get("observed_floor", 1.0e-12)))
         rel_errors.append(abs(pred - obs) / denom)
         colors.append(color)
@@ -195,12 +211,12 @@ def calibration_figure(
         residual_ax.set_xscale("log")
         residual_ax.set_xlim(error_floor * 0.7, max(float(np.max(plot_rel)), gate) * 1.5)
         residual_ax.text(
-            0.03,
-            0.04,
+            0.98,
+            0.96,
             f"log error axis; zero errors plotted at {error_floor:.2e}",
             transform=residual_ax.transAxes,
-            ha="left",
-            va="bottom",
+            ha="right",
+            va="top",
             fontsize=8,
             bbox={"boxstyle": "round,pad=0.25", "fc": "white", "ec": "0.75", "alpha": 0.92},
         )
