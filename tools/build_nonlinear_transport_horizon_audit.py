@@ -195,6 +195,7 @@ def _pilot_records(root: Path) -> list[dict[str, Any]]:
     for relative in [
         "docs/_static/external_vmec_qh_nonlinear_t150_pilot.json",
         "docs/_static/external_vmec_qh_nonlinear_t150_n48_pilot.json",
+        "docs/_static/external_vmec_qh_nonlinear_t150_n64_pilot.json",
         "docs/_static/external_vmec_cth_like_nonlinear_t150_pilot.json",
         "docs/_static/external_vmec_cth_like_nonlinear_t150_n48_pilot.json",
     ]:
@@ -219,6 +220,7 @@ def _pilot_records(root: Path) -> list[dict[str, Any]]:
         )
     for relative in [
         "docs/_static/external_vmec_qh_grid_convergence_gate.json",
+        "docs/_static/external_vmec_qh_high_grid_convergence_gate.json",
         "docs/_static/external_vmec_cth_like_grid_convergence_gate.json",
     ]:
         gate_payload = _read_json(root / relative)
