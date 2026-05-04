@@ -195,6 +195,7 @@ artifact_paths = [
   "docs/_static/quasilinear_w7x_train_holdout_report.json",
   "docs/_static/quasilinear_stellarator_train_holdout_report.json",
   "docs/_static/external_vmec_qh_grid_convergence_gate.json",
+  "docs/_static/external_vmec_qh_high_grid_convergence_gate.json",
   "docs/_static/external_vmec_cth_like_grid_convergence_gate.json",
 ]
 next_tests = [
@@ -594,8 +595,12 @@ artifact_paths = [
   "docs/_static/external_vmec_qh_nonlinear_t150_pilot.png",
   "docs/_static/external_vmec_qh_nonlinear_t150_n48_pilot.json",
   "docs/_static/external_vmec_qh_nonlinear_t150_n48_pilot.png",
+  "docs/_static/external_vmec_qh_nonlinear_t150_n64_pilot.json",
+  "docs/_static/external_vmec_qh_nonlinear_t150_n64_pilot.png",
   "docs/_static/external_vmec_qh_grid_convergence_gate.json",
   "docs/_static/external_vmec_qh_grid_convergence_gate.png",
+  "docs/_static/external_vmec_qh_high_grid_convergence_gate.json",
+  "docs/_static/external_vmec_qh_high_grid_convergence_gate.png",
   "docs/_static/nonlinear_transport_time_horizon_audit.json",
   "docs/_static/nonlinear_transport_time_horizon_audit.png",
 ]

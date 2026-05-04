@@ -1843,3 +1843,19 @@ Exit gate:
     ``2.29e-3`` against ``2.0e-3``;
   - conclusion: QH now joins CTH-like as a finite long external-VMEC feasibility
     and negative convergence result, not a quasilinear calibration holdout.
+- QH high-grid follow-up:
+  - ran a bounded office-GPU companion at ``Nx = Ny = 64``, ``Nz = 40``,
+    ``Nl = 4``, ``Nm = 8``, ``dt = 0.05`` to ``t = 150``; wall time was
+    about ``423 s`` and the run stayed finite with final ``Wg = 136.86`` and
+    ``Wphi = 2.20``;
+  - generated
+    ``docs/_static/external_vmec_qh_nonlinear_t150_n64_pilot.{png,pdf,json,traces.csv}``
+    and
+    ``docs/_static/external_vmec_qh_high_grid_convergence_gate.{png,pdf,json,csv}``;
+  - the ``48x48x32`` to ``64x64x40`` gate also fails: common-window means are
+    ``11.58`` and ``6.03``, least-window means are ``12.03`` and ``5.76``, and
+    the symmetric relative differences are ``0.630`` and ``0.704``;
+  - conclusion: QH is not a near-term nonlinear calibration holdout under this
+    grid/window/hypercollision protocol. The next quasilinear-calibration step
+    should prioritize another holdout candidate or a redesigned QH convergence
+    campaign rather than promoting this result.

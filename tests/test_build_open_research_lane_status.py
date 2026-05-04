@@ -120,6 +120,11 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
     )
     _write_json(
         tmp_path,
+        "docs/_static/external_vmec_qh_high_grid_convergence_gate.json",
+        {"gate_report": {"passed": False}},
+    )
+    _write_json(
+        tmp_path,
         "docs/_static/differentiable_geometry_bridge.json",
         {
             "sensitivity": {"max_abs_ad_fd_error": 1.0e-8},
@@ -181,9 +186,9 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
     assert lanes["Nonlinear holdouts for quasilinear absolute-flux promotion"]["key_metrics"][
         "cth_like_external_vmec_converged"
     ] is False
-    assert lanes["Nonlinear holdouts for quasilinear absolute-flux promotion"]["key_metrics"][
-        "qh_external_vmec_converged"
-    ] is False
+    holdout_metrics = lanes["Nonlinear holdouts for quasilinear absolute-flux promotion"]["key_metrics"]
+    assert holdout_metrics["qh_external_vmec_low_to_mid_grid_converged"] is False
+    assert holdout_metrics["qh_external_vmec_mid_to_high_grid_converged"] is False
     profiler = lanes["Profiler-backed nonlinear hot-path optimization"]
     assert profiler["status"] == "partial"
     assert "docs/_static/nonlinear_rhs_profile.json" in profiler["primary_artifacts"]

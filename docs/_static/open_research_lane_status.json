@@ -77,7 +77,8 @@
           "w7x_nonlinear_window"
         ],
         "holdout_points": 3,
-        "qh_external_vmec_converged": false,
+        "qh_external_vmec_low_to_mid_grid_converged": false,
+        "qh_external_vmec_mid_to_high_grid_converged": false,
         "train_points": 1,
         "validated_inputs_passed": true
       },
@@ -87,6 +88,7 @@
         "docs/_static/quasilinear_validated_calibration_inputs.json",
         "docs/_static/quasilinear_stellarator_train_holdout_report.json",
         "docs/_static/external_vmec_qh_grid_convergence_gate.json",
+        "docs/_static/external_vmec_qh_high_grid_convergence_gate.json",
         "docs/_static/external_vmec_cth_like_grid_convergence_gate.json"
       ],
       "status": "open"

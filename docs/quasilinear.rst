@@ -1005,8 +1005,14 @@ late-window mean is about ``11.6`` instead of ``19.8``, and the independently
 selected least-trending means are about ``12.0`` instead of ``19.6``. The
 resulting symmetric relative grid differences are about ``0.523`` on the
 common window and ``0.480`` on the least-trending windows, both above the
-``0.15`` gate. QH therefore becomes a useful negative convergence result, not a
-new quasilinear calibration holdout.
+``0.15`` gate.
+
+The follow-on ``Nx = Ny = 64`` and ``Nz = 40`` run is also finite to
+``t = 150``, but it moves the transport level again instead of confirming the
+``48x48x32`` point: the common-window mean is about ``6.0`` and the
+least-trending mean is about ``5.8``. The mid-to-high-grid symmetric relative
+differences are about ``0.630`` and ``0.704``. QH is therefore a useful
+negative convergence result, not a new quasilinear calibration holdout.
 
 .. image:: _static/external_vmec_qh_nonlinear_t150_n48_pilot.png
    :alt: Higher-grid external nfp4 QH VMEC nonlinear feasibility pilot
@@ -1014,6 +1020,14 @@ new quasilinear calibration holdout.
 
 .. image:: _static/external_vmec_qh_grid_convergence_gate.png
    :alt: External nfp4 QH VMEC nonlinear grid convergence gate
+   :width: 100%
+
+.. image:: _static/external_vmec_qh_nonlinear_t150_n64_pilot.png
+   :alt: High-grid external nfp4 QH VMEC nonlinear feasibility pilot
+   :width: 100%
+
+.. image:: _static/external_vmec_qh_high_grid_convergence_gate.png
+   :alt: External nfp4 QH VMEC nonlinear high-grid convergence gate
    :width: 100%
 
 The same reduced-grid protocol was then applied to the CTH-like fixture and
