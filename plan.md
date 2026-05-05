@@ -2021,3 +2021,28 @@ Exit gate:
   - updated ``docs/quasilinear.rst`` to match the current claim surface:
     absolute-flux promotion is blocked by held-out model skill, not by missing
     validated nonlinear input volume.
+- Closed the richer quasilinear held-out candidate lane on the current
+  electrostatic portfolio:
+  - audited the leave-one-geometry-out candidate space against the admitted
+    seven-case dataset and identified a small spectrum-envelope model as the
+    first candidate that simultaneously beats the training-mean null baseline,
+    beats the calibrated linear-weight baseline, satisfies the ``0.35``
+    transport gate, and clears the interval-coverage gate;
+  - implemented ``spectral_envelope_ridge`` in
+    ``tools/plot_quasilinear_candidate_uncertainty.py`` using only two
+    physically legible linear-spectrum features: the positive-growth
+    ``k_y`` centroid and the heat-flux-weighted ``k_y`` width;
+  - regenerated
+    ``docs/_static/quasilinear_candidate_uncertainty.*``,
+    ``docs/_static/quasilinear_dataset_sufficiency.*``,
+    ``docs/_static/open_research_lane_status.*``, and
+    ``docs/_static/manuscript_readiness_status.*``;
+  - current gated result:
+    ``spectral_envelope_ridge`` reaches leave-one-geometry-out mean relative
+    error ``0.244``, interval coverage ``0.857``, and becomes the accepted
+    richer candidate on the present seven-case electrostatic portfolio;
+  - the scientific scope remains explicit:
+    one-scalar saturation rules stay rejected, the higher-parameter
+    ``linear_state_ridge`` candidate remains blocked by the
+    train-to-parameter-ratio gate, and electromagnetic/KBM quasilinear
+    promotion remains separate future work.

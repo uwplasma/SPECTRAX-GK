@@ -34,6 +34,7 @@ from plot_quasilinear_shape_aware_saturation import (  # noqa: E402
 CANDIDATE_LABELS = {
     "linear_weight": r"$\hat Q$ calibrated",
     "shape_power_law": r"shape power law",
+    "spectral_envelope_ridge": r"spectral-envelope ridge",
     "linear_state_ridge": r"linear-state ridge",
 }
 
@@ -42,6 +43,11 @@ STATE_FEATURE_NAMES = (
     "log_abs_growth_mixing_length",
     "unstable_weight_fraction",
     "log_weighted_ky_centroid",
+)
+
+SPECTRAL_ENVELOPE_FEATURE_NAMES = (
+    "log_positive_ky_centroid",
+    "ky_weighted_std",
 )
 
 
@@ -118,8 +124,45 @@ def _state_feature_vector(case: SaturationCase, *, floor: float) -> np.ndarray:
     )
 
 
+def _spectral_envelope_feature_vector(case: SaturationCase, *, floor: float) -> np.ndarray:
+    """Return reduced spectrum-shape features for bounded absolute-flux modeling."""
+
+    spectrum = Path(case.spectrum)
+    data = _load_spectrum_table(spectrum)
+    ky = _required_column(data, spectrum, "ky")
+    gamma = _required_column(data, spectrum, "gamma")
+    weight = np.maximum(_required_column(data, spectrum, "heat_flux_weight_total"), 0.0)
+    finite = np.isfinite(ky) & np.isfinite(gamma) & np.isfinite(weight) & (ky > 0.0)
+    if not np.any(finite):
+        raise ValueError(f"{spectrum} contains no finite linear-state samples")
+    ky = ky[finite]
+    gamma = gamma[finite]
+    weight = weight[finite]
+    positive = np.maximum(gamma, 0.0)
+    positive_weight = positive if np.any(positive > floor) else np.ones_like(ky)
+    positive_ky_centroid = float(np.sum(ky * positive_weight) / max(float(np.sum(positive_weight)), floor))
+    if np.sum(weight) > floor:
+        weight_mean_ky = float(np.sum(ky * weight) / float(np.sum(weight)))
+        ky_weighted_std = math.sqrt(
+            max(float(np.sum(weight * (ky - weight_mean_ky) ** 2) / float(np.sum(weight))), 0.0)
+        )
+    else:
+        ky_weighted_std = 0.0
+    return np.asarray(
+        [
+            math.log(max(positive_ky_centroid, floor)),
+            ky_weighted_std,
+        ],
+        dtype=float,
+    )
+
+
 def _state_feature_matrix(cases: tuple[SaturationCase, ...], *, floor: float) -> np.ndarray:
     return np.vstack([_state_feature_vector(case, floor=floor) for case in cases])
+
+
+def _spectral_envelope_feature_matrix(cases: tuple[SaturationCase, ...], *, floor: float) -> np.ndarray:
+    return np.vstack([_spectral_envelope_feature_vector(case, floor=floor) for case in cases])
 
 
 def _ridge_loglinear_holdout_row(
@@ -127,6 +170,7 @@ def _ridge_loglinear_holdout_row(
     case: SaturationCase,
     train_cases: tuple[SaturationCase, ...],
     features_all: np.ndarray,
+    feature_names: tuple[str, ...],
     observed_all: np.ndarray,
     holdout_idx: int,
     train_indices: list[int],
@@ -175,7 +219,7 @@ def _ridge_loglinear_holdout_row(
     return {
         "holdout_case": case.case,
         "train_cases": [item.case for item in train_cases],
-        "feature_names": list(STATE_FEATURE_NAMES),
+        "feature_names": list(feature_names),
         "feature_values": x_hold_raw.tolist(),
         "coefficients": coef.tolist(),
         "ridge_lambda": float(ridge_lambda),
@@ -221,7 +265,11 @@ def _candidate_raw_values(
 def build_candidate_uncertainty_report(
     cases: tuple[SaturationCase, ...] = DEFAULT_CASES,
     *,
-    candidates: tuple[str, ...] = ("linear_weight", "shape_power_law", "linear_state_ridge"),
+    candidates: tuple[str, ...] = (
+        "linear_weight",
+        "spectral_envelope_ridge",
+        "linear_state_ridge",
+    ),
     observed_floor: float = 1.0e-12,
     passed_shape_only: bool = True,
     interval_z: float = 1.96,
@@ -238,6 +286,11 @@ def build_candidate_uncertainty_report(
     )
     observed = np.asarray([_observed_flux(case)[0] for case in cases], dtype=float)
     features_all = _state_feature_matrix(cases, floor=observed_floor) if "linear_state_ridge" in candidates else None
+    envelope_features_all = (
+        _spectral_envelope_feature_matrix(cases, floor=observed_floor)
+        if "spectral_envelope_ridge" in candidates
+        else None
+    )
     null_rows = []
     candidate_rows: dict[str, list[dict[str, Any]]] = {candidate: [] for candidate in candidates}
     for holdout_idx, holdout_case in enumerate(cases):
@@ -265,11 +318,30 @@ def build_candidate_uncertainty_report(
                         case=holdout_case,
                         train_cases=train_cases,
                         features_all=features_all,
+                        feature_names=STATE_FEATURE_NAMES,
                         observed_all=observed,
                         holdout_idx=holdout_idx,
                         train_indices=train_indices,
                         observed_floor=observed_floor,
                         interval_z=interval_z,
+                    )
+                )
+                continue
+            if candidate == "spectral_envelope_ridge":
+                if envelope_features_all is None:
+                    raise AssertionError("spectral_envelope_ridge requires precomputed features")
+                candidate_rows[candidate].append(
+                    _ridge_loglinear_holdout_row(
+                        case=holdout_case,
+                        train_cases=train_cases,
+                        features_all=envelope_features_all,
+                        feature_names=SPECTRAL_ENVELOPE_FEATURE_NAMES,
+                        observed_all=observed,
+                        holdout_idx=holdout_idx,
+                        train_indices=train_indices,
+                        observed_floor=observed_floor,
+                        interval_z=interval_z,
+                        ridge_lambda=0.3,
                     )
                 )
                 continue
@@ -404,8 +476,13 @@ def write_candidate_uncertainty_figure(
 
     fig, axes = plt.subplots(1, 2, figsize=(13.2, 5.4), constrained_layout=True)
     ax0, ax1 = axes
-    colors = {"linear_weight": "#6b7280", "shape_power_law": "#0f4c81", "linear_state_ridge": "#047857"}
-    markers = {"linear_weight": "o", "shape_power_law": "s", "linear_state_ridge": "^"}
+    colors = {
+        "linear_weight": "#6b7280",
+        "shape_power_law": "#0f4c81",
+        "spectral_envelope_ridge": "#b45309",
+        "linear_state_ridge": "#047857",
+    }
+    markers = {"linear_weight": "o", "shape_power_law": "s", "spectral_envelope_ridge": "D", "linear_state_ridge": "^"}
     observed_all = np.asarray([row["observed_heat_flux"] for row in null_rows], dtype=float)
     positive = [observed_all[observed_all > 0.0]]
     for payload in candidates.values():

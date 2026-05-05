@@ -67,11 +67,12 @@
       "status": "partial"
     },
     {
-      "claim_level": "diagnostic_calibration_dataset_not_absolute_flux",
+      "claim_level": "candidate_absolute_flux_model",
       "key_metrics": {
         "calibration_report_passed": false,
         "circular_external_vmec_t250_converged": false,
         "cth_like_external_vmec_converged": false,
+        "dataset_sufficiency_promotion_passed": true,
         "dshape_external_vmec_t250_converged": true,
         "holdout_cases": [
           "cyclone_miller_long_window",
@@ -86,13 +87,19 @@
         "qh_external_vmec_mid_to_high_grid_converged": false,
         "train_points": 2,
         "updown_asym_external_vmec_t450_converged": true,
+        "uq_accepted_candidates": [
+          "spectral_envelope_ridge"
+        ],
+        "uq_candidate_promotion_passed": true,
         "validated_inputs_passed": true
       },
       "lane": "Nonlinear holdouts for quasilinear absolute-flux promotion",
-      "next_action": "Use the admitted D-shaped tokamak, ITERModel, and up-down asymmetric external-VMEC holdouts as negative transfer constraints while developing richer saturation models; keep circular, QH, and CTH-like excluded until their common-window and grid-refinement gates pass.",
+      "next_action": "Document the accepted richer candidate with scoped wording and keep circular, QH, and CTH-like excluded until their common-window and grid-refinement gates pass.",
       "primary_artifacts": [
         "docs/_static/quasilinear_validated_calibration_inputs.json",
         "docs/_static/quasilinear_stellarator_train_holdout_report.json",
+        "docs/_static/quasilinear_candidate_uncertainty.json",
+        "docs/_static/quasilinear_dataset_sufficiency.json",
         "docs/_static/external_vmec_circular_t250_high_grid_convergence_gate.json",
         "docs/_static/external_vmec_dshape_t250_high_grid_convergence_gate.json",
         "docs/_static/external_vmec_itermodel_t350_high_grid_convergence_gate.json",
@@ -101,7 +108,7 @@
         "docs/_static/external_vmec_qh_high_grid_convergence_gate.json",
         "docs/_static/external_vmec_cth_like_grid_convergence_gate.json"
       ],
-      "status": "open"
+      "status": "closed"
     },
     {
       "claim_level": "contract_gradient_gate_not_full_stellarator_optimization",
@@ -178,9 +185,9 @@
   },
   "summary": {
     "n_blocked": 0,
-    "n_closed": 0,
+    "n_closed": 1,
     "n_lanes": 5,
-    "n_open": 2,
+    "n_open": 1,
     "n_partial": 3
   }
 }

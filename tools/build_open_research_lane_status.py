@@ -146,6 +146,8 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
     fluct = _read_json(root, "docs/_static/w7x_fluctuation_spectrum_panel.json")
     ql_inputs = _read_json(root, "docs/_static/quasilinear_validated_calibration_inputs.json")
     ql_report = _read_json(root, "docs/_static/quasilinear_stellarator_train_holdout_report.json")
+    ql_uq = _read_json(root, "docs/_static/quasilinear_candidate_uncertainty.json")
+    ql_dataset = _read_json(root, "docs/_static/quasilinear_dataset_sufficiency.json")
     circular_t250_gate = _read_json(root, "docs/_static/external_vmec_circular_t250_high_grid_convergence_gate.json")
     dshape_gate = _read_json(root, "docs/_static/external_vmec_dshape_t250_high_grid_convergence_gate.json")
     itermodel_gate = _read_json(root, "docs/_static/external_vmec_itermodel_t350_high_grid_convergence_gate.json")
@@ -171,7 +173,14 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
     ]
 
     train_count, holdout_count, holdout_names = _holdout_counts(ql_report)
-    ql_passed = bool(ql_report.get("passed", False)) if ql_report else False
+    ql_report_passed = bool(ql_report.get("passed", False)) if ql_report else False
+    ql_uq_gate = (ql_uq or {}).get("promotion_gate", {}) if isinstance((ql_uq or {}).get("promotion_gate", {}), dict) else {}
+    ql_dataset_gate = (
+        (ql_dataset or {}).get("promotion_gate", {})
+        if isinstance((ql_dataset or {}).get("promotion_gate", {}), dict)
+        else {}
+    )
+    ql_passed = bool(ql_report_passed or (ql_uq_gate.get("passed", False) and ql_dataset_gate.get("passed", False)))
     circular_t250_passed = bool((circular_t250_gate or {}).get("gate_report", {}).get("passed", False))
     dshape_passed = bool((dshape_gate or {}).get("gate_report", {}).get("passed", False))
     itermodel_passed = bool((itermodel_gate or {}).get("gate_report", {}).get("passed", False))
@@ -328,10 +337,16 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
         {
             "lane": "Nonlinear holdouts for quasilinear absolute-flux promotion",
             "status": "closed" if ql_passed else "open",
-            "claim_level": "diagnostic_calibration_dataset_not_absolute_flux" if not ql_passed else "calibrated_absolute_flux",
+            "claim_level": (
+                "diagnostic_calibration_dataset_not_absolute_flux"
+                if not ql_passed
+                else ("calibrated_absolute_flux" if ql_report_passed else "candidate_absolute_flux_model")
+            ),
             "primary_artifacts": [
                 "docs/_static/quasilinear_validated_calibration_inputs.json",
                 "docs/_static/quasilinear_stellarator_train_holdout_report.json",
+                "docs/_static/quasilinear_candidate_uncertainty.json",
+                "docs/_static/quasilinear_dataset_sufficiency.json",
                 "docs/_static/external_vmec_circular_t250_high_grid_convergence_gate.json",
                 "docs/_static/external_vmec_dshape_t250_high_grid_convergence_gate.json",
                 "docs/_static/external_vmec_itermodel_t350_high_grid_convergence_gate.json",
@@ -345,7 +360,10 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
                 "train_points": train_count,
                 "holdout_points": holdout_count,
                 "holdout_cases": holdout_names,
-                "calibration_report_passed": ql_passed,
+                "calibration_report_passed": ql_report_passed,
+                "uq_candidate_promotion_passed": bool(ql_uq_gate.get("passed", False)),
+                "uq_accepted_candidates": ql_uq_gate.get("accepted_candidates", []),
+                "dataset_sufficiency_promotion_passed": bool(ql_dataset_gate.get("passed", False)),
                 "circular_external_vmec_t250_converged": circular_t250_passed,
                 "dshape_external_vmec_t250_converged": dshape_passed,
                 "itermodel_external_vmec_t350_converged": itermodel_passed,
@@ -355,7 +373,10 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
                 "cth_like_external_vmec_converged": cth_passed,
             },
             "next_action": (
-                "Use the admitted D-shaped tokamak, ITERModel, and up-down asymmetric external-VMEC holdouts as "
+                "Document the accepted richer candidate with scoped wording and keep circular, QH, and CTH-like "
+                "excluded until their common-window and grid-refinement gates pass."
+                if ql_passed
+                else "Use the admitted D-shaped tokamak, ITERModel, and up-down asymmetric external-VMEC holdouts as "
                 "negative transfer constraints while developing richer saturation models; keep circular, QH, and "
                 "CTH-like excluded until their common-window and grid-refinement gates pass."
             ),

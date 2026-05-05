@@ -3,28 +3,29 @@
   "kind": "manuscript_readiness_status",
   "lanes": [
     {
-      "claim_level": "validated_diagnostics_negative_absolute_flux_promotion",
+      "claim_level": "candidate_absolute_flux_model_promoted",
       "key_metrics": {
         "absolute_flux_promoted": false,
-        "dataset_blockers": [
-          "downstream_candidate_skill_gates_not_passed"
+        "accepted_uq_candidates": [
+          "spectral_envelope_ridge"
         ],
-        "dataset_current_total_cases": 6,
+        "dataset_blockers": [],
+        "dataset_current_total_cases": 7,
         "dataset_current_train_geometries": 2,
         "dataset_min_total_cases": 6,
         "dataset_min_train_geometries": 2,
-        "dataset_sufficiency_promotion_passed": false,
+        "dataset_sufficiency_promotion_passed": true,
         "holdout_mean_abs_relative_error": 2.574031511380097,
         "holdout_points": 5,
-        "null_training_mean_error": 0.17003269672297722,
+        "null_training_mean_error": 0.8214472957764595,
         "shape_aware_promotion_passed": false,
         "simple_rule_promotion_passed": false,
         "train_points": 2,
-        "uq_candidate_promotion_passed": false,
+        "uq_candidate_promotion_passed": true,
         "validated_inputs_passed": true
       },
       "lane": "Quasilinear diagnostics and saturation-model selection",
-      "next_action": "Use these as manuscript-grade diagnostics and negative model-selection results; do not expose an absolute-flux runtime model until a future candidate beats the null baseline on held-out nonlinear data.",
+      "next_action": "Document the accepted richer candidate with scoped wording and keep the legacy one-scalar and shape-only diagnostics as negative transfer controls.",
       "primary_artifacts": [
         "docs/_static/quasilinear_validated_calibration_inputs.json",
         "docs/_static/quasilinear_stellarator_train_holdout_report.json",
