@@ -77,23 +77,26 @@
           "cyclone_miller_long_window",
           "hsx_nonlinear_window",
           "w7x_nonlinear_window",
-          "dshape_external_vmec_t250_window"
+          "dshape_external_vmec_t250_window",
+          "updown_asym_external_vmec_t450_window"
         ],
-        "holdout_points": 4,
+        "holdout_points": 5,
         "itermodel_external_vmec_t350_converged": true,
         "qh_external_vmec_low_to_mid_grid_converged": false,
         "qh_external_vmec_mid_to_high_grid_converged": false,
         "train_points": 2,
+        "updown_asym_external_vmec_t450_converged": true,
         "validated_inputs_passed": true
       },
       "lane": "Nonlinear holdouts for quasilinear absolute-flux promotion",
-      "next_action": "Use the admitted D-shaped tokamak and ITERModel external-VMEC holdouts as negative transfer constraints while developing richer saturation models; keep circular, QH, and CTH-like excluded until their common-window and grid-refinement gates pass.",
+      "next_action": "Use the admitted D-shaped tokamak, ITERModel, and up-down asymmetric external-VMEC holdouts as negative transfer constraints while developing richer saturation models; keep circular, QH, and CTH-like excluded until their common-window and grid-refinement gates pass.",
       "primary_artifacts": [
         "docs/_static/quasilinear_validated_calibration_inputs.json",
         "docs/_static/quasilinear_stellarator_train_holdout_report.json",
         "docs/_static/external_vmec_circular_t250_high_grid_convergence_gate.json",
         "docs/_static/external_vmec_dshape_t250_high_grid_convergence_gate.json",
         "docs/_static/external_vmec_itermodel_t350_high_grid_convergence_gate.json",
+        "docs/_static/external_vmec_updown_asym_t450_high_grid_convergence_gate.json",
         "docs/_static/external_vmec_qh_grid_convergence_gate.json",
         "docs/_static/external_vmec_qh_high_grid_convergence_gate.json",
         "docs/_static/external_vmec_cth_like_grid_convergence_gate.json"

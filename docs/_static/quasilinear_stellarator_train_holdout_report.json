@@ -8,9 +8,9 @@
     },
     "holdout": {
       "max_abs_relative_error": 8.076770096888685,
-      "mean_abs_relative_error": 2.9675393892251214,
-      "n": 4,
-      "rmse": 24.17070875124445
+      "mean_abs_relative_error": 2.574031511380097,
+      "n": 5,
+      "rmse": 21.83643864643394
     },
     "train": {
       "max_abs_relative_error": 0.9852145617003454,
@@ -37,9 +37,9 @@
   },
   "metrics": {
     "max_abs_relative_error": 8.076770096888685,
-    "mean_abs_relative_error": 2.1427838741325558,
-    "n": 6,
-    "rmse": 19.9167582719498
+    "mean_abs_relative_error": 1.979529034970762,
+    "n": 7,
+    "rmse": 18.621497477098544
   },
   "observed_floor": 1e-12,
   "passed": false,
@@ -139,6 +139,22 @@
       "raw_predicted_heat_flux": 0.3888307697796897,
       "saturation_rule": "mixing_length",
       "split": "train"
+    },
+    {
+      "calibration_scale": 56.77558261825238,
+      "case": "updown_asym_external_vmec_t450_window",
+      "electron_model": "adiabatic",
+      "geometry": "updown_asym_external_vmec",
+      "ky": null,
+      "nonlinear_artifact": "docs/_static/external_vmec_updown_asym_nonlinear_t450_n64_pilot.traces.csv",
+      "notes": "External VMEC up-down asymmetric tokamak admitted after t=450 high-grid gate; predicted heat flux to be refreshed by calibration tooling.; train_fitted_heat_flux_scale=56.7755826183",
+      "observed_heat_flux": 6.87441762241923,
+      "observed_heat_flux_std": 0.6306020855936908,
+      "predicted_heat_flux": 0.0,
+      "quasilinear_artifact": "docs/_static/quasilinear_vmec_updown_asym_linear_spectrum_scan.quasilinear_spectrum.csv",
+      "raw_predicted_heat_flux": 0.0,
+      "saturation_rule": "mixing_length",
+      "split": "holdout"
     }
   ],
   "saturation_rule": "mixing_length",

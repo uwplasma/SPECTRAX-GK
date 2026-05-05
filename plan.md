@@ -1980,3 +1980,34 @@ Exit gate:
     blocked only by downstream model-skill gates, not by insufficient validated
     nonlinear data volume. The one-constant mixing-length model remains
     rejected on held-out skill, which is the correct remaining blocker.
+- Closed a third external-VMEC nonlinear transport holdout:
+  - expanded the office linear candidate screen beyond the original shortlist
+    and found a finite unstable branch for
+    ``wout_up_down_asymmetric_tokamak_reference.nc`` at ``ky = 0.4762`` with
+    ``gamma ≈ 0.0328``;
+  - the initial ``t = 150`` high-grid pair was finite, but the gate remained
+    open because only the common-window trend failed
+    (``7.32e-3`` per time unit versus the ``2e-3`` threshold) even though the
+    grid difference already passed (``0.138``);
+  - extending the same ``48x48x32`` and ``64x64x40`` runs to ``t = 250`` and
+    then ``t = 350`` steadily reduced the common-window trend to
+    ``2.78e-3`` and ``2.18e-3`` while all CV, sample-count, and pairwise-grid
+    gates stayed passed;
+  - one final bounded extension to ``t = 450`` closed the gate cleanly with
+    common-window relative slope ``7.48e-4``, least-window slope
+    ``1.26e-4``, common-window relative difference ``0.0435``, and
+    least-window relative difference ``0.0242``;
+  - tracked compact artifacts:
+    ``docs/_static/quasilinear_vmec_updown_asym_linear_spectrum.*``,
+    ``docs/_static/external_vmec_updown_asym_t450_high_grid_convergence_gate.*``,
+    ``docs/_static/external_vmec_updown_asym_nonlinear_t450_n48_pilot.{json,png}``,
+    ``docs/_static/external_vmec_updown_asym_nonlinear_t450_n64_pilot.{json,png,traces.csv}``,
+    and ``docs/_static/external_vmec_updown_asym_t450_n64_transport_window.json``;
+  - admitted ``updown_asym_external_vmec_t450_window`` into
+    ``docs/_static/quasilinear_stellarator_train_holdout_points.json`` as a new
+    validated holdout and refreshed the open-lane, horizon-audit, validated-input,
+    and saturation-rule artifacts accordingly;
+  - the quasilinear skill gate remains the downstream blocker: validated
+    nonlinear data volume is stronger now, but the current one-constant
+    mixing-length model is still not good enough to promote as an absolute-flux
+    predictor.

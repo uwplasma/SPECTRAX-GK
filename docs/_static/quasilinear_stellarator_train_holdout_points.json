@@ -94,5 +94,21 @@
     "raw_predicted_heat_flux": null,
     "saturation_rule": "mixing_length",
     "split": "train"
+  },
+  {
+    "case": "updown_asym_external_vmec_t450_window",
+    "geometry": "updown_asym_external_vmec",
+    "split": "holdout",
+    "nonlinear_artifact": "docs/_static/external_vmec_updown_asym_nonlinear_t450_n64_pilot.traces.csv",
+    "quasilinear_artifact": "docs/_static/quasilinear_vmec_updown_asym_linear_spectrum_scan.quasilinear_spectrum.csv",
+    "observed_heat_flux": 6.87441762241923,
+    "observed_heat_flux_std": 0.6306020855936908,
+    "predicted_heat_flux": 0.0,
+    "notes": "External VMEC up-down asymmetric tokamak admitted after t=450 high-grid gate; predicted heat flux to be refreshed by calibration tooling.",
+    "saturation_rule": "mixing_length",
+    "electron_model": "adiabatic",
+    "calibration_scale": null,
+    "raw_predicted_heat_flux": null,
+    "ky": null
   }
 ]

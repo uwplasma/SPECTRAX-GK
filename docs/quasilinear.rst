@@ -1072,6 +1072,29 @@ quasilinear prediction is only about ``0.389``.
    :alt: External ITERModel VMEC nonlinear t350 high-grid convergence gate
    :width: 100%
 
+The next screened unstable external-VMEC tokamak candidate,
+``wout_up_down_asymmetric_tokamak_reference.nc``, also closes after a bounded
+extension ladder. At ``t = 150`` the grid difference already passed
+(``0.138``), but the ``64x64x40`` common-window trend was still too large
+(``7.32e-3`` per time unit). Extending both runs to ``t = 250`` reduced the
+common-window relative difference to ``0.0411`` and the least-window
+difference to ``0.0499``, but the common-window trend on the lower grid was
+still slightly above threshold (``2.78e-3`` versus ``2.0e-3``). A final
+extension to ``t = 450`` closes the gate cleanly: the common-window heat-flux
+means are about ``7.43`` and ``7.76``, the common-window symmetric relative
+difference is ``0.0435``, the least-window difference is ``0.0242``, and both
+common and least-window trend/CV/sample-count gates pass. This case is now the
+third admitted external-VMEC nonlinear transport holdout in the tracked
+stellarator/tokamak calibration portfolio.
+
+.. image:: _static/quasilinear_vmec_updown_asym_linear_spectrum.png
+   :alt: External up-down asymmetric tokamak VMEC linear quasilinear feasibility spectrum
+   :width: 100%
+
+.. image:: _static/external_vmec_updown_asym_t450_high_grid_convergence_gate.png
+   :alt: External up-down asymmetric tokamak VMEC nonlinear t450 high-grid convergence gate
+   :width: 100%
+
 A reduced-grid nonlinear QH pilot has also been run locally at
 ``Nx = Ny = 32``, ``Nz = 24``, ``Nl = 4``, ``Nm = 8``, and ``dt = 0.05`` using
 the same VMEC fixture. The original ``t = 20`` trace was intentionally not

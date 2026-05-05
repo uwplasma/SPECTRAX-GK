@@ -149,6 +149,7 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
     circular_t250_gate = _read_json(root, "docs/_static/external_vmec_circular_t250_high_grid_convergence_gate.json")
     dshape_gate = _read_json(root, "docs/_static/external_vmec_dshape_t250_high_grid_convergence_gate.json")
     itermodel_gate = _read_json(root, "docs/_static/external_vmec_itermodel_t350_high_grid_convergence_gate.json")
+    updown_gate = _read_json(root, "docs/_static/external_vmec_updown_asym_t450_high_grid_convergence_gate.json")
     qh_gate = _read_json(root, "docs/_static/external_vmec_qh_grid_convergence_gate.json")
     qh_high_gate = _read_json(root, "docs/_static/external_vmec_qh_high_grid_convergence_gate.json")
     cth_gate = _read_json(root, "docs/_static/external_vmec_cth_like_grid_convergence_gate.json")
@@ -174,6 +175,7 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
     circular_t250_passed = bool((circular_t250_gate or {}).get("gate_report", {}).get("passed", False))
     dshape_passed = bool((dshape_gate or {}).get("gate_report", {}).get("passed", False))
     itermodel_passed = bool((itermodel_gate or {}).get("gate_report", {}).get("passed", False))
+    updown_passed = bool((updown_gate or {}).get("gate_report", {}).get("passed", False))
     qh_passed = bool((qh_gate or {}).get("gate_report", {}).get("passed", False))
     qh_high_passed = bool((qh_high_gate or {}).get("gate_report", {}).get("passed", False))
     cth_passed = bool((cth_gate or {}).get("gate_report", {}).get("passed", False))
@@ -333,6 +335,7 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
                 "docs/_static/external_vmec_circular_t250_high_grid_convergence_gate.json",
                 "docs/_static/external_vmec_dshape_t250_high_grid_convergence_gate.json",
                 "docs/_static/external_vmec_itermodel_t350_high_grid_convergence_gate.json",
+                "docs/_static/external_vmec_updown_asym_t450_high_grid_convergence_gate.json",
                 "docs/_static/external_vmec_qh_grid_convergence_gate.json",
                 "docs/_static/external_vmec_qh_high_grid_convergence_gate.json",
                 "docs/_static/external_vmec_cth_like_grid_convergence_gate.json",
@@ -346,14 +349,15 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
                 "circular_external_vmec_t250_converged": circular_t250_passed,
                 "dshape_external_vmec_t250_converged": dshape_passed,
                 "itermodel_external_vmec_t350_converged": itermodel_passed,
+                "updown_asym_external_vmec_t450_converged": updown_passed,
                 "qh_external_vmec_low_to_mid_grid_converged": qh_passed,
                 "qh_external_vmec_mid_to_high_grid_converged": qh_high_passed,
                 "cth_like_external_vmec_converged": cth_passed,
             },
             "next_action": (
-                "Use the admitted D-shaped tokamak and ITERModel external-VMEC holdouts as negative transfer "
-                "constraints while developing richer saturation models; keep circular, QH, and CTH-like excluded "
-                "until their common-window and grid-refinement gates pass."
+                "Use the admitted D-shaped tokamak, ITERModel, and up-down asymmetric external-VMEC holdouts as "
+                "negative transfer constraints while developing richer saturation models; keep circular, QH, and "
+                "CTH-like excluded until their common-window and grid-refinement gates pass."
             ),
         },
         {
