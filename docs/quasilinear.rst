@@ -715,33 +715,37 @@ stable branches underpredict the finite nonlinear window by construction. This
 is retained as a negative absolute-flux result and should not be presented as a
 validated W7-X transport model.
 
-The manuscript-facing combined holdout panel puts Cyclone training, Cyclone
-Miller holdout, HSX holdout, W7-X holdout, and the admitted D-shaped
-external-VMEC holdout in one report:
+The manuscript-facing combined holdout panel now puts two training geometries
+(Cyclone and the admitted external-VMEC ITERModel case) together with five
+held-out nonlinear windows: Cyclone Miller, HSX, W7-X, the admitted D-shaped
+external-VMEC case, and the admitted up-down asymmetric external-VMEC case.
 
 .. image:: _static/quasilinear_stellarator_train_holdout.png
-   :alt: Combined quasilinear train/holdout calibration including HSX, W7-X, and D-shaped external VMEC
+   :alt: Combined quasilinear train/holdout calibration including stellarator and external VMEC holdouts
    :width: 100%
 
 This combined report is also ``calibration_dataset`` and ``passed = false``.
 It is the clearest current figure for the absolute-flux story: one-constant
-mixing length does not transfer from Cyclone to shaped tokamak and stellarator
-nonlinear windows. The D-shaped external-VMEC point is included only after its
-``t = 250`` high-grid gate passed; its common-window nonlinear heat-flux mean
-is about ``18.5``, while the Cyclone-fitted mixing-length estimate is about
-``3.49e3``. The result is useful precisely because it blocks premature absolute
-quasilinear transport claims and motivates the next saturation-model sweep.
+mixing length does not transfer across the present tokamak, stellarator, and
+external-VMEC nonlinear windows. The fitted heat-flux scale uses only the two
+training points and still leaves the five holdouts at mean absolute relative
+error about ``2.57``, with the worst held-out error about ``8.08``. The
+external-VMEC points are included only after their high-grid convergence gates
+passed: D-shaped tokamak at ``t = 250``, ITERModel at ``t = 350``, and the
+up-down asymmetric tokamak at ``t = 450``. The result is useful precisely
+because it blocks premature absolute quasilinear transport claims and motivates
+the next saturation-model sweep.
 
 Saturation-rule sweep
 ---------------------
 
 The first saturation-rule sweep compares three one-scalar intensity rules using
-the same train/holdout split: fit one multiplicative scale on Cyclone and score
-Cyclone Miller, HSX, W7-X, and the D-shaped external-VMEC case as holdouts. The
-tested rules are the current positive-growth mixing-length rule, the raw linear
-heat-flux weight, and an absolute-growth mixing-length diagnostic that gives
-stable branches nonzero intensity. The last rule is included only as a
-diagnostic stress test; it is not a validated physical saturation rule.
+the same train/holdout split: fit one multiplicative scale on the two training
+geometries and score all five holdouts. The tested rules are the current
+positive-growth mixing-length rule, the raw linear heat-flux weight, and an
+absolute-growth mixing-length diagnostic that gives stable branches nonzero
+intensity. The last rule is included only as a diagnostic stress test; it is
+not a validated physical saturation rule.
 
 .. code-block:: bash
 
@@ -753,20 +757,18 @@ diagnostic stress test; it is not a validated physical saturation rule.
    :width: 100%
 
 All tested one-scalar rules fail the held-out absolute-flux gate. The current
-positive-growth mixing-length rule has holdout mean absolute relative error
-about ``201``; the raw linear-weight rule improves that to about ``21`` but is
-still far outside the ``0.35`` gate; the absolute-growth diagnostic is worse,
-with holdout mean error about ``446``. The figure also reports a
-training-mean null baseline using the Cyclone nonlinear heat-flux level for the
-holdouts; that null gives holdout mean relative error about ``0.439``. It is
-not a quasilinear model, but it is a necessary sanity check: no calibrated
+positive-growth mixing-length rule is still the best of the three, but its
+holdout mean absolute relative error is about ``2.51``. The raw linear-weight
+rule is worse at about ``3.19``, and the absolute-growth diagnostic is worse
+again at about ``3.96``. The figure also reports a training-mean null baseline;
+that null gives holdout mean relative error about ``1.39``. It is not a
+quasilinear model, but it is a necessary reviewer check: no calibrated
 saturation rule should be promoted unless it beats this null baseline as well
 as the linear-weight baseline. The JSON companion carries the same
 ``promotion_gate`` and currently has no accepted rules. This narrows the next
-research task: the linear spectrum-shape diagnostics can pass for HSX, W7-X,
-and Cyclone Miller, while the D-shaped point currently has no nonlinear
-spectrum-shape artifact. Absolute-flux prediction needs a richer
-saturation/intensity model than any one-scalar Cyclone fit tested here.
+research task: the admitted external-VMEC cases strengthen the negative
+transfer evidence, but absolute-flux prediction still needs a richer
+saturation/intensity model than any one-scalar fit tested here.
 
 Shape-aware saturation diagnostic
 ---------------------------------
@@ -872,11 +874,11 @@ validation gates pass.
 Dataset-sufficiency gate
 ------------------------
 
-The current four electrostatic-compatible nonlinear windows are enough to test
-and reject simple saturation-rule hypotheses, but they are not enough to
-promote a richer absolute-flux predictor. The dataset-sufficiency gate makes
-that reviewer-facing scope explicit before any model fit is attempted. It
-requires:
+The current electrostatic-compatible dataset is large enough to reject simple
+saturation-rule hypotheses and to support bounded two-parameter candidates, but
+it is still not enough to promote a richer absolute-flux predictor. The
+dataset-sufficiency gate makes that reviewer-facing scope explicit before any
+model fit is attempted. It requires:
 
 * nonlinear input summaries that have already passed their validation gates;
 * at least six electrostatic-compatible calibration cases;
@@ -894,15 +896,16 @@ requires:
    :alt: Quasilinear dataset-sufficiency promotion gate
    :width: 100%
 
-The tracked gate is intentionally blocked. The current dataset has four
-electrostatic-compatible cases, one explicit training geometry, and three
-held-out geometries. The linear-weight candidate has enough leave-one-out
-training volume for a one-parameter scale but fails the downstream skill gates;
-the shape-power-law and linear-state ridge candidates are under-sampled for
-their fitted parameter counts. KBM is listed as a validated but excluded
-nonlinear case because the present quasilinear diagnostics are electrostatic;
-electromagnetic quasilinear field-channel normalization and calibration remain
-separate future work.
+The tracked gate is intentionally blocked. The current dataset has seven
+electrostatic-compatible cases, two explicit training geometries, and five
+held-out geometries. That is enough data volume for the one-parameter
+linear-weight candidate and the two-parameter shape-power-law candidate, but
+not for the five-parameter linear-state ridge candidate. More importantly, the
+downstream skill gates still fail: no candidate beats the training-mean null
+baseline while also passing the ``0.35`` held-out transport gate. KBM is
+listed as a validated but excluded nonlinear case because the present
+quasilinear diagnostics are electrostatic; electromagnetic quasilinear
+field-channel normalization and calibration remain separate future work.
 
 VMEC equilibrium portfolio for future holdouts
 ----------------------------------------------

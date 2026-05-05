@@ -2011,3 +2011,13 @@ Exit gate:
     nonlinear data volume is stronger now, but the current one-constant
     mixing-length model is still not good enough to promote as an absolute-flux
     predictor.
+- Finalized the publication-facing quasilinear documentation refresh:
+  - updated ``README.md`` to promote the combined stellarator/external-VMEC
+    train/holdout figure plus the ITERModel and up-down asymmetric convergence
+    gates instead of the older Cyclone-only calibration narrative;
+  - refreshed ``docs/_static/quasilinear_dataset_sufficiency.*`` so the figure
+    now reflects the admitted seven-case electrostatic portfolio
+    (``2`` training geometries, ``5`` holdouts);
+  - updated ``docs/quasilinear.rst`` to match the current claim surface:
+    absolute-flux promotion is blocked by held-out model skill, not by missing
+    validated nonlinear input volume.
