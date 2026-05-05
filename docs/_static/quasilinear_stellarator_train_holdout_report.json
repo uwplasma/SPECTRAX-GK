@@ -7,84 +7,83 @@
       "rmse": null
     },
     "holdout": {
-      "max_abs_relative_error": 612.8992915144586,
-      "mean_abs_relative_error": 200.7068934367979,
+      "max_abs_relative_error": 8.076770096888685,
+      "mean_abs_relative_error": 2.9675393892251214,
       "n": 4,
-      "rmse": 2172.382142384471
+      "rmse": 24.17070875124445
     },
     "train": {
-      "max_abs_relative_error": 0.0,
-      "mean_abs_relative_error": 0.0,
-      "n": 1,
-      "rmse": 0.0
+      "max_abs_relative_error": 0.9852145617003454,
+      "mean_abs_relative_error": 0.4932728439474241,
+      "n": 2,
+      "rmse": 4.64601518668115
     }
   },
   "claim_level": "calibration_dataset",
   "holdout_mean_rel_gate": 0.35,
   "kind": "quasilinear_calibration_report",
   "metadata": {
-    "dshape_admission_gate": "docs/_static/external_vmec_dshape_t250_high_grid_convergence_gate.json",
-    "dshape_window_summary": "docs/_static/external_vmec_dshape_t250_n64_transport_window.json",
     "heat_flux_scale_fit": {
       "fit_kind": "through_origin_least_squares",
-      "n_train": 1,
+      "n_train": 2,
       "prediction_floor": 1e-300,
-      "scale": 3839.9661523445534,
-      "train_rmse": 0.0,
+      "scale": 56.77558261825238,
+      "train_rmse": 4.64601518668115,
       "train_split": "train"
     },
-    "policy": "one_constant_train_on_cyclone_holdout_on_miller_hsx_w7x_dshape",
-    "source_points": "docs/_static/quasilinear_stellarator_train_holdout_points.json"
+    "source_nonlinear_summary": null,
+    "source_points": "docs/_static/quasilinear_stellarator_train_holdout_points.json",
+    "source_spectrum": null
   },
   "metrics": {
-    "max_abs_relative_error": 612.8992915144586,
-    "mean_abs_relative_error": 160.56551474943834,
-    "n": 5,
-    "rmse": 1943.0376573913218
+    "max_abs_relative_error": 8.076770096888685,
+    "mean_abs_relative_error": 2.1427838741325558,
+    "n": 6,
+    "rmse": 19.9167582719498
   },
   "observed_floor": 1e-12,
   "passed": false,
   "points": [
     {
-      "calibration_scale": 3839.9661523445534,
+      "calibration_scale": 56.77558261825238,
       "case": "cyclone_long_window",
       "electron_model": "adiabatic",
       "geometry": "cyclone",
       "ky": null,
       "nonlinear_artifact": "/Users/rogeriojorge/local/SPECTRAX-GK/tools_out/cyclone_long_audit/cyclone_nonlinear_diag_t400.csv",
-      "notes": "Cyclone training point for one-constant mixing-length heat-flux scale.; ql_spectrum_method=sum; ql_spectrum_column=saturated_heat_flux_total; observed_to_predicted=3839.97; train_fitted_heat_flux_scale=3839.96615234",
+      "notes": "Cyclone training point for one-constant mixing-length heat-flux scale.; ql_spectrum_method=sum; ql_spectrum_column=saturated_heat_flux_total; observed_to_predicted=3839.97; train_fitted_heat_flux_scale=56.7755826183",
       "observed_heat_flux": 6.6689961798985795,
       "observed_heat_flux_std": 0.6486446261822355,
-      "predicted_heat_flux": 6.6689961798985795,
+      "predicted_heat_flux": 0.09860403153852253,
       "quasilinear_artifact": "docs/_static/quasilinear_cyclone_spectrum_scan.quasilinear_spectrum.csv",
       "raw_predicted_heat_flux": 0.001736733063604406,
       "saturation_rule": "mixing_length",
       "split": "train"
     },
     {
-      "calibration_scale": 3839.9661523445534,
+      "calibration_scale": 56.77558261825238,
       "case": "cyclone_miller_long_window",
       "electron_model": "adiabatic",
       "geometry": "cyclone_miller",
       "ky": null,
       "nonlinear_artifact": "/Users/rogeriojorge/local/SPECTRAX-GK/tools_out/office_refresh_cyclone_miller_t122.csv",
-      "notes": "Cyclone Miller held-out transfer test for the Cyclone-fitted scale.; ql_spectrum_method=sum; ql_spectrum_column=saturated_heat_flux_total; observed_to_predicted=6.25504; train_fitted_heat_flux_scale=3839.96615234",
+      "notes": "Cyclone Miller held-out transfer test for the Cyclone-fitted scale.; ql_spectrum_method=sum; ql_spectrum_column=saturated_heat_flux_total; observed_to_predicted=6.25504; train_fitted_heat_flux_scale=56.7755826183",
       "observed_heat_flux": 4.259822065746515,
       "observed_heat_flux_std": 4.2116774700305175,
-      "predicted_heat_flux": 2615.101748139443,
+      "predicted_heat_flux": 38.66542554443455,
       "quasilinear_artifact": "docs/_static/quasilinear_cyclone_miller_spectrum_scan.quasilinear_spectrum.csv",
       "raw_predicted_heat_flux": 0.6810220831094436,
       "saturation_rule": "mixing_length",
       "split": "holdout"
     },
     {
-      "calibration_scale": 3839.9661523445534,
+      "calibration_scale": 56.77558261825238,
       "case": "hsx_nonlinear_window",
       "electron_model": "adiabatic",
       "geometry": "hsx",
       "ky": null,
       "nonlinear_artifact": "/Users/rogeriojorge/local/SPECTRAX-GK/tools_out/final_nonlinear_audit/hsx_spectrax_true_t50.csv",
-      "notes": "combined stellarator holdout point generated from tracked spectrum and nonlinear summary; nonlinear_window=[0.0536652542651,49.2]; nonlinear_window_samples=21; ql_spectrum_method=sum; ql_spectrum_column=saturated_heat_flux_total; train_fitted_heat_flux_scale=3839.96615234",
+      "notes": "combined stellarator holdout point generated from tracked spectrum and nonlinear summary; nonlinear_window=[0.0536652542651,49.2]; nonlinear_window_samples=21; ql_spectrum_method=sum; ql_spectrum_column=saturated_heat_flux_total; train_fitted_heat_flux_scale=56.7755826183",
       "observed_heat_flux": 5.089605487565396,
       "observed_heat_flux_std": 6.284535110439706,
       "predicted_heat_flux": 0.0,
@@ -94,13 +93,13 @@
       "split": "holdout"
     },
     {
-      "calibration_scale": 3839.9661523445534,
+      "calibration_scale": 56.77558261825238,
       "case": "w7x_nonlinear_window",
       "electron_model": "adiabatic",
       "geometry": "w7x",
       "ky": null,
       "nonlinear_artifact": "/Users/rogeriojorge/local/SPECTRAX-GK/tools_out/final_nonlinear_audit/w7x_spectrax_current_adaptive_t200.out.nc",
-      "notes": "combined stellarator holdout point generated from tracked spectrum and nonlinear summary; nonlinear_variable=Diagnostics/HeatFlux_st; nonlinear_window=[0.064763776958,197.773468018]; nonlinear_window_samples=76; ql_spectrum_method=sum; ql_spectrum_column=saturated_heat_flux_total; train_fitted_heat_flux_scale=3839.96615234",
+      "notes": "combined stellarator holdout point generated from tracked spectrum and nonlinear summary; nonlinear_variable=Diagnostics/HeatFlux_st; nonlinear_window=[0.064763776958,197.773468018]; nonlinear_window_samples=76; ql_spectrum_method=sum; ql_spectrum_column=saturated_heat_flux_total; train_fitted_heat_flux_scale=56.7755826183",
       "observed_heat_flux": 5.378544112072135,
       "observed_heat_flux_std": 3.295746205851981,
       "predicted_heat_flux": 0.0,
@@ -110,20 +109,36 @@
       "split": "holdout"
     },
     {
-      "calibration_scale": 3839.9661523445534,
+      "calibration_scale": 56.77558261825238,
       "case": "dshape_external_vmec_t250_window",
       "electron_model": "adiabatic",
       "geometry": "dshape_external_vmec",
       "ky": null,
       "nonlinear_artifact": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/external_vmec_dshape_nonlinear_t250_n64_pilot.traces.csv",
-      "notes": "admitted only after the t=250 48x48x32-to-64x64x40 convergence gate passed; nonlinear_window=[125.053031921,250.00604248]; nonlinear_window_samples=52; ql_spectrum_method=sum; ql_spectrum_column=saturated_heat_flux_total; observed_to_predicted=20.325; train_fitted_heat_flux_scale=3839.96615234",
+      "notes": "admitted only after the t=250 48x48x32-to-64x64x40 convergence gate passed; nonlinear_window=[125.053031921,250.00604248]; nonlinear_window_samples=52; ql_spectrum_method=sum; ql_spectrum_column=saturated_heat_flux_total; observed_to_predicted=20.325; train_fitted_heat_flux_scale=56.7755826183",
       "observed_heat_flux": 18.479456131274883,
       "observed_heat_flux_std": 2.1065149048808203,
-      "predicted_heat_flux": 3491.2919034769097,
+      "predicted_heat_flux": 51.62028102494143,
       "quasilinear_artifact": "docs/_static/quasilinear_vmec_dshape_linear_spectrum_scan.quasilinear_spectrum.csv",
       "raw_predicted_heat_flux": 0.909198613989148,
       "saturation_rule": "mixing_length",
       "split": "holdout"
+    },
+    {
+      "calibration_scale": 56.77558261825238,
+      "case": "itermodel_external_vmec_t350_window",
+      "electron_model": "adiabatic",
+      "geometry": "itermodel_external_vmec",
+      "ky": null,
+      "nonlinear_artifact": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/external_vmec_itermodel_nonlinear_t350_n64_pilot.traces.csv",
+      "notes": "admitted only after the t=350 48x48x32-to-64x64x40 convergence gate passed; nonlinear_window=[175.054443359,350.007537842]; nonlinear_window_samples=72; ql_spectrum_method=sum; ql_spectrum_column=saturated_heat_flux_total; observed_to_predicted=56.7001; train_fitted_heat_flux_scale=56.7755826183",
+      "observed_heat_flux": 22.046746492385864,
+      "observed_heat_flux_std": 3.434397669803179,
+      "predicted_heat_flux": 22.076093494145443,
+      "quasilinear_artifact": "docs/_static/quasilinear_vmec_itermodel_linear_spectrum_scan.quasilinear_spectrum.csv",
+      "raw_predicted_heat_flux": 0.3888307697796897,
+      "saturation_rule": "mixing_length",
+      "split": "train"
     }
   ],
   "saturation_rule": "mixing_length",

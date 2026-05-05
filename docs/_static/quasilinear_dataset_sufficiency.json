@@ -4,28 +4,28 @@
       "candidate": "linear_weight",
       "data_volume_passed": true,
       "label": "linear weight",
-      "leave_one_out_train_cases_per_fold": 4,
+      "leave_one_out_train_cases_per_fold": 5,
       "min_train_to_parameter_ratio": 2.0,
       "n_parameters": 1,
-      "train_to_parameter_ratio": 4.0
+      "train_to_parameter_ratio": 5.0
     },
     {
       "candidate": "shape_power_law",
       "data_volume_passed": true,
       "label": "shape power law",
-      "leave_one_out_train_cases_per_fold": 4,
+      "leave_one_out_train_cases_per_fold": 5,
       "min_train_to_parameter_ratio": 2.0,
       "n_parameters": 2,
-      "train_to_parameter_ratio": 2.0
+      "train_to_parameter_ratio": 2.5
     },
     {
       "candidate": "linear_state_ridge",
       "data_volume_passed": false,
       "label": "linear-state ridge",
-      "leave_one_out_train_cases_per_fold": 4,
+      "leave_one_out_train_cases_per_fold": 5,
       "min_train_to_parameter_ratio": 2.0,
       "n_parameters": 5,
-      "train_to_parameter_ratio": 0.8
+      "train_to_parameter_ratio": 1.0
     }
   ],
   "cases": [
@@ -78,6 +78,16 @@
       "shape_gate_passed": null,
       "spectrum": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_vmec_dshape_linear_spectrum_scan.quasilinear_spectrum.csv",
       "split": "holdout"
+    },
+    {
+      "case": "itermodel_external_vmec_t350_window",
+      "gate_case": "ITERModel external VMEC nonlinear t350 high-grid convergence",
+      "geometry": "itermodel_external_vmec",
+      "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/external_vmec_itermodel_t350_n64_transport_window.json",
+      "shape_gate": null,
+      "shape_gate_passed": null,
+      "spectrum": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_vmec_itermodel_linear_spectrum_scan.quasilinear_spectrum.csv",
+      "split": "train"
     }
   ],
   "claim_level": "promotion_blocked_until_more_converged_electrostatic_holdouts",
@@ -108,6 +118,7 @@
     "cyclone_miller",
     "dshape_external_vmec",
     "hsx",
+    "itermodel_external_vmec",
     "w7x"
   ],
   "holdout_geometries": [
@@ -167,6 +178,16 @@
         "reason": "matched passed nonlinear summary gate",
         "required": true,
         "split": "holdout"
+      },
+      {
+        "case": "itermodel_external_vmec_t350_window",
+        "gate_case": "ITERModel external VMEC nonlinear t350 high-grid convergence",
+        "gate_passed": true,
+        "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/external_vmec_itermodel_t350_n64_transport_window.json",
+        "passed": true,
+        "reason": "matched passed nonlinear summary gate",
+        "required": true,
+        "split": "train"
       }
     ],
     "kind": "quasilinear_model_input_validation",
@@ -180,8 +201,6 @@
   "notes": "This report is a promotion guard, not a transport model. It prevents candidate saturation rules from being documented as absolute-flux predictors until the nonlinear calibration portfolio is large enough, electrostatic-compatible, and downstream held-out skill gates pass.",
   "promotion_gate": {
     "blockers": [
-      "minimum_total_electrostatic_cases",
-      "minimum_explicit_train_geometries",
       "downstream_candidate_skill_gates_not_passed"
     ],
     "passed": false,
@@ -191,21 +210,22 @@
   "requirements": {
     "checks": {
       "candidate_data_volume": true,
-      "minimum_explicit_train_geometries": false,
+      "minimum_explicit_train_geometries": true,
       "minimum_holdout_geometries": true,
-      "minimum_total_electrostatic_cases": false,
+      "minimum_total_electrostatic_cases": true,
       "validated_input_gates": true
     },
-    "current_explicit_train_geometries": 1,
+    "current_explicit_train_geometries": 2,
     "current_holdout_geometries": 4,
-    "current_leave_one_out_train_cases_per_fold": 4,
-    "current_total_cases": 5,
+    "current_leave_one_out_train_cases_per_fold": 5,
+    "current_total_cases": 6,
     "min_explicit_train_geometries": 2,
     "min_holdout_geometries": 3,
     "min_leave_one_out_train_to_parameter_ratio": 2.0,
     "min_total_electrostatic_cases": 6
   },
   "train_geometries": [
-    "cyclone"
+    "cyclone",
+    "itermodel_external_vmec"
   ]
 }

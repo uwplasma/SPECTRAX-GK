@@ -110,12 +110,22 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
     )
     _write_json(
         tmp_path,
+        "docs/_static/external_vmec_circular_t250_high_grid_convergence_gate.json",
+        {"gate_report": {"passed": False}},
+    )
+    _write_json(
+        tmp_path,
         "docs/_static/external_vmec_cth_like_grid_convergence_gate.json",
         {"gate_report": {"passed": False}},
     )
     _write_json(
         tmp_path,
         "docs/_static/external_vmec_dshape_t250_high_grid_convergence_gate.json",
+        {"gate_report": {"passed": True}},
+    )
+    _write_json(
+        tmp_path,
+        "docs/_static/external_vmec_itermodel_t350_high_grid_convergence_gate.json",
         {"gate_report": {"passed": True}},
     )
     _write_json(
@@ -192,9 +202,11 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
         "cth_like_external_vmec_converged"
     ] is False
     holdout_metrics = lanes["Nonlinear holdouts for quasilinear absolute-flux promotion"]["key_metrics"]
+    assert holdout_metrics["circular_external_vmec_t250_converged"] is False
     assert holdout_metrics["qh_external_vmec_low_to_mid_grid_converged"] is False
     assert holdout_metrics["qh_external_vmec_mid_to_high_grid_converged"] is False
     assert holdout_metrics["dshape_external_vmec_t250_converged"] is True
+    assert holdout_metrics["itermodel_external_vmec_t350_converged"] is True
     profiler = lanes["Profiler-backed nonlinear hot-path optimization"]
     assert profiler["status"] == "partial"
     assert "docs/_static/nonlinear_rhs_profile.json" in profiler["primary_artifacts"]

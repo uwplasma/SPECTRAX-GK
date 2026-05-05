@@ -19,6 +19,36 @@
       "tmax": 150.00454711914062
     },
     {
+      "artifact": "docs/_static/external_vmec_circular_t150_high_grid_convergence_gate.json",
+      "case": "Circular tokamak external VMEC nonlinear t150 high-grid convergence",
+      "claim_level": "negative_grid_convergence_result_not_transport_validation",
+      "convergence_gate_passed": false,
+      "effective_tmax": 150.00454711914062,
+      "gate_passed": false,
+      "kind": "external_vmec_nonlinear_grid_convergence_gate",
+      "notes": "long nonlinear pilots exist, but grid/window convergence gate fails",
+      "requires_longer_or_convergence_action": true,
+      "source_tmax": null,
+      "status": "long_but_failed_convergence",
+      "summary_tmax": 150.00454711914062,
+      "tmax": 150.00454711914062
+    },
+    {
+      "artifact": "docs/_static/external_vmec_circular_t250_high_grid_convergence_gate.json",
+      "case": "Circular tokamak external VMEC nonlinear t250 high-grid convergence",
+      "claim_level": "negative_grid_convergence_result_not_transport_validation",
+      "convergence_gate_passed": false,
+      "effective_tmax": 250.00604248046875,
+      "gate_passed": false,
+      "kind": "external_vmec_nonlinear_grid_convergence_gate",
+      "notes": "long nonlinear pilots exist, but grid/window convergence gate fails",
+      "requires_longer_or_convergence_action": true,
+      "source_tmax": null,
+      "status": "long_but_failed_convergence",
+      "summary_tmax": 250.00604248046875,
+      "tmax": 250.00604248046875
+    },
+    {
       "artifact": "docs/_static/external_vmec_dshape_high_grid_convergence_gate.json",
       "case": "D-shaped tokamak external VMEC nonlinear high-grid convergence",
       "claim_level": "negative_grid_convergence_result_not_transport_validation",
@@ -32,6 +62,36 @@
       "status": "long_but_failed_convergence",
       "summary_tmax": 150.00454711914062,
       "tmax": 150.00454711914062
+    },
+    {
+      "artifact": "docs/_static/external_vmec_itermodel_t150_high_grid_convergence_gate.json",
+      "case": "ITERModel external VMEC nonlinear t150 high-grid convergence",
+      "claim_level": "negative_grid_convergence_result_not_transport_validation",
+      "convergence_gate_passed": false,
+      "effective_tmax": 150.00454711914062,
+      "gate_passed": false,
+      "kind": "external_vmec_nonlinear_grid_convergence_gate",
+      "notes": "long nonlinear pilots exist, but grid/window convergence gate fails",
+      "requires_longer_or_convergence_action": true,
+      "source_tmax": null,
+      "status": "long_but_failed_convergence",
+      "summary_tmax": 150.00454711914062,
+      "tmax": 150.00454711914062
+    },
+    {
+      "artifact": "docs/_static/external_vmec_itermodel_t250_high_grid_convergence_gate.json",
+      "case": "ITERModel external VMEC nonlinear t250 high-grid convergence",
+      "claim_level": "negative_grid_convergence_result_not_transport_validation",
+      "convergence_gate_passed": false,
+      "effective_tmax": 250.00604248046875,
+      "gate_passed": false,
+      "kind": "external_vmec_nonlinear_grid_convergence_gate",
+      "notes": "long nonlinear pilots exist, but grid/window convergence gate fails",
+      "requires_longer_or_convergence_action": true,
+      "source_tmax": null,
+      "status": "long_but_failed_convergence",
+      "summary_tmax": 250.00604248046875,
+      "tmax": 250.00604248046875
     },
     {
       "artifact": "docs/_static/external_vmec_qh_grid_convergence_gate.json",
@@ -289,6 +349,21 @@
       "tmax": 250.00604248046875
     },
     {
+      "artifact": "docs/_static/external_vmec_itermodel_t350_high_grid_convergence_gate.json",
+      "case": "ITERModel external VMEC nonlinear t350 high-grid convergence",
+      "claim_level": "passed_grid_convergence_candidate_for_transport_holdout",
+      "convergence_gate_passed": true,
+      "effective_tmax": 350.0075378417969,
+      "gate_passed": true,
+      "kind": "external_vmec_nonlinear_grid_convergence_gate",
+      "notes": "long nonlinear pilots pass the grid/window convergence gate",
+      "requires_longer_or_convergence_action": false,
+      "source_tmax": null,
+      "status": "release_transport_gate_passed",
+      "summary_tmax": 350.0075378417969,
+      "tmax": 350.0075378417969
+    },
+    {
       "artifact": "docs/_static/nonlinear_cyclone_miller_gate_summary.json",
       "case": "cyclone_miller_nonlinear_window",
       "claim_level": "matched_nonlinear_transport_comparison_gate",
@@ -390,14 +465,14 @@
     }
   ],
   "summary": {
-    "n_records": 26,
-    "release_transport_gate_passed": 7,
+    "n_records": 31,
+    "release_transport_gate_passed": 8,
     "short_or_reduced_not_transport": 5,
     "status_counts": {
-      "long_but_failed_convergence": 4,
+      "long_but_failed_convergence": 8,
       "long_feasibility_pending_convergence": 10,
       "reduced_estimator_not_transport_average": 3,
-      "release_transport_gate_passed": 7,
+      "release_transport_gate_passed": 8,
       "short_or_startup_not_transport_average": 2
     }
   }

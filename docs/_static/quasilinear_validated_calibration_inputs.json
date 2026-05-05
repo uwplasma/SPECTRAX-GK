@@ -4,7 +4,7 @@
     "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/*.json"
   ],
   "kind": "quasilinear_calibration_input_audit",
-  "n_gate_artifact_matches": 45,
+  "n_gate_artifact_matches": 70,
   "passed": true,
   "reports": [
     {

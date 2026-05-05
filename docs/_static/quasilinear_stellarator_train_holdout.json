@@ -1,9 +1,9 @@
 {
   "claim_level": "calibration_dataset",
   "kind": "quasilinear_calibration_figure",
-  "max_abs_relative_error": 612.8992915144586,
-  "mean_abs_relative_error": 160.56551474943834,
-  "n_points": 5,
+  "max_abs_relative_error": 8.076770096888685,
+  "mean_abs_relative_error": 2.1427838741325558,
+  "n_points": 6,
   "passed": false,
   "pdf": "docs/_static/quasilinear_stellarator_train_holdout.pdf",
   "png": "docs/_static/quasilinear_stellarator_train_holdout.png",

@@ -79,6 +79,14 @@ DEFAULT_CASES = (
         nonlinear_summary=ROOT / "docs/_static/external_vmec_dshape_t250_n64_transport_window.json",
         shape_gate=None,
     ),
+    SaturationCase(
+        case="itermodel_external_vmec_t350_window",
+        split="train",
+        geometry="itermodel_external_vmec",
+        spectrum=ROOT / "docs/_static/quasilinear_vmec_itermodel_linear_spectrum_scan.quasilinear_spectrum.csv",
+        nonlinear_summary=ROOT / "docs/_static/external_vmec_itermodel_t350_n64_transport_window.json",
+        shape_gate=None,
+    ),
 )
 
 
@@ -94,6 +102,7 @@ CASE_LABELS = {
     "hsx_nonlinear_window": "HSX",
     "w7x_nonlinear_window": "W7-X",
     "dshape_external_vmec_t250_window": "D-shaped VMEC",
+    "itermodel_external_vmec_t350_window": "ITERModel VMEC",
 }
 
 

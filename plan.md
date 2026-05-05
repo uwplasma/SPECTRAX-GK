@@ -1933,3 +1933,50 @@ Exit gate:
   - admit a new candidate only if the high-grid gate passes, then regenerate
     quasilinear train/holdout, saturation-rule, dataset-sufficiency, and
     manuscript-readiness panels.
+- Closed the next external-VMEC holdout tranche:
+  - pulled the circular-tokamak ``t = 150`` and ``t = 250`` gate artifacts
+    back into the repo and kept circular excluded. It is now a documented
+    negative convergence result: ``t = 150`` had good grid agreement but failed
+    trend gates, while ``t = 250`` removed the trend defect but failed common
+    and least-window grid/CV gates;
+  - launched the next screened unstable axisymmetric external-VMEC candidate,
+    ``ITERModel_reference_nc`` at ``ky = 0.4762``, with the standard
+    ``48x48x32`` and ``64x64x40`` ITG/adiabatic-electron ladder on office GPUs;
+  - found and fixed a real reproducibility bug in
+    ``tools/write_external_vmec_holdout_configs.py``: generated
+    ``output.path`` entries were being interpreted relative to the TOML
+    location, causing nested duplicated output directories. Added a regression
+    test and propagated the fix to office before restart continuations;
+  - found and corrected the continuation seeding bug operationally: the
+    ``restart_if_exists`` path keys off the current output basename, so the
+    restart files must be copied from ``t150`` to ``t250`` and from ``t250`` to
+    ``t350`` stems before launching the bounded continuation;
+  - ``ITERModel_reference`` was a genuine extend-not-reject case:
+    ``t = 150`` passed the common-window grid-difference gate but missed the
+    common trend and least-window grid-difference gates; ``t = 250`` passed all
+    grid-difference checks but still missed the common trend/CV gates by a
+    small margin; ``t = 350`` finally passed every gate;
+  - final ``t = 350`` result:
+    common-window heat-flux means ``22.41`` and ``22.05``,
+    common-window relative difference ``0.0165``,
+    least-window relative difference ``0.1415``,
+    common trend ``0.00160`` per time unit,
+    least-window max trend ``2.92e-4`` per time unit,
+    common-window max CV ``0.176``;
+  - generated and tracked compact artifacts:
+    ``docs/_static/quasilinear_vmec_itermodel_linear_spectrum.*``,
+    ``docs/_static/external_vmec_itermodel_t150_high_grid_convergence_gate.*``,
+    ``docs/_static/external_vmec_itermodel_t250_high_grid_convergence_gate.*``,
+    ``docs/_static/external_vmec_itermodel_t350_high_grid_convergence_gate.*``,
+    ``docs/_static/external_vmec_itermodel_nonlinear_t350_n48_pilot.{json,png}``,
+    ``docs/_static/external_vmec_itermodel_nonlinear_t350_n64_pilot.{json,png,traces.csv}``,
+    and ``docs/_static/external_vmec_itermodel_t350_n64_transport_window.json``;
+  - admitted ``itermodel_external_vmec_t350_window`` into
+    ``docs/_static/quasilinear_stellarator_train_holdout_points.json`` as a
+    second training geometry and regenerated the tracked quasilinear holdout,
+    input-validation, saturation-rule, dataset-sufficiency, nonlinear-horizon,
+    open-lane, and manuscript-readiness artifacts;
+  - the important scientific change is that the dataset-sufficiency gate is now
+    blocked only by downstream model-skill gates, not by insufficient validated
+    nonlinear data volume. The one-constant mixing-length model remains
+    rejected on held-out skill, which is the correct remaining blocker.

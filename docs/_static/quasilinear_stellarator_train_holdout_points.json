@@ -78,5 +78,21 @@
     "raw_predicted_heat_flux": null,
     "saturation_rule": "mixing_length",
     "split": "holdout"
+  },
+  {
+    "calibration_scale": null,
+    "case": "itermodel_external_vmec_t350_window",
+    "electron_model": "adiabatic",
+    "geometry": "itermodel_external_vmec",
+    "ky": null,
+    "nonlinear_artifact": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/external_vmec_itermodel_nonlinear_t350_n64_pilot.traces.csv",
+    "notes": "admitted only after the t=350 48x48x32-to-64x64x40 convergence gate passed; nonlinear_window=[175.054443359,350.007537842]; nonlinear_window_samples=72; ql_spectrum_method=sum; ql_spectrum_column=saturated_heat_flux_total; observed_to_predicted=56.7001",
+    "observed_heat_flux": 22.046746492385864,
+    "observed_heat_flux_std": 3.434397669803179,
+    "predicted_heat_flux": 0.3888307697796897,
+    "quasilinear_artifact": "docs/_static/quasilinear_vmec_itermodel_linear_spectrum_scan.quasilinear_spectrum.csv",
+    "raw_predicted_heat_flux": null,
+    "saturation_rule": "mixing_length",
+    "split": "train"
   }
 ]

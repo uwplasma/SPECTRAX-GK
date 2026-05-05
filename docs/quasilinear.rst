@@ -1037,6 +1037,41 @@ overpredicts this D-shaped holdout by about two orders of magnitude.
    :alt: External D-shaped tokamak VMEC nonlinear t250 high-grid convergence gate
    :width: 100%
 
+The circular-tokamak follow-up was intentionally not admitted. It is useful as
+an explicit negative convergence result. At ``t = 150`` the ``48x48x32`` to
+``64x64x40`` pair had excellent grid agreement but still failed the common and
+least-window trend gates. Extending both runs to ``t = 250`` removed the trend
+issue, but the common-window coefficient of variation rose to about ``0.229``
+and the common/least-window grid differences rose to about ``0.180`` and
+``0.307``. That moves in the wrong direction, so the correct action is to keep
+the circular VMEC case out of the calibration set rather than to keep extending
+it indefinitely.
+
+The next screened unstable axisymmetric external-VMEC candidate,
+``wout_ITERModel_reference.nc``, does close the gate after one bounded
+extension ladder. The ``t = 150`` pair was already close: the common-window
+grid difference was only about ``0.073``, but the ``64x64x40`` trace was still
+drifting on the common window and the least-window difference was about
+``0.164``, slightly above the ``0.15`` threshold. Extending the same
+``48x48x32`` and ``64x64x40`` runs first to ``t = 250`` and then to
+``t = 350`` closes the gate cleanly. At ``t = 350`` the common-window
+heat-flux means are about ``22.41`` and ``22.05``, the common-window symmetric
+relative difference is only ``0.0165``, the least-window difference is
+``0.1415``, and all trend/CV/sample-count gates pass. ITERModel is therefore
+admitted as the second external-VMEC nonlinear transport holdout from this
+campaign. As with D-shaped tokamak, this strengthens the negative-transfer
+evidence for the current one-constant mixing-length model rather than rescuing
+it: the observed heat flux is about ``22.0`` while the uncalibrated
+quasilinear prediction is only about ``0.389``.
+
+.. image:: _static/quasilinear_vmec_itermodel_linear_spectrum.png
+   :alt: External ITERModel VMEC linear quasilinear feasibility spectrum
+   :width: 100%
+
+.. image:: _static/external_vmec_itermodel_t350_high_grid_convergence_gate.png
+   :alt: External ITERModel VMEC nonlinear t350 high-grid convergence gate
+   :width: 100%
+
 A reduced-grid nonlinear QH pilot has also been run locally at
 ``Nx = Ny = 32``, ``Nz = 24``, ``Nl = 4``, ``Nm = 8``, and ``dt = 0.05`` using
 the same VMEC fixture. The original ``t = 20`` trace was intentionally not
