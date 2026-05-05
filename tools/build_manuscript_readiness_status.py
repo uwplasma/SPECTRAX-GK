@@ -164,6 +164,7 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
         if isinstance((ql_dataset or {}).get("promotion_gate", {}), dict)
         else {}
     )
+    ql_candidate_promoted = bool(ql_uq_gate.get("passed", False)) and bool(ql_dataset_gate.get("passed", False))
     ql_dataset_requirements = (
         (ql_dataset or {}).get("requirements", {})
         if isinstance((ql_dataset or {}).get("requirements", {}), dict)
@@ -265,8 +266,16 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
     lanes: list[dict[str, Any]] = [
         {
             "lane": "Quasilinear diagnostics and saturation-model selection",
-            "status": "closed" if ql_negative_closed else "open",
-            "claim_level": "validated_diagnostics_negative_absolute_flux_promotion",
+            "status": "closed" if (ql_negative_closed or ql_candidate_promoted) else "open",
+            "claim_level": (
+                "validated_diagnostics_negative_absolute_flux_promotion"
+                if ql_negative_closed
+                else (
+                    "candidate_absolute_flux_model_promoted"
+                    if ql_candidate_promoted
+                    else "validated_diagnostics_negative_absolute_flux_promotion"
+                )
+            ),
             "primary_artifacts": [
                 "docs/_static/quasilinear_validated_calibration_inputs.json",
                 "docs/_static/quasilinear_stellarator_train_holdout_report.json",
@@ -285,6 +294,7 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                 "shape_aware_promotion_passed": bool(ql_shape_gate.get("passed", False)),
                 "uq_candidate_promotion_passed": bool(ql_uq_gate.get("passed", False)),
                 "dataset_sufficiency_promotion_passed": bool(ql_dataset_gate.get("passed", False)),
+                "accepted_uq_candidates": ql_uq_gate.get("accepted_candidates", []),
                 "dataset_current_total_cases": ql_dataset_requirements.get("current_total_cases"),
                 "dataset_min_total_cases": ql_dataset_requirements.get("min_total_electrostatic_cases"),
                 "dataset_current_train_geometries": ql_dataset_requirements.get(
@@ -297,7 +307,10 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                 ),
             },
             "next_action": (
-                "Use these as manuscript-grade diagnostics and negative model-selection results; do not expose an "
+                "Document the accepted richer candidate with scoped wording and keep the legacy one-scalar and "
+                "shape-only diagnostics as negative transfer controls."
+                if ql_candidate_promoted
+                else "Use these as manuscript-grade diagnostics and negative model-selection results; do not expose an "
                 "absolute-flux runtime model until a future candidate beats the null baseline on held-out nonlinear data."
             ),
         },

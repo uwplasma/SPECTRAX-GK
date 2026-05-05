@@ -849,19 +849,20 @@ nonlinear heat-flux window. A candidate is promoted only if it:
    :alt: Quasilinear candidate uncertainty gate
    :width: 100%
 
-The current candidates remain rejected. The calibrated linear-weight candidate
-has mean relative error about ``0.624`` with interval coverage ``0.75``; the
-shape-power-law candidate has mean relative error about ``0.664`` with the same
-coverage. The linear-state ridge candidate uses only linear-spectrum features
-(``log_linear_weight``, ``log_abs_growth_mixing_length``,
-``unstable_weight_fraction``, and ``log_weighted_ky_centroid``). It reaches mean
-relative error about ``0.173`` with full interval coverage, but is marked
-``promotion_eligible = false`` because each leave-one-out fit has too few
-training cases for the five fitted parameters. The training-mean null baseline
-is about ``0.170``, so ``promotion_gate.passed = false`` and no candidate is
-available as a user-facing saturation rule. This is the intended behavior:
-uncertainty intervals document model risk, but they do not rescue a model that
-fails held-out predictive skill or data-volume/conditioning checks.
+The richer ``spectral_envelope_ridge`` candidate is now accepted on the current
+seven-case electrostatic portfolio. It uses only two linear-spectrum envelope
+features, the positive-growth ``k_y`` centroid and the heat-flux-weighted
+``k_y`` width, in a three-parameter log-linear ridge fit (intercept plus two
+features). On leave-one-geometry-out scoring it reaches mean relative error
+about ``0.244`` with interval coverage about ``0.857``. That beats both the
+training-mean null baseline (about ``0.821`` on this seven-case leave-one-out
+metric) and the calibrated linear-weight baseline (about ``0.929``). The
+legacy one-scalar rules remain rejected, and the broader four-feature
+``linear_state_ridge`` candidate remains ineligible because its five fitted
+parameters still exceed the current training-volume gate. This is the intended
+research posture: accept the smallest candidate that passes held-out skill and
+coverage, while retaining the simpler failed models as reviewer-facing
+negative controls.
 
 All three model-development reports above now carry an ``input_validation``
 block. It is generated from the nonlinear summary gates before model fitting,
@@ -875,8 +876,8 @@ Dataset-sufficiency gate
 ------------------------
 
 The current electrostatic-compatible dataset is large enough to reject simple
-saturation-rule hypotheses and to support bounded two-parameter candidates, but
-it is still not enough to promote a richer absolute-flux predictor. The
+saturation-rule hypotheses and to promote a bounded richer candidate, but it is
+still not large enough to justify every higher-parameter model class. The
 dataset-sufficiency gate makes that reviewer-facing scope explicit before any
 model fit is attempted. It requires:
 
@@ -896,16 +897,18 @@ model fit is attempted. It requires:
    :alt: Quasilinear dataset-sufficiency promotion gate
    :width: 100%
 
-The tracked gate is intentionally blocked. The current dataset has seven
-electrostatic-compatible cases, two explicit training geometries, and five
+The tracked gate now passes for the current seven-case electrostatic dataset.
+There are seven admitted cases, two explicit training geometries, and five
 held-out geometries. That is enough data volume for the one-parameter
-linear-weight candidate and the two-parameter shape-power-law candidate, but
-not for the five-parameter linear-state ridge candidate. More importantly, the
-downstream skill gates still fail: no candidate beats the training-mean null
-baseline while also passing the ``0.35`` held-out transport gate. KBM is
-listed as a validated but excluded nonlinear case because the present
-quasilinear diagnostics are electrostatic; electromagnetic quasilinear
-field-channel normalization and calibration remain separate future work.
+linear-weight candidate, the two-parameter shape-power-law candidate, and the
+three-parameter ``spectral_envelope_ridge`` candidate, though not yet for the
+five-parameter ``linear_state_ridge`` model. Promotion is therefore scoped:
+the accepted candidate is the reduced spectral-envelope model documented above,
+while higher-parameter candidates remain blocked by the train-to-parameter
+ratio gate. KBM is still listed as a validated but excluded nonlinear case
+because the present quasilinear diagnostics are electrostatic; electromagnetic
+quasilinear field-channel normalization and calibration remain separate future
+work.
 
 VMEC equilibrium portfolio for future holdouts
 ----------------------------------------------
