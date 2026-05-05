@@ -1924,9 +1924,12 @@ Exit gate:
   - when office is reachable, pull the compact circular JSON/CSV/PNG gate
     artifacts, record circular as a failed high-grid convergence candidate, and
     keep it out of calibration;
-  - run the same generated ladder for the next finite unstable candidate,
-    starting with ``wout_ITERModel_reference.nc`` or another vmec_jax
-    ``examples_single_grid`` fixture with a finite unstable linear spectrum;
+  - use the new selector to launch the next finite unstable candidate.
+    Current dry-run output picks ``ITERModel_reference_nc`` at ``ky = 0.4762``
+    and resolves
+    ``/Users/rogeriojorge/local/vmec_jax/examples_single_grid/data/wout_ITERModel_reference.nc``
+    into the standard ``48x48x32`` and ``64x64x40`` ``t = 150`` plus restart
+    ``t = 250`` ladder;
   - admit a new candidate only if the high-grid gate passes, then regenerate
     quasilinear train/holdout, saturation-rule, dataset-sufficiency, and
     manuscript-readiness panels.
