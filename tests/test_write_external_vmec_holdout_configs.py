@@ -37,6 +37,7 @@ def test_write_external_vmec_holdout_configs_restart_ladder(tmp_path: Path) -> N
     assert "ky = 0.3" in first_config
     assert "steps = 4" in first_config
     assert "restart_if_exists = false" in first_config
+    assert 'path = "candidate_nonlinear_t1_n8.out.nc"' in first_config
 
     continuation_config = written[2].path.read_text(encoding="utf-8")
     assert "t_max = 1.5" in continuation_config
