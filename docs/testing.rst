@@ -253,6 +253,12 @@ copy commands for the standard two-grid external-VMEC holdout ladder, e.g.
 ``48x48x32`` and ``64x64x40``. The script does not promote any data by itself;
 the resulting traces must still pass the convergence gate above before they can
 enter quasilinear calibration reports or optimization studies.
+``tools/prepare_external_vmec_holdout_from_screen.py`` is the selector that
+feeds that generator. It reads the tracked linear candidate screen, skips
+excluded or already-audited cases, resolves the chosen VMEC file from the local
+``vmec_jax`` checkout, and writes the next bounded holdout ladder plus a JSON
+selection summary. This removes another manual step from the external-VMEC
+nonlinear campaign and makes office reruns deterministic.
 
 ``tools/check_quasilinear_calibration_inputs.py`` is the corresponding
 calibration-admission guard. It scans quasilinear train/holdout reports and
