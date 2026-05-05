@@ -146,7 +146,9 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
     fluct = _read_json(root, "docs/_static/w7x_fluctuation_spectrum_panel.json")
     ql_inputs = _read_json(root, "docs/_static/quasilinear_validated_calibration_inputs.json")
     ql_report = _read_json(root, "docs/_static/quasilinear_stellarator_train_holdout_report.json")
+    circular_t250_gate = _read_json(root, "docs/_static/external_vmec_circular_t250_high_grid_convergence_gate.json")
     dshape_gate = _read_json(root, "docs/_static/external_vmec_dshape_t250_high_grid_convergence_gate.json")
+    itermodel_gate = _read_json(root, "docs/_static/external_vmec_itermodel_t350_high_grid_convergence_gate.json")
     qh_gate = _read_json(root, "docs/_static/external_vmec_qh_grid_convergence_gate.json")
     qh_high_gate = _read_json(root, "docs/_static/external_vmec_qh_high_grid_convergence_gate.json")
     cth_gate = _read_json(root, "docs/_static/external_vmec_cth_like_grid_convergence_gate.json")
@@ -169,7 +171,9 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
 
     train_count, holdout_count, holdout_names = _holdout_counts(ql_report)
     ql_passed = bool(ql_report.get("passed", False)) if ql_report else False
+    circular_t250_passed = bool((circular_t250_gate or {}).get("gate_report", {}).get("passed", False))
     dshape_passed = bool((dshape_gate or {}).get("gate_report", {}).get("passed", False))
+    itermodel_passed = bool((itermodel_gate or {}).get("gate_report", {}).get("passed", False))
     qh_passed = bool((qh_gate or {}).get("gate_report", {}).get("passed", False))
     qh_high_passed = bool((qh_high_gate or {}).get("gate_report", {}).get("passed", False))
     cth_passed = bool((cth_gate or {}).get("gate_report", {}).get("passed", False))
@@ -326,7 +330,9 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
             "primary_artifacts": [
                 "docs/_static/quasilinear_validated_calibration_inputs.json",
                 "docs/_static/quasilinear_stellarator_train_holdout_report.json",
+                "docs/_static/external_vmec_circular_t250_high_grid_convergence_gate.json",
                 "docs/_static/external_vmec_dshape_t250_high_grid_convergence_gate.json",
+                "docs/_static/external_vmec_itermodel_t350_high_grid_convergence_gate.json",
                 "docs/_static/external_vmec_qh_grid_convergence_gate.json",
                 "docs/_static/external_vmec_qh_high_grid_convergence_gate.json",
                 "docs/_static/external_vmec_cth_like_grid_convergence_gate.json",
@@ -337,15 +343,17 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
                 "holdout_points": holdout_count,
                 "holdout_cases": holdout_names,
                 "calibration_report_passed": ql_passed,
+                "circular_external_vmec_t250_converged": circular_t250_passed,
                 "dshape_external_vmec_t250_converged": dshape_passed,
+                "itermodel_external_vmec_t350_converged": itermodel_passed,
                 "qh_external_vmec_low_to_mid_grid_converged": qh_passed,
                 "qh_external_vmec_mid_to_high_grid_converged": qh_high_passed,
                 "cth_like_external_vmec_converged": cth_passed,
             },
             "next_action": (
-                "Use the admitted D-shaped tokamak external-VMEC t=250 holdout as a negative transfer "
-                "constraint while developing richer saturation models; keep QH and CTH-like excluded until "
-                "their common-window and grid-refinement gates pass."
+                "Use the admitted D-shaped tokamak and ITERModel external-VMEC holdouts as negative transfer "
+                "constraints while developing richer saturation models; keep circular, QH, and CTH-like excluded "
+                "until their common-window and grid-refinement gates pass."
             ),
         },
         {
