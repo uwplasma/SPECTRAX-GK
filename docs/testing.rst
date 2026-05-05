@@ -246,6 +246,14 @@ tracked CTH-like external-VMEC artifact intentionally fails this gate and sets
 ``gate_index_include=false`` because it is a research-planning negative result,
 not a release-blocking validation gate.
 
+``tools/write_external_vmec_holdout_configs.py`` is the reproducibility
+companion for that lane. It writes the fixed-step nonlinear TOMLs and restart
+copy commands for the standard two-grid external-VMEC holdout ladder, e.g.
+``t = 150`` initial runs followed by ``t = 250`` restart continuations at
+``48x48x32`` and ``64x64x40``. The script does not promote any data by itself;
+the resulting traces must still pass the convergence gate above before they can
+enter quasilinear calibration reports or optimization studies.
+
 ``tools/check_quasilinear_calibration_inputs.py`` is the corresponding
 calibration-admission guard. It scans quasilinear train/holdout reports and
 requires every non-audit nonlinear artifact to match a passed nonlinear gate.

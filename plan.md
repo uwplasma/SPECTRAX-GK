@@ -1904,3 +1904,29 @@ Exit gate:
     training-mean null is about ``0.439``. Dataset sufficiency is improved to
     five validated electrostatic cases but still fails the six-case and
     two-training-geometry promotion requirements.
+- Resumed the next external-VMEC nonlinear holdout lane after interruption:
+  - current local branch is clean at ``742cc93`` and GitHub CI for that commit
+    passed;
+  - the office host timed out during artifact inspection, so no new remote runs
+    were launched blindly;
+  - the interrupted circular-tokamak attempt should be treated as a negative
+    or pending convergence artifact until its remote JSON/CSV files are pulled:
+    existing notes show finite ``t = 150`` and ``t = 250`` runs, but the
+    ``t = 250`` high-grid heat-flux means differed by about ``18%`` on the
+    common window and about ``31%`` on the least-trending window, failing the
+    ``0.15`` high-grid promotion envelope;
+  - added ``tools/write_external_vmec_holdout_configs.py`` and tests so the
+    next candidates use a reproducible two-grid ``t = 150`` plus restart
+    ``t = 250`` ladder instead of ad hoc TOMLs;
+  - documented that generator in ``docs/testing.rst`` and
+    ``docs/quasilinear.rst``.
+- Next best steps:
+  - when office is reachable, pull the compact circular JSON/CSV/PNG gate
+    artifacts, record circular as a failed high-grid convergence candidate, and
+    keep it out of calibration;
+  - run the same generated ladder for the next finite unstable candidate,
+    starting with ``wout_ITERModel_reference.nc`` or another vmec_jax
+    ``examples_single_grid`` fixture with a finite unstable linear spectrum;
+  - admit a new candidate only if the high-grid gate passes, then regenerate
+    quasilinear train/holdout, saturation-rule, dataset-sufficiency, and
+    manuscript-readiness panels.

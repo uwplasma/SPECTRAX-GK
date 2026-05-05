@@ -77,7 +77,7 @@
       "coverage_target_percent": 95.0,
       "module": "spectraxgk.quasilinear_calibration",
       "n_artifacts": 10,
-      "n_fast_tests": 4,
+      "n_fast_tests": 5,
       "n_next_tests": 2,
       "n_numerics_contracts": 3,
       "n_physics_contracts": 3,

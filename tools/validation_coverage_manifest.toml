@@ -187,6 +187,7 @@ fast_tests = [
   "tests/test_check_quasilinear_calibration_inputs.py",
   "tests/test_plot_quasilinear_calibration.py",
   "tests/test_plot_external_vmec_nonlinear_convergence_gate.py",
+  "tests/test_write_external_vmec_holdout_configs.py",
 ]
 artifact_paths = [
   "docs/_static/quasilinear_validated_calibration_inputs.json",

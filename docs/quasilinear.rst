@@ -996,6 +996,15 @@ fixtures are close behind, while QI/QA/QH reference fixtures are stable or fail
 the current geometry screen. The screen output is tracked as
 ``docs/_static/external_vmec_candidate_linear_screen.csv``.
 
+Nonlinear follow-up configs for these external VMEC candidates should be
+generated with ``tools/write_external_vmec_holdout_configs.py`` rather than by
+hand. The standard command writes matched ``48x48x32`` and ``64x64x40`` TOMLs
+for a ``t = 150`` initial run and a ``t = 250`` restart continuation, plus a
+JSON manifest containing the launch commands and restart-copy commands. This
+keeps every candidate on the same ITG/adiabatic-electron physics, dissipation,
+sampling, and output convention before the convergence gate decides whether
+the case is admissible.
+
 .. image:: _static/quasilinear_vmec_dshape_linear_spectrum.png
    :alt: External D-shaped tokamak VMEC linear quasilinear feasibility spectrum
    :width: 100%
