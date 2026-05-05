@@ -94,7 +94,7 @@ def _render_config(
     horizon: float,
     dt: float,
     steps: int,
-    output_path: Path,
+    output_path: str,
     restart_if_exists: bool,
     ky: float,
     nl: int,
@@ -211,7 +211,7 @@ sample_stride = {sample_stride}
 diagnostics = true
 
 [output]
-path = "{output_path.as_posix()}"
+path = "{output_path}"
 restart_if_exists = {_toml_bool(restart_if_exists)}
 append_on_restart = true
 save_for_restart = true
@@ -261,7 +261,7 @@ def write_configs(
         for grid in grids:
             stem = f"{case}_nonlinear_t{_horizon_label(horizon)}_{grid.label}"
             config_path = out_dir / f"{stem}.toml"
-            output_path = out_dir / f"{stem}.out.nc"
+            output_filename = f"{stem}.out.nc"
             config_path.write_text(
                 _render_config(
                     case=case,
@@ -270,7 +270,7 @@ def write_configs(
                     horizon=horizon,
                     dt=dt,
                     steps=steps,
-                    output_path=output_path,
+                    output_path=output_filename,
                     restart_if_exists=restart_if_exists,
                     ky=ky,
                     nl=nl,
@@ -294,7 +294,7 @@ def write_configs(
             written.append(
                 WrittenConfig(
                     path=config_path,
-                    output_path=output_path,
+                    output_path=out_dir / output_filename,
                     case=case,
                     grid=grid,
                     horizon=horizon,
