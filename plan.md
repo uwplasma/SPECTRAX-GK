@@ -2195,3 +2195,18 @@ Exit gate:
   - next performance action is not to claim a new speedup, but to isolate
     environment/runtime effects from source effects and then profile the
     linear RHS hot path.
+- Refreshed the linear RHS term profile on current CPU and ``office`` GPU
+  stacks:
+  - reran initial-state and active ``z_wave`` Cyclone profiles with ``8``
+    repeats locally and on one ``office`` RTX A4000 from a fresh detached
+    ``d357597`` clone;
+  - regenerated ``docs/_static/linear_rhs_terms_profile*.{csv,json}``;
+  - current CPU full linear RHS is about ``1.46e-1`` to ``1.53e-1 s`` in the
+    profiler harness, with streaming, linked ``grad_z``, collisions,
+    hypercollisions, and linked ``|k_z|`` as the largest standalone costs;
+  - current GPU full linear RHS is about ``8.95e-3 s`` in both initial and
+    active states, with collisions/hypercollisions/streaming/build-``H`` as the
+    largest standalone costs;
+  - optimization should first target state-window-safe zero-source branches and
+    linked derivative assembly only where identity gates prove the terms remain
+    inactive or equivalent.
