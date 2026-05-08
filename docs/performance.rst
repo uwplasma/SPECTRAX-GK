@@ -171,11 +171,12 @@ grid-mode split is:
 
 The same GPU profile with ``laguerre_mode="spectral"`` measured
 ``nonlinear_bracket=1.28e-3 s`` and ``full_rhs=5.50e-3 s``. CPU full-RHS
-timings were refreshed locally with a bounded five-repeat run:
-``full_rhs=7.08e-2 s`` for grid mode and ``6.38e-2 s`` for spectral mode.
-The short-harness spectral full-RHS ratios are now ``1.11`` on CPU and
-``1.66`` on GPU for this Cyclone case. The spectral mode therefore remains an
-opt-in mode guarded by the case-level parity gate below rather than a global
+timings were refreshed locally with a bounded sequential 20-repeat run:
+``full_rhs=1.30e-1 s`` for grid mode and ``1.26e-1 s`` for spectral mode.
+The short-harness spectral full-RHS ratios are now ``1.03`` on CPU and
+``1.66`` on GPU for this Cyclone case, while the nonlinear-bracket-only ratios
+are ``1.49`` on CPU and ``2.25`` on GPU. The spectral mode therefore remains
+an opt-in mode guarded by the case-level parity gate below rather than a global
 default.
 
 The dominant remaining warm-throughput costs are the compiled linear RHS and
