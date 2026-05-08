@@ -92,6 +92,35 @@ def _best_recurrence_candidate(payload: dict[str, Any] | None) -> dict[str, Any]
     }
 
 
+def _highest_moment_candidate(payload: dict[str, Any] | None) -> dict[str, Any]:
+    rows = [] if payload is None else payload.get("rows", [])
+    if not isinstance(rows, list) or not rows:
+        return {"label": None, "mean_abs_error": None, "tail_std_ratio": None, "hermite_tail": None}
+    finite_rows = [row for row in rows if isinstance(row, dict) and _finite_float(row.get("mean_abs_error")) is not None]
+    if not finite_rows:
+        return {"label": None, "mean_abs_error": None, "tail_std_ratio": None, "hermite_tail": None}
+    best = max(
+        finite_rows,
+        key=lambda row: (
+            int(_finite_float(row.get("Nl"), 0.0) or 0.0),
+            int(_finite_float(row.get("Nm"), 0.0) or 0.0),
+        ),
+    )
+    tail_std = _finite_float(best.get("tail_std"), 0.0) or 0.0
+    ref_tail_std = _finite_float(best.get("reference_tail_std"), 0.0) or 0.0
+    ratio = None if ref_tail_std <= 0.0 else tail_std / ref_tail_std
+    return {
+        "label": str(best.get("label", "unknown")),
+        "Nl": int(_finite_float(best.get("Nl"), 0.0) or 0.0),
+        "Nm": int(_finite_float(best.get("Nm"), 0.0) or 0.0),
+        "mean_abs_error": _finite_float(best.get("mean_abs_error")),
+        "tail_std_ratio": ratio,
+        "hermite_tail": _finite_float(best.get("hermite_tail_at_tmax")),
+        "laguerre_tail": _finite_float(best.get("laguerre_tail_at_tmax")),
+        "source_path": best.get("source_path"),
+    }
+
+
 def _best_hypercollision_probe(payload: dict[str, Any] | None) -> dict[str, Any] | None:
     rows = [] if payload is None else payload.get("rows", [])
     if not isinstance(rows, list) or not rows:
@@ -143,6 +172,7 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
     zonal_ref = _read_json(root, "docs/_static/w7x_zonal_reference_compare.json")
     zonal_recurrence = _read_json(root, "docs/_static/w7x_zonal_recurrence_sweep_kx070.json")
     zonal_hypercollision = _read_json(root, "docs/_static/w7x_zonal_hypercollision_probe_kx070.json")
+    zonal_mixed_lm_resolution = _read_json(root, "docs/_static/w7x_zonal_mixedlm_resolution_kx070.json")
     fluct = _read_json(root, "docs/_static/w7x_fluctuation_spectrum_panel.json")
     ql_inputs = _read_json(root, "docs/_static/quasilinear_validated_calibration_inputs.json")
     ql_report = _read_json(root, "docs/_static/quasilinear_stellarator_train_holdout_report.json")
@@ -163,6 +193,8 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
     zonal_failures = _gate_failures(zonal_ref.get("gate_report") if zonal_ref else None)
     best_recurrence = _best_recurrence_candidate(zonal_recurrence)
     best_hypercollision = _best_hypercollision_probe(zonal_hypercollision)
+    best_mixed_lm_resolution = _best_recurrence_candidate(zonal_mixed_lm_resolution)
+    high_moment_mixed_lm_resolution = _highest_moment_candidate(zonal_mixed_lm_resolution)
     zonal_status = "closed" if zonal_ref and not zonal_failures and zonal_ref.get("validation_status") == "closed" else "open"
     w7x_tem_extension = _read_json(root, "docs/_static/w7x_tem_extension_status.json")
     w7x_tem_rows = (w7x_tem_extension or {}).get("rows", [])
@@ -301,15 +333,18 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
                 "docs/_static/w7x_zonal_reference_compare.json",
                 "docs/_static/w7x_zonal_recurrence_sweep_kx070.json",
                 "docs/_static/w7x_zonal_hypercollision_probe_kx070.json",
+                "docs/_static/w7x_zonal_mixedlm_resolution_kx070.json",
             ],
             "key_metrics": {
                 "failed_reference_gates": zonal_failures,
                 "best_bounded_candidate": best_recurrence,
                 "best_constant_hypercollision_probe": best_hypercollision,
+                "best_mixed_lm_resolution_probe": best_mixed_lm_resolution,
+                "stable_high_moment_mixed_lm_probe": high_moment_mixed_lm_resolution,
             },
             "next_action": (
-                "Move beyond constant Hermite damping: test a physically motivated closure/operator and promote only if "
-                "residual, tail-envelope, and moment-tail gates pass together."
+                "Move beyond constant Hermite and mixed Laguerre-Hermite damping: test a closure/operator that improves "
+                "trace error, late-window envelope, and moment-tail gates together without losing high-moment stability."
             ),
         },
         {
@@ -518,7 +553,11 @@ def write_status_artifacts(payload: dict[str, Any], *, out_png: Path = DEFAULT_O
         key_metrics = lane.get("key_metrics", {})
         if lane["lane"].startswith("W7-X zonal"):
             failed = key_metrics.get("failed_reference_gates", [])
+            mixed = key_metrics.get("best_mixed_lm_resolution_probe", {})
+            tail_ratio = mixed.get("tail_std_ratio") if isinstance(mixed, dict) else None
             metric = f"failed gates: {len(failed)}"
+            if tail_ratio is not None:
+                metric += f"; mixed-LM tail ratio: {tail_ratio:.2f}"
         elif lane["lane"].startswith("W7-X fluctuation"):
             metric = f"samples: {key_metrics.get('time_samples')}"
         elif lane["lane"].startswith("Nonlinear holdouts"):

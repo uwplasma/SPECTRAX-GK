@@ -459,6 +459,18 @@ ratio from ``0.759`` to ``0.600``, but the mean trace error remains
 the digitized reference. The W7-X zonal lane therefore remains a physical
 closure/recurrence problem, not a normalization problem and not a simple
 constant-damping fix.
+The mixed Laguerre-Hermite closure audit then tests the best bounded closure
+candidate under a moment-resolution increase. At ``Nl=16,Nm=64`` and
+``dt=0.05``, the mixed closure gives mean absolute trace error ``0.2753`` and
+late-window standard-deviation ratio ``4.24``. Raising the resolution to
+``Nl=24,Nm=96`` requires ``dt=0.025`` for a finite run; it lowers the
+late-window standard-deviation ratio slightly to ``4.11`` and further reduces
+the Hermite/Laguerre tail fractions, but the trace error remains ``0.2768``.
+The more aggressive ``Nl=32,Nm=128`` run still becomes non-finite by
+``t v_t/a≈10`` even at ``dt=0.025``. This separates a real high-moment
+time-step limitation from the larger physical result: the current mixed
+closure does not converge toward the digitized W7-X trace in a way that can be
+promoted as validation.
 ``tools/generate_w7x_zonal_response_panel.py`` now exposes explicit
 ``--nu-hyper``, ``--nu-hyper-l``, ``--nu-hyper-m``, ``--nu-hyper-lm``,
 ``--p-hyper-*``, ``--hypercollisions-const``, ``--hypercollisions-kz``,
@@ -543,6 +555,16 @@ audits, not validation defaults.
    reduce the long-window trace error or recurrence envelope enough to match
    the digitized stella/GENE reference. This is a documented negative result
    that motivates a more physical closure/operator study.
+
+.. figure:: _static/w7x_zonal_mixedlm_resolution_kx070.png
+   :alt: W7-X zonal-response mixed Laguerre-Hermite resolution audit at kx rho_i 0.07
+
+   Mixed Laguerre-Hermite closure resolution audit for ``k_x rho_i=0.07``. The
+   ``Nl=24,Nm=96`` run is finite only with the smaller ``dt=0.025`` and lowers
+   the late-window variability modestly, but it does not improve the trace
+   error relative to ``Nl=16,Nm=64``. The omitted ``Nl=32,Nm=128`` point is a
+   tracked non-finite result under the same closure family, so this remains an
+   open physics/numerics lane rather than a closed W7-X zonal validation.
 
 Diffrax and nonlinear smoke tests
 ---------------------------------

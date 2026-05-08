@@ -2120,3 +2120,20 @@ Exit gate:
     moments, but even after removing that numerical artifact the closure family
     still does not close the paper-facing trace mismatch, and its stability
     margin degrades as moments increase.
+- Audited and refreshed the repository-facing status layer after the latest
+  W7-X zonal runs:
+  - promoted the compact mixed Laguerre-Hermite resolution artifact to
+    ``docs/_static/w7x_zonal_mixedlm_resolution_kx070.{json,csv,png}`` and
+    linked it from ``docs/testing.rst``;
+  - updated ``tools/build_open_research_lane_status.py`` so the W7-X zonal lane
+    records both the lowest-error mixed-``LM`` row and the highest stable
+    moment-resolution row; the open-lane dashboard now preserves the
+    ``Nl=24,Nm=96,dt=0.025`` evidence instead of only the older constant
+    hypercollision probes;
+  - regenerated ``docs/_static/open_research_lane_status.{json,csv,png,pdf}``;
+  - the current plan state remains: quasilinear candidate-model selection is
+    closed for the scoped electrostatic portfolio; manuscript readiness remains
+    mostly closed with W7-X zonal and TEM deferred by scope; the broader
+    research status still has one open physics lane (W7-X zonal) plus partial
+    W7-X fluctuation/TEM, differentiable-geometry, and profiler-backed
+    performance lanes.

@@ -21,6 +21,13 @@
           "tail_std_ratio": 4.279647778235477,
           "validation_status": "open"
         },
+        "best_mixed_lm_resolution_probe": {
+          "hermite_tail": 0.00015602049252875098,
+          "label": "Nl16 Nm64 mixedLM dt0.05",
+          "mean_abs_error": 0.27533040750757953,
+          "source_path": "tools_out/zonal_response/closure_sweep_manifest/const_nuhlm_0p01/w7x_test4_kx070.out.nc",
+          "tail_std_ratio": 4.237661194874913
+        },
         "failed_reference_gates": [
           "tail_envelope_std_kx050",
           "residual_kx070",
@@ -29,14 +36,25 @@
           "tail_envelope_std_kx100",
           "residual_kx300",
           "tail_envelope_std_kx300"
-        ]
+        ],
+        "stable_high_moment_mixed_lm_probe": {
+          "Nl": 24,
+          "Nm": 96,
+          "hermite_tail": 1.2347881778555376e-05,
+          "label": "Nl24 Nm96 mixedLM dt0.025",
+          "laguerre_tail": 0.008188658227352008,
+          "mean_abs_error": 0.2768222683690581,
+          "source_path": "tools_out/zonal_response/closure_sweep_manifest/const_nuhlm_0p01_nl24_nm96_dt0025_t100/w7x_test4_kx070.out.nc",
+          "tail_std_ratio": 4.11033280204103
+        }
       },
       "lane": "W7-X zonal long-window recurrence/damping",
-      "next_action": "Move beyond constant Hermite damping: test a physically motivated closure/operator and promote only if residual, tail-envelope, and moment-tail gates pass together.",
+      "next_action": "Move beyond constant Hermite and mixed Laguerre-Hermite damping: test a closure/operator that improves trace error, late-window envelope, and moment-tail gates together without losing high-moment stability.",
       "primary_artifacts": [
         "docs/_static/w7x_zonal_reference_compare.json",
         "docs/_static/w7x_zonal_recurrence_sweep_kx070.json",
-        "docs/_static/w7x_zonal_hypercollision_probe_kx070.json"
+        "docs/_static/w7x_zonal_hypercollision_probe_kx070.json",
+        "docs/_static/w7x_zonal_mixedlm_resolution_kx070.json"
       ],
       "status": "open"
     },
