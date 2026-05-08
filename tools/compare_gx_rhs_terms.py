@@ -186,10 +186,6 @@ def _manual_linear_contributions_from_fields(
     imag = jnp.asarray(1j, dtype=out_dtype)
 
     ns = int(G_arr.shape[0]) if G_arr.ndim == 6 else 1
-    charge = _as_species_array(params.charge_sign, ns, "charge_sign").astype(real_dtype)
-    density = _as_species_array(params.density, ns, "density").astype(real_dtype)
-    mass = _as_species_array(params.mass, ns, "mass").astype(real_dtype)
-    temp = _as_species_array(params.temp, ns, "temp").astype(real_dtype)
     tz = _as_species_array(params.tz, ns, "tz").astype(real_dtype)
     vth = _as_species_array(params.vth, ns, "vth").astype(real_dtype)
     tprim = _as_species_array(params.R_over_LTi, ns, "R_over_LTi").astype(real_dtype)
@@ -254,7 +250,7 @@ def _manual_linear_contributions_from_fields(
         H,
         vth=vth,
         bgrad=cache.bgrad,
-        l=cache.l,
+        ell=cache.l,
         sqrt_m=cache.sqrt_m,
         sqrt_m_p1=cache.sqrt_m_p1,
         weight=w_mirror,
@@ -265,7 +261,7 @@ def _manual_linear_contributions_from_fields(
         omega_d_scale=omega_d_scale,
         cv_d=cache.cv_d,
         gb_d=cache.gb_d,
-        l=cache.l,
+        ell=cache.l,
         m=cache.m,
         imag=imag,
         weight_curv=w_curv,
@@ -277,7 +273,7 @@ def _manual_linear_contributions_from_fields(
         omega_d_scale=omega_d_scale,
         cv_d=cache.cv_d,
         gb_d=cache.gb_d,
-        l=cache.l,
+        ell=cache.l,
         m=cache.m,
         imag=imag,
         weight_curv=jnp.asarray(0.0, dtype=real_dtype),
@@ -565,7 +561,6 @@ def main() -> None:
             ky_vals=ky_vals,
             y0_override=args.y0,
         )
-        init_species_index = 0
     elif args.config is not None:
         cfg, geom, grid_full, params, term_cfg = _build_runtime_compare_context(
             args.config,
@@ -576,8 +571,6 @@ def main() -> None:
             ky_vals=ky_vals,
             y0_override=args.y0,
         )
-        params = params
-        init_species_index = 0
     elif args.case == "cyclone":
         cfg = CycloneBaseCase(
             grid=GridConfig(
@@ -606,7 +599,6 @@ def main() -> None:
             damp_ends_widthfrac=0.0,
         )
         params = _apply_gx_hypercollisions(params, nhermite=Nm_use)
-        init_species_index = 0
         grid_full = build_spectral_grid(cfg.grid)
         term_cfg = TermConfig(hypercollisions=0.0, end_damping=0.0)
     else:
@@ -634,7 +626,6 @@ def main() -> None:
             rho_star=KBM_RHO_STAR,
             nhermite=Nm_use,
         )
-        init_species_index = 0
         grid_full = build_spectral_grid(cfg.grid)
         term_cfg = TermConfig(hypercollisions=0.0, end_damping=0.0, bpar=0.0)
 

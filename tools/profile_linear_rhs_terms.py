@@ -135,8 +135,9 @@ def _hypercollision_kz_source(
     """Return the pre-``|k_z|`` source used by production hypercollisions."""
 
     vth_s = vth[:, None, None, None, None, None]
+    kz_weight = jnp.asarray(weight) * jnp.asarray(hypercollisions_kz)
     nu_hyp_m = nu_hyper_m * m_norm_kz_factor * 2.3 * vth_s * jnp.abs(kpar_scale)
-    return weight * hypercollisions_kz * jnp.where(mask_kz, -nu_hyp_m * m_pow, 0.0) * G
+    return kz_weight * jnp.where(mask_kz, -nu_hyp_m * m_pow, 0.0) * G
 
 
 def _safe_ratio(numerator: float | None, denominator: float | None) -> float | None:
@@ -392,7 +393,7 @@ def main() -> None:
                 H,
                 vth=vth,
                 bgrad=cache.bgrad,
-                l=cache.l,
+                ell=cache.l,
                 sqrt_m=cache.sqrt_m,
                 sqrt_m_p1=cache.sqrt_m_p1,
                 weight=jnp.asarray(term_cfg.mirror, dtype=real_dtype),
@@ -405,7 +406,7 @@ def main() -> None:
                 omega_d_scale=omega_d_scale,
                 cv_d=cache.cv_d,
                 gb_d=cache.gb_d,
-                l=cache.l,
+                ell=cache.l,
                 m=cache.m,
                 imag=imag,
                 weight_curv=jnp.asarray(term_cfg.curvature, dtype=real_dtype),

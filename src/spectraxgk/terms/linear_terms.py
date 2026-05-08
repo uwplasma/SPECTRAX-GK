@@ -144,21 +144,21 @@ def mirror_contribution(
     *,
     vth: jnp.ndarray,
     bgrad: jnp.ndarray,
-    l: jnp.ndarray,
+    ell: jnp.ndarray,
     sqrt_m: jnp.ndarray,
     sqrt_m_p1: jnp.ndarray,
     weight: jnp.ndarray,
 ) -> jnp.ndarray:
     axis_l = -5
     axis_m = -4
-    l_p1 = l + 1.0
+    ell_p1 = ell + 1.0
     H_m_p1 = shift_axis(H, 1, axis=axis_m)
     H_m_m1 = shift_axis(H, -1, axis=axis_m)
     mirror_term = (
-        -sqrt_m_p1 * l_p1 * H_m_p1
-        - sqrt_m_p1 * l * shift_axis(H_m_p1, -1, axis=axis_l)
-        + sqrt_m * l * H_m_m1
-        + sqrt_m * l_p1 * shift_axis(H_m_m1, 1, axis=axis_l)
+        -sqrt_m_p1 * ell_p1 * H_m_p1
+        - sqrt_m_p1 * ell * shift_axis(H_m_p1, -1, axis=axis_l)
+        + sqrt_m * ell * H_m_m1
+        + sqrt_m * ell_p1 * shift_axis(H_m_m1, 1, axis=axis_l)
     )
     bgrad_s = bgrad[None, None, None, None, None, :]
     vth_s = vth[:, None, None, None, None, None]
@@ -172,7 +172,7 @@ def curvature_gradb_contribution(
     omega_d_scale: jnp.ndarray,
     cv_d: jnp.ndarray,
     gb_d: jnp.ndarray,
-    l: jnp.ndarray,
+    ell: jnp.ndarray,
     m: jnp.ndarray,
     imag: jnp.ndarray,
     weight_curv: jnp.ndarray,
@@ -188,9 +188,9 @@ def curvature_gradb_contribution(
     )
     axis_l = -5
     gradb_term = (
-        (l + 1.0) * shift_axis(H, 1, axis=axis_l)
-        + (2.0 * l + 1.0) * H
-        + l * shift_axis(H, -1, axis=axis_l)
+        (ell + 1.0) * shift_axis(H, 1, axis=axis_l)
+        + (2.0 * ell + 1.0) * H
+        + ell * shift_axis(H, -1, axis=axis_l)
     )
     tz_s = tz[:, None, None, None, None, None]
     icv = imag * tz_s * omega_d_scale * cv_d[None, None, None, ...]
@@ -419,6 +419,10 @@ def hypercollisions_contribution(
     dG = weight * hypercollisions_const * jnp.where(mask_const, const_term, 0.0) * G
     dG = dG - weight * nu_hyper * hyper_ratio * G
 
+    kz_weight = jnp.asarray(weight) * jnp.asarray(hypercollisions_kz)
+    if not isinstance(kz_weight, jax.core.Tracer) and np.all(np.asarray(kz_weight) == 0.0):
+        return dG
+
     nu_hyp_m = (
         nu_hyper_m
         * m_norm_kz_factor
@@ -426,10 +430,7 @@ def hypercollisions_contribution(
         * vth_s
         * jnp.abs(kpar_scale)
     )
-    kz_source = weight * hypercollisions_kz * jnp.where(mask_kz, -nu_hyp_m * m_pow, 0.0) * G
-    kz_weight = jnp.asarray(weight) * jnp.asarray(hypercollisions_kz)
-    if not isinstance(kz_weight, jax.core.Tracer) and np.all(np.asarray(kz_weight) == 0.0):
-        return dG
+    kz_source = kz_weight * jnp.where(mask_kz, -nu_hyp_m * m_pow, 0.0) * G
     if linked_indices and linked_kz:
         kz_term = abs_z_linked_fft(
             kz_source,

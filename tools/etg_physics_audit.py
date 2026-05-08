@@ -106,7 +106,6 @@ def main() -> int:
     _max_diff("cv0", cv0_s, cv0_gx)
     _max_diff("gb0", gb0_s, gb0_gx)
 
-    ky_idx = int(np.argmin(np.abs(np.asarray(grid.ky) - args.ky)))
     ky = np.asarray(grid.ky)
     kx = np.asarray(grid.kx)
 
@@ -122,7 +121,7 @@ def main() -> int:
     b = kperp2_s * (_rho_e_over_rho_i(float(cfg.model.mass_ratio), float(cfg.model.Te_over_Ti)) ** 2)
     Jl = np.asarray(J_l_all(jnp.asarray(b), l_max=args.Nl - 1))
     Jl_gx = np.exp(-0.5 * b)[None, ...] * ((-0.5 * b) ** np.arange(args.Nl)[:, None, None, None]) / np.array(
-        [math.factorial(l) for l in range(args.Nl)]
+        [math.factorial(ell) for ell in range(args.Nl)]
     )[:, None, None, None]
     _max_diff("J_l", Jl, Jl_gx)
 
@@ -133,7 +132,7 @@ def main() -> int:
     H = rng.normal(size=(1, Nl, Nm, ky.shape[0], kx.shape[0], theta.shape[0])) + 1j * rng.normal(
         size=(1, Nl, Nm, ky.shape[0], kx.shape[0], theta.shape[0])
     )
-    l = np.arange(Nl)[:, None, None, None, None]
+    ell = np.arange(Nl)[:, None, None, None, None]
     m = np.arange(Nm)[None, :, None, None, None]
     imag = 1j
     tz = np.array([1.0])
@@ -144,7 +143,7 @@ def main() -> int:
         omega_d_scale=jnp.asarray(omega_d_scale),
         cv_d=jnp.asarray(cv_d_s),
         gb_d=jnp.asarray(gb_d_s),
-        l=jnp.asarray(l),
+        ell=jnp.asarray(ell),
         m=jnp.asarray(m),
         imag=jnp.asarray(imag),
         weight_curv=jnp.asarray(1.0),
@@ -175,7 +174,7 @@ def main() -> int:
     ) * H_m_m2
     H_l_p1 = shift(H, 1, axis=1)
     H_l_m1 = shift(H, -1, axis=1)
-    gradb = (l + 1.0) * H_l_p1 + (2.0 * l + 1.0) * H + l * H_l_m1
+    gradb = (ell + 1.0) * H_l_p1 + (2.0 * ell + 1.0) * H + ell * H_l_m1
     dG_gx = -1j * cv_d_s[None, None, None, ...] * curv - 1j * gb_d_s[None, None, None, ...] * gradb
     _max_diff("curv/gradb rhs", dG, dG_gx)
 

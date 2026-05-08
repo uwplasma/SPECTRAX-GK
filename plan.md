@@ -2046,3 +2046,152 @@ Exit gate:
     ``linear_state_ridge`` candidate remains blocked by the
     train-to-parameter-ratio gate, and electromagnetic/KBM quasilinear
     promotion remains separate future work.
+- Tightened the reproducibility path for the remaining W7-X zonal blocker:
+  - office was unreachable during this pass, so no new long zonal runs were
+    launched blindly;
+  - added ``tools/write_w7x_zonal_closure_sweep.py`` plus focused tests to
+    write one manifest for the next paper-facing ``k_x rho_i = 0.07`` operator
+    sweep;
+  - the manifest separates closure families one knob at a time:
+    baseline, constant-Hermite, ``|k_z|``-weighted Hermite, mixed
+    Laguerre-Hermite, Laguerre-only, and isotropic hypercollision variants;
+  - the JSON output carries both the exact
+    ``tools/generate_w7x_zonal_response_panel.py`` launch commands and the
+    matching ``tools/plot_w7x_zonal_closure_ladder.py`` refresh command, so the
+    next office window can be used entirely for bounded physics runs instead of
+    ad hoc setup.
+- Resumed the bounded W7-X zonal closure sweep on ``office`` and closed the
+  first operator tranche as a tracked negative result:
+  - syncing the current zonal driver onto ``office`` surfaced a real runtime
+    bug in the paper-facing zonal initializer path: ``build_linear_cache`` used
+    ``shat`` inside the non-twist FFT branch even when no twist-shift boundary
+    had defined it;
+  - fixed ``src/spectraxgk/linear.py`` so the non-twist branch uses
+    ``geom_data.s_hat`` directly and added a regression in
+    ``tests/test_linear_helpers_extra.py`` covering periodic non-twist cache
+    construction;
+  - after syncing the fixed package to ``office``, completed a bounded
+    ``k_x rho_i = 0.07``, ``Nl=16``, ``Nm=64``, ``dt=0.05``, ``t_max=100``
+    closure tranche against the digitized W7-X reference and stored the ladder
+    summary in
+    ``tools_out/zonal_response/closure_sweep_manifest/w7x_zonal_closure_ladder_partial.{json,csv,png}``;
+  - outcome of the first physically distinct closure families:
+    baseline MAE ``0.2861`` with late-window ``tail_std`` ``0.1131`` and
+    Hermite-tail fraction ``0.388``;
+    ``|k_z|``-weighted Hermite hypercollision reduces the Hermite tail
+    (down to ``0.282`` at ``nu_hyper_m=0.03``) but worsens trace error and
+    late-window variability;
+    mixed Laguerre-Hermite hypercollision improves MAE slightly
+    (``0.2755`` at ``nu_hyper_lm=0.01``/``0.03``) and nearly eliminates the
+    Hermite tail, but it also increases late-window variability to about
+    ``0.117``;
+  - current conclusion remains unchanged at manuscript scope:
+    no tested physical closure in this bounded tranche improves the paper-facing
+    W7-X zonal trace and the late-time recurrence metric together, so the lane
+    stays open as a physics blocker rather than a normalization or runtime bug.
+- Extended the W7-X mixed Laguerre-Hermite closure lane with a bounded
+  moment-resolution audit:
+  - the first ``Nl=24, Nm=96`` and ``Nl=32, Nm=128`` retries at ``dt=0.05``
+    failed with non-finite ``Wg_t`` diagnostics, which exposed a second
+    numerical issue rather than a clean physics conclusion;
+  - fixed the high-order Hermite hypercollision cache representation in
+    ``src/spectraxgk/linear.py`` by storing the ``k_z`` Hermite factor in a
+    normalized finite form and moved the zero-weight early return ahead of the
+    ``k_z`` contribution assembly in ``src/spectraxgk/terms/linear_terms.py``;
+    mirrored the same safe algebra in
+    ``tools/profile_linear_rhs_terms.py`` and added a regression in
+    ``tests/test_linear_helpers_extra.py`` for ``Nm=128``, ``p_hyper_m=20``;
+  - with that fix in place, the mixed ``LM`` closure at ``Nl=24, Nm=96``
+    remains stable when the time step is reduced to ``dt=0.025`` out to
+    ``t_max=100`` and yields
+    ``MAE=0.2768``, ``tail_std=0.1127``, and
+    ``tail_std_ratio=4.11`` versus the digitized reference;
+  - compared with the baseline mixed ``LM`` run
+    (``Nl=16, Nm=64``, ``dt=0.05``:
+    ``MAE=0.2753``, ``tail_std=0.1162``, ``tail_std_ratio=4.24``),
+    higher moment resolution reduces the late-window variability modestly and
+    further suppresses Hermite/Laguerre tail fractions, but it does not improve
+    the paper-facing trace error;
+  - the more aggressive ``Nl=32, Nm=128`` point still goes non-finite even at
+    ``dt=0.025`` (failure around ``t≈10``), so the current mixed ``LM``
+    closure is not robust under further moment refinement;
+  - current W7-X zonal interpretation is therefore sharper:
+    part of the earlier recurrence growth was a time-step limitation at higher
+    moments, but even after removing that numerical artifact the closure family
+    still does not close the paper-facing trace mismatch, and its stability
+    margin degrades as moments increase.
+- Audited and refreshed the repository-facing status layer after the latest
+  W7-X zonal runs:
+  - promoted the compact mixed Laguerre-Hermite resolution artifact to
+    ``docs/_static/w7x_zonal_mixedlm_resolution_kx070.{json,csv,png}`` and
+    linked it from ``docs/testing.rst``;
+  - updated ``tools/build_open_research_lane_status.py`` so the W7-X zonal lane
+    records both the lowest-error mixed-``LM`` row and the highest stable
+    moment-resolution row; the open-lane dashboard now preserves the
+    ``Nl=24,Nm=96,dt=0.025`` evidence instead of only the older constant
+    hypercollision probes;
+  - regenerated ``docs/_static/open_research_lane_status.{json,csv,png,pdf}``;
+  - the current plan state remains: quasilinear candidate-model selection is
+    closed for the scoped electrostatic portfolio; manuscript readiness remains
+    mostly closed with W7-X zonal and TEM deferred by scope; the broader
+    research status still has one open physics lane (W7-X zonal) plus partial
+    W7-X fluctuation/TEM, differentiable-geometry, and profiler-backed
+    performance lanes.
+- Completed a repository-hygiene follow-up after the audit showed only
+  ``289 kB`` of tracked-size headroom under the ``50 MB`` CI gate:
+  - compressed large checked-in documentation PNG previews to lightweight
+    ``1800 px``/``192``-color previews while leaving JSON/CSV evidence, raw
+    local ``tools_out`` outputs, and release-manifest-pinned previews
+    untouched;
+  - tracked size dropped from ``49.71 MB`` to about ``40.16 MB``, restoring
+    enough headroom for near-term validation-dashboard updates without raising
+    the CI size cap;
+  - added ``tools/compress_docs_previews.py`` and a regression test so future
+    figure additions have a repeatable cleanup path that skips
+    ``tools/release_artifact_manifest.toml`` entries by default;
+  - updated the artifact-hygiene documentation to distinguish release-manifest
+    preview compression from ordinary docs-preview compression.
+- Migrated the current high-resolution PDF companions out of Git and into the
+  ``v1.5.0`` GitHub release:
+  - uploaded ``benchmark_readme_panel.pdf``,
+    ``benchmark_core_nonlinear_atlas.pdf``, and
+    ``gx_publication_panel.pdf`` as immutable release assets;
+  - recorded ``release_tag``/``release_url`` in
+    ``tools/release_artifact_manifest.toml`` while preserving each original
+    byte count and SHA-256 checksum;
+  - updated ``tools/check_release_artifact_manifest.py`` so migrated
+    ``move_to_release`` entries can be absent from Git only when the manifest
+    carries release provenance;
+  - removed the PDFs from the tracked tree and removed the temporary
+    repository-size whitelist for ``benchmark_readme_panel.pdf``.
+- Refreshed the local CPU nonlinear RHS split profile for the performance lane:
+  - reran ``tools/profile_nonlinear_step_split.py`` sequentially for Cyclone
+    grid and spectral Laguerre nonlinear modes with ``20`` repeats to avoid
+    local profiler contention;
+  - regenerated ``docs/_static/nonlinear_rhs_profile.{csv,json,png,pdf}``
+    companions through ``tools/plot_nonlinear_rhs_profile.py``;
+  - current bounded CPU result is a modest full-RHS spectral ratio
+    (``grid/spectral = 1.03``) but a clearer nonlinear-bracket ratio
+    (``1.49``), so the performance conclusion remains scoped: spectral
+    Laguerre mode is a gated opt-in path, not a global default, and the linear
+    RHS remains the dominant warm-throughput target.
+- Tightened release-facing nonlinear terminology:
+  - removed stale source and testing-doc wording that described the nonlinear
+    path as a placeholder even though the pseudo-spectral E×B/electromagnetic
+    bracket is implemented and tested;
+  - kept the explicit zero-output helper named as a shape-only/disabled-term
+    test utility so source comments match the implemented physics path.
+- Refreshed the matched short-harness nonlinear RHS profile on CPU and the
+  ``office`` GPU:
+  - used a fresh detached ``de826d8`` clone on ``office`` to avoid dirty
+    worktrees and forced ``PYTHONPATH`` to the current checkout;
+  - reran the Cyclone short-case grid/spectral profiler with ``10`` repeats on
+    local CPU and one RTX A4000 (``CUDA_VISIBLE_DEVICES=0``);
+  - regenerated ``docs/_static/nonlinear_rhs_profile.{csv,json,png,pdf}``
+    companions;
+  - current scoped result: GPU spectral mode reduces the nonlinear bracket by
+    about ``3.25x`` and full RHS by about ``1.69x`` relative to grid mode, but
+    the refreshed ``office`` timings are slower than the older stale artifact;
+  - next performance action is not to claim a new speedup, but to isolate
+    environment/runtime effects from source effects and then profile the
+    linear RHS hot path.
