@@ -1,7 +1,8 @@
 [policy]
-# Current tracked docs previews and validation artifacts sit just under 48 MB.
-# Keep a small buffer while the separate release-artifact migration lane moves
-# more high-resolution companions out of Git.
+# Current tracked docs previews and validation artifacts sit near 40 MB after
+# the lightweight preview trim. Keep a buffer while the separate
+# release-artifact migration lane moves more high-resolution companions out of
+# Git.
 max_tracked_total_bytes = 50000000
 max_unlisted_tracked_file_bytes = 1000000
 
