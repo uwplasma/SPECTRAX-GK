@@ -18,6 +18,7 @@ from spectraxgk.geometry import (
 )
 from spectraxgk.gyroaverage import J_l_all, bessel_j0, bessel_j1, gx_laguerre_transform
 from spectraxgk.grids import SpectralGrid
+from spectraxgk.velocity_maps import VelocityMapConfig
 
 if TYPE_CHECKING:
     from spectraxgk.terms.config import TermConfig
@@ -1173,6 +1174,40 @@ def apply_laguerre_x(G: jnp.ndarray) -> jnp.ndarray:
     )
 
 
+def apply_mapped_hermite_v(
+    G: jnp.ndarray,
+    velocity_map: VelocityMapConfig | None = None,
+) -> jnp.ndarray:
+    """Multiply by ``v_parallel = u + a vhat`` in the retained Hermite basis."""
+
+    if velocity_map is None:
+        return apply_hermite_v(G)
+    shift = jnp.asarray(velocity_map.parallel_shift, dtype=jnp.real(G).dtype)
+    scale = velocity_map.parallel_scale.astype(jnp.real(G).dtype)
+    return shift * G + scale * apply_hermite_v(G)
+
+
+def apply_mapped_hermite_v2(
+    G: jnp.ndarray,
+    velocity_map: VelocityMapConfig | None = None,
+) -> jnp.ndarray:
+    """Multiply by ``(u + a vhat)^2`` in the retained Hermite basis."""
+
+    return apply_mapped_hermite_v(apply_mapped_hermite_v(G, velocity_map), velocity_map)
+
+
+def apply_mapped_laguerre_x(
+    G: jnp.ndarray,
+    velocity_map: VelocityMapConfig | None = None,
+) -> jnp.ndarray:
+    """Multiply by the mapped perpendicular-energy coordinate ``b * muhat``."""
+
+    if velocity_map is None:
+        return apply_laguerre_x(G)
+    scale = velocity_map.perpendicular_scale.astype(jnp.real(G).dtype)
+    return scale * apply_laguerre_x(G)
+
+
 def shift_axis(arr: jnp.ndarray, offset: int, axis: int) -> jnp.ndarray:
     """Shift an array along an axis with zero padding (non-periodic)."""
 
@@ -1195,11 +1230,19 @@ def shift_axis(arr: jnp.ndarray, offset: int, axis: int) -> jnp.ndarray:
 
 
 def energy_operator(
-    G: jnp.ndarray, coeff_const: float, coeff_par: float, coeff_perp: float
+    G: jnp.ndarray,
+    coeff_const: float,
+    coeff_par: float,
+    coeff_perp: float,
+    velocity_map: VelocityMapConfig | None = None,
 ) -> jnp.ndarray:
     """Apply the energy operator (1 + v_par^2 + mu) in Hermite-Laguerre space."""
 
-    return coeff_const * G + coeff_par * apply_hermite_v2(G) + coeff_perp * apply_laguerre_x(G)
+    return (
+        coeff_const * G
+        + coeff_par * apply_mapped_hermite_v2(G, velocity_map)
+        + coeff_perp * apply_mapped_laguerre_x(G, velocity_map)
+    )
 
 
 def diamagnetic_drive_coeffs(
@@ -1209,12 +1252,13 @@ def diamagnetic_drive_coeffs(
     coeff_const: float,
     coeff_par: float,
     coeff_perp: float,
+    velocity_map: VelocityMapConfig | None = None,
 ) -> jnp.ndarray:
     """Return velocity-space coefficients for (1 + eta_i(E - 3/2))."""
 
     e00 = jnp.zeros((Nl, Nm, 1, 1, 1))
     e00 = e00.at[0, 0, 0, 0, 0].set(1.0)
-    energy_e00 = energy_operator(e00, coeff_const, coeff_par, coeff_perp)
+    energy_e00 = energy_operator(e00, coeff_const, coeff_par, coeff_perp, velocity_map=velocity_map)
     coeffs = e00 + eta_i * (energy_e00 - 1.5 * e00)
     return coeffs[:, :, 0, 0, 0]
 

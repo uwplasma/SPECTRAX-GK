@@ -35,6 +35,30 @@ This module does not yet modify the gyrokinetic solver. Linear and nonlinear
 operator integration should happen only after the standalone algebra and
 AD/finite-difference tests are trusted.
 
+Linear operator helpers
+-----------------------
+
+The first solver-facing layer is deliberately small. ``spectraxgk.linear`` now
+exposes optional mapped multiplication helpers,
+``apply_mapped_hermite_v``, ``apply_mapped_hermite_v2``, and
+``apply_mapped_laguerre_x``, together with a ``velocity_map`` argument on the
+energy and diamagnetic-drive coefficient helpers. With ``velocity_map=None`` or
+an identity ``VelocityMapConfig``, these paths reduce exactly to the existing GX
+Hermite-Laguerre ladder convention. With a non-identity map, they apply the
+fixed-shape substitutions
+
+.. code-block:: text
+
+   v_parallel       -> u + a * vhat
+   v_parallel**2    -> (u + a * vhat)**2
+   perpendicular E  -> b * muhat
+
+This branch intentionally stops at operator helpers. The full term-wise
+gyrokinetic RHS contains additional equilibrium-weight, field-coupling, mirror,
+collision, and electromagnetic pieces, so it should not be described as a
+complete mapped-basis gyrokinetic solve until those paths receive separate
+identity, AD/FD, and physics-regression tests.
+
 Why this is not cell AMR
 ------------------------
 
