@@ -2151,3 +2151,16 @@ Exit gate:
     ``tools/release_artifact_manifest.toml`` entries by default;
   - updated the artifact-hygiene documentation to distinguish release-manifest
     preview compression from ordinary docs-preview compression.
+- Migrated the current high-resolution PDF companions out of Git and into the
+  ``v1.5.0`` GitHub release:
+  - uploaded ``benchmark_readme_panel.pdf``,
+    ``benchmark_core_nonlinear_atlas.pdf``, and
+    ``gx_publication_panel.pdf`` as immutable release assets;
+  - recorded ``release_tag``/``release_url`` in
+    ``tools/release_artifact_manifest.toml`` while preserving each original
+    byte count and SHA-256 checksum;
+  - updated ``tools/check_release_artifact_manifest.py`` so migrated
+    ``move_to_release`` entries can be absent from Git only when the manifest
+    carries release provenance;
+  - removed the PDFs from the tracked tree and removed the temporary
+    repository-size whitelist for ``benchmark_readme_panel.pdf``.
