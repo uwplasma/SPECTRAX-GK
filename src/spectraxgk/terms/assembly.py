@@ -24,6 +24,14 @@ from spectraxgk.terms.linear_terms import (
     mirror_contribution,
     streaming_contribution_gx,
 )
+from spectraxgk.velocity_maps import VelocityMapConfig
+
+
+def _resolve_velocity_map(
+    params: LinearParams,
+    velocity_map: VelocityMapConfig | None,
+) -> VelocityMapConfig | None:
+    return velocity_map if velocity_map is not None else params.velocity_map
 
 
 def _apply_external_phi_source(
@@ -50,10 +58,12 @@ def assemble_rhs_cached(
     use_custom_vjp: bool = True,
     dt: jnp.ndarray | float | None = None,
     external_phi: jnp.ndarray | float | None = None,
+    velocity_map: VelocityMapConfig | None = None,
 ) -> Tuple[jnp.ndarray, FieldState]:
     """Assemble the RHS from term-wise modules using a precomputed cache."""
 
     term_cfg = terms or TermConfig()
+    velocity_map_cfg = _resolve_velocity_map(params, velocity_map)
 
     out_dtype = jnp.result_type(G, jnp.complex64)
     G = jnp.asarray(G, dtype=out_dtype)
@@ -153,6 +163,7 @@ def assemble_rhs_cached(
         linked_gather_mask=cache.linked_gather_mask,
         linked_use_gather=cache.linked_use_gather,
         use_twist_shift=cache.use_twist_shift,
+        velocity_map=velocity_map_cfg,
     )
     dG = dG + mirror_contribution(
         H,
@@ -174,6 +185,7 @@ def assemble_rhs_cached(
         imag=imag,
         weight_curv=w_curv,
         weight_gradb=w_gradb,
+        velocity_map=velocity_map_cfg,
     )
     dG = diamagnetic_contribution(
         dG,
@@ -262,6 +274,7 @@ def assemble_rhs_terms_cached(
     terms: TermConfig | None = None,
     use_custom_vjp: bool = True,
     dt: jnp.ndarray | float | None = None,
+    velocity_map: VelocityMapConfig | None = None,
 ) -> tuple[jnp.ndarray, FieldState, dict[str, jnp.ndarray]]:
     """Assemble per-term RHS contributions (debug/diagnostic path).
 
@@ -269,6 +282,7 @@ def assemble_rhs_terms_cached(
     """
 
     term_cfg = terms or TermConfig()
+    velocity_map_cfg = _resolve_velocity_map(params, velocity_map)
 
     out_dtype = jnp.result_type(G, jnp.complex64)
     G = jnp.asarray(G, dtype=out_dtype)
@@ -368,6 +382,7 @@ def assemble_rhs_terms_cached(
         linked_gather_mask=cache.linked_gather_mask,
         linked_use_gather=cache.linked_use_gather,
         use_twist_shift=cache.use_twist_shift,
+        velocity_map=velocity_map_cfg,
     )
     contrib["mirror"] = mirror_contribution(
         H,
@@ -389,6 +404,7 @@ def assemble_rhs_terms_cached(
         imag=imag,
         weight_curv=w_curv,
         weight_gradb=jnp.asarray(0.0, dtype=real_dtype),
+        velocity_map=velocity_map_cfg,
     )
     contrib["gradb"] = curvature_gradb_contribution(
         H,
@@ -401,6 +417,7 @@ def assemble_rhs_terms_cached(
         imag=imag,
         weight_curv=jnp.asarray(0.0, dtype=real_dtype),
         weight_gradb=w_gradb,
+        velocity_map=velocity_map_cfg,
     )
     zero = jnp.zeros_like(G)
     contrib["diamagnetic"] = diamagnetic_contribution(
@@ -505,10 +522,19 @@ def assemble_rhs_cached_jit(
     terms: TermConfig,
     dt: jnp.ndarray | float | None = None,
     external_phi: jnp.ndarray | float | None = None,
+    velocity_map: VelocityMapConfig | None = None,
 ) -> Tuple[jnp.ndarray, FieldState]:
     """Jitted wrapper for cached RHS assembly."""
 
-    return assemble_rhs_cached(G, cache, params, terms=terms, dt=dt, external_phi=external_phi)
+    return assemble_rhs_cached(
+        G,
+        cache,
+        params,
+        terms=terms,
+        dt=dt,
+        external_phi=external_phi,
+        velocity_map=velocity_map,
+    )
 
 
 def compute_fields_cached(
@@ -581,8 +607,17 @@ def assemble_rhs(
     cache: LinearCache | None = None,
     dt: jnp.ndarray | float | None = None,
     external_phi: jnp.ndarray | float | None = None,
+    velocity_map: VelocityMapConfig | None = None,
 ) -> Tuple[jnp.ndarray, FieldState]:
     """Assemble the RHS from term-wise modules."""
 
     cache = cache or build_linear_cache(grid, geom, params, Nl, Nm)
-    return assemble_rhs_cached(G, cache, params, terms=terms, dt=dt, external_phi=external_phi)
+    return assemble_rhs_cached(
+        G,
+        cache,
+        params,
+        terms=terms,
+        dt=dt,
+        external_phi=external_phi,
+        velocity_map=velocity_map,
+    )

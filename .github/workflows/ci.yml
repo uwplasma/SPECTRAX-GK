@@ -131,6 +131,7 @@ jobs:
               tests/test_linear.py
               tests/test_full_operator.py
               tests/test_linear_velocity_maps.py
+              tests/test_linear_rhs_velocity_maps.py
               tests/test_terms_assembly.py
               tests/test_terms_fields.py
               tests/test_terms_integrators.py
@@ -242,6 +243,7 @@ jobs:
             tests/test_analysis.py \
             tests/test_velocity_maps.py \
             tests/test_linear_velocity_maps.py \
+            tests/test_linear_rhs_velocity_maps.py \
             --maxfail=1 --disable-warnings \
             --cov=spectraxgk \
             --cov-report=xml:coverage-fast.xml \

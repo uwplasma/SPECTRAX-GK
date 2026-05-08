@@ -59,6 +59,29 @@ collision, and electromagnetic pieces, so it should not be described as a
 complete mapped-basis gyrokinetic solve until those paths receive separate
 identity, AD/FD, and physics-regression tests.
 
+Linear RHS hooks
+----------------
+
+The next opt-in layer threads ``VelocityMapConfig`` through the cached linear
+RHS and uses it in the velocity factors for streaming, curvature drift, and
+grad-B drift. The substitutions are still fixed-shape:
+
+.. code-block:: text
+
+   v_parallel streaming factor  -> u + a * vhat
+   curvature v_parallel**2      -> (u + a * vhat)**2
+   grad-B perpendicular energy  -> b * muhat
+
+The identity map remains an exact regression against the default RHS. The
+mapped RHS path also has AD/finite-difference tests with respect to ``u``,
+``log(a)``, and ``log(b)``.
+
+This is not yet a complete mapped-basis gyrokinetic model. The field solve,
+mirror force, collision model, diamagnetic drive, and electromagnetic field
+couplings retain the existing basis convention in this layer. Those pieces need
+separate derivation and physics-regression tests before any production or
+publication claim about mapped-basis gyrokinetic dynamics.
+
 Why this is not cell AMR
 ------------------------
 

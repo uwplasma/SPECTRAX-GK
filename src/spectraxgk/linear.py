@@ -76,6 +76,7 @@ class LinearParams:
     apar_beta_scale: float = 0.5
     ampere_g0_scale: float = 0.5
     bpar_beta_scale: float = 0.5
+    velocity_map: VelocityMapConfig | None = None
 
     def tree_flatten(self):
         children = (
@@ -119,6 +120,7 @@ class LinearParams:
             self.apar_beta_scale,
             self.ampere_g0_scale,
             self.bpar_beta_scale,
+            self.velocity_map,
         )
         return children, None
 
@@ -1390,6 +1392,7 @@ def linear_rhs(
     terms: LinearTerms | None = None,
     *,
     dt: jnp.ndarray | float | None = None,
+    velocity_map: VelocityMapConfig | None = None,
 ) -> tuple[jnp.ndarray, jnp.ndarray]:
     """Compute the linear RHS and electrostatic potential.
 
@@ -1412,7 +1415,7 @@ def linear_rhs(
     else:
         raise ValueError("G must have shape (Nl, Nm, Ny, Nx, Nz) or (Ns, Nl, Nm, Ny, Nx, Nz)")
     cache = build_linear_cache(grid, geom, params, Nl, Nm)
-    return linear_rhs_cached(G, cache, params, terms=terms, dt=dt)
+    return linear_rhs_cached(G, cache, params, terms=terms, dt=dt, velocity_map=velocity_map)
 
 
 def linear_rhs_cached(
@@ -1424,6 +1427,7 @@ def linear_rhs_cached(
     use_jit: bool = True,
     use_custom_vjp: bool = True,
     dt: jnp.ndarray | float | None = None,
+    velocity_map: VelocityMapConfig | None = None,
 ) -> tuple[jnp.ndarray, jnp.ndarray]:
     """Compute the linear RHS using precomputed geometry arrays."""
 
@@ -1432,7 +1436,7 @@ def linear_rhs_cached(
     term_cfg = linear_terms_to_term_config(terms)
 
     if use_jit:
-        dG, fields = assemble_rhs_cached_jit(G, cache, params, term_cfg, dt)
+        dG, fields = assemble_rhs_cached_jit(G, cache, params, term_cfg, dt, velocity_map=velocity_map)
     else:
         dG, fields = assemble_rhs_cached(
             G,
@@ -1441,6 +1445,7 @@ def linear_rhs_cached(
             terms=term_cfg,
             use_custom_vjp=use_custom_vjp,
             dt=dt,
+            velocity_map=velocity_map,
         )
     return dG, fields.phi
 

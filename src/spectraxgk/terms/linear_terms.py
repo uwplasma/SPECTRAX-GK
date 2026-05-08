@@ -14,6 +14,83 @@ from spectraxgk.terms.operators import (
     shift_axis,
     streaming_term,
 )
+from spectraxgk.velocity_maps import VelocityMapConfig
+
+
+def _hermite_v(G: jnp.ndarray, *, sqrt_p: jnp.ndarray | None = None, sqrt_m: jnp.ndarray | None = None) -> jnp.ndarray:
+    axis_m = -4
+    Nm = G.shape[axis_m]
+    if sqrt_p is None or sqrt_m is None:
+        m = jnp.arange(Nm, dtype=jnp.real(G).dtype)
+        sqrt_p = jnp.sqrt((m + 1.0) / 2.0)
+        sqrt_m = jnp.sqrt(m / 2.0)
+        shape = [1] * G.ndim
+        shape[axis_m] = Nm
+        sqrt_p = sqrt_p.reshape(shape)
+        sqrt_m = sqrt_m.reshape(shape)
+    return sqrt_p * shift_axis(G, 1, axis=axis_m) + sqrt_m * shift_axis(G, -1, axis=axis_m)
+
+
+def _hermite_v2_direct(G: jnp.ndarray) -> jnp.ndarray:
+    axis_m = -4
+    Nm = G.shape[axis_m]
+    m = jnp.arange(Nm, dtype=jnp.real(G).dtype)
+    shape = [1] * G.ndim
+    shape[axis_m] = Nm
+    m = m.reshape(shape)
+    return (
+        jnp.sqrt((m + 1.0) * (m + 2.0)) * shift_axis(G, 2, axis=axis_m)
+        + (2.0 * m + 1.0) * G
+        + jnp.sqrt(m * (m - 1.0)) * shift_axis(G, -2, axis=axis_m)
+    )
+
+
+def _laguerre_x(G: jnp.ndarray) -> jnp.ndarray:
+    axis_l = -5
+    Nl = G.shape[axis_l]
+    ell = jnp.arange(Nl, dtype=jnp.real(G).dtype)
+    shape = [1] * G.ndim
+    shape[axis_l] = Nl
+    ell = ell.reshape(shape)
+    return (
+        (2.0 * ell + 1.0) * G
+        - (ell + 1.0) * shift_axis(G, 1, axis=axis_l)
+        - ell * shift_axis(G, -1, axis=axis_l)
+    )
+
+
+def _mapped_hermite_v(
+    G: jnp.ndarray,
+    velocity_map: VelocityMapConfig | None,
+    *,
+    sqrt_p: jnp.ndarray | None = None,
+    sqrt_m: jnp.ndarray | None = None,
+) -> jnp.ndarray:
+    base = _hermite_v(G, sqrt_p=sqrt_p, sqrt_m=sqrt_m)
+    if velocity_map is None:
+        return base
+    real_dtype = jnp.real(G).dtype
+    shift = jnp.asarray(velocity_map.parallel_shift, dtype=real_dtype)
+    scale = jnp.exp(jnp.asarray(velocity_map.parallel_log_scale, dtype=real_dtype))
+    return shift * G + scale * base
+
+
+def _mapped_hermite_v2_direct(G: jnp.ndarray, velocity_map: VelocityMapConfig | None) -> jnp.ndarray:
+    base = _hermite_v2_direct(G)
+    if velocity_map is None:
+        return base
+    real_dtype = jnp.real(G).dtype
+    shift = jnp.asarray(velocity_map.parallel_shift, dtype=real_dtype)
+    scale = jnp.exp(jnp.asarray(velocity_map.parallel_log_scale, dtype=real_dtype))
+    return shift * shift * G + 2.0 * shift * scale * _hermite_v(G) + scale * scale * base
+
+
+def _mapped_laguerre_x(G: jnp.ndarray, velocity_map: VelocityMapConfig | None) -> jnp.ndarray:
+    base = _laguerre_x(G)
+    if velocity_map is None:
+        return base
+    scale = jnp.exp(jnp.asarray(velocity_map.perpendicular_log_scale, dtype=jnp.real(G).dtype))
+    return scale * base
 
 
 def streaming_contribution(
@@ -86,14 +163,12 @@ def streaming_contribution_gx(
     linked_gather_map: jnp.ndarray | None = None,
     linked_gather_mask: jnp.ndarray | None = None,
     linked_use_gather: bool = False,
+    velocity_map: VelocityMapConfig | None = None,
 ) -> jnp.ndarray:
     """GX-style streaming: ladder on g, add field terms, then apply parallel derivative."""
 
-    axis_m = -4
-    G_p1 = shift_axis(G, 1, axis=axis_m)
-    G_m1 = shift_axis(G, -1, axis=axis_m)
     vth_s = vth[:, None, None, None, None, None]
-    rhs = -vth_s * (sqrt_p * G_p1 + sqrt_m * G_m1)
+    rhs = -vth_s * _mapped_hermite_v(G, velocity_map, sqrt_p=sqrt_p, sqrt_m=sqrt_m)
 
     tz_arr = tz[:, None, None, None, None, None]
     zt = jnp.where(tz_arr == 0.0, 0.0, 1.0 / tz_arr)
@@ -177,21 +252,10 @@ def curvature_gradb_contribution(
     imag: jnp.ndarray,
     weight_curv: jnp.ndarray,
     weight_gradb: jnp.ndarray,
+    velocity_map: VelocityMapConfig | None = None,
 ) -> jnp.ndarray:
-    axis_m = -4
-    H_m_p2 = shift_axis(H, 2, axis=axis_m)
-    H_m_m2 = shift_axis(H, -2, axis=axis_m)
-    curv_term = (
-        jnp.sqrt((m + 1.0) * (m + 2.0)) * H_m_p2
-        + (2.0 * m + 1.0) * H
-        + jnp.sqrt(m * (m - 1.0)) * H_m_m2
-    )
-    axis_l = -5
-    gradb_term = (
-        (ell + 1.0) * shift_axis(H, 1, axis=axis_l)
-        + (2.0 * ell + 1.0) * H
-        + ell * shift_axis(H, -1, axis=axis_l)
-    )
+    curv_term = _mapped_hermite_v2_direct(H, velocity_map)
+    gradb_term = _mapped_laguerre_x(H, velocity_map)
     tz_s = tz[:, None, None, None, None, None]
     icv = imag * tz_s * omega_d_scale * cv_d[None, None, None, ...]
     igb = imag * tz_s * omega_d_scale * gb_d[None, None, None, ...]
