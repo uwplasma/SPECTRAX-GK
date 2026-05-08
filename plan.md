@@ -2060,3 +2060,32 @@ Exit gate:
     matching ``tools/plot_w7x_zonal_closure_ladder.py`` refresh command, so the
     next office window can be used entirely for bounded physics runs instead of
     ad hoc setup.
+- Resumed the bounded W7-X zonal closure sweep on ``office`` and closed the
+  first operator tranche as a tracked negative result:
+  - syncing the current zonal driver onto ``office`` surfaced a real runtime
+    bug in the paper-facing zonal initializer path: ``build_linear_cache`` used
+    ``shat`` inside the non-twist FFT branch even when no twist-shift boundary
+    had defined it;
+  - fixed ``src/spectraxgk/linear.py`` so the non-twist branch uses
+    ``geom_data.s_hat`` directly and added a regression in
+    ``tests/test_linear_helpers_extra.py`` covering periodic non-twist cache
+    construction;
+  - after syncing the fixed package to ``office``, completed a bounded
+    ``k_x rho_i = 0.07``, ``Nl=16``, ``Nm=64``, ``dt=0.05``, ``t_max=100``
+    closure tranche against the digitized W7-X reference and stored the ladder
+    summary in
+    ``tools_out/zonal_response/closure_sweep_manifest/w7x_zonal_closure_ladder_partial.{json,csv,png}``;
+  - outcome of the first physically distinct closure families:
+    baseline MAE ``0.2861`` with late-window ``tail_std`` ``0.1131`` and
+    Hermite-tail fraction ``0.388``;
+    ``|k_z|``-weighted Hermite hypercollision reduces the Hermite tail
+    (down to ``0.282`` at ``nu_hyper_m=0.03``) but worsens trace error and
+    late-window variability;
+    mixed Laguerre-Hermite hypercollision improves MAE slightly
+    (``0.2755`` at ``nu_hyper_lm=0.01``/``0.03``) and nearly eliminates the
+    Hermite tail, but it also increases late-window variability to about
+    ``0.117``;
+  - current conclusion remains unchanged at manuscript scope:
+    no tested physical closure in this bounded tranche improves the paper-facing
+    W7-X zonal trace and the late-time recurrence metric together, so the lane
+    stays open as a physics blocker rather than a normalization or runtime bug.

@@ -322,6 +322,29 @@ def test_build_linear_cache_allows_traced_shear_for_periodic_sampled_geometry() 
     assert np.isfinite(float(grad))
 
 
+def test_build_linear_cache_periodic_non_twist_uses_geometry_shear() -> None:
+    grid = build_spectral_grid(
+        GridConfig(
+            Nx=2,
+            Ny=4,
+            Nz=8,
+            Lx=2.0 * np.pi,
+            Ly=2.0 * np.pi,
+            boundary="periodic",
+            non_twist=True,
+        )
+    )
+    geom = SAlphaGeometry(q=1.4, s_hat=0.8, epsilon=0.1)
+    params = LinearParams(nu_hyper=0.0, nu_hyper_m=0.0)
+
+    cache = build_linear_cache(grid, geom, params, Nl=2, Nm=3)
+
+    assert cache.use_twist_shift is False
+    assert np.all(np.isfinite(np.asarray(cache.kperp2)))
+    assert np.all(np.isfinite(np.asarray(cache.cv_d)))
+    assert np.all(np.isfinite(np.asarray(cache.gb_d)))
+
+
 def test_build_linear_cache_rejects_traced_shear_for_twist_shift_geometry() -> None:
     grid = build_spectral_grid(
         GridConfig(
