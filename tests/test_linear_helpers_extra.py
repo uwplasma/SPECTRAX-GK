@@ -110,6 +110,15 @@ def test_low_rank_moment_and_damping_cache_match_expected_shapes_and_values() ->
     assert linked[-1] > 0.0
 
 
+def test_low_rank_moment_cache_keeps_high_order_kz_hypercollision_finite() -> None:
+    params = LinearParams(p_hyper_m=20.0)
+    cache = _build_low_rank_moment_cache_arrays(24, 128, params, jnp.float32)
+
+    assert np.all(np.isfinite(np.asarray(cache["m_pow"])))
+    assert np.isfinite(float(np.asarray(cache["m_norm_kz_factor"])))
+    assert float(np.max(np.asarray(cache["m_pow"]))) <= 1.0
+
+
 def test_gyroaverage_cache_helper_matches_species_vmap_convention() -> None:
     b = jnp.asarray(
         [
@@ -320,6 +329,29 @@ def test_build_linear_cache_allows_traced_shear_for_periodic_sampled_geometry() 
     grad = jax.grad(objective)(jnp.asarray(0.8, dtype=jnp.float32))
 
     assert np.isfinite(float(grad))
+
+
+def test_build_linear_cache_periodic_non_twist_uses_geometry_shear() -> None:
+    grid = build_spectral_grid(
+        GridConfig(
+            Nx=2,
+            Ny=4,
+            Nz=8,
+            Lx=2.0 * np.pi,
+            Ly=2.0 * np.pi,
+            boundary="periodic",
+            non_twist=True,
+        )
+    )
+    geom = SAlphaGeometry(q=1.4, s_hat=0.8, epsilon=0.1)
+    params = LinearParams(nu_hyper=0.0, nu_hyper_m=0.0)
+
+    cache = build_linear_cache(grid, geom, params, Nl=2, Nm=3)
+
+    assert cache.use_twist_shift is False
+    assert np.all(np.isfinite(np.asarray(cache.kperp2)))
+    assert np.all(np.isfinite(np.asarray(cache.cv_d)))
+    assert np.all(np.isfinite(np.asarray(cache.gb_d)))
 
 
 def test_build_linear_cache_rejects_traced_shear_for_twist_shift_geometry() -> None:

@@ -170,7 +170,10 @@ temporary whitelist for any intentionally retained large files.
 The release migration manifest is ``tools/release_artifact_manifest.toml``. It
 records checksums, replay commands, and planned destinations for high-resolution
 panels and other large assets. The checker validates provenance only; it does
-not upload or delete artifacts.
+not upload or delete artifacts. ``move_to_release`` entries may be absent from
+Git after migration, but only when the manifest records the immutable
+``release_tag`` and ``release_url`` together with the original size and SHA-256
+checksum.
 
 Documentation figures should use lightweight checked-in previews, with
 high-resolution publication exports regenerated from the replay commands or
@@ -179,9 +182,13 @@ hosted as release assets. The reproducible preview-compression command is:
 .. code-block:: bash
 
    python tools/compress_release_previews.py --max-width 2200 --colors 192
+   python tools/compress_docs_previews.py --min-bytes 300000 --max-width 1800 --colors 192
 
-After compressing previews, update ``tools/release_artifact_manifest.toml`` with
-the new sizes and checksums and rerun both manifest checkers.
+The first command only touches release-manifest previews, so update
+``tools/release_artifact_manifest.toml`` with the new sizes and checksums after
+running it. The second command skips release-manifest paths by default and is
+intended for ordinary checked-in documentation previews. Rerun both manifest
+checkers after either cleanup.
 
 History rewrites are not part of routine development; they require a coordinated
 maintenance window because every collaborator must reclone or reset local

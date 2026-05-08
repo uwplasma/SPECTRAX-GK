@@ -76,6 +76,33 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
     )
     _write_json(
         tmp_path,
+        "docs/_static/w7x_zonal_mixedlm_resolution_kx070.json",
+        {
+            "rows": [
+                {
+                    "label": "Nl16 Nm64 mixedLM",
+                    "mean_abs_error": 0.27,
+                    "tail_std": 0.12,
+                    "reference_tail_std": 0.03,
+                    "hermite_tail_at_tmax": 1.5e-4,
+                    "Nl": 16,
+                    "Nm": 64,
+                },
+                {
+                    "label": "Nl24 Nm96 mixedLM",
+                    "mean_abs_error": 0.26,
+                    "tail_std": 0.11,
+                    "reference_tail_std": 0.03,
+                    "hermite_tail_at_tmax": 1.2e-5,
+                    "laguerre_tail_at_tmax": 8.2e-3,
+                    "Nl": 24,
+                    "Nm": 96,
+                },
+            ]
+        },
+    )
+    _write_json(
+        tmp_path,
         "docs/_static/w7x_fluctuation_spectrum_panel.json",
         {
             "source_gate_passed": True,
@@ -192,6 +219,21 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
     ]
     assert hyper["label"] == "const nuhm0.03"
     assert hyper["validation_status"] == "open"
+    mixed_lm = lanes["W7-X zonal long-window recurrence/damping"]["key_metrics"][
+        "best_mixed_lm_resolution_probe"
+    ]
+    assert mixed_lm["label"] == "Nl24 Nm96 mixedLM"
+    assert mixed_lm["tail_std_ratio"] == 0.11 / 0.03
+    high_moment = lanes["W7-X zonal long-window recurrence/damping"]["key_metrics"][
+        "stable_high_moment_mixed_lm_probe"
+    ]
+    assert high_moment["label"] == "Nl24 Nm96 mixedLM"
+    assert high_moment["Nl"] == 24
+    assert high_moment["Nm"] == 96
+    assert high_moment["laguerre_tail"] == 8.2e-3
+    assert "docs/_static/w7x_zonal_mixedlm_resolution_kx070.json" in lanes[
+        "W7-X zonal long-window recurrence/damping"
+    ]["primary_artifacts"]
     assert lanes["Nonlinear holdouts for quasilinear absolute-flux promotion"]["claim_level"] == (
         "diagnostic_calibration_dataset_not_absolute_flux"
     )

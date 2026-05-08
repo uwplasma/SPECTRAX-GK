@@ -169,6 +169,7 @@ The first reusable tooling for this lane now exists:
 - ``tools/plot_w7x_zonal_contract_audit.py``
 - ``tools/plot_w7x_zonal_moment_tail_audit.py``
 - ``tools/plot_w7x_zonal_closure_ladder.py``
+- ``tools/write_w7x_zonal_closure_sweep.py``
 - ``tools/plot_w7x_zonal_state_convention_audit.py``
 - ``tools/plot_w7x_zonal_recurrence_sweep.py``
 - ``tools/plot_w7x_fluctuation_spectrum_panel.py``
@@ -258,6 +259,16 @@ feeds that generator. It reads the tracked linear candidate screen, skips
 excluded or already-audited cases, resolves the chosen VMEC file from the local
 ``vmec_jax`` checkout, and writes the next bounded holdout ladder plus a JSON
 selection summary. This removes another manual step from the external-VMEC
+
+``tools/write_w7x_zonal_closure_sweep.py`` is the analogous reproducibility
+companion for the open W7-X zonal-response lane. It writes a manifest of
+single-``k_x`` closure probes for the paper-facing test-4 contract, separated
+by operator family: baseline, constant-Hermite, ``|k_z|``-weighted Hermite,
+mixed Laguerre-Hermite, Laguerre-only, and isotropic hypercollision variants.
+The manifest includes the exact
+``tools/generate_w7x_zonal_response_panel.py`` launch commands plus the
+companion ``tools/plot_w7x_zonal_closure_ladder.py`` command needed to refresh
+the bounded closure audit after the remote runs complete.
 nonlinear campaign and makes office reruns deterministic.
 
 ``tools/check_quasilinear_calibration_inputs.py`` is the corresponding
@@ -448,6 +459,18 @@ ratio from ``0.759`` to ``0.600``, but the mean trace error remains
 the digitized reference. The W7-X zonal lane therefore remains a physical
 closure/recurrence problem, not a normalization problem and not a simple
 constant-damping fix.
+The mixed Laguerre-Hermite closure audit then tests the best bounded closure
+candidate under a moment-resolution increase. At ``Nl=16,Nm=64`` and
+``dt=0.05``, the mixed closure gives mean absolute trace error ``0.2753`` and
+late-window standard-deviation ratio ``4.24``. Raising the resolution to
+``Nl=24,Nm=96`` requires ``dt=0.025`` for a finite run; it lowers the
+late-window standard-deviation ratio slightly to ``4.11`` and further reduces
+the Hermite/Laguerre tail fractions, but the trace error remains ``0.2768``.
+The more aggressive ``Nl=32,Nm=128`` run still becomes non-finite by
+``t v_t/a≈10`` even at ``dt=0.025``. This separates a real high-moment
+time-step limitation from the larger physical result: the current mixed
+closure does not converge toward the digitized W7-X trace in a way that can be
+promoted as validation.
 ``tools/generate_w7x_zonal_response_panel.py`` now exposes explicit
 ``--nu-hyper``, ``--nu-hyper-l``, ``--nu-hyper-m``, ``--nu-hyper-lm``,
 ``--p-hyper-*``, ``--hypercollisions-const``, ``--hypercollisions-kz``,
@@ -533,6 +556,16 @@ audits, not validation defaults.
    the digitized stella/GENE reference. This is a documented negative result
    that motivates a more physical closure/operator study.
 
+.. figure:: _static/w7x_zonal_mixedlm_resolution_kx070.png
+   :alt: W7-X zonal-response mixed Laguerre-Hermite resolution audit at kx rho_i 0.07
+
+   Mixed Laguerre-Hermite closure resolution audit for ``k_x rho_i=0.07``. The
+   ``Nl=24,Nm=96`` run is finite only with the smaller ``dt=0.025`` and lowers
+   the late-window variability modestly, but it does not improve the trace
+   error relative to ``Nl=16,Nm=64``. The omitted ``Nl=32,Nm=128`` point is a
+   tracked non-finite result under the same closure family, so this remains an
+   open physics/numerics lane rather than a closed W7-X zonal validation.
+
 Diffrax and nonlinear smoke tests
 ---------------------------------
 
@@ -548,7 +581,8 @@ tests:
   (mode-family targeting, shift-invert preconditioner selection, fallback
   policy, and dominant eigenpair wrappers).
 - ``tests/test_example_smoke.py`` verifies the config-driven runner (diffrax
-  enabled) and a short nonlinear scan with placeholder nonlinear terms.
+  enabled) and a short nonlinear scan through the assembled E×B nonlinear
+  bracket.
 - ``tests/test_nonlinear_exb.py`` exercises the nonlinear bracket sign,
   real-FFT path, flutter coupling, scalar/precomputed gyroaverage paths, and
   EM component accounting. The targeted nonlinear-term tranche covers the
