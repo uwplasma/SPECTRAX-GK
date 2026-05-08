@@ -2164,3 +2164,14 @@ Exit gate:
     carries release provenance;
   - removed the PDFs from the tracked tree and removed the temporary
     repository-size whitelist for ``benchmark_readme_panel.pdf``.
+- Refreshed the local CPU nonlinear RHS split profile for the performance lane:
+  - reran ``tools/profile_nonlinear_step_split.py`` sequentially for Cyclone
+    grid and spectral Laguerre nonlinear modes with ``20`` repeats to avoid
+    local profiler contention;
+  - regenerated ``docs/_static/nonlinear_rhs_profile.{csv,json,png,pdf}``
+    companions through ``tools/plot_nonlinear_rhs_profile.py``;
+  - current bounded CPU result is a modest full-RHS spectral ratio
+    (``grid/spectral = 1.03``) but a clearer nonlinear-bracket ratio
+    (``1.49``), so the performance conclusion remains scoped: spectral
+    Laguerre mode is a gated opt-in path, not a global default, and the linear
+    RHS remains the dominant warm-throughput target.
