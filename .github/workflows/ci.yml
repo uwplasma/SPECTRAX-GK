@@ -104,6 +104,7 @@ jobs:
               tests/test_gyroaverage.py
               tests/test_normalization.py
               tests/test_operators.py
+              tests/test_velocity_maps.py
               tests/test_plotting.py
               tests/test_species.py
               tests/test_io.py
@@ -237,6 +238,7 @@ jobs:
             tests/test_runtime_artifacts.py \
             tests/test_secondary.py \
             tests/test_analysis.py \
+            tests/test_velocity_maps.py \
             --maxfail=1 --disable-warnings \
             --cov=spectraxgk \
             --cov-report=xml:coverage-fast.xml \
