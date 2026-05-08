@@ -169,6 +169,7 @@ The first reusable tooling for this lane now exists:
 - ``tools/plot_w7x_zonal_contract_audit.py``
 - ``tools/plot_w7x_zonal_moment_tail_audit.py``
 - ``tools/plot_w7x_zonal_closure_ladder.py``
+- ``tools/write_w7x_zonal_closure_sweep.py``
 - ``tools/plot_w7x_zonal_state_convention_audit.py``
 - ``tools/plot_w7x_zonal_recurrence_sweep.py``
 - ``tools/plot_w7x_fluctuation_spectrum_panel.py``
@@ -258,6 +259,16 @@ feeds that generator. It reads the tracked linear candidate screen, skips
 excluded or already-audited cases, resolves the chosen VMEC file from the local
 ``vmec_jax`` checkout, and writes the next bounded holdout ladder plus a JSON
 selection summary. This removes another manual step from the external-VMEC
+
+``tools/write_w7x_zonal_closure_sweep.py`` is the analogous reproducibility
+companion for the open W7-X zonal-response lane. It writes a manifest of
+single-``k_x`` closure probes for the paper-facing test-4 contract, separated
+by operator family: baseline, constant-Hermite, ``|k_z|``-weighted Hermite,
+mixed Laguerre-Hermite, Laguerre-only, and isotropic hypercollision variants.
+The manifest includes the exact
+``tools/generate_w7x_zonal_response_panel.py`` launch commands plus the
+companion ``tools/plot_w7x_zonal_closure_ladder.py`` command needed to refresh
+the bounded closure audit after the remote runs complete.
 nonlinear campaign and makes office reruns deterministic.
 
 ``tools/check_quasilinear_calibration_inputs.py`` is the corresponding

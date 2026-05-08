@@ -2046,3 +2046,17 @@ Exit gate:
     ``linear_state_ridge`` candidate remains blocked by the
     train-to-parameter-ratio gate, and electromagnetic/KBM quasilinear
     promotion remains separate future work.
+- Tightened the reproducibility path for the remaining W7-X zonal blocker:
+  - office was unreachable during this pass, so no new long zonal runs were
+    launched blindly;
+  - added ``tools/write_w7x_zonal_closure_sweep.py`` plus focused tests to
+    write one manifest for the next paper-facing ``k_x rho_i = 0.07`` operator
+    sweep;
+  - the manifest separates closure families one knob at a time:
+    baseline, constant-Hermite, ``|k_z|``-weighted Hermite, mixed
+    Laguerre-Hermite, Laguerre-only, and isotropic hypercollision variants;
+  - the JSON output carries both the exact
+    ``tools/generate_w7x_zonal_response_panel.py`` launch commands and the
+    matching ``tools/plot_w7x_zonal_closure_ladder.py`` refresh command, so the
+    next office window can be used entirely for bounded physics runs instead of
+    ad hoc setup.
