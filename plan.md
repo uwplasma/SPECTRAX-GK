@@ -2089,3 +2089,34 @@ Exit gate:
     no tested physical closure in this bounded tranche improves the paper-facing
     W7-X zonal trace and the late-time recurrence metric together, so the lane
     stays open as a physics blocker rather than a normalization or runtime bug.
+- Extended the W7-X mixed Laguerre-Hermite closure lane with a bounded
+  moment-resolution audit:
+  - the first ``Nl=24, Nm=96`` and ``Nl=32, Nm=128`` retries at ``dt=0.05``
+    failed with non-finite ``Wg_t`` diagnostics, which exposed a second
+    numerical issue rather than a clean physics conclusion;
+  - fixed the high-order Hermite hypercollision cache representation in
+    ``src/spectraxgk/linear.py`` by storing the ``k_z`` Hermite factor in a
+    normalized finite form and moved the zero-weight early return ahead of the
+    ``k_z`` contribution assembly in ``src/spectraxgk/terms/linear_terms.py``;
+    mirrored the same safe algebra in
+    ``tools/profile_linear_rhs_terms.py`` and added a regression in
+    ``tests/test_linear_helpers_extra.py`` for ``Nm=128``, ``p_hyper_m=20``;
+  - with that fix in place, the mixed ``LM`` closure at ``Nl=24, Nm=96``
+    remains stable when the time step is reduced to ``dt=0.025`` out to
+    ``t_max=100`` and yields
+    ``MAE=0.2768``, ``tail_std=0.1127``, and
+    ``tail_std_ratio=4.11`` versus the digitized reference;
+  - compared with the baseline mixed ``LM`` run
+    (``Nl=16, Nm=64``, ``dt=0.05``:
+    ``MAE=0.2753``, ``tail_std=0.1162``, ``tail_std_ratio=4.24``),
+    higher moment resolution reduces the late-window variability modestly and
+    further suppresses Hermite/Laguerre tail fractions, but it does not improve
+    the paper-facing trace error;
+  - the more aggressive ``Nl=32, Nm=128`` point still goes non-finite even at
+    ``dt=0.025`` (failure around ``t≈10``), so the current mixed ``LM``
+    closure is not robust under further moment refinement;
+  - current W7-X zonal interpretation is therefore sharper:
+    part of the earlier recurrence growth was a time-step limitation at higher
+    moments, but even after removing that numerical artifact the closure family
+    still does not close the paper-facing trace mismatch, and its stability
+    margin degrades as moments increase.

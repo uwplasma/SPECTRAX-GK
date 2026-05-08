@@ -110,6 +110,15 @@ def test_low_rank_moment_and_damping_cache_match_expected_shapes_and_values() ->
     assert linked[-1] > 0.0
 
 
+def test_low_rank_moment_cache_keeps_high_order_kz_hypercollision_finite() -> None:
+    params = LinearParams(p_hyper_m=20.0)
+    cache = _build_low_rank_moment_cache_arrays(24, 128, params, jnp.float32)
+
+    assert np.all(np.isfinite(np.asarray(cache["m_pow"])))
+    assert np.isfinite(float(np.asarray(cache["m_norm_kz_factor"])))
+    assert float(np.max(np.asarray(cache["m_pow"]))) <= 1.0
+
+
 def test_gyroaverage_cache_helper_matches_species_vmap_convention() -> None:
     b = jnp.asarray(
         [
