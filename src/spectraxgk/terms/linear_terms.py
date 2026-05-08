@@ -45,7 +45,7 @@ def _hermite_v2_direct(G: jnp.ndarray) -> jnp.ndarray:
     )
 
 
-def _laguerre_x(G: jnp.ndarray) -> jnp.ndarray:
+def _gradb_laguerre_factor(G: jnp.ndarray) -> jnp.ndarray:
     axis_l = -5
     Nl = G.shape[axis_l]
     ell = jnp.arange(Nl, dtype=jnp.real(G).dtype)
@@ -53,9 +53,9 @@ def _laguerre_x(G: jnp.ndarray) -> jnp.ndarray:
     shape[axis_l] = Nl
     ell = ell.reshape(shape)
     return (
-        (2.0 * ell + 1.0) * G
-        - (ell + 1.0) * shift_axis(G, 1, axis=axis_l)
-        - ell * shift_axis(G, -1, axis=axis_l)
+        (ell + 1.0) * shift_axis(G, 1, axis=axis_l)
+        + (2.0 * ell + 1.0) * G
+        + ell * shift_axis(G, -1, axis=axis_l)
     )
 
 
@@ -85,8 +85,8 @@ def _mapped_hermite_v2_direct(G: jnp.ndarray, velocity_map: VelocityMapConfig | 
     return shift * shift * G + 2.0 * shift * scale * _hermite_v(G) + scale * scale * base
 
 
-def _mapped_laguerre_x(G: jnp.ndarray, velocity_map: VelocityMapConfig | None) -> jnp.ndarray:
-    base = _laguerre_x(G)
+def _mapped_gradb_laguerre_factor(G: jnp.ndarray, velocity_map: VelocityMapConfig | None) -> jnp.ndarray:
+    base = _gradb_laguerre_factor(G)
     if velocity_map is None:
         return base
     scale = jnp.exp(jnp.asarray(velocity_map.perpendicular_log_scale, dtype=jnp.real(G).dtype))
@@ -255,7 +255,7 @@ def curvature_gradb_contribution(
     velocity_map: VelocityMapConfig | None = None,
 ) -> jnp.ndarray:
     curv_term = _mapped_hermite_v2_direct(H, velocity_map)
-    gradb_term = _mapped_laguerre_x(H, velocity_map)
+    gradb_term = _mapped_gradb_laguerre_factor(H, velocity_map)
     tz_s = tz[:, None, None, None, None, None]
     icv = imag * tz_s * omega_d_scale * cv_d[None, None, None, ...]
     igb = imag * tz_s * omega_d_scale * gb_d[None, None, None, ...]
