@@ -2181,3 +2181,17 @@ Exit gate:
     bracket is implemented and tested;
   - kept the explicit zero-output helper named as a shape-only/disabled-term
     test utility so source comments match the implemented physics path.
+- Refreshed the matched short-harness nonlinear RHS profile on CPU and the
+  ``office`` GPU:
+  - used a fresh detached ``de826d8`` clone on ``office`` to avoid dirty
+    worktrees and forced ``PYTHONPATH`` to the current checkout;
+  - reran the Cyclone short-case grid/spectral profiler with ``10`` repeats on
+    local CPU and one RTX A4000 (``CUDA_VISIBLE_DEVICES=0``);
+  - regenerated ``docs/_static/nonlinear_rhs_profile.{csv,json,png,pdf}``
+    companions;
+  - current scoped result: GPU spectral mode reduces the nonlinear bracket by
+    about ``3.25x`` and full RHS by about ``1.69x`` relative to grid mode, but
+    the refreshed ``office`` timings are slower than the older stale artifact;
+  - next performance action is not to claim a new speedup, but to isolate
+    environment/runtime effects from source effects and then profile the
+    linear RHS hot path.
