@@ -170,7 +170,10 @@ temporary whitelist for any intentionally retained large files.
 The release migration manifest is ``tools/release_artifact_manifest.toml``. It
 records checksums, replay commands, and planned destinations for high-resolution
 panels and other large assets. The checker validates provenance only; it does
-not upload or delete artifacts.
+not upload or delete artifacts. ``move_to_release`` entries may be absent from
+Git after migration, but only when the manifest records the immutable
+``release_tag`` and ``release_url`` together with the original size and SHA-256
+checksum.
 
 Documentation figures should use lightweight checked-in previews, with
 high-resolution publication exports regenerated from the replay commands or

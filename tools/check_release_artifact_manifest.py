@@ -83,8 +83,8 @@ def check_release_artifact_manifest(
         actual_size = path.stat().st_size if exists else None
         actual_sha = _sha256(path) if exists and path.is_file() else None
         action = str(item["action"])
-        if action == "move_to_release" and actual_size is not None:
-            total_move_bytes += int(actual_size)
+        if action == "move_to_release":
+            total_move_bytes += int(item["size_bytes"])
         if action == "keep_in_repo" and actual_size is not None:
             total_keep_bytes += int(actual_size)
         row = {
@@ -97,9 +97,17 @@ def check_release_artifact_manifest(
             "actual_sha256": actual_sha,
             "release_asset_name": item.get("release_asset_name"),
             "preview_strategy": item.get("preview_strategy"),
+            "release_tag": item.get("release_tag"),
+            "release_url": item.get("release_url"),
         }
         rows.append(row)
         if not exists:
+            release_url = item.get("release_url")
+            release_tag = item.get("release_tag")
+            if action == "move_to_release" and isinstance(release_url, str) and release_url.strip():
+                if not isinstance(release_tag, str) or not release_tag.strip():
+                    failures.append(f"{item['path']} moved to release but is missing release_tag")
+                continue
             failures.append(f"{item['path']} does not exist")
             continue
         if actual_size != int(item["size_bytes"]):
@@ -118,8 +126,9 @@ def check_release_artifact_manifest(
         "keep_in_repo_bytes": total_keep_bytes,
         "artifacts": rows,
         "notes": (
-            "This validates provenance for large tracked assets. It does not upload or "
-            "delete files; release migration should happen in a separate explicit step."
+            "This validates provenance for large tracked assets. Existing files are "
+            "checked against size and sha256. move_to_release entries may be absent "
+            "from Git only when the manifest records release_tag and release_url."
         ),
     }
 

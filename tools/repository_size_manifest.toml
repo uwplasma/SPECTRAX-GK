@@ -11,9 +11,3 @@ path = "examples/wout_HSX_QHS_vacuum_ns201.nc"
 max_bytes = 4500000
 reason = "Small checked-in HSX VMEC fixture used by non-axisymmetric geometry examples and tests."
 release_destination = "keep-in-repo-fixture"
-
-[[allowed_large_files]]
-path = "docs/_static/benchmark_readme_panel.pdf"
-max_bytes = 1200000
-reason = "High-resolution README panel companion retained until release-artifact move."
-release_destination = "planned-github-release-highres"
