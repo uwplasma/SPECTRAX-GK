@@ -50,6 +50,7 @@ the same order they appear in the code.
    geometry
    algorithms
    solvers
+   velocity_maps
    architecture
    benchmarks
    examples
