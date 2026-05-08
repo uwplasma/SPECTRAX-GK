@@ -2137,3 +2137,17 @@ Exit gate:
     research status still has one open physics lane (W7-X zonal) plus partial
     W7-X fluctuation/TEM, differentiable-geometry, and profiler-backed
     performance lanes.
+- Completed a repository-hygiene follow-up after the audit showed only
+  ``289 kB`` of tracked-size headroom under the ``50 MB`` CI gate:
+  - compressed large checked-in documentation PNG previews to lightweight
+    ``1800 px``/``192``-color previews while leaving JSON/CSV evidence, raw
+    local ``tools_out`` outputs, and release-manifest-pinned previews
+    untouched;
+  - tracked size dropped from ``49.71 MB`` to about ``40.16 MB``, restoring
+    enough headroom for near-term validation-dashboard updates without raising
+    the CI size cap;
+  - added ``tools/compress_docs_previews.py`` and a regression test so future
+    figure additions have a repeatable cleanup path that skips
+    ``tools/release_artifact_manifest.toml`` entries by default;
+  - updated the artifact-hygiene documentation to distinguish release-manifest
+    preview compression from ordinary docs-preview compression.

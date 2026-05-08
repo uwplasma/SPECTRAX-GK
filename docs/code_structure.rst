@@ -179,9 +179,13 @@ hosted as release assets. The reproducible preview-compression command is:
 .. code-block:: bash
 
    python tools/compress_release_previews.py --max-width 2200 --colors 192
+   python tools/compress_docs_previews.py --min-bytes 300000 --max-width 1800 --colors 192
 
-After compressing previews, update ``tools/release_artifact_manifest.toml`` with
-the new sizes and checksums and rerun both manifest checkers.
+The first command only touches release-manifest previews, so update
+``tools/release_artifact_manifest.toml`` with the new sizes and checksums after
+running it. The second command skips release-manifest paths by default and is
+intended for ordinary checked-in documentation previews. Rerun both manifest
+checkers after either cleanup.
 
 History rewrites are not part of routine development; they require a coordinated
 maintenance window because every collaborator must reclone or reset local
