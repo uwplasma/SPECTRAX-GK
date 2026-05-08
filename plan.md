@@ -2175,3 +2175,9 @@ Exit gate:
     (``1.49``), so the performance conclusion remains scoped: spectral
     Laguerre mode is a gated opt-in path, not a global default, and the linear
     RHS remains the dominant warm-throughput target.
+- Tightened release-facing nonlinear terminology:
+  - removed stale source and testing-doc wording that described the nonlinear
+    path as a placeholder even though the pseudo-spectral E×B/electromagnetic
+    bracket is implemented and tested;
+  - kept the explicit zero-output helper named as a shape-only/disabled-term
+    test utility so source comments match the implemented physics path.

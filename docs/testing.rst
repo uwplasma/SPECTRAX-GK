@@ -581,7 +581,8 @@ tests:
   (mode-family targeting, shift-invert preconditioner selection, fallback
   policy, and dominant eigenpair wrappers).
 - ``tests/test_example_smoke.py`` verifies the config-driven runner (diffrax
-  enabled) and a short nonlinear scan with placeholder nonlinear terms.
+  enabled) and a short nonlinear scan through the assembled E×B nonlinear
+  bracket.
 - ``tests/test_nonlinear_exb.py`` exercises the nonlinear bracket sign,
   real-FFT path, flutter coupling, scalar/precomputed gyroaverage paths, and
   EM component accounting. The targeted nonlinear-term tranche covers the
