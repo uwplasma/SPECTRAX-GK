@@ -159,34 +159,65 @@ The current bounded Cyclone profile separates CPU and ``office`` GPU timings
 for default grid-mode and optional spectral-mode nonlinear brackets. The
 machine-readable companion ``docs/_static/nonlinear_rhs_profile.json`` records
 the dominant measured kernel, kernel fractions relative to the full RHS, and
-grid-to-spectral speedups for each backend. The May 8, 2026 refresh used the
+grid-to-spectral speedups for each backend. The May 9, 2026 refresh used the
 same short-case 10-repeat harness on local CPU and one ``office`` RTX A4000
-with ``CUDA_VISIBLE_DEVICES=0``. The GPU environment reported
+with ``CUDA_VISIBLE_DEVICES=0`` after the linear-RHS fast-path and linked-FFT
+refactor tranche. The GPU environment reported
 ``jax==0.6.2``/``jaxlib==0.6.2``; these are profiler-local hot-path
 measurements, not a broad production runtime claim. The refreshed GPU
 grid-mode split is:
 
 .. code-block:: text
 
-   field_solve=1.85e-4 s
-   nonlinear_bracket=1.92e-2 s
-   linear_rhs=1.70e-2 s
-   full_rhs=2.85e-2 s
+   field_solve=4.65e-4 s
+   nonlinear_bracket=3.36e-3 s
+   linear_rhs=6.13e-3 s
+   full_rhs=9.66e-3 s
 
 The same GPU profile with ``laguerre_mode="spectral"`` measured
-``nonlinear_bracket=5.90e-3 s`` and ``full_rhs=1.69e-2 s``. CPU full-RHS
-timings from the same harness were ``1.47e-1 s`` for grid mode and
-``1.51e-1 s`` for spectral mode. The short-harness spectral full-RHS ratios
-are now ``0.98`` on CPU and ``1.69`` on GPU for this Cyclone case, while the
-nonlinear-bracket-only ratios are ``1.44`` on CPU and ``3.25`` on GPU. The
+``nonlinear_bracket=1.50e-3 s`` and ``full_rhs=6.38e-3 s``. CPU full-RHS
+timings from the same harness were ``1.01e-1 s`` for grid mode and
+``7.73e-2 s`` for spectral mode. The short-harness spectral full-RHS ratios
+are now ``1.30`` on CPU and ``1.51`` on GPU for this Cyclone case, while the
+nonlinear-bracket-only ratios are ``1.54`` on CPU and ``2.24`` on GPU. The
 spectral mode therefore remains an opt-in mode guarded by the case-level
 parity gate below rather than a global default.
 
-The dominant remaining warm-throughput costs are the compiled linear RHS and
-the nonlinear FFT pipeline with gather/scatter-heavy bracket kernels. The
-refreshed GPU run is slower than the older stale checked-in profile, so the
-next performance step is to separate environment/runtime effects from source
-effects before making any new speedup claim.
+The dominant remaining warm-throughput cost is the compiled linear RHS, with
+the nonlinear FFT pipeline still relevant for larger production grids. The next
+performance step is to repeat this split on larger benchmark-size cases and
+then use profiler traces to decide whether fusion, layout changes, or
+production decomposition give the largest verified win.
+
+Benchmark-size Cyclone Miller RHS profile
+-----------------------------------------
+
+The larger Cyclone Miller profile uses the shipped nonlinear Miller input with
+``Nx=192``, ``Ny=64``, ``Nz=24``, ``Nl=4``, and ``Nm=8``. This is still a
+single compiled-RHS split profile rather than a full transport-average runtime
+claim, but it is large enough to expose a different bottleneck balance than the
+short Cyclone case.
+
+.. code-block:: bash
+
+   python tools/profile_nonlinear_step_split.py \
+     --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml \
+     --repeats 3 \
+     --out docs/_static/nonlinear_rhs_profile_miller_cpu.csv
+
+.. image:: _static/nonlinear_rhs_profile_miller.png
+   :alt: SPECTRAX-GK nonlinear RHS kernel profile on the Cyclone Miller benchmark-size case
+   :align: center
+
+The matched May 9, 2026 profile measured CPU full-RHS timings of
+``2.84e-1 s`` in grid mode and ``2.07e-1 s`` in spectral Laguerre mode. On one
+``office`` RTX A4000, the corresponding timings were ``1.48e-2 s`` and
+``1.46e-2 s``. Spectral mode reduced the nonlinear bracket by ``1.39x`` on CPU
+and ``2.09x`` on GPU, but the GPU full-RHS speedup was only ``1.01x`` because
+the compiled linear RHS became comparable to or larger than the bracket. This
+points the next optimization pass at linear-RHS fusion/cache layout and then
+larger-grid bracket decomposition, not at claiming a broad nonlinear speedup
+from spectral mode alone.
 
 Linear RHS term profile
 -----------------------
@@ -205,23 +236,22 @@ inside nonlinear runs:
      --out docs/_static/linear_rhs_terms_profile_cpu.csv \
      --summary-json docs/_static/linear_rhs_terms_profile.json
 
-After the zero-collision fast path, the May 8, 2026 CPU Cyclone artifact
-reports ``full_linear_rhs=1.46e-1 s`` for the compiled full linear RHS call in
-this profiling harness. The independently timed term kernels sum to
-``4.46e-2 s``; this remaining gap is a localization signal, not a speedup
-claim, because the full path recomputes the field solve, ``H`` assembly, and
-all weighted contributions as one compiled graph. The dominant standalone terms
-are streaming (``8.28e-3 s``), linked ``grad_z`` (``6.70e-3 s``), and the
-zero-norm collision branch (``6.06e-3 s``). Zero-norm rows are explicitly
-recorded in ``docs/_static/linear_rhs_terms_profile.json`` but are not removed
-from production until a state-window identity gate proves they remain inactive
-after nonlinear evolution.
+After the zero-collision fast path and linked-FFT refactor, the May 9, 2026
+CPU Cyclone artifact reports ``full_linear_rhs=1.08e-1 s`` for the compiled
+full linear RHS call in this profiling harness. The independently timed term
+kernels sum to ``1.68e-2 s``; this remaining gap is a localization signal, not
+a speedup claim, because the full path recomputes the field solve, ``H``
+assembly, and all weighted contributions as one compiled graph. The largest
+standalone terms are hypercollisions (``2.39e-3 s``), linked ``|k_z|`` setup
+(``2.38e-3 s``), and streaming (``2.34e-3 s``). The accepted
+zero-collision branch now costs ``1.11e-3 s`` in the standalone CPU timing and
+is guarded by the state-window identity gate below.
 
 The active-state CPU companion
 ``docs/_static/linear_rhs_terms_profile_z_wave_cpu.json`` profiles the same
 state after injecting a resolved parallel perturbation. There the hypercollision
 and linked ``|k_z|`` norms are both ``2.35e-4`` and the linked ``|k_z|`` path
-costs ``4.20e-3 s`` on CPU. This is the artifact that should be used for
+costs ``2.33e-3 s`` on CPU. This is the artifact that should be used for
 linked-``|k_z|`` optimization decisions; the initial-state profile is only a
 zero-source baseline.
 
@@ -229,14 +259,14 @@ The matching ``office`` GPU profile is tracked in
 ``docs/_static/linear_rhs_terms_profile_gpu.json`` and
 ``docs/_static/linear_rhs_terms_profile_gpu.csv``. On one RTX A4000 with the
 same ``jax==0.6.2``/``jaxlib==0.6.2`` environment used for the nonlinear RHS
-refresh, it reports ``full_linear_rhs=8.96e-3 s`` and independently timed terms
-summing to ``1.07e-2 s``. The largest profiled zero-norm rows are collisions
-(``1.62e-3 s``) and hypercollisions (``1.50e-3 s``), which is why the
-state-window gate below remains a hard precondition before any zero-source
-fast path. The active-state GPU companion
+refresh, it reports ``full_linear_rhs=5.50e-3 s`` and independently timed terms
+summing to ``3.41e-3 s``. The accepted zero-collision branch costs
+``1.24e-4 s`` in the standalone GPU timing; hypercollisions and linked
+``|k_z|`` remain present as separately profiled rows. The active-state GPU
+companion
 ``docs/_static/linear_rhs_terms_profile_z_wave_gpu.json`` activates the same
 operator pair with matched norms ``2.35e-4`` and records linked ``|k_z|`` at
-``9.72e-4 s``.
+``3.63e-4 s`` with ``full_linear_rhs=5.48e-3 s``.
 
 The companion state-window gate is generated with:
 
@@ -255,6 +285,38 @@ state has zero relative hypercollision skip error, but the resolved
 ``z``-varying state reaches ``3.59e-3``. This protects the optimization path
 from incorrectly disabling linked ``|k_z|`` hypercollisions based only on the
 initial-state profile.
+
+Full fused linear RHS trace
+---------------------------
+
+The term profiler above times independently isolated kernels. The companion
+full-graph profiler lowers and times the fused production linear-RHS assembly
+for a real runtime TOML so optimization work can target the compiled graph
+rather than only the standalone term calls:
+
+.. code-block:: bash
+
+   python tools/profile_full_linear_rhs_trace.py \
+     --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml \
+     --ky 0.3 \
+     --Nl 4 \
+     --Nm 8 \
+     --repeats 3 \
+     --summary-json docs/_static/full_linear_rhs_trace_summary.json
+
+The initial Cyclone Miller CPU artifact
+``docs/_static/full_linear_rhs_trace_summary.json`` reports
+``warm_seconds=1.19e-1`` and ``compile_execute_seconds=1.94`` for the bounded
+local profile. The active-state companion
+``docs/_static/full_linear_rhs_trace_z_wave_summary.json`` injects resolved
+parallel variation and reports ``warm_seconds=1.22e-1`` with the same HLO shape.
+Both summaries contain ``2425`` HLO lines and highlight the current graph-level
+pressure points: broadcasts (``861`` coarse token hits), reshapes (``422``),
+FFT mentions (``312``), reductions (``304``), and gathers (``51``). These are
+localization metrics, not standalone runtime claims. They point the next source
+optimization tranche at fused layout, broadcast/reshape reduction, and linked
+derivative staging before changing physics gates or documentation speedup
+claims.
 
 Parallelization scaling (diffrax + distributed linear loop)
 -----------------------------------------------------------

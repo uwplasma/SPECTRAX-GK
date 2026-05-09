@@ -518,22 +518,44 @@ so the optimization lane remains traceable and machine-checkable.
 
 The next profiler layer resolves the linear RHS into individual term kernels.
 The tracked Cyclone CPU artifact (`docs/_static/linear_rhs_terms_profile.json`)
-now includes the zero-collision fast path and reports `full_linear_rhs=5.04e-2 s`
-in the bounded CPU harness. The active-state companion
+now includes the zero-collision fast path and linked-FFT refactor and reports
+`full_linear_rhs=1.08e-1 s` in the bounded CPU harness. The active-state
+companion
 (`docs/_static/linear_rhs_terms_profile_z_wave_cpu.json`) injects resolved
-parallel variation and shows linked-`|k_z|` hypercollisions becoming active;
-zero-norm initial-state rows are retained in production until a state-window
-identity gate proves they remain inactive after nonlinear evolution. The
+parallel variation and reports `full_linear_rhs=1.27e-1 s` while showing
+linked-`|k_z|` hypercollisions becoming active; apart from the accepted
+zero-collision guard, zero-norm initial-state rows
+remain enabled until a state-window identity gate proves they remain inactive
+after nonlinear evolution. The
 matching `office` GPU artifact
 (`docs/_static/linear_rhs_terms_profile_gpu.json`) reports
-`full_linear_rhs=6.52e-3 s` on one RTX A4000, and the active-state GPU
-companion reproduces the linked-`|k_z|`/hypercollision norm match.
+`full_linear_rhs=5.50e-3 s` on one RTX A4000, and the active-state GPU
+companion reports `5.48e-3 s` while reproducing the linked-`|k_z|`/
+hypercollision norm match.
 
 The tracked state-window gate
 (`docs/_static/linear_rhs_zero_norm_state_window_gate.json`) now makes that
 policy executable: it accepts a zero-collision skip for the `nu=0` Cyclone
 window but rejects skipping linked-`|k_z|` hypercollisions once a resolved
 parallel perturbation is present.
+
+A larger Cyclone Miller companion profile is documented in
+`docs/performance.rst` and tracked as
+`docs/_static/nonlinear_rhs_profile_miller.{png,json}`. It uses
+`Nx=192`, `Ny=64`, `Nz=24`, `Nl=4`, `Nm=8`; spectral mode reduces the GPU
+nonlinear bracket by about `2.09x`, but full-RHS timing is linear-RHS dominated,
+so the next optimization target is linear-RHS fusion/cache layout before any
+broader nonlinear speedup claim.
+
+The full fused linear-RHS trace artifact
+(`docs/_static/full_linear_rhs_trace_summary.json`) now records the Cyclone
+Miller graph-level profile: `warm_seconds=1.19e-1`, first
+compile+execute `1.94 s`, and HLO triage counts dominated by broadcasts,
+reshapes, FFTs, reductions, and gathers. This is an optimization-localization
+artifact, not a headline runtime claim. The active `z_wave` companion
+(`docs/_static/full_linear_rhs_trace_z_wave_summary.json`) reports
+`warm_seconds=1.22e-1` with the same HLO shape after resolved parallel
+variation is injected.
 
 ![Spectral Laguerre mode gate](docs/_static/laguerre_mode_gate_gpu.png)
 
@@ -599,6 +621,11 @@ pytest -m integration
 python tools/run_tests_fast.py
 python tools/run_wide_coverage_gate.py --shards 24 --timeout 300 --fail-under 95 --pytest-arg=-o --pytest-arg=addopts= --pytest-arg=-m --pytest-arg="not slow"
 ```
+
+`tools/run_tests_fast.py` runs per-file pytest shards with a 300 s per-file
+timeout and a 300 s total local budget by default. Use
+`--total-timeout 0` only when you explicitly want the full sequential local
+pass.
 
 For laptops or shared workstations, run the same wide gate one bounded shard at
 a time with `--only-shard N --keep-existing-coverage --skip-combine`, then
