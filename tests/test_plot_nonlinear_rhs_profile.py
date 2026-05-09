@@ -44,3 +44,13 @@ def test_write_summary_json_roundtrips(tmp_path: Path) -> None:
     mod._write_summary_json({"kind": "x", "value": 1.0}, path)
 
     assert json.loads(path.read_text(encoding="utf-8")) == {"kind": "x", "value": 1.0}
+
+
+def test_parse_input_arg_and_case_label() -> None:
+    label, path = mod._parse_input_arg("GPU spectral=docs/_static/example.csv")
+    payload = mod._build_summary({"GPU spectral": {"full_rhs": 2.0}}, case="larger_case")
+
+    assert label == "GPU spectral"
+    assert str(path) == "docs/_static/example.csv"
+    assert payload["case"] == "larger_case"
+    assert mod._case_title("cyclone_miller_benchmark_size") == "Cyclone Miller benchmark-size case"
