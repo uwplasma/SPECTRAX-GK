@@ -321,6 +321,16 @@ standalone runtime claims. They point the next source optimization tranche at
 fused layout, broadcast/reshape reduction, and linked derivative staging before
 changing physics gates or documentation speedup claims.
 
+The matched one-RTX-A4000 artifacts
+``docs/_static/full_linear_rhs_trace_gpu_summary.json`` and
+``docs/_static/full_linear_rhs_trace_gpu_z_wave_summary.json`` report
+``warm_seconds=5.28e-3`` and ``5.25e-3`` for the initial and active ``z_wave``
+states, respectively, with ``force_electrostatic_fields=true``. A same-commit
+benchmark-size nonlinear split on ``office`` measured GPU full-RHS timings of
+``1.71e-2 s`` in grid mode and ``1.48e-2 s`` in spectral Laguerre mode, so the
+fresh GPU evidence supports the linear-RHS specialization but does not yet
+justify a broader nonlinear speedup claim.
+
 Parallelization scaling (diffrax + distributed linear loop)
 -----------------------------------------------------------
 
