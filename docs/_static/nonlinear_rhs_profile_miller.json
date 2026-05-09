@@ -1,0 +1,67 @@
+{
+  "case": "cyclone_miller_benchmark_size",
+  "claim_scope": "RHS split profile for hot-path localization. Treat speedups as bounded engineering measurements; production runtime claims require matched benchmark-size CPU/GPU sweeps.",
+  "fastest_full_rhs_label": "GPU spectral",
+  "fastest_full_rhs_seconds": 0.014627210640658935,
+  "kind": "nonlinear_rhs_profile_summary",
+  "rows": {
+    "CPU grid": {
+      "dominant_measured_kernel": "linear_rhs",
+      "field_solve_fraction_of_full_rhs": 0.0030464148170052012,
+      "linear_rhs_fraction_of_full_rhs": 0.41698394738176775,
+      "nonlinear_bracket_fraction_of_full_rhs": 0.34838969149992777,
+      "seconds": {
+        "field_solve": 0.0008653333255400261,
+        "full_rhs": 0.2840497363358736,
+        "linear_rhs": 0.11844418031008293,
+        "nonlinear_bracket": 0.09896000001269083
+      }
+    },
+    "CPU spectral": {
+      "dominant_measured_kernel": "linear_rhs",
+      "field_solve_fraction_of_full_rhs": 0.003947400586222594,
+      "linear_rhs_fraction_of_full_rhs": 0.6645768150094966,
+      "nonlinear_bracket_fraction_of_full_rhs": 0.3441690872590768,
+      "seconds": {
+        "field_solve": 0.0008157083454231421,
+        "full_rhs": 0.20664443032971272,
+        "linear_rhs": 0.1373310973479723,
+        "nonlinear_bracket": 0.07112062497374912
+      }
+    },
+    "GPU grid": {
+      "dominant_measured_kernel": "nonlinear_bracket",
+      "field_solve_fraction_of_full_rhs": 0.016220825923656104,
+      "linear_rhs_fraction_of_full_rhs": 0.4297745706517854,
+      "nonlinear_bracket_fraction_of_full_rhs": 0.5740935985042243,
+      "seconds": {
+        "field_solve": 0.00024076908205946287,
+        "full_rhs": 0.014843207318335772,
+        "linear_rhs": 0.006379233052333196,
+        "nonlinear_bracket": 0.00852139030272762
+      }
+    },
+    "GPU spectral": {
+      "dominant_measured_kernel": "linear_rhs",
+      "field_solve_fraction_of_full_rhs": 0.01610227197009963,
+      "linear_rhs_fraction_of_full_rhs": 0.43281854241828205,
+      "nonlinear_bracket_fraction_of_full_rhs": 0.27841386722548467,
+      "seconds": {
+        "field_solve": 0.00023553132389982542,
+        "full_rhs": 0.014627210640658935,
+        "linear_rhs": 0.006330927989135186,
+        "nonlinear_bracket": 0.0040724182811876135
+      }
+    }
+  },
+  "spectral_speedups": {
+    "cpu": {
+      "full_rhs_grid_over_spectral": 1.374582106484343,
+      "nonlinear_bracket_grid_over_spectral": 1.3914388413940024
+    },
+    "gpu": {
+      "full_rhs_grid_over_spectral": 1.014766771531712,
+      "nonlinear_bracket_grid_over_spectral": 2.092464406736378
+    }
+  }
+}

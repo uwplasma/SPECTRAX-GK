@@ -17,8 +17,8 @@
         "z_wave_linear_kick"
       ],
       "initial_relative_skip_error": 0.0,
-      "max_relative_skip_error": 0.0035867132613849055,
-      "max_term_norm": 0.00023511407198384404,
+      "max_relative_skip_error": 0.003586714149381006,
+      "max_term_norm": 0.00023511411563958973,
       "safe_to_disable_over_window": false
     }
   },
@@ -78,7 +78,7 @@
     {
       "relative_skip_errors": {
         "collisions": 0.0,
-        "hypercollisions": 0.003586695850967618
+        "hypercollisions": 0.0035866967389331364
       },
       "state": "z_wave",
       "state_norm": 0.08571848273277283,
@@ -88,7 +88,7 @@
         "diamagnetic": 0.03662170097231865,
         "end_damping": 0.0036051818169653416,
         "gradb": 0.025971107184886932,
-        "hypercollisions": 0.00023511407198384404,
+        "hypercollisions": 0.00023511411563958973,
         "hyperdiffusion": 0.0010770052904263139,
         "mirror": 0.0005122728180140257,
         "streaming": 0.029249195009469986
@@ -98,7 +98,7 @@
     {
       "relative_skip_errors": {
         "collisions": 0.0,
-        "hypercollisions": 0.0035867132613849055
+        "hypercollisions": 0.003586714149381006
       },
       "state": "z_wave_linear_kick",
       "state_norm": 0.085716113448143,
@@ -108,7 +108,7 @@
         "diamagnetic": 0.03662091866135597,
         "end_damping": 0.0036047203466296196,
         "gradb": 0.02597063221037388,
-        "hypercollisions": 0.00023510710161644965,
+        "hypercollisions": 0.00023510714527219534,
         "hyperdiffusion": 0.001076959422789514,
         "mirror": 0.0005122592556290329,
         "streaming": 0.029248161241412163

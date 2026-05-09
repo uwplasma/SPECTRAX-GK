@@ -5,7 +5,13 @@ import jax.numpy as jnp
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.gyroaverage import J_l_all, gx_factorial
 from spectraxgk.terms import linear_terms as linear_terms_module
-from spectraxgk.terms.linear_terms import hypercollisions_contribution
+from spectraxgk.terms.linear_terms import (
+    end_damping_contribution,
+    hypercollisions_contribution,
+    hyperdiffusion_contribution,
+    streaming_contribution,
+    streaming_contribution_gx,
+)
 
 
 def _gx_jflr(ell: int, b: jnp.ndarray) -> jnp.ndarray:
@@ -215,6 +221,49 @@ def test_hypercollisions_skips_linked_abs_kz_when_kz_weight_is_zero(monkeypatch)
     assert jnp.allclose(out, jnp.zeros_like(G))
 
 
+def test_hypercollisions_static_zero_operator_skips_linked_abs_kz(monkeypatch):
+    def _fail(*args, **kwargs):
+        raise AssertionError("abs_z_linked_fft should not run for an exactly zero hypercollision operator")
+
+    monkeypatch.setattr(linear_terms_module, "abs_z_linked_fft", _fail)
+
+    Nl, Nm = 2, 4
+    G = jnp.ones((1, Nl, Nm, 1, 1, 2), dtype=jnp.complex64)
+    zeros_lm = jnp.zeros((Nl, Nm, 1, 1, 1), dtype=jnp.float32)
+    mask = jnp.ones((1, Nl, Nm, 1, 1, 1), dtype=bool)
+
+    out = hypercollisions_contribution(
+        G,
+        vth=jnp.asarray([1.0], dtype=jnp.float32),
+        nu_hyper=jnp.asarray(0.0, dtype=jnp.float32),
+        nu_hyper_l=jnp.asarray(0.0, dtype=jnp.float32),
+        nu_hyper_m=jnp.asarray(0.0, dtype=jnp.float32),
+        nu_hyper_lm=jnp.asarray(0.0, dtype=jnp.float32),
+        hyper_ratio=zeros_lm,
+        ratio_l=zeros_lm,
+        ratio_m=zeros_lm,
+        ratio_lm=zeros_lm,
+        mask_const=mask,
+        mask_kz=mask,
+        m_pow=jnp.ones((1, Nl, Nm, 1, 1, 1), dtype=jnp.float32),
+        m_norm_kz_factor=jnp.asarray(1.0, dtype=jnp.float32),
+        kz=jnp.asarray([0.0, 1.0], dtype=jnp.float32),
+        kpar_scale=jnp.asarray(1.0, dtype=jnp.float32),
+        hypercollisions_const=jnp.asarray(1.0, dtype=jnp.float32),
+        hypercollisions_kz=jnp.asarray(1.0, dtype=jnp.float32),
+        weight=jnp.asarray(1.0, dtype=jnp.float32),
+        linked_indices=(jnp.asarray([[0]], dtype=jnp.int32),),
+        linked_kz=(jnp.asarray([0.0, 1.0], dtype=jnp.float32),),
+        linked_inverse_permutation=jnp.asarray([0], dtype=jnp.int32),
+        linked_full_cover=True,
+        linked_gather_map=jnp.asarray([0], dtype=jnp.int32),
+        linked_gather_mask=jnp.asarray([True], dtype=bool),
+        linked_use_gather=True,
+    )
+
+    assert jnp.allclose(out, jnp.zeros_like(G))
+
+
 def test_linked_kz_hypercollisions_activate_for_z_varying_state():
     Nl, Nm, Nz = 2, 4, 4
     zeros_lm = jnp.zeros((Nl, Nm, 1, 1, 1), dtype=jnp.float32)
@@ -253,3 +302,71 @@ def test_linked_kz_hypercollisions_activate_for_z_varying_state():
 
     assert jnp.linalg.norm(constant_out) < 1.0e-6
     assert jnp.linalg.norm(varying_out) > 1.0e-3
+
+
+def test_static_zero_linear_term_guards_skip_expensive_operators(monkeypatch):
+    def _fail_streaming(*args, **kwargs):
+        raise AssertionError("streaming_term should not run when streaming weight is zero")
+
+    def _fail_grad(*args, **kwargs):
+        raise AssertionError("grad_z_periodic should not run when GX streaming weight is zero")
+
+    monkeypatch.setattr(linear_terms_module, "streaming_term", _fail_streaming)
+    monkeypatch.setattr(linear_terms_module, "grad_z_periodic", _fail_grad)
+
+    G = jnp.ones((1, 2, 3, 1, 1, 4), dtype=jnp.complex64)
+    out = streaming_contribution(
+        G,
+        kz=jnp.ones((4,), dtype=jnp.float32),
+        dz=jnp.asarray(1.0, dtype=jnp.float32),
+        vth=jnp.asarray([1.0], dtype=jnp.float32),
+        sqrt_p=jnp.ones((2, 3, 1, 1, 1), dtype=jnp.float32),
+        sqrt_m=jnp.ones((2, 3, 1, 1, 1), dtype=jnp.float32),
+        kpar_scale=jnp.asarray(1.0, dtype=jnp.float32),
+        weight=jnp.asarray(0.0, dtype=jnp.float32),
+    )
+    assert jnp.allclose(out, jnp.zeros_like(G))
+
+    field = jnp.zeros((1, 1, 4), dtype=jnp.complex64)
+    out_gx = streaming_contribution_gx(
+        G,
+        phi=field,
+        apar=field,
+        bpar=field,
+        Jl=jnp.ones((1, 2, 1, 1, 4), dtype=jnp.float32),
+        JlB=jnp.ones((1, 2, 1, 1, 4), dtype=jnp.float32),
+        tz=jnp.asarray([1.0], dtype=jnp.float32),
+        vth=jnp.asarray([1.0], dtype=jnp.float32),
+        sqrt_p=jnp.ones((2, 3, 1, 1, 1), dtype=jnp.float32),
+        sqrt_m=jnp.ones((2, 3, 1, 1, 1), dtype=jnp.float32),
+        kpar_scale=jnp.asarray(1.0, dtype=jnp.float32),
+        weight=jnp.asarray(0.0, dtype=jnp.float32),
+        kz=jnp.ones((4,), dtype=jnp.float32),
+        dz=jnp.asarray(1.0, dtype=jnp.float32),
+    )
+    assert jnp.allclose(out_gx, jnp.zeros_like(G))
+
+
+def test_static_zero_damping_guards_return_zero_without_profiles():
+    G = jnp.ones((1, 2, 3, 2, 2, 4), dtype=jnp.complex64)
+
+    hyperdiff = hyperdiffusion_contribution(
+        G,
+        kx=jnp.asarray([], dtype=jnp.float32),
+        ky=jnp.asarray([], dtype=jnp.float32),
+        dealias_mask=jnp.zeros((0, 0), dtype=bool),
+        D_hyper=jnp.asarray(0.0, dtype=jnp.float32),
+        p_hyper_kperp=jnp.asarray(2.0, dtype=jnp.float32),
+        weight=jnp.asarray(1.0, dtype=jnp.float32),
+    )
+    assert jnp.allclose(hyperdiff, jnp.zeros_like(G))
+
+    damp = end_damping_contribution(
+        G,
+        ky=jnp.asarray([0.0, 1.0], dtype=jnp.float32),
+        damp_profile=jnp.ones((4,), dtype=jnp.float32),
+        linked_damp_profile=jnp.ones((3, 5), dtype=jnp.float32),
+        damp_amp=jnp.asarray(0.0, dtype=jnp.float32),
+        weight=jnp.asarray(1.0, dtype=jnp.float32),
+    )
+    assert jnp.allclose(damp, jnp.zeros_like(G))

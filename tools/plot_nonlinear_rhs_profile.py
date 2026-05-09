@@ -30,12 +30,36 @@ def _parse_args() -> argparse.Namespace:
         default=None,
         help="Optional JSON summary path. Defaults to the plot path with a .json suffix.",
     )
+    parser.add_argument(
+        "--input",
+        action="append",
+        default=None,
+        metavar="LABEL=CSV",
+        help="Optional labeled profile CSV. May be repeated. Defaults to the shipped short Cyclone inputs.",
+    )
+    parser.add_argument("--case", default="cyclone_short", help="Case label written to the JSON summary.")
+    parser.add_argument("--title", default=None, help="Optional plot title suffix. Defaults to a title from --case.")
     return parser.parse_args()
+
+
+def _parse_input_arg(value: str) -> tuple[str, Path]:
+    label, sep, path = value.partition("=")
+    if not sep or not label.strip() or not path.strip():
+        raise argparse.ArgumentTypeError("--input must have the form LABEL=CSV")
+    return label.strip(), Path(path.strip())
 
 
 def _read_profile(path: Path) -> dict[str, float]:
     with path.open(newline="") as f:
         return {row["kernel"]: float(row["seconds"]) for row in csv.DictReader(f)}
+
+
+def _case_title(case: str) -> str:
+    titles = {
+        "cyclone_short": "Cyclone short case",
+        "cyclone_miller_benchmark_size": "Cyclone Miller benchmark-size case",
+    }
+    return titles.get(case, case.replace("_", " "))
 
 
 def _safe_ratio(numerator: float | None, denominator: float | None) -> float | None:
@@ -45,7 +69,7 @@ def _safe_ratio(numerator: float | None, denominator: float | None) -> float | N
     return ratio if math.isfinite(ratio) else None
 
 
-def _build_summary(profiles: dict[str, dict[str, float]]) -> dict[str, Any]:
+def _build_summary(profiles: dict[str, dict[str, float]], *, case: str = "cyclone_short") -> dict[str, Any]:
     """Return a machine-readable summary of RHS split-profile CSV files."""
 
     rows: dict[str, dict[str, Any]] = {}
@@ -82,7 +106,7 @@ def _build_summary(profiles: dict[str, dict[str, float]]) -> dict[str, Any]:
     fastest = min(full_rhs_candidates, default=(None, None), key=lambda item: float(item[0]))
     return {
         "kind": "nonlinear_rhs_profile_summary",
-        "case": "cyclone_short",
+        "case": case,
         "rows": rows,
         "spectral_speedups": spectral_speedups,
         "fastest_full_rhs_label": fastest[1],
@@ -101,7 +125,12 @@ def _write_summary_json(payload: dict[str, Any], path: Path) -> None:
 
 def main() -> int:
     args = _parse_args()
-    profiles = {label: _read_profile(path) for label, path in DEFAULT_INPUTS.items() if path.exists()}
+    input_paths = (
+        dict(_parse_input_arg(item) for item in args.input)
+        if args.input is not None
+        else DEFAULT_INPUTS
+    )
+    profiles = {label: _read_profile(path) for label, path in input_paths.items() if path.exists()}
     if not profiles:
         raise FileNotFoundError("no nonlinear RHS profile CSV files were found")
 
@@ -121,7 +150,7 @@ def main() -> int:
 
     ax.set_yscale("log")
     ax.set_ylabel("seconds per compiled kernel call")
-    ax.set_title("Nonlinear RHS kernel profile: Cyclone short case")
+    ax.set_title(f"Nonlinear RHS kernel profile: {args.title or _case_title(str(args.case))}")
     ax.set_xticks(x, [kernel.replace("_", "\n") for kernel in kernels])
     ax.grid(axis="y", which="major", alpha=0.25)
     ax.legend(frameon=False, ncols=2, fontsize=8)
@@ -131,7 +160,7 @@ def main() -> int:
         fig.savefig(args.out.with_suffix(".pdf"))
     plt.close(fig)
     summary_path = args.summary_json if args.summary_json is not None else args.out.with_suffix(".json")
-    _write_summary_json(_build_summary(profiles), summary_path)
+    _write_summary_json(_build_summary(profiles, case=str(args.case)), summary_path)
     print(f"saved {args.out}")
     print(f"saved {summary_path}")
     return 0

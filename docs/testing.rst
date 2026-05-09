@@ -984,6 +984,17 @@ physics rigor:
 This keeps iteration latency low for development and still enforces complete
 coverage and regression checks on demand without relying on scheduled runners.
 
+For bounded local feedback, use the per-file runner:
+
+.. code-block:: bash
+
+   python tools/run_tests_fast.py
+
+It enforces both a per-file timeout and a whole-run timeout of 300 seconds by
+default, then reports any remaining files as ``not_run(total_timeout)`` instead
+of leaving orphaned pytest children. Use ``--total-timeout 0`` only for an
+explicit full sequential local pass.
+
 The same wide gate can be run locally in one process with:
 
 .. code-block:: bash
