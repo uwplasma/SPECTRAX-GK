@@ -2228,3 +2228,13 @@ Exit gate:
     about ``6.18e-3`` to ``6.43e-3 s``;
   - updated README and performance docs with the refreshed numbers while
     keeping the claim scoped to this bounded profiler artifact.
+- Added conservative exact-zero guards for additional linear RHS terms:
+  - factored a shared static-zero helper for non-traced term weights and
+    coefficients in ``spectraxgk.terms.linear_terms``;
+  - skipped streaming, GX-style streaming, hypercollision, hyperdiffusion, and
+    end-damping work only when the corresponding contribution is
+    mathematically zero at trace time;
+  - preserved linked ``|k_z|`` hypercollision safety by keeping the existing
+    z-varying activation regression and adding a guard test that only an
+    exactly zero operator may bypass the linked transform;
+  - verified with focused normal-precision and ``JAX_ENABLE_X64=1`` shards.
