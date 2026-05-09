@@ -6,6 +6,7 @@ from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.gyroaverage import J_l_all, gx_factorial
 from spectraxgk.terms import linear_terms as linear_terms_module
 from spectraxgk.terms.linear_terms import (
+    diamagnetic_contribution,
     end_damping_contribution,
     hypercollisions_contribution,
     hyperdiffusion_contribution,
@@ -345,6 +346,56 @@ def test_static_zero_linear_term_guards_skip_expensive_operators(monkeypatch):
         dz=jnp.asarray(1.0, dtype=jnp.float32),
     )
     assert jnp.allclose(out_gx, jnp.zeros_like(G))
+
+
+def test_disabled_em_fields_match_explicit_zero_arrays_in_streaming_and_diamagnetic():
+    G = jnp.arange(1 * 2 * 4 * 2 * 1 * 3, dtype=jnp.float32).reshape(1, 2, 4, 2, 1, 3)
+    G = (G + 1j * (G + 1.0)).astype(jnp.complex64) * 1.0e-3
+    phi = jnp.ones((2, 1, 3), dtype=jnp.complex64) * (0.2 + 0.1j)
+    zero_field = jnp.zeros_like(phi)
+    Jl = jnp.ones((1, 2, 2, 1, 3), dtype=jnp.float32)
+    JlB = 0.5 * Jl
+    tz = jnp.asarray([1.0], dtype=jnp.float32)
+    vth = jnp.asarray([1.2], dtype=jnp.float32)
+    sqrt_p = jnp.ones((2, 4, 1, 1, 1), dtype=jnp.float32)
+    sqrt_m = 0.75 * sqrt_p
+    common_streaming = dict(
+        G=G,
+        phi=phi,
+        Jl=Jl,
+        JlB=JlB,
+        tz=tz,
+        vth=vth,
+        sqrt_p=sqrt_p,
+        sqrt_m=sqrt_m,
+        kpar_scale=jnp.asarray(1.0, dtype=jnp.float32),
+        weight=jnp.asarray(1.0, dtype=jnp.float32),
+        kz=jnp.asarray([0.0, 1.0, -1.0], dtype=jnp.float32),
+        dz=jnp.asarray(1.0, dtype=jnp.float32),
+    )
+    explicit_streaming = streaming_contribution_gx(apar=zero_field, bpar=zero_field, **common_streaming)
+    pruned_streaming = streaming_contribution_gx(apar=None, bpar=None, **common_streaming)
+    assert jnp.allclose(pruned_streaming, explicit_streaming, rtol=1.0e-6, atol=1.0e-7)
+
+    l4 = jnp.arange(2, dtype=jnp.float32)[:, None, None, None]
+    common_diamagnetic = dict(
+        dG=jnp.zeros_like(G),
+        phi=phi,
+        Jl=Jl,
+        JlB=JlB,
+        l4=l4,
+        tprim=jnp.asarray([2.0], dtype=jnp.float32),
+        fprim=jnp.asarray([0.8], dtype=jnp.float32),
+        tz=tz,
+        vth=vth,
+        omega_star_scale=jnp.asarray(1.0, dtype=jnp.float32),
+        ky=jnp.asarray([0.0, 0.3], dtype=jnp.float32),
+        imag=jnp.asarray(1j, dtype=jnp.complex64),
+        weight=jnp.asarray(1.0, dtype=jnp.float32),
+    )
+    explicit_diamagnetic = diamagnetic_contribution(apar=zero_field, bpar=zero_field, **common_diamagnetic)
+    pruned_diamagnetic = diamagnetic_contribution(apar=None, bpar=None, **common_diamagnetic)
+    assert jnp.allclose(pruned_diamagnetic, explicit_diamagnetic, rtol=1.0e-6, atol=1.0e-7)
 
 
 def test_static_zero_damping_guards_return_zero_without_profiles():

@@ -30,7 +30,7 @@ from spectraxgk.runtime import (
     build_runtime_linear_params,
     build_runtime_term_config,
 )
-from spectraxgk.terms.assembly import assemble_rhs_cached
+from spectraxgk.terms.assembly import _is_static_zero, assemble_rhs_cached
 
 
 HLO_TOKENS = (
@@ -148,6 +148,7 @@ def _build_summary(
     trace_dir: Path | None,
     memory_profile: Path | None,
     hlo_out: Path | None,
+    force_electrostatic_fields: bool,
 ) -> dict[str, Any]:
     """Build a machine-readable full-linear-RHS trace summary."""
 
@@ -171,6 +172,7 @@ def _build_summary(
         "trace_dir": None if trace_dir is None else str(trace_dir),
         "memory_profile": None if memory_profile is None else str(memory_profile),
         "hlo_out": None if hlo_out is None else str(hlo_out),
+        "force_electrostatic_fields": bool(force_electrostatic_fields),
         "claim_scope": (
             "Full fused linear-RHS graph triage for one runtime state. Use this to choose "
             "kernel-level optimization targets; do not treat it as a standalone runtime claim."
@@ -219,7 +221,16 @@ def main() -> None:
             z_mode=int(args.z_mode),
         )
 
-    rhs_fn = jax.jit(lambda state: assemble_rhs_cached(state, cache, params, terms=linear_terms))
+    force_electrostatic_fields = _is_static_zero(linear_terms.apar) and _is_static_zero(linear_terms.bpar)
+    rhs_fn = jax.jit(
+        lambda state: assemble_rhs_cached(
+            state,
+            cache,
+            params,
+            terms=linear_terms,
+            force_electrostatic_fields=force_electrostatic_fields,
+        )
+    )
     compile_execute_seconds, first_out = _time_call(rhs_fn, g0)
     rhs, fields = first_out
 
@@ -267,6 +278,7 @@ def main() -> None:
         trace_dir=args.trace_dir,
         memory_profile=args.memory_profile,
         hlo_out=args.hlo_out,
+        force_electrostatic_fields=force_electrostatic_fields,
     )
     _write_summary_json(summary, args.summary_json)
     print(json.dumps(summary, indent=2, sort_keys=True))
