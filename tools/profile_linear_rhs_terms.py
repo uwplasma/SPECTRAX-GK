@@ -26,7 +26,7 @@ from spectraxgk.runtime import (
     build_runtime_linear_params,
     build_runtime_term_config,
 )
-from spectraxgk.terms.assembly import assemble_rhs_cached_jit, compute_fields_cached
+from spectraxgk.terms.assembly import _rhs_field_views, assemble_rhs_cached_jit, compute_fields_cached
 from spectraxgk.terms.linear_terms import (
     collisions_contribution,
     curvature_gradb_contribution,
@@ -284,9 +284,8 @@ def main() -> None:
 
     field_fn = jax.jit(lambda G: compute_fields_cached(G, cache, params, terms=term_cfg))
     fields_time, fields = _time_callable(field_fn, G0, repeats=args.repeats)
-    apar = fields.apar if fields.apar is not None else jnp.zeros_like(fields.phi)
-    bpar = fields.bpar if fields.bpar is not None else jnp.zeros_like(fields.phi)
-    H = build_H(G0, cache.Jl, fields.phi, tz, apar=apar, vth=vth, bpar=bpar, JlB=cache.JlB)
+    apar, bpar, h_apar, h_bpar = _rhs_field_views(fields, term_cfg)
+    H = build_H(G0, cache.Jl, fields.phi, tz, apar=h_apar, vth=vth, bpar=h_bpar, JlB=cache.JlB)
 
     omega_d_scale = jnp.asarray(params.omega_d_scale, dtype=real_dtype)
     omega_star_scale = jnp.asarray(params.omega_star_scale, dtype=real_dtype)
@@ -344,7 +343,7 @@ def main() -> None:
         )
 
     kernel_fns = {
-        "build_H": jax.jit(lambda: build_H(G0, cache.Jl, fields.phi, tz, apar=apar, vth=vth, bpar=bpar, JlB=cache.JlB)),
+        "build_H": jax.jit(lambda: build_H(G0, cache.Jl, fields.phi, tz, apar=h_apar, vth=vth, bpar=h_bpar, JlB=cache.JlB)),
         "streaming": jax.jit(
             lambda: streaming_contribution_gx(
                 G0,

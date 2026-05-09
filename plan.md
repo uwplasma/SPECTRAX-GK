@@ -2289,3 +2289,19 @@ Exit gate:
     because the linear RHS is now the limiting kernel, so the next optimization
     tranche should target linear-RHS fusion/cache layout before broader speedup
     claims.
+- Audited disabled electromagnetic field handling in the RHS hot path:
+  - added a shared trace-safe static-zero helper in
+    ``spectraxgk.terms.assembly`` and route disabled ``A_parallel``/``B_parallel``
+    fields as ``None`` to ``build_H`` and the nonlinear bracket where this is
+    safe, while preserving zero-filled arrays for terms whose signatures expect
+    arrays;
+  - caught and fixed an attempted static-``TermConfig`` JIT optimization because
+    it broke autodiff paths where term switches are tracers; differentiability
+    takes priority over that compile-time specialization;
+  - validated with targeted assembly/nonlinear/autodiff tests and a docs build;
+  - bounded local Cyclone Miller profiling did not show a reliable speedup
+    (latest local CPU split profile was about ``linear_rhs=1.17e-1 s`` and
+    ``full_rhs=3.25e-1 s``), so no README/runtime claim is updated from this
+    cleanup;
+  - next performance step remains a fused full-linear-RHS profiler/trace pass
+    and only then a source change with matched before/after artifacts.
