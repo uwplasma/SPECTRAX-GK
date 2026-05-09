@@ -2355,3 +2355,60 @@ Exit gate:
     only. The active ``z_wave`` timing remains noisy, so the next performance
     gate is a matched GPU and nonlinear full-RHS profile before any broad
     runtime claim.
+- Closed the matched one-GPU follow-up for the electrostatic linear-RHS
+  specialization:
+  - used a clean ``office`` clone at ``1469202`` because the existing mainline
+    checkout was dirty and on an old refactor branch;
+  - added ``docs/_static/full_linear_rhs_trace_gpu_summary.json`` and
+    ``docs/_static/full_linear_rhs_trace_gpu_z_wave_summary.json`` to the
+    performance manifest;
+  - one RTX A4000 measured fused linear-RHS ``warm_seconds=5.28e-3`` initial
+    and ``5.25e-3`` active ``z_wave`` with ``force_electrostatic_fields=true``;
+  - same-commit benchmark-size nonlinear split measured GPU
+    ``full_rhs=1.71e-2 s`` grid and ``1.48e-2 s`` spectral, with the nonlinear
+    bracket improving from ``8.60e-3`` to ``4.14e-3 s`` but full RHS still
+    limited by mixed linear/bracket costs;
+  - no README headline runtime claim is updated from this run. The next
+    performance tranche should use profiler traces on the full nonlinear RHS
+    and target fused layout plus larger-grid bracket decomposition.
+- Added the fused full-nonlinear-RHS trace profiler:
+  - introduced ``tools/profile_full_nonlinear_rhs_trace.py`` to lower and time
+    the complete ``nonlinear_rhs_cached`` graph, including optional trace,
+    memory profile, HLO text output, Laguerre grid/spectral mode selection, and
+    compact JSON summaries;
+  - added unit coverage for the nonlinear trace summary schema and missing
+    electromagnetic field norms;
+  - generated ``docs/_static/full_nonlinear_rhs_trace_summary.json`` locally:
+    CPU ``warm_seconds=2.96e-1``, ``3345`` HLO lines, electrostatic
+    specialized;
+  - generated ``docs/_static/full_nonlinear_rhs_trace_gpu_summary.json`` on one
+    ``office`` RTX A4000: ``warm_seconds=1.49e-2``, ``3338`` HLO lines;
+  - GPU HLO token triage is dominated by reshapes ``1539``, broadcasts
+    ``1822``, multiplies ``871``, FFT mentions ``229``, slices ``215``, and
+    reductions ``132``. The next source tranche should target fused layout and
+    bracket data movement with parity gates, not a broad speedup claim.
+- Removed a duplicate non-Laguerre field-mask pass from
+  ``nonlinear_em_contribution`` and added a regression that ensures the
+  electrostatic non-Laguerre path masks ``phi`` once. The refreshed CPU/GPU
+  nonlinear trace artifacts show unchanged HLO counts, so this is treated as a
+  cleanup/guardrail rather than a performance claim.
+- Completed the next nonlinear transform source tranche:
+  - replaced the production grid-Laguerre nonlinear transforms with
+    precision-controlled ``einsum`` contractions that preserve the previous
+    ``moveaxis``/``tensordot`` algebra without the extra layout transposes;
+  - added a direct regression comparing both Laguerre directions against the
+    old explicit algebra on complex test states;
+  - transform-only probes showed exact agreement at the tested precision, with
+    CPU grid/inverse timings improving from about ``1.08e-2``/``1.05e-2 s`` to
+    ``6.33e-3``/``4.91e-3 s`` and one-RTX-A4000 timings improving from about
+    ``1.50e-3``/``1.55e-3 s`` to ``8.96e-4``/``9.33e-4 s``;
+  - refreshed the benchmark-size Cyclone Miller split profile: CPU
+    ``full_rhs=3.19e-1 s`` grid and ``2.76e-1 s`` spectral; one ``office`` RTX
+    A4000 ``full_rhs=1.28e-2 s`` grid and ``1.48e-2 s`` spectral;
+  - refreshed the fused full-nonlinear-RHS trace: local CPU
+    ``warm_seconds=3.16e-1`` and ``3343`` HLO lines; one ``office`` RTX A4000
+    ``warm_seconds=1.28e-2`` and ``3336`` HLO lines, with transposes dropping
+    from ``44`` to ``32`` relative to the previous GPU artifact;
+  - this is now a bounded profiler-state GPU source improvement. It is not a
+    transport-runtime claim, and the next production performance lane remains
+    larger-state nonlinear profiling plus linear-RHS/bracket layout work.
