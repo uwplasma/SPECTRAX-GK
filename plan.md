@@ -2355,3 +2355,19 @@ Exit gate:
     only. The active ``z_wave`` timing remains noisy, so the next performance
     gate is a matched GPU and nonlinear full-RHS profile before any broad
     runtime claim.
+- Closed the matched one-GPU follow-up for the electrostatic linear-RHS
+  specialization:
+  - used a clean ``office`` clone at ``1469202`` because the existing mainline
+    checkout was dirty and on an old refactor branch;
+  - added ``docs/_static/full_linear_rhs_trace_gpu_summary.json`` and
+    ``docs/_static/full_linear_rhs_trace_gpu_z_wave_summary.json`` to the
+    performance manifest;
+  - one RTX A4000 measured fused linear-RHS ``warm_seconds=5.28e-3`` initial
+    and ``5.25e-3`` active ``z_wave`` with ``force_electrostatic_fields=true``;
+  - same-commit benchmark-size nonlinear split measured GPU
+    ``full_rhs=1.71e-2 s`` grid and ``1.48e-2 s`` spectral, with the nonlinear
+    bracket improving from ``8.60e-3`` to ``4.14e-3 s`` but full RHS still
+    limited by mixed linear/bracket costs;
+  - no README headline runtime claim is updated from this run. The next
+    performance tranche should use profiler traces on the full nonlinear RHS
+    and target fused layout plus larger-grid bracket decomposition.
