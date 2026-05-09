@@ -2379,11 +2379,16 @@ Exit gate:
   - added unit coverage for the nonlinear trace summary schema and missing
     electromagnetic field norms;
   - generated ``docs/_static/full_nonlinear_rhs_trace_summary.json`` locally:
-    CPU ``warm_seconds=3.00e-1``, ``3345`` HLO lines, electrostatic
+    CPU ``warm_seconds=2.96e-1``, ``3345`` HLO lines, electrostatic
     specialized;
   - generated ``docs/_static/full_nonlinear_rhs_trace_gpu_summary.json`` on one
-    ``office`` RTX A4000: ``warm_seconds=1.48e-2``, ``3338`` HLO lines;
+    ``office`` RTX A4000: ``warm_seconds=1.49e-2``, ``3338`` HLO lines;
   - GPU HLO token triage is dominated by reshapes ``1539``, broadcasts
     ``1822``, multiplies ``871``, FFT mentions ``229``, slices ``215``, and
     reductions ``132``. The next source tranche should target fused layout and
     bracket data movement with parity gates, not a broad speedup claim.
+- Removed a duplicate non-Laguerre field-mask pass from
+  ``nonlinear_em_contribution`` and added a regression that ensures the
+  electrostatic non-Laguerre path masks ``phi`` once. The refreshed CPU/GPU
+  nonlinear trace artifacts show unchanged HLO counts, so this is treated as a
+  cleanup/guardrail rather than a performance claim.
