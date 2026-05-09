@@ -202,7 +202,7 @@ short Cyclone case.
 
    python tools/profile_nonlinear_step_split.py \
      --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml \
-     --repeats 3 \
+     --repeats 5 \
      --out docs/_static/nonlinear_rhs_profile_miller_cpu.csv
 
 .. image:: _static/nonlinear_rhs_profile_miller.png
@@ -229,7 +229,7 @@ The full fused nonlinear-RHS trace companion is generated with:
      --ky 0.3 \
      --Nl 4 \
      --Nm 8 \
-     --repeats 3 \
+     --repeats 5 \
      --summary-json docs/_static/full_nonlinear_rhs_trace_summary.json
 
 The tracked local CPU artifact
