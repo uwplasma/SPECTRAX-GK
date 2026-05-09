@@ -2210,3 +2210,127 @@ Exit gate:
   - optimization should first target state-window-safe zero-source branches and
     linked derivative assembly only where identity gates prove the terms remain
     inactive or equivalent.
+- Implemented the first state-window-gated linear RHS fast path:
+  - added a dynamic ``jax.lax.cond`` guard around the collision contribution so
+    production RHS assembly skips the collision operator only when the current
+    species collision frequencies are exactly zero and no pre-expanded
+    collision matrix is present, or when the collision term weight is exactly
+    zero;
+  - preserved correctness for cache reuse by keying the guard on the current
+    ``LinearParams.nu`` rather than on a cache-build-time flag, and preserved
+    pre-expanded collision matrices with ``nu=0`` through new regression tests;
+  - reran the state-window gate; it still accepts the zero-collision skip and
+    rejects the linked ``|k_z|`` hypercollision skip with maximum relative RHS
+    error ``3.59e-3`` on resolved ``z``-varying states;
+  - refreshed local CPU and ``office`` GPU linear RHS profiles from the same
+    Cyclone nonlinear runtime harness: CPU full linear RHS is now about
+    ``1.17e-1`` to ``1.26e-1 s`` and one-RTX-A4000 GPU full linear RHS is now
+    about ``6.18e-3`` to ``6.43e-3 s``;
+  - updated README and performance docs with the refreshed numbers while
+    keeping the claim scoped to this bounded profiler artifact.
+- Added conservative exact-zero guards for additional linear RHS terms:
+  - factored a shared static-zero helper for non-traced term weights and
+    coefficients in ``spectraxgk.terms.linear_terms``;
+  - skipped streaming, GX-style streaming, hypercollision, hyperdiffusion, and
+    end-damping work only when the corresponding contribution is
+    mathematically zero at trace time;
+  - preserved linked ``|k_z|`` hypercollision safety by keeping the existing
+    z-varying activation regression and adding a guard test that only an
+    exactly zero operator may bypass the linked transform;
+  - verified with focused normal-precision and ``JAX_ENABLE_X64=1`` shards.
+- Refactored linked-FFT z-operators without changing numerics:
+  - consolidated the duplicated linked-chain/gather/full-cover/scatter
+    machinery behind ``_linked_fft_apply`` while keeping public
+    ``grad_z_linked_fft`` and ``abs_z_linked_fft`` wrappers unchanged;
+  - preserved the separate ``i k_z`` and ``|k_z|`` multipliers and the
+    real-FFT conjugate restoration path;
+  - verified with normal-precision and ``JAX_ENABLE_X64=1`` linked-operator and
+    GX-consistency shards.
+- Refreshed the post-refactor linear RHS profiler artifacts:
+  - confirmed the full GitHub CI run for ``d661c06`` passed, including
+    quick-test shards, docs/package, fast coverage, and wide coverage;
+  - reran CPU initial and active ``z_wave`` Cyclone linear-RHS profiles with
+    ``8`` repeats and refreshed ``docs/_static/linear_rhs_terms_profile*.{csv,json}``;
+  - reran the same GPU profiles on ``office`` from a fresh ``d661c06`` clone on
+    one RTX A4000 and copied back the tracked GPU artifacts;
+  - reran the zero-norm state-window gate, which still accepts the
+    zero-collision skip and rejects linked ``|k_z|`` hypercollision disabling
+    with maximum relative skip error ``3.59e-3``;
+  - current bounded CPU full linear RHS timings are ``1.08e-1 s`` initial and
+    ``1.27e-1 s`` active ``z_wave``; current one-RTX-A4000 timings are
+    ``5.50e-3 s`` initial and ``5.48e-3 s`` active ``z_wave``.
+- Refreshed the nonlinear RHS hot-path profile after the linear-RHS tranche:
+  - reran the short Cyclone split profiler locally for grid and spectral
+    Laguerre modes with ``10`` repeats and on ``office`` from a fresh
+    ``80e8594`` clone on one RTX A4000;
+  - regenerated ``docs/_static/nonlinear_rhs_profile.{csv,json,png,pdf}`` and
+    visually checked that the publication-facing PNG is readable on log scale;
+  - current bounded full-RHS timings are ``1.01e-1 s`` CPU grid,
+    ``7.73e-2 s`` CPU spectral, ``9.66e-3 s`` GPU grid, and ``6.38e-3 s`` GPU
+    spectral;
+  - current spectral grid-over-spectral ratios are ``1.30``/``1.51`` for
+    full RHS on CPU/GPU and ``1.54``/``2.24`` for nonlinear bracket on CPU/GPU;
+  - next performance gate is a larger benchmark-size profile with profiler
+    traces before making any new broad runtime claim.
+- Added the first larger benchmark-size nonlinear RHS split profile:
+  - extended ``tools/plot_nonlinear_rhs_profile.py`` so the same publication
+    plotter can consume labeled arbitrary CSV inputs and write a case-specific
+    JSON summary;
+  - profiled the shipped Cyclone Miller nonlinear case
+    (``Nx=192``, ``Ny=64``, ``Nz=24``, ``Nl=4``, ``Nm=8``) with ``3`` repeats
+    on local CPU and on one ``office`` RTX A4000;
+  - added Miller CSV companions plus
+    ``docs/_static/nonlinear_rhs_profile_miller.{json,png,pdf}`` and
+    documented the result in the performance guide;
+  - current Miller full-RHS timings are ``2.84e-1 s`` CPU grid,
+    ``2.07e-1 s`` CPU spectral, ``1.48e-2 s`` GPU grid, and ``1.46e-2 s`` GPU
+    spectral;
+  - the GPU bracket improves by ``2.09x`` but full RHS improves only ``1.01x``
+    because the linear RHS is now the limiting kernel, so the next optimization
+    tranche should target linear-RHS fusion/cache layout before broader speedup
+    claims.
+- Audited disabled electromagnetic field handling in the RHS hot path:
+  - added a shared trace-safe static-zero helper in
+    ``spectraxgk.terms.assembly`` and route disabled ``A_parallel``/``B_parallel``
+    fields as ``None`` to ``build_H`` and the nonlinear bracket where this is
+    safe, while preserving zero-filled arrays for terms whose signatures expect
+    arrays;
+  - caught and fixed an attempted static-``TermConfig`` JIT optimization because
+    it broke autodiff paths where term switches are tracers; differentiability
+    takes priority over that compile-time specialization;
+  - validated with targeted assembly/nonlinear/autodiff tests and a docs build;
+  - bounded local Cyclone Miller profiling did not show a reliable speedup
+    (latest local CPU split profile was about ``linear_rhs=1.17e-1 s`` and
+    ``full_rhs=3.25e-1 s``), so no README/runtime claim is updated from this
+    cleanup;
+  - next performance step remains a fused full-linear-RHS profiler/trace pass
+    and only then a source change with matched before/after artifacts.
+- Tightened the local fast-test runner after a timeout audit:
+  - replaced ``tools/run_tests_fast.py`` with a bounded per-file runner that
+    uses ``python -m pytest -q --maxfail=1 --disable-warnings`` and enforces a
+    300-second whole-run budget by default;
+  - remaining files are reported as ``not_run(total_timeout)`` instead of
+    relying on an external timeout wrapper that can leave child pytest
+    processes running;
+  - added runner unit tests and documented ``--total-timeout 0`` for an
+    explicit full sequential local pass;
+  - verified the runner tests, targeted autodiff/RHS regressions, and docs
+    build locally.
+- Added the fused full-linear-RHS trace profiler:
+  - introduced ``tools/profile_full_linear_rhs_trace.py`` to lower and time the
+    production linear-RHS assembly for real runtime TOML cases, including
+    optional JAX trace, memory profile, HLO text output, and a compact JSON
+    summary;
+  - generated the first Cyclone Miller artifacts
+    ``docs/_static/full_linear_rhs_trace_summary.json`` and
+    ``docs/_static/full_linear_rhs_trace_z_wave_summary.json`` with local CPU
+    ``warm_seconds=1.19e-1`` (initial), ``1.22e-1`` (active ``z_wave``), and
+    ``compile_execute_seconds≈1.94``;
+  - HLO triage shows the next optimization tranche should target graph/layout
+    pressure rather than another scalar zero branch: broadcasts ``861``,
+    reshapes ``422``, FFT mentions ``312``, reductions ``304``, and gathers
+    ``51``;
+  - documented the artifact in README/performance docs and added manifest plus
+    unit-test coverage;
+  - no new speedup claim is made until a source change is backed by matched
+    before/after CPU and GPU profiler artifacts.
