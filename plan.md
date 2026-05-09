@@ -2321,9 +2321,11 @@ Exit gate:
     production linear-RHS assembly for real runtime TOML cases, including
     optional JAX trace, memory profile, HLO text output, and a compact JSON
     summary;
-  - generated the first Cyclone Miller artifact
-    ``docs/_static/full_linear_rhs_trace_summary.json`` with local CPU
-    ``warm_seconds=1.19e-1`` and ``compile_execute_seconds=1.94``;
+  - generated the first Cyclone Miller artifacts
+    ``docs/_static/full_linear_rhs_trace_summary.json`` and
+    ``docs/_static/full_linear_rhs_trace_z_wave_summary.json`` with local CPU
+    ``warm_seconds=1.19e-1`` (initial), ``1.22e-1`` (active ``z_wave``), and
+    ``compile_execute_seconds≈1.94``;
   - HLO triage shows the next optimization tranche should target graph/layout
     pressure rather than another scalar zero branch: broadcasts ``861``,
     reshapes ``422``, FFT mentions ``312``, reductions ``304``, and gathers
