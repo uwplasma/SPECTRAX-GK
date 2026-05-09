@@ -250,6 +250,32 @@ nonlinear-RHS trace improved from ``1.49e-2 s`` to ``1.28e-2 s`` while
 transposes dropped from ``44`` to ``32``. This is a bounded profiler-state
 source improvement, not a full transport runtime claim.
 
+Runtime-mode stellarator RHS smoke profile
+------------------------------------------
+
+The release-performance gate also tracks W7-X and HSX at their documented
+adiabatic-electron nonlinear runtime mode (``Nx=96``, ``Ny=96``, ``Nz=48``,
+``Nl=4``, ``Nm=8``, and the runtime ``k_y=1/21``). These are not full
+transport-average timings; they are single-state RHS split profiles used to
+verify that the optimized grid-Laguerre path, VMEC/EIK geometry inputs, and
+CPU/GPU hot-path accounting remain consistent on non-axisymmetric cases.
+
+.. image:: _static/nonlinear_rhs_profile_stellarator_runtime.png
+   :alt: SPECTRAX-GK nonlinear RHS kernel profile on W7-X and HSX runtime-mode stellarator cases
+   :align: center
+
+The tracked artifact
+``docs/_static/nonlinear_rhs_profile_stellarator_runtime.json`` reports W7-X
+CPU/GPU full-RHS timings of ``3.09e-1 s`` and ``2.73e-2 s`` and HSX CPU/GPU
+full-RHS timings of ``3.09e-1 s`` and ``2.71e-2 s``. In both stellarator
+runtime-mode profiles the GPU row is dominated by the nonlinear bracket
+(``~59-60%`` of the measured full RHS), with the linear RHS contributing
+``~42%``. That closes the release-level performance evidence: CPU/GPU
+profiler artifacts are current, the sharding identity gate is tracked, and the
+documentation makes only bounded profiler claims. Further nonlinear speedup
+work should target larger-state bracket/linear-RHS layout and must keep using
+identity gates before any production runtime claim.
+
 Linear RHS term profile
 -----------------------
 

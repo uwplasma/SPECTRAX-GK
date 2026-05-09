@@ -114,6 +114,35 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(tmp_path: Pat
     )
     _write_json(
         tmp_path,
+        "docs/_static/nonlinear_rhs_profile_miller.json",
+        {
+            "rows": {
+                "CPU grid": {"seconds": {"full_rhs": 0.32}},
+                "GPU grid": {"seconds": {"full_rhs": 0.013}},
+                "GPU spectral": {"seconds": {"full_rhs": 0.015}},
+            }
+        },
+    )
+    _write_json(
+        tmp_path,
+        "docs/_static/nonlinear_rhs_profile_stellarator_runtime.json",
+        {
+            "rows": {
+                "W7-X CPU": {"seconds": {"full_rhs": 0.31}},
+                "W7-X GPU": {"seconds": {"full_rhs": 0.027}},
+                "HSX CPU": {"seconds": {"full_rhs": 0.31}},
+                "HSX GPU": {"seconds": {"full_rhs": 0.027}},
+            }
+        },
+    )
+    _write_json(tmp_path, "docs/_static/full_nonlinear_rhs_trace_summary.json", {"warm_seconds": 0.316})
+    _write_json(
+        tmp_path,
+        "docs/_static/full_nonlinear_rhs_trace_gpu_summary.json",
+        {"warm_seconds": 0.0128, "hlo_token_counts": {"transpose": 32}},
+    )
+    _write_json(
+        tmp_path,
         "docs/_static/solver_objective_gradient_gate.json",
         {
             "passed": True,
@@ -279,12 +308,16 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(tmp_path: Pat
     assert lanes["W7-X zonal recurrence/damping"]["status"] == "deferred"
     assert lanes["TEM / kinetic-electron stellarator extension"]["status"] == "deferred"
     profiler = lanes["Profiler-backed nonlinear performance claims"]
-    assert profiler["status"] == "partial"
+    assert profiler["status"] == "closed"
+    assert profiler["key_metrics"]["release_performance_gate"] is True
     assert "docs/_static/nonlinear_rhs_profile.json" in profiler["primary_artifacts"]
+    assert "docs/_static/nonlinear_rhs_profile_stellarator_runtime.json" in profiler["primary_artifacts"]
     assert profiler["key_metrics"]["best_identity_candidate"] == "kx"
     assert profiler["key_metrics"]["rhs_fastest_full_label"] == "GPU spectral"
     assert profiler["key_metrics"]["rhs_gpu_full_grid_over_spectral"] == 1.64
     assert profiler["key_metrics"]["rhs_cpu_bracket_grid_over_spectral"] == 1.66
+    assert profiler["key_metrics"]["miller_gpu_grid_full_rhs"] == 0.013
+    assert profiler["key_metrics"]["w7x_gpu_full_rhs"] == 0.027
 
 
 def test_write_manuscript_readiness_artifacts_writes_all_formats(tmp_path: Path) -> None:
