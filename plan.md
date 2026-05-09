@@ -2246,3 +2246,16 @@ Exit gate:
     real-FFT conjugate restoration path;
   - verified with normal-precision and ``JAX_ENABLE_X64=1`` linked-operator and
     GX-consistency shards.
+- Refreshed the post-refactor linear RHS profiler artifacts:
+  - confirmed the full GitHub CI run for ``d661c06`` passed, including
+    quick-test shards, docs/package, fast coverage, and wide coverage;
+  - reran CPU initial and active ``z_wave`` Cyclone linear-RHS profiles with
+    ``8`` repeats and refreshed ``docs/_static/linear_rhs_terms_profile*.{csv,json}``;
+  - reran the same GPU profiles on ``office`` from a fresh ``d661c06`` clone on
+    one RTX A4000 and copied back the tracked GPU artifacts;
+  - reran the zero-norm state-window gate, which still accepts the
+    zero-collision skip and rejects linked ``|k_z|`` hypercollision disabling
+    with maximum relative skip error ``3.59e-3``;
+  - current bounded CPU full linear RHS timings are ``1.08e-1 s`` initial and
+    ``1.27e-1 s`` active ``z_wave``; current one-RTX-A4000 timings are
+    ``5.50e-3 s`` initial and ``5.48e-3 s`` active ``z_wave``.
