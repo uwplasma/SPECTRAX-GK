@@ -2334,3 +2334,24 @@ Exit gate:
     unit-test coverage;
   - no new speedup claim is made until a source change is backed by matched
     before/after CPU and GPU profiler artifacts.
+- Completed the first source optimization tranche from the fused linear-RHS
+  trace:
+  - electrostatic runs now pass disabled ``A_parallel`` and ``B_parallel``
+    fields as static ``None`` through the linear streaming/diamagnetic kernels,
+    while the generic dynamic path remains available for electromagnetic and
+    autodiff-tracer switches;
+  - added parity tests showing explicit zero electromagnetic arrays and the
+    electrostatic-specialized JIT path produce matching RHS values;
+  - refreshed ``docs/_static/full_linear_rhs_trace_summary.json`` and
+    ``docs/_static/full_linear_rhs_trace_z_wave_summary.json`` with local CPU
+    electrostatic-specialized artifacts: initial ``warm_seconds=8.09e-2`` and
+    ``compile_execute_seconds=1.40``; active ``z_wave``
+    ``warm_seconds=1.29e-1`` and ``compile_execute_seconds=1.74``;
+  - the graph shrank from the pre-specialization ``2425`` HLO lines to
+    ``2225`` lines, with broadcasts ``861 -> 748``, reshapes ``422 -> 377``,
+    and multiplies ``161 -> 127``; FFT and reduction counts remain unchanged
+    at ``312`` and ``304``;
+  - this supports a bounded local CPU initial-state graph-speedup statement
+    only. The active ``z_wave`` timing remains noisy, so the next performance
+    gate is a matched GPU and nonlinear full-RHS profile before any broad
+    runtime claim.
