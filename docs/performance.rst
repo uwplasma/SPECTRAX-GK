@@ -286,6 +286,35 @@ state has zero relative hypercollision skip error, but the resolved
 from incorrectly disabling linked ``|k_z|`` hypercollisions based only on the
 initial-state profile.
 
+Full fused linear RHS trace
+---------------------------
+
+The term profiler above times independently isolated kernels. The companion
+full-graph profiler lowers and times the fused production linear-RHS assembly
+for a real runtime TOML so optimization work can target the compiled graph
+rather than only the standalone term calls:
+
+.. code-block:: bash
+
+   python tools/profile_full_linear_rhs_trace.py \
+     --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml \
+     --ky 0.3 \
+     --Nl 4 \
+     --Nm 8 \
+     --repeats 3 \
+     --summary-json docs/_static/full_linear_rhs_trace_summary.json
+
+The initial Cyclone Miller CPU artifact
+``docs/_static/full_linear_rhs_trace_summary.json`` reports
+``warm_seconds=1.19e-1`` and ``compile_execute_seconds=1.94`` for the bounded
+local profile. Its HLO triage summary contains ``2425`` lines and highlights
+the current graph-level pressure points: broadcasts (``861`` coarse token
+hits), reshapes (``422``), FFT mentions (``312``), reductions (``304``), and
+gathers (``51``). These are localization metrics, not standalone runtime
+claims. They point the next source optimization tranche at fused layout,
+broadcast/reshape reduction, and linked derivative staging before changing
+physics gates or documentation speedup claims.
+
 Parallelization scaling (diffrax + distributed linear loop)
 -----------------------------------------------------------
 

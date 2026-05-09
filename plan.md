@@ -2316,3 +2316,19 @@ Exit gate:
     explicit full sequential local pass;
   - verified the runner tests, targeted autodiff/RHS regressions, and docs
     build locally.
+- Added the fused full-linear-RHS trace profiler:
+  - introduced ``tools/profile_full_linear_rhs_trace.py`` to lower and time the
+    production linear-RHS assembly for real runtime TOML cases, including
+    optional JAX trace, memory profile, HLO text output, and a compact JSON
+    summary;
+  - generated the first Cyclone Miller artifact
+    ``docs/_static/full_linear_rhs_trace_summary.json`` with local CPU
+    ``warm_seconds=1.19e-1`` and ``compile_execute_seconds=1.94``;
+  - HLO triage shows the next optimization tranche should target graph/layout
+    pressure rather than another scalar zero branch: broadcasts ``861``,
+    reshapes ``422``, FFT mentions ``312``, reductions ``304``, and gathers
+    ``51``;
+  - documented the artifact in README/performance docs and added manifest plus
+    unit-test coverage;
+  - no new speedup claim is made until a source change is backed by matched
+    before/after CPU and GPU profiler artifacts.
