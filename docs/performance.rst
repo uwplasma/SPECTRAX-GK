@@ -219,6 +219,29 @@ points the next optimization pass at linear-RHS fusion/cache layout and then
 larger-grid bracket decomposition, not at claiming a broad nonlinear speedup
 from spectral mode alone.
 
+The full fused nonlinear-RHS trace companion is generated with:
+
+.. code-block:: bash
+
+   python tools/profile_full_nonlinear_rhs_trace.py \
+     --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml \
+     --ky 0.3 \
+     --Nl 4 \
+     --Nm 8 \
+     --repeats 3 \
+     --summary-json docs/_static/full_nonlinear_rhs_trace_summary.json
+
+The tracked local CPU artifact
+``docs/_static/full_nonlinear_rhs_trace_summary.json`` reports
+``warm_seconds=3.00e-1`` and ``3345`` HLO lines. The matched one-RTX-A4000
+artifact ``docs/_static/full_nonlinear_rhs_trace_gpu_summary.json`` reports
+``warm_seconds=1.48e-2`` and ``3338`` HLO lines. The GPU token triage is
+dominated by reshapes (``1539``), broadcasts (``1822``), multiplies (``871``),
+FFTs (``229``), slices (``215``), and reductions (``132``). This confirms that
+the next nonlinear performance tranche should target fused layout and bracket
+data movement rather than claiming a new runtime speedup from the linear-RHS
+specialization alone.
+
 Linear RHS term profile
 -----------------------
 
