@@ -307,13 +307,16 @@ rather than only the standalone term calls:
 The initial Cyclone Miller CPU artifact
 ``docs/_static/full_linear_rhs_trace_summary.json`` reports
 ``warm_seconds=1.19e-1`` and ``compile_execute_seconds=1.94`` for the bounded
-local profile. Its HLO triage summary contains ``2425`` lines and highlights
-the current graph-level pressure points: broadcasts (``861`` coarse token
-hits), reshapes (``422``), FFT mentions (``312``), reductions (``304``), and
-gathers (``51``). These are localization metrics, not standalone runtime
-claims. They point the next source optimization tranche at fused layout,
-broadcast/reshape reduction, and linked derivative staging before changing
-physics gates or documentation speedup claims.
+local profile. The active-state companion
+``docs/_static/full_linear_rhs_trace_z_wave_summary.json`` injects resolved
+parallel variation and reports ``warm_seconds=1.22e-1`` with the same HLO shape.
+Both summaries contain ``2425`` HLO lines and highlight the current graph-level
+pressure points: broadcasts (``861`` coarse token hits), reshapes (``422``),
+FFT mentions (``312``), reductions (``304``), and gathers (``51``). These are
+localization metrics, not standalone runtime claims. They point the next source
+optimization tranche at fused layout, broadcast/reshape reduction, and linked
+derivative staging before changing physics gates or documentation speedup
+claims.
 
 Parallelization scaling (diffrax + distributed linear loop)
 -----------------------------------------------------------
