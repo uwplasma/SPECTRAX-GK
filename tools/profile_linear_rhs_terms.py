@@ -315,17 +315,19 @@ def main() -> None:
         zt5 = zt[:, 0, 0, 0, 0, 0][:, None, None, None, None]
         vth5 = vth[:, None, None, None, None]
         phi_s = fields.phi[None, None, ...]
-        apar_s = apar[None, None, ...]
-        bpar_s = bpar[None, None, ...]
         Nm = streaming_rhs_pre_grad.shape[2]
         m_idx = jnp.arange(Nm, dtype=jnp.int32)[None, None, :, None, None, None]
         field_rhs = jnp.zeros_like(streaming_rhs_pre_grad)
-        drive_m0 = zt5 * (vth5 * vth5) * cache.Jl * apar_s
-        field_rhs = field_rhs + (m_idx == 0).astype(field_rhs.dtype) * drive_m0[:, :, None, ...]
+        if h_apar is not None:
+            apar_s = h_apar[None, None, ...]
+            drive_m0 = zt5 * (vth5 * vth5) * cache.Jl * apar_s
+            field_rhs = field_rhs + (m_idx == 0).astype(field_rhs.dtype) * drive_m0[:, :, None, ...]
         if Nm > 1:
-            drive_m1 = -zt5 * vth5 * cache.Jl * phi_s - vth5 * cache.JlB * bpar_s
+            drive_m1 = -zt5 * vth5 * cache.Jl * phi_s
+            if h_bpar is not None:
+                drive_m1 = drive_m1 - vth5 * cache.JlB * h_bpar[None, None, ...]
             field_rhs = field_rhs + (m_idx == 1).astype(field_rhs.dtype) * drive_m1[:, :, None, ...]
-        if Nm > 2:
+        if Nm > 2 and h_apar is not None:
             drive_m2 = jnp.sqrt(2.0) * zt5 * (vth5 * vth5) * cache.Jl * apar_s
             field_rhs = field_rhs + (m_idx == 2).astype(field_rhs.dtype) * drive_m2[:, :, None, ...]
         streaming_rhs_pre_grad = kpar_scale * (streaming_rhs_pre_grad + field_rhs)
@@ -348,8 +350,8 @@ def main() -> None:
             lambda: streaming_contribution_gx(
                 G0,
                 phi=fields.phi,
-                apar=apar,
-                bpar=bpar,
+                apar=h_apar,
+                bpar=h_bpar,
                 Jl=cache.Jl,
                 JlB=cache.JlB,
                 tz=tz,
@@ -416,8 +418,8 @@ def main() -> None:
             lambda: diamagnetic_contribution(
                 jnp.zeros_like(G0),
                 phi=fields.phi,
-                apar=apar,
-                bpar=bpar,
+                apar=h_apar,
+                bpar=h_bpar,
                 Jl=cache.Jl,
                 JlB=cache.JlB,
                 l4=cache.l4,
