@@ -5,86 +5,86 @@
   "case": "runtime_cyclone_nonlinear",
   "claim_scope": "Linear RHS split profile for hot-path localization. Zero-norm rows describe the profiled initial state only and must not be skipped in production unless a state-window identity gate proves the term remains inactive.",
   "config": "examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml",
-  "dominant_measured_term": "collisions",
-  "dominant_nonzero_norm_term": "streaming",
-  "full_linear_rhs_seconds": 0.008962112362496555,
-  "full_over_sum_independently_measured_components": 0.837891467593961,
+  "dominant_measured_term": "mirror",
+  "dominant_nonzero_norm_term": "mirror",
+  "full_linear_rhs_seconds": 0.006176410592161119,
+  "full_over_sum_independently_measured_components": 1.1232576064234925,
   "kind": "linear_rhs_terms_profile_summary",
   "kx": null,
   "ky": 0.3,
   "repeats": 8,
   "rows": {
     "build_H": {
-      "norm": 0.12801916725591525,
-      "seconds": 0.0012797573581337929
+      "norm": 0.12801915407180786,
+      "seconds": 0.00045007228618487716
     },
     "collisions": {
       "norm": 0.0,
-      "seconds": 0.0016245304141193628
+      "seconds": 0.0002597295097075403
     },
     "curvature_gradb": {
-      "norm": 0.052589573700110054,
-      "seconds": 0.00033080135472118855
+      "norm": 0.052589576691389084,
+      "seconds": 0.0003224862739443779
     },
     "diamagnetic": {
-      "norm": 0.03662176730992747,
-      "seconds": 0.0010538803762756288
+      "norm": 0.03662176802754402,
+      "seconds": 0.0004212211351841688
     },
     "end_damping": {
-      "norm": 0.003601921846529891,
-      "seconds": 0.00033557909773662686
+      "norm": 0.0036019217222929,
+      "seconds": 0.0003340620896779001
     },
     "field_solve": {
-      "norm": 0.05310655557996763,
-      "seconds": 0.0001929482677951455
+      "norm": 0.053106553852558136,
+      "seconds": 0.00026281102327629924
     },
     "full_linear_rhs": {
-      "norm": 0.06520649790763855,
-      "seconds": 0.008962112362496555
+      "norm": 0.06520650535821915,
+      "seconds": 0.006176410592161119
     },
     "hypercollisions": {
       "norm": 0.0,
-      "seconds": 0.0014966332237236202
+      "seconds": 0.0006157031166367233
     },
     "hyperdiffusion": {
-      "norm": 0.0010770096196093253,
-      "seconds": 0.0003273215261287987
+      "norm": 0.0010770095977932215,
+      "seconds": 0.0003601803909987211
     },
     "linked_abs_kz": {
       "norm": 0.0,
-      "seconds": 0.0009713798644952476
+      "seconds": 0.00047288875794038177
     },
     "linked_grad_z": {
-      "norm": 0.02886696472066111,
-      "seconds": 0.0009718787623569369
+      "norm": 0.02886696718633175,
+      "seconds": 0.0004951006267219782
     },
     "mirror": {
-      "norm": 0.0003229877438924296,
-      "seconds": 0.000755633634980768
+      "norm": 0.0003229877329431474,
+      "seconds": 0.0009599588811397552
     },
     "streaming": {
-      "norm": 0.02886696472066111,
-      "seconds": 0.0013556862249970436
+      "norm": 0.02886696718633175,
+      "seconds": 0.000544444948900491
     }
   },
   "state": "initial",
-  "sum_independently_measured_components_seconds": 0.01069603010546416,
+  "sum_independently_measured_components_seconds": 0.005498659040313214,
   "z_variation_norm": 1.4943761783570153e-08,
   "zero_norm_terms_by_time": [
     {
       "norm": 0.0,
-      "seconds": 0.0016245304141193628,
-      "term": "collisions"
-    },
-    {
-      "norm": 0.0,
-      "seconds": 0.0014966332237236202,
+      "seconds": 0.0006157031166367233,
       "term": "hypercollisions"
     },
     {
       "norm": 0.0,
-      "seconds": 0.0009713798644952476,
+      "seconds": 0.00047288875794038177,
       "term": "linked_abs_kz"
+    },
+    {
+      "norm": 0.0,
+      "seconds": 0.0002597295097075403,
+      "term": "collisions"
     }
   ],
   "zero_norm_threshold": 1e-13

@@ -205,23 +205,22 @@ inside nonlinear runs:
      --out docs/_static/linear_rhs_terms_profile_cpu.csv \
      --summary-json docs/_static/linear_rhs_terms_profile.json
 
-After the zero-collision fast path, the May 8, 2026 CPU Cyclone artifact
-reports ``full_linear_rhs=1.46e-1 s`` for the compiled full linear RHS call in
+After the zero-collision fast path, the May 9, 2026 CPU Cyclone artifact
+reports ``full_linear_rhs=1.17e-1 s`` for the compiled full linear RHS call in
 this profiling harness. The independently timed term kernels sum to
-``4.46e-2 s``; this remaining gap is a localization signal, not a speedup
+``1.80e-2 s``; this remaining gap is a localization signal, not a speedup
 claim, because the full path recomputes the field solve, ``H`` assembly, and
-all weighted contributions as one compiled graph. The dominant standalone terms
-are streaming (``8.28e-3 s``), linked ``grad_z`` (``6.70e-3 s``), and the
-zero-norm collision branch (``6.06e-3 s``). Zero-norm rows are explicitly
-recorded in ``docs/_static/linear_rhs_terms_profile.json`` but are not removed
-from production until a state-window identity gate proves they remain inactive
-after nonlinear evolution.
+all weighted contributions as one compiled graph. The largest standalone terms
+are hypercollisions (``2.87e-3 s``), linked ``|k_z|`` setup
+(``2.42e-3 s``), and streaming (``2.26e-3 s``). The accepted
+zero-collision branch now costs ``1.29e-3 s`` in the standalone CPU timing and
+is guarded by the state-window identity gate below.
 
 The active-state CPU companion
 ``docs/_static/linear_rhs_terms_profile_z_wave_cpu.json`` profiles the same
 state after injecting a resolved parallel perturbation. There the hypercollision
 and linked ``|k_z|`` norms are both ``2.35e-4`` and the linked ``|k_z|`` path
-costs ``4.20e-3 s`` on CPU. This is the artifact that should be used for
+costs ``2.51e-3 s`` on CPU. This is the artifact that should be used for
 linked-``|k_z|`` optimization decisions; the initial-state profile is only a
 zero-source baseline.
 
@@ -229,14 +228,14 @@ The matching ``office`` GPU profile is tracked in
 ``docs/_static/linear_rhs_terms_profile_gpu.json`` and
 ``docs/_static/linear_rhs_terms_profile_gpu.csv``. On one RTX A4000 with the
 same ``jax==0.6.2``/``jaxlib==0.6.2`` environment used for the nonlinear RHS
-refresh, it reports ``full_linear_rhs=8.96e-3 s`` and independently timed terms
-summing to ``1.07e-2 s``. The largest profiled zero-norm rows are collisions
-(``1.62e-3 s``) and hypercollisions (``1.50e-3 s``), which is why the
-state-window gate below remains a hard precondition before any zero-source
-fast path. The active-state GPU companion
+refresh, it reports ``full_linear_rhs=6.18e-3 s`` and independently timed terms
+summing to ``5.50e-3 s``. The accepted zero-collision branch costs
+``2.60e-4 s`` in the standalone GPU timing; hypercollisions and linked
+``|k_z|`` remain present as separately profiled rows. The active-state GPU
+companion
 ``docs/_static/linear_rhs_terms_profile_z_wave_gpu.json`` activates the same
 operator pair with matched norms ``2.35e-4`` and records linked ``|k_z|`` at
-``9.72e-4 s``.
+``4.29e-4 s``.
 
 The companion state-window gate is generated with:
 

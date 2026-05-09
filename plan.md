@@ -2210,3 +2210,21 @@ Exit gate:
   - optimization should first target state-window-safe zero-source branches and
     linked derivative assembly only where identity gates prove the terms remain
     inactive or equivalent.
+- Implemented the first state-window-gated linear RHS fast path:
+  - added a dynamic ``jax.lax.cond`` guard around the collision contribution so
+    production RHS assembly skips the collision operator only when the current
+    species collision frequencies are exactly zero and no pre-expanded
+    collision matrix is present, or when the collision term weight is exactly
+    zero;
+  - preserved correctness for cache reuse by keying the guard on the current
+    ``LinearParams.nu`` rather than on a cache-build-time flag, and preserved
+    pre-expanded collision matrices with ``nu=0`` through new regression tests;
+  - reran the state-window gate; it still accepts the zero-collision skip and
+    rejects the linked ``|k_z|`` hypercollision skip with maximum relative RHS
+    error ``3.59e-3`` on resolved ``z``-varying states;
+  - refreshed local CPU and ``office`` GPU linear RHS profiles from the same
+    Cyclone nonlinear runtime harness: CPU full linear RHS is now about
+    ``1.17e-1`` to ``1.26e-1 s`` and one-RTX-A4000 GPU full linear RHS is now
+    about ``6.18e-3`` to ``6.43e-3 s``;
+  - updated README and performance docs with the refreshed numbers while
+    keeping the claim scoped to this bounded profiler artifact.
