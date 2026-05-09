@@ -8,13 +8,15 @@ from spectraxgk.config import GridConfig
 from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
 from spectraxgk.grids import build_spectral_grid, select_ky_grid
 from spectraxgk.linear import LinearParams, build_linear_cache
+from spectraxgk.terms import assembly as assembly_mod
 from spectraxgk.terms.assembly import (
     assemble_rhs,
     assemble_rhs_cached,
+    assemble_rhs_cached_jit,
     assemble_rhs_terms_cached,
     compute_fields_cached,
 )
-from spectraxgk.terms.config import TermConfig
+from spectraxgk.terms.config import FieldState, TermConfig
 
 
 def test_assemble_rhs_terms_sum_matches_total() -> None:
@@ -141,6 +143,70 @@ def test_compute_fields_cached_matches_rhs_fields_and_validation() -> None:
 
     with pytest.raises(ValueError):
         compute_fields_cached(jnp.ones((2, 3, 4, 5), dtype=jnp.complex64), cache, params)
+
+
+def test_disabled_em_fields_skip_hamiltonian_branches(monkeypatch) -> None:
+    grid_full = build_spectral_grid(GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.28, Ly=6.28))
+    grid = select_ky_grid(grid_full, 1)
+    geom = SAlphaGeometry(q=1.4, s_hat=0.8, epsilon=0.18, R0=2.77778, drift_scale=1.0)
+    params = LinearParams(
+        R_over_Ln=0.8,
+        R_over_LTi=2.49,
+        R_over_LTe=0.0,
+        omega_d_scale=1.0,
+        omega_star_scale=1.0,
+        rho_star=1.0,
+        kpar_scale=float(geom.gradpar()),
+        nu=0.0,
+        beta=0.0,
+    )
+    cache = build_linear_cache(grid, geom, params, 3, 3)
+    G0 = jnp.ones((3, 3, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64)
+    terms = TermConfig(apar=0.0, bpar=0.0)
+    fields = FieldState(
+        phi=jnp.ones((grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64),
+        apar=jnp.zeros((grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64),
+        bpar=jnp.zeros((grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64),
+    )
+    apar, bpar, h_apar, h_bpar = assembly_mod._rhs_field_views(fields, terms)
+    assert apar.shape == fields.phi.shape
+    assert bpar.shape == fields.phi.shape
+    assert h_apar is None
+    assert h_bpar is None
+
+    seen: dict[str, bool] = {}
+    original_build_h = assembly_mod.build_H
+
+    def _record_build_h(*args, **kwargs):
+        seen["apar_is_none"] = kwargs.get("apar") is None
+        seen["bpar_is_none"] = kwargs.get("bpar") is None
+        return original_build_h(*args, **kwargs)
+
+    monkeypatch.setattr(assembly_mod, "build_H", _record_build_h)
+    assemble_rhs_cached(G0, cache, params, terms=terms, use_custom_vjp=False)
+    assert seen == {"apar_is_none": True, "bpar_is_none": True}
+
+
+def test_assemble_rhs_cached_jit_accepts_term_config() -> None:
+    grid_full = build_spectral_grid(GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.28, Ly=6.28))
+    grid = select_ky_grid(grid_full, 1)
+    geom = SAlphaGeometry(q=1.4, s_hat=0.8, epsilon=0.18, R0=2.77778, drift_scale=1.0)
+    params = LinearParams(
+        R_over_Ln=0.8,
+        R_over_LTi=2.49,
+        R_over_LTe=0.0,
+        omega_d_scale=1.0,
+        omega_star_scale=1.0,
+        rho_star=1.0,
+        kpar_scale=float(geom.gradpar()),
+        nu=0.0,
+        beta=0.0,
+    )
+    cache = build_linear_cache(grid, geom, params, 3, 3)
+    G0 = jnp.ones((3, 3, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64)
+    rhs, fields = assemble_rhs_cached_jit(G0, cache, params, TermConfig(apar=0.0, bpar=0.0))
+    assert rhs.shape == G0.shape
+    assert fields.phi.shape == (grid.ky.size, grid.kx.size, grid.z.size)
 
 
 def test_external_phi_source_shifts_fields_and_rhs() -> None:

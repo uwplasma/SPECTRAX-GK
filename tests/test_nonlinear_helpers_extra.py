@@ -7,6 +7,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
+from spectraxgk import nonlinear as nonlinear_mod
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.diagnostics import ResolvedDiagnostics
 from spectraxgk.geometry import SAlphaGeometry
@@ -31,6 +32,52 @@ from spectraxgk.nonlinear import (
     integrate_nonlinear_imex_gx_diagnostics,
 )
 from spectraxgk.terms.config import FieldState, TermConfig
+
+
+def test_nonlinear_rhs_cached_prunes_disabled_em_fields(monkeypatch) -> None:
+    G0 = jnp.ones((1, 1, 1, 1, 1, 2), dtype=jnp.complex64)
+    phi = jnp.zeros((1, 1, 2), dtype=jnp.complex64)
+    fields = FieldState(phi=phi, apar=jnp.zeros_like(phi), bpar=jnp.zeros_like(phi))
+    cache = SimpleNamespace(
+        Jl=jnp.ones((1, 1, 1, 1, 1), dtype=jnp.float32),
+        JlB=jnp.ones((1, 1, 1, 1, 1), dtype=jnp.float32),
+        sqrt_m=jnp.ones((1, 1, 1, 1, 1, 1), dtype=jnp.float32),
+        sqrt_m_p1=jnp.ones((1, 1, 1, 1, 1, 1), dtype=jnp.float32),
+        kx_grid=jnp.zeros((1, 1), dtype=jnp.float32),
+        ky_grid=jnp.zeros((1, 1), dtype=jnp.float32),
+        dealias_mask=jnp.ones((1, 1), dtype=bool),
+        kxfac=1.0,
+        laguerre_to_grid=None,
+        laguerre_to_spectral=None,
+        laguerre_roots=None,
+        laguerre_j0=None,
+        laguerre_j1_over_alpha=None,
+        b=None,
+    )
+    params = SimpleNamespace(tz=jnp.asarray([1.0]), vth=jnp.asarray([1.0]))
+    seen: dict[str, object] = {}
+
+    monkeypatch.setattr(
+        nonlinear_mod,
+        "assemble_rhs_cached_jit",
+        lambda G, cache, params, terms, **kwargs: (jnp.zeros_like(G), fields),
+    )
+
+    def _fake_nonlinear_em(G, **kwargs):
+        seen["apar"] = kwargs["apar"]
+        seen["bpar"] = kwargs["bpar"]
+        return jnp.ones_like(G)
+
+    monkeypatch.setattr(nonlinear_mod, "nonlinear_em_contribution", _fake_nonlinear_em)
+    rhs, rhs_fields = nonlinear_mod.nonlinear_rhs_cached(
+        G0,
+        cache,
+        params,
+        TermConfig(nonlinear=1.0, apar=0.0, bpar=0.0),
+    )
+    assert seen == {"apar": None, "bpar": None}
+    np.testing.assert_allclose(np.asarray(rhs), 1.0)
+    assert rhs_fields is fields
 
 
 def test_pack_resolved_diagnostics_and_fixed_mode_projector() -> None:
