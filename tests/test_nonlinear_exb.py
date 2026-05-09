@@ -4,6 +4,7 @@ import jax.numpy as jnp
 from spectraxgk.config import GridConfig
 from spectraxgk.gyroaverage import bessel_j0, bessel_j1, gx_laguerre_transform
 from spectraxgk.grids import build_spectral_grid, real_fft_mesh
+from spectraxgk.terms import nonlinear as nonlinear_terms_module
 from spectraxgk.terms.nonlinear import (
     _apply_flutter,
     exb_nonlinear_contribution,
@@ -24,6 +25,50 @@ from spectraxgk.terms.nonlinear import (
     _stack_fields,
     placeholder_nonlinear_contribution,
 )
+
+
+def test_nonlinear_em_contribution_masks_nonlaguerre_fields_once(monkeypatch):
+    grid = build_spectral_grid(GridConfig(Nx=4, Ny=4, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
+    G = jnp.ones((1, 1, 1, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64)
+    phi = jnp.ones((grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64)
+    calls: list[tuple[int, ...]] = []
+
+    def _fake_apply_mask(field, mask):
+        calls.append(tuple(field.shape))
+        return field
+
+    def _fake_spectral_bracket(G_arg, chi_arg, **kwargs):
+        return jnp.zeros_like(G_arg)
+
+    monkeypatch.setattr(nonlinear_terms_module, "_apply_mask_xy", _fake_apply_mask)
+    monkeypatch.setattr(nonlinear_terms_module, "_spectral_bracket", _fake_spectral_bracket)
+
+    out = nonlinear_terms_module.nonlinear_em_contribution(
+        G,
+        phi=phi,
+        apar=None,
+        bpar=None,
+        Jl=jnp.ones((1, 1, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.float32),
+        JlB=jnp.ones((1, 1, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.float32),
+        tz=jnp.asarray([1.0]),
+        vth=jnp.asarray([1.0]),
+        sqrt_m=jnp.ones((1, 1, 1, 1, 1), dtype=jnp.float32),
+        sqrt_m_p1=jnp.ones((1, 1, 1, 1, 1), dtype=jnp.float32),
+        kx_grid=grid.kx_grid,
+        ky_grid=grid.ky_grid,
+        dealias_mask=grid.dealias_mask,
+        kxfac=jnp.asarray(1.0),
+        weight=jnp.asarray(1.0),
+        apar_weight=0.0,
+        bpar_weight=0.0,
+        laguerre_to_grid=None,
+        laguerre_to_spectral=None,
+        laguerre_roots=None,
+        b=None,
+    )
+
+    assert out.shape == G.shape
+    assert calls == [tuple(phi.shape)]
 
 
 def _ifft2_xy(x: jnp.ndarray) -> jnp.ndarray:

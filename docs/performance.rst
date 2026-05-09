@@ -233,14 +233,16 @@ The full fused nonlinear-RHS trace companion is generated with:
 
 The tracked local CPU artifact
 ``docs/_static/full_nonlinear_rhs_trace_summary.json`` reports
-``warm_seconds=3.00e-1`` and ``3345`` HLO lines. The matched one-RTX-A4000
+``warm_seconds=2.96e-1`` and ``3345`` HLO lines. The matched one-RTX-A4000
 artifact ``docs/_static/full_nonlinear_rhs_trace_gpu_summary.json`` reports
-``warm_seconds=1.48e-2`` and ``3338`` HLO lines. The GPU token triage is
+``warm_seconds=1.49e-2`` and ``3338`` HLO lines. The GPU token triage is
 dominated by reshapes (``1539``), broadcasts (``1822``), multiplies (``871``),
 FFTs (``229``), slices (``215``), and reductions (``132``). This confirms that
 the next nonlinear performance tranche should target fused layout and bracket
 data movement rather than claiming a new runtime speedup from the linear-RHS
-specialization alone.
+specialization alone. The same tranche removed a duplicated non-Laguerre field
+mask from the nonlinear bracket path and added a regression test; the updated
+trace confirms this is a code cleanup, not a material HLO-size reduction.
 
 Linear RHS term profile
 -----------------------
