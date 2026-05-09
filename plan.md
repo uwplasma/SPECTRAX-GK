@@ -2238,3 +2238,11 @@ Exit gate:
     z-varying activation regression and adding a guard test that only an
     exactly zero operator may bypass the linked transform;
   - verified with focused normal-precision and ``JAX_ENABLE_X64=1`` shards.
+- Refactored linked-FFT z-operators without changing numerics:
+  - consolidated the duplicated linked-chain/gather/full-cover/scatter
+    machinery behind ``_linked_fft_apply`` while keeping public
+    ``grad_z_linked_fft`` and ``abs_z_linked_fft`` wrappers unchanged;
+  - preserved the separate ``i k_z`` and ``|k_z|`` multipliers and the
+    real-FFT conjugate restoration path;
+  - verified with normal-precision and ``JAX_ENABLE_X64=1`` linked-operator and
+    GX-consistency shards.
