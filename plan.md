@@ -2392,3 +2392,23 @@ Exit gate:
   electrostatic non-Laguerre path masks ``phi`` once. The refreshed CPU/GPU
   nonlinear trace artifacts show unchanged HLO counts, so this is treated as a
   cleanup/guardrail rather than a performance claim.
+- Completed the next nonlinear transform source tranche:
+  - replaced the production grid-Laguerre nonlinear transforms with
+    precision-controlled ``einsum`` contractions that preserve the previous
+    ``moveaxis``/``tensordot`` algebra without the extra layout transposes;
+  - added a direct regression comparing both Laguerre directions against the
+    old explicit algebra on complex test states;
+  - transform-only probes showed exact agreement at the tested precision, with
+    CPU grid/inverse timings improving from about ``1.08e-2``/``1.05e-2 s`` to
+    ``6.33e-3``/``4.91e-3 s`` and one-RTX-A4000 timings improving from about
+    ``1.50e-3``/``1.55e-3 s`` to ``8.96e-4``/``9.33e-4 s``;
+  - refreshed the benchmark-size Cyclone Miller split profile: CPU
+    ``full_rhs=3.19e-1 s`` grid and ``2.76e-1 s`` spectral; one ``office`` RTX
+    A4000 ``full_rhs=1.28e-2 s`` grid and ``1.48e-2 s`` spectral;
+  - refreshed the fused full-nonlinear-RHS trace: local CPU
+    ``warm_seconds=3.16e-1`` and ``3343`` HLO lines; one ``office`` RTX A4000
+    ``warm_seconds=1.28e-2`` and ``3336`` HLO lines, with transposes dropping
+    from ``44`` to ``32`` relative to the previous GPU artifact;
+  - this is now a bounded profiler-state GPU source improvement. It is not a
+    transport-runtime claim, and the next production performance lane remains
+    larger-state nonlinear profiling plus linear-RHS/bracket layout work.
