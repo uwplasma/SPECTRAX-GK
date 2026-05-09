@@ -2305,3 +2305,14 @@ Exit gate:
     cleanup;
   - next performance step remains a fused full-linear-RHS profiler/trace pass
     and only then a source change with matched before/after artifacts.
+- Tightened the local fast-test runner after a timeout audit:
+  - replaced ``tools/run_tests_fast.py`` with a bounded per-file runner that
+    uses ``python -m pytest -q --maxfail=1 --disable-warnings`` and enforces a
+    300-second whole-run budget by default;
+  - remaining files are reported as ``not_run(total_timeout)`` instead of
+    relying on an external timeout wrapper that can leave child pytest
+    processes running;
+  - added runner unit tests and documented ``--total-timeout 0`` for an
+    explicit full sequential local pass;
+  - verified the runner tests, targeted autodiff/RHS regressions, and docs
+    build locally.
