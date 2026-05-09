@@ -93,9 +93,12 @@ Current pre-release status snapshot:
 - production parallelization is currently claimed only for independent
   ``k_y``/batch/UQ-style workloads and the sharded linear RK2 identity path,
   not nonlinear domain decomposition;
-- profiling remains manifest-driven through
-  ``tools/performance_optimization_manifest.toml`` and the runtime/cold-start
-  profilers before any hot-path optimization claim is made.
+- release-level performance evidence is closed with the refreshed
+  runtime/memory panel, CPU/GPU nonlinear RHS split profiles, fused full-RHS
+  traces, W7-X/HSX runtime-mode stellarator profiles, and the nonlinear
+  sharding identity gate. This supports bounded profiler claims only; broad
+  production nonlinear speedup and nonlinear domain-decomposition claims remain
+  future profiler-gated work.
 
 Executable open-lane status
 ---------------------------
@@ -110,12 +113,13 @@ closed, partial, open, or blocked.
 .. image:: _static/open_research_lane_status.png
    :alt: Open research lane status summary
 
-The current snapshot has no closed broad manuscript lanes in this group:
-W7-X fluctuation spectra, differentiable geometry, and profiler identity checks
-are partial bounded diagnostics, while W7-X long-window zonal recurrence and
-absolute quasilinear flux promotion remain open. This keeps the README/docs
-claim surface honest while still preserving publication-ready diagnostic panels
-for the pieces that are already reproducible.
+The current snapshot has two closed release/research-support lanes: nonlinear
+holdouts for the scoped quasilinear model-development claim and
+profiler-backed nonlinear hot-path localization. W7-X fluctuation/TEM and the
+broader differentiable-geometry bridge remain partial bounded diagnostics,
+while W7-X long-window zonal recurrence remains open. This keeps the
+README/docs claim surface honest while still preserving publication-ready
+diagnostic panels for the pieces that are already reproducible.
 
 Current manuscript-scope readiness is tracked separately by
 ``tools/build_manuscript_readiness_status.py`` because W7-X zonal recurrence
@@ -139,8 +143,8 @@ converged long post-transient running-average heat-flux windows, and nonlinear
 audits of optimized equilibria; those are required before claiming a production
 nonlinear heat-flux stellarator optimizer.
 
-The latest public CI run for commit ``5790e0e`` passed repo hygiene, mypy,
-quick shards, docs/packaging, fast coverage, and the full wide-coverage matrix.
+The latest checked public CI run passed repo hygiene, mypy, quick shards,
+docs/packaging, fast coverage, and the full wide-coverage matrix.
 The combined wide-coverage job reported ``TOTAL 16134 787 95%`` package-wide
 coverage. Some individual modules still sit below ``95%`` because the gate is
 package-wide; notably ``nonlinear.py`` and ``zonal_validation.py`` remain useful

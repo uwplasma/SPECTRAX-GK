@@ -172,27 +172,41 @@
       "status": "partial"
     },
     {
-      "claim_level": "profile_identity_artifact_no_speedup_claim",
+      "claim_level": "release_hot_path_localization_closed_future_optimization_scoped",
       "key_metrics": {
         "backend": "gpu",
         "best_identity_candidate": "kx",
         "best_identity_candidate_speedup": 1.034710337461593,
         "device_count": 2,
         "engineering_speedup": 0.8555105284923791,
+        "full_trace_cpu_warm_seconds": 0.31616600821726026,
+        "full_trace_gpu_warm_seconds": 0.012807567021809518,
+        "hsx_cpu_full_rhs": 0.3086076334118843,
+        "hsx_gpu_full_rhs": 0.027057467214763164,
         "identity_gate_pass": true,
-        "rhs_cpu_bracket_grid_over_spectral": 1.6589148858389904,
-        "rhs_cpu_full_grid_over_spectral": 1.108921941356894,
+        "miller_cpu_grid_full_rhs": 0.3185731000034139,
+        "miller_gpu_grid_full_rhs": 0.012803101912140846,
+        "miller_gpu_spectral_full_rhs": 0.014757980592548847,
+        "release_performance_gate": true,
+        "rhs_cpu_bracket_grid_over_spectral": 1.544788374379975,
+        "rhs_cpu_full_grid_over_spectral": 1.3022508836871707,
         "rhs_fastest_full_label": "GPU spectral",
-        "rhs_gpu_bracket_grid_over_spectral": 2.245002128793795,
-        "rhs_gpu_full_grid_over_spectral": 1.6637891963914468
+        "rhs_gpu_bracket_grid_over_spectral": 2.2429853842950562,
+        "rhs_gpu_full_grid_over_spectral": 1.5129955548419813,
+        "w7x_cpu_full_rhs": 0.30949455841910095,
+        "w7x_gpu_full_rhs": 0.027265143021941184
       },
       "lane": "Profiler-backed nonlinear hot-path optimization",
-      "next_action": "Collect matched CPU/GPU profiler traces and optimize only persistent nonlinear bracket/field-solve hot paths; do not publish speedup claims until fresh profiler artifacts pass identity gates.",
+      "next_action": "Release hot-path localization is closed with matched CPU/GPU profiler artifacts and conservative claim scope; continue larger-state algorithmic optimization as a future science/performance lane.",
       "primary_artifacts": [
         "docs/_static/nonlinear_sharding_profile_office_gpu.json",
-        "docs/_static/nonlinear_rhs_profile.json"
+        "docs/_static/nonlinear_rhs_profile.json",
+        "docs/_static/nonlinear_rhs_profile_miller.json",
+        "docs/_static/nonlinear_rhs_profile_stellarator_runtime.json",
+        "docs/_static/full_nonlinear_rhs_trace_summary.json",
+        "docs/_static/full_nonlinear_rhs_trace_gpu_summary.json"
       ],
-      "status": "partial"
+      "status": "closed"
     }
   ],
   "status_order": {
@@ -203,9 +217,9 @@
   },
   "summary": {
     "n_blocked": 0,
-    "n_closed": 1,
+    "n_closed": 2,
     "n_lanes": 5,
     "n_open": 1,
-    "n_partial": 3
+    "n_partial": 2
   }
 }

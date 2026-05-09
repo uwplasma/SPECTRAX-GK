@@ -78,6 +78,19 @@ def _count_points(report: dict[str, Any] | None, split: str) -> int:
     return sum(1 for point in points if isinstance(point, dict) and point.get("split") == split)
 
 
+def _profile_seconds(payload: dict[str, Any] | None, label: str, kernel: str) -> float | None:
+    rows = {} if payload is None else payload.get("rows", {})
+    if not isinstance(rows, dict):
+        return None
+    row = rows.get(label, {})
+    if not isinstance(row, dict):
+        return None
+    seconds = row.get("seconds", {})
+    if not isinstance(seconds, dict):
+        return None
+    return _finite_float(seconds.get(kernel))
+
+
 def _all_optimization_objectives_passed(payload: dict[str, Any] | None) -> bool:
     results = [] if payload is None else payload.get("results", [])
     if not isinstance(results, list) or not results:
@@ -152,6 +165,10 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
     vmec_nonlinear_fd_audit = _read_json(root, "docs/_static/vmec_boozer_nonlinear_window_fd_audit.json")
     profile = _read_json(root, "docs/_static/nonlinear_sharding_profile_office_gpu.json")
     rhs_profile = _read_json(root, "docs/_static/nonlinear_rhs_profile.json")
+    rhs_miller = _read_json(root, "docs/_static/nonlinear_rhs_profile_miller.json")
+    rhs_stellarator = _read_json(root, "docs/_static/nonlinear_rhs_profile_stellarator_runtime.json")
+    full_rhs_trace_cpu = _read_json(root, "docs/_static/full_nonlinear_rhs_trace_summary.json")
+    full_rhs_trace_gpu = _read_json(root, "docs/_static/full_nonlinear_rhs_trace_gpu_summary.json")
 
     ql_inputs_passed = bool((ql_inputs or {}).get("passed", False))
     ql_holdout_promoted = bool((ql_holdout or {}).get("passed", False))
@@ -262,6 +279,36 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
     )
     rhs_cpu = rhs_speedups.get("cpu", {}) if isinstance(rhs_speedups.get("cpu", {}), dict) else {}
     rhs_gpu = rhs_speedups.get("gpu", {}) if isinstance(rhs_speedups.get("gpu", {}), dict) else {}
+    miller_cpu_grid_full = _profile_seconds(rhs_miller, "CPU grid", "full_rhs")
+    miller_gpu_grid_full = _profile_seconds(rhs_miller, "GPU grid", "full_rhs")
+    miller_gpu_spectral_full = _profile_seconds(rhs_miller, "GPU spectral", "full_rhs")
+    w7x_cpu_full = _profile_seconds(rhs_stellarator, "W7-X CPU", "full_rhs")
+    w7x_gpu_full = _profile_seconds(rhs_stellarator, "W7-X GPU", "full_rhs")
+    hsx_cpu_full = _profile_seconds(rhs_stellarator, "HSX CPU", "full_rhs")
+    hsx_gpu_full = _profile_seconds(rhs_stellarator, "HSX GPU", "full_rhs")
+    full_rhs_cpu_warm = _finite_float((full_rhs_trace_cpu or {}).get("warm_seconds"))
+    full_rhs_gpu_warm = _finite_float((full_rhs_trace_gpu or {}).get("warm_seconds"))
+    full_rhs_gpu_transposes = _finite_float(
+        (full_rhs_trace_gpu or {}).get("hlo_token_counts", {}).get("transpose")
+        if isinstance((full_rhs_trace_gpu or {}).get("hlo_token_counts", {}), dict)
+        else None
+    )
+    release_performance_closed = bool(
+        (profile or {}).get("identity_gate_pass", False)
+        and miller_cpu_grid_full is not None
+        and miller_gpu_grid_full is not None
+        and miller_gpu_spectral_full is not None
+        and w7x_cpu_full is not None
+        and w7x_gpu_full is not None
+        and hsx_cpu_full is not None
+        and hsx_gpu_full is not None
+        and full_rhs_cpu_warm is not None
+        and full_rhs_gpu_warm is not None
+        and miller_gpu_grid_full < miller_cpu_grid_full
+        and w7x_gpu_full < w7x_cpu_full
+        and hsx_gpu_full < hsx_cpu_full
+        and full_rhs_gpu_warm < full_rhs_cpu_warm
+    )
 
     lanes: list[dict[str, Any]] = [
         {
@@ -451,13 +498,26 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
         },
         {
             "lane": "Profiler-backed nonlinear performance claims",
-            "status": "partial" if bool((profile or {}).get("identity_gate_pass", False)) else "open",
-            "claim_level": "identity_gate_present_no_new_speedup_claim",
+            "status": (
+                "closed"
+                if release_performance_closed
+                else ("partial" if bool((profile or {}).get("identity_gate_pass", False)) else "open")
+            ),
+            "claim_level": (
+                "release_performance_artifacts_closed_no_broad_speedup_claim"
+                if release_performance_closed
+                else "identity_gate_present_no_new_speedup_claim"
+            ),
             "primary_artifacts": [
                 "docs/_static/nonlinear_sharding_profile_office_gpu.json",
                 "docs/_static/nonlinear_rhs_profile.json",
+                "docs/_static/nonlinear_rhs_profile_miller.json",
+                "docs/_static/nonlinear_rhs_profile_stellarator_runtime.json",
+                "docs/_static/full_nonlinear_rhs_trace_summary.json",
+                "docs/_static/full_nonlinear_rhs_trace_gpu_summary.json",
             ],
             "key_metrics": {
+                "release_performance_gate": release_performance_closed,
                 "identity_gate_pass": bool((profile or {}).get("identity_gate_pass", False)),
                 "engineering_speedup": _finite_float((profile or {}).get("engineering_speedup")),
                 "best_identity_candidate": profile_best.get("spec"),
@@ -471,8 +531,23 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                 "rhs_gpu_bracket_grid_over_spectral": _finite_float(
                     rhs_gpu.get("nonlinear_bracket_grid_over_spectral")
                 ),
+                "miller_cpu_grid_full_rhs": miller_cpu_grid_full,
+                "miller_gpu_grid_full_rhs": miller_gpu_grid_full,
+                "miller_gpu_spectral_full_rhs": miller_gpu_spectral_full,
+                "w7x_cpu_full_rhs": w7x_cpu_full,
+                "w7x_gpu_full_rhs": w7x_gpu_full,
+                "hsx_cpu_full_rhs": hsx_cpu_full,
+                "hsx_gpu_full_rhs": hsx_gpu_full,
+                "full_trace_cpu_warm_seconds": full_rhs_cpu_warm,
+                "full_trace_gpu_warm_seconds": full_rhs_gpu_warm,
+                "full_trace_gpu_transpose_count": full_rhs_gpu_transposes,
             },
-            "next_action": "Keep runtime claims conservative until fresh CPU/GPU profiler artifacts support a speedup.",
+            "next_action": (
+                "Release performance evidence is closed for scoped CPU/GPU profiler artifacts; keep broad "
+                "production nonlinear speedup and domain-decomposition claims for the next manuscript/science lane."
+                if release_performance_closed
+                else "Keep runtime claims conservative until fresh CPU/GPU profiler artifacts support a speedup."
+            ),
         },
         {
             "lane": "W7-X zonal recurrence/damping",

@@ -204,11 +204,36 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
             },
         },
     )
+    _write_json(
+        tmp_path,
+        "docs/_static/nonlinear_rhs_profile_miller.json",
+        {
+            "rows": {
+                "CPU grid": {"seconds": {"full_rhs": 0.32}},
+                "GPU grid": {"seconds": {"full_rhs": 0.013}},
+                "GPU spectral": {"seconds": {"full_rhs": 0.015}},
+            }
+        },
+    )
+    _write_json(
+        tmp_path,
+        "docs/_static/nonlinear_rhs_profile_stellarator_runtime.json",
+        {
+            "rows": {
+                "W7-X CPU": {"seconds": {"full_rhs": 0.31}},
+                "W7-X GPU": {"seconds": {"full_rhs": 0.027}},
+                "HSX CPU": {"seconds": {"full_rhs": 0.31}},
+                "HSX GPU": {"seconds": {"full_rhs": 0.027}},
+            }
+        },
+    )
+    _write_json(tmp_path, "docs/_static/full_nonlinear_rhs_trace_summary.json", {"warm_seconds": 0.316})
+    _write_json(tmp_path, "docs/_static/full_nonlinear_rhs_trace_gpu_summary.json", {"warm_seconds": 0.0128})
 
     payload = mod.build_status_payload(tmp_path)
     lanes = {row["lane"]: row for row in payload["lanes"]}
 
-    assert payload["summary"] == {"n_lanes": 5, "n_closed": 0, "n_partial": 3, "n_open": 2, "n_blocked": 0}
+    assert payload["summary"] == {"n_lanes": 5, "n_closed": 1, "n_partial": 2, "n_open": 2, "n_blocked": 0}
     assert lanes["W7-X zonal long-window recurrence/damping"]["status"] == "open"
     assert lanes["W7-X zonal long-window recurrence/damping"]["key_metrics"]["failed_reference_gates"] == [
         "residual_kx070"
@@ -250,12 +275,16 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
     assert holdout_metrics["dshape_external_vmec_t250_converged"] is True
     assert holdout_metrics["itermodel_external_vmec_t350_converged"] is True
     profiler = lanes["Profiler-backed nonlinear hot-path optimization"]
-    assert profiler["status"] == "partial"
+    assert profiler["status"] == "closed"
+    assert profiler["key_metrics"]["release_performance_gate"] is True
     assert "docs/_static/nonlinear_rhs_profile.json" in profiler["primary_artifacts"]
+    assert "docs/_static/nonlinear_rhs_profile_stellarator_runtime.json" in profiler["primary_artifacts"]
     assert profiler["key_metrics"]["best_identity_candidate"] == "kx"
     assert profiler["key_metrics"]["rhs_fastest_full_label"] == "GPU spectral"
     assert profiler["key_metrics"]["rhs_gpu_full_grid_over_spectral"] == 1.64
     assert profiler["key_metrics"]["rhs_gpu_bracket_grid_over_spectral"] == 2.20
+    assert profiler["key_metrics"]["miller_gpu_grid_full_rhs"] == 0.013
+    assert profiler["key_metrics"]["w7x_gpu_full_rhs"] == 0.027
 
 
 def test_write_status_artifacts_writes_all_formats(tmp_path: Path) -> None:
