@@ -2371,3 +2371,19 @@ Exit gate:
   - no README headline runtime claim is updated from this run. The next
     performance tranche should use profiler traces on the full nonlinear RHS
     and target fused layout plus larger-grid bracket decomposition.
+- Added the fused full-nonlinear-RHS trace profiler:
+  - introduced ``tools/profile_full_nonlinear_rhs_trace.py`` to lower and time
+    the complete ``nonlinear_rhs_cached`` graph, including optional trace,
+    memory profile, HLO text output, Laguerre grid/spectral mode selection, and
+    compact JSON summaries;
+  - added unit coverage for the nonlinear trace summary schema and missing
+    electromagnetic field norms;
+  - generated ``docs/_static/full_nonlinear_rhs_trace_summary.json`` locally:
+    CPU ``warm_seconds=3.00e-1``, ``3345`` HLO lines, electrostatic
+    specialized;
+  - generated ``docs/_static/full_nonlinear_rhs_trace_gpu_summary.json`` on one
+    ``office`` RTX A4000: ``warm_seconds=1.48e-2``, ``3338`` HLO lines;
+  - GPU HLO token triage is dominated by reshapes ``1539``, broadcasts
+    ``1822``, multiplies ``871``, FFT mentions ``229``, slices ``215``, and
+    reductions ``132``. The next source tranche should target fused layout and
+    bracket data movement with parity gates, not a broad speedup claim.
