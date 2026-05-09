@@ -94,6 +94,31 @@ def _expand_hermitian(pos: np.ndarray, ny_full: int) -> np.ndarray:
     return np.concatenate([pos, neg], axis=-3)
 
 
+def test_laguerre_transform_einsum_matches_moveaxis_tensordot_reference():
+    rng = np.random.default_rng(42)
+    G = rng.normal(size=(2, 3, 4, 5, 6, 2)) + 1j * rng.normal(size=(2, 3, 4, 5, 6, 2))
+    to_grid = rng.normal(size=(3, 5))
+    G_jax = jnp.asarray(G, dtype=jnp.complex64)
+    to_grid_jax = jnp.asarray(to_grid, dtype=jnp.float32)
+
+    g_mu = _laguerre_to_grid(G_jax, to_grid_jax)
+    ref_grid = jnp.moveaxis(
+        jnp.tensordot(jnp.moveaxis(G_jax, 1, -1), to_grid_jax, axes=([-1], [0])),
+        -1,
+        1,
+    )
+    np.testing.assert_allclose(np.asarray(g_mu), np.asarray(ref_grid), rtol=1.0e-6, atol=1.0e-6)
+
+    to_spectral = jnp.asarray(rng.normal(size=(5, 3)), dtype=jnp.float32)
+    spectral = _laguerre_to_spectral(g_mu, to_spectral)
+    ref_spectral = jnp.moveaxis(
+        jnp.tensordot(jnp.moveaxis(g_mu, 1, -1), to_spectral, axes=([-1], [0])),
+        -1,
+        1,
+    )
+    np.testing.assert_allclose(np.asarray(spectral), np.asarray(ref_spectral), rtol=1.0e-6, atol=1.0e-6)
+
+
 def test_exb_bracket_zero_mean_mode():
     grid = build_spectral_grid(GridConfig(Nx=8, Ny=8, Nz=4, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
     rng = np.random.default_rng(0)
