@@ -2272,3 +2272,20 @@ Exit gate:
     full RHS on CPU/GPU and ``1.54``/``2.24`` for nonlinear bracket on CPU/GPU;
   - next performance gate is a larger benchmark-size profile with profiler
     traces before making any new broad runtime claim.
+- Added the first larger benchmark-size nonlinear RHS split profile:
+  - extended ``tools/plot_nonlinear_rhs_profile.py`` so the same publication
+    plotter can consume labeled arbitrary CSV inputs and write a case-specific
+    JSON summary;
+  - profiled the shipped Cyclone Miller nonlinear case
+    (``Nx=192``, ``Ny=64``, ``Nz=24``, ``Nl=4``, ``Nm=8``) with ``3`` repeats
+    on local CPU and on one ``office`` RTX A4000;
+  - added Miller CSV companions plus
+    ``docs/_static/nonlinear_rhs_profile_miller.{json,png,pdf}`` and
+    documented the result in the performance guide;
+  - current Miller full-RHS timings are ``2.84e-1 s`` CPU grid,
+    ``2.07e-1 s`` CPU spectral, ``1.48e-2 s`` GPU grid, and ``1.46e-2 s`` GPU
+    spectral;
+  - the GPU bracket improves by ``2.09x`` but full RHS improves only ``1.01x``
+    because the linear RHS is now the limiting kernel, so the next optimization
+    tranche should target linear-RHS fusion/cache layout before broader speedup
+    claims.

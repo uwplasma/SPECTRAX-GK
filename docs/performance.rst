@@ -189,6 +189,36 @@ performance step is to repeat this split on larger benchmark-size cases and
 then use profiler traces to decide whether fusion, layout changes, or
 production decomposition give the largest verified win.
 
+Benchmark-size Cyclone Miller RHS profile
+-----------------------------------------
+
+The larger Cyclone Miller profile uses the shipped nonlinear Miller input with
+``Nx=192``, ``Ny=64``, ``Nz=24``, ``Nl=4``, and ``Nm=8``. This is still a
+single compiled-RHS split profile rather than a full transport-average runtime
+claim, but it is large enough to expose a different bottleneck balance than the
+short Cyclone case.
+
+.. code-block:: bash
+
+   python tools/profile_nonlinear_step_split.py \
+     --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml \
+     --repeats 3 \
+     --out docs/_static/nonlinear_rhs_profile_miller_cpu.csv
+
+.. image:: _static/nonlinear_rhs_profile_miller.png
+   :alt: SPECTRAX-GK nonlinear RHS kernel profile on the Cyclone Miller benchmark-size case
+   :align: center
+
+The matched May 9, 2026 profile measured CPU full-RHS timings of
+``2.84e-1 s`` in grid mode and ``2.07e-1 s`` in spectral Laguerre mode. On one
+``office`` RTX A4000, the corresponding timings were ``1.48e-2 s`` and
+``1.46e-2 s``. Spectral mode reduced the nonlinear bracket by ``1.39x`` on CPU
+and ``2.09x`` on GPU, but the GPU full-RHS speedup was only ``1.01x`` because
+the compiled linear RHS became comparable to or larger than the bracket. This
+points the next optimization pass at linear-RHS fusion/cache layout and then
+larger-grid bracket decomposition, not at claiming a broad nonlinear speedup
+from spectral mode alone.
+
 Linear RHS term profile
 -----------------------
 
