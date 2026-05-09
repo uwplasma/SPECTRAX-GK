@@ -12,6 +12,7 @@ from spectraxgk.terms import assembly as assembly_mod
 from spectraxgk.terms.assembly import (
     assemble_rhs,
     assemble_rhs_cached,
+    assemble_rhs_cached_electrostatic_jit,
     assemble_rhs_cached_jit,
     assemble_rhs_terms_cached,
     compute_fields_cached,
@@ -207,6 +208,41 @@ def test_assemble_rhs_cached_jit_accepts_term_config() -> None:
     rhs, fields = assemble_rhs_cached_jit(G0, cache, params, TermConfig(apar=0.0, bpar=0.0))
     assert rhs.shape == G0.shape
     assert fields.phi.shape == (grid.ky.size, grid.kx.size, grid.z.size)
+
+
+def test_electrostatic_rhs_jit_matches_generic_zero_em_fields() -> None:
+    grid_full = build_spectral_grid(GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.28, Ly=6.28))
+    grid = select_ky_grid(grid_full, 1)
+    geom = SAlphaGeometry(q=1.4, s_hat=0.8, epsilon=0.18, R0=2.77778, drift_scale=1.0)
+    params = LinearParams(
+        R_over_Ln=0.8,
+        R_over_LTi=2.49,
+        R_over_LTe=0.0,
+        omega_d_scale=1.0,
+        omega_star_scale=1.0,
+        rho_star=1.0,
+        kpar_scale=float(geom.gradpar()),
+        nu=0.0,
+        beta=0.0,
+    )
+    cache = build_linear_cache(grid, geom, params, 3, 4)
+    rng = np.random.default_rng(8)
+    G0 = rng.normal(size=(3, 4, grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
+        size=(3, 4, grid.ky.size, grid.kx.size, grid.z.size)
+    )
+    G0 = jnp.asarray(G0, dtype=jnp.complex64)
+    terms = TermConfig(apar=0.0, bpar=0.0)
+
+    rhs_generic, fields_generic = assemble_rhs_cached_jit(G0, cache, params, terms)
+    rhs_electrostatic, fields_electrostatic = assemble_rhs_cached_electrostatic_jit(G0, cache, params, terms)
+
+    np.testing.assert_allclose(np.asarray(rhs_electrostatic), np.asarray(rhs_generic), rtol=1.0e-6, atol=1.0e-6)
+    np.testing.assert_allclose(
+        np.asarray(fields_electrostatic.phi),
+        np.asarray(fields_generic.phi),
+        rtol=1.0e-6,
+        atol=1.0e-6,
+    )
 
 
 def test_external_phi_source_shifts_fields_and_rhs() -> None:

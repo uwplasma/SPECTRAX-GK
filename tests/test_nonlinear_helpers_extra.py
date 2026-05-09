@@ -59,8 +59,13 @@ def test_nonlinear_rhs_cached_prunes_disabled_em_fields(monkeypatch) -> None:
 
     monkeypatch.setattr(
         nonlinear_mod,
-        "assemble_rhs_cached_jit",
+        "assemble_rhs_cached_electrostatic_jit",
         lambda G, cache, params, terms, **kwargs: (jnp.zeros_like(G), fields),
+    )
+    monkeypatch.setattr(
+        nonlinear_mod,
+        "assemble_rhs_cached_jit",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("generic RHS should not run")),
     )
 
     def _fake_nonlinear_em(G, **kwargs):
