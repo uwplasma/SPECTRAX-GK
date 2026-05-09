@@ -159,34 +159,35 @@ The current bounded Cyclone profile separates CPU and ``office`` GPU timings
 for default grid-mode and optional spectral-mode nonlinear brackets. The
 machine-readable companion ``docs/_static/nonlinear_rhs_profile.json`` records
 the dominant measured kernel, kernel fractions relative to the full RHS, and
-grid-to-spectral speedups for each backend. The May 8, 2026 refresh used the
+grid-to-spectral speedups for each backend. The May 9, 2026 refresh used the
 same short-case 10-repeat harness on local CPU and one ``office`` RTX A4000
-with ``CUDA_VISIBLE_DEVICES=0``. The GPU environment reported
+with ``CUDA_VISIBLE_DEVICES=0`` after the linear-RHS fast-path and linked-FFT
+refactor tranche. The GPU environment reported
 ``jax==0.6.2``/``jaxlib==0.6.2``; these are profiler-local hot-path
 measurements, not a broad production runtime claim. The refreshed GPU
 grid-mode split is:
 
 .. code-block:: text
 
-   field_solve=1.85e-4 s
-   nonlinear_bracket=1.92e-2 s
-   linear_rhs=1.70e-2 s
-   full_rhs=2.85e-2 s
+   field_solve=4.65e-4 s
+   nonlinear_bracket=3.36e-3 s
+   linear_rhs=6.13e-3 s
+   full_rhs=9.66e-3 s
 
 The same GPU profile with ``laguerre_mode="spectral"`` measured
-``nonlinear_bracket=5.90e-3 s`` and ``full_rhs=1.69e-2 s``. CPU full-RHS
-timings from the same harness were ``1.47e-1 s`` for grid mode and
-``1.51e-1 s`` for spectral mode. The short-harness spectral full-RHS ratios
-are now ``0.98`` on CPU and ``1.69`` on GPU for this Cyclone case, while the
-nonlinear-bracket-only ratios are ``1.44`` on CPU and ``3.25`` on GPU. The
+``nonlinear_bracket=1.50e-3 s`` and ``full_rhs=6.38e-3 s``. CPU full-RHS
+timings from the same harness were ``1.01e-1 s`` for grid mode and
+``7.73e-2 s`` for spectral mode. The short-harness spectral full-RHS ratios
+are now ``1.30`` on CPU and ``1.51`` on GPU for this Cyclone case, while the
+nonlinear-bracket-only ratios are ``1.54`` on CPU and ``2.24`` on GPU. The
 spectral mode therefore remains an opt-in mode guarded by the case-level
 parity gate below rather than a global default.
 
-The dominant remaining warm-throughput costs are the compiled linear RHS and
-the nonlinear FFT pipeline with gather/scatter-heavy bracket kernels. The
-refreshed GPU run is slower than the older stale checked-in profile, so the
-next performance step is to separate environment/runtime effects from source
-effects before making any new speedup claim.
+The dominant remaining warm-throughput cost is the compiled linear RHS, with
+the nonlinear FFT pipeline still relevant for larger production grids. The next
+performance step is to repeat this split on larger benchmark-size cases and
+then use profiler traces to decide whether fusion, layout changes, or
+production decomposition give the largest verified win.
 
 Linear RHS term profile
 -----------------------

@@ -2259,3 +2259,16 @@ Exit gate:
   - current bounded CPU full linear RHS timings are ``1.08e-1 s`` initial and
     ``1.27e-1 s`` active ``z_wave``; current one-RTX-A4000 timings are
     ``5.50e-3 s`` initial and ``5.48e-3 s`` active ``z_wave``.
+- Refreshed the nonlinear RHS hot-path profile after the linear-RHS tranche:
+  - reran the short Cyclone split profiler locally for grid and spectral
+    Laguerre modes with ``10`` repeats and on ``office`` from a fresh
+    ``80e8594`` clone on one RTX A4000;
+  - regenerated ``docs/_static/nonlinear_rhs_profile.{csv,json,png,pdf}`` and
+    visually checked that the publication-facing PNG is readable on log scale;
+  - current bounded full-RHS timings are ``1.01e-1 s`` CPU grid,
+    ``7.73e-2 s`` CPU spectral, ``9.66e-3 s`` GPU grid, and ``6.38e-3 s`` GPU
+    spectral;
+  - current spectral grid-over-spectral ratios are ``1.30``/``1.51`` for
+    full RHS on CPU/GPU and ``1.54``/``2.24`` for nonlinear bracket on CPU/GPU;
+  - next performance gate is a larger benchmark-size profile with profiler
+    traces before making any new broad runtime claim.
