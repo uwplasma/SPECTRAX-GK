@@ -95,6 +95,7 @@ platforms = ["cpu", "gpu"]
 cases = ["cyclone-nonlinear", "kbm-nonlinear", "w7x-nonlinear", "hsx-nonlinear"]
 profiling_tools = [
   "tools/profile_nonlinear_step_split.py",
+  "tools/profile_full_nonlinear_rhs_trace.py",
   "tools/profile_nonlinear_cyclone.py",
   "tools/profile_nonlinear_sharding.py",
   "tools/profile_linear_rhs_terms.py",
@@ -126,6 +127,8 @@ artifact_paths = [
   "docs/_static/nonlinear_rhs_profile_miller_cpu_spectral.csv",
   "docs/_static/nonlinear_rhs_profile_miller_gpu.csv",
   "docs/_static/nonlinear_rhs_profile_miller_gpu_spectral.csv",
+  "docs/_static/full_nonlinear_rhs_trace_summary.json",
+  "docs/_static/full_nonlinear_rhs_trace_gpu_summary.json",
   "docs/_static/linear_rhs_terms_profile.json",
   "docs/_static/linear_rhs_terms_profile_cpu.csv",
   "docs/_static/linear_rhs_terms_profile_z_wave_cpu.json",
@@ -136,6 +139,8 @@ artifact_paths = [
   "docs/_static/linear_rhs_terms_profile_z_wave_gpu.csv",
   "docs/_static/full_linear_rhs_trace_summary.json",
   "docs/_static/full_linear_rhs_trace_z_wave_summary.json",
+  "docs/_static/full_linear_rhs_trace_gpu_summary.json",
+  "docs/_static/full_linear_rhs_trace_gpu_z_wave_summary.json",
   "docs/_static/linear_rhs_zero_norm_state_window_gate.json",
   "docs/_static/laguerre_mode_gate.json",
   "docs/_static/laguerre_mode_gate.png",

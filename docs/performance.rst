@@ -202,22 +202,53 @@ short Cyclone case.
 
    python tools/profile_nonlinear_step_split.py \
      --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml \
-     --repeats 3 \
+     --repeats 5 \
      --out docs/_static/nonlinear_rhs_profile_miller_cpu.csv
 
 .. image:: _static/nonlinear_rhs_profile_miller.png
    :alt: SPECTRAX-GK nonlinear RHS kernel profile on the Cyclone Miller benchmark-size case
    :align: center
 
-The matched May 9, 2026 profile measured CPU full-RHS timings of
-``2.84e-1 s`` in grid mode and ``2.07e-1 s`` in spectral Laguerre mode. On one
-``office`` RTX A4000, the corresponding timings were ``1.48e-2 s`` and
-``1.46e-2 s``. Spectral mode reduced the nonlinear bracket by ``1.39x`` on CPU
-and ``2.09x`` on GPU, but the GPU full-RHS speedup was only ``1.01x`` because
-the compiled linear RHS became comparable to or larger than the bracket. This
-points the next optimization pass at linear-RHS fusion/cache layout and then
+The matched May 9, 2026 profile after the precision-controlled grid-Laguerre
+``einsum`` refactor measured CPU full-RHS timings of ``3.19e-1 s`` in grid mode
+and ``2.76e-1 s`` in spectral Laguerre mode. On one ``office`` RTX A4000, the
+corresponding timings were ``1.28e-2 s`` and ``1.48e-2 s``. Spectral mode still
+reduces the GPU nonlinear bracket by ``1.63x``, but the full GPU RHS is now
+faster in grid mode because the optimized Laguerre transform removes enough
+layout overhead while preserving the production grid-quadrature convention.
+This points the next optimization pass at linear-RHS fusion/cache layout and
 larger-grid bracket decomposition, not at claiming a broad nonlinear speedup
 from spectral mode alone.
+
+The full fused nonlinear-RHS trace companion is generated with:
+
+.. code-block:: bash
+
+   python tools/profile_full_nonlinear_rhs_trace.py \
+     --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml \
+     --ky 0.3 \
+     --Nl 4 \
+     --Nm 8 \
+     --repeats 5 \
+     --summary-json docs/_static/full_nonlinear_rhs_trace_summary.json
+
+The tracked local CPU artifact
+``docs/_static/full_nonlinear_rhs_trace_summary.json`` reports
+``warm_seconds=3.16e-1`` and ``3343`` HLO lines. The matched one-RTX-A4000
+artifact ``docs/_static/full_nonlinear_rhs_trace_gpu_summary.json`` reports
+``warm_seconds=1.28e-2`` and ``3336`` HLO lines. The GPU token triage is
+dominated by reshapes (``1545``), broadcasts (``1822``), multiplies (``871``),
+FFTs (``229``), slices (``215``), and reductions (``132``). This confirms that
+the next nonlinear performance tranche should target fused layout and bracket
+data movement rather than claiming a new runtime speedup from the linear-RHS
+specialization alone. The same tranche removed a duplicated non-Laguerre field
+mask from the nonlinear bracket path and then replaced the Laguerre-grid
+``moveaxis``/``tensordot``/``moveaxis`` transforms with precision-controlled
+``einsum`` calls. Transform-only CPU/GPU probes showed exact agreement with
+the previous algebra at the tested precision; on one RTX A4000 the full fused
+nonlinear-RHS trace improved from ``1.49e-2 s`` to ``1.28e-2 s`` while
+transposes dropped from ``44`` to ``32``. This is a bounded profiler-state
+source improvement, not a full transport runtime claim.
 
 Linear RHS term profile
 -----------------------
@@ -320,6 +351,16 @@ multiplies (``127``), and gathers (``51``). These are localization metrics, not
 standalone runtime claims. They point the next source optimization tranche at
 fused layout, broadcast/reshape reduction, and linked derivative staging before
 changing physics gates or documentation speedup claims.
+
+The matched one-RTX-A4000 artifacts
+``docs/_static/full_linear_rhs_trace_gpu_summary.json`` and
+``docs/_static/full_linear_rhs_trace_gpu_z_wave_summary.json`` report
+``warm_seconds=5.28e-3`` and ``5.25e-3`` for the initial and active ``z_wave``
+states, respectively, with ``force_electrostatic_fields=true``. A same-commit
+benchmark-size nonlinear split on ``office`` measured GPU full-RHS timings of
+``1.71e-2 s`` in grid mode and ``1.48e-2 s`` in spectral Laguerre mode, so the
+fresh GPU evidence supports the linear-RHS specialization but does not yet
+justify a broader nonlinear speedup claim.
 
 Parallelization scaling (diffrax + distributed linear loop)
 -----------------------------------------------------------
