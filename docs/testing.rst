@@ -606,7 +606,14 @@ Independent scan and ensemble parallelization is tested before it is used for
 performance claims:
 
 - ``tests/test_parallel.py`` locks the ``batch_map`` / ``ky_scan_batches``
-  helper semantics, including deterministic padding and one-device fallback.
+  helper semantics, including deterministic padding, one-device fallback, and
+  pytree outputs used by UQ and sensitivity workflows.
+- ``tests/test_velocity_sharding.py`` locks the GX-inspired species/Hermite
+  velocity-decomposition planner. These tests verify load balance metadata,
+  Hermite ghost-exchange flags, and field-reduction axes before any production
+  ``shard_map`` implementation can use that layout. The same test file also
+  covers the full-array Hermite-neighbor reference and one-device fallback for
+  the communication kernel.
 - ``tests/test_sharded_integrators.py`` locks the sharded linear RK2 wrapper in
   both no-sharding and explicit-sharding modes using a mocked RHS and mocked
   ``pjit``. It also locks the fixed-step nonlinear state-sharded wrapper,
@@ -620,6 +627,39 @@ performance claims:
   ``docs/_static/parallel_ky_scan_gate.{png,pdf,csv,json}``. The JSON gate
   requires numerical identity for growth rate and frequency; the speedup value
   is reported separately for engineering tracking.
+- ``tools/generate_logical_cpu_parallel_scan_gate.py`` exercises
+  ``RuntimeParallelConfig`` and ``batch_map`` over logical CPU devices with a
+  structured JAX-native scan output. Its artifact
+  ``docs/_static/logical_cpu_parallel_scan_gate.{png,pdf,csv,json}`` is an API
+  identity gate, not a gyrokinetic physics benchmark.
+- ``tools/generate_hermite_exchange_gate.py`` runs the first actual
+  ``jax.shard_map`` communication-kernel gate for nearest-neighbor Hermite
+  ghost exchange and writes
+  ``docs/_static/hermite_exchange_gate.{png,pdf,csv,json}``. This is a
+  prerequisite for production velocity-space decomposition, but it is not a
+  nonlinear runtime speedup claim.
+- ``tools/generate_velocity_field_reduce_gate.py`` runs the matching
+  ``jax.shard_map`` field-reduction gate with ``lax.psum`` over the Hermite
+  mesh and writes
+  ``docs/_static/velocity_field_reduce_gate.{png,pdf,csv,json}``. Its
+  tolerance is a float32 communication/reduction-tree tolerance, not a physics
+  acceptance tolerance.
+- ``tools/generate_hermite_streaming_ladder_gate.py`` combines the Hermite
+  exchange with the actual ``sqrt(m+1)`` / ``sqrt(m)`` streaming-ladder
+  coefficients and writes
+  ``docs/_static/hermite_streaming_ladder_gate.{png,pdf,csv,json}``. This is
+  the last isolated communication/coefficient gate before a linear streaming
+  microkernel can be wired.
+- ``tools/generate_periodic_streaming_microkernel_gate.py`` adds the periodic
+  spectral parallel derivative and compares the shard-map path directly
+  against ``spectraxgk.terms.operators.streaming_term``. Its artifact
+  ``docs/_static/periodic_streaming_microkernel_gate.{png,pdf,csv,json}``
+  gates the first opt-in linear streaming microkernel before full RHS wiring.
+- ``tools/generate_linear_rhs_streaming_gate.py`` routes the same sharded
+  periodic streaming kernel through production ``linear_rhs_cached`` with all
+  non-streaming terms and electromagnetic channels disabled. Its artifact
+  ``docs/_static/linear_rhs_streaming_gate.{png,pdf,csv,json}`` is the first
+  full-call-graph linear-RHS identity gate for velocity-space streaming.
 - ``tools/profile_nonlinear_sharding.py`` runs a bounded fixed-step nonlinear
   serial-vs-sharded final-state comparison and writes
   ``docs/_static/nonlinear_sharding_profile.json`` locally and

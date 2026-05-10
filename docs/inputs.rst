@@ -364,6 +364,8 @@ are:
 * ``[terms]`` (term toggles used by modular RHS assembly)
 * ``[expert]`` (advanced fixed-mode controls for specialized workflows)
 * ``[output]`` (artifact path for single-point runtime commands)
+* ``[parallel]`` (parallelization policy for independent scans and future
+  sharded paths; defaults to serial)
 * ``[run]`` / ``[scan]`` / ``[fit]`` (driver controls)
 
 Notable runtime-only keys:
@@ -460,6 +462,37 @@ Notable runtime-only keys:
   ``streaming``, ``mirror``, ``curvature``, ``gradb``, ``diamagnetic``,
   ``collisions``, ``hypercollisions``, ``hyperdiffusion``, ``end_damping``,
   ``apar``, ``bpar``, ``nonlinear``.
+
+Runtime parallelization controls
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``[parallel]`` section is parsed by ``RuntimeParallelConfig`` and is
+serial by default:
+
+.. code-block:: toml
+
+   [parallel]
+   strategy = "serial"
+   axis = "ky"
+   batch_size = 2
+   num_devices = 2
+   strict_identity = true
+   profile = false
+   backend = "auto"
+
+Current accepted strategies are ``"serial"``, ``"batch"``,
+``"combined_ky"``, ``"device_batch"``, ``"pmap"``, ``"pjit"``,
+``"shard_map"``, ``"state"``, and ``"velocity"``. Strategy
+``"batch-ky"`` is accepted as an alias for ``"combined_ky"`` and selects the
+existing combined-``k_y`` time-integration scan path. Quasilinear scan
+artifacts still require serial per-``k_y`` evaluation until the per-mode state
+extraction has its own numerical-identity gate.
+
+For independent scan, sensitivity, and UQ workloads, use
+``spectraxgk.batch_map`` and require a serial identity artifact before using
+timing results in a publication claim. The helper supports structured pytree
+outputs, so diagnostics such as growth rates, frequencies, quasilinear weights,
+and covariance summaries can be carried through one parallel map.
 
 Runtime output and restart controls
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
