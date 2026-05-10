@@ -3146,3 +3146,43 @@ Exit gate:
     passed under the 300-second cap;
   - ``python -m sphinx -q -b html docs docs/_build/html`` passed under the
     300-second cap after documenting the hook.
+- Continued the eighth parallelization implementation tranche:
+  - added ``linear_rhs_streaming_electrostatic_velocity_sharded`` and the
+    explicit ``RuntimeParallelConfig(strategy="velocity", axis="hermite",
+    backend="streaming_electrostatic")`` dispatch route;
+  - this route solves electrostatic ``phi`` with the production serial field
+    solve, applies the Hermite velocity-sharded particle-streaming operator,
+    and adds the GX-style electrostatic streaming field term;
+  - the route rejects linked-boundary/twist-shift grids and non-streaming
+    ``LinearTerms`` until those receive separate identity gates;
+  - added unit coverage against production ``linear_rhs_cached`` with a
+    nonzero ``m=0`` density perturbation so ``phi`` is nonzero;
+  - added ``tools/generate_linear_rhs_streaming_electrostatic_gate.py`` and
+    generated
+    ``docs/_static/linear_rhs_streaming_electrostatic_gate.{png,pdf,csv,json}``;
+  - the tracked two-logical-CPU artifact passes with ``phi_norm=0.1342447549``,
+    ``max_phi_abs_error=1.862645149230957e-9``,
+    ``max_abs_error=1.3943616750111687e-7``, and
+    ``max_rel_error=4.0251720179185213e-7``.
+- Validation for this tranche:
+  - ``python -m pytest -q tests/test_velocity_sharding.py tests/test_generate_linear_rhs_streaming_electrostatic_gate.py``
+    passed under the 300-second cap with expected logical-device skips;
+  - targeted ``ruff check --extend-ignore F401`` passed for the touched
+    source, tool, and tests;
+  - ``python tools/generate_linear_rhs_streaming_electrostatic_gate.py
+    --logical-devices 2 --out-prefix
+    docs/_static/linear_rhs_streaming_electrostatic_gate`` generated the
+    tracked passing artifact.
+- Next best implementation steps:
+  - run the bounded parallelization/docs verification shard for the updated
+    route and artifact;
+  - implement a true sharded electrostatic field-reduction gate, replacing the
+    serial field solve in the diagnostic route only after identity passes;
+  - then add mirror/curvature/grad-B drift slices one at a time.
+- Bounded verification after the electrostatic streaming gate:
+  - ``python -m pytest -q tests/test_parallel.py tests/test_velocity_sharding.py tests/test_generate_logical_cpu_parallel_scan_gate.py tests/test_generate_hermite_exchange_gate.py tests/test_generate_velocity_field_reduce_gate.py tests/test_generate_hermite_streaming_ladder_gate.py tests/test_generate_periodic_streaming_microkernel_gate.py tests/test_generate_linear_rhs_streaming_gate.py tests/test_generate_linear_rhs_streaming_electrostatic_gate.py tests/test_runtime_config.py tests/test_runtime_runner.py::test_run_runtime_scan_parallel_config_selects_combined_ky tests/test_runtime_runner.py::test_run_runtime_scan_batch_ky_rejects_krylov``
+    passed under the 300-second cap;
+  - targeted ``ruff check --extend-ignore F401`` passed for the touched
+    source, tool, tests, and docs;
+  - ``python -m sphinx -q -b html docs docs/_build/html`` passed under the
+    300-second cap.

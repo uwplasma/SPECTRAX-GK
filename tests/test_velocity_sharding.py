@@ -302,3 +302,60 @@ def test_linear_rhs_parallel_cached_rejects_non_streaming_velocity_route() -> No
 
     with pytest.raises(NotImplementedError, match="streaming-only LinearTerms"):
         linear_rhs_parallel_cached(state, Cache(), LinearParams(), terms=LinearTerms(), parallel=parallel)
+
+
+def test_linear_rhs_parallel_cached_electrostatic_streaming_matches_serial_call_graph() -> None:
+    from spectraxgk.config import CycloneBaseCase, GridConfig
+    from spectraxgk.geometry import SAlphaGeometry
+    from spectraxgk.grids import build_spectral_grid
+    from spectraxgk.linear import (
+        LinearParams,
+        LinearTerms,
+        build_linear_cache,
+        linear_rhs_cached,
+        linear_rhs_parallel_cached,
+    )
+    from spectraxgk.runtime_config import RuntimeParallelConfig
+
+    cfg = CycloneBaseCase(grid=GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.0, Ly=6.0, boundary="periodic"))
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams(beta=0.0, fapar=0.0)
+    cache = build_linear_cache(grid, geom, params, Nl=2, Nm=4)
+    z = jnp.linspace(0.0, 2.0 * jnp.pi, grid.z.size, endpoint=False)
+    state = jnp.zeros((2, 4, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64)
+    state = state.at[0, 0, min(1, grid.ky.size - 1), 0, :].set(0.2 * jnp.exp(1j * z))
+    state = state.at[1, 2, min(1, grid.ky.size - 1), 0, :].set(0.1 * jnp.exp(2j * z))
+    terms = LinearTerms(
+        streaming=1.0,
+        mirror=0.0,
+        curvature=0.0,
+        gradb=0.0,
+        diamagnetic=0.0,
+        collisions=0.0,
+        hypercollisions=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+    )
+    parallel = RuntimeParallelConfig(
+        strategy="velocity",
+        backend="streaming_electrostatic",
+        axis="hermite",
+        num_devices=1,
+    )
+
+    serial, phi_serial = linear_rhs_cached(state, cache, params, terms=terms, use_jit=False, use_custom_vjp=False)
+    sharded, phi_sharded = linear_rhs_parallel_cached(
+        state,
+        cache,
+        params,
+        terms=terms,
+        parallel=parallel,
+        use_custom_vjp=False,
+    )
+
+    assert float(jnp.linalg.norm(phi_serial)) > 0.0
+    np.testing.assert_allclose(np.asarray(phi_sharded), np.asarray(phi_serial), rtol=2.0e-6, atol=2.0e-6)
+    np.testing.assert_allclose(np.asarray(sharded), np.asarray(serial), rtol=2.0e-6, atol=2.0e-6)
+    assert spectraxgk.linear_rhs_streaming_electrostatic_velocity_sharded(state, cache, params, num_devices=1)[0].shape == state.shape

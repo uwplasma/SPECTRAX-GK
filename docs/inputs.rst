@@ -490,10 +490,13 @@ extraction has its own numerical-identity gate.
 
 The only velocity-space RHS route exposed at this stage is deliberately
 diagnostic: ``strategy = "velocity"``, ``axis = "hermite"``, and
-``backend = "streaming_only"``. It is accepted only by
-``spectraxgk.linear_rhs_parallel_cached`` with all non-streaming linear terms
-disabled, and is used to gate the Hermite streaming communication path before
-full field-solve, drift, collision, and nonlinear decompositions are exposed.
+``backend = "streaming_only"`` or ``backend = "streaming_electrostatic"``. It
+is accepted only by ``spectraxgk.linear_rhs_parallel_cached`` with all
+non-streaming linear terms disabled, and is used to gate the Hermite streaming
+communication path before full field-solve, drift, collision, and nonlinear
+decompositions are exposed. The electrostatic backend solves ``phi`` with the
+serial production field solve and therefore is not yet a sharded field-solve
+claim.
 
 For independent scan, sensitivity, and UQ workloads, use
 ``spectraxgk.batch_map`` and require a serial identity artifact before using

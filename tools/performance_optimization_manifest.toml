@@ -225,6 +225,7 @@ profiling_tools = [
   "tools/generate_hermite_streaming_ladder_gate.py",
   "tools/generate_periodic_streaming_microkernel_gate.py",
   "tools/generate_linear_rhs_streaming_gate.py",
+  "tools/generate_linear_rhs_streaming_electrostatic_gate.py",
   "tools/profile_nonlinear_sharding.py",
 ]
 metrics = [
@@ -251,6 +252,8 @@ artifact_paths = [
   "docs/_static/periodic_streaming_microkernel_gate.json",
   "docs/_static/linear_rhs_streaming_gate.png",
   "docs/_static/linear_rhs_streaming_gate.json",
+  "docs/_static/linear_rhs_streaming_electrostatic_gate.png",
+  "docs/_static/linear_rhs_streaming_electrostatic_gate.json",
   "docs/_static/nonlinear_sharding_profile.json",
   "docs/_static/nonlinear_sharding_profile_office_gpu.json",
 ]
@@ -267,6 +270,7 @@ optimization_actions = [
   "use tools/generate_hermite_streaming_ladder_gate.py as the shard_map Hermite streaming-ladder coefficient gate",
   "use tools/generate_periodic_streaming_microkernel_gate.py as the periodic linear streaming microkernel identity gate",
   "use tools/generate_linear_rhs_streaming_gate.py as the streaming-only linear RHS call-graph identity gate",
+  "use tools/generate_linear_rhs_streaming_electrostatic_gate.py as the electrostatic field-solve-to-streaming call-graph identity gate",
   "gate CPU sharding locally and two-GPU sharding on office",
   "profile fixed-step nonlinear state sharding and keep local plus two-GPU identity artifacts attached to the manifest",
   "keep z-axis FFT sharding as exploratory until a dedicated communication/layout gate passes",

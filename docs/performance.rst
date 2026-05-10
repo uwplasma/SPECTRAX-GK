@@ -580,6 +580,28 @@ backend="streaming_only")``. The helper rejects any non-streaming term weights
 so this remains a disabled-by-default diagnostic path rather than a hidden
 solver change.
 
+The follow-on electrostatic streaming gate keeps the term weights identical
+but initializes an ``m=0`` density perturbation so that the production
+electrostatic field solve produces nonzero ``phi``. It then compares
+``linear_rhs_cached`` against the explicit
+``backend="streaming_electrostatic"`` route:
+
+.. image:: _static/linear_rhs_streaming_electrostatic_gate.png
+   :alt: SPECTRAX-GK electrostatic streaming linear RHS identity gate
+   :align: center
+
+It is regenerated with:
+
+.. code-block:: bash
+
+   python tools/generate_linear_rhs_streaming_electrostatic_gate.py --logical-devices 2
+
+The tracked artifact passes with ``phi_norm=1.34e-1``,
+``max_phi_abs_error=1.9e-9``, ``max_abs_error=1.4e-7``, and
+``max_rel_error=4.1e-7``. The field solve itself is still the production
+serial electrostatic solve; this gate validates the field-solve-to-streaming
+call graph before a true sharded field-reduction solve is introduced.
+
 Fixed-step nonlinear state sharding
 -----------------------------------
 
