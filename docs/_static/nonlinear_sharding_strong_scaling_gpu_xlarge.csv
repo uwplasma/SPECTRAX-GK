@@ -1,0 +1,3 @@
+requested_devices,actual_devices,backend,state_shape,best_spec,state_sharding_active,identity_gate_pass,serial_median_s,parallel_median_s,same_process_speedup,strong_speedup_vs_1_device,max_abs_state_error,max_rel_state_error,profile_json,error
+1,1,gpu,"[4, 8, 96, 48, 128]",auto,False,True,9.534250052645802,8.883126819040626,1.0732988785220898,1.0,0.0,0.0,/tmp/spectraxgk-nonlinear-scaling-m9v5p04p/gpu_1devices.json,
+2,2,gpu,"[4, 8, 96, 48, 128]",kx,True,True,9.372379007050768,14.188248831545934,0.6605733461773213,0.6260904305040111,0.0,0.0,/tmp/spectraxgk-nonlinear-scaling-m9v5p04p/gpu_2devices.json,

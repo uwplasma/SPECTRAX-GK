@@ -3508,3 +3508,38 @@ Exit gate:
   - watch the new CI run through the final wide-coverage combine job;
   - if the new combine job still misses ``95%``, inspect the next largest
     remaining true blocker instead of lowering the threshold.
+- CI and large strong-scaling follow-up:
+  - pushed ``92924c3 Add benchmark coverage gates and parallel sweep``;
+  - confirmed GitHub CI run ``25631175560`` passed hygiene, mypy, quick-test
+    shards, docs/package, fast coverage, all ``48`` wide-coverage shards, and
+    the final wide-coverage combine;
+  - package-wide coverage now passes the ``95%`` gate with ``16969``
+    statements and ``903`` misses;
+  - added ``tools/profile_nonlinear_sharding_sweep.py`` so fixed-step
+    nonlinear strong-scaling sweeps run each device count in a clean
+    subprocess with explicit CPU logical-device or GPU visibility controls;
+  - added ``tools/plot_nonlinear_sharding_strong_scaling.py`` to combine the
+    CPU and GPU artifacts into one paper-facing engineering panel;
+  - ran a large logical-CPU nonlinear sweep on ``ssh office`` with
+    ``Nx=24, Ny=48, Nz=96, Nl=4, Nm=8, steps=8`` over ``1,2,4,8`` logical CPU
+    devices; all points passed final-state identity, speedup peaked at about
+    ``1.39x`` on four logical devices and flattened by eight devices;
+  - ran a larger two-GPU nonlinear sweep on ``ssh office`` with
+    ``Nx=48, Ny=96, Nz=128, Nl=4, Nm=8, steps=12``; both one- and two-GPU
+    points passed final-state identity, but two-GPU whole-state sharding was
+    slower (about ``0.63x`` speedup);
+  - generated
+    ``docs/_static/nonlinear_sharding_strong_scaling_cpu_large.{json,csv,png,pdf}``,
+    ``docs/_static/nonlinear_sharding_strong_scaling_gpu_xlarge.{json,csv,png,pdf}``,
+    and combined
+    ``docs/_static/nonlinear_sharding_strong_scaling_large.{json,csv,png,pdf}``;
+  - updated ``docs/performance.rst`` and ``README.md`` to make the result
+    explicit: current whole-state nonlinear sharding is an identity/profiler
+    gate, not a production speedup path.
+- Next best implementation steps:
+  - commit/push the large-sweep artifacts and documentation;
+  - wait for CI on the new head;
+  - move production parallelization work to independent ``ky`` scans,
+    quasilinear/UQ ensembles, and only then redesign nonlinear communication
+    decomposition; do not keep chasing whole-state nonlinear sharding speedups
+    without a new communication layout.
