@@ -62,7 +62,6 @@ def _load_gx_modes(
     root.close()
     if omega_kxkyt.ndim != 4 or omega_kxkyt.shape[-1] != 2:
         raise ValueError(f"unexpected GX omega_kxkyt shape {omega_kxkyt.shape}")
-    last = omega_kxkyt[-1]
     rows: list[dict[str, float]] = []
     for ky_target, kx_target in modes:
         ky_i = _select_index(ky, ky_target)

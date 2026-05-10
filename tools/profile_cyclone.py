@@ -63,7 +63,6 @@ def main() -> None:
     args = _parse_args()
     _configure_xla(args)
 
-    import jax
     import numpy as np
     from jax import profiler
 
@@ -114,7 +113,7 @@ def main() -> None:
             ),
         )
     t2 = time.perf_counter()
-    res2 = _run()
+    res = _run()
     t3 = time.perf_counter()
     if args.trace_dir:
         profiler.stop_trace()

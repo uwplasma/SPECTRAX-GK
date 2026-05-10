@@ -11,7 +11,6 @@ from spectraxgk.geometry import SAlphaGeometry, sample_flux_tube_geometry
 from spectraxgk.grids import build_spectral_grid, select_ky_grid
 from spectraxgk.linear import (
     _build_linked_fft_maps,
-    _integrate_linear_cached,
     _x64_enabled,
     LinearCache,
     LinearParams,
@@ -668,7 +667,12 @@ def test_linear_rhs_multispecies_shapes():
         tz=jnp.array([1.0, -1.0]),
         R_over_Ln=jnp.array([0.0, 0.0]),
         R_over_LTi=jnp.array([0.0, 0.0]),
-        )
+    )
+    G = jnp.zeros((2, 2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz), dtype=jnp.complex64)
+    cache = build_linear_cache(grid, geom, params, Nl=G.shape[1], Nm=G.shape[2])
+    dG, phi = linear_rhs_cached(G, cache, params)
+    assert dG.shape == G.shape
+    assert phi.shape == (cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz)
 
 
 def test_implicit_preconditioner_hermite_line_shape_and_finite():
