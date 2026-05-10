@@ -82,3 +82,15 @@ def test_hypercollision_kz_source_uses_nu_hyper_m_path() -> None:
 
     assert jnp.linalg.norm(source) > 0.0
     assert jnp.allclose(source[0, 0, 3, 0, 0, 1], -2.3 + 0.0j)
+
+
+def test_tracked_miller_profile_is_active_state_artifact() -> None:
+    path = ROOT / "docs" / "_static" / "linear_rhs_terms_profile_miller_cpu.json"
+    payload = json.loads(path.read_text(encoding="utf-8"))
+
+    assert payload["kind"] == "linear_rhs_terms_profile_summary"
+    assert payload["case"] == "runtime_cyclone_nonlinear_miller"
+    assert payload["state"] == "z_wave_linear_kick"
+    assert payload["full_linear_rhs_seconds"] > 0.0
+    assert payload["rows"]["streaming"]["norm"] > 0.0
+    assert payload["dominant_nonzero_norm_term"] == "streaming"

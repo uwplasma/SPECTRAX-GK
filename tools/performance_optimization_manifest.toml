@@ -143,6 +143,8 @@ artifact_paths = [
   "docs/_static/linear_rhs_terms_profile_gpu.csv",
   "docs/_static/linear_rhs_terms_profile_z_wave_gpu.json",
   "docs/_static/linear_rhs_terms_profile_z_wave_gpu.csv",
+  "docs/_static/linear_rhs_terms_profile_miller_cpu.json",
+  "docs/_static/linear_rhs_terms_profile_miller_cpu.csv",
   "docs/_static/full_linear_rhs_trace_summary.json",
   "docs/_static/full_linear_rhs_trace_z_wave_summary.json",
   "docs/_static/full_linear_rhs_trace_gpu_summary.json",

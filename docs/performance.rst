@@ -314,6 +314,17 @@ costs ``2.33e-3 s`` on CPU. This is the artifact that should be used for
 linked-``|k_z|`` optimization decisions; the initial-state profile is only a
 zero-source baseline.
 
+For the larger Cyclone Miller benchmark-size RHS profile above, the active-state
+CPU companion is
+``docs/_static/linear_rhs_terms_profile_miller_cpu.json``. It uses the same
+``Nl=4``, ``Nm=8``, ``k_y=0.3`` state as the nonlinear Miller profiler and
+reports ``full_linear_rhs=2.93e-1 s`` with independently timed terms summing to
+``4.83e-2 s``. The largest nonzero standalone row is streaming
+(``7.33e-3 s``), followed by linked ``\partial_z`` (``6.39e-3 s``), linked
+``|k_z|`` (``6.18e-3 s``), and hypercollisions (``6.20e-3 s``). That keeps the
+next bounded optimization focused on full-graph layout/fusion and reusable
+state transforms rather than making a standalone-term speedup claim.
+
 The matching ``office`` GPU profile is tracked in
 ``docs/_static/linear_rhs_terms_profile_gpu.json`` and
 ``docs/_static/linear_rhs_terms_profile_gpu.csv``. On one RTX A4000 with the
