@@ -209,16 +209,18 @@ short Cyclone case.
    :alt: SPECTRAX-GK nonlinear RHS kernel profile on the Cyclone Miller benchmark-size case
    :align: center
 
-The matched May 9, 2026 profile after the precision-controlled grid-Laguerre
-``einsum`` refactor measured CPU full-RHS timings of ``3.19e-1 s`` in grid mode
-and ``2.76e-1 s`` in spectral Laguerre mode. On one ``office`` RTX A4000, the
-corresponding timings were ``1.28e-2 s`` and ``1.48e-2 s``. Spectral mode still
-reduces the GPU nonlinear bracket by ``1.63x``, but the full GPU RHS is now
-faster in grid mode because the optimized Laguerre transform removes enough
-layout overhead while preserving the production grid-quadrature convention.
-This points the next optimization pass at linear-RHS fusion/cache layout and
-larger-grid bracket decomposition, not at claiming a broad nonlinear speedup
-from spectral mode alone.
+The May 10, 2026 local CPU refresh after the independent-worker
+parallelization tranche measured CPU full-RHS timings of ``3.48e-1 s`` in grid
+mode and ``2.20e-1 s`` in spectral Laguerre mode, with measured sub-kernels
+``linear_rhs=1.24e-1 s`` and ``nonlinear_bracket=9.89e-2 s`` in grid mode. On
+one ``office`` RTX A4000, the tracked artifact still records corresponding
+full-RHS timings of ``1.28e-2 s`` and ``1.48e-2 s``. Spectral mode reduces the
+GPU nonlinear bracket by ``1.63x``, but the full GPU RHS remains faster in grid
+mode because the optimized Laguerre transform removes enough layout overhead
+while preserving the production grid-quadrature convention. The CPU refresh
+continues to point the next optimization pass at linear-RHS fusion/cache
+layout and larger-grid bracket decomposition, not at claiming a broad
+nonlinear speedup from spectral mode alone.
 
 The full fused nonlinear-RHS trace companion is generated with:
 
@@ -234,7 +236,7 @@ The full fused nonlinear-RHS trace companion is generated with:
 
 The tracked local CPU artifact
 ``docs/_static/full_nonlinear_rhs_trace_summary.json`` reports
-``warm_seconds=3.16e-1`` and ``3343`` HLO lines. The matched one-RTX-A4000
+``warm_seconds=3.35e-1`` and ``3343`` HLO lines. The matched one-RTX-A4000
 artifact ``docs/_static/full_nonlinear_rhs_trace_gpu_summary.json`` reports
 ``warm_seconds=1.28e-2`` and ``3336`` HLO lines. The GPU token triage is
 dominated by reshapes (``1545``), broadcasts (``1822``), multiplies (``871``),

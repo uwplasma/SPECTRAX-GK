@@ -3703,3 +3703,31 @@ Exit gate:
     separated from the independent-worker linear/quasilinear path;
   - defer combined-``ky`` quasilinear extraction until a dedicated batched-state
     identity implementation is ready.
+- Nonlinear hot-path profiler refresh:
+  - reran the local CPU full fused nonlinear-RHS trace for the benchmark-size
+    Cyclone Miller runtime case with ``Nl=4``, ``Nm=8``, and five warm repeats;
+  - refreshed ``docs/_static/full_nonlinear_rhs_trace_summary.json`` with
+    ``warm_seconds=3.35e-1`` and unchanged HLO structure (``3343`` HLO lines),
+    confirming no new graph-size regression after the independent-worker
+    parallelization work;
+  - reran local CPU split profiles for grid and spectral Laguerre nonlinear
+    modes and regenerated ``docs/_static/nonlinear_rhs_profile_miller_cpu.csv``,
+    ``docs/_static/nonlinear_rhs_profile_miller_cpu_spectral.csv``,
+    ``docs/_static/nonlinear_rhs_profile_miller.{json,png,pdf}``;
+  - current local CPU split: grid ``full_rhs=3.48e-1 s``,
+    ``linear_rhs=1.24e-1 s``, ``nonlinear_bracket=9.89e-2 s``; spectral
+    ``full_rhs=2.20e-1 s`` and ``nonlinear_bracket=7.65e-2 s``;
+  - kept performance documentation scoped: the fastest tracked full RHS for
+    this mixed CPU/GPU artifact is still GPU grid, and no new production
+    nonlinear speedup claim is made from the bounded CPU refresh.
+- Verification for this profiler refresh:
+  - ``JAX_ENABLE_X64=0 python tools/profile_full_nonlinear_rhs_trace.py --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml --ky 0.3 --Nl 4 --Nm 8 --repeats 5 --summary-json docs/_static/full_nonlinear_rhs_trace_summary.json``;
+  - ``JAX_ENABLE_X64=0 python tools/profile_nonlinear_step_split.py --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml --ky 0.3 --Nl 4 --Nm 8 --repeats 5 --out docs/_static/nonlinear_rhs_profile_miller_cpu.csv``;
+  - ``JAX_ENABLE_X64=0 python tools/profile_nonlinear_step_split.py --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml --ky 0.3 --Nl 4 --Nm 8 --repeats 5 --laguerre-mode spectral --out docs/_static/nonlinear_rhs_profile_miller_cpu_spectral.csv``;
+  - ``python tools/plot_nonlinear_rhs_profile.py --case cyclone_miller_benchmark_size --title \"Cyclone Miller benchmark-size case\" --out docs/_static/nonlinear_rhs_profile_miller.png --summary-json docs/_static/nonlinear_rhs_profile_miller.json --input \"CPU grid=docs/_static/nonlinear_rhs_profile_miller_cpu.csv\" --input \"CPU spectral=docs/_static/nonlinear_rhs_profile_miller_cpu_spectral.csv\" --input \"GPU grid=docs/_static/nonlinear_rhs_profile_miller_gpu.csv\" --input \"GPU spectral=docs/_static/nonlinear_rhs_profile_miller_gpu_spectral.csv\"``.
+- Next best implementation steps:
+  - run the bounded artifact/docs test shard and commit this profiler refresh;
+  - inspect the linear-RHS cache/layout path next, since the refreshed split
+    again identifies linear RHS as the dominant measured CPU sub-kernel;
+  - keep nonlinear multi-GPU production decomposition separate from the current
+    whole-state sharding correctness gate.
