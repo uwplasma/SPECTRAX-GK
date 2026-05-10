@@ -641,3 +641,65 @@ def test_linear_rhs_parallel_cached_electrostatic_streaming_matches_serial_call_
     np.testing.assert_allclose(np.asarray(phi_sharded), np.asarray(phi_serial), rtol=2.0e-6, atol=2.0e-6)
     np.testing.assert_allclose(np.asarray(sharded), np.asarray(serial), rtol=2.0e-6, atol=2.0e-6)
     assert spectraxgk.linear_rhs_streaming_electrostatic_velocity_sharded(state, cache, params, num_devices=1)[0].shape == state.shape
+
+
+def test_linear_rhs_parallel_cached_electrostatic_linear_slices_match_serial_call_graph() -> None:
+    from spectraxgk.linear import LinearTerms, linear_rhs_cached, linear_rhs_parallel_cached
+    from spectraxgk.runtime_config import RuntimeParallelConfig
+
+    state, cache, params = _small_periodic_field_problem()
+    z = jnp.linspace(0.0, 2.0 * jnp.pi, state.shape[-1], endpoint=False)
+    state = state.at[0, 2, min(1, state.shape[2] - 1), 0, :].set(0.07 * jnp.exp(2j * z))
+    state = state.at[1, 3, min(1, state.shape[2] - 1), 0, :].set(0.03 * jnp.exp(3j * z))
+    terms = LinearTerms(
+        streaming=1.0,
+        mirror=1.0,
+        curvature=1.0,
+        gradb=1.0,
+        diamagnetic=0.0,
+        collisions=0.0,
+        hypercollisions=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+    )
+    parallel = RuntimeParallelConfig(
+        strategy="velocity",
+        backend="electrostatic_linear_slices",
+        axis="hermite",
+        num_devices=1,
+    )
+
+    serial, phi_serial = linear_rhs_cached(state, cache, params, terms=terms, use_jit=False, use_custom_vjp=False)
+    sharded, phi_sharded = linear_rhs_parallel_cached(
+        state,
+        cache,
+        params,
+        terms=terms,
+        parallel=parallel,
+        use_custom_vjp=False,
+    )
+
+    np.testing.assert_allclose(np.asarray(phi_sharded), np.asarray(phi_serial), rtol=2.0e-6, atol=2.0e-6)
+    np.testing.assert_allclose(np.asarray(sharded), np.asarray(serial), rtol=2.0e-6, atol=2.0e-6)
+    assert spectraxgk.linear_rhs_electrostatic_slices_velocity_sharded(state, cache, params, terms=terms, num_devices=1)[0].shape == state.shape
+
+
+def test_linear_rhs_parallel_cached_electrostatic_linear_slices_rejects_ungated_terms() -> None:
+    from spectraxgk.linear import LinearParams, LinearTerms, linear_rhs_parallel_cached
+    from spectraxgk.runtime_config import RuntimeParallelConfig
+
+    class Cache:
+        use_twist_shift = False
+
+    state = jnp.zeros((1, 4, 1, 1, 3), dtype=jnp.complex64)
+    parallel = RuntimeParallelConfig(strategy="velocity", backend="electrostatic_linear_slices", axis="hermite", num_devices=1)
+
+    with pytest.raises(NotImplementedError, match="diamagnetic/collision/EM"):
+        linear_rhs_parallel_cached(
+            state,
+            Cache(),
+            LinearParams(),
+            terms=LinearTerms(diamagnetic=1.0),
+            parallel=parallel,
+        )

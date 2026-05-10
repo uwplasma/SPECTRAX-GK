@@ -571,6 +571,11 @@ The tracked artifact passes with ``phi_norm=1.21e-1`` and zero reported
 absolute/relative error for the mirror, curvature/grad-B, and combined drift
 slices. This is a single-species periodic electrostatic identity gate, not a
 full-RHS, linked-boundary, electromagnetic, or nonlinear performance claim.
+The gated slices are available together through
+``spectraxgk.linear_rhs_parallel_cached`` with
+``RuntimeParallelConfig(strategy="velocity", axis="hermite",
+backend="electrostatic_linear_slices")``. That backend rejects diamagnetic,
+collision, electromagnetic, linked-boundary, and nonlinear terms.
 
 The periodic linear-streaming microkernel gate then adds the spectral
 parallel derivative along the field-line direction and compares the resulting

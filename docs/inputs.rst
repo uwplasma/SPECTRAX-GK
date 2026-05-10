@@ -490,13 +490,14 @@ extraction has its own numerical-identity gate.
 
 The only velocity-space RHS route exposed at this stage is deliberately
 diagnostic: ``strategy = "velocity"``, ``axis = "hermite"``, and
-``backend = "streaming_only"`` or ``backend = "streaming_electrostatic"``. It
-is accepted only by ``spectraxgk.linear_rhs_parallel_cached`` with all
-non-streaming linear terms disabled, and is used to gate the Hermite streaming
-communication path before full field-solve, drift, collision, and nonlinear
-decompositions are exposed. The electrostatic backend uses the single-species
-Hermite-sharded electrostatic field-reduction gate and remains limited to
-periodic 5D electrostatic states.
+``backend = "streaming_only"``, ``backend = "streaming_electrostatic"``, or
+``backend = "electrostatic_linear_slices"``. These are accepted only by
+``spectraxgk.linear_rhs_parallel_cached``. The first two require all
+non-streaming linear terms disabled. The electrostatic-slices backend allows
+only streaming, mirror, curvature, and grad-B weights; diamagnetic drive,
+collisions, linked boundaries, electromagnetic terms, and nonlinear terms
+remain disabled until their own identity gates are added. Current velocity
+RHS routes are limited to single-species periodic 5D electrostatic states.
 
 For independent scan, sensitivity, and UQ workloads, use
 ``spectraxgk.batch_map`` and require a serial identity artifact before using
