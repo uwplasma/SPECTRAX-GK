@@ -463,6 +463,42 @@ The tracked artifact used two logical CPU devices and passed the identity gate:
 metadata only; a speedup claim requires a solver-backed workload and fresh
 CPU/GPU profiler artifacts.
 
+The solver-backed strong-scaling artifact now exercises that production
+policy on a larger real Cyclone linear scan with twelve independent
+``k_y`` values, ``Ny=128``, ``Nz=96``, ``Nl=4``, ``Nm=8``, and ``240`` RK2
+steps per mode. Each worker performs one warmup scan before the timed repeats,
+and every multi-worker result is compared against the one-worker reference for
+``gamma`` and ``omega`` identity:
+
+.. image:: _static/independent_ky_scan_scaling_large.png
+   :alt: SPECTRAX-GK independent ky scan CPU/GPU strong-scaling artifact
+   :align: center
+
+It is regenerated with:
+
+.. code-block:: bash
+
+   python tools/profile_independent_ky_scan_scaling.py \
+     --backend cpu --devices 1,2,4,8 \
+     --ny 128 --nz 96 --nl 4 --nm 8 --steps 240 \
+     --out-prefix docs/_static/independent_ky_scan_scaling_cpu_large
+
+   python tools/profile_independent_ky_scan_scaling.py \
+     --backend gpu --devices 1,2 \
+     --ny 128 --nz 96 --nl 4 --nm 8 --steps 240 \
+     --out-prefix docs/_static/independent_ky_scan_scaling_gpu_large
+
+   python tools/plot_independent_ky_scan_scaling.py
+
+The May 10, 2026 ``office`` sweep passes the identity gate with zero reported
+``gamma``/``omega`` mismatch. CPU process scaling reaches ``1.92x`` on two
+workers, ``3.51x`` on four workers, and ``5.34x`` on eight workers. The
+two-GPU RTX A4000 run reaches ``1.63x`` with about ``81%`` parallel
+efficiency. This is the current recommended production parallelization path
+for linear scans, quasilinear studies, sensitivity sweeps, and UQ ensembles:
+it has much better scaling behavior than whole-state nonlinear sharding
+because communication is restricted to post-run result aggregation.
+
 The production nonlinear-decomposition plan follows the same conservative
 rule. ``spectraxgk.build_velocity_sharding_plan`` records a GX-inspired
 species-first, Hermite-second velocity-space layout, including which axes need
