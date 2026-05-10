@@ -81,6 +81,30 @@ def test_saturation_rule_sweep_fits_train_scale_and_scores_holdout(tmp_path: Pat
     assert report["promotion_gate"]["accepted_rules"] == []
 
 
+def test_saturation_rule_sweep_parallel_workers_match_serial(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    cases = []
+    for name, split, observed in [("train", "train", 9.0), ("holdout_a", "holdout", 4.5), ("holdout_b", "holdout", 6.0)]:
+        spectrum, summary = _write_case(tmp_path, name, observed=observed)
+        cases.append(
+            mod.SaturationCase(
+                case=name,
+                split=split,
+                geometry=name,
+                spectrum=spectrum,
+                nonlinear_summary=summary,
+            )
+        )
+
+    serial = mod.build_saturation_rule_sweep(tuple(cases), workers=1)
+    parallel = mod.build_saturation_rule_sweep(tuple(cases), workers=2)
+
+    assert parallel["parallel"]["workers"] == 2
+    assert parallel["cases"] == serial["cases"]
+    assert parallel["rules"] == serial["rules"]
+    assert parallel["promotion_gate"] == serial["promotion_gate"]
+
+
 def test_saturation_rule_sweep_writes_artifacts(tmp_path: Path) -> None:
     mod = _load_tool_module()
     spectrum, summary = _write_case(tmp_path, "train", observed=9.0)

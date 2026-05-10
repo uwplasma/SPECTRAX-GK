@@ -500,10 +500,12 @@ remain disabled until their own identity gates are added. Current velocity
 RHS routes are limited to single-species periodic 5D electrostatic states.
 
 For independent scan, sensitivity, and UQ workloads, use
-``spectraxgk.batch_map`` and require a serial identity artifact before using
-timing results in a publication claim. The helper supports structured pytree
-outputs, so diagnostics such as growth rates, frequencies, quasilinear weights,
-and covariance summaries can be carried through one parallel map.
+``spectraxgk.batch_map`` for JAX-array maps and ``spectraxgk.independent_map``
+for file-backed Python tasks such as calibration rows or leave-one-out UQ
+holdouts. Require a serial identity artifact before using timing results in a
+publication claim. The helpers preserve ordering, so diagnostics such as growth
+rates, frequencies, quasilinear weights, and covariance summaries can be
+carried through one parallel map.
 
 Runtime output and restart controls
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

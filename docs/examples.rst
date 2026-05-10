@@ -112,6 +112,17 @@ the package helpers:
        batch_size=2,
    )
 
+For file-backed calibration and uncertainty workflows that are independent but
+not JAX-array ``vmap`` workloads, use ``sgk.independent_map``:
+
+.. code-block:: python
+
+   rows = sgk.independent_map(
+       lambda case: {"case": case, "score": len(case)},
+       ["cyclone", "hsx", "w7x"],
+       workers=2,
+   )
+
 These helpers preserve serial ordering and fall back to a one-device ``vmap``
 path on laptops. Multi-device runs should still be checked against the serial
 result before publication speedups are claimed.
