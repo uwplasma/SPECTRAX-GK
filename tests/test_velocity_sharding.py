@@ -9,6 +9,8 @@ import numpy as np
 import spectraxgk
 from spectraxgk.velocity_sharding import (
     build_velocity_sharding_plan,
+    electrostatic_phi_reference,
+    electrostatic_phi_shard_map,
     hermite_neighbor_reference,
     hermite_neighbor_shard_map,
     hermite_streaming_ladder_reference,
@@ -148,6 +150,117 @@ def test_velocity_field_reduce_shard_map_matches_reference_when_logical_devices_
     expected = velocity_field_reduce_reference(state)
 
     np.testing.assert_allclose(np.asarray(reduced), np.asarray(expected))
+
+
+def _small_periodic_field_problem():
+    from spectraxgk.config import CycloneBaseCase, GridConfig
+    from spectraxgk.geometry import SAlphaGeometry
+    from spectraxgk.grids import build_spectral_grid
+    from spectraxgk.linear import LinearParams, build_linear_cache
+
+    cfg = CycloneBaseCase(grid=GridConfig(Nx=1, Ny=4, Nz=8, Lx=6.0, Ly=6.0, boundary="periodic"))
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams(beta=0.0, fapar=0.0)
+    cache = build_linear_cache(grid, geom, params, Nl=2, Nm=6)
+    z = jnp.linspace(0.0, 2.0 * jnp.pi, grid.z.size, endpoint=False)
+    state = jnp.zeros((2, 6, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64)
+    state = state.at[0, 0, min(1, grid.ky.size - 1), 0, :].set(0.2 * jnp.exp(1j * z))
+    state = state.at[1, 0, min(2, grid.ky.size - 1), 0, :].set(0.1 * jnp.exp(2j * z))
+    return state, cache, params
+
+
+def test_electrostatic_phi_reference_matches_production_field_solve() -> None:
+    from spectraxgk.linear import LinearTerms, linear_rhs_cached
+
+    state, cache, params = _small_periodic_field_problem()
+    terms = LinearTerms(
+        streaming=0.0,
+        mirror=0.0,
+        curvature=0.0,
+        gradb=0.0,
+        diamagnetic=0.0,
+        collisions=0.0,
+        hypercollisions=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+    )
+
+    _rhs, phi = linear_rhs_cached(state, cache, params, terms=terms, use_jit=False, use_custom_vjp=False)
+    observed = electrostatic_phi_reference(
+        state,
+        Jl=cache.Jl,
+        tau_e=params.tau_e,
+        charge=params.charge_sign,
+        density=params.density,
+        tz=params.tz,
+        mask0=cache.mask0,
+    )
+
+    assert float(jnp.linalg.norm(phi)) > 0.0
+    np.testing.assert_allclose(np.asarray(observed), np.asarray(phi), rtol=2.0e-6, atol=2.0e-6)
+    assert spectraxgk.electrostatic_phi_reference is electrostatic_phi_reference
+    assert spectraxgk.electrostatic_phi_shard_map is electrostatic_phi_shard_map
+
+
+def test_electrostatic_phi_shard_map_noops_to_reference_for_single_chunk() -> None:
+    state, cache, params = _small_periodic_field_problem()
+    plan = build_velocity_sharding_plan(state.shape, num_devices=1, axes=("hermite",))
+
+    observed = electrostatic_phi_shard_map(
+        state,
+        plan,
+        Jl=cache.Jl,
+        tau_e=params.tau_e,
+        charge=params.charge_sign,
+        density=params.density,
+        tz=params.tz,
+        mask0=cache.mask0,
+        devices=[jax.devices()[0]],
+    )
+    expected = electrostatic_phi_reference(
+        state,
+        Jl=cache.Jl,
+        tau_e=params.tau_e,
+        charge=params.charge_sign,
+        density=params.density,
+        tz=params.tz,
+        mask0=cache.mask0,
+    )
+
+    np.testing.assert_allclose(np.asarray(observed), np.asarray(expected), rtol=2.0e-6, atol=2.0e-6)
+
+
+def test_electrostatic_phi_shard_map_matches_reference_when_logical_devices_available() -> None:
+    devices = jax.devices()
+    if len(devices) < 2:
+        pytest.skip("requires at least two JAX devices; artifact generator sets logical CPU devices")
+    state, cache, params = _small_periodic_field_problem()
+    plan = build_velocity_sharding_plan(state.shape, num_devices=2, axes=("hermite",))
+
+    observed = electrostatic_phi_shard_map(
+        state,
+        plan,
+        Jl=cache.Jl,
+        tau_e=params.tau_e,
+        charge=params.charge_sign,
+        density=params.density,
+        tz=params.tz,
+        mask0=cache.mask0,
+        devices=devices[:2],
+    )
+    expected = electrostatic_phi_reference(
+        state,
+        Jl=cache.Jl,
+        tau_e=params.tau_e,
+        charge=params.charge_sign,
+        density=params.density,
+        tz=params.tz,
+        mask0=cache.mask0,
+    )
+
+    np.testing.assert_allclose(np.asarray(observed), np.asarray(expected), rtol=2.0e-6, atol=2.0e-6)
 
 
 def test_hermite_streaming_ladder_reference_matches_manual_coefficients() -> None:

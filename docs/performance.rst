@@ -512,6 +512,26 @@ different reduction tree; it is not a physics tolerance. The next gate must
 combine Hermite exchange and field reduction with the actual streaming
 coefficients.
 
+The electrostatic field-reduction gate applies the same ``lax.psum`` pattern
+to the actual ``m=0`` density moment used by quasineutrality and compares the
+resulting ``phi`` against the production field solve:
+
+.. image:: _static/electrostatic_field_reduce_gate.png
+   :alt: SPECTRAX-GK electrostatic field-reduction identity gate
+   :align: center
+
+It is regenerated with:
+
+.. code-block:: bash
+
+   python tools/generate_electrostatic_field_reduce_gate.py --logical-devices 2
+
+The tracked artifact passes exactly on the current single-species periodic
+gate with ``phi_norm=1.68e-1`` and zero reported absolute/relative error. This
+is the first true sharded field-reduction solve gate; multi-species,
+linked-boundary, electromagnetic, and nonlinear field solves remain separate
+gates.
+
 That coefficient gate is now tracked separately. It applies the
 ``sqrt(m+1)`` upper-neighbor and ``sqrt(m)`` lower-neighbor Hermite streaming
 ladder on top of the shard-map exchange and records the paired field-reduction
@@ -598,9 +618,10 @@ It is regenerated with:
 
 The tracked artifact passes with ``phi_norm=1.34e-1``,
 ``max_phi_abs_error=1.9e-9``, ``max_abs_error=1.4e-7``, and
-``max_rel_error=4.1e-7``. The field solve itself is still the production
-serial electrostatic solve; this gate validates the field-solve-to-streaming
-call graph before a true sharded field-reduction solve is introduced.
+``max_rel_error=4.1e-7``. The field solve uses the single-species
+Hermite-sharded electrostatic reduction gate above; this validates the
+field-reduction-to-streaming call graph before drift and nonlinear terms are
+introduced.
 
 Fixed-step nonlinear state sharding
 -----------------------------------

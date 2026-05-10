@@ -3186,3 +3186,57 @@ Exit gate:
     source, tool, tests, and docs;
   - ``python -m sphinx -q -b html docs docs/_build/html`` passed under the
     300-second cap.
+- Started the ninth parallelization implementation tranche:
+  - added ``electrostatic_phi_reference`` and ``electrostatic_phi_shard_map``
+    to ``spectraxgk.velocity_sharding``;
+  - the sharded path selects the global ``m=0`` density moment on a Hermite
+    mesh, reduces it with ``lax.psum``, and applies the electrostatic
+    quasineutrality denominator;
+  - current scope is single-species, 5D, periodic electrostatic field solves;
+    multi-species, linked-boundary, electromagnetic, and nonlinear fields are
+    separate gates;
+  - added unit coverage against the production ``linear_rhs_cached`` field
+    solve and one-device/multi-device shard-map identity;
+  - added ``tools/generate_electrostatic_field_reduce_gate.py`` and generated
+    ``docs/_static/electrostatic_field_reduce_gate.{png,pdf,csv,json}``;
+  - the tracked two-logical-CPU artifact passes with
+    ``phi_norm=0.16790585219860077`` and zero reported absolute/relative error.
+- Validation for this tranche so far:
+  - ``python -m pytest -q tests/test_velocity_sharding.py tests/test_generate_electrostatic_field_reduce_gate.py``
+    passed under the 300-second cap with expected logical-device skips;
+  - targeted ``ruff check --extend-ignore F401`` passed for the touched
+    source, tool, and tests;
+  - ``python tools/generate_electrostatic_field_reduce_gate.py
+    --logical-devices 2 --out-prefix docs/_static/electrostatic_field_reduce_gate``
+    generated the tracked passing artifact.
+- Completed the single-species periodic electrostatic route wiring:
+  - replaced the serial field solve inside
+    ``linear_rhs_streaming_electrostatic_velocity_sharded`` with
+    ``electrostatic_phi_shard_map`` for supported 5D periodic electrostatic
+    states;
+  - unsupported multi-species/6D states and linked-boundary/twist-shift states
+    now fail explicitly instead of silently falling back to a serial field
+    solve;
+  - regenerated
+    ``docs/_static/linear_rhs_streaming_electrostatic_gate.{png,pdf,csv,json}``
+    so the artifact records that ``phi`` comes from the Hermite-sharded field
+    reduction gate;
+  - the regenerated streaming-electrostatic artifact passes with
+    ``phi_norm=0.13424475491046906``,
+    ``max_phi_abs_error=1.862645149230957e-9``,
+    ``max_abs_error=1.3943616750111687e-7``, and
+    ``max_rel_error=4.0251720179185213e-7``.
+- Next best implementation steps:
+  - run the bounded parallelization/docs verification shard for the
+    field-reduction and electrostatic streaming route;
+  - add mirror/curvature/grad-B drift identity slices using the same
+    single-species periodic gate discipline;
+  - defer multi-species, linked-boundary, electromagnetic, and nonlinear field
+    sharding until each has its own isolated reduction/communication gate.
+- Bounded verification after field-reduction wiring:
+  - ``python -m pytest -q tests/test_parallel.py tests/test_velocity_sharding.py tests/test_generate_logical_cpu_parallel_scan_gate.py tests/test_generate_hermite_exchange_gate.py tests/test_generate_velocity_field_reduce_gate.py tests/test_generate_electrostatic_field_reduce_gate.py tests/test_generate_hermite_streaming_ladder_gate.py tests/test_generate_periodic_streaming_microkernel_gate.py tests/test_generate_linear_rhs_streaming_gate.py tests/test_generate_linear_rhs_streaming_electrostatic_gate.py tests/test_runtime_config.py tests/test_runtime_runner.py::test_run_runtime_scan_parallel_config_selects_combined_ky tests/test_runtime_runner.py::test_run_runtime_scan_batch_ky_rejects_krylov``
+    passed under the 300-second cap;
+  - targeted ``ruff check --extend-ignore F401`` passed for the touched
+    source, tools, and tests;
+  - ``python -m sphinx -q -b html docs docs/_build/html`` passed under the
+    300-second cap.

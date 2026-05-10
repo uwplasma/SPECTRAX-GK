@@ -13,7 +13,7 @@
   "max_abs_error": 1.3943616750111687e-07,
   "max_phi_abs_error": 1.862645149230957e-09,
   "max_rel_error": 4.0251720179185213e-07,
-  "notes": "Only streaming is enabled. The state includes an m=0 density perturbation, so phi is nonzero. The electrostatic field solve is still computed by the production serial field solver; this gate does not yet claim a sharded field-solve implementation.",
+  "notes": "Only streaming is enabled. The state includes an m=0 density perturbation, so phi is nonzero. The electrostatic field solve uses the Hermite-sharded field-reduction path gated separately by tools/generate_electrostatic_field_reduce_gate.py.",
   "phi_norm": 0.13424475491046906,
   "plan": {
     "active_axes": [
