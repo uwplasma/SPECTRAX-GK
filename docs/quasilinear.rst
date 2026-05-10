@@ -115,6 +115,26 @@ Then render the spectrum:
      --spectrum tools_out/cyclone_quasilinear_scan.quasilinear_spectrum.csv \
      --out docs/_static/quasilinear_cyclone_spectrum.png
 
+The shipped worker-identity gate for this path is generated with:
+
+.. code-block:: bash
+
+   JAX_ENABLE_X64=1 python tools/generate_quasilinear_runtime_parallel_gate.py \
+     --workers 2 \
+     --ky 0.1 0.2 \
+     --out-prefix docs/_static/quasilinear_runtime_parallel_gate
+
+.. figure:: _static/quasilinear_runtime_parallel_gate.png
+   :width: 100%
+   :align: center
+   :alt: Quasilinear runtime scan worker identity gate
+
+   Serial and worker-parallel ``scan-runtime-linear`` quasilinear spectra from
+   the same runtime configuration. The gate checks ordered state-extraction
+   identity for the linear heat-flux weight and the saturated heat-flux
+   estimate; any timing metadata is reported for engineering tracking only,
+   not as a production speedup claim.
+
 The shaped-tokamak Miller companion uses the same pattern, with the positive
 ``ky`` range resolved by the nonlinear run's ``Ny=64`` grid:
 

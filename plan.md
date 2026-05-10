@@ -3680,3 +3680,26 @@ Exit gate:
     quasilinear spectra from the same runtime TOML;
   - only after that, consider a true combined-``ky`` quasilinear extraction
     implementation with a separate serial-identity gate.
+- Quasilinear runtime-scan worker artifact:
+  - added ``tools/generate_quasilinear_runtime_parallel_gate.py`` as a real
+    runtime-scan identity artifact for quasilinear spectra;
+  - generated ``docs/_static/quasilinear_runtime_parallel_gate.{json,csv,png,pdf}``
+    with ``JAX_ENABLE_X64=1``, two Cyclone ``ky`` points, and two independent
+    workers;
+  - the artifact passed exact ordered state-extraction identity with
+    ``max_abs_error=0`` and ``max_rel_error=0`` for the tracked quasilinear
+    spectrum columns;
+  - documented the figure and command in ``docs/quasilinear.rst`` with explicit
+    wording that timing metadata is for tracking only, not a production speedup
+    claim.
+- Verification for this tranche:
+  - ``python -m ruff check tools/generate_quasilinear_runtime_parallel_gate.py tests/test_generate_quasilinear_runtime_parallel_gate.py``;
+  - ``MYPYPATH=src mypy tools/generate_quasilinear_runtime_parallel_gate.py``;
+  - ``pytest -q tests/test_generate_quasilinear_runtime_parallel_gate.py tests/test_runtime_runner.py::test_run_runtime_scan_independent_workers_preserve_quasilinear_order tests/test_runtime_artifacts.py::test_write_runtime_linear_scan_artifacts_with_quasilinear_spectrum tests/test_cli.py::test_cmd_scan_runtime_linear_writes_quasilinear_spectrum``;
+  - ``python -m sphinx -b html docs docs/_build/html``.
+- Next best implementation steps:
+  - commit/push the quasilinear runtime worker artifact and monitor CI;
+  - move to profiler-backed nonlinear worst-offender cleanup, keeping claims
+    separated from the independent-worker linear/quasilinear path;
+  - defer combined-``ky`` quasilinear extraction until a dedicated batched-state
+    identity implementation is ready.
