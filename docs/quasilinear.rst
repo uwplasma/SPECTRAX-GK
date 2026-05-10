@@ -94,7 +94,9 @@ or enable the diagnostic for another linear runtime TOML:
      --ql-csat 1.0 \
      --out tools_out/cyclone_quasilinear
 
-For a ky spectrum, use serial scan evaluation:
+For a ``ky`` spectrum, use the independent-scan path. ``--workers`` can
+parallelize the per-``ky`` linear solves and quasilinear state extraction while
+preserving the serial ordering of the output spectrum:
 
 .. code-block:: bash
 
@@ -102,6 +104,7 @@ For a ky spectrum, use serial scan evaluation:
      --config examples/linear/axisymmetric/runtime_cyclone_quasilinear.toml \
      --ky-values 0.1,0.2,0.3,0.4 \
      --quasilinear \
+     --workers 2 \
      --out tools_out/cyclone_quasilinear_scan
 
 Then render the spectrum:

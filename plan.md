@@ -3656,3 +3656,27 @@ Exit gate:
   - continue the production parallelization lane with large-run profiling of
     remaining worst-offender nonlinear RHS kernels before making new speedup
     claims.
+- Quasilinear per-ky state-extraction parallelization gate:
+  - added ordered independent-worker execution to ``run_runtime_scan`` for the
+    non-batched per-``ky`` path, including quasilinear payload/state extraction;
+  - preserved the existing restriction that combined ``--batch-ky`` quasilinear
+    scan artifacts remain disabled until a separate batched state-extraction
+    identity gate is closed;
+  - exposed ``scan-runtime-linear --workers`` and ``--parallel-executor`` for
+    independent quasilinear spectra and recorded worker metadata in scan
+    summary artifacts;
+  - documented the distinction between independent-worker quasilinear spectra
+    and combined-``ky`` batching in ``docs/quasilinear.rst`` and
+    ``docs/inputs.rst``.
+- Verification for this tranche:
+  - ``mypy src/spectraxgk/runtime.py src/spectraxgk/runtime_results.py src/spectraxgk/runtime_artifacts.py src/spectraxgk/cli.py``;
+  - ``pytest -q tests/test_runtime_runner.py tests/test_quasilinear.py tests/test_runtime_artifacts.py tests/test_cli.py``;
+  - ``python -m sphinx -b html docs docs/_build/html``;
+  - ``python -m ruff check tests/test_runtime_runner.py tests/test_runtime_artifacts.py tests/test_cli.py``;
+  - ``python -m py_compile src/spectraxgk/runtime.py src/spectraxgk/runtime_results.py src/spectraxgk/runtime_artifacts.py src/spectraxgk/cli.py``.
+- Next best implementation steps:
+  - commit/push the independent-``ky`` quasilinear scan path and monitor CI;
+  - generate a small docs artifact that compares serial vs worker-parallel
+    quasilinear spectra from the same runtime TOML;
+  - only after that, consider a true combined-``ky`` quasilinear extraction
+    implementation with a separate serial-identity gate.

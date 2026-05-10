@@ -275,6 +275,13 @@ For large ky scans, ``scan-runtime-linear --batch-ky`` integrates all ky values
 in a single time integration pass (time integrator only) and then extracts the
 growth rates from the per-ky traces.
 
+For quasilinear spectra, use ``scan-runtime-linear --workers N`` instead of
+``--batch-ky``. This runs independent per-``ky`` solves, computes the
+quasilinear state extraction for each mode, preserves serial spectrum ordering,
+and records the worker identity contract in the scan summary JSON. Combined
+``--batch-ky`` quasilinear artifacts remain disabled until the batched
+state-extraction identity gate is separately closed.
+
 Executable usage
 ----------------
 

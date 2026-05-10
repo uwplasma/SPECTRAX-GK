@@ -210,6 +210,13 @@ def test_write_runtime_linear_scan_artifacts_with_quasilinear_spectrum(tmp_path:
         ky=np.asarray([0.2, 0.3]),
         gamma=np.asarray([0.1, 0.2]),
         omega=np.asarray([-0.4, -0.5]),
+        parallel={
+            "requested_workers": 2,
+            "effective_workers": 2,
+            "executor": "thread",
+            "identity_contract": "independent ky workers must preserve serial ky ordering and values",
+            "quasilinear_state_extraction": True,
+        },
         quasilinear=(
             {
                 "ky": 0.2,
@@ -239,6 +246,9 @@ def test_write_runtime_linear_scan_artifacts_with_quasilinear_spectrum(tmp_path:
     paths = write_runtime_linear_scan_artifacts(tmp_path / "scan_bundle", result)
 
     assert Path(paths["summary"]).exists()
+    summary = json.loads(Path(paths["summary"]).read_text(encoding="utf-8"))
+    assert summary["parallel"]["requested_workers"] == 2
+    assert summary["parallel"]["quasilinear_state_extraction"] is True
     assert Path(paths["scan"]).exists()
     assert Path(paths["quasilinear_spectrum"]).exists()
     spectrum = np.loadtxt(paths["quasilinear_spectrum"], delimiter=",", skiprows=1)
