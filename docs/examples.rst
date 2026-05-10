@@ -219,6 +219,21 @@ linear-RHS call graph with every non-streaming contribution disabled:
    gate for the streaming term only; it is not yet a full linear scan or
    nonlinear speedup claim.
 
+With a nonzero electrostatic response, use:
+
+.. code-block:: bash
+
+   python tools/generate_linear_rhs_streaming_electrostatic_gate.py --logical-devices 2
+
+.. figure:: _static/linear_rhs_streaming_electrostatic_gate.png
+   :alt: SPECTRAX-GK electrostatic streaming linear RHS identity gate
+   :width: 100%
+
+   Streaming plus electrostatic ``phi`` call-graph comparison. The field solve
+   is still the production serial electrostatic solve; this gate validates the
+   next Hermite velocity-sharded streaming slice before a sharded field-solve
+   path is introduced.
+
 Use the strong-scaling sweep helper to collect parallelization timings for the
 distributed linear RK2 loop:
 

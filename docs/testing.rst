@@ -660,6 +660,12 @@ performance claims:
   non-streaming terms and electromagnetic channels disabled. Its artifact
   ``docs/_static/linear_rhs_streaming_gate.{png,pdf,csv,json}`` is the first
   full-call-graph linear-RHS identity gate for velocity-space streaming.
+- ``tools/generate_linear_rhs_streaming_electrostatic_gate.py`` repeats that
+  gate with an ``m=0`` density perturbation and nonzero electrostatic ``phi``.
+  Its artifact
+  ``docs/_static/linear_rhs_streaming_electrostatic_gate.{png,pdf,csv,json}``
+  gates the field-solve-to-streaming call graph while explicitly leaving the
+  field solve serial.
 - ``tools/profile_nonlinear_sharding.py`` runs a bounded fixed-step nonlinear
   serial-vs-sharded final-state comparison and writes
   ``docs/_static/nonlinear_sharding_profile.json`` locally and
