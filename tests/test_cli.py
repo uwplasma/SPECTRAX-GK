@@ -607,6 +607,8 @@ def test_cmd_scan_runtime_linear_writes_quasilinear_spectrum(monkeypatch, capsys
         steps=None,
         sample_stride=None,
         batch_ky=False,
+        workers=3,
+        parallel_executor="thread",
         progress=False,
         no_progress=True,
         out="scan_bundle",
@@ -619,6 +621,8 @@ def test_cmd_scan_runtime_linear_writes_quasilinear_spectrum(monkeypatch, capsys
     )
     assert _cmd_scan_runtime_linear(args) == 0
     assert captured["quasilinear"].enabled is True
+    assert captured["kwargs"]["workers"] == 3
+    assert captured["kwargs"]["parallel_executor"] == "thread"
     assert "saved scan.ql.csv" in capsys.readouterr().out
 
 

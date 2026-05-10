@@ -3310,6 +3310,50 @@ def test_run_runtime_scan_serial_forwards_per_ky(monkeypatch: pytest.MonkeyPatch
     np.testing.assert_allclose(out.omega, [-2.15, -2.35])
 
 
+def test_run_runtime_scan_independent_workers_preserve_quasilinear_order(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        species=(RuntimeSpeciesConfig(name="ion"),),
+        normalization=RuntimeNormalizationConfig(contract="cyclone"),
+    )
+
+    def _fake_run_runtime_linear(_cfg, **kwargs):
+        ky = float(kwargs["ky_target"])
+        return RuntimeLinearResult(
+            ky=ky,
+            gamma=ky + 1.0,
+            omega=-(ky + 2.0),
+            selection=runtime.ModeSelection(ky_index=0, kx_index=0, z_index=0),
+            quasilinear={
+                "ky": ky,
+                "gamma": ky + 1.0,
+                "omega": -(ky + 2.0),
+                "heat_flux_weight_total": 10.0 * ky,
+            },
+        )
+
+    import spectraxgk.runtime as runtime
+
+    monkeypatch.setattr(runtime, "run_runtime_linear", _fake_run_runtime_linear)
+
+    out = run_runtime_scan(
+        cfg,
+        ky_values=[0.15, 0.35, 0.25],
+        solver="time",
+        workers=2,
+    )
+
+    np.testing.assert_allclose(out.gamma, [1.15, 1.35, 1.25])
+    assert out.quasilinear is not None
+    np.testing.assert_allclose([row["ky"] for row in out.quasilinear], [0.15, 0.35, 0.25])
+    np.testing.assert_allclose([row["heat_flux_weight_total"] for row in out.quasilinear], [1.5, 3.5, 2.5])
+    assert out.parallel is not None
+    assert out.parallel["requested_workers"] == 2
+    assert out.parallel["quasilinear_state_extraction"] is True
+
+
 def test_run_runtime_scan_parallel_config_selects_combined_ky(monkeypatch: pytest.MonkeyPatch) -> None:
     cfg = replace(
         _base_runtime_cfg(),
