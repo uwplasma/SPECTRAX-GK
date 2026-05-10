@@ -29,6 +29,7 @@ def test_profile_linear_rhs_parallel_slices_builds_summary(monkeypatch) -> None:
     monkeypatch.setattr("spectraxgk.linear.linear_rhs_parallel_cached", fake_rhs)
 
     summary = profile.profile_linear_rhs_parallel_slices(
+        platform="cpu",
         requested_devices=2,
         nx=1,
         ny=2,

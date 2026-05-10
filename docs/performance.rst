@@ -712,6 +712,22 @@ route within a float32 reduction-order engineering tolerance:
 profile rather than a publication speedup claim; the stricter small-grid
 identity gate above is the release correctness gate.
 
+The same profiler can target GPUs on the office node:
+
+.. code-block:: bash
+
+   PYTHONPATH=/tmp/spectrax-gk-profile/src python3 \
+     tools/profile_linear_rhs_parallel_slices.py \
+     --platform gpu --logical-devices 2 \
+     --nl 4 --nm 64 --ny 32 --nz 128 --rtol 1e-5 \
+     --out-prefix docs/_static/linear_rhs_parallel_slices_profile_gpu
+
+The tracked two-RTX-A4000 artifact passes the engineering identity check
+(``max_abs_error=1.9e-6``, ``max_rel_error=4.7e-6``), but it is much slower
+than the single-GPU serial JIT path (``speedup=0.03x``). This keeps the GPU
+Hermite-sharding lane open: do not claim GPU speedup until the communication
+layout is redesigned or a larger production workload shows a real gain.
+
 Fixed-step nonlinear state sharding
 -----------------------------------
 

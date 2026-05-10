@@ -692,7 +692,10 @@ performance claims:
   The tracked profile is explicitly an engineering artifact, not a publication
   speedup claim; it uses a Hermite-heavy workload and a float32
   reduction-order tolerance so the stricter composed identity gate remains the
-  release correctness check.
+  release correctness check. The office GPU companion artifact
+  ``docs/_static/linear_rhs_parallel_slices_profile_gpu.{png,pdf,csv,json}``
+  is currently a negative performance baseline: it passes identity but is much
+  slower than the single-GPU serial JIT path.
 - ``tools/profile_nonlinear_sharding.py`` runs a bounded fixed-step nonlinear
   serial-vs-sharded final-state comparison and writes
   ``docs/_static/nonlinear_sharding_profile.json`` locally and

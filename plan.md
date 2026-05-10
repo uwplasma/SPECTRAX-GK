@@ -3422,3 +3422,37 @@ Exit gate:
   - run the same cached fused profile on ``ssh office`` GPUs;
   - add a profile sweep artifact over ``num_devices`` and Hermite size before
     promoting any broad parallel-speedup claim.
+- Office GPU profile result:
+  - cloned the pushed repository at ``4f43f1b`` into
+    ``/tmp/spectrax-gk-profile`` on ``ssh office`` and verified JAX sees two
+    ``CudaDevice`` GPUs;
+  - added ``--platform cpu|gpu`` support to
+    ``tools/profile_linear_rhs_parallel_slices.py`` so the same profiler can
+    target either logical CPU devices or physical GPUs;
+  - ran the two-GPU profile with
+    ``PYTHONPATH=/tmp/spectrax-gk-profile/src python3
+    tools/profile_linear_rhs_parallel_slices.py --platform gpu
+    --logical-devices 2 --nl 4 --nm 64 --ny 32 --nz 128 --warmups 1
+    --repeats 3 --rtol 1e-5 --out-prefix
+    docs/_static/linear_rhs_parallel_slices_profile_gpu``;
+  - copied
+    ``docs/_static/linear_rhs_parallel_slices_profile_gpu.{png,pdf,csv,json}``
+    back into the local repository;
+  - the GPU artifact passes the engineering identity gate with
+    ``max_abs_error=1.8670061763259582e-06``,
+    ``max_rel_error=4.698092652688501e-06``, and
+    ``max_phi_abs_error=7.451490091625601e-09``;
+  - warm two-GPU timings are negative:
+    ``serial_median_s=0.0042040119878947735``,
+    ``sharded_median_s=0.12247901689261198``,
+    ``speedup=0.034324344647383945``;
+  - a larger two-GPU probe
+    (``nl=4,nm=128,ny=64,nz=256``) remained slow
+    (``speedup=0.05451575420187544``) and missed the ``1e-5`` relative gate,
+    so the GPU Hermite-sharding lane stays open.
+- Next best implementation steps:
+  - commit/push the CPU/GPU profile updates;
+  - add a compact profile-sweep artifact across CPU logical-device count and
+    Hermite size to map the useful CPU regime;
+  - for GPU, investigate a different decomposition (batch/ky or ensemble
+    sharding first) rather than promoting Hermite domain sharding.
