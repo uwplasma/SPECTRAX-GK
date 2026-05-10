@@ -958,6 +958,11 @@
     ]
   },
   "observed_floor": 1e-12,
+  "parallel": {
+    "executor": "thread",
+    "identity_contract": "parallel holdout rows preserve serial holdout ordering",
+    "workers": 4
+  },
   "passed_shape_only": true,
   "promotion_gate": {
     "accepted_candidates": [

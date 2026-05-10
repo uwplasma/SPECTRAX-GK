@@ -12,6 +12,7 @@ import spectraxgk.parallel as parallel
 def test_ky_scan_batches_are_balanced_and_order_preserving() -> None:
     assert spectraxgk.ky_scan_batches is parallel.ky_scan_batches
     assert spectraxgk.batch_map is parallel.batch_map
+    assert spectraxgk.independent_map is parallel.independent_map
     ky = np.array([0.1, 0.2, 0.3, 0.4, 0.5])
     chunks = parallel.ky_scan_batches(ky, n_batches=2)
 
@@ -117,3 +118,21 @@ def test_parallel_helpers_reject_invalid_inputs() -> None:
         parallel.pad_to_multiple(jnp.asarray([1.0]), 0)
     with pytest.raises(ValueError):
         parallel.pad_to_multiple(jnp.asarray([]), 2)
+    with pytest.raises(ValueError):
+        parallel.independent_map(lambda x: x, [1], workers=0)
+    with pytest.raises(ValueError):
+        parallel.independent_map(lambda x: x, [1], workers=2, executor="mpi")
+
+
+def test_independent_map_preserves_serial_order_and_nested_outputs() -> None:
+    values = [3, 1, 2]
+
+    def fn(value: int) -> dict[str, int]:
+        return {"x": value, "x2": value * value}
+
+    serial = parallel.independent_map(fn, values, workers=1)
+    threaded = parallel.independent_map(fn, values, workers=2)
+
+    assert serial == [{"x": 3, "x2": 9}, {"x": 1, "x2": 1}, {"x": 2, "x2": 4}]
+    assert threaded == serial
+    assert parallel.independent_map(fn, [], workers=3) == []

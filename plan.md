@@ -3605,3 +3605,26 @@ Exit gate:
     scheduler into the actual quasilinear calibration and UQ scripts, while
     preserving the existing prohibition on batched quasilinear scan artifacts
     until per-ky state-extraction identity is separately gated.
+- Quasilinear calibration/UQ independent-worker integration:
+  - added ``spectraxgk.independent_map`` as an ordered Python-task mapper for
+    file-backed calibration, finite-difference, and UQ workloads that are not
+    JAX-array ``vmap`` jobs;
+  - wired ``tools/plot_quasilinear_saturation_rule_sweep.py`` through the new
+    mapper so nonlinear-window case rows and linear-spectrum reductions can be
+    evaluated with ``--workers`` while preserving serial report ordering;
+  - wired ``tools/plot_quasilinear_candidate_uncertainty.py`` through the same
+    mapper so leave-one-geometry-out candidate/UQ holdout rows can be evaluated
+    with ``--workers`` while preserving serial report ordering;
+  - added identity tests proving worker-parallel reports match serial reports
+    for the saturation-rule and candidate-uncertainty gates;
+  - documented the claim boundary: this parallelizes calibration/UQ report
+    rows, not quasilinear per-ky state extraction, which remains serial until
+    its own state-extraction identity gate exists.
+- Next best implementation steps:
+  - run the focused quasilinear/parallel/docs verification shard and push;
+  - regenerate the quasilinear saturation-rule and candidate-uncertainty
+    publication artifacts with ``--workers`` so their JSON companions record
+    the parallel identity contract;
+  - extend the same ``independent_map`` path to finite-difference sensitivity
+    and stellarator-optimization UQ ensembles after adding report-identity
+    tests for those workflows.

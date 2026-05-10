@@ -90,3 +90,19 @@ def test_linear_state_ridge_candidate_reports_under_sampled_gate(tmp_path: Path)
     assert report["promotion_gate"]["accepted_candidates"] == []
     assert report["promotion_gate"]["requires_candidate_eligibility"] is True
     assert ridge["rows"][0]["feature_names"] == list(mod.STATE_FEATURE_NAMES)
+
+
+def test_candidate_uncertainty_parallel_workers_match_serial(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    cases = []
+    for name, observed, weight in [("a", 3.0, 1.0), ("b", 6.0, 2.0), ("c", 9.0, 3.0), ("d", 12.0, 4.0)]:
+        spectrum, summary = _write_case(tmp_path, name, observed=observed, weight=weight)
+        cases.append(mod.SaturationCase(name, "holdout", name, spectrum, summary, None))
+
+    serial = mod.build_candidate_uncertainty_report(tuple(cases), candidates=("linear_weight",), workers=1)
+    parallel = mod.build_candidate_uncertainty_report(tuple(cases), candidates=("linear_weight",), workers=3)
+
+    assert parallel["parallel"]["workers"] == 3
+    assert parallel["null_training_mean_baseline"] == serial["null_training_mean_baseline"]
+    assert parallel["candidates"] == serial["candidates"]
+    assert parallel["promotion_gate"] == serial["promotion_gate"]

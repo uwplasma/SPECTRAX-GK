@@ -750,7 +750,12 @@ not a validated physical saturation rule.
 .. code-block:: bash
 
    python tools/plot_quasilinear_saturation_rule_sweep.py \
+     --workers 4 \
      --out docs/_static/quasilinear_saturation_rule_sweep.png
+
+``--workers`` parallelizes the independent case-row extraction while preserving
+the same ordered report as the serial run. It does not change the underlying
+quasilinear spectra, nonlinear window summaries, or validation gates.
 
 .. image:: _static/quasilinear_saturation_rule_sweep.png
    :alt: Quasilinear saturation-rule sweep across Cyclone, Cyclone Miller, HSX, W7-X, and D-shaped external VMEC
@@ -843,7 +848,12 @@ nonlinear heat-flux window. A candidate is promoted only if it:
 .. code-block:: bash
 
    python tools/plot_quasilinear_candidate_uncertainty.py \
+     --workers 4 \
      --out docs/_static/quasilinear_candidate_uncertainty.png
+
+``--workers`` parallelizes the leave-one-geometry-out holdout rows. The JSON
+report records the worker count and the identity contract; the numerical
+acceptance remains the same as the serial report.
 
 .. image:: _static/quasilinear_candidate_uncertainty.png
    :alt: Quasilinear candidate uncertainty gate
