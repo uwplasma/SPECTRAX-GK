@@ -3372,3 +3372,44 @@ Exit gate:
   - keep the next physics-scope expansion focused on either collision slices
     or linked-boundary/twist-shift communication, both as isolated gates before
     exposing them through the runtime route.
+- Added the electrostatic linear-slices engineering profile:
+  - added ``tools/profile_linear_rhs_parallel_slices.py`` and
+    ``tests/test_profile_linear_rhs_parallel_slices.py``;
+  - the tool times serial production ``linear_rhs_cached`` against the opt-in
+    Hermite-sharded ``backend="electrostatic_linear_slices"`` route on a
+    larger bounded CPU workload, while also recording identity errors;
+  - generated
+    ``docs/_static/linear_rhs_parallel_slices_profile.{png,pdf,csv,json}``;
+  - the tracked local profile passes the identity gate with
+    ``max_abs_error=4.132218691665912e-07``,
+    ``max_rel_error=1.0400418659628485e-06``, and zero potential error, but it
+    is not performant: ``serial_median_s=0.14060408296063542``,
+    ``sharded_median_s=3.856044082902372``, ``speedup=0.036463297601827566``.
+- Optimization result from this profile:
+  - removed one redundant electrostatic field solve from the composed backend
+    by reusing the precomputed ``phi`` in the streaming slice;
+  - the bounded profile improved from about ``0.033x`` to ``0.036x`` speedup,
+    which is still a negative result;
+  - next performance work should fuse or cache the current multiple
+    ``shard_map`` launches and mesh setup before broadening this route further.
+- Validation for this profile tranche so far:
+  - ``python -m pytest -q tests/test_profile_linear_rhs_parallel_slices.py``
+    passed under the 300-second cap;
+  - ``python -m pytest -q tests/test_velocity_sharding.py tests/test_generate_linear_rhs_electrostatic_slices_gate.py tests/test_profile_linear_rhs_parallel_slices.py``
+    passed under the 300-second cap with expected logical-device skips;
+  - targeted ``ruff check`` passed for the touched profiler, tests, and
+    backend source;
+  - ``python tools/generate_linear_rhs_electrostatic_slices_gate.py
+    --logical-devices 2 --out-prefix
+    docs/_static/linear_rhs_electrostatic_slices_gate`` regenerated the
+    passing identity artifact after the reuse patch;
+  - ``python tools/profile_linear_rhs_parallel_slices.py --logical-devices 2
+    --nl 4 --nm 16 --ny 8 --nz 32 --warmups 1 --repeats 3 --out-prefix
+    docs/_static/linear_rhs_parallel_slices_profile`` generated the tracked
+    engineering profile.
+- Next best implementation steps:
+  - run the bounded docs/test shard including the new profile test;
+  - commit/push the profile and reuse patch;
+  - start an implementation spike for a fused/cached Hermite-sharded
+    electrostatic RHS kernel, but keep the runtime default serial until a fresh
+    profile shows a real CPU or GPU speedup at numerical identity.

@@ -689,6 +689,27 @@ electrostatic linear-RHS identity gate for velocity-space parallelization. It
 is not a linked-boundary, collision, electromagnetic, nonlinear, or speedup
 claim.
 
+The matching engineering profile intentionally stays separate from the
+identity gate:
+
+.. image:: _static/linear_rhs_parallel_slices_profile.png
+   :alt: SPECTRAX-GK electrostatic linear-slices parallelization profile
+   :align: center
+
+It is regenerated with:
+
+.. code-block:: bash
+
+   python tools/profile_linear_rhs_parallel_slices.py --logical-devices 2
+
+The tracked CPU artifact keeps identity within tolerance but records
+``serial_median_s=1.41e-1``, ``sharded_median_s=3.86``, and
+``speedup=0.04x`` on the bounded local workload. This is a useful negative
+result: the current Hermite-sharded route is correct, but not performant on
+this workload. Do not use it for runtime claims until the multiple shard-map
+launches and mesh setup are fused or cached and a fresh profile shows a real
+speedup.
+
 Fixed-step nonlinear state sharding
 -----------------------------------
 
