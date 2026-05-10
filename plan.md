@@ -3240,3 +3240,39 @@ Exit gate:
     source, tools, and tests;
   - ``python -m sphinx -q -b html docs docs/_build/html`` passed under the
     300-second cap.
+- Continued the ninth parallelization implementation tranche with drift slices:
+  - added generic ``hermite_shift_reference`` and ``hermite_shift_shard_map``
+    for offset-1 and offset-2 Hermite exchanges;
+  - added ``mirror_drift_reference`` / ``mirror_drift_shard_map`` and
+    ``curvature_gradb_drift_reference`` /
+    ``curvature_gradb_drift_shard_map``;
+  - added unit coverage comparing those paths against production
+    ``mirror_contribution`` and ``curvature_gradb_contribution`` and against
+    multi-device shard-map references when logical devices are available;
+  - added ``tools/generate_electrostatic_drift_gate.py`` and generated
+    ``docs/_static/electrostatic_drift_gate.{png,pdf,csv,json}``;
+  - the tracked two-logical-CPU artifact passes with
+    ``phi_norm=0.12082028388977051`` and zero reported absolute/relative error
+    for mirror, curvature/grad-B, and total drift slices.
+- Validation for this tranche so far:
+  - ``python -m pytest -q tests/test_velocity_sharding.py tests/test_generate_electrostatic_drift_gate.py``
+    passed under the 300-second cap with expected logical-device skips;
+  - targeted ``ruff check --extend-ignore F401`` passed for the touched
+    source, tool, and tests;
+  - ``python tools/generate_electrostatic_drift_gate.py --logical-devices 2
+    --out-prefix docs/_static/electrostatic_drift_gate`` generated the tracked
+    passing artifact.
+- Next best implementation steps:
+  - run the bounded parallelization/docs verification shard for the drift gate;
+  - add a disabled-by-default ``backend="electrostatic_linear_slices"`` route
+    combining sharded field reduction, streaming, mirror, curvature, and
+    grad-B before diamagnetic/collision terms are added;
+  - keep diamagnetic, collisions, linked boundaries, electromagnetic terms, and
+    nonlinear brackets behind separate isolated gates.
+- Bounded verification after the drift gate:
+  - ``python -m pytest -q tests/test_parallel.py tests/test_velocity_sharding.py tests/test_generate_logical_cpu_parallel_scan_gate.py tests/test_generate_hermite_exchange_gate.py tests/test_generate_velocity_field_reduce_gate.py tests/test_generate_electrostatic_field_reduce_gate.py tests/test_generate_hermite_streaming_ladder_gate.py tests/test_generate_electrostatic_drift_gate.py tests/test_generate_periodic_streaming_microkernel_gate.py tests/test_generate_linear_rhs_streaming_gate.py tests/test_generate_linear_rhs_streaming_electrostatic_gate.py tests/test_runtime_config.py tests/test_runtime_runner.py::test_run_runtime_scan_parallel_config_selects_combined_ky tests/test_runtime_runner.py::test_run_runtime_scan_batch_ky_rejects_krylov``
+    passed under the 300-second cap;
+  - targeted ``ruff check --extend-ignore F401`` passed for the touched
+    source, tool, and tests;
+  - ``python -m sphinx -q -b html docs docs/_build/html`` passed under the
+    300-second cap.

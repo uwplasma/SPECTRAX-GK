@@ -202,6 +202,20 @@ The Hermite streaming-ladder coefficient gate is:
    gate; full linear streaming also needs the parallel derivative identity
    gate before production runtime wiring.
 
+The first electrostatic drift-slice gate is:
+
+.. code-block:: bash
+
+   python tools/generate_electrostatic_drift_gate.py --logical-devices 2
+
+.. figure:: _static/electrostatic_drift_gate.png
+   :alt: SPECTRAX-GK electrostatic drift-slice identity gate
+   :width: 100%
+
+   Hermite-sharded mirror and curvature/grad-B drift slices, including
+   offset-1 and offset-2 Hermite exchanges, compared against the production
+   linear RHS with only those terms enabled.
+
 The periodic streaming microkernel gate adds that field-line derivative:
 
 .. code-block:: bash

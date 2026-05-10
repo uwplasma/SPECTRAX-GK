@@ -9,12 +9,18 @@ import numpy as np
 import spectraxgk
 from spectraxgk.velocity_sharding import (
     build_velocity_sharding_plan,
+    curvature_gradb_drift_reference,
+    curvature_gradb_drift_shard_map,
     electrostatic_phi_reference,
     electrostatic_phi_shard_map,
     hermite_neighbor_reference,
     hermite_neighbor_shard_map,
+    hermite_shift_reference,
+    hermite_shift_shard_map,
     hermite_streaming_ladder_reference,
     hermite_streaming_ladder_shard_map,
+    mirror_drift_reference,
+    mirror_drift_shard_map,
     periodic_streaming_reference,
     periodic_streaming_shard_map,
     velocity_field_reduce_reference,
@@ -109,6 +115,35 @@ def test_hermite_neighbor_shard_map_matches_reference_when_logical_devices_avail
 
     np.testing.assert_allclose(np.asarray(lower), np.asarray(expected_lower))
     np.testing.assert_allclose(np.asarray(upper), np.asarray(expected_upper))
+
+
+def test_hermite_shift_reference_matches_manual_offsets() -> None:
+    state = jnp.arange(2 * 6 * 3 * 1 * 4, dtype=jnp.float32).reshape((2, 6, 3, 1, 4))
+
+    upper2 = hermite_shift_reference(state, offset=2)
+    lower2 = hermite_shift_reference(state, offset=-2)
+
+    expected_upper2 = np.zeros_like(np.asarray(state))
+    expected_lower2 = np.zeros_like(np.asarray(state))
+    expected_upper2[:, :-2, ...] = np.asarray(state)[:, 2:, ...]
+    expected_lower2[:, 2:, ...] = np.asarray(state)[:, :-2, ...]
+    np.testing.assert_allclose(np.asarray(upper2), expected_upper2)
+    np.testing.assert_allclose(np.asarray(lower2), expected_lower2)
+    assert spectraxgk.hermite_shift_reference is hermite_shift_reference
+    assert spectraxgk.hermite_shift_shard_map is hermite_shift_shard_map
+
+
+def test_hermite_shift_shard_map_matches_reference_when_logical_devices_available() -> None:
+    devices = jax.devices()
+    if len(devices) < 2:
+        pytest.skip("requires at least two JAX devices; artifact generator sets logical CPU devices")
+    state = (jnp.arange(2 * 8 * 3 * 1 * 4, dtype=jnp.float32).reshape((2, 8, 3, 1, 4)) + 1j).astype(jnp.complex64)
+    plan = build_velocity_sharding_plan(state.shape, num_devices=2, axes=("hermite",))
+
+    for offset in (-2, -1, 1, 2):
+        observed = hermite_shift_shard_map(state, plan, offset=offset, devices=devices[:2])
+        expected = hermite_shift_reference(state, offset=offset)
+        np.testing.assert_allclose(np.asarray(observed), np.asarray(expected))
 
 
 def test_hermite_neighbor_shard_map_rejects_unsupported_multi_axis_plan() -> None:
@@ -261,6 +296,140 @@ def test_electrostatic_phi_shard_map_matches_reference_when_logical_devices_avai
     )
 
     np.testing.assert_allclose(np.asarray(observed), np.asarray(expected), rtol=2.0e-6, atol=2.0e-6)
+
+
+def test_mirror_and_curvature_gradb_drift_shard_maps_match_production_terms() -> None:
+    from spectraxgk.linear import build_H
+    from spectraxgk.terms.linear_terms import curvature_gradb_contribution, mirror_contribution
+
+    state, cache, params = _small_periodic_field_problem()
+    phi = electrostatic_phi_reference(
+        state,
+        Jl=cache.Jl,
+        tau_e=params.tau_e,
+        charge=params.charge_sign,
+        density=params.density,
+        tz=params.tz,
+        mask0=cache.mask0,
+    )
+    H = build_H(state, cache.Jl, phi, jnp.asarray([params.tz]))
+    plan = build_velocity_sharding_plan(H.shape, num_devices=1, axes=("hermite",))
+    vth = jnp.asarray([params.vth], dtype=jnp.float32)
+    tz = jnp.asarray([params.tz], dtype=jnp.float32)
+
+    mirror_expected = mirror_contribution(
+        H[None, ...],
+        vth=vth,
+        bgrad=cache.bgrad,
+        ell=cache.l,
+        sqrt_m=cache.sqrt_m,
+        sqrt_m_p1=cache.sqrt_m_p1,
+        weight=jnp.asarray(1.0, dtype=jnp.float32),
+    )[0]
+    mirror_observed = mirror_drift_shard_map(
+        H,
+        plan,
+        vth=vth,
+        bgrad=cache.bgrad,
+        ell=cache.l,
+        sqrt_m=cache.sqrt_m,
+        sqrt_m_p1=cache.sqrt_m_p1,
+        devices=[jax.devices()[0]],
+    )
+    np.testing.assert_allclose(np.asarray(mirror_observed), np.asarray(mirror_expected), rtol=2.0e-6, atol=2.0e-6)
+
+    drift_expected = curvature_gradb_contribution(
+        H[None, ...],
+        tz=tz,
+        omega_d_scale=jnp.asarray(params.omega_d_scale, dtype=jnp.float32),
+        cv_d=cache.cv_d,
+        gb_d=cache.gb_d,
+        ell=cache.l,
+        m=cache.m,
+        imag=jnp.asarray(1j, dtype=H.dtype),
+        weight_curv=jnp.asarray(1.0, dtype=jnp.float32),
+        weight_gradb=jnp.asarray(1.0, dtype=jnp.float32),
+    )[0]
+    drift_observed = curvature_gradb_drift_shard_map(
+        H,
+        plan,
+        tz=tz,
+        omega_d_scale=params.omega_d_scale,
+        cv_d=cache.cv_d,
+        gb_d=cache.gb_d,
+        ell=cache.l,
+        m=cache.m,
+        devices=[jax.devices()[0]],
+    )
+    np.testing.assert_allclose(np.asarray(drift_observed), np.asarray(drift_expected), rtol=2.0e-6, atol=2.0e-6)
+    assert spectraxgk.mirror_drift_reference is mirror_drift_reference
+    assert spectraxgk.mirror_drift_shard_map is mirror_drift_shard_map
+    assert spectraxgk.curvature_gradb_drift_reference is curvature_gradb_drift_reference
+    assert spectraxgk.curvature_gradb_drift_shard_map is curvature_gradb_drift_shard_map
+
+
+def test_mirror_and_curvature_gradb_drift_shard_maps_match_reference_when_logical_devices_available() -> None:
+    from spectraxgk.linear import build_H
+
+    devices = jax.devices()
+    if len(devices) < 2:
+        pytest.skip("requires at least two JAX devices; artifact generator sets logical CPU devices")
+    state, cache, params = _small_periodic_field_problem()
+    phi = electrostatic_phi_reference(
+        state,
+        Jl=cache.Jl,
+        tau_e=params.tau_e,
+        charge=params.charge_sign,
+        density=params.density,
+        tz=params.tz,
+        mask0=cache.mask0,
+    )
+    H = build_H(state, cache.Jl, phi, jnp.asarray([params.tz]))
+    plan = build_velocity_sharding_plan(H.shape, num_devices=2, axes=("hermite",))
+    vth = jnp.asarray([params.vth], dtype=jnp.float32)
+    tz = jnp.asarray([params.tz], dtype=jnp.float32)
+
+    mirror_observed = mirror_drift_shard_map(
+        H,
+        plan,
+        vth=vth,
+        bgrad=cache.bgrad,
+        ell=cache.l,
+        sqrt_m=cache.sqrt_m,
+        sqrt_m_p1=cache.sqrt_m_p1,
+        devices=devices[:2],
+    )
+    mirror_expected = mirror_drift_reference(
+        H,
+        vth=vth,
+        bgrad=cache.bgrad,
+        ell=cache.l,
+        sqrt_m=cache.sqrt_m,
+        sqrt_m_p1=cache.sqrt_m_p1,
+    )
+    np.testing.assert_allclose(np.asarray(mirror_observed), np.asarray(mirror_expected), rtol=2.0e-6, atol=2.0e-6)
+
+    drift_observed = curvature_gradb_drift_shard_map(
+        H,
+        plan,
+        tz=tz,
+        omega_d_scale=params.omega_d_scale,
+        cv_d=cache.cv_d,
+        gb_d=cache.gb_d,
+        ell=cache.l,
+        m=cache.m,
+        devices=devices[:2],
+    )
+    drift_expected = curvature_gradb_drift_reference(
+        H,
+        tz=tz,
+        omega_d_scale=params.omega_d_scale,
+        cv_d=cache.cv_d,
+        gb_d=cache.gb_d,
+        ell=cache.l,
+        m=cache.m,
+    )
+    np.testing.assert_allclose(np.asarray(drift_observed), np.asarray(drift_expected), rtol=2.0e-6, atol=2.0e-6)
 
 
 def test_hermite_streaming_ladder_reference_matches_manual_coefficients() -> None:

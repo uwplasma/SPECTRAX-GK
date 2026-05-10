@@ -553,6 +553,25 @@ coefficient layer for a one-dimensional Hermite mesh. The next step is an
 opt-in linear streaming microkernel that includes the actual parallel
 derivative contract.
 
+The electrostatic drift-slice gate then uses offset-1 and offset-2 Hermite
+exchanges for mirror and curvature terms, together with the electrostatic
+field-reduction gate:
+
+.. image:: _static/electrostatic_drift_gate.png
+   :alt: SPECTRAX-GK electrostatic drift-slice identity gate
+   :align: center
+
+It is regenerated with:
+
+.. code-block:: bash
+
+   python tools/generate_electrostatic_drift_gate.py --logical-devices 2
+
+The tracked artifact passes with ``phi_norm=1.21e-1`` and zero reported
+absolute/relative error for the mirror, curvature/grad-B, and combined drift
+slices. This is a single-species periodic electrostatic identity gate, not a
+full-RHS, linked-boundary, electromagnetic, or nonlinear performance claim.
+
 The periodic linear-streaming microkernel gate then adds the spectral
 parallel derivative along the field-line direction and compares the resulting
 ``shard_map`` path directly against the production
