@@ -174,6 +174,19 @@ The paired field-reduction gate is:
    field-solve communication primitive before streaming-ladder and nonlinear
    RHS identity gates are attempted.
 
+The first production-field-solve reduction gate is:
+
+.. code-block:: bash
+
+   python tools/generate_electrostatic_field_reduce_gate.py --logical-devices 2
+
+.. figure:: _static/electrostatic_field_reduce_gate.png
+   :alt: SPECTRAX-GK electrostatic field-reduction identity gate
+   :width: 100%
+
+   Hermite-sharded ``m=0`` density reduction for the electrostatic
+   quasineutrality solve, compared against the production field solve.
+
 The Hermite streaming-ladder coefficient gate is:
 
 .. code-block:: bash
@@ -230,9 +243,9 @@ With a nonzero electrostatic response, use:
    :width: 100%
 
    Streaming plus electrostatic ``phi`` call-graph comparison. The field solve
-   is still the production serial electrostatic solve; this gate validates the
-   next Hermite velocity-sharded streaming slice before a sharded field-solve
-   path is introduced.
+   uses the Hermite-sharded electrostatic reduction gate; this validates the
+   next velocity-sharded streaming slice before drift and nonlinear terms are
+   introduced.
 
 Use the strong-scaling sweep helper to collect parallelization timings for the
 distributed linear RK2 loop:

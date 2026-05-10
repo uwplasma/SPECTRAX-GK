@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate an electrostatic streaming linear-RHS identity gate."""
+"""Generate a sharded electrostatic field-reduction identity gate."""
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ import numpy as np
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_PREFIX = REPO_ROOT / "docs" / "_static" / "linear_rhs_streaming_electrostatic_gate"
+DEFAULT_PREFIX = REPO_ROOT / "docs" / "_static" / "electrostatic_field_reduce_gate"
 
 
 def _json_clean(value: Any) -> Any:
@@ -49,11 +49,11 @@ def _block_until_ready(tree: Any) -> None:
             leaf.block_until_ready()
 
 
-def _streaming_only_terms() -> Any:
+def _field_only_terms() -> Any:
     from spectraxgk.linear import LinearTerms
 
     return LinearTerms(
-        streaming=1.0,
+        streaming=0.0,
         mirror=0.0,
         curvature=0.0,
         gradb=0.0,
@@ -74,7 +74,7 @@ def build_problem(
     nl: int,
     nm: int,
 ) -> tuple[Any, Any, Any, Any]:
-    """Build a periodic electrostatic streaming problem with nonzero phi."""
+    """Build a periodic electrostatic field problem with nonzero density."""
 
     import jax.numpy as jnp
 
@@ -92,12 +92,12 @@ def build_problem(
     state = jnp.zeros((int(nl), int(nm), grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64)
     ky_index = min(1, grid.ky.size - 1)
     state = state.at[0, 0, ky_index, 0, :].set(0.2 * jnp.exp(1j * z))
-    if int(nm) > 3 and int(nl) > 1:
-        state = state.at[1, 2, ky_index, 0, :].set(0.1 * jnp.exp(2j * z))
+    if int(nl) > 1:
+        state = state.at[1, 0, ky_index, 0, :].set(0.08 * jnp.exp(2j * z))
     return state, cache, params, grid
 
 
-def build_linear_rhs_streaming_electrostatic_gate(
+def build_electrostatic_field_reduce_gate(
     *,
     requested_devices: int,
     nx: int,
@@ -108,77 +108,76 @@ def build_linear_rhs_streaming_electrostatic_gate(
     atol: float,
     rtol: float,
 ) -> dict[str, object]:
-    """Compare serial streaming+phi RHS with the explicit velocity route."""
+    """Compare production phi with the Hermite-sharded density reduction."""
 
     import jax
     import jax.numpy as jnp
 
-    from spectraxgk.linear import linear_rhs_cached, linear_rhs_parallel_cached
-    from spectraxgk.runtime_config import RuntimeParallelConfig
-    from spectraxgk.velocity_sharding import build_velocity_sharding_plan
+    from spectraxgk.linear import linear_rhs_cached
+    from spectraxgk.velocity_sharding import build_velocity_sharding_plan, electrostatic_phi_shard_map
 
     device_list = list(jax.devices("cpu"))[: int(requested_devices)]
     if len(device_list) < int(requested_devices):
         raise RuntimeError(f"requested {requested_devices} CPU devices, but only {len(device_list)} are available")
     state, cache, params, grid = build_problem(nx=nx, ny=ny, nz=nz, nl=nl, nm=nm)
-    terms = _streaming_only_terms()
-    serial, phi_serial = linear_rhs_cached(state, cache, params, terms=terms, use_jit=True)
-    parallel_cfg = RuntimeParallelConfig(
-        strategy="velocity",
-        backend="streaming_electrostatic",
-        axis="hermite",
-        num_devices=len(device_list),
-    )
-    sharded, phi_sharded = linear_rhs_parallel_cached(
+    _rhs, phi_serial = linear_rhs_cached(
         state,
         cache,
         params,
-        terms=terms,
-        parallel=parallel_cfg,
-        use_custom_vjp=True,
+        terms=_field_only_terms(),
+        use_jit=False,
+        use_custom_vjp=False,
     )
-    _block_until_ready((serial, phi_serial, sharded, phi_sharded))
+    plan = build_velocity_sharding_plan(state.shape, num_devices=len(device_list), axes=("hermite",))
+    phi_sharded = electrostatic_phi_shard_map(
+        state,
+        plan,
+        Jl=cache.Jl,
+        tau_e=params.tau_e,
+        charge=params.charge_sign,
+        density=params.density,
+        tz=params.tz,
+        mask0=cache.mask0,
+        devices=device_list,
+    )
+    _block_until_ready((phi_serial, phi_sharded))
 
-    abs_err = jnp.max(jnp.abs(sharded - serial))
-    scale = jnp.max(jnp.abs(serial))
+    abs_err = jnp.max(jnp.abs(phi_sharded - phi_serial))
+    scale = jnp.max(jnp.abs(phi_serial))
     rel_err = abs_err / jnp.maximum(scale, jnp.asarray(1.0e-30, dtype=scale.dtype))
-    phi_abs_err = jnp.max(jnp.abs(phi_sharded - phi_serial))
     phi_norm = jnp.linalg.norm(phi_serial)
-    _block_until_ready((abs_err, rel_err, phi_abs_err, phi_norm))
+    _block_until_ready((abs_err, rel_err, phi_norm))
     max_abs_error = float(np.asarray(abs_err))
     max_rel_error = float(np.asarray(rel_err))
-    max_phi_abs_error = float(np.asarray(phi_abs_err))
     phi_norm_float = float(np.asarray(phi_norm))
-    identity_passed = bool(max_abs_error <= float(atol) and max_rel_error <= float(rtol) and max_phi_abs_error <= float(atol))
+    identity_passed = bool(max_abs_error <= float(atol) and max_rel_error <= float(rtol) and phi_norm_float > 0.0)
 
     ky_index = min(1, grid.ky.size - 1)
-    serial_trace = np.asarray(serial[0, :, ky_index, 0, 1])
-    sharded_trace = np.asarray(sharded[0, :, ky_index, 0, 1])
+    serial_trace = np.asarray(phi_serial[ky_index, 0, :])
+    sharded_trace = np.asarray(phi_sharded[ky_index, 0, :])
     rows = []
-    for m_idx in range(int(nm)):
+    for z_idx in range(grid.z.size):
         rows.append(
             {
-                "m": int(m_idx),
-                "serial_abs": float(abs(serial_trace[m_idx])),
-                "sharded_abs": float(abs(sharded_trace[m_idx])),
-                "abs_error": float(abs(sharded_trace[m_idx] - serial_trace[m_idx])),
+                "z_index": int(z_idx),
+                "serial_abs": float(abs(serial_trace[z_idx])),
+                "sharded_abs": float(abs(sharded_trace[z_idx])),
+                "abs_error": float(abs(sharded_trace[z_idx] - serial_trace[z_idx])),
             }
         )
 
-    plan = build_velocity_sharding_plan(state.shape, num_devices=len(device_list), axes=("hermite",))
     return _json_clean(
         {
-            "case": "Electrostatic streaming linear-RHS shard-map identity gate",
-            "source": "spectraxgk.linear.linear_rhs_parallel_cached backend=streaming_electrostatic",
-            "reference_source": "spectraxgk.linear.linear_rhs_cached with only streaming enabled",
-            "claim_scope": "streaming plus electrostatic field-solve call-graph identity, not a full-RHS or nonlinear speedup claim",
+            "case": "Electrostatic Hermite-sharded field-reduction identity gate",
+            "source": "spectraxgk.velocity_sharding.electrostatic_phi_shard_map",
+            "reference_source": "spectraxgk.linear.linear_rhs_cached production electrostatic field solve",
+            "claim_scope": "single-species electrostatic phi field-reduction identity, not a full RHS or nonlinear speedup claim",
             "state_shape": tuple(int(x) for x in state.shape),
             "grid": {"Nx": int(nx), "Ny_requested": int(ny), "Ny_actual": int(grid.ky.size), "Nz": int(grid.z.size)},
             "requested_devices": int(requested_devices),
             "actual_devices": len(device_list),
             "plan": plan.to_dict(),
             "phi_norm": phi_norm_float,
-            "max_phi_abs_error": max_phi_abs_error,
             "max_abs_error": max_abs_error,
             "max_rel_error": max_rel_error,
             "atol": float(atol),
@@ -186,9 +185,8 @@ def build_linear_rhs_streaming_electrostatic_gate(
             "identity_passed": identity_passed,
             "rows": rows,
             "notes": (
-                "Only streaming is enabled. The state includes an m=0 density perturbation, so phi is nonzero. "
-                "The electrostatic field solve uses the Hermite-sharded field-reduction path gated separately by "
-                "tools/generate_electrostatic_field_reduce_gate.py."
+                "The sharded path selects the global m=0 density moment on the Hermite mesh, "
+                "reduces it with lax.psum, and applies the electrostatic quasineutrality denominator."
             ),
         }
     )
@@ -215,24 +213,24 @@ def write_artifacts(summary: dict[str, object], out_prefix: Path) -> dict[str, s
         writer.writeheader()
         writer.writerows(rows)
 
-    m = np.asarray([row["m"] for row in rows], dtype=float)
+    z = np.asarray([row["z_index"] for row in rows], dtype=float)
     serial = np.asarray([row["serial_abs"] for row in rows], dtype=float)
     sharded = np.asarray([row["sharded_abs"] for row in rows], dtype=float)
     error = np.asarray([row["abs_error"] for row in rows], dtype=float)
 
     set_plot_style()
     fig, axes = plt.subplots(1, 2, figsize=(10.4, 3.8), constrained_layout=True)
-    axes[0].plot(m, serial, "s-", lw=1.8, label="serial streaming+phi")
-    axes[0].plot(m, sharded, "^--", lw=1.8, label="velocity route")
-    axes[0].set_xlabel("Hermite index m")
-    axes[0].set_ylabel("absolute value")
-    axes[0].set_title("Electrostatic streaming RHS")
+    axes[0].plot(z, serial, "s-", lw=1.8, label="serial phi")
+    axes[0].plot(z, sharded, "^--", lw=1.8, label="sharded phi")
+    axes[0].set_xlabel("z index")
+    axes[0].set_ylabel("|phi|")
+    axes[0].set_title("Electrostatic field reduction")
     axes[0].legend(frameon=False, fontsize=8)
 
-    axes[1].semilogy(m, np.maximum(error, 1.0e-16), "s-", lw=2.0, label="absolute error")
+    axes[1].semilogy(z, np.maximum(error, 1.0e-16), "s-", lw=2.0, label="absolute error")
     axes[1].axhline(float(summary["atol"]), ls=":", lw=1.2, color="0.25", label="abs gate")
     status = "passed" if bool(summary["identity_passed"]) else "failed"
-    axes[1].set_xlabel("Hermite index m")
+    axes[1].set_xlabel("z index")
     axes[1].set_ylabel("absolute error")
     axes[1].set_title(f"Identity gate {status}")
     axes[1].legend(frameon=False, fontsize=8)
@@ -259,7 +257,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--ny", type=int, default=4)
     parser.add_argument("--nx", type=int, default=1)
     parser.add_argument("--nz", type=int, default=16)
-    parser.add_argument("--atol", type=float, default=2.0e-5)
+    parser.add_argument("--atol", type=float, default=2.0e-6)
     parser.add_argument("--rtol", type=float, default=2.0e-6)
     return parser
 
@@ -267,7 +265,7 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> None:
     args = build_parser().parse_args()
     _configure_logical_cpu_devices(args.logical_devices)
-    summary = build_linear_rhs_streaming_electrostatic_gate(
+    summary = build_electrostatic_field_reduce_gate(
         requested_devices=int(args.logical_devices),
         nx=int(args.nx),
         ny=int(args.ny),

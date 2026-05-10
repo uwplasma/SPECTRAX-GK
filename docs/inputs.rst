@@ -494,9 +494,9 @@ diagnostic: ``strategy = "velocity"``, ``axis = "hermite"``, and
 is accepted only by ``spectraxgk.linear_rhs_parallel_cached`` with all
 non-streaming linear terms disabled, and is used to gate the Hermite streaming
 communication path before full field-solve, drift, collision, and nonlinear
-decompositions are exposed. The electrostatic backend solves ``phi`` with the
-serial production field solve and therefore is not yet a sharded field-solve
-claim.
+decompositions are exposed. The electrostatic backend uses the single-species
+Hermite-sharded electrostatic field-reduction gate and remains limited to
+periodic 5D electrostatic states.
 
 For independent scan, sensitivity, and UQ workloads, use
 ``spectraxgk.batch_map`` and require a serial identity artifact before using
