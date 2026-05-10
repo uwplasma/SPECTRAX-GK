@@ -31,6 +31,21 @@ def test_batch_map_matches_vmap_on_single_device() -> None:
     assert np.allclose(np.asarray(observed), np.asarray(expected))
 
 
+def test_batch_map_matches_vmap_for_pytree_outputs_single_device() -> None:
+    values = jnp.linspace(0.0, 1.0, 6)
+
+    def fn(x):
+        return {
+            "features": jnp.asarray([x, x**2 + 1.0]),
+            "moments": (x + 2.0, jnp.asarray([x - 1.0])),
+        }
+
+    observed = parallel.batch_map(fn, values, batch_size=2, devices=[jax.devices()[0]])
+    expected = jax.vmap(fn)(values)
+
+    jax.tree_util.tree_map(lambda obs, exp: np.testing.assert_allclose(np.asarray(obs), np.asarray(exp)), observed, expected)
+
+
 def test_pad_to_multiple_preserves_prefix_and_reports_original_size() -> None:
     padded, original_n = parallel.pad_to_multiple(jnp.asarray([1.0, 2.0, 3.0]), 4)
 
@@ -66,6 +81,27 @@ def test_batch_map_multi_device_branch_preserves_vmap_identity(monkeypatch) -> N
     expected = jax.vmap(fn)(values)
 
     assert np.allclose(np.asarray(observed), np.asarray(expected))
+
+
+def test_batch_map_multi_device_branch_preserves_pytree_identity(monkeypatch) -> None:
+    def fake_pmap(fn, devices):
+        assert len(devices) == 2
+
+        def mapped(sharded):
+            return jax.tree_util.tree_map(lambda *parts: jnp.stack(parts, axis=0), *[fn(shard) for shard in sharded])
+
+        return mapped
+
+    monkeypatch.setattr(parallel.jax, "pmap", fake_pmap)
+    values = jnp.linspace(0.0, 1.0, 5)
+
+    def fn(x):
+        return {"field": jnp.asarray([x, x + 1.0]), "flux": x**2}
+
+    observed = parallel.batch_map(fn, values, batch_size=3, devices=[object(), object()])
+    expected = jax.vmap(fn)(values)
+
+    jax.tree_util.tree_map(lambda obs, exp: np.testing.assert_allclose(np.asarray(obs), np.asarray(exp)), observed, expected)
 
 
 def test_parallel_helpers_reject_invalid_inputs() -> None:

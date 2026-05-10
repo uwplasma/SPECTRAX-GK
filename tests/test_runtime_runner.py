@@ -25,6 +25,7 @@ from spectraxgk.runtime import (
     _gx_periodic_zp,
     _infer_runtime_nonlinear_steps,
     RuntimeLinearResult,
+    RuntimeLinearScanResult,
     build_runtime_geometry,
     build_runtime_linear_params,
     build_runtime_linear_terms,
@@ -39,6 +40,7 @@ from spectraxgk.runtime_config import (
     RuntimeConfig,
     RuntimeExpertConfig,
     RuntimeNormalizationConfig,
+    RuntimeParallelConfig,
     RuntimePhysicsConfig,
     RuntimeSpeciesConfig,
     RuntimeTermsConfig,
@@ -3303,6 +3305,36 @@ def test_run_runtime_scan_serial_forwards_per_ky(monkeypatch: pytest.MonkeyPatch
     assert len(calls) == 2
     assert calls[0]["ky_target"] == pytest.approx(0.15)
     assert calls[1]["ky_target"] == pytest.approx(0.35)
+    assert calls[0]["sample_stride"] == 2
+    np.testing.assert_allclose(out.gamma, [1.15, 1.35])
+    np.testing.assert_allclose(out.omega, [-2.15, -2.35])
+
+
+def test_run_runtime_scan_parallel_config_selects_combined_ky(monkeypatch: pytest.MonkeyPatch) -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        species=(RuntimeSpeciesConfig(name="ion"),),
+        normalization=RuntimeNormalizationConfig(contract="cyclone"),
+        parallel=RuntimeParallelConfig(strategy="combined-ky"),
+    )
+    calls: list[dict[str, object]] = []
+
+    def _fake_run_runtime_scan_batch(_cfg, ky_arr, **kwargs):
+        calls.append({"ky_arr": np.asarray(ky_arr), **kwargs})
+        return RuntimeLinearScanResult(
+            ky=np.asarray(ky_arr, dtype=float),
+            gamma=np.asarray(ky_arr, dtype=float) + 1.0,
+            omega=-(np.asarray(ky_arr, dtype=float) + 2.0),
+        )
+
+    import spectraxgk.runtime as runtime
+
+    monkeypatch.setattr(runtime, "_run_runtime_scan_batch", _fake_run_runtime_scan_batch)
+
+    out = run_runtime_scan(cfg, ky_values=[0.15, 0.35], solver="time", sample_stride=2)
+
+    assert len(calls) == 1
+    np.testing.assert_allclose(calls[0]["ky_arr"], [0.15, 0.35])
     assert calls[0]["sample_stride"] == 2
     np.testing.assert_allclose(out.gamma, [1.15, 1.35])
     np.testing.assert_allclose(out.omega, [-2.15, -2.35])

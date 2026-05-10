@@ -441,6 +441,138 @@ reports observed speedup as an engineering metric. The gate intentionally does
 not claim nonlinear domain scaling; that remains a separate communication and
 FFT-decomposition problem.
 
+The complementary logical-CPU gate exercises the public
+``RuntimeParallelConfig`` and ``batch_map`` interface on a structured JAX
+pytree output. It is not a gyrokinetic physics validation; it verifies that the
+parallel API preserves serial numerical identity for independent scan/UQ-style
+workloads before those workloads are connected to heavier solver paths.
+
+.. image:: _static/logical_cpu_parallel_scan_gate.png
+   :alt: SPECTRAX-GK logical CPU parallel scan identity gate
+   :align: center
+
+It is regenerated with:
+
+.. code-block:: bash
+
+   python tools/generate_logical_cpu_parallel_scan_gate.py --logical-devices 2
+
+The tracked artifact used two logical CPU devices and passed the identity gate:
+``max_gamma_rel_error=6.7e-8``, ``max_ql_rel_error=1.1e-7``, and
+``max_omega_abs_error=0``. The observed timing is retained as engineering
+metadata only; a speedup claim requires a solver-backed workload and fresh
+CPU/GPU profiler artifacts.
+
+The production nonlinear-decomposition plan follows the same conservative
+rule. ``spectraxgk.build_velocity_sharding_plan`` records a GX-inspired
+species-first, Hermite-second velocity-space layout, including which axes need
+Hermite ghost exchange and which axes need field-solve reductions and
+broadcasts. This is planning metadata, not yet a nonlinear speedup path. It is
+used to keep future ``shard_map`` work explicit about communication before any
+transport-runtime claim is made.
+
+The first concrete communication-kernel gate is the Hermite ghost exchange.
+It uses ``jax.shard_map`` to exchange nearest-neighbor Hermite moments across a
+two-device logical CPU mesh and compares the result against the full-array
+reference shift with zero physical boundaries:
+
+.. image:: _static/hermite_exchange_gate.png
+   :alt: SPECTRAX-GK Hermite ghost-exchange identity gate
+   :align: center
+
+It is regenerated with:
+
+.. code-block:: bash
+
+   python tools/generate_hermite_exchange_gate.py --logical-devices 2
+
+The tracked artifact passes with zero reported lower/upper neighbor error. It
+only validates the communication primitive. A production nonlinear
+velocity-space decomposition still needs field-reduction/broadcast gates,
+streaming-operator identity gates, full-RHS identity gates, and profiler
+artifacts before any speedup claim.
+
+The matching velocity-space field-reduction gate validates the second required
+communication primitive. It reduces the Hermite-sharded local contributions
+with ``lax.psum`` and compares against the full-array reference sum:
+
+.. image:: _static/velocity_field_reduce_gate.png
+   :alt: SPECTRAX-GK velocity field-reduction identity gate
+   :align: center
+
+It is regenerated with:
+
+.. code-block:: bash
+
+   python tools/generate_velocity_field_reduce_gate.py --logical-devices 2
+
+The tracked artifact passes with ``max_abs_error=3.9e-6`` under an absolute
+tolerance of ``1e-5``. This tolerance reflects expected float32 roundoff from a
+different reduction tree; it is not a physics tolerance. The next gate must
+combine Hermite exchange and field reduction with the actual streaming
+coefficients.
+
+That coefficient gate is now tracked separately. It applies the
+``sqrt(m+1)`` upper-neighbor and ``sqrt(m)`` lower-neighbor Hermite streaming
+ladder on top of the shard-map exchange and records the paired field-reduction
+error:
+
+.. image:: _static/hermite_streaming_ladder_gate.png
+   :alt: SPECTRAX-GK Hermite streaming-ladder identity gate
+   :align: center
+
+It is regenerated with:
+
+.. code-block:: bash
+
+   python tools/generate_hermite_streaming_ladder_gate.py --logical-devices 2
+
+The tracked artifact passes with zero ladder error and records an accompanying
+Hermite field-reduction error of ``1.9e-6``. This closes the communication and
+coefficient layer for a one-dimensional Hermite mesh. The next step is an
+opt-in linear streaming microkernel that includes the actual parallel
+derivative contract.
+
+The periodic linear-streaming microkernel gate then adds the spectral
+parallel derivative along the field-line direction and compares the resulting
+``shard_map`` path directly against the production
+``spectraxgk.terms.operators.streaming_term``:
+
+.. image:: _static/periodic_streaming_microkernel_gate.png
+   :alt: SPECTRAX-GK periodic streaming microkernel identity gate
+   :align: center
+
+It is regenerated with:
+
+.. code-block:: bash
+
+   python tools/generate_periodic_streaming_microkernel_gate.py --logical-devices 2
+
+The tracked artifact passes with zero reported absolute and relative error.
+This is still a linear streaming microkernel gate, not a full linear RHS or
+nonlinear performance claim.
+
+The next release gate exercises the same periodic streaming path through the
+production ``linear_rhs_cached`` call graph. The artifact disables all
+non-streaming terms, keeps electromagnetic channels off, and uses non-density
+Hermite moments so that the electrostatic field solve is exactly zero:
+
+.. image:: _static/linear_rhs_streaming_gate.png
+   :alt: SPECTRAX-GK streaming-only linear RHS identity gate
+   :align: center
+
+It is regenerated with:
+
+.. code-block:: bash
+
+   python tools/generate_linear_rhs_streaming_gate.py --logical-devices 2
+
+The tracked artifact passes with ``max_abs_error=9.7e-7``,
+``max_rel_error=5.6e-7``, and ``phi_norm=0``. This closes a streaming-only
+linear-RHS identity gate. It deliberately does not claim full-RHS, nonlinear,
+or production speedup parity; those remain separate gates with additional
+field-solve, drive, collision, bracket, and profiler coverage.
+
 Fixed-step nonlinear state sharding
 -----------------------------------
 

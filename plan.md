@@ -63,6 +63,442 @@ Only make claims at the level supported by gates:
 
 Do not claim universal nonlinear flux prediction. Do not claim production stellarator optimization until multi-surface, multi-alpha, kinetic-electron and nonlinear audit gates pass.
 
+## Ordered Execution Plan From 2026-05-10 Deep Audit
+
+This section fixes the execution order for the next development cycle. Work
+should be tackled in this order unless a blocking defect in an earlier lane
+forces a short prerequisite patch:
+
+1. parallelization;
+2. refactor completion;
+3. differentiable geometry extension;
+4. docs and examples;
+5. quasilinear absolute-flux promotion;
+6. performance;
+7. W7-X zonal long-window recurrence/damping;
+8. W7-X fluctuation/TEM/multi-flux-tube extension.
+
+The ordering is intentional. Parallelization touches solver state layout and
+therefore should happen before further module extraction. Refactor completion
+then makes geometry, quasilinear, documentation, and validation lanes easier to
+maintain. Physics claim expansion comes only after the code paths are modular,
+tested, and traceable.
+
+### Source, Code, And Literature Audit Snapshot
+
+Current SPECTRAX-GK state:
+
+- Existing independent-work helpers live in `src/spectraxgk/parallel.py`.
+  They cover `batch_map`, `ky_scan_batches`, padding, and deterministic
+  ordering for independent scans and UQ-style workloads.
+- Existing state-sharding helpers live in `src/spectraxgk/sharding.py` and
+  `src/spectraxgk/sharded_integrators.py`. They provide `NamedSharding` /
+  `PartitionSpec` state placement and fixed-step linear/nonlinear pjit scans.
+- Current nonlinear config exposure is intentionally limited by
+  `src/spectraxgk/runners.py` to `state_sharding in {auto, ky, kx, none}`;
+  `z` is rejected because FFT-axis sharding has no identity gate.
+- Current office two-GPU artifact
+  `docs/_static/nonlinear_sharding_profile_office_gpu.json` passes final-state
+  identity but only gives a best bounded `kx` engineering speedup near `1.03x`.
+  It is not a production nonlinear speedup claim.
+- Focused local validation on 2026-05-10 passed:
+  `python -m pytest -q tests/test_parallel.py tests/test_sharding.py tests/test_sharded_integrators.py tests/test_generate_parallel_ky_scan_gate.py tests/test_profile_nonlinear_sharding.py tests/test_nonlinear_sharding_artifacts.py`
+  with `30` tests passing.
+
+GX source-code audit on `ssh office`:
+
+- GX multi-GPU documentation states that parallelization is over species and
+  Hermite indices, with species decomposition prioritized and exact
+  divisibility constraints for `Nspecies`, `Nm`, and GPU count:
+  https://gx.readthedocs.io/en/latest/MultiGPU.html
+- `/home/rjorge/GX/src/grids.cu` implements this policy with `nprocs_s`,
+  `nprocs_m`, `iproc_s`, `iproc_m`, species ranges, Hermite ranges, and
+  `m_ghost` cells.
+- `/home/rjorge/GX/src/moments.cu` exchanges Hermite ghost cells through MPI
+  or NCCL with nearest-neighbor and second-neighbor transfers when required.
+- `/home/rjorge/GX/src/solver.cu` performs reductions over the sharded
+  species/moment layout, then broadcasts fields back to the devices.
+- `/home/rjorge/GX/src/nonlinear.cu` keeps the spatial/spectral grid local
+  while looping over the local Hermite block. This avoids distributed FFTs in
+  the first production multi-GPU strategy.
+
+JAX documentation audit:
+
+- `shard_map` is the right API for explicit SPMD collectives and debugging
+  because it exposes per-shard inputs, explicit `psum`, `ppermute`, and output
+  sharding checks:
+  https://docs.jax.dev/en/latest/notebooks/shard_map.html
+- `pmap` works but current JAX docs recommend `shard_map` or `smap` for new
+  code because `pmap` is implemented on top of `jit` and `shard_map`:
+  https://docs.jax.dev/en/latest/_autosummary/jax.pmap.html
+- Multi-process/multi-host JAX requires `jax.distributed.initialize()` and the
+  same collective order on every process:
+  https://docs.jax.dev/en/latest/multi_process.html
+- `Mesh`, `NamedSharding`, and `PartitionSpec` remain the common sharding
+  vocabulary for automatic and explicit partitioning:
+  https://docs.jax.dev/en/latest/jax.sharding.html
+
+Other gyrokinetic/HPC anchors:
+
+- The GX paper motivates the spectral Laguerre-Hermite velocity formulation and
+  GPU-native implementation for time-to-solution and design studies:
+  https://arxiv.org/abs/2209.06731
+- GKW documents parallelization over the distribution-function grid and
+  species, reinforcing that species/velocity decomposition is a standard
+  continuum gyrokinetic path:
+  https://www.sciencedirect.com/science/article/pii/S0010465509002112
+- ORB5 and TRIMEG-GKX emphasize that production gyrokinetic codes need explicit
+  data-structure refactors before portable CPU/GPU scaling claims:
+  https://arxiv.org/abs/1908.02219
+  https://arxiv.org/abs/2504.21837
+- W7-X validation scope is anchored by the stella/GENE W7-X benchmark:
+  https://arxiv.org/abs/2107.06060
+- Quasilinear absolute-flux claims are anchored by Parker et al. saturation-rule
+  comparisons and must remain calibrated/held-out, not universal:
+  https://arxiv.org/abs/2308.09181
+- Stellarator optimization claim scope is anchored by direct microstability
+  optimization and nonlinear turbulence optimization:
+  https://arxiv.org/abs/2301.09356
+  https://arxiv.org/abs/2310.18842
+
+Local differentiable-geometry audit:
+
+- `/Users/rogeriojorge/local/vmec_jax` has fixed-boundary and free-boundary
+  JAX VMEC workflows, quasisymmetry optimization examples, exact/discrete
+  adjoint planning, and boundary-parameter APIs.
+- `/Users/rogeriojorge/local/booz_xform_jax` has JAX-native Boozer transform
+  APIs, VMEC-object input support, Jacobian sensitivity examples, and
+  autodiff optimization examples.
+- SPECTRAX-GK already has a large differentiable bridge in
+  `src/spectraxgk/geometry/differentiable.py` and gradient gates in
+  `src/spectraxgk/solver_objective_gradients.py`, but production nonlinear
+  heat-flux transport-average gradients are still not promoted.
+
+### Lane 1: Parallelization
+
+Goal: convert the current identity-gated engineering sharding into a production
+parallelization strategy that works on CPU and GPU while preserving physics
+outputs exactly within gate tolerances.
+
+1. Freeze the claim policy.
+   - Keep current `kx`/`ky` whole-state pjit sharding as an engineering
+     identity/profiling artifact only.
+   - Do not use it for broad nonlinear speedup claims until larger matched
+     CPU/GPU sweeps and profiler traces pass.
+   - Keep `z`/FFT-axis sharding disabled in runtime config.
+
+2. Formalize a `ParallelConfig`.
+   - Add a config dataclass with fields for `strategy`, `axis`, `num_devices`,
+     `batch_size`, `strict_identity`, `profile`, and `backend`.
+   - Wire it through runtime scan, quasilinear scan, UQ ensemble, and
+     optimization examples without changing default serial behavior.
+   - Preserve `spectraxgk.batch_map` and `spectraxgk.ky_scan_batches` as
+     public stable helpers.
+
+3. Finish production independent-work parallelism.
+   - Extend independent batching to linear `ky` scans, quasilinear spectra,
+     saturation-rule sweeps, UQ covariance ensembles, and optimization
+     population/member evaluations.
+   - Add deterministic padding/trimming tests for scalar, vector, and pytree
+     outputs.
+   - Add serial identity gates for `gamma`, `omega`, eigenfunction phase-invariant
+     norms, quasilinear heat/particle weights, and UQ covariance summaries.
+   - Add local CPU logical-device artifact with
+     `XLA_FLAGS=--xla_force_host_platform_device_count=2,4,8`.
+   - Add office GPU artifact with `CUDA_VISIBLE_DEVICES=0,1`.
+
+4. Prototype GX-inspired velocity/species sharding.
+   - Add a new module, likely `src/spectraxgk/velocity_sharding.py`.
+   - Implement a decomposition planner with GX-like priorities:
+     species first, Hermite `m` second, optional Laguerre `l` only after
+     species/moment gates pass.
+   - Require exact divisibility or pad only when padding is mathematically
+     invisible to the solver and diagnostics.
+   - Keep `kx`, `ky`, and `z` replicated initially to avoid distributed FFTs.
+   - Use `shard_map` for explicit control and `check_vma=True` where possible.
+   - Use `lax.psum` for field-density/current reductions.
+   - Use `lax.ppermute` or equivalent neighbor collectives for Hermite ghost
+     exchange.
+
+5. Add a linear RHS sharding gate before time integration.
+   - Build minimal states with one and two species and several Hermite blocks.
+   - Compare serial RHS vs sharded RHS for electrostatic adiabatic, full
+     kinetic-electron electrostatic, and electromagnetic-coupling disabled and
+     enabled paths where supported.
+   - Gate density/current reductions and field replication separately.
+   - Gate Hermite streaming/collision/closure ghost exchange separately.
+   - Run locally on logical CPU devices and on office two-GPU.
+
+6. Add fixed-step linear and nonlinear time gates.
+   - Start with fixed-step RK2/RK3 only, not adaptive diffrax.
+   - Gate one-step identity, multi-step identity, and diagnostic identity.
+   - For nonlinear runs, compare heat-flux window means, window CV, free-energy
+     change, `Wphi_kx/ky` spectra, and final state.
+   - Use Cyclone first, then Cyclone Miller, KBM, W7-X, and HSX.
+
+7. Add parallel autodiff gates.
+   - Check `jax.grad`, `jax.jvp`, and `jax.vjp` through independent parallel
+     scans and through the velocity/species sharded linear objective.
+   - Compare AD vs central finite differences for `gamma`, `omega`,
+     `kperp_eff`, quasilinear weights, and selected geometry-derived
+     observables.
+
+8. Add multi-host as post-single-host extension.
+   - Use `jax.distributed.initialize()` only after single-host CPU/GPU gates
+     pass.
+   - Add SLURM/OpenMPI launcher examples for office or cluster environments.
+   - Require all processes to execute identical collectives in identical order.
+
+9. Parallelization exit gates.
+   - `tests/test_parallel.py`, `tests/test_sharding.py`,
+     `tests/test_sharded_integrators.py`, and new velocity-sharding tests pass.
+   - `parallel_ky_scan_gate` passes on serial, local logical CPU devices, and
+     office GPU.
+   - New velocity/species linear RHS identity gate passes.
+   - Nonlinear fixed-step identity gate passes at least Cyclone and one
+     stellarator case.
+   - CPU/GPU speedup curves are published only if identity gates pass.
+
+### Lane 2: Refactor Completion
+
+Goal: make the codebase easier to test and extend while preserving all physics
+and benchmark behavior.
+
+1. Freeze public behavior with compatibility tests.
+   - Before each extraction, add a test against the current public API and
+     artifact schema.
+   - Keep compatibility exports in `src/spectraxgk/__init__.py`.
+
+2. Split runtime orchestration.
+   - Extract input/config parsing, run dispatch, restart handling, progress/ETA,
+     artifact writing, and plotting hooks out of `runtime.py`.
+   - Add tests for default executable behavior, default TOML selection, restart
+     continuation, ETA output, and plot artifact dispatch.
+
+3. Split linear assembly.
+   - Move geometry cache construction, linked parallel derivative maps,
+     field solves, velocity operators, and branch/frequency extraction into
+     tested submodules.
+   - Keep operator-level tests tied to equations and branch-continuity gates.
+
+4. Split nonlinear assembly.
+   - Separate bracket transforms, field solve calls, diagnostic extraction,
+     Hermitian projection, spectral/grid Laguerre modes, and fixed-step
+     integrators.
+   - Preserve current profiler labels so performance artifacts remain
+     comparable.
+
+5. Split benchmark policy.
+   - Break `benchmarks.py` into data loading, fit metrics, window metrics,
+     gate reports, and figure builders.
+   - Keep all benchmark tolerance policy machine-readable.
+
+6. Refactor exit gates.
+   - No public API breakage.
+   - Full fast CI shards pass.
+   - Package-wide coverage remains at or above `95%`.
+   - Benchmark/readme figures regenerate with unchanged accepted metrics unless
+     a deliberate physics bug fix is logged.
+
+### Lane 3: Differentiable Geometry Extension
+
+Goal: move from a closed zero-beta equal-arc bridge to a broader, derivative
+checked `vmec_jax -> booz_xform_jax -> SPECTRAX-GK` optimization pipeline.
+
+1. Stabilize backend discovery.
+   - Keep explicit `SPECTRAX_VMEC_JAX_PATH` and
+     `SPECTRAX_BOOZ_XFORM_JAX_PATH` overrides.
+   - Add tests that prefer local editable checkouts over stale site packages.
+
+2. Promote in-memory VMEC/Boozer contracts.
+   - Avoid writing `wout`/`boozmn` files in differentiable examples unless the
+     example is explicitly demonstrating compatibility output.
+   - Require `mboz,nboz >= 21` for manuscript-facing Boozer gates.
+   - Add finite-beta pressure/drift convention checks before finite-beta
+     optimization claims.
+
+3. Extend solver-objective gradients.
+   - Keep current linear frequency and quasilinear gradient gates.
+   - Add multi-surface and multi-alpha reduced-objective gradients.
+   - Add local conditioning diagnostics for each differentiated observable.
+   - Keep compact nonlinear startup-window FD artifacts labeled as plumbing
+     only.
+
+4. Add production nonlinear transport-gradient prerequisites.
+   - Require post-transient heat-flux running averages.
+   - Require window convergence in time and grid resolution.
+   - Require AD/FD or adjoint/finite-difference agreement on the final
+     promoted nonlinear observable.
+   - Require nonlinear audits of optimized equilibria before claiming
+     stellarator heat-flux optimization.
+
+5. Geometry extension exit gates.
+   - Geometry array parity passes for VMEC/EIK imports and in-memory
+     VMEC/Boozer outputs.
+   - AD/FD gates pass for `gamma`, `omega`, `kperp_eff`, quasilinear weights,
+     and selected reduced nonlinear-window observables.
+   - Docs clearly distinguish reduced differentiable objectives from full
+     nonlinear transport-average objectives.
+
+### Lane 4: Docs And Examples
+
+Goal: make every accepted capability easy to run, inspect, reproduce, and cite.
+
+1. Add a dedicated `docs/parallelization.rst`.
+   - Cover independent batches, logical CPU devices, office/multi-GPU use,
+     identity gates, current limitations, and profiler workflow.
+   - Move long parallelization details out of `docs/performance.rst` while
+     keeping performance plots there.
+
+2. Add examples.
+   - `examples/parallelization/linear_ky_scan_parallel.py`.
+   - `examples/parallelization/quasilinear_uq_ensemble_parallel.py`.
+   - `examples/parallelization/nonlinear_velocity_sharding_identity.py` after
+     Lane 1 gates pass.
+   - `examples/geometry/vmec_jax_boozer_flux_tube_bridge.py`.
+   - `examples/quasilinear/calibrated_holdout_workflow.py`.
+
+3. Add publication artifact docs.
+   - Every figure gets a generator command, JSON/CSV companion, acceptance
+     criteria, and claim scope.
+   - README keeps only high-information figures; docs hold the full figure
+     stack and caveats.
+
+4. Docs/examples exit gates.
+   - `sphinx-build -b html docs docs/_build/html -q` passes.
+   - Example smoke tests run under bounded CI or are explicitly marked
+     `slow`/manual with replay artifacts.
+   - README claim surface matches `docs/_static/manuscript_readiness_status.json`
+     and `docs/_static/open_research_lane_status.json`.
+
+### Lane 5: Quasilinear Absolute-Flux Promotion
+
+Goal: promote only saturation models that survive converged nonlinear holdouts
+with uncertainty, and keep all weaker models scoped as diagnostics.
+
+1. Freeze the accepted data contract.
+   - Require converged nonlinear heat-flux windows after transient removal.
+   - Require time-window and grid-resolution convergence before a case enters
+     train/holdout calibration.
+   - Keep circular, QH, CTH-like, or any other failed convergence cases
+     excluded until they pass common-window and grid-refinement gates.
+
+2. Expand saturation-rule comparison.
+   - Keep simple mixing-length/Lapillonne/Bourdelle/Kumar-style rules as
+     transparent baselines.
+   - Keep richer spectrum-aware candidates separate from runtime TOML exposure
+     until holdout uncertainty gates pass.
+   - Compare spectra, total fluxes, flux ratios, cross-phases, and geometry
+     transferability.
+
+3. Add differentiated quasilinear workflows.
+   - AD/FD for heat and particle flux weights.
+   - UQ covariance for fitted saturation parameters.
+   - Sensitivity maps over geometry and gradient parameters.
+   - Optimization examples that demonstrate trend-level improvement and then
+     nonlinear audits.
+
+4. Quasilinear exit gates.
+   - At least one train/holdout split with multiple geometries and nonlinear
+     convergence evidence.
+   - Prediction intervals calibrated and reported.
+   - Runtime-exposed saturation models limited to those with passing gates.
+   - README wording states whether outputs are diagnostics, trend-level models,
+     or calibrated absolute-flux predictors.
+
+### Lane 6: Performance
+
+Goal: reduce runtime and memory with profiler-backed changes only.
+
+1. Preserve measurement separation.
+   - Cold compile, cache construction, first-step compile, warm runtime,
+     output I/O, plotting, and memory must be reported separately.
+
+2. Repeat profiler traces after parallelization/refactor.
+   - CPU and GPU split profiles for Cyclone, Cyclone Miller, W7-X, HSX, and KBM.
+   - Full nonlinear RHS traces with HLO token summaries.
+   - Memory snapshots for representative nonlinear runs.
+
+3. Optimize only confirmed bottlenecks.
+   - Linear RHS fusion/cache layout.
+   - Nonlinear bracket FFT/data movement.
+   - Diagnostic streaming and output materialization.
+   - Donation/persistent-cache guidance.
+   - Custom kernels only after XLA traces show a stable bottleneck that JAX
+     transformations cannot address.
+
+4. Performance exit gates.
+   - Fresh profiler artifacts in `docs/_static`.
+   - Runtime/memory panel refreshed from final artifacts.
+   - No speedup claim without numerical identity and physics gates.
+
+### Lane 7: W7-X Zonal Long-Window Recurrence/Damping
+
+Goal: close the physical recurrence/damping mismatch without normalization
+changes.
+
+1. Keep current closed convention layer fixed.
+   - Paper-facing initializer, signed line-average observable, and line-first
+     normalization stay unchanged.
+
+2. Study closure/operator physics.
+   - Move beyond constant Hermite or mixed Laguerre-Hermite damping.
+   - Test velocity-space closure operators that improve trace error,
+     late-window envelope, residual, and moment-tail gates together.
+   - Preserve high-moment stability and recurrence behavior.
+
+3. Run convergence ladder.
+   - Moment resolution: `Nl,Nm`.
+   - Time step and total time.
+   - Radial wavelength set.
+   - Closure source and strength.
+   - Compare against digitized stella/GENE W7-X traces.
+
+4. Zonal exit gates.
+   - Residuals pass for all tracked `kx rho_i` values.
+   - Late-envelope gates pass.
+   - Moment tails remain bounded.
+   - Publication panel includes trace, residual, moment-tail, and closure-ladder
+     diagnostics.
+
+### Lane 8: W7-X Fluctuation/TEM/Multi-Flux-Tube Extension
+
+Goal: turn the current partial diagnostic lane into broad W7-X validation.
+
+1. Keep current fluctuation-spectrum estimator.
+   - Preserve the existing simulation-spectrum panel and JSON companion.
+   - Add density/zonal-frequency transfer-function work only if experimental
+     comparison remains in manuscript scope.
+
+2. Add W7-X multi-alpha and multi-surface ITG scans.
+   - Use the stella/GENE benchmark as the reference contract.
+   - Track growth, frequency, mode structure, heat flux, spectra, and
+     windowed nonlinear statistics.
+
+3. Add kinetic-electron/TEM validation.
+   - Fix current TEM branch parity before nonlinear TEM claims.
+   - Include density-gradient scans and branch-ordering diagnostics.
+   - Add nonlinear kinetic-electron W7-X windows only after linear branch
+     gates pass.
+
+4. Extension exit gates.
+   - Multi-alpha/multi-surface ITG gates pass.
+   - TEM linear parity passes with branch-continuity diagnostics.
+   - Kinetic-electron nonlinear windows pass case-specific statistics gates.
+   - Broad W7-X stellarator-validation language is allowed only after these
+     gates close.
+
+### Immediate Next Implementation Tranche
+
+Start Lane 1 with the smallest production-useful changes:
+
+1. Add `ParallelConfig` and wire it into runtime scan/quasilinear scan without
+   changing defaults.
+2. Extend `batch_map` tests for pytrees and device-count edge cases.
+3. Add a local logical-CPU parallel scan artifact generator.
+4. Add `velocity_sharding.py` with only the decomposition planner and tests.
+5. Then implement the first `shard_map` Hermite ghost-exchange unit test.
+
 ## Repository Trim and Artifact Hygiene Plan
 
 Current audit command:
@@ -2437,3 +2873,253 @@ Exit gate:
     numerical-identity gates, while broad production nonlinear speedup and
     nonlinear domain-decomposition claims remain future science/performance
     work.
+
+### 2026-05-10
+
+- Completed a deep planning audit for the next development cycle:
+  - reviewed current SPECTRAX-GK parallelization, sharding, runner, geometry,
+    solver-gradient, and quasilinear calibration modules;
+  - inspected GX source on ``ssh office`` and confirmed its production
+    multi-GPU path decomposes species first and Hermite moments second, with
+    Hermite ghost exchange and field-solve reductions/broadcasts rather than
+    spatial FFT-axis decomposition;
+  - reviewed current JAX ``shard_map``, ``pmap``, ``Mesh``/``NamedSharding``,
+    and multi-process documentation;
+  - reviewed local ``vmec_jax`` and ``booz_xform_jax`` examples/docs for
+    boundary-parameter optimization, JAX-native Boozer transforms, and
+    sensitivity examples;
+  - refreshed the literature anchors for parallelization, quasilinear
+    saturation-rule validation, stellarator microstability optimization,
+    nonlinear turbulence optimization, and W7-X stella/GENE validation.
+- Added the ordered execution plan section above. The fixed order is:
+  parallelization, refactor completion, differentiable geometry extension,
+  docs/examples, quasilinear absolute-flux promotion, performance, W7-X zonal
+  recurrence/damping, and W7-X fluctuation/TEM/multi-flux-tube extension.
+- Focused validation passed:
+  - ``python -m pytest -q tests/test_parallel.py tests/test_sharding.py tests/test_sharded_integrators.py tests/test_generate_parallel_ky_scan_gate.py tests/test_profile_nonlinear_sharding.py tests/test_nonlinear_sharding_artifacts.py``
+    passed with ``30`` tests.
+- Next best implementation steps:
+  - add ``ParallelConfig`` and wire it into scan/quasilinear/UQ paths without
+    changing serial defaults;
+  - extend ``batch_map`` tests for pytrees and more device-count edge cases;
+  - add a logical-CPU parallel scan artifact generator;
+  - add ``velocity_sharding.py`` with the GX-inspired species/Hermite
+    decomposition planner and tests;
+  - then implement the first ``shard_map`` Hermite ghost-exchange unit test.
+- Completed the first parallelization implementation tranche:
+  - added ``RuntimeParallelConfig`` with serial defaults, validated strategy
+    aliases, device-count fields, and TOML round-trip coverage;
+  - exported the config through the public package API and runtime TOML loader;
+  - made ``batch_map`` pytree-safe so UQ, sensitivity, and optimization
+    workloads can return structured diagnostics instead of only one array;
+  - wired explicit ``strategy = "combined-ky"`` / ``"batch-ky"`` runtime
+    config into the existing combined-``k_y`` scan path without changing
+    default serial behavior;
+  - added regression tests for pytree batching on single-device and simulated
+    multi-device branches, invalid parallel config values, and config-driven
+    combined-``k_y`` scan selection.
+- Validation for this tranche:
+  - ``python -m pytest -q tests/test_parallel.py tests/test_runtime_config.py tests/test_runtime_runner.py::test_run_runtime_scan_serial_forwards_per_ky tests/test_runtime_runner.py::test_run_runtime_scan_parallel_config_selects_combined_ky tests/test_runtime_runner.py::test_run_runtime_scan_batch_ky_rejects_krylov``
+    passed with ``33`` tests;
+  - ``python -m pytest -q tests/test_parallel.py tests/test_sharding.py tests/test_sharded_integrators.py tests/test_generate_parallel_ky_scan_gate.py tests/test_profile_nonlinear_sharding.py tests/test_nonlinear_sharding_artifacts.py tests/test_runtime_config.py tests/test_runtime_runner.py::test_run_runtime_scan_parallel_config_selects_combined_ky``
+    passed with ``57`` tests;
+  - ``ruff check --extend-ignore F401`` passed on the touched source/tests.
+    The ``F401`` ignore is scoped to this tranche because ``runtime.py`` keeps
+    several imported names as a historical module patch surface.
+- Next best implementation steps:
+  - add a logical-CPU parallel scan artifact generator using
+    ``RuntimeParallelConfig`` metadata;
+  - add ``velocity_sharding.py`` with a species/Hermite decomposition planner,
+    including numerical-identity and load-balance tests;
+  - implement the first ``shard_map`` Hermite ghost-exchange unit test before
+    moving any nonlinear production path.
+- Completed the second parallelization implementation tranche:
+  - added ``tools/generate_logical_cpu_parallel_scan_gate.py`` and generated
+    ``docs/_static/logical_cpu_parallel_scan_gate.{png,pdf,csv,json}``;
+  - the tracked logical-CPU gate used two logical CPU devices and passed:
+    ``max_gamma_rel_error=6.7e-8``, ``max_ql_rel_error=1.1e-7``, and
+    ``max_omega_abs_error=0``;
+  - added ``spectraxgk.velocity_sharding`` with a GX-inspired species-first,
+    Hermite-second decomposition planner that records active axes, shard shape,
+    Hermite ghost-exchange requirements, field-reduction axes, communication
+    pattern, and load balance;
+  - exposed ``VelocityShardingPlan`` and ``build_velocity_sharding_plan`` from
+    the public package API;
+  - updated ``docs/performance.rst``, ``docs/examples.rst``,
+    ``docs/inputs.rst``, ``docs/testing.rst``, ``docs/api.rst``, and
+    ``tools/performance_optimization_manifest.toml`` with the new identity
+    gate and decomposition planner.
+- Validation for this tranche:
+  - ``python -m pytest -q tests/test_generate_logical_cpu_parallel_scan_gate.py tests/test_parallel.py tests/test_runtime_config.py tests/test_runtime_runner.py::test_run_runtime_scan_parallel_config_selects_combined_ky``
+    passed with ``35`` tests;
+  - ``python -m pytest -q tests/test_velocity_sharding.py tests/test_sharding.py tests/test_sharded_integrators.py tests/test_parallel.py tests/test_generate_logical_cpu_parallel_scan_gate.py``
+    passed with ``31`` tests;
+  - targeted ``ruff check --extend-ignore F401`` passed on the new/touched
+    source, tool, and tests.
+- Next best implementation steps:
+  - add a local ``shard_map`` Hermite ghost-exchange unit test that uses the
+    velocity plan metadata but does not yet alter production nonlinear
+    evolution;
+  - add a two-device CPU artifact for the Hermite-exchange kernel;
+  - only after that, start wiring the production nonlinear velocity
+    decomposition behind an opt-in strategy with strict numerical-identity
+    gates.
+- Completed the third parallelization implementation tranche:
+  - added ``hermite_neighbor_reference`` and ``hermite_neighbor_shard_map`` to
+    ``spectraxgk.velocity_sharding``;
+  - the shard-map primitive exchanges nearest Hermite neighbors across a
+    one-dimensional Hermite mesh with zero physical boundaries at ``m=0`` and
+    ``m=Nm-1``;
+  - added tests for the full-array reference, one-device fallback,
+    multi-device shard-map path when logical devices are available, and
+    explicit rejection of unsupported multi-axis species/Hermite plans;
+  - added ``tools/generate_hermite_exchange_gate.py`` and generated
+    ``docs/_static/hermite_exchange_gate.{png,pdf,csv,json}``;
+  - the tracked two-logical-CPU artifact passes with
+    ``max_lower_abs_error=0`` and ``max_upper_abs_error=0``;
+  - documented the gate in ``docs/performance.rst``, ``docs/examples.rst``,
+    ``docs/testing.rst``, and ``tools/performance_optimization_manifest.toml``.
+- Validation for this tranche:
+  - ``python -m pytest -q tests/test_velocity_sharding.py tests/test_generate_hermite_exchange_gate.py``
+    passed with ``9`` tests and one multi-device test skipped in the
+    single-device default process;
+  - targeted ``ruff check --extend-ignore F401`` passed on the new/touched
+    source, tool, and tests;
+  - ``python tools/generate_hermite_exchange_gate.py --logical-devices 2
+    --out-prefix docs/_static/hermite_exchange_gate`` generated the tracked
+    passing artifact.
+- Next best implementation steps:
+  - add a field-reduction/broadcast identity gate for velocity-space sharding;
+  - add a streaming-Hermite-ladder identity gate that combines the ghost
+    exchange with the actual Hermite coupling coefficients;
+  - after both pass, wire an opt-in velocity-decomposed linear streaming
+    microkernel before touching nonlinear production RHS.
+- Completed the fourth parallelization implementation tranche:
+  - added ``velocity_field_reduce_reference`` and
+    ``velocity_field_reduce_shard_map`` to ``spectraxgk.velocity_sharding``;
+  - the shard-map primitive reduces local Hermite-sharded contributions with
+    ``lax.psum`` and broadcasts the reduced field contribution across the
+    Hermite mesh;
+  - added unit coverage for the reference reduction, single-device fallback,
+    multi-device shard-map path when logical devices are available, and the
+    artifact writer;
+  - added ``tools/generate_velocity_field_reduce_gate.py`` and generated
+    ``docs/_static/velocity_field_reduce_gate.{png,pdf,csv,json}``;
+  - the tracked two-logical-CPU artifact passes with
+    ``max_abs_error=3.814697265625e-6`` under ``atol=1e-5``. This is a
+    float32 reduction-tree tolerance, not a physics tolerance;
+  - documented the gate in ``docs/performance.rst``, ``docs/examples.rst``,
+    ``docs/testing.rst``, and ``tools/performance_optimization_manifest.toml``.
+- Validation for this tranche:
+  - ``python -m pytest -q tests/test_velocity_sharding.py tests/test_generate_velocity_field_reduce_gate.py tests/test_generate_hermite_exchange_gate.py``
+    passed with ``13`` tests and two multi-device tests skipped in the
+    single-device default process;
+  - targeted ``ruff check --extend-ignore F401`` passed on the new/touched
+    source, tool, and tests;
+  - ``python tools/generate_velocity_field_reduce_gate.py --logical-devices 2
+    --out-prefix docs/_static/velocity_field_reduce_gate`` generated the
+    tracked passing artifact.
+- Next best implementation steps:
+  - add a streaming-Hermite-ladder identity gate combining neighbor exchange,
+    field reduction, and the actual Hermite streaming coefficients;
+  - then implement an opt-in velocity-decomposed linear streaming microkernel
+    with serial numerical-identity gates;
+  - only after that, evaluate nonlinear RHS integration behind a disabled-by-
+    default ``RuntimeParallelConfig(strategy="velocity")`` path.
+- Completed the fifth parallelization implementation tranche:
+  - added ``hermite_streaming_ladder_reference`` and
+    ``hermite_streaming_ladder_shard_map`` to ``spectraxgk.velocity_sharding``;
+  - the ladder applies the production Hermite coefficients ``sqrt(m+1)`` and
+    ``sqrt(m)`` on top of the shard-map neighbor exchange, with scalar or
+    per-species ``vth`` broadcasting;
+  - added unit coverage for manual coefficient placement, one-device fallback,
+    and multi-device shard-map behavior when logical devices are available;
+  - added ``tools/generate_hermite_streaming_ladder_gate.py`` and generated
+    ``docs/_static/hermite_streaming_ladder_gate.{png,pdf,csv,json}``;
+  - the tracked two-logical-CPU artifact passes with zero ladder absolute and
+    relative error, and records the paired Hermite field-reduction error
+    ``1.9073486328125e-6``;
+  - documented the gate in ``docs/performance.rst``, ``docs/examples.rst``,
+    ``docs/testing.rst``, and ``tools/performance_optimization_manifest.toml``.
+- Validation for this tranche:
+  - ``python -m pytest -q tests/test_velocity_sharding.py tests/test_generate_hermite_streaming_ladder_gate.py tests/test_generate_velocity_field_reduce_gate.py tests/test_generate_hermite_exchange_gate.py``
+    passed with ``17`` tests and three multi-device tests skipped in the
+    single-device default process;
+  - targeted ``ruff check --extend-ignore F401`` passed on the new/touched
+    source, tool, and tests;
+  - ``python tools/generate_hermite_streaming_ladder_gate.py --logical-devices
+    2 --out-prefix docs/_static/hermite_streaming_ladder_gate`` generated the
+    tracked passing artifact.
+- Next best implementation steps:
+  - implement an opt-in linear streaming microkernel that combines the
+    parallel derivative contract with the Hermite streaming ladder;
+  - gate that microkernel against ``spectraxgk.terms.operators.streaming_term``
+    on periodic field-line grids;
+  - after that, start a disabled-by-default ``RuntimeParallelConfig`` route for
+    velocity-decomposed streaming in linear scans before nonlinear RHS work.
+- Completed the sixth parallelization implementation tranche:
+  - added ``periodic_streaming_reference`` and
+    ``periodic_streaming_shard_map`` to ``spectraxgk.velocity_sharding``;
+  - the microkernel applies the periodic spectral field-line derivative and
+    then the Hermite streaming ladder through the shard-map communication path;
+  - added tests comparing the reference path directly against
+    ``spectraxgk.terms.operators.streaming_term``, plus one-device fallback and
+    multi-device shard-map behavior when logical devices are available;
+  - added ``tools/generate_periodic_streaming_microkernel_gate.py`` and
+    generated
+    ``docs/_static/periodic_streaming_microkernel_gate.{png,pdf,csv,json}``;
+  - the tracked two-logical-CPU artifact passes with zero reported absolute and
+    relative error against the production streaming operator;
+  - documented the gate in ``docs/performance.rst``, ``docs/examples.rst``,
+    ``docs/testing.rst``, and ``tools/performance_optimization_manifest.toml``.
+- Validation for this tranche:
+  - ``python -m pytest -q tests/test_velocity_sharding.py tests/test_generate_periodic_streaming_microkernel_gate.py tests/test_generate_hermite_streaming_ladder_gate.py``
+    passed with ``17`` tests and four multi-device tests skipped in the
+    single-device default process;
+  - targeted ``ruff check --extend-ignore F401`` passed on the new/touched
+    source, tool, and tests;
+  - ``python tools/generate_periodic_streaming_microkernel_gate.py
+    --logical-devices 2 --out-prefix
+    docs/_static/periodic_streaming_microkernel_gate`` generated the tracked
+    passing artifact.
+- Next best implementation steps:
+  - add a disabled-by-default runtime/config route for the periodic
+    velocity-decomposed streaming microkernel in a reduced linear
+    streaming-only path;
+  - gate full ``linear_rhs`` identity with all non-streaming terms disabled
+    before enabling any general linear scan path;
+  - then profile the streaming-only microkernel locally and on office GPUs.
+- Completed the seventh parallelization implementation tranche:
+  - added ``tools/generate_linear_rhs_streaming_gate.py`` to compare the
+    production ``linear_rhs_cached`` call graph, with only streaming enabled,
+    against ``spectraxgk.velocity_sharding.periodic_streaming_shard_map``;
+  - the gate disables drive, curvature, magnetic-drift, mirror, nonlinear,
+    collision, source, and electromagnetic channels, and uses non-density
+    Hermite moments so the electrostatic field solve is exactly zero;
+  - added ``tests/test_generate_linear_rhs_streaming_gate.py`` and generated
+    ``docs/_static/linear_rhs_streaming_gate.{png,pdf,csv,json}``;
+  - the tracked two-logical-CPU artifact passes with
+    ``max_abs_error=9.62942522164667e-7``,
+    ``max_rel_error=5.559545002142841e-7``, and ``phi_norm=0``;
+  - documented the gate in ``docs/performance.rst``, ``docs/examples.rst``,
+    ``docs/testing.rst``, and ``tools/performance_optimization_manifest.toml``.
+- Validation for this tranche:
+  - ``python -m pytest -q tests/test_generate_linear_rhs_streaming_gate.py tests/test_velocity_sharding.py``
+    passed with ``15`` tests and four multi-device tests skipped in the
+    single-device default process;
+  - ``python tools/generate_linear_rhs_streaming_gate.py --logical-devices 2
+    --out-prefix docs/_static/linear_rhs_streaming_gate`` generated the tracked
+    passing artifact.
+- Next best implementation steps:
+  - run the bounded parallelization test shard, targeted ruff, and docs build;
+  - add a disabled-by-default runtime/config route for a streaming-only
+    velocity-decomposed linear diagnostic path;
+  - then gate a full linear RHS slice with streaming plus field-solve/drift
+    terms before any broad runtime exposure.
+- Bounded verification after the seventh tranche:
+  - ``python -m pytest -q tests/test_parallel.py tests/test_velocity_sharding.py tests/test_generate_logical_cpu_parallel_scan_gate.py tests/test_generate_hermite_exchange_gate.py tests/test_generate_velocity_field_reduce_gate.py tests/test_generate_hermite_streaming_ladder_gate.py tests/test_generate_periodic_streaming_microkernel_gate.py tests/test_generate_linear_rhs_streaming_gate.py tests/test_generate_parallel_ky_scan_gate.py tests/test_sharding.py tests/test_sharded_integrators.py tests/test_profile_nonlinear_sharding.py tests/test_nonlinear_sharding_artifacts.py tests/test_runtime_config.py tests/test_runtime_runner.py::test_run_runtime_scan_parallel_config_selects_combined_ky tests/test_runtime_runner.py::test_run_runtime_scan_batch_ky_rejects_krylov``
+    passed under the 300-second cap with the expected logical-device skips;
+  - targeted ``ruff check --extend-ignore F401`` passed on all touched source,
+    tools, and tests;
+  - ``python -m sphinx -q -b html docs docs/_build/html`` passed under the
+    300-second cap.

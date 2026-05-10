@@ -106,7 +106,11 @@ the package helpers:
 
    ky = jnp.asarray([0.1, 0.2, 0.3, 0.4])
    chunks = sgk.ky_scan_batches(ky, n_batches=2)
-   values = sgk.batch_map(lambda x: jnp.asarray([x, x**2]), ky, batch_size=2)
+   values = sgk.batch_map(
+       lambda x: {"gamma": x, "ql_weight": x**2},
+       ky,
+       batch_size=2,
+   )
 
 These helpers preserve serial ordering and fall back to a one-device ``vmap``
 path on laptops. Multi-device runs should still be checked against the serial
@@ -125,6 +129,95 @@ For a solver-backed identity gate, run the Cyclone ``k_y``-batch scan artifact:
    Real Cyclone linear solver comparison between serial and fixed-shape
    ``k_y``-batched scans. The figure verifies that ``gamma`` and ``omega``
    are identical while reporting the observed batch speedup separately.
+
+For a logical-CPU API gate that exercises ``RuntimeParallelConfig`` and pytree
+outputs, run:
+
+.. code-block:: bash
+
+   python tools/generate_logical_cpu_parallel_scan_gate.py --logical-devices 2
+
+.. figure:: _static/logical_cpu_parallel_scan_gate.png
+   :alt: SPECTRAX-GK logical CPU parallel scan identity gate
+   :width: 100%
+
+   Independent-scan interface gate for structured outputs. This validates the
+   parallel API used by UQ and sensitivity ensembles; it is not a nonlinear
+   performance claim.
+
+The first lower-level communication gate for velocity-space decomposition is
+the Hermite ghost exchange:
+
+.. code-block:: bash
+
+   python tools/generate_hermite_exchange_gate.py --logical-devices 2
+
+.. figure:: _static/hermite_exchange_gate.png
+   :alt: SPECTRAX-GK Hermite ghost-exchange identity gate
+   :width: 100%
+
+   ``shard_map`` nearest-neighbor exchange for Hermite moments. This validates
+   the communication primitive that a future nonlinear velocity-space sharding
+   path needs before field reductions and full-RHS identity gates are added.
+
+The paired field-reduction gate is:
+
+.. code-block:: bash
+
+   python tools/generate_velocity_field_reduce_gate.py --logical-devices 2
+
+.. figure:: _static/velocity_field_reduce_gate.png
+   :alt: SPECTRAX-GK velocity field-reduction identity gate
+   :width: 100%
+
+   ``shard_map`` reduction/broadcast over a Hermite mesh. This establishes the
+   field-solve communication primitive before streaming-ladder and nonlinear
+   RHS identity gates are attempted.
+
+The Hermite streaming-ladder coefficient gate is:
+
+.. code-block:: bash
+
+   python tools/generate_hermite_streaming_ladder_gate.py --logical-devices 2
+
+.. figure:: _static/hermite_streaming_ladder_gate.png
+   :alt: SPECTRAX-GK Hermite streaming-ladder identity gate
+   :width: 100%
+
+   ``shard_map`` Hermite exchange plus the ``sqrt(m+1)`` / ``sqrt(m)``
+   streaming-ladder coefficients. This is still a communication/coefficient
+   gate; full linear streaming also needs the parallel derivative identity
+   gate before production runtime wiring.
+
+The periodic streaming microkernel gate adds that field-line derivative:
+
+.. code-block:: bash
+
+   python tools/generate_periodic_streaming_microkernel_gate.py --logical-devices 2
+
+.. figure:: _static/periodic_streaming_microkernel_gate.png
+   :alt: SPECTRAX-GK periodic streaming microkernel identity gate
+   :width: 100%
+
+   Periodic spectral parallel derivative plus Hermite streaming ladder through
+   the ``shard_map`` path, compared directly against the production streaming
+   operator.
+
+The next gate places that same sharded streaming kernel under the production
+linear-RHS call graph with every non-streaming contribution disabled:
+
+.. code-block:: bash
+
+   python tools/generate_linear_rhs_streaming_gate.py --logical-devices 2
+
+.. figure:: _static/linear_rhs_streaming_gate.png
+   :alt: SPECTRAX-GK streaming-only linear RHS identity gate
+   :width: 100%
+
+   Streaming-only ``linear_rhs_cached`` comparison against the velocity-sharded
+   periodic streaming path. This closes the first full-RHS call-graph identity
+   gate for the streaming term only; it is not yet a full linear scan or
+   nonlinear speedup claim.
 
 Use the strong-scaling sweep helper to collect parallelization timings for the
 distributed linear RK2 loop:

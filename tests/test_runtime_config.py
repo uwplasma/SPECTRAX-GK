@@ -9,7 +9,7 @@ import sys
 import pytest
 
 from spectraxgk.io import load_runtime_from_toml
-from spectraxgk.runtime_config import RuntimeConfig
+from spectraxgk.runtime_config import RuntimeConfig, RuntimeParallelConfig
 
 
 def _load_module_from_path(name: str, path: Path):
@@ -36,6 +36,7 @@ def test_runtime_config_to_dict_contains_sections() -> None:
         "expert",
         "output",
         "quasilinear",
+        "parallel",
     }
     assert len(d["species"]) == 1
 
@@ -48,6 +49,8 @@ def test_runtime_defaults_match_gx_reference() -> None:
     assert cfg.collisions.p_hyper_m is None
     assert cfg.collisions.damp_ends_amp == pytest.approx(0.1)
     assert cfg.collisions.damp_ends_widthfrac == pytest.approx(0.125)
+    assert cfg.parallel.strategy == "serial"
+    assert cfg.parallel.axis == "ky"
 
 
 def test_load_runtime_from_toml_roundtrip(tmp_path: Path) -> None:
@@ -108,6 +111,15 @@ amplitude_normalization = "phi_rms"
 csat = 0.7
 channels = ["es"]
 output_path = "tools_out/ql_case"
+
+[parallel]
+strategy = "batch-ky"
+axis = "ky"
+batch_size = 3
+num_devices = 2
+strict_identity = true
+profile = true
+backend = "auto"
 """
     path = tmp_path / "runtime.toml"
     path.write_text(toml, encoding="utf-8")
@@ -133,8 +145,24 @@ output_path = "tools_out/ql_case"
     assert cfg.quasilinear.csat == pytest.approx(0.7)
     assert cfg.quasilinear.channels == ("es",)
     assert cfg.quasilinear.output_path == str((tmp_path / "tools_out" / "ql_case").resolve())
+    assert cfg.parallel.strategy == "combined_ky"
+    assert cfg.parallel.axis == "ky"
+    assert cfg.parallel.batch_size == 3
+    assert cfg.parallel.num_devices == 2
+    assert cfg.parallel.strict_identity is True
+    assert cfg.parallel.profile is True
     assert len(cfg.species) == 2
     assert cfg.species[1].charge == pytest.approx(-1.0)
+
+
+def test_runtime_parallel_config_validates_values() -> None:
+    assert RuntimeParallelConfig(strategy="batch-ky").strategy == "combined_ky"
+    with pytest.raises(ValueError):
+        RuntimeParallelConfig(strategy="unknown")
+    with pytest.raises(ValueError):
+        RuntimeParallelConfig(batch_size=0)
+    with pytest.raises(ValueError):
+        RuntimeParallelConfig(num_devices=0)
 
 
 def test_gx_aligned_kbm_runtime_examples_keep_end_damping_enabled() -> None:

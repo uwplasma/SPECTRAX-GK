@@ -73,6 +73,12 @@ Parallelization
 .. automodule:: spectraxgk.parallel
    :members:
 
+Velocity Sharding Plans
+-----------------------
+
+.. automodule:: spectraxgk.velocity_sharding
+   :members:
+
 Sharded Integrators
 -------------------
 
