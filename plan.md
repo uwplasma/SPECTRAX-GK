@@ -3731,3 +3731,14 @@ Exit gate:
     again identifies linear RHS as the dominant measured CPU sub-kernel;
   - keep nonlinear multi-GPU production decomposition separate from the current
     whole-state sharding correctness gate.
+- Linear-RHS Miller term-profile follow-up:
+  - generated a bounded active-state CPU split profile for the same Cyclone
+    Miller benchmark-size runtime case used in the refreshed nonlinear RHS
+    panel:
+    ``JAX_ENABLE_X64=0 python tools/profile_linear_rhs_terms.py --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml --ky 0.3 --Nl 4 --Nm 8 --repeats 5 --state z_wave_linear_kick --out docs/_static/linear_rhs_terms_profile_miller_cpu.csv --summary-json docs/_static/linear_rhs_terms_profile_miller_cpu.json``;
+  - result: ``full_linear_rhs=2.93e-1 s`` and independently timed terms sum to
+    ``4.83e-2 s``; the largest nonzero standalone rows are streaming
+    (``7.33e-3 s``), linked ``partial_z`` (``6.39e-3 s``), linked ``|k_z|``
+    (``6.18e-3 s``), and hypercollisions (``6.20e-3 s``);
+  - interpretation: optimize full-graph layout/fusion and reusable transformed
+    state paths next; do not claim standalone-term speedup from this profile.
