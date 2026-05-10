@@ -3752,3 +3752,11 @@ Exit gate:
     adiabatic-electron electrostatic terms;
   - documentation updated in ``docs/numerics.rst`` and ``docs/performance.rst``;
     no new end-to-end speedup claim is made until a fresh profile is recorded.
+- Static-quality cleanup / scan fit-signal forwarding:
+  - cleared the known broad ``ruff`` blockers in ``src/spectraxgk/runtime.py``
+    and ``src/spectraxgk/cli.py`` by removing stale imports;
+  - fixed ``scan-linear`` so TOML/argument ``fit_signal`` is forwarded through
+    ``run_linear_scan(..., run_kwargs={...})`` instead of being computed and
+    dropped;
+  - added a CLI regression test that verifies ``fit_signal`` reaches the scan
+    run kwargs.
