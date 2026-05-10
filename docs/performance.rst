@@ -782,9 +782,39 @@ control-flow and single-device identity gate. The two-GPU office artifact at
 axes. In the current bounded run the requested ``auto`` path is slower
 (``0.86x``), while the best identity-preserving candidate is explicit ``kx``
 sharding at about ``1.03x``. That is not enough for a publication speedup
-claim. Do not promote new nonlinear runtime speedup claims until this tool is
-rerun on matched
-benchmark-size CPU and GPU cases and the runtime/memory panel is refreshed.
+claim.
+
+The larger strong-scaling sweep is regenerated with isolated subprocesses so
+each device count gets a clean JAX runtime:
+
+.. code-block:: bash
+
+   python tools/profile_nonlinear_sharding_sweep.py \
+     --backend cpu --devices 1,2,4,8 \
+     --nx 24 --ny 48 --nz 96 --nl 4 --nm 8 --steps 8 \
+     --out-prefix docs/_static/nonlinear_sharding_strong_scaling_cpu_large
+
+   python tools/profile_nonlinear_sharding_sweep.py \
+     --backend gpu --devices 1,2 \
+     --nx 48 --ny 96 --nz 128 --nl 4 --nm 8 --steps 12 \
+     --out-prefix docs/_static/nonlinear_sharding_strong_scaling_gpu_xlarge
+
+   python tools/plot_nonlinear_sharding_strong_scaling.py
+
+.. image:: _static/nonlinear_sharding_strong_scaling_large.png
+   :alt: SPECTRAX-GK large nonlinear whole-state sharding strong-scaling artifact
+   :align: center
+
+The May 10, 2026 large sweep passes the final-state identity gate at every
+tracked point. The CPU logical-device path improves from one to four devices
+but saturates at about ``1.39x`` and does not improve further at eight logical
+devices. The two-RTX-A4000 GPU path is slower than one GPU even for the larger
+``Nx=48, Ny=96, Nz=128, Nl=4, Nm=8`` fixed-step case, with a measured speedup
+of about ``0.63x``. This makes the technical conclusion explicit: the current
+whole-state nonlinear sharding path is useful as a correctness/profiler gate,
+but production parallelization should prioritize independent ``k_y`` scans,
+UQ/ensemble batching, and a redesigned communication-aware nonlinear domain
+decomposition before any nonlinear multi-GPU speedup claim is made.
 
 Spectral nonlinear mode (gated fast toggle)
 -------------------------------------------
