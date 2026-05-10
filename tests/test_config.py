@@ -5,7 +5,6 @@ import pytest
 from spectraxgk.config import (
     CycloneBaseCase,
     ETGBaseCase,
-    ETGModelConfig,
     REFERENCE_ELECTRON_MASS,
     GeometryConfig,
     GridConfig,

@@ -7,10 +7,8 @@ from pathlib import Path
 from pprint import pformat
 import argparse
 import sys
-from types import SimpleNamespace
 from typing import Callable
 
-import jax.numpy as jnp
 import numpy as np
 import pandas as pd
 from tqdm.auto import tqdm
@@ -36,29 +34,20 @@ from spectraxgk.benchmarks import (
     CYCLONE_OMEGA_D_SCALE,
     CYCLONE_OMEGA_STAR_SCALE,
     CYCLONE_RHO_STAR,
-    ETG_OMEGA_D_SCALE,
-    ETG_OMEGA_STAR_SCALE,
-    ETG_RHO_STAR,
     REFERENCE_DAMP_ENDS_AMP,
     REFERENCE_DAMP_ENDS_WIDTHFRAC,
     _apply_gx_hypercollisions,
     _build_initial_condition,
-    _two_species_params,
     _midplane_index,
     load_cyclone_reference,
-    load_cyclone_reference_kinetic,
     load_etg_reference,
     load_kbm_reference,
-    load_tem_reference,
     LinearScanResult,
-    run_cyclone_linear,
     run_cyclone_scan,
     run_etg_linear,
     run_etg_scan,
-    run_kinetic_linear,
     run_kinetic_scan,
     run_kbm_beta_scan,
-    run_tem_linear,
     run_tem_scan,
 )
 from spectraxgk.config import (
@@ -66,21 +55,15 @@ from spectraxgk.config import (
     ETGBaseCase,
     ETGModelConfig,
     GridConfig,
-    KineticElectronBaseCase,
-    KBMBaseCase,
     TimeConfig,
-    TEMBaseCase,
 )
 from spectraxgk.geometry import SAlphaGeometry
-from spectraxgk.grids import build_spectral_grid, select_ky_grid
+from spectraxgk.grids import SpectralGrid, build_spectral_grid, select_ky_grid
 from spectraxgk.gx_integrators import GXTimeConfig, integrate_linear_gx
 from spectraxgk.linear import LinearParams, LinearTerms, build_linear_cache
-from spectraxgk.runners import integrate_linear_from_config
 from spectraxgk.plotting import (
     cyclone_comparison_figure,
     cyclone_reference_figure,
-    linear_validation_figure,
-    LinearValidationPanel,
     scan_comparison_figure,
 )
 from spectraxgk.linear_krylov import KrylovConfig

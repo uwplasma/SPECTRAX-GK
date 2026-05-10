@@ -42,7 +42,7 @@ from spectraxgk.gx_integrators import (
     _gx_midplane_index,
     _linear_explicit_step,
 )
-from spectraxgk.linear import LinearTerms, build_linear_cache
+from spectraxgk.linear import build_linear_cache
 from spectraxgk.species import build_linear_params
 
 

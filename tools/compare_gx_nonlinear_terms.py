@@ -10,7 +10,6 @@ import re
 from typing import Any, cast
 
 import numpy as np
-import jax
 import jax.numpy as jnp
 from netCDF4 import Dataset
 
@@ -29,7 +28,7 @@ from spectraxgk.benchmarks import (
 from spectraxgk.config import GridConfig
 from spectraxgk.geometry import SAlphaGeometry, apply_gx_geometry_grid_defaults
 from spectraxgk.gyroaverage import gx_laguerre_nj
-from spectraxgk.grids import build_spectral_grid, select_ky_grid, twothirds_mask
+from spectraxgk.grids import build_spectral_grid, twothirds_mask
 from spectraxgk.io import load_runtime_from_toml
 from spectraxgk.linear import LinearParams, build_linear_cache
 from spectraxgk.runtime import (
