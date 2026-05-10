@@ -573,6 +573,13 @@ linear-RHS identity gate. It deliberately does not claim full-RHS, nonlinear,
 or production speedup parity; those remain separate gates with additional
 field-solve, drive, collision, bracket, and profiler coverage.
 
+For code-level experiments the same route is available through
+``spectraxgk.linear_rhs_parallel_cached`` with
+``RuntimeParallelConfig(strategy="velocity", axis="hermite",
+backend="streaming_only")``. The helper rejects any non-streaming term weights
+so this remains a disabled-by-default diagnostic path rather than a hidden
+solver change.
+
 Fixed-step nonlinear state sharding
 -----------------------------------
 
