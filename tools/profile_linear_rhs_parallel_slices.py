@@ -120,7 +120,7 @@ def profile_linear_rhs_parallel_slices(
     )
 
     def serial_call():
-        return linear_rhs_cached(state, cache, params, terms=terms, use_jit=False, use_custom_vjp=False)
+        return linear_rhs_cached(state, cache, params, terms=terms, use_jit=True, use_custom_vjp=True)
 
     def sharded_call():
         return linear_rhs_parallel_cached(
@@ -182,8 +182,8 @@ def profile_linear_rhs_parallel_slices(
             "rtol": float(rtol),
             "rows": rows,
             "notes": (
-                "The sharded route currently constructs the Hermite mesh inside the opt-in helper. "
-                "Use this artifact to identify overhead before making speedup claims."
+                "Both routes are warmed before timing. The serial route uses the production JIT path; "
+                "the sharded route uses the cached fused Hermite shard-map callable."
             ),
         }
     )
