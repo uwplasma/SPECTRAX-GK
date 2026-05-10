@@ -3572,3 +3572,36 @@ Exit gate:
   - connect the same independent-worker scheduler to quasilinear calibration
     and UQ ensemble scripts so the scaling result directly supports the
     manuscript quasilinear and differentiable-optimization lanes.
+- Quasilinear/UQ ensemble parallelization closure:
+  - added ``tools/profile_quasilinear_uq_ensemble_scaling.py`` to run late-time
+    Cyclone ITG gradient ensembles as independent CPU/GPU workers, compute real
+    linear growth/frequency fits, and reduce them to a deterministic
+    mixing-length feature observable for UQ/calibration plumbing;
+  - initially found that the short default ``t=3.2`` window measured transient
+    decay and produced zero quasilinear information, so the profiler defaults
+    and tracked sweep were tightened to a late-time ``t=40`` window with
+    ``fit_start_fraction=0.5`` and ``fit_end_fraction=0.95``;
+  - ran the large ``ssh office`` sweep with six ``R/LTi`` samples, five
+    ``k_y`` values, ``Ny=96``, ``Nz=64``, ``Nl=3``, ``Nm=6``, and ``2000`` RK2
+    steps per mode;
+  - CPU process scaling passed exact serial identity and reached ``1.70x`` on
+    two workers, ``2.75x`` on four workers, and ``5.41x`` on eight requested
+    workers using six actual ensemble chunks;
+  - the two-RTX-A4000 GPU run passed exact serial identity and reached
+    ``1.71x`` speedup with about ``86%`` parallel efficiency;
+  - generated
+    ``docs/_static/quasilinear_uq_ensemble_scaling_cpu_large.{json,csv,png,pdf}``,
+    ``docs/_static/quasilinear_uq_ensemble_scaling_gpu_large.{json,csv,png,pdf}``,
+    and combined
+    ``docs/_static/quasilinear_uq_ensemble_scaling_large.{json,csv,png,pdf}``;
+  - documented this as a production independent-work parallelization result
+    for quasilinear calibration grids, finite-difference checks, sensitivity
+    sweeps, and UQ ensembles, while keeping absolute nonlinear heat-flux
+    promotion explicitly out of scope.
+- Next best implementation steps:
+  - run the focused artifact/doc/test shard and push the QL/UQ scaling tranche;
+  - monitor CI on the new head;
+  - continue toward production integration by wiring the independent-worker
+    scheduler into the actual quasilinear calibration and UQ scripts, while
+    preserving the existing prohibition on batched quasilinear scan artifacts
+    until per-ky state-extraction identity is separately gated.
