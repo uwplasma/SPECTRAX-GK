@@ -494,7 +494,7 @@ diagnostic: ``strategy = "velocity"``, ``axis = "hermite"``, and
 ``backend = "electrostatic_linear_slices"``. These are accepted only by
 ``spectraxgk.linear_rhs_parallel_cached``. The first two require all
 non-streaming linear terms disabled. The electrostatic-slices backend allows
-only streaming, mirror, curvature, and grad-B weights; diamagnetic drive,
+only streaming, mirror, curvature, grad-B, and diamagnetic-drive weights;
 collisions, linked boundaries, electromagnetic terms, and nonlinear terms
 remain disabled until their own identity gates are added. Current velocity
 RHS routes are limited to single-species periodic 5D electrostatic states.

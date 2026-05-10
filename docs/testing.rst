@@ -658,6 +658,11 @@ performance claims:
   periodic electrostatic mirror and curvature/grad-B drift slices against the
   production linear RHS. It uses offset-1 and offset-2 Hermite exchanges and
   writes ``docs/_static/electrostatic_drift_gate.{png,pdf,csv,json}``.
+- ``tools/generate_electrostatic_diamagnetic_gate.py`` gates the
+  single-species periodic electrostatic diamagnetic drive against the
+  production diamagnetic-only linear RHS. It uses the Hermite-sharded
+  electrostatic field reduction plus local ``m=0`` and ``m=2`` drive masks and
+  writes ``docs/_static/electrostatic_diamagnetic_gate.{png,pdf,csv,json}``.
 - ``tools/generate_periodic_streaming_microkernel_gate.py`` adds the periodic
   spectral parallel derivative and compares the shard-map path directly
   against ``spectraxgk.terms.operators.streaming_term``. Its artifact

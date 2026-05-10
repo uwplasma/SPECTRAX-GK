@@ -3266,8 +3266,8 @@ Exit gate:
   - run the bounded parallelization/docs verification shard for the drift gate;
   - add a disabled-by-default ``backend="electrostatic_linear_slices"`` route
     combining sharded field reduction, streaming, mirror, curvature, and
-    grad-B before diamagnetic/collision terms are added;
-  - keep diamagnetic, collisions, linked boundaries, electromagnetic terms, and
+    grad-B before adding the separately gated diamagnetic slice;
+  - keep collisions, linked boundaries, electromagnetic terms, and
     nonlinear brackets behind separate isolated gates.
 - Bounded verification after the drift gate:
   - ``python -m pytest -q tests/test_parallel.py tests/test_velocity_sharding.py tests/test_generate_logical_cpu_parallel_scan_gate.py tests/test_generate_hermite_exchange_gate.py tests/test_generate_velocity_field_reduce_gate.py tests/test_generate_electrostatic_field_reduce_gate.py tests/test_generate_hermite_streaming_ladder_gate.py tests/test_generate_electrostatic_drift_gate.py tests/test_generate_periodic_streaming_microkernel_gate.py tests/test_generate_linear_rhs_streaming_gate.py tests/test_generate_linear_rhs_streaming_electrostatic_gate.py tests/test_runtime_config.py tests/test_runtime_runner.py::test_run_runtime_scan_parallel_config_selects_combined_ky tests/test_runtime_runner.py::test_run_runtime_scan_batch_ky_rejects_krylov``
@@ -3283,7 +3283,8 @@ Exit gate:
     ``linear_rhs_parallel_cached``;
   - the route combines the already gated Hermite-sharded electrostatic field
     reduction, electrostatic streaming, mirror, curvature, and grad-B slices;
-  - it rejects diamagnetic drive, collisions, hypercollisions, end damping,
+  - a follow-on tranche promoted the gated diamagnetic-drive slice into this
+    backend; it now rejects collisions, hypercollisions, end damping,
     electromagnetic terms, linked-boundary/twist-shift grids, multi-species
     states, and nonlinear terms until each has its own isolated gate;
   - added unit coverage comparing the composed backend with production
@@ -3300,3 +3301,43 @@ Exit gate:
     source, tool, and tests;
   - ``python -m sphinx -q -b html docs docs/_build/html`` passed under the
     300-second cap.
+- Continued the parallelization implementation tranche with the electrostatic
+  diamagnetic-drive slice:
+  - added ``diamagnetic_drive_reference`` and ``diamagnetic_drive_shard_map``
+    to ``spectraxgk.velocity_sharding``;
+  - the sharded path reuses the Hermite-sharded electrostatic field reduction,
+    then applies local global-``m`` masks for the ``m=0`` density/temperature
+    gradient drive and ``m=2`` temperature-gradient drive;
+  - added unit coverage comparing the new primitive against the production
+    diamagnetic-only ``linear_rhs_cached`` path and against the reference
+    implementation when multiple logical devices are available;
+  - added ``tools/generate_electrostatic_diamagnetic_gate.py`` and generated
+    ``docs/_static/electrostatic_diamagnetic_gate.{png,pdf,csv,json}``;
+  - the tracked two-logical-CPU artifact passes with
+    ``phi_norm=0.16790585219860077`` and zero reported absolute/relative
+    error.
+- Promoted the gated diamagnetic slice into the disabled-by-default
+  ``backend="electrostatic_linear_slices"`` route:
+  - the composed backend now covers streaming, mirror, curvature, grad-B, and
+    diamagnetic-drive slices for single-species periodic electrostatic 5D
+    states;
+  - it still rejects collisions, hypercollisions, hyperdiffusion, end damping,
+    electromagnetic terms, linked-boundary/twist-shift grids, multi-species
+    states, and nonlinear terms until each path has its own identity gate.
+- Validation for this tranche so far:
+  - ``python -m pytest -q tests/test_velocity_sharding.py tests/test_generate_electrostatic_diamagnetic_gate.py``
+    passed under the 300-second cap with expected logical-device skips;
+  - targeted ``ruff check --extend-ignore F401`` passed for the touched
+    source, tool, and tests;
+  - ``python tools/generate_electrostatic_diamagnetic_gate.py
+    --logical-devices 2 --out-prefix
+    docs/_static/electrostatic_diamagnetic_gate`` generated the tracked
+    passing artifact.
+- Next best implementation steps:
+  - run the bounded parallelization/docs verification shard including the new
+    diamagnetic gate;
+  - profile the composed electrostatic linear-slices route on a larger
+    CPU/GPU linear problem before making any speedup claim;
+  - start the next isolated production-parallelization gate with either
+    electrostatic collision/hypercollision slices or a ky/batch linear-scan
+    composition gate, keeping nonlinear domain decomposition separate.
