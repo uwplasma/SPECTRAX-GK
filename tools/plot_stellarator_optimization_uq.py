@@ -144,6 +144,17 @@ def build_uq_summary(payload: dict[str, Any]) -> dict[str, Any]:
         "parameter_names": parameter_names,
         "all_gradient_gates_passed": bool(all_gates),
         "all_sensitivity_maps_full_rank": bool(full_rank),
+        "parallel": payload.get(
+            "parallel",
+            {
+                "requested_workers": 1,
+                "effective_workers": 1,
+                "executor": "thread",
+                "finite_difference_workers": 1,
+                "finite_difference_executor": "thread",
+                "identity_contract": "serial payload or legacy artifact",
+            },
+        ),
         "results": rows,
     }
 

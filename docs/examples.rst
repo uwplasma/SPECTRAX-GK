@@ -127,6 +127,19 @@ These helpers preserve serial ordering and fall back to a one-device ``vmap``
 path on laptops. Multi-device runs should still be checked against the serial
 result before publication speedups are claimed.
 
+Autodiff validation reports also accept ``workers`` for thread-parallel
+central finite-difference columns, and the stellarator optimization comparison
+script exposes the same pattern:
+
+.. code-block:: bash
+
+   JAX_ENABLE_X64=1 python examples/optimization/compare_stellarator_itg_optimizations.py \
+     --workers 3 \
+     --finite-difference-workers 2
+
+The generated JSON records both worker counts and keeps the acceptance
+criterion as numerical identity with the serial report.
+
 For a solver-backed identity gate, run the Cyclone ``k_y``-batch scan artifact:
 
 .. code-block:: bash

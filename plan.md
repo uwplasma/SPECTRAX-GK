@@ -3628,3 +3628,31 @@ Exit gate:
   - extend the same ``independent_map`` path to finite-difference sensitivity
     and stellarator-optimization UQ ensembles after adding report-identity
     tests for those workflows.
+- Stellarator optimization autodiff/UQ worker integration:
+  - extended ``central_finite_difference_jacobian`` and
+    ``autodiff_finite_difference_report`` with thread-parallel finite-difference
+    columns while preserving the serial AD/FD acceptance contract;
+  - wired ``optimize_stellarator_itg`` and
+    ``compare_stellarator_itg_objectives`` with worker controls for independent
+    objective reports plus finite-difference gradient-gate columns;
+  - updated the optimization example scripts and documentation to expose
+    ``--workers`` and ``--finite-difference-workers`` and to record worker
+    metadata in JSON artifacts;
+  - regenerated the growth, quasilinear-flux, nonlinear-window, comparison,
+    and UQ stellarator optimization artifacts with ``JAX_ENABLE_X64=1`` and
+    worker metadata;
+  - verified the reduced objectives still pass AD/FD gates, with nonlinear
+    heat-flux objective ``1.592690e-01 -> 8.412824e-03`` and late-window
+    ``CV=5.830e-03``, ``trend=1.978e-02``.
+- Verification for this tranche:
+  - ``python -m ruff check src/spectraxgk/autodiff_validation.py src/spectraxgk/stellarator_optimization.py examples/optimization/compare_stellarator_itg_optimizations.py examples/optimization/stellarator_itg_growth_optimization.py examples/optimization/stellarator_itg_quasilinear_flux_optimization.py examples/optimization/stellarator_itg_nonlinear_heat_flux_optimization.py tools/plot_stellarator_optimization_uq.py tests/test_autodiff_validation.py tests/test_stellarator_optimization.py tests/test_plot_stellarator_optimization_uq.py``;
+  - ``mypy src/spectraxgk/autodiff_validation.py src/spectraxgk/stellarator_optimization.py``;
+  - ``pytest -q tests/test_autodiff_validation.py tests/test_stellarator_optimization.py tests/test_plot_stellarator_optimization_uq.py tests/test_parallel.py``;
+  - ``python -m sphinx -b html docs docs/_build/html``.
+- Next best implementation steps:
+  - commit/push this stellarator autodiff/UQ worker tranche and monitor CI;
+  - add the missing per-ky quasilinear state-extraction identity gate before
+    allowing worker parallelism inside richer quasilinear scan artifacts;
+  - continue the production parallelization lane with large-run profiling of
+    remaining worst-offender nonlinear RHS kernels before making new speedup
+    claims.

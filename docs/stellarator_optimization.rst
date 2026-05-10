@@ -187,16 +187,23 @@ Generate the three individual optimization panels with:
 
 .. code-block:: bash
 
-   JAX_ENABLE_X64=1 python examples/optimization/stellarator_itg_growth_optimization.py
-   JAX_ENABLE_X64=1 python examples/optimization/stellarator_itg_quasilinear_flux_optimization.py
-   JAX_ENABLE_X64=1 python examples/optimization/stellarator_itg_nonlinear_heat_flux_optimization.py
+   JAX_ENABLE_X64=1 python examples/optimization/stellarator_itg_growth_optimization.py --finite-difference-workers 2
+   JAX_ENABLE_X64=1 python examples/optimization/stellarator_itg_quasilinear_flux_optimization.py --finite-difference-workers 2
+   JAX_ENABLE_X64=1 python examples/optimization/stellarator_itg_nonlinear_heat_flux_optimization.py --finite-difference-workers 2
 
 Generate the comparison panel with:
 
 .. code-block:: bash
 
-   JAX_ENABLE_X64=1 python examples/optimization/compare_stellarator_itg_optimizations.py
+   JAX_ENABLE_X64=1 python examples/optimization/compare_stellarator_itg_optimizations.py --workers 3 --finite-difference-workers 2
    JAX_ENABLE_X64=1 python tools/plot_stellarator_optimization_uq.py
+
+The ``--workers`` option parallelizes the independent growth-rate,
+quasilinear-flux, and nonlinear-window objective reports while preserving the
+serial ordering of the JSON payload. The ``--finite-difference-workers``
+option parallelizes central finite-difference columns inside each AD/FD gate
+using threads, which avoids pickling JAX objective closures. Both paths record
+their worker metadata and identity contract in the JSON artifacts.
 
 .. figure:: _static/stellarator_itg_optimization_comparison.png
    :width: 95%

@@ -24,9 +24,15 @@ def main() -> None:
         default=ROOT / "docs" / "_static" / "stellarator_itg_quasilinear_optimization",
         help="Output base path without extension.",
     )
+    parser.add_argument(
+        "--finite-difference-workers",
+        type=int,
+        default=1,
+        help="Thread workers for finite-difference gradient-gate columns.",
+    )
     args = parser.parse_args()
 
-    result = optimize_stellarator_itg("quasilinear_flux")
+    result = optimize_stellarator_itg("quasilinear_flux", finite_difference_workers=args.finite_difference_workers)
     write_result_artifacts(
         result,
         args.out,
