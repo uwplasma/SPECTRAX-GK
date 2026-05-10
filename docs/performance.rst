@@ -574,8 +574,29 @@ full-RHS, linked-boundary, electromagnetic, or nonlinear performance claim.
 The gated slices are available together through
 ``spectraxgk.linear_rhs_parallel_cached`` with
 ``RuntimeParallelConfig(strategy="velocity", axis="hermite",
-backend="electrostatic_linear_slices")``. That backend rejects diamagnetic,
-collision, electromagnetic, linked-boundary, and nonlinear terms.
+backend="electrostatic_linear_slices")``.
+
+The electrostatic diamagnetic-drive gate validates the remaining local
+electrostatic drive slice. It uses the Hermite-sharded electrostatic field
+reduction, then applies the local ``m=0`` and ``m=2`` density/temperature
+gradient masks on each Hermite shard:
+
+.. image:: _static/electrostatic_diamagnetic_gate.png
+   :alt: SPECTRAX-GK electrostatic diamagnetic-drive identity gate
+   :align: center
+
+It is regenerated with:
+
+.. code-block:: bash
+
+   python tools/generate_electrostatic_diamagnetic_gate.py --logical-devices 2
+
+The tracked artifact passes with ``phi_norm=1.68e-1`` and zero reported
+absolute/relative error against the production diamagnetic-only linear RHS.
+The opt-in ``backend="electrostatic_linear_slices"`` route now combines
+streaming, mirror, curvature, grad-B, and diamagnetic slices. It still rejects
+collision, electromagnetic, linked-boundary, multi-species, and nonlinear
+terms until each path has its own identity gate.
 
 The periodic linear-streaming microkernel gate then adds the spectral
 parallel derivative along the field-line direction and compares the resulting
@@ -644,8 +665,8 @@ The tracked artifact passes with ``phi_norm=1.34e-1``,
 ``max_phi_abs_error=1.9e-9``, ``max_abs_error=1.4e-7``, and
 ``max_rel_error=4.1e-7``. The field solve uses the single-species
 Hermite-sharded electrostatic reduction gate above; this validates the
-field-reduction-to-streaming call graph before drift and nonlinear terms are
-introduced.
+field-reduction-to-streaming call graph before the drift, diamagnetic-drive,
+and nonlinear paths are introduced.
 
 Fixed-step nonlinear state sharding
 -----------------------------------

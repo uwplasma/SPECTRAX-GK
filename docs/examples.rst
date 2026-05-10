@@ -216,6 +216,21 @@ The first electrostatic drift-slice gate is:
    offset-1 and offset-2 Hermite exchanges, compared against the production
    linear RHS with only those terms enabled.
 
+The matching electrostatic diamagnetic-drive gate is:
+
+.. code-block:: bash
+
+   python tools/generate_electrostatic_diamagnetic_gate.py --logical-devices 2
+
+.. figure:: _static/electrostatic_diamagnetic_gate.png
+   :alt: SPECTRAX-GK electrostatic diamagnetic-drive identity gate
+   :width: 100%
+
+   Hermite-sharded electrostatic diamagnetic drive. The sharded route first
+   uses the electrostatic field-reduction gate, then applies the local
+   ``m=0`` and ``m=2`` drive masks on each Hermite shard. This closes the
+   diamagnetic slice for the opt-in electrostatic linear-slices backend.
+
 The periodic streaming microkernel gate adds that field-line derivative:
 
 .. code-block:: bash
@@ -258,8 +273,8 @@ With a nonzero electrostatic response, use:
 
    Streaming plus electrostatic ``phi`` call-graph comparison. The field solve
    uses the Hermite-sharded electrostatic reduction gate; this validates the
-   next velocity-sharded streaming slice before drift and nonlinear terms are
-   introduced.
+   next velocity-sharded streaming slice before drift, diamagnetic-drive, and
+   nonlinear terms are introduced.
 
 Use the strong-scaling sweep helper to collect parallelization timings for the
 distributed linear RK2 loop:

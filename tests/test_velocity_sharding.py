@@ -11,6 +11,8 @@ from spectraxgk.velocity_sharding import (
     build_velocity_sharding_plan,
     curvature_gradb_drift_reference,
     curvature_gradb_drift_shard_map,
+    diamagnetic_drive_reference,
+    diamagnetic_drive_shard_map,
     electrostatic_phi_reference,
     electrostatic_phi_shard_map,
     hermite_neighbor_reference,
@@ -432,6 +434,100 @@ def test_mirror_and_curvature_gradb_drift_shard_maps_match_reference_when_logica
     np.testing.assert_allclose(np.asarray(drift_observed), np.asarray(drift_expected), rtol=2.0e-6, atol=2.0e-6)
 
 
+def test_diamagnetic_drive_shard_map_matches_production_term() -> None:
+    from spectraxgk.linear import LinearTerms, linear_rhs_cached
+
+    state, cache, params = _small_periodic_field_problem()
+    phi = electrostatic_phi_reference(
+        state,
+        Jl=cache.Jl,
+        tau_e=params.tau_e,
+        charge=params.charge_sign,
+        density=params.density,
+        tz=params.tz,
+        mask0=cache.mask0,
+    )
+    plan = build_velocity_sharding_plan(state.shape, num_devices=1, axes=("hermite",))
+
+    observed = diamagnetic_drive_shard_map(
+        state,
+        plan,
+        phi=phi,
+        Jl=cache.Jl,
+        l4=cache.l4,
+        tprim=params.R_over_LTi,
+        fprim=params.R_over_Ln,
+        omega_star_scale=params.omega_star_scale,
+        ky=cache.ky,
+        devices=[jax.devices()[0]],
+    )
+    expected, _phi = linear_rhs_cached(
+        state,
+        cache,
+        params,
+        terms=LinearTerms(
+            streaming=0.0,
+            mirror=0.0,
+            curvature=0.0,
+            gradb=0.0,
+            diamagnetic=1.0,
+            collisions=0.0,
+            hypercollisions=0.0,
+            end_damping=0.0,
+            apar=0.0,
+            bpar=0.0,
+        ),
+        use_jit=False,
+        use_custom_vjp=False,
+    )
+
+    np.testing.assert_allclose(np.asarray(observed), np.asarray(expected), rtol=2.0e-6, atol=2.0e-6)
+    assert spectraxgk.diamagnetic_drive_reference is diamagnetic_drive_reference
+    assert spectraxgk.diamagnetic_drive_shard_map is diamagnetic_drive_shard_map
+
+
+def test_diamagnetic_drive_shard_map_matches_reference_when_logical_devices_available() -> None:
+    devices = jax.devices()
+    if len(devices) < 2:
+        pytest.skip("requires at least two JAX devices; artifact generator sets logical CPU devices")
+    state, cache, params = _small_periodic_field_problem()
+    phi = electrostatic_phi_reference(
+        state,
+        Jl=cache.Jl,
+        tau_e=params.tau_e,
+        charge=params.charge_sign,
+        density=params.density,
+        tz=params.tz,
+        mask0=cache.mask0,
+    )
+    plan = build_velocity_sharding_plan(state.shape, num_devices=2, axes=("hermite",))
+
+    observed = diamagnetic_drive_shard_map(
+        state,
+        plan,
+        phi=phi,
+        Jl=cache.Jl,
+        l4=cache.l4,
+        tprim=params.R_over_LTi,
+        fprim=params.R_over_Ln,
+        omega_star_scale=params.omega_star_scale,
+        ky=cache.ky,
+        devices=devices[:2],
+    )
+    expected = diamagnetic_drive_reference(
+        state,
+        phi=phi,
+        Jl=cache.Jl,
+        l4=cache.l4,
+        tprim=params.R_over_LTi,
+        fprim=params.R_over_Ln,
+        omega_star_scale=params.omega_star_scale,
+        ky=cache.ky,
+    )
+
+    np.testing.assert_allclose(np.asarray(observed), np.asarray(expected), rtol=2.0e-6, atol=2.0e-6)
+
+
 def test_hermite_streaming_ladder_reference_matches_manual_coefficients() -> None:
     state = jnp.zeros((1, 4, 1, 1, 1), dtype=jnp.complex64)
     state = state.at[0, 2, 0, 0, 0].set(3.0 + 2.0j)
@@ -656,7 +752,7 @@ def test_linear_rhs_parallel_cached_electrostatic_linear_slices_match_serial_cal
         mirror=1.0,
         curvature=1.0,
         gradb=1.0,
-        diamagnetic=0.0,
+        diamagnetic=1.0,
         collisions=0.0,
         hypercollisions=0.0,
         end_damping=0.0,
@@ -695,11 +791,11 @@ def test_linear_rhs_parallel_cached_electrostatic_linear_slices_rejects_ungated_
     state = jnp.zeros((1, 4, 1, 1, 3), dtype=jnp.complex64)
     parallel = RuntimeParallelConfig(strategy="velocity", backend="electrostatic_linear_slices", axis="hermite", num_devices=1)
 
-    with pytest.raises(NotImplementedError, match="diamagnetic/collision/EM"):
+    with pytest.raises(NotImplementedError, match="collision/EM"):
         linear_rhs_parallel_cached(
             state,
             Cache(),
             LinearParams(),
-            terms=LinearTerms(diamagnetic=1.0),
+            terms=LinearTerms(collisions=1.0),
             parallel=parallel,
         )
