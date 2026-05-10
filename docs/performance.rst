@@ -499,6 +499,40 @@ for linear scans, quasilinear studies, sensitivity sweeps, and UQ ensembles:
 it has much better scaling behavior than whole-state nonlinear sharding
 because communication is restricted to post-run result aggregation.
 
+The same independent-worker policy is also gated on a quasilinear/UQ-style
+ensemble: six late-time Cyclone ITG gradient samples, five ``k_y`` values per
+sample, ``Ny=96``, ``Nz=64``, ``Nl=3``, ``Nm=6``, and ``2000`` RK2 steps per
+mode. Each worker computes real late-time linear growth/frequency fits and a
+reduced mixing-length feature observable. The observable is useful for
+parallelization and UQ plumbing, but it is not promoted as an absolute
+nonlinear heat-flux predictor.
+
+.. image:: _static/quasilinear_uq_ensemble_scaling_large.png
+   :alt: SPECTRAX-GK quasilinear UQ ensemble CPU/GPU strong-scaling artifact
+   :align: center
+
+It is regenerated with:
+
+.. code-block:: bash
+
+   python tools/profile_quasilinear_uq_ensemble_scaling.py \
+     --backend cpu --devices 1,2,4,8 \
+     --out-prefix docs/_static/quasilinear_uq_ensemble_scaling_cpu_large
+
+   python tools/profile_quasilinear_uq_ensemble_scaling.py \
+     --backend gpu --devices 1,2 \
+     --out-prefix docs/_static/quasilinear_uq_ensemble_scaling_gpu_large
+
+   python tools/plot_quasilinear_uq_ensemble_scaling.py
+
+The May 10, 2026 ``office`` sweep passes the serial identity gate for both the
+reduced quasilinear proxy and ``gamma``. The CPU run reaches ``1.70x`` on two
+workers, ``2.75x`` on four workers, and ``5.41x`` on eight requested workers
+using six actual ensemble chunks. The two-GPU RTX A4000 run reaches ``1.71x``
+with about ``86%`` parallel efficiency. This closes the release engineering
+gate for quasilinear calibration grids, finite-difference checks, sensitivity
+sweeps, and UQ ensembles that can be decomposed into independent solver calls.
+
 The production nonlinear-decomposition plan follows the same conservative
 rule. ``spectraxgk.build_velocity_sharding_plan`` records a GX-inspired
 species-first, Hermite-second velocity-space layout, including which axes need

@@ -24,9 +24,12 @@ def test_quasilinear_uq_ensemble_scaling_parser_defaults_to_bounded_solver_case(
     assert args.out_prefix == mod.DEFAULT_PREFIX
     assert args.backend == "cpu"
     assert args.devices == [1, 2, 4]
-    assert len(args.gradients) == 8
-    assert len(args.ky) == 6
-    assert args.steps == 160
+    assert args.gradients == [2.20, 2.40, 2.60, 2.80, 3.00, 3.20]
+    assert args.ky == [0.10, 0.20, 0.30, 0.40, 0.50]
+    assert args.steps == 2000
+    assert args.sample_stride == 10
+    assert args.fit_start_fraction == 0.5
+    assert args.fit_end_fraction == 0.95
 
 
 def test_quasilinear_uq_ensemble_scaling_reduced_observable_is_positive_for_unstable_modes() -> None:
