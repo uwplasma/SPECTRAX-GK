@@ -3769,3 +3769,20 @@ Exit gate:
     loop/index variables;
   - verification: ``python -m ruff check src/spectraxgk`` is clean, mypy passed
     on touched modules, and the touched-module pytest shard passed.
+- CI/runtime compatibility fix:
+  - restored the legacy private-helper re-export surface in ``src/spectraxgk/runtime.py`` after the source ruff cleanup removed imports still exercised by the runtime helper tests;
+  - added an explicit ``__all__`` so the compatibility surface is intentional and ruff-clean;
+  - verification: ``python -m ruff check src/spectraxgk/runtime.py``, ``mypy src/spectraxgk/runtime.py``, and the CI-equivalent runtime pytest shard passed locally.
+- Tests/tools static-quality cleanup:
+  - made ``python -m ruff check src/spectraxgk tests tools`` clean;
+  - scoped ``E402`` per-file ignores to ``tests/*.py`` and ``tools/*.py`` because those files intentionally bootstrap local source paths for direct execution;
+  - fixed real lint-exposed issues rather than suppressing them: completed the multispecies linear-RHS shape test, used the geometry-contract override values in the imported-geometry test, restored the missing ``SpectralGrid`` plotting import, and removed dead profiling/table locals;
+  - verification: targeted tests for the changed physics/test paths passed, touched tools compiled with ``py_compile``, full source/test/tool ruff passed, and ``git diff --check`` passed.
+- Local release checks after this tranche:
+  - ``python -m build --sdist --wheel`` passed for ``spectraxgk-1.5.0``;
+  - ``python tools/check_repository_size_manifest.py`` passed with tracked size ``44.08 MB``;
+  - ``python tools/check_validation_coverage_manifest.py --skip-artifact-check`` passed schema checks and still lists 15 high-priority modules active/open for the package-wide 95% coverage/validation-depth lane.
+- Next best implementation steps:
+  - monitor the new CI run for ``3c4c435`` and fix any remote-only failure immediately;
+  - run a bounded local fast-coverage shard if CI remains queued, then inspect any module below target before adding tests;
+  - resume the active ordered plan at parallelization/coverage/refactor with no new nonlinear speedup claims unless backed by fresh profiler artifacts.
