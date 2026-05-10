@@ -700,15 +700,17 @@ It is regenerated with:
 
 .. code-block:: bash
 
-   python tools/profile_linear_rhs_parallel_slices.py --logical-devices 2
+   python tools/profile_linear_rhs_parallel_slices.py \
+     --logical-devices 8 --nl 4 --nm 128 --ny 32 --nz 128 --rtol 1e-5
 
-The tracked CPU artifact keeps identity within tolerance but records
-``serial_median_s=1.41e-1``, ``sharded_median_s=3.86``, and
-``speedup=0.04x`` on the bounded local workload. This is a useful negative
-result: the current Hermite-sharded route is correct, but not performant on
-this workload. Do not use it for runtime claims until the multiple shard-map
-launches and mesh setup are fused or cached and a fresh profile shows a real
-speedup.
+The tracked CPU artifact uses a Hermite-heavy workload and keeps the sharded
+route within a float32 reduction-order engineering tolerance:
+``max_abs_error=2.4e-6``, ``max_rel_error=6.0e-6``, and
+``max_phi_abs_error=7.5e-9``. The warm timings are
+``serial_median_s=4.37e-2``, ``sharded_median_s=3.11e-2``, and
+``speedup=1.40x`` on eight logical CPU devices. This remains an engineering
+profile rather than a publication speedup claim; the stricter small-grid
+identity gate above is the release correctness gate.
 
 Fixed-step nonlinear state sharding
 -----------------------------------

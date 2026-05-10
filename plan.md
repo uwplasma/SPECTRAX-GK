@@ -3380,18 +3380,27 @@ Exit gate:
     larger bounded CPU workload, while also recording identity errors;
   - generated
     ``docs/_static/linear_rhs_parallel_slices_profile.{png,pdf,csv,json}``;
-  - the tracked local profile passes the identity gate with
-    ``max_abs_error=4.132218691665912e-07``,
-    ``max_rel_error=1.0400418659628485e-06``, and zero potential error, but it
-    is not performant: ``serial_median_s=0.14060408296063542``,
+  - the first tracked local profile passed identity but was not performant:
+    ``serial_median_s=0.14060408296063542``,
     ``sharded_median_s=3.856044082902372``, ``speedup=0.036463297601827566``.
 - Optimization result from this profile:
   - removed one redundant electrostatic field solve from the composed backend
     by reusing the precomputed ``phi`` in the streaming slice;
-  - the bounded profile improved from about ``0.033x`` to ``0.036x`` speedup,
-    which is still a negative result;
-  - next performance work should fuse or cache the current multiple
-    ``shard_map`` launches and mesh setup before broadening this route further.
+  - a pure fused ``shard_map`` preserved identity but was slower without
+    callable caching, confirming compile/setup overhead as the main issue;
+  - added a per-cache/device cached fused Hermite ``shard_map`` callable for
+    the multi-device route;
+  - the updated tracked Hermite-heavy CPU profile passes the engineering
+    identity gate with ``max_abs_error=2.366846729273675e-06``,
+    ``max_rel_error=5.955886081210338e-06``, and
+    ``max_phi_abs_error=7.508562660518692e-09``;
+  - warm timings on eight logical CPU devices are
+    ``serial_median_s=0.043669458013027906``,
+    ``sharded_median_s=0.031135583063587546``,
+    ``speedup=1.4025579005166755``;
+  - this is an engineering profile, not a publication speedup claim; the
+    stricter small-grid composed identity gate remains the release correctness
+    gate.
 - Validation for this profile tranche so far:
   - ``python -m pytest -q tests/test_profile_linear_rhs_parallel_slices.py``
     passed under the 300-second cap;
@@ -3403,13 +3412,13 @@ Exit gate:
     --logical-devices 2 --out-prefix
     docs/_static/linear_rhs_electrostatic_slices_gate`` regenerated the
     passing identity artifact after the reuse patch;
-  - ``python tools/profile_linear_rhs_parallel_slices.py --logical-devices 2
-    --nl 4 --nm 16 --ny 8 --nz 32 --warmups 1 --repeats 3 --out-prefix
-    docs/_static/linear_rhs_parallel_slices_profile`` generated the tracked
-    engineering profile.
+  - ``python tools/profile_linear_rhs_parallel_slices.py --logical-devices 8
+    --nl 4 --nm 128 --ny 32 --nz 128 --warmups 1 --repeats 3 --rtol 1e-5
+    --out-prefix docs/_static/linear_rhs_parallel_slices_profile`` generated
+    the tracked engineering profile.
 - Next best implementation steps:
   - run the bounded docs/test shard including the new profile test;
   - commit/push the profile and reuse patch;
-  - start an implementation spike for a fused/cached Hermite-sharded
-    electrostatic RHS kernel, but keep the runtime default serial until a fresh
-    profile shows a real CPU or GPU speedup at numerical identity.
+  - run the same cached fused profile on ``ssh office`` GPUs;
+  - add a profile sweep artifact over ``num_devices`` and Hermite size before
+    promoting any broad parallel-speedup claim.

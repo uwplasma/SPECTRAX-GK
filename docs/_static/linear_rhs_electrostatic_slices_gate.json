@@ -11,7 +11,7 @@
   },
   "identity_passed": true,
   "max_abs_error": 1.467594188397925e-07,
-  "max_phi_abs_error": 0.0,
+  "max_phi_abs_error": 4.165001232792065e-09,
   "max_rel_error": 3.6947963621969393e-07,
   "notes": "This is the composed call-graph gate for streaming, mirror, curvature, grad-B, and diamagnetic-drive slices after each primitive has passed its own identity gate.",
   "phi_norm": 0.16790585219860077,
@@ -61,19 +61,19 @@
   "requested_devices": 2,
   "rows": [
     {
-      "abs_error": 0.0,
+      "abs_error": 5.960464477539063e-08,
       "m": 0,
       "serial_norm": 1.0457605123519897,
-      "sharded_norm": 1.0457605123519897
+      "sharded_norm": 1.0457606315612793
     },
     {
       "abs_error": 1.467594188397925e-07,
       "m": 1,
       "serial_norm": 1.30357027053833,
-      "sharded_norm": 1.30357027053833
+      "sharded_norm": 1.3035701513290405
     },
     {
-      "abs_error": 6.332993507385254e-08,
+      "abs_error": 6.322026990801533e-08,
       "m": 2,
       "serial_norm": 0.9904649257659912,
       "sharded_norm": 0.9904648661613464
