@@ -3760,3 +3760,12 @@ Exit gate:
     dropped;
   - added a CLI regression test that verifies ``fit_signal`` reaches the scan
     run kwargs.
+- Repo-wide source ruff cleanup:
+  - cleaned stale variables/imports and ambiguous Laguerre-index names across
+    ``basis.py``, ``gyroaverage.py``, ``gx_legacy_output.py``, Miller geometry
+    helpers, VMEC geometry stub, GX integrators, Krylov selection, and
+    secondary runtime helpers;
+  - preserved behavior by only removing dead locals/imports or renaming local
+    loop/index variables;
+  - verification: ``python -m ruff check src/spectraxgk`` is clean, mypy passed
+    on touched modules, and the touched-module pytest shard passed.
