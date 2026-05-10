@@ -679,6 +679,13 @@ performance claims:
   ``docs/_static/linear_rhs_streaming_electrostatic_gate.{png,pdf,csv,json}``
   gates the field-reduction-to-streaming call graph for the current
   single-species periodic electrostatic route.
+- ``tools/generate_linear_rhs_electrostatic_slices_gate.py`` compares the
+  composed opt-in ``backend="electrostatic_linear_slices"`` route against
+  serial ``linear_rhs_cached`` with streaming, mirror, curvature, grad-B, and
+  diamagnetic drive enabled. Its artifact
+  ``docs/_static/linear_rhs_electrostatic_slices_gate.{png,pdf,csv,json}``
+  is the current single-species periodic electrostatic linear-RHS identity
+  gate for velocity-space parallelization.
 - ``tools/profile_nonlinear_sharding.py`` runs a bounded fixed-step nonlinear
   serial-vs-sharded final-state comparison and writes
   ``docs/_static/nonlinear_sharding_profile.json`` locally and

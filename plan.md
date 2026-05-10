@@ -3341,3 +3341,34 @@ Exit gate:
   - start the next isolated production-parallelization gate with either
     electrostatic collision/hypercollision slices or a ky/batch linear-scan
     composition gate, keeping nonlinear domain decomposition separate.
+- Added the composed electrostatic linear-slices call-graph artifact:
+  - added ``tools/generate_linear_rhs_electrostatic_slices_gate.py`` and
+    ``tests/test_generate_linear_rhs_electrostatic_slices_gate.py``;
+  - the tool compares serial production ``linear_rhs_cached`` against
+    ``linear_rhs_parallel_cached`` with
+    ``RuntimeParallelConfig(strategy="velocity", axis="hermite",
+    backend="electrostatic_linear_slices")`` and streaming, mirror, curvature,
+    grad-B, and diamagnetic drive enabled;
+  - generated
+    ``docs/_static/linear_rhs_electrostatic_slices_gate.{png,pdf,csv,json}``;
+  - the tracked two-logical-CPU artifact passes with
+    ``phi_norm=0.16790585219860077``,
+    ``max_abs_error=1.467594188397925e-07``,
+    ``max_rel_error=3.6947963621969393e-07``, and zero potential error.
+- Validation for the composed artifact so far:
+  - ``python -m pytest -q tests/test_generate_linear_rhs_electrostatic_slices_gate.py tests/test_velocity_sharding.py``
+    passed under the 300-second cap with expected logical-device skips;
+  - targeted ``ruff check --extend-ignore F401`` passed for the touched tool,
+    tests, and linear backend source;
+  - ``python tools/generate_linear_rhs_electrostatic_slices_gate.py
+    --logical-devices 2 --out-prefix
+    docs/_static/linear_rhs_electrostatic_slices_gate`` generated the tracked
+    passing artifact.
+- Next best implementation steps:
+  - run the bounded docs/test shard including the composed artifact test;
+  - run a larger CPU timing/profiling probe for the serial and sharded
+    electrostatic linear-slices route and record it as an engineering artifact,
+    not a claim unless the workload and identity gate are publication-sized;
+  - keep the next physics-scope expansion focused on either collision slices
+    or linked-boundary/twist-shift communication, both as isolated gates before
+    exposing them through the runtime route.

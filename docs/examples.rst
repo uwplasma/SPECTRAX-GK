@@ -276,6 +276,23 @@ With a nonzero electrostatic response, use:
    next velocity-sharded streaming slice before drift, diamagnetic-drive, and
    nonlinear terms are introduced.
 
+For the composed electrostatic linear-slices backend, use:
+
+.. code-block:: bash
+
+   python tools/generate_linear_rhs_electrostatic_slices_gate.py --logical-devices 2
+
+.. figure:: _static/linear_rhs_electrostatic_slices_gate.png
+   :alt: SPECTRAX-GK composed electrostatic linear-slices identity gate
+   :width: 100%
+
+   Full opt-in electrostatic linear-slices call-graph comparison for
+   streaming, mirror, curvature, grad-B, and diamagnetic drive. This is the
+   current production-parallelization identity artifact for the
+   single-species periodic electrostatic RHS path; collisions, linked
+   boundaries, electromagnetic terms, and nonlinear brackets remain separate
+   gates.
+
 Use the strong-scaling sweep helper to collect parallelization timings for the
 distributed linear RK2 loop:
 

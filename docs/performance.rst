@@ -668,6 +668,27 @@ Hermite-sharded electrostatic reduction gate above; this validates the
 field-reduction-to-streaming call graph before the drift, diamagnetic-drive,
 and nonlinear paths are introduced.
 
+The current composed electrostatic linear-RHS gate then exercises the opt-in
+``backend="electrostatic_linear_slices"`` route against the serial production
+RHS with streaming, mirror, curvature, grad-B, and diamagnetic drive enabled:
+
+.. image:: _static/linear_rhs_electrostatic_slices_gate.png
+   :alt: SPECTRAX-GK composed electrostatic linear-slices identity gate
+   :align: center
+
+It is regenerated with:
+
+.. code-block:: bash
+
+   python tools/generate_linear_rhs_electrostatic_slices_gate.py --logical-devices 2
+
+The tracked artifact passes with ``phi_norm=1.68e-1``,
+``max_abs_error=1.5e-7``, ``max_rel_error=3.7e-7``, and zero reported
+electrostatic-potential error. This is the current single-species periodic
+electrostatic linear-RHS identity gate for velocity-space parallelization. It
+is not a linked-boundary, collision, electromagnetic, nonlinear, or speedup
+claim.
+
 Fixed-step nonlinear state sharding
 -----------------------------------
 
