@@ -88,6 +88,7 @@ def _time_callable(fn: Callable[[], Any], *, repeats: int) -> tuple[list[float],
 
 def profile_linear_rhs_parallel_slices(
     *,
+    platform: str,
     requested_devices: int,
     nx: int,
     ny: int,
@@ -107,9 +108,10 @@ def profile_linear_rhs_parallel_slices(
     from spectraxgk.linear import linear_rhs_cached, linear_rhs_parallel_cached
     from spectraxgk.runtime_config import RuntimeParallelConfig
 
-    device_list = list(jax.devices("cpu"))[: int(requested_devices)]
+    platform_name = str(platform).lower()
+    device_list = list(jax.devices(platform_name))[: int(requested_devices)]
     if len(device_list) < int(requested_devices):
-        raise RuntimeError(f"requested {requested_devices} CPU devices, but only {len(device_list)} are available")
+        raise RuntimeError(f"requested {requested_devices} {platform_name} devices, but only {len(device_list)} are available")
     state, cache, params, grid = build_problem(nx=nx, ny=ny, nz=nz, nl=nl, nm=nm)
     terms = _terms()
     parallel_cfg = RuntimeParallelConfig(
@@ -166,6 +168,7 @@ def profile_linear_rhs_parallel_slices(
             ),
             "state_shape": tuple(int(x) for x in state.shape),
             "grid": {"Nx": int(nx), "Ny_requested": int(ny), "Ny_actual": int(grid.ky.size), "Nz": int(grid.z.size)},
+            "platform": platform_name,
             "requested_devices": int(requested_devices),
             "actual_devices": len(device_list),
             "warmups": int(warmups),
@@ -253,6 +256,7 @@ def write_artifacts(summary: dict[str, object], out_prefix: Path) -> dict[str, s
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out-prefix", type=Path, default=DEFAULT_PREFIX)
+    parser.add_argument("--platform", choices=("cpu", "gpu"), default="cpu")
     parser.add_argument("--logical-devices", type=int, default=2)
     parser.add_argument("--nl", type=int, default=4)
     parser.add_argument("--nm", type=int, default=16)
@@ -268,8 +272,10 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main() -> None:
     args = build_parser().parse_args()
-    _configure_logical_cpu_devices(args.logical_devices)
+    if args.platform == "cpu":
+        _configure_logical_cpu_devices(args.logical_devices)
     summary = profile_linear_rhs_parallel_slices(
+        platform=str(args.platform),
         requested_devices=int(args.logical_devices),
         nx=int(args.nx),
         ny=int(args.ny),

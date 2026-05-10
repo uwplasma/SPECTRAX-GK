@@ -269,6 +269,8 @@ artifact_paths = [
   "docs/_static/linear_rhs_electrostatic_slices_gate.json",
   "docs/_static/linear_rhs_parallel_slices_profile.png",
   "docs/_static/linear_rhs_parallel_slices_profile.json",
+  "docs/_static/linear_rhs_parallel_slices_profile_gpu.png",
+  "docs/_static/linear_rhs_parallel_slices_profile_gpu.json",
   "docs/_static/nonlinear_sharding_profile.json",
   "docs/_static/nonlinear_sharding_profile_office_gpu.json",
 ]
