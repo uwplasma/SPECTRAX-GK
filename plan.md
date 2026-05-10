@@ -2412,3 +2412,28 @@ Exit gate:
   - this is now a bounded profiler-state GPU source improvement. It is not a
     transport-runtime claim, and the next production performance lane remains
     larger-state nonlinear profiling plus linear-RHS/bracket layout work.
+- Closed the release-level technical/performance readiness lane:
+  - confirmed the latest checked public CI run on ``main`` passed before this
+    push, including hygiene, docs/package, quick shards, and wide coverage;
+  - added matched W7-X and HSX runtime-mode nonlinear RHS profiler artifacts:
+    ``docs/_static/nonlinear_rhs_profile_stellarator_runtime.{png,pdf,json}``
+    and CPU/GPU CSV companions;
+  - the W7-X runtime-mode profile records ``full_rhs≈3.09e-1 s`` on CPU and
+    ``2.73e-2 s`` on one GPU; HSX records ``full_rhs≈3.09e-1 s`` on CPU and
+    ``2.71e-2 s`` on one GPU;
+  - updated the manuscript-readiness and open-research dashboards so the
+    profiler/performance lane closes only when the nonlinear sharding identity
+    gate, Miller CPU/GPU split profiles, W7-X/HSX CPU/GPU split profiles, and
+    fused full-nonlinear CPU/GPU traces are all present and GPU rows are faster
+    than their CPU counterparts;
+  - regenerated ``docs/_static/manuscript_readiness_status.*`` and
+    ``docs/_static/open_research_lane_status.*``. The manuscript/release scope
+    now reports ``5/5`` active lanes closed with W7-X zonal recurrence and
+    TEM/kinetic-electron stellarator validation deferred by scope. The broader
+    research tracker reports two closed lanes, two partial lanes, and one open
+    lane;
+  - kept the claim surface conservative: release performance evidence is
+    closed for runtime/memory accounting, CPU/GPU profiler coverage, and
+    numerical-identity gates, while broad production nonlinear speedup and
+    nonlinear domain-decomposition claims remain future science/performance
+    work.

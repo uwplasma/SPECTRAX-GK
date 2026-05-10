@@ -20,8 +20,8 @@ quasilinear diagnostics/model selection, nonlinear-window comparison gates,
 compact nonlinear startup-window finite-difference plumbing audits, mode-21
 VMEC/Boozer geometry parity, reduced differentiable stellarator ITG
 optimization examples, and linear/quasilinear VMEC/Boozer AD-vs-finite-
-difference gradient gates on QH and Li383. The latest public CI run for commit
-``5790e0e`` passed the quick shards, docs/packaging, mypy, repo hygiene, fast
+difference gradient gates on QH and Li383. The latest checked public CI run on
+``main`` passed the quick shards, docs/packaging, mypy, repo hygiene, fast
 coverage, and the full wide-coverage matrix with ``95%`` package-wide coverage.
 
 The broader plan is not fully closed. The current quasilinear figures are
@@ -85,7 +85,7 @@ Core Validation Figures
    * - Open research lane status
      - ``tools/build_open_research_lane_status.py``
      - Closed as a claim-scope audit; underlying physics lanes remain scoped
-     - current artifact base: ``docs/_static/open_research_lane_status.png`` with CSV/JSON/PDF companions. It reads the W7-X zonal recurrence, W7-X hypercollision probe, W7-X fluctuation/TEM extension status, quasilinear holdout, differentiable-geometry, and nonlinear-profiler artifacts and records which lanes are closed, partial, open, or blocked. The current status is intentionally conservative: W7-X long-window zonal recurrence/damping and absolute quasilinear flux promotion are open; W7-X fluctuation spectra, differentiable geometry, and profiler identity artifacts are partial diagnostics. This panel is useful for the paper plan and release notes because it prevents partial diagnostics from being described as completed physics claims.
+     - current artifact base: ``docs/_static/open_research_lane_status.png`` with CSV/JSON/PDF companions. It reads the W7-X zonal recurrence, W7-X hypercollision probe, W7-X fluctuation/TEM extension status, quasilinear holdout, differentiable-geometry, and nonlinear-profiler artifacts and records which lanes are closed, partial, open, or blocked. The current status is intentionally conservative: nonlinear holdouts for the scoped quasilinear model-development claim and profiler-backed nonlinear hot-path localization are closed; W7-X fluctuation/TEM and differentiable geometry are partial bounded diagnostics; and W7-X long-window zonal recurrence/damping remains open. This panel is useful for the paper plan and release notes because it prevents partial diagnostics from being described as completed physics claims.
    * - Manuscript-readiness status panel
      - ``tools/build_manuscript_readiness_status.py``
      - Current manuscript scope with W7-X zonal and TEM deferred
@@ -140,8 +140,8 @@ Core Validation Figures
      - W7-X multi-flux-tube + zonal-flow response + HSX summary as needed; add heavy-electron EM verification before realistic-electron EM claims
    * - Performance panel
      - existing performance tooling
-     - Open
-     - keep separate from validation figures
+     - Closed for release-level scoped claims
+     - current artifact bases: ``docs/_static/runtime_memory_benchmark.png``, ``docs/_static/nonlinear_rhs_profile_miller.png``, ``docs/_static/nonlinear_rhs_profile_stellarator_runtime.png``, ``docs/_static/full_nonlinear_rhs_trace_summary.json``, ``docs/_static/full_nonlinear_rhs_trace_gpu_summary.json``, and ``docs/_static/nonlinear_sharding_profile_office_gpu.json``. The release claim is limited to current cold/warm runtime accounting, CPU/GPU nonlinear RHS hot-path localization, W7-X/HSX runtime-mode stellarator smoke profiles, and numerical-identity gates. It is not a production nonlinear domain-decomposition speedup claim.
    * - Parallelization identity gate
      - ``tools/generate_parallel_ky_scan_gate.py``
      - Closed for independent Cyclone ``k_y`` batching
