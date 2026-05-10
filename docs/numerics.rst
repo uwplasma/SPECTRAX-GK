@@ -213,7 +213,10 @@ end-to-end JAX differentiability:
   matrix-free linear operator with
   :func:`spectraxgk.nonlinear.build_nonlinear_imex_operator` and pass it to
   :func:`spectraxgk.nonlinear.integrate_nonlinear_imex_cached` via
-  ``implicit_operator``.
+  ``implicit_operator``. When ``apar=bpar=0``, the IMEX fixed-point and
+  post-step field paths use the same electrostatic compiled linear-RHS route as
+  the explicit nonlinear RHS, avoiding unused electromagnetic Hamiltonian
+  branches while preserving the generic-RHS identity gate.
 
 Automatic solver + fit-signal selection
 ---------------------------------------

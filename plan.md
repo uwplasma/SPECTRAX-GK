@@ -3742,3 +3742,13 @@ Exit gate:
     (``6.18e-3 s``), and hypercollisions (``6.20e-3 s``);
   - interpretation: optimize full-graph layout/fusion and reusable transformed
     state paths next; do not claim standalone-term speedup from this profile.
+- IMEX electrostatic fast-path cleanup:
+  - factored nonlinear linear-RHS JIT selection into a single helper so the
+    explicit nonlinear RHS, nonlinear IMEX fixed-point predictor, and nonlinear
+    IMEX post-step field path all choose the electrostatic compiled RHS when
+    ``apar=bpar=0``;
+  - added a regression test that monkeypatches the generic RHS to fail and
+    verifies ``integrate_nonlinear_imex_cached`` uses the electrostatic path for
+    adiabatic-electron electrostatic terms;
+  - documentation updated in ``docs/numerics.rst`` and ``docs/performance.rst``;
+    no new end-to-end speedup claim is made until a fresh profile is recorded.

@@ -826,6 +826,47 @@ def test_integrate_nonlinear_imex_cached_shape_mismatch_and_zero_nonlinear(monke
     assert fields_t.phi.shape[0] == 2
 
 
+def test_integrate_nonlinear_imex_cached_uses_electrostatic_linear_path(monkeypatch) -> None:
+    G0 = jnp.zeros((1, 1, 1, 1, 2), dtype=jnp.complex64)
+    fields = FieldState(phi=jnp.zeros((1, 1, 2), dtype=jnp.complex64), apar=None, bpar=None)
+    implicit_operator = SimpleNamespace(
+        shape=G0.shape,
+        dt_val=jnp.asarray(0.1, dtype=jnp.float32),
+        precond_op=lambda x: x,
+        matvec=lambda x: x,
+        squeeze_species=False,
+        state_dtype=jnp.complex64,
+    )
+    calls: list[str] = []
+
+    monkeypatch.setattr(
+        "spectraxgk.nonlinear.assemble_rhs_cached_electrostatic_jit",
+        lambda G, cache, params, terms, **kwargs: (calls.append("electrostatic") or jnp.zeros_like(G), fields),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.nonlinear.assemble_rhs_cached_jit",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("generic linear RHS should not run")),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.nonlinear.jax.scipy.sparse.linalg.gmres",
+        lambda matvec, rhs, **kwargs: (rhs, SimpleNamespace(success=True)),
+    )
+
+    G_out, fields_t = integrate_nonlinear_imex_cached(
+        G0,
+        SimpleNamespace(),
+        SimpleNamespace(),
+        dt=0.1,
+        steps=1,
+        terms=TermConfig(nonlinear=0.0, apar=0.0, bpar=0.0),
+        implicit_operator=implicit_operator,
+    )
+
+    assert calls == ["electrostatic", "electrostatic"]
+    assert G_out.shape == G0.shape
+    assert fields_t.phi.shape[0] == 1
+
+
 def test_integrate_nonlinear_imex_cached_builds_operator_and_nonlinear_term(monkeypatch) -> None:
     G0 = jnp.zeros((1, 1, 1, 1, 2), dtype=jnp.complex64)
     cache = SimpleNamespace(

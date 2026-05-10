@@ -1232,7 +1232,10 @@ The linear integrator is ``jit``-compiled with the number of steps and method
 as static arguments. The operator term switches (:class:`spectraxgk.linear.LinearTerms`)
 should also remain static inside a compiled loop to avoid recompilation. The
 cached operator arrays can be constructed once and reused across multiple runs
-to avoid repeated geometry setup costs.
+to avoid repeated geometry setup costs. Nonlinear IMEX paths now reuse the
+electrostatic compiled linear-RHS route whenever ``apar=bpar=0``; this is a
+bounded fast path for adiabatic-electron electrostatic runs, not a new runtime
+claim until a fresh end-to-end profile is recorded.
 
 Planned optimizations
 ---------------------
