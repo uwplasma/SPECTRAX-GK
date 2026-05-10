@@ -3456,3 +3456,55 @@ Exit gate:
     Hermite size to map the useful CPU regime;
   - for GPU, investigate a different decomposition (batch/ky or ensemble
     sharding first) rather than promoting Hermite domain sharding.
+- CI coverage repair and CPU sweep follow-up:
+  - investigated the failed CI run ``25629475335`` and found that all wide
+    coverage shards finished, but the final combine job failed because package
+    coverage rounded to ``94%``; the largest new blocker was
+    ``src/spectraxgk/velocity_sharding.py`` at ``63%`` coverage;
+  - added fast branch, validation, mocked ``shard_map``, and 6D species
+    broadcast tests in ``tests/test_velocity_sharding.py`` so the module now
+    reaches ``99%`` in the targeted coverage run
+    (``508`` statements, ``6`` misses);
+  - pushed ``18c2438 Add velocity sharding coverage gates`` and cancelled the
+    stale superseded CI run so the fixed head can run;
+  - added ``tools/profile_linear_rhs_parallel_slices_sweep.py`` plus
+    ``tests/test_profile_linear_rhs_parallel_slices_sweep.py``;
+  - generated
+    ``docs/_static/linear_rhs_parallel_slices_sweep.{png,pdf,csv,json}`` with
+    ``Nm=64,128`` over ``1,2,4,8`` logical CPU devices;
+  - all sweep points pass the engineering identity gate at ``rtol=1e-5``; the
+    best bounded point is ``1.57x`` at ``Nm=128`` on four logical CPU devices,
+    while one/two-device points remain overhead-limited;
+  - documented this as a development regime map in ``docs/performance.rst``
+    and ``docs/examples.rst``, explicitly not as a nonlinear or publication
+    speedup claim.
+- Next best implementation steps:
+  - wait for CI head ``18c2438`` to finish; if wide coverage still fails,
+    inspect the combined report and patch the next real coverage blocker;
+  - after CI is green, commit and push the sweep tool, artifact, and docs;
+  - run an analogous GPU-side decomposition investigation on office focused on
+    independent ``ky``/ensemble sharding rather than the current Hermite
+    domain sharding, since the two-GPU Hermite profile is negative.
+- Follow-up CI coverage repair:
+  - CI head ``18c2438`` passed repo hygiene, mypy, quick tests,
+    docs-and-packaging, fast coverage, and all ``48`` wide-coverage shards;
+    only the final combined wide-coverage job failed, with
+    ``16969`` statements, ``943`` misses, and total coverage still reported as
+    ``94%``;
+  - added fast benchmark-runner branch tests for:
+    GX-seeded Cyclone Krylov branch selection;
+    reduced Hermite-Laguerre seed fallback after primary seed failure;
+    runtime-configured Cyclone auto signal selection with saved density;
+    explicit-density diagnostic integration; and
+    KBM ``gx_time`` diagnostic fallback ordering;
+  - these tests are benchmark-logic gates, not synthetic coverage scaffolds:
+    they lock branch-following, seed fallback, diagnostic fallback, and
+    density/phi fit routing used by the benchmark validation lanes;
+  - targeted benchmark coverage improved from ``530`` local missed benchmark
+    lines before this tranche to ``426`` after it, which should recover more
+    than the remaining package-wide ``95%`` gap.
+- Next best implementation steps:
+  - commit and push the CI coverage repair plus the CPU sweep artifact;
+  - watch the new CI run through the final wide-coverage combine job;
+  - if the new combine job still misses ``95%``, inspect the next largest
+    remaining true blocker instead of lowering the threshold.

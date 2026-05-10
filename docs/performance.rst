@@ -712,6 +712,28 @@ route within a float32 reduction-order engineering tolerance:
 profile rather than a publication speedup claim; the stricter small-grid
 identity gate above is the release correctness gate.
 
+A compact CPU sweep maps the same opt-in route across Hermite resolution and
+logical device count:
+
+.. image:: _static/linear_rhs_parallel_slices_sweep.png
+   :alt: SPECTRAX-GK electrostatic linear-slices parallelization sweep
+   :align: center
+
+It is regenerated with:
+
+.. code-block:: bash
+
+   python tools/profile_linear_rhs_parallel_slices_sweep.py \
+     --platform cpu --devices 1,2,4,8 --nms 64,128 \
+     --nl 4 --ny 32 --nz 128 --rtol 1e-5
+
+The tracked sweep passes identity for all points. It shows the current
+Hermite-sharded electrostatic route is overhead-limited at one and two logical
+CPU devices, becomes competitive near four devices, and reaches the best
+bounded engineering point of ``1.57x`` at ``Nm=128`` on four logical CPU
+devices. This figure is a regime map for development, not a broad scaling
+claim.
+
 The same profiler can target GPUs on the office node:
 
 .. code-block:: bash

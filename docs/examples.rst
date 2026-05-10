@@ -309,6 +309,24 @@ update ``--backend`` accordingly (for example ``cuda_parallel_large``). The
 backend labels are just sweep names for the output table; they do not change
 the runtime physics or solver path.
 
+For the current opt-in Hermite-sharded electrostatic linear RHS path, use the
+engineering sweep helper:
+
+.. code-block:: bash
+
+   python tools/profile_linear_rhs_parallel_slices_sweep.py \
+     --platform cpu --devices 1,2,4,8 --nms 64,128 \
+     --nl 4 --ny 32 --nz 128 --rtol 1e-5
+
+.. figure:: _static/linear_rhs_parallel_slices_sweep.png
+   :alt: SPECTRAX-GK electrostatic linear-slices parallelization sweep
+   :width: 100%
+
+   Device-count and Hermite-resolution sweep for the opt-in electrostatic
+   linear-slices backend. The right panel is the identity gate; the left panel
+   is engineering timing only and should not be promoted as a nonlinear or
+   publication speedup claim.
+
 Plotting outputs
 ----------------
 
