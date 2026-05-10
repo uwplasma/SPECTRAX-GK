@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from dataclasses import replace
+
 import pytest
 
 import jax
@@ -28,6 +30,47 @@ from spectraxgk.velocity_sharding import (
     velocity_field_reduce_reference,
     velocity_field_reduce_shard_map,
 )
+
+
+def _install_fake_two_way_shard_map(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Exercise shard-map branches without requiring CI-visible logical devices."""
+
+    class FakeMesh:
+        def __init__(self, devices, names):
+            self.devices = devices
+            self.names = names
+
+    class FakeNamedSharding:
+        def __init__(self, mesh, spec):
+            self.mesh = mesh
+            self.spec = spec
+
+    def fake_partition_spec(*axes):
+        return axes
+
+    def local_hermite_slice(arr):
+        if getattr(arr, "ndim", 0) not in (5, 6):
+            return arr
+        m_axis = 1 if arr.ndim == 5 else 2
+        local_m = int(arr.shape[m_axis]) // 2
+        index = [slice(None)] * arr.ndim
+        index[m_axis] = slice(0, local_m)
+        return arr[tuple(index)]
+
+    def fake_shard_map(fn, **_kwargs):
+        def mapped(arr):
+            return fn(local_hermite_slice(arr))
+
+        return mapped
+
+    monkeypatch.setattr("jax.sharding.Mesh", FakeMesh)
+    monkeypatch.setattr("jax.sharding.NamedSharding", FakeNamedSharding)
+    monkeypatch.setattr("jax.sharding.PartitionSpec", fake_partition_spec)
+    monkeypatch.setattr(jax, "shard_map", fake_shard_map)
+    monkeypatch.setattr(jax, "device_put", lambda arr, _sharding=None: arr)
+    monkeypatch.setattr(jax.lax, "ppermute", lambda value, *_args, **_kwargs: jnp.zeros_like(value))
+    monkeypatch.setattr(jax.lax, "psum", lambda value, *_args, **_kwargs: value)
+    monkeypatch.setattr(jax.lax, "axis_index", lambda *_args, **_kwargs: 0)
 
 
 def test_velocity_sharding_plan_prefers_species_then_hermite_for_6d_state() -> None:
@@ -69,14 +112,78 @@ def test_velocity_sharding_plan_supports_explicit_laguerre_fallback() -> None:
 def test_velocity_sharding_plan_rejects_invalid_requests() -> None:
     with pytest.raises(ValueError, match="5 or 6"):
         build_velocity_sharding_plan((2, 3, 4), num_devices=2)
+    with pytest.raises(ValueError, match="entries"):
+        build_velocity_sharding_plan((4, 0, 16, 4, 32), num_devices=1)
     with pytest.raises(ValueError, match="num_devices"):
         build_velocity_sharding_plan((4, 8, 16, 4, 32), num_devices=0)
+    with pytest.raises(ValueError, match="ghost"):
+        build_velocity_sharding_plan((4, 8, 16, 4, 32), num_devices=1, hermite_ghost_depth=-1)
     with pytest.raises(ValueError, match="species sharding"):
         build_velocity_sharding_plan((4, 8, 16, 4, 32), num_devices=2, axes=("species",))
     with pytest.raises(ValueError, match="could not be factored"):
         build_velocity_sharding_plan((1, 2, 3, 4, 1, 8), num_devices=5)
     with pytest.raises(ValueError, match="Unknown"):
         build_velocity_sharding_plan((4, 8, 16, 4, 32), num_devices=2, axes=("banana",))
+    field_only = build_velocity_sharding_plan((4, 8, 16, 4, 32), num_devices=2, axes=("laguerre",))
+    assert field_only.communication_pattern == "field_reduce_broadcast"
+
+
+def test_velocity_sharding_rejects_invalid_hermite_exchange_requests() -> None:
+    state = jnp.zeros((2, 6, 3, 1, 4), dtype=jnp.complex64)
+    plan = build_velocity_sharding_plan(state.shape, num_devices=2, axes=("hermite",))
+    bad_shape = state[:, :5, ...]
+    bad_chunks = replace(plan, chunks={**plan.chunks, "m": 0})
+    uneven = replace(plan, state_shape=bad_shape.shape)
+    laguerre_plan = build_velocity_sharding_plan(state.shape, num_devices=2, axes=("laguerre",))
+
+    with pytest.raises(ValueError, match="state shape"):
+        hermite_neighbor_shard_map(bad_shape, plan)
+    with pytest.raises(ValueError, match="chunk count"):
+        hermite_neighbor_shard_map(state, bad_chunks)
+    with pytest.raises(ValueError, match="divide evenly"):
+        hermite_neighbor_shard_map(bad_shape, uneven, devices=[object(), object()])
+    with pytest.raises(ValueError, match="not enough devices"):
+        hermite_neighbor_shard_map(state, plan, devices=[object()])
+
+    np.testing.assert_allclose(np.asarray(hermite_shift_shard_map(state, plan, offset=0)), np.asarray(state))
+    np.testing.assert_allclose(np.asarray(hermite_shift_shard_map(state, plan, offset=99)), np.zeros_like(np.asarray(state)))
+    with pytest.raises(ValueError, match="state shape"):
+        hermite_shift_shard_map(bad_shape, plan, offset=1)
+    with pytest.raises(NotImplementedError, match="active 'm'"):
+        hermite_shift_shard_map(state, laguerre_plan, offset=1)
+    with pytest.raises(ValueError, match="divide evenly"):
+        hermite_shift_shard_map(bad_shape, uneven, offset=1, devices=[object(), object()])
+    with pytest.raises(NotImplementedError, match="local shard size"):
+        hermite_shift_shard_map(state, plan, offset=4, devices=[object(), object()])
+    with pytest.raises(ValueError, match="not enough devices"):
+        hermite_shift_shard_map(state, plan, offset=1, devices=[object()])
+
+
+def test_velocity_field_reduce_rejects_invalid_axes_and_plans() -> None:
+    state = jnp.zeros((2, 6, 3, 1, 4), dtype=jnp.complex64)
+    plan = build_velocity_sharding_plan(state.shape, num_devices=2, axes=("hermite",))
+    bad_shape = state[:, :5, ...]
+    uneven = replace(plan, state_shape=bad_shape.shape)
+    laguerre_plan = build_velocity_sharding_plan(state.shape, num_devices=2, axes=("laguerre",))
+
+    with pytest.raises(ValueError, match="Unknown"):
+        velocity_field_reduce_reference(state, axis="banana")
+    with pytest.raises(ValueError, match="not present"):
+        velocity_field_reduce_reference(state, axis="species")
+    with pytest.raises(ValueError, match="state shape"):
+        velocity_field_reduce_shard_map(bad_shape, plan)
+    with pytest.raises(ValueError, match="Unknown"):
+        velocity_field_reduce_shard_map(state, plan, axis="banana")
+    with pytest.raises(ValueError, match="not present"):
+        velocity_field_reduce_shard_map(state, plan, axis="species")
+    with pytest.raises(NotImplementedError, match="Hermite axis"):
+        velocity_field_reduce_shard_map(state, plan, axis="laguerre")
+    with pytest.raises(NotImplementedError, match="active 'm'"):
+        velocity_field_reduce_shard_map(state, laguerre_plan)
+    with pytest.raises(ValueError, match="divide evenly"):
+        velocity_field_reduce_shard_map(bad_shape, uneven, devices=[object(), object()])
+    with pytest.raises(ValueError, match="not enough devices"):
+        velocity_field_reduce_shard_map(state, plan, devices=[object()])
 
 
 def test_hermite_neighbor_reference_matches_manual_shift() -> None:
@@ -117,6 +224,78 @@ def test_hermite_neighbor_shard_map_matches_reference_when_logical_devices_avail
 
     np.testing.assert_allclose(np.asarray(lower), np.asarray(expected_lower))
     np.testing.assert_allclose(np.asarray(upper), np.asarray(expected_upper))
+
+
+def test_mocked_shard_map_exercises_multi_device_velocity_paths(monkeypatch: pytest.MonkeyPatch) -> None:
+    _install_fake_two_way_shard_map(monkeypatch)
+    state = (jnp.arange(2 * 6 * 3 * 1 * 4, dtype=jnp.float32).reshape((2, 6, 3, 1, 4)) + 1j).astype(jnp.complex64)
+    plan = build_velocity_sharding_plan(state.shape, num_devices=2, axes=("hermite",))
+    devices = [object(), object()]
+
+    lower, upper = hermite_neighbor_shard_map(state, plan, devices=devices)
+    assert lower.shape == (2, 3, 3, 1, 4)
+    assert upper.shape == (2, 3, 3, 1, 4)
+    assert hermite_shift_shard_map(state, plan, offset=1, devices=devices).shape == (2, 3, 3, 1, 4)
+    assert hermite_shift_shard_map(state, plan, offset=-1, devices=devices).shape == (2, 3, 3, 1, 4)
+    assert velocity_field_reduce_shard_map(state, plan, devices=devices).shape == (2, 3, 1, 4)
+
+    kz = jnp.asarray([0.0, 1.0, -1.0, -2.0], dtype=jnp.float32)
+    local_coeffs = jnp.ones((1, 3, 1, 1, 1), dtype=state.dtype)
+    monkeypatch.setattr(
+        "spectraxgk.velocity_sharding._hermite_ladder_coefficients",
+        lambda _arr: (local_coeffs, local_coeffs, 1),
+    )
+    assert hermite_streaming_ladder_shard_map(state, plan, vth=1.2, devices=devices).shape == (2, 3, 3, 1, 4)
+    assert periodic_streaming_shard_map(state, plan, kz=kz, vth=1.2, devices=devices).shape == (2, 3, 3, 1, 4)
+
+    local_m = 3
+    local_m_shape = (1, local_m, 1, 1, 1)
+    ell = jnp.arange(state.shape[0], dtype=jnp.float32).reshape((state.shape[0], 1, 1, 1, 1))
+    local_m_values = jnp.arange(local_m, dtype=jnp.float32).reshape(local_m_shape)
+    mirror = mirror_drift_shard_map(
+        state,
+        plan,
+        vth=jnp.asarray([1.0], dtype=jnp.float32),
+        bgrad=jnp.ones((state.shape[-1],), dtype=jnp.float32),
+        ell=ell,
+        sqrt_m=jnp.sqrt(local_m_values),
+        sqrt_m_p1=jnp.sqrt(local_m_values + 1.0),
+        devices=devices,
+    )
+    assert mirror.shape == (2, 3, 3, 1, 4)
+    Jl = jnp.ones((state.shape[0], state.shape[2], state.shape[3], state.shape[4]), dtype=jnp.float32)
+    phi = electrostatic_phi_shard_map(
+        state,
+        plan,
+        Jl=Jl,
+        tau_e=1.0,
+        charge=1.0,
+        density=1.0,
+        tz=1.0,
+        mask0=jnp.zeros((state.shape[2], state.shape[3], state.shape[4]), dtype=bool),
+        devices=devices,
+    )
+    assert phi.shape == (3, 1, 4)
+    assert electrostatic_phi_shard_map(
+        state,
+        plan,
+        Jl=Jl[None, ...],
+        tau_e=1.0,
+        devices=devices,
+    ).shape == (3, 1, 4)
+    diamagnetic = diamagnetic_drive_shard_map(
+        state,
+        plan,
+        phi=phi,
+        Jl=Jl,
+        l4=jnp.arange(state.shape[0], dtype=jnp.float32).reshape((state.shape[0], 1, 1, 1)),
+        tprim=6.9,
+        fprim=2.2,
+        omega_star_scale=1.0,
+        ky=jnp.asarray([0.0, 0.3, 0.6], dtype=jnp.float32),
+        devices=devices,
+    )
+    assert diamagnetic.shape == (2, 3, 3, 1, 4)
 
 
 def test_hermite_shift_reference_matches_manual_offsets() -> None:
@@ -300,6 +479,31 @@ def test_electrostatic_phi_shard_map_matches_reference_when_logical_devices_avai
     np.testing.assert_allclose(np.asarray(observed), np.asarray(expected), rtol=2.0e-6, atol=2.0e-6)
 
 
+def test_electrostatic_phi_rejects_invalid_shapes_and_plans() -> None:
+    state, cache, params = _small_periodic_field_problem()
+    plan = build_velocity_sharding_plan(state.shape, num_devices=2, axes=("hermite",))
+    bad_shape = state[:, :5, ...]
+    uneven = replace(plan, state_shape=bad_shape.shape)
+    laguerre_plan = build_velocity_sharding_plan(state.shape, num_devices=2, axes=("laguerre",))
+
+    with pytest.raises(NotImplementedError, match="single-species"):
+        electrostatic_phi_reference(state[None, ...], Jl=cache.Jl, tau_e=params.tau_e)
+    with pytest.raises(ValueError, match="Jl"):
+        electrostatic_phi_reference(state, Jl=jnp.ones((state.shape[0], state.shape[2], state.shape[4])), tau_e=params.tau_e)
+    with pytest.raises(NotImplementedError, match="single-species"):
+        electrostatic_phi_shard_map(state[None, ...], plan, Jl=cache.Jl, tau_e=params.tau_e)
+    with pytest.raises(ValueError, match="state shape"):
+        electrostatic_phi_shard_map(bad_shape, plan, Jl=cache.Jl, tau_e=params.tau_e)
+    with pytest.raises(NotImplementedError, match="active 'm'"):
+        electrostatic_phi_shard_map(state, laguerre_plan, Jl=cache.Jl, tau_e=params.tau_e)
+    with pytest.raises(ValueError, match="divide evenly"):
+        electrostatic_phi_shard_map(bad_shape, uneven, Jl=cache.Jl, tau_e=params.tau_e, devices=[object(), object()])
+    with pytest.raises(ValueError, match="Jl"):
+        electrostatic_phi_shard_map(state, plan, Jl=jnp.ones((state.shape[0], state.shape[2], state.shape[4])), tau_e=params.tau_e)
+    with pytest.raises(ValueError, match="not enough devices"):
+        electrostatic_phi_shard_map(state, plan, Jl=cache.Jl, tau_e=params.tau_e, devices=[object()])
+
+
 def test_mirror_and_curvature_gradb_drift_shard_maps_match_production_terms() -> None:
     from spectraxgk.linear import build_H
     from spectraxgk.terms.linear_terms import curvature_gradb_contribution, mirror_contribution
@@ -434,6 +638,64 @@ def test_mirror_and_curvature_gradb_drift_shard_maps_match_reference_when_logica
     np.testing.assert_allclose(np.asarray(drift_observed), np.asarray(drift_expected), rtol=2.0e-6, atol=2.0e-6)
 
 
+def test_six_dimensional_mirror_and_drift_paths_preserve_species_broadcasts() -> None:
+    state = (jnp.arange(2 * 2 * 4 * 2 * 1 * 3, dtype=jnp.float32).reshape((2, 2, 4, 2, 1, 3)) + 1j).astype(
+        jnp.complex64
+    )
+    plan = build_velocity_sharding_plan(state.shape, num_devices=1, axes=("hermite",))
+    ell = jnp.arange(state.shape[1], dtype=jnp.float32).reshape((1, state.shape[1], 1, 1, 1, 1))
+    m = jnp.arange(state.shape[2], dtype=jnp.float32).reshape((1, 1, state.shape[2], 1, 1, 1))
+    sqrt_m = jnp.sqrt(m)
+    sqrt_m_p1 = jnp.sqrt(m + 1.0)
+    vth = jnp.asarray([1.0, 1.5], dtype=jnp.float32)
+    tz = jnp.asarray([1.0, -1.0], dtype=jnp.float32)
+    cv_d = jnp.ones((state.shape[3], state.shape[4], state.shape[5]), dtype=jnp.float32)
+    gb_d = 0.25 * cv_d
+
+    mirror_expected = mirror_drift_reference(
+        state,
+        vth=vth,
+        bgrad=jnp.ones((state.shape[-1],), dtype=jnp.float32),
+        ell=ell,
+        sqrt_m=sqrt_m,
+        sqrt_m_p1=sqrt_m_p1,
+    )
+    mirror_observed = mirror_drift_shard_map(
+        state,
+        plan,
+        vth=vth,
+        bgrad=jnp.ones((state.shape[-1],), dtype=jnp.float32),
+        ell=ell,
+        sqrt_m=sqrt_m,
+        sqrt_m_p1=sqrt_m_p1,
+        devices=[jax.devices()[0]],
+    )
+    np.testing.assert_allclose(np.asarray(mirror_observed), np.asarray(mirror_expected), rtol=2.0e-6, atol=2.0e-6)
+
+    drift_expected = curvature_gradb_drift_reference(
+        state,
+        tz=tz,
+        omega_d_scale=0.7,
+        cv_d=cv_d,
+        gb_d=gb_d,
+        ell=ell,
+        m=m,
+    )
+    drift_observed = curvature_gradb_drift_shard_map(
+        state,
+        plan,
+        tz=tz,
+        omega_d_scale=0.7,
+        cv_d=cv_d,
+        gb_d=gb_d,
+        ell=ell,
+        m=m,
+        devices=[jax.devices()[0]],
+    )
+    assert drift_observed.shape == state.shape
+    np.testing.assert_allclose(np.asarray(drift_observed), np.asarray(drift_expected), rtol=2.0e-6, atol=2.0e-6)
+
+
 def test_diamagnetic_drive_shard_map_matches_production_term() -> None:
     from spectraxgk.linear import LinearTerms, linear_rhs_cached
 
@@ -526,6 +788,49 @@ def test_diamagnetic_drive_shard_map_matches_reference_when_logical_devices_avai
     )
 
     np.testing.assert_allclose(np.asarray(observed), np.asarray(expected), rtol=2.0e-6, atol=2.0e-6)
+
+
+def test_diamagnetic_drive_rejects_invalid_shapes_and_plans() -> None:
+    state, cache, params = _small_periodic_field_problem()
+    phi = electrostatic_phi_reference(
+        state,
+        Jl=cache.Jl,
+        tau_e=params.tau_e,
+        charge=params.charge_sign,
+        density=params.density,
+        tz=params.tz,
+        mask0=cache.mask0,
+    )
+    plan = build_velocity_sharding_plan(state.shape, num_devices=2, axes=("hermite",))
+    bad_shape = state[:, :5, ...]
+    uneven = replace(plan, state_shape=bad_shape.shape)
+    laguerre_plan = build_velocity_sharding_plan(state.shape, num_devices=2, axes=("laguerre",))
+    kwargs = dict(
+        phi=phi,
+        Jl=cache.Jl,
+        l4=cache.l4,
+        tprim=params.R_over_LTi,
+        fprim=params.R_over_Ln,
+        omega_star_scale=params.omega_star_scale,
+        ky=cache.ky,
+    )
+
+    with pytest.raises(NotImplementedError, match="single-species"):
+        diamagnetic_drive_reference(state[None, ...], **kwargs)
+    with pytest.raises(ValueError, match="Jl"):
+        diamagnetic_drive_reference(state, **{**kwargs, "Jl": jnp.ones((state.shape[0], state.shape[2], state.shape[4]))})
+    jl4 = cache.Jl[0] if cache.Jl.ndim == 5 else cache.Jl
+    assert diamagnetic_drive_reference(state, **{**kwargs, "Jl": jl4[None, ...]}).shape == state.shape
+    with pytest.raises(NotImplementedError, match="single-species"):
+        diamagnetic_drive_shard_map(state[None, ...], plan, **kwargs)
+    with pytest.raises(ValueError, match="state shape"):
+        diamagnetic_drive_shard_map(bad_shape, plan, **kwargs)
+    with pytest.raises(NotImplementedError, match="active 'm'"):
+        diamagnetic_drive_shard_map(state, laguerre_plan, **kwargs)
+    with pytest.raises(ValueError, match="divide evenly"):
+        diamagnetic_drive_shard_map(bad_shape, uneven, devices=[object(), object()], **kwargs)
+    with pytest.raises(ValueError, match="not enough devices"):
+        diamagnetic_drive_shard_map(state, plan, devices=[object()], **kwargs)
 
 
 def test_hermite_streaming_ladder_reference_matches_manual_coefficients() -> None:
