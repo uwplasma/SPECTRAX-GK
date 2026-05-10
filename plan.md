@@ -3543,3 +3543,32 @@ Exit gate:
     quasilinear/UQ ensembles, and only then redesign nonlinear communication
     decomposition; do not keep chasing whole-state nonlinear sharding speedups
     without a new communication layout.
+- Production independent-work parallelization follow-up:
+  - added ``tools/profile_independent_ky_scan_scaling.py`` to run real
+    Cyclone linear ``k_y`` scans in isolated CPU/GPU workers, with warmup
+    scans before timed repeats and ``gamma``/``omega`` identity gates against
+    the one-worker reference;
+  - added ``tools/plot_independent_ky_scan_scaling.py`` to combine CPU and GPU
+    artifacts into one publication-ready panel;
+  - ran the large solver-backed sweep on ``ssh office`` with twelve
+    independent ``k_y`` values, ``Ny=128``, ``Nz=96``, ``Nl=4``, ``Nm=8``,
+    and ``240`` RK2 steps per mode;
+  - the GPU run over one and two RTX A4000 workers passed exact identity and
+    reached ``1.6288309508300018x`` speedup on two GPUs;
+  - the CPU process run over ``1,2,4,8`` workers passed exact identity and
+    reached ``1.9203793204316209x``, ``3.511221992252178x``, and
+    ``5.335095480330332x`` speedup respectively;
+  - generated
+    ``docs/_static/independent_ky_scan_scaling_cpu_large.{json,csv,png,pdf}``,
+    ``docs/_static/independent_ky_scan_scaling_gpu_large.{json,csv,png,pdf}``,
+    and combined
+    ``docs/_static/independent_ky_scan_scaling_large.{json,csv,png,pdf}``;
+  - documented the result in ``README.md`` and ``docs/performance.rst`` as
+    the preferred production parallelization path for linear scans,
+    quasilinear studies, sensitivity sweeps, and UQ ensembles.
+- Next best implementation steps:
+  - commit/push the independent-work scaling artifacts and docs;
+  - watch CI on the new head;
+  - connect the same independent-worker scheduler to quasilinear calibration
+    and UQ ensemble scripts so the scaling result directly supports the
+    manuscript quasilinear and differentiable-optimization lanes.
