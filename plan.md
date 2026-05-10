@@ -3276,3 +3276,27 @@ Exit gate:
     source, tool, and tests;
   - ``python -m sphinx -q -b html docs docs/_build/html`` passed under the
     300-second cap.
+- Added the disabled-by-default composed electrostatic linear-slice backend:
+  - added ``linear_rhs_electrostatic_slices_velocity_sharded`` and
+    ``RuntimeParallelConfig(strategy="velocity", axis="hermite",
+    backend="electrostatic_linear_slices")`` dispatch through
+    ``linear_rhs_parallel_cached``;
+  - the route combines the already gated Hermite-sharded electrostatic field
+    reduction, electrostatic streaming, mirror, curvature, and grad-B slices;
+  - it rejects diamagnetic drive, collisions, hypercollisions, end damping,
+    electromagnetic terms, linked-boundary/twist-shift grids, multi-species
+    states, and nonlinear terms until each has its own isolated gate;
+  - added unit coverage comparing the composed backend with production
+    ``linear_rhs_cached`` and verifying rejection of ungated terms.
+- Validation for the composed backend so far:
+  - ``python -m pytest -q tests/test_velocity_sharding.py`` passed under the
+    300-second cap with expected logical-device skips;
+  - targeted ``ruff check --extend-ignore F401`` passed for the touched
+    source/API/test files.
+- Bounded verification after the composed backend:
+  - ``python -m pytest -q tests/test_parallel.py tests/test_velocity_sharding.py tests/test_generate_electrostatic_drift_gate.py tests/test_generate_electrostatic_field_reduce_gate.py tests/test_generate_linear_rhs_streaming_electrostatic_gate.py tests/test_generate_linear_rhs_streaming_gate.py tests/test_runtime_config.py tests/test_runtime_runner.py::test_run_runtime_scan_parallel_config_selects_combined_ky tests/test_runtime_runner.py::test_run_runtime_scan_batch_ky_rejects_krylov``
+    passed under the 300-second cap;
+  - targeted ``ruff check --extend-ignore F401`` passed for the touched
+    source, tool, and tests;
+  - ``python -m sphinx -q -b html docs docs/_build/html`` passed under the
+    300-second cap.
