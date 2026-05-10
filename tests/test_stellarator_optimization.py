@@ -11,6 +11,7 @@ from spectraxgk.stellarator_optimization import (
     OBSERVABLE_NAMES,
     PARAMETER_NAMES,
     StellaratorITGOptimizationConfig,
+    StellaratorITGOptimizationResult,
     compare_stellarator_itg_objectives,
     default_stellarator_initial_params,
     nonlinear_heat_flux_trace,
@@ -89,8 +90,10 @@ def test_stellarator_itg_objectives_have_fd_checked_gradients() -> None:
             step=cfg.fd_step,
             rtol=rtol,
             atol=atol,
+            workers=2,
         )
         assert report["passed"] is True
+        assert report["finite_difference_parallel"]["requested_workers"] == 2
 
 
 def test_nonlinear_heat_flux_window_metrics_use_late_stable_samples() -> None:
@@ -136,12 +139,60 @@ def test_compare_stellarator_itg_objectives_payload_is_json_ready(monkeypatch) -
     _disable_optional_backend_discovery(monkeypatch)
     cfg = _fast_config()
 
-    payload = compare_stellarator_itg_objectives(("growth",), config=cfg)
+    payload = compare_stellarator_itg_objectives(("growth",), config=cfg, workers=2, finite_difference_workers=2)
 
     assert payload["parameter_names"] == list(PARAMETER_NAMES)
     assert payload["observable_names"] == list(OBSERVABLE_NAMES)
+    assert payload["parallel"]["requested_workers"] == 2
+    assert payload["parallel"]["finite_difference_workers"] == 2
     assert len(payload["results"]) == 1
     result = payload["results"][0]
     assert result["objective_kind"] == "growth"
     assert result["final_objective"] < result["initial_objective"]
     assert result["gradient_gate"]["passed"] is True
+    assert result["gradient_gate"]["finite_difference_parallel"]["requested_workers"] == 2
+
+
+def test_compare_stellarator_itg_objectives_parallel_preserves_order(monkeypatch) -> None:
+    _disable_optional_backend_discovery(monkeypatch)
+
+    def fake_optimize(kind, initial_params=None, config=None, **kwargs):  # noqa: ANN001, ANN202
+        idx = {"growth": 1.0, "quasilinear_flux": 2.0, "nonlinear_heat_flux": 3.0}[kind]
+        return StellaratorITGOptimizationResult(
+            objective_kind=kind,
+            parameter_names=PARAMETER_NAMES,
+            observable_names=OBSERVABLE_NAMES,
+            initial_params=(0.0, 0.0, 0.0, 0.0),
+            final_params=(idx, idx, idx, idx),
+            initial_objective=idx + 1.0,
+            final_objective=idx,
+            initial_observables=tuple(0.0 for _ in OBSERVABLE_NAMES),
+            final_observables=tuple(idx for _ in OBSERVABLE_NAMES),
+            history=(),
+            gradient_gate={
+                "passed": True,
+                "finite_difference_parallel": {
+                    "requested_workers": kwargs["finite_difference_workers"],
+                    "executor": kwargs["finite_difference_executor"],
+                },
+            },
+            covariance={"source": "test"},
+            nonlinear_trace=None,
+            config={},
+            backend_info={},
+        )
+
+    monkeypatch.setattr(so, "optimize_stellarator_itg", fake_optimize)
+    payload = compare_stellarator_itg_objectives(
+        ("growth", "quasilinear_flux", "nonlinear_heat_flux"),
+        workers=3,
+        finite_difference_workers=2,
+    )
+
+    assert [row["objective_kind"] for row in payload["results"]] == [
+        "growth",
+        "quasilinear_flux",
+        "nonlinear_heat_flux",
+    ]
+    assert [row["final_objective"] for row in payload["results"]] == [1.0, 2.0, 3.0]
+    assert payload["parallel"]["effective_workers"] == 3

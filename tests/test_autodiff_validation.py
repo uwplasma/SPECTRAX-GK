@@ -99,10 +99,21 @@ def test_autodiff_finite_difference_report_matches_closed_form_jacobian() -> Non
 
     p = jnp.asarray([0.4, -0.2])
     report = autodiff_finite_difference_report(fn, p, step=1.0e-3, rtol=5.0e-4, atol=5.0e-6)
+    parallel_report = autodiff_finite_difference_report(
+        fn,
+        p,
+        step=1.0e-3,
+        rtol=5.0e-4,
+        atol=5.0e-6,
+        workers=2,
+    )
 
     assert report["passed"] is True
+    assert parallel_report["passed"] is True
+    assert parallel_report["finite_difference_parallel"]["requested_workers"] == 2
     jac_ad = np.asarray(report["jacobian_ad"])
     np.testing.assert_allclose(jac_ad, np.asarray([[0.8, 3.0], [-0.2, 0.4]]), rtol=1.0e-6)
+    np.testing.assert_allclose(parallel_report["jacobian_fd"], report["jacobian_fd"])
     assert float(report["tangent_max_abs_error"]) < 1.0e-4
 
 
@@ -643,9 +654,15 @@ def test_autodiff_finite_difference_report_rejects_bad_inputs() -> None:
     with pytest.raises(ValueError):
         central_finite_difference_jacobian(lambda x: x, jnp.ones(2), step=0.0)
     with pytest.raises(ValueError):
+        central_finite_difference_jacobian(lambda x: x, jnp.ones(2), workers=0)
+    with pytest.raises(ValueError):
+        central_finite_difference_jacobian(lambda x: x, jnp.ones(2), workers=2, parallel_executor="process")
+    with pytest.raises(ValueError):
         autodiff_finite_difference_report(lambda x: x, jnp.ones((2, 1)))
     with pytest.raises(ValueError):
         autodiff_finite_difference_report(lambda x: x, jnp.ones(2), direction=jnp.ones(3))
+    with pytest.raises(ValueError):
+        autodiff_finite_difference_report(lambda x: x, jnp.ones(2), workers=0)
     with pytest.raises(ValueError):
         explicit_complex_operator_matrix(lambda x: x, (0,))
     with pytest.raises(ValueError):
