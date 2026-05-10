@@ -113,5 +113,8 @@ The refactor branch is ready to merge when:
 - W7-X, HSX, Cyclone, Cyclone-Miller, KBM, ETG, Miller, and VMEC examples have
   current documentation that matches the artifacts;
 - autodiff examples validate gradients and inverse/UQ outputs;
+- the performance manifest points to current runtime/memory panels, CPU/GPU
+  profiler artifacts, and numerical-identity gates for every performance
+  claim made in the README/docs;
 - docs build with warnings treated as errors;
 - package build, release workflow, and PyPI metadata checks pass.

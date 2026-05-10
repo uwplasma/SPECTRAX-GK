@@ -165,6 +165,19 @@ def _holdout_counts(report: dict[str, Any] | None) -> tuple[int, int, list[str]]
     return train, holdout, names
 
 
+def _profile_seconds(payload: dict[str, Any] | None, label: str, kernel: str) -> float | None:
+    rows = {} if payload is None else payload.get("rows", {})
+    if not isinstance(rows, dict):
+        return None
+    row = rows.get(label, {})
+    if not isinstance(row, dict):
+        return None
+    seconds = row.get("seconds", {})
+    if not isinstance(seconds, dict):
+        return None
+    return _finite_float(seconds.get(kernel))
+
+
 def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
     """Return a JSON-ready status payload for active research lanes."""
 
@@ -189,6 +202,10 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
     geom_matrix = _read_json(root, "docs/_static/vmec_boozer_parity_matrix.json")
     profile = _read_json(root, "docs/_static/nonlinear_sharding_profile_office_gpu.json")
     rhs_profile = _read_json(root, "docs/_static/nonlinear_rhs_profile.json")
+    rhs_miller = _read_json(root, "docs/_static/nonlinear_rhs_profile_miller.json")
+    rhs_stellarator = _read_json(root, "docs/_static/nonlinear_rhs_profile_stellarator_runtime.json")
+    full_rhs_trace_cpu = _read_json(root, "docs/_static/full_nonlinear_rhs_trace_summary.json")
+    full_rhs_trace_gpu = _read_json(root, "docs/_static/full_nonlinear_rhs_trace_gpu_summary.json")
 
     zonal_failures = _gate_failures(zonal_ref.get("gate_report") if zonal_ref else None)
     best_recurrence = _best_recurrence_candidate(zonal_recurrence)
@@ -323,6 +340,31 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
     )
     rhs_cpu = rhs_speedups.get("cpu", {}) if isinstance(rhs_speedups.get("cpu", {}), dict) else {}
     rhs_gpu = rhs_speedups.get("gpu", {}) if isinstance(rhs_speedups.get("gpu", {}), dict) else {}
+    miller_cpu_grid_full = _profile_seconds(rhs_miller, "CPU grid", "full_rhs")
+    miller_gpu_grid_full = _profile_seconds(rhs_miller, "GPU grid", "full_rhs")
+    miller_gpu_spectral_full = _profile_seconds(rhs_miller, "GPU spectral", "full_rhs")
+    w7x_cpu_full = _profile_seconds(rhs_stellarator, "W7-X CPU", "full_rhs")
+    w7x_gpu_full = _profile_seconds(rhs_stellarator, "W7-X GPU", "full_rhs")
+    hsx_cpu_full = _profile_seconds(rhs_stellarator, "HSX CPU", "full_rhs")
+    hsx_gpu_full = _profile_seconds(rhs_stellarator, "HSX GPU", "full_rhs")
+    full_rhs_cpu_warm = _finite_float((full_rhs_trace_cpu or {}).get("warm_seconds"))
+    full_rhs_gpu_warm = _finite_float((full_rhs_trace_gpu or {}).get("warm_seconds"))
+    release_performance_closed = bool(
+        profile_identity
+        and miller_cpu_grid_full is not None
+        and miller_gpu_grid_full is not None
+        and miller_gpu_spectral_full is not None
+        and w7x_cpu_full is not None
+        and w7x_gpu_full is not None
+        and hsx_cpu_full is not None
+        and hsx_gpu_full is not None
+        and full_rhs_cpu_warm is not None
+        and full_rhs_gpu_warm is not None
+        and miller_gpu_grid_full < miller_cpu_grid_full
+        and w7x_gpu_full < w7x_cpu_full
+        and hsx_gpu_full < hsx_cpu_full
+        and full_rhs_gpu_warm < full_rhs_cpu_warm
+    )
 
     lanes: list[dict[str, Any]] = [
         {
@@ -461,13 +503,22 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
         },
         {
             "lane": "Profiler-backed nonlinear hot-path optimization",
-            "status": "partial" if profile_identity else "open",
-            "claim_level": "profile_identity_artifact_no_speedup_claim",
+            "status": "closed" if release_performance_closed else ("partial" if profile_identity else "open"),
+            "claim_level": (
+                "release_hot_path_localization_closed_future_optimization_scoped"
+                if release_performance_closed
+                else "profile_identity_artifact_no_speedup_claim"
+            ),
             "primary_artifacts": [
                 "docs/_static/nonlinear_sharding_profile_office_gpu.json",
                 "docs/_static/nonlinear_rhs_profile.json",
+                "docs/_static/nonlinear_rhs_profile_miller.json",
+                "docs/_static/nonlinear_rhs_profile_stellarator_runtime.json",
+                "docs/_static/full_nonlinear_rhs_trace_summary.json",
+                "docs/_static/full_nonlinear_rhs_trace_gpu_summary.json",
             ],
             "key_metrics": {
+                "release_performance_gate": release_performance_closed,
                 "identity_gate_pass": profile_identity,
                 "engineering_speedup": profile_speedup,
                 "best_identity_candidate": profile_best.get("spec"),
@@ -483,10 +534,22 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
                 ),
                 "device_count": (profile or {}).get("device_count"),
                 "backend": (profile or {}).get("default_backend"),
+                "miller_cpu_grid_full_rhs": miller_cpu_grid_full,
+                "miller_gpu_grid_full_rhs": miller_gpu_grid_full,
+                "miller_gpu_spectral_full_rhs": miller_gpu_spectral_full,
+                "w7x_cpu_full_rhs": w7x_cpu_full,
+                "w7x_gpu_full_rhs": w7x_gpu_full,
+                "hsx_cpu_full_rhs": hsx_cpu_full,
+                "hsx_gpu_full_rhs": hsx_gpu_full,
+                "full_trace_cpu_warm_seconds": full_rhs_cpu_warm,
+                "full_trace_gpu_warm_seconds": full_rhs_gpu_warm,
             },
             "next_action": (
-                "Collect matched CPU/GPU profiler traces and optimize only persistent nonlinear bracket/field-solve hot paths; "
-                "do not publish speedup claims until fresh profiler artifacts pass identity gates."
+                "Release hot-path localization is closed with matched CPU/GPU profiler artifacts and conservative "
+                "claim scope; continue larger-state algorithmic optimization as a future science/performance lane."
+                if release_performance_closed
+                else "Collect matched CPU/GPU profiler traces and optimize only persistent nonlinear bracket/field-solve "
+                "hot paths; do not publish speedup claims until fresh profiler artifacts pass identity gates."
             ),
         },
     ]
