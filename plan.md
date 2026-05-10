@@ -3123,3 +3123,26 @@ Exit gate:
     tools, and tests;
   - ``python -m sphinx -q -b html docs docs/_build/html`` passed under the
     300-second cap.
+- Started the eighth parallelization implementation tranche:
+  - added ``linear_rhs_streaming_velocity_sharded`` and
+    ``linear_rhs_parallel_cached`` as a disabled-by-default code-level route
+    for the Hermite velocity-sharded streaming operator;
+  - ``linear_rhs_parallel_cached`` is serial by default and only dispatches to
+    the sharded route for ``RuntimeParallelConfig(strategy="velocity",
+    axis="hermite", backend="streaming_only")``;
+  - the route rejects non-streaming ``LinearTerms`` so it cannot silently alter
+    full linear or nonlinear physics;
+  - added unit coverage showing that the explicit velocity route matches
+    production ``linear_rhs_cached`` on a streaming-only periodic problem and
+    rejects default full-physics terms;
+  - documented the diagnostic route in ``docs/inputs.rst`` and
+    ``docs/performance.rst``.
+- Validation for this tranche so far:
+  - ``python -m pytest -q tests/test_velocity_sharding.py tests/test_generate_linear_rhs_streaming_gate.py``
+    passed under the 300-second cap with expected logical-device skips;
+  - targeted ``ruff check --extend-ignore F401`` passed for the touched
+    linear/API/test files.
+  - ``python -m pytest -q tests/test_parallel.py tests/test_velocity_sharding.py tests/test_generate_linear_rhs_streaming_gate.py tests/test_runtime_config.py tests/test_runtime_runner.py::test_run_runtime_scan_parallel_config_selects_combined_ky tests/test_runtime_runner.py::test_run_runtime_scan_batch_ky_rejects_krylov``
+    passed under the 300-second cap;
+  - ``python -m sphinx -q -b html docs docs/_build/html`` passed under the
+    300-second cap after documenting the hook.

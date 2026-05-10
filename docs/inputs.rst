@@ -488,6 +488,13 @@ existing combined-``k_y`` time-integration scan path. Quasilinear scan
 artifacts still require serial per-``k_y`` evaluation until the per-mode state
 extraction has its own numerical-identity gate.
 
+The only velocity-space RHS route exposed at this stage is deliberately
+diagnostic: ``strategy = "velocity"``, ``axis = "hermite"``, and
+``backend = "streaming_only"``. It is accepted only by
+``spectraxgk.linear_rhs_parallel_cached`` with all non-streaming linear terms
+disabled, and is used to gate the Hermite streaming communication path before
+full field-solve, drift, collision, and nonlinear decompositions are exposed.
+
 For independent scan, sensitivity, and UQ workloads, use
 ``spectraxgk.batch_map`` and require a serial identity artifact before using
 timing results in a publication claim. The helper supports structured pytree
