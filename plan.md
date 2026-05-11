@@ -3809,3 +3809,28 @@ Exit gate:
     "auto"`` reaches this gate for eligible linear cases;
   - then move to a profiler-backed linear-RHS layout/cache cleanup before making
     any new performance claim.
+- Runtime-level velocity-parallel threading:
+  - threaded the runtime ``parallel`` policy through the fixed-step cached
+    linear executable path down to ``integrate_linear`` and the gated
+    ``linear_rhs_parallel_cached`` route;
+  - kept default behavior serial, while non-serial velocity requests now fail
+    explicitly on unsupported diffrax, density-assisted fitting, implicit, and
+    donated-buffer paths instead of being silently ignored;
+  - added focused regressions covering runner forwarding, runtime forwarding,
+    non-serial wrapper routing, parallel RHS dispatch inside the cached
+    integrator, and explicit unsupported-route errors;
+  - documented the fixed-step/``fit_signal="phi"`` release boundary in
+    ``docs/inputs.rst``.
+- Verification for this tranche:
+  - ``python -m ruff check src/spectraxgk/linear.py src/spectraxgk/runners.py src/spectraxgk/runtime.py tests/test_linear_helpers_extra.py tests/test_runtime_runner.py tests/test_runners.py``;
+  - ``mypy src/spectraxgk/linear.py src/spectraxgk/runners.py src/spectraxgk/runtime.py``;
+  - focused runtime-parallel pytest nodes under a 300 s timeout;
+  - ``pytest -q --maxfail=1 --disable-warnings tests/test_runners.py tests/test_linear_helpers_extra.py tests/test_velocity_sharding.py`` under a 300 s timeout;
+  - ``python -m sphinx -W -b html docs docs/_build/html``;
+  - ``git diff --check``.
+- Next best implementation steps:
+  - commit/push the runtime-level velocity parallel threading and monitor CI;
+  - add a tiny TOML-backed executable smoke test for an eligible
+    ``strategy="velocity", backend="auto"`` linear case;
+  - only after this gate is green, start the profiler-backed linear-RHS
+    layout/cache cleanup and keep all speedup claims tied to fresh artifacts.

@@ -622,6 +622,27 @@ def test_integrate_linear_wrapper_routes_methods(monkeypatch) -> None:
         integrate_linear(jnp.zeros((2, 2)), grid, geom, params, dt=0.1, steps=2)
 
 
+def test_integrate_linear_wrapper_routes_nonserial_parallel(monkeypatch) -> None:
+    G0 = jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64)
+    grid = geom = params = object()
+    parallel = SimpleNamespace(strategy="velocity", backend="auto")
+    calls: list[object] = []
+
+    monkeypatch.setattr("spectraxgk.linear.build_linear_cache", lambda *args, **kwargs: "cache")
+    monkeypatch.setattr(
+        "spectraxgk.linear._integrate_linear_cached_impl",
+        lambda *args, **kwargs: calls.append(kwargs["parallel"]) or ("Gp", "phip"),
+    )
+
+    assert integrate_linear(G0, grid, geom, params, dt=0.1, steps=2, method="rk2", parallel=parallel) == ("Gp", "phip")
+    assert calls == [parallel]
+
+    with pytest.raises(NotImplementedError, match="explicit fixed-step"):
+        integrate_linear(G0, grid, geom, params, dt=0.1, steps=2, method="implicit", parallel=parallel)
+    with pytest.raises(NotImplementedError, match="donated"):
+        integrate_linear(G0, grid, geom, params, dt=0.1, steps=2, method="rk2", donate=True, parallel=parallel)
+
+
 def test_integrate_linear_cached_impl_invalid_and_sampled(monkeypatch) -> None:
     G0 = jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64)
     cache = SimpleNamespace(lb_lam=jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.float32))
@@ -649,6 +670,43 @@ def test_integrate_linear_cached_impl_invalid_and_sampled(monkeypatch) -> None:
     )
     assert G_out.shape == G0.shape
     assert phi_t.shape[0] == 2
+
+
+def test_integrate_linear_cached_impl_uses_parallel_rhs(monkeypatch) -> None:
+    G0 = jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64)
+    cache = SimpleNamespace(lb_lam=jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.float32))
+    params = SimpleNamespace(nu=0.0)
+    parallel = SimpleNamespace(strategy="velocity", backend="auto")
+    calls: list[object] = []
+
+    monkeypatch.setattr(
+        "spectraxgk.linear.hypercollision_damping",
+        lambda cache, params, dtype: jnp.zeros_like(cache.lb_lam, dtype=dtype),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.linear.linear_rhs_cached",
+        lambda *args, **kwargs: pytest.fail("serial RHS should not be used for nonserial parallel integration"),
+    )
+
+    def _fake_parallel_rhs(G, cache, params, **kwargs):
+        calls.append(kwargs["parallel"])
+        return jnp.ones_like(G), jnp.zeros((1, 1, 2), dtype=jnp.complex64)
+
+    monkeypatch.setattr("spectraxgk.linear.linear_rhs_parallel_cached", _fake_parallel_rhs)
+
+    G_out, phi_t = _integrate_linear_cached_impl(
+        G0,
+        cache,
+        params,
+        dt=0.1,
+        steps=2,
+        method="euler",
+        parallel=parallel,
+    )
+
+    assert G_out.shape == G0.shape
+    assert phi_t.shape[0] == 2
+    assert calls and all(call is parallel for call in calls)
 
 
 def test_integrate_linear_implicit_cached_sampled_path(monkeypatch) -> None:
