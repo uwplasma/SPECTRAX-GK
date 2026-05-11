@@ -127,3 +127,40 @@ def test_strategy_registry_is_complete_json_friendly_and_rejects_unknown_names()
         assert isinstance(row["profiler_gates"], list)
     with pytest.raises(ValueError, match="unknown nonlinear parallelization strategy"):
         nonlinear_parallel_strategy("banana")  # type: ignore[arg-type]
+
+
+def test_strategy_table_keeps_release_ready_paths_independent_and_layout_preserving() -> (
+    None
+):
+    strategies = nonlinear_parallel_strategies()
+
+    assert len({strategy.name for strategy in strategies}) == len(strategies)
+    for strategy in strategies:
+        assert strategy.required_gates
+        assert len(strategy.required_gates) == len(set(strategy.required_gates))
+        if strategy.release_ready:
+            assert strategy.independent_work is True
+            assert strategy.changes_solver_layout is False
+            assert "speedup claim" not in strategy.notes.lower()
+        else:
+            assert strategy.changes_solver_layout is True
+            assert strategy.name not in {
+                item.name for item in release_ready_nonlinear_parallel_strategies()
+            }
+
+
+def test_strategy_policy_separates_identity_physics_and_profiler_gates() -> None:
+    for strategy in nonlinear_parallel_strategies():
+        assert all("identity" in gate for gate in strategy.identity_gates)
+        assert all(
+            gate not in strategy.identity_gates for gate in strategy.physics_gates
+        )
+        assert all(
+            "profile" in gate or "scaling" in gate for gate in strategy.profiler_gates
+        )
+
+    whole_state = nonlinear_parallel_strategy("whole_state_kx_ky")
+    assert whole_state.diagnostic_only
+    assert "final_state" in " ".join(whole_state.identity_gates)
+    assert "nonlinear_window" in " ".join(whole_state.physics_gates)
+    assert "whole_state_scaling_profile" in " ".join(whole_state.profiler_gates)

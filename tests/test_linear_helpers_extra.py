@@ -29,13 +29,18 @@ from spectraxgk.linear import (
     _check_positive,
     _integrate_linear_cached_impl,
     _resolve_implicit_preconditioner,
+    _resolve_parallel_devices,
     _signed_to_index,
     _integrate_linear_implicit_cached,
+    _is_electrostatic_field_terms,
+    _is_electrostatic_slice_terms,
+    _is_streaming_only_terms,
     build_H,
     integrate_linear,
     integrate_linear_diagnostics,
     linear_rhs,
     linear_rhs_cached,
+    linear_rhs_parallel_cached,
     lenard_bernstein_eigenvalues,
     linear_terms_to_term_config,
     term_config_to_linear_terms,
@@ -198,6 +203,54 @@ def test_linear_params_and_terms_roundtrip() -> None:
         apar=0.0,
         bpar=1.0,
     )
+
+
+def test_linear_term_classifiers_and_parallel_device_validation() -> None:
+    streaming_only = LinearTerms(
+        streaming=1.0,
+        mirror=0.0,
+        curvature=0.0,
+        gradb=0.0,
+        diamagnetic=0.0,
+        collisions=0.0,
+        hypercollisions=0.0,
+        hyperdiffusion=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+    )
+    electrostatic_slices = LinearTerms(
+        streaming=1.0,
+        mirror=1.0,
+        curvature=1.0,
+        gradb=1.0,
+        diamagnetic=1.0,
+        collisions=0.0,
+        hypercollisions=0.0,
+        hyperdiffusion=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+    )
+
+    assert _is_streaming_only_terms(streaming_only) is True
+    assert _is_streaming_only_terms(LinearTerms()) is False
+    assert _is_electrostatic_slice_terms(electrostatic_slices) is True
+    assert _is_electrostatic_slice_terms(LinearTerms(collisions=1.0)) is False
+    assert _is_electrostatic_field_terms(LinearTerms(apar=0.0, bpar=0.0)) is True
+    assert _is_electrostatic_field_terms(LinearTerms(apar=1.0, bpar=0.0)) is False
+
+    devices = ["cpu0", "cpu1"]
+    assert _resolve_parallel_devices(devices=devices) == devices
+    assert _resolve_parallel_devices(devices=devices, num_devices=2) == devices
+    with pytest.raises(ValueError, match="must match"):
+        _resolve_parallel_devices(devices=devices, num_devices=1)
+    with pytest.raises(ValueError, match="at least one"):
+        _resolve_parallel_devices(devices=[])
+    with pytest.raises(ValueError, match=">= 1"):
+        _resolve_parallel_devices(num_devices=0)
+    with pytest.raises(ValueError, match="requested"):
+        _resolve_parallel_devices(num_devices=len(jax.devices()) + 1)
 
 
 def test_signed_to_index_and_linked_end_damping_profile() -> None:
@@ -860,6 +913,184 @@ def test_linear_rhs_cached_uses_generic_jit_unless_electrostatic_is_forced(
     assert calls == ["generic"]
     assert rhs.shape == G0.shape
     assert phi.shape == G0.shape[-3:]
+
+
+def test_linear_rhs_parallel_cached_serial_alias_and_error_branches(
+    monkeypatch,
+) -> None:
+    G0 = jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64)
+    cache = params = object()
+    calls: list[str] = []
+
+    def _fake_serial(G, cache, params, **kwargs):
+        calls.append("serial")
+        assert kwargs["use_jit"] is False
+        assert kwargs["use_custom_vjp"] is False
+        assert float(kwargs["dt"]) == pytest.approx(0.2)
+        return jnp.ones_like(G), jnp.zeros(G.shape[-3:], dtype=G.dtype)
+
+    monkeypatch.setattr("spectraxgk.linear.linear_rhs_cached", _fake_serial)
+
+    rhs, phi = linear_rhs_parallel_cached(
+        G0,
+        cache,
+        params,
+        terms=LinearTerms(),
+        parallel=None,
+        use_jit=False,
+        use_custom_vjp=False,
+        dt=0.2,
+    )
+    assert calls == ["serial"]
+    assert rhs.shape == G0.shape
+    assert phi.shape == G0.shape[-3:]
+
+    with pytest.raises(NotImplementedError, match="Hermite axis"):
+        linear_rhs_parallel_cached(
+            G0,
+            cache,
+            params,
+            terms=LinearTerms(apar=0.0, bpar=0.0),
+            parallel=SimpleNamespace(
+                strategy="velocity", backend="auto", axis="laguerre"
+            ),
+        )
+    with pytest.raises(NotImplementedError, match="backend='auto'"):
+        linear_rhs_parallel_cached(
+            G0,
+            cache,
+            params,
+            terms=LinearTerms(),
+            parallel=SimpleNamespace(strategy="velocity", backend="auto"),
+        )
+    with pytest.raises(NotImplementedError, match="currently supports only"):
+        linear_rhs_parallel_cached(
+            G0,
+            cache,
+            params,
+            terms=LinearTerms(),
+            parallel=SimpleNamespace(strategy="kx", backend="auto"),
+        )
+
+
+def test_linear_rhs_parallel_cached_routes_gated_velocity_backends(
+    monkeypatch,
+) -> None:
+    G0 = jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64)
+    cache = params = object()
+    calls: list[tuple[str, int | None]] = []
+
+    streaming_only = LinearTerms(
+        streaming=1.0,
+        mirror=0.0,
+        curvature=0.0,
+        gradb=0.0,
+        diamagnetic=0.0,
+        collisions=0.0,
+        hypercollisions=0.0,
+        hyperdiffusion=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+    )
+    electrostatic_slices = LinearTerms(
+        streaming=1.0,
+        mirror=1.0,
+        curvature=1.0,
+        gradb=1.0,
+        diamagnetic=1.0,
+        collisions=0.0,
+        hypercollisions=0.0,
+        hyperdiffusion=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+    )
+
+    def _out(name):
+        def _fake(G, cache, params, **kwargs):
+            calls.append((name, kwargs.get("num_devices")))
+            return jnp.ones_like(G), jnp.zeros(G.shape[-3:], dtype=G.dtype)
+
+        return _fake
+
+    monkeypatch.setattr(
+        "spectraxgk.linear.linear_rhs_streaming_velocity_sharded",
+        _out("streaming"),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.linear.linear_rhs_streaming_electrostatic_velocity_sharded",
+        _out("streaming_es"),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.linear.linear_rhs_electrostatic_slices_velocity_sharded",
+        _out("slices"),
+    )
+
+    linear_rhs_parallel_cached(
+        G0,
+        cache,
+        params,
+        terms=streaming_only,
+        parallel=SimpleNamespace(
+            strategy="velocity", backend="streaming_only", num_devices=1
+        ),
+    )
+    linear_rhs_parallel_cached(
+        G0,
+        cache,
+        params,
+        terms=streaming_only,
+        parallel=SimpleNamespace(
+            strategy="velocity",
+            backend="streaming_electrostatic",
+            num_devices=2,
+        ),
+    )
+    linear_rhs_parallel_cached(
+        G0,
+        cache,
+        params,
+        terms=electrostatic_slices,
+        parallel=SimpleNamespace(
+            strategy="velocity",
+            backend="electrostatic_linear_slices",
+            num_devices=3,
+        ),
+    )
+    linear_rhs_parallel_cached(
+        G0,
+        cache,
+        params,
+        terms=electrostatic_slices,
+        parallel=SimpleNamespace(strategy="velocity", backend="auto", num_devices=4),
+    )
+
+    assert calls == [
+        ("streaming", 1),
+        ("streaming_es", 2),
+        ("slices", 3),
+        ("slices", 4),
+    ]
+
+    with pytest.raises(NotImplementedError, match="streaming-only"):
+        linear_rhs_parallel_cached(
+            G0,
+            cache,
+            params,
+            terms=electrostatic_slices,
+            parallel=SimpleNamespace(strategy="velocity", backend="streaming_only"),
+        )
+    with pytest.raises(NotImplementedError, match="collision/EM"):
+        linear_rhs_parallel_cached(
+            G0,
+            cache,
+            params,
+            terms=LinearTerms(collisions=1.0, apar=0.0, bpar=0.0),
+            parallel=SimpleNamespace(
+                strategy="velocity", backend="electrostatic_linear_slices"
+            ),
+        )
 
 
 def test_linear_rhs_cached_can_use_electrostatic_specialized_jit(monkeypatch) -> None:

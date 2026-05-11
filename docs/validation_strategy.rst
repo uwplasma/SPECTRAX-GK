@@ -26,6 +26,17 @@ records:
 - shipped artifacts or gate reports that document the validation state;
 - the next tests needed to reach the package-wide 95% target.
 
+Claim-scope synchronization
+---------------------------
+
+Validation status and scientific claims are intentionally separate from raw
+coverage. Use :doc:`release_scope` as the human-readable claim ledger, and keep
+it synchronized with ``docs/_static/manuscript_readiness_status.json``,
+``docs/_static/open_research_lane_status.json``, and the validation coverage
+manifest. A passing test or coverage line is not enough to promote a physics or
+performance claim unless the relevant artifact also records the observable,
+reference, tolerance, and accepted claim level.
+
 How to check the manifest
 -------------------------
 

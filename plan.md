@@ -63,6 +63,33 @@ Only make claims at the level supported by gates:
 
 Do not claim universal nonlinear flux prediction. Do not claim production stellarator optimization until multi-surface, multi-alpha, kinetic-electron and nonlinear audit gates pass.
 
+## Current Claim-Scope Snapshot
+
+The canonical user-facing claim ledger is now `docs/release_scope.rst`. Keep it
+in sync with `docs/_static/manuscript_readiness_status.json` and
+`docs/_static/open_research_lane_status.json`.
+
+As of 2026-05-11:
+
+- Scoped release/manuscript claims are closed for the benchmark atlas,
+  electrostatic quasilinear diagnostics/model selection, reduced
+  differentiable-geometry gates, independent-work parallelization, and
+  profiler-backed nonlinear hot-path localization.
+- The quasilinear one-constant and simple saturation-rule absolute-flux models
+  remain rejected. The accepted `spectral_envelope_ridge` candidate is a
+  model-development result, not a runtime/TOML absolute-flux predictor.
+- The `vmec_jax -> booz_xform_jax -> SPECTRAX-GK` path is closed for
+  zero-beta equal-arc parity at `mboz=nboz=21` and for reduced
+  frequency/quasilinear/nonlinear-window-estimator gradients on QH/Li383; it
+  is not closed for production nonlinear turbulence gradients or optimized-
+  equilibrium nonlinear heat-flux audits.
+- Parallelization claims are production-ready only for independent `k_y`
+  scans, quasilinear/UQ ensembles, and similar independent work. Whole-state
+  nonlinear sharding remains an identity/profiler artifact and should not be
+  described as a nonlinear multi-GPU speedup path.
+- W7-X zonal long-window recurrence/damping and W7-X TEM/kinetic-electron
+  extension remain deferred from the current manuscript/release scope.
+
 ## Ordered Execution Plan From 2026-05-10 Deep Audit
 
 This section fixes the execution order for the next development cycle. Work
@@ -2337,11 +2364,13 @@ Exit gate:
     but a scaled estimate about ``3.49e3``, giving a stronger negative transfer
     constraint for the next saturation-model development step.
   - regenerated the saturation-rule and dataset-sufficiency diagnostics with
-    DSHAPE included as a fourth holdout. The best one-scalar rule is still raw
-    linear weight with holdout mean relative error about ``21``; the
-    training-mean null is about ``0.439``. Dataset sufficiency is improved to
-    five validated electrostatic cases but still fails the six-case and
-    two-training-geometry promotion requirements.
+    DSHAPE included as a fourth holdout. That historical snapshot failed the
+    six-case and two-training-geometry promotion requirements and is now
+    superseded by the current seven-case portfolio: positive-growth mixing
+    length is the least-bad simple rule at about ``2.51`` mean held-out
+    relative error, the training-mean null is about ``1.39``, and
+    ``spectral_envelope_ridge`` is the scoped accepted model-development
+    candidate.
 - Resumed the next external-VMEC nonlinear holdout lane after interruption:
   - current local branch is clean at ``742cc93`` and GitHub CI for that commit
     passed;
@@ -4135,3 +4164,26 @@ Exit gate:
     dry-run behavior;
   - rebuild docs with Sphinx warnings as errors;
   - commit, push, and monitor the superseding CI run.
+
+## 2026-05-11 Docs, Plan, and Science-Claim Ledger Tranche
+
+- Added `docs/release_scope.rst` as the canonical claim-boundary page for
+  release notes and manuscript drafting.
+- Linked the new page from `docs/index.rst` and cross-referenced it from
+  README, roadmap, performance, parallelization, geometry, quasilinear, and
+  manuscript-figure docs.
+- Consolidated current artifact-backed scope:
+  - release-ready benchmark and nonlinear window gates;
+  - quasilinear simple-rule rejection plus scoped `spectral_envelope_ridge`
+    model-development acceptance;
+  - reduced `vmec_jax -> booz_xform_jax -> SPECTRAX-GK` differentiability
+    gates without production nonlinear optimization overclaiming;
+  - independent-work parallelization as the production path;
+  - whole-state nonlinear sharding as identity/profiler-only;
+  - W7-X zonal and TEM/kinetic-electron lanes deferred.
+- Updated stale manuscript/readme wording that could have implied a runtime
+  absolute-flux predictor, a nonlinear multi-GPU speedup claim, or a production
+  nonlinear heat-flux stellarator optimizer.
+- Verification target for this tranche:
+  - strict Sphinx docs build under the 300 s documentation budget;
+  - `git diff --check` for whitespace/doc hygiene.

@@ -191,6 +191,19 @@ contracts and gates close:
 - W7-X multi-flux-tube and TEM extension before broad stellarator-validation
   claims.
 
+Current release-scope guardrail
+-------------------------------
+
+The canonical claim ledger for release notes and manuscript drafting is now
+:doc:`release_scope`. It records which claims are supported by the current
+artifacts and which remain explicitly unpromoted. In short: release-level
+validation is closed for the scoped benchmark, quasilinear diagnostic/model-
+selection, reduced differentiable-geometry, independent-work parallelization,
+and profiler-localization claims; production nonlinear heat-flux stellarator
+optimization, universal absolute quasilinear flux prediction, nonlinear
+multi-GPU speedup, W7-X zonal recurrence closure, and W7-X TEM/kinetic-electron
+validation remain future gates.
+
 Active refactor lane
 --------------------
 

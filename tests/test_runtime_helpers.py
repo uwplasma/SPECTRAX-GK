@@ -55,6 +55,7 @@ from spectraxgk.runtime_config import (
     RuntimeConfig,
     RuntimeExpertConfig,
     RuntimeNormalizationConfig,
+    RuntimeParallelConfig,
     RuntimePhysicsConfig,
     RuntimeSpeciesConfig,
 )
@@ -212,6 +213,36 @@ def test_runtime_diagnostic_slice_stride_truncate_concat() -> None:
     assert concat_none.resolved is None
     with pytest.raises(ValueError):
         _concat_gx_diagnostics([])
+
+
+def test_runtime_diagnostic_concat_rejects_misaligned_optional_channels() -> None:
+    """Optional species channels must stay aligned with the common time axis."""
+
+    diag0 = replace(_diag(resolved=False), heat_flux_species_t=None)
+    diag1 = _diag(offset=1.0, resolved=False)
+
+    with pytest.raises(ValueError, match="optional diagnostic heat_flux_species_t"):
+        _concat_gx_diagnostics([diag0, diag1])
+
+    with pytest.raises(ValueError, match="resolved diagnostics"):
+        _concat_gx_diagnostics([replace(_diag(), resolved=None), _diag(offset=1.0)])
+
+    partial0 = replace(
+        _diag(),
+        resolved=ResolvedDiagnostics(
+            Phi2_kxt=np.ones((2, 4), dtype=float),
+            Wg_kxst=None,
+        ),
+    )
+    partial1 = replace(
+        _diag(offset=1.0),
+        resolved=ResolvedDiagnostics(
+            Phi2_kxt=np.ones((2, 4), dtype=float),
+            Wg_kxst=np.ones((2, 1, 4), dtype=float),
+        ),
+    )
+    with pytest.raises(ValueError, match="resolved diagnostic Wg_kxst"):
+        _concat_gx_diagnostics([partial0, partial1])
 
 
 def test_runtime_species_and_model_helpers() -> None:
@@ -742,6 +773,95 @@ def test_run_runtime_scan_default_parallel_config_keeps_serial_order(
     assert result.parallel["executor"] == "thread"
     assert "serial ky ordering" in result.parallel["identity_contract"]
     assert result.parallel["quasilinear_state_extraction"] is False
+
+
+def test_run_runtime_scan_collects_quasilinear_payloads_and_worker_metadata(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import spectraxgk.runtime as runtime
+
+    cfg = _base_cfg()
+    calls: list[float] = []
+
+    def _fake_run_runtime_linear(_cfg, **kwargs):
+        ky = float(kwargs["ky_target"])
+        calls.append(ky)
+        return SimpleNamespace(
+            gamma=1.0 + ky,
+            omega=-(2.0 + ky),
+            quasilinear={
+                "ky": ky,
+                "heat_flux_weight_total": 10.0 * ky,
+                "claim_level": "bounded_unit_contract",
+            },
+        )
+
+    monkeypatch.setattr(runtime, "run_runtime_linear", _fake_run_runtime_linear)
+
+    result = run_runtime_scan(
+        cfg,
+        [0.4, 0.2, 0.1],
+        solver="time",
+        workers=8,
+        parallel_executor="thread",
+        show_progress=False,
+    )
+
+    np.testing.assert_allclose(calls, [0.4, 0.2, 0.1])
+    np.testing.assert_allclose(result.gamma, [1.4, 1.2, 1.1])
+    assert result.quasilinear is not None
+    assert [payload["ky"] for payload in result.quasilinear] == [0.4, 0.2, 0.1]
+    assert result.parallel is not None
+    assert result.parallel["requested_workers"] == 8
+    assert result.parallel["effective_workers"] == 3
+    assert result.parallel["quasilinear_state_extraction"] is True
+
+
+def test_run_runtime_scan_parallel_config_requests_combined_ky_batch(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import spectraxgk.runtime as runtime
+
+    cfg = replace(
+        _base_cfg(),
+        parallel=RuntimeParallelConfig(strategy="combined_ky", axis="ky"),
+    )
+    captured: dict[str, object] = {}
+    sentinel = SimpleNamespace(
+        ky=np.asarray([0.2, 0.4]),
+        gamma=np.asarray([0.1, 0.2]),
+        omega=np.asarray([-0.3, -0.4]),
+        quasilinear=None,
+    )
+
+    def _fake_batch(_cfg, ky_arr, **kwargs):
+        captured["ky_arr"] = np.asarray(ky_arr)
+        captured["solverless_kwargs"] = kwargs
+        return sentinel
+
+    monkeypatch.setattr(runtime, "_run_runtime_scan_batch", _fake_batch)
+    monkeypatch.setattr(
+        runtime,
+        "run_runtime_linear",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            AssertionError("combined-ky scan must not dispatch per-ky workers")
+        ),
+    )
+
+    result = run_runtime_scan(
+        cfg,
+        [0.2, 0.4],
+        solver="time",
+        method="rk2",
+        sample_stride=2,
+        show_progress=True,
+    )
+
+    assert result is sentinel
+    np.testing.assert_allclose(captured["ky_arr"], [0.2, 0.4])
+    assert captured["solverless_kwargs"]["method"] == "rk2"
+    assert captured["solverless_kwargs"]["sample_stride"] == 2
+    assert captured["solverless_kwargs"]["show_progress"] is True
 
 
 def test_run_runtime_linear_diffrax_contract_paths(

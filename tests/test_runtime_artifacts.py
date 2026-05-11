@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -20,6 +21,9 @@ from spectraxgk.runtime_artifacts import (
     _condense_ky,
     _condense_kykx,
     _condense_gx_diagnostics_for_output,
+    _condense_kx_for_output,
+    _condense_ky_for_output,
+    _condense_kykx_for_output,
     _condense_resolved_for_output,
     _flatten_series,
     _gx_active_field,
@@ -47,6 +51,8 @@ from spectraxgk.runtime_artifacts import (
     _spectral_to_ri,
     _spectral_to_xy,
     _take_axis,
+    _validate_finite_array,
+    _validate_finite_runtime_result,
     _write_csv,
     _write_gx_geometry_group,
     _write_gx_inputs_group,
@@ -281,6 +287,34 @@ def test_write_runtime_linear_scan_artifacts_with_quasilinear_spectrum(
     assert spectrum[1, 8] == pytest.approx(0.6)
 
 
+def test_write_runtime_linear_scan_artifacts_handles_quasilinear_length_mismatch(
+    tmp_path: Path,
+) -> None:
+    result = SimpleNamespace(
+        ky=np.asarray([0.2, 0.3]),
+        gamma=np.asarray([0.1, 0.2]),
+        omega=np.asarray([-0.4, -0.5]),
+        quasilinear=(
+            {
+                "ky": -0.25,
+                "gamma": 0.11,
+                "omega": -0.44,
+                "kperp_eff2": 0.8,
+                "heat_flux_weight_total": 1.2,
+                "particle_flux_weight_total": 0.1,
+            },
+        ),
+    )
+
+    paths = write_runtime_linear_scan_artifacts(tmp_path / "mismatch_scan", result)
+
+    spectrum = np.loadtxt(paths["quasilinear_spectrum"], delimiter=",", skiprows=1)
+    assert spectrum.shape == (10,)
+    assert spectrum[0] == pytest.approx(-0.25)
+    assert spectrum[1] == pytest.approx(-0.25)
+    assert spectrum[5] == pytest.approx(1.2)
+
+
 def test_runtime_artifact_helper_paths_and_flattening(tmp_path: Path) -> None:
     assert _artifact_base(tmp_path / "case.summary.json") == tmp_path / "case.summary"
     assert (
@@ -351,6 +385,120 @@ def test_runtime_artifact_restart_resolution_and_species_helpers() -> None:
         ),
         np.array([3.0, 7.0], dtype=np.float32),
     )
+
+    species_matrix = _species_matrix(
+        total,
+        2,
+        np.array([[3.0, 4.0], [5.0, 6.0]], dtype=np.float32),
+    )
+    np.testing.assert_allclose(
+        species_matrix,
+        np.array([[3.0, 4.0], [5.0, 6.0]], dtype=np.float32),
+    )
+
+
+def test_runtime_artifact_finite_validation_covers_state_and_fields() -> None:
+    _validate_finite_array(None, label="empty")
+    _validate_finite_array(np.asarray([]), label="empty")
+    _validate_finite_array(np.asarray([1.0, 2.0]), label="finite")
+
+    with pytest.raises(RuntimeError, match="bad field contains non-finite values"):
+        _validate_finite_array(np.asarray([1.0, np.inf]), label="bad field")
+
+    finite = RuntimeNonlinearResult(
+        t=np.asarray([]),
+        diagnostics=None,
+        state=np.ones((1,), dtype=np.complex64),
+        fields=SimpleNamespace(
+            phi=np.ones((1,), dtype=np.complex64),
+            apar=None,
+            bpar=np.zeros((1,), dtype=np.complex64),
+        ),
+    )
+    _validate_finite_runtime_result(finite, label="finite nonlinear")
+
+    bad_state = replace(finite, state=np.asarray([np.nan], dtype=np.float32))
+    with pytest.raises(RuntimeError, match="finite nonlinear state"):
+        _validate_finite_runtime_result(bad_state, label="finite nonlinear")
+
+    bad_phi = replace(
+        finite,
+        fields=SimpleNamespace(
+            phi=np.asarray([1.0 + np.nan * 1j]),
+            apar=np.asarray([0.0]),
+            bpar=np.asarray([0.0]),
+        ),
+    )
+    with pytest.raises(RuntimeError, match="finite nonlinear phi"):
+        _validate_finite_runtime_result(bad_phi, label="finite nonlinear")
+
+
+def test_runtime_artifact_condense_output_helpers_reject_bad_axis_lengths() -> None:
+    full_kx = np.arange(7, dtype=np.float32)
+    active_kx = full_kx[_gx_active_kx_indices(full_kx.size)]
+    np.testing.assert_allclose(
+        _condense_kx_for_output(full_kx, full_nx=7, active_nx=active_kx.size),
+        active_kx,
+    )
+    np.testing.assert_allclose(
+        _condense_kx_for_output(active_kx, full_nx=7, active_nx=active_kx.size),
+        active_kx,
+    )
+    with pytest.raises(ValueError, match="kx-resolved diagnostic"):
+        _condense_kx_for_output(np.arange(6), full_nx=7, active_nx=active_kx.size)
+
+    full_ky = np.arange(5, dtype=np.float32)
+    active_ky = full_ky[_gx_active_ky_indices(full_ky.size)]
+    np.testing.assert_allclose(
+        _condense_ky_for_output(full_ky, full_ny=5, active_ny=active_ky.size),
+        active_ky,
+    )
+    np.testing.assert_allclose(
+        _condense_ky_for_output(active_ky, full_ny=5, active_ny=active_ky.size),
+        active_ky,
+    )
+    with pytest.raises(ValueError, match="ky-resolved diagnostic"):
+        _condense_ky_for_output(np.arange(4), full_ny=5, active_ny=active_ky.size)
+
+    full = np.arange(5 * 7, dtype=np.float32).reshape(5, 7)
+    active = full[_gx_active_ky_indices(5)][:, _gx_active_kx_indices(7)]
+    np.testing.assert_allclose(
+        _condense_kykx_for_output(
+            full,
+            full_ny=5,
+            full_nx=7,
+            active_ny=active.shape[0],
+            active_nx=active.shape[1],
+        ),
+        active,
+    )
+    partially_condensed = full[_gx_active_ky_indices(5)]
+    np.testing.assert_allclose(
+        _condense_kykx_for_output(
+            partially_condensed,
+            full_ny=5,
+            full_nx=7,
+            active_ny=active.shape[0],
+            active_nx=active.shape[1],
+        ),
+        active,
+    )
+    with pytest.raises(ValueError, match="ky-kx diagnostic ky length"):
+        _condense_kykx_for_output(
+            np.zeros((3, 7)),
+            full_ny=5,
+            full_nx=7,
+            active_ny=active.shape[0],
+            active_nx=active.shape[1],
+        )
+    with pytest.raises(ValueError, match="ky-kx diagnostic kx length"):
+        _condense_kykx_for_output(
+            np.zeros((active.shape[0], 6)),
+            full_ny=5,
+            full_nx=7,
+            active_ny=active.shape[0],
+            active_nx=active.shape[1],
+        )
 
 
 def test_runtime_artifact_spectral_helpers() -> None:
