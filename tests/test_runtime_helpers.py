@@ -7,6 +7,8 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
+import spectraxgk.runtime as runtime
+import spectraxgk.runtime_policies as runtime_policies
 from spectraxgk.benchmarking import late_time_linear_metrics
 from spectraxgk.config import (
     GeometryConfig,
@@ -136,6 +138,11 @@ def test_runtime_small_helper_functions() -> None:
     assert _gx_default_p_hyper_m(3) == 1.0
     assert _gx_default_p_hyper_m(40) == 20.0
     assert _runtime_model_key(cfg) == "gyrokinetic"
+
+
+def test_runtime_policy_helpers_preserve_legacy_runtime_exports() -> None:
+    for name in runtime_policies.__all__:
+        assert getattr(runtime, name) is getattr(runtime_policies, name)
 
 
 def test_runtime_random_pair_edge_cases() -> None:

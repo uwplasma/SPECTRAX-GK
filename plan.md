@@ -311,6 +311,10 @@ and benchmark behavior.
 2. Split runtime orchestration.
    - Extract input/config parsing, run dispatch, restart handling, progress/ETA,
      artifact writing, and plotting hooks out of `runtime.py`.
+   - Current status: startup helpers, adaptive chunk loops, runtime result
+     assembly, runtime artifact diagnostics, and pure runtime policies are
+     extracted and tested while preserving legacy `spectraxgk.runtime` private
+     helper exports.
    - Add tests for default executable behavior, default TOML selection, restart
      continuation, ETA output, and plot artifact dispatch.
 
@@ -330,6 +334,10 @@ and benchmark behavior.
 5. Split benchmark policy.
    - Break `benchmarks.py` into data loading, fit metrics, window metrics,
      gate reports, and figure builders.
+   - Current status: reference loaders/pure fit helpers live in
+     `src/spectraxgk/benchmark_helpers.py`, and normalization/Krylov policy
+     constants live in `src/spectraxgk/benchmark_defaults.py` while
+     `src/spectraxgk/benchmarks.py` preserves the public compatibility surface.
    - Keep all benchmark tolerance policy machine-readable.
 
 6. Refactor exit gates.
@@ -4230,3 +4238,51 @@ Exit gate:
 - Verification for this docs synchronization:
   - `python -m sphinx -b html -W docs docs/_build/html` passed;
   - `git diff --check -- README.md plan.md docs/code_structure.rst docs/geometry.rst docs/release_scope.rst docs/roadmap.rst` passed.
+
+## 2026-05-12 Benchmark Defaults Refactor Tranche
+
+- Continued the behavior-preserving refactor lane after the green CI run for
+  `ece3c81`.
+- Split shipped benchmark normalization constants and Krylov default policies
+  from `src/spectraxgk/benchmarks.py` into
+  `src/spectraxgk/benchmark_defaults.py`.
+- Preserved compatibility by re-exporting the constants from
+  `spectraxgk.benchmarks` and adding a test that every
+  `benchmark_defaults.__all__` name is object-identical through the legacy
+  benchmark module.
+- Updated the API and architecture docs to expose the new benchmark-default
+  module and keep the refactor status current.
+- Verification for this tranche:
+  - `python -m pytest tests/test_normalization.py tests/test_benchmarks_helpers.py -q`
+    passed;
+  - `python -m pytest tests/test_benchmarks.py tests/test_benchmarks_runner_branches.py tests/test_compare_gx_rhs_terms.py -q`
+    passed;
+  - `ruff check src/spectraxgk/benchmark_defaults.py src/spectraxgk/benchmarks.py tests/test_normalization.py docs/conf.py`
+    passed;
+  - strict Sphinx docs build passed.
+
+## 2026-05-12 Runtime Policies Refactor Tranche
+
+- Split pure runtime policy helpers from `src/spectraxgk/runtime.py` into
+  `src/spectraxgk/runtime_policies.py`:
+  - linear solver-name normalization;
+  - combined-ky scan policy detection;
+  - midplane/zero-kx index selection;
+  - nonlinear monitored-mode selection;
+  - nonlinear step-count inference;
+  - runtime external-phi source policy.
+- Preserved the existing `spectraxgk.runtime` compatibility surface by
+  importing and re-exporting the same helper objects, with a new identity test
+  over `runtime_policies.__all__`.
+- Updated API, architecture, and roadmap docs so the runtime refactor state is
+  current and scoped as release engineering rather than a physics or speedup
+  claim.
+- Verification for this tranche:
+  - `ruff check src/spectraxgk/runtime.py src/spectraxgk/runtime_policies.py tests/test_runtime_helpers.py`
+    passed as part of the touched-file lint shard;
+  - `python -m pytest tests/test_runtime_helpers.py tests/test_normalization.py tests/test_benchmarks_helpers.py -q`
+    passed;
+  - `python -m pytest tests/test_runtime_runner.py -q -m integration --override-ini='addopts='`
+    passed in 64 s;
+  - `python -m py_compile src/spectraxgk/runtime.py src/spectraxgk/runtime_policies.py src/spectraxgk/benchmark_defaults.py src/spectraxgk/benchmarks.py`
+    passed.

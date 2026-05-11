@@ -236,8 +236,11 @@ preserving public behavior and benchmark parity. Refactors should only land
 when they add or preserve tests for the extracted behavior.
 
 Current refactor status: runtime startup, GX-style diagnostics, adaptive chunks,
-runtime result assembly, validation-gate helpers, zonal-validation helpers, and
-nonlinear parallelization policy metadata are split out and tested. The latest
+runtime result assembly, pure runtime policies, validation-gate helpers,
+zonal-validation helpers, and nonlinear parallelization policy metadata are
+split out and tested. Benchmark normalization/Krylov defaults and pure
+benchmark helpers are also separated from the public runner module while
+preserving the ``spectraxgk.benchmarks`` compatibility surface. The latest
 restart-artifact contract keeps NetCDF continuation appends on the persisted
 diagnostic schema. Treat this as release engineering: it supports maintenance,
 restart reproducibility, and future refactors, not a production nonlinear
@@ -245,10 +248,10 @@ optimization or broad validation claim.
 
 Highest-value remaining slices:
 
-- ``runtime.py`` and runtime orchestration;
+- ``runtime.py`` run dispatch, artifact writing, and plotting hooks;
 - ``linear.py`` and linear operator assembly;
 - ``nonlinear.py`` and nonlinear bracket/diagnostic paths;
-- ``benchmarks.py`` and benchmark artifact policy;
+- ``benchmarks.py`` runner orchestration and benchmark artifact policy;
 - plotting and publication-figure helpers;
 - VMEC/Miller geometry adapter boundaries.
 
