@@ -3,8 +3,8 @@ Roadmap
 
 SPECTRAX-GK is being developed as a research-grade, JAX-native gyrokinetic
 solver: accurate against independent benchmarks, differentiable end to end,
-fast enough for production studies, and simple enough for researchers to run,
-test, and extend.
+fast enough for scoped production studies, and simple enough for researchers to
+run, test, and extend.
 
 Current target
 --------------
@@ -20,6 +20,10 @@ validated codebase with:
   selected validation artifacts;
 - clear module boundaries so equations, numerics, runtime I/O, plotting, and
   benchmark policy can be tested independently.
+
+The roadmap is not itself a claim ledger. Use :doc:`release_scope` for the
+current artifact-backed boundary between release-ready, deferred, and explicitly
+unpromoted claims.
 
 Pre-release scope
 -----------------
@@ -113,7 +117,8 @@ closed, partial, open, or blocked.
 .. image:: _static/open_research_lane_status.png
    :alt: Open research lane status summary
 
-The current snapshot has two closed release/research-support lanes: nonlinear
+In the broader research tracker, the current snapshot has two closed
+release/research-support lanes: nonlinear
 holdouts for the scoped quasilinear model-development claim and
 profiler-backed nonlinear hot-path localization. W7-X fluctuation/TEM and the
 broader differentiable-geometry bridge remain partial bounded diagnostics,
@@ -128,21 +133,19 @@ manuscript. In that narrower scope, the quasilinear lane is closed as a
 validated diagnostic/model-selection result rather than as an absolute-flux
 predictor, VMEC/Boozer equal-arc geometry parity is closed at
 ``mboz=nboz=21``, and the reduced differentiable stellarator ITG optimization
-examples are closed with AD/FD gates. The production solver-objective gradient
-lane now has a passed actual linear-RHS gate at the solver-ready geometry
-contract plus passed mode-21 VMEC/Boozer state-to-solver eigenfrequency and
-quasilinear heat-flux-weight gates on QH and Li383 holdouts. A compact
-nonlinear startup-window finite-difference observable audit is also tracked at
-``docs/_static/nonlinear_window_fd_audit.png`` / ``.json``. A
-VMEC/Boozer-perturbed nonlinear startup-window FD observable audit is now
-tracked at ``docs/_static/vmec_boozer_nonlinear_window_fd_audit.png`` /
-``.json``. These short artifacts validate plumbing only and are not heat-flux
-transport averages. The reduced VMEC/Boozer nonlinear-window estimator
-gradient gates are now closed for QH and Li383; the remaining promotion step is
-a production nonlinear turbulence-gradient or robust finite-difference audit
-with local-gradient conditioning, converged long post-transient running-average
-heat-flux windows, and nonlinear audits of optimized equilibria. Those are
-required before claiming a production nonlinear heat-flux stellarator optimizer.
+examples are closed with AD/FD gates. The solver-objective geometry-gradient
+lane has passed actual linear-RHS gates at the solver-ready geometry contract
+plus mode-21 VMEC/Boozer state-to-solver eigenfrequency, quasilinear
+heat-flux-weight, and reduced nonlinear-window-estimator gates on QH and Li383
+holdouts. Compact nonlinear startup-window finite-difference observable audits
+are tracked at ``docs/_static/nonlinear_window_fd_audit.png`` / ``.json`` and
+``docs/_static/vmec_boozer_nonlinear_window_fd_audit.png`` / ``.json``. These
+short artifacts validate plumbing only and explicitly are not heat-flux
+transport averages. The remaining promotion step is a production nonlinear
+turbulence-gradient or robust finite-difference audit with local-gradient
+conditioning, converged long post-transient running-average heat-flux windows,
+and nonlinear audits of optimized equilibria. Those are required before claiming
+a production nonlinear heat-flux stellarator optimizer.
 
 Before tagging, the latest public ``main`` CI run must pass repo hygiene, mypy,
 quick shards, docs/packaging, fast coverage, and the full wide-coverage matrix.
@@ -190,6 +193,9 @@ contracts and gates close:
   remains post-release;
 - W7-X multi-flux-tube and TEM extension before broad stellarator-validation
   claims.
+- production nonlinear heat-flux stellarator optimization, including converged
+  VMEC/Boozer nonlinear transport gradients and optimized-equilibrium nonlinear
+  audits.
 
 Current release-scope guardrail
 -------------------------------
@@ -200,9 +206,9 @@ artifacts and which remain explicitly unpromoted. In short: release-level
 validation is closed for the scoped benchmark, quasilinear diagnostic/model-
 selection, reduced differentiable-geometry, independent-work parallelization,
 and profiler-localization claims; production nonlinear heat-flux stellarator
-optimization, universal absolute quasilinear flux prediction, nonlinear
-multi-GPU speedup, W7-X zonal recurrence closure, and W7-X TEM/kinetic-electron
-validation remain future gates.
+optimization, runtime absolute quasilinear flux prediction, electromagnetic
+quasilinear calibration, nonlinear multi-GPU speedup, W7-X zonal recurrence
+closure, and W7-X TEM/kinetic-electron validation remain future gates.
 
 Active refactor lane
 --------------------

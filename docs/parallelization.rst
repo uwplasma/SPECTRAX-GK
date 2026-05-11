@@ -138,6 +138,32 @@ Use the following rules when writing docs, release notes, or papers:
   correctness; profiler artifacts establish only the scoped timing claim they
   measure.
 
+Large-run scaling acceptance checklist
+--------------------------------------
+
+A CPU/GPU strong-scaling result is release-ready only when the tracked
+artifacts satisfy all of the following:
+
+- the combined ``*_large`` JSON/CSV/PNG/PDF files point back to split CPU and
+  GPU source artifacts for the same workload family;
+- every split artifact records the actual problem size, backend, requested
+  device counts, warmup/repeat policy, and positive per-worker or per-profile
+  timing samples;
+- every row has ``identity_gate_pass = true`` and compares against the
+  one-worker or one-device serial reference for the observable being claimed;
+- nonlinear whole-state sharding rows embed the per-device profiler/profile
+  payload, including trace-request status, serial timing stats, sharded timing
+  stats, selected axis, and final-state error metrics;
+- any speedup wording names the exact backend, device count, workload, grid,
+  software stack, identity tolerance, and artifact files that produced it.
+
+If any item is missing, the result can be kept as local engineering evidence
+only. In particular, whole-state nonlinear sharding remains not a production
+nonlinear speedup claim, even when the embedded profile reports a positive
+engineering timing ratio. Promoting that lane requires fresh profiler artifacts
+for the exact workload plus full nonlinear identity, conservation, field-solve,
+FFT/bracket communication, and transport-window gates.
+
 Release artifact policy
 -----------------------
 

@@ -359,6 +359,13 @@ finite-beta/production-runtime curvature and drift reconstruction, then replace
 the reduced estimator-gradient checks with converged transport-gradient and
 optimized-equilibrium audits.
 
+The lightweight readiness tests mirror that claim boundary. The parity-matrix
+tests reject ``mboz,nboz < 21`` and assert that a passed equal-arc matrix is
+still tagged as ``not_full_transport_gradient_claim``. The gradient-holdout
+tests require the ``mode21_vmec_boozer_state`` source scope, ``mboz,nboz >= 21``,
+and explicitly track the nonlinear-window estimator objectives as a reduced
+differentiability gate rather than a production nonlinear-optimization gate.
+
 For release claims, the differentiable-geometry lane is therefore closed for
 zero-beta equal-arc parity and reduced AD/finite-difference objectives, but
 open for production nonlinear heat-flux optimization. The active publication
