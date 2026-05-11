@@ -3786,3 +3786,26 @@ Exit gate:
   - monitor the new CI run for ``3c4c435`` and fix any remote-only failure immediately;
   - run a bounded local fast-coverage shard if CI remains queued, then inspect any module below target before adding tests;
   - resume the active ordered plan at parallelization/coverage/refactor with no new nonlinear speedup claims unless backed by fresh profiler artifacts.
+- Velocity-parallel ``auto`` backend gate:
+  - made ``linear_rhs_parallel_cached(..., parallel.backend="auto")`` resolve
+    only to the most complete currently gated Hermite-axis electrostatic route
+    (``electrostatic_linear_slices``) when the active linear terms satisfy that
+    backend's identity gate;
+  - ungated term sets now raise a clear ``NotImplementedError`` instead of
+    silently falling back to a serial or partially validated route;
+  - added a serial-identity regression for the auto-selected route and a
+    collision-term rejection regression for the same entry point;
+  - documented the ``auto`` behavior in ``docs/inputs.rst`` so user-facing
+    parallelization language matches the implemented validation boundary.
+- Verification for this tranche:
+  - ``python -m ruff check src/spectraxgk/linear.py tests/test_velocity_sharding.py``;
+  - ``mypy src/spectraxgk/linear.py``;
+  - ``pytest -q --maxfail=1 --disable-warnings tests/test_velocity_sharding.py tests/test_parallel.py`` with a 300 s local timeout;
+  - ``python -m sphinx -W -b html docs docs/_build/html``;
+  - ``git diff --check``.
+- Next best implementation steps:
+  - commit/push the velocity-parallel auto gate and monitor CI;
+  - add a small runtime-level TOML/CLI regression proving ``[parallel] backend =
+    "auto"`` reaches this gate for eligible linear cases;
+  - then move to a profiler-backed linear-RHS layout/cache cleanup before making
+    any new performance claim.
