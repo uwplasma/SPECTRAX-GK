@@ -328,6 +328,9 @@ and benchmark behavior.
    - Separate bracket transforms, field solve calls, diagnostic extraction,
      Hermitian projection, spectral/grid Laguerre modes, and fixed-step
      integrators.
+   - Current status: resolved-diagnostic packing and time-sampling helpers live
+     in `src/spectraxgk/nonlinear_diagnostics.py`, with legacy private exports
+     preserved through `src/spectraxgk/nonlinear.py`.
    - Preserve current profiler labels so performance artifacts remain
      comparable.
 
@@ -4286,3 +4289,21 @@ Exit gate:
     passed in 64 s;
   - `python -m py_compile src/spectraxgk/runtime.py src/spectraxgk/runtime_policies.py src/spectraxgk/benchmark_defaults.py src/spectraxgk/benchmarks.py`
     passed.
+
+## 2026-05-12 Nonlinear Diagnostic Helper Refactor Tranche
+
+- Split resolved-diagnostic packing and sample-retention helpers from
+  `src/spectraxgk/nonlinear.py` into
+  `src/spectraxgk/nonlinear_diagnostics.py`.
+- Preserved legacy private imports from `spectraxgk.nonlinear` and added an
+  identity test over `nonlinear_diagnostics.__all__`.
+- This tranche intentionally does not touch the nonlinear bracket, field solve,
+  IMEX, or fixed-step integration math; it only reduces the diagnostic surface
+  of the large nonlinear module and makes future tests/refactors cheaper.
+- Verification for this tranche:
+  - `ruff check src/spectraxgk/nonlinear.py src/spectraxgk/nonlinear_diagnostics.py tests/test_nonlinear_helpers_extra.py docs/conf.py`
+    passed;
+  - `python -m pytest tests/test_nonlinear_helpers_extra.py -q` passed;
+  - `python -m pytest tests/test_nonlinear.py -q -m integration --override-ini='addopts=' --maxfail=1`
+    passed in 47 s;
+  - strict Sphinx docs build passed.
