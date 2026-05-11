@@ -43,6 +43,13 @@ Linear
 .. automodule:: spectraxgk.linear
    :members:
 
+Nonlinear Diagnostics
+---------------------
+
+.. automodule:: spectraxgk.nonlinear_diagnostics
+   :members:
+   :private-members:
+
 Benchmarks
 ----------
 

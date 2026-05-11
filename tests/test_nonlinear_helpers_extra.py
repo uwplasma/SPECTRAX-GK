@@ -8,6 +8,7 @@ import numpy as np
 import pytest
 
 from spectraxgk import nonlinear as nonlinear_mod
+from spectraxgk import nonlinear_diagnostics
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.diagnostics import ResolvedDiagnostics
 from spectraxgk.geometry import SAlphaGeometry
@@ -231,6 +232,11 @@ def test_sample_indices_with_final_preserves_last_step() -> None:
     )
     np.testing.assert_array_equal(_sample_indices_with_final(6, 5), np.asarray([0, 5]))
     assert isinstance(_sample_indices_with_final(6, 1), slice)
+
+
+def test_nonlinear_diagnostic_helpers_preserve_legacy_exports() -> None:
+    for name in nonlinear_diagnostics.__all__:
+        assert getattr(nonlinear_mod, name) is getattr(nonlinear_diagnostics, name)
 
 
 def test_make_hermitian_projector_and_mode_mask() -> None:
