@@ -35,10 +35,12 @@ from spectraxgk.linear import (
     integrate_linear,
     integrate_linear_diagnostics,
     linear_rhs,
+    linear_rhs_cached,
     lenard_bernstein_eigenvalues,
     linear_terms_to_term_config,
     term_config_to_linear_terms,
 )
+from spectraxgk.terms.config import FieldState
 
 
 def test_linear_validation_helpers_scalar_and_array() -> None:
@@ -641,6 +643,60 @@ def test_integrate_linear_wrapper_routes_nonserial_parallel(monkeypatch) -> None
         integrate_linear(G0, grid, geom, params, dt=0.1, steps=2, method="implicit", parallel=parallel)
     with pytest.raises(NotImplementedError, match="donated"):
         integrate_linear(G0, grid, geom, params, dt=0.1, steps=2, method="rk2", donate=True, parallel=parallel)
+
+
+def test_integrate_linear_wrapper_enables_electrostatic_field_specialization(monkeypatch) -> None:
+    G0 = jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64)
+    grid = geom = params = object()
+    captured: dict[str, bool] = {}
+
+    monkeypatch.setattr("spectraxgk.linear.build_linear_cache", lambda *args, **kwargs: "cache")
+
+    def _fake_cached(*args, **kwargs):
+        captured["force_electrostatic_fields"] = kwargs["force_electrostatic_fields"]
+        return "G", "phi"
+
+    monkeypatch.setattr("spectraxgk.linear._integrate_linear_cached", _fake_cached)
+
+    assert integrate_linear(
+        G0,
+        grid,
+        geom,
+        params,
+        dt=0.1,
+        steps=2,
+        method="rk2",
+        terms=LinearTerms(apar=0.0, bpar=0.0),
+    ) == ("G", "phi")
+    assert captured["force_electrostatic_fields"] is True
+
+
+def test_linear_rhs_cached_can_use_electrostatic_specialized_jit(monkeypatch) -> None:
+    G0 = jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64)
+    cache = params = object()
+    calls: list[str] = []
+
+    def _fake_electrostatic(G, cache, params, terms, dt=None, external_phi=None):
+        calls.append("electrostatic")
+        return jnp.ones_like(G), FieldState(phi=jnp.ones(G.shape[-3:], dtype=G.dtype), apar=None, bpar=None)
+
+    monkeypatch.setattr("spectraxgk.terms.assembly.assemble_rhs_cached_electrostatic_jit", _fake_electrostatic)
+    monkeypatch.setattr(
+        "spectraxgk.terms.assembly.assemble_rhs_cached_jit",
+        lambda *args, **kwargs: pytest.fail("generic RHS should not run when electrostatic specialization is forced"),
+    )
+
+    rhs, phi = linear_rhs_cached(
+        G0,
+        cache,
+        params,
+        terms=LinearTerms(apar=0.0, bpar=0.0),
+        force_electrostatic_fields=True,
+    )
+
+    assert calls == ["electrostatic"]
+    assert rhs.shape == G0.shape
+    assert phi.shape == G0.shape[-3:]
 
 
 def test_integrate_linear_cached_impl_invalid_and_sampled(monkeypatch) -> None:
