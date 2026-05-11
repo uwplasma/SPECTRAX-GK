@@ -3879,3 +3879,31 @@ Exit gate:
     artifact supports a claim;
   - after that, move to nonlinear production sharding with numerical-identity
     and physics-diagnostic gates.
+- Production-path fused linear-RHS profiler refresh:
+  - changed ``tools/profile_full_linear_rhs_trace.py`` to time and lower the
+    production ``spectraxgk.linear.linear_rhs_cached`` entry point rather than
+    the lower-level assembly helper;
+  - regenerated the local CPU Cyclone Miller initial and active ``z_wave``
+    summaries in ``docs/_static/full_linear_rhs_trace*_summary.json``;
+  - results: initial ``warm_seconds=1.54e-1`` and active ``z_wave``
+    ``warm_seconds=8.38e-2`` with ``source="spectraxgk.linear.linear_rhs_cached"``,
+    ``force_electrostatic_fields=true``, and ``2779`` HLO lines;
+  - updated ``docs/performance.rst`` to scope these artifacts as production-path
+    localization only, and explicitly removed the stale lower-level helper
+    speedup wording; GPU production-path traces remain a required next refresh
+    before any GPU speedup claim.
+- Verification for this profiler refresh:
+  - ``python -m ruff check tools/profile_full_linear_rhs_trace.py tests/test_profile_full_linear_rhs_trace.py src/spectraxgk/linear.py tests/test_linear_helpers_extra.py``;
+  - ``MYPYPATH=src mypy tools/profile_full_linear_rhs_trace.py`` and
+    ``mypy src/spectraxgk/linear.py``;
+  - ``pytest -q --maxfail=1 --disable-warnings tests/test_profile_full_linear_rhs_trace.py tests/test_linear_helpers_extra.py::test_integrate_linear_wrapper_enables_electrostatic_field_specialization tests/test_linear_helpers_extra.py::test_linear_rhs_cached_can_use_electrostatic_specialized_jit``;
+  - two bounded local CPU profiler runs through
+    ``tools/profile_full_linear_rhs_trace.py`` with 300 s timeout;
+  - ``python -m sphinx -W -b html docs docs/_build/html``;
+  - ``git diff --check``.
+- Next best implementation steps:
+  - commit/push the profiler-source refresh and monitor CI;
+  - run the same production-path fused linear-RHS profiler on ``office`` GPU
+    before updating any GPU performance claim;
+  - then resume nonlinear sharding production decomposition with identity and
+    physics-diagnostic gates.

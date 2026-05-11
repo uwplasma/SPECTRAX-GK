@@ -6,7 +6,6 @@ from __future__ import annotations
 import argparse
 import json
 import time
-from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -17,20 +16,20 @@ import numpy as np
 try:
     from tools._profiler_options import make_profile_options
 except ModuleNotFoundError:  # pragma: no cover - direct script execution fallback
-    from _profiler_options import make_profile_options
+    from _profiler_options import make_profile_options  # type: ignore[import-not-found,no-redef]
 
 from spectraxgk.geometry import apply_gx_geometry_grid_defaults
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.io import load_runtime_from_toml
-from spectraxgk.linear import build_linear_cache
+from spectraxgk.linear import build_linear_cache, linear_rhs_cached
 from spectraxgk.runtime import (
     _build_initial_condition,
     _select_nonlinear_mode_indices,
     build_runtime_geometry,
     build_runtime_linear_params,
-    build_runtime_term_config,
+    build_runtime_linear_terms,
 )
-from spectraxgk.terms.assembly import _is_static_zero, assemble_rhs_cached
+from spectraxgk.terms.assembly import _is_static_zero
 
 
 HLO_TOKENS = (
@@ -149,6 +148,7 @@ def _build_summary(
     memory_profile: Path | None,
     hlo_out: Path | None,
     force_electrostatic_fields: bool,
+    source: str,
 ) -> dict[str, Any]:
     """Build a machine-readable full-linear-RHS trace summary."""
 
@@ -173,6 +173,7 @@ def _build_summary(
         "memory_profile": None if memory_profile is None else str(memory_profile),
         "hlo_out": None if hlo_out is None else str(hlo_out),
         "force_electrostatic_fields": bool(force_electrostatic_fields),
+        "source": str(source),
         "claim_scope": (
             "Full fused linear-RHS graph triage for one runtime state. Use this to choose "
             "kernel-level optimization targets; do not treat it as a standalone runtime claim."
@@ -192,8 +193,7 @@ def main() -> None:
     grid_cfg = apply_gx_geometry_grid_defaults(geom, cfg.grid)
     grid = build_spectral_grid(grid_cfg)
     params = build_runtime_linear_params(cfg, Nm=args.Nm, geom=geom)
-    term_cfg = build_runtime_term_config(cfg)
-    linear_terms = replace(term_cfg, nonlinear=0.0)
+    linear_terms = build_runtime_linear_terms(cfg)
     ky_index, kx_index = _select_nonlinear_mode_indices(
         grid,
         ky_target=args.ky,
@@ -223,7 +223,7 @@ def main() -> None:
 
     force_electrostatic_fields = _is_static_zero(linear_terms.apar) and _is_static_zero(linear_terms.bpar)
     rhs_fn = jax.jit(
-        lambda state: assemble_rhs_cached(
+        lambda state: linear_rhs_cached(
             state,
             cache,
             params,
@@ -232,7 +232,7 @@ def main() -> None:
         )
     )
     compile_execute_seconds, first_out = _time_call(rhs_fn, g0)
-    rhs, fields = first_out
+    rhs, phi = first_out
 
     if args.trace_dir is not None:
         args.trace_dir.mkdir(parents=True, exist_ok=True)
@@ -246,8 +246,8 @@ def main() -> None:
     try:
         warm_t0 = time.perf_counter()
         for _ in range(int(args.repeats)):
-            rhs, fields = rhs_fn(g0)
-            _block_tree((rhs, fields))
+            rhs, phi = rhs_fn(g0)
+            _block_tree((rhs, phi))
         warm_seconds = (time.perf_counter() - warm_t0) / float(args.repeats)
     finally:
         if args.trace_dir is not None:
@@ -257,7 +257,10 @@ def main() -> None:
         args.memory_profile.parent.mkdir(parents=True, exist_ok=True)
         jax.profiler.save_device_memory_profile(str(args.memory_profile))
 
-    hlo_text = rhs_fn.lower(g0).compiler_ir(dialect="hlo").as_hlo_text()
+    hlo_ir = rhs_fn.lower(g0).compiler_ir(dialect="hlo")
+    if hlo_ir is None:
+        raise RuntimeError("failed to lower full linear RHS to HLO")
+    hlo_text = hlo_ir.as_hlo_text()
     if args.hlo_out is not None:
         args.hlo_out.parent.mkdir(parents=True, exist_ok=True)
         args.hlo_out.write_text(hlo_text, encoding="utf-8")
@@ -273,12 +276,13 @@ def main() -> None:
         compile_execute_seconds=float(compile_execute_seconds),
         warm_seconds=float(warm_seconds),
         rhs_norm=float(np.asarray(jnp.linalg.norm(rhs))),
-        phi_norm=float(np.asarray(jnp.linalg.norm(fields.phi))),
+        phi_norm=float(np.asarray(jnp.linalg.norm(phi))),
         hlo_text=hlo_text,
         trace_dir=args.trace_dir,
         memory_profile=args.memory_profile,
         hlo_out=args.hlo_out,
         force_electrostatic_fields=force_electrostatic_fields,
+        source="spectraxgk.linear.linear_rhs_cached",
     )
     _write_summary_json(summary, args.summary_json)
     print(json.dumps(summary, indent=2, sort_keys=True))
