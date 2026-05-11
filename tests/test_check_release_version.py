@@ -7,6 +7,7 @@ import pytest
 
 from tools.check_release_version import (
     ReleaseVersionError,
+    default_tag_from_github_env,
     normalize_tag,
     read_project_version,
     read_source_version,
@@ -84,3 +85,17 @@ def test_release_version_readers_and_tag_normalization(tmp_path: Path) -> None:
     assert read_source_version(tmp_path) == "3.4.5"
     assert normalize_tag("refs/tags/v3.4.5") == "v3.4.5"
     assert normalize_tag("") is None
+
+
+def test_default_tag_from_github_env_ignores_branch_refs(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("GITHUB_REF_NAME", "main")
+    monkeypatch.setenv("GITHUB_REF_TYPE", "branch")
+
+    assert default_tag_from_github_env() is None
+
+    monkeypatch.setenv("GITHUB_REF_NAME", "v2.0.1")
+    monkeypatch.setenv("GITHUB_REF_TYPE", "tag")
+
+    assert default_tag_from_github_env() == "v2.0.1"
