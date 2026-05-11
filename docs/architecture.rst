@@ -11,7 +11,10 @@ Core modules
 - ``spectraxgk.linear``: cache construction, public linear API, and integrators that call modular RHS assembly.
 - ``spectraxgk.nonlinear``: nonlinear runtime integrators and cached IMEX paths.
 - ``spectraxgk.runtime`` / ``spectraxgk.runtime_config``: user-facing runtime entrypoints and configuration schema.
-- ``spectraxgk.benchmarks``: reference datasets and benchmark harness.
+- ``spectraxgk.runtime_policies``: pure runtime selection policies for solver names, scan modes, nonlinear monitored modes, external fields, and step-count inference.
+- ``spectraxgk.benchmark_defaults``: normalization constants and Krylov policies for shipped benchmark lanes.
+- ``spectraxgk.benchmark_helpers``: reference data loaders, result containers, and pure benchmark policies.
+- ``spectraxgk.benchmarks``: public benchmark runners and compatibility import surface.
 - ``spectraxgk.plotting``: reusable, publication-ready plotting utilities.
 
 Term-level source mapping

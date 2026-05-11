@@ -49,6 +49,12 @@ Benchmarks
 .. automodule:: spectraxgk.benchmarks
    :members:
 
+Benchmark Defaults
+------------------
+
+.. automodule:: spectraxgk.benchmark_defaults
+   :members:
+
 Benchmarking
 ------------
 
@@ -120,6 +126,13 @@ Runtime Config
 
 .. automodule:: spectraxgk.runtime_config
    :members:
+
+Runtime Policies
+----------------
+
+.. automodule:: spectraxgk.runtime_policies
+   :members:
+   :private-members:
 
 Quasilinear Transport
 ---------------------
