@@ -13,6 +13,8 @@ from spectraxgk.config import GridConfig
 from spectraxgk.geometry import FluxTubeGeometryData, SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.gyroaverage import J_l_all
+import spectraxgk.linear as linear_mod
+import spectraxgk.linear_linked as linear_linked
 from spectraxgk.linear import (
     LinearParams,
     LinearTerms,
@@ -92,6 +94,11 @@ def test_as_species_array_and_preconditioner_resolution() -> None:
         return x
 
     assert _resolve_implicit_preconditioner(fn) is fn
+
+
+def test_linear_linked_helpers_preserve_legacy_exports() -> None:
+    for name in linear_linked.__all__:
+        assert getattr(linear_mod, name) is getattr(linear_linked, name)
 
 
 def test_is_tracer_and_lenard_bernstein_eigenvalues() -> None:

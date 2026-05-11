@@ -322,6 +322,9 @@ and benchmark behavior.
    - Move geometry cache construction, linked parallel derivative maps,
      field solves, velocity operators, and branch/frequency extraction into
      tested submodules.
+   - Current status: linked-boundary FFT maps and linked-end damping profiles
+     live in `src/spectraxgk/linear_linked.py`, with legacy private exports
+     preserved through `src/spectraxgk/linear.py`.
    - Keep operator-level tests tied to equations and branch-continuity gates.
 
 4. Split nonlinear assembly.
@@ -4306,4 +4309,23 @@ Exit gate:
   - `python -m pytest tests/test_nonlinear_helpers_extra.py -q` passed;
   - `python -m pytest tests/test_nonlinear.py -q -m integration --override-ini='addopts=' --maxfail=1`
     passed in 47 s;
+  - strict Sphinx docs build passed.
+
+## 2026-05-12 Linear Linked-Boundary Refactor Tranche
+
+- Split linked-field-line FFT map construction and linked-end damping profile
+  construction from `src/spectraxgk/linear.py` into
+  `src/spectraxgk/linear_linked.py`.
+- Preserved the existing `spectraxgk.linear` private-helper import surface with
+  an identity test over `linear_linked.__all__`.
+- This tranche does not change linear RHS, field solve, integrator, or
+  cache-construction physics; it isolates the linked-boundary indexing policy
+  so future tests can target it directly.
+- Verification for this tranche:
+  - `ruff check src/spectraxgk/linear.py src/spectraxgk/linear_linked.py tests/test_linear_helpers_extra.py docs/conf.py`
+    passed;
+  - `python -m pytest tests/test_linear_helpers_extra.py tests/test_linear.py::test_build_linear_cache_restores_linked_end_damping_on_full_fft_grid tests/test_linear.py::test_build_linear_cache_keeps_linked_end_damping_on_selected_positive_ky_grid tests/test_linear.py::test_assemble_rhs_terms_scales_linked_end_damping_by_step_dt -q`
+    passed;
+  - `python -m pytest tests/test_linear.py -q -m integration --override-ini='addopts=' --maxfail=1`
+    passed in 41 s;
   - strict Sphinx docs build passed.
