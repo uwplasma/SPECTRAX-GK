@@ -3935,3 +3935,36 @@ Exit gate:
     green or any failure is fixed;
   - keep W7-X zonal/TEM deferred and keep scientific claims scoped to validated
     artifacts.
+- Nonlinear sharding final-field/RHS diagnostic gate:
+  - extended ``tools/profile_nonlinear_sharding.py`` so each candidate
+    sharded final state is also re-evaluated through the nonlinear field solve
+    and RHS, not only compared as a raw state array;
+  - added a focused regression that perturbs one state entry and verifies the
+    diagnostic metric catches both RHS and ``phi`` differences;
+  - regenerated the bounded local CPU artifact
+    ``docs/_static/nonlinear_sharding_profile.json`` with ``warmups=1`` and
+    ``repeats=2``; the single-device control-flow gate passes with zero
+    final-state, final-field, and final-RHS diagnostic error;
+  - regenerated the two-GPU ``office`` artifact
+    ``docs/_static/nonlinear_sharding_profile_office_gpu.json`` from a fresh
+    temporary clone with ``nx=4, ny=8, nz=16, nl=4, nm=6, steps=16,
+    warmups=1, repeats=3`` and a TensorBoard trace path under
+    ``tools_out/profiles/office_gpu_nonlinear_sharding_trace_20260511``;
+  - results: both active ``auto`` and ``kx`` sharded GPU candidates preserve
+    final state, field solve, and RHS diagnostics exactly in this gate; the
+    bounded timing still does not support a nonlinear speedup claim
+    (``auto=0.81x``, best ``kx=0.96x``), so whole-state nonlinear sharding
+    remains a correctness/profiler artifact while production parallelism should
+    continue through scan/ensemble batching and a communication-aware domain
+    decomposition.
+- Verification for this nonlinear sharding gate:
+  - fresh ``office`` clone imported SPECTRAX-GK from ``PYTHONPATH=src`` and
+    reported GPU backend with two CUDA devices;
+  - ``python tools/profile_nonlinear_sharding.py --out-json docs/_static/nonlinear_sharding_profile.json --sharding auto --sharding-options auto,kx --warmups 1 --repeats 2 --steps 2``;
+  - ``PYTHONPATH=src JAX_ENABLE_X64=0 python3 tools/profile_nonlinear_sharding.py --out-json docs/_static/nonlinear_sharding_profile_office_gpu.json --sharding auto --sharding-options auto,kx --nx 4 --ny 8 --nz 16 --nl 4 --nm 6 --dt 0.01 --steps 16 --warmups 1 --repeats 3 --trace-dir tools_out/profiles/office_gpu_nonlinear_sharding_trace_20260511`` on ``office``.
+- Next best implementation steps:
+  - run bounded lint, type, unit, JSON-artifact, docs, and whitespace checks;
+  - commit/push the nonlinear diagnostic-gate tranche and monitor CI;
+  - resume the next parallelization step by designing a production
+    communication-aware nonlinear decomposition, but do not document any
+    nonlinear multi-GPU speedup until fresh profiler artifacts support it.
