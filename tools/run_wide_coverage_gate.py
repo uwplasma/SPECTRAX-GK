@@ -13,10 +13,20 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_TEST_DIR = REPO_ROOT / "tests"
 
 
+def _resolve_test_dir(test_dir: Path) -> Path:
+    """Resolve relative test directories against the repository root."""
+
+    return (
+        (REPO_ROOT / test_dir).resolve()
+        if not test_dir.is_absolute()
+        else test_dir.resolve()
+    )
+
+
 def discover_test_files(test_dir: Path = DEFAULT_TEST_DIR) -> list[Path]:
     """Return top-level pytest files in deterministic order."""
 
-    return sorted(test_dir.glob("test_*.py"))
+    return sorted(_resolve_test_dir(test_dir).glob("test_*.py"))
 
 
 def split_shards(items: list[Path], nshards: int) -> list[list[Path]]:
@@ -41,19 +51,44 @@ def _run(cmd: list[str], *, timeout: int | None, cwd: Path) -> None:
     try:
         subprocess.run(cmd, cwd=cwd, timeout=timeout, check=True)
     except subprocess.TimeoutExpired as exc:
-        raise SystemExit(f"command timed out after {timeout}s: {' '.join(cmd)}") from exc
+        raise SystemExit(
+            f"command timed out after {timeout}s: {' '.join(cmd)}"
+        ) from exc
     except subprocess.CalledProcessError as exc:
         raise SystemExit(exc.returncode) from exc
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--shards", type=int, default=6, help="Number of bounded test shards.")
-    parser.add_argument("--timeout", type=int, default=300, help="Per-shard timeout in seconds.")
-    parser.add_argument("--fail-under", type=float, default=95.0, help="Combined package coverage threshold.")
-    parser.add_argument("--xml", type=Path, default=Path("coverage-wide.xml"), help="Combined XML report path.")
-    parser.add_argument("--test-dir", type=Path, default=DEFAULT_TEST_DIR, help="Directory containing test_*.py files.")
-    parser.add_argument("--dry-run", action="store_true", help="Print shard membership without running tests.")
+    parser.add_argument(
+        "--shards", type=int, default=6, help="Number of bounded test shards."
+    )
+    parser.add_argument(
+        "--timeout", type=int, default=300, help="Per-shard timeout in seconds."
+    )
+    parser.add_argument(
+        "--fail-under",
+        type=float,
+        default=95.0,
+        help="Combined package coverage threshold.",
+    )
+    parser.add_argument(
+        "--xml",
+        type=Path,
+        default=Path("coverage-wide.xml"),
+        help="Combined XML report path.",
+    )
+    parser.add_argument(
+        "--test-dir",
+        type=Path,
+        default=DEFAULT_TEST_DIR,
+        help="Directory containing test_*.py files.",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Print shard membership without running tests.",
+    )
     parser.add_argument(
         "--only-shard",
         type=int,
@@ -86,9 +121,10 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    tests = discover_test_files(args.test_dir)
+    test_dir = _resolve_test_dir(args.test_dir)
+    tests = discover_test_files(test_dir)
     if not tests:
-        raise SystemExit(f"no test_*.py files found under {args.test_dir}")
+        raise SystemExit(f"no test_*.py files found under {test_dir}")
     shards = split_shards(tests, int(args.shards))
 
     for idx, shard in enumerate(shards):
@@ -102,9 +138,19 @@ def main() -> None:
 
     if args.combine_only:
         _run([sys.executable, "-m", "coverage", "combine"], timeout=120, cwd=REPO_ROOT)
-        _run([sys.executable, "-m", "coverage", "xml", "-o", str(args.xml)], timeout=120, cwd=REPO_ROOT)
         _run(
-            [sys.executable, "-m", "coverage", "report", f"--fail-under={float(args.fail_under):.6g}"],
+            [sys.executable, "-m", "coverage", "xml", "-o", str(args.xml)],
+            timeout=120,
+            cwd=REPO_ROOT,
+        )
+        _run(
+            [
+                sys.executable,
+                "-m",
+                "coverage",
+                "report",
+                f"--fail-under={float(args.fail_under):.6g}",
+            ],
             timeout=120,
             cwd=REPO_ROOT,
         )
@@ -146,9 +192,19 @@ def main() -> None:
         return
 
     _run([sys.executable, "-m", "coverage", "combine"], timeout=120, cwd=REPO_ROOT)
-    _run([sys.executable, "-m", "coverage", "xml", "-o", str(args.xml)], timeout=120, cwd=REPO_ROOT)
     _run(
-        [sys.executable, "-m", "coverage", "report", f"--fail-under={float(args.fail_under):.6g}"],
+        [sys.executable, "-m", "coverage", "xml", "-o", str(args.xml)],
+        timeout=120,
+        cwd=REPO_ROOT,
+    )
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "coverage",
+            "report",
+            f"--fail-under={float(args.fail_under):.6g}",
+        ],
         timeout=120,
         cwd=REPO_ROOT,
     )

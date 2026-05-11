@@ -388,8 +388,9 @@ the following pass:
    matches the imported ``bmag``, ``bgrad``, ``gradpar``, ``q``, ``s_hat``,
    Jacobian, zero-beta ``gds*``/``grho`` metric convention, and zero-beta
    loaded ``cvdrift``/``gbdrift`` drift convention at release tolerance. The
-   remaining gap is broad finite-beta and multi-equilibrium drift parity before
-   broad transport-gradient claims are promoted.
+   remaining gap is finite-beta and broader production-runtime drift parity
+   beyond the tracked zero-beta equal-arc fixtures before broad transport-gradient
+   claims are promoted.
 2. The sampled field-line arrays match the existing imported-VMEC/EIK runtime
    path for at least one small equilibrium.
 3. Geometry-observable gradients match central finite differences for the

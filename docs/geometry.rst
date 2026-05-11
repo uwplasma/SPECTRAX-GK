@@ -268,9 +268,10 @@ separately and is ``2.3e-2``. The same JAX-native path now reconstructs the
 zero-beta Boozer metric profiles ``gds2``, ``gds21``, ``gds22``, and ``grho``
 with worst normalized mismatch ``3.45e-2`` and the loaded-convention zero-beta
 drift profiles ``cvdrift``, ``gbdrift``, ``cvdrift0``, and ``gbdrift0`` with
-worst normalized mismatch ``3.50e-2``. The remaining promotion gap is broad
-finite-beta and multi-equilibrium drift parity, not the Boozer equal-arc
-field-line or zero-beta metric/drift normalization on the tracked fixture.
+worst normalized mismatch ``3.50e-2``. The remaining promotion gap is
+finite-beta and broader production-runtime drift parity beyond the tracked
+zero-beta equal-arc fixtures, not the Boozer equal-arc field-line or zero-beta
+metric/drift normalization on the tracked fixture.
 The Boozer gates evaluate
 the JAX-native Boozer ``|B|``
 spectrum along a field line, build the ``FluxTubeGeometryData`` input mapping,
@@ -343,9 +344,10 @@ claims explicitly scoped as follow-up work.
    ``vmec_jax`` and ``booz_xform_jax`` bridge path and rejects Boozer mode
    counts below 21.
 
-The next implementation step is to add the Hegna-Nakajima curvature/drift
-reconstruction to the same equal-arc path, then add geometry-gradient checks
-for growth-rate and transport observables.
+The next implementation step is to extend the same equal-arc path to
+finite-beta/production-runtime curvature and drift reconstruction, then replace
+the reduced estimator-gradient checks with converged transport-gradient and
+optimized-equilibrium audits.
 The VMEC bridge now also expands environment variables in ``geometry.vmec_file``.
 Tracked portable runtime TOMLs should therefore pass external VMEC equilibria
 through explicit environment variables such as ``$W7X_VMEC_FILE`` and
