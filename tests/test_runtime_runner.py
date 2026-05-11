@@ -3197,6 +3197,95 @@ def test_run_linear_case_uses_toml_output_path(
     assert (tmp_path / "linear_case.summary.json").exists()
 
 
+def test_run_linear_case_toml_velocity_auto_reaches_parallel_rhs(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    import spectraxgk.linear as linear
+
+    cfg_path = tmp_path / "velocity_auto.toml"
+    cfg_path.write_text(
+        """
+[grid]
+Nx = 1
+Ny = 4
+Nz = 4
+Lx = 6.28
+Ly = 62.8318530718
+boundary = "periodic"
+
+[time]
+t_max = 0.02
+dt = 0.01
+method = "euler"
+use_diffrax = false
+sample_stride = 1
+
+[geometry]
+model = "s-alpha"
+q = 1.4
+s_hat = 0.8
+epsilon = 0.18
+R0 = 2.77778
+
+[init]
+init_field = "density"
+init_amp = 1.0e-8
+gaussian_init = false
+
+[physics]
+adiabatic_electrons = true
+electrostatic = true
+collisions = false
+hypercollisions = false
+use_apar = false
+use_bpar = false
+beta = 0.0
+
+[terms]
+collisions = 0.0
+hypercollisions = 0.0
+hyperdiffusion = 0.0
+end_damping = 0.0
+apar = 0.0
+bpar = 0.0
+
+[parallel]
+strategy = "velocity"
+axis = "hermite"
+backend = "auto"
+num_devices = 1
+
+[run]
+ky = 0.1
+Nl = 2
+Nm = 3
+solver = "time"
+
+[fit]
+fit_signal = "phi"
+""",
+        encoding="utf-8",
+    )
+    calls: list[str] = []
+
+    def _fake_parallel_rhs(G, cache, params, **kwargs):
+        parallel = kwargs["parallel"]
+        calls.append(f"{parallel.strategy}:{parallel.axis}:{parallel.backend}")
+        return jnp.zeros_like(G), jnp.ones(G.shape[-3:], dtype=G.dtype)
+
+    monkeypatch.setattr(linear, "linear_rhs_parallel_cached", _fake_parallel_rhs)
+
+    rc = run_linear_case(cfg_path, show_progress=False)
+
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "ky=0.100000" in out
+    assert calls
+    assert set(calls) == {"velocity:hermite:auto"}
+
+
 def test_run_nonlinear_case_uses_toml_output_path(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

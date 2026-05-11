@@ -3834,3 +3834,23 @@ Exit gate:
     ``strategy="velocity", backend="auto"`` linear case;
   - only after this gate is green, start the profiler-backed linear-RHS
     layout/cache cleanup and keep all speedup claims tied to fresh artifacts.
+- TOML-backed velocity-parallel executable smoke:
+  - added an integration smoke that writes a minimal runtime TOML with
+    ``[parallel] strategy="velocity"``, ``axis="hermite"``, and
+    ``backend="auto"``, then runs ``run_linear_case`` through the executable
+    helper path;
+  - the test verifies the parsed TOML policy reaches
+    ``linear_rhs_parallel_cached`` and uses a grid whose spacing contains the
+    requested ``ky=0.1`` mode;
+  - this closes the release-level wiring gate from TOML parsing to the
+    low-level velocity RHS identity gate.
+- Verification for this smoke:
+  - ``python -m ruff check tests/test_runtime_runner.py``;
+  - ``pytest -q -m integration --maxfail=1 --disable-warnings tests/test_runtime_runner.py::test_runtime_linear_forwards_velocity_parallel_config tests/test_runtime_runner.py::test_run_linear_case_toml_velocity_auto_reaches_parallel_rhs`` under a 300 s timeout;
+  - ``git diff --check``.
+- Next best implementation steps:
+  - commit/push the TOML-backed smoke and monitor CI;
+  - move to profiler-backed linear-RHS cache/layout analysis, starting from the
+    existing Miller term-profile artifact, before attempting any speedup claim;
+  - keep nonlinear production sharding separate until the whole-state identity
+    gate is extended into a decomposition with physics diagnostics.
