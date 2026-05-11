@@ -98,9 +98,11 @@ Current SPECTRAX-GK state:
   `src/spectraxgk/runners.py` to `state_sharding in {auto, ky, kx, none}`;
   `z` is rejected because FFT-axis sharding has no identity gate.
 - Current office two-GPU artifact
-  `docs/_static/nonlinear_sharding_profile_office_gpu.json` passes final-state
-  identity but only gives a best bounded `kx` engineering speedup near `1.03x`.
-  It is not a production nonlinear speedup claim.
+  `docs/_static/nonlinear_sharding_profile_office_gpu.json` passes final-state,
+  final-field, and final-RHS diagnostic identity for active `auto`/`kx`
+  sharding, but the best bounded `kx` engineering timing is about `0.96x`.
+  It is therefore a correctness/profiler gate, not a production nonlinear
+  speedup claim.
 - Focused local validation on 2026-05-10 passed:
   `python -m pytest -q tests/test_parallel.py tests/test_sharding.py tests/test_sharded_integrators.py tests/test_generate_parallel_ky_scan_gate.py tests/test_profile_nonlinear_sharding.py tests/test_nonlinear_sharding_artifacts.py`
   with `30` tests passing.
