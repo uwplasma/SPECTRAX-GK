@@ -3975,8 +3975,8 @@ Exit gate:
     ``parallel-autodiff`` quick-test shard so the final-state, final-field, and
     final-RHS diagnostic artifact gates run before wide coverage.
 - Parallelization policy and claim-boundary integration:
-  - latest ``main`` CI for commit ``8239312`` completed green with ``59`` jobs
-    successful and only the nightly job skipped;
+  - the then-latest ``main`` CI for commit ``8239312`` completed green with
+    ``59`` jobs successful and only the nightly job skipped;
   - added ``src/spectraxgk/nonlinear_parallel.py`` as a metadata-only nonlinear
     parallelization contract that classifies ``independent_ky_scan`` and
     ``uq_ensemble`` as release-ready independent-work paths,
@@ -4041,7 +4041,64 @@ Exit gate:
     ``tests/test_make_benchmark_atlas.py``.
 - Next best implementation steps:
   - commit/push this bounded coverage tranche and monitor CI;
-  - if CI remains green, continue the same strategy on the next active
-    high-priority modules in the validation manifest, prioritizing
+  - if the queued CI run for this head passes, continue the same strategy on the
+    next active high-priority modules in the validation manifest, prioritizing
     ``spectraxgk.nonlinear`` branch coverage and ``spectraxgk.benchmarks``
     refactor-enabling helper tests.
+- Docs/release-readiness consistency pass:
+  - checked the owned documentation files against the current release-readiness
+    claim scope: CI status, parallelization policy, package-wide coverage,
+    W7-X zonal/TEM deferral, scoped quasilinear candidate language, and
+    nonlinear stellarator-optimization boundaries;
+  - current ``origin/main``/HEAD is ``a017dec`` and GitHub CI run
+    ``25659472403`` for that commit was still queued at
+    ``2026-05-11T08:37:21Z`` when checked, so the latest-head CI green status is
+    pending rather than closed; the previous completed run in ``gh run list`` was
+    green for ``8239312``;
+  - README wording now names ``spectral_envelope_ridge`` as a scoped
+    model-development result, keeps W7-X zonal recurrence/damping deferred, and
+    avoids implying a production nonlinear stellarator optimizer;
+  - ``docs/testing.rst`` already documents package-wide ``>=95%`` enforcement
+    through the final ``wide-coverage`` combine job and keeps W7-X/TEM broad
+    validation open;
+  - ``docs/code_structure.rst`` now lists the public parallelization helper and
+    metadata-policy modules so the release-ready independent-work path and
+    diagnostic-only nonlinear sharding boundary are traceable.
+- Runtime, parallelization, and quasilinear-claim cleanup tranche:
+  - added bounded runtime tests for JSON/TOML round-trip edge cases, path
+    expansion, invalid species-table rejection, default serial scan ordering,
+    artifact provenance/schema metadata, NetCDF ``code_info``, quasilinear
+    metadata persistence, and live-output callback forwarding;
+  - strengthened parallelization tests and docs with stable public API export
+    checks, JSON round-tripping for the nonlinear strategy table,
+    release-ready strategy ordering, and explicit no-speedup-claim wording for
+    whole-state nonlinear sharding;
+  - updated the quasilinear dataset-sufficiency claim level from the stale
+    ``promotion_blocked_until_more_converged_electrostatic_holdouts`` string to
+    ``scoped_low_parameter_candidate_promotion_not_runtime_option`` in the
+    generator, test, and tracked JSON artifact;
+  - clarified the manuscript figure inventory so the nonlinear transport panel
+    is closed for release-window gates while stricter paper-level tolerance
+    tightening remains open.
+- Verification for this cleanup tranche:
+  - ``python -m ruff format`` and ``python -m ruff check`` on the touched
+    runtime, parallelization, and dataset-sufficiency test/tool files;
+  - bounded runtime/parallel/quasilinear shard with ``tools/run_tests_fast.py``
+    passed for ``tests/test_runtime_helpers.py``,
+    ``tests/test_runtime_config.py``, ``tests/test_runtime_artifacts.py``,
+    ``tests/test_parallel.py``, ``tests/test_nonlinear_parallel.py``, and
+    ``tests/test_plot_quasilinear_dataset_sufficiency.py``;
+  - science-scope validation shard passed ``17`` tests across quasilinear
+    candidate uncertainty, dataset sufficiency, stellarator optimization, and
+    solver-objective gradients;
+  - strict Sphinx docs build passed;
+  - tracked quasilinear dataset-sufficiency JSON now has
+    ``promotion_gate.passed=true`` and the scoped low-parameter claim level;
+  - ``python tools/check_validation_coverage_manifest.py --skip-artifact-check``
+    passed and still reports ``17`` tracked modules with ``15`` active
+    high-priority lanes.
+- Next best implementation steps:
+  - commit/push this cleanup tranche and monitor the superseding CI run;
+  - if CI is green, continue with bounded tests on the remaining active
+    high-priority modules rather than running unbounded package-wide pytest
+    locally.

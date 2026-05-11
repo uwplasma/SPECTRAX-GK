@@ -94,7 +94,9 @@ def _load_promotion_gate(path: Path | None) -> dict[str, Any] | None:
     }
 
 
-def _nonlinear_index_rows(path: Path | None, used_gate_cases: set[str]) -> list[dict[str, Any]]:
+def _nonlinear_index_rows(
+    path: Path | None, used_gate_cases: set[str]
+) -> list[dict[str, Any]]:
     if path is None or not path.exists():
         return []
     payload = _read_json(path)
@@ -122,9 +124,12 @@ def _nonlinear_index_rows(path: Path | None, used_gate_cases: set[str]) -> list[
 def build_dataset_sufficiency_report(
     cases: tuple[SaturationCase, ...] = DEFAULT_CASES,
     *,
-    nonlinear_index: str | Path | None = ROOT / "docs/_static/nonlinear_window_statistics.json",
-    candidate_gate: str | Path | None = ROOT / "docs/_static/quasilinear_candidate_uncertainty.json",
-    saturation_gate: str | Path | None = ROOT / "docs/_static/quasilinear_saturation_rule_sweep.json",
+    nonlinear_index: str | Path | None = ROOT
+    / "docs/_static/nonlinear_window_statistics.json",
+    candidate_gate: str | Path | None = ROOT
+    / "docs/_static/quasilinear_candidate_uncertainty.json",
+    saturation_gate: str | Path | None = ROOT
+    / "docs/_static/quasilinear_saturation_rule_sweep.json",
     min_total_electrostatic_cases: int = 6,
     min_explicit_train_geometries: int = 2,
     min_holdout_geometries: int = 3,
@@ -154,17 +159,27 @@ def build_dataset_sufficiency_report(
             }
         )
 
-    train_geometries = sorted({row["geometry"] for row in case_rows if row["split"] == "train"})
-    holdout_geometries = sorted({row["geometry"] for row in case_rows if row["split"] == "holdout"})
+    train_geometries = sorted(
+        {row["geometry"] for row in case_rows if row["split"] == "train"}
+    )
+    holdout_geometries = sorted(
+        {row["geometry"] for row in case_rows if row["split"] == "holdout"}
+    )
     all_geometries = sorted({row["geometry"] for row in case_rows})
     used_gate_cases = {str(row["gate_case"]) for row in case_rows}
-    excluded_cases = _nonlinear_index_rows(Path(nonlinear_index) if nonlinear_index is not None else None, used_gate_cases)
+    excluded_cases = _nonlinear_index_rows(
+        Path(nonlinear_index) if nonlinear_index is not None else None, used_gate_cases
+    )
 
     n_cases = len(case_rows)
     loo_train_cases_per_fold = max(n_cases - 1, 0)
     candidate_rows = []
     for name, n_parameters in CANDIDATE_PARAMETER_COUNTS.items():
-        ratio = float("inf") if n_parameters == 0 else float(loo_train_cases_per_fold / n_parameters)
+        ratio = (
+            float("inf")
+            if n_parameters == 0
+            else float(loo_train_cases_per_fold / n_parameters)
+        )
         candidate_rows.append(
             {
                 "candidate": name,
@@ -172,39 +187,54 @@ def build_dataset_sufficiency_report(
                 "n_parameters": int(n_parameters),
                 "leave_one_out_train_cases_per_fold": int(loo_train_cases_per_fold),
                 "train_to_parameter_ratio": ratio,
-                "min_train_to_parameter_ratio": float(min_leave_one_out_train_to_parameter_ratio),
-                "data_volume_passed": bool(ratio >= min_leave_one_out_train_to_parameter_ratio),
+                "min_train_to_parameter_ratio": float(
+                    min_leave_one_out_train_to_parameter_ratio
+                ),
+                "data_volume_passed": bool(
+                    ratio >= min_leave_one_out_train_to_parameter_ratio
+                ),
             }
         )
 
     requirements = {
         "validated_input_gates": bool(input_validation["passed"]),
         "minimum_total_electrostatic_cases": n_cases >= min_total_electrostatic_cases,
-        "minimum_explicit_train_geometries": len(train_geometries) >= min_explicit_train_geometries,
+        "minimum_explicit_train_geometries": len(train_geometries)
+        >= min_explicit_train_geometries,
         "minimum_holdout_geometries": len(holdout_geometries) >= min_holdout_geometries,
-        "candidate_data_volume": any(bool(row["data_volume_passed"]) for row in candidate_rows),
+        "candidate_data_volume": any(
+            bool(row["data_volume_passed"]) for row in candidate_rows
+        ),
     }
     blockers = [name for name, passed in requirements.items() if not passed]
 
-    candidate_gate_payload = _load_promotion_gate(Path(candidate_gate) if candidate_gate is not None else None)
-    saturation_gate_payload = _load_promotion_gate(Path(saturation_gate) if saturation_gate is not None else None)
+    candidate_gate_payload = _load_promotion_gate(
+        Path(candidate_gate) if candidate_gate is not None else None
+    )
+    saturation_gate_payload = _load_promotion_gate(
+        Path(saturation_gate) if saturation_gate is not None else None
+    )
     downstream_gates = {
         "candidate_uncertainty": candidate_gate_payload,
         "saturation_rule_sweep": saturation_gate_payload,
     }
-    downstream_passed = any(gate is not None and bool(gate["passed"]) for gate in downstream_gates.values())
+    downstream_passed = any(
+        gate is not None and bool(gate["passed"]) for gate in downstream_gates.values()
+    )
     if not downstream_passed:
         blockers.append("downstream_candidate_skill_gates_not_passed")
 
     return {
         "kind": "quasilinear_dataset_sufficiency",
-        "claim_level": "promotion_blocked_until_more_converged_electrostatic_holdouts",
+        "claim_level": "scoped_low_parameter_candidate_promotion_not_runtime_option",
         "input_validation": input_validation,
         "requirements": {
             "min_total_electrostatic_cases": int(min_total_electrostatic_cases),
             "min_explicit_train_geometries": int(min_explicit_train_geometries),
             "min_holdout_geometries": int(min_holdout_geometries),
-            "min_leave_one_out_train_to_parameter_ratio": float(min_leave_one_out_train_to_parameter_ratio),
+            "min_leave_one_out_train_to_parameter_ratio": float(
+                min_leave_one_out_train_to_parameter_ratio
+            ),
             "current_total_cases": int(n_cases),
             "current_explicit_train_geometries": len(train_geometries),
             "current_holdout_geometries": len(holdout_geometries),
@@ -265,8 +295,18 @@ def write_dataset_sufficiency_figure(
         color = split_colors.get(str(row["split"]), "#6b7280")
         shape_passed = row.get("shape_gate_passed")
         marker = "o" if shape_passed is not False else "X"
-        ax0.scatter(0.0, idx, s=130, color=color, marker=marker, edgecolor="white", linewidth=0.8)
-        ax0.text(0.08, idx, f"{row['geometry']} / {row['split']}", va="center", fontsize=9)
+        ax0.scatter(
+            0.0,
+            idx,
+            s=130,
+            color=color,
+            marker=marker,
+            edgecolor="white",
+            linewidth=0.8,
+        )
+        ax0.text(
+            0.08, idx, f"{row['geometry']} / {row['split']}", va="center", fontsize=9
+        )
     ax0.set_yticks(y, [_short_case_label(str(row["case"])) for row in case_rows])
     ax0.set_xlim(-0.18, 1.25)
     ax0.set_xticks([])
@@ -299,7 +339,14 @@ def write_dataset_sufficiency_figure(
     )
     x = np.arange(len(metric_labels))
     ax1.bar(x - 0.18, current, width=0.36, color="#0f4c81", label="current")
-    ax1.bar(x + 0.18, required, width=0.36, color="#e5e7eb", edgecolor="#374151", label="required")
+    ax1.bar(
+        x + 0.18,
+        required,
+        width=0.36,
+        color="#e5e7eb",
+        edgecolor="#374151",
+        label="required",
+    )
     for xpos, cur, req in zip(x, current, required, strict=True):
         ax1.text(xpos - 0.18, cur + 0.08, f"{cur:.0f}", ha="center", fontsize=9)
         ax1.text(xpos + 0.18, req + 0.08, f"{req:.0f}", ha="center", fontsize=9)
@@ -312,7 +359,9 @@ def write_dataset_sufficiency_figure(
 
     candidate_rows = list(report["candidate_requirements"])
     labels = [str(row["label"]).replace(" ", "\n") for row in candidate_rows]
-    ratios = np.asarray([row["train_to_parameter_ratio"] for row in candidate_rows], dtype=float)
+    ratios = np.asarray(
+        [row["train_to_parameter_ratio"] for row in candidate_rows], dtype=float
+    )
     ratio_gate = float(requirements["min_leave_one_out_train_to_parameter_ratio"])
     bar_colors = ["#0f4c81" if ratio >= ratio_gate else "#d1495b" for ratio in ratios]
     bars = ax2.bar(np.arange(len(labels)), ratios, color=bar_colors)
@@ -324,7 +373,13 @@ def write_dataset_sufficiency_figure(
             ha="center",
             fontsize=9,
         )
-    ax2.axhline(ratio_gate, color="#111827", linestyle="--", linewidth=1.2, label=f"{ratio_gate:g}x gate")
+    ax2.axhline(
+        ratio_gate,
+        color="#111827",
+        linestyle="--",
+        linewidth=1.2,
+        label=f"{ratio_gate:g}x gate",
+    )
     ax2.set_xticks(np.arange(len(labels)), labels)
     ax2.set_ylabel("LOO train cases / parameters")
     ax2.set_title("Candidate data-volume guard")
@@ -334,7 +389,8 @@ def write_dataset_sufficiency_figure(
 
     blockers = list(report["promotion_gate"]["blockers"])
     text_lines = [
-        "Promotion gate: " + ("PASS" if report["promotion_gate"]["passed"] else "BLOCKED"),
+        "Promotion gate: "
+        + ("PASS" if report["promotion_gate"]["passed"] else "BLOCKED"),
         "",
         "Blockers:",
         *(f"- {item.replace('_', ' ')}" for item in blockers[:5]),
@@ -353,7 +409,11 @@ def write_dataset_sufficiency_figure(
         ha="left",
         fontsize=9.5,
         linespacing=1.35,
-        bbox={"boxstyle": "round,pad=0.55", "facecolor": "#f8fafc", "edgecolor": "#cbd5e1"},
+        bbox={
+            "boxstyle": "round,pad=0.55",
+            "facecolor": "#f8fafc",
+            "edgecolor": "#cbd5e1",
+        },
     )
     ax3.set_title("Scope and exclusions")
 
@@ -367,16 +427,23 @@ def write_dataset_sufficiency_figure(
     plt.close(fig)
 
     json_path = out_path.with_suffix(".json")
-    json_path.write_text(json.dumps(_json_clean(report), indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    json_path.write_text(
+        json.dumps(_json_clean(report), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
     paths["json"] = str(json_path)
     return paths
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--out", default=str(ROOT / "docs/_static/quasilinear_dataset_sufficiency.png"))
+    parser.add_argument(
+        "--out", default=str(ROOT / "docs/_static/quasilinear_dataset_sufficiency.png")
+    )
     parser.add_argument("--title", default="Quasilinear dataset-sufficiency gate")
-    parser.add_argument("--no-pdf", action="store_true", help="Only write PNG and JSON artifacts.")
+    parser.add_argument(
+        "--no-pdf", action="store_true", help="Only write PNG and JSON artifacts."
+    )
     return parser
 
 
