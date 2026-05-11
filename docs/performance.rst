@@ -389,13 +389,15 @@ source-path change means these artifacts should be compared against future
 production-path refreshes, not against older lower-level assembly-helper
 artifacts.
 
-The previous one-RTX-A4000 artifacts
+The May 11, 2026 one-RTX-A4000 production-path artifacts
 ``docs/_static/full_linear_rhs_trace_gpu_summary.json`` and
 ``docs/_static/full_linear_rhs_trace_gpu_z_wave_summary.json`` report
-``warm_seconds=5.28e-3`` and ``5.25e-3`` for the initial and active ``z_wave``
-states, respectively, with ``force_electrostatic_fields=true``. They should be
-refreshed through the production ``linear_rhs_cached`` profiler before making a
-new GPU production-path speedup claim.
+``source="spectraxgk.linear.linear_rhs_cached"``, ``2779`` HLO lines, and
+``force_electrostatic_fields=true``. The initial and active ``z_wave`` states
+measure ``warm_seconds=5.13e-3`` and ``5.15e-3``, respectively. These GPU
+artifacts show that the production linear-RHS path remains about five
+milliseconds on one RTX A4000 for this benchmark-size RHS call, but they remain
+kernel-localization evidence rather than a full nonlinear runtime claim.
 
 Parallelization scaling (diffrax + distributed linear loop)
 -----------------------------------------------------------

@@ -3907,3 +3907,31 @@ Exit gate:
     before updating any GPU performance claim;
   - then resume nonlinear sharding production decomposition with identity and
     physics-diagnostic gates.
+- Office GPU production-path fused linear-RHS profiler refresh:
+  - created a fresh temporary ``office`` clone at commit ``6e5550f`` to avoid
+    touching existing dirty worktrees, then ran the production-path fused
+    linear-RHS profiler on one RTX A4000 with ``CUDA_VISIBLE_DEVICES=0`` and
+    ``jax==0.6.2``/``jaxlib==0.6.2``;
+  - refreshed ``docs/_static/full_linear_rhs_trace_gpu_summary.json`` and
+    ``docs/_static/full_linear_rhs_trace_gpu_z_wave_summary.json``;
+  - results: initial ``warm_seconds=5.13e-3`` and active ``z_wave``
+    ``warm_seconds=5.15e-3`` with
+    ``source="spectraxgk.linear.linear_rhs_cached"``,
+    ``force_electrostatic_fields=true``, and ``2779`` HLO lines;
+  - updated ``docs/performance.rst`` to state the refreshed GPU production-path
+    evidence while keeping the claim scoped to kernel-localization rather than
+    full nonlinear runtime speedup.
+- Verification for this GPU refresh:
+  - fresh ``office`` clone imported SPECTRAX-GK from ``PYTHONPATH=src`` and
+    reported GPU backend with two CUDA devices;
+  - ``CUDA_VISIBLE_DEVICES=0 JAX_ENABLE_X64=0 PYTHONPATH=src python3 tools/profile_full_linear_rhs_trace.py --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml --ky 0.3 --Nl 4 --Nm 8 --repeats 5 --summary-json docs/_static/full_linear_rhs_trace_gpu_summary.json``;
+  - same command with ``--state z_wave`` and
+    ``--summary-json docs/_static/full_linear_rhs_trace_gpu_z_wave_summary.json``;
+  - artifacts copied back with ``scp``.
+- Next best implementation steps:
+  - validate docs/static checks locally, commit/push the GPU artifact refresh,
+    and monitor CI;
+  - start nonlinear production sharding decomposition only after current CI is
+    green or any failure is fixed;
+  - keep W7-X zonal/TEM deferred and keep scientific claims scoped to validated
+    artifacts.
