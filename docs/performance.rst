@@ -854,16 +854,18 @@ The profiler/identity artifact is generated with:
      --out-json docs/_static/nonlinear_sharding_profile.json
 
 The JSON records device count, requested sharding axis, warm serial/sharded
-timings, profiler-trace status, final-state errors, and the fastest
-identity-preserving candidate among the requested state-axis options. The
+timings, profiler-trace status, final-state errors, final-field/RHS diagnostic
+errors, and the fastest identity-preserving candidate among the requested
+state-axis options. The
 local checked-in artifact is deliberately small and only establishes the
 control-flow and single-device identity gate. The two-GPU office artifact at
 ``docs/_static/nonlinear_sharding_profile_office_gpu.json`` records active
-``auto``/``kx`` state sharding with zero final-state error on both candidate
-axes. In the current bounded run the requested ``auto`` path is slower
-(``0.86x``), while the best identity-preserving candidate is explicit ``kx``
-sharding at about ``1.03x``. That is not enough for a publication speedup
-claim.
+``auto``/``kx`` state sharding with zero final-state, final-field, and final-RHS
+diagnostic error on both candidate axes. In the current bounded run the
+requested ``auto`` path is slower (``0.81x``), while the best
+identity-preserving candidate is explicit ``kx`` sharding at about ``0.96x``.
+That is not a speedup, so this artifact should be treated as a correctness and
+profiler-localization gate rather than a publication runtime claim.
 
 The larger strong-scaling sweep is regenerated with isolated subprocesses so
 each device count gets a clean JAX runtime:

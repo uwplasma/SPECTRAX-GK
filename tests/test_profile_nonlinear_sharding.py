@@ -3,6 +3,11 @@ from __future__ import annotations
 import importlib.util
 from pathlib import Path
 
+import jax.numpy as jnp
+import pytest
+
+from spectraxgk.terms.config import FieldState
+
 
 def _load_tool_module():
     path = Path(__file__).resolve().parents[1] / "tools" / "profile_nonlinear_sharding.py"
@@ -67,3 +72,32 @@ def test_profile_nonlinear_sharding_reports_best_identity_candidate() -> None:
         "state_sharding_active": True,
         "identity_gate_pass": True,
     }
+
+
+def test_profile_nonlinear_sharding_diagnostic_metrics_compare_rhs_and_phi(monkeypatch) -> None:
+    mod = _load_tool_module()
+
+    def fake_rhs(state, cache, params, terms, *, gx_real_fft=True, laguerre_mode="grid"):
+        del cache, params, terms, gx_real_fft, laguerre_mode
+        arr = jnp.asarray(state)
+        return 2.0 * arr, FieldState(phi=jnp.sum(arr, axis=(0, 1)), apar=None, bpar=None)
+
+    monkeypatch.setattr(mod, "nonlinear_rhs_cached", fake_rhs)
+
+    reference = jnp.ones((2, 2, 1, 1, 3), dtype=jnp.complex64)
+    candidate = reference.at[0, 0, 0, 0, 0].add(1.0e-3)
+
+    metrics = mod._nonlinear_diagnostic_identity_metrics(
+        reference,
+        candidate,
+        cache=object(),
+        params=object(),
+        terms=object(),
+        gx_real_fft=True,
+        laguerre_mode="grid",
+    )
+
+    assert metrics["max_abs_rhs_error"] == pytest.approx(2.0e-3, rel=1.0e-4)
+    assert metrics["max_abs_phi_error"] == pytest.approx(1.0e-3, rel=1.0e-4)
+    assert metrics["max_rel_rhs_error"] > 0.0
+    assert metrics["max_rel_phi_error"] > 0.0
