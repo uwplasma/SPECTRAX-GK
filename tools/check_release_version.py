@@ -67,6 +67,19 @@ def normalize_tag(tag: str | None) -> str | None:
     return tag
 
 
+def default_tag_from_github_env() -> str | None:
+    """Return the GitHub ref name only for tag-triggered workflows.
+
+    Branch pushes expose ``GITHUB_REF_NAME`` as values such as ``main``. Treating
+    that as a release tag would make normal CI fail, so branch workflows must
+    opt in with an explicit ``--tag`` if they need tag validation.
+    """
+
+    if os.environ.get("GITHUB_REF_TYPE") != "tag":
+        return None
+    return os.environ.get("GITHUB_REF_NAME")
+
+
 def fetch_pypi_versions(package: str) -> set[str]:
     """Return released versions for ``package`` from the public PyPI JSON API."""
 
@@ -135,7 +148,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--root", type=Path, default=ROOT, help="Repository root.")
     parser.add_argument(
         "--tag",
-        default=os.environ.get("GITHUB_REF_NAME"),
+        default=default_tag_from_github_env(),
         help="Release tag to validate.",
     )
     parser.add_argument(
