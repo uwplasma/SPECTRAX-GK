@@ -3970,3 +3970,7 @@ Exit gate:
   - resume the next parallelization step by designing a production
     communication-aware nonlinear decomposition, but do not document any
     nonlinear multi-GPU speedup until fresh profiler artifacts support it.
+- CI fast-shard follow-up:
+  - added ``tests/test_nonlinear_sharding_artifacts.py`` to the
+    ``parallel-autodiff`` quick-test shard so the final-state, final-field, and
+    final-RHS diagnostic artifact gates run before wide coverage.
