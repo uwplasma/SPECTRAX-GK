@@ -399,6 +399,35 @@ artifacts show that the production linear-RHS path remains about five
 milliseconds on one RTX A4000 for this benchmark-size RHS call, but they remain
 kernel-localization evidence rather than a full nonlinear runtime claim.
 
+Mapped velocity-basis RHS readiness
+-----------------------------------
+
+The mapped velocity-coordinate lane now has a replayable linear-RHS readiness
+artifact:
+
+.. code-block:: bash
+
+   python tools/benchmark_mapped_velocity_rhs.py \
+     --Nl 2 \
+     --Nm 3,4 \
+     --repeats 2 \
+     --map identity:0:0:0 \
+     --map parallel_shift:0.15:0:0 \
+     --map parallel_scale:0:-0.08:0 \
+     --dense-eigen-max-size 0 \
+     --out-json docs/_static/mapped_velocity_rhs_readiness.json \
+     --out-csv docs/_static/mapped_velocity_rhs_readiness.csv
+
+The May 11, 2026 CPU artifact reports eight rows for the Cyclone Miller
+``z_wave`` state. The identity map agrees exactly with the unmapped production
+RHS in the tracked norm, all Rayleigh-proxy ``gamma``/``omega`` metrics are
+finite, and the largest mapped warm-call overhead is about ``1.22x``. The
+non-identity maps intentionally change the RHS by about ``8-9%`` in this
+single-state diagnostic, so this is a readiness and cost/observable plumbing
+gate, not a claim that a particular mapped basis improves nonlinear physics.
+The benchmark explicitly forces nonlinear terms off and records that mapped
+real-space nonlinear support is outside this artifact's scope.
+
 Parallelization scaling guardrail
 ---------------------------------
 
