@@ -15,13 +15,21 @@ from spectraxgk.linear import build_linear_cache, linear_terms_to_term_config
 from spectraxgk.quasilinear import (
     compute_quasilinear_from_linear_state,
     effective_kperp2,
+    mixing_length_amplitude2_jax,
     normalize_quasilinear_channels,
     phi_norm2,
     quasilinear_feature_objective,
     saturation_amplitude2,
+    saturated_flux_from_linear_weight,
     shape_aware_power_law_objective,
+    spectral_phi_weights,
 )
-from spectraxgk.runtime import build_runtime_linear_params, build_runtime_linear_terms, run_runtime_linear, run_runtime_scan
+from spectraxgk.runtime import (
+    build_runtime_linear_params,
+    build_runtime_linear_terms,
+    run_runtime_linear,
+    run_runtime_scan,
+)
 from spectraxgk.runtime_config import (
     RuntimeConfig,
     RuntimeNormalizationConfig,
@@ -43,9 +51,13 @@ def _tiny_runtime_config() -> RuntimeConfig:
             Ly=62.8,
             boundary="periodic",
         ),
-        time=replace(base.time, t_max=0.04, dt=0.01, use_diffrax=False, sample_stride=1),
+        time=replace(
+            base.time, t_max=0.04, dt=0.01, use_diffrax=False, sample_stride=1
+        ),
         species=(RuntimeSpeciesConfig(name="ion"),),
-        normalization=RuntimeNormalizationConfig(contract="cyclone", diagnostic_norm="none"),
+        normalization=RuntimeNormalizationConfig(
+            contract="cyclone", diagnostic_norm="none"
+        ),
     )
 
 
@@ -77,17 +89,52 @@ def test_saturation_amplitude_rules_are_explicit() -> None:
         kperp_eff2_value=0.5,
         rule="mixing_length",
     ) == pytest.approx(0.0)
-    assert saturation_amplitude2(gamma=-0.2, kperp_eff2_value=0.5, rule="linear_weight") == pytest.approx(1.0)
+    assert saturation_amplitude2(
+        gamma=-0.2, kperp_eff2_value=0.5, rule="linear_weight"
+    ) == pytest.approx(1.0)
     assert saturation_amplitude2(
         gamma=-0.2,
         kperp_eff2_value=0.5,
         rule="absolute_growth_mixing_length",
         csat=2.0,
     ) == pytest.approx(0.8)
-    assert saturation_amplitude2(gamma=0.2, kperp_eff2_value=0.0, rule="mixing_length") == pytest.approx(0.0)
-    assert saturation_amplitude2(gamma=0.2, kperp_eff2_value=np.nan, rule="mixing_length") == pytest.approx(0.0)
+    assert saturation_amplitude2(
+        gamma=0.2, kperp_eff2_value=0.0, rule="mixing_length"
+    ) == pytest.approx(0.0)
+    assert saturation_amplitude2(
+        gamma=0.2, kperp_eff2_value=np.nan, rule="mixing_length"
+    ) == pytest.approx(0.0)
     with pytest.raises(NotImplementedError):
-        saturation_amplitude2(gamma=0.2, kperp_eff2_value=0.5, rule="calibrated_spectral")
+        saturation_amplitude2(
+            gamma=0.2, kperp_eff2_value=0.5, rule="calibrated_spectral"
+        )
+
+
+def test_differentiable_saturation_rules_match_scalar_contracts() -> None:
+    gamma = jnp.asarray([-0.2, 0.0, 0.3])
+    kperp = jnp.asarray([0.5, 0.5, 1.5])
+    amp = mixing_length_amplitude2_jax(gamma, kperp, csat=2.0, gamma_floor=0.05)
+
+    np.testing.assert_allclose(
+        np.asarray(amp), np.asarray([0.0, 0.0, 2.0 * 0.25 / 1.5]), rtol=1.0e-6
+    )
+    signed = mixing_length_amplitude2_jax(
+        gamma, kperp, csat=1.0, include_stable_modes=True
+    )
+    np.testing.assert_allclose(
+        np.asarray(signed), np.asarray([-0.4, 0.0, 0.2]), rtol=1.0e-6
+    )
+    flux = saturated_flux_from_linear_weight(
+        jnp.asarray([2.0, 3.0]), jnp.asarray([0.2, -0.1]), 0.5, csat=1.5
+    )
+    np.testing.assert_allclose(np.asarray(flux), np.asarray([1.2, 0.0]), rtol=1.0e-6)
+
+    alias = quasilinear_feature_objective(
+        jnp.asarray([-0.2, 0.5, 1.5]),
+        rule="abs_growth_mixing_length",
+        csat=2.0,
+    )
+    assert float(alias) == pytest.approx(1.2)
 
 
 def test_quasilinear_feature_objective_supports_sweep_rules() -> None:
@@ -95,7 +142,9 @@ def test_quasilinear_feature_objective_supports_sweep_rules() -> None:
 
     with pytest.raises(ValueError, match="features"):
         quasilinear_feature_objective(jnp.asarray([0.1, 0.2]))
-    assert quasilinear_feature_objective(features, rule="linear_weight", csat=2.0) == pytest.approx(3.0)
+    assert quasilinear_feature_objective(
+        features, rule="linear_weight", csat=2.0
+    ) == pytest.approx(3.0)
     assert quasilinear_feature_objective(
         features,
         rule="absolute_growth_mixing_length",
@@ -112,8 +161,12 @@ def test_shape_aware_power_law_objective_uses_geometric_ky_reference() -> None:
     ky_ref = float(np.exp(np.mean(np.log(np.asarray(ky)))))
     expected = 2.0 * np.asarray([2.0, 3.0]) * (np.asarray(ky) / ky_ref) ** 0.5
     np.testing.assert_allclose(np.asarray(out), expected, rtol=1.0e-6)
-    explicit_ref = shape_aware_power_law_objective(features, ky, exponent=1.0, csat=1.0, ky_ref=0.2)
-    np.testing.assert_allclose(np.asarray(explicit_ref), np.asarray([1.0, 6.0]), rtol=1.0e-6)
+    explicit_ref = shape_aware_power_law_objective(
+        features, ky, exponent=1.0, csat=1.0, ky_ref=0.2
+    )
+    np.testing.assert_allclose(
+        np.asarray(explicit_ref), np.asarray([1.0, 6.0]), rtol=1.0e-6
+    )
     with pytest.raises(ValueError, match="features"):
         shape_aware_power_law_objective(jnp.asarray([0.1, 0.2]), ky, exponent=1.0)
     assert spectraxgk.shape_aware_power_law_objective is shape_aware_power_law_objective
@@ -134,13 +187,32 @@ def test_phi_norm_and_kperp_are_phase_and_amplitude_invariant() -> None:
     kperp = effective_kperp2(phi, cache, vol_fac)
     scaled = 3.0 * jnp.exp(0.7j) * phi
     assert effective_kperp2(scaled, cache, vol_fac) == pytest.approx(float(kperp))
-    assert phi_norm2(scaled, cache, params, vol_fac, normalization="phi_rms") == pytest.approx(
+    assert phi_norm2(
+        scaled, cache, params, vol_fac, normalization="phi_rms"
+    ) == pytest.approx(
         9.0 * float(phi_norm2(phi, cache, params, vol_fac, normalization="phi_rms"))
     )
-    assert phi_norm2(phi, cache, params, vol_fac, normalization="phi_midplane") == pytest.approx(1.0)
+    assert phi_norm2(
+        phi, cache, params, vol_fac, normalization="phi_midplane"
+    ) == pytest.approx(1.0)
     assert phi_norm2(phi, cache, params, vol_fac, normalization="field_energy") > 0.0
     with pytest.raises(ValueError, match="normalization"):
         phi_norm2(phi, cache, params, vol_fac, normalization="not_a_norm")
+
+
+def test_spectral_phi_weights_account_for_half_plane_and_dealiasing() -> None:
+    _cfg, _geom, grid, _params, _terms, cache, _state = _tiny_linear_objects()
+    phi = jnp.ones((grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64)
+    vol_fac = jnp.ones(grid.z.size) / grid.z.size
+
+    weights = spectral_phi_weights(phi, cache, vol_fac, use_dealias=False)
+    assert weights.shape == phi.shape
+    # The selected ky grid is a positive half-plane mode, so the spectral weight
+    # doubles non-zonal contributions to preserve the real-field convention.
+    assert float(jnp.sum(weights)) == pytest.approx(2.0 * grid.kx.size)
+
+    masked = spectral_phi_weights(phi, cache, vol_fac, use_dealias=True)
+    assert float(jnp.sum(masked)) <= float(jnp.sum(weights))
 
 
 def test_quasilinear_weights_are_phase_and_amplitude_invariant() -> None:
@@ -169,8 +241,14 @@ def test_quasilinear_weights_are_phase_and_amplitude_invariant() -> None:
         terms=linear_terms_to_term_config(terms),
         species_names=[cfg.species[0].name],
     )
-    np.testing.assert_allclose(ql_scaled.heat_flux_weight_species, ql.heat_flux_weight_species, rtol=1e-5)
-    np.testing.assert_allclose(ql_scaled.particle_flux_weight_species, ql.particle_flux_weight_species, rtol=1e-5)
+    np.testing.assert_allclose(
+        ql_scaled.heat_flux_weight_species, ql.heat_flux_weight_species, rtol=1e-5
+    )
+    np.testing.assert_allclose(
+        ql_scaled.particle_flux_weight_species,
+        ql.particle_flux_weight_species,
+        rtol=1e-5,
+    )
     assert ql.to_dict()["metadata"]["claim_level"] == "linear_weights"
 
     saturated = compute_quasilinear_from_linear_state(
@@ -244,4 +322,6 @@ def test_runtime_scan_collects_quasilinear_payloads_and_rejects_batch() -> None:
     assert out.quasilinear is not None
     assert len(out.quasilinear) == 2
     with pytest.raises(NotImplementedError):
-        run_runtime_scan(cfg, ky_values=[0.2, 0.3], Nl=2, Nm=2, solver="time", batch_ky=True)
+        run_runtime_scan(
+            cfg, ky_values=[0.2, 0.3], Nl=2, Nm=2, solver="time", batch_ky=True
+        )

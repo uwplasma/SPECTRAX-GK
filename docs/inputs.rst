@@ -175,9 +175,11 @@ effective ``ky_sel``/``kx_sel`` used by diagnostics.
 For benchmark-locked runs, leaving ``dt_max`` unset keeps ``dt_max = dt``.
 Set ``state_sharding = "auto"`` (or ``"ky"``) to enable distributed
 parallelization of the packed state array over multiple JAX devices. This is
-honored by the diffrax integrators only and
-falls back to single-device execution if only one device is visible. Other
-valid values are ``"kx"``, ``"z"``, ``"l"``, ``"m"``, and ``"species"``.
+honored by the sharding-aware integration paths, including the fixed-step RK2
+nonlinear identity/profiler lane; unsupported solver paths or one-device runs
+fall back to single-device execution. Other valid values are ``"kx"``, ``"z"``,
+``"l"``, ``"m"``, and ``"species"``. Treat this as a correctness-gated
+parallelization option unless the run also has a matched scaling artifact.
 Increase ``dt_max`` explicitly only when you intentionally trade strict
 comparison matching for throughput.
 
@@ -275,6 +277,13 @@ For large ky scans, ``scan-runtime-linear --batch-ky`` integrates all ky values
 in a single time integration pass (time integrator only) and then extracts the
 growth rates from the per-ky traces.
 
+For quasilinear spectra, use ``scan-runtime-linear --workers N`` instead of
+``--batch-ky``. This runs independent per-``ky`` solves, computes the
+quasilinear state extraction for each mode, preserves serial spectrum ordering,
+and records the worker identity contract in the scan summary JSON. Combined
+``--batch-ky`` quasilinear artifacts remain disabled until the batched
+state-extraction identity gate is separately closed.
+
 Executable usage
 ----------------
 
@@ -364,6 +373,8 @@ are:
 * ``[terms]`` (term toggles used by modular RHS assembly)
 * ``[expert]`` (advanced fixed-mode controls for specialized workflows)
 * ``[output]`` (artifact path for single-point runtime commands)
+* ``[parallel]`` (parallelization policy for independent scans and future
+  sharded paths; defaults to serial)
 * ``[run]`` / ``[scan]`` / ``[fit]`` (driver controls)
 
 Notable runtime-only keys:
@@ -460,6 +471,59 @@ Notable runtime-only keys:
   ``streaming``, ``mirror``, ``curvature``, ``gradb``, ``diamagnetic``,
   ``collisions``, ``hypercollisions``, ``hyperdiffusion``, ``end_damping``,
   ``apar``, ``bpar``, ``nonlinear``.
+
+Runtime parallelization controls
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``[parallel]`` section is parsed by ``RuntimeParallelConfig`` and is
+serial by default:
+
+.. code-block:: toml
+
+   [parallel]
+   strategy = "serial"
+   axis = "ky"
+   batch_size = 2
+   num_devices = 2
+   strict_identity = true
+   profile = false
+   backend = "auto"
+
+Current accepted strategies are ``"serial"``, ``"batch"``,
+``"combined_ky"``, ``"device_batch"``, ``"pmap"``, ``"pjit"``,
+``"shard_map"``, ``"state"``, and ``"velocity"``. Strategy
+``"batch-ky"`` is accepted as an alias for ``"combined_ky"`` and selects the
+existing combined-``k_y`` time-integration scan path. Quasilinear scan
+artifacts still require serial per-``k_y`` evaluation until the per-mode state
+extraction has its own numerical-identity gate.
+
+The only velocity-space RHS route exposed at this stage is deliberately
+diagnostic: ``strategy = "velocity"``, ``axis = "hermite"``, and
+``backend = "streaming_only"``, ``backend = "streaming_electrostatic"``, or
+``backend = "electrostatic_linear_slices"``. ``backend = "auto"`` selects the
+electrostatic-slices route when the active terms satisfy that gate; otherwise
+the runtime raises instead of silently falling back to an unvalidated path.
+These backends are accepted only by ``spectraxgk.linear_rhs_parallel_cached``.
+The first two require all non-streaming linear terms disabled. The
+electrostatic-slices backend allows only streaming, mirror, curvature, grad-B,
+and diamagnetic-drive weights; collisions, linked boundaries, electromagnetic
+terms, and nonlinear terms remain disabled until their own identity gates are
+added. Current velocity RHS routes are limited to single-species periodic 5D
+electrostatic states.
+
+For full runtime TOML files this velocity-space route is exposed only through
+the fixed-step linear executable path with ``fit_signal = "phi"``. Diffrax
+linear runs and density-assisted automatic fitting stay serial until they have
+their own identity gates, so requesting velocity parallelization there raises a
+clear error.
+
+For independent scan, sensitivity, and UQ workloads, use
+``spectraxgk.batch_map`` for JAX-array maps and ``spectraxgk.independent_map``
+for file-backed Python tasks such as calibration rows or leave-one-out UQ
+holdouts. Require a serial identity artifact before using timing results in a
+publication claim. The helpers preserve ordering, so diagnostics such as growth
+rates, frequencies, quasilinear weights, and covariance summaries can be
+carried through one parallel map.
 
 Runtime output and restart controls
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

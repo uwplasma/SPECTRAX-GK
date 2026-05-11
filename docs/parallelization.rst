@@ -1,0 +1,204 @@
+Parallelization policy
+======================
+
+SPECTRAX-GK parallelization claims are separated by workload class and by the
+identity gates that currently exist. Treat this page as the short policy; the
+long artifact history remains in :doc:`performance` and runnable examples remain
+in :doc:`examples`.
+
+For release notes and manuscripts, read this page together with
+:doc:`release_scope`. Independent scans and ensembles are the current
+production path. Whole-state nonlinear sharding and velocity-space
+decomposition are correctness/profiler development paths until they pass
+workload-specific identity, conservation, and profiler gates.
+
+Strategy registry
+-----------------
+
+The metadata API exposes a JSON-friendly strategy table. Release-ready
+independent-work rows are intentionally ordered first: ``independent_ky_scan``,
+then ``uq_ensemble``.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 28 18 18 24
+
+   * - ``name``
+     - ``readiness``
+     - ``independent_work``
+     - ``changes_solver_layout``
+   * - ``independent_ky_scan``
+     - ``release_ready``
+     - ``true``
+     - ``false``
+   * - ``uq_ensemble``
+     - ``release_ready``
+     - ``true``
+     - ``false``
+   * - ``whole_state_kx_ky``
+     - ``diagnostic``
+     - ``false``
+     - ``true``
+   * - ``velocity_species_hermite``
+     - ``diagnostic``
+     - ``false``
+     - ``true``
+   * - ``fft_axis_domain``
+     - ``blocked``
+     - ``false``
+     - ``true``
+
+Production path: independent work
+---------------------------------
+
+Production-ready parallelism is currently scoped to independent solver calls:
+
+- independent ``k_y`` scans;
+- quasilinear calibration grids;
+- finite-difference and sensitivity batches;
+- UQ and ensemble workloads.
+
+Use ``spectraxgk.ky_scan_batches`` and ``spectraxgk.batch_map`` for JAX-array
+workloads, and ``spectraxgk.independent_map`` for file-backed Python tasks.
+These helpers preserve serial ordering and restrict communication to result
+aggregation. Any timing claim from this path must be paired with a serial
+numerical-identity gate for the reported observables, such as ``gamma``,
+``omega``, quasilinear weights, or covariance summaries.
+
+The large tracked artifacts use real solver work rather than synthetic sleeps:
+``docs/_static/independent_ky_scan_scaling_large.json`` covers Cyclone linear
+``k_y`` scans, and ``docs/_static/quasilinear_uq_ensemble_scaling_large.json``
+covers a late-time linear/quasilinear UQ ensemble. These are the figures to cite
+for current parallelization speedup claims.
+
+Diagnostic path: whole-state nonlinear sharding
+-----------------------------------------------
+
+Fixed-step whole-state nonlinear sharding is diagnostic-only. The
+``integrate_nonlinear_sharded`` / ``TimeConfig.state_sharding`` path is useful
+for control-flow validation, state-axis identity gates, profiler localization,
+and testing candidate layouts. It is not a production nonlinear domain
+decomposition or multi-GPU speedup claim. Do not use it as evidence for a
+whole-state nonlinear sharding speedup; it has no scoped speedup claim until
+separate identity gates and matched profiler artifacts exist for that exact
+workload.
+
+In particular, current whole-state sharding does not close the communication
+problem for nonlinear FFTs, halo exchange, conservation checks, or benchmark-size
+transport runs. ``z``-axis FFT sharding is not release-gated until it has a
+separate communication/layout design and a passing identity gate.
+
+The large CPU/GPU sweep in
+``docs/_static/nonlinear_sharding_strong_scaling_large.json`` confirms the
+policy: the final state is identity-correct, but logical-CPU speedup saturates
+near ``1.39x`` and the current two-GPU path is slower than one GPU for the
+tracked larger fixed-step case. That artifact is therefore valuable engineering
+evidence, not a production nonlinear speedup result.
+
+Velocity-space communication gates
+----------------------------------
+
+Velocity-space decomposition is gated from the bottom up. The accepted planning
+contract is species-first and Hermite-second, with explicit communication flags
+for field reductions/broadcasts and Hermite ghost exchange. Each added runtime
+path must preserve those contracts before being used for performance claims.
+
+The currently gated communication and call-graph layers are:
+
+- species/Hermite velocity-sharding planner metadata;
+- nearest-neighbor Hermite ghost exchange;
+- Hermite-sharded field reduction and electrostatic field reduction;
+- Hermite streaming-ladder coefficients;
+- periodic streaming microkernel and streaming-only linear-RHS call graph;
+- electrostatic streaming, drift-slice, diamagnetic-drive, and composed
+  single-species periodic electrostatic linear-slices gates.
+
+These gates validate communication and numerical identity for bounded linear or
+microkernel paths. They do not validate collisions, linked boundaries,
+electromagnetic terms, multi-species nonlinear field solves, nonlinear brackets,
+or nonlinear transport speedup unless those paths have their own identity gates
+and profiler artifacts.
+
+Claim rules
+-----------
+
+Use the following rules when writing docs, release notes, or papers:
+
+- Call independent ``k_y``/UQ/ensemble batching the production-ready
+  parallelization path when the serial identity gate is current.
+- Call whole-state nonlinear sharding a diagnostic correctness/profiler gate,
+  not production nonlinear parallelism.
+- Call velocity-space ``shard_map`` work communication-gated and opt-in until
+  the relevant full-RHS and workload gates are closed.
+- Do not claim nonlinear speedup from sharding, velocity decomposition, spectral
+  toggles, or linear-slice profiles without fresh profiler artifacts for the
+  exact workload, backend, device count, software stack, and identity tolerance
+  being claimed.
+- Keep speedup plots separate from identity gates: identity establishes
+  correctness; profiler artifacts establish only the scoped timing claim they
+  measure.
+
+Large-run scaling acceptance checklist
+--------------------------------------
+
+A CPU/GPU strong-scaling result is release-ready only when the tracked
+artifacts satisfy all of the following:
+
+- the combined ``*_large`` JSON/CSV/PNG/PDF files point back to split CPU and
+  GPU source artifacts for the same workload family;
+- every split artifact records the actual problem size, backend, requested
+  device counts, warmup/repeat policy, and positive per-worker or per-profile
+  timing samples;
+- every row has ``identity_gate_pass = true`` and compares against the
+  one-worker or one-device serial reference for the observable being claimed;
+- nonlinear whole-state sharding rows embed the per-device profiler/profile
+  payload, including trace-request status, serial timing stats, sharded timing
+  stats, selected axis, and final-state error metrics;
+- any speedup wording names the exact backend, device count, workload, grid,
+  software stack, identity tolerance, and artifact files that produced it.
+
+If any item is missing, the result can be kept as local engineering evidence
+only. In particular, whole-state nonlinear sharding remains not a production
+nonlinear speedup claim, even when the embedded profile reports a positive
+engineering timing ratio. Promoting that lane requires fresh profiler artifacts
+for the exact workload plus full nonlinear identity, conservation, field-solve,
+FFT/bracket communication, and transport-window gates.
+
+Release artifact policy
+-----------------------
+
+The release-gated parallelization artifacts are grouped by what they are
+allowed to support:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 28 24 24 24
+
+   * - Artifact family
+     - Primary files
+     - Claim allowed
+     - Claim not allowed
+   * - Independent ``k_y`` scans
+     - ``independent_ky_scan_scaling_large.{json,csv,png,pdf}``
+     - Production parallelization for independent linear scans when
+       ``gamma``/``omega`` identity is current.
+     - Nonlinear domain decomposition or nonlinear transport speedup.
+   * - Quasilinear/UQ ensembles
+     - ``quasilinear_uq_ensemble_scaling_large.{json,csv,png,pdf}``
+     - Production batching for independent reduced-feature and UQ workloads.
+     - Promoted absolute nonlinear heat-flux prediction.
+   * - Whole-state nonlinear sharding
+     - ``nonlinear_sharding_strong_scaling_large.{json,csv,png,pdf}``
+     - Correctness and profiler-direction evidence for the current ``pjit``
+       state-axis layout.
+     - Production nonlinear multi-GPU speedup.
+   * - Velocity-space linear slices
+     - ``linear_rhs_parallel_slices_sweep.{json,png,pdf}``
+     - Bounded engineering evidence for opt-in electrostatic linear RHS slices.
+     - Electromagnetic, linked-boundary, collision, or nonlinear speedup.
+
+Both ``tools/performance_optimization_manifest.toml`` and
+``tools/validation_coverage_manifest.toml`` list these artifacts explicitly.
+The tests require the manifests, files, and claim scopes to stay synchronized,
+so deleting or silently reinterpreting a scaling artifact fails the fast
+parallelization gate.

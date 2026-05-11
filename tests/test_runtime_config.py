@@ -3,13 +3,18 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 from pathlib import Path
 import sys
 
 import pytest
 
 from spectraxgk.io import load_runtime_from_toml
-from spectraxgk.runtime_config import RuntimeConfig
+from spectraxgk.runtime_config import (
+    RuntimeConfig,
+    RuntimeParallelConfig,
+    RuntimeQuasilinearConfig,
+)
 
 
 def _load_module_from_path(name: str, path: Path):
@@ -36,6 +41,7 @@ def test_runtime_config_to_dict_contains_sections() -> None:
         "expert",
         "output",
         "quasilinear",
+        "parallel",
     }
     assert len(d["species"]) == 1
 
@@ -48,6 +54,79 @@ def test_runtime_defaults_match_gx_reference() -> None:
     assert cfg.collisions.p_hyper_m is None
     assert cfg.collisions.damp_ends_amp == pytest.approx(0.1)
     assert cfg.collisions.damp_ends_widthfrac == pytest.approx(0.125)
+    assert cfg.parallel.strategy == "serial"
+    assert cfg.parallel.axis == "ky"
+
+
+def test_runtime_config_to_dict_is_json_roundtrippable_with_serial_aliases() -> None:
+    cfg = RuntimeConfig(
+        quasilinear=RuntimeQuasilinearConfig(channels="em"),
+        parallel=RuntimeParallelConfig(strategy=" off ", axis=" KY "),
+    )
+
+    payload = cfg.to_dict()
+    restored = json.loads(json.dumps(payload))
+
+    assert payload["quasilinear"]["channels"] == ("em",)
+    assert restored["quasilinear"]["channels"] == ["em"]
+    assert restored["parallel"]["strategy"] == "serial"
+    assert restored["parallel"]["axis"] == "ky"
+    assert restored["parallel"]["strict_identity"] is True
+    assert restored["species"][0]["name"] == "ion"
+
+
+def test_load_runtime_from_toml_handles_path_and_species_edge_cases(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("SPECTRAX_TEST_ROOT", str(tmp_path))
+    toml = """
+species = []
+
+[geometry]
+model = "vmec"
+vmec_file = "$SPECTRAX_TEST_ROOT/vmec.nc"
+geometry_file = "$SPECTRAX_TEST_MISSING/geom.nc"
+
+[quasilinear]
+channels = "em"
+output_path = "$SPECTRAX_TEST_ROOT/ql"
+
+[output]
+restart_to_file = "$SPECTRAX_TEST_MISSING/restart.nc"
+
+[parallel]
+strategy = "OFF"
+axis = " KY "
+"""
+    path = tmp_path / "runtime_edges.toml"
+    path.write_text(toml, encoding="utf-8")
+
+    cfg, data = load_runtime_from_toml(path)
+
+    assert isinstance(data, dict)
+    assert len(cfg.species) == 1
+    assert cfg.species[0].name == "ion"
+    assert cfg.geometry.vmec_file == str((tmp_path / "vmec.nc").resolve())
+    assert cfg.geometry.geometry_file == "$SPECTRAX_TEST_MISSING/geom.nc"
+    assert cfg.quasilinear.channels == ("em",)
+    assert cfg.quasilinear.output_path == str((tmp_path / "ql").resolve())
+    assert cfg.output.restart_to_file == "$SPECTRAX_TEST_MISSING/restart.nc"
+    assert cfg.parallel.strategy == "serial"
+    assert cfg.parallel.axis == "ky"
+
+
+def test_load_runtime_from_toml_rejects_single_species_table(tmp_path: Path) -> None:
+    path = tmp_path / "runtime_bad_species.toml"
+    path.write_text(
+        """
+[species]
+name = "ion"
+""",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(TypeError, match=r"\[\[species\]\] entries"):
+        load_runtime_from_toml(path)
 
 
 def test_load_runtime_from_toml_roundtrip(tmp_path: Path) -> None:
@@ -108,6 +187,15 @@ amplitude_normalization = "phi_rms"
 csat = 0.7
 channels = ["es"]
 output_path = "tools_out/ql_case"
+
+[parallel]
+strategy = "batch-ky"
+axis = "ky"
+batch_size = 3
+num_devices = 2
+strict_identity = true
+profile = true
+backend = "auto"
 """
     path = tmp_path / "runtime.toml"
     path.write_text(toml, encoding="utf-8")
@@ -132,13 +220,33 @@ output_path = "tools_out/ql_case"
     assert cfg.quasilinear.saturation_rule == "mixing_length"
     assert cfg.quasilinear.csat == pytest.approx(0.7)
     assert cfg.quasilinear.channels == ("es",)
-    assert cfg.quasilinear.output_path == str((tmp_path / "tools_out" / "ql_case").resolve())
+    assert cfg.quasilinear.output_path == str(
+        (tmp_path / "tools_out" / "ql_case").resolve()
+    )
+    assert cfg.parallel.strategy == "combined_ky"
+    assert cfg.parallel.axis == "ky"
+    assert cfg.parallel.batch_size == 3
+    assert cfg.parallel.num_devices == 2
+    assert cfg.parallel.strict_identity is True
+    assert cfg.parallel.profile is True
     assert len(cfg.species) == 2
     assert cfg.species[1].charge == pytest.approx(-1.0)
 
 
+def test_runtime_parallel_config_validates_values() -> None:
+    assert RuntimeParallelConfig(strategy="batch-ky").strategy == "combined_ky"
+    with pytest.raises(ValueError):
+        RuntimeParallelConfig(strategy="unknown")
+    with pytest.raises(ValueError):
+        RuntimeParallelConfig(batch_size=0)
+    with pytest.raises(ValueError):
+        RuntimeParallelConfig(num_devices=0)
+
+
 def test_gx_aligned_kbm_runtime_examples_keep_end_damping_enabled() -> None:
-    cfg_dir = Path(__file__).resolve().parents[1] / "examples" / "nonlinear" / "axisymmetric"
+    cfg_dir = (
+        Path(__file__).resolve().parents[1] / "examples" / "nonlinear" / "axisymmetric"
+    )
     paths = [
         cfg_dir / "runtime_kbm_nonlinear.toml",
         cfg_dir / "runtime_kbm_nonlinear_seed.toml",
@@ -153,7 +261,9 @@ def test_gx_aligned_kbm_runtime_examples_keep_end_damping_enabled() -> None:
 
 
 def test_linear_axisymmetric_runtime_examples_keep_parity_collision_contract() -> None:
-    cfg_dir = Path(__file__).resolve().parents[1] / "examples" / "linear" / "axisymmetric"
+    cfg_dir = (
+        Path(__file__).resolve().parents[1] / "examples" / "linear" / "axisymmetric"
+    )
     expected = {
         "cyclone.toml": (1.0, 2.0, 1.0, 0.0),
         "etg.toml": (1.0, 2.0, 1.0, 0.0),
@@ -171,8 +281,13 @@ def test_linear_axisymmetric_runtime_examples_keep_parity_collision_contract() -
 
 
 def test_nonaxisymmetric_quasilinear_examples_keep_electrostatic_contract() -> None:
-    cfg_dir = Path(__file__).resolve().parents[1] / "examples" / "linear" / "non-axisymmetric"
-    for name in ("runtime_hsx_linear_quasilinear.toml", "runtime_w7x_linear_quasilinear_vmec.toml"):
+    cfg_dir = (
+        Path(__file__).resolve().parents[1] / "examples" / "linear" / "non-axisymmetric"
+    )
+    for name in (
+        "runtime_hsx_linear_quasilinear.toml",
+        "runtime_w7x_linear_quasilinear_vmec.toml",
+    ):
         cfg, _ = load_runtime_from_toml(cfg_dir / name)
         assert cfg.quasilinear.enabled is True, name
         assert cfg.quasilinear.channels == ("es",), name
@@ -207,7 +322,9 @@ def test_etg_nonlinear_pilot_example_keeps_two_species_full_gk_contract() -> Non
     assert cfg.collisions.hypercollisions_const == pytest.approx(0.0)
     assert cfg.collisions.hypercollisions_kz == pytest.approx(1.0)
     assert data["run"]["ky"] == pytest.approx(5.0)
-    assert cfg.output.path == str((path.parents[3] / "tools_out" / "etg_nonlinear_runtime").resolve())
+    assert cfg.output.path == str(
+        (path.parents[3] / "tools_out" / "etg_nonlinear_runtime").resolve()
+    )
 
 
 def test_load_runtime_from_toml_keeps_imported_geometry_fields(tmp_path: Path) -> None:
@@ -253,7 +370,13 @@ solver = "explicit_time"
 
 
 def test_w7x_imported_geometry_example_toml_loads() -> None:
-    path = Path(__file__).resolve().parents[1] / "examples" / "linear" / "non-axisymmetric" / "runtime_w7x_linear_imported_geometry.toml"
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "examples"
+        / "linear"
+        / "non-axisymmetric"
+        / "runtime_w7x_linear_imported_geometry.toml"
+    )
 
     cfg, data = load_runtime_from_toml(path)
 
@@ -285,7 +408,9 @@ def test_w7x_nonlinear_imported_geometry_example_toml_loads() -> None:
     assert cfg.terms.collisions == pytest.approx(1.0)
     assert cfg.terms.nonlinear == pytest.approx(1.0)
     assert "steps" not in data.get("run", {})
-    assert cfg.output.path == str((path.parents[3] / "tools_out" / "w7x_nonlinear_imported_runtime").resolve())
+    assert cfg.output.path == str(
+        (path.parents[3] / "tools_out" / "w7x_nonlinear_imported_runtime").resolve()
+    )
 
 
 def test_w7x_nonlinear_imported_geometry_builder_keeps_collision_contract() -> None:
@@ -327,7 +452,9 @@ def test_hsx_nonlinear_vmec_geometry_example_toml_loads() -> None:
     assert cfg.terms.collisions == pytest.approx(1.0)
     assert cfg.terms.nonlinear == pytest.approx(1.0)
     assert "steps" not in data.get("run", {})
-    assert cfg.output.path == str((path.parents[3] / "tools_out" / "hsx_nonlinear_vmec_runtime").resolve())
+    assert cfg.output.path == str(
+        (path.parents[3] / "tools_out" / "hsx_nonlinear_vmec_runtime").resolve()
+    )
 
 
 def test_hsx_nonlinear_vmec_geometry_builder_keeps_collision_contract() -> None:
@@ -356,7 +483,9 @@ def test_hsx_nonlinear_vmec_geometry_builder_keeps_collision_contract() -> None:
     assert cfg.collisions.D_hyper == pytest.approx(0.05)
 
 
-def test_hsx_nonlinear_vmec_wrapper_defaults_to_config_path(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_hsx_nonlinear_vmec_wrapper_defaults_to_config_path(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     path = (
         Path(__file__).resolve().parents[1]
         / "examples"
@@ -409,10 +538,14 @@ def test_w7x_nonlinear_vmec_geometry_example_toml_loads() -> None:
     assert cfg.physics.collisions is True
     assert cfg.terms.collisions == pytest.approx(1.0)
     assert "steps" not in data.get("run", {})
-    assert cfg.output.path == str((path.parents[3] / "tools_out" / "w7x_nonlinear_vmec_runtime").resolve())
+    assert cfg.output.path == str(
+        (path.parents[3] / "tools_out" / "w7x_nonlinear_vmec_runtime").resolve()
+    )
 
 
-def test_load_runtime_from_toml_resolves_relative_runtime_paths_against_config_dir(tmp_path: Path) -> None:
+def test_load_runtime_from_toml_resolves_relative_runtime_paths_against_config_dir(
+    tmp_path: Path,
+) -> None:
     cfg_dir = tmp_path / "configs"
     cfg_dir.mkdir()
     toml = """
@@ -436,15 +569,26 @@ restart_from_file = "../out/run.resume.nc"
     cfg, _ = load_runtime_from_toml(path)
 
     assert cfg.geometry.vmec_file == str((tmp_path / "vmec" / "wout.nc").resolve())
-    assert cfg.geometry.geometry_file == str((tmp_path / "geom" / "run.eik.nc").resolve())
+    assert cfg.geometry.geometry_file == str(
+        (tmp_path / "geom" / "run.eik.nc").resolve()
+    )
     assert cfg.init.init_file == str((tmp_path / "restart" / "state.bin").resolve())
     assert cfg.output.path == str((tmp_path / "out" / "run.out.nc").resolve())
-    assert cfg.output.restart_to_file == str((tmp_path / "out" / "run.restart.nc").resolve())
-    assert cfg.output.restart_from_file == str((tmp_path / "out" / "run.resume.nc").resolve())
+    assert cfg.output.restart_to_file == str(
+        (tmp_path / "out" / "run.restart.nc").resolve()
+    )
+    assert cfg.output.restart_from_file == str(
+        (tmp_path / "out" / "run.resume.nc").resolve()
+    )
 
 
 def test_secondary_slab_example_toml_loads() -> None:
-    path = Path(__file__).resolve().parents[1] / "examples" / "benchmarks" / "runtime_secondary_slab.toml"
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "examples"
+        / "benchmarks"
+        / "runtime_secondary_slab.toml"
+    )
 
     cfg, data = load_runtime_from_toml(path)
 
@@ -457,7 +601,13 @@ def test_secondary_slab_example_toml_loads() -> None:
 
 
 def test_cetg_reference_example_toml_loads() -> None:
-    path = Path(__file__).resolve().parents[1] / "examples" / "nonlinear" / "axisymmetric" / "runtime_cetg_reference.toml"
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "examples"
+        / "nonlinear"
+        / "axisymmetric"
+        / "runtime_cetg_reference.toml"
+    )
 
     cfg, data = load_runtime_from_toml(path)
 
@@ -555,7 +705,12 @@ def test_cyclone_nonlinear_gx_miller_example_toml_loads() -> None:
 
 
 def test_miller_zonal_response_example_uses_merlo_case_iii_contract() -> None:
-    path = Path(__file__).resolve().parents[1] / "examples" / "benchmarks" / "runtime_miller_zonal_response.toml"
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "examples"
+        / "benchmarks"
+        / "runtime_miller_zonal_response.toml"
+    )
 
     cfg, data = load_runtime_from_toml(path)
 
@@ -579,7 +734,12 @@ def test_miller_zonal_response_example_uses_merlo_case_iii_contract() -> None:
 
 
 def test_w7x_zonal_response_vmec_example_uses_test4_contract() -> None:
-    path = Path(__file__).resolve().parents[1] / "examples" / "benchmarks" / "runtime_w7x_zonal_response_vmec.toml"
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "examples"
+        / "benchmarks"
+        / "runtime_w7x_zonal_response_vmec.toml"
+    )
 
     cfg, data = load_runtime_from_toml(path)
 

@@ -12,7 +12,9 @@ def _load_tool_module():
     tools_dir = Path(__file__).resolve().parents[1] / "tools"
     sys.path.insert(0, str(tools_dir))
     path = tools_dir / "plot_quasilinear_dataset_sufficiency.py"
-    spec = importlib.util.spec_from_file_location("plot_quasilinear_dataset_sufficiency", path)
+    spec = importlib.util.spec_from_file_location(
+        "plot_quasilinear_dataset_sufficiency", path
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -21,11 +23,12 @@ def _load_tool_module():
     return module
 
 
-def _write_case(tmp_path: Path, name: str, *, gate_case: str, split: str, geometry: str):
+def _write_case(
+    tmp_path: Path, name: str, *, gate_case: str, split: str, geometry: str
+):
     spectrum = tmp_path / f"{name}_spectrum.csv"
     spectrum.write_text(
-        "ky,gamma,kperp_eff2,heat_flux_weight_total\n"
-        "0.1,0.2,1.0,2.0\n",
+        "ky,gamma,kperp_eff2,heat_flux_weight_total\n0.1,0.2,1.0,2.0\n",
         encoding="utf-8",
     )
     summary = tmp_path / f"{name}_summary.json"
@@ -43,7 +46,9 @@ def _write_case(tmp_path: Path, name: str, *, gate_case: str, split: str, geomet
     return spectrum, summary, shape_gate, split, geometry
 
 
-def test_dataset_sufficiency_blocks_under_sampled_quasilinear_promotion(tmp_path: Path) -> None:
+def test_dataset_sufficiency_blocks_under_sampled_quasilinear_promotion(
+    tmp_path: Path,
+) -> None:
     mod = _load_tool_module()
     cases = []
     for name, gate_case, split, geometry in [
@@ -59,7 +64,9 @@ def test_dataset_sufficiency_blocks_under_sampled_quasilinear_promotion(tmp_path
             split=split,
             geometry=geometry,
         )
-        cases.append(mod.SaturationCase(name, split, geometry, spectrum, summary, shape_gate))
+        cases.append(
+            mod.SaturationCase(name, split, geometry, spectrum, summary, shape_gate)
+        )
     nonlinear_index = tmp_path / "nonlinear_index.json"
     nonlinear_index.write_text(
         json.dumps(
@@ -78,9 +85,15 @@ def test_dataset_sufficiency_blocks_under_sampled_quasilinear_promotion(tmp_path
         encoding="utf-8",
     )
     candidate_gate = tmp_path / "candidate.json"
-    candidate_gate.write_text(json.dumps({"kind": "candidate", "promotion_gate": {"passed": False}}), encoding="utf-8")
+    candidate_gate.write_text(
+        json.dumps({"kind": "candidate", "promotion_gate": {"passed": False}}),
+        encoding="utf-8",
+    )
     saturation_gate = tmp_path / "saturation.json"
-    saturation_gate.write_text(json.dumps({"kind": "saturation", "promotion_gate": {"passed": False}}), encoding="utf-8")
+    saturation_gate.write_text(
+        json.dumps({"kind": "saturation", "promotion_gate": {"passed": False}}),
+        encoding="utf-8",
+    )
 
     report = mod.build_dataset_sufficiency_report(
         tuple(cases),
@@ -94,19 +107,29 @@ def test_dataset_sufficiency_blocks_under_sampled_quasilinear_promotion(tmp_path
     assert report["promotion_gate"]["passed"] is False
     assert "minimum_total_electrostatic_cases" in report["promotion_gate"]["blockers"]
     assert "minimum_explicit_train_geometries" in report["promotion_gate"]["blockers"]
-    assert "downstream_candidate_skill_gates_not_passed" in report["promotion_gate"]["blockers"]
+    assert (
+        "downstream_candidate_skill_gates_not_passed"
+        in report["promotion_gate"]["blockers"]
+    )
     assert report["requirements"]["current_total_cases"] == 4
     assert report["candidate_requirements"][0]["data_volume_passed"] is True
     assert report["candidate_requirements"][-1]["candidate"] == "linear_state_ridge"
     assert report["candidate_requirements"][-1]["data_volume_passed"] is False
-    assert report["excluded_validated_nonlinear_cases"][0]["case"] == "kbm_nonlinear_window"
-    assert "electromagnetic" in report["excluded_validated_nonlinear_cases"][0]["reason"]
+    assert (
+        report["excluded_validated_nonlinear_cases"][0]["case"]
+        == "kbm_nonlinear_window"
+    )
+    assert (
+        "electromagnetic" in report["excluded_validated_nonlinear_cases"][0]["reason"]
+    )
 
 
 def test_dataset_sufficiency_writes_artifacts(tmp_path: Path) -> None:
     mod = _load_tool_module()
     cases = []
-    for idx, split in enumerate(["train", "train", "holdout", "holdout", "holdout", "holdout"]):
+    for idx, split in enumerate(
+        ["train", "train", "holdout", "holdout", "holdout", "holdout"]
+    ):
         spectrum, summary, shape_gate, split, geometry = _write_case(
             tmp_path,
             f"case{idx}",
@@ -114,7 +137,11 @@ def test_dataset_sufficiency_writes_artifacts(tmp_path: Path) -> None:
             split=split,
             geometry=f"geom{idx}",
         )
-        cases.append(mod.SaturationCase(f"case{idx}", split, geometry, spectrum, summary, shape_gate))
+        cases.append(
+            mod.SaturationCase(
+                f"case{idx}", split, geometry, spectrum, summary, shape_gate
+            )
+        )
 
     report = mod.build_dataset_sufficiency_report(
         tuple(cases),
@@ -134,4 +161,7 @@ def test_dataset_sufficiency_writes_artifacts(tmp_path: Path) -> None:
     assert Path(paths["json"]).exists()
     assert "pdf" not in paths
     payload = json.loads(Path(paths["json"]).read_text(encoding="utf-8"))
-    assert payload["claim_level"] == "promotion_blocked_until_more_converged_electrostatic_holdouts"
+    assert (
+        payload["claim_level"]
+        == "scoped_low_parameter_candidate_promotion_not_runtime_option"
+    )

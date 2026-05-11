@@ -1,0 +1,271 @@
+{
+  "backend": "gpu",
+  "claim_scope": "large fixed-step nonlinear state-sharding strong-scaling artifact with numerical identity gates; use as profiler evidence, not as a broad production speedup claim",
+  "devices": [
+    1,
+    2
+  ],
+  "dt": 0.02,
+  "grid": {
+    "Nl": 4,
+    "Nm": 8,
+    "Nx": 48,
+    "Ny_requested": 96,
+    "Nz": 128
+  },
+  "identity_passed": true,
+  "kind": "nonlinear_sharding_strong_scaling_sweep",
+  "laguerre_mode": "grid",
+  "method": "rk2",
+  "profiles": {
+    "1": {
+      "_profile_json": "/tmp/spectraxgk-nonlinear-scaling-m9v5p04p/gpu_1devices.json",
+      "best_identity_preserving_candidate": {
+        "engineering_speedup_median": 1.0732988785220898,
+        "identity_gate_pass": true,
+        "spec": "auto",
+        "state_sharding_active": false
+      },
+      "case": "cyclone_nonlinear_fixed_step",
+      "claim_scope": "Profiler/identity artifact for fixed-step nonlinear state sharding and candidate state-axis decompositions. Do not use as a published runtime claim without a larger matched CPU/GPU sweep and profiler trace review.",
+      "default_backend": "gpu",
+      "device_count": 1,
+      "devices": [
+        "cuda:0"
+      ],
+      "dt": 0.02,
+      "engineering_speedup": 1.0732988785220898,
+      "identity_gate_pass": true,
+      "laguerre_mode": "grid",
+      "max_abs_state_error": 0.0,
+      "max_rel_state_error": 0.0,
+      "method": "rk2",
+      "profiler_trace": {
+        "error": null,
+        "path": null,
+        "requested": false
+      },
+      "repeats": 2,
+      "serial_stats_s": {
+        "max": 9.599847134202719,
+        "mean": 9.534250052645802,
+        "median": 9.534250052645802,
+        "min": 9.468652971088886,
+        "std": 0.06559708155691624
+      },
+      "serial_times_s": [
+        9.599847134202719,
+        9.468652971088886
+      ],
+      "serial_warm_s": 9.534250052645802,
+      "sharded_results": {
+        "auto": {
+          "engineering_speedup_median": 1.0732988785220898,
+          "error": null,
+          "identity_gate_pass": true,
+          "max_abs_state_error": 0.0,
+          "max_rel_state_error": 0.0,
+          "state_sharding_active": false,
+          "stats_s": {
+            "max": 9.00539041403681,
+            "mean": 8.883126819040626,
+            "median": 8.883126819040626,
+            "min": 8.760863224044442,
+            "std": 0.12226359499618411
+          },
+          "times_s": [
+            8.760863224044442,
+            9.00539041403681
+          ]
+        },
+        "kx": {
+          "engineering_speedup_median": 1.0505253082678847,
+          "error": null,
+          "identity_gate_pass": true,
+          "max_abs_state_error": 0.0,
+          "max_rel_state_error": 0.0,
+          "state_sharding_active": false,
+          "stats_s": {
+            "max": 9.216041948180646,
+            "mean": 9.075697632040828,
+            "median": 9.075697632040828,
+            "min": 8.935353315901011,
+            "std": 0.14034431613981724
+          },
+          "times_s": [
+            8.935353315901011,
+            9.216041948180646
+          ]
+        }
+      },
+      "sharded_warm_s": 8.883126819040626,
+      "sharding_options": [
+        "auto",
+        "kx"
+      ],
+      "state_shape": [
+        4,
+        8,
+        96,
+        48,
+        128
+      ],
+      "state_sharding_active": false,
+      "state_sharding_requested": "auto",
+      "steps": 12,
+      "warmups": 1
+    },
+    "2": {
+      "_profile_json": "/tmp/spectraxgk-nonlinear-scaling-m9v5p04p/gpu_2devices.json",
+      "best_identity_preserving_candidate": {
+        "engineering_speedup_median": 0.6605733461773213,
+        "identity_gate_pass": true,
+        "spec": "kx",
+        "state_sharding_active": true
+      },
+      "case": "cyclone_nonlinear_fixed_step",
+      "claim_scope": "Profiler/identity artifact for fixed-step nonlinear state sharding and candidate state-axis decompositions. Do not use as a published runtime claim without a larger matched CPU/GPU sweep and profiler trace review.",
+      "default_backend": "gpu",
+      "device_count": 2,
+      "devices": [
+        "cuda:0",
+        "cuda:1"
+      ],
+      "dt": 0.02,
+      "engineering_speedup": 0.6126940307576554,
+      "identity_gate_pass": true,
+      "laguerre_mode": "grid",
+      "max_abs_state_error": 0.0,
+      "max_rel_state_error": 0.0,
+      "method": "rk2",
+      "profiler_trace": {
+        "error": null,
+        "path": null,
+        "requested": false
+      },
+      "repeats": 2,
+      "serial_stats_s": {
+        "max": 9.378950736951083,
+        "mean": 9.372379007050768,
+        "median": 9.372379007050768,
+        "min": 9.365807277150452,
+        "std": 0.006571729900315404
+      },
+      "serial_times_s": [
+        9.378950736951083,
+        9.365807277150452
+      ],
+      "serial_warm_s": 9.372379007050768,
+      "sharded_results": {
+        "auto": {
+          "engineering_speedup_median": 0.6126940307576554,
+          "error": null,
+          "identity_gate_pass": true,
+          "max_abs_state_error": 0.0,
+          "max_rel_state_error": 0.0,
+          "state_sharding_active": true,
+          "stats_s": {
+            "max": 15.48249035468325,
+            "mean": 15.296997418859974,
+            "median": 15.296997418859974,
+            "min": 15.111504483036697,
+            "std": 0.18549293582327664
+          },
+          "times_s": [
+            15.111504483036697,
+            15.48249035468325
+          ]
+        },
+        "kx": {
+          "engineering_speedup_median": 0.6605733461773213,
+          "error": null,
+          "identity_gate_pass": true,
+          "max_abs_state_error": 0.0,
+          "max_rel_state_error": 0.0,
+          "state_sharding_active": true,
+          "stats_s": {
+            "max": 14.245499385055155,
+            "mean": 14.188248831545934,
+            "median": 14.188248831545934,
+            "min": 14.130998278036714,
+            "std": 0.05725055350922048
+          },
+          "times_s": [
+            14.245499385055155,
+            14.130998278036714
+          ]
+        }
+      },
+      "sharded_warm_s": 15.296997418859974,
+      "sharding_options": [
+        "auto",
+        "kx"
+      ],
+      "state_shape": [
+        4,
+        8,
+        96,
+        48,
+        128
+      ],
+      "state_sharding_active": true,
+      "state_sharding_requested": "auto",
+      "steps": 12,
+      "warmups": 1
+    }
+  },
+  "repeats": 2,
+  "rows": [
+    {
+      "actual_devices": 1,
+      "backend": "gpu",
+      "best_spec": "auto",
+      "error": null,
+      "identity_gate_pass": true,
+      "max_abs_state_error": 0.0,
+      "max_rel_state_error": 0.0,
+      "parallel_median_s": 8.883126819040626,
+      "profile_json": "/tmp/spectraxgk-nonlinear-scaling-m9v5p04p/gpu_1devices.json",
+      "requested_devices": 1,
+      "same_process_speedup": 1.0732988785220898,
+      "serial_median_s": 9.534250052645802,
+      "state_shape": [
+        4,
+        8,
+        96,
+        48,
+        128
+      ],
+      "state_sharding_active": false,
+      "strong_speedup_vs_1_device": 1.0
+    },
+    {
+      "actual_devices": 2,
+      "backend": "gpu",
+      "best_spec": "kx",
+      "error": null,
+      "identity_gate_pass": true,
+      "max_abs_state_error": 0.0,
+      "max_rel_state_error": 0.0,
+      "parallel_median_s": 14.188248831545934,
+      "profile_json": "/tmp/spectraxgk-nonlinear-scaling-m9v5p04p/gpu_2devices.json",
+      "requested_devices": 2,
+      "same_process_speedup": 0.6605733461773213,
+      "serial_median_s": 9.372379007050768,
+      "state_shape": [
+        4,
+        8,
+        96,
+        48,
+        128
+      ],
+      "state_sharding_active": true,
+      "strong_speedup_vs_1_device": 0.6260904305040111
+    }
+  ],
+  "sharding": "auto",
+  "sharding_options": "auto,kx",
+  "steps": 12,
+  "timeout_s": 600.0,
+  "warmups": 1
+}

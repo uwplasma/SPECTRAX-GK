@@ -7,7 +7,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "tools" / "build_manuscript_readiness_status.py"
-spec = importlib.util.spec_from_file_location("build_manuscript_readiness_status", SCRIPT)
+spec = importlib.util.spec_from_file_location(
+    "build_manuscript_readiness_status", SCRIPT
+)
 mod = importlib.util.module_from_spec(spec)
 assert spec.loader is not None
 spec.loader.exec_module(mod)
@@ -19,8 +21,14 @@ def _write_json(root: Path, relative: str, payload: dict[str, object]) -> None:
     path.write_text(json.dumps(payload), encoding="utf-8")
 
 
-def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(tmp_path: Path) -> None:
-    _write_json(tmp_path, "docs/_static/quasilinear_validated_calibration_inputs.json", {"passed": True})
+def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
+    tmp_path: Path,
+) -> None:
+    _write_json(
+        tmp_path,
+        "docs/_static/quasilinear_validated_calibration_inputs.json",
+        {"passed": True},
+    )
     _write_json(
         tmp_path,
         "docs/_static/quasilinear_stellarator_train_holdout_report.json",
@@ -42,13 +50,21 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(tmp_path: Pat
         _write_json(
             tmp_path,
             f"docs/_static/{name}.json",
-            {"promotion_gate": {"passed": False, "null_training_mean_mean_abs_relative_error": 0.2}},
+            {
+                "promotion_gate": {
+                    "passed": False,
+                    "null_training_mean_mean_abs_relative_error": 0.2,
+                }
+            },
         )
     _write_json(
         tmp_path,
         "docs/_static/quasilinear_dataset_sufficiency.json",
         {
-            "promotion_gate": {"passed": False, "blockers": ["minimum_total_electrostatic_cases"]},
+            "promotion_gate": {
+                "passed": False,
+                "blockers": ["minimum_total_electrostatic_cases"],
+            },
             "requirements": {
                 "current_total_cases": 4,
                 "min_total_electrostatic_cases": 6,
@@ -60,20 +76,34 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(tmp_path: Pat
     _write_json(
         tmp_path,
         "docs/_static/differentiable_geometry_bridge.json",
-        {"sensitivity": {"max_abs_ad_fd_error": 1.0e-9}, "uq": {"sensitivity_map_rank": 2}},
+        {
+            "sensitivity": {"max_abs_ad_fd_error": 1.0e-9},
+            "uq": {"sensitivity_map_rank": 2},
+        },
     )
     _write_json(
         tmp_path,
         "docs/_static/vmec_boozer_parity_matrix.json",
-        {"minimum_boozer_mode_count": 21, "summary": {"all_equal_arc_passed": True, "n_cases": 3}},
+        {
+            "minimum_boozer_mode_count": 21,
+            "summary": {"all_equal_arc_passed": True, "n_cases": 3},
+        },
     )
     _write_json(
         tmp_path,
         "docs/_static/stellarator_itg_optimization_comparison.json",
         {
             "results": [
-                {"initial_objective": 1.0, "final_objective": 0.2, "gradient_gate": {"passed": True}},
-                {"initial_objective": 2.0, "final_objective": 0.5, "gradient_gate": {"passed": True}},
+                {
+                    "initial_objective": 1.0,
+                    "final_objective": 0.2,
+                    "gradient_gate": {"passed": True},
+                },
+                {
+                    "initial_objective": 2.0,
+                    "final_objective": 0.5,
+                    "gradient_gate": {"passed": True},
+                },
             ]
         },
     )
@@ -92,7 +122,10 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(tmp_path: Pat
         {
             "identity_gate_pass": True,
             "engineering_speedup": 0.8,
-            "best_identity_preserving_candidate": {"spec": "kx", "engineering_speedup_median": 1.03},
+            "best_identity_preserving_candidate": {
+                "spec": "kx",
+                "engineering_speedup_median": 1.03,
+            },
         },
     )
     _write_json(
@@ -135,7 +168,11 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(tmp_path: Pat
             }
         },
     )
-    _write_json(tmp_path, "docs/_static/full_nonlinear_rhs_trace_summary.json", {"warm_seconds": 0.316})
+    _write_json(
+        tmp_path,
+        "docs/_static/full_nonlinear_rhs_trace_summary.json",
+        {"warm_seconds": 0.316},
+    )
     _write_json(
         tmp_path,
         "docs/_static/full_nonlinear_rhs_trace_gpu_summary.json",
@@ -163,7 +200,9 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(tmp_path: Pat
             {
                 "passed": True,
                 "source_scope": "mode21_vmec_boozer_state",
-                "nonlinear_window_gradient_gate": name.endswith("nonlinear_window_gradient_gate"),
+                "nonlinear_window_gradient_gate": name.endswith(
+                    "nonlinear_window_gradient_gate"
+                ),
                 "eigenpair_gate": {"max_rel_error": 1.0e-3},
             },
         )
@@ -216,8 +255,20 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(tmp_path: Pat
     lanes = {lane["lane"]: lane for lane in payload["lanes"]}
 
     assert payload["summary"]["n_deferred"] == 2
-    assert lanes["Quasilinear diagnostics and saturation-model selection"]["status"] == "closed"
-    assert lanes["Quasilinear diagnostics and saturation-model selection"]["key_metrics"]["absolute_flux_promoted"] is False
+    assert (
+        lanes["Quasilinear diagnostics and saturation-model selection"]["status"]
+        == "closed"
+    )
+    assert (
+        lanes["Quasilinear diagnostics and saturation-model selection"]["claim_level"]
+        == "validated_diagnostics_negative_absolute_flux_promotion"
+    )
+    assert (
+        lanes["Quasilinear diagnostics and saturation-model selection"]["key_metrics"][
+            "absolute_flux_promoted"
+        ]
+        is False
+    )
     assert (
         lanes["Quasilinear diagnostics and saturation-model selection"]["key_metrics"][
             "dataset_sufficiency_promotion_passed"
@@ -225,7 +276,10 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(tmp_path: Pat
         is False
     )
     assert lanes["VMEC/Boozer differentiable geometry parity"]["status"] == "closed"
-    assert lanes["Reduced differentiable stellarator ITG optimization"]["status"] == "closed"
+    assert (
+        lanes["Reduced differentiable stellarator ITG optimization"]["status"]
+        == "closed"
+    )
     assert lanes["Production solver-objective geometry gradients"]["status"] == "closed"
     assert (
         lanes["Production solver-objective geometry gradients"]["key_metrics"][
@@ -311,7 +365,10 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(tmp_path: Pat
     assert profiler["status"] == "closed"
     assert profiler["key_metrics"]["release_performance_gate"] is True
     assert "docs/_static/nonlinear_rhs_profile.json" in profiler["primary_artifacts"]
-    assert "docs/_static/nonlinear_rhs_profile_stellarator_runtime.json" in profiler["primary_artifacts"]
+    assert (
+        "docs/_static/nonlinear_rhs_profile_stellarator_runtime.json"
+        in profiler["primary_artifacts"]
+    )
     assert profiler["key_metrics"]["best_identity_candidate"] == "kx"
     assert profiler["key_metrics"]["rhs_fastest_full_label"] == "GPU spectral"
     assert profiler["key_metrics"]["rhs_gpu_full_grid_over_spectral"] == 1.64
@@ -320,7 +377,75 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(tmp_path: Pat
     assert profiler["key_metrics"]["w7x_gpu_full_rhs"] == 0.027
 
 
-def test_write_manuscript_readiness_artifacts_writes_all_formats(tmp_path: Path) -> None:
+def test_candidate_quasilinear_status_stays_scoped_not_runtime_flux_predictor(
+    tmp_path: Path,
+) -> None:
+    _write_json(
+        tmp_path,
+        "docs/_static/quasilinear_validated_calibration_inputs.json",
+        {"passed": True},
+    )
+    _write_json(
+        tmp_path,
+        "docs/_static/quasilinear_stellarator_train_holdout_report.json",
+        {
+            "passed": False,
+            "by_split": {"holdout": {"mean_abs_relative_error": 2.5}},
+            "points": [
+                {"case": "cyclone", "split": "train"},
+                {"case": "w7x", "split": "holdout"},
+            ],
+        },
+    )
+    _write_json(
+        tmp_path,
+        "docs/_static/quasilinear_saturation_rule_sweep.json",
+        {"promotion_gate": {"passed": False}},
+    )
+    _write_json(
+        tmp_path,
+        "docs/_static/quasilinear_shape_aware_saturation.json",
+        {"promotion_gate": {"passed": False}},
+    )
+    _write_json(
+        tmp_path,
+        "docs/_static/quasilinear_candidate_uncertainty.json",
+        {
+            "promotion_gate": {
+                "passed": True,
+                "accepted_candidates": ["spectral_envelope_ridge"],
+            }
+        },
+    )
+    _write_json(
+        tmp_path,
+        "docs/_static/quasilinear_dataset_sufficiency.json",
+        {
+            "promotion_gate": {"passed": True},
+            "requirements": {
+                "current_total_cases": 7,
+                "min_total_electrostatic_cases": 6,
+            },
+        },
+    )
+
+    payload = mod.build_manuscript_readiness_payload(tmp_path)
+    lane = {row["lane"]: row for row in payload["lanes"]}[
+        "Quasilinear diagnostics and saturation-model selection"
+    ]
+
+    assert lane["status"] == "closed"
+    assert (
+        lane["claim_level"]
+        == "scoped_candidate_model_selection_not_runtime_flux_predictor"
+    )
+    assert lane["key_metrics"]["absolute_flux_promoted"] is False
+    assert lane["key_metrics"]["accepted_uq_candidates"] == ["spectral_envelope_ridge"]
+
+
+def test_write_manuscript_readiness_artifacts_writes_all_formats(
+    tmp_path: Path,
+) -> None:
     payload = {
         "kind": "manuscript_readiness_status",
         "lanes": [
@@ -336,7 +461,9 @@ def test_write_manuscript_readiness_artifacts_writes_all_formats(tmp_path: Path)
         "summary": {"active_fraction_closed": 0.0},
     }
 
-    paths = mod.write_manuscript_readiness_artifacts(payload, out=tmp_path / "status.png")
+    paths = mod.write_manuscript_readiness_artifacts(
+        payload, out=tmp_path / "status.png"
+    )
 
     for path in paths.values():
         assert Path(path).exists()

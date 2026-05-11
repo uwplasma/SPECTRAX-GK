@@ -1,0 +1,86 @@
+{
+  "actual_devices": 2,
+  "atol": 1e-05,
+  "case": "Velocity-space field-reduction shard_map identity gate",
+  "claim_scope": "communication-kernel identity gate, not a nonlinear runtime speedup claim",
+  "identity_passed": true,
+  "max_abs_error": 3.814697265625e-06,
+  "plan": {
+    "active_axes": [
+      "m"
+    ],
+    "chunks": {
+      "kx": 1,
+      "ky": 1,
+      "l": 1,
+      "m": 2,
+      "z": 1
+    },
+    "communication_pattern": "hermite_ghost_exchange+field_reduce_broadcast",
+    "dims": [
+      "l",
+      "m",
+      "ky",
+      "kx",
+      "z"
+    ],
+    "field_reduction_axes": [
+      "m"
+    ],
+    "hermite_ghost_depth": 1,
+    "load_balance": 1.0,
+    "needs_field_reduction": true,
+    "needs_hermite_exchange": true,
+    "num_devices": 2,
+    "shard_shape": [
+      2,
+      4,
+      4,
+      1,
+      5
+    ],
+    "state_shape": [
+      2,
+      8,
+      4,
+      1,
+      5
+    ]
+  },
+  "reduction_axis": "hermite",
+  "requested_devices": 2,
+  "rows": [
+    {
+      "abs_error": 9.5367431640625e-07,
+      "ky_index": 0,
+      "reduced_real": 560.0,
+      "reference_real": 560.0
+    },
+    {
+      "abs_error": 0.0,
+      "ky_index": 1,
+      "reduced_real": 600.0,
+      "reference_real": 600.0
+    },
+    {
+      "abs_error": 9.5367431640625e-07,
+      "ky_index": 2,
+      "reduced_real": 640.0,
+      "reference_real": 640.0
+    },
+    {
+      "abs_error": 0.0,
+      "ky_index": 3,
+      "reduced_real": 680.0,
+      "reference_real": 680.0
+    }
+  ],
+  "source": "spectraxgk.velocity_sharding.velocity_field_reduce_shard_map",
+  "state_shape": [
+    2,
+    8,
+    4,
+    1,
+    5
+  ]
+}

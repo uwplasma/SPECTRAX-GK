@@ -24,7 +24,6 @@ from spectraxgk.analysis import (
     fit_growth_rate_auto_with_stats,
     select_ky_index,
 )
-from spectraxgk.diagnostics import SimulationDiagnostics
 from spectraxgk.geometry import apply_geometry_grid_defaults, FluxTubeGeometryLike
 from spectraxgk.grids import SpectralGrid, build_spectral_grid, select_ky_grid
 from spectraxgk.linear import (
@@ -36,9 +35,10 @@ from spectraxgk.linear import (
 )
 from spectraxgk.nonlinear import integrate_nonlinear_gx_diagnostics_state
 from spectraxgk.linear_krylov import KrylovConfig, dominant_eigenpair
-from spectraxgk.normalization import apply_diagnostic_normalization, get_normalization_contract
+from spectraxgk.normalization import apply_diagnostic_normalization
+from spectraxgk.parallel import independent_map
 from spectraxgk.quasilinear import compute_quasilinear_from_linear_state
-from spectraxgk.runtime_config import RuntimeConfig, RuntimeSpeciesConfig
+from spectraxgk.runtime_config import RuntimeConfig
 from spectraxgk import runtime_startup
 from spectraxgk.runtime_diagnostics import (
     concat_gx_diagnostics,
@@ -67,12 +67,52 @@ from spectraxgk.runtime_startup import (
     _species_to_linear,
 )
 from spectraxgk.runners import integrate_linear_from_config, integrate_nonlinear_from_config
-from spectraxgk.species import Species, build_linear_params
-from spectraxgk.terms.config import FieldState, TermConfig
+from spectraxgk.terms.config import TermConfig
 from spectraxgk.miller_eik import generate_runtime_miller_eik
 from spectraxgk.vmec_eik import generate_runtime_vmec_eik
 
 _GX_RAND_MAX = float((1 << 31) - 1)
+
+__all__ = [
+    "RuntimeLinearResult",
+    "RuntimeLinearScanResult",
+    "RuntimeNonlinearResult",
+    "_build_gaussian_profile",
+    "_build_initial_condition",
+    "_concat_gx_diagnostics",
+    "_enforce_full_ky_hermitian",
+    "_expand_ky",
+    "_gx_centered_random_pairs",
+    "_gx_default_p_hyper_m",
+    "_gx_init_mode_pairs",
+    "_gx_periodic_zp",
+    "_infer_runtime_nonlinear_steps",
+    "_load_initial_state_from_file",
+    "_midplane_index",
+    "_normalize_linear_solver_name",
+    "_require_full_gk_runtime_model",
+    "_resolve_runtime_hl_dims",
+    "_reshape_gx_state",
+    "_run_runtime_scan_batch",
+    "_runtime_default_krylov_config",
+    "_runtime_external_phi",
+    "_runtime_model_key",
+    "_select_nonlinear_mode_indices",
+    "_slice_gx_diagnostics",
+    "_species_to_linear",
+    "_stride_gx_diagnostics",
+    "_truncate_gx_diagnostics",
+    "_zero_kx_index",
+    "build_runtime_geometry",
+    "build_runtime_linear_params",
+    "build_runtime_linear_terms",
+    "build_runtime_term_config",
+    "run_linear_case",
+    "run_nonlinear_case",
+    "run_runtime_linear",
+    "run_runtime_nonlinear",
+    "run_runtime_scan",
+]
 
 
 def _normalize_linear_solver_name(solver: str) -> str:
@@ -82,10 +122,50 @@ def _normalize_linear_solver_name(solver: str) -> str:
     return solver_key
 
 
+def _parallel_requests_combined_ky_scan(cfg: RuntimeConfig) -> bool:
+    """Return whether runtime parallel config requests the combined-ky scan path."""
+
+    parallel = getattr(cfg, "parallel", None)
+    if parallel is None:
+        return False
+    return str(getattr(parallel, "strategy", "serial")).lower() == "combined_ky" and str(
+        getattr(parallel, "axis", "ky")
+    ).lower() == "ky"
+
+
 def _midplane_index(grid: SpectralGrid) -> int:
     if grid.z.size <= 1:
         return 0
     return min(int(grid.z.size // 2 + 1), int(grid.z.size) - 1)
+
+
+def _run_runtime_scan_ky_task(task: dict[str, Any]) -> RuntimeLinearResult:
+    """Run one independent ky point for ordered scan-worker execution."""
+
+    return run_runtime_linear(
+        task["cfg"],
+        ky_target=float(task["ky"]),
+        Nl=int(task["Nl"]),
+        Nm=int(task["Nm"]),
+        solver=str(task["solver"]),
+        method=task["method"],
+        dt=task["dt"],
+        steps=task["steps"],
+        sample_stride=task["sample_stride"],
+        auto_window=bool(task["auto_window"]),
+        tmin=task["tmin"],
+        tmax=task["tmax"],
+        window_fraction=float(task["window_fraction"]),
+        min_points=int(task["min_points"]),
+        start_fraction=float(task["start_fraction"]),
+        growth_weight=float(task["growth_weight"]),
+        require_positive=bool(task["require_positive"]),
+        min_amp_fraction=float(task["min_amp_fraction"]),
+        krylov_cfg=task["krylov_cfg"],
+        mode_method=str(task["mode_method"]),
+        fit_signal=str(task["fit_signal"]),
+        show_progress=bool(task["show_progress"]),
+    )
 
 
 def _zero_kx_index(grid: SpectralGrid) -> int:
@@ -572,6 +652,12 @@ def run_runtime_linear(
             tcfg = replace(tcfg, save_state=True)
 
         need_density = fit_key in {"density", "auto"}
+        parallel_strategy = str(getattr(cfg.parallel, "strategy", "serial")).lower().replace("-", "_")
+        if parallel_strategy != "serial":
+            if tcfg.use_diffrax:
+                raise NotImplementedError("parallel linear RHS is currently supported only by the fixed-step cached integrator")
+            if need_density:
+                raise NotImplementedError("parallel linear RHS runtime path currently requires fit_signal='phi'")
         g_last = None
         if tcfg.use_diffrax:
             _status(
@@ -596,6 +682,7 @@ def run_runtime_linear(
                 save_field=save_field,
                 density_species_index=0 if need_density else None,
                 show_progress=show_progress,
+                parallel=cfg.parallel,
             )
             if need_density:
                 phi_t, density_t = saved
@@ -638,6 +725,7 @@ def run_runtime_linear(
                     mode_method=mode_method,
                     save_field="phi",
                     show_progress=show_progress,
+                    parallel=cfg.parallel,
                 )
                 density_t = None
 
@@ -802,6 +890,8 @@ def run_runtime_scan(
     mode_method: str = "project",
     fit_signal: str = "auto",
     show_progress: bool = False,
+    workers: int = 1,
+    parallel_executor: str = "thread",
 ) -> RuntimeLinearScanResult:
     """Run a ky scan using the unified runtime config path.
 
@@ -812,6 +902,7 @@ def run_runtime_scan(
     ky_arr = np.asarray(ky_values, dtype=float)
     Nl_use, Nm_use = _resolve_runtime_hl_dims(cfg, Nl=Nl, Nm=Nm)
     solver_key = _normalize_linear_solver_name(solver)
+    batch_ky = bool(batch_ky or _parallel_requests_combined_ky_scan(cfg))
     if batch_ky and solver_key == "krylov":
         raise ValueError("batch_ky is only supported for time integration")
     if batch_ky and bool(getattr(cfg.quasilinear, "enabled", False)):
@@ -842,31 +933,35 @@ def run_runtime_scan(
     gamma = np.zeros_like(ky_arr)
     omega = np.zeros_like(ky_arr)
     ql_payloads: list[dict[str, Any]] = []
-    for i, ky in enumerate(ky_arr):
-        res = run_runtime_linear(
-            cfg,
-            ky_target=float(ky),
-            Nl=Nl_use,
-            Nm=Nm_use,
-            solver=solver,
-            method=method,
-            dt=dt,
-            steps=steps,
-            sample_stride=sample_stride,
-            auto_window=auto_window,
-            tmin=tmin,
-            tmax=tmax,
-            window_fraction=window_fraction,
-            min_points=min_points,
-            start_fraction=start_fraction,
-            growth_weight=growth_weight,
-            require_positive=require_positive,
-            min_amp_fraction=min_amp_fraction,
-            krylov_cfg=krylov_cfg,
-            mode_method=mode_method,
-            fit_signal=fit_signal,
-            show_progress=show_progress,
-        )
+    tasks = [
+        {
+            "cfg": cfg,
+            "ky": float(ky),
+            "Nl": Nl_use,
+            "Nm": Nm_use,
+            "solver": solver,
+            "method": method,
+            "dt": dt,
+            "steps": steps,
+            "sample_stride": sample_stride,
+            "auto_window": auto_window,
+            "tmin": tmin,
+            "tmax": tmax,
+            "window_fraction": window_fraction,
+            "min_points": min_points,
+            "start_fraction": start_fraction,
+            "growth_weight": growth_weight,
+            "require_positive": require_positive,
+            "min_amp_fraction": min_amp_fraction,
+            "krylov_cfg": krylov_cfg,
+            "mode_method": mode_method,
+            "fit_signal": fit_signal,
+            "show_progress": show_progress,
+        }
+        for ky in ky_arr
+    ]
+    results = independent_map(_run_runtime_scan_ky_task, tasks, workers=workers, executor=parallel_executor)
+    for i, res in enumerate(results):
         gamma[i] = float(res.gamma)
         omega[i] = float(res.omega)
         if res.quasilinear is not None:
@@ -876,6 +971,13 @@ def run_runtime_scan(
         gamma=gamma,
         omega=omega,
         quasilinear=tuple(ql_payloads) if ql_payloads else None,
+        parallel={
+            "requested_workers": int(workers),
+            "effective_workers": int(min(max(int(workers), 1), max(int(ky_arr.size), 1))),
+            "executor": str(parallel_executor).strip().lower(),
+            "identity_contract": "independent ky workers must preserve serial ky ordering and values",
+            "quasilinear_state_extraction": bool(ql_payloads),
+        },
     )
 
 
@@ -1473,7 +1575,7 @@ def run_nonlinear_case(
     """Run a nonlinear case from a runtime TOML with optional overrides."""
 
     from spectraxgk.io import load_runtime_from_toml
-    from spectraxgk.runtime_artifacts import run_runtime_nonlinear_with_artifacts, write_runtime_nonlinear_artifacts
+    from spectraxgk.runtime_artifacts import run_runtime_nonlinear_with_artifacts
 
     cfg, raw = load_runtime_from_toml(config_path)
     run_cfg = dict(raw.get("run", {}))

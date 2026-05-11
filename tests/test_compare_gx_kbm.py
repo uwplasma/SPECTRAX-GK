@@ -120,7 +120,6 @@ def test_compare_gx_kbm_run_candidate_uses_gx_shift_for_krylov(monkeypatch) -> N
         import compare_gx_kbm as mod
     finally:
         sys.path.remove(str(tools_dir))
-    from spectraxgk.benchmarks import LinearRunResult
 
     captured: dict[str, object] = {}
 

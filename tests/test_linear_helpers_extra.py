@@ -29,16 +29,24 @@ from spectraxgk.linear import (
     _check_positive,
     _integrate_linear_cached_impl,
     _resolve_implicit_preconditioner,
+    _resolve_parallel_devices,
     _signed_to_index,
     _integrate_linear_implicit_cached,
+    _is_electrostatic_field_terms,
+    _is_electrostatic_slice_terms,
+    _is_streaming_only_terms,
     build_H,
+    hypercollision_damping,
     integrate_linear,
     integrate_linear_diagnostics,
     linear_rhs,
+    linear_rhs_cached,
+    linear_rhs_parallel_cached,
     lenard_bernstein_eigenvalues,
     linear_terms_to_term_config,
     term_config_to_linear_terms,
 )
+from spectraxgk.terms.config import FieldState, TermConfig
 
 
 def test_linear_validation_helpers_scalar_and_array() -> None:
@@ -68,8 +76,12 @@ def test_linear_validation_helpers_accept_traced_values() -> None:
 
 
 def test_as_species_array_and_preconditioner_resolution() -> None:
-    np.testing.assert_allclose(np.asarray(_as_species_array(2.0, 3, "nu")), [2.0, 2.0, 2.0])
-    np.testing.assert_allclose(np.asarray(_as_species_array(jnp.asarray([1.0, 2.0]), 2, "nu")), [1.0, 2.0])
+    np.testing.assert_allclose(
+        np.asarray(_as_species_array(2.0, 3, "nu")), [2.0, 2.0, 2.0]
+    )
+    np.testing.assert_allclose(
+        np.asarray(_as_species_array(jnp.asarray([1.0, 2.0]), 2, "nu")), [1.0, 2.0]
+    )
     with pytest.raises(ValueError):
         _as_species_array(jnp.asarray([1.0, 2.0]), 3, "nu")
 
@@ -84,16 +96,23 @@ def test_as_species_array_and_preconditioner_resolution() -> None:
 
 def test_is_tracer_and_lenard_bernstein_eigenvalues() -> None:
     assert _is_tracer(1.0) is False
-    traced_flag = jax.jit(lambda x: jnp.asarray(1 if _is_tracer(x) else 0, dtype=jnp.int32))(1.0)
+    traced_flag = jax.jit(
+        lambda x: jnp.asarray(1 if _is_tracer(x) else 0, dtype=jnp.int32)
+    )(1.0)
     assert int(traced_flag) == 1
 
     expected = np.asarray([[0.0, 0.3, 0.6], [0.7, 1.0, 1.3]], dtype=np.float32)
-    got = np.asarray(lenard_bernstein_eigenvalues(2, 3, nu_hermite=0.3, nu_laguerre=0.7), dtype=np.float32)
+    got = np.asarray(
+        lenard_bernstein_eigenvalues(2, 3, nu_hermite=0.3, nu_laguerre=0.7),
+        dtype=np.float32,
+    )
     np.testing.assert_allclose(got, expected)
 
 
 def test_low_rank_moment_and_damping_cache_match_expected_shapes_and_values() -> None:
-    params = LinearParams(nu_hermite=0.3, nu_laguerre=0.7, p_hyper=2, p_hyper_l=3, p_hyper_m=4)
+    params = LinearParams(
+        nu_hermite=0.3, nu_laguerre=0.7, p_hyper=2, p_hyper_l=3, p_hyper_m=4
+    )
     cache = _build_low_rank_moment_cache_arrays(2, 3, params, jnp.float32)
 
     expected_lb = np.asarray([[0.0, 0.3, 0.6], [0.7, 1.0, 1.3]], dtype=np.float32)
@@ -103,8 +122,12 @@ def test_low_rank_moment_and_damping_cache_match_expected_shapes_and_values() ->
     assert cache["sqrt_p"].shape == (1, 1, 3, 1, 1, 1)
     assert cache["mask_const"].dtype == jnp.bool_
 
-    periodic = np.asarray(_build_end_damping_profile_array(8, 0.25, "periodic", jnp.float32))
-    linked = np.asarray(_build_end_damping_profile_array(8, 0.25, "linked", jnp.float32))
+    periodic = np.asarray(
+        _build_end_damping_profile_array(8, 0.25, "periodic", jnp.float32)
+    )
+    linked = np.asarray(
+        _build_end_damping_profile_array(8, 0.25, "linked", jnp.float32)
+    )
     np.testing.assert_allclose(periodic, np.zeros(8, dtype=np.float32))
     assert linked[0] > 0.0
     assert linked[-1] > 0.0
@@ -117,6 +140,36 @@ def test_low_rank_moment_cache_keeps_high_order_kz_hypercollision_finite() -> No
     assert np.all(np.isfinite(np.asarray(cache["m_pow"])))
     assert np.isfinite(float(np.asarray(cache["m_norm_kz_factor"])))
     assert float(np.max(np.asarray(cache["m_pow"]))) <= 1.0
+
+
+def test_hypercollision_damping_preserves_low_moments_and_grows_with_kz() -> None:
+    params = LinearParams(
+        nu_hyper=0.0,
+        nu_hyper_l=0.2,
+        nu_hyper_m=0.3,
+        nu_hyper_lm=0.4,
+        hypercollisions_const=1.0,
+        hypercollisions_kz=1.0,
+        p_hyper_l=2.0,
+        p_hyper_m=4.0,
+        p_hyper_lm=2.0,
+        vth=1.5,
+        kpar_scale=2.0,
+    )
+    moment_cache = _build_low_rank_moment_cache_arrays(3, 5, params, jnp.float32)
+    cache = SimpleNamespace(
+        **moment_cache,
+        kz=jnp.asarray([0.0, 1.0, 2.0], dtype=jnp.float32),
+    )
+
+    damping = np.asarray(hypercollision_damping(cache, params, jnp.float32))
+
+    assert damping.shape == (1, 3, 5, 1, 1, 3)
+    np.testing.assert_allclose(damping[0, 0, 0, 0, 0], 0.0, atol=0.0)
+    np.testing.assert_allclose(damping[0, 1, 2, 0, 0], 0.0, atol=0.0)
+    assert damping[0, 2, 0, 0, 0, 0] > 0.0
+    assert damping[0, 0, 4, 0, 0, 2] > damping[0, 0, 4, 0, 0, 1]
+    assert damping[0, 0, 4, 0, 0, 1] > damping[0, 0, 4, 0, 0, 0]
 
 
 def test_gyroaverage_cache_helper_matches_species_vmap_convention() -> None:
@@ -137,7 +190,9 @@ def test_gyroaverage_cache_helper_matches_species_vmap_convention() -> None:
 
 
 def test_linear_params_and_terms_roundtrip() -> None:
-    params = LinearParams(charge_sign=jnp.asarray([1.0, -1.0]), nu=jnp.asarray([0.1, 0.2]), beta=0.3)
+    params = LinearParams(
+        charge_sign=jnp.asarray([1.0, -1.0]), nu=jnp.asarray([0.1, 0.2]), beta=0.3
+    )
     leaves, treedef = jax.tree_util.tree_flatten(params)
     restored = jax.tree_util.tree_unflatten(treedef, leaves)
     np.testing.assert_allclose(np.asarray(restored.charge_sign), [1.0, -1.0])
@@ -148,6 +203,85 @@ def test_linear_params_and_terms_roundtrip() -> None:
     term_cfg = linear_terms_to_term_config(terms, nonlinear=0.25)
     assert float(term_cfg.nonlinear) == pytest.approx(0.25)
     assert term_config_to_linear_terms(term_cfg) == terms
+
+    assert linear_terms_to_term_config(None) == TermConfig()
+    assert term_config_to_linear_terms(None) == LinearTerms()
+
+    custom_cfg = TermConfig(
+        streaming=0.2,
+        mirror=0.3,
+        curvature=0.4,
+        gradb=0.5,
+        diamagnetic=0.6,
+        collisions=0.7,
+        hypercollisions=0.8,
+        hyperdiffusion=0.9,
+        end_damping=0.1,
+        apar=0.0,
+        bpar=1.0,
+        nonlinear=3.0,
+    )
+    assert term_config_to_linear_terms(custom_cfg) == LinearTerms(
+        streaming=0.2,
+        mirror=0.3,
+        curvature=0.4,
+        gradb=0.5,
+        diamagnetic=0.6,
+        collisions=0.7,
+        hypercollisions=0.8,
+        hyperdiffusion=0.9,
+        end_damping=0.1,
+        apar=0.0,
+        bpar=1.0,
+    )
+
+
+def test_linear_term_classifiers_and_parallel_device_validation() -> None:
+    streaming_only = LinearTerms(
+        streaming=1.0,
+        mirror=0.0,
+        curvature=0.0,
+        gradb=0.0,
+        diamagnetic=0.0,
+        collisions=0.0,
+        hypercollisions=0.0,
+        hyperdiffusion=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+    )
+    electrostatic_slices = LinearTerms(
+        streaming=1.0,
+        mirror=1.0,
+        curvature=1.0,
+        gradb=1.0,
+        diamagnetic=1.0,
+        collisions=0.0,
+        hypercollisions=0.0,
+        hyperdiffusion=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+    )
+
+    assert _is_streaming_only_terms(streaming_only) is True
+    assert _is_streaming_only_terms(LinearTerms()) is False
+    assert _is_electrostatic_slice_terms(electrostatic_slices) is True
+    assert _is_electrostatic_slice_terms(LinearTerms(collisions=1.0)) is False
+    assert _is_electrostatic_field_terms(LinearTerms(apar=0.0, bpar=0.0)) is True
+    assert _is_electrostatic_field_terms(LinearTerms(apar=1.0, bpar=0.0)) is False
+
+    devices = ["cpu0", "cpu1"]
+    assert _resolve_parallel_devices(devices=devices) == devices
+    assert _resolve_parallel_devices(devices=devices, num_devices=2) == devices
+    with pytest.raises(ValueError, match="must match"):
+        _resolve_parallel_devices(devices=devices, num_devices=1)
+    with pytest.raises(ValueError, match="at least one"):
+        _resolve_parallel_devices(devices=[])
+    with pytest.raises(ValueError, match=">= 1"):
+        _resolve_parallel_devices(num_devices=0)
+    with pytest.raises(ValueError, match="requested"):
+        _resolve_parallel_devices(num_devices=len(jax.devices()) + 1)
 
 
 def test_signed_to_index_and_linked_end_damping_profile() -> None:
@@ -288,7 +422,9 @@ def test_build_linear_cache_y0_default_and_zero_twist_branches() -> None:
     assert np.all(np.isfinite(np.asarray(cache.kperp2)))
 
 
-def _sampled_geometry_with_shear(theta: jnp.ndarray, s_hat: jnp.ndarray) -> FluxTubeGeometryData:
+def _sampled_geometry_with_shear(
+    theta: jnp.ndarray, s_hat: jnp.ndarray
+) -> FluxTubeGeometryData:
     shear = s_hat * theta
     ones = jnp.ones_like(theta)
     zeros = jnp.zeros_like(theta)
@@ -316,7 +452,9 @@ def _sampled_geometry_with_shear(theta: jnp.ndarray, s_hat: jnp.ndarray) -> Flux
 
 def test_build_linear_cache_allows_traced_shear_for_periodic_sampled_geometry() -> None:
     grid = build_spectral_grid(
-        GridConfig(Nx=2, Ny=4, Nz=4, Lx=2.0 * np.pi, Ly=2.0 * np.pi, boundary="periodic")
+        GridConfig(
+            Nx=2, Ny=4, Nz=4, Lx=2.0 * np.pi, Ly=2.0 * np.pi, boundary="periodic"
+        )
     )
     theta = jnp.asarray(grid.z, dtype=jnp.float32)
     params = LinearParams(nu_hyper=0.0, nu_hyper_m=0.0)
@@ -374,7 +512,9 @@ def test_build_linear_cache_rejects_traced_shear_for_twist_shift_geometry() -> N
         cache = build_linear_cache(grid, geom, params, Nl=1, Nm=1)
         return jnp.sum(cache.kperp2)
 
-    with pytest.raises(ValueError, match="traced magnetic shear is not supported with twist-shift"):
+    with pytest.raises(
+        ValueError, match="traced magnetic shear is not supported with twist-shift"
+    ):
         jax.grad(objective)(jnp.asarray(0.8, dtype=jnp.float32))
 
 
@@ -385,7 +525,16 @@ def test_build_H_field_couplings_and_errors() -> None:
     apar = 0.5 * phi
     bpar = 0.25 * phi
 
-    H = build_H(G5, Jl4, phi, tz=jnp.asarray(2.0), apar=apar, vth=jnp.asarray(3.0), bpar=bpar, JlB=Jl4)
+    H = build_H(
+        G5,
+        Jl4,
+        phi,
+        tz=jnp.asarray(2.0),
+        apar=apar,
+        vth=jnp.asarray(3.0),
+        bpar=bpar,
+        JlB=Jl4,
+    )
 
     assert H.shape == G5.shape
     assert np.max(np.abs(np.asarray(H[0, 0]))) > 0.0
@@ -398,14 +547,20 @@ def test_build_H_field_couplings_and_errors() -> None:
 
 def test_linear_rhs_rejects_invalid_state_rank() -> None:
     with pytest.raises(ValueError, match="G must have shape"):
-        linear_rhs(jnp.zeros((2, 2), dtype=jnp.complex64), object(), object(), LinearParams())
+        linear_rhs(
+            jnp.zeros((2, 2), dtype=jnp.complex64), object(), object(), LinearParams()
+        )
 
 
 def test_linear_rhs_accepts_multispecies_state() -> None:
-    grid = build_spectral_grid(GridConfig(Nx=2, Ny=2, Nz=4, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
+    grid = build_spectral_grid(
+        GridConfig(Nx=2, Ny=2, Nz=4, Lx=2.0 * np.pi, Ly=2.0 * np.pi)
+    )
     geom = SAlphaGeometry(q=1.4, s_hat=0.8, epsilon=0.1)
     params = LinearParams(charge_sign=jnp.asarray([1.0]), nu_hyper=0.0, nu_hyper_m=0.0)
-    G = jnp.zeros((1, 2, 2, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64)
+    G = jnp.zeros(
+        (1, 2, 2, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64
+    )
 
     dG, phi = linear_rhs(G, grid, geom, params, terms=LinearTerms())
 
@@ -443,13 +598,15 @@ def test_build_implicit_operator_handles_species_squeeze(monkeypatch) -> None:
         lambda G, cache, params, **kwargs: (jnp.ones_like(G), None),
     )
 
-    G, shape, size, dt_val, precond_op, matvec, squeeze_species = _build_implicit_operator(
-        G0,
-        cache,
-        params,
-        dt=0.2,
-        terms=LinearTerms(),
-        implicit_preconditioner="damping",
+    G, shape, size, dt_val, precond_op, matvec, squeeze_species = (
+        _build_implicit_operator(
+            G0,
+            cache,
+            params,
+            dt=0.2,
+            terms=LinearTerms(),
+            implicit_preconditioner="damping",
+        )
     )
 
     assert squeeze_species is True
@@ -496,25 +653,29 @@ def test_build_implicit_operator_preconditioner_aliases_and_errors(monkeypatch) 
     size = int(np.prod(np.asarray(G0.shape)))
     x = jnp.ones((size,), dtype=G0.dtype)
     for key in ("pas-coarse", "hermite-line-coarse", "identity"):
-        _G, _shape, _size, _dt_val, precond_op, _matvec, _squeeze = _build_implicit_operator(
-            G0,
-            cache,
-            params,
-            dt=0.2,
-            terms=LinearTerms(),
-            implicit_preconditioner=key,
+        _G, _shape, _size, _dt_val, precond_op, _matvec, _squeeze = (
+            _build_implicit_operator(
+                G0,
+                cache,
+                params,
+                dt=0.2,
+                terms=LinearTerms(),
+                implicit_preconditioner=key,
+            )
         )
         y = precond_op(x)
         assert y.shape == x.shape
         assert np.isfinite(np.asarray(y)).all()
 
-    _G, _shape, _size, _dt_val, callable_precond, _matvec, _squeeze = _build_implicit_operator(
-        G0,
-        cache,
-        params,
-        dt=0.2,
-        terms=LinearTerms(),
-        implicit_preconditioner=lambda x: 2.0 * x,
+    _G, _shape, _size, _dt_val, callable_precond, _matvec, _squeeze = (
+        _build_implicit_operator(
+            G0,
+            cache,
+            params,
+            dt=0.2,
+            terms=LinearTerms(),
+            implicit_preconditioner=lambda x: 2.0 * x,
+        )
     )
     np.testing.assert_allclose(np.asarray(callable_precond(x)), np.asarray(2.0 * x))
 
@@ -529,7 +690,9 @@ def test_build_implicit_operator_preconditioner_aliases_and_errors(monkeypatch) 
         )
 
 
-def test_build_implicit_operator_linked_hermite_line_preconditioner(monkeypatch) -> None:
+def test_build_implicit_operator_linked_hermite_line_preconditioner(
+    monkeypatch,
+) -> None:
     G0 = jnp.zeros((1, 1, 2, 1, 1, 2), dtype=jnp.complex64)
     kz_link = 2.0 * jnp.pi * jnp.fft.fftfreq(2, d=1.0)
     cache = SimpleNamespace(
@@ -562,26 +725,30 @@ def test_build_implicit_operator_linked_hermite_line_preconditioner(monkeypatch)
         lambda G, cache, params, **kwargs: (jnp.ones_like(G), None),
     )
 
-    _G, _shape, _size, _dt_val, precond_op, _matvec, _squeeze = _build_implicit_operator(
-        G0,
-        cache,
-        params,
-        dt=0.1,
-        terms=LinearTerms(),
-        implicit_preconditioner="hermite-line",
+    _G, _shape, _size, _dt_val, precond_op, _matvec, _squeeze = (
+        _build_implicit_operator(
+            G0,
+            cache,
+            params,
+            dt=0.1,
+            terms=LinearTerms(),
+            implicit_preconditioner="hermite-line",
+        )
     )
     y = precond_op(jnp.ones((G0.size,), dtype=G0.dtype))
 
     assert y.shape == (G0.size,)
     assert np.all(np.isfinite(np.asarray(y)))
 
-    _G, _shape, _size, _dt_val, coarse_precond, _matvec, _squeeze = _build_implicit_operator(
-        G0,
-        cache,
-        params,
-        dt=0.1,
-        terms=LinearTerms(),
-        implicit_preconditioner="hermite-line-coarse",
+    _G, _shape, _size, _dt_val, coarse_precond, _matvec, _squeeze = (
+        _build_implicit_operator(
+            G0,
+            cache,
+            params,
+            dt=0.1,
+            terms=LinearTerms(),
+            implicit_preconditioner="hermite-line-coarse",
+        )
     )
     y_coarse = coarse_precond(jnp.ones((G0.size,), dtype=G0.dtype))
     assert y_coarse.shape == (G0.size,)
@@ -593,23 +760,34 @@ def test_integrate_linear_wrapper_routes_methods(monkeypatch) -> None:
     grid = geom = params = object()
     calls: list[tuple[str, str]] = []
 
-    monkeypatch.setattr("spectraxgk.linear.build_linear_cache", lambda *args, **kwargs: "cache")
+    monkeypatch.setattr(
+        "spectraxgk.linear.build_linear_cache", lambda *args, **kwargs: "cache"
+    )
     monkeypatch.setattr(
         "spectraxgk.linear._integrate_linear_cached",
-        lambda *args, **kwargs: calls.append(("cached", kwargs["method"])) or ("G", "phi"),
+        lambda *args, **kwargs: calls.append(("cached", kwargs["method"]))
+        or ("G", "phi"),
     )
     monkeypatch.setattr(
         "spectraxgk.linear._integrate_linear_cached_donate",
-        lambda *args, **kwargs: calls.append(("donate", kwargs["method"])) or ("Gd", "phid"),
+        lambda *args, **kwargs: calls.append(("donate", kwargs["method"]))
+        or ("Gd", "phid"),
     )
     monkeypatch.setattr(
         "spectraxgk.linear._integrate_linear_implicit_cached",
-        lambda *args, **kwargs: calls.append(("implicit", "implicit")) or ("Gi", "phii"),
+        lambda *args, **kwargs: calls.append(("implicit", "implicit"))
+        or ("Gi", "phii"),
     )
 
-    assert integrate_linear(G0, grid, geom, params, dt=0.1, steps=2, method="semi-implicit") == ("G", "phi")
-    assert integrate_linear(G0, grid, geom, params, dt=0.1, steps=2, method="rk2", donate=True) == ("Gd", "phid")
-    assert integrate_linear(G0, grid, geom, params, dt=0.1, steps=2, method="implicit") == ("Gi", "phii")
+    assert integrate_linear(
+        G0, grid, geom, params, dt=0.1, steps=2, method="semi-implicit"
+    ) == ("G", "phi")
+    assert integrate_linear(
+        G0, grid, geom, params, dt=0.1, steps=2, method="rk2", donate=True
+    ) == ("Gd", "phid")
+    assert integrate_linear(
+        G0, grid, geom, params, dt=0.1, steps=2, method="implicit"
+    ) == ("Gi", "phii")
     assert ("cached", "imex") in calls
     assert ("donate", "rk2") in calls
     assert ("implicit", "implicit") in calls
@@ -622,6 +800,405 @@ def test_integrate_linear_wrapper_routes_methods(monkeypatch) -> None:
         integrate_linear(jnp.zeros((2, 2)), grid, geom, params, dt=0.1, steps=2)
 
 
+def test_integrate_linear_wrapper_routes_nonserial_parallel(monkeypatch) -> None:
+    G0 = jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64)
+    grid = geom = params = object()
+    parallel = SimpleNamespace(strategy="velocity", backend="auto")
+    calls: list[object] = []
+
+    monkeypatch.setattr(
+        "spectraxgk.linear.build_linear_cache", lambda *args, **kwargs: "cache"
+    )
+    monkeypatch.setattr(
+        "spectraxgk.linear._integrate_linear_cached_impl",
+        lambda *args, **kwargs: calls.append(kwargs["parallel"]) or ("Gp", "phip"),
+    )
+
+    assert integrate_linear(
+        G0, grid, geom, params, dt=0.1, steps=2, method="rk2", parallel=parallel
+    ) == ("Gp", "phip")
+    assert calls == [parallel]
+
+    with pytest.raises(NotImplementedError, match="explicit fixed-step"):
+        integrate_linear(
+            G0,
+            grid,
+            geom,
+            params,
+            dt=0.1,
+            steps=2,
+            method="implicit",
+            parallel=parallel,
+        )
+    with pytest.raises(NotImplementedError, match="donated"):
+        integrate_linear(
+            G0,
+            grid,
+            geom,
+            params,
+            dt=0.1,
+            steps=2,
+            method="rk2",
+            donate=True,
+            parallel=parallel,
+        )
+
+
+def test_integrate_linear_wrapper_enables_electrostatic_field_specialization(
+    monkeypatch,
+) -> None:
+    G0 = jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64)
+    grid = geom = params = object()
+    captured: dict[str, bool] = {}
+
+    monkeypatch.setattr(
+        "spectraxgk.linear.build_linear_cache", lambda *args, **kwargs: "cache"
+    )
+
+    def _fake_cached(*args, **kwargs):
+        captured["force_electrostatic_fields"] = kwargs["force_electrostatic_fields"]
+        return "G", "phi"
+
+    monkeypatch.setattr("spectraxgk.linear._integrate_linear_cached", _fake_cached)
+
+    assert integrate_linear(
+        G0,
+        grid,
+        geom,
+        params,
+        dt=0.1,
+        steps=2,
+        method="rk2",
+        terms=LinearTerms(apar=0.0, bpar=0.0),
+    ) == ("G", "phi")
+    assert captured["force_electrostatic_fields"] is True
+
+
+@pytest.mark.parametrize(
+    "terms",
+    [
+        None,
+        LinearTerms(apar=1.0, bpar=0.0),
+        LinearTerms(apar=0.0, bpar=1.0),
+    ],
+)
+def test_integrate_linear_wrapper_does_not_force_electrostatic_when_em_terms_enabled(
+    monkeypatch,
+    terms: LinearTerms | None,
+) -> None:
+    G0 = jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64)
+    grid = geom = params = object()
+    captured: dict[str, bool] = {}
+
+    monkeypatch.setattr(
+        "spectraxgk.linear.build_linear_cache", lambda *args, **kwargs: "cache"
+    )
+
+    def _fake_cached(*args, **kwargs):
+        captured["force_electrostatic_fields"] = kwargs["force_electrostatic_fields"]
+        return "G", "phi"
+
+    monkeypatch.setattr("spectraxgk.linear._integrate_linear_cached", _fake_cached)
+
+    kwargs = {} if terms is None else {"terms": terms}
+    assert integrate_linear(
+        G0, grid, geom, params, dt=0.1, steps=2, method="rk2", **kwargs
+    ) == ("G", "phi")
+    assert captured["force_electrostatic_fields"] is False
+
+
+def test_linear_rhs_cached_uses_generic_jit_unless_electrostatic_is_forced(
+    monkeypatch,
+) -> None:
+    G0 = jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64)
+    cache = params = object()
+    calls: list[str] = []
+
+    def _fake_generic(G, cache, params, terms, dt=None, external_phi=None):
+        calls.append("generic")
+        assert float(terms.apar) == pytest.approx(0.0)
+        assert float(terms.bpar) == pytest.approx(0.0)
+        assert float(dt) == pytest.approx(0.25)
+        return jnp.zeros_like(G), FieldState(
+            phi=jnp.zeros(G.shape[-3:], dtype=G.dtype), apar=None, bpar=None
+        )
+
+    monkeypatch.setattr(
+        "spectraxgk.terms.assembly.assemble_rhs_cached_jit", _fake_generic
+    )
+    monkeypatch.setattr(
+        "spectraxgk.terms.assembly.assemble_rhs_cached_electrostatic_jit",
+        lambda *args, **kwargs: pytest.fail(
+            "electrostatic RHS should run only when explicitly forced"
+        ),
+    )
+
+    rhs, phi = linear_rhs_cached(
+        G0,
+        cache,
+        params,
+        terms=LinearTerms(apar=0.0, bpar=0.0),
+        dt=0.25,
+    )
+
+    assert calls == ["generic"]
+    assert rhs.shape == G0.shape
+    assert phi.shape == G0.shape[-3:]
+
+
+def test_linear_rhs_parallel_cached_serial_alias_and_error_branches(
+    monkeypatch,
+) -> None:
+    G0 = jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64)
+    cache = params = object()
+    calls: list[str] = []
+
+    def _fake_serial(G, cache, params, **kwargs):
+        calls.append("serial")
+        assert kwargs["use_jit"] is False
+        assert kwargs["use_custom_vjp"] is False
+        assert float(kwargs["dt"]) == pytest.approx(0.2)
+        return jnp.ones_like(G), jnp.zeros(G.shape[-3:], dtype=G.dtype)
+
+    monkeypatch.setattr("spectraxgk.linear.linear_rhs_cached", _fake_serial)
+
+    rhs, phi = linear_rhs_parallel_cached(
+        G0,
+        cache,
+        params,
+        terms=LinearTerms(),
+        parallel=None,
+        use_jit=False,
+        use_custom_vjp=False,
+        dt=0.2,
+    )
+    assert calls == ["serial"]
+    assert rhs.shape == G0.shape
+    assert phi.shape == G0.shape[-3:]
+
+    with pytest.raises(NotImplementedError, match="Hermite axis"):
+        linear_rhs_parallel_cached(
+            G0,
+            cache,
+            params,
+            terms=LinearTerms(apar=0.0, bpar=0.0),
+            parallel=SimpleNamespace(
+                strategy="velocity", backend="auto", axis="laguerre"
+            ),
+        )
+    with pytest.raises(NotImplementedError, match="backend='auto'"):
+        linear_rhs_parallel_cached(
+            G0,
+            cache,
+            params,
+            terms=LinearTerms(),
+            parallel=SimpleNamespace(strategy="velocity", backend="auto"),
+        )
+    with pytest.raises(NotImplementedError, match="currently supports only"):
+        linear_rhs_parallel_cached(
+            G0,
+            cache,
+            params,
+            terms=LinearTerms(),
+            parallel=SimpleNamespace(strategy="kx", backend="auto"),
+        )
+
+
+def test_linear_rhs_parallel_cached_routes_gated_velocity_backends(
+    monkeypatch,
+) -> None:
+    G0 = jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64)
+    cache = params = object()
+    calls: list[tuple[str, int | None]] = []
+
+    streaming_only = LinearTerms(
+        streaming=1.0,
+        mirror=0.0,
+        curvature=0.0,
+        gradb=0.0,
+        diamagnetic=0.0,
+        collisions=0.0,
+        hypercollisions=0.0,
+        hyperdiffusion=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+    )
+    electrostatic_slices = LinearTerms(
+        streaming=1.0,
+        mirror=1.0,
+        curvature=1.0,
+        gradb=1.0,
+        diamagnetic=1.0,
+        collisions=0.0,
+        hypercollisions=0.0,
+        hyperdiffusion=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+    )
+
+    def _out(name):
+        def _fake(G, cache, params, **kwargs):
+            calls.append((name, kwargs.get("num_devices")))
+            return jnp.ones_like(G), jnp.zeros(G.shape[-3:], dtype=G.dtype)
+
+        return _fake
+
+    monkeypatch.setattr(
+        "spectraxgk.linear.linear_rhs_streaming_velocity_sharded",
+        _out("streaming"),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.linear.linear_rhs_streaming_electrostatic_velocity_sharded",
+        _out("streaming_es"),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.linear.linear_rhs_electrostatic_slices_velocity_sharded",
+        _out("slices"),
+    )
+
+    linear_rhs_parallel_cached(
+        G0,
+        cache,
+        params,
+        terms=streaming_only,
+        parallel=SimpleNamespace(
+            strategy="velocity", backend="streaming_only", num_devices=1
+        ),
+    )
+    linear_rhs_parallel_cached(
+        G0,
+        cache,
+        params,
+        terms=streaming_only,
+        parallel=SimpleNamespace(
+            strategy="velocity",
+            backend="streaming_electrostatic",
+            num_devices=2,
+        ),
+    )
+    linear_rhs_parallel_cached(
+        G0,
+        cache,
+        params,
+        terms=electrostatic_slices,
+        parallel=SimpleNamespace(
+            strategy="velocity",
+            backend="electrostatic_linear_slices",
+            num_devices=3,
+        ),
+    )
+    linear_rhs_parallel_cached(
+        G0,
+        cache,
+        params,
+        terms=electrostatic_slices,
+        parallel=SimpleNamespace(strategy="velocity", backend="auto", num_devices=4),
+    )
+
+    assert calls == [
+        ("streaming", 1),
+        ("streaming_es", 2),
+        ("slices", 3),
+        ("slices", 4),
+    ]
+
+    with pytest.raises(NotImplementedError, match="streaming-only"):
+        linear_rhs_parallel_cached(
+            G0,
+            cache,
+            params,
+            terms=electrostatic_slices,
+            parallel=SimpleNamespace(strategy="velocity", backend="streaming_only"),
+        )
+    with pytest.raises(NotImplementedError, match="collision/EM"):
+        linear_rhs_parallel_cached(
+            G0,
+            cache,
+            params,
+            terms=LinearTerms(collisions=1.0, apar=0.0, bpar=0.0),
+            parallel=SimpleNamespace(
+                strategy="velocity", backend="electrostatic_linear_slices"
+            ),
+        )
+
+
+def test_linear_rhs_cached_can_use_electrostatic_specialized_jit(monkeypatch) -> None:
+    G0 = jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64)
+    cache = params = object()
+    calls: list[str] = []
+
+    def _fake_electrostatic(G, cache, params, terms, dt=None, external_phi=None):
+        calls.append("electrostatic")
+        return jnp.ones_like(G), FieldState(
+            phi=jnp.ones(G.shape[-3:], dtype=G.dtype), apar=None, bpar=None
+        )
+
+    monkeypatch.setattr(
+        "spectraxgk.terms.assembly.assemble_rhs_cached_electrostatic_jit",
+        _fake_electrostatic,
+    )
+    monkeypatch.setattr(
+        "spectraxgk.terms.assembly.assemble_rhs_cached_jit",
+        lambda *args, **kwargs: pytest.fail(
+            "generic RHS should not run when electrostatic specialization is forced"
+        ),
+    )
+
+    rhs, phi = linear_rhs_cached(
+        G0,
+        cache,
+        params,
+        terms=LinearTerms(apar=0.0, bpar=0.0),
+        force_electrostatic_fields=True,
+    )
+
+    assert calls == ["electrostatic"]
+    assert rhs.shape == G0.shape
+    assert phi.shape == G0.shape[-3:]
+
+
+def test_linear_rhs_cached_zero_and_near_zero_states_remain_finite() -> None:
+    grid = build_spectral_grid(
+        GridConfig(Nx=2, Ny=2, Nz=4, Lx=2.0 * np.pi, Ly=2.0 * np.pi)
+    )
+    geom = SAlphaGeometry(q=1.4, s_hat=0.8, epsilon=0.1)
+    params = LinearParams(
+        nu=0.0, nu_hyper=0.0, nu_hyper_m=0.0, damp_ends_amp=0.0, damp_ends_widthfrac=0.0
+    )
+    cache = build_linear_cache(grid, geom, params, Nl=2, Nm=2)
+    terms = LinearTerms(
+        collisions=0.0, hypercollisions=0.0, end_damping=0.0, apar=0.0, bpar=0.0
+    )
+    G0 = jnp.zeros((2, 2, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64)
+
+    dG0, phi0 = linear_rhs_cached(
+        G0,
+        cache,
+        params,
+        terms=terms,
+        use_jit=False,
+        use_custom_vjp=False,
+        force_electrostatic_fields=True,
+    )
+    np.testing.assert_allclose(np.asarray(dG0), 0.0, atol=0.0)
+    np.testing.assert_allclose(np.asarray(phi0), 0.0, atol=0.0)
+
+    tiny = G0 + jnp.asarray(1.0e-30 + 1.0e-30j, dtype=G0.dtype)
+    dG_tiny, phi_tiny = linear_rhs_cached(
+        tiny,
+        cache,
+        params,
+        terms=terms,
+        use_jit=False,
+        use_custom_vjp=False,
+        force_electrostatic_fields=True,
+    )
+    assert np.all(np.isfinite(np.asarray(dG_tiny)))
+    assert np.all(np.isfinite(np.asarray(phi_tiny)))
+
+
 def test_integrate_linear_cached_impl_invalid_and_sampled(monkeypatch) -> None:
     G0 = jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64)
     cache = SimpleNamespace(lb_lam=jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.float32))
@@ -632,7 +1209,10 @@ def test_integrate_linear_cached_impl_invalid_and_sampled(monkeypatch) -> None:
     )
     monkeypatch.setattr(
         "spectraxgk.linear.linear_rhs_cached",
-        lambda G, cache, params, **kwargs: (jnp.ones_like(G), jnp.zeros((1, 1, 2), dtype=jnp.complex64)),
+        lambda G, cache, params, **kwargs: (
+            jnp.ones_like(G),
+            jnp.zeros((1, 1, 2), dtype=jnp.complex64),
+        ),
     )
 
     with pytest.raises(ValueError):
@@ -649,6 +1229,47 @@ def test_integrate_linear_cached_impl_invalid_and_sampled(monkeypatch) -> None:
     )
     assert G_out.shape == G0.shape
     assert phi_t.shape[0] == 2
+
+
+def test_integrate_linear_cached_impl_uses_parallel_rhs(monkeypatch) -> None:
+    G0 = jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64)
+    cache = SimpleNamespace(lb_lam=jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.float32))
+    params = SimpleNamespace(nu=0.0)
+    parallel = SimpleNamespace(strategy="velocity", backend="auto")
+    calls: list[object] = []
+
+    monkeypatch.setattr(
+        "spectraxgk.linear.hypercollision_damping",
+        lambda cache, params, dtype: jnp.zeros_like(cache.lb_lam, dtype=dtype),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.linear.linear_rhs_cached",
+        lambda *args, **kwargs: pytest.fail(
+            "serial RHS should not be used for nonserial parallel integration"
+        ),
+    )
+
+    def _fake_parallel_rhs(G, cache, params, **kwargs):
+        calls.append(kwargs["parallel"])
+        return jnp.ones_like(G), jnp.zeros((1, 1, 2), dtype=jnp.complex64)
+
+    monkeypatch.setattr(
+        "spectraxgk.linear.linear_rhs_parallel_cached", _fake_parallel_rhs
+    )
+
+    G_out, phi_t = _integrate_linear_cached_impl(
+        G0,
+        cache,
+        params,
+        dt=0.1,
+        steps=2,
+        method="euler",
+        parallel=parallel,
+    )
+
+    assert G_out.shape == G0.shape
+    assert phi_t.shape[0] == 2
+    assert calls and all(call is parallel for call in calls)
 
 
 def test_integrate_linear_implicit_cached_sampled_path(monkeypatch) -> None:
@@ -674,7 +1295,10 @@ def test_integrate_linear_implicit_cached_sampled_path(monkeypatch) -> None:
     )
     monkeypatch.setattr(
         "spectraxgk.linear.linear_rhs_cached",
-        lambda G, cache, params, **kwargs: (jnp.ones_like(G), jnp.ones((1, 1, 2), dtype=jnp.complex64)),
+        lambda G, cache, params, **kwargs: (
+            jnp.ones_like(G),
+            jnp.ones((1, 1, 2), dtype=jnp.complex64),
+        ),
     )
 
     G_out, phi_t = _integrate_linear_implicit_cached(
@@ -703,13 +1327,20 @@ def test_integrate_linear_diagnostics_validates_and_records_energy(monkeypatch) 
     )
     monkeypatch.setattr(
         "spectraxgk.linear.linear_rhs_cached",
-        lambda G, cache, params, **kwargs: (jnp.ones_like(G), jnp.ones((1, 1, 2), dtype=jnp.complex64)),
+        lambda G, cache, params, **kwargs: (
+            jnp.ones_like(G),
+            jnp.ones((1, 1, 2), dtype=jnp.complex64),
+        ),
     )
 
     with pytest.raises(ValueError):
-        integrate_linear_diagnostics(G0, grid, geom, params, dt=0.1, steps=2, sample_stride=0, cache=cache)
+        integrate_linear_diagnostics(
+            G0, grid, geom, params, dt=0.1, steps=2, sample_stride=0, cache=cache
+        )
     with pytest.raises(ValueError):
-        integrate_linear_diagnostics(G0, grid, geom, params, dt=0.1, steps=3, sample_stride=2, cache=cache)
+        integrate_linear_diagnostics(
+            G0, grid, geom, params, dt=0.1, steps=3, sample_stride=2, cache=cache
+        )
 
     G_out, phi_t, density_t, hl_t = integrate_linear_diagnostics(
         G0,
@@ -731,7 +1362,9 @@ def test_integrate_linear_diagnostics_validates_and_records_energy(monkeypatch) 
 
 
 @pytest.mark.parametrize("method", ["euler", "rk2", "sspx3", "rk4"])
-def test_integrate_linear_diagnostics_explicit_method_branches(monkeypatch, method: str) -> None:
+def test_integrate_linear_diagnostics_explicit_method_branches(
+    monkeypatch, method: str
+) -> None:
     G0 = jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.complex64)
     cache = SimpleNamespace(
         lb_lam=jnp.zeros((2, 2, 1, 1, 2), dtype=jnp.float32),
@@ -743,7 +1376,10 @@ def test_integrate_linear_diagnostics_explicit_method_branches(monkeypatch, meth
     )
     monkeypatch.setattr(
         "spectraxgk.linear.linear_rhs_cached",
-        lambda G, cache, params, **kwargs: (jnp.ones_like(G), jnp.ones((1, 1, 2), dtype=jnp.complex64)),
+        lambda G, cache, params, **kwargs: (
+            jnp.ones_like(G),
+            jnp.ones((1, 1, 2), dtype=jnp.complex64),
+        ),
     )
 
     G_out, phi_t, density_t = integrate_linear_diagnostics(
@@ -764,7 +1400,9 @@ def test_integrate_linear_diagnostics_explicit_method_branches(monkeypatch, meth
     assert density_t.shape[0] == 2
 
 
-def test_integrate_linear_diagnostics_multispecies_density_and_invalid_method(monkeypatch) -> None:
+def test_integrate_linear_diagnostics_multispecies_density_and_invalid_method(
+    monkeypatch,
+) -> None:
     G0 = jnp.zeros((2, 2, 2, 1, 1, 2), dtype=jnp.complex64)
     cache = SimpleNamespace(
         lb_lam=jnp.zeros((2, 2, 2, 1, 1, 2), dtype=jnp.float32),
@@ -776,7 +1414,10 @@ def test_integrate_linear_diagnostics_multispecies_density_and_invalid_method(mo
     )
     monkeypatch.setattr(
         "spectraxgk.linear.linear_rhs_cached",
-        lambda G, cache, params, **kwargs: (jnp.ones_like(G), jnp.ones((1, 1, 2), dtype=jnp.complex64)),
+        lambda G, cache, params, **kwargs: (
+            jnp.ones_like(G),
+            jnp.ones((1, 1, 2), dtype=jnp.complex64),
+        ),
     )
 
     G_out, phi_t, density_t, hl_t = integrate_linear_diagnostics(
@@ -828,7 +1469,10 @@ def test_integrate_linear_diagnostics_builds_cache_and_uses_imex2(monkeypatch) -
     )
     monkeypatch.setattr(
         "spectraxgk.linear.linear_rhs_cached",
-        lambda G, cache, params, **kwargs: (jnp.ones_like(G), jnp.ones((1, 1, 2), dtype=jnp.complex64)),
+        lambda G, cache, params, **kwargs: (
+            jnp.ones_like(G),
+            jnp.ones((1, 1, 2), dtype=jnp.complex64),
+        ),
     )
 
     G_out, phi_t, density_t = integrate_linear_diagnostics(
@@ -863,7 +1507,10 @@ def test_integrate_linear_diagnostics_imex_sampled_multispecies(monkeypatch) -> 
     )
     monkeypatch.setattr(
         "spectraxgk.linear.linear_rhs_cached",
-        lambda G, cache, params, **kwargs: (jnp.zeros_like(G), jnp.ones((1, 1, 2), dtype=jnp.complex64)),
+        lambda G, cache, params, **kwargs: (
+            jnp.zeros_like(G),
+            jnp.ones((1, 1, 2), dtype=jnp.complex64),
+        ),
     )
 
     G_out, phi_t, density_t = integrate_linear_diagnostics(
@@ -885,7 +1532,9 @@ def test_integrate_linear_diagnostics_imex_sampled_multispecies(monkeypatch) -> 
     assert density_t.shape == (2, 1, 1, 2)
 
 
-def test_integrate_linear_diagnostics_species_none_and_5d_density_paths(monkeypatch) -> None:
+def test_integrate_linear_diagnostics_species_none_and_5d_density_paths(
+    monkeypatch,
+) -> None:
     cache6 = SimpleNamespace(
         lb_lam=jnp.zeros((2, 2, 2, 1, 1, 2), dtype=jnp.float32),
         Jl=jnp.ones((2, 2, 1, 1, 2), dtype=jnp.float32),
@@ -900,7 +1549,10 @@ def test_integrate_linear_diagnostics_species_none_and_5d_density_paths(monkeypa
     )
     monkeypatch.setattr(
         "spectraxgk.linear.linear_rhs_cached",
-        lambda G, cache, params, **kwargs: (jnp.ones_like(G), jnp.ones((1, 1, 2), dtype=jnp.complex64)),
+        lambda G, cache, params, **kwargs: (
+            jnp.ones_like(G),
+            jnp.ones((1, 1, 2), dtype=jnp.complex64),
+        ),
     )
 
     G6 = jnp.zeros((2, 2, 2, 1, 1, 2), dtype=jnp.complex64)

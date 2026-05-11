@@ -6,7 +6,7 @@
   "bpar_norm": 0.0,
   "case": "runtime_cyclone_nonlinear_miller",
   "claim_scope": "Full fused nonlinear-RHS graph triage for one runtime state. Use this to choose kernel-level optimization targets; do not treat it as a standalone transport runtime claim.",
-  "compile_execute_seconds": 1.6516990000382066,
+  "compile_execute_seconds": 1.7611348329810426,
   "config": "examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml",
   "electrostatic_specialized": true,
   "gx_real_fft": true,
@@ -39,6 +39,6 @@
   "rhs_norm": 0.16438251733779907,
   "state": "initial",
   "trace_dir": null,
-  "warm_seconds": 0.31616600821726026,
+  "warm_seconds": 0.3346847665961832,
   "z_variation_norm": 2.5703474904048562e-08
 }

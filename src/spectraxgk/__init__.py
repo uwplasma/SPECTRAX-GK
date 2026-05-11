@@ -64,6 +64,7 @@ from spectraxgk.runtime_config import (
     RuntimeConfig,
     RuntimeNormalizationConfig,
     RuntimeOutputConfig,
+    RuntimeParallelConfig,
     RuntimePhysicsConfig,
     RuntimeQuasilinearConfig,
     RuntimeSpeciesConfig,
@@ -100,9 +101,17 @@ from spectraxgk.linear import (
     linear_terms_to_term_config,
     linear_rhs,
     linear_rhs_cached,
+    linear_rhs_electrostatic_slices_velocity_sharded,
+    linear_rhs_streaming_electrostatic_velocity_sharded,
+    linear_rhs_parallel_cached,
+    linear_rhs_streaming_velocity_sharded,
     term_config_to_linear_terms,
 )
-from spectraxgk.linear_krylov import KrylovConfig, dominant_eigenpair, dominant_eigenvalue
+from spectraxgk.linear_krylov import (
+    KrylovConfig,
+    dominant_eigenpair,
+    dominant_eigenvalue,
+)
 from spectraxgk.nonlinear import (
     IMEXLinearOperator,
     build_nonlinear_imex_operator,
@@ -111,7 +120,10 @@ from spectraxgk.nonlinear import (
     integrate_nonlinear_gx_diagnostics,
     nonlinear_rhs_cached,
 )
-from spectraxgk.runners import integrate_linear_from_config, integrate_nonlinear_from_config
+from spectraxgk.runners import (
+    integrate_linear_from_config,
+    integrate_nonlinear_from_config,
+)
 from spectraxgk.species import Species, build_linear_params
 from spectraxgk.analysis import (
     ModeSelection,
@@ -181,7 +193,40 @@ from spectraxgk.autodiff_validation import (
     isolated_eigenpair_observable_sensitivity_report,
     isolated_eigenvalue_sensitivity_report,
 )
-from spectraxgk.parallel import batch_map, ky_scan_batches
+from spectraxgk.parallel import (
+    batch_map,
+    independent_map as independent_map,
+    ky_scan_batches,
+)
+from spectraxgk.nonlinear_parallel import (
+    NonlinearParallelStrategy,
+    classify_nonlinear_parallel_strategy,
+    nonlinear_parallel_strategies,
+    nonlinear_parallel_strategy,
+    release_ready_nonlinear_parallel_strategies,
+)
+from spectraxgk.velocity_sharding import (
+    VelocityShardingPlan,
+    build_velocity_sharding_plan,
+    curvature_gradb_drift_reference,
+    curvature_gradb_drift_shard_map,
+    diamagnetic_drive_reference,
+    diamagnetic_drive_shard_map,
+    electrostatic_phi_reference,
+    electrostatic_phi_shard_map,
+    hermite_neighbor_reference,
+    hermite_neighbor_shard_map,
+    hermite_shift_reference,
+    hermite_shift_shard_map,
+    hermite_streaming_ladder_reference,
+    hermite_streaming_ladder_shard_map,
+    mirror_drift_reference,
+    mirror_drift_shard_map,
+    periodic_streaming_reference,
+    periodic_streaming_shard_map,
+    velocity_field_reduce_reference,
+    velocity_field_reduce_shard_map,
+)
 from spectraxgk.stellarator_optimization import (
     OBSERVABLE_NAMES as STELLARATOR_ITG_OBSERVABLE_NAMES,
     PARAMETER_NAMES as STELLARATOR_ITG_PARAMETER_NAMES,
@@ -233,8 +278,16 @@ from spectraxgk.diffrax_integrators import (
     integrate_linear_diffrax_streaming,
     integrate_nonlinear_diffrax,
 )
-from spectraxgk.sharded_integrators import integrate_linear_sharded, integrate_nonlinear_sharded
-from spectraxgk.gx_integrators import ExplicitTimeConfig, GXTimeConfig, integrate_linear_gx, integrate_linear_gx_diagnostics
+from spectraxgk.sharded_integrators import (
+    integrate_linear_sharded,
+    integrate_nonlinear_sharded,
+)
+from spectraxgk.gx_integrators import (
+    ExplicitTimeConfig,
+    GXTimeConfig,
+    integrate_linear_gx,
+    integrate_linear_gx_diagnostics,
+)
 from spectraxgk.diagnostics import GXDiagnostics, SimulationDiagnostics
 
 LinearExplicitTimeConfig = ExplicitTimeConfig
@@ -291,6 +344,7 @@ __all__ = [
     "RuntimeCollisionConfig",
     "RuntimeNormalizationConfig",
     "RuntimeOutputConfig",
+    "RuntimeParallelConfig",
     "RuntimeQuasilinearConfig",
     "RuntimeTermsConfig",
     "QuasilinearTransportResult",
@@ -329,6 +383,10 @@ __all__ = [
     "term_config_to_linear_terms",
     "linear_rhs",
     "linear_rhs_cached",
+    "linear_rhs_electrostatic_slices_velocity_sharded",
+    "linear_rhs_streaming_electrostatic_velocity_sharded",
+    "linear_rhs_parallel_cached",
+    "linear_rhs_streaming_velocity_sharded",
     "integrate_linear",
     "KrylovConfig",
     "dominant_eigenpair",
@@ -400,7 +458,33 @@ __all__ = [
     "isolated_eigenpair_observable_sensitivity_report",
     "isolated_eigenvalue_sensitivity_report",
     "batch_map",
+    "independent_map",
     "ky_scan_batches",
+    "NonlinearParallelStrategy",
+    "classify_nonlinear_parallel_strategy",
+    "nonlinear_parallel_strategies",
+    "nonlinear_parallel_strategy",
+    "release_ready_nonlinear_parallel_strategies",
+    "VelocityShardingPlan",
+    "build_velocity_sharding_plan",
+    "curvature_gradb_drift_reference",
+    "curvature_gradb_drift_shard_map",
+    "diamagnetic_drive_reference",
+    "diamagnetic_drive_shard_map",
+    "electrostatic_phi_reference",
+    "electrostatic_phi_shard_map",
+    "hermite_neighbor_reference",
+    "hermite_neighbor_shard_map",
+    "hermite_shift_reference",
+    "hermite_shift_shard_map",
+    "hermite_streaming_ladder_reference",
+    "hermite_streaming_ladder_shard_map",
+    "mirror_drift_reference",
+    "mirror_drift_shard_map",
+    "periodic_streaming_reference",
+    "periodic_streaming_shard_map",
+    "velocity_field_reduce_reference",
+    "velocity_field_reduce_shard_map",
     "STELLARATOR_ITG_OBSERVABLE_NAMES",
     "STELLARATOR_ITG_PARAMETER_NAMES",
     "StellaratorITGOptimizationConfig",

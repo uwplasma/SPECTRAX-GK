@@ -1,7 +1,7 @@
 import numpy as np
 
 import jax.numpy as jnp
-from dataclasses import replace
+from dataclasses import fields, replace
 import pytest
 import spectraxgk.gx_integrators as gx_integrators
 from types import SimpleNamespace
@@ -9,6 +9,8 @@ from types import SimpleNamespace
 from spectraxgk.benchmarks import CycloneBaseCase, _build_initial_condition
 from spectraxgk.config import InitializationConfig
 from spectraxgk.diagnostics import (
+    ResolvedDiagnostics,
+    SimulationDiagnostics,
     _gx_fac_mask_cached,
     _jl_family,
     _gx_fac_mask_nonzero,
@@ -68,6 +70,7 @@ from spectraxgk.gx_integrators import (
     _rk3_gx_step,
     integrate_linear_gx_diagnostics,
 )
+from spectraxgk.runtime_diagnostics import validate_finite_gx_diagnostics
 from spectraxgk.species import Species, build_linear_params
 from spectraxgk.terms.assembly import assemble_rhs_cached
 from spectraxgk.terms.config import FieldState
@@ -89,7 +92,10 @@ def test_gx_state_mask_and_apply_mask_remove_dealiased_and_zonal00_modes() -> No
         kx=jnp.asarray([0.0, 0.5], dtype=jnp.float32),
         dealias_mask=jnp.asarray([[1, 1], [0, 1]], dtype=bool),
     )
-    state = jnp.asarray(np.arange(2 * 2 * 3, dtype=np.float32).reshape(2, 2, 3) + 1.0j, dtype=jnp.complex64)
+    state = jnp.asarray(
+        np.arange(2 * 2 * 3, dtype=np.float32).reshape(2, 2, 3) + 1.0j,
+        dtype=jnp.complex64,
+    )
 
     mask = np.asarray(_gx_state_mask(cache))
     expected_mask = np.asarray([[False, True], [False, True]])
@@ -100,6 +106,63 @@ def test_gx_state_mask_and_apply_mask_remove_dealiased_and_zonal00_modes() -> No
     np.testing.assert_allclose(masked[1, 0], 0.0)
     np.testing.assert_allclose(masked[0, 1], np.asarray(state[0, 1]))
     np.testing.assert_allclose(masked[1, 1], np.asarray(state[1, 1]))
+
+
+def test_validate_finite_gx_diagnostics_covers_optional_and_resolved_schema() -> None:
+    n = 3
+    t = np.asarray([0.0, 1.0, 2.0])
+    resolved_payload = {
+        field.name: np.full((n, 2), 1.0 + idx, dtype=np.float64)
+        for idx, field in enumerate(fields(ResolvedDiagnostics))
+    }
+    resolved = ResolvedDiagnostics(**resolved_payload)
+    diag = SimulationDiagnostics(
+        t=t,
+        dt_t=np.full(n, 0.1),
+        dt_mean=np.asarray(0.1),
+        gamma_t=np.linspace(0.0, 0.2, n),
+        omega_t=np.linspace(0.3, 0.5, n),
+        Wg_t=np.linspace(1.0, 1.2, n),
+        Wphi_t=np.linspace(0.5, 0.7, n),
+        Wapar_t=np.zeros(n),
+        heat_flux_t=np.linspace(0.0, 0.2, n),
+        particle_flux_t=np.linspace(0.1, 0.3, n),
+        energy_t=np.linspace(1.5, 1.9, n),
+        heat_flux_species_t=np.ones((n, 2)),
+        particle_flux_species_t=np.ones((n, 2)),
+        turbulent_heating_t=np.ones(n),
+        turbulent_heating_species_t=np.ones((n, 2)),
+        phi_mode_t=np.asarray([1.0 + 0.0j, 0.5 + 0.25j, 0.25 + 0.5j]),
+        resolved=resolved,
+    )
+
+    validate_finite_gx_diagnostics(diag, label="bounded")
+
+    expected_resolved = {
+        "Phi_zonal_mode_kxt",
+        "Phi_zonal_line_kxt",
+        "HeatFluxES_kxst",
+        "ParticleFluxBpar_zst",
+        "TurbulentHeating_zst",
+    }
+    assert expected_resolved.issubset(
+        {field.name for field in fields(ResolvedDiagnostics)}
+    )
+
+    bad_scalar = replace(diag, heat_flux_t=np.asarray([0.0, np.inf, 0.2]))
+    with pytest.raises(RuntimeError, match="heat_flux_t at sample 1 at t=1"):
+        validate_finite_gx_diagnostics(bad_scalar, label="bounded")
+
+    bad_resolved_payload = {
+        field.name: np.asarray(getattr(resolved, field.name)).copy()
+        for field in fields(ResolvedDiagnostics)
+    }
+    bad_resolved_payload["Phi_zonal_line_kxt"][2, 0] = np.nan
+    bad_resolved = replace(diag, resolved=ResolvedDiagnostics(**bad_resolved_payload))
+    with pytest.raises(
+        RuntimeError, match=r"resolved\.Phi_zonal_line_kxt at sample 2 at t=2"
+    ):
+        validate_finite_gx_diagnostics(bad_resolved, label="bounded")
 
 
 def test_gx_fac_mask_cached_matches_full_and_one_sided_conventions() -> None:
@@ -115,7 +178,10 @@ def test_gx_fac_mask_cached_matches_full_and_one_sided_conventions() -> None:
         dealias_mask=dealias,
     )
 
-    np.testing.assert_allclose(np.asarray(_gx_fac_mask_cached(full_cache, use_dealias=True)), np.asarray(dealias))
+    np.testing.assert_allclose(
+        np.asarray(_gx_fac_mask_cached(full_cache, use_dealias=True)),
+        np.asarray(dealias),
+    )
     np.testing.assert_allclose(
         np.asarray(_gx_fac_mask_cached(one_sided_cache, use_dealias=False)),
         np.asarray([[1.0, 1.0], [2.0, 2.0], [2.0, 2.0]], dtype=np.float32),
@@ -136,16 +202,22 @@ def test_gx_grid_helper_contracts_preserve_selected_ky_and_fft_ordering() -> Non
     np.testing.assert_allclose(ky, [0.3])
     np.testing.assert_allclose(kz, [0.0, 1.0, 2.0, -1.0])
 
-    assert _gx_zp_from_grid(SimpleNamespace(z=jnp.asarray([0.0], dtype=jnp.float32))) == pytest.approx(1.0)
+    assert _gx_zp_from_grid(
+        SimpleNamespace(z=jnp.asarray([0.0], dtype=jnp.float32))
+    ) == pytest.approx(1.0)
 
 
 def test_gx_eta_geometry_and_ntft_helpers_match_manual_limits() -> None:
-    assert _gx_eta_max(np.asarray([2.0, 4.0]), np.asarray([1.0, 0.0])) == pytest.approx(1.0e6)
+    assert _gx_eta_max(np.asarray([2.0, 4.0]), np.asarray([1.0, 0.0])) == pytest.approx(
+        1.0e6
+    )
     assert _gx_midplane_index(1) == 0
     assert _gx_midplane_index(4) == 3
 
     cfg = CycloneBaseCase()
-    grid = build_spectral_grid(replace(cfg.grid, Nx=4, Ny=8, Nz=8, ntheta=None, nperiod=None, non_twist=True))
+    grid = build_spectral_grid(
+        replace(cfg.grid, Nx=4, Ny=8, Nz=8, ntheta=None, nperiod=None, non_twist=True)
+    )
     geom = SAlphaGeometry.from_config(cfg.geometry)
     theta = np.asarray(grid.z, dtype=float)
     cv_j, gb_j, cv0_j, gb0_j = geom.drift_coeffs(jnp.asarray(theta))
@@ -166,7 +238,9 @@ def test_gx_eta_geometry_and_ntft_helpers_match_manual_limits() -> None:
         ),
     )
 
-    m0_max, cv0_max, gb0_max = _gx_m0_max_ntft(geom, grid, ky_max=0.0, vpar_max=2.0, muB_max=1.5)
+    m0_max, cv0_max, gb0_max = _gx_m0_max_ntft(
+        geom, grid, ky_max=0.0, vpar_max=2.0, muB_max=1.5
+    )
     assert m0_max == pytest.approx(0.0)
     assert cv0_max == pytest.approx(float(np.max(np.abs(np.asarray(cv0_j)))))
     assert gb0_max == pytest.approx(float(np.max(np.abs(np.asarray(gb0_j)))))
@@ -191,12 +265,23 @@ def _small_setup():
 
 def _multispecies_setup(*, Nl: int = 3, Nm: int = 4):
     cfg = CycloneBaseCase()
-    grid = build_spectral_grid(replace(cfg.grid, Nx=4, Ny=8, Nz=8, ntheta=None, nperiod=None))
+    grid = build_spectral_grid(
+        replace(cfg.grid, Nx=4, Ny=8, Nz=8, ntheta=None, nperiod=None)
+    )
     geom = SAlphaGeometry.from_config(cfg.geometry)
     params = build_linear_params(
         [
-            Species(charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=1.0, fprim=1.0),
-            Species(charge=-1.0, mass=0.00027, density=1.0, temperature=1.0, tprim=1.0, fprim=1.0),
+            Species(
+                charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=1.0, fprim=1.0
+            ),
+            Species(
+                charge=-1.0,
+                mass=0.00027,
+                density=1.0,
+                temperature=1.0,
+                tprim=1.0,
+                fprim=1.0,
+            ),
         ],
         kpar_scale=float(geom.gradpar()),
     )
@@ -209,9 +294,13 @@ def test_gx_krehm_field_energies_match_manual_formulas() -> None:
     kx = np.asarray([-0.5, 0.5], dtype=np.float32)
     ky = np.asarray([-0.25, 0.0, 0.25], dtype=np.float32)
     mask = np.asarray([[1.0, 0.0], [1.0, 1.0], [0.0, 1.0]], dtype=np.float32)
-    grid = SimpleNamespace(kx=jnp.asarray(kx), ky=jnp.asarray(ky), dealias_mask=jnp.asarray(mask))
+    grid = SimpleNamespace(
+        kx=jnp.asarray(kx), ky=jnp.asarray(ky), dealias_mask=jnp.asarray(mask)
+    )
     vol_fac = jnp.asarray([0.4, 0.6], dtype=jnp.float32)
-    field_base = np.arange(ky.size * kx.size * vol_fac.size, dtype=np.float32).reshape(ky.size, kx.size, vol_fac.size)
+    field_base = np.arange(ky.size * kx.size * vol_fac.size, dtype=np.float32).reshape(
+        ky.size, kx.size, vol_fac.size
+    )
     phi = jnp.asarray(field_base + 1.0j * (field_base + 1.0), dtype=jnp.complex64)
     apar = (0.3 - 0.2j) * phi
     params = LinearParams(rho=jnp.asarray([1.0, 0.5], dtype=jnp.float32))
@@ -222,8 +311,14 @@ def test_gx_krehm_field_energies_match_manual_formulas() -> None:
     wphi_expected = 0.0
     for rho_s in (1.0, 0.5):
         b = 0.5 * kperp2 * (rho_s * rho_s)
-        wphi_expected += 0.5 * (2.0 / (rho_s * rho_s)) * np.sum(phi2 * (1.0 - np.asarray(gamma0(b)))[:, :, None] * weight)
-    wapar_expected = 0.5 * np.sum(kperp2[:, :, None] * np.abs(np.asarray(apar)) ** 2 * mask[:, :, None])
+        wphi_expected += (
+            0.5
+            * (2.0 / (rho_s * rho_s))
+            * np.sum(phi2 * (1.0 - np.asarray(gamma0(b)))[:, :, None] * weight)
+        )
+    wapar_expected = 0.5 * np.sum(
+        kperp2[:, :, None] * np.abs(np.asarray(apar)) ** 2 * mask[:, :, None]
+    )
 
     np.testing.assert_allclose(
         np.asarray(gx_Wphi_krehm(phi, grid, params, vol_fac, use_dealias=True)),
@@ -243,24 +338,36 @@ def test_gx_wphi_krehm_real_fft_branch_uses_positive_ky_double_counting() -> Non
     kx = np.asarray([-0.5, 0.5], dtype=np.float32)
     ky = np.asarray([0.0, 0.25, 0.5], dtype=np.float32)
     mask = np.asarray([[1.0, 1.0], [1.0, 0.0], [0.0, 1.0]], dtype=np.float32)
-    grid = SimpleNamespace(kx=jnp.asarray(kx), ky=jnp.asarray(ky), dealias_mask=jnp.asarray(mask))
+    grid = SimpleNamespace(
+        kx=jnp.asarray(kx), ky=jnp.asarray(ky), dealias_mask=jnp.asarray(mask)
+    )
     vol_fac = jnp.asarray([0.25, 0.75], dtype=jnp.float32)
-    field_base = np.arange(ky.size * kx.size * vol_fac.size, dtype=np.float32).reshape(ky.size, kx.size, vol_fac.size)
+    field_base = np.arange(ky.size * kx.size * vol_fac.size, dtype=np.float32).reshape(
+        ky.size, kx.size, vol_fac.size
+    )
     phi = jnp.asarray(field_base + 1.0j * (field_base + 0.5), dtype=jnp.complex64)
     params = LinearParams(rho=0.7)
 
     fac = np.asarray([[1.0], [2.0], [2.0]], dtype=np.float32) * mask
     kperp2 = ky[:, None] ** 2 + kx[None, :] ** 2
     b = 0.5 * kperp2 * (0.7 * 0.7)
-    expected = 0.5 * (2.0 / (0.7 * 0.7)) * np.sum(
-        np.abs(np.asarray(phi)) ** 2
-        * (1.0 - np.asarray(gamma0(b)))[:, :, None]
-        * fac[:, :, None]
-        * np.asarray(vol_fac, dtype=np.float32)[None, None, :]
+    expected = (
+        0.5
+        * (2.0 / (0.7 * 0.7))
+        * np.sum(
+            np.abs(np.asarray(phi)) ** 2
+            * (1.0 - np.asarray(gamma0(b)))[:, :, None]
+            * fac[:, :, None]
+            * np.asarray(vol_fac, dtype=np.float32)[None, None, :]
+        )
     )
 
     np.testing.assert_allclose(
-        np.asarray(gx_Wphi_krehm(phi, grid, params, vol_fac, use_dealias=True, gx_real_fft=True)),
+        np.asarray(
+            gx_Wphi_krehm(
+                phi, grid, params, vol_fac, use_dealias=True, gx_real_fft=True
+            )
+        ),
         expected,
         rtol=1.0e-6,
         atol=1.0e-6,
@@ -270,7 +377,9 @@ def test_gx_wphi_krehm_real_fft_branch_uses_positive_ky_double_counting() -> Non
 def test_gx_energy_components_finite():
     cfg, grid, geom, params, cache = _small_setup()
     vol_fac, flux_fac = gx_volume_factors(geom, grid)
-    G0 = _build_initial_condition(grid, geom, ky_index=0, kx_index=0, Nl=4, Nm=4, init_cfg=cfg.init)
+    G0 = _build_initial_condition(
+        grid, geom, ky_index=0, kx_index=0, Nl=4, Nm=4, init_cfg=cfg.init
+    )
     _, fields = cache, None
     # Build dummy fields from RHS for consistent shapes
     from spectraxgk.terms.assembly import assemble_rhs_cached
@@ -314,15 +423,23 @@ def test_gx_volume_factors_trim_closed_sampled_geometry_contract():
         sampled,
         theta=jnp.concatenate([sampled.theta, jnp.asarray([jnp.pi])]),
         bmag_profile=jnp.concatenate([sampled.bmag_profile, sampled.bmag_profile[:1]]),
-        bgrad_profile=jnp.concatenate([sampled.bgrad_profile, sampled.bgrad_profile[:1]]),
+        bgrad_profile=jnp.concatenate(
+            [sampled.bgrad_profile, sampled.bgrad_profile[:1]]
+        ),
         gds2_profile=jnp.concatenate([sampled.gds2_profile, sampled.gds2_profile[:1]]),
-        gds21_profile=jnp.concatenate([sampled.gds21_profile, sampled.gds21_profile[:1]]),
-        gds22_profile=jnp.concatenate([sampled.gds22_profile, sampled.gds22_profile[:1]]),
+        gds21_profile=jnp.concatenate(
+            [sampled.gds21_profile, sampled.gds21_profile[:1]]
+        ),
+        gds22_profile=jnp.concatenate(
+            [sampled.gds22_profile, sampled.gds22_profile[:1]]
+        ),
         cv_profile=jnp.concatenate([sampled.cv_profile, sampled.cv_profile[:1]]),
         gb_profile=jnp.concatenate([sampled.gb_profile, sampled.gb_profile[:1]]),
         cv0_profile=jnp.concatenate([sampled.cv0_profile, sampled.cv0_profile[:1]]),
         gb0_profile=jnp.concatenate([sampled.gb0_profile, sampled.gb0_profile[:1]]),
-        jacobian_profile=jnp.concatenate([sampled.jacobian_profile, sampled.jacobian_profile[:1]]),
+        jacobian_profile=jnp.concatenate(
+            [sampled.jacobian_profile, sampled.jacobian_profile[:1]]
+        ),
         grho_profile=jnp.concatenate([sampled.grho_profile, sampled.grho_profile[:1]]),
         theta_closed_interval=True,
     )
@@ -391,7 +508,11 @@ def test_gx_standard_field_energies_match_geometry_weighted_formula():
         b = np.asarray(cache.kperp2, dtype=float) * (rho_s * rho_s)
         wphi_expected += 0.5 * np.sum(phi2 * (1.0 - np.asarray(gamma0(b))) * weight)
 
-    bmag2 = np.asarray(cache.bmag, dtype=float)[None, None, :] ** 2 if cache.kperp2_bmag else 1.0
+    bmag2 = (
+        np.asarray(cache.bmag, dtype=float)[None, None, :] ** 2
+        if cache.kperp2_bmag
+        else 1.0
+    )
     wapar_expected = 0.5 * np.sum(
         apar2 * np.asarray(cache.kperp2, dtype=float) * bmag2 * weight
     )
@@ -403,25 +524,47 @@ def test_gx_standard_field_energies_match_geometry_weighted_formula():
 def test_reduce_scalar_and_species_kykxz_preserve_manual_sums() -> None:
     scalar = jnp.asarray(np.arange(2 * 3 * 4, dtype=np.float32).reshape(2, 3, 4))
     scalar_reduced = _reduce_scalar_kykxz(scalar)
-    np.testing.assert_allclose(np.asarray(scalar_reduced[0]), np.asarray(scalar).sum(axis=(0, 2)))
-    np.testing.assert_allclose(np.asarray(scalar_reduced[1]), np.asarray(scalar).sum(axis=(1, 2)))
-    np.testing.assert_allclose(np.asarray(scalar_reduced[2]), np.asarray(scalar).sum(axis=2))
-    np.testing.assert_allclose(np.asarray(scalar_reduced[3]), np.asarray(scalar).sum(axis=(0, 1)))
+    np.testing.assert_allclose(
+        np.asarray(scalar_reduced[0]), np.asarray(scalar).sum(axis=(0, 2))
+    )
+    np.testing.assert_allclose(
+        np.asarray(scalar_reduced[1]), np.asarray(scalar).sum(axis=(1, 2))
+    )
+    np.testing.assert_allclose(
+        np.asarray(scalar_reduced[2]), np.asarray(scalar).sum(axis=2)
+    )
+    np.testing.assert_allclose(
+        np.asarray(scalar_reduced[3]), np.asarray(scalar).sum(axis=(0, 1))
+    )
     np.testing.assert_allclose(np.asarray(scalar_reduced[4]), np.asarray(scalar).sum())
 
-    species = jnp.asarray(np.arange(2 * 2 * 3 * 4, dtype=np.float32).reshape(2, 2, 3, 4))
+    species = jnp.asarray(
+        np.arange(2 * 2 * 3 * 4, dtype=np.float32).reshape(2, 2, 3, 4)
+    )
     species_reduced = _reduce_species_kykxz(species)
-    np.testing.assert_allclose(np.asarray(species_reduced[0]), np.asarray(species).sum(axis=(1, 2, 3)))
-    np.testing.assert_allclose(np.asarray(species_reduced[1]), np.asarray(species).sum(axis=(1, 3)))
-    np.testing.assert_allclose(np.asarray(species_reduced[2]), np.asarray(species).sum(axis=(2, 3)))
-    np.testing.assert_allclose(np.asarray(species_reduced[3]), np.asarray(species).sum(axis=3))
-    np.testing.assert_allclose(np.asarray(species_reduced[4]), np.asarray(species).sum(axis=(1, 2)))
+    np.testing.assert_allclose(
+        np.asarray(species_reduced[0]), np.asarray(species).sum(axis=(1, 2, 3))
+    )
+    np.testing.assert_allclose(
+        np.asarray(species_reduced[1]), np.asarray(species).sum(axis=(1, 3))
+    )
+    np.testing.assert_allclose(
+        np.asarray(species_reduced[2]), np.asarray(species).sum(axis=(2, 3))
+    )
+    np.testing.assert_allclose(
+        np.asarray(species_reduced[3]), np.asarray(species).sum(axis=3)
+    )
+    np.testing.assert_allclose(
+        np.asarray(species_reduced[4]), np.asarray(species).sum(axis=(1, 2))
+    )
 
 
 def test_gx_species_flux_sums_to_total():
     cfg, grid, geom, params, cache = _small_setup()
     _vol_fac, flux_fac = gx_volume_factors(geom, grid)
-    G0 = _build_initial_condition(grid, geom, ky_index=0, kx_index=0, Nl=4, Nm=4, init_cfg=cfg.init)
+    G0 = _build_initial_condition(
+        grid, geom, ky_index=0, kx_index=0, Nl=4, Nm=4, init_cfg=cfg.init
+    )
     from spectraxgk.terms.assembly import assemble_rhs_cached
 
     _dG, fields = assemble_rhs_cached(G0, cache, params, terms=LinearTerms())
@@ -430,7 +573,9 @@ def test_gx_species_flux_sums_to_total():
     bpar = fields.bpar if fields.bpar is not None else jnp.zeros_like(phi)
 
     heat_s = gx_heat_flux_species(G0, phi, apar, bpar, cache, grid, params, flux_fac)
-    pflux_s = gx_particle_flux_species(G0, phi, apar, bpar, cache, grid, params, flux_fac)
+    pflux_s = gx_particle_flux_species(
+        G0, phi, apar, bpar, cache, grid, params, flux_fac
+    )
     heat = gx_heat_flux(G0, phi, apar, bpar, cache, grid, params, flux_fac)
     pflux = gx_particle_flux(G0, phi, apar, bpar, cache, grid, params, flux_fac)
 
@@ -441,13 +586,15 @@ def test_gx_species_flux_sums_to_total():
 
 
 def test_gx_heat_flux_channel_helper_matches_public_split_reductions() -> None:
-    _cfg, grid, _geom, params, cache, _vol_fac, flux_fac = _multispecies_setup(Nl=3, Nm=4)
+    _cfg, grid, _geom, params, cache, _vol_fac, flux_fac = _multispecies_setup(
+        Nl=3, Nm=4
+    )
     shape = (2, 3, 4, grid.ky.size, grid.kx.size, grid.z.size)
     base = np.arange(np.prod(shape), dtype=np.float32).reshape(shape)
     G = jnp.asarray(base + 1.0j * (base + 1.0), dtype=jnp.complex64)
-    field_base = np.arange(grid.ky.size * grid.kx.size * grid.z.size, dtype=np.float32).reshape(
-        grid.ky.size, grid.kx.size, grid.z.size
-    )
+    field_base = np.arange(
+        grid.ky.size * grid.kx.size * grid.z.size, dtype=np.float32
+    ).reshape(grid.ky.size, grid.kx.size, grid.z.size)
     phi = jnp.asarray(field_base + 1.0j * (field_base + 1.0), dtype=jnp.complex64)
     apar = 0.3 * phi
     bpar = -0.2 * phi
@@ -476,20 +623,28 @@ def test_gx_heat_flux_channel_helper_matches_public_split_reductions() -> None:
         use_dealias=False,
     )
 
-    for contrib, reduced in ((es_contrib, es_resolved), (apar_contrib, apar_resolved), (bpar_contrib, bpar_resolved)):
+    for contrib, reduced in (
+        (es_contrib, es_resolved),
+        (apar_contrib, apar_resolved),
+        (bpar_contrib, bpar_resolved),
+    ):
         expected = _reduce_species_kykxz(contrib)
         for got_arr, expected_arr in zip(reduced, expected, strict=True):
-            np.testing.assert_allclose(np.asarray(got_arr), np.asarray(expected_arr), rtol=1.0e-6, atol=1.0e-6)
+            np.testing.assert_allclose(
+                np.asarray(got_arr), np.asarray(expected_arr), rtol=1.0e-6, atol=1.0e-6
+            )
 
 
 def test_gx_particle_flux_channel_helper_matches_public_split_reductions() -> None:
-    _cfg, grid, _geom, params, cache, _vol_fac, flux_fac = _multispecies_setup(Nl=3, Nm=3)
+    _cfg, grid, _geom, params, cache, _vol_fac, flux_fac = _multispecies_setup(
+        Nl=3, Nm=3
+    )
     shape = (2, 3, 3, grid.ky.size, grid.kx.size, grid.z.size)
     base = np.arange(np.prod(shape), dtype=np.float32).reshape(shape)
     G = jnp.asarray(base + 1.0j * (base + 0.25), dtype=jnp.complex64)
-    field_base = np.arange(grid.ky.size * grid.kx.size * grid.z.size, dtype=np.float32).reshape(
-        grid.ky.size, grid.kx.size, grid.z.size
-    )
+    field_base = np.arange(
+        grid.ky.size * grid.kx.size * grid.z.size, dtype=np.float32
+    ).reshape(grid.ky.size, grid.kx.size, grid.z.size)
     phi = jnp.asarray(field_base + 1.0j * (field_base + 1.0), dtype=jnp.complex64)
     apar = 0.1 * phi
     bpar = -0.3 * phi
@@ -518,16 +673,26 @@ def test_gx_particle_flux_channel_helper_matches_public_split_reductions() -> No
         use_dealias=False,
     )
 
-    for contrib, reduced in ((es_contrib, es_resolved), (apar_contrib, apar_resolved), (bpar_contrib, bpar_resolved)):
+    for contrib, reduced in (
+        (es_contrib, es_resolved),
+        (apar_contrib, apar_resolved),
+        (bpar_contrib, bpar_resolved),
+    ):
         expected = _reduce_species_kykxz(contrib)
         for got_arr, expected_arr in zip(reduced, expected, strict=True):
-            np.testing.assert_allclose(np.asarray(got_arr), np.asarray(expected_arr), rtol=1.0e-6, atol=1.0e-6)
+            np.testing.assert_allclose(
+                np.asarray(got_arr), np.asarray(expected_arr), rtol=1.0e-6, atol=1.0e-6
+            )
 
 
-def test_gx_particle_flux_channel_helper_single_species_short_circuits_to_zero() -> None:
+def test_gx_particle_flux_channel_helper_single_species_short_circuits_to_zero() -> (
+    None
+):
     cfg, grid, geom, params, cache = _small_setup()
     _vol_fac, flux_fac = gx_volume_factors(geom, grid)
-    G = _build_initial_condition(grid, geom, ky_index=0, kx_index=0, Nl=4, Nm=4, init_cfg=cfg.init)
+    G = _build_initial_condition(
+        grid, geom, ky_index=0, kx_index=0, Nl=4, Nm=4, init_cfg=cfg.init
+    )
     _dG, fields = assemble_rhs_cached(G, cache, params, terms=LinearTerms())
     phi = fields.phi
     apar = fields.apar if fields.apar is not None else jnp.zeros_like(phi)
@@ -553,11 +718,15 @@ def test_gx_particle_flux_channel_helper_single_species_short_circuits_to_zero()
 
 def test_gx_jl_family_preserves_species_axis() -> None:
     cfg = CycloneBaseCase()
-    grid = build_spectral_grid(replace(cfg.grid, Nx=4, Ny=8, Nz=8, ntheta=None, nperiod=None))
+    grid = build_spectral_grid(
+        replace(cfg.grid, Nx=4, Ny=8, Nz=8, ntheta=None, nperiod=None)
+    )
     geom = SAlphaGeometry.from_config(cfg.geometry)
     params = build_linear_params(
         [
-            Species(charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=1.0, fprim=1.0),
+            Species(
+                charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=1.0, fprim=1.0
+            ),
             Species(
                 charge=-1.0,
                 mass=0.00027,
@@ -581,11 +750,15 @@ def test_gx_jl_family_preserves_species_axis() -> None:
 
 def test_gx_particle_flux_species_matches_manual_multispecies_formula() -> None:
     cfg = CycloneBaseCase()
-    grid = build_spectral_grid(replace(cfg.grid, Nx=4, Ny=8, Nz=8, ntheta=None, nperiod=None))
+    grid = build_spectral_grid(
+        replace(cfg.grid, Nx=4, Ny=8, Nz=8, ntheta=None, nperiod=None)
+    )
     geom = SAlphaGeometry.from_config(cfg.geometry)
     params = build_linear_params(
         [
-            Species(charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=1.0, fprim=1.0),
+            Species(
+                charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=1.0, fprim=1.0
+            ),
             Species(
                 charge=-1.0,
                 mass=0.00027,
@@ -603,9 +776,9 @@ def test_gx_particle_flux_species_matches_manual_multispecies_formula() -> None:
     shape = (2, 3, 3, grid.ky.size, grid.kx.size, grid.z.size)
     base = np.arange(np.prod(shape), dtype=np.float32).reshape(shape)
     G = jnp.asarray(base + 1.0j * (base + 1.0), dtype=jnp.complex64)
-    field_base = np.arange(grid.ky.size * grid.kx.size * grid.z.size, dtype=np.float32).reshape(
-        grid.ky.size, grid.kx.size, grid.z.size
-    )
+    field_base = np.arange(
+        grid.ky.size * grid.kx.size * grid.z.size, dtype=np.float32
+    ).reshape(grid.ky.size, grid.kx.size, grid.z.size)
     phi = jnp.asarray(field_base + 1.0j * (field_base + 1.0), dtype=jnp.complex64)
     apar = 0.3 * phi
     bpar = -0.2 * phi
@@ -624,7 +797,9 @@ def test_gx_particle_flux_species_matches_manual_multispecies_formula() -> None:
         )
     )
 
-    fac = np.asarray(_gx_fac_mask_nonzero(grid, use_dealias=False), dtype=np.float32)[:, :, None]
+    fac = np.asarray(_gx_fac_mask_nonzero(grid, use_dealias=False), dtype=np.float32)[
+        :, :, None
+    ]
     flx = np.asarray(flux_fac, dtype=np.float32)[None, None, :]
     ky = np.asarray(grid.ky, dtype=np.float32)[:, None, None]
     vphi = 1.0j * ky * np.asarray(phi)
@@ -644,7 +819,11 @@ def test_gx_particle_flux_species_matches_manual_multispecies_formula() -> None:
         n_bar = np.sum(Jl[s] * G0, axis=0)
         u_bar = np.sum(Jl[s] * G1, axis=0)
         uB_bar = np.sum(JlB[s] * G0, axis=0)
-        fg = np.conj(vphi) * n_bar - vth[s] * np.conj(vapar) * u_bar + tz[s] * np.conj(vbpar) * uB_bar
+        fg = (
+            np.conj(vphi) * n_bar
+            - vth[s] * np.conj(vapar) * u_bar
+            + tz[s] * np.conj(vbpar) * uB_bar
+        )
         expected.append(np.sum((fg * 2.0 * flx * fac).real) * dens[s])
 
     assert np.allclose(got, np.asarray(expected), rtol=1.0e-6, atol=1.0e-6)
@@ -652,11 +831,15 @@ def test_gx_particle_flux_species_matches_manual_multispecies_formula() -> None:
 
 def test_gx_flux_channel_splits_sum_to_total_multispecies() -> None:
     cfg = CycloneBaseCase()
-    grid = build_spectral_grid(replace(cfg.grid, Nx=4, Ny=8, Nz=8, ntheta=None, nperiod=None))
+    grid = build_spectral_grid(
+        replace(cfg.grid, Nx=4, Ny=8, Nz=8, ntheta=None, nperiod=None)
+    )
     geom = SAlphaGeometry.from_config(cfg.geometry)
     params = build_linear_params(
         [
-            Species(charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=1.0, fprim=1.0),
+            Species(
+                charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=1.0, fprim=1.0
+            ),
             Species(
                 charge=-1.0,
                 mass=0.00027,
@@ -674,14 +857,18 @@ def test_gx_flux_channel_splits_sum_to_total_multispecies() -> None:
     shape = (2, 3, 4, grid.ky.size, grid.kx.size, grid.z.size)
     base = np.arange(np.prod(shape), dtype=np.float32).reshape(shape)
     G = jnp.asarray(base + 1.0j * (base + 1.0), dtype=jnp.complex64)
-    field_base = np.arange(grid.ky.size * grid.kx.size * grid.z.size, dtype=np.float32).reshape(
-        grid.ky.size, grid.kx.size, grid.z.size
-    )
+    field_base = np.arange(
+        grid.ky.size * grid.kx.size * grid.z.size, dtype=np.float32
+    ).reshape(grid.ky.size, grid.kx.size, grid.z.size)
     phi = jnp.asarray(field_base + 1.0j * (field_base + 1.0), dtype=jnp.complex64)
     apar = 0.3 * phi
     bpar = -0.2 * phi
 
-    heat = np.asarray(gx_heat_flux_species(G, phi, apar, bpar, cache, grid, params, flux_fac, use_dealias=False))
+    heat = np.asarray(
+        gx_heat_flux_species(
+            G, phi, apar, bpar, cache, grid, params, flux_fac, use_dealias=False
+        )
+    )
     heat_es, heat_apar, heat_bpar = (
         np.asarray(arr)
         for arr in gx_heat_flux_split_species(
@@ -696,7 +883,11 @@ def test_gx_flux_channel_splits_sum_to_total_multispecies() -> None:
             use_dealias=False,
         )
     )
-    pflux = np.asarray(gx_particle_flux_species(G, phi, apar, bpar, cache, grid, params, flux_fac, use_dealias=False))
+    pflux = np.asarray(
+        gx_particle_flux_species(
+            G, phi, apar, bpar, cache, grid, params, flux_fac, use_dealias=False
+        )
+    )
     pflux_es, pflux_apar, pflux_bpar = (
         np.asarray(arr)
         for arr in gx_particle_flux_split_species(
@@ -712,28 +903,57 @@ def test_gx_flux_channel_splits_sum_to_total_multispecies() -> None:
         )
     )
 
-    np.testing.assert_allclose(heat, heat_es + heat_apar + heat_bpar, rtol=1.0e-6, atol=1.0e-6)
-    np.testing.assert_allclose(pflux, pflux_es + pflux_apar + pflux_bpar, rtol=1.0e-6, atol=1.0e-6)
+    np.testing.assert_allclose(
+        heat, heat_es + heat_apar + heat_bpar, rtol=1.0e-6, atol=1.0e-6
+    )
+    np.testing.assert_allclose(
+        pflux, pflux_es + pflux_apar + pflux_bpar, rtol=1.0e-6, atol=1.0e-6
+    )
 
-    heat_total = gx_heat_flux_resolved_species(G, phi, apar, bpar, cache, grid, params, flux_fac, use_dealias=False)
-    heat_split = gx_heat_flux_split_resolved_species(G, phi, apar, bpar, cache, grid, params, flux_fac, use_dealias=False)
-    pflux_total = gx_particle_flux_resolved_species(G, phi, apar, bpar, cache, grid, params, flux_fac, use_dealias=False)
-    pflux_split = gx_particle_flux_split_resolved_species(G, phi, apar, bpar, cache, grid, params, flux_fac, use_dealias=False)
+    heat_total = gx_heat_flux_resolved_species(
+        G, phi, apar, bpar, cache, grid, params, flux_fac, use_dealias=False
+    )
+    heat_split = gx_heat_flux_split_resolved_species(
+        G, phi, apar, bpar, cache, grid, params, flux_fac, use_dealias=False
+    )
+    pflux_total = gx_particle_flux_resolved_species(
+        G, phi, apar, bpar, cache, grid, params, flux_fac, use_dealias=False
+    )
+    pflux_split = gx_particle_flux_split_resolved_species(
+        G, phi, apar, bpar, cache, grid, params, flux_fac, use_dealias=False
+    )
 
     for total_arr, split_arrs in ((heat_total, heat_split), (pflux_total, pflux_split)):
         for idx in range(len(total_arr)):
-            combined = np.asarray(split_arrs[0][idx]) + np.asarray(split_arrs[1][idx]) + np.asarray(split_arrs[2][idx])
-            np.testing.assert_allclose(np.asarray(total_arr[idx]), combined, rtol=1.0e-6, atol=1.0e-6)
+            combined = (
+                np.asarray(split_arrs[0][idx])
+                + np.asarray(split_arrs[1][idx])
+                + np.asarray(split_arrs[2][idx])
+            )
+            np.testing.assert_allclose(
+                np.asarray(total_arr[idx]), combined, rtol=1.0e-6, atol=1.0e-6
+            )
 
 
 def test_gx_turbulent_heating_zero_for_steady_state() -> None:
     cfg = CycloneBaseCase()
-    grid = build_spectral_grid(replace(cfg.grid, Nx=4, Ny=8, Nz=8, ntheta=None, nperiod=None))
+    grid = build_spectral_grid(
+        replace(cfg.grid, Nx=4, Ny=8, Nz=8, ntheta=None, nperiod=None)
+    )
     geom = SAlphaGeometry.from_config(cfg.geometry)
     params = build_linear_params(
         [
-            Species(charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=1.0, fprim=1.0),
-            Species(charge=-1.0, mass=0.00027, density=1.0, temperature=1.0, tprim=1.0, fprim=1.0),
+            Species(
+                charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=1.0, fprim=1.0
+            ),
+            Species(
+                charge=-1.0,
+                mass=0.00027,
+                density=1.0,
+                temperature=1.0,
+                tprim=1.0,
+                fprim=1.0,
+            ),
         ],
         kpar_scale=float(geom.gradpar()),
     )
@@ -743,9 +963,9 @@ def test_gx_turbulent_heating_zero_for_steady_state() -> None:
     shape = (2, 3, 4, grid.ky.size, grid.kx.size, grid.z.size)
     base = np.arange(np.prod(shape), dtype=np.float32).reshape(shape)
     G = jnp.asarray(base + 1.0j * (base + 0.5), dtype=jnp.complex64)
-    field_base = np.arange(grid.ky.size * grid.kx.size * grid.z.size, dtype=np.float32).reshape(
-        grid.ky.size, grid.kx.size, grid.z.size
-    )
+    field_base = np.arange(
+        grid.ky.size * grid.kx.size * grid.z.size, dtype=np.float32
+    ).reshape(grid.ky.size, grid.kx.size, grid.z.size)
     phi = jnp.asarray(field_base + 1.0j * (field_base + 1.0), dtype=jnp.complex64)
     apar = 0.2 * phi
     bpar = -0.1 * phi
@@ -789,12 +1009,23 @@ def test_gx_turbulent_heating_zero_for_steady_state() -> None:
 
 def test_gx_turbulent_heating_resolved_sums_to_species_total() -> None:
     cfg = CycloneBaseCase()
-    grid = build_spectral_grid(replace(cfg.grid, Nx=4, Ny=8, Nz=8, ntheta=None, nperiod=None))
+    grid = build_spectral_grid(
+        replace(cfg.grid, Nx=4, Ny=8, Nz=8, ntheta=None, nperiod=None)
+    )
     geom = SAlphaGeometry.from_config(cfg.geometry)
     params = build_linear_params(
         [
-            Species(charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=1.0, fprim=1.0),
-            Species(charge=-1.0, mass=0.00027, density=1.0, temperature=1.0, tprim=1.0, fprim=1.0),
+            Species(
+                charge=1.0, mass=1.0, density=1.0, temperature=1.0, tprim=1.0, fprim=1.0
+            ),
+            Species(
+                charge=-1.0,
+                mass=0.00027,
+                density=1.0,
+                temperature=1.0,
+                tprim=1.0,
+                fprim=1.0,
+            ),
         ],
         kpar_scale=float(geom.gradpar()),
     )
@@ -805,9 +1036,9 @@ def test_gx_turbulent_heating_resolved_sums_to_species_total() -> None:
     base = np.arange(np.prod(shape), dtype=np.float32).reshape(shape)
     G_old = jnp.asarray(base + 1.0j * (base + 0.5), dtype=jnp.complex64)
     G = 1.03 * G_old + (0.02 - 0.01j)
-    field_base = np.arange(grid.ky.size * grid.kx.size * grid.z.size, dtype=np.float32).reshape(
-        grid.ky.size, grid.kx.size, grid.z.size
-    )
+    field_base = np.arange(
+        grid.ky.size * grid.kx.size * grid.z.size, dtype=np.float32
+    ).reshape(grid.ky.size, grid.kx.size, grid.z.size)
     phi_old = jnp.asarray(field_base + 1.0j * (field_base + 1.0), dtype=jnp.complex64)
     phi = 1.01 * phi_old + (0.03 + 0.02j)
     apar_old = 0.2 * phi_old
@@ -831,40 +1062,68 @@ def test_gx_turbulent_heating_resolved_sums_to_species_total() -> None:
         0.05,
         use_dealias=False,
     )
-    heat_st, heat_kxst, heat_kyst, heat_kxkyst, heat_zst = gx_turbulent_heating_resolved_species(
-        G,
-        G_old,
-        phi,
-        apar,
-        bpar,
-        phi_old,
-        apar_old,
-        bpar_old,
-        cache,
-        grid,
-        params,
-        vol_fac,
-        0.05,
-        use_dealias=False,
+    heat_st, heat_kxst, heat_kyst, heat_kxkyst, heat_zst = (
+        gx_turbulent_heating_resolved_species(
+            G,
+            G_old,
+            phi,
+            apar,
+            bpar,
+            phi_old,
+            apar_old,
+            bpar_old,
+            cache,
+            grid,
+            params,
+            vol_fac,
+            0.05,
+            use_dealias=False,
+        )
     )
 
-    np.testing.assert_allclose(np.asarray(heat_st), np.asarray(heat_species), rtol=1.0e-5, atol=1.0e-6)
-    np.testing.assert_allclose(np.asarray(heat_kxst).sum(axis=1), np.asarray(heat_species), rtol=1.0e-5, atol=1.0e-6)
-    np.testing.assert_allclose(np.asarray(heat_kyst).sum(axis=1), np.asarray(heat_species), rtol=1.0e-5, atol=1.0e-6)
-    np.testing.assert_allclose(np.asarray(heat_kxkyst).sum(axis=(1, 2)), np.asarray(heat_species), rtol=1.0e-5, atol=1.0e-6)
-    np.testing.assert_allclose(np.asarray(heat_zst).sum(axis=1), np.asarray(heat_species), rtol=1.0e-5, atol=1.0e-6)
+    np.testing.assert_allclose(
+        np.asarray(heat_st), np.asarray(heat_species), rtol=1.0e-5, atol=1.0e-6
+    )
+    np.testing.assert_allclose(
+        np.asarray(heat_kxst).sum(axis=1),
+        np.asarray(heat_species),
+        rtol=1.0e-5,
+        atol=1.0e-6,
+    )
+    np.testing.assert_allclose(
+        np.asarray(heat_kyst).sum(axis=1),
+        np.asarray(heat_species),
+        rtol=1.0e-5,
+        atol=1.0e-6,
+    )
+    np.testing.assert_allclose(
+        np.asarray(heat_kxkyst).sum(axis=(1, 2)),
+        np.asarray(heat_species),
+        rtol=1.0e-5,
+        atol=1.0e-6,
+    )
+    np.testing.assert_allclose(
+        np.asarray(heat_zst).sum(axis=1),
+        np.asarray(heat_species),
+        rtol=1.0e-5,
+        atol=1.0e-6,
+    )
     assert np.max(np.abs(np.asarray(heat_species))) > 0.0
 
 
-def test_gx_turbulent_heating_helper_zero_dt_guard_returns_zero_for_changed_state() -> None:
-    _cfg, grid, _geom, params, cache, vol_fac, _flux_fac = _multispecies_setup(Nl=3, Nm=4)
+def test_gx_turbulent_heating_helper_zero_dt_guard_returns_zero_for_changed_state() -> (
+    None
+):
+    _cfg, grid, _geom, params, cache, vol_fac, _flux_fac = _multispecies_setup(
+        Nl=3, Nm=4
+    )
     shape = (2, 3, 4, grid.ky.size, grid.kx.size, grid.z.size)
     base = np.arange(np.prod(shape), dtype=np.float32).reshape(shape)
     G_old = jnp.asarray(base + 1.0j * (base + 0.5), dtype=jnp.complex64)
     G = 1.02 * G_old + (0.03 - 0.01j)
-    field_base = np.arange(grid.ky.size * grid.kx.size * grid.z.size, dtype=np.float32).reshape(
-        grid.ky.size, grid.kx.size, grid.z.size
-    )
+    field_base = np.arange(
+        grid.ky.size * grid.kx.size * grid.z.size, dtype=np.float32
+    ).reshape(grid.ky.size, grid.kx.size, grid.z.size)
     phi_old = jnp.asarray(field_base + 1.0j * (field_base + 1.0), dtype=jnp.complex64)
     phi = 1.01 * phi_old + (0.02 + 0.01j)
     apar_old = 0.2 * phi_old
@@ -904,7 +1163,9 @@ def test_gx_init_all_scaling_matches_reference():
         init_amp=1.0,
         gaussian_init=False,
     )
-    G0 = _build_initial_condition(grid, geom, ky_index=0, kx_index=0, Nl=4, Nm=4, init_cfg=init_cfg)
+    G0 = _build_initial_condition(
+        grid, geom, ky_index=0, kx_index=0, Nl=4, Nm=4, init_cfg=init_cfg
+    )
     base = 1.0 + 1.0j
     # density (l=0,m=0) should be unscaled
     assert np.allclose(G0[0, 0, 0, 0, 0], base)
@@ -916,7 +1177,9 @@ def test_gx_init_all_scaling_matches_reference():
 
 def test_integrate_linear_gx_diagnostics_shapes():
     cfg, grid, geom, params, cache = _small_setup()
-    G0 = _build_initial_condition(grid, geom, ky_index=0, kx_index=0, Nl=4, Nm=4, init_cfg=cfg.init)
+    G0 = _build_initial_condition(
+        grid, geom, ky_index=0, kx_index=0, Nl=4, Nm=4, init_cfg=cfg.init
+    )
     time_cfg = ExplicitTimeConfig(dt=0.01, t_max=0.1, sample_stride=1, fixed_dt=True)
 
     t, phi_t, gamma_t, omega_t, diag = integrate_linear_gx_diagnostics(
@@ -942,7 +1205,9 @@ def test_integrate_linear_gx_diagnostics_honors_rk3_method(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     cfg, grid, geom, params, cache = _small_setup()
-    G0 = _build_initial_condition(grid, geom, ky_index=0, kx_index=0, Nl=4, Nm=4, init_cfg=cfg.init)
+    G0 = _build_initial_condition(
+        grid, geom, ky_index=0, kx_index=0, Nl=4, Nm=4, init_cfg=cfg.init
+    )
     calls: list[str] = []
 
     def _fake_step(G, cache, params, term_cfg, dt, *, method):
@@ -952,7 +1217,9 @@ def test_integrate_linear_gx_diagnostics_honors_rk3_method(
 
     monkeypatch.setattr(gx_integrators, "_linear_explicit_step", _fake_step)
 
-    time_cfg = ExplicitTimeConfig(dt=0.01, t_max=0.01, method="rk3", sample_stride=1, fixed_dt=True)
+    time_cfg = ExplicitTimeConfig(
+        dt=0.01, t_max=0.01, method="rk3", sample_stride=1, fixed_dt=True
+    )
     integrate_linear_gx_diagnostics(
         G0,
         grid,
@@ -1044,7 +1311,9 @@ def test_linear_explicit_step_applies_gx_post_step_mask(
 def test_gx_energy_drift_small_no_drive():
     cfg, grid, geom, params, cache = _small_setup()
     params = replace(params, R_over_Ln=0.0, R_over_LTi=0.0, R_over_LTe=0.0, nu=0.0)
-    G0 = _build_initial_condition(grid, geom, ky_index=0, kx_index=0, Nl=4, Nm=4, init_cfg=cfg.init)
+    G0 = _build_initial_condition(
+        grid, geom, ky_index=0, kx_index=0, Nl=4, Nm=4, init_cfg=cfg.init
+    )
     time_cfg = ExplicitTimeConfig(dt=0.01, t_max=0.2, sample_stride=1, fixed_dt=True)
 
     _, _, _, _, diag = integrate_linear_gx_diagnostics(
@@ -1054,7 +1323,18 @@ def test_gx_energy_drift_small_no_drive():
         params,
         geom,
         time_cfg,
-        terms=LinearTerms(streaming=1.0, mirror=0.0, curvature=0.0, gradb=0.0, diamagnetic=0.0, collisions=0.0, hypercollisions=0.0, end_damping=0.0, apar=0.0, bpar=0.0),
+        terms=LinearTerms(
+            streaming=1.0,
+            mirror=0.0,
+            curvature=0.0,
+            gradb=0.0,
+            diamagnetic=0.0,
+            collisions=0.0,
+            hypercollisions=0.0,
+            end_damping=0.0,
+            apar=0.0,
+            bpar=0.0,
+        ),
         jit=False,
     )
     energy = np.asarray(diag.energy_t)
@@ -1077,7 +1357,9 @@ def test_gx_growth_rate_step_matches_real_imag_validity_mask():
     assert np.allclose(np.asarray(omega_bad), 0.0)
 
     phi_now_valid = jnp.asarray([[[2.0 + 2.0j, 2.0 + 2.0j]]], dtype=jnp.complex64)
-    gamma_ok, omega_ok = _gx_growth_rate_step(phi_now_valid, phi_prev, 0.1, z_index=0, mask=mask)
+    gamma_ok, omega_ok = _gx_growth_rate_step(
+        phi_now_valid, phi_prev, 0.1, z_index=0, mask=mask
+    )
     assert np.isfinite(np.asarray(gamma_ok)).all()
     assert np.isfinite(np.asarray(omega_ok)).all()
     assert not np.allclose(np.asarray(gamma_ok), 0.0)
@@ -1135,7 +1417,9 @@ def test_gx_growth_mask_keeps_single_selected_zonal_slice_masked() -> None:
 def test_rk4_step_uses_runtime_scaled_end_damping_once() -> None:
     cfg, grid, geom, params, cache = _small_setup()
     params = replace(params, damp_ends_amp=0.5)
-    G0 = _build_initial_condition(grid, geom, ky_index=0, kx_index=0, Nl=4, Nm=4, init_cfg=cfg.init)
+    G0 = _build_initial_condition(
+        grid, geom, ky_index=0, kx_index=0, Nl=4, Nm=4, init_cfg=cfg.init
+    )
     terms = LinearTerms(
         streaming=0.0,
         mirror=0.0,
@@ -1162,11 +1446,18 @@ def test_rk4_step_uses_runtime_scaled_end_damping_once() -> None:
     k3 = rhs(G0 + 0.5 * dt * k2)
     k4 = rhs(G0 + dt * k3)
     G_manual = G0 + (dt / 6.0) * (k1 + 2.0 * k2 + 2.0 * k3 + k4)
-    _dG_manual, fields_manual = assemble_rhs_cached(G_manual, cache, params, terms=term_cfg)
+    _dG_manual, fields_manual = assemble_rhs_cached(
+        G_manual, cache, params, terms=term_cfg
+    )
 
-    assert np.allclose(np.asarray(G_step), np.asarray(G_manual), rtol=1.0e-6, atol=1.0e-6)
     assert np.allclose(
-        np.asarray(fields_step.phi), np.asarray(fields_manual.phi), rtol=1.0e-6, atol=1.0e-6
+        np.asarray(G_step), np.asarray(G_manual), rtol=1.0e-6, atol=1.0e-6
+    )
+    assert np.allclose(
+        np.asarray(fields_step.phi),
+        np.asarray(fields_manual.phi),
+        rtol=1.0e-6,
+        atol=1.0e-6,
     )
 
 
@@ -1174,7 +1465,9 @@ def test_linear_gx_adaptive_default_dt_max_matches_gx():
     """When dt_max is unset, adaptive GX path should clamp to dt."""
 
     cfg, grid, geom, params, cache = _small_setup()
-    G0 = _build_initial_condition(grid, geom, ky_index=0, kx_index=0, Nl=4, Nm=4, init_cfg=cfg.init)
+    G0 = _build_initial_condition(
+        grid, geom, ky_index=0, kx_index=0, Nl=4, Nm=4, init_cfg=cfg.init
+    )
     time_cfg = ExplicitTimeConfig(
         dt=0.01,
         t_max=0.05,

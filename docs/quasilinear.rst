@@ -68,9 +68,12 @@ instead of a single uncalibrated mixing-length constant.
 For stellarator optimization, SPECTRAX-GK currently treats quasilinear fluxes as
 research diagnostics and optimization proxies, following the microstability
 optimization motivation in [Jorge24]_. The present release does **not** claim a
-validated absolute nonlinear flux predictor: the first Cyclone-to-Cyclone-Miller
-train/holdout gate deliberately fails, and that failure is preserved as a
-model-development constraint.
+validated absolute nonlinear flux predictor. The current seven-case
+electrostatic-compatible portfolio validates the input plumbing and rejects the
+legacy one-constant and simple saturation-rule families. The richer
+``spectral_envelope_ridge`` candidate is accepted only as a scoped
+model-development result with uncertainty metadata; it is not exposed as a
+runtime saturation law or universal transport model.
 
 Executable usage
 ----------------
@@ -94,7 +97,9 @@ or enable the diagnostic for another linear runtime TOML:
      --ql-csat 1.0 \
      --out tools_out/cyclone_quasilinear
 
-For a ky spectrum, use serial scan evaluation:
+For a ``ky`` spectrum, use the independent-scan path. ``--workers`` can
+parallelize the per-``ky`` linear solves and quasilinear state extraction while
+preserving the serial ordering of the output spectrum:
 
 .. code-block:: bash
 
@@ -102,6 +107,7 @@ For a ky spectrum, use serial scan evaluation:
      --config examples/linear/axisymmetric/runtime_cyclone_quasilinear.toml \
      --ky-values 0.1,0.2,0.3,0.4 \
      --quasilinear \
+     --workers 2 \
      --out tools_out/cyclone_quasilinear_scan
 
 Then render the spectrum:
@@ -111,6 +117,26 @@ Then render the spectrum:
    python tools/plot_quasilinear_spectrum.py \
      --spectrum tools_out/cyclone_quasilinear_scan.quasilinear_spectrum.csv \
      --out docs/_static/quasilinear_cyclone_spectrum.png
+
+The shipped worker-identity gate for this path is generated with:
+
+.. code-block:: bash
+
+   JAX_ENABLE_X64=1 python tools/generate_quasilinear_runtime_parallel_gate.py \
+     --workers 2 \
+     --ky 0.1 0.2 \
+     --out-prefix docs/_static/quasilinear_runtime_parallel_gate
+
+.. figure:: _static/quasilinear_runtime_parallel_gate.png
+   :width: 100%
+   :align: center
+   :alt: Quasilinear runtime scan worker identity gate
+
+   Serial and worker-parallel ``scan-runtime-linear`` quasilinear spectra from
+   the same runtime configuration. The gate checks ordered state-extraction
+   identity for the linear heat-flux weight and the saturated heat-flux
+   estimate; any timing metadata is reported for engineering tracking only,
+   not as a production speedup claim.
 
 The shaped-tokamak Miller companion uses the same pattern, with the positive
 ``ky`` range resolved by the nonlinear run's ``Ny=64`` grid:
@@ -494,15 +520,25 @@ passes. Otherwise the claim is demoted to ``calibration_dataset`` or
 claiming absolute nonlinear transport prediction from an uncalibrated
 saturation rule.
 
+The report builder is intentionally strict. Every point in one report must use
+the report's named ``saturation_rule``; predicted fluxes, observed nonlinear
+window means, and optional window standard deviations must be finite; and
+window standard deviations must be non-negative. Spectrum integration similarly
+rejects missing columns, all-non-finite samples, invalid integration methods,
+and non-positive ``delta_ky`` widths. These checks are part of the validation
+surface: a quasilinear figure can be exploratory, but a calibration or
+candidate-model artifact cannot silently mix rules or admit non-converged,
+non-finite, or dimensionally ambiguous data.
+
 Train and holdout points must also be tied to a passed nonlinear validation
 gate before they can be used in calibration. The audit tool
 ``tools/check_quasilinear_calibration_inputs.py`` enforces that rule by matching
 each point's ``nonlinear_artifact`` to tracked nonlinear gate metadata. It
 passes for the current Cyclone, Cyclone Miller, HSX, W7-X, and D-shaped
-external-VMEC calibration
-inputs, and it would fail if an exploratory or non-converged pilot such as the
-CTH-like external-VMEC feasibility trace were inserted as a train/holdout
-point.
+external-VMEC calibration inputs, and now includes the ITERModel and up-down
+asymmetric external-VMEC windows in the seven-case portfolio. It would fail if
+an exploratory or non-converged pilot such as the CTH-like external-VMEC
+feasibility trace were inserted as a train/holdout point.
 
 .. image:: _static/quasilinear_validated_calibration_inputs.png
    :alt: Quasilinear calibration inputs matched to passed nonlinear gates
@@ -582,6 +618,20 @@ relative gate. That failure is retained as a manuscript-facing result: it
 demonstrates that the implemented linear weights and nonlinear-window ingestion
 are working, while a transferable saturation model remains an open research
 task.
+
+The manuscript-facing combined report broadens this test to seven
+electrostatic-compatible nonlinear windows. It fits Cyclone and external-VMEC
+ITERModel, then holds out Cyclone Miller, HSX, W7-X, D-shaped external VMEC, and
+up-down asymmetric external VMEC. The nonlinear input validation passes, but the
+one-constant model still fails with held-out mean relative error about ``2.57``.
+The simple saturation-rule sweep also fails: positive-growth mixing length is
+the least-bad simple rule at about ``2.51`` mean held-out relative error, while
+the training-mean null baseline is about ``1.39``. The accepted
+``spectral_envelope_ridge`` candidate reaches about ``0.244`` mean relative
+error with interval coverage about ``0.857``; keep it labeled as
+``candidate_model_development_not_runtime_option`` until additional
+electrostatic holdouts, electromagnetic channels, and optimized-equilibrium
+audits close.
 
 The report is generated with:
 
@@ -750,7 +800,12 @@ not a validated physical saturation rule.
 .. code-block:: bash
 
    python tools/plot_quasilinear_saturation_rule_sweep.py \
+     --workers 4 \
      --out docs/_static/quasilinear_saturation_rule_sweep.png
+
+``--workers`` parallelizes the independent case-row extraction while preserving
+the same ordered report as the serial run. It does not change the underlying
+quasilinear spectra, nonlinear window summaries, or validation gates.
 
 .. image:: _static/quasilinear_saturation_rule_sweep.png
    :alt: Quasilinear saturation-rule sweep across Cyclone, Cyclone Miller, HSX, W7-X, and D-shaped external VMEC
@@ -843,7 +898,12 @@ nonlinear heat-flux window. A candidate is promoted only if it:
 .. code-block:: bash
 
    python tools/plot_quasilinear_candidate_uncertainty.py \
+     --workers 4 \
      --out docs/_static/quasilinear_candidate_uncertainty.png
+
+``--workers`` parallelizes the leave-one-geometry-out holdout rows. The JSON
+report records the worker count and the identity contract; the numerical
+acceptance remains the same as the serial report.
 
 .. image:: _static/quasilinear_candidate_uncertainty.png
    :alt: Quasilinear candidate uncertainty gate

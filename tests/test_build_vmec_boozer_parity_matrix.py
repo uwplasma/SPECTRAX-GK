@@ -15,7 +15,9 @@ SCRIPT = ROOT / "tools" / "build_vmec_boozer_parity_matrix.py"
 
 
 def _load_tool_module():
-    spec = importlib.util.spec_from_file_location("build_vmec_boozer_parity_matrix", SCRIPT)
+    spec = importlib.util.spec_from_file_location(
+        "build_vmec_boozer_parity_matrix", SCRIPT
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -67,12 +69,20 @@ def test_build_parity_matrix_uses_mode21_floor_and_summarizes_rows() -> None:
     assert payload["summary"]["n_equal_arc_passed"] == 2
     assert payload["summary"]["all_equal_arc_passed"] is True
     assert all(row["mode_floor_passed"] for row in payload["rows"])
-    assert payload["rows"][0]["equal_arc_drift_worst_normalized_max_abs"] == pytest.approx(7.0e-2)
+    assert payload["rows"][0][
+        "equal_arc_drift_worst_normalized_max_abs"
+    ] == pytest.approx(7.0e-2)
+    assert payload["claim_level"].endswith("not_full_transport_gradient_claim")
+    assert payload["rows"][0]["production_parity_passed"] is False
 
 
 def test_build_parity_matrix_rejects_underresolved_boozer_modes() -> None:
     mod = _load_tool_module()
-    cases = (mod.ParityCase("nfp3_QI_fixed_resolution_final", "QI", "stellarator", 8, mboz=20, nboz=21),)
+    cases = (
+        mod.ParityCase(
+            "nfp3_QI_fixed_resolution_final", "QI", "stellarator", 8, mboz=20, nboz=21
+        ),
+    )
 
     with pytest.raises(ValueError, match="mboz and nboz"):
         mod.build_parity_matrix(cases=cases, reporter=_fake_report)
@@ -81,7 +91,9 @@ def test_build_parity_matrix_rejects_underresolved_boozer_modes() -> None:
 def test_write_parity_matrix_artifacts_writes_companions(tmp_path: Path) -> None:
     mod = _load_tool_module()
     payload = mod.build_parity_matrix(
-        cases=(mod.ParityCase("shaped_tokamak_pressure", "tokamak", "axisymmetric", 8),),
+        cases=(
+            mod.ParityCase("shaped_tokamak_pressure", "tokamak", "axisymmetric", 8),
+        ),
         reporter=_fake_report,
     )
 
@@ -91,4 +103,6 @@ def test_write_parity_matrix_artifacts_writes_companions(tmp_path: Path) -> None
         assert Path(path).exists()
     saved = json.loads((tmp_path / "parity.json").read_text(encoding="utf-8"))
     assert saved["summary"]["n_equal_arc_passed"] == 1
-    assert "shaped_tokamak_pressure" in (tmp_path / "parity.csv").read_text(encoding="utf-8")
+    assert "shaped_tokamak_pressure" in (tmp_path / "parity.csv").read_text(
+        encoding="utf-8"
+    )

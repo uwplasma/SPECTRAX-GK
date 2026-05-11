@@ -19,6 +19,9 @@ def test_state_sharding_disabled():
     assert resolve_state_sharding(G0, None) is None
     assert resolve_state_sharding(G0, "none") is None
     assert resolve_state_sharding(G0, "off") is None
+    assert resolve_state_sharding(G0, "") is None
+    assert resolve_state_sharding(G0, " false ") is None
+    assert resolve_state_sharding(G0, "0") is None
 
 
 def test_state_sharding_invalid():
@@ -39,17 +42,106 @@ def test_state_sharding_builds_partition_specs_with_fake_mesh(monkeypatch):
             self.mesh = mesh
             self.spec = spec
 
-    monkeypatch.setattr(sharding_mod, "_mesh_from_devices", lambda devices, axis_name: f"mesh:{axis_name}")
+    monkeypatch.setattr(
+        sharding_mod,
+        "_mesh_from_devices",
+        lambda devices, axis_name: f"mesh:{axis_name}",
+    )
     monkeypatch.setattr(sharding_mod, "NamedSharding", FakeNamedSharding)
 
-    ky_sharding = resolve_state_sharding(_state_5d(), "auto", axis_name="batch", devices=[object(), object()])
-    species_sharding = resolve_state_sharding(_state_6d(), "species", axis_name="batch", devices=[object(), object()])
+    ky_sharding = resolve_state_sharding(
+        _state_5d(), "auto", axis_name="batch", devices=[object(), object()]
+    )
+    species_sharding = resolve_state_sharding(
+        _state_6d(), "species", axis_name="batch", devices=[object(), object()]
+    )
 
     assert ky_sharding.mesh == "mesh:batch"
-    assert ky_sharding.spec == sharding_mod.PartitionSpec(None, None, "batch", None, None)
-    assert species_sharding.spec == sharding_mod.PartitionSpec("batch", None, None, None, None, None)
+    assert ky_sharding.spec == sharding_mod.PartitionSpec(
+        None, None, "batch", None, None
+    )
+    assert species_sharding.spec == sharding_mod.PartitionSpec(
+        "batch", None, None, None, None, None
+    )
 
     with pytest.raises(ValueError, match="Cannot shard"):
         resolve_state_sharding(_state_5d(), "species", devices=[object(), object()])
     with pytest.raises(ValueError, match="5 or 6 dimensions"):
         resolve_state_sharding(jnp.zeros((2, 2)), "ky", devices=[object(), object()])
+
+
+@pytest.mark.parametrize(
+    ("directive", "expected_spec"),
+    [
+        ("auto", (None, None, "batch", None, None)),
+        ("ky", (None, None, "batch", None, None)),
+        ("kx", (None, None, None, "batch", None)),
+        ("z", (None, None, None, None, "batch")),
+        ("l", ("batch", None, None, None, None)),
+        ("m", (None, "batch", None, None, None)),
+    ],
+)
+def test_state_sharding_5d_axis_map_is_explicit_with_fake_mesh(
+    monkeypatch, directive, expected_spec
+):
+    class FakeNamedSharding:
+        def __init__(self, mesh, spec):
+            self.mesh = mesh
+            self.spec = spec
+
+    monkeypatch.setattr(
+        sharding_mod,
+        "_mesh_from_devices",
+        lambda devices, axis_name: f"mesh:{axis_name}",
+    )
+    monkeypatch.setattr(sharding_mod, "NamedSharding", FakeNamedSharding)
+
+    resolved = resolve_state_sharding(
+        _state_5d(), directive, axis_name="batch", devices=[object(), object()]
+    )
+
+    assert resolved.mesh == "mesh:batch"
+    assert resolved.spec == sharding_mod.PartitionSpec(*expected_spec)
+
+
+@pytest.mark.parametrize("directive", ["species", "s"])
+def test_state_sharding_6d_species_aliases_share_partition_spec(monkeypatch, directive):
+    class FakeNamedSharding:
+        def __init__(self, mesh, spec):
+            self.mesh = mesh
+            self.spec = spec
+
+    monkeypatch.setattr(
+        sharding_mod,
+        "_mesh_from_devices",
+        lambda devices, axis_name: f"mesh:{axis_name}",
+    )
+    monkeypatch.setattr(sharding_mod, "NamedSharding", FakeNamedSharding)
+
+    resolved = resolve_state_sharding(
+        _state_6d(), directive, axis_name="batch", devices=[object(), object()]
+    )
+
+    assert resolved.spec == sharding_mod.PartitionSpec(
+        "batch", None, None, None, None, None
+    )
+
+
+def test_mesh_from_devices_uses_visible_devices_and_returns_none_for_one_device(
+    monkeypatch,
+):
+    class FakeMesh:
+        def __init__(self, devices, axis_names):
+            self.devices = devices
+            self.axis_names = axis_names
+
+    monkeypatch.setattr(sharding_mod, "Mesh", FakeMesh)
+    fake_devices = [object(), object(), object()]
+    monkeypatch.setattr(sharding_mod.jax, "devices", lambda: fake_devices)
+
+    mesh = sharding_mod._mesh_from_devices(None, "d")
+
+    assert mesh is not None
+    assert mesh.axis_names == ("d",)
+    assert list(mesh.devices.reshape(-1)) == fake_devices
+    assert sharding_mod._mesh_from_devices([object()], "d") is None

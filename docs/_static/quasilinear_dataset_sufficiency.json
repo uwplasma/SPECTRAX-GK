@@ -109,7 +109,7 @@
       "split": "holdout"
     }
   ],
-  "claim_level": "promotion_blocked_until_more_converged_electrostatic_holdouts",
+  "claim_level": "scoped_low_parameter_candidate_promotion_not_runtime_option",
   "downstream_gates": {
     "candidate_uncertainty": {
       "accepted": [

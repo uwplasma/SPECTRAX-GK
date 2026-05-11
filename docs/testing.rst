@@ -606,7 +606,14 @@ Independent scan and ensemble parallelization is tested before it is used for
 performance claims:
 
 - ``tests/test_parallel.py`` locks the ``batch_map`` / ``ky_scan_batches``
-  helper semantics, including deterministic padding and one-device fallback.
+  helper semantics, including deterministic padding, one-device fallback, and
+  pytree outputs used by UQ and sensitivity workflows.
+- ``tests/test_velocity_sharding.py`` locks the GX-inspired species/Hermite
+  velocity-decomposition planner. These tests verify load balance metadata,
+  Hermite ghost-exchange flags, and field-reduction axes before any production
+  ``shard_map`` implementation can use that layout. The same test file also
+  covers the full-array Hermite-neighbor reference and one-device fallback for
+  the communication kernel.
 - ``tests/test_sharded_integrators.py`` locks the sharded linear RK2 wrapper in
   both no-sharding and explicit-sharding modes using a mocked RHS and mocked
   ``pjit``. It also locks the fixed-step nonlinear state-sharded wrapper,
@@ -615,11 +622,86 @@ performance claims:
   gates, not speedup claims.
 - ``tests/test_generate_parallel_ky_scan_gate.py`` tests the artifact writer
   for the real Cyclone ``k_y``-batch gate.
+- ``tests/test_parallel_artifact_contracts.py`` locks the tracked large-run
+  scaling artifacts themselves. It requires the performance and validation
+  manifests to list the CPU/GPU split artifacts, verifies serial numerical
+  identity for independent ``k_y`` and quasilinear/UQ rows, checks that
+  nonlinear whole-state sharding embeds per-device profiler/profile payloads,
+  and fails if docs detach speedup wording from the current artifact set.
 - ``tools/generate_parallel_ky_scan_gate.py`` runs the actual linear solver
   serially and with fixed-shape ``k_y`` batching, then writes
   ``docs/_static/parallel_ky_scan_gate.{png,pdf,csv,json}``. The JSON gate
   requires numerical identity for growth rate and frequency; the speedup value
   is reported separately for engineering tracking.
+- ``tools/generate_logical_cpu_parallel_scan_gate.py`` exercises
+  ``RuntimeParallelConfig`` and ``batch_map`` over logical CPU devices with a
+  structured JAX-native scan output. Its artifact
+  ``docs/_static/logical_cpu_parallel_scan_gate.{png,pdf,csv,json}`` is an API
+  identity gate, not a gyrokinetic physics benchmark.
+- ``tools/generate_hermite_exchange_gate.py`` runs the first actual
+  ``jax.shard_map`` communication-kernel gate for nearest-neighbor Hermite
+  ghost exchange and writes
+  ``docs/_static/hermite_exchange_gate.{png,pdf,csv,json}``. This is a
+  prerequisite for production velocity-space decomposition, but it is not a
+  nonlinear runtime speedup claim.
+- ``tools/generate_velocity_field_reduce_gate.py`` runs the matching
+  ``jax.shard_map`` field-reduction gate with ``lax.psum`` over the Hermite
+  mesh and writes
+  ``docs/_static/velocity_field_reduce_gate.{png,pdf,csv,json}``. Its
+  tolerance is a float32 communication/reduction-tree tolerance, not a physics
+  acceptance tolerance.
+- ``tools/generate_electrostatic_field_reduce_gate.py`` applies that reduction
+  pattern to the production electrostatic quasineutrality density moment and
+  writes ``docs/_static/electrostatic_field_reduce_gate.{png,pdf,csv,json}``.
+  It is currently scoped to single-species periodic electrostatic cases.
+- ``tools/generate_hermite_streaming_ladder_gate.py`` combines the Hermite
+  exchange with the actual ``sqrt(m+1)`` / ``sqrt(m)`` streaming-ladder
+  coefficients and writes
+  ``docs/_static/hermite_streaming_ladder_gate.{png,pdf,csv,json}``. This is
+  the last isolated communication/coefficient gate before a linear streaming
+  microkernel can be wired.
+- ``tools/generate_electrostatic_drift_gate.py`` gates the single-species
+  periodic electrostatic mirror and curvature/grad-B drift slices against the
+  production linear RHS. It uses offset-1 and offset-2 Hermite exchanges and
+  writes ``docs/_static/electrostatic_drift_gate.{png,pdf,csv,json}``.
+- ``tools/generate_electrostatic_diamagnetic_gate.py`` gates the
+  single-species periodic electrostatic diamagnetic drive against the
+  production diamagnetic-only linear RHS. It uses the Hermite-sharded
+  electrostatic field reduction plus local ``m=0`` and ``m=2`` drive masks and
+  writes ``docs/_static/electrostatic_diamagnetic_gate.{png,pdf,csv,json}``.
+- ``tools/generate_periodic_streaming_microkernel_gate.py`` adds the periodic
+  spectral parallel derivative and compares the shard-map path directly
+  against ``spectraxgk.terms.operators.streaming_term``. Its artifact
+  ``docs/_static/periodic_streaming_microkernel_gate.{png,pdf,csv,json}``
+  gates the first opt-in linear streaming microkernel before full RHS wiring.
+- ``tools/generate_linear_rhs_streaming_gate.py`` routes the same sharded
+  periodic streaming kernel through production ``linear_rhs_cached`` with all
+  non-streaming terms and electromagnetic channels disabled. Its artifact
+  ``docs/_static/linear_rhs_streaming_gate.{png,pdf,csv,json}`` is the first
+  full-call-graph linear-RHS identity gate for velocity-space streaming.
+- ``tools/generate_linear_rhs_streaming_electrostatic_gate.py`` repeats that
+  gate with an ``m=0`` density perturbation and nonzero electrostatic ``phi``.
+  Its artifact
+  ``docs/_static/linear_rhs_streaming_electrostatic_gate.{png,pdf,csv,json}``
+  gates the field-reduction-to-streaming call graph for the current
+  single-species periodic electrostatic route.
+- ``tools/generate_linear_rhs_electrostatic_slices_gate.py`` compares the
+  composed opt-in ``backend="electrostatic_linear_slices"`` route against
+  serial ``linear_rhs_cached`` with streaming, mirror, curvature, grad-B, and
+  diamagnetic drive enabled. Its artifact
+  ``docs/_static/linear_rhs_electrostatic_slices_gate.{png,pdf,csv,json}``
+  is the current single-species periodic electrostatic linear-RHS identity
+  gate for velocity-space parallelization.
+- ``tools/profile_linear_rhs_parallel_slices.py`` times that same composed
+  route on a larger bounded CPU workload and writes
+  ``docs/_static/linear_rhs_parallel_slices_profile.{png,pdf,csv,json}``.
+  The tracked profile is explicitly an engineering artifact, not a publication
+  speedup claim; it uses a Hermite-heavy workload and a float32
+  reduction-order tolerance so the stricter composed identity gate remains the
+  release correctness check. The office GPU companion artifact
+  ``docs/_static/linear_rhs_parallel_slices_profile_gpu.{png,pdf,csv,json}``
+  is currently a negative performance baseline: it passes identity but is much
+  slower than the single-GPU serial JIT path.
 - ``tools/profile_nonlinear_sharding.py`` runs a bounded fixed-step nonlinear
   serial-vs-sharded final-state comparison and writes
   ``docs/_static/nonlinear_sharding_profile.json`` locally and
