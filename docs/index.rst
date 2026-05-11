@@ -44,6 +44,7 @@ the same order they appear in the code.
    linear_model
    operators
    numerics
+   parallelization
    normalization
    quasilinear
    stellarator_optimization

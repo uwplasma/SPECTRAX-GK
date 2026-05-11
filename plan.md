@@ -3974,3 +3974,39 @@ Exit gate:
   - added ``tests/test_nonlinear_sharding_artifacts.py`` to the
     ``parallel-autodiff`` quick-test shard so the final-state, final-field, and
     final-RHS diagnostic artifact gates run before wide coverage.
+- Parallelization policy and claim-boundary integration:
+  - latest ``main`` CI for commit ``8239312`` completed green with ``59`` jobs
+    successful and only the nightly job skipped;
+  - added ``src/spectraxgk/nonlinear_parallel.py`` as a metadata-only nonlinear
+    parallelization contract that classifies ``independent_ky_scan`` and
+    ``uq_ensemble`` as release-ready independent-work paths,
+    ``whole_state_kx_ky`` and ``velocity_species_hermite`` as diagnostic gates,
+    and ``fft_axis_domain`` as blocked until distributed-FFT identity gates
+    exist;
+  - exported the contract helpers through ``spectraxgk.__init__`` and added
+    focused tests for release readiness, diagnostic-only whole-state sharding,
+    velocity/species/Hermite gates, and blocked FFT-axis domain sharding;
+  - added ``docs/parallelization.rst`` and linked it from the docs index so the
+    current policy is explicit: independent ``k_y``/UQ/ensemble work is the
+    production parallelization path, whole-state nonlinear sharding is a
+    correctness/profiler gate, and no nonlinear speedup claim is allowed without
+    fresh identity-preserving profiler artifacts;
+  - corrected ``docs/manuscript_figures.rst`` so the quasilinear candidate
+    uncertainty and dataset-sufficiency entries match the current seven-case
+    artifacts: ``spectral_envelope_ridge`` is accepted as a scoped
+    model-development candidate, while broader runtime/TOML, electromagnetic,
+    and universal absolute-flux claims remain blocked.
+- Verification for this integration tranche:
+  - ``python -m ruff format src/spectraxgk/nonlinear_parallel.py tests/test_nonlinear_parallel.py src/spectraxgk/__init__.py``;
+  - ``python -m ruff check src/spectraxgk/nonlinear_parallel.py tests/test_nonlinear_parallel.py src/spectraxgk/__init__.py``;
+  - ``MYPYPATH=src mypy src/spectraxgk/nonlinear_parallel.py``;
+  - ``pytest -q --maxfail=1 --disable-warnings tests/test_nonlinear_parallel.py tests/test_nonlinear_sharding_artifacts.py tests/test_profile_nonlinear_sharding.py``;
+  - science-scope shard covering quasilinear candidate uncertainty, dataset
+    sufficiency, stellarator objective AD/FD, and reduced nonlinear-window
+    AD/FD passed with ``7`` tests;
+  - ``python tools/check_validation_coverage_manifest.py --skip-artifact-check``.
+- Next best implementation steps:
+  - run strict docs and whitespace checks, then commit/push this tranche;
+  - after CI is green, start the next bounded coverage/refactor tranche on
+    ``spectraxgk.nonlinear`` helper diagnostics and ``spectraxgk.benchmarks``
+    branch/gate metadata, avoiding integration-marked slow tests.
