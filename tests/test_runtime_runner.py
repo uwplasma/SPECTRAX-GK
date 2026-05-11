@@ -612,6 +612,65 @@ def test_runtime_linear_diffrax_project_mode_keeps_full_field_history(monkeypatc
     assert metrics.omega_fit == pytest.approx(omega_ref, rel=1.0e-3)
 
 
+def test_runtime_linear_forwards_velocity_parallel_config(monkeypatch: pytest.MonkeyPatch) -> None:
+    import spectraxgk.runtime as runtime
+
+    cfg0 = _base_runtime_cfg()
+    cfg = replace(
+        cfg0,
+        time=replace(cfg0.time, use_diffrax=False, sample_stride=1, dt=0.01, t_max=0.03),
+        parallel=RuntimeParallelConfig(strategy="velocity", axis="hermite", backend="auto", num_devices=1),
+    )
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    captured: dict[str, object] = {}
+
+    monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: geom)
+    monkeypatch.setattr(
+        runtime,
+        "_build_initial_condition",
+        lambda *args, **kwargs: np.zeros((1, 3, 4, 1, 1, grid.z.size), dtype=np.complex64),
+    )
+
+    def _fake_integrate_linear_from_config(*args, **kwargs):
+        captured["parallel"] = kwargs["parallel"]
+        phi_t = np.ones((3, 1, 1, grid.z.size), dtype=np.complex64)
+        return np.zeros((1, 3, 4, 1, 1, grid.z.size), dtype=np.complex64), phi_t
+
+    monkeypatch.setattr(runtime, "integrate_linear_from_config", _fake_integrate_linear_from_config)
+    monkeypatch.setattr(
+        runtime,
+        "extract_mode_time_series",
+        lambda *args, **kwargs: np.asarray([1.0, 1.1, 1.2], dtype=np.complex128),
+    )
+    monkeypatch.setattr(runtime, "fit_growth_rate_auto", lambda *args, **kwargs: (0.05, -0.02, 0.01, 0.03))
+    monkeypatch.setattr(runtime, "extract_eigenfunction", lambda *args, **kwargs: np.ones(grid.z.size, dtype=np.complex128))
+    monkeypatch.setattr(runtime, "apply_diagnostic_normalization", lambda gamma, omega, **kwargs: (gamma, omega))
+
+    res = run_runtime_linear(
+        cfg,
+        ky_target=0.1,
+        Nl=3,
+        Nm=4,
+        solver="time",
+        fit_signal="phi",
+        mode_method="project",
+    )
+
+    assert res.fit_signal_used == "phi"
+    assert captured["parallel"] is cfg.parallel
+
+    with pytest.raises(NotImplementedError, match="fit_signal='phi'"):
+        run_runtime_linear(
+            cfg,
+            ky_target=0.1,
+            Nl=3,
+            Nm=4,
+            solver="time",
+            fit_signal="auto",
+        )
+
+
 def test_runtime_linear_diffrax_auto_fit_with_density_keeps_full_fields(monkeypatch: pytest.MonkeyPatch) -> None:
     import spectraxgk.runtime as runtime
 

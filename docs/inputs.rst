@@ -509,6 +509,12 @@ terms, and nonlinear terms remain disabled until their own identity gates are
 added. Current velocity RHS routes are limited to single-species periodic 5D
 electrostatic states.
 
+For full runtime TOML files this velocity-space route is exposed only through
+the fixed-step linear executable path with ``fit_signal = "phi"``. Diffrax
+linear runs and density-assisted automatic fitting stay serial until they have
+their own identity gates, so requesting velocity parallelization there raises a
+clear error.
+
 For independent scan, sensitivity, and UQ workloads, use
 ``spectraxgk.batch_map`` for JAX-array maps and ``spectraxgk.independent_map``
 for file-backed Python tasks such as calibration rows or leave-one-out UQ
