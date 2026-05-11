@@ -175,9 +175,11 @@ effective ``ky_sel``/``kx_sel`` used by diagnostics.
 For benchmark-locked runs, leaving ``dt_max`` unset keeps ``dt_max = dt``.
 Set ``state_sharding = "auto"`` (or ``"ky"``) to enable distributed
 parallelization of the packed state array over multiple JAX devices. This is
-honored by the diffrax integrators only and
-falls back to single-device execution if only one device is visible. Other
-valid values are ``"kx"``, ``"z"``, ``"l"``, ``"m"``, and ``"species"``.
+honored by the sharding-aware integration paths, including the fixed-step RK2
+nonlinear identity/profiler lane; unsupported solver paths or one-device runs
+fall back to single-device execution. Other valid values are ``"kx"``, ``"z"``,
+``"l"``, ``"m"``, and ``"species"``. Treat this as a correctness-gated
+parallelization option unless the run also has a matched scaling artifact.
 Increase ``dt_max`` explicitly only when you intentionally trade strict
 comparison matching for throughput.
 

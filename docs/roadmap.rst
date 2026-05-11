@@ -137,18 +137,19 @@ nonlinear startup-window finite-difference observable audit is also tracked at
 VMEC/Boozer-perturbed nonlinear startup-window FD observable audit is now
 tracked at ``docs/_static/vmec_boozer_nonlinear_window_fd_audit.png`` /
 ``.json``. These short artifacts validate plumbing only and are not heat-flux
-transport averages. The remaining promotion step is now the VMEC/Boozer
-nonlinear-window state-gradient gate with local-gradient conditioning,
-converged long post-transient running-average heat-flux windows, and nonlinear
-audits of optimized equilibria; those are required before claiming a production
-nonlinear heat-flux stellarator optimizer.
+transport averages. The reduced VMEC/Boozer nonlinear-window estimator
+gradient gates are now closed for QH and Li383; the remaining promotion step is
+a production nonlinear turbulence-gradient or robust finite-difference audit
+with local-gradient conditioning, converged long post-transient running-average
+heat-flux windows, and nonlinear audits of optimized equilibria. Those are
+required before claiming a production nonlinear heat-flux stellarator optimizer.
 
-The latest checked public CI run passed repo hygiene, mypy, quick shards,
-docs/packaging, fast coverage, and the full wide-coverage matrix.
-The combined wide-coverage job reported ``TOTAL 16134 787 95%`` package-wide
-coverage. Some individual modules still sit below ``95%`` because the gate is
-package-wide; notably ``nonlinear.py`` and ``zonal_validation.py`` remain useful
-targets for future targeted physics tests.
+Before tagging, the latest public ``main`` CI run must pass repo hygiene, mypy,
+quick shards, docs/packaging, fast coverage, and the full wide-coverage matrix.
+The configured wide-coverage job enforces ``95%`` package-wide coverage. Some
+individual modules can still sit below ``95%`` because the gate is package-wide;
+notably ``nonlinear.py`` and ``zonal_validation.py`` remain useful targets for
+future targeted physics tests.
 
 .. image:: _static/manuscript_readiness_status.png
    :alt: Manuscript-scope readiness status summary

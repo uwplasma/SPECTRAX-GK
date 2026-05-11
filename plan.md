@@ -1,9 +1,9 @@
 # SPECTRAX-GK Quasilinear Transport and Optimization Plan
 
-Last updated: 2026-04-30
+Last updated: 2026-05-11
 Active repository: `uwplasma/SPECTRAX-GK`
 Historical planning archive: private repo `rogeriojorge/spectraxgk_plan`
-Current public baseline: `main` at v1.4.0, with the historical ship-readiness log archived before this file was reset.
+Current public baseline: `main` at v1.5.0, with the historical ship-readiness log archived before this file was reset.
 
 This file is both the active plan and the running log. Keep entries concise, dated, and tied to artifacts, tests, and figures.
 
@@ -4102,3 +4102,36 @@ Exit gate:
   - if CI is green, continue with bounded tests on the remaining active
     high-priority modules rather than running unbounded package-wide pytest
     locally.
+
+## 2026-05-11 Bounded Coverage, Claims, and Parallelization Hygiene Tranche
+
+- Spawned read-only auditors for CI/release hygiene, coverage/test gaps,
+  manuscript/docs claim consistency, and performance/parallelization artifacts.
+- Added bounded tests covering linear electrostatic fast-path routing, Krylov
+  branch flag forwarding, JSON-safe validation gates, covariance conditioning,
+  AD/FD/JVP/VJP consistency, finite resolved diagnostics schemas, zonal tail
+  envelope metrics, and explicit W7-X zonal/TEM open-lane status preservation.
+- Fixed release-facing documentation drift:
+  - manuscript quasilinear train/holdout text now reflects the seven-case
+    portfolio with Cyclone + ITERModel training and five holdouts;
+  - saturation-rule text now uses the current artifact values:
+    positive-growth mixing length `2.51`, linear weight `3.19`, absolute-growth
+    diagnostic `3.96`, and training-mean null `1.39` mean held-out relative
+    error;
+  - VMEC/Boozer language now distinguishes closed reduced estimator gradient
+    gates from still-open production nonlinear turbulence-gradient and
+    converged heat-flux transport claims;
+  - `state_sharding` input docs now match the fixed-step sharded nonlinear
+    identity/profiler path and avoid unsupported speedup claims.
+- Tightened release tooling and manifests:
+  - normalized relative `--test-dir` handling in `tools/run_wide_coverage_gate.py`;
+  - added current independent-ky, UQ ensemble, linear-slice, and nonlinear
+    sharding strong-scaling artifacts to performance/validation manifests;
+  - changed the manuscript-readiness quasilinear claim string to a scoped
+    model-selection result, not a runtime absolute-flux predictor.
+- Verification plan for this tranche:
+  - run ruff on touched Python files and bounded test shards for dirty tests,
+    performance artifacts, manuscript/validation status, and wide-coverage
+    dry-run behavior;
+  - rebuild docs with Sphinx warnings as errors;
+  - commit, push, and monitor the superseding CI run.

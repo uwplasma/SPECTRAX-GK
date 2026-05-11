@@ -1,5 +1,4 @@
 import argparse
-import numpy as np
 
 from spectraxgk.benchmarks import load_cyclone_reference_kinetic, run_kinetic_scan
 from spectraxgk.config import TimeConfig
@@ -7,10 +6,16 @@ from spectraxgk.plotting import scan_comparison_figure
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Kinetic-electron ITG benchmark example.")
-    parser.add_argument("--no-diffrax", action="store_true", help="Disable diffrax integrator.")
+    parser = argparse.ArgumentParser(
+        description="Kinetic-electron ITG benchmark example."
+    )
+    parser.add_argument(
+        "--no-diffrax", action="store_true", help="Disable diffrax integrator."
+    )
     parser.add_argument("--solver", default="Tsit5", help="Diffrax solver name.")
-    parser.add_argument("--no-adaptive", action="store_true", help="Disable adaptive step sizes.")
+    parser.add_argument(
+        "--no-adaptive", action="store_true", help="Disable adaptive step sizes."
+    )
     args = parser.parse_args()
 
     ref = load_cyclone_reference_kinetic()
