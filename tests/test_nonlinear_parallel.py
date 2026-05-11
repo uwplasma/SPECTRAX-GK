@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import json
+
 import pytest
 
 import spectraxgk
+import spectraxgk.nonlinear_parallel as nonlinear_parallel
 from spectraxgk.nonlinear_parallel import (
     NonlinearParallelStrategy,
     classify_nonlinear_parallel_strategy,
@@ -12,12 +15,25 @@ from spectraxgk.nonlinear_parallel import (
 )
 
 
+def test_nonlinear_parallel_public_api_exports_are_stable() -> None:
+    public_names = (
+        "NonlinearParallelStrategy",
+        "classify_nonlinear_parallel_strategy",
+        "nonlinear_parallel_strategies",
+        "nonlinear_parallel_strategy",
+        "release_ready_nonlinear_parallel_strategies",
+    )
+
+    assert set(public_names) <= set(spectraxgk.__all__)
+    assert set(public_names) <= set(nonlinear_parallel.__all__)
+    assert NonlinearParallelStrategy is nonlinear_parallel.NonlinearParallelStrategy
+    for name in public_names:
+        assert getattr(spectraxgk, name) is getattr(nonlinear_parallel, name)
+
+
 def test_fft_axis_domain_sharding_is_blocked_until_distributed_fft_identity_gates_exist() -> (
     None
 ):
-    assert spectraxgk.NonlinearParallelStrategy is NonlinearParallelStrategy
-    assert spectraxgk.nonlinear_parallel_strategy is nonlinear_parallel_strategy
-
     strategy = nonlinear_parallel_strategy("fft_axis_domain")
 
     assert strategy.blocked is True
@@ -39,14 +55,17 @@ def test_whole_state_kx_ky_is_diagnostic_only() -> None:
     assert strategy.changes_solver_layout is True
     assert "whole_state_kx_ky_final_state_identity" in strategy.identity_gates
     assert "matched_cpu_gpu_whole_state_scaling_profile" in strategy.profiler_gates
+    assert "not a speedup claim" in strategy.notes
 
 
 def test_independent_ky_and_uq_are_release_ready_independent_work_paths() -> None:
-    release_ready = {
-        strategy.name: strategy
-        for strategy in release_ready_nonlinear_parallel_strategies()
-    }
+    release_ready_strategies = release_ready_nonlinear_parallel_strategies()
+    release_ready = {strategy.name: strategy for strategy in release_ready_strategies}
 
+    assert [strategy.name for strategy in release_ready_strategies] == [
+        "independent_ky_scan",
+        "uq_ensemble",
+    ]
     assert set(release_ready) == {"independent_ky_scan", "uq_ensemble"}
     for name in ("independent_ky_scan", "uq_ensemble"):
         strategy = release_ready[name]
@@ -84,8 +103,27 @@ def test_strategy_registry_is_complete_json_friendly_and_rejects_unknown_names()
         "velocity_species_hermite",
         "fft_axis_domain",
     }
-    payload = by_name["independent_ky_scan"].to_dict()
-    assert payload["name"] == "independent_ky_scan"
-    assert payload["readiness"] == "release_ready"
+    strategy_table = [strategy.to_dict() for strategy in strategies]
+    decoded_table = json.loads(json.dumps(strategy_table, sort_keys=True))
+
+    assert [row["name"] for row in decoded_table] == [
+        strategy.name for strategy in strategies
+    ]
+    assert decoded_table[0]["name"] == "independent_ky_scan"
+    assert decoded_table[0]["readiness"] == "release_ready"
+    for row in decoded_table:
+        assert set(row) == {
+            "name",
+            "readiness",
+            "independent_work",
+            "changes_solver_layout",
+            "identity_gates",
+            "physics_gates",
+            "profiler_gates",
+            "notes",
+        }
+        assert isinstance(row["identity_gates"], list)
+        assert isinstance(row["physics_gates"], list)
+        assert isinstance(row["profiler_gates"], list)
     with pytest.raises(ValueError, match="unknown nonlinear parallelization strategy"):
         nonlinear_parallel_strategy("banana")  # type: ignore[arg-type]

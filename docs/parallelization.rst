@@ -6,6 +6,42 @@ identity gates that currently exist. Treat this page as the short policy; the
 long artifact history remains in :doc:`performance` and runnable examples remain
 in :doc:`examples`.
 
+Strategy registry
+-----------------
+
+The metadata API exposes a JSON-friendly strategy table. Release-ready
+independent-work rows are intentionally ordered first: ``independent_ky_scan``,
+then ``uq_ensemble``.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 28 18 18 24
+
+   * - ``name``
+     - ``readiness``
+     - ``independent_work``
+     - ``changes_solver_layout``
+   * - ``independent_ky_scan``
+     - ``release_ready``
+     - ``true``
+     - ``false``
+   * - ``uq_ensemble``
+     - ``release_ready``
+     - ``true``
+     - ``false``
+   * - ``whole_state_kx_ky``
+     - ``diagnostic``
+     - ``false``
+     - ``true``
+   * - ``velocity_species_hermite``
+     - ``diagnostic``
+     - ``false``
+     - ``true``
+   * - ``fft_axis_domain``
+     - ``blocked``
+     - ``false``
+     - ``true``
+
 Production path: independent work
 ---------------------------------
 
@@ -30,7 +66,10 @@ Fixed-step whole-state nonlinear sharding is diagnostic-only. The
 ``integrate_nonlinear_sharded`` / ``TimeConfig.state_sharding`` path is useful
 for control-flow validation, state-axis identity gates, profiler localization,
 and testing candidate layouts. It is not a production nonlinear domain
-decomposition or multi-GPU speedup claim.
+decomposition or multi-GPU speedup claim. Do not use it as evidence for a
+whole-state nonlinear sharding speedup; it has no scoped speedup claim until
+separate identity gates and matched profiler artifacts exist for that exact
+workload.
 
 In particular, current whole-state sharding does not close the communication
 problem for nonlinear FFTs, halo exchange, conservation checks, or benchmark-size

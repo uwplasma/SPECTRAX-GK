@@ -9,10 +9,16 @@ import spectraxgk
 import spectraxgk.parallel as parallel
 
 
+def test_parallel_public_api_exports_are_stable() -> None:
+    public_names = ("batch_map", "independent_map", "ky_scan_batches")
+
+    assert set(public_names) <= set(spectraxgk.__all__)
+    assert set(public_names) <= set(parallel.__all__)
+    for name in public_names:
+        assert getattr(spectraxgk, name) is getattr(parallel, name)
+
+
 def test_ky_scan_batches_are_balanced_and_order_preserving() -> None:
-    assert spectraxgk.ky_scan_batches is parallel.ky_scan_batches
-    assert spectraxgk.batch_map is parallel.batch_map
-    assert spectraxgk.independent_map is parallel.independent_map
     ky = np.array([0.1, 0.2, 0.3, 0.4, 0.5])
     chunks = parallel.ky_scan_batches(ky, n_batches=2)
 
@@ -44,7 +50,11 @@ def test_batch_map_matches_vmap_for_pytree_outputs_single_device() -> None:
     observed = parallel.batch_map(fn, values, batch_size=2, devices=[jax.devices()[0]])
     expected = jax.vmap(fn)(values)
 
-    jax.tree_util.tree_map(lambda obs, exp: np.testing.assert_allclose(np.asarray(obs), np.asarray(exp)), observed, expected)
+    jax.tree_util.tree_map(
+        lambda obs, exp: np.testing.assert_allclose(np.asarray(obs), np.asarray(exp)),
+        observed,
+        expected,
+    )
 
 
 def test_pad_to_multiple_preserves_prefix_and_reports_original_size() -> None:
@@ -78,7 +88,9 @@ def test_batch_map_multi_device_branch_preserves_vmap_identity(monkeypatch) -> N
     def fn(x):
         return jnp.asarray([x, x + 1.0])
 
-    observed = parallel.batch_map(fn, values, batch_size=3, devices=[object(), object()])
+    observed = parallel.batch_map(
+        fn, values, batch_size=3, devices=[object(), object()]
+    )
     expected = jax.vmap(fn)(values)
 
     assert np.allclose(np.asarray(observed), np.asarray(expected))
@@ -89,7 +101,10 @@ def test_batch_map_multi_device_branch_preserves_pytree_identity(monkeypatch) ->
         assert len(devices) == 2
 
         def mapped(sharded):
-            return jax.tree_util.tree_map(lambda *parts: jnp.stack(parts, axis=0), *[fn(shard) for shard in sharded])
+            return jax.tree_util.tree_map(
+                lambda *parts: jnp.stack(parts, axis=0),
+                *[fn(shard) for shard in sharded],
+            )
 
         return mapped
 
@@ -99,10 +114,16 @@ def test_batch_map_multi_device_branch_preserves_pytree_identity(monkeypatch) ->
     def fn(x):
         return {"field": jnp.asarray([x, x + 1.0]), "flux": x**2}
 
-    observed = parallel.batch_map(fn, values, batch_size=3, devices=[object(), object()])
+    observed = parallel.batch_map(
+        fn, values, batch_size=3, devices=[object(), object()]
+    )
     expected = jax.vmap(fn)(values)
 
-    jax.tree_util.tree_map(lambda obs, exp: np.testing.assert_allclose(np.asarray(obs), np.asarray(exp)), observed, expected)
+    jax.tree_util.tree_map(
+        lambda obs, exp: np.testing.assert_allclose(np.asarray(obs), np.asarray(exp)),
+        observed,
+        expected,
+    )
 
 
 def test_parallel_helpers_reject_invalid_inputs() -> None:
