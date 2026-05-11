@@ -434,6 +434,52 @@ def test_gx_nonlinear_omega_components_zero_and_finite() -> None:
     assert float(oy) >= 0.0
 
 
+def test_gx_nonlinear_omega_components_recovers_spectral_gradient_cfl() -> None:
+    """GX CFL estimate should reduce to the pseudo-spectral derivative maximum."""
+
+    ny = nx = 4
+    kx = jnp.asarray([0.0, 1.0, -2.0, -1.0], dtype=jnp.float32)
+    ky = jnp.asarray([0.0, 1.0, -2.0, -1.0], dtype=jnp.float32)
+    ky_grid, kx_grid = jnp.meshgrid(ky, kx, indexing="ij")
+    grid = SimpleNamespace(ky=ky, kx=kx)
+    cache = SimpleNamespace(kx_grid=kx_grid, ky_grid=ky_grid)
+
+    def _sin_x_hat(amplitude: float) -> jnp.ndarray:
+        # Coefficients for amplitude * sin(x); irfft/ifft paths multiply by N.
+        field = jnp.zeros((ny, nx, 1), dtype=jnp.complex64)
+        field = field.at[0, 1, 0].set(-0.5j * amplitude)
+        return field.at[0, -1, 0].set(0.5j * amplitude)
+
+    phi_amp = 1.25
+    apar_amp = 0.5
+    bpar_amp = 0.25
+    vpar_max = 2.0
+    muB_max = 3.0
+    fields = FieldState(
+        phi=_sin_x_hat(phi_amp),
+        apar=_sin_x_hat(apar_amp),
+        bpar=_sin_x_hat(bpar_amp),
+    )
+
+    omega_x, omega_y = _gx_nonlinear_omega_components(
+        fields,
+        grid,
+        cache,
+        gx_real_fft=False,
+        kx_max=5.0,
+        ky_max=3.0,
+        kxfac=-2.0,
+        vpar_max=vpar_max,
+        muB_max=muB_max,
+    )
+
+    expected_vmax_y = phi_amp + vpar_max * apar_amp + muB_max * bpar_amp
+    assert float(omega_x) == pytest.approx(0.0, abs=1.0e-6)
+    assert float(omega_y) == pytest.approx(
+        0.5 * 2.0 * 3.0 * expected_vmax_y, rel=1.0e-6
+    )
+
+
 def test_apply_collision_split_and_nonlinear_wrapper_routing(monkeypatch) -> None:
     G = jnp.ones((2, 2, 1, 1, 1), dtype=jnp.complex64)
     damping = jnp.ones_like(G.real)

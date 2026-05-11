@@ -622,6 +622,12 @@ performance claims:
   gates, not speedup claims.
 - ``tests/test_generate_parallel_ky_scan_gate.py`` tests the artifact writer
   for the real Cyclone ``k_y``-batch gate.
+- ``tests/test_parallel_artifact_contracts.py`` locks the tracked large-run
+  scaling artifacts themselves. It requires the performance and validation
+  manifests to list the CPU/GPU split artifacts, verifies serial numerical
+  identity for independent ``k_y`` and quasilinear/UQ rows, checks that
+  nonlinear whole-state sharding embeds per-device profiler/profile payloads,
+  and fails if docs detach speedup wording from the current artifact set.
 - ``tools/generate_parallel_ky_scan_gate.py`` runs the actual linear solver
   serially and with fixed-shape ``k_y`` batching, then writes
   ``docs/_static/parallel_ky_scan_gate.{png,pdf,csv,json}``. The JSON gate

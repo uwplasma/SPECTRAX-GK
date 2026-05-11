@@ -170,6 +170,27 @@ def test_runtime_mode_index_selection_and_step_inference() -> None:
     )
     assert (ky_idx2, kx_idx2) == (2, 2)
 
+    dealiased_grid = type(
+        "Grid",
+        (),
+        {
+            "ky": np.asarray([0.0, 0.2, 0.4]),
+            "kx": np.asarray([0.0, 0.5, 1.0]),
+            "dealias_mask": np.asarray(
+                [
+                    [True, True, True],
+                    [True, False, True],
+                    [False, False, False],
+                ],
+                dtype=bool,
+            ),
+        },
+    )()
+    ky_idx3, kx_idx3 = _select_nonlinear_mode_indices(
+        dealiased_grid, ky_target=0.39, kx_target=0.9, use_dealias_mask=True
+    )
+    assert (ky_idx3, kx_idx3) == (1, 2)
+
     assert _infer_runtime_nonlinear_steps(cfg, dt=0.1, steps=7) == 7
     assert (
         _infer_runtime_nonlinear_steps(

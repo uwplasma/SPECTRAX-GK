@@ -619,6 +619,41 @@ def test_build_initial_condition_supports_all_and_invalid_fields() -> None:
         )
 
 
+def test_build_initial_condition_all_uses_gx_moment_normalization() -> None:
+    grid = SimpleNamespace(
+        kx=np.array([0.0]),
+        ky=np.array([0.0, 0.4]),
+        z=np.array([0.0, 1.0]),
+    )
+    geom = SimpleNamespace(s_hat=0.8)
+    base = 2.0 * (1.0 + 1.0j)
+
+    G0 = np.asarray(
+        _build_initial_condition(
+            grid,
+            geom,
+            ky_index=[0, 1],
+            kx_index=0,
+            Nl=2,
+            Nm=4,
+            init_cfg=InitializationConfig(
+                init_field="all",
+                init_amp=2.0,
+                gaussian_init=False,
+            ),
+        )
+    )
+
+    np.testing.assert_allclose(G0[:, :, 0, 0, :], 0.0)
+    np.testing.assert_allclose(G0[0, 0, 1, 0, :], base)
+    np.testing.assert_allclose(G0[0, 1, 1, 0, :], base)
+    np.testing.assert_allclose(G0[0, 2, 1, 0, :], base / np.sqrt(2.0))
+    np.testing.assert_allclose(G0[1, 0, 1, 0, :], base)
+    np.testing.assert_allclose(G0[0, 3, 1, 0, :], base / np.sqrt(6.0))
+    np.testing.assert_allclose(G0[1, 1, 1, 0, :], base)
+    np.testing.assert_allclose(G0[1, 2:, 1, 0, :], 0.0)
+
+
 def test_build_initial_condition_field_map_and_zonal_mode_safety() -> None:
     grid = SimpleNamespace(
         kx=np.array([0.0]),

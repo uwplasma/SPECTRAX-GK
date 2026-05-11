@@ -36,6 +36,7 @@ from spectraxgk.linear import (
     _is_electrostatic_slice_terms,
     _is_streaming_only_terms,
     build_H,
+    hypercollision_damping,
     integrate_linear,
     integrate_linear_diagnostics,
     linear_rhs,
@@ -139,6 +140,36 @@ def test_low_rank_moment_cache_keeps_high_order_kz_hypercollision_finite() -> No
     assert np.all(np.isfinite(np.asarray(cache["m_pow"])))
     assert np.isfinite(float(np.asarray(cache["m_norm_kz_factor"])))
     assert float(np.max(np.asarray(cache["m_pow"]))) <= 1.0
+
+
+def test_hypercollision_damping_preserves_low_moments_and_grows_with_kz() -> None:
+    params = LinearParams(
+        nu_hyper=0.0,
+        nu_hyper_l=0.2,
+        nu_hyper_m=0.3,
+        nu_hyper_lm=0.4,
+        hypercollisions_const=1.0,
+        hypercollisions_kz=1.0,
+        p_hyper_l=2.0,
+        p_hyper_m=4.0,
+        p_hyper_lm=2.0,
+        vth=1.5,
+        kpar_scale=2.0,
+    )
+    moment_cache = _build_low_rank_moment_cache_arrays(3, 5, params, jnp.float32)
+    cache = SimpleNamespace(
+        **moment_cache,
+        kz=jnp.asarray([0.0, 1.0, 2.0], dtype=jnp.float32),
+    )
+
+    damping = np.asarray(hypercollision_damping(cache, params, jnp.float32))
+
+    assert damping.shape == (1, 3, 5, 1, 1, 3)
+    np.testing.assert_allclose(damping[0, 0, 0, 0, 0], 0.0, atol=0.0)
+    np.testing.assert_allclose(damping[0, 1, 2, 0, 0], 0.0, atol=0.0)
+    assert damping[0, 2, 0, 0, 0, 0] > 0.0
+    assert damping[0, 0, 4, 0, 0, 2] > damping[0, 0, 4, 0, 0, 1]
+    assert damping[0, 0, 4, 0, 0, 1] > damping[0, 0, 4, 0, 0, 0]
 
 
 def test_gyroaverage_cache_helper_matches_species_vmap_convention() -> None:

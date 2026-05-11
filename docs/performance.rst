@@ -433,6 +433,16 @@ they use JAX device batching and trim padded edge samples deterministically.
 Every performance claim from this path should include a numerical-identity
 gate against the serial result before a speedup plot is promoted.
 
+For the release-scale CPU/GPU panels below, the acceptance contract is
+machine-checkable: the combined ``*_large`` artifact must cite split CPU and
+GPU JSON/CSV/PNG/PDF companions, each split artifact must include the grid,
+warmup/repeat policy, backend/device counts, positive timing samples, and
+per-row identity results, and any speedup statement must name the artifact that
+supports it. Whole-state nonlinear sharding uses the same large-run artifact
+shape, but its timing ratios remain profiler evidence and not a production
+nonlinear speedup claim unless a future matched workload refresh adds the
+missing full nonlinear communication and transport gates.
+
 The first release-grade gate for this policy is a real Cyclone linear
 ``k_y``-scan comparison:
 
@@ -813,7 +823,9 @@ Hermite-sharded electrostatic route is overhead-limited at one and two logical
 CPU devices, becomes competitive near four devices, and reaches the best
 bounded engineering point of ``1.57x`` at ``Nm=128`` on four logical CPU
 devices. This figure is a regime map for development, not a broad scaling
-claim.
+claim. The machine-readable release contract is
+``docs/_static/linear_rhs_parallel_slices_sweep.json`` with CSV/PNG/PDF
+companions.
 
 The same profiler can target GPUs on the office node:
 

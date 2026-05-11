@@ -35,7 +35,10 @@ it synchronized with ``docs/_static/manuscript_readiness_status.json``,
 ``docs/_static/open_research_lane_status.json``, and the validation coverage
 manifest. A passing test or coverage line is not enough to promote a physics or
 performance claim unless the relevant artifact also records the observable,
-reference, tolerance, and accepted claim level.
+reference, tolerance, and accepted claim level. Likewise, an example that runs
+successfully is still only a release claim when it is labeled as release-gated
+and tied to the relevant artifact; otherwise keep it framed as a stress lane,
+pilot, or deferred manuscript lane.
 
 How to check the manifest
 -------------------------
@@ -75,13 +78,15 @@ The remaining work should be closed in this order.
    ``from_gx/vmec.py``. Each slice should land with targeted tests and no
    physics-model change.
 
-3. **Turn open physics lanes into explicit gates.**
+3. **Turn open or deferred physics lanes into explicit gates.**
    Literature-facing lanes should produce JSON/CSV/PNG/PDF artifacts with the
    same observable, window, tolerance, and source recorded in metadata. The
-   current priority list is W7-X zonal response, W7-X fluctuation-spectrum
-   experimental extension, monotone Cyclone velocity-space convergence, KBM
-   branch continuity, nonlinear window statistics, and
-   Merlo/Rosenbluth-Hinton response panels.
+   current priority list is W7-X zonal recurrence/damping, W7-X
+   fluctuation-spectrum experimental transfer functions, W7-X TEM /
+   kinetic-electron and multi-flux-tube validation, production nonlinear
+   transport-gradient gates, optimized-equilibrium nonlinear audits, and any
+   stricter case-specific nonlinear window-statistics retuning that should
+   become a paper claim.
 
 4. **Replace coverage gaps with physics or numerics tests.**
    Do not add shallow import-only tests to chase the number. Prefer tests for
@@ -94,9 +99,11 @@ The remaining work should be closed in this order.
    recovery diagnostics, and covariance/uncertainty estimates. The Phase-A
    ``vmec_jax`` and ``booz_xform_jax`` bridge now carries a tracer-safe
    geometry-observable sensitivity check, a two-parameter inverse design, and
-   local UQ covariance diagnostics. Growth-rate and transport derivatives must
-   get the same finite-difference checks before they are used for optimization
-   claims.
+   local UQ covariance diagnostics. Reduced linear, quasilinear, and
+   nonlinear-window-estimator derivatives now have AD/finite-difference gates,
+   but production nonlinear transport derivatives still need long-window
+   heat-flux convergence, local-gradient conditioning, and optimized-equilibrium
+   audits before they are used for stellarator heat-flux optimization claims.
 
 6. **Keep performance measurements separated from validation.**
    Performance panels should report cold compile, warm runtime, memory, output
@@ -122,7 +129,8 @@ The refactor branch is ready to merge when:
   labeled as non-release exploratory artifacts;
 - shipped examples still run and plot from output files;
 - W7-X, HSX, Cyclone, Cyclone-Miller, KBM, ETG, Miller, and VMEC examples have
-  current documentation that matches the artifacts;
+  current documentation that labels each lane as release-gated, stress, pilot,
+  or deferred and matches the tracked artifacts;
 - autodiff examples validate gradients and inverse/UQ outputs;
 - the performance manifest points to current runtime/memory panels, CPU/GPU
   profiler artifacts, and numerical-identity gates for every performance
