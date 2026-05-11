@@ -4010,3 +4010,38 @@ Exit gate:
   - after CI is green, start the next bounded coverage/refactor tranche on
     ``spectraxgk.nonlinear`` helper diagnostics and ``spectraxgk.benchmarks``
     branch/gate metadata, avoiding integration-marked slow tests.
+- Bounded nonlinear and benchmark coverage tranche:
+  - added nonlinear tests in ``tests/test_nonlinear_exb.py`` and
+    ``tests/test_nonlinear_helpers_extra.py`` covering Poisson-bracket
+    antisymmetry, free-energy inner-product cancellation in a periodic
+    nonlinear-only limit, resolved-diagnostic schema/sample-axis behavior, and
+    small-amplitude fixed-mode gamma/omega finiteness;
+  - added benchmark tests in ``tests/test_benchmarks_helpers.py``,
+    ``tests/test_benchmarks_runner_branches.py``, and
+    ``tests/test_make_benchmark_atlas.py`` covering checked-in reference
+    monotonicity/sign/scale conventions, nearest-``ky`` comparison behavior,
+    zero-growth near-marginal scoring, synthetic KBM multi-target branch
+    selection, benchmark-atlas static asset provenance, CSV schema checks, and
+    inclusive convergence-gate thresholds;
+  - no source files were changed in this tranche; the tests are bounded,
+    synthetic/reference-artifact checks and avoid long simulations, VMEC
+    backends, GPUs, and integration-marked default-skipped files.
+- Verification for this coverage tranche:
+  - ``python -m ruff format tests/test_nonlinear_helpers_extra.py tests/test_nonlinear_exb.py tests/test_benchmarks_helpers.py tests/test_benchmarks_runner_branches.py tests/test_make_benchmark_atlas.py``;
+  - ``python -m ruff check tests/test_nonlinear_helpers_extra.py tests/test_nonlinear_exb.py tests/test_benchmarks_helpers.py tests/test_benchmarks_runner_branches.py tests/test_make_benchmark_atlas.py``;
+  - bounded nonlinear shard with ``tools/run_tests_fast.py`` passed:
+    ``tests/test_nonlinear_helpers_extra.py``,
+    ``tests/test_nonlinear_exb.py``,
+    ``tests/test_plot_nonlinear_window_statistics.py``, and
+    ``tests/test_plot_w7x_fluctuation_spectrum_panel.py``;
+  - bounded benchmark shard with ``tools/run_tests_fast.py`` passed:
+    ``tests/test_benchmarks_helpers.py``,
+    ``tests/test_benchmarks_runner_branches.py``,
+    ``tests/test_benchmarking.py``, and
+    ``tests/test_make_benchmark_atlas.py``.
+- Next best implementation steps:
+  - commit/push this bounded coverage tranche and monitor CI;
+  - if CI remains green, continue the same strategy on the next active
+    high-priority modules in the validation manifest, prioritizing
+    ``spectraxgk.nonlinear`` branch coverage and ``spectraxgk.benchmarks``
+    refactor-enabling helper tests.
