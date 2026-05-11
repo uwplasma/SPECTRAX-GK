@@ -288,6 +288,16 @@ finite differences, and records local covariance diagnostics. High-fidelity
 ``vmec_jax`` / ``booz_xform_jax`` optimization examples should use the same
 contract once their in-memory field-line mapping is available.
 
+The bridge validates more than array shapes. Host-side mappings must contain
+finite scalar metadata such as ``q``, ``R0``, ``B0``, and ``theta_scale``,
+must provide at least one ``theta`` sample, and must use a positive integer
+``nfp``. JAX-traced mappings can still be passed with
+``validate_finite=False`` so autodiff transforms do not attempt host NumPy
+checks during tracing. The finite-difference utilities used by these gates
+also reject non-positive step sizes, and the inverse-design covariance block
+records rank and conditioning before any optimization result is promoted from
+local sensitivity evidence to a transport-design claim.
+
 .. figure:: _static/differentiable_geometry_bridge.png
    :width: 95%
    :align: center
@@ -348,6 +358,14 @@ The next implementation step is to extend the same equal-arc path to
 finite-beta/production-runtime curvature and drift reconstruction, then replace
 the reduced estimator-gradient checks with converged transport-gradient and
 optimized-equilibrium audits.
+
+For release claims, the differentiable-geometry lane is therefore closed for
+zero-beta equal-arc parity and reduced AD/finite-difference objectives, but
+open for production nonlinear heat-flux optimization. The active publication
+wording must keep these two levels separate: the current bridge starts at real
+``vmec_jax`` state coefficients and reaches SPECTRAX-GK solver observables, but
+it has not yet validated converged nonlinear turbulence gradients or nonlinear
+audits of optimized equilibria.
 The VMEC bridge now also expands environment variables in ``geometry.vmec_file``.
 Tracked portable runtime TOMLs should therefore pass external VMEC equilibria
 through explicit environment variables such as ``$W7X_VMEC_FILE`` and

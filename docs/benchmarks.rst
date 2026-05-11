@@ -128,6 +128,10 @@ because it is a pilot rather than a headline transport benchmark. TEM and KAW
 are intentionally kept out of the active parity claim until their separate
 recovery work is finished.
 
+The global release claim boundary is summarized in :doc:`release_scope`. Use
+that page when deciding whether a benchmark panel supports a README, release
+note, or manuscript claim.
+
 Interpretation of validation
 ----------------------------
 

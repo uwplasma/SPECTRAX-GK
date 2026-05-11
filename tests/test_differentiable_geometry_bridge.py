@@ -72,13 +72,17 @@ def test_flux_tube_geometry_from_mapping_builds_solver_contract() -> None:
     assert spectraxgk.flux_tube_geometry_from_mapping is flux_tube_geometry_from_mapping
     assert spectraxgk.geometry_observable_names is geometry_observable_names
     assert spectraxgk.flux_tube_geometry_observables is flux_tube_geometry_observables
-    geom = flux_tube_geometry_from_mapping(_sample_mapping(), source_model="vmec_jax:test")
+    geom = flux_tube_geometry_from_mapping(
+        _sample_mapping(), source_model="vmec_jax:test"
+    )
 
     assert geom.source_model == "vmec_jax:test"
     assert geom.theta.shape == (8,)
     assert geom.nfp == 5
     assert geom.gradpar() == pytest.approx(0.7)
-    assert np.allclose(np.asarray(geom.bmag(jnp.asarray(geom.theta))), np.asarray(geom.bmag_profile))
+    assert np.allclose(
+        np.asarray(geom.bmag(jnp.asarray(geom.theta))), np.asarray(geom.bmag_profile)
+    )
     observables = np.asarray(flux_tube_geometry_observables(geom))
     assert observables.shape == (len(geometry_observable_names()),)
     assert np.all(np.isfinite(observables))
@@ -119,8 +123,27 @@ def test_flux_tube_geometry_from_mapping_rejects_bad_contracts() -> None:
     with pytest.raises(ValueError, match="non-finite"):
         flux_tube_geometry_from_mapping(bad)
 
+    bad = _sample_mapping()
+    bad["q"] = np.nan
+    with pytest.raises(ValueError, match="q.*non-finite"):
+        flux_tube_geometry_from_mapping(bad)
 
-def test_flux_tube_geometry_from_mapping_uses_jax_native_defaults_and_shat_alias() -> None:
+    bad = _sample_mapping()
+    bad["nfp"] = 0
+    with pytest.raises(ValueError, match="nfp"):
+        flux_tube_geometry_from_mapping(bad)
+
+    bad = _sample_mapping()
+    for key, value in list(bad.items()):
+        if isinstance(value, np.ndarray):
+            bad[key] = value[:0]
+    with pytest.raises(ValueError, match="theta"):
+        flux_tube_geometry_from_mapping(bad)
+
+
+def test_flux_tube_geometry_from_mapping_uses_jax_native_defaults_and_shat_alias() -> (
+    None
+):
     data = _sample_mapping()
     data.pop("jacobian")
     data.pop("grho")
@@ -134,25 +157,35 @@ def test_flux_tube_geometry_from_mapping_uses_jax_native_defaults_and_shat_alias
     assert geom.s_hat == pytest.approx(0.4)
 
 
-def test_differentiable_backend_path_helpers_handle_missing_modules(tmp_path: Path, monkeypatch) -> None:
+def test_differentiable_backend_path_helpers_handle_missing_modules(
+    tmp_path: Path, monkeypatch
+) -> None:
     existing = tmp_path / "backend"
     (existing / "src").mkdir(parents=True)
     monkeypatch.setenv("SPECTRAX_VMEC_JAX_PATH", str(existing))
 
-    paths = _candidate_paths(("SPECTRAX_VMEC_JAX_PATH",), (existing, tmp_path / "missing"))
+    paths = _candidate_paths(
+        ("SPECTRAX_VMEC_JAX_PATH",), (existing, tmp_path / "missing")
+    )
 
     assert paths == [existing.resolve(), (existing / "src").resolve()]
-    assert _find_importable_module("spectraxgk_definitely_missing_backend", paths) is None
+    assert (
+        _find_importable_module("spectraxgk_definitely_missing_backend", paths) is None
+    )
 
 
-def test_differentiable_backend_path_helpers_prefer_configured_checkout(tmp_path: Path, monkeypatch) -> None:
+def test_differentiable_backend_path_helpers_prefer_configured_checkout(
+    tmp_path: Path, monkeypatch
+) -> None:
     installed_root = tmp_path / "installed"
     local_root = tmp_path / "local_vmec"
     installed_pkg = installed_root / "vmec_jax"
     local_pkg = local_root / "vmec_jax"
     installed_pkg.mkdir(parents=True)
     local_pkg.mkdir(parents=True)
-    (installed_pkg / "__init__.py").write_text("marker = 'installed'\n", encoding="utf-8")
+    (installed_pkg / "__init__.py").write_text(
+        "marker = 'installed'\n", encoding="utf-8"
+    )
     (local_pkg / "__init__.py").write_text("marker = 'local'\n", encoding="utf-8")
     monkeypatch.syspath_prepend(str(installed_root))
     sys.modules.pop("vmec_jax", None)
@@ -167,7 +200,9 @@ def test_differentiable_backend_path_helpers_prefer_configured_checkout(tmp_path
     assert str(local_pkg) in str(module.__file__)
 
 
-def test_discover_differentiable_geometry_backends_reports_optional_apis(tmp_path: Path, monkeypatch) -> None:
+def test_discover_differentiable_geometry_backends_reports_optional_apis(
+    tmp_path: Path, monkeypatch
+) -> None:
     vmec_root = tmp_path / "vmec_jax" / "src" / "vmec_jax"
     booz_root = tmp_path / "booz_xform_jax" / "src" / "booz_xform_jax"
     vmec_root.mkdir(parents=True)
@@ -193,7 +228,9 @@ def test_discover_differentiable_geometry_backends_reports_optional_apis(tmp_pat
     assert info["booz_xform_jax_api_available"] is True
 
 
-def test_vmec_boundary_aspect_sensitivity_report_uses_discovered_jax_api(tmp_path: Path, monkeypatch) -> None:
+def test_vmec_boundary_aspect_sensitivity_report_uses_discovered_jax_api(
+    tmp_path: Path, monkeypatch
+) -> None:
     vmec_root = tmp_path / "vmec_jax" / "src" / "vmec_jax"
     vmec_root.mkdir(parents=True)
     (vmec_root / "__init__.py").write_text(
@@ -213,7 +250,9 @@ def test_vmec_boundary_aspect_sensitivity_report_uses_discovered_jax_api(tmp_pat
     sys.modules.pop("vmec_jax", None)
     monkeypatch.setenv("SPECTRAX_VMEC_JAX_PATH", str(tmp_path / "vmec_jax"))
 
-    report = vmec_boundary_aspect_sensitivity_report(jnp.asarray([0.08, 0.2]), fd_step=1.0e-3)
+    report = vmec_boundary_aspect_sensitivity_report(
+        jnp.asarray([0.08, 0.2]), fd_step=1.0e-3
+    )
 
     assert report["available"] is True
     assert report["backend_info"]["vmec_jax_boundary_api_available"] is True
@@ -231,7 +270,10 @@ def test_booz_xform_spectral_sensitivity_report_is_bounded_when_available() -> N
 
     report = booz_xform_spectral_sensitivity_report(ripple=0.05, fd_step=2.0e-5)
 
-    assert spectraxgk.booz_xform_spectral_sensitivity_report is booz_xform_spectral_sensitivity_report
+    assert (
+        spectraxgk.booz_xform_spectral_sensitivity_report
+        is booz_xform_spectral_sensitivity_report
+    )
     assert "available" in report
     if not report["available"]:
         assert report["objective"] is None
@@ -248,7 +290,10 @@ def test_booz_xform_flux_tube_sensitivity_report_is_bounded_when_available() -> 
 
     report = booz_xform_flux_tube_sensitivity_report(ntheta=32, fd_step=2.0e-5)
 
-    assert spectraxgk.booz_xform_flux_tube_sensitivity_report is booz_xform_flux_tube_sensitivity_report
+    assert (
+        spectraxgk.booz_xform_flux_tube_sensitivity_report
+        is booz_xform_flux_tube_sensitivity_report
+    )
     assert "available" in report
     if not report["available"]:
         assert report["sensitivity"] is None
@@ -256,13 +301,18 @@ def test_booz_xform_flux_tube_sensitivity_report_is_bounded_when_available() -> 
 
     sensitivity = report["sensitivity"]
     assert sensitivity["observable_names"] == list(geometry_observable_names())
-    assert np.asarray(sensitivity["jacobian_ad"]).shape == (len(geometry_observable_names()), 2)
+    assert np.asarray(sensitivity["jacobian_ad"]).shape == (
+        len(geometry_observable_names()),
+        2,
+    )
     assert float(sensitivity["max_abs_ad_fd_error"]) < 2.0e-6
     assert float(sensitivity["max_rel_ad_fd_error"]) < 2.0e-4
     assert np.asarray(report["bmnc_b"]).shape == (5,)
 
 
-def test_vmec_jax_boozer_flux_tube_sensitivity_report_starts_from_real_vmec_state_when_available() -> None:
+def test_vmec_jax_boozer_flux_tube_sensitivity_report_starts_from_real_vmec_state_when_available() -> (
+    None
+):
     for name in (
         "vmec_jax",
         "vmec_jax.driver",
@@ -277,7 +327,10 @@ def test_vmec_jax_boozer_flux_tube_sensitivity_report_starts_from_real_vmec_stat
 
     report = vmec_jax_boozer_flux_tube_sensitivity_report(ntheta=16, fd_step=2.0e-5)
 
-    assert spectraxgk.vmec_jax_boozer_flux_tube_sensitivity_report is vmec_jax_boozer_flux_tube_sensitivity_report
+    assert (
+        spectraxgk.vmec_jax_boozer_flux_tube_sensitivity_report
+        is vmec_jax_boozer_flux_tube_sensitivity_report
+    )
     assert "available" in report
     if not report["available"]:
         assert report["sensitivity"] is None
@@ -287,13 +340,18 @@ def test_vmec_jax_boozer_flux_tube_sensitivity_report_starts_from_real_vmec_stat
     assert report["case_name"] == "circular_tokamak"
     assert report["param_names"] == ["delta_Rcos", "delta_Zsin"]
     assert sensitivity["observable_names"] == list(geometry_observable_names())
-    assert np.asarray(sensitivity["jacobian_ad"]).shape == (len(geometry_observable_names()), 2)
+    assert np.asarray(sensitivity["jacobian_ad"]).shape == (
+        len(geometry_observable_names()),
+        2,
+    )
     assert float(sensitivity["max_abs_ad_fd_error"]) < 2.0e-5
     assert float(sensitivity["max_rel_ad_fd_error"]) < 2.0e-4
     assert np.asarray(report["bmnc_b"]).shape == (2,)
 
 
-def test_vmec_jax_flux_tube_sensitivity_report_starts_from_real_vmec_state_when_available() -> None:
+def test_vmec_jax_flux_tube_sensitivity_report_starts_from_real_vmec_state_when_available() -> (
+    None
+):
     for name in (
         "vmec_jax",
         "vmec_jax.driver",
@@ -308,7 +366,10 @@ def test_vmec_jax_flux_tube_sensitivity_report_starts_from_real_vmec_state_when_
 
     report = vmec_jax_flux_tube_sensitivity_report(ntheta=12, fd_step=2.0e-6)
 
-    assert spectraxgk.vmec_jax_flux_tube_sensitivity_report is vmec_jax_flux_tube_sensitivity_report
+    assert (
+        spectraxgk.vmec_jax_flux_tube_sensitivity_report
+        is vmec_jax_flux_tube_sensitivity_report
+    )
     assert "available" in report
     if not report["available"]:
         assert report["sensitivity"] is None
@@ -318,7 +379,10 @@ def test_vmec_jax_flux_tube_sensitivity_report_starts_from_real_vmec_state_when_
     assert report["case_name"] == "nfp4_QH_warm_start"
     assert report["param_names"] == ["delta_Rcos", "delta_Zsin"]
     assert sensitivity["observable_names"] == list(geometry_observable_names())
-    assert np.asarray(sensitivity["jacobian_ad"]).shape == (len(geometry_observable_names()), 2)
+    assert np.asarray(sensitivity["jacobian_ad"]).shape == (
+        len(geometry_observable_names()),
+        2,
+    )
     assert float(sensitivity["max_abs_ad_fd_error"]) < 1.0e1
     assert float(sensitivity["max_rel_ad_fd_error"]) < 1.0e-3
     assert int(report["surface_index"]) > 0
@@ -326,7 +390,9 @@ def test_vmec_jax_flux_tube_sensitivity_report_starts_from_real_vmec_state_when_
     assert float(report["reference_b"]) > 0.0
 
 
-def test_vmec_jax_flux_tube_array_parity_report_tracks_production_gap_when_available() -> None:
+def test_vmec_jax_flux_tube_array_parity_report_tracks_production_gap_when_available() -> (
+    None
+):
     for name in (
         "vmec_jax",
         "vmec_jax.driver",
@@ -343,7 +409,10 @@ def test_vmec_jax_flux_tube_array_parity_report_tracks_production_gap_when_avail
 
     report = vmec_jax_flux_tube_array_parity_report(ntheta=8)
 
-    assert spectraxgk.vmec_jax_flux_tube_array_parity_report is vmec_jax_flux_tube_array_parity_report
+    assert (
+        spectraxgk.vmec_jax_flux_tube_array_parity_report
+        is vmec_jax_flux_tube_array_parity_report
+    )
     assert "available" in report
     if not report["available"]:
         assert "reason" in report or "error" in report
@@ -351,7 +420,15 @@ def test_vmec_jax_flux_tube_array_parity_report_tracks_production_gap_when_avail
 
     assert report["case_name"] == "nfp4_QH_warm_start"
     assert report["status"] in {"diagnostic_open", "passed"}
-    assert set(report["array_metrics"]) >= {"bmag", "gds2", "gds21", "gds22", "gbdrift", "jacobian", "grho"}
+    assert set(report["array_metrics"]) >= {
+        "bmag",
+        "gds2",
+        "gds21",
+        "gds22",
+        "gbdrift",
+        "jacobian",
+        "grho",
+    }
     assert set(report["scalar_metrics"]) == {"gradpar", "q", "s_hat"}
     assert "equal_arc_core_array_metrics" in report
     assert "equal_arc_metric_array_metrics" in report
@@ -361,14 +438,33 @@ def test_vmec_jax_flux_tube_array_parity_report_tracks_production_gap_when_avail
     assert np.isfinite(float(report["worst_scalar_rel"]))
     assert bool(report["array_metrics"]["bmag"]["shape_match"])
     if report["equal_arc_core_array_metrics"]:
-        assert spectraxgk.vmec_jax_boozer_equal_arc_core_profiles_from_state is vmec_jax_boozer_equal_arc_core_profiles_from_state
-        assert set(report["equal_arc_core_array_metrics"]) >= {"bmag", "bgrad", "jacobian"}
-        assert set(report["equal_arc_metric_array_metrics"]) == {"gds2", "gds21", "gds22", "grho"}
-        assert set(report["equal_arc_drift_array_metrics"]) == {"cvdrift", "gbdrift", "cvdrift0", "gbdrift0"}
+        assert (
+            spectraxgk.vmec_jax_boozer_equal_arc_core_profiles_from_state
+            is vmec_jax_boozer_equal_arc_core_profiles_from_state
+        )
+        assert set(report["equal_arc_core_array_metrics"]) >= {
+            "bmag",
+            "bgrad",
+            "jacobian",
+        }
+        assert set(report["equal_arc_metric_array_metrics"]) == {
+            "gds2",
+            "gds21",
+            "gds22",
+            "grho",
+        }
+        assert set(report["equal_arc_drift_array_metrics"]) == {
+            "cvdrift",
+            "gbdrift",
+            "cvdrift0",
+            "gbdrift0",
+        }
         assert set(report["equal_arc_core_scalar_metrics"]) == {"gradpar", "q", "s_hat"}
         assert np.isfinite(float(report["equal_arc_core_worst_normalized_max_abs"]))
         assert np.isfinite(float(report["equal_arc_core_worst_scalar_rel"]))
-        assert np.isfinite(float(report["equal_arc_derivative_worst_normalized_max_abs"]))
+        assert np.isfinite(
+            float(report["equal_arc_derivative_worst_normalized_max_abs"])
+        )
         assert np.isfinite(float(report["equal_arc_metric_worst_normalized_max_abs"]))
         assert np.isfinite(float(report["equal_arc_drift_worst_normalized_max_abs"]))
         assert float(report["equal_arc_core_worst_normalized_max_abs"]) < 5.0e-2
@@ -378,12 +474,16 @@ def test_vmec_jax_flux_tube_array_parity_report_tracks_production_gap_when_avail
         assert float(report["equal_arc_drift_worst_normalized_max_abs"]) < 1.2e-1
 
 
-def test_vmec_jax_flux_tube_array_parity_report_enforces_boozer_resolution_floor() -> None:
+def test_vmec_jax_flux_tube_array_parity_report_enforces_boozer_resolution_floor() -> (
+    None
+):
     with pytest.raises(ValueError, match="mboz and nboz"):
         vmec_jax_flux_tube_array_parity_report(mboz=20, nboz=21)
 
 
-def test_vmec_jax_boozer_equal_arc_core_profiles_supports_surface_stencil(monkeypatch) -> None:
+def test_vmec_jax_boozer_equal_arc_core_profiles_supports_surface_stencil(
+    monkeypatch,
+) -> None:
     vmec_pkg = types.ModuleType("vmec_jax")
     vmec_pkg.__path__ = []  # type: ignore[attr-defined]
     booz_pkg = types.ModuleType("booz_xform_jax")
@@ -422,7 +522,9 @@ def test_vmec_jax_boozer_equal_arc_core_profiles_supports_surface_stencil(monkey
         }
 
     booz_input.booz_xform_inputs_from_state = booz_xform_inputs_from_state
-    booz_api.prepare_booz_xform_constants_from_inputs = prepare_booz_xform_constants_from_inputs
+    booz_api.prepare_booz_xform_constants_from_inputs = (
+        prepare_booz_xform_constants_from_inputs
+    )
     booz_api.booz_xform_from_inputs = booz_xform_from_inputs
     monkeypatch.setitem(sys.modules, "vmec_jax", vmec_pkg)
     monkeypatch.setitem(sys.modules, "vmec_jax.booz_input", booz_input)
@@ -435,7 +537,9 @@ def test_vmec_jax_boozer_equal_arc_core_profiles_supports_surface_stencil(monkey
     )
 
     state = types.SimpleNamespace(Rcos=jnp.ones((6, 2), dtype=jnp.float64))
-    wout = types.SimpleNamespace(signgs=1, Aminor_p=1.0, phi=np.asarray([0.0, -np.pi]), nfp=4)
+    wout = types.SimpleNamespace(
+        signgs=1, Aminor_p=1.0, phi=np.asarray([0.0, -np.pi]), nfp=4
+    )
     mapping = vmec_jax_boozer_equal_arc_core_profiles_from_state(
         state,
         static=object(),
@@ -461,7 +565,9 @@ def test_vmec_jax_boozer_equal_arc_core_profiles_supports_surface_stencil(monkey
         )
 
 
-def test_vmec_jax_metric_tensor_sensitivity_report_checks_real_metric_tensors_when_available() -> None:
+def test_vmec_jax_metric_tensor_sensitivity_report_checks_real_metric_tensors_when_available() -> (
+    None
+):
     for name in (
         "vmec_jax",
         "vmec_jax.driver",
@@ -474,8 +580,14 @@ def test_vmec_jax_metric_tensor_sensitivity_report_checks_real_metric_tensors_wh
 
     report = vmec_jax_metric_tensor_sensitivity_report(fd_step=2.0e-5)
 
-    assert spectraxgk.vmec_jax_metric_tensor_sensitivity_report is vmec_jax_metric_tensor_sensitivity_report
-    assert spectraxgk.vmec_metric_tensor_observable_names is vmec_metric_tensor_observable_names
+    assert (
+        spectraxgk.vmec_jax_metric_tensor_sensitivity_report
+        is vmec_jax_metric_tensor_sensitivity_report
+    )
+    assert (
+        spectraxgk.vmec_metric_tensor_observable_names
+        is vmec_metric_tensor_observable_names
+    )
     assert "available" in report
     if not report["available"]:
         assert report["sensitivity"] is None
@@ -484,13 +596,18 @@ def test_vmec_jax_metric_tensor_sensitivity_report_checks_real_metric_tensors_wh
     assert report["case_name"] == "circular_tokamak"
     assert report["param_names"] == ["delta_Rcos", "delta_Zsin"]
     assert report["observable_names"] == list(vmec_metric_tensor_observable_names())
-    assert np.asarray(report["jacobian_ad"]).shape == (len(vmec_metric_tensor_observable_names()), 2)
+    assert np.asarray(report["jacobian_ad"]).shape == (
+        len(vmec_metric_tensor_observable_names()),
+        2,
+    )
     assert float(report["max_abs_ad_fd_error"]) < 2.0e-5
     assert float(report["max_rel_ad_fd_error"]) < 2.0e-4
     assert len(report["metric_grid_shape"]) == 3
 
 
-def test_vmec_jax_field_line_tensor_sensitivity_report_checks_stellarator_tensors_when_available() -> None:
+def test_vmec_jax_field_line_tensor_sensitivity_report_checks_stellarator_tensors_when_available() -> (
+    None
+):
     for name in (
         "vmec_jax",
         "vmec_jax.driver",
@@ -505,8 +622,14 @@ def test_vmec_jax_field_line_tensor_sensitivity_report_checks_stellarator_tensor
 
     report = vmec_jax_field_line_tensor_sensitivity_report(ntheta=24, fd_step=1.0e-6)
 
-    assert spectraxgk.vmec_jax_field_line_tensor_sensitivity_report is vmec_jax_field_line_tensor_sensitivity_report
-    assert spectraxgk.vmec_field_line_tensor_observable_names is vmec_field_line_tensor_observable_names
+    assert (
+        spectraxgk.vmec_jax_field_line_tensor_sensitivity_report
+        is vmec_jax_field_line_tensor_sensitivity_report
+    )
+    assert (
+        spectraxgk.vmec_field_line_tensor_observable_names
+        is vmec_field_line_tensor_observable_names
+    )
     assert "available" in report
     if not report["available"]:
         assert report["sensitivity"] is None
@@ -515,7 +638,10 @@ def test_vmec_jax_field_line_tensor_sensitivity_report_checks_stellarator_tensor
     assert report["case_name"] == "nfp4_QH_warm_start"
     assert report["param_names"] == ["delta_Rcos", "delta_Zsin"]
     assert report["observable_names"] == list(vmec_field_line_tensor_observable_names())
-    assert np.asarray(report["jacobian_ad"]).shape == (len(vmec_field_line_tensor_observable_names()), 2)
+    assert np.asarray(report["jacobian_ad"]).shape == (
+        len(vmec_field_line_tensor_observable_names()),
+        2,
+    )
     assert float(report["max_abs_ad_fd_error"]) < 5.0e-3
     assert float(report["max_rel_ad_fd_error"]) < 5.0e-4
     assert len(report["metric_grid_shape"]) == 3
@@ -550,19 +676,29 @@ def _differentiable_mapping(params: jnp.ndarray) -> dict[str, object]:
     }
 
 
-def test_flux_tube_geometry_from_mapping_is_tracer_safe_for_geometry_sensitivities() -> None:
+def test_flux_tube_geometry_from_mapping_is_tracer_safe_for_geometry_sensitivities() -> (
+    None
+):
     x64_enabled = bool(jax.config.jax_enable_x64)
     fd_step = 2.0e-5 if x64_enabled else 1.0e-3
     abs_tol = 5.0e-6 if x64_enabled else 1.0e-3
     rel_tol = 5.0e-4 if x64_enabled else 2.0e-3
     params = jnp.asarray([0.08, 0.4], dtype=jnp.float64 if x64_enabled else jnp.float32)
 
-    report = geometry_sensitivity_report(_differentiable_mapping, params, fd_step=fd_step)
+    report = geometry_sensitivity_report(
+        _differentiable_mapping, params, fd_step=fd_step
+    )
 
     assert spectraxgk.geometry_sensitivity_report is geometry_sensitivity_report
     assert report["observable_names"] == list(geometry_observable_names())
-    assert np.asarray(report["jacobian_ad"]).shape == (len(geometry_observable_names()), 2)
-    assert np.asarray(report["jacobian_fd"]).shape == (len(geometry_observable_names()), 2)
+    assert np.asarray(report["jacobian_ad"]).shape == (
+        len(geometry_observable_names()),
+        2,
+    )
+    assert np.asarray(report["jacobian_fd"]).shape == (
+        len(geometry_observable_names()),
+        2,
+    )
     assert float(report["max_abs_ad_fd_error"]) < abs_tol
     assert float(report["max_rel_ad_fd_error"]) < rel_tol
 
@@ -586,10 +722,14 @@ def test_finite_difference_jacobian_matches_closed_form_linear_map() -> None:
 
     jac = finite_difference_jacobian(fn, jnp.asarray([0.2, -0.5]), step=fd_step)
 
-    np.testing.assert_allclose(np.asarray(jac), np.asarray([[2.0, -1.0], [1.0, 3.0]]), rtol=rtol, atol=atol)
+    np.testing.assert_allclose(
+        np.asarray(jac), np.asarray([[2.0, -1.0], [1.0, 3.0]]), rtol=rtol, atol=atol
+    )
 
     with pytest.raises(ValueError, match="one-dimensional"):
         finite_difference_jacobian(fn, jnp.ones((2, 1)))
+    with pytest.raises(ValueError, match="step"):
+        finite_difference_jacobian(fn, jnp.ones(2), step=0.0)
 
 
 def test_low_level_radial_and_sampling_helpers_cover_edge_contracts() -> None:
@@ -602,19 +742,32 @@ def test_low_level_radial_and_sampling_helpers_cover_edge_contracts() -> None:
     with pytest.raises(ValueError, match="radial interpolation"):
         _interp_radial(jnp.ones((2, 2, 2)), s_grid[:2], 0.25)
 
-    assert np.allclose(np.asarray(_radial_derivative_profile(profile, 0.5)), [2.0, 4.0, 6.0])
-    assert np.allclose(np.asarray(_radial_derivative_profile(jnp.asarray([3.0]), 0.5)), [0.0])
+    assert np.allclose(
+        np.asarray(_radial_derivative_profile(profile, 0.5)), [2.0, 4.0, 6.0]
+    )
+    assert np.allclose(
+        np.asarray(_radial_derivative_profile(jnp.asarray([3.0]), 0.5)), [0.0]
+    )
     with pytest.raises(ValueError, match="one-dimensional"):
         _radial_derivative_profile(jnp.ones((2, 2)), 0.5)
 
-    assert np.allclose(np.asarray(_radial_derivative_array(modes, 0.5)), [[2.0, 20.0], [4.0, 40.0], [6.0, 60.0]])
-    assert np.allclose(np.asarray(_radial_derivative_array(jnp.ones((1, 2)), 0.5)), [[0.0, 0.0]])
+    assert np.allclose(
+        np.asarray(_radial_derivative_array(modes, 0.5)),
+        [[2.0, 20.0], [4.0, 40.0], [6.0, 60.0]],
+    )
+    assert np.allclose(
+        np.asarray(_radial_derivative_array(jnp.ones((1, 2)), 0.5)), [[0.0, 0.0]]
+    )
     with pytest.raises(ValueError, match="two-dimensional"):
         _radial_derivative_array(jnp.ones(2), 0.5)
 
-    cumulative = _cumulative_trapezoid(jnp.asarray([0.0, 2.0, 2.0]), jnp.asarray([0.0, 1.0, 3.0]))
+    cumulative = _cumulative_trapezoid(
+        jnp.asarray([0.0, 2.0, 2.0]), jnp.asarray([0.0, 1.0, 3.0])
+    )
     assert np.allclose(np.asarray(cumulative), [0.0, 1.0, 5.0])
-    assert np.allclose(np.asarray(_cumulative_trapezoid(jnp.asarray([7.0]), jnp.asarray([0.0]))), [0.0])
+    assert np.allclose(
+        np.asarray(_cumulative_trapezoid(jnp.asarray([7.0]), jnp.asarray([0.0]))), [0.0]
+    )
     with pytest.raises(ValueError, match="cumulative trapezoid"):
         _cumulative_trapezoid(jnp.ones((2, 1)), jnp.ones(2))
 
@@ -693,31 +846,67 @@ def test_geometry_inverse_design_report_recovers_selected_observables() -> None:
     )
 
     assert spectraxgk.geometry_inverse_design_report is geometry_inverse_design_report
-    assert report["observable_names"] == ["relative_bmag_ripple", "metric_frobenius_rms"]
+    assert report["observable_names"] == [
+        "relative_bmag_ripple",
+        "metric_frobenius_rms",
+    ]
     assert len(report["history"]) == 7
     assert float(report["final_residual_norm"]) < 1.0e-5
     assert float(report["max_rel_ad_fd_error"]) < rel_tol
     assert report["uq"]["sensitivity_map_rank"] == 2
+    covariance = np.asarray(report["uq"]["covariance"])
+    assert np.allclose(covariance, covariance.T)
+    assert np.all(np.linalg.eigvalsh(covariance) >= -1.0e-16)
+    assert float(report["uq"]["jacobian_condition_number"]) < 1.0e5
 
 
 def test_geometry_inverse_design_report_rejects_invalid_contracts() -> None:
     with pytest.raises(ValueError, match="initial_params"):
-        geometry_inverse_design_report(_differentiable_mapping, jnp.ones((2, 1)), jnp.ones(2), observable_indices=[1, 2])
+        geometry_inverse_design_report(
+            _differentiable_mapping,
+            jnp.ones((2, 1)),
+            jnp.ones(2),
+            observable_indices=[1, 2],
+        )
     with pytest.raises(ValueError, match="max_steps"):
-        geometry_inverse_design_report(_differentiable_mapping, jnp.ones(2), jnp.ones(2), observable_indices=[1, 2], max_steps=-1)
+        geometry_inverse_design_report(
+            _differentiable_mapping,
+            jnp.ones(2),
+            jnp.ones(2),
+            observable_indices=[1, 2],
+            max_steps=-1,
+        )
     with pytest.raises(ValueError, match="damping"):
-        geometry_inverse_design_report(_differentiable_mapping, jnp.ones(2), jnp.ones(2), observable_indices=[1, 2], damping=-1.0)
+        geometry_inverse_design_report(
+            _differentiable_mapping,
+            jnp.ones(2),
+            jnp.ones(2),
+            observable_indices=[1, 2],
+            damping=-1.0,
+        )
     with pytest.raises(ValueError, match="observable_indices"):
-        geometry_inverse_design_report(_differentiable_mapping, jnp.ones(2), jnp.ones(2), observable_indices=[])
+        geometry_inverse_design_report(
+            _differentiable_mapping, jnp.ones(2), jnp.ones(2), observable_indices=[]
+        )
     with pytest.raises(ValueError, match="target_observables"):
-        geometry_inverse_design_report(_differentiable_mapping, jnp.ones(2), jnp.ones(1), observable_indices=[1, 2])
+        geometry_inverse_design_report(
+            _differentiable_mapping, jnp.ones(2), jnp.ones(1), observable_indices=[1, 2]
+        )
     with pytest.raises(ValueError, match="out-of-range"):
-        geometry_inverse_design_report(_differentiable_mapping, jnp.ones(2), jnp.ones(1), observable_indices=[99])
+        geometry_inverse_design_report(
+            _differentiable_mapping, jnp.ones(2), jnp.ones(1), observable_indices=[99]
+        )
 
 
-def test_geometry_inverse_design_report_defaults_to_all_observables_for_square_problem() -> None:
+def test_geometry_inverse_design_report_defaults_to_all_observables_for_square_problem() -> (
+    None
+):
     initial = jnp.asarray([0.08, 0.40])
-    target = flux_tube_geometry_observables(flux_tube_geometry_from_mapping(_differentiable_mapping(initial), validate_finite=False))
+    target = flux_tube_geometry_observables(
+        flux_tube_geometry_from_mapping(
+            _differentiable_mapping(initial), validate_finite=False
+        )
+    )
 
     report = geometry_inverse_design_report(
         _differentiable_mapping,

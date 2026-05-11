@@ -115,6 +115,10 @@ def test_covariance_diagnostics_rejects_inconsistent_shapes() -> None:
         covariance_diagnostics(np.ones((2, 2)), np.ones(3))
     with pytest.raises(ValueError):
         covariance_diagnostics(np.ones((2, 2)), np.ones(2), regularization=-1.0)
+    with pytest.raises(ValueError, match="jacobian.*finite"):
+        covariance_diagnostics(np.asarray([[1.0, np.nan]]), np.ones(1))
+    with pytest.raises(ValueError, match="residual.*finite"):
+        covariance_diagnostics(np.ones((1, 1)), np.asarray([np.inf]))
 
 
 def test_autodiff_finite_difference_report_matches_closed_form_jacobian() -> None:
@@ -200,6 +204,29 @@ def test_central_finite_difference_handles_empty_parameter_vector() -> None:
     )
     assert jac.shape == (2, 0)
     assert jac.dtype == jnp.asarray([]).dtype
+
+
+def test_finite_difference_report_rejects_invalid_worker_contracts() -> None:
+    def fn(x):
+        return jnp.asarray([x[0] ** 2])
+
+    with pytest.raises(ValueError, match="step"):
+        central_finite_difference_jacobian(fn, jnp.asarray([1.0]), step=0.0)
+    with pytest.raises(ValueError, match="workers"):
+        autodiff_finite_difference_report(fn, jnp.asarray([1.0]), workers=0)
+    with pytest.raises(ValueError, match="parallel_executor"):
+        autodiff_finite_difference_report(
+            fn, jnp.asarray([1.0]), parallel_executor="mpi"
+        )
+    with pytest.raises(ValueError, match="thread executor"):
+        central_finite_difference_jacobian(
+            fn,
+            jnp.asarray([1.0, 2.0]),
+            workers=2,
+            parallel_executor="process",
+        )
+    with pytest.raises(ValueError, match="direction"):
+        autodiff_finite_difference_report(fn, jnp.asarray([1.0]), direction=jnp.ones(2))
 
 
 def test_quasilinear_feature_objective_derivative_gate() -> None:

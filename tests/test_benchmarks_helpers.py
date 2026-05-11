@@ -153,6 +153,7 @@ def test_load_reference_with_header_reads_named_columns(tmp_path, monkeypatch) -
     np.testing.assert_allclose(ref.ky, [0.1])
     np.testing.assert_allclose(ref.gamma, [0.2])
     np.testing.assert_allclose(ref.omega, [-0.3])
+    assert ref.ky.shape == ref.gamma.shape == ref.omega.shape == (1,)
 
 
 def test_gx_hypercollision_helpers() -> None:
@@ -373,6 +374,50 @@ def test_score_fit_signal_auto_filters_invalid(monkeypatch) -> None:
     assert score == -np.inf
 
 
+def test_score_fit_signal_auto_rejects_low_r2_and_nonfinite_frequency(
+    monkeypatch,
+) -> None:
+    def _score_with_fit_output(output) -> tuple[float, float, float]:
+        monkeypatch.setattr(
+            "spectraxgk.benchmarks.fit_growth_rate_auto_with_stats",
+            lambda *args, **kwargs: output,
+        )
+        return _score_fit_signal_auto(
+            np.array([0.0, 1.0, 2.0]),
+            np.array([1.0, 2.0, 4.0], dtype=np.complex128),
+            tmin=None,
+            tmax=None,
+            window_fraction=0.5,
+            min_points=2,
+            start_fraction=0.2,
+            growth_weight=1.0,
+            require_positive=True,
+            min_amp_fraction=0.0,
+            max_amp_fraction=1.0,
+            window_method="rolling",
+            max_fraction=1.0,
+            end_fraction=1.0,
+            num_windows=4,
+            phase_weight=0.5,
+            length_weight=0.5,
+            min_r2=0.9,
+            late_penalty=0.0,
+            min_slope=None,
+            min_slope_frac=0.0,
+            slope_var_weight=0.0,
+        )
+
+    gamma, omega, score = _score_with_fit_output((0.2, -0.3, 0.0, 1.0, 0.5, 0.99))
+    assert gamma == pytest.approx(0.2)
+    assert omega == pytest.approx(-0.3)
+    assert score == -np.inf
+
+    gamma, omega, score = _score_with_fit_output((0.2, np.inf, 0.0, 1.0, 0.99, 0.99))
+    assert gamma == pytest.approx(0.2)
+    assert np.isinf(omega)
+    assert score == -np.inf
+
+
 def test_score_fit_signal_auto_treats_zero_growth_as_marginal(monkeypatch) -> None:
     def _score_for(gamma_value: float, *, require_positive: bool = True) -> float:
         monkeypatch.setattr(
@@ -521,6 +566,29 @@ def test_compare_to_reference_uses_nearest_ky_and_documents_ties() -> None:
     assert tie.gamma_ref == pytest.approx(0.10)
 
 
+def test_compare_to_reference_keeps_zero_reference_errors_nan() -> None:
+    reference = CycloneReference(
+        ky=np.array([0.3]),
+        gamma=np.array([0.0]),
+        omega=np.array([0.0]),
+    )
+    result = CycloneRunResult(
+        t=np.array([0.0]),
+        phi_t=np.ones((1, 1, 1, 1), dtype=np.complex128),
+        gamma=0.1,
+        omega=0.2,
+        ky=0.3,
+        selection=ModeSelection(ky_index=0, kx_index=0),
+    )
+
+    comparison = compare_cyclone_to_reference(result, reference)
+
+    assert comparison.gamma_ref == pytest.approx(0.0)
+    assert comparison.omega_ref == pytest.approx(0.0)
+    assert np.isnan(comparison.rel_gamma)
+    assert np.isnan(comparison.rel_omega)
+
+
 def test_build_initial_condition_supports_all_and_invalid_fields() -> None:
     grid = SimpleNamespace(
         kx=np.array([0.0, 0.5]),
@@ -549,6 +617,46 @@ def test_build_initial_condition_supports_all_and_invalid_fields() -> None:
         _build_initial_condition(
             grid, geom, ky_index=1, kx_index=1, Nl=2, Nm=4, init_cfg=bad
         )
+
+
+def test_build_initial_condition_field_map_and_zonal_mode_safety() -> None:
+    grid = SimpleNamespace(
+        kx=np.array([0.0]),
+        ky=np.array([0.0, 0.4]),
+        z=np.linspace(-1.0, 1.0, 3),
+    )
+    geom = SimpleNamespace(s_hat=0.8)
+    expected_moments = {
+        "density": (0, 0),
+        "upar": (0, 1),
+        "tpar": (0, 2),
+        "tperp": (1, 0),
+        "qpar": (0, 3),
+        "qperp": (1, 1),
+    }
+
+    for field_name, (l_idx, m_idx) in expected_moments.items():
+        G0 = np.asarray(
+            _build_initial_condition(
+                grid,
+                geom,
+                ky_index=[0, 1],
+                kx_index=0,
+                Nl=2,
+                Nm=4,
+                init_cfg=InitializationConfig(
+                    init_field=field_name,
+                    init_amp=2.0,
+                    gaussian_init=False,
+                ),
+            )
+        )
+        assert np.count_nonzero(G0[:, :, 0, 0, :]) == 0
+        assert np.count_nonzero(G0[:, :, 1, 0, :]) == grid.z.size
+        assert np.count_nonzero(G0[l_idx, m_idx, 1, 0, :]) == grid.z.size
+        seeded_slice = G0[:, :, 1, 0, :].copy()
+        seeded_slice[l_idx, m_idx, :] = 0.0
+        assert np.count_nonzero(seeded_slice) == 0
 
 
 def test_kinetic_init_and_kbm_target_helpers() -> None:

@@ -87,6 +87,103 @@ def test_nonlinear_rhs_cached_prunes_disabled_em_fields(monkeypatch) -> None:
     assert rhs_fields is fields
 
 
+def test_nonlinear_rhs_cached_routes_generic_and_skips_disabled_bracket(
+    monkeypatch,
+) -> None:
+    G0 = jnp.ones((1, 1, 1, 1, 1, 2), dtype=jnp.complex64)
+    phi = jnp.ones((1, 1, 2), dtype=jnp.complex64)
+    fields = FieldState(phi=phi, apar=2.0 * phi, bpar=3.0 * phi)
+    cache = SimpleNamespace()
+    params = SimpleNamespace()
+    calls: dict[str, int] = {"generic": 0, "electrostatic": 0, "nonlinear": 0}
+
+    def _generic(G, cache, params, terms, **kwargs):
+        calls["generic"] += 1
+        return 4.0 * jnp.ones_like(G), fields
+
+    def _electrostatic(*args, **kwargs):
+        calls["electrostatic"] += 1
+        raise AssertionError(
+            "electrostatic fast path is invalid when Apar/Bpar terms are enabled"
+        )
+
+    def _nonlinear(*args, **kwargs):
+        calls["nonlinear"] += 1
+        raise AssertionError(
+            "nonlinear bracket must not run when terms.nonlinear is zero"
+        )
+
+    monkeypatch.setattr(nonlinear_mod, "assemble_rhs_cached_jit", _generic)
+    monkeypatch.setattr(
+        nonlinear_mod, "assemble_rhs_cached_electrostatic_jit", _electrostatic
+    )
+    monkeypatch.setattr(nonlinear_mod, "nonlinear_em_contribution", _nonlinear)
+
+    rhs, rhs_fields = nonlinear_mod.nonlinear_rhs_cached(
+        G0,
+        cache,
+        params,
+        TermConfig(nonlinear=0.0, apar=1.0, bpar=1.0),
+    )
+
+    assert calls == {"generic": 1, "electrostatic": 0, "nonlinear": 0}
+    np.testing.assert_allclose(np.asarray(rhs), 4.0)
+    assert rhs_fields is fields
+
+
+def test_nonlinear_rhs_cached_forwards_enabled_em_fields(monkeypatch) -> None:
+    G0 = jnp.ones((1, 1, 1, 1, 1, 2), dtype=jnp.complex64)
+    phi = jnp.ones((1, 1, 2), dtype=jnp.complex64)
+    fields = FieldState(phi=phi, apar=2.0 * phi, bpar=3.0 * phi)
+    cache = SimpleNamespace(
+        Jl=jnp.ones((1, 1, 1, 1, 1), dtype=jnp.float32),
+        JlB=jnp.ones((1, 1, 1, 1, 1), dtype=jnp.float32),
+        sqrt_m=jnp.ones((1, 1, 1, 1, 1, 1), dtype=jnp.float32),
+        sqrt_m_p1=jnp.ones((1, 1, 1, 1, 1, 1), dtype=jnp.float32),
+        kx_grid=jnp.zeros((1, 1), dtype=jnp.float32),
+        ky_grid=jnp.zeros((1, 1), dtype=jnp.float32),
+        dealias_mask=jnp.ones((1, 1), dtype=bool),
+        kxfac=1.0,
+        laguerre_to_grid=None,
+        laguerre_to_spectral=None,
+        laguerre_roots=None,
+        laguerre_j0=None,
+        laguerre_j1_over_alpha=None,
+        b=None,
+    )
+    params = SimpleNamespace(tz=jnp.asarray([1.0]), vth=jnp.asarray([1.0]))
+    seen: dict[str, object] = {}
+
+    monkeypatch.setattr(
+        nonlinear_mod,
+        "assemble_rhs_cached_jit",
+        lambda G, cache, params, terms, **kwargs: (jnp.zeros_like(G), fields),
+    )
+
+    def _fake_nonlinear_em(G, **kwargs):
+        seen["apar"] = kwargs["apar"]
+        seen["bpar"] = kwargs["bpar"]
+        seen["apar_weight"] = kwargs["apar_weight"]
+        seen["bpar_weight"] = kwargs["bpar_weight"]
+        seen["weight_dtype"] = kwargs["weight"].dtype
+        return 2.0 * jnp.ones_like(G)
+
+    monkeypatch.setattr(nonlinear_mod, "nonlinear_em_contribution", _fake_nonlinear_em)
+    rhs, _rhs_fields = nonlinear_mod.nonlinear_rhs_cached(
+        G0,
+        cache,
+        params,
+        TermConfig(nonlinear=0.5, apar=1.0, bpar=1.0),
+    )
+
+    assert seen["apar"] is fields.apar
+    assert seen["bpar"] is fields.bpar
+    assert seen["apar_weight"] == pytest.approx(1.0)
+    assert seen["bpar_weight"] == pytest.approx(1.0)
+    assert seen["weight_dtype"] == jnp.float32
+    np.testing.assert_allclose(np.asarray(rhs), 2.0)
+
+
 def test_pack_resolved_diagnostics_and_fixed_mode_projector() -> None:
     names = [field.name for field in dataclass_fields(ResolvedDiagnostics)]
     assert len(names) == 58
@@ -179,6 +276,15 @@ def test_make_hermitian_projector_and_mode_mask() -> None:
     signed_mask = _gx_omega_mode_mask(grid, cache, gx_real_fft=False)
     assert bool(signed_mask[1, 0]) is True
     assert bool(signed_mask[2, 0]) is False
+
+    positive_grid = SimpleNamespace(
+        ky=np.array([0.0, 0.2, 0.4]),
+        kx=np.array([0.0, 0.5]),
+        dealias_mask=np.array([[True, True], [True, False], [False, True]]),
+    )
+    positive_cache = SimpleNamespace(ky=jnp.asarray(positive_grid.ky))
+    positive_mask = _gx_omega_mode_mask(positive_grid, positive_cache, gx_real_fft=True)
+    np.testing.assert_array_equal(np.asarray(positive_mask), positive_grid.dealias_mask)
 
 
 def test_collision_damping_and_imex_operator_builder(monkeypatch) -> None:
@@ -335,8 +441,16 @@ def test_apply_collision_split_and_nonlinear_wrapper_routing(monkeypatch) -> Non
         G, damping, jnp.asarray(0.1, dtype=jnp.float32), "implicit"
     )
     exp = _apply_collision_split(G, damping, jnp.asarray(0.1, dtype=jnp.float32), "exp")
+    imex = _apply_collision_split(
+        G, damping, jnp.asarray(0.1, dtype=jnp.float32), "imex"
+    )
+    rkc = _apply_collision_split(
+        G, damping, jnp.asarray(0.1, dtype=jnp.float32), "rkc2"
+    )
     assert np.all(np.isfinite(np.asarray(implicit)))
     assert np.all(np.isfinite(np.asarray(exp)))
+    np.testing.assert_allclose(np.asarray(imex), np.asarray(implicit))
+    np.testing.assert_allclose(np.asarray(rkc), np.asarray(exp))
     with pytest.raises(ValueError):
         _apply_collision_split(G, damping, jnp.asarray(0.1, dtype=jnp.float32), "bad")
 

@@ -399,14 +399,14 @@ artifacts show that the production linear-RHS path remains about five
 milliseconds on one RTX A4000 for this benchmark-size RHS call, but they remain
 kernel-localization evidence rather than a full nonlinear runtime claim.
 
-Parallelization scaling (diffrax + distributed linear loop)
------------------------------------------------------------
+Parallelization scaling guardrail
+---------------------------------
 
-The shipped scaling figure is intentionally limited to the release-grade
-2-device diffrax speedup sweep. It captures CPU (macOS) and GPU (``office``)
-performance for a fixed linear ITG configuration (Ny=64, Nz=128, Nl=6, Nm=6),
-comparing one vs two devices across several time horizons. GPU runs use
-``sample_stride=5`` to limit memory pressure.
+The legacy two-device linear scaling figure remains an engineering artifact, not
+the headline production parallelization claim. Current user-facing scaling
+claims should point to the independent ``k_y`` scan and quasilinear/UQ ensemble
+figures below, because those paths preserve serial ordering and have explicit
+solver-observable identity gates.
 
 .. image:: _static/scaling_speedup.png
    :alt: SPECTRAX-GK scaling speedup
@@ -419,8 +419,8 @@ be replotted with:
 
    python tools/plot_scaling_speedup.py
 
-The exploratory distributed-RK2 strong-scaling data is still tracked in the CSV
-for engineering work, but it is intentionally not presented as a headline
+The exploratory distributed-RK2 strong-scaling data is still tracked for
+engineering work, but it is intentionally not presented as a headline
 publication figure because the current curve is dominated by communication
 overhead rather than near-ideal scaling.
 
@@ -898,6 +898,10 @@ whole-state nonlinear sharding path is useful as a correctness/profiler gate,
 but production parallelization should prioritize independent ``k_y`` scans,
 UQ/ensemble batching, and a redesigned communication-aware nonlinear domain
 decomposition before any nonlinear multi-GPU speedup claim is made.
+
+This claim boundary is mirrored in :doc:`parallelization` and
+:doc:`release_scope`. If a future optimization changes the conclusion, refresh
+the CPU and GPU sweep artifacts before changing README or release-note wording.
 
 Spectral nonlinear mode (gated fast toggle)
 -------------------------------------------

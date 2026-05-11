@@ -6,6 +6,12 @@ identity gates that currently exist. Treat this page as the short policy; the
 long artifact history remains in :doc:`performance` and runnable examples remain
 in :doc:`examples`.
 
+For release notes and manuscripts, read this page together with
+:doc:`release_scope`. Independent scans and ensembles are the current
+production path. Whole-state nonlinear sharding and velocity-space
+decomposition are correctness/profiler development paths until they pass
+workload-specific identity, conservation, and profiler gates.
+
 Strategy registry
 -----------------
 
@@ -59,6 +65,12 @@ aggregation. Any timing claim from this path must be paired with a serial
 numerical-identity gate for the reported observables, such as ``gamma``,
 ``omega``, quasilinear weights, or covariance summaries.
 
+The large tracked artifacts use real solver work rather than synthetic sleeps:
+``docs/_static/independent_ky_scan_scaling_large.json`` covers Cyclone linear
+``k_y`` scans, and ``docs/_static/quasilinear_uq_ensemble_scaling_large.json``
+covers a late-time linear/quasilinear UQ ensemble. These are the figures to cite
+for current parallelization speedup claims.
+
 Diagnostic path: whole-state nonlinear sharding
 -----------------------------------------------
 
@@ -75,6 +87,13 @@ In particular, current whole-state sharding does not close the communication
 problem for nonlinear FFTs, halo exchange, conservation checks, or benchmark-size
 transport runs. ``z``-axis FFT sharding is not release-gated until it has a
 separate communication/layout design and a passing identity gate.
+
+The large CPU/GPU sweep in
+``docs/_static/nonlinear_sharding_strong_scaling_large.json`` confirms the
+policy: the final state is identity-correct, but logical-CPU speedup saturates
+near ``1.39x`` and the current two-GPU path is slower than one GPU for the
+tracked larger fixed-step case. That artifact is therefore valuable engineering
+evidence, not a production nonlinear speedup result.
 
 Velocity-space communication gates
 ----------------------------------
@@ -118,3 +137,42 @@ Use the following rules when writing docs, release notes, or papers:
 - Keep speedup plots separate from identity gates: identity establishes
   correctness; profiler artifacts establish only the scoped timing claim they
   measure.
+
+Release artifact policy
+-----------------------
+
+The release-gated parallelization artifacts are grouped by what they are
+allowed to support:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 28 24 24 24
+
+   * - Artifact family
+     - Primary files
+     - Claim allowed
+     - Claim not allowed
+   * - Independent ``k_y`` scans
+     - ``independent_ky_scan_scaling_large.{json,csv,png,pdf}``
+     - Production parallelization for independent linear scans when
+       ``gamma``/``omega`` identity is current.
+     - Nonlinear domain decomposition or nonlinear transport speedup.
+   * - Quasilinear/UQ ensembles
+     - ``quasilinear_uq_ensemble_scaling_large.{json,csv,png,pdf}``
+     - Production batching for independent reduced-feature and UQ workloads.
+     - Promoted absolute nonlinear heat-flux prediction.
+   * - Whole-state nonlinear sharding
+     - ``nonlinear_sharding_strong_scaling_large.{json,csv,png,pdf}``
+     - Correctness and profiler-direction evidence for the current ``pjit``
+       state-axis layout.
+     - Production nonlinear multi-GPU speedup.
+   * - Velocity-space linear slices
+     - ``linear_rhs_parallel_slices_sweep.{json,png,pdf}``
+     - Bounded engineering evidence for opt-in electrostatic linear RHS slices.
+     - Electromagnetic, linked-boundary, collision, or nonlinear speedup.
+
+Both ``tools/performance_optimization_manifest.toml`` and
+``tools/validation_coverage_manifest.toml`` list these artifacts explicitly.
+The tests require the manifests, files, and claim scopes to stay synchronized,
+so deleting or silently reinterpreting a scaling artifact fails the fast
+parallelization gate.

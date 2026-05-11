@@ -305,6 +305,70 @@ def test_run_cyclone_linear_krylov_uses_reduced_seed_after_primary_failure(
     assert any("retrying reduced Hermite-Laguerre seed" in msg for msg in status)
 
 
+def test_run_cyclone_linear_gx_reference_time_path_uses_gx_contract(
+    monkeypatch,
+) -> None:
+    captured: dict[str, object] = {}
+    monkeypatch.setattr(
+        "spectraxgk.benchmarks.build_spectral_grid", lambda cfg: _grid_full()
+    )
+    monkeypatch.setattr(
+        "spectraxgk.benchmarks.select_ky_grid", lambda grid, idx: _grid_sel()
+    )
+    monkeypatch.setattr(
+        "spectraxgk.benchmarks.SAlphaGeometry.from_config",
+        lambda cfg: SimpleNamespace(gradpar=lambda: 1.0, s_hat=0.8),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.benchmarks._build_initial_condition", _fake_initial_condition
+    )
+    monkeypatch.setattr(
+        "spectraxgk.benchmarks.build_linear_cache",
+        lambda *args, **kwargs: SimpleNamespace(),
+    )
+
+    def _fake_gx_integrator(*args, **kwargs):
+        captured["time_cfg"] = args[5]
+        captured["mode_method"] = kwargs["mode_method"]
+        return (
+            np.array([0.0, 0.1, 0.2]),
+            np.ones((3, 1, 1, 3), dtype=np.complex64),
+            None,
+            None,
+        )
+
+    monkeypatch.setattr(
+        "spectraxgk.benchmarks.integrate_linear_gx", _fake_gx_integrator
+    )
+    monkeypatch.setattr(
+        "spectraxgk.benchmarks.gx_growth_rate_from_phi",
+        lambda *args, **kwargs: (0.31, -0.17, None, None, 0.1),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.benchmarks._normalize_growth_rate",
+        lambda g, o, params, norm: (g, o),
+    )
+
+    result = run_cyclone_linear(
+        cfg=CycloneBaseCase(),
+        params=SimpleNamespace(rho_star=1.0),
+        terms=LinearTerms(),
+        solver="time",
+        gx_reference=True,
+        mode_method="project",
+        Nl=2,
+        Nm=2,
+        dt=0.1,
+        steps=2,
+    )
+
+    assert captured["mode_method"] == "z_index"
+    assert captured["time_cfg"].fixed_dt is True
+    assert captured["time_cfg"].sample_stride == 1
+    assert result.gamma == pytest.approx(0.31)
+    assert result.omega == pytest.approx(-0.17)
+
+
 def test_run_etg_linear_streaming_density_path(monkeypatch) -> None:
     cfg0 = ETGBaseCase()
     cfg = replace(
@@ -1399,6 +1463,46 @@ def test_run_kbm_beta_scan_rejects_invalid_species_indices() -> None:
         run_kbm_beta_scan(np.array([1.0e-4]), density_species_index=2)
 
 
+def test_run_kbm_linear_rejects_invalid_fit_and_species_indices(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "spectraxgk.benchmarks.build_flux_tube_geometry",
+        lambda cfg: SimpleNamespace(gradpar=lambda: 1.0),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.benchmarks.apply_geometry_grid_defaults", lambda geom, grid: grid
+    )
+    monkeypatch.setattr(
+        "spectraxgk.benchmarks.build_spectral_grid", lambda cfg: _grid_full()
+    )
+    with pytest.raises(ValueError, match="fit_signal"):
+        run_kbm_linear(
+            cfg=KBMBaseCase(),
+            fit_signal="bad",
+            params=SimpleNamespace(rho_star=1.0),
+            terms=LinearTerms(),
+            Nl=2,
+            Nm=2,
+        )
+    with pytest.raises(ValueError, match="init_species_index"):
+        run_kbm_linear(
+            cfg=KBMBaseCase(),
+            init_species_index=2,
+            params=SimpleNamespace(rho_star=1.0),
+            terms=LinearTerms(),
+            Nl=2,
+            Nm=2,
+        )
+    with pytest.raises(ValueError, match="density_species_index"):
+        run_kbm_linear(
+            cfg=KBMBaseCase(),
+            density_species_index=-1,
+            params=SimpleNamespace(rho_star=1.0),
+            terms=LinearTerms(),
+            Nl=2,
+            Nm=2,
+        )
+
+
 def test_run_kbm_beta_scan_auto_krylov_invalid_growth_falls_back_to_time(
     monkeypatch,
 ) -> None:
@@ -1807,6 +1911,38 @@ def test_run_kinetic_scan_rejects_invalid_batch_and_species_indices() -> None:
         run_kinetic_scan(np.array([0.2]), init_species_index=2)
     with pytest.raises(ValueError):
         run_kinetic_scan(np.array([0.2]), density_species_index=-1)
+
+
+def test_run_kinetic_linear_rejects_invalid_species_indices(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "spectraxgk.benchmarks.build_spectral_grid", lambda cfg: _grid_full()
+    )
+    monkeypatch.setattr(
+        "spectraxgk.benchmarks.select_ky_grid", lambda grid, idx: _grid_sel()
+    )
+    monkeypatch.setattr(
+        "spectraxgk.benchmarks.SAlphaGeometry.from_config",
+        lambda cfg: SimpleNamespace(gradpar=lambda: 1.0, s_hat=0.8),
+    )
+    params = SimpleNamespace(rho_star=1.0)
+    with pytest.raises(ValueError, match="init_species_index"):
+        run_kinetic_linear(
+            cfg=KineticElectronBaseCase(),
+            params=params,
+            terms=LinearTerms(),
+            init_species_index=-1,
+            Nl=2,
+            Nm=2,
+        )
+    with pytest.raises(ValueError, match="density_species_index"):
+        run_kinetic_linear(
+            cfg=KineticElectronBaseCase(),
+            params=params,
+            terms=LinearTerms(),
+            density_species_index=2,
+            Nl=2,
+            Nm=2,
+        )
 
 
 def test_run_kinetic_scan_diffrax_mode_only_phi_uses_z_index_save_mode(

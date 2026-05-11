@@ -49,8 +49,8 @@ Core Validation Figures
      - Notes
    * - Linear benchmark master panel
      - ``tools/make_benchmark_atlas.py``
-     - Open
-     - Cyclone ITG, ETG, KBM, W7-X, HSX, plus shaped tokamak lane if closed. Current artifact base: ``docs/_static/benchmark_core_linear_atlas.png``.
+     - Closed for the release atlas; paper-level extensions remain scoped
+     - Cyclone ITG, ETG, KBM, W7-X, HSX, and shaped tokamak coverage are represented in ``docs/_static/benchmark_core_linear_atlas.png``. TEM/kinetic-electron branch parity and additional W7-X multi-flux-tube scans remain outside the current release claim.
    * - Eigenfunction validation panel
      - ``tools/plot_eigenfunction_overlap_summary.py``, ``tools/plot_eigenfunction_reference_overlay.py``, ``tools/generate_kbm_reference_overlay.py``, and ``tools/generate_w7x_reference_overlay.py``
      - Closed for KBM and W7-X raw overlays
@@ -93,7 +93,7 @@ Core Validation Figures
      - current artifact base: ``docs/_static/manuscript_readiness_status.png`` with CSV/JSON/PDF companions. It records the narrower manuscript scope where W7-X zonal recurrence and TEM/kinetic-electron extensions are deferred. In that scope, quasilinear diagnostics and saturation-model selection are closed as a validated negative/model-selection result rather than as an absolute-flux predictor; VMEC/Boozer zero-beta equal-arc geometry parity is closed at ``mboz=nboz=21``; reduced differentiable stellarator ITG optimization is closed with AD/FD gates; and production solver-objective geometry gradients are closed for solver-ready arrays plus mode-21 VMEC/Boozer eigenfrequency, quasilinear heat-flux-weight, and reduced nonlinear-window estimator gates on QH and Li383. The compact nonlinear FD audits are retained only as startup plumbing checks with false transport-average gates. Converged post-transient nonlinear heat-flux averages, VMEC/Boozer nonlinear-window state-gradient, and optimized-equilibrium nonlinear audits remain required before production nonlinear heat-flux optimization claims.
    * - Quasilinear spectrum panel
      - ``tools/plot_quasilinear_spectrum.py``
-     - Initial diagnostic closed; nonlinear calibration open
+     - Electrostatic diagnostic closed; absolute-flux calibration scoped
      - current artifact bases: ``docs/_static/quasilinear_cyclone_spectrum.png``, ``docs/_static/quasilinear_cyclone_miller_spectrum.png``, ``docs/_static/quasilinear_hsx_spectrum.png``, and ``docs/_static/quasilinear_w7x_spectrum.png`` with CSV/JSON/PDF companions. They show electrostatic linear weights and explicitly uncalibrated mixing-length outputs from ``examples/linear/axisymmetric/runtime_cyclone_quasilinear.toml``, ``examples/linear/axisymmetric/runtime_cyclone_miller_quasilinear.toml``, ``examples/linear/non-axisymmetric/runtime_hsx_linear_quasilinear.toml``, and ``examples/linear/non-axisymmetric/runtime_w7x_linear_quasilinear_vmec.toml``. Scan spectra use requested ``ky`` for the x-axis and retain signed selected-mode coordinates as ``mode_ky`` when applicable. W7-X was generated from an external VMEC benchmark file via ``W7X_VMEC_FILE``; the equilibrium itself is not shipped. Absolute saturated-flux claims remain open until a held-out nonlinear calibration report passes.
    * - Quasilinear calibration audit
      - ``tools/build_quasilinear_calibration_report.py`` and ``tools/plot_quasilinear_calibration.py``
@@ -115,6 +115,10 @@ Core Validation Figures
      - ``tools/plot_quasilinear_dataset_sufficiency.py``
      - Promotion guard closed for the scoped spectral-envelope candidate; higher-parameter and electromagnetic claims remain blocked
      - current artifact base: ``docs/_static/quasilinear_dataset_sufficiency.png`` with JSON/PDF companions. It audits the validated nonlinear windows before any richer saturation model is promoted. The current electrostatic-compatible set has seven cases, two explicit training geometries, and five held-out geometries. That is sufficient for the one-parameter linear-weight candidate, the two-parameter shape-power-law candidate, and the three-parameter ``spectral_envelope_ridge`` candidate, but not for the five-parameter ``linear_state_ridge`` model. KBM is explicitly excluded from this electrostatic quasilinear promotion lane because electromagnetic field-channel normalization and calibration remain future work. The gate therefore supports the scoped spectral-envelope model-selection claim while preventing broader absolute-flux or electromagnetic quasilinear claims.
+   * - Release claim-scope ledger
+     - ``docs/release_scope.rst``
+     - Closed as documentation guardrail
+     - This documentation page centralizes the current claim boundaries across validation, quasilinear model selection, differentiable geometry, parallelization, performance, and deferred W7-X/TEM lanes. It should be updated whenever a new artifact promotes or demotes a claim.
    * - VMEC equilibrium portfolio for future quasilinear holdouts
      - ``tools/plot_vmec_jax_equilibrium_inventory.py``
      - Planning artifact closed; bounded linear smoke checks started; transport validation open
