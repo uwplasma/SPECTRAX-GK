@@ -335,13 +335,16 @@ The builder enforces ``mboz,nboz >= 21`` before calling the real optional
 backend path, because the QI drift gate is under-resolved at lower Boozer mode
 counts. The tracked matrix covers the ``nfp4_QH_warm_start``,
 ``nfp3_QI_fixed_resolution_final``, and ``shaped_tokamak_pressure`` examples.
-At ``mboz=nboz=21`` all three pass the current Boozer equal-arc core, scalar,
-``bgrad``, zero-beta metric, and loaded-convention drift subgates. The worst
-tracked drift mismatch is the QI case at about ``7.13e-2`` against an
-``8e-2`` release tolerance. This closes the current multi-equilibrium
-zero-beta field-line convention gate while keeping finite-beta drift parity,
-solver-objective geometry gradients, and nonlinear transport optimization
-claims explicitly scoped as follow-up work.
+At ``mboz=nboz=21`` the current regenerated artifact passes all matrix rows.
+The fixed-resolution QI case passes the loaded-convention drift subgate with
+mismatch about ``7.13e-2`` against an ``8e-2`` release tolerance after fixing
+the Boozer half-mesh radial-index convention. The evaluated QI robustness
+variants at ``ntheta=8`` and ``ntheta=16`` also pass. The broader QI seed
+campaign is still artifact-limited because three input-only QI seeds have no
+bundled ``wout`` references, and none of this is broad random-seed nonlinear
+QI transport validation or QI optimization. Finite-beta drift parity,
+solver-objective geometry gradients beyond the tracked reduced gates, and
+nonlinear transport optimization remain explicitly scoped as follow-up work.
 
 .. figure:: _static/vmec_boozer_parity_matrix.png
    :width: 95%
@@ -366,12 +369,14 @@ tests require the ``mode21_vmec_boozer_state`` source scope, ``mboz,nboz >= 21``
 and explicitly track the nonlinear-window estimator objectives as a reduced
 differentiability gate rather than a production nonlinear-optimization gate.
 
-For release claims, the differentiable-geometry lane is therefore closed for
-zero-beta equal-arc parity and reduced AD/finite-difference objectives, but
-open for production nonlinear heat-flux optimization. The active publication
-wording must keep these two levels separate: the current bridge starts at real
-``vmec_jax`` state coefficients and reaches SPECTRAX-GK solver observables, but
-it has not yet validated converged nonlinear turbulence gradients or nonlinear
+For release claims, the differentiable-geometry lane is closed only for
+artifact-passing zero-beta equal-arc parity rows and reduced
+AD/finite-difference objectives. The fixed-resolution QI row and evaluated QI
+``ntheta`` variants now pass, but production nonlinear heat-flux optimization
+is still open. The active publication wording must keep these levels separate:
+the current bridge starts at real ``vmec_jax`` state coefficients and reaches
+SPECTRAX-GK solver observables, but it has not yet validated converged
+nonlinear turbulence gradients, broad QI transport behavior, or nonlinear
 audits of optimized equilibria.
 The VMEC bridge now also expands environment variables in ``geometry.vmec_file``.
 Tracked portable runtime TOMLs should therefore pass external VMEC equilibria

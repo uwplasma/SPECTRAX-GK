@@ -6,11 +6,9 @@ import numpy as np
 import pytest
 
 from spectraxgk.analysis import ModeSelection
-from spectraxgk.benchmarks import (
+from spectraxgk.benchmark_helpers import (
     CycloneReference,
     CycloneRunResult,
-    InitializationConfig,
-    KrylovConfig,
     _apply_gx_hypercollisions,
     _build_gaussian_profile,
     _build_initial_condition,
@@ -38,8 +36,12 @@ from spectraxgk.benchmarks import (
     load_tem_reference,
     select_kbm_solver_auto,
 )
-from spectraxgk.config import KineticElectronBaseCase as KineticBaseConfig
+from spectraxgk.config import (
+    InitializationConfig,
+    KineticElectronBaseCase as KineticBaseConfig,
+)
 from spectraxgk.linear import LinearParams
+from spectraxgk.linear_krylov import KrylovConfig
 
 
 def _linear_params() -> LinearParams:
@@ -147,7 +149,7 @@ def test_load_reference_with_header_reads_named_columns(tmp_path, monkeypatch) -
             return data_dir / parts[-1]
 
     monkeypatch.setattr(
-        "spectraxgk.benchmarks.resources.files", lambda _pkg: FakeFiles()
+        "spectraxgk.benchmark_helpers.resources.files", lambda _pkg: FakeFiles()
     )
     ref = _load_reference_with_header("demo.csv")
     np.testing.assert_allclose(ref.ky, [0.1])
@@ -192,7 +194,7 @@ def test_select_fit_signal_and_auto(monkeypatch) -> None:
         np.array([4.0, 3.0, 2.0, 1.0], dtype=np.complex128),
     ]
     monkeypatch.setattr(
-        "spectraxgk.benchmarks.extract_mode_time_series",
+        "spectraxgk.benchmark_helpers.extract_mode_time_series",
         lambda *args, **kwargs: queue.pop(0),
     )
     signal = _select_fit_signal(
@@ -205,7 +207,7 @@ def test_select_fit_signal_and_auto(monkeypatch) -> None:
         np.array([1.0, 2.0, 3.0, 4.0], dtype=np.complex128),
     ]
     monkeypatch.setattr(
-        "spectraxgk.benchmarks.extract_mode_time_series",
+        "spectraxgk.benchmark_helpers.extract_mode_time_series",
         lambda *args, **kwargs: queue.pop(0),
     )
     signal = _select_fit_signal(
@@ -215,7 +217,7 @@ def test_select_fit_signal_and_auto(monkeypatch) -> None:
 
     queue = [np.array([np.nan, np.nan, np.nan, np.nan], dtype=np.complex128)]
     monkeypatch.setattr(
-        "spectraxgk.benchmarks.extract_mode_time_series",
+        "spectraxgk.benchmark_helpers.extract_mode_time_series",
         lambda *args, **kwargs: queue.pop(0),
     )
     with pytest.warns(RuntimeWarning, match="insufficient finite"):
@@ -226,7 +228,7 @@ def test_select_fit_signal_and_auto(monkeypatch) -> None:
 
     queue = [np.array([np.nan, np.nan, np.nan, np.nan], dtype=np.complex128)]
     monkeypatch.setattr(
-        "spectraxgk.benchmarks.extract_mode_time_series",
+        "spectraxgk.benchmark_helpers.extract_mode_time_series",
         lambda *args, **kwargs: queue.pop(0),
     )
     with pytest.warns(RuntimeWarning, match="insufficient finite"):
@@ -242,7 +244,7 @@ def test_select_fit_signal_and_auto(monkeypatch) -> None:
 
     queue = [np.array([1.0, 2.0], dtype=np.complex128)]
     monkeypatch.setattr(
-        "spectraxgk.benchmarks.extract_mode_time_series",
+        "spectraxgk.benchmark_helpers.extract_mode_time_series",
         lambda *args, **kwargs: queue.pop(0),
     )
     with pytest.raises(ValueError):
@@ -268,8 +270,8 @@ def test_select_fit_signal_and_auto(monkeypatch) -> None:
             return 0.1, 0.2, 0.3
         return 0.4, 0.5, 0.8
 
-    monkeypatch.setattr("spectraxgk.benchmarks.extract_mode_time_series", fake_extract)
-    monkeypatch.setattr("spectraxgk.benchmarks._score_fit_signal_auto", fake_score)
+    monkeypatch.setattr("spectraxgk.benchmark_helpers.extract_mode_time_series", fake_extract)
+    monkeypatch.setattr("spectraxgk.benchmark_helpers._score_fit_signal_auto", fake_score)
     signal, name, gamma, omega = _select_fit_signal_auto(
         np.array([0.0, 1.0, 2.0]),
         phi_t,
@@ -311,7 +313,7 @@ def test_score_fit_signal_auto_filters_invalid(monkeypatch) -> None:
         return (0.3, -0.2, 0.0, 1.0, 0.95, 0.9)
 
     monkeypatch.setattr(
-        "spectraxgk.benchmarks.fit_growth_rate_auto_with_stats",
+        "spectraxgk.benchmark_helpers.fit_growth_rate_auto_with_stats",
         _fake_fit,
     )
     gamma, omega, score = _score_fit_signal_auto(
@@ -344,7 +346,7 @@ def test_score_fit_signal_auto_filters_invalid(monkeypatch) -> None:
     assert captured["num_windows"] == 6
 
     monkeypatch.setattr(
-        "spectraxgk.benchmarks.fit_growth_rate_auto_with_stats",
+        "spectraxgk.benchmark_helpers.fit_growth_rate_auto_with_stats",
         lambda *args, **kwargs: (_ for _ in ()).throw(ValueError("bad")),
     )
     gamma, omega, score = _score_fit_signal_auto(
@@ -379,7 +381,7 @@ def test_score_fit_signal_auto_rejects_low_r2_and_nonfinite_frequency(
 ) -> None:
     def _score_with_fit_output(output) -> tuple[float, float, float]:
         monkeypatch.setattr(
-            "spectraxgk.benchmarks.fit_growth_rate_auto_with_stats",
+            "spectraxgk.benchmark_helpers.fit_growth_rate_auto_with_stats",
             lambda *args, **kwargs: output,
         )
         return _score_fit_signal_auto(
@@ -421,7 +423,7 @@ def test_score_fit_signal_auto_rejects_low_r2_and_nonfinite_frequency(
 def test_score_fit_signal_auto_treats_zero_growth_as_marginal(monkeypatch) -> None:
     def _score_for(gamma_value: float, *, require_positive: bool = True) -> float:
         monkeypatch.setattr(
-            "spectraxgk.benchmarks.fit_growth_rate_auto_with_stats",
+            "spectraxgk.benchmark_helpers.fit_growth_rate_auto_with_stats",
             lambda *args, **kwargs: (gamma_value, -0.2, 0.0, 1.0, 0.99, 0.9),
         )
         _gamma, _omega, score = _score_fit_signal_auto(
@@ -822,7 +824,7 @@ def test_score_fit_signal_auto_rejects_nonfinite_and_negative_growth(
     monkeypatch,
 ) -> None:
     monkeypatch.setattr(
-        "spectraxgk.benchmarks.fit_growth_rate_auto_with_stats",
+        "spectraxgk.benchmark_helpers.fit_growth_rate_auto_with_stats",
         lambda *args, **kwargs: (np.nan, -0.2, 0.0, 1.0, 0.95, 0.9),
     )
     gamma, omega, score = _score_fit_signal_auto(
@@ -854,7 +856,7 @@ def test_score_fit_signal_auto_rejects_nonfinite_and_negative_growth(
     assert score == -np.inf
 
     monkeypatch.setattr(
-        "spectraxgk.benchmarks.fit_growth_rate_auto_with_stats",
+        "spectraxgk.benchmark_helpers.fit_growth_rate_auto_with_stats",
         lambda *args, **kwargs: (-0.1, -0.2, 0.0, 1.0, 0.95, 0.9),
     )
     gamma, omega, score = _score_fit_signal_auto(
