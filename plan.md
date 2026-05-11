@@ -3854,3 +3854,28 @@ Exit gate:
     existing Miller term-profile artifact, before attempting any speedup claim;
   - keep nonlinear production sharding separate until the whole-state identity
     gate is extended into a decomposition with physics diagnostics.
+- Electrostatic cached-linear RHS specialization hook:
+  - routed serial ``linear_rhs_cached`` and the fixed-step cached linear
+    integrator through the existing electrostatic compiled RHS when the Python
+    term policy has ``apar=bpar=0``;
+  - kept the specialization as a static integrator flag so default
+    electromagnetic-capable calls remain unchanged and non-serial velocity
+    gates keep their own explicit backend dispatch;
+  - added tests proving direct specialized-RHS dispatch and integrator-level
+    static-flag forwarding;
+  - no new speedup claim is made yet: this closes source wiring so the next
+    profiler refresh can measure the production path, not just the standalone
+    assembly helper.
+- Verification for this source tranche:
+  - ``python -m ruff check src/spectraxgk/linear.py tests/test_linear_helpers_extra.py``;
+  - ``mypy src/spectraxgk/linear.py``;
+  - focused linear-helper pytest nodes under a 300 s timeout;
+  - ``pytest -q --maxfail=1 --disable-warnings tests/test_linear_helpers_extra.py tests/test_runners.py tests/test_velocity_sharding.py`` under a 300 s timeout;
+  - ``git diff --check``.
+- Next best implementation steps:
+  - commit/push this production-path specialization hook and monitor CI;
+  - refresh the full fused linear-RHS trace using the production
+    ``linear_rhs_cached`` path, then update the profiler docs only if the new
+    artifact supports a claim;
+  - after that, move to nonlinear production sharding with numerical-identity
+    and physics-diagnostic gates.
