@@ -43,6 +43,13 @@ Linear
 .. automodule:: spectraxgk.linear
    :members:
 
+Linear Linked Boundaries
+------------------------
+
+.. automodule:: spectraxgk.linear_linked
+   :members:
+   :private-members:
+
 Nonlinear Diagnostics
 ---------------------
 
