@@ -25,6 +25,7 @@ from spectraxgk.runtime import (
     _gx_periodic_zp,
     _infer_runtime_nonlinear_steps,
     RuntimeLinearResult,
+    RuntimeLinearScanResult,
     build_runtime_geometry,
     build_runtime_linear_params,
     build_runtime_linear_terms,
@@ -39,6 +40,7 @@ from spectraxgk.runtime_config import (
     RuntimeConfig,
     RuntimeExpertConfig,
     RuntimeNormalizationConfig,
+    RuntimeParallelConfig,
     RuntimePhysicsConfig,
     RuntimeSpeciesConfig,
     RuntimeTermsConfig,
@@ -608,6 +610,65 @@ def test_runtime_linear_diffrax_project_mode_keeps_full_field_history(monkeypatc
     assert res.omega == pytest.approx(omega_ref, rel=1.0e-3)
     assert metrics.gamma_fit == pytest.approx(gamma_ref, rel=1.0e-3)
     assert metrics.omega_fit == pytest.approx(omega_ref, rel=1.0e-3)
+
+
+def test_runtime_linear_forwards_velocity_parallel_config(monkeypatch: pytest.MonkeyPatch) -> None:
+    import spectraxgk.runtime as runtime
+
+    cfg0 = _base_runtime_cfg()
+    cfg = replace(
+        cfg0,
+        time=replace(cfg0.time, use_diffrax=False, sample_stride=1, dt=0.01, t_max=0.03),
+        parallel=RuntimeParallelConfig(strategy="velocity", axis="hermite", backend="auto", num_devices=1),
+    )
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    captured: dict[str, object] = {}
+
+    monkeypatch.setattr(runtime, "build_runtime_geometry", lambda _cfg: geom)
+    monkeypatch.setattr(
+        runtime,
+        "_build_initial_condition",
+        lambda *args, **kwargs: np.zeros((1, 3, 4, 1, 1, grid.z.size), dtype=np.complex64),
+    )
+
+    def _fake_integrate_linear_from_config(*args, **kwargs):
+        captured["parallel"] = kwargs["parallel"]
+        phi_t = np.ones((3, 1, 1, grid.z.size), dtype=np.complex64)
+        return np.zeros((1, 3, 4, 1, 1, grid.z.size), dtype=np.complex64), phi_t
+
+    monkeypatch.setattr(runtime, "integrate_linear_from_config", _fake_integrate_linear_from_config)
+    monkeypatch.setattr(
+        runtime,
+        "extract_mode_time_series",
+        lambda *args, **kwargs: np.asarray([1.0, 1.1, 1.2], dtype=np.complex128),
+    )
+    monkeypatch.setattr(runtime, "fit_growth_rate_auto", lambda *args, **kwargs: (0.05, -0.02, 0.01, 0.03))
+    monkeypatch.setattr(runtime, "extract_eigenfunction", lambda *args, **kwargs: np.ones(grid.z.size, dtype=np.complex128))
+    monkeypatch.setattr(runtime, "apply_diagnostic_normalization", lambda gamma, omega, **kwargs: (gamma, omega))
+
+    res = run_runtime_linear(
+        cfg,
+        ky_target=0.1,
+        Nl=3,
+        Nm=4,
+        solver="time",
+        fit_signal="phi",
+        mode_method="project",
+    )
+
+    assert res.fit_signal_used == "phi"
+    assert captured["parallel"] is cfg.parallel
+
+    with pytest.raises(NotImplementedError, match="fit_signal='phi'"):
+        run_runtime_linear(
+            cfg,
+            ky_target=0.1,
+            Nl=3,
+            Nm=4,
+            solver="time",
+            fit_signal="auto",
+        )
 
 
 def test_runtime_linear_diffrax_auto_fit_with_density_keeps_full_fields(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -3136,6 +3197,95 @@ def test_run_linear_case_uses_toml_output_path(
     assert (tmp_path / "linear_case.summary.json").exists()
 
 
+def test_run_linear_case_toml_velocity_auto_reaches_parallel_rhs(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    import spectraxgk.linear as linear
+
+    cfg_path = tmp_path / "velocity_auto.toml"
+    cfg_path.write_text(
+        """
+[grid]
+Nx = 1
+Ny = 4
+Nz = 4
+Lx = 6.28
+Ly = 62.8318530718
+boundary = "periodic"
+
+[time]
+t_max = 0.02
+dt = 0.01
+method = "euler"
+use_diffrax = false
+sample_stride = 1
+
+[geometry]
+model = "s-alpha"
+q = 1.4
+s_hat = 0.8
+epsilon = 0.18
+R0 = 2.77778
+
+[init]
+init_field = "density"
+init_amp = 1.0e-8
+gaussian_init = false
+
+[physics]
+adiabatic_electrons = true
+electrostatic = true
+collisions = false
+hypercollisions = false
+use_apar = false
+use_bpar = false
+beta = 0.0
+
+[terms]
+collisions = 0.0
+hypercollisions = 0.0
+hyperdiffusion = 0.0
+end_damping = 0.0
+apar = 0.0
+bpar = 0.0
+
+[parallel]
+strategy = "velocity"
+axis = "hermite"
+backend = "auto"
+num_devices = 1
+
+[run]
+ky = 0.1
+Nl = 2
+Nm = 3
+solver = "time"
+
+[fit]
+fit_signal = "phi"
+""",
+        encoding="utf-8",
+    )
+    calls: list[str] = []
+
+    def _fake_parallel_rhs(G, cache, params, **kwargs):
+        parallel = kwargs["parallel"]
+        calls.append(f"{parallel.strategy}:{parallel.axis}:{parallel.backend}")
+        return jnp.zeros_like(G), jnp.ones(G.shape[-3:], dtype=G.dtype)
+
+    monkeypatch.setattr(linear, "linear_rhs_parallel_cached", _fake_parallel_rhs)
+
+    rc = run_linear_case(cfg_path, show_progress=False)
+
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "ky=0.100000" in out
+    assert calls
+    assert set(calls) == {"velocity:hermite:auto"}
+
+
 def test_run_nonlinear_case_uses_toml_output_path(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -3303,6 +3453,80 @@ def test_run_runtime_scan_serial_forwards_per_ky(monkeypatch: pytest.MonkeyPatch
     assert len(calls) == 2
     assert calls[0]["ky_target"] == pytest.approx(0.15)
     assert calls[1]["ky_target"] == pytest.approx(0.35)
+    assert calls[0]["sample_stride"] == 2
+    np.testing.assert_allclose(out.gamma, [1.15, 1.35])
+    np.testing.assert_allclose(out.omega, [-2.15, -2.35])
+
+
+def test_run_runtime_scan_independent_workers_preserve_quasilinear_order(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        species=(RuntimeSpeciesConfig(name="ion"),),
+        normalization=RuntimeNormalizationConfig(contract="cyclone"),
+    )
+
+    def _fake_run_runtime_linear(_cfg, **kwargs):
+        ky = float(kwargs["ky_target"])
+        return RuntimeLinearResult(
+            ky=ky,
+            gamma=ky + 1.0,
+            omega=-(ky + 2.0),
+            selection=runtime.ModeSelection(ky_index=0, kx_index=0, z_index=0),
+            quasilinear={
+                "ky": ky,
+                "gamma": ky + 1.0,
+                "omega": -(ky + 2.0),
+                "heat_flux_weight_total": 10.0 * ky,
+            },
+        )
+
+    import spectraxgk.runtime as runtime
+
+    monkeypatch.setattr(runtime, "run_runtime_linear", _fake_run_runtime_linear)
+
+    out = run_runtime_scan(
+        cfg,
+        ky_values=[0.15, 0.35, 0.25],
+        solver="time",
+        workers=2,
+    )
+
+    np.testing.assert_allclose(out.gamma, [1.15, 1.35, 1.25])
+    assert out.quasilinear is not None
+    np.testing.assert_allclose([row["ky"] for row in out.quasilinear], [0.15, 0.35, 0.25])
+    np.testing.assert_allclose([row["heat_flux_weight_total"] for row in out.quasilinear], [1.5, 3.5, 2.5])
+    assert out.parallel is not None
+    assert out.parallel["requested_workers"] == 2
+    assert out.parallel["quasilinear_state_extraction"] is True
+
+
+def test_run_runtime_scan_parallel_config_selects_combined_ky(monkeypatch: pytest.MonkeyPatch) -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        species=(RuntimeSpeciesConfig(name="ion"),),
+        normalization=RuntimeNormalizationConfig(contract="cyclone"),
+        parallel=RuntimeParallelConfig(strategy="combined-ky"),
+    )
+    calls: list[dict[str, object]] = []
+
+    def _fake_run_runtime_scan_batch(_cfg, ky_arr, **kwargs):
+        calls.append({"ky_arr": np.asarray(ky_arr), **kwargs})
+        return RuntimeLinearScanResult(
+            ky=np.asarray(ky_arr, dtype=float),
+            gamma=np.asarray(ky_arr, dtype=float) + 1.0,
+            omega=-(np.asarray(ky_arr, dtype=float) + 2.0),
+        )
+
+    import spectraxgk.runtime as runtime
+
+    monkeypatch.setattr(runtime, "_run_runtime_scan_batch", _fake_run_runtime_scan_batch)
+
+    out = run_runtime_scan(cfg, ky_values=[0.15, 0.35], solver="time", sample_stride=2)
+
+    assert len(calls) == 1
+    np.testing.assert_allclose(calls[0]["ky_arr"], [0.15, 0.35])
     assert calls[0]["sample_stride"] == 2
     np.testing.assert_allclose(out.gamma, [1.15, 1.35])
     np.testing.assert_allclose(out.omega, [-2.15, -2.35])

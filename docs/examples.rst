@@ -106,11 +106,39 @@ the package helpers:
 
    ky = jnp.asarray([0.1, 0.2, 0.3, 0.4])
    chunks = sgk.ky_scan_batches(ky, n_batches=2)
-   values = sgk.batch_map(lambda x: jnp.asarray([x, x**2]), ky, batch_size=2)
+   values = sgk.batch_map(
+       lambda x: {"gamma": x, "ql_weight": x**2},
+       ky,
+       batch_size=2,
+   )
+
+For file-backed calibration and uncertainty workflows that are independent but
+not JAX-array ``vmap`` workloads, use ``sgk.independent_map``:
+
+.. code-block:: python
+
+   rows = sgk.independent_map(
+       lambda case: {"case": case, "score": len(case)},
+       ["cyclone", "hsx", "w7x"],
+       workers=2,
+   )
 
 These helpers preserve serial ordering and fall back to a one-device ``vmap``
 path on laptops. Multi-device runs should still be checked against the serial
 result before publication speedups are claimed.
+
+Autodiff validation reports also accept ``workers`` for thread-parallel
+central finite-difference columns, and the stellarator optimization comparison
+script exposes the same pattern:
+
+.. code-block:: bash
+
+   JAX_ENABLE_X64=1 python examples/optimization/compare_stellarator_itg_optimizations.py \
+     --workers 3 \
+     --finite-difference-workers 2
+
+The generated JSON records both worker counts and keeps the acceptance
+criterion as numerical identity with the serial report.
 
 For a solver-backed identity gate, run the Cyclone ``k_y``-batch scan artifact:
 
@@ -125,6 +153,169 @@ For a solver-backed identity gate, run the Cyclone ``k_y``-batch scan artifact:
    Real Cyclone linear solver comparison between serial and fixed-shape
    ``k_y``-batched scans. The figure verifies that ``gamma`` and ``omega``
    are identical while reporting the observed batch speedup separately.
+
+For a logical-CPU API gate that exercises ``RuntimeParallelConfig`` and pytree
+outputs, run:
+
+.. code-block:: bash
+
+   python tools/generate_logical_cpu_parallel_scan_gate.py --logical-devices 2
+
+.. figure:: _static/logical_cpu_parallel_scan_gate.png
+   :alt: SPECTRAX-GK logical CPU parallel scan identity gate
+   :width: 100%
+
+   Independent-scan interface gate for structured outputs. This validates the
+   parallel API used by UQ and sensitivity ensembles; it is not a nonlinear
+   performance claim.
+
+The first lower-level communication gate for velocity-space decomposition is
+the Hermite ghost exchange:
+
+.. code-block:: bash
+
+   python tools/generate_hermite_exchange_gate.py --logical-devices 2
+
+.. figure:: _static/hermite_exchange_gate.png
+   :alt: SPECTRAX-GK Hermite ghost-exchange identity gate
+   :width: 100%
+
+   ``shard_map`` nearest-neighbor exchange for Hermite moments. This validates
+   the communication primitive that a future nonlinear velocity-space sharding
+   path needs before field reductions and full-RHS identity gates are added.
+
+The paired field-reduction gate is:
+
+.. code-block:: bash
+
+   python tools/generate_velocity_field_reduce_gate.py --logical-devices 2
+
+.. figure:: _static/velocity_field_reduce_gate.png
+   :alt: SPECTRAX-GK velocity field-reduction identity gate
+   :width: 100%
+
+   ``shard_map`` reduction/broadcast over a Hermite mesh. This establishes the
+   field-solve communication primitive before streaming-ladder and nonlinear
+   RHS identity gates are attempted.
+
+The first production-field-solve reduction gate is:
+
+.. code-block:: bash
+
+   python tools/generate_electrostatic_field_reduce_gate.py --logical-devices 2
+
+.. figure:: _static/electrostatic_field_reduce_gate.png
+   :alt: SPECTRAX-GK electrostatic field-reduction identity gate
+   :width: 100%
+
+   Hermite-sharded ``m=0`` density reduction for the electrostatic
+   quasineutrality solve, compared against the production field solve.
+
+The Hermite streaming-ladder coefficient gate is:
+
+.. code-block:: bash
+
+   python tools/generate_hermite_streaming_ladder_gate.py --logical-devices 2
+
+.. figure:: _static/hermite_streaming_ladder_gate.png
+   :alt: SPECTRAX-GK Hermite streaming-ladder identity gate
+   :width: 100%
+
+   ``shard_map`` Hermite exchange plus the ``sqrt(m+1)`` / ``sqrt(m)``
+   streaming-ladder coefficients. This is still a communication/coefficient
+   gate; full linear streaming also needs the parallel derivative identity
+   gate before production runtime wiring.
+
+The first electrostatic drift-slice gate is:
+
+.. code-block:: bash
+
+   python tools/generate_electrostatic_drift_gate.py --logical-devices 2
+
+.. figure:: _static/electrostatic_drift_gate.png
+   :alt: SPECTRAX-GK electrostatic drift-slice identity gate
+   :width: 100%
+
+   Hermite-sharded mirror and curvature/grad-B drift slices, including
+   offset-1 and offset-2 Hermite exchanges, compared against the production
+   linear RHS with only those terms enabled.
+
+The matching electrostatic diamagnetic-drive gate is:
+
+.. code-block:: bash
+
+   python tools/generate_electrostatic_diamagnetic_gate.py --logical-devices 2
+
+.. figure:: _static/electrostatic_diamagnetic_gate.png
+   :alt: SPECTRAX-GK electrostatic diamagnetic-drive identity gate
+   :width: 100%
+
+   Hermite-sharded electrostatic diamagnetic drive. The sharded route first
+   uses the electrostatic field-reduction gate, then applies the local
+   ``m=0`` and ``m=2`` drive masks on each Hermite shard. This closes the
+   diamagnetic slice for the opt-in electrostatic linear-slices backend.
+
+The periodic streaming microkernel gate adds that field-line derivative:
+
+.. code-block:: bash
+
+   python tools/generate_periodic_streaming_microkernel_gate.py --logical-devices 2
+
+.. figure:: _static/periodic_streaming_microkernel_gate.png
+   :alt: SPECTRAX-GK periodic streaming microkernel identity gate
+   :width: 100%
+
+   Periodic spectral parallel derivative plus Hermite streaming ladder through
+   the ``shard_map`` path, compared directly against the production streaming
+   operator.
+
+The next gate places that same sharded streaming kernel under the production
+linear-RHS call graph with every non-streaming contribution disabled:
+
+.. code-block:: bash
+
+   python tools/generate_linear_rhs_streaming_gate.py --logical-devices 2
+
+.. figure:: _static/linear_rhs_streaming_gate.png
+   :alt: SPECTRAX-GK streaming-only linear RHS identity gate
+   :width: 100%
+
+   Streaming-only ``linear_rhs_cached`` comparison against the velocity-sharded
+   periodic streaming path. This closes the first full-RHS call-graph identity
+   gate for the streaming term only; it is not yet a full linear scan or
+   nonlinear speedup claim.
+
+With a nonzero electrostatic response, use:
+
+.. code-block:: bash
+
+   python tools/generate_linear_rhs_streaming_electrostatic_gate.py --logical-devices 2
+
+.. figure:: _static/linear_rhs_streaming_electrostatic_gate.png
+   :alt: SPECTRAX-GK electrostatic streaming linear RHS identity gate
+   :width: 100%
+
+   Streaming plus electrostatic ``phi`` call-graph comparison. The field solve
+   uses the Hermite-sharded electrostatic reduction gate; this validates the
+   next velocity-sharded streaming slice before drift, diamagnetic-drive, and
+   nonlinear terms are introduced.
+
+For the composed electrostatic linear-slices backend, use:
+
+.. code-block:: bash
+
+   python tools/generate_linear_rhs_electrostatic_slices_gate.py --logical-devices 2
+
+.. figure:: _static/linear_rhs_electrostatic_slices_gate.png
+   :alt: SPECTRAX-GK composed electrostatic linear-slices identity gate
+   :width: 100%
+
+   Full opt-in electrostatic linear-slices call-graph comparison for
+   streaming, mirror, curvature, grad-B, and diamagnetic drive. This is the
+   current production-parallelization identity artifact for the
+   single-species periodic electrostatic RHS path; collisions, linked
+   boundaries, electromagnetic terms, and nonlinear brackets remain separate
+   gates.
 
 Use the strong-scaling sweep helper to collect parallelization timings for the
 distributed linear RK2 loop:
@@ -141,6 +332,24 @@ On multi-GPU systems, point ``--devices`` at the available accelerators and
 update ``--backend`` accordingly (for example ``cuda_parallel_large``). The
 backend labels are just sweep names for the output table; they do not change
 the runtime physics or solver path.
+
+For the current opt-in Hermite-sharded electrostatic linear RHS path, use the
+engineering sweep helper:
+
+.. code-block:: bash
+
+   python tools/profile_linear_rhs_parallel_slices_sweep.py \
+     --platform cpu --devices 1,2,4,8 --nms 64,128 \
+     --nl 4 --ny 32 --nz 128 --rtol 1e-5
+
+.. figure:: _static/linear_rhs_parallel_slices_sweep.png
+   :alt: SPECTRAX-GK electrostatic linear-slices parallelization sweep
+   :width: 100%
+
+   Device-count and Hermite-resolution sweep for the opt-in electrostatic
+   linear-slices backend. The right panel is the identity gate; the left panel
+   is engineering timing only and should not be promoted as a nonlinear or
+   publication speedup claim.
 
 Plotting outputs
 ----------------

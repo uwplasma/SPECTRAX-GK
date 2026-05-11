@@ -37,9 +37,8 @@ from spectraxgk.runtime_artifacts import (
     write_quasilinear_artifacts,
     write_runtime_linear_artifacts,
     write_runtime_linear_scan_artifacts,
-    write_runtime_nonlinear_artifacts,
 )
-from spectraxgk.runtime import RuntimeLinearResult, run_runtime_linear, run_runtime_scan, run_runtime_nonlinear
+from spectraxgk.runtime import RuntimeLinearResult, run_runtime_linear, run_runtime_scan
 
 
 def _runtime_output_path(args: argparse.Namespace, cfg) -> str | None:
@@ -399,6 +398,18 @@ def build_parser() -> argparse.ArgumentParser:
     scan_runtime.add_argument("--steps", type=int, default=None)
     scan_runtime.add_argument("--sample-stride", type=int, default=None)
     scan_runtime.add_argument("--batch-ky", action="store_true", help="Integrate all ky in one batch")
+    scan_runtime.add_argument(
+        "--workers",
+        type=int,
+        default=1,
+        help="Independent ky workers for the serial scan path, including quasilinear spectra.",
+    )
+    scan_runtime.add_argument(
+        "--parallel-executor",
+        choices=("thread", "process"),
+        default="thread",
+        help="Executor for independent ky workers.",
+    )
     scan_runtime.add_argument("--fit-signal", type=str, default=None, help="auto, phi, or density")
     scan_runtime.add_argument("--out", type=str, default=None, help="Optional scan artifact path/prefix")
     _add_quasilinear_flags(scan_runtime)
@@ -605,7 +616,9 @@ def _cmd_scan_linear(args: argparse.Namespace) -> int:
         solver=str(solver),
         krylov_cfg=krylov_cfg,
         window_kw=fit_cfg,
-        run_kwargs={"terms": terms} if terms is not None else None,
+        run_kwargs={"terms": terms, "fit_signal": str(fit_signal)}
+        if terms is not None
+        else {"fit_signal": str(fit_signal)},
     )
 
     for ky, g, w in zip(scan.ky, scan.gamma, scan.omega):
@@ -807,6 +820,8 @@ def _cmd_scan_runtime_linear(args: argparse.Namespace) -> int:
         else scan_cfg.get("sample_stride", cfg.time.sample_stride)
     )
     batch_ky = bool(args.batch_ky)
+    workers = int(getattr(args, "workers", 1))
+    parallel_executor = str(getattr(args, "parallel_executor", "thread"))
     show_progress = (
         True
         if getattr(args, "progress", False)
@@ -829,6 +844,8 @@ def _cmd_scan_runtime_linear(args: argparse.Namespace) -> int:
         batch_ky=batch_ky,
         fit_signal=fit_signal,
         show_progress=show_progress,
+        workers=workers,
+        parallel_executor=parallel_executor,
         **fit_cfg,
     )
     for ky, g, w in zip(scan.ky, scan.gamma, scan.omega):

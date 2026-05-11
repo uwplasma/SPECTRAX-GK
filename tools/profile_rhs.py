@@ -68,7 +68,9 @@ def main() -> None:
     G0 = jnp.zeros((Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64)
     G0 = G0.at[0, 0, 1, 0, :].set(1e-3 + 0.0j)
 
-    rhs_fn = lambda G: linear_rhs_cached(G, cache, params, terms=terms)[0]
+    def rhs_fn(G):
+        return linear_rhs_cached(G, cache, params, terms=terms)[0]
+
     jit_rhs = jax.jit(rhs_fn)
     jit_rhs(G0).block_until_ready()
 

@@ -19,7 +19,7 @@ from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.linear import LinearParams, build_linear_cache
-from spectraxgk.nonlinear import integrate_nonlinear_cached
+from spectraxgk.nonlinear import integrate_nonlinear_cached, nonlinear_rhs_cached
 from spectraxgk.sharded_integrators import integrate_nonlinear_sharded
 from spectraxgk.sharding import resolve_state_sharding
 from spectraxgk.terms.config import TermConfig
@@ -83,6 +83,56 @@ def _time_stats(times: list[float]) -> dict[str, float]:
         "mean": float(statistics.fmean(times)),
         "max": float(max(times)),
         "std": float(statistics.pstdev(times)) if len(times) > 1 else 0.0,
+    }
+
+
+def _max_abs_rel_error(candidate: Any, reference: Any, *, floor: float = 1.0e-30) -> tuple[float, float]:
+    """Return max absolute and scale-normalized errors for two array-like values."""
+
+    candidate_arr = np.asarray(candidate)
+    reference_arr = np.asarray(reference)
+    err = candidate_arr - reference_arr
+    max_abs = float(np.max(np.abs(err)))
+    scale = max(float(np.max(np.abs(reference_arr))), float(floor))
+    return max_abs, float(max_abs / scale)
+
+
+def _nonlinear_diagnostic_identity_metrics(
+    reference_state: Any,
+    candidate_state: Any,
+    cache: Any,
+    params: LinearParams,
+    terms: TermConfig,
+    *,
+    gx_real_fft: bool,
+    laguerre_mode: str,
+) -> dict[str, float]:
+    """Compare field solve and nonlinear RHS diagnostics on final states."""
+
+    reference_rhs, reference_fields = nonlinear_rhs_cached(
+        jnp.asarray(reference_state),
+        cache,
+        params,
+        terms,
+        gx_real_fft=gx_real_fft,
+        laguerre_mode=laguerre_mode,
+    )
+    candidate_rhs, candidate_fields = nonlinear_rhs_cached(
+        jnp.asarray(candidate_state),
+        cache,
+        params,
+        terms,
+        gx_real_fft=gx_real_fft,
+        laguerre_mode=laguerre_mode,
+    )
+    _block_until_ready((reference_rhs, reference_fields, candidate_rhs, candidate_fields))
+    rhs_abs, rhs_rel = _max_abs_rel_error(candidate_rhs, reference_rhs)
+    phi_abs, phi_rel = _max_abs_rel_error(candidate_fields.phi, reference_fields.phi)
+    return {
+        "max_abs_rhs_error": rhs_abs,
+        "max_rel_rhs_error": rhs_rel,
+        "max_abs_phi_error": phi_abs,
+        "max_rel_phi_error": phi_rel,
     }
 
 
@@ -244,7 +294,22 @@ def main(argv: list[str] | None = None) -> int:
             err = np.asarray(sharded_final - serial_final)
             max_abs = float(np.max(np.abs(err)))
             max_rel = float(max_abs / scale)
-            identity_pass = bool(max_abs <= 1.0e-5 and max_rel <= 1.0e-5)
+            diagnostic_metrics = _nonlinear_diagnostic_identity_metrics(
+                serial_final,
+                sharded_final,
+                cache,
+                params,
+                terms,
+                gx_real_fft=True,
+                laguerre_mode=str(args.laguerre_mode),
+            )
+            diagnostic_pass = bool(
+                diagnostic_metrics["max_abs_rhs_error"] <= 1.0e-5
+                and diagnostic_metrics["max_rel_rhs_error"] <= 1.0e-5
+                and diagnostic_metrics["max_abs_phi_error"] <= 1.0e-5
+                and diagnostic_metrics["max_rel_phi_error"] <= 1.0e-5
+            )
+            identity_pass = bool(max_abs <= 1.0e-5 and max_rel <= 1.0e-5 and diagnostic_pass)
             sharded_results[spec] = {
                 "state_sharding_active": bool(sharded_state_active[spec]),
                 "times_s": sharded_times,
@@ -254,6 +319,8 @@ def main(argv: list[str] | None = None) -> int:
                 else None,
                 "max_abs_state_error": max_abs,
                 "max_rel_state_error": max_rel,
+                **diagnostic_metrics,
+                "diagnostic_identity_gate_pass": diagnostic_pass,
                 "identity_gate_pass": identity_pass,
                 "error": None,
             }
@@ -266,6 +333,11 @@ def main(argv: list[str] | None = None) -> int:
                 "engineering_speedup_median": None,
                 "max_abs_state_error": None,
                 "max_rel_state_error": None,
+                "max_abs_rhs_error": None,
+                "max_rel_rhs_error": None,
+                "max_abs_phi_error": None,
+                "max_rel_phi_error": None,
+                "diagnostic_identity_gate_pass": False,
                 "identity_gate_pass": False,
                 "error": repr(exc),
             }

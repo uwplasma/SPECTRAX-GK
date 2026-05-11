@@ -8,7 +8,12 @@ import pytest
 from spectraxgk.config import CycloneBaseCase, GridConfig
 from spectraxgk.geometry import SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid
-from spectraxgk.linear import LinearParams, LinearTerms, build_linear_cache, linear_terms_to_term_config
+from spectraxgk.linear import (
+    LinearParams,
+    LinearTerms,
+    build_linear_cache,
+    linear_terms_to_term_config,
+)
 from spectraxgk import linear_krylov as lk
 
 
@@ -36,7 +41,9 @@ def _tiny_krylov_setup(*, linked: bool = False):
     )
     Nl, Nm = 2, 4
     cache = build_linear_cache(grid, geom, params, Nl=Nl, Nm=Nm)
-    v0 = jnp.ones((Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64) * (1.0 + 0.1j)
+    v0 = jnp.ones(
+        (Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64
+    ) * (1.0 + 0.1j)
     terms = LinearTerms(
         streaming=1.0,
         mirror=0.0,
@@ -95,28 +102,143 @@ def test_select_by_overlap_prefers_reference_branch() -> None:
     assert int(idx_fallback) == 1
 
 
+def test_normalize_handles_zero_and_tiny_vectors_without_nan() -> None:
+    zero = jnp.zeros((3,), dtype=jnp.complex64)
+    zero_normed = lk._normalize(zero)
+    assert jnp.all(jnp.isfinite(jnp.real(zero_normed)))
+    assert jnp.allclose(zero_normed, zero)
+
+    tiny = jnp.asarray(
+        [1.0e-12 + 0.0j, 0.0 + 1.0e-12j, 0.0 + 0.0j], dtype=jnp.complex64
+    )
+    tiny_normed = lk._normalize(tiny)
+    assert jnp.all(jnp.isfinite(jnp.real(tiny_normed)))
+    assert jnp.linalg.norm(tiny_normed) == pytest.approx(1.0)
+
+
+def test_dominant_eigenpair_arnoldi_branch_normalizes_wrapper_flags(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    v0 = jnp.ones((2,), dtype=jnp.complex64)
+    v_ref = jnp.asarray([0.0 + 0.0j, 2.0 + 0.0j], dtype=jnp.complex64)
+    captured: dict[str, object] = {}
+
+    def _fake_arnoldi(v0_in, v_ref_in, _cache, _params, term_cfg, **kwargs):
+        captured["v0"] = v0_in
+        captured["v_ref"] = v_ref_in
+        captured["term_cfg"] = term_cfg
+        captured.update(kwargs)
+        return jnp.asarray(0.1 + 0.2j, dtype=v0.dtype), jnp.full_like(v0, 3.0 + 0.0j)
+
+    monkeypatch.setattr(lk, "dominant_eigenpair_cached", _fake_arnoldi)
+
+    eig, vec = lk.dominant_eigenpair(
+        v0,
+        object(),
+        object(),
+        terms=LinearTerms(apar=0.0, bpar=0.0),
+        v_ref=v_ref,
+        select_overlap=True,
+        krylov_dim=3,
+        restarts=0,
+        omega_sign=0,
+        mode_family="etg",
+        method=" Arnoldi ",
+    )
+
+    assert jnp.allclose(eig, jnp.asarray(0.1 + 0.2j, dtype=v0.dtype))
+    assert jnp.allclose(vec, 3.0 + 0.0j)
+    assert captured["krylov_dim"] == 3
+    assert captured["restarts"] == 1
+    assert captured["omega_sign"] == -1
+    assert captured["select_overlap"] is True
+    assert captured["v_ref"] is v_ref
+    assert float(captured["term_cfg"].apar) == pytest.approx(0.0)
+    assert float(captured["term_cfg"].bpar) == pytest.approx(0.0)
+
+
+@pytest.mark.parametrize(
+    ("shift_selection", "select_targeted", "select_growth"),
+    [
+        ("targeted", True, True),
+        ("target", True, False),
+        ("growth", False, True),
+        ("shift", False, False),
+    ],
+)
+def test_shift_invert_selection_key_controls_cached_branch_flags(
+    monkeypatch: pytest.MonkeyPatch,
+    shift_selection: str,
+    select_targeted: bool,
+    select_growth: bool,
+) -> None:
+    v0 = jnp.ones((2,), dtype=jnp.complex64)
+    captured: dict[str, object] = {}
+
+    def _fake_shift(v_init, v_ref, _cache, _params, term_cfg, **kwargs):
+        captured["v_init"] = v_init
+        captured["v_ref"] = v_ref
+        captured["term_cfg"] = term_cfg
+        captured.update(kwargs)
+        return jnp.asarray(0.4 + 0.2j, dtype=v0.dtype), jnp.full_like(v0, 5.0 + 0.0j)
+
+    monkeypatch.setattr(lk, "dominant_eigenpair_shift_invert_cached", _fake_shift)
+
+    eig, vec = lk.dominant_eigenpair(
+        v0,
+        object(),
+        object(),
+        terms=LinearTerms(apar=0.0, bpar=0.0),
+        method="shift_invert",
+        shift=0.2 - 1.1j,
+        shift_source="target",
+        shift_selection=shift_selection,
+        select_overlap=True,
+        fallback_method="none",
+    )
+
+    assert jnp.allclose(eig, jnp.asarray(0.4 + 0.2j, dtype=v0.dtype))
+    assert jnp.allclose(vec, 5.0 + 0.0j)
+    assert captured["select_targeted"] is select_targeted
+    assert captured["select_growth"] is select_growth
+    assert captured["select_overlap"] is True
+    assert jnp.allclose(captured["sigma"], jnp.asarray(0.2 - 1.1j, dtype=v0.dtype))
+    assert captured["v_init"] is v0
+    assert captured["v_ref"] is v0
+
+
 def test_build_shift_invert_preconditioner_modes() -> None:
     _grid, cache, params, v0, term_cfg, _terms = _tiny_krylov_setup(linked=False)
     sigma = jnp.asarray(0.1j, dtype=v0.dtype)
 
-    precond, op = lk._build_shift_invert_precond(v0, cache, params, term_cfg, sigma, None)
+    precond, op = lk._build_shift_invert_precond(
+        v0, cache, params, term_cfg, sigma, None
+    )
     assert precond is None and op is None
-    precond, op = lk._build_shift_invert_precond(v0, cache, params, term_cfg, sigma, "unknown")
+    precond, op = lk._build_shift_invert_precond(
+        v0, cache, params, term_cfg, sigma, "unknown"
+    )
     assert precond is None and op is None
 
-    precond, op = lk._build_shift_invert_precond(v0, cache, params, term_cfg, sigma, "damping")
+    precond, op = lk._build_shift_invert_precond(
+        v0, cache, params, term_cfg, sigma, "damping"
+    )
     assert precond is not None and op is not None
     y = op(v0.reshape(-1))
     assert y.shape == (v0.size,)
     assert jnp.all(jnp.isfinite(jnp.real(y)))
 
-    precond, op = lk._build_shift_invert_precond(v0, cache, params, term_cfg, sigma, "hermite-line")
+    precond, op = lk._build_shift_invert_precond(
+        v0, cache, params, term_cfg, sigma, "hermite-line"
+    )
     assert op is not None
     y = op(v0.reshape(-1))
     assert y.shape == (v0.size,)
     assert jnp.all(jnp.isfinite(jnp.real(y)))
 
-    precond, op = lk._build_shift_invert_precond(v0, cache, params, term_cfg, sigma, "hermite-line-coarse")
+    precond, op = lk._build_shift_invert_precond(
+        v0, cache, params, term_cfg, sigma, "hermite-line-coarse"
+    )
     assert op is not None
     y = op(v0.reshape(-1))
     assert y.shape == (v0.size,)
@@ -126,7 +248,9 @@ def test_build_shift_invert_preconditioner_modes() -> None:
 def test_build_shift_invert_preconditioner_linked_branch() -> None:
     _grid, cache, params, v0, term_cfg, _terms = _tiny_krylov_setup(linked=True)
     sigma = jnp.asarray(0.2j, dtype=v0.dtype)
-    precond, op = lk._build_shift_invert_precond(v0, cache, params, term_cfg, sigma, "hermite-line")
+    precond, op = lk._build_shift_invert_precond(
+        v0, cache, params, term_cfg, sigma, "hermite-line"
+    )
     assert op is not None
     y = op(v0.reshape(-1))
     assert y.shape == (v0.size,)
@@ -376,23 +500,33 @@ def test_shift_invert_fallback_policy(monkeypatch: pytest.MonkeyPatch) -> None:
         "dominant_eigenpair",
         lambda *args, **kwargs: (jnp.asarray(0.7 + 0.1j), jnp.ones_like(v0)),
     )
-    eig_val = lk.dominant_eigenvalue(v0, cache, params, terms=terms, krylov_dim=4, restarts=1)
+    eig_val = lk.dominant_eigenvalue(
+        v0, cache, params, terms=terms, krylov_dim=4, restarts=1
+    )
     assert jnp.allclose(eig_val, jnp.asarray(0.7 + 0.1j))
 
 
-def test_dominant_eigenpair_reports_shift_invert_status(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_dominant_eigenpair_reports_shift_invert_status(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     _grid, cache, params, v0, _term_cfg, terms = _tiny_krylov_setup(linked=False)
     messages: list[str] = []
 
     monkeypatch.setattr(
         lk,
         "dominant_eigenpair_propagator_cached",
-        lambda *args, **kwargs: (jnp.asarray(0.1 + 0.2j, dtype=v0.dtype), jnp.full_like(v0, 2.0 + 0.0j)),
+        lambda *args, **kwargs: (
+            jnp.asarray(0.1 + 0.2j, dtype=v0.dtype),
+            jnp.full_like(v0, 2.0 + 0.0j),
+        ),
     )
     monkeypatch.setattr(
         lk,
         "dominant_eigenpair_shift_invert_cached",
-        lambda *args, **kwargs: (jnp.asarray(0.3 + 0.4j, dtype=v0.dtype), jnp.full_like(v0, 3.0 + 0.0j)),
+        lambda *args, **kwargs: (
+            jnp.asarray(0.3 + 0.4j, dtype=v0.dtype),
+            jnp.full_like(v0, 3.0 + 0.0j),
+        ),
     )
 
     eig, vec = lk.dominant_eigenpair(

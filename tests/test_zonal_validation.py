@@ -43,8 +43,12 @@ def test_normalize_trace_rejects_bad_scale() -> None:
 def test_w7x_trace_loader_accepts_t_or_t_reference(tmp_path: Path) -> None:
     path_ref = tmp_path / "trace_ref.csv"
     path_t = tmp_path / "trace_t.csv"
-    pd.DataFrame({"t_reference": [0.0, 1.0], "phi_zonal_real": [1.0, 2.0]}).to_csv(path_ref, index=False)
-    pd.DataFrame({"t": [0.0, 2.0], "phi_zonal_real": [3.0, 5.0]}).to_csv(path_t, index=False)
+    pd.DataFrame({"t_reference": [0.0, 1.0], "phi_zonal_real": [1.0, 2.0]}).to_csv(
+        path_ref, index=False
+    )
+    pd.DataFrame({"t": [0.0, 2.0], "phi_zonal_real": [3.0, 5.0]}).to_csv(
+        path_t, index=False
+    )
 
     t_ref, y_ref = load_w7x_trace_csv(path_ref)
     t_t, y_t = load_w7x_trace_csv(path_t)
@@ -111,9 +115,38 @@ def test_tail_trace_metrics_uses_late_reference_window() -> None:
     t_obs = np.linspace(0.0, 10.0, 11)
     y_obs = np.interp(t_obs, t_ref, y_ref)
 
-    metrics = tail_trace_metrics(t_obs=t_obs, y_obs=y_obs, t_ref=t_ref, y_ref=y_ref, tail_fraction=0.4)
+    metrics = tail_trace_metrics(
+        t_obs=t_obs, y_obs=y_obs, t_ref=t_ref, y_ref=y_ref, tail_fraction=0.4
+    )
 
     assert metrics["tail_mean_abs_error"] <= 1.0e-12
     assert metrics["tail_max_abs_error"] <= 1.0e-12
     assert metrics["tail_std"] is not None
     assert metrics["reference_tail_std"] is not None
+
+
+def test_tail_trace_metrics_reports_late_window_envelope_errors() -> None:
+    t_ref = np.asarray([0.0, 2.0, 4.0, 6.0, 8.0, 10.0])
+    y_ref = np.asarray([1.0, 0.7, 0.35, 0.18, 0.11, 0.09])
+    t_obs = np.asarray([0.0, 6.0, 7.0, 8.0, 9.0, 10.0, 12.0])
+    tail_offsets = np.asarray([0.03, -0.01, 0.02, -0.04])
+    y_obs = np.interp(t_obs, t_ref, y_ref)
+    y_obs[2:6] += tail_offsets
+    y_obs[-1] = 999.0
+
+    metrics = tail_trace_metrics(
+        t_obs=t_obs, y_obs=y_obs, t_ref=t_ref, y_ref=y_ref, tail_fraction=0.3
+    )
+
+    tail_start = 10.0 - 0.3 * 10.0
+    mask = (t_obs >= tail_start) & (t_obs <= 10.0)
+    ref_interp = np.interp(t_obs[mask], t_ref, y_ref)
+    obs_tail = y_obs[mask]
+    diff = obs_tail - ref_interp
+    ref_tail = y_ref[t_ref >= tail_start]
+
+    assert mask.tolist() == [False, False, True, True, True, True, False]
+    assert metrics["tail_mean_abs_error"] == pytest.approx(float(np.mean(np.abs(diff))))
+    assert metrics["tail_max_abs_error"] == pytest.approx(float(np.max(np.abs(diff))))
+    assert metrics["tail_std"] == pytest.approx(float(np.std(obs_tail)))
+    assert metrics["reference_tail_std"] == pytest.approx(float(np.std(ref_tail)))

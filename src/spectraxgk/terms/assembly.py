@@ -630,6 +630,7 @@ def assemble_rhs_cached_electrostatic_jit(
     terms: TermConfig,
     dt: jnp.ndarray | float | None = None,
     external_phi: jnp.ndarray | float | None = None,
+    velocity_map: VelocityMapConfig | None = None,
 ) -> Tuple[jnp.ndarray, FieldState]:
     """Jitted cached RHS assembly for statically electrostatic field terms."""
 
@@ -640,6 +641,7 @@ def assemble_rhs_cached_electrostatic_jit(
         terms=terms,
         dt=dt,
         external_phi=external_phi,
+        velocity_map=velocity_map,
         force_electrostatic_fields=True,
     )
 

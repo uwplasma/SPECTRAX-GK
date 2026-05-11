@@ -28,8 +28,12 @@ from spectraxgk.terms.nonlinear import (
 
 
 def test_nonlinear_em_contribution_masks_nonlaguerre_fields_once(monkeypatch):
-    grid = build_spectral_grid(GridConfig(Nx=4, Ny=4, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
-    G = jnp.ones((1, 1, 1, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64)
+    grid = build_spectral_grid(
+        GridConfig(Nx=4, Ny=4, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi)
+    )
+    G = jnp.ones(
+        (1, 1, 1, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64
+    )
     phi = jnp.ones((grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64)
     calls: list[tuple[int, ...]] = []
 
@@ -41,7 +45,9 @@ def test_nonlinear_em_contribution_masks_nonlaguerre_fields_once(monkeypatch):
         return jnp.zeros_like(G_arg)
 
     monkeypatch.setattr(nonlinear_terms_module, "_apply_mask_xy", _fake_apply_mask)
-    monkeypatch.setattr(nonlinear_terms_module, "_spectral_bracket", _fake_spectral_bracket)
+    monkeypatch.setattr(
+        nonlinear_terms_module, "_spectral_bracket", _fake_spectral_bracket
+    )
 
     out = nonlinear_terms_module.nonlinear_em_contribution(
         G,
@@ -49,7 +55,9 @@ def test_nonlinear_em_contribution_masks_nonlaguerre_fields_once(monkeypatch):
         apar=None,
         bpar=None,
         Jl=jnp.ones((1, 1, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.float32),
-        JlB=jnp.ones((1, 1, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.float32),
+        JlB=jnp.ones(
+            (1, 1, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.float32
+        ),
         tz=jnp.asarray([1.0]),
         vth=jnp.asarray([1.0]),
         sqrt_m=jnp.ones((1, 1, 1, 1, 1), dtype=jnp.float32),
@@ -107,7 +115,9 @@ def test_laguerre_transform_einsum_matches_moveaxis_tensordot_reference():
         -1,
         1,
     )
-    np.testing.assert_allclose(np.asarray(g_mu), np.asarray(ref_grid), rtol=1.0e-6, atol=1.0e-6)
+    np.testing.assert_allclose(
+        np.asarray(g_mu), np.asarray(ref_grid), rtol=1.0e-6, atol=1.0e-6
+    )
 
     to_spectral = jnp.asarray(rng.normal(size=(5, 3)), dtype=jnp.float32)
     spectral = _laguerre_to_spectral(g_mu, to_spectral)
@@ -116,11 +126,15 @@ def test_laguerre_transform_einsum_matches_moveaxis_tensordot_reference():
         -1,
         1,
     )
-    np.testing.assert_allclose(np.asarray(spectral), np.asarray(ref_spectral), rtol=1.0e-6, atol=1.0e-6)
+    np.testing.assert_allclose(
+        np.asarray(spectral), np.asarray(ref_spectral), rtol=1.0e-6, atol=1.0e-6
+    )
 
 
 def test_exb_bracket_zero_mean_mode():
-    grid = build_spectral_grid(GridConfig(Nx=8, Ny=8, Nz=4, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
+    grid = build_spectral_grid(
+        GridConfig(Nx=8, Ny=8, Nz=4, Lx=2.0 * np.pi, Ly=2.0 * np.pi)
+    )
     rng = np.random.default_rng(0)
     G_real = rng.normal(size=(1, 2, 3, grid.ky.size, grid.kx.size, grid.z.size))
     phi_real = rng.normal(size=(grid.ky.size, grid.kx.size, grid.z.size))
@@ -139,11 +153,13 @@ def test_exb_bracket_zero_mean_mode():
 
 
 def test_exb_bracket_respects_dealias_mask():
-    grid = build_spectral_grid(GridConfig(Nx=8, Ny=8, Nz=2, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
-    rng = np.random.default_rng(2)
-    G = rng.normal(size=(2, 2, 2, grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
-        size=(2, 2, 2, grid.ky.size, grid.kx.size, grid.z.size)
+    grid = build_spectral_grid(
+        GridConfig(Nx=8, Ny=8, Nz=2, Lx=2.0 * np.pi, Ly=2.0 * np.pi)
     )
+    rng = np.random.default_rng(2)
+    G = rng.normal(
+        size=(2, 2, 2, grid.ky.size, grid.kx.size, grid.z.size)
+    ) + 1j * rng.normal(size=(2, 2, 2, grid.ky.size, grid.kx.size, grid.z.size))
     phi = rng.normal(size=(grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
         size=(grid.ky.size, grid.kx.size, grid.z.size)
     )
@@ -160,7 +176,9 @@ def test_exb_bracket_respects_dealias_mask():
 
 
 def test_exb_bracket_matches_finite_difference():
-    grid = build_spectral_grid(GridConfig(Nx=8, Ny=8, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
+    grid = build_spectral_grid(
+        GridConfig(Nx=8, Ny=8, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi)
+    )
     phi_hat = np.zeros((grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex128)
     G_hat = np.zeros_like(phi_hat)
     phi_hat[1, 2, 0] = 1.0
@@ -189,12 +207,80 @@ def test_exb_bracket_matches_finite_difference():
     assert np.max(np.abs(bracket_spec_hat - bracket_ref)) < 5.0e-6
 
 
-def test_apar_flutter_hermite_ladder():
-    grid = build_spectral_grid(GridConfig(Nx=4, Ny=4, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
-    rng = np.random.default_rng(3)
-    G = rng.normal(size=(1, 1, 3, grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
-        size=(1, 1, 3, grid.ky.size, grid.kx.size, grid.z.size)
+def test_spectral_bracket_is_antisymmetric_for_periodic_fields():
+    grid = build_spectral_grid(
+        GridConfig(Nx=8, Ny=8, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi)
     )
+    x = np.arange(grid.kx.size) * 2.0 * np.pi / grid.kx.size
+    y = np.arange(grid.ky.size) * 2.0 * np.pi / grid.ky.size
+    Y, X = np.meshgrid(y, x, indexing="ij")
+    f = np.sin(X + 2.0 * Y) + 0.3 * np.cos(2.0 * X - Y)
+    g = np.cos(2.0 * X + Y) - 0.2 * np.sin(X - Y)
+    nxy = grid.kx.size * grid.ky.size
+    f_hat = (np.fft.fft2(f) / nxy)[:, :, None]
+    g_hat = (np.fft.fft2(g) / nxy)[:, :, None]
+    full_mask = jnp.ones_like(grid.dealias_mask)
+
+    bracket_fg = _spectral_bracket(
+        jnp.asarray(f_hat[None, None, None, ...]),
+        jnp.asarray(g_hat),
+        kx_grid=grid.kx_grid,
+        ky_grid=grid.ky_grid,
+        dealias_mask=full_mask,
+        kxfac=jnp.asarray(1.0),
+        gx_real_fft=False,
+    )
+    bracket_gf = _spectral_bracket(
+        jnp.asarray(g_hat[None, None, None, ...]),
+        jnp.asarray(f_hat),
+        kx_grid=grid.kx_grid,
+        ky_grid=grid.ky_grid,
+        dealias_mask=full_mask,
+        kxfac=jnp.asarray(1.0),
+        gx_real_fft=False,
+    )
+
+    np.testing.assert_allclose(np.asarray(bracket_fg + bracket_gf), 0.0, atol=1.0e-6)
+
+
+def test_exb_bracket_free_energy_inner_product_vanishes_for_periodic_scalar():
+    grid = build_spectral_grid(
+        GridConfig(Nx=8, Ny=8, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi)
+    )
+    x = np.arange(grid.kx.size) * 2.0 * np.pi / grid.kx.size
+    y = np.arange(grid.ky.size) * 2.0 * np.pi / grid.ky.size
+    Y, X = np.meshgrid(y, x, indexing="ij")
+    G_real = np.sin(X + 2.0 * Y) + 0.3 * np.cos(2.0 * X - Y)
+    phi_real = np.cos(2.0 * X + Y) - 0.2 * np.sin(X - Y)
+    nxy = grid.kx.size * grid.ky.size
+    G_hat = (np.fft.fft2(G_real) / nxy)[:, :, None]
+    phi_hat = (np.fft.fft2(phi_real) / nxy)[:, :, None]
+    full_mask = jnp.ones_like(grid.dealias_mask)
+
+    dG_hat = exb_nonlinear_contribution(
+        jnp.asarray(G_hat[None, None, None, ...]),
+        phi=jnp.asarray(phi_hat),
+        dealias_mask=full_mask,
+        kx_grid=grid.kx_grid,
+        ky_grid=grid.ky_grid,
+        weight=jnp.asarray(1.0),
+        gx_real_fft=False,
+    )
+    dG_real = np.fft.ifft2(np.asarray(dG_hat[0, 0, 0, :, :, 0])) * nxy
+    free_energy_rate = np.mean(np.real(np.conj(G_real) * dG_real))
+
+    assert np.max(np.abs(dG_real)) > 1.0
+    assert abs(float(free_energy_rate)) < 1.0e-6
+
+
+def test_apar_flutter_hermite_ladder():
+    grid = build_spectral_grid(
+        GridConfig(Nx=4, Ny=4, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi)
+    )
+    rng = np.random.default_rng(3)
+    G = rng.normal(
+        size=(1, 1, 3, grid.ky.size, grid.kx.size, grid.z.size)
+    ) + 1j * rng.normal(size=(1, 1, 3, grid.ky.size, grid.kx.size, grid.z.size))
     apar = rng.normal(size=(grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
         size=(grid.ky.size, grid.kx.size, grid.z.size)
     )
@@ -238,14 +324,18 @@ def test_apar_flutter_hermite_ladder():
 
 
 def test_apar_flutter_no_wrap_boundary():
-    grid = build_spectral_grid(GridConfig(Nx=4, Ny=4, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
+    grid = build_spectral_grid(
+        GridConfig(Nx=4, Ny=4, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi)
+    )
     Nm = 4
     bracket = jnp.zeros(
         (1, 1, Nm, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64
     )
     bracket = bracket.at[:, :, -1, 0, 0, 0].set(1.0 + 0.0j)
     sqrt_m = jnp.sqrt(jnp.arange(Nm, dtype=jnp.float32))[None, :, None, None, None]
-    sqrt_m_p1 = jnp.sqrt(jnp.arange(1, Nm + 1, dtype=jnp.float32))[None, :, None, None, None]
+    sqrt_m_p1 = jnp.sqrt(jnp.arange(1, Nm + 1, dtype=jnp.float32))[
+        None, :, None, None, None
+    ]
     flutter = _apply_flutter(bracket, jnp.asarray([1.0]), sqrt_m, sqrt_m_p1)
     flutter_np = np.asarray(flutter)
     assert np.allclose(flutter_np[:, :, 0, 0, 0, 0], 0.0)
@@ -255,11 +345,13 @@ def test_apar_flutter_no_wrap_boundary():
 
 
 def test_em_weights_are_toggles():
-    grid = build_spectral_grid(GridConfig(Nx=4, Ny=4, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
-    rng = np.random.default_rng(5)
-    G = rng.normal(size=(1, 1, 3, grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
-        size=(1, 1, 3, grid.ky.size, grid.kx.size, grid.z.size)
+    grid = build_spectral_grid(
+        GridConfig(Nx=4, Ny=4, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi)
     )
+    rng = np.random.default_rng(5)
+    G = rng.normal(
+        size=(1, 1, 3, grid.ky.size, grid.kx.size, grid.z.size)
+    ) + 1j * rng.normal(size=(1, 1, 3, grid.ky.size, grid.kx.size, grid.z.size))
     apar = rng.normal(size=(grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
         size=(grid.ky.size, grid.kx.size, grid.z.size)
     )
@@ -277,24 +369,36 @@ def test_em_weights_are_toggles():
         tz=jnp.asarray([1.0]),
         vth=jnp.asarray([1.0]),
         sqrt_m=jnp.sqrt(jnp.arange(3, dtype=jnp.float32))[None, :, None, None, None],
-        sqrt_m_p1=jnp.sqrt(jnp.arange(1, 4, dtype=jnp.float32))[None, :, None, None, None],
+        sqrt_m_p1=jnp.sqrt(jnp.arange(1, 4, dtype=jnp.float32))[
+            None, :, None, None, None
+        ],
         kx_grid=grid.kx_grid,
         ky_grid=grid.ky_grid,
         dealias_mask=grid.dealias_mask,
         kxfac=jnp.asarray(1.0),
     )
     dG_on = nonlinear_em_contribution(
-        jnp.asarray(G), apar_weight=1.0, bpar_weight=1.0, weight=jnp.asarray(1.0), **common
+        jnp.asarray(G),
+        apar_weight=1.0,
+        bpar_weight=1.0,
+        weight=jnp.asarray(1.0),
+        **common,
     )
     dG_off = nonlinear_em_contribution(
-        jnp.asarray(G), apar_weight=1.0, bpar_weight=1.0, weight=jnp.asarray(0.0), **common
+        jnp.asarray(G),
+        apar_weight=1.0,
+        bpar_weight=1.0,
+        weight=jnp.asarray(0.0),
+        **common,
     )
     assert np.max(np.abs(np.asarray(dG_off))) < 1.0e-8
     assert np.max(np.abs(np.asarray(dG_on))) > 0.0
 
 
 def test_gx_real_fft_bracket_match():
-    grid = build_spectral_grid(GridConfig(Nx=6, Ny=8, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
+    grid = build_spectral_grid(
+        GridConfig(Nx=6, Ny=8, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi)
+    )
     ny = grid.ky.size
     nx = grid.kx.size
     nyc = ny // 2 + 1
@@ -345,7 +449,9 @@ def test_gx_real_fft_bracket_match():
 
 
 def test_gx_real_fft_toggle_matches_full_fft_for_hermitian():
-    grid = build_spectral_grid(GridConfig(Nx=6, Ny=8, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
+    grid = build_spectral_grid(
+        GridConfig(Nx=6, Ny=8, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi)
+    )
     ny = grid.ky.size
     nx = grid.kx.size
     nyc = ny // 2 + 1
@@ -384,7 +490,9 @@ def test_gx_real_fft_toggle_matches_full_fft_for_hermitian():
 
 
 def test_gx_real_fft_bracket_preserves_full_hermitian_symmetry():
-    grid = build_spectral_grid(GridConfig(Nx=6, Ny=8, Nz=2, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
+    grid = build_spectral_grid(
+        GridConfig(Nx=6, Ny=8, Nz=2, Lx=2.0 * np.pi, Ly=2.0 * np.pi)
+    )
     ny = grid.ky.size
     nx = grid.kx.size
     nyc = ny // 2 + 1
@@ -418,7 +526,9 @@ def test_gx_real_fft_bracket_preserves_full_hermitian_symmetry():
 
 
 def test_gx_real_fft_bracket_match_odd_ny():
-    grid = build_spectral_grid(GridConfig(Nx=6, Ny=7, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
+    grid = build_spectral_grid(
+        GridConfig(Nx=6, Ny=7, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi)
+    )
     ny = grid.ky.size
     nx = grid.kx.size
     nyc = ny // 2 + 1
@@ -468,11 +578,13 @@ def test_gx_real_fft_bracket_match_odd_ny():
 
 
 def test_bpar_contributes_to_chi():
-    grid = build_spectral_grid(GridConfig(Nx=4, Ny=4, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
-    rng = np.random.default_rng(4)
-    G = rng.normal(size=(1, 1, 2, grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
-        size=(1, 1, 2, grid.ky.size, grid.kx.size, grid.z.size)
+    grid = build_spectral_grid(
+        GridConfig(Nx=4, Ny=4, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi)
     )
+    rng = np.random.default_rng(4)
+    G = rng.normal(
+        size=(1, 1, 2, grid.ky.size, grid.kx.size, grid.z.size)
+    ) + 1j * rng.normal(size=(1, 1, 2, grid.ky.size, grid.kx.size, grid.z.size))
     phi = rng.normal(size=(grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
         size=(grid.ky.size, grid.kx.size, grid.z.size)
     )
@@ -502,7 +614,9 @@ def test_bpar_contributes_to_chi():
         tz=jnp.asarray([1.0]),
         vth=jnp.asarray([1.0]),
         sqrt_m=jnp.sqrt(jnp.arange(2, dtype=jnp.float32))[None, :, None, None, None],
-        sqrt_m_p1=jnp.sqrt(jnp.arange(1, 3, dtype=jnp.float32))[None, :, None, None, None],
+        sqrt_m_p1=jnp.sqrt(jnp.arange(1, 3, dtype=jnp.float32))[
+            None, :, None, None, None
+        ],
         kx_grid=grid.kx_grid,
         ky_grid=grid.ky_grid,
         dealias_mask=grid.dealias_mask,
@@ -515,11 +629,13 @@ def test_bpar_contributes_to_chi():
 
 
 def test_bracket_multi_matches_separate():
-    grid = build_spectral_grid(GridConfig(Nx=4, Ny=4, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
-    rng = np.random.default_rng(11)
-    G = rng.normal(size=(1, 1, 2, grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
-        size=(1, 1, 2, grid.ky.size, grid.kx.size, grid.z.size)
+    grid = build_spectral_grid(
+        GridConfig(Nx=4, Ny=4, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi)
     )
+    rng = np.random.default_rng(11)
+    G = rng.normal(
+        size=(1, 1, 2, grid.ky.size, grid.kx.size, grid.z.size)
+    ) + 1j * rng.normal(size=(1, 1, 2, grid.ky.size, grid.kx.size, grid.z.size))
     phi = rng.normal(size=(grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
         size=(grid.ky.size, grid.kx.size, grid.z.size)
     )
@@ -530,7 +646,9 @@ def test_bracket_multi_matches_separate():
     JlB = 2.0 * jnp.ones_like(Jl)
     chi_phi = Jl * phi[None, None, ...]
     chi_bpar = JlB * bpar[None, None, ...]
-    chi_stack = _stack_fields(jnp.asarray(G), [jnp.asarray(chi_phi), jnp.asarray(chi_bpar)])
+    chi_stack = _stack_fields(
+        jnp.asarray(G), [jnp.asarray(chi_phi), jnp.asarray(chi_bpar)]
+    )
     brackets = _spectral_bracket_multi(
         jnp.asarray(G),
         chi_stack,
@@ -558,16 +676,22 @@ def test_bracket_multi_matches_separate():
         kxfac=jnp.asarray(1.0),
         gx_real_fft=False,
     )
-    assert np.allclose(np.asarray(brackets[0]), np.asarray(bracket_phi), rtol=1.0e-6, atol=1.0e-6)
-    assert np.allclose(np.asarray(brackets[1]), np.asarray(bracket_bpar), rtol=1.0e-6, atol=1.0e-6)
+    assert np.allclose(
+        np.asarray(brackets[0]), np.asarray(bracket_phi), rtol=1.0e-6, atol=1.0e-6
+    )
+    assert np.allclose(
+        np.asarray(brackets[1]), np.asarray(bracket_bpar), rtol=1.0e-6, atol=1.0e-6
+    )
 
 
 def test_single_field_bracket_fast_path_matches_multi_reference():
-    grid = build_spectral_grid(GridConfig(Nx=4, Ny=6, Nz=2, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
-    rng = np.random.default_rng(41)
-    G = rng.normal(size=(1, 2, 3, grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
-        size=(1, 2, 3, grid.ky.size, grid.kx.size, grid.z.size)
+    grid = build_spectral_grid(
+        GridConfig(Nx=4, Ny=6, Nz=2, Lx=2.0 * np.pi, Ly=2.0 * np.pi)
     )
+    rng = np.random.default_rng(41)
+    G = rng.normal(
+        size=(1, 2, 3, grid.ky.size, grid.kx.size, grid.z.size)
+    ) + 1j * rng.normal(size=(1, 2, 3, grid.ky.size, grid.kx.size, grid.z.size))
     chi = rng.normal(size=(grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
         size=(grid.ky.size, grid.kx.size, grid.z.size)
     )
@@ -592,16 +716,20 @@ def test_single_field_bracket_fast_path_matches_multi_reference():
             kxfac=jnp.asarray(1.0),
             gx_real_fft=gx_real_fft,
         )[0]
-        assert np.allclose(np.asarray(single), np.asarray(multi), rtol=1.0e-6, atol=1.0e-6)
+        assert np.allclose(
+            np.asarray(single), np.asarray(multi), rtol=1.0e-6, atol=1.0e-6
+        )
 
 
 def test_laguerre_precompute_matches_direct():
-    grid = build_spectral_grid(GridConfig(Nx=4, Ny=4, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
+    grid = build_spectral_grid(
+        GridConfig(Nx=4, Ny=4, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi)
+    )
     rng = np.random.default_rng(21)
     Ns, Nl, Nm = 1, 2, 2
-    G = rng.normal(size=(Ns, Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
+    G = rng.normal(
         size=(Ns, Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size)
-    )
+    ) + 1j * rng.normal(size=(Ns, Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size))
     phi = rng.normal(size=(grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
         size=(grid.ky.size, grid.kx.size, grid.z.size)
     )
@@ -619,7 +747,9 @@ def test_laguerre_precompute_matches_direct():
     alpha = jnp.sqrt(
         jnp.maximum(
             0.0,
-            2.0 * laguerre_roots[None, :, None, None, None] * jnp.asarray(b)[:, None, ...],
+            2.0
+            * laguerre_roots[None, :, None, None, None]
+            * jnp.asarray(b)[:, None, ...],
         )
     )
     j0 = bessel_j0(alpha)
@@ -635,7 +765,9 @@ def test_laguerre_precompute_matches_direct():
         tz=jnp.asarray([1.0]),
         vth=jnp.asarray([1.0]),
         sqrt_m=jnp.sqrt(jnp.arange(Nm, dtype=jnp.float32))[None, :, None, None, None],
-        sqrt_m_p1=jnp.sqrt(jnp.arange(1, Nm + 1, dtype=jnp.float32))[None, :, None, None, None],
+        sqrt_m_p1=jnp.sqrt(jnp.arange(1, Nm + 1, dtype=jnp.float32))[
+            None, :, None, None, None
+        ],
         kx_grid=grid.kx_grid,
         ky_grid=grid.ky_grid,
         dealias_mask=grid.dealias_mask,
@@ -656,16 +788,20 @@ def test_laguerre_precompute_matches_direct():
         laguerre_j1_over_alpha=j1_over_alpha,
         **common,
     )
-    assert np.allclose(np.asarray(dG_direct), np.asarray(dG_cached), rtol=1.0e-6, atol=1.0e-6)
+    assert np.allclose(
+        np.asarray(dG_direct), np.asarray(dG_cached), rtol=1.0e-6, atol=1.0e-6
+    )
 
 
 def test_laguerre_mode_spectral_matches_identity_grid():
-    grid = build_spectral_grid(GridConfig(Nx=4, Ny=4, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
+    grid = build_spectral_grid(
+        GridConfig(Nx=4, Ny=4, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi)
+    )
     rng = np.random.default_rng(12)
     Ns, Nl, Nm = 1, 1, 1
-    G = rng.normal(size=(Ns, Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
+    G = rng.normal(
         size=(Ns, Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size)
-    )
+    ) + 1j * rng.normal(size=(Ns, Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size))
     phi = rng.normal(size=(grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
         size=(grid.ky.size, grid.kx.size, grid.z.size)
     )
@@ -703,17 +839,23 @@ def test_laguerre_mode_spectral_matches_identity_grid():
     )
 
     dG_grid = nonlinear_em_contribution(jnp.asarray(G), laguerre_mode="grid", **common)
-    dG_spec = nonlinear_em_contribution(jnp.asarray(G), laguerre_mode="spectral", **common)
-    assert np.allclose(np.asarray(dG_grid), np.asarray(dG_spec), rtol=1.0e-6, atol=1.0e-6)
+    dG_spec = nonlinear_em_contribution(
+        jnp.asarray(G), laguerre_mode="spectral", **common
+    )
+    assert np.allclose(
+        np.asarray(dG_grid), np.asarray(dG_spec), rtol=1.0e-6, atol=1.0e-6
+    )
 
 
 def test_laguerre_grid_electrostatic_fast_path_matches_component_reference():
-    grid = build_spectral_grid(GridConfig(Nx=4, Ny=4, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
+    grid = build_spectral_grid(
+        GridConfig(Nx=4, Ny=4, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi)
+    )
     rng = np.random.default_rng(42)
     Ns, Nl, Nm = 1, 2, 2
-    G = rng.normal(size=(Ns, Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
+    G = rng.normal(
         size=(Ns, Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size)
-    )
+    ) + 1j * rng.normal(size=(Ns, Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size))
     phi = rng.normal(size=(grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
         size=(grid.ky.size, grid.kx.size, grid.z.size)
     )
@@ -737,7 +879,9 @@ def test_laguerre_grid_electrostatic_fast_path_matches_component_reference():
         tz=jnp.asarray([1.0]),
         vth=jnp.asarray([1.0]),
         sqrt_m=jnp.sqrt(jnp.arange(Nm, dtype=jnp.float32))[None, :, None, None, None],
-        sqrt_m_p1=jnp.sqrt(jnp.arange(1, Nm + 1, dtype=jnp.float32))[None, :, None, None, None],
+        sqrt_m_p1=jnp.sqrt(jnp.arange(1, Nm + 1, dtype=jnp.float32))[
+            None, :, None, None, None
+        ],
         kx_grid=grid.kx_grid,
         ky_grid=grid.ky_grid,
         dealias_mask=grid.dealias_mask,
@@ -754,17 +898,26 @@ def test_laguerre_grid_electrostatic_fast_path_matches_component_reference():
         gx_real_fft=False,
     )
 
-    contribution = nonlinear_em_contribution(jnp.asarray(G), laguerre_mode="grid", **common)
+    contribution = nonlinear_em_contribution(
+        jnp.asarray(G), laguerre_mode="grid", **common
+    )
     components = nonlinear_em_components(jnp.asarray(G), laguerre_mode="grid", **common)
-    assert np.allclose(np.asarray(contribution), np.asarray(components["total"]), rtol=1.0e-6, atol=1.0e-6)
+    assert np.allclose(
+        np.asarray(contribution),
+        np.asarray(components["total"]),
+        rtol=1.0e-6,
+        atol=1.0e-6,
+    )
 
 
 def test_nonlinear_components_total_matches_contribution():
-    grid = build_spectral_grid(GridConfig(Nx=4, Ny=4, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
-    rng = np.random.default_rng(21)
-    G = rng.normal(size=(1, 1, 3, grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
-        size=(1, 1, 3, grid.ky.size, grid.kx.size, grid.z.size)
+    grid = build_spectral_grid(
+        GridConfig(Nx=4, Ny=4, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi)
     )
+    rng = np.random.default_rng(21)
+    G = rng.normal(
+        size=(1, 1, 3, grid.ky.size, grid.kx.size, grid.z.size)
+    ) + 1j * rng.normal(size=(1, 1, 3, grid.ky.size, grid.kx.size, grid.z.size))
     phi = rng.normal(size=(grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
         size=(grid.ky.size, grid.kx.size, grid.z.size)
     )
@@ -782,7 +935,9 @@ def test_nonlinear_components_total_matches_contribution():
         tz=jnp.asarray([1.0]),
         vth=jnp.asarray([1.0]),
         sqrt_m=jnp.sqrt(jnp.arange(3, dtype=jnp.float32))[None, :, None, None, None],
-        sqrt_m_p1=jnp.sqrt(jnp.arange(1, 4, dtype=jnp.float32))[None, :, None, None, None],
+        sqrt_m_p1=jnp.sqrt(jnp.arange(1, 4, dtype=jnp.float32))[
+            None, :, None, None, None
+        ],
         kx_grid=grid.kx_grid,
         ky_grid=grid.ky_grid,
         dealias_mask=grid.dealias_mask,
@@ -794,16 +949,20 @@ def test_nonlinear_components_total_matches_contribution():
     )
     dG = nonlinear_em_contribution(jnp.asarray(G), **common)
     comps = nonlinear_em_components(jnp.asarray(G), laguerre_mode="spectral", **common)
-    assert np.allclose(np.asarray(dG), np.asarray(comps["total"]), rtol=1.0e-6, atol=1.0e-6)
+    assert np.allclose(
+        np.asarray(dG), np.asarray(comps["total"]), rtol=1.0e-6, atol=1.0e-6
+    )
 
 
 def test_laguerre_components_total_matches_contribution():
-    grid = build_spectral_grid(GridConfig(Nx=4, Ny=4, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
+    grid = build_spectral_grid(
+        GridConfig(Nx=4, Ny=4, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi)
+    )
     rng = np.random.default_rng(22)
     Ns, Nl, Nm = 1, 1, 2
-    G = rng.normal(size=(Ns, Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
+    G = rng.normal(
         size=(Ns, Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size)
-    )
+    ) + 1j * rng.normal(size=(Ns, Nl, Nm, grid.ky.size, grid.kx.size, grid.z.size))
     phi = rng.normal(size=(grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
         size=(grid.ky.size, grid.kx.size, grid.z.size)
     )
@@ -825,7 +984,9 @@ def test_laguerre_components_total_matches_contribution():
         tz=jnp.asarray([1.0]),
         vth=jnp.asarray([1.0]),
         sqrt_m=jnp.sqrt(jnp.arange(Nm, dtype=jnp.float32))[None, :, None, None, None],
-        sqrt_m_p1=jnp.sqrt(jnp.arange(1, Nm + 1, dtype=jnp.float32))[None, :, None, None, None],
+        sqrt_m_p1=jnp.sqrt(jnp.arange(1, Nm + 1, dtype=jnp.float32))[
+            None, :, None, None, None
+        ],
         kx_grid=grid.kx_grid,
         ky_grid=grid.ky_grid,
         dealias_mask=grid.dealias_mask,
@@ -843,12 +1004,18 @@ def test_laguerre_components_total_matches_contribution():
     )
     dG = nonlinear_em_contribution(jnp.asarray(G), laguerre_mode="grid", **common)
     comps = nonlinear_em_components(jnp.asarray(G), laguerre_mode="grid", **common)
-    assert np.allclose(np.asarray(dG), np.asarray(comps["total"]), rtol=1.0e-6, atol=1.0e-6)
+    assert np.allclose(
+        np.asarray(dG), np.asarray(comps["total"]), rtol=1.0e-6, atol=1.0e-6
+    )
 
 
 def test_exb_bracket_energy_conserves():
-    grid = build_spectral_grid(GridConfig(Nx=8, Ny=8, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
-    G_hat = np.zeros((1, 1, 1, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex128)
+    grid = build_spectral_grid(
+        GridConfig(Nx=8, Ny=8, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi)
+    )
+    G_hat = np.zeros(
+        (1, 1, 1, grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex128
+    )
     phi_hat = np.zeros((grid.ky.size, grid.kx.size, grid.z.size), dtype=np.complex128)
     G_hat[0, 0, 0, 1, 2, 0] = 1.0
     phi_hat[1, 2, 0] = 2.0
@@ -883,7 +1050,14 @@ def test_nonlinear_broadcast_helpers_cover_shape_contracts():
     same = _broadcast_to_G(G, G)
     assert same.shape == G.shape
     assert _broadcast_to_G(field, G).shape == (1, 1, 1, 2, 2, 3)
-    assert _broadcast_to_G(jnp.ones((2, 3), dtype=jnp.float32), G).shape == (1, 1, 1, 1, 2, 3)
+    assert _broadcast_to_G(jnp.ones((2, 3), dtype=jnp.float32), G).shape == (
+        1,
+        1,
+        1,
+        1,
+        2,
+        3,
+    )
 
 
 def test_laguerre_transform_helpers_roundtrip():
@@ -907,7 +1081,9 @@ def test_gx_precomputed_bessel_helpers_match_direct():
     direct_j0 = _gx_j0_field(field, b, roots, 1.0)
     b_species = b[None, ...]
     alpha = jnp.sqrt(
-        jnp.maximum(0.0, 2.0 * roots[None, :, None, None, None] * b_species[:, None, ...])
+        jnp.maximum(
+            0.0, 2.0 * roots[None, :, None, None, None] * b_species[:, None, ...]
+        )
     )
     from spectraxgk.gyroaverage import bessel_j0 as _b0, bessel_j1 as _b1
 
@@ -915,12 +1091,16 @@ def test_gx_precomputed_bessel_helpers_match_direct():
     j1 = _b1(alpha)
     j1_over_alpha = jnp.where(alpha < 1.0e-8, 0.5, j1 / alpha)
     cached_j0 = _gx_j0_field_precomputed(field, j0, 1.0)
-    assert np.allclose(np.asarray(direct_j0), np.asarray(cached_j0), rtol=1.0e-6, atol=1.0e-6)
+    assert np.allclose(
+        np.asarray(direct_j0), np.asarray(cached_j0), rtol=1.0e-6, atol=1.0e-6
+    )
 
     bpar = jnp.asarray([[[0.3 + 0.1j]]], dtype=jnp.complex64)
     direct_bpar = _gx_bpar_term(bpar, b, roots, tz, 1.0)
     cached_bpar = _gx_bpar_term_precomputed(bpar, j1_over_alpha, roots, tz, 1.0)
-    assert np.allclose(np.asarray(direct_bpar), np.asarray(cached_bpar), rtol=1.0e-6, atol=1.0e-6)
+    assert np.allclose(
+        np.asarray(direct_bpar), np.asarray(cached_bpar), rtol=1.0e-6, atol=1.0e-6
+    )
     cached_scalar_tz = _gx_bpar_term_precomputed(
         bpar,
         j1_over_alpha,
@@ -966,11 +1146,13 @@ def test_stack_fields_and_placeholder_output_contract():
 
 
 def test_spectral_bracket_explicit_fft_norm_and_single_ky_branch():
-    grid = build_spectral_grid(GridConfig(Nx=4, Ny=4, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
-    rng = np.random.default_rng(33)
-    G = rng.normal(size=(1, 1, 1, grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
-        size=(1, 1, 1, grid.ky.size, grid.kx.size, grid.z.size)
+    grid = build_spectral_grid(
+        GridConfig(Nx=4, Ny=4, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi)
     )
+    rng = np.random.default_rng(33)
+    G = rng.normal(
+        size=(1, 1, 1, grid.ky.size, grid.kx.size, grid.z.size)
+    ) + 1j * rng.normal(size=(1, 1, 1, grid.ky.size, grid.kx.size, grid.z.size))
     chi = rng.normal(size=(grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
         size=(grid.ky.size, grid.kx.size, grid.z.size)
     )
@@ -1014,11 +1196,13 @@ def test_spectral_bracket_explicit_fft_norm_and_single_ky_branch():
 
 
 def test_squeezed_em_components_match_contribution_with_4d_gyroaverages():
-    grid = build_spectral_grid(GridConfig(Nx=4, Ny=4, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
-    rng = np.random.default_rng(34)
-    G = rng.normal(size=(1, 2, grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
-        size=(1, 2, grid.ky.size, grid.kx.size, grid.z.size)
+    grid = build_spectral_grid(
+        GridConfig(Nx=4, Ny=4, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi)
     )
+    rng = np.random.default_rng(34)
+    G = rng.normal(
+        size=(1, 2, grid.ky.size, grid.kx.size, grid.z.size)
+    ) + 1j * rng.normal(size=(1, 2, grid.ky.size, grid.kx.size, grid.z.size))
     phi = rng.normal(size=(grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
         size=(grid.ky.size, grid.kx.size, grid.z.size)
     )
@@ -1033,7 +1217,9 @@ def test_squeezed_em_components_match_contribution_with_4d_gyroaverages():
         tz=jnp.asarray([1.0]),
         vth=jnp.asarray([1.0]),
         sqrt_m=jnp.sqrt(jnp.arange(2, dtype=jnp.float32))[None, :, None, None, None],
-        sqrt_m_p1=jnp.sqrt(jnp.arange(1, 3, dtype=jnp.float32))[None, :, None, None, None],
+        sqrt_m_p1=jnp.sqrt(jnp.arange(1, 3, dtype=jnp.float32))[
+            None, :, None, None, None
+        ],
         kx_grid=grid.kx_grid,
         ky_grid=grid.ky_grid,
         dealias_mask=grid.dealias_mask,
@@ -1045,18 +1231,27 @@ def test_squeezed_em_components_match_contribution_with_4d_gyroaverages():
     )
 
     contribution = nonlinear_em_contribution(jnp.asarray(G), **common)
-    components = nonlinear_em_components(jnp.asarray(G), laguerre_mode="spectral", **common)
+    components = nonlinear_em_components(
+        jnp.asarray(G), laguerre_mode="spectral", **common
+    )
     assert contribution.shape == G.shape
     assert components["total"].shape == G.shape
-    assert np.allclose(np.asarray(contribution), np.asarray(components["total"]), rtol=1.0e-6, atol=1.0e-6)
+    assert np.allclose(
+        np.asarray(contribution),
+        np.asarray(components["total"]),
+        rtol=1.0e-6,
+        atol=1.0e-6,
+    )
 
 
 def test_laguerre_components_without_precomputed_bessel_include_bpar_and_apar():
-    grid = build_spectral_grid(GridConfig(Nx=4, Ny=4, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi))
-    rng = np.random.default_rng(35)
-    G = rng.normal(size=(1, 1, 2, grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
-        size=(1, 1, 2, grid.ky.size, grid.kx.size, grid.z.size)
+    grid = build_spectral_grid(
+        GridConfig(Nx=4, Ny=4, Nz=1, Lx=2.0 * np.pi, Ly=2.0 * np.pi)
     )
+    rng = np.random.default_rng(35)
+    G = rng.normal(
+        size=(1, 1, 2, grid.ky.size, grid.kx.size, grid.z.size)
+    ) + 1j * rng.normal(size=(1, 1, 2, grid.ky.size, grid.kx.size, grid.z.size))
     phi = rng.normal(size=(grid.ky.size, grid.kx.size, grid.z.size)) + 1j * rng.normal(
         size=(grid.ky.size, grid.kx.size, grid.z.size)
     )
@@ -1069,11 +1264,15 @@ def test_laguerre_components_without_precomputed_bessel_include_bpar_and_apar():
         apar=jnp.asarray(apar),
         bpar=jnp.asarray(bpar),
         Jl=jnp.ones((1, 1, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.float32),
-        JlB=jnp.ones((1, 1, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.float32),
+        JlB=jnp.ones(
+            (1, 1, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.float32
+        ),
         tz=jnp.asarray([1.0]),
         vth=jnp.asarray([1.0]),
         sqrt_m=jnp.sqrt(jnp.arange(2, dtype=jnp.float32))[None, :, None, None, None],
-        sqrt_m_p1=jnp.sqrt(jnp.arange(1, 3, dtype=jnp.float32))[None, :, None, None, None],
+        sqrt_m_p1=jnp.sqrt(jnp.arange(1, 3, dtype=jnp.float32))[
+            None, :, None, None, None
+        ],
         kx_grid=grid.kx_grid,
         ky_grid=grid.ky_grid,
         dealias_mask=grid.dealias_mask,
@@ -1088,17 +1287,28 @@ def test_laguerre_components_without_precomputed_bessel_include_bpar_and_apar():
         gx_real_fft=False,
     )
 
-    contribution = nonlinear_em_contribution(jnp.asarray(G), laguerre_mode="grid", **common)
+    contribution = nonlinear_em_contribution(
+        jnp.asarray(G), laguerre_mode="grid", **common
+    )
     components = nonlinear_em_components(jnp.asarray(G), laguerre_mode="grid", **common)
     assert components["exb_bpar"].shape == G.shape
     assert components["flutter"].shape == G.shape
-    assert np.allclose(np.asarray(contribution), np.asarray(components["total"]), rtol=1.0e-6, atol=1.0e-6)
+    assert np.allclose(
+        np.asarray(contribution),
+        np.asarray(components["total"]),
+        rtol=1.0e-6,
+        atol=1.0e-6,
+    )
 
     precomputed = nonlinear_em_components(
         jnp.asarray(G),
         laguerre_mode="grid",
-        laguerre_j0=jnp.ones((1, 2, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.float32),
-        laguerre_j1_over_alpha=jnp.full((1, 2, grid.ky.size, grid.kx.size, grid.z.size), 0.5, dtype=jnp.float32),
+        laguerre_j0=jnp.ones(
+            (1, 2, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.float32
+        ),
+        laguerre_j1_over_alpha=jnp.full(
+            (1, 2, grid.ky.size, grid.kx.size, grid.z.size), 0.5, dtype=jnp.float32
+        ),
         **common,
     )
     assert precomputed["exb_bpar"].shape == G.shape

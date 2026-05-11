@@ -11,8 +11,14 @@ import pytest
 
 
 def _load_tool_module():
-    path = Path(__file__).resolve().parents[1] / "tools" / "plot_quasilinear_saturation_rule_sweep.py"
-    spec = importlib.util.spec_from_file_location("plot_quasilinear_saturation_rule_sweep", path)
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "tools"
+        / "plot_quasilinear_saturation_rule_sweep.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "plot_quasilinear_saturation_rule_sweep", path
+    )
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -21,7 +27,9 @@ def _load_tool_module():
     return module
 
 
-def _write_case(tmp_path: Path, name: str, *, observed: float, gamma_sign: float = 1.0) -> tuple[Path, Path]:
+def _write_case(
+    tmp_path: Path, name: str, *, observed: float, gamma_sign: float = 1.0
+) -> tuple[Path, Path]:
     spectrum = tmp_path / f"{name}_ql.csv"
     spectrum.write_text(
         "ky,gamma,kperp_eff2,heat_flux_weight_total,saturated_heat_flux_total\n"
@@ -45,10 +53,14 @@ def _write_case(tmp_path: Path, name: str, *, observed: float, gamma_sign: float
     return spectrum, summary
 
 
-def test_saturation_rule_sweep_fits_train_scale_and_scores_holdout(tmp_path: Path) -> None:
+def test_saturation_rule_sweep_fits_train_scale_and_scores_holdout(
+    tmp_path: Path,
+) -> None:
     mod = _load_tool_module()
     train_spectrum, train_summary = _write_case(tmp_path, "train", observed=9.0)
-    holdout_spectrum, holdout_summary = _write_case(tmp_path, "holdout", observed=4.5, gamma_sign=-1.0)
+    holdout_spectrum, holdout_summary = _write_case(
+        tmp_path, "holdout", observed=4.5, gamma_sign=-1.0
+    )
     cases = (
         mod.SaturationCase(
             case="train",
@@ -71,14 +83,52 @@ def test_saturation_rule_sweep_fits_train_scale_and_scores_holdout(tmp_path: Pat
     assert report["claim_level"] == "model_comparison_not_validated_transport"
     assert report["input_validation"]["passed"] is True
     assert report["rules"]["positive_mixing_length"]["scale"] == pytest.approx(10.0)
-    assert report["rules"]["positive_mixing_length"]["predicted_heat_flux"][0] == pytest.approx(9.0)
-    assert report["rules"]["positive_mixing_length"]["predicted_heat_flux"][1] == pytest.approx(0.0)
+    assert report["rules"]["positive_mixing_length"]["predicted_heat_flux"][
+        0
+    ] == pytest.approx(9.0)
+    assert report["rules"]["positive_mixing_length"]["predicted_heat_flux"][
+        1
+    ] == pytest.approx(0.0)
     assert report["rules"]["linear_weight"]["scale"] == pytest.approx(3.0)
-    assert report["rules"]["linear_weight"]["predicted_heat_flux"][1] == pytest.approx(9.0)
-    assert report["null_training_mean_baseline"]["predicted_heat_flux"] == pytest.approx([9.0, 9.0])
-    assert report["null_training_mean_baseline"]["holdout_mean_abs_relative_error"] == pytest.approx(1.0)
+    assert report["rules"]["linear_weight"]["predicted_heat_flux"][1] == pytest.approx(
+        9.0
+    )
+    assert report["null_training_mean_baseline"][
+        "predicted_heat_flux"
+    ] == pytest.approx([9.0, 9.0])
+    assert report["null_training_mean_baseline"][
+        "holdout_mean_abs_relative_error"
+    ] == pytest.approx(1.0)
     assert report["promotion_gate"]["passed"] is False
     assert report["promotion_gate"]["accepted_rules"] == []
+
+
+def test_saturation_rule_sweep_parallel_workers_match_serial(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    cases = []
+    for name, split, observed in [
+        ("train", "train", 9.0),
+        ("holdout_a", "holdout", 4.5),
+        ("holdout_b", "holdout", 6.0),
+    ]:
+        spectrum, summary = _write_case(tmp_path, name, observed=observed)
+        cases.append(
+            mod.SaturationCase(
+                case=name,
+                split=split,
+                geometry=name,
+                spectrum=spectrum,
+                nonlinear_summary=summary,
+            )
+        )
+
+    serial = mod.build_saturation_rule_sweep(tuple(cases), workers=1)
+    parallel = mod.build_saturation_rule_sweep(tuple(cases), workers=2)
+
+    assert parallel["parallel"]["workers"] == 2
+    assert parallel["cases"] == serial["cases"]
+    assert parallel["rules"] == serial["rules"]
+    assert parallel["promotion_gate"] == serial["promotion_gate"]
 
 
 def test_saturation_rule_sweep_writes_artifacts(tmp_path: Path) -> None:
@@ -95,7 +145,9 @@ def test_saturation_rule_sweep_writes_artifacts(tmp_path: Path) -> None:
     )
     report = mod.build_saturation_rule_sweep(cases)
 
-    paths = mod.write_saturation_rule_sweep_figure(report, out=tmp_path / "sweep.png", title="Sweep")
+    paths = mod.write_saturation_rule_sweep_figure(
+        report, out=tmp_path / "sweep.png", title="Sweep"
+    )
 
     assert Path(paths["png"]).exists()
     assert Path(paths["pdf"]).exists()
@@ -105,7 +157,9 @@ def test_saturation_rule_sweep_writes_artifacts(tmp_path: Path) -> None:
     assert "promotion_gate" in payload
 
 
-def test_saturation_rule_sweep_rejects_failed_nonlinear_summary_gate(tmp_path: Path) -> None:
+def test_saturation_rule_sweep_rejects_failed_nonlinear_summary_gate(
+    tmp_path: Path,
+) -> None:
     mod = _load_tool_module()
     spectrum, summary = _write_case(tmp_path, "train", observed=9.0)
     data = json.loads(summary.read_text(encoding="utf-8"))
@@ -123,3 +177,36 @@ def test_saturation_rule_sweep_rejects_failed_nonlinear_summary_gate(tmp_path: P
 
     with pytest.raises(ValueError, match="unvalidated nonlinear train/holdout input"):
         mod.build_saturation_rule_sweep(cases)
+
+
+def test_saturation_rule_sweep_development_mode_and_input_schema_guards(
+    tmp_path: Path,
+) -> None:
+    mod = _load_tool_module()
+    spectrum, summary = _write_case(tmp_path, "holdout", observed=4.0)
+    failed_payload = json.loads(summary.read_text(encoding="utf-8"))
+    failed_payload["gate_report"]["passed"] = False
+    summary.write_text(json.dumps(failed_payload), encoding="utf-8")
+    cases = (
+        mod.SaturationCase(
+            case="holdout",
+            split="holdout",
+            geometry="hsx",
+            spectrum=spectrum,
+            nonlinear_summary=summary,
+        ),
+    )
+
+    report = mod.nonlinear_input_validation_report(cases, required_splits=("train",))
+    assert report["passed"] is True
+    assert report["cases"][0]["reason"] == "not required split"
+
+    with pytest.raises(ValueError, match="at least one train case"):
+        mod.build_saturation_rule_sweep(cases, require_validated_inputs=False)
+
+    bad_spectrum = tmp_path / "bad.csv"
+    bad_spectrum.write_text(
+        "ky,gamma,heat_flux_weight_total\n0.1,0.2,1.0\n", encoding="utf-8"
+    )
+    with pytest.raises(ValueError, match="required column 'kperp_eff2'"):
+        mod.raw_rule_estimates(bad_spectrum)

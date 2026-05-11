@@ -25,6 +25,43 @@ def test_integrate_linear_from_config():
     assert phi_t.shape[0] == 2
 
 
+def test_integrate_linear_from_config_forwards_parallel(monkeypatch):
+    """Runtime parallel policy should reach the fixed-step linear integrator."""
+
+    captured = {}
+    parallel = object()
+
+    def fake_integrate_linear(*args, **kwargs):
+        captured["parallel"] = kwargs["parallel"]
+        return "G", "phi"
+
+    monkeypatch.setattr(runners, "integrate_linear", fake_integrate_linear)
+
+    grid_cfg = GridConfig(Nx=1, Ny=2, Nz=4, Lx=6.0, Ly=6.0)
+    time_cfg = TimeConfig(t_max=0.2, dt=0.1, method="rk2", use_diffrax=False)
+    cfg = CycloneBaseCase(grid=grid_cfg, time=time_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams()
+    G = jnp.zeros((2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz), dtype=jnp.complex64)
+
+    assert integrate_linear_from_config(G, grid, geom, params, cfg.time, parallel=parallel) == ("G", "phi")
+    assert captured["parallel"] is parallel
+
+
+def test_integrate_linear_from_config_rejects_parallel_diffrax() -> None:
+    grid_cfg = GridConfig(Nx=1, Ny=2, Nz=4, Lx=6.0, Ly=6.0)
+    time_cfg = TimeConfig(t_max=0.2, dt=0.1, method="rk2", use_diffrax=True)
+    cfg = CycloneBaseCase(grid=grid_cfg, time=time_cfg)
+    grid = build_spectral_grid(cfg.grid)
+    geom = SAlphaGeometry.from_config(cfg.geometry)
+    params = LinearParams()
+    G = jnp.zeros((2, 2, cfg.grid.Ny, cfg.grid.Nx, cfg.grid.Nz), dtype=jnp.complex64)
+
+    with pytest.raises(NotImplementedError, match="fixed-step cached"):
+        integrate_linear_from_config(G, grid, geom, params, cfg.time, parallel=type("P", (), {"strategy": "velocity"})())
+
+
 def test_integrate_nonlinear_from_config_routes_fixed_step_state_sharding(monkeypatch):
     """Non-diffrax nonlinear runs should honor TimeConfig.state_sharding."""
 

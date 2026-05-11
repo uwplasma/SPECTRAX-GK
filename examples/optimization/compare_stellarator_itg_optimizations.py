@@ -24,9 +24,31 @@ def main() -> None:
         default=ROOT / "docs" / "_static" / "stellarator_itg_optimization_comparison",
         help="Output base path without extension.",
     )
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=1,
+        help="Independent objective workers; preserves serial result ordering.",
+    )
+    parser.add_argument(
+        "--parallel-executor",
+        choices=("thread", "process"),
+        default="thread",
+        help="Executor for independent objective workers.",
+    )
+    parser.add_argument(
+        "--finite-difference-workers",
+        type=int,
+        default=1,
+        help="Thread workers for finite-difference gradient-gate columns inside each objective.",
+    )
     args = parser.parse_args()
 
-    payload = compare_stellarator_itg_objectives()
+    payload = compare_stellarator_itg_objectives(
+        workers=args.workers,
+        parallel_executor=args.parallel_executor,
+        finite_difference_workers=args.finite_difference_workers,
+    )
     write_comparison_artifacts(payload, args.out)
     print(f"comparison artifacts={args.out}")
 

@@ -47,6 +47,7 @@ def test_build_summary_contains_trace_metadata() -> None:
         memory_profile=Path("tools_out/memory.prof"),
         hlo_out=Path("tools_out/hlo.txt"),
         force_electrostatic_fields=True,
+        source="spectraxgk.linear.linear_rhs_cached",
     )
 
     assert payload["kind"] == "full_linear_rhs_trace_summary"
@@ -55,6 +56,7 @@ def test_build_summary_contains_trace_metadata() -> None:
     assert payload["warm_seconds"] == 0.1
     assert payload["hlo_token_counts"]["add"] >= 1
     assert payload["force_electrostatic_fields"] is True
+    assert payload["source"] == "spectraxgk.linear.linear_rhs_cached"
     assert payload["trace_dir"] == "tools_out/trace"
     assert "kernel-level optimization targets" in payload["claim_scope"]
 

@@ -2,12 +2,11 @@
 from __future__ import annotations
 
 import argparse
-from dataclasses import replace
 from pathlib import Path
 
 import numpy as np
 
-from spectraxgk.benchmarks import CycloneBaseCase, load_cyclone_reference, run_cyclone_scan
+from spectraxgk.benchmarks import load_cyclone_reference, run_cyclone_scan
 from spectraxgk.config import TimeConfig
 
 

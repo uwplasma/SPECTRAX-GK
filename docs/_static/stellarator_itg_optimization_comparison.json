@@ -2295,7 +2295,13 @@
         ],
         "tangent_fd": [
           0.0014798935648978329
-        ]
+        ],
+        "finite_difference_parallel": {
+          "requested_workers": 2,
+          "effective_workers": 2,
+          "executor": "thread",
+          "identity_contract": "parallel finite-difference columns must match serial columns"
+        }
       },
       "covariance": {
         "sigma2": 0.003525595987785427,
@@ -4812,7 +4818,13 @@
         ],
         "tangent_fd": [
           -0.006190018740307585
-        ]
+        ],
+        "finite_difference_parallel": {
+          "requested_workers": 2,
+          "effective_workers": 2,
+          "executor": "thread",
+          "identity_contract": "parallel finite-difference columns must match serial columns"
+        }
       },
       "covariance": {
         "sigma2": 0.002752351438896093,
@@ -4922,8 +4934,8 @@
       "backend_info": {
         "vmec_jax_available": true,
         "vmec_jax_boundary_api_available": true,
-        "booz_xform_jax_available": true,
-        "booz_xform_jax_api_available": true,
+        "booz_xform_jax_available": false,
+        "booz_xform_jax_api_available": false,
         "vmec_jax_paths": [
           "/Users/rogeriojorge/local/vmec_jax"
         ],
@@ -7689,7 +7701,13 @@
         ],
         "tangent_fd": [
           -0.0002474797137965584
-        ]
+        ],
+        "finite_difference_parallel": {
+          "requested_workers": 2,
+          "effective_workers": 2,
+          "executor": "thread",
+          "identity_contract": "parallel finite-difference columns must match serial columns"
+        }
       },
       "covariance": {
         "sigma2": 0.0010516030061950088,
@@ -9405,5 +9423,13 @@
       "/Users/rogeriojorge/local/booz_xform_jax",
       "/Users/rogeriojorge/local/booz_xform_jax/src"
     ]
+  },
+  "parallel": {
+    "requested_workers": 3,
+    "effective_workers": 3,
+    "executor": "thread",
+    "finite_difference_workers": 2,
+    "finite_difference_executor": "thread",
+    "identity_contract": "parallel objective reports must preserve serial ordering and values"
   }
 }

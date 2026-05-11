@@ -151,6 +151,9 @@ def write_runtime_linear_scan_artifacts(out: str | Path, result: Any) -> dict[st
         "ky_max": None if ky.size == 0 else float(np.max(ky)),
         "has_quasilinear": bool(ql_payloads),
     }
+    parallel = getattr(result, "parallel", None)
+    if isinstance(parallel, dict):
+        summary["parallel"] = parallel
     _write_json(summary_path, summary)
     _write_csv(csv_path, ["ky", "gamma", "omega"], [ky, gamma, omega])
     paths = {"summary": str(summary_path), "scan": str(csv_path)}
@@ -282,7 +285,11 @@ def _condense_resolved_for_output(resolved: ResolvedDiagnostics | None) -> Resol
 
 
 def _condense_gx_diagnostics_for_output(diag: SimulationDiagnostics) -> SimulationDiagnostics:
-    return replace(diag, resolved=_condense_resolved_for_output(diag.resolved))
+    # GX-style NetCDF artifacts do not persist the monitored complex mode trace.
+    # Drop it when appending from an existing artifact so restart concatenation
+    # preserves the exact on-disk schema instead of mixing persisted and transient
+    # diagnostics.
+    return replace(diag, phi_mode_t=None, resolved=_condense_resolved_for_output(diag.resolved))
 
 
 def load_runtime_nonlinear_gx_diagnostics(path: str | Path) -> SimulationDiagnostics:
