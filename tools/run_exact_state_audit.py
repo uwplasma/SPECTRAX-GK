@@ -61,7 +61,7 @@ def _run_tool(cmd: list[str], *, cwd: Path | None, log_path: Path, env: dict[str
                 env_lines.append(f"{key}={env[key]}")
     log_path.write_text(
         f"$ {' '.join(cmd)}\n"
-        + (f"env:\n" + "\n".join(env_lines) + "\n\n" if env_lines else "\n")
+        + ("env:\n" + "\n".join(env_lines) + "\n\n" if env_lines else "\n")
         + f"stdout:\n{proc.stdout}\n\nstderr:\n{proc.stderr}\n",
         encoding="utf-8",
     )

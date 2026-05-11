@@ -13,7 +13,6 @@ from compare_gx_imported_bigfield_linear import (
     _reduce_linear_grid_to_target_ky,
     build_parser,
 )
-from spectraxgk.analysis import ModeSelection
 from spectraxgk.config import GridConfig
 from spectraxgk.grids import build_spectral_grid
 

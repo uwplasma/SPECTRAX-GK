@@ -21,6 +21,11 @@ def _assert_identity_artifact(payload: dict) -> None:
         assert result["error"] is None
         assert result["max_abs_state_error"] == 0.0
         assert result["max_rel_state_error"] == 0.0
+        assert result["diagnostic_identity_gate_pass"] is True
+        assert result["max_abs_phi_error"] == 0.0
+        assert result["max_rel_phi_error"] == 0.0
+        assert result["max_abs_rhs_error"] == 0.0
+        assert result["max_rel_rhs_error"] == 0.0
 
 
 def test_local_nonlinear_sharding_profile_is_identity_gated() -> None:

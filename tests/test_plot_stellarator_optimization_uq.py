@@ -75,6 +75,14 @@ def test_stellarator_optimization_uq_summary_and_artifacts(tmp_path: Path) -> No
             "magnetic_shear_shift",
         ],
         "observable_names": ["growth_rate"],
+        "parallel": {
+            "requested_workers": 3,
+            "effective_workers": 3,
+            "executor": "thread",
+            "finite_difference_workers": 2,
+            "finite_difference_executor": "thread",
+            "identity_contract": "parallel objective reports must preserve serial ordering and values",
+        },
         "results": [
             _result("growth", 1.0),
             _result("quasilinear_flux", 1.2),
@@ -86,6 +94,8 @@ def test_stellarator_optimization_uq_summary_and_artifacts(tmp_path: Path) -> No
     assert summary["kind"] == "stellarator_itg_optimization_uq"
     assert summary["all_gradient_gates_passed"] is True
     assert summary["all_sensitivity_maps_full_rank"] is True
+    assert summary["parallel"]["requested_workers"] == 3
+    assert summary["parallel"]["finite_difference_workers"] == 2
     assert len(summary["results"]) == 3
     assert summary["results"][0]["max_abs_error"] == 1.0e-6
 

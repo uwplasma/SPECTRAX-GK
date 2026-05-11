@@ -44,6 +44,7 @@ the same order they appear in the code.
    linear_model
    operators
    numerics
+   parallelization
    normalization
    quasilinear
    stellarator_optimization
@@ -59,6 +60,7 @@ the same order they appear in the code.
    testing
    validation_strategy
    verification_matrix
+   release_scope
    code_structure
    manuscript_figures
    references

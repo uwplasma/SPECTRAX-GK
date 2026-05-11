@@ -222,6 +222,11 @@
     ]
   },
   "observed_floor": 1e-12,
+  "parallel": {
+    "executor": "thread",
+    "identity_contract": "parallel case rows preserve serial case ordering",
+    "workers": 4
+  },
   "promotion_gate": {
     "accepted_rules": [],
     "best_rule": "positive_mixing_length",

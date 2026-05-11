@@ -697,10 +697,10 @@ def test_select_geometry_source_prefers_gx_output_for_vmec_generated_runs() -> N
     vmec_contract = replace(_dummy_gx_contract(init_single=False), geo_option="vmec")
     desc_contract = replace(_dummy_gx_contract(init_single=False), geo_option="desc")
     nc_contract = replace(_dummy_gx_contract(init_single=False), geo_option="nc")
-    assert _resolve_internal_geometry_source(geometry_file=geom, runtime_config=None) == geom
-    assert _resolve_internal_geometry_source(geometry_file=gx_out, runtime_config=None) == gx_out
-    assert _resolve_internal_geometry_source(geometry_file=gx_out, runtime_config=None) == gx_out
-    assert _resolve_internal_geometry_source(geometry_file=geom, runtime_config=None) == geom
+    assert _resolve_internal_geometry_source(geometry_file=geom, runtime_config=None, gx_contract=vmec_contract) == geom
+    assert _resolve_internal_geometry_source(geometry_file=gx_out, runtime_config=None, gx_contract=vmec_contract) == gx_out
+    assert _resolve_internal_geometry_source(geometry_file=gx_out, runtime_config=None, gx_contract=desc_contract) == gx_out
+    assert _resolve_internal_geometry_source(geometry_file=geom, runtime_config=None, gx_contract=nc_contract) == geom
 
 
 def test_resolve_internal_geometry_source_uses_gx_grid_contract_for_internal_miller(monkeypatch) -> None:

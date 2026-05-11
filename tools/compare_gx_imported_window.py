@@ -36,7 +36,7 @@ from spectraxgk.diagnostics import gx_Wapar, gx_Wg, gx_Wphi, gx_volume_factors
 from spectraxgk.geometry import SlabGeometry, apply_gx_geometry_grid_defaults, load_gx_geometry_netcdf
 from spectraxgk.grids import build_spectral_grid, select_gx_real_fft_ky_grid
 from spectraxgk.gx_integrators import GXTimeConfig, _gx_linear_omega_max, _linear_explicit_step
-from spectraxgk.linear import LinearTerms, build_linear_cache
+from spectraxgk.linear import build_linear_cache
 from spectraxgk.species import build_linear_params
 
 
@@ -228,6 +228,8 @@ def main() -> None:
     _summary("start_phi", gx_phi_start.astype(np.complex64), gx_phi_start.astype(np.complex64))
     if gx_apar_start is not None:
         _summary("start_apar", gx_apar_start.astype(np.complex64), gx_apar_start.astype(np.complex64))
+    if gx_bpar_start is not None:
+        _summary("start_bpar", gx_bpar_start.astype(np.complex64), gx_bpar_start.astype(np.complex64))
     _summary("stop_g_state", gx_G_stop.astype(np.complex64), sp_G_stop)
     _summary("stop_phi", gx_phi_stop.astype(np.complex64), sp_phi_stop)
     if gx_apar_stop is not None or fields.apar is not None:

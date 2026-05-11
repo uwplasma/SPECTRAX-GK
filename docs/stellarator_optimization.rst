@@ -187,16 +187,23 @@ Generate the three individual optimization panels with:
 
 .. code-block:: bash
 
-   JAX_ENABLE_X64=1 python examples/optimization/stellarator_itg_growth_optimization.py
-   JAX_ENABLE_X64=1 python examples/optimization/stellarator_itg_quasilinear_flux_optimization.py
-   JAX_ENABLE_X64=1 python examples/optimization/stellarator_itg_nonlinear_heat_flux_optimization.py
+   JAX_ENABLE_X64=1 python examples/optimization/stellarator_itg_growth_optimization.py --finite-difference-workers 2
+   JAX_ENABLE_X64=1 python examples/optimization/stellarator_itg_quasilinear_flux_optimization.py --finite-difference-workers 2
+   JAX_ENABLE_X64=1 python examples/optimization/stellarator_itg_nonlinear_heat_flux_optimization.py --finite-difference-workers 2
 
 Generate the comparison panel with:
 
 .. code-block:: bash
 
-   JAX_ENABLE_X64=1 python examples/optimization/compare_stellarator_itg_optimizations.py
+   JAX_ENABLE_X64=1 python examples/optimization/compare_stellarator_itg_optimizations.py --workers 3 --finite-difference-workers 2
    JAX_ENABLE_X64=1 python tools/plot_stellarator_optimization_uq.py
+
+The ``--workers`` option parallelizes the independent growth-rate,
+quasilinear-flux, and nonlinear-window objective reports while preserving the
+serial ordering of the JSON payload. The ``--finite-difference-workers``
+option parallelizes central finite-difference columns inside each AD/FD gate
+using threads, which avoids pickling JAX objective closures. Both paths record
+their worker metadata and identity contract in the JSON artifacts.
 
 .. figure:: _static/stellarator_itg_optimization_comparison.png
    :width: 95%
@@ -381,8 +388,9 @@ the following pass:
    matches the imported ``bmag``, ``bgrad``, ``gradpar``, ``q``, ``s_hat``,
    Jacobian, zero-beta ``gds*``/``grho`` metric convention, and zero-beta
    loaded ``cvdrift``/``gbdrift`` drift convention at release tolerance. The
-   remaining gap is broad finite-beta and multi-equilibrium drift parity before
-   broad transport-gradient claims are promoted.
+   remaining gap is finite-beta and broader production-runtime drift parity
+   beyond the tracked zero-beta equal-arc fixtures before broad transport-gradient
+   claims are promoted.
 2. The sampled field-line arrays match the existing imported-VMEC/EIK runtime
    path for at least one small equilibrium.
 3. Geometry-observable gradients match central finite differences for the

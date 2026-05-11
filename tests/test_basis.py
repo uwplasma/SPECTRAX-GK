@@ -21,9 +21,9 @@ def test_laguerre_orthonormality():
     l_max = 4
     x = jnp.linspace(0.0, 40.0, 8001)
     dx = x[1] - x[0]
-    l = laguerre(x, l_max)
+    lag = laguerre(x, l_max)
     w = jnp.exp(-x)
-    gram = jnp.einsum("ix,jx,x->ij", l, l, w) * dx
+    gram = jnp.einsum("ix,jx,x->ij", lag, lag, w) * dx
     assert jnp.allclose(gram, jnp.eye(l_max + 1), atol=2e-2)
 
 

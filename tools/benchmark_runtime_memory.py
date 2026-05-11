@@ -14,7 +14,6 @@ import platform
 import re
 import shlex
 import subprocess
-import sys
 import time
 import tomllib
 

@@ -17,6 +17,7 @@ from spectraxgk.solver_objective_gradients import (
     VMEC_BOOZER_NONLINEAR_WINDOW_OBJECTIVE_NAMES,
     VMEC_BOOZER_QUASILINEAR_OBJECTIVE_NAMES,
     VMEC_BOOZER_STATE_PARAMETER_NAMES,
+    _objective_gate_rows,
     _reduced_nonlinear_window_metrics_from_linear_observables,
     _vmec_boozer_state_parameter_name,
     default_solver_geometry_design_params,
@@ -30,7 +31,9 @@ from spectraxgk.solver_objective_gradients import (
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "tools" / "build_solver_objective_gradient_gate.py"
-spec = importlib.util.spec_from_file_location("build_solver_objective_gradient_gate", SCRIPT)
+spec = importlib.util.spec_from_file_location(
+    "build_solver_objective_gradient_gate", SCRIPT
+)
 mod = importlib.util.module_from_spec(spec)
 assert spec.loader is not None
 spec.loader.exec_module(mod)
@@ -38,10 +41,15 @@ spec.loader.exec_module(mod)
 
 def test_solver_ready_geometry_mapping_validates_contract() -> None:
     theta = jnp.linspace(-jnp.pi, jnp.pi, 8, endpoint=False)
-    mapping = solver_ready_geometry_mapping(default_solver_geometry_design_params(), theta)
+    mapping = solver_ready_geometry_mapping(
+        default_solver_geometry_design_params(), theta
+    )
 
     assert spectraxgk.solver_ready_geometry_mapping is solver_ready_geometry_mapping
-    assert tuple(SOLVER_GEOMETRY_PARAMETER_NAMES) == ("bmag_ripple", "curvature_drift_scale")
+    assert tuple(SOLVER_GEOMETRY_PARAMETER_NAMES) == (
+        "bmag_ripple",
+        "curvature_drift_scale",
+    )
     assert mapping["theta"].shape == theta.shape
     assert np.all(np.asarray(mapping["bmag"]) > 0.0)
     with pytest.raises(ValueError, match="length-2"):
@@ -49,14 +57,25 @@ def test_solver_ready_geometry_mapping_validates_contract() -> None:
 
 
 def test_vmec_boozer_state_parameter_name_tracks_default_and_explicit_modes() -> None:
-    assert _vmec_boozer_state_parameter_name(17, 1, default_mid_surface=17) == "Rcos_mid_surface_m1"
-    assert _vmec_boozer_state_parameter_name(11, 2, default_mid_surface=17) == "Rcos_r11_m2"
+    assert (
+        _vmec_boozer_state_parameter_name(17, 1, default_mid_surface=17)
+        == "Rcos_mid_surface_m1"
+    )
+    assert (
+        _vmec_boozer_state_parameter_name(11, 2, default_mid_surface=17)
+        == "Rcos_r11_m2"
+    )
 
 
 def test_linear_solver_geometry_gradient_report_passes_actual_rhs_gate() -> None:
-    report = linear_solver_geometry_gradient_report(fd_step=1.0e-3, rtol=1.0e-1, atol=2.0e-3)
+    report = linear_solver_geometry_gradient_report(
+        fd_step=1.0e-3, rtol=1.0e-1, atol=2.0e-3
+    )
 
-    assert spectraxgk.linear_solver_geometry_gradient_report is linear_solver_geometry_gradient_report
+    assert (
+        spectraxgk.linear_solver_geometry_gradient_report
+        is linear_solver_geometry_gradient_report
+    )
     assert report["passed"] is True
     assert report["source_scope"] == "solver_ready_geometry_contract"
     assert report["linear_growth_gradient_gate"] is True
@@ -103,9 +122,36 @@ def test_reduced_nonlinear_window_metrics_are_smooth_and_fd_checked() -> None:
     np.testing.assert_allclose(ad, fd, rtol=2.0e-2, atol=5.0e-3)
 
     with pytest.raises(ValueError, match="steps"):
-        _reduced_nonlinear_window_metrics_from_linear_observables(0.1, 1.0, 1.0, steps=3)
+        _reduced_nonlinear_window_metrics_from_linear_observables(
+            0.1, 1.0, 1.0, steps=3
+        )
     with pytest.raises(ValueError, match="tail_fraction"):
-        _reduced_nonlinear_window_metrics_from_linear_observables(0.1, 1.0, 1.0, tail_fraction=0.0)
+        _reduced_nonlinear_window_metrics_from_linear_observables(
+            0.1, 1.0, 1.0, tail_fraction=0.0
+        )
+
+
+def test_objective_gate_rows_are_json_ready_and_gate_each_parameter() -> None:
+    report = {
+        "jacobian_implicit": [[1.0, 2.0], [0.0, 1.1]],
+        "jacobian_fd": [[1.0, 2.2], [0.0, 1.0]],
+    }
+
+    rows = _objective_gate_rows(
+        report,
+        parameter_names=("p0", "p1"),
+        objective_names=("gamma", "ql"),
+        rtol=0.05,
+        atol=1.0e-6,
+    )
+
+    assert len(rows) == 4
+    assert rows[0]["objective"] == "gamma"
+    assert rows[0]["parameter"] == "p0"
+    assert rows[0]["passed"] is True
+    assert rows[1]["passed"] is False
+    assert rows[1]["rel_error"] == pytest.approx(abs(2.0 - 2.2) / 2.2)
+    assert all(isinstance(row["passed"], bool) for row in rows)
 
 
 def test_mode21_vmec_boozer_frequency_gate_exports_and_scope() -> None:
@@ -172,7 +218,9 @@ def test_write_solver_objective_gradient_artifacts(tmp_path: Path) -> None:
         },
     }
 
-    paths = mod.write_solver_objective_gradient_artifacts(payload, out=tmp_path / "gate.png")
+    paths = mod.write_solver_objective_gradient_artifacts(
+        payload, out=tmp_path / "gate.png"
+    )
 
     for path in paths.values():
         assert Path(path).exists()

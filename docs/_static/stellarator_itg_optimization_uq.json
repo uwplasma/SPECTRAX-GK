@@ -9,6 +9,14 @@
   ],
   "all_gradient_gates_passed": true,
   "all_sensitivity_maps_full_rank": true,
+  "parallel": {
+    "requested_workers": 3,
+    "effective_workers": 3,
+    "executor": "thread",
+    "finite_difference_workers": 2,
+    "finite_difference_executor": "thread",
+    "identity_contract": "parallel objective reports must preserve serial ordering and values"
+  },
   "results": [
     {
       "objective_kind": "growth",

@@ -209,16 +209,18 @@ short Cyclone case.
    :alt: SPECTRAX-GK nonlinear RHS kernel profile on the Cyclone Miller benchmark-size case
    :align: center
 
-The matched May 9, 2026 profile after the precision-controlled grid-Laguerre
-``einsum`` refactor measured CPU full-RHS timings of ``3.19e-1 s`` in grid mode
-and ``2.76e-1 s`` in spectral Laguerre mode. On one ``office`` RTX A4000, the
-corresponding timings were ``1.28e-2 s`` and ``1.48e-2 s``. Spectral mode still
-reduces the GPU nonlinear bracket by ``1.63x``, but the full GPU RHS is now
-faster in grid mode because the optimized Laguerre transform removes enough
-layout overhead while preserving the production grid-quadrature convention.
-This points the next optimization pass at linear-RHS fusion/cache layout and
-larger-grid bracket decomposition, not at claiming a broad nonlinear speedup
-from spectral mode alone.
+The May 10, 2026 local CPU refresh after the independent-worker
+parallelization tranche measured CPU full-RHS timings of ``3.48e-1 s`` in grid
+mode and ``2.20e-1 s`` in spectral Laguerre mode, with measured sub-kernels
+``linear_rhs=1.24e-1 s`` and ``nonlinear_bracket=9.89e-2 s`` in grid mode. On
+one ``office`` RTX A4000, the tracked artifact still records corresponding
+full-RHS timings of ``1.28e-2 s`` and ``1.48e-2 s``. Spectral mode reduces the
+GPU nonlinear bracket by ``1.63x``, but the full GPU RHS remains faster in grid
+mode because the optimized Laguerre transform removes enough layout overhead
+while preserving the production grid-quadrature convention. The CPU refresh
+continues to point the next optimization pass at linear-RHS fusion/cache
+layout and larger-grid bracket decomposition, not at claiming a broad
+nonlinear speedup from spectral mode alone.
 
 The full fused nonlinear-RHS trace companion is generated with:
 
@@ -234,7 +236,7 @@ The full fused nonlinear-RHS trace companion is generated with:
 
 The tracked local CPU artifact
 ``docs/_static/full_nonlinear_rhs_trace_summary.json`` reports
-``warm_seconds=3.16e-1`` and ``3343`` HLO lines. The matched one-RTX-A4000
+``warm_seconds=3.35e-1`` and ``3343`` HLO lines. The matched one-RTX-A4000
 artifact ``docs/_static/full_nonlinear_rhs_trace_gpu_summary.json`` reports
 ``warm_seconds=1.28e-2`` and ``3336`` HLO lines. The GPU token triage is
 dominated by reshapes (``1545``), broadcasts (``1822``), multiplies (``871``),
@@ -312,6 +314,17 @@ costs ``2.33e-3 s`` on CPU. This is the artifact that should be used for
 linked-``|k_z|`` optimization decisions; the initial-state profile is only a
 zero-source baseline.
 
+For the larger Cyclone Miller benchmark-size RHS profile above, the active-state
+CPU companion is
+``docs/_static/linear_rhs_terms_profile_miller_cpu.json``. It uses the same
+``Nl=4``, ``Nm=8``, ``k_y=0.3`` state as the nonlinear Miller profiler and
+reports ``full_linear_rhs=2.93e-1 s`` with independently timed terms summing to
+``4.83e-2 s``. The largest nonzero standalone row is streaming
+(``7.33e-3 s``), followed by linked ``\partial_z`` (``6.39e-3 s``), linked
+``|k_z|`` (``6.18e-3 s``), and hypercollisions (``6.20e-3 s``). That keeps the
+next bounded optimization focused on full-graph layout/fusion and reusable
+state transforms rather than making a standalone-term speedup claim.
+
 The matching ``office`` GPU profile is tracked in
 ``docs/_static/linear_rhs_terms_profile_gpu.json`` and
 ``docs/_static/linear_rhs_terms_profile_gpu.csv``. On one RTX A4000 with the
@@ -347,9 +360,10 @@ Full fused linear RHS trace
 ---------------------------
 
 The term profiler above times independently isolated kernels. The companion
-full-graph profiler lowers and times the fused production linear-RHS assembly
-for a real runtime TOML so optimization work can target the compiled graph
-rather than only the standalone term calls:
+full-graph profiler lowers and times the production ``linear_rhs_cached`` entry
+point for a real runtime TOML so optimization work can target the compiled
+graph seen by executable linear runs rather than only the standalone assembly
+helper:
 
 .. code-block:: bash
 
@@ -361,41 +375,38 @@ rather than only the standalone term calls:
      --repeats 3 \
      --summary-json docs/_static/full_linear_rhs_trace_summary.json
 
-The initial Cyclone Miller CPU artifact
-``docs/_static/full_linear_rhs_trace_summary.json`` reports
-``warm_seconds=8.09e-2`` and ``compile_execute_seconds=1.40`` for the bounded
-local profile after electrostatic field specialization. The previous
-pre-specialization local artifact reported ``warm_seconds=1.19e-1`` and
-``compile_execute_seconds=1.94``, so the initial-state CPU profiler shows a
-graph-localized improvement of about ``1.47x``. The active-state companion
-``docs/_static/full_linear_rhs_trace_z_wave_summary.json`` injects resolved
-parallel variation and reports ``warm_seconds=1.29e-1`` with the same
-specialized HLO shape. Both current summaries contain ``2225`` HLO lines and
-highlight the remaining graph-level pressure points: broadcasts (``748`` coarse
-token hits), reshapes (``377``), FFT mentions (``312``), reductions (``304``),
-multiplies (``127``), and gathers (``51``). These are localization metrics, not
-standalone runtime claims. They point the next source optimization tranche at
-fused layout, broadcast/reshape reduction, and linked derivative staging before
-changing physics gates or documentation speedup claims.
+The May 11, 2026 local CPU production-path artifacts record
+``source="spectraxgk.linear.linear_rhs_cached"`` and
+``force_electrostatic_fields=true``. The initial-state companion reports
+``warm_seconds=1.54e-1`` and ``compile_execute_seconds=1.02``. The active
+``z_wave`` companion injects resolved parallel variation and reports
+``warm_seconds=8.38e-2`` with the same specialized HLO shape. Both summaries
+contain ``2779`` HLO lines and highlight the remaining graph-level pressure
+points: broadcasts (``983`` coarse token hits), reshapes (``578``), FFT
+mentions (``312``), reductions (``316``), multiplies (``200``), and gathers
+(``51``). These are localization metrics, not standalone runtime claims. The
+source-path change means these artifacts should be compared against future
+production-path refreshes, not against older lower-level assembly-helper
+artifacts.
 
-The matched one-RTX-A4000 artifacts
+The May 11, 2026 one-RTX-A4000 production-path artifacts
 ``docs/_static/full_linear_rhs_trace_gpu_summary.json`` and
 ``docs/_static/full_linear_rhs_trace_gpu_z_wave_summary.json`` report
-``warm_seconds=5.28e-3`` and ``5.25e-3`` for the initial and active ``z_wave``
-states, respectively, with ``force_electrostatic_fields=true``. A same-commit
-benchmark-size nonlinear split on ``office`` measured GPU full-RHS timings of
-``1.71e-2 s`` in grid mode and ``1.48e-2 s`` in spectral Laguerre mode, so the
-fresh GPU evidence supports the linear-RHS specialization but does not yet
-justify a broader nonlinear speedup claim.
+``source="spectraxgk.linear.linear_rhs_cached"``, ``2779`` HLO lines, and
+``force_electrostatic_fields=true``. The initial and active ``z_wave`` states
+measure ``warm_seconds=5.13e-3`` and ``5.15e-3``, respectively. These GPU
+artifacts show that the production linear-RHS path remains about five
+milliseconds on one RTX A4000 for this benchmark-size RHS call, but they remain
+kernel-localization evidence rather than a full nonlinear runtime claim.
 
-Parallelization scaling (diffrax + distributed linear loop)
------------------------------------------------------------
+Parallelization scaling guardrail
+---------------------------------
 
-The shipped scaling figure is intentionally limited to the release-grade
-2-device diffrax speedup sweep. It captures CPU (macOS) and GPU (``office``)
-performance for a fixed linear ITG configuration (Ny=64, Nz=128, Nl=6, Nm=6),
-comparing one vs two devices across several time horizons. GPU runs use
-``sample_stride=5`` to limit memory pressure.
+The legacy two-device linear scaling figure remains an engineering artifact, not
+the headline production parallelization claim. Current user-facing scaling
+claims should point to the independent ``k_y`` scan and quasilinear/UQ ensemble
+figures below, because those paths preserve serial ordering and have explicit
+solver-observable identity gates.
 
 .. image:: _static/scaling_speedup.png
    :alt: SPECTRAX-GK scaling speedup
@@ -408,8 +419,8 @@ be replotted with:
 
    python tools/plot_scaling_speedup.py
 
-The exploratory distributed-RK2 strong-scaling data is still tracked in the CSV
-for engineering work, but it is intentionally not presented as a headline
+The exploratory distributed-RK2 strong-scaling data is still tracked for
+engineering work, but it is intentionally not presented as a headline
 publication figure because the current curve is dominated by communication
 overhead rather than near-ideal scaling.
 
@@ -421,6 +432,16 @@ On one device they reduce to batched ``vmap`` execution; on multiple devices
 they use JAX device batching and trim padded edge samples deterministically.
 Every performance claim from this path should include a numerical-identity
 gate against the serial result before a speedup plot is promoted.
+
+For the release-scale CPU/GPU panels below, the acceptance contract is
+machine-checkable: the combined ``*_large`` artifact must cite split CPU and
+GPU JSON/CSV/PNG/PDF companions, each split artifact must include the grid,
+warmup/repeat policy, backend/device counts, positive timing samples, and
+per-row identity results, and any speedup statement must name the artifact that
+supports it. Whole-state nonlinear sharding uses the same large-run artifact
+shape, but its timing ratios remain profiler evidence and not a production
+nonlinear speedup claim unless a future matched workload refresh adds the
+missing full nonlinear communication and transport gates.
 
 The first release-grade gate for this policy is a real Cyclone linear
 ``k_y``-scan comparison:
@@ -440,6 +461,387 @@ This gate runs the same linear solver serially and with fixed-shape
 reports observed speedup as an engineering metric. The gate intentionally does
 not claim nonlinear domain scaling; that remains a separate communication and
 FFT-decomposition problem.
+
+The complementary logical-CPU gate exercises the public
+``RuntimeParallelConfig`` and ``batch_map`` interface on a structured JAX
+pytree output. It is not a gyrokinetic physics validation; it verifies that the
+parallel API preserves serial numerical identity for independent scan/UQ-style
+workloads before those workloads are connected to heavier solver paths.
+
+.. image:: _static/logical_cpu_parallel_scan_gate.png
+   :alt: SPECTRAX-GK logical CPU parallel scan identity gate
+   :align: center
+
+It is regenerated with:
+
+.. code-block:: bash
+
+   python tools/generate_logical_cpu_parallel_scan_gate.py --logical-devices 2
+
+The tracked artifact used two logical CPU devices and passed the identity gate:
+``max_gamma_rel_error=6.7e-8``, ``max_ql_rel_error=1.1e-7``, and
+``max_omega_abs_error=0``. The observed timing is retained as engineering
+metadata only; a speedup claim requires a solver-backed workload and fresh
+CPU/GPU profiler artifacts.
+
+The solver-backed strong-scaling artifact now exercises that production
+policy on a larger real Cyclone linear scan with twelve independent
+``k_y`` values, ``Ny=128``, ``Nz=96``, ``Nl=4``, ``Nm=8``, and ``240`` RK2
+steps per mode. Each worker performs one warmup scan before the timed repeats,
+and every multi-worker result is compared against the one-worker reference for
+``gamma`` and ``omega`` identity:
+
+.. image:: _static/independent_ky_scan_scaling_large.png
+   :alt: SPECTRAX-GK independent ky scan CPU/GPU strong-scaling artifact
+   :align: center
+
+It is regenerated with:
+
+.. code-block:: bash
+
+   python tools/profile_independent_ky_scan_scaling.py \
+     --backend cpu --devices 1,2,4,8 \
+     --ny 128 --nz 96 --nl 4 --nm 8 --steps 240 \
+     --out-prefix docs/_static/independent_ky_scan_scaling_cpu_large
+
+   python tools/profile_independent_ky_scan_scaling.py \
+     --backend gpu --devices 1,2 \
+     --ny 128 --nz 96 --nl 4 --nm 8 --steps 240 \
+     --out-prefix docs/_static/independent_ky_scan_scaling_gpu_large
+
+   python tools/plot_independent_ky_scan_scaling.py
+
+The May 10, 2026 ``office`` sweep passes the identity gate with zero reported
+``gamma``/``omega`` mismatch. CPU process scaling reaches ``1.92x`` on two
+workers, ``3.51x`` on four workers, and ``5.34x`` on eight workers. The
+two-GPU RTX A4000 run reaches ``1.63x`` with about ``81%`` parallel
+efficiency. This is the current recommended production parallelization path
+for linear scans, quasilinear studies, sensitivity sweeps, and UQ ensembles:
+it has much better scaling behavior than whole-state nonlinear sharding
+because communication is restricted to post-run result aggregation.
+
+The same independent-worker policy is also gated on a quasilinear/UQ-style
+ensemble: six late-time Cyclone ITG gradient samples, five ``k_y`` values per
+sample, ``Ny=96``, ``Nz=64``, ``Nl=3``, ``Nm=6``, and ``2000`` RK2 steps per
+mode. Each worker computes real late-time linear growth/frequency fits and a
+reduced mixing-length feature observable. The observable is useful for
+parallelization and UQ plumbing, but it is not promoted as an absolute
+nonlinear heat-flux predictor.
+
+.. image:: _static/quasilinear_uq_ensemble_scaling_large.png
+   :alt: SPECTRAX-GK quasilinear UQ ensemble CPU/GPU strong-scaling artifact
+   :align: center
+
+It is regenerated with:
+
+.. code-block:: bash
+
+   python tools/profile_quasilinear_uq_ensemble_scaling.py \
+     --backend cpu --devices 1,2,4,8 \
+     --out-prefix docs/_static/quasilinear_uq_ensemble_scaling_cpu_large
+
+   python tools/profile_quasilinear_uq_ensemble_scaling.py \
+     --backend gpu --devices 1,2 \
+     --out-prefix docs/_static/quasilinear_uq_ensemble_scaling_gpu_large
+
+   python tools/plot_quasilinear_uq_ensemble_scaling.py
+
+The May 10, 2026 ``office`` sweep passes the serial identity gate for both the
+reduced quasilinear proxy and ``gamma``. The CPU run reaches ``1.70x`` on two
+workers, ``2.75x`` on four workers, and ``5.41x`` on eight requested workers
+using six actual ensemble chunks. The two-GPU RTX A4000 run reaches ``1.71x``
+with about ``86%`` parallel efficiency. This closes the release engineering
+gate for quasilinear calibration grids, finite-difference checks, sensitivity
+sweeps, and UQ ensembles that can be decomposed into independent solver calls.
+
+The production nonlinear-decomposition plan follows the same conservative
+rule. ``spectraxgk.build_velocity_sharding_plan`` records a GX-inspired
+species-first, Hermite-second velocity-space layout, including which axes need
+Hermite ghost exchange and which axes need field-solve reductions and
+broadcasts. This is planning metadata, not yet a nonlinear speedup path. It is
+used to keep future ``shard_map`` work explicit about communication before any
+transport-runtime claim is made.
+
+The first concrete communication-kernel gate is the Hermite ghost exchange.
+It uses ``jax.shard_map`` to exchange nearest-neighbor Hermite moments across a
+two-device logical CPU mesh and compares the result against the full-array
+reference shift with zero physical boundaries:
+
+.. image:: _static/hermite_exchange_gate.png
+   :alt: SPECTRAX-GK Hermite ghost-exchange identity gate
+   :align: center
+
+It is regenerated with:
+
+.. code-block:: bash
+
+   python tools/generate_hermite_exchange_gate.py --logical-devices 2
+
+The tracked artifact passes with zero reported lower/upper neighbor error. It
+only validates the communication primitive. A production nonlinear
+velocity-space decomposition still needs field-reduction/broadcast gates,
+streaming-operator identity gates, full-RHS identity gates, and profiler
+artifacts before any speedup claim.
+
+The matching velocity-space field-reduction gate validates the second required
+communication primitive. It reduces the Hermite-sharded local contributions
+with ``lax.psum`` and compares against the full-array reference sum:
+
+.. image:: _static/velocity_field_reduce_gate.png
+   :alt: SPECTRAX-GK velocity field-reduction identity gate
+   :align: center
+
+It is regenerated with:
+
+.. code-block:: bash
+
+   python tools/generate_velocity_field_reduce_gate.py --logical-devices 2
+
+The tracked artifact passes with ``max_abs_error=3.9e-6`` under an absolute
+tolerance of ``1e-5``. This tolerance reflects expected float32 roundoff from a
+different reduction tree; it is not a physics tolerance. The next gate must
+combine Hermite exchange and field reduction with the actual streaming
+coefficients.
+
+The electrostatic field-reduction gate applies the same ``lax.psum`` pattern
+to the actual ``m=0`` density moment used by quasineutrality and compares the
+resulting ``phi`` against the production field solve:
+
+.. image:: _static/electrostatic_field_reduce_gate.png
+   :alt: SPECTRAX-GK electrostatic field-reduction identity gate
+   :align: center
+
+It is regenerated with:
+
+.. code-block:: bash
+
+   python tools/generate_electrostatic_field_reduce_gate.py --logical-devices 2
+
+The tracked artifact passes exactly on the current single-species periodic
+gate with ``phi_norm=1.68e-1`` and zero reported absolute/relative error. This
+is the first true sharded field-reduction solve gate; multi-species,
+linked-boundary, electromagnetic, and nonlinear field solves remain separate
+gates.
+
+That coefficient gate is now tracked separately. It applies the
+``sqrt(m+1)`` upper-neighbor and ``sqrt(m)`` lower-neighbor Hermite streaming
+ladder on top of the shard-map exchange and records the paired field-reduction
+error:
+
+.. image:: _static/hermite_streaming_ladder_gate.png
+   :alt: SPECTRAX-GK Hermite streaming-ladder identity gate
+   :align: center
+
+It is regenerated with:
+
+.. code-block:: bash
+
+   python tools/generate_hermite_streaming_ladder_gate.py --logical-devices 2
+
+The tracked artifact passes with zero ladder error and records an accompanying
+Hermite field-reduction error of ``1.9e-6``. This closes the communication and
+coefficient layer for a one-dimensional Hermite mesh. The next step is an
+opt-in linear streaming microkernel that includes the actual parallel
+derivative contract.
+
+The electrostatic drift-slice gate then uses offset-1 and offset-2 Hermite
+exchanges for mirror and curvature terms, together with the electrostatic
+field-reduction gate:
+
+.. image:: _static/electrostatic_drift_gate.png
+   :alt: SPECTRAX-GK electrostatic drift-slice identity gate
+   :align: center
+
+It is regenerated with:
+
+.. code-block:: bash
+
+   python tools/generate_electrostatic_drift_gate.py --logical-devices 2
+
+The tracked artifact passes with ``phi_norm=1.21e-1`` and zero reported
+absolute/relative error for the mirror, curvature/grad-B, and combined drift
+slices. This is a single-species periodic electrostatic identity gate, not a
+full-RHS, linked-boundary, electromagnetic, or nonlinear performance claim.
+The gated slices are available together through
+``spectraxgk.linear_rhs_parallel_cached`` with
+``RuntimeParallelConfig(strategy="velocity", axis="hermite",
+backend="electrostatic_linear_slices")``.
+
+The electrostatic diamagnetic-drive gate validates the remaining local
+electrostatic drive slice. It uses the Hermite-sharded electrostatic field
+reduction, then applies the local ``m=0`` and ``m=2`` density/temperature
+gradient masks on each Hermite shard:
+
+.. image:: _static/electrostatic_diamagnetic_gate.png
+   :alt: SPECTRAX-GK electrostatic diamagnetic-drive identity gate
+   :align: center
+
+It is regenerated with:
+
+.. code-block:: bash
+
+   python tools/generate_electrostatic_diamagnetic_gate.py --logical-devices 2
+
+The tracked artifact passes with ``phi_norm=1.68e-1`` and zero reported
+absolute/relative error against the production diamagnetic-only linear RHS.
+The opt-in ``backend="electrostatic_linear_slices"`` route now combines
+streaming, mirror, curvature, grad-B, and diamagnetic slices. It still rejects
+collision, electromagnetic, linked-boundary, multi-species, and nonlinear
+terms until each path has its own identity gate.
+
+The periodic linear-streaming microkernel gate then adds the spectral
+parallel derivative along the field-line direction and compares the resulting
+``shard_map`` path directly against the production
+``spectraxgk.terms.operators.streaming_term``:
+
+.. image:: _static/periodic_streaming_microkernel_gate.png
+   :alt: SPECTRAX-GK periodic streaming microkernel identity gate
+   :align: center
+
+It is regenerated with:
+
+.. code-block:: bash
+
+   python tools/generate_periodic_streaming_microkernel_gate.py --logical-devices 2
+
+The tracked artifact passes with zero reported absolute and relative error.
+This is still a linear streaming microkernel gate, not a full linear RHS or
+nonlinear performance claim.
+
+The next release gate exercises the same periodic streaming path through the
+production ``linear_rhs_cached`` call graph. The artifact disables all
+non-streaming terms, keeps electromagnetic channels off, and uses non-density
+Hermite moments so that the electrostatic field solve is exactly zero:
+
+.. image:: _static/linear_rhs_streaming_gate.png
+   :alt: SPECTRAX-GK streaming-only linear RHS identity gate
+   :align: center
+
+It is regenerated with:
+
+.. code-block:: bash
+
+   python tools/generate_linear_rhs_streaming_gate.py --logical-devices 2
+
+The tracked artifact passes with ``max_abs_error=9.7e-7``,
+``max_rel_error=5.6e-7``, and ``phi_norm=0``. This closes a streaming-only
+linear-RHS identity gate. It deliberately does not claim full-RHS, nonlinear,
+or production speedup parity; those remain separate gates with additional
+field-solve, drive, collision, bracket, and profiler coverage.
+
+For code-level experiments the same route is available through
+``spectraxgk.linear_rhs_parallel_cached`` with
+``RuntimeParallelConfig(strategy="velocity", axis="hermite",
+backend="streaming_only")``. The helper rejects any non-streaming term weights
+so this remains a disabled-by-default diagnostic path rather than a hidden
+solver change.
+
+The follow-on electrostatic streaming gate keeps the term weights identical
+but initializes an ``m=0`` density perturbation so that the production
+electrostatic field solve produces nonzero ``phi``. It then compares
+``linear_rhs_cached`` against the explicit
+``backend="streaming_electrostatic"`` route:
+
+.. image:: _static/linear_rhs_streaming_electrostatic_gate.png
+   :alt: SPECTRAX-GK electrostatic streaming linear RHS identity gate
+   :align: center
+
+It is regenerated with:
+
+.. code-block:: bash
+
+   python tools/generate_linear_rhs_streaming_electrostatic_gate.py --logical-devices 2
+
+The tracked artifact passes with ``phi_norm=1.34e-1``,
+``max_phi_abs_error=1.9e-9``, ``max_abs_error=1.4e-7``, and
+``max_rel_error=4.1e-7``. The field solve uses the single-species
+Hermite-sharded electrostatic reduction gate above; this validates the
+field-reduction-to-streaming call graph before the drift, diamagnetic-drive,
+and nonlinear paths are introduced.
+
+The current composed electrostatic linear-RHS gate then exercises the opt-in
+``backend="electrostatic_linear_slices"`` route against the serial production
+RHS with streaming, mirror, curvature, grad-B, and diamagnetic drive enabled:
+
+.. image:: _static/linear_rhs_electrostatic_slices_gate.png
+   :alt: SPECTRAX-GK composed electrostatic linear-slices identity gate
+   :align: center
+
+It is regenerated with:
+
+.. code-block:: bash
+
+   python tools/generate_linear_rhs_electrostatic_slices_gate.py --logical-devices 2
+
+The tracked artifact passes with ``phi_norm=1.68e-1``,
+``max_abs_error=1.5e-7``, ``max_rel_error=3.7e-7``, and zero reported
+electrostatic-potential error. This is the current single-species periodic
+electrostatic linear-RHS identity gate for velocity-space parallelization. It
+is not a linked-boundary, collision, electromagnetic, nonlinear, or speedup
+claim.
+
+The matching engineering profile intentionally stays separate from the
+identity gate:
+
+.. image:: _static/linear_rhs_parallel_slices_profile.png
+   :alt: SPECTRAX-GK electrostatic linear-slices parallelization profile
+   :align: center
+
+It is regenerated with:
+
+.. code-block:: bash
+
+   python tools/profile_linear_rhs_parallel_slices.py \
+     --logical-devices 8 --nl 4 --nm 128 --ny 32 --nz 128 --rtol 1e-5
+
+The tracked CPU artifact uses a Hermite-heavy workload and keeps the sharded
+route within a float32 reduction-order engineering tolerance:
+``max_abs_error=2.4e-6``, ``max_rel_error=6.0e-6``, and
+``max_phi_abs_error=7.5e-9``. The warm timings are
+``serial_median_s=4.37e-2``, ``sharded_median_s=3.11e-2``, and
+``speedup=1.40x`` on eight logical CPU devices. This remains an engineering
+profile rather than a publication speedup claim; the stricter small-grid
+identity gate above is the release correctness gate.
+
+A compact CPU sweep maps the same opt-in route across Hermite resolution and
+logical device count:
+
+.. image:: _static/linear_rhs_parallel_slices_sweep.png
+   :alt: SPECTRAX-GK electrostatic linear-slices parallelization sweep
+   :align: center
+
+It is regenerated with:
+
+.. code-block:: bash
+
+   python tools/profile_linear_rhs_parallel_slices_sweep.py \
+     --platform cpu --devices 1,2,4,8 --nms 64,128 \
+     --nl 4 --ny 32 --nz 128 --rtol 1e-5
+
+The tracked sweep passes identity for all points. It shows the current
+Hermite-sharded electrostatic route is overhead-limited at one and two logical
+CPU devices, becomes competitive near four devices, and reaches the best
+bounded engineering point of ``1.57x`` at ``Nm=128`` on four logical CPU
+devices. This figure is a regime map for development, not a broad scaling
+claim. The machine-readable release contract is
+``docs/_static/linear_rhs_parallel_slices_sweep.json`` with CSV/PNG/PDF
+companions.
+
+The same profiler can target GPUs on the office node:
+
+.. code-block:: bash
+
+   PYTHONPATH=/tmp/spectrax-gk-profile/src python3 \
+     tools/profile_linear_rhs_parallel_slices.py \
+     --platform gpu --logical-devices 2 \
+     --nl 4 --nm 64 --ny 32 --nz 128 --rtol 1e-5 \
+     --out-prefix docs/_static/linear_rhs_parallel_slices_profile_gpu
+
+The tracked two-RTX-A4000 artifact passes the engineering identity check
+(``max_abs_error=1.9e-6``, ``max_rel_error=4.7e-6``), but it is much slower
+than the single-GPU serial JIT path (``speedup=0.03x``). This keeps the GPU
+Hermite-sharding lane open: do not claim GPU speedup until the communication
+layout is redesigned or a larger production workload shows a real gain.
 
 Fixed-step nonlinear state sharding
 -----------------------------------
@@ -464,18 +866,54 @@ The profiler/identity artifact is generated with:
      --out-json docs/_static/nonlinear_sharding_profile.json
 
 The JSON records device count, requested sharding axis, warm serial/sharded
-timings, profiler-trace status, final-state errors, and the fastest
-identity-preserving candidate among the requested state-axis options. The
+timings, profiler-trace status, final-state errors, final-field/RHS diagnostic
+errors, and the fastest identity-preserving candidate among the requested
+state-axis options. The
 local checked-in artifact is deliberately small and only establishes the
 control-flow and single-device identity gate. The two-GPU office artifact at
 ``docs/_static/nonlinear_sharding_profile_office_gpu.json`` records active
-``auto``/``kx`` state sharding with zero final-state error on both candidate
-axes. In the current bounded run the requested ``auto`` path is slower
-(``0.86x``), while the best identity-preserving candidate is explicit ``kx``
-sharding at about ``1.03x``. That is not enough for a publication speedup
-claim. Do not promote new nonlinear runtime speedup claims until this tool is
-rerun on matched
-benchmark-size CPU and GPU cases and the runtime/memory panel is refreshed.
+``auto``/``kx`` state sharding with zero final-state, final-field, and final-RHS
+diagnostic error on both candidate axes. In the current bounded run the
+requested ``auto`` path is slower (``0.81x``), while the best
+identity-preserving candidate is explicit ``kx`` sharding at about ``0.96x``.
+That is not a speedup, so this artifact should be treated as a correctness and
+profiler-localization gate rather than a publication runtime claim.
+
+The larger strong-scaling sweep is regenerated with isolated subprocesses so
+each device count gets a clean JAX runtime:
+
+.. code-block:: bash
+
+   python tools/profile_nonlinear_sharding_sweep.py \
+     --backend cpu --devices 1,2,4,8 \
+     --nx 24 --ny 48 --nz 96 --nl 4 --nm 8 --steps 8 \
+     --out-prefix docs/_static/nonlinear_sharding_strong_scaling_cpu_large
+
+   python tools/profile_nonlinear_sharding_sweep.py \
+     --backend gpu --devices 1,2 \
+     --nx 48 --ny 96 --nz 128 --nl 4 --nm 8 --steps 12 \
+     --out-prefix docs/_static/nonlinear_sharding_strong_scaling_gpu_xlarge
+
+   python tools/plot_nonlinear_sharding_strong_scaling.py
+
+.. image:: _static/nonlinear_sharding_strong_scaling_large.png
+   :alt: SPECTRAX-GK large nonlinear whole-state sharding strong-scaling artifact
+   :align: center
+
+The May 10, 2026 large sweep passes the final-state identity gate at every
+tracked point. The CPU logical-device path improves from one to four devices
+but saturates at about ``1.39x`` and does not improve further at eight logical
+devices. The two-RTX-A4000 GPU path is slower than one GPU even for the larger
+``Nx=48, Ny=96, Nz=128, Nl=4, Nm=8`` fixed-step case, with a measured speedup
+of about ``0.63x``. This makes the technical conclusion explicit: the current
+whole-state nonlinear sharding path is useful as a correctness/profiler gate,
+but production parallelization should prioritize independent ``k_y`` scans,
+UQ/ensemble batching, and a redesigned communication-aware nonlinear domain
+decomposition before any nonlinear multi-GPU speedup claim is made.
+
+This claim boundary is mirrored in :doc:`parallelization` and
+:doc:`release_scope`. If a future optimization changes the conclusion, refresh
+the CPU and GPU sweep artifacts before changing README or release-note wording.
 
 Spectral nonlinear mode (gated fast toggle)
 -------------------------------------------
@@ -810,7 +1248,10 @@ The linear integrator is ``jit``-compiled with the number of steps and method
 as static arguments. The operator term switches (:class:`spectraxgk.linear.LinearTerms`)
 should also remain static inside a compiled loop to avoid recompilation. The
 cached operator arrays can be constructed once and reused across multiple runs
-to avoid repeated geometry setup costs.
+to avoid repeated geometry setup costs. Nonlinear IMEX paths now reuse the
+electrostatic compiled linear-RHS route whenever ``apar=bpar=0``; this is a
+bounded fast path for adiabatic-electron electrostatic runs, not a new runtime
+claim until a fresh end-to-end profile is recorded.
 
 Planned optimizations
 ---------------------

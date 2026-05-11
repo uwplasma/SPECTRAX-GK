@@ -1,0 +1,7 @@
+backend,requested_devices,actual_workers,timed_wall_s,strong_speedup_vs_1_device,parallel_efficiency,max_gamma_rel_error,max_omega_abs_error,identity_gate_pass,grid_label,source,error
+cpu,1,1,2.557562366593629,1.0,1.0,0.0,0.0,True,"Nx=1, Ny=128, Nz=96, Nl=4, Nm=8",/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/independent_ky_scan_scaling_cpu_large.json,
+cpu,2,2,1.3318006184417754,1.9203793204316209,0.9601896602158104,0.0,0.0,True,"Nx=1, Ny=128, Nz=96, Nl=4, Nm=8",/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/independent_ky_scan_scaling_cpu_large.json,
+cpu,4,4,0.7283966585528105,3.511221992252178,0.8778054980630445,0.0,0.0,True,"Nx=1, Ny=128, Nz=96, Nl=4, Nm=8",/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/independent_ky_scan_scaling_cpu_large.json,
+cpu,8,8,0.47938455385155976,5.335095480330332,0.6668869350412915,0.0,0.0,True,"Nx=1, Ny=128, Nz=96, Nl=4, Nm=8",/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/independent_ky_scan_scaling_cpu_large.json,
+gpu,1,1,0.9000271949917078,1.0,1.0,0.0,0.0,True,"Nx=1, Ny=128, Nz=96, Nl=4, Nm=8",/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/independent_ky_scan_scaling_gpu_large.json,
+gpu,2,2,0.5525602239649743,1.6288309508300018,0.8144154754150009,0.0,0.0,True,"Nx=1, Ny=128, Nz=96, Nl=4, Nm=8",/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/independent_ky_scan_scaling_gpu_large.json,

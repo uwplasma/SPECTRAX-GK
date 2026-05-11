@@ -103,7 +103,7 @@ def _parse_args() -> argparse.Namespace:
 
 def _selected_candidate_row(candidate_csv: Path, ky: float) -> pd.Series:
     table = pd.read_csv(candidate_csv)
-    mask = (table["selected"] == True) & (table["ky"].round(4) == round(float(ky), 4))
+    mask = table["selected"].astype(bool) & (table["ky"].round(4) == round(float(ky), 4))
     if not mask.any():
         raise ValueError(f"no selected KBM candidate found for ky={ky:.4f}")
     return table.loc[mask].iloc[0]

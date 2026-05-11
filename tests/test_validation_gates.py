@@ -38,7 +38,9 @@ def test_validation_gate_primitives_are_public_and_backward_compatible() -> None
 def test_scalar_gate_and_json_report_are_strict_and_serializable() -> None:
     passed = evaluate_scalar_gate("gamma", 1.01, 1.0, atol=0.0, rtol=0.02)
     failed = evaluate_scalar_gate("omega", 0.7, 1.0, atol=0.0, rtol=0.02)
-    near_zero = evaluate_scalar_gate("zonal_residual", 1.0e-4, 0.0, atol=2.0e-4, rtol=0.0)
+    near_zero = evaluate_scalar_gate(
+        "zonal_residual", 1.0e-4, 0.0, atol=2.0e-4, rtol=0.0
+    )
     report = gate_report("case", "reference", [passed, failed, near_zero])
     payload = gate_report_to_dict(report)
 
@@ -54,6 +56,88 @@ def test_scalar_gate_and_json_report_are_strict_and_serializable() -> None:
         gate_report("empty", "reference", [])
     with pytest.raises(ValueError):
         evaluate_scalar_gate("bad", 1.0, 1.0, atol=-1.0, rtol=0.0)
+
+
+def test_scalar_gate_thresholds_are_inclusive_and_nonfinite_values_fail() -> None:
+    exact_combined = evaluate_scalar_gate(
+        "combined_tol", 1.25, 1.0, atol=0.05, rtol=0.20
+    )
+    just_over = evaluate_scalar_gate("combined_tol", 1.2501, 1.0, atol=0.05, rtol=0.20)
+    exact_zero_ref = evaluate_scalar_gate(
+        "zero_ref", -2.0e-4, 0.0, atol=2.0e-4, rtol=0.0
+    )
+    just_over_zero_ref = evaluate_scalar_gate(
+        "zero_ref", 2.01e-4, 0.0, atol=2.0e-4, rtol=0.0
+    )
+
+    assert exact_combined.passed is True
+    assert just_over.passed is False
+    assert exact_zero_ref.passed is True
+    assert just_over_zero_ref.passed is False
+
+    nonfinite_report = gate_report(
+        "nonfinite",
+        "synthetic",
+        (
+            evaluate_scalar_gate("nan_observed", np.nan, 1.0, atol=1.0, rtol=0.0),
+            evaluate_scalar_gate("inf_observed", np.inf, 1.0, atol=1.0, rtol=0.0),
+            evaluate_scalar_gate("inf_reference", 1.0, np.inf, atol=1.0, rtol=0.0),
+        ),
+    )
+    payload = gate_report_to_dict(nonfinite_report)
+
+    assert nonfinite_report.passed is False
+    assert np.isinf(nonfinite_report.max_abs_error)
+    assert all(gate.passed is False for gate in nonfinite_report.gates)
+    assert payload["max_abs_error"] is None
+    assert payload["gates"][0]["observed"] is None
+    assert payload["gates"][1]["observed"] is None
+    assert payload["gates"][2]["reference"] is None
+    json.dumps(payload, allow_nan=False)
+
+
+def test_family_gate_thresholds_are_inclusive_at_documented_bounds() -> None:
+    eigen = eigenfunction_gate_report(
+        EigenfunctionComparisonMetrics(overlap=0.95, relative_l2=0.25, phase_shift=0.0),
+        case="mode",
+        source="synthetic",
+        min_overlap=0.95,
+        max_relative_l2=0.25,
+    )
+    order = observed_order_gate_report(
+        ObservedOrderMetrics(
+            step_sizes=np.array([0.4, 0.2, 0.1]),
+            errors=np.array([4.0e-3, 2.0e-3, 1.0e-3]),
+            orders=np.array([1.5, 1.5]),
+            asymptotic_order=2.0,
+        ),
+        case="order",
+        source="synthetic",
+        min_asymptotic_order=2.0,
+        min_pairwise_order=1.5,
+        max_final_error=1.0e-3,
+    )
+    branch = branch_continuity_gate_report(
+        BranchContinuationMetrics(
+            ky=np.array([0.1, 0.2, 0.3]),
+            gamma=np.array([0.1, 0.15, 0.2]),
+            omega=np.array([1.0, 1.1, 1.2]),
+            rel_gamma_jumps=np.array([0.5, 0.25]),
+            rel_omega_jumps=np.array([0.25, 0.1]),
+            max_rel_gamma_jump=0.5,
+            max_rel_omega_jump=0.25,
+            min_successive_overlap=0.95,
+        ),
+        case="branch",
+        source="synthetic",
+        max_rel_gamma_jump=0.5,
+        max_rel_omega_jump=0.25,
+        min_successive_overlap=0.95,
+    )
+
+    assert eigen.passed is True
+    assert order.passed is True
+    assert branch.passed is True
 
 
 def test_validation_gate_family_helpers_cover_physics_observables() -> None:
@@ -108,8 +192,16 @@ def test_validation_gate_family_helpers_cover_physics_observables() -> None:
         min_peak_values=np.array([-0.4]),
     )
 
-    assert linear_metrics_gate_report(linear, linear, case="linear", source="self").passed is True
-    assert nonlinear_window_gate_report(nonlinear, nonlinear, case="nonlinear", source="self").passed is True
+    assert (
+        linear_metrics_gate_report(linear, linear, case="linear", source="self").passed
+        is True
+    )
+    assert (
+        nonlinear_window_gate_report(
+            nonlinear, nonlinear, case="nonlinear", source="self"
+        ).passed
+        is True
+    )
     assert (
         zonal_response_gate_report(
             zonal,
@@ -122,11 +214,16 @@ def test_validation_gate_family_helpers_cover_physics_observables() -> None:
         ).passed
         is True
     )
-    assert eigenfunction_gate_report(
-        EigenfunctionComparisonMetrics(overlap=0.99, relative_l2=0.01, phase_shift=0.0),
-        case="mode",
-        source="self",
-    ).passed is True
+    assert (
+        eigenfunction_gate_report(
+            EigenfunctionComparisonMetrics(
+                overlap=0.99, relative_l2=0.01, phase_shift=0.0
+            ),
+            case="mode",
+            source="self",
+        ).passed
+        is True
+    )
 
 
 def test_order_and_branch_gates_preserve_open_lane_failures() -> None:

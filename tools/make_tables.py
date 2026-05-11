@@ -29,7 +29,6 @@ from spectraxgk.benchmarks import (
     REFERENCE_DAMP_ENDS_AMP,
     REFERENCE_DAMP_ENDS_WIDTHFRAC,
     KINETIC_KRYLOV_GX_REFERENCE,
-    KINETIC_KRYLOV_DEFAULT,
     ETG_KRYLOV_DEFAULT,
     KBM_KRYLOV_DEFAULT,
     TEM_KRYLOV_DEFAULT,
@@ -47,7 +46,6 @@ from spectraxgk.benchmarks import (
     run_cyclone_linear,
     run_cyclone_scan,
     run_etg_linear,
-    run_etg_scan,
     run_kinetic_linear,
     run_kbm_beta_scan,
     run_tem_linear,
@@ -1470,8 +1468,6 @@ def main() -> int:
         verbose=verbose,
         progress=progress,
     )
-    full_scan = CycloneScanResult(ky=full_ky, gamma=full_g, omega=full_w)
-
     full_rows = [
         "ky,gamma_ref,omega_ref,gamma_full,omega_full,abs_gamma,abs_omega,rel_gamma,rel_omega"
     ]

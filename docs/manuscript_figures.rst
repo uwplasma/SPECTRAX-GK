@@ -20,9 +20,13 @@ quasilinear diagnostics/model selection, nonlinear-window comparison gates,
 compact nonlinear startup-window finite-difference plumbing audits, mode-21
 VMEC/Boozer geometry parity, reduced differentiable stellarator ITG
 optimization examples, and linear/quasilinear VMEC/Boozer AD-vs-finite-
-difference gradient gates on QH and Li383. The latest checked public CI run on
-``main`` passed the quick shards, docs/packaging, mypy, repo hygiene, fast
-coverage, and the full wide-coverage matrix with ``95%`` package-wide coverage.
+difference gradient gates on QH and Li383. The required release CI stack is the
+quick-shard, docs/packaging, mypy, repo-hygiene, fast-coverage, and
+wide-coverage matrix; treat the latest ``main`` run as the source of truth before
+tagging. The companion ``docs/_static/manuscript_readiness_status.json`` report
+currently has five active manuscript lanes closed and two lanes explicitly
+deferred: W7-X zonal recurrence/damping and TEM / kinetic-electron stellarator
+extension.
 
 The broader plan is not fully closed. The current quasilinear figures are
 publication-ready as diagnostics, model-selection evidence, and explicit
@@ -30,11 +34,52 @@ negative promotion gates, but they do not support a calibrated absolute-flux
 predictor. The stellarator optimization figures are publication-ready for
 reduced differentiable optimization/UQ plumbing and gradient validation, but
 not yet for production nonlinear heat-flux optimization. Those stronger claims
-require more converged electrostatic nonlinear holdouts, VMEC/Boozer
-nonlinear-window state-gradient gates, and nonlinear audits of optimized
-equilibria. W7-X zonal
+require converged post-transient nonlinear heat-flux windows, VMEC/Boozer
+nonlinear turbulence-gradient or robust finite-difference gates, local-gradient
+conditioning, and nonlinear audits of optimized equilibria. W7-X zonal
 recurrence and TEM/kinetic-electron stellarator validation remain deferred from
 the current manuscript scope.
+
+Current Vs Deferred Figure Inventory
+------------------------------------
+
+.. list-table::
+   :header-rows: 1
+   :widths: 24 42 34
+
+   * - Figure group
+     - Current manuscript use
+     - Deferred or blocked interpretation
+   * - Benchmark atlas and nonlinear windows
+     - Release atlas, nonlinear window statistics, eigenfunction overlays, and
+       gate index support the scoped linear/nonlinear validation narrative.
+     - ETG nonlinear pilots, TEM/KAW stress lanes, extra W7-X flux tubes, and
+       non-indexed figures are not promoted release parity claims.
+   * - Quasilinear diagnostics
+     - Electrostatic spectra, shape gates, calibration provenance, negative
+       simple-rule gates, and the ``spectral_envelope_ridge`` uncertainty panel
+       support a model-selection result.
+     - No runtime/TOML absolute-flux predictor, universal saturation law, or
+       electromagnetic/KBM quasilinear calibration is promoted.
+   * - Autodiff and VMEC/Boozer gradients
+     - Inverse/UQ demos, zero-beta equal-arc parity, solver-ready gradients, and
+       mode-21 QH/Li383 linear, quasilinear, and reduced nonlinear-window
+       estimator gates are in scope.
+     - Compact nonlinear FD audits are startup plumbing checks only; production
+       nonlinear transport gradients and optimized-equilibrium audits remain
+       future gates.
+   * - Performance and parallelization
+     - Runtime/memory figures, independent ``k_y`` scan scaling,
+       quasilinear/UQ ensemble scaling, and nonlinear RHS profiler artifacts are
+       release-facing engineering evidence.
+     - Whole-state nonlinear sharding is identity/profiler evidence only, not a
+       production nonlinear multi-GPU speedup claim.
+   * - W7-X zonal and TEM guardrails
+     - Open-research and TEM-status panels are useful guardrails for the paper
+       plan and release notes.
+     - W7-X long-window zonal recurrence, W7-X experimental fluctuation-spectrum
+       validation, W7-X TEM/kinetic-electron nonlinear windows, and broad
+       multi-flux-tube stellarator validation are deferred.
 
 Core Validation Figures
 -----------------------
@@ -48,16 +93,16 @@ Core Validation Figures
      - Notes
    * - Linear benchmark master panel
      - ``tools/make_benchmark_atlas.py``
-     - Open
-     - Cyclone ITG, ETG, KBM, W7-X, HSX, plus shaped tokamak lane if closed. Current artifact base: ``docs/_static/benchmark_core_linear_atlas.png``.
+     - Closed for the release atlas; paper-level extensions remain scoped
+     - Cyclone ITG, ETG, KBM, W7-X, HSX, and shaped tokamak coverage are represented in ``docs/_static/benchmark_core_linear_atlas.png``. TEM/kinetic-electron branch parity and additional W7-X multi-flux-tube scans remain outside the current release claim.
    * - Eigenfunction validation panel
      - ``tools/plot_eigenfunction_overlap_summary.py``, ``tools/plot_eigenfunction_reference_overlay.py``, ``tools/generate_kbm_reference_overlay.py``, and ``tools/generate_w7x_reference_overlay.py``
      - Closed for KBM and W7-X raw overlays
      - first shipped overlap artifact is ``docs/_static/kbm_eigenfunction_overlap_summary.png``; frozen raw GX bundles now exist for KBM and W7-X under ``docs/_static/reference_modes/``. The closed KBM raw overlay is ``docs/_static/kbm_eigenfunction_reference_overlay_ky0p3000.png`` with overlap ``0.999985`` and relative ``L^2`` mismatch ``0.00721``. The closed W7-X raw overlay is ``docs/_static/w7x_eigenfunction_reference_overlay_ky0p3000.png`` with overlap ``0.9999999994`` and relative ``L^2`` mismatch ``3.33e-5`` against the finite GX ``t≈2`` raw-mode bundle. Both overlay generators write JSON gate reports with ``overlap >= 0.95`` and ``relative L^2 <= 0.25`` requirements. ``tools/compare_gx_kbm.py --branch-summary-json`` writes branch-continuity gate metadata for selected KBM scans, and ``tools/generate_kbm_branch_gate_summary.py`` refreshes the no-rerun tracked artifact ``docs/_static/kbm_branch_gate_summary.json`` from ``docs/_static/kbm_gx_candidates.csv``. The current continuity-first branch summary passes the strict adjacent growth/frequency jump and successive-overlap gates.
    * - Nonlinear transport panel
      - ``tools/make_gx_summary_panel.py`` / ``tools/make_gx_publication_panel.py``
-     - Open
-     - Cyclone, Miller, KBM, W7-X, HSX with matched windows. Current component artifacts: ``docs/_static/nonlinear_cyclone_diag_compare_t400.png``, ``docs/_static/nonlinear_cyclone_miller_diag_compare_t122.png``, ``docs/_static/nonlinear_kbm_diag_compare_t400_stats.png``, ``docs/_static/nonlinear_w7x_diag_compare_t200.png``, ``docs/_static/hsx_nonlinear_compare_t50_true.png``. ``tools/compare_gx_nonlinear_diagnostics.py --summary-json`` now writes machine-readable mean-relative-mismatch gates for each plotted diagnostic with explicit transport-window bounds. The materialized release-window metadata are ``docs/_static/nonlinear_cyclone_gate_summary.json``, ``docs/_static/nonlinear_cyclone_miller_gate_summary.json``, ``docs/_static/nonlinear_kbm_gate_summary.json``, ``docs/_static/nonlinear_hsx_gate_summary.json``, and ``docs/_static/nonlinear_w7x_gate_summary.json``; all pass the current ``0.10`` mean-relative release gate. The older short Cyclone ``t=5`` diagnostic remains documented as an exploratory startup/resolved-spectrum audit, not a release gate.
+     - Closed for release-window gates; stricter manuscript tightening remains open
+     - Cyclone, Miller, KBM, W7-X, HSX with matched windows. Current component artifacts: ``docs/_static/nonlinear_cyclone_diag_compare_t400.png``, ``docs/_static/nonlinear_cyclone_miller_diag_compare_t122.png``, ``docs/_static/nonlinear_kbm_diag_compare_t400_stats.png``, ``docs/_static/nonlinear_w7x_diag_compare_t200.png``, ``docs/_static/hsx_nonlinear_compare_t50_true.png``. ``tools/compare_gx_nonlinear_diagnostics.py --summary-json`` writes machine-readable mean-relative-mismatch gates for each plotted diagnostic with explicit transport-window bounds. The materialized release-window metadata are ``docs/_static/nonlinear_cyclone_gate_summary.json``, ``docs/_static/nonlinear_cyclone_miller_gate_summary.json``, ``docs/_static/nonlinear_kbm_gate_summary.json``, ``docs/_static/nonlinear_hsx_gate_summary.json``, and ``docs/_static/nonlinear_w7x_gate_summary.json``; all pass the current release gate. This is sufficient for the release validation atlas. Paper-level tightening remains open where case-specific references support narrower tolerances, and the older short Cyclone ``t=5`` diagnostic remains documented as an exploratory startup/resolved-spectrum audit, not a release gate.
    * - W7-X exact-state convention audit
      - ``tools/run_exact_state_audit.py`` and ``tools/plot_w7x_exact_state_audit.py``
      - Closed
@@ -92,28 +137,32 @@ Core Validation Figures
      - current artifact base: ``docs/_static/manuscript_readiness_status.png`` with CSV/JSON/PDF companions. It records the narrower manuscript scope where W7-X zonal recurrence and TEM/kinetic-electron extensions are deferred. In that scope, quasilinear diagnostics and saturation-model selection are closed as a validated negative/model-selection result rather than as an absolute-flux predictor; VMEC/Boozer zero-beta equal-arc geometry parity is closed at ``mboz=nboz=21``; reduced differentiable stellarator ITG optimization is closed with AD/FD gates; and production solver-objective geometry gradients are closed for solver-ready arrays plus mode-21 VMEC/Boozer eigenfrequency, quasilinear heat-flux-weight, and reduced nonlinear-window estimator gates on QH and Li383. The compact nonlinear FD audits are retained only as startup plumbing checks with false transport-average gates. Converged post-transient nonlinear heat-flux averages, VMEC/Boozer nonlinear-window state-gradient, and optimized-equilibrium nonlinear audits remain required before production nonlinear heat-flux optimization claims.
    * - Quasilinear spectrum panel
      - ``tools/plot_quasilinear_spectrum.py``
-     - Initial diagnostic closed; nonlinear calibration open
+     - Electrostatic diagnostic closed; absolute-flux prediction not promoted
      - current artifact bases: ``docs/_static/quasilinear_cyclone_spectrum.png``, ``docs/_static/quasilinear_cyclone_miller_spectrum.png``, ``docs/_static/quasilinear_hsx_spectrum.png``, and ``docs/_static/quasilinear_w7x_spectrum.png`` with CSV/JSON/PDF companions. They show electrostatic linear weights and explicitly uncalibrated mixing-length outputs from ``examples/linear/axisymmetric/runtime_cyclone_quasilinear.toml``, ``examples/linear/axisymmetric/runtime_cyclone_miller_quasilinear.toml``, ``examples/linear/non-axisymmetric/runtime_hsx_linear_quasilinear.toml``, and ``examples/linear/non-axisymmetric/runtime_w7x_linear_quasilinear_vmec.toml``. Scan spectra use requested ``ky`` for the x-axis and retain signed selected-mode coordinates as ``mode_ky`` when applicable. W7-X was generated from an external VMEC benchmark file via ``W7X_VMEC_FILE``; the equilibrium itself is not shipped. Absolute saturated-flux claims remain open until a held-out nonlinear calibration report passes.
    * - Quasilinear calibration audit
      - ``tools/build_quasilinear_calibration_report.py`` and ``tools/plot_quasilinear_calibration.py``
      - Initial train/holdout artifact closed as a failed model-transfer gate
-     - current artifact bases: ``docs/_static/quasilinear_cyclone_calibration_audit.png``, ``docs/_static/quasilinear_cyclone_miller_calibration_audit.png``, ``docs/_static/quasilinear_cyclone_miller_train_holdout.png``, ``docs/_static/quasilinear_hsx_train_holdout.png``, ``docs/_static/quasilinear_w7x_train_holdout.png``, the manuscript-facing combined panel ``docs/_static/quasilinear_stellarator_train_holdout.png``, and the input-provenance audit ``docs/_static/quasilinear_validated_calibration_inputs.png`` with JSON/PDF companions. The one-constant train/holdout report fits the heat-flux scale on Cyclone and scores Cyclone Miller plus HSX/W7-X and the D-shaped external-VMEC ``t = 250`` holdout as held-out geometries; it intentionally remains ``calibration_dataset`` with ``passed = false`` because held-out errors exceed the ``0.35`` gate. HSX and W7-X are useful negative stellarator holdouts: the current short linear spectra are stable under ``gamma_floor = 0`` and therefore predict zero mixing-length flux while the nonlinear windows are finite. The D-shaped external-VMEC point is a converged negative transfer constraint, with a finite late-window nonlinear heat flux but a grossly overpredicted Cyclone-scaled mixing-length estimate. The input audit confirms that every current train/holdout nonlinear artifact maps to a passed nonlinear gate, while failed QH and CTH-like external-VMEC feasibility pilots remain excluded. This closes the NetCDF/CSV calibration machinery and provenance gate but not a calibrated absolute-flux claim.
+     - current artifact bases: ``docs/_static/quasilinear_cyclone_calibration_audit.png``, ``docs/_static/quasilinear_cyclone_miller_calibration_audit.png``, ``docs/_static/quasilinear_cyclone_miller_train_holdout.png``, ``docs/_static/quasilinear_hsx_train_holdout.png``, ``docs/_static/quasilinear_w7x_train_holdout.png``, the manuscript-facing combined panel ``docs/_static/quasilinear_stellarator_train_holdout.png``, and the input-provenance audit ``docs/_static/quasilinear_validated_calibration_inputs.png`` with JSON/PDF companions. The current one-constant train/holdout report fits the heat-flux scale on Cyclone and the external-VMEC ITERModel case, then scores five held-out windows: Cyclone Miller, HSX, W7-X, D-shaped external VMEC, and an up-down asymmetric external-VMEC tokamak. It intentionally remains ``calibration_dataset`` with ``passed = false`` because held-out errors exceed the ``0.35`` gate; the current holdout mean relative error is about ``2.57``. HSX, W7-X, and the up-down asymmetric VMEC point are useful negative stellarator/tokamak transfer checks because the simple positive-growth mixing-length family predicts little or zero flux while the nonlinear windows are finite. The D-shaped external-VMEC point is a converged negative transfer constraint with finite late-window nonlinear heat flux but a grossly overpredicted Cyclone/ITERModel-scaled mixing-length estimate. The input audit confirms that every current train/holdout nonlinear artifact maps to a passed nonlinear gate, while failed QH and CTH-like external-VMEC feasibility pilots remain excluded. This closes the NetCDF/CSV calibration machinery and provenance gate but not a calibrated absolute-flux claim.
    * - Quasilinear saturation-rule sweep
      - ``tools/plot_quasilinear_saturation_rule_sweep.py``
      - Initial model-development diagnostic closed as a negative result
-     - current artifact base: ``docs/_static/quasilinear_saturation_rule_sweep.png`` with JSON/PDF companions. It fits one scalar on Cyclone and scores Cyclone Miller, HSX, W7-X, and D-shaped external VMEC for three simple rules: positive-growth mixing length, raw linear heat-flux weight, and an absolute-growth diagnostic. All three fail the held-out absolute-flux gate; the raw linear-weight rule is least bad with holdout mean relative error about ``21``. The panel also includes a Cyclone-training-mean null baseline with holdout mean relative error about ``0.439``. Its JSON ``promotion_gate`` has no accepted rules, so future calibrated rules must beat both the quasilinear baselines and this null baseline before being promoted. This supports the next saturation-model lane while preventing premature absolute quasilinear transport claims.
+     - current artifact base: ``docs/_static/quasilinear_saturation_rule_sweep.png`` with JSON/PDF companions. It fits one scalar on the two training cases, Cyclone and external-VMEC ITERModel, then scores the same five held-out windows for three simple rules: positive-growth mixing length, raw linear heat-flux weight, and an absolute-growth diagnostic. All three fail the held-out absolute-flux gate. The least-bad simple rule is now positive-growth mixing length with holdout mean relative error about ``2.51``; raw linear weight is about ``3.19`` and the absolute-growth diagnostic is about ``3.96``. The panel also includes a training-mean null baseline with holdout mean relative error about ``1.39``. Its JSON ``promotion_gate`` has no accepted rules, so future calibrated rules must beat both the quasilinear baselines and this null baseline before being promoted. This supports the next saturation-model lane while preventing premature absolute quasilinear transport claims.
    * - Shape-aware quasilinear saturation diagnostic
      - ``tools/plot_quasilinear_shape_aware_saturation.py``
      - Initial leave-one-geometry-out diagnostic closed as a negative result
      - current artifact base: ``docs/_static/quasilinear_shape_aware_saturation.png`` with JSON/PDF companions. It fits a shared nonlinear/quasilinear spectrum-shape exponent with per-case intercepts, uses only passed shape gates for the exponent fit, then fits the absolute heat-flux scale on training cases and scores each held-out geometry. The shape-aware model gives mean absolute relative error about ``0.664`` versus ``0.624`` for the linear-weight baseline and ``0.170`` for a deliberately simple training-mean null baseline. The JSON ``promotion_gate`` is false because the model fails the ``0.35`` transport gate and does not beat the null baseline on the current four-case dataset. This is retained as a manuscript-facing negative result because it rules out a too-simple one-exponent envelope before stellarator optimization claims.
    * - Quasilinear candidate uncertainty gate
      - ``tools/plot_quasilinear_candidate_uncertainty.py``
-     - Initial uncertainty-aware candidate gate closed as a negative result
-     - current artifact base: ``docs/_static/quasilinear_candidate_uncertainty.png`` with JSON/PDF companions. It adds training-residual ``95%`` prediction intervals to leave-one-geometry-out candidate scoring. The calibrated linear-weight candidate has mean relative error about ``0.624`` and interval coverage ``0.75``; the shape-power-law candidate has mean relative error about ``0.664`` and interval coverage ``0.75``. The linear-state ridge candidate uses only linear-spectrum branch/state features and reaches mean relative error about ``0.173`` with full interval coverage, but is explicitly marked ineligible because the current four-case dataset leaves too few training cases per fitted parameter. The training-mean null remains about ``0.170``. The JSON ``promotion_gate`` is false with no accepted candidates, so no candidate is promoted into runtime/TOML saturation options.
+     - Seven-case uncertainty-aware candidate gate closed as a scoped model-selection result
+     - current artifact base: ``docs/_static/quasilinear_candidate_uncertainty.png`` with JSON/PDF companions. It adds training-residual ``95%`` prediction intervals to leave-one-geometry-out candidate scoring on the current seven-case electrostatic-compatible dataset. The legacy calibrated linear-weight and one-exponent shape-power-law candidates remain rejected relative to the null/skill gates. The accepted research candidate is ``spectral_envelope_ridge``: it uses the positive-growth ``k_y`` centroid and heat-flux-weighted ``k_y`` width in a three-parameter log-linear ridge model, reaches leave-one-geometry-out mean relative error about ``0.244``, and has interval coverage about ``0.857``. This is a bounded model-development result, not a runtime/TOML absolute-flux predictor or a universal saturation law.
    * - Quasilinear dataset-sufficiency gate
      - ``tools/plot_quasilinear_dataset_sufficiency.py``
-     - Promotion guard closed as a blocked-data-volume result
-     - current artifact base: ``docs/_static/quasilinear_dataset_sufficiency.png`` with JSON/PDF companions. It audits the validated nonlinear windows before any richer saturation model is promoted. The current electrostatic-compatible set has four cases, one explicit training geometry, and three held-out geometries; the gate requires at least six cases and two explicit training geometries. It also records candidate train-to-parameter ratios, downstream skill-gate status, and validated-but-excluded cases. KBM is explicitly excluded from this electrostatic quasilinear promotion lane because electromagnetic field-channel normalization and calibration remain future work. The JSON ``promotion_gate`` is false, so the documentation cannot accidentally describe the current quasilinear candidates as calibrated absolute-flux predictors.
+     - Promotion guard closed for the scoped spectral-envelope candidate; higher-parameter and electromagnetic claims remain blocked
+     - current artifact base: ``docs/_static/quasilinear_dataset_sufficiency.png`` with JSON/PDF companions. It audits the validated nonlinear windows before any richer saturation model is promoted. The current electrostatic-compatible set has seven cases, two explicit training geometries, and five held-out geometries. That is sufficient for the one-parameter linear-weight candidate, the two-parameter shape-power-law candidate, and the three-parameter ``spectral_envelope_ridge`` candidate, but not for the five-parameter ``linear_state_ridge`` model. KBM is explicitly excluded from this electrostatic quasilinear promotion lane because electromagnetic field-channel normalization and calibration remain future work. The gate therefore supports the scoped spectral-envelope model-selection claim while preventing broader absolute-flux or electromagnetic quasilinear claims.
+   * - Release claim-scope ledger
+     - ``docs/release_scope.rst``
+     - Closed as documentation guardrail
+     - This documentation page centralizes the current claim boundaries across validation, quasilinear model selection, differentiable geometry, parallelization, performance, and deferred W7-X/TEM lanes. It should be updated whenever a new artifact promotes or demotes a claim.
    * - VMEC equilibrium portfolio for future quasilinear holdouts
      - ``tools/plot_vmec_jax_equilibrium_inventory.py``
      - Planning artifact closed; bounded linear smoke checks started; transport validation open
@@ -163,16 +212,16 @@ Differentiable-Physics Figures
      - current artifact base: ``docs/_static/quasilinear_implicit_sensitivity.png`` with JSON/PDF companions. It differentiates a tiny Cyclone linear-RHS quasilinear objective ``[gamma, omega, kperp_eff^2, Qhat_i, Q_i^ML]`` with respect to ``[R/Ln, R/LTi]`` using the implicit left/right eigenpair system and checks the result against nearest-branch central finite differences. This is a differentiability/conditioning gate, not an absolute nonlinear-flux validation.
    * - Solver-objective geometry-gradient gate
      - ``tools/build_solver_objective_gradient_gate.py``, ``tools/build_vmec_boozer_solver_frequency_gradient_gate.py``, ``tools/build_vmec_boozer_quasilinear_gradient_gate.py``, ``tools/build_vmec_boozer_nonlinear_window_gradient_gate.py``, ``tools/build_vmec_boozer_gradient_holdout_matrix.py``, ``tools/build_nonlinear_window_fd_audit.py``, and ``tools/build_vmec_boozer_nonlinear_window_fd_audit.py``
-     - Solver-ready production linear-RHS gradient gate closed; mode-21 VMEC/Boozer state-to-solver eigenfrequency, quasilinear heat-flux-weight, and reduced nonlinear-window estimator gates closed for QH plus Li383; compact and VMEC/Boozer-perturbed nonlinear startup FD audits closed only as plumbing checks; production nonlinear-window transport-average and turbulence-gradient promotion open
+     - Solver-ready linear-RHS gradient gate closed; mode-21 VMEC/Boozer state-to-solver eigenfrequency, quasilinear heat-flux-weight, and reduced nonlinear-window estimator gates closed for QH plus Li383; compact and VMEC/Boozer-perturbed nonlinear startup FD audits closed only as plumbing checks; production nonlinear-window transport-average and turbulence-gradient promotion open
      - current artifact bases: ``docs/_static/solver_objective_gradient_gate.png``, ``docs/_static/vmec_boozer_solver_frequency_gradient_gate.png``, ``docs/_static/vmec_boozer_quasilinear_gradient_gate.png``, ``docs/_static/vmec_boozer_nonlinear_window_gradient_gate.png``, ``docs/_static/vmec_boozer_li383_nonlinear_window_gradient_gate.png``, ``docs/_static/vmec_boozer_gradient_holdout_matrix.png``, ``docs/_static/nonlinear_window_fd_audit.png``, and ``docs/_static/vmec_boozer_nonlinear_window_fd_audit.png`` with CSV/JSON/PDF companions. The first differentiates actual electrostatic linear-RHS eigenpair observables with respect to solver-ready geometry arrays using the implicit left/right eigenpair system and checks ``gamma``, ``omega``, ``<k_perp^2>``, linear heat/particle-flux weights, and a mixing-length heat-flux proxy against nearest-branch central finite differences. The VMEC/Boozer frequency gate starts from a real ``vmec_jax`` state coefficient, maps through ``booz_xform_jax`` with ``mboz=nboz=21``, builds the SPECTRAX-GK linear RHS, and verifies the eigenfrequency gradient. The VMEC/Boozer quasilinear gate uses a richer ``Nl=2, Nm=3`` moment basis and checks ``gamma``, ``omega``, ``<k_perp^2>``, ``Q_i`` weight, and ``gamma Q_i/k_perp^2`` against finite differences. The nonlinear-window estimator gates feed those observables into a smooth RK2 late-window envelope and check heat-flux mean, coefficient of variation, and normalized trend gradients. The multi-equilibrium matrix repeats the frequency, quasilinear, and estimator gates on the tracked QH and Li383 fixtures. The compact nonlinear FD audits run actual nonlinear windows and verify startup conditioning/response only; their transport-average gates are false because they do not discard a long transient or demonstrate running-mean convergence. A surface-stencil path is available for memory-bounded diagnostics; converged nonlinear-window turbulence gradients remain a separate promotion gate.
    * - Inverse/UQ figure
-     - ``examples/theory_and_demos/autodiff_inverse_twomode.py`` plus UQ follow-on
-     - Open
-     - must separate identifiability from recovery quality
+     - ``examples/theory_and_demos/autodiff_inverse_growth.py``, ``examples/theory_and_demos/autodiff_inverse_twomode.py``, and ``tools/plot_stellarator_optimization_uq.py``
+     - Scoped inverse and UQ validation closed; global identifiability and production optimization claims remain scoped
+     - current artifact bases: ``docs/_static/autodiff_inverse_growth.png``, ``docs/_static/autodiff_inverse_twomode.png``, and ``docs/_static/stellarator_itg_optimization_uq.png`` with JSON/PDF/CSV companions. The inverse examples check AD/finite-difference consistency and conditioning for one- and two-parameter reduced objectives, while the UQ panel reports local Gauss-Newton covariance, rank, and sensitivity-map diagnostics. These figures validate the differentiable workflow and uncertainty reporting, not global uniqueness or production nonlinear stellarator optimization.
    * - Optimization figure
      - ``examples/optimization/compare_stellarator_itg_optimizations.py`` and ``tools/plot_stellarator_optimization_uq.py``
      - Initial differentiable objective-reduction and weighted-residual UQ gates closed; full VMEC/Boozer/GK optimization open
-     - current artifact bases: ``docs/_static/stellarator_itg_optimization_comparison.png`` and ``docs/_static/stellarator_itg_optimization_uq.png`` with JSON/PDF companions and individual objective panels ``docs/_static/stellarator_itg_growth_optimization.png``, ``docs/_static/stellarator_itg_quasilinear_optimization.png``, and ``docs/_static/stellarator_itg_nonlinear_optimization.png``. The examples optimize a QA max-mode-1 control vector with ``A = 7`` and ``iota = 0.41`` constraints for growth-rate, quasilinear-flux, and nonlinear-window objectives. All three pass AD-vs-finite-difference gates and reduce the tracked ITG observables from the shared initial point. The UQ panel now computes covariance from the final weighted objective residual Jacobian, not from initial-to-final displacement, and shows derivative parity, control uncertainty, covariance projection, and rank/conditioning diagnostics. The geometry bridge now includes real ``vmec_jax`` metric-tensor derivatives, real non-axisymmetric VMEC field-line tensor derivatives through ``vmec_jax.geom`` plus ``vmec_jax.vmec_bcovar``, a direct VMEC tensor-derived flux-tube derivative gate, a direct-VMEC-tensor vs imported-VMEC/EIK array-parity audit, a Boozer equal-arc core/metric parity audit, and a real ``vmec_jax`` ``VMECState`` to ``booz_xform_jax`` to SPECTRAX-GK derivative gate. This is a differentiable optimization and UQ gate, not a full production stellarator-transport optimization claim; the latter remains open pending full VMEC/EIK drift array parity, production geometry-gradient checks, and converged nonlinear audits of optimized equilibria.
+     - current artifact bases: ``docs/_static/stellarator_itg_optimization_comparison.png`` and ``docs/_static/stellarator_itg_optimization_uq.png`` with JSON/PDF companions and individual objective panels ``docs/_static/stellarator_itg_growth_optimization.png``, ``docs/_static/stellarator_itg_quasilinear_optimization.png``, and ``docs/_static/stellarator_itg_nonlinear_optimization.png``. The examples optimize a QA max-mode-1 control vector with ``A = 7`` and ``iota = 0.41`` constraints for growth-rate, quasilinear-flux, and nonlinear-window objectives. All three pass AD-vs-finite-difference gates and reduce the tracked ITG observables from the shared initial point. The UQ panel now computes covariance from the final weighted objective residual Jacobian, not from initial-to-final displacement, and shows derivative parity, control uncertainty, covariance projection, and rank/conditioning diagnostics. The geometry bridge now includes real ``vmec_jax`` metric-tensor derivatives, real non-axisymmetric VMEC field-line tensor derivatives through ``vmec_jax.geom`` plus ``vmec_jax.vmec_bcovar``, a direct VMEC tensor-derived flux-tube derivative gate, a direct-VMEC-tensor vs imported-VMEC/EIK array-parity audit, a Boozer equal-arc core/metric parity audit, and a real ``vmec_jax`` ``VMECState`` to ``booz_xform_jax`` to SPECTRAX-GK derivative gate. This is a differentiable optimization and UQ gate, not a full production stellarator-transport optimization claim; the latter remains open pending finite-beta and broader production-runtime drift parity, production nonlinear turbulence-gradient or robust finite-difference audits, and converged nonlinear audits of optimized equilibria.
    * - VMEC/Boozer parity matrix
      - ``tools/build_vmec_boozer_parity_matrix.py``
      - Multi-equilibrium zero-beta equal-arc geometry gate closed at ``mboz=nboz=21``
@@ -206,4 +255,7 @@ Open Issues Before Drafting
   overlays where additional literature-backed mode-shape references are useful
 - tighten the current windowed nonlinear statistics panel with stricter case-specific gates where reference windows justify them
 - tie ETG nonlinear claims to the benchmark literature or keep them framed as a pilot
-- add publication-ready figure scripts for zonal-flow and fluctuation-spectrum panels
+- add or refine publication-ready zonal-flow closure figures before making W7-X
+  recurrence claims
+- add an experimental transfer-function fluctuation-spectrum panel only if
+  experimental-facing W7-X claims enter the paper

@@ -465,12 +465,18 @@ def test_cmd_scan_linear_branches(monkeypatch, tmp_path: Path, capsys) -> None:
         "gamma": np.array([0.3, 0.4]),
         "omega": np.array([-0.1, -0.2]),
     })()
+    scan_calls: list[dict] = []
 
-    monkeypatch.setattr("spectraxgk.cli.load_case_from_toml", lambda *_args: ("other", _Cfg(), {"scan": {"ky": [0.1, 0.2]}, "fit": {}}))
+    monkeypatch.setattr("spectraxgk.cli.load_case_from_toml", lambda *_args: ("other", _Cfg(), {"scan": {"ky": [0.1, 0.2]}, "fit": {"fit_signal": "density"}}))
     monkeypatch.setattr("spectraxgk.cli._resolve_case", lambda _name: (object, object()))
     monkeypatch.setattr("spectraxgk.cli.load_linear_terms_from_toml", lambda _data: None)
     monkeypatch.setattr("spectraxgk.cli.load_krylov_from_toml", lambda _data: None)
-    monkeypatch.setattr("spectraxgk.cli.run_linear_scan", lambda **_kwargs: scan_result)
+
+    def _fake_scan(**kwargs):
+        scan_calls.append(kwargs)
+        return scan_result
+
+    monkeypatch.setattr("spectraxgk.cli.run_linear_scan", _fake_scan)
     args = argparse.Namespace(
         config="case.toml",
         case=None,
@@ -486,6 +492,7 @@ def test_cmd_scan_linear_branches(monkeypatch, tmp_path: Path, capsys) -> None:
         outdir=str(tmp_path),
     )
     assert _cmd_scan_linear(args) == 0
+    assert scan_calls[-1]["run_kwargs"] == {"fit_signal": "density"}
     assert "No reference available" in capsys.readouterr().out
 
     monkeypatch.setattr("spectraxgk.cli.load_case_from_toml", lambda *_args: ("cyclone", _Cfg(), {"scan": {}, "fit": {}}))
@@ -607,6 +614,8 @@ def test_cmd_scan_runtime_linear_writes_quasilinear_spectrum(monkeypatch, capsys
         steps=None,
         sample_stride=None,
         batch_ky=False,
+        workers=3,
+        parallel_executor="thread",
         progress=False,
         no_progress=True,
         out="scan_bundle",
@@ -619,6 +628,8 @@ def test_cmd_scan_runtime_linear_writes_quasilinear_spectrum(monkeypatch, capsys
     )
     assert _cmd_scan_runtime_linear(args) == 0
     assert captured["quasilinear"].enabled is True
+    assert captured["kwargs"]["workers"] == 3
+    assert captured["kwargs"]["parallel_executor"] == "thread"
     assert "saved scan.ql.csv" in capsys.readouterr().out
 
 

@@ -7,11 +7,14 @@
 [![Python](https://img.shields.io/badge/python-%3E%3D3.10-blue.svg)](https://github.com/uwplasma/SPECTRAX-GK/blob/main/pyproject.toml)
 [![Coverage](https://codecov.io/gh/uwplasma/SPECTRAX-GK/graph/badge.svg)](https://codecov.io/gh/uwplasma/SPECTRAX-GK)
 
-SPECTRAX-GK is a JAX-native gyrokinetic solver designed for differentiability, 
-high-performance accelerator execution, and advanced stellarator optimization. 
+SPECTRAX-GK is a JAX-native gyrokinetic solver designed for differentiability,
+accelerator-ready execution, and stellarator-optimization research workflows.
 The code employs a Hermite-Laguerre velocity space, Fourier perpendicular 
 coordinates, and field-aligned flux-tube geometry to simulate linear and 
 nonlinear electrostatic and electromagnetic turbulence in magnetized plasmas.
+The validated release claim is narrower than the full feature surface; use the
+claim-scope ledger below before citing benchmark, quasilinear, autodiff, or
+manuscript results.
 
 ## Installation
 
@@ -96,11 +99,39 @@ resolved diagnostics, and heat flux.
 - **Hermite-Laguerre spectral velocity basis** providing efficient kinetic closures and multi-fidelity modeling.
 - **Accelerator-ready execution** on CPUs and GPUs with JIT compilation.
 - **Flexible geometry interface** supporting analytic s-alpha, Miller, and direct VMEC equilibrium imports.
-- **Electromagnetic turbulence** including $(\phi, A_\parallel, B_\parallel)$ fluctuations.
+- **Electromagnetic field-channel support** including $(\phi, A_\parallel, B_\parallel)$ fluctuations, with validation claims limited to tracked release lanes.
 - **Multi-species support** with kinetic electrons and advanced collision operators.
 - **Quasilinear transport diagnostics** from linear states, with explicit
   saturation-rule metadata and electrostatic channel validation gates.
 - **Automated benchmark workflows** for reproducible validation and regression tracking.
+
+## Current claim scope
+
+The current release surface is deliberately scoped:
+
+- Linear and nonlinear benchmark claims are tied to tracked gates and figures
+  under `docs/_static`.
+- Electrostatic quasilinear weights and spectra are validated diagnostics. The
+  one-constant and simple saturation-rule absolute-flux models are rejected on
+  the current train/holdout portfolio; the `spectral_envelope_ridge` result is
+  a scoped manuscript model-selection candidate, not a runtime/TOML
+  absolute-flux predictor. Electromagnetic quasilinear calibration remains
+  deferred.
+- The `vmec_jax -> booz_xform_jax -> SPECTRAX-GK` path is validated for
+  zero-beta equal-arc geometry parity and reduced linear/quasilinear/nonlinear-
+  window-estimator gradients on tracked fixtures. The actual nonlinear
+  finite-difference audits are startup plumbing checks with
+  `transport_average_gate = false`; they are not production turbulence-gradient
+  or nonlinear heat-flux optimization claims.
+- Production parallelization is currently the independent-work path for `k_y`
+  scans, sensitivity sweeps, quasilinear studies, and UQ ensembles. Whole-state
+  nonlinear sharding is identity-correct but remains a profiler/diagnostic
+  path, not a nonlinear multi-GPU speedup claim.
+- W7-X zonal long-window recurrence/damping and W7-X TEM / kinetic-electron
+  extensions are deferred from the current manuscript/release scope.
+
+The detailed claim ledger is in
+[`docs/release_scope.rst`](docs/release_scope.rst).
 
 ![SPECTRAX-GK linear benchmark panel](docs/_static/benchmark_core_linear_atlas.png)
 
@@ -141,12 +172,13 @@ rule remains worse than the training-mean null baseline (`2.51` versus `1.39`),
 so SPECTRAX-GK does not promote any simple or user-facing absolute quasilinear
 flux predictor from that legacy family.
 
-The richer held-out candidate is now the reduced spectral-envelope model below.
-It uses only two linear-spectrum envelope features, reaches mean relative error
-about `0.244`, and clears the leave-one-geometry-out interval-coverage gate on
-the current seven-case electrostatic portfolio. That is the current manuscript
-result: the simple rules are rejected, but a small spectrum-aware candidate is
-now accepted as a scoped research model.
+The richer held-out candidate is now the reduced `spectral_envelope_ridge`
+model below. It uses only two linear-spectrum envelope features, reaches mean
+relative error about `0.244`, and clears the leave-one-geometry-out
+interval-coverage gate on the current seven-case electrostatic portfolio. That
+is the current manuscript model-selection result: the simple rules are rejected,
+but a small spectrum-aware candidate is accepted as a scoped research candidate,
+not a runtime/TOML absolute-flux predictor or universal saturation law.
 
 ![SPECTRAX-GK quasilinear candidate uncertainty gate](docs/_static/quasilinear_candidate_uncertainty.png)
 
@@ -286,8 +318,9 @@ solver Jacobian at the percent level on the tracked stellarator fixture; the
 same audit now reconstructs the zero-beta Boozer metric profiles `gds*`/`grho`
 with worst normalized mismatch `3.45e-2` and the loaded-convention zero-beta
 drift profiles `cvdrift`/`gbdrift`/`cvdrift0`/`gbdrift0` with worst normalized
-mismatch `3.50e-2`. The remaining geometry promotion work is broad finite-beta
-and multi-equilibrium drift parity. When
+mismatch `3.50e-2`. The remaining geometry promotion work is finite-beta and
+broader production-runtime drift parity beyond the tracked zero-beta equal-arc
+fixtures. When
 `booz_xform_jax` is available, it also runs a bounded JAX-native Boozer
 spectral transform, samples the resulting Boozer `|B|` spectrum onto a
 field-line flux-tube mapping, and checks both derivative paths against central
@@ -321,7 +354,9 @@ linear eigenfrequency gradient against central finite differences. The
 full-chain quasilinear gate uses a richer `Nl=2, Nm=3` moment basis and
 checks `gamma`, `omega`, `<k_perp^2>`, the electrostatic heat-flux weight, and
 `gamma Q_i/k_perp^2` against central finite differences with maximum relative
-error `4.3e-3`. This closes the reduced linear/quasilinear stellarator
+error `4.3e-3`. These are differentiability checks on reduced solver
+observables and an uncalibrated heat-flux proxy, not calibrated absolute-flux
+predictions. This closes the reduced linear/quasilinear stellarator
 objective-gradient path on the tracked all-surface QH fixture. A second Li383
 holdout now passes the same frequency and quasilinear VMEC/Boozer gradient
 contracts at `mboz=nboz=21`; the combined holdout matrix has maximum relative
@@ -412,10 +447,12 @@ weighted objective residual. These are validated optimization-plumbing
 diagnostics for stellarator-transport objectives, not a final absolute-flux
 optimization claim. Full
 `vmec_jax -> booz_xform_jax -> SPECTRAX-GK` nonlinear optimization remains
-scoped to the next promotion gate: nonlinear-window state-gradient validation,
-continued production curvature/drift parity on additional equilibria, and
-converged nonlinear audits of the optimized equilibria. The current full-chain
-linear/quasilinear gradient evidence covers QH and Li383 at `mboz=nboz=21`;
+scoped to the next promotion gate: production nonlinear turbulence-gradient or
+robust finite-difference audits with converged post-transient heat-flux
+windows, continued production curvature/drift parity on additional equilibria,
+and nonlinear audits of the optimized equilibria. The current full-chain
+linear/quasilinear and reduced nonlinear-window estimator gradient evidence
+covers QH and Li383 at `mboz=nboz=21`;
 it should not be read as a production nonlinear heat-flux optimization claim.
 
 For production parallelization of independent work, use
@@ -431,8 +468,13 @@ requires a separate communication/layout design. The current profiler-backed
 artifacts are `docs/_static/nonlinear_sharding_profile.json` for the local
 control-flow gate and `docs/_static/nonlinear_sharding_profile_office_gpu.json`
 for the two-GPU office identity gate. Treat both as engineering gates, not as
-new runtime claims; publication speedups still need a matched CPU/GPU sweep on
-benchmark-size nonlinear cases.
+new runtime claims. The matched large strong-scaling sweep in
+`docs/performance.rst` now confirms this conservative stance: whole-state
+nonlinear sharding is identity-correct, but only modestly useful on logical
+CPUs and slower on two RTX A4000 GPUs for the current decomposition. Production
+parallelization should therefore focus first on independent `k_y` scans,
+UQ/ensemble batching, and a communication-aware nonlinear decomposition before
+any nonlinear multi-GPU speedup claim is promoted.
 
 ![SPECTRAX-GK ky-batch parallelization identity gate](docs/_static/parallel_ky_scan_gate.png)
 
@@ -442,16 +484,43 @@ linear solver serially and with fixed-shape ky batching, verifies numerical
 identity for `gamma` and `omega`, and reports the observed batch speedup for
 engineering tracking.
 
+![SPECTRAX-GK independent ky scan strong scaling](docs/_static/independent_ky_scan_scaling_large.png)
+
+The large independent-`k_y` strong-scaling panel uses the real Cyclone linear
+solver on twelve modes with `Ny=128`, `Nz=96`, `Nl=4`, `Nm=8`, and `240` RK2
+steps per mode. It passes exact `gamma`/`omega` identity against the one-worker
+reference. On `ssh office`, CPU process scaling reaches `5.34x` on eight
+workers, and the two-RTX-A4000 GPU run reaches `1.63x`. This is the preferred
+production parallelization path for linear scans, quasilinear studies,
+sensitivity sweeps, and UQ ensembles.
+
+![SPECTRAX-GK quasilinear UQ ensemble strong scaling](docs/_static/quasilinear_uq_ensemble_scaling_large.png)
+
+The quasilinear/UQ ensemble panel applies the same independent-worker policy
+to six late-time Cyclone ITG gradient samples and five `k_y` values per sample
+at `Ny=96`, `Nz=64`, `Nl=3`, `Nm=6`, and `2000` RK2 steps. It computes real
+linear growth/frequency fits and a reduced mixing-length feature observable,
+then checks exact serial identity. On `ssh office`, CPU process scaling reaches
+`5.41x` on eight requested workers using six actual ensemble chunks, and the
+two-RTX-A4000 GPU run reaches `1.71x`. This is a parallelization and UQ
+plumbing result, not a promoted absolute nonlinear heat-flux model.
+
 ## Benchmarks
 
-SPECTRAX-GK is rigorously validated against standard gyrokinetic benchmarks, including:
-- **Linear growth rates and frequencies:** Cyclone ITG, ETG, KBM, W7-X, HSX, Miller, and KAW.
-- **Nonlinear transport:** Heat flux and energy traces for ITG, KBM, and stellarator configurations.
+SPECTRAX-GK is validated against standard gyrokinetic benchmarks within the
+tracked release scope:
+
+- **Linear growth rates, frequencies, and eigenfunctions:** release-atlas cases
+  including Cyclone ITG, ETG, KBM, W7-X, HSX, and shaped tokamak coverage.
+- **Nonlinear transport windows:** release-gated heat-flux and energy statistics
+  for Cyclone, Cyclone Miller, KBM, W7-X, and HSX.
 
 The benchmark tooling in `tools/` ensures reproducibility and performance tracking.
 For the current release pass, the accepted nonlinear validation set is Cyclone,
-KBM, W7-X, HSX, Cyclone Miller, and the closed short-window full-GK ETG
-nonlinear pilot. TEM and KAW stay outside the active parity claim.
+Cyclone Miller, KBM, W7-X, and HSX. Full-GK ETG nonlinear pilots, TEM/KAW stress
+lanes, kinetic-electron extensions, and W7-X zonal-flow recurrence/damping stay
+outside the active release parity claim unless a gate-indexed artifact promotes
+them explicitly.
 The window-statistics artifact uses case-specific mean-relative gates: KBM
 `0.02`, HSX `0.05`, Cyclone Miller `0.095`, and the broader release envelope
 `0.10` for Cyclone and W7-X while their paper-level tightening lanes remain
@@ -591,10 +660,11 @@ python tools/benchmark_runtime_memory.py \
 python tools/benchmark_runtime_memory.py --continue-on-error --log-dir tools_out/runtime_memory_logs
 ```
 
-The parallelization scaling figure is kept in the performance docs rather than
-the top-level README. The shipped public plot focuses on the release-grade
-2-device diffrax speedup curve rather than the exploratory CPU strong-scaling
-study.
+Parallelization scaling figures are kept in the performance docs rather than
+the top-level README. The shipped public claim is the independent-work path for
+`k_y` scans and UQ ensembles; whole-state nonlinear sharding remains an
+identity/profiler artifact until a communication-aware nonlinear decomposition
+has matched CPU/GPU identity and throughput evidence.
 
 ## Examples
 
@@ -605,13 +675,18 @@ The `examples/` directory is organized by physics and configuration:
 - **`benchmarks/`**: Scripts for replicating published benchmark results and parameter scans.
 - **`theory_and_demos/`**: Pedagogical examples and demonstrations of the underlying numerical methods.
 
-Parity-facing nonlinear examples now include:
+Release-gated nonlinear example lanes include:
 
 - Cyclone ITG
+- Cyclone Miller
 - KBM
 - W7-X
 - HSX
-- a full-GK ETG nonlinear pilot lane in `examples/nonlinear/axisymmetric/runtime_etg_nonlinear.toml`
+
+A full-GK ETG nonlinear pilot lane is also available at
+`examples/nonlinear/axisymmetric/runtime_etg_nonlinear.toml`, but it remains a
+pilot until its benchmark operating point, observable contract, and gate-indexed
+artifact are promoted.
 
 The reduced `cETG` example remains available as a separate reduced-model
 workflow; it is not the same thing as the full-GK ETG nonlinear lane.

@@ -1,0 +1,3 @@
+requested_devices,actual_workers,timed_wall_s,wall_s,strong_speedup_vs_1_device,parallel_efficiency,max_gamma_abs_error,max_gamma_rel_error,max_omega_abs_error,identity_gate_pass,error
+1,1,0.9000271949917078,13.4193270271644,1.0,1.0,0.0,0.0,0.0,True,
+2,2,0.5525602239649743,11.439577556680888,1.6288309508300018,0.8144154754150009,0.0,0.0,0.0,True,

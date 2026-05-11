@@ -20,6 +20,8 @@ on:
 - ``spectraxgk.runtime_config``
 - ``spectraxgk.runtime_artifacts``
 - ``spectraxgk.plotting``
+- ``spectraxgk.parallel``
+- ``spectraxgk.nonlinear_parallel``
 - documented benchmark/example scripts under ``examples/`` and ``tools/``
 
 Internal modules that are free to move as long as the public behavior and tests
@@ -78,6 +80,9 @@ Physics / Numerics / IO Map
    * - Nonlinear operators
      - ``nonlinear.py``, ``terms/nonlinear.py``
      - fixed-mode, diagnostics, collision-split, transport-window tests
+   * - Parallelization policy and helpers
+     - ``parallel.py``, ``sharding.py``, ``nonlinear_parallel.py``
+     - identity gates, one-device fallback, diagnostic-only nonlinear sharding policy
    * - Runtime/executable behavior
      - ``runtime.py``, ``cli.py``
      - runtime contract, startup/restart, output-path, executable smoke tests

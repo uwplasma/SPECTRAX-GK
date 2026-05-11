@@ -75,10 +75,14 @@ def _count_points(report: dict[str, Any] | None, split: str) -> int:
     points = report.get("points", [])
     if not isinstance(points, list):
         return 0
-    return sum(1 for point in points if isinstance(point, dict) and point.get("split") == split)
+    return sum(
+        1 for point in points if isinstance(point, dict) and point.get("split") == split
+    )
 
 
-def _profile_seconds(payload: dict[str, Any] | None, label: str, kernel: str) -> float | None:
+def _profile_seconds(
+    payload: dict[str, Any] | None, label: str, kernel: str
+) -> float | None:
     rows = {} if payload is None else payload.get("rows", {})
     if not isinstance(rows, dict):
         return None
@@ -107,10 +111,16 @@ def _all_optimization_objectives_passed(payload: dict[str, Any] | None) -> bool:
     return True
 
 
-def _optimization_reduction_summary(payload: dict[str, Any] | None) -> dict[str, float | int | None]:
+def _optimization_reduction_summary(
+    payload: dict[str, Any] | None,
+) -> dict[str, float | int | None]:
     results = [] if payload is None else payload.get("results", [])
     if not isinstance(results, list) or not results:
-        return {"n_objectives": 0, "best_reduction_factor": None, "worst_reduction_factor": None}
+        return {
+            "n_objectives": 0,
+            "best_reduction_factor": None,
+            "worst_reduction_factor": None,
+        }
     factors = []
     for result in results:
         if not isinstance(result, dict):
@@ -142,8 +152,12 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
     """Return a JSON-ready manuscript-scope readiness payload."""
 
     root = Path(root)
-    ql_inputs = _read_json(root, "docs/_static/quasilinear_validated_calibration_inputs.json")
-    ql_holdout = _read_json(root, "docs/_static/quasilinear_stellarator_train_holdout_report.json")
+    ql_inputs = _read_json(
+        root, "docs/_static/quasilinear_validated_calibration_inputs.json"
+    )
+    ql_holdout = _read_json(
+        root, "docs/_static/quasilinear_stellarator_train_holdout_report.json"
+    )
     ql_sweep = _read_json(root, "docs/_static/quasilinear_saturation_rule_sweep.json")
     ql_shape = _read_json(root, "docs/_static/quasilinear_shape_aware_saturation.json")
     ql_uq = _read_json(root, "docs/_static/quasilinear_candidate_uncertainty.json")
@@ -153,35 +167,72 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
     opt = _read_json(root, "docs/_static/stellarator_itg_optimization_comparison.json")
     opt_uq = _read_json(root, "docs/_static/stellarator_itg_optimization_uq.json")
     solver_grad = _read_json(root, "docs/_static/solver_objective_gradient_gate.json")
-    vmec_solver_grad = _read_json(root, "docs/_static/vmec_boozer_solver_frequency_gradient_gate.json")
-    vmec_ql_grad = _read_json(root, "docs/_static/vmec_boozer_quasilinear_gradient_gate.json")
-    vmec_nl_window_grad = _read_json(root, "docs/_static/vmec_boozer_nonlinear_window_gradient_gate.json")
+    vmec_solver_grad = _read_json(
+        root, "docs/_static/vmec_boozer_solver_frequency_gradient_gate.json"
+    )
+    vmec_ql_grad = _read_json(
+        root, "docs/_static/vmec_boozer_quasilinear_gradient_gate.json"
+    )
+    vmec_nl_window_grad = _read_json(
+        root, "docs/_static/vmec_boozer_nonlinear_window_gradient_gate.json"
+    )
     vmec_li383_nl_window_grad = _read_json(
         root,
         "docs/_static/vmec_boozer_li383_nonlinear_window_gradient_gate.json",
     )
-    vmec_gradient_matrix = _read_json(root, "docs/_static/vmec_boozer_gradient_holdout_matrix.json")
+    vmec_gradient_matrix = _read_json(
+        root, "docs/_static/vmec_boozer_gradient_holdout_matrix.json"
+    )
     nonlinear_fd_audit = _read_json(root, "docs/_static/nonlinear_window_fd_audit.json")
-    vmec_nonlinear_fd_audit = _read_json(root, "docs/_static/vmec_boozer_nonlinear_window_fd_audit.json")
-    profile = _read_json(root, "docs/_static/nonlinear_sharding_profile_office_gpu.json")
+    vmec_nonlinear_fd_audit = _read_json(
+        root, "docs/_static/vmec_boozer_nonlinear_window_fd_audit.json"
+    )
+    profile = _read_json(
+        root, "docs/_static/nonlinear_sharding_profile_office_gpu.json"
+    )
     rhs_profile = _read_json(root, "docs/_static/nonlinear_rhs_profile.json")
     rhs_miller = _read_json(root, "docs/_static/nonlinear_rhs_profile_miller.json")
-    rhs_stellarator = _read_json(root, "docs/_static/nonlinear_rhs_profile_stellarator_runtime.json")
-    full_rhs_trace_cpu = _read_json(root, "docs/_static/full_nonlinear_rhs_trace_summary.json")
-    full_rhs_trace_gpu = _read_json(root, "docs/_static/full_nonlinear_rhs_trace_gpu_summary.json")
+    rhs_stellarator = _read_json(
+        root, "docs/_static/nonlinear_rhs_profile_stellarator_runtime.json"
+    )
+    full_rhs_trace_cpu = _read_json(
+        root, "docs/_static/full_nonlinear_rhs_trace_summary.json"
+    )
+    full_rhs_trace_gpu = _read_json(
+        root, "docs/_static/full_nonlinear_rhs_trace_gpu_summary.json"
+    )
 
     ql_inputs_passed = bool((ql_inputs or {}).get("passed", False))
     ql_holdout_promoted = bool((ql_holdout or {}).get("passed", False))
-    ql_holdout_mean = _finite_float((ql_holdout or {}).get("by_split", {}).get("holdout", {}).get("mean_abs_relative_error"))
-    ql_sweep_gate = (ql_sweep or {}).get("promotion_gate", {}) if isinstance((ql_sweep or {}).get("promotion_gate", {}), dict) else {}
-    ql_shape_gate = (ql_shape or {}).get("promotion_gate", {}) if isinstance((ql_shape or {}).get("promotion_gate", {}), dict) else {}
-    ql_uq_gate = (ql_uq or {}).get("promotion_gate", {}) if isinstance((ql_uq or {}).get("promotion_gate", {}), dict) else {}
+    ql_holdout_mean = _finite_float(
+        (ql_holdout or {})
+        .get("by_split", {})
+        .get("holdout", {})
+        .get("mean_abs_relative_error")
+    )
+    ql_sweep_gate = (
+        (ql_sweep or {}).get("promotion_gate", {})
+        if isinstance((ql_sweep or {}).get("promotion_gate", {}), dict)
+        else {}
+    )
+    ql_shape_gate = (
+        (ql_shape or {}).get("promotion_gate", {})
+        if isinstance((ql_shape or {}).get("promotion_gate", {}), dict)
+        else {}
+    )
+    ql_uq_gate = (
+        (ql_uq or {}).get("promotion_gate", {})
+        if isinstance((ql_uq or {}).get("promotion_gate", {}), dict)
+        else {}
+    )
     ql_dataset_gate = (
         (ql_dataset or {}).get("promotion_gate", {})
         if isinstance((ql_dataset or {}).get("promotion_gate", {}), dict)
         else {}
     )
-    ql_candidate_promoted = bool(ql_uq_gate.get("passed", False)) and bool(ql_dataset_gate.get("passed", False))
+    ql_candidate_promoted = bool(ql_uq_gate.get("passed", False)) and bool(
+        ql_dataset_gate.get("passed", False)
+    )
     ql_dataset_requirements = (
         (ql_dataset or {}).get("requirements", {})
         if isinstance((ql_dataset or {}).get("requirements", {}), dict)
@@ -201,39 +252,61 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
         and not bool(ql_dataset_gate.get("passed", False))
     )
 
-    matrix_summary = (geom_matrix or {}).get("summary", {}) if isinstance((geom_matrix or {}).get("summary", {}), dict) else {}
+    matrix_summary = (
+        (geom_matrix or {}).get("summary", {})
+        if isinstance((geom_matrix or {}).get("summary", {}), dict)
+        else {}
+    )
     geom_matrix_passed = bool(matrix_summary.get("all_equal_arc_passed", False))
-    geom_uq = (geom or {}).get("uq", {}) if isinstance((geom or {}).get("uq", {}), dict) else {}
-    geom_sensitivity = (geom or {}).get("sensitivity", {}) if isinstance((geom or {}).get("sensitivity", {}), dict) else {}
-    geom_bridge_passed = _finite_float(geom_sensitivity.get("max_abs_ad_fd_error")) is not None and int(
-        geom_uq.get("sensitivity_map_rank", 0)
-    ) >= 2
+    geom_uq = (
+        (geom or {}).get("uq", {})
+        if isinstance((geom or {}).get("uq", {}), dict)
+        else {}
+    )
+    geom_sensitivity = (
+        (geom or {}).get("sensitivity", {})
+        if isinstance((geom or {}).get("sensitivity", {}), dict)
+        else {}
+    )
+    geom_bridge_passed = (
+        _finite_float(geom_sensitivity.get("max_abs_ad_fd_error")) is not None
+        and int(geom_uq.get("sensitivity_map_rank", 0)) >= 2
+    )
 
     opt_reductions = _optimization_reduction_summary(opt)
     opt_reduced_objectives_passed = _all_optimization_objectives_passed(opt)
     opt_uq_passed = _optimization_uq_gate_passed(opt_uq)
     solver_gradient_passed = bool((solver_grad or {}).get("passed", False))
     solver_gradient_source = str((solver_grad or {}).get("source_scope", "missing"))
-    solver_gradient_full_vmec_frequency = bool((vmec_solver_grad or {}).get("passed", False)) and str(
-        (vmec_solver_grad or {}).get("source_scope", "missing")
-    ) == "mode21_vmec_boozer_state"
-    solver_gradient_full_vmec_quasilinear = bool((vmec_ql_grad or {}).get("passed", False)) and str(
-        (vmec_ql_grad or {}).get("source_scope", "missing")
-    ) == "mode21_vmec_boozer_state"
-    solver_gradient_reduced_nonlinear_window = bool((vmec_nl_window_grad or {}).get("passed", False)) and str(
-        (vmec_nl_window_grad or {}).get("source_scope", "missing")
-    ) == "mode21_vmec_boozer_state"
+    solver_gradient_full_vmec_frequency = (
+        bool((vmec_solver_grad or {}).get("passed", False))
+        and str((vmec_solver_grad or {}).get("source_scope", "missing"))
+        == "mode21_vmec_boozer_state"
+    )
+    solver_gradient_full_vmec_quasilinear = (
+        bool((vmec_ql_grad or {}).get("passed", False))
+        and str((vmec_ql_grad or {}).get("source_scope", "missing"))
+        == "mode21_vmec_boozer_state"
+    )
+    solver_gradient_reduced_nonlinear_window = (
+        bool((vmec_nl_window_grad or {}).get("passed", False))
+        and str((vmec_nl_window_grad or {}).get("source_scope", "missing"))
+        == "mode21_vmec_boozer_state"
+    )
     solver_gradient_reduced_nonlinear_window_multi_equilibrium = bool(
         solver_gradient_reduced_nonlinear_window
         and bool((vmec_li383_nl_window_grad or {}).get("passed", False))
-        and str((vmec_li383_nl_window_grad or {}).get("source_scope", "missing")) == "mode21_vmec_boozer_state"
+        and str((vmec_li383_nl_window_grad or {}).get("source_scope", "missing"))
+        == "mode21_vmec_boozer_state"
     )
     gradient_matrix_summary = (
         (vmec_gradient_matrix or {}).get("summary", {})
         if isinstance((vmec_gradient_matrix or {}).get("summary", {}), dict)
         else {}
     )
-    solver_gradient_multi_equilibrium = bool((vmec_gradient_matrix or {}).get("passed", False))
+    solver_gradient_multi_equilibrium = bool(
+        (vmec_gradient_matrix or {}).get("passed", False)
+    )
     nonlinear_fd_metrics = (
         (nonlinear_fd_audit or {}).get("metrics", {})
         if isinstance((nonlinear_fd_audit or {}).get("metrics", {}), dict)
@@ -242,9 +315,13 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
     startup_nonlinear_plumbing_fd_path_gate = bool(
         (nonlinear_fd_audit or {}).get("startup_nonlinear_plumbing_fd_path_gate", False)
     )
-    nonlinear_transport_average_gate = bool((nonlinear_fd_audit or {}).get("transport_average_gate", False))
+    nonlinear_transport_average_gate = bool(
+        (nonlinear_fd_audit or {}).get("transport_average_gate", False)
+    )
     production_nonlinear_observable_fd_path_gate = bool(
-        (nonlinear_fd_audit or {}).get("production_nonlinear_observable_fd_path_gate", False)
+        (nonlinear_fd_audit or {}).get(
+            "production_nonlinear_observable_fd_path_gate", False
+        )
     )
     vmec_nonlinear_fd_metrics = (
         (vmec_nonlinear_fd_audit or {}).get("metrics", {})
@@ -252,13 +329,17 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
         else {}
     )
     vmec_boozer_startup_nonlinear_plumbing_fd_path_gate = bool(
-        (vmec_nonlinear_fd_audit or {}).get("vmec_boozer_startup_nonlinear_plumbing_fd_path_gate", False)
+        (vmec_nonlinear_fd_audit or {}).get(
+            "vmec_boozer_startup_nonlinear_plumbing_fd_path_gate", False
+        )
     )
     vmec_boozer_nonlinear_transport_average_gate = bool(
         (vmec_nonlinear_fd_audit or {}).get("transport_average_gate", False)
     )
     vmec_boozer_production_nonlinear_observable_fd_path_gate = bool(
-        (vmec_nonlinear_fd_audit or {}).get("vmec_boozer_production_nonlinear_observable_fd_path_gate", False)
+        (vmec_nonlinear_fd_audit or {}).get(
+            "vmec_boozer_production_nonlinear_observable_fd_path_gate", False
+        )
     )
     solver_gradient_closed = bool(
         solver_gradient_passed
@@ -266,10 +347,16 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
         and solver_gradient_full_vmec_quasilinear
         and solver_gradient_multi_equilibrium
     )
-    solver_gradient_status = "closed" if solver_gradient_closed else ("partial" if solver_gradient_passed else "open")
+    solver_gradient_status = (
+        "closed"
+        if solver_gradient_closed
+        else ("partial" if solver_gradient_passed else "open")
+    )
     profile_best = (
         (profile or {}).get("best_identity_preserving_candidate", {})
-        if isinstance((profile or {}).get("best_identity_preserving_candidate", {}), dict)
+        if isinstance(
+            (profile or {}).get("best_identity_preserving_candidate", {}), dict
+        )
         else {}
     )
     rhs_speedups = (
@@ -277,8 +364,16 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
         if isinstance((rhs_profile or {}).get("spectral_speedups", {}), dict)
         else {}
     )
-    rhs_cpu = rhs_speedups.get("cpu", {}) if isinstance(rhs_speedups.get("cpu", {}), dict) else {}
-    rhs_gpu = rhs_speedups.get("gpu", {}) if isinstance(rhs_speedups.get("gpu", {}), dict) else {}
+    rhs_cpu = (
+        rhs_speedups.get("cpu", {})
+        if isinstance(rhs_speedups.get("cpu", {}), dict)
+        else {}
+    )
+    rhs_gpu = (
+        rhs_speedups.get("gpu", {})
+        if isinstance(rhs_speedups.get("gpu", {}), dict)
+        else {}
+    )
     miller_cpu_grid_full = _profile_seconds(rhs_miller, "CPU grid", "full_rhs")
     miller_gpu_grid_full = _profile_seconds(rhs_miller, "GPU grid", "full_rhs")
     miller_gpu_spectral_full = _profile_seconds(rhs_miller, "GPU spectral", "full_rhs")
@@ -313,12 +408,14 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
     lanes: list[dict[str, Any]] = [
         {
             "lane": "Quasilinear diagnostics and saturation-model selection",
-            "status": "closed" if (ql_negative_closed or ql_candidate_promoted) else "open",
+            "status": "closed"
+            if (ql_negative_closed or ql_candidate_promoted)
+            else "open",
             "claim_level": (
                 "validated_diagnostics_negative_absolute_flux_promotion"
                 if ql_negative_closed
                 else (
-                    "candidate_absolute_flux_model_promoted"
+                    "scoped_candidate_model_selection_not_runtime_flux_predictor"
                     if ql_candidate_promoted
                     else "validated_diagnostics_negative_absolute_flux_promotion"
                 )
@@ -337,17 +434,29 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                 "holdout_points": _count_points(ql_holdout, "holdout"),
                 "absolute_flux_promoted": ql_holdout_promoted,
                 "holdout_mean_abs_relative_error": ql_holdout_mean,
-                "simple_rule_promotion_passed": bool(ql_sweep_gate.get("passed", False)),
-                "shape_aware_promotion_passed": bool(ql_shape_gate.get("passed", False)),
+                "simple_rule_promotion_passed": bool(
+                    ql_sweep_gate.get("passed", False)
+                ),
+                "shape_aware_promotion_passed": bool(
+                    ql_shape_gate.get("passed", False)
+                ),
                 "uq_candidate_promotion_passed": bool(ql_uq_gate.get("passed", False)),
-                "dataset_sufficiency_promotion_passed": bool(ql_dataset_gate.get("passed", False)),
+                "dataset_sufficiency_promotion_passed": bool(
+                    ql_dataset_gate.get("passed", False)
+                ),
                 "accepted_uq_candidates": ql_uq_gate.get("accepted_candidates", []),
-                "dataset_current_total_cases": ql_dataset_requirements.get("current_total_cases"),
-                "dataset_min_total_cases": ql_dataset_requirements.get("min_total_electrostatic_cases"),
+                "dataset_current_total_cases": ql_dataset_requirements.get(
+                    "current_total_cases"
+                ),
+                "dataset_min_total_cases": ql_dataset_requirements.get(
+                    "min_total_electrostatic_cases"
+                ),
                 "dataset_current_train_geometries": ql_dataset_requirements.get(
                     "current_explicit_train_geometries"
                 ),
-                "dataset_min_train_geometries": ql_dataset_requirements.get("min_explicit_train_geometries"),
+                "dataset_min_train_geometries": ql_dataset_requirements.get(
+                    "min_explicit_train_geometries"
+                ),
                 "dataset_blockers": ql_dataset_gate.get("blockers", []),
                 "null_training_mean_error": _finite_float(
                     ql_uq_gate.get("null_training_mean_mean_abs_relative_error")
@@ -363,7 +472,9 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
         },
         {
             "lane": "VMEC/Boozer differentiable geometry parity",
-            "status": "closed" if geom_bridge_passed and geom_matrix_passed else "partial",
+            "status": "closed"
+            if geom_bridge_passed and geom_matrix_passed
+            else "partial",
             "claim_level": "zero_beta_equal_arc_geometry_bridge_closed",
             "primary_artifacts": [
                 "docs/_static/differentiable_geometry_bridge.json",
@@ -373,7 +484,9 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                 "bridge_ad_fd_available": geom_bridge_passed,
                 "matrix_all_equal_arc_passed": geom_matrix_passed,
                 "matrix_n_cases": matrix_summary.get("n_cases"),
-                "minimum_boozer_mode_count": (geom_matrix or {}).get("minimum_boozer_mode_count"),
+                "minimum_boozer_mode_count": (geom_matrix or {}).get(
+                    "minimum_boozer_mode_count"
+                ),
             },
             "next_action": (
                 "Keep finite-beta pressure-correction drift parity as a future extension unless the manuscript claims "
@@ -382,7 +495,9 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
         },
         {
             "lane": "Reduced differentiable stellarator ITG optimization",
-            "status": "closed" if opt_reduced_objectives_passed and opt_uq_passed else "open",
+            "status": "closed"
+            if opt_reduced_objectives_passed and opt_uq_passed
+            else "open",
             "claim_level": "reduced_objective_optimization_closed_not_full_production_vmec_gk",
             "primary_artifacts": [
                 "docs/_static/stellarator_itg_optimization_comparison.json",
@@ -409,18 +524,36 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                 path
                 for path, payload in (
                     ("docs/_static/solver_objective_gradient_gate.json", solver_grad),
-                    ("docs/_static/vmec_boozer_solver_frequency_gradient_gate.json", vmec_solver_grad),
-                    ("docs/_static/vmec_boozer_quasilinear_gradient_gate.json", vmec_ql_grad),
-                    ("docs/_static/vmec_boozer_nonlinear_window_gradient_gate.json", vmec_nl_window_grad),
+                    (
+                        "docs/_static/vmec_boozer_solver_frequency_gradient_gate.json",
+                        vmec_solver_grad,
+                    ),
+                    (
+                        "docs/_static/vmec_boozer_quasilinear_gradient_gate.json",
+                        vmec_ql_grad,
+                    ),
+                    (
+                        "docs/_static/vmec_boozer_nonlinear_window_gradient_gate.json",
+                        vmec_nl_window_grad,
+                    ),
                     (
                         "docs/_static/vmec_boozer_li383_nonlinear_window_gradient_gate.json",
                         vmec_li383_nl_window_grad,
                     ),
-                    ("docs/_static/vmec_boozer_gradient_holdout_matrix.json", vmec_gradient_matrix),
+                    (
+                        "docs/_static/vmec_boozer_gradient_holdout_matrix.json",
+                        vmec_gradient_matrix,
+                    ),
                     ("docs/_static/nonlinear_window_fd_audit.json", nonlinear_fd_audit),
                     ("docs/_static/nonlinear_window_fd_audit.png", nonlinear_fd_audit),
-                    ("docs/_static/vmec_boozer_nonlinear_window_fd_audit.json", vmec_nonlinear_fd_audit),
-                    ("docs/_static/vmec_boozer_nonlinear_window_fd_audit.png", vmec_nonlinear_fd_audit),
+                    (
+                        "docs/_static/vmec_boozer_nonlinear_window_fd_audit.json",
+                        vmec_nonlinear_fd_audit,
+                    ),
+                    (
+                        "docs/_static/vmec_boozer_nonlinear_window_fd_audit.png",
+                        vmec_nonlinear_fd_audit,
+                    ),
                 )
                 if payload
             ],
@@ -434,28 +567,40 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                     solver_gradient_reduced_nonlinear_window_multi_equilibrium
                 ),
                 "multi_equilibrium_gradient_holdout_matrix": solver_gradient_multi_equilibrium,
-                "multi_equilibrium_gradient_cases": gradient_matrix_summary.get("n_cases"),
+                "multi_equilibrium_gradient_cases": gradient_matrix_summary.get(
+                    "n_cases"
+                ),
                 "multi_equilibrium_gradient_max_rel_error": _finite_float(
                     gradient_matrix_summary.get("max_relative_error")
                 ),
-                "linear_growth_gradient_gate": bool((solver_grad or {}).get("linear_growth_gradient_gate", False)),
+                "linear_growth_gradient_gate": bool(
+                    (solver_grad or {}).get("linear_growth_gradient_gate", False)
+                ),
                 "quasilinear_weight_gradient_gate": bool(
                     (solver_grad or {}).get("quasilinear_weight_gradient_gate", False)
                 ),
                 "vmec_boozer_frequency_rel_error": _finite_float(
-                    (vmec_solver_grad or {}).get("eigenpair_gate", {}).get("max_rel_error")
+                    (vmec_solver_grad or {})
+                    .get("eigenpair_gate", {})
+                    .get("max_rel_error")
                 ),
                 "vmec_boozer_quasilinear_rel_error": _finite_float(
                     (vmec_ql_grad or {}).get("eigenpair_gate", {}).get("max_rel_error")
                 ),
                 "vmec_boozer_reduced_nonlinear_window_rel_error": _finite_float(
-                    (vmec_nl_window_grad or {}).get("eigenpair_gate", {}).get("max_rel_error")
+                    (vmec_nl_window_grad or {})
+                    .get("eigenpair_gate", {})
+                    .get("max_rel_error")
                 ),
                 "vmec_boozer_li383_reduced_nonlinear_window_rel_error": _finite_float(
-                    (vmec_li383_nl_window_grad or {}).get("eigenpair_gate", {}).get("max_rel_error")
+                    (vmec_li383_nl_window_grad or {})
+                    .get("eigenpair_gate", {})
+                    .get("max_rel_error")
                 ),
                 "reduced_nonlinear_window_gradient_gate": bool(
-                    (vmec_nl_window_grad or solver_grad or {}).get("nonlinear_window_gradient_gate", False)
+                    (vmec_nl_window_grad or solver_grad or {}).get(
+                        "nonlinear_window_gradient_gate", False
+                    )
                 ),
                 "startup_nonlinear_plumbing_fd_path_gate": startup_nonlinear_plumbing_fd_path_gate,
                 "startup_nonlinear_plumbing_response_fraction": _finite_float(
@@ -501,7 +646,11 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
             "status": (
                 "closed"
                 if release_performance_closed
-                else ("partial" if bool((profile or {}).get("identity_gate_pass", False)) else "open")
+                else (
+                    "partial"
+                    if bool((profile or {}).get("identity_gate_pass", False))
+                    else "open"
+                )
             ),
             "claim_level": (
                 "release_performance_artifacts_closed_no_broad_speedup_claim"
@@ -518,13 +667,25 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
             ],
             "key_metrics": {
                 "release_performance_gate": release_performance_closed,
-                "identity_gate_pass": bool((profile or {}).get("identity_gate_pass", False)),
-                "engineering_speedup": _finite_float((profile or {}).get("engineering_speedup")),
+                "identity_gate_pass": bool(
+                    (profile or {}).get("identity_gate_pass", False)
+                ),
+                "engineering_speedup": _finite_float(
+                    (profile or {}).get("engineering_speedup")
+                ),
                 "best_identity_candidate": profile_best.get("spec"),
-                "best_identity_candidate_speedup": _finite_float(profile_best.get("engineering_speedup_median")),
-                "rhs_fastest_full_label": (rhs_profile or {}).get("fastest_full_rhs_label"),
-                "rhs_cpu_full_grid_over_spectral": _finite_float(rhs_cpu.get("full_rhs_grid_over_spectral")),
-                "rhs_gpu_full_grid_over_spectral": _finite_float(rhs_gpu.get("full_rhs_grid_over_spectral")),
+                "best_identity_candidate_speedup": _finite_float(
+                    profile_best.get("engineering_speedup_median")
+                ),
+                "rhs_fastest_full_label": (rhs_profile or {}).get(
+                    "fastest_full_rhs_label"
+                ),
+                "rhs_cpu_full_grid_over_spectral": _finite_float(
+                    rhs_cpu.get("full_rhs_grid_over_spectral")
+                ),
+                "rhs_gpu_full_grid_over_spectral": _finite_float(
+                    rhs_gpu.get("full_rhs_grid_over_spectral")
+                ),
                 "rhs_cpu_bracket_grid_over_spectral": _finite_float(
                     rhs_cpu.get("nonlinear_bracket_grid_over_spectral")
                 ),
@@ -585,13 +746,18 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
             "n_deferred": sum(1 for lane in lanes if str(lane["status"]) == "deferred"),
             "n_blocked": sum(1 for lane in lanes if str(lane["status"]) == "blocked"),
             "active_fraction_closed": (
-                sum(1 for lane in active if str(lane["status"]) == "closed") / len(active) if active else 0.0
+                sum(1 for lane in active if str(lane["status"]) == "closed")
+                / len(active)
+                if active
+                else 0.0
             ),
         },
     }
 
 
-def write_manuscript_readiness_artifacts(payload: dict[str, Any], *, out: str | Path = DEFAULT_OUT) -> dict[str, str]:
+def write_manuscript_readiness_artifacts(
+    payload: dict[str, Any], *, out: str | Path = DEFAULT_OUT
+) -> dict[str, str]:
     """Write JSON/CSV/PNG/PDF companions for the manuscript readiness payload."""
 
     out_path = Path(out)
@@ -599,7 +765,10 @@ def write_manuscript_readiness_artifacts(payload: dict[str, Any], *, out: str | 
     json_path = out_path.with_suffix(".json")
     csv_path = out_path.with_suffix(".csv")
     pdf_path = out_path.with_suffix(".pdf")
-    json_path.write_text(json.dumps(_json_clean(payload), indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    json_path.write_text(
+        json.dumps(_json_clean(payload), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
 
     fieldnames = ["lane", "status", "claim_level", "primary_artifacts", "next_action"]
     with csv_path.open("w", newline="", encoding="utf-8") as handle:
@@ -626,7 +795,9 @@ def write_manuscript_readiness_artifacts(payload: dict[str, Any], *, out: str | 
 
     fig, ax = plt.subplots(figsize=(12.0, 6.1))
     ax.barh(y, bar_values, color=colors, edgecolor="#333333", alpha=0.95)
-    ax.scatter(values, y, s=52, color=colors, edgecolor="#222222", linewidth=0.7, zorder=3)
+    ax.scatter(
+        values, y, s=52, color=colors, edgecolor="#222222", linewidth=0.7, zorder=3
+    )
     ax.set_yticks(y, labels)
     ax.set_xlim(0.0, 4.2)
     ax.set_xticks([0, 1, 2, 3, 4], ["closed", "partial", "open", "deferred", "blocked"])
@@ -646,7 +817,11 @@ def write_manuscript_readiness_artifacts(payload: dict[str, Any], *, out: str | 
             metric = f"mode floor: {km.get('minimum_boozer_mode_count')}; cases: {km.get('matrix_n_cases')}"
         elif str(lane["lane"]).startswith("Reduced"):
             worst = km.get("worst_reduction_factor")
-            metric = "gradient gates passed" if worst is None else f"worst final/initial: {float(worst):.2f}"
+            metric = (
+                "gradient gates passed"
+                if worst is None
+                else f"worst final/initial: {float(worst):.2f}"
+            )
         elif str(lane["lane"]).startswith("Production"):
             max_err = km.get("multi_equilibrium_gradient_max_rel_error")
             err_text = "n/a" if max_err is None else f"{float(max_err):.1e}"
@@ -663,12 +838,22 @@ def write_manuscript_readiness_artifacts(payload: dict[str, Any], *, out: str | 
             best = km.get("best_identity_candidate")
             best_speed = km.get("best_identity_candidate_speedup")
             rhs_gpu_speed = km.get("rhs_gpu_full_grid_over_spectral")
-            primary = "primary: n/a" if speed is None else f"primary: {float(speed):.2f}x"
-            best_text = "" if best_speed is None else f"; best {best}: {float(best_speed):.2f}x"
-            rhs_text = "" if rhs_gpu_speed is None else f"; RHS GPU split: {float(rhs_gpu_speed):.2f}x"
+            primary = (
+                "primary: n/a" if speed is None else f"primary: {float(speed):.2f}x"
+            )
+            best_text = (
+                "" if best_speed is None else f"; best {best}: {float(best_speed):.2f}x"
+            )
+            rhs_text = (
+                ""
+                if rhs_gpu_speed is None
+                else f"; RHS GPU split: {float(rhs_gpu_speed):.2f}x"
+            )
             metric = primary + best_text + rhs_text
         text_x = max(float(value) + 0.06, 0.18)
-        ax.text(min(text_x, 4.05), float(yi), metric, va="center", ha="left", fontsize=8.0)
+        ax.text(
+            min(text_x, 4.05), float(yi), metric, va="center", ha="left", fontsize=8.0
+        )
 
     summary = payload.get("summary", {})
     caption = (
@@ -680,7 +865,12 @@ def write_manuscript_readiness_artifacts(payload: dict[str, Any], *, out: str | 
     fig.savefig(out_path, dpi=220)
     fig.savefig(pdf_path)
     plt.close(fig)
-    return {"png": str(out_path), "pdf": str(pdf_path), "json": str(json_path), "csv": str(csv_path)}
+    return {
+        "png": str(out_path),
+        "pdf": str(pdf_path),
+        "json": str(json_path),
+        "csv": str(csv_path),
+    }
 
 
 def build_parser() -> argparse.ArgumentParser:

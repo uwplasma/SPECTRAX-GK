@@ -17,6 +17,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
 from spectraxgk.plotting import set_plot_style  # noqa: E402
+from spectraxgk.parallel import independent_map  # noqa: E402
 
 from plot_quasilinear_saturation_rule_sweep import (  # noqa: E402
     DEFAULT_CASES,
@@ -262,6 +263,101 @@ def _candidate_raw_values(
     raise ValueError(f"unknown candidate {candidate!r}")
 
 
+def _candidate_holdout_payload(task: dict[str, Any]) -> dict[str, Any]:
+    """Score all candidate models for one leave-one-geometry-out holdout."""
+
+    cases = tuple(task["cases"])
+    candidates = tuple(task["candidates"])
+    observed = np.asarray(task["observed"], dtype=float)
+    holdout_idx = int(task["holdout_idx"])
+    observed_floor = float(task["observed_floor"])
+    passed_shape_only = bool(task["passed_shape_only"])
+    interval_z = float(task["interval_z"])
+    features_all = task.get("features_all")
+    envelope_features_all = task.get("envelope_features_all")
+    holdout_case = cases[holdout_idx]
+    train_indices = [idx for idx in range(len(cases)) if idx != holdout_idx]
+    train_cases = tuple(cases[idx] for idx in train_indices)
+    train_observed = observed[train_indices]
+    holdout_observed = float(observed[holdout_idx])
+    null_predicted = float(np.mean(train_observed))
+    null_error = abs(null_predicted - holdout_observed) / max(abs(holdout_observed), observed_floor)
+    null_row = {
+        "holdout_case": holdout_case.case,
+        "predicted_heat_flux": null_predicted,
+        "observed_heat_flux": holdout_observed,
+        "absolute_relative_error": float(null_error),
+    }
+
+    candidate_rows: dict[str, dict[str, Any]] = {}
+    for candidate in candidates:
+        if candidate == "linear_state_ridge":
+            if features_all is None:
+                raise AssertionError("linear_state_ridge requires precomputed features")
+            candidate_rows[candidate] = _ridge_loglinear_holdout_row(
+                case=holdout_case,
+                train_cases=train_cases,
+                features_all=np.asarray(features_all, dtype=float),
+                feature_names=STATE_FEATURE_NAMES,
+                observed_all=observed,
+                holdout_idx=holdout_idx,
+                train_indices=train_indices,
+                observed_floor=observed_floor,
+                interval_z=interval_z,
+            )
+            continue
+        if candidate == "spectral_envelope_ridge":
+            if envelope_features_all is None:
+                raise AssertionError("spectral_envelope_ridge requires precomputed features")
+            candidate_rows[candidate] = _ridge_loglinear_holdout_row(
+                case=holdout_case,
+                train_cases=train_cases,
+                features_all=np.asarray(envelope_features_all, dtype=float),
+                feature_names=SPECTRAL_ENVELOPE_FEATURE_NAMES,
+                observed_all=observed,
+                holdout_idx=holdout_idx,
+                train_indices=train_indices,
+                observed_floor=observed_floor,
+                interval_z=interval_z,
+                ridge_lambda=0.3,
+            )
+            continue
+        raw_all, metadata = _candidate_raw_values(
+            candidate,
+            cases,
+            train_cases=train_cases,
+            passed_shape_only=passed_shape_only,
+        )
+        train_raw = raw_all[train_indices]
+        scale = _fit_scale(train_raw, train_observed, floor=observed_floor)
+        train_predicted = scale * train_raw
+        holdout_predicted = float(scale * raw_all[holdout_idx])
+        train_residual = np.log((train_observed + observed_floor) / np.maximum(train_predicted, observed_floor))
+        residual_mean = float(np.mean(train_residual))
+        residual_sigma = float(np.std(train_residual, ddof=1)) if train_residual.size > 1 else 0.0
+        lo = holdout_predicted * math.exp(residual_mean - interval_z * residual_sigma)
+        hi = holdout_predicted * math.exp(residual_mean + interval_z * residual_sigma)
+        if lo > hi:
+            lo, hi = hi, lo
+        rel_error = abs(holdout_predicted - holdout_observed) / max(abs(holdout_observed), observed_floor)
+        candidate_rows[candidate] = {
+            "holdout_case": holdout_case.case,
+            "train_cases": [case.case for case in train_cases],
+            "scale": float(scale),
+            "raw_estimate": float(raw_all[holdout_idx]),
+            "predicted_heat_flux": holdout_predicted,
+            "observed_heat_flux": holdout_observed,
+            "absolute_relative_error": float(rel_error),
+            "prediction_interval_low": float(lo),
+            "prediction_interval_high": float(hi),
+            "prediction_interval_contains_observed": bool(lo <= holdout_observed <= hi),
+            "train_log_residual_mean": residual_mean,
+            "train_log_residual_sigma": residual_sigma,
+            **metadata,
+        }
+    return {"holdout_idx": holdout_idx, "null_row": null_row, "candidate_rows": candidate_rows}
+
+
 def build_candidate_uncertainty_report(
     cases: tuple[SaturationCase, ...] = DEFAULT_CASES,
     *,
@@ -276,6 +372,8 @@ def build_candidate_uncertainty_report(
     transport_gate: float = 0.35,
     interval_coverage_gate: float = 0.75,
     require_validated_inputs: bool = True,
+    workers: int = 1,
+    parallel_executor: str = "thread",
 ) -> dict[str, Any]:
     """Build a leave-one-geometry-out uncertainty report for candidate models."""
 
@@ -291,95 +389,32 @@ def build_candidate_uncertainty_report(
         if "spectral_envelope_ridge" in candidates
         else None
     )
-    null_rows = []
     candidate_rows: dict[str, list[dict[str, Any]]] = {candidate: [] for candidate in candidates}
-    for holdout_idx, holdout_case in enumerate(cases):
-        train_indices = [idx for idx in range(len(cases)) if idx != holdout_idx]
-        train_cases = tuple(cases[idx] for idx in train_indices)
-        train_observed = observed[train_indices]
-        holdout_observed = float(observed[holdout_idx])
-        null_predicted = float(np.mean(train_observed))
-        null_error = abs(null_predicted - holdout_observed) / max(abs(holdout_observed), observed_floor)
-        null_rows.append(
-            {
-                "holdout_case": holdout_case.case,
-                "predicted_heat_flux": null_predicted,
-                "observed_heat_flux": holdout_observed,
-                "absolute_relative_error": float(null_error),
-            }
-        )
-
+    tasks = [
+        {
+            "holdout_idx": holdout_idx,
+            "cases": cases,
+            "candidates": candidates,
+            "observed": observed,
+            "features_all": features_all,
+            "envelope_features_all": envelope_features_all,
+            "observed_floor": observed_floor,
+            "passed_shape_only": passed_shape_only,
+            "interval_z": interval_z,
+        }
+        for holdout_idx in range(len(cases))
+    ]
+    holdout_payloads = independent_map(
+        _candidate_holdout_payload,
+        tasks,
+        workers=workers,
+        executor=parallel_executor,
+    )
+    holdout_payloads = sorted(holdout_payloads, key=lambda payload: int(payload["holdout_idx"]))
+    null_rows = [payload["null_row"] for payload in holdout_payloads]
+    for payload in holdout_payloads:
         for candidate in candidates:
-            if candidate == "linear_state_ridge":
-                if features_all is None:
-                    raise AssertionError("linear_state_ridge requires precomputed features")
-                candidate_rows[candidate].append(
-                    _ridge_loglinear_holdout_row(
-                        case=holdout_case,
-                        train_cases=train_cases,
-                        features_all=features_all,
-                        feature_names=STATE_FEATURE_NAMES,
-                        observed_all=observed,
-                        holdout_idx=holdout_idx,
-                        train_indices=train_indices,
-                        observed_floor=observed_floor,
-                        interval_z=interval_z,
-                    )
-                )
-                continue
-            if candidate == "spectral_envelope_ridge":
-                if envelope_features_all is None:
-                    raise AssertionError("spectral_envelope_ridge requires precomputed features")
-                candidate_rows[candidate].append(
-                    _ridge_loglinear_holdout_row(
-                        case=holdout_case,
-                        train_cases=train_cases,
-                        features_all=envelope_features_all,
-                        feature_names=SPECTRAL_ENVELOPE_FEATURE_NAMES,
-                        observed_all=observed,
-                        holdout_idx=holdout_idx,
-                        train_indices=train_indices,
-                        observed_floor=observed_floor,
-                        interval_z=interval_z,
-                        ridge_lambda=0.3,
-                    )
-                )
-                continue
-            raw_all, metadata = _candidate_raw_values(
-                candidate,
-                cases,
-                train_cases=train_cases,
-                passed_shape_only=passed_shape_only,
-            )
-            train_raw = raw_all[train_indices]
-            scale = _fit_scale(train_raw, train_observed, floor=observed_floor)
-            train_predicted = scale * train_raw
-            holdout_predicted = float(scale * raw_all[holdout_idx])
-            train_residual = np.log((train_observed + observed_floor) / np.maximum(train_predicted, observed_floor))
-            residual_mean = float(np.mean(train_residual))
-            residual_sigma = float(np.std(train_residual, ddof=1)) if train_residual.size > 1 else 0.0
-            lo = holdout_predicted * math.exp(residual_mean - interval_z * residual_sigma)
-            hi = holdout_predicted * math.exp(residual_mean + interval_z * residual_sigma)
-            if lo > hi:
-                lo, hi = hi, lo
-            rel_error = abs(holdout_predicted - holdout_observed) / max(abs(holdout_observed), observed_floor)
-            candidate_rows[candidate].append(
-                {
-                    "holdout_case": holdout_case.case,
-                    "train_cases": [case.case for case in train_cases],
-                    "scale": float(scale),
-                    "raw_estimate": float(raw_all[holdout_idx]),
-                    "predicted_heat_flux": holdout_predicted,
-                    "observed_heat_flux": holdout_observed,
-                    "absolute_relative_error": float(rel_error),
-                    "prediction_interval_low": float(lo),
-                    "prediction_interval_high": float(hi),
-                    "prediction_interval_contains_observed": bool(lo <= holdout_observed <= hi),
-                    "train_log_residual_mean": residual_mean,
-                    "train_log_residual_sigma": residual_sigma,
-                    **metadata,
-                }
-            )
+            candidate_rows[candidate].append(payload["candidate_rows"][candidate])
 
     null_errors = np.asarray([row["absolute_relative_error"] for row in null_rows], dtype=float)
     null_mean = float(np.nanmean(null_errors))
@@ -431,6 +466,11 @@ def build_candidate_uncertainty_report(
         "transport_gate": float(transport_gate),
         "interval_coverage_gate": float(interval_coverage_gate),
         "input_validation": input_validation,
+        "parallel": {
+            "workers": int(workers),
+            "executor": str(parallel_executor),
+            "identity_contract": "parallel holdout rows preserve serial holdout ordering",
+        },
         "null_training_mean_baseline": {
             "mean_abs_relative_error": null_mean,
             "max_abs_relative_error": float(np.nanmax(null_errors)),
@@ -588,12 +628,18 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--out", default=str(root / "docs/_static/quasilinear_candidate_uncertainty.png"))
     parser.add_argument("--title", default="Quasilinear candidate uncertainty gate")
     parser.add_argument("--include-all-shape-gates", action="store_true")
+    parser.add_argument("--workers", type=int, default=1, help="Independent holdout workers.")
+    parser.add_argument("--parallel-executor", choices=("thread", "process"), default="thread")
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    report = build_candidate_uncertainty_report(passed_shape_only=not args.include_all_shape_gates)
+    report = build_candidate_uncertainty_report(
+        passed_shape_only=not args.include_all_shape_gates,
+        workers=args.workers,
+        parallel_executor=args.parallel_executor,
+    )
     paths = write_candidate_uncertainty_figure(report, out=args.out, title=args.title)
     print(f"saved {paths['png']}")
     print(f"saved {paths['pdf']}")

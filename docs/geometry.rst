@@ -268,9 +268,10 @@ separately and is ``2.3e-2``. The same JAX-native path now reconstructs the
 zero-beta Boozer metric profiles ``gds2``, ``gds21``, ``gds22``, and ``grho``
 with worst normalized mismatch ``3.45e-2`` and the loaded-convention zero-beta
 drift profiles ``cvdrift``, ``gbdrift``, ``cvdrift0``, and ``gbdrift0`` with
-worst normalized mismatch ``3.50e-2``. The remaining promotion gap is broad
-finite-beta and multi-equilibrium drift parity, not the Boozer equal-arc
-field-line or zero-beta metric/drift normalization on the tracked fixture.
+worst normalized mismatch ``3.50e-2``. The remaining promotion gap is
+finite-beta and broader production-runtime drift parity beyond the tracked
+zero-beta equal-arc fixtures, not the Boozer equal-arc field-line or zero-beta
+metric/drift normalization on the tracked fixture.
 The Boozer gates evaluate
 the JAX-native Boozer ``|B|``
 spectrum along a field line, build the ``FluxTubeGeometryData`` input mapping,
@@ -286,6 +287,16 @@ geometry observables, checks the final sensitivity Jacobian against central
 finite differences, and records local covariance diagnostics. High-fidelity
 ``vmec_jax`` / ``booz_xform_jax`` optimization examples should use the same
 contract once their in-memory field-line mapping is available.
+
+The bridge validates more than array shapes. Host-side mappings must contain
+finite scalar metadata such as ``q``, ``R0``, ``B0``, and ``theta_scale``,
+must provide at least one ``theta`` sample, and must use a positive integer
+``nfp``. JAX-traced mappings can still be passed with
+``validate_finite=False`` so autodiff transforms do not attempt host NumPy
+checks during tracing. The finite-difference utilities used by these gates
+also reject non-positive step sizes, and the inverse-design covariance block
+records rank and conditioning before any optimization result is promoted from
+local sensitivity evidence to a transport-design claim.
 
 .. figure:: _static/differentiable_geometry_bridge.png
    :width: 95%
@@ -343,9 +354,25 @@ claims explicitly scoped as follow-up work.
    ``vmec_jax`` and ``booz_xform_jax`` bridge path and rejects Boozer mode
    counts below 21.
 
-The next implementation step is to add the Hegna-Nakajima curvature/drift
-reconstruction to the same equal-arc path, then add geometry-gradient checks
-for growth-rate and transport observables.
+The next implementation step is to extend the same equal-arc path to
+finite-beta/production-runtime curvature and drift reconstruction, then replace
+the reduced estimator-gradient checks with converged transport-gradient and
+optimized-equilibrium audits.
+
+The lightweight readiness tests mirror that claim boundary. The parity-matrix
+tests reject ``mboz,nboz < 21`` and assert that a passed equal-arc matrix is
+still tagged as ``not_full_transport_gradient_claim``. The gradient-holdout
+tests require the ``mode21_vmec_boozer_state`` source scope, ``mboz,nboz >= 21``,
+and explicitly track the nonlinear-window estimator objectives as a reduced
+differentiability gate rather than a production nonlinear-optimization gate.
+
+For release claims, the differentiable-geometry lane is therefore closed for
+zero-beta equal-arc parity and reduced AD/finite-difference objectives, but
+open for production nonlinear heat-flux optimization. The active publication
+wording must keep these two levels separate: the current bridge starts at real
+``vmec_jax`` state coefficients and reaches SPECTRAX-GK solver observables, but
+it has not yet validated converged nonlinear turbulence gradients or nonlinear
+audits of optimized equilibria.
 The VMEC bridge now also expands environment variables in ``geometry.vmec_file``.
 Tracked portable runtime TOMLs should therefore pass external VMEC equilibria
 through explicit environment variables such as ``$W7X_VMEC_FILE`` and

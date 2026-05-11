@@ -2754,7 +2754,13 @@
     ],
     "tangent_fd": [
       -0.0002474797137965584
-    ]
+    ],
+    "finite_difference_parallel": {
+      "requested_workers": 2,
+      "effective_workers": 2,
+      "executor": "thread",
+      "identity_contract": "parallel finite-difference columns must match serial columns"
+    }
   },
   "covariance": {
     "sigma2": 0.0010516030061950088,

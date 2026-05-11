@@ -19,6 +19,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
 from spectraxgk.plotting import set_plot_style  # noqa: E402
+from spectraxgk.parallel import independent_map  # noqa: E402
 from spectraxgk.quasilinear_calibration import calibration_point_from_nonlinear_window_summary  # noqa: E402
 from spectraxgk.quasilinear import saturation_amplitude2  # noqa: E402
 
@@ -276,11 +277,37 @@ def require_validated_nonlinear_inputs(cases: tuple[SaturationCase, ...]) -> dic
     return report
 
 
+def _saturation_case_row(case: SaturationCase) -> dict[str, Any]:
+    observed_point = calibration_point_from_nonlinear_window_summary(
+        case.nonlinear_summary,
+        predicted_heat_flux=1.0,
+        split=case.split,
+        saturation_rule="diagnostic_only",
+        geometry=case.geometry,
+        electron_model="adiabatic",
+        quasilinear_artifact=str(case.spectrum),
+    )
+    raw = raw_rule_estimates(case.spectrum)
+    return {
+        "case": case.case,
+        "split": case.split,
+        "geometry": case.geometry,
+        "spectrum": str(case.spectrum),
+        "nonlinear_summary": str(case.nonlinear_summary),
+        "observed_heat_flux": observed_point.observed_heat_flux,
+        "observed_heat_flux_std": observed_point.observed_heat_flux_std,
+        "raw_estimates": raw,
+        **_shape_payload(case.shape_gate),
+    }
+
+
 def build_saturation_rule_sweep(
     cases: tuple[SaturationCase, ...] = DEFAULT_CASES,
     *,
     observed_floor: float = 1.0e-12,
     require_validated_inputs: bool = True,
+    workers: int = 1,
+    parallel_executor: str = "thread",
 ) -> dict[str, Any]:
     """Fit one scalar per rule on train cases and score all cases."""
 
@@ -289,32 +316,13 @@ def build_saturation_rule_sweep(
         if require_validated_inputs
         else {"kind": "quasilinear_model_input_validation", "passed": None, "required": False}
     )
-    case_rows = []
     rule_names = tuple(RULE_LABELS)
-    for case in cases:
-        observed_point = calibration_point_from_nonlinear_window_summary(
-            case.nonlinear_summary,
-            predicted_heat_flux=1.0,
-            split=case.split,
-            saturation_rule="diagnostic_only",
-            geometry=case.geometry,
-            electron_model="adiabatic",
-            quasilinear_artifact=str(case.spectrum),
-        )
-        raw = raw_rule_estimates(case.spectrum)
-        case_rows.append(
-            {
-                "case": case.case,
-                "split": case.split,
-                "geometry": case.geometry,
-                "spectrum": str(case.spectrum),
-                "nonlinear_summary": str(case.nonlinear_summary),
-                "observed_heat_flux": observed_point.observed_heat_flux,
-                "observed_heat_flux_std": observed_point.observed_heat_flux_std,
-                "raw_estimates": raw,
-                **_shape_payload(case.shape_gate),
-            }
-        )
+    case_rows = independent_map(
+        _saturation_case_row,
+        cases,
+        workers=workers,
+        executor=parallel_executor,
+    )
 
     observed = np.asarray([row["observed_heat_flux"] for row in case_rows], dtype=float)
     train_mask = np.asarray([row["split"] == "train" for row in case_rows], dtype=bool)
@@ -365,6 +373,11 @@ def build_saturation_rule_sweep(
             "holdout_max_abs_relative_error": None if null_holdout.size == 0 else float(np.nanmax(null_holdout)),
         },
         "input_validation": input_validation,
+        "parallel": {
+            "workers": int(workers),
+            "executor": str(parallel_executor),
+            "identity_contract": "parallel case rows preserve serial case ordering",
+        },
         "promotion_gate": {
             "passed": bool(accepted_rules),
             "accepted_rules": accepted_rules,
@@ -493,12 +506,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", default=str(ROOT / "docs/_static/quasilinear_saturation_rule_sweep.png"))
     parser.add_argument("--title", default="Quasilinear saturation-rule sweep")
+    parser.add_argument("--workers", type=int, default=1, help="Independent case-row workers.")
+    parser.add_argument("--parallel-executor", choices=("thread", "process"), default="thread")
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    report = build_saturation_rule_sweep()
+    report = build_saturation_rule_sweep(workers=args.workers, parallel_executor=args.parallel_executor)
     paths = write_saturation_rule_sweep_figure(report, out=args.out, title=args.title)
     print(f"saved {paths['png']}")
     print(f"saved {paths['pdf']}")

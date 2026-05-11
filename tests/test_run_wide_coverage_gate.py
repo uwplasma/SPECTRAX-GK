@@ -4,7 +4,11 @@ from pathlib import Path
 
 import pytest
 
-from tools.run_wide_coverage_gate import discover_test_files, split_shards
+from tools.run_wide_coverage_gate import (
+    _resolve_test_dir,
+    discover_test_files,
+    split_shards,
+)
 
 
 def test_split_shards_is_round_robin_and_complete() -> None:
@@ -28,4 +32,15 @@ def test_discover_test_files_returns_sorted_top_level_tests(tmp_path: Path) -> N
     nested.mkdir()
     (nested / "test_nested.py").write_text("", encoding="utf-8")
 
-    assert [path.name for path in discover_test_files(tmp_path)] == ["test_a.py", "test_b.py"]
+    assert [path.name for path in discover_test_files(tmp_path)] == [
+        "test_a.py",
+        "test_b.py",
+    ]
+
+
+def test_relative_test_dir_resolves_under_repository_root() -> None:
+    resolved = _resolve_test_dir(Path("tests"))
+
+    assert resolved.is_absolute()
+    assert resolved.name == "tests"
+    assert discover_test_files(Path("tests"))
