@@ -75,14 +75,24 @@ As of 2026-05-11:
   electrostatic quasilinear diagnostics/model selection, reduced
   differentiable-geometry gates, independent-work parallelization, and
   profiler-backed nonlinear hot-path localization.
+- Large runtime/diagnostic refactor work is release engineering: extracted
+  startup, chunk, result, validation-gate, zonal-validation, parallelization-
+  policy, and artifact helpers preserve public behavior, including restartable
+  NetCDF append schema. It is not a new physics-validation, nonlinear-
+  optimization, or speedup claim.
 - The quasilinear one-constant and simple saturation-rule absolute-flux models
   remain rejected. The accepted `spectral_envelope_ridge` candidate is a
   model-development result, not a runtime/TOML absolute-flux predictor.
-- The `vmec_jax -> booz_xform_jax -> SPECTRAX-GK` path is closed for
-  zero-beta equal-arc parity at `mboz=nboz=21` and for reduced
-  frequency/quasilinear/nonlinear-window-estimator gradients on QH/Li383; it
-  is not closed for production nonlinear turbulence gradients or optimized-
-  equilibrium nonlinear heat-flux audits.
+- The `vmec_jax -> booz_xform_jax -> SPECTRAX-GK` path is closed only for
+  artifact-passing zero-beta equal-arc parity rows at `mboz=nboz=21` and for
+  reduced frequency/quasilinear/nonlinear-window-estimator gradients on
+  QH/Li383; it is not closed for production nonlinear turbulence gradients or
+  optimized-equilibrium nonlinear heat-flux audits. The fixed-resolution QI
+  entry passes after the Boozer half-mesh convention fix, with drift mismatch
+  about `7.13e-2` against the `8e-2` tolerance, and evaluated QI `ntheta=8,16`
+  robustness variants pass. The full QI seed campaign remains artifact-limited
+  by missing bundled `wout` references; do not promote it to broad QI
+  validation, QI calibration, or QI nonlinear optimization.
 - Parallelization claims are production-ready only for independent `k_y`
   scans, quasilinear/UQ ensembles, and similar independent work. Whole-state
   nonlinear sharding remains an identity/profiler artifact and should not be
@@ -1831,10 +1841,10 @@ Exit gate:
     enforcing the default Boozer parity mode count to ``mboz=nboz=21``:
     ``cvdrift=3.50e-2``, ``gbdrift=3.50e-2``, ``cvdrift0=3.03e-2``, and
     ``gbdrift0=3.03e-2``;
-  - the release claim is now closed for the tracked zero-beta Boozer
-    equal-arc field-line, metric, and drift convention, while finite-beta,
-    multi-equilibrium drift parity and solver-objective gradients remain
-    required before stellarator heat-flux optimization claims.
+  - historical note: this closed the then-tracked zero-beta Boozer equal-arc
+    field-line, metric, and drift convention for that artifact. Current release
+    wording must defer to `docs/release_scope.rst`, where regenerated failing
+    rows are open rather than release-backed.
 - Bounded follow-up probe after the drift subgate:
   - ``LandremanPaul2021_QA_lowres`` is not usable for this runtime EIK parity
     path as shipped in ``vmec_jax`` because its bundled ``wout`` reports
@@ -1844,10 +1854,9 @@ Exit gate:
     of ``7.10e-3``;
   - ``nfp3_QI_fixed_resolution_final`` passes core/metric smoke gates but fails
     the drift smoke gate with ``mboz=nboz=8`` at worst normalized mismatch
-    ``1.82e-1``; increasing the Boozer parity mode count to ``21`` reduces the
-    QI drift mismatch to ``7.13e-2`` and passes the release drift tolerance,
-    which identifies the immediate issue as spectral truncation rather than a
-    normalization change;
+    ``1.82e-1``; the current mode-21 regeneration passes with QI drift mismatch
+    ``7.13e-2`` against the ``8e-2`` tolerance after fixing the Boozer
+    half-mesh radial-index convention;
   - a trial shear-HNGC correction using the wrong input-convention factor was
     explicitly rejected because it worsened the tracked QH metric gate.
 - Enforced ``mboz,nboz >= 21`` for the VMEC/Boozer equal-arc parity helpers so
@@ -1855,9 +1864,10 @@ Exit gate:
 - Added ``tools/build_vmec_boozer_parity_matrix.py`` and
   ``docs/_static/vmec_boozer_parity_matrix.{png,pdf,json,csv}`` to make the
   mode-21 result replayable across the tracked QH, QI, and shaped-tokamak
-  examples. All three current rows pass the equal-arc core, scalar, ``bgrad``,
-  metric, and drift subgates at ``mboz=nboz=21``; the QI drift row remains the
-  limiting release-level value at ``7.13e-2`` against the ``8e-2`` tolerance.
+  examples. The current regenerated artifact passes all matrix rows; evaluated
+  QI robustness variants at ``ntheta=8`` and ``ntheta=16`` pass, while three
+  input-only QI seeds remain artifact-limited by missing bundled ``wout``
+  references.
 
 ### 2026-04-30
 
@@ -1871,9 +1881,10 @@ Exit gate:
     and TEM/kinetic-electron stellarator extension explicitly deferred;
   - in this narrower scope, the quasilinear lane is closed as a validated
     diagnostic/model-selection negative result rather than as an absolute-flux
-    predictor, VMEC/Boozer equal-arc geometry parity is closed at
-    ``mboz=nboz=21``, and reduced differentiable stellarator ITG optimization
-    is closed with AD/FD gates;
+    predictor, VMEC/Boozer equal-arc geometry parity is closed for the current
+    artifact-passing rows at ``mboz=nboz=21`` including fixed-resolution QI,
+    and reduced differentiable stellarator ITG optimization is closed with
+    AD/FD gates;
   - the active manuscript blocker is now production solver-objective geometry
     gradients through the mode-21 VMEC/Boozer bridge, while profiler-backed
     nonlinear speedup claims remain partial and require fresh CPU/GPU profiler
@@ -4187,3 +4198,35 @@ Exit gate:
 - Verification target for this tranche:
   - strict Sphinx docs build under the 300 s documentation budget;
   - `git diff --check` for whitespace/doc hygiene.
+
+## 2026-05-11 Docs Synchronization for Refactor and QI Scope
+
+- Synchronized the owned docs for the current push without touching source:
+  `README.md`, `docs/release_scope.rst`, `docs/code_structure.rst`,
+  `docs/geometry.rst`, `docs/roadmap.rst`, and this plan.
+- Documented the large runtime/diagnostic refactor as a release-engineering
+  claim only:
+  - extracted startup, chunk, result, runtime artifact, validation-gate,
+    zonal-validation, and nonlinear-parallel policy helpers preserve public
+    behavior and make future refactors safer;
+  - restartable NetCDF continuation appends now stay on the persisted diagnostic
+    schema, so transient in-memory traces that are not written to `.out.nc` do
+    not reappear when a previous artifact is loaded for append;
+  - this does not promote new physics validation, broad nonlinear speedup, or
+    production nonlinear optimization.
+- Tightened the QI language:
+  - the current QI result is the fixed-resolution
+    `nfp3_QI_fixed_resolution_final` row in
+    `docs/_static/vmec_boozer_parity_matrix.{json,png,csv,pdf}`;
+  - the row is admitted only with `mboz=nboz=21`, and the current regenerated
+    artifact passes the QI drift subgate with mismatch about `7.13e-2` against
+    the `8e-2` release tolerance after the Boozer half-mesh convention fix;
+  - evaluated QI robustness variants at `ntheta=8` and `ntheta=16` pass;
+  - the full QI seed campaign is still artifact-limited because three input-
+    only QI seeds have no bundled `wout` reference;
+  - the robust part is the replayable mode-floor and evaluated-grid gate, not
+    broad QI nonlinear transport validation, QI quasilinear calibration, or QI
+    optimization.
+- Verification for this docs synchronization:
+  - `python -m sphinx -b html -W docs docs/_build/html` passed;
+  - `git diff --check -- README.md plan.md docs/code_structure.rst docs/geometry.rst docs/release_scope.rst docs/roadmap.rst` passed.

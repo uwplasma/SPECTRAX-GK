@@ -54,6 +54,12 @@ def _fake_report(**kwargs: object) -> dict[str, object]:
     }
 
 
+def _fake_artifact_resolver(case_name: str) -> tuple[str | None, str | None, str | None]:
+    if case_name in {"nfp1_QI", "nfp2_QI", "nfp4_QI_finite_beta"}:
+        return f"/tmp/input.{case_name}", None, None
+    return f"/tmp/input.{case_name}", "/dev/null", None
+
+
 def test_build_parity_matrix_uses_mode21_floor_and_summarizes_rows() -> None:
     mod = _load_tool_module()
     cases = (
@@ -61,7 +67,11 @@ def test_build_parity_matrix_uses_mode21_floor_and_summarizes_rows() -> None:
         mod.ParityCase("nfp3_QI_fixed_resolution_final", "QI", "stellarator", 8),
     )
 
-    payload = mod.build_parity_matrix(cases=cases, reporter=_fake_report)
+    payload = mod.build_parity_matrix(
+        cases=cases,
+        reporter=_fake_report,
+        artifact_resolver=_fake_artifact_resolver,
+    )
 
     assert payload["kind"] == "vmec_boozer_parity_matrix"
     assert payload["minimum_boozer_mode_count"] == 21
@@ -74,6 +84,15 @@ def test_build_parity_matrix_uses_mode21_floor_and_summarizes_rows() -> None:
     ] == pytest.approx(7.0e-2)
     assert payload["claim_level"].endswith("not_full_transport_gradient_claim")
     assert payload["rows"][0]["production_parity_passed"] is False
+    qi_summary = payload["qi_seed_robustness"]["summary"]
+    assert qi_summary["n_variants"] == 5
+    assert qi_summary["n_passed"] == 2
+    assert qi_summary["n_rejected"] == 3
+    assert qi_summary["seed_robust_gate_passed"] is True
+    assert qi_summary["full_declared_seed_campaign_passed"] is False
+    assert qi_summary["evaluated_reference_gate_passed"] is True
+    assert qi_summary["robustness_status"] == "artifact_limited_passed"
+    assert qi_summary["artifact_reason_counts"]["missing_bundled_wout_reference"] == 3
 
 
 def test_build_parity_matrix_rejects_underresolved_boozer_modes() -> None:
@@ -85,7 +104,63 @@ def test_build_parity_matrix_rejects_underresolved_boozer_modes() -> None:
     )
 
     with pytest.raises(ValueError, match="mboz and nboz"):
-        mod.build_parity_matrix(cases=cases, reporter=_fake_report)
+        mod.build_parity_matrix(
+            cases=cases,
+            reporter=_fake_report,
+            artifact_resolver=_fake_artifact_resolver,
+        )
+
+
+def test_qi_seed_robustness_records_failed_mode21_variant() -> None:
+    mod = _load_tool_module()
+
+    def failing_report(**kwargs: object) -> dict[str, object]:
+        report = _fake_report(**kwargs)
+        report["equal_arc_drift_worst_normalized_max_abs"] = 9.0e-2
+        report["equal_arc_drift_passed"] = False
+        return report
+
+    payload = mod.build_parity_matrix(
+        cases=(),
+        qi_variants=(
+            mod.ParityCase(
+                "nfp3_QI_fixed_resolution_final",
+                "QI",
+                "quasi-isodynamic accepted reference",
+                8,
+            ),
+        ),
+        reporter=failing_report,
+        artifact_resolver=_fake_artifact_resolver,
+    )
+
+    qi = payload["qi_seed_robustness"]
+    assert qi["summary"]["n_failed"] == 1
+    assert qi["summary"]["seed_robust_gate_passed"] is False
+    row = qi["rows"][0]
+    assert row["qi_gate_status"] == "fragile_open"
+    assert row["artifact_reason"] == "mode21_qi_tolerance_exceeded"
+    assert row["equal_arc_drift_worst_normalized_max_abs"] == pytest.approx(9.0e-2)
+
+
+def test_qi_seed_robustness_rejects_input_only_variants() -> None:
+    mod = _load_tool_module()
+    payload = mod.build_parity_matrix(
+        cases=(),
+        qi_variants=(
+            mod.ParityCase("nfp1_QI", "QI input nfp1", "quasi-isodynamic input variant", 8),
+        ),
+        reporter=_fake_report,
+        artifact_resolver=_fake_artifact_resolver,
+    )
+
+    qi = payload["qi_seed_robustness"]
+    assert qi["summary"]["n_rejected"] == 1
+    assert qi["summary"]["seed_robust_gate_passed"] is False
+    row = qi["rows"][0]
+    assert row["qi_gate_status"] == "artifact_rejected"
+    assert row["artifact_reason"] == "missing_bundled_wout_reference"
+    assert "does not launch VMEC solves" in row["rejection_reason"]
 
 
 def test_write_parity_matrix_artifacts_writes_companions(tmp_path: Path) -> None:
@@ -95,6 +170,7 @@ def test_write_parity_matrix_artifacts_writes_companions(tmp_path: Path) -> None
             mod.ParityCase("shaped_tokamak_pressure", "tokamak", "axisymmetric", 8),
         ),
         reporter=_fake_report,
+        artifact_resolver=_fake_artifact_resolver,
     )
 
     paths = mod.write_parity_matrix_artifacts(payload, out=tmp_path / "parity.png")
@@ -104,5 +180,8 @@ def test_write_parity_matrix_artifacts_writes_companions(tmp_path: Path) -> None
     saved = json.loads((tmp_path / "parity.json").read_text(encoding="utf-8"))
     assert saved["summary"]["n_equal_arc_passed"] == 1
     assert "shaped_tokamak_pressure" in (tmp_path / "parity.csv").read_text(
+        encoding="utf-8"
+    )
+    assert "missing_bundled_wout_reference" in (tmp_path / "parity.csv").read_text(
         encoding="utf-8"
     )

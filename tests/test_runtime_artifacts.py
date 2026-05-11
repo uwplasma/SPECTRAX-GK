@@ -51,8 +51,6 @@ from spectraxgk.runtime_artifacts import (
     _spectral_to_ri,
     _spectral_to_xy,
     _take_axis,
-    _validate_finite_array,
-    _validate_finite_runtime_result,
     _write_csv,
     _write_gx_geometry_group,
     _write_gx_inputs_group,
@@ -65,6 +63,10 @@ from spectraxgk.runtime_artifacts import (
     run_runtime_nonlinear_with_artifacts,
     write_runtime_linear_artifacts,
     write_runtime_nonlinear_artifacts,
+)
+from spectraxgk.runtime_artifact_diagnostics import (
+    validate_finite_array,
+    validate_finite_runtime_result,
 )
 
 
@@ -398,12 +400,12 @@ def test_runtime_artifact_restart_resolution_and_species_helpers() -> None:
 
 
 def test_runtime_artifact_finite_validation_covers_state_and_fields() -> None:
-    _validate_finite_array(None, label="empty")
-    _validate_finite_array(np.asarray([]), label="empty")
-    _validate_finite_array(np.asarray([1.0, 2.0]), label="finite")
+    validate_finite_array(None, label="empty")
+    validate_finite_array(np.asarray([]), label="empty")
+    validate_finite_array(np.asarray([1.0, 2.0]), label="finite")
 
     with pytest.raises(RuntimeError, match="bad field contains non-finite values"):
-        _validate_finite_array(np.asarray([1.0, np.inf]), label="bad field")
+        validate_finite_array(np.asarray([1.0, np.inf]), label="bad field")
 
     finite = RuntimeNonlinearResult(
         t=np.asarray([]),
@@ -415,11 +417,11 @@ def test_runtime_artifact_finite_validation_covers_state_and_fields() -> None:
             bpar=np.zeros((1,), dtype=np.complex64),
         ),
     )
-    _validate_finite_runtime_result(finite, label="finite nonlinear")
+    validate_finite_runtime_result(finite, label="finite nonlinear")
 
     bad_state = replace(finite, state=np.asarray([np.nan], dtype=np.float32))
     with pytest.raises(RuntimeError, match="finite nonlinear state"):
-        _validate_finite_runtime_result(bad_state, label="finite nonlinear")
+        validate_finite_runtime_result(bad_state, label="finite nonlinear")
 
     bad_phi = replace(
         finite,
@@ -430,7 +432,49 @@ def test_runtime_artifact_finite_validation_covers_state_and_fields() -> None:
         ),
     )
     with pytest.raises(RuntimeError, match="finite nonlinear phi"):
-        _validate_finite_runtime_result(bad_phi, label="finite nonlinear")
+        validate_finite_runtime_result(bad_phi, label="finite nonlinear")
+
+    bad_apar = replace(
+        finite,
+        fields=SimpleNamespace(
+            phi=np.asarray([0.0]),
+            apar=np.asarray([np.inf]),
+            bpar=np.asarray([0.0]),
+        ),
+    )
+    with pytest.raises(RuntimeError, match="finite nonlinear apar"):
+        validate_finite_runtime_result(bad_apar, label="finite nonlinear")
+
+    bad_bpar = replace(
+        finite,
+        fields=SimpleNamespace(
+            phi=np.asarray([0.0]),
+            apar=np.asarray([0.0]),
+            bpar=np.asarray([np.nan]),
+        ),
+    )
+    with pytest.raises(RuntimeError, match="finite nonlinear bpar"):
+        validate_finite_runtime_result(bad_bpar, label="finite nonlinear")
+
+    bad_diag = SimulationDiagnostics(
+        t=np.asarray([0.1, 0.2]),
+        dt_t=np.asarray([0.1, 0.1]),
+        dt_mean=np.asarray(0.1),
+        gamma_t=np.zeros(2),
+        omega_t=np.zeros(2),
+        Wg_t=np.ones(2),
+        Wphi_t=np.ones(2),
+        Wapar_t=np.zeros(2),
+        heat_flux_t=np.zeros(2),
+        particle_flux_t=np.asarray([0.0, np.nan]),
+        energy_t=np.ones(2),
+    )
+    bad_diag_result = replace(finite, diagnostics=bad_diag, fields=None, state=None)
+    with pytest.raises(
+        RuntimeError,
+        match=r"finite nonlinear produced non-finite diagnostics in particle_flux_t at sample 1 at t=0.2",
+    ):
+        validate_finite_runtime_result(bad_diag_result, label="finite nonlinear")
 
 
 def test_runtime_artifact_condense_output_helpers_reject_bad_axis_lengths() -> None:
@@ -1559,6 +1603,139 @@ def test_load_runtime_nonlinear_gx_diagnostics_fills_missing_turbulent_heating(
             diag.createVariable(name, "f4", ("time", "s"))[:] = values
     loaded = load_runtime_nonlinear_gx_diagnostics(out_nc)
     assert np.allclose(loaded.turbulent_heating_t, np.zeros(2, dtype=np.float32))
+
+
+def test_run_runtime_nonlinear_with_artifacts_append_preserves_loaded_gx_schema(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    netcdf4 = pytest.importorskip("netCDF4")
+    Dataset = netcdf4.Dataset
+    out = tmp_path / "append.out.nc"
+    restart = tmp_path / "append.restart.nc"
+    restart.write_bytes(b"restart")
+    cfg = RuntimeConfig(
+        grid=GridConfig(Nx=6, Ny=4, Nz=4, Lx=1.0, Ly=1.0, boundary="periodic"),
+        time=TimeConfig(dt=0.1, t_max=0.2, diagnostics=True, fixed_dt=True),
+        output=RuntimeOutputConfig(
+            path=str(out),
+            restart_if_exists=True,
+            append_on_restart=True,
+            save_for_restart=False,
+        ),
+    )
+    full_ny = int(cfg.grid.Ny)
+    full_nx = int(cfg.grid.Nx)
+    ky_idx = _gx_active_ky_indices(full_ny)
+    kx_idx = _gx_active_kx_indices(full_nx)
+
+    def _diag(sample_t: float, base: float) -> SimulationDiagnostics:
+        phi2_kxkyt = (
+            base
+            + np.arange(full_ny * full_nx, dtype=np.float32).reshape(
+                1, full_ny, full_nx
+            )
+        )
+        phi2_kxt = np.sum(phi2_kxkyt[:, ky_idx, :], axis=1)
+        phi2_kyt = np.sum(phi2_kxkyt[:, :, kx_idx], axis=2)
+        wg_kxst = base + np.arange(full_nx, dtype=np.float32).reshape(1, 1, full_nx)
+        wg_kyst = base + np.arange(full_ny, dtype=np.float32).reshape(1, 1, full_ny)
+        wg_kxkyst = (
+            base
+            + np.arange(full_ny * full_nx, dtype=np.float32).reshape(
+                1, 1, full_ny, full_nx
+            )
+        )
+        return SimulationDiagnostics(
+            t=np.asarray([sample_t]),
+            dt_t=np.asarray([0.1]),
+            dt_mean=np.asarray(0.1),
+            gamma_t=np.asarray([0.0]),
+            omega_t=np.asarray([0.0]),
+            Wg_t=np.asarray([base + 1.0]),
+            Wphi_t=np.asarray([base + 2.0]),
+            Wapar_t=np.asarray([0.0]),
+            heat_flux_t=np.asarray([base + 3.0]),
+            particle_flux_t=np.asarray([base + 4.0]),
+            energy_t=np.asarray([base + 3.0]),
+            heat_flux_species_t=np.asarray([[base + 3.0]]),
+            particle_flux_species_t=np.asarray([[base + 4.0]]),
+            turbulent_heating_t=np.asarray([base + 5.0]),
+            turbulent_heating_species_t=np.asarray([[base + 5.0]]),
+            phi_mode_t=np.asarray([base + 1.0j * base]),
+            resolved=ResolvedDiagnostics(
+                Phi2_kxt=phi2_kxt,
+                Phi2_kyt=phi2_kyt,
+                Phi2_kxkyt=phi2_kxkyt,
+                Phi_zonal_line_kxt=(
+                    base + np.arange(full_nx, dtype=np.float32)[None, :]
+                ).astype(np.complex64),
+                Wg_kxst=wg_kxst,
+                Wg_kyst=wg_kyst,
+                Wg_kxkyst=wg_kxkyst,
+            ),
+        )
+
+    write_runtime_nonlinear_artifacts(
+        out,
+        RuntimeNonlinearResult(
+            t=np.asarray([0.1]),
+            diagnostics=_diag(0.1, 1.0),
+            state=None,
+            ky_selected=0.2,
+            kx_selected=0.0,
+        ),
+        cfg,
+    )
+    with Dataset(out, "r") as root:
+        before_schema = {
+            name: tuple(var.dimensions)
+            for name, var in root.groups["Diagnostics"].variables.items()
+        }
+        assert root.dimensions["time"].size == 1
+    assert "Phi_zonal_line_kxt" in before_schema
+    assert all("phi_mode" not in name.lower() for name in before_schema)
+
+    def _fake_run_runtime_nonlinear(run_cfg, **_kwargs):
+        assert run_cfg.init.init_file == str(restart)
+        return RuntimeNonlinearResult(
+            t=np.asarray([0.1]),
+            diagnostics=_diag(0.1, 20.0),
+            state=None,
+            ky_selected=0.2,
+            kx_selected=0.0,
+        )
+
+    monkeypatch.setattr(
+        "spectraxgk.runtime_artifacts.run_runtime_nonlinear",
+        _fake_run_runtime_nonlinear,
+    )
+
+    result, paths = run_runtime_nonlinear_with_artifacts(
+        cfg,
+        out=out,
+        ky_target=0.2,
+        steps=1,
+        diagnostics=True,
+    )
+
+    assert result.diagnostics is not None
+    assert result.diagnostics.phi_mode_t is None
+    with Dataset(paths["out"], "r") as root:
+        after_schema = {
+            name: tuple(var.dimensions)
+            for name, var in root.groups["Diagnostics"].variables.items()
+        }
+        assert after_schema == before_schema
+        assert root.dimensions["time"].size == 2
+        np.testing.assert_allclose(
+            root.groups["Grids"].variables["time"][:], np.asarray([0.1, 0.2])
+        )
+        assert root.groups["Diagnostics"].variables["Phi_zonal_line_kxt"].shape == (
+            2,
+            int(kx_idx.size),
+            2,
+        )
 
 
 def test_run_runtime_nonlinear_with_artifacts_validation_branches(

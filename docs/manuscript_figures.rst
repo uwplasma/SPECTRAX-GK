@@ -225,7 +225,7 @@ Differentiable-Physics Figures
    * - VMEC/Boozer parity matrix
      - ``tools/build_vmec_boozer_parity_matrix.py``
      - Multi-equilibrium zero-beta equal-arc geometry gate closed at ``mboz=nboz=21``
-     - current artifact base: ``docs/_static/vmec_boozer_parity_matrix.png`` with JSON/CSV/PDF companions. It checks QH, QI, and shaped-tokamak fixtures against the imported VMEC/EIK runtime convention and rejects ``mboz,nboz < 21``. The current limiting row is QI drift at ``7.13e-2`` against the ``8e-2`` release tolerance. This should be presented as a field-line geometry convention gate, not as a finite-beta transport-gradient validation.
+     - current artifact base: ``docs/_static/vmec_boozer_parity_matrix.png`` with JSON/CSV/PDF companions. It checks QH, QI, and shaped-tokamak fixtures against the imported VMEC/EIK runtime convention and rejects ``mboz,nboz < 21``. The current limiting matrix row is QI drift at ``7.13e-2`` against the ``8e-2`` release tolerance; evaluated QI ``ntheta=8,16`` variants pass, while input-only QI seeds without bundled ``wout`` references are explicitly artifact-limited. This should be presented as a field-line geometry convention gate, not as a finite-beta transport-gradient validation.
 
 Caption Policy
 --------------

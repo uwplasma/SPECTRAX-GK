@@ -13,6 +13,7 @@ import spectraxgk
 import spectraxgk.geometry.differentiable as diff_geom
 from spectraxgk.geometry.differentiable import (
     _array_parity_metrics,
+    _boozer_half_mesh_s_grid,
     _candidate_paths,
     _cumulative_trapezoid,
     _find_importable_module,
@@ -481,6 +482,27 @@ def test_vmec_jax_flux_tube_array_parity_report_enforces_boozer_resolution_floor
         vmec_jax_flux_tube_array_parity_report(mboz=20, nboz=21)
 
 
+def test_boozer_half_mesh_s_grid_uses_fortran_half_mesh_indices() -> None:
+    s_half = _boozer_half_mesh_s_grid(
+        jnp.asarray([2, 3, 4]),
+        ns_b=3,
+        ns_b_full=3,
+        dtype=jnp.float64,
+    )
+
+    np.testing.assert_allclose(
+        np.asarray(s_half),
+        np.asarray([1.0 / 6.0, 3.0 / 6.0, 5.0 / 6.0]),
+    )
+    fallback = _boozer_half_mesh_s_grid(
+        None,
+        ns_b=3,
+        ns_b_full=3,
+        dtype=jnp.float64,
+    )
+    np.testing.assert_allclose(np.asarray(fallback), np.asarray(s_half))
+
+
 def test_vmec_jax_boozer_equal_arc_core_profiles_supports_surface_stencil(
     monkeypatch,
 ) -> None:
@@ -518,7 +540,7 @@ def test_vmec_jax_boozer_equal_arc_core_profiles_supports_surface_stencil(
             "ixm_b": jnp.asarray([0, 1], dtype=jnp.int32),
             "ixn_b": jnp.asarray([0, 0], dtype=jnp.int32),
             "ns_b": 5,
-            "jlist": idx + 1,
+            "jlist": idx + 2,
         }
 
     booz_input.booz_xform_inputs_from_state = booz_xform_inputs_from_state
