@@ -7,6 +7,8 @@ import pytest
 
 from spectraxgk.analysis import ModeSelection
 from spectraxgk.benchmarks import (
+    CycloneReference,
+    CycloneRunResult,
     InitializationConfig,
     KrylovConfig,
     _apply_gx_hypercollisions,
@@ -28,6 +30,7 @@ from spectraxgk.benchmarks import (
     _select_fit_signal,
     _select_fit_signal_auto,
     _two_species_params,
+    compare_cyclone_to_reference,
     load_cyclone_reference,
     load_cyclone_reference_kinetic,
     load_etg_reference,
@@ -97,16 +100,55 @@ def test_reference_loaders_return_data() -> None:
         assert ref.gamma.shape == ref.omega.shape == ref.ky.shape
 
 
+def test_checked_in_references_keep_literature_scale_and_sign_conventions() -> None:
+    cyclone = load_cyclone_reference()
+    kinetic = load_cyclone_reference_kinetic()
+    kbm = load_kbm_reference()
+    etg = load_etg_reference()
+    tem = load_tem_reference()
+
+    for ref in (cyclone, kinetic, kbm, etg, tem):
+        assert np.all(np.diff(ref.ky) > 0.0)
+        assert np.all(np.isfinite(ref.gamma))
+        assert np.all(np.isfinite(ref.omega))
+
+    cyclone_peak = int(np.argmax(cyclone.gamma))
+    assert cyclone.ky[cyclone_peak] == pytest.approx(0.30000001)
+    assert cyclone.gamma[cyclone_peak] == pytest.approx(0.09302951)
+    assert np.all(cyclone.gamma > 0.0)
+    assert np.all(cyclone.omega > 0.0)
+
+    assert kinetic.ky[0] == pytest.approx(0.1)
+    assert np.all(kinetic.gamma > 0.0)
+    assert np.all(kinetic.omega > 0.0)
+
+    assert kbm.gamma[np.argmin(np.abs(kbm.ky - 0.2))] == pytest.approx(0.33845928)
+    assert np.all(kbm.gamma > 0.0)
+    assert np.all(kbm.omega > 0.0)
+
+    assert etg.ky.tolist() == [10.0, 20.0, 30.0]
+    assert np.all(etg.gamma > 0.0)
+    assert np.all(etg.omega < 0.0)
+
+    assert np.any(tem.gamma > 0.0)
+    assert np.any(tem.gamma < 0.0)
+    assert tem.gamma[-1] == pytest.approx(-0.426778)
+
+
 def test_load_reference_with_header_reads_named_columns(tmp_path, monkeypatch) -> None:
     data_dir = tmp_path / "data"
     data_dir.mkdir()
-    (data_dir / "demo.csv").write_text("ky,gamma,omega\n0.1,0.2,-0.3\n", encoding="utf-8")
+    (data_dir / "demo.csv").write_text(
+        "ky,gamma,omega\n0.1,0.2,-0.3\n", encoding="utf-8"
+    )
 
     class FakeFiles:
         def joinpath(self, *parts):
             return data_dir / parts[-1]
 
-    monkeypatch.setattr("spectraxgk.benchmarks.resources.files", lambda _pkg: FakeFiles())
+    monkeypatch.setattr(
+        "spectraxgk.benchmarks.resources.files", lambda _pkg: FakeFiles()
+    )
     ref = _load_reference_with_header("demo.csv")
     np.testing.assert_allclose(ref.ky, [0.1])
     np.testing.assert_allclose(ref.gamma, [0.2])
@@ -148,36 +190,68 @@ def test_select_fit_signal_and_auto(monkeypatch) -> None:
         np.array([1.0, 2.0, 3.0, 4.0], dtype=np.complex128),
         np.array([4.0, 3.0, 2.0, 1.0], dtype=np.complex128),
     ]
-    monkeypatch.setattr("spectraxgk.benchmarks.extract_mode_time_series", lambda *args, **kwargs: queue.pop(0))
-    signal = _select_fit_signal(phi_t, density_t, sel, fit_signal="phi", mode_method="project")
+    monkeypatch.setattr(
+        "spectraxgk.benchmarks.extract_mode_time_series",
+        lambda *args, **kwargs: queue.pop(0),
+    )
+    signal = _select_fit_signal(
+        phi_t, density_t, sel, fit_signal="phi", mode_method="project"
+    )
     np.testing.assert_allclose(signal, [1.0, 2.0, 3.0, 4.0])
 
     queue = [
         np.array([np.nan, np.nan, np.nan, np.nan], dtype=np.complex128),
         np.array([1.0, 2.0, 3.0, 4.0], dtype=np.complex128),
     ]
-    monkeypatch.setattr("spectraxgk.benchmarks.extract_mode_time_series", lambda *args, **kwargs: queue.pop(0))
-    signal = _select_fit_signal(density_t, phi_t, sel, fit_signal="density", mode_method="project")
+    monkeypatch.setattr(
+        "spectraxgk.benchmarks.extract_mode_time_series",
+        lambda *args, **kwargs: queue.pop(0),
+    )
+    signal = _select_fit_signal(
+        density_t, phi_t, sel, fit_signal="density", mode_method="project"
+    )
     np.testing.assert_allclose(signal, [1.0, 2.0, 3.0, 4.0])
 
     queue = [np.array([np.nan, np.nan, np.nan, np.nan], dtype=np.complex128)]
-    monkeypatch.setattr("spectraxgk.benchmarks.extract_mode_time_series", lambda *args, **kwargs: queue.pop(0))
+    monkeypatch.setattr(
+        "spectraxgk.benchmarks.extract_mode_time_series",
+        lambda *args, **kwargs: queue.pop(0),
+    )
     with pytest.warns(RuntimeWarning, match="insufficient finite"):
-        signal = _select_fit_signal(phi_t, None, sel, fit_signal="phi", mode_method="project")
+        signal = _select_fit_signal(
+            phi_t, None, sel, fit_signal="phi", mode_method="project"
+        )
     np.testing.assert_allclose(signal, np.zeros(4))
 
     queue = [np.array([np.nan, np.nan, np.nan, np.nan], dtype=np.complex128)]
-    monkeypatch.setattr("spectraxgk.benchmarks.extract_mode_time_series", lambda *args, **kwargs: queue.pop(0))
+    monkeypatch.setattr(
+        "spectraxgk.benchmarks.extract_mode_time_series",
+        lambda *args, **kwargs: queue.pop(0),
+    )
     with pytest.warns(RuntimeWarning, match="insufficient finite"):
-        signal = _select_fit_signal(phi_t, density_t, sel, fit_signal="density", mode_method="project", fallback=False)
+        signal = _select_fit_signal(
+            phi_t,
+            density_t,
+            sel,
+            fit_signal="density",
+            mode_method="project",
+            fallback=False,
+        )
     np.testing.assert_allclose(signal, np.zeros(4))
 
     queue = [np.array([1.0, 2.0], dtype=np.complex128)]
-    monkeypatch.setattr("spectraxgk.benchmarks.extract_mode_time_series", lambda *args, **kwargs: queue.pop(0))
+    monkeypatch.setattr(
+        "spectraxgk.benchmarks.extract_mode_time_series",
+        lambda *args, **kwargs: queue.pop(0),
+    )
     with pytest.raises(ValueError):
-        _select_fit_signal(phi_t, None, sel, fit_signal="density", mode_method="project")
+        _select_fit_signal(
+            phi_t, None, sel, fit_signal="density", mode_method="project"
+        )
     with pytest.raises(ValueError):
-        _select_fit_signal(phi_t, density_t, sel, fit_signal="bad", mode_method="project")
+        _select_fit_signal(
+            phi_t, density_t, sel, fit_signal="bad", mode_method="project"
+        )
 
     signals = {
         "phi": np.array([1.0, 2.0, 3.0], dtype=np.complex128),
@@ -230,6 +304,7 @@ def test_select_fit_signal_and_auto(monkeypatch) -> None:
 
 def test_score_fit_signal_auto_filters_invalid(monkeypatch) -> None:
     captured: dict[str, object] = {}
+
     def _fake_fit(*args, **kwargs):
         captured["num_windows"] = kwargs["num_windows"]
         return (0.3, -0.2, 0.0, 1.0, 0.95, 0.9)
@@ -298,32 +373,81 @@ def test_score_fit_signal_auto_filters_invalid(monkeypatch) -> None:
     assert score == -np.inf
 
 
+def test_score_fit_signal_auto_treats_zero_growth_as_marginal(monkeypatch) -> None:
+    def _score_for(gamma_value: float, *, require_positive: bool = True) -> float:
+        monkeypatch.setattr(
+            "spectraxgk.benchmarks.fit_growth_rate_auto_with_stats",
+            lambda *args, **kwargs: (gamma_value, -0.2, 0.0, 1.0, 0.99, 0.9),
+        )
+        _gamma, _omega, score = _score_fit_signal_auto(
+            np.array([0.0, 1.0, 2.0]),
+            np.array([1.0, 1.0, 1.0], dtype=np.complex128),
+            tmin=None,
+            tmax=None,
+            window_fraction=0.5,
+            min_points=2,
+            start_fraction=0.2,
+            growth_weight=1.0,
+            require_positive=require_positive,
+            min_amp_fraction=0.0,
+            max_amp_fraction=1.0,
+            window_method="rolling",
+            max_fraction=1.0,
+            end_fraction=1.0,
+            num_windows=4,
+            phase_weight=0.2,
+            length_weight=0.05,
+            min_r2=0.8,
+            late_penalty=0.0,
+            min_slope=None,
+            min_slope_frac=0.0,
+            slope_var_weight=0.0,
+        )
+        return score
+
+    assert _score_for(0.0) == -np.inf
+    assert np.isfinite(_score_for(1.0e-12))
+    assert np.isfinite(_score_for(0.0, require_positive=False))
+
+
 def test_mode_signal_batch_and_window_helpers() -> None:
     arr = np.arange(12).reshape(3, 4)
     np.testing.assert_allclose(_extract_mode_only_signal(arr, local_idx=2), [2, 6, 10])
     arr3 = np.arange(24).reshape(2, 3, 4)
-    np.testing.assert_allclose(_extract_mode_only_signal(arr3, local_idx=1, species_index=1), [5, 17])
+    np.testing.assert_allclose(
+        _extract_mode_only_signal(arr3, local_idx=1, species_index=1), [5, 17]
+    )
     arr4 = np.arange(48).reshape(2, 2, 3, 4)
     np.testing.assert_allclose(_extract_mode_only_signal(arr4, local_idx=4), [4, 28])
-    np.testing.assert_allclose(_extract_mode_only_signal(np.array(3.0 + 1.0j), local_idx=0), [3.0 + 1.0j])
-    np.testing.assert_allclose(_extract_mode_only_signal(np.array([1.0, 2.0]), local_idx=1), [1.0, 2.0])
+    np.testing.assert_allclose(
+        _extract_mode_only_signal(np.array(3.0 + 1.0j), local_idx=0), [3.0 + 1.0j]
+    )
+    np.testing.assert_allclose(
+        _extract_mode_only_signal(np.array([1.0, 2.0]), local_idx=1), [1.0, 2.0]
+    )
     assert _is_array_like([1, 2]) is True
     assert _is_array_like(np.array([1, 2])) is True
     assert _is_array_like(1.0) is False
 
-    single_batches = list(_iter_ky_batches(np.array([0.1, 0.2]), ky_batch=1, fixed_batch_shape=False))
+    single_batches = list(
+        _iter_ky_batches(np.array([0.1, 0.2]), ky_batch=1, fixed_batch_shape=False)
+    )
     assert len(single_batches) == 2
     assert single_batches[0][0] == 0
     np.testing.assert_allclose(single_batches[0][1], [0.1])
     assert single_batches[0][2] == 1
 
-    batches = list(_iter_ky_batches(np.array([0.1, 0.2, 0.3]), ky_batch=2, fixed_batch_shape=True))
+    batches = list(
+        _iter_ky_batches(np.array([0.1, 0.2, 0.3]), ky_batch=2, fixed_batch_shape=True)
+    )
     assert batches[0][0] == 0
     np.testing.assert_allclose(batches[0][1], [0.1, 0.2])
     np.testing.assert_allclose(batches[1][1], [0.3, 0.3])
     assert batches[1][2] == 1
 
-    ragged_batches = list(_iter_ky_batches(np.array([0.1, 0.2, 0.3]), ky_batch=2, fixed_batch_shape=False))
+    ragged_batches = list(
+        _iter_ky_batches(np.array([0.1, 0.2, 0.3]), ky_batch=2, fixed_batch_shape=False)
+    )
     np.testing.assert_allclose(ragged_batches[1][1], [0.3])
     assert ragged_batches[1][2] == 1
 
@@ -350,7 +474,51 @@ def test_normalization_and_initial_profiles() -> None:
     assert profile.shape == z.shape
     assert np.max(np.abs(profile)) > 0.0
     with pytest.raises(ValueError):
-        _build_gaussian_profile(z, kx=0.2, ky=0.4, s_hat=0.5, init_cfg=SimpleNamespace(**{**init_cfg.__dict__, "gaussian_width": 0.0}))
+        _build_gaussian_profile(
+            z,
+            kx=0.2,
+            ky=0.4,
+            s_hat=0.5,
+            init_cfg=SimpleNamespace(**{**init_cfg.__dict__, "gaussian_width": 0.0}),
+        )
+
+
+def test_compare_to_reference_uses_nearest_ky_and_documents_ties() -> None:
+    reference = CycloneReference(
+        ky=np.array([0.2, 0.4, 0.6]),
+        gamma=np.array([0.10, 0.20, 0.40]),
+        omega=np.array([1.0, 2.0, 4.0]),
+    )
+    result = CycloneRunResult(
+        t=np.array([0.0]),
+        phi_t=np.ones((1, 1, 1, 1), dtype=np.complex128),
+        gamma=0.22,
+        omega=2.2,
+        ky=0.39,
+        selection=ModeSelection(ky_index=0, kx_index=0),
+    )
+
+    comparison = compare_cyclone_to_reference(result, reference)
+
+    assert comparison.ky == pytest.approx(0.4)
+    assert comparison.gamma_ref == pytest.approx(0.20)
+    assert comparison.omega_ref == pytest.approx(2.0)
+    assert comparison.rel_gamma == pytest.approx(0.10)
+    assert comparison.rel_omega == pytest.approx(0.10)
+
+    tie = compare_cyclone_to_reference(
+        CycloneRunResult(
+            t=result.t,
+            phi_t=result.phi_t,
+            gamma=0.15,
+            omega=1.5,
+            ky=0.3,
+            selection=result.selection,
+        ),
+        reference,
+    )
+    assert tie.ky == pytest.approx(0.2)
+    assert tie.gamma_ref == pytest.approx(0.10)
 
 
 def test_build_initial_condition_supports_all_and_invalid_fields() -> None:
@@ -361,18 +529,26 @@ def test_build_initial_condition_supports_all_and_invalid_fields() -> None:
     )
     geom = SimpleNamespace(s_hat=0.8)
     init_cfg = InitializationConfig(init_field="all", init_amp=2.0, gaussian_init=False)
-    G0 = _build_initial_condition(grid, geom, ky_index=[0, 1], kx_index=1, Nl=2, Nm=4, init_cfg=init_cfg)
+    G0 = _build_initial_condition(
+        grid, geom, ky_index=[0, 1], kx_index=1, Nl=2, Nm=4, init_cfg=init_cfg
+    )
     assert G0.shape == (2, 4, 2, 2, 5)
     assert np.count_nonzero(np.asarray(G0)[:, :, 0, 1, :]) == 0
     assert np.count_nonzero(np.asarray(G0)[:, :, 1, 1, :]) > 0
 
-    too_small = InitializationConfig(init_field="qpar", init_amp=1.0, gaussian_init=False)
+    too_small = InitializationConfig(
+        init_field="qpar", init_amp=1.0, gaussian_init=False
+    )
     with pytest.raises(ValueError, match="moment exceeds"):
-        _build_initial_condition(grid, geom, ky_index=1, kx_index=1, Nl=1, Nm=1, init_cfg=too_small)
+        _build_initial_condition(
+            grid, geom, ky_index=1, kx_index=1, Nl=1, Nm=1, init_cfg=too_small
+        )
 
     bad = InitializationConfig(init_field="banana")
     with pytest.raises(ValueError):
-        _build_initial_condition(grid, geom, ky_index=1, kx_index=1, Nl=2, Nm=4, init_cfg=bad)
+        _build_initial_condition(
+            grid, geom, ky_index=1, kx_index=1, Nl=2, Nm=4, init_cfg=bad
+        )
 
 
 def test_kinetic_init_and_kbm_target_helpers() -> None:
@@ -384,15 +560,29 @@ def test_kinetic_init_and_kbm_target_helpers() -> None:
     custom = InitializationConfig(init_field="upar", init_amp=2.0)
     assert _kinetic_reference_init_cfg(custom, gx_reference=True) == custom
 
-    kcfg = KrylovConfig(method="shift_invert", mode_family="kbm", shift_selection="target")
+    kcfg = KrylovConfig(
+        method="shift_invert", mode_family="kbm", shift_selection="target"
+    )
     assert _kbm_use_multi_target_krylov(kcfg, [0.1, 0.2], shift=None) is True
     assert _kbm_use_multi_target_krylov(kcfg, None, shift=None) is False
     assert _kbm_use_multi_target_krylov(kcfg, [0.1], shift=1.0 + 0.0j) is False
-    assert _kbm_use_multi_target_krylov(KrylovConfig(method="arnoldi", mode_family="kbm"), [0.1], shift=None) is False
-    assert _kbm_use_multi_target_krylov(KrylovConfig(method="shift_invert", mode_family="etg"), [0.1], shift=None) is False
     assert (
         _kbm_use_multi_target_krylov(
-            KrylovConfig(method="shift_invert", mode_family="kbm", shift_selection="shift"),
+            KrylovConfig(method="arnoldi", mode_family="kbm"), [0.1], shift=None
+        )
+        is False
+    )
+    assert (
+        _kbm_use_multi_target_krylov(
+            KrylovConfig(method="shift_invert", mode_family="etg"), [0.1], shift=None
+        )
+        is False
+    )
+    assert (
+        _kbm_use_multi_target_krylov(
+            KrylovConfig(
+                method="shift_invert", mode_family="kbm", shift_selection="shift"
+            ),
             [0.1],
             shift=None,
         )
@@ -485,7 +675,9 @@ def test_species_param_builders() -> None:
         )
 
 
-def test_score_fit_signal_auto_rejects_nonfinite_and_negative_growth(monkeypatch) -> None:
+def test_score_fit_signal_auto_rejects_nonfinite_and_negative_growth(
+    monkeypatch,
+) -> None:
     monkeypatch.setattr(
         "spectraxgk.benchmarks.fit_growth_rate_auto_with_stats",
         lambda *args, **kwargs: (np.nan, -0.2, 0.0, 1.0, 0.95, 0.9),
