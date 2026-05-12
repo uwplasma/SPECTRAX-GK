@@ -61,6 +61,7 @@ LANES: dict[str, tuple[EvidenceCheck, ...]] = {
         EvidenceCheck("runtime parallel input docs", "docs/inputs.rst", "strategy = \"batch\""),
         EvidenceCheck("independent ky scaling artifact", "docs/_static/independent_ky_scan_scaling_large.json", "not a nonlinear domain-decomposition"),
         EvidenceCheck("quasilinear UQ scaling artifact", "docs/_static/quasilinear_uq_ensemble_scaling_large.json", "not a promoted absolute nonlinear heat-flux predictor"),
+        EvidenceCheck("parallelization completion status", "docs/_static/parallelization_completion_status.json", "production_completion_percent"),
         EvidenceCheck("nonlinear sharding scoped diagnostic", "docs/_static/nonlinear_sharding_strong_scaling_large.json", "not a production speedup claim"),
         EvidenceCheck("nonlinear domain identity gate", "docs/_static/nonlinear_domain_parallel_identity_gate.json", "no production routing or speedup claim"),
         EvidenceCheck("nonlinear spectral communication gate", "docs/_static/nonlinear_spectral_communication_identity_gate.json", "no production routing or speedup claim"),

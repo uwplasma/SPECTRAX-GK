@@ -86,6 +86,30 @@ The large tracked artifacts use real solver work rather than synthetic sleeps:
 covers a late-time linear/quasilinear UQ ensemble. These are the figures to cite
 for current parallelization speedup claims.
 
+Production closure status
+-------------------------
+
+The release status artifact combines the production scaling evidence and the
+diagnostic decomposition gates into one machine-readable claim boundary:
+
+.. image:: _static/parallelization_completion_status.png
+   :alt: SPECTRAX-GK parallelization closure status
+   :align: center
+
+``docs/_static/parallelization_completion_status.json`` reports the release
+production-completion percentage and the status of each lane. For the current
+tracked artifacts, production independent-work parallelization is closed:
+independent ``k_y`` scans reach ``7.18x`` on eight CPU workers and ``1.88x`` on
+two RTX A4000 GPUs, while the quasilinear/UQ ensemble reaches ``5.41x`` on CPU
+and ``1.71x`` on GPU. Whole-state nonlinear sharding and FFT-axis decomposition
+remain diagnostic, not production nonlinear speedup claims.
+
+Regenerate the closure status after refreshing any scaling artifact:
+
+.. code-block:: bash
+
+   python tools/build_parallelization_completion_status.py
+
 Diagnostic path: whole-state nonlinear sharding
 -----------------------------------------------
 

@@ -491,7 +491,7 @@ metadata only; a speedup claim requires a solver-backed workload and fresh
 CPU/GPU profiler artifacts.
 
 The solver-backed strong-scaling artifact now exercises that production
-policy on a larger real Cyclone linear scan with twelve independent
+policy on a larger real Cyclone linear scan with 64 independent
 ``k_y`` values, ``Ny=128``, ``Nz=96``, ``Nl=4``, ``Nm=8``, and ``240`` RK2
 steps per mode. Each worker performs one warmup scan before the timed repeats,
 and every multi-worker result is compared against the one-worker reference for
@@ -505,26 +505,50 @@ It is regenerated with:
 
 .. code-block:: bash
 
+   KY=$(python -c "print(','.join(f'{0.04 + 0.0125*i:.3f}' for i in range(64)))")
+
    python tools/profile_independent_ky_scan_scaling.py \
      --backend cpu --devices 1,2,4,8 \
+     --ky "$KY" \
      --ny 128 --nz 96 --nl 4 --nm 8 --steps 240 \
      --out-prefix docs/_static/independent_ky_scan_scaling_cpu_large
 
    python tools/profile_independent_ky_scan_scaling.py \
      --backend gpu --devices 1,2 \
+     --ky "$KY" \
      --ny 128 --nz 96 --nl 4 --nm 8 --steps 240 \
      --out-prefix docs/_static/independent_ky_scan_scaling_gpu_large
 
    python tools/plot_independent_ky_scan_scaling.py
 
-The May 10, 2026 ``office`` sweep passes the identity gate with zero reported
-``gamma``/``omega`` mismatch. CPU process scaling reaches ``1.92x`` on two
-workers, ``3.51x`` on four workers, and ``5.34x`` on eight workers. The
-two-GPU RTX A4000 run reaches ``1.63x`` with about ``81%`` parallel
+The May 12, 2026 refresh passes the identity gate with zero reported
+``gamma``/``omega`` mismatch. CPU process scaling reaches ``1.94x`` on two
+workers, ``3.78x`` on four workers, and ``7.18x`` on eight workers. The
+two-GPU RTX A4000 run reaches ``1.88x`` with about ``94%`` parallel
 efficiency. This is the current recommended production parallelization path
 for linear scans, quasilinear studies, sensitivity sweeps, and UQ ensembles:
 it has much better scaling behavior than whole-state nonlinear sharding
 because communication is restricted to post-run result aggregation.
+
+The release closure status is machine-readable and separates production claims
+from diagnostic decomposition work:
+
+.. image:: _static/parallelization_completion_status.png
+   :alt: SPECTRAX-GK parallelization closure status
+   :align: center
+
+It is regenerated with:
+
+.. code-block:: bash
+
+   python tools/build_parallelization_completion_status.py
+
+The tracked ``docs/_static/parallelization_completion_status.json`` reports
+``production_completion_percent = 100`` for independent ``k_y`` scans and
+quasilinear/UQ ensembles. The same artifact keeps whole-state nonlinear
+sharding and FFT-axis decomposition at diagnostic status until runtime
+distributed communication, conservation, transport-window, and profiler-backed
+speedup gates are closed.
 
 The same independent-worker policy is also gated on a quasilinear/UQ-style
 ensemble: six late-time Cyclone ITG gradient samples, five ``k_y`` values per
