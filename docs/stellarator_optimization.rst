@@ -31,6 +31,8 @@ Source Map
   :func:`spectraxgk.flux_tube_geometry_from_vmec_boozer_state`
 - Production-adjacent linear/quasilinear objective evaluator:
   :func:`spectraxgk.vmec_boozer_solver_objective_vector_from_state`
+- Scalar optimizer hook:
+  :func:`spectraxgk.vmec_boozer_scalar_objective_from_state`
 - Fast branch-continuity and sensitivity gate:
   :func:`spectraxgk.solver_objective_branch_gradient_report`
 - Tests: ``tests/test_stellarator_optimization.py``
@@ -70,6 +72,12 @@ max-growth eigenbranch stays dominant under central perturbations and that
 the objective-vector sensitivities pass the implicit left/right eigenpair
 gate. The VMEC/Boozer offline gates remain the authority for production
 stellarator optimization claims.
+
+Optimizer drivers should use ``vmec_boozer_scalar_objective_from_state`` once
+they have a solved ``vmec_jax`` state. The supported aliases are
+``growth``/``gamma``, ``frequency``/``omega``, and
+``quasilinear_flux``/``mixing_length_heat_flux_proxy``. This selector prevents
+each optimization example from silently using a different objective index.
 
 Objective
 ---------
