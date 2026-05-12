@@ -36,6 +36,7 @@ from spectraxgk.solver_objective_gradients import (
     tiny_differentiable_objective_gradient_report,
     vmec_boozer_scalar_objective_finite_difference_report,
     vmec_boozer_scalar_objective_from_state,
+    vmec_boozer_scalar_objective_line_search_report,
     vmec_boozer_solver_objective_vector_from_state,
 )
 
@@ -307,6 +308,7 @@ def test_vmec_boozer_scalar_objective_finite_difference_report(
     report = vmec_boozer_scalar_objective_finite_difference_report(
         case_name="case",
         objective="growth",
+        base_delta=0.1,
         perturbation_step=1.0e-3,
         response_atol=1.0e-6,
         ntheta=4,
@@ -318,10 +320,11 @@ def test_vmec_boozer_scalar_objective_finite_difference_report(
     assert report["passed"] is True
     assert report["source_scope"] == "mode21_vmec_boozer_state"
     assert report["parameter_name"] == "Rcos_mid_surface_m1"
+    assert report["base_delta"] == pytest.approx(0.1)
     assert report["central_derivative"] == pytest.approx(3.0, rel=1.0e-4)
     assert report["response_resolved"] is True
     assert report["finite_difference_consistent"] is True
-    assert report["curvature_ratio"] == pytest.approx(0.0)
+    assert report["curvature_ratio"] < 1.0e-3
     assert report["options"] == {"ntheta": 4}
 
     with pytest.raises(ValueError, match="perturbation_step"):
@@ -330,6 +333,73 @@ def test_vmec_boozer_scalar_objective_finite_difference_report(
         vmec_boozer_scalar_objective_finite_difference_report(max_curvature_ratio=-1.0)
     with pytest.raises(ValueError, match="radial_index"):
         vmec_boozer_scalar_objective_finite_difference_report(radial_index=99)
+
+
+def test_vmec_boozer_scalar_objective_line_search_report_accepts_safe_updates(
+    monkeypatch,
+) -> None:
+    calls: list[float] = []
+
+    def fake_fd_report(**kwargs):  # noqa: ANN003, ANN202
+        delta = float(kwargs.get("base_delta", 0.0))
+        calls.append(delta)
+        value = 1.0 + 2.0 * delta
+        return {
+            "passed": True,
+            "base_value": value,
+            "central_derivative": 2.0,
+            "curvature_ratio": 0.0,
+        }
+
+    monkeypatch.setattr(
+        sog,
+        "vmec_boozer_scalar_objective_finite_difference_report",
+        fake_fd_report,
+    )
+
+    report = vmec_boozer_scalar_objective_line_search_report(
+        objective="growth",
+        update_step=0.05,
+        max_steps=2,
+        ntheta=4,
+    )
+
+    assert spectraxgk.vmec_boozer_scalar_objective_line_search_report is (
+        vmec_boozer_scalar_objective_line_search_report
+    )
+    assert report["passed"] is True
+    assert report["accepted_steps"] == 2
+    assert report["final_delta"] == pytest.approx(-0.10)
+    assert report["final_objective"] < report["initial_objective"]
+    assert all(row["accepted"] for row in report["history"])
+    assert calls[:2] == [0.0, -0.05]
+
+
+def test_vmec_boozer_scalar_objective_line_search_report_fails_closed(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(
+        sog,
+        "vmec_boozer_scalar_objective_finite_difference_report",
+        lambda **_kwargs: {
+            "passed": False,
+            "base_value": 1.0,
+            "central_derivative": 2.0,
+            "curvature_ratio": 9.0,
+        },
+    )
+
+    report = vmec_boozer_scalar_objective_line_search_report(max_steps=1)
+
+    assert report["passed"] is False
+    assert report["accepted_steps"] == 0
+    assert report["stop_reason"] == "finite_difference_gate_failed"
+    with pytest.raises(ValueError, match="max_steps"):
+        vmec_boozer_scalar_objective_line_search_report(max_steps=0)
+    with pytest.raises(ValueError, match="update_step"):
+        vmec_boozer_scalar_objective_line_search_report(update_step=0.0)
+    with pytest.raises(ValueError, match="min_improvement"):
+        vmec_boozer_scalar_objective_line_search_report(min_improvement=-1.0)
 
 
 def test_reduced_nonlinear_window_metrics_are_smooth_and_fd_checked() -> None:

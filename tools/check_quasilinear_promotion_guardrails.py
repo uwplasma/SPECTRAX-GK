@@ -21,6 +21,7 @@ DEFAULT_REPORT_PATTERNS = (
     str(ROOT / "docs/_static/quasilinear_candidate_uncertainty.json"),
     str(ROOT / "docs/_static/quasilinear_dataset_sufficiency.json"),
     str(ROOT / "docs/_static/quasilinear_validated_calibration_inputs.json"),
+    str(ROOT / "docs/_static/manuscript_readiness_status.json"),
 )
 DEFAULT_DOCS = (
     ROOT / "docs/quasilinear.rst",
@@ -122,6 +123,14 @@ SCOPED_NON_ABSOLUTE_MARKERS = (
     "candidate",
     "sufficiency",
     "scoped",
+)
+MANUSCRIPT_QL_LANE = "Quasilinear diagnostics and saturation-model selection"
+MANUSCRIPT_NON_ABSOLUTE_CLAIM_MARKERS = (
+    "negative_absolute_flux_promotion",
+    "not_runtime_flux_predictor",
+    "not_runtime",
+    "not runtime",
+    "not absolute",
 )
 
 
@@ -417,6 +426,88 @@ def _audit_promotion_gate(
     }
 
 
+def _audit_manuscript_readiness(
+    path: Path, data: dict[str, Any]
+) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
+    if data.get("kind") != "manuscript_readiness_status":
+        return [], None
+
+    lanes = data.get("lanes", [])
+    ql_lane = None
+    if isinstance(lanes, list):
+        for lane in lanes:
+            if isinstance(lane, dict) and lane.get("lane") == MANUSCRIPT_QL_LANE:
+                ql_lane = lane
+                break
+
+    gates = [
+        _gate(
+            "manuscript_ql_lane_present",
+            ql_lane is not None,
+            f"{_repo_relative(path)} contains {MANUSCRIPT_QL_LANE!r}",
+        )
+    ]
+    if ql_lane is None:
+        return gates, {
+            "artifact": _repo_relative(path),
+            "kind": data.get("kind"),
+            "ql_lane_present": False,
+        }
+
+    claim_level = str(ql_lane.get("claim_level", ""))
+    status = str(ql_lane.get("status", ""))
+    metrics = ql_lane.get("key_metrics", {})
+    if not isinstance(metrics, dict):
+        metrics = {}
+    artifacts = ql_lane.get("primary_artifacts", [])
+    if not isinstance(artifacts, list):
+        artifacts = []
+
+    absolute_flux_promoted = bool(metrics.get("absolute_flux_promoted", False))
+    accepted_candidates = metrics.get("accepted_uq_candidates", [])
+    candidate_selected = bool(
+        metrics.get("uq_candidate_promotion_passed", False)
+        or metrics.get("dataset_sufficiency_promotion_passed", False)
+        or accepted_candidates
+    )
+    claim_is_scoped = _has_scope_marker(
+        claim_level, MANUSCRIPT_NON_ABSOLUTE_CLAIM_MARKERS
+    )
+    gates.extend(
+        [
+            _gate(
+                "manuscript_ql_not_absolute_flux",
+                not absolute_flux_promoted and claim_level != PROMOTED_CLAIM,
+                f"claim_level={claim_level} absolute_flux_promoted={absolute_flux_promoted}",
+            ),
+            _gate(
+                "manuscript_ql_closed_scope_is_non_absolute",
+                status != "closed" or claim_is_scoped,
+                f"status={status} claim_level={claim_level}",
+            ),
+            _gate(
+                "manuscript_ql_candidate_scope_not_runtime",
+                not candidate_selected or claim_is_scoped,
+                f"candidate_selected={candidate_selected} claim_level={claim_level}",
+            ),
+            _gate(
+                "manuscript_ql_guardrail_artifact_listed",
+                "docs/_static/quasilinear_promotion_guardrails.json" in artifacts,
+                "manuscript QL lane should list the promotion guardrail audit artifact",
+            ),
+        ]
+    )
+    return gates, {
+        "artifact": _repo_relative(path),
+        "kind": data.get("kind"),
+        "ql_lane_present": True,
+        "ql_status": status,
+        "ql_claim_level": claim_level,
+        "absolute_flux_promoted": absolute_flux_promoted,
+        "accepted_uq_candidates": accepted_candidates,
+    }
+
+
 def _audit_docs(paths: list[Path]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     gates: list[dict[str, Any]] = []
     rows: list[dict[str, Any]] = []
@@ -464,6 +555,7 @@ def build_guardrail_audit(
     report_rows: list[dict[str, Any]] = []
     input_rows: list[dict[str, Any]] = []
     promotion_rows: list[dict[str, Any]] = []
+    manuscript_rows: list[dict[str, Any]] = []
 
     for path in report_paths:
         data = _load_json(path)
@@ -479,6 +571,10 @@ def build_guardrail_audit(
         gates.extend(promotion_gates)
         if promotion_summary is not None:
             promotion_rows.append(promotion_summary)
+        manuscript_gates, manuscript_summary = _audit_manuscript_readiness(path, data)
+        gates.extend(manuscript_gates)
+        if manuscript_summary is not None:
+            manuscript_rows.append(manuscript_summary)
 
     doc_gates, doc_rows = _audit_docs([Path(path) for path in doc_paths])
     gates.extend(doc_gates)
@@ -501,16 +597,19 @@ def build_guardrail_audit(
             "n_calibration_reports": len(report_rows),
             "n_input_validation_reports": len(input_rows),
             "n_promotion_gate_reports": len(promotion_rows),
+            "n_manuscript_readiness_reports": len(manuscript_rows),
             "n_doc_checks": len(doc_rows),
             "n_failed_gates": len(failed),
         },
         "calibration_reports": report_rows,
         "input_validation_reports": input_rows,
         "promotion_gate_reports": promotion_rows,
+        "manuscript_readiness_reports": manuscript_rows,
         "doc_checks": doc_rows,
         "notes": (
             "Fast metadata guardrail only: it verifies finite nonlinear window statistics, "
-            "train/holdout provenance, absolute-flux promotion gates, and conservative docs wording. "
+            "train/holdout provenance, absolute-flux promotion gates, manuscript-readiness QL scope, "
+            "and conservative docs wording. "
             "It does not replace nonlinear convergence simulations."
         ),
     }

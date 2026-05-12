@@ -14,6 +14,7 @@ from spectraxgk.benchmarking import (
     GateReport,
     EigenfunctionComparisonMetrics,
     LateTimeLinearMetrics,
+    NonlinearHeatFluxConvergenceMetrics,
     NonlinearWindowMetrics,
     ScalarGateResult,
     ZonalFlowResponseMetrics,
@@ -31,6 +32,8 @@ from spectraxgk.benchmarking import (
     linear_metrics_gate_report,
     load_diagnostic_time_series,
     load_eigenfunction_reference_bundle,
+    nonlinear_heat_flux_convergence_gate_report,
+    nonlinear_heat_flux_convergence_metrics,
     nonlinear_window_gate_report,
     normalize_eigenfunction,
     observed_order_gate_report,
@@ -985,6 +988,82 @@ def test_windowed_nonlinear_metrics_ignores_nonfinite_phi_envelope_and_keeps_win
     assert metrics.phi_mode_envelope_mean == pytest.approx(2.0)
     assert metrics.phi_mode_envelope_std == pytest.approx(0.0)
     assert metrics.phi_mode_envelope_max == pytest.approx(2.0)
+
+
+def test_nonlinear_window_convergence_metrics_pass_stable_post_transient_average() -> None:
+    t = np.linspace(0.0, 19.0, 20)
+    heat_flux = 2.0 + 0.02 * np.sin(np.arange(t.size))
+
+    metrics = nonlinear_heat_flux_convergence_metrics(
+        t,
+        heat_flux,
+        start_fraction=0.5,
+        terminal_fraction=0.5,
+    )
+    report = nonlinear_heat_flux_convergence_gate_report(
+        metrics,
+        case="synthetic_nonlinear",
+        source="unit-test",
+        max_mean_rel_delta=0.03,
+        max_cv=0.02,
+        max_abs_trend=0.03,
+        min_samples=8,
+    )
+
+    assert isinstance(metrics, NonlinearHeatFluxConvergenceMetrics)
+    assert metrics.nsamples == 10
+    assert metrics.terminal_nsamples == 5
+    assert metrics.tmin == pytest.approx(10.0)
+    assert metrics.terminal_tmin == pytest.approx(15.0)
+    assert metrics.heat_flux_mean == pytest.approx(np.mean(heat_flux[10:]))
+    assert metrics.mean_rel_delta < 0.01
+    assert report.passed is True
+    assert [gate.metric for gate in report.gates] == [
+        "heat_flux_terminal_mean_rel_delta",
+        "heat_flux_window_cv",
+        "heat_flux_window_abs_trend",
+        "heat_flux_window_sample_deficit",
+    ]
+
+
+def test_nonlinear_window_convergence_gate_rejects_drifting_reduced_window_proxy() -> None:
+    t = np.linspace(0.0, 19.0, 20)
+    heat_flux = np.where(t < 10.0, 4.0, 2.0 + 0.08 * (t - 10.0))
+
+    metrics = nonlinear_heat_flux_convergence_metrics(t, heat_flux, start_fraction=0.5)
+    report = nonlinear_heat_flux_convergence_gate_report(
+        metrics,
+        case="drifting_nonlinear",
+        source="unit-test",
+        max_mean_rel_delta=0.03,
+        max_cv=0.02,
+        max_abs_trend=0.03,
+        min_samples=12,
+    )
+
+    assert metrics.mean_rel_delta > 0.05
+    assert metrics.abs_trend > 0.25
+    assert report.passed is False
+    failed = {gate.metric for gate in report.gates if not gate.passed}
+    assert failed == {
+        "heat_flux_terminal_mean_rel_delta",
+        "heat_flux_window_cv",
+        "heat_flux_window_abs_trend",
+        "heat_flux_window_sample_deficit",
+    }
+
+
+def test_nonlinear_window_convergence_metrics_validate_inputs() -> None:
+    with pytest.raises(ValueError, match="equal length"):
+        nonlinear_heat_flux_convergence_metrics(np.array([0.0, 1.0]), np.array([1.0]))
+    with pytest.raises(ValueError, match="start_fraction"):
+        nonlinear_heat_flux_convergence_metrics(np.arange(3.0), np.ones(3), start_fraction=1.0)
+    with pytest.raises(ValueError, match="terminal_fraction"):
+        nonlinear_heat_flux_convergence_metrics(np.arange(3.0), np.ones(3), terminal_fraction=0.0)
+    with pytest.raises(ValueError, match="strictly increasing"):
+        nonlinear_heat_flux_convergence_metrics(np.array([0.0, 0.0, 1.0]), np.ones(3))
+    with pytest.raises(ValueError, match="finite paired sample"):
+        nonlinear_heat_flux_convergence_metrics(np.array([np.nan, np.inf]), np.array([1.0, 2.0]))
 
 
 def test_estimate_observed_order_returns_asymptotic_pairwise_orders() -> None:

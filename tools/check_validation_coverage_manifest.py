@@ -83,6 +83,17 @@ def _as_nonempty_list(value: object, field: str, module: str) -> list[str]:
     return items
 
 
+def _reject_duplicate_values(values: list[str], field: str, module: str) -> None:
+    seen: set[str] = set()
+    duplicates: list[str] = []
+    for value in values:
+        if value in seen and value not in duplicates:
+            duplicates.append(value)
+        seen.add(value)
+    if duplicates:
+        raise ValueError(f"{module}: {field} contains duplicate entries: {duplicates}")
+
+
 def load_manifest(path: Path = DEFAULT_MANIFEST) -> dict[str, Any]:
     """Load a TOML manifest as a dictionary."""
 
@@ -115,6 +126,8 @@ def _coverage_xml_summary(
         module = _coverage_filename_to_module(cls.attrib.get("filename", ""))
         if module is None or module not in package_modules:
             continue
+        if module in measured:
+            raise ValueError(f"{coverage_xml}: duplicate coverage entry for {module}")
         try:
             measured[module] = float(cls.attrib["line-rate"]) * 100.0
         except (KeyError, ValueError) as exc:
@@ -185,13 +198,17 @@ def validate_manifest(
     require_all_owned = inventory.get("require_all_package_modules_owned")
     if require_all_owned is not True:
         raise ValueError("coverage_inventory.require_all_package_modules_owned must be true")
-    excluded_modules = set(
-        _as_nonempty_list(
-            inventory.get("excluded_modules"),
-            "excluded_modules",
-            "coverage_inventory",
-        )
+    excluded_module_list = _as_nonempty_list(
+        inventory.get("excluded_modules"),
+        "excluded_modules",
+        "coverage_inventory",
     )
+    _reject_duplicate_values(
+        excluded_module_list,
+        "excluded_modules",
+        "coverage_inventory",
+    )
+    excluded_modules = set(excluded_module_list)
     for module in excluded_modules:
         if not module.startswith("spectraxgk."):
             raise ValueError(f"coverage_inventory: excluded module must start with 'spectraxgk.': {module}")
@@ -221,11 +238,15 @@ def validate_manifest(
             field: _as_nonempty_list(entry.get(field), field, module)
             for field in REQUIRED_LIST_FIELDS
         }
+        for field, values in lists.items():
+            _reject_duplicate_values(values, field, module)
         optional_lists = {
             field: _as_nonempty_list(entry[field], field, module)
             for field in OPTIONAL_LIST_FIELDS
             if field in entry
         }
+        for field, values in optional_lists.items():
+            _reject_duplicate_values(values, field, module)
         status = strings["status"]
         if status not in ALLOWED_STATUSES:
             raise ValueError(f"{module}: invalid status {status!r}")
@@ -269,16 +290,22 @@ def validate_manifest(
             resolved = _repo_path(test_path)
             if not resolved.exists():
                 raise ValueError(f"{module}: fast test does not exist: {test_path}")
+            if not resolved.is_file():
+                raise ValueError(f"{module}: fast test must be a file: {test_path}")
             try:
                 resolved.relative_to((REPO_ROOT / "tests").resolve())
             except ValueError as exc:
                 raise ValueError(f"{module}: fast test must live under tests/: {test_path}") from exc
 
         artifacts = _as_nonempty_list(entry.get("artifact_paths"), "artifact_paths", module)
+        _reject_duplicate_values(artifacts, "artifact_paths", module)
         if check_artifacts:
             for artifact in artifacts:
-                if not _repo_path(artifact).exists():
+                resolved_artifact = _repo_path(artifact)
+                if not resolved_artifact.exists():
                     raise ValueError(f"{module}: artifact path does not exist: {artifact}")
+                if not resolved_artifact.is_file():
+                    raise ValueError(f"{module}: artifact path must be a file: {artifact}")
 
         rows.append(
             {
