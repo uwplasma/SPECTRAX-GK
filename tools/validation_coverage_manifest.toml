@@ -141,6 +141,40 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.linear_moments"
+path = "src/spectraxgk/linear_moments.py"
+owner_lane = "Hermite-Laguerre moment operators and field-coupling primitives"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "Hermite-Laguerre ladder representation of the linear gyrokinetic equation",
+  "electrostatic quasineutrality and gyrokinetic variable construction used by linear and nonlinear RHS assembly",
+]
+physics_contracts = [
+  "velocity-space ladder operators preserve Hermite/Laguerre recurrence identities",
+  "field-coupled H construction applies phi, A_parallel, and B_parallel to the intended moment channels",
+]
+numerics_contracts = [
+  "zero-padded moment shifts remain non-periodic and shape preserving",
+  "quasineutrality protects zero denominators and preserves multi-species broadcasting",
+]
+fast_tests = [
+  "tests/test_linear.py",
+  "tests/test_linear_helpers_extra.py",
+  "tests/test_terms_fields.py",
+  "tests/test_terms_assembly.py",
+]
+artifact_paths = [
+  "docs/_static/hermite_streaming_ladder_gate.json",
+  "docs/_static/electrostatic_field_reduce_gate.json",
+]
+next_tests = [
+  "add direct finite-difference checks for grad_z_periodic and streaming_term on analytic waves",
+  "keep spectraxgk.linear moment exports object-identical until the next major API cleanup",
+]
+
+[[modules]]
 module = "spectraxgk.linear_params"
 path = "src/spectraxgk/linear_params.py"
 owner_lane = "linear parameter pytrees, term toggles, and validation/coercion helpers"

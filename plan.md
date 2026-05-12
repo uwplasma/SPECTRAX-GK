@@ -326,6 +326,10 @@ and benchmark behavior.
      gyroaverage tables, moment-space cache arrays, and collision/
      hypercollision damping factors live in `src/spectraxgk/linear_cache.py`,
      with legacy exports preserved through `src/spectraxgk/linear.py`.
+   - Current status: Hermite/Laguerre ladder operators, quasineutrality,
+     velocity-space energy/drive coefficients, and `H` field coupling live in
+     `src/spectraxgk/linear_moments.py`, with legacy exports preserved through
+     `src/spectraxgk/linear.py` and direct imports from `spectraxgk.terms`.
    - Current status: parameter pytrees, linear term toggles, term-config
      conversion, validation helpers, and implicit-preconditioner policy live in
      `src/spectraxgk/linear_params.py`, with legacy exports preserved through
@@ -4387,5 +4391,31 @@ Exit gate:
   - `python -m pytest tests/test_geometry.py::test_build_linear_cache_uses_linked_streaming_for_fix_aspect_imported_geometry tests/test_geometry.py::test_sampled_flux_tube_geometry_matches_salpha_profiles tests/test_geometry.py::test_ensure_flux_tube_geometry_data_reuses_sampled_input -q`
     passed;
   - `mypy src/spectraxgk/linear.py src/spectraxgk/linear_cache.py` passed;
+  - `python tools/check_validation_coverage_manifest.py --skip-artifact-check` passed;
+  - strict Sphinx docs build passed.
+
+## 2026-05-12 Linear Moment Primitive Refactor Tranche
+
+- Split Hermite/Laguerre ladder operators, nonperiodic moment shifts,
+  electrostatic quasineutrality, velocity-space energy/diamagnetic-drive
+  coefficients, and `build_H` field coupling from `src/spectraxgk/linear.py`
+  into `src/spectraxgk/linear_moments.py`.
+- Updated `src/spectraxgk/terms/fields.py` and
+  `src/spectraxgk/terms/assembly.py` to import these primitives directly from
+  the extracted modules instead of depending on the large `spectraxgk.linear`
+  compatibility surface. This narrows import cycles while keeping the public
+  `spectraxgk.linear` symbols object-identical.
+- Updated API docs, architecture docs, and the validation coverage manifest so
+  the extracted moment module has explicit Hermite/Laguerre, field-coupling,
+  and quasineutrality contracts.
+- Verification for this tranche:
+  - `ruff check src/spectraxgk/linear.py src/spectraxgk/linear_moments.py src/spectraxgk/terms/fields.py src/spectraxgk/terms/assembly.py tests/test_linear_helpers_extra.py docs/conf.py`
+    passed;
+  - `python -m pytest tests/test_linear_helpers_extra.py tests/test_linear.py::test_grad_z_periodic_sine tests/test_linear.py::test_quasineutrality_simple tests/test_linear.py::test_quasineutrality_charge_sign tests/test_linear.py::test_build_H_adds_phi_to_m0 tests/test_linear.py::test_build_H_adds_apar_to_m1 tests/test_linear.py::test_build_H_adds_bpar_to_m0 tests/test_terms_fields.py tests/test_terms_assembly.py tests/test_validation_coverage_manifest.py -q`
+    passed;
+  - `python -m pytest tests/test_linear.py tests/test_linear_krylov_core.py tests/test_terms_assembly.py tests/test_terms_fields.py -q -m 'not slow' --override-ini='addopts=' --maxfail=1`
+    passed with 86 tests;
+  - `mypy src/spectraxgk/linear.py src/spectraxgk/linear_moments.py src/spectraxgk/terms/fields.py src/spectraxgk/terms/assembly.py`
+    passed;
   - `python tools/check_validation_coverage_manifest.py --skip-artifact-check` passed;
   - strict Sphinx docs build passed.
