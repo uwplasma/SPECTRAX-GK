@@ -31,6 +31,8 @@ Source Map
   :func:`spectraxgk.flux_tube_geometry_from_vmec_boozer_state`
 - Production-adjacent linear/quasilinear objective evaluator:
   :func:`spectraxgk.vmec_boozer_solver_objective_vector_from_state`
+- Fast branch-continuity and sensitivity gate:
+  :func:`spectraxgk.solver_objective_branch_gradient_report`
 - Tests: ``tests/test_stellarator_optimization.py``
 - Growth-rate example:
   :download:`stellarator_itg_growth_optimization.py <../examples/optimization/stellarator_itg_growth_optimization.py>`
@@ -60,6 +62,14 @@ geometry path. It is a forward evaluator, not by itself a gradient claim:
 end-to-end differentiability is claimed only after VMEC/Boozer geometry parity,
 branch-continuity, and AD/finite-difference gates pass for the optimized
 equilibrium and held-out field lines.
+
+For CI-scale development, ``solver_objective_branch_gradient_report`` applies
+the same branch-continuity and implicit AD/finite-difference logic to the
+solver-ready differentiable geometry contract. It verifies that the selected
+max-growth eigenbranch stays dominant under central perturbations and that
+the objective-vector sensitivities pass the implicit left/right eigenpair
+gate. The VMEC/Boozer offline gates remain the authority for production
+stellarator optimization claims.
 
 Objective
 ---------
