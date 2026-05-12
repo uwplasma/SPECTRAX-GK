@@ -1211,6 +1211,14 @@ Exit gate:
   `vmec_boozer_scalar_objective_from_state` so the real linear-growth and
   quasilinear-flux optimizer paths select objectives through one tested alias
   layer instead of duplicating objective-vector indices.
+- Local real-backend smoke checks on `nfp4_QH_warm_start` with
+  `mboz=nboz=21`, `ntheta=4`, and `surface_stencil_width=3` passed through
+  `vmec_boozer_solver_objective_vector_from_state`. The minimal `Nl=1,Nm=1`
+  row completed in 13.7 s and is expected to have zero heat-weight proxies.
+  The richer `Nl=2,Nm=3` row completed in 16.9 s with `gamma=0.2966`,
+  `omega=-0.1669`, `kperp_eff2=0.4208`, heat weight `2.0487`, and
+  quasilinear proxy `1.4442`. This confirms the public value path is live
+  before adding optimizer loops.
 - Validation for this tranche:
   `python -m pytest -q tests/test_solver_objective_gradients.py tests/test_differentiable_geometry_bridge.py tests/test_stellarator_optimization.py` passed with 46 tests, and `ruff check` passed for the touched source/test files.
 - Commits pushed to `main`: `7ab3676` and `ebdebc1`.
