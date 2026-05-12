@@ -41,8 +41,12 @@ Current scoped claims
        rejected on the seven-case train/holdout portfolio. The
        ``spectral_envelope_ridge`` candidate is accepted only as a scoped
        manuscript model-selection result, not as a runtime/TOML absolute-flux
-       predictor. Electromagnetic quasilinear field-channel normalization and
-       KBM calibration remain future gates.
+       predictor. Any future absolute-flux promotion additionally requires
+       finite passed nonlinear late-window convergence metadata for every
+       holdout: transient cutoff, running-mean drift, block/bootstrap SEM,
+       finite sample count, and source provenance. Electromagnetic
+       quasilinear field-channel normalization and KBM calibration remain
+       future gates.
    * - Differentiable geometry
      - release-ready for equal-arc parity and reduced QH/Li383 gates
      - The ``vmec_jax -> booz_xform_jax -> SPECTRAX-GK`` bridge is validated
@@ -175,6 +179,12 @@ Quasilinear model-selection state:
 - ``docs/_static/quasilinear_stellarator_train_holdout_report.json``:
   nonlinear inputs are valid, but the one-constant absolute-flux model remains
   ``passed = false`` with held-out mean relative error about ``2.57``.
+- ``tools/check_nonlinear_window_convergence.py`` and
+  ``spectraxgk.quasilinear_window`` provide the reusable late-window
+  convergence metadata required before any future holdout report can be
+  promoted to ``calibrated_absolute_flux``. This is a metadata/finite-window
+  guardrail over existing traces, not a substitute for new long nonlinear
+  simulations.
 - ``docs/_static/quasilinear_saturation_rule_sweep.json``:
   no simple saturation rule is accepted. Positive-growth mixing length is the
   least-bad simple rule with mean held-out relative error about ``2.51``;

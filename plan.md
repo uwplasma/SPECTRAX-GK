@@ -1163,6 +1163,14 @@ Exit gate:
 
 ## Running Log
 
+### 2026-05-12
+
+- Worker C extracted benchmark scan-window, fit-signal, mode-only, and
+  ky-batching policies from `spectraxgk.benchmarks` into
+  `spectraxgk.benchmark_scan`, added focused policy tests, and registered the
+  module in the validation coverage manifest/API docs while preserving the
+  public `spectraxgk.benchmarks` import surface.
+
 ### 2026-04-29
 
 - Archived the historical 2,755-line root `plan.md` into private repo `rogeriojorge/spectraxgk_plan`.
@@ -4323,6 +4331,28 @@ Exit gate:
     passed in 47 s;
   - strict Sphinx docs build passed.
 
+## 2026-05-12 Nonlinear Helper/Operator Refactor Tranche
+
+- Split nonlinear helper policies from `src/spectraxgk/nonlinear.py` into
+  `src/spectraxgk/nonlinear_helpers.py`:
+  - GX real-FFT Hermitian projection;
+  - GX omega/gamma mode masks and nonlinear CFL omega components;
+  - fixed-mode state projection;
+  - collision/hypercollision split damping and update policies;
+  - reusable nonlinear IMEX linear-operator construction.
+- Preserved legacy private/public imports from `spectraxgk.nonlinear` and added
+  an identity test over `nonlinear_helpers.__all__`.
+- This tranche intentionally does not change the nonlinear bracket, field
+  solves, time-stepping formulas, or collision math; it reduces the monolithic
+  nonlinear runtime surface and makes projection/collision/IMEX helper tests
+  cheaper to target.
+- Verification for this tranche:
+  - `ruff check src/spectraxgk/nonlinear.py src/spectraxgk/nonlinear_helpers.py tests/test_nonlinear_helpers_extra.py tests/test_nonlinear.py`
+    passed;
+  - `python -m py_compile src/spectraxgk/nonlinear.py src/spectraxgk/nonlinear_helpers.py`
+    passed;
+  - `python -m pytest tests/test_nonlinear_helpers_extra.py -q` passed.
+
 ## 2026-05-12 Linear Linked-Boundary Refactor Tranche
 
 - Split linked-field-line FFT map construction and linked-end damping profile
@@ -4498,3 +4528,18 @@ Exit gate:
     passed;
   - `python -m pytest tests/test_make_validation_gate_index.py -q`
     passed.
+
+## 2026-05-12 Runtime Orchestration Refactor Tranche
+
+- Extracted runtime coordination policy into `src/spectraxgk/runtime_orchestration.py`:
+  progress/ETA message policy, combined-ky scan batch execution through an
+  injected dependency surface, and nonlinear restart/checkpoint artifact handoff
+  through an injected artifact dependency surface.
+- Kept legacy monkeypatch seams intact by leaving `spectraxgk.runtime` and
+  `spectraxgk.runtime_artifacts` as thin wrappers that pass their current module
+  globals into the extracted helpers at call time.
+- Added direct tests for progress/ETA policy, nonlinear artifact policy
+  resolution, and checkpoint restart handoff, while retaining the existing
+  runtime wrapper and artifact monkeypatch regressions.
+- Updated API docs, architecture docs, and the validation coverage manifest so
+  the new orchestration module is tracked as a runtime coverage/refactor lane.

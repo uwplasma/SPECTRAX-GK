@@ -309,6 +309,25 @@ the finite-difference step is not well scaled to the chosen VMEC coefficient.
 Research artifacts should quote both the derivative error and this conditioning
 metadata before treating a VMEC/Boozer bridge row as optimization-ready.
 
+The reusable low-level entry point is
+``observable_gradient_validation_report(observable_fn, params, ...)``. It
+flattens arbitrary geometry or objective observables, compares JAX AD
+Jacobians with central finite differences, records absolute and relative error
+tables, checks a tangent direction, adds finite flags, and applies an explicit
+rank/condition-number gate. Its payload is strict JSON compatible: nonfinite
+diagnostic numbers are written as ``null`` while the corresponding finite flag
+and failure reason remain explicit. ``geometry_sensitivity_report`` is a thin
+``FluxTubeGeometryData`` wrapper around the same helper.
+
+For ``vmec_jax`` and ``booz_xform_jax`` this remains a bridge contract, not a
+claim that SPECTRAX-GK has run a full optimization. The upstream JAX pipeline
+must first produce the sampled solver-ready field-line arrays accepted by
+``flux_tube_geometry_from_mapping``. Passing the reusable AD/finite-difference
+gate proves local differentiability and conditioning of the supplied
+observables; production stellarator optimization still requires the VMEC/Boozer
+array parity, solver-objective gradient, and nonlinear transport gates
+described below.
+
 .. figure:: _static/differentiable_geometry_bridge.png
    :width: 95%
    :align: center

@@ -176,6 +176,55 @@ def test_parallel_scaling_artifact_checker_rejects_failed_identity_gate(tmp_path
         mod.validate_family(tmp_path, family, check_sidecars=False)
 
 
+def test_parallel_scaling_artifact_checker_rejects_tiny_problem_metadata(
+    tmp_path: Path,
+) -> None:
+    mod = _load_parallel_checker()
+    family = mod.ArtifactFamily(
+        name="tiny",
+        combined="tiny.json",
+        split=(),
+        expected_combined_kind="tiny_scaling",
+        expected_split_kind=None,
+        identity_claim_phrase="identity-only",
+        split_identity_claim_phrase=None,
+        timing_fields=("serial_median_s",),
+        error_fields=("max_abs_error",),
+        row_identity_key="identity_passed",
+        combined_has_inputs=False,
+        min_grid=(("Ny", 64), ("Nz", 32)),
+        min_steps=100,
+    )
+    (tmp_path / "tiny.json").write_text(
+        json.dumps(
+            {
+                "kind": "tiny_scaling",
+                "identity_passed": True,
+                "claim_scope": "identity-only local test",
+                "grid": {"Ny": 16, "Nz": 32},
+                "time": {"steps": 100},
+                "rows": [
+                    {
+                        "requested_devices": 1,
+                        "identity_passed": True,
+                        "serial_median_s": 1.0,
+                        "max_abs_error": 0.0,
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    (tmp_path / "tiny.csv").write_text(
+        "requested_devices,identity_passed,serial_median_s,max_abs_error\n"
+        "1,true,1.0,0.0\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="grid Ny=16 is below required 64"):
+        mod.validate_family(tmp_path, family, check_sidecars=False)
+
+
 def test_independent_ky_scaling_artifact_preserves_order_and_identity_scope() -> None:
     payload = _load_json("independent_ky_scan_scaling_large.json")
 

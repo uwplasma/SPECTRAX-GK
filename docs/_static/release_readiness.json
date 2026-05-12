@@ -1,0 +1,47 @@
+{
+  "failures": [],
+  "kind": "spectraxgk_release_readiness",
+  "passed": true,
+  "project": {
+    "name": "spectraxgk",
+    "scripts": [
+      "spectrax-gk",
+      "spectraxgk"
+    ],
+    "version": "1.5.0"
+  },
+  "required_ci_snippets": [
+    "wide-coverage-shards",
+    "coverage-wide-shard-manifest.json",
+    "--require-shard-data",
+    "codecov/codecov-action",
+    "tools/check_parallel_scaling_artifacts.py",
+    "tools/check_performance_optimization_manifest.py",
+    "tools/check_quasilinear_promotion_guardrails.py",
+    "tools/check_release_readiness.py"
+  ],
+  "required_readme_snippets": [
+    "pip install spectraxgk",
+    "spectraxgk",
+    "MIT"
+  ],
+  "required_static_artifacts": [
+    "docs/_static/runtime_memory_benchmark.png",
+    "docs/_static/validation_gate_index.json",
+    "docs/_static/validation_coverage_manifest_summary.json",
+    "docs/_static/quasilinear_promotion_guardrails.json",
+    "docs/_static/independent_ky_scan_scaling_large.json",
+    "docs/_static/quasilinear_uq_ensemble_scaling_large.json",
+    "docs/_static/nonlinear_sharding_strong_scaling_large.json"
+  ],
+  "root": "/Users/rogeriojorge/local/SPECTRAX-GK",
+  "version": {
+    "checked_pypi": false,
+    "duplicate_on_pypi": false,
+    "package": "spectraxgk",
+    "project_version": "1.5.0",
+    "require_tag": false,
+    "source_version": "1.5.0",
+    "tag": null
+  }
+}

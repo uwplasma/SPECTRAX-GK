@@ -11,6 +11,8 @@ import re
 from pathlib import Path
 from typing import Any
 
+from spectraxgk.quasilinear_window import nonlinear_window_stats_promotion_ready
+
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_REPORT_PATTERNS = (
@@ -128,7 +130,9 @@ def _line_overclaims_absolute_flux(line: str) -> bool:
     return bool(re.search(r"\b(predictor|model|claim|transport)\b", low))
 
 
-def _audit_calibration_report(path: Path, data: dict[str, Any]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+def _audit_calibration_report(
+    path: Path, data: dict[str, Any]
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     gates: list[dict[str, Any]] = []
     claim = str(data.get("claim_level", ""))
     points = data.get("points", [])
@@ -137,7 +141,13 @@ def _audit_calibration_report(path: Path, data: dict[str, Any]) -> tuple[list[di
     promoted = claim == PROMOTED_CLAIM
 
     points_are_list = isinstance(points, list)
-    gates.append(_gate("calibration_points_are_list", points_are_list, f"{_repo_relative(path)} points field"))
+    gates.append(
+        _gate(
+            "calibration_points_are_list",
+            points_are_list,
+            f"{_repo_relative(path)} points field",
+        )
+    )
     split_counts = {split: 0 for split in REQUIRED_SPLITS}
     point_failures: list[str] = []
     if points_are_list:
@@ -148,33 +158,81 @@ def _audit_calibration_report(path: Path, data: dict[str, Any]) -> tuple[list[di
             split = str(point.get("split", ""))
             if split in split_counts:
                 split_counts[split] += 1
-                missing = [field for field in REQUIRED_POINT_FIELDS if not str(point.get(field, "")).strip()]
+                missing = [
+                    field
+                    for field in REQUIRED_POINT_FIELDS
+                    if not str(point.get(field, "")).strip()
+                ]
                 if missing:
-                    point_failures.append(f"{point.get('case', idx)} missing {','.join(missing)}")
-                for field in ("predicted_heat_flux", "observed_heat_flux", "raw_predicted_heat_flux", "calibration_scale"):
+                    point_failures.append(
+                        f"{point.get('case', idx)} missing {','.join(missing)}"
+                    )
+                for field in (
+                    "predicted_heat_flux",
+                    "observed_heat_flux",
+                    "raw_predicted_heat_flux",
+                    "calibration_scale",
+                ):
                     if field in point and not _finite_number(point.get(field)):
-                        point_failures.append(f"{point.get('case', idx)} has non-finite {field}")
+                        point_failures.append(
+                            f"{point.get('case', idx)} has non-finite {field}"
+                        )
                 if not _nonnegative_finite(point.get("observed_heat_flux_std")):
-                    point_failures.append(f"{point.get('case', idx)} has missing/non-finite window std")
+                    point_failures.append(
+                        f"{point.get('case', idx)} has missing/non-finite window std"
+                    )
 
     gates.append(
         _gate(
             "train_holdout_point_metadata",
-            points_are_list and not point_failures and all(split_counts[split] > 0 for split in REQUIRED_SPLITS),
-            "; ".join(point_failures) or f"train={split_counts['train']} holdout={split_counts['holdout']}",
+            points_are_list
+            and not point_failures
+            and all(split_counts[split] > 0 for split in REQUIRED_SPLITS),
+            "; ".join(point_failures)
+            or f"train={split_counts['train']} holdout={split_counts['holdout']}",
         )
     )
 
-    has_holdout_gate = _finite_number(data.get("holdout_mean_rel_gate")) and float(data["holdout_mean_rel_gate"]) > 0.0
+    holdout_window_failures: list[str] = []
+    holdout_window_passes = 0
+    if points_are_list:
+        for idx, point in enumerate(points):
+            if not isinstance(point, dict) or str(point.get("split", "")) != "holdout":
+                continue
+            ready, failures = nonlinear_window_stats_promotion_ready(
+                point.get("nonlinear_window_stats")
+            )
+            if ready:
+                holdout_window_passes += 1
+            else:
+                label = str(point.get("case", idx))
+                holdout_window_failures.extend(
+                    f"{label}: {failure}" for failure in failures
+                )
+
+    has_holdout_gate = (
+        _finite_number(data.get("holdout_mean_rel_gate"))
+        and float(data["holdout_mean_rel_gate"]) > 0.0
+    )
     holdout_metrics = by_split.get("holdout", {}) if isinstance(by_split, dict) else {}
-    holdout_mean = holdout_metrics.get("mean_abs_relative_error") if isinstance(holdout_metrics, dict) else None
+    holdout_mean = (
+        holdout_metrics.get("mean_abs_relative_error")
+        if isinstance(holdout_metrics, dict)
+        else None
+    )
     holdout_passes = (
         has_holdout_gate
         and _finite_number(holdout_mean)
         and float(holdout_mean) <= float(data["holdout_mean_rel_gate"])
     )
     if promoted:
-        gates.append(_gate("promoted_report_passed", bool(data.get("passed", False)), "promoted reports must pass"))
+        gates.append(
+            _gate(
+                "promoted_report_passed",
+                bool(data.get("passed", False)),
+                "promoted reports must pass",
+            )
+        )
         gates.append(
             _gate(
                 "promoted_holdout_gate",
@@ -185,8 +243,21 @@ def _audit_calibration_report(path: Path, data: dict[str, Any]) -> tuple[list[di
         gates.append(
             _gate(
                 "promoted_calibration_policy_metadata",
-                isinstance(metadata, dict) and bool(metadata.get("calibration_policy") or metadata.get("heat_flux_scale_fit")),
+                isinstance(metadata, dict)
+                and bool(
+                    metadata.get("calibration_policy")
+                    or metadata.get("heat_flux_scale_fit")
+                ),
                 "promoted reports must serialize calibration policy or scale fit metadata",
+            )
+        )
+        gates.append(
+            _gate(
+                "promoted_holdout_window_convergence",
+                not holdout_window_failures
+                and holdout_window_passes == split_counts["holdout"],
+                "; ".join(holdout_window_failures)
+                or f"converged_holdout_windows={holdout_window_passes}",
             )
         )
     else:
@@ -211,19 +282,30 @@ def _audit_calibration_report(path: Path, data: dict[str, Any]) -> tuple[list[di
     return gates, summary
 
 
-def _audit_input_validation(path: Path, data: dict[str, Any]) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
+def _audit_input_validation(
+    path: Path, data: dict[str, Any]
+) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
     validation = data.get("input_validation")
     if not isinstance(validation, dict):
         return [], None
     cases = validation.get("cases", [])
     rows = cases if isinstance(cases, list) else []
-    required_rows = [row for row in rows if isinstance(row, dict) and bool(row.get("required", False))]
-    failed = [str(row.get("case", "unknown")) for row in required_rows if not bool(row.get("passed", False))]
+    required_rows = [
+        row
+        for row in rows
+        if isinstance(row, dict) and bool(row.get("required", False))
+    ]
+    failed = [
+        str(row.get("case", "unknown"))
+        for row in required_rows
+        if not bool(row.get("passed", False))
+    ]
     gates = [
         _gate(
             "input_validation_passed",
             bool(validation.get("passed", False)) and not failed,
-            "; ".join(failed) or f"{len(required_rows)} required nonlinear summaries passed",
+            "; ".join(failed)
+            or f"{len(required_rows)} required nonlinear summaries passed",
         )
     ]
     return gates, {
@@ -234,7 +316,9 @@ def _audit_input_validation(path: Path, data: dict[str, Any]) -> tuple[list[dict
     }
 
 
-def _audit_promotion_gate(path: Path, data: dict[str, Any]) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
+def _audit_promotion_gate(
+    path: Path, data: dict[str, Any]
+) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
     promotion = data.get("promotion_gate")
     if not isinstance(promotion, dict):
         return [], None
@@ -244,7 +328,8 @@ def _audit_promotion_gate(path: Path, data: dict[str, Any]) -> tuple[list[dict[s
     gates = [
         _gate(
             "non_absolute_promotion_scope",
-            claim == PROMOTED_CLAIM or _has_scope_marker(text, SCOPED_NON_ABSOLUTE_MARKERS),
+            claim == PROMOTED_CLAIM
+            or _has_scope_marker(text, SCOPED_NON_ABSOLUTE_MARKERS),
             f"claim_level={claim}",
         )
     ]
@@ -261,7 +346,9 @@ def _audit_promotion_gate(path: Path, data: dict[str, Any]) -> tuple[list[dict[s
         "kind": data.get("kind"),
         "claim_level": claim,
         "promotion_gate_passed": bool(promotion.get("passed", False)),
-        "accepted": promotion.get("accepted_candidates", promotion.get("accepted_rules", [])),
+        "accepted": promotion.get(
+            "accepted_candidates", promotion.get("accepted_rules", [])
+        ),
         "blockers": promotion.get("blockers", []),
     }
 
@@ -282,14 +369,17 @@ def _audit_docs(paths: list[Path]) -> tuple[list[dict[str, Any]], list[dict[str,
             _gate(
                 f"doc_scope_marker:{_repo_relative(path)}",
                 scope_present,
-                "contains explicit non-promotion wording" if scope_present else "missing absolute-flux non-promotion wording",
+                "contains explicit non-promotion wording"
+                if scope_present
+                else "missing absolute-flux non-promotion wording",
             )
         )
         gates.append(
             _gate(
                 f"doc_no_absolute_flux_overclaim:{_repo_relative(path)}",
                 not overclaim_lines,
-                "; ".join(overclaim_lines[:3]) or "no positive absolute-flux predictor wording found",
+                "; ".join(overclaim_lines[:3])
+                or "no positive absolute-flux predictor wording found",
             )
         )
         rows.append(
@@ -302,7 +392,9 @@ def _audit_docs(paths: list[Path]) -> tuple[list[dict[str, Any]], list[dict[str,
     return gates, rows
 
 
-def build_guardrail_audit(report_patterns: list[str], doc_paths: list[str | Path]) -> dict[str, Any]:
+def build_guardrail_audit(
+    report_patterns: list[str], doc_paths: list[str | Path]
+) -> dict[str, Any]:
     report_paths = _expand_patterns(report_patterns)
     gates: list[dict[str, Any]] = []
     report_rows: list[dict[str, Any]] = []
@@ -362,8 +454,20 @@ def build_guardrail_audit(report_patterns: list[str], doc_paths: list[str | Path
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--report", action="append", dest="reports", default=None, help="Report JSON path or glob.")
-    parser.add_argument("--doc", action="append", dest="docs", default=None, help="Documentation file to scope-check.")
+    parser.add_argument(
+        "--report",
+        action="append",
+        dest="reports",
+        default=None,
+        help="Report JSON path or glob.",
+    )
+    parser.add_argument(
+        "--doc",
+        action="append",
+        dest="docs",
+        default=None,
+        help="Documentation file to scope-check.",
+    )
     parser.add_argument("--out-json", type=Path, default=DEFAULT_OUT)
     return parser
 
@@ -375,7 +479,10 @@ def main(argv: list[str] | None = None) -> int:
         args.docs or [str(path) for path in DEFAULT_DOCS],
     )
     args.out_json.parent.mkdir(parents=True, exist_ok=True)
-    args.out_json.write_text(json.dumps(payload, indent=2, sort_keys=True, allow_nan=False) + "\n", encoding="utf-8")
+    args.out_json.write_text(
+        json.dumps(payload, indent=2, sort_keys=True, allow_nan=False) + "\n",
+        encoding="utf-8",
+    )
     print(f"Wrote {args.out_json}")
     print(
         "quasilinear_promotion_guardrails_passed={passed} failed_gates={n_failed}".format(

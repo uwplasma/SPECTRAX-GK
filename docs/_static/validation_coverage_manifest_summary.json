@@ -3,8 +3,10 @@
     "spectraxgk.runtime",
     "spectraxgk.linear",
     "spectraxgk.nonlinear",
+    "spectraxgk.nonlinear_helpers",
     "spectraxgk.quasilinear",
     "spectraxgk.quasilinear_calibration",
+    "spectraxgk.quasilinear_window",
     "spectraxgk.benchmarks",
     "spectraxgk.diagnostics",
     "spectraxgk.validation_gates",
@@ -16,8 +18,8 @@
     "spectraxgk.solver_objective_gradients",
     "spectraxgk.parallel"
   ],
-  "n_high_priority_open": 15,
-  "n_modules": 26,
+  "n_high_priority_open": 17,
+  "n_modules": 30,
   "package_coverage_target_percent": 95.0,
   "rows": [
     {
@@ -44,6 +46,19 @@
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/runtime_policies.py",
+      "status": "active"
+    },
+    {
+      "coverage_priority": "medium",
+      "coverage_target_percent": 95.0,
+      "module": "spectraxgk.runtime_orchestration",
+      "n_artifacts": 2,
+      "n_fast_tests": 2,
+      "n_next_tests": 2,
+      "n_numerics_contracts": 2,
+      "n_physics_contracts": 2,
+      "n_reference_anchors": 2,
+      "path": "src/spectraxgk/runtime_orchestration.py",
       "status": "active"
     },
     {
@@ -153,6 +168,19 @@
     {
       "coverage_priority": "high",
       "coverage_target_percent": 95.0,
+      "module": "spectraxgk.nonlinear_helpers",
+      "n_artifacts": 2,
+      "n_fast_tests": 2,
+      "n_next_tests": 2,
+      "n_numerics_contracts": 2,
+      "n_physics_contracts": 2,
+      "n_reference_anchors": 2,
+      "path": "src/spectraxgk/nonlinear_helpers.py",
+      "status": "active"
+    },
+    {
+      "coverage_priority": "high",
+      "coverage_target_percent": 95.0,
       "module": "spectraxgk.quasilinear",
       "n_artifacts": 7,
       "n_fast_tests": 7,
@@ -168,12 +196,25 @@
       "coverage_target_percent": 95.0,
       "module": "spectraxgk.quasilinear_calibration",
       "n_artifacts": 15,
-      "n_fast_tests": 6,
+      "n_fast_tests": 8,
       "n_next_tests": 2,
       "n_numerics_contracts": 3,
       "n_physics_contracts": 3,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/quasilinear_calibration.py",
+      "status": "active"
+    },
+    {
+      "coverage_priority": "high",
+      "coverage_target_percent": 95.0,
+      "module": "spectraxgk.quasilinear_window",
+      "n_artifacts": 1,
+      "n_fast_tests": 3,
+      "n_next_tests": 2,
+      "n_numerics_contracts": 2,
+      "n_physics_contracts": 2,
+      "n_reference_anchors": 2,
+      "path": "src/spectraxgk/quasilinear_window.py",
       "status": "active"
     },
     {
@@ -200,6 +241,19 @@
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/benchmark_helpers.py",
+      "status": "active"
+    },
+    {
+      "coverage_priority": "medium",
+      "coverage_target_percent": 95.0,
+      "module": "spectraxgk.benchmark_scan",
+      "n_artifacts": 2,
+      "n_fast_tests": 2,
+      "n_next_tests": 2,
+      "n_numerics_contracts": 2,
+      "n_physics_contracts": 2,
+      "n_reference_anchors": 2,
+      "path": "src/spectraxgk/benchmark_scan.py",
       "status": "active"
     },
     {

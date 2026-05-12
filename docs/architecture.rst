@@ -16,10 +16,13 @@ Core modules
 - ``spectraxgk.linear_parallel``: gated velocity-parallel linear RHS helpers and disabled-by-default parallel dispatcher.
 - ``spectraxgk.nonlinear``: nonlinear runtime integrators and cached IMEX paths.
 - ``spectraxgk.nonlinear_diagnostics``: sampling and resolved-diagnostic packing helpers used by nonlinear integrators.
+- ``spectraxgk.nonlinear_helpers``: Hermitian/fixed-mode projectors, GX omega masks, collision-split policies, and reusable nonlinear IMEX operator construction.
 - ``spectraxgk.runtime`` / ``spectraxgk.runtime_config``: user-facing runtime entrypoints and configuration schema.
 - ``spectraxgk.runtime_policies``: pure runtime selection policies for solver names, scan modes, nonlinear monitored modes, external fields, and step-count inference.
+- ``spectraxgk.runtime_orchestration``: runtime progress/ETA formatting, combined-ky scan batching, and nonlinear restart/checkpoint artifact handoff behind injectable compatibility seams.
 - ``spectraxgk.benchmark_defaults``: normalization constants and Krylov policies for shipped benchmark lanes.
 - ``spectraxgk.benchmark_helpers``: reference data loaders, result containers, and pure benchmark policies.
+- ``spectraxgk.benchmark_scan``: shared scan-window, batching, and fit-signal policies used by benchmark runners.
 - ``spectraxgk.benchmarks``: public benchmark runners and compatibility import surface.
 - ``spectraxgk.plotting``: reusable, publication-ready plotting utilities.
 
