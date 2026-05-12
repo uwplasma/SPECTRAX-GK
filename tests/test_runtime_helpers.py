@@ -149,6 +149,60 @@ def test_runtime_policy_helpers_preserve_legacy_runtime_exports() -> None:
         assert getattr(runtime, name) is getattr(runtime_policies, name)
 
 
+def test_runtime_independent_parallel_plan_resolves_config_and_arguments() -> None:
+    cfg = replace(
+        _base_cfg(),
+        parallel=RuntimeParallelConfig(
+            strategy="batch", axis="ky", num_devices=4, backend="process"
+        ),
+    )
+
+    plan = runtime_policies._runtime_independent_parallel_plan(
+        cfg, problem_size=3, workers=1, executor="thread"
+    )
+
+    assert plan.requested_workers == 4
+    assert plan.effective_workers == 3
+    assert plan.executor == "process"
+    assert plan.source == "runtime_config"
+    assert plan.enabled is True
+    assert plan.to_dict()["enabled"] is True
+
+    explicit = runtime_policies._runtime_independent_parallel_plan(
+        cfg, problem_size=3, workers=2, executor="threads"
+    )
+
+    assert explicit.requested_workers == 2
+    assert explicit.executor == "thread"
+    assert explicit.source == "arguments"
+
+
+def test_runtime_independent_parallel_plan_rejects_invalid_policy() -> None:
+    cfg_bad_backend = replace(
+        _base_cfg(),
+        parallel=RuntimeParallelConfig(
+            strategy="batch", axis="ky", num_devices=2, backend="mpi"
+        ),
+    )
+    cfg_bad_axis = replace(
+        _base_cfg(),
+        parallel=RuntimeParallelConfig(strategy="batch", axis="kx", num_devices=2),
+    )
+
+    with pytest.raises(ValueError, match="workers"):
+        runtime_policies._runtime_independent_parallel_plan(
+            _base_cfg(), problem_size=1, workers=0, executor="thread"
+        )
+    with pytest.raises(ValueError, match="backend"):
+        runtime_policies._runtime_independent_parallel_plan(
+            cfg_bad_backend, problem_size=2, workers=1, executor="thread"
+        )
+    with pytest.raises(ValueError, match="axis='ky'"):
+        runtime_policies._runtime_independent_parallel_plan(
+            cfg_bad_axis, problem_size=2, workers=1, executor="thread"
+        )
+
+
 def test_runtime_orchestration_progress_policy() -> None:
     message, snapshot = build_runtime_progress_message(
         label="nonlinear",
