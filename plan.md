@@ -322,6 +322,10 @@ and benchmark behavior.
    - Move geometry cache construction, linked parallel derivative maps,
      field solves, velocity operators, and branch/frequency extraction into
      tested submodules.
+   - Current status: geometry-dependent `LinearCache` construction,
+     gyroaverage tables, moment-space cache arrays, and collision/
+     hypercollision damping factors live in `src/spectraxgk/linear_cache.py`,
+     with legacy exports preserved through `src/spectraxgk/linear.py`.
    - Current status: parameter pytrees, linear term toggles, term-config
      conversion, validation helpers, and implicit-preconditioner policy live in
      `src/spectraxgk/linear_params.py`, with legacy exports preserved through
@@ -4357,4 +4361,31 @@ Exit gate:
   - `python -m pytest tests/test_linear.py tests/test_linear_krylov_core.py tests/test_terms_assembly.py -q -m 'not slow' --override-ini='addopts=' --maxfail=1`
     passed with 81 tests;
   - `mypy src/spectraxgk/linear.py src/spectraxgk/linear_params.py` passed;
+  - strict Sphinx docs build passed.
+
+## 2026-05-12 Linear Cache Refactor Tranche
+
+- Split `LinearCache`, `build_linear_cache`, cache-array builders, gyroaverage
+  cache construction, and collision/hypercollision damping assembly from
+  `src/spectraxgk/linear.py` into `src/spectraxgk/linear_cache.py`.
+- Preserved the existing public and legacy private import surface through
+  `spectraxgk.linear`, with identity tests over `linear_cache.__all__`.
+- This tranche does not change field solves, RHS terms, integrator algorithms,
+  or benchmark physics. The only code-path change inside the moved cache
+  builder is replacing a local call to `linear.shift_axis` with an equivalent
+  private cache-local shift helper, avoiding a circular import.
+- Updated API docs, architecture docs, and the validation coverage manifest so
+  the extracted module has explicit physics/numerics contracts and fast-test
+  ownership.
+- Verification for this tranche:
+  - `ruff check src/spectraxgk/linear.py src/spectraxgk/linear_cache.py tests/test_linear_helpers_extra.py docs/conf.py`
+    passed;
+  - `python -m pytest tests/test_linear_helpers_extra.py tests/test_linear.py::test_linear_cache_tree_roundtrip tests/test_linear.py::test_build_linear_cache_multispecies tests/test_linear.py::test_build_linear_cache_accepts_sampled_geometry_contract tests/test_validation_coverage_manifest.py -q`
+    passed;
+  - `python -m pytest tests/test_linear.py tests/test_linear_krylov_core.py tests/test_terms_assembly.py -q -m 'not slow' --override-ini='addopts=' --maxfail=1`
+    passed with 81 tests;
+  - `python -m pytest tests/test_geometry.py::test_build_linear_cache_uses_linked_streaming_for_fix_aspect_imported_geometry tests/test_geometry.py::test_sampled_flux_tube_geometry_matches_salpha_profiles tests/test_geometry.py::test_ensure_flux_tube_geometry_data_reuses_sampled_input -q`
+    passed;
+  - `mypy src/spectraxgk/linear.py src/spectraxgk/linear_cache.py` passed;
+  - `python tools/check_validation_coverage_manifest.py --skip-artifact-check` passed;
   - strict Sphinx docs build passed.

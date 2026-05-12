@@ -103,8 +103,41 @@ artifact_paths = [
   "docs/_static/w7x_eigenfunction_reference_overlay_ky0p3000.png",
 ]
 next_tests = [
-  "extract linear cache/diagnostic helpers and preserve public imports",
+  "extract field-solve and diagnostic helpers and preserve public imports",
   "replace remaining convergence pilots with monotone velocity-space sweeps",
+]
+
+[[modules]]
+module = "spectraxgk.linear_cache"
+path = "src/spectraxgk/linear_cache.py"
+owner_lane = "linear geometry cache construction and damping factors"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "Hermite-Laguerre gyroaverage and polarization cache contracts",
+  "linked-boundary and nonlinear-dealias cache construction used by linear and nonlinear parity lanes",
+]
+physics_contracts = [
+  "cached gyroaverages, drifts, magnetic geometry, and damping factors preserve the operator seen by RHS kernels",
+  "species-dependent collision and hypercollision factors keep the intended multi-species broadcast semantics",
+]
+numerics_contracts = [
+  "LinearCache remains a stable JAX pytree with deterministic flatten/unflatten ordering",
+  "cache builders preserve dtype policy, linked-boundary metadata, dealias masks, and moment-space array shapes",
+]
+fast_tests = [
+  "tests/test_linear.py",
+  "tests/test_linear_helpers_extra.py",
+  "tests/test_geometry.py",
+]
+artifact_paths = [
+  "docs/_static/cyclone_resolution_observed_order.json",
+  "docs/_static/w7x_eigenfunction_reference_overlay_ky0p3000.png",
+]
+next_tests = [
+  "add direct cache-construction fixtures for sampled geometry, linked geometry, and multispecies damping paths",
+  "keep spectraxgk.linear cache exports object-identical until the next major API cleanup",
 ]
 
 [[modules]]

@@ -50,6 +50,13 @@ Linear Linked Boundaries
    :members:
    :private-members:
 
+Linear Cache
+------------
+
+.. automodule:: spectraxgk.linear_cache
+   :members:
+   :private-members:
+
 Linear Parameters
 -----------------
 
