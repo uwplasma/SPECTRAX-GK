@@ -26,7 +26,8 @@ from spectraxgk.config import GridConfig
 from spectraxgk.geometry import SAlphaGeometry, apply_gx_geometry_grid_defaults
 from spectraxgk.grids import build_spectral_grid, select_ky_grid
 from spectraxgk.io import load_runtime_from_toml
-from spectraxgk.linear import LinearParams, build_linear_cache
+from spectraxgk.linear import LinearParams, LinearTerms, build_linear_cache
+from spectraxgk.linear_krylov import dominant_eigenpair
 from spectraxgk.runtime import (
     _build_initial_condition,
     _select_nonlinear_mode_indices,
@@ -117,6 +118,17 @@ def _parse_args() -> argparse.Namespace:
             "0 disables the scorecard."
         ),
     )
+    parser.add_argument(
+        "--krylov-scorecard-max-size",
+        type=int,
+        default=128,
+        help=(
+            "Build a tiny mapped-RHS Krylov scorecard up to this vector size; "
+            "0 disables the scorecard."
+        ),
+    )
+    parser.add_argument("--krylov-scorecard-dim", type=int, default=24)
+    parser.add_argument("--krylov-scorecard-restarts", type=int, default=1)
     parser.add_argument("--identity-tolerance", type=float, default=1.0e-10)
     parser.add_argument("--out-json", type=Path, default=Path("docs/_static/mapped_velocity_rhs_readiness.json"))
     parser.add_argument("--out-csv", type=Path, default=Path("docs/_static/mapped_velocity_rhs_readiness.csv"))
@@ -438,6 +450,193 @@ def _build_tiny_eigen_scorecard(
     }
 
 
+def _tiny_eigen_case() -> tuple[
+    jnp.ndarray,
+    Any,
+    LinearParams,
+    TermConfig,
+    LinearTerms,
+]:
+    nl, nm = 2, 3
+    grid_full = build_spectral_grid(GridConfig(Nx=1, Ny=4, Nz=4, Lx=6.28, Ly=6.28))
+    grid = select_ky_grid(grid_full, 1)
+    geom = SAlphaGeometry(q=1.4, s_hat=0.8, epsilon=0.18, R0=2.77778, drift_scale=1.0)
+    params = LinearParams(
+        R_over_Ln=0.8,
+        R_over_LTi=2.49,
+        R_over_LTe=0.0,
+        omega_d_scale=1.0,
+        omega_star_scale=1.0,
+        rho_star=1.0,
+        kpar_scale=float(geom.gradpar()),
+        nu=0.0,
+    )
+    terms = LinearTerms(
+        streaming=1.0,
+        mirror=0.0,
+        curvature=1.0,
+        gradb=1.0,
+        diamagnetic=0.0,
+        collisions=0.0,
+        hypercollisions=0.0,
+        hyperdiffusion=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+    )
+    term_cfg = TermConfig(
+        streaming=terms.streaming,
+        mirror=terms.mirror,
+        curvature=terms.curvature,
+        gradb=terms.gradb,
+        diamagnetic=terms.diamagnetic,
+        collisions=terms.collisions,
+        hypercollisions=terms.hypercollisions,
+        hyperdiffusion=terms.hyperdiffusion,
+        end_damping=terms.end_damping,
+        apar=terms.apar,
+        bpar=terms.bpar,
+    )
+    template = jnp.zeros((nl, nm, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64)
+    cache = build_linear_cache(grid, geom, params, nl, nm)
+    return template, cache, params, term_cfg, terms
+
+
+def _nearest_eigen_abs_error(eig: complex, matrix: np.ndarray) -> float:
+    eigvals = np.linalg.eigvals(np.asarray(matrix))
+    return float(np.min(np.abs(eigvals - eig)))
+
+
+def _operator_residual_rel(matrix: np.ndarray, eig: complex, vec: np.ndarray) -> float:
+    flat = np.asarray(vec).reshape(-1)
+    mat = np.asarray(matrix)
+    residual = mat @ flat - complex(eig) * flat
+    denominator = (float(np.linalg.norm(mat, ord=2)) + abs(complex(eig))) * float(np.linalg.norm(flat))
+    if denominator == 0.0:
+        return 0.0 if float(np.linalg.norm(residual)) == 0.0 else math.inf
+    return float(np.linalg.norm(residual) / denominator)
+
+
+def _build_tiny_krylov_scorecard(
+    map_specs: list[tuple[str, VelocityMapConfig]],
+    *,
+    max_size: int,
+    identity_tolerance: float,
+    krylov_dim: int,
+    restarts: int,
+) -> dict[str, Any] | None:
+    """Exercise the mapped RHS through the actual Krylov eigen-solver path."""
+
+    template, cache, params, term_cfg, terms = _tiny_eigen_case()
+    if int(max_size) <= 0 or int(template.size) > int(max_size):
+        return None
+
+    rng = np.random.default_rng(12345)
+    v0_np = rng.normal(size=template.shape) + 1j * rng.normal(size=template.shape)
+    v0 = jnp.asarray(v0_np, dtype=template.dtype)
+    krylov_dim_use = min(max(int(krylov_dim), 1), int(template.size))
+    restarts_use = max(int(restarts), 1)
+
+    rows: list[dict[str, Any]] = []
+    baseline_row: dict[str, Any] | None = None
+    for label, map_cfg in _dedupe_scorecard_maps(map_specs):
+        params_use = params if map_cfg is None else replace(params, velocity_map=map_cfg)
+
+        def _rhs(state_arg: jnp.ndarray, map_cfg=map_cfg) -> tuple[jnp.ndarray, Any]:
+            return assemble_rhs_cached(
+                state_arg,
+                cache,
+                params,
+                terms=term_cfg,
+                use_custom_vjp=False,
+                velocity_map=map_cfg,
+                force_electrostatic_fields=True,
+            )
+
+        matrix = _dense_operator_matrix(_rhs, template, max_size=max_size)
+        if matrix is None:  # pragma: no cover - guarded by the template size check above.
+            return None
+        matrix_np = np.asarray(matrix)
+        eig, vec = dominant_eigenpair(
+            v0,
+            cache,
+            params_use,
+            terms=terms,
+            method="arnoldi",
+            krylov_dim=krylov_dim_use,
+            restarts=restarts_use,
+            omega_min_factor=-1.0e6,
+            omega_cap_factor=1.0e6,
+        )
+        eig_complex = complex(np.asarray(eig))
+        vec_np = np.asarray(vec)
+        row = {
+            "map_label": label,
+            "matrix_size": int(template.size),
+            "krylov_dim": int(krylov_dim_use),
+            "restarts": int(restarts_use),
+            "krylov_gamma": float(eig_complex.real),
+            "krylov_omega": float(-eig_complex.imag),
+            "nearest_dense_eigen_abs_error": _nearest_eigen_abs_error(eig_complex, matrix_np),
+            "operator_residual_rel": _operator_residual_rel(matrix_np, eig_complex, vec_np),
+            "vector_norm": float(np.linalg.norm(vec_np.reshape(-1))),
+        }
+        if label == "unmapped":
+            baseline_row = row
+            row["krylov_eigen_abs_error_vs_unmapped"] = 0.0
+        elif baseline_row is not None:
+            baseline_eig = complex(
+                float(baseline_row["krylov_gamma"]),
+                -float(baseline_row["krylov_omega"]),
+            )
+            row["krylov_eigen_abs_error_vs_unmapped"] = abs(eig_complex - baseline_eig)
+        else:
+            row["krylov_eigen_abs_error_vs_unmapped"] = None
+        rows.append(row)
+
+    identity_rows = [row for row in rows if row["map_label"] == "identity"]
+    residuals = [float(row["operator_residual_rel"]) for row in rows]
+    nearest_errors = [float(row["nearest_dense_eigen_abs_error"]) for row in rows]
+    identity_errors = [
+        float(row["krylov_eigen_abs_error_vs_unmapped"])
+        for row in identity_rows
+        if row.get("krylov_eigen_abs_error_vs_unmapped") is not None
+    ]
+    return {
+        "kind": "mapped_velocity_rhs_tiny_krylov_scorecard",
+        "matrix_source": "spectraxgk.terms.assembly.assemble_rhs_cached",
+        "krylov_source": "spectraxgk.linear_krylov.dominant_eigenpair",
+        "matrix_size": int(template.size),
+        "max_size": int(max_size),
+        "identity_tolerance": float(identity_tolerance),
+        "krylov_dim": int(krylov_dim_use),
+        "restarts": int(restarts_use),
+        "max_operator_residual_rel": max(residuals, default=None),
+        "max_nearest_dense_eigen_abs_error": max(nearest_errors, default=None),
+        "max_identity_krylov_eigen_abs_error": max(identity_errors, default=None),
+        "readiness": {
+            "all_krylov_metrics_finite": all(
+                math.isfinite(float(row["krylov_gamma"]))
+                and math.isfinite(float(row["krylov_omega"]))
+                and math.isfinite(float(row["nearest_dense_eigen_abs_error"]))
+                and math.isfinite(float(row["operator_residual_rel"]))
+                for row in rows
+            ),
+            "all_krylov_eigenvalues_close_to_dense": all(value <= 1.0e-4 for value in nearest_errors),
+            "identity_krylov_matches_unmapped": bool(identity_errors)
+            and max(identity_errors) <= float(identity_tolerance),
+        },
+        "rows": rows,
+        "claim_scope": (
+            "Tiny actual mapped-RHS Krylov scorecard using the same LinearParams.velocity_map path "
+            "used by runtime Krylov solves. Eigenvalues are compared against the nearest dense eigenvalue "
+            "of the materialized compact operator; returned-vector residuals are recorded as diagnostics "
+            "but are not used as an eigenfunction claim. This is an eigen-solver plumbing gate, not a "
+            "production-size spectrum."
+        ),
+    }
+
+
 def _map_regularization_floats(cfg: VelocityMapConfig) -> dict[str, float]:
     reg = map_regularization(cfg)
     return {key: float(np.asarray(value)) for key, value in reg.items()}
@@ -482,6 +681,7 @@ def _build_summary(
     identity_tolerance: float,
     dense_eigen_max_size: int,
     eigen_scorecard: dict[str, Any] | None,
+    krylov_scorecard: dict[str, Any] | None,
 ) -> dict[str, Any]:
     identity_rows = [row for row in rows if row["map_label"] == "identity"]
     mapped_rows = [row for row in rows if row["map_label"] != "unmapped"]
@@ -507,6 +707,15 @@ def _build_summary(
         eigen_identity_pass = bool(
             eigen_scorecard["readiness"]["identity_dense_operator_matches_unmapped"]
         )
+    krylov_identity_pass = None
+    krylov_eigen_pass = None
+    if krylov_scorecard is not None:
+        krylov_identity_pass = bool(
+            krylov_scorecard["readiness"]["identity_krylov_matches_unmapped"]
+        )
+        krylov_eigen_pass = bool(
+            krylov_scorecard["readiness"]["all_krylov_eigenvalues_close_to_dense"]
+        )
     return {
         "kind": "mapped_velocity_rhs_readiness",
         "case": Path(config).stem,
@@ -526,6 +735,7 @@ def _build_summary(
         "max_mapped_warm_over_unmapped": max(ratios, default=None),
         "resolution_sensitivity": _resolution_sensitivity(rows),
         "eigen_scorecard": eigen_scorecard,
+        "krylov_scorecard": krylov_scorecard,
         "readiness": {
             "identity_map_matches_unmapped": bool(identity_pass),
             "all_proxy_metrics_finite": all(
@@ -534,14 +744,20 @@ def _build_summary(
             ),
             "tiny_dense_eigen_scorecard_available": eigen_scorecard is not None,
             "identity_dense_operator_matches_unmapped": eigen_identity_pass,
+            "tiny_krylov_scorecard_available": krylov_scorecard is not None,
+            "identity_krylov_matches_unmapped": krylov_identity_pass,
+            "all_krylov_eigenvalues_close_to_dense": krylov_eigen_pass,
         },
         "rows": rows,
         "claim_scope": (
             "Mapped velocity-basis readiness for cached linear RHS assembly. Timings are single-state "
             "JAX warm-call measurements; gamma/omega values are Rayleigh-quotient proxies unless dense "
             "eigen fields are populated. The eigen_scorecard field adds a tiny actual assembled-RHS dense "
-            "operator check for mapped identity consistency. Nonlinear real-space mapped-basis support is "
-            "not asserted here, and any input nonlinear term is forced off for this benchmark."
+            "operator check for mapped identity consistency. The krylov_scorecard field additionally runs "
+            "the mapped operator through the production Krylov eigen wrapper on the same compact grid and "
+            "compares Krylov eigenvalues with the nearest dense eigenvalues; returned-vector residuals are "
+            "recorded as diagnostics rather than eigenfunction evidence. Nonlinear real-space mapped-basis "
+            "support is not asserted here, and any input nonlinear term is forced off for this benchmark."
         ),
     }
 
@@ -786,6 +1002,13 @@ def main() -> None:
         max_size=int(args.eigen_scorecard_max_size),
         identity_tolerance=float(args.identity_tolerance),
     )
+    krylov_scorecard = _build_tiny_krylov_scorecard(
+        map_specs,
+        max_size=int(args.krylov_scorecard_max_size),
+        identity_tolerance=float(args.identity_tolerance),
+        krylov_dim=int(args.krylov_scorecard_dim),
+        restarts=int(args.krylov_scorecard_restarts),
+    )
     summary = _build_summary(
         rows,
         config=str(args.config),
@@ -797,6 +1020,7 @@ def main() -> None:
         identity_tolerance=float(args.identity_tolerance),
         dense_eigen_max_size=int(args.dense_eigen_max_size),
         eigen_scorecard=eigen_scorecard,
+        krylov_scorecard=krylov_scorecard,
     )
     _write_json(args.out_json, summary)
     _write_csv(args.out_csv, rows)

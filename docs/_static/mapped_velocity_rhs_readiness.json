@@ -1,7 +1,7 @@
 {
   "backend": "cpu",
   "case": "runtime_cyclone_nonlinear_miller",
-  "claim_scope": "Mapped velocity-basis readiness for cached linear RHS assembly. Timings are single-state JAX warm-call measurements; gamma/omega values are Rayleigh-quotient proxies unless dense eigen fields are populated. The eigen_scorecard field adds a tiny actual assembled-RHS dense operator check for mapped identity consistency. Nonlinear real-space mapped-basis support is not asserted here, and any input nonlinear term is forced off for this benchmark.",
+  "claim_scope": "Mapped velocity-basis readiness for cached linear RHS assembly. Timings are single-state JAX warm-call measurements; gamma/omega values are Rayleigh-quotient proxies unless dense eigen fields are populated. The eigen_scorecard field adds a tiny actual assembled-RHS dense operator check for mapped identity consistency. The krylov_scorecard field additionally runs the mapped operator through the production Krylov eigen wrapper on the same compact grid and compares Krylov eigenvalues with the nearest dense eigenvalues; returned-vector residuals are recorded as diagnostics rather than eigenfunction evidence. Nonlinear real-space mapped-basis support is not asserted here, and any input nonlinear term is forced off for this benchmark.",
   "config": "examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml",
   "dense_eigen_max_size": 0,
   "eigen_scorecard": {
@@ -88,17 +88,101 @@
   },
   "identity_tolerance": 1e-10,
   "kind": "mapped_velocity_rhs_readiness",
+  "krylov_scorecard": {
+    "claim_scope": "Tiny actual mapped-RHS Krylov scorecard using the same LinearParams.velocity_map path used by runtime Krylov solves. Eigenvalues are compared against the nearest dense eigenvalue of the materialized compact operator; returned-vector residuals are recorded as diagnostics but are not used as an eigenfunction claim. This is an eigen-solver plumbing gate, not a production-size spectrum.",
+    "identity_tolerance": 1e-10,
+    "kind": "mapped_velocity_rhs_tiny_krylov_scorecard",
+    "krylov_dim": 24,
+    "krylov_source": "spectraxgk.linear_krylov.dominant_eigenpair",
+    "matrix_size": 24,
+    "matrix_source": "spectraxgk.terms.assembly.assemble_rhs_cached",
+    "max_identity_krylov_eigen_abs_error": 0.0,
+    "max_nearest_dense_eigen_abs_error": 5.654430424328893e-06,
+    "max_operator_residual_rel": 0.8218187093734741,
+    "max_size": 128,
+    "readiness": {
+      "all_krylov_eigenvalues_close_to_dense": true,
+      "all_krylov_metrics_finite": true,
+      "identity_krylov_matches_unmapped": true
+    },
+    "restarts": 1,
+    "rows": [
+      {
+        "krylov_dim": 24,
+        "krylov_eigen_abs_error_vs_unmapped": 0.0,
+        "krylov_gamma": 9.371537998958956e-07,
+        "krylov_omega": -1.3187828063964844,
+        "map_label": "unmapped",
+        "matrix_size": 24,
+        "nearest_dense_eigen_abs_error": 1.611760126252193e-06,
+        "operator_residual_rel": 0.663899838924408,
+        "restarts": 1,
+        "vector_norm": 1.0
+      },
+      {
+        "krylov_dim": 24,
+        "krylov_eigen_abs_error_vs_unmapped": 0.0,
+        "krylov_gamma": 9.371537998958956e-07,
+        "krylov_omega": -1.3187828063964844,
+        "map_label": "identity",
+        "matrix_size": 24,
+        "nearest_dense_eigen_abs_error": 1.611760126252193e-06,
+        "operator_residual_rel": 0.663899838924408,
+        "restarts": 1,
+        "vector_norm": 1.0
+      },
+      {
+        "krylov_dim": 24,
+        "krylov_eigen_abs_error_vs_unmapped": 5.471676349639957,
+        "krylov_gamma": 1.778329533408396e-06,
+        "krylov_omega": 4.152893543243408,
+        "map_label": "parallel_shift",
+        "matrix_size": 24,
+        "nearest_dense_eigen_abs_error": 2.974356902996078e-06,
+        "operator_residual_rel": 0.7852246761322021,
+        "restarts": 1,
+        "vector_norm": 1.0000001192092896
+      },
+      {
+        "krylov_dim": 24,
+        "krylov_eigen_abs_error_vs_unmapped": 0.16112029552467588,
+        "krylov_gamma": 7.778896247145894e-07,
+        "krylov_omega": -1.1576625108718872,
+        "map_label": "parallel_scale",
+        "matrix_size": 24,
+        "nearest_dense_eigen_abs_error": 8.136066185215896e-07,
+        "operator_residual_rel": 0.6694802641868591,
+        "restarts": 1,
+        "vector_norm": 1.0
+      },
+      {
+        "krylov_dim": 24,
+        "krylov_eigen_abs_error_vs_unmapped": 5.493868350983068,
+        "krylov_gamma": 3.0389492167159915e-06,
+        "krylov_omega": 4.175085544586182,
+        "map_label": "perp_scale",
+        "matrix_size": 24,
+        "nearest_dense_eigen_abs_error": 5.654430424328893e-06,
+        "operator_residual_rel": 0.8218187093734741,
+        "restarts": 1,
+        "vector_norm": 1.0
+      }
+    ]
+  },
   "max_identity_gamma_proxy_abs_error": 0.0,
   "max_identity_omega_proxy_abs_error": 0.0,
   "max_identity_rhs_rel_error": 0.0,
-  "max_mapped_warm_over_unmapped": 1.1426918814959794,
+  "max_mapped_warm_over_unmapped": 1.1355034324826165,
   "nonlinear_input_weight": 1.0,
   "nonlinear_terms_forced_linear": true,
   "readiness": {
+    "all_krylov_eigenvalues_close_to_dense": true,
     "all_proxy_metrics_finite": true,
     "identity_dense_operator_matches_unmapped": true,
+    "identity_krylov_matches_unmapped": true,
     "identity_map_matches_unmapped": true,
-    "tiny_dense_eigen_scorecard_available": true
+    "tiny_dense_eigen_scorecard_available": true,
+    "tiny_krylov_scorecard_available": true
   },
   "repeats": 2,
   "resolution_sensitivity": [
@@ -110,7 +194,7 @@
       "gamma_proxy_abs_delta": 0.00016175583004951477,
       "map_label": "identity",
       "omega_proxy_abs_delta": 2.9103830456733704e-11,
-      "warm_seconds_delta": -0.02368197892792523
+      "warm_seconds_delta": -0.024678562534973025
     },
     {
       "coarse_Nl": 4,
@@ -120,7 +204,7 @@
       "gamma_proxy_abs_delta": 0.00016175583004951477,
       "map_label": "parallel_scale",
       "omega_proxy_abs_delta": 5.820766091346741e-11,
-      "warm_seconds_delta": -0.014543333556503057
+      "warm_seconds_delta": -0.027681562467478216
     },
     {
       "coarse_Nl": 4,
@@ -130,7 +214,7 @@
       "gamma_proxy_abs_delta": 0.00016174651682376862,
       "map_label": "parallel_shift",
       "omega_proxy_abs_delta": 1.1641532182693481e-10,
-      "warm_seconds_delta": -0.01850533310789615
+      "warm_seconds_delta": -0.02999060449656099
     },
     {
       "coarse_Nl": 4,
@@ -140,7 +224,7 @@
       "gamma_proxy_abs_delta": 0.00016175583004951477,
       "map_label": "perp_scale",
       "omega_proxy_abs_delta": 5.820766091346741e-11,
-      "warm_seconds_delta": -0.018172583542764187
+      "warm_seconds_delta": -0.023372812429443002
     },
     {
       "coarse_Nl": 4,
@@ -150,7 +234,7 @@
       "gamma_proxy_abs_delta": 0.00016175583004951477,
       "map_label": "unmapped",
       "omega_proxy_abs_delta": 2.9103830456733704e-11,
-      "warm_seconds_delta": -0.023914812481962144
+      "warm_seconds_delta": -0.012963583576492965
     }
   ],
   "row_count": 10,
@@ -159,9 +243,9 @@
       "Nl": 4,
       "Nm": 6,
       "backend": "cpu",
-      "baseline_warm_seconds": 0.05516212503425777,
+      "baseline_warm_seconds": 0.0795456039486453,
       "case": "runtime_cyclone_nonlinear_miller",
-      "compile_execute_seconds": 0.6755401249974966,
+      "compile_execute_seconds": 0.8653286250773817,
       "dense_gamma": null,
       "dense_gamma_abs_error_vs_unmapped": null,
       "dense_omega": null,
@@ -182,15 +266,15 @@
       "state": "z_wave",
       "vector_size": 7077888,
       "warm_over_baseline": 1.0,
-      "warm_seconds": 0.05516212503425777
+      "warm_seconds": 0.0795456039486453
     },
     {
       "Nl": 4,
       "Nm": 6,
       "backend": "cpu",
-      "baseline_warm_seconds": 0.05516212503425777,
+      "baseline_warm_seconds": 0.0795456039486453,
       "case": "runtime_cyclone_nonlinear_miller",
-      "compile_execute_seconds": 0.6470629579853266,
+      "compile_execute_seconds": 0.8143177919555455,
       "dense_gamma": null,
       "dense_gamma_abs_error_vs_unmapped": null,
       "dense_omega": null,
@@ -210,16 +294,16 @@
       "rhs_rel_error_vs_unmapped": 0.0,
       "state": "z_wave",
       "vector_size": 7077888,
-      "warm_over_baseline": 1.0641789997188202,
-      "warm_seconds": 0.05870237504132092
+      "warm_over_baseline": 0.8998708596616816,
+      "warm_seconds": 0.0715807710075751
     },
     {
       "Nl": 4,
       "Nm": 6,
       "backend": "cpu",
-      "baseline_warm_seconds": 0.05516212503425777,
+      "baseline_warm_seconds": 0.0795456039486453,
       "case": "runtime_cyclone_nonlinear_miller",
-      "compile_execute_seconds": 0.06007379083894193,
+      "compile_execute_seconds": 0.07439012499526143,
       "dense_gamma": null,
       "dense_gamma_abs_error_vs_unmapped": null,
       "dense_omega": null,
@@ -239,16 +323,16 @@
       "rhs_rel_error_vs_unmapped": 0.08313553651311835,
       "state": "z_wave",
       "vector_size": 7077888,
-      "warm_over_baseline": 1.1334479218920257,
-      "warm_seconds": 0.06252339598722756
+      "warm_over_baseline": 0.943532913809623,
+      "warm_seconds": 0.07505389547441155
     },
     {
       "Nl": 4,
       "Nm": 6,
       "backend": "cpu",
-      "baseline_warm_seconds": 0.05516212503425777,
+      "baseline_warm_seconds": 0.0795456039486453,
       "case": "runtime_cyclone_nonlinear_miller",
-      "compile_execute_seconds": 0.06301887496374547,
+      "compile_execute_seconds": 0.07204629201442003,
       "dense_gamma": null,
       "dense_gamma_abs_error_vs_unmapped": null,
       "dense_omega": null,
@@ -268,16 +352,16 @@
       "rhs_rel_error_vs_unmapped": 0.08954230984161798,
       "state": "z_wave",
       "vector_size": 7077888,
-      "warm_over_baseline": 1.1426918814959794,
-      "warm_seconds": 0.06303331244271249
+      "warm_over_baseline": 0.9296959898676339,
+      "warm_seconds": 0.07395322900265455
     },
     {
       "Nl": 4,
       "Nm": 6,
       "backend": "cpu",
-      "baseline_warm_seconds": 0.05516212503425777,
+      "baseline_warm_seconds": 0.0795456039486453,
       "case": "runtime_cyclone_nonlinear_miller",
-      "compile_execute_seconds": 0.056357583962380886,
+      "compile_execute_seconds": 0.07124137482605875,
       "dense_gamma": null,
       "dense_gamma_abs_error_vs_unmapped": null,
       "dense_omega": null,
@@ -297,16 +381,16 @@
       "rhs_rel_error_vs_unmapped": 0.02777758977890548,
       "state": "z_wave",
       "vector_size": 7077888,
-      "warm_over_baseline": 1.0323296995663798,
-      "warm_seconds": 0.0569454999640584
+      "warm_over_baseline": 0.9650679954640445,
+      "warm_seconds": 0.0767669165506959
     },
     {
       "Nl": 4,
       "Nm": 8,
       "backend": "cpu",
-      "baseline_warm_seconds": 0.07907693751621991,
+      "baseline_warm_seconds": 0.09250918752513826,
       "case": "runtime_cyclone_nonlinear_miller",
-      "compile_execute_seconds": 0.6688147077802569,
+      "compile_execute_seconds": 0.8398400419391692,
       "dense_gamma": null,
       "dense_gamma_abs_error_vs_unmapped": null,
       "dense_omega": null,
@@ -327,15 +411,15 @@
       "state": "z_wave",
       "vector_size": 9437184,
       "warm_over_baseline": 1.0,
-      "warm_seconds": 0.07907693751621991
+      "warm_seconds": 0.09250918752513826
     },
     {
       "Nl": 4,
       "Nm": 8,
       "backend": "cpu",
-      "baseline_warm_seconds": 0.07907693751621991,
+      "baseline_warm_seconds": 0.09250918752513826,
       "case": "runtime_cyclone_nonlinear_miller",
-      "compile_execute_seconds": 0.6832926247734576,
+      "compile_execute_seconds": 0.8730332080740482,
       "dense_gamma": null,
       "dense_gamma_abs_error_vs_unmapped": null,
       "dense_omega": null,
@@ -355,16 +439,16 @@
       "rhs_rel_error_vs_unmapped": 0.0,
       "state": "z_wave",
       "vector_size": 9437184,
-      "warm_over_baseline": 1.0418252977026055,
-      "warm_seconds": 0.08238435396924615
+      "warm_over_baseline": 1.0405380926774521,
+      "warm_seconds": 0.09625933354254812
     },
     {
       "Nl": 4,
       "Nm": 8,
       "backend": "cpu",
-      "baseline_warm_seconds": 0.07907693751621991,
+      "baseline_warm_seconds": 0.09250918752513826,
       "case": "runtime_cyclone_nonlinear_miller",
-      "compile_execute_seconds": 0.07838874985463917,
+      "compile_execute_seconds": 0.10569150000810623,
       "dense_gamma": null,
       "dense_gamma_abs_error_vs_unmapped": null,
       "dense_omega": null,
@@ -384,16 +468,16 @@
       "rhs_rel_error_vs_unmapped": 0.08314023374909815,
       "state": "z_wave",
       "vector_size": 9437184,
-      "warm_over_baseline": 1.0246821847204624,
-      "warm_seconds": 0.08102872909512371
+      "warm_over_baseline": 1.1355034324826165,
+      "warm_seconds": 0.10504449997097254
     },
     {
       "Nl": 4,
       "Nm": 8,
       "backend": "cpu",
-      "baseline_warm_seconds": 0.07907693751621991,
+      "baseline_warm_seconds": 0.09250918752513826,
       "case": "runtime_cyclone_nonlinear_miller",
-      "compile_execute_seconds": 0.0791288751643151,
+      "compile_execute_seconds": 0.10987608297728002,
       "dense_gamma": null,
       "dense_gamma_abs_error_vs_unmapped": null,
       "dense_omega": null,
@@ -413,16 +497,16 @@
       "rhs_rel_error_vs_unmapped": 0.08954736906631472,
       "state": "z_wave",
       "vector_size": 9437184,
-      "warm_over_baseline": 0.9810274453699394,
-      "warm_seconds": 0.07757664599921554
+      "warm_over_baseline": 1.0986453798712126,
+      "warm_seconds": 0.10163479147013277
     },
     {
       "Nl": 4,
       "Nm": 8,
       "backend": "cpu",
-      "baseline_warm_seconds": 0.07907693751621991,
+      "baseline_warm_seconds": 0.09250918752513826,
       "case": "runtime_cyclone_nonlinear_miller",
-      "compile_execute_seconds": 0.07319366605952382,
+      "compile_execute_seconds": 0.10444520809687674,
       "dense_gamma": null,
       "dense_gamma_abs_error_vs_unmapped": null,
       "dense_omega": null,
@@ -442,8 +526,8 @@
       "rhs_rel_error_vs_unmapped": 0.02777915923884541,
       "state": "z_wave",
       "vector_size": 9437184,
-      "warm_over_baseline": 0.9499366802288556,
-      "warm_seconds": 0.07511808350682259
+      "warm_over_baseline": 1.0824841473494418,
+      "warm_seconds": 0.1001397289801389
     }
   ],
   "state": "z_wave",

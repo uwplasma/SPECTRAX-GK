@@ -71,6 +71,29 @@ def test_tiny_eigen_scorecard_validates_identity_operator() -> None:
     assert {"unmapped", "identity", "parallel_shift"} <= labels
 
 
+def test_tiny_krylov_scorecard_validates_identity_operator_path() -> None:
+    scorecard = mod._build_tiny_krylov_scorecard(
+        [
+            ("identity", mod.VelocityMapConfig()),
+            ("parallel_shift", mod.VelocityMapConfig(parallel_shift=0.15)),
+        ],
+        max_size=128,
+        identity_tolerance=1.0e-10,
+        krylov_dim=24,
+        restarts=1,
+    )
+
+    assert scorecard is not None
+    assert scorecard["kind"] == "mapped_velocity_rhs_tiny_krylov_scorecard"
+    assert scorecard["matrix_size"] == 24
+    assert scorecard["readiness"]["all_krylov_metrics_finite"] is True
+    assert scorecard["readiness"]["all_krylov_eigenvalues_close_to_dense"] is True
+    assert scorecard["readiness"]["identity_krylov_matches_unmapped"] is True
+    assert scorecard["max_nearest_dense_eigen_abs_error"] < 1.0e-4
+    labels = {row["map_label"] for row in scorecard["rows"]}
+    assert {"unmapped", "identity", "parallel_shift"} <= labels
+
+
 def test_build_summary_reports_identity_and_dense_eigen_readiness() -> None:
     rows = [
         {
@@ -106,6 +129,14 @@ def test_build_summary_reports_identity_and_dense_eigen_readiness() -> None:
         },
         "rows": [],
     }
+    krylov_scorecard = {
+        "kind": "mapped_velocity_rhs_tiny_krylov_scorecard",
+        "readiness": {
+            "identity_krylov_matches_unmapped": True,
+            "all_krylov_eigenvalues_close_to_dense": True,
+        },
+        "rows": [],
+    }
 
     payload = mod._build_summary(
         rows,
@@ -118,6 +149,7 @@ def test_build_summary_reports_identity_and_dense_eigen_readiness() -> None:
         identity_tolerance=1.0e-10,
         dense_eigen_max_size=128,
         eigen_scorecard=scorecard,
+        krylov_scorecard=krylov_scorecard,
     )
 
     assert payload["kind"] == "mapped_velocity_rhs_readiness"
@@ -126,7 +158,11 @@ def test_build_summary_reports_identity_and_dense_eigen_readiness() -> None:
     assert payload["readiness"]["identity_map_matches_unmapped"] is True
     assert payload["readiness"]["tiny_dense_eigen_scorecard_available"] is True
     assert payload["readiness"]["identity_dense_operator_matches_unmapped"] is True
+    assert payload["readiness"]["tiny_krylov_scorecard_available"] is True
+    assert payload["readiness"]["identity_krylov_matches_unmapped"] is True
+    assert payload["readiness"]["all_krylov_eigenvalues_close_to_dense"] is True
     assert payload["eigen_scorecard"] is scorecard
+    assert payload["krylov_scorecard"] is krylov_scorecard
     assert "Nonlinear real-space mapped-basis support is not asserted" in payload["claim_scope"]
 
 
@@ -185,8 +221,15 @@ def test_tracked_mapped_velocity_rhs_artifact_is_scoped_and_replayable() -> None
     assert payload["readiness"]["all_proxy_metrics_finite"] is True
     assert payload["readiness"]["tiny_dense_eigen_scorecard_available"] is True
     assert payload["readiness"]["identity_dense_operator_matches_unmapped"] is True
+    assert payload["readiness"]["tiny_krylov_scorecard_available"] is True
+    assert payload["readiness"]["identity_krylov_matches_unmapped"] is True
+    assert payload["readiness"]["all_krylov_eigenvalues_close_to_dense"] is True
     assert payload["eigen_scorecard"]["matrix_size"] == 24
     assert payload["eigen_scorecard"]["readiness"]["identity_dense_operator_matches_unmapped"] is True
+    assert payload["krylov_scorecard"]["matrix_size"] == 24
+    assert payload["krylov_scorecard"]["readiness"]["identity_krylov_matches_unmapped"] is True
+    assert payload["krylov_scorecard"]["readiness"]["all_krylov_eigenvalues_close_to_dense"] is True
+    assert payload["krylov_scorecard"]["max_nearest_dense_eigen_abs_error"] < 1.0e-4
     assert payload["max_identity_rhs_rel_error"] == 0.0
     assert payload["row_count"] >= 8
     assert payload["max_mapped_warm_over_unmapped"] < 2.5

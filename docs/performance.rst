@@ -423,6 +423,8 @@ artifact:
      --map perp_scale:0:0:0.06 \
      --dense-eigen-max-size 0 \
      --eigen-scorecard-max-size 128 \
+     --krylov-scorecard-max-size 128 \
+     --krylov-scorecard-dim 24 \
      --out-json docs/_static/mapped_velocity_rhs_readiness.json \
      --out-csv docs/_static/mapped_velocity_rhs_readiness.csv
 
@@ -434,11 +436,18 @@ small repeat-count run. The JSON also includes an ``eigen_scorecard`` field:
 a 24-by-24 dense matrix materialized from actual matrix-free
 ``assemble_rhs_cached`` basis-vector applies on a compact linear grid. That
 scorecard records finite dense dominant-eigen metrics and exact mapped-identity
-operator/eigen agreement with the unmapped operator. The
+operator/eigen agreement with the unmapped operator. The refreshed JSON also
+includes a ``krylov_scorecard`` field that runs the same compact mapped
+operators through ``spectraxgk.linear_krylov.dominant_eigenpair`` and checks
+the returned Krylov eigenvalues against the nearest dense eigenvalues of the
+materialized operator. It also records returned-vector residuals as diagnostics
+without using them as an eigenfunction claim. This adds a direct eigen-solver
+plumbing gate on the mapped ``LinearParams`` path, while still keeping the
+claim scoped to a compact operator. The
 non-identity maps intentionally change the RHS by about ``8-9%`` in this
 single-state diagnostic, so this is a readiness and cost/observable plumbing
-gate plus a tiny eigen-consistency artifact, not a claim that a particular
-mapped basis improves nonlinear physics.
+gate plus tiny dense and Krylov eigen-consistency artifacts, not a claim that
+a particular mapped basis improves nonlinear physics.
 The benchmark explicitly forces nonlinear terms off and records that mapped
 real-space nonlinear support is outside this artifact's scope.
 
