@@ -43,11 +43,73 @@ Linear
 .. automodule:: spectraxgk.linear
    :members:
 
+Linear Linked Boundaries
+------------------------
+
+.. automodule:: spectraxgk.linear_linked
+   :members:
+   :private-members:
+
+Linear Cache
+------------
+
+.. automodule:: spectraxgk.linear_cache
+   :members:
+   :private-members:
+
+Linear Moments
+--------------
+
+.. automodule:: spectraxgk.linear_moments
+   :members:
+   :private-members:
+
+Linear Parameters
+-----------------
+
+.. automodule:: spectraxgk.linear_params
+   :members:
+   :private-members:
+
+Linear Parallel RHS
+-------------------
+
+.. automodule:: spectraxgk.linear_parallel
+   :members:
+   :private-members:
+
+Nonlinear Diagnostics
+---------------------
+
+.. automodule:: spectraxgk.nonlinear_diagnostics
+   :members:
+   :private-members:
+
+Nonlinear Helpers
+-----------------
+
+.. automodule:: spectraxgk.nonlinear_helpers
+   :members:
+   :private-members:
+
 Benchmarks
 ----------
 
 .. automodule:: spectraxgk.benchmarks
    :members:
+
+Benchmark Defaults
+------------------
+
+.. automodule:: spectraxgk.benchmark_defaults
+   :members:
+
+Benchmark Scan Policies
+-----------------------
+
+.. automodule:: spectraxgk.benchmark_scan
+   :members:
+   :private-members:
 
 Benchmarking
 ------------
@@ -120,6 +182,20 @@ Runtime Config
 
 .. automodule:: spectraxgk.runtime_config
    :members:
+
+Runtime Policies
+----------------
+
+.. automodule:: spectraxgk.runtime_policies
+   :members:
+   :private-members:
+
+Runtime Orchestration
+---------------------
+
+.. automodule:: spectraxgk.runtime_orchestration
+   :members:
+   :private-members:
 
 Quasilinear Transport
 ---------------------

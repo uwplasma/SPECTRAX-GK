@@ -382,10 +382,12 @@ For nonlinear calibration:
 .. code-block:: text
 
    integrate or load nonlinear diagnostic CSV over a declared time window
+   compute late-window convergence metadata after transient removal
+   require finite mean, running-mean drift, block-bootstrap SEM, and provenance
    integrate/sum the linear quasilinear spectrum
    create train, holdout, or audit calibration points
    optionally fit one multiplicative scale on train points only
-   score holdout points against an explicit mean-relative-error gate
+   score holdout points against explicit mean-relative-error and window gates
 
 Numerics and differentiability
 ------------------------------
@@ -514,10 +516,16 @@ Calibration reports
 Calibration artifacts should use ``spectraxgk.quasilinear_calibration`` so
 training, holdout, and audit points carry the same schema. A report is promoted
 to ``calibrated_absolute_flux`` only when it contains at least one training
-point, at least one holdout point, and the holdout mean-relative-error gate
-passes. Otherwise the claim is demoted to ``calibration_dataset`` or
-``training_or_audit_only``. This keeps README, docs, and manuscript figures from
-claiming absolute nonlinear transport prediction from an uncalibrated
+point, at least one holdout point, finite passed nonlinear late-window
+convergence metadata for every holdout, and the holdout mean-relative-error
+gate passes. The window metadata comes from
+``spectraxgk.quasilinear_window`` or
+``tools/check_nonlinear_window_convergence.py`` and records the transient
+cutoff, late-window mean/std, running-mean drift, block/bootstrap SEM, sample
+counts, and source-artifact provenance. Otherwise the claim is demoted to
+``calibration_dataset`` or ``training_or_audit_only``. This keeps README, docs,
+and manuscript figures from claiming absolute nonlinear transport prediction
+from an uncalibrated
 saturation rule.
 
 The report builder is intentionally strict. Every point in one report must use
@@ -539,6 +547,12 @@ external-VMEC calibration inputs, and now includes the ITERModel and up-down
 asymmetric external-VMEC windows in the seven-case portfolio. It would fail if
 an exploratory or non-converged pilot such as the CTH-like external-VMEC
 feasibility trace were inserted as a train/holdout point.
+The companion audit ``tools/check_quasilinear_promotion_guardrails.py`` is the
+metadata promotion guard: it requires finite nonlinear window means and
+standard deviations, train/holdout artifact provenance, passed held-out gates
+before ``calibrated_absolute_flux`` promotion, and explicit documentation scope
+markers. The current tracked reports are therefore not a calibrated
+absolute-flux claim.
 
 .. image:: _static/quasilinear_validated_calibration_inputs.png
    :alt: Quasilinear calibration inputs matched to passed nonlinear gates
