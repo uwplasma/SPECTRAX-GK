@@ -8,18 +8,11 @@ import glob
 import json
 import math
 import re
-import sys
 from pathlib import Path
 from typing import Any, cast
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SRC = ROOT / "src"
-if str(SRC) not in sys.path:
-    sys.path.insert(0, str(SRC))
-
-from spectraxgk.quasilinear_window import nonlinear_window_stats_promotion_ready
-
 DEFAULT_REPORT_PATTERNS = (
     str(ROOT / "docs/_static/quasilinear_*train_holdout_report.json"),
     str(ROOT / "docs/_static/quasilinear_saturation_rule_sweep.json"),
@@ -100,6 +93,61 @@ def _finite_number(value: object) -> bool:
 
 def _nonnegative_finite(value: object) -> bool:
     return _finite_number(value) and float(cast(Any, value)) >= 0.0
+
+
+def _nonlinear_window_stats_promotion_ready(stats: object) -> tuple[bool, list[str]]:
+    """Return whether serialized nonlinear-window metadata can support promotion.
+
+    Keep this metadata-only predicate local so the repo-hygiene CI job can run
+    without importing the full package or installing JAX.
+    """
+
+    failures: list[str] = []
+    if not isinstance(stats, dict):
+        return False, ["missing nonlinear_window_stats object"]
+    if stats.get("kind") != "nonlinear_window_convergence_report":
+        failures.append("unexpected nonlinear_window_stats kind")
+    if not bool(stats.get("passed", False)):
+        failures.append("nonlinear window convergence report did not pass")
+    provenance = stats.get("provenance")
+    if (
+        not isinstance(provenance, dict)
+        or not str(provenance.get("source_artifact", "")).strip()
+    ):
+        failures.append("missing nonlinear source_artifact provenance")
+    statistics = stats.get("statistics")
+    if not isinstance(statistics, dict):
+        failures.append("missing statistics object")
+        statistics = {}
+    for field in (
+        "late_mean",
+        "sem",
+        "block_bootstrap_sem",
+        "running_mean_rel_drift",
+    ):
+        if not _finite_number(statistics.get(field)):
+            failures.append(f"missing/non-finite statistics.{field}")
+    window = stats.get("window")
+    if not isinstance(window, dict):
+        failures.append("missing window object")
+        window = {}
+    for field in ("transient_cutoff", "late_tmin", "late_tmax"):
+        if not _finite_number(window.get(field)):
+            failures.append(f"missing/non-finite window.{field}")
+    raw_transient_fraction = window.get("transient_fraction", 0.0)
+    has_declared_cutoff = _finite_number(window.get("input_tmin")) or (
+        _finite_number(raw_transient_fraction)
+        and float(cast(Any, raw_transient_fraction)) > 0.0
+    )
+    if not has_declared_cutoff:
+        failures.append("missing declared transient cutoff policy")
+    n_finite_late = window.get("n_finite_late", 0)
+    if not _finite_number(n_finite_late) or int(float(cast(Any, n_finite_late))) <= 0:
+        failures.append("window has no finite late samples")
+    gate_report = stats.get("gate_report")
+    if not isinstance(gate_report, dict) or not bool(gate_report.get("passed", False)):
+        failures.append("missing passed gate_report")
+    return not failures, failures
 
 
 def _gate(metric: str, passed: bool, detail: str) -> dict[str, Any]:
@@ -204,7 +252,7 @@ def _audit_calibration_report(
         for idx, point in enumerate(points):
             if not isinstance(point, dict) or str(point.get("split", "")) != "holdout":
                 continue
-            ready, failures = nonlinear_window_stats_promotion_ready(
+            ready, failures = _nonlinear_window_stats_promotion_ready(
                 point.get("nonlinear_window_stats")
             )
             if ready:
