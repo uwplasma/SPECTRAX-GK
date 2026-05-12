@@ -35,6 +35,8 @@ Source Map
   :func:`spectraxgk.vmec_boozer_scalar_objective_from_state`
 - VMEC-state finite-difference sensitivity audit:
   :func:`spectraxgk.vmec_boozer_scalar_objective_finite_difference_report`
+- Curvature-gated one-parameter line search:
+  :func:`spectraxgk.vmec_boozer_scalar_objective_line_search_report`
 - Fast branch-continuity and sensitivity gate:
   :func:`spectraxgk.solver_objective_branch_gradient_report`
 - Tests: ``tests/test_stellarator_optimization.py``
@@ -90,6 +92,14 @@ curvature/branch-switch indicator so a non-smooth max-growth branch is not
 mistaken for a usable optimization gradient. This is intentionally a
 finite-difference/SPSA-compatible audit, not an automatic-differentiation claim
 for eigenvector-dependent quasilinear observables.
+
+The first optimizer scaffold is
+``vmec_boozer_scalar_objective_line_search_report``. It repeatedly applies the
+finite-difference audit at the current VMEC coefficient offset and accepts only
+candidate updates that both pass the same curvature gate and reduce the scalar
+objective. This is useful for growth-rate and quasilinear-flux optimizer
+plumbing, but it remains a one-parameter audit rather than a multi-parameter
+stellarator optimization claim.
 
 Objective
 ---------

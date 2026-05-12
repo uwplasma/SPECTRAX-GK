@@ -139,8 +139,12 @@ The next decomposition step is also gated, but still diagnostic. The artifact
 deterministic local nonlinear state update with one-cell halo chunks and checks
 the decomposed result against the serial update before enabling that prototype
 path. This validates the fail-closed identity-gate contract for a bounded local
-stencil. It does not validate distributed FFTs, field solves, conservation, or
-nonlinear transport windows, and it carries no speedup claim.
+stencil. The report records the gate name, plan-validity status, and any
+explicit blocker reasons such as noncanonical axes, incomplete chunk coverage,
+or serial/decomposed shape mismatches; any blocker disables the decomposed
+prototype path even if the arrays being compared are numerically equal. It does
+not validate distributed FFTs, field solves, conservation, or nonlinear
+transport windows, and it carries no speedup claim.
 
 The spectral communication layer now has the same fail-closed treatment. The
 artifact ``docs/_static/nonlinear_spectral_communication_identity_gate.json``

@@ -326,7 +326,8 @@ Autodiff Validation
    * - Stellarator optimization prototype
      - low-dimensional objective reduction
      - gradient consistency + constrained solve behavior
-     - Open
+     - Closed for reduced objective plumbing; open for production nonlinear
+       heat-flux optimization
 
 The single-mode inverse figure is intentionally a sensitivity and
 non-identifiability demonstration. The two-mode figure is the closed
@@ -336,6 +337,66 @@ deviations, correlations, and one-sigma UQ ellipse area into their summary
 JSON files. Those metadata are part of the validation gate: differentiated
 observables are not promoted to inverse-design or UQ claims unless the
 derivative check is conditioned and the inverse problem is identifiable.
+
+Differentiable Geometry and Stellarator Objectives
+--------------------------------------------------
+
+The VMEC/Boozer objective lane is split into three claim levels. The first two
+are currently release/manuscript scoped; the third remains a future promotion
+gate.
+
+.. list-table::
+   :header-rows: 1
+
+   * - Workflow
+     - Observable
+     - Reference or artifact
+     - Status
+     - Baseline gate
+   * - VMEC/Boozer equal-arc geometry parity
+     - ``bmag``, ``bgrad``, ``gradpar``, zero-beta metric profiles, drift
+       profiles, ``q``, ``s_hat``, and solver Jacobian
+     - ``docs/_static/vmec_boozer_parity_matrix.json``
+     - Closed for artifact-passing rows
+     - ``mboz,nboz >= 21`` and row-level parity tolerances pass; QI scope is
+       limited to the fixed-resolution row plus evaluated robustness variants
+   * - Solver-ready objective gradients
+     - linear eigenfrequency, growth, ``<k_perp^2>``, electrostatic heat-flux
+       weight, and ``gamma Q_i/k_perp^2``
+     - ``docs/_static/solver_objective_gradient_gate.json`` and
+       ``docs/_static/vmec_boozer_gradient_holdout_matrix.json``
+     - Closed for reduced QH/Li383 gates
+     - implicit AD/finite-difference mismatch remains within the tracked gate;
+       current combined maximum relative mismatch is about ``2.7e-2`` after
+       adding reduced nonlinear-window estimator rows
+   * - Reduced stellarator ITG optimization and UQ
+     - objective reduction history, AD/finite-difference derivative parity,
+       local covariance, and projected uncertainty
+     - ``docs/_static/stellarator_itg_optimization_comparison.json`` and
+       ``docs/_static/stellarator_itg_optimization_uq.json``
+     - Closed as reduced optimization plumbing
+     - objective/UQ metadata pass for the tracked QA control vector; the
+       nonlinear entry is a smooth reduced window estimator
+   * - VMEC/Boozer nonlinear startup FD audit
+     - compact startup-window heat-flux response to geometry perturbation
+     - ``docs/_static/vmec_boozer_nonlinear_window_fd_audit.json``
+     - Exploratory plumbing gate
+     - finite-output and finite-difference-response checks pass, but
+       ``transport_average_gate = false``
+   * - Production nonlinear stellarator optimization
+     - optimized-equilibrium post-transient heat-flux average with uncertainty
+       and nonlinear audit bars
+     - future long-window nonlinear artifacts
+     - Open
+     - requires transient cutoff, cumulative running-mean stability,
+       independent late-block stability, grid/timestep/seed checks, and
+       nonlinear audits of optimized equilibria
+
+Use this section as the verification boundary for README figures: the
+VMEC/Boozer parity, gradient-holdout, and reduced optimization/UQ panels can be
+cited as reduced objective evidence. Startup-window finite-difference panels
+and reduced nonlinear-window estimators must not be cited as saturated
+transport-gradient or optimized-equilibrium nonlinear heat-flux validation.
 
 Parallelization Validation
 --------------------------

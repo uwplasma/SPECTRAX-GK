@@ -55,6 +55,13 @@ are declared. New manifest tests for this policy should stay cheap and live in
 ``tests/test_validation_coverage_manifest.py`` or
 ``tests/test_refactor_coverage_*.py``.
 
+Manifest paths are intentionally concrete. ``fast_tests`` and
+``artifact_paths`` must name files, not directories or placeholder buckets, and
+list fields must not repeat the same module, test, artifact, contract, or next
+test. The optional Cobertura XML pass also rejects duplicate measured entries
+for the same package module so coverage enforcement cannot depend on whichever
+duplicate XML row happened to be parsed last.
+
 The wide CI matrix also feeds the manifest checker with ``coverage-wide.xml``.
 That pass enforces the declared package-wide coverage target and writes the
 measured summary to ``docs/_static/validation_coverage_manifest_summary.json``.

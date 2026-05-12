@@ -75,6 +75,11 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
     )
     _write_json(
         tmp_path,
+        "docs/_static/quasilinear_promotion_guardrails.json",
+        {"passed": True},
+    )
+    _write_json(
+        tmp_path,
         "docs/_static/differentiable_geometry_bridge.json",
         {
             "sensitivity": {"max_abs_ad_fd_error": 1.0e-9},
@@ -275,6 +280,18 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
         ]
         is False
     )
+    assert (
+        lanes["Quasilinear diagnostics and saturation-model selection"]["key_metrics"][
+            "promotion_guardrails_passed"
+        ]
+        is True
+    )
+    assert (
+        "docs/_static/quasilinear_promotion_guardrails.json"
+        in lanes["Quasilinear diagnostics and saturation-model selection"][
+            "primary_artifacts"
+        ]
+    )
     assert lanes["VMEC/Boozer differentiable geometry parity"]["status"] == "closed"
     assert (
         lanes["Reduced differentiable stellarator ITG optimization"]["status"]
@@ -428,6 +445,11 @@ def test_candidate_quasilinear_status_stays_scoped_not_runtime_flux_predictor(
             },
         },
     )
+    _write_json(
+        tmp_path,
+        "docs/_static/quasilinear_promotion_guardrails.json",
+        {"passed": True},
+    )
 
     payload = mod.build_manuscript_readiness_payload(tmp_path)
     lane = {row["lane"]: row for row in payload["lanes"]}[
@@ -440,7 +462,66 @@ def test_candidate_quasilinear_status_stays_scoped_not_runtime_flux_predictor(
         == "scoped_candidate_model_selection_not_runtime_flux_predictor"
     )
     assert lane["key_metrics"]["absolute_flux_promoted"] is False
+    assert lane["key_metrics"]["promotion_guardrails_passed"] is True
     assert lane["key_metrics"]["accepted_uq_candidates"] == ["spectral_envelope_ridge"]
+
+
+def test_candidate_quasilinear_status_stays_open_without_promotion_guardrail(
+    tmp_path: Path,
+) -> None:
+    _write_json(
+        tmp_path,
+        "docs/_static/quasilinear_validated_calibration_inputs.json",
+        {"passed": True},
+    )
+    _write_json(
+        tmp_path,
+        "docs/_static/quasilinear_stellarator_train_holdout_report.json",
+        {
+            "passed": False,
+            "by_split": {"holdout": {"mean_abs_relative_error": 2.5}},
+            "points": [
+                {"case": "cyclone", "split": "train"},
+                {"case": "w7x", "split": "holdout"},
+            ],
+        },
+    )
+    _write_json(
+        tmp_path,
+        "docs/_static/quasilinear_saturation_rule_sweep.json",
+        {"promotion_gate": {"passed": False}},
+    )
+    _write_json(
+        tmp_path,
+        "docs/_static/quasilinear_shape_aware_saturation.json",
+        {"promotion_gate": {"passed": False}},
+    )
+    _write_json(
+        tmp_path,
+        "docs/_static/quasilinear_candidate_uncertainty.json",
+        {
+            "promotion_gate": {
+                "passed": True,
+                "accepted_candidates": ["spectral_envelope_ridge"],
+            }
+        },
+    )
+    _write_json(
+        tmp_path,
+        "docs/_static/quasilinear_dataset_sufficiency.json",
+        {
+            "promotion_gate": {"passed": True},
+            "requirements": {"current_total_cases": 7},
+        },
+    )
+
+    payload = mod.build_manuscript_readiness_payload(tmp_path)
+    lane = {row["lane"]: row for row in payload["lanes"]}[
+        "Quasilinear diagnostics and saturation-model selection"
+    ]
+
+    assert lane["status"] == "open"
+    assert lane["key_metrics"]["promotion_guardrails_passed"] is False
 
 
 def test_write_manuscript_readiness_artifacts_writes_all_formats(

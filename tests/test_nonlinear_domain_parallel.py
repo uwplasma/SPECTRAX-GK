@@ -55,8 +55,12 @@ def test_nonlinear_domain_identity_gate_enables_only_matching_decomposition() ->
 
     assert report.identity_passed is True
     assert report.decomposed_path_enabled is True
+    assert report.gate_name == "nonlinear_domain_local_stencil_identity"
+    assert report.plan_valid is True
+    assert report.blocked_reasons == ()
     assert report.max_abs_error <= report.atol
     assert report.max_rel_error <= report.rtol
+    assert "bounded local-stencil prototype" in report.claim_scope
     assert "no production routing or speedup claim" in report.claim_scope
     assert jnp.allclose(decomposed, serial, atol=1.0e-6, rtol=1.0e-6)
     assert jnp.allclose(gated_state, decomposed, atol=1.0e-6, rtol=1.0e-6)
@@ -78,8 +82,54 @@ def test_nonlinear_domain_identity_report_fails_closed_on_mismatch() -> None:
 
     assert report.identity_passed is False
     assert report.decomposed_path_enabled is False
+    assert report.plan_valid is True
+    assert report.blocked_reasons == ()
     assert report.max_abs_error > report.atol
     assert report.to_dict()["identity_passed"] is False
+
+
+def test_nonlinear_domain_identity_report_blocks_invalid_plan() -> None:
+    state = deterministic_nonlinear_domain_state((6, 4))
+    invalid_plan = NonlinearDomainDecompositionPlan(
+        state_shape=state.shape,
+        axis=0,
+        chunk_sizes=(2, 2),
+        halo=1,
+    )
+
+    report = nonlinear_domain_identity_report(
+        state,
+        state,
+        invalid_plan,
+        atol=1.0e-6,
+        rtol=1.0e-6,
+    )
+
+    assert report.identity_passed is False
+    assert report.decomposed_path_enabled is False
+    assert report.plan_valid is False
+    assert report.blocked_reasons == ("chunk_sizes_do_not_cover_axis",)
+
+
+def test_nonlinear_domain_identity_report_blocks_shape_mismatch() -> None:
+    state = deterministic_nonlinear_domain_state((6, 4))
+    candidate = deterministic_nonlinear_domain_state((5, 4))
+    plan = build_nonlinear_domain_decomposition_plan(state.shape, num_domains=2)
+
+    report = nonlinear_domain_identity_report(
+        state,
+        candidate,
+        plan,
+        atol=1.0e-6,
+        rtol=1.0e-6,
+    )
+
+    assert report.identity_passed is False
+    assert report.decomposed_path_enabled is False
+    assert report.plan_valid is True
+    assert report.blocked_reasons == ("decomposed_shape_does_not_match_serial",)
+    assert report.max_abs_error == float("inf")
+    assert report.max_rel_error == float("inf")
 
 
 def test_nonlinear_domain_decomposed_step_is_jax_jittable_with_static_plan() -> None:
@@ -102,3 +152,16 @@ def test_nonlinear_domain_plan_rejects_unsupported_or_invalid_domains() -> None:
         build_nonlinear_domain_decomposition_plan((4, 4), halo=2)
     with pytest.raises(ValueError, match="non-empty"):
         build_nonlinear_domain_decomposition_plan((0, 4))
+
+
+def test_nonlinear_domain_decomposed_step_rejects_manual_invalid_plan() -> None:
+    state = deterministic_nonlinear_domain_state((6, 4))
+    invalid_plan = NonlinearDomainDecompositionPlan(
+        state_shape=state.shape,
+        axis=-1,
+        chunk_sizes=(3, 3),
+        halo=1,
+    )
+
+    with pytest.raises(ValueError, match="axis_not_canonical"):
+        prototype_nonlinear_domain_decomposed_step(state, invalid_plan)

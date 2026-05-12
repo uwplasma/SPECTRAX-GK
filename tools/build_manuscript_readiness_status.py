@@ -162,6 +162,9 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
     ql_shape = _read_json(root, "docs/_static/quasilinear_shape_aware_saturation.json")
     ql_uq = _read_json(root, "docs/_static/quasilinear_candidate_uncertainty.json")
     ql_dataset = _read_json(root, "docs/_static/quasilinear_dataset_sufficiency.json")
+    ql_guardrails = _read_json(
+        root, "docs/_static/quasilinear_promotion_guardrails.json"
+    )
     geom = _read_json(root, "docs/_static/differentiable_geometry_bridge.json")
     geom_matrix = _read_json(root, "docs/_static/vmec_boozer_parity_matrix.json")
     opt = _read_json(root, "docs/_static/stellarator_itg_optimization_comparison.json")
@@ -233,6 +236,7 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
     ql_candidate_promoted = bool(ql_uq_gate.get("passed", False)) and bool(
         ql_dataset_gate.get("passed", False)
     )
+    ql_guardrails_passed = bool((ql_guardrails or {}).get("passed", False))
     ql_dataset_requirements = (
         (ql_dataset or {}).get("requirements", {})
         if isinstance((ql_dataset or {}).get("requirements", {}), dict)
@@ -250,6 +254,7 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
         and not bool(ql_shape_gate.get("passed", False))
         and not bool(ql_uq_gate.get("passed", False))
         and not bool(ql_dataset_gate.get("passed", False))
+        and ql_guardrails_passed
     )
 
     matrix_summary = (
@@ -409,7 +414,7 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
         {
             "lane": "Quasilinear diagnostics and saturation-model selection",
             "status": "closed"
-            if (ql_negative_closed or ql_candidate_promoted)
+            if ql_guardrails_passed and (ql_negative_closed or ql_candidate_promoted)
             else "open",
             "claim_level": (
                 "validated_diagnostics_negative_absolute_flux_promotion"
@@ -427,9 +432,11 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                 "docs/_static/quasilinear_shape_aware_saturation.json",
                 "docs/_static/quasilinear_candidate_uncertainty.json",
                 "docs/_static/quasilinear_dataset_sufficiency.json",
+                "docs/_static/quasilinear_promotion_guardrails.json",
             ],
             "key_metrics": {
                 "validated_inputs_passed": ql_inputs_passed,
+                "promotion_guardrails_passed": ql_guardrails_passed,
                 "train_points": _count_points(ql_holdout, "train"),
                 "holdout_points": _count_points(ql_holdout, "holdout"),
                 "absolute_flux_promoted": ql_holdout_promoted,
@@ -465,7 +472,7 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
             "next_action": (
                 "Document the accepted richer candidate with scoped wording and keep the legacy one-scalar and "
                 "shape-only diagnostics as negative transfer controls."
-                if ql_candidate_promoted
+                if ql_guardrails_passed and ql_candidate_promoted
                 else "Use these as manuscript-grade diagnostics and negative model-selection results; do not expose an "
                 "absolute-flux runtime model until a future candidate beats the null baseline on held-out nonlinear data."
             ),

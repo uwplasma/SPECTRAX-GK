@@ -28,20 +28,70 @@ page names the claim level explicitly.
 
 | Lane | Current Level | 100% Acceptance Gate | First Work Item |
 |---|---:|---|---|
-| Linear-growth stellarator optimization | 85% | Real in-memory `vmec_jax -> booz_xform_jax -> SPECTRAX-GK` optimizer, multi-surface/multi-alpha/multi-ky reduction, AD/FD checks, and branch-continuity gates. | Promote the report-only VMEC/Boozer flux-tube bridge into a public solver-ready geometry API. |
+| Linear-growth stellarator optimization | 90% | Real in-memory `vmec_jax -> booz_xform_jax -> SPECTRAX-GK` optimizer, multi-surface/multi-alpha/multi-ky reduction, AD/FD checks, and branch-continuity gates. | Extend the now-public in-memory VMEC/Boozer objective path from single reduced fixtures to multi-surface/multi-alpha/multi-ky objective reductions. |
 | Quasilinear-flux stellarator optimization | 75% | Held-out nonlinear flux trends are predicted with calibrated uncertainty intervals and the failed stellarator train/holdout artifact is replaced by a passing, converged dataset. | Add converged nonlinear holdouts before fitting richer saturation rules. |
 | Nonlinear turbulent-flux stellarator optimization | 55% | Objective uses post-transient nonlinear heat-flux averages with time-window, seed, grid, and timestep convergence, not reduced envelope estimates. | Freeze the long-window averaging protocol and gate every optimized run by running-average convergence. |
-| Quasilinear manuscript plots | 75% | Every plot is regenerated from checked scripts and JSON sidecars, with failed baselines and accepted candidate scope shown honestly. | Regenerate the QL model-development stack after the holdout dataset changes. |
+| Quasilinear manuscript plots | 78% | Every plot is regenerated from checked scripts and JSON sidecars, with failed baselines and accepted candidate scope shown honestly. | Keep the VMEC/Boozer objective figures in the reduced-objective checklist and regenerate the QL model-development stack after the holdout dataset changes. |
 | Parallelization | 87.5% broad | Nonlinear domain sharding routes the real RHS/FFT/field-solve communication and passes serial identity, conservation, transport-window, CPU/GPU speedup, and profiler gates. | Keep independent batching production; start a separate `nonlinear_domain_shard_map` path. |
 | Coverage and refactor | 95% gate, thin margin | Fresh combined wide coverage has positive margin above 95%, preferably 97%, and high-priority manifest owners are either closed or explicitly scoped. | Close high-priority owners touched by geometry/optimization split. |
 | `spectraxgk --plot` | 100% | Keep linear/nonlinear saved-output smoke tests and docs examples green. | Maintain as release hygiene while adding manuscript plot scripts. |
 
 Immediate execution order for this tranche:
 
-1. Add the in-memory VMEC/Boozer-to-flux-tube public API.
-2. Document that this is the required path for differentiable geometry and that NetCDF/EIK remains a runtime import path, not the optimizer path.
-3. Add fast tests that validate the wrapper contract without requiring optional backends.
-4. Use the new API as the base for the next real linear-growth objective builder.
+1. Completed: add the in-memory VMEC/Boozer-to-flux-tube public API and solver-objective value wrappers.
+2. Completed: document that this is the required path for differentiable geometry and that NetCDF/EIK remains a runtime import path, not the optimizer path.
+3. Completed: add fast tests that validate the wrapper contract without requiring optional backends.
+4. Active next step: use the public objective path as the base for multi-surface/multi-alpha/multi-`k_y` reduced objective builders.
+
+### 2026-05-12 VMEC/Boozer Objective-Work Checkpoint
+
+This checkpoint is the docs/release/readme lane ledger after the current
+VMEC/Boozer objective work. It is deliberately narrower than the source-code
+running log: it states which artifacts can be cited and which claims remain
+blocked.
+
+Closed and citeable with explicit boundaries:
+
+- Public in-memory optimizer path:
+  `vmec_jax` state coefficients -> `booz_xform_jax` mode-21 equal-arc Boozer
+  geometry -> SPECTRAX-GK solver-ready flux tube. NetCDF/EIK geometry remains a
+  runtime import and parity/reference path, not the differentiable optimizer
+  path.
+- Reduced objective value path:
+  dominant linear frequency/growth and electrostatic quasilinear proxy
+  objectives are evaluated through the public VMEC/Boozer/SPECTRAX-GK bridge.
+- Reduced objective-gradient evidence:
+  `docs/_static/vmec_boozer_solver_frequency_gradient_gate.*`,
+  `docs/_static/vmec_boozer_quasilinear_gradient_gate.*`,
+  `docs/_static/vmec_boozer_nonlinear_window_gradient_gate.*`, and the Li383
+  holdout companions are summarized by
+  `docs/_static/vmec_boozer_gradient_holdout_matrix.*`.
+- Geometry convention evidence:
+  `docs/_static/vmec_boozer_parity_matrix.*` is the source of truth for the
+  zero-beta equal-arc parity rows and the fixed-resolution QI boundary.
+- Optimization/UQ example evidence:
+  `docs/_static/stellarator_itg_optimization_comparison.*` and
+  `docs/_static/stellarator_itg_optimization_uq.*` support reduced
+  differentiable objective plumbing and local UQ, not production nonlinear
+  transport optimization.
+
+Still blocked from release/manuscript promotion:
+
+- production nonlinear heat-flux gradients through `vmec_jax` and
+  `booz_xform_jax`;
+- optimized-equilibrium nonlinear audit bars based on converged post-transient
+  heat-flux windows;
+- broad QI transport validation or QI quasilinear calibration beyond the
+  fixed-resolution parity row and evaluated robustness variants;
+- calibrated absolute quasilinear flux prediction from the current
+  train/holdout portfolio;
+- multi-surface/multi-alpha/multi-`k_y` stellarator optimization claims.
+
+Docs synchronization rule for this lane: `docs/release_scope.rst`,
+`docs/verification_matrix.rst`, README claim wording, and the dashboard JSONs
+must all preserve this distinction between reduced differentiable objectives,
+startup/nonlinear-window estimators, and converged nonlinear transport
+averages.
 
 ## Literature Anchors From Final Pass
 
@@ -1232,6 +1282,17 @@ Exit gate:
   growth (`curvature_ratio=1.1e-2`) and quasilinear flux
   (`curvature_ratio=6.8e-3`). The default perturbation for this report is
   therefore `1e-7` until a broader step-size sweep is added.
+- Added `vmec_boozer_scalar_objective_line_search_report`, a one-parameter
+  optimizer scaffold that accepts VMEC coefficient updates only when the local
+  finite-difference curvature gate passes and the candidate scalar objective
+  decreases. This moves real linear-growth and quasilinear-flux optimization
+  from probe-only to a fail-closed update loop, while remaining explicitly
+  scoped below broad stellarator optimization.
+- Real one-step line-search smokes on `nfp4_QH_warm_start` passed for both
+  scalar objectives at `h=1e-7` and update step `1e-8`: growth reduced from
+  `0.2966178` to `0.2964576`, and quasilinear flux reduced from `1.4441574`
+  to `1.4390302`. These are plumbing/conditioning results, not optimized
+  equilibrium claims.
 - Validation for this tranche:
   `python -m pytest -q tests/test_solver_objective_gradients.py tests/test_differentiable_geometry_bridge.py tests/test_stellarator_optimization.py` passed with 46 tests, and `ruff check` passed for the touched source/test files.
 - Commits pushed to `main`: `7ab3676` and `ebdebc1`.
