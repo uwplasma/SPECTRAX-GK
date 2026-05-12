@@ -33,6 +33,8 @@ Source Map
   :func:`spectraxgk.vmec_boozer_solver_objective_vector_from_state`
 - Scalar optimizer hook:
   :func:`spectraxgk.vmec_boozer_scalar_objective_from_state`
+- VMEC-state finite-difference sensitivity audit:
+  :func:`spectraxgk.vmec_boozer_scalar_objective_finite_difference_report`
 - Fast branch-continuity and sensitivity gate:
   :func:`spectraxgk.solver_objective_branch_gradient_report`
 - Tests: ``tests/test_stellarator_optimization.py``
@@ -78,6 +80,16 @@ they have a solved ``vmec_jax`` state. The supported aliases are
 ``growth``/``gamma``, ``frequency``/``omega``, and
 ``quasilinear_flux``/``mixing_length_heat_flux_proxy``. This selector prevents
 each optimization example from silently using a different objective index.
+
+Before any optimizer loop is promoted, run
+``vmec_boozer_scalar_objective_finite_difference_report`` on the selected
+VMEC coefficient, field line, and objective. It evaluates the scalar objective
+at ``x-h``, ``x``, and ``x+h`` through the same in-memory VMEC/Boozer path and
+records the central finite-difference sensitivity. The report also checks a
+curvature/branch-switch indicator so a non-smooth max-growth branch is not
+mistaken for a usable optimization gradient. This is intentionally a
+finite-difference/SPSA-compatible audit, not an automatic-differentiation claim
+for eigenvector-dependent quasilinear observables.
 
 Objective
 ---------

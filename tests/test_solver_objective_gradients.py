@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+from dataclasses import dataclass
 from pathlib import Path
 
 import jax
@@ -33,6 +34,7 @@ from spectraxgk.solver_objective_gradients import (
     solver_scalar_objective_from_vector,
     solver_ready_geometry_mapping,
     tiny_differentiable_objective_gradient_report,
+    vmec_boozer_scalar_objective_finite_difference_report,
     vmec_boozer_scalar_objective_from_state,
     vmec_boozer_solver_objective_vector_from_state,
 )
@@ -272,6 +274,62 @@ def test_vmec_boozer_scalar_objective_from_state_uses_vector_selector(
 
     assert spectraxgk.vmec_boozer_scalar_objective_from_state is vmec_boozer_scalar_objective_from_state
     assert float(value) == pytest.approx(6.0)
+
+
+def test_vmec_boozer_scalar_objective_finite_difference_report(
+    monkeypatch,
+) -> None:
+    @dataclass(frozen=True)
+    class FakeState:
+        Rcos: jnp.ndarray
+
+    fake_state = FakeState(Rcos=jnp.zeros((5, 3), dtype=jnp.float32))
+    monkeypatch.setattr(
+        sog,
+        "_load_vmec_jax_example_state_bundle",
+        lambda case_name: {
+            "case_name": case_name,
+            "input_path": "input.test",
+            "wout_path": "wout.test",
+            "state": fake_state,
+            "static": "static",
+            "indata": "indata",
+            "wout": "wout",
+        },
+    )
+
+    def fake_vector(state, *_args, **_kwargs):  # noqa: ANN001, ANN202
+        coeff = float(np.asarray(state.Rcos[2, 1]))
+        return jnp.asarray([1.0 + 3.0 * coeff, 0.0, 2.0, 4.0, 0.5, 5.0 + coeff])
+
+    monkeypatch.setattr(sog, "vmec_boozer_solver_objective_vector_from_state", fake_vector)
+
+    report = vmec_boozer_scalar_objective_finite_difference_report(
+        case_name="case",
+        objective="growth",
+        perturbation_step=1.0e-3,
+        response_atol=1.0e-6,
+        ntheta=4,
+    )
+
+    assert spectraxgk.vmec_boozer_scalar_objective_finite_difference_report is (
+        vmec_boozer_scalar_objective_finite_difference_report
+    )
+    assert report["passed"] is True
+    assert report["source_scope"] == "mode21_vmec_boozer_state"
+    assert report["parameter_name"] == "Rcos_mid_surface_m1"
+    assert report["central_derivative"] == pytest.approx(3.0, rel=1.0e-4)
+    assert report["response_resolved"] is True
+    assert report["finite_difference_consistent"] is True
+    assert report["curvature_ratio"] == pytest.approx(0.0)
+    assert report["options"] == {"ntheta": 4}
+
+    with pytest.raises(ValueError, match="perturbation_step"):
+        vmec_boozer_scalar_objective_finite_difference_report(perturbation_step=0.0)
+    with pytest.raises(ValueError, match="max_curvature_ratio"):
+        vmec_boozer_scalar_objective_finite_difference_report(max_curvature_ratio=-1.0)
+    with pytest.raises(ValueError, match="radial_index"):
+        vmec_boozer_scalar_objective_finite_difference_report(radial_index=99)
 
 
 def test_reduced_nonlinear_window_metrics_are_smooth_and_fd_checked() -> None:

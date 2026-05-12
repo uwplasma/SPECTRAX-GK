@@ -1219,6 +1219,19 @@ Exit gate:
   `omega=-0.1669`, `kperp_eff2=0.4208`, heat weight `2.0487`, and
   quasilinear proxy `1.4442`. This confirms the public value path is live
   before adding optimizer loops.
+- Added `vmec_boozer_scalar_objective_finite_difference_report` to perturb one
+  VMEC `Rcos` state coefficient and audit `x-h`, `x`, and `x+h` scalar
+  objective values through the in-memory VMEC/Boozer/SPECTRAX-GK path. This is
+  the safe finite-difference/SPSA optimization pre-step for growth and
+  quasilinear objectives; it is not an AD or nonlinear-transport claim. The
+  report rejects high-curvature/branch-switch finite differences so a nonsmooth
+  max-growth branch is not promoted as an optimization gradient.
+- Real local `nfp4_QH_warm_start` finite-difference audits showed why the
+  curvature gate matters: `h=1e-5` for the growth objective failed the
+  smoothness gate (`curvature_ratio=12.74`), while `h=1e-7` passed for both
+  growth (`curvature_ratio=1.1e-2`) and quasilinear flux
+  (`curvature_ratio=6.8e-3`). The default perturbation for this report is
+  therefore `1e-7` until a broader step-size sweep is added.
 - Validation for this tranche:
   `python -m pytest -q tests/test_solver_objective_gradients.py tests/test_differentiable_geometry_bridge.py tests/test_stellarator_optimization.py` passed with 46 tests, and `ruff check` passed for the touched source/test files.
 - Commits pushed to `main`: `7ab3676` and `ebdebc1`.
