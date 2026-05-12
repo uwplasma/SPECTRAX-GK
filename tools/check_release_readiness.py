@@ -24,6 +24,8 @@ REQUIRED_CI_SNIPPETS = (
     "wide-coverage-shards",
     "coverage-wide-shard-manifest.json",
     "--require-shard-data",
+    "--coverage-xml coverage-wide.xml",
+    "--enforce-package-coverage",
     "codecov/codecov-action",
     "tools/check_parallel_scaling_artifacts.py",
     "tools/check_performance_optimization_manifest.py",
@@ -48,6 +50,7 @@ REQUIRED_STATIC_ARTIFACTS = (
     "docs/_static/independent_ky_scan_scaling_large.json",
     "docs/_static/quasilinear_uq_ensemble_scaling_large.json",
     "docs/_static/nonlinear_sharding_strong_scaling_large.json",
+    "docs/_static/nonlinear_domain_parallel_identity_gate.json",
 )
 TECHNICAL_COMPLETION_TARGET = 0.98
 TECHNICAL_STATUS_ARTIFACT = "docs/_static/technical_release_status.json"

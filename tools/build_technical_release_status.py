@@ -52,6 +52,7 @@ LANES: dict[str, tuple[EvidenceCheck, ...]] = {
         EvidenceCheck("wide coverage matrix", ".github/workflows/ci.yml", "wide-coverage-shards"),
         EvidenceCheck("wide shard manifest", ".github/workflows/ci.yml", "coverage-wide-shard-manifest.json"),
         EvidenceCheck("95 percent gate", ".github/workflows/ci.yml", "--fail-under 95"),
+        EvidenceCheck("measured manifest coverage audit", ".github/workflows/ci.yml", "--coverage-xml coverage-wide.xml"),
         EvidenceCheck("codecov upload", ".github/workflows/ci.yml", "codecov/codecov-action"),
         EvidenceCheck("release readiness check", ".github/workflows/ci.yml", "tools/check_release_readiness.py"),
     ),
@@ -61,6 +62,7 @@ LANES: dict[str, tuple[EvidenceCheck, ...]] = {
         EvidenceCheck("independent ky scaling artifact", "docs/_static/independent_ky_scan_scaling_large.json", "not a nonlinear domain-decomposition"),
         EvidenceCheck("quasilinear UQ scaling artifact", "docs/_static/quasilinear_uq_ensemble_scaling_large.json", "not a promoted absolute nonlinear heat-flux predictor"),
         EvidenceCheck("nonlinear sharding scoped diagnostic", "docs/_static/nonlinear_sharding_strong_scaling_large.json", "not a production speedup claim"),
+        EvidenceCheck("nonlinear domain identity gate", "docs/_static/nonlinear_domain_parallel_identity_gate.json", "no production routing or speedup claim"),
         EvidenceCheck("parallel artifact checker", "tools/check_parallel_scaling_artifacts.py", "FAMILIES"),
     ),
     "refactor_modularity": (

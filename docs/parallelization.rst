@@ -110,6 +110,14 @@ near ``1.39x`` and the current two-GPU path is slower than one GPU for the
 tracked larger fixed-step case. That artifact is therefore valuable engineering
 evidence, not a production nonlinear speedup result.
 
+The next decomposition step is also gated, but still diagnostic. The artifact
+``docs/_static/nonlinear_domain_parallel_identity_gate.json`` exercises a
+deterministic local nonlinear state update with one-cell halo chunks and checks
+the decomposed result against the serial update before enabling that prototype
+path. This validates the fail-closed identity-gate contract for a bounded local
+stencil. It does not validate distributed FFTs, field solves, conservation, or
+nonlinear transport windows, and it carries no speedup claim.
+
 Velocity-space communication gates
 ----------------------------------
 
@@ -224,6 +232,11 @@ allowed to support:
      - Correctness and profiler-direction evidence for the current ``pjit``
        state-axis layout.
      - Production nonlinear multi-GPU speedup.
+   * - Prototype nonlinear state-domain gate
+     - ``nonlinear_domain_parallel_identity_gate.{json,png}``
+     - Fail-closed serial-vs-halo-decomposed identity evidence for one bounded
+       local stencil.
+     - Distributed FFT, field-solve, transport-window, or speedup claims.
    * - Velocity-space linear slices
      - ``linear_rhs_parallel_slices_sweep.{json,png,pdf}``
      - Bounded engineering evidence for opt-in electrostatic linear RHS slices.
