@@ -297,6 +297,17 @@ checks during tracing. The finite-difference utilities used by these gates
 also reject non-positive step sizes, and the inverse-design covariance block
 records rank and conditioning before any optimization result is promoted from
 local sensitivity evidence to a transport-design claim.
+Each geometry AD/finite-difference gate now also records a compact
+``conditioning`` block alongside the raw Jacobians. That block includes finite
+flags for the AD and finite-difference Jacobians, singular values, numerical
+rank, condition number, AD row/column norms, per-parameter finite-difference
+step scaling, and the observable/parameter location of the worst absolute and
+relative AD/FD mismatch. This metadata is intentionally separate from the pass
+tolerance: a derivative can agree with finite differences and still be a poor
+optimization direction if the sensitivity map is nearly rank deficient or if
+the finite-difference step is not well scaled to the chosen VMEC coefficient.
+Research artifacts should quote both the derivative error and this conditioning
+metadata before treating a VMEC/Boozer bridge row as optimization-ready.
 
 .. figure:: _static/differentiable_geometry_bridge.png
    :width: 95%

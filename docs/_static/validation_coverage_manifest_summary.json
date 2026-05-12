@@ -17,7 +17,7 @@
     "spectraxgk.parallel"
   ],
   "n_high_priority_open": 15,
-  "n_modules": 25,
+  "n_modules": 26,
   "package_coverage_target_percent": 95.0,
   "rows": [
     {
@@ -109,6 +109,19 @@
       "n_physics_contracts": 2,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/linear_linked.py",
+      "status": "active"
+    },
+    {
+      "coverage_priority": "medium",
+      "coverage_target_percent": 95.0,
+      "module": "spectraxgk.linear_parallel",
+      "n_artifacts": 2,
+      "n_fast_tests": 2,
+      "n_next_tests": 2,
+      "n_numerics_contracts": 2,
+      "n_physics_contracts": 2,
+      "n_reference_anchors": 2,
+      "path": "src/spectraxgk/linear_parallel.py",
       "status": "active"
     },
     {

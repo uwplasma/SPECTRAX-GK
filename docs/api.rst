@@ -71,6 +71,13 @@ Linear Parameters
    :members:
    :private-members:
 
+Linear Parallel RHS
+-------------------
+
+.. automodule:: spectraxgk.linear_parallel
+   :members:
+   :private-members:
+
 Nonlinear Diagnostics
 ---------------------
 

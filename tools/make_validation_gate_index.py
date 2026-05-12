@@ -108,7 +108,10 @@ def collect_gate_entries(patterns: list[str]) -> list[dict[str, object]]:
         paths.extend(Path(item) for item in glob.glob(pattern, recursive=True))
     entries: list[dict[str, object]] = []
     for path in sorted(set(paths)):
-        data = _load_json(path)
+        try:
+            data = _load_json(path)
+        except ValueError:
+            continue
         entries.extend(_report_entries(path, data))
     return sorted(entries, key=lambda row: str(row["case"]))
 

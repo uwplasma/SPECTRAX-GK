@@ -258,6 +258,13 @@ def test_vmec_boundary_aspect_sensitivity_report_uses_discovered_jax_api(
     assert report["available"] is True
     assert report["backend_info"]["vmec_jax_boundary_api_available"] is True
     assert float(report["max_abs_ad_fd_error"]) < 2.0e-5
+    conditioning = report["conditioning"]
+    assert conditioning["jacobian_shape"] == [1, 2]
+    assert conditioning["sensitivity_map_rank"] == 1
+    assert conditioning["worst_abs_error"]["observable_name"] == "aspect_ratio"
+    assert conditioning["finite_difference_step_by_parameter"][0]["parameter_name"] == (
+        "ripple"
+    )
 
 
 def test_vmec_boundary_aspect_sensitivity_report_validates_parameter_shape() -> None:
@@ -308,6 +315,10 @@ def test_booz_xform_flux_tube_sensitivity_report_is_bounded_when_available() -> 
     )
     assert float(sensitivity["max_abs_ad_fd_error"]) < 2.0e-6
     assert float(sensitivity["max_rel_ad_fd_error"]) < 2.0e-4
+    assert sensitivity["conditioning"]["jacobian_shape"] == [
+        len(geometry_observable_names()),
+        2,
+    ]
     assert np.asarray(report["bmnc_b"]).shape == (5,)
 
 
@@ -347,6 +358,7 @@ def test_vmec_jax_boozer_flux_tube_sensitivity_report_starts_from_real_vmec_stat
     )
     assert float(sensitivity["max_abs_ad_fd_error"]) < 2.0e-5
     assert float(sensitivity["max_rel_ad_fd_error"]) < 2.0e-4
+    assert sensitivity["conditioning"]["finite_ad_jacobian"] is True
     assert np.asarray(report["bmnc_b"]).shape == (2,)
 
 
@@ -386,6 +398,7 @@ def test_vmec_jax_flux_tube_sensitivity_report_starts_from_real_vmec_state_when_
     )
     assert float(sensitivity["max_abs_ad_fd_error"]) < 1.0e1
     assert float(sensitivity["max_rel_ad_fd_error"]) < 1.0e-3
+    assert sensitivity["conditioning"]["finite_fd_jacobian"] is True
     assert int(report["surface_index"]) > 0
     assert float(report["reference_length"]) > 0.0
     assert float(report["reference_b"]) > 0.0
@@ -624,6 +637,10 @@ def test_vmec_jax_metric_tensor_sensitivity_report_checks_real_metric_tensors_wh
     )
     assert float(report["max_abs_ad_fd_error"]) < 2.0e-5
     assert float(report["max_rel_ad_fd_error"]) < 2.0e-4
+    assert report["conditioning"]["jacobian_shape"] == [
+        len(vmec_metric_tensor_observable_names()),
+        2,
+    ]
     assert len(report["metric_grid_shape"]) == 3
 
 
@@ -666,6 +683,10 @@ def test_vmec_jax_field_line_tensor_sensitivity_report_checks_stellarator_tensor
     )
     assert float(report["max_abs_ad_fd_error"]) < 5.0e-3
     assert float(report["max_rel_ad_fd_error"]) < 5.0e-4
+    assert report["conditioning"]["worst_rel_error"]["parameter_name"] in {
+        "delta_Rcos",
+        "delta_Zsin",
+    }
     assert len(report["metric_grid_shape"]) == 3
     assert int(report["metric_grid_shape"][2]) > 1
 
@@ -723,6 +744,16 @@ def test_flux_tube_geometry_from_mapping_is_tracer_safe_for_geometry_sensitiviti
     )
     assert float(report["max_abs_ad_fd_error"]) < abs_tol
     assert float(report["max_rel_ad_fd_error"]) < rel_tol
+    conditioning = report["conditioning"]
+    assert conditioning["jacobian_shape"] == [len(geometry_observable_names()), 2]
+    assert conditioning["finite_ad_jacobian"] is True
+    assert conditioning["finite_fd_jacobian"] is True
+    assert conditioning["sensitivity_map_rank"] == 2
+    assert np.all(np.isfinite(conditioning["jacobian_singular_values"]))
+    assert conditioning["worst_abs_error"]["observable_name"] in geometry_observable_names()
+    assert conditioning["finite_difference_step_by_parameter"][0]["absolute_step"] == (
+        pytest.approx(fd_step)
+    )
 
 
 def test_geometry_tracer_detection_recurses_through_containers() -> None:
@@ -876,6 +907,11 @@ def test_geometry_inverse_design_report_recovers_selected_observables() -> None:
     assert float(report["final_residual_norm"]) < 1.0e-5
     assert float(report["max_rel_ad_fd_error"]) < rel_tol
     assert report["uq"]["sensitivity_map_rank"] == 2
+    assert report["conditioning"]["sensitivity_map_rank"] == 2
+    assert report["conditioning"]["worst_rel_error"]["observable_name"] in {
+        "relative_bmag_ripple",
+        "metric_frobenius_rms",
+    }
     covariance = np.asarray(report["uq"]["covariance"])
     assert np.allclose(covariance, covariance.T)
     assert np.all(np.linalg.eigvalsh(covariance) >= -1.0e-16)

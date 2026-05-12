@@ -4419,3 +4419,82 @@ Exit gate:
     passed;
   - `python tools/check_validation_coverage_manifest.py --skip-artifact-check` passed;
   - strict Sphinx docs build passed.
+
+## 2026-05-12 Linear Parallel RHS Refactor Tranche
+
+- Split the gated velocity-parallel linear RHS dispatcher, Hermite sharding
+  helpers, electrostatic streaming helper, and fused electrostatic-slice kernel
+  cache from `src/spectraxgk/linear.py` into
+  `src/spectraxgk/linear_parallel.py`.
+- Preserved the existing public and legacy private import surface through
+  `spectraxgk.linear`, with an identity test over `linear_parallel.__all__`.
+- This tranche does not change serial RHS assembly, field solves, integrator
+  algorithms, or physics terms. The moved dispatcher keeps serial fallback as a
+  runtime import of `spectraxgk.linear.linear_rhs_cached` so the cached serial
+  RHS remains the source of truth.
+- Updated API docs, architecture docs, and the validation coverage manifest so
+  the extracted parallel module has explicit identity, fail-closed, and
+  Hermite-sharded RHS contracts.
+- Verification for this tranche:
+  - `python -m ruff format src/spectraxgk/linear.py src/spectraxgk/linear_parallel.py tests/test_linear_helpers_extra.py`
+    passed with files already formatted;
+  - `python -m ruff check src/spectraxgk/linear.py src/spectraxgk/linear_parallel.py tests/test_linear_helpers_extra.py`
+    passed after marking compatibility imports as intentional re-exports;
+  - `mypy src/spectraxgk/linear.py src/spectraxgk/linear_parallel.py`
+    passed;
+  - `python -m pytest tests/test_linear_helpers_extra.py tests/test_validation_coverage_manifest.py -q`
+    passed with 60 tests;
+  - `python -m pytest tests/test_velocity_sharding.py -q` passed with 30
+    tests and 8 skips;
+  - `python tools/check_validation_coverage_manifest.py --skip-artifact-check`
+    passed.
+
+## 2026-05-12 CI Coverage Hygiene Tranche
+
+- Tightened the wide coverage combine path so CI can reject missing labeled
+  shard data, empty shard markers, and out-of-range shard artifacts before
+  running `coverage combine` or refreshing the package-wide Codecov flag.
+- Added a deterministic `coverage-wide-shard-manifest.json` report for the
+  wide coverage combine job.
+- Updated README, testing docs, and the release checklist from the stale
+  24-shard examples to the current 48-shard CI matrix.
+- Aligned `tools/run_tests_fast.py --test-dir tests` with the wide coverage
+  helper by resolving relative test directories against the repository root.
+- Verification for this tranche:
+  - `python -m pytest -q tests/test_run_wide_coverage_gate.py tests/test_run_tests_fast.py`
+    passed with 13 tests;
+  - `python tools/run_wide_coverage_gate.py --shards 3 --test-dir tests --dry-run`
+    printed deterministic shard membership with repo-root-relative test
+    discovery;
+  - `ruff check tools/run_wide_coverage_gate.py tools/run_tests_fast.py tests/test_run_wide_coverage_gate.py tests/test_run_tests_fast.py`
+    passed;
+  - `python -m py_compile tools/run_wide_coverage_gate.py tools/run_tests_fast.py`
+    passed;
+  - `git diff --check -- .github/workflows/ci.yml tools/run_wide_coverage_gate.py tools/run_tests_fast.py tests/test_run_wide_coverage_gate.py tests/test_run_tests_fast.py README.md docs/testing.rst docs/release_scope.rst plan.md`
+    passed.
+
+## 2026-05-12 Quasilinear Promotion Guardrail Tranche
+
+- Added `tools/check_quasilinear_promotion_guardrails.py`, a fast metadata
+  audit for quasilinear absolute-flux promotion. It scans tracked
+  train/holdout calibration reports, saturation/candidate reports, nonlinear
+  input-validation blocks, promotion gates, and claim-scope docs.
+- The guard requires finite nonlinear window means and standard deviations,
+  train/holdout nonlinear and quasilinear artifact provenance, passed held-out
+  gates before any `calibrated_absolute_flux` claim, and explicit docs wording
+  that current diagnostics are not runtime/TOML absolute-flux predictors.
+- Wrote `docs/_static/quasilinear_promotion_guardrails.json` with a standard
+  `gate_report`, and refreshed the JSON validation-gate index to include the
+  new `quasilinear_absolute_flux_promotion_guardrails` row.
+- Updated quasilinear, manuscript-figure, and testing docs so the new guardrail
+  is part of the research-grade validation surface without broadening the
+  physics claim.
+- Verification for this tranche:
+  - `python -m pytest tests/test_quasilinear_promotion_guardrails.py -q`
+    passed;
+  - `python tools/check_quasilinear_promotion_guardrails.py --out-json docs/_static/quasilinear_promotion_guardrails.json`
+    passed with `failed_gates=0`;
+  - `python -m pytest tests/test_check_quasilinear_calibration_inputs.py tests/test_plot_quasilinear_dataset_sufficiency.py -q`
+    passed;
+  - `python -m pytest tests/test_make_validation_gate_index.py -q`
+    passed.

@@ -153,6 +153,18 @@ The finite-difference gate is
 
 with tighter tolerances when JAX x64 is enabled.
 
+For the VMEC/Boozer bridge reports, passing this AD/FD tolerance is necessary
+but not sufficient for optimization readiness. The geometry sensitivity reports
+also carry a ``conditioning`` block with singular values, numerical rank,
+condition number, AD row/column norms, per-parameter finite-difference step
+scaling, and the worst error location. This keeps three cases separate in the
+artifacts: a failed derivative implementation, a correct but ill-conditioned
+control direction, and a well-conditioned reduced optimization gate. The
+current full-chain ``vmec_jax`` state-coefficient reports should therefore be
+read as reduced linear/quasilinear/nonlinear-window estimator differentiability
+evidence until converged nonlinear heat-flux gradients or optimized-equilibrium
+finite-difference audits also pass.
+
 The UQ diagnostic uses the weighted residual vector whose squared norm is the
 reported objective:
 

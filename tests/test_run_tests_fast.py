@@ -17,6 +17,14 @@ def test_discover_test_files_returns_top_level_tests(tmp_path: Path) -> None:
     assert [path.name for path in run_tests_fast.discover_test_files(tmp_path)] == ["test_a.py", "test_b.py"]
 
 
+def test_relative_test_dir_resolves_under_repository_root() -> None:
+    resolved = run_tests_fast._resolve_test_dir(Path("tests"))
+
+    assert resolved.is_absolute()
+    assert resolved.name == "tests"
+    assert run_tests_fast.discover_test_files(Path("tests"))
+
+
 def test_run_tests_uses_bounded_pytest_invocations(monkeypatch, tmp_path: Path) -> None:
     test_file = tmp_path / "test_sample.py"
     test_file.write_text("def test_ok(): assert True\n", encoding="utf-8")

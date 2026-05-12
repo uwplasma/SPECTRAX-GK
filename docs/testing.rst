@@ -224,7 +224,7 @@ growth/frequency jump and successive-overlap gates.
 ``tools/make_validation_gate_index.py`` scans tracked JSON metadata and writes
 ``docs/_static/validation_gate_index.json``, ``.csv``, and ``.png`` so the docs
 always have one compact pass/open view of the currently materialized release
-validation gates. The current index has ``10/10`` tracked reports passing.
+validation gates. The current JSON index has ``14/14`` tracked reports passing.
 Exploratory diagnostics can set ``gate_index_include=false``
 to remain documented without being treated as release blockers.
 ``tools/plot_nonlinear_window_statistics.py`` provides the companion
@@ -279,6 +279,15 @@ be documented in the docs, but they cannot silently become calibration or
 optimization data. The public CI runs this audit during the docs/packaging
 job, and the fast test suite checks the current tracked train/holdout reports
 against the same gate index.
+``tools/check_quasilinear_promotion_guardrails.py`` is the higher-level
+absolute-flux promotion guard. It scans the tracked quasilinear reports plus
+the claim-scope docs, fails if a promoted report lacks train/holdout points,
+finite nonlinear window statistics, a passed holdout gate, or calibration
+policy metadata, and writes
+``docs/_static/quasilinear_promotion_guardrails.json`` with a normal
+``gate_report`` for the validation index. This is not a runtime/TOML
+absolute-flux predictor; it is a fast metadata and wording guard that prevents
+overclaiming current diagnostics.
 The model-development figure scripts for saturation-rule sweeps,
 shape-aware saturation, and uncertainty-aware candidate scoring also validate
 their nonlinear summary inputs by default and serialize an ``input_validation``
@@ -1046,16 +1055,19 @@ CI split: fast PR vs manual full
 CI is split into two tiers to keep pull requests fast while preserving full
 physics rigor:
 
-- **Fast PR/push tier**: three parallel shards run mypy and targeted test
-  subsets (fundamentals, linear core, runtime/nonlinear). This catches solver
-  and dtype regressions quickly.
-- **Wide coverage tier**: CI runs the 24 top-level coverage shards as a matrix,
+- **Fast PR/push tier**: the quick-test matrix runs mypy and targeted test
+  subsets across fundamentals, release artifacts, linear core, runtime,
+  nonlinear, and parallel/autodiff contracts. This catches solver and dtype
+  regressions quickly.
+- **Wide coverage tier**: CI runs the 48 top-level coverage shards as a matrix,
   uploads the per-shard ``coverage.py`` data, then combines the artifacts in one
   final ``wide-coverage`` check that enforces the package-wide ``>=95%`` target.
   The same helper, ``tools/run_wide_coverage_gate.py``, is used locally and in
   CI so the threshold is not weakened when the job is parallelized. Each shard
   has its own timeout so a single slow validation slice cannot become an
-  unbounded release job.
+  unbounded release job. The combine step also requires labeled coverage data
+  for every CI shard and writes ``coverage-wide-shard-manifest.json`` before
+  refreshing the package-wide Codecov flag.
   Optional VMEC/Boozer artifact builders remain validated by their tracked
   offline artifact gates and mocked CI contracts, not by importing unavailable
   external repositories in the public coverage job.
@@ -1082,7 +1094,7 @@ The same wide gate can be run locally in one process with:
 .. code-block:: bash
 
    python tools/run_wide_coverage_gate.py \
-     --shards 24 \
+     --shards 48 \
      --timeout 300 \
      --fail-under 95 \
      --pytest-arg=-o \
@@ -1099,9 +1111,9 @@ parallel and downloads the resulting coverage artifacts before the
 .. code-block:: bash
 
    python -m coverage erase
-   for shard in $(seq 1 24); do
+   for shard in $(seq 1 48); do
      python tools/run_wide_coverage_gate.py \
-       --shards 24 \
+       --shards 48 \
        --timeout 300 \
        --only-shard "${shard}" \
        --keep-existing-coverage \
@@ -1112,7 +1124,7 @@ parallel and downloads the resulting coverage artifacts before the
        --pytest-arg="not slow"
    done
    python tools/run_wide_coverage_gate.py \
-     --shards 24 \
+     --shards 48 \
      --combine-only \
      --fail-under 95 \
      --pytest-arg=-o \
