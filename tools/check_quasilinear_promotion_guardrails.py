@@ -9,12 +9,17 @@ import json
 import math
 import re
 from pathlib import Path
+import sys
 from typing import Any
+
+ROOT = Path(__file__).resolve().parents[1]
+SRC = ROOT / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
 
 from spectraxgk.quasilinear_window import nonlinear_window_stats_promotion_ready
 
 
-ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_REPORT_PATTERNS = (
     str(ROOT / "docs/_static/quasilinear_*train_holdout_report.json"),
     str(ROOT / "docs/_static/quasilinear_saturation_rule_sweep.json"),

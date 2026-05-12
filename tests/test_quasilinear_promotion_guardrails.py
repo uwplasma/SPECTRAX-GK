@@ -4,7 +4,10 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 from pathlib import Path
+import subprocess
+import sys
 
 
 def _load_tool_module():
@@ -221,3 +224,26 @@ def test_tracked_quasilinear_promotion_guardrails_pass() -> None:
     assert audit["summary"]["n_calibration_reports"] == 4
     assert audit["summary"]["n_input_validation_reports"] >= 4
     assert audit["summary"]["n_promotion_gate_reports"] >= 4
+
+
+def test_guardrail_script_runs_before_editable_install(tmp_path: Path) -> None:
+    root = Path(__file__).resolve().parents[1]
+    out = tmp_path / "guardrails.json"
+    env = {**os.environ, "PYTHONPATH": ""}
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "tools/check_quasilinear_promotion_guardrails.py",
+            "--out-json",
+            str(out),
+        ],
+        cwd=root,
+        env=env,
+        check=True,
+        text=True,
+        capture_output=True,
+    )
+
+    assert "quasilinear_promotion_guardrails_passed=True" in completed.stdout
+    assert json.loads(out.read_text(encoding="utf-8"))["passed"] is True
