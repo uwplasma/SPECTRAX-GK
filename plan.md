@@ -1165,6 +1165,19 @@ Exit gate:
 
 ### 2026-05-12
 
+- Runtime `k_y` scans now consume `[parallel] strategy = "batch"` with
+  `axis = "ky"` as the production independent-worker path when explicit
+  executable `workers` are not provided. The resolver records requested and
+  effective worker counts, executor, source (`arguments` vs `runtime_config`),
+  problem size, and the ordering-preservation identity contract in runtime scan
+  artifacts. This advances Lane 1 without changing default serial behavior or
+  promoting nonlinear domain-decomposition speedup claims.
+- Validation for the runtime-parallel policy slice:
+  - `python -m pytest -q tests/test_runtime_helpers.py::test_runtime_policy_helpers_preserve_legacy_runtime_exports tests/test_runtime_helpers.py::test_runtime_independent_parallel_plan_resolves_config_and_arguments tests/test_runtime_helpers.py::test_runtime_independent_parallel_plan_rejects_invalid_policy tests/test_runtime_runner.py::test_run_runtime_scan_parallel_config_batch_selects_independent_workers tests/test_runtime_runner.py::test_run_runtime_scan_explicit_workers_override_parallel_config tests/test_runtime_runner.py::test_run_runtime_scan_parallel_config_batch_rejects_non_ky_axis --disable-warnings -o addopts=` passed;
+  - `python -m pytest -q tests/test_runtime_runner.py tests/test_runtime_helpers.py tests/test_runtime_config.py tests/test_parallel.py --maxfail=1 --disable-warnings -o addopts=` passed with 171 tests;
+  - `ruff check src/spectraxgk/runtime.py src/spectraxgk/runtime_policies.py tests/test_runtime_helpers.py tests/test_runtime_runner.py` passed;
+  - `mypy src/spectraxgk/runtime.py src/spectraxgk/runtime_policies.py` passed;
+  - `sphinx-build -b html docs docs/_build/html -q` passed.
 - Worker C extracted benchmark scan-window, fit-signal, mode-only, and
   ky-batching policies from `spectraxgk.benchmarks` into
   `spectraxgk.benchmark_scan`, added focused policy tests, and registered the
