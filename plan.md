@@ -1194,6 +1194,18 @@ Exit gate:
 
 ### 2026-05-12
 
+- Added `flux_tube_geometry_from_vmec_boozer_state` as the public in-memory
+  `VMECState -> BoozXformInputs -> Boozer -> FluxTubeGeometryData` bridge for
+  differentiable stellarator optimization. The wrapper is explicitly scoped as
+  an API boundary, not a nonlinear heat-flux optimization claim.
+- Added `solver_objective_vector_from_geometry` and
+  `vmec_boozer_solver_objective_vector_from_state` as forward evaluators for
+  dominant linear/quasilinear SPECTRAX-GK objectives on the in-memory
+  VMEC/Boozer path. These are value evaluators; branch-continuity and
+  AD/finite-difference gates remain the next validation layer.
+- Validation for this tranche:
+  `python -m pytest -q tests/test_differentiable_geometry_bridge.py tests/test_stellarator_optimization.py tests/test_solver_objective_gradients.py` passed with 45 tests, and `ruff check` passed for the touched source/test files.
+- Commits pushed to `main`: `7ab3676` and `ebdebc1`.
 - Runtime `k_y` scans now consume `[parallel] strategy = "batch"` with
   `axis = "ky"` as the production independent-worker path when explicit
   executable `workers` are not provided. The resolver records requested and
