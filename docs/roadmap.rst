@@ -236,9 +236,10 @@ preserving public behavior and benchmark parity. Refactors should only land
 when they add or preserve tests for the extracted behavior.
 
 Current refactor status: runtime startup, GX-style diagnostics, adaptive chunks,
-runtime result assembly, pure runtime policies, linear linked-boundary maps,
-nonlinear diagnostic packing, validation-gate helpers, zonal-validation helpers,
-and nonlinear parallelization policy metadata are split out and tested.
+runtime result assembly, pure runtime policies, linear parameter policies,
+linear linked-boundary maps, nonlinear diagnostic packing, validation-gate
+helpers, zonal-validation helpers, and nonlinear parallelization policy metadata
+are split out and tested.
 Benchmark normalization/Krylov defaults and pure benchmark helpers are also
 separated from the public runner module while preserving the
 ``spectraxgk.benchmarks`` compatibility surface. The latest restart-artifact
@@ -250,7 +251,7 @@ or broad validation claim.
 Highest-value remaining slices:
 
 - ``runtime.py`` run dispatch, artifact writing, and plotting hooks;
-- ``linear.py`` cache construction, field solve calls, and integration paths;
+- ``linear.py`` cache construction, field solve calls, RHS kernels, and integration paths;
 - ``nonlinear.py`` bracket kernels and long diagnostic integration paths;
 - ``benchmarks.py`` runner orchestration and benchmark artifact policy;
 - plotting and publication-figure helpers;

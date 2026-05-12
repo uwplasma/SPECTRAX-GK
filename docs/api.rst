@@ -50,6 +50,13 @@ Linear Linked Boundaries
    :members:
    :private-members:
 
+Linear Parameters
+-----------------
+
+.. automodule:: spectraxgk.linear_params
+   :members:
+   :private-members:
+
 Nonlinear Diagnostics
 ---------------------
 
