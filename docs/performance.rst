@@ -36,6 +36,12 @@ The exact speedup depends on hardware and problem size. As more geometry and
 operator terms are cached (cv/gb/bgrad, hyper ratios), the overhead balance may
 shift; in this run the cached path was roughly cost-neutral.
 
+No speedup claim should be made from a local profile, scaling panel, or
+parallelization artifact unless the matching numerical-identity gate and
+hardware-specific profiler artifact are cited together. Current production
+parallelization claims are limited to independent-work batching; whole-state
+nonlinear sharding remains a diagnostic/profiler path.
+
 Nonlinear profiling
 -------------------
 

@@ -13,6 +13,12 @@ it.
 Current scoped claims
 ---------------------
 
+Claim scope for this release is intentionally artifact-limited: each
+release-ready claim below must be backed by the cited tracked figure, JSON
+report, test, or workflow gate. Open manuscript physics lanes stay visible in
+the guardrail artifacts, but they are not promoted by the release-readiness
+score.
+
 .. list-table::
    :header-rows: 1
    :widths: 28 18 54
@@ -71,8 +77,9 @@ Current scoped claims
      - production-ready for independent work
      - Independent ``k_y`` scans, quasilinear spectra, sensitivity batches, and
        UQ ensembles preserve serial ordering and have solver-backed scaling
-       artifacts. Whole-state nonlinear sharding is a correctness/profiler gate
-       only.
+       artifacts. Runtime scan TOMLs may use ``[parallel] strategy = "batch"``
+       with ``axis = "ky"`` for this independent scan path. Whole-state
+       nonlinear sharding is a correctness/profiler gate only.
    * - Performance
      - release-ready for scoped profiler evidence
      - Runtime/memory panels, RHS profiler artifacts, and state-sharding
@@ -142,7 +149,8 @@ README claims, or manuscript claims.
      - Reduced AD/finite-difference gates are in scope. Production nonlinear
        turbulence-gradient and optimized-equilibrium heat-flux claims are not.
    * - Scope guardrails
-     - ``manuscript_readiness_status.*``,
+     - ``technical_release_status.json``,
+       ``release_readiness.json``, ``manuscript_readiness_status.*``,
        ``open_research_lane_status.*``, and
        ``w7x_tem_extension_status.*``
      - These panels record what is closed, deferred, partial, or open; they do

@@ -4556,3 +4556,48 @@ Exit gate:
   runtime wrapper and artifact monkeypatch regressions.
 - Updated API docs, architecture docs, and the validation coverage manifest so
   the new orchestration module is tracked as a runtime coverage/refactor lane.
+
+## 2026-05-12 Technical Release 98% Gate and Runtime Parallelization Push
+
+- Added a machine-readable technical release status gate in
+  `tools/build_technical_release_status.py` and tracked
+  `docs/_static/technical_release_status.json`. The gate scores CI/coverage,
+  refactor modularity, docs/release hygiene, parallelization artifacts,
+  performance artifacts, and scientific guardrails separately, with a scoped
+  release target of 98%.
+- Wired the technical status builder into the CI repo-hygiene job before the
+  existing release-readiness check, and added the new status tests to the fast
+  CI shards. The generated local report currently passes at 100% for the scoped
+  technical/release evidence surface.
+- Hardened `tools/check_release_readiness.py` so it no longer trusts the
+  precomputed manuscript readiness fraction. It now recomputes active closed
+  fraction from lane rows, fails on active partial/open/blocked release lanes,
+  keeps deferred lanes explicit, aggregates lane-status parse errors into the
+  release failure list, validates the generated technical status JSON, and
+  requires the technical status artifact.
+- Added a bounded runtime-configured independent `k_y` scan example in
+  `examples/parallelization/`. The example exercises `[parallel]
+  strategy="batch"` as independent solver-call orchestration, not combined-`k_y`
+  solver layout or nonlinear domain decomposition. The misleading
+  `strict_identity` example key was removed because that key is not an enforced
+  serial-comparison gate on this runtime path.
+- Updated README and docs to keep the public parallelization claim scoped to
+  independent `k_y`, quasilinear, sensitivity, and UQ workloads. Whole-state
+  nonlinear sharding remains documented as a correctness/profiler artifact with
+  no production nonlinear speedup claim.
+- Verification for this tranche:
+  - `python tools/build_technical_release_status.py --out-json docs/_static/technical_release_status.json --fail-under 98`
+    passed;
+  - `python tools/check_release_readiness.py --out-json docs/_static/release_readiness.json`
+    passed;
+  - `python -m pytest -q tests/test_check_release_readiness.py tests/test_build_technical_release_status.py tests/test_parallelization_examples.py --disable-warnings -o addopts=`
+    passed with 6 tests;
+  - `ruff check tools/build_technical_release_status.py tests/test_build_technical_release_status.py tests/test_parallelization_examples.py tools/check_release_readiness.py tests/test_check_release_readiness.py examples/parallelization/independent_ky_runtime_batch_scan.py`
+    passed;
+  - `python -m py_compile tools/build_technical_release_status.py tools/check_release_readiness.py examples/parallelization/independent_ky_runtime_batch_scan.py`
+    passed.
+  - `python -m pytest -q tests/test_check_release_readiness.py tests/test_build_technical_release_status.py tests/test_parallelization_examples.py tests/test_parallel.py tests/test_runtime_config.py --maxfail=1 --disable-warnings -o addopts=`
+    passed with 53 tests;
+  - `python -m sphinx -W -b html docs docs/_build/html` passed;
+  - `python -m build` passed;
+  - `python -m twine check dist/*` passed.

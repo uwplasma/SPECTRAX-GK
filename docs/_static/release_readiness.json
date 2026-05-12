@@ -1,6 +1,160 @@
 {
   "failures": [],
   "kind": "spectraxgk_release_readiness",
+  "lane_status": {
+    "active_fraction_closed": 1.0,
+    "passed": true,
+    "recomputed_active_summary": {
+      "active_fraction_closed": 1.0,
+      "incomplete_lanes": [],
+      "n_active": 5,
+      "n_closed": 5,
+      "n_incomplete": 0
+    },
+    "release_scoped_incomplete": 0,
+    "release_scoped_open_or_blocked": 0,
+    "source": "docs/_static/manuscript_readiness_status.json:lanes",
+    "status_artifacts": {
+      "docs/_static/manuscript_readiness_status.json": {
+        "claim_scope": "current_manuscript_excludes_w7x_zonal_recurrence_and_tem_kinetic_electron_extension; quasilinear absolute-flux models are validated as diagnostics/model-selection results only",
+        "kind": "manuscript_readiness_status",
+        "lane_source_key": "lanes",
+        "lanes": [
+          {
+            "claim_level": "scoped_candidate_model_selection_not_runtime_flux_predictor",
+            "lane": "Quasilinear diagnostics and saturation-model selection",
+            "status": "closed"
+          },
+          {
+            "claim_level": "zero_beta_equal_arc_geometry_bridge_closed",
+            "lane": "VMEC/Boozer differentiable geometry parity",
+            "status": "closed"
+          },
+          {
+            "claim_level": "reduced_objective_optimization_closed_not_full_production_vmec_gk",
+            "lane": "Reduced differentiable stellarator ITG optimization",
+            "status": "closed"
+          },
+          {
+            "claim_level": "required_for_full_end_to_end_stellarator_optimization_claim",
+            "lane": "Production solver-objective geometry gradients",
+            "status": "closed"
+          },
+          {
+            "claim_level": "release_performance_artifacts_closed_no_broad_speedup_claim",
+            "lane": "Profiler-backed nonlinear performance claims",
+            "status": "closed"
+          },
+          {
+            "claim_level": "deferred_out_of_current_manuscript_scope",
+            "lane": "W7-X zonal recurrence/damping",
+            "status": "deferred"
+          },
+          {
+            "claim_level": "deferred_out_of_current_manuscript_scope",
+            "lane": "TEM / kinetic-electron stellarator extension",
+            "status": "deferred"
+          }
+        ],
+        "status_counts": {
+          "closed": 5,
+          "deferred": 2
+        },
+        "summary": {
+          "active_fraction_closed": 1.0,
+          "n_active": 5,
+          "n_blocked": 0,
+          "n_closed": 5,
+          "n_deferred": 2,
+          "n_lanes": 7,
+          "n_open": 0,
+          "n_partial": 0
+        }
+      },
+      "docs/_static/open_research_lane_status.json": {
+        "claim_scope": "post_v1_5_development_tracking_no_unvalidated_promotion",
+        "kind": "open_research_lane_status",
+        "lane_source_key": "lanes",
+        "lanes": [
+          {
+            "claim_level": "open_physical_closure_not_normalization",
+            "lane": "W7-X zonal long-window recurrence/damping",
+            "status": "open"
+          },
+          {
+            "claim_level": "validated_simulation_spectrum_tem_extension_open",
+            "lane": "W7-X fluctuation spectrum and TEM/multi-flux extension",
+            "status": "partial"
+          },
+          {
+            "claim_level": "candidate_absolute_flux_model",
+            "lane": "Nonlinear holdouts for quasilinear absolute-flux promotion",
+            "status": "closed"
+          },
+          {
+            "claim_level": "contract_gradient_gate_not_full_stellarator_optimization",
+            "lane": "vmec_jax / booz_xform_jax differentiable geometry bridge",
+            "status": "partial"
+          },
+          {
+            "claim_level": "release_hot_path_localization_closed_future_optimization_scoped",
+            "lane": "Profiler-backed nonlinear hot-path optimization",
+            "status": "closed"
+          }
+        ],
+        "status_counts": {
+          "closed": 2,
+          "open": 1,
+          "partial": 2
+        },
+        "summary": {
+          "n_blocked": 0,
+          "n_closed": 2,
+          "n_lanes": 5,
+          "n_open": 1,
+          "n_partial": 2
+        }
+      },
+      "docs/_static/w7x_tem_extension_status.json": {
+        "claim_scope": "w7x_fluctuation_tem_multi_flux_extension_tracking",
+        "kind": "w7x_tem_extension_status",
+        "lane_source_key": "rows",
+        "lanes": [
+          {
+            "claim_level": "validated_simulation_spectrum_not_experimental_validation",
+            "lane": "W7-X nonlinear fluctuation spectrum",
+            "status": "closed"
+          },
+          {
+            "claim_level": "open_linear_mismatch_blocks_tem_extension",
+            "lane": "TEM / kinetic-electron linear parity",
+            "status": "open"
+          },
+          {
+            "claim_level": "untracked_required_manuscript_extension",
+            "lane": "W7-X multi-flux-tube and multi-surface scan",
+            "status": "open"
+          },
+          {
+            "claim_level": "not_started",
+            "lane": "W7-X kinetic-electron/TEM nonlinear window",
+            "status": "open"
+          }
+        ],
+        "status_counts": {
+          "closed": 1,
+          "open": 3
+        },
+        "summary": {
+          "n_closed": 1,
+          "n_open": 3,
+          "n_partial": 0,
+          "n_rows": 4
+        }
+      }
+    },
+    "target_fraction": 0.98
+  },
   "passed": true,
   "project": {
     "name": "spectraxgk",
@@ -10,6 +164,10 @@
     ],
     "version": "1.5.0"
   },
+  "release_target": {
+    "status_source": "docs/_static/manuscript_readiness_status.json:lanes",
+    "technical_completion_fraction": 0.98
+  },
   "required_ci_snippets": [
     "wide-coverage-shards",
     "coverage-wide-shard-manifest.json",
@@ -18,6 +176,7 @@
     "tools/check_parallel_scaling_artifacts.py",
     "tools/check_performance_optimization_manifest.py",
     "tools/check_quasilinear_promotion_guardrails.py",
+    "tools/build_technical_release_status.py",
     "tools/check_release_readiness.py"
   ],
   "required_readme_snippets": [
@@ -30,11 +189,22 @@
     "docs/_static/validation_gate_index.json",
     "docs/_static/validation_coverage_manifest_summary.json",
     "docs/_static/quasilinear_promotion_guardrails.json",
+    "docs/_static/technical_release_status.json",
+    "docs/_static/manuscript_readiness_status.json",
+    "docs/_static/open_research_lane_status.json",
+    "docs/_static/w7x_tem_extension_status.json",
     "docs/_static/independent_ky_scan_scaling_large.json",
     "docs/_static/quasilinear_uq_ensemble_scaling_large.json",
     "docs/_static/nonlinear_sharding_strong_scaling_large.json"
   ],
   "root": "/Users/rogeriojorge/local/SPECTRAX-GK",
+  "technical_status": {
+    "completion_percent": 100.0,
+    "failed_required": [],
+    "passed": true,
+    "source": "docs/_static/technical_release_status.json",
+    "target_percent": 98.0
+  },
   "version": {
     "checked_pypi": false,
     "duplicate_on_pypi": false,
