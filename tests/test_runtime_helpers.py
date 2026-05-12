@@ -7,6 +7,12 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
+import spectraxgk.runtime as runtime
+import spectraxgk.runtime_policies as runtime_policies
+from spectraxgk.runtime_orchestration import (
+    build_runtime_progress_message,
+    format_duration,
+)
 from spectraxgk.benchmarking import late_time_linear_metrics
 from spectraxgk.config import (
     GeometryConfig,
@@ -136,6 +142,31 @@ def test_runtime_small_helper_functions() -> None:
     assert _gx_default_p_hyper_m(3) == 1.0
     assert _gx_default_p_hyper_m(40) == 20.0
     assert _runtime_model_key(cfg) == "gyrokinetic"
+
+
+def test_runtime_policy_helpers_preserve_legacy_runtime_exports() -> None:
+    for name in runtime_policies.__all__:
+        assert getattr(runtime, name) is getattr(runtime_policies, name)
+
+
+def test_runtime_orchestration_progress_policy() -> None:
+    message, snapshot = build_runtime_progress_message(
+        label="nonlinear",
+        chunk_index=3,
+        t_elapsed=2.0,
+        t_max=4.0,
+        chunk_wall_seconds=61.0,
+        elapsed_seconds=180.0,
+    )
+
+    assert format_duration(3661.0) == "1:01:01"
+    assert snapshot.progress == pytest.approx(0.5)
+    assert snapshot.eta_seconds == pytest.approx(180.0)
+    assert "completed nonlinear chunk 3" in message
+    assert "progress= 50.0%" in message
+    assert "chunk_wall=01:01" in message
+    assert "elapsed=03:00" in message
+    assert "eta=03:00" in message
 
 
 def test_runtime_random_pair_edge_cases() -> None:

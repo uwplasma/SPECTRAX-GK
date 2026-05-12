@@ -41,6 +41,69 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.runtime_policies"
+path = "src/spectraxgk/runtime_policies.py"
+owner_lane = "pure runtime selection policies split from runtime orchestration"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "GX-style runtime monitored-mode and external-field conventions",
+  "Cyclone/W7-X runtime scan and nonlinear artifact replay contracts",
+]
+physics_contracts = [
+  "runtime policy helpers select the intended monitored mode and external potential source",
+  "step-count inference follows the same fixed/adaptive semantics used by nonlinear diagnostics",
+]
+numerics_contracts = [
+  "dealias-mask mode selection is deterministic when the requested mode is filtered",
+  "adaptive step-count ceilings remain finite and reject zero-length runs",
+]
+fast_tests = [
+  "tests/test_runtime_helpers.py",
+]
+artifact_paths = [
+  "docs/_static/validation_gate_index.json",
+  "docs/_static/w7x_exact_state_audit.json",
+]
+next_tests = [
+  "add direct coverage for combined-ky scan policy once runtime scan dispatch is split",
+  "keep legacy spectraxgk.runtime exports object-identical until the next major API cleanup",
+]
+
+[[modules]]
+module = "spectraxgk.runtime_orchestration"
+path = "src/spectraxgk/runtime_orchestration.py"
+owner_lane = "runtime progress, scan batching, and nonlinear artifact handoff orchestration"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "GX-style adaptive runtime progress and restart output contracts",
+  "combined-ky runtime scan and nonlinear checkpoint artifact regressions",
+]
+physics_contracts = [
+  "orchestration helpers preserve the selected runtime geometry, species, and monitored diagnostic policy supplied by callers",
+  "nonlinear restart handoff preserves cumulative diagnostics without promoting new physics claims",
+]
+numerics_contracts = [
+  "progress and ETA reporting stays deterministic for finite and near-zero progress fractions",
+  "checkpointed nonlinear artifact handoff validates finite chunks before writing restart or output artifacts",
+]
+fast_tests = [
+  "tests/test_runtime_helpers.py",
+  "tests/test_runtime_artifacts.py",
+]
+artifact_paths = [
+  "docs/_static/validation_gate_index.json",
+  "docs/_static/w7x_exact_state_audit.json",
+]
+next_tests = [
+  "add direct combined-ky scan orchestration fixtures that bypass the legacy runtime wrapper",
+  "split CLI plotting/output dispatch once CLI ownership is available in a later tranche",
+]
+
+[[modules]]
 module = "spectraxgk.linear"
 path = "src/spectraxgk/linear.py"
 owner_lane = "linear gyrokinetic operators, field solve, growth/frequency diagnostics"
@@ -72,8 +135,171 @@ artifact_paths = [
   "docs/_static/w7x_eigenfunction_reference_overlay_ky0p3000.png",
 ]
 next_tests = [
-  "extract linear cache/diagnostic helpers and preserve public imports",
+  "extract field-solve and diagnostic helpers and preserve public imports",
   "replace remaining convergence pilots with monotone velocity-space sweeps",
+]
+
+[[modules]]
+module = "spectraxgk.linear_cache"
+path = "src/spectraxgk/linear_cache.py"
+owner_lane = "linear geometry cache construction and damping factors"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "Hermite-Laguerre gyroaverage and polarization cache contracts",
+  "linked-boundary and nonlinear-dealias cache construction used by linear and nonlinear parity lanes",
+]
+physics_contracts = [
+  "cached gyroaverages, drifts, magnetic geometry, and damping factors preserve the operator seen by RHS kernels",
+  "species-dependent collision and hypercollision factors keep the intended multi-species broadcast semantics",
+]
+numerics_contracts = [
+  "LinearCache remains a stable JAX pytree with deterministic flatten/unflatten ordering",
+  "cache builders preserve dtype policy, linked-boundary metadata, dealias masks, and moment-space array shapes",
+]
+fast_tests = [
+  "tests/test_linear.py",
+  "tests/test_linear_helpers_extra.py",
+  "tests/test_geometry.py",
+]
+artifact_paths = [
+  "docs/_static/cyclone_resolution_observed_order.json",
+  "docs/_static/w7x_eigenfunction_reference_overlay_ky0p3000.png",
+]
+next_tests = [
+  "add direct cache-construction fixtures for sampled geometry, linked geometry, and multispecies damping paths",
+  "keep spectraxgk.linear cache exports object-identical until the next major API cleanup",
+]
+
+[[modules]]
+module = "spectraxgk.linear_moments"
+path = "src/spectraxgk/linear_moments.py"
+owner_lane = "Hermite-Laguerre moment operators and field-coupling primitives"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "Hermite-Laguerre ladder representation of the linear gyrokinetic equation",
+  "electrostatic quasineutrality and gyrokinetic variable construction used by linear and nonlinear RHS assembly",
+]
+physics_contracts = [
+  "velocity-space ladder operators preserve Hermite/Laguerre recurrence identities",
+  "field-coupled H construction applies phi, A_parallel, and B_parallel to the intended moment channels",
+]
+numerics_contracts = [
+  "zero-padded moment shifts remain non-periodic and shape preserving",
+  "quasineutrality protects zero denominators and preserves multi-species broadcasting",
+]
+fast_tests = [
+  "tests/test_linear.py",
+  "tests/test_linear_helpers_extra.py",
+  "tests/test_terms_fields.py",
+  "tests/test_terms_assembly.py",
+]
+artifact_paths = [
+  "docs/_static/hermite_streaming_ladder_gate.json",
+  "docs/_static/electrostatic_field_reduce_gate.json",
+]
+next_tests = [
+  "add direct finite-difference checks for grad_z_periodic and streaming_term on analytic waves",
+  "keep spectraxgk.linear moment exports object-identical until the next major API cleanup",
+]
+
+[[modules]]
+module = "spectraxgk.linear_params"
+path = "src/spectraxgk/linear_params.py"
+owner_lane = "linear parameter pytrees, term toggles, and validation/coercion helpers"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "Hermite-Laguerre linear operator parameter contracts",
+  "runtime and benchmark term-toggle conversion policies",
+]
+physics_contracts = [
+  "linear species and field parameters remain explicit JAX pytrees",
+  "term toggles map one-to-one to modular operator term weights",
+]
+numerics_contracts = [
+  "scalar and species-array parameters coerce to deterministic shapes",
+  "positive/nonnegative validation rejects invalid host values while allowing traced autodiff values",
+]
+fast_tests = [
+  "tests/test_linear_helpers_extra.py",
+  "tests/test_linear.py",
+]
+artifact_paths = [
+  "docs/_static/cyclone_resolution_observed_order.json",
+  "docs/_static/validation_gate_index.json",
+]
+next_tests = [
+  "add direct pytree round-trip tests for LinearParams and LinearTerms after any dataclass field changes",
+  "keep spectraxgk.linear re-exports object-identical until the next major API cleanup",
+]
+
+[[modules]]
+module = "spectraxgk.linear_linked"
+path = "src/spectraxgk/linear_linked.py"
+owner_lane = "linked-boundary FFT maps and end-damping profiles"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "field-aligned linked-boundary linear operator contracts",
+  "GX-style linked-end damping used by Cyclone and stellarator parity lanes",
+]
+physics_contracts = [
+  "linked chains preserve the intended ky/kx mirror symmetry for field-aligned domains",
+  "linked end damping remains explicit and separate from physical collisions",
+]
+numerics_contracts = [
+  "signed Fourier indices map to FFT storage indices deterministically",
+  "linked FFT kz arrays and damping profiles preserve chain length and endpoint behavior",
+]
+fast_tests = [
+  "tests/test_linear_helpers_extra.py",
+  "tests/test_linear.py",
+]
+artifact_paths = [
+  "docs/_static/cyclone_resolution_observed_order.json",
+  "docs/_static/validation_gate_index.json",
+]
+next_tests = [
+  "add minimal direct linked-chain fixtures independent of full cache construction",
+  "preserve profiler labels when linked derivative kernels are split further",
+]
+
+[[modules]]
+module = "spectraxgk.linear_parallel"
+path = "src/spectraxgk/linear_parallel.py"
+owner_lane = "gated velocity-parallel linear RHS dispatch and Hermite shard-map helpers"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "linear RHS streaming and electrostatic-slice identity gates",
+  "disabled-by-default runtime velocity parallelization policy",
+]
+physics_contracts = [
+  "parallel RHS routes preserve the same electrostatic field solve and linear term weights as serial RHS assembly",
+  "unsupported collision, electromagnetic, linked-boundary, and non-Hermite-axis cases fail closed rather than changing physics",
+]
+numerics_contracts = [
+  "serial fallback remains an exact alias for spectraxgk.linear.linear_rhs_cached",
+  "Hermite-sharded streaming and electrostatic-slice routes preserve shape, dtype, and phi identity gates",
+]
+fast_tests = [
+  "tests/test_linear_helpers_extra.py",
+  "tests/test_velocity_sharding.py",
+]
+artifact_paths = [
+  "docs/_static/linear_rhs_streaming_gate.json",
+  "docs/_static/linear_rhs_electrostatic_slices_gate.json",
+]
+next_tests = [
+  "keep spectraxgk.linear parallel exports object-identical until the next major API cleanup",
+  "add direct dispatch-policy tests for backend auto, unsupported axes, and fail-closed term combinations",
 ]
 
 [[modules]]
@@ -116,6 +342,69 @@ next_tests = [
   "add more unit coverage for resolved spectral diagnostics",
   "add reduced free-energy/conservation tests for nonlinear-only limits",
   "close TEM branch/frequency parity before kinetic-electron W7-X nonlinear gates",
+]
+
+[[modules]]
+module = "spectraxgk.nonlinear_diagnostics"
+path = "src/spectraxgk/nonlinear_diagnostics.py"
+owner_lane = "resolved nonlinear diagnostic packing and time-sample retention"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "GX exact-state resolved nonlinear diagnostic schemas",
+  "case-specific nonlinear window statistics used for release gates",
+]
+physics_contracts = [
+  "resolved diagnostic names and ordering remain stable for spectral heat-flux audits",
+  "sample-stride compression retains the final nonlinear state needed by transport windows",
+]
+numerics_contracts = [
+  "axis-0 sampling preserves array rank and final sample retention",
+  "diagnostic packing maps each resolved array to the documented dataclass field",
+]
+fast_tests = [
+  "tests/test_nonlinear_helpers_extra.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_window_statistics.json",
+  "docs/_static/validation_gate_index.json",
+]
+next_tests = [
+  "add direct NetCDF resolved-diagnostic schema round-trip coverage after artifact writers are split further",
+  "keep legacy spectraxgk.nonlinear helper exports object-identical until the next major API cleanup",
+]
+
+[[modules]]
+module = "spectraxgk.nonlinear_helpers"
+path = "src/spectraxgk/nonlinear_helpers.py"
+owner_lane = "nonlinear projection helpers, collision split policies, GX omega masks, and IMEX operator construction"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "fixed-mode nonlinear diagnostics and GX real-FFT Hermitian projection",
+  "split collision/hypercollision nonlinear updates and reusable IMEX solves",
+]
+physics_contracts = [
+  "collision and hypercollision weights remain explicit before split updates are applied",
+  "fixed-mode projection preserves the selected Fourier block exactly",
+]
+numerics_contracts = [
+  "GX omega masks keep only unique real-FFT modes before gamma/omega reductions",
+  "prebuilt nonlinear IMEX operators preserve dtype, shape, and preconditioner metadata",
+]
+fast_tests = [
+  "tests/test_nonlinear_helpers_extra.py",
+  "tests/test_nonlinear.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_window_statistics.json",
+  "docs/_static/validation_gate_index.json",
+]
+next_tests = [
+  "keep legacy spectraxgk.nonlinear helper exports object-identical until the next major API cleanup",
+  "add direct helper parity coverage when the IMEX diagnostics loop is split further",
 ]
 
 [[modules]]
@@ -178,12 +467,14 @@ physics_contracts = [
   "external VMEC nonlinear pilots enter calibration only after explicit grid/window convergence gates pass",
 ]
 numerics_contracts = [
-  "window means and uncertainties are finite-filtered and serialized with null-safe JSON fields",
+  "window means and uncertainties include running-mean drift, block/bootstrap SEM, and finite-sample gates",
   "zero or non-positive quasilinear predictions remain visible in plots instead of being hidden by log axes",
   "grid-refined late-window means are compared with symmetric relative differences and stationarity gates",
 ]
 fast_tests = [
   "tests/test_quasilinear_calibration.py",
+  "tests/test_quasilinear_window.py",
+  "tests/test_quasilinear_promotion_guardrails.py",
   "tests/test_check_quasilinear_calibration_inputs.py",
   "tests/test_plot_quasilinear_calibration.py",
   "tests/test_plot_external_vmec_nonlinear_convergence_gate.py",
@@ -210,6 +501,38 @@ artifact_paths = [
 next_tests = [
   "add per-species ion/electron calibration points once kinetic-electron nonlinear holdouts are validated",
   "tighten transport-window uncertainty propagation before any absolute saturated-flux model is promoted",
+]
+
+[[modules]]
+module = "spectraxgk.quasilinear_window"
+path = "src/spectraxgk/quasilinear_window.py"
+owner_lane = "nonlinear late-window convergence metadata for quasilinear holdouts"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "post-transient nonlinear heat-flux windows used for reduced-model holdout validation",
+  "block-bootstrap uncertainty and running-average stationarity gates for noisy turbulence traces",
+]
+physics_contracts = [
+  "absolute-flux quasilinear promotion requires converged nonlinear holdout windows with provenance",
+  "startup/transient-only traces and compact finite-difference plumbing windows cannot promote transport claims",
+]
+numerics_contracts = [
+  "late-window means, running-mean drift, SEM, block-bootstrap SEM, and sample counts remain finite",
+  "NaN late-window samples and undersampled windows fail closed by default",
+]
+fast_tests = [
+  "tests/test_quasilinear_window.py",
+  "tests/test_quasilinear_calibration.py",
+  "tests/test_quasilinear_promotion_guardrails.py",
+]
+artifact_paths = [
+  "docs/_static/quasilinear_promotion_guardrails.json",
+]
+next_tests = [
+  "regenerate promoted-candidate reports with serialized nonlinear_window_stats once true holdout gates pass",
+  "extend CSV convergence ingestion to NetCDF when a direct promotion workflow needs it",
 ]
 
 [[modules]]
@@ -243,8 +566,102 @@ artifact_paths = [
   "docs/_static/validation_gate_index.json",
 ]
 next_tests = [
-  "split reference loading from run execution",
+  "split remaining run execution blocks behind compatibility exports",
   "add manifest-backed tests that every published benchmark figure has a gate source",
+]
+
+[[modules]]
+module = "spectraxgk.benchmark_helpers"
+path = "src/spectraxgk/benchmark_helpers.py"
+owner_lane = "reference loaders, benchmark result containers, and fit-signal policies"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "Cyclone, ETG, TEM, KBM, and kinetic-electron reference tables",
+  "benchmark fit-window policies used by release atlas generation",
+]
+physics_contracts = [
+  "reference loaders preserve ky ordering and sign conventions",
+  "fit-signal fallback policies remain explicit for density/phi ambiguity",
+]
+numerics_contracts = [
+  "auto-window scoring handles nonfinite and near-zero signals deterministically",
+  "batch slicing preserves ky order and requested batch size",
+]
+fast_tests = [
+  "tests/test_benchmarks_helpers.py",
+]
+artifact_paths = [
+  "docs/_static/benchmark_core_linear_atlas.png",
+  "docs/_static/validation_gate_index.json",
+]
+next_tests = [
+  "add reference-table checksum tests for every shipped CSV",
+  "split benchmark figure manifest policy after runner orchestration is smaller",
+]
+
+[[modules]]
+module = "spectraxgk.benchmark_scan"
+path = "src/spectraxgk/benchmark_scan.py"
+owner_lane = "pure benchmark scan-window, batching, and fit-signal policies"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "Cyclone, ETG, TEM, kinetic-electron, and KBM scan runner contracts",
+  "benchmark fit-window policies used by release atlas generation",
+]
+physics_contracts = [
+  "fit-signal selectors preserve phi/density ambiguity explicitly",
+  "mode-only scan saves use direct extraction methods instead of projection-only policies",
+]
+numerics_contracts = [
+  "explicit fit windows fall back to auto windows when undersampled",
+  "fixed-shape ky batching is disabled for array-valued per-point controls",
+]
+fast_tests = [
+  "tests/test_benchmark_scan.py",
+  "tests/test_benchmarks_helpers.py",
+]
+artifact_paths = [
+  "docs/_static/benchmark_core_linear_atlas.png",
+  "docs/_static/validation_gate_index.json",
+]
+next_tests = [
+  "add branch-level parity fixtures for every scan runner wrapper",
+  "move benchmark figure manifest policy after solver orchestration is smaller",
+]
+
+[[modules]]
+module = "spectraxgk.benchmark_defaults"
+path = "src/spectraxgk/benchmark_defaults.py"
+owner_lane = "normalization constants and Krylov policies for shipped benchmark lanes"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "case-specific normalization contracts for Cyclone, ETG, TEM, kinetic-electron, and KBM benchmarks",
+  "default Krylov branch-following policies used by benchmark scans",
+]
+physics_contracts = [
+  "diagnostic normalization constants follow the canonical case contracts",
+  "case-specific Krylov defaults encode branch-sign and continuation choices explicitly",
+]
+numerics_contracts = [
+  "shift-invert and propagator defaults remain immutable dataclass policies",
+  "GX-reference kinetic-electron default differs only by documented shift source",
+]
+fast_tests = [
+  "tests/test_normalization.py",
+]
+artifact_paths = [
+  "docs/_static/benchmark_core_linear_atlas.png",
+  "docs/_static/validation_gate_index.json",
+]
+next_tests = [
+  "add tests that TOML benchmark overrides do not mutate shared default policies",
+  "promote case-default policy documentation into the benchmark atlas manifest",
 ]
 
 [[modules]]

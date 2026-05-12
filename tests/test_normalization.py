@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pytest
 
+from spectraxgk import benchmark_defaults
 from spectraxgk import benchmarks
 from spectraxgk.normalization import (
     apply_diagnostic_normalization,
@@ -53,3 +54,12 @@ def test_benchmark_constants_follow_contract() -> None:
     assert benchmarks.KBM_OMEGA_STAR_SCALE == pytest.approx(kbm.omega_star_scale)
     assert benchmarks.KBM_RHO_STAR == pytest.approx(kbm.rho_star)
 
+
+def test_benchmark_defaults_preserve_benchmarks_compatibility_surface() -> None:
+    for name in benchmark_defaults.__all__:
+        assert getattr(benchmarks, name) is getattr(benchmark_defaults, name)
+
+    assert benchmarks.KINETIC_KRYLOV_GX_REFERENCE.shift_source == "history"
+    assert benchmarks.KINETIC_KRYLOV_DEFAULT.shift_source == "target"
+    assert benchmarks.KBM_KRYLOV_DEFAULT.mode_family == "kbm"
+    assert benchmarks.ETG_KRYLOV_DEFAULT.omega_sign == -1

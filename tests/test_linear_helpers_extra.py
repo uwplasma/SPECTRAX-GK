@@ -13,6 +13,12 @@ from spectraxgk.config import GridConfig
 from spectraxgk.geometry import FluxTubeGeometryData, SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.gyroaverage import J_l_all
+import spectraxgk.linear as linear_mod
+import spectraxgk.linear_cache as linear_cache
+import spectraxgk.linear_linked as linear_linked
+import spectraxgk.linear_moments as linear_moments
+import spectraxgk.linear_parallel as linear_parallel
+import spectraxgk.linear_params as linear_params
 from spectraxgk.linear import (
     LinearParams,
     LinearTerms,
@@ -92,6 +98,31 @@ def test_as_species_array_and_preconditioner_resolution() -> None:
         return x
 
     assert _resolve_implicit_preconditioner(fn) is fn
+
+
+def test_linear_linked_helpers_preserve_legacy_exports() -> None:
+    for name in linear_linked.__all__:
+        assert getattr(linear_mod, name) is getattr(linear_linked, name)
+
+
+def test_linear_param_helpers_preserve_legacy_exports() -> None:
+    for name in linear_params.__all__:
+        assert getattr(linear_mod, name) is getattr(linear_params, name)
+
+
+def test_linear_cache_helpers_preserve_legacy_exports() -> None:
+    for name in linear_cache.__all__:
+        assert getattr(linear_mod, name) is getattr(linear_cache, name)
+
+
+def test_linear_moment_helpers_preserve_legacy_exports() -> None:
+    for name in linear_moments.__all__:
+        assert getattr(linear_mod, name) is getattr(linear_moments, name)
+
+
+def test_linear_parallel_helpers_preserve_legacy_exports() -> None:
+    for name in linear_parallel.__all__:
+        assert getattr(linear_mod, name) is getattr(linear_parallel, name)
 
 
 def test_is_tracer_and_lenard_bernstein_eigenvalues() -> None:

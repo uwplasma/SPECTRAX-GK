@@ -49,6 +49,10 @@ documented without changing the physics claim surface:
 Current pre-release status snapshot:
 
 - runtime/memory and nonlinear atlas figures include W7-X and HSX release rows;
+- the large runtime/diagnostics refactor has a release-engineering boundary:
+  extracted startup/chunk/result/artifact helpers and validation-policy modules
+  preserve public behavior, including restartable NetCDF append schema, but do
+  not by themselves promote new physics or speedup claims;
 - targeted nonlinear coverage now exercises explicit diagnostic branches,
   Hermitian projection, fixed-mode frequency extraction, IMEX nonlinear terms,
   and scalar/gyroaveraged electromagnetic bracket components;
@@ -94,6 +98,13 @@ Current pre-release status snapshot:
   gate, and a
   tracked AD-vs-finite-difference inverse/UQ artifact at
   ``docs/_static/differentiable_geometry_bridge.png``;
+- the fixed-resolution QI row in the parity matrix is admitted only at
+  ``mboz=nboz=21`` after low-mode Boozer settings are rejected; after the
+  Boozer half-mesh convention fix, the current regenerated artifact passes QI
+  drift at about ``7.13e-2`` against the ``8e-2`` tolerance and the evaluated
+  QI ``ntheta=8,16`` variants pass. The full QI seed campaign remains
+  artifact-limited by missing bundled ``wout`` references and is not broad QI
+  transport validation, quasilinear calibration, or nonlinear optimization;
 - production parallelization is currently claimed only for independent
   ``k_y``/batch/UQ-style workloads and the sharded linear RK2 identity path,
   not nonlinear domain decomposition;
@@ -131,9 +142,13 @@ Current manuscript-scope readiness is tracked separately by
 and TEM/kinetic-electron extensions are intentionally deferred from this
 manuscript. In that narrower scope, the quasilinear lane is closed as a
 validated diagnostic/model-selection result rather than as an absolute-flux
-predictor, VMEC/Boozer equal-arc geometry parity is closed at
-``mboz=nboz=21``, and the reduced differentiable stellarator ITG optimization
-examples are closed with AD/FD gates. The solver-objective geometry-gradient
+predictor, VMEC/Boozer equal-arc geometry parity is closed for the current
+artifact-passing ``mboz=nboz=21`` rows, including fixed-resolution QI after the
+half-mesh convention fix. The evaluated QI robustness variants pass, while the
+full QI seed campaign is artifact-limited by missing bundled ``wout`` files.
+The reduced
+differentiable stellarator ITG optimization examples are closed with AD/FD
+gates. The solver-objective geometry-gradient
 lane has passed actual linear-RHS gates at the solver-ready geometry contract
 plus mode-21 VMEC/Boozer state-to-solver eigenfrequency, quasilinear
 heat-flux-weight, and reduced nonlinear-window-estimator gates on QH and Li383
@@ -204,11 +219,14 @@ The canonical claim ledger for release notes and manuscript drafting is now
 :doc:`release_scope`. It records which claims are supported by the current
 artifacts and which remain explicitly unpromoted. In short: release-level
 validation is closed for the scoped benchmark, quasilinear diagnostic/model-
-selection, reduced differentiable-geometry, independent-work parallelization,
-and profiler-localization claims; production nonlinear heat-flux stellarator
-optimization, runtime absolute quasilinear flux prediction, electromagnetic
-quasilinear calibration, nonlinear multi-GPU speedup, W7-X zonal recurrence
-closure, and W7-X TEM/kinetic-electron validation remain future gates.
+selection, artifact-passing reduced differentiable-geometry, independent-work
+parallelization, runtime/refactor artifact-contract, and profiler-localization
+claims, including the fixed-resolution QI equal-arc row after the half-mesh
+convention fix. Production nonlinear heat-flux stellarator optimization, broad
+QI validation, runtime absolute quasilinear flux
+prediction, electromagnetic quasilinear calibration, nonlinear multi-GPU
+speedup, W7-X zonal recurrence closure, and W7-X TEM/kinetic-electron
+validation remain future gates.
 
 Active refactor lane
 --------------------
@@ -217,12 +235,25 @@ The current branch is splitting large modules into smaller, tested units while
 preserving public behavior and benchmark parity. Refactors should only land
 when they add or preserve tests for the extracted behavior.
 
+Current refactor status: runtime startup, GX-style diagnostics, adaptive chunks,
+runtime result assembly, pure runtime policies, linear parameter policies,
+linear linked-boundary maps, nonlinear diagnostic packing, validation-gate
+helpers, zonal-validation helpers, and nonlinear parallelization policy metadata
+are split out and tested.
+Benchmark normalization/Krylov defaults and pure benchmark helpers are also
+separated from the public runner module while preserving the
+``spectraxgk.benchmarks`` compatibility surface. The latest restart-artifact
+contract keeps NetCDF continuation appends on the persisted diagnostic schema.
+Treat this as release engineering: it supports maintenance, restart
+reproducibility, and future refactors, not a production nonlinear optimization
+or broad validation claim.
+
 Highest-value remaining slices:
 
-- ``runtime.py`` and runtime orchestration;
-- ``linear.py`` and linear operator assembly;
-- ``nonlinear.py`` and nonlinear bracket/diagnostic paths;
-- ``benchmarks.py`` and benchmark artifact policy;
+- ``runtime.py`` run dispatch, artifact writing, and plotting hooks;
+- ``linear.py`` cache construction, field solve calls, RHS kernels, and integration paths;
+- ``nonlinear.py`` bracket kernels and long diagnostic integration paths;
+- ``benchmarks.py`` runner orchestration and benchmark artifact policy;
 - plotting and publication-figure helpers;
 - VMEC/Miller geometry adapter boundaries.
 

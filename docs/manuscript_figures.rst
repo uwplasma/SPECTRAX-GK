@@ -159,6 +159,10 @@ Core Validation Figures
      - ``tools/plot_quasilinear_dataset_sufficiency.py``
      - Promotion guard closed for the scoped spectral-envelope candidate; higher-parameter and electromagnetic claims remain blocked
      - current artifact base: ``docs/_static/quasilinear_dataset_sufficiency.png`` with JSON/PDF companions. It audits the validated nonlinear windows before any richer saturation model is promoted. The current electrostatic-compatible set has seven cases, two explicit training geometries, and five held-out geometries. That is sufficient for the one-parameter linear-weight candidate, the two-parameter shape-power-law candidate, and the three-parameter ``spectral_envelope_ridge`` candidate, but not for the five-parameter ``linear_state_ridge`` model. KBM is explicitly excluded from this electrostatic quasilinear promotion lane because electromagnetic field-channel normalization and calibration remain future work. The gate therefore supports the scoped spectral-envelope model-selection claim while preventing broader absolute-flux or electromagnetic quasilinear claims.
+   * - Quasilinear promotion guardrail audit
+     - ``tools/check_quasilinear_promotion_guardrails.py``
+     - Fast metadata gate closed; nonlinear simulation validation remains delegated to the source gates
+     - current artifact: ``docs/_static/quasilinear_promotion_guardrails.json``. It scans the train/holdout calibration reports, saturation-model reports, nonlinear input-validation blocks, promotion gates, and claim-scope docs. It requires finite nonlinear window means and standard deviations for train/holdout calibration points, explicit nonlinear and quasilinear artifact provenance, passed held-out gates before any ``calibrated_absolute_flux`` claim, and non-promotion wording in the docs. This is deliberately a wording and metadata guard, not a calibrated absolute-flux claim or a replacement for nonlinear convergence simulations.
    * - Release claim-scope ledger
      - ``docs/release_scope.rst``
      - Closed as documentation guardrail
@@ -225,7 +229,7 @@ Differentiable-Physics Figures
    * - VMEC/Boozer parity matrix
      - ``tools/build_vmec_boozer_parity_matrix.py``
      - Multi-equilibrium zero-beta equal-arc geometry gate closed at ``mboz=nboz=21``
-     - current artifact base: ``docs/_static/vmec_boozer_parity_matrix.png`` with JSON/CSV/PDF companions. It checks QH, QI, and shaped-tokamak fixtures against the imported VMEC/EIK runtime convention and rejects ``mboz,nboz < 21``. The current limiting row is QI drift at ``7.13e-2`` against the ``8e-2`` release tolerance. This should be presented as a field-line geometry convention gate, not as a finite-beta transport-gradient validation.
+     - current artifact base: ``docs/_static/vmec_boozer_parity_matrix.png`` with JSON/CSV/PDF companions. It checks QH, QI, and shaped-tokamak fixtures against the imported VMEC/EIK runtime convention and rejects ``mboz,nboz < 21``. The current limiting matrix row is QI drift at ``7.13e-2`` against the ``8e-2`` release tolerance; evaluated QI ``ntheta=8,16`` variants pass, while input-only QI seeds without bundled ``wout`` references are explicitly artifact-limited. This should be presented as a field-line geometry convention gate, not as a finite-beta transport-gradient validation.
 
 Caption Policy
 --------------

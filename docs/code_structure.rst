@@ -35,6 +35,13 @@ remain unchanged:
 - ``spectraxgk.from_gx.*``
 - low-level geometry adapters and import bridges
 
+Large refactor status for this push: the split runtime, diagnostics,
+validation-gate, zonal-validation, and parallelization-policy modules are
+documented as behavior-preserving infrastructure. They should not be cited as
+new physics validation, production nonlinear optimization, or broad performance
+claims unless the corresponding artifact gate in :doc:`release_scope` promotes
+that claim separately.
+
 Runtime Flow
 ------------
 
@@ -84,11 +91,11 @@ Physics / Numerics / IO Map
      - ``parallel.py``, ``sharding.py``, ``nonlinear_parallel.py``
      - identity gates, one-device fallback, diagnostic-only nonlinear sharding policy
    * - Runtime/executable behavior
-     - ``runtime.py``, ``cli.py``
-     - runtime contract, startup/restart, output-path, executable smoke tests
+     - ``runtime.py``, ``runtime_startup.py``, ``runtime_chunks.py``, ``runtime_results.py``, ``cli.py``
+     - runtime contract, startup/restart, output-path, chunking, result assembly, executable smoke tests
    * - Artifacts and plots
      - ``runtime_artifacts.py``, ``plotting.py``
-     - serialization, reload, plotting contract tests
+     - serialization, reload, restart append schema, plotting contract tests
    * - Benchmark harness
      - ``benchmarking.py``, ``benchmarks.py``, ``validation_gates.py``, ``zonal_validation.py``
      - late-time/windowed gate tests, reference loading, fallback policy tests
@@ -114,6 +121,10 @@ Completed extractions:
   ``validation_gates.py``
 - zonal-response reference/trace normalization helpers:
   ``zonal_validation.py``
+- nonlinear parallelization policy metadata:
+  ``nonlinear_parallel.py``
+- runtime artifact read/write and restart-append schema coverage:
+  ``runtime_artifacts.py``
 
 Next planned extractions:
 
@@ -130,6 +141,12 @@ requires every high-priority module to name its source path, owning lane,
 reference anchors, physics and numerics contracts, fast tests, artifacts, and
 next coverage tests. Update it whenever a source extraction changes module
 ownership or validation responsibility.
+
+Release-scope synchronization for refactors is tracked separately in
+:doc:`release_scope`. In particular, the current restartable NetCDF append
+contract normalizes diagnostics loaded from ``*.out.nc`` to the persisted
+schema before concatenation; transient in-memory traces that are not stored in
+the NetCDF artifact are not treated as release data on continuation.
 
 Testing Taxonomy
 ----------------
