@@ -261,7 +261,9 @@ Before tagging a new public release:
 
 1. Run the fast shard set, docs build, package build, repo hygiene, mypy, and
    wide coverage matrix.
-2. Confirm the coverage workflow reports the package-wide ``95%`` gate.
+2. Confirm the coverage workflow reports the package-wide ``95%`` gate and
+   that ``coverage-wide-shard-manifest.json`` has labeled data for every wide
+   coverage shard.
 3. Confirm README and this page agree with
    ``docs/_static/manuscript_readiness_status.json`` and
    ``docs/_static/open_research_lane_status.json``.

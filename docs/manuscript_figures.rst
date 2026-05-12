@@ -159,6 +159,10 @@ Core Validation Figures
      - ``tools/plot_quasilinear_dataset_sufficiency.py``
      - Promotion guard closed for the scoped spectral-envelope candidate; higher-parameter and electromagnetic claims remain blocked
      - current artifact base: ``docs/_static/quasilinear_dataset_sufficiency.png`` with JSON/PDF companions. It audits the validated nonlinear windows before any richer saturation model is promoted. The current electrostatic-compatible set has seven cases, two explicit training geometries, and five held-out geometries. That is sufficient for the one-parameter linear-weight candidate, the two-parameter shape-power-law candidate, and the three-parameter ``spectral_envelope_ridge`` candidate, but not for the five-parameter ``linear_state_ridge`` model. KBM is explicitly excluded from this electrostatic quasilinear promotion lane because electromagnetic field-channel normalization and calibration remain future work. The gate therefore supports the scoped spectral-envelope model-selection claim while preventing broader absolute-flux or electromagnetic quasilinear claims.
+   * - Quasilinear promotion guardrail audit
+     - ``tools/check_quasilinear_promotion_guardrails.py``
+     - Fast metadata gate closed; nonlinear simulation validation remains delegated to the source gates
+     - current artifact: ``docs/_static/quasilinear_promotion_guardrails.json``. It scans the train/holdout calibration reports, saturation-model reports, nonlinear input-validation blocks, promotion gates, and claim-scope docs. It requires finite nonlinear window means and standard deviations for train/holdout calibration points, explicit nonlinear and quasilinear artifact provenance, passed held-out gates before any ``calibrated_absolute_flux`` claim, and non-promotion wording in the docs. This is deliberately a wording and metadata guard, not a calibrated absolute-flux claim or a replacement for nonlinear convergence simulations.
    * - Release claim-scope ledger
      - ``docs/release_scope.rst``
      - Closed as documentation guardrail

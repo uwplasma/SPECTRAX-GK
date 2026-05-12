@@ -539,6 +539,12 @@ external-VMEC calibration inputs, and now includes the ITERModel and up-down
 asymmetric external-VMEC windows in the seven-case portfolio. It would fail if
 an exploratory or non-converged pilot such as the CTH-like external-VMEC
 feasibility trace were inserted as a train/holdout point.
+The companion audit ``tools/check_quasilinear_promotion_guardrails.py`` is the
+metadata promotion guard: it requires finite nonlinear window means and
+standard deviations, train/holdout artifact provenance, passed held-out gates
+before ``calibrated_absolute_flux`` promotion, and explicit documentation scope
+markers. The current tracked reports are therefore not a calibrated
+absolute-flux claim.
 
 .. image:: _static/quasilinear_validated_calibration_inputs.png
    :alt: Quasilinear calibration inputs matched to passed nonlinear gates

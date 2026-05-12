@@ -14,10 +14,20 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_TEST_DIR = REPO_ROOT / "tests"
 
 
+def _resolve_test_dir(test_dir: Path) -> Path:
+    """Resolve relative test directories against the repository root."""
+
+    return (
+        (REPO_ROOT / test_dir).resolve()
+        if not test_dir.is_absolute()
+        else test_dir.resolve()
+    )
+
+
 def discover_test_files(test_dir: Path = DEFAULT_TEST_DIR) -> list[Path]:
     """Return top-level pytest files in deterministic order."""
 
-    return sorted(test_dir.glob("test_*.py"))
+    return sorted(_resolve_test_dir(test_dir).glob("test_*.py"))
 
 
 def parse_args() -> argparse.Namespace:

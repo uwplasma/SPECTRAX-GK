@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+import importlib.util
 import json
+import sys
 from pathlib import Path
+
+import pytest
 
 try:
     import tomllib
@@ -20,6 +24,17 @@ def _load_json(name: str) -> dict:
 def _load_toml(path: Path) -> dict:
     with path.open("rb") as stream:
         return tomllib.load(stream)
+
+
+def _load_parallel_checker():
+    path = ROOT / "tools" / "check_parallel_scaling_artifacts.py"
+    spec = importlib.util.spec_from_file_location("check_parallel_scaling_artifacts", path)
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
 
 
 def _assert_positive_stats(stats: dict) -> None:
@@ -104,6 +119,61 @@ def test_parallel_manifests_track_current_cpu_gpu_scaling_artifacts() -> None:
     assert required <= validation_paths
     for artifact in required:
         assert (ROOT / artifact).exists(), artifact
+
+
+def test_parallel_scaling_artifact_checker_validates_tracked_large_run_evidence() -> None:
+    mod = _load_parallel_checker()
+
+    summary = mod.validate_all()
+
+    assert summary["n_families"] == 4
+    assert summary["n_json_artifacts"] == 10
+    assert summary["n_sidecars"] == 40
+    assert summary["manifest_checked"] is True
+    assert {family["name"] for family in summary["families"]} == {
+        "independent_ky_scan",
+        "quasilinear_uq_ensemble",
+        "nonlinear_sharding",
+        "linear_rhs_parallel_slices",
+    }
+
+
+def test_parallel_scaling_artifact_checker_rejects_failed_identity_gate(tmp_path: Path) -> None:
+    mod = _load_parallel_checker()
+    family = mod.ArtifactFamily(
+        name="bad_identity",
+        combined="bad_identity.json",
+        split=(),
+        expected_combined_kind="bad_identity",
+        expected_split_kind=None,
+        identity_claim_phrase="identity-only",
+        split_identity_claim_phrase=None,
+        timing_fields=("serial_median_s",),
+        error_fields=("max_abs_error",),
+        row_identity_key="identity_passed",
+        combined_has_inputs=False,
+    )
+    (tmp_path / "bad_identity.json").write_text(
+        json.dumps(
+            {
+                "kind": "bad_identity",
+                "identity_passed": False,
+                "claim_scope": "identity-only local test",
+                "rows": [
+                    {
+                        "requested_devices": 1,
+                        "identity_passed": True,
+                        "serial_median_s": 1.0,
+                        "max_abs_error": 0.0,
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="identity_passed must be true"):
+        mod.validate_family(tmp_path, family, check_sidecars=False)
 
 
 def test_independent_ky_scaling_artifact_preserves_order_and_identity_scope() -> None:

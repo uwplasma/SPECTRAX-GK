@@ -239,6 +239,38 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.linear_parallel"
+path = "src/spectraxgk/linear_parallel.py"
+owner_lane = "gated velocity-parallel linear RHS dispatch and Hermite shard-map helpers"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "linear RHS streaming and electrostatic-slice identity gates",
+  "disabled-by-default runtime velocity parallelization policy",
+]
+physics_contracts = [
+  "parallel RHS routes preserve the same electrostatic field solve and linear term weights as serial RHS assembly",
+  "unsupported collision, electromagnetic, linked-boundary, and non-Hermite-axis cases fail closed rather than changing physics",
+]
+numerics_contracts = [
+  "serial fallback remains an exact alias for spectraxgk.linear.linear_rhs_cached",
+  "Hermite-sharded streaming and electrostatic-slice routes preserve shape, dtype, and phi identity gates",
+]
+fast_tests = [
+  "tests/test_linear_helpers_extra.py",
+  "tests/test_velocity_sharding.py",
+]
+artifact_paths = [
+  "docs/_static/linear_rhs_streaming_gate.json",
+  "docs/_static/linear_rhs_electrostatic_slices_gate.json",
+]
+next_tests = [
+  "keep spectraxgk.linear parallel exports object-identical until the next major API cleanup",
+  "add direct dispatch-policy tests for backend auto, unsupported axes, and fail-closed term combinations",
+]
+
+[[modules]]
 module = "spectraxgk.nonlinear"
 path = "src/spectraxgk/nonlinear.py"
 owner_lane = "nonlinear bracket, collisions, resolved diagnostics, transport windows"
