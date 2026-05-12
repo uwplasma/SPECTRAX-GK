@@ -108,6 +108,38 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.linear_params"
+path = "src/spectraxgk/linear_params.py"
+owner_lane = "linear parameter pytrees, term toggles, and validation/coercion helpers"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "Hermite-Laguerre linear operator parameter contracts",
+  "runtime and benchmark term-toggle conversion policies",
+]
+physics_contracts = [
+  "linear species and field parameters remain explicit JAX pytrees",
+  "term toggles map one-to-one to modular operator term weights",
+]
+numerics_contracts = [
+  "scalar and species-array parameters coerce to deterministic shapes",
+  "positive/nonnegative validation rejects invalid host values while allowing traced autodiff values",
+]
+fast_tests = [
+  "tests/test_linear_helpers_extra.py",
+  "tests/test_linear.py",
+]
+artifact_paths = [
+  "docs/_static/cyclone_resolution_observed_order.json",
+  "docs/_static/validation_gate_index.json",
+]
+next_tests = [
+  "add direct pytree round-trip tests for LinearParams and LinearTerms after any dataclass field changes",
+  "keep spectraxgk.linear re-exports object-identical until the next major API cleanup",
+]
+
+[[modules]]
 module = "spectraxgk.linear_linked"
 path = "src/spectraxgk/linear_linked.py"
 owner_lane = "linked-boundary FFT maps and end-damping profiles"

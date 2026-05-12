@@ -322,6 +322,10 @@ and benchmark behavior.
    - Move geometry cache construction, linked parallel derivative maps,
      field solves, velocity operators, and branch/frequency extraction into
      tested submodules.
+   - Current status: parameter pytrees, linear term toggles, term-config
+     conversion, validation helpers, and implicit-preconditioner policy live in
+     `src/spectraxgk/linear_params.py`, with legacy exports preserved through
+     `src/spectraxgk/linear.py`.
    - Current status: linked-boundary FFT maps and linked-end damping profiles
      live in `src/spectraxgk/linear_linked.py`, with legacy private exports
      preserved through `src/spectraxgk/linear.py`.
@@ -4328,4 +4332,29 @@ Exit gate:
     passed;
   - `python -m pytest tests/test_linear.py -q -m integration --override-ini='addopts=' --maxfail=1`
     passed in 41 s;
+  - strict Sphinx docs build passed.
+
+## 2026-05-12 Linear Parameter Policy Refactor Tranche
+
+- Split `LinearParams`, `LinearTerms`, linear/term-config conversion helpers,
+  scalar/array validation helpers, species-array coercion, x64 detection, and
+  implicit-preconditioner policy from `src/spectraxgk/linear.py` into
+  `src/spectraxgk/linear_params.py`.
+- Preserved the existing public and legacy private import surface through
+  `spectraxgk.linear`, with identity tests over `linear_params.__all__`.
+- This tranche does not change linear cache construction, field solves, RHS
+  kernels, integration methods, or benchmark physics; it only isolates the
+  parameter and validation layer so operator code is easier to test and audit.
+- Updated the validation coverage manifest and regenerated
+  `docs/_static/validation_coverage_manifest_summary.json` so the extracted
+  module has explicit reference anchors, physics/numerics contracts, fast tests,
+  and next-test obligations.
+- Verification for this tranche:
+  - `ruff check src/spectraxgk/linear.py src/spectraxgk/linear_params.py tests/test_linear_helpers_extra.py docs/conf.py`
+    passed;
+  - `python -m pytest tests/test_linear_helpers_extra.py tests/test_linear.py::test_linear_param_validation tests/test_linear.py::test_linear_cache_tree_roundtrip tests/test_linear.py::test_linear_rhs_multispecies_shapes tests/test_validation_coverage_manifest.py -q`
+    passed;
+  - `python -m pytest tests/test_linear.py tests/test_linear_krylov_core.py tests/test_terms_assembly.py -q -m 'not slow' --override-ini='addopts=' --maxfail=1`
+    passed with 81 tests;
+  - `mypy src/spectraxgk/linear.py src/spectraxgk/linear_params.py` passed;
   - strict Sphinx docs build passed.

@@ -10,6 +10,7 @@ Core modules
 - ``spectraxgk.terms``: term-wise RHS kernels (streaming, mirror, drifts, drive, collisions, fields).
 - ``spectraxgk.linear``: cache construction, public linear API, and integrators that call modular RHS assembly.
 - ``spectraxgk.linear_linked``: linked-boundary FFT maps and end-damping profiles for field-aligned linear operators.
+- ``spectraxgk.linear_params``: linear parameter pytrees, term toggles, and validation/coercion helpers.
 - ``spectraxgk.nonlinear``: nonlinear runtime integrators and cached IMEX paths.
 - ``spectraxgk.nonlinear_diagnostics``: sampling and resolved-diagnostic packing helpers used by nonlinear integrators.
 - ``spectraxgk.runtime`` / ``spectraxgk.runtime_config``: user-facing runtime entrypoints and configuration schema.
