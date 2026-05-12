@@ -142,6 +142,23 @@ reference anchors, physics and numerics contracts, fast tests, artifacts, and
 next coverage tests. Update it whenever a source extraction changes module
 ownership or validation responsibility.
 
+The manifest also owns the package inventory. Direct rows cover the public or
+high-risk refactor modules. Smaller implementation modules are listed in an
+owner row's ``owned_modules`` field when their behavior is validated by the
+same fast tests and artifacts. Package plumbing such as ``__init__.py`` and
+version metadata is the only normal exclusion. Adding a new
+``src/spectraxgk/*.py`` file without one of those declarations should fail the
+manifest checker.
+
+Use this rule of thumb when changing ownership:
+
+- add a direct row when a module has public imports, independent physics or
+  numerics contracts, separate artifact traceability, or high refactor risk;
+- add it to ``owned_modules`` when it is a narrow helper split whose contract is
+  still fully exercised by the owning row's tests;
+- update the owning row's ``next_tests`` when the helper split creates coverage
+  debt that is not closed in the same change.
+
 Release-scope synchronization for refactors is tracked separately in
 :doc:`release_scope`. In particular, the current restartable NetCDF append
 contract normalizes diagnostics loaded from ``*.out.nc`` to the persisted

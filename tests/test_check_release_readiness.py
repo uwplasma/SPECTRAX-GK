@@ -38,6 +38,8 @@ spectrax-gk = "spectraxgk.cli:main"
                 "wide-coverage-shards",
                 "coverage-wide-shard-manifest.json",
                 "--require-shard-data",
+                "--coverage-xml coverage-wide.xml",
+                "--enforce-package-coverage",
                 "codecov/codecov-action",
                 "tools/check_parallel_scaling_artifacts.py",
                 "tools/check_performance_optimization_manifest.py",
@@ -67,6 +69,7 @@ spectrax-gk = "spectraxgk.cli:main"
         "independent_ky_scan_scaling_large.json",
         "quasilinear_uq_ensemble_scaling_large.json",
         "nonlinear_sharding_strong_scaling_large.json",
+        "nonlinear_domain_parallel_identity_gate.json",
     ):
         (root / "docs" / "_static" / artifact).write_text("{}", encoding="utf-8")
     (root / "docs" / "_static" / "technical_release_status.json").write_text(

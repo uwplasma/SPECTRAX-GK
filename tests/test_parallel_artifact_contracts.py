@@ -121,6 +121,20 @@ def test_parallel_manifests_track_current_cpu_gpu_scaling_artifacts() -> None:
         assert (ROOT / artifact).exists(), artifact
 
 
+def test_nonlinear_domain_parallel_identity_gate_is_scoped_and_fail_closed() -> None:
+    payload = _load_json("nonlinear_domain_parallel_identity_gate.json")
+
+    assert payload["case"] == "Nonlinear state-domain decomposition identity gate"
+    assert payload["gate"]["identity_passed"] is True
+    assert payload["gate"]["decomposed_path_enabled"] is True
+    assert payload["gated_state_matches_serial"] is True
+    assert payload["gated_state_matches_decomposed"] is True
+    assert payload["gate"]["max_abs_error"] <= payload["gate"]["atol"]
+    assert payload["gate"]["max_rel_error"] <= payload["gate"]["rtol"]
+    assert "no production routing or speedup claim" in payload["claim_scope"]
+    assert (STATIC / "nonlinear_domain_parallel_identity_gate.png").exists()
+
+
 def test_parallel_scaling_artifact_checker_validates_tracked_large_run_evidence() -> None:
     mod = _load_parallel_checker()
 

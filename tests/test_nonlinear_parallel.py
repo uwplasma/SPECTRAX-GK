@@ -7,6 +7,8 @@ import pytest
 import spectraxgk
 import spectraxgk.nonlinear_parallel as nonlinear_parallel
 from spectraxgk.nonlinear_parallel import (
+    NonlinearDomainDecompositionPlan,
+    NonlinearDomainIdentityReport,
     NonlinearParallelStrategy,
     classify_nonlinear_parallel_strategy,
     nonlinear_parallel_strategies,
@@ -17,16 +19,26 @@ from spectraxgk.nonlinear_parallel import (
 
 def test_nonlinear_parallel_public_api_exports_are_stable() -> None:
     public_names = (
+        "NonlinearDomainDecompositionPlan",
+        "NonlinearDomainIdentityReport",
         "NonlinearParallelStrategy",
+        "build_nonlinear_domain_decomposition_plan",
         "classify_nonlinear_parallel_strategy",
+        "deterministic_nonlinear_domain_state",
+        "nonlinear_domain_identity_report",
+        "nonlinear_domain_parallel_identity_gate",
         "nonlinear_parallel_strategies",
         "nonlinear_parallel_strategy",
+        "prototype_nonlinear_domain_decomposed_step",
+        "prototype_nonlinear_domain_serial_step",
         "release_ready_nonlinear_parallel_strategies",
     )
 
     assert set(public_names) <= set(spectraxgk.__all__)
     assert set(public_names) <= set(nonlinear_parallel.__all__)
     assert NonlinearParallelStrategy is nonlinear_parallel.NonlinearParallelStrategy
+    assert NonlinearDomainDecompositionPlan is nonlinear_parallel.NonlinearDomainDecompositionPlan
+    assert NonlinearDomainIdentityReport is nonlinear_parallel.NonlinearDomainIdentityReport
     for name in public_names:
         assert getattr(spectraxgk, name) is getattr(nonlinear_parallel, name)
 

@@ -56,6 +56,21 @@ For CI or release bookkeeping, write a JSON summary:
    python tools/check_validation_coverage_manifest.py \
      --out-json docs/_static/validation_coverage_manifest_summary.json
 
+The wide-coverage CI job attaches measured coverage from the combined Cobertura
+report:
+
+.. code-block:: bash
+
+   python tools/check_validation_coverage_manifest.py \
+     --coverage-xml coverage-wide.xml \
+     --enforce-package-coverage \
+     --out-json docs/_static/validation_coverage_manifest_summary.json
+
+This fails if total package coverage drops below the manifest target and records
+direct/owned module coverage gaps for the next refactor tranche. Module-level
+coverage enforcement is intentionally a separate switch so the release gate can
+remain package-wide while the manifest still exposes specific debt.
+
 The manifest complements ``tools/make_validation_gate_index.py``. The gate
 index reports which validation artifacts currently pass. The coverage manifest
 reports whether the remaining refactor and testing work is traceable to
