@@ -252,6 +252,36 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.velocity_maps"
+path = "src/spectraxgk/velocity_maps.py"
+owner_lane = "differentiable Hermite-Laguerre velocity-map primitives"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "Hermite-Laguerre velocity-space maps for shifted/scaled kinetic coordinates",
+  "validation gate index entry for velocity-map primitive coverage ownership",
+]
+physics_contracts = [
+  "identity velocity maps preserve the unmapped Hermite/Laguerre operator algebra",
+  "parallel shift/scale and perpendicular scale maps expose bounded diagnostics for differentiable coordinate optimization",
+]
+numerics_contracts = [
+  "mapped Hermite multiplication, derivative, and energy matrices preserve fixed shapes and JAX pytree semantics",
+  "smooth modal gates remain differentiable and shape preserving for p-adaptation probes",
+]
+fast_tests = [
+  "tests/test_velocity_maps.py",
+]
+artifact_paths = [
+  "docs/_static/validation_gate_index.json",
+]
+next_tests = [
+  "add finite-difference gradient checks for map regularization and modal-gate objectives",
+  "promote mapped-RHS readiness from dense tiny eigen scorecards to a Krylov branch when dimensions permit",
+]
+
+[[modules]]
 module = "spectraxgk.linear_params"
 path = "src/spectraxgk/linear_params.py"
 owner_lane = "linear parameter pytrees, term toggles, and validation/coercion helpers"
