@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+from tools.check_release_readiness import TECHNICAL_COMPLETION_TARGET
 from tools.check_release_readiness import (
     ReleaseReadinessError,
     check_release_readiness,
@@ -37,10 +38,13 @@ spectrax-gk = "spectraxgk.cli:main"
                 "wide-coverage-shards",
                 "coverage-wide-shard-manifest.json",
                 "--require-shard-data",
+                "--coverage-xml coverage-wide.xml",
+                "--enforce-package-coverage",
                 "codecov/codecov-action",
                 "tools/check_parallel_scaling_artifacts.py",
                 "tools/check_performance_optimization_manifest.py",
                 "tools/check_quasilinear_promotion_guardrails.py",
+                "tools/build_technical_release_status.py",
                 "tools/check_release_readiness.py",
             ]
         ),
@@ -61,11 +65,92 @@ spectrax-gk = "spectraxgk.cli:main"
         "validation_gate_index.json",
         "validation_coverage_manifest_summary.json",
         "quasilinear_promotion_guardrails.json",
+        "technical_release_status.json",
         "independent_ky_scan_scaling_large.json",
         "quasilinear_uq_ensemble_scaling_large.json",
         "nonlinear_sharding_strong_scaling_large.json",
+        "nonlinear_domain_parallel_identity_gate.json",
+        "nonlinear_spectral_communication_identity_gate.json",
     ):
         (root / "docs" / "_static" / artifact).write_text("{}", encoding="utf-8")
+    (root / "docs" / "_static" / "technical_release_status.json").write_text(
+        """
+{
+  "failed_required": [],
+  "kind": "spectraxgk_technical_release_status",
+  "lanes": {},
+  "passed": true,
+  "target_percent": 98.0,
+  "technical_release_completion_percent": 100.0
+}
+""".lstrip(),
+        encoding="utf-8",
+    )
+    (root / "docs" / "_static" / "manuscript_readiness_status.json").write_text(
+        """
+{
+  "claim_scope": "release_scope",
+  "kind": "manuscript_readiness_status",
+  "lanes": [
+    {
+      "claim_level": "release_claim",
+      "lane": "CI/release hygiene and status automation",
+      "status": "closed"
+    },
+    {
+      "claim_level": "deferred_out_of_release_scope",
+      "lane": "Future physics extension",
+      "status": "deferred"
+    }
+  ],
+  "summary": {
+    "active_fraction_closed": 1.0,
+    "n_active": 1,
+    "n_blocked": 0,
+    "n_closed": 1,
+    "n_deferred": 1,
+    "n_lanes": 2,
+    "n_open": 0,
+    "n_partial": 0
+  }
+}
+""".lstrip(),
+        encoding="utf-8",
+    )
+    (root / "docs" / "_static" / "open_research_lane_status.json").write_text(
+        """
+{
+  "claim_scope": "post_release_tracking",
+  "kind": "open_research_lane_status",
+  "lanes": [
+    {
+      "claim_level": "open_research_not_release_claim",
+      "lane": "Open research lane",
+      "status": "open"
+    }
+  ],
+  "summary": {"n_open": 1}
+}
+""".lstrip(),
+        encoding="utf-8",
+    )
+    (root / "docs" / "_static" / "w7x_tem_extension_status.json").write_text(
+        """
+{
+  "claim_scope": "extension_tracking",
+  "kind": "w7x_tem_extension_status",
+  "lanes": [
+    {
+      "claim_level": "partial_extension_not_release_claim",
+      "lane": "W7-X TEM extension",
+      "status": "partial"
+    }
+  ],
+  "summary": {"n_partial": 1}
+}
+""".lstrip(),
+        encoding="utf-8",
+    )
 
 
 def test_release_readiness_accepts_ci_release_docs_and_artifact_contracts(
@@ -79,6 +164,18 @@ def test_release_readiness_accepts_ci_release_docs_and_artifact_contracts(
     assert report["project"]["name"] == "spectraxgk"
     assert report["project"]["scripts"] == ["spectrax-gk", "spectraxgk"]
     assert report["version"]["project_version"] == "1.2.3"
+    assert (
+        report["release_target"]["technical_completion_fraction"]
+        == TECHNICAL_COMPLETION_TARGET
+    )
+    assert report["lane_status"]["passed"] is True
+    assert report["lane_status"]["active_fraction_closed"] == 1.0
+    assert report["lane_status"]["release_scoped_open_or_blocked"] == 0
+    assert report["technical_status"]["passed"] is True
+    assert report["technical_status"]["completion_percent"] >= 98.0
+    assert report["lane_status"]["status_artifacts"][
+        "docs/_static/manuscript_readiness_status.json"
+    ]["status_counts"] == {"closed": 1, "deferred": 1}
 
 
 def test_release_readiness_rejects_missing_ci_guardrails(tmp_path: Path) -> None:
@@ -89,4 +186,65 @@ def test_release_readiness_rejects_missing_ci_guardrails(tmp_path: Path) -> None
     )
 
     with pytest.raises(ReleaseReadinessError, match="ci.yml missing release checks"):
+        check_release_readiness(tmp_path)
+
+
+def test_release_readiness_rejects_below_target_release_completion(
+    tmp_path: Path,
+) -> None:
+    _write_release_ready_tree(tmp_path)
+    (tmp_path / "docs" / "_static" / "manuscript_readiness_status.json").write_text(
+        """
+{
+  "claim_scope": "release_scope",
+  "kind": "manuscript_readiness_status",
+  "lanes": [
+    {
+      "claim_level": "release_claim",
+      "lane": "CI/release hygiene and status automation",
+      "status": "partial"
+    }
+  ],
+  "summary": {
+    "active_fraction_closed": 0.97,
+    "n_active": 1,
+    "n_blocked": 0,
+    "n_closed": 0,
+    "n_deferred": 0,
+    "n_lanes": 1,
+    "n_open": 0,
+    "n_partial": 1
+  }
+}
+""".lstrip(),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+        ReleaseReadinessError,
+        match="release-scoped technical completion below target",
+    ):
+        check_release_readiness(tmp_path)
+
+
+def test_release_readiness_rejects_failed_technical_status(tmp_path: Path) -> None:
+    _write_release_ready_tree(tmp_path)
+    (tmp_path / "docs" / "_static" / "technical_release_status.json").write_text(
+        """
+{
+  "failed_required": ["docs_release_hygiene: roadmap"],
+  "kind": "spectraxgk_technical_release_status",
+  "lanes": {},
+  "passed": false,
+  "target_percent": 98.0,
+  "technical_release_completion_percent": 92.0
+}
+""".lstrip(),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+        ReleaseReadinessError,
+        match="technical release status below target",
+    ):
         check_release_readiness(tmp_path)

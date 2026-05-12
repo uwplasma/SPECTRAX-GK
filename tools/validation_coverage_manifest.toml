@@ -5,9 +5,32 @@ default_test_budget_seconds = 300
 wide_coverage_ci_job = "wide-coverage"
 branch = "main"
 
+[coverage_inventory]
+require_all_package_modules_owned = true
+excluded_modules = [
+  "spectraxgk.__init__",
+  "spectraxgk._version",
+  "spectraxgk.from_gx.__init__",
+  "spectraxgk.geometry.__init__",
+  "spectraxgk.terms.__init__",
+  "spectraxgk.utils.__init__",
+]
+
 [[modules]]
 module = "spectraxgk.runtime"
 path = "src/spectraxgk/runtime.py"
+owned_modules = [
+  "spectraxgk.cli",
+  "spectraxgk.config",
+  "spectraxgk.diffrax_integrators",
+  "spectraxgk.gx_integrators",
+  "spectraxgk.io",
+  "spectraxgk.restart",
+  "spectraxgk.runners",
+  "spectraxgk.runtime_config",
+  "spectraxgk.runtime_diagnostics",
+  "spectraxgk.runtime_startup",
+]
 owner_lane = "runtime orchestration, executable behavior, restart/output contracts"
 status = "active"
 coverage_priority = "high"
@@ -74,6 +97,10 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.runtime_orchestration"
 path = "src/spectraxgk/runtime_orchestration.py"
+owned_modules = [
+  "spectraxgk.runtime_chunks",
+  "spectraxgk.runtime_results",
+]
 owner_lane = "runtime progress, scan batching, and nonlinear artifact handoff orchestration"
 status = "active"
 coverage_priority = "medium"
@@ -106,6 +133,24 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.linear"
 path = "src/spectraxgk/linear.py"
+owned_modules = [
+  "spectraxgk.analysis",
+  "spectraxgk.basis",
+  "spectraxgk.cetg",
+  "spectraxgk.grids",
+  "spectraxgk.gyroaverage",
+  "spectraxgk.linear_krylov",
+  "spectraxgk.operators",
+  "spectraxgk.secondary",
+  "spectraxgk.species",
+  "spectraxgk.terms.assembly",
+  "spectraxgk.terms.config",
+  "spectraxgk.terms.fields",
+  "spectraxgk.terms.integrators",
+  "spectraxgk.terms.linear_terms",
+  "spectraxgk.terms.operators",
+  "spectraxgk.terms.validation",
+]
 owner_lane = "linear gyrokinetic operators, field solve, growth/frequency diagnostics"
 status = "active"
 coverage_priority = "high"
@@ -305,6 +350,10 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.nonlinear"
 path = "src/spectraxgk/nonlinear.py"
+owned_modules = [
+  "spectraxgk.nonlinear_parallel",
+  "spectraxgk.terms.nonlinear",
+]
 owner_lane = "nonlinear bracket, collisions, resolved diagnostics, transport windows"
 status = "active"
 coverage_priority = "high"
@@ -324,6 +373,8 @@ numerics_contracts = [
 fast_tests = [
   "tests/test_nonlinear.py",
   "tests/test_nonlinear_exb.py",
+  "tests/test_nonlinear_domain_parallel.py",
+  "tests/test_nonlinear_spectral_communication_gate.py",
   "tests/test_terms_assembly.py",
   "tests/test_plot_nonlinear_window_statistics.py",
   "tests/test_plot_w7x_fluctuation_spectrum_panel.py",
@@ -337,10 +388,15 @@ artifact_paths = [
   "docs/_static/w7x_fluctuation_spectrum_panel.json",
   "docs/_static/tem_branch_parity_audit.json",
   "docs/_static/w7x_tem_extension_status.json",
+  "docs/_static/nonlinear_domain_parallel_identity_gate.json",
+  "docs/_static/nonlinear_domain_parallel_identity_gate.png",
+  "docs/_static/nonlinear_spectral_communication_identity_gate.json",
+  "docs/_static/nonlinear_spectral_communication_identity_gate.png",
 ]
 next_tests = [
   "add more unit coverage for resolved spectral diagnostics",
   "add reduced free-energy/conservation tests for nonlinear-only limits",
+  "extend spectral communication gates from split/reassemble identity to runtime distributed FFT routing",
   "close TEM branch/frequency parity before kinetic-electron W7-X nonlinear gates",
 ]
 
@@ -378,6 +434,9 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.nonlinear_helpers"
 path = "src/spectraxgk/nonlinear_helpers.py"
+owned_modules = [
+  "spectraxgk.gx_reduced_models",
+]
 owner_lane = "nonlinear projection helpers, collision split policies, GX omega masks, and IMEX operator construction"
 status = "active"
 coverage_priority = "high"
@@ -538,6 +597,9 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.benchmarks"
 path = "src/spectraxgk/benchmarks.py"
+owned_modules = [
+  "spectraxgk.benchmarking",
+]
 owner_lane = "reference loading, scan runners, fit policies, benchmark atlas"
 status = "active"
 coverage_priority = "high"
@@ -636,6 +698,9 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.benchmark_defaults"
 path = "src/spectraxgk/benchmark_defaults.py"
+owned_modules = [
+  "spectraxgk.normalization",
+]
 owner_lane = "normalization constants and Krylov policies for shipped benchmark lanes"
 status = "active"
 coverage_priority = "medium"
@@ -667,6 +732,11 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.diagnostics"
 path = "src/spectraxgk/diagnostics.py"
+owned_modules = [
+  "spectraxgk.diagnostics_channels",
+  "spectraxgk.diagnostics_metadata",
+  "spectraxgk.diagnostics_weights",
+]
 owner_lane = "scalar, resolved, flux, and zonal diagnostics"
 status = "active"
 coverage_priority = "high"
@@ -810,6 +880,12 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.from_gx.vmec"
 path = "src/spectraxgk/from_gx/vmec.py"
+owned_modules = [
+  "spectraxgk.from_gx.kernels",
+  "spectraxgk.from_gx.miller",
+  "spectraxgk.miller_eik",
+  "spectraxgk.vmec_eik",
+]
 owner_lane = "VMEC import/remap geometry and future differentiable geometry bridge"
 status = "active"
 coverage_priority = "high"
@@ -847,6 +923,10 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.geometry.differentiable"
 path = "src/spectraxgk/geometry/differentiable.py"
+owned_modules = [
+  "spectraxgk.geometry.miller",
+  "spectraxgk.geometry.vmec",
+]
 owner_lane = "in-memory vmec_jax/booz_xform_jax bridge into the flux-tube geometry contract"
 status = "active"
 coverage_priority = "high"
@@ -889,6 +969,10 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.runtime_artifacts"
 path = "src/spectraxgk/runtime_artifacts.py"
+owned_modules = [
+  "spectraxgk.gx_legacy_output",
+  "spectraxgk.runtime_artifact_diagnostics",
+]
 owner_lane = "artifact schema, NetCDF output, JSON summaries, and plot reload path"
 status = "active"
 coverage_priority = "high"
@@ -923,6 +1007,11 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.sharding"
 path = "src/spectraxgk/sharding.py"
+owned_modules = [
+  "spectraxgk.sharded_integrators",
+  "spectraxgk.utils.callbacks",
+  "spectraxgk.velocity_sharding",
+]
 owner_lane = "JAX parallelization policy for CPU/GPU scans and ensemble workloads"
 status = "active"
 coverage_priority = "medium"
@@ -975,6 +1064,9 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.solver_objective_gradients"
 path = "src/spectraxgk/solver_objective_gradients.py"
+owned_modules = [
+  "spectraxgk.stellarator_optimization",
+]
 owner_lane = "production solver-objective geometry-gradient validation"
 status = "active"
 coverage_priority = "high"

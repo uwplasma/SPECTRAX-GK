@@ -1,6 +1,6 @@
 # SPECTRAX-GK Quasilinear Transport and Optimization Plan
 
-Last updated: 2026-05-11
+Last updated: 2026-05-12
 Active repository: `uwplasma/SPECTRAX-GK`
 Historical planning archive: private repo `rogeriojorge/spectraxgk_plan`
 Current public baseline: `main` at v1.5.0, with the historical ship-readiness log archived before this file was reset.
@@ -96,7 +96,12 @@ As of 2026-05-11:
 - Parallelization claims are production-ready only for independent `k_y`
   scans, quasilinear/UQ ensembles, and similar independent work. Whole-state
   nonlinear sharding remains an identity/profiler artifact and should not be
-  described as a nonlinear multi-GPU speedup path.
+  described as a nonlinear multi-GPU speedup path. The FFT-axis nonlinear
+  route is now diagnostic rather than blocked because
+  `docs/_static/nonlinear_spectral_communication_identity_gate.json` validates
+  split/reassemble identity for FFT round trip, pseudo-spectral bracket, and
+  field-solve layout. It is still not runtime distributed FFT routing and it
+  carries no speedup claim.
 - W7-X zonal long-window recurrence/damping and W7-X TEM/kinetic-electron
   extension remain deferred from the current manuscript/release scope.
 
@@ -1165,11 +1170,48 @@ Exit gate:
 
 ### 2026-05-12
 
+- Runtime `k_y` scans now consume `[parallel] strategy = "batch"` with
+  `axis = "ky"` as the production independent-worker path when explicit
+  executable `workers` are not provided. The resolver records requested and
+  effective worker counts, executor, source (`arguments` vs `runtime_config`),
+  problem size, and the ordering-preservation identity contract in runtime scan
+  artifacts. This advances Lane 1 without changing default serial behavior or
+  promoting nonlinear domain-decomposition speedup claims.
+- Validation for the runtime-parallel policy slice:
+  - `python -m pytest -q tests/test_runtime_helpers.py::test_runtime_policy_helpers_preserve_legacy_runtime_exports tests/test_runtime_helpers.py::test_runtime_independent_parallel_plan_resolves_config_and_arguments tests/test_runtime_helpers.py::test_runtime_independent_parallel_plan_rejects_invalid_policy tests/test_runtime_runner.py::test_run_runtime_scan_parallel_config_batch_selects_independent_workers tests/test_runtime_runner.py::test_run_runtime_scan_explicit_workers_override_parallel_config tests/test_runtime_runner.py::test_run_runtime_scan_parallel_config_batch_rejects_non_ky_axis --disable-warnings -o addopts=` passed;
+  - `python -m pytest -q tests/test_runtime_runner.py tests/test_runtime_helpers.py tests/test_runtime_config.py tests/test_parallel.py --maxfail=1 --disable-warnings -o addopts=` passed with 171 tests;
+  - `ruff check src/spectraxgk/runtime.py src/spectraxgk/runtime_policies.py tests/test_runtime_helpers.py tests/test_runtime_runner.py` passed;
+  - `mypy src/spectraxgk/runtime.py src/spectraxgk/runtime_policies.py` passed;
+  - `sphinx-build -b html docs docs/_build/html -q` passed.
 - Worker C extracted benchmark scan-window, fit-signal, mode-only, and
   ky-batching policies from `spectraxgk.benchmarks` into
   `spectraxgk.benchmark_scan`, added focused policy tests, and registered the
   module in the validation coverage manifest/API docs while preserving the
   public `spectraxgk.benchmarks` import surface.
+- Added the nonlinear spectral communication identity gate:
+  `spectraxgk.nonlinear_parallel.deterministic_nonlinear_spectral_state`,
+  `nonlinear_spectral_communication_identity_gate`, and
+  `NonlinearSpectralCommunicationReport`. The tracked artifact
+  `docs/_static/nonlinear_spectral_communication_identity_gate.{json,png}`
+  passes with zero observed error for FFT forward/inverse, pseudo-spectral
+  bracket, and spectral field-solve layout under deterministic
+  split/reassemble communication. This advances Lane 1 from blocked to
+  diagnostic for `fft_axis_domain`, while docs/release checks still forbid
+  production routing or speedup claims.
+- Fixed `tools/run_tests_fast.py` to treat pytest exit code `5` as
+  `skipped(no_tests_collected)` for integration-only files filtered by the
+  default non-integration selector. This keeps the 5-minute bounded local
+  runner useful without incorrectly failing on intentionally excluded
+  benchmark-only files.
+- Validation for this tranche:
+  - `pytest -q tests/test_nonlinear_domain_parallel.py tests/test_nonlinear_spectral_communication_gate.py tests/test_nonlinear_parallel.py tests/test_parallel_artifact_contracts.py tests/test_build_technical_release_status.py tests/test_validation_coverage_manifest.py tests/test_check_release_readiness.py tests/test_run_tests_fast.py` passed with 47 tests;
+  - `python tools/check_release_readiness.py` passed with technical release
+    status at 100%;
+  - `python tools/check_parallel_scaling_artifacts.py` passed;
+  - `python -m sphinx -W -b html docs docs/_build/html` passed;
+  - `python -m build --wheel --sdist` passed;
+  - full `tools/run_tests_fast.py` remains bounded by the 300 s local cap and
+    is not expected to finish every top-level file locally in one pass.
 
 ### 2026-04-29
 
@@ -4543,3 +4585,48 @@ Exit gate:
   runtime wrapper and artifact monkeypatch regressions.
 - Updated API docs, architecture docs, and the validation coverage manifest so
   the new orchestration module is tracked as a runtime coverage/refactor lane.
+
+## 2026-05-12 Technical Release 98% Gate and Runtime Parallelization Push
+
+- Added a machine-readable technical release status gate in
+  `tools/build_technical_release_status.py` and tracked
+  `docs/_static/technical_release_status.json`. The gate scores CI/coverage,
+  refactor modularity, docs/release hygiene, parallelization artifacts,
+  performance artifacts, and scientific guardrails separately, with a scoped
+  release target of 98%.
+- Wired the technical status builder into the CI repo-hygiene job before the
+  existing release-readiness check, and added the new status tests to the fast
+  CI shards. The generated local report currently passes at 100% for the scoped
+  technical/release evidence surface.
+- Hardened `tools/check_release_readiness.py` so it no longer trusts the
+  precomputed manuscript readiness fraction. It now recomputes active closed
+  fraction from lane rows, fails on active partial/open/blocked release lanes,
+  keeps deferred lanes explicit, aggregates lane-status parse errors into the
+  release failure list, validates the generated technical status JSON, and
+  requires the technical status artifact.
+- Added a bounded runtime-configured independent `k_y` scan example in
+  `examples/parallelization/`. The example exercises `[parallel]
+  strategy="batch"` as independent solver-call orchestration, not combined-`k_y`
+  solver layout or nonlinear domain decomposition. The misleading
+  `strict_identity` example key was removed because that key is not an enforced
+  serial-comparison gate on this runtime path.
+- Updated README and docs to keep the public parallelization claim scoped to
+  independent `k_y`, quasilinear, sensitivity, and UQ workloads. Whole-state
+  nonlinear sharding remains documented as a correctness/profiler artifact with
+  no production nonlinear speedup claim.
+- Verification for this tranche:
+  - `python tools/build_technical_release_status.py --out-json docs/_static/technical_release_status.json --fail-under 98`
+    passed;
+  - `python tools/check_release_readiness.py --out-json docs/_static/release_readiness.json`
+    passed;
+  - `python -m pytest -q tests/test_check_release_readiness.py tests/test_build_technical_release_status.py tests/test_parallelization_examples.py --disable-warnings -o addopts=`
+    passed with 6 tests;
+  - `ruff check tools/build_technical_release_status.py tests/test_build_technical_release_status.py tests/test_parallelization_examples.py tools/check_release_readiness.py tests/test_check_release_readiness.py examples/parallelization/independent_ky_runtime_batch_scan.py`
+    passed;
+  - `python -m py_compile tools/build_technical_release_status.py tools/check_release_readiness.py examples/parallelization/independent_ky_runtime_batch_scan.py`
+    passed.
+  - `python -m pytest -q tests/test_check_release_readiness.py tests/test_build_technical_release_status.py tests/test_parallelization_examples.py tests/test_parallel.py tests/test_runtime_config.py --maxfail=1 --disable-warnings -o addopts=`
+    passed with 53 tests;
+  - `python -m sphinx -W -b html docs docs/_build/html` passed;
+  - `python -m build` passed;
+  - `python -m twine check dist/*` passed.

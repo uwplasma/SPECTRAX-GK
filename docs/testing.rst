@@ -40,6 +40,29 @@ tracked artifacts, and next tests. This is the working guardrail for reaching
 95% package-wide coverage without adding shallow tests that do not validate the
 implemented physics or numerics.
 
+The manifest now has two levels of coverage ownership:
+
+- direct ``[[modules]]`` rows for public, high-risk, or actively refactored
+  surfaces that need their own contracts and artifact traceability;
+- ``owned_modules`` entries for smaller implementation modules whose fast-test
+  responsibility is intentionally carried by a direct row.
+
+The checker inventories ``src/spectraxgk`` and fails if a package module is not
+directly listed, owned by a listed row, or explicitly excluded as package
+plumbing such as ``__init__.py`` or version metadata. This makes source
+extractions fail fast until the coverage owner, fast tests, and next-test debt
+are declared. New manifest tests for this policy should stay cheap and live in
+``tests/test_validation_coverage_manifest.py`` or
+``tests/test_refactor_coverage_*.py``.
+
+The wide CI matrix also feeds the manifest checker with ``coverage-wide.xml``.
+That pass enforces the declared package-wide coverage target and writes the
+measured summary to ``docs/_static/validation_coverage_manifest_summary.json``.
+Module-level rows in that summary are a debt map: they identify direct and
+owned modules below their row target, but release blocking remains tied to the
+package-wide gate unless the CI command is explicitly upgraded to
+``--enforce-module-coverage``.
+
 Optional external-backend artifact builders that require local ``vmec_jax`` or
 ``booz_xform_jax`` checkouts are kept out of the default package-wide coverage
 denominator when the public CI cannot install or execute those repositories.
@@ -629,6 +652,12 @@ performance claims:
   including final-state-only profiling mode and the config-runner route through
   ``TimeConfig.state_sharding``. These are numerical-identity and control-flow
   gates, not speedup claims.
+- ``tests/test_nonlinear_domain_parallel.py`` and
+  ``tests/test_nonlinear_spectral_communication_gate.py`` lock the diagnostic
+  nonlinear decomposition gates. The first covers one-cell halo chunks for a
+  bounded local stencil. The second covers split/reassemble spectral layout
+  identity for FFT round trip, pseudo-spectral bracket, and field-solve layout.
+  Both fail closed and carry no production routing or speedup claim.
 - ``tests/test_generate_parallel_ky_scan_gate.py`` tests the artifact writer
   for the real Cyclone ``k_y``-batch gate.
 - ``tests/test_parallel_artifact_contracts.py`` locks the tracked large-run

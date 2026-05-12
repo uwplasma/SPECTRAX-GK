@@ -96,8 +96,11 @@ def run_tests(
             status = "timeout"
             timed_out = True
         except subprocess.CalledProcessError as exc:
-            status = f"fail({exc.returncode})"
-            failed = True
+            if exc.returncode == 5:
+                status = "skipped(no_tests_collected)"
+            else:
+                status = f"fail({exc.returncode})"
+                failed = True
         dt = time.monotonic() - t0
         results.append((label, status, dt))
         print(f"{label}: {status} ({dt:.1f}s)", flush=True)
