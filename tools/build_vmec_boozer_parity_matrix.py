@@ -24,12 +24,6 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 from matplotlib.colors import LogNorm  # noqa: E402
 
-from spectraxgk.geometry.differentiable import (  # type: ignore[import-untyped]  # noqa: E402
-    discover_differentiable_geometry_backends,
-    vmec_jax_flux_tube_array_parity_report,
-)
-from spectraxgk.plotting import set_plot_style  # type: ignore[import-untyped]  # noqa: E402
-
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUT = ROOT / "docs" / "_static" / "vmec_boozer_parity_matrix.png"
@@ -49,7 +43,7 @@ class ParityCase(NamedTuple):
 
 DEFAULT_CASES: tuple[ParityCase, ...] = (
     ParityCase("nfp4_QH_warm_start", "QH warm start", "quasi-helical", 16),
-    ParityCase("nfp3_QI_fixed_resolution_final", "QI fixed resolution", "quasi-isodynamic", 8),
+    ParityCase("nfp3_QI_fixed_resolution_final", "QI fixed resolution", "quasi-isodynamic", 16),
     ParityCase("shaped_tokamak_pressure", "shaped tokamak", "axisymmetric finite-beta", 8),
 )
 
@@ -74,6 +68,46 @@ DEFAULT_QI_VARIANTS: tuple[ParityCase, ...] = (
 
 Reporter = Callable[..., dict[str, object]]
 ArtifactResolver = Callable[[str], tuple[str | None, str | None, str | None]]
+
+
+def _discover_differentiable_geometry_backends() -> dict[str, object]:
+    """Import optional backend discovery lazily so fake-reporter tests stay local."""
+
+    try:
+        mod = importlib.import_module("spectraxgk.geometry.differentiable")
+        discover = getattr(mod, "discover_differentiable_geometry_backends")
+        return cast(dict[str, object], discover())
+    except Exception as exc:  # pragma: no cover - optional-backend diagnostic detail
+        return {
+            "vmec_jax_available": False,
+            "booz_xform_jax_api_available": False,
+            "import_error": f"{type(exc).__name__}: {exc}",
+        }
+
+
+def _default_reporter(**kwargs: object) -> dict[str, object]:
+    """Call the real VMEC/Boozer reporter only when a live report is requested."""
+
+    try:
+        mod = importlib.import_module("spectraxgk.geometry.differentiable")
+        reporter = getattr(mod, "vmec_jax_flux_tube_array_parity_report")
+        return cast(dict[str, object], reporter(**kwargs))
+    except Exception as exc:  # pragma: no cover - optional-backend diagnostic detail
+        return {
+            "available": False,
+            "case_name": str(kwargs.get("case_name", "unknown")),
+            "mboz": int(cast(Any, kwargs.get("mboz", MIN_BOOZER_MODE_COUNT))),
+            "nboz": int(cast(Any, kwargs.get("nboz", MIN_BOOZER_MODE_COUNT))),
+            "error": f"{type(exc).__name__}: {exc}",
+        }
+
+
+def _set_plot_style() -> None:
+    try:
+        mod = importlib.import_module("spectraxgk.plotting")
+        cast(Callable[[], None], getattr(mod, "set_plot_style"))()
+    except Exception:  # pragma: no cover - plotting style is cosmetic
+        plt.rcParams.update({"figure.dpi": 140})
 
 
 def _json_clean(value: Any) -> Any:
@@ -106,7 +140,7 @@ def _validate_case(case: ParityCase) -> None:
 def _vmec_example_artifacts(case_name: str) -> tuple[str | None, str | None, str | None]:
     """Return VMEC example input/wout artifacts without launching a solve."""
 
-    info = discover_differentiable_geometry_backends()
+    info = _discover_differentiable_geometry_backends()
     if not bool(info.get("vmec_jax_available", False)):
         return None, None, "vmec_jax is not available for example artifact lookup"
 
@@ -305,7 +339,7 @@ def _count_by_artifact_reason(rows: list[dict[str, object]]) -> dict[str, int]:
 def build_qi_seed_robustness(
     variants: tuple[ParityCase, ...] = DEFAULT_QI_VARIANTS,
     *,
-    reporter: Reporter = vmec_jax_flux_tube_array_parity_report,
+    reporter: Reporter = _default_reporter,
     artifact_resolver: ArtifactResolver = _vmec_example_artifacts,
     evaluated_rows: dict[str, dict[str, object]] | None = None,
 ) -> dict[str, object]:
@@ -475,7 +509,7 @@ def build_qi_seed_robustness(
 def build_parity_matrix(
     cases: tuple[ParityCase, ...] = DEFAULT_CASES,
     *,
-    reporter: Reporter = vmec_jax_flux_tube_array_parity_report,
+    reporter: Reporter = _default_reporter,
     qi_variants: tuple[ParityCase, ...] = DEFAULT_QI_VARIANTS,
     artifact_resolver: ArtifactResolver = _vmec_example_artifacts,
 ) -> dict[str, object]:
@@ -625,7 +659,7 @@ def write_parity_matrix_artifacts(payload: dict[str, object], *, out: str | Path
         for row in csv_rows:
             writer.writerow({name: row.get(name) for name in fieldnames})
 
-    set_plot_style()
+    _set_plot_style()
     labels = [str(row["label"]) for row in rows]
     cols, values, tolerances, passed = _metric_arrays(rows)
     ratios = values / tolerances

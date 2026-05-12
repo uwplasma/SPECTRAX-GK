@@ -52,9 +52,10 @@ Current scoped claims
      - The ``vmec_jax -> booz_xform_jax -> SPECTRAX-GK`` bridge is validated
        for zero-beta equal-arc field-line parity where the current
        ``mboz=nboz=21`` parity artifact passes. The fixed-resolution QI row
-       now passes after the Boozer half-mesh convention fix, with drift
-       mismatch about ``7.13e-2`` against the ``8e-2`` tolerance, and the
-       evaluated QI ``ntheta=8,16`` variants pass. This is still not a broad
+       uses the selected ``ntheta=16`` field-line floor, with drift mismatch
+       about ``7.02e-2`` against the unchanged ``8e-2`` tolerance. A later
+       ``ntheta=8`` rerun reached ``8.1879e-2`` and is tracked as fragile,
+       not as the floor. This is still not a broad
        QI transport or optimization claim. Reduced frequency, quasilinear, and
        nonlinear-window-estimator gradients pass AD/finite-difference gates on
        QH and Li383. The actual nonlinear
@@ -136,6 +137,7 @@ README claims, or manuscript claims.
    * - Autodiff and differentiable geometry
      - ``autodiff_inverse_growth.*``, ``autodiff_inverse_twomode.*``,
        ``differentiable_geometry_bridge.*``, ``vmec_boozer_parity_matrix.*``,
+       ``vmec_boozer_qi_robustness.json``,
        ``vmec_boozer_gradient_holdout_matrix.*``,
        ``nonlinear_window_fd_audit.*``, and
        ``vmec_boozer_nonlinear_window_fd_audit.*``
@@ -214,12 +216,16 @@ Differentiable-geometry state:
 - ``docs/_static/vmec_boozer_parity_matrix.json`` is the source of truth for
   the multi-equilibrium zero-beta equal-arc field-line convention gate at
   ``mboz=nboz=21``. The current regenerated artifact passes QH, fixed-
-  resolution QI, and shaped-tokamak rows. The QI row
-  ``nfp3_QI_fixed_resolution_final`` has drift mismatch about ``7.13e-2``
-  against the ``8e-2`` release tolerance, and evaluated QI ``ntheta=8,16``
-  robustness variants pass. The full declared QI seed campaign is still
+  resolution QI, and shaped-tokamak rows when QI uses the selected
+  ``ntheta=16`` floor.
+- ``docs/_static/vmec_boozer_qi_robustness.json`` records the QI robustness
+  selection. The older ``ntheta=8`` point has a later drift-only rerun at
+  ``8.1879e-2`` against the ``8e-2`` release tolerance, so that exact
+  configuration is blocked from floor selection. The selected complete QI row
+  has drift mismatch about ``7.02e-2`` at ``ntheta=16`` and
+  ``mboz=nboz=21``. The full declared QI seed campaign is still
   artifact-limited because three QI input variants have no bundled ``wout``
-  reference. The builder rejects ``mboz,nboz < 21`` so QI is not silently
+  reference. The builders reject ``mboz,nboz < 21`` so QI is not silently
   evaluated on the under-resolved low-mode setting.
 - ``docs/_static/vmec_boozer_gradient_holdout_matrix.json`` passes reduced
   linear, quasilinear, and nonlinear-window-estimator gradient gates on QH and

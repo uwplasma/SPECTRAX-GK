@@ -365,16 +365,30 @@ The builder enforces ``mboz,nboz >= 21`` before calling the real optional
 backend path, because the QI drift gate is under-resolved at lower Boozer mode
 counts. The tracked matrix covers the ``nfp4_QH_warm_start``,
 ``nfp3_QI_fixed_resolution_final``, and ``shaped_tokamak_pressure`` examples.
-At ``mboz=nboz=21`` the current regenerated artifact passes all matrix rows.
-The fixed-resolution QI case passes the loaded-convention drift subgate with
-mismatch about ``7.13e-2`` against an ``8e-2`` release tolerance after fixing
-the Boozer half-mesh radial-index convention. The evaluated QI robustness
-variants at ``ntheta=8`` and ``ntheta=16`` also pass. The broader QI seed
-campaign is still artifact-limited because three input-only QI seeds have no
-bundled ``wout`` references, and none of this is broad random-seed nonlinear
-QI transport validation or QI optimization. Finite-beta drift parity,
-solver-objective geometry gradients beyond the tracked reduced gates, and
-nonlinear transport optimization remain explicitly scoped as follow-up work.
+At ``mboz=nboz=21`` the current regenerated artifact passes all matrix rows
+when the QI case uses the selected ``ntheta=16`` field-line floor. A later real
+rerun of the older ``ntheta=8`` QI point reported a loaded-convention drift
+mismatch of ``8.1879e-2``, just above the unchanged ``8e-2`` release
+tolerance, so that point is tracked as fragile rather than used as the robust
+floor. The selected complete QI row has drift mismatch about ``7.02e-2`` at
+``ntheta=16`` and ``mboz=nboz=21``. The broader QI seed campaign is still
+artifact-limited because three input-only QI seeds have no bundled ``wout``
+references, and none of this is broad random-seed nonlinear QI transport
+validation or QI optimization. Finite-beta drift parity, solver-objective
+geometry gradients beyond the tracked reduced gates, and nonlinear transport
+optimization remain explicitly scoped as follow-up work.
+
+The companion QI robustness artifact is generated without unbounded optional
+backend work by default:
+
+.. code-block:: bash
+
+   PYTHONPATH=src python tools/build_vmec_boozer_qi_robustness.py \
+     --known-rerun-drift 0.081879
+
+It writes ``docs/_static/vmec_boozer_qi_robustness.json``. Use ``--live`` with
+``--timeout-sec`` and ``--max-evaluations`` for a bounded backend scan over the
+declared ``mboz/nboz/ntheta`` points.
 
 .. figure:: _static/vmec_boozer_parity_matrix.png
    :width: 95%
@@ -385,7 +399,9 @@ nonlinear transport optimization remain explicitly scoped as follow-up work.
    mismatch for one subgate, while the color shows mismatch divided by the
    relevant tolerance. The matrix is generated from the actual optional
    ``vmec_jax`` and ``booz_xform_jax`` bridge path and rejects Boozer mode
-   counts below 21.
+   counts below 21. The QI robustness companion blocks the older ``ntheta=8``
+   floor when the newer drift-only rerun is present and selects the complete
+   ``ntheta=16`` row instead.
 
 The next implementation step is to extend the same equal-arc path to
 finite-beta/production-runtime curvature and drift reconstruction, then replace
@@ -401,9 +417,10 @@ differentiability gate rather than a production nonlinear-optimization gate.
 
 For release claims, the differentiable-geometry lane is closed only for
 artifact-passing zero-beta equal-arc parity rows and reduced
-AD/finite-difference objectives. The fixed-resolution QI row and evaluated QI
-``ntheta`` variants now pass, but production nonlinear heat-flux optimization
-is still open. The active publication wording must keep these levels separate:
+AD/finite-difference objectives. The fixed-resolution QI row now uses the
+selected ``ntheta=16`` floor, while the older ``ntheta=8`` rerun remains a
+tracked fragile point; production nonlinear heat-flux optimization is still
+open. The active publication wording must keep these levels separate:
 the current bridge starts at real ``vmec_jax`` state coefficients and reaches
 SPECTRAX-GK solver observables, but it has not yet validated converged
 nonlinear turbulence gradients, broad QI transport behavior, or nonlinear

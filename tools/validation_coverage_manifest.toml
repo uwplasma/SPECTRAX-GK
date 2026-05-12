@@ -867,6 +867,7 @@ numerics_contracts = [
 fast_tests = [
   "tests/test_differentiable_geometry_bridge.py",
   "tests/test_build_vmec_boozer_parity_matrix.py",
+  "tests/test_build_vmec_boozer_qi_robustness.py",
   "tests/test_from_gx_vmec_helpers.py",
   "tests/test_vmec_eik.py",
 ]
@@ -877,8 +878,10 @@ artifact_paths = [
   "docs/_static/differentiable_geometry_bridge.png",
   "docs/_static/vmec_boozer_parity_matrix.json",
   "docs/_static/vmec_boozer_parity_matrix.png",
+  "docs/_static/vmec_boozer_qi_robustness.json",
 ]
 next_tests = [
+  "rerun the bounded QI robustness scan live after resolving optional-backend import blockers and retain the selected ntheta/mode floor without relaxing drift tolerance",
   "generalize the mode-21 VMEC/Boozer parity matrix to finite-beta pressure-correction drift terms",
   "promote the finite-difference geometry-gradient check from geometry observables to linear growth observables",
 ]

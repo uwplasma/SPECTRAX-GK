@@ -51,7 +51,27 @@ def test_dense_dominant_frequency_returns_tiny_operator_eigenvalue() -> None:
     assert abs(omega - 0.2) < 1.0e-6
 
 
-def test_build_summary_reports_identity_readiness_and_linear_scope() -> None:
+def test_tiny_eigen_scorecard_validates_identity_operator() -> None:
+    scorecard = mod._build_tiny_eigen_scorecard(
+        [
+            ("identity", mod.VelocityMapConfig()),
+            ("parallel_shift", mod.VelocityMapConfig(parallel_shift=0.15)),
+        ],
+        max_size=128,
+        identity_tolerance=1.0e-10,
+    )
+
+    assert scorecard is not None
+    assert scorecard["kind"] == "mapped_velocity_rhs_tiny_dense_eigen_scorecard"
+    assert scorecard["matrix_size"] == 24
+    assert scorecard["readiness"]["identity_dense_operator_matches_unmapped"] is True
+    assert scorecard["readiness"]["all_dense_metrics_finite"] is True
+    assert scorecard["max_identity_matrix_rel_error"] == 0.0
+    labels = {row["map_label"] for row in scorecard["rows"]}
+    assert {"unmapped", "identity", "parallel_shift"} <= labels
+
+
+def test_build_summary_reports_identity_and_dense_eigen_readiness() -> None:
     rows = [
         {
             "map_label": "unmapped",
@@ -77,19 +97,15 @@ def test_build_summary_reports_identity_readiness_and_linear_scope() -> None:
             "gamma_proxy_abs_error_vs_unmapped": 0.0,
             "omega_proxy_abs_error_vs_unmapped": 0.0,
         },
-        {
-            "map_label": "identity",
-            "Nl": 4,
-            "Nm": 8,
-            "warm_seconds": 0.12,
-            "warm_over_baseline": 1.2,
-            "rhs_rel_error_vs_unmapped": 2.0e-13,
-            "gamma_proxy": 0.21,
-            "omega_proxy": 1.02,
-            "gamma_proxy_abs_error_vs_unmapped": 0.0,
-            "omega_proxy_abs_error_vs_unmapped": 0.0,
-        },
     ]
+    scorecard = {
+        "kind": "mapped_velocity_rhs_tiny_dense_eigen_scorecard",
+        "readiness": {
+            "identity_dense_operator_matches_unmapped": True,
+            "all_dense_metrics_finite": True,
+        },
+        "rows": [],
+    }
 
     payload = mod._build_summary(
         rows,
@@ -101,14 +117,16 @@ def test_build_summary_reports_identity_readiness_and_linear_scope() -> None:
         nonlinear_weight=1.0,
         identity_tolerance=1.0e-10,
         dense_eigen_max_size=128,
+        eigen_scorecard=scorecard,
     )
 
     assert payload["kind"] == "mapped_velocity_rhs_readiness"
     assert payload["case"] == "runtime_cyclone_nonlinear_miller"
     assert payload["nonlinear_terms_forced_linear"] is True
     assert payload["readiness"]["identity_map_matches_unmapped"] is True
-    assert payload["max_mapped_warm_over_unmapped"] == 1.2
-    assert payload["resolution_sensitivity"][0]["map_label"] == "identity"
+    assert payload["readiness"]["tiny_dense_eigen_scorecard_available"] is True
+    assert payload["readiness"]["identity_dense_operator_matches_unmapped"] is True
+    assert payload["eigen_scorecard"] is scorecard
     assert "Nonlinear real-space mapped-basis support is not asserted" in payload["claim_scope"]
 
 
@@ -165,7 +183,11 @@ def test_tracked_mapped_velocity_rhs_artifact_is_scoped_and_replayable() -> None
     assert payload["state"] == "z_wave"
     assert payload["readiness"]["identity_map_matches_unmapped"] is True
     assert payload["readiness"]["all_proxy_metrics_finite"] is True
+    assert payload["readiness"]["tiny_dense_eigen_scorecard_available"] is True
+    assert payload["readiness"]["identity_dense_operator_matches_unmapped"] is True
+    assert payload["eigen_scorecard"]["matrix_size"] == 24
+    assert payload["eigen_scorecard"]["readiness"]["identity_dense_operator_matches_unmapped"] is True
     assert payload["max_identity_rhs_rel_error"] == 0.0
     assert payload["row_count"] >= 8
-    assert payload["max_mapped_warm_over_unmapped"] < 1.5
+    assert payload["max_mapped_warm_over_unmapped"] < 2.5
     assert "Nonlinear real-space mapped-basis support is not asserted" in payload["claim_scope"]

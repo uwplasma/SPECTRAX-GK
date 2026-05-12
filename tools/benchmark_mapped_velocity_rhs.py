@@ -22,10 +22,11 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from spectraxgk.geometry import apply_gx_geometry_grid_defaults
-from spectraxgk.grids import build_spectral_grid
+from spectraxgk.config import GridConfig
+from spectraxgk.geometry import SAlphaGeometry, apply_gx_geometry_grid_defaults
+from spectraxgk.grids import build_spectral_grid, select_ky_grid
 from spectraxgk.io import load_runtime_from_toml
-from spectraxgk.linear import build_linear_cache
+from spectraxgk.linear import LinearParams, build_linear_cache
 from spectraxgk.runtime import (
     _build_initial_condition,
     _select_nonlinear_mode_indices,
@@ -34,6 +35,7 @@ from spectraxgk.runtime import (
     build_runtime_term_config,
 )
 from spectraxgk.terms.assembly import _is_static_zero, assemble_rhs_cached
+from spectraxgk.terms.config import TermConfig
 from spectraxgk.velocity_maps import VelocityMapConfig, map_regularization
 
 
@@ -106,6 +108,15 @@ def _parse_args() -> argparse.Namespace:
         default=256,
         help="Compute a dense dominant eigenvalue only when state.size is at most this value; 0 disables it.",
     )
+    parser.add_argument(
+        "--eigen-scorecard-max-size",
+        type=int,
+        default=128,
+        help=(
+            "Build a tiny actual assembled-RHS dense-eigen scorecard up to this matrix size; "
+            "0 disables the scorecard."
+        ),
+    )
     parser.add_argument("--identity-tolerance", type=float, default=1.0e-10)
     parser.add_argument("--out-json", type=Path, default=Path("docs/_static/mapped_velocity_rhs_readiness.json"))
     parser.add_argument("--out-csv", type=Path, default=Path("docs/_static/mapped_velocity_rhs_readiness.csv"))
@@ -127,9 +138,8 @@ def _parse_map_spec(spec: str) -> tuple[str, VelocityMapConfig]:
         raise ValueError(
             "map specs must be label:parallel_shift:parallel_log_scale:perpendicular_log_scale"
         )
-    label = parts[0]
     return (
-        label,
+        parts[0],
         VelocityMapConfig(
             parallel_shift=float(parts[1]),
             parallel_log_scale=float(parts[2]),
@@ -217,13 +227,13 @@ def _rayleigh_frequency_proxy(state: jnp.ndarray, rhs: jnp.ndarray) -> tuple[flo
     return float(np.asarray(jnp.real(lam))), float(np.asarray(-jnp.imag(lam)))
 
 
-def _dense_dominant_frequency(
+def _dense_operator_matrix(
     rhs_fn: Callable[[jnp.ndarray], tuple[jnp.ndarray, Any]],
     template: jnp.ndarray,
     *,
     max_size: int,
-) -> tuple[float, float] | None:
-    """Return dominant dense eigen gamma/omega for tiny states, otherwise ``None``."""
+) -> jnp.ndarray | None:
+    """Materialize a tiny matrix-free RHS operator by applying it to basis vectors."""
 
     n = int(template.size)
     if int(max_size) <= 0 or n > int(max_size):
@@ -236,83 +246,201 @@ def _dense_dominant_frequency(
         return rhs.reshape(-1)
 
     columns = jax.vmap(_apply)(eye)
-    matrix = columns.T
+    return columns.T
+
+
+def _dense_dominant_frequency(
+    rhs_fn: Callable[[jnp.ndarray], tuple[jnp.ndarray, Any]],
+    template: jnp.ndarray,
+    *,
+    max_size: int,
+) -> tuple[float, float] | None:
+    """Return dominant dense eigen gamma/omega for tiny states, otherwise ``None``."""
+
+    matrix = _dense_operator_matrix(rhs_fn, template, max_size=max_size)
+    if matrix is None:
+        return None
     eigvals = jnp.linalg.eigvals(matrix)
     eig = eigvals[jnp.argmax(jnp.real(eigvals))]
     return float(np.asarray(jnp.real(eig))), float(np.asarray(-jnp.imag(eig)))
 
 
-def _map_regularization_floats(cfg: VelocityMapConfig) -> dict[str, float]:
-    reg = map_regularization(cfg)
-    return {key: float(np.asarray(value)) for key, value in reg.items()}
+def _dominant_frequency_from_matrix(matrix: np.ndarray) -> tuple[float, float]:
+    eigvals = np.linalg.eigvals(np.asarray(matrix))
+    eig = eigvals[int(np.argmax(np.real(eigvals)))]
+    return float(np.real(eig)), float(-np.imag(eig))
 
 
-def _build_summary(
-    rows: list[dict[str, Any]],
+def _spectral_radius(matrix: np.ndarray) -> float:
+    eigvals = np.linalg.eigvals(np.asarray(matrix))
+    return float(np.max(np.abs(eigvals)))
+
+
+def _relative_matrix_error(lhs: np.ndarray, rhs: np.ndarray) -> float:
+    rhs_norm = float(np.linalg.norm(rhs))
+    diff_norm = float(np.linalg.norm(lhs - rhs))
+    if rhs_norm == 0.0:
+        return 0.0 if diff_norm == 0.0 else math.inf
+    return diff_norm / rhs_norm
+
+
+def _is_identity_velocity_map(cfg: VelocityMapConfig) -> bool:
+    return (
+        float(np.asarray(cfg.parallel_shift)) == 0.0
+        and float(np.asarray(cfg.parallel_log_scale)) == 0.0
+        and float(np.asarray(cfg.perpendicular_log_scale)) == 0.0
+    )
+
+
+def _dedupe_scorecard_maps(
+    map_specs: list[tuple[str, VelocityMapConfig]],
+) -> list[tuple[str, VelocityMapConfig | None]]:
+    specs: list[tuple[str, VelocityMapConfig | None]] = [("unmapped", None), ("identity", VelocityMapConfig())]
+    seen = {"unmapped", "identity"}
+    for label, cfg in map_specs:
+        if label in seen or _is_identity_velocity_map(cfg):
+            continue
+        specs.append((label, cfg))
+        seen.add(label)
+    return specs
+
+
+def _build_tiny_eigen_scorecard(
+    map_specs: list[tuple[str, VelocityMapConfig]],
     *,
-    config: str,
-    backend: str,
-    repeats: int,
-    state: str,
-    z_variation_norm: float,
-    nonlinear_weight: float,
+    max_size: int,
     identity_tolerance: float,
-    dense_eigen_max_size: int,
-) -> dict[str, Any]:
-    identity_rows = [row for row in rows if row["map_label"] == "identity"]
-    mapped_rows = [row for row in rows if row["map_label"] != "unmapped"]
-    ratios = [
-        float(row["warm_over_baseline"])
-        for row in mapped_rows
-        if row.get("warm_over_baseline") is not None and math.isfinite(float(row["warm_over_baseline"]))
-    ]
-    identity_rhs_errors = [float(row["rhs_rel_error_vs_unmapped"]) for row in identity_rows]
-    identity_gamma_errors = [float(row["gamma_proxy_abs_error_vs_unmapped"]) for row in identity_rows]
-    identity_omega_errors = [float(row["omega_proxy_abs_error_vs_unmapped"]) for row in identity_rows]
+) -> dict[str, Any] | None:
+    """Build a compact dense-eigen artifact from the actual mapped RHS assembly."""
 
-    sensitivity = _resolution_sensitivity(rows)
-    max_identity_rhs_error = max(identity_rhs_errors, default=None)
-    max_identity_gamma_error = max(identity_gamma_errors, default=None)
-    max_identity_omega_error = max(identity_omega_errors, default=None)
+    nl, nm = 2, 3
+    grid_full = build_spectral_grid(GridConfig(Nx=1, Ny=4, Nz=4, Lx=6.28, Ly=6.28))
+    grid = select_ky_grid(grid_full, 1)
+    geom = SAlphaGeometry(q=1.4, s_hat=0.8, epsilon=0.18, R0=2.77778, drift_scale=1.0)
+    params = LinearParams(
+        R_over_Ln=0.8,
+        R_over_LTi=2.49,
+        R_over_LTe=0.0,
+        omega_d_scale=1.0,
+        omega_star_scale=1.0,
+        rho_star=1.0,
+        kpar_scale=float(geom.gradpar()),
+        nu=0.0,
+    )
+    terms = TermConfig(
+        streaming=1.0,
+        mirror=0.0,
+        curvature=1.0,
+        gradb=1.0,
+        diamagnetic=0.0,
+        collisions=0.0,
+        hypercollisions=0.0,
+        hyperdiffusion=0.0,
+        end_damping=0.0,
+        apar=0.0,
+        bpar=0.0,
+    )
+    template = jnp.zeros((nl, nm, grid.ky.size, grid.kx.size, grid.z.size), dtype=jnp.complex64)
+    if int(max_size) <= 0 or int(template.size) > int(max_size):
+        return None
+
+    cache = build_linear_cache(grid, geom, params, nl, nm)
+
+    def _rhs(state: jnp.ndarray, map_cfg: VelocityMapConfig | None) -> tuple[jnp.ndarray, Any]:
+        return assemble_rhs_cached(
+            state,
+            cache,
+            params,
+            terms=terms,
+            use_custom_vjp=False,
+            velocity_map=map_cfg,
+            force_electrostatic_fields=True,
+        )
+
+    matrices: dict[str, np.ndarray] = {}
+    rows: list[dict[str, Any]] = []
+    for label, map_cfg in _dedupe_scorecard_maps(map_specs):
+        matrix = _dense_operator_matrix(
+            lambda state_arg, map_cfg=map_cfg: _rhs(state_arg, map_cfg),
+            template,
+            max_size=max_size,
+        )
+        if matrix is None:  # pragma: no cover - guarded by the template size check above.
+            return None
+        matrices[label] = np.asarray(matrix)
+
+    baseline_matrix = matrices["unmapped"]
+    baseline_gamma, baseline_omega = _dominant_frequency_from_matrix(baseline_matrix)
+    for label, matrix in matrices.items():
+        gamma, omega = _dominant_frequency_from_matrix(matrix)
+        rows.append(
+            {
+                "map_label": label,
+                "matrix_size": int(template.size),
+                "Nl": nl,
+                "Nm": nm,
+                "Nz": int(grid.z.size),
+                "dense_gamma": gamma,
+                "dense_omega": omega,
+                "dense_gamma_abs_error_vs_unmapped": abs(gamma - baseline_gamma),
+                "dense_omega_abs_error_vs_unmapped": abs(omega - baseline_omega),
+                "spectral_radius": _spectral_radius(matrix),
+                "matrix_rel_error_vs_unmapped": _relative_matrix_error(matrix, baseline_matrix),
+            }
+        )
+
+    identity_rows = [row for row in rows if row["map_label"] == "identity"]
+    max_identity_matrix_error = max(
+        (float(row["matrix_rel_error_vs_unmapped"]) for row in identity_rows),
+        default=None,
+    )
+    max_identity_gamma_error = max(
+        (float(row["dense_gamma_abs_error_vs_unmapped"]) for row in identity_rows),
+        default=None,
+    )
+    max_identity_omega_error = max(
+        (float(row["dense_omega_abs_error_vs_unmapped"]) for row in identity_rows),
+        default=None,
+    )
     identity_pass = (
-        max_identity_rhs_error is not None
-        and max_identity_rhs_error <= float(identity_tolerance)
-        and max(identity_gamma_errors, default=0.0) <= float(identity_tolerance)
-        and max(identity_omega_errors, default=0.0) <= float(identity_tolerance)
+        max_identity_matrix_error is not None
+        and max_identity_matrix_error <= float(identity_tolerance)
+        and max_identity_gamma_error is not None
+        and max_identity_gamma_error <= float(identity_tolerance)
+        and max_identity_omega_error is not None
+        and max_identity_omega_error <= float(identity_tolerance)
     )
     return {
-        "kind": "mapped_velocity_rhs_readiness",
-        "case": Path(config).stem,
-        "config": config,
-        "backend": backend,
-        "repeats": int(repeats),
-        "state": state,
-        "z_variation_norm": float(z_variation_norm),
-        "nonlinear_input_weight": float(nonlinear_weight),
-        "nonlinear_terms_forced_linear": bool(float(nonlinear_weight) != 0.0),
-        "dense_eigen_max_size": int(dense_eigen_max_size),
+        "kind": "mapped_velocity_rhs_tiny_dense_eigen_scorecard",
+        "matrix_source": "spectraxgk.terms.assembly.assemble_rhs_cached",
+        "matrix_size": int(template.size),
+        "max_size": int(max_size),
         "identity_tolerance": float(identity_tolerance),
-        "row_count": len(rows),
-        "max_identity_rhs_rel_error": max_identity_rhs_error,
-        "max_identity_gamma_proxy_abs_error": max_identity_gamma_error,
-        "max_identity_omega_proxy_abs_error": max_identity_omega_error,
-        "max_mapped_warm_over_unmapped": max(ratios, default=None),
-        "resolution_sensitivity": sensitivity,
+        "max_identity_matrix_rel_error": max_identity_matrix_error,
+        "max_identity_dense_gamma_abs_error": max_identity_gamma_error,
+        "max_identity_dense_omega_abs_error": max_identity_omega_error,
         "readiness": {
-            "identity_map_matches_unmapped": bool(identity_pass),
-            "all_proxy_metrics_finite": all(
-                math.isfinite(float(row["gamma_proxy"])) and math.isfinite(float(row["omega_proxy"]))
+            "identity_dense_operator_matches_unmapped": bool(identity_pass),
+            "all_dense_metrics_finite": all(
+                math.isfinite(float(row["dense_gamma"]))
+                and math.isfinite(float(row["dense_omega"]))
+                and math.isfinite(float(row["spectral_radius"]))
+                and math.isfinite(float(row["matrix_rel_error_vs_unmapped"]))
                 for row in rows
             ),
         },
         "rows": rows,
         "claim_scope": (
-            "Mapped velocity-basis readiness for cached linear RHS assembly. Timings are single-state "
-            "JAX warm-call measurements; gamma/omega values are Rayleigh-quotient proxies unless dense "
-            "eigen fields are populated. Nonlinear real-space mapped-basis support is not asserted here, "
-            "and any input nonlinear term is forced off for this benchmark."
+            "Tiny actual assembled-RHS dense matrix materialized from matrix-free basis-vector applies. "
+            "This validates mapped identity eigen/operator consistency on a compact linear grid; it is "
+            "not a production-size spectrum."
         ),
     }
+
+
+def _map_regularization_floats(cfg: VelocityMapConfig) -> dict[str, float]:
+    reg = map_regularization(cfg)
+    return {key: float(np.asarray(value)) for key, value in reg.items()}
 
 
 def _resolution_sensitivity(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -340,6 +468,82 @@ def _resolution_sensitivity(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
             }
         )
     return out
+
+
+def _build_summary(
+    rows: list[dict[str, Any]],
+    *,
+    config: str,
+    backend: str,
+    repeats: int,
+    state: str,
+    z_variation_norm: float,
+    nonlinear_weight: float,
+    identity_tolerance: float,
+    dense_eigen_max_size: int,
+    eigen_scorecard: dict[str, Any] | None,
+) -> dict[str, Any]:
+    identity_rows = [row for row in rows if row["map_label"] == "identity"]
+    mapped_rows = [row for row in rows if row["map_label"] != "unmapped"]
+    ratios = [
+        float(row["warm_over_baseline"])
+        for row in mapped_rows
+        if row.get("warm_over_baseline") is not None and math.isfinite(float(row["warm_over_baseline"]))
+    ]
+    identity_rhs_errors = [float(row["rhs_rel_error_vs_unmapped"]) for row in identity_rows]
+    identity_gamma_errors = [float(row["gamma_proxy_abs_error_vs_unmapped"]) for row in identity_rows]
+    identity_omega_errors = [float(row["omega_proxy_abs_error_vs_unmapped"]) for row in identity_rows]
+    max_identity_rhs_error = max(identity_rhs_errors, default=None)
+    max_identity_gamma_error = max(identity_gamma_errors, default=None)
+    max_identity_omega_error = max(identity_omega_errors, default=None)
+    identity_pass = (
+        max_identity_rhs_error is not None
+        and max_identity_rhs_error <= float(identity_tolerance)
+        and max(identity_gamma_errors, default=0.0) <= float(identity_tolerance)
+        and max(identity_omega_errors, default=0.0) <= float(identity_tolerance)
+    )
+    eigen_identity_pass = None
+    if eigen_scorecard is not None:
+        eigen_identity_pass = bool(
+            eigen_scorecard["readiness"]["identity_dense_operator_matches_unmapped"]
+        )
+    return {
+        "kind": "mapped_velocity_rhs_readiness",
+        "case": Path(config).stem,
+        "config": config,
+        "backend": backend,
+        "repeats": int(repeats),
+        "state": state,
+        "z_variation_norm": float(z_variation_norm),
+        "nonlinear_input_weight": float(nonlinear_weight),
+        "nonlinear_terms_forced_linear": bool(float(nonlinear_weight) != 0.0),
+        "dense_eigen_max_size": int(dense_eigen_max_size),
+        "identity_tolerance": float(identity_tolerance),
+        "row_count": len(rows),
+        "max_identity_rhs_rel_error": max_identity_rhs_error,
+        "max_identity_gamma_proxy_abs_error": max_identity_gamma_error,
+        "max_identity_omega_proxy_abs_error": max_identity_omega_error,
+        "max_mapped_warm_over_unmapped": max(ratios, default=None),
+        "resolution_sensitivity": _resolution_sensitivity(rows),
+        "eigen_scorecard": eigen_scorecard,
+        "readiness": {
+            "identity_map_matches_unmapped": bool(identity_pass),
+            "all_proxy_metrics_finite": all(
+                math.isfinite(float(row["gamma_proxy"])) and math.isfinite(float(row["omega_proxy"]))
+                for row in rows
+            ),
+            "tiny_dense_eigen_scorecard_available": eigen_scorecard is not None,
+            "identity_dense_operator_matches_unmapped": eigen_identity_pass,
+        },
+        "rows": rows,
+        "claim_scope": (
+            "Mapped velocity-basis readiness for cached linear RHS assembly. Timings are single-state "
+            "JAX warm-call measurements; gamma/omega values are Rayleigh-quotient proxies unless dense "
+            "eigen fields are populated. The eigen_scorecard field adds a tiny actual assembled-RHS dense "
+            "operator check for mapped identity consistency. Nonlinear real-space mapped-basis support is "
+            "not asserted here, and any input nonlinear term is forced off for this benchmark."
+        ),
+    }
 
 
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
@@ -577,6 +781,11 @@ def main() -> None:
                     f"gamma={gamma_proxy:.6e} omega={omega_proxy:.6e}"
                 )
 
+    eigen_scorecard = _build_tiny_eigen_scorecard(
+        map_specs,
+        max_size=int(args.eigen_scorecard_max_size),
+        identity_tolerance=float(args.identity_tolerance),
+    )
     summary = _build_summary(
         rows,
         config=str(args.config),
@@ -587,6 +796,7 @@ def main() -> None:
         nonlinear_weight=float(term_cfg.nonlinear),
         identity_tolerance=float(args.identity_tolerance),
         dense_eigen_max_size=int(args.dense_eigen_max_size),
+        eigen_scorecard=eigen_scorecard,
     )
     _write_json(args.out_json, summary)
     _write_csv(args.out_csv, rows)

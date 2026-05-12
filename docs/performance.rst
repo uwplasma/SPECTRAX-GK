@@ -408,23 +408,31 @@ artifact:
 .. code-block:: bash
 
    python tools/benchmark_mapped_velocity_rhs.py \
-     --Nl 2 \
-     --Nm 3,4 \
+     --Nl 4 \
+     --Nm 6,8 \
      --repeats 2 \
      --map identity:0:0:0 \
      --map parallel_shift:0.15:0:0 \
      --map parallel_scale:0:-0.08:0 \
+     --map perp_scale:0:0:0.06 \
      --dense-eigen-max-size 0 \
+     --eigen-scorecard-max-size 128 \
      --out-json docs/_static/mapped_velocity_rhs_readiness.json \
      --out-csv docs/_static/mapped_velocity_rhs_readiness.csv
 
-The May 11, 2026 CPU artifact reports eight rows for the Cyclone Miller
+The May 12, 2026 CPU artifact reports ten rows for the Cyclone Miller
 ``z_wave`` state. The identity map agrees exactly with the unmapped production
 RHS in the tracked norm, all Rayleigh-proxy ``gamma``/``omega`` metrics are
-finite, and the largest mapped warm-call overhead is about ``1.22x``. The
+finite, and the largest mapped warm-call overhead is about ``1.14x`` in this
+small repeat-count run. The JSON also includes an ``eigen_scorecard`` field:
+a 24-by-24 dense matrix materialized from actual matrix-free
+``assemble_rhs_cached`` basis-vector applies on a compact linear grid. That
+scorecard records finite dense dominant-eigen metrics and exact mapped-identity
+operator/eigen agreement with the unmapped operator. The
 non-identity maps intentionally change the RHS by about ``8-9%`` in this
 single-state diagnostic, so this is a readiness and cost/observable plumbing
-gate, not a claim that a particular mapped basis improves nonlinear physics.
+gate plus a tiny eigen-consistency artifact, not a claim that a particular
+mapped basis improves nonlinear physics.
 The benchmark explicitly forces nonlinear terms off and records that mapped
 real-space nonlinear support is outside this artifact's scope.
 
