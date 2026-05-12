@@ -65,6 +65,21 @@ aggregation. Any timing claim from this path must be paired with a serial
 numerical-identity gate for the reported observables, such as ``gamma``,
 ``omega``, quasilinear weights, or covariance summaries.
 
+Runtime ``k_y`` scans can request the same independent-worker policy directly
+from TOML. This is a scan orchestration path, not a solver-layout sharding path:
+
+.. code-block:: toml
+
+   [parallel]
+   strategy = "batch"
+   axis = "ky"
+   num_devices = 4      # or batch_size = 4
+   backend = "auto"     # "thread" or "process" are explicit alternatives
+
+When command-line scan workers are not set explicitly, ``strategy = "batch"``
+with ``axis = "ky"`` resolves to independent per-``k_y`` solver calls and
+records the resolved worker policy in runtime scan artifacts.
+
 The large tracked artifacts use real solver work rather than synthetic sleeps:
 ``docs/_static/independent_ky_scan_scaling_large.json`` covers Cyclone linear
 ``k_y`` scans, and ``docs/_static/quasilinear_uq_ensemble_scaling_large.json``
@@ -126,6 +141,8 @@ Use the following rules when writing docs, release notes, or papers:
 
 - Call independent ``k_y``/UQ/ensemble batching the production-ready
   parallelization path when the serial identity gate is current.
+- For runtime scan TOMLs, use ``[parallel] strategy = "batch"`` with
+  ``axis = "ky"`` only for independent ``k_y`` scan orchestration.
 - Call whole-state nonlinear sharding a diagnostic correctness/profiler gate,
   not production nonlinear parallelism.
 - Call velocity-space ``shard_map`` work communication-gated and opt-in until
