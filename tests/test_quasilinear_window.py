@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 from pathlib import Path
+import subprocess
+import sys
 
 import numpy as np
 import pytest
@@ -152,3 +155,23 @@ def test_check_nonlinear_window_convergence_tool_writes_json(tmp_path: Path) -> 
     payload = json.loads(out.read_text(encoding="utf-8"))
     assert payload["passed"] is True
     assert payload["provenance"]["source_artifact"] == str(csv)
+
+
+def test_nonlinear_window_script_imports_before_editable_install() -> None:
+    root = Path(__file__).resolve().parents[1]
+    env = {**os.environ, "PYTHONPATH": ""}
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "tools/check_nonlinear_window_convergence.py",
+            "--help",
+        ],
+        cwd=root,
+        env=env,
+        check=True,
+        text=True,
+        capture_output=True,
+    )
+
+    assert "Check nonlinear late-window convergence metadata" in completed.stdout
