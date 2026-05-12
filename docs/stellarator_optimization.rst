@@ -27,6 +27,8 @@ Source Map
 ----------
 
 - Core API: :mod:`spectraxgk.stellarator_optimization`
+- Production in-memory geometry boundary:
+  :func:`spectraxgk.flux_tube_geometry_from_vmec_boozer_state`
 - Tests: ``tests/test_stellarator_optimization.py``
 - Growth-rate example:
   :download:`stellarator_itg_growth_optimization.py <../examples/optimization/stellarator_itg_growth_optimization.py>`
@@ -47,6 +49,13 @@ quasisymmetry, then minimizes them over boundary Fourier coefficients. The
 SPECTRAX-GK examples use the same optimization pattern but keep the transport
 objective inside a trace-safe reduced map until the production geometry bridge
 is fully gated.
+
+The next implementation stage replaces that reduced map with
+``flux_tube_geometry_from_vmec_boozer_state`` followed by the linear or
+quasilinear SPECTRAX-GK objective. That stage is allowed to claim
+end-to-end differentiability only after VMEC/Boozer geometry parity,
+branch-continuity, and AD/finite-difference gates pass for the optimized
+equilibrium and held-out field lines.
 
 Objective
 ---------

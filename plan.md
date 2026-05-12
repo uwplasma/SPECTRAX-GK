@@ -3,7 +3,7 @@
 Last updated: 2026-05-12
 Active repository: `uwplasma/SPECTRAX-GK`
 Historical planning archive: private repo `rogeriojorge/spectraxgk_plan`
-Current public baseline: `main` at v1.5.0, with the historical ship-readiness log archived before this file was reset.
+Current public baseline: `main` at v1.6.0, with the historical ship-readiness log archived before this file was reset.
 
 This file is both the active plan and the running log. Keep entries concise, dated, and tied to artifacts, tests, and figures.
 
@@ -18,6 +18,30 @@ The target paper should show:
 3. Differentiable quasilinear objectives with finite-difference, tangent, and covariance validation.
 4. A full `vmec_jax -> booz_xform_jax -> SPECTRAX-GK` pipeline for stellarator sensitivity analysis, uncertainty quantification, inverse design, and optimization.
 5. Nonlinear audit runs that confirm where the reduced objective does and does not predict saturated transport trends.
+
+## 2026-05-12 Closure Execution Board
+
+This board is the active route from the v1.6.0 release baseline to the next
+research-grade claim set. Treat each lane as incomplete until its acceptance
+gate and publication artifacts exist in `docs/_static` and the relevant docs
+page names the claim level explicitly.
+
+| Lane | Current Level | 100% Acceptance Gate | First Work Item |
+|---|---:|---|---|
+| Linear-growth stellarator optimization | 85% | Real in-memory `vmec_jax -> booz_xform_jax -> SPECTRAX-GK` optimizer, multi-surface/multi-alpha/multi-ky reduction, AD/FD checks, and branch-continuity gates. | Promote the report-only VMEC/Boozer flux-tube bridge into a public solver-ready geometry API. |
+| Quasilinear-flux stellarator optimization | 75% | Held-out nonlinear flux trends are predicted with calibrated uncertainty intervals and the failed stellarator train/holdout artifact is replaced by a passing, converged dataset. | Add converged nonlinear holdouts before fitting richer saturation rules. |
+| Nonlinear turbulent-flux stellarator optimization | 55% | Objective uses post-transient nonlinear heat-flux averages with time-window, seed, grid, and timestep convergence, not reduced envelope estimates. | Freeze the long-window averaging protocol and gate every optimized run by running-average convergence. |
+| Quasilinear manuscript plots | 75% | Every plot is regenerated from checked scripts and JSON sidecars, with failed baselines and accepted candidate scope shown honestly. | Regenerate the QL model-development stack after the holdout dataset changes. |
+| Parallelization | 87.5% broad | Nonlinear domain sharding routes the real RHS/FFT/field-solve communication and passes serial identity, conservation, transport-window, CPU/GPU speedup, and profiler gates. | Keep independent batching production; start a separate `nonlinear_domain_shard_map` path. |
+| Coverage and refactor | 95% gate, thin margin | Fresh combined wide coverage has positive margin above 95%, preferably 97%, and high-priority manifest owners are either closed or explicitly scoped. | Close high-priority owners touched by geometry/optimization split. |
+| `spectraxgk --plot` | 100% | Keep linear/nonlinear saved-output smoke tests and docs examples green. | Maintain as release hygiene while adding manuscript plot scripts. |
+
+Immediate execution order for this tranche:
+
+1. Add the in-memory VMEC/Boozer-to-flux-tube public API.
+2. Document that this is the required path for differentiable geometry and that NetCDF/EIK remains a runtime import path, not the optimizer path.
+3. Add fast tests that validate the wrapper contract without requiring optional backends.
+4. Use the new API as the base for the next real linear-growth objective builder.
 
 ## Literature Anchors From Final Pass
 
