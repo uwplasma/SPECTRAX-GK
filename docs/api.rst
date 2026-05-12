@@ -57,6 +57,13 @@ Linear Cache
    :members:
    :private-members:
 
+Linear Moments
+--------------
+
+.. automodule:: spectraxgk.linear_moments
+   :members:
+   :private-members:
+
 Linear Parameters
 -----------------
 
