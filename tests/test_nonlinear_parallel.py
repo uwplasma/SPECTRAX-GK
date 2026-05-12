@@ -7,7 +7,10 @@ import pytest
 import spectraxgk
 import spectraxgk.nonlinear_parallel as nonlinear_parallel
 from spectraxgk.nonlinear_parallel import (
+    NonlinearDomainDecompositionPlan,
+    NonlinearDomainIdentityReport,
     NonlinearParallelStrategy,
+    NonlinearSpectralCommunicationReport,
     classify_nonlinear_parallel_strategy,
     nonlinear_parallel_strategies,
     nonlinear_parallel_strategy,
@@ -17,32 +20,51 @@ from spectraxgk.nonlinear_parallel import (
 
 def test_nonlinear_parallel_public_api_exports_are_stable() -> None:
     public_names = (
+        "NonlinearDomainDecompositionPlan",
+        "NonlinearDomainIdentityReport",
         "NonlinearParallelStrategy",
+        "NonlinearSpectralCommunicationReport",
+        "build_nonlinear_domain_decomposition_plan",
         "classify_nonlinear_parallel_strategy",
+        "deterministic_nonlinear_domain_state",
+        "deterministic_nonlinear_spectral_state",
+        "nonlinear_domain_identity_report",
+        "nonlinear_domain_parallel_identity_gate",
         "nonlinear_parallel_strategies",
         "nonlinear_parallel_strategy",
+        "nonlinear_spectral_communication_identity_gate",
+        "nonlinear_spectral_communication_identity_report",
+        "prototype_nonlinear_domain_decomposed_step",
+        "prototype_nonlinear_domain_serial_step",
         "release_ready_nonlinear_parallel_strategies",
     )
 
     assert set(public_names) <= set(spectraxgk.__all__)
     assert set(public_names) <= set(nonlinear_parallel.__all__)
     assert NonlinearParallelStrategy is nonlinear_parallel.NonlinearParallelStrategy
+    assert NonlinearDomainDecompositionPlan is nonlinear_parallel.NonlinearDomainDecompositionPlan
+    assert NonlinearDomainIdentityReport is nonlinear_parallel.NonlinearDomainIdentityReport
+    assert (
+        NonlinearSpectralCommunicationReport
+        is nonlinear_parallel.NonlinearSpectralCommunicationReport
+    )
     for name in public_names:
         assert getattr(spectraxgk, name) is getattr(nonlinear_parallel, name)
 
 
-def test_fft_axis_domain_sharding_is_blocked_until_distributed_fft_identity_gates_exist() -> (
+def test_fft_axis_domain_sharding_is_diagnostic_until_runtime_fft_gates_exist() -> (
     None
 ):
     strategy = nonlinear_parallel_strategy("fft_axis_domain")
 
-    assert strategy.blocked is True
+    assert strategy.diagnostic_only is True
     assert strategy.release_ready is False
-    assert strategy.readiness == "blocked"
+    assert strategy.readiness == "diagnostic"
     assert "distributed_fft_forward_inverse_identity" in strategy.identity_gates
     assert "distributed_fft_nonlinear_bracket_identity" in strategy.identity_gates
     assert "distributed_fft_field_solve_identity" in strategy.identity_gates
-    assert "distributed FFT identity gates" in strategy.notes
+    assert "split/reassemble spectral communication identity" in strategy.notes
+    assert "runtime distributed FFT routing" in strategy.notes
 
 
 def test_whole_state_kx_ky_is_diagnostic_only() -> None:

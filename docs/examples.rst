@@ -93,6 +93,20 @@ lanes:
 
    spectrax-gk examples/linear/axisymmetric/runtime_cyclone.toml
 
+For a bounded runtime-configured independent ``k_y`` scan that uses
+``[parallel] strategy = "batch"`` without changing the single-``k_y`` solver
+layout, run:
+
+.. code-block:: bash
+
+   python examples/parallelization/independent_ky_runtime_batch_scan.py
+
+The companion
+``examples/parallelization/runtime_batch_ky_scan.toml`` selects two thread
+workers through ``[parallel].num_devices``. The runtime still dispatches normal
+single-``k_y`` solver calls and gathers results in input order; it does not opt
+into the combined-``k_y`` solver path.
+
 Scaling utilities
 -----------------
 

@@ -48,6 +48,10 @@ documented without changing the physics claim surface:
 
 Current pre-release status snapshot:
 
+- Release-ready technical lanes are those backed by tracked CI,
+  documentation, refactor, parallelization, profiler, and guardrail artifacts;
+  remaining manuscript physics lanes are tracked separately and must not be
+  counted as shipped claims.
 - runtime/memory and nonlinear atlas figures include W7-X and HSX release rows;
 - the large runtime/diagnostics refactor has a release-engineering boundary:
   extracted startup/chunk/result/artifact helpers and validation-policy modules
@@ -106,8 +110,10 @@ Current pre-release status snapshot:
   artifact-limited by missing bundled ``wout`` references and is not broad QI
   transport validation, quasilinear calibration, or nonlinear optimization;
 - production parallelization is currently claimed only for independent
-  ``k_y``/batch/UQ-style workloads and the sharded linear RK2 identity path,
-  not nonlinear domain decomposition;
+  ``k_y``/batch/quasilinear/sensitivity/UQ-style workloads, including the
+  runtime scan ``[parallel] strategy = "batch"`` path for independent
+  ``k_y`` scans. Solver-layout sharding paths remain diagnostic or
+  communication-gated, not production nonlinear domain decomposition;
 - release-level performance evidence is closed with the refreshed
   runtime/memory panel, CPU/GPU nonlinear RHS split profiles, fused full-RHS
   traces, W7-X/HSX runtime-mode stellarator profiles, and the nonlinear
@@ -342,7 +348,8 @@ Performance work should stay measurement-driven. The current priorities are:
 - expose JAX memory-allocation and persistent-cache guidance for production
   sweeps;
 - use distributed parallelization first for independent scans, UQ ensembles,
-  and linear batches before attempting nonlinear domain decomposition;
+  sensitivity sweeps, and linear batches before attempting nonlinear domain
+  decomposition;
 - only introduce custom kernels after profiling shows a persistent XLA
   bottleneck.
 

@@ -24,10 +24,13 @@ REQUIRED_CI_SNIPPETS = (
     "wide-coverage-shards",
     "coverage-wide-shard-manifest.json",
     "--require-shard-data",
+    "--coverage-xml coverage-wide.xml",
+    "--enforce-package-coverage",
     "codecov/codecov-action",
     "tools/check_parallel_scaling_artifacts.py",
     "tools/check_performance_optimization_manifest.py",
     "tools/check_quasilinear_promotion_guardrails.py",
+    "tools/build_technical_release_status.py",
     "tools/check_release_readiness.py",
 )
 REQUIRED_README_SNIPPETS = (
@@ -40,9 +43,22 @@ REQUIRED_STATIC_ARTIFACTS = (
     "docs/_static/validation_gate_index.json",
     "docs/_static/validation_coverage_manifest_summary.json",
     "docs/_static/quasilinear_promotion_guardrails.json",
+    "docs/_static/technical_release_status.json",
+    "docs/_static/manuscript_readiness_status.json",
+    "docs/_static/open_research_lane_status.json",
+    "docs/_static/w7x_tem_extension_status.json",
     "docs/_static/independent_ky_scan_scaling_large.json",
     "docs/_static/quasilinear_uq_ensemble_scaling_large.json",
     "docs/_static/nonlinear_sharding_strong_scaling_large.json",
+    "docs/_static/nonlinear_domain_parallel_identity_gate.json",
+    "docs/_static/nonlinear_spectral_communication_identity_gate.json",
+)
+TECHNICAL_COMPLETION_TARGET = 0.98
+TECHNICAL_STATUS_ARTIFACT = "docs/_static/technical_release_status.json"
+LANE_STATUS_ARTIFACTS = (
+    "docs/_static/manuscript_readiness_status.json",
+    "docs/_static/open_research_lane_status.json",
+    "docs/_static/w7x_tem_extension_status.json",
 )
 
 
@@ -70,6 +86,134 @@ def _project_metadata(root: Path) -> dict[str, Any]:
         "name": project.get("name"),
         "version": project.get("version"),
         "scripts": sorted(scripts),
+    }
+
+
+def _read_json(path: Path) -> dict[str, Any]:
+    try:
+        with path.open(encoding="utf-8") as stream:
+            payload = json.load(stream)
+    except FileNotFoundError as exc:
+        raise ReleaseReadinessError(f"missing required file: {path}") from exc
+    except json.JSONDecodeError as exc:
+        raise ReleaseReadinessError(f"invalid JSON in required file: {path}") from exc
+    if not isinstance(payload, dict):
+        raise ReleaseReadinessError(f"required JSON file must contain an object: {path}")
+    return payload
+
+
+def _status_counts(lanes: list[Any]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for lane in lanes:
+        if not isinstance(lane, dict):
+            continue
+        status = lane.get("status")
+        if isinstance(status, str):
+            counts[status] = counts.get(status, 0) + 1
+    return dict(sorted(counts.items()))
+
+
+def _is_deferred_lane(lane: dict[str, Any]) -> bool:
+    status = str(lane.get("status", "")).strip().lower()
+    claim_level = str(lane.get("claim_level", "")).strip().lower()
+    return status == "deferred" or claim_level.startswith("deferred")
+
+
+def _recomputed_active_summary(lanes: list[Any]) -> dict[str, Any]:
+    active = [lane for lane in lanes if isinstance(lane, dict) and not _is_deferred_lane(lane)]
+    closed = [
+        lane
+        for lane in active
+        if str(lane.get("status", "")).strip().lower() == "closed"
+    ]
+    incomplete = [
+        {
+            "lane": lane.get("lane"),
+            "status": lane.get("status"),
+            "claim_level": lane.get("claim_level"),
+        }
+        for lane in active
+        if str(lane.get("status", "")).strip().lower() != "closed"
+    ]
+    return {
+        "active_fraction_closed": len(closed) / max(len(active), 1),
+        "n_active": len(active),
+        "n_closed": len(closed),
+        "n_incomplete": len(incomplete),
+        "incomplete_lanes": incomplete,
+    }
+
+
+def _technical_release_status(root: Path) -> dict[str, Any]:
+    payload = _read_json(root / TECHNICAL_STATUS_ARTIFACT)
+    completion_percent = payload.get("technical_release_completion_percent")
+    if not isinstance(completion_percent, (int, float)):
+        raise ReleaseReadinessError(
+            f"{TECHNICAL_STATUS_ARTIFACT} missing numeric "
+            "technical_release_completion_percent"
+        )
+    failed_required = payload.get("failed_required", [])
+    if not isinstance(failed_required, list):
+        raise ReleaseReadinessError(
+            f"{TECHNICAL_STATUS_ARTIFACT} failed_required must be a list"
+        )
+    target_percent = 100.0 * TECHNICAL_COMPLETION_TARGET
+    passed = (
+        bool(payload.get("passed"))
+        and float(completion_percent) >= target_percent
+        and not failed_required
+    )
+    return {
+        "source": TECHNICAL_STATUS_ARTIFACT,
+        "completion_percent": float(completion_percent),
+        "target_percent": target_percent,
+        "failed_required": failed_required,
+        "passed": passed,
+    }
+
+
+def _lane_status_summary(root: Path) -> dict[str, Any]:
+    artifacts: dict[str, Any] = {}
+    for artifact in LANE_STATUS_ARTIFACTS:
+        payload = _read_json(root / artifact)
+        lane_key = "lanes" if "lanes" in payload else "rows"
+        lanes = payload.get(lane_key)
+        if not isinstance(lanes, list):
+            raise ReleaseReadinessError(f"{artifact} missing lanes/rows list")
+        artifacts[artifact] = {
+            "kind": payload.get("kind"),
+            "claim_scope": payload.get("claim_scope"),
+            "summary": payload.get("summary", {}),
+            "lane_source_key": lane_key,
+            "status_counts": _status_counts(lanes),
+            "lanes": [
+                {
+                    "lane": lane.get("lane"),
+                    "status": lane.get("status"),
+                    "claim_level": lane.get("claim_level"),
+                }
+                for lane in lanes
+                if isinstance(lane, dict)
+            ],
+        }
+
+    manuscript = artifacts["docs/_static/manuscript_readiness_status.json"]
+    recomputed = _recomputed_active_summary(manuscript["lanes"])
+    active_fraction_closed = float(recomputed["active_fraction_closed"])
+    release_scoped_incomplete = int(recomputed["n_incomplete"])
+    target_passed = (
+        active_fraction_closed >= TECHNICAL_COMPLETION_TARGET
+        and release_scoped_incomplete == 0
+    )
+    return {
+        "target_fraction": TECHNICAL_COMPLETION_TARGET,
+        "source": "docs/_static/manuscript_readiness_status.json:lanes",
+        "active_fraction_closed": active_fraction_closed,
+        "release_scoped_open_or_blocked": release_scoped_incomplete,
+        "release_scoped_incomplete": release_scoped_incomplete,
+        "recomputed_active_summary": recomputed,
+        "passed": target_passed,
+        "status_artifacts": artifacts,
     }
 
 
@@ -112,11 +256,59 @@ def check_release_readiness(root: Path = REPO_ROOT) -> dict[str, Any]:
     if missing_artifacts:
         failures.append(f"missing required docs/static release artifacts: {missing_artifacts}")
 
+    try:
+        technical_status = _technical_release_status(root)
+        if not technical_status["passed"]:
+            failures.append(
+                "technical release status below target: "
+                f"{technical_status['completion_percent']:.3f} < "
+                f"{technical_status['target_percent']:.3f} or failed checks "
+                f"= {technical_status['failed_required']}"
+            )
+    except ReleaseReadinessError as exc:
+        technical_status = {
+            "source": TECHNICAL_STATUS_ARTIFACT,
+            "completion_percent": 0.0,
+            "target_percent": 100.0 * TECHNICAL_COMPLETION_TARGET,
+            "failed_required": [],
+            "passed": False,
+            "error": str(exc),
+        }
+        failures.append(str(exc))
+
+    try:
+        lane_status = _lane_status_summary(root)
+        if not lane_status["passed"]:
+            failures.append(
+                "release-scoped technical completion below target: "
+                f"{lane_status['active_fraction_closed']:.3f} < "
+                f"{lane_status['target_fraction']:.3f} or incomplete release lanes "
+                f"= {lane_status['release_scoped_incomplete']}"
+            )
+    except ReleaseReadinessError as exc:
+        lane_status = {
+            "target_fraction": TECHNICAL_COMPLETION_TARGET,
+            "source": "docs/_static/manuscript_readiness_status.json:lanes",
+            "active_fraction_closed": 0.0,
+            "release_scoped_open_or_blocked": None,
+            "release_scoped_incomplete": None,
+            "passed": False,
+            "status_artifacts": {},
+            "error": str(exc),
+        }
+        failures.append(str(exc))
+
     report = {
         "kind": "spectraxgk_release_readiness",
         "root": str(root),
         "project": project,
         "version": version_report,
+        "release_target": {
+            "technical_completion_fraction": TECHNICAL_COMPLETION_TARGET,
+            "status_source": lane_status["source"],
+        },
+        "technical_status": technical_status,
+        "lane_status": lane_status,
         "required_ci_snippets": list(REQUIRED_CI_SNIPPETS),
         "required_readme_snippets": list(REQUIRED_README_SNIPPETS),
         "required_static_artifacts": list(REQUIRED_STATIC_ARTIFACTS),
