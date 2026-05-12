@@ -28,6 +28,7 @@ from spectraxgk.geometry.differentiable import (
     discover_differentiable_geometry_backends,
     finite_difference_jacobian,
     flux_tube_geometry_from_mapping,
+    flux_tube_geometry_from_vmec_boozer_state,
     flux_tube_geometry_observables,
     geometry_inverse_design_report,
     geometry_observable_names,
@@ -71,6 +72,10 @@ def _sample_mapping() -> dict[str, object]:
 
 def test_flux_tube_geometry_from_mapping_builds_solver_contract() -> None:
     assert spectraxgk.flux_tube_geometry_from_mapping is flux_tube_geometry_from_mapping
+    assert (
+        spectraxgk.flux_tube_geometry_from_vmec_boozer_state
+        is flux_tube_geometry_from_vmec_boozer_state
+    )
     assert spectraxgk.geometry_observable_names is geometry_observable_names
     assert spectraxgk.flux_tube_geometry_observables is flux_tube_geometry_observables
     geom = flux_tube_geometry_from_mapping(
@@ -87,6 +92,62 @@ def test_flux_tube_geometry_from_mapping_builds_solver_contract() -> None:
     observables = np.asarray(flux_tube_geometry_observables(geom))
     assert observables.shape == (len(geometry_observable_names()),)
     assert np.all(np.isfinite(observables))
+
+
+def test_flux_tube_geometry_from_vmec_boozer_state_wraps_in_memory_bridge(
+    monkeypatch,
+) -> None:
+    calls: list[dict[str, object]] = []
+
+    def fake_core_profiles(state, static, indata, wout, **kwargs):  # noqa: ANN001, ANN202
+        calls.append(
+            {
+                "state": state,
+                "static": static,
+                "indata": indata,
+                "wout": wout,
+                **kwargs,
+            }
+        )
+        return _sample_mapping()
+
+    monkeypatch.setattr(
+        diff_geom,
+        "vmec_jax_boozer_equal_arc_core_profiles_from_state",
+        fake_core_profiles,
+    )
+
+    geom = flux_tube_geometry_from_vmec_boozer_state(
+        "state",
+        "static",
+        "indata",
+        "wout",
+        surface_index=3,
+        torflux=0.42,
+        alpha=0.25,
+        ntheta=16,
+        mboz=21,
+        nboz=23,
+        jit=True,
+        surface_stencil_width=5,
+        reference_length=1.7,
+        reference_b=2.3,
+        source_model="unit-test-vmec-boozer",
+    )
+
+    assert geom.source_model == "unit-test-vmec-boozer"
+    assert geom.theta.shape == (8,)
+    assert len(calls) == 1
+    assert calls[0]["surface_index"] == 3
+    assert calls[0]["torflux"] == 0.42
+    assert calls[0]["alpha"] == 0.25
+    assert calls[0]["ntheta"] == 16
+    assert calls[0]["mboz"] == 21
+    assert calls[0]["nboz"] == 23
+    assert calls[0]["jit"] is True
+    assert calls[0]["surface_stencil_width"] == 5
+    assert calls[0]["reference_length"] == 1.7
+    assert calls[0]["reference_b"] == 2.3
 
 
 def test_flux_tube_geometry_from_mapping_rejects_bad_contracts() -> None:
