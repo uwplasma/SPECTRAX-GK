@@ -8,13 +8,18 @@ import glob
 import json
 import math
 import re
+import sys
 from pathlib import Path
-from typing import Any
-
-from spectraxgk.quasilinear_window import nonlinear_window_stats_promotion_ready
+from typing import Any, cast
 
 
 ROOT = Path(__file__).resolve().parents[1]
+SRC = ROOT / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
+
+from spectraxgk.quasilinear_window import nonlinear_window_stats_promotion_ready
+
 DEFAULT_REPORT_PATTERNS = (
     str(ROOT / "docs/_static/quasilinear_*train_holdout_report.json"),
     str(ROOT / "docs/_static/quasilinear_saturation_rule_sweep.json"),
@@ -88,13 +93,13 @@ def _load_json(path: Path) -> dict[str, Any]:
 
 def _finite_number(value: object) -> bool:
     try:
-        return math.isfinite(float(value))
+        return math.isfinite(float(cast(Any, value)))
     except (TypeError, ValueError):
         return False
 
 
 def _nonnegative_finite(value: object) -> bool:
-    return _finite_number(value) and float(value) >= 0.0
+    return _finite_number(value) and float(cast(Any, value)) >= 0.0
 
 
 def _gate(metric: str, passed: bool, detail: str) -> dict[str, Any]:
@@ -223,7 +228,8 @@ def _audit_calibration_report(
     holdout_passes = (
         has_holdout_gate
         and _finite_number(holdout_mean)
-        and float(holdout_mean) <= float(data["holdout_mean_rel_gate"])
+        and float(cast(Any, holdout_mean))
+        <= float(cast(Any, data["holdout_mean_rel_gate"]))
     )
     if promoted:
         gates.append(
