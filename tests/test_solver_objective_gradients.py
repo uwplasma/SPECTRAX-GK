@@ -13,6 +13,7 @@ import spectraxgk
 from spectraxgk.solver_objective_gradients import (
     SOLVER_GEOMETRY_PARAMETER_NAMES,
     SOLVER_OBJECTIVE_NAMES,
+    TINY_OBJECTIVE_NAMES,
     VMEC_BOOZER_FREQUENCY_OBJECTIVE_NAMES,
     VMEC_BOOZER_NONLINEAR_WINDOW_OBJECTIVE_NAMES,
     VMEC_BOOZER_QUASILINEAR_OBJECTIVE_NAMES,
@@ -26,6 +27,7 @@ from spectraxgk.solver_objective_gradients import (
     mode21_vmec_boozer_nonlinear_window_gradient_report,
     mode21_vmec_boozer_quasilinear_gradient_report,
     solver_ready_geometry_mapping,
+    tiny_differentiable_objective_gradient_report,
 )
 
 
@@ -54,6 +56,39 @@ def test_solver_ready_geometry_mapping_validates_contract() -> None:
     assert np.all(np.asarray(mapping["bmag"]) > 0.0)
     with pytest.raises(ValueError, match="length-2"):
         solver_ready_geometry_mapping(jnp.ones(3), theta)
+
+
+def test_tiny_differentiable_objective_gradient_report_is_finite_and_conditioned() -> None:
+    x64_enabled = bool(jax.config.read("jax_enable_x64"))
+    fd_step = 2.0e-5 if x64_enabled else 1.0e-3
+    rtol = 5.0e-4 if x64_enabled else 1.0e-2
+    atol = 1.0e-7 if x64_enabled else 1.0e-4
+
+    report = tiny_differentiable_objective_gradient_report(
+        fd_step=fd_step,
+        rtol=rtol,
+        atol=atol,
+    )
+
+    assert report["passed"] is True
+    assert report["source_scope"] == "solver_ready_geometry_contract"
+    assert report["observable_names"] == list(TINY_OBJECTIVE_NAMES)
+    assert report["parameter_names"] == list(SOLVER_GEOMETRY_PARAMETER_NAMES)
+    assert report["finite_flags"]["autodiff_jacobian"] is True
+    assert report["finite_flags"]["finite_difference_jacobian"] is True
+    assert report["conditioning"]["jacobian_shape"] == [
+        len(TINY_OBJECTIVE_NAMES),
+        len(SOLVER_GEOMETRY_PARAMETER_NAMES),
+    ]
+    assert report["conditioning"]["sensitivity_map_rank"] == 2
+    assert np.isfinite(float(report["tangent_ad_norm"]))
+    assert len(report["gradient_checks"]) == (
+        len(TINY_OBJECTIVE_NAMES) * len(SOLVER_GEOMETRY_PARAMETER_NAMES)
+    )
+    json.dumps(report, allow_nan=False)
+
+    with pytest.raises(ValueError, match="length-2"):
+        tiny_differentiable_objective_gradient_report(jnp.ones(3))
 
 
 def test_vmec_boozer_state_parameter_name_tracks_default_and_explicit_modes() -> None:

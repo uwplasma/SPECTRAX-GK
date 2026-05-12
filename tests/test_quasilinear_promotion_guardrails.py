@@ -34,7 +34,32 @@ def _write_doc(path: Path, text: str | None = None) -> None:
     )
 
 
-def _calibration_report(*, claim_level: str, passed: bool, holdout_error: float) -> dict:
+def _window_stats(*, passed: bool = True) -> dict:
+    return {
+        "kind": "nonlinear_window_convergence_report",
+        "passed": passed,
+        "statistics": {
+            "late_mean": 1.0,
+            "sem": 0.02,
+            "block_bootstrap_sem": 0.02,
+            "running_mean_rel_drift": 0.01,
+        },
+        "window": {
+            "input_tmin": None,
+            "transient_fraction": 0.5,
+            "transient_cutoff": 50.0,
+            "late_tmin": 50.0,
+            "late_tmax": 100.0,
+            "n_finite_late": 64,
+        },
+        "provenance": {"source_artifact": "tools_out/nonlinear_trace.csv"},
+        "gate_report": {"passed": passed},
+    }
+
+
+def _calibration_report(
+    *, claim_level: str, passed: bool, holdout_error: float
+) -> dict:
     return {
         "kind": "quasilinear_calibration_report",
         "claim_level": claim_level,
@@ -59,6 +84,7 @@ def _calibration_report(*, claim_level: str, passed: bool, holdout_error: float)
                 "calibration_scale": 2.0,
                 "observed_heat_flux": 1.0,
                 "observed_heat_flux_std": 0.1,
+                "nonlinear_window_stats": _window_stats(),
             },
             {
                 "case": "holdout",
@@ -73,6 +99,7 @@ def _calibration_report(*, claim_level: str, passed: bool, holdout_error: float)
                 "calibration_scale": 2.0,
                 "observed_heat_flux": 1.0,
                 "observed_heat_flux_std": 0.2,
+                "nonlinear_window_stats": _window_stats(),
             },
         ],
     }
@@ -89,6 +116,7 @@ def test_promoted_absolute_flux_requires_passed_holdout_gate_and_window_stats(
         holdout_error=0.7,
     )
     payload["points"][1]["observed_heat_flux_std"] = float("nan")
+    payload["points"][1]["nonlinear_window_stats"] = _window_stats(passed=False)
     report.write_text(json.dumps(payload), encoding="utf-8")
     doc = tmp_path / "doc.rst"
     _write_doc(doc)
@@ -96,9 +124,38 @@ def test_promoted_absolute_flux_requires_passed_holdout_gate_and_window_stats(
     audit = mod.build_guardrail_audit([str(report)], [doc])
 
     assert audit["passed"] is False
-    failed = {gate["metric"]: gate["detail"] for gate in audit["gate_report"]["gates"] if not gate["passed"]}
+    failed = {
+        gate["metric"]: gate["detail"]
+        for gate in audit["gate_report"]["gates"]
+        if not gate["passed"]
+    }
     assert "train_holdout_point_metadata" in failed
     assert "promoted_holdout_gate" in failed
+    assert "promoted_holdout_window_convergence" in failed
+
+
+def test_promoted_absolute_flux_requires_converged_holdout_window_metadata(
+    tmp_path: Path,
+) -> None:
+    mod = _load_tool_module()
+    report = tmp_path / "report.json"
+    payload = _calibration_report(
+        claim_level="calibrated_absolute_flux",
+        passed=True,
+        holdout_error=0.1,
+    )
+    del payload["points"][1]["nonlinear_window_stats"]
+    report.write_text(json.dumps(payload), encoding="utf-8")
+    doc = tmp_path / "doc.rst"
+    _write_doc(doc)
+
+    audit = mod.build_guardrail_audit([str(report)], [doc])
+
+    assert audit["passed"] is False
+    failed_metrics = {
+        gate["metric"] for gate in audit["gate_report"]["gates"] if not gate["passed"]
+    }
+    assert "promoted_holdout_window_convergence" in failed_metrics
 
 
 def test_unpromoted_report_with_finite_metadata_passes_synthetic_guardrail(
@@ -145,7 +202,9 @@ def test_docs_without_nonpromotion_marker_fail_scope_check(tmp_path: Path) -> No
     audit = mod.build_guardrail_audit([str(report)], [doc])
 
     assert audit["passed"] is False
-    failed_metrics = {gate["metric"] for gate in audit["gate_report"]["gates"] if not gate["passed"]}
+    failed_metrics = {
+        gate["metric"] for gate in audit["gate_report"]["gates"] if not gate["passed"]
+    }
     assert f"doc_scope_marker:{doc}" in failed_metrics
     assert f"doc_no_absolute_flux_overclaim:{doc}" in failed_metrics
 

@@ -72,6 +72,38 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.runtime_orchestration"
+path = "src/spectraxgk/runtime_orchestration.py"
+owner_lane = "runtime progress, scan batching, and nonlinear artifact handoff orchestration"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "GX-style adaptive runtime progress and restart output contracts",
+  "combined-ky runtime scan and nonlinear checkpoint artifact regressions",
+]
+physics_contracts = [
+  "orchestration helpers preserve the selected runtime geometry, species, and monitored diagnostic policy supplied by callers",
+  "nonlinear restart handoff preserves cumulative diagnostics without promoting new physics claims",
+]
+numerics_contracts = [
+  "progress and ETA reporting stays deterministic for finite and near-zero progress fractions",
+  "checkpointed nonlinear artifact handoff validates finite chunks before writing restart or output artifacts",
+]
+fast_tests = [
+  "tests/test_runtime_helpers.py",
+  "tests/test_runtime_artifacts.py",
+]
+artifact_paths = [
+  "docs/_static/validation_gate_index.json",
+  "docs/_static/w7x_exact_state_audit.json",
+]
+next_tests = [
+  "add direct combined-ky scan orchestration fixtures that bypass the legacy runtime wrapper",
+  "split CLI plotting/output dispatch once CLI ownership is available in a later tranche",
+]
+
+[[modules]]
 module = "spectraxgk.linear"
 path = "src/spectraxgk/linear.py"
 owner_lane = "linear gyrokinetic operators, field solve, growth/frequency diagnostics"
@@ -344,6 +376,38 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.nonlinear_helpers"
+path = "src/spectraxgk/nonlinear_helpers.py"
+owner_lane = "nonlinear projection helpers, collision split policies, GX omega masks, and IMEX operator construction"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "fixed-mode nonlinear diagnostics and GX real-FFT Hermitian projection",
+  "split collision/hypercollision nonlinear updates and reusable IMEX solves",
+]
+physics_contracts = [
+  "collision and hypercollision weights remain explicit before split updates are applied",
+  "fixed-mode projection preserves the selected Fourier block exactly",
+]
+numerics_contracts = [
+  "GX omega masks keep only unique real-FFT modes before gamma/omega reductions",
+  "prebuilt nonlinear IMEX operators preserve dtype, shape, and preconditioner metadata",
+]
+fast_tests = [
+  "tests/test_nonlinear_helpers_extra.py",
+  "tests/test_nonlinear.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_window_statistics.json",
+  "docs/_static/validation_gate_index.json",
+]
+next_tests = [
+  "keep legacy spectraxgk.nonlinear helper exports object-identical until the next major API cleanup",
+  "add direct helper parity coverage when the IMEX diagnostics loop is split further",
+]
+
+[[modules]]
 module = "spectraxgk.quasilinear"
 path = "src/spectraxgk/quasilinear.py"
 owner_lane = "linear-response quasilinear weights and saturation-model diagnostics"
@@ -403,12 +467,14 @@ physics_contracts = [
   "external VMEC nonlinear pilots enter calibration only after explicit grid/window convergence gates pass",
 ]
 numerics_contracts = [
-  "window means and uncertainties are finite-filtered and serialized with null-safe JSON fields",
+  "window means and uncertainties include running-mean drift, block/bootstrap SEM, and finite-sample gates",
   "zero or non-positive quasilinear predictions remain visible in plots instead of being hidden by log axes",
   "grid-refined late-window means are compared with symmetric relative differences and stationarity gates",
 ]
 fast_tests = [
   "tests/test_quasilinear_calibration.py",
+  "tests/test_quasilinear_window.py",
+  "tests/test_quasilinear_promotion_guardrails.py",
   "tests/test_check_quasilinear_calibration_inputs.py",
   "tests/test_plot_quasilinear_calibration.py",
   "tests/test_plot_external_vmec_nonlinear_convergence_gate.py",
@@ -435,6 +501,38 @@ artifact_paths = [
 next_tests = [
   "add per-species ion/electron calibration points once kinetic-electron nonlinear holdouts are validated",
   "tighten transport-window uncertainty propagation before any absolute saturated-flux model is promoted",
+]
+
+[[modules]]
+module = "spectraxgk.quasilinear_window"
+path = "src/spectraxgk/quasilinear_window.py"
+owner_lane = "nonlinear late-window convergence metadata for quasilinear holdouts"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "post-transient nonlinear heat-flux windows used for reduced-model holdout validation",
+  "block-bootstrap uncertainty and running-average stationarity gates for noisy turbulence traces",
+]
+physics_contracts = [
+  "absolute-flux quasilinear promotion requires converged nonlinear holdout windows with provenance",
+  "startup/transient-only traces and compact finite-difference plumbing windows cannot promote transport claims",
+]
+numerics_contracts = [
+  "late-window means, running-mean drift, SEM, block-bootstrap SEM, and sample counts remain finite",
+  "NaN late-window samples and undersampled windows fail closed by default",
+]
+fast_tests = [
+  "tests/test_quasilinear_window.py",
+  "tests/test_quasilinear_calibration.py",
+  "tests/test_quasilinear_promotion_guardrails.py",
+]
+artifact_paths = [
+  "docs/_static/quasilinear_promotion_guardrails.json",
+]
+next_tests = [
+  "regenerate promoted-candidate reports with serialized nonlinear_window_stats once true holdout gates pass",
+  "extend CSV convergence ingestion to NetCDF when a direct promotion workflow needs it",
 ]
 
 [[modules]]
@@ -468,7 +566,7 @@ artifact_paths = [
   "docs/_static/validation_gate_index.json",
 ]
 next_tests = [
-  "split reference loading from run execution",
+  "split remaining run execution blocks behind compatibility exports",
   "add manifest-backed tests that every published benchmark figure has a gate source",
 ]
 
@@ -501,6 +599,38 @@ artifact_paths = [
 next_tests = [
   "add reference-table checksum tests for every shipped CSV",
   "split benchmark figure manifest policy after runner orchestration is smaller",
+]
+
+[[modules]]
+module = "spectraxgk.benchmark_scan"
+path = "src/spectraxgk/benchmark_scan.py"
+owner_lane = "pure benchmark scan-window, batching, and fit-signal policies"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "Cyclone, ETG, TEM, kinetic-electron, and KBM scan runner contracts",
+  "benchmark fit-window policies used by release atlas generation",
+]
+physics_contracts = [
+  "fit-signal selectors preserve phi/density ambiguity explicitly",
+  "mode-only scan saves use direct extraction methods instead of projection-only policies",
+]
+numerics_contracts = [
+  "explicit fit windows fall back to auto windows when undersampled",
+  "fixed-shape ky batching is disabled for array-valued per-point controls",
+]
+fast_tests = [
+  "tests/test_benchmark_scan.py",
+  "tests/test_benchmarks_helpers.py",
+]
+artifact_paths = [
+  "docs/_static/benchmark_core_linear_atlas.png",
+  "docs/_static/validation_gate_index.json",
+]
+next_tests = [
+  "add branch-level parity fixtures for every scan runner wrapper",
+  "move benchmark figure manifest policy after solver orchestration is smaller",
 ]
 
 [[modules]]

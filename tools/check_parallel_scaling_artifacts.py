@@ -43,6 +43,9 @@ class ArtifactFamily:
     row_identity_key: str = "identity_gate_pass"
     combined_has_inputs: bool = True
     profile_payloads_required: bool = False
+    min_rows: int = 1
+    min_grid: tuple[tuple[str, int], ...] = ()
+    min_steps: int | None = None
 
     @property
     def json_files(self) -> tuple[str, ...]:
@@ -72,6 +75,9 @@ FAMILIES = (
         split_identity_claim_phrase=None,
         timing_fields=("timed_wall_s", "wall_s", "strong_speedup_vs_1_device", "parallel_efficiency"),
         error_fields=("max_gamma_abs_error", "max_gamma_rel_error", "max_omega_abs_error"),
+        min_rows=2,
+        min_grid=(("Nl", 2), ("Nm", 4), ("Ny", 64), ("Nz", 32)),
+        min_steps=100,
     ),
     ArtifactFamily(
         name="quasilinear_uq_ensemble",
@@ -86,6 +92,9 @@ FAMILIES = (
         split_identity_claim_phrase="not an absolute nonlinear heat-flux validation claim",
         timing_fields=("timed_wall_s", "wall_s", "strong_speedup_vs_1_device", "parallel_efficiency"),
         error_fields=("max_gamma_abs_error", "max_heat_flux_proxy_abs_error", "max_heat_flux_proxy_rel_error"),
+        min_rows=2,
+        min_grid=(("Nl", 2), ("Nm", 4), ("Ny", 64), ("Nz", 32)),
+        min_steps=500,
     ),
     ArtifactFamily(
         name="nonlinear_sharding",
@@ -101,6 +110,9 @@ FAMILIES = (
         timing_fields=("parallel_median_s", "serial_median_s", "same_process_speedup", "strong_speedup_vs_1_device"),
         error_fields=("max_abs_state_error", "max_rel_state_error"),
         profile_payloads_required=True,
+        min_rows=2,
+        min_grid=(("Nl", 2), ("Nm", 4), ("Nx", 8), ("Ny", 24), ("Nz", 32)),
+        min_steps=1,
     ),
     ArtifactFamily(
         name="linear_rhs_parallel_slices",
@@ -114,6 +126,8 @@ FAMILIES = (
         error_fields=("max_abs_error", "max_rel_error", "max_phi_abs_error"),
         row_identity_key="identity_passed",
         combined_has_inputs=False,
+        min_rows=4,
+        min_grid=(("Nl", 2), ("Ny", 16), ("Nz", 64)),
     ),
 )
 
@@ -194,6 +208,56 @@ def _assert_claim_scope(payload: dict[str, Any], phrase: str, context: str) -> N
         raise ValueError(f"{context}: claim_scope must include {phrase!r}")
 
 
+def _grid_value(grid: dict[str, Any], name: str) -> int | None:
+    aliases = {
+        "Ny": ("Ny", "Ny_requested"),
+        "Nx": ("Nx", "Nx_requested"),
+    }
+    for key in aliases.get(name, (name,)):
+        if key in grid:
+            return int(grid[key])
+    return None
+
+
+def _assert_problem_metadata(
+    payload: dict[str, Any],
+    family: ArtifactFamily,
+    context: str,
+) -> None:
+    """Reject artifacts that lack representative problem-size metadata."""
+
+    rows = _as_rows(payload, context)
+    if len(rows) < family.min_rows:
+        raise ValueError(f"{context}: expected at least {family.min_rows} rows")
+    if family.combined_has_inputs and "inputs" in payload and "grid" not in payload:
+        # Combined CPU/GPU summary artifacts carry provenance rows and delegate
+        # representative grid/time checks to the split source artifacts.
+        return
+    if family.min_grid:
+        grid = payload.get("grid")
+        if not isinstance(grid, dict):
+            raise ValueError(f"{context}: grid metadata must be present")
+        for field, minimum in family.min_grid:
+            value = _grid_value(grid, field)
+            if value is None:
+                raise ValueError(f"{context}: grid metadata missing {field!r}")
+            if value < minimum:
+                raise ValueError(
+                    f"{context}: grid {field}={value} is below required {minimum}"
+                )
+    if family.min_steps is not None:
+        steps = payload.get("steps")
+        time = payload.get("time")
+        if steps is None and isinstance(time, dict):
+            steps = time.get("steps")
+        if steps is None:
+            raise ValueError(f"{context}: time-step metadata must be present")
+        if int(steps) < family.min_steps:
+            raise ValueError(
+                f"{context}: steps={int(steps)} is below required {family.min_steps}"
+            )
+
+
 def _assert_identity_payload(
     payload: dict[str, Any],
     family: ArtifactFamily,
@@ -207,6 +271,7 @@ def _assert_identity_payload(
     if payload.get("identity_passed") is not True:
         raise ValueError(f"{context}: identity_passed must be true")
     _assert_claim_scope(payload, claim_phrase or family.identity_claim_phrase, context)
+    _assert_problem_metadata(payload, family, context)
 
     rows = _as_rows(payload, context)
     seen_requested: set[int] = set()

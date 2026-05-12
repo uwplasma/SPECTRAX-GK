@@ -155,6 +155,17 @@ Benchmark-specific replay knobs used to regenerate these figures stay confined
 to the benchmark builders in ``tools/``. They are not promoted into generic
 runtime defaults for the solver or the shipped example drivers.
 
+Benchmark runner internals
+--------------------------
+
+The public compatibility surface remains ``spectraxgk.benchmarks``. Shared
+scan policies that are easy to test without launching a solver live in
+``spectraxgk.benchmark_scan``: fit-signal key validation, mode-only extraction
+coercion, explicit-window fallback, and fixed-shape ``k_y`` batching
+eligibility. The runner module imports those policies so Cyclone, ETG,
+kinetic-electron, TEM, and KBM scans keep the same window and ordering
+contracts without carrying separate copies of the policy code.
+
 For the current stellarator nonlinear pair, the tracked public figures should
 also be read asymmetrically:
 

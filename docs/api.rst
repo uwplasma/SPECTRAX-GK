@@ -85,6 +85,13 @@ Nonlinear Diagnostics
    :members:
    :private-members:
 
+Nonlinear Helpers
+-----------------
+
+.. automodule:: spectraxgk.nonlinear_helpers
+   :members:
+   :private-members:
+
 Benchmarks
 ----------
 
@@ -96,6 +103,13 @@ Benchmark Defaults
 
 .. automodule:: spectraxgk.benchmark_defaults
    :members:
+
+Benchmark Scan Policies
+-----------------------
+
+.. automodule:: spectraxgk.benchmark_scan
+   :members:
+   :private-members:
 
 Benchmarking
 ------------
@@ -173,6 +187,13 @@ Runtime Policies
 ----------------
 
 .. automodule:: spectraxgk.runtime_policies
+   :members:
+   :private-members:
+
+Runtime Orchestration
+---------------------
+
+.. automodule:: spectraxgk.runtime_orchestration
    :members:
    :private-members:
 

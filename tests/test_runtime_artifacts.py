@@ -68,6 +68,11 @@ from spectraxgk.runtime_artifact_diagnostics import (
     validate_finite_array,
     validate_finite_runtime_result,
 )
+from spectraxgk.runtime_diagnostics import concat_gx_diagnostics
+from spectraxgk.runtime_orchestration import (
+    resolve_nonlinear_artifact_policy,
+    run_runtime_nonlinear_artifact_handoff,
+)
 
 
 def test_write_runtime_linear_artifacts_writes_bundle(tmp_path: Path) -> None:
@@ -370,6 +375,32 @@ def test_runtime_artifact_restart_resolution_and_species_helpers() -> None:
         _resolve_restart_path("tools_out/run.out.nc", cfg_custom, for_write=False).name
         == "custom_from.nc"
     )
+
+    policy_cfg = RuntimeConfig(
+        time=TimeConfig(dt=0.2, t_max=1.0, fixed_dt=True, diagnostics=True),
+        output=RuntimeOutputConfig(
+            path="tools_out/policy.out.nc", save_for_restart=True, nsave=2
+        ),
+    )
+    deps = SimpleNamespace(
+        is_gx_netcdf_target=lambda path: Path(path).suffix == ".nc",
+        resolve_restart_path=lambda _path, _cfg: Path("policy_from.restart.nc"),
+        resolve_restart_write_path=lambda _path, _cfg: Path("policy_to.restart.nc"),
+    )
+    policy = resolve_nonlinear_artifact_policy(
+        policy_cfg,
+        out="tools_out/policy.out.nc",
+        diagnostics=None,
+        steps=None,
+        dt=None,
+        deps=deps,
+    )
+    assert policy.gx_target is True
+    assert policy.diagnostics_on is True
+    assert policy.remaining_steps == 5
+    assert policy.checkpoint_steps == 2
+    assert policy.restart_from == Path("policy_from.restart.nc")
+    assert policy.restart_to == Path("policy_to.restart.nc")
 
     total = np.array([2.0, 4.0], dtype=np.float32)
     assert np.allclose(
@@ -1397,6 +1428,84 @@ def test_run_runtime_nonlinear_with_artifacts_uses_restart_if_exists(
     assert calls[1]["init_file_scale"] == 1.0
 
 
+def test_runtime_orchestration_handoff_chunks_and_restarts(tmp_path: Path) -> None:
+    calls: list[dict[str, object]] = []
+    writes: list[float] = []
+    out_path = tmp_path / "direct.out.nc"
+    restart_path = tmp_path / "direct.restart.nc"
+    cfg = RuntimeConfig(
+        time=TimeConfig(dt=0.1, t_max=0.2, fixed_dt=True, diagnostics=True),
+        output=RuntimeOutputConfig(path=str(out_path), save_for_restart=True, nsave=1),
+    )
+
+    def _diag(sample_t: float) -> SimulationDiagnostics:
+        return SimulationDiagnostics(
+            t=np.asarray([sample_t]),
+            dt_t=np.asarray([0.1]),
+            dt_mean=np.asarray(0.1),
+            gamma_t=np.zeros(1),
+            omega_t=np.zeros(1),
+            Wg_t=np.ones(1),
+            Wphi_t=np.ones(1),
+            Wapar_t=np.zeros(1),
+            heat_flux_t=np.zeros(1),
+            particle_flux_t=np.zeros(1),
+            energy_t=np.ones(1),
+        )
+
+    def _run(run_cfg, **kwargs):
+        calls.append(
+            {
+                "init_file": run_cfg.init.init_file,
+                "init_file_mode": run_cfg.init.init_file_mode,
+                "steps": kwargs["steps"],
+                "return_state": kwargs["return_state"],
+            }
+        )
+        return RuntimeNonlinearResult(
+            t=np.asarray([0.1]),
+            diagnostics=_diag(0.1),
+            state=np.zeros((1, 1, 1, 1, 1, 1), dtype=np.complex64),
+        )
+
+    def _write(_out, result, _cfg):
+        assert result.diagnostics is not None
+        writes.append(float(np.asarray(result.diagnostics.t)[-1]))
+        restart_path.write_bytes(b"restart")
+        return {"out": str(out_path), "restart": str(restart_path)}
+
+    deps = SimpleNamespace(
+        is_gx_netcdf_target=lambda path: Path(path).suffix == ".nc",
+        resolve_restart_path=lambda _path, _cfg: restart_path,
+        resolve_restart_write_path=lambda _path, _cfg: restart_path,
+        gx_bundle_base=lambda path: Path(path).with_suffix("").with_suffix(""),
+        load_runtime_nonlinear_gx_diagnostics=lambda _path: _diag(0.0),
+        condense_gx_diagnostics_for_output=lambda diag: diag,
+        concat_gx_diagnostics=lambda diags: concat_gx_diagnostics(diags),
+        validate_finite_runtime_result=lambda _result: None,
+        run_runtime_nonlinear=_run,
+        write_runtime_nonlinear_artifacts=_write,
+    )
+
+    result, paths = run_runtime_nonlinear_artifact_handoff(
+        cfg,
+        out=out_path,
+        ky_target=0.2,
+        steps=2,
+        diagnostics=True,
+        deps=deps,
+    )
+
+    assert result.diagnostics is not None
+    assert paths["restart"] == str(restart_path)
+    assert [call["steps"] for call in calls] == [1, 1]
+    assert calls[0]["init_file"] is None
+    assert calls[1]["init_file"] == str(restart_path)
+    assert calls[1]["init_file_mode"] == "replace"
+    assert all(call["return_state"] is True for call in calls)
+    assert writes == pytest.approx([0.1, 0.2])
+
+
 def test_run_runtime_nonlinear_with_artifacts_keeps_adaptive_steps_none(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
@@ -1630,21 +1739,15 @@ def test_run_runtime_nonlinear_with_artifacts_append_preserves_loaded_gx_schema(
     kx_idx = _gx_active_kx_indices(full_nx)
 
     def _diag(sample_t: float, base: float) -> SimulationDiagnostics:
-        phi2_kxkyt = (
-            base
-            + np.arange(full_ny * full_nx, dtype=np.float32).reshape(
-                1, full_ny, full_nx
-            )
+        phi2_kxkyt = base + np.arange(full_ny * full_nx, dtype=np.float32).reshape(
+            1, full_ny, full_nx
         )
         phi2_kxt = np.sum(phi2_kxkyt[:, ky_idx, :], axis=1)
         phi2_kyt = np.sum(phi2_kxkyt[:, :, kx_idx], axis=2)
         wg_kxst = base + np.arange(full_nx, dtype=np.float32).reshape(1, 1, full_nx)
         wg_kyst = base + np.arange(full_ny, dtype=np.float32).reshape(1, 1, full_ny)
-        wg_kxkyst = (
-            base
-            + np.arange(full_ny * full_nx, dtype=np.float32).reshape(
-                1, 1, full_ny, full_nx
-            )
+        wg_kxkyst = base + np.arange(full_ny * full_nx, dtype=np.float32).reshape(
+            1, 1, full_ny, full_nx
         )
         return SimulationDiagnostics(
             t=np.asarray([sample_t]),
