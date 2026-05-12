@@ -10,6 +10,7 @@ import numpy as np
 import pytest
 
 import spectraxgk
+import spectraxgk.solver_objective_gradients as sog
 from spectraxgk.solver_objective_gradients import (
     SOLVER_GEOMETRY_PARAMETER_NAMES,
     SOLVER_OBJECTIVE_NAMES,
@@ -26,8 +27,10 @@ from spectraxgk.solver_objective_gradients import (
     mode21_vmec_boozer_linear_frequency_gradient_report,
     mode21_vmec_boozer_nonlinear_window_gradient_report,
     mode21_vmec_boozer_quasilinear_gradient_report,
+    solver_objective_vector_from_geometry,
     solver_ready_geometry_mapping,
     tiny_differentiable_objective_gradient_report,
+    vmec_boozer_solver_objective_vector_from_state,
 )
 
 
@@ -124,6 +127,80 @@ def test_linear_solver_geometry_gradient_report_passes_actual_rhs_gate() -> None
 
     with pytest.raises(ValueError, match="length-2"):
         linear_solver_geometry_gradient_report(jnp.ones(3))
+
+
+def test_solver_objective_vector_from_geometry_is_finite_and_exported() -> None:
+    theta = jnp.linspace(-jnp.pi, jnp.pi, 4, endpoint=False)
+    geom = spectraxgk.flux_tube_geometry_from_mapping(
+        solver_ready_geometry_mapping(default_solver_geometry_design_params(), theta),
+        validate_finite=False,
+    )
+
+    vector = solver_objective_vector_from_geometry(
+        geom,
+        n_laguerre=1,
+        n_hermite=1,
+        ny=4,
+        selected_ky_index=1,
+    )
+
+    assert spectraxgk.solver_objective_vector_from_geometry is solver_objective_vector_from_geometry
+    assert vector.shape == (len(SOLVER_OBJECTIVE_NAMES),)
+    assert np.all(np.isfinite(np.asarray(vector)))
+    with pytest.raises(ValueError, match="selected_ky_index"):
+        solver_objective_vector_from_geometry(geom, selected_ky_index=99)
+    with pytest.raises(ValueError, match="positive"):
+        solver_objective_vector_from_geometry(geom, n_laguerre=0)
+
+
+def test_vmec_boozer_solver_objective_vector_from_state_splits_options(
+    monkeypatch,
+) -> None:
+    calls: dict[str, object] = {}
+
+    def fake_geometry(state, static, indata, wout, **kwargs):  # noqa: ANN001, ANN202
+        calls["geometry"] = (state, static, indata, wout, kwargs)
+        return "geom"
+
+    def fake_objective(geom, **kwargs):  # noqa: ANN001, ANN202
+        calls["objective"] = (geom, kwargs)
+        return jnp.arange(len(SOLVER_OBJECTIVE_NAMES), dtype=jnp.float32)
+
+    monkeypatch.setattr(sog, "flux_tube_geometry_from_vmec_boozer_state", fake_geometry)
+    monkeypatch.setattr(sog, "solver_objective_vector_from_geometry", fake_objective)
+
+    vector = vmec_boozer_solver_objective_vector_from_state(
+        "state",
+        "static",
+        "indata",
+        "wout",
+        surface_index=2,
+        ntheta=8,
+        mboz=21,
+        nboz=21,
+        selected_ky_index=1,
+        n_laguerre=2,
+    )
+
+    assert spectraxgk.vmec_boozer_solver_objective_vector_from_state is (
+        vmec_boozer_solver_objective_vector_from_state
+    )
+    assert np.asarray(vector).tolist() == list(range(len(SOLVER_OBJECTIVE_NAMES)))
+    assert calls["geometry"][4] == {
+        "surface_index": 2,
+        "ntheta": 8,
+        "mboz": 21,
+        "nboz": 21,
+    }
+    assert calls["objective"] == ("geom", {"selected_ky_index": 1, "n_laguerre": 2})
+    with pytest.raises(TypeError, match="unknown VMEC/Boozer objective options"):
+        vmec_boozer_solver_objective_vector_from_state(
+            "state",
+            "static",
+            "indata",
+            "wout",
+            unexpected=True,
+        )
 
 
 def test_reduced_nonlinear_window_metrics_are_smooth_and_fd_checked() -> None:
