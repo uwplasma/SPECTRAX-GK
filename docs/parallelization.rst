@@ -65,6 +65,21 @@ aggregation. Any timing claim from this path must be paired with a serial
 numerical-identity gate for the reported observables, such as ``gamma``,
 ``omega``, quasilinear weights, or covariance summaries.
 
+Runtime ``k_y`` scans can request the same independent-worker policy directly
+from TOML. This is a scan orchestration path, not a solver-layout sharding path:
+
+.. code-block:: toml
+
+   [parallel]
+   strategy = "batch"
+   axis = "ky"
+   num_devices = 4      # or batch_size = 4
+   backend = "auto"     # "thread" or "process" are explicit alternatives
+
+When command-line scan workers are not set explicitly, ``strategy = "batch"``
+with ``axis = "ky"`` resolves to independent per-``k_y`` solver calls and
+records the resolved worker policy in runtime scan artifacts.
+
 The large tracked artifacts use real solver work rather than synthetic sleeps:
 ``docs/_static/independent_ky_scan_scaling_large.json`` covers Cyclone linear
 ``k_y`` scans, and ``docs/_static/quasilinear_uq_ensemble_scaling_large.json``
@@ -94,6 +109,25 @@ policy: the final state is identity-correct, but logical-CPU speedup saturates
 near ``1.39x`` and the current two-GPU path is slower than one GPU for the
 tracked larger fixed-step case. That artifact is therefore valuable engineering
 evidence, not a production nonlinear speedup result.
+
+The next decomposition step is also gated, but still diagnostic. The artifact
+``docs/_static/nonlinear_domain_parallel_identity_gate.json`` exercises a
+deterministic local nonlinear state update with one-cell halo chunks and checks
+the decomposed result against the serial update before enabling that prototype
+path. This validates the fail-closed identity-gate contract for a bounded local
+stencil. It does not validate distributed FFTs, field solves, conservation, or
+nonlinear transport windows, and it carries no speedup claim.
+
+The spectral communication layer now has the same fail-closed treatment. The
+artifact ``docs/_static/nonlinear_spectral_communication_identity_gate.json``
+uses deterministic complex spectral coefficients in ``(N_l,N_m,N_y,N_x,N_z)``
+layout, applies the split/reassemble and axis-transpose operations that a
+distributed FFT route would need, and compares three serial observables against
+the communicated layout: FFT forward/inverse round trip, pseudo-spectral
+nonlinear bracket, and spectral field-solve layout. Passing this gate promotes
+``fft_axis_domain`` from blocked to diagnostic. It still does not add runtime
+distributed FFT routing, conservation checks, nonlinear transport-window
+acceptance, profiler evidence, or any speedup claim.
 
 Velocity-space communication gates
 ----------------------------------
@@ -126,6 +160,8 @@ Use the following rules when writing docs, release notes, or papers:
 
 - Call independent ``k_y``/UQ/ensemble batching the production-ready
   parallelization path when the serial identity gate is current.
+- For runtime scan TOMLs, use ``[parallel] strategy = "batch"`` with
+  ``axis = "ky"`` only for independent ``k_y`` scan orchestration.
 - Call whole-state nonlinear sharding a diagnostic correctness/profiler gate,
   not production nonlinear parallelism.
 - Call velocity-space ``shard_map`` work communication-gated and opt-in until
@@ -207,6 +243,17 @@ allowed to support:
      - Correctness and profiler-direction evidence for the current ``pjit``
        state-axis layout.
      - Production nonlinear multi-GPU speedup.
+   * - Prototype nonlinear state-domain gate
+     - ``nonlinear_domain_parallel_identity_gate.{json,png}``
+     - Fail-closed serial-vs-halo-decomposed identity evidence for one bounded
+       local stencil.
+     - Distributed FFT, field-solve, transport-window, or speedup claims.
+   * - Prototype nonlinear spectral communication gate
+     - ``nonlinear_spectral_communication_identity_gate.{json,png}``
+     - Fail-closed split/reassemble identity evidence for FFT round trip,
+       pseudo-spectral bracket, and spectral field-solve layout.
+     - Runtime distributed FFT routing, nonlinear conservation,
+       transport-window, or speedup claims.
    * - Velocity-space linear slices
      - ``linear_rhs_parallel_slices_sweep.{json,png,pdf}``
      - Bounded engineering evidence for opt-in electrostatic linear RHS slices.

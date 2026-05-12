@@ -497,6 +497,15 @@ existing combined-``k_y`` time-integration scan path. Quasilinear scan
 artifacts still require serial per-``k_y`` evaluation until the per-mode state
 extraction has its own numerical-identity gate.
 
+For runtime ``k_y`` scans, ``strategy = "batch"`` with ``axis = "ky"`` selects
+the production independent-worker path. ``num_devices`` is interpreted as the
+requested worker count when the executable call does not explicitly pass
+``workers``; ``backend = "thread"`` or ``"process"`` selects the executor, and
+``"auto"`` keeps the executable default. The runtime output records whether
+the worker policy came from the TOML file or from explicit executable
+arguments, together with the requested/effective worker counts and the
+ordering-preservation identity contract.
+
 The only velocity-space RHS route exposed at this stage is deliberately
 diagnostic: ``strategy = "velocity"``, ``axis = "hermite"``, and
 ``backend = "streaming_only"``, ``backend = "streaming_electrostatic"``, or

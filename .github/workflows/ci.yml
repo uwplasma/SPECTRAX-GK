@@ -45,6 +45,9 @@ jobs:
           python tools/check_parallel_scaling_artifacts.py
           python tools/check_quasilinear_promotion_guardrails.py \
             --out-json docs/_static/quasilinear_promotion_guardrails.json
+          python tools/build_technical_release_status.py \
+            --out-json docs/_static/technical_release_status.json \
+            --fail-under 98
           python tools/check_release_readiness.py \
             --out-json docs/_static/release_readiness.json
 
@@ -121,6 +124,7 @@ jobs:
               tests/test_check_repository_size_manifest.py
               tests/test_check_release_artifact_manifest.py
               tests/test_check_release_readiness.py
+              tests/test_build_technical_release_status.py
               tests/test_check_release_version.py
               tests/test_check_quasilinear_calibration_inputs.py
               tests/test_compress_docs_previews.py
@@ -169,6 +173,7 @@ jobs:
           - name: parallel-autodiff
             files: >-
               tests/test_parallel.py
+              tests/test_parallelization_examples.py
               tests/test_sharding.py
               tests/test_sharded_integrators.py
               tests/test_generate_parallel_ky_scan_gate.py
@@ -429,6 +434,10 @@ jobs:
             --shard-manifest coverage-wide-shard-manifest.json \
             --fail-under 95 \
             --xml coverage-wide.xml
+          python tools/check_validation_coverage_manifest.py \
+            --coverage-xml coverage-wide.xml \
+            --enforce-package-coverage \
+            --out-json docs/_static/validation_coverage_manifest_summary.json
 
       - name: Upload wide coverage shard manifest
         if: always()
@@ -436,6 +445,14 @@ jobs:
         with:
           name: coverage-wide-shard-manifest
           path: coverage-wide-shard-manifest.json
+          if-no-files-found: ignore
+
+      - name: Upload validation coverage manifest summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-coverage-manifest-summary
+          path: docs/_static/validation_coverage_manifest_summary.json
           if-no-files-found: ignore
 
       - name: Upload wide coverage report

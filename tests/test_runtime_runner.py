@@ -3499,7 +3499,116 @@ def test_run_runtime_scan_independent_workers_preserve_quasilinear_order(
     np.testing.assert_allclose([row["heat_flux_weight_total"] for row in out.quasilinear], [1.5, 3.5, 2.5])
     assert out.parallel is not None
     assert out.parallel["requested_workers"] == 2
+    assert out.parallel["source"] == "arguments"
     assert out.parallel["quasilinear_state_extraction"] is True
+
+
+def test_run_runtime_scan_parallel_config_batch_selects_independent_workers(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        species=(RuntimeSpeciesConfig(name="ion"),),
+        normalization=RuntimeNormalizationConfig(contract="cyclone"),
+        parallel=RuntimeParallelConfig(
+            strategy="batch", axis="ky", num_devices=3, backend="thread"
+        ),
+    )
+    captured: dict[str, object] = {}
+
+    def _fake_run_runtime_linear(_cfg, **kwargs):
+        ky = float(kwargs["ky_target"])
+        return RuntimeLinearResult(
+            ky=ky,
+            gamma=ky + 1.0,
+            omega=-(ky + 2.0),
+            selection=runtime.ModeSelection(ky_index=0, kx_index=0, z_index=0),
+        )
+
+    def _fake_independent_map(fn, values, *, workers=1, executor="thread"):
+        items = list(values)
+        captured["workers"] = workers
+        captured["executor"] = executor
+        captured["ky"] = [item["ky"] for item in items]
+        return [fn(item) for item in items]
+
+    import spectraxgk.runtime as runtime
+
+    monkeypatch.setattr(runtime, "run_runtime_linear", _fake_run_runtime_linear)
+    monkeypatch.setattr(runtime, "independent_map", _fake_independent_map)
+
+    out = run_runtime_scan(cfg, ky_values=[0.15, 0.35, 0.25], solver="time")
+
+    assert captured == {
+        "workers": 3,
+        "executor": "thread",
+        "ky": [0.15, 0.35, 0.25],
+    }
+    np.testing.assert_allclose(out.gamma, [1.15, 1.35, 1.25])
+    assert out.parallel is not None
+    assert out.parallel["source"] == "runtime_config"
+    assert out.parallel["requested_workers"] == 3
+    assert out.parallel["effective_workers"] == 3
+    assert out.parallel["enabled"] is True
+
+
+def test_run_runtime_scan_explicit_workers_override_parallel_config(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        species=(RuntimeSpeciesConfig(name="ion"),),
+        normalization=RuntimeNormalizationConfig(contract="cyclone"),
+        parallel=RuntimeParallelConfig(
+            strategy="batch", axis="ky", num_devices=4, backend="process"
+        ),
+    )
+    captured: dict[str, object] = {}
+
+    def _fake_run_runtime_linear(_cfg, **kwargs):
+        ky = float(kwargs["ky_target"])
+        return RuntimeLinearResult(
+            ky=ky,
+            gamma=ky,
+            omega=-ky,
+            selection=runtime.ModeSelection(ky_index=0, kx_index=0, z_index=0),
+        )
+
+    def _fake_independent_map(fn, values, *, workers=1, executor="thread"):
+        captured["workers"] = workers
+        captured["executor"] = executor
+        return [fn(item) for item in values]
+
+    import spectraxgk.runtime as runtime
+
+    monkeypatch.setattr(runtime, "run_runtime_linear", _fake_run_runtime_linear)
+    monkeypatch.setattr(runtime, "independent_map", _fake_independent_map)
+
+    out = run_runtime_scan(
+        cfg,
+        ky_values=[0.15, 0.35, 0.25],
+        solver="time",
+        workers=2,
+        parallel_executor="thread",
+    )
+
+    assert captured == {"workers": 2, "executor": "thread"}
+    assert out.parallel is not None
+    assert out.parallel["source"] == "arguments"
+    assert out.parallel["requested_workers"] == 2
+    assert out.parallel["effective_workers"] == 2
+
+
+def test_run_runtime_scan_parallel_config_batch_rejects_non_ky_axis() -> None:
+    cfg = replace(
+        _base_runtime_cfg(),
+        species=(RuntimeSpeciesConfig(name="ion"),),
+        normalization=RuntimeNormalizationConfig(contract="cyclone"),
+        parallel=RuntimeParallelConfig(strategy="batch", axis="kx", num_devices=2),
+    )
+
+    with pytest.raises(ValueError, match="axis='ky'"):
+        run_runtime_scan(cfg, ky_values=[0.15, 0.35], solver="time")
 
 
 def test_run_runtime_scan_parallel_config_selects_combined_ky(monkeypatch: pytest.MonkeyPatch) -> None:

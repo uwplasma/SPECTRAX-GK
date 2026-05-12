@@ -29,6 +29,10 @@ def _manifest_text(
 [metadata]
 package_coverage_target_percent = 95.0
 
+[coverage_inventory]
+require_all_package_modules_owned = true
+excluded_modules = ["spectraxgk.__init__"]
+
 [[modules]]
 module = "{module}"
 path = "{source}"
@@ -45,14 +49,29 @@ next_tests = ["next"]
 """
 
 
+def _write_minimal_package(tmp_path: Path, *modules: str) -> None:
+    package = tmp_path / "src" / "spectraxgk"
+    package.mkdir(parents=True, exist_ok=True)
+    (package / "__init__.py").write_text("# package\n")
+    for module in modules:
+        assert module.startswith("spectraxgk.")
+        module_path = tmp_path / "src" / Path(*module.split(".")).with_suffix(".py")
+        module_path.parent.mkdir(parents=True, exist_ok=True)
+        module_path.write_text("# source\n")
+
+
 def test_repository_validation_manifest_is_well_formed() -> None:
     mod = _load_tool_module()
     summary = mod.validate_manifest(mod.load_manifest())
 
     assert summary["package_coverage_target_percent"] == 95.0
     assert summary["n_modules"] >= 10
+    assert summary["n_package_modules"] == (
+        summary["n_direct_modules"] + summary["n_owned_modules"] + summary["n_excluded_modules"]
+    )
     rows = {row["module"]: row for row in summary["rows"]}
     assert rows["spectraxgk.linear"]["coverage_target_percent"] == 95.0
+    assert rows["spectraxgk.runtime"]["n_owned_modules"] >= 5
     assert rows["spectraxgk.validation_gates"]["n_physics_contracts"] >= 2
     assert "spectraxgk.nonlinear" in summary["high_priority_open"]
 
@@ -70,9 +89,7 @@ def test_validation_manifest_main_writes_summary_json(tmp_path: Path) -> None:
 
 def test_validation_manifest_rejects_missing_fast_test(tmp_path: Path) -> None:
     mod = _load_tool_module()
-    source = tmp_path / "src" / "spectraxgk" / "runtime.py"
-    source.parent.mkdir(parents=True)
-    source.write_text("# source\n")
+    _write_minimal_package(tmp_path, "spectraxgk.runtime")
     artifact = tmp_path / "docs" / "_static" / "gate.json"
     artifact.parent.mkdir(parents=True)
     artifact.write_text("{}\n")
@@ -95,9 +112,7 @@ def test_validation_manifest_rejects_missing_fast_test(tmp_path: Path) -> None:
 
 def test_validation_manifest_rejects_invalid_status(tmp_path: Path) -> None:
     mod = _load_tool_module()
-    source = tmp_path / "src" / "spectraxgk" / "runtime.py"
-    source.parent.mkdir(parents=True)
-    source.write_text("# source\n")
+    _write_minimal_package(tmp_path, "spectraxgk.runtime")
     test = tmp_path / "tests" / "test_runtime.py"
     test.parent.mkdir()
     test.write_text("def test_placeholder():\n    assert True\n")
@@ -118,5 +133,100 @@ def test_validation_manifest_rejects_invalid_status(tmp_path: Path) -> None:
         mod.REPO_ROOT = tmp_path
         with pytest.raises(ValueError, match="invalid status"):
             mod.validate_manifest(mod.load_manifest(manifest))
+    finally:
+        mod.REPO_ROOT = old_root
+
+
+def test_validation_manifest_attaches_measured_package_coverage(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    _write_minimal_package(tmp_path, "spectraxgk.runtime")
+    test = tmp_path / "tests" / "test_runtime.py"
+    test.parent.mkdir()
+    test.write_text("def test_placeholder():\n    assert True\n")
+    artifact = tmp_path / "docs" / "_static" / "gate.json"
+    artifact.parent.mkdir(parents=True)
+    artifact.write_text("{}\n")
+    manifest = tmp_path / "manifest.toml"
+    manifest.write_text(
+        _manifest_text(
+            source="src/spectraxgk/runtime.py",
+            test="tests/test_runtime.py",
+            artifact="docs/_static/gate.json",
+        )
+    )
+    coverage_xml = tmp_path / "coverage.xml"
+    coverage_xml.write_text(
+        """
+<coverage line-rate="0.96">
+  <packages>
+    <package name="spectraxgk">
+      <classes>
+        <class filename="src/spectraxgk/runtime.py" line-rate="0.97" />
+      </classes>
+    </package>
+  </packages>
+</coverage>
+""".strip()
+    )
+
+    old_root = mod.REPO_ROOT
+    try:
+        mod.REPO_ROOT = tmp_path
+        summary = mod.validate_manifest(
+            mod.load_manifest(manifest),
+            coverage_xml=coverage_xml,
+            enforce_package_coverage=True,
+        )
+    finally:
+        mod.REPO_ROOT = old_root
+
+    measured = summary["coverage_xml_summary"]
+    assert measured["package_coverage_passed"] is True
+    assert measured["package_coverage_percent"] == pytest.approx(96.0)
+    assert measured["n_modules_below_target"] == 0
+    assert measured["module_rows"][0]["coverage_percent"] == pytest.approx(97.0)
+
+
+def test_validation_manifest_rejects_package_coverage_below_target(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    _write_minimal_package(tmp_path, "spectraxgk.runtime")
+    test = tmp_path / "tests" / "test_runtime.py"
+    test.parent.mkdir()
+    test.write_text("def test_placeholder():\n    assert True\n")
+    artifact = tmp_path / "docs" / "_static" / "gate.json"
+    artifact.parent.mkdir(parents=True)
+    artifact.write_text("{}\n")
+    manifest = tmp_path / "manifest.toml"
+    manifest.write_text(
+        _manifest_text(
+            source="src/spectraxgk/runtime.py",
+            test="tests/test_runtime.py",
+            artifact="docs/_static/gate.json",
+        )
+    )
+    coverage_xml = tmp_path / "coverage.xml"
+    coverage_xml.write_text(
+        """
+<coverage line-rate="0.949">
+  <packages>
+    <package name="spectraxgk">
+      <classes>
+        <class filename="spectraxgk/runtime.py" line-rate="1.0" />
+      </classes>
+    </package>
+  </packages>
+</coverage>
+""".strip()
+    )
+
+    old_root = mod.REPO_ROOT
+    try:
+        mod.REPO_ROOT = tmp_path
+        with pytest.raises(ValueError, match="package coverage below manifest target"):
+            mod.validate_manifest(
+                mod.load_manifest(manifest),
+                coverage_xml=coverage_xml,
+                enforce_package_coverage=True,
+            )
     finally:
         mod.REPO_ROOT = old_root
