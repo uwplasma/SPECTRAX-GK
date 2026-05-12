@@ -1207,6 +1207,10 @@ Exit gate:
   continuity and implicit AD/finite-difference gate for the same objective
   vector on the solver-ready geometry contract. This closes the local
   non-optional counterpart before running heavier VMEC/Boozer holdout gates.
+- Added `solver_scalar_objective_from_vector` and
+  `vmec_boozer_scalar_objective_from_state` so the real linear-growth and
+  quasilinear-flux optimizer paths select objectives through one tested alias
+  layer instead of duplicating objective-vector indices.
 - Validation for this tranche:
   `python -m pytest -q tests/test_solver_objective_gradients.py tests/test_differentiable_geometry_bridge.py tests/test_stellarator_optimization.py` passed with 46 tests, and `ruff check` passed for the touched source/test files.
 - Commits pushed to `main`: `7ab3676` and `ebdebc1`.

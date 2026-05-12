@@ -14,6 +14,7 @@ import spectraxgk.solver_objective_gradients as sog
 from spectraxgk.solver_objective_gradients import (
     SOLVER_GEOMETRY_PARAMETER_NAMES,
     SOLVER_OBJECTIVE_NAMES,
+    SolverScalarObjective,
     TINY_OBJECTIVE_NAMES,
     VMEC_BOOZER_FREQUENCY_OBJECTIVE_NAMES,
     VMEC_BOOZER_NONLINEAR_WINDOW_OBJECTIVE_NAMES,
@@ -29,8 +30,10 @@ from spectraxgk.solver_objective_gradients import (
     mode21_vmec_boozer_quasilinear_gradient_report,
     solver_objective_branch_gradient_report,
     solver_objective_vector_from_geometry,
+    solver_scalar_objective_from_vector,
     solver_ready_geometry_mapping,
     tiny_differentiable_objective_gradient_report,
+    vmec_boozer_scalar_objective_from_state,
     vmec_boozer_solver_objective_vector_from_state,
 )
 
@@ -154,6 +157,21 @@ def test_solver_objective_vector_from_geometry_is_finite_and_exported() -> None:
         solver_objective_vector_from_geometry(geom, n_laguerre=0)
 
 
+def test_solver_scalar_objective_selector_aliases_and_errors() -> None:
+    vector = jnp.asarray([1.0, -0.5, 2.0, 3.0, 4.0, 5.0])
+
+    assert spectraxgk.SolverScalarObjective is SolverScalarObjective
+    assert spectraxgk.solver_scalar_objective_from_vector is solver_scalar_objective_from_vector
+    assert float(solver_scalar_objective_from_vector(vector, "growth")) == pytest.approx(1.0)
+    assert float(solver_scalar_objective_from_vector(vector, "gamma")) == pytest.approx(1.0)
+    assert float(solver_scalar_objective_from_vector(vector, "frequency")) == pytest.approx(-0.5)
+    assert float(solver_scalar_objective_from_vector(vector, "quasilinear_flux")) == pytest.approx(5.0)
+    with pytest.raises(ValueError, match="unknown solver objective"):
+        solver_scalar_objective_from_vector(vector, "bad")  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="length"):
+        solver_scalar_objective_from_vector(jnp.ones(2), "growth")
+
+
 def test_solver_objective_branch_gradient_report_gates_public_evaluator() -> None:
     report = solver_objective_branch_gradient_report(
         fd_step=1.0e-3,
@@ -232,6 +250,28 @@ def test_vmec_boozer_solver_objective_vector_from_state_splits_options(
             "wout",
             unexpected=True,
         )
+
+
+def test_vmec_boozer_scalar_objective_from_state_uses_vector_selector(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(
+        sog,
+        "vmec_boozer_solver_objective_vector_from_state",
+        lambda *_args, **_kwargs: jnp.asarray([1.0, 2.0, 3.0, 4.0, 5.0, 6.0]),
+    )
+
+    value = vmec_boozer_scalar_objective_from_state(
+        "state",
+        "static",
+        "indata",
+        "wout",
+        objective="quasilinear_flux",
+        ntheta=4,
+    )
+
+    assert spectraxgk.vmec_boozer_scalar_objective_from_state is vmec_boozer_scalar_objective_from_state
+    assert float(value) == pytest.approx(6.0)
 
 
 def test_reduced_nonlinear_window_metrics_are_smooth_and_fd_checked() -> None:
