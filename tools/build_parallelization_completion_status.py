@@ -5,10 +5,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 from pathlib import Path
 from typing import Any
-
-import numpy as np
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 STATIC = REPO_ROOT / "docs" / "_static"
@@ -162,6 +161,17 @@ def build_status(root: Path = REPO_ROOT) -> dict[str, Any]:
     }
 
 
+def _json_path_for_prefix(out_prefix: Path) -> Path:
+    out_prefix.parent.mkdir(parents=True, exist_ok=True)
+    return out_prefix.with_suffix(".json")
+
+
+def write_json_artifact(status: dict[str, Any], out_prefix: Path) -> dict[str, str]:
+    json_path = _json_path_for_prefix(out_prefix)
+    json_path.write_text(json.dumps(status, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return {"json": str(json_path)}
+
+
 def write_artifacts(status: dict[str, Any], out_prefix: Path) -> dict[str, str]:
     import matplotlib
 
@@ -170,16 +180,14 @@ def write_artifacts(status: dict[str, Any], out_prefix: Path) -> dict[str, str]:
 
     from spectraxgk.plotting import set_plot_style
 
-    out_prefix.parent.mkdir(parents=True, exist_ok=True)
-    json_path = out_prefix.with_suffix(".json")
     png_path = out_prefix.with_suffix(".png")
     pdf_path = out_prefix.with_suffix(".pdf")
-    json_path.write_text(json.dumps(status, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    paths = write_json_artifact(status, out_prefix)
 
     lanes = list(status["lanes"])
     labels = [str(lane["lane"]).replace("_", "\n") for lane in lanes]
-    cpu = [float(lane.get("best_speedups", {}).get("cpu", np.nan)) for lane in lanes]
-    gpu = [float(lane.get("best_speedups", {}).get("gpu", np.nan)) for lane in lanes]
+    cpu = [float(lane.get("best_speedups", {}).get("cpu", math.nan)) for lane in lanes]
+    gpu = [float(lane.get("best_speedups", {}).get("gpu", math.nan)) for lane in lanes]
     colors = [
         "#2f7f5f" if str(lane["status"]).startswith(("production", "diagnostic")) else "#b44a3c"
         for lane in lanes
@@ -187,7 +195,7 @@ def write_artifacts(status: dict[str, Any], out_prefix: Path) -> dict[str, str]:
 
     set_plot_style()
     fig, axes = plt.subplots(1, 2, figsize=(12.8, 4.2), constrained_layout=True)
-    y = np.arange(len(lanes))
+    y = list(range(len(lanes)))
     score = [
         100.0
         if lane["status"] == "production_closed"
@@ -221,9 +229,11 @@ def write_artifacts(status: dict[str, Any], out_prefix: Path) -> dict[str, str]:
         )
 
     width = 0.36
-    x = np.arange(len(lanes))
-    axes[1].bar(x - width / 2, np.nan_to_num(cpu, nan=0.0), width, label="CPU", color="#276b8e")
-    axes[1].bar(x + width / 2, np.nan_to_num(gpu, nan=0.0), width, label="GPU", color="#c45a14")
+    x = list(range(len(lanes)))
+    cpu_plot = [0.0 if math.isnan(value) else value for value in cpu]
+    gpu_plot = [0.0 if math.isnan(value) else value for value in gpu]
+    axes[1].bar([value - width / 2 for value in x], cpu_plot, width, label="CPU", color="#276b8e")
+    axes[1].bar([value + width / 2 for value in x], gpu_plot, width, label="GPU", color="#c45a14")
     axes[1].axhline(5.0, color="#276b8e", ls=":", lw=1.1, label="CPU prod. gate")
     axes[1].axhline(1.5, color="#c45a14", ls="--", lw=1.1, label="GPU prod. gate")
     axes[1].set_xticks(x, labels, rotation=0)
@@ -236,7 +246,8 @@ def write_artifacts(status: dict[str, Any], out_prefix: Path) -> dict[str, str]:
     fig.savefig(png_path, dpi=220)
     fig.savefig(pdf_path)
     plt.close(fig)
-    return {"json": str(json_path), "png": str(png_path), "pdf": str(pdf_path)}
+    paths.update({"png": str(png_path), "pdf": str(pdf_path)})
+    return paths
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -244,13 +255,22 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--root", type=Path, default=REPO_ROOT)
     parser.add_argument("--out-prefix", type=Path, default=DEFAULT_OUT_PREFIX)
     parser.add_argument("--fail-under-production", type=float, default=100.0)
+    parser.add_argument(
+        "--skip-figures",
+        action="store_true",
+        help="Write only the JSON status artifact; useful in dependency-free CI hygiene jobs.",
+    )
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     status = build_status(args.root)
-    paths = write_artifacts(status, Path(args.out_prefix))
+    paths = (
+        write_json_artifact(status, Path(args.out_prefix))
+        if args.skip_figures
+        else write_artifacts(status, Path(args.out_prefix))
+    )
     print(json.dumps({"passed": status["passed"], "paths": paths}, indent=2))
     return (
         0
