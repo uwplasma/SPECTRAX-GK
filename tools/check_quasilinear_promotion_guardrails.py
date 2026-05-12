@@ -11,8 +11,9 @@ import re
 from pathlib import Path
 from typing import Any, cast
 
-
 ROOT = Path(__file__).resolve().parents[1]
+
+
 DEFAULT_REPORT_PATTERNS = (
     str(ROOT / "docs/_static/quasilinear_*train_holdout_report.json"),
     str(ROOT / "docs/_static/quasilinear_saturation_rule_sweep.json"),
