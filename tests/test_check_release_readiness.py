@@ -44,6 +44,7 @@ spectrax-gk = "spectraxgk.cli:main"
                 "tools/check_parallel_scaling_artifacts.py",
                 "tools/check_performance_optimization_manifest.py",
                 "tools/check_quasilinear_promotion_guardrails.py",
+                "tools/build_parallelization_completion_status.py",
                 "tools/build_technical_release_status.py",
                 "tools/check_release_readiness.py",
             ]
@@ -68,6 +69,7 @@ spectrax-gk = "spectraxgk.cli:main"
         "technical_release_status.json",
         "independent_ky_scan_scaling_large.json",
         "quasilinear_uq_ensemble_scaling_large.json",
+        "parallelization_completion_status.json",
         "nonlinear_sharding_strong_scaling_large.json",
         "nonlinear_domain_parallel_identity_gate.json",
         "nonlinear_spectral_communication_identity_gate.json",

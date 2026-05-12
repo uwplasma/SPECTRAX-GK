@@ -150,6 +150,7 @@ README claims, or manuscript claims.
        turbulence-gradient and optimized-equilibrium heat-flux claims are not.
    * - Scope guardrails
      - ``technical_release_status.json``,
+       ``parallelization_completion_status.*``,
        ``release_readiness.json``, ``manuscript_readiness_status.*``,
        ``open_research_lane_status.*``, and
        ``w7x_tem_extension_status.*``
@@ -159,6 +160,7 @@ README claims, or manuscript claims.
      - ``runtime_memory_benchmark.*``,
        ``independent_ky_scan_scaling_large.*``,
        ``quasilinear_uq_ensemble_scaling_large.*``, and
+       ``parallelization_completion_status.*``, plus
        ``nonlinear_sharding_*``
      - Independent-work parallelization and profiler localization are in scope.
        Whole-state nonlinear sharding is not a production speedup claim.
@@ -245,6 +247,10 @@ Parallelization and performance state:
 - ``docs/_static/independent_ky_scan_scaling_large.json`` and
   ``docs/_static/quasilinear_uq_ensemble_scaling_large.json`` support
   production independent-work parallelization for scans and ensembles.
+- ``docs/_static/parallelization_completion_status.json`` is the release
+  closure ledger for parallelization: production independent-work CPU/GPU
+  scaling is closed, while nonlinear domain and FFT-axis decomposition remain
+  diagnostic.
 - ``docs/_static/nonlinear_sharding_strong_scaling_large.json`` is an identity
   and profiler-direction artifact. It shows whole-state nonlinear sharding is
   identity-correct but not a production speedup path for the current

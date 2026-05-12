@@ -4630,3 +4630,32 @@ Exit gate:
   - `python -m sphinx -W -b html docs docs/_build/html` passed;
   - `python -m build` passed;
   - `python -m twine check dist/*` passed.
+
+## 2026-05-12 Parallelization Strong-Scaling Closure Push
+
+- Refreshed the production independent-`k_y` strong-scaling artifact with a
+  larger 64-mode Cyclone linear scan at `Ny=128`, `Nz=96`, `Nl=4`, `Nm=8`,
+  and `240` RK2 steps per mode.
+- The refreshed CPU artifact preserves exact `gamma`/`omega` identity and
+  reaches `7.18x` strong speedup on eight local CPU workers. The refreshed
+  two-GPU `office` artifact preserves exact identity and reaches `1.88x` on
+  two RTX A4000 GPUs.
+- Added `tools/build_parallelization_completion_status.py` and tracked
+  `docs/_static/parallelization_completion_status.{json,png,pdf}`. The new
+  ledger marks independent `k_y` scans and quasilinear/UQ ensembles as
+  production-closed while keeping whole-state nonlinear sharding and FFT-axis
+  decomposition diagnostic-only until runtime distributed communication,
+  conservation, transport-window, and profiler-backed speedup gates pass.
+- Wired the new status artifact into CI repo hygiene, release readiness,
+  technical-release status, performance and validation manifests, README, and
+  parallelization/performance/release-scope docs.
+- Verification for this tranche:
+  - `python tools/build_parallelization_completion_status.py`,
+    `python tools/check_parallel_scaling_artifacts.py`, and
+    `python tools/check_performance_optimization_manifest.py` passed;
+  - `python tools/check_validation_coverage_manifest.py --out-json docs/_static/validation_coverage_manifest_summary.json` passed;
+  - `python tools/build_technical_release_status.py --out-json docs/_static/technical_release_status.json --fail-under 98` passed;
+  - `python tools/check_release_readiness.py --out-json docs/_static/release_readiness.json` passed;
+  - `pytest -q tests/test_independent_ky_scaling_artifacts.py tests/test_quasilinear_uq_ensemble_scaling_artifacts.py tests/test_parallel_artifact_contracts.py tests/test_build_parallelization_completion_status.py tests/test_build_technical_release_status.py tests/test_check_release_readiness.py tests/test_performance_optimization_manifest.py tests/test_validation_coverage_manifest.py --maxfail=1 --disable-warnings -o addopts=` passed with 39 tests;
+  - targeted `ruff check`, `python -m py_compile`, and strict Sphinx docs
+    build passed.
