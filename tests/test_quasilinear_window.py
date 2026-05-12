@@ -12,6 +12,8 @@ import pytest
 
 from spectraxgk.quasilinear_window import (
     NonlinearWindowConvergenceConfig,
+    nonlinear_window_convergence_from_csv,
+    nonlinear_window_convergence_from_summary,
     nonlinear_window_convergence_report,
     nonlinear_window_stats_promotion_ready,
 )
@@ -175,3 +177,140 @@ def test_nonlinear_window_script_imports_before_editable_install() -> None:
     )
 
     assert "Check nonlinear late-window convergence metadata" in completed.stdout
+
+
+def test_nonlinear_window_config_and_input_validation_are_fail_closed() -> None:
+    t = np.linspace(0.0, 10.0, 11)
+    heat = np.ones_like(t)
+
+    bad_configs = [
+        (NonlinearWindowConvergenceConfig(tmin=np.nan), "tmin must be finite"),
+        (NonlinearWindowConvergenceConfig(tmax=np.inf), "tmax must be finite"),
+        (NonlinearWindowConvergenceConfig(tmin=5.0, tmax=5.0), "tmin must be less"),
+        (NonlinearWindowConvergenceConfig(transient_fraction=1.0), "transient_fraction"),
+        (NonlinearWindowConvergenceConfig(min_samples=1), "min_samples"),
+        (NonlinearWindowConvergenceConfig(min_blocks=1), "min_blocks"),
+        (NonlinearWindowConvergenceConfig(block_size=0), "block_size"),
+        (NonlinearWindowConvergenceConfig(bootstrap_samples=-1), "bootstrap_samples"),
+        (
+            NonlinearWindowConvergenceConfig(max_running_mean_rel_drift=-1.0),
+            "running_mean",
+        ),
+        (NonlinearWindowConvergenceConfig(max_sem_rel=-1.0), "max_sem_rel"),
+        (NonlinearWindowConvergenceConfig(value_floor=0.0), "value_floor"),
+    ]
+    for config, message in bad_configs:
+        with pytest.raises(ValueError, match=message):
+            nonlinear_window_convergence_report(t, heat, config=config)
+
+    with pytest.raises(ValueError, match="same length"):
+        nonlinear_window_convergence_report([0.0, 1.0], [1.0])
+    with pytest.raises(ValueError, match="must not be empty"):
+        nonlinear_window_convergence_report([], [])
+    with pytest.raises(ValueError, match="time contains non-finite"):
+        nonlinear_window_convergence_report([0.0, np.nan], [1.0, 1.0])
+    with pytest.raises(ValueError, match="selected nonlinear window is empty"):
+        nonlinear_window_convergence_report([1.0], [1.0])
+
+
+def test_nonlinear_window_csv_and_summary_loaders_cover_artifact_contracts(
+    tmp_path: Path,
+) -> None:
+    csv = tmp_path / "diagnostics.csv"
+    t, heat = _saturated_trace()
+    csv.write_text(
+        "time,q_i\n"
+        + "\n".join(f"{ti:.8g},{qi:.12g}" for ti, qi in zip(t, heat, strict=True))
+        + "\n",
+        encoding="utf-8",
+    )
+    config = NonlinearWindowConvergenceConfig(
+        transient_fraction=0.5,
+        min_samples=64,
+        max_running_mean_rel_drift=0.02,
+        max_sem_rel=0.02,
+    )
+
+    from_csv = nonlinear_window_convergence_from_csv(
+        csv,
+        time_column="time",
+        value_column="q_i",
+        case="csv_case",
+        config=config,
+        summary_artifact="summary.json",
+    )
+
+    assert from_csv["passed"] is True
+    assert from_csv["case"] == "csv_case"
+    assert from_csv["observable"] == "q_i"
+    assert from_csv["provenance"]["summary_artifact"] == "summary.json"
+
+    summary = tmp_path / "window_summary.json"
+    summary.write_text(
+        json.dumps(
+            {
+                "case": "summary_case",
+                "spectrax": "diagnostics.csv",
+                "tmin": 50.0,
+                "tmax": 200.0,
+            }
+        ),
+        encoding="utf-8",
+    )
+    from_summary = nonlinear_window_convergence_from_summary(
+        summary,
+        time_column="time",
+        value_column="q_i",
+        config=config,
+    )
+
+    assert from_summary["case"] == "summary_case"
+    assert from_summary["provenance"]["summary_artifact"] == str(summary)
+    assert from_summary["provenance"]["source_artifact"].endswith("diagnostics.csv")
+
+    missing_column = tmp_path / "missing_column.csv"
+    missing_column.write_text("time,other\n0.0,1.0\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="observable column"):
+        nonlinear_window_convergence_from_csv(
+            missing_column,
+            time_column="time",
+            value_column="q_i",
+        )
+
+    bad_summary = tmp_path / "bad_summary.json"
+    bad_summary.write_text(json.dumps({"other": "diagnostics.csv"}), encoding="utf-8")
+    with pytest.raises(ValueError, match="diagnostics source"):
+        nonlinear_window_convergence_from_summary(bad_summary)
+
+    txt_summary = tmp_path / "txt_summary.json"
+    txt_summary.write_text(json.dumps({"spectrax": "trace.txt"}), encoding="utf-8")
+    (tmp_path / "trace.txt").write_text("not,csv\n", encoding="utf-8")
+    with pytest.raises(NotImplementedError, match="diagnostics CSV"):
+        nonlinear_window_convergence_from_summary(txt_summary)
+
+
+def test_nonlinear_window_promotion_ready_reports_all_missing_contracts() -> None:
+    ready, failures = nonlinear_window_stats_promotion_ready(None)
+    assert ready is False
+    assert failures == ["missing nonlinear_window_stats object"]
+
+    ready, failures = nonlinear_window_stats_promotion_ready(
+        {
+            "kind": "wrong",
+            "passed": False,
+            "provenance": {},
+            "statistics": {"late_mean": 1.0},
+            "window": {"transient_fraction": 0.0, "n_finite_late": 0},
+            "gate_report": {"passed": False},
+        }
+    )
+
+    assert ready is False
+    assert "unexpected nonlinear_window_stats kind" in failures
+    assert "nonlinear window convergence report did not pass" in failures
+    assert "missing nonlinear source_artifact provenance" in failures
+    assert "missing/non-finite statistics.sem" in failures
+    assert "missing/non-finite window.late_tmin" in failures
+    assert "missing declared transient cutoff policy" in failures
+    assert "window has no finite late samples" in failures
+    assert "missing passed gate_report" in failures
