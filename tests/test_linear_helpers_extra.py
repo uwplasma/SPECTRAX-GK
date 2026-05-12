@@ -14,6 +14,7 @@ from spectraxgk.geometry import FluxTubeGeometryData, SAlphaGeometry
 from spectraxgk.grids import build_spectral_grid
 from spectraxgk.gyroaverage import J_l_all
 import spectraxgk.linear as linear_mod
+import spectraxgk.linear_cache as linear_cache
 import spectraxgk.linear_linked as linear_linked
 import spectraxgk.linear_params as linear_params
 from spectraxgk.linear import (
@@ -105,6 +106,11 @@ def test_linear_linked_helpers_preserve_legacy_exports() -> None:
 def test_linear_param_helpers_preserve_legacy_exports() -> None:
     for name in linear_params.__all__:
         assert getattr(linear_mod, name) is getattr(linear_params, name)
+
+
+def test_linear_cache_helpers_preserve_legacy_exports() -> None:
+    for name in linear_cache.__all__:
+        assert getattr(linear_mod, name) is getattr(linear_cache, name)
 
 
 def test_is_tracer_and_lenard_bernstein_eigenvalues() -> None:
