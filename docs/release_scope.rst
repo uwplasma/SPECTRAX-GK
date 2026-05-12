@@ -249,6 +249,12 @@ Parallelization and performance state:
   and profiler-direction artifact. It shows whole-state nonlinear sharding is
   identity-correct but not a production speedup path for the current
   decomposition.
+- ``docs/_static/nonlinear_domain_parallel_identity_gate.json`` and
+  ``docs/_static/nonlinear_spectral_communication_identity_gate.json`` are
+  diagnostic identity gates for local halo chunks and spectral
+  split/reassemble communication layout, respectively. They are correctness
+  prerequisites for future nonlinear domain decomposition, not runtime
+  distributed-FFT or nonlinear speedup claims.
 - ``docs/_static/nonlinear_sharding_profile_office_gpu.json`` and related RHS
   profiler artifacts support scoped hot-path localization only.
 

@@ -118,6 +118,17 @@ path. This validates the fail-closed identity-gate contract for a bounded local
 stencil. It does not validate distributed FFTs, field solves, conservation, or
 nonlinear transport windows, and it carries no speedup claim.
 
+The spectral communication layer now has the same fail-closed treatment. The
+artifact ``docs/_static/nonlinear_spectral_communication_identity_gate.json``
+uses deterministic complex spectral coefficients in ``(N_l,N_m,N_y,N_x,N_z)``
+layout, applies the split/reassemble and axis-transpose operations that a
+distributed FFT route would need, and compares three serial observables against
+the communicated layout: FFT forward/inverse round trip, pseudo-spectral
+nonlinear bracket, and spectral field-solve layout. Passing this gate promotes
+``fft_axis_domain`` from blocked to diagnostic. It still does not add runtime
+distributed FFT routing, conservation checks, nonlinear transport-window
+acceptance, profiler evidence, or any speedup claim.
+
 Velocity-space communication gates
 ----------------------------------
 
@@ -237,6 +248,12 @@ allowed to support:
      - Fail-closed serial-vs-halo-decomposed identity evidence for one bounded
        local stencil.
      - Distributed FFT, field-solve, transport-window, or speedup claims.
+   * - Prototype nonlinear spectral communication gate
+     - ``nonlinear_spectral_communication_identity_gate.{json,png}``
+     - Fail-closed split/reassemble identity evidence for FFT round trip,
+       pseudo-spectral bracket, and spectral field-solve layout.
+     - Runtime distributed FFT routing, nonlinear conservation,
+       transport-window, or speedup claims.
    * - Velocity-space linear slices
      - ``linear_rhs_parallel_slices_sweep.{json,png,pdf}``
      - Bounded engineering evidence for opt-in electrostatic linear RHS slices.

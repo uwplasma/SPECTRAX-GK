@@ -1,6 +1,6 @@
 # SPECTRAX-GK Quasilinear Transport and Optimization Plan
 
-Last updated: 2026-05-11
+Last updated: 2026-05-12
 Active repository: `uwplasma/SPECTRAX-GK`
 Historical planning archive: private repo `rogeriojorge/spectraxgk_plan`
 Current public baseline: `main` at v1.5.0, with the historical ship-readiness log archived before this file was reset.
@@ -96,7 +96,12 @@ As of 2026-05-11:
 - Parallelization claims are production-ready only for independent `k_y`
   scans, quasilinear/UQ ensembles, and similar independent work. Whole-state
   nonlinear sharding remains an identity/profiler artifact and should not be
-  described as a nonlinear multi-GPU speedup path.
+  described as a nonlinear multi-GPU speedup path. The FFT-axis nonlinear
+  route is now diagnostic rather than blocked because
+  `docs/_static/nonlinear_spectral_communication_identity_gate.json` validates
+  split/reassemble identity for FFT round trip, pseudo-spectral bracket, and
+  field-solve layout. It is still not runtime distributed FFT routing and it
+  carries no speedup claim.
 - W7-X zonal long-window recurrence/damping and W7-X TEM/kinetic-electron
   extension remain deferred from the current manuscript/release scope.
 
@@ -1183,6 +1188,30 @@ Exit gate:
   `spectraxgk.benchmark_scan`, added focused policy tests, and registered the
   module in the validation coverage manifest/API docs while preserving the
   public `spectraxgk.benchmarks` import surface.
+- Added the nonlinear spectral communication identity gate:
+  `spectraxgk.nonlinear_parallel.deterministic_nonlinear_spectral_state`,
+  `nonlinear_spectral_communication_identity_gate`, and
+  `NonlinearSpectralCommunicationReport`. The tracked artifact
+  `docs/_static/nonlinear_spectral_communication_identity_gate.{json,png}`
+  passes with zero observed error for FFT forward/inverse, pseudo-spectral
+  bracket, and spectral field-solve layout under deterministic
+  split/reassemble communication. This advances Lane 1 from blocked to
+  diagnostic for `fft_axis_domain`, while docs/release checks still forbid
+  production routing or speedup claims.
+- Fixed `tools/run_tests_fast.py` to treat pytest exit code `5` as
+  `skipped(no_tests_collected)` for integration-only files filtered by the
+  default non-integration selector. This keeps the 5-minute bounded local
+  runner useful without incorrectly failing on intentionally excluded
+  benchmark-only files.
+- Validation for this tranche:
+  - `pytest -q tests/test_nonlinear_domain_parallel.py tests/test_nonlinear_spectral_communication_gate.py tests/test_nonlinear_parallel.py tests/test_parallel_artifact_contracts.py tests/test_build_technical_release_status.py tests/test_validation_coverage_manifest.py tests/test_check_release_readiness.py tests/test_run_tests_fast.py` passed with 47 tests;
+  - `python tools/check_release_readiness.py` passed with technical release
+    status at 100%;
+  - `python tools/check_parallel_scaling_artifacts.py` passed;
+  - `python -m sphinx -W -b html docs docs/_build/html` passed;
+  - `python -m build --wheel --sdist` passed;
+  - full `tools/run_tests_fast.py` remains bounded by the 300 s local cap and
+    is not expected to finish every top-level file locally in one pass.
 
 ### 2026-04-29
 
