@@ -1203,8 +1203,12 @@ Exit gate:
   dominant linear/quasilinear SPECTRAX-GK objectives on the in-memory
   VMEC/Boozer path. These are value evaluators; branch-continuity and
   AD/finite-difference gates remain the next validation layer.
+- Added `solver_objective_branch_gradient_report`, a CI-scale branch
+  continuity and implicit AD/finite-difference gate for the same objective
+  vector on the solver-ready geometry contract. This closes the local
+  non-optional counterpart before running heavier VMEC/Boozer holdout gates.
 - Validation for this tranche:
-  `python -m pytest -q tests/test_differentiable_geometry_bridge.py tests/test_stellarator_optimization.py tests/test_solver_objective_gradients.py` passed with 45 tests, and `ruff check` passed for the touched source/test files.
+  `python -m pytest -q tests/test_solver_objective_gradients.py tests/test_differentiable_geometry_bridge.py tests/test_stellarator_optimization.py` passed with 46 tests, and `ruff check` passed for the touched source/test files.
 - Commits pushed to `main`: `7ab3676` and `ebdebc1`.
 - Runtime `k_y` scans now consume `[parallel] strategy = "batch"` with
   `axis = "ky"` as the production independent-worker path when explicit

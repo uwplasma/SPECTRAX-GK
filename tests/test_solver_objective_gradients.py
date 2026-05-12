@@ -27,6 +27,7 @@ from spectraxgk.solver_objective_gradients import (
     mode21_vmec_boozer_linear_frequency_gradient_report,
     mode21_vmec_boozer_nonlinear_window_gradient_report,
     mode21_vmec_boozer_quasilinear_gradient_report,
+    solver_objective_branch_gradient_report,
     solver_objective_vector_from_geometry,
     solver_ready_geometry_mapping,
     tiny_differentiable_objective_gradient_report,
@@ -151,6 +152,36 @@ def test_solver_objective_vector_from_geometry_is_finite_and_exported() -> None:
         solver_objective_vector_from_geometry(geom, selected_ky_index=99)
     with pytest.raises(ValueError, match="positive"):
         solver_objective_vector_from_geometry(geom, n_laguerre=0)
+
+
+def test_solver_objective_branch_gradient_report_gates_public_evaluator() -> None:
+    report = solver_objective_branch_gradient_report(
+        fd_step=1.0e-3,
+        rtol=1.0e-1,
+        atol=2.0e-3,
+        n_laguerre=2,
+        n_hermite=1,
+    )
+
+    assert (
+        spectraxgk.solver_objective_branch_gradient_report
+        is solver_objective_branch_gradient_report
+    )
+    assert report["passed"] is True
+    assert report["source_scope"] == "solver_ready_geometry_contract"
+    assert report["value_evaluator_finite"] is True
+    assert report["branch_continuity_gate"] is True
+    assert report["ad_fd_gate"] is True
+    assert len(report["branch_rows"]) == 2 * len(SOLVER_GEOMETRY_PARAMETER_NAMES)
+    assert np.asarray(report["value_evaluator_objectives"]).shape == (
+        len(SOLVER_OBJECTIVE_NAMES),
+    )
+    assert np.asarray(report["eigenpair_gate"]["jacobian_implicit"]).shape == (
+        len(SOLVER_OBJECTIVE_NAMES),
+        len(SOLVER_GEOMETRY_PARAMETER_NAMES),
+    )
+    with pytest.raises(ValueError, match="length-2"):
+        solver_objective_branch_gradient_report(jnp.ones(3))
 
 
 def test_vmec_boozer_solver_objective_vector_from_state_splits_options(
