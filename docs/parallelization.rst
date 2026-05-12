@@ -164,6 +164,21 @@ engineering timing ratio. Promoting that lane requires fresh profiler artifacts
 for the exact workload plus full nonlinear identity, conservation, field-solve,
 FFT/bracket communication, and transport-window gates.
 
+Fast artifact contract check
+----------------------------
+
+Before editing scaling docs or manifests, run the checked-in artifact contract:
+
+.. code-block:: bash
+
+   python tools/check_parallel_scaling_artifacts.py
+
+This command does not rerun large profiles and does not enforce any minimum
+speedup. It validates that the tracked JSON/CSV/PNG/PDF sidecars exist, the
+``parallel_scaling`` manifest lists them, split CPU/GPU source artifacts are
+attached where required, numerical identity gates pass, error fields are finite,
+and timing/profiler payloads are positive and scoped to their documented claim.
+
 Release artifact policy
 -----------------------
 

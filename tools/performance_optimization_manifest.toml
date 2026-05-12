@@ -232,6 +232,7 @@ profiling_tools = [
   "tools/generate_linear_rhs_streaming_gate.py",
   "tools/generate_linear_rhs_streaming_electrostatic_gate.py",
   "tools/generate_linear_rhs_electrostatic_slices_gate.py",
+  "tools/check_parallel_scaling_artifacts.py",
   "tools/profile_linear_rhs_parallel_slices.py",
   "tools/profile_nonlinear_sharding.py",
 ]
@@ -241,6 +242,7 @@ metrics = [
   "memory_per_device_mb",
   "device_parity_error",
   "nonlinear_state_sharding_identity_error",
+  "parallel_scaling_artifact_contract_status",
 ]
 artifact_paths = [
   "docs/_static/scaling_speedup.png",
@@ -334,6 +336,7 @@ optimization_actions = [
   "use tools/generate_linear_rhs_streaming_gate.py as the streaming-only linear RHS call-graph identity gate",
   "use tools/generate_linear_rhs_streaming_electrostatic_gate.py as the electrostatic field-solve-to-streaming call-graph identity gate",
   "use tools/generate_linear_rhs_electrostatic_slices_gate.py as the composed electrostatic linear-RHS identity gate",
+  "use tools/check_parallel_scaling_artifacts.py as the fast local contract check for tracked large-run scaling artifacts",
   "use tools/profile_linear_rhs_parallel_slices.py as the engineering profile before making any Hermite-sharded RHS speedup claim",
   "gate CPU sharding locally and two-GPU sharding on office",
   "profile fixed-step nonlinear state sharding and keep local plus two-GPU identity artifacts attached to the manifest",
@@ -343,5 +346,6 @@ optimization_actions = [
 gates = [
   "parallel outputs must match single-device outputs within numerical-identity tolerances",
   "fixed-step nonlinear state sharding must preserve the final state within the recorded local and two-GPU identity gates",
+  "tracked large-run scaling artifacts must pass the fast sidecar, manifest, identity, timing, and claim-scope contract checker",
   "publication scaling panels must show both speedup and efficiency or be kept out of the README",
 ]

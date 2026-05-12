@@ -10,7 +10,14 @@ import spectraxgk.parallel as parallel
 
 
 def test_parallel_public_api_exports_are_stable() -> None:
-    public_names = ("batch_map", "independent_map", "ky_scan_batches")
+    public_names = (
+        "ParallelIdentityReport",
+        "batch_map",
+        "batch_map_identity_report",
+        "independent_map",
+        "ky_scan_batches",
+        "parallel_identity_report",
+    )
 
     assert set(public_names) <= set(spectraxgk.__all__)
     assert set(public_names) <= set(parallel.__all__)
@@ -63,6 +70,91 @@ def test_batch_map_matches_vmap_for_pytree_outputs_single_device() -> None:
         observed,
         expected,
     )
+
+
+def test_parallel_identity_report_records_tree_errors_and_metadata() -> None:
+    reference = {
+        "gamma": jnp.asarray([1.0, 2.0, 4.0]),
+        "omega": (jnp.asarray([0.25]),),
+    }
+    observed = {
+        "gamma": jnp.asarray([1.0, 2.0 + 1e-6, 4.0]),
+        "omega": (jnp.asarray([0.25]),),
+    }
+
+    report = parallel.parallel_identity_report(
+        reference,
+        observed,
+        kind="unit_identity",
+        problem_size=3,
+        requested_workers=2,
+        actual_workers=2,
+        backend="cpu",
+        atol=1e-5,
+        rtol=1e-5,
+        metadata={"observable": "linear_scan"},
+    )
+
+    payload = report.to_dict()
+    assert report.identity_passed is True
+    assert payload["kind"] == "unit_identity"
+    assert payload["backend"] == "cpu"
+    assert payload["problem_size"] == 3
+    assert payload["metadata"] == {"observable": "linear_scan"}
+    assert payload["max_abs_error"] > 0.0
+
+
+def test_parallel_identity_report_rejects_mismatched_pytrees_and_bad_counts() -> None:
+    with pytest.raises(ValueError, match="different structures"):
+        parallel.parallel_identity_report(
+            {"a": jnp.asarray([1.0])},
+            {"b": jnp.asarray([1.0])},
+            kind="bad",
+            problem_size=1,
+            requested_workers=1,
+        )
+    with pytest.raises(ValueError, match="problem_size"):
+        parallel.parallel_identity_report(
+            jnp.asarray([1.0]),
+            jnp.asarray([1.0]),
+            kind="bad",
+            problem_size=0,
+            requested_workers=1,
+        )
+    with pytest.raises(ValueError, match="actual_workers"):
+        parallel.parallel_identity_report(
+            jnp.asarray([1.0]),
+            jnp.asarray([1.0]),
+            kind="bad",
+            problem_size=1,
+            requested_workers=1,
+            actual_workers=2,
+        )
+
+
+def test_batch_map_identity_report_is_serial_vmap_identity_gate() -> None:
+    values = jnp.linspace(0.1, 0.9, 9)
+
+    def fn(x):
+        return {
+            "mode": jnp.asarray([x, x**2, jnp.sin(x)]),
+            "flux_proxy": x**3 + 0.5,
+        }
+
+    report = parallel.batch_map_identity_report(
+        fn,
+        values,
+        batch_size=4,
+        devices=[jax.devices()[0]],
+        atol=0.0,
+        rtol=0.0,
+    )
+
+    assert report.kind == "batch_map_serial_identity"
+    assert report.identity_passed is True
+    assert report.problem_size == 9
+    assert report.actual_workers == 1
+    assert report.metadata["batch_size"] == 4
 
 
 def test_pad_to_multiple_preserves_prefix_and_reports_original_size() -> None:

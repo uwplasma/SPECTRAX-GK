@@ -4,13 +4,16 @@
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
+import re
 import subprocess
 import sys
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_TEST_DIR = REPO_ROOT / "tests"
+COVERAGE_DATA_RE = re.compile(r"^\.coverage\.shard-(?P<shard>[0-9]+)\.")
 
 
 def _resolve_test_dir(test_dir: Path) -> Path:
@@ -44,6 +47,85 @@ def split_shards(items: list[Path], nshards: int) -> list[list[Path]]:
     for idx, item in enumerate(items):
         shards[idx % nshards].append(item)
     return shards
+
+
+def discover_coverage_data(root: Path = REPO_ROOT) -> list[Path]:
+    """Return coverage.py data files under ``root`` without descending into docs."""
+
+    return sorted(path for path in root.glob(".coverage.*") if path.is_file())
+
+
+def discover_empty_shard_markers(root: Path = REPO_ROOT) -> list[Path]:
+    """Return sentinel files written when a CI shard produced no coverage data."""
+
+    return sorted(path for path in root.glob("EMPTY_SHARD_*") if path.is_file())
+
+
+def build_coverage_shard_report(root: Path, nshards: int) -> dict[str, object]:
+    """Return a JSON-ready report for combine-time shard artifact validation."""
+
+    coverage_files = discover_coverage_data(root)
+    markers = discover_empty_shard_markers(root)
+    labeled: dict[int, list[Path]] = {idx: [] for idx in range(1, nshards + 1)}
+    unlabeled: list[Path] = []
+    out_of_range: list[Path] = []
+    for path in coverage_files:
+        match = COVERAGE_DATA_RE.match(path.name)
+        if not match:
+            unlabeled.append(path)
+            continue
+        shard = int(match.group("shard"))
+        if 1 <= shard <= nshards:
+            labeled[shard].append(path)
+        else:
+            out_of_range.append(path)
+
+    def _rel(paths: list[Path]) -> list[str]:
+        return [str(path.relative_to(root)) for path in paths]
+
+    return {
+        "kind": "wide_coverage_shard_report",
+        "root": str(root),
+        "expected_shards": int(nshards),
+        "coverage_data_files": _rel(coverage_files),
+        "coverage_data_file_count": len(coverage_files),
+        "empty_shard_markers": _rel(markers),
+        "unlabeled_coverage_data_files": _rel(unlabeled),
+        "out_of_range_labeled_coverage_data_files": _rel(out_of_range),
+        "labeled_shards": {
+            str(idx): _rel(paths) for idx, paths in labeled.items() if paths
+        },
+        "missing_labeled_shards": [
+            idx for idx, paths in labeled.items() if not paths
+        ],
+    }
+
+
+def validate_coverage_shard_report(
+    report: dict[str, object], *, require_labeled_shards: bool
+) -> list[str]:
+    """Return validation failures for a combine-time coverage shard report."""
+
+    failures: list[str] = []
+    if int(report["coverage_data_file_count"]) == 0:
+        failures.append("no coverage.py data files were found")
+    markers = list(report["empty_shard_markers"])
+    if markers:
+        failures.append(f"empty shard markers found: {markers}")
+    out_of_range = list(report["out_of_range_labeled_coverage_data_files"])
+    if out_of_range:
+        failures.append(f"out-of-range labeled coverage data files found: {out_of_range}")
+    missing = list(report["missing_labeled_shards"])
+    if require_labeled_shards and missing:
+        failures.append(f"missing labeled coverage data for shards: {missing}")
+    return failures
+
+
+def write_json(path: Path, payload: dict[str, object]) -> None:
+    """Write deterministic JSON for CI artifacts and local diagnostics."""
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
 def _run(cmd: list[str], *, timeout: int | None, cwd: Path) -> None:
@@ -111,6 +193,20 @@ def parse_args() -> argparse.Namespace:
         help="Skip pytest execution and only combine/report existing shard coverage data.",
     )
     parser.add_argument(
+        "--require-shard-data",
+        action="store_true",
+        help=(
+            "Before combining, require one or more labeled .coverage.shard-N.* "
+            "files for every configured shard and reject EMPTY_SHARD_N markers."
+        ),
+    )
+    parser.add_argument(
+        "--shard-manifest",
+        type=Path,
+        default=None,
+        help="Optional JSON report path for combine-time coverage shard data.",
+    )
+    parser.add_argument(
         "--pytest-arg",
         action="append",
         default=[],
@@ -137,6 +233,15 @@ def main() -> None:
         return
 
     if args.combine_only:
+        report = build_coverage_shard_report(REPO_ROOT, int(args.shards))
+        if args.shard_manifest is not None:
+            write_json(args.shard_manifest, report)
+        failures = validate_coverage_shard_report(
+            report, require_labeled_shards=bool(args.require_shard_data)
+        )
+        if failures:
+            print(json.dumps(report, indent=2, sort_keys=True), flush=True)
+            raise SystemExit("wide coverage shard validation failed: " + "; ".join(failures))
         _run([sys.executable, "-m", "coverage", "combine"], timeout=120, cwd=REPO_ROOT)
         _run(
             [sys.executable, "-m", "coverage", "xml", "-o", str(args.xml)],

@@ -27,6 +27,13 @@ Current scoped claims
        statistics gate includes only Cyclone, Cyclone Miller, KBM, W7-X, and
        HSX. ETG nonlinear pilots and KAW/TEM stress lanes are not part of the
        release nonlinear parity claim unless a later gate index admits them.
+   * - Runtime/refactor artifact contract
+     - release-ready as infrastructure
+     - The large runtime and diagnostics refactor is covered as a behavior
+       preservation claim: extracted startup, chunk, result, validation-gate,
+       and artifact helpers keep the public runtime and NetCDF restart/append
+       contracts stable. This does not promote new physics validation,
+       nonlinear optimization, or performance claims.
    * - Quasilinear diagnostics
      - release-ready as diagnostics
      - Electrostatic linear heat/particle weights, spectra, and model-selection
@@ -34,17 +41,26 @@ Current scoped claims
        rejected on the seven-case train/holdout portfolio. The
        ``spectral_envelope_ridge`` candidate is accepted only as a scoped
        manuscript model-selection result, not as a runtime/TOML absolute-flux
-       predictor. Electromagnetic quasilinear field-channel normalization and
-       KBM calibration remain future gates.
+       predictor. Any future absolute-flux promotion additionally requires
+       finite passed nonlinear late-window convergence metadata for every
+       holdout: transient cutoff, running-mean drift, block/bootstrap SEM,
+       finite sample count, and source provenance. Electromagnetic
+       quasilinear field-channel normalization and KBM calibration remain
+       future gates.
    * - Differentiable geometry
-     - release-ready for reduced gates
+     - release-ready for equal-arc parity and reduced QH/Li383 gates
      - The ``vmec_jax -> booz_xform_jax -> SPECTRAX-GK`` bridge is validated
-       for zero-beta equal-arc field-line parity at ``mboz=nboz=21`` on the
-       tracked QH, QI, and shaped-tokamak fixtures. Reduced frequency,
-       quasilinear, and nonlinear-window-estimator gradients pass AD/finite-
-       difference gates on QH and Li383. The actual nonlinear finite-difference
-       audits are startup plumbing checks with false transport-average gates;
-       they do not validate production turbulence gradients.
+       for zero-beta equal-arc field-line parity where the current
+       ``mboz=nboz=21`` parity artifact passes. The fixed-resolution QI row
+       now passes after the Boozer half-mesh convention fix, with drift
+       mismatch about ``7.13e-2`` against the ``8e-2`` tolerance, and the
+       evaluated QI ``ntheta=8,16`` variants pass. This is still not a broad
+       QI transport or optimization claim. Reduced frequency, quasilinear, and
+       nonlinear-window-estimator gradients pass AD/finite-difference gates on
+       QH and Li383. The actual nonlinear
+       finite-difference audits are startup plumbing checks with false
+       transport-average gates; they do not validate production turbulence
+       gradients.
    * - Stellarator optimization examples
      - release-ready as reduced examples
      - The examples demonstrate differentiable reduced ITG objectives, UQ, and
@@ -69,6 +85,8 @@ Explicitly unpromoted claims
 Do not make these claims from the current artifacts:
 
 - universal or user-facing absolute quasilinear flux prediction;
+- treating refactor/test coverage as new physics validation or as a nonlinear
+  performance claim;
 - using ``spectral_envelope_ridge`` as a shipped runtime or TOML saturation
   option;
 - electromagnetic quasilinear transport calibration for KBM;
@@ -78,6 +96,9 @@ Do not make these claims from the current artifacts:
 - treating compact nonlinear finite-difference startup audits as saturated
   transport averages;
 - broad W7-X validation beyond the tracked single-flux-tube ITG windows;
+- broad QI validation beyond the fixed-resolution mode-21 equal-arc parity row;
+- citing even the fixed-resolution QI mode-21 row when the latest regenerated
+  parity artifact fails, errors, or is missing;
 - W7-X TEM / kinetic-electron validation;
 - W7-X long-window zonal recurrence/damping closure;
 - nonlinear multi-GPU speedup from whole-state sharding;
@@ -137,11 +158,33 @@ README claims, or manuscript claims.
 Artifact-backed details
 -----------------------
 
+Runtime/refactor state:
+
+- The current large refactor has extracted runtime startup, diagnostics,
+  adaptive chunks, result assembly, validation-gate helpers, zonal-validation
+  helpers, parallelization policy helpers, and runtime artifact boundaries into
+  smaller tested modules. This is a maintainability and public-behavior
+  preservation lane.
+- Restartable nonlinear NetCDF append now normalizes loaded diagnostics to the
+  persisted schema before concatenation. Monitored complex mode traces that are
+  transient in memory and not written to ``*.out.nc`` remain absent on reload,
+  so continuation artifacts do not mix persisted and non-persisted diagnostic
+  fields.
+- These refactor checks support release engineering only. They do not change
+  the benchmark, quasilinear, QI, nonlinear optimization, or performance claim
+  surface without the artifact gates listed below.
+
 Quasilinear model-selection state:
 
 - ``docs/_static/quasilinear_stellarator_train_holdout_report.json``:
   nonlinear inputs are valid, but the one-constant absolute-flux model remains
   ``passed = false`` with held-out mean relative error about ``2.57``.
+- ``tools/check_nonlinear_window_convergence.py`` and
+  ``spectraxgk.quasilinear_window`` provide the reusable late-window
+  convergence metadata required before any future holdout report can be
+  promoted to ``calibrated_absolute_flux``. This is a metadata/finite-window
+  guardrail over existing traces, not a substitute for new long nonlinear
+  simulations.
 - ``docs/_static/quasilinear_saturation_rule_sweep.json``:
   no simple saturation rule is accepted. Positive-growth mixing length is the
   least-bad simple rule with mean held-out relative error about ``2.51``;
@@ -168,9 +211,16 @@ Nonlinear benchmark state:
 
 Differentiable-geometry state:
 
-- ``docs/_static/vmec_boozer_parity_matrix.json`` passes the current
-  multi-equilibrium zero-beta equal-arc field-line convention gate at
-  ``mboz=nboz=21``.
+- ``docs/_static/vmec_boozer_parity_matrix.json`` is the source of truth for
+  the multi-equilibrium zero-beta equal-arc field-line convention gate at
+  ``mboz=nboz=21``. The current regenerated artifact passes QH, fixed-
+  resolution QI, and shaped-tokamak rows. The QI row
+  ``nfp3_QI_fixed_resolution_final`` has drift mismatch about ``7.13e-2``
+  against the ``8e-2`` release tolerance, and evaluated QI ``ntheta=8,16``
+  robustness variants pass. The full declared QI seed campaign is still
+  artifact-limited because three QI input variants have no bundled ``wout``
+  reference. The builder rejects ``mboz,nboz < 21`` so QI is not silently
+  evaluated on the under-resolved low-mode setting.
 - ``docs/_static/vmec_boozer_gradient_holdout_matrix.json`` passes reduced
   linear, quasilinear, and nonlinear-window-estimator gradient gates on QH and
   Li383 with maximum relative mismatch about ``2.7e-2``.
@@ -221,7 +271,9 @@ Before tagging a new public release:
 
 1. Run the fast shard set, docs build, package build, repo hygiene, mypy, and
    wide coverage matrix.
-2. Confirm the coverage workflow reports the package-wide ``95%`` gate.
+2. Confirm the coverage workflow reports the package-wide ``95%`` gate and
+   that ``coverage-wide-shard-manifest.json`` has labeled data for every wide
+   coverage shard.
 3. Confirm README and this page agree with
    ``docs/_static/manuscript_readiness_status.json`` and
    ``docs/_static/open_research_lane_status.json``.

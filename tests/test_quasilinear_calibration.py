@@ -21,6 +21,10 @@ from spectraxgk.quasilinear_calibration import (
     quasilinear_calibration_report,
     write_quasilinear_calibration_report,
 )
+from spectraxgk.quasilinear_window import (
+    NonlinearWindowConvergenceConfig,
+    nonlinear_window_convergence_report,
+)
 
 
 def _load_build_tool_module():
@@ -39,6 +43,23 @@ def _load_build_tool_module():
     return module
 
 
+def _valid_window_stats(case: str = "holdout") -> dict:
+    t = np.linspace(0.0, 120.0, 121)
+    heat = 2.0 + 0.02 * np.sin(2.0 * np.pi * t / 12.0)
+    return nonlinear_window_convergence_report(
+        t,
+        heat,
+        case=case,
+        source_artifact=f"{case}.csv",
+        config=NonlinearWindowConvergenceConfig(
+            transient_fraction=0.5,
+            min_samples=40,
+            max_running_mean_rel_drift=0.03,
+            max_sem_rel=0.03,
+        ),
+    )
+
+
 def test_quasilinear_calibration_report_tracks_train_holdout_claim_level(
     tmp_path: Path,
 ) -> None:
@@ -52,6 +73,7 @@ def test_quasilinear_calibration_report_tracks_train_holdout_claim_level(
             saturation_rule="mixing_length",
             geometry="cyclone",
             electron_model="adiabatic",
+            nonlinear_window_stats=_valid_window_stats("train"),
         ),
         {
             "case": "cyclone_ky0p3",
@@ -61,6 +83,7 @@ def test_quasilinear_calibration_report_tracks_train_holdout_claim_level(
             "saturation_rule": "mixing_length",
             "geometry": "cyclone",
             "electron_model": "adiabatic",
+            "nonlinear_window_stats": _valid_window_stats("holdout"),
         },
     ]
 
@@ -123,6 +146,33 @@ def test_quasilinear_calibration_report_demotes_missing_holdout_or_failed_gate()
     assert failed["claim_level"] == "calibration_dataset"
     assert failed["by_split"]["holdout"]["max_abs_relative_error"] == pytest.approx(1.0)
 
+    missing_window_stats = quasilinear_calibration_report(
+        [
+            QuasilinearCalibrationPoint(
+                case="train",
+                split="train",
+                predicted_heat_flux=1.0,
+                observed_heat_flux=1.0,
+                saturation_rule="mixing_length",
+            ),
+            QuasilinearCalibrationPoint(
+                case="holdout",
+                split="holdout",
+                predicted_heat_flux=0.95,
+                observed_heat_flux=1.0,
+                saturation_rule="mixing_length",
+            ),
+        ],
+        saturation_rule="mixing_length",
+        holdout_mean_rel_gate=0.2,
+    )
+    assert missing_window_stats["passed"] is False
+    assert missing_window_stats["claim_level"] == "calibration_dataset"
+    assert (
+        "missing nonlinear_window_stats"
+        in missing_window_stats["metadata"]["holdout_window_convergence"]["failures"][0]
+    )
+
 
 def test_quasilinear_calibration_report_can_fit_one_train_scale() -> None:
     points = [
@@ -132,6 +182,7 @@ def test_quasilinear_calibration_report_can_fit_one_train_scale() -> None:
             predicted_heat_flux=0.25,
             observed_heat_flux=1.0,
             saturation_rule="mixing_length",
+            nonlinear_window_stats=_valid_window_stats("train_scale"),
         ),
         QuasilinearCalibrationPoint(
             case="holdout",
@@ -139,6 +190,7 @@ def test_quasilinear_calibration_report_can_fit_one_train_scale() -> None:
             predicted_heat_flux=0.5,
             observed_heat_flux=2.2,
             saturation_rule="mixing_length",
+            nonlinear_window_stats=_valid_window_stats("holdout_scale"),
         ),
     ]
 
@@ -723,6 +775,7 @@ def test_build_calibration_report_tool_can_fit_train_scale(tmp_path: Path) -> No
                     "predicted_heat_flux": 0.25,
                     "observed_heat_flux": 1.0,
                     "saturation_rule": "mixing_length",
+                    "nonlinear_window_stats": _valid_window_stats("tool_train"),
                 },
                 {
                     "case": "holdout",
@@ -730,6 +783,7 @@ def test_build_calibration_report_tool_can_fit_train_scale(tmp_path: Path) -> No
                     "predicted_heat_flux": 0.5,
                     "observed_heat_flux": 2.2,
                     "saturation_rule": "mixing_length",
+                    "nonlinear_window_stats": _valid_window_stats("tool_holdout"),
                 },
             ]
         ),

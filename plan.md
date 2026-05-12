@@ -75,14 +75,24 @@ As of 2026-05-11:
   electrostatic quasilinear diagnostics/model selection, reduced
   differentiable-geometry gates, independent-work parallelization, and
   profiler-backed nonlinear hot-path localization.
+- Large runtime/diagnostic refactor work is release engineering: extracted
+  startup, chunk, result, validation-gate, zonal-validation, parallelization-
+  policy, and artifact helpers preserve public behavior, including restartable
+  NetCDF append schema. It is not a new physics-validation, nonlinear-
+  optimization, or speedup claim.
 - The quasilinear one-constant and simple saturation-rule absolute-flux models
   remain rejected. The accepted `spectral_envelope_ridge` candidate is a
   model-development result, not a runtime/TOML absolute-flux predictor.
-- The `vmec_jax -> booz_xform_jax -> SPECTRAX-GK` path is closed for
-  zero-beta equal-arc parity at `mboz=nboz=21` and for reduced
-  frequency/quasilinear/nonlinear-window-estimator gradients on QH/Li383; it
-  is not closed for production nonlinear turbulence gradients or optimized-
-  equilibrium nonlinear heat-flux audits.
+- The `vmec_jax -> booz_xform_jax -> SPECTRAX-GK` path is closed only for
+  artifact-passing zero-beta equal-arc parity rows at `mboz=nboz=21` and for
+  reduced frequency/quasilinear/nonlinear-window-estimator gradients on
+  QH/Li383; it is not closed for production nonlinear turbulence gradients or
+  optimized-equilibrium nonlinear heat-flux audits. The fixed-resolution QI
+  entry passes after the Boozer half-mesh convention fix, with drift mismatch
+  about `7.13e-2` against the `8e-2` tolerance, and evaluated QI `ntheta=8,16`
+  robustness variants pass. The full QI seed campaign remains artifact-limited
+  by missing bundled `wout` references; do not promote it to broad QI
+  validation, QI calibration, or QI nonlinear optimization.
 - Parallelization claims are production-ready only for independent `k_y`
   scans, quasilinear/UQ ensembles, and similar independent work. Whole-state
   nonlinear sharding remains an identity/profiler artifact and should not be
@@ -301,6 +311,10 @@ and benchmark behavior.
 2. Split runtime orchestration.
    - Extract input/config parsing, run dispatch, restart handling, progress/ETA,
      artifact writing, and plotting hooks out of `runtime.py`.
+   - Current status: startup helpers, adaptive chunk loops, runtime result
+     assembly, runtime artifact diagnostics, and pure runtime policies are
+     extracted and tested while preserving legacy `spectraxgk.runtime` private
+     helper exports.
    - Add tests for default executable behavior, default TOML selection, restart
      continuation, ETA output, and plot artifact dispatch.
 
@@ -308,18 +322,40 @@ and benchmark behavior.
    - Move geometry cache construction, linked parallel derivative maps,
      field solves, velocity operators, and branch/frequency extraction into
      tested submodules.
+   - Current status: geometry-dependent `LinearCache` construction,
+     gyroaverage tables, moment-space cache arrays, and collision/
+     hypercollision damping factors live in `src/spectraxgk/linear_cache.py`,
+     with legacy exports preserved through `src/spectraxgk/linear.py`.
+   - Current status: Hermite/Laguerre ladder operators, quasineutrality,
+     velocity-space energy/drive coefficients, and `H` field coupling live in
+     `src/spectraxgk/linear_moments.py`, with legacy exports preserved through
+     `src/spectraxgk/linear.py` and direct imports from `spectraxgk.terms`.
+   - Current status: parameter pytrees, linear term toggles, term-config
+     conversion, validation helpers, and implicit-preconditioner policy live in
+     `src/spectraxgk/linear_params.py`, with legacy exports preserved through
+     `src/spectraxgk/linear.py`.
+   - Current status: linked-boundary FFT maps and linked-end damping profiles
+     live in `src/spectraxgk/linear_linked.py`, with legacy private exports
+     preserved through `src/spectraxgk/linear.py`.
    - Keep operator-level tests tied to equations and branch-continuity gates.
 
 4. Split nonlinear assembly.
    - Separate bracket transforms, field solve calls, diagnostic extraction,
      Hermitian projection, spectral/grid Laguerre modes, and fixed-step
      integrators.
+   - Current status: resolved-diagnostic packing and time-sampling helpers live
+     in `src/spectraxgk/nonlinear_diagnostics.py`, with legacy private exports
+     preserved through `src/spectraxgk/nonlinear.py`.
    - Preserve current profiler labels so performance artifacts remain
      comparable.
 
 5. Split benchmark policy.
    - Break `benchmarks.py` into data loading, fit metrics, window metrics,
      gate reports, and figure builders.
+   - Current status: reference loaders/pure fit helpers live in
+     `src/spectraxgk/benchmark_helpers.py`, and normalization/Krylov policy
+     constants live in `src/spectraxgk/benchmark_defaults.py` while
+     `src/spectraxgk/benchmarks.py` preserves the public compatibility surface.
    - Keep all benchmark tolerance policy machine-readable.
 
 6. Refactor exit gates.
@@ -1127,6 +1163,14 @@ Exit gate:
 
 ## Running Log
 
+### 2026-05-12
+
+- Worker C extracted benchmark scan-window, fit-signal, mode-only, and
+  ky-batching policies from `spectraxgk.benchmarks` into
+  `spectraxgk.benchmark_scan`, added focused policy tests, and registered the
+  module in the validation coverage manifest/API docs while preserving the
+  public `spectraxgk.benchmarks` import surface.
+
 ### 2026-04-29
 
 - Archived the historical 2,755-line root `plan.md` into private repo `rogeriojorge/spectraxgk_plan`.
@@ -1831,10 +1875,10 @@ Exit gate:
     enforcing the default Boozer parity mode count to ``mboz=nboz=21``:
     ``cvdrift=3.50e-2``, ``gbdrift=3.50e-2``, ``cvdrift0=3.03e-2``, and
     ``gbdrift0=3.03e-2``;
-  - the release claim is now closed for the tracked zero-beta Boozer
-    equal-arc field-line, metric, and drift convention, while finite-beta,
-    multi-equilibrium drift parity and solver-objective gradients remain
-    required before stellarator heat-flux optimization claims.
+  - historical note: this closed the then-tracked zero-beta Boozer equal-arc
+    field-line, metric, and drift convention for that artifact. Current release
+    wording must defer to `docs/release_scope.rst`, where regenerated failing
+    rows are open rather than release-backed.
 - Bounded follow-up probe after the drift subgate:
   - ``LandremanPaul2021_QA_lowres`` is not usable for this runtime EIK parity
     path as shipped in ``vmec_jax`` because its bundled ``wout`` reports
@@ -1844,10 +1888,9 @@ Exit gate:
     of ``7.10e-3``;
   - ``nfp3_QI_fixed_resolution_final`` passes core/metric smoke gates but fails
     the drift smoke gate with ``mboz=nboz=8`` at worst normalized mismatch
-    ``1.82e-1``; increasing the Boozer parity mode count to ``21`` reduces the
-    QI drift mismatch to ``7.13e-2`` and passes the release drift tolerance,
-    which identifies the immediate issue as spectral truncation rather than a
-    normalization change;
+    ``1.82e-1``; the current mode-21 regeneration passes with QI drift mismatch
+    ``7.13e-2`` against the ``8e-2`` tolerance after fixing the Boozer
+    half-mesh radial-index convention;
   - a trial shear-HNGC correction using the wrong input-convention factor was
     explicitly rejected because it worsened the tracked QH metric gate.
 - Enforced ``mboz,nboz >= 21`` for the VMEC/Boozer equal-arc parity helpers so
@@ -1855,9 +1898,10 @@ Exit gate:
 - Added ``tools/build_vmec_boozer_parity_matrix.py`` and
   ``docs/_static/vmec_boozer_parity_matrix.{png,pdf,json,csv}`` to make the
   mode-21 result replayable across the tracked QH, QI, and shaped-tokamak
-  examples. All three current rows pass the equal-arc core, scalar, ``bgrad``,
-  metric, and drift subgates at ``mboz=nboz=21``; the QI drift row remains the
-  limiting release-level value at ``7.13e-2`` against the ``8e-2`` tolerance.
+  examples. The current regenerated artifact passes all matrix rows; evaluated
+  QI robustness variants at ``ntheta=8`` and ``ntheta=16`` pass, while three
+  input-only QI seeds remain artifact-limited by missing bundled ``wout``
+  references.
 
 ### 2026-04-30
 
@@ -1871,9 +1915,10 @@ Exit gate:
     and TEM/kinetic-electron stellarator extension explicitly deferred;
   - in this narrower scope, the quasilinear lane is closed as a validated
     diagnostic/model-selection negative result rather than as an absolute-flux
-    predictor, VMEC/Boozer equal-arc geometry parity is closed at
-    ``mboz=nboz=21``, and reduced differentiable stellarator ITG optimization
-    is closed with AD/FD gates;
+    predictor, VMEC/Boozer equal-arc geometry parity is closed for the current
+    artifact-passing rows at ``mboz=nboz=21`` including fixed-resolution QI,
+    and reduced differentiable stellarator ITG optimization is closed with
+    AD/FD gates;
   - the active manuscript blocker is now production solver-objective geometry
     gradients through the mode-21 VMEC/Boozer bridge, while profiler-backed
     nonlinear speedup claims remain partial and require fresh CPU/GPU profiler
@@ -4187,3 +4232,314 @@ Exit gate:
 - Verification target for this tranche:
   - strict Sphinx docs build under the 300 s documentation budget;
   - `git diff --check` for whitespace/doc hygiene.
+
+## 2026-05-11 Docs Synchronization for Refactor and QI Scope
+
+- Synchronized the owned docs for the current push without touching source:
+  `README.md`, `docs/release_scope.rst`, `docs/code_structure.rst`,
+  `docs/geometry.rst`, `docs/roadmap.rst`, and this plan.
+- Documented the large runtime/diagnostic refactor as a release-engineering
+  claim only:
+  - extracted startup, chunk, result, runtime artifact, validation-gate,
+    zonal-validation, and nonlinear-parallel policy helpers preserve public
+    behavior and make future refactors safer;
+  - restartable NetCDF continuation appends now stay on the persisted diagnostic
+    schema, so transient in-memory traces that are not written to `.out.nc` do
+    not reappear when a previous artifact is loaded for append;
+  - this does not promote new physics validation, broad nonlinear speedup, or
+    production nonlinear optimization.
+- Tightened the QI language:
+  - the current QI result is the fixed-resolution
+    `nfp3_QI_fixed_resolution_final` row in
+    `docs/_static/vmec_boozer_parity_matrix.{json,png,csv,pdf}`;
+  - the row is admitted only with `mboz=nboz=21`, and the current regenerated
+    artifact passes the QI drift subgate with mismatch about `7.13e-2` against
+    the `8e-2` release tolerance after the Boozer half-mesh convention fix;
+  - evaluated QI robustness variants at `ntheta=8` and `ntheta=16` pass;
+  - the full QI seed campaign is still artifact-limited because three input-
+    only QI seeds have no bundled `wout` reference;
+  - the robust part is the replayable mode-floor and evaluated-grid gate, not
+    broad QI nonlinear transport validation, QI quasilinear calibration, or QI
+    optimization.
+- Verification for this docs synchronization:
+  - `python -m sphinx -b html -W docs docs/_build/html` passed;
+  - `git diff --check -- README.md plan.md docs/code_structure.rst docs/geometry.rst docs/release_scope.rst docs/roadmap.rst` passed.
+
+## 2026-05-12 Benchmark Defaults Refactor Tranche
+
+- Continued the behavior-preserving refactor lane after the green CI run for
+  `ece3c81`.
+- Split shipped benchmark normalization constants and Krylov default policies
+  from `src/spectraxgk/benchmarks.py` into
+  `src/spectraxgk/benchmark_defaults.py`.
+- Preserved compatibility by re-exporting the constants from
+  `spectraxgk.benchmarks` and adding a test that every
+  `benchmark_defaults.__all__` name is object-identical through the legacy
+  benchmark module.
+- Updated the API and architecture docs to expose the new benchmark-default
+  module and keep the refactor status current.
+- Verification for this tranche:
+  - `python -m pytest tests/test_normalization.py tests/test_benchmarks_helpers.py -q`
+    passed;
+  - `python -m pytest tests/test_benchmarks.py tests/test_benchmarks_runner_branches.py tests/test_compare_gx_rhs_terms.py -q`
+    passed;
+  - `ruff check src/spectraxgk/benchmark_defaults.py src/spectraxgk/benchmarks.py tests/test_normalization.py docs/conf.py`
+    passed;
+  - strict Sphinx docs build passed.
+
+## 2026-05-12 Runtime Policies Refactor Tranche
+
+- Split pure runtime policy helpers from `src/spectraxgk/runtime.py` into
+  `src/spectraxgk/runtime_policies.py`:
+  - linear solver-name normalization;
+  - combined-ky scan policy detection;
+  - midplane/zero-kx index selection;
+  - nonlinear monitored-mode selection;
+  - nonlinear step-count inference;
+  - runtime external-phi source policy.
+- Preserved the existing `spectraxgk.runtime` compatibility surface by
+  importing and re-exporting the same helper objects, with a new identity test
+  over `runtime_policies.__all__`.
+- Updated API, architecture, and roadmap docs so the runtime refactor state is
+  current and scoped as release engineering rather than a physics or speedup
+  claim.
+- Verification for this tranche:
+  - `ruff check src/spectraxgk/runtime.py src/spectraxgk/runtime_policies.py tests/test_runtime_helpers.py`
+    passed as part of the touched-file lint shard;
+  - `python -m pytest tests/test_runtime_helpers.py tests/test_normalization.py tests/test_benchmarks_helpers.py -q`
+    passed;
+  - `python -m pytest tests/test_runtime_runner.py -q -m integration --override-ini='addopts='`
+    passed in 64 s;
+  - `python -m py_compile src/spectraxgk/runtime.py src/spectraxgk/runtime_policies.py src/spectraxgk/benchmark_defaults.py src/spectraxgk/benchmarks.py`
+    passed.
+
+## 2026-05-12 Nonlinear Diagnostic Helper Refactor Tranche
+
+- Split resolved-diagnostic packing and sample-retention helpers from
+  `src/spectraxgk/nonlinear.py` into
+  `src/spectraxgk/nonlinear_diagnostics.py`.
+- Preserved legacy private imports from `spectraxgk.nonlinear` and added an
+  identity test over `nonlinear_diagnostics.__all__`.
+- This tranche intentionally does not touch the nonlinear bracket, field solve,
+  IMEX, or fixed-step integration math; it only reduces the diagnostic surface
+  of the large nonlinear module and makes future tests/refactors cheaper.
+- Verification for this tranche:
+  - `ruff check src/spectraxgk/nonlinear.py src/spectraxgk/nonlinear_diagnostics.py tests/test_nonlinear_helpers_extra.py docs/conf.py`
+    passed;
+  - `python -m pytest tests/test_nonlinear_helpers_extra.py -q` passed;
+  - `python -m pytest tests/test_nonlinear.py -q -m integration --override-ini='addopts=' --maxfail=1`
+    passed in 47 s;
+  - strict Sphinx docs build passed.
+
+## 2026-05-12 Nonlinear Helper/Operator Refactor Tranche
+
+- Split nonlinear helper policies from `src/spectraxgk/nonlinear.py` into
+  `src/spectraxgk/nonlinear_helpers.py`:
+  - GX real-FFT Hermitian projection;
+  - GX omega/gamma mode masks and nonlinear CFL omega components;
+  - fixed-mode state projection;
+  - collision/hypercollision split damping and update policies;
+  - reusable nonlinear IMEX linear-operator construction.
+- Preserved legacy private/public imports from `spectraxgk.nonlinear` and added
+  an identity test over `nonlinear_helpers.__all__`.
+- This tranche intentionally does not change the nonlinear bracket, field
+  solves, time-stepping formulas, or collision math; it reduces the monolithic
+  nonlinear runtime surface and makes projection/collision/IMEX helper tests
+  cheaper to target.
+- Verification for this tranche:
+  - `ruff check src/spectraxgk/nonlinear.py src/spectraxgk/nonlinear_helpers.py tests/test_nonlinear_helpers_extra.py tests/test_nonlinear.py`
+    passed;
+  - `python -m py_compile src/spectraxgk/nonlinear.py src/spectraxgk/nonlinear_helpers.py`
+    passed;
+  - `python -m pytest tests/test_nonlinear_helpers_extra.py -q` passed.
+
+## 2026-05-12 Linear Linked-Boundary Refactor Tranche
+
+- Split linked-field-line FFT map construction and linked-end damping profile
+  construction from `src/spectraxgk/linear.py` into
+  `src/spectraxgk/linear_linked.py`.
+- Preserved the existing `spectraxgk.linear` private-helper import surface with
+  an identity test over `linear_linked.__all__`.
+- This tranche does not change linear RHS, field solve, integrator, or
+  cache-construction physics; it isolates the linked-boundary indexing policy
+  so future tests can target it directly.
+- Verification for this tranche:
+  - `ruff check src/spectraxgk/linear.py src/spectraxgk/linear_linked.py tests/test_linear_helpers_extra.py docs/conf.py`
+    passed;
+  - `python -m pytest tests/test_linear_helpers_extra.py tests/test_linear.py::test_build_linear_cache_restores_linked_end_damping_on_full_fft_grid tests/test_linear.py::test_build_linear_cache_keeps_linked_end_damping_on_selected_positive_ky_grid tests/test_linear.py::test_assemble_rhs_terms_scales_linked_end_damping_by_step_dt -q`
+    passed;
+  - `python -m pytest tests/test_linear.py -q -m integration --override-ini='addopts=' --maxfail=1`
+    passed in 41 s;
+  - strict Sphinx docs build passed.
+
+## 2026-05-12 Linear Parameter Policy Refactor Tranche
+
+- Split `LinearParams`, `LinearTerms`, linear/term-config conversion helpers,
+  scalar/array validation helpers, species-array coercion, x64 detection, and
+  implicit-preconditioner policy from `src/spectraxgk/linear.py` into
+  `src/spectraxgk/linear_params.py`.
+- Preserved the existing public and legacy private import surface through
+  `spectraxgk.linear`, with identity tests over `linear_params.__all__`.
+- This tranche does not change linear cache construction, field solves, RHS
+  kernels, integration methods, or benchmark physics; it only isolates the
+  parameter and validation layer so operator code is easier to test and audit.
+- Updated the validation coverage manifest and regenerated
+  `docs/_static/validation_coverage_manifest_summary.json` so the extracted
+  module has explicit reference anchors, physics/numerics contracts, fast tests,
+  and next-test obligations.
+- Verification for this tranche:
+  - `ruff check src/spectraxgk/linear.py src/spectraxgk/linear_params.py tests/test_linear_helpers_extra.py docs/conf.py`
+    passed;
+  - `python -m pytest tests/test_linear_helpers_extra.py tests/test_linear.py::test_linear_param_validation tests/test_linear.py::test_linear_cache_tree_roundtrip tests/test_linear.py::test_linear_rhs_multispecies_shapes tests/test_validation_coverage_manifest.py -q`
+    passed;
+  - `python -m pytest tests/test_linear.py tests/test_linear_krylov_core.py tests/test_terms_assembly.py -q -m 'not slow' --override-ini='addopts=' --maxfail=1`
+    passed with 81 tests;
+  - `mypy src/spectraxgk/linear.py src/spectraxgk/linear_params.py` passed;
+  - strict Sphinx docs build passed.
+
+## 2026-05-12 Linear Cache Refactor Tranche
+
+- Split `LinearCache`, `build_linear_cache`, cache-array builders, gyroaverage
+  cache construction, and collision/hypercollision damping assembly from
+  `src/spectraxgk/linear.py` into `src/spectraxgk/linear_cache.py`.
+- Preserved the existing public and legacy private import surface through
+  `spectraxgk.linear`, with identity tests over `linear_cache.__all__`.
+- This tranche does not change field solves, RHS terms, integrator algorithms,
+  or benchmark physics. The only code-path change inside the moved cache
+  builder is replacing a local call to `linear.shift_axis` with an equivalent
+  private cache-local shift helper, avoiding a circular import.
+- Updated API docs, architecture docs, and the validation coverage manifest so
+  the extracted module has explicit physics/numerics contracts and fast-test
+  ownership.
+- Verification for this tranche:
+  - `ruff check src/spectraxgk/linear.py src/spectraxgk/linear_cache.py tests/test_linear_helpers_extra.py docs/conf.py`
+    passed;
+  - `python -m pytest tests/test_linear_helpers_extra.py tests/test_linear.py::test_linear_cache_tree_roundtrip tests/test_linear.py::test_build_linear_cache_multispecies tests/test_linear.py::test_build_linear_cache_accepts_sampled_geometry_contract tests/test_validation_coverage_manifest.py -q`
+    passed;
+  - `python -m pytest tests/test_linear.py tests/test_linear_krylov_core.py tests/test_terms_assembly.py -q -m 'not slow' --override-ini='addopts=' --maxfail=1`
+    passed with 81 tests;
+  - `python -m pytest tests/test_geometry.py::test_build_linear_cache_uses_linked_streaming_for_fix_aspect_imported_geometry tests/test_geometry.py::test_sampled_flux_tube_geometry_matches_salpha_profiles tests/test_geometry.py::test_ensure_flux_tube_geometry_data_reuses_sampled_input -q`
+    passed;
+  - `mypy src/spectraxgk/linear.py src/spectraxgk/linear_cache.py` passed;
+  - `python tools/check_validation_coverage_manifest.py --skip-artifact-check` passed;
+  - strict Sphinx docs build passed.
+
+## 2026-05-12 Linear Moment Primitive Refactor Tranche
+
+- Split Hermite/Laguerre ladder operators, nonperiodic moment shifts,
+  electrostatic quasineutrality, velocity-space energy/diamagnetic-drive
+  coefficients, and `build_H` field coupling from `src/spectraxgk/linear.py`
+  into `src/spectraxgk/linear_moments.py`.
+- Updated `src/spectraxgk/terms/fields.py` and
+  `src/spectraxgk/terms/assembly.py` to import these primitives directly from
+  the extracted modules instead of depending on the large `spectraxgk.linear`
+  compatibility surface. This narrows import cycles while keeping the public
+  `spectraxgk.linear` symbols object-identical.
+- Updated API docs, architecture docs, and the validation coverage manifest so
+  the extracted moment module has explicit Hermite/Laguerre, field-coupling,
+  and quasineutrality contracts.
+- Verification for this tranche:
+  - `ruff check src/spectraxgk/linear.py src/spectraxgk/linear_moments.py src/spectraxgk/terms/fields.py src/spectraxgk/terms/assembly.py tests/test_linear_helpers_extra.py docs/conf.py`
+    passed;
+  - `python -m pytest tests/test_linear_helpers_extra.py tests/test_linear.py::test_grad_z_periodic_sine tests/test_linear.py::test_quasineutrality_simple tests/test_linear.py::test_quasineutrality_charge_sign tests/test_linear.py::test_build_H_adds_phi_to_m0 tests/test_linear.py::test_build_H_adds_apar_to_m1 tests/test_linear.py::test_build_H_adds_bpar_to_m0 tests/test_terms_fields.py tests/test_terms_assembly.py tests/test_validation_coverage_manifest.py -q`
+    passed;
+  - `python -m pytest tests/test_linear.py tests/test_linear_krylov_core.py tests/test_terms_assembly.py tests/test_terms_fields.py -q -m 'not slow' --override-ini='addopts=' --maxfail=1`
+    passed with 86 tests;
+  - `mypy src/spectraxgk/linear.py src/spectraxgk/linear_moments.py src/spectraxgk/terms/fields.py src/spectraxgk/terms/assembly.py`
+    passed;
+  - `python tools/check_validation_coverage_manifest.py --skip-artifact-check` passed;
+  - strict Sphinx docs build passed.
+
+## 2026-05-12 Linear Parallel RHS Refactor Tranche
+
+- Split the gated velocity-parallel linear RHS dispatcher, Hermite sharding
+  helpers, electrostatic streaming helper, and fused electrostatic-slice kernel
+  cache from `src/spectraxgk/linear.py` into
+  `src/spectraxgk/linear_parallel.py`.
+- Preserved the existing public and legacy private import surface through
+  `spectraxgk.linear`, with an identity test over `linear_parallel.__all__`.
+- This tranche does not change serial RHS assembly, field solves, integrator
+  algorithms, or physics terms. The moved dispatcher keeps serial fallback as a
+  runtime import of `spectraxgk.linear.linear_rhs_cached` so the cached serial
+  RHS remains the source of truth.
+- Updated API docs, architecture docs, and the validation coverage manifest so
+  the extracted parallel module has explicit identity, fail-closed, and
+  Hermite-sharded RHS contracts.
+- Verification for this tranche:
+  - `python -m ruff format src/spectraxgk/linear.py src/spectraxgk/linear_parallel.py tests/test_linear_helpers_extra.py`
+    passed with files already formatted;
+  - `python -m ruff check src/spectraxgk/linear.py src/spectraxgk/linear_parallel.py tests/test_linear_helpers_extra.py`
+    passed after marking compatibility imports as intentional re-exports;
+  - `mypy src/spectraxgk/linear.py src/spectraxgk/linear_parallel.py`
+    passed;
+  - `python -m pytest tests/test_linear_helpers_extra.py tests/test_validation_coverage_manifest.py -q`
+    passed with 60 tests;
+  - `python -m pytest tests/test_velocity_sharding.py -q` passed with 30
+    tests and 8 skips;
+  - `python tools/check_validation_coverage_manifest.py --skip-artifact-check`
+    passed.
+
+## 2026-05-12 CI Coverage Hygiene Tranche
+
+- Tightened the wide coverage combine path so CI can reject missing labeled
+  shard data, empty shard markers, and out-of-range shard artifacts before
+  running `coverage combine` or refreshing the package-wide Codecov flag.
+- Added a deterministic `coverage-wide-shard-manifest.json` report for the
+  wide coverage combine job.
+- Updated README, testing docs, and the release checklist from the stale
+  24-shard examples to the current 48-shard CI matrix.
+- Aligned `tools/run_tests_fast.py --test-dir tests` with the wide coverage
+  helper by resolving relative test directories against the repository root.
+- Verification for this tranche:
+  - `python -m pytest -q tests/test_run_wide_coverage_gate.py tests/test_run_tests_fast.py`
+    passed with 13 tests;
+  - `python tools/run_wide_coverage_gate.py --shards 3 --test-dir tests --dry-run`
+    printed deterministic shard membership with repo-root-relative test
+    discovery;
+  - `ruff check tools/run_wide_coverage_gate.py tools/run_tests_fast.py tests/test_run_wide_coverage_gate.py tests/test_run_tests_fast.py`
+    passed;
+  - `python -m py_compile tools/run_wide_coverage_gate.py tools/run_tests_fast.py`
+    passed;
+  - `git diff --check -- .github/workflows/ci.yml tools/run_wide_coverage_gate.py tools/run_tests_fast.py tests/test_run_wide_coverage_gate.py tests/test_run_tests_fast.py README.md docs/testing.rst docs/release_scope.rst plan.md`
+    passed.
+
+## 2026-05-12 Quasilinear Promotion Guardrail Tranche
+
+- Added `tools/check_quasilinear_promotion_guardrails.py`, a fast metadata
+  audit for quasilinear absolute-flux promotion. It scans tracked
+  train/holdout calibration reports, saturation/candidate reports, nonlinear
+  input-validation blocks, promotion gates, and claim-scope docs.
+- The guard requires finite nonlinear window means and standard deviations,
+  train/holdout nonlinear and quasilinear artifact provenance, passed held-out
+  gates before any `calibrated_absolute_flux` claim, and explicit docs wording
+  that current diagnostics are not runtime/TOML absolute-flux predictors.
+- Wrote `docs/_static/quasilinear_promotion_guardrails.json` with a standard
+  `gate_report`, and refreshed the JSON validation-gate index to include the
+  new `quasilinear_absolute_flux_promotion_guardrails` row.
+- Updated quasilinear, manuscript-figure, and testing docs so the new guardrail
+  is part of the research-grade validation surface without broadening the
+  physics claim.
+- Verification for this tranche:
+  - `python -m pytest tests/test_quasilinear_promotion_guardrails.py -q`
+    passed;
+  - `python tools/check_quasilinear_promotion_guardrails.py --out-json docs/_static/quasilinear_promotion_guardrails.json`
+    passed with `failed_gates=0`;
+  - `python -m pytest tests/test_check_quasilinear_calibration_inputs.py tests/test_plot_quasilinear_dataset_sufficiency.py -q`
+    passed;
+  - `python -m pytest tests/test_make_validation_gate_index.py -q`
+    passed.
+
+## 2026-05-12 Runtime Orchestration Refactor Tranche
+
+- Extracted runtime coordination policy into `src/spectraxgk/runtime_orchestration.py`:
+  progress/ETA message policy, combined-ky scan batch execution through an
+  injected dependency surface, and nonlinear restart/checkpoint artifact handoff
+  through an injected artifact dependency surface.
+- Kept legacy monkeypatch seams intact by leaving `spectraxgk.runtime` and
+  `spectraxgk.runtime_artifacts` as thin wrappers that pass their current module
+  globals into the extracted helpers at call time.
+- Added direct tests for progress/ETA policy, nonlinear artifact policy
+  resolution, and checkpoint restart handoff, while retaining the existing
+  runtime wrapper and artifact monkeypatch regressions.
+- Updated API docs, architecture docs, and the validation coverage manifest so
+  the new orchestration module is tracked as a runtime coverage/refactor lane.
