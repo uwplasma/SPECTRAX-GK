@@ -652,6 +652,12 @@ performance claims:
   including final-state-only profiling mode and the config-runner route through
   ``TimeConfig.state_sharding``. These are numerical-identity and control-flow
   gates, not speedup claims.
+- ``tests/test_nonlinear_domain_parallel.py`` and
+  ``tests/test_nonlinear_spectral_communication_gate.py`` lock the diagnostic
+  nonlinear decomposition gates. The first covers one-cell halo chunks for a
+  bounded local stencil. The second covers split/reassemble spectral layout
+  identity for FFT round trip, pseudo-spectral bracket, and field-solve layout.
+  Both fail closed and carry no production routing or speedup claim.
 - ``tests/test_generate_parallel_ky_scan_gate.py`` tests the artifact writer
   for the real Cyclone ``k_y``-batch gate.
 - ``tests/test_parallel_artifact_contracts.py`` locks the tracked large-run

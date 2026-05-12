@@ -70,6 +70,7 @@ spectrax-gk = "spectraxgk.cli:main"
         "quasilinear_uq_ensemble_scaling_large.json",
         "nonlinear_sharding_strong_scaling_large.json",
         "nonlinear_domain_parallel_identity_gate.json",
+        "nonlinear_spectral_communication_identity_gate.json",
     ):
         (root / "docs" / "_static" / artifact).write_text("{}", encoding="utf-8")
     (root / "docs" / "_static" / "technical_release_status.json").write_text(

@@ -68,6 +68,31 @@ def test_run_tests_returns_124_on_timeout(monkeypatch, tmp_path: Path) -> None:
     assert results[0][1] == "timeout"
 
 
+def test_run_tests_treats_pytest_no_tests_collected_as_skip(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    test_file = tmp_path / "test_integration_only.py"
+    test_file.write_text(
+        "import pytest\npytestmark = pytest.mark.integration\n",
+        encoding="utf-8",
+    )
+
+    def _fake_run(cmd, *, cwd, check, timeout):
+        del cwd, check, timeout
+        raise subprocess.CalledProcessError(5, cmd)
+
+    monkeypatch.setattr(run_tests_fast.subprocess, "run", _fake_run)
+    code, results = run_tests_fast.run_tests(
+        [test_file],
+        per_file_timeout_s=1.0,
+        total_timeout_s=30.0,
+    )
+
+    assert code == 0
+    assert results[0][1] == "skipped(no_tests_collected)"
+
+
 def test_run_tests_marks_remaining_files_after_total_timeout(monkeypatch, tmp_path: Path) -> None:
     files = [tmp_path / "test_one.py", tmp_path / "test_two.py"]
     for path in files:
