@@ -137,6 +137,75 @@ def test_validation_manifest_rejects_invalid_status(tmp_path: Path) -> None:
         mod.REPO_ROOT = old_root
 
 
+def test_validation_manifest_rejects_duplicate_manifest_list_entries(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    _write_minimal_package(tmp_path, "spectraxgk.runtime", "spectraxgk.config")
+    test = tmp_path / "tests" / "test_runtime.py"
+    test.parent.mkdir()
+    test.write_text("def test_placeholder():\n    assert True\n")
+    artifact = tmp_path / "docs" / "_static" / "gate.json"
+    artifact.parent.mkdir(parents=True)
+    artifact.write_text("{}\n")
+    manifest = tmp_path / "manifest.toml"
+    manifest.write_text(
+        """
+[metadata]
+package_coverage_target_percent = 95.0
+
+[coverage_inventory]
+require_all_package_modules_owned = true
+excluded_modules = ["spectraxgk.__init__"]
+
+[[modules]]
+module = "spectraxgk.runtime"
+path = "src/spectraxgk/runtime.py"
+owned_modules = ["spectraxgk.config", "spectraxgk.config"]
+owner_lane = "runtime lane"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = ["reference"]
+physics_contracts = ["physics"]
+numerics_contracts = ["numerics"]
+fast_tests = ["tests/test_runtime.py"]
+artifact_paths = ["docs/_static/gate.json"]
+next_tests = ["next"]
+""".strip()
+    )
+    old_root = mod.REPO_ROOT
+    try:
+        mod.REPO_ROOT = tmp_path
+        with pytest.raises(ValueError, match="owned_modules contains duplicate entries"):
+            mod.validate_manifest(mod.load_manifest(manifest))
+    finally:
+        mod.REPO_ROOT = old_root
+
+
+def test_validation_manifest_rejects_directory_fast_test(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    _write_minimal_package(tmp_path, "spectraxgk.runtime")
+    test_dir = tmp_path / "tests" / "runtime_cases"
+    test_dir.mkdir(parents=True)
+    artifact = tmp_path / "docs" / "_static" / "gate.json"
+    artifact.parent.mkdir(parents=True)
+    artifact.write_text("{}\n")
+    manifest = tmp_path / "manifest.toml"
+    manifest.write_text(
+        _manifest_text(
+            source="src/spectraxgk/runtime.py",
+            test="tests/runtime_cases",
+            artifact="docs/_static/gate.json",
+        )
+    )
+    old_root = mod.REPO_ROOT
+    try:
+        mod.REPO_ROOT = tmp_path
+        with pytest.raises(ValueError, match="fast test must be a file"):
+            mod.validate_manifest(mod.load_manifest(manifest))
+    finally:
+        mod.REPO_ROOT = old_root
+
+
 def test_validation_manifest_attaches_measured_package_coverage(tmp_path: Path) -> None:
     mod = _load_tool_module()
     _write_minimal_package(tmp_path, "spectraxgk.runtime")
@@ -185,6 +254,48 @@ def test_validation_manifest_attaches_measured_package_coverage(tmp_path: Path) 
     assert measured["package_coverage_percent"] == pytest.approx(96.0)
     assert measured["n_modules_below_target"] == 0
     assert measured["module_rows"][0]["coverage_percent"] == pytest.approx(97.0)
+
+
+def test_validation_manifest_rejects_duplicate_coverage_xml_module_entries(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    _write_minimal_package(tmp_path, "spectraxgk.runtime")
+    test = tmp_path / "tests" / "test_runtime.py"
+    test.parent.mkdir()
+    test.write_text("def test_placeholder():\n    assert True\n")
+    artifact = tmp_path / "docs" / "_static" / "gate.json"
+    artifact.parent.mkdir(parents=True)
+    artifact.write_text("{}\n")
+    manifest = tmp_path / "manifest.toml"
+    manifest.write_text(
+        _manifest_text(
+            source="src/spectraxgk/runtime.py",
+            test="tests/test_runtime.py",
+            artifact="docs/_static/gate.json",
+        )
+    )
+    coverage_xml = tmp_path / "coverage.xml"
+    coverage_xml.write_text(
+        """
+<coverage line-rate="0.96">
+  <packages>
+    <package name="spectraxgk">
+      <classes>
+        <class filename="src/spectraxgk/runtime.py" line-rate="0.97" />
+        <class filename="spectraxgk/runtime.py" line-rate="0.50" />
+      </classes>
+    </package>
+  </packages>
+</coverage>
+""".strip()
+    )
+
+    old_root = mod.REPO_ROOT
+    try:
+        mod.REPO_ROOT = tmp_path
+        with pytest.raises(ValueError, match="duplicate coverage entry for spectraxgk.runtime"):
+            mod.validate_manifest(mod.load_manifest(manifest), coverage_xml=coverage_xml)
+    finally:
+        mod.REPO_ROOT = old_root
 
 
 def test_validation_manifest_rejects_package_coverage_below_target(tmp_path: Path) -> None:

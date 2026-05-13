@@ -86,6 +86,30 @@ The large tracked artifacts use real solver work rather than synthetic sleeps:
 covers a late-time linear/quasilinear UQ ensemble. These are the figures to cite
 for current parallelization speedup claims.
 
+Production closure status
+-------------------------
+
+The release status artifact combines the production scaling evidence and the
+diagnostic decomposition gates into one machine-readable claim boundary:
+
+.. image:: _static/parallelization_completion_status.png
+   :alt: SPECTRAX-GK parallelization closure status
+   :align: center
+
+``docs/_static/parallelization_completion_status.json`` reports the release
+production-completion percentage and the status of each lane. For the current
+tracked artifacts, production independent-work parallelization is closed:
+independent ``k_y`` scans reach ``7.18x`` on eight CPU workers and ``1.88x`` on
+two RTX A4000 GPUs, while the quasilinear/UQ ensemble reaches ``5.41x`` on CPU
+and ``1.71x`` on GPU. Whole-state nonlinear sharding and FFT-axis decomposition
+remain diagnostic, not production nonlinear speedup claims.
+
+Regenerate the closure status after refreshing any scaling artifact:
+
+.. code-block:: bash
+
+   python tools/build_parallelization_completion_status.py
+
 Diagnostic path: whole-state nonlinear sharding
 -----------------------------------------------
 
@@ -115,8 +139,12 @@ The next decomposition step is also gated, but still diagnostic. The artifact
 deterministic local nonlinear state update with one-cell halo chunks and checks
 the decomposed result against the serial update before enabling that prototype
 path. This validates the fail-closed identity-gate contract for a bounded local
-stencil. It does not validate distributed FFTs, field solves, conservation, or
-nonlinear transport windows, and it carries no speedup claim.
+stencil. The report records the gate name, plan-validity status, and any
+explicit blocker reasons such as noncanonical axes, incomplete chunk coverage,
+or serial/decomposed shape mismatches; any blocker disables the decomposed
+prototype path even if the arrays being compared are numerically equal. It does
+not validate distributed FFTs, field solves, conservation, or nonlinear
+transport windows, and it carries no speedup claim.
 
 The spectral communication layer now has the same fail-closed treatment. The
 artifact ``docs/_static/nonlinear_spectral_communication_identity_gate.json``

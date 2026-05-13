@@ -460,6 +460,11 @@ The fast test suite currently checks:
 * an implicit left/right eigenpair sensitivity gate for phase-invariant
   eigenfunction observables, including a tiny SPECTRAX-GK linear-RHS
   quasilinear-style objective checked against finite differences.
+* a fast promotion guardrail that scans the calibration/model-selection JSON
+  reports, conservative documentation wording, and the manuscript-readiness
+  quasilinear lane. A closed manuscript lane must remain explicitly scoped as
+  a diagnostic/model-selection result and must list the guardrail artifact; it
+  is not a calibrated absolute-flux claim.
 
 Implicit sensitivity example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
