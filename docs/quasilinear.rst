@@ -541,7 +541,10 @@ requires each input window to be promotion-ready by default, and checks the
 relative spread of late-window means plus the combined SEM across replicates.
 This is the lightweight metadata gate that lets the validation ladder state
 that several long nonlinear runs agree; it is not a substitute for actually
-running those long nonlinear simulations.
+running those long nonlinear simulations. The command-line artifact wrapper is
+``tools/check_nonlinear_window_ensemble.py``; it reads multiple window JSON
+reports and writes a JSON report plus an optional PNG summary for documentation
+or manuscript audit trails.
 
 The report builder is intentionally strict. Every point in one report must use
 the report's named ``saturation_rule``; predicted fluxes, observed nonlinear
