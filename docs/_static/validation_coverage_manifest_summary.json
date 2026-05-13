@@ -22,8 +22,8 @@
   "n_excluded_modules": 6,
   "n_high_priority_open": 17,
   "n_modules": 30,
-  "n_owned_modules": 48,
-  "n_package_modules": 84,
+  "n_owned_modules": 49,
+  "n_package_modules": 85,
   "owned_modules_by_owner": {
     "spectraxgk.autodiff_validation": [],
     "spectraxgk.benchmark_defaults": [
@@ -82,7 +82,9 @@
     ],
     "spectraxgk.parallel": [],
     "spectraxgk.plotting": [],
-    "spectraxgk.quasilinear": [],
+    "spectraxgk.quasilinear": [
+      "spectraxgk.quasilinear_model_selection"
+    ],
     "spectraxgk.quasilinear_calibration": [],
     "spectraxgk.quasilinear_window": [],
     "spectraxgk.runtime": [
@@ -291,11 +293,11 @@
       "coverage_priority": "high",
       "coverage_target_percent": 95.0,
       "module": "spectraxgk.quasilinear",
-      "n_artifacts": 7,
-      "n_fast_tests": 7,
+      "n_artifacts": 9,
+      "n_fast_tests": 9,
       "n_next_tests": 2,
       "n_numerics_contracts": 2,
-      "n_owned_modules": 0,
+      "n_owned_modules": 1,
       "n_physics_contracts": 3,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/quasilinear.py",

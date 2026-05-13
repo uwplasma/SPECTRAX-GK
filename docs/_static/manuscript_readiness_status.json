@@ -17,6 +17,9 @@
         "dataset_sufficiency_promotion_passed": true,
         "holdout_mean_abs_relative_error": 2.574031511380097,
         "holdout_points": 5,
+        "model_selection_candidate_mean_error": 0.24440227852178917,
+        "model_selection_interval_coverage": 0.8571428571428571,
+        "model_selection_status_passed": true,
         "null_training_mean_error": 0.8214472957764595,
         "promotion_guardrails_passed": true,
         "shape_aware_promotion_passed": false,
@@ -34,6 +37,7 @@
         "docs/_static/quasilinear_shape_aware_saturation.json",
         "docs/_static/quasilinear_candidate_uncertainty.json",
         "docs/_static/quasilinear_dataset_sufficiency.json",
+        "docs/_static/quasilinear_model_selection_status.json",
         "docs/_static/quasilinear_promotion_guardrails.json"
       ],
       "status": "closed"

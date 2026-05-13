@@ -162,6 +162,9 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
     ql_shape = _read_json(root, "docs/_static/quasilinear_shape_aware_saturation.json")
     ql_uq = _read_json(root, "docs/_static/quasilinear_candidate_uncertainty.json")
     ql_dataset = _read_json(root, "docs/_static/quasilinear_dataset_sufficiency.json")
+    ql_model_status = _read_json(
+        root, "docs/_static/quasilinear_model_selection_status.json"
+    )
     ql_guardrails = _read_json(
         root, "docs/_static/quasilinear_promotion_guardrails.json"
     )
@@ -233,8 +236,15 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
         if isinstance((ql_dataset or {}).get("promotion_gate", {}), dict)
         else {}
     )
-    ql_candidate_promoted = bool(ql_uq_gate.get("passed", False)) and bool(
-        ql_dataset_gate.get("passed", False)
+    ql_model_status_gate = (
+        (ql_model_status or {}).get("promotion_gate", {})
+        if isinstance((ql_model_status or {}).get("promotion_gate", {}), dict)
+        else {}
+    )
+    ql_candidate_promoted = (
+        bool(ql_uq_gate.get("passed", False))
+        and bool(ql_dataset_gate.get("passed", False))
+        and bool(ql_model_status_gate.get("passed", False))
     )
     ql_guardrails_passed = bool((ql_guardrails or {}).get("passed", False))
     ql_dataset_requirements = (
@@ -432,6 +442,7 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                 "docs/_static/quasilinear_shape_aware_saturation.json",
                 "docs/_static/quasilinear_candidate_uncertainty.json",
                 "docs/_static/quasilinear_dataset_sufficiency.json",
+                "docs/_static/quasilinear_model_selection_status.json",
                 "docs/_static/quasilinear_promotion_guardrails.json",
             ],
             "key_metrics": {
@@ -450,6 +461,23 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                 "uq_candidate_promotion_passed": bool(ql_uq_gate.get("passed", False)),
                 "dataset_sufficiency_promotion_passed": bool(
                     ql_dataset_gate.get("passed", False)
+                ),
+                "model_selection_status_passed": bool(
+                    ql_model_status_gate.get("passed", False)
+                ),
+                "model_selection_candidate_mean_error": _finite_float(
+                    (ql_model_status or {})
+                    .get("metrics", {})
+                    .get("candidate_mean_abs_relative_error")
+                    if isinstance((ql_model_status or {}).get("metrics", {}), dict)
+                    else None
+                ),
+                "model_selection_interval_coverage": _finite_float(
+                    (ql_model_status or {})
+                    .get("metrics", {})
+                    .get("candidate_prediction_interval_coverage")
+                    if isinstance((ql_model_status or {}).get("metrics", {}), dict)
+                    else None
                 ),
                 "accepted_uq_candidates": ql_uq_gate.get("accepted_candidates", []),
                 "dataset_current_total_cases": ql_dataset_requirements.get(

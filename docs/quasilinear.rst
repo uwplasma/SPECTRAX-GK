@@ -989,6 +989,34 @@ because the present quasilinear diagnostics are electrostatic; electromagnetic
 quasilinear field-channel normalization and calibration remain separate future
 work.
 
+Model-selection status
+----------------------
+
+The model-selection status combines the dataset-sufficiency gate, candidate
+uncertainty gate, and all tracked train/holdout calibration reports into one
+claim-boundary artifact. It is intentionally not another fit. It answers the
+reviewer-facing question: is there a positive scoped model-selection result,
+and are we still avoiding an absolute-flux overclaim?
+
+.. code-block:: bash
+
+   python tools/plot_quasilinear_model_selection_status.py \
+     --out docs/_static/quasilinear_model_selection_status.png
+
+.. image:: _static/quasilinear_model_selection_status.png
+   :alt: Quasilinear model-selection status and claim-boundary guardrails
+   :width: 100%
+
+The current status passes. The accepted ``spectral_envelope_ridge`` candidate
+has leave-one-geometry-out mean relative error about ``0.244`` and interval
+coverage about ``0.857``. It beats both the training-mean null baseline
+(``0.821``) and the calibrated linear-weight baseline (``0.929``), while every
+tracked one-constant train/holdout calibration report remains demoted to
+``calibration_dataset``. This closes a scoped model-selection lane for the
+manuscript. It does **not** promote a runtime/TOML absolute-flux predictor,
+and it does not replace the nonlinear convergence requirements for future
+stellarator-optimization transport claims.
+
 VMEC equilibrium portfolio for future holdouts
 ----------------------------------------------
 

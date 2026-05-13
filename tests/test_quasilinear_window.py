@@ -68,6 +68,39 @@ def test_converged_saturated_transport_window_passes_with_finite_uncertainty() -
     assert failures == []
 
 
+def test_window_report_supports_explicit_bounds_and_deterministic_blocks() -> None:
+    t, heat = _saturated_trace()
+
+    report = nonlinear_window_convergence_report(
+        t,
+        heat,
+        case="bounded_saturated_itg",
+        source_artifact="bounded.csv",
+        config=NonlinearWindowConvergenceConfig(
+            tmin=50.0,
+            tmax=150.0,
+            transient_fraction=0.25,
+            block_size=8,
+            bootstrap_samples=0,
+            min_samples=40,
+            min_blocks=4,
+            max_running_mean_rel_drift=0.03,
+            max_sem_rel=0.03,
+        ),
+    )
+
+    assert report["passed"] is False
+    assert report["window"]["selected_tmin"] == pytest.approx(50.0)
+    assert report["window"]["selected_tmax"] == pytest.approx(150.0)
+    assert report["statistics"]["block_size"] == 8
+    assert report["statistics"]["block_bootstrap_sem"] is None
+    failed = {gate["metric"] for gate in report["gates"] if not gate["passed"]}
+    assert failed == {"block_bootstrap_sem"}
+    # With no bootstrap samples, the diagnostic SEM falls back to sample/block SEM,
+    # but promotion still fails closed because bootstrap uncertainty was requested.
+    assert np.isfinite(report["statistics"]["sem"])
+
+
 def test_transient_only_trace_fails_running_mean_gate() -> None:
     t = np.linspace(0.0, 120.0, 121)
     heat = 0.05 * t

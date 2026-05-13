@@ -1,0 +1,108 @@
+{
+  "accepted_candidates": [
+    "spectral_envelope_ridge"
+  ],
+  "calibration_reports": [
+    {
+      "artifact": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_cyclone_miller_train_holdout_report.json",
+      "claim_level": "calibration_dataset",
+      "holdout_mean_abs_relative_error": 612.8992915144586,
+      "kind": "quasilinear_calibration_report",
+      "passed": false
+    },
+    {
+      "artifact": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_hsx_train_holdout_report.json",
+      "claim_level": "calibration_dataset",
+      "holdout_mean_abs_relative_error": 306.9496457572293,
+      "kind": "quasilinear_calibration_report",
+      "passed": false
+    },
+    {
+      "artifact": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_stellarator_train_holdout_report.json",
+      "claim_level": "calibration_dataset",
+      "holdout_mean_abs_relative_error": 2.574031511380097,
+      "kind": "quasilinear_calibration_report",
+      "passed": false
+    },
+    {
+      "artifact": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_w7x_train_holdout_report.json",
+      "claim_level": "calibration_dataset",
+      "holdout_mean_abs_relative_error": 306.9496457572293,
+      "kind": "quasilinear_calibration_report",
+      "passed": false
+    }
+  ],
+  "claim_level": "scoped_candidate_model_selection_not_runtime_absolute_flux",
+  "gate_report": {
+    "case": "quasilinear_model_selection",
+    "gates": [
+      {
+        "detail": "blockers=[]",
+        "metric": "dataset_sufficiency_passed",
+        "passed": true
+      },
+      {
+        "detail": "accepted=['spectral_envelope_ridge']",
+        "metric": "candidate_uncertainty_passed",
+        "passed": true
+      },
+      {
+        "detail": "required=spectral_envelope_ridge accepted=['spectral_envelope_ridge']",
+        "metric": "required_candidate_accepted",
+        "passed": true
+      },
+      {
+        "detail": "eligibility_failures=[]",
+        "metric": "required_candidate_eligible",
+        "passed": true
+      },
+      {
+        "detail": "mean_abs_relative_error=0.24440227852178917 gate=0.35",
+        "metric": "required_candidate_transport_error",
+        "passed": true
+      },
+      {
+        "detail": "coverage=0.8571428571428571 gate=0.75",
+        "metric": "required_candidate_interval_coverage",
+        "passed": true
+      },
+      {
+        "detail": "candidate=0.24440227852178917 null=0.8214472957764595",
+        "metric": "required_candidate_beats_training_mean_null",
+        "passed": true
+      },
+      {
+        "detail": "candidate=0.24440227852178917 linear_weight=0.9285002667723133",
+        "metric": "required_candidate_beats_linear_weight",
+        "passed": true
+      },
+      {
+        "detail": "promoted_reports=0",
+        "metric": "absolute_flux_not_promoted",
+        "passed": true
+      }
+    ],
+    "max_abs_error": 0.0,
+    "max_rel_error": 0.0,
+    "passed": true
+  },
+  "kind": "quasilinear_model_selection_status",
+  "metrics": {
+    "candidate_mean_abs_relative_error": 0.24440227852178917,
+    "candidate_prediction_interval_coverage": 0.8571428571428571,
+    "interval_coverage_gate": 0.75,
+    "linear_weight_mean_abs_relative_error": 0.9285002667723133,
+    "null_training_mean_mean_abs_relative_error": 0.8214472957764595,
+    "transport_mean_relative_error_gate": 0.35
+  },
+  "notes": "A passed status promotes only the scoped model-selection result. It does not promote a runtime/TOML absolute-flux predictor or a universal nonlinear transport model.",
+  "passed": true,
+  "promotion_gate": {
+    "blockers": [],
+    "passed": true,
+    "requires_dataset_sufficiency": true,
+    "requires_no_absolute_flux_promotion": true,
+    "requires_uncertainty_skill": true
+  },
+  "required_candidate": "spectral_envelope_ridge"
+}

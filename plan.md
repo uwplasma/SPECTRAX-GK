@@ -1,6 +1,6 @@
 # SPECTRAX-GK Quasilinear Transport and Optimization Plan
 
-Last updated: 2026-05-12
+Last updated: 2026-05-13
 Active repository: `uwplasma/SPECTRAX-GK`
 Historical planning archive: private repo `rogeriojorge/spectraxgk_plan`
 Current public baseline: `main` at v1.6.0, with the historical ship-readiness log archived before this file was reset.
@@ -92,6 +92,40 @@ Docs synchronization rule for this lane: `docs/release_scope.rst`,
 must all preserve this distinction between reduced differentiable objectives,
 startup/nonlinear-window estimators, and converged nonlinear transport
 averages.
+
+### 2026-05-13 Quasilinear Model-Selection Status Checkpoint
+
+Current tranche result: added a source-level
+`spectraxgk.quasilinear_model_selection` claim-boundary utility plus the
+publication artifact generator
+`tools/plot_quasilinear_model_selection_status.py`. The tracked figure and
+sidecars live at `docs/_static/quasilinear_model_selection_status.*`.
+
+Closed by this checkpoint:
+
+- The seven-case electrostatic quasilinear model-selection lane is now
+  summarized by one reusable status object instead of only by separate plotting
+  scripts.
+- The accepted `spectral_envelope_ridge` candidate remains scoped: mean
+  leave-one-geometry-out relative error is about `0.244`, interval coverage is
+  about `0.857`, and the candidate beats both the training-mean null and
+  linear-weight baselines.
+- The same status verifies that no tracked train/holdout calibration report is
+  promoted to `calibrated_absolute_flux`, preserving the absolute-flux claim
+  boundary.
+- Fast tests now cover the status utility, artifact writer, vectorized
+  quasilinear reduced objectives, saturation/channel edge cases, and nonlinear
+  window bootstrap-fail-closed behavior.
+
+Still open:
+
+- Absolute quasilinear flux prediction remains blocked until additional
+  converged nonlinear holdouts support a calibrated runtime model.
+- Electromagnetic/KBM quasilinear calibration remains future work because the
+  present channels are electrostatic.
+- Production nonlinear turbulent-flux stellarator optimization still requires
+  post-transient heat-flux averages with seed, timestep, grid, and running-mean
+  convergence gates.
 
 ## Literature Anchors From Final Pass
 

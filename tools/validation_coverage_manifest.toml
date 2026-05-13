@@ -469,6 +469,9 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.quasilinear"
 path = "src/spectraxgk/quasilinear.py"
+owned_modules = [
+  "spectraxgk.quasilinear_model_selection",
+]
 owner_lane = "linear-response quasilinear weights and saturation-model diagnostics"
 status = "active"
 coverage_priority = "high"
@@ -494,6 +497,8 @@ fast_tests = [
   "tests/test_plot_quasilinear_shape_aware_saturation.py",
   "tests/test_plot_quasilinear_candidate_uncertainty.py",
   "tests/test_plot_quasilinear_dataset_sufficiency.py",
+  "tests/test_quasilinear_model_selection.py",
+  "tests/test_plot_quasilinear_model_selection_status.py",
 ]
 artifact_paths = [
   "docs/_static/quasilinear_cyclone_spectrum.png",
@@ -503,6 +508,8 @@ artifact_paths = [
   "docs/_static/quasilinear_shape_aware_saturation.json",
   "docs/_static/quasilinear_candidate_uncertainty.json",
   "docs/_static/quasilinear_dataset_sufficiency.json",
+  "docs/_static/quasilinear_model_selection_status.json",
+  "docs/_static/quasilinear_model_selection_status.png",
 ]
 next_tests = [
   "add at least two more converged electrostatic nonlinear holdout windows before promoting richer saturation candidates",
