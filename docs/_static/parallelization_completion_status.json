@@ -13,6 +13,23 @@
     },
     "exception_metadata_passed": true,
     "identity_passed": true,
+    "identity_report": {
+      "actual_workers": 4,
+      "atol": 0.0,
+      "backend": "python:thread",
+      "identity_passed": true,
+      "kind": "independent_ensemble_serial_identity",
+      "max_abs_error": 0.0,
+      "max_rel_error": 0.0,
+      "metadata": {
+        "executor": "thread",
+        "source": "build_parallelization_completion_status",
+        "workload": "optimization_ensemble"
+      },
+      "problem_size": 4,
+      "requested_workers": 16,
+      "rtol": 0.0
+    },
     "kind": "independent_ensemble_provenance_gate",
     "ordering_passed": true,
     "parallel_indices": [
