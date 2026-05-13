@@ -14,6 +14,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_AGGREGATE_ARTIFACT = ROOT / "docs/_static/vmec_boozer_aggregate_objective_gate.json"
 DEFAULT_LINE_SEARCH_ARTIFACT = ROOT / "docs/_static/vmec_boozer_aggregate_line_search_gate.json"
+DEFAULT_NONLINEAR_ENSEMBLE_ARTIFACTS: tuple[Path, ...] = ()
 
 NON_PROMOTABLE_CLAIM_MARKERS = (
     "not_transport",
@@ -76,8 +77,19 @@ def _samples(payload: dict[str, Any]) -> list[dict[str, Any]]:
     return []
 
 
+def _is_nonlinear_window_ensemble(payload: dict[str, Any]) -> bool:
+    kind = str(payload.get("kind", "")).strip().lower()
+    claim_level = str(payload.get("claim_level", "")).strip().lower()
+    return (
+        "nonlinear_window_ensemble" in kind
+        or "replicated_nonlinear_window" in claim_level
+    )
+
+
 def _alpha(sample: dict[str, Any]) -> float | None:
     value = sample.get("alpha")
+    if value is None:
+        return None
     try:
         alpha = float(value)
     except (TypeError, ValueError):
@@ -124,6 +136,7 @@ def check_vmec_boozer_aggregate_holdout_gate(
     aggregate_artifact: str | Path = DEFAULT_AGGREGATE_ARTIFACT,
     line_search_artifact: str | Path = DEFAULT_LINE_SEARCH_ARTIFACT,
     holdout_artifacts: tuple[str | Path, ...] = (),
+    nonlinear_ensemble_artifacts: tuple[str | Path, ...] = DEFAULT_NONLINEAR_ENSEMBLE_ARTIFACTS,
     alpha_atol: float = 1.0e-12,
 ) -> dict[str, Any]:
     """Return a JSON-ready promotion gate for aggregate optimization artifacts."""
@@ -163,6 +176,26 @@ def check_vmec_boozer_aggregate_holdout_gate(
             }
         )
 
+    nonlinear_ensemble_rows: list[dict[str, Any]] = []
+    qualifying_ensemble_reasons: list[str] = []
+    for raw_path in nonlinear_ensemble_artifacts:
+        path = Path(raw_path)
+        payload = _load_json_object(path)
+        passed = _artifact_passed(payload)
+        is_ensemble = _is_nonlinear_window_ensemble(payload)
+        qualifies = bool(passed and is_ensemble)
+        if qualifies:
+            qualifying_ensemble_reasons.append(_repo_relative(path))
+        nonlinear_ensemble_rows.append(
+            {
+                "path": _repo_relative(path),
+                "passed": passed,
+                "is_nonlinear_window_ensemble": is_ensemble,
+                "claim_level": str(payload.get("claim_level", "")),
+                "qualifies_for_production_nonlinear_promotion": qualifies,
+            }
+        )
+
     gates = [
         _gate(
             "aggregate_finite_difference_artifact_passed",
@@ -186,6 +219,13 @@ def check_vmec_boozer_aggregate_holdout_gate(
             if qualifying_holdout_reasons
             else "provide a passed production-scope holdout artifact with a new surface_index or alpha",
         ),
+        _gate(
+            "passed_replicated_nonlinear_window_ensemble",
+            bool(qualifying_ensemble_reasons),
+            "; ".join(qualifying_ensemble_reasons)
+            if qualifying_ensemble_reasons
+            else "provide a passed replicated nonlinear-window ensemble artifact before any production nonlinear optimized-equilibrium claim",
+        ),
     ]
     blockers = [gate["metric"] for gate in gates if not bool(gate["passed"])]
     passed = not blockers
@@ -202,6 +242,7 @@ def check_vmec_boozer_aggregate_holdout_gate(
                 "aggregate finite-difference artifact passes",
                 "aggregate line-search artifact passes on the same sample set",
                 "at least one passed production-scope validation artifact covers a held-out surface_index or field-line alpha",
+                "at least one passed replicated nonlinear-window ensemble artifact supports the post-transient transport mean and uncertainty",
                 "k_y-only holdouts do not satisfy the surface/field-line requirement",
             ],
         },
@@ -215,11 +256,13 @@ def check_vmec_boozer_aggregate_holdout_gate(
             "selected_ky_indices": sorted({str(sample.get("selected_ky_index")) for sample in training_samples}),
         },
         "holdout_artifacts": holdout_rows,
+        "nonlinear_ensemble_artifacts": nonlinear_ensemble_rows,
         "notes": (
             "This check gates claim promotion only. Passing aggregate reduced-objective "
             "FD and line-search artifacts proves optimizer plumbing; it does not by "
             "itself validate optimized-equilibrium nonlinear transport. Promotion "
-            "requires independent held-out surface or field-line evidence."
+            "requires independent held-out surface or field-line evidence plus "
+            "replicated nonlinear-window uncertainty evidence."
         ),
     }
 
@@ -229,6 +272,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--aggregate-artifact", type=Path, default=DEFAULT_AGGREGATE_ARTIFACT)
     parser.add_argument("--line-search-artifact", type=Path, default=DEFAULT_LINE_SEARCH_ARTIFACT)
     parser.add_argument("--holdout-artifact", action="append", type=Path, default=[])
+    parser.add_argument("--nonlinear-ensemble-artifact", action="append", type=Path, default=[])
     parser.add_argument("--alpha-atol", type=float, default=1.0e-12)
     parser.add_argument("--json-out", type=Path)
     parser.add_argument(
@@ -245,6 +289,7 @@ def main(argv: list[str] | None = None) -> int:
         aggregate_artifact=args.aggregate_artifact,
         line_search_artifact=args.line_search_artifact,
         holdout_artifacts=tuple(args.holdout_artifact),
+        nonlinear_ensemble_artifacts=tuple(args.nonlinear_ensemble_artifact),
         alpha_atol=args.alpha_atol,
     )
     text = json.dumps(report, indent=2, sort_keys=True)
