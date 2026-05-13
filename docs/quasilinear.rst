@@ -533,6 +533,16 @@ and manuscript figures from claiming absolute nonlinear transport prediction
 from an uncalibrated
 saturation rule.
 
+Replicated nonlinear windows should additionally be checked with
+``spectraxgk.quasilinear_window.nonlinear_window_ensemble_report`` before they
+are used as seed, initial-condition, or timestep-robust transport evidence.
+The ensemble gate consumes already-built nonlinear-window convergence reports,
+requires each input window to be promotion-ready by default, and checks the
+relative spread of late-window means plus the combined SEM across replicates.
+This is the lightweight metadata gate that lets the validation ladder state
+that several long nonlinear runs agree; it is not a substitute for actually
+running those long nonlinear simulations.
+
 The report builder is intentionally strict. Every point in one report must use
 the report's named ``saturation_rule``; predicted fluxes, observed nonlinear
 window means, and optional window standard deviations must be finite; and

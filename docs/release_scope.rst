@@ -233,6 +233,11 @@ Quasilinear model-selection state:
   promoted to ``calibrated_absolute_flux``. This is a metadata/finite-window
   guardrail over existing traces, not a substitute for new long nonlinear
   simulations.
+- ``spectraxgk.quasilinear_window.nonlinear_window_ensemble_report`` provides
+  the next guardrail for replicated windows: seed, initial-condition, timestep,
+  or restart variants must have individually passed late-window reports and
+  mutually consistent late means before a nonlinear turbulent-flux optimization
+  artifact can claim robustness.
 - ``docs/_static/quasilinear_saturation_rule_sweep.json``:
   no simple saturation rule is accepted. Positive-growth mixing length is the
   least-bad simple rule with mean held-out relative error about ``2.11``;
