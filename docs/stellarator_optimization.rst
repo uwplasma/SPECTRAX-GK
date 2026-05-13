@@ -526,6 +526,20 @@ transport claims.
    quasilinear proxy, and nonlinear transport are related but not identical
    objective choices, so each must carry its own validation and holdout gate.
 
+.. figure:: _static/vmec_boozer_aggregate_alpha_holdout_gate.png
+   :width: 90%
+   :align: center
+   :alt: VMEC/Boozer aggregate alpha-heldout line-search gate
+
+   Alpha-heldout aggregate line-search gate. The same accepted quasilinear
+   update is trained on the ``alpha=0`` QH field line and evaluated on the
+   held-out ``alpha=0.5`` field line with the same two ``k_y`` samples. The
+   tracked artifact passes, with training relative reduction about ``2.2e-3``
+   and held-out relative reduction about ``6.8e-5``. This is useful reduced
+   field-line generalization evidence, but it is intentionally blocked from the
+   production promotion gate because it is still a reduced linear/quasilinear
+   objective split, not a nonlinear transport validation.
+
 .. figure:: _static/vmec_boozer_nonlinear_window_gradient_gate.png
    :width: 90%
    :align: center
