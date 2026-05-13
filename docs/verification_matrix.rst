@@ -426,6 +426,7 @@ gate.
      - aggregate objective decrease plus surface/field-line generalization
      - ``docs/_static/vmec_boozer_aggregate_objective_gate.json``,
        ``docs/_static/vmec_boozer_multi_point_objective_gate.json``,
+       ``docs/_static/vmec_boozer_reduced_portfolio_guard.json``,
        ``docs/_static/vmec_boozer_aggregate_line_search_gate.json``,
        ``docs/_static/vmec_boozer_aggregate_line_search_comparison.json``,
        ``docs/_static/vmec_boozer_aggregate_alpha_holdout_gate.json``,
@@ -443,7 +444,11 @@ gate.
        heat-flux claim.
        The multi-alpha finite-difference artifact passes and the growth-vs-QL
        comparison shows objective-dependent descent directions. The
-       alpha-heldout and surface-heldout splits pass as reduced generalization
+       reduced-portfolio guard now verifies that the multi-alpha rows have real
+       VMEC/Boozer provenance, multi-alpha/multi-``k_y`` metadata, finite
+       aggregate FD fields, finite growth/QL AD/FD diagnostics, and no
+       production nonlinear claim. The alpha-heldout and surface-heldout
+       splits pass as reduced generalization
        evidence, and Li383 passes as a second-equilibrium aggregate
        finite-difference/line-search check. The current promotion JSON is
        intentionally blocked because these artifacts are reduced

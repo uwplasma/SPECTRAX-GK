@@ -11,9 +11,11 @@ import spectraxgk.parallel as parallel
 
 def test_parallel_public_api_exports_are_stable() -> None:
     public_names = (
+        "IndependentEnsembleProvenanceReport",
         "ParallelIdentityReport",
         "batch_map",
         "batch_map_identity_report",
+        "independent_ensemble_provenance_gate",
         "independent_map",
         "ky_scan_batches",
         "parallel_identity_report",
@@ -433,11 +435,80 @@ def test_independent_map_identity_report_records_worker_metadata() -> None:
     }
 
 
+def test_independent_ensemble_provenance_gate_closes_uq_optimization_batching() -> None:
+    values = [0.05, 0.2, 0.45, 0.8]
+
+    def fn(value: float) -> dict[str, jnp.ndarray]:
+        x = jnp.asarray(value)
+        residual = x - 0.35
+        return {
+            "objective": jnp.asarray(residual * residual + 0.1 * x),
+            "gradient_proxy": jnp.asarray([2.0 * residual + 0.1, x**2]),
+            "uq_weight": jnp.asarray(1.0 / (1.0 + x * x)),
+        }
+
+    report = parallel.independent_ensemble_provenance_gate(
+        fn,
+        values,
+        workers=99,
+        executor="threads",
+        workload="optimization_ensemble",
+        atol=0.0,
+        rtol=0.0,
+        metadata={"case": "optimization_uq_batch"},
+    )
+
+    assert isinstance(report, parallel.IndependentEnsembleProvenanceReport)
+    assert report.kind == "independent_ensemble_provenance_gate"
+    assert report.workload == "optimization_ensemble"
+    assert report.passed is True
+    assert report.identity_passed is True
+    assert report.ordering_passed is True
+    assert report.worker_clipping_passed is True
+    assert report.reconstruction_identity_passed is True
+    assert report.exception_metadata_passed is True
+    assert report.requested_workers == 99
+    assert report.actual_workers == len(values)
+    assert report.serial_indices == (0, 1, 2, 3)
+    assert report.parallel_indices == report.serial_indices
+    assert report.reconstructed_indices == report.serial_indices
+    assert report.identity_report.max_abs_error == 0.0
+    assert report.exception_metadata["index"] == 1
+    assert report.exception_metadata["executor"] == "thread"
+    assert report.exception_metadata["actual_workers"] == 2
+    assert report.exception_metadata["original_type"] == "ValueError"
+    assert report.metadata["case"] == "optimization_uq_batch"
+    assert (
+        report.metadata["contract"]["claim_level"]
+        == "production_independent_batching"
+    )
+    assert report.to_dict()["passed"] is True
+
+
+def test_independent_ensemble_provenance_gate_rejects_empty_and_bad_workloads() -> None:
+    with pytest.raises(ValueError, match="at least one item"):
+        parallel.independent_ensemble_provenance_gate(lambda x: x, [], workers=2)
+    with pytest.raises(ValueError, match="workload"):
+        parallel.independent_ensemble_provenance_gate(
+            lambda x: x,
+            [1.0],
+            workload="independent_ky_scan",
+        )
+
+
 def test_independent_map_identity_helpers_are_exported_at_package_top_level() -> None:
     import spectraxgk as sgk
 
+    assert (
+        sgk.IndependentEnsembleProvenanceReport
+        is parallel.IndependentEnsembleProvenanceReport
+    )
     assert sgk.IndependentMapExecutionError is parallel.IndependentMapExecutionError
     assert sgk.IndependentWorkerMetadata is parallel.IndependentWorkerMetadata
+    assert (
+        sgk.independent_ensemble_provenance_gate
+        is parallel.independent_ensemble_provenance_gate
+    )
     assert sgk.independent_worker_metadata is parallel.independent_worker_metadata
     assert sgk.independent_map_identity_report is parallel.independent_map_identity_report
 

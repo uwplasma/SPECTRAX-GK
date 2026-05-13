@@ -353,6 +353,26 @@ finite difference on a deterministic nonlinear row fixture.
    not a standalone VMEC/Boozer geometry-gradient or nonlinear heat-flux
    optimization claim.
 
+The corresponding real-artifact guard is
+``tools/check_vmec_boozer_reduced_portfolio_guard.py``. It consumes the tracked
+multi-alpha VMEC/Boozer aggregate-objective JSON plus a VMEC/Boozer AD/FD
+gradient JSON, rebuilds a backend-free reducer table from the real rows, and
+fails closed unless the artifact has VMEC/Boozer provenance, at least two
+field-line ``alpha`` values, at least two ``k_y`` samples, finite FD and AD/FD
+diagnostics, growth and quasilinear objective columns, and an explicit
+non-production nonlinear claim boundary.
+
+.. code-block:: bash
+
+   python tools/check_vmec_boozer_reduced_portfolio_guard.py
+
+The tracked guard lives at
+``docs/_static/vmec_boozer_reduced_portfolio_guard.json`` and passes on the QH
+mode-21 multi-alpha/two-``k_y`` artifact. It admits reduced growth/QL
+portfolio plumbing only; production nonlinear turbulent-transport optimization
+still requires separate held-out optimized-equilibrium nonlinear-window
+ensemble and transport audits.
+
 Results
 -------
 
@@ -539,7 +559,10 @@ transport claims.
    curvature ratio about ``6.9e-3``, and is the current reduced-objective
    evidence for field-line coverage. It still remains a reduced
    linear/quasilinear objective gate, not an optimized-equilibrium nonlinear
-   transport claim.
+   transport claim. The reduced-portfolio guard in
+   ``docs/_static/vmec_boozer_reduced_portfolio_guard.json`` now verifies that
+   these real rows satisfy the backend-free reducer contract and the
+   growth/QL AD/FD provenance boundary.
 
 .. figure:: _static/vmec_boozer_aggregate_line_search_gate.png
    :width: 90%

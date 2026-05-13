@@ -569,7 +569,11 @@ The companion audit ``tools/check_quasilinear_promotion_guardrails.py`` is the
 metadata promotion guard: it requires finite nonlinear window means and
 standard deviations, train/holdout artifact provenance, passed held-out gates
 before ``calibrated_absolute_flux`` promotion, and explicit documentation scope
-markers. The current tracked reports are therefore not a calibrated
+markers. It also audits the manuscript quasilinear model-development figure
+index: each tracked figure must have a JSON sidecar, a scoped non-absolute
+claim level, explicit failed-baseline or blocker metadata where relevant, and
+README/docs wording that does not promote a runtime/TOML absolute-flux
+predictor. The current tracked reports are therefore not a calibrated
 absolute-flux claim.
 
 .. image:: _static/quasilinear_validated_calibration_inputs.png

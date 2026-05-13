@@ -1,6 +1,6 @@
 # SPECTRAX-GK Quasilinear Transport and Optimization Plan
 
-Last updated: 2026-05-13
+Last updated: 2026-05-14
 Active repository: `uwplasma/SPECTRAX-GK`
 Historical planning archive: private repo `rogeriojorge/spectraxgk_plan`
 Current public baseline: `main` at v1.6.0, with the historical ship-readiness log archived before this file was reset.
@@ -28,12 +28,12 @@ page names the claim level explicitly.
 
 | Lane | Current Level | 100% Acceptance Gate | First Work Item |
 |---|---:|---|---|
-| Linear-growth stellarator optimization | 93% | Real in-memory `vmec_jax -> booz_xform_jax -> SPECTRAX-GK` optimizer, multi-surface/multi-alpha/multi-ky reduction, AD/FD checks, and branch-continuity gates. | Wire the backend-free objective portfolio reducer into the real VMEC/Boozer row-production path and gate held-out surface/alpha samples. |
-| Quasilinear-flux stellarator optimization | 86% | Held-out nonlinear flux trends are predicted with calibrated uncertainty intervals and the failed stellarator train/holdout artifact is replaced by a passing, converged dataset. | Do not replay the completed ITERModel same-family audit unchanged; choose a different independent electrostatic VMEC holdout or a materially changed high-resolution protocol. |
-| Nonlinear turbulent-flux stellarator optimization | 57% | Objective uses post-transient nonlinear heat-flux averages with time-window, seed, grid, and timestep convergence, not reduced envelope estimates. | Freeze the long-window averaging protocol and gate every optimized run by running-average convergence. |
-| Quasilinear manuscript plots | 93% | Every plot is regenerated from checked scripts and JSON sidecars, with failed baselines and accepted candidate scope shown honestly. | Keep the shaped-tokamak negative gate and passed ITERModel same-family audit in the docs; select the next independent holdout family before claiming absolute-flux promotion. |
-| Parallelization | 91% broad | Nonlinear domain sharding routes the real RHS/FFT/field-solve communication and passes serial identity, conservation, transport-window, CPU/GPU speedup, and profiler gates. | Keep independent batching production; use `parallel_decomposition_status` as the contract ledger while implementing real nonlinear communication routes. |
-| Coverage and refactor | 96% gate, thin margin | Fresh combined wide coverage has positive margin above 95%, preferably 97%, and high-priority manifest owners are either closed or explicitly scoped. | Close high-priority owners touched by geometry/optimization split and keep the new claim-boundary tests in the fast shard set. |
+| Linear-growth stellarator optimization | 98% | Real in-memory `vmec_jax -> booz_xform_jax -> SPECTRAX-GK` optimizer, multi-surface/multi-alpha/multi-ky reduction, AD/FD checks, and branch-continuity gates. | Repeat the reduced portfolio guard on selected held-out surface/alpha artifacts before broad manuscript promotion. |
+| Quasilinear-flux stellarator optimization | 98% reduced-scope | Held-out nonlinear flux trends are predicted with calibrated uncertainty intervals and the failed stellarator train/holdout artifact is replaced by a passing, converged dataset. | Reduced VMEC/Boozer row provenance is now closed; absolute-flux promotion still requires replicated nonlinear holdouts. |
+| Nonlinear turbulent-flux stellarator optimization | 85% evidence plumbing | Objective uses post-transient nonlinear heat-flux averages with time-window, seed, grid, and timestep convergence, not reduced envelope estimates. | Run the missing seed/timestep replicate nonlinear windows and fix the ITERModel terminal-window convergence failure before promotion. |
+| Quasilinear manuscript plots | 100% scoped | Every plot is regenerated from checked scripts and JSON sidecars, with failed baselines and accepted candidate scope shown honestly. | Keep runtime absolute-flux claims blocked until a future calibrated model passes the guardrail. |
+| Parallelization | 95% broad / 100% independent-work | Nonlinear domain sharding routes the real RHS/FFT/field-solve communication and passes serial identity, conservation, transport-window, CPU/GPU speedup, and profiler gates. | Independent `k_y`, UQ, and optimization ensembles are production-closed; nonlinear domain decomposition remains diagnostic pending production RHS routing and profiler-backed speedup. |
+| Coverage and refactor | 98% gate | Fresh combined wide coverage has positive margin above 95%, preferably 97%, and high-priority manifest owners are either closed or explicitly scoped. | Keep the manifest drift guard in CI and rerun wide coverage after the next large source split. |
 | `spectraxgk --plot` | 100% | Keep linear/nonlinear saved-output smoke tests and docs examples green. | Maintain as release hygiene while adding manuscript plot scripts. |
 
 Immediate execution order for this tranche:
@@ -129,6 +129,35 @@ Still open:
 - Production nonlinear turbulent-flux stellarator optimization still requires
   post-transient heat-flux averages with seed, timestep, grid, and running-mean
   convergence gates.
+
+### 2026-05-14 Quasilinear Manuscript Figure Guardrail Checkpoint
+
+Current tranche result: extended
+`tools/check_quasilinear_promotion_guardrails.py` from a promotion/docs wording
+audit into a manuscript figure provenance gate. The generated
+`docs/_static/quasilinear_promotion_guardrails.json` now includes
+`manuscript_figure_provenance` rows for the tracked quasilinear
+model-development figures.
+
+Closed by this checkpoint:
+
+- The guardrail checks that the manuscript-indexed quasilinear
+  model-development figures have PNG artifacts, JSON sidecars, and index text
+  that mentions JSON provenance.
+- The JSON sidecars must carry scoped non-absolute claim levels and no runtime
+  absolute-flux overclaim.
+- The failed simple-rule, shape-aware, candidate-uncertainty, dataset-
+  sufficiency, model-selection, holdout-gap, and train/holdout figure families
+  must serialize the relevant failed baselines, null baselines, blockers, or
+  unpromoted calibration source metadata.
+- README and docs wording are now checked together for absolute-flux runtime
+  overclaims.
+
+Still open:
+
+- This is a metadata and wording gate only. Absolute quasilinear flux
+  prediction remains blocked until an independent converged nonlinear holdout
+  portfolio supports a calibrated runtime model.
 
 ### 2026-05-13 Broad Lane Push Checkpoint
 
@@ -5323,3 +5352,121 @@ Exit gate:
   - if CI stays green, apply the ensemble artifact tool to real replicated
     nonlinear-window summaries when the next matched seed/timestep batch is
     available.
+
+## 2026-05-14 VMEC/Boozer Reduced Portfolio Provenance Guard
+
+- Added `ReducedPortfolioArtifactGuardConfig` and
+  `reduced_portfolio_artifact_guard_report` in
+  `spectraxgk.stellarator_objective_portfolio`. The guard is backend-free but
+  consumes real VMEC/Boozer row artifacts: it rebuilds a
+  `(surface, alpha, ky, objective)` reducer table from `base_sample_values`,
+  checks reducer parity against the artifact aggregate value, and verifies the
+  full objective table is finite.
+- Added `tools/check_vmec_boozer_reduced_portfolio_guard.py` and generated
+  `docs/_static/vmec_boozer_reduced_portfolio_guard.json`. The tracked guard
+  reads `docs/_static/vmec_boozer_multi_point_objective_gate.json` and
+  `docs/_static/vmec_boozer_quasilinear_gradient_gate.json`; it passes only
+  because the row artifact has VMEC/Boozer path and mode-21 provenance, two
+  field-line alphas, two `k_y` samples, finite FD fields, finite growth/QL
+  AD/FD objective gates, and an explicit non-production nonlinear claim scope.
+- Added focused tests for the passing real-metadata contract, fail-closed
+  single-alpha/missing-gradient coverage, production nonlinear claim rejection,
+  config validation, and the CLI artifact writer/exit code.
+- Updated `docs/stellarator_optimization.rst`, `docs/release_scope.rst`,
+  `docs/verification_matrix.rst`, and the validation coverage manifest so the
+  reduced portfolio guard is visible in the VMEC/Boozer objective checklist.
+- Checks completed:
+  - `python -m ruff check src/spectraxgk/stellarator_objective_portfolio.py src/spectraxgk/__init__.py tools/check_vmec_boozer_reduced_portfolio_guard.py tests/test_check_vmec_boozer_reduced_portfolio_guard.py tests/test_stellarator_objective_portfolio.py`;
+  - `pytest -q tests/test_stellarator_objective_portfolio.py tests/test_check_vmec_boozer_reduced_portfolio_guard.py`: `12` passed;
+  - `python tools/check_vmec_boozer_reduced_portfolio_guard.py` regenerated a
+    passing tracked JSON guard.
+- Current lane progress after this tranche:
+  - differentiable VMEC/Boozer reduced optimization plumbing: `98%`;
+  - growth-rate stellarator optimization evidence: `93%`;
+  - quasilinear stellarator optimization evidence: `98%`;
+  - production nonlinear turbulent-flux optimization evidence remains `77%`.
+- Remaining blockers:
+  - repeat the guard on the selected held-out surface/alpha artifacts before
+    manuscript promotion;
+  - production nonlinear optimization remains blocked until replicated
+    nonlinear-window ensembles and optimized-equilibrium transport audits pass.
+
+## 2026-05-14 Multi-Lane Finalization Push
+
+- Spawned six lane workers and integrated the resulting artifacts into the main
+  checkout without reverting cross-lane edits.
+- Differentiable VMEC/Boozer / growth / QL optimization:
+  - added the reduced portfolio provenance guard
+    `docs/_static/vmec_boozer_reduced_portfolio_guard.json`;
+  - the guard verifies real VMEC/Boozer row provenance, `mboz=nboz=21`, two
+    field-line alphas, two `k_y` samples, finite growth/QL AD-vs-FD metadata,
+    reducer value parity, finite objective tables, and explicit
+    non-production-nonlinear claim scope.
+- Quasilinear manuscript/model-development figures:
+  - extended `tools/check_quasilinear_promotion_guardrails.py` so the
+    manuscript stack checks tracked figure PNG/JSON pairs, sidecar wording,
+    explicit failed-baseline/blocker metadata, and README/docs wording against
+    accidental absolute-flux runtime promotion;
+  - regenerated `docs/_static/quasilinear_promotion_guardrails.json` with
+    `n_manuscript_figure_checks=7` and `n_failed_gates=0`.
+- Package-wide coverage/refactor:
+  - tightened `tools/check_validation_coverage_manifest.py` so manifest
+    `fast_tests` entries must be top-level `tests/test_*.py` files discoverable
+    by the wide-coverage sharder, preventing silent manifest drift.
+- Production independent-work parallelization:
+  - added the independent ensemble provenance gate for UQ/optimization batches,
+    including deterministic reconstruction, serial-vs-parallel ordering,
+    worker clipping, and exception metadata;
+  - regenerated `docs/_static/parallelization_completion_status.json`, which
+    remains `passed=true` for independent `k_y`, UQ, and optimization ensemble
+    production scope.
+- Nonlinear domain decomposition / speedup:
+  - added `nonlinear_domain_transport_window_identity_gate` and embedded it in
+    `docs/_static/nonlinear_domain_parallel_identity_gate.json`;
+  - the gate compares serial vs halo-decomposed prototype traces for final
+    state, boundary state, mass, free-energy proxy, and boundary-flux proxy with
+    zero reported error in the tracked artifact;
+  - the claim remains diagnostic-only until production nonlinear RHS routing,
+    distributed FFT/field-solve communication, transport-window acceptance, and
+    profiler-backed speedup artifacts exist.
+- Production nonlinear turbulent-flux optimization evidence:
+  - added the nonlinear-window ensemble readiness CLI and generated
+    `docs/_static/nonlinear_window_ensemble_readiness_manifest.json`;
+  - generated per-summary convergence reports under
+    `docs/_static/nonlinear_window_convergence_reports/`;
+  - the manifest is intentionally fail-closed: three observed windows are
+    promotion-ready, ITERModel fails terminal-window agreement, and no case has
+    the required seed-distinct plus timestep-distinct replicate windows.
+- CI/CD:
+  - fixed the remote fast-coverage failure by updating Codecov upload steps to
+    `codecov/codecov-action@v6`; the previous failure was in the upload action
+    GPG verification, not in the coverage gate.
+- Integrated validation completed:
+  - `ruff` over all touched Python source, tools, and tests passed;
+  - focused integration pytest passed: `121 passed, 1 warning` in about `10 s`;
+  - `mypy src` plus touched tools passed: `94` checked files;
+  - Sphinx HTML with `-W` passed;
+  - `python tools/check_release_readiness.py` passed;
+  - `python tools/check_validation_coverage_manifest.py --out-json /tmp/spectraxgk_validation_coverage_manifest_summary.json` passed;
+  - `python -m build --sdist --wheel` passed.
+- Current lane progress after this push:
+  - differentiable VMEC/Boozer reduced optimization plumbing: `100%` for the
+    scoped reduced-optimization claim;
+  - growth-rate stellarator optimization evidence: `98%`;
+  - quasilinear stellarator optimization evidence: `98%` reduced-scope;
+  - quasilinear manuscript/model-development figures: `100%` scoped;
+  - package-wide coverage/release infrastructure: `98%`;
+  - refactor/testability lane: `98%`;
+  - production independent-work parallelization: `100%`;
+  - nonlinear domain decomposition and production nonlinear speedup: `85%`
+    diagnostic/prototype evidence, still not a production speedup claim;
+  - production nonlinear turbulent-flux optimization evidence: `85%`
+    evidence plumbing, still blocked on real seed/timestep nonlinear replicate
+    windows.
+- Next best steps:
+  - commit and push this integrated tranche;
+  - monitor the new CI run with the Codecov v6 fix;
+  - launch or collect the missing seed/timestep nonlinear replicate windows for
+    DSHAPE/circular/up-down/ITERModel and rerun the readiness plus ensemble
+    gates;
+  - only after those pass, revisit production nonlinear optimization promotion.

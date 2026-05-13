@@ -139,6 +139,40 @@ def _manuscript_readiness_report(
     }
 
 
+def _candidate_uncertainty_sidecar() -> dict:
+    return {
+        "kind": "quasilinear_candidate_uncertainty_report",
+        "claim_level": "candidate_model_development_not_runtime_option",
+        "passed": True,
+        "notes": (
+            "Candidate accepted only as a scoped model-development result, "
+            "not a runtime/TOML absolute-flux predictor."
+        ),
+        "null_training_mean_baseline": {"mean_abs_relative_error": 0.9},
+        "candidates": {
+            "linear_weight": {
+                "mean_abs_relative_error": 0.95,
+                "promotion_eligible": True,
+            },
+            "linear_state_ridge": {
+                "mean_abs_relative_error": 1.1,
+                "promotion_eligible": False,
+                "eligibility_failures": ["insufficient_train_to_parameter_ratio"],
+            },
+            "spectral_envelope_ridge": {
+                "mean_abs_relative_error": 0.29,
+                "promotion_eligible": True,
+            },
+        },
+        "promotion_gate": {
+            "passed": True,
+            "accepted_candidates": ["spectral_envelope_ridge"],
+            "requires_beating_linear_weight_baseline": True,
+            "requires_beating_training_mean_null": True,
+        },
+    }
+
+
 def test_promoted_absolute_flux_requires_passed_holdout_gate_and_window_stats(
     tmp_path: Path,
 ) -> None:
@@ -308,6 +342,153 @@ def test_manuscript_readiness_ql_lane_passes_when_candidate_is_scoped(
     assert audit["manuscript_readiness_reports"][0]["ql_status"] == "closed"
 
 
+def test_manuscript_figure_audit_requires_json_sidecar_and_index_entry(
+    tmp_path: Path,
+) -> None:
+    mod = _load_tool_module()
+    report = tmp_path / "report.json"
+    report.write_text(
+        json.dumps(
+            _calibration_report(
+                claim_level="calibration_dataset",
+                passed=False,
+                holdout_error=4.0,
+            )
+        ),
+        encoding="utf-8",
+    )
+    doc = tmp_path / "doc.rst"
+    _write_doc(doc)
+    figure_base = tmp_path / "docs/_static/quasilinear_candidate_uncertainty"
+    figure_base.parent.mkdir(parents=True)
+    figure_base.with_suffix(".png").write_bytes(b"not a real png for metadata test")
+    index = tmp_path / "manuscript_figures.rst"
+    index.write_text(
+        (
+            f"current artifact base: ``{figure_base.with_suffix('.png')}`` "
+            "with PDF companion only. "
+            "No runtime/TOML absolute-flux predictor; absolute-flux runtime "
+            "promotion remains blocked.\n"
+        ),
+        encoding="utf-8",
+    )
+
+    audit = mod.build_guardrail_audit(
+        [str(report)],
+        [doc],
+        [figure_base],
+        index,
+    )
+
+    assert audit["passed"] is False
+    failed_metrics = {
+        gate["metric"] for gate in audit["gate_report"]["gates"] if not gate["passed"]
+    }
+    assert f"ql_figure_json_sidecar_exists:{figure_base}" in failed_metrics
+    assert f"ql_figure_index_mentions_json_sidecar:{figure_base}" in failed_metrics
+
+
+def test_manuscript_figure_audit_requires_explicit_failed_baselines(
+    tmp_path: Path,
+) -> None:
+    mod = _load_tool_module()
+    report = tmp_path / "report.json"
+    report.write_text(
+        json.dumps(
+            _calibration_report(
+                claim_level="calibration_dataset",
+                passed=False,
+                holdout_error=4.0,
+            )
+        ),
+        encoding="utf-8",
+    )
+    doc = tmp_path / "doc.rst"
+    _write_doc(doc)
+    figure_base = tmp_path / "docs/_static/quasilinear_candidate_uncertainty"
+    figure_base.parent.mkdir(parents=True)
+    figure_base.with_suffix(".png").write_bytes(b"not a real png for metadata test")
+    sidecar = _candidate_uncertainty_sidecar()
+    sidecar["promotion_gate"]["accepted_candidates"] = [
+        "spectral_envelope_ridge",
+        "linear_weight",
+    ]
+    figure_base.with_suffix(".json").write_text(json.dumps(sidecar), encoding="utf-8")
+    index = tmp_path / "manuscript_figures.rst"
+    index.write_text(
+        (
+            f"current artifact base: ``{figure_base.with_suffix('.png')}`` "
+            f"with JSON companion ``{figure_base.with_suffix('.json')}``. "
+            "No runtime/TOML absolute-flux predictor; absolute-flux runtime "
+            "promotion remains blocked.\n"
+        ),
+        encoding="utf-8",
+    )
+
+    audit = mod.build_guardrail_audit(
+        [str(report)],
+        [doc],
+        [figure_base],
+        index,
+    )
+
+    assert audit["passed"] is False
+    failed_metrics = {
+        gate["metric"] for gate in audit["gate_report"]["gates"] if not gate["passed"]
+    }
+    assert f"ql_figure_failed_baselines_explicit:{figure_base}" in failed_metrics
+
+
+def test_manuscript_figure_audit_accepts_scoped_candidate_sidecar(
+    tmp_path: Path,
+) -> None:
+    mod = _load_tool_module()
+    report = tmp_path / "report.json"
+    report.write_text(
+        json.dumps(
+            _calibration_report(
+                claim_level="calibration_dataset",
+                passed=False,
+                holdout_error=4.0,
+            )
+        ),
+        encoding="utf-8",
+    )
+    doc = tmp_path / "doc.rst"
+    _write_doc(doc)
+    figure_base = tmp_path / "docs/_static/quasilinear_candidate_uncertainty"
+    figure_base.parent.mkdir(parents=True)
+    figure_base.with_suffix(".png").write_bytes(b"not a real png for metadata test")
+    figure_base.with_suffix(".json").write_text(
+        json.dumps(_candidate_uncertainty_sidecar()),
+        encoding="utf-8",
+    )
+    index = tmp_path / "manuscript_figures.rst"
+    index.write_text(
+        (
+            f"current artifact base: ``{figure_base.with_suffix('.png')}`` "
+            f"with JSON companion ``{figure_base.with_suffix('.json')}``. "
+            "No runtime/TOML absolute-flux predictor; absolute-flux runtime "
+            "promotion remains blocked.\n"
+        ),
+        encoding="utf-8",
+    )
+
+    audit = mod.build_guardrail_audit(
+        [str(report)],
+        [doc],
+        [figure_base],
+        index,
+    )
+
+    assert audit["passed"] is True
+    assert audit["summary"]["n_manuscript_figure_checks"] == 1
+    assert audit["manuscript_figure_provenance"][0]["claim_scoped"] is True
+    assert (
+        audit["manuscript_figure_provenance"][0]["failed_baselines_explicit"] is True
+    )
+
+
 def test_tracked_quasilinear_promotion_guardrails_pass() -> None:
     mod = _load_tool_module()
 
@@ -321,6 +502,8 @@ def test_tracked_quasilinear_promotion_guardrails_pass() -> None:
     assert audit["summary"]["n_input_validation_reports"] >= 4
     assert audit["summary"]["n_promotion_gate_reports"] >= 4
     assert audit["summary"]["n_manuscript_readiness_reports"] == 1
+    assert audit["summary"]["n_doc_checks"] == 4
+    assert audit["summary"]["n_manuscript_figure_checks"] == 7
 
 
 def test_guardrail_script_runs_before_editable_install(tmp_path: Path) -> None:

@@ -1,5 +1,46 @@
 {
-  "claim_scope": "Release production parallelization is closed for independent ky scans and quasilinear/UQ ensembles with CPU/GPU strong-scaling and serial numerical identity. Whole-state nonlinear sharding and FFT-axis decomposition remain diagnostic until runtime distributed communication, conservation, transport-window, and profiler-backed speedup gates pass.",
+  "claim_scope": "Release production parallelization is closed for independent ky scans and quasilinear/UQ ensembles with CPU/GPU strong-scaling and serial numerical identity. The independent ensemble provenance gate additionally verifies serial-vs-parallel ordering, worker clipping, exception metadata, and deterministic reconstruction for UQ/optimization batches. Whole-state nonlinear sharding and FFT-axis decomposition remain diagnostic until runtime distributed communication, conservation, transport-window, and profiler-backed speedup gates pass.",
+  "independent_ensemble_provenance_gate": {
+    "actual_workers": 4,
+    "exception_metadata": {
+      "actual_workers": 2,
+      "executor": "thread",
+      "index": 1,
+      "original_message": "provenance probe failure",
+      "original_type": "ValueError",
+      "passed": true,
+      "probe_workers": 16
+    },
+    "exception_metadata_passed": true,
+    "identity_passed": true,
+    "kind": "independent_ensemble_provenance_gate",
+    "ordering_passed": true,
+    "parallel_indices": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "passed": true,
+    "problem_size": 4,
+    "reconstructed_indices": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "reconstruction_identity_passed": true,
+    "requested_workers": 16,
+    "serial_indices": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "summary": "Independent UQ/optimization ensemble batching preserves serial ordering, clips oversubscribed workers, records worker-exception metadata, and reconstructs deterministically.",
+    "worker_clipping_passed": true,
+    "workload": "optimization_ensemble"
+  },
   "kind": "parallelization_completion_status",
   "lanes": [
     {

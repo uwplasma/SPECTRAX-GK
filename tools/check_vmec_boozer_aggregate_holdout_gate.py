@@ -80,9 +80,17 @@ def _samples(payload: dict[str, Any]) -> list[dict[str, Any]]:
 def _is_nonlinear_window_ensemble(payload: dict[str, Any]) -> bool:
     kind = str(payload.get("kind", "")).strip().lower()
     claim_level = str(payload.get("claim_level", "")).strip().lower()
-    return (
-        "nonlinear_window_ensemble" in kind
-        or "replicated_nonlinear_window" in claim_level
+    if kind == "nonlinear_window_ensemble_readiness_manifest":
+        return False
+    return kind == "nonlinear_window_ensemble_report" or (
+        "replicated_nonlinear_window" in claim_level
+        and "manifest_blocks_promotion" not in claim_level
+    )
+
+
+def _is_nonlinear_window_readiness_manifest(payload: dict[str, Any]) -> bool:
+    return str(payload.get("kind", "")).strip().lower() == (
+        "nonlinear_window_ensemble_readiness_manifest"
     )
 
 
@@ -183,6 +191,13 @@ def check_vmec_boozer_aggregate_holdout_gate(
         payload = _load_json_object(path)
         passed = _artifact_passed(payload)
         is_ensemble = _is_nonlinear_window_ensemble(payload)
+        is_readiness_manifest = _is_nonlinear_window_readiness_manifest(payload)
+        promotion_gate = payload.get("promotion_gate")
+        readiness_blockers = (
+            list(promotion_gate.get("blockers", []))
+            if isinstance(promotion_gate, dict)
+            else []
+        )
         qualifies = bool(passed and is_ensemble)
         if qualifies:
             qualifying_ensemble_reasons.append(_repo_relative(path))
@@ -191,7 +206,12 @@ def check_vmec_boozer_aggregate_holdout_gate(
                 "path": _repo_relative(path),
                 "passed": passed,
                 "is_nonlinear_window_ensemble": is_ensemble,
+                "is_nonlinear_window_readiness_manifest": is_readiness_manifest,
                 "claim_level": str(payload.get("claim_level", "")),
+                "readiness_blockers": readiness_blockers,
+                "missing_artifacts": payload.get("missing_artifacts", [])
+                if is_readiness_manifest
+                else [],
                 "qualifies_for_production_nonlinear_promotion": qualifies,
             }
         )
