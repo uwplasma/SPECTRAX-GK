@@ -33,8 +33,13 @@ Source Map
   :func:`spectraxgk.vmec_boozer_solver_objective_vector_from_state`
 - Scalar optimizer hook:
   :func:`spectraxgk.vmec_boozer_scalar_objective_from_state`
+- Multi-point objective table and aggregate hooks:
+  :func:`spectraxgk.vmec_boozer_solver_objective_table_from_state`,
+  :func:`spectraxgk.vmec_boozer_aggregate_scalar_objective_from_state`
 - VMEC-state finite-difference sensitivity audit:
   :func:`spectraxgk.vmec_boozer_scalar_objective_finite_difference_report`
+- Multi-point finite-difference sensitivity audit:
+  :func:`spectraxgk.vmec_boozer_aggregate_scalar_objective_finite_difference_report`
 - Curvature-gated one-parameter line search:
   :func:`spectraxgk.vmec_boozer_scalar_objective_line_search_report`
 - Fast branch-continuity and sensitivity gate:
@@ -83,6 +88,17 @@ they have a solved ``vmec_jax`` state. The supported aliases are
 ``quasilinear_flux``/``mixing_length_heat_flux_proxy``. This selector prevents
 each optimization example from silently using a different objective index.
 
+The production-facing geometry objective should not stay tied to one field
+line or one ``k_y`` point. ``vmec_boozer_solver_objective_table_from_state``
+evaluates the same solver-objective vector over explicit ``surface_indices``,
+field-line ``alphas``, and ``selected_ky_indices`` and returns the full table
+before any reduction. ``vmec_boozer_aggregate_scalar_objective_from_state``
+then reduces that table with a mean, weighted mean, or worst-case max. Mean and
+weighted mean are the preferred gradient-development targets because the
+sample set is fixed. A max reduction is useful as a conservative diagnostic,
+but it must not be treated as a smooth optimizer objective unless active-set
+and branch-continuity diagnostics are also passed.
+
 Before any optimizer loop is promoted, run
 ``vmec_boozer_scalar_objective_finite_difference_report`` on the selected
 VMEC coefficient, field line, and objective. It evaluates the scalar objective
@@ -92,6 +108,15 @@ curvature/branch-switch indicator so a non-smooth max-growth branch is not
 mistaken for a usable optimization gradient. This is intentionally a
 finite-difference/SPSA-compatible audit, not an automatic-differentiation claim
 for eigenvector-dependent quasilinear observables.
+
+For multi-surface or multi-``k_y`` objectives, run
+``vmec_boozer_aggregate_scalar_objective_finite_difference_report`` with the
+same sample set and weights used by the optimizer. The report records the
+sample metadata, scalar values, objective tables, and the same
+curvature/branch-switch indicator. This is the minimum gate before a
+stellarator optimization study can claim that a reduced growth-rate or
+quasilinear objective decreased across more than one field line, surface, or
+``k_y`` point.
 
 The first optimizer scaffold is
 ``vmec_boozer_scalar_objective_line_search_report``. It repeatedly applies the
@@ -500,7 +525,10 @@ the following pass:
    optimized-equilibrium finite-difference audits.
 7. Optimized geometries pass multi-field-line, multi-surface, grid/window
    convergence, and nonlinear holdout gates before being used for transport
-   claims.
+   claims. The current multi-point VMEC/Boozer aggregate API closes the
+   software plumbing for this gate, but the manuscript claim remains bounded
+   until the corresponding aggregate artifacts pass on the selected
+   equilibria.
 
 Until those gates pass, the release claim is: SPECTRAX-GK has a tested
 differentiable stellarator ITG objective-reduction workflow and the validation
