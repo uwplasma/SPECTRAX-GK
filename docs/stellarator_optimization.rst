@@ -540,6 +540,33 @@ transport claims.
    production promotion gate because it is still a reduced linear/quasilinear
    objective split, not a nonlinear transport validation.
 
+.. figure:: _static/vmec_boozer_aggregate_surface_holdout_gate.png
+   :width: 90%
+   :align: center
+   :alt: VMEC/Boozer aggregate surface-heldout line-search gate
+
+   Surface-heldout aggregate line-search gate. The QH quasilinear update is
+   trained on explicit ``surface_index = 18`` and evaluated on held-out
+   ``surface_index = 19`` with the same ``alpha=0`` and two ``k_y`` samples.
+   The tracked artifact passes with training relative reduction about
+   ``1.31e-3`` and held-out-surface relative reduction about ``4.59e-4``. This
+   closes a true reduced surface-generalization check; it still remains a
+   reduced linear/quasilinear objective gate rather than a nonlinear transport
+   validation.
+
+.. figure:: _static/vmec_boozer_second_equilibrium_aggregate_gate.png
+   :width: 90%
+   :align: center
+   :alt: VMEC/Boozer second-equilibrium aggregate-objective gate
+
+   Second-equilibrium aggregate-objective gate. The Li383 fixture passes the
+   same mode-21 VMEC/Boozer aggregate finite-difference and one-step
+   line-search path with two ``k_y`` samples. The finite-difference curvature
+   ratio is about ``3.4e-3`` and the line search reduces the reduced
+   quasilinear objective by about ``1.34e-4``. This is second-equilibrium
+   optimizer-plumbing evidence, not a calibrated saturated-flux or nonlinear
+   transport claim.
+
 .. figure:: _static/vmec_boozer_nonlinear_window_gradient_gate.png
    :width: 90%
    :align: center
@@ -637,9 +664,9 @@ the following pass:
    useful, but ``k_y``-only holdout evidence does not satisfy the
    surface/field-line gate. The current frozen promotion artifact,
    ``docs/_static/vmec_boozer_aggregate_holdout_promotion_gate.json``, is
-   blocked as intended because the tracked aggregate optimizer artifacts do not
-   yet include a separate production-grade held-out surface or field-line
-   validation artifact.
+   blocked as intended: reduced held-out-alpha and held-out-surface artifacts
+   now pass, but they are not production nonlinear transport validation
+   artifacts.
 
 Until those gates pass, the release claim is: SPECTRAX-GK has a tested
 differentiable stellarator ITG objective-reduction workflow and the validation

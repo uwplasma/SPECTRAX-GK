@@ -327,6 +327,7 @@ def _pilot_records(root: Path) -> list[dict[str, Any]]:
                 "kind": str(gate_payload.get("kind", "external_vmec_nonlinear_grid_convergence_gate")),
                 "gate_passed": passed,
                 "convergence_gate_passed": passed,
+                "grid_convergence_gate_passed": passed,
                 "summary_tmax": max(run_tmax) if run_tmax else None,
                 "source_tmax": None,
                 "effective_tmax": max(run_tmax) if run_tmax else None,

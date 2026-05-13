@@ -184,7 +184,7 @@ def check_vmec_boozer_aggregate_holdout_gate(
             bool(qualifying_holdout_reasons),
             "; ".join(qualifying_holdout_reasons)
             if qualifying_holdout_reasons
-            else "provide a passed holdout artifact with a new surface_index or alpha",
+            else "provide a passed production-scope holdout artifact with a new surface_index or alpha",
         ),
     ]
     blockers = [gate["metric"] for gate in gates if not bool(gate["passed"])]
@@ -201,7 +201,7 @@ def check_vmec_boozer_aggregate_holdout_gate(
             "requirements": [
                 "aggregate finite-difference artifact passes",
                 "aggregate line-search artifact passes on the same sample set",
-                "at least one passed validation artifact covers a held-out surface_index or field-line alpha",
+                "at least one passed production-scope validation artifact covers a held-out surface_index or field-line alpha",
                 "k_y-only holdouts do not satisfy the surface/field-line requirement",
             ],
         },

@@ -17,6 +17,7 @@
       "convergence_gate_passed": false,
       "effective_tmax": 150.00454711914062,
       "gate_passed": false,
+      "grid_convergence_gate_passed": false,
       "kind": "external_vmec_nonlinear_grid_convergence_gate",
       "notes": "long nonlinear pilots exist, but grid/window convergence gate fails",
       "production_nonlinear_optimization_blockers": [
@@ -40,6 +41,7 @@
       "convergence_gate_passed": false,
       "effective_tmax": 150.00454711914062,
       "gate_passed": false,
+      "grid_convergence_gate_passed": false,
       "kind": "external_vmec_nonlinear_grid_convergence_gate",
       "notes": "long nonlinear pilots exist, but grid/window convergence gate fails",
       "production_nonlinear_optimization_blockers": [
@@ -63,6 +65,7 @@
       "convergence_gate_passed": false,
       "effective_tmax": 250.00604248046875,
       "gate_passed": false,
+      "grid_convergence_gate_passed": false,
       "kind": "external_vmec_nonlinear_grid_convergence_gate",
       "notes": "long nonlinear pilots exist, but grid/window convergence gate fails",
       "production_nonlinear_optimization_blockers": [
@@ -86,6 +89,7 @@
       "convergence_gate_passed": false,
       "effective_tmax": 150.00454711914062,
       "gate_passed": false,
+      "grid_convergence_gate_passed": false,
       "kind": "external_vmec_nonlinear_grid_convergence_gate",
       "notes": "long nonlinear pilots exist, but grid/window convergence gate fails",
       "production_nonlinear_optimization_blockers": [
@@ -109,6 +113,7 @@
       "convergence_gate_passed": false,
       "effective_tmax": 150.00454711914062,
       "gate_passed": false,
+      "grid_convergence_gate_passed": false,
       "kind": "external_vmec_nonlinear_grid_convergence_gate",
       "notes": "long nonlinear pilots exist, but grid/window convergence gate fails",
       "production_nonlinear_optimization_blockers": [
@@ -132,6 +137,7 @@
       "convergence_gate_passed": false,
       "effective_tmax": 250.00604248046875,
       "gate_passed": false,
+      "grid_convergence_gate_passed": false,
       "kind": "external_vmec_nonlinear_grid_convergence_gate",
       "notes": "long nonlinear pilots exist, but grid/window convergence gate fails",
       "production_nonlinear_optimization_blockers": [
@@ -155,6 +161,7 @@
       "convergence_gate_passed": false,
       "effective_tmax": 150.00454711914062,
       "gate_passed": false,
+      "grid_convergence_gate_passed": false,
       "kind": "external_vmec_nonlinear_grid_convergence_gate",
       "notes": "long nonlinear pilots exist, but grid/window convergence gate fails",
       "production_nonlinear_optimization_blockers": [
@@ -178,6 +185,7 @@
       "convergence_gate_passed": false,
       "effective_tmax": 150.00454711914062,
       "gate_passed": false,
+      "grid_convergence_gate_passed": false,
       "kind": "external_vmec_nonlinear_grid_convergence_gate",
       "notes": "long nonlinear pilots exist, but grid/window convergence gate fails",
       "production_nonlinear_optimization_blockers": [
@@ -592,10 +600,10 @@
       "convergence_gate_passed": true,
       "effective_tmax": 150.00454711914062,
       "gate_passed": true,
+      "grid_convergence_gate_passed": true,
       "kind": "external_vmec_nonlinear_grid_convergence_gate",
       "notes": "long nonlinear pilots pass the grid/window convergence gate",
       "production_nonlinear_optimization_blockers": [
-        "missing grid-convergence gate for optimized nonlinear objective",
         "missing timestep-convergence gate for optimized nonlinear objective",
         "missing seed/initial-condition uncertainty gate",
         "missing optimized-equilibrium nonlinear audit"
@@ -614,10 +622,10 @@
       "convergence_gate_passed": true,
       "effective_tmax": 250.00604248046875,
       "gate_passed": true,
+      "grid_convergence_gate_passed": true,
       "kind": "external_vmec_nonlinear_grid_convergence_gate",
       "notes": "long nonlinear pilots pass the grid/window convergence gate",
       "production_nonlinear_optimization_blockers": [
-        "missing grid-convergence gate for optimized nonlinear objective",
         "missing timestep-convergence gate for optimized nonlinear objective",
         "missing seed/initial-condition uncertainty gate",
         "missing optimized-equilibrium nonlinear audit"
@@ -636,10 +644,10 @@
       "convergence_gate_passed": true,
       "effective_tmax": 350.0075378417969,
       "gate_passed": true,
+      "grid_convergence_gate_passed": true,
       "kind": "external_vmec_nonlinear_grid_convergence_gate",
       "notes": "long nonlinear pilots pass the grid/window convergence gate",
       "production_nonlinear_optimization_blockers": [
-        "missing grid-convergence gate for optimized nonlinear objective",
         "missing timestep-convergence gate for optimized nonlinear objective",
         "missing seed/initial-condition uncertainty gate",
         "missing optimized-equilibrium nonlinear audit"
@@ -742,10 +750,10 @@
       "convergence_gate_passed": true,
       "effective_tmax": 450.009033203125,
       "gate_passed": true,
+      "grid_convergence_gate_passed": true,
       "kind": "external_vmec_nonlinear_grid_convergence_gate",
       "notes": "long nonlinear pilots pass the grid/window convergence gate",
       "production_nonlinear_optimization_blockers": [
-        "missing grid-convergence gate for optimized nonlinear objective",
         "missing timestep-convergence gate for optimized nonlinear objective",
         "missing seed/initial-condition uncertainty gate",
         "missing optimized-equilibrium nonlinear audit"

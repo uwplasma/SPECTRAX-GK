@@ -4915,3 +4915,62 @@ Exit gate:
   - keep production nonlinear transport optimization blocked until the horizon
     audit can report at least one optimized-equilibrium artifact with all
     convergence and uncertainty gates closed.
+
+## 2026-05-13 Surface Holdout, Second Equilibrium, and Claim-Contract Push
+
+- CI for head `3341ce2` is green: 59 jobs passed, including repo hygiene,
+  mypy, docs/package, fast coverage, all 48 wide-coverage shards, and combined
+  wide coverage.
+- Added a true surface-index reduced aggregate holdout gate:
+  `tools/build_vmec_boozer_aggregate_surface_holdout_gate.py`,
+  `tests/test_build_vmec_boozer_aggregate_surface_holdout_gate.py`, and
+  `docs/_static/vmec_boozer_aggregate_surface_holdout_gate.{json,csv,png,pdf}`.
+  The QH quasilinear update trained on `surface_index=18` and held out
+  `surface_index=19` with the same `alpha=0` and `k_y=(1,2)` samples. It
+  passed with training reduction `1.31e-3` and held-out-surface reduction
+  `4.59e-4`.
+- Added a second-equilibrium reduced aggregate gate:
+  `tools/build_vmec_boozer_second_equilibrium_aggregate_gate.py`,
+  `tests/test_build_vmec_boozer_second_equilibrium_aggregate_gate.py`, and
+  `docs/_static/vmec_boozer_second_equilibrium_aggregate_gate.{json,csv,png,pdf}`.
+  The Li383 fixture passed both finite-difference and one-step line-search
+  gates at `mboz=nboz=21`; the finite-difference curvature ratio is
+  `3.41e-3`, and the line search reduced the reduced QL objective by
+  `1.34e-4`.
+- Regenerated `docs/_static/vmec_boozer_aggregate_holdout_promotion_gate.json`
+  with the alpha and surface holdout artifacts. The gate still blocks
+  production promotion as intended because both held-out artifacts are reduced
+  linear/quasilinear evidence with explicit non-nonlinear claim scope, not
+  production nonlinear transport validation artifacts.
+- Tightened `tools/build_parallelization_completion_status.py` and its tests so
+  the status artifact now records source-contract checks for artifact kind,
+  CPU/GPU input coverage, and claim-scope separation. The refreshed
+  `docs/_static/parallelization_completion_status.*` remains green for
+  independent `k_y` scans and UQ ensembles while keeping whole-state nonlinear
+  sharding diagnostic-only.
+- Updated the nonlinear horizon audit so passed external-VMEC grid/window
+  convergence artifacts explicitly close the
+  `grid_convergence_gate_passed` production subgate. Four existing records now
+  remove the grid blocker, but production nonlinear optimization readiness
+  remains `0/36` because timestep convergence, seed/IC uncertainty, and
+  optimized-equilibrium nonlinear audits are still missing.
+- Added callback utility coverage in `tests/test_callbacks.py` for duration
+  formatting, progress stride sanitization, ETA printing, metric labels, and
+  JAX callback forwarding.
+- Current lane progress after this tranche:
+  - differentiable VMEC/Boozer reduced optimization plumbing: `97%`;
+  - growth-rate stellarator optimization evidence: `92%`;
+  - quasilinear stellarator optimization evidence: `95%`;
+  - production nonlinear turbulent-flux optimization evidence: `66%`;
+  - publication quasilinear/model-development figures: `88%`;
+  - package-wide coverage/release infrastructure: `97%`;
+  - refactor/testability lane: `88%`;
+  - parallelization production independent-work lane: `92%`;
+  - nonlinear domain decomposition and production nonlinear speedup lane: `60%`.
+- Next best scientific steps:
+  - add a production-scope nonlinear optimized-equilibrium transport artifact,
+    then reuse the promotion checker with that artifact;
+  - add nonlinear timestep and seed/IC uncertainty gates for the external-VMEC
+    records that already passed grid/window convergence;
+  - extend second-equilibrium aggregate checks to a held-out surface/field-line
+    split once runtime/memory allows.

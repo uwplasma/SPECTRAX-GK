@@ -1,0 +1,2 @@
+case_name,passed,feasible,mboz,nboz,n_samples,elapsed_wall_seconds,fd_passed,fd_base_value,fd_central_derivative,fd_response_abs,fd_curvature_ratio,line_search_passed,accepted_steps,initial_objective,final_objective,relative_reduction,stop_reason,blocker_type,blocker_message
+li383_low_res,True,True,21,21,2,26.16077029198641,True,9.788411723486012,-131581.3127201526,0.026316262544030522,0.0034110957961531064,True,1,9.788411723486012,9.787095473427266,0.0001344702384747547,max_steps,,

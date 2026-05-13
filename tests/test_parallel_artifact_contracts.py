@@ -134,9 +134,13 @@ def test_parallelization_completion_status_scopes_production_and_diagnostic_lane
     lanes = {lane["lane"]: lane for lane in payload["lanes"]}
     assert lanes["independent_ky_scan"]["status"] == "production_closed"
     assert lanes["quasilinear_uq_ensemble"]["status"] == "production_closed"
+    assert lanes["independent_ky_scan"]["source_contract"]["claim_separation_passed"] is True
+    assert lanes["independent_ky_scan"]["source_contract"]["input_backends"] == ["cpu", "gpu"]
+    assert lanes["quasilinear_uq_ensemble"]["source_contract"]["claim_separation_passed"] is True
     assert lanes["independent_ky_scan"]["best_speedups"]["cpu"] >= 5.0
     assert lanes["independent_ky_scan"]["best_speedups"]["gpu"] >= 1.5
     assert lanes["whole_state_nonlinear_sharding"]["status"] == "diagnostic_closed_not_production"
+    assert lanes["whole_state_nonlinear_sharding"]["source_contract"]["claim_separation_passed"] is True
     assert lanes["fft_axis_domain"]["status"] == "diagnostic_identity_closed"
 
 

@@ -11,6 +11,26 @@
       "identity_passed": true,
       "lane": "independent_ky_scan",
       "source": "docs/_static/independent_ky_scan_scaling_large.json",
+      "source_contract": {
+        "artifact_kind": "independent_ky_scan_scaling_combined",
+        "claim_separation_passed": true,
+        "expected_input_backends": [
+          "cpu",
+          "gpu"
+        ],
+        "expected_kind": "independent_ky_scan_scaling_combined",
+        "input_backend_gate_passed": true,
+        "input_backends": [
+          "cpu",
+          "gpu"
+        ],
+        "kind_gate_passed": true,
+        "missing_scope_phrases": [],
+        "required_scope_phrases": [
+          "independent ky scan",
+          "not a nonlinear domain-decomposition speedup claim"
+        ]
+      },
       "status": "production_closed",
       "summary": "Production independent-work strong scaling with serial numerical identity.",
       "threshold_passed": true,
@@ -28,6 +48,26 @@
       "identity_passed": true,
       "lane": "quasilinear_uq_ensemble",
       "source": "docs/_static/quasilinear_uq_ensemble_scaling_large.json",
+      "source_contract": {
+        "artifact_kind": "quasilinear_uq_ensemble_scaling_combined",
+        "claim_separation_passed": true,
+        "expected_input_backends": [
+          "cpu",
+          "gpu"
+        ],
+        "expected_kind": "quasilinear_uq_ensemble_scaling_combined",
+        "input_backend_gate_passed": true,
+        "input_backends": [
+          "cpu",
+          "gpu"
+        ],
+        "kind_gate_passed": true,
+        "missing_scope_phrases": [],
+        "required_scope_phrases": [
+          "quasilinear/uq ensemble",
+          "not a promoted absolute nonlinear heat-flux predictor"
+        ]
+      },
       "status": "production_closed",
       "summary": "Production independent-work strong scaling with serial numerical identity.",
       "threshold_passed": true,
@@ -45,6 +85,26 @@
       "identity_passed": true,
       "lane": "whole_state_nonlinear_sharding",
       "source": "docs/_static/nonlinear_sharding_strong_scaling_large.json",
+      "source_contract": {
+        "artifact_kind": "nonlinear_sharding_strong_scaling_combined",
+        "claim_separation_passed": true,
+        "expected_input_backends": [
+          "cpu",
+          "gpu"
+        ],
+        "expected_kind": "nonlinear_sharding_strong_scaling_combined",
+        "input_backend_gate_passed": true,
+        "input_backends": [
+          "cpu",
+          "gpu"
+        ],
+        "kind_gate_passed": true,
+        "missing_scope_phrases": [],
+        "required_scope_phrases": [
+          "whole-state sharding",
+          "not a production speedup claim"
+        ]
+      },
       "status": "diagnostic_closed_not_production",
       "summary": "Whole-state nonlinear sharding preserves state identity but is not promoted as production nonlinear domain-decomposition speedup.",
       "threshold_passed": null
@@ -55,6 +115,20 @@
       "identity_passed": true,
       "lane": "fft_axis_domain",
       "source": "docs/_static/nonlinear_spectral_communication_identity_gate.json",
+      "source_contract": {
+        "artifact_kind": "nonlinear_spectral_communication_identity_gate",
+        "claim_separation_passed": true,
+        "expected_input_backends": [],
+        "expected_kind": "nonlinear_spectral_communication_identity_gate",
+        "input_backend_gate_passed": true,
+        "input_backends": [],
+        "kind_gate_passed": true,
+        "missing_scope_phrases": [],
+        "required_scope_phrases": [
+          "split/reassemble layout simulation",
+          "no production routing or speedup claim"
+        ]
+      },
       "status": "diagnostic_identity_closed",
       "summary": "Spectral split/reassemble, FFT round-trip, bracket, and field-layout identity are closed; runtime distributed FFT routing remains out of production scope.",
       "threshold_passed": null

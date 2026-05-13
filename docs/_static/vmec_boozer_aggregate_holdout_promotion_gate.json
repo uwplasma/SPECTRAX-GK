@@ -17,7 +17,7 @@
       "passed": true
     },
     {
-      "detail": "provide a passed holdout artifact with a new surface_index or alpha",
+      "detail": "provide a passed production-scope holdout artifact with a new surface_index or alpha",
       "metric": "passed_holdout_surface_or_field_line_artifact",
       "passed": false
     }
@@ -34,6 +34,18 @@
       "passed": true,
       "path": "docs/_static/vmec_boozer_aggregate_alpha_holdout_gate.json",
       "qualifies_for_promotion": false
+    },
+    {
+      "claim_scope_blockers": [
+        "not a nonlinear",
+        "reduced"
+      ],
+      "heldout_reason": "held-out surface_index=19",
+      "heldout_surface_or_field_line": true,
+      "n_samples": 2,
+      "passed": true,
+      "path": "docs/_static/vmec_boozer_aggregate_surface_holdout_gate.json",
+      "qualifies_for_promotion": false
     }
   ],
   "kind": "vmec_boozer_aggregate_holdout_promotion_gate",
@@ -47,7 +59,7 @@
     "requirements": [
       "aggregate finite-difference artifact passes",
       "aggregate line-search artifact passes on the same sample set",
-      "at least one passed validation artifact covers a held-out surface_index or field-line alpha",
+      "at least one passed production-scope validation artifact covers a held-out surface_index or field-line alpha",
       "k_y-only holdouts do not satisfy the surface/field-line requirement"
     ]
   },

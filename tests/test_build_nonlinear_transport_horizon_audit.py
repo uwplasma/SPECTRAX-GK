@@ -124,6 +124,17 @@ def test_build_payload_marks_short_fd_audit_outside_transport_scope(tmp_path: Pa
             "promotion_gate": {"passed": False, "reason": "not grid converged"},
         },
     )
+    _write_json(
+        tmp_path,
+        "docs/_static/external_vmec_dshape_t250_high_grid_convergence_gate.json",
+        {
+            "kind": "external_vmec_nonlinear_grid_convergence_gate",
+            "case": "D-shaped grid gate",
+            "claim_level": "passed_grid_convergence_candidate_for_transport_holdout",
+            "gate_report": {"passed": True},
+            "runs": [{"tmax": 250.0}, {"tmax": 250.0}],
+        },
+    )
 
     payload = mod.build_payload(tmp_path)
     rows = {row["case"]: row for row in payload["records"]}
@@ -140,6 +151,24 @@ def test_build_payload_marks_short_fd_audit_outside_transport_scope(tmp_path: Pa
         ]
     )
     assert rows["QH pilot"]["status"] == "long_feasibility_pending_convergence"
-    assert payload["summary"]["release_transport_gate_passed"] == 1
+    assert rows["D-shaped grid gate"]["status"] == "release_transport_gate_passed"
+    assert rows["D-shaped grid gate"]["grid_convergence_gate_passed"] is True
+    assert (
+        "missing grid-convergence gate for optimized nonlinear objective"
+        not in rows["D-shaped grid gate"]["production_nonlinear_optimization_blockers"]
+    )
+    assert (
+        "missing timestep-convergence gate for optimized nonlinear objective"
+        in rows["D-shaped grid gate"]["production_nonlinear_optimization_blockers"]
+    )
+    assert (
+        "missing seed/initial-condition uncertainty gate"
+        in rows["D-shaped grid gate"]["production_nonlinear_optimization_blockers"]
+    )
+    assert (
+        "missing optimized-equilibrium nonlinear audit"
+        in rows["D-shaped grid gate"]["production_nonlinear_optimization_blockers"]
+    )
+    assert payload["summary"]["release_transport_gate_passed"] == 2
     assert payload["summary"]["short_or_reduced_not_transport"] == 1
     assert payload["summary"]["production_nonlinear_optimization_ready"] == 0
