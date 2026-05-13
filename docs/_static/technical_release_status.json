@@ -158,6 +158,14 @@
         },
         {
           "exists": true,
+          "name": "parallelization completion status",
+          "passed": true,
+          "path": "docs/_static/parallelization_completion_status.json",
+          "required": true,
+          "snippet": "production_completion_percent"
+        },
+        {
+          "exists": true,
           "name": "nonlinear sharding scoped diagnostic",
           "passed": true,
           "path": "docs/_static/nonlinear_sharding_strong_scaling_large.json",
@@ -191,8 +199,8 @@
       ],
       "completion_percent": 100.0,
       "failed_required": [],
-      "passed_required": 8,
-      "required": 8
+      "passed_required": 9,
+      "required": 9
     },
     "performance_artifacts": {
       "checks": [

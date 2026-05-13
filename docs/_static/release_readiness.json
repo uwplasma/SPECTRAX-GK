@@ -162,7 +162,7 @@
       "spectrax-gk",
       "spectraxgk"
     ],
-    "version": "1.5.0"
+    "version": "1.6.0"
   },
   "release_target": {
     "status_source": "docs/_static/manuscript_readiness_status.json:lanes",
@@ -172,10 +172,13 @@
     "wide-coverage-shards",
     "coverage-wide-shard-manifest.json",
     "--require-shard-data",
+    "--coverage-xml coverage-wide.xml",
+    "--enforce-package-coverage",
     "codecov/codecov-action",
     "tools/check_parallel_scaling_artifacts.py",
     "tools/check_performance_optimization_manifest.py",
     "tools/check_quasilinear_promotion_guardrails.py",
+    "tools/build_parallelization_completion_status.py",
     "tools/build_technical_release_status.py",
     "tools/check_release_readiness.py"
   ],
@@ -195,7 +198,10 @@
     "docs/_static/w7x_tem_extension_status.json",
     "docs/_static/independent_ky_scan_scaling_large.json",
     "docs/_static/quasilinear_uq_ensemble_scaling_large.json",
-    "docs/_static/nonlinear_sharding_strong_scaling_large.json"
+    "docs/_static/parallelization_completion_status.json",
+    "docs/_static/nonlinear_sharding_strong_scaling_large.json",
+    "docs/_static/nonlinear_domain_parallel_identity_gate.json",
+    "docs/_static/nonlinear_spectral_communication_identity_gate.json"
   ],
   "root": "/Users/rogeriojorge/local/SPECTRAX-GK",
   "technical_status": {
@@ -209,9 +215,9 @@
     "checked_pypi": false,
     "duplicate_on_pypi": false,
     "package": "spectraxgk",
-    "project_version": "1.5.0",
+    "project_version": "1.6.0",
     "require_tag": false,
-    "source_version": "1.5.0",
+    "source_version": "1.6.0",
     "tag": null
   }
 }

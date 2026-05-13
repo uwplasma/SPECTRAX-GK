@@ -67,6 +67,15 @@ score.
        finite-difference audits are startup plumbing checks with false
        transport-average gates; they do not validate production turbulence
        gradients.
+   * - VMEC/Boozer reduced objectives
+     - release-ready for reduced gradient and UQ plumbing
+     - The public in-memory objective path supports reduced linear frequency,
+       electrostatic quasilinear proxy, and smooth nonlinear-window-estimator
+       objectives through the mode-21 VMEC/Boozer bridge. The QH and Li383
+       holdout matrix is the citeable gate for these reduced objectives. This
+       row does not promote multi-surface/multi-alpha optimization, calibrated
+       absolute quasilinear flux prediction, or converged nonlinear heat-flux
+       gradients.
    * - Stellarator optimization examples
      - release-ready as reduced examples
      - The examples demonstrate differentiable reduced ITG objectives, UQ, and
@@ -102,6 +111,10 @@ Do not make these claims from the current artifacts:
   ``booz_xform_jax``;
 - treating compact nonlinear finite-difference startup audits as saturated
   transport averages;
+- treating reduced nonlinear-window estimators or startup finite-difference
+  audits as optimized-equilibrium nonlinear heat-flux audit bars;
+- multi-surface, multi-alpha, or multi-``k_y`` stellarator optimization from
+  the current reduced single-fixture objective evidence;
 - broad W7-X validation beyond the tracked single-flux-tube ITG windows;
 - broad QI validation beyond the fixed-resolution mode-21 equal-arc parity row;
 - citing even the fixed-resolution QI mode-21 row when the latest regenerated
@@ -148,8 +161,23 @@ README claims, or manuscript claims.
        ``vmec_boozer_nonlinear_window_fd_audit.*``
      - Reduced AD/finite-difference gates are in scope. Production nonlinear
        turbulence-gradient and optimized-equilibrium heat-flux claims are not.
+   * - VMEC/Boozer objective and optimization checklist
+     - ``vmec_boozer_solver_frequency_gradient_gate.*``,
+       ``vmec_boozer_quasilinear_gradient_gate.*``,
+       ``vmec_boozer_nonlinear_window_gradient_gate.*``,
+       ``vmec_boozer_li383_solver_frequency_gradient_gate.*``,
+       ``vmec_boozer_li383_quasilinear_gradient_gate.*``,
+       ``vmec_boozer_li383_nonlinear_window_gradient_gate.*``,
+       ``vmec_boozer_gradient_holdout_matrix.*``,
+       ``stellarator_itg_optimization_comparison.*``, and
+       ``stellarator_itg_optimization_uq.*``
+     - These artifacts support reduced objective differentiability, optimizer
+       plumbing, and local UQ. They do not support calibrated saturated-flux
+       prediction, production nonlinear turbulence gradients, or nonlinear
+       audits of optimized equilibria.
    * - Scope guardrails
      - ``technical_release_status.json``,
+       ``parallelization_completion_status.*``,
        ``release_readiness.json``, ``manuscript_readiness_status.*``,
        ``open_research_lane_status.*``, and
        ``w7x_tem_extension_status.*``
@@ -159,6 +187,7 @@ README claims, or manuscript claims.
      - ``runtime_memory_benchmark.*``,
        ``independent_ky_scan_scaling_large.*``,
        ``quasilinear_uq_ensemble_scaling_large.*``, and
+       ``parallelization_completion_status.*``, plus
        ``nonlinear_sharding_*``
      - Independent-work parallelization and profiler localization are in scope.
        Whole-state nonlinear sharding is not a production speedup claim.
@@ -232,6 +261,11 @@ Differentiable-geometry state:
 - ``docs/_static/vmec_boozer_gradient_holdout_matrix.json`` passes reduced
   linear, quasilinear, and nonlinear-window-estimator gradient gates on QH and
   Li383 with maximum relative mismatch about ``2.7e-2``.
+- The VMEC/Boozer objective artifact checklist for README and manuscript use is
+  the parity matrix, the six single-equilibrium frequency/quasilinear/reduced
+  nonlinear-window gradient-gate figures, the combined holdout matrix, and the
+  reduced stellarator ITG optimization/UQ panels. This checklist is the current
+  boundary between objective plumbing and transport prediction.
 - ``docs/_static/nonlinear_window_fd_audit.json`` and
   ``docs/_static/vmec_boozer_nonlinear_window_fd_audit.json`` pass only startup
   finite-difference plumbing checks. Both record ``transport_average_gate =
@@ -245,6 +279,10 @@ Parallelization and performance state:
 - ``docs/_static/independent_ky_scan_scaling_large.json`` and
   ``docs/_static/quasilinear_uq_ensemble_scaling_large.json`` support
   production independent-work parallelization for scans and ensembles.
+- ``docs/_static/parallelization_completion_status.json`` is the release
+  closure ledger for parallelization: production independent-work CPU/GPU
+  scaling is closed, while nonlinear domain and FFT-axis decomposition remain
+  diagnostic.
 - ``docs/_static/nonlinear_sharding_strong_scaling_large.json`` is an identity
   and profiler-direction artifact. It shows whole-state nonlinear sharding is
   identity-correct but not a production speedup path for the current

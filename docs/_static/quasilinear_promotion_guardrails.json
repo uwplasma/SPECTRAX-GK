@@ -63,6 +63,31 @@
     "case": "quasilinear_absolute_flux_promotion_guardrails",
     "gates": [
       {
+        "detail": "docs/_static/manuscript_readiness_status.json contains 'Quasilinear diagnostics and saturation-model selection'",
+        "metric": "manuscript_ql_lane_present",
+        "passed": true
+      },
+      {
+        "detail": "claim_level=scoped_candidate_model_selection_not_runtime_flux_predictor absolute_flux_promoted=False",
+        "metric": "manuscript_ql_not_absolute_flux",
+        "passed": true
+      },
+      {
+        "detail": "status=closed claim_level=scoped_candidate_model_selection_not_runtime_flux_predictor",
+        "metric": "manuscript_ql_closed_scope_is_non_absolute",
+        "passed": true
+      },
+      {
+        "detail": "candidate_selected=True claim_level=scoped_candidate_model_selection_not_runtime_flux_predictor",
+        "metric": "manuscript_ql_candidate_scope_not_runtime",
+        "passed": true
+      },
+      {
+        "detail": "manuscript QL lane should list the promotion guardrail audit artifact",
+        "metric": "manuscript_ql_guardrail_artifact_listed",
+        "passed": true
+      },
+      {
         "detail": "7 required nonlinear summaries passed",
         "metric": "input_validation_passed",
         "passed": true
@@ -225,7 +250,20 @@
     }
   ],
   "kind": "quasilinear_promotion_guardrail_audit",
-  "notes": "Fast metadata guardrail only: it verifies finite nonlinear window statistics, train/holdout provenance, absolute-flux promotion gates, and conservative docs wording. It does not replace nonlinear convergence simulations.",
+  "manuscript_readiness_reports": [
+    {
+      "absolute_flux_promoted": false,
+      "accepted_uq_candidates": [
+        "spectral_envelope_ridge"
+      ],
+      "artifact": "docs/_static/manuscript_readiness_status.json",
+      "kind": "manuscript_readiness_status",
+      "ql_claim_level": "scoped_candidate_model_selection_not_runtime_flux_predictor",
+      "ql_lane_present": true,
+      "ql_status": "closed"
+    }
+  ],
+  "notes": "Fast metadata guardrail only: it verifies finite nonlinear window statistics, train/holdout provenance, absolute-flux promotion gates, manuscript-readiness QL scope, and conservative docs wording. It does not replace nonlinear convergence simulations.",
   "passed": true,
   "promotion_gate_reports": [
     {
@@ -268,7 +306,8 @@
     "n_doc_checks": 3,
     "n_failed_gates": 0,
     "n_input_validation_reports": 4,
+    "n_manuscript_readiness_reports": 1,
     "n_promotion_gate_reports": 4,
-    "n_reports_scanned": 9
+    "n_reports_scanned": 10
   }
 }
