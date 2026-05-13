@@ -4826,6 +4826,10 @@ Exit gate:
   accepted one step in `21.5 s`: objective `0.8870404 -> 0.8850874`,
   relative reduction `2.20e-3`, final coefficient offset `-1e-8`, and the
   underlying aggregate FD curvature ratio remained `9.46e-3`.
+- Added `tools/build_vmec_boozer_aggregate_line_search_gate.py` and generated
+  `docs/_static/vmec_boozer_aggregate_line_search_gate.{json,csv,png,pdf}` so
+  the aggregate optimizer-control gate is now reproducible and visible in the
+  docs alongside the aggregate FD gate.
 - Next best scientific steps:
   - build a tracked artifact for the aggregate gate on the QH warm-start case
     with `mboz=nboz=21`, at least two field lines or surfaces, and at least
