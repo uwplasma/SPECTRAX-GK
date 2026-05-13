@@ -4822,6 +4822,17 @@ Exit gate:
   optimizer-control path for multi-point reduced growth/QL objectives. Each
   attempted one-coefficient update must pass the aggregate finite-difference
   curvature gate and reduce the aggregate objective before it is accepted.
+- Added `vmec_boozer_aggregate_line_search_holdout_report`, which separates
+  training aggregate samples from held-out aggregate samples and passes only
+  if the accepted coefficient update reduces both. This is the next guardrail
+  against confusing training-only reduced-objective improvement with
+  geometry-wide stellarator optimization.
+- Real QH split smoke using training `ky_index=1` and held-out `ky_index=2`
+  correctly failed closed: training QL decreased `1.4441574 -> 1.4390302`
+  (`3.55e-3` relative reduction), but held-out QL increased
+  `0.3299233 -> 0.3311445` (`-3.70e-3` relative reduction). This proves the
+  split gate is doing useful scientific work and blocks overclaiming the
+  one-coefficient update as geometry-wide optimization.
 - Real QH aggregate QL line-search smoke with the same two-`k_y` sample set
   accepted one step in `21.5 s`: objective `0.8870404 -> 0.8850874`,
   relative reduction `2.20e-3`, final coefficient offset `-1e-8`, and the
