@@ -7,6 +7,7 @@ import pytest
 
 from spectraxgk.stellarator_objective_portfolio import (
     aggregate_objective_portfolio,
+    objective_portfolio_sensitivity_report,
     portfolio_objective_weight_vector,
     portfolio_sample_weight_tensor,
     validate_objective_portfolio_contract,
@@ -93,6 +94,80 @@ def test_objective_portfolio_gradient_jvp_and_finite_difference_parity() -> None
     np.testing.assert_allclose(float(tangent), float(finite_difference), rtol=1.5e-3, atol=1.5e-3)
 
 
+def test_objective_portfolio_sensitivity_report_checks_fd_and_conditioning() -> None:
+    surface = jnp.asarray([-0.4, 0.7])[:, None, None]
+    alpha = jnp.asarray([-0.5, 0.3])[None, :, None]
+    ky = jnp.asarray([0.2, 0.6, 1.0])[None, None, :]
+
+    def row_fn(params: jnp.ndarray) -> jnp.ndarray:
+        gamma = 0.15 + 0.08 * params[0] + 0.04 * alpha + 0.03 * ky
+        kperp = 0.45 + 0.05 * params[1] ** 2 + 0.08 * ky + 0.02 * surface
+        flux = 0.30 + 0.09 * params[2] + 0.04 * jnp.sin(params[1] + alpha) + 0.02 * surface * ky
+        ql_flux = gamma * flux / kperp
+        return jnp.stack(
+            [
+                gamma + jnp.zeros_like(ql_flux),
+                kperp + jnp.zeros_like(ql_flux),
+                ql_flux,
+            ],
+            axis=-1,
+        )
+
+    params = jnp.asarray([0.12, -0.20, 0.35])
+    step = 1.0e-4 if bool(jax.config.jax_enable_x64) else 2.0e-3
+    rtol = 5.0e-4 if bool(jax.config.jax_enable_x64) else 2.0e-2
+    atol = 1.0e-5 if bool(jax.config.jax_enable_x64) else 2.0e-4
+
+    report = objective_portfolio_sensitivity_report(
+        row_fn,
+        params,
+        surface_weights=jnp.asarray([1.0, 2.0]),
+        alpha_weights=jnp.asarray([2.0, 1.0]),
+        ky_weights=jnp.asarray([1.0, 2.0, 3.0]),
+        objective_weights=jnp.asarray([0.2, 0.2, 1.0]),
+        step=step,
+        rtol=rtol,
+        atol=atol,
+        min_rank=3,
+        condition_number_limit=1.0e4,
+        workers=2,
+    )
+
+    assert report["passed"] is True
+    assert report["portfolio_contract"]["row_shape"] == [2, 2, 3, 3]
+    assert report["scalar_gradient_gate"]["passed"] is True
+    assert report["row_jacobian_gate"]["passed"] is True
+    assert report["conditioning_gate"]["passed"] is True
+    assert report["conditioning_gate"]["sensitivity_map_rank"] == 3
+    assert report["scalar_gradient_gate"]["finite_difference_parallel"]["requested_workers"] == 2
+    assert report["covariance"]["source"] == "objective_portfolio_rows"
+
+
+def test_objective_portfolio_sensitivity_report_fails_rank_deficient_rows() -> None:
+    sample_axis = jnp.arange(4.0).reshape((1, 1, 4))
+
+    def rank_deficient_row_fn(params: jnp.ndarray) -> jnp.ndarray:
+        row = 0.2 + params[0] * (1.0 + sample_axis)
+        return row[..., None]
+
+    report = objective_portfolio_sensitivity_report(
+        rank_deficient_row_fn,
+        jnp.asarray([0.1, -0.2]),
+        reduction="mean",
+        step=1.0e-3,
+        rtol=2.0e-2,
+        atol=2.0e-4,
+        min_rank=2,
+        condition_number_limit=1.0e4,
+    )
+
+    assert report["passed"] is False
+    assert report["scalar_gradient_gate"]["passed"] is True
+    assert report["row_jacobian_gate"]["passed"] is True
+    assert report["conditioning_gate"]["passed"] is False
+    assert report["conditioning_gate"]["rank_deficiency"] == 1
+
+
 def test_objective_portfolio_rejects_invalid_shape_and_weights() -> None:
     rows = jnp.ones((2, 2, 2, 2))
 
@@ -132,3 +207,4 @@ def test_objective_portfolio_helpers_are_exported_at_package_top_level() -> None
 
     assert isinstance(contract, sgk.StellaratorObjectivePortfolioContract)
     np.testing.assert_allclose(float(sgk.aggregate_objective_portfolio(rows)), 1.0)
+    assert sgk.objective_portfolio_sensitivity_report is objective_portfolio_sensitivity_report

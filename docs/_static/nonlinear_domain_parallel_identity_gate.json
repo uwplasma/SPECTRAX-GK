@@ -1,11 +1,65 @@
 {
+  "boundary_identity": {
+    "indices": [
+      0,
+      2,
+      3,
+      5
+    ],
+    "max_abs_error": 0.0,
+    "max_rel_error": 0.0
+  },
   "case": "Nonlinear state-domain decomposition identity gate",
-  "claim_scope": "diagnostic nonlinear state-domain identity gate only; no production routing or speedup claim",
+  "claim_scope": "diagnostic nonlinear state-domain identity gate only; bounded local-stencil prototype with no production routing or speedup claim",
+  "decomposition": {
+    "axis": 0,
+    "boundary_indices": [
+      0,
+      2,
+      3,
+      5
+    ],
+    "chunk_bounds": [
+      [
+        0,
+        3
+      ],
+      [
+        3,
+        6
+      ]
+    ],
+    "chunk_sizes": [
+      3,
+      3
+    ],
+    "domain_size": 6,
+    "halo": 1,
+    "num_domains": 2,
+    "offsets": [
+      0,
+      3
+    ],
+    "state_shape": [
+      6,
+      4
+    ]
+  },
   "dt": 0.025,
   "gate": {
     "atol": 1e-06,
-    "claim_scope": "diagnostic nonlinear state-domain identity gate only; no production routing or speedup claim",
+    "blocked_reasons": [],
+    "boundary_indices": [
+      0,
+      2,
+      3,
+      5
+    ],
+    "boundary_max_abs_error": 0.0,
+    "boundary_max_rel_error": 0.0,
+    "claim_scope": "diagnostic nonlinear state-domain identity gate only; bounded local-stencil prototype with no production routing or speedup claim",
     "decomposed_path_enabled": true,
+    "gate_name": "nonlinear_domain_local_stencil_identity",
     "identity_passed": true,
     "max_abs_error": 0.0,
     "max_rel_error": 0.0,
@@ -21,6 +75,7 @@
         4
       ]
     },
+    "plan_valid": true,
     "rtol": 1e-06
   },
   "gated_state_matches_decomposed": true,

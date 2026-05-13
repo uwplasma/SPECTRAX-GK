@@ -82,7 +82,12 @@ def test_saturation_rule_sweep_fits_train_scale_and_scores_holdout(
 
     assert report["claim_level"] == "model_comparison_not_validated_transport"
     assert report["input_validation"]["passed"] is True
+    assert report["holdout_relative_error_gate"] == pytest.approx(0.35)
+    assert report["any_rule_holdout_gate_passed"] is False
+    assert report["cases"][0]["shape_gate_status"] == "missing"
+    assert report["cases"][0]["shape_passed"] is None
     assert report["rules"]["positive_mixing_length"]["scale"] == pytest.approx(10.0)
+    assert report["rules"]["positive_mixing_length"]["holdout_gate_passed"] is False
     assert report["rules"]["positive_mixing_length"]["predicted_heat_flux"][
         0
     ] == pytest.approx(9.0)
@@ -155,6 +160,7 @@ def test_saturation_rule_sweep_writes_artifacts(tmp_path: Path) -> None:
     assert payload["kind"] == "quasilinear_saturation_rule_sweep"
     assert "null_training_mean_baseline" in payload
     assert "promotion_gate" in payload
+    assert payload["cases"][0]["shape_gate_status"] == "missing"
 
 
 def test_saturation_rule_sweep_rejects_failed_nonlinear_summary_gate(
@@ -210,3 +216,28 @@ def test_saturation_rule_sweep_development_mode_and_input_schema_guards(
     )
     with pytest.raises(ValueError, match="required column 'kperp_eff2'"):
         mod.raw_rule_estimates(bad_spectrum)
+
+
+def test_saturation_rule_sweep_records_shape_gate_metadata(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    shape = tmp_path / "shape.json"
+    shape.write_text(
+        json.dumps(
+            {
+                "kind": "quasilinear_spectrum_shape_gate",
+                "passed": True,
+                "total_variation_distance": 0.12,
+                "cosine_similarity": 0.97,
+                "tv_gate": 0.2,
+                "cosine_gate": 0.95,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    payload = mod._shape_payload(shape)
+
+    assert payload["shape_gate_status"] == "passed"
+    assert payload["shape_tv_gate"] == pytest.approx(0.2)
+    assert payload["shape_cosine_gate"] == pytest.approx(0.95)
+    assert mod._artifact_path(mod.ROOT / "docs/_static/example.json") == "docs/_static/example.json"

@@ -5159,3 +5159,74 @@ Exit gate:
   - add nonlinear timestep and seed/IC uncertainty gates for the already
     grid-converged external-VMEC records before promoting nonlinear optimized
     stellarator transport claims.
+
+## 2026-05-13 Multi-Lane Subagent Integration Push
+
+- Integrated six lane-specific worker tranches into the main checkout and kept
+  the release baseline green:
+  - quasilinear stellarator optimization now has residual/Jacobian sensitivity
+    gates through `stellarator_itg_residual_sensitivity_report`, with AD/FD
+    parity, covariance diagnostics, rank checks, and condition-number gates for
+    the weighted residual map used by the reduced ITG optimization workflow;
+  - objective-portfolio aggregation now has
+    `objective_portfolio_sensitivity_report`, checking both scalar portfolio
+    gradients and the full row sensitivity map so a passing scalar gradient
+    cannot hide rank-deficient surface/alpha/ky objective tables;
+  - runtime chunk/policy helpers were factored into smaller tested units for
+    accumulated adaptive time axes, diagnostic stride normalization, dealias
+    mask validation, and retained nonlinear mode selection;
+  - independent-worker parallel utilities now expose normalized worker metadata,
+    serial-vs-independent identity reports, ordered task reconstruction, worker
+    clipping, and exception metadata with task index/executor/worker count;
+  - nonlinear domain/spectral diagnostic parallel gates now record boundary
+    error checks, decomposition offsets, communication blockers, and JSON
+    metadata needed before any future production nonlinear decomposition claim;
+  - nonlinear transport-window convergence now includes a terminal-subwindow
+    mean agreement gate so late-window drift cannot be hidden by broad half-
+    window cancellation.
+- Regenerated affected publication/model-development artifacts:
+  - `docs/_static/quasilinear_saturation_rule_sweep.{json,png,pdf}` now uses
+    repo-relative artifact paths, explicit shape-gate metadata, per-rule
+    holdout gate fields, and null-baseline metadata. The current model remains
+    correctly fail-closed: the best simple rule has holdout mean relative error
+    about `2.11`, while the train-mean null baseline is about `1.20`.
+  - `docs/_static/quasilinear_shape_aware_saturation.{json,png,pdf}` now
+    defaults only to cases with tracked spectrum-shape gates and records
+    explicit shape-gate metadata. The shape-aware leave-one-out model remains
+    fail-closed: mean relative error is about `0.725`, versus `0.624` for the
+    linear-weight baseline and `0.170` for the training-mean null.
+  - `docs/_static/nonlinear_domain_parallel_identity_gate.json` now includes
+    boundary identity metadata and still passes with zero serial/decomposed
+    error.
+  - `docs/_static/nonlinear_spectral_communication_identity_gate.json` now
+    includes y/x decomposition offsets and blocker metadata and still passes
+    with zero FFT, bracket, and field-layout error.
+- Checks completed in bounded local shards:
+  - focused `ruff` over modified source, tools, and tests;
+  - focused `pytest` over parallel, nonlinear domain/spectral communication,
+    nonlinear-window convergence, runtime refactor helpers, stellarator
+    optimization/portfolio sensitivity, and quasilinear plotting tools: `83`
+    tests passed under the local five-minute cap;
+  - `python tools/check_release_readiness.py` passed.
+- Current lane progress after this tranche:
+  - differentiable VMEC/Boozer reduced optimization plumbing: `97%`;
+  - growth-rate stellarator optimization evidence: `92%`;
+  - quasilinear stellarator optimization evidence: `97%`;
+  - production nonlinear turbulent-flux optimization evidence: `70%`;
+  - publication quasilinear/model-development figures: `92%`;
+  - package-wide coverage/release infrastructure: `97%`;
+  - refactor/testability lane: `90%`;
+  - parallelization production independent-work lane: `94%`;
+  - nonlinear domain decomposition and production nonlinear speedup lane: `63%`.
+- Next best technical/scientific steps:
+  - add timestep and seed/initial-condition uncertainty gates to the
+    grid-converged nonlinear transport windows before promoting nonlinear
+    turbulent-flux optimization;
+  - extend the objective-portfolio sensitivity gate to a real vmec_jax/Boozer
+    backend table artifact, not only backend-free fixture rows;
+  - convert the nonlinear domain diagnostic metadata into a bounded runtime
+    prototype only after adding conservation and transport-window identity
+    checks;
+  - keep the quasilinear absolute-flux manuscript claims scoped to
+    model-development diagnostics until at least one richer candidate beats the
+    null baseline on independent nonlinear holdouts.

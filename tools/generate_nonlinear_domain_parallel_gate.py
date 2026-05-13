@@ -98,6 +98,12 @@ def build_nonlinear_domain_parallel_gate(
             "source": "spectraxgk.nonlinear_parallel nonlinear-domain prototype utilities",
             "claim_scope": report.claim_scope,
             "state_shape": tuple(int(item) for item in state.shape),
+            "decomposition": plan.decomposition_metadata(),
+            "boundary_identity": {
+                "indices": report.boundary_indices,
+                "max_abs_error": report.boundary_max_abs_error,
+                "max_rel_error": report.boundary_max_rel_error,
+            },
             "dt": float(dt),
             "gate": report.to_dict(),
             "gated_state_matches_decomposed": bool(

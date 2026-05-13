@@ -62,6 +62,7 @@ def test_converged_saturated_transport_window_passes_with_finite_uncertainty() -
     assert report["statistics"]["late_mean"] == pytest.approx(4.0, abs=5.0e-3)
     assert np.isfinite(report["statistics"]["block_bootstrap_sem"])
     assert np.isfinite(report["statistics"]["sem"])
+    assert report["statistics"]["terminal_mean_rel_delta"] < 0.02
     assert report["window"]["transient_cutoff"] == pytest.approx(100.0)
     ready, failures = nonlinear_window_stats_promotion_ready(report)
     assert ready is True
@@ -121,6 +122,42 @@ def test_transient_only_trace_fails_running_mean_gate() -> None:
     failed = {gate["metric"] for gate in report["gates"] if not gate["passed"]}
     assert report["passed"] is False
     assert "running_mean_drift" in failed
+
+
+def test_terminal_subwindow_gate_blocks_cancelled_running_mean_drift() -> None:
+    t = np.arange(96.0)
+    heat = np.ones_like(t)
+    heat[48:] = np.concatenate(
+        [
+            np.ones(24),
+            np.zeros(12),
+            2.0 * np.ones(12),
+        ]
+    )
+
+    report = nonlinear_window_convergence_report(
+        t,
+        heat,
+        case="terminal_drift_hidden_by_half_means",
+        source_artifact="terminal.csv",
+        config=NonlinearWindowConvergenceConfig(
+            transient_fraction=0.5,
+            min_samples=48,
+            min_blocks=4,
+            max_running_mean_rel_drift=0.01,
+            terminal_fraction=0.25,
+            min_terminal_samples=8,
+            max_terminal_mean_rel_delta=0.20,
+            max_sem_rel=10.0,
+        ),
+    )
+
+    failed = {gate["metric"] for gate in report["gates"] if not gate["passed"]}
+    assert report["passed"] is False
+    assert "terminal_mean_agreement" in failed
+    assert "running_mean_drift" not in failed
+    assert report["statistics"]["terminal_n_samples"] == 12
+    assert report["statistics"]["terminal_mean_rel_delta"] == pytest.approx(1.0)
 
 
 def test_small_window_and_nan_late_window_fail() -> None:
@@ -228,6 +265,12 @@ def test_nonlinear_window_config_and_input_validation_are_fail_closed() -> None:
         (
             NonlinearWindowConvergenceConfig(max_running_mean_rel_drift=-1.0),
             "running_mean",
+        ),
+        (NonlinearWindowConvergenceConfig(terminal_fraction=0.0), "terminal_fraction"),
+        (NonlinearWindowConvergenceConfig(min_terminal_samples=0), "min_terminal"),
+        (
+            NonlinearWindowConvergenceConfig(max_terminal_mean_rel_delta=-1.0),
+            "terminal_mean",
         ),
         (NonlinearWindowConvergenceConfig(max_sem_rel=-1.0), "max_sem_rel"),
         (NonlinearWindowConvergenceConfig(value_floor=0.0), "value_floor"),
@@ -343,6 +386,7 @@ def test_nonlinear_window_promotion_ready_reports_all_missing_contracts() -> Non
     assert "nonlinear window convergence report did not pass" in failures
     assert "missing nonlinear source_artifact provenance" in failures
     assert "missing/non-finite statistics.sem" in failures
+    assert "missing/non-finite statistics.terminal_mean_rel_delta" in failures
     assert "missing/non-finite window.late_tmin" in failures
     assert "missing declared transient cutoff policy" in failures
     assert "window has no finite late samples" in failures
