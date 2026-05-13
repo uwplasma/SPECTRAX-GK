@@ -335,7 +335,7 @@ def test_independent_map_preserves_serial_order_and_nested_outputs() -> None:
 def test_independent_map_clips_thread_workers_and_accepts_executor_aliases(
     monkeypatch,
 ) -> None:
-    records: list[tuple[int, tuple[int, ...]]] = []
+    records: list[tuple[int, tuple[tuple[object, int, int, str, int], ...]]] = []
 
     class FakeThreadPool:
         def __init__(self, *, max_workers: int):
@@ -359,4 +359,104 @@ def test_independent_map_clips_thread_workers_and_accepts_executor_aliases(
     )
 
     assert observed == [33, 11, 44]
-    assert records == [(3, (3, 1, 4))]
+    assert records[0][0] == 3
+    assert [(task[1], task[2], task[3], task[4]) for task in records[0][1]] == [
+        (0, 3, "thread", 3),
+        (1, 1, "thread", 3),
+        (2, 4, "thread", 3),
+    ]
+
+
+def test_independent_worker_metadata_normalizes_aliases_and_empty_work() -> None:
+    metadata = parallel.independent_worker_metadata(
+        3,
+        workers=8,
+        executor="threads",
+    )
+    empty = parallel.independent_worker_metadata(
+        0,
+        workers=4,
+        executor="processes",
+    )
+
+    assert metadata.to_dict() == {
+        "requested_workers": 8,
+        "actual_workers": 3,
+        "problem_size": 3,
+        "executor": "thread",
+        "parallel_enabled": True,
+    }
+    assert empty.to_dict() == {
+        "requested_workers": 4,
+        "actual_workers": 0,
+        "problem_size": 0,
+        "executor": "process",
+        "parallel_enabled": False,
+    }
+    with pytest.raises(ValueError, match="problem_size"):
+        parallel.independent_worker_metadata(-1)
+
+
+def test_independent_map_identity_report_records_worker_metadata() -> None:
+    values = [0.1, 0.2, 0.4]
+
+    def fn(value: float) -> dict[str, jnp.ndarray]:
+        x = jnp.asarray(value)
+        return {"mode": jnp.asarray([x, x**2]), "flux": jnp.asarray(x + 1.0)}
+
+    report = parallel.independent_map_identity_report(
+        fn,
+        values,
+        workers=5,
+        executor="threads",
+        atol=0.0,
+        rtol=0.0,
+        metadata={"case": "threaded_unit_gate"},
+    )
+
+    assert report.kind == "independent_map_serial_identity"
+    assert report.backend == "python:thread"
+    assert report.identity_passed is True
+    assert report.problem_size == 3
+    assert report.requested_workers == 5
+    assert report.actual_workers == 3
+    assert report.max_abs_error == 0.0
+    assert report.metadata["case"] == "threaded_unit_gate"
+    assert report.metadata["executor"] == "thread"
+    assert report.metadata["parallel_enabled"] is True
+    assert report.metadata["worker_metadata"] == {
+        "requested_workers": 5,
+        "actual_workers": 3,
+        "problem_size": 3,
+        "executor": "thread",
+        "parallel_enabled": True,
+    }
+
+
+def test_independent_map_identity_helpers_are_exported_at_package_top_level() -> None:
+    import spectraxgk as sgk
+
+    assert sgk.IndependentMapExecutionError is parallel.IndependentMapExecutionError
+    assert sgk.IndependentWorkerMetadata is parallel.IndependentWorkerMetadata
+    assert sgk.independent_worker_metadata is parallel.independent_worker_metadata
+    assert sgk.independent_map_identity_report is parallel.independent_map_identity_report
+
+
+def test_independent_map_parallel_failures_include_worker_metadata() -> None:
+    def fn(value: int) -> int:
+        if value == 2:
+            raise ValueError("bad ky point")
+        return value
+
+    with pytest.raises(
+        parallel.IndependentMapExecutionError,
+        match=(
+            "independent_map task 1 failed with executor='thread' "
+            "and actual_workers=2: ValueError: bad ky point"
+        ),
+    ) as exc_info:
+        parallel.independent_map(fn, [1, 2, 3], workers=2, executor="thread")
+
+    assert exc_info.value.index == 1
+    assert exc_info.value.executor == "thread"
+    assert exc_info.value.actual_workers == 2

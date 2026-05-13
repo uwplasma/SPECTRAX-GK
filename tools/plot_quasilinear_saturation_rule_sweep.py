@@ -113,6 +113,8 @@ RULE_LABELS = {
     "absolute_growth_mixing_length": r"$|\gamma|\,\hat Q/k_\perp^2$",
 }
 
+DEFAULT_HOLDOUT_RELATIVE_ERROR_GATE = 0.35
+
 CASE_LABELS = {
     "cyclone_long_window": "Cyclone train",
     "cyclone_miller_long_window": "Cyclone Miller",
@@ -135,6 +137,18 @@ def _json_clean(value: Any) -> Any:
     if isinstance(value, float):
         return value if math.isfinite(value) else None
     return value
+
+
+def _artifact_path(path: str | Path | None) -> str | None:
+    """Return a stable repo-relative artifact path when possible."""
+
+    if path is None:
+        return None
+    path_obj = Path(path)
+    try:
+        return path_obj.resolve().relative_to(ROOT.resolve()).as_posix()
+    except (OSError, ValueError):
+        return path_obj.as_posix()
 
 
 def _load_table(path: Path) -> np.ndarray:
@@ -215,14 +229,43 @@ def _fit_scale(raw: np.ndarray, observed: np.ndarray, mask: np.ndarray, *, floor
 
 
 def _shape_payload(path: Path | None) -> dict[str, Any]:
-    if path is None or not path.exists():
-        return {}
+    if path is None:
+        return {
+            "shape_gate": None,
+            "shape_gate_status": "missing",
+            "shape_passed": None,
+            "shape_tv": None,
+            "shape_cosine": None,
+            "shape_tv_gate": None,
+            "shape_cosine_gate": None,
+            "shape_gate_kind": None,
+            "shape_gate_notes": "no shape-gate JSON configured for this case",
+        }
+    if not path.exists():
+        return {
+            "shape_gate": _artifact_path(path),
+            "shape_gate_status": "missing",
+            "shape_passed": None,
+            "shape_tv": None,
+            "shape_cosine": None,
+            "shape_tv_gate": None,
+            "shape_cosine_gate": None,
+            "shape_gate_kind": None,
+            "shape_gate_notes": "configured shape-gate JSON is missing",
+        }
     data = json.loads(path.read_text(encoding="utf-8"))
+    kind = data.get("kind")
+    passed = bool(data.get("passed", False))
+    status = "invalid_kind" if kind != "quasilinear_spectrum_shape_gate" else ("passed" if passed else "failed")
     return {
-        "shape_passed": bool(data.get("passed", False)),
+        "shape_gate": _artifact_path(path),
+        "shape_gate_kind": kind,
+        "shape_gate_status": status,
+        "shape_passed": passed,
         "shape_tv": data.get("total_variation_distance"),
         "shape_cosine": data.get("cosine_similarity"),
-        "shape_gate": str(path),
+        "shape_tv_gate": data.get("tv_gate"),
+        "shape_cosine_gate": data.get("cosine_gate"),
     }
 
 
@@ -259,7 +302,7 @@ def nonlinear_input_validation_report(
                 "case": case.case,
                 "split": case.split,
                 "required": required,
-                "nonlinear_summary": str(path),
+                "nonlinear_summary": _artifact_path(path),
                 "passed": row_passed,
                 "gate_passed": gate_passed,
                 "gate_case": str(gate_report.get("case", payload.get("case", path.stem))),
@@ -301,8 +344,8 @@ def _saturation_case_row(case: SaturationCase) -> dict[str, Any]:
         "case": case.case,
         "split": case.split,
         "geometry": case.geometry,
-        "spectrum": str(case.spectrum),
-        "nonlinear_summary": str(case.nonlinear_summary),
+        "spectrum": _artifact_path(case.spectrum),
+        "nonlinear_summary": _artifact_path(case.nonlinear_summary),
         "observed_heat_flux": observed_point.observed_heat_flux,
         "observed_heat_flux_std": observed_point.observed_heat_flux_std,
         "raw_estimates": raw,
@@ -317,9 +360,12 @@ def build_saturation_rule_sweep(
     require_validated_inputs: bool = True,
     workers: int = 1,
     parallel_executor: str = "thread",
+    holdout_relative_error_gate: float = DEFAULT_HOLDOUT_RELATIVE_ERROR_GATE,
 ) -> dict[str, Any]:
     """Fit one scalar per rule on train cases and score all cases."""
 
+    if holdout_relative_error_gate <= 0.0:
+        raise ValueError("holdout_relative_error_gate must be positive")
     input_validation = (
         require_validated_nonlinear_inputs(cases)
         if require_validated_inputs
@@ -345,20 +391,26 @@ def build_saturation_rule_sweep(
         predicted = raw * scale if np.isfinite(scale) else np.full_like(raw, np.nan)
         rel_error = np.abs(predicted - observed) / np.maximum(np.abs(observed), observed_floor)
         holdout = rel_error[~train_mask]
+        holdout_mean = None if holdout.size == 0 else float(np.nanmean(holdout))
+        holdout_max = None if holdout.size == 0 else float(np.nanmax(holdout))
         rules[rule] = {
             "label": RULE_LABELS[rule],
             "scale": float(scale),
             "predicted_heat_flux": predicted.tolist(),
             "absolute_relative_error": rel_error.tolist(),
-            "holdout_mean_abs_relative_error": None if holdout.size == 0 else float(np.nanmean(holdout)),
-            "holdout_max_abs_relative_error": None if holdout.size == 0 else float(np.nanmax(holdout)),
+            "holdout_relative_error_gate": float(holdout_relative_error_gate),
+            "holdout_gate_passed": None
+            if holdout_mean is None
+            else bool(holdout_mean <= holdout_relative_error_gate),
+            "holdout_mean_abs_relative_error": holdout_mean,
+            "holdout_max_abs_relative_error": holdout_max,
         }
 
     null_predicted = np.full_like(observed, float(np.nanmean(observed[train_mask])))
     null_rel_error = np.abs(null_predicted - observed) / np.maximum(np.abs(observed), observed_floor)
     null_holdout = null_rel_error[~train_mask]
     null_holdout_mean = None if null_holdout.size == 0 else float(np.nanmean(null_holdout))
-    transport_gate = 0.35
+    transport_gate = float(holdout_relative_error_gate)
     accepted_rules = []
     for rule, payload in rules.items():
         mean_error = payload["holdout_mean_abs_relative_error"]
@@ -372,6 +424,14 @@ def build_saturation_rule_sweep(
         "kind": "quasilinear_saturation_rule_sweep",
         "claim_level": "model_comparison_not_validated_transport",
         "observed_floor": float(observed_floor),
+        "holdout_relative_error_gate": float(holdout_relative_error_gate),
+        "any_rule_holdout_gate_passed": any(payload["holdout_gate_passed"] is True for payload in rules.values()),
+        "best_rule_by_holdout_mean_abs_relative_error": min(
+            rules,
+            key=lambda name: float("inf")
+            if rules[name]["holdout_mean_abs_relative_error"] is None
+            else float(rules[name]["holdout_mean_abs_relative_error"]),
+        ),
         "train_cases": [row["case"] for row in case_rows if row["split"] == "train"],
         "rules": rules,
         "null_training_mean_baseline": {
@@ -429,6 +489,7 @@ def write_saturation_rule_sweep_figure(report: dict[str, Any], *, out: str | Pat
     set_plot_style()
     fig, axes = plt.subplots(1, 2, figsize=(13.2, 5.2), constrained_layout=True)
     ax0, ax1 = axes
+    gate = float(report.get("holdout_relative_error_gate", DEFAULT_HOLDOUT_RELATIVE_ERROR_GATE))
     colors = {
         "positive_mixing_length": "#0f4c81",
         "linear_weight": "#2a9d8f",
@@ -465,9 +526,9 @@ def write_saturation_rule_sweep_figure(report: dict[str, Any], *, out: str | Pat
         linewidth=0.7,
         zorder=3,
     )
-    ax0.axvline(0.35, color="#c2410c", linestyle="--", linewidth=1.5, label="0.35 gate")
+    ax0.axvline(gate, color="#c2410c", linestyle="--", linewidth=1.5, label=f"{gate:.2g} gate")
     ax0.set_xscale("log")
-    ax0.set_xlim(floor * 0.7, max(max_err, 0.35) * 1.5)
+    ax0.set_xlim(floor * 0.7, max(max_err, gate) * 1.5)
     ax0.set_yticks(y, labels)
     ax0.invert_yaxis()
     ax0.set_xlabel("absolute relative error after Cyclone scale fit")
@@ -475,26 +536,37 @@ def write_saturation_rule_sweep_figure(report: dict[str, Any], *, out: str | Pat
     ax0.grid(True, axis="x", alpha=0.25)
     ax0.legend(loc="lower left", fontsize=8, framealpha=0.92)
 
-    shape_tv = np.asarray([np.nan if row.get("shape_tv") is None else float(row["shape_tv"]) for row in cases])
-    shape_cos = np.asarray([np.nan if row.get("shape_cosine") is None else float(row["shape_cosine"]) for row in cases])
-    x = np.arange(len(labels))
+    shape_cases = [
+        row
+        for row in cases
+        if row.get("shape_tv") is not None and row.get("shape_cosine") is not None
+    ]
+    pending_shape_count = len(cases) - len(shape_cases)
+    shape_labels = [_case_label(row["case"]) for row in shape_cases]
+    shape_tv = np.asarray([float(row["shape_tv"]) for row in shape_cases], dtype=float)
+    shape_cos = np.asarray([float(row["shape_cosine"]) for row in shape_cases], dtype=float)
+    tv_gates = [row.get("shape_tv_gate") for row in shape_cases if row.get("shape_tv_gate") is not None]
+    cosine_gates = [row.get("shape_cosine_gate") for row in shape_cases if row.get("shape_cosine_gate") is not None]
+    tv_gate = float(tv_gates[0]) if tv_gates else 0.2
+    cosine_gate = float(cosine_gates[0]) if cosine_gates else 0.95
+    x = np.arange(len(shape_labels))
     width = 0.38
     ax1.bar(x - width / 2.0, shape_tv, width=width, label="TV distance", color="#f97316")
     ax1.bar(x + width / 2.0, 1.0 - shape_cos, width=width, label="1 - cosine", color="#2a9d8f")
-    for xi, tv, cosine in zip(x, shape_tv, shape_cos, strict=True):
-        if not np.isfinite(tv) and not np.isfinite(cosine):
-            ax1.text(
-                xi,
-                0.012,
-                "shape gate\npending",
-                ha="center",
-                va="bottom",
-                fontsize=8,
-                color="0.35",
-            )
-    ax1.axhline(0.2, color="#f97316", linestyle=":", linewidth=1.2)
-    ax1.axhline(0.05, color="#2a9d8f", linestyle=":", linewidth=1.2)
-    ax1.set_xticks(x, labels, rotation=25, ha="right")
+    if pending_shape_count:
+        ax1.text(
+            0.99,
+            0.03,
+            f"{pending_shape_count} external-VMEC shape gates pending",
+            transform=ax1.transAxes,
+            ha="right",
+            va="bottom",
+            fontsize=8.5,
+            color="0.35",
+        )
+    ax1.axhline(tv_gate, color="#f97316", linestyle=":", linewidth=1.2)
+    ax1.axhline(1.0 - cosine_gate, color="#2a9d8f", linestyle=":", linewidth=1.2)
+    ax1.set_xticks(x, shape_labels, rotation=25, ha="right")
     ax1.set_ylabel("shape mismatch")
     ax1.set_title("Normalized spectrum-shape diagnostics")
     ax1.grid(True, axis="y", alpha=0.25)

@@ -21,6 +21,7 @@ from spectraxgk.stellarator_optimization import (
     stellarator_itg_objective,
     stellarator_itg_objective_residual_names,
     stellarator_itg_objective_residual_vector,
+    stellarator_itg_residual_sensitivity_report,
 )
 
 
@@ -56,6 +57,10 @@ def test_stellarator_itg_observable_contract_is_finite_and_exported() -> None:
     assert spectraxgk.STELLARATOR_ITG_PARAMETER_NAMES == PARAMETER_NAMES
     assert spectraxgk.STELLARATOR_ITG_OBSERVABLE_NAMES == OBSERVABLE_NAMES
     assert spectraxgk.optimize_stellarator_itg is optimize_stellarator_itg
+    assert (
+        spectraxgk.stellarator_itg_residual_sensitivity_report
+        is stellarator_itg_residual_sensitivity_report
+    )
 
     cfg = _fast_config()
     params = default_stellarator_initial_params()
@@ -96,6 +101,29 @@ def test_stellarator_itg_objectives_have_fd_checked_gradients() -> None:
         assert report["finite_difference_parallel"]["requested_workers"] == 2
 
 
+def test_quasilinear_residual_sensitivity_report_checks_fd_and_conditioning() -> None:
+    cfg = _fast_config()
+    params = jnp.asarray([0.16, 0.21, 0.24, -0.18])
+
+    report = stellarator_itg_residual_sensitivity_report(
+        params,
+        "quasilinear_flux",
+        cfg,
+        finite_difference_workers=2,
+    )
+
+    assert report["passed"] is True
+    assert report["objective_kind"] == "quasilinear_flux"
+    assert report["finite_difference_gate"]["passed"] is True
+    assert report["finite_difference_gate"]["step"] <= cfg.fd_step
+    assert report["finite_difference_gate"]["finite_difference_parallel"]["requested_workers"] == 2
+    assert report["conditioning_gate"]["passed"] is True
+    assert report["conditioning_gate"]["sensitivity_map_rank"] == len(PARAMETER_NAMES)
+    assert report["covariance"]["source"] == "weighted_objective_residual"
+    assert report["covariance"]["conditioning_gate"]["passed"] is True
+    assert report["residual_names"] == list(stellarator_itg_objective_residual_names("quasilinear_flux"))
+
+
 def test_nonlinear_heat_flux_window_metrics_use_late_stable_samples() -> None:
     cfg = _fast_config()
     times, heat_flux = nonlinear_heat_flux_trace(default_stellarator_initial_params(), cfg)
@@ -122,8 +150,11 @@ def test_optimize_stellarator_itg_reduces_nonlinear_window_objective(monkeypatch
     assert result.final_objective < 0.20 * result.initial_objective
     assert result.gradient_gate["passed"] is True
     assert result.covariance["source"] == "weighted_objective_residual"
+    assert result.covariance["residual_sensitivity_passed"] is True
+    assert result.covariance["residual_jacobian_gate"]["passed"] is True
+    assert result.covariance["conditioning_gate"]["passed"] is True
     assert len(result.covariance["residual_names"]) == 3 + len(PARAMETER_NAMES) + 1
-    assert result.covariance["sensitivity_map_rank"] >= 3
+    assert result.covariance["sensitivity_map_rank"] == len(PARAMETER_NAMES)
     assert result.nonlinear_trace is not None
     assert result.nonlinear_trace["final_window"]["cv"] < 0.05
     assert result.nonlinear_trace["final_window"]["trend"] < 0.15

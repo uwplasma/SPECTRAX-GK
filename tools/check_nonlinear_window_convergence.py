@@ -42,6 +42,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--bootstrap-samples", type=int, default=256)
     parser.add_argument("--bootstrap-seed", type=int, default=0)
     parser.add_argument("--max-running-mean-rel-drift", type=float, default=0.15)
+    parser.add_argument("--terminal-fraction", type=float, default=0.25)
+    parser.add_argument("--min-terminal-samples", type=int, default=8)
+    parser.add_argument("--max-terminal-mean-rel-delta", type=float, default=0.10)
     parser.add_argument("--max-sem-rel", type=float, default=0.25)
     parser.add_argument("--value-floor", type=float, default=1.0e-12)
     parser.add_argument(
@@ -64,6 +67,9 @@ def _config(args: argparse.Namespace) -> NonlinearWindowConvergenceConfig:
         bootstrap_samples=args.bootstrap_samples,
         bootstrap_seed=args.bootstrap_seed,
         max_running_mean_rel_drift=args.max_running_mean_rel_drift,
+        terminal_fraction=args.terminal_fraction,
+        min_terminal_samples=args.min_terminal_samples,
+        max_terminal_mean_rel_delta=args.max_terminal_mean_rel_delta,
         max_sem_rel=args.max_sem_rel,
         value_floor=args.value_floor,
         require_all_finite=not args.allow_nonfinite,

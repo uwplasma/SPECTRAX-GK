@@ -6,7 +6,13 @@ import numpy as np
 import pytest
 
 from spectraxgk.diagnostics import SimulationDiagnostics
-from spectraxgk.runtime_chunks import _format_duration, run_adaptive_gx_chunk_loop
+from spectraxgk.runtime_chunks import (
+    _effective_diagnostics_stride,
+    _format_duration,
+    _next_elapsed_time,
+    _offset_chunk_diagnostics_time,
+    run_adaptive_gx_chunk_loop,
+)
 from spectraxgk.terms.config import FieldState
 
 
@@ -33,6 +39,30 @@ def test_format_duration_compacts_minutes_and_hours() -> None:
     assert _format_duration(5.0) == "00:05"
     assert _format_duration(65.0) == "01:05"
     assert _format_duration(3665.0) == "1:01:05"
+
+
+def test_adaptive_chunk_time_helpers_lock_accumulated_time_axis() -> None:
+    shifted = _offset_chunk_diagnostics_time(_diag([0.25, 0.5]), offset=1.0)
+
+    np.testing.assert_allclose(shifted.t, [1.25, 1.5])
+    assert _next_elapsed_time(
+        shifted, previous_elapsed=1.0, label="test", chunk_index=2
+    ) == pytest.approx(1.5)
+    assert _effective_diagnostics_stride(-4) == 1
+    assert _effective_diagnostics_stride(0) == 1
+    assert _effective_diagnostics_stride(3) == 3
+
+
+def test_adaptive_chunk_time_helper_rejects_empty_or_stalled_chunks() -> None:
+    with pytest.raises(RuntimeError, match="chunk 1 produced no time samples"):
+        _next_elapsed_time(
+            _diag([]), previous_elapsed=0.0, label="test", chunk_index=1
+        )
+
+    with pytest.raises(RuntimeError, match="made no time-step progress"):
+        _next_elapsed_time(
+            _diag([1.0]), previous_elapsed=1.0, label="test", chunk_index=1
+        )
 
 
 def test_run_adaptive_gx_chunk_loop_reports_wall_eta(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -76,6 +106,37 @@ def test_run_adaptive_gx_chunk_loop_reports_wall_eta(monkeypatch: pytest.MonkeyP
     np.testing.assert_allclose(np.asarray(result.diagnostics.t), np.asarray([0.5, 1.0, 1.25, 1.5]))
     np.testing.assert_allclose(np.asarray(result.state), np.asarray([2.0]))
     np.testing.assert_allclose(np.asarray(result.fields.phi), np.asarray([2.0 + 0.0j]))
+
+
+def test_run_adaptive_gx_chunk_loop_truncates_before_applying_stride() -> None:
+    chunks = iter(
+        [
+            (
+                np.asarray([0.4, 0.8]),
+                _diag([0.4, 0.8]),
+                np.asarray([1.0]),
+                FieldState(phi=np.asarray([1.0 + 0.0j])),
+            ),
+            (
+                np.asarray([0.4, 0.8]),
+                _diag([0.4, 0.8]),
+                np.asarray([2.0]),
+                FieldState(phi=np.asarray([2.0 + 0.0j])),
+            ),
+        ]
+    )
+
+    result = run_adaptive_gx_chunk_loop(
+        integrate_chunk=lambda _show_progress: next(chunks),
+        t_max=1.2,
+        chunk_steps=8,
+        label="test",
+        diagnostics_stride=2,
+    )
+
+    np.testing.assert_allclose(np.asarray(result.diagnostics.t), [0.4, 1.2])
+    np.testing.assert_allclose(np.asarray(result.state), [2.0])
+    np.testing.assert_allclose(np.asarray(result.fields.phi), [2.0 + 0.0j])
 
 
 def test_run_adaptive_gx_chunk_loop_rejects_stalled_time_progress() -> None:

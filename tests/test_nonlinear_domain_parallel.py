@@ -31,6 +31,19 @@ def test_nonlinear_domain_plan_uses_static_halo_chunks() -> None:
     assert plan.num_domains == 3
     assert plan.domain_size == 7
     assert plan.offsets == (0, 3, 5)
+    assert plan.chunk_bounds == ((0, 3), (3, 5), (5, 7))
+    assert plan.boundary_indices == (0, 2, 3, 4, 5, 6)
+    assert plan.decomposition_metadata() == {
+        "state_shape": (7, 3),
+        "axis": 0,
+        "chunk_sizes": (3, 2, 2),
+        "halo": 1,
+        "num_domains": 3,
+        "domain_size": 7,
+        "offsets": (0, 3, 5),
+        "chunk_bounds": ((0, 3), (3, 5), (5, 7)),
+        "boundary_indices": (0, 2, 3, 4, 5, 6),
+    }
     assert plan.to_dict() == {
         "state_shape": (7, 3),
         "axis": 0,
@@ -60,6 +73,9 @@ def test_nonlinear_domain_identity_gate_enables_only_matching_decomposition() ->
     assert report.blocked_reasons == ()
     assert report.max_abs_error <= report.atol
     assert report.max_rel_error <= report.rtol
+    assert report.boundary_indices == (0, 2, 3, 5)
+    assert report.boundary_max_abs_error <= report.atol
+    assert report.boundary_max_rel_error <= report.rtol
     assert "bounded local-stencil prototype" in report.claim_scope
     assert "no production routing or speedup claim" in report.claim_scope
     assert jnp.allclose(decomposed, serial, atol=1.0e-6, rtol=1.0e-6)
@@ -85,6 +101,7 @@ def test_nonlinear_domain_identity_report_fails_closed_on_mismatch() -> None:
     assert report.plan_valid is True
     assert report.blocked_reasons == ()
     assert report.max_abs_error > report.atol
+    assert report.boundary_max_abs_error > report.atol
     assert report.to_dict()["identity_passed"] is False
 
 
