@@ -20,15 +20,15 @@ def test_write_external_vmec_holdout_configs_restart_ladder(tmp_path: Path) -> N
         vmec_file=vmec_file,
         out_dir=tmp_path / "runs",
         grids=[_parse_grid("n8:8:8:6:6"), _parse_grid("n10:10:10:8:8")],
-        horizons=(1.0, 1.5),
+        horizons=(1.0, 1.5, 2.0),
         dt=0.25,
         ky=0.3,
         nl=2,
         nm=3,
     )
-    assert len(written) == 4
-    assert [item.steps for item in written] == [4, 4, 2, 2]
-    assert [item.restart_if_exists for item in written] == [False, False, True, True]
+    assert len(written) == 6
+    assert [item.steps for item in written] == [4, 4, 2, 2, 2, 2]
+    assert [item.restart_if_exists for item in written] == [False, False, True, True, True, True]
 
     first_config = written[0].path.read_text(encoding="utf-8")
     assert 'vmec_file = "' in first_config
@@ -47,12 +47,14 @@ def test_write_external_vmec_holdout_configs_restart_ladder(tmp_path: Path) -> N
     manifest = write_manifest(tmp_path / "runs", written)
     payload = json.loads(manifest.read_text(encoding="utf-8"))
     assert payload["kind"] == "external_vmec_holdout_config_manifest"
-    assert len(payload["configs"]) == 4
-    assert len(payload["launch_commands"]) == 4
-    assert len(payload["restart_seed_commands"]) == 2
+    assert len(payload["configs"]) == 6
+    assert len(payload["launch_commands"]) == 6
+    assert len(payload["restart_seed_commands"]) == 4
     assert "python3 -m spectraxgk.cli run" in payload["launch_commands"][0]
     assert "restart.nc" in payload["restart_seed_commands"][0]
     assert "candidate_nonlinear_t1p5_n8" in payload["restart_seed_commands"][0]
+    assert "candidate_nonlinear_t1p5_n8" in payload["restart_seed_commands"][2]
+    assert "candidate_nonlinear_t2_n8" in payload["restart_seed_commands"][2]
 
 
 def test_external_vmec_holdout_config_parsers_reject_bad_inputs() -> None:
