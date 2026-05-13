@@ -96,6 +96,14 @@ DEFAULT_CASES = (
         nonlinear_summary=ROOT / "docs/_static/external_vmec_updown_asym_t450_n64_transport_window.json",
         shape_gate=None,
     ),
+    SaturationCase(
+        case="circular_external_vmec_t450_window",
+        split="holdout",
+        geometry="circular_external_vmec",
+        spectrum=ROOT / "docs/_static/quasilinear_vmec_circular_linear_spectrum_scan.quasilinear_spectrum.csv",
+        nonlinear_summary=ROOT / "docs/_static/external_vmec_circular_t450_n64_transport_window.json",
+        shape_gate=None,
+    ),
 )
 
 
@@ -113,6 +121,7 @@ CASE_LABELS = {
     "dshape_external_vmec_t250_window": "D-shaped VMEC",
     "itermodel_external_vmec_t350_window": "ITERModel VMEC",
     "updown_asym_external_vmec_t450_window": "Up-Down Asym VMEC",
+    "circular_external_vmec_t450_window": "Circular VMEC",
 }
 
 

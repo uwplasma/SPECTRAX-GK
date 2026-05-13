@@ -23,10 +23,10 @@
     {
       "artifact": "docs/_static/quasilinear_stellarator_train_holdout_report.json",
       "claim_level": "calibration_dataset",
-      "holdout_mean_abs_relative_error": 2.574031511380097,
+      "holdout_mean_abs_relative_error": 2.114098664675138,
       "holdout_mean_rel_gate": 0.35,
       "kind": "quasilinear_calibration_report",
-      "n_holdout": 5,
+      "n_holdout": 6,
       "n_train": 2,
       "passed": false
     },
@@ -88,7 +88,7 @@
         "passed": true
       },
       {
-        "detail": "7 required nonlinear summaries passed",
+        "detail": "8 required nonlinear summaries passed",
         "metric": "input_validation_passed",
         "passed": true
       },
@@ -113,7 +113,7 @@
         "passed": true
       },
       {
-        "detail": "7 required nonlinear summaries passed",
+        "detail": "8 required nonlinear summaries passed",
         "metric": "input_validation_passed",
         "passed": true
       },
@@ -138,7 +138,7 @@
         "passed": true
       },
       {
-        "detail": "7 required nonlinear summaries passed",
+        "detail": "8 required nonlinear summaries passed",
         "metric": "input_validation_passed",
         "passed": true
       },
@@ -163,7 +163,7 @@
         "passed": true
       },
       {
-        "detail": "train=2 holdout=5",
+        "detail": "train=2 holdout=6",
         "metric": "train_holdout_point_metadata",
         "passed": true
       },
@@ -228,19 +228,19 @@
       "artifact": "docs/_static/quasilinear_candidate_uncertainty.json",
       "failed_required_cases": [],
       "kind": "quasilinear_candidate_uncertainty_report",
-      "required_cases": 7
+      "required_cases": 8
     },
     {
       "artifact": "docs/_static/quasilinear_dataset_sufficiency.json",
       "failed_required_cases": [],
       "kind": "quasilinear_dataset_sufficiency",
-      "required_cases": 7
+      "required_cases": 8
     },
     {
       "artifact": "docs/_static/quasilinear_saturation_rule_sweep.json",
       "failed_required_cases": [],
       "kind": "quasilinear_saturation_rule_sweep",
-      "required_cases": 7
+      "required_cases": 8
     },
     {
       "artifact": "docs/_static/quasilinear_shape_aware_saturation.json",

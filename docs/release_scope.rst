@@ -44,7 +44,7 @@ score.
      - release-ready as diagnostics
      - Electrostatic linear heat/particle weights, spectra, and model-selection
        artifacts are reproducible. Simple one-scalar saturation rules are
-       rejected on the seven-case train/holdout portfolio. The
+       rejected on the eight-case train/holdout portfolio. The
        ``spectral_envelope_ridge`` candidate is accepted only as a scoped
        manuscript model-selection result. The passed
        ``quasilinear_model_selection_status.json`` gate does not promote a
@@ -226,7 +226,7 @@ Quasilinear model-selection state:
 
 - ``docs/_static/quasilinear_stellarator_train_holdout_report.json``:
   nonlinear inputs are valid, but the one-constant absolute-flux model remains
-  ``passed = false`` with held-out mean relative error about ``2.57``.
+  ``passed = false`` with held-out mean relative error about ``2.11``.
 - ``tools/check_nonlinear_window_convergence.py`` and
   ``spectraxgk.quasilinear_window`` provide the reusable late-window
   convergence metadata required before any future holdout report can be
@@ -235,12 +235,12 @@ Quasilinear model-selection state:
   simulations.
 - ``docs/_static/quasilinear_saturation_rule_sweep.json``:
   no simple saturation rule is accepted. Positive-growth mixing length is the
-  least-bad simple rule with mean held-out relative error about ``2.51``;
-  the training-mean null is about ``1.39``.
+  least-bad simple rule with mean held-out relative error about ``2.11``;
+  the training-mean null is about ``1.20``.
 - ``docs/_static/quasilinear_candidate_uncertainty.json``:
   ``spectral_envelope_ridge`` is the accepted scoped candidate with mean
-  relative error about ``0.244`` and interval coverage about ``0.857`` on the
-  current seven-case electrostatic-compatible portfolio. Its claim level is
+  relative error about ``0.295`` and interval coverage ``7/8`` on the
+  current eight-case electrostatic-compatible portfolio. Its claim level is
   ``candidate_model_development_not_runtime_option``.
 
 Nonlinear benchmark state:

@@ -35,6 +35,7 @@ CASE_LABELS = {
     "dshape_external_vmec_t250_window": "D-shaped VMEC",
     "itermodel_external_vmec_t350_window": "ITERModel VMEC",
     "updown_asym_external_vmec_t450_window": "Up-Down Asym VMEC",
+    "circular_external_vmec_t450_window": "Circular VMEC",
 }
 
 

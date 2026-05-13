@@ -16,7 +16,7 @@
   },
   "kind": "external_vmec_holdout_runbook",
   "launch_commands": [
-    "python tools/write_external_vmec_holdout_configs.py --case circular_tokamak_holdout --vmec-file /home/rjorge/src/vmec_jax/examples/data/wout_circular_tokamak.nc --out-dir tools_out/external_vmec_holdouts/circular_tokamak --ky 0.4762 --dt 0.05 --horizons 250,350,450 --grid n48:48:48:32:32 --grid n64:64:64:40:40",
+    "python tools/write_external_vmec_holdout_configs.py --case shaped_tokamak_pressure_reference_holdout --vmec-file /home/rjorge/src/vmec_jax/examples/data/wout_shaped_tokamak_pressure_reference.nc --out-dir tools_out/external_vmec_holdouts/shaped_tokamak_pressure_reference --ky 0.4762 --dt 0.05 --horizons 250,350,450 --grid n48:48:48:32:32 --grid n64:64:64:40:40",
     "python tools/write_external_vmec_holdout_configs.py --case ITERModel_reference_independent_audit --vmec-file /home/rjorge/src/vmec_jax/examples/data/wout_ITERModel_reference.nc --out-dir tools_out/external_vmec_holdouts/ITERModel_reference_audit --ky 0.4762 --dt 0.05 --horizons 250,350,450 --grid n48:48:48:32:32 --grid n64:64:64:40:40"
   ],
   "nearest_tracked_gap": {
@@ -35,36 +35,6 @@
   "preferred_family": "itermodel_external_vmec",
   "ranked_candidates": [
     {
-      "best_gamma": 0.089094,
-      "best_ky": 0.4762,
-      "best_omega": 0.407803,
-      "case": "circular_tokamak_nc",
-      "family": "circular_external_vmec",
-      "log": "/home/rjorge/spectraxgk_qh_convergence/tools_out/candidate_screen/circular_tokamak_nc.log",
-      "priority": 2.0,
-      "rank": 1,
-      "reason": "unstable electrostatic-compatible VMEC family not yet represented",
-      "returncode": 0,
-      "status": "new_family_holdout_candidate",
-      "unstable": true,
-      "vmec_file": "/home/rjorge/src/vmec_jax/examples/data/wout_circular_tokamak.nc"
-    },
-    {
-      "best_gamma": 0.089094,
-      "best_ky": 0.4762,
-      "best_omega": 0.407803,
-      "case": "circular_tokamak_reference_nc",
-      "family": "circular_external_vmec",
-      "log": "/home/rjorge/spectraxgk_qh_convergence/tools_out/candidate_screen/circular_tokamak_reference_nc.log",
-      "priority": 2.0,
-      "rank": 2,
-      "reason": "unstable electrostatic-compatible VMEC family not yet represented",
-      "returncode": 0,
-      "status": "new_family_holdout_candidate",
-      "unstable": true,
-      "vmec_file": "/home/rjorge/src/vmec_jax/examples/data/wout_circular_tokamak_reference.nc"
-    },
-    {
       "best_gamma": 0.047324,
       "best_ky": 0.4762,
       "best_omega": 0.282209,
@@ -72,7 +42,7 @@
       "family": "shaped_tokamak_external_vmec",
       "log": "/home/rjorge/spectraxgk_qh_convergence/tools_out/candidate_screen/shaped_tokamak_pressure_reference_nc.log",
       "priority": 2.0,
-      "rank": 3,
+      "rank": 1,
       "reason": "unstable electrostatic-compatible VMEC family not yet represented",
       "returncode": 0,
       "status": "new_family_holdout_candidate",
@@ -87,7 +57,7 @@
       "family": "itermodel_external_vmec",
       "log": "/home/rjorge/spectraxgk_qh_convergence/tools_out/candidate_screen/ITERModel_reference_nc.log",
       "priority": 3.0,
-      "rank": 4,
+      "rank": 2,
       "reason": "preferred family is already used in the current calibration portfolio; use only with an independent split/window",
       "returncode": 0,
       "status": "preferred_family_already_represented",
@@ -102,12 +72,42 @@
       "family": "dshape_external_vmec",
       "log": "/home/rjorge/spectraxgk_qh_convergence/tools_out/candidate_screen/DSHAPE_nc.log",
       "priority": 4.0,
-      "rank": 5,
+      "rank": 3,
       "reason": "family already represented; useful as an audit, not first holdout leverage",
       "returncode": 0,
       "status": "represented_family_audit_candidate",
       "unstable": true,
       "vmec_file": "/home/rjorge/src/vmec_jax/examples/data/wout_DSHAPE.nc"
+    },
+    {
+      "best_gamma": 0.089094,
+      "best_ky": 0.4762,
+      "best_omega": 0.407803,
+      "case": "circular_tokamak_nc",
+      "family": "circular_external_vmec",
+      "log": "/home/rjorge/spectraxgk_qh_convergence/tools_out/candidate_screen/circular_tokamak_nc.log",
+      "priority": 4.0,
+      "rank": 4,
+      "reason": "family already represented; useful as an audit, not first holdout leverage",
+      "returncode": 0,
+      "status": "represented_family_audit_candidate",
+      "unstable": true,
+      "vmec_file": "/home/rjorge/src/vmec_jax/examples/data/wout_circular_tokamak.nc"
+    },
+    {
+      "best_gamma": 0.089094,
+      "best_ky": 0.4762,
+      "best_omega": 0.407803,
+      "case": "circular_tokamak_reference_nc",
+      "family": "circular_external_vmec",
+      "log": "/home/rjorge/spectraxgk_qh_convergence/tools_out/candidate_screen/circular_tokamak_reference_nc.log",
+      "priority": 4.0,
+      "rank": 5,
+      "reason": "family already represented; useful as an audit, not first holdout leverage",
+      "returncode": 0,
+      "status": "represented_family_audit_candidate",
+      "unstable": true,
+      "vmec_file": "/home/rjorge/src/vmec_jax/examples/data/wout_circular_tokamak_reference.nc"
     },
     {
       "best_gamma": -0.001248,
@@ -135,24 +135,25 @@
     450.0
   ],
   "represented_families": [
+    "circular_external_vmec",
     "dshape_external_vmec",
     "itermodel_external_vmec",
     "updown_asym_external_vmec"
   ],
   "selected_new_family_candidate": {
-    "best_gamma": 0.089094,
+    "best_gamma": 0.047324,
     "best_ky": 0.4762,
-    "best_omega": 0.407803,
-    "case": "circular_tokamak_nc",
-    "family": "circular_external_vmec",
-    "log": "/home/rjorge/spectraxgk_qh_convergence/tools_out/candidate_screen/circular_tokamak_nc.log",
+    "best_omega": 0.282209,
+    "case": "shaped_tokamak_pressure_reference_nc",
+    "family": "shaped_tokamak_external_vmec",
+    "log": "/home/rjorge/spectraxgk_qh_convergence/tools_out/candidate_screen/shaped_tokamak_pressure_reference_nc.log",
     "priority": 2.0,
     "rank": 1,
     "reason": "unstable electrostatic-compatible VMEC family not yet represented",
     "returncode": 0,
     "status": "new_family_holdout_candidate",
     "unstable": true,
-    "vmec_file": "/home/rjorge/src/vmec_jax/examples/data/wout_circular_tokamak.nc"
+    "vmec_file": "/home/rjorge/src/vmec_jax/examples/data/wout_shaped_tokamak_pressure_reference.nc"
   },
   "selected_preferred_family_audit": {
     "best_gamma": 0.088737,
@@ -162,7 +163,7 @@
     "family": "itermodel_external_vmec",
     "log": "/home/rjorge/spectraxgk_qh_convergence/tools_out/candidate_screen/ITERModel_reference_nc.log",
     "priority": 3.0,
-    "rank": 4,
+    "rank": 2,
     "reason": "preferred family is already used in the current calibration portfolio; use only with an independent split/window",
     "returncode": 0,
     "status": "preferred_family_already_represented",

@@ -97,11 +97,12 @@
           "hsx_nonlinear_window",
           "w7x_nonlinear_window",
           "dshape_external_vmec_t250_window",
-          "updown_asym_external_vmec_t450_window"
+          "updown_asym_external_vmec_t450_window",
+          "circular_external_vmec_t450_window"
         ],
-        "holdout_points": 5,
+        "holdout_points": 6,
         "itermodel_external_vmec_t350_converged": true,
-        "model_selection_candidate_mean_error": 0.24440227852178917,
+        "model_selection_candidate_mean_error": 0.29524327596674427,
         "model_selection_status_passed": true,
         "qh_external_vmec_low_to_mid_grid_converged": false,
         "qh_external_vmec_mid_to_high_grid_converged": false,
