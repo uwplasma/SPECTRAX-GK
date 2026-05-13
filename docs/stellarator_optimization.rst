@@ -46,6 +46,8 @@ Source Map
   :func:`spectraxgk.vmec_boozer_aggregate_scalar_objective_line_search_report`
 - Held-out aggregate line-search validation:
   :func:`spectraxgk.vmec_boozer_aggregate_line_search_holdout_report`
+- Held-out aggregate promotion artifact check:
+  ``tools/check_vmec_boozer_aggregate_holdout_gate.py``
 - Fast branch-continuity and sensitivity gate:
   :func:`spectraxgk.solver_objective_branch_gradient_report`
 - Tests: ``tests/test_stellarator_optimization.py``
@@ -145,6 +147,17 @@ offset on a disjoint held-out sample set. The split gate passes only if both
 the training line-search gate and held-out aggregate reduction pass. This is
 the minimum reduced-objective validation step before using an optimized VMEC
 coefficient in manuscript figures.
+
+Production promotion adds a stricter surface/field-line rule. The aggregate
+finite-difference, line-search, and reduced holdout reports must be paired with
+at least one separate passed validation artifact whose sample metadata covers a
+held-out ``surface_index`` or field-line ``alpha``. A held-out ``k_y`` point
+alone is useful spectrum coverage, but it is not sufficient for the
+surface/field-line generalization gate. The repository-level check
+``tools/check_vmec_boozer_aggregate_holdout_gate.py`` encodes that boundary for
+frozen artifacts: it accepts the aggregate FD and line-search artifacts as
+necessary optimizer-plumbing evidence, then blocks promotion until independent
+surface/field-line holdout evidence is supplied.
 
 Objective
 ---------
@@ -469,7 +482,23 @@ transport claims.
    ``mboz=nboz=21`` and records the aggregate finite-difference response
    through the same in-memory VMEC/Boozer/SPECTRAX-GK value path. This closes
    the software and artifact path for multi-``k_y`` reduced objectives; it is
-   not a nonlinear turbulent heat-flux optimization claim.
+   not a nonlinear turbulent heat-flux optimization claim. The tracked
+   two-``k_y`` artifact intentionally does not satisfy the held-out
+   surface/field-line promotion gate by itself.
+
+.. figure:: _static/vmec_boozer_multi_point_objective_gate.png
+   :width: 90%
+   :align: center
+   :alt: VMEC/Boozer multi-alpha aggregate-objective finite-difference gate
+
+   Multi-alpha VMEC/Boozer aggregate-objective gate. The QH fixture repeats the
+   same quasilinear finite-difference audit over two field lines
+   (``alpha = 0`` and ``0.5``) and two ``k_y`` samples using ``mboz=nboz=21``.
+   The tracked artifact has four samples, passes the curvature gate with
+   curvature ratio about ``6.9e-3``, and is the current reduced-objective
+   evidence for field-line coverage. It still remains a reduced
+   linear/quasilinear objective gate, not an optimized-equilibrium nonlinear
+   transport claim.
 
 .. figure:: _static/vmec_boozer_aggregate_line_search_gate.png
    :width: 90%
@@ -481,7 +510,21 @@ transport claims.
    two-``k_y`` quasilinear proxy aggregate and accepts it only because the
    candidate decreases the objective while the finite-difference gate remains
    conditioned. This is optimizer control-flow evidence for reduced objectives,
-   not a nonlinear turbulent transport optimization claim.
+   not a nonlinear turbulent transport optimization claim. It must be paired
+   with held-out ``surface_index`` or field-line ``alpha`` validation before it
+   can support an optimized-equilibrium transport claim.
+
+.. figure:: _static/vmec_boozer_aggregate_line_search_comparison.png
+   :width: 90%
+   :align: center
+   :alt: VMEC/Boozer aggregate growth and quasilinear line-search comparison
+
+   Growth-vs-quasilinear aggregate line-search comparison. The growth and
+   quasilinear proxy objectives both pass a one-step curvature-gated line
+   search on the same QH sample set, but their initial descent directions
+   differ. This is important for manuscript claims: optimizing growth rate,
+   quasilinear proxy, and nonlinear transport are related but not identical
+   objective choices, so each must carry its own validation and holdout gate.
 
 .. figure:: _static/vmec_boozer_nonlinear_window_gradient_gate.png
    :width: 90%
@@ -572,7 +615,17 @@ the following pass:
    claims. The current multi-point VMEC/Boozer aggregate API closes the
    software plumbing for this gate, but the manuscript claim remains bounded
    until the corresponding aggregate artifacts pass on the selected
-   equilibria.
+   equilibria. ``tools/check_vmec_boozer_aggregate_holdout_gate.py`` is the
+   artifact-level promotion check for this boundary: aggregate finite-difference
+   and line-search artifacts must pass on the same training sample set, and at
+   least one independent passed validation artifact must cover a held-out
+   ``surface_index`` or field-line ``alpha``. Additional ``k_y`` coverage is
+   useful, but ``k_y``-only holdout evidence does not satisfy the
+   surface/field-line gate. The current frozen promotion artifact,
+   ``docs/_static/vmec_boozer_aggregate_holdout_promotion_gate.json``, is
+   blocked as intended because the tracked aggregate optimizer artifacts do not
+   yet include a separate production-grade held-out surface or field-line
+   validation artifact.
 
 Until those gates pass, the release claim is: SPECTRAX-GK has a tested
 differentiable stellarator ITG objective-reduction workflow and the validation

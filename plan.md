@@ -4848,3 +4848,60 @@ Exit gate:
   - use that artifact to drive a bounded multi-point growth-rate line search;
   - repeat for the quasilinear proxy, then compare the optimized perturbations
     against held-out surfaces/field lines before updating manuscript figures.
+
+## 2026-05-13 Aggregate Promotion Guardrail Push
+
+- Integrated the worker-generated multi-alpha VMEC/Boozer objective artifact:
+  `tools/build_vmec_boozer_multi_point_objective_gate.py`,
+  `tests/test_build_vmec_boozer_multi_point_objective_gate.py`, and
+  `docs/_static/vmec_boozer_multi_point_objective_gate.{json,csv,png,pdf}`.
+  The real QH run uses `mboz=nboz=21`, two field lines
+  (`alpha=0.0,0.5`), two `k_y` samples, and four total aggregate samples. It
+  passes the finite-difference curvature gate with curvature ratio about
+  `6.93e-3`. This raises the reduced multi-point differentiable-geometry
+  evidence from `k_y`-only plumbing to field-line-covered plumbing.
+- Integrated the growth-vs-quasilinear aggregate line-search comparison:
+  `tools/build_vmec_boozer_aggregate_line_search_comparison.py`,
+  `tests/test_build_vmec_boozer_aggregate_line_search_comparison.py`, and
+  `docs/_static/vmec_boozer_aggregate_line_search_comparison.{json,csv,png,pdf}`.
+  Both one-step line searches pass on the same QH sample set, but their initial
+  descent directions differ (`growth` prefers positive coefficient delta while
+  the quasilinear proxy prefers negative delta). This is now documented as a
+  manuscript-relevant reason to keep growth-rate, quasilinear, and nonlinear
+  transport optimization claims separate.
+- Added the repository-level aggregate promotion check:
+  `tools/check_vmec_boozer_aggregate_holdout_gate.py`,
+  `tests/test_check_vmec_boozer_aggregate_holdout_gate.py`, and
+  `docs/_static/vmec_boozer_aggregate_holdout_promotion_gate.json`. The current
+  frozen gate is blocked as intended because the aggregate FD and line-search
+  artifacts do not yet have an independent production-grade held-out
+  `surface_index` or field-line `alpha` artifact. Held-out `k_y` evidence alone
+  is explicitly insufficient for geometry-wide optimization promotion.
+- Regenerated `docs/_static/nonlinear_transport_time_horizon_audit.{json,csv,png,pdf}`
+  after adding production nonlinear optimization blockers. The audit still
+  reports `9` release transport gates but `0` production nonlinear optimization
+  ready artifacts, because no nonlinear artifact simultaneously closes
+  post-transient transport, grid convergence, timestep convergence, seed/IC
+  uncertainty, and optimized-equilibrium audit gates.
+- Updated the stellarator optimization docs, verification matrix, and
+  validation coverage manifest to include these artifacts and the conservative
+  claim boundaries.
+- Current lane progress after this tranche:
+  - differentiable VMEC/Boozer reduced optimization plumbing: `92%`;
+  - growth-rate stellarator optimization evidence: `90%`;
+  - quasilinear stellarator optimization evidence: `88%`;
+  - production nonlinear turbulent-flux optimization evidence: `62%`;
+  - publication-ready quasilinear/model-development figures: `86%`;
+  - package-wide coverage/release infrastructure: `96%`;
+  - refactor/testability lane: `86%`;
+  - parallelization production independent-work lane: `90%`;
+  - nonlinear domain decomposition and production nonlinear speedup lane: `58%`.
+- Next best scientific steps:
+  - run a real held-out `alpha` or `surface_index` aggregate validation artifact
+    after a coefficient update, not just a `k_y` split;
+  - extend the comparison artifact to at least one second equilibrium or
+    surface if memory allows;
+  - only after those pass, promote the reduced growth/QL optimization figures;
+  - keep production nonlinear transport optimization blocked until the horizon
+    audit can report at least one optimized-equilibrium artifact with all
+    convergence and uncertainty gates closed.

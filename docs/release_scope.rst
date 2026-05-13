@@ -169,6 +169,9 @@ README claims, or manuscript claims.
        ``vmec_boozer_li383_quasilinear_gradient_gate.*``,
        ``vmec_boozer_li383_nonlinear_window_gradient_gate.*``,
        ``vmec_boozer_gradient_holdout_matrix.*``,
+       ``vmec_boozer_multi_point_objective_gate.*``,
+       ``vmec_boozer_aggregate_line_search_comparison.*``,
+       ``vmec_boozer_aggregate_holdout_promotion_gate.json``,
        ``stellarator_itg_optimization_comparison.*``, and
        ``stellarator_itg_optimization_uq.*``
      - These artifacts support reduced objective differentiability, optimizer
@@ -263,16 +266,18 @@ Differentiable-geometry state:
   Li383 with maximum relative mismatch about ``2.7e-2``.
 - The VMEC/Boozer objective artifact checklist for README and manuscript use is
   the parity matrix, the six single-equilibrium frequency/quasilinear/reduced
-  nonlinear-window gradient-gate figures, the combined holdout matrix, and the
-  reduced stellarator ITG optimization/UQ panels. This checklist is the current
+  nonlinear-window gradient-gate figures, the combined holdout matrix, the
+  multi-alpha aggregate objective gate, the growth-vs-quasilinear line-search
+  comparison, the blocked aggregate promotion JSON, and the reduced
+  stellarator ITG optimization/UQ panels. This checklist is the current
   boundary between objective plumbing and transport prediction.
 - ``docs/_static/nonlinear_window_fd_audit.json`` and
   ``docs/_static/vmec_boozer_nonlinear_window_fd_audit.json`` pass only startup
   finite-difference plumbing checks. Both record ``transport_average_gate =
   false``.
 - Finite-beta drift reconstruction, converged nonlinear turbulence gradients,
-  multi-surface/multi-alpha optimization, and optimized-equilibrium nonlinear
-  audits remain future promotion gates.
+  held-out surface/field-line aggregate promotion, and optimized-equilibrium
+  nonlinear audits remain future promotion gates.
 
 Parallelization and performance state:
 
