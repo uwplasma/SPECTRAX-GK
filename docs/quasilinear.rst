@@ -1042,13 +1042,16 @@ accepted ``spectral_envelope_ridge`` candidate remains a scoped
 model-selection result; the next useful input is a new independent,
 electrostatic-compatible nonlinear transport window with a passed
 grid/window-convergence gate and ``split = holdout`` metadata. The report now
-tracks ``12`` excluded candidates. The shaped-tokamak pressure candidate is
+tracks ``13`` excluded candidates. The shaped-tokamak pressure candidate is
 one of those exclusions: it is finite and late-window stable at ``t = 450``,
 but its ``48x48x32`` and ``64x64x40`` heat-flux windows differ by about
 ``0.306``, above the ``0.15`` grid-agreement gate. The report currently
 identifies the external-VMEC family as the highest-leverage next source
 because an ITERModel window already passes as training data and the nearest
-tracked holdout gap is a near-miss in the same family.
+tracked holdout gap is a near-miss in the same family. The new
+``ITERModel_reference`` same-family audit passes at ``t = 450``, but it is
+classified as reproducibility evidence rather than an independent holdout
+because that family is already consumed by a training reference.
 
 External-VMEC next-holdout runbook
 ----------------------------------
@@ -1069,15 +1072,16 @@ gate must pass before a new point can enter the calibration set.
    :alt: External-VMEC nonlinear holdout launch runbook
    :width: 100%
 
-The current runbook keeps the ITERModel near-miss as a preferred-family audit
-because that family already supplies a training reference. It no longer
-recommends the unchanged shaped-tokamak pressure case as the next new-family
-holdout because the tracked ``t = 450`` high-grid convergence gate failed.
-Families with a recent failed external-VMEC convergence gate are demoted until
-the rerun protocol is materially changed, for example by increasing resolution
-or changing the candidate. The generated JSON sidecar includes replayable
-``write_external_vmec_holdout_configs.py`` commands when an admissible launch
-target exists, the recommended high-grid horizons, and the fail-closed
+The current runbook is intentionally blocked for unchanged replays. The
+ITERModel preferred-family audit has now passed, so replaying the same
+``wout_ITERModel_reference.nc`` ladder would not create independent holdout
+leverage. The unchanged shaped-tokamak pressure case is also demoted because
+its tracked ``t = 450`` high-grid convergence gate failed. Families with a
+recent failed external-VMEC convergence gate are demoted until the rerun
+protocol is materially changed, for example by increasing resolution or
+changing the candidate. The generated JSON sidecar includes replayable
+``write_external_vmec_holdout_configs.py`` commands only when an admissible
+launch target exists, the recommended high-grid horizons, and the fail-closed
 acceptance requirements: ``split = holdout``, passed grid/window convergence,
 a post-transient transport window, and independence from the training
 reference.
@@ -1277,6 +1281,18 @@ quasilinear prediction is only about ``0.389``.
 
 .. image:: _static/external_vmec_itermodel_t350_high_grid_convergence_gate.png
    :alt: External ITERModel VMEC nonlinear t350 high-grid convergence gate
+   :width: 100%
+
+The same ITERModel family was then rerun as an independent ``t = 450`` audit
+using the corrected restart ladder. The audit passes the high-grid gate: the
+``48x48x32`` and ``64x64x40`` common-window heat-flux means are about ``21.31``
+and ``20.14``, with common-window and least-window symmetric grid differences
+``0.056`` and ``0.055``. This is useful reproducibility evidence for the
+training reference, but it is not admitted as a new quasilinear holdout because
+it is not independent of the training-family geometry.
+
+.. image:: _static/external_vmec_itermodel_independent_audit_t450_high_grid_convergence_gate.png
+   :alt: External ITERModel VMEC same-family audit t450 high-grid convergence gate
    :width: 100%
 
 The next screened unstable external-VMEC tokamak candidate,

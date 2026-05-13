@@ -48,6 +48,19 @@ def _gap_report_with_failed_shaped_family() -> dict:
     return report
 
 
+def _gap_report_with_passed_preferred_audit() -> dict:
+    report = _gap_report()
+    report["excluded_candidates"] = [
+        {
+            "case": "ITERModel external VMEC independent audit t450 high-grid convergence",
+            "geometry": "itermodel_external_vmec",
+            "gate_passed": True,
+            "status": "excluded_same_family_training_audit",
+        }
+    ]
+    return report
+
+
 def test_family_detection_covers_screen_names() -> None:
     assert external_vmec_family("ITERModel_reference_nc") == "itermodel_external_vmec"
     assert external_vmec_family("DSHAPE_nc") == "dshape_external_vmec"
@@ -116,6 +129,29 @@ def test_runbook_demotes_recent_failed_external_family() -> None:
     assert shaped["status"] == "recent_family_failed_external_gate"
     assert runbook["selected_new_family_candidate"] is None
     assert runbook["selected_preferred_family_audit"]["case"] == "ITERModel_reference_nc"
+
+
+def test_runbook_does_not_relaunch_passed_same_family_audit() -> None:
+    rows = [
+        ExternalHoldoutScreenRow(
+            case="ITERModel_reference_nc",
+            vmec_file="/vmec/wout_ITER.nc",
+            returncode=0,
+            best_ky=0.47,
+            best_gamma=0.089,
+            best_omega=0.40,
+        )
+    ]
+
+    runbook = build_external_holdout_runbook(
+        gap_report=_gap_report_with_passed_preferred_audit(),
+        screen_rows=rows,
+    )
+
+    assert runbook["passed"] is False
+    assert runbook["launch_commands"] == []
+    assert runbook["selected_preferred_family_audit"] is None
+    assert runbook["ranked_candidates"][0]["status"] == "preferred_family_audit_already_passed"
 
 
 def test_runbook_fails_closed_when_no_unstable_candidate_exists() -> None:

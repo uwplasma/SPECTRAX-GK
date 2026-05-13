@@ -497,6 +497,7 @@ def _external_excluded_rows(
     *,
     known_gate_cases: set[str],
     holdout_families: set[str],
+    training_families: set[str],
 ) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for gate in external_gates:
@@ -509,6 +510,13 @@ def _external_excluded_rows(
         if passed and family in holdout_families:
             status = "excluded_superseded_by_current_holdout_family"
             reason = "passed external-VMEC gate, but this family is already represented by a current admitted holdout"
+            eligible = False
+        elif passed and family in training_families:
+            status = "excluded_same_family_training_audit"
+            reason = (
+                "passed external-VMEC same-family audit, but this family is already consumed by a training reference; "
+                "it is reproducibility evidence rather than an independent holdout"
+            )
             eligible = False
         elif passed:
             status = "next_best_passed_gate_not_in_holdout_report"
@@ -725,6 +733,11 @@ def build_holdout_gap_report(
         for row in admitted
         if "external_vmec" in str(row.get("geometry", ""))
     }
+    training_families = {
+        str(row.get("geometry"))
+        for row in training
+        if "external_vmec" in str(row.get("geometry", ""))
+    }
     excluded = _dataset_excluded_rows(dataset, window_stats=window_stats)
     already_reported = {str(row.get("case", "")) for row in excluded}
     excluded.extend(
@@ -739,6 +752,7 @@ def build_holdout_gap_report(
             external_gates,
             known_gate_cases=known_gate_cases,
             holdout_families=holdout_families,
+            training_families=training_families,
         )
     )
     next_candidates = _next_candidates(

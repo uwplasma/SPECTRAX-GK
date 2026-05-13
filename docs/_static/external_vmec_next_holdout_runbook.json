@@ -15,9 +15,7 @@
     "screen": "docs/_static/external_vmec_candidate_linear_screen.csv"
   },
   "kind": "external_vmec_holdout_runbook",
-  "launch_commands": [
-    "python tools/write_external_vmec_holdout_configs.py --case ITERModel_reference_independent_audit --vmec-file /home/rjorge/src/vmec_jax/examples/data/wout_ITERModel_reference.nc --out-dir tools_out/external_vmec_holdouts/ITERModel_reference_audit --ky 0.4762 --dt 0.05 --horizons 250,350,450 --grid n48:48:48:32:32 --grid n64:64:64:40:40"
-  ],
+  "launch_commands": [],
   "nearest_tracked_gap": {
     "case": "ITERModel external VMEC nonlinear t250 high-grid convergence",
     "failed_gates": [
@@ -28,7 +26,7 @@
     "source_artifact": "docs/_static/external_vmec_itermodel_t250_high_grid_convergence_gate.json"
   },
   "notes": "Run the selected configurations on the large-run host, build a convergence gate with tools/plot_external_vmec_nonlinear_convergence_gate.py, and admit the resulting transport window to quasilinear calibration only if the gate passes and the split is holdout.",
-  "passed": true,
+  "passed": false,
   "pdf": "docs/_static/external_vmec_next_holdout_runbook.pdf",
   "png": "docs/_static/external_vmec_next_holdout_runbook.png",
   "preferred_family": "itermodel_external_vmec",
@@ -40,11 +38,11 @@
       "case": "ITERModel_reference_nc",
       "family": "itermodel_external_vmec",
       "log": "/home/rjorge/spectraxgk_qh_convergence/tools_out/candidate_screen/ITERModel_reference_nc.log",
-      "priority": 3.0,
+      "priority": 5.0,
       "rank": 1,
-      "reason": "preferred family is already used in the current calibration portfolio; use only with an independent split/window",
+      "reason": "same-family audit already passed; relaunch only with a different independent geometry or a materially changed protocol",
       "returncode": 0,
-      "status": "preferred_family_already_represented",
+      "status": "preferred_family_audit_already_passed",
       "unstable": true,
       "vmec_file": "/home/rjorge/src/vmec_jax/examples/data/wout_ITERModel_reference.nc"
     },
@@ -140,19 +138,5 @@
     "updown_asym_external_vmec"
   ],
   "selected_new_family_candidate": null,
-  "selected_preferred_family_audit": {
-    "best_gamma": 0.088737,
-    "best_ky": 0.4762,
-    "best_omega": 0.408683,
-    "case": "ITERModel_reference_nc",
-    "family": "itermodel_external_vmec",
-    "log": "/home/rjorge/spectraxgk_qh_convergence/tools_out/candidate_screen/ITERModel_reference_nc.log",
-    "priority": 3.0,
-    "rank": 1,
-    "reason": "preferred family is already used in the current calibration portfolio; use only with an independent split/window",
-    "returncode": 0,
-    "status": "preferred_family_already_represented",
-    "unstable": true,
-    "vmec_file": "/home/rjorge/src/vmec_jax/examples/data/wout_ITERModel_reference.nc"
-  }
+  "selected_preferred_family_audit": null
 }

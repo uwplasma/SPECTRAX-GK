@@ -29,9 +29,9 @@ page names the claim level explicitly.
 | Lane | Current Level | 100% Acceptance Gate | First Work Item |
 |---|---:|---|---|
 | Linear-growth stellarator optimization | 93% | Real in-memory `vmec_jax -> booz_xform_jax -> SPECTRAX-GK` optimizer, multi-surface/multi-alpha/multi-ky reduction, AD/FD checks, and branch-continuity gates. | Wire the backend-free objective portfolio reducer into the real VMEC/Boozer row-production path and gate held-out surface/alpha samples. |
-| Quasilinear-flux stellarator optimization | 85% | Held-out nonlinear flux trends are predicted with calibrated uncertainty intervals and the failed stellarator train/holdout artifact is replaced by a passing, converged dataset. | Use the shaped-tokamak failed-grid result as an exclusion and move to either a modified higher-resolution protocol or the ITERModel preferred-family audit. |
+| Quasilinear-flux stellarator optimization | 86% | Held-out nonlinear flux trends are predicted with calibrated uncertainty intervals and the failed stellarator train/holdout artifact is replaced by a passing, converged dataset. | Do not replay the completed ITERModel same-family audit unchanged; choose a different independent electrostatic VMEC holdout or a materially changed high-resolution protocol. |
 | Nonlinear turbulent-flux stellarator optimization | 57% | Objective uses post-transient nonlinear heat-flux averages with time-window, seed, grid, and timestep convergence, not reduced envelope estimates. | Freeze the long-window averaging protocol and gate every optimized run by running-average convergence. |
-| Quasilinear manuscript plots | 92% | Every plot is regenerated from checked scripts and JSON sidecars, with failed baselines and accepted candidate scope shown honestly. | Keep the shaped-tokamak negative gate in the docs and decide whether the next manuscript candidate is a higher-resolution rerun or a separate ITERModel holdout audit. |
+| Quasilinear manuscript plots | 93% | Every plot is regenerated from checked scripts and JSON sidecars, with failed baselines and accepted candidate scope shown honestly. | Keep the shaped-tokamak negative gate and passed ITERModel same-family audit in the docs; select the next independent holdout family before claiming absolute-flux promotion. |
 | Parallelization | 91% broad | Nonlinear domain sharding routes the real RHS/FFT/field-solve communication and passes serial identity, conservation, transport-window, CPU/GPU speedup, and profiler gates. | Keep independent batching production; use `parallel_decomposition_status` as the contract ledger while implementing real nonlinear communication routes. |
 | Coverage and refactor | 96% gate, thin margin | Fresh combined wide coverage has positive margin above 95%, preferably 97%, and high-priority manifest owners are either closed or explicitly scoped. | Close high-priority owners touched by geometry/optimization split and keep the new claim-boundary tests in the fast shard set. |
 | `spectraxgk --plot` | 100% | Keep linear/nonlinear saved-output smoke tests and docs examples green. | Maintain as release hygiene while adding manuscript plot scripts. |
@@ -44,6 +44,7 @@ Immediate execution order for this tranche:
 4. Completed contract step: added a backend-free multi-surface/multi-alpha/multi-`k_y` objective portfolio reducer with AD/JVP/finite-difference gates.
 5. Active next step: wire that reducer around real `vmec_jax -> booz_xform_jax -> SPECTRAX-GK` row producers and add held-out surface/alpha acceptance artifacts.
 6. Completed negative holdout: launched and completed the shaped-tokamak external-VMEC n48/n64 `t=250/350/450` ladder on office from commit `f613ad1` after fixing the restart manifest to seed each continuation from the previous horizon rather than the first horizon. The `t=450` traces are finite and late-window stable, but the high-grid gate fails on grid agreement: common/least-window heat-flux differences are about `0.306 > 0.15`. The case is therefore documented as an exclusion, not admitted to calibration.
+7. Completed same-family audit: launched and completed the ITERModel external-VMEC audit n48/n64 `t=250/350/450` ladder on office from commit `5951da6`. The `t=450` high-grid gate passes with common/least-window heat-flux differences about `0.056`/`0.055`, but the case is explicitly excluded from independent holdout admission because ITERModel is already consumed by the training reference.
 
 ### 2026-05-12 VMEC/Boozer Objective-Work Checkpoint
 
@@ -181,10 +182,14 @@ Closed by this checkpoint:
 
 - The external-VMEC holdout gap is now converted into replayable run commands
   instead of being only a prose next step.
-- The current runbook selects `circular_tokamak_nc` as the next independent
-  external-VMEC holdout candidate and keeps `ITERModel_reference_nc` as a
-  preferred-family audit because ITERModel is already consumed by the training
-  reference.
+- Earlier runbook generations selected `circular_tokamak_nc` and then
+  `ITERModel_reference_nc`; those have now been resolved by the circular
+  admitted holdout and the passed ITERModel same-family audit.
+- The current runbook emits no unchanged replay command for the completed
+  ITERModel audit and no unchanged replay command for shaped tokamak because
+  its latest high-grid gate failed. The next candidate must be either a
+  different independent electrostatic VMEC family or a materially changed
+  high-resolution protocol.
 - The runbook encodes the required grids `n48:48:48:32:32` and
   `n64:64:64:40:40`, horizons `t = 250, 350, 450`, `dt = 0.05`, and the
   acceptance gate: `split = holdout`, passed grid/window convergence,
@@ -196,10 +201,10 @@ Closed by this checkpoint:
 
 Still open:
 
-- No new nonlinear simulation was promoted in this checkpoint. The next
-  expensive step is to run the circular-tokamak external-VMEC holdout configs
-  on office, build the convergence gate from the resulting traces, and admit it
-  to calibration only if the gate passes.
+- No new independent nonlinear holdout was promoted by the ITERModel audit. The
+  expensive next step is to pick a different independent electrostatic VMEC
+  family or a materially changed higher-resolution rerun protocol, then admit
+  it to calibration only if the resulting grid/window convergence gate passes.
 - Absolute quasilinear flux prediction remains blocked by the existing
   train/holdout error gate until the converged holdout portfolio is stronger.
 
