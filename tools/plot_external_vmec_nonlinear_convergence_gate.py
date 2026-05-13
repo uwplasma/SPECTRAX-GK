@@ -494,7 +494,17 @@ def write_convergence_panel(runs: list[PilotRun], payload: dict[str, Any], *, ou
     if not failed:
         lines.append("- none")
     lines.extend(["", "Interpretation:"])
-    if passed:
+    case_text = str(payload.get("case", "")).lower()
+    if passed and "audit" in case_text:
+        lines.extend(
+            [
+                "same-family audit passes;",
+                "reproducibility evidence,",
+                "not an independent",
+                "calibration holdout.",
+            ]
+        )
+    elif passed:
         lines.extend(
             [
                 "finite external-VMEC pilot",

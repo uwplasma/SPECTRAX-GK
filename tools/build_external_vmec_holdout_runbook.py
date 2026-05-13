@@ -87,7 +87,7 @@ def _write_panel(path: Path, runbook: dict[str, Any], *, dpi: int = 220, write_p
         status = str(row.get("status", ""))
         if status in {"preferred_family_new_holdout", "new_family_holdout_candidate"}:
             colors.append("#2f7f5f")
-        elif status == "preferred_family_already_represented":
+        elif status in {"preferred_family_already_represented", "preferred_family_audit_already_passed"}:
             colors.append("#d89c32")
         elif status == "represented_family_audit_candidate":
             colors.append("#78909c")

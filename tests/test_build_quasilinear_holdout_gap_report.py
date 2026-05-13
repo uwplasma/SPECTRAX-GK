@@ -182,6 +182,12 @@ def _write_inputs(tmp_path: Path) -> dict[str, Path]:
         gates=pass_gate,
     )
     _external_gate(
+        tmp_path / "external_itermodel_audit.json",
+        "ITERModel external VMEC independent audit t450 high-grid convergence",
+        passed=True,
+        gates=pass_gate,
+    )
+    _external_gate(
         tmp_path / "external_itermodel_t250.json",
         "ITERModel external VMEC nonlinear t250 high-grid convergence",
         passed=False,
@@ -245,6 +251,14 @@ def test_gap_report_preserves_claim_boundary_and_ranks_next_holdout(tmp_path: Pa
     )
     assert shaped["geometry"] == "shaped_tokamak_external_vmec"
     assert shaped["status"] == "excluded_failed_external_gate"
+    audit = next(
+        row
+        for row in report["excluded_candidates"]
+        if row["case"] == "ITERModel external VMEC independent audit t450 high-grid convergence"
+    )
+    assert audit["geometry"] == "itermodel_external_vmec"
+    assert audit["status"] == "excluded_same_family_training_audit"
+    assert audit["eligible_for_next_candidate"] is False
     assert report["next_best_candidates"][0]["status"] == "training_reference_not_independent_holdout"
     assert report["next_actual_nonlinear_holdout_needed"]["preferred_family"] == "itermodel_external_vmec"
     nearest = report["next_actual_nonlinear_holdout_needed"]["nearest_tracked_gap"]

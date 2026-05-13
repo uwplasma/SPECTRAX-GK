@@ -254,7 +254,7 @@ Nonlinear benchmark state:
   release-window cases. KBM and HSX use tightened gates, Cyclone Miller is
   tighter than the broad release envelope, while Cyclone and W7-X remain at the
   ``0.10`` release envelope pending paper-level retuning.
-- ``docs/_static/validation_gate_index.json`` currently records ``10`` passed
+- ``docs/_static/validation_gate_index.json`` currently records ``16`` passed
   gate-indexed reports and ``0`` open reports. It is a gate index, not a
   blanket promotion of every figure under ``docs/_static``.
 - ``docs/_static/nonlinear_transport_time_horizon_audit.json`` separates
