@@ -375,6 +375,7 @@ gate.
        ``docs/_static/vmec_boozer_multi_point_objective_gate.json``,
        ``docs/_static/vmec_boozer_aggregate_line_search_gate.json``,
        ``docs/_static/vmec_boozer_aggregate_line_search_comparison.json``,
+       ``docs/_static/vmec_boozer_aggregate_alpha_holdout_gate.json``,
        ``docs/_static/vmec_boozer_aggregate_holdout_promotion_gate.json``, and
        ``tools/check_vmec_boozer_aggregate_holdout_gate.py``
      - Open for production transport claims
@@ -382,10 +383,12 @@ gate.
        same training sample set, then an independent passed validation artifact
        must cover a held-out ``surface_index`` or field-line ``alpha``.
        The multi-alpha finite-difference artifact passes and the growth-vs-QL
-       comparison shows objective-dependent descent directions, but the current
-       promotion JSON is intentionally blocked because held-out ``k_y`` coverage
-       alone does not satisfy the surface/field-line gate. The frozen aggregate
-       artifacts are therefore reduced optimizer-plumbing evidence only
+       comparison shows objective-dependent descent directions. The
+       alpha-heldout split passes as reduced field-line generalization evidence,
+       but the current promotion JSON is intentionally blocked because the
+       held-out artifact is reduced linear/quasilinear evidence, not a
+       production nonlinear transport validation. The frozen aggregate artifacts
+       are therefore reduced optimizer-plumbing evidence only
    * - Reduced stellarator ITG optimization and UQ
      - objective reduction history, AD/finite-difference derivative parity,
        local covariance, and projected uncertainty

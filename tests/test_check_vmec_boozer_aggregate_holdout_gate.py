@@ -116,7 +116,7 @@ def test_aggregate_holdout_gate_rejects_non_promotable_holdout_scope(tmp_path: P
             "passed": True,
             "claim_level": "startup_transient_nonlinear_plumbing_fd_audit_not_transport_average",
             "transport_average_gate": False,
-            "samples": [
+            "heldout_samples": [
                 {"surface_index": 3, "alpha": 0.0, "selected_ky_index": 1},
             ],
         },
@@ -129,6 +129,7 @@ def test_aggregate_holdout_gate_rejects_non_promotable_holdout_scope(tmp_path: P
     )
 
     assert report["passed"] is False
+    assert report["holdout_artifacts"][0]["n_samples"] == 1
     assert report["holdout_artifacts"][0]["heldout_surface_or_field_line"] is True
     assert report["holdout_artifacts"][0]["qualifies_for_promotion"] is False
     assert "transport_average_gate_false" in report["holdout_artifacts"][0]["claim_scope_blockers"]

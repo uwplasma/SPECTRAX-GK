@@ -4877,6 +4877,16 @@ Exit gate:
   artifacts do not yet have an independent production-grade held-out
   `surface_index` or field-line `alpha` artifact. Held-out `k_y` evidence alone
   is explicitly insufficient for geometry-wide optimization promotion.
+- Added the first real alpha-heldout reduced aggregate split:
+  `tools/build_vmec_boozer_aggregate_alpha_holdout_gate.py`,
+  `tests/test_build_vmec_boozer_aggregate_alpha_holdout_gate.py`, and
+  `docs/_static/vmec_boozer_aggregate_alpha_holdout_gate.{json,csv,png,pdf}`.
+  The QH quasilinear update trained on `alpha=0` and `k_y=(1,2)` also reduces
+  the held-out `alpha=0.5` aggregate on the same `k_y` samples. The measured
+  reductions are `2.20e-3` on training and `6.77e-5` on held-out alpha. The
+  promotion gate now recognizes this held-out field line but still blocks
+  production promotion because the artifact claim scope is reduced
+  linear/quasilinear evidence, not nonlinear transport validation.
 - Regenerated `docs/_static/nonlinear_transport_time_horizon_audit.{json,csv,png,pdf}`
   after adding production nonlinear optimization blockers. The audit still
   reports `9` release transport gates but `0` production nonlinear optimization
@@ -4887,9 +4897,9 @@ Exit gate:
   validation coverage manifest to include these artifacts and the conservative
   claim boundaries.
 - Current lane progress after this tranche:
-  - differentiable VMEC/Boozer reduced optimization plumbing: `92%`;
+  - differentiable VMEC/Boozer reduced optimization plumbing: `94%`;
   - growth-rate stellarator optimization evidence: `90%`;
-  - quasilinear stellarator optimization evidence: `88%`;
+  - quasilinear stellarator optimization evidence: `91%`;
   - production nonlinear turbulent-flux optimization evidence: `62%`;
   - publication-ready quasilinear/model-development figures: `86%`;
   - package-wide coverage/release infrastructure: `96%`;
@@ -4897,8 +4907,8 @@ Exit gate:
   - parallelization production independent-work lane: `90%`;
   - nonlinear domain decomposition and production nonlinear speedup lane: `58%`.
 - Next best scientific steps:
-  - run a real held-out `alpha` or `surface_index` aggregate validation artifact
-    after a coefficient update, not just a `k_y` split;
+  - repeat the held-out aggregate validation on a distinct `surface_index`, not
+    just a distinct field-line `alpha`;
   - extend the comparison artifact to at least one second equilibrium or
     surface if memory allows;
   - only after those pass, promote the reduced growth/QL optimization figures;

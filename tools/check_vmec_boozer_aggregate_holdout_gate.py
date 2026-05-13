@@ -69,7 +69,7 @@ def _claim_scope_blocks_promotion(payload: dict[str, Any]) -> list[str]:
 
 
 def _samples(payload: dict[str, Any]) -> list[dict[str, Any]]:
-    for key in ("samples", "holdout_samples", "validation_samples"):
+    for key in ("samples", "holdout_samples", "heldout_samples", "validation_samples"):
         raw = payload.get(key)
         if isinstance(raw, list):
             return [item for item in raw if isinstance(item, dict)]
