@@ -5089,3 +5089,66 @@ Exit gate:
     records that already passed grid/window convergence;
   - extend second-equilibrium aggregate checks to a held-out surface/field-line
     split once runtime/memory allows.
+
+## 2026-05-13 External-VMEC Portfolio Guardrail and QI Seed Screen
+
+- Refreshed the local `vmec_jax/examples/data` inventory. It now detects
+  `11` VMEC fixtures and adds `wout_QI_stel_seed_3127.nc` to the recommended
+  linear-screen portfolio alongside Li383, nfp4 QH, CTH-like, shaped tokamak,
+  circular tokamak, DSHAPE, and purely toroidal fixtures.
+- Ran bounded local linear screens for the next external-VMEC candidates:
+  - `wout_li383_low_res.nc`: stable over the five-point
+    `ky = 0.0952..0.4762` screen; best sampled growth remains negative
+    (`gamma = -0.0168` at `ky = 0.4762`).
+  - `wout_QI_stel_seed_3127.nc`: finite and weakly unstable only at low `ky`;
+    the refined low-`ky` scan peaks at `gamma = 3.835e-3` near `ky = 0.1429`,
+    and a Krylov check confirms the branch is near marginal rather than a
+    strong nonlinear transport candidate.
+  - `wout_basic_non_stellsym_simsopt.nc`: fails the current VMEC flux-tube cut
+    contract before time integration, so it is recorded as a geometry-contract
+    failure rather than a physics result.
+- Tightened `spectraxgk.external_holdout_plan` so nonlinear launch runbooks now
+  require `gamma >= 0.02` before writing any nonlinear holdout commands. This
+  prevents near-marginal QI branches from being promoted to expensive nonlinear
+  transport validation without first closing a stronger linear/refinement
+  gate.
+- Added family labels for Li383, QI, QA, non-stellarator-symmetric, purely
+  toroidal, and Solovev external-VMEC candidates, plus regression coverage for
+  family detection and marginal-branch fail-closed behavior.
+- Regenerated and documented:
+  - `docs/_static/vmec_jax_equilibrium_inventory.*`;
+  - `docs/_static/external_vmec_candidate_linear_screen.csv`;
+  - `docs/_static/external_vmec_next_holdout_runbook.*`;
+  - `docs/_static/quasilinear_vmec_qi_seed_linear_spectrum.*`.
+- Current conclusion: the external-VMEC absolute-flux lane remains honest and
+  fail-closed. ITERModel same-family audit is reproducible but not independent;
+  DSHAPE/circular/shaped families are represented or failed; Li383 is stable;
+  QI seed is near marginal; basic non-stellarator-symmetric geometry needs a
+  VMEC flux-tube-contract fix before physics screening.
+- Checks completed:
+  - `ruff` focused source/tool/test shard;
+  - focused `pytest` shard covering external holdout planning, inventory,
+    quasilinear spectrum plotting, and holdout-gap reporting;
+  - Sphinx HTML with `-W`;
+  - package build;
+  - release-readiness gate;
+  - repository-size manifest, still below the `50 MB` tracked limit.
+- Current lane progress after this tranche:
+  - differentiable VMEC/Boozer reduced optimization plumbing: `97%`;
+  - growth-rate stellarator optimization evidence: `92%`;
+  - quasilinear stellarator optimization evidence: `96%`;
+  - production nonlinear turbulent-flux optimization evidence: `66%`;
+  - publication quasilinear/model-development figures: `90%`;
+  - package-wide coverage/release infrastructure: `97%`;
+  - refactor/testability lane: `88%`;
+  - parallelization production independent-work lane: `92%`;
+  - nonlinear domain decomposition and production nonlinear speedup lane: `60%`.
+- Next best scientific steps:
+  - automate a stronger QI branch-continuation/refinement gate before any QI
+    nonlinear transport claim;
+  - find or generate a genuinely new electrostatic-compatible VMEC fixture with
+    `gamma >= 0.02` and valid flux-tube geometry, then launch the standard
+    two-grid nonlinear holdout ladder;
+  - add nonlinear timestep and seed/IC uncertainty gates for the already
+    grid-converged external-VMEC records before promoting nonlinear optimized
+    stellarator transport claims.
