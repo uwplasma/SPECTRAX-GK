@@ -1098,6 +1098,7 @@ numerics_contracts = [
 fast_tests = [
   "tests/test_solver_objective_gradients.py",
   "tests/test_build_vmec_boozer_nonlinear_window_gradient_gate.py",
+  "tests/test_build_vmec_boozer_aggregate_objective_gate.py",
   "tests/test_build_vmec_boozer_gradient_holdout_matrix.py",
   "tests/test_build_nonlinear_window_fd_audit.py",
   "tests/test_build_vmec_boozer_nonlinear_window_fd_audit.py",
@@ -1110,6 +1111,8 @@ artifact_paths = [
   "docs/_static/vmec_boozer_solver_frequency_gradient_gate.png",
   "docs/_static/vmec_boozer_quasilinear_gradient_gate.json",
   "docs/_static/vmec_boozer_quasilinear_gradient_gate.png",
+  "docs/_static/vmec_boozer_aggregate_objective_gate.json",
+  "docs/_static/vmec_boozer_aggregate_objective_gate.png",
   "docs/_static/vmec_boozer_nonlinear_window_gradient_gate.json",
   "docs/_static/vmec_boozer_nonlinear_window_gradient_gate.png",
   "docs/_static/vmec_boozer_li383_nonlinear_window_gradient_gate.json",
