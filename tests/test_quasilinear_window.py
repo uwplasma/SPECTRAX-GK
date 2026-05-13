@@ -12,9 +12,11 @@ import pytest
 
 from spectraxgk.quasilinear_window import (
     NonlinearWindowConvergenceConfig,
+    NonlinearWindowEnsembleConfig,
     nonlinear_window_convergence_from_csv,
     nonlinear_window_convergence_from_summary,
     nonlinear_window_convergence_report,
+    nonlinear_window_ensemble_report,
     nonlinear_window_stats_promotion_ready,
 )
 
@@ -160,6 +162,95 @@ def test_terminal_subwindow_gate_blocks_cancelled_running_mean_drift() -> None:
     assert report["statistics"]["terminal_mean_rel_delta"] == pytest.approx(1.0)
 
 
+def test_nonlinear_window_ensemble_gate_accepts_seed_replicates() -> None:
+    import spectraxgk as sgk
+
+    assert sgk.NonlinearWindowEnsembleConfig is NonlinearWindowEnsembleConfig
+    assert sgk.nonlinear_window_ensemble_report is nonlinear_window_ensemble_report
+
+    t, heat = _saturated_trace()
+    reports = [
+        nonlinear_window_convergence_report(
+            t,
+            heat + offset,
+            case=f"seed_{idx}",
+            source_artifact=f"seed_{idx}.csv",
+            config=NonlinearWindowConvergenceConfig(
+                transient_fraction=0.5,
+                min_samples=64,
+                min_blocks=4,
+                max_running_mean_rel_drift=0.02,
+                max_sem_rel=0.02,
+            ),
+        )
+        for idx, offset in enumerate((-0.02, 0.0, 0.02))
+    ]
+
+    report = nonlinear_window_ensemble_report(
+        reports,
+        case="seed_uncertainty_gate",
+        comparison="random_seed_replicates",
+        config=NonlinearWindowEnsembleConfig(
+            min_reports=3,
+            max_mean_rel_spread=0.02,
+            max_combined_sem_rel=0.02,
+        ),
+    )
+
+    assert report["passed"] is True
+    assert report["statistics"]["n_reports"] == 3
+    assert report["statistics"]["mean_rel_spread"] == pytest.approx(0.01)
+    assert report["rows"][0]["source_artifact"] == "seed_0.csv"
+    assert {gate["metric"] for gate in report["gates"] if not gate["passed"]} == set()
+
+
+def test_nonlinear_window_ensemble_gate_blocks_spread_and_failed_inputs() -> None:
+    t, heat = _saturated_trace()
+    good = nonlinear_window_convergence_report(
+        t,
+        heat,
+        case="good_seed",
+        source_artifact="good.csv",
+        config=NonlinearWindowConvergenceConfig(
+            transient_fraction=0.5,
+            min_samples=64,
+            max_running_mean_rel_drift=0.02,
+            max_sem_rel=0.02,
+        ),
+    )
+    drifted = nonlinear_window_convergence_report(
+        t,
+        heat + 2.0,
+        case="drifted_seed",
+        source_artifact="drifted.csv",
+        config=NonlinearWindowConvergenceConfig(
+            transient_fraction=0.5,
+            min_samples=64,
+            max_running_mean_rel_drift=0.02,
+            max_sem_rel=0.02,
+        ),
+    )
+    failed = dict(good)
+    failed["case"] = "failed_seed"
+    failed["passed"] = False
+    failed["gate_report"] = {"passed": False}
+
+    report = nonlinear_window_ensemble_report(
+        [good, drifted, failed],
+        config=NonlinearWindowEnsembleConfig(
+            min_reports=3,
+            max_mean_rel_spread=0.05,
+            max_combined_sem_rel=0.02,
+        ),
+    )
+
+    failed_metrics = {gate["metric"] for gate in report["gates"] if not gate["passed"]}
+    assert report["passed"] is False
+    assert "individual_windows_passed" in failed_metrics
+    assert "mean_relative_spread" in failed_metrics
+    assert report["rows"][2]["promotion_ready"] is False
+
+
 def test_small_window_and_nan_late_window_fail() -> None:
     t = np.linspace(0.0, 10.0, 11)
     heat = np.ones_like(t)
@@ -287,6 +378,21 @@ def test_nonlinear_window_config_and_input_validation_are_fail_closed() -> None:
         nonlinear_window_convergence_report([0.0, np.nan], [1.0, 1.0])
     with pytest.raises(ValueError, match="selected nonlinear window is empty"):
         nonlinear_window_convergence_report([1.0], [1.0])
+
+    bad_ensemble_configs = [
+        (NonlinearWindowEnsembleConfig(min_reports=1), "min_reports"),
+        (NonlinearWindowEnsembleConfig(max_mean_rel_spread=-1.0), "mean_rel_spread"),
+        (NonlinearWindowEnsembleConfig(max_combined_sem_rel=-1.0), "combined_sem"),
+        (NonlinearWindowEnsembleConfig(value_floor=0.0), "value_floor"),
+    ]
+    for config, message in bad_ensemble_configs:
+        with pytest.raises(ValueError, match=message):
+            nonlinear_window_ensemble_report([], config=config)
+    with pytest.raises(TypeError, match="report dictionaries"):
+        nonlinear_window_ensemble_report(
+            [object()],  # type: ignore[list-item]
+            config=NonlinearWindowEnsembleConfig(min_reports=2),
+        )
 
 
 def test_nonlinear_window_csv_and_summary_loaders_cover_artifact_contracts(

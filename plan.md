@@ -5230,3 +5230,41 @@ Exit gate:
   - keep the quasilinear absolute-flux manuscript claims scoped to
     model-development diagnostics until at least one richer candidate beats the
     null baseline on independent nonlinear holdouts.
+
+## 2026-05-13 Nonlinear Window Ensemble Robustness Gate
+
+- Added `NonlinearWindowEnsembleConfig` and
+  `nonlinear_window_ensemble_report` in `spectraxgk.quasilinear_window`.
+  The new gate consumes already-built nonlinear-window convergence reports and
+  checks replicated windows across seed, initial-condition, restart, or
+  timestep variants without launching simulations inside the checker.
+- The ensemble report fails closed unless enough reports are present, each
+  individual report is promotion-ready by default, late-window means are finite,
+  relative mean spread is below the configured threshold, and the combined SEM
+  across replicate means/individual uncertainties is below threshold.
+- Added focused tests for passing synthetic seed replicates, blocking a broad
+  spread plus a failed input window, config validation, and top-level exports.
+- Documented the new gate in `docs/quasilinear.rst` and `docs/release_scope.rst`
+  as the metadata layer needed before nonlinear turbulent-flux optimization can
+  claim seed/timestep robustness.
+- Checks completed:
+  - `ruff` on the touched source/docs-adjacent tests;
+  - `pytest -q tests/test_quasilinear_window.py`: `12` passed;
+  - full-package `mypy`: `Success: no issues found in 88 source files`.
+- Current lane progress after this tranche:
+  - differentiable VMEC/Boozer reduced optimization plumbing: `97%`;
+  - growth-rate stellarator optimization evidence: `92%`;
+  - quasilinear stellarator optimization evidence: `97%`;
+  - production nonlinear turbulent-flux optimization evidence: `73%`;
+  - publication quasilinear/model-development figures: `92%`;
+  - package-wide coverage/release infrastructure: `97%`;
+  - refactor/testability lane: `90%`;
+  - parallelization production independent-work lane: `94%`;
+  - nonlinear domain decomposition and production nonlinear speedup lane: `63%`.
+- Next best steps:
+  - build a small artifact tool that reads multiple tracked nonlinear-window
+    JSON reports and emits a seed/timestep ensemble gate JSON/PNG;
+  - apply that tool to the already grid-converged external-VMEC records once
+    the matching replicate/timestep summaries exist;
+  - keep production nonlinear transport optimization blocked until this
+    ensemble gate, grid convergence, and optimized-equilibrium audits all pass.
