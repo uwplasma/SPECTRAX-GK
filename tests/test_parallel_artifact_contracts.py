@@ -85,6 +85,9 @@ def test_parallel_manifests_track_current_cpu_gpu_scaling_artifacts() -> None:
         "docs/_static/quasilinear_uq_ensemble_scaling_gpu_large.csv",
         "docs/_static/quasilinear_uq_ensemble_scaling_gpu_large.png",
         "docs/_static/quasilinear_uq_ensemble_scaling_gpu_large.pdf",
+        "docs/_static/parallelization_completion_status.json",
+        "docs/_static/parallelization_completion_status.png",
+        "docs/_static/parallelization_completion_status.pdf",
         "docs/_static/nonlinear_sharding_strong_scaling_large.json",
         "docs/_static/nonlinear_sharding_strong_scaling_large.csv",
         "docs/_static/nonlinear_sharding_strong_scaling_large.png",
@@ -119,6 +122,22 @@ def test_parallel_manifests_track_current_cpu_gpu_scaling_artifacts() -> None:
     assert required <= validation_paths
     for artifact in required:
         assert (ROOT / artifact).exists(), artifact
+
+
+def test_parallelization_completion_status_scopes_production_and_diagnostic_lanes() -> None:
+    payload = _load_json("parallelization_completion_status.json")
+
+    assert payload["kind"] == "parallelization_completion_status"
+    assert payload["passed"] is True
+    assert payload["production_completion_percent"] == 100.0
+    assert "Release production parallelization is closed" in payload["claim_scope"]
+    lanes = {lane["lane"]: lane for lane in payload["lanes"]}
+    assert lanes["independent_ky_scan"]["status"] == "production_closed"
+    assert lanes["quasilinear_uq_ensemble"]["status"] == "production_closed"
+    assert lanes["independent_ky_scan"]["best_speedups"]["cpu"] >= 5.0
+    assert lanes["independent_ky_scan"]["best_speedups"]["gpu"] >= 1.5
+    assert lanes["whole_state_nonlinear_sharding"]["status"] == "diagnostic_closed_not_production"
+    assert lanes["fft_axis_domain"]["status"] == "diagnostic_identity_closed"
 
 
 def test_nonlinear_domain_parallel_identity_gate_is_scoped_and_fail_closed() -> None:

@@ -408,6 +408,41 @@ finite-beta/production-runtime curvature and drift reconstruction, then replace
 the reduced estimator-gradient checks with converged transport-gradient and
 optimized-equilibrium audits.
 
+In-memory differentiable geometry API
+-------------------------------------
+
+Differentiable stellarator optimization must stay on the in-memory path:
+
+.. code-block:: python
+
+   from spectraxgk import flux_tube_geometry_from_vmec_boozer_state
+
+   geom = flux_tube_geometry_from_vmec_boozer_state(
+       state,
+       static,
+       indata,
+       wout,
+       surface_index=surface_index,
+       alpha=0.0,
+       ntheta=32,
+       mboz=21,
+       nboz=21,
+   )
+
+This public wrapper converts a solved ``vmec_jax`` state through
+``booz_xform_jax`` and returns the existing SPECTRAX-GK
+``FluxTubeGeometryData`` solver contract. The path is
+``VMECState -> BoozXformInputs -> Boozer coefficients -> FluxTubeGeometryData``
+and does not write or reload ``*.eik.nc`` files. The file-backed VMEC/EIK route
+remains the right runtime import path for ordinary examples, but it is not the
+path to use for end-to-end differentiable optimization.
+
+The current wrapper is a production API boundary, not a new physics claim. It
+inherits the same ``mboz,nboz >= 21`` and equal-arc parity requirements as the
+VMEC/Boozer gates. Full stellarator-optimization claims still require
+multi-surface/multi-field-line objective gates and nonlinear heat-flux audits
+of optimized equilibria.
+
 The lightweight readiness tests mirror that claim boundary. The parity-matrix
 tests reject ``mboz,nboz < 21`` and assert that a passed equal-arc matrix is
 still tagged as ``not_full_transport_gradient_claim``. The gradient-holdout

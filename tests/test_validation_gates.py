@@ -12,6 +12,7 @@ from spectraxgk.validation_gates import (
     EigenfunctionComparisonMetrics,
     GateReport,
     LateTimeLinearMetrics,
+    NonlinearHeatFluxConvergenceMetrics,
     NonlinearWindowMetrics,
     ObservedOrderMetrics,
     ScalarGateResult,
@@ -22,6 +23,7 @@ from spectraxgk.validation_gates import (
     gate_report,
     gate_report_to_dict,
     linear_metrics_gate_report,
+    nonlinear_heat_flux_convergence_gate_report,
     nonlinear_window_gate_report,
     observed_order_gate_report,
     zonal_response_gate_report,
@@ -33,6 +35,7 @@ def test_validation_gate_primitives_are_public_and_backward_compatible() -> None
     assert benchmarking.evaluate_scalar_gate is evaluate_scalar_gate
     assert benchmarking.observed_order_gate_report is observed_order_gate_report
     assert benchmarking.branch_continuity_gate_report is branch_continuity_gate_report
+    assert benchmarking.nonlinear_heat_flux_convergence_gate_report is nonlinear_heat_flux_convergence_gate_report
 
 
 def test_scalar_gate_and_json_report_are_strict_and_serializable() -> None:
@@ -168,6 +171,24 @@ def test_validation_gate_family_helpers_cover_physics_observables() -> None:
         phi_mode_envelope_std=0.4,
         phi_mode_envelope_max=4.5,
     )
+    nonlinear_convergence = NonlinearHeatFluxConvergenceMetrics(
+        tmin=10.0,
+        tmax=20.0,
+        nsamples=12,
+        heat_flux_mean=1.0,
+        heat_flux_std=0.02,
+        heat_flux_cv=0.02,
+        heat_flux_rms=1.0002,
+        terminal_tmin=15.0,
+        terminal_tmax=20.0,
+        terminal_nsamples=6,
+        terminal_heat_flux_mean=1.01,
+        mean_rel_delta=0.01,
+        trend=0.02,
+        abs_trend=0.02,
+        start_fraction=0.5,
+        terminal_fraction=0.5,
+    )
     zonal = ZonalFlowResponseMetrics(
         initial_level=1.0,
         initial_policy="first_abs",
@@ -199,6 +220,18 @@ def test_validation_gate_family_helpers_cover_physics_observables() -> None:
     assert (
         nonlinear_window_gate_report(
             nonlinear, nonlinear, case="nonlinear", source="self"
+        ).passed
+        is True
+    )
+    assert (
+        nonlinear_heat_flux_convergence_gate_report(
+            nonlinear_convergence,
+            case="nonlinear_convergence",
+            source="self",
+            max_mean_rel_delta=0.02,
+            max_cv=0.03,
+            max_abs_trend=0.03,
+            min_samples=12,
         ).passed
         is True
     )

@@ -27,6 +27,18 @@ Source Map
 ----------
 
 - Core API: :mod:`spectraxgk.stellarator_optimization`
+- Production in-memory geometry boundary:
+  :func:`spectraxgk.flux_tube_geometry_from_vmec_boozer_state`
+- Production-adjacent linear/quasilinear objective evaluator:
+  :func:`spectraxgk.vmec_boozer_solver_objective_vector_from_state`
+- Scalar optimizer hook:
+  :func:`spectraxgk.vmec_boozer_scalar_objective_from_state`
+- VMEC-state finite-difference sensitivity audit:
+  :func:`spectraxgk.vmec_boozer_scalar_objective_finite_difference_report`
+- Curvature-gated one-parameter line search:
+  :func:`spectraxgk.vmec_boozer_scalar_objective_line_search_report`
+- Fast branch-continuity and sensitivity gate:
+  :func:`spectraxgk.solver_objective_branch_gradient_report`
 - Tests: ``tests/test_stellarator_optimization.py``
 - Growth-rate example:
   :download:`stellarator_itg_growth_optimization.py <../examples/optimization/stellarator_itg_growth_optimization.py>`
@@ -47,6 +59,47 @@ quasisymmetry, then minimizes them over boundary Fourier coefficients. The
 SPECTRAX-GK examples use the same optimization pattern but keep the transport
 objective inside a trace-safe reduced map until the production geometry bridge
 is fully gated.
+
+The next implementation stage replaces that reduced map with
+``flux_tube_geometry_from_vmec_boozer_state`` followed by
+``vmec_boozer_solver_objective_vector_from_state``. The latter evaluates the
+dominant SPECTRAX-GK linear/quasilinear objective vector from the in-memory
+geometry path. It is a forward evaluator, not by itself a gradient claim:
+end-to-end differentiability is claimed only after VMEC/Boozer geometry parity,
+branch-continuity, and AD/finite-difference gates pass for the optimized
+equilibrium and held-out field lines.
+
+For CI-scale development, ``solver_objective_branch_gradient_report`` applies
+the same branch-continuity and implicit AD/finite-difference logic to the
+solver-ready differentiable geometry contract. It verifies that the selected
+max-growth eigenbranch stays dominant under central perturbations and that
+the objective-vector sensitivities pass the implicit left/right eigenpair
+gate. The VMEC/Boozer offline gates remain the authority for production
+stellarator optimization claims.
+
+Optimizer drivers should use ``vmec_boozer_scalar_objective_from_state`` once
+they have a solved ``vmec_jax`` state. The supported aliases are
+``growth``/``gamma``, ``frequency``/``omega``, and
+``quasilinear_flux``/``mixing_length_heat_flux_proxy``. This selector prevents
+each optimization example from silently using a different objective index.
+
+Before any optimizer loop is promoted, run
+``vmec_boozer_scalar_objective_finite_difference_report`` on the selected
+VMEC coefficient, field line, and objective. It evaluates the scalar objective
+at ``x-h``, ``x``, and ``x+h`` through the same in-memory VMEC/Boozer path and
+records the central finite-difference sensitivity. The report also checks a
+curvature/branch-switch indicator so a non-smooth max-growth branch is not
+mistaken for a usable optimization gradient. This is intentionally a
+finite-difference/SPSA-compatible audit, not an automatic-differentiation claim
+for eigenvector-dependent quasilinear observables.
+
+The first optimizer scaffold is
+``vmec_boozer_scalar_objective_line_search_report``. It repeatedly applies the
+finite-difference audit at the current VMEC coefficient offset and accepts only
+candidate updates that both pass the same curvature gate and reduce the scalar
+objective. This is useful for growth-rate and quasilinear-flux optimizer
+plumbing, but it remains a one-parameter audit rather than a multi-parameter
+stellarator optimization claim.
 
 Objective
 ---------

@@ -16,6 +16,7 @@ def _assert_scaling_artifact(payload: dict) -> None:
     assert "independent ky" in payload["claim_scope"].lower()
     assert payload["grid"] == {"Nl": 4, "Nm": 8, "Nx": 1, "Ny": 128, "Nz": 96}
     assert payload["time"]["steps"] == 240
+    assert len(payload["ky"]) == 64
     for row in payload["rows"]:
         assert row["identity_gate_pass"] is True
         assert row["max_gamma_rel_error"] == 0.0
@@ -29,7 +30,7 @@ def test_large_cpu_independent_ky_scaling_artifact_is_identity_gated() -> None:
     _assert_scaling_artifact(payload)
     assert payload["backend"] == "cpu"
     assert [row["requested_devices"] for row in payload["rows"]] == [1, 2, 4, 8]
-    assert payload["rows"][-1]["strong_speedup_vs_1_device"] > 5.0
+    assert payload["rows"][-1]["strong_speedup_vs_1_device"] > 7.0
 
 
 def test_large_gpu_independent_ky_scaling_artifact_is_identity_gated() -> None:
@@ -38,7 +39,7 @@ def test_large_gpu_independent_ky_scaling_artifact_is_identity_gated() -> None:
     _assert_scaling_artifact(payload)
     assert payload["backend"] == "gpu"
     assert [row["requested_devices"] for row in payload["rows"]] == [1, 2]
-    assert payload["rows"][-1]["strong_speedup_vs_1_device"] > 1.5
+    assert payload["rows"][-1]["strong_speedup_vs_1_device"] > 1.8
 
 
 def test_combined_independent_ky_scaling_artifact_tracks_cpu_and_gpu() -> None:

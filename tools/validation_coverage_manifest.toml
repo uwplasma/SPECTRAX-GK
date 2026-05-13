@@ -1084,6 +1084,9 @@ artifact_paths = [
   "docs/_static/nonlinear_sharding_strong_scaling_large.csv",
   "docs/_static/nonlinear_sharding_strong_scaling_large.png",
   "docs/_static/nonlinear_sharding_strong_scaling_large.pdf",
+  "docs/_static/parallelization_completion_status.json",
+  "docs/_static/parallelization_completion_status.png",
+  "docs/_static/parallelization_completion_status.pdf",
 ]
 next_tests = [
   "promote tools/profile_nonlinear_sharding.py to a benchmark-size nonlinear identity/profile artifact once the bounded two-GPU gate is replaced by a matched runtime sweep",
@@ -1241,6 +1244,9 @@ artifact_paths = [
   "docs/_static/quasilinear_uq_ensemble_scaling_gpu_large.csv",
   "docs/_static/quasilinear_uq_ensemble_scaling_gpu_large.png",
   "docs/_static/quasilinear_uq_ensemble_scaling_gpu_large.pdf",
+  "docs/_static/parallelization_completion_status.json",
+  "docs/_static/parallelization_completion_status.png",
+  "docs/_static/parallelization_completion_status.pdf",
   "docs/_static/nonlinear_sharding_strong_scaling_cpu_large.json",
   "docs/_static/nonlinear_sharding_strong_scaling_cpu_large.csv",
   "docs/_static/nonlinear_sharding_strong_scaling_cpu_large.png",

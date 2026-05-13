@@ -108,6 +108,37 @@ def _calibration_report(
     }
 
 
+def _manuscript_readiness_report(
+    *,
+    claim_level: str = "scoped_candidate_model_selection_not_runtime_flux_predictor",
+    absolute_flux_promoted: bool = False,
+    include_guardrail_artifact: bool = True,
+) -> dict:
+    artifacts = [
+        "docs/_static/quasilinear_validated_calibration_inputs.json",
+        "docs/_static/quasilinear_candidate_uncertainty.json",
+    ]
+    if include_guardrail_artifact:
+        artifacts.append("docs/_static/quasilinear_promotion_guardrails.json")
+    return {
+        "kind": "manuscript_readiness_status",
+        "lanes": [
+            {
+                "lane": "Quasilinear diagnostics and saturation-model selection",
+                "status": "closed",
+                "claim_level": claim_level,
+                "primary_artifacts": artifacts,
+                "key_metrics": {
+                    "absolute_flux_promoted": absolute_flux_promoted,
+                    "uq_candidate_promotion_passed": True,
+                    "dataset_sufficiency_promotion_passed": True,
+                    "accepted_uq_candidates": ["spectral_envelope_ridge"],
+                },
+            }
+        ],
+    }
+
+
 def test_promoted_absolute_flux_requires_passed_holdout_gate_and_window_stats(
     tmp_path: Path,
 ) -> None:
@@ -212,6 +243,71 @@ def test_docs_without_nonpromotion_marker_fail_scope_check(tmp_path: Path) -> No
     assert f"doc_no_absolute_flux_overclaim:{doc}" in failed_metrics
 
 
+def test_manuscript_readiness_ql_lane_requires_scoped_nonabsolute_candidate(
+    tmp_path: Path,
+) -> None:
+    mod = _load_tool_module()
+    report = tmp_path / "manuscript_readiness_status.json"
+    report.write_text(
+        json.dumps(
+            _manuscript_readiness_report(
+                claim_level="calibrated_absolute_flux",
+                absolute_flux_promoted=True,
+            )
+        ),
+        encoding="utf-8",
+    )
+    doc = tmp_path / "doc.rst"
+    _write_doc(doc)
+
+    audit = mod.build_guardrail_audit([str(report)], [doc])
+
+    assert audit["passed"] is False
+    failed_metrics = {
+        gate["metric"] for gate in audit["gate_report"]["gates"] if not gate["passed"]
+    }
+    assert "manuscript_ql_not_absolute_flux" in failed_metrics
+    assert "manuscript_ql_closed_scope_is_non_absolute" in failed_metrics
+    assert "manuscript_ql_candidate_scope_not_runtime" in failed_metrics
+
+
+def test_manuscript_readiness_ql_lane_requires_guardrail_artifact(
+    tmp_path: Path,
+) -> None:
+    mod = _load_tool_module()
+    report = tmp_path / "manuscript_readiness_status.json"
+    report.write_text(
+        json.dumps(_manuscript_readiness_report(include_guardrail_artifact=False)),
+        encoding="utf-8",
+    )
+    doc = tmp_path / "doc.rst"
+    _write_doc(doc)
+
+    audit = mod.build_guardrail_audit([str(report)], [doc])
+
+    assert audit["passed"] is False
+    failed_metrics = {
+        gate["metric"] for gate in audit["gate_report"]["gates"] if not gate["passed"]
+    }
+    assert "manuscript_ql_guardrail_artifact_listed" in failed_metrics
+
+
+def test_manuscript_readiness_ql_lane_passes_when_candidate_is_scoped(
+    tmp_path: Path,
+) -> None:
+    mod = _load_tool_module()
+    report = tmp_path / "manuscript_readiness_status.json"
+    report.write_text(json.dumps(_manuscript_readiness_report()), encoding="utf-8")
+    doc = tmp_path / "doc.rst"
+    _write_doc(doc)
+
+    audit = mod.build_guardrail_audit([str(report)], [doc])
+
+    assert audit["passed"] is True
+    assert audit["summary"]["n_manuscript_readiness_reports"] == 1
+    assert audit["manuscript_readiness_reports"][0]["ql_status"] == "closed"
+
+
 def test_tracked_quasilinear_promotion_guardrails_pass() -> None:
     mod = _load_tool_module()
 
@@ -224,6 +320,7 @@ def test_tracked_quasilinear_promotion_guardrails_pass() -> None:
     assert audit["summary"]["n_calibration_reports"] == 4
     assert audit["summary"]["n_input_validation_reports"] >= 4
     assert audit["summary"]["n_promotion_gate_reports"] >= 4
+    assert audit["summary"]["n_manuscript_readiness_reports"] == 1
 
 
 def test_guardrail_script_runs_before_editable_install(tmp_path: Path) -> None:

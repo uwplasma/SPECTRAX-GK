@@ -30,6 +30,7 @@ REQUIRED_CI_SNIPPETS = (
     "tools/check_parallel_scaling_artifacts.py",
     "tools/check_performance_optimization_manifest.py",
     "tools/check_quasilinear_promotion_guardrails.py",
+    "tools/build_parallelization_completion_status.py",
     "tools/build_technical_release_status.py",
     "tools/check_release_readiness.py",
 )
@@ -49,6 +50,7 @@ REQUIRED_STATIC_ARTIFACTS = (
     "docs/_static/w7x_tem_extension_status.json",
     "docs/_static/independent_ky_scan_scaling_large.json",
     "docs/_static/quasilinear_uq_ensemble_scaling_large.json",
+    "docs/_static/parallelization_completion_status.json",
     "docs/_static/nonlinear_sharding_strong_scaling_large.json",
     "docs/_static/nonlinear_domain_parallel_identity_gate.json",
     "docs/_static/nonlinear_spectral_communication_identity_gate.json",
