@@ -215,6 +215,12 @@ Quasilinear Model Selection
 .. automodule:: spectraxgk.quasilinear_model_selection
    :members:
 
+External-VMEC Holdout Planning
+------------------------------
+
+.. automodule:: spectraxgk.external_holdout_plan
+   :members:
+
 Parallel Decomposition Contracts
 --------------------------------
 

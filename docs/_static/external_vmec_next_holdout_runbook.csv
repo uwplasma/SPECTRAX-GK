@@ -1,0 +1,7 @@
+rank,case,family,status,best_gamma,best_ky,best_omega,reason
+1,circular_tokamak_nc,circular_external_vmec,new_family_holdout_candidate,0.089094,0.4762,0.407803,unstable electrostatic-compatible VMEC family not yet represented
+2,circular_tokamak_reference_nc,circular_external_vmec,new_family_holdout_candidate,0.089094,0.4762,0.407803,unstable electrostatic-compatible VMEC family not yet represented
+3,shaped_tokamak_pressure_reference_nc,shaped_tokamak_external_vmec,new_family_holdout_candidate,0.047324,0.4762,0.282209,unstable electrostatic-compatible VMEC family not yet represented
+4,ITERModel_reference_nc,itermodel_external_vmec,preferred_family_already_represented,0.088737,0.4762,0.408683,preferred family is already used in the current calibration portfolio; use only with an independent split/window
+5,DSHAPE_nc,dshape_external_vmec,represented_family_audit_candidate,0.09619,0.4762,0.062517,"family already represented; useful as an audit, not first holdout leverage"
+6,LandremanSengupta2019_section5_4_B2_A80_reference_nc,external_vmec,screen_rejected_stable_or_failed,-0.001248,0.1905,-0.143501,screen row did not finish with positive growth

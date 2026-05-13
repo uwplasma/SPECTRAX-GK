@@ -29,9 +29,9 @@ page names the claim level explicitly.
 | Lane | Current Level | 100% Acceptance Gate | First Work Item |
 |---|---:|---|---|
 | Linear-growth stellarator optimization | 93% | Real in-memory `vmec_jax -> booz_xform_jax -> SPECTRAX-GK` optimizer, multi-surface/multi-alpha/multi-ky reduction, AD/FD checks, and branch-continuity gates. | Wire the backend-free objective portfolio reducer into the real VMEC/Boozer row-production path and gate held-out surface/alpha samples. |
-| Quasilinear-flux stellarator optimization | 78% | Held-out nonlinear flux trends are predicted with calibrated uncertainty intervals and the failed stellarator train/holdout artifact is replaced by a passing, converged dataset. | Add the next converged nonlinear holdout identified by `quasilinear_holdout_gap_report`. |
+| Quasilinear-flux stellarator optimization | 80% | Held-out nonlinear flux trends are predicted with calibrated uncertainty intervals and the failed stellarator train/holdout artifact is replaced by a passing, converged dataset. | Run the new `external_vmec_next_holdout_runbook` configs on office and admit only a passed `split=holdout` window. |
 | Nonlinear turbulent-flux stellarator optimization | 57% | Objective uses post-transient nonlinear heat-flux averages with time-window, seed, grid, and timestep convergence, not reduced envelope estimates. | Freeze the long-window averaging protocol and gate every optimized run by running-average convergence. |
-| Quasilinear manuscript plots | 86% | Every plot is regenerated from checked scripts and JSON sidecars, with failed baselines and accepted candidate scope shown honestly. | Add the next admitted nonlinear holdout and regenerate the model-selection/gap-report stack. |
+| Quasilinear manuscript plots | 88% | Every plot is regenerated from checked scripts and JSON sidecars, with failed baselines and accepted candidate scope shown honestly. | Execute the external-VMEC holdout runbook, then regenerate the model-selection/gap-report stack from the admitted holdout. |
 | Parallelization | 91% broad | Nonlinear domain sharding routes the real RHS/FFT/field-solve communication and passes serial identity, conservation, transport-window, CPU/GPU speedup, and profiler gates. | Keep independent batching production; use `parallel_decomposition_status` as the contract ledger while implementing real nonlinear communication routes. |
 | Coverage and refactor | 96% gate, thin margin | Fresh combined wide coverage has positive margin above 95%, preferably 97%, and high-priority manifest owners are either closed or explicitly scoped. | Close high-priority owners touched by geometry/optimization split and keep the new claim-boundary tests in the fast shard set. |
 | `spectraxgk --plot` | 100% | Keep linear/nonlinear saved-output smoke tests and docs examples green. | Maintain as release hygiene while adding manuscript plot scripts. |
@@ -168,6 +168,39 @@ Still open after this checkpoint:
   artifacts.
 - Wide coverage remains above the release gate but has a thin margin; keep
   expanding focused physics/claim-boundary tests before claiming 97%+ margin.
+
+### 2026-05-13 External-VMEC Holdout Runbook Checkpoint
+
+Current tranche result: added the source-level
+`spectraxgk.external_holdout_plan` planner and
+`tools/build_external_vmec_holdout_runbook.py`, with the tracked artifact base
+`docs/_static/external_vmec_next_holdout_runbook.*`.
+
+Closed by this checkpoint:
+
+- The external-VMEC holdout gap is now converted into replayable run commands
+  instead of being only a prose next step.
+- The current runbook selects `circular_tokamak_nc` as the next independent
+  external-VMEC holdout candidate and keeps `ITERModel_reference_nc` as a
+  preferred-family audit because ITERModel is already consumed by the training
+  reference.
+- The runbook encodes the required grids `n48:48:48:32:32` and
+  `n64:64:64:40:40`, horizons `t = 250, 350, 450`, `dt = 0.05`, and the
+  acceptance gate: `split = holdout`, passed grid/window convergence,
+  post-transient transport window, and independence from the training
+  reference.
+- External-VMEC convergence JSON sidecars now expose `passed` at top level in
+  addition to the nested `promotion_gate`, making downstream artifact contracts
+  less error-prone.
+
+Still open:
+
+- No new nonlinear simulation was promoted in this checkpoint. The next
+  expensive step is to run the circular-tokamak external-VMEC holdout configs
+  on office, build the convergence gate from the resulting traces, and admit it
+  to calibration only if the gate passes.
+- Absolute quasilinear flux prediction remains blocked by the existing
+  train/holdout error gate until the converged holdout portfolio is stronger.
 
 ## Literature Anchors From Final Pass
 
