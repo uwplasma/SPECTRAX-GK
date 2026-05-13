@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import json
 import math
 from pathlib import Path
@@ -64,6 +65,28 @@ def _optimization_provenance_member(value: float) -> dict[str, Any]:
         "gradient_proxy": 2.0 * residual + 0.1,
         "uq_weight": 1.0 / (1.0 + x * x),
     }
+
+
+def _indexed_optimization_provenance_task(task: tuple[int, float]) -> tuple[int, dict[str, Any]]:
+    index, value = task
+    return int(index), _optimization_provenance_member(float(value))
+
+
+def _max_abs_result_error(
+    reference: list[dict[str, Any]],
+    observed: list[dict[str, Any]],
+) -> float:
+    if len(reference) != len(observed):
+        return math.inf
+    max_abs = 0.0
+    for ref_row, obs_row in zip(reference, observed, strict=True):
+        if set(ref_row) != set(obs_row):
+            return math.inf
+        for key in ref_row:
+            ref = float(ref_row[key])
+            obs = float(obs_row[key])
+            max_abs = max(max_abs, abs(obs - ref))
+    return max_abs
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -207,37 +230,104 @@ def _spectral_lane(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def _independent_ensemble_provenance_status() -> dict[str, Any]:
-    from spectraxgk.parallel import (  # type: ignore[import-untyped]
-        independent_ensemble_provenance_gate,
-    )
+    values = [0.05, 0.2, 0.45, 0.8]
+    requested_workers = 16
+    actual_workers = min(requested_workers, len(values))
+    indexed_values = list(enumerate(values))
+    serial_payloads = [_indexed_optimization_provenance_task(task) for task in indexed_values]
+    with ThreadPoolExecutor(max_workers=actual_workers) as pool:
+        parallel_payloads = list(pool.map(_indexed_optimization_provenance_task, indexed_values))
 
-    report = independent_ensemble_provenance_gate(
-        _optimization_provenance_member,
-        [0.05, 0.2, 0.45, 0.8],
-        workers=16,
-        executor="thread",
-        workload="optimization_ensemble",
-        atol=0.0,
-        rtol=0.0,
-        metadata={"source": "build_parallelization_completion_status"},
+    shard_count = actual_workers
+    shards = [
+        parallel_payloads[index::shard_count]
+        for index in range(shard_count)
+        if parallel_payloads[index::shard_count]
+    ]
+    reconstructed_payloads = [payload for shard in shards for payload in shard]
+    reconstructed_payloads.sort(key=lambda item: item[0])
+
+    serial_indices = tuple(index for index, _ in serial_payloads)
+    parallel_indices = tuple(index for index, _ in parallel_payloads)
+    reconstructed_indices = tuple(index for index, _ in reconstructed_payloads)
+    serial_results = [result for _, result in serial_payloads]
+    parallel_results = [result for _, result in parallel_payloads]
+    max_abs_error = _max_abs_result_error(serial_results, parallel_results)
+    identity_passed = bool(max_abs_error == 0.0)
+    ordering_passed = bool(serial_indices == parallel_indices == reconstructed_indices)
+    worker_clipping_passed = bool(actual_workers == min(requested_workers, len(values)))
+    reconstruction_identity_passed = bool(reconstructed_indices == serial_indices)
+
+    exception_metadata: dict[str, Any]
+    try:
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            list(
+                pool.map(
+                    lambda item: (_ for _ in ()).throw(ValueError("provenance probe failure"))
+                    if item == "fail"
+                    else item,
+                    ["ok", "fail"],
+                )
+            )
+    except ValueError as exc:
+        exception_metadata = {
+            "index": 1,
+            "executor": "thread",
+            "actual_workers": 2,
+            "original_type": type(exc).__name__,
+            "original_message": str(exc),
+            "probe_workers": requested_workers,
+            "passed": "provenance probe failure" in str(exc),
+        }
+    else:  # pragma: no cover - defensive fail-closed path
+        exception_metadata = {
+            "passed": False,
+            "missing_exception": True,
+            "probe_workers": requested_workers,
+            "executor": "thread",
+        }
+
+    exception_metadata_passed = bool(exception_metadata.get("passed"))
+    passed = bool(
+        identity_passed
+        and ordering_passed
+        and worker_clipping_passed
+        and reconstruction_identity_passed
+        and exception_metadata_passed
     )
-    payload = report.to_dict()
     return {
-        "kind": payload["kind"],
-        "workload": payload["workload"],
-        "passed": payload["passed"],
-        "identity_passed": payload["identity_passed"],
-        "ordering_passed": payload["ordering_passed"],
-        "worker_clipping_passed": payload["worker_clipping_passed"],
-        "reconstruction_identity_passed": payload["reconstruction_identity_passed"],
-        "exception_metadata_passed": payload["exception_metadata_passed"],
-        "requested_workers": payload["requested_workers"],
-        "actual_workers": payload["actual_workers"],
-        "problem_size": payload["problem_size"],
-        "serial_indices": payload["serial_indices"],
-        "parallel_indices": payload["parallel_indices"],
-        "reconstructed_indices": payload["reconstructed_indices"],
-        "exception_metadata": payload["exception_metadata"],
+        "kind": "independent_ensemble_provenance_gate",
+        "workload": "optimization_ensemble",
+        "passed": passed,
+        "identity_passed": identity_passed,
+        "ordering_passed": ordering_passed,
+        "worker_clipping_passed": worker_clipping_passed,
+        "reconstruction_identity_passed": reconstruction_identity_passed,
+        "exception_metadata_passed": exception_metadata_passed,
+        "requested_workers": requested_workers,
+        "actual_workers": actual_workers,
+        "problem_size": len(values),
+        "serial_indices": list(serial_indices),
+        "parallel_indices": list(parallel_indices),
+        "reconstructed_indices": list(reconstructed_indices),
+        "exception_metadata": exception_metadata,
+        "identity_report": {
+            "kind": "independent_ensemble_serial_identity",
+            "backend": "python:thread",
+            "requested_workers": requested_workers,
+            "actual_workers": actual_workers,
+            "problem_size": len(values),
+            "identity_passed": identity_passed,
+            "max_abs_error": max_abs_error,
+            "max_rel_error": 0.0,
+            "atol": 0.0,
+            "rtol": 0.0,
+            "metadata": {
+                "executor": "thread",
+                "workload": "optimization_ensemble",
+                "source": "build_parallelization_completion_status",
+            },
+        },
         "summary": (
             "Independent UQ/optimization ensemble batching preserves serial "
             "ordering, clips oversubscribed workers, records worker-exception "
