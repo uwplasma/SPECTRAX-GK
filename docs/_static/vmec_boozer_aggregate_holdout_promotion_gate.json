@@ -20,6 +20,11 @@
       "detail": "provide a passed production-scope holdout artifact with a new surface_index or alpha",
       "metric": "passed_holdout_surface_or_field_line_artifact",
       "passed": false
+    },
+    {
+      "detail": "provide a passed replicated nonlinear-window ensemble artifact before any production nonlinear optimized-equilibrium claim",
+      "metric": "passed_replicated_nonlinear_window_ensemble",
+      "passed": false
     }
   ],
   "holdout_artifacts": [
@@ -49,17 +54,20 @@
     }
   ],
   "kind": "vmec_boozer_aggregate_holdout_promotion_gate",
-  "notes": "This check gates claim promotion only. Passing aggregate reduced-objective FD and line-search artifacts proves optimizer plumbing; it does not by itself validate optimized-equilibrium nonlinear transport. Promotion requires independent held-out surface or field-line evidence.",
+  "nonlinear_ensemble_artifacts": [],
+  "notes": "This check gates claim promotion only. Passing aggregate reduced-objective FD and line-search artifacts proves optimizer plumbing; it does not by itself validate optimized-equilibrium nonlinear transport. Promotion requires independent held-out surface or field-line evidence plus replicated nonlinear-window uncertainty evidence.",
   "passed": false,
   "promotion_gate": {
     "blockers": [
-      "passed_holdout_surface_or_field_line_artifact"
+      "passed_holdout_surface_or_field_line_artifact",
+      "passed_replicated_nonlinear_window_ensemble"
     ],
     "passed": false,
     "requirements": [
       "aggregate finite-difference artifact passes",
       "aggregate line-search artifact passes on the same sample set",
       "at least one passed production-scope validation artifact covers a held-out surface_index or field-line alpha",
+      "at least one passed replicated nonlinear-window ensemble artifact supports the post-transient transport mean and uncertainty",
       "k_y-only holdouts do not satisfy the surface/field-line requirement"
     ]
   },

@@ -41,6 +41,15 @@ def _line_search_payload() -> dict[str, object]:
     }
 
 
+def _ensemble_payload(*, passed: bool = True) -> dict[str, object]:
+    return {
+        "kind": "nonlinear_window_ensemble_report",
+        "claim_level": "replicated_nonlinear_window_uncertainty_gate_not_simulation_claim",
+        "passed": passed,
+        "gate_report": {"passed": passed},
+    }
+
+
 def test_aggregate_holdout_gate_blocks_without_surface_or_field_line_holdout(tmp_path: Path) -> None:
     aggregate = _write_json(tmp_path / "aggregate.json", _aggregate_payload())
     line_search = _write_json(tmp_path / "line_search.json", _line_search_payload())
@@ -51,7 +60,10 @@ def test_aggregate_holdout_gate_blocks_without_surface_or_field_line_holdout(tmp
     )
 
     assert report["passed"] is False
-    assert report["promotion_gate"]["blockers"] == ["passed_holdout_surface_or_field_line_artifact"]
+    assert report["promotion_gate"]["blockers"] == [
+        "passed_holdout_surface_or_field_line_artifact",
+        "passed_replicated_nonlinear_window_ensemble",
+    ]
     assert report["training_sample_summary"]["alphas"] == ["0"]
 
 
@@ -78,12 +90,13 @@ def test_aggregate_holdout_gate_rejects_ky_only_holdout(tmp_path: Path) -> None:
     assert report["passed"] is False
     assert report["holdout_artifacts"][0]["passed"] is True
     assert report["holdout_artifacts"][0]["heldout_surface_or_field_line"] is False
-    assert "k_y-only" in report["promotion_gate"]["requirements"][3]
+    assert "k_y-only" in report["promotion_gate"]["requirements"][4]
 
 
 def test_aggregate_holdout_gate_accepts_passed_field_line_holdout(tmp_path: Path) -> None:
     aggregate = _write_json(tmp_path / "aggregate.json", _aggregate_payload())
     line_search = _write_json(tmp_path / "line_search.json", _line_search_payload())
+    ensemble = _write_json(tmp_path / "ensemble.json", _ensemble_payload())
     holdout = _write_json(
         tmp_path / "alpha_holdout.json",
         {
@@ -99,12 +112,46 @@ def test_aggregate_holdout_gate_accepts_passed_field_line_holdout(tmp_path: Path
         aggregate_artifact=aggregate,
         line_search_artifact=line_search,
         holdout_artifacts=(holdout,),
+        nonlinear_ensemble_artifacts=(ensemble,),
     )
 
     assert report["passed"] is True
     assert report["promotion_gate"]["blockers"] == []
     assert report["holdout_artifacts"][0]["qualifies_for_promotion"] is True
-    assert report["gates"][-1]["detail"].endswith("held-out field-line alpha=0.75")
+    assert report["nonlinear_ensemble_artifacts"][0]["qualifies_for_production_nonlinear_promotion"] is True
+    assert report["gates"][-2]["detail"].endswith("held-out field-line alpha=0.75")
+
+
+def test_aggregate_holdout_gate_rejects_non_ensemble_nonlinear_artifact(tmp_path: Path) -> None:
+    aggregate = _write_json(tmp_path / "aggregate.json", _aggregate_payload())
+    line_search = _write_json(tmp_path / "line_search.json", _line_search_payload())
+    holdout = _write_json(
+        tmp_path / "alpha_holdout.json",
+        {
+            "promotion_gate": {"passed": True},
+            "claim_level": "passed_grid_convergence_candidate_for_transport_holdout",
+            "samples": [{"surface_index": None, "alpha": 0.75, "selected_ky_index": 1}],
+        },
+    )
+    single_window = _write_json(
+        tmp_path / "single_window.json",
+        {
+            "kind": "nonlinear_window_convergence_report",
+            "passed": True,
+            "gate_report": {"passed": True},
+        },
+    )
+
+    report = mod.check_vmec_boozer_aggregate_holdout_gate(
+        aggregate_artifact=aggregate,
+        line_search_artifact=line_search,
+        holdout_artifacts=(holdout,),
+        nonlinear_ensemble_artifacts=(single_window,),
+    )
+
+    assert report["passed"] is False
+    assert report["promotion_gate"]["blockers"] == ["passed_replicated_nonlinear_window_ensemble"]
+    assert report["nonlinear_ensemble_artifacts"][0]["is_nonlinear_window_ensemble"] is False
 
 
 def test_aggregate_holdout_gate_rejects_non_promotable_holdout_scope(tmp_path: Path) -> None:
@@ -133,6 +180,7 @@ def test_aggregate_holdout_gate_rejects_non_promotable_holdout_scope(tmp_path: P
     assert report["holdout_artifacts"][0]["heldout_surface_or_field_line"] is True
     assert report["holdout_artifacts"][0]["qualifies_for_promotion"] is False
     assert "transport_average_gate_false" in report["holdout_artifacts"][0]["claim_scope_blockers"]
+    assert "passed_replicated_nonlinear_window_ensemble" in report["promotion_gate"]["blockers"]
 
 
 def test_aggregate_holdout_gate_main_writes_json(tmp_path: Path) -> None:

@@ -437,7 +437,10 @@ gate.
      - aggregate finite-difference and line-search artifacts must pass on the
        same training sample set, then an independent passed production-scope
        validation artifact must cover a held-out ``surface_index`` or field-line
-       ``alpha``.
+       ``alpha``. Production nonlinear optimization promotion additionally
+       requires a passed replicated nonlinear-window ensemble artifact, so a
+       single converged window cannot by itself support an optimized-equilibrium
+       heat-flux claim.
        The multi-alpha finite-difference artifact passes and the growth-vs-QL
        comparison shows objective-dependent descent directions. The
        alpha-heldout and surface-heldout splits pass as reduced generalization
@@ -445,8 +448,9 @@ gate.
        finite-difference/line-search check. The current promotion JSON is
        intentionally blocked because these artifacts are reduced
        linear/quasilinear evidence, not production nonlinear transport
-       validation. The frozen aggregate artifacts are therefore reduced
-       optimizer-plumbing evidence only
+       validation, and no replicated nonlinear-window ensemble is yet supplied.
+       The frozen aggregate artifacts are therefore reduced optimizer-plumbing
+       evidence only
    * - Reduced stellarator ITG optimization and UQ
      - objective reduction history, AD/finite-difference derivative parity,
        local covariance, and projected uncertainty
@@ -467,8 +471,9 @@ gate.
      - future long-window nonlinear artifacts
      - Open
      - requires transient cutoff, cumulative running-mean stability,
-       independent late-block stability, grid/timestep/seed checks, and
-       nonlinear audits of optimized equilibria
+       independent late-block stability, grid/timestep/seed checks, a passed
+       replicated nonlinear-window ensemble gate, and nonlinear audits of
+       optimized equilibria
 
 Use this section as the verification boundary for README figures: the
 VMEC/Boozer parity, gradient-holdout, and reduced optimization/UQ panels can be

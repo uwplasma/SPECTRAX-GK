@@ -5295,3 +5295,31 @@ Exit gate:
     soon as matching seed/timestep artifacts exist;
   - add a promotion-checker hook requiring an ensemble gate for production
     nonlinear optimized-equilibrium claims.
+
+## 2026-05-13 Nonlinear Optimization Promotion Guard
+
+- Tightened `tools/check_vmec_boozer_aggregate_holdout_gate.py` so production
+  nonlinear optimized-equilibrium promotion now requires, in addition to
+  aggregate FD/line-search and held-out surface/field-line evidence, at least
+  one passed replicated nonlinear-window ensemble artifact.
+- Regenerated
+  `docs/_static/vmec_boozer_aggregate_holdout_promotion_gate.json`; it remains
+  blocked as intended, now with two explicit blockers:
+  `passed_holdout_surface_or_field_line_artifact` and
+  `passed_replicated_nonlinear_window_ensemble`.
+- Added fast regression coverage for accepting a passed nonlinear-window
+  ensemble and rejecting a single-window report as insufficient production
+  nonlinear optimization evidence.
+- Updated `docs/release_scope.rst`, `docs/stellarator_optimization.rst`, and
+  `docs/verification_matrix.rst` so the claim boundary is visible in the
+  documentation.
+- Current lane progress after this tranche:
+  - production nonlinear turbulent-flux optimization evidence: `77%`;
+  - refactor/testability lane: `91%`;
+  - package-wide coverage/release infrastructure: `97%`;
+  - other lane percentages unchanged from the preceding tranche.
+- Next best steps:
+  - run the focused tests, docs build, release-readiness check, and CI poll;
+  - if CI stays green, apply the ensemble artifact tool to real replicated
+    nonlinear-window summaries when the next matched seed/timestep batch is
+    available.

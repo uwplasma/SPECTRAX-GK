@@ -157,7 +157,13 @@ surface/field-line generalization gate. The repository-level check
 ``tools/check_vmec_boozer_aggregate_holdout_gate.py`` encodes that boundary for
 frozen artifacts: it accepts the aggregate FD and line-search artifacts as
 necessary optimizer-plumbing evidence, then blocks promotion until independent
-surface/field-line holdout evidence is supplied.
+surface/field-line holdout evidence is supplied. It also requires a passed
+replicated nonlinear-window ensemble artifact from
+``tools/check_nonlinear_window_ensemble.py`` before any optimized-equilibrium
+production nonlinear heat-flux claim can be made. The ensemble requirement is
+deliberately separate from the single-window convergence rule: a single
+post-transient mean can establish a candidate window, but seed/timestep/restart
+replicates are needed before that mean becomes a robust optimization target.
 
 Objective
 ---------
@@ -697,11 +703,15 @@ the following pass:
    least one independent passed validation artifact must cover a held-out
    ``surface_index`` or field-line ``alpha``. Additional ``k_y`` coverage is
    useful, but ``k_y``-only holdout evidence does not satisfy the
-   surface/field-line gate. The current frozen promotion artifact,
+   surface/field-line gate. A passed replicated nonlinear-window ensemble is
+   also required before the optimized-equilibrium claim can be promoted from
+   reduced-objective evidence to production nonlinear transport evidence. The
+   current frozen promotion artifact,
    ``docs/_static/vmec_boozer_aggregate_holdout_promotion_gate.json``, is
    blocked as intended: reduced held-out-alpha and held-out-surface artifacts
    now pass, but they are not production nonlinear transport validation
-   artifacts.
+   artifacts, and no replicated nonlinear-window ensemble artifact has been
+   supplied.
 
 Until those gates pass, the release claim is: SPECTRAX-GK has a tested
 differentiable stellarator ITG objective-reduction workflow and the validation
