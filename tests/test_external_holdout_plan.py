@@ -66,6 +66,9 @@ def test_family_detection_covers_screen_names() -> None:
     assert external_vmec_family("DSHAPE_nc") == "dshape_external_vmec"
     assert external_vmec_family("circular_tokamak_nc") == "circular_external_vmec"
     assert external_vmec_family("shaped_tokamak_pressure_reference_nc") == "shaped_tokamak_external_vmec"
+    assert external_vmec_family("QI_stel_seed_3127_nc", "/vmec/wout_QI_stel_seed_3127.nc") == "qi_external_vmec"
+    assert external_vmec_family("li383_low_res_nc", "/vmec/wout_li383_low_res.nc") == "li383_external_vmec"
+    assert external_vmec_family("basic_non_stellsym_nc") == "non_stellsym_external_vmec"
 
 
 def test_read_external_holdout_screen_and_rank_runbook(tmp_path: Path) -> None:
@@ -169,6 +172,24 @@ def test_runbook_fails_closed_when_no_unstable_candidate_exists() -> None:
     assert runbook["passed"] is False
     assert runbook["launch_commands"] == []
     assert runbook["ranked_candidates"][0]["status"] == "screen_rejected_stable_or_failed"
+
+
+def test_runbook_blocks_marginal_linear_candidate_from_nonlinear_launch() -> None:
+    rows = [
+        ExternalHoldoutScreenRow(
+            case="QI_stel_seed_3127_nc",
+            vmec_file="/vmec/wout_QI_stel_seed_3127.nc",
+            returncode=0,
+            best_ky=0.1429,
+            best_gamma=0.0038,
+            best_omega=-0.09,
+        )
+    ]
+    runbook = build_external_holdout_runbook(gap_report=_gap_report(), screen_rows=rows)
+    assert runbook["passed"] is False
+    assert runbook["launch_commands"] == []
+    assert runbook["min_launch_gamma"] == 0.02
+    assert runbook["ranked_candidates"][0]["status"] == "screen_marginal_needs_linear_refinement"
 
 
 def _load_tool_module():

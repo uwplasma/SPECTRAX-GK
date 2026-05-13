@@ -1107,9 +1107,10 @@ selection score for follow-up cases:
    :alt: vmec_jax equilibrium inventory for future validation holdouts
    :width: 100%
 
-The current inventory finds ``10`` local VMEC equilibria. The best immediate
+The current inventory finds ``11`` local VMEC equilibria. The best immediate
 linear/nonlinear holdout candidates are ``wout_li383_low_res.nc``,
-``wout_nfp4_QH_warm_start.nc``, ``wout_cth_like_fixed_bdy.nc``,
+``wout_QI_stel_seed_3127.nc``, ``wout_nfp4_QH_warm_start.nc``,
+``wout_cth_like_fixed_bdy.nc``,
 ``wout_shaped_tokamak_pressure.nc``, ``wout_circular_tokamak.nc``,
 ``wout_DSHAPE.nc``, and ``wout_purely_toroidal_field.nc``. The
 ``wout_LandremanPaul2021_QA_lowres.nc`` fixture is deliberately deferred by the
@@ -1177,6 +1178,22 @@ with ``gamma = 0.096`` at ``ky = 0.476``. Circular tokamak and ITER-model
 fixtures are close behind, while QI/QA/QH reference fixtures are stable or fail
 the current geometry screen. The screen output is tracked as
 ``docs/_static/external_vmec_candidate_linear_screen.csv``.
+
+The refreshed local portfolio adds three explicit outcomes to that screen. The
+finite-beta ``wout_li383_low_res.nc`` branch stays stable over
+``ky = 0.095`` to ``0.476`` under the same adiabatic-electron ITG screen. The
+new ``wout_QI_stel_seed_3127.nc`` branch is finite and only weakly unstable:
+the refined low-``ky`` scan peaks at ``gamma≈3.8e-3`` near ``ky≈0.143``, and a
+Krylov check confirms the lowest-``ky`` branch remains near marginality. The
+current runbook therefore treats this as QI/seed-robust feasibility evidence,
+not as a nonlinear transport launch target. A separate
+``wout_basic_non_stellsym_simsopt.nc`` attempt fails the present VMEC flux-tube
+cut contract before time integration, so it is tracked as a geometry-contract
+failure rather than a physics result.
+
+.. image:: _static/quasilinear_vmec_qi_seed_linear_spectrum.png
+   :alt: QI seed VMEC near-marginal linear quasilinear spectrum
+   :width: 100%
 
 Nonlinear follow-up configs for these external VMEC candidates should be
 generated with ``tools/write_external_vmec_holdout_configs.py`` rather than by
@@ -1294,6 +1311,15 @@ it is not independent of the training-family geometry.
 .. image:: _static/external_vmec_itermodel_independent_audit_t450_high_grid_convergence_gate.png
    :alt: External ITERModel VMEC same-family audit t450 high-grid convergence gate
    :width: 100%
+
+The external-VMEC runbook is now deliberately fail-closed. It requires a
+screened linear growth rate of at least ``gamma = 0.02`` before it writes any
+nonlinear launch command, and it still requires a matched post-transient
+transport window plus passed grid/window convergence before a point can enter
+calibration. This blocks three common failure modes: rerunning a same-family
+training audit as if it were independent, replaying a family with a recent
+failed convergence gate unchanged, and launching expensive nonlinear
+simulations from near-marginal linear branches such as the present QI seed.
 
 The next screened unstable external-VMEC tokamak candidate,
 ``wout_up_down_asymmetric_tokamak_reference.nc``, also closes after a bounded

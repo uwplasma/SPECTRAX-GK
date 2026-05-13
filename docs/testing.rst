@@ -284,11 +284,20 @@ copy commands for the standard two-grid external-VMEC holdout ladder, e.g.
 ``48x48x32`` and ``64x64x40``. The script does not promote any data by itself;
 the resulting traces must still pass the convergence gate above before they can
 enter quasilinear calibration reports or optimization studies.
+
 ``tools/prepare_external_vmec_holdout_from_screen.py`` is the selector that
 feeds that generator. It reads the tracked linear candidate screen, skips
 excluded or already-audited cases, resolves the chosen VMEC file from the local
 ``vmec_jax`` checkout, and writes the next bounded holdout ladder plus a JSON
 selection summary. This removes another manual step from the external-VMEC
+nonlinear campaign and makes office reruns deterministic.
+
+``tools/build_external_vmec_holdout_runbook.py`` is stricter than a positive
+growth-rate sorter. It requires a configurable minimum screened growth rate
+(``gamma >= 0.02`` by default) before writing nonlinear launch commands. This
+keeps near-marginal branches in the manuscript evidence chain as linear/QI
+feasibility data without silently promoting them to expensive nonlinear
+transport holdout campaigns.
 
 ``tools/write_w7x_zonal_closure_sweep.py`` is the analogous reproducibility
 companion for the open W7-X zonal-response lane. It writes a manifest of
@@ -299,7 +308,6 @@ The manifest includes the exact
 ``tools/generate_w7x_zonal_response_panel.py`` launch commands plus the
 companion ``tools/plot_w7x_zonal_closure_ladder.py`` command needed to refresh
 the bounded closure audit after the remote runs complete.
-nonlinear campaign and makes office reruns deterministic.
 
 ``tools/check_quasilinear_calibration_inputs.py`` is the corresponding
 calibration-admission guard. It scans quasilinear train/holdout reports and
@@ -309,6 +317,7 @@ be documented in the docs, but they cannot silently become calibration or
 optimization data. The public CI runs this audit during the docs/packaging
 job, and the fast test suite checks the current tracked train/holdout reports
 against the same gate index.
+
 ``tools/check_quasilinear_promotion_guardrails.py`` is the higher-level
 absolute-flux promotion guard. It scans the tracked quasilinear reports plus
 the claim-scope docs, fails if a promoted report lacks train/holdout points,
