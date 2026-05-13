@@ -317,7 +317,7 @@ def _bundle_base(path: Path) -> Path:
 def write_manifest(out_dir: Path, written: list[WrittenConfig]) -> Path:
     """Write launch and restart-copy commands next to generated configs."""
 
-    first_by_grid: dict[str, WrittenConfig] = {}
+    previous_by_grid: dict[str, WrittenConfig] = {}
     manifest: dict[str, object] = {
         "kind": "external_vmec_holdout_config_manifest",
         "configs": [],
@@ -340,17 +340,16 @@ def write_manifest(out_dir: Path, written: list[WrittenConfig]) -> Path:
             f"CUDA_VISIBLE_DEVICES=${{DEVICE:-0}} python3 -m spectraxgk.cli run "
             f"--config {item.path.as_posix()} --no-progress"
         )
-        if not item.restart_if_exists:
-            first_by_grid[item.grid.label] = item
-        else:
-            first = first_by_grid[item.grid.label]
-            src_base = _bundle_base(first.output_path)
+        if item.restart_if_exists:
+            previous = previous_by_grid[item.grid.label]
+            src_base = _bundle_base(previous.output_path)
             dst_base = _bundle_base(item.output_path)
             manifest["restart_seed_commands"].append(
                 "for ext in out.nc restart.nc big.nc; do "
                 f"cp {src_base.as_posix()}.$ext {dst_base.as_posix()}.$ext; "
                 "done"
             )
+        previous_by_grid[item.grid.label] = item
     path = out_dir / "run_manifest.json"
     path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return path
