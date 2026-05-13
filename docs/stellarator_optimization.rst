@@ -42,6 +42,8 @@ Source Map
   :func:`spectraxgk.vmec_boozer_aggregate_scalar_objective_finite_difference_report`
 - Curvature-gated one-parameter line search:
   :func:`spectraxgk.vmec_boozer_scalar_objective_line_search_report`
+- Multi-point curvature-gated one-parameter line search:
+  :func:`spectraxgk.vmec_boozer_aggregate_scalar_objective_line_search_report`
 - Fast branch-continuity and sensitivity gate:
   :func:`spectraxgk.solver_objective_branch_gradient_report`
 - Tests: ``tests/test_stellarator_optimization.py``
@@ -125,6 +127,14 @@ candidate updates that both pass the same curvature gate and reduce the scalar
 objective. This is useful for growth-rate and quasilinear-flux optimizer
 plumbing, but it remains a one-parameter audit rather than a multi-parameter
 stellarator optimization claim.
+
+For multi-point reduced objectives, use
+``vmec_boozer_aggregate_scalar_objective_line_search_report`` instead. It
+applies the aggregate finite-difference gate at every attempted VMEC
+coefficient update and records the same sample metadata as the aggregate gate.
+This is now the preferred scaffold for growth-rate and quasilinear-flux
+optimization studies that need more than one field line, surface, or ``k_y``
+point before entering a full optimizer loop.
 
 Objective
 ---------

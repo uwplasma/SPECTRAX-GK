@@ -36,6 +36,7 @@ from spectraxgk.solver_objective_gradients import (
     tiny_differentiable_objective_gradient_report,
     vmec_boozer_aggregate_scalar_objective_finite_difference_report,
     vmec_boozer_aggregate_scalar_objective_from_state,
+    vmec_boozer_aggregate_scalar_objective_line_search_report,
     vmec_boozer_scalar_objective_finite_difference_report,
     vmec_boozer_scalar_objective_from_state,
     vmec_boozer_scalar_objective_line_search_report,
@@ -522,6 +523,86 @@ def test_vmec_boozer_aggregate_scalar_objective_finite_difference_report(
             selected_ky_indices=[1, 2],
             weights=[1.0],
         )
+
+
+def test_vmec_boozer_aggregate_scalar_objective_line_search_report_accepts_safe_updates(
+    monkeypatch,
+) -> None:
+    calls: list[float] = []
+
+    def fake_fd_report(**kwargs):  # noqa: ANN003, ANN202
+        delta = float(kwargs.get("base_delta", 0.0))
+        calls.append(delta)
+        value = 2.0 + 4.0 * delta
+        return {
+            "passed": True,
+            "base_value": value,
+            "central_derivative": 4.0,
+            "curvature_ratio": 0.0,
+            "n_samples": 2,
+            "samples": [
+                {"surface_index": None, "alpha": 0.0, "selected_ky_index": 1, "weight": 0.5},
+                {"surface_index": None, "alpha": 0.0, "selected_ky_index": 2, "weight": 0.5},
+            ],
+        }
+
+    monkeypatch.setattr(
+        sog,
+        "vmec_boozer_aggregate_scalar_objective_finite_difference_report",
+        fake_fd_report,
+    )
+
+    report = vmec_boozer_aggregate_scalar_objective_line_search_report(
+        objective="quasilinear_flux",
+        reduction="mean",
+        selected_ky_indices=[1, 2],
+        update_step=0.05,
+        max_steps=2,
+        ntheta=4,
+    )
+
+    assert spectraxgk.vmec_boozer_aggregate_scalar_objective_line_search_report is (
+        vmec_boozer_aggregate_scalar_objective_line_search_report
+    )
+    assert report["passed"] is True
+    assert report["accepted_steps"] == 2
+    assert report["n_samples"] == 2
+    assert report["final_delta"] == pytest.approx(-0.10)
+    assert report["final_objective"] < report["initial_objective"]
+    assert all(row["accepted"] for row in report["history"])
+    assert calls[:2] == [0.0, -0.05]
+
+
+def test_vmec_boozer_aggregate_scalar_objective_line_search_report_fails_closed(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(
+        sog,
+        "vmec_boozer_aggregate_scalar_objective_finite_difference_report",
+        lambda **_kwargs: {
+            "passed": False,
+            "base_value": 1.0,
+            "central_derivative": 2.0,
+            "curvature_ratio": 9.0,
+            "n_samples": 2,
+            "samples": [],
+        },
+    )
+
+    report = vmec_boozer_aggregate_scalar_objective_line_search_report(
+        selected_ky_indices=[1, 2],
+        max_steps=1,
+    )
+
+    assert report["passed"] is False
+    assert report["accepted_steps"] == 0
+    assert report["stop_reason"] == "finite_difference_gate_failed"
+    with pytest.raises(ValueError, match="max_steps"):
+        vmec_boozer_aggregate_scalar_objective_line_search_report(max_steps=0)
+    with pytest.raises(ValueError, match="update_step"):
+        vmec_boozer_aggregate_scalar_objective_line_search_report(update_step=0.0)
+    with pytest.raises(ValueError, match="min_improvement"):
+        vmec_boozer_aggregate_scalar_objective_line_search_report(min_improvement=-1.0)
 
 
 def test_vmec_boozer_scalar_objective_line_search_report_accepts_safe_updates(

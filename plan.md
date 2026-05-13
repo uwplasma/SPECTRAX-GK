@@ -4818,6 +4818,14 @@ Exit gate:
   `docs/_static/vmec_boozer_aggregate_objective_gate.{json,csv,png,pdf}`.
   The figure is now included in the stellarator-optimization docs and the
   artifact/test pair is tracked in the validation coverage manifest.
+- Added `vmec_boozer_aggregate_scalar_objective_line_search_report`, the first
+  optimizer-control path for multi-point reduced growth/QL objectives. Each
+  attempted one-coefficient update must pass the aggregate finite-difference
+  curvature gate and reduce the aggregate objective before it is accepted.
+- Real QH aggregate QL line-search smoke with the same two-`k_y` sample set
+  accepted one step in `21.5 s`: objective `0.8870404 -> 0.8850874`,
+  relative reduction `2.20e-3`, final coefficient offset `-1e-8`, and the
+  underlying aggregate FD curvature ratio remained `9.46e-3`.
 - Next best scientific steps:
   - build a tracked artifact for the aggregate gate on the QH warm-start case
     with `mboz=nboz=21`, at least two field lines or surfaces, and at least
