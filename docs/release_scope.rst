@@ -242,6 +242,11 @@ Quasilinear model-selection state:
   relative error about ``0.295`` and interval coverage ``7/8`` on the
   current eight-case electrostatic-compatible portfolio. Its claim level is
   ``candidate_model_development_not_runtime_option``.
+- ``docs/_static/external_vmec_shaped_tokamak_pressure_t450_high_grid_convergence_gate.json``:
+  finite shaped-tokamak pressure traces at ``t = 450`` are explicitly
+  excluded from calibration because the ``n48``/``n64`` heat-flux windows
+  differ by about ``0.306``, above the ``0.15`` grid-convergence gate. This is
+  negative validation evidence, not an admitted holdout.
 
 Nonlinear benchmark state:
 

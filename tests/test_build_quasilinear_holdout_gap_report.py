@@ -193,6 +193,19 @@ def _write_inputs(tmp_path: Path) -> dict[str, Path]:
         passed=True,
         gates=pass_gate,
     )
+    _external_gate(
+        tmp_path / "external_shaped_failed.json",
+        "Shaped tokamak external VMEC nonlinear t450 high-grid convergence",
+        passed=False,
+        gates=[
+            _gate(
+                "common_window_pairwise_heat_flux_symmetric_relative_difference",
+                0.306,
+                0.15,
+                passed=False,
+            )
+        ],
+    )
     return {
         "dataset": dataset,
         "model_selection": model_selection,
@@ -225,6 +238,13 @@ def test_gap_report_preserves_claim_boundary_and_ranks_next_holdout(tmp_path: Pa
     assert report["admitted_holdouts"][0]["absolute_relative_error"] == 0.5
     assert report["admitted_holdouts"][0]["gate_passed"] is True
     assert any(row["case"] == "kbm_nonlinear_window" for row in report["excluded_candidates"])
+    shaped = next(
+        row
+        for row in report["excluded_candidates"]
+        if row["case"] == "Shaped tokamak external VMEC nonlinear t450 high-grid convergence"
+    )
+    assert shaped["geometry"] == "shaped_tokamak_external_vmec"
+    assert shaped["status"] == "excluded_failed_external_gate"
     assert report["next_best_candidates"][0]["status"] == "training_reference_not_independent_holdout"
     assert report["next_actual_nonlinear_holdout_needed"]["preferred_family"] == "itermodel_external_vmec"
     nearest = report["next_actual_nonlinear_holdout_needed"]["nearest_tracked_gap"]

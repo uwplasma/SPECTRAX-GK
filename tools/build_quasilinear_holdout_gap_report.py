@@ -155,6 +155,8 @@ def _external_family(case: str, artifact: str = "") -> str:
         return "dshape_external_vmec"
     if "circular" in text:
         return "circular_external_vmec"
+    if "shaped_tokamak" in text or "shaped tokamak" in text:
+        return "shaped_tokamak_external_vmec"
     if "cth" in text:
         return "cth_like_external_vmec"
     if "qh" in text or "nfp4" in text:

@@ -1041,10 +1041,14 @@ absolute-flux error remains about ``2.11`` against the ``0.35`` gate. The
 accepted ``spectral_envelope_ridge`` candidate remains a scoped
 model-selection result; the next useful input is a new independent,
 electrostatic-compatible nonlinear transport window with a passed
-grid/window-convergence gate and ``split = holdout`` metadata. The report
-currently identifies the external-VMEC family as the highest-leverage next
-source because an ITERModel window already passes as training data and the
-nearest tracked holdout gap is a near-miss in the same family.
+grid/window-convergence gate and ``split = holdout`` metadata. The report now
+tracks ``12`` excluded candidates. The shaped-tokamak pressure candidate is
+one of those exclusions: it is finite and late-window stable at ``t = 450``,
+but its ``48x48x32`` and ``64x64x40`` heat-flux windows differ by about
+``0.306``, above the ``0.15`` grid-agreement gate. The report currently
+identifies the external-VMEC family as the highest-leverage next source
+because an ITERModel window already passes as training data and the nearest
+tracked holdout gap is a near-miss in the same family.
 
 External-VMEC next-holdout runbook
 ----------------------------------
@@ -1066,13 +1070,17 @@ gate must pass before a new point can enter the calibration set.
    :width: 100%
 
 The current runbook keeps the ITERModel near-miss as a preferred-family audit
-because that family already supplies a training reference. For independent
-holdout leverage, it selects the highest-growth unstable external-VMEC family
-that is not already represented in the train/holdout portfolio. The generated
-JSON sidecar includes replayable ``write_external_vmec_holdout_configs.py``
-commands, the recommended high-grid horizons, and the fail-closed acceptance
-requirements: ``split = holdout``, passed grid/window convergence, a
-post-transient transport window, and independence from the training reference.
+because that family already supplies a training reference. It no longer
+recommends the unchanged shaped-tokamak pressure case as the next new-family
+holdout because the tracked ``t = 450`` high-grid convergence gate failed.
+Families with a recent failed external-VMEC convergence gate are demoted until
+the rerun protocol is materially changed, for example by increasing resolution
+or changing the candidate. The generated JSON sidecar includes replayable
+``write_external_vmec_holdout_configs.py`` commands when an admissible launch
+target exists, the recommended high-grid horizons, and the fail-closed
+acceptance requirements: ``split = holdout``, passed grid/window convergence,
+a post-transient transport window, and independence from the training
+reference.
 
 VMEC equilibrium portfolio for future holdouts
 ----------------------------------------------
@@ -1228,6 +1236,22 @@ as useful convergence-history artifacts.
 
 .. image:: _static/external_vmec_circular_t450_high_grid_convergence_gate.png
    :alt: External circular tokamak VMEC nonlinear t450 high-grid convergence gate
+   :width: 100%
+
+The shaped-tokamak pressure candidate was then run through the same
+``48x48x32`` / ``64x64x40`` ladder to ``t = 450``. This is a scientifically
+useful negative result rather than a calibration point. Both traces are finite
+and their late windows are statistically interpretable: the ``48x48x32``
+common-window heat flux is about ``11.45`` with relative slope
+``6.3e-5`` per time unit, and the ``64x64x40`` common-window heat flux is
+about ``8.41`` with relative slope ``-9.3e-4`` per time unit. The pair fails
+only the grid-agreement gate: the common-window and least-window symmetric
+relative heat-flux differences are both about ``0.306``. The candidate stays
+excluded from quasilinear calibration until a higher-resolution or otherwise
+modified protocol demonstrates grid convergence.
+
+.. image:: _static/external_vmec_shaped_tokamak_pressure_t450_high_grid_convergence_gate.png
+   :alt: External shaped-tokamak pressure VMEC nonlinear t450 high-grid convergence gate
    :width: 100%
 
 The next screened unstable axisymmetric external-VMEC candidate,
