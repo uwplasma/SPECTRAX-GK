@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
+import subprocess
+import sys
 
 from tools.build_parallelization_completion_status import ARTIFACTS
 from tools.build_parallelization_completion_status import build_status
@@ -168,3 +171,29 @@ def test_parallelization_completion_status_writes_json_and_figures(tmp_path: Pat
 
     for path in paths.values():
         assert Path(path).exists()
+
+
+def test_parallelization_completion_status_script_runs_without_install(tmp_path: Path) -> None:
+    _write_minimal_status_inputs(tmp_path, cpu_speedup=6.0, gpu_speedup=1.7)
+    env = dict(os.environ)
+    env["PYTHONPATH"] = ""
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "tools" / "build_parallelization_completion_status.py"),
+            "--root",
+            str(tmp_path),
+            "--out-prefix",
+            str(tmp_path / "status"),
+            "--skip-figures",
+        ],
+        cwd=tmp_path,
+        env=env,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert (tmp_path / "status.json").exists()

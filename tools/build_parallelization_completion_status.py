@@ -7,9 +7,13 @@ import argparse
 import json
 import math
 from pathlib import Path
+import sys
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+SRC = REPO_ROOT / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
 STATIC = REPO_ROOT / "docs" / "_static"
 DEFAULT_OUT_PREFIX = STATIC / "parallelization_completion_status"
 
@@ -203,7 +207,9 @@ def _spectral_lane(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def _independent_ensemble_provenance_status() -> dict[str, Any]:
-    from spectraxgk.parallel import independent_ensemble_provenance_gate
+    from spectraxgk.parallel import (  # type: ignore[import-untyped]
+        independent_ensemble_provenance_gate,
+    )
 
     report = independent_ensemble_provenance_gate(
         _optimization_provenance_member,
@@ -302,7 +308,7 @@ def write_artifacts(status: dict[str, Any], out_prefix: Path) -> dict[str, str]:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.plotting import set_plot_style
+    from spectraxgk.plotting import set_plot_style  # type: ignore[import-untyped]
 
     png_path = out_prefix.with_suffix(".png")
     pdf_path = out_prefix.with_suffix(".pdf")
