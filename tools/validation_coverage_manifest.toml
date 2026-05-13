@@ -498,7 +498,9 @@ fast_tests = [
   "tests/test_plot_quasilinear_candidate_uncertainty.py",
   "tests/test_plot_quasilinear_dataset_sufficiency.py",
   "tests/test_quasilinear_model_selection.py",
+  "tests/test_quasilinear_model_selection_extra.py",
   "tests/test_plot_quasilinear_model_selection_status.py",
+  "tests/test_build_quasilinear_holdout_gap_report.py",
 ]
 artifact_paths = [
   "docs/_static/quasilinear_cyclone_spectrum.png",
@@ -510,6 +512,8 @@ artifact_paths = [
   "docs/_static/quasilinear_dataset_sufficiency.json",
   "docs/_static/quasilinear_model_selection_status.json",
   "docs/_static/quasilinear_model_selection_status.png",
+  "docs/_static/quasilinear_holdout_gap_report.json",
+  "docs/_static/quasilinear_holdout_gap_report.png",
 ]
 next_tests = [
   "add at least two more converged electrostatic nonlinear holdout windows before promoting richer saturation candidates",
@@ -1192,6 +1196,37 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.stellarator_objective_portfolio"
+path = "src/spectraxgk/stellarator_objective_portfolio.py"
+owner_lane = "backend-free multi-surface, multi-alpha, multi-ky reduced-objective portfolio reduction"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "multi-field-line and multi-surface stellarator microstability optimization",
+  "AD/JVP/finite-difference validation before coupling expensive VMEC/Boozer row producers",
+]
+physics_contracts = [
+  "fixed surface/alpha/ky sample tables are reduced explicitly before any geometry-wide optimization claim",
+  "backend-free reducer gates do not promote VMEC/Boozer geometry-gradient or nonlinear heat-flux optimization claims",
+]
+numerics_contracts = [
+  "sample and objective weights are finite, non-negative, normalized, and shape checked",
+  "aggregate scalar objectives pass reverse-mode, JVP, and central finite-difference directional derivative parity",
+]
+fast_tests = [
+  "tests/test_stellarator_objective_portfolio.py",
+]
+artifact_paths = [
+  "docs/_static/stellarator_objective_portfolio_gate.json",
+  "docs/_static/stellarator_objective_portfolio_gate.png",
+]
+next_tests = [
+  "wrap real VMEC/Boozer row producers with this reducer and repeat held-out surface/alpha gates",
+  "add local-gradient conditioning diagnostics for real reduced stellarator objective portfolios",
+]
+
+[[modules]]
 module = "spectraxgk.parallel"
 path = "src/spectraxgk/parallel.py"
 owner_lane = "production ky/batch scan and UQ ensemble parallelization"
@@ -1263,6 +1298,37 @@ artifact_paths = [
 ]
 next_tests = [
   "add office two-GPU identity and speedup gates for UQ ensembles",
+]
+
+[[modules]]
+module = "spectraxgk.parallel_decomposition"
+path = "src/spectraxgk/parallel_decomposition.py"
+owner_lane = "deterministic decomposition contracts for production independent work and diagnostic nonlinear partitions"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "JAX independent work batching and deterministic reconstruction identity gates",
+  "nonlinear domain-decomposition claim separation before runtime speedup claims",
+]
+physics_contracts = [
+  "independent ky and UQ portfolio decomposition preserves serial observable ordering",
+  "nonlinear state-domain partition metadata remains diagnostic until real RHS/FFT/field-solve routing passes identity and transport gates",
+]
+numerics_contracts = [
+  "shard assignments are deterministic, balanced, contiguous, and contain no empty shards",
+  "serial reconstruction identity fails closed on missing, duplicate, out-of-range, or out-of-order indices",
+]
+fast_tests = [
+  "tests/test_parallel_decomposition.py",
+]
+artifact_paths = [
+  "docs/_static/parallel_decomposition_status.json",
+  "docs/_static/parallel_decomposition_status.png",
+]
+next_tests = [
+  "replace diagnostic nonlinear state-domain metadata with real runtime communication routes before any nonlinear speedup claim",
+  "add conservation and transport-window identity gates once nonlinear domain routing is implemented",
 ]
 
 [[modules]]

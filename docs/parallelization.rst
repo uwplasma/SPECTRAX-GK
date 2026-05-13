@@ -110,6 +110,25 @@ Regenerate the closure status after refreshing any scaling artifact:
 
    python tools/build_parallelization_completion_status.py
 
+The lower-level decomposition-contract status is generated separately. It is
+useful when editing orchestration code because it checks deterministic shard
+assignment, serial reconstruction identity, and claim-level separation without
+rerunning large profiles.
+
+.. code-block:: bash
+
+   python tools/build_parallel_decomposition_status.py
+
+.. image:: _static/parallel_decomposition_status.png
+   :alt: Parallel decomposition contract status
+   :align: center
+
+This status passes for production independent ``k_y`` and UQ portfolios and
+for a diagnostic nonlinear state-domain partition. Passing the diagnostic row
+does not imply runtime nonlinear domain decomposition: it only proves that the
+metadata split/reassemble contract is internally consistent and correctly
+scoped as non-production.
+
 Diagnostic path: whole-state nonlinear sharding
 -----------------------------------------------
 

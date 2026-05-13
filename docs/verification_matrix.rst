@@ -301,6 +301,59 @@ with ``gate_index_include=false``.
   an exploratory ``t=5`` startup/resolved-spectrum audit and excluded from the
   release-gate index.
 
+Quasilinear Diagnostics and Model Selection
+-------------------------------------------
+
+The quasilinear verification surface is deliberately split between validated
+linear-state diagnostics, rejected absolute-flux calibration attempts, and one
+scoped model-selection result. A closed model-selection status must not be read
+as a promoted runtime predictor.
+
+.. list-table::
+   :header-rows: 1
+
+   * - Lane
+     - Observable
+     - Reference or artifact
+     - Status
+     - Baseline gate
+   * - Electrostatic quasilinear weights and spectra
+     - heat/particle weights, growth/frequency spectra, and channel metadata
+     - ``docs/_static/quasilinear_*_spectrum.*`` and
+       ``docs/_static/quasilinear_validated_calibration_inputs.json``
+     - Closed as diagnostics
+     - electrostatic channel validation and reproducible spectrum generation;
+       this is not calibrated absolute-flux prediction
+   * - One-constant and simple saturation-rule absolute-flux models
+     - train/holdout heat-flux prediction error
+     - ``docs/_static/quasilinear_stellarator_train_holdout_report.json`` and
+       ``docs/_static/quasilinear_saturation_rule_sweep.json``
+     - Rejected / unpromoted
+     - current one-constant and simple-rule reports fail the held-out
+       absolute-flux gate and must not be exposed as a user-facing saturation
+       law
+   * - ``spectral_envelope_ridge`` model selection
+     - leave-one-geometry-out error and interval coverage
+     - ``docs/_static/quasilinear_candidate_uncertainty.json`` and
+       ``docs/_static/quasilinear_model_selection_status.json``
+     - Closed as scoped model-selection result
+     - the accepted candidate is a manuscript model-selection result only; the
+       status gate does not promote a runtime/TOML absolute-flux predictor,
+       universal nonlinear transport model, or shipped saturation option
+   * - Future absolute-flux promotion
+     - calibrated heat-flux prediction on nonlinear holdouts
+     - future late-window convergence metadata and promotion JSON
+     - Open
+     - every holdout needs finite passed post-transient convergence metadata:
+       transient cutoff, running-mean drift, block/bootstrap uncertainty,
+       finite sample count, and source provenance
+
+These gates do not change the deferred W7-X lanes: W7-X zonal long-window
+recurrence/damping and W7-X TEM / kinetic-electron validation remain outside
+the current manuscript/release scope. They also do not promote nonlinear
+production optimization, which still requires converged post-transient audits
+of optimized equilibria before any production heat-flux optimization claim.
+
 Autodiff Validation
 -------------------
 

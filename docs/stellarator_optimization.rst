@@ -312,6 +312,41 @@ This is intentionally tied to the optimization objective. It is not computed
 from the initial-to-final parameter displacement, which would measure optimizer
 travel rather than local uncertainty at the optimized point.
 
+Objective-portfolio reducer gate
+--------------------------------
+
+Multi-surface, multi-field-line, and multi-``k_y`` stellarator studies should
+separate two contracts:
+
+- row production, where VMEC/Boozer/SPECTRAX-GK evaluates one objective vector
+  per sample;
+- row reduction, where those fixed samples are combined into one scalar for an
+  optimizer or UQ ensemble.
+
+The lightweight reducer in
+:mod:`spectraxgk.stellarator_objective_portfolio` validates the second contract
+without importing optional VMEC or Boozer backends. It requires a real numeric
+``(surface, alpha, ky, objective)`` table, finite non-negative normalized
+weights, and an explicit reduction policy. The gate below checks the weighted
+mean reducer, directional JVP, reverse-mode gradient projection, and central
+finite difference on a deterministic nonlinear row fixture.
+
+.. code-block:: bash
+
+   python tools/build_stellarator_objective_portfolio_gate.py \
+     --out docs/_static/stellarator_objective_portfolio_gate.png
+
+.. figure:: _static/stellarator_objective_portfolio_gate.png
+   :width: 95%
+   :align: center
+   :alt: Stellarator objective portfolio reducer gate
+
+   Backend-free aggregate-objective reducer gate. It passes AD/JVP/central-FD
+   parity for fixed surface/alpha/``k_y`` rows and validates the normalized
+   sample/objective weights. This is a required optimization-plumbing contract,
+   not a standalone VMEC/Boozer geometry-gradient or nonlinear heat-flux
+   optimization claim.
+
 Results
 -------
 

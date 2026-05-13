@@ -46,13 +46,15 @@ score.
        artifacts are reproducible. Simple one-scalar saturation rules are
        rejected on the seven-case train/holdout portfolio. The
        ``spectral_envelope_ridge`` candidate is accepted only as a scoped
-       manuscript model-selection result, not as a runtime/TOML absolute-flux
-       predictor. Any future absolute-flux promotion additionally requires
-       finite passed nonlinear late-window convergence metadata for every
-       holdout: transient cutoff, running-mean drift, block/bootstrap SEM,
-       finite sample count, and source provenance. Electromagnetic
-       quasilinear field-channel normalization and KBM calibration remain
-       future gates.
+       manuscript model-selection result. The passed
+       ``quasilinear_model_selection_status.json`` gate does not promote a
+       runtime/TOML absolute-flux predictor, universal nonlinear transport
+       model, or user-facing saturation law. Any future absolute-flux
+       promotion additionally requires finite passed nonlinear late-window
+       convergence metadata for every holdout: transient cutoff, running-mean
+       drift, block/bootstrap SEM, finite sample count, and source provenance.
+       Electromagnetic quasilinear field-channel normalization and KBM
+       calibration remain future gates.
    * - Differentiable geometry
      - release-ready for equal-arc parity and reduced QH/Li383 gates
      - The ``vmec_jax -> booz_xform_jax -> SPECTRAX-GK`` bridge is validated
@@ -81,7 +83,8 @@ score.
      - The examples demonstrate differentiable reduced ITG objectives, UQ, and
        AD/finite-difference checks. The nonlinear objective is a reduced
        window-estimator path, not a converged post-transient nonlinear
-       heat-flux optimization claim.
+       heat-flux optimization claim; production nonlinear optimization still
+       requires converged post-transient audits of optimized equilibria.
    * - Parallelization
      - production-ready for independent work
      - Independent ``k_y`` scans, quasilinear spectra, sensitivity batches, and
@@ -107,6 +110,8 @@ Do not make these claims from the current artifacts:
   option;
 - electromagnetic quasilinear transport calibration for KBM;
 - production nonlinear heat-flux stellarator optimization;
+- production nonlinear optimization without converged post-transient audits of
+  optimized equilibria;
 - converged nonlinear transport gradients through ``vmec_jax`` and
   ``booz_xform_jax``;
 - treating compact nonlinear finite-difference startup audits as saturated
