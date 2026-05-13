@@ -461,6 +461,18 @@ transport claims.
    the software and artifact path for multi-``k_y`` reduced objectives; it is
    not a nonlinear turbulent heat-flux optimization claim.
 
+.. figure:: _static/vmec_boozer_aggregate_line_search_gate.png
+   :width: 90%
+   :align: center
+   :alt: VMEC/Boozer multi-point aggregate-objective line-search gate
+
+   Multi-point VMEC/Boozer aggregate-objective line-search gate. The tracked
+   QH fixture applies one curvature-gated VMEC coefficient update to the
+   two-``k_y`` quasilinear proxy aggregate and accepts it only because the
+   candidate decreases the objective while the finite-difference gate remains
+   conditioned. This is optimizer control-flow evidence for reduced objectives,
+   not a nonlinear turbulent transport optimization claim.
+
 .. figure:: _static/vmec_boozer_nonlinear_window_gradient_gate.png
    :width: 90%
    :align: center
