@@ -299,6 +299,13 @@ keeps near-marginal branches in the manuscript evidence chain as linear/QI
 feasibility data without silently promoting them to expensive nonlinear
 transport holdout campaigns.
 
+``tools/build_qi_branch_refinement_gate.py`` is the focused companion for that
+near-marginal QI evidence. It checks finite low-``k_y`` branch rows, contiguous
+positive support, optional Krylov consistency, and the same nonlinear-launch
+growth threshold. A failed launch-growth subgate is a useful documented result,
+not a release failure, because it prevents QI feasibility scans from being
+misread as transport validation.
+
 ``tools/write_w7x_zonal_closure_sweep.py`` is the analogous reproducibility
 companion for the open W7-X zonal-response lane. It writes a manifest of
 single-``k_x`` closure probes for the paper-facing test-4 contract, separated
