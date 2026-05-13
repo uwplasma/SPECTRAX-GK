@@ -6,10 +6,12 @@ import numpy as np
 import pytest
 
 from spectraxgk.stellarator_objective_portfolio import (
+    ReducedPortfolioArtifactGuardConfig,
     aggregate_objective_portfolio,
     objective_portfolio_sensitivity_report,
     portfolio_objective_weight_vector,
     portfolio_sample_weight_tensor,
+    reduced_portfolio_artifact_guard_report,
     validate_objective_portfolio_contract,
 )
 
@@ -206,5 +208,7 @@ def test_objective_portfolio_helpers_are_exported_at_package_top_level() -> None
     contract = sgk.validate_objective_portfolio_contract(rows)
 
     assert isinstance(contract, sgk.StellaratorObjectivePortfolioContract)
+    assert isinstance(sgk.ReducedPortfolioArtifactGuardConfig(), ReducedPortfolioArtifactGuardConfig)
     np.testing.assert_allclose(float(sgk.aggregate_objective_portfolio(rows)), 1.0)
     assert sgk.objective_portfolio_sensitivity_report is objective_portfolio_sensitivity_report
+    assert sgk.reduced_portfolio_artifact_guard_report is reduced_portfolio_artifact_guard_report

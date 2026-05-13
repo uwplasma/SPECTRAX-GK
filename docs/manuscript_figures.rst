@@ -41,8 +41,9 @@ recurrence and TEM/kinetic-electron stellarator validation remain deferred from
 the current manuscript scope.
 
 The latest manuscript-stack additions are deliberately contract-level figures:
-``docs/_static/quasilinear_holdout_gap_report.png`` states exactly why
-absolute-flux promotion remains blocked; ``docs/_static/stellarator_objective_portfolio_gate.png``
+``docs/_static/quasilinear_holdout_gap_report.png`` with CSV/JSON/PDF
+companions states exactly why absolute-flux promotion remains blocked;
+``docs/_static/stellarator_objective_portfolio_gate.png``
 validates the aggregate reduced-objective reducer used before expensive
 VMEC/Boozer row production; and
 ``docs/_static/parallel_decomposition_status.png`` keeps independent-work
@@ -179,7 +180,7 @@ Core Validation Figures
    * - Quasilinear promotion guardrail audit
      - ``tools/check_quasilinear_promotion_guardrails.py``
      - Fast metadata gate closed; nonlinear simulation validation remains delegated to the source gates
-     - current artifact: ``docs/_static/quasilinear_promotion_guardrails.json``. It scans the train/holdout calibration reports, saturation-model reports, nonlinear input-validation blocks, promotion gates, claim-scope docs, and the quasilinear row in ``docs/_static/manuscript_readiness_status.json``. It requires finite nonlinear window means and standard deviations for train/holdout calibration points, explicit nonlinear and quasilinear artifact provenance, passed held-out gates before any ``calibrated_absolute_flux`` claim, non-promotion wording in the docs, and a manuscript-readiness quasilinear lane that remains scoped as diagnostic/model-selection evidence rather than a runtime absolute-flux predictor. This is deliberately a wording and metadata guard, not a calibrated absolute-flux claim or a replacement for nonlinear convergence simulations.
+     - current artifact: ``docs/_static/quasilinear_promotion_guardrails.json``. It scans the train/holdout calibration reports, saturation-model reports, nonlinear input-validation blocks, promotion gates, claim-scope README/docs wording, the quasilinear row in ``docs/_static/manuscript_readiness_status.json``, and the manuscript quasilinear model-development figure index. It requires finite nonlinear window means and standard deviations for train/holdout calibration points, explicit nonlinear and quasilinear artifact provenance, JSON sidecars for the tracked model-development figures, scoped non-absolute claim levels, explicit failed-baseline or blocker metadata, passed held-out gates before any ``calibrated_absolute_flux`` claim, and a manuscript-readiness quasilinear lane that remains scoped as diagnostic/model-selection evidence rather than a runtime absolute-flux predictor. This is deliberately a wording and metadata guard, not a calibrated absolute-flux claim or a replacement for nonlinear convergence simulations.
    * - Release claim-scope ledger
      - ``docs/release_scope.rst``
      - Closed as documentation guardrail

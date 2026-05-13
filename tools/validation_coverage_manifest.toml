@@ -1202,7 +1202,7 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.stellarator_objective_portfolio"
 path = "src/spectraxgk/stellarator_objective_portfolio.py"
-owner_lane = "backend-free multi-surface, multi-alpha, multi-ky reduced-objective portfolio reduction"
+owner_lane = "backend-free and artifact-level multi-surface, multi-alpha, multi-ky reduced-objective portfolio reduction"
 status = "active"
 coverage_priority = "high"
 coverage_target_percent = 95.0
@@ -1220,13 +1220,15 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/test_stellarator_objective_portfolio.py",
+  "tests/test_check_vmec_boozer_reduced_portfolio_guard.py",
 ]
 artifact_paths = [
   "docs/_static/stellarator_objective_portfolio_gate.json",
   "docs/_static/stellarator_objective_portfolio_gate.png",
+  "docs/_static/vmec_boozer_reduced_portfolio_guard.json",
 ]
 next_tests = [
-  "wrap real VMEC/Boozer row producers with this reducer and repeat held-out surface/alpha gates",
+  "repeat the reduced-portfolio guard on the selected held-out surface/alpha artifacts before manuscript promotion",
   "add local-gradient conditioning diagnostics for real reduced stellarator objective portfolios",
 ]
 

@@ -96,6 +96,26 @@ def test_uq_decomposition_reconstructs_serial_identity() -> None:
     assert report.to_dict()["identity_passed"] is True
 
 
+def test_optimization_ensemble_decomposition_uses_production_independent_contract() -> None:
+    values = tuple({"candidate": idx, "objective": idx * idx} for idx in range(5))
+    contract = build_independent_portfolio_decomposition(
+        len(values),
+        requested_shards=8,
+        workload="optimization_ensemble",
+    )
+    report = serial_reconstruction_identity_report(values, contract)
+
+    assert contract.workload == "optimization_ensemble"
+    assert contract.claim_level == "production_independent_batching"
+    assert contract.actual_shards == 5
+    assert contract.independent_work is True
+    assert contract.changes_solver_layout is False
+    assert "independent optimization ensemble" in contract.claim_label
+    assert "not a nonlinear state-domain decomposition" in contract.claim_label
+    assert report.identity_passed is True
+    assert reconstruct_serial(contract, shard_sequence(values, contract)) == values
+
+
 def test_decomposition_handles_empty_and_oversharded_portfolios_without_empty_shards() -> None:
     empty = build_independent_portfolio_decomposition(
         0,

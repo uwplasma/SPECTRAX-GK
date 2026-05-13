@@ -550,6 +550,16 @@ sharding and FFT-axis decomposition at diagnostic status until runtime
 distributed communication, conservation, transport-window, and profiler-backed
 speedup gates are closed.
 
+The nonlinear state-domain prototype now has a stronger diagnostic gate in
+``docs/_static/nonlinear_domain_parallel_identity_gate.json``. In addition to
+the one-step serial-vs-halo-decomposed state check, the embedded
+``nonlinear_domain_transport_window_identity`` report advances a short
+fixed-step window and compares boundary identity plus mass, free-energy-proxy,
+and boundary-flux-proxy traces. Those trace drifts are agreement metadata for
+the diagnostic local stencil only. They do not validate production conservation,
+distributed FFT routing, field solves, benchmark transport windows, or any
+speedup claim.
+
 The same independent-worker policy is also gated on a quasilinear/UQ-style
 ensemble: six late-time Cyclone ITG gradient samples, five ``k_y`` values per
 sample, ``Ny=96``, ``Nz=64``, ``Nl=3``, ``Nm=6``, and ``2000`` RK2 steps per

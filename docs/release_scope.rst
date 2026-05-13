@@ -175,17 +175,21 @@ README claims, or manuscript claims.
        ``vmec_boozer_li383_nonlinear_window_gradient_gate.*``,
        ``vmec_boozer_gradient_holdout_matrix.*``,
        ``vmec_boozer_multi_point_objective_gate.*``,
+       ``vmec_boozer_reduced_portfolio_guard.json``,
        ``vmec_boozer_aggregate_line_search_comparison.*``,
        ``vmec_boozer_aggregate_alpha_holdout_gate.*``,
        ``vmec_boozer_aggregate_surface_holdout_gate.*``,
        ``vmec_boozer_second_equilibrium_aggregate_gate.*``,
        ``vmec_boozer_aggregate_holdout_promotion_gate.json``,
+       ``nonlinear_window_ensemble_readiness_manifest.json``,
+       ``nonlinear_window_convergence_reports/*.json``,
        ``stellarator_itg_optimization_comparison.*``, and
        ``stellarator_itg_optimization_uq.*``
      - These artifacts support reduced objective differentiability, optimizer
-       plumbing, and local UQ. They do not support calibrated saturated-flux
-       prediction, production nonlinear turbulence gradients, or nonlinear
-       audits of optimized equilibria.
+       plumbing, local UQ, and explicit nonlinear ensemble-readiness blockers.
+       They do not support calibrated saturated-flux prediction, production
+       nonlinear turbulence gradients, or nonlinear audits of optimized
+       equilibria.
    * - Scope guardrails
      - ``technical_release_status.json``,
        ``parallelization_completion_status.*``,
@@ -239,6 +243,16 @@ Quasilinear model-selection state:
   mutually consistent late means before a nonlinear turbulent-flux optimization
   artifact can claim robustness. ``tools/check_nonlinear_window_ensemble.py``
   is the tracked artifact wrapper for this gate.
+- ``tools/check_nonlinear_window_ensemble_readiness.py`` converts tracked
+  transport-window summaries into explicit convergence-report JSON files and a
+  readiness manifest. The current
+  ``docs/_static/nonlinear_window_ensemble_readiness_manifest.json`` is
+  intentionally blocked: three of four existing external-VMEC transport
+  summaries pass the stricter late-window convergence wrapper, the ITERModel
+  window fails terminal-mean agreement, and all four cases lack distinct
+  seed-replicate and timestep-replicate artifacts. The manifest records the
+  exact missing artifact groups and must pass before
+  ``tools/check_nonlinear_window_ensemble.py`` is meaningful for these cases.
 - ``tools/check_vmec_boozer_aggregate_holdout_gate.py`` now requires a passed
   replicated nonlinear-window ensemble artifact in addition to aggregate
   finite-difference, line-search, and held-out surface/field-line evidence
@@ -292,11 +306,18 @@ Differentiable-geometry state:
 - The VMEC/Boozer objective artifact checklist for README and manuscript use is
   the parity matrix, the six single-equilibrium frequency/quasilinear/reduced
   nonlinear-window gradient-gate figures, the combined holdout matrix, the
-  multi-alpha aggregate objective gate, the growth-vs-quasilinear line-search
-  comparison, the positive reduced alpha-heldout and surface-heldout splits,
-  the Li383 second-equilibrium aggregate gate, the blocked aggregate promotion
-  JSON, and the reduced stellarator ITG optimization/UQ panels. This checklist
-  is the current boundary between objective plumbing and transport prediction.
+  multi-alpha aggregate objective gate, the reduced-portfolio provenance guard,
+  the growth-vs-quasilinear line-search comparison, the positive reduced
+  alpha-heldout and surface-heldout splits, the Li383 second-equilibrium
+  aggregate gate, the blocked aggregate promotion JSON, and the reduced
+  stellarator ITG optimization/UQ panels. This checklist is the current
+  boundary between objective plumbing and transport prediction.
+- ``docs/_static/vmec_boozer_reduced_portfolio_guard.json`` is the
+  artifact-level guard that ties the backend-free portfolio reducer to real
+  VMEC/Boozer rows. It requires VMEC/Boozer path/mode provenance, two
+  field-line ``alpha`` values, two ``k_y`` samples, finite aggregate FD fields,
+  finite growth/QL AD/FD objective gates, and an explicit non-production
+  nonlinear claim boundary.
 - ``docs/_static/nonlinear_window_fd_audit.json`` and
   ``docs/_static/vmec_boozer_nonlinear_window_fd_audit.json`` pass only startup
   finite-difference plumbing checks. Both record ``transport_average_gate =

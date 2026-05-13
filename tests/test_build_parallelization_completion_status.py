@@ -104,6 +104,21 @@ def test_parallelization_completion_status_closes_production_lanes() -> None:
 
     assert status["passed"] is True
     assert status["production_completion_percent"] == 100.0
+    assert status["independent_ensemble_provenance_gate"]["passed"] is True
+    assert (
+        status["independent_ensemble_provenance_gate"]["workload"]
+        == "optimization_ensemble"
+    )
+    assert (
+        status["independent_ensemble_provenance_gate"]["parallel_indices"]
+        == status["independent_ensemble_provenance_gate"]["serial_indices"]
+    )
+    assert (
+        status["independent_ensemble_provenance_gate"][
+            "exception_metadata_passed"
+        ]
+        is True
+    )
     lanes = {lane["lane"]: lane for lane in status["lanes"]}
     assert lanes["independent_ky_scan"]["status"] == "production_closed"
     assert lanes["independent_ky_scan"]["source_contract"]["claim_separation_passed"] is True
@@ -115,6 +130,7 @@ def test_parallelization_completion_status_closes_production_lanes() -> None:
     assert lanes["whole_state_nonlinear_sharding"]["source_contract"]["claim_separation_passed"] is True
     assert lanes["fft_axis_domain"]["status"] == "diagnostic_identity_closed"
     assert "Whole-state nonlinear sharding" in status["claim_scope"]
+    assert "exception metadata" in status["claim_scope"]
 
 
 def test_parallelization_completion_status_rejects_weak_production_speedup(tmp_path: Path) -> None:

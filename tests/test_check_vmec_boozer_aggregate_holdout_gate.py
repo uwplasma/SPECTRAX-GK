@@ -154,6 +154,51 @@ def test_aggregate_holdout_gate_rejects_non_ensemble_nonlinear_artifact(tmp_path
     assert report["nonlinear_ensemble_artifacts"][0]["is_nonlinear_window_ensemble"] is False
 
 
+def test_aggregate_holdout_gate_records_readiness_manifest_blockers(tmp_path: Path) -> None:
+    aggregate = _write_json(tmp_path / "aggregate.json", _aggregate_payload())
+    line_search = _write_json(tmp_path / "line_search.json", _line_search_payload())
+    holdout = _write_json(
+        tmp_path / "alpha_holdout.json",
+        {
+            "promotion_gate": {"passed": True},
+            "claim_level": "passed_grid_convergence_candidate_for_transport_holdout",
+            "samples": [{"surface_index": None, "alpha": 0.75, "selected_ky_index": 1}],
+        },
+    )
+    manifest = _write_json(
+        tmp_path / "manifest.json",
+        {
+            "kind": "nonlinear_window_ensemble_readiness_manifest",
+            "passed": False,
+            "promotion_gate": {
+                "passed": False,
+                "blockers": ["seed_and_timestep_replicates_present"],
+            },
+            "missing_artifacts": [
+                {
+                    "case": "case_a",
+                    "variant_axis": "seed",
+                    "missing_count": 2,
+                }
+            ],
+        },
+    )
+
+    report = mod.check_vmec_boozer_aggregate_holdout_gate(
+        aggregate_artifact=aggregate,
+        line_search_artifact=line_search,
+        holdout_artifacts=(holdout,),
+        nonlinear_ensemble_artifacts=(manifest,),
+    )
+
+    row = report["nonlinear_ensemble_artifacts"][0]
+    assert report["passed"] is False
+    assert row["is_nonlinear_window_readiness_manifest"] is True
+    assert row["readiness_blockers"] == ["seed_and_timestep_replicates_present"]
+    assert row["missing_artifacts"][0]["variant_axis"] == "seed"
+    assert row["qualifies_for_production_nonlinear_promotion"] is False
+
+
 def test_aggregate_holdout_gate_rejects_non_promotable_holdout_scope(tmp_path: Path) -> None:
     aggregate = _write_json(tmp_path / "aggregate.json", _aggregate_payload())
     line_search = _write_json(tmp_path / "line_search.json", _line_search_payload())

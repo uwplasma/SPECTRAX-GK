@@ -154,6 +154,20 @@ def test_nonlinear_domain_parallel_identity_gate_is_scoped_and_fail_closed() -> 
     assert payload["gated_state_matches_decomposed"] is True
     assert payload["gate"]["max_abs_error"] <= payload["gate"]["atol"]
     assert payload["gate"]["max_rel_error"] <= payload["gate"]["rtol"]
+    assert payload["transport_window"]["gate"]["identity_passed"] is True
+    assert payload["transport_window"]["gate"]["decomposed_path_enabled"] is True
+    assert payload["transport_window"]["gate"]["max_abs_state_error"] <= payload["gate"]["atol"]
+    assert payload["transport_window"]["gate"]["mass_trace_max_abs_error"] <= payload["gate"]["atol"]
+    assert payload["transport_window"]["gate"]["free_energy_trace_max_abs_error"] <= payload["gate"]["atol"]
+    assert payload["transport_window"]["gate"]["flux_proxy_trace_max_abs_error"] <= payload["gate"]["atol"]
+    assert {
+        row["metric"] for row in payload["transport_window"]["metrics"]
+    } == {
+        "mass_trace",
+        "free_energy_trace",
+        "boundary_flux_proxy_trace",
+    }
+    assert all(row["identity_passed"] is True for row in payload["transport_window"]["metrics"])
     assert "no production routing or speedup claim" in payload["claim_scope"]
     assert (STATIC / "nonlinear_domain_parallel_identity_gate.png").exists()
 

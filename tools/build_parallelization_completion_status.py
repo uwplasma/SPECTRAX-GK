@@ -52,6 +52,16 @@ CLAIM_SCOPE_PHRASES = {
 }
 
 
+def _optimization_provenance_member(value: float) -> dict[str, Any]:
+    x = float(value)
+    residual = x - 0.35
+    return {
+        "objective": residual * residual + 0.1 * x,
+        "gradient_proxy": 2.0 * residual + 0.1,
+        "uq_weight": 1.0 / (1.0 + x * x),
+    }
+
+
 def _read_json(path: Path) -> dict[str, Any]:
     with path.open(encoding="utf-8") as stream:
         payload = json.load(stream)
@@ -192,6 +202,44 @@ def _spectral_lane(payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _independent_ensemble_provenance_status() -> dict[str, Any]:
+    from spectraxgk.parallel import independent_ensemble_provenance_gate
+
+    report = independent_ensemble_provenance_gate(
+        _optimization_provenance_member,
+        [0.05, 0.2, 0.45, 0.8],
+        workers=16,
+        executor="thread",
+        workload="optimization_ensemble",
+        atol=0.0,
+        rtol=0.0,
+        metadata={"source": "build_parallelization_completion_status"},
+    )
+    payload = report.to_dict()
+    return {
+        "kind": payload["kind"],
+        "workload": payload["workload"],
+        "passed": payload["passed"],
+        "identity_passed": payload["identity_passed"],
+        "ordering_passed": payload["ordering_passed"],
+        "worker_clipping_passed": payload["worker_clipping_passed"],
+        "reconstruction_identity_passed": payload["reconstruction_identity_passed"],
+        "exception_metadata_passed": payload["exception_metadata_passed"],
+        "requested_workers": payload["requested_workers"],
+        "actual_workers": payload["actual_workers"],
+        "problem_size": payload["problem_size"],
+        "serial_indices": payload["serial_indices"],
+        "parallel_indices": payload["parallel_indices"],
+        "reconstructed_indices": payload["reconstructed_indices"],
+        "exception_metadata": payload["exception_metadata"],
+        "summary": (
+            "Independent UQ/optimization ensemble batching preserves serial "
+            "ordering, clips oversubscribed workers, records worker-exception "
+            "metadata, and reconstructs deterministically."
+        ),
+    }
+
+
 def build_status(root: Path = REPO_ROOT) -> dict[str, Any]:
     """Return release-scoped parallelization completion status."""
 
@@ -206,6 +254,7 @@ def build_status(root: Path = REPO_ROOT) -> dict[str, Any]:
     production = [lane for lane in lanes if lane["claim_level"] == "production_parallelization"]
     production_closed = [lane for lane in production if lane["status"] == "production_closed"]
     diagnostic_closed = [lane for lane in lanes if str(lane["status"]).startswith("diagnostic")]
+    provenance_gate = _independent_ensemble_provenance_status()
     production_completion = 100.0 * len(production_closed) / max(len(production), 1)
     overall_completion = 100.0 * (
         len(production_closed) + 0.75 * len(diagnostic_closed)
@@ -214,19 +263,24 @@ def build_status(root: Path = REPO_ROOT) -> dict[str, Any]:
         production_completion == 100.0
         and all(lane["identity_passed"] for lane in lanes)
         and all(lane["source_contract"]["claim_separation_passed"] for lane in lanes)
+        and provenance_gate["passed"]
     )
     return {
         "kind": "parallelization_completion_status",
         "claim_scope": (
             "Release production parallelization is closed for independent ky scans and "
             "quasilinear/UQ ensembles with CPU/GPU strong-scaling and serial numerical "
-            "identity. Whole-state nonlinear sharding and FFT-axis decomposition remain "
+            "identity. The independent ensemble provenance gate additionally verifies "
+            "serial-vs-parallel ordering, worker clipping, exception metadata, and "
+            "deterministic reconstruction for UQ/optimization batches. Whole-state "
+            "nonlinear sharding and FFT-axis decomposition remain "
             "diagnostic until runtime distributed communication, conservation, transport-window, "
             "and profiler-backed speedup gates pass."
         ),
         "passed": passed,
         "production_completion_percent": production_completion,
         "overall_parallelization_percent": overall_completion,
+        "independent_ensemble_provenance_gate": provenance_gate,
         "lanes": lanes,
     }
 
