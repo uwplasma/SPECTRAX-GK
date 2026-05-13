@@ -112,6 +112,7 @@ def _write_panel(path: Path, runbook: dict[str, Any], *, dpi: int = 220, write_p
     lines = [
         f"Status: {'READY' if runbook.get('passed') else 'BLOCKED'}",
         f"Preferred family: {runbook.get('preferred_family')}",
+        f"Min launch gamma: {float(runbook.get('min_launch_gamma', 0.0)):.3g}",
         f"Selected next candidate: {selected_case}",
         f"Nearest tracked gap: {nearest_case}",
         f"Horizons: {', '.join(str(v) for v in runbook.get('recommended_horizons', []))}",
@@ -148,6 +149,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--out-dir", default="tools_out/external_vmec_holdouts")
     parser.add_argument("--grid", action="append", default=None, help="Grid spec label:Nx:Ny:Nz:ntheta")
     parser.add_argument("--dt", type=float, default=0.05)
+    parser.add_argument(
+        "--min-launch-gamma",
+        type=float,
+        default=0.02,
+        help="Minimum positive linear growth rate required before writing nonlinear launch commands.",
+    )
     parser.add_argument("--max-candidates", type=int, default=6)
     parser.add_argument("--dpi", type=int, default=220)
     parser.add_argument("--no-pdf", action="store_true")
@@ -164,6 +171,7 @@ def main(argv: list[str] | None = None) -> int:
         out_dir=str(args.out_dir),
         grids=tuple(args.grid or ("n48:48:48:32:32", "n64:64:64:40:40")),
         dt=float(args.dt),
+        min_launch_gamma=float(args.min_launch_gamma),
         max_candidates=int(args.max_candidates),
     )
     outputs = _write_panel(args.out, runbook, dpi=int(args.dpi), write_pdf=not bool(args.no_pdf))

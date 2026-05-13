@@ -151,6 +151,12 @@ def _external_family(case: str, artifact: str = "") -> str:
         return "updown_asym_external_vmec"
     if "itermodel" in text:
         return "itermodel_external_vmec"
+    if "li383" in text:
+        return "li383_external_vmec"
+    if "qi_stel" in text or "quasi-isodynamic" in text or "nfp3_qi" in text:
+        return "qi_external_vmec"
+    if "qa" in text and ("landremanpaul" in text or "quasi-axisymmetric" in text):
+        return "qa_external_vmec"
     if "dshape" in text or "d-shaped" in text or "d shaped" in text:
         return "dshape_external_vmec"
     if "circular" in text:
@@ -161,6 +167,12 @@ def _external_family(case: str, artifact: str = "") -> str:
         return "cth_like_external_vmec"
     if "qh" in text or "nfp4" in text:
         return "qh_external_vmec"
+    if "basic_non_stellsym" in text or "non_stellsym" in text:
+        return "non_stellsym_external_vmec"
+    if "purely_toroidal" in text:
+        return "purely_toroidal_external_vmec"
+    if "solovev" in text:
+        return "solovev_external_vmec"
     return "external_vmec"
 
 

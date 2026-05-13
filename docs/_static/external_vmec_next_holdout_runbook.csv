@@ -4,4 +4,7 @@ rank,case,family,status,best_gamma,best_ky,best_omega,reason
 3,circular_tokamak_nc,circular_external_vmec,recent_family_failed_external_gate,0.089094,0.4762,0.407803,this external-VMEC family has a tracked failed convergence gate; rerun only with a modified higher-resolution protocol
 4,circular_tokamak_reference_nc,circular_external_vmec,recent_family_failed_external_gate,0.089094,0.4762,0.407803,this external-VMEC family has a tracked failed convergence gate; rerun only with a modified higher-resolution protocol
 5,shaped_tokamak_pressure_reference_nc,shaped_tokamak_external_vmec,recent_family_failed_external_gate,0.047324,0.4762,0.282209,this external-VMEC family has a tracked failed convergence gate; rerun only with a modified higher-resolution protocol
-6,LandremanSengupta2019_section5_4_B2_A80_reference_nc,external_vmec,screen_rejected_stable_or_failed,-0.001248,0.1905,-0.143501,screen row did not finish with positive growth
+6,QI_stel_seed_3127_nc,qi_external_vmec,screen_marginal_needs_linear_refinement,0.003835,0.1429,-0.089976,positive growth is below the nonlinear-launch threshold; refine the linear branch before launching a transport holdout
+7,LandremanSengupta2019_section5_4_B2_A80_reference_nc,external_vmec,screen_rejected_stable_or_failed,-0.001248,0.1905,-0.143501,screen row did not finish with positive growth
+8,LandremanPaul2021_QH_reactorScale_lowres_reference_nc,qh_external_vmec,screen_rejected_stable_or_failed,-0.012907,0.4762,-0.090396,screen row did not finish with positive growth
+9,li383_low_res_nc,li383_external_vmec,screen_rejected_stable_or_failed,-0.016791,0.4762,-0.165161,screen row did not finish with positive growth

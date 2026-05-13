@@ -1,6 +1,7 @@
 {
   "absolute_flux_promoted": false,
   "acceptance_gate": {
+    "minimum_screen_growth_rate_for_launch": 0.02,
     "required_claim_level": "passed_grid_convergence_candidate_for_transport_holdout",
     "required_split": "holdout",
     "requires_grid_window_convergence": true,
@@ -16,6 +17,7 @@
   },
   "kind": "external_vmec_holdout_runbook",
   "launch_commands": [],
+  "min_launch_gamma": 0.02,
   "nearest_tracked_gap": {
     "case": "ITERModel external VMEC nonlinear t250 high-grid convergence",
     "failed_gates": [
@@ -107,6 +109,21 @@
       "vmec_file": "/home/rjorge/src/vmec_jax/examples/data/wout_shaped_tokamak_pressure_reference.nc"
     },
     {
+      "best_gamma": 0.003835,
+      "best_ky": 0.1429,
+      "best_omega": -0.089976,
+      "case": "QI_stel_seed_3127_nc",
+      "family": "qi_external_vmec",
+      "log": "tools_out/candidate_screen_qi_seed/qi_seed_lowky_scan.log",
+      "priority": 7.0,
+      "rank": 6,
+      "reason": "positive growth is below the nonlinear-launch threshold; refine the linear branch before launching a transport holdout",
+      "returncode": 0,
+      "status": "screen_marginal_needs_linear_refinement",
+      "unstable": true,
+      "vmec_file": "/Users/rogeriojorge/local/vmec_jax/examples/data/wout_QI_stel_seed_3127.nc"
+    },
+    {
       "best_gamma": -0.001248,
       "best_ky": 0.1905,
       "best_omega": -0.143501,
@@ -114,12 +131,42 @@
       "family": "external_vmec",
       "log": "/home/rjorge/spectraxgk_qh_convergence/tools_out/candidate_screen/LandremanSengupta2019_section5_4_B2_A80_reference_nc.log",
       "priority": 9.0,
-      "rank": 6,
+      "rank": 7,
       "reason": "screen row did not finish with positive growth",
       "returncode": 0,
       "status": "screen_rejected_stable_or_failed",
       "unstable": false,
       "vmec_file": "/home/rjorge/src/vmec_jax/examples/data/wout_LandremanSengupta2019_section5.4_B2_A80_reference.nc"
+    },
+    {
+      "best_gamma": -0.012907,
+      "best_ky": 0.4762,
+      "best_omega": -0.090396,
+      "case": "LandremanPaul2021_QH_reactorScale_lowres_reference_nc",
+      "family": "qh_external_vmec",
+      "log": "/home/rjorge/spectraxgk_qh_convergence/tools_out/candidate_screen/LandremanPaul2021_QH_reactorScale_lowres_reference_nc.log",
+      "priority": 9.0,
+      "rank": 8,
+      "reason": "screen row did not finish with positive growth",
+      "returncode": 0,
+      "status": "screen_rejected_stable_or_failed",
+      "unstable": false,
+      "vmec_file": "/home/rjorge/src/vmec_jax/examples/data/wout_LandremanPaul2021_QH_reactorScale_lowres_reference.nc"
+    },
+    {
+      "best_gamma": -0.016791,
+      "best_ky": 0.4762,
+      "best_omega": -0.165161,
+      "case": "li383_low_res_nc",
+      "family": "li383_external_vmec",
+      "log": "tools_out/candidate_screen_li383/li383_linear_scan.log",
+      "priority": 9.0,
+      "rank": 9,
+      "reason": "screen row did not finish with positive growth",
+      "returncode": 0,
+      "status": "screen_rejected_stable_or_failed",
+      "unstable": false,
+      "vmec_file": "/Users/rogeriojorge/local/vmec_jax/examples/data/wout_li383_low_res.nc"
     }
   ],
   "recommended_grids": [
