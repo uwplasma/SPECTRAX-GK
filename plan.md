@@ -4785,3 +4785,39 @@ Exit gate:
   - `pytest -q tests/test_independent_ky_scaling_artifacts.py tests/test_quasilinear_uq_ensemble_scaling_artifacts.py tests/test_parallel_artifact_contracts.py tests/test_build_parallelization_completion_status.py tests/test_build_technical_release_status.py tests/test_check_release_readiness.py tests/test_performance_optimization_manifest.py tests/test_validation_coverage_manifest.py --maxfail=1 --disable-warnings -o addopts=` passed with 39 tests;
   - targeted `ruff check`, `python -m py_compile`, and strict Sphinx docs
     build passed.
+
+## 2026-05-13 Multi-Point VMEC/Boozer Objective Gate Push
+
+- CI for the latest `main` push is green after the mypy fix in `d0e2772`.
+- Added the next differentiable-geometry optimizer API layer:
+  - `vmec_boozer_solver_objective_table_from_state` evaluates the production
+    VMEC/Boozer/SPECTRAX-GK linear/quasilinear objective vector over explicit
+    surface, field-line, and `k_y` samples;
+  - `vmec_boozer_aggregate_scalar_objective_from_state` reduces that table
+    with mean, weighted mean, or worst-case max reductions;
+  - `vmec_boozer_aggregate_scalar_objective_finite_difference_report` applies
+    the same finite-difference/curvature gate to the aggregate objective and
+    records per-sample metadata, scalar values, and objective tables.
+- Claim boundary: this closes software plumbing for multi-surface/multi-`k_y`
+  reduced growth-rate and quasilinear objectives. It does not promote a full
+  nonlinear turbulent heat-flux stellarator optimization claim; that still
+  needs converged nonlinear-window audits on optimized geometries.
+- Real local VMEC/Boozer smoke with `nfp4_QH_warm_start`, `mboz=nboz=21`,
+  `surface_stencil_width=3`, `ntheta=4`, `Nl=2`, `Nm=3`, `Ny=6`, and
+  `selected_ky_indices=(1, 2)`:
+  - objective table shape `(2, 6)`;
+  - `ky_index=1`: `gamma=0.2966178`, `omega=-0.1669332`,
+    `kperp_eff2=0.4207791`, heat weight `2.0486671`, QL proxy `1.4441574`;
+  - `ky_index=2`: `gamma=0.3115840`, `omega=-1.5544764`,
+    `kperp_eff2=0.5878794`, heat weight `0.6224810`, QL proxy `0.3299233`;
+  - mean QL proxy aggregate `0.8870404`;
+  - aggregate finite-difference gate passed with `h=1e-7`,
+    central derivative `1.954731e5`, response `3.909462e-2`, and curvature
+    ratio `9.455764e-3`.
+- Next best scientific steps:
+  - build a tracked artifact for the aggregate gate on the QH warm-start case
+    with `mboz=nboz=21`, at least two field lines or surfaces, and at least
+    two `k_y` points;
+  - use that artifact to drive a bounded multi-point growth-rate line search;
+  - repeat for the quasilinear proxy, then compare the optimized perturbations
+    against held-out surfaces/field lines before updating manuscript figures.
