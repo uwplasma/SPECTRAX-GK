@@ -426,7 +426,7 @@ def dominant_eigenpair_shift_invert_cached(
         if select_overlap:
             idx = _select_by_overlap(eigvecs, V[:krylov_dim], v_ref, mask, idx)
         y = eigvecs[:, idx]
-        v_next = jnp.tensordot(jnp.conj(y), V[:krylov_dim], axes=1)
+        v_next = jnp.tensordot(y, V[:krylov_dim], axes=1)
         v_next = _normalize(v_next)
         eig_out = jnp.where(mask0_any, lam[idx], jnp.nan + 1.0j * jnp.nan)
         return v_next, eig_out
@@ -499,7 +499,7 @@ def dominant_eigenpair_cached(
             idx = _select_by_overlap(eigvecs, V[:krylov_dim], v_ref, mask, idx)
         eig = eigvals[idx]
         y = eigvecs[:, idx]
-        v_next = jnp.tensordot(jnp.conj(y), V[:krylov_dim], axes=1)
+        v_next = jnp.tensordot(y, V[:krylov_dim], axes=1)
         v_next = _normalize(v_next)
         return v_next, eig
 
@@ -571,7 +571,7 @@ def dominant_eigenpair_propagator_cached(
         if select_overlap:
             idx = _select_by_overlap(eigvecs, V[:krylov_dim], v_ref, mask, idx)
         y = eigvecs[:, idx]
-        v_next = jnp.tensordot(jnp.conj(y), V[:krylov_dim], axes=1)
+        v_next = jnp.tensordot(y, V[:krylov_dim], axes=1)
         v_next = _normalize(v_next)
         return v_next, lam[idx]
 

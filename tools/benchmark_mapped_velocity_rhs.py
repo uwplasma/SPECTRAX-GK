@@ -46,6 +46,7 @@ DEFAULT_MAP_SPECS = (
     "parallel_scale:0.0:-0.08:0.0",
     "perp_scale:0.0:0.0:0.06",
 )
+KRYLOV_RETURNED_VECTOR_RESIDUAL_TOLERANCE = 1.0e-4
 
 CSV_FIELDS = (
     "case",
@@ -609,6 +610,8 @@ def _build_tiny_krylov_scorecard(
         "matrix_size": int(template.size),
         "max_size": int(max_size),
         "identity_tolerance": float(identity_tolerance),
+        "operator_residual_tolerance": KRYLOV_RETURNED_VECTOR_RESIDUAL_TOLERANCE,
+        "residual_operator": "same materialized compact operator used for dense eigenvalue matching",
         "krylov_dim": int(krylov_dim_use),
         "restarts": int(restarts_use),
         "max_operator_residual_rel": max(residuals, default=None),
@@ -623,6 +626,9 @@ def _build_tiny_krylov_scorecard(
                 for row in rows
             ),
             "all_krylov_eigenvalues_close_to_dense": all(value <= 1.0e-4 for value in nearest_errors),
+            "all_krylov_returned_vectors_validate_materialized_operator": all(
+                value <= KRYLOV_RETURNED_VECTOR_RESIDUAL_TOLERANCE for value in residuals
+            ),
             "identity_krylov_matches_unmapped": bool(identity_errors)
             and max(identity_errors) <= float(identity_tolerance),
         },
@@ -630,9 +636,9 @@ def _build_tiny_krylov_scorecard(
         "claim_scope": (
             "Tiny actual mapped-RHS Krylov scorecard using the same LinearParams.velocity_map path "
             "used by runtime Krylov solves. Eigenvalues are compared against the nearest dense eigenvalue "
-            "of the materialized compact operator; returned-vector residuals are recorded as diagnostics "
-            "but are not used as an eigenfunction claim. This is an eigen-solver plumbing gate, not a "
-            "production-size spectrum."
+            "of the materialized compact operator, and returned Krylov vectors are checked as right "
+            "eigenvectors against that same compact operator. This is an eigen-solver plumbing gate, "
+            "not a production-size spectrum."
         ),
     }
 
@@ -709,12 +715,18 @@ def _build_summary(
         )
     krylov_identity_pass = None
     krylov_eigen_pass = None
+    krylov_vector_residual_pass = None
     if krylov_scorecard is not None:
         krylov_identity_pass = bool(
             krylov_scorecard["readiness"]["identity_krylov_matches_unmapped"]
         )
         krylov_eigen_pass = bool(
             krylov_scorecard["readiness"]["all_krylov_eigenvalues_close_to_dense"]
+        )
+        krylov_vector_residual_pass = bool(
+            krylov_scorecard["readiness"][
+                "all_krylov_returned_vectors_validate_materialized_operator"
+            ]
         )
     return {
         "kind": "mapped_velocity_rhs_readiness",
@@ -747,6 +759,7 @@ def _build_summary(
             "tiny_krylov_scorecard_available": krylov_scorecard is not None,
             "identity_krylov_matches_unmapped": krylov_identity_pass,
             "all_krylov_eigenvalues_close_to_dense": krylov_eigen_pass,
+            "all_krylov_returned_vectors_validate_materialized_operator": krylov_vector_residual_pass,
         },
         "rows": rows,
         "claim_scope": (
@@ -755,9 +768,9 @@ def _build_summary(
             "eigen fields are populated. The eigen_scorecard field adds a tiny actual assembled-RHS dense "
             "operator check for mapped identity consistency. The krylov_scorecard field additionally runs "
             "the mapped operator through the production Krylov eigen wrapper on the same compact grid and "
-            "compares Krylov eigenvalues with the nearest dense eigenvalues; returned-vector residuals are "
-            "recorded as diagnostics rather than eigenfunction evidence. Nonlinear real-space mapped-basis "
-            "support is not asserted here, and any input nonlinear term is forced off for this benchmark."
+            "compares Krylov eigenvalues with the nearest dense eigenvalues, then validates returned-vector "
+            "residuals against that same materialized operator. Nonlinear real-space mapped-basis support "
+            "is not asserted here, and any input nonlinear term is forced off for this benchmark."
         ),
     }
 

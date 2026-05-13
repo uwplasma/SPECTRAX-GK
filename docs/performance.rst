@@ -428,10 +428,10 @@ artifact:
      --out-json docs/_static/mapped_velocity_rhs_readiness.json \
      --out-csv docs/_static/mapped_velocity_rhs_readiness.csv
 
-The May 12, 2026 CPU artifact reports ten rows for the Cyclone Miller
+The May 13, 2026 CPU artifact reports ten rows for the Cyclone Miller
 ``z_wave`` state. The identity map agrees exactly with the unmapped production
 RHS in the tracked norm, all Rayleigh-proxy ``gamma``/``omega`` metrics are
-finite, and the largest mapped warm-call overhead is about ``1.14x`` in this
+finite, and the largest mapped warm-call overhead is about ``1.07x`` in this
 small repeat-count run. The JSON also includes an ``eigen_scorecard`` field:
 a 24-by-24 dense matrix materialized from actual matrix-free
 ``assemble_rhs_cached`` basis-vector applies on a compact linear grid. That
@@ -440,10 +440,11 @@ operator/eigen agreement with the unmapped operator. The refreshed JSON also
 includes a ``krylov_scorecard`` field that runs the same compact mapped
 operators through ``spectraxgk.linear_krylov.dominant_eigenpair`` and checks
 the returned Krylov eigenvalues against the nearest dense eigenvalues of the
-materialized operator. It also records returned-vector residuals as diagnostics
-without using them as an eigenfunction claim. This adds a direct eigen-solver
-plumbing gate on the mapped ``LinearParams`` path, while still keeping the
-claim scoped to a compact operator. The
+materialized operator. It also validates the returned Krylov vectors against
+that same compact operator, with maximum relative residual below ``8e-7``
+against a ``1e-4`` gate. This adds a direct eigen-solver plumbing gate on the
+mapped ``LinearParams`` path, while still keeping the claim scoped to a compact
+operator. The
 non-identity maps intentionally change the RHS by about ``8-9%`` in this
 single-state diagnostic, so this is a readiness and cost/observable plumbing
 gate plus tiny dense and Krylov eigen-consistency artifacts, not a claim that

@@ -1,7 +1,7 @@
 {
   "backend": "cpu",
   "case": "runtime_cyclone_nonlinear_miller",
-  "claim_scope": "Mapped velocity-basis readiness for cached linear RHS assembly. Timings are single-state JAX warm-call measurements; gamma/omega values are Rayleigh-quotient proxies unless dense eigen fields are populated. The eigen_scorecard field adds a tiny actual assembled-RHS dense operator check for mapped identity consistency. The krylov_scorecard field additionally runs the mapped operator through the production Krylov eigen wrapper on the same compact grid and compares Krylov eigenvalues with the nearest dense eigenvalues; returned-vector residuals are recorded as diagnostics rather than eigenfunction evidence. Nonlinear real-space mapped-basis support is not asserted here, and any input nonlinear term is forced off for this benchmark.",
+  "claim_scope": "Mapped velocity-basis readiness for cached linear RHS assembly. Timings are single-state JAX warm-call measurements; gamma/omega values are Rayleigh-quotient proxies unless dense eigen fields are populated. The eigen_scorecard field adds a tiny actual assembled-RHS dense operator check for mapped identity consistency. The krylov_scorecard field additionally runs the mapped operator through the production Krylov eigen wrapper on the same compact grid and compares Krylov eigenvalues with the nearest dense eigenvalues, then validates returned-vector residuals against that same materialized operator. Nonlinear real-space mapped-basis support is not asserted here, and any input nonlinear term is forced off for this benchmark.",
   "config": "examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_miller.toml",
   "dense_eigen_max_size": 0,
   "eigen_scorecard": {
@@ -89,7 +89,7 @@
   "identity_tolerance": 1e-10,
   "kind": "mapped_velocity_rhs_readiness",
   "krylov_scorecard": {
-    "claim_scope": "Tiny actual mapped-RHS Krylov scorecard using the same LinearParams.velocity_map path used by runtime Krylov solves. Eigenvalues are compared against the nearest dense eigenvalue of the materialized compact operator; returned-vector residuals are recorded as diagnostics but are not used as an eigenfunction claim. This is an eigen-solver plumbing gate, not a production-size spectrum.",
+    "claim_scope": "Tiny actual mapped-RHS Krylov scorecard using the same LinearParams.velocity_map path used by runtime Krylov solves. Eigenvalues are compared against the nearest dense eigenvalue of the materialized compact operator, and returned Krylov vectors are checked as right eigenvectors against that same compact operator. This is an eigen-solver plumbing gate, not a production-size spectrum.",
     "identity_tolerance": 1e-10,
     "kind": "mapped_velocity_rhs_tiny_krylov_scorecard",
     "krylov_dim": 24,
@@ -98,13 +98,16 @@
     "matrix_source": "spectraxgk.terms.assembly.assemble_rhs_cached",
     "max_identity_krylov_eigen_abs_error": 0.0,
     "max_nearest_dense_eigen_abs_error": 5.654430424328893e-06,
-    "max_operator_residual_rel": 0.8218187093734741,
+    "max_operator_residual_rel": 7.943973514557001e-07,
     "max_size": 128,
+    "operator_residual_tolerance": 0.0001,
     "readiness": {
       "all_krylov_eigenvalues_close_to_dense": true,
       "all_krylov_metrics_finite": true,
+      "all_krylov_returned_vectors_validate_materialized_operator": true,
       "identity_krylov_matches_unmapped": true
     },
+    "residual_operator": "same materialized compact operator used for dense eigenvalue matching",
     "restarts": 1,
     "rows": [
       {
@@ -115,7 +118,7 @@
         "map_label": "unmapped",
         "matrix_size": 24,
         "nearest_dense_eigen_abs_error": 1.611760126252193e-06,
-        "operator_residual_rel": 0.663899838924408,
+        "operator_residual_rel": 4.487625631099945e-07,
         "restarts": 1,
         "vector_norm": 1.0
       },
@@ -127,7 +130,7 @@
         "map_label": "identity",
         "matrix_size": 24,
         "nearest_dense_eigen_abs_error": 1.611760126252193e-06,
-        "operator_residual_rel": 0.663899838924408,
+        "operator_residual_rel": 4.487625631099945e-07,
         "restarts": 1,
         "vector_norm": 1.0
       },
@@ -139,9 +142,9 @@
         "map_label": "parallel_shift",
         "matrix_size": 24,
         "nearest_dense_eigen_abs_error": 2.974356902996078e-06,
-        "operator_residual_rel": 0.7852246761322021,
+        "operator_residual_rel": 5.607799948847969e-07,
         "restarts": 1,
-        "vector_norm": 1.0000001192092896
+        "vector_norm": 1.0
       },
       {
         "krylov_dim": 24,
@@ -151,7 +154,7 @@
         "map_label": "parallel_scale",
         "matrix_size": 24,
         "nearest_dense_eigen_abs_error": 8.136066185215896e-07,
-        "operator_residual_rel": 0.6694802641868591,
+        "operator_residual_rel": 4.71599861384675e-07,
         "restarts": 1,
         "vector_norm": 1.0
       },
@@ -163,7 +166,7 @@
         "map_label": "perp_scale",
         "matrix_size": 24,
         "nearest_dense_eigen_abs_error": 5.654430424328893e-06,
-        "operator_residual_rel": 0.8218187093734741,
+        "operator_residual_rel": 7.943973514557001e-07,
         "restarts": 1,
         "vector_norm": 1.0
       }
@@ -172,11 +175,12 @@
   "max_identity_gamma_proxy_abs_error": 0.0,
   "max_identity_omega_proxy_abs_error": 0.0,
   "max_identity_rhs_rel_error": 0.0,
-  "max_mapped_warm_over_unmapped": 1.1355034324826165,
+  "max_mapped_warm_over_unmapped": 1.07167349434442,
   "nonlinear_input_weight": 1.0,
   "nonlinear_terms_forced_linear": true,
   "readiness": {
     "all_krylov_eigenvalues_close_to_dense": true,
+    "all_krylov_returned_vectors_validate_materialized_operator": true,
     "all_proxy_metrics_finite": true,
     "identity_dense_operator_matches_unmapped": true,
     "identity_krylov_matches_unmapped": true,
@@ -194,7 +198,7 @@
       "gamma_proxy_abs_delta": 0.00016175583004951477,
       "map_label": "identity",
       "omega_proxy_abs_delta": 2.9103830456733704e-11,
-      "warm_seconds_delta": -0.024678562534973025
+      "warm_seconds_delta": -0.022863666526973248
     },
     {
       "coarse_Nl": 4,
@@ -204,7 +208,7 @@
       "gamma_proxy_abs_delta": 0.00016175583004951477,
       "map_label": "parallel_scale",
       "omega_proxy_abs_delta": 5.820766091346741e-11,
-      "warm_seconds_delta": -0.027681562467478216
+      "warm_seconds_delta": -0.021208749967627227
     },
     {
       "coarse_Nl": 4,
@@ -214,7 +218,7 @@
       "gamma_proxy_abs_delta": 0.00016174651682376862,
       "map_label": "parallel_shift",
       "omega_proxy_abs_delta": 1.1641532182693481e-10,
-      "warm_seconds_delta": -0.02999060449656099
+      "warm_seconds_delta": -0.019529333105310798
     },
     {
       "coarse_Nl": 4,
@@ -224,7 +228,7 @@
       "gamma_proxy_abs_delta": 0.00016175583004951477,
       "map_label": "perp_scale",
       "omega_proxy_abs_delta": 5.820766091346741e-11,
-      "warm_seconds_delta": -0.023372812429443002
+      "warm_seconds_delta": -0.01816974999383092
     },
     {
       "coarse_Nl": 4,
@@ -234,7 +238,7 @@
       "gamma_proxy_abs_delta": 0.00016175583004951477,
       "map_label": "unmapped",
       "omega_proxy_abs_delta": 2.9103830456733704e-11,
-      "warm_seconds_delta": -0.012963583576492965
+      "warm_seconds_delta": -0.013391750049777329
     }
   ],
   "row_count": 10,
@@ -243,9 +247,9 @@
       "Nl": 4,
       "Nm": 6,
       "backend": "cpu",
-      "baseline_warm_seconds": 0.0795456039486453,
+      "baseline_warm_seconds": 0.061398791964165866,
       "case": "runtime_cyclone_nonlinear_miller",
-      "compile_execute_seconds": 0.8653286250773817,
+      "compile_execute_seconds": 0.6940852080006152,
       "dense_gamma": null,
       "dense_gamma_abs_error_vs_unmapped": null,
       "dense_omega": null,
@@ -266,15 +270,15 @@
       "state": "z_wave",
       "vector_size": 7077888,
       "warm_over_baseline": 1.0,
-      "warm_seconds": 0.0795456039486453
+      "warm_seconds": 0.061398791964165866
     },
     {
       "Nl": 4,
       "Nm": 6,
       "backend": "cpu",
-      "baseline_warm_seconds": 0.0795456039486453,
+      "baseline_warm_seconds": 0.061398791964165866,
       "case": "runtime_cyclone_nonlinear_miller",
-      "compile_execute_seconds": 0.8143177919555455,
+      "compile_execute_seconds": 0.6531384170521051,
       "dense_gamma": null,
       "dense_gamma_abs_error_vs_unmapped": null,
       "dense_omega": null,
@@ -294,16 +298,16 @@
       "rhs_rel_error_vs_unmapped": 0.0,
       "state": "z_wave",
       "vector_size": 7077888,
-      "warm_over_baseline": 0.8998708596616816,
-      "warm_seconds": 0.0715807710075751
+      "warm_over_baseline": 0.9330374938069954,
+      "warm_seconds": 0.05728737497702241
     },
     {
       "Nl": 4,
       "Nm": 6,
       "backend": "cpu",
-      "baseline_warm_seconds": 0.0795456039486453,
+      "baseline_warm_seconds": 0.061398791964165866,
       "case": "runtime_cyclone_nonlinear_miller",
-      "compile_execute_seconds": 0.07439012499526143,
+      "compile_execute_seconds": 0.05648429109714925,
       "dense_gamma": null,
       "dense_gamma_abs_error_vs_unmapped": null,
       "dense_omega": null,
@@ -323,16 +327,16 @@
       "rhs_rel_error_vs_unmapped": 0.08313553651311835,
       "state": "z_wave",
       "vector_size": 7077888,
-      "warm_over_baseline": 0.943532913809623,
-      "warm_seconds": 0.07505389547441155
+      "warm_over_baseline": 0.916781749932174,
+      "warm_seconds": 0.05628929194062948
     },
     {
       "Nl": 4,
       "Nm": 6,
       "backend": "cpu",
-      "baseline_warm_seconds": 0.0795456039486453,
+      "baseline_warm_seconds": 0.061398791964165866,
       "case": "runtime_cyclone_nonlinear_miller",
-      "compile_execute_seconds": 0.07204629201442003,
+      "compile_execute_seconds": 0.058416665997356176,
       "dense_gamma": null,
       "dense_gamma_abs_error_vs_unmapped": null,
       "dense_omega": null,
@@ -352,16 +356,16 @@
       "rhs_rel_error_vs_unmapped": 0.08954230984161798,
       "state": "z_wave",
       "vector_size": 7077888,
-      "warm_over_baseline": 0.9296959898676339,
-      "warm_seconds": 0.07395322900265455
+      "warm_over_baseline": 0.9291571241434586,
+      "warm_seconds": 0.05704912496730685
     },
     {
       "Nl": 4,
       "Nm": 6,
       "backend": "cpu",
-      "baseline_warm_seconds": 0.0795456039486453,
+      "baseline_warm_seconds": 0.061398791964165866,
       "case": "runtime_cyclone_nonlinear_miller",
-      "compile_execute_seconds": 0.07124137482605875,
+      "compile_execute_seconds": 0.05685850000008941,
       "dense_gamma": null,
       "dense_gamma_abs_error_vs_unmapped": null,
       "dense_omega": null,
@@ -381,16 +385,16 @@
       "rhs_rel_error_vs_unmapped": 0.02777758977890548,
       "state": "z_wave",
       "vector_size": 7077888,
-      "warm_over_baseline": 0.9650679954640445,
-      "warm_seconds": 0.0767669165506959
+      "warm_over_baseline": 0.9594111814835353,
+      "warm_seconds": 0.05890668754000217
     },
     {
       "Nl": 4,
       "Nm": 8,
       "backend": "cpu",
-      "baseline_warm_seconds": 0.09250918752513826,
+      "baseline_warm_seconds": 0.0747905420139432,
       "case": "runtime_cyclone_nonlinear_miller",
-      "compile_execute_seconds": 0.8398400419391692,
+      "compile_execute_seconds": 0.686667624861002,
       "dense_gamma": null,
       "dense_gamma_abs_error_vs_unmapped": null,
       "dense_omega": null,
@@ -411,15 +415,15 @@
       "state": "z_wave",
       "vector_size": 9437184,
       "warm_over_baseline": 1.0,
-      "warm_seconds": 0.09250918752513826
+      "warm_seconds": 0.0747905420139432
     },
     {
       "Nl": 4,
       "Nm": 8,
       "backend": "cpu",
-      "baseline_warm_seconds": 0.09250918752513826,
+      "baseline_warm_seconds": 0.0747905420139432,
       "case": "runtime_cyclone_nonlinear_miller",
-      "compile_execute_seconds": 0.8730332080740482,
+      "compile_execute_seconds": 0.6813941670116037,
       "dense_gamma": null,
       "dense_gamma_abs_error_vs_unmapped": null,
       "dense_omega": null,
@@ -439,16 +443,16 @@
       "rhs_rel_error_vs_unmapped": 0.0,
       "state": "z_wave",
       "vector_size": 9437184,
-      "warm_over_baseline": 1.0405380926774521,
-      "warm_seconds": 0.09625933354254812
+      "warm_over_baseline": 1.07167349434442,
+      "warm_seconds": 0.08015104150399566
     },
     {
       "Nl": 4,
       "Nm": 8,
       "backend": "cpu",
-      "baseline_warm_seconds": 0.09250918752513826,
+      "baseline_warm_seconds": 0.0747905420139432,
       "case": "runtime_cyclone_nonlinear_miller",
-      "compile_execute_seconds": 0.10569150000810623,
+      "compile_execute_seconds": 0.07557279197499156,
       "dense_gamma": null,
       "dense_gamma_abs_error_vs_unmapped": null,
       "dense_omega": null,
@@ -468,16 +472,16 @@
       "rhs_rel_error_vs_unmapped": 0.08314023374909815,
       "state": "z_wave",
       "vector_size": 9437184,
-      "warm_over_baseline": 1.1355034324826165,
-      "warm_seconds": 0.10504449997097254
+      "warm_over_baseline": 1.0137461636767577,
+      "warm_seconds": 0.07581862504594028
     },
     {
       "Nl": 4,
       "Nm": 8,
       "backend": "cpu",
-      "baseline_warm_seconds": 0.09250918752513826,
+      "baseline_warm_seconds": 0.0747905420139432,
       "case": "runtime_cyclone_nonlinear_miller",
-      "compile_execute_seconds": 0.10987608297728002,
+      "compile_execute_seconds": 0.07695045811124146,
       "dense_gamma": null,
       "dense_gamma_abs_error_vs_unmapped": null,
       "dense_omega": null,
@@ -497,16 +501,16 @@
       "rhs_rel_error_vs_unmapped": 0.08954736906631472,
       "state": "z_wave",
       "vector_size": 9437184,
-      "warm_over_baseline": 1.0986453798712126,
-      "warm_seconds": 0.10163479147013277
+      "warm_over_baseline": 1.046360580196684,
+      "warm_seconds": 0.07825787493493408
     },
     {
       "Nl": 4,
       "Nm": 8,
       "backend": "cpu",
-      "baseline_warm_seconds": 0.09250918752513826,
+      "baseline_warm_seconds": 0.0747905420139432,
       "case": "runtime_cyclone_nonlinear_miller",
-      "compile_execute_seconds": 0.10444520809687674,
+      "compile_execute_seconds": 0.07680212496779859,
       "dense_gamma": null,
       "dense_gamma_abs_error_vs_unmapped": null,
       "dense_omega": null,
@@ -526,8 +530,8 @@
       "rhs_rel_error_vs_unmapped": 0.02777915923884541,
       "state": "z_wave",
       "vector_size": 9437184,
-      "warm_over_baseline": 1.0824841473494418,
-      "warm_seconds": 0.1001397289801389
+      "warm_over_baseline": 1.0305639651530234,
+      "warm_seconds": 0.07707643753383309
     }
   ],
   "state": "z_wave",
