@@ -5268,3 +5268,30 @@ Exit gate:
     the matching replicate/timestep summaries exist;
   - keep production nonlinear transport optimization blocked until this
     ensemble gate, grid convergence, and optimized-equilibrium audits all pass.
+
+## 2026-05-13 Nonlinear Window Ensemble Artifact Tool
+
+- Added `tools/check_nonlinear_window_ensemble.py`, a bounded artifact wrapper
+  around `nonlinear_window_ensemble_report`. It reads multiple nonlinear-window
+  JSON reports, writes a combined ensemble JSON gate, optionally writes a PNG
+  summary, and returns nonzero when seed/timestep/initial-condition agreement
+  fails.
+- Added `tests/test_check_nonlinear_window_ensemble.py` covering a passing
+  three-seed synthetic replicate gate and a fail-closed broad-spread timestep
+  comparison.
+- Documented the tool in `docs/quasilinear.rst` and `docs/release_scope.rst` as
+  the tracked audit layer for replicated nonlinear transport windows.
+- Checks completed:
+  - `ruff` on the new tool, tests, and touched source;
+  - `pytest -q tests/test_quasilinear_window.py tests/test_check_nonlinear_window_ensemble.py`: `14` passed;
+  - full-package `mypy`: `Success: no issues found in 88 source files`.
+- Current lane progress after this tranche:
+  - production nonlinear turbulent-flux optimization evidence: `75%`;
+  - refactor/testability lane: `91%`;
+  - package-wide coverage/release infrastructure: `97%`;
+  - other lane percentages unchanged from the preceding tranche.
+- Next best steps:
+  - apply the ensemble tool to real replicated nonlinear-window summaries as
+    soon as matching seed/timestep artifacts exist;
+  - add a promotion-checker hook requiring an ensemble gate for production
+    nonlinear optimized-equilibrium claims.
