@@ -1017,6 +1017,34 @@ manuscript. It does **not** promote a runtime/TOML absolute-flux predictor,
 and it does not replace the nonlinear convergence requirements for future
 stellarator-optimization transport claims.
 
+Holdout-gap report
+------------------
+
+The holdout-gap report is the reviewer-facing companion to the model-selection
+status. It answers a different question: which currently tracked nonlinear
+windows are admitted, which candidate windows are excluded, and what exact
+data product is needed before absolute-flux promotion can be reconsidered?
+
+.. code-block:: bash
+
+   python tools/build_quasilinear_holdout_gap_report.py \
+     --out docs/_static/quasilinear_holdout_gap_report.png
+
+.. image:: _static/quasilinear_holdout_gap_report.png
+   :alt: Quasilinear holdout gap report and absolute-flux promotion blocker
+   :width: 100%
+
+The current report admits five holdouts and two training references, but it
+keeps ``absolute_flux_promoted = false`` because the aggregate held-out
+absolute-flux error remains about ``2.57`` against the ``0.35`` gate. The
+accepted ``spectral_envelope_ridge`` candidate remains a scoped
+model-selection result; the next useful input is a new independent,
+electrostatic-compatible nonlinear transport window with a passed
+grid/window-convergence gate and ``split = holdout`` metadata. The report
+currently identifies the external-VMEC family as the highest-leverage next
+source because an ITERModel window already passes as training data and the
+nearest tracked holdout gap is a near-miss in the same family.
+
 VMEC equilibrium portfolio for future holdouts
 ----------------------------------------------
 

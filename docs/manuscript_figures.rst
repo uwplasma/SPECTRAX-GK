@@ -40,6 +40,15 @@ conditioning, and nonlinear audits of optimized equilibria. W7-X zonal
 recurrence and TEM/kinetic-electron stellarator validation remain deferred from
 the current manuscript scope.
 
+The latest manuscript-stack additions are deliberately contract-level figures:
+``docs/_static/quasilinear_holdout_gap_report.png`` states exactly why
+absolute-flux promotion remains blocked; ``docs/_static/stellarator_objective_portfolio_gate.png``
+validates the aggregate reduced-objective reducer used before expensive
+VMEC/Boozer row production; and
+``docs/_static/parallel_decomposition_status.png`` keeps independent-work
+parallelization claims separated from diagnostic nonlinear domain-partition
+metadata.
+
 Current Vs Deferred Figure Inventory
 ------------------------------------
 

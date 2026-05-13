@@ -209,6 +209,24 @@ Quasilinear Calibration
 .. automodule:: spectraxgk.quasilinear_calibration
    :members:
 
+Quasilinear Model Selection
+---------------------------
+
+.. automodule:: spectraxgk.quasilinear_model_selection
+   :members:
+
+Parallel Decomposition Contracts
+--------------------------------
+
+.. automodule:: spectraxgk.parallel_decomposition
+   :members:
+
+Stellarator Objective Portfolios
+--------------------------------
+
+.. automodule:: spectraxgk.stellarator_objective_portfolio
+   :members:
+
 Runtime Runner
 --------------
 

@@ -28,12 +28,12 @@ page names the claim level explicitly.
 
 | Lane | Current Level | 100% Acceptance Gate | First Work Item |
 |---|---:|---|---|
-| Linear-growth stellarator optimization | 90% | Real in-memory `vmec_jax -> booz_xform_jax -> SPECTRAX-GK` optimizer, multi-surface/multi-alpha/multi-ky reduction, AD/FD checks, and branch-continuity gates. | Extend the now-public in-memory VMEC/Boozer objective path from single reduced fixtures to multi-surface/multi-alpha/multi-ky objective reductions. |
-| Quasilinear-flux stellarator optimization | 75% | Held-out nonlinear flux trends are predicted with calibrated uncertainty intervals and the failed stellarator train/holdout artifact is replaced by a passing, converged dataset. | Add converged nonlinear holdouts before fitting richer saturation rules. |
-| Nonlinear turbulent-flux stellarator optimization | 55% | Objective uses post-transient nonlinear heat-flux averages with time-window, seed, grid, and timestep convergence, not reduced envelope estimates. | Freeze the long-window averaging protocol and gate every optimized run by running-average convergence. |
-| Quasilinear manuscript plots | 78% | Every plot is regenerated from checked scripts and JSON sidecars, with failed baselines and accepted candidate scope shown honestly. | Keep the VMEC/Boozer objective figures in the reduced-objective checklist and regenerate the QL model-development stack after the holdout dataset changes. |
-| Parallelization | 87.5% broad | Nonlinear domain sharding routes the real RHS/FFT/field-solve communication and passes serial identity, conservation, transport-window, CPU/GPU speedup, and profiler gates. | Keep independent batching production; start a separate `nonlinear_domain_shard_map` path. |
-| Coverage and refactor | 95% gate, thin margin | Fresh combined wide coverage has positive margin above 95%, preferably 97%, and high-priority manifest owners are either closed or explicitly scoped. | Close high-priority owners touched by geometry/optimization split. |
+| Linear-growth stellarator optimization | 93% | Real in-memory `vmec_jax -> booz_xform_jax -> SPECTRAX-GK` optimizer, multi-surface/multi-alpha/multi-ky reduction, AD/FD checks, and branch-continuity gates. | Wire the backend-free objective portfolio reducer into the real VMEC/Boozer row-production path and gate held-out surface/alpha samples. |
+| Quasilinear-flux stellarator optimization | 78% | Held-out nonlinear flux trends are predicted with calibrated uncertainty intervals and the failed stellarator train/holdout artifact is replaced by a passing, converged dataset. | Add the next converged nonlinear holdout identified by `quasilinear_holdout_gap_report`. |
+| Nonlinear turbulent-flux stellarator optimization | 57% | Objective uses post-transient nonlinear heat-flux averages with time-window, seed, grid, and timestep convergence, not reduced envelope estimates. | Freeze the long-window averaging protocol and gate every optimized run by running-average convergence. |
+| Quasilinear manuscript plots | 86% | Every plot is regenerated from checked scripts and JSON sidecars, with failed baselines and accepted candidate scope shown honestly. | Add the next admitted nonlinear holdout and regenerate the model-selection/gap-report stack. |
+| Parallelization | 91% broad | Nonlinear domain sharding routes the real RHS/FFT/field-solve communication and passes serial identity, conservation, transport-window, CPU/GPU speedup, and profiler gates. | Keep independent batching production; use `parallel_decomposition_status` as the contract ledger while implementing real nonlinear communication routes. |
+| Coverage and refactor | 96% gate, thin margin | Fresh combined wide coverage has positive margin above 95%, preferably 97%, and high-priority manifest owners are either closed or explicitly scoped. | Close high-priority owners touched by geometry/optimization split and keep the new claim-boundary tests in the fast shard set. |
 | `spectraxgk --plot` | 100% | Keep linear/nonlinear saved-output smoke tests and docs examples green. | Maintain as release hygiene while adding manuscript plot scripts. |
 
 Immediate execution order for this tranche:
@@ -41,7 +41,8 @@ Immediate execution order for this tranche:
 1. Completed: add the in-memory VMEC/Boozer-to-flux-tube public API and solver-objective value wrappers.
 2. Completed: document that this is the required path for differentiable geometry and that NetCDF/EIK remains a runtime import path, not the optimizer path.
 3. Completed: add fast tests that validate the wrapper contract without requiring optional backends.
-4. Active next step: use the public objective path as the base for multi-surface/multi-alpha/multi-`k_y` reduced objective builders.
+4. Completed contract step: added a backend-free multi-surface/multi-alpha/multi-`k_y` objective portfolio reducer with AD/JVP/finite-difference gates.
+5. Active next step: wire that reducer around real `vmec_jax -> booz_xform_jax -> SPECTRAX-GK` row producers and add held-out surface/alpha acceptance artifacts.
 
 ### 2026-05-12 VMEC/Boozer Objective-Work Checkpoint
 
@@ -126,6 +127,47 @@ Still open:
 - Production nonlinear turbulent-flux stellarator optimization still requires
   post-transient heat-flux averages with seed, timestep, grid, and running-mean
   convergence gates.
+
+### 2026-05-13 Broad Lane Push Checkpoint
+
+Current tranche result: five parallel lane workers added claim-boundary tests,
+new contract utilities, and three publication-facing status artifacts while
+preserving the current release scope.
+
+Closed or materially advanced by this checkpoint:
+
+- Quasilinear guardrails now fail closed when calibration reports are missing
+  holdout metrics or when path wrappers receive non-path payloads. The fix
+  lives in `spectraxgk.quasilinear_model_selection` with extra fast tests.
+- `tools/build_quasilinear_holdout_gap_report.py` generates
+  `docs/_static/quasilinear_holdout_gap_report.*`, which records five admitted
+  holdouts, two training references, ten excluded candidates, four next-best
+  candidates, and the explicit blocker `2.574 > 0.35` for absolute-flux
+  promotion.
+- `spectraxgk.stellarator_objective_portfolio` adds the backend-free
+  `(surface, alpha, ky, objective)` reducer contract needed before expensive
+  VMEC/Boozer row production. Its gate passes with JVP/finite-difference error
+  `9.8e-6` below the `1.23e-4` tolerance.
+- `spectraxgk.parallel_decomposition` adds deterministic shard assignments and
+  serial reconstruction identity reports for production independent `k_y`/UQ
+  portfolios, plus explicitly diagnostic nonlinear state-domain metadata. The
+  tracked status artifact passes without making a nonlinear speedup claim.
+- Release-scope documentation now contains fast phrase tests that keep scoped
+  quasilinear model selection, deferred W7-X zonal/TEM work, and nonlinear
+  optimization audit boundaries from regressing.
+
+Still open after this checkpoint:
+
+- Absolute quasilinear flux promotion needs a new independent, converged,
+  electrostatic-compatible nonlinear holdout with `split = holdout`; the
+  external-VMEC ITERModel family is the current highest-leverage target.
+- Full stellarator optimization still needs real VMEC/Boozer row production
+  plugged into the portfolio reducer and then held-out surface/alpha gates.
+- Nonlinear production sharding still needs real RHS/FFT/field-solve routing,
+  conservation checks, transport-window gates, and profiler-backed speedup
+  artifacts.
+- Wide coverage remains above the release gate but has a thin margin; keep
+  expanding focused physics/claim-boundary tests before claiming 97%+ margin.
 
 ## Literature Anchors From Final Pass
 
