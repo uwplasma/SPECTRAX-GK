@@ -1045,6 +1045,34 @@ currently identifies the external-VMEC family as the highest-leverage next
 source because an ITERModel window already passes as training data and the
 nearest tracked holdout gap is a near-miss in the same family.
 
+External-VMEC next-holdout runbook
+----------------------------------
+
+The gap report intentionally stops at metadata ranking. The launch runbook
+turns that ranking plus the linear external-VMEC candidate screen into a
+reproducible next-run contract. It does not run simulations and does not
+promote an absolute-flux model; it records which nonlinear runs should be
+launched next, which grids and horizons should be used, and which acceptance
+gate must pass before a new point can enter the calibration set.
+
+.. code-block:: bash
+
+   python tools/build_external_vmec_holdout_runbook.py \
+     --out docs/_static/external_vmec_next_holdout_runbook.png
+
+.. image:: _static/external_vmec_next_holdout_runbook.png
+   :alt: External-VMEC nonlinear holdout launch runbook
+   :width: 100%
+
+The current runbook keeps the ITERModel near-miss as a preferred-family audit
+because that family already supplies a training reference. For independent
+holdout leverage, it selects the highest-growth unstable external-VMEC family
+that is not already represented in the train/holdout portfolio. The generated
+JSON sidecar includes replayable ``write_external_vmec_holdout_configs.py``
+commands, the recommended high-grid horizons, and the fail-closed acceptance
+requirements: ``split = holdout``, passed grid/window convergence, a
+post-transient transport window, and independence from the training reference.
+
 VMEC equilibrium portfolio for future holdouts
 ----------------------------------------------
 

@@ -326,6 +326,7 @@ def build_convergence_payload(
     payload = {
         "kind": "external_vmec_nonlinear_grid_convergence_gate",
         "case": case,
+        "passed": passed,
         "gate_index_include": False,
         "claim_level": (
             "passed_grid_convergence_candidate_for_transport_holdout"

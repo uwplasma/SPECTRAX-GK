@@ -471,6 +471,7 @@ module = "spectraxgk.quasilinear"
 path = "src/spectraxgk/quasilinear.py"
 owned_modules = [
   "spectraxgk.quasilinear_model_selection",
+  "spectraxgk.external_holdout_plan",
 ]
 owner_lane = "linear-response quasilinear weights and saturation-model diagnostics"
 status = "active"
@@ -501,6 +502,7 @@ fast_tests = [
   "tests/test_quasilinear_model_selection_extra.py",
   "tests/test_plot_quasilinear_model_selection_status.py",
   "tests/test_build_quasilinear_holdout_gap_report.py",
+  "tests/test_external_holdout_plan.py",
 ]
 artifact_paths = [
   "docs/_static/quasilinear_cyclone_spectrum.png",
@@ -514,6 +516,8 @@ artifact_paths = [
   "docs/_static/quasilinear_model_selection_status.png",
   "docs/_static/quasilinear_holdout_gap_report.json",
   "docs/_static/quasilinear_holdout_gap_report.png",
+  "docs/_static/external_vmec_next_holdout_runbook.json",
+  "docs/_static/external_vmec_next_holdout_runbook.png",
 ]
 next_tests = [
   "add at least two more converged electrostatic nonlinear holdout windows before promoting richer saturation candidates",
