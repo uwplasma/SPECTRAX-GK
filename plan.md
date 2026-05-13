@@ -5112,6 +5112,13 @@ Exit gate:
   prevents near-marginal QI branches from being promoted to expensive nonlinear
   transport validation without first closing a stronger linear/refinement
   gate.
+- Added the focused QI branch-refinement gate:
+  `tools/build_qi_branch_refinement_gate.py`,
+  `tests/test_build_qi_branch_refinement_gate.py`, and
+  `docs/_static/quasilinear_vmec_qi_seed_branch_refinement_gate.{json,png,pdf}`.
+  It passes finite-row, contiguous-positive-branch, and Krylov-consistency
+  subgates, but fails the nonlinear-launch growth subgate because
+  `max(gamma)=3.835e-3 < 0.02`.
 - Added family labels for Li383, QI, QA, non-stellarator-symmetric, purely
   toroidal, and Solovev external-VMEC candidates, plus regression coverage for
   family detection and marginal-branch fail-closed behavior.

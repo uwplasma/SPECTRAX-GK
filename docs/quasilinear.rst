@@ -1195,6 +1195,18 @@ failure rather than a physics result.
    :alt: QI seed VMEC near-marginal linear quasilinear spectrum
    :width: 100%
 
+The companion branch-refinement gate compares the same time-propagated branch
+with a Krylov check at the lowest unstable sampled mode. Finite rows,
+contiguous positive low-``ky`` support, and Krylov consistency pass, but the
+launch-growth subgate fails because ``max(gamma)≈3.8e-3`` is below the
+``0.02`` nonlinear-launch threshold. This is the intended outcome: the result
+is useful QI branch-continuation evidence, not a nonlinear transport validation
+or absolute-flux calibration point.
+
+.. image:: _static/quasilinear_vmec_qi_seed_branch_refinement_gate.png
+   :alt: QI seed branch-refinement gate
+   :width: 100%
+
 Nonlinear follow-up configs for these external VMEC candidates should be
 generated with ``tools/write_external_vmec_holdout_configs.py`` rather than by
 hand. The standard command writes matched ``48x48x32`` and ``64x64x40`` TOMLs
