@@ -25,6 +25,32 @@ ARTIFACTS = {
     "fft_axis_domain": "nonlinear_spectral_communication_identity_gate.json",
 }
 
+EXPECTED_KINDS = {
+    "independent_ky_scan": "independent_ky_scan_scaling_combined",
+    "quasilinear_uq_ensemble": "quasilinear_uq_ensemble_scaling_combined",
+    "whole_state_nonlinear_sharding": "nonlinear_sharding_strong_scaling_combined",
+    "fft_axis_domain": "nonlinear_spectral_communication_identity_gate",
+}
+
+CLAIM_SCOPE_PHRASES = {
+    "independent_ky_scan": (
+        "independent ky scan",
+        "not a nonlinear domain-decomposition speedup claim",
+    ),
+    "quasilinear_uq_ensemble": (
+        "quasilinear/uq ensemble",
+        "not a promoted absolute nonlinear heat-flux predictor",
+    ),
+    "whole_state_nonlinear_sharding": (
+        "whole-state sharding",
+        "not a production speedup claim",
+    ),
+    "fft_axis_domain": (
+        "split/reassemble layout simulation",
+        "no production routing or speedup claim",
+    ),
+}
+
 
 def _read_json(path: Path) -> dict[str, Any]:
     with path.open(encoding="utf-8") as stream:
@@ -52,9 +78,47 @@ def _best_speedups_by_backend(payload: dict[str, Any]) -> dict[str, float]:
     return best
 
 
+def _input_backends(payload: dict[str, Any]) -> list[str]:
+    inputs = payload.get("inputs", [])
+    if not isinstance(inputs, list):
+        return []
+    return sorted(
+        {
+            str(row.get("backend", "")).strip().lower()
+            for row in inputs
+            if isinstance(row, dict) and str(row.get("backend", "")).strip()
+        }
+    )
+
+
+def _source_contract(name: str, payload: dict[str, Any], *, require_cpu_gpu_inputs: bool) -> dict[str, Any]:
+    claim_scope = str(payload.get("claim_scope", ""))
+    claim_scope_lc = claim_scope.lower()
+    required_phrases = CLAIM_SCOPE_PHRASES[name]
+    missing_phrases = [phrase for phrase in required_phrases if phrase.lower() not in claim_scope_lc]
+    backends = _input_backends(payload)
+    expected_backends = ["cpu", "gpu"] if require_cpu_gpu_inputs else []
+    backend_gate_passed = not require_cpu_gpu_inputs or backends == expected_backends
+    kind = str(payload.get("kind", ""))
+    kind_gate_passed = kind == EXPECTED_KINDS[name]
+    claim_separation_passed = bool(kind_gate_passed and not missing_phrases and backend_gate_passed)
+    return {
+        "artifact_kind": kind,
+        "expected_kind": EXPECTED_KINDS[name],
+        "kind_gate_passed": kind_gate_passed,
+        "required_scope_phrases": list(required_phrases),
+        "missing_scope_phrases": missing_phrases,
+        "input_backends": backends,
+        "expected_input_backends": expected_backends,
+        "input_backend_gate_passed": backend_gate_passed,
+        "claim_separation_passed": claim_separation_passed,
+    }
+
+
 def _production_lane(name: str, payload: dict[str, Any]) -> dict[str, Any]:
     thresholds = PRODUCTION_THRESHOLDS[name]
     speedups = _best_speedups_by_backend(payload)
+    source_contract = _source_contract(name, payload, require_cpu_gpu_inputs=True)
     identity_passed = bool(payload.get("identity_passed")) and all(
         row.get("identity_gate_pass") is True for row in _rows(payload)
     )
@@ -62,11 +126,12 @@ def _production_lane(name: str, payload: dict[str, Any]) -> dict[str, Any]:
         speedups.get(backend, 0.0) >= threshold
         for backend, threshold in thresholds.items()
     )
-    passed = bool(identity_passed and threshold_passed)
+    passed = bool(identity_passed and threshold_passed and source_contract["claim_separation_passed"])
     return {
         "lane": name,
         "status": "production_closed" if passed else "open",
         "claim_level": "production_parallelization",
+        "source_contract": source_contract,
         "identity_passed": identity_passed,
         "threshold_passed": threshold_passed,
         "thresholds": thresholds,
@@ -82,15 +147,16 @@ def _production_lane(name: str, payload: dict[str, Any]) -> dict[str, Any]:
 
 def _diagnostic_nonlinear_lane(payload: dict[str, Any]) -> dict[str, Any]:
     speedups = _best_speedups_by_backend(payload)
+    source_contract = _source_contract("whole_state_nonlinear_sharding", payload, require_cpu_gpu_inputs=True)
     identity_passed = bool(payload.get("identity_passed")) and all(
         row.get("identity_gate_pass") is True for row in _rows(payload)
     )
-    claim_scope = str(payload.get("claim_scope", ""))
-    scoped = "not a production speedup claim" in claim_scope
+    passed = bool(identity_passed and source_contract["claim_separation_passed"])
     return {
         "lane": "whole_state_nonlinear_sharding",
-        "status": "diagnostic_closed_not_production" if identity_passed and scoped else "open",
+        "status": "diagnostic_closed_not_production" if passed else "open",
         "claim_level": "diagnostic_identity_and_profiler_evidence",
+        "source_contract": source_contract,
         "identity_passed": identity_passed,
         "threshold_passed": None,
         "best_speedups": speedups,
@@ -103,18 +169,18 @@ def _diagnostic_nonlinear_lane(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def _spectral_lane(payload: dict[str, Any]) -> dict[str, Any]:
+    source_contract = _source_contract("fft_axis_domain", payload, require_cpu_gpu_inputs=False)
     gate = payload.get("gate", {}) if isinstance(payload.get("gate"), dict) else {}
     identity_passed = bool(payload.get("identity_passed", gate.get("identity_passed"))) or bool(
         gate.get("identity_passed")
     )
     rows_passed = all(row.get("identity_passed") is True for row in _rows(payload))
-    claim_scope = str(payload.get("claim_scope", ""))
-    scoped = "no production routing or speedup claim" in claim_scope
-    passed = bool(identity_passed and rows_passed and scoped)
+    passed = bool(identity_passed and rows_passed and source_contract["claim_separation_passed"])
     return {
         "lane": "fft_axis_domain",
         "status": "diagnostic_identity_closed" if passed else "open",
         "claim_level": "diagnostic_communication_identity",
+        "source_contract": source_contract,
         "identity_passed": passed,
         "threshold_passed": None,
         "best_speedups": {},
@@ -144,7 +210,11 @@ def build_status(root: Path = REPO_ROOT) -> dict[str, Any]:
     overall_completion = 100.0 * (
         len(production_closed) + 0.75 * len(diagnostic_closed)
     ) / max(len(lanes), 1)
-    passed = production_completion == 100.0 and all(lane["identity_passed"] for lane in lanes)
+    passed = (
+        production_completion == 100.0
+        and all(lane["identity_passed"] for lane in lanes)
+        and all(lane["source_contract"]["claim_separation_passed"] for lane in lanes)
+    )
     return {
         "kind": "parallelization_completion_status",
         "claim_scope": (
