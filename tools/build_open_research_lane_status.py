@@ -191,6 +191,7 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
     ql_report = _read_json(root, "docs/_static/quasilinear_stellarator_train_holdout_report.json")
     ql_uq = _read_json(root, "docs/_static/quasilinear_candidate_uncertainty.json")
     ql_dataset = _read_json(root, "docs/_static/quasilinear_dataset_sufficiency.json")
+    ql_model_status = _read_json(root, "docs/_static/quasilinear_model_selection_status.json")
     circular_t250_gate = _read_json(root, "docs/_static/external_vmec_circular_t250_high_grid_convergence_gate.json")
     dshape_gate = _read_json(root, "docs/_static/external_vmec_dshape_t250_high_grid_convergence_gate.json")
     itermodel_gate = _read_json(root, "docs/_static/external_vmec_itermodel_t350_high_grid_convergence_gate.json")
@@ -229,7 +230,19 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
         if isinstance((ql_dataset or {}).get("promotion_gate", {}), dict)
         else {}
     )
-    ql_passed = bool(ql_report_passed or (ql_uq_gate.get("passed", False) and ql_dataset_gate.get("passed", False)))
+    ql_model_status_gate = (
+        (ql_model_status or {}).get("promotion_gate", {})
+        if isinstance((ql_model_status or {}).get("promotion_gate", {}), dict)
+        else {}
+    )
+    ql_passed = bool(
+        ql_report_passed
+        or (
+            ql_uq_gate.get("passed", False)
+            and ql_dataset_gate.get("passed", False)
+            and ql_model_status_gate.get("passed", False)
+        )
+    )
     circular_t250_passed = bool((circular_t250_gate or {}).get("gate_report", {}).get("passed", False))
     dshape_passed = bool((dshape_gate or {}).get("gate_report", {}).get("passed", False))
     itermodel_passed = bool((itermodel_gate or {}).get("gate_report", {}).get("passed", False))
@@ -417,13 +430,18 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
             "claim_level": (
                 "diagnostic_calibration_dataset_not_absolute_flux"
                 if not ql_passed
-                else ("calibrated_absolute_flux" if ql_report_passed else "candidate_absolute_flux_model")
+                else (
+                    "calibrated_absolute_flux"
+                    if ql_report_passed
+                    else "scoped_candidate_model_selection_not_absolute_flux"
+                )
             ),
             "primary_artifacts": [
                 "docs/_static/quasilinear_validated_calibration_inputs.json",
                 "docs/_static/quasilinear_stellarator_train_holdout_report.json",
                 "docs/_static/quasilinear_candidate_uncertainty.json",
                 "docs/_static/quasilinear_dataset_sufficiency.json",
+                "docs/_static/quasilinear_model_selection_status.json",
                 "docs/_static/external_vmec_circular_t250_high_grid_convergence_gate.json",
                 "docs/_static/external_vmec_dshape_t250_high_grid_convergence_gate.json",
                 "docs/_static/external_vmec_itermodel_t350_high_grid_convergence_gate.json",
@@ -441,6 +459,14 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
                 "uq_candidate_promotion_passed": bool(ql_uq_gate.get("passed", False)),
                 "uq_accepted_candidates": ql_uq_gate.get("accepted_candidates", []),
                 "dataset_sufficiency_promotion_passed": bool(ql_dataset_gate.get("passed", False)),
+                "model_selection_status_passed": bool(ql_model_status_gate.get("passed", False)),
+                "model_selection_candidate_mean_error": _finite_float(
+                    (ql_model_status or {})
+                    .get("metrics", {})
+                    .get("candidate_mean_abs_relative_error")
+                    if isinstance((ql_model_status or {}).get("metrics", {}), dict)
+                    else None
+                ),
                 "circular_external_vmec_t250_converged": circular_t250_passed,
                 "dshape_external_vmec_t250_converged": dshape_passed,
                 "itermodel_external_vmec_t350_converged": itermodel_passed,
