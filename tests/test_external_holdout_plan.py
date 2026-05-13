@@ -35,6 +35,19 @@ def _gap_report() -> dict:
     }
 
 
+def _gap_report_with_failed_shaped_family() -> dict:
+    report = _gap_report()
+    report["excluded_candidates"] = [
+        {
+            "case": "Shaped tokamak external VMEC nonlinear t450 high-grid convergence",
+            "geometry": "shaped_tokamak_external_vmec",
+            "gate_passed": False,
+            "status": "excluded_failed_external_gate",
+        }
+    ]
+    return report
+
+
 def test_family_detection_covers_screen_names() -> None:
     assert external_vmec_family("ITERModel_reference_nc") == "itermodel_external_vmec"
     assert external_vmec_family("DSHAPE_nc") == "dshape_external_vmec"
@@ -72,6 +85,37 @@ def test_read_external_holdout_screen_and_rank_runbook(tmp_path: Path) -> None:
     assert runbook["selected_new_family_candidate"]["status"] == "new_family_holdout_candidate"
     assert runbook["acceptance_gate"]["required_split"] == "holdout"
     assert any("write_external_vmec_holdout_configs.py" in command for command in runbook["launch_commands"])
+
+
+def test_runbook_demotes_recent_failed_external_family() -> None:
+    rows = [
+        ExternalHoldoutScreenRow(
+            case="shaped_tokamak_pressure_reference_nc",
+            vmec_file="/vmec/wout_shaped_tokamak_pressure_reference.nc",
+            returncode=0,
+            best_ky=0.47,
+            best_gamma=0.047,
+            best_omega=0.28,
+        ),
+        ExternalHoldoutScreenRow(
+            case="ITERModel_reference_nc",
+            vmec_file="/vmec/wout_ITER.nc",
+            returncode=0,
+            best_ky=0.47,
+            best_gamma=0.089,
+            best_omega=0.40,
+        ),
+    ]
+
+    runbook = build_external_holdout_runbook(
+        gap_report=_gap_report_with_failed_shaped_family(),
+        screen_rows=rows,
+    )
+
+    shaped = next(row for row in runbook["ranked_candidates"] if row["case"].startswith("shaped_tokamak"))
+    assert shaped["status"] == "recent_family_failed_external_gate"
+    assert runbook["selected_new_family_candidate"] is None
+    assert runbook["selected_preferred_family_audit"]["case"] == "ITERModel_reference_nc"
 
 
 def test_runbook_fails_closed_when_no_unstable_candidate_exists() -> None:
