@@ -439,6 +439,18 @@ transport claims.
    open until all-surface or otherwise accuracy-equivalent gates pass. This is
    still not a nonlinear-window heat-flux gradient claim.
 
+.. figure:: _static/vmec_boozer_aggregate_objective_gate.png
+   :width: 90%
+   :align: center
+   :alt: VMEC/Boozer multi-point aggregate-objective finite-difference gate
+
+   Multi-point VMEC/Boozer aggregate-objective gate. The tracked QH fixture
+   evaluates the quasilinear proxy at two resolved ``k_y`` samples using
+   ``mboz=nboz=21`` and records the aggregate finite-difference response
+   through the same in-memory VMEC/Boozer/SPECTRAX-GK value path. This closes
+   the software and artifact path for multi-``k_y`` reduced objectives; it is
+   not a nonlinear turbulent heat-flux optimization claim.
+
 .. figure:: _static/vmec_boozer_nonlinear_window_gradient_gate.png
    :width: 90%
    :align: center

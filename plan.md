@@ -4814,6 +4814,10 @@ Exit gate:
   - aggregate finite-difference gate passed with `h=1e-7`,
     central derivative `1.954731e5`, response `3.909462e-2`, and curvature
     ratio `9.455764e-3`.
+- Added `tools/build_vmec_boozer_aggregate_objective_gate.py` and generated
+  `docs/_static/vmec_boozer_aggregate_objective_gate.{json,csv,png,pdf}`.
+  The figure is now included in the stellarator-optimization docs and the
+  artifact/test pair is tracked in the validation coverage manifest.
 - Next best scientific steps:
   - build a tracked artifact for the aggregate gate on the QH warm-start case
     with `mboz=nboz=21`, at least two field lines or surfaces, and at least
