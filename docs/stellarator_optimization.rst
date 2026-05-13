@@ -44,6 +44,8 @@ Source Map
   :func:`spectraxgk.vmec_boozer_scalar_objective_line_search_report`
 - Multi-point curvature-gated one-parameter line search:
   :func:`spectraxgk.vmec_boozer_aggregate_scalar_objective_line_search_report`
+- Held-out aggregate line-search validation:
+  :func:`spectraxgk.vmec_boozer_aggregate_line_search_holdout_report`
 - Fast branch-continuity and sensitivity gate:
   :func:`spectraxgk.solver_objective_branch_gradient_report`
 - Tests: ``tests/test_stellarator_optimization.py``
@@ -135,6 +137,14 @@ coefficient update and records the same sample metadata as the aggregate gate.
 This is now the preferred scaffold for growth-rate and quasilinear-flux
 optimization studies that need more than one field line, surface, or ``k_y``
 point before entering a full optimizer loop.
+
+Training improvement is not enough for a geometry-wide claim.
+``vmec_boozer_aggregate_line_search_holdout_report`` runs the same aggregate
+line-search on a training sample set, then evaluates the final coefficient
+offset on a disjoint held-out sample set. The split gate passes only if both
+the training line-search gate and held-out aggregate reduction pass. This is
+the minimum reduced-objective validation step before using an optimized VMEC
+coefficient in manuscript figures.
 
 Objective
 ---------

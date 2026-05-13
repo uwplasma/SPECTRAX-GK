@@ -34,6 +34,7 @@ from spectraxgk.solver_objective_gradients import (
     solver_scalar_objective_from_vector,
     solver_ready_geometry_mapping,
     tiny_differentiable_objective_gradient_report,
+    vmec_boozer_aggregate_line_search_holdout_report,
     vmec_boozer_aggregate_scalar_objective_finite_difference_report,
     vmec_boozer_aggregate_scalar_objective_from_state,
     vmec_boozer_aggregate_scalar_objective_line_search_report,
@@ -603,6 +604,98 @@ def test_vmec_boozer_aggregate_scalar_objective_line_search_report_fails_closed(
         vmec_boozer_aggregate_scalar_objective_line_search_report(update_step=0.0)
     with pytest.raises(ValueError, match="min_improvement"):
         vmec_boozer_aggregate_scalar_objective_line_search_report(min_improvement=-1.0)
+
+
+def test_vmec_boozer_aggregate_line_search_holdout_report_passes_split(
+    monkeypatch,
+) -> None:
+    calls: list[tuple[float, tuple[int, ...]]] = []
+
+    def fake_line_search(**kwargs):  # noqa: ANN003, ANN202
+        return {
+            "passed": True,
+            "initial_objective": 2.0,
+            "final_objective": 1.9,
+            "relative_reduction": 0.05,
+            "final_delta": -0.1,
+            "samples": [{"selected_ky_index": 1}],
+        }
+
+    def fake_fd_report(**kwargs):  # noqa: ANN003, ANN202
+        delta = float(kwargs.get("base_delta", 0.0))
+        ky = tuple(int(item) for item in kwargs.get("selected_ky_indices", ()))
+        calls.append((delta, ky))
+        return {
+            "passed": True,
+            "base_value": 1.0 + 0.5 * delta,
+            "central_derivative": 0.5,
+            "curvature_ratio": 0.0,
+            "samples": [{"selected_ky_index": ky[0] if ky else 0}],
+        }
+
+    monkeypatch.setattr(sog, "vmec_boozer_aggregate_scalar_objective_line_search_report", fake_line_search)
+    monkeypatch.setattr(
+        sog,
+        "vmec_boozer_aggregate_scalar_objective_finite_difference_report",
+        fake_fd_report,
+    )
+
+    report = vmec_boozer_aggregate_line_search_holdout_report(
+        objective="quasilinear_flux",
+        training_selected_ky_indices=[1],
+        holdout_selected_ky_indices=[2],
+        min_holdout_improvement=0.01,
+    )
+
+    assert spectraxgk.vmec_boozer_aggregate_line_search_holdout_report is (
+        vmec_boozer_aggregate_line_search_holdout_report
+    )
+    assert report["passed"] is True
+    assert report["training_passed"] is True
+    assert report["heldout_passed"] is True
+    assert report["heldout_initial_objective"] == pytest.approx(1.0)
+    assert report["heldout_final_objective"] == pytest.approx(0.95)
+    assert report["heldout_relative_reduction"] == pytest.approx(0.05)
+    assert calls == [(0.0, (2,)), (-0.1, (2,))]
+
+
+def test_vmec_boozer_aggregate_line_search_holdout_report_fails_closed(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(
+        sog,
+        "vmec_boozer_aggregate_scalar_objective_line_search_report",
+        lambda **_kwargs: {
+            "passed": True,
+            "initial_objective": 2.0,
+            "final_objective": 1.9,
+            "relative_reduction": 0.05,
+            "final_delta": 0.1,
+            "samples": [],
+        },
+    )
+    monkeypatch.setattr(
+        sog,
+        "vmec_boozer_aggregate_scalar_objective_finite_difference_report",
+        lambda **kwargs: {
+            "passed": True,
+            "base_value": 1.0 + float(kwargs.get("base_delta", 0.0)),
+            "central_derivative": 1.0,
+            "curvature_ratio": 0.0,
+            "samples": [],
+        },
+    )
+
+    report = vmec_boozer_aggregate_line_search_holdout_report(
+        training_selected_ky_indices=[1],
+        holdout_selected_ky_indices=[2],
+    )
+
+    assert report["passed"] is False
+    assert report["training_passed"] is True
+    assert report["heldout_passed"] is False
+    with pytest.raises(ValueError, match="min_holdout_improvement"):
+        vmec_boozer_aggregate_line_search_holdout_report(min_holdout_improvement=-1.0)
 
 
 def test_vmec_boozer_scalar_objective_line_search_report_accepts_safe_updates(
