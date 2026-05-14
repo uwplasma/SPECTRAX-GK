@@ -9,12 +9,18 @@
         "accepted_uq_candidates": [
           "spectral_envelope_ridge"
         ],
+        "circular_replicate_combined_sem_rel": 0.04283952221624353,
+        "circular_replicate_mean_rel_spread": 0.035473869975602645,
+        "circular_replicate_passed": true,
         "dataset_blockers": [],
         "dataset_current_total_cases": 8,
         "dataset_current_train_geometries": 2,
         "dataset_min_total_cases": 6,
         "dataset_min_train_geometries": 2,
         "dataset_sufficiency_promotion_passed": true,
+        "dshape_replicate_combined_sem_rel": 0.05360630620607054,
+        "dshape_replicate_mean_rel_spread": 0.14102885109482344,
+        "dshape_replicate_passed": true,
         "holdout_mean_abs_relative_error": 2.114098664675138,
         "holdout_points": 6,
         "model_selection_candidate_mean_error": 0.29524327596674427,
@@ -38,7 +44,9 @@
         "docs/_static/quasilinear_candidate_uncertainty.json",
         "docs/_static/quasilinear_dataset_sufficiency.json",
         "docs/_static/quasilinear_model_selection_status.json",
-        "docs/_static/quasilinear_promotion_guardrails.json"
+        "docs/_static/quasilinear_promotion_guardrails.json",
+        "docs/_static/external_vmec_dshape_replicates/dshape_replicate_t250_ensemble_gate.json",
+        "docs/_static/external_vmec_circular_replicates/circular_replicate_t700_ensemble_gate.json"
       ],
       "status": "closed"
     },

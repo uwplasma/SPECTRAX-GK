@@ -193,7 +193,15 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
     ql_dataset = _read_json(root, "docs/_static/quasilinear_dataset_sufficiency.json")
     ql_model_status = _read_json(root, "docs/_static/quasilinear_model_selection_status.json")
     circular_t250_gate = _read_json(root, "docs/_static/external_vmec_circular_t250_high_grid_convergence_gate.json")
+    circular_t700_replicate = _read_json(
+        root,
+        "docs/_static/external_vmec_circular_replicates/circular_replicate_t700_ensemble_gate.json",
+    )
     dshape_gate = _read_json(root, "docs/_static/external_vmec_dshape_t250_high_grid_convergence_gate.json")
+    dshape_replicate = _read_json(
+        root,
+        "docs/_static/external_vmec_dshape_replicates/dshape_replicate_t250_ensemble_gate.json",
+    )
     itermodel_gate = _read_json(root, "docs/_static/external_vmec_itermodel_t350_high_grid_convergence_gate.json")
     updown_gate = _read_json(root, "docs/_static/external_vmec_updown_asym_t450_high_grid_convergence_gate.json")
     qh_gate = _read_json(root, "docs/_static/external_vmec_qh_grid_convergence_gate.json")
@@ -244,7 +252,9 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
         )
     )
     circular_t250_passed = bool((circular_t250_gate or {}).get("gate_report", {}).get("passed", False))
+    circular_t700_replicate_passed = bool((circular_t700_replicate or {}).get("passed", False))
     dshape_passed = bool((dshape_gate or {}).get("gate_report", {}).get("passed", False))
+    dshape_replicate_passed = bool((dshape_replicate or {}).get("passed", False))
     itermodel_passed = bool((itermodel_gate or {}).get("gate_report", {}).get("passed", False))
     updown_passed = bool((updown_gate or {}).get("gate_report", {}).get("passed", False))
     qh_passed = bool((qh_gate or {}).get("gate_report", {}).get("passed", False))
@@ -443,7 +453,9 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
                 "docs/_static/quasilinear_dataset_sufficiency.json",
                 "docs/_static/quasilinear_model_selection_status.json",
                 "docs/_static/external_vmec_circular_t250_high_grid_convergence_gate.json",
+                "docs/_static/external_vmec_circular_replicates/circular_replicate_t700_ensemble_gate.json",
                 "docs/_static/external_vmec_dshape_t250_high_grid_convergence_gate.json",
+                "docs/_static/external_vmec_dshape_replicates/dshape_replicate_t250_ensemble_gate.json",
                 "docs/_static/external_vmec_itermodel_t350_high_grid_convergence_gate.json",
                 "docs/_static/external_vmec_updown_asym_t450_high_grid_convergence_gate.json",
                 "docs/_static/external_vmec_qh_grid_convergence_gate.json",
@@ -468,7 +480,29 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
                     else None
                 ),
                 "circular_external_vmec_t250_converged": circular_t250_passed,
+                "circular_external_vmec_t700_replicated": circular_t700_replicate_passed,
+                "circular_external_vmec_t700_replicate_mean_rel_spread": _finite_float(
+                    (circular_t700_replicate or {}).get("statistics", {}).get("mean_rel_spread")
+                    if isinstance((circular_t700_replicate or {}).get("statistics", {}), dict)
+                    else None
+                ),
+                "circular_external_vmec_t700_replicate_sem_rel": _finite_float(
+                    (circular_t700_replicate or {}).get("statistics", {}).get("combined_sem_rel")
+                    if isinstance((circular_t700_replicate or {}).get("statistics", {}), dict)
+                    else None
+                ),
                 "dshape_external_vmec_t250_converged": dshape_passed,
+                "dshape_external_vmec_t250_replicated": dshape_replicate_passed,
+                "dshape_external_vmec_t250_replicate_mean_rel_spread": _finite_float(
+                    (dshape_replicate or {}).get("statistics", {}).get("mean_rel_spread")
+                    if isinstance((dshape_replicate or {}).get("statistics", {}), dict)
+                    else None
+                ),
+                "dshape_external_vmec_t250_replicate_sem_rel": _finite_float(
+                    (dshape_replicate or {}).get("statistics", {}).get("combined_sem_rel")
+                    if isinstance((dshape_replicate or {}).get("statistics", {}), dict)
+                    else None
+                ),
                 "itermodel_external_vmec_t350_converged": itermodel_passed,
                 "updown_asym_external_vmec_t450_converged": updown_passed,
                 "qh_external_vmec_low_to_mid_grid_converged": qh_passed,
@@ -479,9 +513,9 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
                 "Document the accepted richer candidate with scoped wording and keep circular, QH, and CTH-like "
                 "excluded until their common-window and grid-refinement gates pass."
                 if ql_passed
-                else "Use the admitted D-shaped tokamak, ITERModel, and up-down asymmetric external-VMEC holdouts as "
-                "negative transfer constraints while developing richer saturation models; keep circular, QH, and "
-                "CTH-like excluded until their common-window and grid-refinement gates pass."
+                else "Use the admitted D-shaped, circular, ITERModel, and up-down asymmetric external-VMEC holdouts as "
+                "negative transfer constraints while developing richer saturation models; keep QH and CTH-like excluded "
+                "until their common-window and grid-refinement gates pass."
             ),
         },
         {
@@ -650,7 +684,18 @@ def write_status_artifacts(payload: dict[str, Any], *, out_png: Path = DEFAULT_O
         elif lane["lane"].startswith("W7-X fluctuation"):
             metric = f"samples: {key_metrics.get('time_samples')}"
         elif lane["lane"].startswith("Nonlinear holdouts"):
-            metric = f"holdouts: {key_metrics.get('holdout_points')}, promoted: {key_metrics.get('calibration_report_passed')}"
+            replicated = sum(
+                1
+                for key in (
+                    "dshape_external_vmec_t250_replicated",
+                    "circular_external_vmec_t700_replicated",
+                )
+                if key_metrics.get(key)
+            )
+            metric = (
+                f"holdouts: {key_metrics.get('holdout_points')}, replicated: {replicated}, "
+                f"promoted: {key_metrics.get('calibration_report_passed')}"
+            )
         elif lane["lane"].startswith("vmec_jax"):
             field_line_abs = key_metrics.get("vmec_field_line_tensor_max_abs_ad_fd_error")
             flux_tube_rel = key_metrics.get("vmec_tensor_flux_tube_max_rel_ad_fd_error")

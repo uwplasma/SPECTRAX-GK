@@ -29,11 +29,11 @@ page names the claim level explicitly.
 | Lane | Current Level | 100% Acceptance Gate | First Work Item |
 |---|---:|---|---|
 | Linear-growth stellarator optimization | 98% | Real in-memory `vmec_jax -> booz_xform_jax -> SPECTRAX-GK` optimizer, multi-surface/multi-alpha/multi-ky reduction, AD/FD checks, and branch-continuity gates. | Repeat the reduced portfolio guard on selected held-out surface/alpha artifacts before broad manuscript promotion. |
-| Quasilinear-flux stellarator optimization | 98% reduced-scope | Held-out nonlinear flux trends are predicted with calibrated uncertainty intervals and the failed stellarator train/holdout artifact is replaced by a passing, converged dataset. | Reduced VMEC/Boozer row provenance is now closed; absolute-flux promotion still requires replicated nonlinear holdouts. |
-| Nonlinear turbulent-flux stellarator optimization | 85% evidence plumbing | Objective uses post-transient nonlinear heat-flux averages with time-window, seed, grid, and timestep convergence, not reduced envelope estimates. | Run the missing seed/timestep replicate nonlinear windows and fix the ITERModel terminal-window convergence failure before promotion. |
+| Quasilinear-flux stellarator optimization | 99% model-development scope | Held-out nonlinear flux trends are predicted with calibrated uncertainty intervals and the failed stellarator train/holdout artifact is replaced by a passing, converged dataset. | DSHAPE and circular now have replicated nonlinear-window evidence; absolute-flux promotion still requires a richer model that beats the null/one-constant baselines on held-out nonlinear data. |
+| Nonlinear turbulent-flux stellarator optimization | 94% evidence plumbing | Objective uses post-transient nonlinear heat-flux averages with time-window, seed, grid, and timestep convergence, not reduced envelope estimates. | Two independent external-VMEC seed/timestep gates are closed; production nonlinear optimization remains blocked until the optimizer objective uses these long post-transient averages rather than startup/reduced-window estimators. |
 | Quasilinear manuscript plots | 100% scoped | Every plot is regenerated from checked scripts and JSON sidecars, with failed baselines and accepted candidate scope shown honestly. | Keep runtime absolute-flux claims blocked until a future calibrated model passes the guardrail. |
 | Parallelization | 95% broad / 100% independent-work | Nonlinear domain sharding routes the real RHS/FFT/field-solve communication and passes serial identity, conservation, transport-window, CPU/GPU speedup, and profiler gates. | Independent `k_y`, UQ, and optimization ensembles are production-closed; nonlinear domain decomposition remains diagnostic pending production RHS routing and profiler-backed speedup. |
-| Coverage and refactor | 98% gate | Fresh combined wide coverage has positive margin above 95%, preferably 97%, and high-priority manifest owners are either closed or explicitly scoped. | Keep the manifest drift guard in CI and rerun wide coverage after the next large source split. |
+| Coverage and refactor | 99% gate | Fresh combined wide coverage has positive margin above 95%, preferably 97%, and high-priority manifest owners are either closed or explicitly scoped. | Latest public CI for `a00d19e` is green; keep the manifest drift guard in CI and rerun wide coverage after the next large source split. |
 | `spectraxgk --plot` | 100% | Keep linear/nonlinear saved-output smoke tests and docs examples green. | Maintain as release hygiene while adding manuscript plot scripts. |
 
 Immediate execution order for this tranche:
@@ -5715,3 +5715,22 @@ Exit gate:
   - run Sphinx, repository-size, validation-manifest, quasilinear guardrails,
     focused tests, and diff checks;
   - commit and push the accepted circular replicate documentation and artifacts.
+
+### 2026-05-14 CI Green and Status Dashboard Refresh
+
+- CI/CD:
+  - GitHub Actions run `25852322368` for commit `a00d19e`
+    (`Promote circular replicate holdout evidence`) passed all `60` jobs;
+  - the previous cancelled runs were superseded by later pushes and are not
+    current-head failures.
+- Plan status:
+  - updated the execution board to reflect that DSHAPE and circular are now
+    replicated external-VMEC nonlinear-window holdouts;
+  - kept the absolute-flux and production nonlinear-optimization claims blocked
+    because the calibrated quasilinear predictor is still rejected and the
+    nonlinear optimizer examples still use reduced/startup windows rather than
+    production long-time turbulent averages.
+- Immediate next step:
+  - refresh `open_research_lane_status` and `manuscript_readiness_status` so
+    the machine-readable dashboards include the accepted circular and DSHAPE
+    replicate gates.
