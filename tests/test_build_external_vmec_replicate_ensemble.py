@@ -75,8 +75,12 @@ def test_replicate_ensemble_tool_builds_trace_reports_and_plot(tmp_path: Path) -
     assert rc == 0
     readiness = json.loads((out_dir / "replicate_ensemble_readiness.json").read_text())
     ensemble = json.loads((out_dir / "replicate_ensemble_gate.json").read_text())
+    summary = json.loads(
+        (out_dir / "demo_nonlinear_t100_n64_seed31_transport_window.json").read_text()
+    )
     assert readiness["passed"] is True
     assert ensemble["passed"] is True
+    assert summary["nonlinear_artifact"] == "demo_nonlinear_t100_n64_seed31.out.nc"
     assert len(list(out_dir.glob("*_heat_flux_trace.csv"))) == 3
     assert (out_dir / "replicate_ensemble_gate.png").exists()
     assert (
