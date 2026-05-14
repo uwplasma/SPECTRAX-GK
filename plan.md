@@ -5632,3 +5632,28 @@ Exit gate:
 - Immediate next step:
   - run Sphinx, repository-size, validation-manifest, and quasilinear guardrail
     checks; then commit and push the documentation/artifact promotion.
+
+### 2026-05-14 Replicate Extraction Tooling
+
+- Added `tools/build_external_vmec_replicate_ensemble.py` so future
+  external-VMEC seed/timestep campaigns are reproducible from finished
+  `*.out.nc` files:
+  - extracts `Grids/time` and `Diagnostics/HeatFlux_st`;
+  - writes heat-flux trace CSVs and transport-window summaries;
+  - writes per-replicate nonlinear-window convergence reports;
+  - writes the readiness manifest and final ensemble gate;
+  - creates the two-panel trace plus late-window uncertainty figure used in
+    README/docs/manuscript ledgers.
+- Added a synthetic NetCDF regression test,
+  `tests/test_build_external_vmec_replicate_ensemble.py`, to make sure the tool
+  reconstructs seed and timestep variants, emits portable artifact provenance,
+  and passes the readiness/ensemble gates on stable traces.
+- Local checks:
+  - `python -m pytest tests/test_build_external_vmec_replicate_ensemble.py -q`
+    passed;
+  - `ruff`, `py_compile`, and `git diff --check` passed.
+- Immediate next step:
+  - commit and push this tooling;
+  - use it on the next independent converged holdout, with circular `t=450`
+    preferred over ITERModel because ITERModel is already consumed by the
+    current training reference.
