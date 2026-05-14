@@ -1231,7 +1231,12 @@ for a ``t = 150`` initial run and a ``t = 250`` restart continuation, plus a
 JSON manifest containing the launch commands and restart-copy commands. This
 keeps every candidate on the same ITG/adiabatic-electron physics, dissipation,
 sampling, and output convention before the convergence gate decides whether
-the case is admissible.
+the case is admissible. The next promotion step is replicated nonlinear
+transport evidence: use ``--seed-variant`` for distinct randomized initial
+conditions and ``--dt-variant`` for fixed-step sensitivity checks. The generated
+TOMLs carry explicit seed/timestep metadata so
+``tools/check_nonlinear_window_ensemble_readiness.py`` can fail closed until
+each admitted case has at least two passed seed and timestep windows.
 
 .. image:: _static/quasilinear_vmec_dshape_linear_spectrum.png
    :alt: External D-shaped tokamak VMEC linear quasilinear feasibility spectrum
