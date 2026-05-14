@@ -5511,3 +5511,13 @@ Exit gate:
   - if the next run still misses 95%, add one more manifest-listed tranche in
     `stellarator_objective_portfolio.py` or `benchmarks.py`, not a threshold
     relaxation.
+- Follow-up result:
+  - CI for `db8f830` improved the exact wide-coverage gate to
+    `94.98% < 95.00%` (`TOTAL 19622 stmts, 986 miss`), leaving only a
+    five-line deficit;
+  - added fused Hermite electrostatic-slice pre-mesh validation tests covering
+    invalid chunk count, non-divisible Hermite dimension, and unsupported
+    non-Hermite active axes;
+  - local focused checks pass (`22 passed` across the linear-parallel and
+    validation-manifest subset), along with `ruff`, `git diff --check`,
+    validation manifest, and repository-size gate.
