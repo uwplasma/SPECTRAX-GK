@@ -108,6 +108,12 @@ def _artifact_path(path: Path, *, out_dir: Path, artifact_prefix: str | None) ->
     return _repo_relative(path)
 
 
+def _output_artifact(path: Path, *, out_dir: Path, artifact_prefix: str | None) -> str:
+    if path.resolve().is_relative_to(out_dir.resolve()):
+        return _artifact_path(path, out_dir=out_dir, artifact_prefix=artifact_prefix)
+    return path.name if artifact_prefix else path.as_posix()
+
+
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -293,7 +299,11 @@ def main(argv: list[str] | None = None) -> int:
         _write_trace(trace_path, time, heat_flux)
         summary_artifact = _artifact_path(summary_path, out_dir=out_dir, artifact_prefix=args.artifact_prefix)
         trace_artifact = _artifact_path(trace_path, out_dir=out_dir, artifact_prefix=args.artifact_prefix)
-        output_artifact = _artifact_path(output, out_dir=out_dir, artifact_prefix=args.artifact_prefix) if output.resolve().is_relative_to(out_dir.resolve()) else output.as_posix()
+        output_artifact = _output_artifact(
+            output,
+            out_dir=out_dir,
+            artifact_prefix=args.artifact_prefix,
+        )
         summary = {
             "kind": "nonlinear_window_summary",
             "case": str(args.case),
