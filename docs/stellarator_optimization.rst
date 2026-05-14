@@ -753,6 +753,29 @@ the following pass:
         --case optimized_equilibrium_post_optimization \
         --out-dir tools_out/optimized_equilibrium_replicates
 
+   The current QA ``vmec_jax`` optimized-equilibrium candidate has also been
+   screened through the SPECTRAX-GK linear/quasilinear runtime before launching
+   the large nonlinear campaign. On the sampled ITG branch
+   ``k_y rho_i = 0.095, 0.190, 0.300, 0.476, 0.667``, all fitted growth rates
+   are negative, with the least damped point at ``gamma≈-0.015``. The
+   quasilinear mixing-length diagnostic therefore reports zero saturated heat
+   flux because stable modes are excluded by the current growth-floor rule. The
+   next nonlinear audit for this candidate should be interpreted as a
+   low-flux/stability replicated transport-window check, not as an unstable
+   turbulent saturation run.
+
+.. figure:: _static/optimized_equilibrium_linear_screen.png
+   :width: 90%
+   :align: center
+   :alt: Optimized QA equilibrium linear and quasilinear screen
+
+   Linear/quasilinear screen for the QA optimized-equilibrium candidate from
+   ``vmec_jax``. The sampled ITG branch is linearly damped across the scan, so
+   the uncalibrated quasilinear heat-flux estimate is zero under the stable-mode
+   exclusion rule. This is pre-launch evidence for the production nonlinear
+   replicated transport-window audit; it does not by itself promote an
+   optimized-equilibrium nonlinear heat-flux claim.
+
 .. figure:: _static/production_nonlinear_optimization_guard.png
    :width: 90%
    :align: center
