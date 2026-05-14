@@ -5678,3 +5678,40 @@ Exit gate:
   - continue monitoring the office circular external-VMEC seed/timestep
     replicate campaign and only promote the generated figure if the readiness
     and ensemble gates pass.
+
+### 2026-05-14 Circular External-VMEC Replicate Closure
+
+- Office circular replicate campaign:
+  - ran three ``64x64x40`` circular external-VMEC nonlinear replicas from the
+    same configuration family:
+    seed ``31``/``dt=0.05``, seed ``32``/``dt=0.05``, and seed ``22``/``dt=0.04``;
+  - the initial ``t=150`` late-window means were finite and consistent
+    (about ``17.0`` to ``17.5``);
+  - the ``t=450`` ensemble had small seed/timestep spread but failed readiness
+    because seed ``31`` still had terminal-window drift
+    (terminal mean relative delta ``0.199`` against the ``0.15`` gate);
+  - extended the same three replicas to ``t=700`` rather than relaxing the
+    gate.
+- Accepted transport-window result:
+  - accepted late window: ``t=[350,700]``;
+  - ensemble mean heat flux: ``18.97``;
+  - mean relative spread: ``0.035`` against the ``0.15`` gate;
+  - combined SEM/mean: ``0.043`` against the ``0.25`` gate;
+  - readiness and ensemble gates both pass.
+- Documentation/release hygiene:
+  - copied only small evidence artifacts under
+    ``docs/_static/external_vmec_circular_replicates/``;
+  - kept large ``*.out.nc``, ``*.big.nc``, and ``*.restart.nc`` files on
+    ``office``/artifact storage only;
+  - updated README, quasilinear docs, release-scope docs, manuscript figure
+    ledger, and validation coverage manifest.
+- Claim boundary:
+  - this closes a second independent external-VMEC replicated nonlinear-window
+    holdout for quasilinear model-development evidence;
+  - it still does not promote the rejected one-constant quasilinear
+    absolute-flux model, production nonlinear heat-flux stellarator
+    optimization, W7-X zonal closure, or TEM validation claims.
+- Immediate next step:
+  - run Sphinx, repository-size, validation-manifest, quasilinear guardrails,
+    focused tests, and diff checks;
+  - commit and push the accepted circular replicate documentation and artifacts.

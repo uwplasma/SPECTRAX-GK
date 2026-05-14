@@ -570,6 +570,23 @@ model to an absolute saturated-flux predictor.
    :alt: D-shaped external-VMEC nonlinear heat-flux replicate gate
    :width: 100%
 
+The next independent external-VMEC replicate campaign uses the admitted
+circular tokamak holdout. The first ``t=450`` pass was intentionally not
+promoted even though the seed/timestep ensemble spread was small
+(``mean_rel_spread≈0.076``): seed ``31`` failed terminal-window agreement
+(``0.199`` against the ``0.15`` gate), showing that the late-time heat flux
+was still drifting. Extending the same three replicas to ``t=700`` and using
+the later ``t=[350,700]`` window closes the readiness and ensemble gates
+without relaxing thresholds. The accepted means are consistent across seed
+and timestep variants, with ensemble mean ``18.97``, mean-relative spread
+``0.035``, and combined SEM/mean ``0.043``. This is the circular holdout's
+replicated nonlinear-window artifact; the failed ``t=450`` readiness result is
+retained as convergence-history evidence rather than a promoted figure.
+
+.. image:: _static/external_vmec_circular_replicates/circular_replicate_t700_ensemble_gate.png
+   :alt: Circular external-VMEC nonlinear heat-flux replicate gate
+   :width: 100%
+
 The report builder is intentionally strict. Every point in one report must use
 the report's named ``saturation_rule``; predicted fluxes, observed nonlinear
 window means, and optional window standard deviations must be finite; and
@@ -1317,6 +1334,10 @@ as useful convergence-history artifacts.
    :alt: External circular tokamak VMEC nonlinear t450 high-grid convergence gate
    :width: 100%
 
+.. image:: _static/external_vmec_circular_replicates/circular_replicate_t700_ensemble_gate.png
+   :alt: External circular tokamak VMEC seed/timestep replicate gate
+   :width: 100%
+
 The shaped-tokamak pressure candidate was then run through the same
 ``48x48x32`` / ``64x64x40`` ladder to ``t = 450``. This is a scientifically
 useful negative result rather than a calibration point. Both traces are finite
@@ -1505,10 +1526,11 @@ The nonlinear time-horizon audit below is a guardrail for the manuscript and
 documentation. It classifies archived heat-flux artifacts by their actual time
 coverage and claim level. The long matched nonlinear gates for Cyclone,
 Cyclone Miller, KBM, W7-X, and HSX pass the current release comparison
-envelopes. D-shaped tokamak now passes the external-VMEC ``t = 250`` high-grid
-convergence gate and is ready for calibration-report admission. The QH and
-CTH-like external-VMEC traces are long feasibility pilots that still need
-convergence gates. The compact finite-difference audits
+envelopes. D-shaped tokamak passes the external-VMEC ``t = 250`` high-grid
+convergence and replicated seed/timestep gates, while circular tokamak passes
+the external-VMEC ``t = 450`` high-grid gate and the longer ``t = 700``
+replicated seed/timestep gate. The QH and CTH-like external-VMEC traces are
+long feasibility pilots that still need convergence gates. The compact finite-difference audits
 remain startup plumbing checks, and the differentiable nonlinear-window
 optimization examples remain reduced-envelope estimators rather than production
 nonlinear transport averages.

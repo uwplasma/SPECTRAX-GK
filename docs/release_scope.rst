@@ -154,6 +154,7 @@ README claims, or manuscript claims.
        ``quasilinear_validated_calibration_inputs.*``,
        ``quasilinear_stellarator_train_holdout.*``,
        ``external_vmec_dshape_replicates/dshape_replicate_t250_ensemble_gate.*``,
+       ``external_vmec_circular_replicates/circular_replicate_t700_ensemble_gate.*``,
        ``quasilinear_saturation_rule_sweep.*``,
        ``quasilinear_candidate_uncertainty.*``, and
        ``quasilinear_dataset_sufficiency.*``
