@@ -168,6 +168,14 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
     ql_guardrails = _read_json(
         root, "docs/_static/quasilinear_promotion_guardrails.json"
     )
+    dshape_replicate = _read_json(
+        root,
+        "docs/_static/external_vmec_dshape_replicates/dshape_replicate_t250_ensemble_gate.json",
+    )
+    circular_replicate = _read_json(
+        root,
+        "docs/_static/external_vmec_circular_replicates/circular_replicate_t700_ensemble_gate.json",
+    )
     geom = _read_json(root, "docs/_static/differentiable_geometry_bridge.json")
     geom_matrix = _read_json(root, "docs/_static/vmec_boozer_parity_matrix.json")
     opt = _read_json(root, "docs/_static/stellarator_itg_optimization_comparison.json")
@@ -250,6 +258,16 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
     ql_dataset_requirements = (
         (ql_dataset or {}).get("requirements", {})
         if isinstance((ql_dataset or {}).get("requirements", {}), dict)
+        else {}
+    )
+    dshape_replicate_stats = (
+        (dshape_replicate or {}).get("statistics", {})
+        if isinstance((dshape_replicate or {}).get("statistics", {}), dict)
+        else {}
+    )
+    circular_replicate_stats = (
+        (circular_replicate or {}).get("statistics", {})
+        if isinstance((circular_replicate or {}).get("statistics", {}), dict)
         else {}
     )
     ql_negative_closed = bool(
@@ -444,6 +462,8 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                 "docs/_static/quasilinear_dataset_sufficiency.json",
                 "docs/_static/quasilinear_model_selection_status.json",
                 "docs/_static/quasilinear_promotion_guardrails.json",
+                "docs/_static/external_vmec_dshape_replicates/dshape_replicate_t250_ensemble_gate.json",
+                "docs/_static/external_vmec_circular_replicates/circular_replicate_t700_ensemble_gate.json",
             ],
             "key_metrics": {
                 "validated_inputs_passed": ql_inputs_passed,
@@ -495,6 +515,20 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                 "dataset_blockers": ql_dataset_gate.get("blockers", []),
                 "null_training_mean_error": _finite_float(
                     ql_uq_gate.get("null_training_mean_mean_abs_relative_error")
+                ),
+                "dshape_replicate_passed": bool((dshape_replicate or {}).get("passed", False)),
+                "dshape_replicate_mean_rel_spread": _finite_float(
+                    dshape_replicate_stats.get("mean_rel_spread")
+                ),
+                "dshape_replicate_combined_sem_rel": _finite_float(
+                    dshape_replicate_stats.get("combined_sem_rel")
+                ),
+                "circular_replicate_passed": bool((circular_replicate or {}).get("passed", False)),
+                "circular_replicate_mean_rel_spread": _finite_float(
+                    circular_replicate_stats.get("mean_rel_spread")
+                ),
+                "circular_replicate_combined_sem_rel": _finite_float(
+                    circular_replicate_stats.get("combined_sem_rel")
                 ),
             },
             "next_action": (
@@ -843,9 +877,15 @@ def write_manuscript_readiness_artifacts(
         metric = ""
         km = lane.get("key_metrics", {})
         if str(lane["lane"]).startswith("Quasilinear"):
+            replicated = sum(
+                1
+                for key in ("dshape_replicate_passed", "circular_replicate_passed")
+                if km.get(key)
+            )
             metric = (
                 f"dataset: {km.get('dataset_current_total_cases')}/{km.get('dataset_min_total_cases')}; "
                 f"holdouts: {km.get('holdout_points')}; "
+                f"replicated: {replicated}; "
                 f"absolute flux promoted: {km.get('absolute_flux_promoted')}"
             )
         elif str(lane["lane"]).startswith("VMEC/Boozer"):
