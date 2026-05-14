@@ -15,7 +15,7 @@ import argparse
 from dataclasses import dataclass
 import json
 from pathlib import Path
-from typing import Iterable
+from typing import Any, Iterable
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -399,11 +399,14 @@ def write_manifest(out_dir: Path, written: list[WrittenConfig]) -> Path:
     """Write launch and restart-copy commands next to generated configs."""
 
     previous_by_grid: dict[tuple[str, str], WrittenConfig] = {}
-    manifest: dict[str, object] = {
+    configs: list[dict[str, Any]] = []
+    launch_commands: list[str] = []
+    restart_seed_commands: list[str] = []
+    manifest: dict[str, Any] = {
         "kind": "external_vmec_holdout_config_manifest",
-        "configs": [],
-        "launch_commands": [],
-        "restart_seed_commands": [],
+        "configs": configs,
+        "launch_commands": launch_commands,
+        "restart_seed_commands": restart_seed_commands,
     }
     for item in written:
         variant_payload = None
@@ -414,7 +417,7 @@ def write_manifest(out_dir: Path, written: list[WrittenConfig]) -> Path:
                 "seed": item.variant.random_seed,
                 "timestep": item.variant.dt,
             }
-        manifest["configs"].append(
+        configs.append(
             {
                 "path": item.path.as_posix(),
                 "output_path": item.output_path.as_posix(),
@@ -426,7 +429,7 @@ def write_manifest(out_dir: Path, written: list[WrittenConfig]) -> Path:
                 "variant": variant_payload,
             }
         )
-        manifest["launch_commands"].append(
+        launch_commands.append(
             f"CUDA_VISIBLE_DEVICES=${{DEVICE:-0}} python3 -m spectraxgk.cli run "
             f"--config {item.path.as_posix()} --no-progress"
         )
@@ -436,7 +439,7 @@ def write_manifest(out_dir: Path, written: list[WrittenConfig]) -> Path:
             previous = previous_by_grid[previous_key]
             src_base = _bundle_base(previous.output_path)
             dst_base = _bundle_base(item.output_path)
-            manifest["restart_seed_commands"].append(
+            restart_seed_commands.append(
                 "for ext in out.nc restart.nc big.nc; do "
                 f"cp {src_base.as_posix()}.$ext {dst_base.as_posix()}.$ext; "
                 "done"

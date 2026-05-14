@@ -304,6 +304,18 @@ release-safe scoped wording while blocking production nonlinear turbulent-flux
 optimization promotion until optimized equilibria have replicated
 post-transient transport-window audits.
 
+``tools/write_optimized_equilibrium_transport_configs.py`` is the production
+optimization companion for that final audit. Given a concrete post-optimization
+``wout*.nc`` file, it writes the ``t=250,350,450,700`` fixed-step nonlinear
+ladder on the release ``n64`` grid, two seed replicates, one timestep
+replicate, restart-copy commands, and the exact
+``tools/build_external_vmec_replicate_ensemble.py`` plus
+``tools/check_production_nonlinear_optimization_guard.py`` commands needed
+after the runs finish. This wrapper is a launch contract only: the production
+optimization claim remains blocked until the generated ``t=[350,700]`` ensemble
+actually passes finite-flux, running-window, block/SEM, replicate-spread, and
+optimized-equilibrium marker gates.
+
 ``tools/prepare_external_vmec_holdout_from_screen.py`` is the selector that
 feeds that generator. It reads the tracked linear candidate screen, skips
 excluded or already-audited cases, resolves the chosen VMEC file from the local
