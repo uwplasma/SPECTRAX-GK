@@ -5470,3 +5470,15 @@ Exit gate:
     DSHAPE/circular/up-down/ITERModel and rerun the readiness plus ensemble
     gates;
   - only after those pass, revisit production nonlinear optimization promotion.
+
+### 2026-05-14 CI Follow-Up
+
+- Fixed the latest CI/CD blockers after the multi-lane push:
+  - removed the unused tracked `docs/_static/benchmark_convergence_panel.png` artifact so the repository-size gate stays below the 50 MB tracked-file cap;
+  - made `tools/build_parallelization_completion_status.py` usable in dependency-free `repo-hygiene` jobs by avoiding package/JAX imports in the JSON-only provenance path;
+  - added `tests/test_build_parallelization_completion_status.py::test_parallelization_completion_status_script_runs_without_install` to prevent regression of that no-install hygiene path;
+  - added `tests/test_linear_parallel_dispatch.py` to cover release-route dispatch, error handling, and device-resolution branches in `spectraxgk.linear_parallel`, recovering the exact package-wide coverage margin above the 95% manifest gate.
+- Local checks after these fixes:
+  - exact no-install `repo-hygiene` command group passes with `PYTHONPATH=`;
+  - targeted dispatch/parallel/release tests pass (`47 passed` for the linear-parallel/parallel shard subset and `28 passed` for the release/parallelization subset);
+  - `ruff`, `mypy tools/build_parallelization_completion_status.py`, `git diff --check`, repository-size, release-readiness, and validation-manifest checks pass.
