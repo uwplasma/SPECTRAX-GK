@@ -331,6 +331,42 @@ def test_electrostatic_slices_velocity_sharded_fail_closed_and_weighted_routes(m
     assert jnp.allclose(dG, 0.5 * 1.0 + 0.25 * 2.0 + 0.5 * 3.0 + 0.125 * 4.0)
 
 
+def test_fused_electrostatic_slice_route_validates_decomposition_before_mesh() -> None:
+    arr = _richer_state()
+    cache = _cache_for_richer_state()
+    terms = _electrostatic_slice_terms()
+
+    with pytest.raises(ValueError, match="more than one Hermite chunk"):
+        linear_parallel._linear_rhs_electrostatic_slices_velocity_sharded_fused(
+            arr,
+            cache,
+            LinearParams(),
+            terms,
+            plan=SimpleNamespace(chunks={"m": 1}, active_axes=("m",)),
+            devices=[object()],
+        )
+
+    with pytest.raises(ValueError, match="Hermite dimension must divide evenly"):
+        linear_parallel._linear_rhs_electrostatic_slices_velocity_sharded_fused(
+            arr,
+            cache,
+            LinearParams(),
+            terms,
+            plan=SimpleNamespace(chunks={"m": 2}, active_axes=("m",)),
+            devices=[object(), object()],
+        )
+
+    with pytest.raises(NotImplementedError, match="only an active 'm' axis"):
+        linear_parallel._linear_rhs_electrostatic_slices_velocity_sharded_fused(
+            jnp.zeros((2, 4, 2, 1, 4), dtype=jnp.complex64),
+            cache,
+            LinearParams(),
+            terms,
+            plan=SimpleNamespace(chunks={"m": 2}, active_axes=("m", "l")),
+            devices=[object(), object()],
+        )
+
+
 def test_linear_rhs_parallel_cached_serial_dispatch(monkeypatch) -> None:
     import spectraxgk.linear as linear_compat
 
