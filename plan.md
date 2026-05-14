@@ -5521,3 +5521,37 @@ Exit gate:
   - local focused checks pass (`22 passed` across the linear-parallel and
     validation-manifest subset), along with `ruff`, `git diff --check`,
     validation manifest, and repository-size gate.
+
+### 2026-05-14 Nonlinear Replicate Campaign Start
+
+- CI/CD check:
+  - latest `main` run `25835745970` at `e2e2bc1` is green
+    (`59` successful jobs, `1` skipped, no failures).
+- Prepared the next production nonlinear turbulent-flux evidence step:
+  - extended `tools/write_external_vmec_holdout_configs.py` with
+    first-class seed/timestep replicate generation via `--seed-variant` and
+    `--dt-variant`;
+  - generated TOMLs now include explicit `random_seed` entries and a
+    `[metadata]` block with `case`, `variant_axis`, `variant_label`, `seed`,
+    and `timestep`, matching the metadata consumed by the nonlinear-window
+    ensemble readiness tool;
+  - restart-copy commands are now keyed by `(grid, variant)` so continuation
+    seeding cannot accidentally cross from one seed/timestep variant to
+    another;
+  - updated `docs/testing.rst` and `docs/quasilinear.rst` to document that
+    replicated nonlinear windows are required before promoting turbulent-flux
+    optimization or absolute-flux quasilinear claims.
+- Local checks:
+  - `python -m py_compile tools/write_external_vmec_holdout_configs.py` passed;
+  - `python -m pytest tests/test_write_external_vmec_holdout_configs.py tests/test_check_nonlinear_window_ensemble_readiness.py -q` passed
+    (`5 passed`);
+  - `ruff check tools/write_external_vmec_holdout_configs.py tests/test_write_external_vmec_holdout_configs.py` passed;
+  - `git diff --check` passed.
+- Immediate next step:
+  - commit and push this replicate-campaign infrastructure;
+  - on office, use a fresh latest-main checkout to launch the DSHAPE
+    `n64`, `t=150 -> 250` seed/timestep variants first because DSHAPE is the
+    shortest currently admitted high-grid nonlinear holdout;
+  - after the first DSHAPE replicate batch completes, extract the same
+    transport-window summaries and rerun
+    `tools/check_nonlinear_window_ensemble_readiness.py`.

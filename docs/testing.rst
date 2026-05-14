@@ -283,7 +283,14 @@ copy commands for the standard two-grid external-VMEC holdout ladder, e.g.
 ``t = 150`` initial runs followed by ``t = 250`` restart continuations at
 ``48x48x32`` and ``64x64x40``. The script does not promote any data by itself;
 the resulting traces must still pass the convergence gate above before they can
-enter quasilinear calibration reports or optimization studies.
+enter quasilinear calibration reports or optimization studies. For the
+production nonlinear optimization evidence lane the same generator also accepts
+``--seed-variant`` and ``--dt-variant`` entries. Those options write explicit
+``[metadata]`` blocks and variant-specific filenames so seed and timestep
+replicate windows can be launched on the office GPUs, extracted with the same
+transport-window protocol, and checked by
+``tools/check_nonlinear_window_ensemble_readiness.py`` before any
+absolute-flux or turbulent-flux optimization claim is promoted.
 
 ``tools/prepare_external_vmec_holdout_from_screen.py`` is the selector that
 feeds that generator. It reads the tracked linear candidate screen, skips
