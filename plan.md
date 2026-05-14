@@ -5591,3 +5591,44 @@ Exit gate:
   - clone/pull the fixed commit on office and relaunch the same DSHAPE
     replicate campaign with `PYTHONPATH=/home/rjorge/booz_xform_jax/src:<repo>/src`
     so the real Boozer backend is resolved first.
+
+### 2026-05-14 DSHAPE Replicated Nonlinear Holdout Closure
+
+- CI/CD:
+  - latest main run `25845599633` for `cfd3ce9` passed (`59` successful jobs,
+    `1` skipped nightly job, no failures).
+- Office DSHAPE replicate campaign:
+  - relaunched from fresh main checkout
+    `/home/rjorge/tmp/spectrax-replicates-cfd3ce9`;
+  - completed all six requested GPU runs:
+    `t=150 -> 250` continuations for seed `31`, seed `32`, and timestep
+    variant `dt=0.04`;
+  - backend discovery was stable with
+    `PYTHONPATH=/home/rjorge/booz_xform_jax/src:<repo>/src`.
+- Transport-window result:
+  - accepted late window: `t=[170,250]`, chosen because it keeps the saturated
+    late window while giving at least eight terminal samples for the `dt=0.05`
+    output cadence;
+  - seed `31`, `dt=0.05`: `<Q_i> = 18.814`, `SEM = 0.781`;
+  - seed `32`, `dt=0.05`: `<Q_i> = 20.819`, `SEM = 0.827`;
+  - seed `22`, `dt=0.04`: `<Q_i> = 18.105`, `SEM = 1.032`;
+  - readiness and ensemble gates both pass; mean relative spread is `0.141`
+    against the `0.15` threshold and combined SEM/mean is `0.054` against the
+    `0.25` threshold.
+- Documentation/release hygiene:
+  - removed unreferenced duplicate
+    `docs/_static/nonlinear_cyclone_short_resolved_audit_t5_ph2_noend.png` to
+    stay within the repository-size policy;
+  - promoted the DSHAPE replicate plot, trace CSVs, summaries, convergence
+    reports, readiness JSON, and ensemble-gate JSON under
+    `docs/_static/external_vmec_dshape_replicates/`;
+  - updated README, quasilinear docs, manuscript-figure ledger, release-scope
+    docs, and validation coverage manifest.
+- Claim boundary:
+  - this closes the DSHAPE seed/timestep robustness evidence for the current
+    nonlinear holdout and strengthens quasilinear model-development evidence;
+  - it still does not promote an absolute quasilinear saturated-flux predictor
+    or production nonlinear turbulent-flux stellarator optimization claim.
+- Immediate next step:
+  - run Sphinx, repository-size, validation-manifest, and quasilinear guardrail
+    checks; then commit and push the documentation/artifact promotion.
