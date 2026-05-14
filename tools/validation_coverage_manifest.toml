@@ -1093,6 +1093,7 @@ module = "spectraxgk.solver_objective_gradients"
 path = "src/spectraxgk/solver_objective_gradients.py"
 owned_modules = [
   "spectraxgk.stellarator_optimization",
+  "spectraxgk.nonlinear_transport_optimization",
 ]
 owner_lane = "production solver-objective geometry-gradient validation"
 status = "active"
@@ -1137,6 +1138,7 @@ fast_tests = [
   "tests/test_build_nonlinear_window_fd_audit.py",
   "tests/test_build_vmec_boozer_nonlinear_window_fd_audit.py",
   "tests/test_build_nonlinear_transport_horizon_audit.py",
+  "tests/test_nonlinear_transport_optimization.py",
 ]
 artifact_paths = [
   "docs/_static/solver_objective_gradient_gate.json",
@@ -1203,6 +1205,8 @@ artifact_paths = [
   "docs/_static/external_vmec_qh_high_grid_convergence_gate.png",
   "docs/_static/nonlinear_transport_time_horizon_audit.json",
   "docs/_static/nonlinear_transport_time_horizon_audit.png",
+  "docs/_static/production_nonlinear_optimization_guard.json",
+  "docs/_static/production_nonlinear_optimization_guard.png",
 ]
 next_tests = [
   "extend the reduced nonlinear-window estimator-gradient matrix to optimized-equilibrium holdouts before broad stellarator transport-gradient claims",

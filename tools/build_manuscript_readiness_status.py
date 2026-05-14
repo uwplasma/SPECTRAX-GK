@@ -201,6 +201,9 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
     vmec_nonlinear_fd_audit = _read_json(
         root, "docs/_static/vmec_boozer_nonlinear_window_fd_audit.json"
     )
+    production_nl_guard = _read_json(
+        root, "docs/_static/production_nonlinear_optimization_guard.json"
+    )
     profile = _read_json(
         root, "docs/_static/nonlinear_sharding_profile_office_gpu.json"
     )
@@ -372,6 +375,19 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
     vmec_boozer_production_nonlinear_observable_fd_path_gate = bool(
         (vmec_nonlinear_fd_audit or {}).get(
             "vmec_boozer_production_nonlinear_observable_fd_path_gate", False
+        )
+    )
+    production_nl_guard_summary = (
+        (production_nl_guard or {}).get("summary", {})
+        if isinstance((production_nl_guard or {}).get("summary", {}), dict)
+        else {}
+    )
+    production_nonlinear_optimization_safe_to_release = bool(
+        (production_nl_guard or {}).get("safe_to_release", False)
+    )
+    production_nonlinear_optimization_promoted = bool(
+        (production_nl_guard or {}).get(
+            "production_nonlinear_optimization_promoted", False
         )
     )
     solver_gradient_closed = bool(
@@ -573,11 +589,29 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                 "docs/_static/stellarator_itg_optimization_comparison.png",
                 "docs/_static/stellarator_itg_optimization_uq.json",
                 "docs/_static/stellarator_itg_optimization_uq.png",
+                "docs/_static/production_nonlinear_optimization_guard.json",
+                "docs/_static/production_nonlinear_optimization_guard.png",
             ],
             "key_metrics": {
                 **opt_reductions,
                 "all_objective_gradient_gates_passed": opt_reduced_objectives_passed,
                 "weighted_residual_uq_gate_passed": opt_uq_passed,
+                "production_nonlinear_optimization_guard_safe": (
+                    production_nonlinear_optimization_safe_to_release
+                ),
+                "production_nonlinear_optimization_promoted": (
+                    production_nonlinear_optimization_promoted
+                ),
+                "production_nonlinear_replicated_holdout_ensembles": (
+                    production_nl_guard_summary.get(
+                        "qualifying_replicated_holdout_ensembles"
+                    )
+                ),
+                "production_nonlinear_optimized_equilibrium_ensembles": (
+                    production_nl_guard_summary.get(
+                        "qualifying_optimized_equilibrium_ensembles"
+                    )
+                ),
             },
             "next_action": (
                 "Use as the current optimization figure only with scoped wording; nonlinear-window VMEC/Boozer/GK "
@@ -622,6 +656,10 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                     (
                         "docs/_static/vmec_boozer_nonlinear_window_fd_audit.png",
                         vmec_nonlinear_fd_audit,
+                    ),
+                    (
+                        "docs/_static/production_nonlinear_optimization_guard.json",
+                        production_nl_guard,
                     ),
                 )
                 if payload
@@ -700,6 +738,17 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                     vmec_boozer_production_nonlinear_observable_fd_path_gate
                 ),
                 "production_nonlinear_window_gradient_gate": False,
+                "production_nonlinear_optimization_guard_safe": (
+                    production_nonlinear_optimization_safe_to_release
+                ),
+                "production_nonlinear_optimization_promoted": (
+                    production_nonlinear_optimization_promoted
+                ),
+                "optimized_equilibrium_replicated_transport_ensembles": (
+                    production_nl_guard_summary.get(
+                        "qualifying_optimized_equilibrium_ensembles"
+                    )
+                ),
             },
             "next_action": (
                 "Full VMEC/Boozer eigenfrequency, quasilinear, and multi-equilibrium reduced nonlinear-window "

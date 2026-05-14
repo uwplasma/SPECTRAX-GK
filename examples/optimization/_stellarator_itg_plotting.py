@@ -85,7 +85,12 @@ def _plot_result(payload: dict[str, Any], path: Path, *, title: str) -> None:
 
     axes[1].plot(steps, obs[:, idx["growth_rate"]], lw=2.0, label=r"$\gamma$")
     axes[1].plot(steps, obs[:, idx["quasilinear_heat_flux"]], lw=2.0, label=r"$Q_i^{QL}$")
-    axes[1].plot(steps, obs[:, idx["nonlinear_heat_flux_mean"]], lw=2.0, label=r"$\langle Q_i\rangle_{NL}$")
+    axes[1].plot(
+        steps,
+        obs[:, idx["nonlinear_heat_flux_mean"]],
+        lw=2.0,
+        label=r"$Q_i^{red\ NL}$",
+    )
     axes[1].set_xlabel("optimizer step")
     axes[1].set_ylabel("ITG observable")
     axes[1].set_title("Transport observables")
@@ -122,8 +127,8 @@ def _plot_result(payload: dict[str, Any], path: Path, *, title: str) -> None:
         axes[4].axvspan(time[start], time[-1], color=color, alpha=0.12, label="averaging window")
         axes[4].axhline(trace["final_window"]["mean"], color=color, ls="--", lw=1.4)
         axes[4].set_xlabel(r"$t v_{ti}/a$")
-        axes[4].set_ylabel(r"$Q_i$ envelope")
-        axes[4].set_title("Nonlinear heat-flux window")
+        axes[4].set_ylabel(r"$Q_i$ reduced envelope")
+        axes[4].set_title("Reduced nonlinear-window estimator")
         axes[4].legend(frameon=False, fontsize=8)
         axes[4].grid(alpha=0.25)
 
@@ -157,7 +162,7 @@ def _plot_comparison(payload: dict[str, Any], path: Path) -> None:
     results = list(payload["results"])
     names = list(payload["observable_names"])
     idx = {name: names.index(name) for name in names}
-    labels = [r["objective_kind"].replace("_", " ") for r in results]
+    labels = [_objective_label(str(r["objective_kind"])) for r in results]
     wrapped_labels = [label.replace("quasilinear flux", "quasilinear\nflux") for label in labels]
     colors = [COLORS.get(r["objective_kind"], "#3f3f46") for r in results]
     final_obs = np.asarray([r["final_observables"] for r in results], dtype=float)
@@ -178,7 +183,7 @@ def _plot_comparison(payload: dict[str, Any], path: Path) -> None:
 
     width = 0.24
     metrics = ["growth_rate", "quasilinear_heat_flux", "nonlinear_heat_flux_mean"]
-    metric_labels = [r"$\gamma$", r"$Q_i^{QL}$", r"$\langle Q_i\rangle_{NL}$"]
+    metric_labels = [r"$\gamma$", r"$Q_i^{QL}$", r"$Q_i^{red\ NL}$"]
     for j, metric in enumerate(metrics):
         axs[0, 1].bar(x + (j - 1) * width, final_obs[:, idx[metric]], width=width, label=metric_labels[j])
     axs[0, 1].set_xticks(x, wrapped_labels, rotation=0, ha="center")
@@ -242,3 +247,11 @@ def _short_param(name: str) -> str:
         "helical_ripple_amplitude": "helical ripple",
         "magnetic_shear_shift": "shear",
     }.get(name, name)
+
+
+def _objective_label(kind: str) -> str:
+    return {
+        "growth": "growth",
+        "quasilinear_flux": "quasilinear flux",
+        "nonlinear_heat_flux": "reduced NL window",
+    }.get(kind, kind.replace("_", " "))

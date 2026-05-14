@@ -192,6 +192,7 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
     ql_uq = _read_json(root, "docs/_static/quasilinear_candidate_uncertainty.json")
     ql_dataset = _read_json(root, "docs/_static/quasilinear_dataset_sufficiency.json")
     ql_model_status = _read_json(root, "docs/_static/quasilinear_model_selection_status.json")
+    production_nl_guard = _read_json(root, "docs/_static/production_nonlinear_optimization_guard.json")
     circular_t250_gate = _read_json(root, "docs/_static/external_vmec_circular_t250_high_grid_convergence_gate.json")
     circular_t700_replicate = _read_json(
         root,
@@ -255,6 +256,11 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
     circular_t700_replicate_passed = bool((circular_t700_replicate or {}).get("passed", False))
     dshape_passed = bool((dshape_gate or {}).get("gate_report", {}).get("passed", False))
     dshape_replicate_passed = bool((dshape_replicate or {}).get("passed", False))
+    production_nl_guard_summary = (
+        (production_nl_guard or {}).get("summary", {})
+        if isinstance((production_nl_guard or {}).get("summary", {}), dict)
+        else {}
+    )
     itermodel_passed = bool((itermodel_gate or {}).get("gate_report", {}).get("passed", False))
     updown_passed = bool((updown_gate or {}).get("gate_report", {}).get("passed", False))
     qh_passed = bool((qh_gate or {}).get("gate_report", {}).get("passed", False))
@@ -456,6 +462,7 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
                 "docs/_static/external_vmec_circular_replicates/circular_replicate_t700_ensemble_gate.json",
                 "docs/_static/external_vmec_dshape_t250_high_grid_convergence_gate.json",
                 "docs/_static/external_vmec_dshape_replicates/dshape_replicate_t250_ensemble_gate.json",
+                "docs/_static/production_nonlinear_optimization_guard.json",
                 "docs/_static/external_vmec_itermodel_t350_high_grid_convergence_gate.json",
                 "docs/_static/external_vmec_updown_asym_t450_high_grid_convergence_gate.json",
                 "docs/_static/external_vmec_qh_grid_convergence_gate.json",
@@ -502,6 +509,19 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
                     (dshape_replicate or {}).get("statistics", {}).get("combined_sem_rel")
                     if isinstance((dshape_replicate or {}).get("statistics", {}), dict)
                     else None
+                ),
+                "production_nonlinear_optimization_guard_safe": bool(
+                    (production_nl_guard or {}).get("safe_to_release", False)
+                ),
+                "production_nonlinear_optimization_promoted": bool(
+                    (production_nl_guard or {}).get(
+                        "production_nonlinear_optimization_promoted", False
+                    )
+                ),
+                "production_nonlinear_replicated_holdout_ensembles": (
+                    production_nl_guard_summary.get(
+                        "qualifying_replicated_holdout_ensembles"
+                    )
                 ),
                 "itermodel_external_vmec_t350_converged": itermodel_passed,
                 "updown_asym_external_vmec_t450_converged": updown_passed,

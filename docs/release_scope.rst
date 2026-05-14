@@ -247,20 +247,25 @@ Quasilinear model-selection state:
   is the tracked artifact wrapper for this gate.
 - ``tools/check_nonlinear_window_ensemble_readiness.py`` converts tracked
   transport-window summaries into explicit convergence-report JSON files and a
-  readiness manifest. The current
-  ``docs/_static/nonlinear_window_ensemble_readiness_manifest.json`` is
-  intentionally blocked: three of four existing external-VMEC transport
-  summaries pass the stricter late-window convergence wrapper, the ITERModel
-  window fails terminal-mean agreement, and all four cases lack distinct
-  seed-replicate and timestep-replicate artifacts. The manifest records the
-  exact missing artifact groups and must pass before
-  ``tools/check_nonlinear_window_ensemble.py`` is meaningful for these cases.
+  readiness manifest. The older global
+  ``docs/_static/nonlinear_window_ensemble_readiness_manifest.json`` remains a
+  base-window manifest, but the current D-shaped and circular case-local
+  replicate campaigns now pass their own ensemble gates. Those case-local
+  artifacts supersede the stale global missing-replicate message for those two
+  cases, while still leaving optimized-equilibrium nonlinear audits open.
 - ``tools/check_vmec_boozer_aggregate_holdout_gate.py`` now requires a passed
   replicated nonlinear-window ensemble artifact in addition to aggregate
   finite-difference, line-search, and held-out surface/field-line evidence
   before any optimized-equilibrium production nonlinear heat-flux claim can be
   promoted. Single-window convergence reports remain necessary but insufficient
   for that claim level.
+- ``tools/check_production_nonlinear_optimization_guard.py`` is the explicit
+  production nonlinear turbulent-flux optimization guard. Its tracked artifact,
+  ``docs/_static/production_nonlinear_optimization_guard.json``, passes release
+  safety because reduced/startup estimators are blocked and two long
+  post-transient replicated holdout ensembles pass. Its production-promotion
+  gate remains false until an optimized-equilibrium replicated transport-window
+  audit exists.
 - ``docs/_static/quasilinear_saturation_rule_sweep.json``:
   no simple saturation rule is accepted. Positive-growth mixing length is the
   least-bad simple rule with mean held-out relative error about ``2.11``;
