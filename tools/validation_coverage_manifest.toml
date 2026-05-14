@@ -554,6 +554,7 @@ fast_tests = [
   "tests/test_plot_quasilinear_calibration.py",
   "tests/test_plot_external_vmec_nonlinear_convergence_gate.py",
   "tests/test_write_external_vmec_holdout_configs.py",
+  "tests/test_build_external_vmec_replicate_ensemble.py",
   "tests/test_prepare_external_vmec_holdout_from_screen.py",
 ]
 artifact_paths = [

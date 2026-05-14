@@ -544,7 +544,14 @@ that several long nonlinear runs agree; it is not a substitute for actually
 running those long nonlinear simulations. The command-line artifact wrapper is
 ``tools/check_nonlinear_window_ensemble.py``; it reads multiple window JSON
 reports and writes a JSON report plus an optional PNG summary for documentation
-or manuscript audit trails.
+or manuscript audit trails. For external-VMEC replicate campaigns the
+end-to-end extraction wrapper is
+``tools/build_external_vmec_replicate_ensemble.py``: it reads the finished
+``*.out.nc`` files, extracts ``Diagnostics/HeatFlux_st`` into trace CSVs,
+writes transport-window summaries, convergence reports, readiness and ensemble
+JSON gates, and generates the publication-facing two-panel trace/uncertainty
+plot. This is the preferred path for new seed/timestep replicate evidence
+because it removes manual NetCDF-to-CSV and provenance-editing steps.
 
 The first tracked external-VMEC replicate campaign applies that protocol to
 the admitted D-shaped nonlinear holdout. Six office-GPU runs were launched from
