@@ -159,6 +159,39 @@ Still open:
   prediction remains blocked until an independent converged nonlinear holdout
   portfolio supports a calibrated runtime model.
 
+### 2026-05-14 Optimized-Equilibrium Nonlinear Audit Launch
+
+Current tranche result: office is available again and the optimized-equilibrium
+post-optimization nonlinear audit has moved from runbook to active replicated
+execution.
+
+Closed by this checkpoint:
+
+- The selected optimized VMEC artifact
+  `/Users/rogeriojorge/local/vmec_jax/results/qa_opt/ess/wout_final.nc` was
+  copied to office under
+  `tools_out/optimized_equilibrium_vmec/wout_qa_opt_ess_final.nc`.
+- The generated nonlinear transport manifest now uses an absolute VMEC path.
+  This fixes the path-resolution bug where runtime TOML loading interpreted a
+  relative VMEC path relative to the generated `tools_out` directory instead
+  of the config-writer invocation directory.
+- A GPU smoke run completed on office from the generated optimized-equilibrium
+  config with nonlinear diagnostics, output, restart, and big-output files.
+- The replicated transport campaign was launched on office from commit
+  `f9c7925`, with seed31 on GPU 0 and seed32 on GPU 1 followed by the dt0p04
+  timestep variant. The queued ladder is `t = 250, 350, 450, 700` with
+  explicit restart continuation between horizons.
+
+Still open:
+
+- The campaign outputs must be audited for finite traces, late-window
+  post-transient running-mean convergence, seed agreement, timestep agreement,
+  and meaningful nonzero transport before any optimized-equilibrium nonlinear
+  heat-flux reduction claim is promoted.
+- If the optimized-equilibrium audit fails, it should remain an honest negative
+  result and the next manuscript step is either a modified geometry candidate
+  or a stronger multi-surface optimization objective.
+
 ### 2026-05-13 Broad Lane Push Checkpoint
 
 Current tranche result: five parallel lane workers added claim-boundary tests,
