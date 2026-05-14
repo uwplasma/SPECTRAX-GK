@@ -5842,3 +5842,69 @@ Exit gate:
     equilibrium and run the generated `t=700` seed/timestep replicate campaign;
   - only then attach the ensemble to the production nonlinear optimization
     guard.
+
+### 2026-05-14 Office W7-X Zonal Closure Sweep Completion
+
+- Office status:
+  - `office` was reachable with two idle RTX A4000 GPUs and JAX GPU support;
+  - a clean run checkout was created at `/home/rjorge/SPECTRAX-GK-run` on
+    commit `64425ee`;
+  - existing W7-X zonal outputs were copied from the older office workspace so
+    only missing closure families were rerun.
+- Completed the missing bounded closure candidates at `k_x rho_i=0.07`,
+  `Nl=16`, `Nm=64`, `dt=0.05`, `t v_t/a=100`, one GPU per case:
+  - constant Hermite hypercollision, `nu_hyper_m = 0.01, 0.03`;
+  - constant Laguerre hypercollision, `nu_hyper_l = 0.01, 0.03`;
+  - constant isotropic hypercollision, `nu_hyper = 0.01, 0.03`.
+- Regenerated the full eleven-row closure ladder and promoted the refreshed
+  artifacts to `docs/_static/w7x_zonal_closure_ladder_kx070.{png,pdf,json,csv}`.
+- Result:
+  - baseline: `MAE=0.2861`, `tail_std_ratio=4.10`, final Hermite-tail fraction
+    `0.388`;
+  - best trace-error candidate: isotropic `nu_hyper=0.01` with `MAE=0.2755`,
+    but `tail_std_ratio=4.25`, so the late recurrence/envelope metric worsens;
+  - isotropic `nu_hyper=0.03`, mixed Laguerre-Hermite, and Laguerre-only
+    closures show the same pattern: strong tail suppression but no simultaneous
+    improvement of trace residual and late envelope.
+- Interpretation:
+  - the state convention and observable layer remain closed;
+  - the tested bounded hypercollision families are rejected as a physical
+    W7-X zonal closure fix;
+  - no high-moment follow-up is justified for these families because the
+    promotion contract requires trace error, late-envelope recurrence, and
+    moment-tail metrics to improve together.
+- Next executable steps:
+  - move W7-X zonal recurrence/damping back to the deferred physical
+    closure/operator lane, not a normalization or constant-damping lane;
+  - use the freed office GPUs for the optimized-equilibrium replicated
+    long-window nonlinear transport campaign once the concrete post-optimization
+    `wout*.nc` is selected and screened.
+
+### 2026-05-14 Optimized QA Equilibrium Linear Screen
+
+- Selected the concrete `vmec_jax` QA optimized-equilibrium candidate:
+  `/Users/rogeriojorge/local/vmec_jax/results/qa_opt/ess/wout_final.nc`.
+- `office` became unreachable again after the W7-X zonal sweep, so the VMEC
+  transfer and nonlinear replicate launch were not started in this pass.
+- Ran a bounded local SPECTRAX-GK linear/quasilinear screen against the selected
+  `wout_final.nc` at `ky rho_i = 0.095, 0.190, 0.300, 0.476, 0.667`, using
+  `Nl=4`, `Nm=8`, `dt=0.005`, and `400` RK4 steps.
+- Result:
+  - all sampled ITG branch growth rates are damped:
+    `gamma = -0.015, -0.0208, -0.0273, -0.0401, -0.0281`;
+  - the current quasilinear mixing-length rule returns zero saturated heat flux
+    because stable modes are excluded by the growth-floor rule;
+  - the selected optimized equilibrium is therefore a low-flux/stability
+    candidate for nonlinear replicated transport, not an unstable-turbulence
+    saturation candidate.
+- Added tracked documentation artifacts:
+  - `docs/_static/optimized_equilibrium_linear_screen.png`;
+  - `docs/_static/optimized_equilibrium_linear_screen.{json,csv}`;
+  - `docs/_static/optimized_equilibrium_linear_screen.quasilinear_spectrum.csv`;
+  - `docs/_static/optimized_equilibrium_linear_screen.summary.json`.
+- Next executable step when `office` is stable:
+  - copy the selected `wout_final.nc` to the clean office checkout;
+  - generate the optimized-equilibrium `n64`, `t=250,350,450,700` seed/timestep
+    replicate campaign with `tools/write_optimized_equilibrium_transport_configs.py`;
+  - launch the long nonlinear runs as a low-flux/stability transport-window
+    audit and only promote if the generated ensemble/guard artifacts pass.

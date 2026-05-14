@@ -509,16 +509,18 @@ control sweep, not a change to the paper normalization.
 ``tools/plot_w7x_zonal_closure_ladder.py`` makes that bounded sweep explicit
 for ``k_x rho_i=0.07`` in
 ``docs/_static/w7x_zonal_closure_ladder_kx070.png``. The ladder separates
-paper-contract resolution changes from weak-closure and non-contract
-initializer audits. The current result is useful but not closed:
-higher moments and weak closure reduce some envelope metrics, while the
-early-window trace mismatch remains too large under the paper-facing
-normalization. The newest paper-width ``Nl=16``, ``Nm=64``,
-``nu_hyper_m=3e-3`` row reduces the final Hermite-tail fraction from
-``0.388`` to ``0.064`` relative to the no-closure high-moment probe, but the
-reference-trace mean absolute error worsens slightly from ``0.283`` to
-``0.292``; that supports a moment-tail mitigation hypothesis but not a closed
-validation claim.
+closure families one knob at a time under the paper-facing initializer and
+line-average observable. The refreshed office-GPU ladder covers baseline,
+constant Hermite, ``k_z``-weighted Hermite, mixed Laguerre-Hermite,
+Laguerre-only, and isotropic hypercollision variants at ``0.01`` and
+``0.03``. The best early-window trace error is the isotropic ``nu_hyper=0.01``
+case with mean absolute error ``0.2755`` versus baseline ``0.2861``, but its
+late-window standard-deviation ratio is ``4.25`` versus baseline ``4.10`` and
+therefore worsens the recurrence/envelope metric. Laguerre-only and mixed
+Laguerre-Hermite closures show the same pattern: strong tail suppression with
+no simultaneous improvement of trace error and late envelope. The ladder is
+therefore a documented negative result for these bounded closure families, not
+a hidden validation setting.
 ``tools/plot_w7x_zonal_state_convention_audit.py`` closes the state-level
 initializer and observable convention layer for the same paper-facing setup.
 At ``k_x rho_i=0.07``, ``Nl=16``, and ``Nm=64``, the recovered Gaussian
@@ -614,11 +616,11 @@ audits, not validation defaults.
 .. figure:: _static/w7x_zonal_closure_ladder_kx070.png
    :alt: W7-X zonal-response closure ladder at kx rho_i 0.07
 
-   Bounded closure ladder for ``k_x rho_i=0.07``. Paper-contract resolution
-   changes, weak velocity-space closure, and non-contract initializer probes
-   are shown separately. The non-contract width-four high-resolution probe
-   improves the short early window, but it is not a validation result because
-   the benchmark source specifies the width-one Gaussian potential initializer.
+   Bounded closure ladder for ``k_x rho_i=0.07``. Constant Hermite,
+   ``k_z``-weighted Hermite, mixed Laguerre-Hermite, Laguerre-only, and
+   isotropic hypercollision families are compared with the no-closure baseline.
+   Some variants reduce mean trace error or velocity-space tails, but none
+   improves the trace and late-envelope recurrence metrics together.
 
 .. figure:: _static/w7x_zonal_state_convention_audit.png
    :alt: W7-X zonal-response state convention audit at kx rho_i 0.07
