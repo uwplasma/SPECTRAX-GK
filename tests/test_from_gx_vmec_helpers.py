@@ -42,6 +42,28 @@ def test_import_module_with_search_paths_loads_temp_module(tmp_path: Path) -> No
     sys.modules.pop("demo_mod", None)
 
 
+def test_import_module_with_search_paths_replaces_namespace_without_backend(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    checkout_root = tmp_path / "checkout"
+    pkg = checkout_root / "booz_xform_jax"
+    pkg.mkdir(parents=True)
+    (pkg / "__init__.py").write_text("class Booz_xform:\n    pass\n", encoding="utf-8")
+    monkeypatch.setitem(
+        sys.modules,
+        "booz_xform_jax",
+        SimpleNamespace(__name__="booz_xform_jax", __path__=[str(tmp_path / "namespace")]),
+    )
+
+    mod = _import_module_with_search_paths(
+        "booz_xform_jax", [checkout_root], required_attr="Booz_xform"
+    )
+
+    assert hasattr(mod, "Booz_xform")
+    assert Path(mod.__file__).resolve() == (pkg / "__init__.py").resolve()
+    sys.modules.pop("booz_xform_jax", None)
+
+
 def test_import_module_with_search_paths_raises_on_missing(tmp_path: Path) -> None:
     with pytest.raises(ImportError):
         _import_module_with_search_paths("missing_demo_mod", [tmp_path / "missing"])
@@ -54,7 +76,7 @@ def test_import_booz_backend_falls_back_to_booz_xform(monkeypatch) -> None:
         lambda *_args, **_kwargs: (_ for _ in ()).throw(ImportError("jax backend missing")),
     )
 
-    marker = SimpleNamespace(name="fallback")
+    marker = SimpleNamespace(name="fallback", Booz_xform=object)
 
     def _import_module(name: str):
         if name == "booz_xform":
