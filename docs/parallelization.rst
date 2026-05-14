@@ -44,7 +44,7 @@ then ``uq_ensemble``.
      - ``false``
      - ``true``
    * - ``fft_axis_domain``
-     - ``blocked``
+     - ``diagnostic``
      - ``false``
      - ``true``
 
