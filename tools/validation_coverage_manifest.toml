@@ -1122,6 +1122,7 @@ numerics_contracts = [
   "production nonlinear heat-flux averages additionally require a discarded transient, enough post-transient samples, cumulative running-mean convergence, stable independent late blocks, and finite flux above the startup/noise floor",
   "VMEC/Boozer nonlinear finite-difference startup audits require finite imported-geometry nonlinear runs, deterministic repeatability, resolved geometry perturbation, and resolved central response; forward/backward asymmetry is diagnostic until a long-window gradient gate is promoted",
   "long external-VMEC feasibility traces require a separate grid/window convergence gate before entering quasilinear calibration",
+  "optimized-equilibrium nonlinear transport promotion requires seed and timestep long-window replicate audits with finite flux, running-mean stability, block/SEM stability, and bounded ensemble spread",
 ]
 fast_tests = [
   "tests/test_solver_objective_gradients.py",
@@ -1207,12 +1208,18 @@ artifact_paths = [
   "docs/_static/nonlinear_transport_time_horizon_audit.png",
   "docs/_static/production_nonlinear_optimization_guard.json",
   "docs/_static/production_nonlinear_optimization_guard.png",
+  "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json",
+  "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.png",
+  "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_readiness.json",
+  "docs/_static/optimized_equilibrium_replicates/nonlinear_window_convergence_reports/optimized_equilibrium_post_optimization_nonlinear_t700_n64_seed31_transport_window.convergence.json",
+  "docs/_static/optimized_equilibrium_replicates/nonlinear_window_convergence_reports/optimized_equilibrium_post_optimization_nonlinear_t700_n64_seed32_transport_window.convergence.json",
+  "docs/_static/optimized_equilibrium_replicates/nonlinear_window_convergence_reports/optimized_equilibrium_post_optimization_nonlinear_t700_n64_dt0p04_transport_window.convergence.json",
 ]
 next_tests = [
   "extend the reduced nonlinear-window estimator-gradient matrix to optimized-equilibrium holdouts before broad stellarator transport-gradient claims",
-  "replace reduced nonlinear-window estimator gates with converged nonlinear-window turbulence-gradient or robust finite-difference audits before production nonlinear optimization claims",
-  "replace startup nonlinear finite-difference audits with converged long-window transport-average audits before any production nonlinear heat-flux optimization claim",
-  "tighten VMEC/Boozer nonlinear-window finite-difference audits into local-gradient conditioning gates only after converged post-transient windows and optimized-equilibrium audits exist",
+  "replace reduced nonlinear-window estimator gates with converged nonlinear-window turbulence-gradient or robust finite-difference audits before broad nonlinear optimization-gradient claims",
+  "add matched baseline-to-optimized nonlinear audits before broad geometry-family heat-flux-reduction claims",
+  "tighten VMEC/Boozer nonlinear-window finite-difference audits into local-gradient conditioning gates only after converged post-transient windows and local-gradient evidence exist",
 ]
 
 [[modules]]

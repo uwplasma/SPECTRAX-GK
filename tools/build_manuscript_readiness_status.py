@@ -591,6 +591,8 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                 "docs/_static/stellarator_itg_optimization_uq.png",
                 "docs/_static/production_nonlinear_optimization_guard.json",
                 "docs/_static/production_nonlinear_optimization_guard.png",
+                "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json",
+                "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.png",
             ],
             "key_metrics": {
                 **opt_reductions,
@@ -615,8 +617,8 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
             },
             "next_action": (
                 "Use as the current optimization figure only with scoped wording; nonlinear-window VMEC/Boozer/GK "
-                "gradients and optimized-geometry nonlinear audits remain future requirements before claiming "
-                "end-to-end stellarator heat-flux optimization."
+                "gradients and matched baseline-to-optimized audits across broader geometry families remain future "
+                "requirements before claiming broad end-to-end stellarator heat-flux optimization."
             ),
         },
         {
@@ -659,6 +661,10 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                     ),
                     (
                         "docs/_static/production_nonlinear_optimization_guard.json",
+                        production_nl_guard,
+                    ),
+                    (
+                        "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json",
                         production_nl_guard,
                     ),
                 )
@@ -753,9 +759,9 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
             "next_action": (
                 "Full VMEC/Boozer eigenfrequency, quasilinear, and multi-equilibrium reduced nonlinear-window "
                 "estimator gradients are closed. The compact nonlinear FD audits are tracked only as startup "
-                "plumbing checks; they do not validate transport heat-flux averages. Converged post-transient "
-                "running-average nonlinear windows, VMEC/Boozer turbulence gradients, local-gradient conditioning, "
-                "and optimized-equilibrium nonlinear audits remain required before full nonlinear stellarator-"
+                "plumbing checks; they do not validate transport heat-flux averages. The selected optimized-equilibrium "
+                "long-window audit is closed; VMEC/Boozer turbulence gradients, local-gradient conditioning, and "
+                "broader multi-surface baseline-to-optimized audits remain required before full nonlinear stellarator-"
                 "optimization claims."
             ),
         },

@@ -79,12 +79,14 @@ score.
        absolute quasilinear flux prediction, or converged nonlinear heat-flux
        gradients.
    * - Stellarator optimization examples
-     - release-ready as reduced examples
+     - release-ready as reduced examples plus selected optimized-equilibrium audit
      - The examples demonstrate differentiable reduced ITG objectives, UQ, and
        AD/finite-difference checks. The nonlinear objective is a reduced
-       window-estimator path, not a converged post-transient nonlinear
-       heat-flux optimization claim; production nonlinear optimization still
-       requires converged post-transient audits of optimized equilibria.
+       window-estimator path, not a nonlinear turbulence-gradient path. The
+       selected optimized QA equilibrium now has a converged post-transient
+       seed/timestep transport-window audit, so the production guard is closed
+       for that scoped audit. Broad multi-surface nonlinear optimization and
+       nonlinear turbulence gradients remain unpromoted.
    * - Parallelization
      - production-ready for independent work
      - Independent ``k_y`` scans, quasilinear spectra, sensitivity batches, and
@@ -109,9 +111,10 @@ Do not make these claims from the current artifacts:
 - using ``spectral_envelope_ridge`` as a shipped runtime or TOML saturation
   option;
 - electromagnetic quasilinear transport calibration for KBM;
-- production nonlinear heat-flux stellarator optimization;
+- broad multi-surface production nonlinear heat-flux stellarator optimization;
 - production nonlinear optimization without converged post-transient audits of
-  optimized equilibria;
+  optimized equilibria; the selected QA optimized-equilibrium audit is the
+  current scoped exception;
 - converged nonlinear transport gradients through ``vmec_jax`` and
   ``booz_xform_jax``;
 - treating compact nonlinear finite-difference startup audits as saturated
@@ -252,7 +255,8 @@ Quasilinear model-selection state:
   base-window manifest, but the current D-shaped and circular case-local
   replicate campaigns now pass their own ensemble gates. Those case-local
   artifacts supersede the stale global missing-replicate message for those two
-  cases, while still leaving optimized-equilibrium nonlinear audits open.
+  cases. The selected optimized-equilibrium audit now also passes its local
+  seed/timestep ensemble gate.
 - ``tools/check_vmec_boozer_aggregate_holdout_gate.py`` now requires a passed
   replicated nonlinear-window ensemble artifact in addition to aggregate
   finite-difference, line-search, and held-out surface/field-line evidence
@@ -264,8 +268,8 @@ Quasilinear model-selection state:
   ``docs/_static/production_nonlinear_optimization_guard.json``, passes release
   safety because reduced/startup estimators are blocked and two long
   post-transient replicated holdout ensembles pass. Its production-promotion
-  gate remains false until an optimized-equilibrium replicated transport-window
-  audit exists.
+  gate now also passes for the selected optimized QA equilibrium because the
+  ``t=[350,700]`` seed/timestep replicated transport-window audit is attached.
 - ``docs/_static/quasilinear_saturation_rule_sweep.json``:
   no simple saturation rule is accepted. Positive-growth mixing length is the
   least-bad simple rule with mean held-out relative error about ``2.11``;

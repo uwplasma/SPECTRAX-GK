@@ -360,9 +360,10 @@ as a promoted runtime predictor.
 
 These gates do not change the deferred W7-X lanes: W7-X zonal long-window
 recurrence/damping and W7-X TEM / kinetic-electron validation remain outside
-the current manuscript/release scope. They also do not promote nonlinear
-production optimization, which still requires converged post-transient audits
-of optimized equilibria before any production heat-flux optimization claim.
+the current manuscript/release scope. They also do not promote a universal
+absolute-flux model. Production nonlinear optimization is promoted only for the
+selected optimized-equilibrium audit now attached to the guard; nonlinear
+turbulence gradients and broad multi-surface claims remain separate gates.
 
 Autodiff Validation
 -------------------
@@ -460,12 +461,12 @@ gate.
        production nonlinear claim. The alpha-heldout and surface-heldout
        splits pass as reduced generalization
        evidence, and Li383 passes as a second-equilibrium aggregate
-       finite-difference/line-search check. The current promotion JSON is
-       intentionally blocked because these artifacts are reduced
-       linear/quasilinear evidence, not production nonlinear transport
-       validation, and no replicated nonlinear-window ensemble is yet supplied.
-       The frozen aggregate artifacts are therefore reduced optimizer-plumbing
-       evidence only
+       finite-difference/line-search check. The aggregate artifacts remain
+       reduced optimizer-plumbing evidence. The separate production nonlinear
+       optimization guard now includes long-window D-shaped/circular holdouts
+       and the selected optimized-equilibrium seed/timestep audit; broader
+       nonlinear turbulence gradients and multi-surface transport optimization
+       are still separate gates.
    * - Reduced stellarator ITG optimization and UQ
      - objective reduction history, AD/finite-difference derivative parity,
        local covariance, and projected uncertainty
@@ -483,18 +484,20 @@ gate.
    * - Production nonlinear stellarator optimization
      - optimized-equilibrium post-transient heat-flux average with uncertainty
        and nonlinear audit bars
-     - future long-window nonlinear artifacts
-     - Open
-     - requires transient cutoff, cumulative running-mean stability,
-       independent late-block stability, grid/timestep/seed checks, a passed
-       replicated nonlinear-window ensemble gate, and nonlinear audits of
-       optimized equilibria
+     - ``docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json``
+       and ``docs/_static/production_nonlinear_optimization_guard.json``
+     - Closed for selected optimized-equilibrium replicated transport audit
+     - the selected QA optimized equilibrium passes the ``t=[350,700]`` seed
+       and timestep ensemble gate; nonlinear turbulence-gradient and broad
+       multi-surface/multi-field-line optimization claims remain open
 
 Use this section as the verification boundary for README figures: the
 VMEC/Boozer parity, gradient-holdout, and reduced optimization/UQ panels can be
 cited as reduced objective evidence. Startup-window finite-difference panels
 and reduced nonlinear-window estimators must not be cited as saturated
-transport-gradient or optimized-equilibrium nonlinear heat-flux validation.
+transport-gradient validation. The optimized-equilibrium replicate panel may be
+cited as a post-transient transport-window audit for the selected candidate,
+not as a universal quasilinear absolute-flux model.
 
 Parallelization Validation
 --------------------------

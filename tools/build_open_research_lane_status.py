@@ -463,6 +463,7 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
                 "docs/_static/external_vmec_dshape_t250_high_grid_convergence_gate.json",
                 "docs/_static/external_vmec_dshape_replicates/dshape_replicate_t250_ensemble_gate.json",
                 "docs/_static/production_nonlinear_optimization_guard.json",
+                "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json",
                 "docs/_static/external_vmec_itermodel_t350_high_grid_convergence_gate.json",
                 "docs/_static/external_vmec_updown_asym_t450_high_grid_convergence_gate.json",
                 "docs/_static/external_vmec_qh_grid_convergence_gate.json",
@@ -521,6 +522,11 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
                 "production_nonlinear_replicated_holdout_ensembles": (
                     production_nl_guard_summary.get(
                         "qualifying_replicated_holdout_ensembles"
+                    )
+                ),
+                "production_nonlinear_optimized_equilibrium_ensembles": (
+                    production_nl_guard_summary.get(
+                        "qualifying_optimized_equilibrium_ensembles"
                     )
                 ),
                 "itermodel_external_vmec_t350_converged": itermodel_passed,
