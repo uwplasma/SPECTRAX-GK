@@ -290,7 +290,7 @@ production nonlinear optimization evidence lane the same generator also accepts
 replicate windows can be launched on the office GPUs, extracted with the same
 transport-window protocol, and checked by
 ``tools/check_nonlinear_window_ensemble_readiness.py`` before any
-absolute-flux or turbulent-flux optimization claim is promoted.
+absolute-flux or turbulent-flux optimization wording can be considered.
 
 ``tools/prepare_external_vmec_holdout_from_screen.py`` is the selector that
 feeds that generator. It reads the tracked linear candidate screen, skips
