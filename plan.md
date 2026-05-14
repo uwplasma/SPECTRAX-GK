@@ -30,7 +30,7 @@ page names the claim level explicitly.
 |---|---:|---|---|
 | Linear-growth stellarator optimization | 98% | Real in-memory `vmec_jax -> booz_xform_jax -> SPECTRAX-GK` optimizer, multi-surface/multi-alpha/multi-ky reduction, AD/FD checks, and branch-continuity gates. | Repeat the reduced portfolio guard on selected held-out surface/alpha artifacts before broad manuscript promotion. |
 | Quasilinear-flux stellarator optimization | 99% model-development scope | Held-out nonlinear flux trends are predicted with calibrated uncertainty intervals and the failed stellarator train/holdout artifact is replaced by a passing, converged dataset. | DSHAPE and circular now have replicated nonlinear-window evidence; absolute-flux promotion still requires a richer model that beats the null/one-constant baselines on held-out nonlinear data. |
-| Nonlinear turbulent-flux stellarator optimization | 96% evidence plumbing | Objective uses post-transient nonlinear heat-flux averages with time-window, seed, grid, and timestep convergence, not reduced envelope estimates. | Two independent external-VMEC seed/timestep gates are closed and a production guard now enforces this boundary; promotion remains blocked until optimized equilibria have their own replicated long-window nonlinear audits. |
+| Nonlinear turbulent-flux stellarator optimization | 100% scoped audit evidence / broader gradients open | Objective uses post-transient nonlinear heat-flux averages with time-window, seed, grid, and timestep convergence, not reduced envelope estimates. | D-shaped/circular external-VMEC holdout ensembles and the selected optimized-equilibrium seed/timestep `t=[350,700]` audit pass; nonlinear turbulence-gradient and broad multi-surface optimization claims remain future gates. |
 | Quasilinear manuscript plots | 100% scoped | Every plot is regenerated from checked scripts and JSON sidecars, with failed baselines and accepted candidate scope shown honestly. | Keep runtime absolute-flux claims blocked until a future calibrated model passes the guardrail. |
 | Parallelization | 95% broad / 100% independent-work | Nonlinear domain sharding routes the real RHS/FFT/field-solve communication and passes serial identity, conservation, transport-window, CPU/GPU speedup, and profiler gates. | Independent `k_y`, UQ, and optimization ensembles are production-closed; nonlinear domain decomposition remains diagnostic pending production RHS routing and profiler-backed speedup. |
 | Coverage and refactor | 99% gate | Fresh combined wide coverage has positive margin above 95%, preferably 97%, and high-priority manifest owners are either closed or explicitly scoped. | Latest public CI for `2516ff8` is green; keep the manifest drift guard in CI and rerun wide coverage after the next large source split. |
@@ -182,15 +182,28 @@ Closed by this checkpoint:
   timestep variant. The queued ladder is `t = 250, 350, 450, 700` with
   explicit restart continuation between horizons.
 
+Closed after the full office campaign:
+
+- The first launch wrapper exposed a real orchestration bug: copied continuation
+  outputs at `t≈250` were initially treated as completed `t=350/450/700`
+  outputs. The corrected wrapper now reads `Grids/time` and skips only when the
+  target horizon is actually reached.
+- Seed31 and seed32 were advanced to `t≈700.02`, and the dt0p04 timestep
+  replicate was advanced to `t≈699.97`.
+- The formal `t=[350,700]` optimized-equilibrium replicate gate passed with
+  ensemble mean ion heat flux `10.19`, mean-relative spread `0.038`, and
+  combined SEM/mean `0.021`.
+- `docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.*`
+  and the convergence sidecars are now tracked, and
+  `docs/_static/production_nonlinear_optimization_guard.*` is regenerated with
+  the optimized-equilibrium ensemble attached.
+
 Still open:
 
-- The campaign outputs must be audited for finite traces, late-window
-  post-transient running-mean convergence, seed agreement, timestep agreement,
-  and meaningful nonzero transport before any optimized-equilibrium nonlinear
-  heat-flux reduction claim is promoted.
-- If the optimized-equilibrium audit fails, it should remain an honest negative
-  result and the next manuscript step is either a modified geometry candidate
-  or a stronger multi-surface optimization objective.
+- This closes the scoped optimized-equilibrium post-transient transport-window
+  audit. It does not close nonlinear turbulence-gradient AD, universal
+  quasilinear absolute-flux prediction, or broad multi-surface/multi-field-line
+  stellarator heat-flux optimization claims.
 
 ### 2026-05-13 Broad Lane Push Checkpoint
 
@@ -337,8 +350,10 @@ As of 2026-05-11:
 - The `vmec_jax -> booz_xform_jax -> SPECTRAX-GK` path is closed only for
   artifact-passing zero-beta equal-arc parity rows at `mboz=nboz=21` and for
   reduced frequency/quasilinear/nonlinear-window-estimator gradients on
-  QH/Li383; it is not closed for production nonlinear turbulence gradients or
-  optimized-equilibrium nonlinear heat-flux audits. The fixed-resolution QI
+  QH/Li383. The selected optimized-equilibrium nonlinear heat-flux audit now
+  passes as a replicated post-transient transport-window check, but production
+  nonlinear turbulence gradients and broad multi-surface optimization remain
+  open. The fixed-resolution QI
   entry passes after the Boozer half-mesh convention fix, with drift mismatch
   about `7.13e-2` against the `8e-2` tolerance, and evaluated QI `ntheta=8,16`
   robustness variants pass. The full QI seed campaign remains artifact-limited

@@ -16,13 +16,13 @@ REQUIRED_PHRASES = {
         "does not promote a runtime/TOML absolute-flux predictor",
         "W7-X TEM / kinetic-electron validation",
         "W7-X long-window zonal recurrence/damping closure",
-        "production nonlinear optimization still requires converged post-transient audits",
+        "selected QA optimized-equilibrium audit is the current scoped exception",
     ),
     "docs/verification_matrix.rst": (
         "Closed as scoped model-selection result",
         "does not promote a runtime/TOML absolute-flux predictor",
         "W7-X zonal long-window recurrence/damping and W7-X TEM / kinetic-electron validation remain outside",
-        "production optimization, which still requires converged post-transient audits",
+        "Production nonlinear optimization is promoted only for the selected optimized-equilibrium audit",
     ),
     "README.md": (
         "scoped manuscript model-selection candidate, not a runtime/TOML absolute-flux predictor",

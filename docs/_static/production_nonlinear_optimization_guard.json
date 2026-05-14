@@ -1,5 +1,5 @@
 {
-  "claim_level": "production_nonlinear_optimization_blocked_until_optimized_equilibrium_replicated_transport_windows",
+  "claim_level": "production_nonlinear_optimization_promoted_by_replicated_transport_windows",
   "config": {
     "max_combined_sem_rel": 0.25,
     "max_mean_rel_spread": 0.15,
@@ -30,13 +30,13 @@
       "passed": true
     },
     {
-      "detail": "provide long post-transient replicated nonlinear transport windows for the optimized equilibrium",
+      "detail": "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json",
       "metric": "optimized_equilibrium_replicated_transport_window",
-      "passed": false
+      "passed": true
     }
   ],
   "kind": "production_nonlinear_turbulent_flux_optimization_guard",
-  "notes": "This guard intentionally allows release when reduced/startup nonlinear artifacts are scoped correctly, while keeping production nonlinear turbulent-flux optimization unpromoted until optimized-equilibrium long-window replicate audits exist.",
+  "notes": "This guard intentionally allows release when reduced/startup nonlinear artifacts are scoped correctly. Production nonlinear turbulent-flux optimization is promoted only when optimized-equilibrium long-window replicate audits exist and pass.",
   "optimization_artifact_path": "docs/_static/stellarator_itg_optimization_comparison.json",
   "optimization_scope": {
     "artifact_claims_production": false,
@@ -51,14 +51,33 @@
       "nonlinear_heat_flux"
     ]
   },
-  "optimized_equilibrium_artifacts": [],
+  "optimized_equilibrium_artifacts": [
+    {
+      "case": "optimized_equilibrium_post_optimization_ensemble_gate",
+      "claim_level": "replicated_nonlinear_window_uncertainty_gate_not_simulation_claim",
+      "claim_scoped_as_replicated_holdout": true,
+      "combined_sem_rel": 0.020869088819709194,
+      "combined_sem_rel_ok": true,
+      "ensemble_mean": 10.19273263179093,
+      "finite_transport_mean": true,
+      "is_nonlinear_window_ensemble": true,
+      "kind": "nonlinear_window_ensemble_report",
+      "mean_rel_spread": 0.038174615386123725,
+      "mean_rel_spread_ok": true,
+      "n_reports": 3,
+      "optimized_equilibrium_marker": true,
+      "passed": true,
+      "path": "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json",
+      "qualifies_as_long_post_transient_replicate": true,
+      "qualifies_for_production_optimization": true,
+      "report_count_ok": true
+    }
+  ],
   "passed": true,
-  "production_nonlinear_optimization_promoted": false,
+  "production_nonlinear_optimization_promoted": true,
   "promotion_gate": {
-    "blockers": [
-      "optimized_equilibrium_replicated_transport_window"
-    ],
-    "passed": false,
+    "blockers": [],
+    "passed": true,
     "requirements": [
       "optimized equilibrium must have long post-transient replicated nonlinear transport-window audits",
       "replicates must include independent seed/initial-condition and timestep evidence",
@@ -142,8 +161,8 @@
     ]
   },
   "summary": {
-    "production_nonlinear_optimization_ready": 0,
-    "qualifying_optimized_equilibrium_ensembles": 0,
+    "production_nonlinear_optimization_ready": 1,
+    "qualifying_optimized_equilibrium_ensembles": 1,
     "qualifying_replicated_holdout_ensembles": 2
   }
 }

@@ -370,8 +370,10 @@ The tracked guard lives at
 ``docs/_static/vmec_boozer_reduced_portfolio_guard.json`` and passes on the QH
 mode-21 multi-alpha/two-``k_y`` artifact. It admits reduced growth/QL
 portfolio plumbing only; production nonlinear turbulent-transport optimization
-still requires separate held-out optimized-equilibrium nonlinear-window
-ensemble and transport audits.
+now additionally requires the separate optimized-equilibrium long-window
+transport audit tracked below. That audit is closed for the selected QA
+candidate, while nonlinear turbulence gradients and broad multi-surface
+optimization remain separate gates.
 
 Results
 -------
@@ -734,15 +736,20 @@ the following pass:
    blocked as intended: reduced held-out-alpha and held-out-surface artifacts
    now pass, but they remain reduced-objective evidence, while the D-shaped and
    circular replicated nonlinear-window ensembles are holdout/calibration
-   evidence rather than optimized-equilibrium nonlinear audits.
+   evidence. The selected optimized QA equilibrium now has its own replicated
+   long-window nonlinear audit, which closes the optimized-equilibrium
+   post-transient transport-window evidence requirement for this scoped
+   candidate.
    ``tools/write_optimized_equilibrium_transport_configs.py`` is the launch
    contract for that final audit. Given a concrete post-optimization
    ``wout*.nc``, it writes the release ``n64`` nonlinear transport replicate
    ladder, including ``t=250,350,450,700`` continuations, two random-seed
    replicates, one timestep replicate, and the exact ensemble/guard commands.
-   These outputs remain a run plan until the generated ``t=[350,700]`` ensemble
-   passes finite-flux, running-window, block/SEM, replicate-spread, and
-   optimized-equilibrium marker gates.
+   The current selected candidate has completed that ladder. The generated
+   ``t=[350,700]`` ensemble passes finite-flux, running-window, block/SEM,
+   replicate-spread, and optimized-equilibrium marker gates, with ensemble mean
+   ion heat flux ``10.19``, mean-relative spread ``0.038``, and combined
+   SEM/mean ``0.021``.
 
    Example launch-contract generation:
 
@@ -760,9 +767,10 @@ the following pass:
    are negative, with the least damped point at ``gamma≈-0.015``. The
    quasilinear mixing-length diagnostic therefore reports zero saturated heat
    flux because stable modes are excluded by the current growth-floor rule. The
-   next nonlinear audit for this candidate should be interpreted as a
-   low-flux/stability replicated transport-window check, not as an unstable
-   turbulent saturation run.
+   nonlinear audit for this candidate is therefore interpreted as a
+   post-transient optimized-equilibrium transport-window check, not as evidence
+   that the uncalibrated quasilinear zero-flux estimate predicts an absolute
+   saturated flux.
 
 .. figure:: _static/optimized_equilibrium_linear_screen.png
    :width: 90%
@@ -772,9 +780,22 @@ the following pass:
    Linear/quasilinear screen for the QA optimized-equilibrium candidate from
    ``vmec_jax``. The sampled ITG branch is linearly damped across the scan, so
    the uncalibrated quasilinear heat-flux estimate is zero under the stable-mode
-   exclusion rule. This is pre-launch evidence for the production nonlinear
-   replicated transport-window audit; it does not by itself promote an
-   optimized-equilibrium nonlinear heat-flux claim.
+   exclusion rule. The subsequent nonlinear audit shows finite post-transient
+   heat flux, so this panel should be read as a stability/branch screen rather
+   than as an absolute-flux prediction.
+
+.. figure:: _static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.png
+   :width: 90%
+   :align: center
+   :alt: Optimized QA equilibrium nonlinear replicate gate
+
+   Optimized-equilibrium nonlinear replicate gate. Two seed replicates and one
+   timestep replicate are advanced to ``t≈700`` at ``n64`` and accepted over the
+   post-transient window ``t=[350,700]``. The ensemble passes with mean ion heat
+   flux ``10.19``, mean-relative spread ``0.038``, and combined SEM/mean
+   ``0.021``. This closes the scoped optimized-equilibrium transport-window
+   evidence gate; broader nonlinear turbulence-gradient and absolute-flux model
+   claims remain separate gates.
 
 .. figure:: _static/production_nonlinear_optimization_guard.png
    :width: 90%
@@ -784,11 +805,12 @@ the following pass:
    Production nonlinear turbulent-flux optimization guard. The release-safety
    side passes because startup and reduced nonlinear artifacts are explicitly
    blocked from production promotion and two long post-transient replicated
-   holdout ensembles pass. The production-promotion side remains blocked until
-   the optimized equilibrium itself has replicated post-transient nonlinear
-   transport windows with seed/initial-condition and timestep evidence.
+   holdout ensembles pass. The production-promotion side now also passes for
+   the selected optimized-equilibrium audit because seed and timestep
+   post-transient windows are attached and converged.
 
-Until those gates pass, the release claim is: SPECTRAX-GK has a tested
-differentiable stellarator ITG objective-reduction workflow and the validation
-infrastructure needed to promote that workflow to full VMEC/Boozer/nonlinear
-optimization.
+The release claim is now: SPECTRAX-GK has a tested differentiable stellarator
+ITG objective-reduction workflow, long-window nonlinear holdout evidence, and a
+scoped optimized-equilibrium replicated nonlinear transport audit. It is still
+not a universal absolute-flux quasilinear model, a nonlinear turbulence-gradient
+optimizer, or a broad multi-surface stellarator transport-optimization claim.

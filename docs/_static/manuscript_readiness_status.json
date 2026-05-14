@@ -73,21 +73,23 @@
         "best_reduction_factor": 0.05282149157273069,
         "n_objectives": 3,
         "production_nonlinear_optimization_guard_safe": true,
-        "production_nonlinear_optimization_promoted": false,
-        "production_nonlinear_optimized_equilibrium_ensembles": 0,
+        "production_nonlinear_optimization_promoted": true,
+        "production_nonlinear_optimized_equilibrium_ensembles": 1,
         "production_nonlinear_replicated_holdout_ensembles": 2,
         "weighted_residual_uq_gate_passed": true,
         "worst_reduction_factor": 0.14944986630532714
       },
       "lane": "Reduced differentiable stellarator ITG optimization",
-      "next_action": "Use as the current optimization figure only with scoped wording; nonlinear-window VMEC/Boozer/GK gradients and optimized-geometry nonlinear audits remain future requirements before claiming end-to-end stellarator heat-flux optimization.",
+      "next_action": "Use as the current optimization figure only with scoped wording; nonlinear-window VMEC/Boozer/GK gradients and matched baseline-to-optimized audits across broader geometry families remain future requirements before claiming broad end-to-end stellarator heat-flux optimization.",
       "primary_artifacts": [
         "docs/_static/stellarator_itg_optimization_comparison.json",
         "docs/_static/stellarator_itg_optimization_comparison.png",
         "docs/_static/stellarator_itg_optimization_uq.json",
         "docs/_static/stellarator_itg_optimization_uq.png",
         "docs/_static/production_nonlinear_optimization_guard.json",
-        "docs/_static/production_nonlinear_optimization_guard.png"
+        "docs/_static/production_nonlinear_optimization_guard.png",
+        "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json",
+        "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.png"
       ],
       "status": "closed"
     },
@@ -103,10 +105,10 @@
         "multi_equilibrium_gradient_max_rel_error": 0.026774412331418387,
         "multi_equilibrium_reduced_nonlinear_window_gradient_gate": true,
         "nonlinear_transport_average_gate": false,
-        "optimized_equilibrium_replicated_transport_ensembles": 0,
+        "optimized_equilibrium_replicated_transport_ensembles": 1,
         "production_nonlinear_observable_fd_path_gate": false,
         "production_nonlinear_optimization_guard_safe": true,
-        "production_nonlinear_optimization_promoted": false,
+        "production_nonlinear_optimization_promoted": true,
         "production_nonlinear_window_gradient_gate": false,
         "quasilinear_weight_gradient_gate": true,
         "reduced_nonlinear_window_gradient_gate": true,
@@ -128,7 +130,7 @@
         "vmec_boozer_startup_nonlinear_response_fraction": 0.04008881189273438
       },
       "lane": "Production solver-objective geometry gradients",
-      "next_action": "Full VMEC/Boozer eigenfrequency, quasilinear, and multi-equilibrium reduced nonlinear-window estimator gradients are closed. The compact nonlinear FD audits are tracked only as startup plumbing checks; they do not validate transport heat-flux averages. Converged post-transient running-average nonlinear windows, VMEC/Boozer turbulence gradients, local-gradient conditioning, and optimized-equilibrium nonlinear audits remain required before full nonlinear stellarator-optimization claims.",
+      "next_action": "Full VMEC/Boozer eigenfrequency, quasilinear, and multi-equilibrium reduced nonlinear-window estimator gradients are closed. The compact nonlinear FD audits are tracked only as startup plumbing checks; they do not validate transport heat-flux averages. The selected optimized-equilibrium long-window audit is closed; VMEC/Boozer turbulence gradients, local-gradient conditioning, and broader multi-surface baseline-to-optimized audits remain required before full nonlinear stellarator-optimization claims.",
       "primary_artifacts": [
         "docs/_static/solver_objective_gradient_gate.json",
         "docs/_static/vmec_boozer_solver_frequency_gradient_gate.json",
@@ -140,7 +142,8 @@
         "docs/_static/nonlinear_window_fd_audit.png",
         "docs/_static/vmec_boozer_nonlinear_window_fd_audit.json",
         "docs/_static/vmec_boozer_nonlinear_window_fd_audit.png",
-        "docs/_static/production_nonlinear_optimization_guard.json"
+        "docs/_static/production_nonlinear_optimization_guard.json",
+        "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json"
       ],
       "status": "closed"
     },
