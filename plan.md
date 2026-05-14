@@ -5657,3 +5657,24 @@ Exit gate:
   - use it on the next independent converged holdout, with circular `t=450`
     preferred over ITERModel because ITERModel is already consumed by the
     current training reference.
+
+### 2026-05-14 Repository-Size Headroom Cleanup
+
+- Removed unreferenced tracked `docs/_static` PNG diagnostics that were no
+  longer cited by README, docs, manifests, tests, tools, or this plan.
+- Restored tracked-repository headroom for the next accepted circular replicate
+  evidence without changing any validation claim or documentation reference.
+- Local checks:
+  - `python tools/check_repository_size_manifest.py` passed with tracked total
+    `47.28 MB` against the `50 MB` policy;
+  - `python tools/check_validation_coverage_manifest.py --out-json
+    /tmp/validation_coverage_manifest_summary.json` passed;
+  - `python tools/check_quasilinear_promotion_guardrails.py --out-json
+    /tmp/quasilinear_promotion_guardrails.json` passed;
+  - `python -m sphinx -b html -W docs docs/_build/html` passed;
+  - `git diff --check` passed.
+- Immediate next step:
+  - commit and push the cleanup;
+  - continue monitoring the office circular external-VMEC seed/timestep
+    replicate campaign and only promote the generated figure if the readiness
+    and ensemble gates pass.
