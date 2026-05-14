@@ -546,6 +546,23 @@ running those long nonlinear simulations. The command-line artifact wrapper is
 reports and writes a JSON report plus an optional PNG summary for documentation
 or manuscript audit trails.
 
+The first tracked external-VMEC replicate campaign applies that protocol to
+the admitted D-shaped nonlinear holdout. Six office-GPU runs were launched from
+the same ``n64`` configuration family: ``t=150`` startup runs and ``t=250``
+continuations for seeds ``31`` and ``32`` at ``dt=0.05``, plus a timestep
+variant with seed ``22`` at ``dt=0.04``. The late transport window
+``t=[170,250]`` passes the readiness gate and the ensemble gate without
+relaxing the spread or uncertainty thresholds: the accepted means are about
+``18.8``, ``20.8``, and ``18.1`` in gyro-Bohm units, the mean-relative spread is
+``0.141`` against the ``0.15`` gate, and the combined SEM/mean is ``0.054``
+against the ``0.25`` gate. This strengthens the D-shaped holdout as nonlinear
+model-development evidence; it still does not promote the current quasilinear
+model to an absolute saturated-flux predictor.
+
+.. image:: _static/external_vmec_dshape_replicates/dshape_replicate_t250_ensemble_gate.png
+   :alt: D-shaped external-VMEC nonlinear heat-flux replicate gate
+   :width: 100%
+
 The report builder is intentionally strict. Every point in one report must use
 the report's named ``saturation_rule``; predicted fluxes, observed nonlinear
 window means, and optional window standard deviations must be finite; and
