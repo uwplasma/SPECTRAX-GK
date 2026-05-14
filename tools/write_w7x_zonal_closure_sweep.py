@@ -158,15 +158,19 @@ def _command_for_case(
     nl: int,
     nm: int,
     sample_stride: int,
+    checkpoint_steps: int,
 ) -> list[str]:
     out_dir = out_dir_root / case.slug
+    panel_png = out_dir / "panel.png"
     cmd = [
         "python3",
         "tools/generate_w7x_zonal_response_panel.py",
         "--config",
-        config.as_posix(),
+        _repo_relative(config),
         "--out-dir",
-        out_dir.as_posix(),
+        _repo_relative(out_dir),
+        "--out-png",
+        _repo_relative(panel_png),
         "--kx-values",
         f"{kx:.12g}",
         "--dt",
@@ -179,6 +183,8 @@ def _command_for_case(
         str(nm),
         "--sample-stride",
         str(sample_stride),
+        "--checkpoint-steps",
+        str(checkpoint_steps),
         "--enable-hypercollisions",
         "--show-progress",
     ]
@@ -209,6 +215,7 @@ def build_manifest(
     nl: int = 16,
     nm: int = 64,
     sample_stride: int = 4,
+    checkpoint_steps: int = 500,
 ) -> dict[str, object]:
     rows = []
     launch_commands = []
@@ -224,14 +231,17 @@ def build_manifest(
             nl=nl,
             nm=nm,
             sample_stride=sample_stride,
+            checkpoint_steps=checkpoint_steps,
         )
         case_out = out_dir / case.slug / f"w7x_test4_kx{int(round(1000.0 * kx)):03d}.out.nc"
+        panel_png = out_dir / case.slug / "panel.png"
         rows.append(
             {
                 "slug": case.slug,
                 "label": case.label,
                 "family": case.family,
                 "out_dir": _repo_relative(out_dir / case.slug),
+                "panel_png": _repo_relative(panel_png),
                 "out_nc": _repo_relative(case_out),
                 "nu_hyper": case.nu_hyper,
                 "nu_hyper_l": case.nu_hyper_l,
@@ -245,8 +255,19 @@ def build_manifest(
             }
         )
         launch_commands.append(" ".join(cmd))
-        plot_args.append(f'--run "{case.label}" "{case.family}" "{case_out.as_posix()}"')
-    plot_command = "python3 tools/plot_w7x_zonal_closure_ladder.py " + " ".join(plot_args)
+        plot_args.append(
+            f'--run "{case.label}" "{case.family}" "{_repo_relative(case_out)}"'
+        )
+    plot_out = out_dir / "w7x_zonal_closure_ladder_full.png"
+    plot_json = out_dir / "w7x_zonal_closure_ladder_full.json"
+    plot_csv = out_dir / "w7x_zonal_closure_ladder_full.csv"
+    plot_command = (
+        "python3 tools/plot_w7x_zonal_closure_ladder.py "
+        f"--out-png {_repo_relative(plot_out)} "
+        f"--out-json {_repo_relative(plot_json)} "
+        f"--out-csv {_repo_relative(plot_csv)} "
+        + " ".join(plot_args)
+    )
     return {
         "kind": "w7x_zonal_closure_sweep_manifest",
         "reference_case": "W7-X test 4 kx rho_i = 0.07",
@@ -258,6 +279,7 @@ def build_manifest(
         "Nl": nl,
         "Nm": nm,
         "sample_stride": sample_stride,
+        "checkpoint_steps": checkpoint_steps,
         "notes": (
             "This sweep isolates closure families one at a time on the paper-facing W7-X "
             "test-4 zonal-response contract. Constant Hermite, kz Hermite, mixed LM, "
@@ -267,6 +289,11 @@ def build_manifest(
         "cases": rows,
         "launch_commands": launch_commands,
         "plot_command": plot_command,
+        "plot_outputs": {
+            "png": _repo_relative(plot_out),
+            "json": _repo_relative(plot_json),
+            "csv": _repo_relative(plot_csv),
+        },
     }
 
 
@@ -287,6 +314,7 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--Nl", type=int, default=16)
     parser.add_argument("--Nm", type=int, default=64)
     parser.add_argument("--sample-stride", type=int, default=4)
+    parser.add_argument("--checkpoint-steps", type=int, default=500)
     return parser.parse_args(argv)
 
 
@@ -301,12 +329,19 @@ def main(argv: list[str] | None = None) -> int:
         nl=int(args.Nl),
         nm=int(args.Nm),
         sample_stride=int(args.sample_stride),
+        checkpoint_steps=int(args.checkpoint_steps),
     )
     path = write_manifest(args.manifest, payload)
     print(f"Wrote {path}")
-    for cmd in payload["launch_commands"]:
+    launch_commands = payload["launch_commands"]
+    if not isinstance(launch_commands, list):
+        raise TypeError("manifest launch_commands must be a list")
+    for cmd in launch_commands:
         print(cmd)
-    print(payload["plot_command"])
+    plot_command = payload["plot_command"]
+    if not isinstance(plot_command, str):
+        raise TypeError("manifest plot_command must be a string")
+    print(plot_command)
     return 0
 
 
