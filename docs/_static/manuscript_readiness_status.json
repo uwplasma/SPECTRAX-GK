@@ -72,6 +72,10 @@
         "all_objective_gradient_gates_passed": true,
         "best_reduction_factor": 0.05282149157273069,
         "n_objectives": 3,
+        "production_nonlinear_optimization_guard_safe": true,
+        "production_nonlinear_optimization_promoted": false,
+        "production_nonlinear_optimized_equilibrium_ensembles": 0,
+        "production_nonlinear_replicated_holdout_ensembles": 2,
         "weighted_residual_uq_gate_passed": true,
         "worst_reduction_factor": 0.14944986630532714
       },
@@ -81,7 +85,9 @@
         "docs/_static/stellarator_itg_optimization_comparison.json",
         "docs/_static/stellarator_itg_optimization_comparison.png",
         "docs/_static/stellarator_itg_optimization_uq.json",
-        "docs/_static/stellarator_itg_optimization_uq.png"
+        "docs/_static/stellarator_itg_optimization_uq.png",
+        "docs/_static/production_nonlinear_optimization_guard.json",
+        "docs/_static/production_nonlinear_optimization_guard.png"
       ],
       "status": "closed"
     },
@@ -97,7 +103,10 @@
         "multi_equilibrium_gradient_max_rel_error": 0.026774412331418387,
         "multi_equilibrium_reduced_nonlinear_window_gradient_gate": true,
         "nonlinear_transport_average_gate": false,
+        "optimized_equilibrium_replicated_transport_ensembles": 0,
         "production_nonlinear_observable_fd_path_gate": false,
+        "production_nonlinear_optimization_guard_safe": true,
+        "production_nonlinear_optimization_promoted": false,
         "production_nonlinear_window_gradient_gate": false,
         "quasilinear_weight_gradient_gate": true,
         "reduced_nonlinear_window_gradient_gate": true,
@@ -130,7 +139,8 @@
         "docs/_static/nonlinear_window_fd_audit.json",
         "docs/_static/nonlinear_window_fd_audit.png",
         "docs/_static/vmec_boozer_nonlinear_window_fd_audit.json",
-        "docs/_static/vmec_boozer_nonlinear_window_fd_audit.png"
+        "docs/_static/vmec_boozer_nonlinear_window_fd_audit.png",
+        "docs/_static/production_nonlinear_optimization_guard.json"
       ],
       "status": "closed"
     },

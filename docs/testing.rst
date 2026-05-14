@@ -297,6 +297,12 @@ NetCDF-to-evidence wrapper: it extracts heat-flux traces from finished
 ``*.out.nc`` files, writes the transport-window summaries and convergence
 reports, runs the readiness and ensemble gates, and produces the documentation
 figure used by the manuscript ledger.
+``tools/check_production_nonlinear_optimization_guard.py`` then consumes those
+replicated long-window ensembles together with the reduced optimization and
+startup finite-difference artifacts. It is the fail-closed check that allows
+release-safe scoped wording while blocking production nonlinear turbulent-flux
+optimization promotion until optimized equilibria have replicated
+post-transient transport-window audits.
 
 ``tools/prepare_external_vmec_holdout_from_screen.py`` is the selector that
 feeds that generator. It reads the tracked linear candidate screen, skips

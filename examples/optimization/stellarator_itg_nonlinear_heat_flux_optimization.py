@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Optimize a QA max-mode-1 stellarator for a nonlinear ITG heat-flux window."""
+"""Optimize a QA max-mode-1 stellarator for a reduced nonlinear ITG window."""
 
 from __future__ import annotations
 
@@ -39,12 +39,12 @@ def main() -> None:
     write_result_artifacts(
         result,
         args.out,
-        title="QA stellarator optimization for small nonlinear ITG heat flux",
+        title="QA stellarator optimization for a reduced nonlinear ITG window",
     )
     trace = result.nonlinear_trace or {}
     final_window = trace.get("final_window", {})
     print(
-        "nonlinear heat-flux optimization: "
+        "reduced nonlinear-window optimization: "
         f"objective {result.initial_objective:.4e} -> {result.final_objective:.4e}, "
         f"AD/FD gate={result.gradient_gate['passed']}, "
         f"tail CV={final_window.get('cv', float('nan')):.3e}, "

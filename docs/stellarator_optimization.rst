@@ -732,9 +732,21 @@ the following pass:
    current frozen promotion artifact,
    ``docs/_static/vmec_boozer_aggregate_holdout_promotion_gate.json``, is
    blocked as intended: reduced held-out-alpha and held-out-surface artifacts
-   now pass, but they are not production nonlinear transport validation
-   artifacts, and no replicated nonlinear-window ensemble artifact has been
-   supplied.
+   now pass, but they remain reduced-objective evidence, while the D-shaped and
+   circular replicated nonlinear-window ensembles are holdout/calibration
+   evidence rather than optimized-equilibrium nonlinear audits.
+
+.. figure:: _static/production_nonlinear_optimization_guard.png
+   :width: 90%
+   :align: center
+   :alt: Production nonlinear turbulent-flux optimization promotion guard
+
+   Production nonlinear turbulent-flux optimization guard. The release-safety
+   side passes because startup and reduced nonlinear artifacts are explicitly
+   blocked from production promotion and two long post-transient replicated
+   holdout ensembles pass. The production-promotion side remains blocked until
+   the optimized equilibrium itself has replicated post-transient nonlinear
+   transport windows with seed/initial-condition and timestep evidence.
 
 Until those gates pass, the release claim is: SPECTRAX-GK has a tested
 differentiable stellarator ITG objective-reduction workflow and the validation

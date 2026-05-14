@@ -162,7 +162,12 @@ holdouts. Compact nonlinear startup-window finite-difference observable audits
 are tracked at ``docs/_static/nonlinear_window_fd_audit.png`` / ``.json`` and
 ``docs/_static/vmec_boozer_nonlinear_window_fd_audit.png`` / ``.json``. These
 short artifacts validate plumbing only and explicitly are not heat-flux
-transport averages. The remaining promotion step is a production nonlinear
+transport averages. The production guard at
+``docs/_static/production_nonlinear_optimization_guard.png`` / ``.json`` records
+that D-shaped and circular long post-transient replicate ensembles now pass as
+holdout evidence, while production nonlinear turbulent-flux optimization remains
+blocked until optimized equilibria have their own replicated post-transient
+transport-window audits. The remaining promotion step is a production nonlinear
 turbulence-gradient or robust finite-difference audit with local-gradient
 conditioning, converged long post-transient running-average heat-flux windows,
 and nonlinear audits of optimized equilibria. Those are required before claiming

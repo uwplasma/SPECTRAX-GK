@@ -158,6 +158,16 @@ def test_optimize_stellarator_itg_reduces_nonlinear_window_objective(monkeypatch
     assert result.nonlinear_trace is not None
     assert result.nonlinear_trace["final_window"]["cv"] < 0.05
     assert result.nonlinear_trace["final_window"]["trend"] < 0.15
+    serialized = result.to_dict()
+    assert (
+        serialized["claim_level"]
+        == "reduced_nonlinear_window_estimator_optimization_not_transport_average"
+    )
+    assert serialized["nonlinear_transport_scope"]["transport_average_gate"] is False
+    assert (
+        serialized["nonlinear_transport_scope"]["production_nonlinear_optimization_claim"]
+        is False
+    )
 
     initial = dict(zip(OBSERVABLE_NAMES, result.initial_observables, strict=True))
     final = dict(zip(OBSERVABLE_NAMES, result.final_observables, strict=True))
@@ -172,6 +182,11 @@ def test_compare_stellarator_itg_objectives_payload_is_json_ready(monkeypatch) -
 
     payload = compare_stellarator_itg_objectives(("growth",), config=cfg, workers=2, finite_difference_workers=2)
 
+    assert (
+        payload["claim_level"]
+        == "reduced_objective_optimization_comparison_not_full_production_vmec_gk"
+    )
+    assert payload["production_nonlinear_optimization_claim"] is False
     assert payload["parameter_names"] == list(PARAMETER_NAMES)
     assert payload["observable_names"] == list(OBSERVABLE_NAMES)
     assert payload["parallel"]["requested_workers"] == 2

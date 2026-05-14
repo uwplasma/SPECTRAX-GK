@@ -22,9 +22,9 @@
       "passed": false
     },
     {
-      "detail": "provide a passed replicated nonlinear-window ensemble artifact before any production nonlinear optimized-equilibrium claim",
+      "detail": "docs/_static/external_vmec_dshape_replicates/dshape_replicate_t250_ensemble_gate.json; docs/_static/external_vmec_circular_replicates/circular_replicate_t700_ensemble_gate.json",
       "metric": "passed_replicated_nonlinear_window_ensemble",
-      "passed": false
+      "passed": true
     }
   ],
   "holdout_artifacts": [
@@ -56,130 +56,31 @@
   "kind": "vmec_boozer_aggregate_holdout_promotion_gate",
   "nonlinear_ensemble_artifacts": [
     {
-      "claim_level": "replicated_seed_timestep_artifact_manifest_blocks_promotion_until_ready",
-      "is_nonlinear_window_ensemble": false,
-      "is_nonlinear_window_readiness_manifest": true,
-      "missing_artifacts": [
-        {
-          "artifact_hint": "add 2 passed nonlinear-window convergence report(s) for case 'circular_external_vmec_t450_high_grid_window' with distinct seed metadata and trace provenance",
-          "case": "circular_external_vmec_t450_high_grid_window",
-          "metadata_requirements": [
-            "summary JSON or convergence report with source_artifact provenance",
-            "variant.seed or equivalent top-level seed metadata",
-            "passed nonlinear_window_convergence_report gates"
-          ],
-          "missing_count": 2,
-          "observed_distinct_values": [],
-          "required_distinct_count": 2,
-          "variant_axis": "seed"
-        },
-        {
-          "artifact_hint": "add 2 passed nonlinear-window convergence report(s) for case 'circular_external_vmec_t450_high_grid_window' with distinct timestep metadata and trace provenance",
-          "case": "circular_external_vmec_t450_high_grid_window",
-          "metadata_requirements": [
-            "summary JSON or convergence report with source_artifact provenance",
-            "variant.timestep or equivalent top-level timestep metadata",
-            "passed nonlinear_window_convergence_report gates"
-          ],
-          "missing_count": 2,
-          "observed_distinct_values": [],
-          "required_distinct_count": 2,
-          "variant_axis": "timestep"
-        },
-        {
-          "artifact_hint": "add 2 passed nonlinear-window convergence report(s) for case 'dshape_external_vmec_t250_high_grid_window' with distinct seed metadata and trace provenance",
-          "case": "dshape_external_vmec_t250_high_grid_window",
-          "metadata_requirements": [
-            "summary JSON or convergence report with source_artifact provenance",
-            "variant.seed or equivalent top-level seed metadata",
-            "passed nonlinear_window_convergence_report gates"
-          ],
-          "missing_count": 2,
-          "observed_distinct_values": [],
-          "required_distinct_count": 2,
-          "variant_axis": "seed"
-        },
-        {
-          "artifact_hint": "add 2 passed nonlinear-window convergence report(s) for case 'dshape_external_vmec_t250_high_grid_window' with distinct timestep metadata and trace provenance",
-          "case": "dshape_external_vmec_t250_high_grid_window",
-          "metadata_requirements": [
-            "summary JSON or convergence report with source_artifact provenance",
-            "variant.timestep or equivalent top-level timestep metadata",
-            "passed nonlinear_window_convergence_report gates"
-          ],
-          "missing_count": 2,
-          "observed_distinct_values": [],
-          "required_distinct_count": 2,
-          "variant_axis": "timestep"
-        },
-        {
-          "artifact_hint": "add 2 passed nonlinear-window convergence report(s) for case 'itermodel_external_vmec_t350_high_grid_window' with distinct seed metadata and trace provenance",
-          "case": "itermodel_external_vmec_t350_high_grid_window",
-          "metadata_requirements": [
-            "summary JSON or convergence report with source_artifact provenance",
-            "variant.seed or equivalent top-level seed metadata",
-            "passed nonlinear_window_convergence_report gates"
-          ],
-          "missing_count": 2,
-          "observed_distinct_values": [],
-          "required_distinct_count": 2,
-          "variant_axis": "seed"
-        },
-        {
-          "artifact_hint": "add 2 passed nonlinear-window convergence report(s) for case 'itermodel_external_vmec_t350_high_grid_window' with distinct timestep metadata and trace provenance",
-          "case": "itermodel_external_vmec_t350_high_grid_window",
-          "metadata_requirements": [
-            "summary JSON or convergence report with source_artifact provenance",
-            "variant.timestep or equivalent top-level timestep metadata",
-            "passed nonlinear_window_convergence_report gates"
-          ],
-          "missing_count": 2,
-          "observed_distinct_values": [],
-          "required_distinct_count": 2,
-          "variant_axis": "timestep"
-        },
-        {
-          "artifact_hint": "add 2 passed nonlinear-window convergence report(s) for case 'updown_asym_external_vmec_t450_high_grid_window' with distinct seed metadata and trace provenance",
-          "case": "updown_asym_external_vmec_t450_high_grid_window",
-          "metadata_requirements": [
-            "summary JSON or convergence report with source_artifact provenance",
-            "variant.seed or equivalent top-level seed metadata",
-            "passed nonlinear_window_convergence_report gates"
-          ],
-          "missing_count": 2,
-          "observed_distinct_values": [],
-          "required_distinct_count": 2,
-          "variant_axis": "seed"
-        },
-        {
-          "artifact_hint": "add 2 passed nonlinear-window convergence report(s) for case 'updown_asym_external_vmec_t450_high_grid_window' with distinct timestep metadata and trace provenance",
-          "case": "updown_asym_external_vmec_t450_high_grid_window",
-          "metadata_requirements": [
-            "summary JSON or convergence report with source_artifact provenance",
-            "variant.timestep or equivalent top-level timestep metadata",
-            "passed nonlinear_window_convergence_report gates"
-          ],
-          "missing_count": 2,
-          "observed_distinct_values": [],
-          "required_distinct_count": 2,
-          "variant_axis": "timestep"
-        }
-      ],
-      "passed": false,
-      "path": "docs/_static/nonlinear_window_ensemble_readiness_manifest.json",
-      "qualifies_for_production_nonlinear_promotion": false,
-      "readiness_blockers": [
-        "observed_windows_promotion_ready",
-        "seed_and_timestep_replicates_present"
-      ]
+      "claim_level": "replicated_nonlinear_window_uncertainty_gate_not_simulation_claim",
+      "is_nonlinear_window_ensemble": true,
+      "is_nonlinear_window_readiness_manifest": false,
+      "missing_artifacts": [],
+      "passed": true,
+      "path": "docs/_static/external_vmec_dshape_replicates/dshape_replicate_t250_ensemble_gate.json",
+      "qualifies_for_production_nonlinear_promotion": true,
+      "readiness_blockers": []
+    },
+    {
+      "claim_level": "replicated_nonlinear_window_uncertainty_gate_not_simulation_claim",
+      "is_nonlinear_window_ensemble": true,
+      "is_nonlinear_window_readiness_manifest": false,
+      "missing_artifacts": [],
+      "passed": true,
+      "path": "docs/_static/external_vmec_circular_replicates/circular_replicate_t700_ensemble_gate.json",
+      "qualifies_for_production_nonlinear_promotion": true,
+      "readiness_blockers": []
     }
   ],
   "notes": "This check gates claim promotion only. Passing aggregate reduced-objective FD and line-search artifacts proves optimizer plumbing; it does not by itself validate optimized-equilibrium nonlinear transport. Promotion requires independent held-out surface or field-line evidence plus replicated nonlinear-window uncertainty evidence.",
   "passed": false,
   "promotion_gate": {
     "blockers": [
-      "passed_holdout_surface_or_field_line_artifact",
-      "passed_replicated_nonlinear_window_ensemble"
+      "passed_holdout_surface_or_field_line_artifact"
     ],
     "passed": false,
     "requirements": [

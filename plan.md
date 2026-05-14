@@ -30,10 +30,10 @@ page names the claim level explicitly.
 |---|---:|---|---|
 | Linear-growth stellarator optimization | 98% | Real in-memory `vmec_jax -> booz_xform_jax -> SPECTRAX-GK` optimizer, multi-surface/multi-alpha/multi-ky reduction, AD/FD checks, and branch-continuity gates. | Repeat the reduced portfolio guard on selected held-out surface/alpha artifacts before broad manuscript promotion. |
 | Quasilinear-flux stellarator optimization | 99% model-development scope | Held-out nonlinear flux trends are predicted with calibrated uncertainty intervals and the failed stellarator train/holdout artifact is replaced by a passing, converged dataset. | DSHAPE and circular now have replicated nonlinear-window evidence; absolute-flux promotion still requires a richer model that beats the null/one-constant baselines on held-out nonlinear data. |
-| Nonlinear turbulent-flux stellarator optimization | 94% evidence plumbing | Objective uses post-transient nonlinear heat-flux averages with time-window, seed, grid, and timestep convergence, not reduced envelope estimates. | Two independent external-VMEC seed/timestep gates are closed; production nonlinear optimization remains blocked until the optimizer objective uses these long post-transient averages rather than startup/reduced-window estimators. |
+| Nonlinear turbulent-flux stellarator optimization | 96% evidence plumbing | Objective uses post-transient nonlinear heat-flux averages with time-window, seed, grid, and timestep convergence, not reduced envelope estimates. | Two independent external-VMEC seed/timestep gates are closed and a production guard now enforces this boundary; promotion remains blocked until optimized equilibria have their own replicated long-window nonlinear audits. |
 | Quasilinear manuscript plots | 100% scoped | Every plot is regenerated from checked scripts and JSON sidecars, with failed baselines and accepted candidate scope shown honestly. | Keep runtime absolute-flux claims blocked until a future calibrated model passes the guardrail. |
 | Parallelization | 95% broad / 100% independent-work | Nonlinear domain sharding routes the real RHS/FFT/field-solve communication and passes serial identity, conservation, transport-window, CPU/GPU speedup, and profiler gates. | Independent `k_y`, UQ, and optimization ensembles are production-closed; nonlinear domain decomposition remains diagnostic pending production RHS routing and profiler-backed speedup. |
-| Coverage and refactor | 99% gate | Fresh combined wide coverage has positive margin above 95%, preferably 97%, and high-priority manifest owners are either closed or explicitly scoped. | Latest public CI for `a00d19e` is green; keep the manifest drift guard in CI and rerun wide coverage after the next large source split. |
+| Coverage and refactor | 99% gate | Fresh combined wide coverage has positive margin above 95%, preferably 97%, and high-priority manifest owners are either closed or explicitly scoped. | Latest public CI for `2516ff8` is green; keep the manifest drift guard in CI and rerun wide coverage after the next large source split. |
 | `spectraxgk --plot` | 100% | Keep linear/nonlinear saved-output smoke tests and docs examples green. | Maintain as release hygiene while adding manuscript plot scripts. |
 
 Immediate execution order for this tranche:
@@ -5734,3 +5734,36 @@ Exit gate:
   - refresh `open_research_lane_status` and `manuscript_readiness_status` so
     the machine-readable dashboards include the accepted circular and DSHAPE
     replicate gates.
+
+### 2026-05-14 Production Nonlinear Optimization Guard
+
+- Added `src/spectraxgk/nonlinear_transport_optimization.py` and
+  `tools/check_production_nonlinear_optimization_guard.py`.
+- The new guard consumes the reduced stellarator optimization comparison,
+  startup nonlinear FD audits, and the DSHAPE/circular replicated long-window
+  ensembles.
+- Current tracked result:
+  - `docs/_static/production_nonlinear_optimization_guard.json` passes
+    release safety;
+  - qualifying replicated holdout ensembles: `2`;
+  - qualifying optimized-equilibrium replicated transport ensembles: `0`;
+  - production nonlinear turbulent-flux optimization promoted: `false`.
+- Updated the reduced nonlinear optimization plots and JSON metadata so the
+  nonlinear objective is explicitly labeled as a reduced nonlinear-window
+  estimator rather than a converged turbulent transport average.
+- Regenerated `open_research_lane_status` and `manuscript_readiness_status`
+  with the guard metrics.
+- Verified:
+  - `tests/test_nonlinear_transport_optimization.py`;
+  - `tests/test_stellarator_optimization.py`;
+  - dashboard builder tests;
+  - aggregate holdout gate tests;
+  - validation coverage manifest;
+  - quasilinear promotion guardrails;
+  - repository-size manifest;
+  - Sphinx docs with `-W`.
+- Remaining requirement for 100% production nonlinear turbulent-flux
+  optimization:
+  - run the selected optimized equilibrium through long post-transient
+    nonlinear transport windows, with seed/initial-condition and timestep
+    replicates, then attach that optimized-equilibrium ensemble to the guard.
