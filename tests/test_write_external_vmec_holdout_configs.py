@@ -31,7 +31,7 @@ def test_write_external_vmec_holdout_configs_restart_ladder(tmp_path: Path) -> N
     assert [item.restart_if_exists for item in written] == [False, False, True, True, True, True]
 
     first_config = written[0].path.read_text(encoding="utf-8")
-    assert 'vmec_file = "' in first_config
+    assert f'vmec_file = "{vmec_file.resolve().as_posix()}"' in first_config
     assert "Nx = 8" in first_config
     assert "Nz = 6" in first_config
     assert "ky = 0.3" in first_config

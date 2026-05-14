@@ -101,6 +101,19 @@ def _float_label(value: float) -> str:
     return f"{float(value):.12g}".replace(".", "p").replace("-", "m")
 
 
+def _resolved_vmec_file(path: Path) -> Path:
+    """Return an absolute VMEC path for generated TOMLs.
+
+    Runtime TOML loading resolves relative paths against the TOML file
+    directory. The generated holdout configs live in ``tools_out`` beside their
+    outputs, so a relative VMEC path would be interpreted relative to that run
+    directory rather than relative to the shell where the config writer was
+    invoked.
+    """
+
+    return Path(path).expanduser().resolve()
+
+
 def _build_variants(
     *,
     dt: float,
@@ -318,6 +331,7 @@ def write_configs(
         raise ValueError("dt must be positive")
     if nl <= 0 or nm <= 0:
         raise ValueError("Nl and Nm must be positive")
+    vmec_file = _resolved_vmec_file(vmec_file)
     out_dir.mkdir(parents=True, exist_ok=True)
     written: list[WrittenConfig] = []
     variants = _build_variants(
