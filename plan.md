@@ -5555,3 +5555,39 @@ Exit gate:
   - after the first DSHAPE replicate batch completes, extract the same
     transport-window summaries and rerun
     `tools/check_nonlinear_window_ensemble_readiness.py`.
+
+### 2026-05-14 CI and Office Geometry Backend Follow-Up
+
+- CI/CD:
+  - run `25845250016` for `327a9c4` failed only in `repo-hygiene`;
+  - the failure was the quasilinear overclaim guardrail catching the phrase
+    `absolute-flux or turbulent-flux optimization claim is promoted` in
+    `docs/testing.rst`;
+  - changed the wording to a non-promotional readiness statement and reran
+    `tools/check_quasilinear_promotion_guardrails.py`, which passed.
+- Office DSHAPE replicate launch:
+  - created a fresh office checkout at
+    `/home/rjorge/tmp/spectrax-replicates-327a9c4`;
+  - generated six `n64` DSHAPE replicate configs:
+    `seed31`, `seed32`, and `dt0p04`, each with `t=150` and `t=250`
+    continuation stages;
+  - initial launch failed before stepping because the office `spectrax` venv
+    resolved a namespace-only `booz_xform_jax` package that did not expose
+    `Booz_xform`, causing VMEC geometry backend discovery to fail.
+- Source fix:
+  - hardened `spectraxgk.from_gx.vmec._import_module_with_search_paths` and
+    `_import_booz_backend` so optional backend discovery now requires the
+    actual `Booz_xform` class, evicts invalid cached namespace modules, and
+    retries explicit checkout paths before falling back;
+  - added a regression test that reproduces the namespace-only cache failure
+    mode.
+- Local checks:
+  - `python -m pytest tests/test_from_gx_vmec_helpers.py tests/test_vmec_eik.py::test_internal_vmec_backend_available_detects_env_provided_booz_xform_jax -q` passed
+    (`20 passed`);
+  - `ruff`, `git diff --check`, validation manifest, repository-size, and
+    quasilinear guardrail checks passed.
+- Immediate next step:
+  - commit and push the backend-discovery fix;
+  - clone/pull the fixed commit on office and relaunch the same DSHAPE
+    replicate campaign with `PYTHONPATH=/home/rjorge/booz_xform_jax/src:<repo>/src`
+    so the real Boozer backend is resolved first.
