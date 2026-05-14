@@ -336,6 +336,7 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/test_linear_helpers_extra.py",
+  "tests/test_linear_parallel_dispatch.py",
   "tests/test_velocity_sharding.py",
 ]
 artifact_paths = [
@@ -344,7 +345,7 @@ artifact_paths = [
 ]
 next_tests = [
   "keep spectraxgk.linear parallel exports object-identical until the next major API cleanup",
-  "add direct dispatch-policy tests for backend auto, unsupported axes, and fail-closed term combinations",
+  "extend dispatch-policy tests when new velocity or domain-parallel backends are promoted",
 ]
 
 [[modules]]
