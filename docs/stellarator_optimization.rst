@@ -735,6 +735,23 @@ the following pass:
    now pass, but they remain reduced-objective evidence, while the D-shaped and
    circular replicated nonlinear-window ensembles are holdout/calibration
    evidence rather than optimized-equilibrium nonlinear audits.
+   ``tools/write_optimized_equilibrium_transport_configs.py`` is the launch
+   contract for that final audit. Given a concrete post-optimization
+   ``wout*.nc``, it writes the release ``n64`` nonlinear transport replicate
+   ladder, including ``t=250,350,450,700`` continuations, two random-seed
+   replicates, one timestep replicate, and the exact ensemble/guard commands.
+   These outputs remain a run plan until the generated ``t=[350,700]`` ensemble
+   passes finite-flux, running-window, block/SEM, replicate-spread, and
+   optimized-equilibrium marker gates.
+
+   Example launch-contract generation:
+
+   .. code-block:: bash
+
+      python tools/write_optimized_equilibrium_transport_configs.py \
+        --vmec-file /path/to/wout_optimized_equilibrium.nc \
+        --case optimized_equilibrium_post_optimization \
+        --out-dir tools_out/optimized_equilibrium_replicates
 
 .. figure:: _static/production_nonlinear_optimization_guard.png
    :width: 90%

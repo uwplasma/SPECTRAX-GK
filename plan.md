@@ -5810,3 +5810,35 @@ Exit gate:
     transport windows before revisiting production nonlinear optimization;
   - keep absolute quasilinear flux and broad W7-X/TEM claims blocked until the
     corresponding holdout and branch-parity gates pass.
+
+### 2026-05-14 Optimized-Equilibrium Transport Launch Contract
+
+- CI/CD:
+  - GitHub Actions run `25875105571` for commit `77b4fd7` passed all jobs,
+    including all wide-coverage shards.
+- Office status:
+  - bounded SSH probes to `office` timed out, so no new W7-X zonal or
+    optimized-equilibrium nonlinear simulations were launched in this pass.
+- Added `tools/write_optimized_equilibrium_transport_configs.py`, a
+  production-scope wrapper around the external-VMEC config generator:
+  - requires a concrete post-optimization VMEC `wout*.nc`;
+  - writes the `n64` `t=250,350,450,700` nonlinear continuation ladder;
+  - includes two seed replicates and one timestep replicate by default;
+  - writes restart-copy commands plus the exact
+    `tools/build_external_vmec_replicate_ensemble.py` and
+    `tools/check_production_nonlinear_optimization_guard.py` promotion-check
+    commands.
+- Tightened `tools/write_external_vmec_holdout_configs.py` typing so mypy can
+  check the config-writer stack directly.
+- Documented the launch contract in `docs/testing.rst` and
+  `docs/stellarator_optimization.rst`.
+- Verified:
+  - focused optimized-equilibrium/external-VMEC config tests;
+  - ruff and mypy over both config writers;
+  - direct launch-contract generation against the local
+    `vmec_jax/results/qa_opt/ess/wout_final.nc` candidate in `/tmp`.
+- Remaining executable step:
+  - when `office` is reachable, select/screen the concrete optimized
+    equilibrium and run the generated `t=700` seed/timestep replicate campaign;
+  - only then attach the ensemble to the production nonlinear optimization
+    guard.
