@@ -5482,3 +5482,32 @@ Exit gate:
   - exact no-install `repo-hygiene` command group passes with `PYTHONPATH=`;
   - targeted dispatch/parallel/release tests pass (`47 passed` for the linear-parallel/parallel shard subset and `28 passed` for the release/parallelization subset);
   - `ruff`, `mypy tools/build_parallelization_completion_status.py`, `git diff --check`, repository-size, release-readiness, and validation-manifest checks pass.
+
+### 2026-05-14 CI Follow-Up: Exact Wide-Coverage Margin
+
+- The CI run for `1937f83` passed all 48 wide-coverage shards but failed the
+  final exact manifest gate at `94.94% < 95.00%` (`TOTAL 19622 stmts, 992 miss`).
+  The rounded `coverage report --fail-under=95` passed, but the manifest check
+  correctly rejected the thin exact margin.
+- Added a real fast source-coverage tranche in
+  `tests/test_linear_parallel_dispatch.py` for `spectraxgk.linear_parallel`:
+  - streaming velocity-sharded shape validation and zero-phi contract;
+  - electrostatic streaming field RHS construction and field-streaming
+    contribution assembly;
+  - fail-closed single-species/periodic-grid policy for the electrostatic
+    streaming route;
+  - electrostatic-slice route fail-closed policy plus weighted streaming,
+    mirror, curvature/grad-B, and diamagnetic helper dispatch.
+- Local checks after this patch:
+  - `python -m pytest tests/test_linear_parallel_dispatch.py -q` passes
+    (`10 passed`);
+  - `ruff check tests/test_linear_parallel_dispatch.py` passes;
+  - `python tools/check_validation_coverage_manifest.py --out-json /tmp/validation_coverage_manifest_summary.json` passes;
+  - `python tools/check_repository_size_manifest.py` passes with tracked size
+    `49,937,061` bytes.
+- Next CI expectation:
+  - the extra `linear_parallel` helper execution should recover well over the
+    12-source-line deficit needed for the exact package-wide coverage gate;
+  - if the next run still misses 95%, add one more manifest-listed tranche in
+    `stellarator_objective_portfolio.py` or `benchmarks.py`, not a threshold
+    relaxation.
