@@ -5767,3 +5767,46 @@ Exit gate:
   - run the selected optimized equilibrium through long post-transient
     nonlinear transport windows, with seed/initial-condition and timestep
     replicates, then attach that optimized-equilibrium ensemble to the guard.
+
+### 2026-05-14 Open-Lane Audit and Claim-Boundary Tightening
+
+- Spawned focused audits for the remaining open lanes:
+  - production nonlinear turbulent-flux optimization;
+  - W7-X zonal long-window recurrence/damping;
+  - W7-X fluctuation/TEM/multi-flux-tube validation;
+  - nonlinear domain decomposition / production speedup;
+  - quasilinear absolute-flux promotion and stellarator optimization;
+  - package-wide coverage, refactor, release, and CI hygiene.
+- CI/CD:
+  - GitHub Actions run `25857514845` for commit `192fbd8` passed all jobs,
+    including mypy, docs/package, fast tests, fast coverage, all wide-coverage
+    shards, and combined wide coverage.
+- Audit conclusions:
+  - production nonlinear optimization remains blocked by the missing
+    optimized-equilibrium replicated long-window transport artifact;
+  - W7-X zonal convention is closed, but residual and tail-envelope gates still
+    fail physically under paper-facing normalization;
+  - W7-X fluctuation spectra are closed only as simulation diagnostics, while
+    TEM/kinetic-electron and multi-alpha/multi-surface W7-X validation remain
+    open;
+  - quasilinear absolute-flux promotion remains rejected by the holdout gap
+    gate, even though scoped model-development and UQ figures are usable;
+  - production parallelization remains closed for independent `k_y` and UQ
+    ensembles only; nonlinear domain decomposition is diagnostic until full RHS,
+    field-solve, conservation, transport-window, and profiler gates pass.
+- Tightened executable runbooks and documentation:
+  - `tools/write_w7x_zonal_closure_sweep.py` now emits repo-relative commands,
+    per-candidate `--out-png` panels, and explicit full-ladder output paths so
+    office closure probes do not overwrite frozen docs figures;
+  - `docs/verification_matrix.rst` now separates closed W7-X ITG flux-tube
+    evidence from still-open W7-X TEM / kinetic-electron validation;
+  - `docs/parallelization.rst` now lists the exact nonlinear domain
+    decomposition gates required before any production nonlinear speedup claim.
+- Next executable scientific steps:
+  - run the missing W7-X zonal closure families on `office` and promote only if
+    residual, late-envelope, and moment-tail metrics improve together;
+  - produce or select a concrete optimized-equilibrium VMEC `wout*.nc`, screen
+    its linear branch, then run long post-transient replicated nonlinear
+    transport windows before revisiting production nonlinear optimization;
+  - keep absolute quasilinear flux and broad W7-X/TEM claims blocked until the
+    corresponding holdout and branch-parity gates pass.

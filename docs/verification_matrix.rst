@@ -160,11 +160,21 @@ Stellarator Linear
      - Reference
      - Status
      - Baseline gate
-   * - W7-X ITG/TEM flux tube
+   * - W7-X ITG flux tube
      - ``gamma(k_y)``, ``omega(k_y)``
      - stella/GENE benchmark paper + GX
      - Closed
-     - ``rtol <= 1e-2`` on closed branches
+     - ``rtol <= 1e-2`` on closed adiabatic-electron ITG branches. This row
+       does not close W7-X TEM or kinetic-electron validation; those remain
+       blocked by the explicit TEM branch audit below.
+   * - W7-X TEM / kinetic-electron extension
+     - ``gamma(k_y)``, ``omega(k_y)``, multi-alpha/multi-surface windows
+     - stella/GENE benchmark paper + W7-X TEM literature
+     - Open
+     - ``docs/_static/tem_branch_parity_audit.json`` is outside the publication
+       parity envelope and ``docs/_static/w7x_tem_extension_status.json`` keeps
+       multi-alpha, multi-surface, and kinetic-electron nonlinear windows open.
+       Do not use the closed W7-X ITG row as a TEM claim.
    * - W7-X zonal flow
      - residual level, damping envelope
      - stella/GENE benchmark paper + zonal-flow literature

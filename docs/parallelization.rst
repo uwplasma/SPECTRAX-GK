@@ -195,6 +195,28 @@ nonlinear bracket, and spectral field-solve layout. Passing this gate promotes
 distributed FFT routing, conservation checks, nonlinear transport-window
 acceptance, profiler evidence, or any speedup claim.
 
+Before nonlinear domain decomposition can be promoted beyond this diagnostic
+state, the runtime route must pass all of the following gates on the same
+workload family that appears in the speedup figure:
+
+- full nonlinear RHS identity for ``dG``, ``phi``, the nonlinear bracket,
+  density/field-solve layout, Hermitian projection, and dealiasing;
+- fixed-step serial-vs-decomposed integration identity for final state,
+  final fields, final RHS, and per-step scalar traces;
+- boundary/interface identity for owned and halo cells, not only a global norm;
+- conservation agreement for density/mass, a free-energy-like diagnostic,
+  zonal response, and heat-flux proxies;
+- post-transient transport-window agreement for Cyclone, KBM, and at least one
+  stellarator smoke case;
+- CPU serial, CPU decomposed, one-GPU serial, and two-GPU decomposed parity
+  under the same observable contract;
+- matched profiler artifacts for the exact backend, device count, software
+  stack, grid, warmups/repeats, and identity tolerance being claimed.
+
+Until those gates exist, nonlinear decomposition work can be documented as
+engineering evidence only, even if a new profile shows positive timing on one
+machine.
+
 Velocity-space communication gates
 ----------------------------------
 

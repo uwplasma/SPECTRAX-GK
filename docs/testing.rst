@@ -333,7 +333,11 @@ mixed Laguerre-Hermite, Laguerre-only, and isotropic hypercollision variants.
 The manifest includes the exact
 ``tools/generate_w7x_zonal_response_panel.py`` launch commands plus the
 companion ``tools/plot_w7x_zonal_closure_ladder.py`` command needed to refresh
-the bounded closure audit after the remote runs complete.
+the bounded closure audit after the remote runs complete. Each launch command
+writes a case-local ``panel.png`` and the final ladder command writes
+``w7x_zonal_closure_ladder_full.{png,json,csv}``, preventing exploratory
+office runs from overwriting the frozen documentation figure before the
+candidate passes the residual, late-envelope, and moment-tail screens.
 
 ``tools/check_quasilinear_calibration_inputs.py`` is the corresponding
 calibration-admission guard. It scans quasilinear train/holdout reports and
