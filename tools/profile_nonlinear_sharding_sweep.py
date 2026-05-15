@@ -52,6 +52,16 @@ def _append_xla_flag(existing: str, flag: str) -> str:
     return f"{existing} {flag}".strip()
 
 
+def _tail_text(value: Any, *, limit: int = 4000) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, bytes):
+        text = value.decode("utf-8", errors="replace")
+    else:
+        text = str(value)
+    return text[-int(limit) :]
+
+
 def _device_env(base_env: dict[str, str], *, backend: str, devices: int) -> dict[str, str]:
     env = dict(base_env)
     env.setdefault("MPLBACKEND", "Agg")
@@ -161,6 +171,58 @@ def _row_from_payload(payload: dict[str, Any], *, requested_devices: int) -> dic
     }
 
 
+def _failure_row(
+    *,
+    requested_devices: int,
+    backend: str,
+    profile_json: Path,
+    error: str,
+) -> dict[str, Any]:
+    return {
+        "requested_devices": int(requested_devices),
+        "actual_devices": None,
+        "backend": str(backend),
+        "state_shape": None,
+        "best_spec": None,
+        "state_sharding_active": False,
+        "identity_gate_pass": False,
+        "serial_median_s": math.nan,
+        "parallel_median_s": math.nan,
+        "same_process_speedup": math.nan,
+        "strong_speedup_vs_1_device": math.nan,
+        "max_abs_state_error": None,
+        "max_rel_state_error": None,
+        "profile_json": str(profile_json),
+        "error": str(error),
+    }
+
+
+def _speedup_status(rows: list[dict[str, Any]], *, backend: str) -> dict[str, Any]:
+    parallel_rows = [row for row in rows if int(row.get("requested_devices") or 0) > 1]
+    speedup_threshold = 1.0
+    speedup_blockers: list[str] = []
+    for row in parallel_rows:
+        requested_devices = int(row.get("requested_devices") or 0)
+        if not bool(row.get("identity_gate_pass", False)):
+            speedup_blockers.append(f"{backend}_{requested_devices}devices_identity_failed")
+            continue
+        speedup = row.get("strong_speedup_vs_1_device")
+        speedup_value = float(speedup) if speedup is not None else math.nan
+        if not math.isfinite(speedup_value):
+            speedup_blockers.append(f"{backend}_{requested_devices}devices_speedup_missing")
+        elif speedup_value < speedup_threshold:
+            speedup_blockers.append(
+                f"{backend}_{requested_devices}devices_speedup_{speedup_value:.3g}_below_{speedup_threshold:.3g}"
+            )
+    speedup_passed = bool(parallel_rows) and not speedup_blockers
+    return {
+        "speedup_passed": speedup_passed,
+        "speedup_threshold_vs_1_device": speedup_threshold,
+        "speedup_blockers": speedup_blockers,
+        "status": "identity_and_speedup" if speedup_passed else "diagnostic_identity_only",
+    }
+
+
 def run_sweep(
     *,
     backend: str,
@@ -206,34 +268,38 @@ def run_sweep(
                 warmups=warmups,
                 repeats=repeats,
             )
-            completed = subprocess.run(
-                cmd,
-                cwd=REPO_ROOT,
-                env=env,
-                text=True,
-                capture_output=True,
-                timeout=float(timeout_s),
-                check=False,
-            )
+            try:
+                completed = subprocess.run(
+                    cmd,
+                    cwd=REPO_ROOT,
+                    env=env,
+                    text=True,
+                    capture_output=True,
+                    timeout=float(timeout_s),
+                    check=False,
+                )
+            except subprocess.TimeoutExpired as exc:
+                output_tail = _tail_text(exc.stderr) or _tail_text(exc.stdout)
+                rows.append(
+                    _failure_row(
+                        requested_devices=int(requested_devices),
+                        backend=backend,
+                        profile_json=profile_json,
+                        error=(
+                            f"profile timed out after {float(timeout_s):.3g} s"
+                            + (f"\n{output_tail}" if output_tail else "")
+                        ),
+                    )
+                )
+                continue
             if completed.returncode != 0:
                 rows.append(
-                    {
-                        "requested_devices": int(requested_devices),
-                        "actual_devices": None,
-                        "backend": backend,
-                        "state_shape": None,
-                        "best_spec": None,
-                        "state_sharding_active": False,
-                        "identity_gate_pass": False,
-                        "serial_median_s": math.nan,
-                        "parallel_median_s": math.nan,
-                        "same_process_speedup": math.nan,
-                        "strong_speedup_vs_1_device": math.nan,
-                        "max_abs_state_error": None,
-                        "max_rel_state_error": None,
-                        "profile_json": str(profile_json),
-                        "error": completed.stderr[-4000:] or completed.stdout[-4000:],
-                    }
+                    _failure_row(
+                        requested_devices=int(requested_devices),
+                        backend=backend,
+                        profile_json=profile_json,
+                        error=_tail_text(completed.stderr) or _tail_text(completed.stdout),
+                    )
                 )
                 continue
             payload = json.loads(profile_json.read_text(encoding="utf-8"))
@@ -249,6 +315,7 @@ def run_sweep(
         row["strong_speedup_vs_1_device"] = baseline / current if baseline > 0.0 and current > 0.0 else math.nan
 
     passed = all(bool(row.get("identity_gate_pass")) for row in rows)
+    speedup_status = _speedup_status(rows, backend=backend)
     return _json_clean(
         {
             "kind": "nonlinear_sharding_strong_scaling_sweep",
@@ -265,9 +332,11 @@ def run_sweep(
             "repeats": int(repeats),
             "timeout_s": float(timeout_s),
             "identity_passed": passed,
+            **speedup_status,
             "claim_scope": (
                 "large fixed-step nonlinear state-sharding strong-scaling artifact with numerical identity gates; "
-                "use as profiler evidence, not as a broad production speedup claim"
+                "speedup is a separate fail-closed field, and this artifact is profiler evidence unless "
+                "speedup_passed is true, not as a broad production speedup claim"
             ),
             "rows": rows,
             "profiles": profiles,
@@ -427,7 +496,17 @@ def main() -> int:
         trace=bool(args.trace),
     )
     paths = write_artifacts(summary, Path(args.out_prefix))
-    print(json.dumps({"identity_passed": summary["identity_passed"], "paths": paths}, indent=2))
+    print(
+        json.dumps(
+            {
+                "identity_passed": summary["identity_passed"],
+                "speedup_passed": summary["speedup_passed"],
+                "status": summary["status"],
+                "paths": paths,
+            },
+            indent=2,
+        )
+    )
     return 0 if bool(summary["identity_passed"]) else 2
 
 

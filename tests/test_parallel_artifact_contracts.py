@@ -441,6 +441,9 @@ def test_nonlinear_whole_state_scaling_artifact_is_identity_only_not_speedup_cla
 
     assert payload["kind"] == "nonlinear_sharding_strong_scaling_combined"
     assert payload["identity_passed"] is True
+    assert payload["speedup_passed"] is False
+    assert payload["status"] == "diagnostic_identity_only"
+    assert payload["speedup_blockers"]
     assert "not a production speedup claim" in payload["claim_scope"]
     assert {row["backend"] for row in payload["rows"]} == {"cpu", "gpu"}
     for row in payload["rows"]:

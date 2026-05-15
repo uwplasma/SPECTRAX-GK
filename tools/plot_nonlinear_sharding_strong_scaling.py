@@ -47,6 +47,9 @@ def load_summary(paths: list[Path]) -> dict[str, Any]:
                 "backend": backend,
                 "grid": payload["grid"],
                 "identity_passed": bool(payload["identity_passed"]),
+                "speedup_passed": bool(payload.get("speedup_passed", False)),
+                "status": str(payload.get("status", "diagnostic_identity_only")),
+                "speedup_blockers": list(payload.get("speedup_blockers", [])),
                 "claim_scope": payload.get("claim_scope", ""),
             }
         )
@@ -60,9 +63,21 @@ def load_summary(paths: list[Path]) -> dict[str, Any]:
             "kind": "nonlinear_sharding_strong_scaling_combined",
             "claim_scope": (
                 "large CPU/GPU nonlinear whole-state sharding artifact. It is a numerical-identity "
-                "and profiler-direction result; it is not a production speedup claim."
+                "and profiler-direction result; it is not a production speedup claim unless speedup_passed "
+                "is true and the separate production gate passes."
             ),
             "identity_passed": all(bool(item["identity_passed"]) for item in inputs),
+            "speedup_passed": all(bool(item["speedup_passed"]) for item in inputs),
+            "status": (
+                "identity_and_speedup"
+                if inputs and all(bool(item["speedup_passed"]) for item in inputs)
+                else "diagnostic_identity_only"
+            ),
+            "speedup_blockers": [
+                f"{item['backend']}:{blocker}"
+                for item in inputs
+                for blocker in item.get("speedup_blockers", [])
+            ],
             "inputs": inputs,
             "rows": rows,
         }
@@ -160,7 +175,17 @@ def main() -> None:
     args = build_parser().parse_args()
     summary = load_summary([Path(path) for path in args.inputs])
     paths = write_artifacts(summary, Path(args.out_prefix))
-    print(json.dumps({"identity_passed": summary["identity_passed"], "paths": paths}, indent=2))
+    print(
+        json.dumps(
+            {
+                "identity_passed": summary["identity_passed"],
+                "speedup_passed": summary["speedup_passed"],
+                "status": summary["status"],
+                "paths": paths,
+            },
+            indent=2,
+        )
+    )
 
 
 if __name__ == "__main__":
