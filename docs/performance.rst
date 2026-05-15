@@ -961,6 +961,9 @@ the configured speedup and parallel-efficiency thresholds. The tracked gate
 artifact is ``docs/_static/nonlinear_sharding_production_speedup_gate.json``;
 in the current artifact set the CPU two-device row passes, but the GPU row
 blocks production speedup claims.
+The raw sweep JSON files also carry ``speedup_passed``, ``status``, and
+``speedup_blockers`` fields so a timeout, profiler failure, or identity-correct
+slowdown is visible before the stricter production gate is evaluated.
 
 This claim boundary is mirrored in :doc:`parallelization` and
 :doc:`release_scope`. If a future optimization changes the conclusion, refresh

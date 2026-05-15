@@ -30,6 +30,8 @@ def test_plot_nonlinear_sharding_strong_scaling_loads_combined_rows(tmp_path: Pa
         "backend": "cpu",
         "grid": {"Nx": 24, "Ny_requested": 48, "Nz": 96, "Nl": 4, "Nm": 8},
         "identity_passed": True,
+        "speedup_passed": False,
+        "speedup_blockers": ["cpu_2devices_speedup_0.8_below_1"],
         "rows": [
             {
                 "backend": "cpu",
@@ -52,5 +54,8 @@ def test_plot_nonlinear_sharding_strong_scaling_loads_combined_rows(tmp_path: Pa
     summary = mod.load_summary([path])
 
     assert summary["identity_passed"] is True
+    assert summary["speedup_passed"] is False
+    assert summary["status"] == "diagnostic_identity_only"
+    assert summary["speedup_blockers"] == ["cpu:cpu_2devices_speedup_0.8_below_1"]
     assert summary["rows"][0]["grid_label"] == "Nx=24, Ny=48, Nz=96, Nl=4, Nm=8"
     assert summary["rows"][0]["source"] == str(path)

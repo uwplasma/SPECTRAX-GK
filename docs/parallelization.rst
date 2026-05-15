@@ -164,6 +164,9 @@ policy: the final state is identity-correct, but logical-CPU speedup saturates
 near ``1.39x`` and the current two-GPU path is slower than one GPU for the
 tracked larger fixed-step case. That artifact is therefore valuable engineering
 evidence, not a production nonlinear speedup result.
+The combined artifact is intentionally fail-closed: ``identity_passed`` may be
+true while ``speedup_passed`` is false, with explicit ``speedup_blockers`` naming
+the backend/device row that regressed.
 
 The next decomposition step is also gated, but still diagnostic. The artifact
 ``docs/_static/nonlinear_domain_parallel_identity_gate.json`` exercises a
