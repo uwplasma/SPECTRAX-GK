@@ -6198,3 +6198,29 @@ Exit gate:
   - the next scientific step should be a better-conditioned profile-gradient or
     objective-control direction, not more repetitions of these same two
     boundary controls.
+
+### 2026-05-15 Nonlinear Turbulence-Gradient Candidate Ranking Gate
+
+- Added a fail-closed candidate-ranking layer for the production nonlinear
+  turbulence-gradient lane:
+  - source API: `spectraxgk.nonlinear_gradient_evidence.nonlinear_turbulence_gradient_candidate_ranking_report`;
+  - CLI: `tools/rank_nonlinear_turbulence_gradient_candidates.py`;
+  - tracked artifact: `docs/_static/nonlinear_turbulence_gradient_candidate_ranking.json`.
+- The ranking compares the completed central-FD production-candidate campaigns:
+  - `ZBS(1,1)` rel5: best score, response fraction `0.151`, uncertainty
+    `0.225`, but locality fails with `fd_asymmetry_rel = 0.663`;
+  - `ZBS(1,0)` rel5: locality passes with `fd_asymmetry_rel = 0.274`, but
+    uncertainty fails with `gradient_uncertainty_rel = 0.768`;
+  - `RBC(1,1)` rel5: uncertainty passes (`0.402`) but locality fails
+    (`0.897`);
+  - `RBC(1,1)` rel8 remains the weakest candidate and fails both locality and
+    marginal uncertainty.
+- Result: no candidate is promoted. The ranking explicitly recommends the next
+  scientific campaign be an overdetermined least-squares/profile-gradient
+  perturbation design rather than another blind single-boundary-coefficient
+  rerun, because the current single-control evidence has complementary locality
+  and uncertainty failures.
+- Checks run:
+  - `pytest -q tests/test_nonlinear_gradient_evidence.py`;
+  - `ruff check src/spectraxgk/nonlinear_gradient_evidence.py tools/rank_nonlinear_turbulence_gradient_candidates.py tests/test_nonlinear_gradient_evidence.py`;
+  - `mypy src/spectraxgk/nonlinear_gradient_evidence.py tools/rank_nonlinear_turbulence_gradient_candidates.py`.
