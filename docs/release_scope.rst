@@ -311,6 +311,12 @@ Quasilinear model-selection state:
   files have byte-identical SHA256 contents. The only override is
   ``--allow-identical-vmec-content``, which is recorded as a smoke-test-only
   manifest flag and must not be used for production turbulence-gradient claims.
+- ``tools/write_vmec_boundary_perturbation_inputs.py`` is the upstream
+  boundary-gradient launch helper. It writes matched ``baseline``,
+  ``plus_delta``, and ``minus_delta`` VMEC input files for one explicit
+  ``RBC/RBS/ZBC/ZBS(m,n)`` coefficient and records the ``vmec_jax`` commands
+  that must be run before the resulting ``wout`` files can enter the
+  nonlinear-gradient campaign writer.
 - ``docs/_static/quasilinear_saturation_rule_sweep.json``:
   no simple saturation rule is accepted. Positive-growth mixing length is the
   least-bad simple rule with mean held-out relative error about ``2.11``;

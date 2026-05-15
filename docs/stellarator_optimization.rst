@@ -852,6 +852,15 @@ finite-difference audit with bounded response, asymmetry, condition number, and
 gradient uncertainty. Existing standalone replicated transport windows remain
 necessary evidence but are not sufficient to claim a production nonlinear
 turbulence gradient.
+For boundary-coefficient gradients, first use
+``tools/write_vmec_boundary_perturbation_inputs.py``. It starts from a concrete
+VMEC input file such as the optimized-equilibrium ``input.final``, writes
+matched ``baseline``, ``plus_delta``, and ``minus_delta`` input files for an
+explicit ``RBC/RBS/ZBC/ZBS(m,n)`` coefficient, and records the exact
+``vmec_jax`` commands plus the downstream nonlinear-gradient campaign command.
+The generated files are still launch artifacts, not evidence: production
+promotion only begins after ``vmec_jax`` has re-equilibrated all three inputs
+and produced distinct ``wout`` files.
 Once the three matched ensembles exist,
 ``tools/build_nonlinear_turbulence_gradient_fd_gate.py`` is the promotion
 artifact builder. It consumes the ``baseline``, ``plus_delta``, and

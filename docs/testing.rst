@@ -304,6 +304,10 @@ release-safe scoped wording while blocking production nonlinear turbulent-flux
 optimization promotion until optimized equilibria have replicated
 post-transient transport-window audits.
 For actual nonlinear turbulence-gradient promotion, use
+``tools/write_vmec_boundary_perturbation_inputs.py`` when the perturbation is a
+VMEC boundary coefficient. It writes the matched ``input.*`` files and records
+the exact ``vmec_jax`` commands needed to create the three real re-equilibrated
+``wout`` files. Then use
 ``tools/write_nonlinear_turbulence_gradient_campaign.py`` to write the matched
 baseline/plus/minus VMEC launch ladders and replay commands. The campaign
 writer rejects missing files, duplicate resolved paths, and byte-identical VMEC
