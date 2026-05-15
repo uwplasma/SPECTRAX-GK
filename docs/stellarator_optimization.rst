@@ -868,4 +868,8 @@ launch ladder from three explicit VMEC files first: baseline, positive
 perturbation, and negative perturbation. Its manifest records the per-state run
 manifests, the ensemble-builder commands, the central-FD command, and the final
 evidence-check command, so office GPU campaigns and later manuscript artifacts
-use one reproducible contract.
+use one reproducible contract. The writer also performs a fail-closed VMEC
+preflight: all three files must exist, must be distinct resolved paths, and must
+have distinct SHA256 contents by default. Byte-identical files can only be
+accepted with ``--allow-identical-vmec-content`` for plumbing smoke tests, and
+that flag is recorded in the manifest as non-production evidence.

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -47,6 +48,66 @@ def _json_clean(value: Any) -> Any:
     if isinstance(value, Path):
         return _repo_relative(value)
     return value
+
+
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def _validate_state_vmec_files(
+    state_vmec: dict[str, Path],
+    *,
+    allow_identical_vmec_content: bool = False,
+) -> dict[str, dict[str, Any]]:
+    metadata: dict[str, dict[str, Any]] = {}
+    resolved_paths: dict[str, Path] = {}
+    for state, raw_path in state_vmec.items():
+        path = Path(raw_path).expanduser().resolve()
+        if not path.exists():
+            raise FileNotFoundError(f"{state} VMEC file does not exist: {path}")
+        if not path.is_file():
+            raise ValueError(f"{state} VMEC path is not a file: {path}")
+        resolved_paths[state] = path
+        stat = path.stat()
+        metadata[state] = {
+            "path": path,
+            "size_bytes": int(stat.st_size),
+            "sha256": _sha256(path),
+        }
+
+    unique_paths = {path for path in resolved_paths.values()}
+    if len(unique_paths) != len(resolved_paths):
+        duplicates = {
+            state: _repo_relative(path)
+            for state, path in resolved_paths.items()
+            if list(resolved_paths.values()).count(path) > 1
+        }
+        raise ValueError(
+            "baseline/plus/minus VMEC files must be distinct paths for a matched "
+            f"gradient campaign; duplicates: {duplicates}"
+        )
+
+    hashes = [str(row["sha256"]) for row in metadata.values()]
+    if len(set(hashes)) != len(hashes) and not allow_identical_vmec_content:
+        duplicate_hash_states: dict[str, list[str]] = {}
+        for state, row in metadata.items():
+            duplicate_hash_states.setdefault(str(row["sha256"]), []).append(state)
+        duplicate_hash_states = {
+            digest: states
+            for digest, states in duplicate_hash_states.items()
+            if len(states) > 1
+        }
+        raise ValueError(
+            "baseline/plus/minus VMEC files must not have identical contents for "
+            "production evidence; use --allow-identical-vmec-content only for "
+            f"plumbing smoke tests. Duplicate SHA256 groups: {duplicate_hash_states}"
+        )
+
+    return metadata
 
 
 def _horizon_label(value: float) -> str:
@@ -167,6 +228,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--Nm", type=int, default=8)
     parser.add_argument("--window-tmin", type=float, default=DEFAULT_WINDOW[0])
     parser.add_argument("--window-tmax", type=float, default=DEFAULT_WINDOW[1])
+    parser.add_argument(
+        "--allow-identical-vmec-content",
+        action="store_true",
+        help=(
+            "Allow byte-identical baseline/plus/minus VMEC files. This is only "
+            "for plumbing smoke tests and is not production turbulence-gradient evidence."
+        ),
+    )
     return parser
 
 
@@ -184,6 +253,10 @@ def main(argv: list[str] | None = None) -> int:
         "baseline": args.baseline_vmec_file,
         "plus_delta": args.plus_vmec_file,
     }
+    state_file_metadata = _validate_state_vmec_files(
+        state_vmec,
+        allow_identical_vmec_content=bool(args.allow_identical_vmec_content),
+    )
     state_manifests: dict[str, str] = {}
     state_commands: dict[str, dict[str, Any]] = {}
     total_configs = 0
@@ -224,6 +297,19 @@ def main(argv: list[str] | None = None) -> int:
         "parameter_name": str(args.parameter_name),
         "delta_parameter": float(args.delta_parameter),
         "state_vmec_files": {state: _repo_relative(path) for state, path in state_vmec.items()},
+        "vmec_file_preflight": {
+            "vmec_files_exist": True,
+            "vmec_paths_distinct": True,
+            "vmec_contents_distinct": len({row["sha256"] for row in state_file_metadata.values()})
+            == len(state_file_metadata),
+            "allow_identical_vmec_content": bool(args.allow_identical_vmec_content),
+            "claim_boundary": (
+                "Production nonlinear turbulence-gradient evidence requires real "
+                "baseline/plus/minus re-equilibrated VMEC files. Identical file "
+                "content is accepted only for explicit plumbing smoke tests."
+            ),
+            "files": state_file_metadata,
+        },
         "state_manifests": state_manifests,
         "state_ensemble_commands": state_commands,
         "promotion_contract": _promotion_contract(

@@ -305,7 +305,11 @@ optimization promotion until optimized equilibria have replicated
 post-transient transport-window audits.
 For actual nonlinear turbulence-gradient promotion, use
 ``tools/write_nonlinear_turbulence_gradient_campaign.py`` to write the matched
-baseline/plus/minus VMEC launch ladders and replay commands, then use
+baseline/plus/minus VMEC launch ladders and replay commands. The campaign
+writer rejects missing files, duplicate resolved paths, and byte-identical VMEC
+contents unless ``--allow-identical-vmec-content`` is explicitly used for a
+plumbing-only smoke test; production evidence therefore requires real
+re-equilibrated perturbation files. Then use
 ``tools/build_nonlinear_turbulence_gradient_fd_gate.py`` after the matched
 ``baseline``/``plus_delta``/``minus_delta`` ensembles finish. The builder writes
 the central finite-difference gradient sidecar and checks response resolution,
