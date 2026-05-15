@@ -470,8 +470,9 @@ def test_gradient_campaign_writer_creates_matched_state_run_contract(tmp_path: P
     baseline = tmp_path / "wout_baseline.nc"
     plus = tmp_path / "wout_plus.nc"
     minus = tmp_path / "wout_minus.nc"
-    for path in (baseline, plus, minus):
-        path.write_text("placeholder", encoding="utf-8")
+    baseline.write_text("baseline-equilibrium", encoding="utf-8")
+    plus.write_text("plus-equilibrium", encoding="utf-8")
+    minus.write_text("minus-equilibrium", encoding="utf-8")
     out_dir = tmp_path / "campaign"
 
     rc = mod.main(
@@ -511,8 +512,91 @@ def test_gradient_campaign_writer_creates_matched_state_run_contract(tmp_path: P
     assert manifest["run_contract"]["same_numerics_except_parameter"] is True
     assert manifest["run_contract"]["analysis_window"] == [1.0, 2.0]
     assert manifest["run_contract"]["replicates"] == ["seed31", "dt0p04"]
+    assert manifest["vmec_file_preflight"]["vmec_files_exist"] is True
+    assert manifest["vmec_file_preflight"]["vmec_paths_distinct"] is True
+    assert manifest["vmec_file_preflight"]["vmec_contents_distinct"] is True
+    assert manifest["vmec_file_preflight"]["allow_identical_vmec_content"] is False
+    assert set(manifest["vmec_file_preflight"]["files"]) == {"minus_delta", "baseline", "plus_delta"}
     assert set(manifest["state_manifests"]) == {"minus_delta", "baseline", "plus_delta"}
     assert "build_nonlinear_turbulence_gradient_fd_gate.py" in manifest["promotion_contract"]["central_fd_command"]
     central_fd_command = manifest["promotion_contract"]["central_fd_command"]
     assert "--baseline docs/_static/qa_gradient_baseline_replicates" in central_fd_command
     assert "--fail-on-blocked" in manifest["promotion_contract"]["evidence_check_command"]
+
+
+def test_gradient_campaign_writer_fails_closed_on_duplicate_vmec_paths(tmp_path: Path) -> None:
+    mod = _load_campaign_tool_module()
+    vmec_file = tmp_path / "wout_same.nc"
+    vmec_file.write_text("same-equilibrium", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="distinct paths"):
+        mod.main(
+            [
+                "--baseline-vmec-file",
+                str(vmec_file),
+                "--plus-vmec-file",
+                str(vmec_file),
+                "--minus-vmec-file",
+                str(vmec_file),
+                "--delta-parameter",
+                "0.02",
+            ]
+        )
+
+
+def test_gradient_campaign_writer_fails_closed_on_identical_vmec_content(tmp_path: Path) -> None:
+    mod = _load_campaign_tool_module()
+    baseline = tmp_path / "wout_baseline.nc"
+    plus = tmp_path / "wout_plus.nc"
+    minus = tmp_path / "wout_minus.nc"
+    for path in (baseline, plus, minus):
+        path.write_text("same-equilibrium", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="identical contents"):
+        mod.main(
+            [
+                "--baseline-vmec-file",
+                str(baseline),
+                "--plus-vmec-file",
+                str(plus),
+                "--minus-vmec-file",
+                str(minus),
+                "--delta-parameter",
+                "0.02",
+            ]
+        )
+
+
+def test_gradient_campaign_writer_allows_identical_vmec_content_only_for_smoke_tests(tmp_path: Path) -> None:
+    mod = _load_campaign_tool_module()
+    baseline = tmp_path / "wout_baseline.nc"
+    plus = tmp_path / "wout_plus.nc"
+    minus = tmp_path / "wout_minus.nc"
+    for path in (baseline, plus, minus):
+        path.write_text("same-equilibrium", encoding="utf-8")
+    out_dir = tmp_path / "campaign"
+
+    rc = mod.main(
+        [
+            "--baseline-vmec-file",
+            str(baseline),
+            "--plus-vmec-file",
+            str(plus),
+            "--minus-vmec-file",
+            str(minus),
+            "--delta-parameter",
+            "0.02",
+            "--out-dir",
+            str(out_dir),
+            "--horizons",
+            "1",
+            "--grid",
+            "n4:4:4:4:4",
+            "--allow-identical-vmec-content",
+        ]
+    )
+
+    manifest = json.loads((out_dir / "gradient_campaign_manifest.json").read_text(encoding="utf-8"))
+    assert rc == 0
+    assert manifest["vmec_file_preflight"]["allow_identical_vmec_content"] is True
+    assert manifest["vmec_file_preflight"]["vmec_contents_distinct"] is False

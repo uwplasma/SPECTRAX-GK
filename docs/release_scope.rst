@@ -305,7 +305,12 @@ Quasilinear model-selection state:
   launch-contract writer for the same lane. Given explicit baseline,
   plus-perturbation, and minus-perturbation VMEC files, it writes the matched
   fixed-step nonlinear TOML ladders, per-state ensemble commands, the central
-  finite-difference gate command, and the final evidence-check command.
+  finite-difference gate command, and the final evidence-check command. It
+  fails closed before writing production launch contracts if any VMEC file is
+  missing, if the same path is reused for more than one state, or if the three
+  files have byte-identical SHA256 contents. The only override is
+  ``--allow-identical-vmec-content``, which is recorded as a smoke-test-only
+  manifest flag and must not be used for production turbulence-gradient claims.
 - ``docs/_static/quasilinear_saturation_rule_sweep.json``:
   no simple saturation rule is accepted. Positive-growth mixing length is the
   least-bad simple rule with mean held-out relative error about ``2.11``;

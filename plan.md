@@ -5956,3 +5956,40 @@ Exit gate:
     replicate campaign with `tools/write_optimized_equilibrium_transport_configs.py`;
   - launch the long nonlinear runs as a low-flux/stability transport-window
     audit and only promote if the generated ensemble/guard artifacts pass.
+
+### 2026-05-15 Nonlinear Turbulence-Gradient Campaign Preflight
+
+- Reviewed the current office artifacts after the restart:
+  - optimized-equilibrium long-window seed/timestep outputs and
+    `tools_out/optimized_equilibrium_vmec/wout_qa_opt_ess_final.nc` exist;
+  - no matched baseline/plus/minus re-equilibrated VMEC perturbation files were
+    found for a production nonlinear turbulence-gradient campaign.
+- Hardened `tools/write_nonlinear_turbulence_gradient_campaign.py` so it now
+  fails closed before writing launch contracts unless:
+  - all baseline, plus, and minus VMEC files exist;
+  - the three resolved paths are distinct;
+  - the three file contents have distinct SHA256 hashes.
+- Added the explicit `--allow-identical-vmec-content` override only for
+  plumbing smoke tests. The manifest records that flag and marks identical
+  content as non-production evidence.
+- Added regression tests for:
+  - successful matched-state campaign manifest generation with VMEC preflight
+    metadata;
+  - duplicate-path rejection;
+  - identical-content rejection;
+  - explicit smoke-test override behavior.
+- Documented the fail-closed VMEC preflight in the testing, release-scope, and
+  stellarator-optimization docs.
+- Verified:
+  - `pytest -q tests/test_nonlinear_gradient_evidence.py`;
+  - `ruff check tools/write_nonlinear_turbulence_gradient_campaign.py tests/test_nonlinear_gradient_evidence.py`;
+  - `mypy tools/write_nonlinear_turbulence_gradient_campaign.py`;
+  - `python -m sphinx -W -b html docs docs/_build/html-check`;
+  - `python tools/check_release_readiness.py`;
+  - `python tools/check_parallel_scaling_artifacts.py`.
+- Result:
+  - the production nonlinear turbulence-gradient lane is now safer and
+    auditable, but still not promoted;
+  - the next real scientific blocker is generating real re-equilibrated
+    plus/minus VMEC files for a selected control/profile parameter, then
+    launching the matched long-window ensembles on office.
