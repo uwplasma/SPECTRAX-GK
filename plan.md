@@ -5993,3 +5993,42 @@ Exit gate:
   - the next real scientific blocker is generating real re-equilibrated
     plus/minus VMEC files for a selected control/profile parameter, then
     launching the matched long-window ensembles on office.
+
+### 2026-05-15 QA/ESS RBC(1,1) Re-Equilibrated Gradient Launch Artifacts
+
+- Added `tools/write_vmec_boundary_perturbation_inputs.py`.
+  - It starts from a real VMEC input file, patches one explicit
+    `RBC/RBS/ZBC/ZBS(m,n)` coefficient, and writes matched `baseline`,
+    `plus_delta`, and `minus_delta` input files.
+  - It records the exact `vmec_jax` commands and the downstream
+    nonlinear-gradient campaign command.
+  - Tests cover successful manifest generation, ambiguous duplicate
+    coefficient rejection, and invalid relative perturbations.
+- Applied it to the optimized QA/ESS candidate:
+  - baseline input:
+    `/Users/rogeriojorge/local/vmec_jax/results/qa_opt/ess/input.final`;
+  - coefficient: `RBC(1,1)`;
+  - relative perturbation: `2%`;
+  - absolute `delta_parameter`: `2.0076100682862165e-03`;
+  - local launch manifest:
+    `tools_out/nonlinear_turbulence_gradient_vmec_inputs/qa_ess_rbc11/vmec_boundary_perturbation_manifest.json`.
+- Ran real VMEC-JAX re-equilibrations on `office` with GPU JAX:
+  - `baseline`: completed normally in `96.97 s`;
+  - `plus_delta`: completed normally in `96.88 s`;
+  - `minus_delta`: completed normally in `43.02 s`;
+  - all three generated `854728` byte `wout` files with distinct SHA256
+    hashes.
+- Ran the stricter nonlinear-gradient campaign writer against those VMEC files.
+  It wrote nine `t=700`, `n64`, seed/timestep SPECTRAX-GK configs:
+  `tools_out/nonlinear_turbulence_gradient_campaign/qa_ess_rbc11/gradient_campaign_manifest.json`.
+- Verified:
+  - `pytest -q tests/test_write_vmec_boundary_perturbation_inputs.py tests/test_nonlinear_gradient_evidence.py`;
+  - `ruff check tools/write_vmec_boundary_perturbation_inputs.py tests/test_write_vmec_boundary_perturbation_inputs.py tools/write_nonlinear_turbulence_gradient_campaign.py tests/test_nonlinear_gradient_evidence.py`;
+  - `mypy tools/write_vmec_boundary_perturbation_inputs.py tools/write_nonlinear_turbulence_gradient_campaign.py`;
+  - `python -m sphinx -W -b html docs docs/_build/html-check`.
+- Next executable step:
+  - copy the nine generated nonlinear configs and three `wout` files to
+    `office`;
+  - run the nine matched long-window SPECTRAX-GK simulations;
+  - build the three replicated ensemble artifacts;
+  - run the central finite-difference gradient gate and final evidence check.
