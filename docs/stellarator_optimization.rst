@@ -864,6 +864,19 @@ The companion ``ZBS(1,1)`` 5% campaign gives the complementary negative result:
 ``gradient_uncertainty_rel = 0.225`` passes, but ``fd_asymmetry_rel = 0.663`` is
 still above the locality gate. This is now a robust production-candidate audit
 set, not a promoted nonlinear turbulence-gradient validation.
+``docs/_static/nonlinear_turbulence_gradient_candidate_ranking.json`` ranks the
+completed ``RBC(1,1)``, ``ZBS(1,1)``, and ``ZBS(1,0)`` attempts. Its current
+recommendation is to move to an overdetermined least-squares/profile-gradient
+campaign: the best single-control candidates fail in complementary ways, with
+``ZBS(1,1)`` statistically clean but nonlocal and ``ZBS(1,0)`` local but too
+noisy.
+The concrete next-campaign launch contract is tracked in
+``docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_plan.json``.
+It starts from the same optimized-QA/ESS VMEC input and writes matched
+``vmec_jax`` perturbation inputs for ``ZBS(1,1)``, ``ZBS(1,0)``, and
+``RBC(1,1)`` at 3% relative amplitude, followed by identical
+``t=900``, ``n64:64:64:40:40`` nonlinear launch ladders and a final candidate
+ranking command. This is still a launch plan, not gradient evidence.
 
 .. figure:: _static/qa_ess_zbs10_rel5_nonlinear_gradient_zbs_1_0_central_fd_gradient_gate.png
    :width: 90%
