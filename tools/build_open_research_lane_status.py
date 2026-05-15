@@ -193,6 +193,7 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
     ql_dataset = _read_json(root, "docs/_static/quasilinear_dataset_sufficiency.json")
     ql_model_status = _read_json(root, "docs/_static/quasilinear_model_selection_status.json")
     production_nl_guard = _read_json(root, "docs/_static/production_nonlinear_optimization_guard.json")
+    baseline_optimized_audit = _read_json(root, "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json")
     circular_t250_gate = _read_json(root, "docs/_static/external_vmec_circular_t250_high_grid_convergence_gate.json")
     circular_t700_replicate = _read_json(
         root,
@@ -259,6 +260,11 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
     production_nl_guard_summary = (
         (production_nl_guard or {}).get("summary", {})
         if isinstance((production_nl_guard or {}).get("summary", {}), dict)
+        else {}
+    )
+    baseline_optimized_comparison = (
+        (baseline_optimized_audit or {}).get("comparison", {})
+        if isinstance((baseline_optimized_audit or {}).get("comparison", {}), dict)
         else {}
     )
     itermodel_passed = bool((itermodel_gate or {}).get("gate_report", {}).get("passed", False))
@@ -464,6 +470,8 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
                 "docs/_static/external_vmec_dshape_replicates/dshape_replicate_t250_ensemble_gate.json",
                 "docs/_static/production_nonlinear_optimization_guard.json",
                 "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json",
+                "docs/_static/qa_no_ess_reference_replicates/qa_no_ess_reference_t700_ensemble_gate.json",
+                "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json",
                 "docs/_static/external_vmec_itermodel_t350_high_grid_convergence_gate.json",
                 "docs/_static/external_vmec_updown_asym_t450_high_grid_convergence_gate.json",
                 "docs/_static/external_vmec_qh_grid_convergence_gate.json",
@@ -529,6 +537,17 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
                         "qualifying_optimized_equilibrium_ensembles"
                     )
                 ),
+                "matched_qa_no_ess_to_optimized_audit_passed": bool(
+                    (baseline_optimized_audit or {}).get("passed", False)
+                ),
+                "matched_qa_no_ess_relative_reduction": (
+                    baseline_optimized_comparison.get("relative_reduction")
+                ),
+                "matched_qa_no_ess_uncertainty_separation_sigma": (
+                    baseline_optimized_comparison.get(
+                        "uncertainty_separation_sigma"
+                    )
+                ),
                 "itermodel_external_vmec_t350_converged": itermodel_passed,
                 "updown_asym_external_vmec_t450_converged": updown_passed,
                 "qh_external_vmec_low_to_mid_grid_converged": qh_passed,
@@ -536,8 +555,9 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
                 "cth_like_external_vmec_converged": cth_passed,
             },
             "next_action": (
-                "Document the accepted richer candidate with scoped wording and keep circular, QH, and CTH-like "
-                "excluded until their common-window and grid-refinement gates pass."
+                "Document the accepted richer candidate and matched QA no-ESS to optimized QA/ESS audit with scoped "
+                "wording; keep circular, QH, and CTH-like excluded until their common-window and grid-refinement "
+                "gates pass."
                 if ql_passed
                 else "Use the admitted D-shaped, circular, ITERModel, and up-down asymmetric external-VMEC holdouts as "
                 "negative transfer constraints while developing richer saturation models; keep QH and CTH-like excluded "

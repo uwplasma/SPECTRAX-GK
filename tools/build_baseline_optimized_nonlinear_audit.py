@@ -368,20 +368,25 @@ def _write_plot(report: Mapping[str, Any], path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     set_plot_style()
     rows = [report["baseline_ensemble"], report["optimized_ensemble"]]
-    labels = ["baseline", "optimized"]
+    labels = ["no-ESS\nreference", "optimized\nQA/ESS"]
     means = [_finite_float(row.get("ensemble_mean")) or 0.0 for row in rows]
     sems = [_finite_float(row.get("combined_sem")) or 0.0 for row in rows]
     colors = ["#2563eb", "#0f766e"] if bool(report["passed"]) else ["#6b7280", "#b91c1c"]
-    fig, ax = plt.subplots(figsize=(6.3, 4.1), constrained_layout=True)
+    fig, ax = plt.subplots(figsize=(6.4, 4.6))
     ax.bar(labels, means, yerr=sems, capsize=5, color=colors, alpha=0.88, edgecolor="0.2")
-    ax.set_ylabel(r"post-transient $\langle Q\rangle$")
+    ax.set_ylabel(r"post-transient $\langle Q_i\rangle/Q_{gB}$")
     reduction = report["comparison"].get("relative_reduction")
     sigma = report["comparison"].get("uncertainty_separation_sigma")
     status = "passed" if report["passed"] else "failed closed"
     ax.set_title(f"Baseline-to-optimized nonlinear audit: {status}")
     ax.grid(axis="y", alpha=0.25)
-    caption = f"relative reduction={reduction:.3f}, separation={sigma:.2f} sigma" if reduction is not None and sigma is not None else "comparison unavailable"
-    fig.text(0.5, 0.02, caption, ha="center", fontsize=9, color="0.25")
+    caption = (
+        f"relative reduction = {reduction:.3f}; separation = {sigma:.2f} sigma"
+        if reduction is not None and sigma is not None
+        else "comparison unavailable"
+    )
+    fig.subplots_adjust(left=0.14, right=0.98, top=0.86, bottom=0.23)
+    fig.text(0.5, 0.055, caption, ha="center", fontsize=9.5, color="0.25")
     fig.savefig(path, dpi=220, bbox_inches="tight")
     plt.close(fig)
 

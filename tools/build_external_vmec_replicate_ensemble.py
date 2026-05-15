@@ -243,15 +243,13 @@ def _write_png(
         ls="--",
         lw=1.3,
         color="0.15",
-        label=f"mean = {float(ensemble_mean):.2f}",
     )
     ax1.set_xticks(x, labels)
     ax1.set_ylabel(r"late-window $\langle Q_i\rangle/Q_{gB}$")
-    ax1.set_title("Seed/timestep robustness")
+    ax1.set_title(f"Seed/timestep robustness\nmean = {float(ensemble_mean):.2f}")
     ax1.grid(axis="y", alpha=0.25)
-    ax1.legend(frameon=False, loc="upper right")
 
-    fig.subplots_adjust(left=0.065, right=0.985, bottom=0.22, top=0.82, wspace=0.16)
+    fig.subplots_adjust(left=0.065, right=0.985, bottom=0.22, top=0.80, wspace=0.16)
     fig.suptitle(title, fontsize=12.5, y=0.96)
     stats = ensemble["statistics"]
     caption = (

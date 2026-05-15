@@ -204,6 +204,9 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
     production_nl_guard = _read_json(
         root, "docs/_static/production_nonlinear_optimization_guard.json"
     )
+    baseline_optimized_audit = _read_json(
+        root, "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json"
+    )
     profile = _read_json(
         root, "docs/_static/nonlinear_sharding_profile_office_gpu.json"
     )
@@ -389,6 +392,14 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
         (production_nl_guard or {}).get(
             "production_nonlinear_optimization_promoted", False
         )
+    )
+    baseline_optimized_comparison = (
+        (baseline_optimized_audit or {}).get("comparison", {})
+        if isinstance((baseline_optimized_audit or {}).get("comparison", {}), dict)
+        else {}
+    )
+    matched_baseline_optimized_audit_passed = bool(
+        (baseline_optimized_audit or {}).get("passed", False)
     )
     solver_gradient_closed = bool(
         solver_gradient_passed
@@ -593,6 +604,10 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                 "docs/_static/production_nonlinear_optimization_guard.png",
                 "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json",
                 "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.png",
+                "docs/_static/qa_no_ess_reference_replicates/qa_no_ess_reference_t700_ensemble_gate.json",
+                "docs/_static/qa_no_ess_reference_replicates/qa_no_ess_reference_t700_ensemble_gate.png",
+                "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json",
+                "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.png",
             ],
             "key_metrics": {
                 **opt_reductions,
@@ -614,11 +629,23 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                         "qualifying_optimized_equilibrium_ensembles"
                     )
                 ),
+                "matched_qa_no_ess_to_optimized_audit_passed": (
+                    matched_baseline_optimized_audit_passed
+                ),
+                "matched_qa_no_ess_relative_reduction": (
+                    baseline_optimized_comparison.get("relative_reduction")
+                ),
+                "matched_qa_no_ess_uncertainty_separation_sigma": (
+                    baseline_optimized_comparison.get(
+                        "uncertainty_separation_sigma"
+                    )
+                ),
             },
             "next_action": (
-                "Use as the current optimization figure only with scoped wording; nonlinear-window VMEC/Boozer/GK "
-                "gradients and matched baseline-to-optimized audits across broader geometry families remain future "
-                "requirements before claiming broad end-to-end stellarator heat-flux optimization."
+                "Use as the current optimization figure only with scoped wording; the matched QA no-ESS to optimized "
+                "QA/ESS audit is closed, but nonlinear-window VMEC/Boozer/GK gradients and matched audits across "
+                "broader geometry families remain future requirements before claiming broad end-to-end stellarator "
+                "heat-flux optimization."
             ),
         },
         {
