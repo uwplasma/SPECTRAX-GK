@@ -81,6 +81,8 @@ def test_w7x_zonal_closure_ladder_builds_rows_and_main(tmp_path: Path) -> None:
     assert len(rows) == 1
     assert rows[0]["label"] == "synthetic"
     assert rows[0]["mean_abs_error"] < 1.0
+    assert rows[0]["reference_tail_std"] > 0.0
+    assert rows[0]["tail_std_ratio"] is not None
     assert rows[0]["hermite_tail_last"] > 0.0
     assert "synthetic" in traces
 

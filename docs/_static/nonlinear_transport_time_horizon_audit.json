@@ -1,7 +1,14 @@
 {
-  "interpretation": "Heat-flux values from startup or reduced-estimator artifacts must not be used as nonlinear transport averages. Long windows require post-transient averaging plus either matched-code comparison or grid/window convergence gates.",
+  "interpretation": "Heat-flux values from startup or reduced-estimator artifacts must not be used as nonlinear transport averages. Long windows require post-transient averaging plus either matched-code comparison or grid/window convergence gates. Production nonlinear optimization additionally requires optimized-equilibrium audits with grid, timestep, and seed/initial-condition convergence.",
   "kind": "nonlinear_transport_time_horizon_audit",
   "min_transport_time": 50.0,
+  "production_optimization_requirements": [
+    "passed post-transient nonlinear transport-average gate",
+    "grid-convergence gate for the optimized nonlinear objective",
+    "timestep-convergence gate for the optimized nonlinear objective",
+    "seed/initial-condition uncertainty gate",
+    "optimized-equilibrium nonlinear audit"
+  ],
   "records": [
     {
       "artifact": "docs/_static/external_vmec_cth_like_grid_convergence_gate.json",
@@ -10,8 +17,17 @@
       "convergence_gate_passed": false,
       "effective_tmax": 150.00454711914062,
       "gate_passed": false,
+      "grid_convergence_gate_passed": false,
       "kind": "external_vmec_nonlinear_grid_convergence_gate",
       "notes": "long nonlinear pilots exist, but grid/window convergence gate fails",
+      "production_nonlinear_optimization_blockers": [
+        "long nonlinear trace failed the convergence gate",
+        "missing grid-convergence gate for optimized nonlinear objective",
+        "missing timestep-convergence gate for optimized nonlinear objective",
+        "missing seed/initial-condition uncertainty gate",
+        "missing optimized-equilibrium nonlinear audit"
+      ],
+      "production_nonlinear_optimization_ready": false,
       "requires_longer_or_convergence_action": true,
       "source_tmax": null,
       "status": "long_but_failed_convergence",
@@ -25,8 +41,17 @@
       "convergence_gate_passed": false,
       "effective_tmax": 150.00454711914062,
       "gate_passed": false,
+      "grid_convergence_gate_passed": false,
       "kind": "external_vmec_nonlinear_grid_convergence_gate",
       "notes": "long nonlinear pilots exist, but grid/window convergence gate fails",
+      "production_nonlinear_optimization_blockers": [
+        "long nonlinear trace failed the convergence gate",
+        "missing grid-convergence gate for optimized nonlinear objective",
+        "missing timestep-convergence gate for optimized nonlinear objective",
+        "missing seed/initial-condition uncertainty gate",
+        "missing optimized-equilibrium nonlinear audit"
+      ],
+      "production_nonlinear_optimization_ready": false,
       "requires_longer_or_convergence_action": true,
       "source_tmax": null,
       "status": "long_but_failed_convergence",
@@ -40,8 +65,17 @@
       "convergence_gate_passed": false,
       "effective_tmax": 250.00604248046875,
       "gate_passed": false,
+      "grid_convergence_gate_passed": false,
       "kind": "external_vmec_nonlinear_grid_convergence_gate",
       "notes": "long nonlinear pilots exist, but grid/window convergence gate fails",
+      "production_nonlinear_optimization_blockers": [
+        "long nonlinear trace failed the convergence gate",
+        "missing grid-convergence gate for optimized nonlinear objective",
+        "missing timestep-convergence gate for optimized nonlinear objective",
+        "missing seed/initial-condition uncertainty gate",
+        "missing optimized-equilibrium nonlinear audit"
+      ],
+      "production_nonlinear_optimization_ready": false,
       "requires_longer_or_convergence_action": true,
       "source_tmax": null,
       "status": "long_but_failed_convergence",
@@ -55,8 +89,17 @@
       "convergence_gate_passed": false,
       "effective_tmax": 150.00454711914062,
       "gate_passed": false,
+      "grid_convergence_gate_passed": false,
       "kind": "external_vmec_nonlinear_grid_convergence_gate",
       "notes": "long nonlinear pilots exist, but grid/window convergence gate fails",
+      "production_nonlinear_optimization_blockers": [
+        "long nonlinear trace failed the convergence gate",
+        "missing grid-convergence gate for optimized nonlinear objective",
+        "missing timestep-convergence gate for optimized nonlinear objective",
+        "missing seed/initial-condition uncertainty gate",
+        "missing optimized-equilibrium nonlinear audit"
+      ],
+      "production_nonlinear_optimization_ready": false,
       "requires_longer_or_convergence_action": true,
       "source_tmax": null,
       "status": "long_but_failed_convergence",
@@ -70,8 +113,17 @@
       "convergence_gate_passed": false,
       "effective_tmax": 150.00454711914062,
       "gate_passed": false,
+      "grid_convergence_gate_passed": false,
       "kind": "external_vmec_nonlinear_grid_convergence_gate",
       "notes": "long nonlinear pilots exist, but grid/window convergence gate fails",
+      "production_nonlinear_optimization_blockers": [
+        "long nonlinear trace failed the convergence gate",
+        "missing grid-convergence gate for optimized nonlinear objective",
+        "missing timestep-convergence gate for optimized nonlinear objective",
+        "missing seed/initial-condition uncertainty gate",
+        "missing optimized-equilibrium nonlinear audit"
+      ],
+      "production_nonlinear_optimization_ready": false,
       "requires_longer_or_convergence_action": true,
       "source_tmax": null,
       "status": "long_but_failed_convergence",
@@ -85,8 +137,17 @@
       "convergence_gate_passed": false,
       "effective_tmax": 250.00604248046875,
       "gate_passed": false,
+      "grid_convergence_gate_passed": false,
       "kind": "external_vmec_nonlinear_grid_convergence_gate",
       "notes": "long nonlinear pilots exist, but grid/window convergence gate fails",
+      "production_nonlinear_optimization_blockers": [
+        "long nonlinear trace failed the convergence gate",
+        "missing grid-convergence gate for optimized nonlinear objective",
+        "missing timestep-convergence gate for optimized nonlinear objective",
+        "missing seed/initial-condition uncertainty gate",
+        "missing optimized-equilibrium nonlinear audit"
+      ],
+      "production_nonlinear_optimization_ready": false,
       "requires_longer_or_convergence_action": true,
       "source_tmax": null,
       "status": "long_but_failed_convergence",
@@ -100,8 +161,17 @@
       "convergence_gate_passed": false,
       "effective_tmax": 150.00454711914062,
       "gate_passed": false,
+      "grid_convergence_gate_passed": false,
       "kind": "external_vmec_nonlinear_grid_convergence_gate",
       "notes": "long nonlinear pilots exist, but grid/window convergence gate fails",
+      "production_nonlinear_optimization_blockers": [
+        "long nonlinear trace failed the convergence gate",
+        "missing grid-convergence gate for optimized nonlinear objective",
+        "missing timestep-convergence gate for optimized nonlinear objective",
+        "missing seed/initial-condition uncertainty gate",
+        "missing optimized-equilibrium nonlinear audit"
+      ],
+      "production_nonlinear_optimization_ready": false,
       "requires_longer_or_convergence_action": true,
       "source_tmax": null,
       "status": "long_but_failed_convergence",
@@ -115,8 +185,17 @@
       "convergence_gate_passed": false,
       "effective_tmax": 150.00454711914062,
       "gate_passed": false,
+      "grid_convergence_gate_passed": false,
       "kind": "external_vmec_nonlinear_grid_convergence_gate",
       "notes": "long nonlinear pilots exist, but grid/window convergence gate fails",
+      "production_nonlinear_optimization_blockers": [
+        "long nonlinear trace failed the convergence gate",
+        "missing grid-convergence gate for optimized nonlinear objective",
+        "missing timestep-convergence gate for optimized nonlinear objective",
+        "missing seed/initial-condition uncertainty gate",
+        "missing optimized-equilibrium nonlinear audit"
+      ],
+      "production_nonlinear_optimization_ready": false,
       "requires_longer_or_convergence_action": true,
       "source_tmax": null,
       "status": "long_but_failed_convergence",
@@ -131,6 +210,14 @@
       "gate_passed": false,
       "kind": "nonlinear_feasibility_pilot",
       "notes": "feasibility pilot only; no external nonlinear transport acceptance gate is defined",
+      "production_nonlinear_optimization_blockers": [
+        "long nonlinear trace lacks a passed convergence/reference gate",
+        "missing grid-convergence gate for optimized nonlinear objective",
+        "missing timestep-convergence gate for optimized nonlinear objective",
+        "missing seed/initial-condition uncertainty gate",
+        "missing optimized-equilibrium nonlinear audit"
+      ],
+      "production_nonlinear_optimization_ready": false,
       "promotion_gate_passed": false,
       "requires_longer_or_convergence_action": true,
       "source_tmax": null,
@@ -146,6 +233,14 @@
       "gate_passed": false,
       "kind": "nonlinear_feasibility_pilot",
       "notes": "feasibility pilot only; no external nonlinear transport acceptance gate is defined",
+      "production_nonlinear_optimization_blockers": [
+        "long nonlinear trace lacks a passed convergence/reference gate",
+        "missing grid-convergence gate for optimized nonlinear objective",
+        "missing timestep-convergence gate for optimized nonlinear objective",
+        "missing seed/initial-condition uncertainty gate",
+        "missing optimized-equilibrium nonlinear audit"
+      ],
+      "production_nonlinear_optimization_ready": false,
       "promotion_gate_passed": false,
       "requires_longer_or_convergence_action": true,
       "source_tmax": null,
@@ -161,6 +256,14 @@
       "gate_passed": false,
       "kind": "nonlinear_feasibility_pilot",
       "notes": "feasibility pilot only; no external nonlinear transport acceptance gate is defined",
+      "production_nonlinear_optimization_blockers": [
+        "long nonlinear trace lacks a passed convergence/reference gate",
+        "missing grid-convergence gate for optimized nonlinear objective",
+        "missing timestep-convergence gate for optimized nonlinear objective",
+        "missing seed/initial-condition uncertainty gate",
+        "missing optimized-equilibrium nonlinear audit"
+      ],
+      "production_nonlinear_optimization_ready": false,
       "promotion_gate_passed": false,
       "requires_longer_or_convergence_action": true,
       "source_tmax": 150.00454711914062,
@@ -176,6 +279,14 @@
       "gate_passed": false,
       "kind": "nonlinear_feasibility_pilot",
       "notes": "feasibility pilot only; no external nonlinear transport acceptance gate is defined",
+      "production_nonlinear_optimization_blockers": [
+        "long nonlinear trace lacks a passed convergence/reference gate",
+        "missing grid-convergence gate for optimized nonlinear objective",
+        "missing timestep-convergence gate for optimized nonlinear objective",
+        "missing seed/initial-condition uncertainty gate",
+        "missing optimized-equilibrium nonlinear audit"
+      ],
+      "production_nonlinear_optimization_ready": false,
       "promotion_gate_passed": false,
       "requires_longer_or_convergence_action": true,
       "source_tmax": 150.00454711914062,
@@ -191,6 +302,14 @@
       "gate_passed": false,
       "kind": "nonlinear_feasibility_pilot",
       "notes": "feasibility pilot only; no external nonlinear transport acceptance gate is defined",
+      "production_nonlinear_optimization_blockers": [
+        "long nonlinear trace lacks a passed convergence/reference gate",
+        "missing grid-convergence gate for optimized nonlinear objective",
+        "missing timestep-convergence gate for optimized nonlinear objective",
+        "missing seed/initial-condition uncertainty gate",
+        "missing optimized-equilibrium nonlinear audit"
+      ],
+      "production_nonlinear_optimization_ready": false,
       "promotion_gate_passed": false,
       "requires_longer_or_convergence_action": true,
       "source_tmax": 150.00454711914062,
@@ -206,6 +325,14 @@
       "gate_passed": false,
       "kind": "nonlinear_feasibility_pilot",
       "notes": "feasibility pilot only; no external nonlinear transport acceptance gate is defined",
+      "production_nonlinear_optimization_blockers": [
+        "long nonlinear trace lacks a passed convergence/reference gate",
+        "missing grid-convergence gate for optimized nonlinear objective",
+        "missing timestep-convergence gate for optimized nonlinear objective",
+        "missing seed/initial-condition uncertainty gate",
+        "missing optimized-equilibrium nonlinear audit"
+      ],
+      "production_nonlinear_optimization_ready": false,
       "promotion_gate_passed": false,
       "requires_longer_or_convergence_action": true,
       "source_tmax": 150.00454711914062,
@@ -221,6 +348,14 @@
       "gate_passed": false,
       "kind": "nonlinear_feasibility_pilot",
       "notes": "feasibility pilot only; no external nonlinear transport acceptance gate is defined",
+      "production_nonlinear_optimization_blockers": [
+        "long nonlinear trace lacks a passed convergence/reference gate",
+        "missing grid-convergence gate for optimized nonlinear objective",
+        "missing timestep-convergence gate for optimized nonlinear objective",
+        "missing seed/initial-condition uncertainty gate",
+        "missing optimized-equilibrium nonlinear audit"
+      ],
+      "production_nonlinear_optimization_ready": false,
       "promotion_gate_passed": false,
       "requires_longer_or_convergence_action": true,
       "source_tmax": 250.00604248046875,
@@ -236,6 +371,14 @@
       "gate_passed": false,
       "kind": "nonlinear_feasibility_pilot",
       "notes": "feasibility pilot only; no external nonlinear transport acceptance gate is defined",
+      "production_nonlinear_optimization_blockers": [
+        "long nonlinear trace lacks a passed convergence/reference gate",
+        "missing grid-convergence gate for optimized nonlinear objective",
+        "missing timestep-convergence gate for optimized nonlinear objective",
+        "missing seed/initial-condition uncertainty gate",
+        "missing optimized-equilibrium nonlinear audit"
+      ],
+      "production_nonlinear_optimization_ready": false,
       "promotion_gate_passed": false,
       "requires_longer_or_convergence_action": true,
       "source_tmax": 150.00454711914062,
@@ -251,6 +394,14 @@
       "gate_passed": false,
       "kind": "nonlinear_feasibility_pilot",
       "notes": "feasibility pilot only; no external nonlinear transport acceptance gate is defined",
+      "production_nonlinear_optimization_blockers": [
+        "long nonlinear trace lacks a passed convergence/reference gate",
+        "missing grid-convergence gate for optimized nonlinear objective",
+        "missing timestep-convergence gate for optimized nonlinear objective",
+        "missing seed/initial-condition uncertainty gate",
+        "missing optimized-equilibrium nonlinear audit"
+      ],
+      "production_nonlinear_optimization_ready": false,
       "promotion_gate_passed": false,
       "requires_longer_or_convergence_action": true,
       "source_tmax": 250.00604248046875,
@@ -266,6 +417,14 @@
       "gate_passed": false,
       "kind": "nonlinear_feasibility_pilot",
       "notes": "feasibility pilot only; no external nonlinear transport acceptance gate is defined",
+      "production_nonlinear_optimization_blockers": [
+        "long nonlinear trace lacks a passed convergence/reference gate",
+        "missing grid-convergence gate for optimized nonlinear objective",
+        "missing timestep-convergence gate for optimized nonlinear objective",
+        "missing seed/initial-condition uncertainty gate",
+        "missing optimized-equilibrium nonlinear audit"
+      ],
+      "production_nonlinear_optimization_ready": false,
       "promotion_gate_passed": false,
       "requires_longer_or_convergence_action": true,
       "source_tmax": null,
@@ -281,6 +440,14 @@
       "gate_passed": false,
       "kind": "nonlinear_feasibility_pilot",
       "notes": "feasibility pilot only; no external nonlinear transport acceptance gate is defined",
+      "production_nonlinear_optimization_blockers": [
+        "long nonlinear trace lacks a passed convergence/reference gate",
+        "missing grid-convergence gate for optimized nonlinear objective",
+        "missing timestep-convergence gate for optimized nonlinear objective",
+        "missing seed/initial-condition uncertainty gate",
+        "missing optimized-equilibrium nonlinear audit"
+      ],
+      "production_nonlinear_optimization_ready": false,
       "promotion_gate_passed": false,
       "requires_longer_or_convergence_action": true,
       "source_tmax": null,
@@ -296,6 +463,14 @@
       "gate_passed": false,
       "kind": "nonlinear_feasibility_pilot",
       "notes": "feasibility pilot only; no external nonlinear transport acceptance gate is defined",
+      "production_nonlinear_optimization_blockers": [
+        "long nonlinear trace lacks a passed convergence/reference gate",
+        "missing grid-convergence gate for optimized nonlinear objective",
+        "missing timestep-convergence gate for optimized nonlinear objective",
+        "missing seed/initial-condition uncertainty gate",
+        "missing optimized-equilibrium nonlinear audit"
+      ],
+      "production_nonlinear_optimization_ready": false,
       "promotion_gate_passed": false,
       "requires_longer_or_convergence_action": true,
       "source_tmax": 150.00454711914062,
@@ -311,6 +486,14 @@
       "gate_passed": false,
       "kind": "nonlinear_feasibility_pilot",
       "notes": "feasibility pilot only; no external nonlinear transport acceptance gate is defined",
+      "production_nonlinear_optimization_blockers": [
+        "long nonlinear trace lacks a passed convergence/reference gate",
+        "missing grid-convergence gate for optimized nonlinear objective",
+        "missing timestep-convergence gate for optimized nonlinear objective",
+        "missing seed/initial-condition uncertainty gate",
+        "missing optimized-equilibrium nonlinear audit"
+      ],
+      "production_nonlinear_optimization_ready": false,
       "promotion_gate_passed": false,
       "requires_longer_or_convergence_action": true,
       "source_tmax": 150.00454711914062,
@@ -326,6 +509,14 @@
       "gate_passed": false,
       "kind": "nonlinear_feasibility_pilot",
       "notes": "feasibility pilot only; no external nonlinear transport acceptance gate is defined",
+      "production_nonlinear_optimization_blockers": [
+        "long nonlinear trace lacks a passed convergence/reference gate",
+        "missing grid-convergence gate for optimized nonlinear objective",
+        "missing timestep-convergence gate for optimized nonlinear objective",
+        "missing seed/initial-condition uncertainty gate",
+        "missing optimized-equilibrium nonlinear audit"
+      ],
+      "production_nonlinear_optimization_ready": false,
       "promotion_gate_passed": false,
       "requires_longer_or_convergence_action": true,
       "source_tmax": 150.0010223388672,
@@ -341,6 +532,14 @@
       "gate_passed": true,
       "kind": "mode21_vmec_boozer_nonlinear_window_gradient_gate",
       "notes": "Use this as a reduced nonlinear-window estimator-gradient gate only. Full stellarator heat-flux optimization still requires converged nonlinear SPECTRAX-GK window gradients or robust adjoint/finite-difference audits on optimized equilibria.",
+      "production_nonlinear_optimization_blockers": [
+        "reduced estimator output is not an actual nonlinear transport average",
+        "missing grid-convergence gate for optimized nonlinear objective",
+        "missing timestep-convergence gate for optimized nonlinear objective",
+        "missing seed/initial-condition uncertainty gate",
+        "missing optimized-equilibrium nonlinear audit"
+      ],
+      "production_nonlinear_optimization_ready": false,
       "requires_longer_or_convergence_action": false,
       "source_tmax": null,
       "status": "reduced_estimator_not_transport_average",
@@ -356,6 +555,14 @@
       "gate_passed": true,
       "kind": "mode21_vmec_boozer_nonlinear_window_gradient_gate",
       "notes": "Use this as a reduced nonlinear-window estimator-gradient gate only. Full stellarator heat-flux optimization still requires converged nonlinear SPECTRAX-GK window gradients or robust adjoint/finite-difference audits on optimized equilibria.",
+      "production_nonlinear_optimization_blockers": [
+        "reduced estimator output is not an actual nonlinear transport average",
+        "missing grid-convergence gate for optimized nonlinear objective",
+        "missing timestep-convergence gate for optimized nonlinear objective",
+        "missing seed/initial-condition uncertainty gate",
+        "missing optimized-equilibrium nonlinear audit"
+      ],
+      "production_nonlinear_optimization_ready": false,
       "requires_longer_or_convergence_action": false,
       "source_tmax": null,
       "status": "reduced_estimator_not_transport_average",
@@ -371,6 +578,14 @@
       "gate_passed": false,
       "kind": "",
       "notes": "not a promoted nonlinear transport average",
+      "production_nonlinear_optimization_blockers": [
+        "reduced estimator output is not an actual nonlinear transport average",
+        "missing grid-convergence gate for optimized nonlinear objective",
+        "missing timestep-convergence gate for optimized nonlinear objective",
+        "missing seed/initial-condition uncertainty gate",
+        "missing optimized-equilibrium nonlinear audit"
+      ],
+      "production_nonlinear_optimization_ready": false,
       "requires_longer_or_convergence_action": false,
       "source_tmax": null,
       "status": "reduced_estimator_not_transport_average",
@@ -385,8 +600,15 @@
       "convergence_gate_passed": true,
       "effective_tmax": 150.00454711914062,
       "gate_passed": true,
+      "grid_convergence_gate_passed": true,
       "kind": "external_vmec_nonlinear_grid_convergence_gate",
       "notes": "long nonlinear pilots pass the grid/window convergence gate",
+      "production_nonlinear_optimization_blockers": [
+        "missing timestep-convergence gate for optimized nonlinear objective",
+        "missing seed/initial-condition uncertainty gate",
+        "missing optimized-equilibrium nonlinear audit"
+      ],
+      "production_nonlinear_optimization_ready": false,
       "requires_longer_or_convergence_action": false,
       "source_tmax": null,
       "status": "release_transport_gate_passed",
@@ -400,8 +622,15 @@
       "convergence_gate_passed": true,
       "effective_tmax": 250.00604248046875,
       "gate_passed": true,
+      "grid_convergence_gate_passed": true,
       "kind": "external_vmec_nonlinear_grid_convergence_gate",
       "notes": "long nonlinear pilots pass the grid/window convergence gate",
+      "production_nonlinear_optimization_blockers": [
+        "missing timestep-convergence gate for optimized nonlinear objective",
+        "missing seed/initial-condition uncertainty gate",
+        "missing optimized-equilibrium nonlinear audit"
+      ],
+      "production_nonlinear_optimization_ready": false,
       "requires_longer_or_convergence_action": false,
       "source_tmax": null,
       "status": "release_transport_gate_passed",
@@ -415,8 +644,15 @@
       "convergence_gate_passed": true,
       "effective_tmax": 350.0075378417969,
       "gate_passed": true,
+      "grid_convergence_gate_passed": true,
       "kind": "external_vmec_nonlinear_grid_convergence_gate",
       "notes": "long nonlinear pilots pass the grid/window convergence gate",
+      "production_nonlinear_optimization_blockers": [
+        "missing timestep-convergence gate for optimized nonlinear objective",
+        "missing seed/initial-condition uncertainty gate",
+        "missing optimized-equilibrium nonlinear audit"
+      ],
+      "production_nonlinear_optimization_ready": false,
       "requires_longer_or_convergence_action": false,
       "source_tmax": null,
       "status": "release_transport_gate_passed",
@@ -431,6 +667,13 @@
       "gate_passed": true,
       "kind": "release_nonlinear_gate",
       "notes": "matched-code nonlinear transport comparison gate",
+      "production_nonlinear_optimization_blockers": [
+        "missing grid-convergence gate for optimized nonlinear objective",
+        "missing timestep-convergence gate for optimized nonlinear objective",
+        "missing seed/initial-condition uncertainty gate",
+        "missing optimized-equilibrium nonlinear audit"
+      ],
+      "production_nonlinear_optimization_ready": false,
       "requires_longer_or_convergence_action": false,
       "source_tmax": 400.01537822923615,
       "status": "release_transport_gate_passed",
@@ -445,6 +688,13 @@
       "gate_passed": true,
       "kind": "release_nonlinear_gate",
       "notes": "matched-code nonlinear transport comparison gate",
+      "production_nonlinear_optimization_blockers": [
+        "missing grid-convergence gate for optimized nonlinear objective",
+        "missing timestep-convergence gate for optimized nonlinear objective",
+        "missing seed/initial-condition uncertainty gate",
+        "missing optimized-equilibrium nonlinear audit"
+      ],
+      "production_nonlinear_optimization_ready": false,
       "requires_longer_or_convergence_action": false,
       "source_tmax": 1999.8255615234375,
       "status": "release_transport_gate_passed",
@@ -459,6 +709,13 @@
       "gate_passed": true,
       "kind": "release_nonlinear_gate",
       "notes": "matched-code nonlinear transport comparison gate",
+      "production_nonlinear_optimization_blockers": [
+        "missing grid-convergence gate for optimized nonlinear objective",
+        "missing timestep-convergence gate for optimized nonlinear objective",
+        "missing seed/initial-condition uncertainty gate",
+        "missing optimized-equilibrium nonlinear audit"
+      ],
+      "production_nonlinear_optimization_ready": false,
       "requires_longer_or_convergence_action": false,
       "source_tmax": 50.04916948152942,
       "status": "release_transport_gate_passed",
@@ -473,6 +730,13 @@
       "gate_passed": true,
       "kind": "release_nonlinear_gate",
       "notes": "matched-code nonlinear transport comparison gate",
+      "production_nonlinear_optimization_blockers": [
+        "missing grid-convergence gate for optimized nonlinear objective",
+        "missing timestep-convergence gate for optimized nonlinear objective",
+        "missing seed/initial-condition uncertainty gate",
+        "missing optimized-equilibrium nonlinear audit"
+      ],
+      "production_nonlinear_optimization_ready": false,
       "requires_longer_or_convergence_action": false,
       "source_tmax": 100.07963562011719,
       "status": "release_transport_gate_passed",
@@ -486,8 +750,15 @@
       "convergence_gate_passed": true,
       "effective_tmax": 450.009033203125,
       "gate_passed": true,
+      "grid_convergence_gate_passed": true,
       "kind": "external_vmec_nonlinear_grid_convergence_gate",
       "notes": "long nonlinear pilots pass the grid/window convergence gate",
+      "production_nonlinear_optimization_blockers": [
+        "missing timestep-convergence gate for optimized nonlinear objective",
+        "missing seed/initial-condition uncertainty gate",
+        "missing optimized-equilibrium nonlinear audit"
+      ],
+      "production_nonlinear_optimization_ready": false,
       "requires_longer_or_convergence_action": false,
       "source_tmax": null,
       "status": "release_transport_gate_passed",
@@ -502,6 +773,13 @@
       "gate_passed": true,
       "kind": "release_nonlinear_gate",
       "notes": "matched-code nonlinear transport comparison gate",
+      "production_nonlinear_optimization_blockers": [
+        "missing grid-convergence gate for optimized nonlinear objective",
+        "missing timestep-convergence gate for optimized nonlinear objective",
+        "missing seed/initial-condition uncertainty gate",
+        "missing optimized-equilibrium nonlinear audit"
+      ],
+      "production_nonlinear_optimization_ready": false,
       "requires_longer_or_convergence_action": false,
       "source_tmax": 200.00664938039336,
       "status": "release_transport_gate_passed",
@@ -516,6 +794,14 @@
       "gate_passed": true,
       "kind": "nonlinear_startup_window_finite_difference_audit",
       "notes": "Use this only as a compact startup-response plumbing and FD-conditioning audit. Meaningful nonlinear heat-flux claims require long post-transient simulations, running-average convergence, block/window stability, and comparison against the tracked long-window nonlinear reference gates before optimization or manuscript use.",
+      "production_nonlinear_optimization_blockers": [
+        "missing long post-transient nonlinear transport average",
+        "missing grid-convergence gate for optimized nonlinear objective",
+        "missing timestep-convergence gate for optimized nonlinear objective",
+        "missing seed/initial-condition uncertainty gate",
+        "missing optimized-equilibrium nonlinear audit"
+      ],
+      "production_nonlinear_optimization_ready": false,
       "requires_longer_or_convergence_action": true,
       "source_tmax": null,
       "status": "short_or_startup_not_transport_average",
@@ -531,6 +817,14 @@
       "gate_passed": true,
       "kind": "vmec_boozer_nonlinear_startup_finite_difference_audit",
       "notes": "Use this only as a VMEC/Boozer-perturbed startup-response plumbing FD audit. Promoted nonlinear stellarator optimization still requires long post-transient running-average heat-flux windows, optimized-equilibrium audits, and a validated gradient/adjoint strategy.",
+      "production_nonlinear_optimization_blockers": [
+        "missing long post-transient nonlinear transport average",
+        "missing grid-convergence gate for optimized nonlinear objective",
+        "missing timestep-convergence gate for optimized nonlinear objective",
+        "missing seed/initial-condition uncertainty gate",
+        "missing optimized-equilibrium nonlinear audit"
+      ],
+      "production_nonlinear_optimization_ready": false,
       "requires_longer_or_convergence_action": true,
       "source_tmax": null,
       "status": "short_or_startup_not_transport_average",
@@ -541,6 +835,7 @@
   ],
   "summary": {
     "n_records": 36,
+    "production_nonlinear_optimization_ready": 0,
     "release_transport_gate_passed": 9,
     "short_or_reduced_not_transport": 5,
     "status_counts": {

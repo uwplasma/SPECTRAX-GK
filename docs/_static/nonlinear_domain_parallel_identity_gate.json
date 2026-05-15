@@ -1,11 +1,65 @@
 {
+  "boundary_identity": {
+    "indices": [
+      0,
+      2,
+      3,
+      5
+    ],
+    "max_abs_error": 0.0,
+    "max_rel_error": 0.0
+  },
   "case": "Nonlinear state-domain decomposition identity gate",
-  "claim_scope": "diagnostic nonlinear state-domain identity gate only; no production routing or speedup claim",
+  "claim_scope": "diagnostic nonlinear state-domain identity gate only; bounded local-stencil prototype with no production routing or speedup claim",
+  "decomposition": {
+    "axis": 0,
+    "boundary_indices": [
+      0,
+      2,
+      3,
+      5
+    ],
+    "chunk_bounds": [
+      [
+        0,
+        3
+      ],
+      [
+        3,
+        6
+      ]
+    ],
+    "chunk_sizes": [
+      3,
+      3
+    ],
+    "domain_size": 6,
+    "halo": 1,
+    "num_domains": 2,
+    "offsets": [
+      0,
+      3
+    ],
+    "state_shape": [
+      6,
+      4
+    ]
+  },
   "dt": 0.025,
   "gate": {
     "atol": 1e-06,
-    "claim_scope": "diagnostic nonlinear state-domain identity gate only; no production routing or speedup claim",
+    "blocked_reasons": [],
+    "boundary_indices": [
+      0,
+      2,
+      3,
+      5
+    ],
+    "boundary_max_abs_error": 0.0,
+    "boundary_max_rel_error": 0.0,
+    "claim_scope": "diagnostic nonlinear state-domain identity gate only; bounded local-stencil prototype with no production routing or speedup claim",
     "decomposed_path_enabled": true,
+    "gate_name": "nonlinear_domain_local_stencil_identity",
     "identity_passed": true,
     "max_abs_error": 0.0,
     "max_rel_error": 0.0,
@@ -21,6 +75,7 @@
         4
       ]
     },
+    "plan_valid": true,
     "rtol": 1e-06
   },
   "gated_state_matches_decomposed": true,
@@ -67,5 +122,125 @@
   "state_shape": [
     6,
     4
-  ]
+  ],
+  "transport_window": {
+    "gate": {
+      "atol": 1e-06,
+      "blocked_reasons": [],
+      "boundary_indices": [
+        0,
+        2,
+        3,
+        5
+      ],
+      "claim_scope": "diagnostic nonlinear state-domain transport-window identity gate only; serial-vs-halo-decomposed state, boundary, mass, free-energy, and flux-proxy traces with no production routing or speedup claim",
+      "decomposed_flux_proxy_trace": [
+        0.3478260636329651,
+        0.34701502323150635,
+        0.3462066054344177,
+        0.345400869846344,
+        0.3445977568626404,
+        0.3437972366809845
+      ],
+      "decomposed_free_energy_drift": -0.06326007843017578,
+      "decomposed_free_energy_trace": [
+        8.36922550201416,
+        8.356439590454102,
+        8.343721389770508,
+        8.331070899963379,
+        8.318485260009766,
+        8.305965423583984
+      ],
+      "decomposed_mass_drift": -0.012355804443359375,
+      "decomposed_mass_trace": [
+        12.0,
+        11.997515678405762,
+        11.995038986206055,
+        11.992568016052246,
+        11.990104675292969,
+        11.98764419555664
+      ],
+      "decomposed_path_enabled": true,
+      "dt": 0.025,
+      "flux_proxy_trace_max_abs_error": 0.0,
+      "flux_proxy_trace_max_rel_error": 0.0,
+      "free_energy_trace_max_abs_error": 0.0,
+      "free_energy_trace_max_rel_error": 0.0,
+      "gate_name": "nonlinear_domain_transport_window_identity",
+      "identity_passed": true,
+      "mass_trace_max_abs_error": 0.0,
+      "mass_trace_max_rel_error": 0.0,
+      "max_abs_boundary_error": 0.0,
+      "max_abs_state_error": 0.0,
+      "max_rel_boundary_error": 0.0,
+      "max_rel_state_error": 0.0,
+      "plan": {
+        "axis": 0,
+        "chunk_sizes": [
+          3,
+          3
+        ],
+        "halo": 1,
+        "state_shape": [
+          6,
+          4
+        ]
+      },
+      "plan_valid": true,
+      "rtol": 1e-06,
+      "serial_flux_proxy_trace": [
+        0.3478260636329651,
+        0.34701502323150635,
+        0.3462066054344177,
+        0.345400869846344,
+        0.3445977568626404,
+        0.3437972366809845
+      ],
+      "serial_free_energy_drift": -0.06326007843017578,
+      "serial_free_energy_trace": [
+        8.36922550201416,
+        8.356439590454102,
+        8.343721389770508,
+        8.331070899963379,
+        8.318485260009766,
+        8.305965423583984
+      ],
+      "serial_mass_drift": -0.012355804443359375,
+      "serial_mass_trace": [
+        12.0,
+        11.997515678405762,
+        11.995038986206055,
+        11.992568016052246,
+        11.990104675292969,
+        11.98764419555664
+      ],
+      "steps": 5
+    },
+    "metrics": [
+      {
+        "decomposed_drift": -0.012355804443359375,
+        "identity_passed": true,
+        "max_abs_error": 0.0,
+        "max_rel_error": 0.0,
+        "metric": "mass_trace",
+        "serial_drift": -0.012355804443359375
+      },
+      {
+        "decomposed_drift": -0.06326007843017578,
+        "identity_passed": true,
+        "max_abs_error": 0.0,
+        "max_rel_error": 0.0,
+        "metric": "free_energy_trace",
+        "serial_drift": -0.06326007843017578
+      },
+      {
+        "decomposed_drift": null,
+        "identity_passed": true,
+        "max_abs_error": 0.0,
+        "max_rel_error": 0.0,
+        "metric": "boundary_flux_proxy_trace",
+        "serial_drift": null
+      }
+    ]
+  }
 }

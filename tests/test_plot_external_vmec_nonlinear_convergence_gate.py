@@ -64,6 +64,7 @@ def test_convergence_gate_passes_for_flat_nearby_traces(tmp_path: Path) -> None:
     )
 
     payload = json.loads(Path(paths["json"]).read_text(encoding="utf-8"))
+    assert payload["passed"] is True
     assert payload["promotion_gate"]["passed"] is True
     assert payload["claim_level"] == "passed_grid_convergence_candidate_for_transport_holdout"
     assert payload["promotion_gate"]["reason"].startswith("synthetic external VMEC convergence passed")
@@ -87,6 +88,7 @@ def test_convergence_gate_fails_large_grid_shift(tmp_path: Path) -> None:
 
     payload = json.loads(Path(paths["json"]).read_text(encoding="utf-8"))
     failed = {gate["metric"] for gate in payload["gate_report"]["gates"] if not gate["passed"]}
+    assert payload["passed"] is False
     assert payload["promotion_gate"]["passed"] is False
     assert payload["claim_level"] == "negative_grid_convergence_result_not_transport_validation"
     assert payload["promotion_gate"]["reason"].startswith("synthetic external VMEC convergence is finite")

@@ -37,9 +37,10 @@ def build_nonlinear_domain_parallel_gate(
     axis: int,
     num_domains: int,
     dt: float,
+    transport_steps: int,
     atol: float,
     rtol: float,
-) -> dict[str, object]:
+) -> dict[str, Any]:
     """Run the deterministic serial-vs-decomposed nonlinear identity gate."""
 
     import jax.numpy as jnp
@@ -48,6 +49,7 @@ def build_nonlinear_domain_parallel_gate(
         build_nonlinear_domain_decomposition_plan,
         deterministic_nonlinear_domain_state,
         nonlinear_domain_parallel_identity_gate,
+        nonlinear_domain_transport_window_identity_gate,
         prototype_nonlinear_domain_decomposed_step,
         prototype_nonlinear_domain_serial_step,
     )
@@ -62,6 +64,14 @@ def build_nonlinear_domain_parallel_gate(
         state,
         plan,
         dt=dt,
+        atol=atol,
+        rtol=rtol,
+    )
+    transport_report = nonlinear_domain_transport_window_identity_gate(
+        state,
+        plan,
+        dt=dt,
+        steps=transport_steps,
         atol=atol,
         rtol=rtol,
     )
@@ -98,6 +108,54 @@ def build_nonlinear_domain_parallel_gate(
             "source": "spectraxgk.nonlinear_parallel nonlinear-domain prototype utilities",
             "claim_scope": report.claim_scope,
             "state_shape": tuple(int(item) for item in state.shape),
+            "decomposition": plan.decomposition_metadata(),
+            "boundary_identity": {
+                "indices": report.boundary_indices,
+                "max_abs_error": report.boundary_max_abs_error,
+                "max_rel_error": report.boundary_max_rel_error,
+            },
+            "transport_window": {
+                "gate": transport_report.to_dict(),
+                "metrics": [
+                    {
+                        "metric": "mass_trace",
+                        "max_abs_error": transport_report.mass_trace_max_abs_error,
+                        "max_rel_error": transport_report.mass_trace_max_rel_error,
+                        "serial_drift": transport_report.serial_mass_drift,
+                        "decomposed_drift": transport_report.decomposed_mass_drift,
+                        "identity_passed": bool(
+                            transport_report.mass_trace_max_abs_error <= transport_report.atol
+                            and transport_report.mass_trace_max_rel_error <= transport_report.rtol
+                        ),
+                    },
+                    {
+                        "metric": "free_energy_trace",
+                        "max_abs_error": transport_report.free_energy_trace_max_abs_error,
+                        "max_rel_error": transport_report.free_energy_trace_max_rel_error,
+                        "serial_drift": transport_report.serial_free_energy_drift,
+                        "decomposed_drift": transport_report.decomposed_free_energy_drift,
+                        "identity_passed": bool(
+                            transport_report.free_energy_trace_max_abs_error
+                            <= transport_report.atol
+                            and transport_report.free_energy_trace_max_rel_error
+                            <= transport_report.rtol
+                        ),
+                    },
+                    {
+                        "metric": "boundary_flux_proxy_trace",
+                        "max_abs_error": transport_report.flux_proxy_trace_max_abs_error,
+                        "max_rel_error": transport_report.flux_proxy_trace_max_rel_error,
+                        "serial_drift": None,
+                        "decomposed_drift": None,
+                        "identity_passed": bool(
+                            transport_report.flux_proxy_trace_max_abs_error
+                            <= transport_report.atol
+                            and transport_report.flux_proxy_trace_max_rel_error
+                            <= transport_report.rtol
+                        ),
+                    },
+                ],
+            },
             "dt": float(dt),
             "gate": report.to_dict(),
             "gated_state_matches_decomposed": bool(
@@ -111,7 +169,7 @@ def build_nonlinear_domain_parallel_gate(
     )
 
 
-def write_artifacts(summary: dict[str, object], out_json: Path, out_png: Path) -> None:
+def write_artifacts(summary: dict[str, Any], out_json: Path, out_png: Path) -> None:
     """Write the JSON report and compact identity-gate plot."""
 
     import matplotlib
@@ -164,6 +222,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--axis", type=int, default=0)
     parser.add_argument("--num-domains", type=int, default=2)
     parser.add_argument("--dt", type=float, default=0.025)
+    parser.add_argument("--transport-steps", type=int, default=5)
     parser.add_argument("--atol", type=float, default=1.0e-6)
     parser.add_argument("--rtol", type=float, default=1.0e-6)
     return parser
@@ -176,6 +235,7 @@ def main(argv: list[str] | None = None) -> int:
         axis=args.axis,
         num_domains=args.num_domains,
         dt=args.dt,
+        transport_steps=args.transport_steps,
         atol=args.atol,
         rtol=args.rtol,
     )

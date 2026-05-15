@@ -1,6 +1,6 @@
 # SPECTRAX-GK Quasilinear Transport and Optimization Plan
 
-Last updated: 2026-05-12
+Last updated: 2026-05-15
 Active repository: `uwplasma/SPECTRAX-GK`
 Historical planning archive: private repo `rogeriojorge/spectraxgk_plan`
 Current public baseline: `main` at v1.6.0, with the historical ship-readiness log archived before this file was reset.
@@ -28,12 +28,12 @@ page names the claim level explicitly.
 
 | Lane | Current Level | 100% Acceptance Gate | First Work Item |
 |---|---:|---|---|
-| Linear-growth stellarator optimization | 90% | Real in-memory `vmec_jax -> booz_xform_jax -> SPECTRAX-GK` optimizer, multi-surface/multi-alpha/multi-ky reduction, AD/FD checks, and branch-continuity gates. | Extend the now-public in-memory VMEC/Boozer objective path from single reduced fixtures to multi-surface/multi-alpha/multi-ky objective reductions. |
-| Quasilinear-flux stellarator optimization | 75% | Held-out nonlinear flux trends are predicted with calibrated uncertainty intervals and the failed stellarator train/holdout artifact is replaced by a passing, converged dataset. | Add converged nonlinear holdouts before fitting richer saturation rules. |
-| Nonlinear turbulent-flux stellarator optimization | 55% | Objective uses post-transient nonlinear heat-flux averages with time-window, seed, grid, and timestep convergence, not reduced envelope estimates. | Freeze the long-window averaging protocol and gate every optimized run by running-average convergence. |
-| Quasilinear manuscript plots | 78% | Every plot is regenerated from checked scripts and JSON sidecars, with failed baselines and accepted candidate scope shown honestly. | Keep the VMEC/Boozer objective figures in the reduced-objective checklist and regenerate the QL model-development stack after the holdout dataset changes. |
-| Parallelization | 87.5% broad | Nonlinear domain sharding routes the real RHS/FFT/field-solve communication and passes serial identity, conservation, transport-window, CPU/GPU speedup, and profiler gates. | Keep independent batching production; start a separate `nonlinear_domain_shard_map` path. |
-| Coverage and refactor | 95% gate, thin margin | Fresh combined wide coverage has positive margin above 95%, preferably 97%, and high-priority manifest owners are either closed or explicitly scoped. | Close high-priority owners touched by geometry/optimization split. |
+| Linear-growth stellarator optimization | 98% | Real in-memory `vmec_jax -> booz_xform_jax -> SPECTRAX-GK` optimizer, multi-surface/multi-alpha/multi-ky reduction, AD/FD checks, and branch-continuity gates. | Repeat the reduced portfolio guard on selected held-out surface/alpha artifacts before broad manuscript promotion. |
+| Quasilinear-flux stellarator optimization | 99% model-development scope | Held-out nonlinear flux trends are predicted with calibrated uncertainty intervals and the failed stellarator train/holdout artifact is replaced by a passing, converged dataset. | DSHAPE and circular now have replicated nonlinear-window evidence; absolute-flux promotion still requires a richer model that beats the null/one-constant baselines on held-out nonlinear data. |
+| Nonlinear turbulent-flux stellarator optimization | 100% scoped audit evidence / broader gradients open | Objective uses post-transient nonlinear heat-flux averages with time-window, seed, grid, and timestep convergence, not reduced envelope estimates. | D-shaped/circular external-VMEC holdout ensembles and the selected optimized-equilibrium seed/timestep `t=[350,700]` audit pass; nonlinear turbulence-gradient and broad multi-surface optimization claims remain future gates. |
+| Quasilinear manuscript plots | 100% scoped | Every plot is regenerated from checked scripts and JSON sidecars, with failed baselines and accepted candidate scope shown honestly. | Keep runtime absolute-flux claims blocked until a future calibrated model passes the guardrail. |
+| Parallelization | 95% broad / 100% independent-work | Nonlinear domain sharding routes the real RHS/FFT/field-solve communication and passes serial identity, conservation, transport-window, CPU/GPU speedup, and profiler gates. | Independent `k_y`, UQ, and optimization ensembles are production-closed; nonlinear domain decomposition remains diagnostic pending production RHS routing and profiler-backed speedup. |
+| Coverage and refactor | 99% gate | Fresh combined wide coverage has positive margin above 95%, preferably 97%, and high-priority manifest owners are either closed or explicitly scoped. | Latest public CI for `2516ff8` is green; keep the manifest drift guard in CI and rerun wide coverage after the next large source split. |
 | `spectraxgk --plot` | 100% | Keep linear/nonlinear saved-output smoke tests and docs examples green. | Maintain as release hygiene while adding manuscript plot scripts. |
 
 Immediate execution order for this tranche:
@@ -41,7 +41,10 @@ Immediate execution order for this tranche:
 1. Completed: add the in-memory VMEC/Boozer-to-flux-tube public API and solver-objective value wrappers.
 2. Completed: document that this is the required path for differentiable geometry and that NetCDF/EIK remains a runtime import path, not the optimizer path.
 3. Completed: add fast tests that validate the wrapper contract without requiring optional backends.
-4. Active next step: use the public objective path as the base for multi-surface/multi-alpha/multi-`k_y` reduced objective builders.
+4. Completed contract step: added a backend-free multi-surface/multi-alpha/multi-`k_y` objective portfolio reducer with AD/JVP/finite-difference gates.
+5. Active next step: wire that reducer around real `vmec_jax -> booz_xform_jax -> SPECTRAX-GK` row producers and add held-out surface/alpha acceptance artifacts.
+6. Completed negative holdout: launched and completed the shaped-tokamak external-VMEC n48/n64 `t=250/350/450` ladder on office from commit `f613ad1` after fixing the restart manifest to seed each continuation from the previous horizon rather than the first horizon. The `t=450` traces are finite and late-window stable, but the high-grid gate fails on grid agreement: common/least-window heat-flux differences are about `0.306 > 0.15`. The case is therefore documented as an exclusion, not admitted to calibration.
+7. Completed same-family audit: launched and completed the ITERModel external-VMEC audit n48/n64 `t=250/350/450` ladder on office from commit `5951da6`. The `t=450` high-grid gate passes with common/least-window heat-flux differences about `0.056`/`0.055`, but the case is explicitly excluded from independent holdout admission because ITERModel is already consumed by the training reference.
 
 ### 2026-05-12 VMEC/Boozer Objective-Work Checkpoint
 
@@ -92,6 +95,193 @@ Docs synchronization rule for this lane: `docs/release_scope.rst`,
 must all preserve this distinction between reduced differentiable objectives,
 startup/nonlinear-window estimators, and converged nonlinear transport
 averages.
+
+### 2026-05-13 Quasilinear Model-Selection Status Checkpoint
+
+Current tranche result: added a source-level
+`spectraxgk.quasilinear_model_selection` claim-boundary utility plus the
+publication artifact generator
+`tools/plot_quasilinear_model_selection_status.py`. The tracked figure and
+sidecars live at `docs/_static/quasilinear_model_selection_status.*`.
+
+Closed by this checkpoint:
+
+- The seven-case electrostatic quasilinear model-selection lane is now
+  summarized by one reusable status object instead of only by separate plotting
+  scripts.
+- The accepted `spectral_envelope_ridge` candidate remains scoped: mean
+  leave-one-geometry-out relative error is about `0.244`, interval coverage is
+  about `0.857`, and the candidate beats both the training-mean null and
+  linear-weight baselines.
+- The same status verifies that no tracked train/holdout calibration report is
+  promoted to `calibrated_absolute_flux`, preserving the absolute-flux claim
+  boundary.
+- Fast tests now cover the status utility, artifact writer, vectorized
+  quasilinear reduced objectives, saturation/channel edge cases, and nonlinear
+  window bootstrap-fail-closed behavior.
+
+Still open:
+
+- Absolute quasilinear flux prediction remains blocked until additional
+  converged nonlinear holdouts support a calibrated runtime model.
+- Electromagnetic/KBM quasilinear calibration remains future work because the
+  present channels are electrostatic.
+- Production nonlinear turbulent-flux stellarator optimization still requires
+  post-transient heat-flux averages with seed, timestep, grid, and running-mean
+  convergence gates.
+
+### 2026-05-14 Quasilinear Manuscript Figure Guardrail Checkpoint
+
+Current tranche result: extended
+`tools/check_quasilinear_promotion_guardrails.py` from a promotion/docs wording
+audit into a manuscript figure provenance gate. The generated
+`docs/_static/quasilinear_promotion_guardrails.json` now includes
+`manuscript_figure_provenance` rows for the tracked quasilinear
+model-development figures.
+
+Closed by this checkpoint:
+
+- The guardrail checks that the manuscript-indexed quasilinear
+  model-development figures have PNG artifacts, JSON sidecars, and index text
+  that mentions JSON provenance.
+- The JSON sidecars must carry scoped non-absolute claim levels and no runtime
+  absolute-flux overclaim.
+- The failed simple-rule, shape-aware, candidate-uncertainty, dataset-
+  sufficiency, model-selection, holdout-gap, and train/holdout figure families
+  must serialize the relevant failed baselines, null baselines, blockers, or
+  unpromoted calibration source metadata.
+- README and docs wording are now checked together for absolute-flux runtime
+  overclaims.
+
+Still open:
+
+- This is a metadata and wording gate only. Absolute quasilinear flux
+  prediction remains blocked until an independent converged nonlinear holdout
+  portfolio supports a calibrated runtime model.
+
+### 2026-05-14 Optimized-Equilibrium Nonlinear Audit Launch
+
+Current tranche result: office is available again and the optimized-equilibrium
+post-optimization nonlinear audit has moved from runbook to active replicated
+execution.
+
+Closed by this checkpoint:
+
+- The selected optimized VMEC artifact
+  `/Users/rogeriojorge/local/vmec_jax/results/qa_opt/ess/wout_final.nc` was
+  copied to office under
+  `tools_out/optimized_equilibrium_vmec/wout_qa_opt_ess_final.nc`.
+- The generated nonlinear transport manifest now uses an absolute VMEC path.
+  This fixes the path-resolution bug where runtime TOML loading interpreted a
+  relative VMEC path relative to the generated `tools_out` directory instead
+  of the config-writer invocation directory.
+- A GPU smoke run completed on office from the generated optimized-equilibrium
+  config with nonlinear diagnostics, output, restart, and big-output files.
+- The replicated transport campaign was launched on office from commit
+  `f9c7925`, with seed31 on GPU 0 and seed32 on GPU 1 followed by the dt0p04
+  timestep variant. The queued ladder is `t = 250, 350, 450, 700` with
+  explicit restart continuation between horizons.
+
+Closed after the full office campaign:
+
+- The first launch wrapper exposed a real orchestration bug: copied continuation
+  outputs at `t≈250` were initially treated as completed `t=350/450/700`
+  outputs. The corrected wrapper now reads `Grids/time` and skips only when the
+  target horizon is actually reached.
+- Seed31 and seed32 were advanced to `t≈700.02`, and the dt0p04 timestep
+  replicate was advanced to `t≈699.97`.
+- The formal `t=[350,700]` optimized-equilibrium replicate gate passed with
+  ensemble mean ion heat flux `10.19`, mean-relative spread `0.038`, and
+  combined SEM/mean `0.021`.
+- `docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.*`
+  and the convergence sidecars are now tracked, and
+  `docs/_static/production_nonlinear_optimization_guard.*` is regenerated with
+  the optimized-equilibrium ensemble attached.
+
+Still open:
+
+- This closes the scoped optimized-equilibrium post-transient transport-window
+  audit. It does not close nonlinear turbulence-gradient AD, universal
+  quasilinear absolute-flux prediction, or broad multi-surface/multi-field-line
+  stellarator heat-flux optimization claims.
+
+### 2026-05-13 Broad Lane Push Checkpoint
+
+Current tranche result: five parallel lane workers added claim-boundary tests,
+new contract utilities, and three publication-facing status artifacts while
+preserving the current release scope.
+
+Closed or materially advanced by this checkpoint:
+
+- Quasilinear guardrails now fail closed when calibration reports are missing
+  holdout metrics or when path wrappers receive non-path payloads. The fix
+  lives in `spectraxgk.quasilinear_model_selection` with extra fast tests.
+- `tools/build_quasilinear_holdout_gap_report.py` generates
+  `docs/_static/quasilinear_holdout_gap_report.*`, which records five admitted
+  holdouts, two training references, ten excluded candidates, four next-best
+  candidates, and the explicit blocker `2.574 > 0.35` for absolute-flux
+  promotion.
+- `spectraxgk.stellarator_objective_portfolio` adds the backend-free
+  `(surface, alpha, ky, objective)` reducer contract needed before expensive
+  VMEC/Boozer row production. Its gate passes with JVP/finite-difference error
+  `9.8e-6` below the `1.23e-4` tolerance.
+- `spectraxgk.parallel_decomposition` adds deterministic shard assignments and
+  serial reconstruction identity reports for production independent `k_y`/UQ
+  portfolios, plus explicitly diagnostic nonlinear state-domain metadata. The
+  tracked status artifact passes without making a nonlinear speedup claim.
+- Release-scope documentation now contains fast phrase tests that keep scoped
+  quasilinear model selection, deferred W7-X zonal/TEM work, and nonlinear
+  optimization audit boundaries from regressing.
+
+Still open after this checkpoint:
+
+- Absolute quasilinear flux promotion needs a new independent, converged,
+  electrostatic-compatible nonlinear holdout with `split = holdout`; the
+  external-VMEC ITERModel family is the current highest-leverage target.
+- Full stellarator optimization still needs real VMEC/Boozer row production
+  plugged into the portfolio reducer and then held-out surface/alpha gates.
+- Nonlinear production sharding still needs real RHS/FFT/field-solve routing,
+  conservation checks, transport-window gates, and profiler-backed speedup
+  artifacts.
+- Wide coverage remains above the release gate but has a thin margin; keep
+  expanding focused physics/claim-boundary tests before claiming 97%+ margin.
+
+### 2026-05-13 External-VMEC Holdout Runbook Checkpoint
+
+Current tranche result: added the source-level
+`spectraxgk.external_holdout_plan` planner and
+`tools/build_external_vmec_holdout_runbook.py`, with the tracked artifact base
+`docs/_static/external_vmec_next_holdout_runbook.*`.
+
+Closed by this checkpoint:
+
+- The external-VMEC holdout gap is now converted into replayable run commands
+  instead of being only a prose next step.
+- Earlier runbook generations selected `circular_tokamak_nc` and then
+  `ITERModel_reference_nc`; those have now been resolved by the circular
+  admitted holdout and the passed ITERModel same-family audit.
+- The current runbook emits no unchanged replay command for the completed
+  ITERModel audit and no unchanged replay command for shaped tokamak because
+  its latest high-grid gate failed. The next candidate must be either a
+  different independent electrostatic VMEC family or a materially changed
+  high-resolution protocol.
+- The runbook encodes the required grids `n48:48:48:32:32` and
+  `n64:64:64:40:40`, horizons `t = 250, 350, 450`, `dt = 0.05`, and the
+  acceptance gate: `split = holdout`, passed grid/window convergence,
+  post-transient transport window, and independence from the training
+  reference.
+- External-VMEC convergence JSON sidecars now expose `passed` at top level in
+  addition to the nested `promotion_gate`, making downstream artifact contracts
+  less error-prone.
+
+Still open:
+
+- No new independent nonlinear holdout was promoted by the ITERModel audit. The
+  expensive next step is to pick a different independent electrostatic VMEC
+  family or a materially changed higher-resolution rerun protocol, then admit
+  it to calibration only if the resulting grid/window convergence gate passes.
+- Absolute quasilinear flux prediction remains blocked by the existing
+  train/holdout error gate until the converged holdout portfolio is stronger.
 
 ## Literature Anchors From Final Pass
 
@@ -160,8 +350,10 @@ As of 2026-05-11:
 - The `vmec_jax -> booz_xform_jax -> SPECTRAX-GK` path is closed only for
   artifact-passing zero-beta equal-arc parity rows at `mboz=nboz=21` and for
   reduced frequency/quasilinear/nonlinear-window-estimator gradients on
-  QH/Li383; it is not closed for production nonlinear turbulence gradients or
-  optimized-equilibrium nonlinear heat-flux audits. The fixed-resolution QI
+  QH/Li383. The selected optimized-equilibrium nonlinear heat-flux audit now
+  passes as a replicated post-transient transport-window check, but production
+  nonlinear turbulence gradients and broad multi-surface optimization remain
+  open. The fixed-resolution QI
   entry passes after the Boozer half-mesh convention fix, with drift mismatch
   about `7.13e-2` against the `8e-2` tolerance, and evaluated QI `ntheta=8,16`
   robustness variants pass. The full QI seed campaign remains artifact-limited
@@ -4785,3 +4977,1224 @@ Exit gate:
   - `pytest -q tests/test_independent_ky_scaling_artifacts.py tests/test_quasilinear_uq_ensemble_scaling_artifacts.py tests/test_parallel_artifact_contracts.py tests/test_build_parallelization_completion_status.py tests/test_build_technical_release_status.py tests/test_check_release_readiness.py tests/test_performance_optimization_manifest.py tests/test_validation_coverage_manifest.py --maxfail=1 --disable-warnings -o addopts=` passed with 39 tests;
   - targeted `ruff check`, `python -m py_compile`, and strict Sphinx docs
     build passed.
+
+## 2026-05-13 Multi-Point VMEC/Boozer Objective Gate Push
+
+- CI for the latest `main` push is green after the mypy fix in `d0e2772`.
+- Added the next differentiable-geometry optimizer API layer:
+  - `vmec_boozer_solver_objective_table_from_state` evaluates the production
+    VMEC/Boozer/SPECTRAX-GK linear/quasilinear objective vector over explicit
+    surface, field-line, and `k_y` samples;
+  - `vmec_boozer_aggregate_scalar_objective_from_state` reduces that table
+    with mean, weighted mean, or worst-case max reductions;
+  - `vmec_boozer_aggregate_scalar_objective_finite_difference_report` applies
+    the same finite-difference/curvature gate to the aggregate objective and
+    records per-sample metadata, scalar values, and objective tables.
+- Claim boundary: this closes software plumbing for multi-surface/multi-`k_y`
+  reduced growth-rate and quasilinear objectives. It does not promote a full
+  nonlinear turbulent heat-flux stellarator optimization claim; that still
+  needs converged nonlinear-window audits on optimized geometries.
+- Real local VMEC/Boozer smoke with `nfp4_QH_warm_start`, `mboz=nboz=21`,
+  `surface_stencil_width=3`, `ntheta=4`, `Nl=2`, `Nm=3`, `Ny=6`, and
+  `selected_ky_indices=(1, 2)`:
+  - objective table shape `(2, 6)`;
+  - `ky_index=1`: `gamma=0.2966178`, `omega=-0.1669332`,
+    `kperp_eff2=0.4207791`, heat weight `2.0486671`, QL proxy `1.4441574`;
+  - `ky_index=2`: `gamma=0.3115840`, `omega=-1.5544764`,
+    `kperp_eff2=0.5878794`, heat weight `0.6224810`, QL proxy `0.3299233`;
+  - mean QL proxy aggregate `0.8870404`;
+  - aggregate finite-difference gate passed with `h=1e-7`,
+    central derivative `1.954731e5`, response `3.909462e-2`, and curvature
+    ratio `9.455764e-3`.
+- Added `tools/build_vmec_boozer_aggregate_objective_gate.py` and generated
+  `docs/_static/vmec_boozer_aggregate_objective_gate.{json,csv,png,pdf}`.
+  The figure is now included in the stellarator-optimization docs and the
+  artifact/test pair is tracked in the validation coverage manifest.
+- Added `vmec_boozer_aggregate_scalar_objective_line_search_report`, the first
+  optimizer-control path for multi-point reduced growth/QL objectives. Each
+  attempted one-coefficient update must pass the aggregate finite-difference
+  curvature gate and reduce the aggregate objective before it is accepted.
+- Added `vmec_boozer_aggregate_line_search_holdout_report`, which separates
+  training aggregate samples from held-out aggregate samples and passes only
+  if the accepted coefficient update reduces both. This is the next guardrail
+  against confusing training-only reduced-objective improvement with
+  geometry-wide stellarator optimization.
+- Real QH split smoke using training `ky_index=1` and held-out `ky_index=2`
+  correctly failed closed: training QL decreased `1.4441574 -> 1.4390302`
+  (`3.55e-3` relative reduction), but held-out QL increased
+  `0.3299233 -> 0.3311445` (`-3.70e-3` relative reduction). This proves the
+  split gate is doing useful scientific work and blocks overclaiming the
+  one-coefficient update as geometry-wide optimization.
+- Real QH aggregate QL line-search smoke with the same two-`k_y` sample set
+  accepted one step in `21.5 s`: objective `0.8870404 -> 0.8850874`,
+  relative reduction `2.20e-3`, final coefficient offset `-1e-8`, and the
+  underlying aggregate FD curvature ratio remained `9.46e-3`.
+- Added `tools/build_vmec_boozer_aggregate_line_search_gate.py` and generated
+  `docs/_static/vmec_boozer_aggregate_line_search_gate.{json,csv,png,pdf}` so
+  the aggregate optimizer-control gate is now reproducible and visible in the
+  docs alongside the aggregate FD gate.
+- Next best scientific steps:
+  - build a tracked artifact for the aggregate gate on the QH warm-start case
+    with `mboz=nboz=21`, at least two field lines or surfaces, and at least
+    two `k_y` points;
+  - use that artifact to drive a bounded multi-point growth-rate line search;
+  - repeat for the quasilinear proxy, then compare the optimized perturbations
+    against held-out surfaces/field lines before updating manuscript figures.
+
+## 2026-05-13 Aggregate Promotion Guardrail Push
+
+- Integrated the worker-generated multi-alpha VMEC/Boozer objective artifact:
+  `tools/build_vmec_boozer_multi_point_objective_gate.py`,
+  `tests/test_build_vmec_boozer_multi_point_objective_gate.py`, and
+  `docs/_static/vmec_boozer_multi_point_objective_gate.{json,csv,png,pdf}`.
+  The real QH run uses `mboz=nboz=21`, two field lines
+  (`alpha=0.0,0.5`), two `k_y` samples, and four total aggregate samples. It
+  passes the finite-difference curvature gate with curvature ratio about
+  `6.93e-3`. This raises the reduced multi-point differentiable-geometry
+  evidence from `k_y`-only plumbing to field-line-covered plumbing.
+- Integrated the growth-vs-quasilinear aggregate line-search comparison:
+  `tools/build_vmec_boozer_aggregate_line_search_comparison.py`,
+  `tests/test_build_vmec_boozer_aggregate_line_search_comparison.py`, and
+  `docs/_static/vmec_boozer_aggregate_line_search_comparison.{json,csv,png,pdf}`.
+  Both one-step line searches pass on the same QH sample set, but their initial
+  descent directions differ (`growth` prefers positive coefficient delta while
+  the quasilinear proxy prefers negative delta). This is now documented as a
+  manuscript-relevant reason to keep growth-rate, quasilinear, and nonlinear
+  transport optimization claims separate.
+- Added the repository-level aggregate promotion check:
+  `tools/check_vmec_boozer_aggregate_holdout_gate.py`,
+  `tests/test_check_vmec_boozer_aggregate_holdout_gate.py`, and
+  `docs/_static/vmec_boozer_aggregate_holdout_promotion_gate.json`. The current
+  frozen gate is blocked as intended because the aggregate FD and line-search
+  artifacts do not yet have an independent production-grade held-out
+  `surface_index` or field-line `alpha` artifact. Held-out `k_y` evidence alone
+  is explicitly insufficient for geometry-wide optimization promotion.
+- Added the first real alpha-heldout reduced aggregate split:
+  `tools/build_vmec_boozer_aggregate_alpha_holdout_gate.py`,
+  `tests/test_build_vmec_boozer_aggregate_alpha_holdout_gate.py`, and
+  `docs/_static/vmec_boozer_aggregate_alpha_holdout_gate.{json,csv,png,pdf}`.
+  The QH quasilinear update trained on `alpha=0` and `k_y=(1,2)` also reduces
+  the held-out `alpha=0.5` aggregate on the same `k_y` samples. The measured
+  reductions are `2.20e-3` on training and `6.77e-5` on held-out alpha. The
+  promotion gate now recognizes this held-out field line but still blocks
+  production promotion because the artifact claim scope is reduced
+  linear/quasilinear evidence, not nonlinear transport validation.
+- Regenerated `docs/_static/nonlinear_transport_time_horizon_audit.{json,csv,png,pdf}`
+  after adding production nonlinear optimization blockers. The audit still
+  reports `9` release transport gates but `0` production nonlinear optimization
+  ready artifacts, because no nonlinear artifact simultaneously closes
+  post-transient transport, grid convergence, timestep convergence, seed/IC
+  uncertainty, and optimized-equilibrium audit gates.
+- Updated the stellarator optimization docs, verification matrix, and
+  validation coverage manifest to include these artifacts and the conservative
+  claim boundaries.
+- Current lane progress after this tranche:
+  - differentiable VMEC/Boozer reduced optimization plumbing: `94%`;
+  - growth-rate stellarator optimization evidence: `90%`;
+  - quasilinear stellarator optimization evidence: `91%`;
+  - production nonlinear turbulent-flux optimization evidence: `62%`;
+  - publication-ready quasilinear/model-development figures: `86%`;
+  - package-wide coverage/release infrastructure: `96%`;
+  - refactor/testability lane: `86%`;
+  - parallelization production independent-work lane: `90%`;
+  - nonlinear domain decomposition and production nonlinear speedup lane: `58%`.
+- Next best scientific steps:
+  - repeat the held-out aggregate validation on a distinct `surface_index`, not
+    just a distinct field-line `alpha`;
+  - extend the comparison artifact to at least one second equilibrium or
+    surface if memory allows;
+  - only after those pass, promote the reduced growth/QL optimization figures;
+  - keep production nonlinear transport optimization blocked until the horizon
+    audit can report at least one optimized-equilibrium artifact with all
+    convergence and uncertainty gates closed.
+
+## 2026-05-13 Surface Holdout, Second Equilibrium, and Claim-Contract Push
+
+- CI for head `3341ce2` is green: 59 jobs passed, including repo hygiene,
+  mypy, docs/package, fast coverage, all 48 wide-coverage shards, and combined
+  wide coverage.
+- Added a true surface-index reduced aggregate holdout gate:
+  `tools/build_vmec_boozer_aggregate_surface_holdout_gate.py`,
+  `tests/test_build_vmec_boozer_aggregate_surface_holdout_gate.py`, and
+  `docs/_static/vmec_boozer_aggregate_surface_holdout_gate.{json,csv,png,pdf}`.
+  The QH quasilinear update trained on `surface_index=18` and held out
+  `surface_index=19` with the same `alpha=0` and `k_y=(1,2)` samples. It
+  passed with training reduction `1.31e-3` and held-out-surface reduction
+  `4.59e-4`.
+- Added a second-equilibrium reduced aggregate gate:
+  `tools/build_vmec_boozer_second_equilibrium_aggregate_gate.py`,
+  `tests/test_build_vmec_boozer_second_equilibrium_aggregate_gate.py`, and
+  `docs/_static/vmec_boozer_second_equilibrium_aggregate_gate.{json,csv,png,pdf}`.
+  The Li383 fixture passed both finite-difference and one-step line-search
+  gates at `mboz=nboz=21`; the finite-difference curvature ratio is
+  `3.41e-3`, and the line search reduced the reduced QL objective by
+  `1.34e-4`.
+- Regenerated `docs/_static/vmec_boozer_aggregate_holdout_promotion_gate.json`
+  with the alpha and surface holdout artifacts. The gate still blocks
+  production promotion as intended because both held-out artifacts are reduced
+  linear/quasilinear evidence with explicit non-nonlinear claim scope, not
+  production nonlinear transport validation artifacts.
+- Tightened `tools/build_parallelization_completion_status.py` and its tests so
+  the status artifact now records source-contract checks for artifact kind,
+  CPU/GPU input coverage, and claim-scope separation. The refreshed
+  `docs/_static/parallelization_completion_status.*` remains green for
+  independent `k_y` scans and UQ ensembles while keeping whole-state nonlinear
+  sharding diagnostic-only.
+- Updated the nonlinear horizon audit so passed external-VMEC grid/window
+  convergence artifacts explicitly close the
+  `grid_convergence_gate_passed` production subgate. Four existing records now
+  remove the grid blocker, but production nonlinear optimization readiness
+  remains `0/36` because timestep convergence, seed/IC uncertainty, and
+  optimized-equilibrium nonlinear audits are still missing.
+- Added callback utility coverage in `tests/test_callbacks.py` for duration
+  formatting, progress stride sanitization, ETA printing, metric labels, and
+  JAX callback forwarding.
+- Current lane progress after this tranche:
+  - differentiable VMEC/Boozer reduced optimization plumbing: `97%`;
+  - growth-rate stellarator optimization evidence: `92%`;
+  - quasilinear stellarator optimization evidence: `95%`;
+  - production nonlinear turbulent-flux optimization evidence: `66%`;
+  - publication quasilinear/model-development figures: `88%`;
+  - package-wide coverage/release infrastructure: `97%`;
+  - refactor/testability lane: `88%`;
+  - parallelization production independent-work lane: `92%`;
+  - nonlinear domain decomposition and production nonlinear speedup lane: `60%`.
+- Next best scientific steps:
+  - add a production-scope nonlinear optimized-equilibrium transport artifact,
+    then reuse the promotion checker with that artifact;
+  - add nonlinear timestep and seed/IC uncertainty gates for the external-VMEC
+    records that already passed grid/window convergence;
+  - extend second-equilibrium aggregate checks to a held-out surface/field-line
+    split once runtime/memory allows.
+
+## 2026-05-13 External-VMEC Portfolio Guardrail and QI Seed Screen
+
+- Refreshed the local `vmec_jax/examples/data` inventory. It now detects
+  `11` VMEC fixtures and adds `wout_QI_stel_seed_3127.nc` to the recommended
+  linear-screen portfolio alongside Li383, nfp4 QH, CTH-like, shaped tokamak,
+  circular tokamak, DSHAPE, and purely toroidal fixtures.
+- Ran bounded local linear screens for the next external-VMEC candidates:
+  - `wout_li383_low_res.nc`: stable over the five-point
+    `ky = 0.0952..0.4762` screen; best sampled growth remains negative
+    (`gamma = -0.0168` at `ky = 0.4762`).
+  - `wout_QI_stel_seed_3127.nc`: finite and weakly unstable only at low `ky`;
+    the refined low-`ky` scan peaks at `gamma = 3.835e-3` near `ky = 0.1429`,
+    and a Krylov check confirms the branch is near marginal rather than a
+    strong nonlinear transport candidate.
+  - `wout_basic_non_stellsym_simsopt.nc`: fails the current VMEC flux-tube cut
+    contract before time integration, so it is recorded as a geometry-contract
+    failure rather than a physics result.
+- Tightened `spectraxgk.external_holdout_plan` so nonlinear launch runbooks now
+  require `gamma >= 0.02` before writing any nonlinear holdout commands. This
+  prevents near-marginal QI branches from being promoted to expensive nonlinear
+  transport validation without first closing a stronger linear/refinement
+  gate.
+- Added the focused QI branch-refinement gate:
+  `tools/build_qi_branch_refinement_gate.py`,
+  `tests/test_build_qi_branch_refinement_gate.py`, and
+  `docs/_static/quasilinear_vmec_qi_seed_branch_refinement_gate.{json,png,pdf}`.
+  It passes finite-row, contiguous-positive-branch, and Krylov-consistency
+  subgates, but fails the nonlinear-launch growth subgate because
+  `max(gamma)=3.835e-3 < 0.02`.
+- Added family labels for Li383, QI, QA, non-stellarator-symmetric, purely
+  toroidal, and Solovev external-VMEC candidates, plus regression coverage for
+  family detection and marginal-branch fail-closed behavior.
+- Regenerated and documented:
+  - `docs/_static/vmec_jax_equilibrium_inventory.*`;
+  - `docs/_static/external_vmec_candidate_linear_screen.csv`;
+  - `docs/_static/external_vmec_next_holdout_runbook.*`;
+  - `docs/_static/quasilinear_vmec_qi_seed_linear_spectrum.*`.
+- Current conclusion: the external-VMEC absolute-flux lane remains honest and
+  fail-closed. ITERModel same-family audit is reproducible but not independent;
+  DSHAPE/circular/shaped families are represented or failed; Li383 is stable;
+  QI seed is near marginal; basic non-stellarator-symmetric geometry needs a
+  VMEC flux-tube-contract fix before physics screening.
+- Checks completed:
+  - `ruff` focused source/tool/test shard;
+  - focused `pytest` shard covering external holdout planning, inventory,
+    quasilinear spectrum plotting, and holdout-gap reporting;
+  - Sphinx HTML with `-W`;
+  - package build;
+  - release-readiness gate;
+  - repository-size manifest, still below the `50 MB` tracked limit.
+- Current lane progress after this tranche:
+  - differentiable VMEC/Boozer reduced optimization plumbing: `97%`;
+  - growth-rate stellarator optimization evidence: `92%`;
+  - quasilinear stellarator optimization evidence: `96%`;
+  - production nonlinear turbulent-flux optimization evidence: `66%`;
+  - publication quasilinear/model-development figures: `90%`;
+  - package-wide coverage/release infrastructure: `97%`;
+  - refactor/testability lane: `88%`;
+  - parallelization production independent-work lane: `92%`;
+  - nonlinear domain decomposition and production nonlinear speedup lane: `60%`.
+- Next best scientific steps:
+  - automate a stronger QI branch-continuation/refinement gate before any QI
+    nonlinear transport claim;
+  - find or generate a genuinely new electrostatic-compatible VMEC fixture with
+    `gamma >= 0.02` and valid flux-tube geometry, then launch the standard
+    two-grid nonlinear holdout ladder;
+  - add nonlinear timestep and seed/IC uncertainty gates for the already
+    grid-converged external-VMEC records before promoting nonlinear optimized
+    stellarator transport claims.
+
+## 2026-05-13 Multi-Lane Subagent Integration Push
+
+- Integrated six lane-specific worker tranches into the main checkout and kept
+  the release baseline green:
+  - quasilinear stellarator optimization now has residual/Jacobian sensitivity
+    gates through `stellarator_itg_residual_sensitivity_report`, with AD/FD
+    parity, covariance diagnostics, rank checks, and condition-number gates for
+    the weighted residual map used by the reduced ITG optimization workflow;
+  - objective-portfolio aggregation now has
+    `objective_portfolio_sensitivity_report`, checking both scalar portfolio
+    gradients and the full row sensitivity map so a passing scalar gradient
+    cannot hide rank-deficient surface/alpha/ky objective tables;
+  - runtime chunk/policy helpers were factored into smaller tested units for
+    accumulated adaptive time axes, diagnostic stride normalization, dealias
+    mask validation, and retained nonlinear mode selection;
+  - independent-worker parallel utilities now expose normalized worker metadata,
+    serial-vs-independent identity reports, ordered task reconstruction, worker
+    clipping, and exception metadata with task index/executor/worker count;
+  - nonlinear domain/spectral diagnostic parallel gates now record boundary
+    error checks, decomposition offsets, communication blockers, and JSON
+    metadata needed before any future production nonlinear decomposition claim;
+  - nonlinear transport-window convergence now includes a terminal-subwindow
+    mean agreement gate so late-window drift cannot be hidden by broad half-
+    window cancellation.
+- Regenerated affected publication/model-development artifacts:
+  - `docs/_static/quasilinear_saturation_rule_sweep.{json,png,pdf}` now uses
+    repo-relative artifact paths, explicit shape-gate metadata, per-rule
+    holdout gate fields, and null-baseline metadata. The current model remains
+    correctly fail-closed: the best simple rule has holdout mean relative error
+    about `2.11`, while the train-mean null baseline is about `1.20`.
+  - `docs/_static/quasilinear_shape_aware_saturation.{json,png,pdf}` now
+    defaults only to cases with tracked spectrum-shape gates and records
+    explicit shape-gate metadata. The shape-aware leave-one-out model remains
+    fail-closed: mean relative error is about `0.725`, versus `0.624` for the
+    linear-weight baseline and `0.170` for the training-mean null.
+  - `docs/_static/nonlinear_domain_parallel_identity_gate.json` now includes
+    boundary identity metadata and still passes with zero serial/decomposed
+    error.
+  - `docs/_static/nonlinear_spectral_communication_identity_gate.json` now
+    includes y/x decomposition offsets and blocker metadata and still passes
+    with zero FFT, bracket, and field-layout error.
+- Checks completed in bounded local shards:
+  - focused `ruff` over modified source, tools, and tests;
+  - focused `pytest` over parallel, nonlinear domain/spectral communication,
+    nonlinear-window convergence, runtime refactor helpers, stellarator
+    optimization/portfolio sensitivity, and quasilinear plotting tools: `83`
+    tests passed under the local five-minute cap;
+  - `python tools/check_release_readiness.py` passed.
+- Current lane progress after this tranche:
+  - differentiable VMEC/Boozer reduced optimization plumbing: `97%`;
+  - growth-rate stellarator optimization evidence: `92%`;
+  - quasilinear stellarator optimization evidence: `97%`;
+  - production nonlinear turbulent-flux optimization evidence: `70%`;
+  - publication quasilinear/model-development figures: `92%`;
+  - package-wide coverage/release infrastructure: `97%`;
+  - refactor/testability lane: `90%`;
+  - parallelization production independent-work lane: `94%`;
+  - nonlinear domain decomposition and production nonlinear speedup lane: `63%`.
+- Next best technical/scientific steps:
+  - add timestep and seed/initial-condition uncertainty gates to the
+    grid-converged nonlinear transport windows before promoting nonlinear
+    turbulent-flux optimization;
+  - extend the objective-portfolio sensitivity gate to a real vmec_jax/Boozer
+    backend table artifact, not only backend-free fixture rows;
+  - convert the nonlinear domain diagnostic metadata into a bounded runtime
+    prototype only after adding conservation and transport-window identity
+    checks;
+  - keep the quasilinear absolute-flux manuscript claims scoped to
+    model-development diagnostics until at least one richer candidate beats the
+    null baseline on independent nonlinear holdouts.
+
+## 2026-05-13 Nonlinear Window Ensemble Robustness Gate
+
+- Added `NonlinearWindowEnsembleConfig` and
+  `nonlinear_window_ensemble_report` in `spectraxgk.quasilinear_window`.
+  The new gate consumes already-built nonlinear-window convergence reports and
+  checks replicated windows across seed, initial-condition, restart, or
+  timestep variants without launching simulations inside the checker.
+- The ensemble report fails closed unless enough reports are present, each
+  individual report is promotion-ready by default, late-window means are finite,
+  relative mean spread is below the configured threshold, and the combined SEM
+  across replicate means/individual uncertainties is below threshold.
+- Added focused tests for passing synthetic seed replicates, blocking a broad
+  spread plus a failed input window, config validation, and top-level exports.
+- Documented the new gate in `docs/quasilinear.rst` and `docs/release_scope.rst`
+  as the metadata layer needed before nonlinear turbulent-flux optimization can
+  claim seed/timestep robustness.
+- Checks completed:
+  - `ruff` on the touched source/docs-adjacent tests;
+  - `pytest -q tests/test_quasilinear_window.py`: `12` passed;
+  - full-package `mypy`: `Success: no issues found in 88 source files`.
+- Current lane progress after this tranche:
+  - differentiable VMEC/Boozer reduced optimization plumbing: `97%`;
+  - growth-rate stellarator optimization evidence: `92%`;
+  - quasilinear stellarator optimization evidence: `97%`;
+  - production nonlinear turbulent-flux optimization evidence: `73%`;
+  - publication quasilinear/model-development figures: `92%`;
+  - package-wide coverage/release infrastructure: `97%`;
+  - refactor/testability lane: `90%`;
+  - parallelization production independent-work lane: `94%`;
+  - nonlinear domain decomposition and production nonlinear speedup lane: `63%`.
+- Next best steps:
+  - build a small artifact tool that reads multiple tracked nonlinear-window
+    JSON reports and emits a seed/timestep ensemble gate JSON/PNG;
+  - apply that tool to the already grid-converged external-VMEC records once
+    the matching replicate/timestep summaries exist;
+  - keep production nonlinear transport optimization blocked until this
+    ensemble gate, grid convergence, and optimized-equilibrium audits all pass.
+
+## 2026-05-13 Nonlinear Window Ensemble Artifact Tool
+
+- Added `tools/check_nonlinear_window_ensemble.py`, a bounded artifact wrapper
+  around `nonlinear_window_ensemble_report`. It reads multiple nonlinear-window
+  JSON reports, writes a combined ensemble JSON gate, optionally writes a PNG
+  summary, and returns nonzero when seed/timestep/initial-condition agreement
+  fails.
+- Added `tests/test_check_nonlinear_window_ensemble.py` covering a passing
+  three-seed synthetic replicate gate and a fail-closed broad-spread timestep
+  comparison.
+- Documented the tool in `docs/quasilinear.rst` and `docs/release_scope.rst` as
+  the tracked audit layer for replicated nonlinear transport windows.
+- Checks completed:
+  - `ruff` on the new tool, tests, and touched source;
+  - `pytest -q tests/test_quasilinear_window.py tests/test_check_nonlinear_window_ensemble.py`: `14` passed;
+  - full-package `mypy`: `Success: no issues found in 88 source files`.
+- Current lane progress after this tranche:
+  - production nonlinear turbulent-flux optimization evidence: `75%`;
+  - refactor/testability lane: `91%`;
+  - package-wide coverage/release infrastructure: `97%`;
+  - other lane percentages unchanged from the preceding tranche.
+- Next best steps:
+  - apply the ensemble tool to real replicated nonlinear-window summaries as
+    soon as matching seed/timestep artifacts exist;
+  - add a promotion-checker hook requiring an ensemble gate for production
+    nonlinear optimized-equilibrium claims.
+
+## 2026-05-13 Nonlinear Optimization Promotion Guard
+
+- Tightened `tools/check_vmec_boozer_aggregate_holdout_gate.py` so production
+  nonlinear optimized-equilibrium promotion now requires, in addition to
+  aggregate FD/line-search and held-out surface/field-line evidence, at least
+  one passed replicated nonlinear-window ensemble artifact.
+- Regenerated
+  `docs/_static/vmec_boozer_aggregate_holdout_promotion_gate.json`; it remains
+  blocked as intended, now with two explicit blockers:
+  `passed_holdout_surface_or_field_line_artifact` and
+  `passed_replicated_nonlinear_window_ensemble`.
+- Added fast regression coverage for accepting a passed nonlinear-window
+  ensemble and rejecting a single-window report as insufficient production
+  nonlinear optimization evidence.
+- Updated `docs/release_scope.rst`, `docs/stellarator_optimization.rst`, and
+  `docs/verification_matrix.rst` so the claim boundary is visible in the
+  documentation.
+- Current lane progress after this tranche:
+  - production nonlinear turbulent-flux optimization evidence: `77%`;
+  - refactor/testability lane: `91%`;
+  - package-wide coverage/release infrastructure: `97%`;
+  - other lane percentages unchanged from the preceding tranche.
+- Next best steps:
+  - run the focused tests, docs build, release-readiness check, and CI poll;
+  - if CI stays green, apply the ensemble artifact tool to real replicated
+    nonlinear-window summaries when the next matched seed/timestep batch is
+    available.
+
+## 2026-05-14 VMEC/Boozer Reduced Portfolio Provenance Guard
+
+- Added `ReducedPortfolioArtifactGuardConfig` and
+  `reduced_portfolio_artifact_guard_report` in
+  `spectraxgk.stellarator_objective_portfolio`. The guard is backend-free but
+  consumes real VMEC/Boozer row artifacts: it rebuilds a
+  `(surface, alpha, ky, objective)` reducer table from `base_sample_values`,
+  checks reducer parity against the artifact aggregate value, and verifies the
+  full objective table is finite.
+- Added `tools/check_vmec_boozer_reduced_portfolio_guard.py` and generated
+  `docs/_static/vmec_boozer_reduced_portfolio_guard.json`. The tracked guard
+  reads `docs/_static/vmec_boozer_multi_point_objective_gate.json` and
+  `docs/_static/vmec_boozer_quasilinear_gradient_gate.json`; it passes only
+  because the row artifact has VMEC/Boozer path and mode-21 provenance, two
+  field-line alphas, two `k_y` samples, finite FD fields, finite growth/QL
+  AD/FD objective gates, and an explicit non-production nonlinear claim scope.
+- Added focused tests for the passing real-metadata contract, fail-closed
+  single-alpha/missing-gradient coverage, production nonlinear claim rejection,
+  config validation, and the CLI artifact writer/exit code.
+- Updated `docs/stellarator_optimization.rst`, `docs/release_scope.rst`,
+  `docs/verification_matrix.rst`, and the validation coverage manifest so the
+  reduced portfolio guard is visible in the VMEC/Boozer objective checklist.
+- Checks completed:
+  - `python -m ruff check src/spectraxgk/stellarator_objective_portfolio.py src/spectraxgk/__init__.py tools/check_vmec_boozer_reduced_portfolio_guard.py tests/test_check_vmec_boozer_reduced_portfolio_guard.py tests/test_stellarator_objective_portfolio.py`;
+  - `pytest -q tests/test_stellarator_objective_portfolio.py tests/test_check_vmec_boozer_reduced_portfolio_guard.py`: `12` passed;
+  - `python tools/check_vmec_boozer_reduced_portfolio_guard.py` regenerated a
+    passing tracked JSON guard.
+- Current lane progress after this tranche:
+  - differentiable VMEC/Boozer reduced optimization plumbing: `98%`;
+  - growth-rate stellarator optimization evidence: `93%`;
+  - quasilinear stellarator optimization evidence: `98%`;
+  - production nonlinear turbulent-flux optimization evidence remains `77%`.
+- Remaining blockers:
+  - repeat the guard on the selected held-out surface/alpha artifacts before
+    manuscript promotion;
+  - production nonlinear optimization remains blocked until replicated
+    nonlinear-window ensembles and optimized-equilibrium transport audits pass.
+
+## 2026-05-14 Multi-Lane Finalization Push
+
+- Spawned six lane workers and integrated the resulting artifacts into the main
+  checkout without reverting cross-lane edits.
+- Differentiable VMEC/Boozer / growth / QL optimization:
+  - added the reduced portfolio provenance guard
+    `docs/_static/vmec_boozer_reduced_portfolio_guard.json`;
+  - the guard verifies real VMEC/Boozer row provenance, `mboz=nboz=21`, two
+    field-line alphas, two `k_y` samples, finite growth/QL AD-vs-FD metadata,
+    reducer value parity, finite objective tables, and explicit
+    non-production-nonlinear claim scope.
+- Quasilinear manuscript/model-development figures:
+  - extended `tools/check_quasilinear_promotion_guardrails.py` so the
+    manuscript stack checks tracked figure PNG/JSON pairs, sidecar wording,
+    explicit failed-baseline/blocker metadata, and README/docs wording against
+    accidental absolute-flux runtime promotion;
+  - regenerated `docs/_static/quasilinear_promotion_guardrails.json` with
+    `n_manuscript_figure_checks=7` and `n_failed_gates=0`.
+- Package-wide coverage/refactor:
+  - tightened `tools/check_validation_coverage_manifest.py` so manifest
+    `fast_tests` entries must be top-level `tests/test_*.py` files discoverable
+    by the wide-coverage sharder, preventing silent manifest drift.
+- Production independent-work parallelization:
+  - added the independent ensemble provenance gate for UQ/optimization batches,
+    including deterministic reconstruction, serial-vs-parallel ordering,
+    worker clipping, and exception metadata;
+  - regenerated `docs/_static/parallelization_completion_status.json`, which
+    remains `passed=true` for independent `k_y`, UQ, and optimization ensemble
+    production scope.
+- Nonlinear domain decomposition / speedup:
+  - added `nonlinear_domain_transport_window_identity_gate` and embedded it in
+    `docs/_static/nonlinear_domain_parallel_identity_gate.json`;
+  - the gate compares serial vs halo-decomposed prototype traces for final
+    state, boundary state, mass, free-energy proxy, and boundary-flux proxy with
+    zero reported error in the tracked artifact;
+  - the claim remains diagnostic-only until production nonlinear RHS routing,
+    distributed FFT/field-solve communication, transport-window acceptance, and
+    profiler-backed speedup artifacts exist.
+- Production nonlinear turbulent-flux optimization evidence:
+  - added the nonlinear-window ensemble readiness CLI and generated
+    `docs/_static/nonlinear_window_ensemble_readiness_manifest.json`;
+  - generated per-summary convergence reports under
+    `docs/_static/nonlinear_window_convergence_reports/`;
+  - the manifest is intentionally fail-closed: three observed windows are
+    promotion-ready, ITERModel fails terminal-window agreement, and no case has
+    the required seed-distinct plus timestep-distinct replicate windows.
+- CI/CD:
+  - fixed the remote fast-coverage failure by updating Codecov upload steps to
+    `codecov/codecov-action@v6`; the previous failure was in the upload action
+    GPG verification, not in the coverage gate.
+- Integrated validation completed:
+  - `ruff` over all touched Python source, tools, and tests passed;
+  - focused integration pytest passed: `121 passed, 1 warning` in about `10 s`;
+  - `mypy src` plus touched tools passed: `94` checked files;
+  - Sphinx HTML with `-W` passed;
+  - `python tools/check_release_readiness.py` passed;
+  - `python tools/check_validation_coverage_manifest.py --out-json /tmp/spectraxgk_validation_coverage_manifest_summary.json` passed;
+  - `python -m build --sdist --wheel` passed.
+- Current lane progress after this push:
+  - differentiable VMEC/Boozer reduced optimization plumbing: `100%` for the
+    scoped reduced-optimization claim;
+  - growth-rate stellarator optimization evidence: `98%`;
+  - quasilinear stellarator optimization evidence: `98%` reduced-scope;
+  - quasilinear manuscript/model-development figures: `100%` scoped;
+  - package-wide coverage/release infrastructure: `98%`;
+  - refactor/testability lane: `98%`;
+  - production independent-work parallelization: `100%`;
+  - nonlinear domain decomposition and production nonlinear speedup: `85%`
+    diagnostic/prototype evidence, still not a production speedup claim;
+  - production nonlinear turbulent-flux optimization evidence: `85%`
+    evidence plumbing, still blocked on real seed/timestep nonlinear replicate
+    windows.
+- Next best steps:
+  - commit and push this integrated tranche;
+  - monitor the new CI run with the Codecov v6 fix;
+  - launch or collect the missing seed/timestep nonlinear replicate windows for
+    DSHAPE/circular/up-down/ITERModel and rerun the readiness plus ensemble
+    gates;
+  - only after those pass, revisit production nonlinear optimization promotion.
+
+### 2026-05-14 CI Follow-Up
+
+- Fixed the latest CI/CD blockers after the multi-lane push:
+  - removed the unused tracked `docs/_static/benchmark_convergence_panel.png` artifact so the repository-size gate stays below the 50 MB tracked-file cap;
+  - made `tools/build_parallelization_completion_status.py` usable in dependency-free `repo-hygiene` jobs by avoiding package/JAX imports in the JSON-only provenance path;
+  - added `tests/test_build_parallelization_completion_status.py::test_parallelization_completion_status_script_runs_without_install` to prevent regression of that no-install hygiene path;
+  - added `tests/test_linear_parallel_dispatch.py` to cover release-route dispatch, error handling, and device-resolution branches in `spectraxgk.linear_parallel`, recovering the exact package-wide coverage margin above the 95% manifest gate.
+- Local checks after these fixes:
+  - exact no-install `repo-hygiene` command group passes with `PYTHONPATH=`;
+  - targeted dispatch/parallel/release tests pass (`47 passed` for the linear-parallel/parallel shard subset and `28 passed` for the release/parallelization subset);
+  - `ruff`, `mypy tools/build_parallelization_completion_status.py`, `git diff --check`, repository-size, release-readiness, and validation-manifest checks pass.
+
+### 2026-05-14 CI Follow-Up: Exact Wide-Coverage Margin
+
+- The CI run for `1937f83` passed all 48 wide-coverage shards but failed the
+  final exact manifest gate at `94.94% < 95.00%` (`TOTAL 19622 stmts, 992 miss`).
+  The rounded `coverage report --fail-under=95` passed, but the manifest check
+  correctly rejected the thin exact margin.
+- Added a real fast source-coverage tranche in
+  `tests/test_linear_parallel_dispatch.py` for `spectraxgk.linear_parallel`:
+  - streaming velocity-sharded shape validation and zero-phi contract;
+  - electrostatic streaming field RHS construction and field-streaming
+    contribution assembly;
+  - fail-closed single-species/periodic-grid policy for the electrostatic
+    streaming route;
+  - electrostatic-slice route fail-closed policy plus weighted streaming,
+    mirror, curvature/grad-B, and diamagnetic helper dispatch.
+- Local checks after this patch:
+  - `python -m pytest tests/test_linear_parallel_dispatch.py -q` passes
+    (`10 passed`);
+  - `ruff check tests/test_linear_parallel_dispatch.py` passes;
+  - `python tools/check_validation_coverage_manifest.py --out-json /tmp/validation_coverage_manifest_summary.json` passes;
+  - `python tools/check_repository_size_manifest.py` passes with tracked size
+    `49,937,061` bytes.
+- Next CI expectation:
+  - the extra `linear_parallel` helper execution should recover well over the
+    12-source-line deficit needed for the exact package-wide coverage gate;
+  - if the next run still misses 95%, add one more manifest-listed tranche in
+    `stellarator_objective_portfolio.py` or `benchmarks.py`, not a threshold
+    relaxation.
+- Follow-up result:
+  - CI for `db8f830` improved the exact wide-coverage gate to
+    `94.98% < 95.00%` (`TOTAL 19622 stmts, 986 miss`), leaving only a
+    five-line deficit;
+  - added fused Hermite electrostatic-slice pre-mesh validation tests covering
+    invalid chunk count, non-divisible Hermite dimension, and unsupported
+    non-Hermite active axes;
+  - local focused checks pass (`22 passed` across the linear-parallel and
+    validation-manifest subset), along with `ruff`, `git diff --check`,
+    validation manifest, and repository-size gate.
+
+### 2026-05-14 Nonlinear Replicate Campaign Start
+
+- CI/CD check:
+  - latest `main` run `25835745970` at `e2e2bc1` is green
+    (`59` successful jobs, `1` skipped, no failures).
+- Prepared the next production nonlinear turbulent-flux evidence step:
+  - extended `tools/write_external_vmec_holdout_configs.py` with
+    first-class seed/timestep replicate generation via `--seed-variant` and
+    `--dt-variant`;
+  - generated TOMLs now include explicit `random_seed` entries and a
+    `[metadata]` block with `case`, `variant_axis`, `variant_label`, `seed`,
+    and `timestep`, matching the metadata consumed by the nonlinear-window
+    ensemble readiness tool;
+  - restart-copy commands are now keyed by `(grid, variant)` so continuation
+    seeding cannot accidentally cross from one seed/timestep variant to
+    another;
+  - updated `docs/testing.rst` and `docs/quasilinear.rst` to document that
+    replicated nonlinear windows are required before promoting turbulent-flux
+    optimization or absolute-flux quasilinear claims.
+- Local checks:
+  - `python -m py_compile tools/write_external_vmec_holdout_configs.py` passed;
+  - `python -m pytest tests/test_write_external_vmec_holdout_configs.py tests/test_check_nonlinear_window_ensemble_readiness.py -q` passed
+    (`5 passed`);
+  - `ruff check tools/write_external_vmec_holdout_configs.py tests/test_write_external_vmec_holdout_configs.py` passed;
+  - `git diff --check` passed.
+- Immediate next step:
+  - commit and push this replicate-campaign infrastructure;
+  - on office, use a fresh latest-main checkout to launch the DSHAPE
+    `n64`, `t=150 -> 250` seed/timestep variants first because DSHAPE is the
+    shortest currently admitted high-grid nonlinear holdout;
+  - after the first DSHAPE replicate batch completes, extract the same
+    transport-window summaries and rerun
+    `tools/check_nonlinear_window_ensemble_readiness.py`.
+
+### 2026-05-14 CI and Office Geometry Backend Follow-Up
+
+- CI/CD:
+  - run `25845250016` for `327a9c4` failed only in `repo-hygiene`;
+  - the failure was the quasilinear overclaim guardrail catching the phrase
+    `absolute-flux or turbulent-flux optimization claim is promoted` in
+    `docs/testing.rst`;
+  - changed the wording to a non-promotional readiness statement and reran
+    `tools/check_quasilinear_promotion_guardrails.py`, which passed.
+- Office DSHAPE replicate launch:
+  - created a fresh office checkout at
+    `/home/rjorge/tmp/spectrax-replicates-327a9c4`;
+  - generated six `n64` DSHAPE replicate configs:
+    `seed31`, `seed32`, and `dt0p04`, each with `t=150` and `t=250`
+    continuation stages;
+  - initial launch failed before stepping because the office `spectrax` venv
+    resolved a namespace-only `booz_xform_jax` package that did not expose
+    `Booz_xform`, causing VMEC geometry backend discovery to fail.
+- Source fix:
+  - hardened `spectraxgk.from_gx.vmec._import_module_with_search_paths` and
+    `_import_booz_backend` so optional backend discovery now requires the
+    actual `Booz_xform` class, evicts invalid cached namespace modules, and
+    retries explicit checkout paths before falling back;
+  - added a regression test that reproduces the namespace-only cache failure
+    mode.
+- Local checks:
+  - `python -m pytest tests/test_from_gx_vmec_helpers.py tests/test_vmec_eik.py::test_internal_vmec_backend_available_detects_env_provided_booz_xform_jax -q` passed
+    (`20 passed`);
+  - `ruff`, `git diff --check`, validation manifest, repository-size, and
+    quasilinear guardrail checks passed.
+- Immediate next step:
+  - commit and push the backend-discovery fix;
+  - clone/pull the fixed commit on office and relaunch the same DSHAPE
+    replicate campaign with `PYTHONPATH=/home/rjorge/booz_xform_jax/src:<repo>/src`
+    so the real Boozer backend is resolved first.
+
+### 2026-05-14 DSHAPE Replicated Nonlinear Holdout Closure
+
+- CI/CD:
+  - latest main run `25845599633` for `cfd3ce9` passed (`59` successful jobs,
+    `1` skipped nightly job, no failures).
+- Office DSHAPE replicate campaign:
+  - relaunched from fresh main checkout
+    `/home/rjorge/tmp/spectrax-replicates-cfd3ce9`;
+  - completed all six requested GPU runs:
+    `t=150 -> 250` continuations for seed `31`, seed `32`, and timestep
+    variant `dt=0.04`;
+  - backend discovery was stable with
+    `PYTHONPATH=/home/rjorge/booz_xform_jax/src:<repo>/src`.
+- Transport-window result:
+  - accepted late window: `t=[170,250]`, chosen because it keeps the saturated
+    late window while giving at least eight terminal samples for the `dt=0.05`
+    output cadence;
+  - seed `31`, `dt=0.05`: `<Q_i> = 18.814`, `SEM = 0.781`;
+  - seed `32`, `dt=0.05`: `<Q_i> = 20.819`, `SEM = 0.827`;
+  - seed `22`, `dt=0.04`: `<Q_i> = 18.105`, `SEM = 1.032`;
+  - readiness and ensemble gates both pass; mean relative spread is `0.141`
+    against the `0.15` threshold and combined SEM/mean is `0.054` against the
+    `0.25` threshold.
+- Documentation/release hygiene:
+  - removed unreferenced duplicate
+    `docs/_static/nonlinear_cyclone_short_resolved_audit_t5_ph2_noend.png` to
+    stay within the repository-size policy;
+  - promoted the DSHAPE replicate plot, trace CSVs, summaries, convergence
+    reports, readiness JSON, and ensemble-gate JSON under
+    `docs/_static/external_vmec_dshape_replicates/`;
+  - updated README, quasilinear docs, manuscript-figure ledger, release-scope
+    docs, and validation coverage manifest.
+- Claim boundary:
+  - this closes the DSHAPE seed/timestep robustness evidence for the current
+    nonlinear holdout and strengthens quasilinear model-development evidence;
+  - it still does not promote an absolute quasilinear saturated-flux predictor
+    or production nonlinear turbulent-flux stellarator optimization claim.
+- Immediate next step:
+  - run Sphinx, repository-size, validation-manifest, and quasilinear guardrail
+    checks; then commit and push the documentation/artifact promotion.
+
+### 2026-05-14 Replicate Extraction Tooling
+
+- Added `tools/build_external_vmec_replicate_ensemble.py` so future
+  external-VMEC seed/timestep campaigns are reproducible from finished
+  `*.out.nc` files:
+  - extracts `Grids/time` and `Diagnostics/HeatFlux_st`;
+  - writes heat-flux trace CSVs and transport-window summaries;
+  - writes per-replicate nonlinear-window convergence reports;
+  - writes the readiness manifest and final ensemble gate;
+  - creates the two-panel trace plus late-window uncertainty figure used in
+    README/docs/manuscript ledgers.
+- Added a synthetic NetCDF regression test,
+  `tests/test_build_external_vmec_replicate_ensemble.py`, to make sure the tool
+  reconstructs seed and timestep variants, emits portable artifact provenance,
+  and passes the readiness/ensemble gates on stable traces.
+- Local checks:
+  - `python -m pytest tests/test_build_external_vmec_replicate_ensemble.py -q`
+    passed;
+  - `ruff`, `py_compile`, and `git diff --check` passed.
+- Immediate next step:
+  - commit and push this tooling;
+  - use it on the next independent converged holdout, with circular `t=450`
+    preferred over ITERModel because ITERModel is already consumed by the
+    current training reference.
+
+### 2026-05-14 Repository-Size Headroom Cleanup
+
+- Removed unreferenced tracked `docs/_static` PNG diagnostics that were no
+  longer cited by README, docs, manifests, tests, tools, or this plan.
+- Restored tracked-repository headroom for the next accepted circular replicate
+  evidence without changing any validation claim or documentation reference.
+- Local checks:
+  - `python tools/check_repository_size_manifest.py` passed with tracked total
+    `47.28 MB` against the `50 MB` policy;
+  - `python tools/check_validation_coverage_manifest.py --out-json
+    /tmp/validation_coverage_manifest_summary.json` passed;
+  - `python tools/check_quasilinear_promotion_guardrails.py --out-json
+    /tmp/quasilinear_promotion_guardrails.json` passed;
+  - `python -m sphinx -b html -W docs docs/_build/html` passed;
+  - `git diff --check` passed.
+- Immediate next step:
+  - commit and push the cleanup;
+  - continue monitoring the office circular external-VMEC seed/timestep
+    replicate campaign and only promote the generated figure if the readiness
+    and ensemble gates pass.
+
+### 2026-05-14 Circular External-VMEC Replicate Closure
+
+- Office circular replicate campaign:
+  - ran three ``64x64x40`` circular external-VMEC nonlinear replicas from the
+    same configuration family:
+    seed ``31``/``dt=0.05``, seed ``32``/``dt=0.05``, and seed ``22``/``dt=0.04``;
+  - the initial ``t=150`` late-window means were finite and consistent
+    (about ``17.0`` to ``17.5``);
+  - the ``t=450`` ensemble had small seed/timestep spread but failed readiness
+    because seed ``31`` still had terminal-window drift
+    (terminal mean relative delta ``0.199`` against the ``0.15`` gate);
+  - extended the same three replicas to ``t=700`` rather than relaxing the
+    gate.
+- Accepted transport-window result:
+  - accepted late window: ``t=[350,700]``;
+  - ensemble mean heat flux: ``18.97``;
+  - mean relative spread: ``0.035`` against the ``0.15`` gate;
+  - combined SEM/mean: ``0.043`` against the ``0.25`` gate;
+  - readiness and ensemble gates both pass.
+- Documentation/release hygiene:
+  - copied only small evidence artifacts under
+    ``docs/_static/external_vmec_circular_replicates/``;
+  - kept large ``*.out.nc``, ``*.big.nc``, and ``*.restart.nc`` files on
+    ``office``/artifact storage only;
+  - updated README, quasilinear docs, release-scope docs, manuscript figure
+    ledger, and validation coverage manifest.
+- Claim boundary:
+  - this closes a second independent external-VMEC replicated nonlinear-window
+    holdout for quasilinear model-development evidence;
+  - it still does not promote the rejected one-constant quasilinear
+    absolute-flux model, production nonlinear heat-flux stellarator
+    optimization, W7-X zonal closure, or TEM validation claims.
+- Immediate next step:
+  - run Sphinx, repository-size, validation-manifest, quasilinear guardrails,
+    focused tests, and diff checks;
+  - commit and push the accepted circular replicate documentation and artifacts.
+
+### 2026-05-14 CI Green and Status Dashboard Refresh
+
+- CI/CD:
+  - GitHub Actions run `25852322368` for commit `a00d19e`
+    (`Promote circular replicate holdout evidence`) passed all `60` jobs;
+  - the previous cancelled runs were superseded by later pushes and are not
+    current-head failures.
+- Plan status:
+  - updated the execution board to reflect that DSHAPE and circular are now
+    replicated external-VMEC nonlinear-window holdouts;
+  - kept the absolute-flux and production nonlinear-optimization claims blocked
+    because the calibrated quasilinear predictor is still rejected and the
+    nonlinear optimizer examples still use reduced/startup windows rather than
+    production long-time turbulent averages.
+- Immediate next step:
+  - refresh `open_research_lane_status` and `manuscript_readiness_status` so
+    the machine-readable dashboards include the accepted circular and DSHAPE
+    replicate gates.
+
+### 2026-05-14 Production Nonlinear Optimization Guard
+
+- Added `src/spectraxgk/nonlinear_transport_optimization.py` and
+  `tools/check_production_nonlinear_optimization_guard.py`.
+- The new guard consumes the reduced stellarator optimization comparison,
+  startup nonlinear FD audits, and the DSHAPE/circular replicated long-window
+  ensembles.
+- Current tracked result:
+  - `docs/_static/production_nonlinear_optimization_guard.json` passes
+    release safety;
+  - qualifying replicated holdout ensembles: `2`;
+  - qualifying optimized-equilibrium replicated transport ensembles: `0`;
+  - production nonlinear turbulent-flux optimization promoted: `false`.
+- Updated the reduced nonlinear optimization plots and JSON metadata so the
+  nonlinear objective is explicitly labeled as a reduced nonlinear-window
+  estimator rather than a converged turbulent transport average.
+- Regenerated `open_research_lane_status` and `manuscript_readiness_status`
+  with the guard metrics.
+- Verified:
+  - `tests/test_nonlinear_transport_optimization.py`;
+  - `tests/test_stellarator_optimization.py`;
+  - dashboard builder tests;
+  - aggregate holdout gate tests;
+  - validation coverage manifest;
+  - quasilinear promotion guardrails;
+  - repository-size manifest;
+  - Sphinx docs with `-W`.
+- Remaining requirement for 100% production nonlinear turbulent-flux
+  optimization:
+  - run the selected optimized equilibrium through long post-transient
+    nonlinear transport windows, with seed/initial-condition and timestep
+    replicates, then attach that optimized-equilibrium ensemble to the guard.
+
+### 2026-05-14 Open-Lane Audit and Claim-Boundary Tightening
+
+- Spawned focused audits for the remaining open lanes:
+  - production nonlinear turbulent-flux optimization;
+  - W7-X zonal long-window recurrence/damping;
+  - W7-X fluctuation/TEM/multi-flux-tube validation;
+  - nonlinear domain decomposition / production speedup;
+  - quasilinear absolute-flux promotion and stellarator optimization;
+  - package-wide coverage, refactor, release, and CI hygiene.
+- CI/CD:
+  - GitHub Actions run `25857514845` for commit `192fbd8` passed all jobs,
+    including mypy, docs/package, fast tests, fast coverage, all wide-coverage
+    shards, and combined wide coverage.
+- Audit conclusions:
+  - production nonlinear optimization remains blocked by the missing
+    optimized-equilibrium replicated long-window transport artifact;
+  - W7-X zonal convention is closed, but residual and tail-envelope gates still
+    fail physically under paper-facing normalization;
+  - W7-X fluctuation spectra are closed only as simulation diagnostics, while
+    TEM/kinetic-electron and multi-alpha/multi-surface W7-X validation remain
+    open;
+  - quasilinear absolute-flux promotion remains rejected by the holdout gap
+    gate, even though scoped model-development and UQ figures are usable;
+  - production parallelization remains closed for independent `k_y` and UQ
+    ensembles only; nonlinear domain decomposition is diagnostic until full RHS,
+    field-solve, conservation, transport-window, and profiler gates pass.
+- Tightened executable runbooks and documentation:
+  - `tools/write_w7x_zonal_closure_sweep.py` now emits repo-relative commands,
+    per-candidate `--out-png` panels, and explicit full-ladder output paths so
+    office closure probes do not overwrite frozen docs figures;
+  - `docs/verification_matrix.rst` now separates closed W7-X ITG flux-tube
+    evidence from still-open W7-X TEM / kinetic-electron validation;
+  - `docs/parallelization.rst` now lists the exact nonlinear domain
+    decomposition gates required before any production nonlinear speedup claim.
+- Next executable scientific steps:
+  - run the missing W7-X zonal closure families on `office` and promote only if
+    residual, late-envelope, and moment-tail metrics improve together;
+  - produce or select a concrete optimized-equilibrium VMEC `wout*.nc`, screen
+    its linear branch, then run long post-transient replicated nonlinear
+    transport windows before revisiting production nonlinear optimization;
+  - keep absolute quasilinear flux and broad W7-X/TEM claims blocked until the
+    corresponding holdout and branch-parity gates pass.
+
+### 2026-05-14 Optimized-Equilibrium Transport Launch Contract
+
+- CI/CD:
+  - GitHub Actions run `25875105571` for commit `77b4fd7` passed all jobs,
+    including all wide-coverage shards.
+- Office status:
+  - bounded SSH probes to `office` timed out, so no new W7-X zonal or
+    optimized-equilibrium nonlinear simulations were launched in this pass.
+- Added `tools/write_optimized_equilibrium_transport_configs.py`, a
+  production-scope wrapper around the external-VMEC config generator:
+  - requires a concrete post-optimization VMEC `wout*.nc`;
+  - writes the `n64` `t=250,350,450,700` nonlinear continuation ladder;
+  - includes two seed replicates and one timestep replicate by default;
+  - writes restart-copy commands plus the exact
+    `tools/build_external_vmec_replicate_ensemble.py` and
+    `tools/check_production_nonlinear_optimization_guard.py` promotion-check
+    commands.
+- Tightened `tools/write_external_vmec_holdout_configs.py` typing so mypy can
+  check the config-writer stack directly.
+- Documented the launch contract in `docs/testing.rst` and
+  `docs/stellarator_optimization.rst`.
+- Verified:
+  - focused optimized-equilibrium/external-VMEC config tests;
+  - ruff and mypy over both config writers;
+  - direct launch-contract generation against the local
+    `vmec_jax/results/qa_opt/ess/wout_final.nc` candidate in `/tmp`.
+- Remaining executable step:
+  - when `office` is reachable, select/screen the concrete optimized
+    equilibrium and run the generated `t=700` seed/timestep replicate campaign;
+  - only then attach the ensemble to the production nonlinear optimization
+    guard.
+
+### 2026-05-14 Office W7-X Zonal Closure Sweep Completion
+
+- Office status:
+  - `office` was reachable with two idle RTX A4000 GPUs and JAX GPU support;
+  - a clean run checkout was created at `/home/rjorge/SPECTRAX-GK-run` on
+    commit `64425ee`;
+  - existing W7-X zonal outputs were copied from the older office workspace so
+    only missing closure families were rerun.
+- Completed the missing bounded closure candidates at `k_x rho_i=0.07`,
+  `Nl=16`, `Nm=64`, `dt=0.05`, `t v_t/a=100`, one GPU per case:
+  - constant Hermite hypercollision, `nu_hyper_m = 0.01, 0.03`;
+  - constant Laguerre hypercollision, `nu_hyper_l = 0.01, 0.03`;
+  - constant isotropic hypercollision, `nu_hyper = 0.01, 0.03`.
+- Regenerated the full eleven-row closure ladder and promoted the refreshed
+  artifacts to `docs/_static/w7x_zonal_closure_ladder_kx070.{png,pdf,json,csv}`.
+- Result:
+  - baseline: `MAE=0.2861`, `tail_std_ratio=4.10`, final Hermite-tail fraction
+    `0.388`;
+  - best trace-error candidate: isotropic `nu_hyper=0.01` with `MAE=0.2755`,
+    but `tail_std_ratio=4.25`, so the late recurrence/envelope metric worsens;
+  - isotropic `nu_hyper=0.03`, mixed Laguerre-Hermite, and Laguerre-only
+    closures show the same pattern: strong tail suppression but no simultaneous
+    improvement of trace residual and late envelope.
+- Interpretation:
+  - the state convention and observable layer remain closed;
+  - the tested bounded hypercollision families are rejected as a physical
+    W7-X zonal closure fix;
+  - no high-moment follow-up is justified for these families because the
+    promotion contract requires trace error, late-envelope recurrence, and
+    moment-tail metrics to improve together.
+- Next executable steps:
+  - move W7-X zonal recurrence/damping back to the deferred physical
+    closure/operator lane, not a normalization or constant-damping lane;
+  - use the freed office GPUs for the optimized-equilibrium replicated
+    long-window nonlinear transport campaign once the concrete post-optimization
+    `wout*.nc` is selected and screened.
+
+### 2026-05-14 Optimized QA Equilibrium Linear Screen
+
+- Selected the concrete `vmec_jax` QA optimized-equilibrium candidate:
+  `/Users/rogeriojorge/local/vmec_jax/results/qa_opt/ess/wout_final.nc`.
+- `office` became unreachable again after the W7-X zonal sweep, so the VMEC
+  transfer and nonlinear replicate launch were not started in this pass.
+- Ran a bounded local SPECTRAX-GK linear/quasilinear screen against the selected
+  `wout_final.nc` at `ky rho_i = 0.095, 0.190, 0.300, 0.476, 0.667`, using
+  `Nl=4`, `Nm=8`, `dt=0.005`, and `400` RK4 steps.
+- Result:
+  - all sampled ITG branch growth rates are damped:
+    `gamma = -0.015, -0.0208, -0.0273, -0.0401, -0.0281`;
+  - the current quasilinear mixing-length rule returns zero saturated heat flux
+    because stable modes are excluded by the growth-floor rule;
+  - the selected optimized equilibrium is therefore a low-flux/stability
+    candidate for nonlinear replicated transport, not an unstable-turbulence
+    saturation candidate.
+- Added tracked documentation artifacts:
+  - `docs/_static/optimized_equilibrium_linear_screen.png`;
+  - `docs/_static/optimized_equilibrium_linear_screen.{json,csv}`;
+  - `docs/_static/optimized_equilibrium_linear_screen.quasilinear_spectrum.csv`;
+  - `docs/_static/optimized_equilibrium_linear_screen.summary.json`.
+- Next executable step when `office` is stable:
+  - copy the selected `wout_final.nc` to the clean office checkout;
+  - generate the optimized-equilibrium `n64`, `t=250,350,450,700` seed/timestep
+    replicate campaign with `tools/write_optimized_equilibrium_transport_configs.py`;
+  - launch the long nonlinear runs as a low-flux/stability transport-window
+    audit and only promote if the generated ensemble/guard artifacts pass.
+
+### 2026-05-15 Nonlinear Turbulence-Gradient Campaign Preflight
+
+- Reviewed the current office artifacts after the restart:
+  - optimized-equilibrium long-window seed/timestep outputs and
+    `tools_out/optimized_equilibrium_vmec/wout_qa_opt_ess_final.nc` exist;
+  - no matched baseline/plus/minus re-equilibrated VMEC perturbation files were
+    found for a production nonlinear turbulence-gradient campaign.
+- Hardened `tools/write_nonlinear_turbulence_gradient_campaign.py` so it now
+  fails closed before writing launch contracts unless:
+  - all baseline, plus, and minus VMEC files exist;
+  - the three resolved paths are distinct;
+  - the three file contents have distinct SHA256 hashes.
+- Added the explicit `--allow-identical-vmec-content` override only for
+  plumbing smoke tests. The manifest records that flag and marks identical
+  content as non-production evidence.
+- Added regression tests for:
+  - successful matched-state campaign manifest generation with VMEC preflight
+    metadata;
+  - duplicate-path rejection;
+  - identical-content rejection;
+  - explicit smoke-test override behavior.
+- Documented the fail-closed VMEC preflight in the testing, release-scope, and
+  stellarator-optimization docs.
+- Verified:
+  - `pytest -q tests/test_nonlinear_gradient_evidence.py`;
+  - `ruff check tools/write_nonlinear_turbulence_gradient_campaign.py tests/test_nonlinear_gradient_evidence.py`;
+  - `mypy tools/write_nonlinear_turbulence_gradient_campaign.py`;
+  - `python -m sphinx -W -b html docs docs/_build/html-check`;
+  - `python tools/check_release_readiness.py`;
+  - `python tools/check_parallel_scaling_artifacts.py`.
+- Result:
+  - the production nonlinear turbulence-gradient lane is now safer and
+    auditable, but still not promoted;
+  - the next real scientific blocker is generating real re-equilibrated
+    plus/minus VMEC files for a selected control/profile parameter, then
+    launching the matched long-window ensembles on office.
+
+### 2026-05-15 QA/ESS RBC(1,1) Re-Equilibrated Gradient Launch Artifacts
+
+- Added `tools/write_vmec_boundary_perturbation_inputs.py`.
+  - It starts from a real VMEC input file, patches one explicit
+    `RBC/RBS/ZBC/ZBS(m,n)` coefficient, and writes matched `baseline`,
+    `plus_delta`, and `minus_delta` input files.
+  - It records the exact `vmec_jax` commands and the downstream
+    nonlinear-gradient campaign command.
+  - Tests cover successful manifest generation, ambiguous duplicate
+    coefficient rejection, and invalid relative perturbations.
+- Applied it to the optimized QA/ESS candidate:
+  - baseline input:
+    `/Users/rogeriojorge/local/vmec_jax/results/qa_opt/ess/input.final`;
+  - coefficient: `RBC(1,1)`;
+  - relative perturbation: `2%`;
+  - absolute `delta_parameter`: `2.0076100682862165e-03`;
+  - local launch manifest:
+    `tools_out/nonlinear_turbulence_gradient_vmec_inputs/qa_ess_rbc11/vmec_boundary_perturbation_manifest.json`.
+- Ran real VMEC-JAX re-equilibrations on `office` with GPU JAX:
+  - `baseline`: completed normally in `96.97 s`;
+  - `plus_delta`: completed normally in `96.88 s`;
+  - `minus_delta`: completed normally in `43.02 s`;
+  - all three generated `854728` byte `wout` files with distinct SHA256
+    hashes.
+- Ran the stricter nonlinear-gradient campaign writer against those VMEC files.
+  It wrote nine `t=700`, `n64`, seed/timestep SPECTRAX-GK configs:
+  `tools_out/nonlinear_turbulence_gradient_campaign/qa_ess_rbc11/gradient_campaign_manifest.json`.
+- Verified:
+  - `pytest -q tests/test_write_vmec_boundary_perturbation_inputs.py tests/test_nonlinear_gradient_evidence.py`;
+  - `ruff check tools/write_vmec_boundary_perturbation_inputs.py tests/test_write_vmec_boundary_perturbation_inputs.py tools/write_nonlinear_turbulence_gradient_campaign.py tests/test_nonlinear_gradient_evidence.py`;
+  - `mypy tools/write_vmec_boundary_perturbation_inputs.py tools/write_nonlinear_turbulence_gradient_campaign.py`;
+  - `python -m sphinx -W -b html docs docs/_build/html-check`.
+- Next executable step:
+  - copy the nine generated nonlinear configs and three `wout` files to
+    `office`;
+  - run the nine matched long-window SPECTRAX-GK simulations;
+  - build the three replicated ensemble artifacts;
+  - run the central finite-difference gradient gate and final evidence check.
+
+### 2026-05-15 QA/ESS RBC(1,1) Long-Window Nonlinear Gradient Evidence
+
+- Completed the first real re-equilibrated nonlinear turbulence-gradient
+  campaign on `office` using the optimized QA/ESS `RBC(1,1)` boundary
+  coefficient.
+- Execution details:
+  - regenerated the campaign in the clean office checkout so all VMEC paths were
+    office-local;
+  - used a restart ladder with horizons `t=250,350,450,700,900`;
+  - ran three replicated nonlinear states for each parameter value:
+    `seed31`, `seed32`, and `dt0p04`;
+  - analyzed the long post-transient window `t=[450,900]` after the initial
+    `t=[350,700]` pass exposed a still-rising plus-state terminal mean.
+- Results:
+  - baseline ensemble passed with mean `16.142734`, combined SEM `0.517429`,
+    SEM fraction `0.0321`, and mean spread `0.0598`;
+  - minus ensemble passed with mean `15.886632`, combined SEM `0.534764`,
+    SEM fraction `0.0337`, and mean spread `0.0277`;
+  - plus ensemble passed with mean `16.373695`, combined SEM `0.711721`,
+    SEM fraction `0.0435`, and mean spread `0.0653`;
+  - central finite-difference response fraction was `0.03017`, just above the
+    `0.03` gate;
+  - forward/backward asymmetry passed at `0.103`;
+  - subtraction condition number passed at `66.23`;
+  - propagated gradient uncertainty failed at
+    `gradient_uncertainty_rel = 1.83 > 0.5`.
+- Code and reporting updates:
+  - fixed `spectraxgk.nonlinear_gradient_evidence` so a real
+    production-candidate long-window artifact that fails uncertainty is reported
+    separately from a missing or startup/reduced gradient artifact;
+  - regenerated `docs/_static/nonlinear_turbulence_gradient_evidence_status.json`
+    and `docs/_static/nonlinear_turbulence_gradient_evidence_gap_report.json`
+    against the actual QA/ESS `RBC(1,1)` `t=[450,900]` campaign;
+  - added the central-FD gate figure and all three replicate ensemble artifacts
+    under `docs/_static/qa_ess_rbc11_nonlinear_gradient_*`;
+  - updated README, testing, release-scope, and stellarator-optimization docs.
+- Interpretation:
+  - this closes the missing-campaign blocker for the selected coefficient;
+  - the nonlinear turbulence-gradient claim still must remain blocked because
+    the 2% perturbation response is barely resolved above nonlinear transport
+    variability;
+  - more repetitions at the same 2% amplitude are inefficient because the
+    current response is only about `3%` of the baseline mean and the propagated
+    gradient uncertainty is about `3.7x` above the target.
+- Next executable step:
+  - run a second matched QA/ESS boundary-gradient campaign with a larger bounded
+    `RBC(1,1)` perturbation, starting at `8%` relative amplitude, keeping the
+    same `t=[450,900]` analysis window, seed/timestep labels, and finite
+    difference gates;
+  - promote only if the larger-amplitude campaign keeps forward/backward
+    asymmetry bounded while reducing `gradient_uncertainty_rel` below `0.5`;
+  - if `8%` violates finite-difference asymmetry, bracket with an intermediate
+    `5%` perturbation rather than relaxing the uncertainty gate.
+
+### 2026-05-15 QA/ESS RBC(1,1) 8% Bracketed Nonlinear Gradient Evidence
+
+- Ran the planned larger-amplitude QA/ESS `RBC(1,1)` campaign on `office`.
+- VMEC-JAX re-equilibrations:
+  - relative perturbation: `8%`;
+  - absolute `delta_parameter`: `8.030440273144866e-03`;
+  - baseline, plus, and minus equilibria all terminated normally and produced
+    distinct `854728` byte `wout` files.
+- SPECTRAX-GK nonlinear evidence:
+  - generated the matched `baseline`/`plus_delta`/`minus_delta` campaign with
+    horizons `t=250,350,450,700,900`;
+  - ran true restart ladders on the two office GPUs by copying both `.out.nc`
+    and `.restart.nc` between horizons and running only the additional steps;
+  - completed `45/45` stage markers and `9/9` `t900` outputs.
+- Replicated `t=[450,900]` ensemble results:
+  - baseline passed with mean `15.976041`, combined SEM `0.567676`, SEM
+    fraction `0.0355`, and mean spread `0.0322`;
+  - plus passed with mean `14.432491`, combined SEM `0.662912`, SEM fraction
+    `0.0459`, and mean spread `0.0309`;
+  - minus passed with mean `16.017794`, combined SEM `0.453119`, SEM fraction
+    `0.0283`, and mean spread `0.0749`.
+- Central finite-difference gate:
+  - response fraction improved to `0.09923`;
+  - condition number passed at `19.21`;
+  - propagated uncertainty almost passed but remains blocked at
+    `gradient_uncertainty_rel = 0.5065 > 0.5`;
+  - forward/backward locality failed clearly:
+    `fd_asymmetry_rel = 1.8947 > 0.5`;
+  - forward gradient `-192.21`, backward gradient `-5.20`, central gradient
+    `-98.71`.
+- Interpretation:
+  - increasing the perturbation fixed the low-signal issue but revealed that an
+    8% `RBC(1,1)` displacement is not a local finite-difference derivative for
+    this nonlinear turbulent heat-flux observable;
+  - this should not be promoted as a turbulence-gradient claim;
+  - the next best scientific step is a bracketed `5%` campaign or a more
+    sensitive/well-conditioned control direction, with the same `t=[450,900]`
+    replicated-window protocol and no relaxed asymmetry/uncertainty gates.
+- Tracked artifact policy:
+  - replaced the older 2% tracked central-FD figure/gate with the 8%
+    production-candidate artifact to keep the repository-size gate green;
+  - kept the older 2% metrics in this plan as historical context.
+
+### 2026-05-15 Nonlinear Turbulence-Gradient Robustness Push
+
+- Hardened the evidence code and CI surface around production nonlinear
+  turbulence-gradient claims:
+  - added tests for standalone VMEC backend fallback/error paths;
+  - added a fail-closed test for nonfinite ensemble statistics in the
+    long-window finite-difference gate;
+  - targeted coverage now reports `98%` for
+    `spectraxgk.nonlinear_gradient_evidence` and `100%` for the standalone
+    VMEC geometry shim.
+- Tightened release/readme/docs wording so the selected optimized-equilibrium
+  nonlinear transport audit is not described as a broad production
+  transport-optimization claim.
+- Ran the `RBC(1,1)` 5% QA/ESS bracket on office with the same `t=[450,900]`
+  replicated-window protocol:
+  - all baseline/plus/minus ensembles passed with three reports each;
+  - `response_fraction = 0.1177`, condition number `16.54`, and
+    `gradient_uncertainty_rel = 0.402` passed;
+  - `fd_asymmetry_rel = 0.897` failed, so the finite-difference response is
+    still not local enough to promote.
+- Active office campaign:
+  - `ZBS(1,1)` 5% long-window ladder is running on the two office GPUs as the
+    next helical control check;
+  - `ZBS(1,0)` 5% VMEC re-equilibration inputs are staged, with the baseline
+    wout copied and plus/minus CPU-only VMEC jobs launched as the lower-order
+    fallback if `ZBS(1,1)` remains asymmetric.
+- Claim status:
+  - selected optimized-equilibrium nonlinear transport-window audit remains
+    closed for the scoped candidate;
+  - production nonlinear turbulence-gradient evidence remains fail-closed until
+    a paired long-window central finite-difference artifact passes response,
+    asymmetry, condition-number, uncertainty, and all replicated-window gates.
+
+### 2026-05-15 ZBS Control Sweep for Nonlinear Turbulence-Gradient Evidence
+
+- Completed two additional real VMEC-JAX re-equilibrated QA/ESS control
+  campaigns on office, both with `t=[450,900]`, `n64`, two seeds plus one
+  timestep replicate, and the same fail-closed central finite-difference gate:
+  - `ZBS(1,1)` 5%:
+    - minus ensemble passed with mean `14.667897`, SEM fraction `0.0186`;
+    - plus ensemble passed with mean `17.129801`, SEM fraction `0.0282`;
+    - response fraction `0.151`, condition number `12.92`, and
+      `gradient_uncertainty_rel = 0.225` passed;
+    - locality still failed with `fd_asymmetry_rel = 0.663 > 0.5`.
+  - `ZBS(1,0)` 5%:
+    - minus ensemble passed with mean `16.941520`, SEM fraction `0.0397`;
+    - plus ensemble passed with mean `15.824927`, SEM fraction `0.0335`;
+    - locality passed with `fd_asymmetry_rel = 0.274`, response fraction
+      `0.0685`, and condition number `29.35`;
+    - propagated uncertainty failed with
+      `gradient_uncertainty_rel = 0.768 > 0.5`.
+- Tracked artifact update:
+  - replaced the old `RBC(1,1)` rel8 docs artifact with the current
+    `ZBS(1,0)` rel5 production-candidate gate because it closes the locality
+    blocker and identifies uncertainty as the remaining blocker;
+  - kept the `ZBS(1,1)` metrics in this plan as the complementary near miss
+    that closes uncertainty but not locality.
+- Interpretation:
+  - nonlinear turbulent-flux optimization is now above the 90% evidence level
+    for the scoped manuscript/release lane: long-window replicated transport
+    audits, real VMEC perturbations, multiple control directions, and strict
+    fail-closed gates are all operational;
+  - it is still not a promoted nonlinear turbulence-gradient optimizer because
+    no single paired control artifact has passed both locality and propagated
+    uncertainty simultaneously;
+  - the next scientific step should be a better-conditioned profile-gradient or
+    objective-control direction, not more repetitions of these same two
+    boundary controls.

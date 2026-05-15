@@ -110,6 +110,29 @@ def test_saturation_amplitude_rules_are_explicit() -> None:
         )
 
 
+def test_saturation_and_channel_edge_cases_are_fail_closed() -> None:
+    assert normalize_quasilinear_channels([" ES ", "es"]) == ("es",)
+    assert normalize_quasilinear_channels([]) == ("es",)
+    assert saturation_amplitude2(
+        gamma=-0.2,
+        kperp_eff2_value=0.5,
+        rule="mixing_length",
+        include_stable_modes=True,
+    ) == pytest.approx(-0.4)
+    assert saturation_amplitude2(
+        gamma=0.03,
+        kperp_eff2_value=0.5,
+        rule="mixing_length",
+        gamma_floor=0.05,
+    ) == pytest.approx(0.0)
+    assert saturation_amplitude2(
+        gamma=0.03,
+        kperp_eff2_value=0.5,
+        rule="lapillonne_2011",
+        gamma_floor=0.05,
+    ) == pytest.approx(0.0)
+
+
 def test_differentiable_saturation_rules_match_scalar_contracts() -> None:
     gamma = jnp.asarray([-0.2, 0.0, 0.3])
     kperp = jnp.asarray([0.5, 0.5, 1.5])
@@ -154,6 +177,29 @@ def test_quasilinear_feature_objective_supports_sweep_rules() -> None:
         quasilinear_feature_objective(features, rule="not_a_rule")
 
 
+def test_quasilinear_feature_objective_vectorizes_and_applies_stability_floor() -> None:
+    features = jnp.asarray(
+        [[0.1, 0.5, 2.0], [0.01, 0.25, 4.0], [-0.2, 0.5, 6.0]]
+    )
+    out = quasilinear_feature_objective(
+        features,
+        rule="mixing_length",
+        csat=1.5,
+        gamma_floor=0.05,
+    )
+    np.testing.assert_allclose(
+        np.asarray(out), np.asarray([0.3, 0.0, 0.0]), rtol=1.0e-6
+    )
+    signed = quasilinear_feature_objective(
+        features,
+        rule="mixing_length",
+        include_stable_modes=True,
+    )
+    np.testing.assert_allclose(
+        np.asarray(signed), np.asarray([0.4, 0.16, -2.4]), rtol=1.0e-6
+    )
+
+
 def test_shape_aware_power_law_objective_uses_geometric_ky_reference() -> None:
     features = jnp.asarray([[0.1, 0.5, 2.0], [0.2, 0.7, 3.0]])
     ky = jnp.asarray([0.1, 0.4])
@@ -170,6 +216,19 @@ def test_shape_aware_power_law_objective_uses_geometric_ky_reference() -> None:
     with pytest.raises(ValueError, match="features"):
         shape_aware_power_law_objective(jnp.asarray([0.1, 0.2]), ky, exponent=1.0)
     assert spectraxgk.shape_aware_power_law_objective is shape_aware_power_law_objective
+
+
+def test_shape_aware_power_law_objective_clips_nonpositive_ky_reference() -> None:
+    features = jnp.asarray([[0.1, 0.5, 2.0], [0.2, 0.7, 3.0]])
+    ky = jnp.asarray([0.0, -0.4])
+    out = shape_aware_power_law_objective(
+        features,
+        ky,
+        exponent=0.0,
+        csat=0.5,
+        ky_ref=-1.0,
+    )
+    np.testing.assert_allclose(np.asarray(out), np.asarray([1.0, 1.5]), rtol=1.0e-6)
 
 
 def test_quasilinear_channel_validation_rejects_unvalidated_em_channels() -> None:

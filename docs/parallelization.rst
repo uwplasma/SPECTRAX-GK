@@ -44,7 +44,7 @@ then ``uq_ensemble``.
      - ``false``
      - ``true``
    * - ``fft_axis_domain``
-     - ``blocked``
+     - ``diagnostic``
      - ``false``
      - ``true``
 
@@ -64,6 +64,15 @@ These helpers preserve serial ordering and restrict communication to result
 aggregation. Any timing claim from this path must be paired with a serial
 numerical-identity gate for the reported observables, such as ``gamma``,
 ``omega``, quasilinear weights, or covariance summaries.
+
+For UQ and optimization portfolios, ``spectraxgk.independent_ensemble_provenance_gate``
+is the compact production-readiness check. It runs the same member function
+serially and through ``independent_map``, verifies numerical identity and result
+ordering, checks that oversubscribed worker requests clip to the ensemble size,
+reconstructs the deterministic independent-work decomposition, and probes
+``IndependentMapExecutionError`` metadata for worker failures. This is a
+provenance and identity gate only; it does not make a nonlinear
+domain-decomposition speedup claim.
 
 Runtime ``k_y`` scans can request the same independent-worker policy directly
 from TOML. This is a scan orchestration path, not a solver-layout sharding path:
@@ -101,14 +110,36 @@ production-completion percentage and the status of each lane. For the current
 tracked artifacts, production independent-work parallelization is closed:
 independent ``k_y`` scans reach ``7.18x`` on eight CPU workers and ``1.88x`` on
 two RTX A4000 GPUs, while the quasilinear/UQ ensemble reaches ``5.41x`` on CPU
-and ``1.71x`` on GPU. Whole-state nonlinear sharding and FFT-axis decomposition
-remain diagnostic, not production nonlinear speedup claims.
+and ``1.71x`` on GPU. The same status now embeds the independent
+UQ/optimization provenance gate for serial-vs-parallel ordering, worker
+clipping, exception metadata, and deterministic reconstruction. Whole-state
+nonlinear sharding and FFT-axis decomposition remain diagnostic, not production
+nonlinear speedup claims.
 
 Regenerate the closure status after refreshing any scaling artifact:
 
 .. code-block:: bash
 
    python tools/build_parallelization_completion_status.py
+
+The lower-level decomposition-contract status is generated separately. It is
+useful when editing orchestration code because it checks deterministic shard
+assignment, serial reconstruction identity, and claim-level separation without
+rerunning large profiles.
+
+.. code-block:: bash
+
+   python tools/build_parallel_decomposition_status.py
+
+.. image:: _static/parallel_decomposition_status.png
+   :alt: Parallel decomposition contract status
+   :align: center
+
+This status passes for production independent ``k_y`` and UQ portfolios and
+for a diagnostic nonlinear state-domain partition. Passing the diagnostic row
+does not imply runtime nonlinear domain decomposition: it only proves that the
+metadata split/reassemble contract is internally consistent and correctly
+scoped as non-production.
 
 Diagnostic path: whole-state nonlinear sharding
 -----------------------------------------------
@@ -133,6 +164,9 @@ policy: the final state is identity-correct, but logical-CPU speedup saturates
 near ``1.39x`` and the current two-GPU path is slower than one GPU for the
 tracked larger fixed-step case. That artifact is therefore valuable engineering
 evidence, not a production nonlinear speedup result.
+The combined artifact is intentionally fail-closed: ``identity_passed`` may be
+true while ``speedup_passed`` is false, with explicit ``speedup_blockers`` naming
+the backend/device row that regressed.
 
 The next decomposition step is also gated, but still diagnostic. The artifact
 ``docs/_static/nonlinear_domain_parallel_identity_gate.json`` exercises a
@@ -142,9 +176,16 @@ path. This validates the fail-closed identity-gate contract for a bounded local
 stencil. The report records the gate name, plan-validity status, and any
 explicit blocker reasons such as noncanonical axes, incomplete chunk coverage,
 or serial/decomposed shape mismatches; any blocker disables the decomposed
-prototype path even if the arrays being compared are numerically equal. It does
-not validate distributed FFTs, field solves, conservation, or nonlinear
-transport windows, and it carries no speedup claim.
+prototype path even if the arrays being compared are numerically equal. The
+same JSON now embeds a stricter transport-window sub-gate,
+``nonlinear_domain_transport_window_identity``, that advances the serial and
+halo-decomposed prototypes over a short fixed-step window and compares final
+state identity, boundary identity, mass-trace identity, free-energy-proxy trace
+identity, and boundary-flux-proxy trace identity. The drift values in that
+sub-gate are serial-vs-decomposed agreement checks for the damped diagnostic
+stencil; they are not production conservation claims. The artifact still does
+not validate distributed FFTs, field solves, runtime routing, benchmark
+transport acceptance, or speedup.
 
 The spectral communication layer now has the same fail-closed treatment. The
 artifact ``docs/_static/nonlinear_spectral_communication_identity_gate.json``
@@ -156,6 +197,28 @@ nonlinear bracket, and spectral field-solve layout. Passing this gate promotes
 ``fft_axis_domain`` from blocked to diagnostic. It still does not add runtime
 distributed FFT routing, conservation checks, nonlinear transport-window
 acceptance, profiler evidence, or any speedup claim.
+
+Before nonlinear domain decomposition can be promoted beyond this diagnostic
+state, the runtime route must pass all of the following gates on the same
+workload family that appears in the speedup figure:
+
+- full nonlinear RHS identity for ``dG``, ``phi``, the nonlinear bracket,
+  density/field-solve layout, Hermitian projection, and dealiasing;
+- fixed-step serial-vs-decomposed integration identity for final state,
+  final fields, final RHS, and per-step scalar traces;
+- boundary/interface identity for owned and halo cells, not only a global norm;
+- conservation agreement for density/mass, a free-energy-like diagnostic,
+  zonal response, and heat-flux proxies;
+- post-transient transport-window agreement for Cyclone, KBM, and at least one
+  stellarator smoke case;
+- CPU serial, CPU decomposed, one-GPU serial, and two-GPU decomposed parity
+  under the same observable contract;
+- matched profiler artifacts for the exact backend, device count, software
+  stack, grid, warmups/repeats, and identity tolerance being claimed.
+
+Until those gates exist, nonlinear decomposition work can be documented as
+engineering evidence only, even if a new profile shows positive timing on one
+machine.
 
 Velocity-space communication gates
 ----------------------------------
@@ -274,8 +337,9 @@ allowed to support:
    * - Prototype nonlinear state-domain gate
      - ``nonlinear_domain_parallel_identity_gate.{json,png}``
      - Fail-closed serial-vs-halo-decomposed identity evidence for one bounded
-       local stencil.
-     - Distributed FFT, field-solve, transport-window, or speedup claims.
+       local stencil, including the embedded transport-window proxy traces.
+     - Distributed FFT, field-solve, production conservation, transport-runtime,
+       or speedup claims.
    * - Prototype nonlinear spectral communication gate
      - ``nonlinear_spectral_communication_identity_gate.{json,png}``
      - Fail-closed split/reassemble identity evidence for FFT round trip,

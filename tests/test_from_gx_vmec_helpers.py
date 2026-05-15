@@ -9,6 +9,7 @@ import pytest
 
 from spectraxgk.from_gx.vmec import (
     _apply_flux_tube_cut,
+    _booz_read_wout_square_layout_failure,
     _booz_xform_jax_search_paths,
     _equal_arc_remap,
     _import_booz_backend,
@@ -42,6 +43,28 @@ def test_import_module_with_search_paths_loads_temp_module(tmp_path: Path) -> No
     sys.modules.pop("demo_mod", None)
 
 
+def test_import_module_with_search_paths_replaces_namespace_without_backend(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    checkout_root = tmp_path / "checkout"
+    pkg = checkout_root / "booz_xform_jax"
+    pkg.mkdir(parents=True)
+    (pkg / "__init__.py").write_text("class Booz_xform:\n    pass\n", encoding="utf-8")
+    monkeypatch.setitem(
+        sys.modules,
+        "booz_xform_jax",
+        SimpleNamespace(__name__="booz_xform_jax", __path__=[str(tmp_path / "namespace")]),
+    )
+
+    mod = _import_module_with_search_paths(
+        "booz_xform_jax", [checkout_root], required_attr="Booz_xform"
+    )
+
+    assert hasattr(mod, "Booz_xform")
+    assert Path(mod.__file__).resolve() == (pkg / "__init__.py").resolve()
+    sys.modules.pop("booz_xform_jax", None)
+
+
 def test_import_module_with_search_paths_raises_on_missing(tmp_path: Path) -> None:
     with pytest.raises(ImportError):
         _import_module_with_search_paths("missing_demo_mod", [tmp_path / "missing"])
@@ -54,7 +77,7 @@ def test_import_booz_backend_falls_back_to_booz_xform(monkeypatch) -> None:
         lambda *_args, **_kwargs: (_ for _ in ()).throw(ImportError("jax backend missing")),
     )
 
-    marker = SimpleNamespace(name="fallback")
+    marker = SimpleNamespace(name="fallback", Booz_xform=object)
 
     def _import_module(name: str):
         if name == "booz_xform":
@@ -63,6 +86,64 @@ def test_import_booz_backend_falls_back_to_booz_xform(monkeypatch) -> None:
 
     monkeypatch.setattr("spectraxgk.from_gx.vmec.importlib.import_module", _import_module)
     assert _import_booz_backend() is marker
+
+
+def test_import_booz_backend_honors_fortran_override(monkeypatch) -> None:
+    marker = SimpleNamespace(name="forced-fortran", Booz_xform=object)
+    monkeypatch.setenv("SPECTRAX_BOOZ_BACKEND", "fortran")
+    monkeypatch.setattr("spectraxgk.from_gx.vmec._import_booz_xform_backend", lambda: marker)
+    monkeypatch.setattr(
+        "spectraxgk.from_gx.vmec._import_booz_xform_jax_backend",
+        lambda: (_ for _ in ()).throw(AssertionError("jax backend should not be imported")),
+    )
+
+    assert _import_booz_backend() is marker
+
+
+def test_square_layout_failure_matcher_is_specific() -> None:
+    assert _booz_read_wout_square_layout_failure(
+        ValueError("rmnc0 has unexpected shape (50, 50); one dimension must equal ns=50")
+    )
+    assert not _booz_read_wout_square_layout_failure(
+        ValueError("rmnc0 has unexpected shape (50, 49)")
+    )
+    assert not _booz_read_wout_square_layout_failure(
+        RuntimeError("rmnc0 has unexpected shape (50, 50); one dimension must equal ns=50")
+    )
+
+
+def test_import_booz_backend_honors_jax_override(monkeypatch) -> None:
+    marker = SimpleNamespace(name="forced-jax", Booz_xform=object)
+    monkeypatch.setenv("SPECTRAX_BOOZ_BACKEND", "jax")
+    monkeypatch.setattr("spectraxgk.from_gx.vmec._import_booz_xform_jax_backend", lambda: marker)
+    monkeypatch.setattr(
+        "spectraxgk.from_gx.vmec._import_booz_xform_backend",
+        lambda: (_ for _ in ()).throw(AssertionError("booz_xform should not be imported")),
+    )
+
+    assert _import_booz_backend() is marker
+
+
+def test_import_booz_backend_rejects_unknown_override(monkeypatch) -> None:
+    monkeypatch.setenv("SPECTRAX_BOOZ_BACKEND", "unexpected-backend")
+
+    with pytest.raises(ValueError, match="SPECTRAX_BOOZ_BACKEND"):
+        _import_booz_backend()
+
+
+def test_import_booz_backend_reports_missing_backends(monkeypatch) -> None:
+    monkeypatch.delenv("SPECTRAX_BOOZ_BACKEND", raising=False)
+    monkeypatch.setattr(
+        "spectraxgk.from_gx.vmec._import_booz_xform_jax_backend",
+        lambda: (_ for _ in ()).throw(ImportError("jax missing")),
+    )
+    monkeypatch.setattr(
+        "spectraxgk.from_gx.vmec._import_booz_xform_backend",
+        lambda: (_ for _ in ()).throw(ImportError("booz missing")),
+    )
+
+    with pytest.raises(ImportError, match="booz_xform_jax/booz_xform backend unavailable"):
+        _import_booz_backend()
 
 
 def test_internal_vmec_backend_available_uses_backend_probe(monkeypatch) -> None:
@@ -250,6 +331,12 @@ class _FakeBoozXform:
 
     def run(self) -> None:
         self.ran = True
+
+
+class _SquareLayoutFailingBoozXform(_FakeBoozXform):
+    def read_wout(self, path: str) -> None:
+        self.read_path = path
+        raise ValueError("rmnc0 has unexpected shape (50, 50); one dimension must equal ns=50")
 
 
 def _const_callable(value: float):
@@ -491,6 +578,81 @@ def test_vmec_fieldlines_respects_overrides_and_closes_dataset(monkeypatch: pyte
     assert np.isfinite(out.bmag).all()
     assert np.isfinite(out.gds2).all()
     assert np.isfinite(out.gbdrift).all()
+
+
+def test_vmec_fieldlines_falls_back_for_square_vmec_jax_wout(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_nc = _FakeNCDataset(mpol=3, ntor=2)
+    jax_backend = SimpleNamespace(Booz_xform=_SquareLayoutFailingBoozXform)
+    fortran_backend = SimpleNamespace(Booz_xform=_FakeBoozXform)
+    calls: dict[str, object] = {}
+
+    def _fake_import_backend(preferred: str | None = None) -> object:
+        if preferred == "booz_xform":
+            return fortran_backend
+        return jax_backend
+
+    def _fake_splines(_nc: object, booz_obj: object) -> SimpleNamespace:
+        calls["booz_obj"] = booz_obj
+        return _fake_vmec_spline_struct()
+
+    monkeypatch.delenv("SPECTRAX_BOOZ_BACKEND", raising=False)
+    monkeypatch.setitem(sys.modules, "netCDF4", SimpleNamespace(Dataset=lambda *_args, **_kwargs: fake_nc))
+    monkeypatch.setattr("spectraxgk.from_gx.vmec._import_booz_backend", _fake_import_backend)
+    monkeypatch.setattr("spectraxgk.from_gx.vmec._vmec_splines", _fake_splines)
+
+    out = _vmec_fieldlines(
+        vmec_fname="square-vmec-jax.nc",
+        s_val=0.5,
+        betaprim=0.01,
+        alpha=0.2,
+        include_shear_variation=False,
+        include_pressure_variation=False,
+        theta1d=np.linspace(-np.pi, np.pi, 9),
+        isaxisym=True,
+        iota_input=0.9,
+        s_hat_input=0.0,
+        res_theta=21,
+        res_phi=21,
+    )
+
+    assert fake_nc.closed is True
+    assert isinstance(calls["booz_obj"], _FakeBoozXform)
+    assert not isinstance(calls["booz_obj"], _SquareLayoutFailingBoozXform)
+    assert out.iota_input == pytest.approx(0.9)
+
+
+def test_vmec_fieldlines_does_not_fallback_when_booz_backend_is_forced(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_nc = _FakeNCDataset(mpol=3, ntor=2)
+    jax_backend = SimpleNamespace(Booz_xform=_SquareLayoutFailingBoozXform)
+
+    def _fake_import_backend(preferred: str | None = None) -> object:
+        assert preferred is None
+        return jax_backend
+
+    monkeypatch.setenv("SPECTRAX_BOOZ_BACKEND", "jax")
+    monkeypatch.setitem(sys.modules, "netCDF4", SimpleNamespace(Dataset=lambda *_args, **_kwargs: fake_nc))
+    monkeypatch.setattr("spectraxgk.from_gx.vmec._import_booz_backend", _fake_import_backend)
+
+    with pytest.raises(ValueError, match="rmnc0 has unexpected shape"):
+        _vmec_fieldlines(
+            vmec_fname="square-vmec-jax.nc",
+            s_val=0.5,
+            betaprim=0.01,
+            alpha=0.2,
+            include_shear_variation=False,
+            include_pressure_variation=False,
+            theta1d=np.linspace(-np.pi, np.pi, 9),
+            isaxisym=True,
+            iota_input=0.9,
+            s_hat_input=0.0,
+            res_theta=21,
+            res_phi=21,
+        )
+    assert fake_nc.closed is True
 
 
 def test_vmec_fieldlines_rejects_degenerate_reference_length(monkeypatch: pytest.MonkeyPatch) -> None:
