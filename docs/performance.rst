@@ -934,7 +934,12 @@ each device count gets a clean JAX runtime:
      --nx 48 --ny 96 --nz 128 --nl 4 --nm 8 --steps 12 \
      --out-prefix docs/_static/nonlinear_sharding_strong_scaling_gpu_xlarge
 
+   # Equivalent office two-GPU profile preset with JAX traces enabled.
+   python tools/profile_nonlinear_sharding_sweep.py --office-gpu-xlarge
+
    python tools/plot_nonlinear_sharding_strong_scaling.py
+
+   python tools/generate_nonlinear_sharding_production_gate.py
 
 .. image:: _static/nonlinear_sharding_strong_scaling_large.png
    :alt: SPECTRAX-GK large nonlinear whole-state sharding strong-scaling artifact
@@ -950,6 +955,12 @@ whole-state nonlinear sharding path is useful as a correctness/profiler gate,
 but production parallelization should prioritize independent ``k_y`` scans,
 UQ/ensemble batching, and a redesigned communication-aware nonlinear domain
 decomposition before any nonlinear multi-GPU speedup claim is made.
+The production gate fails closed as ``diagnostic_only`` unless the refreshed
+CPU and GPU rows both pass serial identity, use active state sharding, and meet
+the configured speedup and parallel-efficiency thresholds. The tracked gate
+artifact is ``docs/_static/nonlinear_sharding_production_speedup_gate.json``;
+in the current artifact set the CPU two-device row passes, but the GPU row
+blocks production speedup claims.
 
 This claim boundary is mirrored in :doc:`parallelization` and
 :doc:`release_scope`. If a future optimization changes the conclusion, refresh

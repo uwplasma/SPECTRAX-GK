@@ -61,6 +61,26 @@ def _calibration_report(
     return report
 
 
+def _optimized_equilibrium_audit(*, passed: bool = True) -> dict[str, Any]:
+    return {
+        "kind": "production_nonlinear_turbulent_flux_optimization_guard",
+        "claim_level": "production_nonlinear_optimization_promoted_by_replicated_transport_windows",
+        "passed": True,
+        "production_nonlinear_optimization_promoted": passed,
+        "promotion_gate": {"passed": passed, "blockers": [] if passed else ["audit"]},
+        "summary": {
+            "qualifying_optimized_equilibrium_ensembles": 1 if passed else 0,
+        },
+        "optimized_equilibrium_artifacts": [
+            {
+                "path": "optimized_equilibrium_post_optimization_gate.json",
+                "optimized_equilibrium_marker": True,
+                "qualifies_for_production_optimization": passed,
+            }
+        ],
+    }
+
+
 def _write_json(path: Path, payload: object) -> Path:
     path.write_text(json.dumps(payload), encoding="utf-8")
     return path
@@ -173,6 +193,63 @@ def test_model_selection_path_wrapper_requires_path_payloads(tmp_path: Path) -> 
             candidate_uncertainty=candidate,
             calibration_reports=[_calibration_report()],  # type: ignore[list-item]
         )
+
+    with pytest.raises(
+        TypeError, match=r"optimized_equilibrium_nonlinear_audits\[0\] must be a path"
+    ):
+        build_quasilinear_model_selection_status_from_paths(
+            dataset_sufficiency=dataset,
+            candidate_uncertainty=candidate,
+            calibration_reports=[calibration],
+            optimized_equilibrium_nonlinear_audits=[
+                _optimized_equilibrium_audit()
+            ],  # type: ignore[list-item]
+        )
+
+
+def test_model_selection_path_wrapper_accepts_optimized_equilibrium_audit(
+    tmp_path: Path,
+) -> None:
+    dataset = _write_json(tmp_path / "dataset.json", _dataset_payload())
+    candidate = _write_json(tmp_path / "candidate.json", _candidate_payload())
+    calibration = _write_json(tmp_path / "calibration.json", _calibration_report())
+    audit = _write_json(
+        tmp_path / "optimized_audit.json", _optimized_equilibrium_audit()
+    )
+
+    status = build_quasilinear_model_selection_status_from_paths(
+        dataset_sufficiency=dataset,
+        candidate_uncertainty=candidate,
+        calibration_reports=[calibration],
+        optimized_equilibrium_nonlinear_audits=[audit],
+        require_optimized_equilibrium_nonlinear_audit=True,
+    )
+
+    assert status["passed"] is True
+    assert status["optimized_equilibrium_nonlinear_audits"][0]["artifact"] == str(
+        audit
+    )
+
+
+def test_model_selection_fails_closed_for_supplied_failed_optimized_audit() -> None:
+    status = build_quasilinear_model_selection_status(
+        dataset_sufficiency=_dataset_payload(),
+        candidate_uncertainty=_candidate_payload(),
+        calibration_reports=[_calibration_report()],
+        optimized_equilibrium_nonlinear_audits=[
+            _optimized_equilibrium_audit(passed=False)
+        ],
+    )
+
+    assert status["passed"] is False
+    assert (
+        "optimized_equilibrium_nonlinear_audit_qualified"
+        in status["promotion_gate"]["blockers"]
+    )
+    assert (
+        "optimized_equilibrium_audit_not_passed"
+        in status["optimized_equilibrium_nonlinear_audits"][0]["blockers"]
+    )
 
 
 def test_model_selection_helpers_are_exported_at_package_top_level() -> None:

@@ -41,6 +41,10 @@ GATE_LABELS = {
     "required_candidate_beats_training_mean_null": "beats\nnull",
     "required_candidate_beats_linear_weight": "beats\nlinear",
     "absolute_flux_not_promoted": "absolute flux\nnot promoted",
+    "calibration_reports_have_holdout_metrics": "holdout\nmetrics",
+    "optimized_equilibrium_nonlinear_audit_present": "optimized NL\naudit present",
+    "optimized_equilibrium_nonlinear_audit_qualified": "optimized NL\naudit passes",
+    "optimized_equilibrium_nonlinear_audit_scope_limited": "optimized NL\nscope limited",
 }
 
 
@@ -206,6 +210,22 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Train/holdout calibration report. Defaults to tracked QL reports.",
     )
+    parser.add_argument(
+        "--optimized-equilibrium-nonlinear-audit",
+        type=Path,
+        action="append",
+        default=[],
+        help=(
+            "Optional optimized-equilibrium nonlinear audit JSON. If supplied, "
+            "it must be scoped and qualified; it cannot promote universal "
+            "absolute-flux claims."
+        ),
+    )
+    parser.add_argument(
+        "--require-optimized-equilibrium-nonlinear-audit",
+        action="store_true",
+        help="Fail closed unless a qualified optimized-equilibrium nonlinear audit is supplied.",
+    )
     parser.add_argument("--required-candidate", default=DEFAULT_REQUIRED_CANDIDATE)
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     parser.add_argument("--title", default="Quasilinear model-selection status")
@@ -225,7 +245,13 @@ def main(argv: list[str] | None = None) -> int:
         dataset_sufficiency=args.dataset,
         candidate_uncertainty=args.candidate,
         calibration_reports=reports,
+        optimized_equilibrium_nonlinear_audits=tuple(
+            args.optimized_equilibrium_nonlinear_audit
+        ),
         required_candidate=args.required_candidate,
+        require_optimized_equilibrium_nonlinear_audit=(
+            args.require_optimized_equilibrium_nonlinear_audit
+        ),
     )
     paths = write_model_selection_status_artifacts(
         status,

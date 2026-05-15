@@ -67,6 +67,33 @@ def _write_inputs(tmp_path: Path) -> tuple[Path, Path, Path]:
     return dataset, candidate, calibration
 
 
+def _write_optimized_audit(tmp_path: Path) -> Path:
+    audit = tmp_path / "optimized_audit.json"
+    audit.write_text(
+        json.dumps(
+            {
+                "kind": "production_nonlinear_turbulent_flux_optimization_guard",
+                "claim_level": "production_nonlinear_optimization_promoted_by_replicated_transport_windows",
+                "passed": True,
+                "production_nonlinear_optimization_promoted": True,
+                "promotion_gate": {"passed": True, "blockers": []},
+                "summary": {
+                    "qualifying_optimized_equilibrium_ensembles": 1,
+                },
+                "optimized_equilibrium_artifacts": [
+                    {
+                        "path": "optimized_equilibrium_gate.json",
+                        "optimized_equilibrium_marker": True,
+                        "qualifies_for_production_optimization": True,
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    return audit
+
+
 def test_model_selection_status_tool_writes_replayable_artifacts(
     tmp_path: Path,
 ) -> None:
@@ -107,4 +134,45 @@ def test_model_selection_status_tool_writes_replayable_artifacts(
         title="status",
         dpi=80,
         write_pdf=False,
+    )
+
+
+def test_model_selection_status_tool_can_require_optimized_equilibrium_audit(
+    tmp_path: Path,
+) -> None:
+    mod = _load_tool_module()
+    dataset, candidate, calibration = _write_inputs(tmp_path)
+    audit = _write_optimized_audit(tmp_path)
+    out = tmp_path / "status.png"
+
+    assert (
+        mod.main(
+            [
+                "--dataset",
+                str(dataset),
+                "--candidate",
+                str(candidate),
+                "--calibration-report",
+                str(calibration),
+                "--optimized-equilibrium-nonlinear-audit",
+                str(audit),
+                "--require-optimized-equilibrium-nonlinear-audit",
+                "--out",
+                str(out),
+                "--no-pdf",
+                "--dpi",
+                "80",
+            ]
+        )
+        == 0
+    )
+
+    payload = json.loads(out.with_suffix(".json").read_text(encoding="utf-8"))
+    assert (
+        payload["absolute_flux_promotion"]["honest_status"]
+        == "scoped_candidate_with_audited_optimized_equilibrium_evidence_not_universal_absolute_flux"
+    )
+    assert (
+        payload["absolute_flux_promotion"]["universal_absolute_flux_promoted"]
+        is False
     )
