@@ -463,7 +463,7 @@
         "passed": true
       },
       {
-        "detail": "claim_level=scoped_candidate_model_selection_not_runtime_absolute_flux passed=True",
+        "detail": "claim_level=scoped_candidate_model_selection_with_optimized_equilibrium_nonlinear_audit_not_universal_absolute_flux passed=True",
         "metric": "ql_figure_sidecar_claim_scoped:docs/_static/quasilinear_model_selection_status",
         "passed": true
       },
@@ -632,7 +632,7 @@
       "runtime_absolute_overclaim_lines": []
     },
     {
-      "claim_level": "scoped_candidate_model_selection_not_runtime_absolute_flux",
+      "claim_level": "scoped_candidate_model_selection_with_optimized_equilibrium_nonlinear_audit_not_universal_absolute_flux",
       "claim_scoped": true,
       "failed_baseline_detail": "accepted=['spectral_envelope_ridge'] absolute_flux_not_promoted=True",
       "failed_baselines_explicit": true,
