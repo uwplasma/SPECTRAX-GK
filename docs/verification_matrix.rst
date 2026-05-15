@@ -146,7 +146,7 @@ The current materialized gate reports are indexed by
 ``docs/_static/validation_gate_index.json`` and
 ``docs/_static/validation_gate_index.png``. Exploratory diagnostics can set
 ``gate_index_include=false`` so they remain documented but do not count as
-release blockers. The current release-gate index has ``10/10`` tracked reports
+release blockers. The current release-gate index has ``16/16`` tracked reports
 passing.
 
 Stellarator Linear
@@ -160,11 +160,21 @@ Stellarator Linear
      - Reference
      - Status
      - Baseline gate
-   * - W7-X ITG/TEM flux tube
+   * - W7-X ITG flux tube
      - ``gamma(k_y)``, ``omega(k_y)``
      - stella/GENE benchmark paper + GX
      - Closed
-     - ``rtol <= 1e-2`` on closed branches
+     - ``rtol <= 1e-2`` on closed adiabatic-electron ITG branches. This row
+       does not close W7-X TEM or kinetic-electron validation; those remain
+       blocked by the explicit TEM branch audit below.
+   * - W7-X TEM / kinetic-electron extension
+     - ``gamma(k_y)``, ``omega(k_y)``, multi-alpha/multi-surface windows
+     - stella/GENE benchmark paper + W7-X TEM literature
+     - Open
+     - ``docs/_static/tem_branch_parity_audit.json`` is outside the publication
+       parity envelope and ``docs/_static/w7x_tem_extension_status.json`` keeps
+       multi-alpha, multi-surface, and kinetic-electron nonlinear windows open.
+       Do not use the closed W7-X ITG row as a TEM claim.
    * - W7-X zonal flow
      - residual level, damping envelope
      - stella/GENE benchmark paper + zonal-flow literature
@@ -301,6 +311,60 @@ with ``gate_index_include=false``.
   an exploratory ``t=5`` startup/resolved-spectrum audit and excluded from the
   release-gate index.
 
+Quasilinear Diagnostics and Model Selection
+-------------------------------------------
+
+The quasilinear verification surface is deliberately split between validated
+linear-state diagnostics, rejected absolute-flux calibration attempts, and one
+scoped model-selection result. A closed model-selection status must not be read
+as a promoted runtime predictor.
+
+.. list-table::
+   :header-rows: 1
+
+   * - Lane
+     - Observable
+     - Reference or artifact
+     - Status
+     - Baseline gate
+   * - Electrostatic quasilinear weights and spectra
+     - heat/particle weights, growth/frequency spectra, and channel metadata
+     - ``docs/_static/quasilinear_*_spectrum.*`` and
+       ``docs/_static/quasilinear_validated_calibration_inputs.json``
+     - Closed as diagnostics
+     - electrostatic channel validation and reproducible spectrum generation;
+       this is not calibrated absolute-flux prediction
+   * - One-constant and simple saturation-rule absolute-flux models
+     - train/holdout heat-flux prediction error
+     - ``docs/_static/quasilinear_stellarator_train_holdout_report.json`` and
+       ``docs/_static/quasilinear_saturation_rule_sweep.json``
+     - Rejected / unpromoted
+     - current one-constant and simple-rule reports fail the held-out
+       absolute-flux gate and must not be exposed as a user-facing saturation
+       law
+   * - ``spectral_envelope_ridge`` model selection
+     - leave-one-geometry-out error and interval coverage
+     - ``docs/_static/quasilinear_candidate_uncertainty.json`` and
+       ``docs/_static/quasilinear_model_selection_status.json``
+     - Closed as scoped model-selection result
+     - the accepted candidate is a manuscript model-selection result only; the
+       status gate does not promote a runtime/TOML absolute-flux predictor,
+       universal nonlinear transport model, or shipped saturation option
+   * - Future absolute-flux promotion
+     - calibrated heat-flux prediction on nonlinear holdouts
+     - future late-window convergence metadata and promotion JSON
+     - Open
+     - every holdout needs finite passed post-transient convergence metadata:
+       transient cutoff, running-mean drift, block/bootstrap uncertainty,
+       finite sample count, and source provenance
+
+These gates do not change the deferred W7-X lanes: W7-X zonal long-window
+recurrence/damping and W7-X TEM / kinetic-electron validation remain outside
+the current manuscript/release scope. They also do not promote a universal
+absolute-flux model. Production nonlinear optimization is promoted only for the
+selected optimized-equilibrium audit now attached to the guard; nonlinear
+turbulence gradients and broad multi-surface claims remain separate gates.
+
 Autodiff Validation
 -------------------
 
@@ -369,6 +433,40 @@ gate.
      - implicit AD/finite-difference mismatch remains within the tracked gate;
        current combined maximum relative mismatch is about ``2.7e-2`` after
        adding reduced nonlinear-window estimator rows
+   * - VMEC/Boozer aggregate optimization promotion
+     - aggregate objective decrease plus surface/field-line generalization
+     - ``docs/_static/vmec_boozer_aggregate_objective_gate.json``,
+       ``docs/_static/vmec_boozer_multi_point_objective_gate.json``,
+       ``docs/_static/vmec_boozer_reduced_portfolio_guard.json``,
+       ``docs/_static/vmec_boozer_aggregate_line_search_gate.json``,
+       ``docs/_static/vmec_boozer_aggregate_line_search_comparison.json``,
+       ``docs/_static/vmec_boozer_aggregate_alpha_holdout_gate.json``,
+       ``docs/_static/vmec_boozer_aggregate_surface_holdout_gate.json``,
+       ``docs/_static/vmec_boozer_second_equilibrium_aggregate_gate.json``,
+       ``docs/_static/vmec_boozer_aggregate_holdout_promotion_gate.json``, and
+       ``tools/check_vmec_boozer_aggregate_holdout_gate.py``
+     - Open for production transport claims
+     - aggregate finite-difference and line-search artifacts must pass on the
+       same training sample set, then an independent passed production-scope
+       validation artifact must cover a held-out ``surface_index`` or field-line
+       ``alpha``. Production nonlinear optimization promotion additionally
+       requires a passed replicated nonlinear-window ensemble artifact, so a
+       single converged window cannot by itself support an optimized-equilibrium
+       heat-flux claim.
+       The multi-alpha finite-difference artifact passes and the growth-vs-QL
+       comparison shows objective-dependent descent directions. The
+       reduced-portfolio guard now verifies that the multi-alpha rows have real
+       VMEC/Boozer provenance, multi-alpha/multi-``k_y`` metadata, finite
+       aggregate FD fields, finite growth/QL AD/FD diagnostics, and no
+       production nonlinear claim. The alpha-heldout and surface-heldout
+       splits pass as reduced generalization
+       evidence, and Li383 passes as a second-equilibrium aggregate
+       finite-difference/line-search check. The aggregate artifacts remain
+       reduced optimizer-plumbing evidence. The separate production nonlinear
+       optimization guard now includes long-window D-shaped/circular holdouts
+       and the selected optimized-equilibrium seed/timestep audit; broader
+       nonlinear turbulence gradients and multi-surface transport optimization
+       are still separate gates.
    * - Reduced stellarator ITG optimization and UQ
      - objective reduction history, AD/finite-difference derivative parity,
        local covariance, and projected uncertainty
@@ -383,20 +481,23 @@ gate.
      - Exploratory plumbing gate
      - finite-output and finite-difference-response checks pass, but
        ``transport_average_gate = false``
-   * - Production nonlinear stellarator optimization
+   * - Selected optimized-equilibrium nonlinear transport audit
      - optimized-equilibrium post-transient heat-flux average with uncertainty
        and nonlinear audit bars
-     - future long-window nonlinear artifacts
-     - Open
-     - requires transient cutoff, cumulative running-mean stability,
-       independent late-block stability, grid/timestep/seed checks, and
-       nonlinear audits of optimized equilibria
+     - ``docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json``
+       and ``docs/_static/production_nonlinear_optimization_guard.json``
+     - Closed for selected optimized-equilibrium replicated transport audit
+     - the selected QA optimized equilibrium passes the ``t=[350,700]`` seed
+       and timestep ensemble gate; nonlinear turbulence-gradient and broad
+       multi-surface/multi-field-line optimization claims remain open
 
 Use this section as the verification boundary for README figures: the
 VMEC/Boozer parity, gradient-holdout, and reduced optimization/UQ panels can be
 cited as reduced objective evidence. Startup-window finite-difference panels
 and reduced nonlinear-window estimators must not be cited as saturated
-transport-gradient or optimized-equilibrium nonlinear heat-flux validation.
+transport-gradient validation. The optimized-equilibrium replicate panel may be
+cited as a post-transient transport-window audit for the selected candidate,
+not as a universal quasilinear absolute-flux model.
 
 Parallelization Validation
 --------------------------

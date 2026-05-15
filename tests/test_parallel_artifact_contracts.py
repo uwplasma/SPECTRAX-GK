@@ -134,9 +134,13 @@ def test_parallelization_completion_status_scopes_production_and_diagnostic_lane
     lanes = {lane["lane"]: lane for lane in payload["lanes"]}
     assert lanes["independent_ky_scan"]["status"] == "production_closed"
     assert lanes["quasilinear_uq_ensemble"]["status"] == "production_closed"
+    assert lanes["independent_ky_scan"]["source_contract"]["claim_separation_passed"] is True
+    assert lanes["independent_ky_scan"]["source_contract"]["input_backends"] == ["cpu", "gpu"]
+    assert lanes["quasilinear_uq_ensemble"]["source_contract"]["claim_separation_passed"] is True
     assert lanes["independent_ky_scan"]["best_speedups"]["cpu"] >= 5.0
     assert lanes["independent_ky_scan"]["best_speedups"]["gpu"] >= 1.5
     assert lanes["whole_state_nonlinear_sharding"]["status"] == "diagnostic_closed_not_production"
+    assert lanes["whole_state_nonlinear_sharding"]["source_contract"]["claim_separation_passed"] is True
     assert lanes["fft_axis_domain"]["status"] == "diagnostic_identity_closed"
 
 
@@ -150,6 +154,20 @@ def test_nonlinear_domain_parallel_identity_gate_is_scoped_and_fail_closed() -> 
     assert payload["gated_state_matches_decomposed"] is True
     assert payload["gate"]["max_abs_error"] <= payload["gate"]["atol"]
     assert payload["gate"]["max_rel_error"] <= payload["gate"]["rtol"]
+    assert payload["transport_window"]["gate"]["identity_passed"] is True
+    assert payload["transport_window"]["gate"]["decomposed_path_enabled"] is True
+    assert payload["transport_window"]["gate"]["max_abs_state_error"] <= payload["gate"]["atol"]
+    assert payload["transport_window"]["gate"]["mass_trace_max_abs_error"] <= payload["gate"]["atol"]
+    assert payload["transport_window"]["gate"]["free_energy_trace_max_abs_error"] <= payload["gate"]["atol"]
+    assert payload["transport_window"]["gate"]["flux_proxy_trace_max_abs_error"] <= payload["gate"]["atol"]
+    assert {
+        row["metric"] for row in payload["transport_window"]["metrics"]
+    } == {
+        "mass_trace",
+        "free_energy_trace",
+        "boundary_flux_proxy_trace",
+    }
+    assert all(row["identity_passed"] is True for row in payload["transport_window"]["metrics"])
     assert "no production routing or speedup claim" in payload["claim_scope"]
     assert (STATIC / "nonlinear_domain_parallel_identity_gate.png").exists()
 
@@ -423,6 +441,9 @@ def test_nonlinear_whole_state_scaling_artifact_is_identity_only_not_speedup_cla
 
     assert payload["kind"] == "nonlinear_sharding_strong_scaling_combined"
     assert payload["identity_passed"] is True
+    assert payload["speedup_passed"] is False
+    assert payload["status"] == "diagnostic_identity_only"
+    assert payload["speedup_blockers"]
     assert "not a production speedup claim" in payload["claim_scope"]
     assert {row["backend"] for row in payload["rows"]} == {"cpu", "gpu"}
     for row in payload["rows"]:

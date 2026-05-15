@@ -1,10 +1,10 @@
 {
-  "claim_scope": "large CPU/GPU nonlinear whole-state sharding artifact. It is a numerical-identity and profiler-direction result; it is not a production speedup claim.",
+  "claim_scope": "large CPU/GPU nonlinear whole-state sharding artifact. It is a numerical-identity and profiler-direction result; it is not a production speedup claim unless speedup_passed is true and the separate production gate passes.",
   "identity_passed": true,
   "inputs": [
     {
       "backend": "cpu",
-      "claim_scope": "large fixed-step nonlinear state-sharding strong-scaling artifact with numerical identity gates; use as profiler evidence, not as a broad production speedup claim",
+      "claim_scope": "large fixed-step nonlinear state-sharding strong-scaling artifact with numerical identity gates; speedup is a separate fail-closed field, and this artifact is profiler evidence unless speedup_passed is true, not as a broad production speedup claim",
       "grid": {
         "Nl": 4,
         "Nm": 8,
@@ -13,11 +13,14 @@
         "Nz": 96
       },
       "identity_passed": true,
-      "path": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/nonlinear_sharding_strong_scaling_cpu_large.json"
+      "path": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/nonlinear_sharding_strong_scaling_cpu_large.json",
+      "speedup_blockers": [],
+      "speedup_passed": true,
+      "status": "identity_and_speedup"
     },
     {
       "backend": "gpu",
-      "claim_scope": "large fixed-step nonlinear state-sharding strong-scaling artifact with numerical identity gates; use as profiler evidence, not as a broad production speedup claim",
+      "claim_scope": "large fixed-step nonlinear state-sharding strong-scaling artifact with numerical identity gates; speedup is a separate fail-closed field, and this artifact is profiler evidence unless speedup_passed is true, not as a broad production speedup claim",
       "grid": {
         "Nl": 4,
         "Nm": 8,
@@ -26,7 +29,12 @@
         "Nz": 128
       },
       "identity_passed": true,
-      "path": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/nonlinear_sharding_strong_scaling_gpu_xlarge.json"
+      "path": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/nonlinear_sharding_strong_scaling_gpu_xlarge.json",
+      "speedup_blockers": [
+        "gpu_2devices_speedup_0.626_below_1"
+      ],
+      "speedup_passed": false,
+      "status": "diagnostic_identity_only"
     }
   ],
   "kind": "nonlinear_sharding_strong_scaling_combined",
@@ -181,5 +189,10 @@
       "state_sharding_active": true,
       "strong_speedup_vs_1_device": 0.6260904305040111
     }
-  ]
+  ],
+  "speedup_blockers": [
+    "gpu:gpu_2devices_speedup_0.626_below_1"
+  ],
+  "speedup_passed": false,
+  "status": "diagnostic_identity_only"
 }

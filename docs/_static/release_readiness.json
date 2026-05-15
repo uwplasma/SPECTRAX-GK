@@ -87,7 +87,7 @@
             "status": "partial"
           },
           {
-            "claim_level": "candidate_absolute_flux_model",
+            "claim_level": "scoped_candidate_model_selection_not_absolute_flux",
             "lane": "Nonlinear holdouts for quasilinear absolute-flux promotion",
             "status": "closed"
           },

@@ -283,12 +283,93 @@ copy commands for the standard two-grid external-VMEC holdout ladder, e.g.
 ``t = 150`` initial runs followed by ``t = 250`` restart continuations at
 ``48x48x32`` and ``64x64x40``. The script does not promote any data by itself;
 the resulting traces must still pass the convergence gate above before they can
-enter quasilinear calibration reports or optimization studies.
+enter quasilinear calibration reports or optimization studies. For the
+production nonlinear optimization evidence lane the same generator also accepts
+``--seed-variant`` and ``--dt-variant`` entries. Those options write explicit
+``[metadata]`` blocks and variant-specific filenames so seed and timestep
+replicate windows can be launched on the office GPUs, extracted with the same
+transport-window protocol, and checked by
+``tools/check_nonlinear_window_ensemble_readiness.py`` before any
+absolute-flux or turbulent-flux optimization wording can be considered.
+For external-VMEC replicate campaigns,
+``tools/build_external_vmec_replicate_ensemble.py`` is the reproducible
+NetCDF-to-evidence wrapper: it extracts heat-flux traces from finished
+``*.out.nc`` files, writes the transport-window summaries and convergence
+reports, runs the readiness and ensemble gates, and produces the documentation
+figure used by the manuscript ledger.
+``tools/check_production_nonlinear_optimization_guard.py`` then consumes those
+replicated long-window ensembles together with the reduced optimization and
+startup finite-difference artifacts. It is the fail-closed check that allows
+release-safe scoped wording while blocking production nonlinear turbulent-flux
+optimization promotion until optimized equilibria have replicated
+post-transient transport-window audits.
+For actual nonlinear turbulence-gradient promotion, use
+``tools/write_vmec_boundary_perturbation_inputs.py`` when the perturbation is a
+VMEC boundary coefficient. It writes the matched ``input.*`` files and records
+the exact ``vmec_jax`` commands needed to create the three real re-equilibrated
+``wout`` files. Then use
+``tools/write_nonlinear_turbulence_gradient_campaign.py`` to write the matched
+baseline/plus/minus VMEC launch ladders and replay commands. The campaign
+writer rejects missing files, duplicate resolved paths, and byte-identical VMEC
+contents unless ``--allow-identical-vmec-content`` is explicitly used for a
+plumbing-only smoke test; production evidence therefore requires real
+re-equilibrated perturbation files. Then use
+``tools/build_nonlinear_turbulence_gradient_fd_gate.py`` after the matched
+``baseline``/``plus_delta``/``minus_delta`` ensembles finish. The builder writes
+the central finite-difference gradient sidecar and checks response resolution,
+forward/backward asymmetry, subtraction conditioning, propagated uncertainty,
+and the uncertainty gates on all three replicated nonlinear windows.
+The tracked optimized-QA/ESS ``ZBS(1,0)`` example is deliberately kept as a
+fail-closed regression: the real ``vmec_jax`` re-equilibrated ``t=[450,900]``
+baseline/plus/minus ensembles pass their replicated transport-window gates and
+the central finite difference is local, but
+``gradient_uncertainty_rel = 0.768`` and therefore does not promote a
+turbulence-gradient claim. The companion ``ZBS(1,1)`` campaign gives the
+opposite near miss: uncertainty passes, but ``fd_asymmetry_rel = 0.663`` still
+fails the locality gate. A future passing artifact must satisfy both gates
+without relaxing either threshold.
+For future perturbation refreshes, keep each coefficient/amplitude in a
+distinct artifact slug such as
+``docs/_static/qa_ess_zbs10_rel5_nonlinear_gradient_zbs_1_0_central_fd_gradient_gate.*``.
+Do not promote new prose until
+``tools/check_nonlinear_turbulence_gradient_evidence.py`` reports
+``passed = true`` and the JSON sidecar sets
+``nonlinear_turbulence_gradient_gate = true``. Until then, describe the result
+as a bounded production-candidate finite-difference audit, not as a nonlinear
+turbulence-gradient claim.
+
+``tools/write_optimized_equilibrium_transport_configs.py`` is the production
+optimization companion for that final audit. Given a concrete post-optimization
+``wout*.nc`` file, it writes the ``t=250,350,450,700`` fixed-step nonlinear
+ladder on the release ``n64`` grid, two seed replicates, one timestep
+replicate, restart-copy commands, and the exact
+``tools/build_external_vmec_replicate_ensemble.py`` plus
+``tools/check_production_nonlinear_optimization_guard.py`` commands needed
+after the runs finish. This wrapper is a launch contract only: the production
+optimization claim remains blocked until the generated ``t=[350,700]`` ensemble
+actually passes finite-flux, running-window, block/SEM, replicate-spread, and
+optimized-equilibrium marker gates.
+
 ``tools/prepare_external_vmec_holdout_from_screen.py`` is the selector that
 feeds that generator. It reads the tracked linear candidate screen, skips
 excluded or already-audited cases, resolves the chosen VMEC file from the local
 ``vmec_jax`` checkout, and writes the next bounded holdout ladder plus a JSON
 selection summary. This removes another manual step from the external-VMEC
+nonlinear campaign and makes office reruns deterministic.
+
+``tools/build_external_vmec_holdout_runbook.py`` is stricter than a positive
+growth-rate sorter. It requires a configurable minimum screened growth rate
+(``gamma >= 0.02`` by default) before writing nonlinear launch commands. This
+keeps near-marginal branches in the manuscript evidence chain as linear/QI
+feasibility data without silently promoting them to expensive nonlinear
+transport holdout campaigns.
+
+``tools/build_qi_branch_refinement_gate.py`` is the focused companion for that
+near-marginal QI evidence. It checks finite low-``k_y`` branch rows, contiguous
+positive support, optional Krylov consistency, and the same nonlinear-launch
+growth threshold. A failed launch-growth subgate is a useful documented result,
+not a release failure, because it prevents QI feasibility scans from being
+misread as transport validation.
 
 ``tools/write_w7x_zonal_closure_sweep.py`` is the analogous reproducibility
 companion for the open W7-X zonal-response lane. It writes a manifest of
@@ -298,8 +379,11 @@ mixed Laguerre-Hermite, Laguerre-only, and isotropic hypercollision variants.
 The manifest includes the exact
 ``tools/generate_w7x_zonal_response_panel.py`` launch commands plus the
 companion ``tools/plot_w7x_zonal_closure_ladder.py`` command needed to refresh
-the bounded closure audit after the remote runs complete.
-nonlinear campaign and makes office reruns deterministic.
+the bounded closure audit after the remote runs complete. Each launch command
+writes a case-local ``panel.png`` and the final ladder command writes
+``w7x_zonal_closure_ladder_full.{png,json,csv}``, preventing exploratory
+office runs from overwriting the frozen documentation figure before the
+candidate passes the residual, late-envelope, and moment-tail screens.
 
 ``tools/check_quasilinear_calibration_inputs.py`` is the corresponding
 calibration-admission guard. It scans quasilinear train/holdout reports and
@@ -309,6 +393,7 @@ be documented in the docs, but they cannot silently become calibration or
 optimization data. The public CI runs this audit during the docs/packaging
 job, and the fast test suite checks the current tracked train/holdout reports
 against the same gate index.
+
 ``tools/check_quasilinear_promotion_guardrails.py`` is the higher-level
 absolute-flux promotion guard. It scans the tracked quasilinear reports plus
 the claim-scope docs, fails if a promoted report lacks train/holdout points,
@@ -458,16 +543,18 @@ control sweep, not a change to the paper normalization.
 ``tools/plot_w7x_zonal_closure_ladder.py`` makes that bounded sweep explicit
 for ``k_x rho_i=0.07`` in
 ``docs/_static/w7x_zonal_closure_ladder_kx070.png``. The ladder separates
-paper-contract resolution changes from weak-closure and non-contract
-initializer audits. The current result is useful but not closed:
-higher moments and weak closure reduce some envelope metrics, while the
-early-window trace mismatch remains too large under the paper-facing
-normalization. The newest paper-width ``Nl=16``, ``Nm=64``,
-``nu_hyper_m=3e-3`` row reduces the final Hermite-tail fraction from
-``0.388`` to ``0.064`` relative to the no-closure high-moment probe, but the
-reference-trace mean absolute error worsens slightly from ``0.283`` to
-``0.292``; that supports a moment-tail mitigation hypothesis but not a closed
-validation claim.
+closure families one knob at a time under the paper-facing initializer and
+line-average observable. The refreshed office-GPU ladder covers baseline,
+constant Hermite, ``k_z``-weighted Hermite, mixed Laguerre-Hermite,
+Laguerre-only, and isotropic hypercollision variants at ``0.01`` and
+``0.03``. The best early-window trace error is the isotropic ``nu_hyper=0.01``
+case with mean absolute error ``0.2755`` versus baseline ``0.2861``, but its
+late-window standard-deviation ratio is ``4.25`` versus baseline ``4.10`` and
+therefore worsens the recurrence/envelope metric. Laguerre-only and mixed
+Laguerre-Hermite closures show the same pattern: strong tail suppression with
+no simultaneous improvement of trace error and late envelope. The ladder is
+therefore a documented negative result for these bounded closure families, not
+a hidden validation setting.
 ``tools/plot_w7x_zonal_state_convention_audit.py`` closes the state-level
 initializer and observable convention layer for the same paper-facing setup.
 At ``k_x rho_i=0.07``, ``Nl=16``, and ``Nm=64``, the recovered Gaussian
@@ -563,11 +650,11 @@ audits, not validation defaults.
 .. figure:: _static/w7x_zonal_closure_ladder_kx070.png
    :alt: W7-X zonal-response closure ladder at kx rho_i 0.07
 
-   Bounded closure ladder for ``k_x rho_i=0.07``. Paper-contract resolution
-   changes, weak velocity-space closure, and non-contract initializer probes
-   are shown separately. The non-contract width-four high-resolution probe
-   improves the short early window, but it is not a validation result because
-   the benchmark source specifies the width-one Gaussian potential initializer.
+   Bounded closure ladder for ``k_x rho_i=0.07``. Constant Hermite,
+   ``k_z``-weighted Hermite, mixed Laguerre-Hermite, Laguerre-only, and
+   isotropic hypercollision families are compared with the no-closure baseline.
+   Some variants reduce mean trace error or velocity-space tails, but none
+   improves the trace and late-envelope recurrence metrics together.
 
 .. figure:: _static/w7x_zonal_state_convention_audit.png
    :alt: W7-X zonal-response state convention audit at kx rho_i 0.07

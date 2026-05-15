@@ -85,12 +85,128 @@ _SOLVER_OBJECTIVE_ALIASES = {
     "frequency": "omega",
     "quasilinear_flux": "mixing_length_heat_flux_proxy",
 }
+_VMEC_BOOZER_GEOMETRY_OPTION_KEYS = {
+    "surface_index",
+    "torflux",
+    "alpha",
+    "ntheta",
+    "mboz",
+    "nboz",
+    "jit",
+    "surface_stencil_width",
+    "reference_length",
+    "reference_b",
+    "source_model",
+    "validate_finite",
+}
+_SOLVER_OBJECTIVE_OPTION_KEYS = {
+    "selected_ky_index",
+    "n_laguerre",
+    "n_hermite",
+    "nx",
+    "ny",
+    "lx",
+    "ly",
+    "params_linear",
+    "terms",
+}
 
 
 def _report_float(report: dict[str, object], key: str) -> float:
     """Read a numeric finite-difference report field with mypy-safe casting."""
 
     return float(cast(Any, report[key]))
+
+
+def _split_vmec_boozer_objective_kwargs(kwargs: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
+    unknown = set(kwargs) - _VMEC_BOOZER_GEOMETRY_OPTION_KEYS - _SOLVER_OBJECTIVE_OPTION_KEYS
+    if unknown:
+        raise TypeError(f"unknown VMEC/Boozer objective options: {sorted(unknown)!r}")
+    geometry_kwargs = {
+        key: kwargs[key]
+        for key in _VMEC_BOOZER_GEOMETRY_OPTION_KEYS
+        if key in kwargs
+    }
+    objective_kwargs = {
+        key: kwargs[key]
+        for key in _SOLVER_OBJECTIVE_OPTION_KEYS
+        if key in kwargs
+    }
+    return geometry_kwargs, objective_kwargs
+
+
+def _surface_index_tuple(value: int | None | tuple[int | None, ...] | list[int | None]) -> tuple[int | None, ...]:
+    if value is None:
+        return (None,)
+    if isinstance(value, int):
+        return (int(value),)
+    result = tuple(None if item is None else int(item) for item in value)
+    if not result:
+        raise ValueError("surface_indices must contain at least one entry")
+    return result
+
+
+def _int_tuple(value: int | tuple[int, ...] | list[int], *, name: str) -> tuple[int, ...]:
+    result: tuple[int, ...]
+    if isinstance(value, int):
+        result = (int(value),)
+    else:
+        result = tuple(int(item) for item in value)
+    if not result:
+        raise ValueError(f"{name} must contain at least one entry")
+    return result
+
+
+def _float_tuple(value: float | tuple[float, ...] | list[float], *, name: str) -> tuple[float, ...]:
+    result: tuple[float, ...]
+    if isinstance(value, (float, int)):
+        result = (float(value),)
+    else:
+        result = tuple(float(item) for item in value)
+    if not result:
+        raise ValueError(f"{name} must contain at least one entry")
+    if not np.all(np.isfinite(np.asarray(result, dtype=float))):
+        raise ValueError(f"{name} must be finite")
+    return result
+
+
+def _aggregate_weights(weights: tuple[float, ...] | list[float] | np.ndarray | None, n_samples: int) -> np.ndarray:
+    if n_samples < 1:
+        raise ValueError("n_samples must be positive")
+    if weights is None:
+        return np.full(n_samples, 1.0 / float(n_samples), dtype=float)
+    array = np.asarray(weights, dtype=float).reshape(-1)
+    if int(array.size) != int(n_samples):
+        raise ValueError("weights must have one entry per aggregate sample")
+    if not np.all(np.isfinite(array)):
+        raise ValueError("weights must be finite")
+    total = float(np.sum(array))
+    if total <= 0.0:
+        raise ValueError("weights must have positive sum")
+    return array / total
+
+
+def _aggregate_sample_metadata(
+    surface_indices: tuple[int | None, ...],
+    alphas: tuple[float, ...],
+    selected_ky_indices: tuple[int, ...],
+    weights: np.ndarray,
+) -> list[dict[str, object]]:
+    rows: list[dict[str, object]] = []
+    weight_index = 0
+    for surface_index in surface_indices:
+        for alpha in alphas:
+            for selected_ky_index in selected_ky_indices:
+                rows.append(
+                    {
+                        "surface_index": None if surface_index is None else int(surface_index),
+                        "alpha": float(alpha),
+                        "selected_ky_index": int(selected_ky_index),
+                        "weight": float(weights[weight_index]),
+                    }
+                )
+                weight_index += 1
+    return rows
 
 
 def solver_scalar_objective_from_vector(
@@ -248,36 +364,7 @@ def vmec_boozer_solver_objective_vector_from_state(  # pragma: no cover
     expensive backend work starts.
     """
 
-    geometry_keys = {
-        "surface_index",
-        "torflux",
-        "alpha",
-        "ntheta",
-        "mboz",
-        "nboz",
-        "jit",
-        "surface_stencil_width",
-        "reference_length",
-        "reference_b",
-        "source_model",
-        "validate_finite",
-    }
-    objective_keys = {
-        "selected_ky_index",
-        "n_laguerre",
-        "n_hermite",
-        "nx",
-        "ny",
-        "lx",
-        "ly",
-        "params_linear",
-        "terms",
-    }
-    unknown = set(kwargs) - geometry_keys - objective_keys
-    if unknown:
-        raise TypeError(f"unknown VMEC/Boozer objective options: {sorted(unknown)!r}")
-    geometry_kwargs = {key: kwargs[key] for key in geometry_keys if key in kwargs}
-    objective_kwargs = {key: kwargs[key] for key in objective_keys if key in kwargs}
+    geometry_kwargs, objective_kwargs = _split_vmec_boozer_objective_kwargs(kwargs)
     geom = flux_tube_geometry_from_vmec_boozer_state(
         state,
         static,
@@ -286,6 +373,98 @@ def vmec_boozer_solver_objective_vector_from_state(  # pragma: no cover
         **geometry_kwargs,
     )
     return solver_objective_vector_from_geometry(geom, **objective_kwargs)
+
+
+def vmec_boozer_solver_objective_table_from_state(  # pragma: no cover
+    state: Any,
+    static: Any,
+    indata: Any,
+    wout: Any,
+    *,
+    surface_indices: int | None | tuple[int | None, ...] | list[int | None] = (None,),
+    alphas: float | tuple[float, ...] | list[float] = (0.0,),
+    selected_ky_indices: int | tuple[int, ...] | list[int] = (1,),
+    **kwargs: Any,
+) -> jnp.ndarray:
+    """Evaluate solver objectives over a surface/field-line/``k_y`` table.
+
+    The full table is returned so optimization drivers can audit which
+    surface, field line, or ``k_y`` point controls an aggregate objective.
+    """
+
+    mutable_kwargs = dict(kwargs)
+    if "selected_ky_index" in mutable_kwargs:
+        if selected_ky_indices != (1,):
+            raise TypeError("use selected_ky_indices, not both selected_ky_index and selected_ky_indices")
+        selected_ky_indices = int(mutable_kwargs.pop("selected_ky_index"))
+    geometry_kwargs, objective_kwargs = _split_vmec_boozer_objective_kwargs(mutable_kwargs)
+    surfaces = _surface_index_tuple(surface_indices)
+    alpha_values = _float_tuple(alphas, name="alphas")
+    ky_indices = _int_tuple(selected_ky_indices, name="selected_ky_indices")
+
+    rows: list[jnp.ndarray] = []
+    for surface_index in surfaces:
+        for alpha in alpha_values:
+            geom_kwargs = dict(geometry_kwargs)
+            if surface_index is not None:
+                geom_kwargs["surface_index"] = surface_index
+            geom_kwargs["alpha"] = alpha
+            geom = flux_tube_geometry_from_vmec_boozer_state(
+                state,
+                static,
+                indata,
+                wout,
+                **geom_kwargs,
+            )
+            for selected_ky_index in ky_indices:
+                obj_kwargs = dict(objective_kwargs)
+                obj_kwargs["selected_ky_index"] = selected_ky_index
+                rows.append(solver_objective_vector_from_geometry(geom, **obj_kwargs))
+    if not rows:
+        raise RuntimeError("VMEC/Boozer objective table produced no samples")
+    return jnp.stack(rows)
+
+
+def vmec_boozer_aggregate_scalar_objective_from_state(  # pragma: no cover
+    state: Any,
+    static: Any,
+    indata: Any,
+    wout: Any,
+    *,
+    objective: SolverScalarObjective = "growth",
+    reduction: Literal["mean", "weighted_mean", "max"] = "mean",
+    weights: tuple[float, ...] | list[float] | np.ndarray | None = None,
+    surface_indices: int | None | tuple[int | None, ...] | list[int | None] = (None,),
+    alphas: float | tuple[float, ...] | list[float] = (0.0,),
+    selected_ky_indices: int | tuple[int, ...] | list[int] = (1,),
+    **kwargs: Any,
+) -> jnp.ndarray:
+    """Reduce a VMEC/Boozer multi-point objective table to one scalar.
+
+    ``mean`` and ``weighted_mean`` are smooth for fixed branch choices. ``max``
+    is a conservative worst-case diagnostic and needs active-set diagnostics
+    before it is promoted for gradient-based optimization.
+    """
+
+    table = vmec_boozer_solver_objective_table_from_state(
+        state,
+        static,
+        indata,
+        wout,
+        surface_indices=surface_indices,
+        alphas=alphas,
+        selected_ky_indices=selected_ky_indices,
+        **kwargs,
+    )
+    values = jnp.asarray([solver_scalar_objective_from_vector(row, objective) for row in table])
+    if str(reduction) == "mean":
+        return jnp.mean(values)
+    if str(reduction) == "weighted_mean":
+        normalized = _aggregate_weights(weights, int(values.size))
+        return jnp.sum(values * jnp.asarray(normalized, dtype=values.dtype))
+    if str(reduction) == "max":
+        return jnp.max(values)
+    raise ValueError("reduction must be one of 'mean', 'weighted_mean', or 'max'")
 
 
 def vmec_boozer_scalar_objective_from_state(  # pragma: no cover
@@ -475,6 +654,458 @@ def vmec_boozer_scalar_objective_finite_difference_report(  # pragma: no cover
             "Use this finite-difference path to seed real VMEC/Boozer optimizer "
             "drivers, then promote growth objectives with implicit AD/FD gates and "
             "quasilinear objectives with branch-continuity plus finite-difference/SPSA audits."
+        ),
+    }
+
+
+def vmec_boozer_aggregate_scalar_objective_finite_difference_report(  # pragma: no cover
+    *,
+    case_name: str = "nfp4_QH_warm_start",
+    objective: SolverScalarObjective = "growth",
+    reduction: Literal["mean", "weighted_mean", "max"] = "mean",
+    weights: tuple[float, ...] | list[float] | np.ndarray | None = None,
+    surface_indices: int | None | tuple[int | None, ...] | list[int | None] = (None,),
+    alphas: float | tuple[float, ...] | list[float] = (0.0,),
+    selected_ky_indices: int | tuple[int, ...] | list[int] = (1,),
+    radial_index: int | None = None,
+    mode_index: int = 1,
+    base_delta: float = 0.0,
+    perturbation_step: float = 1.0e-7,
+    response_atol: float = 0.0,
+    max_curvature_ratio: float = 5.0,
+    **kwargs: Any,
+) -> dict[str, object]:
+    """Finite-difference a multi-surface/multi-``k_y`` aggregate objective."""
+
+    step = float(perturbation_step)
+    if step <= 0.0:
+        raise ValueError("perturbation_step must be positive")
+    curvature_ratio_limit = float(max_curvature_ratio)
+    if curvature_ratio_limit < 0.0:
+        raise ValueError("max_curvature_ratio must be non-negative")
+    surfaces = _surface_index_tuple(surface_indices)
+    alpha_values = _float_tuple(alphas, name="alphas")
+    ky_indices = _int_tuple(selected_ky_indices, name="selected_ky_indices")
+    n_samples = len(surfaces) * len(alpha_values) * len(ky_indices)
+    normalized_weights = _aggregate_weights(weights, n_samples)
+    samples = _aggregate_sample_metadata(surfaces, alpha_values, ky_indices, normalized_weights)
+    bundle = _load_vmec_jax_example_state_bundle(str(case_name))
+    state = bundle["state"]
+    base_Rcos = jnp.asarray(state.Rcos)
+    if base_Rcos.ndim != 2 or int(base_Rcos.shape[1]) < 2:
+        raise RuntimeError("vmec_jax state Rcos array must expose at least one non-axisymmetric mode")
+    default_radial_index = int(base_Rcos.shape[0] // 2)
+    radial_index_int = default_radial_index if radial_index is None else int(radial_index)
+    mode_index_int = int(mode_index)
+    if not (0 <= radial_index_int < int(base_Rcos.shape[0])):
+        raise ValueError("radial_index is outside the VMEC state radial grid")
+    if not (0 <= mode_index_int < int(base_Rcos.shape[1])):
+        raise ValueError("mode_index is outside the VMEC state mode table")
+    parameter_name = _vmec_boozer_state_parameter_name(
+        radial_index_int,
+        mode_index_int,
+        default_mid_surface=default_radial_index,
+    )
+
+    base_delta_float = float(base_delta)
+
+    def evaluate(delta: float) -> tuple[float, list[float], list[list[float]]]:
+        traced_state = dc_replace(
+            state,
+            Rcos=base_Rcos.at[radial_index_int, mode_index_int].add(base_delta_float + float(delta)),
+        )
+        table = vmec_boozer_solver_objective_table_from_state(
+            traced_state,
+            bundle["static"],
+            bundle["indata"],
+            bundle["wout"],
+            surface_indices=surfaces,
+            alphas=alpha_values,
+            selected_ky_indices=ky_indices,
+            **kwargs,
+        )
+        scalar_values = np.asarray(
+            [solver_scalar_objective_from_vector(row, objective) for row in table],
+            dtype=float,
+        )
+        if str(reduction) == "mean":
+            scalar = float(np.mean(scalar_values))
+        elif str(reduction) == "weighted_mean":
+            scalar = float(np.sum(scalar_values * normalized_weights))
+        elif str(reduction) == "max":
+            scalar = float(np.max(scalar_values))
+        else:
+            raise ValueError("reduction must be one of 'mean', 'weighted_mean', or 'max'")
+        return scalar, scalar_values.tolist(), np.asarray(table, dtype=float).tolist()
+
+    minus_value, minus_sample_values, minus_table = evaluate(-step)
+    base_value, base_sample_values, base_table = evaluate(0.0)
+    plus_value, plus_sample_values, plus_table = evaluate(step)
+    central_derivative = (plus_value - minus_value) / (2.0 * step)
+    response_abs = abs(plus_value - minus_value)
+    curvature_abs = abs(plus_value - 2.0 * base_value + minus_value)
+    curvature_scale = max(abs(response_abs), float(response_atol), 1.0e-300)
+    curvature_ratio = curvature_abs / curvature_scale
+    finite = bool(
+        np.all(
+            np.isfinite(
+                np.asarray(
+                    [
+                        minus_value,
+                        base_value,
+                        plus_value,
+                        central_derivative,
+                        *minus_sample_values,
+                        *base_sample_values,
+                        *plus_sample_values,
+                    ],
+                    dtype=float,
+                )
+            )
+        )
+    )
+    response_resolved = bool(response_abs >= float(response_atol))
+    finite_difference_consistent = bool(curvature_ratio <= curvature_ratio_limit)
+    return {
+        "kind": "vmec_boozer_aggregate_scalar_objective_finite_difference_report",
+        "passed": bool(finite and response_resolved and finite_difference_consistent),
+        "source_scope": "mode21_vmec_boozer_state_multi_point",
+        "claim_scope": (
+            "finite-difference sensitivity of an aggregated linear/quasilinear "
+            "VMEC/Boozer/SPECTRAX-GK objective over fixed surfaces, field lines, and ky points; "
+            "not a nonlinear transport optimization claim"
+        ),
+        "case_name": str(case_name),
+        "input_path": bundle["input_path"],
+        "wout_path": bundle["wout_path"],
+        "objective": str(objective),
+        "reduction": str(reduction),
+        "samples": samples,
+        "n_samples": n_samples,
+        "parameter_name": parameter_name,
+        "parameter_indices": {"Rcos": [radial_index_int, mode_index_int]},
+        "base_delta": base_delta_float,
+        "perturbation_step": step,
+        "response_atol": float(response_atol),
+        "max_curvature_ratio": curvature_ratio_limit,
+        "response_abs": response_abs,
+        "curvature_abs": curvature_abs,
+        "curvature_ratio": curvature_ratio,
+        "finite_values": finite,
+        "response_resolved": response_resolved,
+        "finite_difference_consistent": finite_difference_consistent,
+        "minus_value": minus_value,
+        "base_value": base_value,
+        "plus_value": plus_value,
+        "central_derivative": float(central_derivative),
+        "minus_sample_values": minus_sample_values,
+        "base_sample_values": base_sample_values,
+        "plus_sample_values": plus_sample_values,
+        "objective_names": list(SOLVER_OBJECTIVE_NAMES),
+        "minus_objective_table": minus_table,
+        "base_objective_table": base_table,
+        "plus_objective_table": plus_table,
+        "options": {key: value for key, value in kwargs.items() if isinstance(value, (str, int, float, bool, type(None)))},
+        "next_action": (
+            "Use this gate before any multi-surface or multi-ky optimizer loop. "
+            "Promote only after branch-continuity and held-out nonlinear-window evidence pass."
+        ),
+    }
+
+
+def vmec_boozer_aggregate_scalar_objective_line_search_report(  # pragma: no cover
+    *,
+    case_name: str = "nfp4_QH_warm_start",
+    objective: SolverScalarObjective = "growth",
+    reduction: Literal["mean", "weighted_mean", "max"] = "mean",
+    weights: tuple[float, ...] | list[float] | np.ndarray | None = None,
+    surface_indices: int | None | tuple[int | None, ...] | list[int | None] = (None,),
+    alphas: float | tuple[float, ...] | list[float] = (0.0,),
+    selected_ky_indices: int | tuple[int, ...] | list[int] = (1,),
+    radial_index: int | None = None,
+    mode_index: int = 1,
+    initial_delta: float = 0.0,
+    perturbation_step: float = 1.0e-7,
+    update_step: float = 1.0e-8,
+    max_steps: int = 3,
+    min_improvement: float = 0.0,
+    response_atol: float = 0.0,
+    max_curvature_ratio: float = 5.0,
+    **kwargs: Any,
+) -> dict[str, object]:
+    """Run a curvature-gated line search for an aggregate VMEC objective.
+
+    This is the first optimizer-control gate for multi-surface, field-line, or
+    ``k_y`` reduced objectives.  It keeps the update one-dimensional so each
+    step can be audited against the finite-difference curvature gate and
+    rejected when the aggregate objective does not decrease.
+    """
+
+    max_steps_int = int(max_steps)
+    if max_steps_int < 1:
+        raise ValueError("max_steps must be >= 1")
+    update_step_float = float(update_step)
+    if update_step_float <= 0.0:
+        raise ValueError("update_step must be positive")
+    min_improvement_float = float(min_improvement)
+    if min_improvement_float < 0.0:
+        raise ValueError("min_improvement must be non-negative")
+
+    delta = float(initial_delta)
+    history: list[dict[str, object]] = []
+    best_value: float | None = None
+    accepted_steps = 0
+    stop_reason = "max_steps"
+    sample_metadata: list[dict[str, object]] = []
+    n_samples = 0
+    for step_index in range(max_steps_int):
+        report = vmec_boozer_aggregate_scalar_objective_finite_difference_report(
+            case_name=case_name,
+            objective=objective,
+            reduction=reduction,
+            weights=weights,
+            surface_indices=surface_indices,
+            alphas=alphas,
+            selected_ky_indices=selected_ky_indices,
+            radial_index=radial_index,
+            mode_index=mode_index,
+            base_delta=delta,
+            perturbation_step=perturbation_step,
+            response_atol=response_atol,
+            max_curvature_ratio=max_curvature_ratio,
+            **kwargs,
+        )
+        base_value = _report_float(report, "base_value")
+        if best_value is None:
+            best_value = base_value
+        if not sample_metadata and isinstance(report.get("samples"), list):
+            sample_metadata = cast(list[dict[str, object]], report["samples"])
+        n_samples = int(cast(Any, report.get("n_samples", n_samples)))
+        derivative = _report_float(report, "central_derivative")
+        row: dict[str, object] = {
+            "step": step_index,
+            "delta": delta,
+            "objective": base_value,
+            "central_derivative": derivative,
+            "finite_difference_passed": bool(report["passed"]),
+            "curvature_ratio": _report_float(report, "curvature_ratio"),
+            "accepted": False,
+            "candidate_delta": None,
+            "candidate_objective": None,
+        }
+        if not bool(report["passed"]):
+            stop_reason = "finite_difference_gate_failed"
+            history.append(row)
+            break
+        if not np.isfinite(derivative) or abs(derivative) == 0.0:
+            stop_reason = "zero_or_nonfinite_derivative"
+            history.append(row)
+            break
+        direction = -float(np.sign(derivative))
+        candidate_delta = delta + direction * update_step_float
+        candidate = vmec_boozer_aggregate_scalar_objective_finite_difference_report(
+            case_name=case_name,
+            objective=objective,
+            reduction=reduction,
+            weights=weights,
+            surface_indices=surface_indices,
+            alphas=alphas,
+            selected_ky_indices=selected_ky_indices,
+            radial_index=radial_index,
+            mode_index=mode_index,
+            base_delta=candidate_delta,
+            perturbation_step=perturbation_step,
+            response_atol=response_atol,
+            max_curvature_ratio=max_curvature_ratio,
+            **kwargs,
+        )
+        candidate_value = _report_float(candidate, "base_value")
+        row["candidate_delta"] = candidate_delta
+        row["candidate_objective"] = candidate_value
+        candidate_ok = bool(candidate["passed"]) and (
+            candidate_value < base_value - min_improvement_float
+        )
+        if not candidate_ok:
+            stop_reason = "no_accepted_candidate"
+            history.append(row)
+            break
+        delta = candidate_delta
+        best_value = candidate_value
+        accepted_steps += 1
+        row["accepted"] = True
+        history.append(row)
+
+    initial_objective = float(cast(Any, history[0]["objective"])) if history else float("nan")
+    final_objective = float(best_value) if best_value is not None else initial_objective
+    return {
+        "kind": "vmec_boozer_aggregate_scalar_objective_line_search_report",
+        "passed": bool(accepted_steps > 0 and final_objective < initial_objective),
+        "source_scope": "mode21_vmec_boozer_state_multi_point",
+        "claim_scope": (
+            "curvature-gated one-parameter line search for an aggregated "
+            "VMEC/Boozer/SPECTRAX-GK linear/quasilinear objective; not a "
+            "multi-parameter or nonlinear turbulent transport optimization claim"
+        ),
+        "case_name": str(case_name),
+        "objective": str(objective),
+        "reduction": str(reduction),
+        "samples": sample_metadata,
+        "n_samples": n_samples,
+        "radial_index": None if radial_index is None else int(radial_index),
+        "mode_index": int(mode_index),
+        "initial_delta": float(initial_delta),
+        "final_delta": delta,
+        "perturbation_step": float(perturbation_step),
+        "update_step": update_step_float,
+        "max_steps": max_steps_int,
+        "accepted_steps": accepted_steps,
+        "stop_reason": stop_reason,
+        "initial_objective": initial_objective,
+        "final_objective": final_objective,
+        "relative_reduction": (
+            float((initial_objective - final_objective) / abs(initial_objective))
+            if np.isfinite(initial_objective) and abs(initial_objective) > 0.0
+            else None
+        ),
+        "history": history,
+        "options": {key: value for key, value in kwargs.items() if isinstance(value, (str, int, float, bool, type(None)))},
+    }
+
+
+def vmec_boozer_aggregate_line_search_holdout_report(  # pragma: no cover
+    *,
+    case_name: str = "nfp4_QH_warm_start",
+    objective: SolverScalarObjective = "growth",
+    reduction: Literal["mean", "weighted_mean", "max"] = "mean",
+    training_weights: tuple[float, ...] | list[float] | np.ndarray | None = None,
+    holdout_weights: tuple[float, ...] | list[float] | np.ndarray | None = None,
+    training_surface_indices: int | None | tuple[int | None, ...] | list[int | None] = (None,),
+    training_alphas: float | tuple[float, ...] | list[float] = (0.0,),
+    training_selected_ky_indices: int | tuple[int, ...] | list[int] = (1,),
+    holdout_surface_indices: int | None | tuple[int | None, ...] | list[int | None] = (None,),
+    holdout_alphas: float | tuple[float, ...] | list[float] = (0.0,),
+    holdout_selected_ky_indices: int | tuple[int, ...] | list[int] = (2,),
+    radial_index: int | None = None,
+    mode_index: int = 1,
+    initial_delta: float = 0.0,
+    perturbation_step: float = 1.0e-7,
+    update_step: float = 1.0e-8,
+    max_steps: int = 3,
+    min_improvement: float = 0.0,
+    min_holdout_improvement: float = 0.0,
+    response_atol: float = 0.0,
+    max_curvature_ratio: float = 5.0,
+    **kwargs: Any,
+) -> dict[str, object]:
+    """Audit a training aggregate update against held-out aggregate samples.
+
+    A report passes only when the training line search accepts at least one
+    curvature-gated update and the same final VMEC coefficient offset reduces
+    the held-out aggregate objective.  This is a reduced linear/quasilinear
+    validation split, not a nonlinear transport optimization claim.
+    """
+
+    min_holdout_improvement_float = float(min_holdout_improvement)
+    if min_holdout_improvement_float < 0.0:
+        raise ValueError("min_holdout_improvement must be non-negative")
+
+    training = vmec_boozer_aggregate_scalar_objective_line_search_report(
+        case_name=case_name,
+        objective=objective,
+        reduction=reduction,
+        weights=training_weights,
+        surface_indices=training_surface_indices,
+        alphas=training_alphas,
+        selected_ky_indices=training_selected_ky_indices,
+        radial_index=radial_index,
+        mode_index=mode_index,
+        initial_delta=initial_delta,
+        perturbation_step=perturbation_step,
+        update_step=update_step,
+        max_steps=max_steps,
+        min_improvement=min_improvement,
+        response_atol=response_atol,
+        max_curvature_ratio=max_curvature_ratio,
+        **kwargs,
+    )
+    final_delta = _report_float(training, "final_delta")
+
+    heldout_initial = vmec_boozer_aggregate_scalar_objective_finite_difference_report(
+        case_name=case_name,
+        objective=objective,
+        reduction=reduction,
+        weights=holdout_weights,
+        surface_indices=holdout_surface_indices,
+        alphas=holdout_alphas,
+        selected_ky_indices=holdout_selected_ky_indices,
+        radial_index=radial_index,
+        mode_index=mode_index,
+        base_delta=initial_delta,
+        perturbation_step=perturbation_step,
+        response_atol=response_atol,
+        max_curvature_ratio=max_curvature_ratio,
+        **kwargs,
+    )
+    heldout_final = vmec_boozer_aggregate_scalar_objective_finite_difference_report(
+        case_name=case_name,
+        objective=objective,
+        reduction=reduction,
+        weights=holdout_weights,
+        surface_indices=holdout_surface_indices,
+        alphas=holdout_alphas,
+        selected_ky_indices=holdout_selected_ky_indices,
+        radial_index=radial_index,
+        mode_index=mode_index,
+        base_delta=final_delta,
+        perturbation_step=perturbation_step,
+        response_atol=response_atol,
+        max_curvature_ratio=max_curvature_ratio,
+        **kwargs,
+    )
+    heldout_initial_value = _report_float(heldout_initial, "base_value")
+    heldout_final_value = _report_float(heldout_final, "base_value")
+    heldout_reduction = heldout_initial_value - heldout_final_value
+    heldout_passed = bool(
+        bool(heldout_initial["passed"])
+        and bool(heldout_final["passed"])
+        and heldout_reduction > min_holdout_improvement_float
+    )
+    training_passed = bool(training["passed"])
+    return {
+        "kind": "vmec_boozer_aggregate_line_search_holdout_report",
+        "passed": bool(training_passed and heldout_passed),
+        "source_scope": "mode21_vmec_boozer_state_train_holdout",
+        "claim_scope": (
+            "one-parameter aggregate reduced-objective line search with held-out "
+            "surface/field-line/ky validation; not a nonlinear turbulent transport "
+            "or broad stellarator optimization claim"
+        ),
+        "case_name": str(case_name),
+        "objective": str(objective),
+        "reduction": str(reduction),
+        "initial_delta": float(initial_delta),
+        "final_delta": final_delta,
+        "training_passed": training_passed,
+        "heldout_passed": heldout_passed,
+        "training_initial_objective": _report_float(training, "initial_objective"),
+        "training_final_objective": _report_float(training, "final_objective"),
+        "training_relative_reduction": training.get("relative_reduction"),
+        "heldout_initial_objective": heldout_initial_value,
+        "heldout_final_objective": heldout_final_value,
+        "heldout_relative_reduction": (
+            float(heldout_reduction / abs(heldout_initial_value))
+            if np.isfinite(heldout_initial_value) and abs(heldout_initial_value) > 0.0
+            else None
+        ),
+        "min_holdout_improvement": min_holdout_improvement_float,
+        "training_samples": training.get("samples", []),
+        "heldout_samples": heldout_initial.get("samples", []),
+        "training_report": training,
+        "heldout_initial_report": heldout_initial,
+        "heldout_final_report": heldout_final,
+        "next_action": (
+            "Promote only if this split gate passes on multiple held-out surfaces "
+            "or field lines and then survives nonlinear-window transport audits."
         ),
     }
 
@@ -1710,8 +2341,13 @@ __all__ = [
     "solver_scalar_objective_from_vector",
     "solver_ready_geometry_mapping",
     "tiny_differentiable_objective_gradient_report",
+    "vmec_boozer_aggregate_line_search_holdout_report",
+    "vmec_boozer_aggregate_scalar_objective_finite_difference_report",
+    "vmec_boozer_aggregate_scalar_objective_from_state",
+    "vmec_boozer_aggregate_scalar_objective_line_search_report",
     "vmec_boozer_scalar_objective_finite_difference_report",
     "vmec_boozer_scalar_objective_from_state",
     "vmec_boozer_scalar_objective_line_search_report",
+    "vmec_boozer_solver_objective_table_from_state",
     "vmec_boozer_solver_objective_vector_from_state",
 ]

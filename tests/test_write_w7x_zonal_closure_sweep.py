@@ -27,6 +27,7 @@ def test_build_w7x_zonal_closure_sweep_manifest_contains_operator_families(tmp_p
     assert payload["kx"] == 0.07
     assert payload["Nl"] == 16
     assert payload["Nm"] == 64
+    assert payload["checkpoint_steps"] == 500
     assert len(payload["cases"]) == len(DEFAULT_CASES)
     assert len(payload["launch_commands"]) == len(DEFAULT_CASES)
     assert any(case["family"] == "constant_mixed_lm" for case in payload["cases"])
@@ -36,7 +37,11 @@ def test_build_w7x_zonal_closure_sweep_manifest_contains_operator_families(tmp_p
     assert any("--nu-hyper-l 0.03" in command for command in payload["launch_commands"])
     assert any("--nu-hyper 0.01" in command for command in payload["launch_commands"])
     assert any("--hypercollisions-kz 1" in command or "--hypercollisions-kz 1.0" in command for command in payload["launch_commands"])
+    assert all("--out-png" in command for command in payload["launch_commands"])
+    assert all("--checkpoint-steps 500" in command for command in payload["launch_commands"])
     assert "plot_w7x_zonal_closure_ladder.py" in payload["plot_command"]
+    assert "w7x_zonal_closure_ladder_full.png" in payload["plot_command"]
+    assert payload["plot_outputs"]["png"].endswith("w7x_zonal_closure_ladder_full.png")
 
 
 def test_w7x_zonal_closure_sweep_manifest_writes_json(tmp_path: Path) -> None:
@@ -57,4 +62,5 @@ def test_w7x_zonal_closure_sweep_manifest_writes_json(tmp_path: Path) -> None:
     loaded = json.loads(path.read_text(encoding="utf-8"))
     assert loaded["kind"] == "w7x_zonal_closure_sweep_manifest"
     assert loaded["cases"][0]["slug"] == "baseline"
+    assert loaded["cases"][0]["panel_png"].endswith("baseline/panel.png")
     assert loaded["launch_commands"][0].startswith("python3 tools/generate_w7x_zonal_response_panel.py")

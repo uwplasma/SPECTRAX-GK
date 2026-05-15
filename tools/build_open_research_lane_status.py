@@ -191,8 +191,19 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
     ql_report = _read_json(root, "docs/_static/quasilinear_stellarator_train_holdout_report.json")
     ql_uq = _read_json(root, "docs/_static/quasilinear_candidate_uncertainty.json")
     ql_dataset = _read_json(root, "docs/_static/quasilinear_dataset_sufficiency.json")
+    ql_model_status = _read_json(root, "docs/_static/quasilinear_model_selection_status.json")
+    production_nl_guard = _read_json(root, "docs/_static/production_nonlinear_optimization_guard.json")
+    baseline_optimized_audit = _read_json(root, "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json")
     circular_t250_gate = _read_json(root, "docs/_static/external_vmec_circular_t250_high_grid_convergence_gate.json")
+    circular_t700_replicate = _read_json(
+        root,
+        "docs/_static/external_vmec_circular_replicates/circular_replicate_t700_ensemble_gate.json",
+    )
     dshape_gate = _read_json(root, "docs/_static/external_vmec_dshape_t250_high_grid_convergence_gate.json")
+    dshape_replicate = _read_json(
+        root,
+        "docs/_static/external_vmec_dshape_replicates/dshape_replicate_t250_ensemble_gate.json",
+    )
     itermodel_gate = _read_json(root, "docs/_static/external_vmec_itermodel_t350_high_grid_convergence_gate.json")
     updown_gate = _read_json(root, "docs/_static/external_vmec_updown_asym_t450_high_grid_convergence_gate.json")
     qh_gate = _read_json(root, "docs/_static/external_vmec_qh_grid_convergence_gate.json")
@@ -229,9 +240,33 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
         if isinstance((ql_dataset or {}).get("promotion_gate", {}), dict)
         else {}
     )
-    ql_passed = bool(ql_report_passed or (ql_uq_gate.get("passed", False) and ql_dataset_gate.get("passed", False)))
+    ql_model_status_gate = (
+        (ql_model_status or {}).get("promotion_gate", {})
+        if isinstance((ql_model_status or {}).get("promotion_gate", {}), dict)
+        else {}
+    )
+    ql_passed = bool(
+        ql_report_passed
+        or (
+            ql_uq_gate.get("passed", False)
+            and ql_dataset_gate.get("passed", False)
+            and ql_model_status_gate.get("passed", False)
+        )
+    )
     circular_t250_passed = bool((circular_t250_gate or {}).get("gate_report", {}).get("passed", False))
+    circular_t700_replicate_passed = bool((circular_t700_replicate or {}).get("passed", False))
     dshape_passed = bool((dshape_gate or {}).get("gate_report", {}).get("passed", False))
+    dshape_replicate_passed = bool((dshape_replicate or {}).get("passed", False))
+    production_nl_guard_summary = (
+        (production_nl_guard or {}).get("summary", {})
+        if isinstance((production_nl_guard or {}).get("summary", {}), dict)
+        else {}
+    )
+    baseline_optimized_comparison = (
+        (baseline_optimized_audit or {}).get("comparison", {})
+        if isinstance((baseline_optimized_audit or {}).get("comparison", {}), dict)
+        else {}
+    )
     itermodel_passed = bool((itermodel_gate or {}).get("gate_report", {}).get("passed", False))
     updown_passed = bool((updown_gate or {}).get("gate_report", {}).get("passed", False))
     qh_passed = bool((qh_gate or {}).get("gate_report", {}).get("passed", False))
@@ -417,15 +452,26 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
             "claim_level": (
                 "diagnostic_calibration_dataset_not_absolute_flux"
                 if not ql_passed
-                else ("calibrated_absolute_flux" if ql_report_passed else "candidate_absolute_flux_model")
+                else (
+                    "calibrated_absolute_flux"
+                    if ql_report_passed
+                    else "scoped_candidate_model_selection_not_absolute_flux"
+                )
             ),
             "primary_artifacts": [
                 "docs/_static/quasilinear_validated_calibration_inputs.json",
                 "docs/_static/quasilinear_stellarator_train_holdout_report.json",
                 "docs/_static/quasilinear_candidate_uncertainty.json",
                 "docs/_static/quasilinear_dataset_sufficiency.json",
+                "docs/_static/quasilinear_model_selection_status.json",
                 "docs/_static/external_vmec_circular_t250_high_grid_convergence_gate.json",
+                "docs/_static/external_vmec_circular_replicates/circular_replicate_t700_ensemble_gate.json",
                 "docs/_static/external_vmec_dshape_t250_high_grid_convergence_gate.json",
+                "docs/_static/external_vmec_dshape_replicates/dshape_replicate_t250_ensemble_gate.json",
+                "docs/_static/production_nonlinear_optimization_guard.json",
+                "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json",
+                "docs/_static/qa_no_ess_reference_replicates/qa_no_ess_reference_t700_ensemble_gate.json",
+                "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json",
                 "docs/_static/external_vmec_itermodel_t350_high_grid_convergence_gate.json",
                 "docs/_static/external_vmec_updown_asym_t450_high_grid_convergence_gate.json",
                 "docs/_static/external_vmec_qh_grid_convergence_gate.json",
@@ -441,8 +487,67 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
                 "uq_candidate_promotion_passed": bool(ql_uq_gate.get("passed", False)),
                 "uq_accepted_candidates": ql_uq_gate.get("accepted_candidates", []),
                 "dataset_sufficiency_promotion_passed": bool(ql_dataset_gate.get("passed", False)),
+                "model_selection_status_passed": bool(ql_model_status_gate.get("passed", False)),
+                "model_selection_candidate_mean_error": _finite_float(
+                    (ql_model_status or {})
+                    .get("metrics", {})
+                    .get("candidate_mean_abs_relative_error")
+                    if isinstance((ql_model_status or {}).get("metrics", {}), dict)
+                    else None
+                ),
                 "circular_external_vmec_t250_converged": circular_t250_passed,
+                "circular_external_vmec_t700_replicated": circular_t700_replicate_passed,
+                "circular_external_vmec_t700_replicate_mean_rel_spread": _finite_float(
+                    (circular_t700_replicate or {}).get("statistics", {}).get("mean_rel_spread")
+                    if isinstance((circular_t700_replicate or {}).get("statistics", {}), dict)
+                    else None
+                ),
+                "circular_external_vmec_t700_replicate_sem_rel": _finite_float(
+                    (circular_t700_replicate or {}).get("statistics", {}).get("combined_sem_rel")
+                    if isinstance((circular_t700_replicate or {}).get("statistics", {}), dict)
+                    else None
+                ),
                 "dshape_external_vmec_t250_converged": dshape_passed,
+                "dshape_external_vmec_t250_replicated": dshape_replicate_passed,
+                "dshape_external_vmec_t250_replicate_mean_rel_spread": _finite_float(
+                    (dshape_replicate or {}).get("statistics", {}).get("mean_rel_spread")
+                    if isinstance((dshape_replicate or {}).get("statistics", {}), dict)
+                    else None
+                ),
+                "dshape_external_vmec_t250_replicate_sem_rel": _finite_float(
+                    (dshape_replicate or {}).get("statistics", {}).get("combined_sem_rel")
+                    if isinstance((dshape_replicate or {}).get("statistics", {}), dict)
+                    else None
+                ),
+                "production_nonlinear_optimization_guard_safe": bool(
+                    (production_nl_guard or {}).get("safe_to_release", False)
+                ),
+                "production_nonlinear_optimization_promoted": bool(
+                    (production_nl_guard or {}).get(
+                        "production_nonlinear_optimization_promoted", False
+                    )
+                ),
+                "production_nonlinear_replicated_holdout_ensembles": (
+                    production_nl_guard_summary.get(
+                        "qualifying_replicated_holdout_ensembles"
+                    )
+                ),
+                "production_nonlinear_optimized_equilibrium_ensembles": (
+                    production_nl_guard_summary.get(
+                        "qualifying_optimized_equilibrium_ensembles"
+                    )
+                ),
+                "matched_qa_no_ess_to_optimized_audit_passed": bool(
+                    (baseline_optimized_audit or {}).get("passed", False)
+                ),
+                "matched_qa_no_ess_relative_reduction": (
+                    baseline_optimized_comparison.get("relative_reduction")
+                ),
+                "matched_qa_no_ess_uncertainty_separation_sigma": (
+                    baseline_optimized_comparison.get(
+                        "uncertainty_separation_sigma"
+                    )
+                ),
                 "itermodel_external_vmec_t350_converged": itermodel_passed,
                 "updown_asym_external_vmec_t450_converged": updown_passed,
                 "qh_external_vmec_low_to_mid_grid_converged": qh_passed,
@@ -450,12 +555,13 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
                 "cth_like_external_vmec_converged": cth_passed,
             },
             "next_action": (
-                "Document the accepted richer candidate with scoped wording and keep circular, QH, and CTH-like "
-                "excluded until their common-window and grid-refinement gates pass."
+                "Document the accepted richer candidate and matched QA no-ESS to optimized QA/ESS audit with scoped "
+                "wording; keep circular, QH, and CTH-like excluded until their common-window and grid-refinement "
+                "gates pass."
                 if ql_passed
-                else "Use the admitted D-shaped tokamak, ITERModel, and up-down asymmetric external-VMEC holdouts as "
-                "negative transfer constraints while developing richer saturation models; keep circular, QH, and "
-                "CTH-like excluded until their common-window and grid-refinement gates pass."
+                else "Use the admitted D-shaped, circular, ITERModel, and up-down asymmetric external-VMEC holdouts as "
+                "negative transfer constraints while developing richer saturation models; keep QH and CTH-like excluded "
+                "until their common-window and grid-refinement gates pass."
             ),
         },
         {
@@ -624,7 +730,18 @@ def write_status_artifacts(payload: dict[str, Any], *, out_png: Path = DEFAULT_O
         elif lane["lane"].startswith("W7-X fluctuation"):
             metric = f"samples: {key_metrics.get('time_samples')}"
         elif lane["lane"].startswith("Nonlinear holdouts"):
-            metric = f"holdouts: {key_metrics.get('holdout_points')}, promoted: {key_metrics.get('calibration_report_passed')}"
+            replicated = sum(
+                1
+                for key in (
+                    "dshape_external_vmec_t250_replicated",
+                    "circular_external_vmec_t700_replicated",
+                )
+                if key_metrics.get(key)
+            )
+            metric = (
+                f"holdouts: {key_metrics.get('holdout_points')}, replicated: {replicated}, "
+                f"promoted: {key_metrics.get('calibration_report_passed')}"
+            )
         elif lane["lane"].startswith("vmec_jax"):
             field_line_abs = key_metrics.get("vmec_field_line_tensor_max_abs_ad_fd_error")
             flux_tube_rel = key_metrics.get("vmec_tensor_flux_tube_max_rel_ad_fd_error")

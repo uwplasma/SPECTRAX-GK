@@ -216,6 +216,10 @@ def build_rows(
         diff = response[mask] - reference_interp
         tail_start = float(np.nanmax(t)) - float(tail_fraction) * (float(np.nanmax(t)) - float(np.nanmin(t)))
         tail_mask = t >= tail_start
+        tail_response = response[tail_mask]
+        reference_tail = np.interp(t[tail_mask], reference_t, reference_y)
+        tail_std = float(np.std(tail_response))
+        reference_tail_std = float(np.std(reference_tail))
         rows.append(
             {
                 "label": label,
@@ -230,9 +234,11 @@ def build_rows(
                 "mean_abs_error": float(np.mean(np.abs(diff))),
                 "max_abs_error": float(np.max(np.abs(diff))),
                 "final_window_tmax": float(compare_tmax),
-                "tail_mean": float(np.mean(response[tail_mask])),
-                "tail_std": float(np.std(response[tail_mask])),
-                "tail_abs_max": float(np.max(np.abs(response[tail_mask]))),
+                "tail_mean": float(np.mean(tail_response)),
+                "tail_std": tail_std,
+                "tail_abs_max": float(np.max(np.abs(tail_response))),
+                "reference_tail_std": reference_tail_std,
+                "tail_std_ratio": None if reference_tail_std <= 0.0 else tail_std / reference_tail_std,
                 "hermite_tail_last": loaded["hermite_tail_last"],
                 "laguerre_tail_last": loaded["laguerre_tail_last"],
                 "free_energy_last_over_first": loaded["free_energy_last_over_first"],
@@ -258,15 +264,37 @@ def closure_ladder_figure(
     labels = [str(row["label"]) for row in rows]
     families = [str(row["family"]) for row in rows]
     plot_ids = [chr(ord("A") + idx) for idx in range(len(rows))]
+    compact_labels = {
+        "paper baseline": "baseline",
+        "constant Hermite hypercollision nu_hyper_m=0.01": r"const H $\nu_m=0.01$",
+        "constant Hermite hypercollision nu_hyper_m=0.03": r"const H $\nu_m=0.03$",
+        "kz Hermite hypercollision nu_hyper_m=0.01": r"$k_z$ H $\nu_m=0.01$",
+        "kz Hermite hypercollision nu_hyper_m=0.03": r"$k_z$ H $\nu_m=0.03$",
+        "constant mixed LM hypercollision nu_hyper_lm=0.01": r"const LM $\nu_{lm}=0.01$",
+        "constant mixed LM hypercollision nu_hyper_lm=0.03": r"const LM $\nu_{lm}=0.03$",
+        "constant Laguerre hypercollision nu_hyper_l=0.01": r"const L $\nu_l=0.01$",
+        "constant Laguerre hypercollision nu_hyper_l=0.03": r"const L $\nu_l=0.03$",
+        "constant isotropic hypercollision nu_hyper=0.01": r"const all $\nu=0.01$",
+        "constant isotropic hypercollision nu_hyper=0.03": r"const all $\nu=0.03$",
+    }
     plot_labels = [
-        label.replace("paper: ", "")
-        .replace("weak closure: ", "weak: ")
-        .replace("non-contract: ", "audit: ")
-        .replace("high moment", "Nl16 Nm64")
+        compact_labels.get(
+            label,
+            label.replace("paper: ", "")
+            .replace("weak closure: ", "weak: ")
+            .replace("non-contract: ", "audit: ")
+            .replace("high moment", "Nl16 Nm64"),
+        )
         for label in labels
     ]
     plot_labels = [f"{plot_id}  {label}" for plot_id, label in zip(plot_ids, plot_labels, strict=True)]
     family_colors = {
+        "baseline": "#111827",
+        "constant_hermite": "#d95f02",
+        "kz_hermite": "#7570b3",
+        "constant_mixed_lm": "#1b9e77",
+        "constant_laguerre": "#e7298a",
+        "constant_isotropic": "#66a61e",
         "paper": "#0f4c81",
         "paper-resolution": "#2a9d8f",
         "closure-audit": "#c2410c",
@@ -275,10 +303,10 @@ def closure_ladder_figure(
     colors = [family_colors.get(family, "#555555") for family in families]
     y_pos = np.arange(len(rows))
 
-    fig, axes = plt.subplots(2, 2, figsize=(13.2, 8.2), constrained_layout=True)
+    fig, axes = plt.subplots(2, 2, figsize=(14.0, 8.6), constrained_layout=True)
     ax = axes[0, 0]
     ref_mask = reference_t <= float(t_compare)
-    ax.plot(reference_t[ref_mask], reference_y[ref_mask], color="#111827", linewidth=2.4, label="digitized stella/GENE mean")
+    ax.plot(reference_t[ref_mask], reference_y[ref_mask], color="#111827", linewidth=2.4, label="reference mean")
     for row, color, plot_id in zip(rows, colors, plot_ids, strict=True):
         trace = traces[str(row["label"])]
         t = np.asarray(trace["t"], dtype=float)
@@ -289,7 +317,7 @@ def closure_ladder_figure(
     ax.set_ylabel(r"$\phi_z/\phi_z(0)$")
     ax.set_title(r"Trace overlay, $k_x \rho_i = 0.07$")
     ax.grid(True, alpha=0.25)
-    ax.legend(frameon=True, framealpha=0.90, fontsize=7, ncol=4, loc="lower left")
+    ax.legend(frameon=True, framealpha=0.90, fontsize=6.2, ncol=4, loc="upper right")
 
     ax = axes[0, 1]
     ax.barh(y_pos, [float(row["mean_abs_error"]) for row in rows], color=colors, alpha=0.85)
@@ -363,9 +391,10 @@ def write_json(
         "rows": rows,
         "notes": (
             "This is an open closure ladder, not a validation gate. It separates paper-contract resolution "
-            "changes from weak-closure and non-contract initializer audits. Weak closure reduces the late "
-            "envelope in existing probes but does not close the early trace mismatch, so it should not be "
-            "used as a hidden validation setting."
+            "changes from weak-closure and non-contract initializer audits. The bounded closure families "
+            "can suppress velocity-space tail metrics and sometimes lower mean trace error, but the promoted "
+            "candidate must also improve the late-envelope recurrence metric. These rows therefore document "
+            "negative closure evidence rather than a hidden validation setting."
         ),
     }
     out_json.write_text(json.dumps(_json_clean(payload), indent=2, sort_keys=True, allow_nan=False) + "\n", encoding="utf-8")

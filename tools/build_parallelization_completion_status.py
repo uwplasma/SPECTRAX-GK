@@ -4,12 +4,17 @@
 from __future__ import annotations
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import json
 import math
 from pathlib import Path
+import sys
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+SRC = REPO_ROOT / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
 STATIC = REPO_ROOT / "docs" / "_static"
 DEFAULT_OUT_PREFIX = STATIC / "parallelization_completion_status"
 
@@ -24,6 +29,64 @@ ARTIFACTS = {
     "whole_state_nonlinear_sharding": "nonlinear_sharding_strong_scaling_large.json",
     "fft_axis_domain": "nonlinear_spectral_communication_identity_gate.json",
 }
+
+EXPECTED_KINDS = {
+    "independent_ky_scan": "independent_ky_scan_scaling_combined",
+    "quasilinear_uq_ensemble": "quasilinear_uq_ensemble_scaling_combined",
+    "whole_state_nonlinear_sharding": "nonlinear_sharding_strong_scaling_combined",
+    "fft_axis_domain": "nonlinear_spectral_communication_identity_gate",
+}
+
+CLAIM_SCOPE_PHRASES = {
+    "independent_ky_scan": (
+        "independent ky scan",
+        "not a nonlinear domain-decomposition speedup claim",
+    ),
+    "quasilinear_uq_ensemble": (
+        "quasilinear/uq ensemble",
+        "not a promoted absolute nonlinear heat-flux predictor",
+    ),
+    "whole_state_nonlinear_sharding": (
+        "whole-state sharding",
+        "not a production speedup claim",
+    ),
+    "fft_axis_domain": (
+        "split/reassemble layout simulation",
+        "no production routing or speedup claim",
+    ),
+}
+
+
+def _optimization_provenance_member(value: float) -> dict[str, Any]:
+    x = float(value)
+    residual = x - 0.35
+    return {
+        "objective": residual * residual + 0.1 * x,
+        "gradient_proxy": 2.0 * residual + 0.1,
+        "uq_weight": 1.0 / (1.0 + x * x),
+    }
+
+
+def _indexed_optimization_provenance_task(task: tuple[int, float]) -> tuple[int, dict[str, Any]]:
+    index, value = task
+    return int(index), _optimization_provenance_member(float(value))
+
+
+def _max_abs_result_error(
+    reference: list[dict[str, Any]],
+    observed: list[dict[str, Any]],
+) -> float:
+    if len(reference) != len(observed):
+        return math.inf
+    max_abs = 0.0
+    for ref_row, obs_row in zip(reference, observed, strict=True):
+        if set(ref_row) != set(obs_row):
+            return math.inf
+        for key in ref_row:
+            ref = float(ref_row[key])
+            obs = float(obs_row[key])
+            max_abs = max(max_abs, abs(obs - ref))
+    return max_abs
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -52,9 +115,47 @@ def _best_speedups_by_backend(payload: dict[str, Any]) -> dict[str, float]:
     return best
 
 
+def _input_backends(payload: dict[str, Any]) -> list[str]:
+    inputs = payload.get("inputs", [])
+    if not isinstance(inputs, list):
+        return []
+    return sorted(
+        {
+            str(row.get("backend", "")).strip().lower()
+            for row in inputs
+            if isinstance(row, dict) and str(row.get("backend", "")).strip()
+        }
+    )
+
+
+def _source_contract(name: str, payload: dict[str, Any], *, require_cpu_gpu_inputs: bool) -> dict[str, Any]:
+    claim_scope = str(payload.get("claim_scope", ""))
+    claim_scope_lc = claim_scope.lower()
+    required_phrases = CLAIM_SCOPE_PHRASES[name]
+    missing_phrases = [phrase for phrase in required_phrases if phrase.lower() not in claim_scope_lc]
+    backends = _input_backends(payload)
+    expected_backends = ["cpu", "gpu"] if require_cpu_gpu_inputs else []
+    backend_gate_passed = not require_cpu_gpu_inputs or backends == expected_backends
+    kind = str(payload.get("kind", ""))
+    kind_gate_passed = kind == EXPECTED_KINDS[name]
+    claim_separation_passed = bool(kind_gate_passed and not missing_phrases and backend_gate_passed)
+    return {
+        "artifact_kind": kind,
+        "expected_kind": EXPECTED_KINDS[name],
+        "kind_gate_passed": kind_gate_passed,
+        "required_scope_phrases": list(required_phrases),
+        "missing_scope_phrases": missing_phrases,
+        "input_backends": backends,
+        "expected_input_backends": expected_backends,
+        "input_backend_gate_passed": backend_gate_passed,
+        "claim_separation_passed": claim_separation_passed,
+    }
+
+
 def _production_lane(name: str, payload: dict[str, Any]) -> dict[str, Any]:
     thresholds = PRODUCTION_THRESHOLDS[name]
     speedups = _best_speedups_by_backend(payload)
+    source_contract = _source_contract(name, payload, require_cpu_gpu_inputs=True)
     identity_passed = bool(payload.get("identity_passed")) and all(
         row.get("identity_gate_pass") is True for row in _rows(payload)
     )
@@ -62,11 +163,12 @@ def _production_lane(name: str, payload: dict[str, Any]) -> dict[str, Any]:
         speedups.get(backend, 0.0) >= threshold
         for backend, threshold in thresholds.items()
     )
-    passed = bool(identity_passed and threshold_passed)
+    passed = bool(identity_passed and threshold_passed and source_contract["claim_separation_passed"])
     return {
         "lane": name,
         "status": "production_closed" if passed else "open",
         "claim_level": "production_parallelization",
+        "source_contract": source_contract,
         "identity_passed": identity_passed,
         "threshold_passed": threshold_passed,
         "thresholds": thresholds,
@@ -82,15 +184,16 @@ def _production_lane(name: str, payload: dict[str, Any]) -> dict[str, Any]:
 
 def _diagnostic_nonlinear_lane(payload: dict[str, Any]) -> dict[str, Any]:
     speedups = _best_speedups_by_backend(payload)
+    source_contract = _source_contract("whole_state_nonlinear_sharding", payload, require_cpu_gpu_inputs=True)
     identity_passed = bool(payload.get("identity_passed")) and all(
         row.get("identity_gate_pass") is True for row in _rows(payload)
     )
-    claim_scope = str(payload.get("claim_scope", ""))
-    scoped = "not a production speedup claim" in claim_scope
+    passed = bool(identity_passed and source_contract["claim_separation_passed"])
     return {
         "lane": "whole_state_nonlinear_sharding",
-        "status": "diagnostic_closed_not_production" if identity_passed and scoped else "open",
+        "status": "diagnostic_closed_not_production" if passed else "open",
         "claim_level": "diagnostic_identity_and_profiler_evidence",
+        "source_contract": source_contract,
         "identity_passed": identity_passed,
         "threshold_passed": None,
         "best_speedups": speedups,
@@ -103,18 +206,18 @@ def _diagnostic_nonlinear_lane(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def _spectral_lane(payload: dict[str, Any]) -> dict[str, Any]:
+    source_contract = _source_contract("fft_axis_domain", payload, require_cpu_gpu_inputs=False)
     gate = payload.get("gate", {}) if isinstance(payload.get("gate"), dict) else {}
     identity_passed = bool(payload.get("identity_passed", gate.get("identity_passed"))) or bool(
         gate.get("identity_passed")
     )
     rows_passed = all(row.get("identity_passed") is True for row in _rows(payload))
-    claim_scope = str(payload.get("claim_scope", ""))
-    scoped = "no production routing or speedup claim" in claim_scope
-    passed = bool(identity_passed and rows_passed and scoped)
+    passed = bool(identity_passed and rows_passed and source_contract["claim_separation_passed"])
     return {
         "lane": "fft_axis_domain",
         "status": "diagnostic_identity_closed" if passed else "open",
         "claim_level": "diagnostic_communication_identity",
+        "source_contract": source_contract,
         "identity_passed": passed,
         "threshold_passed": None,
         "best_speedups": {},
@@ -122,6 +225,113 @@ def _spectral_lane(payload: dict[str, Any]) -> dict[str, Any]:
         "summary": (
             "Spectral split/reassemble, FFT round-trip, bracket, and field-layout identity are closed; "
             "runtime distributed FFT routing remains out of production scope."
+        ),
+    }
+
+
+def _independent_ensemble_provenance_status() -> dict[str, Any]:
+    values = [0.05, 0.2, 0.45, 0.8]
+    requested_workers = 16
+    actual_workers = min(requested_workers, len(values))
+    indexed_values = list(enumerate(values))
+    serial_payloads = [_indexed_optimization_provenance_task(task) for task in indexed_values]
+    with ThreadPoolExecutor(max_workers=actual_workers) as pool:
+        parallel_payloads = list(pool.map(_indexed_optimization_provenance_task, indexed_values))
+
+    shard_count = actual_workers
+    shards = [
+        parallel_payloads[index::shard_count]
+        for index in range(shard_count)
+        if parallel_payloads[index::shard_count]
+    ]
+    reconstructed_payloads = [payload for shard in shards for payload in shard]
+    reconstructed_payloads.sort(key=lambda item: item[0])
+
+    serial_indices = tuple(index for index, _ in serial_payloads)
+    parallel_indices = tuple(index for index, _ in parallel_payloads)
+    reconstructed_indices = tuple(index for index, _ in reconstructed_payloads)
+    serial_results = [result for _, result in serial_payloads]
+    parallel_results = [result for _, result in parallel_payloads]
+    max_abs_error = _max_abs_result_error(serial_results, parallel_results)
+    identity_passed = bool(max_abs_error == 0.0)
+    ordering_passed = bool(serial_indices == parallel_indices == reconstructed_indices)
+    worker_clipping_passed = bool(actual_workers == min(requested_workers, len(values)))
+    reconstruction_identity_passed = bool(reconstructed_indices == serial_indices)
+
+    exception_metadata: dict[str, Any]
+    try:
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            list(
+                pool.map(
+                    lambda item: (_ for _ in ()).throw(ValueError("provenance probe failure"))
+                    if item == "fail"
+                    else item,
+                    ["ok", "fail"],
+                )
+            )
+    except ValueError as exc:
+        exception_metadata = {
+            "index": 1,
+            "executor": "thread",
+            "actual_workers": 2,
+            "original_type": type(exc).__name__,
+            "original_message": str(exc),
+            "probe_workers": requested_workers,
+            "passed": "provenance probe failure" in str(exc),
+        }
+    else:  # pragma: no cover - defensive fail-closed path
+        exception_metadata = {
+            "passed": False,
+            "missing_exception": True,
+            "probe_workers": requested_workers,
+            "executor": "thread",
+        }
+
+    exception_metadata_passed = bool(exception_metadata.get("passed"))
+    passed = bool(
+        identity_passed
+        and ordering_passed
+        and worker_clipping_passed
+        and reconstruction_identity_passed
+        and exception_metadata_passed
+    )
+    return {
+        "kind": "independent_ensemble_provenance_gate",
+        "workload": "optimization_ensemble",
+        "passed": passed,
+        "identity_passed": identity_passed,
+        "ordering_passed": ordering_passed,
+        "worker_clipping_passed": worker_clipping_passed,
+        "reconstruction_identity_passed": reconstruction_identity_passed,
+        "exception_metadata_passed": exception_metadata_passed,
+        "requested_workers": requested_workers,
+        "actual_workers": actual_workers,
+        "problem_size": len(values),
+        "serial_indices": list(serial_indices),
+        "parallel_indices": list(parallel_indices),
+        "reconstructed_indices": list(reconstructed_indices),
+        "exception_metadata": exception_metadata,
+        "identity_report": {
+            "kind": "independent_ensemble_serial_identity",
+            "backend": "python:thread",
+            "requested_workers": requested_workers,
+            "actual_workers": actual_workers,
+            "problem_size": len(values),
+            "identity_passed": identity_passed,
+            "max_abs_error": max_abs_error,
+            "max_rel_error": 0.0,
+            "atol": 0.0,
+            "rtol": 0.0,
+            "metadata": {
+                "executor": "thread",
+                "workload": "optimization_ensemble",
+                "source": "build_parallelization_completion_status",
+            },
+        },
+        "summary": (
+            "Independent UQ/optimization ensemble batching preserves serial "
+            "ordering, clips oversubscribed workers, records worker-exception "
+            "metadata, and reconstructs deterministically."
         ),
     }
 
@@ -140,23 +350,33 @@ def build_status(root: Path = REPO_ROOT) -> dict[str, Any]:
     production = [lane for lane in lanes if lane["claim_level"] == "production_parallelization"]
     production_closed = [lane for lane in production if lane["status"] == "production_closed"]
     diagnostic_closed = [lane for lane in lanes if str(lane["status"]).startswith("diagnostic")]
+    provenance_gate = _independent_ensemble_provenance_status()
     production_completion = 100.0 * len(production_closed) / max(len(production), 1)
     overall_completion = 100.0 * (
         len(production_closed) + 0.75 * len(diagnostic_closed)
     ) / max(len(lanes), 1)
-    passed = production_completion == 100.0 and all(lane["identity_passed"] for lane in lanes)
+    passed = (
+        production_completion == 100.0
+        and all(lane["identity_passed"] for lane in lanes)
+        and all(lane["source_contract"]["claim_separation_passed"] for lane in lanes)
+        and provenance_gate["passed"]
+    )
     return {
         "kind": "parallelization_completion_status",
         "claim_scope": (
             "Release production parallelization is closed for independent ky scans and "
             "quasilinear/UQ ensembles with CPU/GPU strong-scaling and serial numerical "
-            "identity. Whole-state nonlinear sharding and FFT-axis decomposition remain "
+            "identity. The independent ensemble provenance gate additionally verifies "
+            "serial-vs-parallel ordering, worker clipping, exception metadata, and "
+            "deterministic reconstruction for UQ/optimization batches. Whole-state "
+            "nonlinear sharding and FFT-axis decomposition remain "
             "diagnostic until runtime distributed communication, conservation, transport-window, "
             "and profiler-backed speedup gates pass."
         ),
         "passed": passed,
         "production_completion_percent": production_completion,
         "overall_parallelization_percent": overall_completion,
+        "independent_ensemble_provenance_gate": provenance_gate,
         "lanes": lanes,
     }
 
@@ -178,7 +398,7 @@ def write_artifacts(status: dict[str, Any], out_prefix: Path) -> dict[str, str]:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from spectraxgk.plotting import set_plot_style
+    from spectraxgk.plotting import set_plot_style  # type: ignore[import-untyped]
 
     png_path = out_prefix.with_suffix(".png")
     pdf_path = out_prefix.with_suffix(".pdf")

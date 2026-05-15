@@ -10,6 +10,7 @@ from spectraxgk.nonlinear_parallel import (
     deterministic_nonlinear_domain_state,
     nonlinear_domain_identity_report,
     nonlinear_domain_parallel_identity_gate,
+    nonlinear_domain_transport_window_identity_gate,
     prototype_nonlinear_domain_decomposed_step,
     prototype_nonlinear_domain_serial_step,
 )
@@ -31,6 +32,19 @@ def test_nonlinear_domain_plan_uses_static_halo_chunks() -> None:
     assert plan.num_domains == 3
     assert plan.domain_size == 7
     assert plan.offsets == (0, 3, 5)
+    assert plan.chunk_bounds == ((0, 3), (3, 5), (5, 7))
+    assert plan.boundary_indices == (0, 2, 3, 4, 5, 6)
+    assert plan.decomposition_metadata() == {
+        "state_shape": (7, 3),
+        "axis": 0,
+        "chunk_sizes": (3, 2, 2),
+        "halo": 1,
+        "num_domains": 3,
+        "domain_size": 7,
+        "offsets": (0, 3, 5),
+        "chunk_bounds": ((0, 3), (3, 5), (5, 7)),
+        "boundary_indices": (0, 2, 3, 4, 5, 6),
+    }
     assert plan.to_dict() == {
         "state_shape": (7, 3),
         "axis": 0,
@@ -60,10 +74,77 @@ def test_nonlinear_domain_identity_gate_enables_only_matching_decomposition() ->
     assert report.blocked_reasons == ()
     assert report.max_abs_error <= report.atol
     assert report.max_rel_error <= report.rtol
+    assert report.boundary_indices == (0, 2, 3, 5)
+    assert report.boundary_max_abs_error <= report.atol
+    assert report.boundary_max_rel_error <= report.rtol
     assert "bounded local-stencil prototype" in report.claim_scope
     assert "no production routing or speedup claim" in report.claim_scope
     assert jnp.allclose(decomposed, serial, atol=1.0e-6, rtol=1.0e-6)
     assert jnp.allclose(gated_state, decomposed, atol=1.0e-6, rtol=1.0e-6)
+
+
+def test_nonlinear_domain_transport_window_gate_tracks_conservation_proxies() -> None:
+    state = deterministic_nonlinear_domain_state((6, 4))
+    plan = build_nonlinear_domain_decomposition_plan(state.shape, num_domains=2)
+
+    report = nonlinear_domain_transport_window_identity_gate(
+        state,
+        plan,
+        dt=0.025,
+        steps=5,
+        atol=1.0e-6,
+        rtol=1.0e-6,
+    )
+
+    assert report.gate_name == "nonlinear_domain_transport_window_identity"
+    assert report.identity_passed is True
+    assert report.decomposed_path_enabled is True
+    assert report.steps == 5
+    assert report.plan_valid is True
+    assert report.blocked_reasons == ()
+    assert report.boundary_indices == (0, 2, 3, 5)
+    assert report.max_abs_state_error <= report.atol
+    assert report.max_abs_boundary_error <= report.atol
+    assert report.mass_trace_max_abs_error <= report.atol
+    assert report.mass_trace_max_rel_error <= report.rtol
+    assert report.free_energy_trace_max_abs_error <= report.atol
+    assert report.free_energy_trace_max_rel_error <= report.rtol
+    assert report.flux_proxy_trace_max_abs_error <= report.atol
+    assert report.flux_proxy_trace_max_rel_error <= report.rtol
+    assert len(report.serial_mass_trace) == report.steps + 1
+    assert len(report.decomposed_free_energy_trace) == report.steps + 1
+    assert report.serial_mass_drift == pytest.approx(report.decomposed_mass_drift)
+    assert report.serial_free_energy_drift == pytest.approx(
+        report.decomposed_free_energy_drift
+    )
+    assert "transport-window identity gate" in report.claim_scope
+    assert "no production routing or speedup claim" in report.claim_scope
+    assert report.to_dict()["identity_passed"] is True
+
+
+def test_nonlinear_domain_transport_window_gate_fails_closed_on_invalid_plan() -> None:
+    state = deterministic_nonlinear_domain_state((6, 4))
+    invalid_plan = NonlinearDomainDecompositionPlan(
+        state_shape=state.shape,
+        axis=0,
+        chunk_sizes=(2, 2),
+        halo=1,
+    )
+
+    report = nonlinear_domain_transport_window_identity_gate(
+        state,
+        invalid_plan,
+        steps=2,
+        atol=1.0e-6,
+        rtol=1.0e-6,
+    )
+
+    assert report.identity_passed is False
+    assert report.decomposed_path_enabled is False
+    assert report.plan_valid is False
+    assert report.blocked_reasons == ("chunk_sizes_do_not_cover_axis",)
+    assert report.max_abs_state_error == float("inf")
+    assert report.mass_trace_max_abs_error == float("inf")
 
 
 def test_nonlinear_domain_identity_report_fails_closed_on_mismatch() -> None:
@@ -85,6 +166,7 @@ def test_nonlinear_domain_identity_report_fails_closed_on_mismatch() -> None:
     assert report.plan_valid is True
     assert report.blocked_reasons == ()
     assert report.max_abs_error > report.atol
+    assert report.boundary_max_abs_error > report.atol
     assert report.to_dict()["identity_passed"] is False
 
 

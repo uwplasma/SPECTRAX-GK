@@ -23,9 +23,13 @@ from spectraxgk.quasilinear_calibration import calibration_point_from_nonlinear_
 
 from plot_quasilinear_saturation_rule_sweep import (  # noqa: E402
     DEFAULT_CASES,
+    DEFAULT_HOLDOUT_RELATIVE_ERROR_GATE,
     SaturationCase,
+    _artifact_path,
     require_validated_nonlinear_inputs,
 )
+
+DEFAULT_SHAPE_CASES = tuple(case for case in DEFAULT_CASES if case.shape_gate is not None)
 
 
 def _json_clean(value: Any) -> Any:
@@ -58,9 +62,22 @@ def _shape_gate_payload(case: SaturationCase) -> dict[str, Any]:
     if case.shape_gate is None or not Path(case.shape_gate).exists():
         raise ValueError(f"{case.case} is missing a tracked shape-gate JSON")
     data = json.loads(Path(case.shape_gate).read_text(encoding="utf-8"))
-    for key in ("ky", "quasilinear_distribution", "nonlinear_distribution"):
+    required = (
+        "kind",
+        "passed",
+        "ky",
+        "quasilinear_distribution",
+        "nonlinear_distribution",
+        "total_variation_distance",
+        "cosine_similarity",
+        "tv_gate",
+        "cosine_gate",
+    )
+    for key in required:
         if key not in data:
             raise ValueError(f"{case.shape_gate} is missing '{key}'")
+    if data["kind"] != "quasilinear_spectrum_shape_gate":
+        raise ValueError(f"{case.shape_gate} is not a quasilinear spectrum-shape gate")
     return data
 
 
@@ -159,14 +176,17 @@ def _fit_scale(raw: np.ndarray, observed: np.ndarray, *, floor: float) -> float:
 
 
 def build_shape_aware_saturation_report(
-    cases: tuple[SaturationCase, ...] = DEFAULT_CASES,
+    cases: tuple[SaturationCase, ...] = DEFAULT_SHAPE_CASES,
     *,
     observed_floor: float = 1.0e-12,
     passed_shape_only: bool = False,
     require_validated_inputs: bool = True,
+    holdout_relative_error_gate: float = DEFAULT_HOLDOUT_RELATIVE_ERROR_GATE,
 ) -> dict[str, Any]:
     """Run leave-one-case-out validation for the power-law shape-aware model."""
 
+    if holdout_relative_error_gate <= 0.0:
+        raise ValueError("holdout_relative_error_gate must be positive")
     input_validation = (
         require_validated_nonlinear_inputs(cases)
         if require_validated_inputs
@@ -180,12 +200,16 @@ def build_shape_aware_saturation_report(
             {
                 "case": case.case,
                 "geometry": case.geometry,
-                "spectrum": str(case.spectrum),
-                "nonlinear_summary": str(case.nonlinear_summary),
-                "shape_gate": None if case.shape_gate is None else str(case.shape_gate),
+                "spectrum": _artifact_path(case.spectrum),
+                "nonlinear_summary": _artifact_path(case.nonlinear_summary),
+                "shape_gate": _artifact_path(case.shape_gate),
+                "shape_gate_kind": shape_payload.get("kind"),
+                "shape_gate_status": "passed" if bool(shape_payload.get("passed", False)) else "failed",
                 "shape_passed": bool(shape_payload.get("passed", False)),
                 "shape_tv": shape_payload.get("total_variation_distance"),
                 "shape_cosine": shape_payload.get("cosine_similarity"),
+                "shape_tv_gate": shape_payload.get("tv_gate"),
+                "shape_cosine_gate": shape_payload.get("cosine_gate"),
                 "observed_heat_flux": float(observed),
                 "observed_heat_flux_std": None if observed_std is None else float(observed_std),
             }
@@ -234,21 +258,25 @@ def build_shape_aware_saturation_report(
     shape_mean = float(np.nanmean(shape_errors))
     baseline_mean = float(np.nanmean(baseline_errors))
     null_mean = float(np.nanmean(null_errors))
-    transport_gate = 0.35
+    transport_gate = float(holdout_relative_error_gate)
     return {
         "kind": "quasilinear_shape_aware_saturation_report",
         "claim_level": "leave_one_geometry_out_model_development",
         "observed_floor": float(observed_floor),
+        "holdout_relative_error_gate": float(holdout_relative_error_gate),
         "passed_shape_only": bool(passed_shape_only),
         "input_validation": input_validation,
         "all_case_shape_fit": all_fit,
         "metrics": {
             "shape_aware_mean_abs_relative_error": shape_mean,
             "shape_aware_max_abs_relative_error": float(np.nanmax(shape_errors)),
+            "shape_aware_all_case_gate_passed": bool(np.all(shape_errors <= transport_gate)),
             "baseline_linear_weight_mean_abs_relative_error": baseline_mean,
             "baseline_linear_weight_max_abs_relative_error": float(np.nanmax(baseline_errors)),
+            "baseline_linear_weight_all_case_gate_passed": bool(np.all(baseline_errors <= transport_gate)),
             "null_training_mean_mean_abs_relative_error": null_mean,
             "null_training_mean_max_abs_relative_error": float(np.nanmax(null_errors)),
+            "null_training_mean_all_case_gate_passed": bool(np.all(null_errors <= transport_gate)),
         },
         "promotion_gate": {
             "passed": bool(shape_mean <= transport_gate and shape_mean < baseline_mean and shape_mean < null_mean),
@@ -314,7 +342,8 @@ def write_shape_aware_saturation_figure(report: dict[str, Any], *, out: str | Pa
     ax1.barh(y - height, baseline_err, height=height, color="#9ca3af", label="linear-weight baseline")
     ax1.barh(y, null_err, height=height, color="#b45309", label="train-mean null")
     ax1.barh(y + height, shape_err, height=height, color="#0f4c81", label="shape-aware")
-    ax1.axvline(0.35, color="#c2410c", linestyle="--", linewidth=1.5, label="0.35 gate")
+    gate = float(report.get("holdout_relative_error_gate", DEFAULT_HOLDOUT_RELATIVE_ERROR_GATE))
+    ax1.axvline(gate, color="#c2410c", linestyle="--", linewidth=1.5, label=f"{gate:.2g} gate")
     ax1.set_xscale("log")
     ax1.set_yticks(y, short_labels)
     ax1.invert_yaxis()

@@ -1,9 +1,11 @@
 {
+  "any_rule_holdout_gate_passed": false,
+  "best_rule_by_holdout_mean_abs_relative_error": "positive_mixing_length",
   "cases": [
     {
       "case": "cyclone_long_window",
       "geometry": "cyclone",
-      "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/nonlinear_cyclone_gate_summary.json",
+      "nonlinear_summary": "docs/_static/nonlinear_cyclone_gate_summary.json",
       "observed_heat_flux": 6.6689961798985795,
       "observed_heat_flux_std": 0.6486446261822355,
       "raw_estimates": {
@@ -12,16 +14,20 @@
         "positive_mixing_length": 0.001736733063604406
       },
       "shape_cosine": 0.8964299105687351,
-      "shape_gate": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_cyclone_spectrum_shape_gate.json",
+      "shape_cosine_gate": 0.95,
+      "shape_gate": "docs/_static/quasilinear_cyclone_spectrum_shape_gate.json",
+      "shape_gate_kind": "quasilinear_spectrum_shape_gate",
+      "shape_gate_status": "failed",
       "shape_passed": false,
       "shape_tv": 0.21473341652286174,
-      "spectrum": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_cyclone_spectrum_scan.quasilinear_spectrum.csv",
+      "shape_tv_gate": 0.2,
+      "spectrum": "docs/_static/quasilinear_cyclone_spectrum_scan.quasilinear_spectrum.csv",
       "split": "train"
     },
     {
       "case": "cyclone_miller_long_window",
       "geometry": "cyclone_miller",
-      "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/nonlinear_cyclone_miller_gate_summary.json",
+      "nonlinear_summary": "docs/_static/nonlinear_cyclone_miller_gate_summary.json",
       "observed_heat_flux": 4.259822065746515,
       "observed_heat_flux_std": 4.2116774700305175,
       "raw_estimates": {
@@ -30,16 +36,20 @@
         "positive_mixing_length": 0.6810220831094436
       },
       "shape_cosine": 0.9825396600130925,
-      "shape_gate": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_cyclone_miller_spectrum_shape_gate.json",
+      "shape_cosine_gate": 0.95,
+      "shape_gate": "docs/_static/quasilinear_cyclone_miller_spectrum_shape_gate.json",
+      "shape_gate_kind": "quasilinear_spectrum_shape_gate",
+      "shape_gate_status": "passed",
       "shape_passed": true,
       "shape_tv": 0.09394928384219987,
-      "spectrum": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_cyclone_miller_spectrum_scan.quasilinear_spectrum.csv",
+      "shape_tv_gate": 0.2,
+      "spectrum": "docs/_static/quasilinear_cyclone_miller_spectrum_scan.quasilinear_spectrum.csv",
       "split": "holdout"
     },
     {
       "case": "hsx_nonlinear_window",
       "geometry": "hsx",
-      "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/nonlinear_hsx_gate_summary.json",
+      "nonlinear_summary": "docs/_static/nonlinear_hsx_gate_summary.json",
       "observed_heat_flux": 5.089605487565396,
       "observed_heat_flux_std": 6.284535110439706,
       "raw_estimates": {
@@ -48,16 +58,20 @@
         "positive_mixing_length": 0.0
       },
       "shape_cosine": 0.9709889879217466,
-      "shape_gate": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_hsx_spectrum_shape_gate.json",
+      "shape_cosine_gate": 0.95,
+      "shape_gate": "docs/_static/quasilinear_hsx_spectrum_shape_gate.json",
+      "shape_gate_kind": "quasilinear_spectrum_shape_gate",
+      "shape_gate_status": "passed",
       "shape_passed": true,
       "shape_tv": 0.11157506481268943,
-      "spectrum": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_hsx_spectrum_scan.quasilinear_spectrum.csv",
+      "shape_tv_gate": 0.2,
+      "spectrum": "docs/_static/quasilinear_hsx_spectrum_scan.quasilinear_spectrum.csv",
       "split": "holdout"
     },
     {
       "case": "w7x_nonlinear_window",
       "geometry": "w7x",
-      "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/nonlinear_w7x_gate_summary.json",
+      "nonlinear_summary": "docs/_static/nonlinear_w7x_gate_summary.json",
       "observed_heat_flux": 5.378544112072135,
       "observed_heat_flux_std": 3.295746205851981,
       "raw_estimates": {
@@ -66,16 +80,20 @@
         "positive_mixing_length": 0.0
       },
       "shape_cosine": 0.9916731122648941,
-      "shape_gate": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_w7x_spectrum_shape_gate.json",
+      "shape_cosine_gate": 0.95,
+      "shape_gate": "docs/_static/quasilinear_w7x_spectrum_shape_gate.json",
+      "shape_gate_kind": "quasilinear_spectrum_shape_gate",
+      "shape_gate_status": "passed",
       "shape_passed": true,
       "shape_tv": 0.05564144523893508,
-      "spectrum": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_w7x_spectrum_scan.quasilinear_spectrum.csv",
+      "shape_tv_gate": 0.2,
+      "spectrum": "docs/_static/quasilinear_w7x_spectrum_scan.quasilinear_spectrum.csv",
       "split": "holdout"
     },
     {
       "case": "dshape_external_vmec_t250_window",
       "geometry": "dshape_external_vmec",
-      "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/external_vmec_dshape_t250_n64_transport_window.json",
+      "nonlinear_summary": "docs/_static/external_vmec_dshape_t250_n64_transport_window.json",
       "observed_heat_flux": 18.479456131274883,
       "observed_heat_flux_std": 2.1065149048808203,
       "raw_estimates": {
@@ -83,13 +101,22 @@
         "linear_weight": 2.2930220564131654,
         "positive_mixing_length": 0.909198613989148
       },
-      "spectrum": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_vmec_dshape_linear_spectrum_scan.quasilinear_spectrum.csv",
+      "shape_cosine": null,
+      "shape_cosine_gate": null,
+      "shape_gate": null,
+      "shape_gate_kind": null,
+      "shape_gate_notes": "no shape-gate JSON configured for this case",
+      "shape_gate_status": "missing",
+      "shape_passed": null,
+      "shape_tv": null,
+      "shape_tv_gate": null,
+      "spectrum": "docs/_static/quasilinear_vmec_dshape_linear_spectrum_scan.quasilinear_spectrum.csv",
       "split": "holdout"
     },
     {
       "case": "itermodel_external_vmec_t350_window",
       "geometry": "itermodel_external_vmec",
-      "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/external_vmec_itermodel_t350_n64_transport_window.json",
+      "nonlinear_summary": "docs/_static/external_vmec_itermodel_t350_n64_transport_window.json",
       "observed_heat_flux": 22.046746492385864,
       "observed_heat_flux_std": 3.434397669803179,
       "raw_estimates": {
@@ -97,13 +124,22 @@
         "linear_weight": 1.3025812708940083,
         "positive_mixing_length": 0.3888307697796897
       },
-      "spectrum": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_vmec_itermodel_linear_spectrum_scan.quasilinear_spectrum.csv",
+      "shape_cosine": null,
+      "shape_cosine_gate": null,
+      "shape_gate": null,
+      "shape_gate_kind": null,
+      "shape_gate_notes": "no shape-gate JSON configured for this case",
+      "shape_gate_status": "missing",
+      "shape_passed": null,
+      "shape_tv": null,
+      "shape_tv_gate": null,
+      "spectrum": "docs/_static/quasilinear_vmec_itermodel_linear_spectrum_scan.quasilinear_spectrum.csv",
       "split": "train"
     },
     {
       "case": "updown_asym_external_vmec_t450_window",
       "geometry": "updown_asym_external_vmec",
-      "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/external_vmec_updown_asym_t450_n64_transport_window.json",
+      "nonlinear_summary": "docs/_static/external_vmec_updown_asym_t450_n64_transport_window.json",
       "observed_heat_flux": 7.76432224499282,
       "observed_heat_flux_std": 0.6236662752268785,
       "raw_estimates": {
@@ -111,18 +147,51 @@
         "linear_weight": 0.9060503900122323,
         "positive_mixing_length": 0.04517405095460055
       },
-      "spectrum": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/quasilinear_vmec_updown_asym_linear_spectrum_scan.quasilinear_spectrum.csv",
+      "shape_cosine": null,
+      "shape_cosine_gate": null,
+      "shape_gate": null,
+      "shape_gate_kind": null,
+      "shape_gate_notes": "no shape-gate JSON configured for this case",
+      "shape_gate_status": "missing",
+      "shape_passed": null,
+      "shape_tv": null,
+      "shape_tv_gate": null,
+      "spectrum": "docs/_static/quasilinear_vmec_updown_asym_linear_spectrum_scan.quasilinear_spectrum.csv",
+      "split": "holdout"
+    },
+    {
+      "case": "circular_external_vmec_t450_window",
+      "geometry": "circular_external_vmec",
+      "nonlinear_summary": "docs/_static/external_vmec_circular_t450_n64_transport_window.json",
+      "observed_heat_flux": 19.430008846324878,
+      "observed_heat_flux_std": 2.5120911781559006,
+      "raw_estimates": {
+        "absolute_growth_mixing_length": 0.4477122990896032,
+        "linear_weight": 1.3059193904159918,
+        "positive_mixing_length": 0.39176646407336235
+      },
+      "shape_cosine": null,
+      "shape_cosine_gate": null,
+      "shape_gate": null,
+      "shape_gate_kind": null,
+      "shape_gate_notes": "no shape-gate JSON configured for this case",
+      "shape_gate_status": "missing",
+      "shape_passed": null,
+      "shape_tv": null,
+      "shape_tv_gate": null,
+      "spectrum": "docs/_static/quasilinear_vmec_circular_linear_spectrum_scan.quasilinear_spectrum.csv",
       "split": "holdout"
     }
   ],
   "claim_level": "model_comparison_not_validated_transport",
+  "holdout_relative_error_gate": 0.35,
   "input_validation": {
     "cases": [
       {
         "case": "cyclone_long_window",
         "gate_case": "cyclone_nonlinear_long_window",
         "gate_passed": true,
-        "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/nonlinear_cyclone_gate_summary.json",
+        "nonlinear_summary": "docs/_static/nonlinear_cyclone_gate_summary.json",
         "passed": true,
         "reason": "matched passed nonlinear summary gate",
         "required": true,
@@ -132,7 +201,7 @@
         "case": "cyclone_miller_long_window",
         "gate_case": "cyclone_miller_nonlinear_window",
         "gate_passed": true,
-        "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/nonlinear_cyclone_miller_gate_summary.json",
+        "nonlinear_summary": "docs/_static/nonlinear_cyclone_miller_gate_summary.json",
         "passed": true,
         "reason": "matched passed nonlinear summary gate",
         "required": true,
@@ -142,7 +211,7 @@
         "case": "hsx_nonlinear_window",
         "gate_case": "hsx_nonlinear_window",
         "gate_passed": true,
-        "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/nonlinear_hsx_gate_summary.json",
+        "nonlinear_summary": "docs/_static/nonlinear_hsx_gate_summary.json",
         "passed": true,
         "reason": "matched passed nonlinear summary gate",
         "required": true,
@@ -152,7 +221,7 @@
         "case": "w7x_nonlinear_window",
         "gate_case": "w7x_nonlinear_window",
         "gate_passed": true,
-        "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/nonlinear_w7x_gate_summary.json",
+        "nonlinear_summary": "docs/_static/nonlinear_w7x_gate_summary.json",
         "passed": true,
         "reason": "matched passed nonlinear summary gate",
         "required": true,
@@ -162,7 +231,7 @@
         "case": "dshape_external_vmec_t250_window",
         "gate_case": "D-shaped tokamak external VMEC nonlinear t250 high-grid convergence",
         "gate_passed": true,
-        "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/external_vmec_dshape_t250_n64_transport_window.json",
+        "nonlinear_summary": "docs/_static/external_vmec_dshape_t250_n64_transport_window.json",
         "passed": true,
         "reason": "matched passed nonlinear summary gate",
         "required": true,
@@ -172,7 +241,7 @@
         "case": "itermodel_external_vmec_t350_window",
         "gate_case": "ITERModel external VMEC nonlinear t350 high-grid convergence",
         "gate_passed": true,
-        "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/external_vmec_itermodel_t350_n64_transport_window.json",
+        "nonlinear_summary": "docs/_static/external_vmec_itermodel_t350_n64_transport_window.json",
         "passed": true,
         "reason": "matched passed nonlinear summary gate",
         "required": true,
@@ -182,7 +251,17 @@
         "case": "updown_asym_external_vmec_t450_window",
         "gate_case": "updown_asym_external_vmec_t450",
         "gate_passed": true,
-        "nonlinear_summary": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/external_vmec_updown_asym_t450_n64_transport_window.json",
+        "nonlinear_summary": "docs/_static/external_vmec_updown_asym_t450_n64_transport_window.json",
+        "passed": true,
+        "reason": "matched passed nonlinear summary gate",
+        "required": true,
+        "split": "holdout"
+      },
+      {
+        "case": "circular_external_vmec_t450_window",
+        "gate_case": "circular_external_vmec_t450",
+        "gate_passed": true,
+        "nonlinear_summary": "docs/_static/external_vmec_circular_t450_n64_transport_window.json",
         "passed": true,
         "reason": "matched passed nonlinear summary gate",
         "required": true,
@@ -206,12 +285,14 @@
       1.6694717077649317,
       0.22303604423494022,
       0.34875328016762464,
-      0.8492111588234961
+      0.8492111588234961,
+      0.26104658779617773
     ],
     "holdout_max_abs_relative_error": 2.3705331148910482,
-    "holdout_mean_abs_relative_error": 1.386654108994605,
+    "holdout_mean_abs_relative_error": 1.1990528554615338,
     "label": "training-mean null",
     "predicted_heat_flux": [
+      14.357871336142221,
       14.357871336142221,
       14.357871336142221,
       14.357871336142221,
@@ -225,13 +306,13 @@
   "parallel": {
     "executor": "thread",
     "identity_contract": "parallel case rows preserve serial case ordering",
-    "workers": 4
+    "workers": 1
   },
   "promotion_gate": {
     "accepted_rules": [],
     "best_rule": "positive_mixing_length",
-    "best_rule_holdout_mean_abs_relative_error": 2.507965653182929,
-    "null_training_mean_holdout_mean_abs_relative_error": 1.386654108994605,
+    "best_rule_holdout_mean_abs_relative_error": 2.114098664675138,
+    "null_training_mean_holdout_mean_abs_relative_error": 1.1990528554615338,
     "passed": false,
     "requires_beating_training_mean_null": true,
     "transport_mean_relative_error_gate": 0.35
@@ -245,10 +326,13 @@
         5.628605471681736,
         2.2844105822343836,
         0.0011663937234478862,
-        0.7111422075065565
+        0.7111422075065565,
+        0.14399632420788017
       ],
+      "holdout_gate_passed": false,
       "holdout_max_abs_relative_error": 7.977649671388667,
-      "holdout_mean_abs_relative_error": 3.960701946600608,
+      "holdout_mean_abs_relative_error": 3.3245843428684867,
+      "holdout_relative_error_gate": 0.35,
       "label": "$|\\gamma|\\,\\hat Q/k_\\perp^2$",
       "predicted_heat_flux": [
         0.0862246965631407,
@@ -257,7 +341,8 @@
         35.65224693096294,
         60.694121271495284,
         22.07246167911703,
-        2.2427849838963634
+        2.2427849838963634,
+        22.227858699522255
       ],
       "scale": 49.6476392199216
     },
@@ -269,10 +354,13 @@
         3.2141590889876523,
         1.1319745272589499,
         0.015133793802400076,
-        1.0049879392103855
+        1.0049879392103855,
+        0.15479883386577564
       ],
+      "holdout_gate_passed": false,
       "holdout_max_abs_relative_error": 7.095485447591235,
-      "holdout_mean_abs_relative_error": 3.1852098221344005,
+      "holdout_mean_abs_relative_error": 2.6801413240896292,
+      "holdout_relative_error_gate": 0.35,
       "label": "$\\hat Q$",
       "predicted_heat_flux": [
         1.4235722857694018,
@@ -281,7 +369,8 @@
         22.66604055540981,
         39.39772974947727,
         22.38039740781542,
-        15.567372457353509
+        15.567372457353509,
+        22.437751557737673
       ],
       "scale": 17.18157469933139
     },
@@ -293,10 +382,13 @@
         1.0,
         1.7933874600118,
         0.001331126194502853,
-        0.6696707090141597
+        0.6696707090141597,
+        0.14476372213618077
       ],
+      "holdout_gate_passed": false,
       "holdout_max_abs_relative_error": 8.076770096888685,
-      "holdout_mean_abs_relative_error": 2.507965653182929,
+      "holdout_mean_abs_relative_error": 2.114098664675138,
+      "holdout_relative_error_gate": 0.35,
       "label": "$\\max(\\gamma,0)\\,\\hat Q/k_\\perp^2$",
       "predicted_heat_flux": [
         0.09860403153852253,
@@ -305,7 +397,8 @@
         0.0,
         51.62028102494143,
         22.076093494145443,
-        2.5647830621740666
+        2.5647830621740666,
+        22.242769248057787
       ],
       "scale": 56.77558261825238
     }

@@ -2847,7 +2847,154 @@
       "regularization_helical_ripple_amplitude",
       "regularization_magnetic_shear_shift",
       "nonlinear_heat_flux_transport_objective"
-    ]
+    ],
+    "conditioning_gate": {
+      "passed": true,
+      "finite_singular_values": true,
+      "finite_condition_number": true,
+      "sensitivity_map_rank": 4,
+      "min_rank": 4,
+      "rank_deficiency": 0,
+      "jacobian_condition_number": 21.61110169400794,
+      "condition_number_limit": 10000.0,
+      "smallest_singular_value": 0.044749911641373694
+    },
+    "residual_jacobian_gate": {
+      "passed": true,
+      "step": 0.0001,
+      "rtol": 0.005,
+      "atol": 0.0006,
+      "max_abs_error": 0.0002884163473779594,
+      "max_rel_error": 0.0037541870352328353,
+      "tangent_max_abs_error": 3.6196075986774656e-05,
+      "jacobian_ad": [
+        [
+          -0.2398279105015582,
+          0.0015107428330135726,
+          9.759207268366052e-06,
+          0.0
+        ],
+        [
+          0.0,
+          0.09,
+          -0.15,
+          0.95
+        ],
+        [
+          0.0,
+          1.5952855410671402e-08,
+          0.07716021322307587,
+          0.0
+        ],
+        [
+          0.044721359549995794,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.044721359549995794,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.044721359549995794,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.044721359549995794
+        ],
+        [
+          -0.0008801151178918008,
+          0.0012364910698595155,
+          0.009103286884211529,
+          -0.00405610592805889
+        ]
+      ],
+      "jacobian_fd": [
+        [
+          -0.2398279105937057,
+          0.001510742833689448,
+          9.75920741056813e-06,
+          0.0
+        ],
+        [
+          0.0,
+          0.08999999999981245,
+          -0.15000000000015,
+          0.9499999999995623
+        ],
+        [
+          0.0,
+          1.5952855627211077e-08,
+          0.07687179687569791,
+          0.0
+        ],
+        [
+          0.04472135954999585,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.04472135954999585,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.044721359549995794,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.04472135954999571
+        ],
+        [
+          -0.0008801151247378458,
+          0.0012364910718237754,
+          0.009069239263748141,
+          -0.0040560627736357935
+        ]
+      ],
+      "tangent_ad": [
+        -0.11915370423063812,
+        0.445,
+        0.03858011458796564,
+        0.022360679774997897,
+        0.022360679774997897,
+        0.022360679774997897,
+        0.022360679774997897,
+        0.0027017784540601768
+      ],
+      "tangent_fd": [
+        -0.11915370427344786,
+        0.4449999999989185,
+        0.038543918511978865,
+        0.022360679774997855,
+        0.022360679774997925,
+        0.022360679774997897,
+        0.022360679774997925,
+        0.002697508368204593
+      ],
+      "finite_difference_parallel": {
+        "requested_workers": 2,
+        "effective_workers": 2,
+        "executor": "thread",
+        "identity_contract": "parallel finite-difference columns must match serial columns"
+      }
+    },
+    "residual_sensitivity_passed": true
   },
   "nonlinear_trace": {
     "times": [
@@ -4460,6 +4607,17 @@
     "booz_xform_jax_paths": [
       "/Users/rogeriojorge/local/booz_xform_jax",
       "/Users/rogeriojorge/local/booz_xform_jax/src"
+    ]
+  },
+  "claim_level": "reduced_nonlinear_window_estimator_optimization_not_transport_average",
+  "nonlinear_transport_scope": {
+    "model": "smooth_logistic_heat_flux_envelope_from_linear_observables",
+    "transport_average_gate": false,
+    "production_nonlinear_optimization_claim": false,
+    "requires_for_production": [
+      "long post-transient nonlinear transport window",
+      "seed/initial-condition and timestep replicate ensemble",
+      "optimized-equilibrium nonlinear audit"
     ]
   }
 }

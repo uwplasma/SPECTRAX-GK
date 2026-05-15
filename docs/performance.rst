@@ -550,6 +550,16 @@ sharding and FFT-axis decomposition at diagnostic status until runtime
 distributed communication, conservation, transport-window, and profiler-backed
 speedup gates are closed.
 
+The nonlinear state-domain prototype now has a stronger diagnostic gate in
+``docs/_static/nonlinear_domain_parallel_identity_gate.json``. In addition to
+the one-step serial-vs-halo-decomposed state check, the embedded
+``nonlinear_domain_transport_window_identity`` report advances a short
+fixed-step window and compares boundary identity plus mass, free-energy-proxy,
+and boundary-flux-proxy traces. Those trace drifts are agreement metadata for
+the diagnostic local stencil only. They do not validate production conservation,
+distributed FFT routing, field solves, benchmark transport windows, or any
+speedup claim.
+
 The same independent-worker policy is also gated on a quasilinear/UQ-style
 ensemble: six late-time Cyclone ITG gradient samples, five ``k_y`` values per
 sample, ``Ny=96``, ``Nz=64``, ``Nl=3``, ``Nm=6``, and ``2000`` RK2 steps per
@@ -924,7 +934,12 @@ each device count gets a clean JAX runtime:
      --nx 48 --ny 96 --nz 128 --nl 4 --nm 8 --steps 12 \
      --out-prefix docs/_static/nonlinear_sharding_strong_scaling_gpu_xlarge
 
+   # Equivalent office two-GPU profile preset with JAX traces enabled.
+   python tools/profile_nonlinear_sharding_sweep.py --office-gpu-xlarge
+
    python tools/plot_nonlinear_sharding_strong_scaling.py
+
+   python tools/generate_nonlinear_sharding_production_gate.py
 
 .. image:: _static/nonlinear_sharding_strong_scaling_large.png
    :alt: SPECTRAX-GK large nonlinear whole-state sharding strong-scaling artifact
@@ -940,6 +955,15 @@ whole-state nonlinear sharding path is useful as a correctness/profiler gate,
 but production parallelization should prioritize independent ``k_y`` scans,
 UQ/ensemble batching, and a redesigned communication-aware nonlinear domain
 decomposition before any nonlinear multi-GPU speedup claim is made.
+The production gate fails closed as ``diagnostic_only`` unless the refreshed
+CPU and GPU rows both pass serial identity, use active state sharding, and meet
+the configured speedup and parallel-efficiency thresholds. The tracked gate
+artifact is ``docs/_static/nonlinear_sharding_production_speedup_gate.json``;
+in the current artifact set the CPU two-device row passes, but the GPU row
+blocks production speedup claims.
+The raw sweep JSON files also carry ``speedup_passed``, ``status``, and
+``speedup_blockers`` fields so a timeout, profiler failure, or identity-correct
+slowdown is visible before the stricter production gate is evaluated.
 
 This claim boundary is mirrored in :doc:`parallelization` and
 :doc:`release_scope`. If a future optimization changes the conclusion, refresh

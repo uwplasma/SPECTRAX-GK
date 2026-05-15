@@ -66,6 +66,25 @@ def _coverage_filename_to_module(filename: str) -> str | None:
     return normalized[:-3].replace("/", ".")
 
 
+def _validate_fast_test_path(resolved: Path, raw: str, module: str) -> None:
+    """Require manifest fast tests to be discoverable by the wide coverage gate."""
+
+    tests_root = (REPO_ROOT / "tests").resolve()
+    if not resolved.exists():
+        raise ValueError(f"{module}: fast test does not exist: {raw}")
+    if not resolved.is_file():
+        raise ValueError(f"{module}: fast test must be a file: {raw}")
+    try:
+        rel = resolved.relative_to(tests_root)
+    except ValueError as exc:
+        raise ValueError(f"{module}: fast test must live under tests/: {raw}") from exc
+    if rel.parent != Path(".") or not rel.name.startswith("test_") or rel.suffix != ".py":
+        raise ValueError(
+            f"{module}: fast test must be a top-level tests/test_*.py file "
+            f"discoverable by run_wide_coverage_gate.py: {raw}"
+        )
+
+
 def _as_nonempty_string(value: object, field: str, module: str) -> str:
     if not isinstance(value, str) or not value.strip():
         raise ValueError(f"{module}: {field} must be a non-empty string")
@@ -288,14 +307,7 @@ def validate_manifest(
 
         for test_path in lists["fast_tests"]:
             resolved = _repo_path(test_path)
-            if not resolved.exists():
-                raise ValueError(f"{module}: fast test does not exist: {test_path}")
-            if not resolved.is_file():
-                raise ValueError(f"{module}: fast test must be a file: {test_path}")
-            try:
-                resolved.relative_to((REPO_ROOT / "tests").resolve())
-            except ValueError as exc:
-                raise ValueError(f"{module}: fast test must live under tests/: {test_path}") from exc
+            _validate_fast_test_path(resolved, test_path, module)
 
         artifacts = _as_nonempty_list(entry.get("artifact_paths"), "artifact_paths", module)
         _reject_duplicate_values(artifacts, "artifact_paths", module)
