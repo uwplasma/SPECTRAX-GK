@@ -25,6 +25,20 @@ def test_profile_nonlinear_sharding_sweep_parser_defaults_to_bounded_artifact() 
     assert args.devices == [1, 2]
     assert args.sharding_options == "auto,kx"
     assert args.timeout_s == 300.0
+    assert args.office_gpu_xlarge is False
+
+
+def test_profile_nonlinear_sharding_sweep_office_gpu_preset_is_canonical() -> None:
+    mod = _load_tool_module()
+
+    args = mod.apply_profile_preset(mod.build_parser().parse_args(["--office-gpu-xlarge"]))
+
+    assert args.backend == "gpu"
+    assert args.devices == [1, 2]
+    assert (args.nx, args.ny, args.nz, args.nl, args.nm, args.steps) == (48, 96, 128, 4, 8, 12)
+    assert args.sharding_options == "auto,kx"
+    assert args.out_prefix == mod.OFFICE_GPU_XLARGE_PREFIX
+    assert args.trace is True
 
 
 def test_profile_nonlinear_sharding_sweep_device_env_is_backend_specific() -> None:

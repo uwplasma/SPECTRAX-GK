@@ -20,6 +20,7 @@ import numpy as np
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_PREFIX = REPO_ROOT / "docs" / "_static" / "nonlinear_sharding_strong_scaling"
 PROFILE_TOOL = REPO_ROOT / "tools" / "profile_nonlinear_sharding.py"
+OFFICE_GPU_XLARGE_PREFIX = REPO_ROOT / "docs" / "_static" / "nonlinear_sharding_strong_scaling_gpu_xlarge"
 
 
 def _json_clean(value: Any) -> Any:
@@ -355,6 +356,14 @@ def write_artifacts(summary: dict[str, Any], out_prefix: Path) -> dict[str, str]
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--office-gpu-xlarge",
+        action="store_true",
+        help=(
+            "Use the canonical office two-GPU nonlinear sharding profile: "
+            "gpu backend, devices 1,2, Nx=48, Ny=96, Nz=128, Nl=4, Nm=8, steps=12, trace enabled."
+        ),
+    )
     parser.add_argument("--out-prefix", type=Path, default=DEFAULT_PREFIX)
     parser.add_argument("--backend", choices=("cpu", "gpu"), default="cpu")
     parser.add_argument("--devices", type=_parse_int_list, default=[1, 2])
@@ -376,8 +385,28 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def apply_profile_preset(args: argparse.Namespace) -> argparse.Namespace:
+    """Apply named profiling presets after argparse has filled defaults."""
+
+    if not bool(getattr(args, "office_gpu_xlarge", False)):
+        return args
+    args.backend = "gpu"
+    args.devices = [1, 2]
+    args.nx = 48
+    args.ny = 96
+    args.nz = 128
+    args.nl = 4
+    args.nm = 8
+    args.steps = 12
+    args.sharding = "auto"
+    args.sharding_options = "auto,kx"
+    args.out_prefix = OFFICE_GPU_XLARGE_PREFIX
+    args.trace = True
+    return args
+
+
 def main() -> int:
-    args = build_parser().parse_args()
+    args = apply_profile_preset(build_parser().parse_args())
     summary = run_sweep(
         backend=str(args.backend),
         devices=list(args.devices),

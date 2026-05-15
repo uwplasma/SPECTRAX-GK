@@ -1,4 +1,12 @@
 {
+  "absolute_flux_promotion": {
+    "blockers": [],
+    "honest_status": "scoped_candidate_with_audited_optimized_equilibrium_evidence_not_universal_absolute_flux",
+    "runtime_absolute_flux_predictor_promoted": false,
+    "scoped_model_selection_promoted": true,
+    "scoped_optimized_equilibrium_nonlinear_audit_supported": true,
+    "universal_absolute_flux_promoted": false
+  },
   "accepted_candidates": [
     "spectral_envelope_ridge"
   ],
@@ -32,7 +40,7 @@
       "passed": false
     }
   ],
-  "claim_level": "scoped_candidate_model_selection_not_runtime_absolute_flux",
+  "claim_level": "scoped_candidate_model_selection_with_optimized_equilibrium_nonlinear_audit_not_universal_absolute_flux",
   "gate_report": {
     "case": "quasilinear_model_selection",
     "gates": [
@@ -85,6 +93,21 @@
         "detail": "missing_holdout_metrics=0",
         "metric": "calibration_reports_have_holdout_metrics",
         "passed": true
+      },
+      {
+        "detail": "audits=1",
+        "metric": "optimized_equilibrium_nonlinear_audit_present",
+        "passed": true
+      },
+      {
+        "detail": "qualifying_audits=1",
+        "metric": "optimized_equilibrium_nonlinear_audit_qualified",
+        "passed": true
+      },
+      {
+        "detail": "universal_absolute_flux_overclaims=0",
+        "metric": "optimized_equilibrium_nonlinear_audit_scope_limited",
+        "passed": true
       }
     ],
     "max_abs_error": 0.0,
@@ -100,13 +123,29 @@
     "null_training_mean_mean_abs_relative_error": 0.899798561209823,
     "transport_mean_relative_error_gate": 0.35
   },
-  "notes": "A passed status promotes only the scoped model-selection result. It does not promote a runtime/TOML absolute-flux predictor or a universal nonlinear transport model.",
+  "notes": "A passed status promotes only the scoped model-selection result. Optimized-equilibrium nonlinear audits, when supplied, can support only that audited equilibrium. The status does not promote a runtime/TOML absolute-flux predictor or a universal nonlinear transport model.",
+  "optimized_equilibrium_nonlinear_audits": [
+    {
+      "artifact": "docs/_static/production_nonlinear_optimization_guard.json",
+      "blockers": [],
+      "claim_level": "production_nonlinear_optimization_promoted_by_replicated_transport_windows",
+      "claims_universal_absolute_flux": false,
+      "kind": "production_nonlinear_turbulent_flux_optimization_guard",
+      "optimized_equilibrium_marker": true,
+      "passed": true,
+      "production_nonlinear_optimization_promoted": true,
+      "promotion_gate_passed": true,
+      "qualifying_optimized_equilibrium_ensembles": 1,
+      "supports_scoped_optimized_equilibrium_transport": true
+    }
+  ],
   "passed": true,
   "promotion_gate": {
     "blockers": [],
     "passed": true,
     "requires_dataset_sufficiency": true,
     "requires_no_absolute_flux_promotion": true,
+    "requires_optimized_equilibrium_nonlinear_audit": true,
     "requires_uncertainty_skill": true
   },
   "required_candidate": "spectral_envelope_ridge"

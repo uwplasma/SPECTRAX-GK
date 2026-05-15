@@ -1,0 +1,154 @@
+{
+  "blockers": [
+    "production_gradient_artifact"
+  ],
+  "claim_level": "fail_closed_claim_boundary_for_long_window_nonlinear_turbulence_gradient_evidence",
+  "config": {
+    "max_fd_asymmetry_rel": 0.5,
+    "max_fd_condition_number": 100000000.0,
+    "max_gradient_uncertainty_rel": 0.5,
+    "max_window_combined_sem_rel": 0.25,
+    "max_window_mean_rel_spread": 0.15,
+    "min_fd_response_fraction": 0.03,
+    "min_window_reports": 2,
+    "value_floor": 1e-12
+  },
+  "gates": [
+    {
+      "detail": "startup_or_reduced_window_fd_not_production",
+      "metric": "production_gradient_artifact",
+      "passed": false
+    },
+    {
+      "detail": "qualifying_ensembles=2 min_window_reports=2",
+      "metric": "replicated_long_window_uncertainty",
+      "passed": true
+    }
+  ],
+  "gradient_artifact": {
+    "artifact_passed": true,
+    "claim_level": "",
+    "claim_scope": "full vmec_jax state coefficient -> booz_xform_jax mode-21 equal-arc geometry -> SPECTRAX-GK linear-RHS eigenpair -> reduced nonlinear-window estimator gradient",
+    "conditioning": {
+      "central_gradient": 15692.509115410841,
+      "fd_asymmetry_rel": null,
+      "fd_condition_number": null,
+      "gradient_uncertainty_rel": null,
+      "passed": false,
+      "response_fraction": null
+    },
+    "evidence_class": "startup_or_reduced_window_fd_not_production",
+    "explicit_production_scope": false,
+    "gates": [
+      {
+        "detail": "kind=mode21_vmec_boozer_nonlinear_window_gradient_gate",
+        "metric": "artifact_passed",
+        "passed": true
+      },
+      {
+        "detail": "explicit_production_scope=False scope_blockers=['estimator', 'reduced']",
+        "metric": "explicit_production_long_window_scope",
+        "passed": false
+      },
+      {
+        "detail": "central_gradient=15692.509115410841",
+        "metric": "finite_gradient_estimate",
+        "passed": true
+      },
+      {
+        "detail": "response_fraction=None min=0.03",
+        "metric": "fd_response_resolved",
+        "passed": false
+      },
+      {
+        "detail": "fd_asymmetry_rel=None max=0.5",
+        "metric": "fd_asymmetry_bounded",
+        "passed": false
+      },
+      {
+        "detail": "condition_number=None max=100000000.0",
+        "metric": "fd_condition_number_bounded",
+        "passed": false
+      },
+      {
+        "detail": "gradient_uncertainty_rel=None max=0.5",
+        "metric": "gradient_uncertainty_bounded",
+        "passed": false
+      }
+    ],
+    "kind": "mode21_vmec_boozer_nonlinear_window_gradient_gate",
+    "path": "docs/_static/vmec_boozer_nonlinear_window_gradient_gate.json",
+    "qualifies_for_production_turbulence_gradient": false,
+    "scope_blockers": [
+      "estimator",
+      "reduced"
+    ]
+  },
+  "kind": "nonlinear_turbulence_gradient_evidence_report",
+  "notes": "This checker distinguishes claim boundaries only.  Passing it means the supplied artifacts meet the recorded evidence contract; it does not run or certify new nonlinear simulations.",
+  "passed": false,
+  "production_nonlinear_window_gradient_gate": false,
+  "requirements": [
+    "gradient artifact must explicitly claim production long-window nonlinear turbulence-gradient scope",
+    "startup/reduced-window finite-difference or estimator artifacts are recorded but never promoted",
+    "finite-difference response, asymmetry, and condition number must be recorded and within gates",
+    "gradient uncertainty must be recorded and within gate",
+    "replicated post-transient nonlinear-window summaries must pass ensemble uncertainty gates"
+  ],
+  "window_evidence": {
+    "derived_ensemble": null,
+    "ensemble_rows": [
+      {
+        "combined_sem_rel": 0.04283952221624353,
+        "kind": "nonlinear_window_ensemble_report",
+        "mean_rel_spread": 0.035473869975602645,
+        "n_reports": 3,
+        "passed": true,
+        "path": "docs/_static/external_vmec_circular_replicates/circular_replicate_t700_ensemble_gate.json",
+        "qualifies_for_replicated_long_window_uncertainty": true,
+        "source": "input_ensemble",
+        "statistics": {
+          "combined_sem": 0.8127758666777402,
+          "combined_sem_rel": 0.04283952221624353,
+          "ensemble_mean": 18.972570762461928,
+          "max_individual_sem": 0.8127758666777402,
+          "mean_rel_spread": 0.035473869975602645,
+          "mean_spread": 0.6730305083304948,
+          "n_finite_means": 3,
+          "n_reports": 3,
+          "sample_sem": 0.19528025448806302
+        }
+      },
+      {
+        "combined_sem_rel": 0.020869088819709194,
+        "kind": "nonlinear_window_ensemble_report",
+        "mean_rel_spread": 0.038174615386123725,
+        "n_reports": 3,
+        "passed": true,
+        "path": "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json",
+        "qualifies_for_replicated_long_window_uncertainty": true,
+        "source": "input_ensemble",
+        "statistics": {
+          "combined_sem": 0.21271304260839316,
+          "combined_sem_rel": 0.020869088819709194,
+          "ensemble_mean": 10.19273263179093,
+          "max_individual_sem": 0.21271304260839316,
+          "mean_rel_spread": 0.038174615386123725,
+          "mean_spread": 0.3891036479522114,
+          "n_finite_means": 3,
+          "n_reports": 3,
+          "sample_sem": 0.11288514898058016
+        }
+      }
+    ],
+    "gates": [
+      {
+        "detail": "qualifying_ensembles=2 min_window_reports=2",
+        "metric": "replicated_long_window_uncertainty",
+        "passed": true
+      }
+    ],
+    "passed": true,
+    "single_window_rows": []
+  }
+}

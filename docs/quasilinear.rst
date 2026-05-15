@@ -1060,6 +1060,8 @@ and are we still avoiding an absolute-flux overclaim?
 .. code-block:: bash
 
    python tools/plot_quasilinear_model_selection_status.py \
+     --optimized-equilibrium-nonlinear-audit docs/_static/production_nonlinear_optimization_guard.json \
+     --require-optimized-equilibrium-nonlinear-audit \
      --out docs/_static/quasilinear_model_selection_status.png
 
 .. image:: _static/quasilinear_model_selection_status.png
@@ -1071,10 +1073,18 @@ has leave-one-geometry-out mean relative error about ``0.295`` and interval
 coverage ``7/8``. It beats both the training-mean null baseline
 (``0.900``) and the calibrated linear-weight baseline (``0.947``), while every
 tracked one-constant train/holdout calibration report remains demoted to
-``calibration_dataset``. This closes a scoped model-selection lane for the
-manuscript. It does **not** promote a runtime/TOML absolute-flux predictor,
-and it does not replace the nonlinear convergence requirements for future
-stellarator-optimization transport claims.
+``calibration_dataset``. The status also consumes the selected optimized-QA
+nonlinear audit, but only as scoped transport evidence for that audited
+equilibrium. This closes a scoped model-selection lane for the manuscript. It
+does **not** promote a runtime/TOML absolute-flux predictor, a universal
+saturation rule, or a nonlinear turbulence-gradient optimization claim.
+
+The companion claim-boundary artifact
+``docs/_static/nonlinear_turbulence_gradient_evidence_status.json`` is
+deliberately stricter: it records that replicated long-window transport
+evidence is present, while the current nonlinear-gradient artifact remains
+startup/reduced-window scoped and is therefore not production turbulence-gradient
+evidence.
 
 Holdout-gap report
 ------------------

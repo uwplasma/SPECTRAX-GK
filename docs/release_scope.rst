@@ -270,6 +270,13 @@ Quasilinear model-selection state:
   post-transient replicated holdout ensembles pass. Its production-promotion
   gate now also passes for the selected optimized QA equilibrium because the
   ``t=[350,700]`` seed/timestep replicated transport-window audit is attached.
+- ``tools/check_nonlinear_turbulence_gradient_evidence.py`` is the stricter
+  nonlinear turbulence-gradient claim gate. The tracked
+  ``docs/_static/nonlinear_turbulence_gradient_evidence_status.json`` artifact
+  passes the replicated long-window uncertainty side but fails closed on the
+  gradient side because the available VMEC/Boozer nonlinear-gradient artifacts
+  are startup/reduced-window diagnostics, not production transport-gradient
+  evidence.
 - ``docs/_static/quasilinear_saturation_rule_sweep.json``:
   no simple saturation rule is accepted. Positive-growth mixing length is the
   least-bad simple rule with mean held-out relative error about ``2.11``;

@@ -165,13 +165,13 @@ short artifacts validate plumbing only and explicitly are not heat-flux
 transport averages. The production guard at
 ``docs/_static/production_nonlinear_optimization_guard.png`` / ``.json`` records
 that D-shaped and circular long post-transient replicate ensembles now pass as
-holdout evidence, while production nonlinear turbulent-flux optimization remains
-blocked until optimized equilibria have their own replicated post-transient
-transport-window audits. The remaining promotion step is a production nonlinear
-turbulence-gradient or robust finite-difference audit with local-gradient
-conditioning, converged long post-transient running-average heat-flux windows,
-and nonlinear audits of optimized equilibria. Those are required before claiming
-a production nonlinear heat-flux stellarator optimizer.
+holdout evidence, and the selected optimized QA equilibrium now has its own
+replicated ``t=[350,700]`` post-transient transport-window audit. The remaining
+promotion step is production nonlinear turbulence-gradient evidence or a robust
+matched baseline-to-optimized finite-difference audit with local-gradient
+conditioning and converged long post-transient running-average heat-flux
+windows. Those are required before claiming a production nonlinear heat-flux
+stellarator optimizer.
 
 Before tagging, the latest public ``main`` CI run must pass repo hygiene, mypy,
 quick shards, docs/packaging, fast coverage, and the full wide-coverage matrix.
