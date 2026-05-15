@@ -345,6 +345,12 @@ replicas, shrink a bracket, or move to an overdetermined
 least-squares/profile-gradient design. The current tracked ranking artifact is
 ``docs/_static/nonlinear_turbulence_gradient_candidate_ranking.json`` and is
 not itself promotion evidence.
+``tools/write_overdetermined_nonlinear_gradient_campaign.py`` implements that
+next launch-contract step. It writes multiple matched boundary-control VMEC
+perturbation manifests from one baseline input, records the per-control
+nonlinear campaign commands, and writes the final candidate-ranking command.
+The tracked QA/ESS profile-gradient launch plan is
+``docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_plan.json``.
 
 ``tools/write_optimized_equilibrium_transport_configs.py`` is the production
 optimization companion for that final audit. Given a concrete post-optimization
