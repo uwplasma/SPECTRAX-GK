@@ -1082,9 +1082,10 @@ saturation rule, or a nonlinear turbulence-gradient optimization claim.
 The companion claim-boundary artifact
 ``docs/_static/nonlinear_turbulence_gradient_evidence_status.json`` is
 deliberately stricter: it records that replicated long-window transport
-evidence is present, while the current nonlinear-gradient artifact remains
-startup/reduced-window scoped and is therefore not production turbulence-gradient
-evidence.
+evidence is present, while the current nonlinear-gradient artifact is a
+long-window production candidate that still fails closed on finite-difference
+locality and propagated gradient uncertainty. It is therefore not promoted as
+production turbulence-gradient evidence.
 
 Holdout-gap report
 ------------------
