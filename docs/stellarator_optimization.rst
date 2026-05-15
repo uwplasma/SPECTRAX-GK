@@ -33,10 +33,21 @@ Source Map
   :func:`spectraxgk.vmec_boozer_solver_objective_vector_from_state`
 - Scalar optimizer hook:
   :func:`spectraxgk.vmec_boozer_scalar_objective_from_state`
+- Multi-point objective table and aggregate hooks:
+  :func:`spectraxgk.vmec_boozer_solver_objective_table_from_state`,
+  :func:`spectraxgk.vmec_boozer_aggregate_scalar_objective_from_state`
 - VMEC-state finite-difference sensitivity audit:
   :func:`spectraxgk.vmec_boozer_scalar_objective_finite_difference_report`
+- Multi-point finite-difference sensitivity audit:
+  :func:`spectraxgk.vmec_boozer_aggregate_scalar_objective_finite_difference_report`
 - Curvature-gated one-parameter line search:
   :func:`spectraxgk.vmec_boozer_scalar_objective_line_search_report`
+- Multi-point curvature-gated one-parameter line search:
+  :func:`spectraxgk.vmec_boozer_aggregate_scalar_objective_line_search_report`
+- Held-out aggregate line-search validation:
+  :func:`spectraxgk.vmec_boozer_aggregate_line_search_holdout_report`
+- Held-out aggregate promotion artifact check:
+  ``tools/check_vmec_boozer_aggregate_holdout_gate.py``
 - Fast branch-continuity and sensitivity gate:
   :func:`spectraxgk.solver_objective_branch_gradient_report`
 - Tests: ``tests/test_stellarator_optimization.py``
@@ -83,6 +94,17 @@ they have a solved ``vmec_jax`` state. The supported aliases are
 ``quasilinear_flux``/``mixing_length_heat_flux_proxy``. This selector prevents
 each optimization example from silently using a different objective index.
 
+The production-facing geometry objective should not stay tied to one field
+line or one ``k_y`` point. ``vmec_boozer_solver_objective_table_from_state``
+evaluates the same solver-objective vector over explicit ``surface_indices``,
+field-line ``alphas``, and ``selected_ky_indices`` and returns the full table
+before any reduction. ``vmec_boozer_aggregate_scalar_objective_from_state``
+then reduces that table with a mean, weighted mean, or worst-case max. Mean and
+weighted mean are the preferred gradient-development targets because the
+sample set is fixed. A max reduction is useful as a conservative diagnostic,
+but it must not be treated as a smooth optimizer objective unless active-set
+and branch-continuity diagnostics are also passed.
+
 Before any optimizer loop is promoted, run
 ``vmec_boozer_scalar_objective_finite_difference_report`` on the selected
 VMEC coefficient, field line, and objective. It evaluates the scalar objective
@@ -93,6 +115,15 @@ mistaken for a usable optimization gradient. This is intentionally a
 finite-difference/SPSA-compatible audit, not an automatic-differentiation claim
 for eigenvector-dependent quasilinear observables.
 
+For multi-surface or multi-``k_y`` objectives, run
+``vmec_boozer_aggregate_scalar_objective_finite_difference_report`` with the
+same sample set and weights used by the optimizer. The report records the
+sample metadata, scalar values, objective tables, and the same
+curvature/branch-switch indicator. This is the minimum gate before a
+stellarator optimization study can claim that a reduced growth-rate or
+quasilinear objective decreased across more than one field line, surface, or
+``k_y`` point.
+
 The first optimizer scaffold is
 ``vmec_boozer_scalar_objective_line_search_report``. It repeatedly applies the
 finite-difference audit at the current VMEC coefficient offset and accepts only
@@ -100,6 +131,39 @@ candidate updates that both pass the same curvature gate and reduce the scalar
 objective. This is useful for growth-rate and quasilinear-flux optimizer
 plumbing, but it remains a one-parameter audit rather than a multi-parameter
 stellarator optimization claim.
+
+For multi-point reduced objectives, use
+``vmec_boozer_aggregate_scalar_objective_line_search_report`` instead. It
+applies the aggregate finite-difference gate at every attempted VMEC
+coefficient update and records the same sample metadata as the aggregate gate.
+This is now the preferred scaffold for growth-rate and quasilinear-flux
+optimization studies that need more than one field line, surface, or ``k_y``
+point before entering a full optimizer loop.
+
+Training improvement is not enough for a geometry-wide claim.
+``vmec_boozer_aggregate_line_search_holdout_report`` runs the same aggregate
+line-search on a training sample set, then evaluates the final coefficient
+offset on a disjoint held-out sample set. The split gate passes only if both
+the training line-search gate and held-out aggregate reduction pass. This is
+the minimum reduced-objective validation step before using an optimized VMEC
+coefficient in manuscript figures.
+
+Production promotion adds a stricter surface/field-line rule. The aggregate
+finite-difference, line-search, and reduced holdout reports must be paired with
+at least one separate passed validation artifact whose sample metadata covers a
+held-out ``surface_index`` or field-line ``alpha``. A held-out ``k_y`` point
+alone is useful spectrum coverage, but it is not sufficient for the
+surface/field-line generalization gate. The repository-level check
+``tools/check_vmec_boozer_aggregate_holdout_gate.py`` encodes that boundary for
+frozen artifacts: it accepts the aggregate FD and line-search artifacts as
+necessary optimizer-plumbing evidence, then blocks promotion until independent
+surface/field-line holdout evidence is supplied. It also requires a passed
+replicated nonlinear-window ensemble artifact from
+``tools/check_nonlinear_window_ensemble.py`` before any optimized-equilibrium
+production nonlinear heat-flux claim can be made. The ensemble requirement is
+deliberately separate from the single-window convergence rule: a single
+post-transient mean can establish a candidate window, but seed/timestep/restart
+replicates are needed before that mean becomes a robust optimization target.
 
 Objective
 ---------
@@ -253,6 +317,63 @@ where ``J_r = dr/dp`` and ``sigma^2`` is estimated from the final residual.
 This is intentionally tied to the optimization objective. It is not computed
 from the initial-to-final parameter displacement, which would measure optimizer
 travel rather than local uncertainty at the optimized point.
+
+Objective-portfolio reducer gate
+--------------------------------
+
+Multi-surface, multi-field-line, and multi-``k_y`` stellarator studies should
+separate two contracts:
+
+- row production, where VMEC/Boozer/SPECTRAX-GK evaluates one objective vector
+  per sample;
+- row reduction, where those fixed samples are combined into one scalar for an
+  optimizer or UQ ensemble.
+
+The lightweight reducer in
+:mod:`spectraxgk.stellarator_objective_portfolio` validates the second contract
+without importing optional VMEC or Boozer backends. It requires a real numeric
+``(surface, alpha, ky, objective)`` table, finite non-negative normalized
+weights, and an explicit reduction policy. The gate below checks the weighted
+mean reducer, directional JVP, reverse-mode gradient projection, and central
+finite difference on a deterministic nonlinear row fixture.
+
+.. code-block:: bash
+
+   python tools/build_stellarator_objective_portfolio_gate.py \
+     --out docs/_static/stellarator_objective_portfolio_gate.png
+
+.. figure:: _static/stellarator_objective_portfolio_gate.png
+   :width: 95%
+   :align: center
+   :alt: Stellarator objective portfolio reducer gate
+
+   Backend-free aggregate-objective reducer gate. It passes AD/JVP/central-FD
+   parity for fixed surface/alpha/``k_y`` rows and validates the normalized
+   sample/objective weights. This is a required optimization-plumbing contract,
+   not a standalone VMEC/Boozer geometry-gradient or nonlinear heat-flux
+   optimization claim.
+
+The corresponding real-artifact guard is
+``tools/check_vmec_boozer_reduced_portfolio_guard.py``. It consumes the tracked
+multi-alpha VMEC/Boozer aggregate-objective JSON plus a VMEC/Boozer AD/FD
+gradient JSON, rebuilds a backend-free reducer table from the real rows, and
+fails closed unless the artifact has VMEC/Boozer provenance, at least two
+field-line ``alpha`` values, at least two ``k_y`` samples, finite FD and AD/FD
+diagnostics, growth and quasilinear objective columns, and an explicit
+non-production nonlinear claim boundary.
+
+.. code-block:: bash
+
+   python tools/check_vmec_boozer_reduced_portfolio_guard.py
+
+The tracked guard lives at
+``docs/_static/vmec_boozer_reduced_portfolio_guard.json`` and passes on the QH
+mode-21 multi-alpha/two-``k_y`` artifact. It admits reduced growth/QL
+portfolio plumbing only; production nonlinear turbulent-transport optimization
+now additionally requires the separate optimized-equilibrium long-window
+transport audit tracked below. That audit is closed for the selected QA
+candidate, while nonlinear turbulence gradients and broad multi-surface
+optimization remain separate gates.
 
 Results
 -------
@@ -414,6 +535,104 @@ transport claims.
    open until all-surface or otherwise accuracy-equivalent gates pass. This is
    still not a nonlinear-window heat-flux gradient claim.
 
+.. figure:: _static/vmec_boozer_aggregate_objective_gate.png
+   :width: 90%
+   :align: center
+   :alt: VMEC/Boozer multi-point aggregate-objective finite-difference gate
+
+   Multi-point VMEC/Boozer aggregate-objective gate. The tracked QH fixture
+   evaluates the quasilinear proxy at two resolved ``k_y`` samples using
+   ``mboz=nboz=21`` and records the aggregate finite-difference response
+   through the same in-memory VMEC/Boozer/SPECTRAX-GK value path. This closes
+   the software and artifact path for multi-``k_y`` reduced objectives; it is
+   not a nonlinear turbulent heat-flux optimization claim. The tracked
+   two-``k_y`` artifact intentionally does not satisfy the held-out
+   surface/field-line promotion gate by itself.
+
+.. figure:: _static/vmec_boozer_multi_point_objective_gate.png
+   :width: 90%
+   :align: center
+   :alt: VMEC/Boozer multi-alpha aggregate-objective finite-difference gate
+
+   Multi-alpha VMEC/Boozer aggregate-objective gate. The QH fixture repeats the
+   same quasilinear finite-difference audit over two field lines
+   (``alpha = 0`` and ``0.5``) and two ``k_y`` samples using ``mboz=nboz=21``.
+   The tracked artifact has four samples, passes the curvature gate with
+   curvature ratio about ``6.9e-3``, and is the current reduced-objective
+   evidence for field-line coverage. It still remains a reduced
+   linear/quasilinear objective gate, not an optimized-equilibrium nonlinear
+   transport claim. The reduced-portfolio guard in
+   ``docs/_static/vmec_boozer_reduced_portfolio_guard.json`` now verifies that
+   these real rows satisfy the backend-free reducer contract and the
+   growth/QL AD/FD provenance boundary.
+
+.. figure:: _static/vmec_boozer_aggregate_line_search_gate.png
+   :width: 90%
+   :align: center
+   :alt: VMEC/Boozer multi-point aggregate-objective line-search gate
+
+   Multi-point VMEC/Boozer aggregate-objective line-search gate. The tracked
+   QH fixture applies one curvature-gated VMEC coefficient update to the
+   two-``k_y`` quasilinear proxy aggregate and accepts it only because the
+   candidate decreases the objective while the finite-difference gate remains
+   conditioned. This is optimizer control-flow evidence for reduced objectives,
+   not a nonlinear turbulent transport optimization claim. It must be paired
+   with held-out ``surface_index`` or field-line ``alpha`` validation before it
+   can support an optimized-equilibrium transport claim.
+
+.. figure:: _static/vmec_boozer_aggregate_line_search_comparison.png
+   :width: 90%
+   :align: center
+   :alt: VMEC/Boozer aggregate growth and quasilinear line-search comparison
+
+   Growth-vs-quasilinear aggregate line-search comparison. The growth and
+   quasilinear proxy objectives both pass a one-step curvature-gated line
+   search on the same QH sample set, but their initial descent directions
+   differ. This is important for manuscript claims: optimizing growth rate,
+   quasilinear proxy, and nonlinear transport are related but not identical
+   objective choices, so each must carry its own validation and holdout gate.
+
+.. figure:: _static/vmec_boozer_aggregate_alpha_holdout_gate.png
+   :width: 90%
+   :align: center
+   :alt: VMEC/Boozer aggregate alpha-heldout line-search gate
+
+   Alpha-heldout aggregate line-search gate. The same accepted quasilinear
+   update is trained on the ``alpha=0`` QH field line and evaluated on the
+   held-out ``alpha=0.5`` field line with the same two ``k_y`` samples. The
+   tracked artifact passes, with training relative reduction about ``2.2e-3``
+   and held-out relative reduction about ``6.8e-5``. This is useful reduced
+   field-line generalization evidence, but it is intentionally blocked from the
+   production promotion gate because it is still a reduced linear/quasilinear
+   objective split, not a nonlinear transport validation.
+
+.. figure:: _static/vmec_boozer_aggregate_surface_holdout_gate.png
+   :width: 90%
+   :align: center
+   :alt: VMEC/Boozer aggregate surface-heldout line-search gate
+
+   Surface-heldout aggregate line-search gate. The QH quasilinear update is
+   trained on explicit ``surface_index = 18`` and evaluated on held-out
+   ``surface_index = 19`` with the same ``alpha=0`` and two ``k_y`` samples.
+   The tracked artifact passes with training relative reduction about
+   ``1.31e-3`` and held-out-surface relative reduction about ``4.59e-4``. This
+   closes a true reduced surface-generalization check; it still remains a
+   reduced linear/quasilinear objective gate rather than a nonlinear transport
+   validation.
+
+.. figure:: _static/vmec_boozer_second_equilibrium_aggregate_gate.png
+   :width: 90%
+   :align: center
+   :alt: VMEC/Boozer second-equilibrium aggregate-objective gate
+
+   Second-equilibrium aggregate-objective gate. The Li383 fixture passes the
+   same mode-21 VMEC/Boozer aggregate finite-difference and one-step
+   line-search path with two ``k_y`` samples. The finite-difference curvature
+   ratio is about ``3.4e-3`` and the line search reduces the reduced
+   quasilinear objective by about ``1.34e-4``. This is second-equilibrium
+   optimizer-plumbing evidence, not a calibrated saturated-flux or nonlinear
+   transport claim.
+
 .. figure:: _static/vmec_boozer_nonlinear_window_gradient_gate.png
    :width: 90%
    :align: center
@@ -500,9 +719,191 @@ the following pass:
    optimized-equilibrium finite-difference audits.
 7. Optimized geometries pass multi-field-line, multi-surface, grid/window
    convergence, and nonlinear holdout gates before being used for transport
-   claims.
+   claims. The current multi-point VMEC/Boozer aggregate API closes the
+   software plumbing for this gate, but the manuscript claim remains bounded
+   until the corresponding aggregate artifacts pass on the selected
+   equilibria. ``tools/check_vmec_boozer_aggregate_holdout_gate.py`` is the
+   artifact-level promotion check for this boundary: aggregate finite-difference
+   and line-search artifacts must pass on the same training sample set, and at
+   least one independent passed validation artifact must cover a held-out
+   ``surface_index`` or field-line ``alpha``. Additional ``k_y`` coverage is
+   useful, but ``k_y``-only holdout evidence does not satisfy the
+   surface/field-line gate. A passed replicated nonlinear-window ensemble is
+   also required before the optimized-equilibrium claim can be promoted from
+   reduced-objective evidence to production nonlinear transport evidence. The
+   current frozen promotion artifact,
+   ``docs/_static/vmec_boozer_aggregate_holdout_promotion_gate.json``, is
+   blocked as intended: reduced held-out-alpha and held-out-surface artifacts
+   now pass, but they remain reduced-objective evidence, while the D-shaped and
+   circular replicated nonlinear-window ensembles are holdout/calibration
+   evidence. The selected optimized QA equilibrium now has its own replicated
+   long-window nonlinear audit, which closes the optimized-equilibrium
+   post-transient transport-window evidence requirement for this scoped
+   candidate.
+   ``tools/write_optimized_equilibrium_transport_configs.py`` is the launch
+   contract for that final audit. Given a concrete post-optimization
+   ``wout*.nc``, it writes the release ``n64`` nonlinear transport replicate
+   ladder, including ``t=250,350,450,700`` continuations, two random-seed
+   replicates, one timestep replicate, and the exact ensemble/guard commands.
+   The current selected candidate has completed that ladder. The generated
+   ``t=[350,700]`` ensemble passes finite-flux, running-window, block/SEM,
+   replicate-spread, and optimized-equilibrium marker gates, with ensemble mean
+   ion heat flux ``10.19``, mean-relative spread ``0.038``, and combined
+   SEM/mean ``0.021``.
 
-Until those gates pass, the release claim is: SPECTRAX-GK has a tested
-differentiable stellarator ITG objective-reduction workflow and the validation
-infrastructure needed to promote that workflow to full VMEC/Boozer/nonlinear
-optimization.
+   Example launch-contract generation:
+
+   .. code-block:: bash
+
+      python tools/write_optimized_equilibrium_transport_configs.py \
+        --vmec-file /path/to/wout_optimized_equilibrium.nc \
+        --case optimized_equilibrium_post_optimization \
+        --out-dir tools_out/optimized_equilibrium_replicates
+
+   The current QA ``vmec_jax`` optimized-equilibrium candidate has also been
+   screened through the SPECTRAX-GK linear/quasilinear runtime before launching
+   the large nonlinear campaign. On the sampled ITG branch
+   ``k_y rho_i = 0.095, 0.190, 0.300, 0.476, 0.667``, all fitted growth rates
+   are negative, with the least damped point at ``gamma≈-0.015``. The
+   quasilinear mixing-length diagnostic therefore reports zero saturated heat
+   flux because stable modes are excluded by the current growth-floor rule. The
+   nonlinear audit for this candidate is therefore interpreted as a
+   post-transient optimized-equilibrium transport-window check, not as evidence
+   that the uncalibrated quasilinear zero-flux estimate predicts an absolute
+   saturated flux.
+
+.. figure:: _static/optimized_equilibrium_linear_screen.png
+   :width: 90%
+   :align: center
+   :alt: Optimized QA equilibrium linear and quasilinear screen
+
+   Linear/quasilinear screen for the QA optimized-equilibrium candidate from
+   ``vmec_jax``. The sampled ITG branch is linearly damped across the scan, so
+   the uncalibrated quasilinear heat-flux estimate is zero under the stable-mode
+   exclusion rule. The subsequent nonlinear audit shows finite post-transient
+   heat flux, so this panel should be read as a stability/branch screen rather
+   than as an absolute-flux prediction.
+
+.. figure:: _static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.png
+   :width: 90%
+   :align: center
+   :alt: Optimized QA equilibrium nonlinear replicate gate
+
+   Optimized-equilibrium nonlinear replicate gate. Two seed replicates and one
+   timestep replicate are advanced to ``t≈700`` at ``n64`` and accepted over the
+   post-transient window ``t=[350,700]``. The ensemble passes with mean ion heat
+   flux ``10.19``, mean-relative spread ``0.038``, and combined SEM/mean
+   ``0.021``. This closes the scoped optimized-equilibrium transport-window
+   evidence gate; broader nonlinear turbulence-gradient and absolute-flux model
+   claims remain separate gates.
+
+.. figure:: _static/qa_no_ess_reference_replicates/qa_no_ess_reference_t700_ensemble_gate.png
+   :width: 90%
+   :align: center
+   :alt: QA no-ESS reference nonlinear replicate gate
+
+   Matched no-ESS reference replicate gate. The valid finite-transform QA
+   ``no_ess`` equilibrium from the same ``vmec_jax`` campaign is advanced with
+   the same grid, seeds, timestep variant, and post-transient window as the
+   selected optimized QA/ESS equilibrium. The reference ensemble passes with
+   mean ion heat flux ``12.50``, mean-relative spread ``0.046``, and combined
+   SEM/mean ``0.016``.
+
+.. figure:: _static/qa_no_ess_to_optimized_nonlinear_audit.png
+   :width: 70%
+   :align: center
+   :alt: Matched no-ESS to optimized QA/ESS nonlinear audit
+
+   Matched baseline-to-optimized nonlinear audit. Against the validated no-ESS
+   reference ensemble, the optimized QA/ESS equilibrium reduces the
+   post-transient ion heat flux from ``12.50`` to ``10.19``. The relative
+   reduction is ``0.184`` and the difference is separated by ``7.82`` combined
+   SEMs. The zero-transform raw ``wout_initial.nc`` from the VMEC optimization
+   is intentionally excluded because it cannot define the same finite-twist
+   flux-tube baseline.
+
+.. figure:: _static/production_nonlinear_optimization_guard.png
+   :width: 90%
+   :align: center
+   :alt: Production nonlinear turbulent-flux optimization promotion guard
+
+   Production nonlinear turbulent-flux optimization guard. The release-safety
+   side passes because startup and reduced nonlinear artifacts are explicitly
+   blocked from production promotion and two long post-transient replicated
+   holdout ensembles pass. The selected optimized-equilibrium audit also
+   satisfies this guard because seed and timestep post-transient windows are
+   attached and converged; broader nonlinear transport-optimization claims
+   still require separate gates.
+
+The release claim is now: SPECTRAX-GK has a tested differentiable stellarator
+ITG objective-reduction workflow, long-window nonlinear holdout evidence, and a
+scoped optimized-equilibrium replicated nonlinear transport audit with a matched
+finite-transform no-ESS reference comparison. It is still not a universal
+absolute-flux quasilinear model, a nonlinear turbulence-gradient optimizer, or a
+broad multi-surface stellarator transport-optimization claim.
+
+The next nonlinear turbulence-gradient promotion is now encoded as a
+fail-closed evidence gate in
+``docs/_static/nonlinear_turbulence_gradient_evidence_gap_report.json``. That
+gate requires paired ``baseline``, ``plus_delta``, and ``minus_delta`` nonlinear
+campaigns around the same VMEC/profile parameter, the same seed/timestep
+replicate set for every parameter state, post-transient heat-flux averages,
+passed ensemble uncertainty gates for all three states, and a central
+finite-difference audit with bounded response, asymmetry, condition number, and
+gradient uncertainty. Existing standalone replicated transport windows remain
+necessary evidence but are not sufficient to claim a production nonlinear
+turbulence gradient.
+The current real boundary-gradient sweep starts from the optimized QA/ESS
+equilibrium, re-equilibrates each perturbed VMEC input with ``vmec_jax``, runs
+three seed/timestep nonlinear replicates to ``t=900`` for each parameter state,
+and analyzes the common ``t=[450,900]`` transport window. The tracked
+``ZBS(1,0)`` 5% campaign closes the earlier finite-difference locality blocker:
+``fd_asymmetry_rel = 0.274`` and the response fraction is ``0.0685``. It still
+fails closed because the propagated gradient uncertainty is ``0.768 > 0.5``.
+The companion ``ZBS(1,1)`` 5% campaign gives the complementary negative result:
+``gradient_uncertainty_rel = 0.225`` passes, but ``fd_asymmetry_rel = 0.663`` is
+still above the locality gate. This is now a robust production-candidate audit
+set, not a promoted nonlinear turbulence-gradient validation.
+
+.. figure:: _static/qa_ess_zbs10_rel5_nonlinear_gradient_zbs_1_0_central_fd_gradient_gate.png
+   :width: 90%
+   :align: center
+   :alt: QA/ESS ZBS(1,0) long-window nonlinear turbulence-gradient gate
+
+   QA/ESS ``ZBS(1,0)`` 5% long-window nonlinear turbulence-gradient gate. The left
+   panel shows the replicated ``t=[450,900]`` heat-flux means for minus,
+   baseline, and plus states; the right panel compares backward, central, and
+   forward finite-difference gradients. The artifact is a production-candidate
+   long-window campaign, but it remains blocked because the propagated
+   gradient uncertainty is still above the release gate.
+
+For boundary-coefficient gradients, first use
+``tools/write_vmec_boundary_perturbation_inputs.py``. It starts from a concrete
+VMEC input file such as the optimized-equilibrium ``input.final``, writes
+matched ``baseline``, ``plus_delta``, and ``minus_delta`` input files for an
+explicit ``RBC/RBS/ZBC/ZBS(m,n)`` coefficient, and records the exact
+``vmec_jax`` commands plus the downstream nonlinear-gradient campaign command.
+The generated files are still launch artifacts, not evidence: production
+promotion only begins after ``vmec_jax`` has re-equilibrated all three inputs
+and produced distinct ``wout`` files.
+Once the three matched ensembles exist,
+``tools/build_nonlinear_turbulence_gradient_fd_gate.py`` is the promotion
+artifact builder. It consumes the ``baseline``, ``plus_delta``, and
+``minus_delta`` replicated ensemble JSON files, computes
+``dQ/dp = (Q_+ - Q_-)/(2 delta_p)``, propagates the ensemble SEM into
+``gradient_uncertainty_rel``, checks the response fraction, forward/backward
+asymmetry, subtraction condition number, and per-state window uncertainty, and
+writes JSON/CSV/PNG/PDF sidecars. The resulting JSON is then supplied to
+``tools/check_nonlinear_turbulence_gradient_evidence.py`` together with the
+three ensemble artifacts; only that paired long-window workflow can promote a
+nonlinear turbulence-gradient claim.
+``tools/write_nonlinear_turbulence_gradient_campaign.py`` writes the matching
+launch ladder from three explicit VMEC files first: baseline, positive
+perturbation, and negative perturbation. Its manifest records the per-state run
+manifests, the ensemble-builder commands, the central-FD command, and the final
+evidence-check command, so office GPU campaigns and later manuscript artifacts
+use one reproducible contract. The writer also performs a fail-closed VMEC
+preflight: all three files must exist, must be distinct resolved paths, and must
+have distinct SHA256 contents by default. Byte-identical files can only be
+accepted with ``--allow-identical-vmec-content`` for plumbing smoke tests, and
+that flag is recorded in the manifest as non-production evidence.

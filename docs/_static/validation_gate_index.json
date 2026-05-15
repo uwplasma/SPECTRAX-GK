@@ -1,7 +1,7 @@
 {
   "n_open": 0,
-  "n_passed": 14,
-  "n_reports": 14,
+  "n_passed": 16,
+  "n_reports": 16,
   "patterns": [
     "docs/_static/**/*.json"
   ],
@@ -25,6 +25,17 @@
       "max_rel_error": 0.0,
       "n_failed": 0,
       "n_gates": 8,
+      "passed": true,
+      "source": "external_vmec_nonlinear_pilot_reports"
+    },
+    {
+      "artifact": "docs/_static/external_vmec_circular_t450_n64_transport_window.json",
+      "case": "circular_external_vmec_t450",
+      "failed_metrics": "",
+      "max_abs_error": null,
+      "max_rel_error": null,
+      "n_failed": 0,
+      "n_gates": 0,
       "passed": true,
       "source": "external_vmec_nonlinear_pilot_reports"
     },
@@ -123,9 +134,20 @@
       "max_abs_error": 0.0,
       "max_rel_error": 0.0,
       "n_failed": 0,
-      "n_gates": 26,
+      "n_gates": 31,
       "passed": true,
       "source": "tracked quasilinear JSON artifacts and documentation scope checks"
+    },
+    {
+      "artifact": "docs/_static/quasilinear_model_selection_status.json",
+      "case": "quasilinear_model_selection",
+      "failed_metrics": "",
+      "max_abs_error": 0.0,
+      "max_rel_error": 0.0,
+      "n_failed": 0,
+      "n_gates": 10,
+      "passed": true,
+      "source": ""
     },
     {
       "artifact": "docs/_static/external_vmec_updown_asym_t450_n64_transport_window.json",

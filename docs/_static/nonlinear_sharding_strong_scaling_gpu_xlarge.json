@@ -1,6 +1,6 @@
 {
   "backend": "gpu",
-  "claim_scope": "large fixed-step nonlinear state-sharding strong-scaling artifact with numerical identity gates; use as profiler evidence, not as a broad production speedup claim",
+  "claim_scope": "large fixed-step nonlinear state-sharding strong-scaling artifact with numerical identity gates; speedup is a separate fail-closed field, and this artifact is profiler evidence unless speedup_passed is true, not as a broad production speedup claim",
   "devices": [
     1,
     2
@@ -265,6 +265,12 @@
   ],
   "sharding": "auto",
   "sharding_options": "auto,kx",
+  "speedup_blockers": [
+    "gpu_2devices_speedup_0.626_below_1"
+  ],
+  "speedup_passed": false,
+  "speedup_threshold_vs_1_device": 1.0,
+  "status": "diagnostic_identity_only",
   "steps": 12,
   "timeout_s": 600.0,
   "warmups": 1

@@ -26,6 +26,9 @@ def test_nonlinear_spectral_communication_gate_closes_fft_bracket_and_field_layo
     assert report.state_shape == (2, 3, 6, 4, 2)
     assert report.y_chunks == (2, 2, 2)
     assert report.x_chunks == (2, 2)
+    assert report.y_offsets == (0, 2, 4)
+    assert report.x_offsets == (0, 2)
+    assert report.blocked_reasons == ()
     assert report.identity_passed is True
     assert report.decomposed_path_enabled is True
     assert report.fft_max_abs_error <= report.atol
@@ -60,6 +63,35 @@ def test_nonlinear_spectral_communication_report_fails_closed_on_mismatch() -> N
     assert report.identity_passed is False
     assert report.decomposed_path_enabled is False
     assert report.fft_max_abs_error > report.atol
+    assert report.blocked_reasons == ()
+
+
+def test_nonlinear_spectral_communication_report_fails_closed_on_shape_blocker() -> None:
+    reference = jnp.ones((2, 3, 6, 4, 2), dtype=jnp.complex64)
+    communicated = jnp.ones((2, 3, 5, 4, 2), dtype=jnp.complex64)
+    field = jnp.ones((6, 4, 2), dtype=jnp.complex64)
+
+    report = nonlinear_spectral_communication_identity_report(
+        reference,
+        communicated,
+        reference,
+        reference,
+        field,
+        field,
+        state_shape=(2, 3, 6, 4, 2),
+        y_chunks=(3, 3),
+        x_chunks=(2, 2),
+        atol=5.0e-6,
+        rtol=5.0e-6,
+    )
+
+    assert report.identity_passed is False
+    assert report.decomposed_path_enabled is False
+    assert report.fft_max_abs_error == float("inf")
+    assert report.fft_max_rel_error == float("inf")
+    assert report.blocked_reasons == (
+        "communicated_fft_roundtrip_shape_mismatch",
+    )
 
 
 def test_nonlinear_spectral_state_and_chunk_validation_reject_invalid_inputs() -> None:

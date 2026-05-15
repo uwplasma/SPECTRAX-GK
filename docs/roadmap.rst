@@ -162,11 +162,18 @@ holdouts. Compact nonlinear startup-window finite-difference observable audits
 are tracked at ``docs/_static/nonlinear_window_fd_audit.png`` / ``.json`` and
 ``docs/_static/vmec_boozer_nonlinear_window_fd_audit.png`` / ``.json``. These
 short artifacts validate plumbing only and explicitly are not heat-flux
-transport averages. The remaining promotion step is a production nonlinear
-turbulence-gradient or robust finite-difference audit with local-gradient
-conditioning, converged long post-transient running-average heat-flux windows,
-and nonlinear audits of optimized equilibria. Those are required before claiming
-a production nonlinear heat-flux stellarator optimizer.
+transport averages. The production guard at
+``docs/_static/production_nonlinear_optimization_guard.png`` / ``.json`` records
+that D-shaped and circular long post-transient replicate ensembles now pass as
+holdout evidence, and the selected optimized QA equilibrium now has its own
+replicated ``t=[350,700]`` post-transient transport-window audit. A matched
+finite-transform no-ESS reference from the same VMEC-JAX campaign now also
+passes the same ensemble protocol, and the optimized QA/ESS equilibrium reduces
+the audited late-window heat flux by ``18.4%``. The remaining promotion step is
+production nonlinear turbulence-gradient evidence or broader matched
+baseline-to-optimized finite-difference audits with local-gradient conditioning
+and converged long post-transient running-average heat-flux windows. Those are
+required before claiming a production nonlinear heat-flux stellarator optimizer.
 
 Before tagging, the latest public ``main`` CI run must pass repo hygiene, mypy,
 quick shards, docs/packaging, fast coverage, and the full wide-coverage matrix.

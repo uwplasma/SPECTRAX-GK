@@ -93,6 +93,13 @@ def build_nonlinear_spectral_communication_gate(
             "source": "spectraxgk.nonlinear_parallel nonlinear-spectral communication utilities",
             "claim_scope": report.claim_scope,
             "kind": "nonlinear_spectral_communication_identity_gate",
+            "communication_decomposition": {
+                "y_chunks": report.y_chunks,
+                "y_offsets": report.y_offsets,
+                "x_chunks": report.x_chunks,
+                "x_offsets": report.x_offsets,
+                "blocked_reasons": report.blocked_reasons,
+            },
             "gate": report.to_dict(),
             "rows": error_rows,
         }

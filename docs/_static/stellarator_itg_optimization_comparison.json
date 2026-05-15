@@ -1,4 +1,6 @@
 {
+  "claim_level": "reduced_objective_optimization_comparison_not_full_production_vmec_gk",
+  "production_nonlinear_optimization_claim": false,
   "parameter_names": [
     "minor_radius_log_shift",
     "vertical_elongation_shift",
@@ -2388,7 +2390,154 @@
           "regularization_helical_ripple_amplitude",
           "regularization_magnetic_shear_shift",
           "growth_transport_objective"
-        ]
+        ],
+        "conditioning_gate": {
+          "passed": true,
+          "finite_singular_values": true,
+          "finite_condition_number": true,
+          "sensitivity_map_rank": 4,
+          "min_rank": 4,
+          "rank_deficiency": 0,
+          "jacobian_condition_number": 21.669611376202656,
+          "condition_number_limit": 10000.0,
+          "smallest_singular_value": 0.044722085336877625
+        },
+        "residual_jacobian_gate": {
+          "passed": true,
+          "step": 0.0001,
+          "rtol": 0.005,
+          "atol": 0.0006,
+          "max_abs_error": 1.9707516555389493e-05,
+          "max_rel_error": 5.199957870334836e-05,
+          "tangent_max_abs_error": 2.4620686959742066e-06,
+          "jacobian_ad": [
+            [
+              -0.2399765338835372,
+              -0.0004901314178169352,
+              0.00013988566118990078,
+              0.0
+            ],
+            [
+              0.0,
+              0.09,
+              -0.15,
+              0.95
+            ],
+            [
+              0.0,
+              -3.6395823378433576e-07,
+              0.3790134810588108,
+              0.0
+            ],
+            [
+              0.044721359549995794,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.044721359549995794,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.044721359549995794,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.044721359549995794
+            ],
+            [
+              9.360586877905021e-07,
+              -0.0001902239180854713,
+              0.010143133976391813,
+              0.0006946282291612037
+            ]
+          ],
+          "jacobian_fd": [
+            [
+              -0.23997653397556107,
+              -0.0004901314176741778,
+              0.0001398856614669554,
+              0.0
+            ],
+            [
+              0.0,
+              0.08999999999981245,
+              -0.15000000000015,
+              0.9499999999995623
+            ],
+            [
+              0.0,
+              -3.6395823312627973e-07,
+              0.3789937735422554,
+              0.0
+            ],
+            [
+              0.04472135954999579,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.04472135954999558,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.04472135954999571,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.04472135954999579
+            ],
+            [
+              9.36047628297132e-07,
+              -0.00019022392022671752,
+              0.010142608380669937,
+              0.000694620304331206
+            ]
+          ],
+          "tangent_ad": [
+            -0.12016338982008211,
+            0.445,
+            0.1895065585502885,
+            0.022360679774997897,
+            0.022360679774997897,
+            0.022360679774997897,
+            0.022360679774997897,
+            0.005324237173077668
+          ],
+          "tangent_fd": [
+            -0.12016338986287067,
+            0.44500000000030626,
+            0.18950409648159253,
+            0.022360679774997904,
+            0.022360679774997654,
+            0.022360679774997925,
+            0.022360679774997907,
+            0.005324171919451892
+          ],
+          "finite_difference_parallel": {
+            "requested_workers": 2,
+            "effective_workers": 2,
+            "executor": "thread",
+            "identity_contract": "parallel finite-difference columns must match serial columns"
+          }
+        },
+        "residual_sensitivity_passed": true
       },
       "nonlinear_trace": null,
       "config": {
@@ -2420,7 +2569,8 @@
           "/Users/rogeriojorge/local/booz_xform_jax",
           "/Users/rogeriojorge/local/booz_xform_jax/src"
         ]
-      }
+      },
+      "claim_level": "reduced_linear_or_quasilinear_objective_optimization"
     },
     {
       "objective_kind": "quasilinear_flux",
@@ -4911,7 +5061,154 @@
           "regularization_helical_ripple_amplitude",
           "regularization_magnetic_shear_shift",
           "quasilinear_flux_transport_objective"
-        ]
+        ],
+        "conditioning_gate": {
+          "passed": true,
+          "finite_singular_values": true,
+          "finite_condition_number": true,
+          "sensitivity_map_rank": 4,
+          "min_rank": 4,
+          "rank_deficiency": 0,
+          "jacobian_condition_number": 21.626826082419527,
+          "condition_number_limit": 10000.0,
+          "smallest_singular_value": 0.04472185690923485
+        },
+        "residual_jacobian_gate": {
+          "passed": true,
+          "step": 0.0001,
+          "rtol": 0.005,
+          "atol": 0.0006,
+          "max_abs_error": 0.00040194810358727684,
+          "max_rel_error": 0.003410456566775849,
+          "tangent_max_abs_error": 5.040855179973963e-05,
+          "jacobian_ad": [
+            [
+              -0.23932070860179672,
+              -0.0001481646118463381,
+              -1.559199102522431e-05,
+              -0.0
+            ],
+            [
+              0.0,
+              0.09,
+              -0.15,
+              0.95
+            ],
+            [
+              -0.0,
+              -3.908358008077464e-09,
+              -0.12013211906313806,
+              -0.0
+            ],
+            [
+              0.044721359549995794,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.044721359549995794,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.044721359549995794,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.044721359549995794
+            ],
+            [
+              -0.0024748864333660517,
+              -0.0003798047325860775,
+              -0.02293576895360636,
+              -0.006273244332713925
+            ]
+          ],
+          "jacobian_fd": [
+            [
+              -0.23932070869386152,
+              -0.00014816461200843102,
+              -1.55919908733336e-05,
+              0.0
+            ],
+            [
+              0.0,
+              0.09000000000120023,
+              -0.15000000000015,
+              0.9500000000009501
+            ],
+            [
+              0.0,
+              -3.908357741177343e-09,
+              -0.11973017095955078,
+              0.0
+            ],
+            [
+              0.04472135954999612,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.04472135954999571,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.044721359549995794,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.04472135954999578
+            ],
+            [
+              -0.0024748864439760876,
+              -0.00037980473086007827,
+              -0.022857813373883262,
+              -0.006273196774819745
+            ]
+          ],
+          "tangent_ad": [
+            -0.11974223260233413,
+            0.445,
+            -0.060066061485748036,
+            0.022360679774997897,
+            0.022360679774997897,
+            0.022360679774997897,
+            0.022360679774997897,
+            -0.016031852226136206
+          ],
+          "tangent_fd": [
+            -0.11974223264551694,
+            0.44500000000169404,
+            -0.060015652933948296,
+            0.022360679774997654,
+            0.022360679774997925,
+            0.022360679774997907,
+            0.022360679774997855,
+            -0.01602207190573579
+          ],
+          "finite_difference_parallel": {
+            "requested_workers": 2,
+            "effective_workers": 2,
+            "executor": "thread",
+            "identity_contract": "parallel finite-difference columns must match serial columns"
+          }
+        },
+        "residual_sensitivity_passed": true
       },
       "nonlinear_trace": null,
       "config": {
@@ -4934,8 +5231,8 @@
       "backend_info": {
         "vmec_jax_available": true,
         "vmec_jax_boundary_api_available": true,
-        "booz_xform_jax_available": false,
-        "booz_xform_jax_api_available": false,
+        "booz_xform_jax_available": true,
+        "booz_xform_jax_api_available": true,
         "vmec_jax_paths": [
           "/Users/rogeriojorge/local/vmec_jax"
         ],
@@ -4943,7 +5240,8 @@
           "/Users/rogeriojorge/local/booz_xform_jax",
           "/Users/rogeriojorge/local/booz_xform_jax/src"
         ]
-      }
+      },
+      "claim_level": "reduced_linear_or_quasilinear_objective_optimization"
     },
     {
       "objective_kind": "nonlinear_heat_flux",
@@ -7794,7 +8092,154 @@
           "regularization_helical_ripple_amplitude",
           "regularization_magnetic_shear_shift",
           "nonlinear_heat_flux_transport_objective"
-        ]
+        ],
+        "conditioning_gate": {
+          "passed": true,
+          "finite_singular_values": true,
+          "finite_condition_number": true,
+          "sensitivity_map_rank": 4,
+          "min_rank": 4,
+          "rank_deficiency": 0,
+          "jacobian_condition_number": 21.61110169400794,
+          "condition_number_limit": 10000.0,
+          "smallest_singular_value": 0.044749911641373694
+        },
+        "residual_jacobian_gate": {
+          "passed": true,
+          "step": 0.0001,
+          "rtol": 0.005,
+          "atol": 0.0006,
+          "max_abs_error": 0.0002884163473779594,
+          "max_rel_error": 0.0037541870352328353,
+          "tangent_max_abs_error": 3.6196075986774656e-05,
+          "jacobian_ad": [
+            [
+              -0.2398279105015582,
+              0.0015107428330135726,
+              9.759207268366052e-06,
+              0.0
+            ],
+            [
+              0.0,
+              0.09,
+              -0.15,
+              0.95
+            ],
+            [
+              0.0,
+              1.5952855410671402e-08,
+              0.07716021322307587,
+              0.0
+            ],
+            [
+              0.044721359549995794,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.044721359549995794,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.044721359549995794,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.044721359549995794
+            ],
+            [
+              -0.0008801151178918008,
+              0.0012364910698595155,
+              0.009103286884211529,
+              -0.00405610592805889
+            ]
+          ],
+          "jacobian_fd": [
+            [
+              -0.2398279105937057,
+              0.001510742833689448,
+              9.75920741056813e-06,
+              0.0
+            ],
+            [
+              0.0,
+              0.08999999999981245,
+              -0.15000000000015,
+              0.9499999999995623
+            ],
+            [
+              0.0,
+              1.5952855627211077e-08,
+              0.07687179687569791,
+              0.0
+            ],
+            [
+              0.04472135954999585,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.04472135954999585,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.044721359549995794,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.04472135954999571
+            ],
+            [
+              -0.0008801151247378458,
+              0.0012364910718237754,
+              0.009069239263748141,
+              -0.0040560627736357935
+            ]
+          ],
+          "tangent_ad": [
+            -0.11915370423063812,
+            0.445,
+            0.03858011458796564,
+            0.022360679774997897,
+            0.022360679774997897,
+            0.022360679774997897,
+            0.022360679774997897,
+            0.0027017784540601768
+          ],
+          "tangent_fd": [
+            -0.11915370427344786,
+            0.4449999999989185,
+            0.038543918511978865,
+            0.022360679774997855,
+            0.022360679774997925,
+            0.022360679774997897,
+            0.022360679774997925,
+            0.002697508368204593
+          ],
+          "finite_difference_parallel": {
+            "requested_workers": 2,
+            "effective_workers": 2,
+            "executor": "thread",
+            "identity_contract": "parallel finite-difference columns must match serial columns"
+          }
+        },
+        "residual_sensitivity_passed": true
       },
       "nonlinear_trace": {
         "times": [
@@ -9407,6 +9852,17 @@
         "booz_xform_jax_paths": [
           "/Users/rogeriojorge/local/booz_xform_jax",
           "/Users/rogeriojorge/local/booz_xform_jax/src"
+        ]
+      },
+      "claim_level": "reduced_nonlinear_window_estimator_optimization_not_transport_average",
+      "nonlinear_transport_scope": {
+        "model": "smooth_logistic_heat_flux_envelope_from_linear_observables",
+        "transport_average_gate": false,
+        "production_nonlinear_optimization_claim": false,
+        "requires_for_production": [
+          "long post-transient nonlinear transport window",
+          "seed/initial-condition and timestep replicate ensemble",
+          "optimized-equilibrium nonlinear audit"
         ]
       }
     }

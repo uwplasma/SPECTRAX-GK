@@ -9,7 +9,7 @@ import json
 import math
 import re
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -24,11 +24,22 @@ DEFAULT_REPORT_PATTERNS = (
     str(ROOT / "docs/_static/manuscript_readiness_status.json"),
 )
 DEFAULT_DOCS = (
+    ROOT / "README.md",
     ROOT / "docs/quasilinear.rst",
     ROOT / "docs/manuscript_figures.rst",
     ROOT / "docs/testing.rst",
 )
 DEFAULT_OUT = ROOT / "docs/_static/quasilinear_promotion_guardrails.json"
+DEFAULT_MANUSCRIPT_INDEX = ROOT / "docs/manuscript_figures.rst"
+DEFAULT_MANUSCRIPT_FIGURE_BASES = (
+    ROOT / "docs/_static/quasilinear_stellarator_train_holdout",
+    ROOT / "docs/_static/quasilinear_saturation_rule_sweep",
+    ROOT / "docs/_static/quasilinear_shape_aware_saturation",
+    ROOT / "docs/_static/quasilinear_candidate_uncertainty",
+    ROOT / "docs/_static/quasilinear_dataset_sufficiency",
+    ROOT / "docs/_static/quasilinear_model_selection_status",
+    ROOT / "docs/_static/quasilinear_holdout_gap_report",
+)
 
 PROMOTED_CLAIM = "calibrated_absolute_flux"
 REQUIRED_SPLITS = {"train", "holdout"}
@@ -48,13 +59,99 @@ DOC_SCOPE_MARKERS = (
     "not a promoted absolute nonlinear heat-flux model",
     "not a validated transport model",
 )
+
+
+def _finite_number(value: Any) -> bool:
+    if value is None:
+        return False
+    try:
+        return math.isfinite(float(value))
+    except (TypeError, ValueError):
+        return False
+
+
+def _float_or_none(value: Any) -> float | None:
+    if value is None:
+        return None
+    try:
+        result = float(value)
+    except (TypeError, ValueError):
+        return None
+    return result if math.isfinite(result) else None
+
+
+def nonlinear_window_stats_promotion_ready(
+    stats: object,
+) -> tuple[bool, list[str]]:
+    """Return whether serialized nonlinear-window metadata supports promotion.
+
+    This duplicates the lightweight schema check from
+    ``spectraxgk.quasilinear_window`` so the CI repo-hygiene job can run before
+    installing JAX and the rest of the runtime stack.
+    """
+
+    failures: list[str] = []
+    if not isinstance(stats, dict):
+        return False, ["missing nonlinear_window_stats object"]
+    if stats.get("kind") != "nonlinear_window_convergence_report":
+        failures.append("unexpected nonlinear_window_stats kind")
+    if not bool(stats.get("passed", False)):
+        failures.append("nonlinear window convergence report did not pass")
+    provenance = stats.get("provenance")
+    if (
+        not isinstance(provenance, dict)
+        or not str(provenance.get("source_artifact", "")).strip()
+    ):
+        failures.append("missing nonlinear source_artifact provenance")
+    statistics = stats.get("statistics")
+    if not isinstance(statistics, dict):
+        failures.append("missing statistics object")
+        statistics = {}
+    for field in (
+        "late_mean",
+        "sem",
+        "block_bootstrap_sem",
+        "running_mean_rel_drift",
+    ):
+        if not _finite_number(statistics.get(field)):
+            failures.append(f"missing/non-finite statistics.{field}")
+    window = stats.get("window")
+    if not isinstance(window, dict):
+        failures.append("missing window object")
+        window = {}
+    for field in ("transient_cutoff", "late_tmin", "late_tmax"):
+        if not _finite_number(window.get(field)):
+            failures.append(f"missing/non-finite window.{field}")
+    raw_transient_fraction = window.get("transient_fraction", 0.0)
+    has_declared_cutoff = _finite_number(window.get("input_tmin")) or (
+        _finite_number(raw_transient_fraction)
+        and float(raw_transient_fraction) > 0.0
+    )
+    if not has_declared_cutoff:
+        failures.append("missing declared transient cutoff policy")
+    n_finite_late = window.get("n_finite_late", 0)
+    if not _finite_number(n_finite_late) or int(float(n_finite_late)) <= 0:
+        failures.append("window has no finite late samples")
+    gate_report = stats.get("gate_report")
+    if not isinstance(gate_report, dict) or not bool(gate_report.get("passed", False)):
+        failures.append("missing passed gate_report")
+    return not failures, failures
+
+
 SCOPED_NON_ABSOLUTE_MARKERS = (
+    "calibration_dataset",
     "model_development",
+    "model-selection",
+    "model_selection",
+    "no_absolute_flux_promotion",
     "not_runtime",
     "not runtime",
     "not a runtime",
     "not a transport model",
     "not validated transport",
+    "not_validated_transport",
+    "not_runtime_absolute_flux",
+    "not_runtime_option",
     "candidate",
     "sufficiency",
     "scoped",
@@ -94,70 +191,9 @@ def _load_json(path: Path) -> dict[str, Any]:
     return data
 
 
-def _finite_number(value: object) -> bool:
-    try:
-        return math.isfinite(float(cast(Any, value)))
-    except (TypeError, ValueError):
-        return False
-
-
 def _nonnegative_finite(value: object) -> bool:
-    return _finite_number(value) and float(cast(Any, value)) >= 0.0
-
-
-def _nonlinear_window_stats_promotion_ready(stats: object) -> tuple[bool, list[str]]:
-    """Return whether serialized nonlinear-window metadata can support promotion.
-
-    Keep this metadata-only predicate local so the repo-hygiene CI job can run
-    without importing the full package or installing JAX.
-    """
-
-    failures: list[str] = []
-    if not isinstance(stats, dict):
-        return False, ["missing nonlinear_window_stats object"]
-    if stats.get("kind") != "nonlinear_window_convergence_report":
-        failures.append("unexpected nonlinear_window_stats kind")
-    if not bool(stats.get("passed", False)):
-        failures.append("nonlinear window convergence report did not pass")
-    provenance = stats.get("provenance")
-    if (
-        not isinstance(provenance, dict)
-        or not str(provenance.get("source_artifact", "")).strip()
-    ):
-        failures.append("missing nonlinear source_artifact provenance")
-    statistics = stats.get("statistics")
-    if not isinstance(statistics, dict):
-        failures.append("missing statistics object")
-        statistics = {}
-    for field in (
-        "late_mean",
-        "sem",
-        "block_bootstrap_sem",
-        "running_mean_rel_drift",
-    ):
-        if not _finite_number(statistics.get(field)):
-            failures.append(f"missing/non-finite statistics.{field}")
-    window = stats.get("window")
-    if not isinstance(window, dict):
-        failures.append("missing window object")
-        window = {}
-    for field in ("transient_cutoff", "late_tmin", "late_tmax"):
-        if not _finite_number(window.get(field)):
-            failures.append(f"missing/non-finite window.{field}")
-    raw_transient_fraction = window.get("transient_fraction", 0.0)
-    has_declared_cutoff = _finite_number(window.get("input_tmin")) or (
-        _finite_number(raw_transient_fraction)
-        and float(cast(Any, raw_transient_fraction)) > 0.0
-    )
-    if not has_declared_cutoff:
-        failures.append("missing declared transient cutoff policy")
-    n_finite_late = window.get("n_finite_late", 0)
-    if not _finite_number(n_finite_late) or int(float(cast(Any, n_finite_late))) <= 0:
-        failures.append("window has no finite late samples")
-    gate_report = stats.get("gate_report")
-    if not isinstance(gate_report, dict) or not bool(gate_report.get("passed", False)):
-        failures.append("missing passed gate_report")
-    return not failures, failures
+    number = _float_or_none(value)
+    return number is not None and number >= 0.0
 
 
 def _gate(metric: str, passed: bool, detail: str) -> dict[str, Any]:
@@ -262,7 +298,7 @@ def _audit_calibration_report(
         for idx, point in enumerate(points):
             if not isinstance(point, dict) or str(point.get("split", "")) != "holdout":
                 continue
-            ready, failures = _nonlinear_window_stats_promotion_ready(
+            ready, failures = nonlinear_window_stats_promotion_ready(
                 point.get("nonlinear_window_stats")
             )
             if ready:
@@ -273,10 +309,8 @@ def _audit_calibration_report(
                     f"{label}: {failure}" for failure in failures
                 )
 
-    has_holdout_gate = (
-        _finite_number(data.get("holdout_mean_rel_gate"))
-        and float(data["holdout_mean_rel_gate"]) > 0.0
-    )
+    holdout_gate = _float_or_none(data.get("holdout_mean_rel_gate"))
+    has_holdout_gate = holdout_gate is not None and holdout_gate > 0.0
     holdout_metrics = by_split.get("holdout", {}) if isinstance(by_split, dict) else {}
     holdout_mean = (
         holdout_metrics.get("mean_abs_relative_error")
@@ -285,9 +319,9 @@ def _audit_calibration_report(
     )
     holdout_passes = (
         has_holdout_gate
-        and _finite_number(holdout_mean)
-        and float(cast(Any, holdout_mean))
-        <= float(cast(Any, data["holdout_mean_rel_gate"]))
+        and (holdout_mean_value := _float_or_none(holdout_mean)) is not None
+        and holdout_gate is not None
+        and holdout_mean_value <= holdout_gate
     )
     if promoted:
         gates.append(
@@ -499,6 +533,331 @@ def _audit_manuscript_readiness(
     }
 
 
+def _json_text(data: dict[str, Any]) -> str:
+    return json.dumps(data, sort_keys=True, allow_nan=False)
+
+
+def _has_non_absolute_json_scope(data: dict[str, Any]) -> bool:
+    claim = str(data.get("claim_level", ""))
+    notes = str(data.get("notes", ""))
+    promotion = data.get("promotion_gate")
+    promotion_text = json.dumps(promotion, sort_keys=True) if promotion else ""
+    return (
+        claim != PROMOTED_CLAIM
+        and (
+            not bool(data.get("passed", True))
+            or _has_scope_marker(
+                f"{claim} {notes} {promotion_text}", SCOPED_NON_ABSOLUTE_MARKERS
+            )
+        )
+    )
+
+
+def _gate_metric_passed(data: dict[str, Any], metric: str) -> bool:
+    gate_report = data.get("gate_report")
+    gates = gate_report.get("gates", []) if isinstance(gate_report, dict) else []
+    return any(
+        isinstance(gate, dict)
+        and gate.get("metric") == metric
+        and bool(gate.get("passed", False))
+        for gate in gates
+    )
+
+
+def _audit_failed_baseline_contract(
+    sidecar: Path, data: dict[str, Any]
+) -> tuple[bool, str]:
+    """Check that QL model-development sidecars serialize failed baselines.
+
+    This intentionally audits metadata shape rather than physics correctness.
+    The plotting tools own the numerical values; this guardrail ensures the
+    manuscript-facing JSON keeps enough information to state failed baselines
+    and non-promotion blockers explicitly.
+    """
+
+    name = sidecar.stem
+    promotion = data.get("promotion_gate")
+    promotion = promotion if isinstance(promotion, dict) else {}
+    metrics = data.get("metrics")
+    metrics = metrics if isinstance(metrics, dict) else {}
+
+    if name == "quasilinear_stellarator_train_holdout":
+        source = data.get("source")
+        source_path = ROOT / str(source) if source else None
+        return (
+            bool(source)
+            and source_path is not None
+            and source_path.exists()
+            and data.get("claim_level") == "calibration_dataset"
+            and data.get("passed") is False
+            and _finite_number(data.get("mean_abs_relative_error")),
+            f"source={source} passed={data.get('passed')} claim_level={data.get('claim_level')}",
+        )
+
+    if name == "quasilinear_saturation_rule_sweep":
+        return (
+            promotion.get("passed") is False
+            and promotion.get("accepted_rules") == []
+            and bool(promotion.get("requires_beating_training_mean_null", False))
+            and isinstance(data.get("null_training_mean_baseline"), dict)
+            and _finite_number(
+                promotion.get("best_rule_holdout_mean_abs_relative_error")
+            )
+            and _finite_number(
+                promotion.get("null_training_mean_holdout_mean_abs_relative_error")
+            ),
+            (
+                f"accepted_rules={promotion.get('accepted_rules')} "
+                f"best={promotion.get('best_rule_holdout_mean_abs_relative_error')} "
+                f"null={promotion.get('null_training_mean_holdout_mean_abs_relative_error')}"
+            ),
+        )
+
+    if name == "quasilinear_shape_aware_saturation":
+        return (
+            promotion.get("passed") is False
+            and bool(promotion.get("requires_beating_linear_weight_baseline", False))
+            and bool(promotion.get("requires_beating_training_mean_null", False))
+            and _finite_number(
+                metrics.get("baseline_linear_weight_mean_abs_relative_error")
+            )
+            and _finite_number(metrics.get("null_training_mean_mean_abs_relative_error"))
+            and _finite_number(metrics.get("shape_aware_mean_abs_relative_error")),
+            (
+                f"shape={metrics.get('shape_aware_mean_abs_relative_error')} "
+                f"linear={metrics.get('baseline_linear_weight_mean_abs_relative_error')} "
+                f"null={metrics.get('null_training_mean_mean_abs_relative_error')}"
+            ),
+        )
+
+    if name == "quasilinear_candidate_uncertainty":
+        candidates = data.get("candidates")
+        candidates = candidates if isinstance(candidates, dict) else {}
+        linear_weight = candidates.get("linear_weight", {})
+        linear_state = candidates.get("linear_state_ridge", {})
+        accepted = promotion.get("accepted_candidates", [])
+        return (
+            promotion.get("passed") is True
+            and "spectral_envelope_ridge" in accepted
+            and "linear_weight" not in accepted
+            and bool(promotion.get("requires_beating_linear_weight_baseline", False))
+            and bool(promotion.get("requires_beating_training_mean_null", False))
+            and isinstance(data.get("null_training_mean_baseline"), dict)
+            and _finite_number(linear_weight.get("mean_abs_relative_error"))
+            and bool(linear_state.get("eligibility_failures")),
+            (
+                f"accepted={accepted} "
+                f"linear_weight_error={linear_weight.get('mean_abs_relative_error')} "
+                f"linear_state_failures={linear_state.get('eligibility_failures')}"
+            ),
+        )
+
+    if name == "quasilinear_dataset_sufficiency":
+        requirements = data.get("candidate_requirements")
+        requirements = requirements if isinstance(requirements, list) else []
+        linear_state_rows = [
+            row
+            for row in requirements
+            if isinstance(row, dict) and row.get("candidate") == "linear_state_ridge"
+        ]
+        downstream = data.get("downstream_gates")
+        downstream = downstream if isinstance(downstream, dict) else {}
+        simple_sweep = downstream.get("saturation_rule_sweep")
+        simple_sweep = simple_sweep if isinstance(simple_sweep, dict) else {}
+        return (
+            bool(linear_state_rows)
+            and linear_state_rows[0].get("data_volume_passed") is False
+            and simple_sweep.get("accepted") == []
+            and promotion.get("passed") is True
+            and bool(promotion.get("requires_downstream_candidate_skill_gates", False)),
+            (
+                f"linear_state_data_volume_passed="
+                f"{linear_state_rows[0].get('data_volume_passed') if linear_state_rows else None} "
+                f"saturation_rule_accepted={simple_sweep.get('accepted')}"
+            ),
+        )
+
+    if name == "quasilinear_model_selection_status":
+        reports = data.get("calibration_reports")
+        reports = reports if isinstance(reports, list) else []
+        return (
+            data.get("passed") is True
+            and "spectral_envelope_ridge" in data.get("accepted_candidates", [])
+            and _finite_number(
+                data.get("metrics", {}).get("linear_weight_mean_abs_relative_error")
+                if isinstance(data.get("metrics"), dict)
+                else None
+            )
+            and _finite_number(
+                data.get("metrics", {}).get("null_training_mean_mean_abs_relative_error")
+                if isinstance(data.get("metrics"), dict)
+                else None
+            )
+            and _gate_metric_passed(data, "absolute_flux_not_promoted")
+            and all(
+                isinstance(report, dict)
+                and report.get("claim_level") != PROMOTED_CLAIM
+                for report in reports
+            ),
+            (
+                f"accepted={data.get('accepted_candidates')} "
+                f"absolute_flux_not_promoted={_gate_metric_passed(data, 'absolute_flux_not_promoted')}"
+            ),
+        )
+
+    if name == "quasilinear_holdout_gap_report":
+        status = data.get("calibration_status")
+        status = status if isinstance(status, dict) else {}
+        blockers = promotion.get("blockers", [])
+        return (
+            promotion.get("passed") is False
+            and "absolute_flux_predictor_not_promoted" in blockers
+            and status.get("absolute_flux_promoted") is False
+            and status.get("passed") is False
+            and _finite_number(status.get("holdout_mean_abs_relative_error")),
+            (
+                f"blockers={blockers} "
+                f"holdout_mean={status.get('holdout_mean_abs_relative_error')}"
+            ),
+        )
+
+    return True, "no specialized baseline contract for this sidecar"
+
+
+def _audit_manuscript_figures(
+    figure_bases: list[str | Path], index_path: str | Path
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    gates: list[dict[str, Any]] = []
+    rows: list[dict[str, Any]] = []
+    index = Path(index_path)
+    index_text = index.read_text(encoding="utf-8") if index.exists() else ""
+    normalized_index = _normalized_text(index_text)
+    gates.append(
+        _gate(
+            "manuscript_figure_index_exists",
+            index.exists(),
+            _repo_relative(index),
+        )
+    )
+
+    for raw_base in figure_bases:
+        base = Path(raw_base)
+        if base.suffix:
+            base = base.with_suffix("")
+        png = base.with_suffix(".png")
+        json_sidecar = base.with_suffix(".json")
+        rel_png = _repo_relative(png)
+        rel_json = _repo_relative(json_sidecar)
+        rel_base = _repo_relative(base)
+        png_exists = png.exists()
+        json_exists = json_sidecar.exists()
+        gates.append(
+            _gate(
+                f"ql_figure_png_exists:{rel_base}",
+                png_exists,
+                rel_png,
+            )
+        )
+        gates.append(
+            _gate(
+                f"ql_figure_json_sidecar_exists:{rel_base}",
+                json_exists,
+                rel_json,
+            )
+        )
+
+        index_mentions_png = rel_png in index_text
+        png_pos = index_text.find(rel_png)
+        nearby_index_text = (
+            index_text[max(0, png_pos - 240) : png_pos + len(rel_png) + 320]
+            if png_pos >= 0
+            else ""
+        )
+        index_mentions_json = rel_json in index_text or "json" in nearby_index_text.lower()
+        gates.append(
+            _gate(
+                f"ql_figure_index_mentions_png:{rel_base}",
+                index_mentions_png,
+                rel_png,
+            )
+        )
+        gates.append(
+            _gate(
+                f"ql_figure_index_mentions_json_sidecar:{rel_base}",
+                index_mentions_json,
+                rel_json if rel_json in index_text else "nearby index text mentions JSON companion",
+            )
+        )
+
+        sidecar_summary: dict[str, Any] = {
+            "figure": rel_png,
+            "json_sidecar": rel_json,
+            "png_exists": png_exists,
+            "json_exists": json_exists,
+            "index_mentions_png": index_mentions_png,
+            "index_mentions_json_sidecar": index_mentions_json,
+        }
+        if json_exists:
+            data = _load_json(json_sidecar)
+            claim_level = str(data.get("claim_level", ""))
+            kind = str(data.get("kind", ""))
+            json_lines = _json_text(data).splitlines()
+            runtime_overclaims = [
+                line for line in json_lines if _line_overclaims_absolute_flux(line)
+            ]
+            scoped = _has_non_absolute_json_scope(data)
+            baseline_passed, baseline_detail = _audit_failed_baseline_contract(
+                json_sidecar, data
+            )
+            gates.extend(
+                [
+                    _gate(
+                        f"ql_figure_sidecar_has_kind:{rel_base}",
+                        bool(kind),
+                        f"kind={kind}",
+                    ),
+                    _gate(
+                        f"ql_figure_sidecar_claim_scoped:{rel_base}",
+                        scoped,
+                        f"claim_level={claim_level} passed={data.get('passed')}",
+                    ),
+                    _gate(
+                        f"ql_figure_sidecar_no_runtime_absolute_overclaim:{rel_base}",
+                        not runtime_overclaims,
+                        "; ".join(runtime_overclaims[:2])
+                        or "no runtime absolute-flux overclaim in JSON sidecar",
+                    ),
+                    _gate(
+                        f"ql_figure_failed_baselines_explicit:{rel_base}",
+                        baseline_passed,
+                        baseline_detail,
+                    ),
+                ]
+            )
+            sidecar_summary.update(
+                {
+                    "kind": kind,
+                    "claim_level": claim_level,
+                    "passed": data.get("passed"),
+                    "claim_scoped": scoped,
+                    "failed_baselines_explicit": baseline_passed,
+                    "failed_baseline_detail": baseline_detail,
+                    "runtime_absolute_overclaim_lines": runtime_overclaims,
+                }
+            )
+        rows.append(sidecar_summary)
+
+    gates.append(
+        _gate(
+            "manuscript_index_has_non_absolute_ql_scope",
+            "no runtime/toml absolute-flux predictor" in normalized_index
+            and "absolute-flux runtime promotion remains blocked" in normalized_index,
+            "manuscript index states no runtime/TOML absolute-flux predictor and blocked runtime promotion",
+        )
+    )
+    return gates, rows
+
+
 def _audit_docs(paths: list[Path]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     gates: list[dict[str, Any]] = []
     rows: list[dict[str, Any]] = []
@@ -539,7 +898,10 @@ def _audit_docs(paths: list[Path]) -> tuple[list[dict[str, Any]], list[dict[str,
 
 
 def build_guardrail_audit(
-    report_patterns: list[str], doc_paths: list[str | Path]
+    report_patterns: list[str],
+    doc_paths: list[str | Path],
+    figure_bases: list[str | Path] | None = None,
+    figure_index_path: str | Path = DEFAULT_MANUSCRIPT_INDEX,
 ) -> dict[str, Any]:
     report_paths = _expand_patterns(report_patterns)
     gates: list[dict[str, Any]] = []
@@ -547,6 +909,7 @@ def build_guardrail_audit(
     input_rows: list[dict[str, Any]] = []
     promotion_rows: list[dict[str, Any]] = []
     manuscript_rows: list[dict[str, Any]] = []
+    figure_rows: list[dict[str, Any]] = []
 
     for path in report_paths:
         data = _load_json(path)
@@ -569,6 +932,13 @@ def build_guardrail_audit(
 
     doc_gates, doc_rows = _audit_docs([Path(path) for path in doc_paths])
     gates.extend(doc_gates)
+    figure_gates, figure_rows = _audit_manuscript_figures(
+        figure_bases
+        if figure_bases is not None
+        else list(DEFAULT_MANUSCRIPT_FIGURE_BASES),
+        figure_index_path,
+    )
+    gates.extend(figure_gates)
     passed = all(bool(gate["passed"]) for gate in gates)
     failed = [gate for gate in gates if not bool(gate["passed"])]
     return {
@@ -590,17 +960,20 @@ def build_guardrail_audit(
             "n_promotion_gate_reports": len(promotion_rows),
             "n_manuscript_readiness_reports": len(manuscript_rows),
             "n_doc_checks": len(doc_rows),
+            "n_manuscript_figure_checks": len(figure_rows),
             "n_failed_gates": len(failed),
         },
         "calibration_reports": report_rows,
         "input_validation_reports": input_rows,
         "promotion_gate_reports": promotion_rows,
         "manuscript_readiness_reports": manuscript_rows,
+        "manuscript_figure_provenance": figure_rows,
         "doc_checks": doc_rows,
         "notes": (
             "Fast metadata guardrail only: it verifies finite nonlinear window statistics, "
             "train/holdout provenance, absolute-flux promotion gates, manuscript-readiness QL scope, "
-            "and conservative docs wording. "
+            "manuscript figure JSON sidecars, explicit failed-baseline metadata, "
+            "and conservative README/docs wording. "
             "It does not replace nonlinear convergence simulations."
         ),
     }
@@ -622,6 +995,22 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Documentation file to scope-check.",
     )
+    parser.add_argument(
+        "--figure-base",
+        action="append",
+        dest="figure_bases",
+        default=None,
+        help=(
+            "Manuscript QL model-development figure base to audit. "
+            "Defaults to the tracked quasilinear manuscript figure set."
+        ),
+    )
+    parser.add_argument(
+        "--figure-index",
+        type=Path,
+        default=DEFAULT_MANUSCRIPT_INDEX,
+        help="Manuscript figure index file to check for figure/sidecar references.",
+    )
     parser.add_argument("--out-json", type=Path, default=DEFAULT_OUT)
     return parser
 
@@ -631,6 +1020,8 @@ def main(argv: list[str] | None = None) -> int:
     payload = build_guardrail_audit(
         args.reports or list(DEFAULT_REPORT_PATTERNS),
         args.docs or [str(path) for path in DEFAULT_DOCS],
+        args.figure_bases,
+        args.figure_index,
     )
     args.out_json.parent.mkdir(parents=True, exist_ok=True)
     args.out_json.write_text(

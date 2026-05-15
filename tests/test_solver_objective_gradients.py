@@ -34,9 +34,14 @@ from spectraxgk.solver_objective_gradients import (
     solver_scalar_objective_from_vector,
     solver_ready_geometry_mapping,
     tiny_differentiable_objective_gradient_report,
+    vmec_boozer_aggregate_line_search_holdout_report,
+    vmec_boozer_aggregate_scalar_objective_finite_difference_report,
+    vmec_boozer_aggregate_scalar_objective_from_state,
+    vmec_boozer_aggregate_scalar_objective_line_search_report,
     vmec_boozer_scalar_objective_finite_difference_report,
     vmec_boozer_scalar_objective_from_state,
     vmec_boozer_scalar_objective_line_search_report,
+    vmec_boozer_solver_objective_table_from_state,
     vmec_boozer_solver_objective_vector_from_state,
 )
 
@@ -277,6 +282,123 @@ def test_vmec_boozer_scalar_objective_from_state_uses_vector_selector(
     assert float(value) == pytest.approx(6.0)
 
 
+def test_vmec_boozer_solver_objective_table_samples_surfaces_alphas_and_ky(
+    monkeypatch,
+) -> None:
+    geometry_calls: list[dict[str, object]] = []
+    objective_calls: list[tuple[str, dict[str, object]]] = []
+
+    def fake_geometry(_state, _static, _indata, _wout, **kwargs):  # noqa: ANN001, ANN202
+        geometry_calls.append(dict(kwargs))
+        return f"geom-{len(geometry_calls)}"
+
+    def fake_objective(geom, **kwargs):  # noqa: ANN001, ANN202
+        objective_calls.append((geom, dict(kwargs)))
+        ky = float(kwargs["selected_ky_index"])
+        geom_index = float(str(geom).split("-")[-1])
+        return jnp.asarray([geom_index + ky, 0.0, 1.0, 2.0, 0.0, 3.0])
+
+    monkeypatch.setattr(sog, "flux_tube_geometry_from_vmec_boozer_state", fake_geometry)
+    monkeypatch.setattr(sog, "solver_objective_vector_from_geometry", fake_objective)
+
+    table = vmec_boozer_solver_objective_table_from_state(
+        "state",
+        "static",
+        "indata",
+        "wout",
+        surface_indices=[1, 3],
+        alphas=[0.0, 0.5],
+        selected_ky_indices=[1, 2],
+        ntheta=8,
+        n_laguerre=2,
+    )
+
+    assert spectraxgk.vmec_boozer_solver_objective_table_from_state is (
+        vmec_boozer_solver_objective_table_from_state
+    )
+    assert np.asarray(table).shape == (8, len(SOLVER_OBJECTIVE_NAMES))
+    assert len(geometry_calls) == 4
+    assert len(objective_calls) == 8
+    assert geometry_calls[0] == {"surface_index": 1, "alpha": 0.0, "ntheta": 8}
+    assert objective_calls[0] == ("geom-1", {"n_laguerre": 2, "selected_ky_index": 1})
+    assert objective_calls[1] == ("geom-1", {"n_laguerre": 2, "selected_ky_index": 2})
+    with pytest.raises(TypeError, match="selected_ky_indices"):
+        vmec_boozer_solver_objective_table_from_state(
+            "state",
+            "static",
+            "indata",
+            "wout",
+            selected_ky_index=1,
+            selected_ky_indices=[1, 2],
+        )
+
+
+def test_vmec_boozer_aggregate_scalar_objective_from_state_reductions(
+    monkeypatch,
+) -> None:
+    table = jnp.asarray(
+        [
+            [1.0, 0.0, 1.0, 2.0, 0.0, 10.0],
+            [2.0, 0.0, 1.0, 2.0, 0.0, 20.0],
+            [4.0, 0.0, 1.0, 2.0, 0.0, 40.0],
+        ]
+    )
+    monkeypatch.setattr(
+        sog,
+        "vmec_boozer_solver_objective_table_from_state",
+        lambda *_args, **_kwargs: table,
+    )
+
+    mean_value = vmec_boozer_aggregate_scalar_objective_from_state(
+        "state",
+        "static",
+        "indata",
+        "wout",
+        objective="growth",
+    )
+    weighted_value = vmec_boozer_aggregate_scalar_objective_from_state(
+        "state",
+        "static",
+        "indata",
+        "wout",
+        objective="quasilinear_flux",
+        reduction="weighted_mean",
+        weights=[1.0, 1.0, 2.0],
+    )
+    max_value = vmec_boozer_aggregate_scalar_objective_from_state(
+        "state",
+        "static",
+        "indata",
+        "wout",
+        objective="growth",
+        reduction="max",
+    )
+
+    assert spectraxgk.vmec_boozer_aggregate_scalar_objective_from_state is (
+        vmec_boozer_aggregate_scalar_objective_from_state
+    )
+    assert float(mean_value) == pytest.approx(7.0 / 3.0)
+    assert float(weighted_value) == pytest.approx(27.5)
+    assert float(max_value) == pytest.approx(4.0)
+    with pytest.raises(ValueError, match="weights"):
+        vmec_boozer_aggregate_scalar_objective_from_state(
+            "state",
+            "static",
+            "indata",
+            "wout",
+            reduction="weighted_mean",
+            weights=[1.0],
+        )
+    with pytest.raises(ValueError, match="reduction"):
+        vmec_boozer_aggregate_scalar_objective_from_state(
+            "state",
+            "static",
+            "indata",
+            "wout",
+            reduction="median",  # type: ignore[arg-type]
+        )
+
+
 def test_vmec_boozer_scalar_objective_finite_difference_report(
     monkeypatch,
 ) -> None:
@@ -333,6 +455,247 @@ def test_vmec_boozer_scalar_objective_finite_difference_report(
         vmec_boozer_scalar_objective_finite_difference_report(max_curvature_ratio=-1.0)
     with pytest.raises(ValueError, match="radial_index"):
         vmec_boozer_scalar_objective_finite_difference_report(radial_index=99)
+
+
+def test_vmec_boozer_aggregate_scalar_objective_finite_difference_report(
+    monkeypatch,
+) -> None:
+    @dataclass(frozen=True)
+    class FakeState:
+        Rcos: jnp.ndarray
+
+    fake_state = FakeState(Rcos=jnp.zeros((5, 3), dtype=jnp.float32))
+    monkeypatch.setattr(
+        sog,
+        "_load_vmec_jax_example_state_bundle",
+        lambda case_name: {
+            "case_name": case_name,
+            "input_path": "input.multi",
+            "wout_path": "wout.multi",
+            "state": fake_state,
+            "static": "static",
+            "indata": "indata",
+            "wout": "wout",
+        },
+    )
+
+    def fake_table(state, *_args, **kwargs):  # noqa: ANN001, ANN202
+        coeff = float(np.asarray(state.Rcos[2, 1]))
+        ky_indices = tuple(kwargs["selected_ky_indices"])
+        rows = []
+        for ky in ky_indices:
+            rows.append([1.0 + 2.0 * coeff + float(ky), 0.0, 1.0, 3.0, 0.0, 5.0 + coeff])
+        return jnp.asarray(rows)
+
+    monkeypatch.setattr(sog, "vmec_boozer_solver_objective_table_from_state", fake_table)
+
+    report = vmec_boozer_aggregate_scalar_objective_finite_difference_report(
+        case_name="case",
+        objective="growth",
+        reduction="weighted_mean",
+        weights=[1.0, 3.0],
+        selected_ky_indices=[1, 2],
+        base_delta=0.1,
+        perturbation_step=1.0e-3,
+        response_atol=1.0e-6,
+        ntheta=4,
+    )
+
+    assert spectraxgk.vmec_boozer_aggregate_scalar_objective_finite_difference_report is (
+        vmec_boozer_aggregate_scalar_objective_finite_difference_report
+    )
+    assert report["passed"] is True
+    assert report["source_scope"] == "mode21_vmec_boozer_state_multi_point"
+    assert report["n_samples"] == 2
+    assert report["parameter_name"] == "Rcos_mid_surface_m1"
+    assert report["base_value"] == pytest.approx(2.95)
+    assert report["central_derivative"] == pytest.approx(2.0, rel=1.0e-4)
+    assert report["curvature_ratio"] < 1.0e-3
+    assert report["samples"] == [
+        {"surface_index": None, "alpha": 0.0, "selected_ky_index": 1, "weight": 0.25},
+        {"surface_index": None, "alpha": 0.0, "selected_ky_index": 2, "weight": 0.75},
+    ]
+    assert report["options"] == {"ntheta": 4}
+
+    with pytest.raises(ValueError, match="perturbation_step"):
+        vmec_boozer_aggregate_scalar_objective_finite_difference_report(perturbation_step=0.0)
+    with pytest.raises(ValueError, match="weights"):
+        vmec_boozer_aggregate_scalar_objective_finite_difference_report(
+            selected_ky_indices=[1, 2],
+            weights=[1.0],
+        )
+
+
+def test_vmec_boozer_aggregate_scalar_objective_line_search_report_accepts_safe_updates(
+    monkeypatch,
+) -> None:
+    calls: list[float] = []
+
+    def fake_fd_report(**kwargs):  # noqa: ANN003, ANN202
+        delta = float(kwargs.get("base_delta", 0.0))
+        calls.append(delta)
+        value = 2.0 + 4.0 * delta
+        return {
+            "passed": True,
+            "base_value": value,
+            "central_derivative": 4.0,
+            "curvature_ratio": 0.0,
+            "n_samples": 2,
+            "samples": [
+                {"surface_index": None, "alpha": 0.0, "selected_ky_index": 1, "weight": 0.5},
+                {"surface_index": None, "alpha": 0.0, "selected_ky_index": 2, "weight": 0.5},
+            ],
+        }
+
+    monkeypatch.setattr(
+        sog,
+        "vmec_boozer_aggregate_scalar_objective_finite_difference_report",
+        fake_fd_report,
+    )
+
+    report = vmec_boozer_aggregate_scalar_objective_line_search_report(
+        objective="quasilinear_flux",
+        reduction="mean",
+        selected_ky_indices=[1, 2],
+        update_step=0.05,
+        max_steps=2,
+        ntheta=4,
+    )
+
+    assert spectraxgk.vmec_boozer_aggregate_scalar_objective_line_search_report is (
+        vmec_boozer_aggregate_scalar_objective_line_search_report
+    )
+    assert report["passed"] is True
+    assert report["accepted_steps"] == 2
+    assert report["n_samples"] == 2
+    assert report["final_delta"] == pytest.approx(-0.10)
+    assert report["final_objective"] < report["initial_objective"]
+    assert all(row["accepted"] for row in report["history"])
+    assert calls[:2] == [0.0, -0.05]
+
+
+def test_vmec_boozer_aggregate_scalar_objective_line_search_report_fails_closed(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(
+        sog,
+        "vmec_boozer_aggregate_scalar_objective_finite_difference_report",
+        lambda **_kwargs: {
+            "passed": False,
+            "base_value": 1.0,
+            "central_derivative": 2.0,
+            "curvature_ratio": 9.0,
+            "n_samples": 2,
+            "samples": [],
+        },
+    )
+
+    report = vmec_boozer_aggregate_scalar_objective_line_search_report(
+        selected_ky_indices=[1, 2],
+        max_steps=1,
+    )
+
+    assert report["passed"] is False
+    assert report["accepted_steps"] == 0
+    assert report["stop_reason"] == "finite_difference_gate_failed"
+    with pytest.raises(ValueError, match="max_steps"):
+        vmec_boozer_aggregate_scalar_objective_line_search_report(max_steps=0)
+    with pytest.raises(ValueError, match="update_step"):
+        vmec_boozer_aggregate_scalar_objective_line_search_report(update_step=0.0)
+    with pytest.raises(ValueError, match="min_improvement"):
+        vmec_boozer_aggregate_scalar_objective_line_search_report(min_improvement=-1.0)
+
+
+def test_vmec_boozer_aggregate_line_search_holdout_report_passes_split(
+    monkeypatch,
+) -> None:
+    calls: list[tuple[float, tuple[int, ...]]] = []
+
+    def fake_line_search(**kwargs):  # noqa: ANN003, ANN202
+        return {
+            "passed": True,
+            "initial_objective": 2.0,
+            "final_objective": 1.9,
+            "relative_reduction": 0.05,
+            "final_delta": -0.1,
+            "samples": [{"selected_ky_index": 1}],
+        }
+
+    def fake_fd_report(**kwargs):  # noqa: ANN003, ANN202
+        delta = float(kwargs.get("base_delta", 0.0))
+        ky = tuple(int(item) for item in kwargs.get("selected_ky_indices", ()))
+        calls.append((delta, ky))
+        return {
+            "passed": True,
+            "base_value": 1.0 + 0.5 * delta,
+            "central_derivative": 0.5,
+            "curvature_ratio": 0.0,
+            "samples": [{"selected_ky_index": ky[0] if ky else 0}],
+        }
+
+    monkeypatch.setattr(sog, "vmec_boozer_aggregate_scalar_objective_line_search_report", fake_line_search)
+    monkeypatch.setattr(
+        sog,
+        "vmec_boozer_aggregate_scalar_objective_finite_difference_report",
+        fake_fd_report,
+    )
+
+    report = vmec_boozer_aggregate_line_search_holdout_report(
+        objective="quasilinear_flux",
+        training_selected_ky_indices=[1],
+        holdout_selected_ky_indices=[2],
+        min_holdout_improvement=0.01,
+    )
+
+    assert spectraxgk.vmec_boozer_aggregate_line_search_holdout_report is (
+        vmec_boozer_aggregate_line_search_holdout_report
+    )
+    assert report["passed"] is True
+    assert report["training_passed"] is True
+    assert report["heldout_passed"] is True
+    assert report["heldout_initial_objective"] == pytest.approx(1.0)
+    assert report["heldout_final_objective"] == pytest.approx(0.95)
+    assert report["heldout_relative_reduction"] == pytest.approx(0.05)
+    assert calls == [(0.0, (2,)), (-0.1, (2,))]
+
+
+def test_vmec_boozer_aggregate_line_search_holdout_report_fails_closed(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(
+        sog,
+        "vmec_boozer_aggregate_scalar_objective_line_search_report",
+        lambda **_kwargs: {
+            "passed": True,
+            "initial_objective": 2.0,
+            "final_objective": 1.9,
+            "relative_reduction": 0.05,
+            "final_delta": 0.1,
+            "samples": [],
+        },
+    )
+    monkeypatch.setattr(
+        sog,
+        "vmec_boozer_aggregate_scalar_objective_finite_difference_report",
+        lambda **kwargs: {
+            "passed": True,
+            "base_value": 1.0 + float(kwargs.get("base_delta", 0.0)),
+            "central_derivative": 1.0,
+            "curvature_ratio": 0.0,
+            "samples": [],
+        },
+    )
+
+    report = vmec_boozer_aggregate_line_search_holdout_report(
+        training_selected_ky_indices=[1],
+        holdout_selected_ky_indices=[2],
+    )
+
+    assert report["passed"] is False
+    assert report["training_passed"] is True
+    assert report["heldout_passed"] is False
+    with pytest.raises(ValueError, match="min_holdout_improvement"):
+        vmec_boozer_aggregate_line_search_holdout_report(min_holdout_improvement=-1.0)
 
 
 def test_vmec_boozer_scalar_objective_line_search_report_accepts_safe_updates(

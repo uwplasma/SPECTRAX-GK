@@ -326,6 +326,7 @@ def build_convergence_payload(
     payload = {
         "kind": "external_vmec_nonlinear_grid_convergence_gate",
         "case": case,
+        "passed": passed,
         "gate_index_include": False,
         "claim_level": (
             "passed_grid_convergence_candidate_for_transport_holdout"
@@ -493,7 +494,17 @@ def write_convergence_panel(runs: list[PilotRun], payload: dict[str, Any], *, ou
     if not failed:
         lines.append("- none")
     lines.extend(["", "Interpretation:"])
-    if passed:
+    case_text = str(payload.get("case", "")).lower()
+    if passed and "audit" in case_text:
+        lines.extend(
+            [
+                "same-family audit passes;",
+                "reproducibility evidence,",
+                "not an independent",
+                "calibration holdout.",
+            ]
+        )
+    elif passed:
         lines.extend(
             [
                 "finite external-VMEC pilot",

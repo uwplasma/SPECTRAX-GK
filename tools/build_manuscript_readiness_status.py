@@ -162,8 +162,19 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
     ql_shape = _read_json(root, "docs/_static/quasilinear_shape_aware_saturation.json")
     ql_uq = _read_json(root, "docs/_static/quasilinear_candidate_uncertainty.json")
     ql_dataset = _read_json(root, "docs/_static/quasilinear_dataset_sufficiency.json")
+    ql_model_status = _read_json(
+        root, "docs/_static/quasilinear_model_selection_status.json"
+    )
     ql_guardrails = _read_json(
         root, "docs/_static/quasilinear_promotion_guardrails.json"
+    )
+    dshape_replicate = _read_json(
+        root,
+        "docs/_static/external_vmec_dshape_replicates/dshape_replicate_t250_ensemble_gate.json",
+    )
+    circular_replicate = _read_json(
+        root,
+        "docs/_static/external_vmec_circular_replicates/circular_replicate_t700_ensemble_gate.json",
     )
     geom = _read_json(root, "docs/_static/differentiable_geometry_bridge.json")
     geom_matrix = _read_json(root, "docs/_static/vmec_boozer_parity_matrix.json")
@@ -189,6 +200,12 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
     nonlinear_fd_audit = _read_json(root, "docs/_static/nonlinear_window_fd_audit.json")
     vmec_nonlinear_fd_audit = _read_json(
         root, "docs/_static/vmec_boozer_nonlinear_window_fd_audit.json"
+    )
+    production_nl_guard = _read_json(
+        root, "docs/_static/production_nonlinear_optimization_guard.json"
+    )
+    baseline_optimized_audit = _read_json(
+        root, "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json"
     )
     profile = _read_json(
         root, "docs/_static/nonlinear_sharding_profile_office_gpu.json"
@@ -233,13 +250,30 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
         if isinstance((ql_dataset or {}).get("promotion_gate", {}), dict)
         else {}
     )
-    ql_candidate_promoted = bool(ql_uq_gate.get("passed", False)) and bool(
-        ql_dataset_gate.get("passed", False)
+    ql_model_status_gate = (
+        (ql_model_status or {}).get("promotion_gate", {})
+        if isinstance((ql_model_status or {}).get("promotion_gate", {}), dict)
+        else {}
+    )
+    ql_candidate_promoted = (
+        bool(ql_uq_gate.get("passed", False))
+        and bool(ql_dataset_gate.get("passed", False))
+        and bool(ql_model_status_gate.get("passed", False))
     )
     ql_guardrails_passed = bool((ql_guardrails or {}).get("passed", False))
     ql_dataset_requirements = (
         (ql_dataset or {}).get("requirements", {})
         if isinstance((ql_dataset or {}).get("requirements", {}), dict)
+        else {}
+    )
+    dshape_replicate_stats = (
+        (dshape_replicate or {}).get("statistics", {})
+        if isinstance((dshape_replicate or {}).get("statistics", {}), dict)
+        else {}
+    )
+    circular_replicate_stats = (
+        (circular_replicate or {}).get("statistics", {})
+        if isinstance((circular_replicate or {}).get("statistics", {}), dict)
         else {}
     )
     ql_negative_closed = bool(
@@ -346,6 +380,27 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
             "vmec_boozer_production_nonlinear_observable_fd_path_gate", False
         )
     )
+    production_nl_guard_summary = (
+        (production_nl_guard or {}).get("summary", {})
+        if isinstance((production_nl_guard or {}).get("summary", {}), dict)
+        else {}
+    )
+    production_nonlinear_optimization_safe_to_release = bool(
+        (production_nl_guard or {}).get("safe_to_release", False)
+    )
+    production_nonlinear_optimization_promoted = bool(
+        (production_nl_guard or {}).get(
+            "production_nonlinear_optimization_promoted", False
+        )
+    )
+    baseline_optimized_comparison = (
+        (baseline_optimized_audit or {}).get("comparison", {})
+        if isinstance((baseline_optimized_audit or {}).get("comparison", {}), dict)
+        else {}
+    )
+    matched_baseline_optimized_audit_passed = bool(
+        (baseline_optimized_audit or {}).get("passed", False)
+    )
     solver_gradient_closed = bool(
         solver_gradient_passed
         and solver_gradient_full_vmec_frequency
@@ -432,7 +487,10 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                 "docs/_static/quasilinear_shape_aware_saturation.json",
                 "docs/_static/quasilinear_candidate_uncertainty.json",
                 "docs/_static/quasilinear_dataset_sufficiency.json",
+                "docs/_static/quasilinear_model_selection_status.json",
                 "docs/_static/quasilinear_promotion_guardrails.json",
+                "docs/_static/external_vmec_dshape_replicates/dshape_replicate_t250_ensemble_gate.json",
+                "docs/_static/external_vmec_circular_replicates/circular_replicate_t700_ensemble_gate.json",
             ],
             "key_metrics": {
                 "validated_inputs_passed": ql_inputs_passed,
@@ -451,6 +509,23 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                 "dataset_sufficiency_promotion_passed": bool(
                     ql_dataset_gate.get("passed", False)
                 ),
+                "model_selection_status_passed": bool(
+                    ql_model_status_gate.get("passed", False)
+                ),
+                "model_selection_candidate_mean_error": _finite_float(
+                    (ql_model_status or {})
+                    .get("metrics", {})
+                    .get("candidate_mean_abs_relative_error")
+                    if isinstance((ql_model_status or {}).get("metrics", {}), dict)
+                    else None
+                ),
+                "model_selection_interval_coverage": _finite_float(
+                    (ql_model_status or {})
+                    .get("metrics", {})
+                    .get("candidate_prediction_interval_coverage")
+                    if isinstance((ql_model_status or {}).get("metrics", {}), dict)
+                    else None
+                ),
                 "accepted_uq_candidates": ql_uq_gate.get("accepted_candidates", []),
                 "dataset_current_total_cases": ql_dataset_requirements.get(
                     "current_total_cases"
@@ -467,6 +542,20 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                 "dataset_blockers": ql_dataset_gate.get("blockers", []),
                 "null_training_mean_error": _finite_float(
                     ql_uq_gate.get("null_training_mean_mean_abs_relative_error")
+                ),
+                "dshape_replicate_passed": bool((dshape_replicate or {}).get("passed", False)),
+                "dshape_replicate_mean_rel_spread": _finite_float(
+                    dshape_replicate_stats.get("mean_rel_spread")
+                ),
+                "dshape_replicate_combined_sem_rel": _finite_float(
+                    dshape_replicate_stats.get("combined_sem_rel")
+                ),
+                "circular_replicate_passed": bool((circular_replicate or {}).get("passed", False)),
+                "circular_replicate_mean_rel_spread": _finite_float(
+                    circular_replicate_stats.get("mean_rel_spread")
+                ),
+                "circular_replicate_combined_sem_rel": _finite_float(
+                    circular_replicate_stats.get("combined_sem_rel")
                 ),
             },
             "next_action": (
@@ -511,16 +600,52 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                 "docs/_static/stellarator_itg_optimization_comparison.png",
                 "docs/_static/stellarator_itg_optimization_uq.json",
                 "docs/_static/stellarator_itg_optimization_uq.png",
+                "docs/_static/production_nonlinear_optimization_guard.json",
+                "docs/_static/production_nonlinear_optimization_guard.png",
+                "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json",
+                "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.png",
+                "docs/_static/qa_no_ess_reference_replicates/qa_no_ess_reference_t700_ensemble_gate.json",
+                "docs/_static/qa_no_ess_reference_replicates/qa_no_ess_reference_t700_ensemble_gate.png",
+                "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json",
+                "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.png",
             ],
             "key_metrics": {
                 **opt_reductions,
                 "all_objective_gradient_gates_passed": opt_reduced_objectives_passed,
                 "weighted_residual_uq_gate_passed": opt_uq_passed,
+                "production_nonlinear_optimization_guard_safe": (
+                    production_nonlinear_optimization_safe_to_release
+                ),
+                "production_nonlinear_optimization_promoted": (
+                    production_nonlinear_optimization_promoted
+                ),
+                "production_nonlinear_replicated_holdout_ensembles": (
+                    production_nl_guard_summary.get(
+                        "qualifying_replicated_holdout_ensembles"
+                    )
+                ),
+                "production_nonlinear_optimized_equilibrium_ensembles": (
+                    production_nl_guard_summary.get(
+                        "qualifying_optimized_equilibrium_ensembles"
+                    )
+                ),
+                "matched_qa_no_ess_to_optimized_audit_passed": (
+                    matched_baseline_optimized_audit_passed
+                ),
+                "matched_qa_no_ess_relative_reduction": (
+                    baseline_optimized_comparison.get("relative_reduction")
+                ),
+                "matched_qa_no_ess_uncertainty_separation_sigma": (
+                    baseline_optimized_comparison.get(
+                        "uncertainty_separation_sigma"
+                    )
+                ),
             },
             "next_action": (
-                "Use as the current optimization figure only with scoped wording; nonlinear-window VMEC/Boozer/GK "
-                "gradients and optimized-geometry nonlinear audits remain future requirements before claiming "
-                "end-to-end stellarator heat-flux optimization."
+                "Use as the current optimization figure only with scoped wording; the matched QA no-ESS to optimized "
+                "QA/ESS audit is closed, but nonlinear-window VMEC/Boozer/GK gradients and matched audits across "
+                "broader geometry families remain future requirements before claiming broad end-to-end stellarator "
+                "heat-flux optimization."
             ),
         },
         {
@@ -560,6 +685,14 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                     (
                         "docs/_static/vmec_boozer_nonlinear_window_fd_audit.png",
                         vmec_nonlinear_fd_audit,
+                    ),
+                    (
+                        "docs/_static/production_nonlinear_optimization_guard.json",
+                        production_nl_guard,
+                    ),
+                    (
+                        "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json",
+                        production_nl_guard,
                     ),
                 )
                 if payload
@@ -638,13 +771,24 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                     vmec_boozer_production_nonlinear_observable_fd_path_gate
                 ),
                 "production_nonlinear_window_gradient_gate": False,
+                "production_nonlinear_optimization_guard_safe": (
+                    production_nonlinear_optimization_safe_to_release
+                ),
+                "production_nonlinear_optimization_promoted": (
+                    production_nonlinear_optimization_promoted
+                ),
+                "optimized_equilibrium_replicated_transport_ensembles": (
+                    production_nl_guard_summary.get(
+                        "qualifying_optimized_equilibrium_ensembles"
+                    )
+                ),
             },
             "next_action": (
                 "Full VMEC/Boozer eigenfrequency, quasilinear, and multi-equilibrium reduced nonlinear-window "
                 "estimator gradients are closed. The compact nonlinear FD audits are tracked only as startup "
-                "plumbing checks; they do not validate transport heat-flux averages. Converged post-transient "
-                "running-average nonlinear windows, VMEC/Boozer turbulence gradients, local-gradient conditioning, "
-                "and optimized-equilibrium nonlinear audits remain required before full nonlinear stellarator-"
+                "plumbing checks; they do not validate transport heat-flux averages. The selected optimized-equilibrium "
+                "long-window audit is closed; VMEC/Boozer turbulence gradients, local-gradient conditioning, and "
+                "broader multi-surface baseline-to-optimized audits remain required before full nonlinear stellarator-"
                 "optimization claims."
             ),
         },
@@ -815,9 +959,15 @@ def write_manuscript_readiness_artifacts(
         metric = ""
         km = lane.get("key_metrics", {})
         if str(lane["lane"]).startswith("Quasilinear"):
+            replicated = sum(
+                1
+                for key in ("dshape_replicate_passed", "circular_replicate_passed")
+                if km.get(key)
+            )
             metric = (
                 f"dataset: {km.get('dataset_current_total_cases')}/{km.get('dataset_min_total_cases')}; "
                 f"holdouts: {km.get('holdout_points')}; "
+                f"replicated: {replicated}; "
                 f"absolute flux promoted: {km.get('absolute_flux_promoted')}"
             )
         elif str(lane["lane"]).startswith("VMEC/Boozer"):

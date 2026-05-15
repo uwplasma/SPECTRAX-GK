@@ -9,6 +9,7 @@ import spectraxgk.nonlinear_parallel as nonlinear_parallel
 from spectraxgk.nonlinear_parallel import (
     NonlinearDomainDecompositionPlan,
     NonlinearDomainIdentityReport,
+    NonlinearDomainTransportWindowReport,
     NonlinearParallelStrategy,
     NonlinearSpectralCommunicationReport,
     classify_nonlinear_parallel_strategy,
@@ -22,6 +23,7 @@ def test_nonlinear_parallel_public_api_exports_are_stable() -> None:
     public_names = (
         "NonlinearDomainDecompositionPlan",
         "NonlinearDomainIdentityReport",
+        "NonlinearDomainTransportWindowReport",
         "NonlinearParallelStrategy",
         "NonlinearSpectralCommunicationReport",
         "build_nonlinear_domain_decomposition_plan",
@@ -30,6 +32,7 @@ def test_nonlinear_parallel_public_api_exports_are_stable() -> None:
         "deterministic_nonlinear_spectral_state",
         "nonlinear_domain_identity_report",
         "nonlinear_domain_parallel_identity_gate",
+        "nonlinear_domain_transport_window_identity_gate",
         "nonlinear_parallel_strategies",
         "nonlinear_parallel_strategy",
         "nonlinear_spectral_communication_identity_gate",
@@ -44,6 +47,10 @@ def test_nonlinear_parallel_public_api_exports_are_stable() -> None:
     assert NonlinearParallelStrategy is nonlinear_parallel.NonlinearParallelStrategy
     assert NonlinearDomainDecompositionPlan is nonlinear_parallel.NonlinearDomainDecompositionPlan
     assert NonlinearDomainIdentityReport is nonlinear_parallel.NonlinearDomainIdentityReport
+    assert (
+        NonlinearDomainTransportWindowReport
+        is nonlinear_parallel.NonlinearDomainTransportWindowReport
+    )
     assert (
         NonlinearSpectralCommunicationReport
         is nonlinear_parallel.NonlinearSpectralCommunicationReport
@@ -76,6 +83,7 @@ def test_whole_state_kx_ky_is_diagnostic_only() -> None:
     assert strategy.independent_work is False
     assert strategy.changes_solver_layout is True
     assert "whole_state_kx_ky_final_state_identity" in strategy.identity_gates
+    assert "nonlinear_domain_transport_window_identity" in strategy.physics_gates
     assert "matched_cpu_gpu_whole_state_scaling_profile" in strategy.profiler_gates
     assert "not a speedup claim" in strategy.notes
 

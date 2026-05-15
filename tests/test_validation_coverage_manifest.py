@@ -206,6 +206,60 @@ def test_validation_manifest_rejects_directory_fast_test(tmp_path: Path) -> None
         mod.REPO_ROOT = old_root
 
 
+def test_validation_manifest_rejects_nested_fast_test_not_seen_by_wide_gate(
+    tmp_path: Path,
+) -> None:
+    mod = _load_tool_module()
+    _write_minimal_package(tmp_path, "spectraxgk.runtime")
+    test = tmp_path / "tests" / "runtime" / "test_runtime.py"
+    test.parent.mkdir(parents=True)
+    test.write_text("def test_placeholder():\n    assert True\n")
+    artifact = tmp_path / "docs" / "_static" / "gate.json"
+    artifact.parent.mkdir(parents=True)
+    artifact.write_text("{}\n")
+    manifest = tmp_path / "manifest.toml"
+    manifest.write_text(
+        _manifest_text(
+            source="src/spectraxgk/runtime.py",
+            test="tests/runtime/test_runtime.py",
+            artifact="docs/_static/gate.json",
+        )
+    )
+    old_root = mod.REPO_ROOT
+    try:
+        mod.REPO_ROOT = tmp_path
+        with pytest.raises(ValueError, match="discoverable by run_wide_coverage_gate"):
+            mod.validate_manifest(mod.load_manifest(manifest))
+    finally:
+        mod.REPO_ROOT = old_root
+
+
+def test_validation_manifest_rejects_non_pytest_fast_test_name(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    _write_minimal_package(tmp_path, "spectraxgk.runtime")
+    test = tmp_path / "tests" / "runtime_cases.py"
+    test.parent.mkdir()
+    test.write_text("def test_placeholder():\n    assert True\n")
+    artifact = tmp_path / "docs" / "_static" / "gate.json"
+    artifact.parent.mkdir(parents=True)
+    artifact.write_text("{}\n")
+    manifest = tmp_path / "manifest.toml"
+    manifest.write_text(
+        _manifest_text(
+            source="src/spectraxgk/runtime.py",
+            test="tests/runtime_cases.py",
+            artifact="docs/_static/gate.json",
+        )
+    )
+    old_root = mod.REPO_ROOT
+    try:
+        mod.REPO_ROOT = tmp_path
+        with pytest.raises(ValueError, match="top-level tests/test_\\*.py"):
+            mod.validate_manifest(mod.load_manifest(manifest))
+    finally:
+        mod.REPO_ROOT = old_root
+
+
 def test_validation_manifest_attaches_measured_package_coverage(tmp_path: Path) -> None:
     mod = _load_tool_module()
     _write_minimal_package(tmp_path, "spectraxgk.runtime")

@@ -170,30 +170,62 @@ The first Cyclone nonlinear audit is tracked in `docs/quasilinear.rst` and is
 kept at `training_or_audit_only` until a held-out calibration set passes.
 
 The manuscript-facing quasilinear calibration panel now uses the full admitted
-electrostatic portfolio: two training geometries and five held-out nonlinear
+electrostatic portfolio: two training geometries and six held-out nonlinear
 windows spanning tokamak, stellarator, and external-VMEC cases.
 
 ![SPECTRAX-GK quasilinear stellarator train/holdout calibration](docs/_static/quasilinear_stellarator_train_holdout.png)
 
 The current training set is Cyclone plus the external-VMEC ITERModel case; the
-holdouts are Cyclone Miller, HSX, W7-X, D-shaped VMEC, and the up-down
-asymmetric VMEC tokamak. This is a stronger negative-transfer result than the
-earlier Cyclone-only fit: nonlinear input validation now passes, but the fitted
+holdouts are Cyclone Miller, HSX, W7-X, D-shaped VMEC, up-down asymmetric VMEC,
+and circular VMEC. This is a stronger transfer test than the earlier
+Cyclone-only fit: nonlinear input validation now passes, but the fitted
 one-constant mixing-length model still fails the held-out absolute-flux gate
-with mean relative error about `2.57`. The best current one-scalar saturation
-rule remains worse than the training-mean null baseline (`2.51` versus `1.39`),
+with mean relative error about `2.11`. The circular holdout itself is predicted
+well by the scaled one-constant diagnostic, but the aggregate model remains
+blocked by the other held-out cases. The best current one-scalar saturation
+rule remains worse than the training-mean null baseline (`2.11` versus `1.20`),
 so SPECTRAX-GK does not promote any simple or user-facing absolute quasilinear
 flux predictor from that legacy family.
 
 The richer held-out candidate is now the reduced `spectral_envelope_ridge`
 model below. It uses only two linear-spectrum envelope features, reaches mean
-relative error about `0.244`, and clears the leave-one-geometry-out
-interval-coverage gate on the current seven-case electrostatic portfolio. That
+relative error about `0.295`, and clears the leave-one-geometry-out
+interval-coverage gate at `7/8` on the current eight-case electrostatic portfolio. That
 is the current manuscript model-selection result: the simple rules are rejected,
-but a small spectrum-aware candidate is accepted as a scoped research candidate,
-not a runtime/TOML absolute-flux predictor or universal saturation law.
+but a small spectrum-aware candidate is accepted as a scoped research candidate.
+The model-selection status also consumes the selected optimized-equilibrium
+nonlinear audit as local transport evidence, but it is not a runtime/TOML
+absolute-flux predictor or universal saturation law.
 
 ![SPECTRAX-GK quasilinear candidate uncertainty gate](docs/_static/quasilinear_candidate_uncertainty.png)
+
+The companion holdout-gap report makes the remaining promotion blocker
+explicit instead of hiding it in the calibration plot. Six holdouts are
+admitted and the scoped model-selection gate passes, but the current absolute
+heat-flux calibration still fails the aggregate holdout gate (`2.11 > 0.35`).
+The next useful data product is therefore another independent, converged
+electrostatic nonlinear holdout, preferably in the external-VMEC family, not
+another unvalidated fit parameter.
+
+![SPECTRAX-GK quasilinear holdout gap report](docs/_static/quasilinear_holdout_gap_report.png)
+
+The runbook below converts that gap into a fail-closed nonlinear launch plan.
+It is a planning artifact only: admission still requires the resulting
+post-transient traces to pass the grid/window convergence gate and enter the
+calibration metadata as `split = holdout`.
+
+![SPECTRAX-GK external-VMEC next holdout runbook](docs/_static/external_vmec_next_holdout_runbook.png)
+
+The latest new-family shaped-tokamak pressure candidate was run to `t=450` on
+the office GPUs at `48x48x32` and `64x64x40`. It is finite and late-window
+stable, but it is not admitted: the two grid levels differ by about `0.306` in
+both common-window and least-window heat-flux means, above the `0.15`
+convergence gate. The runbook now demotes unchanged reruns of that failed
+family. The follow-on ITERModel `t=450` same-family audit passed
+(`0.056`/`0.055` common/least grid differences), so the runbook no longer
+relaunches that unchanged audit; it records that the next useful data product
+must be a different independent electrostatic VMEC holdout or a materially
+changed high-resolution protocol.
 
 Two of the strongest admitted external-VMEC nonlinear holdouts are shown below.
 These figures are part of the publication-facing evidence that the nonlinear
@@ -211,10 +243,24 @@ all pass.
 
 The up-down asymmetric external-VMEC tokamak closes at `t=450` on the same
 ladder. Its common-window and least-window relative differences are about
-`0.0435` and `0.0242`, respectively. These admitted windows strengthen the
-quasilinear calibration dataset without changing the core conclusion: the
-current absolute-flux model is still a rejected research candidate, not a
-shipped predictive transport law.
+`0.0435` and `0.0242`, respectively.
+
+![SPECTRAX-GK circular external-VMEC nonlinear convergence gate](docs/_static/external_vmec_circular_t450_high_grid_convergence_gate.png)
+
+The circular external-VMEC tokamak initially failed the shorter `t=150` and
+`t=250` admission gates, then closes at `t=450` on the same high-grid ladder:
+the common-window and least-window grid differences are about `0.0128` and
+`0.0468`. These admitted windows strengthen the quasilinear calibration dataset
+without changing the core conclusion: the current absolute-flux model is still
+a rejected research candidate, not a shipped predictive transport law.
+
+The follow-up seed/timestep replicate gate initially failed at `t=450` because
+one seed still had a drifting terminal window. Extending the same three
+replicas to `t=700` closes the physical readiness gate on `t=[350,700]`: the
+ensemble mean heat flux is `18.97`, mean relative spread is `0.035`, and
+combined SEM/mean is `0.043`.
+
+![SPECTRAX-GK circular VMEC nonlinear replicate gate](docs/_static/external_vmec_circular_replicates/circular_replicate_t700_ensemble_gate.png)
 
 Autodiff validation (inverse/sensitivity demo):
 
@@ -427,6 +473,37 @@ as saturated transport.
 
 ![SPECTRAX-GK VMEC/Boozer gradient holdout matrix](docs/_static/vmec_boozer_gradient_holdout_matrix.png)
 
+The reduced VMEC/Boozer optimization path also has aggregate guardrails. The
+multi-point gate below checks a quasilinear objective over two field lines and
+two `k_y` samples at `mboz=nboz=21`; the growth-vs-quasilinear comparison shows
+that growth-rate and quasilinear objectives can choose different initial VMEC
+coefficient directions. The current promotion gate is therefore intentionally
+blocked until an independent production-grade held-out surface or field-line
+artifact passes. The alpha-heldout split shown below is a positive reduced
+field-line generalization check, but it is still not a nonlinear transport
+optimization claim. The surface-heldout split extends this to a true
+held-out `surface_index`, and the Li383 panel checks that the same aggregate
+finite-difference plus line-search machinery works on a second equilibrium.
+
+![SPECTRAX-GK VMEC/Boozer multi-alpha aggregate-objective gate](docs/_static/vmec_boozer_multi_point_objective_gate.png)
+
+![SPECTRAX-GK VMEC/Boozer growth-vs-quasilinear line-search comparison](docs/_static/vmec_boozer_aggregate_line_search_comparison.png)
+
+![SPECTRAX-GK VMEC/Boozer aggregate alpha-heldout gate](docs/_static/vmec_boozer_aggregate_alpha_holdout_gate.png)
+
+![SPECTRAX-GK VMEC/Boozer aggregate surface-heldout gate](docs/_static/vmec_boozer_aggregate_surface_holdout_gate.png)
+
+![SPECTRAX-GK VMEC/Boozer second-equilibrium aggregate gate](docs/_static/vmec_boozer_second_equilibrium_aggregate_gate.png)
+
+The backend-free portfolio reducer below is the lightweight contract that
+multi-surface, multi-field-line, multi-`k_y` stellarator optimization drivers
+should satisfy before they call expensive VMEC/Boozer row producers. It checks
+normalized sample/objective weights and AD/JVP/finite-difference consistency
+for the aggregate scalar objective; it is not a VMEC/Boozer or nonlinear
+turbulent-transport optimization claim by itself.
+
+![SPECTRAX-GK stellarator objective portfolio reducer gate](docs/_static/stellarator_objective_portfolio_gate.png)
+
 ![SPECTRAX-GK nonlinear startup-window finite-difference audit](docs/_static/nonlinear_window_fd_audit.png)
 
 ![SPECTRAX-GK VMEC/Boozer nonlinear startup-window finite-difference audit](docs/_static/vmec_boozer_nonlinear_window_fd_audit.png)
@@ -441,16 +518,67 @@ again by about `63%`. QH is therefore excluded from quasilinear calibration
 until a separate grid/window-converged transport gate passes. A new D-shaped
 tokamak external-VMEC candidate now passes the longer `t=250` high-grid gate:
 `48x48x32` and `64x64x40` differ by `13.9%` on the common late window and
-`10.8%` on independently selected least-trending windows.
+`10.8%` on independently selected least-trending windows. A follow-up
+seed/timestep replicate campaign on the `64x64x40`, `t=250` D-shaped case
+passes the late-window ensemble gate on `t=[170,250]`: the three accepted
+windows have mean heat fluxes `18.8`, `20.8`, and `18.1`, with mean relative
+spread `0.141` below the `0.15` gate. A circular external-VMEC replicate
+campaign required a longer horizon: the `t=450` ensemble spread was already
+small, but seed31 failed terminal-window stationarity, so the accepted artifact
+is the `t=700`, `t=[350,700]` replicate with mean relative spread `0.035` and
+combined SEM/mean `0.043`. The selected optimized QA equilibrium was then run
+through the same long-window protocol at `n64` with two seed replicates and one
+timestep replicate. Its accepted `t=[350,700]` window has ensemble mean ion
+heat flux `10.19`, mean-relative spread `0.038`, and combined SEM/mean `0.021`.
+This is a passed post-transient optimized-equilibrium audit; it is not a
+universal absolute-flux model and should be compared case-by-case against the
+chosen baseline objective and geometry family.
 
 ![SPECTRAX-GK nonlinear transport time-horizon audit](docs/_static/nonlinear_transport_time_horizon_audit.png)
+
+![SPECTRAX-GK D-shaped VMEC nonlinear replicate gate](docs/_static/external_vmec_dshape_replicates/dshape_replicate_t250_ensemble_gate.png)
+
+![SPECTRAX-GK circular VMEC nonlinear replicate gate](docs/_static/external_vmec_circular_replicates/circular_replicate_t700_ensemble_gate.png)
+
+![SPECTRAX-GK optimized-equilibrium nonlinear replicate gate](docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.png)
+
+The matched no-ESS reference from the same `vmec_jax` QA campaign also passes
+the same `t=[350,700]` seed/timestep ensemble gate. Against that finite-transform
+reference, the optimized QA/ESS equilibrium reduces the late-window ion heat
+flux from `12.50` to `10.19`, a relative reduction of `18.4%` with `7.82`
+combined-SEMs separation.
+
+![SPECTRAX-GK matched no-ESS to optimized QA/ESS nonlinear audit](docs/_static/qa_no_ess_to_optimized_nonlinear_audit.png)
+
+The production nonlinear optimization guard below is the enforced claim
+boundary. It passes as a release-safety check because startup/reduced nonlinear
+artifacts are scoped correctly and two long post-transient replicated holdout
+ensembles pass. With the optimized-equilibrium `t=[350,700]` seed/timestep
+replicate now attached, the selected optimized-equilibrium transport audit also
+satisfies this guard. The claim remains bounded: this proves
+that the selected optimized equilibrium has a converged replicated nonlinear
+transport-window audit, not that the current quasilinear model is a universal
+absolute-flux predictor or that nonlinear turbulence gradients are available.
+The separate nonlinear turbulence-gradient evidence gate is stricter and
+currently fails closed after a real re-equilibrated QA/ESS control sweep. The
+tracked lower-order `ZBS(1,0)` 5% campaign has three passed `t=[450,900]`
+baseline/plus/minus replicated nonlinear ensembles and a local central
+finite-difference response (`fd_asymmetry_rel = 0.274`), but the propagated
+gradient uncertainty is still too large (`0.768 > 0.5`). A companion `ZBS(1,1)`
+5% campaign passed the uncertainty gate (`0.225`) but remained mildly nonlocal
+(`fd_asymmetry_rel = 0.663`). These are useful production-candidate audits, not
+nonlinear turbulence-gradient validation.
+
+![SPECTRAX-GK production nonlinear optimization guard](docs/_static/production_nonlinear_optimization_guard.png)
+
+![SPECTRAX-GK QA/ESS ZBS(1,0) nonlinear gradient gate](docs/_static/qa_ess_zbs10_rel5_nonlinear_gradient_zbs_1_0_central_fd_gradient_gate.png)
 
 Differentiable stellarator ITG optimization examples live in
 `examples/optimization/`. They optimize the same QA, max-mode-1 control vector
 with three turbulence objectives: small linear ITG growth rate, small
-quasilinear ITG heat-flux proxy, and a small late-window nonlinear heat-flux
-envelope. Each example reports AD-vs-finite-difference checks, UQ covariance
-diagnostics, objective histories, and polished figures.
+quasilinear ITG heat-flux proxy, and a small reduced late-window nonlinear
+heat-flux envelope. Each example reports AD-vs-finite-difference checks, UQ
+covariance diagnostics, objective histories, and polished figures.
 
 ![SPECTRAX-GK differentiable stellarator ITG optimization](docs/_static/stellarator_itg_optimization_comparison.png)
 
@@ -468,7 +596,8 @@ optimization claim. Full
 scoped to the next promotion gate: production nonlinear turbulence-gradient or
 robust finite-difference audits with converged post-transient heat-flux
 windows, continued production curvature/drift parity on additional equilibria,
-and nonlinear audits of the optimized equilibria. The current full-chain
+and matched baseline-to-optimized nonlinear audits for broader geometry
+families. The current full-chain
 linear/quasilinear and reduced nonlinear-window estimator gradient evidence
 covers QH and Li383 at `mboz=nboz=21`;
 it should not be read as a production nonlinear heat-flux optimization claim.
@@ -504,6 +633,13 @@ therefore focus on independent `k_y` scans, quasilinear studies, sensitivity
 sweeps, and UQ/ensemble batching until a communication-aware nonlinear
 decomposition has its own identity and throughput evidence.
 
+For UQ and optimization portfolios, `spectraxgk.independent_ensemble_provenance_gate`
+is the production identity/provenance check. It runs serial and
+`independent_map` ensemble members, verifies result ordering and numerical
+identity, checks worker clipping for oversubscribed requests, validates
+deterministic reconstruction through the independent-work decomposition
+contract, and confirms worker-exception metadata.
+
 ![SPECTRAX-GK ky-batch parallelization identity gate](docs/_static/parallel_ky_scan_gate.png)
 
 The ky-batch gate above is generated by
@@ -529,7 +665,17 @@ The closure status above is regenerated by
 `k_y` scans and quasilinear/UQ ensembles as production-closed, while keeping
 whole-state nonlinear sharding and FFT-axis decomposition diagnostic until they
 have runtime communication, conservation, transport-window, and profiler-backed
-speedup gates.
+speedup gates. The status JSON also embeds the UQ/optimization ensemble
+provenance gate so the production independent-work lane is closed on ordering,
+worker clipping, exception metadata, and deterministic reconstruction, not only
+speedup and scalar identity.
+
+The decomposition-contract gate below is the lower-level correctness ledger for
+parallel work partitioning. It confirms deterministic shard assignment and
+serial reconstruction identity for independent `k_y` and UQ portfolios, while
+labeling nonlinear state-domain partitioning as diagnostic metadata only.
+
+![SPECTRAX-GK parallel decomposition contract status](docs/_static/parallel_decomposition_status.png)
 
 ![SPECTRAX-GK quasilinear UQ ensemble strong scaling](docs/_static/quasilinear_uq_ensemble_scaling_large.png)
 

@@ -56,12 +56,15 @@ def _write_case(
     shape.write_text(
         json.dumps(
             {
+                "kind": "quasilinear_spectrum_shape_gate",
                 "passed": True,
                 "ky": [0.1, 0.2, 0.4],
                 "quasilinear_distribution": ql_dist,
                 "nonlinear_distribution": nonlinear_dist,
                 "total_variation_distance": 0.1,
                 "cosine_similarity": 0.98,
+                "tv_gate": 0.2,
+                "cosine_gate": 0.95,
             }
         ),
         encoding="utf-8",
@@ -103,7 +106,10 @@ def test_shape_aware_report_and_figure_are_replayable(tmp_path: Path) -> None:
     assert report["kind"] == "quasilinear_shape_aware_saturation_report"
     assert report["input_validation"]["passed"] is True
     assert len(report["leave_one_out"]) == 3
+    assert report["holdout_relative_error_gate"] == pytest.approx(0.35)
     assert "null_training_mean_mean_abs_relative_error" in report["metrics"]
+    assert "shape_aware_all_case_gate_passed" in report["metrics"]
+    assert all(row["shape_gate_status"] == "passed" for row in report["cases"])
     assert report["promotion_gate"]["requires_beating_training_mean_null"] is True
     assert all("null_training_mean_predicted_heat_flux" in row for row in report["leave_one_out"])
     assert Path(paths["png"]).exists()
@@ -118,4 +124,16 @@ def test_shape_aware_report_rejects_missing_shape_gate(tmp_path: Path) -> None:
     case = mod.SaturationCase("a", "train", "a", spectrum, summary, None)
 
     with pytest.raises(ValueError, match="missing a tracked shape-gate"):
+        mod.build_shape_aware_saturation_report((case,))
+
+
+def test_shape_aware_report_rejects_incomplete_shape_gate(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    spectrum, summary, shape = _write_case(tmp_path, "a", observed=1.0, nonlinear_dist=(0.2, 0.3, 0.5))
+    payload = json.loads(shape.read_text(encoding="utf-8"))
+    payload.pop("tv_gate")
+    shape.write_text(json.dumps(payload), encoding="utf-8")
+    case = mod.SaturationCase("a", "train", "a", spectrum, summary, shape)
+
+    with pytest.raises(ValueError, match="tv_gate"):
         mod.build_shape_aware_saturation_report((case,))

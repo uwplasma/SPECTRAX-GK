@@ -33,6 +33,14 @@ STATUS_COLORS = {
     "missing_or_unclassified": "#6b7280",
 }
 
+PRODUCTION_OPTIMIZATION_REQUIREMENTS = (
+    "passed post-transient nonlinear transport-average gate",
+    "grid-convergence gate for the optimized nonlinear objective",
+    "timestep-convergence gate for the optimized nonlinear objective",
+    "seed/initial-condition uncertainty gate",
+    "optimized-equilibrium nonlinear audit",
+)
+
 
 def _read_json(path: Path) -> dict[str, Any] | None:
     if not path.exists():
@@ -157,6 +165,61 @@ def classify_record(record: dict[str, Any], *, min_transport_time: float = MIN_T
     return "missing_or_unclassified"
 
 
+def production_optimization_blockers(
+    record: dict[str, Any],
+    *,
+    status: str | None = None,
+    min_transport_time: float = MIN_TRANSPORT_TIME,
+) -> list[str]:
+    """Return blockers for production nonlinear heat-flux optimization claims.
+
+    A passed long-window transport gate is a prerequisite, not a complete
+    optimized-equilibrium claim. The extra fields are intentionally explicit so
+    future artifacts must opt in after closing each convergence/audit layer.
+    """
+
+    record_status = status or classify_record(
+        record,
+        min_transport_time=min_transport_time,
+    )
+    blockers: list[str] = []
+    if record_status == "reduced_estimator_not_transport_average":
+        blockers.append(
+            "reduced estimator output is not an actual nonlinear transport average"
+        )
+    elif record_status == "short_or_startup_not_transport_average":
+        blockers.append("missing long post-transient nonlinear transport average")
+    elif record_status == "long_feasibility_pending_convergence":
+        blockers.append("long nonlinear trace lacks a passed convergence/reference gate")
+    elif record_status == "long_but_failed_convergence":
+        blockers.append("long nonlinear trace failed the convergence gate")
+    elif record_status != "release_transport_gate_passed":
+        blockers.append("missing passed post-transient nonlinear transport-average gate")
+
+    requirement_fields = (
+        (
+            "grid_convergence_gate_passed",
+            "missing grid-convergence gate for optimized nonlinear objective",
+        ),
+        (
+            "timestep_convergence_gate_passed",
+            "missing timestep-convergence gate for optimized nonlinear objective",
+        ),
+        (
+            "seed_ensemble_gate_passed",
+            "missing seed/initial-condition uncertainty gate",
+        ),
+        (
+            "optimized_equilibrium_audit_passed",
+            "missing optimized-equilibrium nonlinear audit",
+        ),
+    )
+    for field, message in requirement_fields:
+        if record.get(field) is not True:
+            blockers.append(message)
+    return blockers
+
+
 def _release_gate_records(root: Path) -> list[dict[str, Any]]:
     records: list[dict[str, Any]] = []
     for relative in [
@@ -264,6 +327,7 @@ def _pilot_records(root: Path) -> list[dict[str, Any]]:
                 "kind": str(gate_payload.get("kind", "external_vmec_nonlinear_grid_convergence_gate")),
                 "gate_passed": passed,
                 "convergence_gate_passed": passed,
+                "grid_convergence_gate_passed": passed,
                 "summary_tmax": max(run_tmax) if run_tmax else None,
                 "source_tmax": None,
                 "effective_tmax": max(run_tmax) if run_tmax else None,
@@ -353,24 +417,39 @@ def build_payload(root: Path = ROOT, *, min_transport_time: float = MIN_TRANSPOR
             "long_feasibility_pending_convergence",
             "long_but_failed_convergence",
         }
+        blockers = production_optimization_blockers(
+            record,
+            status=str(record["status"]),
+            min_transport_time=min_transport_time,
+        )
+        record["production_nonlinear_optimization_ready"] = not blockers
+        record["production_nonlinear_optimization_blockers"] = blockers
     records.sort(key=lambda item: (str(item["status"]), str(item["case"])))
     counts: dict[str, int] = {}
     for record in records:
         counts[str(record["status"])] = counts.get(str(record["status"]), 0) + 1
+    production_ready = sum(
+        1
+        for record in records
+        if bool(record["production_nonlinear_optimization_ready"])
+    )
     return {
         "kind": "nonlinear_transport_time_horizon_audit",
         "min_transport_time": float(min_transport_time),
+        "production_optimization_requirements": list(PRODUCTION_OPTIMIZATION_REQUIREMENTS),
         "summary": {
             "n_records": len(records),
             "status_counts": counts,
             "release_transport_gate_passed": counts.get("release_transport_gate_passed", 0),
             "short_or_reduced_not_transport": counts.get("short_or_startup_not_transport_average", 0)
             + counts.get("reduced_estimator_not_transport_average", 0),
+            "production_nonlinear_optimization_ready": production_ready,
         },
         "interpretation": (
             "Heat-flux values from startup or reduced-estimator artifacts must not be used as nonlinear "
             "transport averages. Long windows require post-transient averaging plus either matched-code "
-            "comparison or grid/window convergence gates."
+            "comparison or grid/window convergence gates. Production nonlinear optimization additionally "
+            "requires optimized-equilibrium audits with grid, timestep, and seed/initial-condition convergence."
         ),
         "records": records,
     }

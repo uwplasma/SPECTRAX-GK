@@ -1,8 +1,30 @@
 {
   "case": "Nonlinear spectral communication identity gate",
   "claim_scope": "diagnostic spectral communication identity gate only; split/reassemble layout simulation with no production routing or speedup claim",
+  "communication_decomposition": {
+    "blocked_reasons": [],
+    "x_chunks": [
+      2,
+      2
+    ],
+    "x_offsets": [
+      0,
+      2
+    ],
+    "y_chunks": [
+      2,
+      2,
+      2
+    ],
+    "y_offsets": [
+      0,
+      2,
+      4
+    ]
+  },
   "gate": {
     "atol": 5e-06,
+    "blocked_reasons": [],
     "bracket_max_abs_error": 0.0,
     "bracket_max_rel_error": 0.0,
     "claim_scope": "diagnostic spectral communication identity gate only; split/reassemble layout simulation with no production routing or speedup claim",
@@ -24,10 +46,19 @@
       2,
       2
     ],
+    "x_offsets": [
+      0,
+      2
+    ],
     "y_chunks": [
       2,
       2,
       2
+    ],
+    "y_offsets": [
+      0,
+      2,
+      4
     ]
   },
   "kind": "nonlinear_spectral_communication_identity_gate",

@@ -447,6 +447,17 @@ def test_candidate_quasilinear_status_stays_scoped_not_runtime_flux_predictor(
     )
     _write_json(
         tmp_path,
+        "docs/_static/quasilinear_model_selection_status.json",
+        {
+            "promotion_gate": {"passed": True, "blockers": []},
+            "metrics": {
+                "candidate_mean_abs_relative_error": 0.24,
+                "candidate_prediction_interval_coverage": 0.86,
+            },
+        },
+    )
+    _write_json(
+        tmp_path,
         "docs/_static/quasilinear_promotion_guardrails.json",
         {"passed": True},
     )
@@ -464,6 +475,8 @@ def test_candidate_quasilinear_status_stays_scoped_not_runtime_flux_predictor(
     assert lane["key_metrics"]["absolute_flux_promoted"] is False
     assert lane["key_metrics"]["promotion_guardrails_passed"] is True
     assert lane["key_metrics"]["accepted_uq_candidates"] == ["spectral_envelope_ridge"]
+    assert lane["key_metrics"]["model_selection_status_passed"] is True
+    assert lane["key_metrics"]["model_selection_candidate_mean_error"] == 0.24
 
 
 def test_candidate_quasilinear_status_stays_open_without_promotion_guardrail(

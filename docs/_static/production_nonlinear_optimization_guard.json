@@ -1,0 +1,168 @@
+{
+  "claim_level": "production_nonlinear_optimization_promoted_by_replicated_transport_windows",
+  "config": {
+    "max_combined_sem_rel": 0.25,
+    "max_mean_rel_spread": 0.15,
+    "min_replicated_ensembles": 2,
+    "min_reports_per_ensemble": 2,
+    "require_optimized_equilibrium_transport": true,
+    "value_floor": 1e-12
+  },
+  "gates": [
+    {
+      "detail": "docs/_static/stellarator_itg_optimization_comparison.json",
+      "metric": "optimization_artifact_present",
+      "passed": true
+    },
+    {
+      "detail": "rows_claiming_production=0 artifact_claims_production=False",
+      "metric": "reduced_optimizer_not_promoted",
+      "passed": true
+    },
+    {
+      "detail": "reduced_artifacts=2",
+      "metric": "startup_or_reduced_artifacts_blocked",
+      "passed": true
+    },
+    {
+      "detail": "qualifying_ensembles=2 min=2",
+      "metric": "replicated_long_window_holdouts_present",
+      "passed": true
+    },
+    {
+      "detail": "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json",
+      "metric": "optimized_equilibrium_replicated_transport_window",
+      "passed": true
+    }
+  ],
+  "kind": "production_nonlinear_turbulent_flux_optimization_guard",
+  "notes": "This guard intentionally allows release when reduced/startup nonlinear artifacts are scoped correctly. Production nonlinear turbulent-flux optimization is promoted only when optimized-equilibrium long-window replicate audits exist and pass.",
+  "optimization_artifact_path": "docs/_static/stellarator_itg_optimization_comparison.json",
+  "optimization_scope": {
+    "artifact_claims_production": false,
+    "contains_reduced_nonlinear_window_objective": true,
+    "legacy_reduced_scope": true,
+    "n_reduced_nonlinear_rows": 1,
+    "n_results": 3,
+    "n_rows_claiming_production": 0,
+    "objective_kinds": [
+      "growth",
+      "quasilinear_flux",
+      "nonlinear_heat_flux"
+    ]
+  },
+  "optimized_equilibrium_artifacts": [
+    {
+      "case": "optimized_equilibrium_post_optimization_ensemble_gate",
+      "claim_level": "replicated_nonlinear_window_uncertainty_gate_not_simulation_claim",
+      "claim_scoped_as_replicated_holdout": true,
+      "combined_sem_rel": 0.020869088819709194,
+      "combined_sem_rel_ok": true,
+      "ensemble_mean": 10.19273263179093,
+      "finite_transport_mean": true,
+      "is_nonlinear_window_ensemble": true,
+      "kind": "nonlinear_window_ensemble_report",
+      "mean_rel_spread": 0.038174615386123725,
+      "mean_rel_spread_ok": true,
+      "n_reports": 3,
+      "optimized_equilibrium_marker": true,
+      "passed": true,
+      "path": "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json",
+      "qualifies_as_long_post_transient_replicate": true,
+      "qualifies_for_production_optimization": true,
+      "report_count_ok": true
+    }
+  ],
+  "passed": true,
+  "production_nonlinear_optimization_promoted": true,
+  "promotion_gate": {
+    "blockers": [],
+    "passed": true,
+    "requirements": [
+      "optimized equilibrium must have long post-transient replicated nonlinear transport-window audits",
+      "replicates must include independent seed/initial-condition and timestep evidence",
+      "optimized-equilibrium transport means must satisfy running-window, block/SEM, spread, and finite-flux gates"
+    ]
+  },
+  "reduced_artifacts": [
+    {
+      "blocked_by_claim_scope": true,
+      "blocked_by_production_gradient_gate": true,
+      "blocked_by_transport_average_gate": true,
+      "claim_level": "startup_transient_nonlinear_plumbing_fd_audit_not_transport_average",
+      "claims_production": false,
+      "kind": "nonlinear_startup_window_finite_difference_audit",
+      "passed": true,
+      "path": "docs/_static/nonlinear_window_fd_audit.json",
+      "production_nonlinear_window_gradient_gate": false,
+      "safely_blocked_from_production": true,
+      "transport_average_gate": false
+    },
+    {
+      "blocked_by_claim_scope": true,
+      "blocked_by_production_gradient_gate": true,
+      "blocked_by_transport_average_gate": true,
+      "claim_level": "vmec_boozer_geometry_perturbed_startup_plumbing_fd_audit_not_transport_average",
+      "claims_production": false,
+      "kind": "vmec_boozer_nonlinear_startup_finite_difference_audit",
+      "passed": true,
+      "path": "docs/_static/vmec_boozer_nonlinear_window_fd_audit.json",
+      "production_nonlinear_window_gradient_gate": false,
+      "safely_blocked_from_production": true,
+      "transport_average_gate": false
+    }
+  ],
+  "replicated_ensemble_artifacts": [
+    {
+      "case": "circular_external_vmec_t700_replicate_window_ensemble_gate",
+      "claim_level": "replicated_nonlinear_window_uncertainty_gate_not_simulation_claim",
+      "claim_scoped_as_replicated_holdout": true,
+      "combined_sem_rel": 0.04283952221624353,
+      "combined_sem_rel_ok": true,
+      "ensemble_mean": 18.972570762461928,
+      "finite_transport_mean": true,
+      "is_nonlinear_window_ensemble": true,
+      "kind": "nonlinear_window_ensemble_report",
+      "mean_rel_spread": 0.035473869975602645,
+      "mean_rel_spread_ok": true,
+      "n_reports": 3,
+      "passed": true,
+      "path": "docs/_static/external_vmec_circular_replicates/circular_replicate_t700_ensemble_gate.json",
+      "qualifies_as_long_post_transient_replicate": true,
+      "report_count_ok": true
+    },
+    {
+      "case": "external_vmec_dshape_replicate_t250_ensemble_gate",
+      "claim_level": "replicated_nonlinear_window_uncertainty_gate_not_simulation_claim",
+      "claim_scoped_as_replicated_holdout": true,
+      "combined_sem_rel": 0.05360630620607054,
+      "combined_sem_rel_ok": true,
+      "ensemble_mean": 19.246314938866664,
+      "finite_transport_mean": true,
+      "is_nonlinear_window_ensemble": true,
+      "kind": "nonlinear_window_ensemble_report",
+      "mean_rel_spread": 0.14102885109482344,
+      "mean_rel_spread_ok": true,
+      "n_reports": 3,
+      "passed": true,
+      "path": "docs/_static/external_vmec_dshape_replicates/dshape_replicate_t250_ensemble_gate.json",
+      "qualifies_as_long_post_transient_replicate": true,
+      "report_count_ok": true
+    }
+  ],
+  "safe_to_release": true,
+  "safety_gate": {
+    "blockers": [],
+    "passed": true,
+    "requirements": [
+      "differentiable optimization artifacts must not claim production nonlinear turbulent transport",
+      "startup and reduced nonlinear-window artifacts must record false production/transport gates",
+      "at least two long post-transient replicated nonlinear-window holdout ensembles must pass"
+    ]
+  },
+  "summary": {
+    "production_nonlinear_optimization_ready": 1,
+    "qualifying_optimized_equilibrium_ensembles": 1,
+    "qualifying_replicated_holdout_ensembles": 2
+  }
+}

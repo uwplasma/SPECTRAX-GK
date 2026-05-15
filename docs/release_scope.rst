@@ -44,15 +44,17 @@ score.
      - release-ready as diagnostics
      - Electrostatic linear heat/particle weights, spectra, and model-selection
        artifacts are reproducible. Simple one-scalar saturation rules are
-       rejected on the seven-case train/holdout portfolio. The
+       rejected on the eight-case train/holdout portfolio. The
        ``spectral_envelope_ridge`` candidate is accepted only as a scoped
-       manuscript model-selection result, not as a runtime/TOML absolute-flux
-       predictor. Any future absolute-flux promotion additionally requires
-       finite passed nonlinear late-window convergence metadata for every
-       holdout: transient cutoff, running-mean drift, block/bootstrap SEM,
-       finite sample count, and source provenance. Electromagnetic
-       quasilinear field-channel normalization and KBM calibration remain
-       future gates.
+       manuscript model-selection result. The passed
+       ``quasilinear_model_selection_status.json`` gate does not promote a
+       runtime/TOML absolute-flux predictor, universal nonlinear transport
+       model, or user-facing saturation law. Any future absolute-flux
+       promotion additionally requires finite passed nonlinear late-window
+       convergence metadata for every holdout: transient cutoff, running-mean
+       drift, block/bootstrap SEM, finite sample count, and source provenance.
+       Electromagnetic quasilinear field-channel normalization and KBM
+       calibration remain future gates.
    * - Differentiable geometry
      - release-ready for equal-arc parity and reduced QH/Li383 gates
      - The ``vmec_jax -> booz_xform_jax -> SPECTRAX-GK`` bridge is validated
@@ -77,11 +79,14 @@ score.
        absolute quasilinear flux prediction, or converged nonlinear heat-flux
        gradients.
    * - Stellarator optimization examples
-     - release-ready as reduced examples
+     - release-ready as reduced examples plus selected optimized-equilibrium audit
      - The examples demonstrate differentiable reduced ITG objectives, UQ, and
        AD/finite-difference checks. The nonlinear objective is a reduced
-       window-estimator path, not a converged post-transient nonlinear
-       heat-flux optimization claim.
+       window-estimator path, not a nonlinear turbulence-gradient path. The
+       selected optimized QA equilibrium now has a converged post-transient
+       seed/timestep transport-window audit, so the production guard is closed
+       for that scoped audit. Broad multi-surface nonlinear optimization and
+       nonlinear turbulence gradients remain unpromoted.
    * - Parallelization
      - production-ready for independent work
      - Independent ``k_y`` scans, quasilinear spectra, sensitivity batches, and
@@ -106,7 +111,10 @@ Do not make these claims from the current artifacts:
 - using ``spectral_envelope_ridge`` as a shipped runtime or TOML saturation
   option;
 - electromagnetic quasilinear transport calibration for KBM;
-- production nonlinear heat-flux stellarator optimization;
+- broad multi-surface production nonlinear heat-flux stellarator optimization;
+- production nonlinear optimization without converged post-transient audits of
+  optimized equilibria; the selected QA optimized-equilibrium audit is the
+  current scoped exception;
 - converged nonlinear transport gradients through ``vmec_jax`` and
   ``booz_xform_jax``;
 - treating compact nonlinear finite-difference startup audits as saturated
@@ -148,6 +156,8 @@ README claims, or manuscript claims.
      - ``quasilinear_*_spectrum.*``,
        ``quasilinear_validated_calibration_inputs.*``,
        ``quasilinear_stellarator_train_holdout.*``,
+       ``external_vmec_dshape_replicates/dshape_replicate_t250_ensemble_gate.*``,
+       ``external_vmec_circular_replicates/circular_replicate_t700_ensemble_gate.*``,
        ``quasilinear_saturation_rule_sweep.*``,
        ``quasilinear_candidate_uncertainty.*``, and
        ``quasilinear_dataset_sufficiency.*``
@@ -169,12 +179,22 @@ README claims, or manuscript claims.
        ``vmec_boozer_li383_quasilinear_gradient_gate.*``,
        ``vmec_boozer_li383_nonlinear_window_gradient_gate.*``,
        ``vmec_boozer_gradient_holdout_matrix.*``,
+       ``vmec_boozer_multi_point_objective_gate.*``,
+       ``vmec_boozer_reduced_portfolio_guard.json``,
+       ``vmec_boozer_aggregate_line_search_comparison.*``,
+       ``vmec_boozer_aggregate_alpha_holdout_gate.*``,
+       ``vmec_boozer_aggregate_surface_holdout_gate.*``,
+       ``vmec_boozer_second_equilibrium_aggregate_gate.*``,
+       ``vmec_boozer_aggregate_holdout_promotion_gate.json``,
+       ``nonlinear_window_ensemble_readiness_manifest.json``,
+       ``nonlinear_window_convergence_reports/*.json``,
        ``stellarator_itg_optimization_comparison.*``, and
        ``stellarator_itg_optimization_uq.*``
      - These artifacts support reduced objective differentiability, optimizer
-       plumbing, and local UQ. They do not support calibrated saturated-flux
-       prediction, production nonlinear turbulence gradients, or nonlinear
-       audits of optimized equilibria.
+       plumbing, local UQ, and explicit nonlinear ensemble-readiness blockers.
+       They do not support calibrated saturated-flux prediction, production
+       nonlinear turbulence gradients, or nonlinear audits of optimized
+       equilibria.
    * - Scope guardrails
      - ``technical_release_status.json``,
        ``parallelization_completion_status.*``,
@@ -215,22 +235,121 @@ Quasilinear model-selection state:
 
 - ``docs/_static/quasilinear_stellarator_train_holdout_report.json``:
   nonlinear inputs are valid, but the one-constant absolute-flux model remains
-  ``passed = false`` with held-out mean relative error about ``2.57``.
+  ``passed = false`` with held-out mean relative error about ``2.11``.
 - ``tools/check_nonlinear_window_convergence.py`` and
   ``spectraxgk.quasilinear_window`` provide the reusable late-window
   convergence metadata required before any future holdout report can be
   promoted to ``calibrated_absolute_flux``. This is a metadata/finite-window
   guardrail over existing traces, not a substitute for new long nonlinear
   simulations.
+- ``spectraxgk.quasilinear_window.nonlinear_window_ensemble_report`` provides
+  the next guardrail for replicated windows: seed, initial-condition, timestep,
+  or restart variants must have individually passed late-window reports and
+  mutually consistent late means before a nonlinear turbulent-flux optimization
+  artifact can claim robustness. ``tools/check_nonlinear_window_ensemble.py``
+  is the tracked artifact wrapper for this gate.
+- ``tools/check_nonlinear_window_ensemble_readiness.py`` converts tracked
+  transport-window summaries into explicit convergence-report JSON files and a
+  readiness manifest. The older global
+  ``docs/_static/nonlinear_window_ensemble_readiness_manifest.json`` remains a
+  base-window manifest, but the current D-shaped and circular case-local
+  replicate campaigns now pass their own ensemble gates. Those case-local
+  artifacts supersede the stale global missing-replicate message for those two
+  cases. The selected optimized-equilibrium audit now also passes its local
+  seed/timestep ensemble gate.
+- ``tools/check_vmec_boozer_aggregate_holdout_gate.py`` now requires a passed
+  replicated nonlinear-window ensemble artifact in addition to aggregate
+  finite-difference, line-search, and held-out surface/field-line evidence
+  before any optimized-equilibrium production nonlinear heat-flux claim can be
+  promoted. Single-window convergence reports remain necessary but insufficient
+  for that claim level.
+- ``tools/check_production_nonlinear_optimization_guard.py`` is the explicit
+  production nonlinear turbulent-flux optimization guard. Its tracked artifact,
+  ``docs/_static/production_nonlinear_optimization_guard.json``, passes release
+  safety because reduced/startup estimators are blocked and two long
+  post-transient replicated holdout ensembles pass. The selected optimized QA
+  equilibrium also satisfies this guard because the ``t=[350,700]``
+  seed/timestep replicated transport-window audit is attached; that is a scoped
+  candidate audit, not a broad nonlinear transport-optimization claim.
+- ``tools/build_baseline_optimized_nonlinear_audit.py`` now records the matched
+  QA no-ESS reference to optimized QA/ESS comparison. The tracked
+  ``docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json`` artifact passes
+  with a relative ion-heat-flux reduction of ``0.184`` and a ``7.82`` combined
+  SEM separation. This is a scoped finite-transform VMEC campaign comparison,
+  not a broad multi-surface stellarator optimization claim.
+- ``tools/check_nonlinear_turbulence_gradient_evidence.py`` is the stricter
+  nonlinear turbulence-gradient claim gate. The tracked
+  ``docs/_static/nonlinear_turbulence_gradient_evidence_status.json`` artifact
+  passes the replicated long-window uncertainty side but fails closed on the
+  gradient side. The current tracked production-candidate artifact is the
+  re-equilibrated optimized QA/ESS ``ZBS(1,0)`` 5% campaign at ``t=[450,900]``:
+  all baseline/plus/minus replicated nonlinear windows pass, and the finite
+  difference has bounded response fraction, subtraction condition number, and
+  forward/backward locality. The remaining blocker is propagated uncertainty:
+  ``gradient_uncertainty_rel = 0.768`` exceeds the ``0.5`` gate. The companion
+  ``ZBS(1,1)`` 5% campaign passes uncertainty at ``0.225`` but remains mildly
+  nonlocal with ``fd_asymmetry_rel = 0.663``. The
+  ``docs/_static/nonlinear_turbulence_gradient_evidence_gap_report.json`` now
+  records this as a failed production-candidate gate, not as a missing campaign.
+  Until a paired post-transient artifact passes all response, asymmetry,
+  conditioning, and propagated uncertainty gates, nonlinear turbulence-gradient
+  evidence remains explicitly unpromoted.
+- ``tools/build_nonlinear_turbulence_gradient_fd_gate.py`` is the paired
+  long-window promotion builder for that missing evidence. It takes the
+  finished ``baseline``, ``plus_delta``, and ``minus_delta`` replicated
+  nonlinear-window ensemble JSON files, computes the central finite-difference
+  heat-flux gradient, propagates ensemble SEM into a gradient-uncertainty gate,
+  writes reviewer-facing JSON/CSV/PNG/PDF sidecars, and fails closed unless the
+  response, forward/backward asymmetry, condition number, and all three window
+  uncertainty gates pass.
+- Future perturbation refreshes must use distinct artifact slugs rather than
+  overwriting the tracked failed candidate. For example, a new coefficient or
+  amplitude campaign should write a slug such as
+  ``docs/_static/qa_ess_zbs11_rel5_nonlinear_gradient_zbs_1_1_central_fd_gradient_gate.*``
+  and a matching refreshed
+  ``nonlinear_turbulence_gradient_evidence_status.json``. Release prose can
+  promote the result only if the central finite-difference artifact passes
+  and the evidence-status JSON reports the production gradient gate as true;
+  otherwise it remains a documented production-candidate audit.
+- ``tools/write_nonlinear_turbulence_gradient_campaign.py`` is the paired
+  launch-contract writer for the same lane. Given explicit baseline,
+  plus-perturbation, and minus-perturbation VMEC files, it writes the matched
+  fixed-step nonlinear TOML ladders, per-state ensemble commands, the central
+  finite-difference gate command, and the final evidence-check command. It
+  fails closed before writing production launch contracts if any VMEC file is
+  missing, if the same path is reused for more than one state, or if the three
+  files have byte-identical SHA256 contents. The only override is
+  ``--allow-identical-vmec-content``, which is recorded as a smoke-test-only
+  manifest flag and must not be used for production turbulence-gradient claims.
+- ``tools/write_vmec_boundary_perturbation_inputs.py`` is the upstream
+  boundary-gradient launch helper. It writes matched ``baseline``,
+  ``plus_delta``, and ``minus_delta`` VMEC input files for one explicit
+  ``RBC/RBS/ZBC/ZBS(m,n)`` coefficient and records the ``vmec_jax`` commands
+  that must be run before the resulting ``wout`` files can enter the
+  nonlinear-gradient campaign writer.
 - ``docs/_static/quasilinear_saturation_rule_sweep.json``:
   no simple saturation rule is accepted. Positive-growth mixing length is the
-  least-bad simple rule with mean held-out relative error about ``2.51``;
-  the training-mean null is about ``1.39``.
+  least-bad simple rule with mean held-out relative error about ``2.11``;
+  the training-mean null is about ``1.20``.
 - ``docs/_static/quasilinear_candidate_uncertainty.json``:
   ``spectral_envelope_ridge`` is the accepted scoped candidate with mean
-  relative error about ``0.244`` and interval coverage about ``0.857`` on the
-  current seven-case electrostatic-compatible portfolio. Its claim level is
+  relative error about ``0.295`` and interval coverage ``7/8`` on the
+  current eight-case electrostatic-compatible portfolio. Its claim level is
   ``candidate_model_development_not_runtime_option``.
+- ``docs/_static/quasilinear_holdout_gap_report.json``:
+  absolute-flux promotion remains explicitly blocked. The
+  ``absolute_flux_promotion_requirements`` block quantifies the current gap:
+  the absolute train/holdout mean relative error is about ``6.04`` times the
+  ``0.35`` gate, three additional independent passed holdouts are still
+  required, one additional external-VMEC holdout family is required, and one
+  non-axisymmetric external-VMEC holdout family is required before promotion
+  can be reconsidered. These are evidence prerequisites, not a promoted
+  runtime absolute-flux option.
+- ``docs/_static/external_vmec_shaped_tokamak_pressure_t450_high_grid_convergence_gate.json``:
+  finite shaped-tokamak pressure traces at ``t = 450`` are explicitly
+  excluded from calibration because the ``n48``/``n64`` heat-flux windows
+  differ by about ``0.306``, above the ``0.15`` grid-convergence gate. This is
+  negative validation evidence, not an admitted holdout.
 
 Nonlinear benchmark state:
 
@@ -238,7 +357,7 @@ Nonlinear benchmark state:
   release-window cases. KBM and HSX use tightened gates, Cyclone Miller is
   tighter than the broad release envelope, while Cyclone and W7-X remain at the
   ``0.10`` release envelope pending paper-level retuning.
-- ``docs/_static/validation_gate_index.json`` currently records ``10`` passed
+- ``docs/_static/validation_gate_index.json`` currently records ``16`` passed
   gate-indexed reports and ``0`` open reports. It is a gate index, not a
   blanket promotion of every figure under ``docs/_static``.
 - ``docs/_static/nonlinear_transport_time_horizon_audit.json`` separates
@@ -263,16 +382,26 @@ Differentiable-geometry state:
   Li383 with maximum relative mismatch about ``2.7e-2``.
 - The VMEC/Boozer objective artifact checklist for README and manuscript use is
   the parity matrix, the six single-equilibrium frequency/quasilinear/reduced
-  nonlinear-window gradient-gate figures, the combined holdout matrix, and the
-  reduced stellarator ITG optimization/UQ panels. This checklist is the current
+  nonlinear-window gradient-gate figures, the combined holdout matrix, the
+  multi-alpha aggregate objective gate, the reduced-portfolio provenance guard,
+  the growth-vs-quasilinear line-search comparison, the positive reduced
+  alpha-heldout and surface-heldout splits, the Li383 second-equilibrium
+  aggregate gate, the blocked aggregate promotion JSON, and the reduced
+  stellarator ITG optimization/UQ panels. This checklist is the current
   boundary between objective plumbing and transport prediction.
+- ``docs/_static/vmec_boozer_reduced_portfolio_guard.json`` is the
+  artifact-level guard that ties the backend-free portfolio reducer to real
+  VMEC/Boozer rows. It requires VMEC/Boozer path/mode provenance, two
+  field-line ``alpha`` values, two ``k_y`` samples, finite aggregate FD fields,
+  finite growth/QL AD/FD objective gates, and an explicit non-production
+  nonlinear claim boundary.
 - ``docs/_static/nonlinear_window_fd_audit.json`` and
   ``docs/_static/vmec_boozer_nonlinear_window_fd_audit.json`` pass only startup
   finite-difference plumbing checks. Both record ``transport_average_gate =
   false``.
 - Finite-beta drift reconstruction, converged nonlinear turbulence gradients,
-  multi-surface/multi-alpha optimization, and optimized-equilibrium nonlinear
-  audits remain future promotion gates.
+  held-out surface/field-line aggregate promotion, and optimized-equilibrium
+  nonlinear audits remain future promotion gates.
 
 Parallelization and performance state:
 

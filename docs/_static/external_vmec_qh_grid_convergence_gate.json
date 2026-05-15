@@ -139,6 +139,7 @@
     ],
     "summary": "Nonlinear gyrokinetic heat-flux claims require finite late-time traces, statistically interpretable saturated windows, and resolution/convergence checks before a run is admitted as a calibration holdout."
   },
+  "passed": false,
   "pdf": "docs/_static/external_vmec_qh_grid_convergence_gate.pdf",
   "png": "docs/_static/external_vmec_qh_grid_convergence_gate.png",
   "promotion_gate": {

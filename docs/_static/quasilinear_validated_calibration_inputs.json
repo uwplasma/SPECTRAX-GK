@@ -4,13 +4,13 @@
     "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/*.json"
   ],
   "kind": "quasilinear_calibration_input_audit",
-  "n_gate_artifact_matches": 79,
+  "n_gate_artifact_matches": 86,
   "passed": true,
   "reports": [
     {
-      "n_points": 7,
-      "n_required": 7,
-      "n_required_passed": 7,
+      "n_points": 8,
+      "n_required": 8,
+      "n_required_passed": 8,
       "passed": true,
       "points": [
         {
@@ -106,13 +106,28 @@
         {
           "case": "updown_asym_external_vmec_t450_window",
           "matched_gate": {
-            "artifact": "docs/_static/external_vmec_updown_asym_t450_high_grid_convergence_gate.json",
+            "artifact": "docs/_static/external_vmec_updown_asym_t450_n64_transport_window.json",
             "case": "updown_asym_external_vmec_t450",
-            "claim_level": "passed_grid_convergence_candidate_for_transport_holdout",
-            "kind": "external_vmec_nonlinear_grid_convergence_gate",
+            "claim_level": "passed_grid_converged_external_vmec_transport_window",
+            "kind": "external_vmec_transport_window_summary",
             "passed": true
           },
           "nonlinear_artifact": "docs/_static/external_vmec_updown_asym_nonlinear_t450_n64_pilot.traces.csv",
+          "passed": true,
+          "reason": "matched passed nonlinear gate",
+          "required": true,
+          "split": "holdout"
+        },
+        {
+          "case": "circular_external_vmec_t450_window",
+          "matched_gate": {
+            "artifact": "docs/_static/external_vmec_circular_t450_n64_transport_window.json",
+            "case": "circular_external_vmec_t450",
+            "claim_level": "passed_grid_converged_external_vmec_transport_window",
+            "kind": "external_vmec_transport_window_summary",
+            "passed": true
+          },
+          "nonlinear_artifact": "docs/_static/external_vmec_circular_holdout_nonlinear_t450_n64_pilot.traces.csv",
           "passed": true,
           "reason": "matched passed nonlinear gate",
           "required": true,
