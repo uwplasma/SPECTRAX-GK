@@ -23,6 +23,8 @@ DEFAULT_MIN_SPEEDUP = 1.20
 DEFAULT_MIN_EFFICIENCY = 0.50
 DEFAULT_MIN_DEVICES = 2
 DEFAULT_REQUIRED_BACKENDS = ("cpu", "gpu")
+DEFAULT_IDENTITY_ATOL = 1.0e-5
+DEFAULT_IDENTITY_RTOL = 1.0e-5
 
 
 def _json_clean(value: Any) -> Any:
@@ -57,6 +59,31 @@ def _finite_float(value: Any, default: float = math.nan) -> float:
     return out if math.isfinite(out) else default
 
 
+def _identity_error_blockers(
+    row: dict[str, Any],
+    *,
+    identity_atol: float,
+    identity_rtol: float,
+) -> tuple[str, ...]:
+    """Return blockers from explicit state-error metrics, not only booleans."""
+
+    blockers: list[str] = []
+    max_abs = _finite_float(row.get("max_abs_state_error"))
+    max_rel = _finite_float(row.get("max_rel_state_error"))
+
+    if not math.isfinite(max_abs):
+        blockers.append("identity_abs_error_missing")
+    elif max_abs > float(identity_atol):
+        blockers.append("identity_abs_error_above_tolerance")
+
+    if not math.isfinite(max_rel):
+        blockers.append("identity_rel_error_missing")
+    elif max_rel > float(identity_rtol):
+        blockers.append("identity_rel_error_above_tolerance")
+
+    return tuple(blockers)
+
+
 def load_rows(paths: list[Path]) -> list[dict[str, Any]]:
     """Load rows from sweep or combined nonlinear sharding artifacts."""
 
@@ -81,6 +108,8 @@ def _row_blockers(
     min_speedup: float,
     min_efficiency: float,
     min_devices: int,
+    identity_atol: float,
+    identity_rtol: float,
 ) -> tuple[str, ...]:
     blockers: list[str] = []
     requested_devices = int(row.get("requested_devices") or 0)
@@ -97,6 +126,13 @@ def _row_blockers(
         blockers.append("state_sharding_inactive")
     if not bool(row.get("identity_gate_pass", False)):
         blockers.append("identity_gate_failed")
+    blockers.extend(
+        _identity_error_blockers(
+            row,
+            identity_atol=float(identity_atol),
+            identity_rtol=float(identity_rtol),
+        )
+    )
     if row.get("error") not in {None, ""}:
         blockers.append("profile_row_error")
     if not math.isfinite(speedup):
@@ -110,6 +146,87 @@ def _row_blockers(
     return tuple(blockers)
 
 
+def _row_classification(
+    blockers: tuple[str, ...],
+    *,
+    requested_devices: int,
+    actual_devices: int,
+    min_devices: int,
+    speedup: float,
+    min_speedup: float,
+) -> str:
+    """Classify rows for claim-boundary review without changing gate policy."""
+
+    blocker_set = set(blockers)
+    identity_blockers = {
+        "identity_gate_failed",
+        "identity_abs_error_missing",
+        "identity_abs_error_above_tolerance",
+        "identity_rel_error_missing",
+        "identity_rel_error_above_tolerance",
+    }
+    if "profile_row_error" in blocker_set:
+        return "profile_error"
+    if requested_devices < int(min_devices) or actual_devices < int(min_devices):
+        return "reference_only"
+    if identity_blockers & blocker_set:
+        return "identity_failed"
+    if "state_sharding_inactive" in blocker_set:
+        return "inactive_or_fallback"
+    if "speedup_missing" in blocker_set:
+        return "timing_incomplete"
+    if math.isfinite(speedup) and speedup < 1.0:
+        return "identity_preserving_regression"
+    if (
+        "speedup_below_threshold" in blocker_set
+        or "parallel_efficiency_below_threshold" in blocker_set
+    ):
+        return "identity_only_insufficient_speedup"
+    if math.isfinite(speedup) and speedup >= float(min_speedup):
+        return "production_candidate"
+    return "diagnostic_only"
+
+
+def _backend_summary(
+    rows: list[dict[str, Any]],
+    required_backends: tuple[str, ...],
+) -> dict[str, dict[str, Any]]:
+    """Summarize rows by backend for reviewer-facing claim classification."""
+
+    summary: dict[str, dict[str, Any]] = {}
+    for backend in required_backends:
+        backend_rows = [row for row in rows if row["backend"] == backend]
+        classifications = sorted({str(row["classification"]) for row in backend_rows})
+        identity_rows = [
+            row
+            for row in backend_rows
+            if row["classification"]
+            in {
+                "production_candidate",
+                "identity_only_insufficient_speedup",
+                "identity_preserving_regression",
+            }
+        ]
+        best_identity = None
+        if identity_rows:
+            best_identity = max(
+                identity_rows,
+                key=lambda row: (
+                    _finite_float(row.get("strong_speedup_vs_1_device")),
+                    int(row.get("requested_devices") or 0),
+                ),
+            )
+        summary[backend] = {
+            "row_count": len(backend_rows),
+            "classifications": classifications,
+            "best_identity_preserving_row": best_identity,
+            "production_candidate_count": sum(
+                1 for row in backend_rows if row["classification"] == "production_candidate"
+            ),
+        }
+    return summary
+
+
 def evaluate_production_gate(
     rows: list[dict[str, Any]],
     *,
@@ -117,6 +234,8 @@ def evaluate_production_gate(
     min_efficiency: float = DEFAULT_MIN_EFFICIENCY,
     min_devices: int = DEFAULT_MIN_DEVICES,
     required_backends: tuple[str, ...] = DEFAULT_REQUIRED_BACKENDS,
+    identity_atol: float = DEFAULT_IDENTITY_ATOL,
+    identity_rtol: float = DEFAULT_IDENTITY_RTOL,
 ) -> dict[str, Any]:
     """Return a fail-closed production-speedup gate summary."""
 
@@ -133,6 +252,16 @@ def evaluate_production_gate(
             min_speedup=min_speedup,
             min_efficiency=min_efficiency,
             min_devices=min_devices,
+            identity_atol=identity_atol,
+            identity_rtol=identity_rtol,
+        )
+        classification = _row_classification(
+            blockers,
+            requested_devices=requested_devices,
+            actual_devices=actual_devices,
+            min_devices=min_devices,
+            speedup=speedup,
+            min_speedup=min_speedup,
         )
         item = {
             "backend": str(row.get("backend", "")).lower(),
@@ -143,9 +272,13 @@ def evaluate_production_gate(
             "identity_gate_pass": bool(row.get("identity_gate_pass", False)),
             "strong_speedup_vs_1_device": speedup,
             "parallel_efficiency": efficiency,
+            "max_abs_state_error": row.get("max_abs_state_error"),
             "max_rel_state_error": row.get("max_rel_state_error"),
+            "identity_atol": float(identity_atol),
+            "identity_rtol": float(identity_rtol),
             "source": row.get("source"),
             "candidate_passed": not blockers,
+            "classification": classification,
             "blockers": blockers,
         }
         evaluated_rows.append(item)
@@ -179,7 +312,10 @@ def evaluate_production_gate(
             "min_devices": int(min_devices),
             "min_speedup_vs_1_device": float(min_speedup),
             "min_parallel_efficiency": float(min_efficiency),
+            "identity_atol": float(identity_atol),
+            "identity_rtol": float(identity_rtol),
             "best_candidates": best_candidates,
+            "backend_summary": _backend_summary(evaluated_rows, required_backends),
             "blockers": tuple(gate_blockers),
             "rows": evaluated_rows,
             "claim_scope": (
@@ -205,6 +341,9 @@ def write_artifacts(summary: dict[str, Any], out_prefix: Path) -> dict[str, str]
         "identity_gate_pass",
         "strong_speedup_vs_1_device",
         "parallel_efficiency",
+        "max_abs_state_error",
+        "max_rel_state_error",
+        "classification",
         "candidate_passed",
         "blockers",
         "source",
@@ -224,6 +363,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--min-efficiency", type=float, default=DEFAULT_MIN_EFFICIENCY)
     parser.add_argument("--min-devices", type=int, default=DEFAULT_MIN_DEVICES)
     parser.add_argument("--required-backends", type=_parse_backend_list, default=DEFAULT_REQUIRED_BACKENDS)
+    parser.add_argument("--identity-atol", type=float, default=DEFAULT_IDENTITY_ATOL)
+    parser.add_argument("--identity-rtol", type=float, default=DEFAULT_IDENTITY_RTOL)
     return parser
 
 
@@ -236,6 +377,8 @@ def main(argv: list[str] | None = None) -> int:
         min_efficiency=float(args.min_efficiency),
         min_devices=int(args.min_devices),
         required_backends=tuple(args.required_backends),
+        identity_atol=float(args.identity_atol),
+        identity_rtol=float(args.identity_rtol),
     )
     paths = write_artifacts(summary, Path(args.out_prefix))
     print(json.dumps({"gate_passed": summary["gate_passed"], "status": summary["status"], "paths": paths}, indent=2))

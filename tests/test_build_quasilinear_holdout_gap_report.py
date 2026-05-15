@@ -264,6 +264,39 @@ def test_gap_report_preserves_claim_boundary_and_ranks_next_holdout(tmp_path: Pa
     nearest = report["next_actual_nonlinear_holdout_needed"]["nearest_tracked_gap"]
     assert nearest["case"] == "ITERModel external VMEC nonlinear t250 high-grid convergence"
     assert nearest["next_best_score"] == 1.1
+    requirements = report["absolute_flux_promotion_requirements"]
+    assert requirements["absolute_flux_promoted"] is False
+    assert requirements["reconsideration_ready"] is False
+    assert requirements["numeric_gap"]["holdout_mean_abs_relative_error"] == 0.5
+    assert requirements["numeric_gap"]["holdout_mean_rel_gate"] == 0.35
+    assert requirements["numeric_gap"]["error_factor_to_gate"] == 0.5 / 0.35
+    assert (
+        requirements["coverage_gap"]["additional_total_independent_holdouts_needed"]
+        == 8
+    )
+    assert (
+        requirements["coverage_gap"][
+            "additional_external_vmec_holdout_families_needed"
+        ]
+        == 3
+    )
+    assert (
+        requirements["coverage_gap"][
+            "additional_nonaxisymmetric_external_vmec_holdout_families_needed"
+        ]
+        == 1
+    )
+    assert {
+        "absolute_train_holdout_report_passed",
+        "holdout_mean_abs_relative_error",
+        "minimum_total_independent_holdouts",
+        "minimum_external_vmec_holdout_families",
+        "minimum_nonaxisymmetric_external_vmec_holdout_families",
+    }.issubset(requirements["blockers"])
+    assert any(
+        row["case"] == "Shaped tokamak external VMEC nonlinear t450 high-grid convergence"
+        for row in requirements["required_nonlinear_cases"]
+    )
 
 
 def test_gap_report_tool_writes_replayable_artifacts(tmp_path: Path) -> None:
@@ -298,6 +331,11 @@ def test_gap_report_tool_writes_replayable_artifacts(tmp_path: Path) -> None:
     assert not out.with_suffix(".pdf").exists()
     payload = json.loads(out.with_suffix(".json").read_text(encoding="utf-8"))
     assert payload["absolute_flux_promoted"] is False
+    assert (
+        payload["absolute_flux_promotion_requirements"]["claim_boundary"]
+        .lower()
+        .startswith("this section defines the evidence needed")
+    )
     rows = list(csv.DictReader(out.with_suffix(".csv").open(encoding="utf-8")))
     assert {row["section"] for row in rows} >= {
         "admitted_holdouts",

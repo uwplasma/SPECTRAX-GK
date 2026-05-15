@@ -1107,13 +1107,27 @@ The current report admits six holdouts and two training references, but it
 keeps ``absolute_flux_promoted = false`` because the aggregate held-out
 absolute-flux error remains about ``2.11`` against the ``0.35`` gate. The
 accepted ``spectral_envelope_ridge`` candidate remains a scoped
-model-selection result; the next useful input is a new independent,
-electrostatic-compatible nonlinear transport window with a passed
-grid/window-convergence gate and ``split = holdout`` metadata. The report now
-tracks ``13`` excluded candidates. The shaped-tokamak pressure candidate is
-one of those exclusions: it is finite and late-window stable at ``t = 450``,
-but its ``48x48x32`` and ``64x64x40`` heat-flux windows differ by about
-``0.306``, above the ``0.15`` grid-agreement gate. The report currently
+model-selection result. Its mean leave-one-geometry-out relative error is
+about ``0.295``, but that number is not a saturated absolute-flux promotion
+because it comes from the candidate-selection uncertainty report rather than a
+passed absolute train/holdout calibration artifact.
+
+The JSON sidecar now carries an explicit
+``absolute_flux_promotion_requirements`` block. For the current frozen
+artifacts it records an error factor of about ``6.04`` over the absolute-flux
+gate, with Cyclone Miller as the worst admitted holdout
+(``Q_i = 4.26`` observed versus ``38.7`` predicted). Before absolute-flux
+promotion can even be reconsidered, the report requires at least three
+additional independent passed holdouts, at least one additional external-VMEC
+holdout family, and at least one non-axisymmetric external-VMEC holdout family.
+These are evidence requirements, not automatic promotion criteria; any future
+absolute model must still pass the held-out transport-error gate, prediction
+interval/skill gates, and provenance checks on the same frozen case ledger.
+
+The report tracks ``13`` excluded candidates. The shaped-tokamak pressure
+candidate is one of those exclusions: it is finite and late-window stable at
+``t = 450``, but its ``48x48x32`` and ``64x64x40`` heat-flux windows differ by
+about ``0.306``, above the ``0.15`` grid-agreement gate. The report currently
 identifies the external-VMEC family as the highest-leverage next source
 because an ITERModel window already passes as training data and the nearest
 tracked holdout gap is a near-miss in the same family. The new

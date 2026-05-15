@@ -1,4 +1,64 @@
 {
+  "backend_summary": {
+    "cpu": {
+      "best_identity_preserving_row": {
+        "actual_devices": 4,
+        "backend": "cpu",
+        "best_spec": "kx",
+        "blockers": [
+          "parallel_efficiency_below_threshold"
+        ],
+        "candidate_passed": false,
+        "classification": "identity_only_insufficient_speedup",
+        "identity_atol": 1e-05,
+        "identity_gate_pass": true,
+        "identity_rtol": 1e-05,
+        "max_abs_state_error": 0.0,
+        "max_rel_state_error": 0.0,
+        "parallel_efficiency": 0.3481051743852482,
+        "requested_devices": 4,
+        "source": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/nonlinear_sharding_strong_scaling_cpu_large.json",
+        "state_sharding_active": true,
+        "strong_speedup_vs_1_device": 1.3924206975409927
+      },
+      "classifications": [
+        "identity_only_insufficient_speedup",
+        "production_candidate",
+        "reference_only"
+      ],
+      "production_candidate_count": 1,
+      "row_count": 4
+    },
+    "gpu": {
+      "best_identity_preserving_row": {
+        "actual_devices": 2,
+        "backend": "gpu",
+        "best_spec": "kx",
+        "blockers": [
+          "speedup_below_threshold",
+          "parallel_efficiency_below_threshold"
+        ],
+        "candidate_passed": false,
+        "classification": "identity_preserving_regression",
+        "identity_atol": 1e-05,
+        "identity_gate_pass": true,
+        "identity_rtol": 1e-05,
+        "max_abs_state_error": 0.0,
+        "max_rel_state_error": 0.0,
+        "parallel_efficiency": 0.31304521525200557,
+        "requested_devices": 2,
+        "source": "/Users/rogeriojorge/local/SPECTRAX-GK/docs/_static/nonlinear_sharding_strong_scaling_gpu_xlarge.json",
+        "state_sharding_active": true,
+        "strong_speedup_vs_1_device": 0.6260904305040111
+      },
+      "classifications": [
+        "identity_preserving_regression",
+        "reference_only"
+      ],
+      "production_candidate_count": 0,
+      "row_count": 2
+    }
+  },
   "best_candidates": {
     "cpu": {
       "actual_devices": 2,
@@ -6,7 +66,11 @@
       "best_spec": "kx",
       "blockers": [],
       "candidate_passed": true,
+      "classification": "production_candidate",
+      "identity_atol": 1e-05,
       "identity_gate_pass": true,
+      "identity_rtol": 1e-05,
+      "max_abs_state_error": 0.0,
       "max_rel_state_error": 0.0,
       "parallel_efficiency": 0.6637884077350061,
       "requested_devices": 2,
@@ -21,6 +85,8 @@
   ],
   "claim_scope": "Whole-state nonlinear sharding may be described as a production speedup candidate only when this gate passes. Otherwise keep it as a diagnostic identity/profiler artifact.",
   "gate_passed": false,
+  "identity_atol": 1e-05,
+  "identity_rtol": 1e-05,
   "kind": "nonlinear_sharding_production_speedup_gate",
   "min_devices": 2,
   "min_parallel_efficiency": 0.5,
@@ -42,7 +108,11 @@
         "speedup_below_threshold"
       ],
       "candidate_passed": false,
+      "classification": "reference_only",
+      "identity_atol": 1e-05,
       "identity_gate_pass": true,
+      "identity_rtol": 1e-05,
+      "max_abs_state_error": 0.0,
       "max_rel_state_error": 0.0,
       "parallel_efficiency": 1.0,
       "requested_devices": 1,
@@ -56,7 +126,11 @@
       "best_spec": "kx",
       "blockers": [],
       "candidate_passed": true,
+      "classification": "production_candidate",
+      "identity_atol": 1e-05,
       "identity_gate_pass": true,
+      "identity_rtol": 1e-05,
+      "max_abs_state_error": 0.0,
       "max_rel_state_error": 0.0,
       "parallel_efficiency": 0.6637884077350061,
       "requested_devices": 2,
@@ -72,7 +146,11 @@
         "parallel_efficiency_below_threshold"
       ],
       "candidate_passed": false,
+      "classification": "identity_only_insufficient_speedup",
+      "identity_atol": 1e-05,
       "identity_gate_pass": true,
+      "identity_rtol": 1e-05,
+      "max_abs_state_error": 0.0,
       "max_rel_state_error": 0.0,
       "parallel_efficiency": 0.3481051743852482,
       "requested_devices": 4,
@@ -88,7 +166,11 @@
         "parallel_efficiency_below_threshold"
       ],
       "candidate_passed": false,
+      "classification": "identity_only_insufficient_speedup",
+      "identity_atol": 1e-05,
       "identity_gate_pass": true,
+      "identity_rtol": 1e-05,
+      "max_abs_state_error": 0.0,
       "max_rel_state_error": 0.0,
       "parallel_efficiency": 0.17127984535738103,
       "requested_devices": 8,
@@ -107,7 +189,11 @@
         "speedup_below_threshold"
       ],
       "candidate_passed": false,
+      "classification": "reference_only",
+      "identity_atol": 1e-05,
       "identity_gate_pass": true,
+      "identity_rtol": 1e-05,
+      "max_abs_state_error": 0.0,
       "max_rel_state_error": 0.0,
       "parallel_efficiency": 1.0,
       "requested_devices": 1,
@@ -124,7 +210,11 @@
         "parallel_efficiency_below_threshold"
       ],
       "candidate_passed": false,
+      "classification": "identity_preserving_regression",
+      "identity_atol": 1e-05,
       "identity_gate_pass": true,
+      "identity_rtol": 1e-05,
+      "max_abs_state_error": 0.0,
       "max_rel_state_error": 0.0,
       "parallel_efficiency": 0.31304521525200557,
       "requested_devices": 2,

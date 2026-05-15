@@ -840,3 +840,15 @@ scoped optimized-equilibrium replicated nonlinear transport audit with a matched
 finite-transform no-ESS reference comparison. It is still not a universal
 absolute-flux quasilinear model, a nonlinear turbulence-gradient optimizer, or a
 broad multi-surface stellarator transport-optimization claim.
+
+The next nonlinear turbulence-gradient promotion is now encoded as a
+fail-closed run plan in
+``docs/_static/nonlinear_turbulence_gradient_evidence_gap_report.json``. That
+plan requires paired ``baseline``, ``plus_delta``, and ``minus_delta`` nonlinear
+campaigns around the same VMEC/profile parameter, the same seed/timestep
+replicate set for every parameter state, ``t=[350,700]`` post-transient heat-flux
+averages, passed ensemble uncertainty gates for all three states, and a central
+finite-difference audit with bounded response, asymmetry, condition number, and
+gradient uncertainty. Existing standalone replicated transport windows remain
+necessary evidence but are not sufficient to claim a production nonlinear
+turbulence gradient.

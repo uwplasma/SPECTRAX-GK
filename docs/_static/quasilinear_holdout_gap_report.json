@@ -1,5 +1,188 @@
 {
   "absolute_flux_promoted": false,
+  "absolute_flux_promotion_requirements": {
+    "absolute_flux_promoted": false,
+    "blockers": [
+      "absolute_train_holdout_report_passed",
+      "holdout_mean_abs_relative_error",
+      "minimum_total_independent_holdouts",
+      "minimum_external_vmec_holdout_families",
+      "minimum_nonaxisymmetric_external_vmec_holdout_families"
+    ],
+    "claim_boundary": "This section defines the evidence needed to reopen absolute-flux promotion; it is not a promoted runtime/TOML predictor.",
+    "coverage_gap": {
+      "additional_external_vmec_holdout_families_needed": 1,
+      "additional_nonaxisymmetric_external_vmec_holdout_families_needed": 1,
+      "additional_total_independent_holdouts_needed": 3,
+      "admitted_holdout_families": [
+        "circular_external_vmec",
+        "cyclone_miller",
+        "dshape_external_vmec",
+        "hsx",
+        "updown_asym_external_vmec",
+        "w7x"
+      ],
+      "external_vmec_holdout_families": [
+        "circular_external_vmec",
+        "dshape_external_vmec",
+        "updown_asym_external_vmec"
+      ],
+      "nonaxisymmetric_external_vmec_holdout_families": [],
+      "training_families": [
+        "cyclone",
+        "itermodel_external_vmec"
+      ]
+    },
+    "gates": [
+      {
+        "current": false,
+        "detail": "the current one-constant absolute calibration report is still failed",
+        "metric": "absolute_train_holdout_report_passed",
+        "passed": false,
+        "required": true
+      },
+      {
+        "current": 2.114098664675138,
+        "detail": "absolute-flux promotion needs a calibrated report that passes the held-out transport gate",
+        "metric": "holdout_mean_abs_relative_error",
+        "passed": false,
+        "required": "<= 0.35"
+      },
+      {
+        "additional_needed": 3,
+        "current": 6,
+        "detail": "holdouts must be passed, post-transient nonlinear transport windows outside the training split",
+        "metric": "minimum_total_independent_holdouts",
+        "passed": false,
+        "required": 9
+      },
+      {
+        "additional_needed": 1,
+        "current": 3,
+        "detail": "external-VMEC holdout families test transfer beyond built-in local cases",
+        "metric": "minimum_external_vmec_holdout_families",
+        "passed": false,
+        "required": 4
+      },
+      {
+        "additional_needed": 1,
+        "current": 0,
+        "detail": "at least one external stellarator-like VMEC holdout is required before broad stellarator absolute-flux claims",
+        "metric": "minimum_nonaxisymmetric_external_vmec_holdout_families",
+        "passed": false,
+        "required": 1
+      },
+      {
+        "current": true,
+        "detail": "model-selection skill can pass while absolute-flux promotion remains blocked",
+        "metric": "scoped_model_selection_gate_passed",
+        "passed": true,
+        "required": true
+      }
+    ],
+    "kind": "quasilinear_absolute_flux_promotion_requirements",
+    "numeric_gap": {
+      "error_excess_over_gate": 1.7640986646751378,
+      "error_factor_to_gate": 6.040281899071823,
+      "holdout_mean_abs_relative_error": 2.114098664675138,
+      "holdout_mean_rel_gate": 0.35,
+      "scoped_model_selection_interval_coverage": 0.875,
+      "scoped_model_selection_mean_abs_relative_error": 0.29524327596674427,
+      "worst_admitted_holdout": {
+        "absolute_relative_error": 8.076770096888685,
+        "case": "cyclone_miller_long_window",
+        "family": "cyclone_miller",
+        "observed_heat_flux": 4.259822065746515,
+        "predicted_heat_flux": 38.66542554443455
+      }
+    },
+    "reconsideration_ready": false,
+    "required_nonlinear_cases": [
+      {
+        "case": "itermodel_external_vmec_t350_window",
+        "claim_boundary": "candidate case only; adding it does not by itself promote absolute flux",
+        "failed_gates": [],
+        "family": "itermodel_external_vmec",
+        "gate_passed": true,
+        "next_best_score": 0.0,
+        "required_action": "add this passed-gate case as an independent holdout, not a training/reference point",
+        "role": "ranked_next_best",
+        "source_artifact": "docs/_static/quasilinear_stellarator_train_holdout_report.json"
+      },
+      {
+        "case": "ITERModel external VMEC nonlinear t250 high-grid convergence",
+        "claim_boundary": "candidate case only; adding it does not by itself promote absolute flux",
+        "failed_gates": [
+          "common slope: 0.002197 > 0.002",
+          "common CV: 0.2059 > 0.2"
+        ],
+        "family": "itermodel_external_vmec",
+        "gate_passed": false,
+        "next_best_score": 1.098693462935406,
+        "required_action": "extend/refine this nonlinear run until its grid/window convergence gate passes",
+        "role": "ranked_next_best",
+        "source_artifact": "docs/_static/external_vmec_itermodel_t250_high_grid_convergence_gate.json"
+      },
+      {
+        "case": "Shaped tokamak external VMEC nonlinear t450 high-grid convergence",
+        "claim_boundary": "candidate case only; adding it does not by itself promote absolute flux",
+        "failed_gates": [
+          "common grid shift: 0.3057 > 0.15",
+          "least-window grid shift: 0.3061 > 0.15"
+        ],
+        "family": "shaped_tokamak_external_vmec",
+        "gate_passed": false,
+        "next_best_score": 2.0408639765603045,
+        "required_action": "extend/refine this nonlinear run until its grid/window convergence gate passes",
+        "role": "ranked_next_best",
+        "source_artifact": "docs/_static/external_vmec_shaped_tokamak_pressure_t450_high_grid_convergence_gate.json"
+      },
+      {
+        "case": "ITERModel external VMEC nonlinear t150 high-grid convergence",
+        "claim_boundary": "candidate case only; adding it does not by itself promote absolute flux",
+        "failed_gates": [
+          "common slope: 0.00492 > 0.002",
+          "least-window grid shift: 0.164 > 0.15"
+        ],
+        "family": "itermodel_external_vmec",
+        "gate_passed": false,
+        "next_best_score": 2.4600972408053723,
+        "required_action": "extend/refine this nonlinear run until its grid/window convergence gate passes",
+        "role": "ranked_next_best",
+        "source_artifact": "docs/_static/external_vmec_itermodel_t150_high_grid_convergence_gate.json"
+      },
+      {
+        "case": "CTH-like external VMEC nonlinear grid convergence",
+        "claim_boundary": "candidate case only; adding it does not by itself promote absolute flux",
+        "failed_gates": [
+          "common slope: 0.005418 > 0.002",
+          "common grid shift: 0.5709 > 0.15",
+          "least-window grid shift: 0.4531 > 0.15"
+        ],
+        "family": "cth_like_external_vmec",
+        "gate_passed": false,
+        "next_best_score": 3.8057848574436037,
+        "required_action": "extend/refine this nonlinear run until its grid/window convergence gate passes",
+        "role": "missing_nonaxisymmetric_external_vmec_holdout",
+        "source_artifact": "docs/_static/external_vmec_cth_like_grid_convergence_gate.json"
+      },
+      {
+        "case": "nfp4 QH external VMEC nonlinear grid convergence",
+        "claim_boundary": "candidate case only; adding it does not by itself promote absolute flux",
+        "failed_gates": [
+          "common slope: 0.002289 > 0.002",
+          "common grid shift: 0.5233 > 0.15",
+          "least-window grid shift: 0.4803 > 0.15"
+        ],
+        "family": "qh_external_vmec",
+        "gate_passed": false,
+        "next_best_score": 3.4884512654473183,
+        "required_action": "extend/refine this nonlinear run until its grid/window convergence gate passes",
+        "role": "missing_nonaxisymmetric_external_vmec_holdout",
+        "source_artifact": "docs/_static/external_vmec_qh_grid_convergence_gate.json"
+      }
+    ]
+  },
   "admitted_holdouts": [
     {
       "absolute_flux_promoted": false,
@@ -536,7 +719,7 @@
     "artifact": "docs/_static/quasilinear_model_selection_status.json",
     "candidate_mean_abs_relative_error": 0.29524327596674427,
     "candidate_prediction_interval_coverage": 0.875,
-    "claim_level": "scoped_candidate_model_selection_not_runtime_absolute_flux",
+    "claim_level": "scoped_candidate_model_selection_with_optimized_equilibrium_nonlinear_audit_not_universal_absolute_flux",
     "kind": "quasilinear_model_selection_status",
     "passed": true,
     "reason": "scoped model-selection result only; not a runtime/TOML absolute-flux predictor",
@@ -674,6 +857,11 @@
   "promotion_gate": {
     "blockers": [
       "absolute_flux_predictor_not_promoted",
+      "absolute_requirement:absolute_train_holdout_report_passed",
+      "absolute_requirement:holdout_mean_abs_relative_error",
+      "absolute_requirement:minimum_total_independent_holdouts",
+      "absolute_requirement:minimum_external_vmec_holdout_families",
+      "absolute_requirement:minimum_nonaxisymmetric_external_vmec_holdout_families",
       "stellarator_train_holdout_report_failed",
       "holdout_mean_error_exceeds_gate"
     ],
