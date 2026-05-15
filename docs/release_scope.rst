@@ -293,6 +293,14 @@ Quasilinear model-selection state:
   ``fd_condition_number``, and ``gradient_uncertainty_rel``. Until those paired
   post-transient artifacts pass, nonlinear turbulence-gradient evidence remains
   explicitly unpromoted.
+- ``tools/build_nonlinear_turbulence_gradient_fd_gate.py`` is the paired
+  long-window promotion builder for that missing evidence. It takes the
+  finished ``baseline``, ``plus_delta``, and ``minus_delta`` replicated
+  nonlinear-window ensemble JSON files, computes the central finite-difference
+  heat-flux gradient, propagates ensemble SEM into a gradient-uncertainty gate,
+  writes reviewer-facing JSON/CSV/PNG/PDF sidecars, and fails closed unless the
+  response, forward/backward asymmetry, condition number, and all three window
+  uncertainty gates pass.
 - ``docs/_static/quasilinear_saturation_rule_sweep.json``:
   no simple saturation rule is accepted. Positive-growth mixing length is the
   least-bad simple rule with mean held-out relative error about ``2.11``;
