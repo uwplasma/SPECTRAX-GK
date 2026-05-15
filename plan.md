@@ -6086,3 +6086,46 @@ Exit gate:
     asymmetry bounded while reducing `gradient_uncertainty_rel` below `0.5`;
   - if `8%` violates finite-difference asymmetry, bracket with an intermediate
     `5%` perturbation rather than relaxing the uncertainty gate.
+
+### 2026-05-15 QA/ESS RBC(1,1) 8% Bracketed Nonlinear Gradient Evidence
+
+- Ran the planned larger-amplitude QA/ESS `RBC(1,1)` campaign on `office`.
+- VMEC-JAX re-equilibrations:
+  - relative perturbation: `8%`;
+  - absolute `delta_parameter`: `8.030440273144866e-03`;
+  - baseline, plus, and minus equilibria all terminated normally and produced
+    distinct `854728` byte `wout` files.
+- SPECTRAX-GK nonlinear evidence:
+  - generated the matched `baseline`/`plus_delta`/`minus_delta` campaign with
+    horizons `t=250,350,450,700,900`;
+  - ran true restart ladders on the two office GPUs by copying both `.out.nc`
+    and `.restart.nc` between horizons and running only the additional steps;
+  - completed `45/45` stage markers and `9/9` `t900` outputs.
+- Replicated `t=[450,900]` ensemble results:
+  - baseline passed with mean `15.976041`, combined SEM `0.567676`, SEM
+    fraction `0.0355`, and mean spread `0.0322`;
+  - plus passed with mean `14.432491`, combined SEM `0.662912`, SEM fraction
+    `0.0459`, and mean spread `0.0309`;
+  - minus passed with mean `16.017794`, combined SEM `0.453119`, SEM fraction
+    `0.0283`, and mean spread `0.0749`.
+- Central finite-difference gate:
+  - response fraction improved to `0.09923`;
+  - condition number passed at `19.21`;
+  - propagated uncertainty almost passed but remains blocked at
+    `gradient_uncertainty_rel = 0.5065 > 0.5`;
+  - forward/backward locality failed clearly:
+    `fd_asymmetry_rel = 1.8947 > 0.5`;
+  - forward gradient `-192.21`, backward gradient `-5.20`, central gradient
+    `-98.71`.
+- Interpretation:
+  - increasing the perturbation fixed the low-signal issue but revealed that an
+    8% `RBC(1,1)` displacement is not a local finite-difference derivative for
+    this nonlinear turbulent heat-flux observable;
+  - this should not be promoted as a turbulence-gradient claim;
+  - the next best scientific step is a bracketed `5%` campaign or a more
+    sensitive/well-conditioned control direction, with the same `t=[450,900]`
+    replicated-window protocol and no relaxed asymmetry/uncertainty gates.
+- Tracked artifact policy:
+  - replaced the older 2% tracked central-FD figure/gate with the 8%
+    production-candidate artifact to keep the repository-size gate green;
+  - kept the older 2% metrics in this plan as historical context.

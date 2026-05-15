@@ -10,7 +10,11 @@
       "metric": "artifact_passed"
     },
     {
-      "detail": "gradient_uncertainty_rel=1.8277639813619166 max=0.5",
+      "detail": "fd_asymmetry_rel=1.8946500665295756 max=0.5",
+      "metric": "fd_asymmetry_bounded"
+    },
+    {
+      "detail": "gradient_uncertainty_rel=0.5065121189058193 max=0.5",
       "metric": "gradient_uncertainty_bounded"
     }
   ],
@@ -20,14 +24,18 @@
     {
       "blocker": "production_gradient_artifact",
       "current_artifact_class": "production_long_window_turbulence_gradient_candidate",
-      "current_artifact_path": "docs/_static/qa_ess_rbc11_nonlinear_gradient_rbc_1_1_central_fd_gradient_gate.json",
+      "current_artifact_path": "docs/_static/qa_ess_rbc11_rel8_nonlinear_gradient_rbc_1_1_central_fd_gradient_gate.json",
       "current_failed_gates": [
         {
           "detail": "kind=nonlinear_turbulence_gradient_central_fd_gate",
           "metric": "artifact_passed"
         },
         {
-          "detail": "gradient_uncertainty_rel=1.8277639813619166 max=0.5",
+          "detail": "fd_asymmetry_rel=1.8946500665295756 max=0.5",
+          "metric": "fd_asymmetry_bounded"
+        },
+        {
+          "detail": "gradient_uncertainty_rel=0.5065121189058193 max=0.5",
           "metric": "gradient_uncertainty_bounded"
         }
       ],
@@ -39,7 +47,7 @@
   "promotion_blocked": true,
   "qualifying_window_ensemble_count": 3,
   "required_campaign": {
-    "case_slug": "qa_ess_rbc11_nonlinear_gradient",
+    "case_slug": "qa_ess_rbc11_rel8_nonlinear_gradient",
     "finite_difference_audit": {
       "acceptance_gates": {
         "fd_asymmetry_rel_max": 0.5,
@@ -65,20 +73,20 @@
         "plus_window_sem",
         "minus_window_sem"
       ],
-      "required_output": "docs/_static/qa_ess_rbc11_nonlinear_gradient_rbc_1_1_central_fd_gradient_gate.json"
+      "required_output": "docs/_static/qa_ess_rbc11_rel8_nonlinear_gradient_rbc_1_1_central_fd_gradient_gate.json"
     },
     "parameter_name": "rbc_1_1",
-    "perturbation_fraction": 0.02,
+    "perturbation_fraction": 0.08,
     "required_runs": [
       {
-        "parameter_multiplier": 0.98,
+        "parameter_multiplier": 0.92,
         "parameter_name": "rbc_1_1",
         "replicates": [
           "seed31",
           "seed32",
           "dt0p04"
         ],
-        "required_output": "docs/_static/qa_ess_rbc11_nonlinear_gradient_minus_delta_replicates/qa_ess_rbc11_nonlinear_gradient_minus_delta_t900_ensemble_gate.json",
+        "required_output": "docs/_static/qa_ess_rbc11_rel8_nonlinear_gradient_minus_delta_replicates/qa_ess_rbc11_rel8_nonlinear_gradient_minus_delta_t900_ensemble_gate.json",
         "run_contract": {
           "analysis_window": [
             450.0,
@@ -99,7 +107,7 @@
           "seed32",
           "dt0p04"
         ],
-        "required_output": "docs/_static/qa_ess_rbc11_nonlinear_gradient_baseline_replicates/qa_ess_rbc11_nonlinear_gradient_baseline_t900_ensemble_gate.json",
+        "required_output": "docs/_static/qa_ess_rbc11_rel8_nonlinear_gradient_baseline_replicates/qa_ess_rbc11_rel8_nonlinear_gradient_baseline_t900_ensemble_gate.json",
         "run_contract": {
           "analysis_window": [
             450.0,
@@ -113,14 +121,14 @@
         "state": "baseline"
       },
       {
-        "parameter_multiplier": 1.02,
+        "parameter_multiplier": 1.08,
         "parameter_name": "rbc_1_1",
         "replicates": [
           "seed31",
           "seed32",
           "dt0p04"
         ],
-        "required_output": "docs/_static/qa_ess_rbc11_nonlinear_gradient_plus_delta_replicates/qa_ess_rbc11_nonlinear_gradient_plus_delta_t900_ensemble_gate.json",
+        "required_output": "docs/_static/qa_ess_rbc11_rel8_nonlinear_gradient_plus_delta_replicates/qa_ess_rbc11_rel8_nonlinear_gradient_plus_delta_t900_ensemble_gate.json",
         "run_contract": {
           "analysis_window": [
             450.0,

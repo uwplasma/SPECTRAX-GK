@@ -281,11 +281,12 @@ Quasilinear model-selection state:
   ``docs/_static/nonlinear_turbulence_gradient_evidence_status.json`` artifact
   passes the replicated long-window uncertainty side but fails closed on the
   gradient side. The current tracked production-candidate artifact is the
-  re-equilibrated optimized QA/ESS ``RBC(1,1)`` campaign at ``t=[450,900]``:
+  re-equilibrated optimized QA/ESS ``RBC(1,1)`` 8% campaign at ``t=[450,900]``:
   all baseline/plus/minus replicated nonlinear windows pass, the finite
-  difference has bounded response fraction, forward/backward asymmetry, and
-  subtraction condition number, but ``gradient_uncertainty_rel = 1.83`` exceeds
-  the ``0.5`` gate. The companion
+  difference has bounded response fraction and subtraction condition number, but
+  ``fd_asymmetry_rel = 1.89`` exceeds the ``0.5`` asymmetry gate and
+  ``gradient_uncertainty_rel = 0.506`` remains just above the ``0.5`` uncertainty
+  gate. The companion
   ``docs/_static/nonlinear_turbulence_gradient_evidence_gap_report.json`` now
   records this as a failed production-candidate gate, not as a missing campaign.
   Until a paired post-transient artifact passes all response, asymmetry,
