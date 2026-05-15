@@ -27,6 +27,7 @@ from spectraxgk.quasilinear_window import (
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "tools" / "check_nonlinear_turbulence_gradient_evidence.py"
 FD_SCRIPT = ROOT / "tools" / "build_nonlinear_turbulence_gradient_fd_gate.py"
+CAMPAIGN_SCRIPT = ROOT / "tools" / "write_nonlinear_turbulence_gradient_campaign.py"
 
 
 def _load_tool_module():
@@ -41,6 +42,16 @@ def _load_tool_module():
 
 def _load_fd_tool_module():
     spec = importlib.util.spec_from_file_location("build_nonlinear_turbulence_gradient_fd_gate", FD_SCRIPT)
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def _load_campaign_tool_module():
+    spec = importlib.util.spec_from_file_location("write_nonlinear_turbulence_gradient_campaign", CAMPAIGN_SCRIPT)
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -452,3 +463,56 @@ def test_fd_cli_writes_json_csv_and_plot_artifacts(tmp_path: Path) -> None:
     assert out_prefix.with_suffix(".csv").exists()
     assert out_prefix.with_suffix(".png").exists()
     assert out_prefix.with_suffix(".pdf").exists()
+
+
+def test_gradient_campaign_writer_creates_matched_state_run_contract(tmp_path: Path) -> None:
+    mod = _load_campaign_tool_module()
+    baseline = tmp_path / "wout_baseline.nc"
+    plus = tmp_path / "wout_plus.nc"
+    minus = tmp_path / "wout_minus.nc"
+    for path in (baseline, plus, minus):
+        path.write_text("placeholder", encoding="utf-8")
+    out_dir = tmp_path / "campaign"
+
+    rc = mod.main(
+        [
+            "--baseline-vmec-file",
+            str(baseline),
+            "--plus-vmec-file",
+            str(plus),
+            "--minus-vmec-file",
+            str(minus),
+            "--case",
+            "qa_gradient",
+            "--parameter-name",
+            "rbc_1_0",
+            "--delta-parameter",
+            "0.02",
+            "--out-dir",
+            str(out_dir),
+            "--horizons",
+            "1,2",
+            "--grid",
+            "n4:4:4:4:4",
+            "--window-tmin",
+            "1",
+            "--window-tmax",
+            "2",
+            "--seed-variant",
+            "31",
+            "--dt-variant",
+            "0.04",
+        ]
+    )
+
+    manifest = json.loads((out_dir / "gradient_campaign_manifest.json").read_text(encoding="utf-8"))
+    assert rc == 0
+    assert manifest["configs_written"] == 12
+    assert manifest["run_contract"]["same_numerics_except_parameter"] is True
+    assert manifest["run_contract"]["analysis_window"] == [1.0, 2.0]
+    assert manifest["run_contract"]["replicates"] == ["seed31", "dt0p04"]
+    assert set(manifest["state_manifests"]) == {"minus_delta", "baseline", "plus_delta"}
+    assert "build_nonlinear_turbulence_gradient_fd_gate.py" in manifest["promotion_contract"]["central_fd_command"]
+    central_fd_command = manifest["promotion_contract"]["central_fd_command"]
+    assert "--baseline docs/_static/qa_gradient_baseline_replicates" in central_fd_command
+    assert "--fail-on-blocked" in manifest["promotion_contract"]["evidence_check_command"]

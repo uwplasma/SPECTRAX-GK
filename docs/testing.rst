@@ -304,6 +304,8 @@ release-safe scoped wording while blocking production nonlinear turbulent-flux
 optimization promotion until optimized equilibria have replicated
 post-transient transport-window audits.
 For actual nonlinear turbulence-gradient promotion, use
+``tools/write_nonlinear_turbulence_gradient_campaign.py`` to write the matched
+baseline/plus/minus VMEC launch ladders and replay commands, then use
 ``tools/build_nonlinear_turbulence_gradient_fd_gate.py`` after the matched
 ``baseline``/``plus_delta``/``minus_delta`` ensembles finish. The builder writes
 the central finite-difference gradient sidecar and checks response resolution,
