@@ -311,6 +311,20 @@ Quasilinear model-selection state:
   promote the result only if the central finite-difference artifact passes
   and the evidence-status JSON reports the production gradient gate as true;
   otherwise it remains a documented production-candidate audit.
+- ``tools/rank_nonlinear_turbulence_gradient_candidates.py`` ranks failed
+  central finite-difference candidates without promoting them. The current
+  ``docs/_static/nonlinear_turbulence_gradient_candidate_ranking.json`` summary
+  compares the completed ``RBC(1,1)``, ``ZBS(1,1)``, and ``ZBS(1,0)`` campaigns
+  and recommends an overdetermined least-squares/profile-gradient campaign next
+  because the best single-control candidates have complementary locality and
+  uncertainty failures.
+- ``tools/write_overdetermined_nonlinear_gradient_campaign.py`` is the concrete
+  launch-contract writer for that next campaign shape. The current tracked
+  ``docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_plan.json``
+  uses the optimized-QA/ESS baseline input and prepares ``ZBS(1,1)``,
+  ``ZBS(1,0)``, and ``RBC(1,1)`` controls at 3% relative amplitude with the
+  same ``t=[450,900]`` analysis window. This artifact is planning/provenance
+  only; it does not promote a nonlinear turbulence-gradient claim.
 - ``tools/write_nonlinear_turbulence_gradient_campaign.py`` is the paired
   launch-contract writer for the same lane. Given explicit baseline,
   plus-perturbation, and minus-perturbation VMEC files, it writes the matched

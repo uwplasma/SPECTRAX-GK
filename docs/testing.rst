@@ -337,6 +337,20 @@ Do not promote new prose until
 ``nonlinear_turbulence_gradient_gate = true``. Until then, describe the result
 as a bounded production-candidate finite-difference audit, not as a nonlinear
 turbulence-gradient claim.
+``tools/rank_nonlinear_turbulence_gradient_candidates.py`` is the companion
+planning utility for failed candidates. It ranks completed central-FD artifacts
+by response, locality, conditioning, and propagated uncertainty margins, writes
+a fail-closed JSON summary, and recommends whether the next campaign should add
+replicas, shrink a bracket, or move to an overdetermined
+least-squares/profile-gradient design. The current tracked ranking artifact is
+``docs/_static/nonlinear_turbulence_gradient_candidate_ranking.json`` and is
+not itself promotion evidence.
+``tools/write_overdetermined_nonlinear_gradient_campaign.py`` implements that
+next launch-contract step. It writes multiple matched boundary-control VMEC
+perturbation manifests from one baseline input, records the per-control
+nonlinear campaign commands, and writes the final candidate-ranking command.
+The tracked QA/ESS profile-gradient launch plan is
+``docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_plan.json``.
 
 ``tools/write_optimized_equilibrium_transport_configs.py`` is the production
 optimization companion for that final audit. Given a concrete post-optimization
