@@ -853,33 +853,29 @@ finite-difference audit with bounded response, asymmetry, condition number, and
 gradient uncertainty. Existing standalone replicated transport windows remain
 necessary evidence but are not sufficient to claim a production nonlinear
 turbulence gradient.
-The first real boundary-gradient attempt uses the optimized QA/ESS
-``RBC(1,1)`` coefficient. Real ``vmec_jax`` re-equilibrations produced distinct
-baseline/plus/minus ``wout`` files; SPECTRAX-GK then ran three seed/timestep
-replicates for every state to ``t=900`` and analyzed ``t=[450,900]``. The 2%
-perturbation closed the missing-campaign blocker but did not resolve the
-gradient above transport-window uncertainty. The follow-up 8% campaign resolves
-a larger heat-flux response fraction, ``9.92e-2``, and all three replicated
-nonlinear-window ensembles pass. The central finite-difference gate still fails
-closed because the response is not local: ``fd_asymmetry_rel = 1.89`` exceeds the
-``0.5`` gate, and ``gradient_uncertainty_rel = 0.506`` remains just above the
-``0.5`` uncertainty gate. This is an important negative result: the next
-production attempt should bracket the perturbation amplitude or choose a better
-conditioned boundary/profile direction, not relax the finite-difference locality
-or uncertainty standards.
+The current real boundary-gradient sweep starts from the optimized QA/ESS
+equilibrium, re-equilibrates each perturbed VMEC input with ``vmec_jax``, runs
+three seed/timestep nonlinear replicates to ``t=900`` for each parameter state,
+and analyzes the common ``t=[450,900]`` transport window. The tracked
+``ZBS(1,0)`` 5% campaign closes the earlier finite-difference locality blocker:
+``fd_asymmetry_rel = 0.274`` and the response fraction is ``0.0685``. It still
+fails closed because the propagated gradient uncertainty is ``0.768 > 0.5``.
+The companion ``ZBS(1,1)`` 5% campaign gives the complementary negative result:
+``gradient_uncertainty_rel = 0.225`` passes, but ``fd_asymmetry_rel = 0.663`` is
+still above the locality gate. This is now a robust production-candidate audit
+set, not a promoted nonlinear turbulence-gradient validation.
 
-.. figure:: _static/qa_ess_rbc11_rel8_nonlinear_gradient_rbc_1_1_central_fd_gradient_gate.png
+.. figure:: _static/qa_ess_zbs10_rel5_nonlinear_gradient_zbs_1_0_central_fd_gradient_gate.png
    :width: 90%
    :align: center
-   :alt: QA/ESS RBC(1,1) long-window nonlinear turbulence-gradient gate
+   :alt: QA/ESS ZBS(1,0) long-window nonlinear turbulence-gradient gate
 
-   QA/ESS ``RBC(1,1)`` 8% long-window nonlinear turbulence-gradient gate. The left
+   QA/ESS ``ZBS(1,0)`` 5% long-window nonlinear turbulence-gradient gate. The left
    panel shows the replicated ``t=[450,900]`` heat-flux means for minus,
    baseline, and plus states; the right panel compares backward, central, and
    forward finite-difference gradients. The artifact is a production-candidate
-   long-window campaign, but it remains blocked because the forward and backward
-   differences are too asymmetric and the propagated uncertainty is still
-   marginally above the release gate.
+   long-window campaign, but it remains blocked because the propagated
+   gradient uncertainty is still above the release gate.
 
 For boundary-coefficient gradients, first use
 ``tools/write_vmec_boundary_perturbation_inputs.py``. It starts from a concrete

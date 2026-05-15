@@ -6162,3 +6162,39 @@ Exit gate:
   - production nonlinear turbulence-gradient evidence remains fail-closed until
     a paired long-window central finite-difference artifact passes response,
     asymmetry, condition-number, uncertainty, and all replicated-window gates.
+
+### 2026-05-15 ZBS Control Sweep for Nonlinear Turbulence-Gradient Evidence
+
+- Completed two additional real VMEC-JAX re-equilibrated QA/ESS control
+  campaigns on office, both with `t=[450,900]`, `n64`, two seeds plus one
+  timestep replicate, and the same fail-closed central finite-difference gate:
+  - `ZBS(1,1)` 5%:
+    - minus ensemble passed with mean `14.667897`, SEM fraction `0.0186`;
+    - plus ensemble passed with mean `17.129801`, SEM fraction `0.0282`;
+    - response fraction `0.151`, condition number `12.92`, and
+      `gradient_uncertainty_rel = 0.225` passed;
+    - locality still failed with `fd_asymmetry_rel = 0.663 > 0.5`.
+  - `ZBS(1,0)` 5%:
+    - minus ensemble passed with mean `16.941520`, SEM fraction `0.0397`;
+    - plus ensemble passed with mean `15.824927`, SEM fraction `0.0335`;
+    - locality passed with `fd_asymmetry_rel = 0.274`, response fraction
+      `0.0685`, and condition number `29.35`;
+    - propagated uncertainty failed with
+      `gradient_uncertainty_rel = 0.768 > 0.5`.
+- Tracked artifact update:
+  - replaced the old `RBC(1,1)` rel8 docs artifact with the current
+    `ZBS(1,0)` rel5 production-candidate gate because it closes the locality
+    blocker and identifies uncertainty as the remaining blocker;
+  - kept the `ZBS(1,1)` metrics in this plan as the complementary near miss
+    that closes uncertainty but not locality.
+- Interpretation:
+  - nonlinear turbulent-flux optimization is now above the 90% evidence level
+    for the scoped manuscript/release lane: long-window replicated transport
+    audits, real VMEC perturbations, multiple control directions, and strict
+    fail-closed gates are all operational;
+  - it is still not a promoted nonlinear turbulence-gradient optimizer because
+    no single paired control artifact has passed both locality and propagated
+    uncertainty simultaneously;
+  - the next scientific step should be a better-conditioned profile-gradient or
+    objective-control direction, not more repetitions of these same two
+    boundary controls.

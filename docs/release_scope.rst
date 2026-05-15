@@ -282,12 +282,13 @@ Quasilinear model-selection state:
   ``docs/_static/nonlinear_turbulence_gradient_evidence_status.json`` artifact
   passes the replicated long-window uncertainty side but fails closed on the
   gradient side. The current tracked production-candidate artifact is the
-  re-equilibrated optimized QA/ESS ``RBC(1,1)`` 8% campaign at ``t=[450,900]``:
-  all baseline/plus/minus replicated nonlinear windows pass, the finite
-  difference has bounded response fraction and subtraction condition number, but
-  ``fd_asymmetry_rel = 1.89`` exceeds the ``0.5`` asymmetry gate and
-  ``gradient_uncertainty_rel = 0.506`` remains just above the ``0.5`` uncertainty
-  gate. The companion
+  re-equilibrated optimized QA/ESS ``ZBS(1,0)`` 5% campaign at ``t=[450,900]``:
+  all baseline/plus/minus replicated nonlinear windows pass, and the finite
+  difference has bounded response fraction, subtraction condition number, and
+  forward/backward locality. The remaining blocker is propagated uncertainty:
+  ``gradient_uncertainty_rel = 0.768`` exceeds the ``0.5`` gate. The companion
+  ``ZBS(1,1)`` 5% campaign passes uncertainty at ``0.225`` but remains mildly
+  nonlocal with ``fd_asymmetry_rel = 0.663``. The
   ``docs/_static/nonlinear_turbulence_gradient_evidence_gap_report.json`` now
   records this as a failed production-candidate gate, not as a missing campaign.
   Until a paired post-transient artifact passes all response, asymmetry,
@@ -301,13 +302,13 @@ Quasilinear model-selection state:
   writes reviewer-facing JSON/CSV/PNG/PDF sidecars, and fails closed unless the
   response, forward/backward asymmetry, condition number, and all three window
   uncertainty gates pass.
-- Future perturbation-amplitude refreshes must use distinct artifact slugs
-  rather than overwriting the tracked failed candidate. For example, a rel5
-  ``RBC(1,1)`` campaign should write
-  ``docs/_static/qa_ess_rbc11_rel5_nonlinear_gradient_rbc_1_1_central_fd_gradient_gate.*``
+- Future perturbation refreshes must use distinct artifact slugs rather than
+  overwriting the tracked failed candidate. For example, a new coefficient or
+  amplitude campaign should write a slug such as
+  ``docs/_static/qa_ess_zbs11_rel5_nonlinear_gradient_zbs_1_1_central_fd_gradient_gate.*``
   and a matching refreshed
   ``nonlinear_turbulence_gradient_evidence_status.json``. Release prose can
-  promote the rel5 result only if the central finite-difference artifact passes
+  promote the result only if the central finite-difference artifact passes
   and the evidence-status JSON reports the production gradient gate as true;
   otherwise it remains a documented production-candidate audit.
 - ``tools/write_nonlinear_turbulence_gradient_campaign.py`` is the paired
