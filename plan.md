@@ -1,6 +1,6 @@
 # SPECTRAX-GK Quasilinear Transport and Optimization Plan
 
-Last updated: 2026-05-14
+Last updated: 2026-05-15
 Active repository: `uwplasma/SPECTRAX-GK`
 Historical planning archive: private repo `rogeriojorge/spectraxgk_plan`
 Current public baseline: `main` at v1.6.0, with the historical ship-readiness log archived before this file was reset.
@@ -6129,3 +6129,36 @@ Exit gate:
   - replaced the older 2% tracked central-FD figure/gate with the 8%
     production-candidate artifact to keep the repository-size gate green;
   - kept the older 2% metrics in this plan as historical context.
+
+### 2026-05-15 Nonlinear Turbulence-Gradient Robustness Push
+
+- Hardened the evidence code and CI surface around production nonlinear
+  turbulence-gradient claims:
+  - added tests for standalone VMEC backend fallback/error paths;
+  - added a fail-closed test for nonfinite ensemble statistics in the
+    long-window finite-difference gate;
+  - targeted coverage now reports `98%` for
+    `spectraxgk.nonlinear_gradient_evidence` and `100%` for the standalone
+    VMEC geometry shim.
+- Tightened release/readme/docs wording so the selected optimized-equilibrium
+  nonlinear transport audit is not described as a broad production
+  transport-optimization claim.
+- Ran the `RBC(1,1)` 5% QA/ESS bracket on office with the same `t=[450,900]`
+  replicated-window protocol:
+  - all baseline/plus/minus ensembles passed with three reports each;
+  - `response_fraction = 0.1177`, condition number `16.54`, and
+    `gradient_uncertainty_rel = 0.402` passed;
+  - `fd_asymmetry_rel = 0.897` failed, so the finite-difference response is
+    still not local enough to promote.
+- Active office campaign:
+  - `ZBS(1,1)` 5% long-window ladder is running on the two office GPUs as the
+    next helical control check;
+  - `ZBS(1,0)` 5% VMEC re-equilibration inputs are staged, with the baseline
+    wout copied and plus/minus CPU-only VMEC jobs launched as the lower-order
+    fallback if `ZBS(1,1)` remains asymmetric.
+- Claim status:
+  - selected optimized-equilibrium nonlinear transport-window audit remains
+    closed for the scoped candidate;
+  - production nonlinear turbulence-gradient evidence remains fail-closed until
+    a paired long-window central finite-difference artifact passes response,
+    asymmetry, condition-number, uncertainty, and all replicated-window gates.

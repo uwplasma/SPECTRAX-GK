@@ -830,9 +830,10 @@ the following pass:
    Production nonlinear turbulent-flux optimization guard. The release-safety
    side passes because startup and reduced nonlinear artifacts are explicitly
    blocked from production promotion and two long post-transient replicated
-   holdout ensembles pass. The production-promotion side now also passes for
-   the selected optimized-equilibrium audit because seed and timestep
-   post-transient windows are attached and converged.
+   holdout ensembles pass. The selected optimized-equilibrium audit also
+   satisfies this guard because seed and timestep post-transient windows are
+   attached and converged; broader nonlinear transport-optimization claims
+   still require separate gates.
 
 The release claim is now: SPECTRAX-GK has a tested differentiable stellarator
 ITG objective-reduction workflow, long-window nonlinear holdout evidence, and a

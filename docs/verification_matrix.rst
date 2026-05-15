@@ -481,7 +481,7 @@ gate.
      - Exploratory plumbing gate
      - finite-output and finite-difference-response checks pass, but
        ``transport_average_gate = false``
-   * - Production nonlinear stellarator optimization
+   * - Selected optimized-equilibrium nonlinear transport audit
      - optimized-equilibrium post-transient heat-flux average with uncertainty
        and nonlinear audit bars
      - ``docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json``
