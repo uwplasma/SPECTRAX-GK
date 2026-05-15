@@ -319,6 +319,12 @@ re-equilibrated perturbation files. Then use
 the central finite-difference gradient sidecar and checks response resolution,
 forward/backward asymmetry, subtraction conditioning, propagated uncertainty,
 and the uncertainty gates on all three replicated nonlinear windows.
+The tracked optimized-QA/ESS ``RBC(1,1)`` example is deliberately kept as a
+fail-closed regression: the real ``vmec_jax`` re-equilibrated ``t=[450,900]``
+baseline/plus/minus ensembles pass their replicated transport-window gates, but
+the 2% perturbation gives ``gradient_uncertainty_rel = 1.83`` and therefore does
+not promote a turbulence-gradient claim. A future passing artifact must reduce
+that propagated uncertainty without relaxing the gate.
 
 ``tools/write_optimized_equilibrium_transport_configs.py`` is the production
 optimization companion for that final audit. Given a concrete post-optimization

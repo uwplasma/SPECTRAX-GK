@@ -842,16 +842,41 @@ absolute-flux quasilinear model, a nonlinear turbulence-gradient optimizer, or a
 broad multi-surface stellarator transport-optimization claim.
 
 The next nonlinear turbulence-gradient promotion is now encoded as a
-fail-closed run plan in
+fail-closed evidence gate in
 ``docs/_static/nonlinear_turbulence_gradient_evidence_gap_report.json``. That
-plan requires paired ``baseline``, ``plus_delta``, and ``minus_delta`` nonlinear
+gate requires paired ``baseline``, ``plus_delta``, and ``minus_delta`` nonlinear
 campaigns around the same VMEC/profile parameter, the same seed/timestep
-replicate set for every parameter state, ``t=[350,700]`` post-transient heat-flux
-averages, passed ensemble uncertainty gates for all three states, and a central
+replicate set for every parameter state, post-transient heat-flux averages,
+passed ensemble uncertainty gates for all three states, and a central
 finite-difference audit with bounded response, asymmetry, condition number, and
 gradient uncertainty. Existing standalone replicated transport windows remain
 necessary evidence but are not sufficient to claim a production nonlinear
 turbulence gradient.
+The first real boundary-gradient attempt uses the optimized QA/ESS
+``RBC(1,1)`` coefficient. Real ``vmec_jax`` re-equilibrations produced distinct
+baseline/plus/minus ``wout`` files; SPECTRAX-GK then ran three seed/timestep
+replicates for every state to ``t=900`` and analyzed ``t=[450,900]``. All three
+replicated nonlinear-window ensembles pass. The central finite-difference gate
+still fails closed because the 2% boundary perturbation produces a heat-flux
+response fraction of only ``3.02e-2`` and propagated gradient uncertainty
+``gradient_uncertainty_rel = 1.83``, above the ``0.5`` gate, even though
+forward/backward asymmetry and subtraction conditioning pass. This is an
+important negative result: the next production attempt should increase the
+bounded perturbation or lower the transport-window variance, not relax the
+gradient-uncertainty standard.
+
+.. figure:: _static/qa_ess_rbc11_nonlinear_gradient_rbc_1_1_central_fd_gradient_gate.png
+   :width: 90%
+   :align: center
+   :alt: QA/ESS RBC(1,1) long-window nonlinear turbulence-gradient gate
+
+   QA/ESS ``RBC(1,1)`` long-window nonlinear turbulence-gradient gate. The left
+   panel shows the replicated ``t=[450,900]`` heat-flux means for minus,
+   baseline, and plus states; the right panel compares backward, central, and
+   forward finite-difference gradients. The artifact is a production-candidate
+   long-window campaign, but it remains blocked because the finite-difference
+   response is not resolved above propagated transport-window uncertainty.
+
 For boundary-coefficient gradients, first use
 ``tools/write_vmec_boundary_perturbation_inputs.py``. It starts from a concrete
 VMEC input file such as the optimized-equilibrium ``input.final``, writes
