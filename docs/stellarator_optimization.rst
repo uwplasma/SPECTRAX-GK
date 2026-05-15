@@ -863,3 +863,9 @@ writes JSON/CSV/PNG/PDF sidecars. The resulting JSON is then supplied to
 ``tools/check_nonlinear_turbulence_gradient_evidence.py`` together with the
 three ensemble artifacts; only that paired long-window workflow can promote a
 nonlinear turbulence-gradient claim.
+``tools/write_nonlinear_turbulence_gradient_campaign.py`` writes the matching
+launch ladder from three explicit VMEC files first: baseline, positive
+perturbation, and negative perturbation. Its manifest records the per-state run
+manifests, the ensemble-builder commands, the central-FD command, and the final
+evidence-check command, so office GPU campaigns and later manuscript artifacts
+use one reproducible contract.

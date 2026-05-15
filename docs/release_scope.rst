@@ -301,6 +301,11 @@ Quasilinear model-selection state:
   writes reviewer-facing JSON/CSV/PNG/PDF sidecars, and fails closed unless the
   response, forward/backward asymmetry, condition number, and all three window
   uncertainty gates pass.
+- ``tools/write_nonlinear_turbulence_gradient_campaign.py`` is the paired
+  launch-contract writer for the same lane. Given explicit baseline,
+  plus-perturbation, and minus-perturbation VMEC files, it writes the matched
+  fixed-step nonlinear TOML ladders, per-state ensemble commands, the central
+  finite-difference gate command, and the final evidence-check command.
 - ``docs/_static/quasilinear_saturation_rule_sweep.json``:
   no simple saturation rule is accepted. Positive-growth mixing length is the
   least-bad simple rule with mean held-out relative error about ``2.11``;
