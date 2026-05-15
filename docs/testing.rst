@@ -303,6 +303,12 @@ startup finite-difference artifacts. It is the fail-closed check that allows
 release-safe scoped wording while blocking production nonlinear turbulent-flux
 optimization promotion until optimized equilibria have replicated
 post-transient transport-window audits.
+For actual nonlinear turbulence-gradient promotion, use
+``tools/build_nonlinear_turbulence_gradient_fd_gate.py`` after the matched
+``baseline``/``plus_delta``/``minus_delta`` ensembles finish. The builder writes
+the central finite-difference gradient sidecar and checks response resolution,
+forward/backward asymmetry, subtraction conditioning, propagated uncertainty,
+and the uncertainty gates on all three replicated nonlinear windows.
 
 ``tools/write_optimized_equilibrium_transport_configs.py`` is the production
 optimization companion for that final audit. Given a concrete post-optimization

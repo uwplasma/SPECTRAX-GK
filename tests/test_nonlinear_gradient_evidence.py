@@ -9,11 +9,13 @@ import numpy as np
 import pytest
 
 from spectraxgk.nonlinear_gradient_evidence import (
+    NonlinearTurbulenceGradientFiniteDifferenceConfig,
     NonlinearTurbulenceGradientGapConfig,
     classify_gradient_artifact,
     load_json_artifact,
     nonlinear_turbulence_gradient_evidence_gap_report,
     nonlinear_turbulence_gradient_evidence_report,
+    nonlinear_turbulence_gradient_finite_difference_report,
     summarize_window_evidence,
 )
 from spectraxgk.quasilinear_window import (
@@ -24,10 +26,21 @@ from spectraxgk.quasilinear_window import (
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "tools" / "check_nonlinear_turbulence_gradient_evidence.py"
+FD_SCRIPT = ROOT / "tools" / "build_nonlinear_turbulence_gradient_fd_gate.py"
 
 
 def _load_tool_module():
     spec = importlib.util.spec_from_file_location("check_nonlinear_turbulence_gradient_evidence", SCRIPT)
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def _load_fd_tool_module():
+    spec = importlib.util.spec_from_file_location("build_nonlinear_turbulence_gradient_fd_gate", FD_SCRIPT)
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -71,6 +84,21 @@ def _production_gradient() -> dict[str, object]:
         },
         "uncertainty": {
             "gradient_sem_rel": 0.18,
+        },
+    }
+
+
+def _ensemble(mean: float, sem: float = 0.02, *, passed: bool = True) -> dict[str, object]:
+    return {
+        "kind": "nonlinear_window_ensemble_report",
+        "case": "matched_replicated_window",
+        "passed": passed,
+        "statistics": {
+            "ensemble_mean": float(mean),
+            "combined_sem": float(sem),
+            "combined_sem_rel": abs(float(sem) / float(mean)),
+            "mean_rel_spread": 0.02,
+            "n_reports": 3,
         },
     }
 
@@ -259,6 +287,48 @@ def test_explicit_nonlinear_turbulence_gradient_flag_can_promote_scope() -> None
     assert row["qualifies_for_production_turbulence_gradient"] is True
 
 
+def test_long_window_fd_gate_promotes_only_resolved_replicated_gradient() -> None:
+    report = nonlinear_turbulence_gradient_finite_difference_report(
+        minus=_ensemble(9.0),
+        baseline=_ensemble(10.0),
+        plus=_ensemble(11.0),
+        delta_parameter=0.05,
+        parameter_name="rbc_1_0",
+    )
+
+    assert report["passed"] is True
+    assert report["metrics"]["central_gradient"] == pytest.approx(20.0)
+    assert report["metrics"]["response_fraction"] == pytest.approx(0.2)
+    assert report["production_nonlinear_window_gradient_gate"] is True
+    classified = classify_gradient_artifact(report)
+    assert classified["qualifies_for_production_turbulence_gradient"] is True
+    evidence = nonlinear_turbulence_gradient_evidence_report(
+        report,
+        window_artifacts=[_ensemble(10.0), _ensemble(10.1)],
+    )
+    assert evidence["passed"] is True
+
+
+def test_long_window_fd_gate_fails_when_response_is_buried_in_uncertainty() -> None:
+    report = nonlinear_turbulence_gradient_finite_difference_report(
+        minus=_ensemble(9.99, sem=0.5),
+        baseline=_ensemble(10.0, sem=0.5),
+        plus=_ensemble(10.01, sem=0.5),
+        delta_parameter=0.05,
+        parameter_name="rbc_1_0",
+        config=NonlinearTurbulenceGradientFiniteDifferenceConfig(
+            min_fd_response_fraction=0.03,
+            max_gradient_uncertainty_rel=0.5,
+        ),
+    )
+
+    gates = {gate["metric"]: gate["passed"] for gate in report["gates"]}
+    assert report["passed"] is False
+    assert gates["fd_response_resolved"] is False
+    assert gates["gradient_uncertainty_bounded"] is False
+    assert classify_gradient_artifact(report)["qualifies_for_production_turbulence_gradient"] is False
+
+
 def test_window_evidence_handles_input_ensembles_unsupported_rows_and_path_mismatch() -> None:
     ensemble = {
         "kind": "nonlinear_window_ensemble_report",
@@ -346,3 +416,39 @@ def test_cli_writes_report_and_can_fail_on_blocked(tmp_path: Path) -> None:
     assert gap["promotion_blocked"] is True
     assert gap["required_campaign"]["case_slug"] == "qa_ess_gradient"
     assert gap["required_campaign"]["parameter_name"] == "rbc_1_0"
+
+
+def test_fd_cli_writes_json_csv_and_plot_artifacts(tmp_path: Path) -> None:
+    mod = _load_fd_tool_module()
+    baseline = tmp_path / "baseline.json"
+    plus = tmp_path / "plus.json"
+    minus = tmp_path / "minus.json"
+    baseline.write_text(json.dumps(_ensemble(10.0)), encoding="utf-8")
+    plus.write_text(json.dumps(_ensemble(11.0)), encoding="utf-8")
+    minus.write_text(json.dumps(_ensemble(9.0)), encoding="utf-8")
+    out_prefix = tmp_path / "fd_gate"
+
+    rc = mod.main(
+        [
+            "--baseline",
+            str(baseline),
+            "--plus",
+            str(plus),
+            "--minus",
+            str(minus),
+            "--delta-parameter",
+            "0.05",
+            "--parameter-name",
+            "rbc_1_0",
+            "--out-prefix",
+            str(out_prefix),
+            "--fail-on-blocked",
+        ]
+    )
+
+    payload = json.loads(out_prefix.with_suffix(".json").read_text(encoding="utf-8"))
+    assert rc == 0
+    assert payload["passed"] is True
+    assert out_prefix.with_suffix(".csv").exists()
+    assert out_prefix.with_suffix(".png").exists()
+    assert out_prefix.with_suffix(".pdf").exists()

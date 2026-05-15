@@ -852,3 +852,14 @@ finite-difference audit with bounded response, asymmetry, condition number, and
 gradient uncertainty. Existing standalone replicated transport windows remain
 necessary evidence but are not sufficient to claim a production nonlinear
 turbulence gradient.
+Once the three matched ensembles exist,
+``tools/build_nonlinear_turbulence_gradient_fd_gate.py`` is the promotion
+artifact builder. It consumes the ``baseline``, ``plus_delta``, and
+``minus_delta`` replicated ensemble JSON files, computes
+``dQ/dp = (Q_+ - Q_-)/(2 delta_p)``, propagates the ensemble SEM into
+``gradient_uncertainty_rel``, checks the response fraction, forward/backward
+asymmetry, subtraction condition number, and per-state window uncertainty, and
+writes JSON/CSV/PNG/PDF sidecars. The resulting JSON is then supplied to
+``tools/check_nonlinear_turbulence_gradient_evidence.py`` together with the
+three ensemble artifacts; only that paired long-window workflow can promote a
+nonlinear turbulence-gradient claim.
