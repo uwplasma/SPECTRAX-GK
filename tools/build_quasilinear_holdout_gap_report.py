@@ -34,6 +34,9 @@ DEFAULT_WINDOW_STATS = STATIC / "nonlinear_window_statistics.json"
 DEFAULT_DATASET_SUFFICIENCY = STATIC / "quasilinear_dataset_sufficiency.json"
 DEFAULT_EXTERNAL_GLOB = str(STATIC / "external_vmec_*_convergence_gate.json")
 DEFAULT_NEXT_CANDIDATES = 4
+DEFAULT_MIN_ABSOLUTE_PROMOTION_HOLDOUTS = 9
+DEFAULT_MIN_EXTERNAL_VMEC_HOLDOUT_FAMILIES = 4
+DEFAULT_MIN_NONAXISYMMETRIC_EXTERNAL_HOLDOUT_FAMILIES = 1
 CLAIM_LEVEL = "holdout_gap_report_no_absolute_flux_promotion"
 
 CSV_FIELDS = (
@@ -174,6 +177,25 @@ def _external_family(case: str, artifact: str = "") -> str:
     if "solovev" in text:
         return "solovev_external_vmec"
     return "external_vmec"
+
+
+def _is_external_vmec_family(family: str) -> bool:
+    return str(family).endswith("external_vmec")
+
+
+def _is_nonaxisymmetric_external_vmec_family(family: str) -> bool:
+    text = str(family).lower()
+    return _is_external_vmec_family(text) and any(
+        marker in text
+        for marker in (
+            "cth",
+            "li383",
+            "non_stellsym",
+            "qa_",
+            "qh_",
+            "qi_",
+        )
+    )
 
 
 def _gate_limit(gate: dict[str, Any]) -> float | None:
@@ -670,6 +692,229 @@ def _next_actual_need(next_candidates: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def _top_case_requirements(
+    next_candidates: list[dict[str, Any]],
+    excluded_rows: list[dict[str, Any]],
+    *,
+    max_rows: int = 6,
+) -> list[dict[str, Any]]:
+    """Return concrete nonlinear cases that would reduce the promotion gap."""
+
+    rows: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for source, role in (
+        (next_candidates, "ranked_next_best"),
+        (
+            [
+                row
+                for row in excluded_rows
+                if _is_nonaxisymmetric_external_vmec_family(str(row.get("geometry", "")))
+                and bool(row.get("eligible_for_next_candidate", False))
+            ],
+            "missing_nonaxisymmetric_external_vmec_holdout",
+        ),
+    ):
+        for row in source:
+            if not isinstance(row, dict):
+                continue
+            case = str(row.get("case", ""))
+            if not case or case in seen:
+                continue
+            seen.add(case)
+            passed = row.get("gate_passed")
+            score = _finite_float(row.get("next_best_score"))
+            if passed is True:
+                action = "add this passed-gate case as an independent holdout, not a training/reference point"
+            else:
+                action = "extend/refine this nonlinear run until its grid/window convergence gate passes"
+            rows.append(
+                {
+                    "case": case,
+                    "family": row.get("geometry"),
+                    "role": role,
+                    "gate_passed": passed,
+                    "next_best_score": score,
+                    "failed_gates": list(row.get("failed_gate_details", row.get("failed_gates", []))),
+                    "required_action": action,
+                    "claim_boundary": "candidate case only; adding it does not by itself promote absolute flux",
+                    "source_artifact": row.get("source_artifact"),
+                }
+            )
+            if len(rows) >= max_rows:
+                return rows
+    return rows
+
+
+def _absolute_flux_promotion_requirements(
+    *,
+    admitted: list[dict[str, Any]],
+    training: list[dict[str, Any]],
+    excluded_rows: list[dict[str, Any]],
+    next_candidates: list[dict[str, Any]],
+    calibration: dict[str, Any],
+    model: dict[str, Any],
+) -> dict[str, Any]:
+    """Quantify what is missing before absolute-flux promotion can reopen."""
+
+    admitted_families = {
+        str(row.get("geometry", ""))
+        for row in admitted
+        if str(row.get("geometry", ""))
+    }
+    training_families = {
+        str(row.get("geometry", ""))
+        for row in training
+        if str(row.get("geometry", ""))
+    }
+    external_holdout_families = sorted(
+        family for family in admitted_families if _is_external_vmec_family(family)
+    )
+    nonaxisym_external_holdout_families = sorted(
+        family
+        for family in admitted_families
+        if _is_nonaxisymmetric_external_vmec_family(family)
+    )
+
+    holdout_error = _finite_float(calibration.get("holdout_mean_abs_relative_error"))
+    holdout_gate = _finite_float(calibration.get("holdout_mean_rel_gate"))
+    error_excess = None
+    error_factor = None
+    if holdout_error is not None and holdout_gate is not None:
+        error_excess = max(0.0, holdout_error - holdout_gate)
+        error_factor = math.inf if holdout_gate == 0.0 else holdout_error / holdout_gate
+
+    worst = None
+    finite_admitted = [
+        row
+        for row in admitted
+        if _finite_float(row.get("absolute_relative_error")) is not None
+    ]
+    if finite_admitted:
+        worst_row = max(
+            finite_admitted,
+            key=lambda row: float(_finite_float(row.get("absolute_relative_error")) or 0.0),
+        )
+        worst = {
+            "case": worst_row.get("case"),
+            "family": worst_row.get("geometry"),
+            "absolute_relative_error": _finite_float(worst_row.get("absolute_relative_error")),
+            "observed_heat_flux": _finite_float(worst_row.get("observed_heat_flux")),
+            "predicted_heat_flux": _finite_float(worst_row.get("predicted_heat_flux")),
+        }
+
+    total_needed = max(
+        0,
+        DEFAULT_MIN_ABSOLUTE_PROMOTION_HOLDOUTS - len(admitted),
+    )
+    external_needed = max(
+        0,
+        DEFAULT_MIN_EXTERNAL_VMEC_HOLDOUT_FAMILIES - len(external_holdout_families),
+    )
+    nonaxisym_external_needed = max(
+        0,
+        DEFAULT_MIN_NONAXISYMMETRIC_EXTERNAL_HOLDOUT_FAMILIES
+        - len(nonaxisym_external_holdout_families),
+    )
+    reconsideration_passed = bool(
+        holdout_error is not None
+        and holdout_gate is not None
+        and holdout_error <= holdout_gate
+        and total_needed == 0
+        and external_needed == 0
+        and nonaxisym_external_needed == 0
+        and bool(model.get("passed", False))
+        and bool(calibration.get("passed", False))
+    )
+
+    gates = [
+        {
+            "metric": "absolute_train_holdout_report_passed",
+            "passed": bool(calibration.get("passed", False)),
+            "current": bool(calibration.get("passed", False)),
+            "required": True,
+            "detail": "the current one-constant absolute calibration report is still failed",
+        },
+        {
+            "metric": "holdout_mean_abs_relative_error",
+            "passed": bool(holdout_error is not None and holdout_gate is not None and holdout_error <= holdout_gate),
+            "current": holdout_error,
+            "required": f"<= {holdout_gate}" if holdout_gate is not None else "finite gate",
+            "detail": "absolute-flux promotion needs a calibrated report that passes the held-out transport gate",
+        },
+        {
+            "metric": "minimum_total_independent_holdouts",
+            "passed": total_needed == 0,
+            "current": len(admitted),
+            "required": DEFAULT_MIN_ABSOLUTE_PROMOTION_HOLDOUTS,
+            "additional_needed": total_needed,
+            "detail": "holdouts must be passed, post-transient nonlinear transport windows outside the training split",
+        },
+        {
+            "metric": "minimum_external_vmec_holdout_families",
+            "passed": external_needed == 0,
+            "current": len(external_holdout_families),
+            "required": DEFAULT_MIN_EXTERNAL_VMEC_HOLDOUT_FAMILIES,
+            "additional_needed": external_needed,
+            "detail": "external-VMEC holdout families test transfer beyond built-in local cases",
+        },
+        {
+            "metric": "minimum_nonaxisymmetric_external_vmec_holdout_families",
+            "passed": nonaxisym_external_needed == 0,
+            "current": len(nonaxisym_external_holdout_families),
+            "required": DEFAULT_MIN_NONAXISYMMETRIC_EXTERNAL_HOLDOUT_FAMILIES,
+            "additional_needed": nonaxisym_external_needed,
+            "detail": "at least one external stellarator-like VMEC holdout is required before broad stellarator absolute-flux claims",
+        },
+        {
+            "metric": "scoped_model_selection_gate_passed",
+            "passed": bool(model.get("passed", False)),
+            "current": bool(model.get("passed", False)),
+            "required": True,
+            "detail": "model-selection skill can pass while absolute-flux promotion remains blocked",
+        },
+    ]
+    blockers = [str(gate["metric"]) for gate in gates if not bool(gate["passed"])]
+    return _json_clean(
+        {
+            "kind": "quasilinear_absolute_flux_promotion_requirements",
+            "absolute_flux_promoted": False,
+            "reconsideration_ready": reconsideration_passed,
+            "claim_boundary": (
+                "This section defines the evidence needed to reopen absolute-flux promotion; "
+                "it is not a promoted runtime/TOML predictor."
+            ),
+            "numeric_gap": {
+                "holdout_mean_abs_relative_error": holdout_error,
+                "holdout_mean_rel_gate": holdout_gate,
+                "error_excess_over_gate": error_excess,
+                "error_factor_to_gate": error_factor,
+                "worst_admitted_holdout": worst,
+                "scoped_model_selection_mean_abs_relative_error": model.get(
+                    "candidate_mean_abs_relative_error"
+                ),
+                "scoped_model_selection_interval_coverage": model.get(
+                    "candidate_prediction_interval_coverage"
+                ),
+            },
+            "coverage_gap": {
+                "admitted_holdout_families": sorted(admitted_families),
+                "training_families": sorted(training_families),
+                "external_vmec_holdout_families": external_holdout_families,
+                "nonaxisymmetric_external_vmec_holdout_families": nonaxisym_external_holdout_families,
+                "additional_total_independent_holdouts_needed": total_needed,
+                "additional_external_vmec_holdout_families_needed": external_needed,
+                "additional_nonaxisymmetric_external_vmec_holdout_families_needed": nonaxisym_external_needed,
+            },
+            "gates": gates,
+            "blockers": blockers,
+            "required_nonlinear_cases": _top_case_requirements(
+                next_candidates,
+                excluded_rows,
+            ),
+        }
+    )
+
+
 def _model_selection_summary(model_selection: dict[str, Any]) -> dict[str, Any]:
     metrics = model_selection.get("metrics", {})
     if not isinstance(metrics, dict):
@@ -774,10 +1019,23 @@ def build_holdout_gap_report(
     )
     calibration = _calibration_summary(train_holdout)
     model = _model_selection_summary(model_selection)
+    absolute_requirements = _absolute_flux_promotion_requirements(
+        admitted=admitted,
+        training=training,
+        excluded_rows=excluded,
+        next_candidates=next_candidates,
+        calibration=calibration,
+        model=model,
+    )
     external_passed = sum(1 for gate in external_gates if bool(gate.get("passed", False)))
     external_failed = len(external_gates) - external_passed
     window_passed = _window_case_passes(window_stats)
     blockers = ["absolute_flux_predictor_not_promoted"]
+    blockers.extend(
+        f"absolute_requirement:{item}"
+        for item in absolute_requirements.get("blockers", [])
+        if item not in {"scoped_model_selection_gate_passed"}
+    )
     if not bool(calibration["passed"]):
         blockers.append("stellarator_train_holdout_report_failed")
     if calibration.get("holdout_mean_abs_relative_error") is not None and calibration.get("holdout_mean_rel_gate") is not None:
@@ -824,6 +1082,7 @@ def build_holdout_gap_report(
         "excluded_candidates": excluded,
         "next_best_candidates": next_candidates,
         "next_actual_nonlinear_holdout_needed": _next_actual_need(next_candidates),
+        "absolute_flux_promotion_requirements": absolute_requirements,
         "notes": (
             "Admitted means the nonlinear window is already present in the current train/holdout metadata with a "
             "passed input/convergence gate. Excluded means the tracked nonlinear artifact is outside the current "
@@ -977,6 +1236,15 @@ def holdout_gap_figure(report: dict[str, Any], *, title: str) -> plt.Figure:
     need = report.get("next_actual_nonlinear_holdout_needed", {})
     if not isinstance(need, dict):
         need = {}
+    absolute_requirements = report.get("absolute_flux_promotion_requirements", {})
+    if not isinstance(absolute_requirements, dict):
+        absolute_requirements = {}
+    numeric_gap = absolute_requirements.get("numeric_gap", {})
+    if not isinstance(numeric_gap, dict):
+        numeric_gap = {}
+    coverage_gap = absolute_requirements.get("coverage_gap", {})
+    if not isinstance(coverage_gap, dict):
+        coverage_gap = {}
     text_lines = [
         "Claim boundary",
         "No runtime/TOML absolute-flux predictor is promoted.",
@@ -987,6 +1255,14 @@ def holdout_gap_figure(report: dict[str, Any], *, title: str) -> plt.Figure:
         "Holdout mean/gate: "
         f"{_format_gate_value(calibration.get('holdout_mean_abs_relative_error'))} / "
         f"{_format_gate_value(calibration.get('holdout_mean_rel_gate'))}",
+        "Error factor to gate: "
+        f"{_format_gate_value(numeric_gap.get('error_factor_to_gate'))}x",
+        "Additional holdouts needed: "
+        f"{coverage_gap.get('additional_total_independent_holdouts_needed', 'n/a')}; "
+        "external VMEC families: "
+        f"{coverage_gap.get('additional_external_vmec_holdout_families_needed', 'n/a')}; "
+        "nonaxisym external: "
+        f"{coverage_gap.get('additional_nonaxisymmetric_external_vmec_holdout_families_needed', 'n/a')}",
         "",
         "Next actual nonlinear holdout needed",
         str(need.get("needed", "new independent passed-gate holdout")),

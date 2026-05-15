@@ -9,8 +9,10 @@ import numpy as np
 import pytest
 
 from spectraxgk.nonlinear_gradient_evidence import (
+    NonlinearTurbulenceGradientGapConfig,
     classify_gradient_artifact,
     load_json_artifact,
+    nonlinear_turbulence_gradient_evidence_gap_report,
     nonlinear_turbulence_gradient_evidence_report,
     summarize_window_evidence,
 )
@@ -125,6 +127,14 @@ def test_reduced_estimator_gradient_does_not_promote_even_with_replicates() -> N
     assert report["window_evidence"]["passed"] is True
     assert report["gradient_artifact"]["qualifies_for_production_turbulence_gradient"] is False
     assert report["blockers"] == ["production_gradient_artifact"]
+    assert report["evidence_gap"]["promotion_blocked"] is True
+    assert report["evidence_gap"]["current_window_evidence_passed"] is True
+    assert report["evidence_gap"]["required_campaign"]["required_runs"][0]["state"] == "minus_delta"
+    assert report["evidence_gap"]["required_campaign"]["required_runs"][1]["state"] == "baseline"
+    assert report["evidence_gap"]["required_campaign"]["required_runs"][2]["state"] == "plus_delta"
+    audit = report["evidence_gap"]["required_campaign"]["finite_difference_audit"]
+    assert audit["acceptance_gates"]["production_nonlinear_window_gradient_gate"] is True
+    assert "central_gradient" in audit["required_metrics"]
 
 
 def test_production_gradient_can_use_derived_replicated_window_summaries() -> None:
@@ -141,8 +151,57 @@ def test_production_gradient_can_use_derived_replicated_window_summaries() -> No
 
     assert report["passed"] is True
     assert report["production_nonlinear_window_gradient_gate"] is True
+    assert report["evidence_gap"]["passed"] is True
+    assert report["evidence_gap"]["promotion_blocked"] is False
     assert report["window_evidence"]["derived_ensemble"]["source"] == "derived_from_window_summaries"
     assert report["gradient_artifact"]["conditioning"]["gradient_uncertainty_rel"] == 0.18
+
+
+def test_gap_report_names_custom_paired_parameter_campaign() -> None:
+    report = {
+        "passed": False,
+        "blockers": ["production_gradient_artifact"],
+        "gradient_artifact": {
+            "path": "gradient.json",
+            "evidence_class": "startup_or_reduced_window_fd_not_production",
+        },
+        "window_evidence": {
+            "passed": True,
+            "ensemble_rows": [
+                {"qualifies_for_replicated_long_window_uncertainty": True},
+            ],
+        },
+    }
+
+    gap = nonlinear_turbulence_gradient_evidence_gap_report(
+        report,
+        gap_config=NonlinearTurbulenceGradientGapConfig(
+            case_slug="qa_ess_dqi",
+            parameter_name="rbc_1_0",
+            perturbation_fraction=0.02,
+            analysis_tmin=500.0,
+            analysis_tmax=900.0,
+            minimum_tmax=900.0,
+            minimum_grid="n96x96x64x48x48",
+            replicate_labels=("seed41", "seed42", "dt0p04"),
+        ),
+    )
+
+    assert gap["passed"] is False
+    assert gap["promotion_blocked"] is True
+    assert gap["qualifying_window_ensemble_count"] == 1
+    assert gap["missing_evidence"][0]["current_artifact_path"] == "gradient.json"
+    required_runs = gap["required_campaign"]["required_runs"]
+    assert [row["state"] for row in required_runs] == [
+        "minus_delta",
+        "baseline",
+        "plus_delta",
+    ]
+    assert required_runs[0]["parameter_multiplier"] == pytest.approx(0.98)
+    assert required_runs[2]["parameter_multiplier"] == pytest.approx(1.02)
+    assert required_runs[0]["run_contract"]["analysis_window"] == [500.0, 900.0]
+    assert required_runs[0]["run_contract"]["minimum_grid"] == "n96x96x64x48x48"
+    assert required_runs[0]["replicates"] == ["seed41", "seed42", "dt0p04"]
 
 
 def test_production_gradient_fails_closed_without_uncertainty() -> None:
@@ -258,6 +317,7 @@ def test_cli_writes_report_and_can_fail_on_blocked(tmp_path: Path) -> None:
         encoding="utf-8",
     )
     out = tmp_path / "evidence.json"
+    gap_out = tmp_path / "gap.json"
 
     rc = mod.main(
         [
@@ -265,14 +325,24 @@ def test_cli_writes_report_and_can_fail_on_blocked(tmp_path: Path) -> None:
             str(gradient_path),
             "--json-out",
             str(out),
+            "--gap-json-out",
+            str(gap_out),
+            "--gap-case-slug",
+            "qa_ess_gradient",
+            "--gradient-parameter-name",
+            "rbc_1_0",
             "--fail-on-blocked",
         ]
     )
 
     payload = json.loads(out.read_text(encoding="utf-8"))
+    gap = json.loads(gap_out.read_text(encoding="utf-8"))
     assert rc == 1
     assert payload["passed"] is False
     assert payload["blockers"] == [
         "production_gradient_artifact",
         "replicated_long_window_uncertainty",
     ]
+    assert gap["promotion_blocked"] is True
+    assert gap["required_campaign"]["case_slug"] == "qa_ess_gradient"
+    assert gap["required_campaign"]["parameter_name"] == "rbc_1_0"

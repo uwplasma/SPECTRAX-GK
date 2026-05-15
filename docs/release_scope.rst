@@ -282,7 +282,17 @@ Quasilinear model-selection state:
   passes the replicated long-window uncertainty side but fails closed on the
   gradient side because the available VMEC/Boozer nonlinear-gradient artifacts
   are startup/reduced-window diagnostics, not production transport-gradient
-  evidence.
+  evidence. The companion
+  ``docs/_static/nonlinear_turbulence_gradient_evidence_gap_report.json`` makes
+  the missing evidence concrete: run matched ``baseline``, ``plus_delta``, and
+  ``minus_delta`` nonlinear campaigns for the same parameter with identical
+  numerics except the perturbation, use the same ``seed31``, ``seed32``, and
+  ``dt0p04`` replicate labels, integrate to at least ``t=700``, average only
+  over ``t=[350,700]``, and write a production central finite-difference audit
+  containing ``central_gradient``, ``response_fraction``, ``fd_asymmetry_rel``,
+  ``fd_condition_number``, and ``gradient_uncertainty_rel``. Until those paired
+  post-transient artifacts pass, nonlinear turbulence-gradient evidence remains
+  explicitly unpromoted.
 - ``docs/_static/quasilinear_saturation_rule_sweep.json``:
   no simple saturation rule is accepted. Positive-growth mixing length is the
   least-bad simple rule with mean held-out relative error about ``2.11``;
@@ -292,6 +302,15 @@ Quasilinear model-selection state:
   relative error about ``0.295`` and interval coverage ``7/8`` on the
   current eight-case electrostatic-compatible portfolio. Its claim level is
   ``candidate_model_development_not_runtime_option``.
+- ``docs/_static/quasilinear_holdout_gap_report.json``:
+  absolute-flux promotion remains explicitly blocked. The
+  ``absolute_flux_promotion_requirements`` block quantifies the current gap:
+  the absolute train/holdout mean relative error is about ``6.04`` times the
+  ``0.35`` gate, three additional independent passed holdouts are still
+  required, one additional external-VMEC holdout family is required, and one
+  non-axisymmetric external-VMEC holdout family is required before promotion
+  can be reconsidered. These are evidence prerequisites, not a promoted
+  runtime absolute-flux option.
 - ``docs/_static/external_vmec_shaped_tokamak_pressure_t450_high_grid_convergence_gate.json``:
   finite shaped-tokamak pressure traces at ``t = 450`` are explicitly
   excluded from calibration because the ``n48``/``n64`` heat-flux windows
