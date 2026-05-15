@@ -9,10 +9,12 @@ import numpy as np
 import pytest
 
 from spectraxgk.nonlinear_gradient_evidence import (
+    NonlinearTurbulenceGradientCandidateRankingConfig,
     NonlinearTurbulenceGradientFiniteDifferenceConfig,
     NonlinearTurbulenceGradientGapConfig,
     classify_gradient_artifact,
     load_json_artifact,
+    nonlinear_turbulence_gradient_candidate_ranking_report,
     nonlinear_turbulence_gradient_evidence_gap_report,
     nonlinear_turbulence_gradient_evidence_report,
     nonlinear_turbulence_gradient_finite_difference_report,
@@ -28,6 +30,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "tools" / "check_nonlinear_turbulence_gradient_evidence.py"
 FD_SCRIPT = ROOT / "tools" / "build_nonlinear_turbulence_gradient_fd_gate.py"
 CAMPAIGN_SCRIPT = ROOT / "tools" / "write_nonlinear_turbulence_gradient_campaign.py"
+RANK_SCRIPT = ROOT / "tools" / "rank_nonlinear_turbulence_gradient_candidates.py"
 
 
 def _load_tool_module():
@@ -52,6 +55,16 @@ def _load_fd_tool_module():
 
 def _load_campaign_tool_module():
     spec = importlib.util.spec_from_file_location("write_nonlinear_turbulence_gradient_campaign", CAMPAIGN_SCRIPT)
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def _load_rank_tool_module():
+    spec = importlib.util.spec_from_file_location("rank_nonlinear_turbulence_gradient_candidates", RANK_SCRIPT)
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -441,6 +454,56 @@ def test_long_window_fd_gate_fails_closed_for_nonfinite_window_statistics() -> N
     assert classified["qualifies_for_production_turbulence_gradient"] is False
 
 
+def test_candidate_ranking_selects_profile_gradient_when_failures_are_complementary() -> None:
+    local_but_noisy = nonlinear_turbulence_gradient_finite_difference_report(
+        minus=_ensemble(16.94, sem=0.67),
+        baseline=_ensemble(16.31, sem=0.45),
+        plus=_ensemble(15.82, sem=0.53),
+        delta_parameter=0.0015890833407568477,
+        parameter_name="zbs_1_0",
+    )
+    quiet_but_nonlocal = nonlinear_turbulence_gradient_finite_difference_report(
+        minus=_ensemble(14.67, sem=0.27),
+        baseline=_ensemble(16.31, sem=0.45),
+        plus=_ensemble(17.13, sem=0.48),
+        delta_parameter=0.004699871690217756,
+        parameter_name="zbs_1_1",
+    )
+
+    report = nonlinear_turbulence_gradient_candidate_ranking_report(
+        [local_but_noisy, quiet_but_nonlocal],
+        labels=["local_but_noisy", "quiet_but_nonlocal"],
+    )
+
+    assert report["passed"] is False
+    assert "least-squares/profile-gradient" in report["recommendation"]
+    assert report["candidates"][0]["rank"] == 1
+    assert report["candidates"][0]["score"] >= report["candidates"][1]["score"]
+    assert any(
+        "more replicas" in row["next_action"] or "smaller bracket" in row["next_action"]
+        for row in report["candidates"]
+    )
+
+
+def test_candidate_ranking_can_promote_a_passing_production_candidate() -> None:
+    passing = nonlinear_turbulence_gradient_finite_difference_report(
+        minus=_ensemble(9.0, sem=0.02),
+        baseline=_ensemble(10.0, sem=0.02),
+        plus=_ensemble(11.0, sem=0.02),
+        delta_parameter=0.05,
+        parameter_name="profile_gradient",
+    )
+
+    report = nonlinear_turbulence_gradient_candidate_ranking_report(
+        [passing],
+        config=NonlinearTurbulenceGradientCandidateRankingConfig(),
+    )
+
+    assert report["passed"] is True
+    assert report["promotion_ready_candidate_count"] == 1
+    assert report["best_candidate"]["parameter_name"] == "profile_gradient"
+
+
 def test_gap_report_distinguishes_failed_production_candidate_from_missing_campaign() -> None:
     fd_report = nonlinear_turbulence_gradient_finite_difference_report(
         minus=_ensemble(9.9, sem=0.5),
@@ -596,6 +659,45 @@ def test_fd_cli_writes_json_csv_and_plot_artifacts(tmp_path: Path) -> None:
     assert out_prefix.with_suffix(".csv").exists()
     assert out_prefix.with_suffix(".png").exists()
     assert out_prefix.with_suffix(".pdf").exists()
+
+
+def test_candidate_ranking_cli_writes_fail_closed_campaign_recommendation(tmp_path: Path) -> None:
+    mod = _load_rank_tool_module()
+    noisy = nonlinear_turbulence_gradient_finite_difference_report(
+        minus=_ensemble(16.94, sem=0.67),
+        baseline=_ensemble(16.31, sem=0.45),
+        plus=_ensemble(15.82, sem=0.53),
+        delta_parameter=0.0015890833407568477,
+        parameter_name="zbs_1_0",
+    )
+    nonlocal_candidate = nonlinear_turbulence_gradient_finite_difference_report(
+        minus=_ensemble(14.67, sem=0.27),
+        baseline=_ensemble(16.31, sem=0.45),
+        plus=_ensemble(17.13, sem=0.48),
+        delta_parameter=0.004699871690217756,
+        parameter_name="zbs_1_1",
+    )
+    noisy_path = tmp_path / "noisy.json"
+    nonlocal_path = tmp_path / "nonlocal.json"
+    out = tmp_path / "ranking.json"
+    noisy_path.write_text(json.dumps(noisy), encoding="utf-8")
+    nonlocal_path.write_text(json.dumps(nonlocal_candidate), encoding="utf-8")
+
+    rc = mod.main(
+        [
+            str(noisy_path),
+            str(nonlocal_path),
+            "--json-out",
+            str(out),
+            "--fail-on-no-promotable",
+        ]
+    )
+
+    payload = json.loads(out.read_text(encoding="utf-8"))
+    assert rc == 1
+    assert payload["passed"] is False
+    assert payload["promotion_ready_candidate_count"] == 0
+    assert "least-squares/profile-gradient" in payload["recommendation"]
 
 
 def test_gradient_campaign_writer_creates_matched_state_run_contract(tmp_path: Path) -> None:
