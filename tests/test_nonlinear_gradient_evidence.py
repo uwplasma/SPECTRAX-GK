@@ -414,6 +414,33 @@ def test_long_window_fd_gate_requires_replicated_source_ensembles() -> None:
     }.issubset(set(report["blockers"]))
 
 
+def test_long_window_fd_gate_fails_closed_for_nonfinite_window_statistics() -> None:
+    baseline = _ensemble(10.0)
+    plus = _ensemble(11.0)
+    minus = _ensemble(9.0)
+    plus["statistics"]["ensemble_mean"] = "not-a-number"
+    plus["statistics"]["combined_sem"] = "not-a-number"
+
+    report = nonlinear_turbulence_gradient_finite_difference_report(
+        minus=minus,
+        baseline=baseline,
+        plus=plus,
+        delta_parameter=0.05,
+        parameter_name="rbc_1_0",
+    )
+
+    assert report["passed"] is False
+    assert report["production_nonlinear_window_gradient_gate"] is False
+    assert report["nonlinear_turbulence_gradient_gate"] is False
+    assert report["metrics"]["central_gradient"] is None
+    assert report["metrics"]["gradient_uncertainty_rel"] is None
+    assert {"finite_window_means", "finite_window_uncertainties"}.issubset(
+        set(report["blockers"])
+    )
+    classified = classify_gradient_artifact(report)
+    assert classified["qualifies_for_production_turbulence_gradient"] is False
+
+
 def test_gap_report_distinguishes_failed_production_candidate_from_missing_campaign() -> None:
     fd_report = nonlinear_turbulence_gradient_finite_difference_report(
         minus=_ensemble(9.9, sem=0.5),
