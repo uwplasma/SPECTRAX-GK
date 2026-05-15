@@ -87,6 +87,18 @@ def test_import_booz_backend_falls_back_to_booz_xform(monkeypatch) -> None:
     assert _import_booz_backend() is marker
 
 
+def test_import_booz_backend_honors_fortran_override(monkeypatch) -> None:
+    marker = SimpleNamespace(name="forced-fortran", Booz_xform=object)
+    monkeypatch.setenv("SPECTRAX_BOOZ_BACKEND", "fortran")
+    monkeypatch.setattr("spectraxgk.from_gx.vmec._import_booz_xform_backend", lambda: marker)
+    monkeypatch.setattr(
+        "spectraxgk.from_gx.vmec._import_booz_xform_jax_backend",
+        lambda: (_ for _ in ()).throw(AssertionError("jax backend should not be imported")),
+    )
+
+    assert _import_booz_backend() is marker
+
+
 def test_internal_vmec_backend_available_uses_backend_probe(monkeypatch) -> None:
     monkeypatch.setattr("spectraxgk.from_gx.vmec._import_booz_backend", lambda: object())
     assert internal_vmec_backend_available() is True
@@ -272,6 +284,12 @@ class _FakeBoozXform:
 
     def run(self) -> None:
         self.ran = True
+
+
+class _SquareLayoutFailingBoozXform(_FakeBoozXform):
+    def read_wout(self, path: str) -> None:
+        self.read_path = path
+        raise ValueError("rmnc0 has unexpected shape (50, 50); one dimension must equal ns=50")
 
 
 def _const_callable(value: float):
@@ -513,6 +531,49 @@ def test_vmec_fieldlines_respects_overrides_and_closes_dataset(monkeypatch: pyte
     assert np.isfinite(out.bmag).all()
     assert np.isfinite(out.gds2).all()
     assert np.isfinite(out.gbdrift).all()
+
+
+def test_vmec_fieldlines_falls_back_for_square_vmec_jax_wout(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_nc = _FakeNCDataset(mpol=3, ntor=2)
+    jax_backend = SimpleNamespace(Booz_xform=_SquareLayoutFailingBoozXform)
+    fortran_backend = SimpleNamespace(Booz_xform=_FakeBoozXform)
+    calls: dict[str, object] = {}
+
+    def _fake_import_backend(preferred: str | None = None) -> object:
+        if preferred == "booz_xform":
+            return fortran_backend
+        return jax_backend
+
+    def _fake_splines(_nc: object, booz_obj: object) -> SimpleNamespace:
+        calls["booz_obj"] = booz_obj
+        return _fake_vmec_spline_struct()
+
+    monkeypatch.delenv("SPECTRAX_BOOZ_BACKEND", raising=False)
+    monkeypatch.setitem(sys.modules, "netCDF4", SimpleNamespace(Dataset=lambda *_args, **_kwargs: fake_nc))
+    monkeypatch.setattr("spectraxgk.from_gx.vmec._import_booz_backend", _fake_import_backend)
+    monkeypatch.setattr("spectraxgk.from_gx.vmec._vmec_splines", _fake_splines)
+
+    out = _vmec_fieldlines(
+        vmec_fname="square-vmec-jax.nc",
+        s_val=0.5,
+        betaprim=0.01,
+        alpha=0.2,
+        include_shear_variation=False,
+        include_pressure_variation=False,
+        theta1d=np.linspace(-np.pi, np.pi, 9),
+        isaxisym=True,
+        iota_input=0.9,
+        s_hat_input=0.0,
+        res_theta=21,
+        res_phi=21,
+    )
+
+    assert fake_nc.closed is True
+    assert isinstance(calls["booz_obj"], _FakeBoozXform)
+    assert not isinstance(calls["booz_obj"], _SquareLayoutFailingBoozXform)
+    assert out.iota_input == pytest.approx(0.9)
 
 
 def test_vmec_fieldlines_rejects_degenerate_reference_length(monkeypatch: pytest.MonkeyPatch) -> None:
