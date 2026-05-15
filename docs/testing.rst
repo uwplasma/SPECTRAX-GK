@@ -319,20 +319,21 @@ re-equilibrated perturbation files. Then use
 the central finite-difference gradient sidecar and checks response resolution,
 forward/backward asymmetry, subtraction conditioning, propagated uncertainty,
 and the uncertainty gates on all three replicated nonlinear windows.
-The tracked optimized-QA/ESS ``RBC(1,1)`` example is deliberately kept as a
+The tracked optimized-QA/ESS ``ZBS(1,0)`` example is deliberately kept as a
 fail-closed regression: the real ``vmec_jax`` re-equilibrated ``t=[450,900]``
-baseline/plus/minus ensembles pass their replicated transport-window gates, but
-the current 8% perturbation gives ``fd_asymmetry_rel = 1.89`` and
-``gradient_uncertainty_rel = 0.506`` and therefore does not promote a
-turbulence-gradient claim. A future passing artifact must reduce the propagated
-uncertainty and keep the forward/backward finite-difference response local
-without relaxing either gate.
-For future perturbation-amplitude refreshes, keep each amplitude in a distinct
-artifact slug such as
-``docs/_static/qa_ess_rbc11_rel5_nonlinear_gradient_rbc_1_1_central_fd_gradient_gate.*``.
-Do not overwrite the tracked ``rel8`` sidecars or promote new prose from the
-``rel5`` slug until ``tools/check_nonlinear_turbulence_gradient_evidence.py``
-reports ``passed = true`` and the JSON sidecar sets
+baseline/plus/minus ensembles pass their replicated transport-window gates and
+the central finite difference is local, but
+``gradient_uncertainty_rel = 0.768`` and therefore does not promote a
+turbulence-gradient claim. The companion ``ZBS(1,1)`` campaign gives the
+opposite near miss: uncertainty passes, but ``fd_asymmetry_rel = 0.663`` still
+fails the locality gate. A future passing artifact must satisfy both gates
+without relaxing either threshold.
+For future perturbation refreshes, keep each coefficient/amplitude in a
+distinct artifact slug such as
+``docs/_static/qa_ess_zbs10_rel5_nonlinear_gradient_zbs_1_0_central_fd_gradient_gate.*``.
+Do not promote new prose until
+``tools/check_nonlinear_turbulence_gradient_evidence.py`` reports
+``passed = true`` and the JSON sidecar sets
 ``nonlinear_turbulence_gradient_gate = true``. Until then, describe the result
 as a bounded production-candidate finite-difference audit, not as a nonlinear
 turbulence-gradient claim.
