@@ -797,6 +797,31 @@ the following pass:
    evidence gate; broader nonlinear turbulence-gradient and absolute-flux model
    claims remain separate gates.
 
+.. figure:: _static/qa_no_ess_reference_replicates/qa_no_ess_reference_t700_ensemble_gate.png
+   :width: 90%
+   :align: center
+   :alt: QA no-ESS reference nonlinear replicate gate
+
+   Matched no-ESS reference replicate gate. The valid finite-transform QA
+   ``no_ess`` equilibrium from the same ``vmec_jax`` campaign is advanced with
+   the same grid, seeds, timestep variant, and post-transient window as the
+   selected optimized QA/ESS equilibrium. The reference ensemble passes with
+   mean ion heat flux ``12.50``, mean-relative spread ``0.046``, and combined
+   SEM/mean ``0.016``.
+
+.. figure:: _static/qa_no_ess_to_optimized_nonlinear_audit.png
+   :width: 70%
+   :align: center
+   :alt: Matched no-ESS to optimized QA/ESS nonlinear audit
+
+   Matched baseline-to-optimized nonlinear audit. Against the validated no-ESS
+   reference ensemble, the optimized QA/ESS equilibrium reduces the
+   post-transient ion heat flux from ``12.50`` to ``10.19``. The relative
+   reduction is ``0.184`` and the difference is separated by ``7.82`` combined
+   SEMs. The zero-transform raw ``wout_initial.nc`` from the VMEC optimization
+   is intentionally excluded because it cannot define the same finite-twist
+   flux-tube baseline.
+
 .. figure:: _static/production_nonlinear_optimization_guard.png
    :width: 90%
    :align: center
@@ -811,6 +836,7 @@ the following pass:
 
 The release claim is now: SPECTRAX-GK has a tested differentiable stellarator
 ITG objective-reduction workflow, long-window nonlinear holdout evidence, and a
-scoped optimized-equilibrium replicated nonlinear transport audit. It is still
-not a universal absolute-flux quasilinear model, a nonlinear turbulence-gradient
-optimizer, or a broad multi-surface stellarator transport-optimization claim.
+scoped optimized-equilibrium replicated nonlinear transport audit with a matched
+finite-transform no-ESS reference comparison. It is still not a universal
+absolute-flux quasilinear model, a nonlinear turbulence-gradient optimizer, or a
+broad multi-surface stellarator transport-optimization claim.

@@ -1089,6 +1089,37 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.nonlinear_gradient_evidence"
+path = "src/spectraxgk/nonlinear_gradient_evidence.py"
+owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "post-transient nonlinear transport-window uncertainty gates",
+  "finite-difference conditioning checks for nonlinear turbulence-gradient claims",
+]
+physics_contracts = [
+  "startup/reduced-window finite-difference artifacts are recorded but never promoted as production turbulent-transport gradients",
+  "production nonlinear turbulence-gradient claims require explicit long-window scope plus replicated post-transient transport-window evidence",
+]
+numerics_contracts = [
+  "finite-difference gradient estimates record response fraction, asymmetry, condition number, and relative uncertainty before promotion",
+  "single-window and unsupported artifacts fail closed unless replicated ensemble uncertainty gates pass",
+]
+fast_tests = [
+  "tests/test_nonlinear_gradient_evidence.py",
+]
+artifact_paths = [
+  "docs/_static/nonlinear_turbulence_gradient_evidence_status.json",
+  "docs/_static/production_nonlinear_optimization_guard.json",
+]
+next_tests = [
+  "replace reduced-window nonlinear finite-difference evidence with converged post-transient production gradient artifacts",
+  "add matched baseline-to-optimized turbulence-gradient audits once long-window parameter perturbation runs are available",
+]
+
+[[modules]]
 module = "spectraxgk.solver_objective_gradients"
 path = "src/spectraxgk/solver_objective_gradients.py"
 owned_modules = [
@@ -1211,9 +1242,17 @@ artifact_paths = [
   "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json",
   "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.png",
   "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_readiness.json",
+  "docs/_static/qa_no_ess_reference_replicates/qa_no_ess_reference_t700_ensemble_gate.json",
+  "docs/_static/qa_no_ess_reference_replicates/qa_no_ess_reference_t700_ensemble_gate.png",
+  "docs/_static/qa_no_ess_reference_replicates/qa_no_ess_reference_t700_ensemble_readiness.json",
+  "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json",
+  "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.png",
   "docs/_static/optimized_equilibrium_replicates/nonlinear_window_convergence_reports/optimized_equilibrium_post_optimization_nonlinear_t700_n64_seed31_transport_window.convergence.json",
   "docs/_static/optimized_equilibrium_replicates/nonlinear_window_convergence_reports/optimized_equilibrium_post_optimization_nonlinear_t700_n64_seed32_transport_window.convergence.json",
   "docs/_static/optimized_equilibrium_replicates/nonlinear_window_convergence_reports/optimized_equilibrium_post_optimization_nonlinear_t700_n64_dt0p04_transport_window.convergence.json",
+  "docs/_static/qa_no_ess_reference_replicates/nonlinear_window_convergence_reports/qa_no_ess_reference_equilibrium_nonlinear_t700_n64_seed31_transport_window.convergence.json",
+  "docs/_static/qa_no_ess_reference_replicates/nonlinear_window_convergence_reports/qa_no_ess_reference_equilibrium_nonlinear_t700_n64_seed32_transport_window.convergence.json",
+  "docs/_static/qa_no_ess_reference_replicates/nonlinear_window_convergence_reports/qa_no_ess_reference_equilibrium_nonlinear_t700_n64_dt0p04_transport_window.convergence.json",
 ]
 next_tests = [
   "extend the reduced nonlinear-window estimator-gradient matrix to optimized-equilibrium holdouts before broad stellarator transport-gradient claims",

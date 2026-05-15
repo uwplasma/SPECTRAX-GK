@@ -6,10 +6,13 @@ from pathlib import Path
 import sys
 
 import numpy as np
+import pytest
 
 from spectraxgk.nonlinear_gradient_evidence import (
     classify_gradient_artifact,
+    load_json_artifact,
     nonlinear_turbulence_gradient_evidence_report,
+    summarize_window_evidence,
 )
 from spectraxgk.quasilinear_window import (
     NonlinearWindowConvergenceConfig,
@@ -158,6 +161,85 @@ def test_production_gradient_fails_closed_without_uncertainty() -> None:
     }
     assert report["passed"] is False
     assert gradient_gates["gradient_uncertainty_bounded"] is False
+
+
+def test_unscoped_nested_passed_artifact_with_bad_numbers_stays_blocked() -> None:
+    artifact = {
+        "kind": "long_window_gradient_candidate",
+        "gate_report": {"passed": True},
+        "objective_gates": [
+            "not-a-row",
+            {"finite_difference": "not-a-number", "implicit": "inf"},
+        ],
+        "gradient": {"central": "not-a-number"},
+        "metrics": {"response_fraction": float("nan"), "derivative_asymmetry": "bad"},
+        "conditioning": {"condition_number": "bad"},
+        "uncertainty": {"sem_rel": None},
+    }
+
+    row = classify_gradient_artifact(artifact)
+
+    assert row["artifact_passed"] is True
+    assert row["evidence_class"] == "unscoped_gradient_or_fd_artifact_not_production"
+    assert row["qualifies_for_production_turbulence_gradient"] is False
+    assert row["conditioning"]["central_gradient"] is None
+    assert {gate["metric"]: gate["passed"] for gate in row["gates"]}[
+        "finite_gradient_estimate"
+    ] is False
+
+
+def test_explicit_nonlinear_turbulence_gradient_flag_can_promote_scope() -> None:
+    artifact = _production_gradient()
+    artifact.pop("production_nonlinear_window_gradient_gate")
+    artifact["nonlinear_turbulence_gradient_gate"] = True
+
+    row = classify_gradient_artifact(artifact)
+
+    assert row["explicit_production_scope"] is True
+    assert row["evidence_class"] == "production_long_window_turbulence_gradient_candidate"
+    assert row["qualifies_for_production_turbulence_gradient"] is True
+
+
+def test_window_evidence_handles_input_ensembles_unsupported_rows_and_path_mismatch() -> None:
+    ensemble = {
+        "kind": "nonlinear_window_ensemble_report",
+        "passed": True,
+        "statistics": {
+            "n_reports": 3,
+            "combined_sem_rel": 0.04,
+            "mean_rel_spread": 0.05,
+        },
+    }
+    malformed_ensemble = {
+        "kind": "nonlinear_window_ensemble_report",
+        "passed": True,
+        "statistics": ["not", "a", "dict"],
+    }
+    unsupported = {"kind": "single_trace_debug_artifact", "promotion_gate": {"passed": True}}
+
+    summary = summarize_window_evidence(
+        [ensemble, malformed_ensemble, unsupported],
+        paths=["ensemble.json", "bad_ensemble.json", "debug.json"],
+    )
+
+    assert summary["passed"] is True
+    rows = summary["ensemble_rows"]
+    assert rows[0]["source"] == "input_ensemble"
+    assert rows[0]["qualifies_for_replicated_long_window_uncertainty"] is True
+    assert rows[1]["statistics"] == {}
+    assert rows[2]["source"] == "unsupported_window_artifact"
+    assert rows[2]["passed"] is True
+
+    with pytest.raises(ValueError, match="paths length"):
+        summarize_window_evidence([ensemble], paths=["ensemble.json", "extra.json"])
+
+
+def test_load_json_artifact_rejects_non_object_payload(tmp_path: Path) -> None:
+    path = tmp_path / "artifact.json"
+    path.write_text("[1, 2, 3]\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="does not contain a JSON object"):
+        load_json_artifact(path)
 
 
 def test_cli_writes_report_and_can_fail_on_blocked(tmp_path: Path) -> None:

@@ -71,6 +71,9 @@
       "key_metrics": {
         "all_objective_gradient_gates_passed": true,
         "best_reduction_factor": 0.05282149157273069,
+        "matched_qa_no_ess_relative_reduction": 0.1844401904195982,
+        "matched_qa_no_ess_to_optimized_audit_passed": true,
+        "matched_qa_no_ess_uncertainty_separation_sigma": 7.819308425110687,
         "n_objectives": 3,
         "production_nonlinear_optimization_guard_safe": true,
         "production_nonlinear_optimization_promoted": true,
@@ -80,7 +83,7 @@
         "worst_reduction_factor": 0.14944986630532714
       },
       "lane": "Reduced differentiable stellarator ITG optimization",
-      "next_action": "Use as the current optimization figure only with scoped wording; nonlinear-window VMEC/Boozer/GK gradients and matched baseline-to-optimized audits across broader geometry families remain future requirements before claiming broad end-to-end stellarator heat-flux optimization.",
+      "next_action": "Use as the current optimization figure only with scoped wording; the matched QA no-ESS to optimized QA/ESS audit is closed, but nonlinear-window VMEC/Boozer/GK gradients and matched audits across broader geometry families remain future requirements before claiming broad end-to-end stellarator heat-flux optimization.",
       "primary_artifacts": [
         "docs/_static/stellarator_itg_optimization_comparison.json",
         "docs/_static/stellarator_itg_optimization_comparison.png",
@@ -89,7 +92,11 @@
         "docs/_static/production_nonlinear_optimization_guard.json",
         "docs/_static/production_nonlinear_optimization_guard.png",
         "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json",
-        "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.png"
+        "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.png",
+        "docs/_static/qa_no_ess_reference_replicates/qa_no_ess_reference_t700_ensemble_gate.json",
+        "docs/_static/qa_no_ess_reference_replicates/qa_no_ess_reference_t700_ensemble_gate.png",
+        "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json",
+        "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.png"
       ],
       "status": "closed"
     },

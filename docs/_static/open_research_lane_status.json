@@ -108,6 +108,9 @@
         ],
         "holdout_points": 6,
         "itermodel_external_vmec_t350_converged": true,
+        "matched_qa_no_ess_relative_reduction": 0.1844401904195982,
+        "matched_qa_no_ess_to_optimized_audit_passed": true,
+        "matched_qa_no_ess_uncertainty_separation_sigma": 7.819308425110687,
         "model_selection_candidate_mean_error": 0.29524327596674427,
         "model_selection_status_passed": true,
         "production_nonlinear_optimization_guard_safe": true,
@@ -125,7 +128,7 @@
         "validated_inputs_passed": true
       },
       "lane": "Nonlinear holdouts for quasilinear absolute-flux promotion",
-      "next_action": "Document the accepted richer candidate with scoped wording and keep circular, QH, and CTH-like excluded until their common-window and grid-refinement gates pass.",
+      "next_action": "Document the accepted richer candidate and matched QA no-ESS to optimized QA/ESS audit with scoped wording; keep circular, QH, and CTH-like excluded until their common-window and grid-refinement gates pass.",
       "primary_artifacts": [
         "docs/_static/quasilinear_validated_calibration_inputs.json",
         "docs/_static/quasilinear_stellarator_train_holdout_report.json",
@@ -138,6 +141,8 @@
         "docs/_static/external_vmec_dshape_replicates/dshape_replicate_t250_ensemble_gate.json",
         "docs/_static/production_nonlinear_optimization_guard.json",
         "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json",
+        "docs/_static/qa_no_ess_reference_replicates/qa_no_ess_reference_t700_ensemble_gate.json",
+        "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json",
         "docs/_static/external_vmec_itermodel_t350_high_grid_convergence_gate.json",
         "docs/_static/external_vmec_updown_asym_t450_high_grid_convergence_gate.json",
         "docs/_static/external_vmec_qh_grid_convergence_gate.json",

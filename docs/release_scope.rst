@@ -270,6 +270,12 @@ Quasilinear model-selection state:
   post-transient replicated holdout ensembles pass. Its production-promotion
   gate now also passes for the selected optimized QA equilibrium because the
   ``t=[350,700]`` seed/timestep replicated transport-window audit is attached.
+- ``tools/build_baseline_optimized_nonlinear_audit.py`` now records the matched
+  QA no-ESS reference to optimized QA/ESS comparison. The tracked
+  ``docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json`` artifact passes
+  with a relative ion-heat-flux reduction of ``0.184`` and a ``7.82`` combined
+  SEM separation. This is a scoped finite-transform VMEC campaign comparison,
+  not a broad multi-surface stellarator optimization claim.
 - ``tools/check_nonlinear_turbulence_gradient_evidence.py`` is the stricter
   nonlinear turbulence-gradient claim gate. The tracked
   ``docs/_static/nonlinear_turbulence_gradient_evidence_status.json`` artifact

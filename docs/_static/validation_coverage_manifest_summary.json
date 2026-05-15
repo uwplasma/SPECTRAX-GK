@@ -15,17 +15,18 @@
     "spectraxgk.from_gx.vmec",
     "spectraxgk.geometry.differentiable",
     "spectraxgk.runtime_artifacts",
+    "spectraxgk.nonlinear_gradient_evidence",
     "spectraxgk.solver_objective_gradients",
     "spectraxgk.stellarator_objective_portfolio",
     "spectraxgk.parallel",
     "spectraxgk.parallel_decomposition"
   ],
-  "n_direct_modules": 32,
+  "n_direct_modules": 33,
   "n_excluded_modules": 6,
-  "n_high_priority_open": 19,
-  "n_modules": 32,
+  "n_high_priority_open": 20,
+  "n_modules": 33,
   "n_owned_modules": 51,
-  "n_package_modules": 89,
+  "n_package_modules": 90,
   "owned_modules_by_owner": {
     "spectraxgk.autodiff_validation": [],
     "spectraxgk.benchmark_defaults": [
@@ -79,6 +80,7 @@
       "spectraxgk.terms.nonlinear"
     ],
     "spectraxgk.nonlinear_diagnostics": [],
+    "spectraxgk.nonlinear_gradient_evidence": [],
     "spectraxgk.nonlinear_helpers": [
       "spectraxgk.gx_reduced_models"
     ],
@@ -508,11 +510,25 @@
     {
       "coverage_priority": "high",
       "coverage_target_percent": 95.0,
+      "module": "spectraxgk.nonlinear_gradient_evidence",
+      "n_artifacts": 2,
+      "n_fast_tests": 1,
+      "n_next_tests": 2,
+      "n_numerics_contracts": 2,
+      "n_owned_modules": 0,
+      "n_physics_contracts": 2,
+      "n_reference_anchors": 2,
+      "path": "src/spectraxgk/nonlinear_gradient_evidence.py",
+      "status": "active"
+    },
+    {
+      "coverage_priority": "high",
+      "coverage_target_percent": 95.0,
       "module": "spectraxgk.solver_objective_gradients",
-      "n_artifacts": 66,
+      "n_artifacts": 80,
       "n_fast_tests": 15,
       "n_next_tests": 4,
-      "n_numerics_contracts": 8,
+      "n_numerics_contracts": 9,
       "n_owned_modules": 2,
       "n_physics_contracts": 8,
       "n_reference_anchors": 2,
