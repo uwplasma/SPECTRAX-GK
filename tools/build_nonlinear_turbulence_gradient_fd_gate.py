@@ -125,6 +125,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--delta-parameter", type=float, required=True)
     parser.add_argument("--parameter-name", default="vmec_state_control_or_profile_gradient")
     parser.add_argument("--out-prefix", type=Path, default=DEFAULT_OUT_PREFIX)
+    parser.add_argument("--min-window-reports", type=int, default=2)
     parser.add_argument("--max-window-mean-rel-spread", type=float, default=0.15)
     parser.add_argument("--max-window-combined-sem-rel", type=float, default=0.25)
     parser.add_argument("--max-gradient-uncertainty-rel", type=float, default=0.50)
@@ -147,6 +148,7 @@ def main(argv: list[str] | None = None) -> int:
         delta_parameter=float(args.delta_parameter),
         parameter_name=str(args.parameter_name),
         config=NonlinearTurbulenceGradientFiniteDifferenceConfig(
+            min_window_reports=int(args.min_window_reports),
             max_window_mean_rel_spread=float(args.max_window_mean_rel_spread),
             max_window_combined_sem_rel=float(args.max_window_combined_sem_rel),
             max_gradient_uncertainty_rel=float(args.max_gradient_uncertainty_rel),

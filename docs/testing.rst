@@ -327,6 +327,15 @@ the current 8% perturbation gives ``fd_asymmetry_rel = 1.89`` and
 turbulence-gradient claim. A future passing artifact must reduce the propagated
 uncertainty and keep the forward/backward finite-difference response local
 without relaxing either gate.
+For future perturbation-amplitude refreshes, keep each amplitude in a distinct
+artifact slug such as
+``docs/_static/qa_ess_rbc11_rel5_nonlinear_gradient_rbc_1_1_central_fd_gradient_gate.*``.
+Do not overwrite the tracked ``rel8`` sidecars or promote new prose from the
+``rel5`` slug until ``tools/check_nonlinear_turbulence_gradient_evidence.py``
+reports ``passed = true`` and the JSON sidecar sets
+``nonlinear_turbulence_gradient_gate = true``. Until then, describe the result
+as a bounded production-candidate finite-difference audit, not as a nonlinear
+turbulence-gradient claim.
 
 ``tools/write_optimized_equilibrium_transport_configs.py`` is the production
 optimization companion for that final audit. Given a concrete post-optimization

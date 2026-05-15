@@ -99,7 +99,13 @@ def _production_gradient() -> dict[str, object]:
     }
 
 
-def _ensemble(mean: float, sem: float = 0.02, *, passed: bool = True) -> dict[str, object]:
+def _ensemble(
+    mean: float,
+    sem: float = 0.02,
+    *,
+    passed: bool = True,
+    n_reports: int = 3,
+) -> dict[str, object]:
     return {
         "kind": "nonlinear_window_ensemble_report",
         "case": "matched_replicated_window",
@@ -109,7 +115,7 @@ def _ensemble(mean: float, sem: float = 0.02, *, passed: bool = True) -> dict[st
             "combined_sem": float(sem),
             "combined_sem_rel": abs(float(sem) / float(mean)),
             "mean_rel_spread": 0.02,
-            "n_reports": 3,
+            "n_reports": n_reports,
         },
     }
 
@@ -298,6 +304,27 @@ def test_explicit_nonlinear_turbulence_gradient_flag_can_promote_scope() -> None
     assert row["qualifies_for_production_turbulence_gradient"] is True
 
 
+def test_canonical_gradient_uncertainty_rel_is_accepted_for_classification() -> None:
+    artifact = {
+        "kind": "external_nonlinear_turbulence_gradient_gate",
+        "claim_level": "production_long_window_nonlinear_turbulence_gradient_evidence",
+        "passed": True,
+        "production_nonlinear_window_gradient_gate": True,
+        "metrics": {
+            "central_gradient": 1.0,
+            "response_fraction": 0.1,
+            "fd_asymmetry_rel": 0.1,
+            "fd_condition_number": 10.0,
+            "gradient_uncertainty_rel": 0.2,
+        },
+    }
+
+    row = classify_gradient_artifact(artifact)
+
+    assert row["conditioning"]["gradient_uncertainty_rel"] == pytest.approx(0.2)
+    assert row["qualifies_for_production_turbulence_gradient"] is True
+
+
 def test_long_window_fd_gate_promotes_only_resolved_replicated_gradient() -> None:
     report = nonlinear_turbulence_gradient_finite_difference_report(
         minus=_ensemble(9.0),
@@ -340,6 +367,51 @@ def test_long_window_fd_gate_fails_when_response_is_buried_in_uncertainty() -> N
     classified = classify_gradient_artifact(report)
     assert classified["evidence_class"] == "production_long_window_turbulence_gradient_candidate"
     assert classified["qualifies_for_production_turbulence_gradient"] is False
+
+
+def test_long_window_fd_gate_requires_ensemble_artifacts() -> None:
+    baseline = _ensemble(10.0)
+    plus = _ensemble(11.0)
+    minus = _ensemble(9.0)
+    baseline["kind"] = "nonlinear_window_convergence_report"
+    plus["kind"] = "nonlinear_window_convergence_report"
+    minus["kind"] = "nonlinear_window_convergence_report"
+
+    report = nonlinear_turbulence_gradient_finite_difference_report(
+        minus=minus,
+        baseline=baseline,
+        plus=plus,
+        delta_parameter=0.05,
+        parameter_name="rbc_1_0",
+    )
+
+    assert report["passed"] is False
+    assert report["production_nonlinear_window_gradient_gate"] is False
+    assert {
+        "minus_ensemble_kind",
+        "baseline_ensemble_kind",
+        "plus_ensemble_kind",
+    }.issubset(set(report["blockers"]))
+    classified = classify_gradient_artifact(report)
+    assert classified["qualifies_for_production_turbulence_gradient"] is False
+
+
+def test_long_window_fd_gate_requires_replicated_source_ensembles() -> None:
+    report = nonlinear_turbulence_gradient_finite_difference_report(
+        minus=_ensemble(9.0, n_reports=1),
+        baseline=_ensemble(10.0, n_reports=1),
+        plus=_ensemble(11.0, n_reports=1),
+        delta_parameter=0.05,
+        parameter_name="rbc_1_0",
+    )
+
+    assert report["passed"] is False
+    assert report["production_nonlinear_window_gradient_gate"] is False
+    assert {
+        "minus_ensemble_replicated",
+        "baseline_ensemble_replicated",
+        "plus_ensemble_replicated",
+    }.issubset(set(report["blockers"]))
 
 
 def test_gap_report_distinguishes_failed_production_candidate_from_missing_campaign() -> None:

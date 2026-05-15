@@ -300,6 +300,15 @@ Quasilinear model-selection state:
   writes reviewer-facing JSON/CSV/PNG/PDF sidecars, and fails closed unless the
   response, forward/backward asymmetry, condition number, and all three window
   uncertainty gates pass.
+- Future perturbation-amplitude refreshes must use distinct artifact slugs
+  rather than overwriting the tracked failed candidate. For example, a rel5
+  ``RBC(1,1)`` campaign should write
+  ``docs/_static/qa_ess_rbc11_rel5_nonlinear_gradient_rbc_1_1_central_fd_gradient_gate.*``
+  and a matching refreshed
+  ``nonlinear_turbulence_gradient_evidence_status.json``. Release prose can
+  promote the rel5 result only if the central finite-difference artifact passes
+  and the evidence-status JSON reports the production gradient gate as true;
+  otherwise it remains a documented production-candidate audit.
 - ``tools/write_nonlinear_turbulence_gradient_campaign.py`` is the paired
   launch-contract writer for the same lane. Given explicit baseline,
   plus-perturbation, and minus-perturbation VMEC files, it writes the matched
