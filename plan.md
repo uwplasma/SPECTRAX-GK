@@ -6032,3 +6032,57 @@ Exit gate:
   - run the nine matched long-window SPECTRAX-GK simulations;
   - build the three replicated ensemble artifacts;
   - run the central finite-difference gradient gate and final evidence check.
+
+### 2026-05-15 QA/ESS RBC(1,1) Long-Window Nonlinear Gradient Evidence
+
+- Completed the first real re-equilibrated nonlinear turbulence-gradient
+  campaign on `office` using the optimized QA/ESS `RBC(1,1)` boundary
+  coefficient.
+- Execution details:
+  - regenerated the campaign in the clean office checkout so all VMEC paths were
+    office-local;
+  - used a restart ladder with horizons `t=250,350,450,700,900`;
+  - ran three replicated nonlinear states for each parameter value:
+    `seed31`, `seed32`, and `dt0p04`;
+  - analyzed the long post-transient window `t=[450,900]` after the initial
+    `t=[350,700]` pass exposed a still-rising plus-state terminal mean.
+- Results:
+  - baseline ensemble passed with mean `16.142734`, combined SEM `0.517429`,
+    SEM fraction `0.0321`, and mean spread `0.0598`;
+  - minus ensemble passed with mean `15.886632`, combined SEM `0.534764`,
+    SEM fraction `0.0337`, and mean spread `0.0277`;
+  - plus ensemble passed with mean `16.373695`, combined SEM `0.711721`,
+    SEM fraction `0.0435`, and mean spread `0.0653`;
+  - central finite-difference response fraction was `0.03017`, just above the
+    `0.03` gate;
+  - forward/backward asymmetry passed at `0.103`;
+  - subtraction condition number passed at `66.23`;
+  - propagated gradient uncertainty failed at
+    `gradient_uncertainty_rel = 1.83 > 0.5`.
+- Code and reporting updates:
+  - fixed `spectraxgk.nonlinear_gradient_evidence` so a real
+    production-candidate long-window artifact that fails uncertainty is reported
+    separately from a missing or startup/reduced gradient artifact;
+  - regenerated `docs/_static/nonlinear_turbulence_gradient_evidence_status.json`
+    and `docs/_static/nonlinear_turbulence_gradient_evidence_gap_report.json`
+    against the actual QA/ESS `RBC(1,1)` `t=[450,900]` campaign;
+  - added the central-FD gate figure and all three replicate ensemble artifacts
+    under `docs/_static/qa_ess_rbc11_nonlinear_gradient_*`;
+  - updated README, testing, release-scope, and stellarator-optimization docs.
+- Interpretation:
+  - this closes the missing-campaign blocker for the selected coefficient;
+  - the nonlinear turbulence-gradient claim still must remain blocked because
+    the 2% perturbation response is barely resolved above nonlinear transport
+    variability;
+  - more repetitions at the same 2% amplitude are inefficient because the
+    current response is only about `3%` of the baseline mean and the propagated
+    gradient uncertainty is about `3.7x` above the target.
+- Next executable step:
+  - run a second matched QA/ESS boundary-gradient campaign with a larger bounded
+    `RBC(1,1)` perturbation, starting at `8%` relative amplitude, keeping the
+    same `t=[450,900]` analysis window, seed/timestep labels, and finite
+    difference gates;
+  - promote only if the larger-amplitude campaign keeps forward/backward
+    asymmetry bounded while reducing `gradient_uncertainty_rel` below `0.5`;
+  - if `8%` violates finite-difference asymmetry, bracket with an intermediate
+    `5%` perturbation rather than relaxing the uncertainty gate.

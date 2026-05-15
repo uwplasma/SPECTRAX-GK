@@ -337,7 +337,41 @@ def test_long_window_fd_gate_fails_when_response_is_buried_in_uncertainty() -> N
     assert report["passed"] is False
     assert gates["fd_response_resolved"] is False
     assert gates["gradient_uncertainty_bounded"] is False
-    assert classify_gradient_artifact(report)["qualifies_for_production_turbulence_gradient"] is False
+    classified = classify_gradient_artifact(report)
+    assert classified["evidence_class"] == "production_long_window_turbulence_gradient_candidate"
+    assert classified["qualifies_for_production_turbulence_gradient"] is False
+
+
+def test_gap_report_distinguishes_failed_production_candidate_from_missing_campaign() -> None:
+    fd_report = nonlinear_turbulence_gradient_finite_difference_report(
+        minus=_ensemble(9.9, sem=0.5),
+        baseline=_ensemble(10.0, sem=0.5),
+        plus=_ensemble(10.2, sem=0.5),
+        delta_parameter=0.05,
+        parameter_name="rbc_1_0",
+        config=NonlinearTurbulenceGradientFiniteDifferenceConfig(
+            min_fd_response_fraction=0.01,
+            max_gradient_uncertainty_rel=0.05,
+        ),
+    )
+
+    evidence = nonlinear_turbulence_gradient_evidence_report(
+        fd_report,
+        window_artifacts=[_ensemble(10.0), _ensemble(10.1)],
+    )
+    gap = evidence["evidence_gap"]
+
+    assert evidence["passed"] is False
+    assert gap["claim_level"] == "fail_closed_production_candidate_gradient_gate_not_resolved"
+    assert gap["current_gradient_candidate_present"] is True
+    assert gap["missing_evidence"][0]["current_artifact_class"] == (
+        "production_long_window_turbulence_gradient_candidate"
+    )
+    failed_metrics = {
+        row["metric"] for row in gap["missing_evidence"][0]["current_failed_gates"]
+    }
+    assert "artifact_passed" in failed_metrics
+    assert "gradient_uncertainty_bounded" in failed_metrics
 
 
 def test_window_evidence_handles_input_ensembles_unsupported_rows_and_path_mismatch() -> None:

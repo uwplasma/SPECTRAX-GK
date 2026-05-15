@@ -1,0 +1,187 @@
+{
+  "blockers": [
+    "gradient_uncertainty_bounded"
+  ],
+  "claim_level": "production_long_window_nonlinear_turbulence_gradient_candidate",
+  "claim_scope": "production_long_window nonlinear turbulence gradient from matched replicated post-transient heat-flux windows",
+  "config": {
+    "max_fd_asymmetry_rel": 0.5,
+    "max_fd_condition_number": 100000000.0,
+    "max_gradient_uncertainty_rel": 0.5,
+    "max_window_combined_sem_rel": 0.25,
+    "max_window_mean_rel_spread": 0.15,
+    "min_fd_response_fraction": 0.03,
+    "value_floor": 1e-12
+  },
+  "delta_parameter": 0.00200761006829,
+  "gates": [
+    {
+      "detail": "path=docs/_static/qa_ess_rbc11_nonlinear_gradient_minus_delta_replicates/qa_ess_rbc11_nonlinear_gradient_minus_delta_t900_ensemble_gate.json",
+      "metric": "minus_ensemble_passed",
+      "passed": true
+    },
+    {
+      "detail": "path=docs/_static/qa_ess_rbc11_nonlinear_gradient_baseline_replicates/qa_ess_rbc11_nonlinear_gradient_baseline_t900_ensemble_gate.json",
+      "metric": "baseline_ensemble_passed",
+      "passed": true
+    },
+    {
+      "detail": "path=docs/_static/qa_ess_rbc11_nonlinear_gradient_plus_delta_replicates/qa_ess_rbc11_nonlinear_gradient_plus_delta_t900_ensemble_gate.json",
+      "metric": "plus_ensemble_passed",
+      "passed": true
+    },
+    {
+      "detail": "mean_rel_spread=0.02766163711760634 max=0.15",
+      "metric": "minus_window_mean_spread",
+      "passed": true
+    },
+    {
+      "detail": "combined_sem_rel=0.0336612352144749 max=0.25",
+      "metric": "minus_window_sem",
+      "passed": true
+    },
+    {
+      "detail": "mean_rel_spread=0.05976334650298239 max=0.15",
+      "metric": "baseline_window_mean_spread",
+      "passed": true
+    },
+    {
+      "detail": "combined_sem_rel=0.03205335297968035 max=0.25",
+      "metric": "baseline_window_sem",
+      "passed": true
+    },
+    {
+      "detail": "mean_rel_spread=0.0653461676311895 max=0.15",
+      "metric": "plus_window_mean_spread",
+      "passed": true
+    },
+    {
+      "detail": "combined_sem_rel=0.04346737297029576 max=0.25",
+      "metric": "plus_window_sem",
+      "passed": true
+    },
+    {
+      "detail": "means={'minus': 15.886631769009893, 'baseline': 16.142734000922214, 'plus': 16.373694500806348}",
+      "metric": "finite_window_means",
+      "passed": true
+    },
+    {
+      "detail": "combined_sem={'minus': 0.5347636487423915, 'baseline': 0.5174287509886474, 'plus': 0.7117214857682301}",
+      "metric": "finite_window_uncertainties",
+      "passed": true
+    },
+    {
+      "detail": "response_fraction=0.030172257795279853 min=0.03",
+      "metric": "fd_response_resolved",
+      "passed": true
+    },
+    {
+      "detail": "fd_asymmetry_rel=0.1032381678452618 max=0.5",
+      "metric": "fd_asymmetry_bounded",
+      "passed": true
+    },
+    {
+      "detail": "fd_condition_number=66.23443791486385 max=100000000.0",
+      "metric": "fd_condition_number_bounded",
+      "passed": true
+    },
+    {
+      "detail": "gradient_uncertainty_rel=1.8277639813619166 max=0.5",
+      "metric": "gradient_uncertainty_bounded",
+      "passed": false
+    }
+  ],
+  "kind": "nonlinear_turbulence_gradient_central_fd_gate",
+  "metrics": {
+    "asymmetry_rel": 0.1032381678452618,
+    "backward_gradient": 127.56572402053061,
+    "baseline_window_mean": 16.142734000922214,
+    "baseline_window_sem": 0.5174287509886474,
+    "central_gradient": 121.30411664335658,
+    "condition_number": 66.23443791486385,
+    "fd_asymmetry_rel": 0.1032381678452618,
+    "fd_condition_number": 66.23443791486385,
+    "forward_gradient": 115.04250926618255,
+    "gradient_relative_uncertainty": 1.8277639813619166,
+    "gradient_uncertainty": 221.71529519165176,
+    "gradient_uncertainty_rel": 1.8277639813619166,
+    "minus_window_mean": 15.886631769009893,
+    "minus_window_sem": 0.5347636487423915,
+    "plus_window_mean": 16.373694500806348,
+    "plus_window_sem": 0.7117214857682301,
+    "response": 0.48706273179645443,
+    "response_fraction": 0.030172257795279853
+  },
+  "nonlinear_turbulence_gradient_gate": false,
+  "parameter_name": "rbc_1_1",
+  "passed": false,
+  "production_nonlinear_window_gradient_gate": false,
+  "source_ensembles": {
+    "baseline": {
+      "case": "qa_ess_rbc11_nonlinear_gradient_baseline_replicated_nonlinear_window_ensemble_gate",
+      "combined_sem": 0.5174287509886474,
+      "combined_sem_rel": 0.03205335297968035,
+      "ensemble_mean": 16.142734000922214,
+      "kind": "nonlinear_window_ensemble_report",
+      "mean_rel_spread": 0.05976334650298239,
+      "n_reports": 3,
+      "passed": true,
+      "path": "docs/_static/qa_ess_rbc11_nonlinear_gradient_baseline_replicates/qa_ess_rbc11_nonlinear_gradient_baseline_t900_ensemble_gate.json",
+      "statistics": {
+        "combined_sem": 0.5174287509886474,
+        "combined_sem_rel": 0.03205335297968035,
+        "ensemble_mean": 16.142734000922214,
+        "max_individual_sem": 0.5174287509886474,
+        "mean_rel_spread": 0.05976334650298239,
+        "mean_spread": 0.9647438056025894,
+        "n_finite_means": 3,
+        "n_reports": 3,
+        "sample_sem": 0.2926765577224251
+      }
+    },
+    "minus": {
+      "case": "qa_ess_rbc11_nonlinear_gradient_minus_delta_replicated_nonlinear_window_ensemble_gate",
+      "combined_sem": 0.5347636487423915,
+      "combined_sem_rel": 0.0336612352144749,
+      "ensemble_mean": 15.886631769009893,
+      "kind": "nonlinear_window_ensemble_report",
+      "mean_rel_spread": 0.02766163711760634,
+      "n_reports": 3,
+      "passed": true,
+      "path": "docs/_static/qa_ess_rbc11_nonlinear_gradient_minus_delta_replicates/qa_ess_rbc11_nonlinear_gradient_minus_delta_t900_ensemble_gate.json",
+      "statistics": {
+        "combined_sem": 0.5347636487423915,
+        "combined_sem_rel": 0.0336612352144749,
+        "ensemble_mean": 15.886631769009893,
+        "max_individual_sem": 0.5347636487423915,
+        "mean_rel_spread": 0.02766163711760634,
+        "mean_spread": 0.43945024301538815,
+        "n_finite_means": 3,
+        "n_reports": 3,
+        "sample_sem": 0.13852894612104197
+      }
+    },
+    "plus": {
+      "case": "qa_ess_rbc11_nonlinear_gradient_plus_delta_replicated_nonlinear_window_ensemble_gate",
+      "combined_sem": 0.7117214857682301,
+      "combined_sem_rel": 0.04346737297029576,
+      "ensemble_mean": 16.373694500806348,
+      "kind": "nonlinear_window_ensemble_report",
+      "mean_rel_spread": 0.0653461676311895,
+      "n_reports": 3,
+      "passed": true,
+      "path": "docs/_static/qa_ess_rbc11_nonlinear_gradient_plus_delta_replicates/qa_ess_rbc11_nonlinear_gradient_plus_delta_t900_ensemble_gate.json",
+      "statistics": {
+        "combined_sem": 0.7117214857682301,
+        "combined_sem_rel": 0.04346737297029576,
+        "ensemble_mean": 16.373694500806348,
+        "max_individual_sem": 0.7117214857682301,
+        "mean_rel_spread": 0.0653461676311895,
+        "mean_spread": 1.0699581855915774,
+        "n_finite_means": 3,
+        "n_reports": 3,
+        "sample_sem": 0.32075982005511805
+      }
+    }
+  }
+}

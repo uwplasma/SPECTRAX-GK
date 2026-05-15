@@ -2,23 +2,44 @@
   "blockers": [
     "production_gradient_artifact"
   ],
-  "claim_level": "fail_closed_missing_campaign_plan_not_gradient_evidence",
+  "claim_level": "fail_closed_production_candidate_gradient_gate_not_resolved",
+  "current_gradient_candidate_present": true,
+  "current_gradient_failed_gates": [
+    {
+      "detail": "kind=nonlinear_turbulence_gradient_central_fd_gate",
+      "metric": "artifact_passed"
+    },
+    {
+      "detail": "gradient_uncertainty_rel=1.8277639813619166 max=0.5",
+      "metric": "gradient_uncertainty_bounded"
+    }
+  ],
   "current_window_evidence_passed": true,
   "kind": "nonlinear_turbulence_gradient_evidence_gap_report",
   "missing_evidence": [
     {
       "blocker": "production_gradient_artifact",
-      "current_artifact_class": "startup_or_reduced_window_fd_not_production",
-      "current_artifact_path": "docs/_static/vmec_boozer_nonlinear_window_gradient_gate.json",
-      "needed": "central finite-difference or adjoint/VJP artifact computed from matched long post-transient nonlinear heat-flux windows"
+      "current_artifact_class": "production_long_window_turbulence_gradient_candidate",
+      "current_artifact_path": "docs/_static/qa_ess_rbc11_nonlinear_gradient_rbc_1_1_central_fd_gradient_gate.json",
+      "current_failed_gates": [
+        {
+          "detail": "kind=nonlinear_turbulence_gradient_central_fd_gate",
+          "metric": "artifact_passed"
+        },
+        {
+          "detail": "gradient_uncertainty_rel=1.8277639813619166 max=0.5",
+          "metric": "gradient_uncertainty_bounded"
+        }
+      ],
+      "needed": "the current matched long-window production-candidate finite-difference artifact must pass all recorded response, asymmetry, conditioning, and propagated gradient-uncertainty gates"
     }
   ],
   "notes": "Standalone passed transport windows are necessary but not sufficient: production turbulence-gradient evidence requires paired parameter perturbations tied to the same post-transient averaging protocol.",
   "passed": false,
   "promotion_blocked": true,
-  "qualifying_window_ensemble_count": 2,
+  "qualifying_window_ensemble_count": 3,
   "required_campaign": {
-    "case_slug": "optimized_equilibrium_turbulence_gradient",
+    "case_slug": "qa_ess_rbc11_nonlinear_gradient",
     "finite_difference_audit": {
       "acceptance_gates": {
         "fd_asymmetry_rel_max": 0.5,
@@ -44,27 +65,27 @@
         "plus_window_sem",
         "minus_window_sem"
       ],
-      "required_output": "docs/_static/optimized_equilibrium_turbulence_gradient_vmec_state_control_or_profile_gradient_central_fd_gradient_gate.json"
+      "required_output": "docs/_static/qa_ess_rbc11_nonlinear_gradient_rbc_1_1_central_fd_gradient_gate.json"
     },
-    "parameter_name": "vmec_state_control_or_profile_gradient",
-    "perturbation_fraction": 0.05,
+    "parameter_name": "rbc_1_1",
+    "perturbation_fraction": 0.02,
     "required_runs": [
       {
-        "parameter_multiplier": 0.95,
-        "parameter_name": "vmec_state_control_or_profile_gradient",
+        "parameter_multiplier": 0.98,
+        "parameter_name": "rbc_1_1",
         "replicates": [
           "seed31",
           "seed32",
           "dt0p04"
         ],
-        "required_output": "docs/_static/optimized_equilibrium_turbulence_gradient_minus_delta_replicates/optimized_equilibrium_turbulence_gradient_minus_delta_t700_ensemble_gate.json",
+        "required_output": "docs/_static/qa_ess_rbc11_nonlinear_gradient_minus_delta_replicates/qa_ess_rbc11_nonlinear_gradient_minus_delta_t900_ensemble_gate.json",
         "run_contract": {
           "analysis_window": [
-            350.0,
-            700.0
+            450.0,
+            900.0
           ],
           "minimum_grid": "n64x64x64x40x40",
-          "minimum_tmax": 700.0,
+          "minimum_tmax": 900.0,
           "same_numerics_except_parameter": true,
           "t_start": 0.0
         },
@@ -72,41 +93,41 @@
       },
       {
         "parameter_multiplier": 1.0,
-        "parameter_name": "vmec_state_control_or_profile_gradient",
+        "parameter_name": "rbc_1_1",
         "replicates": [
           "seed31",
           "seed32",
           "dt0p04"
         ],
-        "required_output": "docs/_static/optimized_equilibrium_turbulence_gradient_baseline_replicates/optimized_equilibrium_turbulence_gradient_baseline_t700_ensemble_gate.json",
+        "required_output": "docs/_static/qa_ess_rbc11_nonlinear_gradient_baseline_replicates/qa_ess_rbc11_nonlinear_gradient_baseline_t900_ensemble_gate.json",
         "run_contract": {
           "analysis_window": [
-            350.0,
-            700.0
+            450.0,
+            900.0
           ],
           "minimum_grid": "n64x64x64x40x40",
-          "minimum_tmax": 700.0,
+          "minimum_tmax": 900.0,
           "same_numerics_except_parameter": true,
           "t_start": 0.0
         },
         "state": "baseline"
       },
       {
-        "parameter_multiplier": 1.05,
-        "parameter_name": "vmec_state_control_or_profile_gradient",
+        "parameter_multiplier": 1.02,
+        "parameter_name": "rbc_1_1",
         "replicates": [
           "seed31",
           "seed32",
           "dt0p04"
         ],
-        "required_output": "docs/_static/optimized_equilibrium_turbulence_gradient_plus_delta_replicates/optimized_equilibrium_turbulence_gradient_plus_delta_t700_ensemble_gate.json",
+        "required_output": "docs/_static/qa_ess_rbc11_nonlinear_gradient_plus_delta_replicates/qa_ess_rbc11_nonlinear_gradient_plus_delta_t900_ensemble_gate.json",
         "run_contract": {
           "analysis_window": [
-            350.0,
-            700.0
+            450.0,
+            900.0
           ],
           "minimum_grid": "n64x64x64x40x40",
-          "minimum_tmax": 700.0,
+          "minimum_tmax": 900.0,
           "same_numerics_except_parameter": true,
           "t_start": 0.0
         },

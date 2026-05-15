@@ -280,19 +280,17 @@ Quasilinear model-selection state:
   nonlinear turbulence-gradient claim gate. The tracked
   ``docs/_static/nonlinear_turbulence_gradient_evidence_status.json`` artifact
   passes the replicated long-window uncertainty side but fails closed on the
-  gradient side because the available VMEC/Boozer nonlinear-gradient artifacts
-  are startup/reduced-window diagnostics, not production transport-gradient
-  evidence. The companion
-  ``docs/_static/nonlinear_turbulence_gradient_evidence_gap_report.json`` makes
-  the missing evidence concrete: run matched ``baseline``, ``plus_delta``, and
-  ``minus_delta`` nonlinear campaigns for the same parameter with identical
-  numerics except the perturbation, use the same ``seed31``, ``seed32``, and
-  ``dt0p04`` replicate labels, integrate to at least ``t=700``, average only
-  over ``t=[350,700]``, and write a production central finite-difference audit
-  containing ``central_gradient``, ``response_fraction``, ``fd_asymmetry_rel``,
-  ``fd_condition_number``, and ``gradient_uncertainty_rel``. Until those paired
-  post-transient artifacts pass, nonlinear turbulence-gradient evidence remains
-  explicitly unpromoted.
+  gradient side. The current tracked production-candidate artifact is the
+  re-equilibrated optimized QA/ESS ``RBC(1,1)`` campaign at ``t=[450,900]``:
+  all baseline/plus/minus replicated nonlinear windows pass, the finite
+  difference has bounded response fraction, forward/backward asymmetry, and
+  subtraction condition number, but ``gradient_uncertainty_rel = 1.83`` exceeds
+  the ``0.5`` gate. The companion
+  ``docs/_static/nonlinear_turbulence_gradient_evidence_gap_report.json`` now
+  records this as a failed production-candidate gate, not as a missing campaign.
+  Until a paired post-transient artifact passes all response, asymmetry,
+  conditioning, and propagated uncertainty gates, nonlinear turbulence-gradient
+  evidence remains explicitly unpromoted.
 - ``tools/build_nonlinear_turbulence_gradient_fd_gate.py`` is the paired
   long-window promotion builder for that missing evidence. It takes the
   finished ``baseline``, ``plus_delta``, and ``minus_delta`` replicated

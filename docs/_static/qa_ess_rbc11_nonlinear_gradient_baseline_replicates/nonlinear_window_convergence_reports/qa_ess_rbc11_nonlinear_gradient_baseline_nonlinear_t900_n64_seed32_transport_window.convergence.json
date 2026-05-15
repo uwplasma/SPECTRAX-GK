@@ -1,0 +1,148 @@
+{
+  "case": "qa_ess_rbc11_nonlinear_gradient_baseline_replicated_nonlinear_window",
+  "claim_level": "nonlinear_holdout_window_metadata_not_simulation_claim",
+  "config": {
+    "block_size": null,
+    "bootstrap_samples": 256,
+    "bootstrap_seed": 0,
+    "max_running_mean_rel_drift": 0.2,
+    "max_sem_rel": 0.3,
+    "max_terminal_mean_rel_delta": 0.15,
+    "min_blocks": 4,
+    "min_samples": 24,
+    "min_terminal_samples": 8,
+    "require_all_finite": true,
+    "terminal_fraction": 0.25,
+    "tmax": 900.0,
+    "tmin": 450.0,
+    "transient_fraction": 0.5,
+    "value_floor": 1e-12
+  },
+  "gate_report": {
+    "case": "qa_ess_rbc11_nonlinear_gradient_baseline_replicated_nonlinear_window",
+    "gates": [
+      {
+        "detail": "finite=182 nonfinite=0 late=182",
+        "metric": "finite_late_window",
+        "passed": true
+      },
+      {
+        "detail": "finite_late_samples=182 min_samples=24",
+        "metric": "finite_sample_count",
+        "passed": true
+      },
+      {
+        "detail": "n_blocks=13 min_blocks=4",
+        "metric": "minimum_block_count",
+        "passed": true
+      },
+      {
+        "detail": "running_mean_rel_drift=0.07541928738809897 gate=0.2",
+        "metric": "running_mean_drift",
+        "passed": true
+      },
+      {
+        "detail": "terminal_samples=46 min_terminal_samples=8",
+        "metric": "terminal_sample_count",
+        "passed": true
+      },
+      {
+        "detail": "terminal_mean_rel_delta=0.09482905981391905 gate=0.15 terminal_fraction=0.25",
+        "metric": "terminal_mean_agreement",
+        "passed": true
+      },
+      {
+        "detail": "sem_rel=0.025478844165388592 gate=0.3",
+        "metric": "block_bootstrap_sem",
+        "passed": true
+      }
+    ],
+    "max_abs_error": 0.0,
+    "max_rel_error": 0.0,
+    "passed": true,
+    "source": "docs/_static/qa_ess_rbc11_nonlinear_gradient_baseline_replicates/qa_ess_rbc11_nonlinear_gradient_baseline_nonlinear_t900_n64_seed32_heat_flux_trace.csv"
+  },
+  "gates": [
+    {
+      "detail": "finite=182 nonfinite=0 late=182",
+      "metric": "finite_late_window",
+      "passed": true
+    },
+    {
+      "detail": "finite_late_samples=182 min_samples=24",
+      "metric": "finite_sample_count",
+      "passed": true
+    },
+    {
+      "detail": "n_blocks=13 min_blocks=4",
+      "metric": "minimum_block_count",
+      "passed": true
+    },
+    {
+      "detail": "running_mean_rel_drift=0.07541928738809897 gate=0.2",
+      "metric": "running_mean_drift",
+      "passed": true
+    },
+    {
+      "detail": "terminal_samples=46 min_terminal_samples=8",
+      "metric": "terminal_sample_count",
+      "passed": true
+    },
+    {
+      "detail": "terminal_mean_rel_delta=0.09482905981391905 gate=0.15 terminal_fraction=0.25",
+      "metric": "terminal_mean_agreement",
+      "passed": true
+    },
+    {
+      "detail": "sem_rel=0.025478844165388592 gate=0.3",
+      "metric": "block_bootstrap_sem",
+      "passed": true
+    }
+  ],
+  "kind": "nonlinear_window_convergence_report",
+  "observable": "heat_flux",
+  "passed": true,
+  "provenance": {
+    "observable_column": "heat_flux",
+    "source_artifact": "docs/_static/qa_ess_rbc11_nonlinear_gradient_baseline_replicates/qa_ess_rbc11_nonlinear_gradient_baseline_nonlinear_t900_n64_seed32_heat_flux_trace.csv",
+    "summary_artifact": "docs/_static/qa_ess_rbc11_nonlinear_gradient_baseline_replicates/qa_ess_rbc11_nonlinear_gradient_baseline_nonlinear_t900_n64_seed32_transport_window.json",
+    "time_column": "t"
+  },
+  "statistics": {
+    "block_bootstrap_sem": 0.41001063690888756,
+    "block_sem": 0.42129557297351955,
+    "block_size": 14,
+    "bootstrap_samples": 256,
+    "bootstrap_seed": 0,
+    "first_half_mean": 17.158646447318684,
+    "late_mean": 16.535113219375276,
+    "late_std": 1.7521351446932685,
+    "n_blocks": 13,
+    "running_mean_drift": 1.2470664558868183,
+    "running_mean_rel_drift": 0.07541928738809897,
+    "sample_sem": 0.13023517964844383,
+    "second_half_mean": 15.911579991431866,
+    "sem": 0.42129557297351955,
+    "sem_rel": 0.025478844165388592,
+    "terminal_mean": 14.967103978865214,
+    "terminal_mean_delta": 1.5680092405100616,
+    "terminal_mean_rel_delta": 0.09482905981391905,
+    "terminal_n_samples": 46,
+    "terminal_tmax": 897.581726074,
+    "terminal_tmin": 785.074890137
+  },
+  "window": {
+    "input_tmax": 900.0,
+    "input_tmin": 450.0,
+    "late_tmax": 897.581726074,
+    "late_tmin": 450.013641357,
+    "n_finite_late": 182,
+    "n_late": 182,
+    "n_nonfinite_late": 0,
+    "n_total": 365,
+    "selected_tmax": 900.0,
+    "selected_tmin": 450.0,
+    "transient_cutoff": 450.0,
+    "transient_fraction": 0.5
+  }
+}
