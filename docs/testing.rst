@@ -297,6 +297,13 @@ NetCDF-to-evidence wrapper: it extracts heat-flux traces from finished
 ``*.out.nc`` files, writes the transport-window summaries and convergence
 reports, runs the readiness and ensemble gates, and produces the documentation
 figure used by the manuscript ledger.
+Before those files enter the ensemble builder, run
+``tools/check_nonlinear_runtime_outputs.py`` on every produced ``*.out.nc``.
+That gate verifies the grouped NetCDF contains ``Grids/time`` and the requested
+heat-flux diagnostic, checks finite monotone time samples, enforces optional
+``tmin/tmax`` coverage, and fails closed for restart-only or metadata-only
+artifacts. It is the first campaign-level smoke check after a long office GPU
+batch exits with ``rc=0``.
 ``tools/check_production_nonlinear_optimization_guard.py`` then consumes those
 replicated long-window ensembles together with the reduced optimization and
 startup finite-difference artifacts. It is the fail-closed check that allows

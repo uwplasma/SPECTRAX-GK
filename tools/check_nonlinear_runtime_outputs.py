@@ -1,0 +1,230 @@
+#!/usr/bin/env python3
+"""Fail-closed validation for nonlinear runtime NetCDF diagnostics.
+
+This tool is intentionally lightweight: it checks that a completed nonlinear
+``.out.nc`` file contains the time axis and heat-flux diagnostics required by
+the long-window transport and nonlinear-gradient gates before larger campaign
+steps consume the artifact.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+
+
+DEFAULT_HEAT_FLUX_VARIABLE = "Diagnostics/HeatFlux_st"
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("outputs", nargs="+", type=Path, help="Nonlinear runtime .out.nc files")
+    parser.add_argument("--json-out", type=Path, help="Optional JSON report path")
+    parser.add_argument("--heat-flux-variable", default=DEFAULT_HEAT_FLUX_VARIABLE)
+    parser.add_argument("--min-samples", type=int, default=2)
+    parser.add_argument("--tmin", type=float, default=None, help="Optional required analysis-window start")
+    parser.add_argument("--tmax", type=float, default=None, help="Optional required analysis-window end")
+    parser.add_argument(
+        "--min-window-samples",
+        type=int,
+        default=None,
+        help="Minimum samples inside [tmin,tmax]; defaults to --min-samples when a window is requested.",
+    )
+    parser.add_argument(
+        "--min-abs-window-mean",
+        type=float,
+        default=None,
+        help="Optional fail-closed lower bound on |mean heat flux| in the requested window.",
+    )
+    return parser
+
+
+def _write_json(path: Path, payload: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _netcdf_variable(root: Any, variable_path: str) -> np.ndarray:
+    group = root
+    parts = variable_path.split("/")
+    for part in parts[:-1]:
+        if part not in group.groups:
+            raise KeyError(f"missing NetCDF group {part!r} in {variable_path!r}")
+        group = group.groups[part]
+    name = parts[-1]
+    if name not in group.variables:
+        raise KeyError(f"missing NetCDF variable {name!r} in {variable_path!r}")
+    return np.asarray(group.variables[name][:], dtype=float)
+
+
+def _window_mask(time: np.ndarray, *, tmin: float | None, tmax: float | None) -> np.ndarray:
+    mask = np.isfinite(time)
+    if tmin is not None:
+        mask &= time >= float(tmin)
+    if tmax is not None:
+        mask &= time <= float(tmax)
+    return mask
+
+
+def validate_output(
+    path: Path,
+    *,
+    heat_flux_variable: str = DEFAULT_HEAT_FLUX_VARIABLE,
+    min_samples: int = 2,
+    tmin: float | None = None,
+    tmax: float | None = None,
+    min_window_samples: int | None = None,
+    min_abs_window_mean: float | None = None,
+) -> dict[str, Any]:
+    row: dict[str, Any] = {
+        "path": path.as_posix(),
+        "passed": False,
+        "failures": [],
+        "warnings": [],
+    }
+    failures = row["failures"]
+    warnings = row["warnings"]
+    if not path.exists():
+        failures.append("missing_output_file")
+        return row
+
+    try:
+        import netCDF4
+    except Exception as exc:  # pragma: no cover - dependency is in pyproject
+        failures.append(f"netcdf4_unavailable:{type(exc).__name__}")
+        return row
+
+    try:
+        with netCDF4.Dataset(path) as root:
+            time = _netcdf_variable(root, "Grids/time").reshape(-1)
+            heat = _netcdf_variable(root, heat_flux_variable)
+    except Exception as exc:
+        failures.append(f"read_error:{type(exc).__name__}:{exc}")
+        return row
+
+    row["samples"] = int(time.size)
+    row["heat_flux_shape"] = list(heat.shape)
+    row["time_min"] = float(np.nanmin(time)) if time.size else None
+    row["time_max"] = float(np.nanmax(time)) if time.size else None
+
+    if time.size < int(min_samples):
+        failures.append("too_few_time_samples")
+    if time.size and not bool(np.all(np.isfinite(time))):
+        failures.append("nonfinite_time")
+    if time.size > 1 and bool(np.any(np.diff(time) <= 0.0)):
+        failures.append("nonmonotone_time")
+    if heat.ndim == 0:
+        failures.append("scalar_heat_flux_variable")
+        heat_total = np.asarray([], dtype=float)
+    elif heat.shape[0] != time.size:
+        failures.append("heat_flux_time_dimension_mismatch")
+        heat_total = np.asarray([], dtype=float)
+    else:
+        heat_total = heat.reshape((time.size, -1)).sum(axis=1)
+        if not bool(np.all(np.isfinite(heat_total))):
+            failures.append("nonfinite_heat_flux")
+        row["heat_flux_min"] = float(np.nanmin(heat_total)) if heat_total.size else None
+        row["heat_flux_max"] = float(np.nanmax(heat_total)) if heat_total.size else None
+        row["heat_flux_last"] = float(heat_total[-1]) if heat_total.size else None
+
+    if tmax is not None and (not time.size or float(np.nanmax(time)) < float(tmax)):
+        failures.append("does_not_reach_required_tmax")
+
+    if tmin is not None or tmax is not None:
+        required_window_samples = (
+            int(min_window_samples)
+            if min_window_samples is not None
+            else int(min_samples)
+        )
+        mask = _window_mask(time, tmin=tmin, tmax=tmax)
+        window_heat = heat_total[mask] if heat_total.size else np.asarray([], dtype=float)
+        row["window"] = {
+            "tmin": None if tmin is None else float(tmin),
+            "tmax": None if tmax is None else float(tmax),
+            "samples": int(window_heat.size),
+            "mean_heat_flux": float(np.mean(window_heat)) if window_heat.size else None,
+            "sem_heat_flux": (
+                float(np.std(window_heat, ddof=1) / np.sqrt(window_heat.size))
+                if window_heat.size > 1
+                else None
+            ),
+        }
+        if window_heat.size < required_window_samples:
+            failures.append("too_few_window_samples")
+        if window_heat.size and min_abs_window_mean is not None:
+            mean_abs = abs(float(np.mean(window_heat)))
+            if mean_abs < float(min_abs_window_mean):
+                failures.append("window_mean_heat_flux_below_threshold")
+        if window_heat.size and abs(float(np.mean(window_heat))) < 1.0e-12:
+            warnings.append("near_zero_window_mean_heat_flux")
+
+    row["passed"] = len(failures) == 0
+    return row
+
+
+def check_outputs(
+    outputs: list[Path],
+    *,
+    heat_flux_variable: str,
+    min_samples: int,
+    tmin: float | None,
+    tmax: float | None,
+    min_window_samples: int | None,
+    min_abs_window_mean: float | None,
+) -> dict[str, Any]:
+    rows = [
+        validate_output(
+            output,
+            heat_flux_variable=heat_flux_variable,
+            min_samples=min_samples,
+            tmin=tmin,
+            tmax=tmax,
+            min_window_samples=min_window_samples,
+            min_abs_window_mean=min_abs_window_mean,
+        )
+        for output in outputs
+    ]
+    passed = all(bool(row["passed"]) for row in rows)
+    return {
+        "kind": "nonlinear_runtime_output_diagnostics_gate",
+        "passed": passed,
+        "heat_flux_variable": heat_flux_variable,
+        "config": {
+            "min_samples": int(min_samples),
+            "tmin": None if tmin is None else float(tmin),
+            "tmax": None if tmax is None else float(tmax),
+            "min_window_samples": min_window_samples,
+            "min_abs_window_mean": min_abs_window_mean,
+        },
+        "summary": {
+            "outputs": len(rows),
+            "passed": sum(1 for row in rows if bool(row["passed"])),
+            "failed": sum(1 for row in rows if not bool(row["passed"])),
+        },
+        "rows": rows,
+    }
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
+    payload = check_outputs(
+        args.outputs,
+        heat_flux_variable=str(args.heat_flux_variable),
+        min_samples=int(args.min_samples),
+        tmin=args.tmin,
+        tmax=args.tmax,
+        min_window_samples=args.min_window_samples,
+        min_abs_window_mean=args.min_abs_window_mean,
+    )
+    if args.json_out is not None:
+        _write_json(args.json_out, payload)
+    print(json.dumps(payload["summary"], indent=2, sort_keys=True))
+    return 0 if bool(payload["passed"]) else 1
+
+
+if __name__ == "__main__":  # pragma: no cover
+    raise SystemExit(main())
