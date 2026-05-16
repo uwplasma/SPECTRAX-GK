@@ -757,6 +757,15 @@ def test_gradient_campaign_writer_creates_matched_state_run_contract(tmp_path: P
     central_fd_command = manifest["promotion_contract"]["central_fd_command"]
     assert "--baseline docs/_static/qa_gradient_baseline_replicates" in central_fd_command
     assert "--fail-on-blocked" in manifest["promotion_contract"]["evidence_check_command"]
+    baseline_commands = manifest["state_ensemble_commands"]["baseline"]
+    assert baseline_commands["direct_full_horizon_step_counts"] == {
+        "dt0p04": 50,
+        "seed31": 40,
+    }
+    assert any("--steps 40" in command for command in baseline_commands["direct_full_horizon_launch_commands"])
+    assert "check_nonlinear_runtime_outputs.py" in baseline_commands["output_gate_command"]
+    assert "--tmin 1 --tmax 2" in baseline_commands["output_gate_command"]
+    assert "restart-ladder segments" in baseline_commands["restart_ladder_note"]
 
 
 def test_gradient_campaign_writer_fails_closed_on_duplicate_vmec_paths(tmp_path: Path) -> None:

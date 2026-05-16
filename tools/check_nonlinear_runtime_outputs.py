@@ -29,6 +29,16 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--tmin", type=float, default=None, help="Optional required analysis-window start")
     parser.add_argument("--tmax", type=float, default=None, help="Optional required analysis-window end")
     parser.add_argument(
+        "--tmax-atol",
+        type=float,
+        default=None,
+        help=(
+            "Absolute tolerance for the required tmax coverage check. The default "
+            "uses a fraction of the saved diagnostic cadence to tolerate fixed-step "
+            "float32 accumulation roundoff."
+        ),
+    )
+    parser.add_argument(
         "--min-window-samples",
         type=int,
         default=None,
@@ -70,6 +80,19 @@ def _window_mask(time: np.ndarray, *, tmin: float | None, tmax: float | None) ->
     return mask
 
 
+def _resolved_tmax_atol(time: np.ndarray, requested: float | None) -> float:
+    if requested is not None:
+        return max(float(requested), 0.0)
+    finite = np.asarray(time[np.isfinite(time)], dtype=float)
+    if finite.size < 2:
+        return 1.0e-6
+    positive_diffs = np.diff(finite)
+    positive_diffs = positive_diffs[positive_diffs > 0.0]
+    if positive_diffs.size == 0:
+        return 1.0e-6
+    return min(1.0, max(1.0e-6, 0.25 * float(np.median(positive_diffs))))
+
+
 def validate_output(
     path: Path,
     *,
@@ -77,6 +100,7 @@ def validate_output(
     min_samples: int = 2,
     tmin: float | None = None,
     tmax: float | None = None,
+    tmax_atol: float | None = None,
     min_window_samples: int | None = None,
     min_abs_window_mean: float | None = None,
 ) -> dict[str, Any]:
@@ -110,6 +134,7 @@ def validate_output(
     row["heat_flux_shape"] = list(heat.shape)
     row["time_min"] = float(np.nanmin(time)) if time.size else None
     row["time_max"] = float(np.nanmax(time)) if time.size else None
+    row["tmax_atol"] = _resolved_tmax_atol(time, tmax_atol)
 
     if time.size < int(min_samples):
         failures.append("too_few_time_samples")
@@ -131,7 +156,10 @@ def validate_output(
         row["heat_flux_max"] = float(np.nanmax(heat_total)) if heat_total.size else None
         row["heat_flux_last"] = float(heat_total[-1]) if heat_total.size else None
 
-    if tmax is not None and (not time.size or float(np.nanmax(time)) < float(tmax)):
+    if tmax is not None and (
+        not time.size
+        or float(np.nanmax(time)) + float(row["tmax_atol"]) < float(tmax)
+    ):
         failures.append("does_not_reach_required_tmax")
 
     if tmin is not None or tmax is not None:
@@ -173,6 +201,7 @@ def check_outputs(
     min_samples: int,
     tmin: float | None,
     tmax: float | None,
+    tmax_atol: float | None,
     min_window_samples: int | None,
     min_abs_window_mean: float | None,
 ) -> dict[str, Any]:
@@ -183,6 +212,7 @@ def check_outputs(
             min_samples=min_samples,
             tmin=tmin,
             tmax=tmax,
+            tmax_atol=tmax_atol,
             min_window_samples=min_window_samples,
             min_abs_window_mean=min_abs_window_mean,
         )
@@ -197,6 +227,7 @@ def check_outputs(
             "min_samples": int(min_samples),
             "tmin": None if tmin is None else float(tmin),
             "tmax": None if tmax is None else float(tmax),
+            "tmax_atol": tmax_atol,
             "min_window_samples": min_window_samples,
             "min_abs_window_mean": min_abs_window_mean,
         },
@@ -217,6 +248,7 @@ def main(argv: list[str] | None = None) -> int:
         min_samples=int(args.min_samples),
         tmin=args.tmin,
         tmax=args.tmax,
+        tmax_atol=args.tmax_atol,
         min_window_samples=args.min_window_samples,
         min_abs_window_mean=args.min_abs_window_mean,
     )

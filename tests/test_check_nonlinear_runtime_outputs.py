@@ -73,6 +73,7 @@ def test_check_outputs_reports_required_window_failures(tmp_path: Path) -> None:
         min_samples=2,
         tmin=20.0,
         tmax=30.0,
+        tmax_atol=None,
         min_window_samples=2,
         min_abs_window_mean=None,
     )
@@ -83,6 +84,32 @@ def test_check_outputs_reports_required_window_failures(tmp_path: Path) -> None:
         "does_not_reach_required_tmax",
         "too_few_window_samples",
     }.issubset(set(payload["rows"][0]["failures"]))
+
+
+def test_validate_output_tolerates_fixed_step_time_roundoff(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    out = tmp_path / "rounded.out.nc"
+    _write_nonlinear_output(
+        out,
+        time=np.asarray([896.0, 898.0, 899.99]),
+        heat=np.asarray([2.0, 2.1, 2.2]),
+    )
+
+    row = mod.validate_output(out, min_samples=3, tmin=896.0, tmax=900.0)
+
+    assert row["passed"] is True
+    assert row["tmax_atol"] == pytest.approx(0.25 * np.median([2.0, 1.99]))
+
+
+def test_validate_output_can_enforce_strict_tmax_tolerance(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    out = tmp_path / "rounded.out.nc"
+    _write_nonlinear_output(out, time=np.asarray([0.0, 2.0, 899.99]), heat=np.ones(3))
+
+    row = mod.validate_output(out, min_samples=3, tmax=900.0, tmax_atol=1.0e-4)
+
+    assert row["passed"] is False
+    assert "does_not_reach_required_tmax" in row["failures"]
 
 
 def test_main_writes_json_and_exit_code(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:

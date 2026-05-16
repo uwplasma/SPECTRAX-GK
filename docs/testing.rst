@@ -320,7 +320,12 @@ baseline/plus/minus VMEC launch ladders and replay commands. The campaign
 writer rejects missing files, duplicate resolved paths, and byte-identical VMEC
 contents unless ``--allow-identical-vmec-content`` is explicitly used for a
 plumbing-only smoke test; production evidence therefore requires real
-re-equilibrated perturbation files. Then use
+``wout`` files. The generated TOMLs are restart-ladder segments: a final
+``t=900`` config only advances the last segment unless the earlier restart
+artifacts have been seeded. The manifest therefore records
+``direct_full_horizon_launch_commands`` for one-shot final-horizon campaigns
+and an ``output_gate_command`` that must pass before ensemble evidence is built.
+Then use
 ``tools/build_nonlinear_turbulence_gradient_fd_gate.py`` after the matched
 ``baseline``/``plus_delta``/``minus_delta`` ensembles finish. The builder writes
 the central finite-difference gradient sidecar and checks response resolution,

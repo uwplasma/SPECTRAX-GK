@@ -133,7 +133,9 @@ def _state_ensemble_command(
     grid_label: str,
     tmin: float,
     tmax: float,
+    baseline_dt: float,
     seed_variants: tuple[int, ...],
+    dt_variant: float,
     dt_variant_label: str,
 ) -> dict[str, Any]:
     state_case = f"{case}_{state}"
@@ -143,6 +145,19 @@ def _state_ensemble_command(
         for seed in seed_variants
     ]
     inputs.append(_expected_output(state_out_dir, state_case, tmax, grid_label, dt_variant_label))
+    variants = [(f"seed{seed}", float(baseline_dt)) for seed in seed_variants]
+    variants.append((dt_variant_label, float(dt_variant)))
+    direct_full_horizon_step_counts = {
+        label: int(round(float(tmax) / dt)) for label, dt in variants
+    }
+    direct_full_horizon_launch_commands = [
+        (
+            "python3 -m spectraxgk.cli run-runtime-nonlinear "
+            f"--config {_repo_relative(_expected_output(state_out_dir, state_case, tmax, grid_label, label).with_suffix('').with_suffix('.toml'))} "
+            f"--steps {steps} --no-progress"
+        )
+        for label, steps in direct_full_horizon_step_counts.items()
+    ]
     ensemble_json = f"{case}_{state}_t{_horizon_label(tmax)}_ensemble_gate.json"
     readiness_json = f"{case}_{state}_readiness.json"
     ensemble_png = f"{case}_{state}_t{_horizon_label(tmax)}_ensemble_gate.png"
@@ -157,6 +172,14 @@ def _state_ensemble_command(
         + f" --ensemble-json {ensemble_json}"
         + f" --out-png {ensemble_png}"
     )
+    output_gate_json = f"{case}_{state}_t{_horizon_label(tmax)}_output_gate.json"
+    output_gate_command = (
+        "python tools/check_nonlinear_runtime_outputs.py "
+        + " ".join(_repo_relative(path) for path in inputs)
+        + f" --min-samples 200 --tmin {tmin:.12g} --tmax {tmax:.12g}"
+        + " --min-window-samples 80 --min-abs-window-mean 1e-4"
+        + f" --json-out {_repo_relative(ensemble_dir / output_gate_json)}"
+    )
     return {
         "state": state,
         "expected_outputs": [_repo_relative(path) for path in inputs],
@@ -164,6 +187,16 @@ def _state_ensemble_command(
         "readiness_json": _repo_relative(ensemble_dir / readiness_json),
         "ensemble_png": _repo_relative(ensemble_dir / ensemble_png),
         "build_ensemble_command": command,
+        "output_gate_json": _repo_relative(ensemble_dir / output_gate_json),
+        "output_gate_command": output_gate_command,
+        "direct_full_horizon_step_counts": direct_full_horizon_step_counts,
+        "direct_full_horizon_launch_commands": direct_full_horizon_launch_commands,
+        "restart_ladder_note": (
+            "The generated TOMLs are restart-ladder segments. To run only the final "
+            "tmax TOMLs without first executing and seeding the earlier horizons, "
+            "use the direct_full_horizon_launch_commands so the CLI overrides "
+            "[run].steps with tmax/dt."
+        ),
     }
 
 
@@ -286,7 +319,9 @@ def main(argv: list[str] | None = None) -> int:
             grid_label=grids[0].label,
             tmin=float(args.window_tmin),
             tmax=float(args.window_tmax),
+            baseline_dt=float(args.dt),
             seed_variants=seed_variants,
+            dt_variant=float(args.dt_variant),
             dt_variant_label=dt_variant_label,
         )
 
