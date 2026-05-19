@@ -200,6 +200,42 @@ def test_objective_portfolio_rejects_invalid_shape_and_weights() -> None:
     with pytest.raises(ValueError, match="max reduction"):
         aggregate_objective_portfolio(rows, sample_weights=jnp.ones((2, 2, 2)), reduction="max")
 
+    with pytest.raises(TypeError, match="real numeric"):
+        aggregate_objective_portfolio(jnp.ones((1, 1, 1, 1), dtype=jnp.complex64))
+
+    with pytest.raises(ValueError, match="params"):
+        objective_portfolio_sensitivity_report(lambda _p: rows, jnp.ones((1, 1)))
+
+
+def test_objective_portfolio_mean_and_max_reductions_are_explicit() -> None:
+    rows = jnp.asarray(
+        [
+            [[1.0, 2.0], [3.0, 4.0]],
+            [[5.0, 6.0], [7.0, 8.0]],
+        ]
+    ).reshape((2, 2, 1, 2))
+
+    mean_contract = validate_objective_portfolio_contract(rows, reduction="mean")
+    max_contract = validate_objective_portfolio_contract(
+        rows,
+        objective_weights=jnp.asarray([1.0, 3.0]),
+        reduction="max",
+    )
+
+    assert mean_contract.reduction == "mean"
+    assert max_contract.reduction == "max"
+    np.testing.assert_allclose(float(aggregate_objective_portfolio(rows, reduction="mean")), 4.5)
+    np.testing.assert_allclose(
+        float(
+            aggregate_objective_portfolio(
+                rows,
+                objective_weights=jnp.asarray([1.0, 3.0]),
+                reduction="max",
+            )
+        ),
+        7.75,
+    )
+
 
 def test_objective_portfolio_helpers_are_exported_at_package_top_level() -> None:
     import spectraxgk as sgk

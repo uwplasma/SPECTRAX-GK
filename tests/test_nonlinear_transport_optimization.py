@@ -4,8 +4,14 @@ import importlib.util
 import json
 from pathlib import Path
 
+import pytest
+
 from spectraxgk.nonlinear_transport_optimization import (
+    ProductionNonlinearOptimizationGuardConfig,
+    optimized_equilibrium_transport_report,
     production_nonlinear_optimization_guard_report,
+    reduced_artifact_scope_report,
+    replicated_transport_ensemble_report,
 )
 
 
@@ -162,3 +168,71 @@ def test_production_nonlinear_guard_tool_writes_artifacts(tmp_path: Path) -> Non
     assert out_png.exists()
     assert payload["safe_to_release"] is True
     assert payload["production_nonlinear_optimization_promoted"] is False
+
+
+def test_replicated_transport_report_fails_closed_on_unscoped_or_noisy_payloads() -> None:
+    noisy = _ensemble_payload(mean=3.0)
+    noisy["claim_level"] = "replicated nonlinear window without required scope"
+    noisy["statistics"] = {
+        "n_reports": 1,
+        "ensemble_mean": 0.0,
+        "mean_rel_spread": 0.6,
+        "combined_sem_rel": 0.8,
+    }
+
+    report = replicated_transport_ensemble_report(
+        "noisy.json",
+        noisy,
+        config=ProductionNonlinearOptimizationGuardConfig(
+            min_reports_per_ensemble=2,
+            max_mean_rel_spread=0.15,
+            max_combined_sem_rel=0.25,
+        ),
+    )
+
+    assert report["qualifies_as_long_post_transient_replicate"] is False
+    assert report["claim_scoped_as_replicated_holdout"] is False
+    assert report["finite_transport_mean"] is False
+    assert report["mean_rel_spread_ok"] is False
+    assert report["combined_sem_rel_ok"] is False
+    assert report["report_count_ok"] is False
+
+
+def test_optimized_equilibrium_marker_and_reduced_scope_reports_are_fail_closed() -> None:
+    optimized = optimized_equilibrium_transport_report(
+        "post_optimization_transport.json",
+        _ensemble_payload(case="final"),
+    )
+    nonoptimized = optimized_equilibrium_transport_report("baseline.json", _ensemble_payload(case="baseline"))
+    reduced = reduced_artifact_scope_report("startup.json", _startup_payload())
+    unsafe = reduced_artifact_scope_report(
+        "unsafe.json",
+        {
+            "kind": "optimized_equilibrium_nonlinear_transport_window",
+            "passed": True,
+            "production_nonlinear_optimization_claim": True,
+            "transport_average_gate": False,
+        },
+    )
+
+    assert optimized["optimized_equilibrium_marker"] is True
+    assert optimized["qualifies_for_production_optimization"] is True
+    assert nonoptimized["optimized_equilibrium_marker"] is False
+    assert nonoptimized["qualifies_for_production_optimization"] is False
+    assert reduced["safely_blocked_from_production"] is True
+    assert unsafe["claims_production"] is True
+    assert unsafe["safely_blocked_from_production"] is False
+
+
+def test_production_nonlinear_guard_config_validation() -> None:
+    invalid_configs = [
+        ProductionNonlinearOptimizationGuardConfig(min_replicated_ensembles=0),
+        ProductionNonlinearOptimizationGuardConfig(min_reports_per_ensemble=1),
+        ProductionNonlinearOptimizationGuardConfig(max_mean_rel_spread=-1.0),
+        ProductionNonlinearOptimizationGuardConfig(max_combined_sem_rel=-1.0),
+        ProductionNonlinearOptimizationGuardConfig(value_floor=0.0),
+    ]
+
+    for cfg in invalid_configs:
+        with pytest.raises(ValueError):
+            cfg.validate()
