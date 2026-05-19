@@ -335,6 +335,14 @@ Quasilinear model-selection state:
   ``ZBS(1,0)``, and ``RBC(1,1)`` controls at 3% relative amplitude with the
   same ``t=[450,900]`` analysis window. This artifact is planning/provenance
   only; it does not promote a nonlinear turbulence-gradient claim.
+- ``tools/check_overdetermined_nonlinear_gradient_campaign.py`` and
+  ``tools/run_overdetermined_nonlinear_gradient_campaign.py`` make that
+  launch contract executable. The current status artifact,
+  ``docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_status.json``,
+  records that all three VMEC-JAX re-equilibrated controls are ready for
+  runtime, but none has completed the required nine long-window nonlinear
+  outputs or central-FD/ranking gates yet. This keeps the broader gradient
+  claim blocked until real post-transient outputs exist.
 - ``tools/write_vmec_boundary_profile_perturbation_inputs.py`` writes a
   launch-contract for a smoother composite VMEC boundary direction. The
   tracked

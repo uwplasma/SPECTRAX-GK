@@ -87,6 +87,14 @@ def _nonlinear_campaign_command(
     return command
 
 
+def _expected_nonlinear_campaign_manifest(
+    *,
+    campaign_out_dir: Path,
+    coefficient: CoefficientSpec,
+) -> Path:
+    return campaign_out_dir / _coefficient_slug(coefficient) / "gradient_campaign_manifest.json"
+
+
 def _load_previous_ranking(path: Path | None) -> dict[str, Any] | None:
     if path is None:
         return None
@@ -170,6 +178,12 @@ def write_overdetermined_campaign(
                     seed_variants=seed_variants,
                     nl=nl,
                     nm=nm,
+                ),
+                "expected_nonlinear_campaign_manifest": _repo_relative(
+                    _expected_nonlinear_campaign_manifest(
+                        campaign_out_dir=campaign_root,
+                        coefficient=coefficient,
+                    )
                 ),
                 "expected_fd_artifact": _repo_relative(fd_json),
             }

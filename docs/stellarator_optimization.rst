@@ -902,6 +902,14 @@ It starts from the same optimized-QA/ESS VMEC input and writes matched
 ``RBC(1,1)`` at 3% relative amplitude, followed by identical
 ``t=900``, ``n64:64:64:40:40`` nonlinear launch ladders and a final candidate
 ranking command. This is still a launch plan, not gradient evidence.
+The current status artifact,
+``docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_status.json``,
+shows that all nine VMEC-JAX re-equilibrations have completed and the three
+nested nonlinear campaign manifests are ready. The remaining task is the
+two-GPU execution of 27 full-horizon nonlinear outputs, followed by the
+per-control ensemble, central finite-difference, and candidate-ranking gates.
+Until those gates pass, the nonlinear turbulence-gradient claim remains
+blocked.
 Because both single-control amplitude sweeps point away from more blind
 replicas, SPECTRAX-GK now also includes
 ``tools/write_vmec_boundary_profile_perturbation_inputs.py`` for a smoother

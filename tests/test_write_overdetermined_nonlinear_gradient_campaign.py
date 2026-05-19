@@ -88,6 +88,12 @@ def test_overdetermined_writer_creates_multi_control_launch_manifest(tmp_path: P
         in row["nonlinear_campaign_command_after_vmec_runs"]
         for row in manifest["controls"]
     )
+    assert all(
+        row["expected_nonlinear_campaign_manifest"].endswith(
+            f"{row['coefficient_slug']}/gradient_campaign_manifest.json"
+        )
+        for row in manifest["controls"]
+    )
     assert "rank_nonlinear_turbulence_gradient_candidates.py" in manifest["promotion_contract"][
         "candidate_ranking_command"
     ]

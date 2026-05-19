@@ -401,6 +401,13 @@ perturbation manifests from one baseline input, records the per-control
 nonlinear campaign commands, and writes the final candidate-ranking command.
 The tracked QA/ESS profile-gradient launch plan is
 ``docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_plan.json``.
+Use ``tools/check_overdetermined_nonlinear_gradient_campaign.py`` to turn that
+multi-control launch plan into a machine-readable status artifact and
+``tools/run_overdetermined_nonlinear_gradient_campaign.py`` to run all nested
+long-window tasks through one shared CPU/GPU worker queue. The checker must
+remain fail-closed until the VMEC states, nonlinear runtime outputs, ensemble
+gates, central finite-difference gates, and candidate ranking all exist and
+pass.
 ``tools/write_vmec_boundary_profile_perturbation_inputs.py`` is the companion
 for a single smoother composite direction. It perturbs several VMEC boundary
 coefficients together, normalizes the finite-difference scalar by the Euclidean
