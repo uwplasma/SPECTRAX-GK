@@ -906,7 +906,12 @@ artifact builder. It consumes the ``baseline``, ``plus_delta``, and
 ``dQ/dp = (Q_+ - Q_-)/(2 delta_p)``, propagates the ensemble SEM into
 ``gradient_uncertainty_rel``, checks the response fraction, forward/backward
 asymmetry, subtraction condition number, and per-state window uncertainty, and
-writes JSON/CSV/PNG/PDF sidecars. The resulting JSON is then supplied to
+writes JSON/CSV/PNG/PDF sidecars. When the three ensembles contain matching
+``seedNN`` or ``dtNN`` replicate labels, the JSON also records
+diagnostic-only paired-replicate finite-difference rows. Those rows diagnose
+weak or sign-changing stochastic responses; they are not production gates and
+do not relax the uncertainty, asymmetry, response, or conditioning thresholds.
+The resulting JSON is then supplied to
 ``tools/check_nonlinear_turbulence_gradient_evidence.py`` together with the
 three ensemble artifacts; only that paired long-window workflow can promote a
 nonlinear turbulence-gradient claim.

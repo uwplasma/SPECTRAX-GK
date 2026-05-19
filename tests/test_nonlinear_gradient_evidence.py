@@ -118,8 +118,9 @@ def _ensemble(
     *,
     passed: bool = True,
     n_reports: int = 3,
+    rows: list[dict[str, object]] | None = None,
 ) -> dict[str, object]:
-    return {
+    payload: dict[str, object] = {
         "kind": "nonlinear_window_ensemble_report",
         "case": "matched_replicated_window",
         "passed": passed,
@@ -131,6 +132,9 @@ def _ensemble(
             "n_reports": n_reports,
         },
     }
+    if rows is not None:
+        payload["rows"] = rows
+    return payload
 
 
 def test_startup_fd_artifact_is_recorded_but_not_promoted() -> None:
@@ -358,6 +362,39 @@ def test_long_window_fd_gate_promotes_only_resolved_replicated_gradient() -> Non
         window_artifacts=[_ensemble(10.0), _ensemble(10.1)],
     )
     assert evidence["passed"] is True
+
+
+def test_long_window_fd_gate_reports_paired_replicate_diagnostics() -> None:
+    rows_baseline = [
+        {"source_artifact": "case_seed31_heat_flux_trace.csv", "late_mean": 10.0},
+        {"source_artifact": "case_seed32_heat_flux_trace.csv", "late_mean": 10.2},
+    ]
+    rows_minus = [
+        {"source_artifact": "case_seed31_heat_flux_trace.csv", "late_mean": 9.0},
+        {"source_artifact": "case_seed32_heat_flux_trace.csv", "late_mean": 9.3},
+    ]
+    rows_plus = [
+        {"source_artifact": "case_seed31_heat_flux_trace.csv", "late_mean": 11.0},
+        {"source_artifact": "case_seed32_heat_flux_trace.csv", "late_mean": 10.7},
+    ]
+
+    report = nonlinear_turbulence_gradient_finite_difference_report(
+        minus=_ensemble(9.15, rows=rows_minus),
+        baseline=_ensemble(10.1, rows=rows_baseline),
+        plus=_ensemble(10.85, rows=rows_plus),
+        delta_parameter=0.05,
+        parameter_name="rbc_1_0",
+    )
+
+    diagnostics = report["paired_replicate_diagnostics"]
+    assert diagnostics["claim_level"] == "diagnostic_only_not_a_production_gate"
+    assert diagnostics["common_plus_minus_labels"] == ["seed31", "seed32"]
+    assert diagnostics["common_all_state_labels"] == ["seed31", "seed32"]
+    assert diagnostics["n_pairs"] == 2
+    assert diagnostics["central_gradient_mean"] == pytest.approx(17.0)
+    assert diagnostics["paired_rows"][0]["central_gradient"] == pytest.approx(20.0)
+    assert diagnostics["paired_rows"][1]["central_gradient"] == pytest.approx(14.0)
+    assert diagnostics["same_sign_fraction"] == pytest.approx(1.0)
 
 
 def test_long_window_fd_gate_fails_when_response_is_buried_in_uncertainty() -> None:

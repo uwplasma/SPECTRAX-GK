@@ -334,12 +334,18 @@ and the uncertainty gates on all three replicated nonlinear windows.
 The tracked optimized-QA/ESS ``ZBS(1,0)`` example is deliberately kept as a
 fail-closed regression: the real ``vmec_jax`` re-equilibrated ``t=[450,900]``
 baseline/plus/minus ensembles pass their replicated transport-window gates and
-the central finite difference is local, but
-``gradient_uncertainty_rel = 0.768`` and therefore does not promote a
-turbulence-gradient claim. The companion ``ZBS(1,1)`` campaign gives the
-opposite near miss: uncertainty passes, but ``fd_asymmetry_rel = 0.663`` still
-fails the locality gate. A future passing artifact must satisfy both gates
-without relaxing either threshold.
+the initial three-replicate central finite difference is local, but
+``gradient_uncertainty_rel = 0.655`` and therefore does not promote a
+turbulence-gradient claim. A seed-5 follow-up for the same ``ZBS(1,0)``
+bracket also remains blocked: the response fraction weakens to about ``0.037``,
+``gradient_uncertainty_rel`` rises to about ``1.18``, and ``fd_asymmetry_rel``
+is about ``0.520``. The companion ``RBC(1,1)`` and ``ZBS(1,1)`` controls fail
+the locality/asymmetry gates. The central-FD artifact now includes
+diagnostic-only paired-replicate rows when matching seed or timestep labels are
+available; these rows are useful for identifying sign reversals or weak
+responses, but they do not relax the production gates. A future passing
+artifact must satisfy both uncertainty and locality thresholds without
+weakening either threshold.
 For future perturbation refreshes, keep each coefficient/amplitude in a
 distinct artifact slug such as
 ``docs/_static/qa_ess_zbs10_rel5_nonlinear_gradient_zbs_1_0_central_fd_gradient_gate.*``.
