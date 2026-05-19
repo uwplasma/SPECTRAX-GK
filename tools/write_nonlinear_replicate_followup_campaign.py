@@ -211,6 +211,107 @@ def _write_followup_configs(
     return written_by_state
 
 
+def _planned_outputs_for_state(written_by_state: dict[str, Any], state: str) -> list[str]:
+    state_payload = written_by_state.get(state)
+    if not isinstance(state_payload, dict):
+        return []
+    return [
+        str(row["output"])
+        for row in state_payload.get("configs", [])
+        if isinstance(row, dict) and row.get("output")
+    ]
+
+
+def _postprocess_commands(
+    *,
+    manifest: dict[str, Any],
+    written_by_state: dict[str, Any],
+) -> dict[str, Any]:
+    run_contract = manifest.get("run_contract")
+    if not isinstance(run_contract, dict):
+        return {}
+    analysis_window = run_contract.get("analysis_window", [0.0, 0.0])
+    tmin = float(analysis_window[0])
+    tmax = float(analysis_window[1])
+    t_label = str(int(round(tmax))) if abs(tmax - round(tmax)) < 1.0e-12 else f"{tmax:.12g}".replace(".", "p")
+    commands: dict[str, Any] = {}
+    state_commands = manifest.get("state_ensemble_commands")
+    if not isinstance(state_commands, dict):
+        return commands
+    for state in sorted(written_by_state):
+        original = state_commands.get(state)
+        if not isinstance(original, dict):
+            continue
+        ensemble_json = Path(str(original.get("ensemble_json", "")))
+        if not ensemble_json.name:
+            continue
+        ensemble_dir = ensemble_json.parent
+        existing_outputs = [str(path) for path in original.get("expected_outputs", [])]
+        planned_outputs = _planned_outputs_for_state(written_by_state, state)
+        all_outputs = existing_outputs + planned_outputs
+        prefix = f"{manifest['case']}_{state}_t{t_label}_followup"
+        output_gate_json = ensemble_dir / f"{prefix}_output_gate.json"
+        ensemble_gate_json = f"{prefix}_ensemble_gate.json"
+        readiness_json = f"{prefix}_ensemble_readiness.json"
+        ensemble_png = f"{prefix}_ensemble_gate.png"
+        commands[state] = {
+            "all_expected_outputs": all_outputs,
+            "output_gate_json": _repo_relative(output_gate_json),
+            "output_gate_command": (
+                "python3 tools/check_nonlinear_runtime_outputs.py "
+                + " ".join(all_outputs)
+                + f" --min-samples 200 --tmin {tmin:.12g} --tmax {tmax:.12g}"
+                + " --min-window-samples 80 --min-abs-window-mean 1e-4"
+                + f" --json-out {_repo_relative(output_gate_json)}"
+            ),
+            "ensemble_json": _repo_relative(ensemble_dir / ensemble_gate_json),
+            "readiness_json": _repo_relative(ensemble_dir / readiness_json),
+            "ensemble_png": _repo_relative(ensemble_dir / ensemble_png),
+            "build_ensemble_command": (
+                "python3 tools/build_external_vmec_replicate_ensemble.py "
+                + " ".join(all_outputs)
+                + f" --out-dir {_repo_relative(ensemble_dir)}"
+                + f" --case {manifest['case']}_{state}_replicated_nonlinear_window_followup"
+                + f" --tmin {tmin:.12g} --tmax {tmax:.12g}"
+                + f" --artifact-prefix {_repo_relative(ensemble_dir)}"
+                + f" --readiness-json {readiness_json}"
+                + f" --ensemble-json {ensemble_gate_json}"
+                + f" --out-png {ensemble_png}"
+            ),
+        }
+
+    baseline_json = state_commands.get("baseline", {}).get("ensemble_json")
+    minus_json = state_commands.get("minus_delta", {}).get("ensemble_json")
+    if baseline_json and minus_json:
+        for state, row in commands.items():
+            if state != "plus_delta":
+                continue
+            spread_prefix = ROOT / "docs" / "_static" / f"{manifest['case']}_{state}_followup_replicate_spread_diagnostic"
+            fd_prefix = ROOT / "docs" / "_static" / f"{manifest['case']}_{state}_followup_central_fd_gradient_gate"
+            evidence_json = ROOT / "docs" / "_static" / f"{manifest['case']}_{state}_followup_evidence_status.json"
+            gap_json = ROOT / "docs" / "_static" / f"{manifest['case']}_{state}_followup_evidence_gap_report.json"
+            row["replicate_spread_command"] = (
+                f"python3 tools/summarize_nonlinear_replicate_spread.py {baseline_json} "
+                f"{row['ensemble_json']} {minus_json} --out-prefix {_repo_relative(spread_prefix)} "
+                f"--case {manifest['case']}_{state}_followup_replicate_spread"
+            )
+            row["central_fd_command"] = (
+                "python3 tools/build_nonlinear_turbulence_gradient_fd_gate.py "
+                f"--baseline {baseline_json} --plus {row['ensemble_json']} --minus {minus_json} "
+                f"--delta-parameter {float(manifest['delta_parameter']):.12g} "
+                f"--parameter-name {manifest['parameter_name']} "
+                f"--out-prefix {_repo_relative(fd_prefix)} --fail-on-blocked"
+            )
+            row["evidence_check_command"] = (
+                "python3 tools/check_nonlinear_turbulence_gradient_evidence.py "
+                f"--gradient-artifact {_repo_relative(fd_prefix.with_suffix('.json'))} "
+                f"--window-artifact {baseline_json} --window-artifact {row['ensemble_json']} "
+                f"--window-artifact {minus_json} --json-out {_repo_relative(evidence_json)} "
+                f"--gap-json-out {_repo_relative(gap_json)} --fail-on-blocked"
+            )
+    return commands
+
+
 def build_followup_campaign(
     *,
     campaign_manifest_path: Path,
@@ -234,12 +335,14 @@ def build_followup_campaign(
         ),
     )
     written = {} if dry_run else _write_followup_configs(manifest=campaign_manifest, plan=plan)
+    postprocess = {} if dry_run else _postprocess_commands(manifest=campaign_manifest, written_by_state=written)
     payload = {
         **plan,
         "campaign_manifest": _repo_relative(campaign_manifest_path),
         "spread_diagnostic": _repo_relative(spread_diagnostic_path),
         "variant_metadata": metadata,
         "written_configs_by_state": written,
+        "postprocess_commands_by_state": postprocess,
         "dry_run": bool(dry_run),
         "next_action": (
             "Run the direct_full_horizon_launch_commands for each written state, rebuild the failed "

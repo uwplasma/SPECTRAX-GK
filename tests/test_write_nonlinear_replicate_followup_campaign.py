@@ -93,9 +93,19 @@ def test_followup_campaign_writes_cross_variant_configs(tmp_path: Path) -> None:
     manifest = {
         "kind": "nonlinear_turbulence_gradient_campaign_manifest",
         "case": "case",
+        "parameter_name": "profile_direction",
+        "delta_parameter": 0.02,
         "run_contract": {"analysis_window": [5.0, 10.0], "grid": "n8"},
         "state_ensemble_commands": {
+            "baseline": {
+                "ensemble_json": "docs/_static/case_baseline_replicates/case_baseline_t10_ensemble_gate.json"
+            },
+            "minus_delta": {
+                "ensemble_json": "docs/_static/case_minus_delta_replicates/case_minus_delta_t10_ensemble_gate.json"
+            },
             "plus_delta": {
+                "ensemble_json": "docs/_static/case_plus_delta_replicates/case_plus_delta_t10_ensemble_gate.json",
+                "expected_outputs": ["old_seed31.out.nc", "old_seed32.out.nc", "old_dt0p04.out.nc"],
                 "direct_full_horizon_launch_commands": [
                     f"python3 -m spectraxgk.cli run-runtime-nonlinear --config {path} --steps 1 --no-progress"
                     for path in configs.values()
@@ -141,3 +151,9 @@ def test_followup_campaign_writes_cross_variant_configs(tmp_path: Path) -> None:
     assert "run-runtime-nonlinear" in payload["written_configs_by_state"]["plus_delta"][
         "direct_full_horizon_launch_commands"
     ][0]
+    postprocess = payload["postprocess_commands_by_state"]["plus_delta"]
+    assert len(postprocess["all_expected_outputs"]) == 6
+    assert "check_nonlinear_runtime_outputs.py" in postprocess["output_gate_command"]
+    assert "build_external_vmec_replicate_ensemble.py" in postprocess["build_ensemble_command"]
+    assert "summarize_nonlinear_replicate_spread.py" in postprocess["replicate_spread_command"]
+    assert "build_nonlinear_turbulence_gradient_fd_gate.py" in postprocess["central_fd_command"]
