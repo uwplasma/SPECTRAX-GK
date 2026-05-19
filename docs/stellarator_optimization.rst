@@ -911,10 +911,16 @@ current long-window evidence signs to define a 2% descent-oriented direction:
 decrease ``ZBS(1,1)`` while increasing ``ZBS(1,0)`` and ``RBC(1,1)`` with
 smaller weights. The finite-difference scalar is the Euclidean norm of the
 actual coefficient-change vector, so a successful downstream audit would
-measure a directional sensitivity per boundary-coefficient norm. This artifact
-only writes VMEC inputs and the matched nonlinear campaign command; it is not a
-claim that the composite direction has reduced turbulent flux until those
-states are re-equilibrated and pass the long-window FD gate.
+measure a directional sensitivity per boundary-coefficient norm. That full
+campaign has now been run with real re-equilibrated VMEC files and matched
+``t=900``, ``n64:64:64:40:40`` seed/timestep replicates. The output gates pass
+for all nine runtime files, and the baseline and minus replicated ensembles
+pass, but the plus ensemble fails its spread gate. The resulting central
+finite-difference artifact remains fail-closed:
+``response_fraction≈0.052`` is resolved, but
+``fd_asymmetry_rel≈1.37`` and ``gradient_uncertainty_rel≈1.13`` exceed the
+promotion gates. This is a useful negative production-candidate audit, not a
+promoted nonlinear turbulence-gradient claim.
 
 .. figure:: _static/qa_ess_zbs10_rel5_nonlinear_gradient_zbs_1_0_central_fd_gradient_gate.png
    :width: 90%
@@ -927,6 +933,18 @@ states are re-equilibrated and pass the long-window FD gate.
    forward finite-difference gradients. The artifact is a production-candidate
    long-window campaign, but it remains blocked because the propagated
    gradient uncertainty is still above the release gate.
+
+.. figure:: _static/qa_ess_descent_profile_rel2_nonlinear_gradient_profile_direction_zbs_1_1_zbs_1_0_rbc_1_1_central_fd_gradient_gate.png
+   :width: 90%
+   :align: center
+   :alt: QA/ESS composite profile-direction nonlinear turbulence-gradient gate
+
+   QA/ESS composite profile-direction nonlinear-gradient audit. The nine
+   matched ``t=900`` nonlinear runs all pass runtime-output gates; baseline and
+   minus ensembles pass their replicated-window gates, but the plus ensemble
+   has too much replicate spread. The finite-difference response is resolved
+   but nonlocal and too uncertain, so the result is retained as fail-closed
+   evidence for the next campaign design rather than a promoted gradient.
 
 .. figure:: _static/qa_ess_rbc11_bracket_sweep.png
    :width: 90%
