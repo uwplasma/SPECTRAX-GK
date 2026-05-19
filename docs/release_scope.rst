@@ -335,6 +335,14 @@ Quasilinear model-selection state:
   ``ZBS(1,0)``, and ``RBC(1,1)`` controls at 3% relative amplitude with the
   same ``t=[450,900]`` analysis window. This artifact is planning/provenance
   only; it does not promote a nonlinear turbulence-gradient claim.
+- ``tools/write_vmec_boundary_profile_perturbation_inputs.py`` writes a
+  launch-contract for a smoother composite VMEC boundary direction. The
+  tracked
+  ``docs/_static/qa_ess_descent_profile_direction_rel2_manifest.json`` applies
+  a 2% descent-oriented ``ZBS(1,1)``, ``ZBS(1,0)``, ``RBC(1,1)`` direction and
+  records the finite-difference normalization by coefficient-vector norm. This
+  is not nonlinear turbulence-gradient evidence until the generated VMEC states
+  are re-equilibrated and passed through the long-window nonlinear FD gate.
 - ``tools/write_nonlinear_turbulence_gradient_campaign.py`` is the paired
   launch-contract writer for the same lane. Given explicit baseline,
   plus-perturbation, and minus-perturbation VMEC files, it writes the matched

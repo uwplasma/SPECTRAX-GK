@@ -902,6 +902,19 @@ It starts from the same optimized-QA/ESS VMEC input and writes matched
 ``RBC(1,1)`` at 3% relative amplitude, followed by identical
 ``t=900``, ``n64:64:64:40:40`` nonlinear launch ladders and a final candidate
 ranking command. This is still a launch plan, not gradient evidence.
+Because both single-control amplitude sweeps point away from more blind
+replicas, SPECTRAX-GK now also includes
+``tools/write_vmec_boundary_profile_perturbation_inputs.py`` for a smoother
+multi-coefficient direction. The tracked
+``docs/_static/qa_ess_descent_profile_direction_rel2_manifest.json`` uses the
+current long-window evidence signs to define a 2% descent-oriented direction:
+decrease ``ZBS(1,1)`` while increasing ``ZBS(1,0)`` and ``RBC(1,1)`` with
+smaller weights. The finite-difference scalar is the Euclidean norm of the
+actual coefficient-change vector, so a successful downstream audit would
+measure a directional sensitivity per boundary-coefficient norm. This artifact
+only writes VMEC inputs and the matched nonlinear campaign command; it is not a
+claim that the composite direction has reduced turbulent flux until those
+states are re-equilibrated and pass the long-window FD gate.
 
 .. figure:: _static/qa_ess_zbs10_rel5_nonlinear_gradient_zbs_1_0_central_fd_gradient_gate.png
    :width: 90%

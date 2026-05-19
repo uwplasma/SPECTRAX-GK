@@ -385,6 +385,16 @@ perturbation manifests from one baseline input, records the per-control
 nonlinear campaign commands, and writes the final candidate-ranking command.
 The tracked QA/ESS profile-gradient launch plan is
 ``docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_plan.json``.
+``tools/write_vmec_boundary_profile_perturbation_inputs.py`` is the companion
+for a single smoother composite direction. It perturbs several VMEC boundary
+coefficients together, normalizes the finite-difference scalar by the Euclidean
+norm of the coefficient-change vector, and writes the same
+baseline/plus/minus VMEC launch contract. The tracked
+``docs/_static/qa_ess_descent_profile_direction_rel2_manifest.json`` uses the
+current QA/ESS long-window evidence signs to define a 2% descent-oriented
+``ZBS(1,1)``, ``ZBS(1,0)``, ``RBC(1,1)`` direction. This is still a launch
+artifact; promotion requires the resulting re-equilibrated VMEC files and
+long-window nonlinear FD gate.
 
 ``tools/write_optimized_equilibrium_transport_configs.py`` is the production
 optimization companion for that final audit. Given a concrete post-optimization
