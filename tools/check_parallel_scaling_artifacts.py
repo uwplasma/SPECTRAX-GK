@@ -26,7 +26,7 @@ except ModuleNotFoundError:  # pragma: no cover - Python 3.10 fallback
 REPO_ROOT = Path(__file__).resolve().parents[1]
 STATIC = REPO_ROOT / "docs" / "_static"
 DEFAULT_MANIFEST = REPO_ROOT / "tools" / "performance_optimization_manifest.toml"
-SIDE_EXTENSIONS = (".json", ".csv", ".png", ".pdf")
+SIDE_EXTENSIONS = (".json", ".csv", ".png")
 
 
 @dataclass(frozen=True)

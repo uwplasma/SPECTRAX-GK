@@ -64,46 +64,35 @@ def test_parallel_manifests_track_current_cpu_gpu_scaling_artifacts() -> None:
         "docs/_static/independent_ky_scan_scaling_large.json",
         "docs/_static/independent_ky_scan_scaling_large.csv",
         "docs/_static/independent_ky_scan_scaling_large.png",
-        "docs/_static/independent_ky_scan_scaling_large.pdf",
         "docs/_static/independent_ky_scan_scaling_cpu_large.json",
         "docs/_static/independent_ky_scan_scaling_cpu_large.csv",
         "docs/_static/independent_ky_scan_scaling_cpu_large.png",
-        "docs/_static/independent_ky_scan_scaling_cpu_large.pdf",
         "docs/_static/independent_ky_scan_scaling_gpu_large.json",
         "docs/_static/independent_ky_scan_scaling_gpu_large.csv",
         "docs/_static/independent_ky_scan_scaling_gpu_large.png",
-        "docs/_static/independent_ky_scan_scaling_gpu_large.pdf",
         "docs/_static/quasilinear_uq_ensemble_scaling_large.json",
         "docs/_static/quasilinear_uq_ensemble_scaling_large.csv",
         "docs/_static/quasilinear_uq_ensemble_scaling_large.png",
-        "docs/_static/quasilinear_uq_ensemble_scaling_large.pdf",
         "docs/_static/quasilinear_uq_ensemble_scaling_cpu_large.json",
         "docs/_static/quasilinear_uq_ensemble_scaling_cpu_large.csv",
         "docs/_static/quasilinear_uq_ensemble_scaling_cpu_large.png",
-        "docs/_static/quasilinear_uq_ensemble_scaling_cpu_large.pdf",
         "docs/_static/quasilinear_uq_ensemble_scaling_gpu_large.json",
         "docs/_static/quasilinear_uq_ensemble_scaling_gpu_large.csv",
         "docs/_static/quasilinear_uq_ensemble_scaling_gpu_large.png",
-        "docs/_static/quasilinear_uq_ensemble_scaling_gpu_large.pdf",
         "docs/_static/parallelization_completion_status.json",
         "docs/_static/parallelization_completion_status.png",
-        "docs/_static/parallelization_completion_status.pdf",
         "docs/_static/nonlinear_sharding_strong_scaling_large.json",
         "docs/_static/nonlinear_sharding_strong_scaling_large.csv",
         "docs/_static/nonlinear_sharding_strong_scaling_large.png",
-        "docs/_static/nonlinear_sharding_strong_scaling_large.pdf",
         "docs/_static/nonlinear_sharding_strong_scaling_cpu_large.json",
         "docs/_static/nonlinear_sharding_strong_scaling_cpu_large.csv",
         "docs/_static/nonlinear_sharding_strong_scaling_cpu_large.png",
-        "docs/_static/nonlinear_sharding_strong_scaling_cpu_large.pdf",
         "docs/_static/nonlinear_sharding_strong_scaling_gpu_xlarge.json",
         "docs/_static/nonlinear_sharding_strong_scaling_gpu_xlarge.csv",
         "docs/_static/nonlinear_sharding_strong_scaling_gpu_xlarge.png",
-        "docs/_static/nonlinear_sharding_strong_scaling_gpu_xlarge.pdf",
         "docs/_static/linear_rhs_parallel_slices_sweep.json",
         "docs/_static/linear_rhs_parallel_slices_sweep.csv",
         "docs/_static/linear_rhs_parallel_slices_sweep.png",
-        "docs/_static/linear_rhs_parallel_slices_sweep.pdf",
     }
 
     performance = _load_toml(ROOT / "tools" / "performance_optimization_manifest.toml")
@@ -200,7 +189,7 @@ def test_parallel_scaling_artifact_checker_validates_tracked_large_run_evidence(
 
     assert summary["n_families"] == 4
     assert summary["n_json_artifacts"] == 10
-    assert summary["n_sidecars"] == 40
+    assert summary["n_sidecars"] == 30
     assert summary["manifest_checked"] is True
     assert {family["name"] for family in summary["families"]} == {
         "independent_ky_scan",
