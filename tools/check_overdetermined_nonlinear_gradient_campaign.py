@@ -79,6 +79,92 @@ def _expected_runtime_outputs(nested_manifest: dict[str, Any] | None) -> list[Pa
     return outputs
 
 
+def _required_runtime_tmax(manifest: dict[str, Any]) -> float | None:
+    contract = manifest.get("run_contract")
+    if not isinstance(contract, dict):
+        return None
+    window = contract.get("analysis_window")
+    if isinstance(window, (list, tuple)) and len(window) >= 2:
+        try:
+            return float(window[1])
+        except (TypeError, ValueError):
+            return None
+    horizons = contract.get("horizons")
+    if isinstance(horizons, str):
+        values: list[float] = []
+        for raw in horizons.split(","):
+            try:
+                values.append(float(raw.strip()))
+            except ValueError:
+                continue
+        return max(values) if values else None
+    return None
+
+
+def _read_runtime_time_max(path: Path) -> float | None:
+    try:
+        import netCDF4
+        import numpy as np
+    except ImportError:
+        return None
+
+    candidates: list[float] = []
+    try:
+        with netCDF4.Dataset(path) as root:
+            arrays = []
+            if "time" in root.variables:
+                arrays.append(root.variables["time"][:])
+            grids = root.groups.get("Grids")
+            if grids is not None and "time" in grids.variables:
+                arrays.append(grids.variables["time"][:])
+            for array in arrays:
+                values = np.asarray(array, dtype=float)
+                finite = values[np.isfinite(values)]
+                if finite.size:
+                    candidates.append(float(finite.max()))
+    except Exception:
+        return None
+    return max(candidates) if candidates else None
+
+
+def _runtime_output_status(paths: list[Path], *, required_tmax: float | None) -> dict[str, Any]:
+    rows: list[dict[str, Any]] = []
+    for path in paths:
+        exists = path.exists()
+        size_bytes = int(path.stat().st_size) if exists else 0
+        time_max = _read_runtime_time_max(path) if exists and size_bytes > 0 and required_tmax is not None else None
+        complete = bool(exists and size_bytes > 0)
+        if complete and required_tmax is not None:
+            complete = bool(time_max is not None and time_max >= required_tmax - 1.0e-6)
+        rows.append(
+            {
+                "path": _repo_path(path),
+                "exists": exists,
+                "size_bytes": size_bytes,
+                "time_max": time_max,
+                "complete": complete,
+            }
+        )
+    missing = [row for row in rows if not row["exists"] or int(row["size_bytes"]) <= 0]
+    incomplete = [row for row in rows if row["exists"] and int(row["size_bytes"]) > 0 and not row["complete"]]
+    return {
+        "expected_count": len(rows),
+        "complete_count": sum(1 for row in rows if row["complete"]),
+        "missing_count": len(missing),
+        "incomplete_count": len(incomplete),
+        "required_tmax": required_tmax,
+        "missing_outputs": [row["path"] for row in missing[:20]],
+        "incomplete_outputs": [
+            {
+                "path": row["path"],
+                "time_max": row["time_max"],
+                "size_bytes": row["size_bytes"],
+            }
+            for row in incomplete[:20]
+        ],
+    }
+
+
 def _state_file_status(paths: dict[str, Any] | None) -> dict[str, Any]:
     paths = paths or {}
     rows: dict[str, dict[str, Any]] = {}
@@ -126,19 +212,19 @@ def _ranking_status(path: Path) -> dict[str, Any]:
     }
 
 
-def _control_status(control: dict[str, Any]) -> dict[str, Any]:
+def _control_status(control: dict[str, Any], *, required_tmax: float | None) -> dict[str, Any]:
     slug = str(control.get("coefficient_slug", "unknown"))
     vmec_inputs = _state_file_status(control.get("state_input_files") if isinstance(control.get("state_input_files"), dict) else {})
     vmec_wouts = _state_file_status(control.get("expected_wout_files") if isinstance(control.get("expected_wout_files"), dict) else {})
     nested_manifest_path = _expected_nested_manifest(control)
     nested_manifest = _load_json(nested_manifest_path) if nested_manifest_path is not None else None
     runtime_outputs = _expected_runtime_outputs(nested_manifest)
-    missing_runtime_outputs = [path for path in runtime_outputs if not path.exists()]
+    runtime_status = _runtime_output_status(runtime_outputs, required_tmax=required_tmax)
     fd_artifact = _resolve_repo_path(str(control.get("expected_fd_artifact", "")))
     fd = _fd_status(fd_artifact)
     nonlinear_manifest_exists = nested_manifest is not None
     ready_for_runtime = bool(vmec_wouts["passed"] and nonlinear_manifest_exists)
-    runtime_outputs_complete = bool(runtime_outputs) and not missing_runtime_outputs
+    runtime_outputs_complete = bool(runtime_outputs) and runtime_status["complete_count"] == len(runtime_outputs)
     passed = bool(ready_for_runtime and runtime_outputs_complete and fd["passed"])
     blockers: list[str] = []
     if not vmec_inputs["passed"]:
@@ -147,8 +233,10 @@ def _control_status(control: dict[str, Any]) -> dict[str, Any]:
         blockers.append("missing_vmec_wouts")
     if not nonlinear_manifest_exists:
         blockers.append("missing_nested_nonlinear_campaign_manifest")
-    if nonlinear_manifest_exists and not runtime_outputs_complete:
+    if nonlinear_manifest_exists and runtime_status["missing_count"]:
         blockers.append("missing_runtime_outputs")
+    if nonlinear_manifest_exists and runtime_status["incomplete_count"]:
+        blockers.append("incomplete_runtime_outputs")
     if not fd["passed"]:
         blockers.append("central_fd_not_promoted")
     return {
@@ -167,11 +255,7 @@ def _control_status(control: dict[str, Any]) -> dict[str, Any]:
             "path": _repo_path(nested_manifest_path),
             "exists": nonlinear_manifest_exists,
         },
-        "runtime_output_status": {
-            "expected_count": len(runtime_outputs),
-            "missing_count": len(missing_runtime_outputs),
-            "missing_outputs": [_repo_path(path) for path in missing_runtime_outputs[:20]],
-        },
+        "runtime_output_status": runtime_status,
         "central_fd_status": fd,
         "vmec_run_commands": control.get("vmec_run_commands", {}),
         "write_nonlinear_campaign_command": control.get("nonlinear_campaign_command_after_vmec_runs", ""),
@@ -193,7 +277,8 @@ def overdetermined_campaign_status_report(manifest: dict[str, Any], *, manifest_
     if len(controls) != len(controls_raw):
         raise ValueError("all controls must be JSON objects")
 
-    control_rows = [_control_status(control) for control in controls]
+    required_tmax = _required_runtime_tmax(manifest)
+    control_rows = [_control_status(control, required_tmax=required_tmax) for control in controls]
     contract = manifest.get("promotion_contract")
     contract_map = contract if isinstance(contract, dict) else {}
     ranking_json = contract_map.get("candidate_ranking_json")

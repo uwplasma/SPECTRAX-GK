@@ -407,7 +407,9 @@ multi-control launch plan into a machine-readable status artifact and
 long-window tasks through one shared CPU/GPU worker queue. The checker must
 remain fail-closed until the VMEC states, nonlinear runtime outputs, ensemble
 gates, central finite-difference gates, and candidate ranking all exist and
-pass.
+pass. Runtime outputs are only counted complete when their recorded
+``Grids/time`` coverage reaches the campaign analysis-window endpoint, so
+in-progress NetCDF files cannot accidentally promote a result.
 After the long runtime queue completes,
 ``tools/postprocess_overdetermined_nonlinear_gradient_campaign.py`` runs the
 per-control output gates, ensemble gates, central finite-difference gates,

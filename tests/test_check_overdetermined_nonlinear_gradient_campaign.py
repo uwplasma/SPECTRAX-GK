@@ -22,7 +22,26 @@ def _load_tool_module():
     return module
 
 
-def _manifest(tmp_path: Path, *, with_nested: bool = False, with_runtime: bool = False, fd_passed: bool = False) -> dict[str, object]:
+def _write_runtime_output(path: Path, *, time_max: float) -> None:
+    netcdf4 = pytest.importorskip("netCDF4")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with netcdf4.Dataset(path, "w") as root:
+        root.createDimension("time", 2)
+        grids = root.createGroup("Grids")
+        grids.createDimension("time", 2)
+        times = grids.createVariable("time", "f8", ("time",))
+        times[:] = [0.0, time_max]
+
+
+def _manifest(
+    tmp_path: Path,
+    *,
+    with_nested: bool = False,
+    with_runtime: bool = False,
+    fd_passed: bool = False,
+    required_tmax: float | None = None,
+    runtime_tmax: float | None = None,
+) -> dict[str, object]:
     work = tmp_path / "work"
     control_dir = work / "zbs_1_0"
     control_dir.mkdir(parents=True)
@@ -54,8 +73,11 @@ def _manifest(tmp_path: Path, *, with_nested: bool = False, with_runtime: bool =
         )
     if with_runtime:
         for output in outputs:
-            output.parent.mkdir(parents=True, exist_ok=True)
-            output.write_bytes(b"netcdf")
+            if runtime_tmax is None:
+                output.parent.mkdir(parents=True, exist_ok=True)
+                output.write_bytes(b"netcdf")
+            else:
+                _write_runtime_output(output, time_max=runtime_tmax)
 
     fd = tmp_path / "fd.json"
     fd.write_text(
@@ -80,7 +102,7 @@ def _manifest(tmp_path: Path, *, with_nested: bool = False, with_runtime: bool =
         ),
         encoding="utf-8",
     )
-    return {
+    manifest: dict[str, object] = {
         "kind": "overdetermined_nonlinear_turbulence_gradient_campaign_manifest",
         "case": "qa_profile",
         "controls": [
@@ -100,6 +122,9 @@ def _manifest(tmp_path: Path, *, with_nested: bool = False, with_runtime: bool =
         ],
         "promotion_contract": {"candidate_ranking_json": str(ranking)},
     }
+    if required_tmax is not None:
+        manifest["run_contract"] = {"analysis_window": [0.0, required_tmax]}
+    return manifest
 
 
 def test_overdetermined_status_blocks_before_nested_manifest(tmp_path: Path) -> None:
@@ -129,6 +154,38 @@ def test_overdetermined_status_tracks_runtime_and_fd_progression(tmp_path: Path)
     assert promoted["passed"] is True
     assert promoted["summary"]["central_fd_promoted_count"] == 1
     assert promoted["ranking_status"]["passed"] is True
+
+
+def test_overdetermined_status_requires_full_runtime_time_coverage(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+
+    partial = mod.overdetermined_campaign_status_report(
+        _manifest(
+            tmp_path / "partial",
+            with_nested=True,
+            with_runtime=True,
+            fd_passed=True,
+            required_tmax=900.0,
+            runtime_tmax=500.0,
+        )
+    )
+    complete = mod.overdetermined_campaign_status_report(
+        _manifest(
+            tmp_path / "complete",
+            with_nested=True,
+            with_runtime=True,
+            fd_passed=True,
+            required_tmax=900.0,
+            runtime_tmax=900.0,
+        )
+    )
+
+    assert partial["passed"] is False
+    assert partial["controls"][0]["runtime_output_status"]["missing_count"] == 0
+    assert partial["controls"][0]["runtime_output_status"]["incomplete_count"] == 3
+    assert "incomplete_runtime_outputs" in partial["controls"][0]["blockers"]
+    assert complete["passed"] is True
+    assert complete["controls"][0]["runtime_output_status"]["complete_count"] == 3
 
 
 def test_overdetermined_status_cli_writes_json_and_fail_code(tmp_path: Path) -> None:

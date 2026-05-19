@@ -342,7 +342,9 @@ Quasilinear model-selection state:
   records that all three VMEC-JAX re-equilibrated controls are ready for
   runtime, but none has completed the required nine long-window nonlinear
   outputs or central-FD/ranking gates yet. This keeps the broader gradient
-  claim blocked until real post-transient outputs exist.
+  claim blocked until real post-transient outputs exist. The status check now
+  requires each runtime NetCDF to reach the analysis-window endpoint, not just
+  exist on disk, so in-progress files remain blocked.
 - ``tools/postprocess_overdetermined_nonlinear_gradient_campaign.py`` is the
   matching fail-closed post-runtime driver. It runs each nested campaign's
   output, ensemble, and central-FD gates, then runs the overdetermined
