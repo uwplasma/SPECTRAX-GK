@@ -26,6 +26,7 @@ from tools.write_nonlinear_turbulence_gradient_campaign import (  # noqa: E402
     DEFAULT_HORIZONS,
     DEFAULT_SEEDS,
     DEFAULT_WINDOW,
+    PYTHON_CMD,
     _repo_relative,
 )
 
@@ -63,7 +64,7 @@ def _nonlinear_campaign_command(
     slug = _coefficient_slug(coefficient)
     state_wouts = vmec_manifest["expected_wout_files"]
     command = (
-        "python tools/write_nonlinear_turbulence_gradient_campaign.py "
+        f"{PYTHON_CMD} tools/write_nonlinear_turbulence_gradient_campaign.py "
         f"--baseline-vmec-file {state_wouts['baseline']} "
         f"--plus-vmec-file {state_wouts['plus_delta']} "
         f"--minus-vmec-file {state_wouts['minus_delta']} "
@@ -176,7 +177,7 @@ def write_overdetermined_campaign(
 
     ranking_json = ROOT / "docs" / "_static" / f"{case}_overdetermined_nonlinear_gradient_candidate_ranking.json"
     ranking_command = (
-        "python tools/rank_nonlinear_turbulence_gradient_candidates.py "
+        f"{PYTHON_CMD} tools/rank_nonlinear_turbulence_gradient_candidates.py "
         + " ".join(_repo_relative(path) for path in fd_artifacts)
         + f" --json-out {_repo_relative(ranking_json)}"
         + " --fail-on-no-promotable"

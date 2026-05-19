@@ -16,6 +16,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from tools.write_nonlinear_turbulence_gradient_campaign import _repo_relative  # noqa: E402
+from tools.write_nonlinear_turbulence_gradient_campaign import PYTHON_CMD  # noqa: E402
 
 
 COEFFICIENT_RE = re.compile(
@@ -150,7 +151,7 @@ def write_perturbation_inputs(
         for state, input_file in input_files.items()
     }
     gradient_command = (
-        "python tools/write_nonlinear_turbulence_gradient_campaign.py "
+        f"{PYTHON_CMD} tools/write_nonlinear_turbulence_gradient_campaign.py "
         f"--baseline-vmec-file {_repo_relative(wout_files['baseline'])} "
         f"--plus-vmec-file {_repo_relative(wout_files['plus_delta'])} "
         f"--minus-vmec-file {_repo_relative(wout_files['minus_delta'])} "

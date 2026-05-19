@@ -28,6 +28,7 @@ from tools.write_nonlinear_turbulence_gradient_campaign import (  # noqa: E402
     DEFAULT_HORIZONS,
     DEFAULT_SEEDS,
     DEFAULT_WINDOW,
+    PYTHON_CMD,
     _repo_relative,
 )
 from tools.write_vmec_boundary_perturbation_inputs import (  # noqa: E402
@@ -173,7 +174,7 @@ def write_profile_direction_inputs(
     }
     parameter_name = _direction_slug(controls)
     campaign_command = (
-        "python tools/write_nonlinear_turbulence_gradient_campaign.py "
+        f"{PYTHON_CMD} tools/write_nonlinear_turbulence_gradient_campaign.py "
         f"--baseline-vmec-file {_repo_relative(wout_files['baseline'])} "
         f"--plus-vmec-file {_repo_relative(wout_files['plus_delta'])} "
         f"--minus-vmec-file {_repo_relative(wout_files['minus_delta'])} "

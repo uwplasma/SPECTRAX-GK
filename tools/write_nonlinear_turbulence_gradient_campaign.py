@@ -30,6 +30,7 @@ DEFAULT_GRID = "n64:64:64:40:40"
 DEFAULT_SEEDS = (31, 32)
 DEFAULT_DT_VARIANT = 0.04
 DEFAULT_WINDOW = (350.0, 700.0)
+PYTHON_CMD = "python3"
 
 
 def _repo_relative(path: Path | str) -> str:
@@ -152,7 +153,7 @@ def _state_ensemble_command(
     }
     direct_full_horizon_launch_commands = [
         (
-            "python3 -m spectraxgk.cli run-runtime-nonlinear "
+            f"{PYTHON_CMD} -m spectraxgk.cli run-runtime-nonlinear "
             f"--config {_repo_relative(_expected_output(state_out_dir, state_case, tmax, grid_label, label).with_suffix('').with_suffix('.toml'))} "
             f"--steps {steps} --no-progress"
         )
@@ -162,7 +163,7 @@ def _state_ensemble_command(
     readiness_json = f"{case}_{state}_readiness.json"
     ensemble_png = f"{case}_{state}_t{_horizon_label(tmax)}_ensemble_gate.png"
     command = (
-        "python tools/build_external_vmec_replicate_ensemble.py "
+        f"{PYTHON_CMD} tools/build_external_vmec_replicate_ensemble.py "
         + " ".join(_repo_relative(path) for path in inputs)
         + f" --out-dir {_repo_relative(ensemble_dir)}"
         + f" --case {case}_{state}_replicated_nonlinear_window"
@@ -174,7 +175,7 @@ def _state_ensemble_command(
     )
     output_gate_json = f"{case}_{state}_t{_horizon_label(tmax)}_output_gate.json"
     output_gate_command = (
-        "python tools/check_nonlinear_runtime_outputs.py "
+        f"{PYTHON_CMD} tools/check_nonlinear_runtime_outputs.py "
         + " ".join(_repo_relative(path) for path in inputs)
         + f" --min-samples 200 --tmin {tmin:.12g} --tmax {tmax:.12g}"
         + " --min-window-samples 80 --min-abs-window-mean 1e-4"
@@ -212,7 +213,7 @@ def _promotion_contract(
     evidence_json = ROOT / "docs" / "_static" / "nonlinear_turbulence_gradient_evidence_status.json"
     gap_json = ROOT / "docs" / "_static" / "nonlinear_turbulence_gradient_evidence_gap_report.json"
     fd_command = (
-        "python tools/build_nonlinear_turbulence_gradient_fd_gate.py "
+        f"{PYTHON_CMD} tools/build_nonlinear_turbulence_gradient_fd_gate.py "
         f"--baseline {state_commands['baseline']['ensemble_json']} "
         f"--plus {state_commands['plus_delta']['ensemble_json']} "
         f"--minus {state_commands['minus_delta']['ensemble_json']} "
@@ -222,7 +223,7 @@ def _promotion_contract(
         "--fail-on-blocked"
     )
     evidence_command = (
-        "python tools/check_nonlinear_turbulence_gradient_evidence.py "
+        f"{PYTHON_CMD} tools/check_nonlinear_turbulence_gradient_evidence.py "
         f"--gradient-artifact {_repo_relative(fd_json)} "
         f"--window-artifact {state_commands['baseline']['ensemble_json']} "
         f"--window-artifact {state_commands['plus_delta']['ensemble_json']} "
