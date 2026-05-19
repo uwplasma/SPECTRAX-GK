@@ -395,6 +395,15 @@ current QA/ESS long-window evidence signs to define a 2% descent-oriented
 ``ZBS(1,1)``, ``ZBS(1,0)``, ``RBC(1,1)`` direction. This is still a launch
 artifact; promotion requires the resulting re-equilibrated VMEC files and
 long-window nonlinear FD gate.
+After a detached office campaign finishes, run
+``tools/run_nonlinear_gradient_manifest_postprocess.py`` on the generated
+``gradient_campaign_manifest.json`` rather than replaying individual commands
+by hand. With ``--require-outputs`` it fails before post-processing if any
+expected ``*.out.nc`` file is missing; otherwise it runs the output gates,
+baseline/plus/minus replicated ensemble builders, the central-FD gate, and the
+final nonlinear-gradient evidence check in dependency order. Use
+``--allow-blocked`` only when collecting a failure artifact for diagnosis; a
+promotion run should keep the default fail-closed behavior.
 
 ``tools/write_optimized_equilibrium_transport_configs.py`` is the production
 optimization companion for that final audit. Given a concrete post-optimization
