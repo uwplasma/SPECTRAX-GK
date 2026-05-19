@@ -318,6 +318,13 @@ Quasilinear model-selection state:
   and recommends an overdetermined least-squares/profile-gradient campaign next
   because the best single-control candidates have complementary locality and
   uncertainty failures.
+- ``tools/summarize_nonlinear_gradient_bracket_sweep.py`` is the bounded
+  follow-up for a same-control perturbation-amplitude sweep. It writes
+  JSON/CSV/PNG/PDF sidecars from completed central finite-difference artifacts
+  and recommends whether to add replicas, shrink/enlarge the bracket, or switch
+  controls. It is deliberately not a promotion checker; it only promotes when
+  one of the supplied long-window central-FD artifacts already passes all
+  production gates.
 - ``tools/write_overdetermined_nonlinear_gradient_campaign.py`` is the concrete
   launch-contract writer for that next campaign shape. The current tracked
   ``docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_plan.json``

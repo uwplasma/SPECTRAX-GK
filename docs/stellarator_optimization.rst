@@ -864,12 +864,27 @@ The companion ``ZBS(1,1)`` 5% campaign gives the complementary negative result:
 ``gradient_uncertainty_rel = 0.225`` passes, but ``fd_asymmetry_rel = 0.663`` is
 still above the locality gate. This is now a robust production-candidate audit
 set, not a promoted nonlinear turbulence-gradient validation.
+A later seed-5 follow-up of the best ``ZBS(1,0)`` bracket kept the
+baseline/plus/minus long-window ensembles valid but did not close the claim:
+``gradient_uncertainty_rel`` increased to about ``1.18``, ``fd_asymmetry_rel``
+was about ``0.520``, and one matched-seed central finite difference changed
+sign. The scientific conclusion is therefore fail-closed: the current
+single-control bracket is a useful diagnostic, but it is not efficient to keep
+adding replicas at the same amplitude without a new locality/amplitude sweep or
+a smoother composite profile-gradient direction.
 ``docs/_static/nonlinear_turbulence_gradient_candidate_ranking.json`` ranks the
 completed ``RBC(1,1)``, ``ZBS(1,1)``, and ``ZBS(1,0)`` attempts. Its current
 recommendation is to move to an overdetermined least-squares/profile-gradient
 campaign: the best single-control candidates fail in complementary ways, with
 ``ZBS(1,1)`` statistically clean but nonlocal and ``ZBS(1,0)`` local but too
 noisy.
+``tools/summarize_nonlinear_gradient_bracket_sweep.py`` is the companion
+amplitude-sweep utility for this decision. It consumes completed central-FD
+artifacts for one control, plots gradient, response, asymmetry, and uncertainty
+against perturbation amplitude, and preserves the same claim boundary: the
+sweep can recommend the next campaign, but it does not promote a nonlinear
+turbulence-gradient claim unless one input artifact already passes the
+production long-window gate.
 The concrete next-campaign launch contract is tracked in
 ``docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_plan.json``.
 It starts from the same optimized-QA/ESS VMEC input and writes matched

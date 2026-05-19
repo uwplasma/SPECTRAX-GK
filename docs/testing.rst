@@ -363,6 +363,15 @@ replicas, shrink a bracket, or move to an overdetermined
 least-squares/profile-gradient design. The current tracked ranking artifact is
 ``docs/_static/nonlinear_turbulence_gradient_candidate_ranking.json`` and is
 not itself promotion evidence.
+``tools/summarize_nonlinear_gradient_bracket_sweep.py`` is the next
+same-control locality utility. It consumes one or more central-FD JSON
+artifacts for the same control at different perturbation amplitudes, writes
+JSON/CSV/PNG/PDF sidecars, and decides whether to promote an already passing
+bracket, shrink/enlarge the amplitude, add statistical power, or abandon the
+single-control direction. It also reads the diagnostic-only paired-replicate
+rows when present. If those same-seed rows show sign reversals or large paired
+uncertainty, the utility explicitly recommends not spending more GPU time on
+more replicas at that same bracket.
 ``tools/write_overdetermined_nonlinear_gradient_campaign.py`` implements that
 next launch-contract step. It writes multiple matched boundary-control VMEC
 perturbation manifests from one baseline input, records the per-control

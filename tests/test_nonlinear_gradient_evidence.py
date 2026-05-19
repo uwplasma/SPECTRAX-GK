@@ -9,11 +9,13 @@ import numpy as np
 import pytest
 
 from spectraxgk.nonlinear_gradient_evidence import (
+    NonlinearTurbulenceGradientBracketSweepConfig,
     NonlinearTurbulenceGradientCandidateRankingConfig,
     NonlinearTurbulenceGradientFiniteDifferenceConfig,
     NonlinearTurbulenceGradientGapConfig,
     classify_gradient_artifact,
     load_json_artifact,
+    nonlinear_turbulence_gradient_bracket_sweep_report,
     nonlinear_turbulence_gradient_candidate_ranking_report,
     nonlinear_turbulence_gradient_evidence_gap_report,
     nonlinear_turbulence_gradient_evidence_report,
@@ -31,6 +33,7 @@ SCRIPT = ROOT / "tools" / "check_nonlinear_turbulence_gradient_evidence.py"
 FD_SCRIPT = ROOT / "tools" / "build_nonlinear_turbulence_gradient_fd_gate.py"
 CAMPAIGN_SCRIPT = ROOT / "tools" / "write_nonlinear_turbulence_gradient_campaign.py"
 RANK_SCRIPT = ROOT / "tools" / "rank_nonlinear_turbulence_gradient_candidates.py"
+BRACKET_SCRIPT = ROOT / "tools" / "summarize_nonlinear_gradient_bracket_sweep.py"
 
 
 def _load_tool_module():
@@ -65,6 +68,16 @@ def _load_campaign_tool_module():
 
 def _load_rank_tool_module():
     spec = importlib.util.spec_from_file_location("rank_nonlinear_turbulence_gradient_candidates", RANK_SCRIPT)
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def _load_bracket_tool_module():
+    spec = importlib.util.spec_from_file_location("summarize_nonlinear_gradient_bracket_sweep", BRACKET_SCRIPT)
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -541,6 +554,79 @@ def test_candidate_ranking_can_promote_a_passing_production_candidate() -> None:
     assert report["best_candidate"]["parameter_name"] == "profile_gradient"
 
 
+def test_bracket_sweep_blocks_repeating_unstable_same_bracket() -> None:
+    rows_baseline = [
+        {"source_artifact": "case_seed31.csv", "late_mean": 15.5},
+        {"source_artifact": "case_seed32.csv", "late_mean": 15.15},
+        {"source_artifact": "case_seed33.csv", "late_mean": 15.55},
+    ]
+    rows_minus = [
+        {"source_artifact": "case_seed31.csv", "late_mean": 15.0},
+        {"source_artifact": "case_seed32.csv", "late_mean": 14.8},
+        {"source_artifact": "case_seed33.csv", "late_mean": 15.4},
+    ]
+    rows_plus = [
+        {"source_artifact": "case_seed31.csv", "late_mean": 16.0},
+        {"source_artifact": "case_seed32.csv", "late_mean": 15.5},
+        {"source_artifact": "case_seed33.csv", "late_mean": 15.7},
+    ]
+    artifact = nonlinear_turbulence_gradient_finite_difference_report(
+        minus=_ensemble(15.0667, sem=0.5, rows=rows_minus),
+        baseline=_ensemble(15.4, sem=0.5, rows=rows_baseline),
+        plus=_ensemble(15.7333, sem=0.5, rows=rows_plus),
+        delta_parameter=0.05,
+        parameter_name="zbs_1_0",
+        config=NonlinearTurbulenceGradientFiniteDifferenceConfig(
+            min_fd_response_fraction=0.03,
+            max_gradient_uncertainty_rel=0.5,
+            max_fd_asymmetry_rel=1.0,
+        ),
+    )
+
+    report = nonlinear_turbulence_gradient_bracket_sweep_report(
+        [artifact],
+        labels=["zbs_1_0_rel5_seed3"],
+        config=NonlinearTurbulenceGradientBracketSweepConfig(
+            max_fd_asymmetry_rel=1.0,
+            max_repeated_bracket_uncertainty_rel=0.2,
+            min_repeated_bracket_same_sign_fraction=1.0,
+        ),
+    )
+
+    assert report["passed"] is False
+    assert "do not add replicas at the same bracket" in report["recommendation"]
+    bracket = report["brackets"][0]
+    assert bracket["metrics"]["paired_gradient_uncertainty_rel"] is not None
+    assert bracket["metrics"]["repeated_bracket_stable"] is False
+
+
+def test_bracket_sweep_promotes_only_passing_long_window_bracket() -> None:
+    small = nonlinear_turbulence_gradient_finite_difference_report(
+        minus=_ensemble(9.9, sem=0.4),
+        baseline=_ensemble(10.0, sem=0.4),
+        plus=_ensemble(10.1, sem=0.4),
+        delta_parameter=0.01,
+        parameter_name="profile_gradient",
+    )
+    passing = nonlinear_turbulence_gradient_finite_difference_report(
+        minus=_ensemble(9.0, sem=0.02),
+        baseline=_ensemble(10.0, sem=0.02),
+        plus=_ensemble(11.0, sem=0.02),
+        delta_parameter=0.05,
+        parameter_name="profile_gradient",
+    )
+
+    report = nonlinear_turbulence_gradient_bracket_sweep_report(
+        [passing, small],
+        labels=["rel5", "rel1"],
+    )
+
+    assert report["passed"] is True
+    assert report["promotion_ready_bracket_count"] == 1
+    assert [row["delta_parameter"] for row in report["brackets"]] == [0.01, 0.05]
+    assert "smallest passing delta is 0.05" in report["recommendation"]
+
+
 def test_gap_report_distinguishes_failed_production_candidate_from_missing_campaign() -> None:
     fd_report = nonlinear_turbulence_gradient_finite_difference_report(
         minus=_ensemble(9.9, sem=0.5),
@@ -735,6 +821,45 @@ def test_candidate_ranking_cli_writes_fail_closed_campaign_recommendation(tmp_pa
     assert payload["passed"] is False
     assert payload["promotion_ready_candidate_count"] == 0
     assert "least-squares/profile-gradient" in payload["recommendation"]
+
+
+def test_bracket_sweep_cli_writes_json_csv_and_plot(tmp_path: Path) -> None:
+    mod = _load_bracket_tool_module()
+    small = nonlinear_turbulence_gradient_finite_difference_report(
+        minus=_ensemble(9.9, sem=0.4),
+        baseline=_ensemble(10.0, sem=0.4),
+        plus=_ensemble(10.1, sem=0.4),
+        delta_parameter=0.01,
+        parameter_name="profile_gradient",
+    )
+    passing = nonlinear_turbulence_gradient_finite_difference_report(
+        minus=_ensemble(9.0, sem=0.02),
+        baseline=_ensemble(10.0, sem=0.02),
+        plus=_ensemble(11.0, sem=0.02),
+        delta_parameter=0.05,
+        parameter_name="profile_gradient",
+    )
+    small_path = tmp_path / "small.json"
+    passing_path = tmp_path / "passing.json"
+    out_prefix = tmp_path / "sweep"
+    small_path.write_text(json.dumps(small), encoding="utf-8")
+    passing_path.write_text(json.dumps(passing), encoding="utf-8")
+
+    rc = mod.main(
+        [
+            str(small_path),
+            str(passing_path),
+            "--json-out-prefix",
+            str(out_prefix),
+        ]
+    )
+
+    payload = json.loads(out_prefix.with_suffix(".json").read_text(encoding="utf-8"))
+    assert rc == 0
+    assert payload["passed"] is True
+    assert out_prefix.with_suffix(".csv").exists()
+    assert out_prefix.with_suffix(".png").exists()
+    assert out_prefix.with_suffix(".pdf").exists()
 
 
 def test_gradient_campaign_writer_creates_matched_state_run_contract(tmp_path: Path) -> None:
