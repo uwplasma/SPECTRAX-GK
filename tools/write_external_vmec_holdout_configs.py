@@ -14,6 +14,7 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass
 import json
+import os
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -102,16 +103,25 @@ def _float_label(value: float) -> str:
 
 
 def _resolved_vmec_file(path: Path) -> Path:
-    """Return an absolute VMEC path for generated TOMLs.
+    """Return an absolute VMEC source path before rendering generated TOMLs.
 
-    Runtime TOML loading resolves relative paths against the TOML file
-    directory. The generated holdout configs live in ``tools_out`` beside their
-    outputs, so a relative VMEC path would be interpreted relative to that run
-    directory rather than relative to the shell where the config writer was
-    invoked.
+    The rendered TOML stores a path relative to each generated config when
+    possible.  Keeping the validated source path absolute here avoids ambiguous
+    input handling while still producing portable campaign artifacts that can
+    be copied from a laptop checkout to an office/GPU checkout.
     """
 
     return Path(path).expanduser().resolve()
+
+
+def _vmec_file_for_config(vmec_file: Path, config_path: Path) -> Path:
+    """Return a VMEC path portable with respect to ``config_path``."""
+
+    try:
+        return Path(os.path.relpath(vmec_file, start=config_path.parent))
+    except ValueError:
+        # Different Windows drives, or another path relation edge case.
+        return vmec_file
 
 
 def _build_variants(
@@ -354,10 +364,11 @@ def write_configs(
                 stem = f"{case}_nonlinear_t{_horizon_label(horizon)}_{grid.label}{variant_suffix}"
                 config_path = out_dir / f"{stem}.toml"
                 output_filename = f"{stem}.out.nc"
+                rendered_vmec_file = _vmec_file_for_config(vmec_file, config_path)
                 config_path.write_text(
                     _render_config(
                         case=case,
-                        vmec_file=vmec_file,
+                        vmec_file=rendered_vmec_file,
                         grid=grid,
                         horizon=horizon,
                         dt=variant_dt,
