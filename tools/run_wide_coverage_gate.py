@@ -9,11 +9,24 @@ from pathlib import Path
 import re
 import subprocess
 import sys
+from typing import cast
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_TEST_DIR = REPO_ROOT / "tests"
 COVERAGE_DATA_RE = re.compile(r"^\.coverage\.shard-(?P<shard>[0-9]+)\.")
+HIGH_COST_TEST_WEIGHT = 100
+WIDE_COVERAGE_HIGH_COST_TESTS = {
+    # These files exercise JAX compilation, plotting, or runtime orchestration
+    # paths. Keeping them isolated prevents one CI shard from exceeding the
+    # five-minute per-shard budget while preserving package-wide coverage.
+    "test_build_vmec_boozer_nonlinear_window_fd_audit.py",
+    "test_diffrax_integrators.py",
+    "test_diffrax_integrators_core.py",
+    "test_make_benchmark_atlas.py",
+    "test_plot_w7x_zonal_state_convention_audit.py",
+    "test_runtime_runner.py",
+}
 
 
 def _resolve_test_dir(test_dir: Path) -> Path:
@@ -32,20 +45,38 @@ def discover_test_files(test_dir: Path = DEFAULT_TEST_DIR) -> list[Path]:
     return sorted(_resolve_test_dir(test_dir).glob("test_*.py"))
 
 
+def _wide_coverage_test_weight(path: Path) -> int:
+    """Return the scheduling weight used by the wide-coverage shard planner."""
+
+    return HIGH_COST_TEST_WEIGHT if path.name in WIDE_COVERAGE_HIGH_COST_TESTS else 1
+
+
 def split_shards(items: list[Path], nshards: int) -> list[list[Path]]:
-    """Split paths into round-robin shards with near-equal file counts.
+    """Split paths into deterministic, cost-balanced shards.
 
     Alphabetical test discovery groups related plotting tests together. A
-    round-robin split keeps deterministic membership while spreading expensive
-    modules across CI workers, which makes the package-wide coverage gate less
-    sensitive to runner memory and shutdown pressure.
+    weighted first-fit split keeps deterministic membership while isolating
+    known high-cost modules across CI workers. With unit weights this reduces
+    to the previous round-robin assignment, but it avoids packing several
+    compile-heavy files into one five-minute shard.
     """
 
     if nshards < 1:
         raise ValueError("nshards must be >= 1")
     shards: list[list[Path]] = [[] for _ in range(nshards)]
-    for idx, item in enumerate(items):
-        shards[idx % nshards].append(item)
+    loads = [0 for _ in range(nshards)]
+    indexed_items = list(enumerate(items))
+    for original_idx, item in sorted(
+        indexed_items,
+        key=lambda pair: (-_wide_coverage_test_weight(pair[1]), pair[0]),
+    ):
+        shard_idx = min(range(nshards), key=lambda idx: (loads[idx], idx))
+        shards[shard_idx].append(item)
+        loads[shard_idx] += _wide_coverage_test_weight(item)
+
+    original_order = {path: idx for idx, path in indexed_items}
+    for shard in shards:
+        shard.sort(key=lambda path: original_order[path])
     return shards
 
 
@@ -107,15 +138,15 @@ def validate_coverage_shard_report(
     """Return validation failures for a combine-time coverage shard report."""
 
     failures: list[str] = []
-    if int(report["coverage_data_file_count"]) == 0:
+    if int(cast(int, report["coverage_data_file_count"])) == 0:
         failures.append("no coverage.py data files were found")
-    markers = list(report["empty_shard_markers"])
+    markers = list(cast(list[str], report["empty_shard_markers"]))
     if markers:
         failures.append(f"empty shard markers found: {markers}")
-    out_of_range = list(report["out_of_range_labeled_coverage_data_files"])
+    out_of_range = list(cast(list[str], report["out_of_range_labeled_coverage_data_files"]))
     if out_of_range:
         failures.append(f"out-of-range labeled coverage data files found: {out_of_range}")
-    missing = list(report["missing_labeled_shards"])
+    missing = list(cast(list[int], report["missing_labeled_shards"]))
     if require_labeled_shards and missing:
         failures.append(f"missing labeled coverage data for shards: {missing}")
     return failures

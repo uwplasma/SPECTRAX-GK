@@ -1018,6 +1018,9 @@ def test_cli_writes_report_and_can_fail_on_blocked(tmp_path: Path) -> None:
 
 def test_fd_cli_writes_json_csv_and_plot_artifacts(tmp_path: Path) -> None:
     mod = _load_fd_tool_module()
+    assert "ZBS(1,1)" in mod._format_parameter_label(
+        "profile_direction_zbs_1_1_zbs_1_0_rbc_1_1"
+    )
     baseline = tmp_path / "baseline.json"
     plus = tmp_path / "plus.json"
     minus = tmp_path / "minus.json"

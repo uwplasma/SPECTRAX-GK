@@ -22,6 +22,25 @@ def test_split_shards_is_round_robin_and_complete() -> None:
     assert sorted(path for shard in shards for path in shard) == files
 
 
+def test_split_shards_isolates_known_high_cost_tests() -> None:
+    expensive = [
+        Path("tests/test_diffrax_integrators_core.py"),
+        Path("tests/test_runtime_runner.py"),
+    ]
+    files = expensive + [Path(f"tests/test_light_{idx}.py") for idx in range(12)]
+    shards = split_shards(files, 4)
+
+    expensive_by_shard = [
+        [path.name for path in shard if path in expensive] for shard in shards
+    ]
+    assert sorted(name for shard in expensive_by_shard for name in shard) == [
+        "test_diffrax_integrators_core.py",
+        "test_runtime_runner.py",
+    ]
+    assert all(len(shard_names) <= 1 for shard_names in expensive_by_shard)
+    assert all(len(shard) == 1 for shard in shards if any(path in expensive for path in shard))
+
+
 def test_split_shards_rejects_nonpositive_count() -> None:
     with pytest.raises(ValueError, match="nshards"):
         split_shards([Path("tests/test_a.py")], 0)

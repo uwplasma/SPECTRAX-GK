@@ -123,7 +123,7 @@ def _write_csv(report: dict[str, Any], out_csv: Path) -> None:
     ]
     out_csv.parent.mkdir(parents=True, exist_ok=True)
     with out_csv.open("w", encoding="utf-8", newline="") as stream:
-        writer = csv.DictWriter(stream, fieldnames=fieldnames)
+        writer = csv.DictWriter(stream, fieldnames=fieldnames, lineterminator="\n")
         writer.writeheader()
         for row in rows:
             writer.writerow({key: row.get(key) for key in fieldnames})
@@ -140,12 +140,17 @@ def _write_png(report: dict[str, Any], out_png: Path) -> None:
     replicate_rows = list(report.get("replicate_rows", []))
     state_rows = {str(row["state"]): row for row in report.get("state_rows", [])}
     states = list(dict.fromkeys(str(row["state"]) for row in replicate_rows))
-    offsets = {"seed": -0.22, "timestep": 0.22, "unknown": 0.0}
-    colors = {"seed": "#2563eb", "timestep": "#d97706", "unknown": "#6b7280"}
+    offsets = {"seed": -0.24, "timestep": 0.24, "seed_timestep": 0.0, "unknown": 0.0}
+    colors = {
+        "seed": "#2563eb",
+        "timestep": "#d97706",
+        "seed_timestep": "#4b5563",
+        "unknown": "#6b7280",
+    }
 
     set_plot_style()
     out_png.parent.mkdir(parents=True, exist_ok=True)
-    fig, ax = plt.subplots(figsize=(9.6, 4.8), constrained_layout=True)
+    fig, ax = plt.subplots(figsize=(11.2, 4.8), constrained_layout=True)
     plotted_values: list[float] = []
     for state_index, state in enumerate(states):
         group = [row for row in replicate_rows if str(row["state"]) == state]
@@ -166,7 +171,7 @@ def _write_png(report: dict[str, Any], out_png: Path) -> None:
                 ms=6.0,
                 capsize=3.0,
                 color=colors.get(axis, colors["unknown"]),
-                label=axis if state_index == 0 and local_index < len(colors) else None,
+                label=axis if axis not in ax.get_legend_handles_labels()[1] else None,
             )
             ax.text(
                 x,
@@ -175,7 +180,7 @@ def _write_png(report: dict[str, Any], out_png: Path) -> None:
                 rotation=45,
                 ha="left",
                 va="bottom",
-                fontsize=7,
+                fontsize=6.5,
             )
         state_summary = state_rows.get(state, {})
         ensemble_mean = state_summary.get("ensemble_mean")

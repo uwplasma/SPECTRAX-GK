@@ -42,6 +42,15 @@ def _float_or_nan(value: Any) -> float:
     return out
 
 
+def _format_parameter_label(value: object) -> str:
+    """Return a compact plot label for long VMEC profile-direction names."""
+
+    name = str(value or "parameter")
+    if name == "profile_direction_zbs_1_1_zbs_1_0_rbc_1_1":
+        return "profile direction\nZBS(1,1), ZBS(1,0), RBC(1,1)"
+    return name.replace("_", " ") if len(name) <= 32 else name.replace("_", " ", 3)
+
+
 def write_artifacts(report: dict[str, Any], out_prefix: Path) -> dict[str, str]:
     import matplotlib
 
@@ -105,13 +114,13 @@ def write_artifacts(report: dict[str, Any], out_prefix: Path) -> dict[str, str]:
     colors = ["#8c6d31", "#3f6f8f", "#b65f2a"]
     axes[1].bar(gradient_labels, gradient_values, color=colors, alpha=0.88)
     axes[1].axhline(0.0, color="0.25", lw=0.9)
-    axes[1].set_ylabel(f"dQ/d({report.get('parameter_name', 'parameter')})")
+    axes[1].set_ylabel(f"dQ/dp\n{_format_parameter_label(report.get('parameter_name', 'parameter'))}")
     status = "passed" if bool(report.get("passed", False)) else "blocked"
     axes[1].set_title(f"Central FD gate: {status}")
     for ax in axes:
         ax.grid(True, alpha=0.25)
-    fig.savefig(png_path, dpi=220)
-    fig.savefig(pdf_path)
+    fig.savefig(png_path, dpi=220, bbox_inches="tight")
+    fig.savefig(pdf_path, bbox_inches="tight")
     plt.close(fig)
 
     return {"json": str(json_path), "csv": str(csv_path), "png": str(png_path), "pdf": str(pdf_path)}

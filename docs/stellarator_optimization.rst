@@ -961,13 +961,43 @@ promoted nonlinear turbulence-gradient claim.
 
 The targeted follow-up launch artifact for that decision is
 ``docs/_static/qa_ess_descent_profile_rel2_plus_delta_replicate_followup_plan.json``.
-It keeps the nonlinear-gradient claim fail-closed and writes only three
-``plus_delta`` cross variants: ``seed22_dt0p05`` tests whether the low window
-follows the seed at the nominal timestep, ``seed32_dt0p04`` tests whether the
-high window persists at the refined timestep, and ``seed33_dt0p05`` adds one
-fresh nominal-timestep seed. These are campaign-design runs; they become
-physics evidence only after the corresponding ``t=900`` outputs pass the same
-runtime-output, window-convergence, replicate-spread, and central-FD gates.
+It kept the nonlinear-gradient claim fail-closed and wrote only three
+``plus_delta`` cross variants: ``seed22_dt0p05`` tested whether the low window
+followed the seed at the nominal timestep, ``seed32_dt0p04`` tested whether the
+high window persisted at the refined timestep, and ``seed33_dt0p05`` added one
+fresh nominal-timestep seed. Those runs have now completed on the office GPUs.
+All six ``plus_delta`` outputs pass the runtime-output gate, but the extended
+plus ensemble still fails the spread gate:
+``mean_rel_spread = 0.166 > 0.15``. The recomputed central finite-difference
+artifact therefore remains blocked by the plus ensemble, by
+``fd_asymmetry_rel = 2.84 > 0.5``, and by
+``gradient_uncertainty_rel = 1.22 > 0.5``. This closes the blind-replica
+question: more of the same plus-state runs are not the right next step. The
+next scientifically useful campaign should shrink the finite-difference
+bracket or use an overdetermined/profile-gradient design with matched
+seed/timestep labels across all parameter states.
+
+.. figure:: _static/qa_ess_descent_profile_rel2_plus_delta_followup_replicate_spread_diagnostic.png
+   :width: 90%
+   :align: center
+   :alt: QA/ESS composite profile-direction targeted plus-state follow-up spread diagnostic
+
+   Targeted ``plus_delta`` follow-up for the QA/ESS composite profile-direction
+   nonlinear-gradient audit. The baseline and minus states remain within the
+   replicate-spread gate, but the expanded plus-state ensemble still exceeds
+   the spread threshold after crossing seed and timestep variants. The shaded
+   plus-state panel is the reason the nonlinear turbulence-gradient claim stays
+   fail-closed.
+
+.. figure:: _static/qa_ess_descent_profile_rel2_nonlinear_gradient_plus_delta_followup_central_fd_gradient_gate.png
+   :width: 90%
+   :align: center
+   :alt: QA/ESS composite profile-direction targeted follow-up central finite-difference gate
+
+   Central finite-difference audit after the targeted plus-state follow-up. The
+   mean response is resolved, but the forward/backward finite differences are
+   inconsistent and the propagated uncertainty is too large. This is recorded
+   as a bounded negative result, not as nonlinear turbulence-gradient evidence.
 
 .. figure:: _static/qa_ess_rbc11_bracket_sweep.png
    :width: 90%

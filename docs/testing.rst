@@ -360,6 +360,17 @@ Do not promote new prose until
 ``nonlinear_turbulence_gradient_gate = true``. Until then, describe the result
 as a bounded production-candidate finite-difference audit, not as a nonlinear
 turbulence-gradient claim.
+The current QA/ESS composite profile-direction follow-up demonstrates this
+policy. The targeted ``plus_delta`` cross variants ``seed22_dt0p05``,
+``seed32_dt0p04``, and ``seed33_dt0p05`` completed and all six plus-state
+outputs passed the runtime-output gate. The extended plus ensemble still fails
+the spread gate with ``mean_rel_spread = 0.166`` against the ``0.15`` limit,
+and the central finite-difference artifact remains blocked by
+``fd_asymmetry_rel = 2.84`` and ``gradient_uncertainty_rel = 1.22``. That
+artifact is tracked as
+``docs/_static/qa_ess_descent_profile_rel2_nonlinear_gradient_plus_delta_followup_central_fd_gradient_gate.json``.
+It is a regression target for the fail-closed workflow and a design input for
+the next campaign, not promotion evidence.
 ``tools/rank_nonlinear_turbulence_gradient_candidates.py`` is the companion
 planning utility for failed candidates. It ranks completed central-FD artifacts
 by response, locality, conditioning, and propagated uncertainty margins, writes
