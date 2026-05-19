@@ -179,12 +179,23 @@ def test_overdetermined_status_requires_full_runtime_time_coverage(tmp_path: Pat
             runtime_tmax=900.0,
         )
     )
+    rounded_final = mod.overdetermined_campaign_status_report(
+        _manifest(
+            tmp_path / "rounded",
+            with_nested=True,
+            with_runtime=True,
+            fd_passed=True,
+            required_tmax=900.0,
+            runtime_tmax=899.93,
+        )
+    )
 
     assert partial["passed"] is False
     assert partial["controls"][0]["runtime_output_status"]["missing_count"] == 0
     assert partial["controls"][0]["runtime_output_status"]["incomplete_count"] == 3
     assert "incomplete_runtime_outputs" in partial["controls"][0]["blockers"]
     assert complete["passed"] is True
+    assert rounded_final["passed"] is True
     assert complete["controls"][0]["runtime_output_status"]["complete_count"] == 3
 
 

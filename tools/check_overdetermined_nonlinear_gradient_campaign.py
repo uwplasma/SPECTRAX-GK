@@ -127,7 +127,14 @@ def _read_runtime_time_max(path: Path) -> float | None:
     return max(candidates) if candidates else None
 
 
+def _runtime_completion_tolerance(required_tmax: float | None) -> float:
+    if required_tmax is None:
+        return 0.0
+    return max(0.5, abs(float(required_tmax)) * 1.0e-4)
+
+
 def _runtime_output_status(paths: list[Path], *, required_tmax: float | None) -> dict[str, Any]:
+    tolerance = _runtime_completion_tolerance(required_tmax)
     rows: list[dict[str, Any]] = []
     for path in paths:
         exists = path.exists()
@@ -135,7 +142,7 @@ def _runtime_output_status(paths: list[Path], *, required_tmax: float | None) ->
         time_max = _read_runtime_time_max(path) if exists and size_bytes > 0 and required_tmax is not None else None
         complete = bool(exists and size_bytes > 0)
         if complete and required_tmax is not None:
-            complete = bool(time_max is not None and time_max >= required_tmax - 1.0e-6)
+            complete = bool(time_max is not None and time_max >= required_tmax - tolerance)
         rows.append(
             {
                 "path": _repo_path(path),
@@ -153,6 +160,7 @@ def _runtime_output_status(paths: list[Path], *, required_tmax: float | None) ->
         "missing_count": len(missing),
         "incomplete_count": len(incomplete),
         "required_tmax": required_tmax,
+        "completion_tolerance": tolerance,
         "missing_outputs": [row["path"] for row in missing[:20]],
         "incomplete_outputs": [
             {
