@@ -92,6 +92,12 @@ Nonlinear Helpers
    :members:
    :private-members:
 
+Nonlinear Replicate Diagnostics
+-------------------------------
+
+.. automodule:: spectraxgk.nonlinear_replicate_diagnostics
+   :members:
+
 Benchmarks
 ----------
 

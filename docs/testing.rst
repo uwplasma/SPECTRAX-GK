@@ -409,6 +409,17 @@ baseline/plus/minus replicated ensemble builders, the central-FD gate, and the
 final nonlinear-gradient evidence check in dependency order. Use
 ``--allow-blocked`` only when collecting a failure artifact for diagnosis; a
 promotion run should keep the default fail-closed behavior.
+If that central-FD gate is blocked by a replicated state, run
+``tools/summarize_nonlinear_replicate_spread.py`` on the baseline, plus, and
+minus ensemble JSON files before launching more nonlinear simulations. The
+tool enriches the ensemble rows with seed/timestep labels and convergence
+statistics, writes JSON/CSV/PNG sidecars, and classifies whether the failed
+state is seed-limited, timestep-limited, mixed seed/timestep spread, or missing
+metadata. The current QA/ESS composite profile-direction diagnostic is
+``docs/_static/qa_ess_descent_profile_rel2_replicate_spread_diagnostic.json``:
+the plus state is a mixed seed/timestep failure, so the next GPU campaign must
+disambiguate timestep sensitivity or shrink the bracket rather than adding
+blind replicas.
 
 ``tools/write_optimized_equilibrium_transport_configs.py`` is the production
 optimization companion for that final audit. Given a concrete post-optimization

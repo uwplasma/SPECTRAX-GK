@@ -468,6 +468,38 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.nonlinear_replicate_diagnostics"
+path = "src/spectraxgk/nonlinear_replicate_diagnostics.py"
+owner_lane = "replicated nonlinear-window spread diagnosis before follow-up GPU campaigns"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "seed and timestep replicate windows for post-transient nonlinear transport audits",
+  "fail-closed nonlinear turbulence-gradient evidence gates",
+]
+physics_contracts = [
+  "a nonlinear-gradient claim stays blocked when any baseline/plus/minus state fails the replicate-spread gate",
+  "mixed seed/timestep spread is classified as a campaign-design problem rather than hidden by adding blind replicas",
+]
+numerics_contracts = [
+  "relative deviations are normalized by the finite ensemble mean with a positive value floor",
+  "seed and timestep variant labels are inferred deterministically from ensemble rows when explicit metadata is absent",
+]
+fast_tests = [
+  "tests/test_nonlinear_replicate_diagnostics.py",
+  "tests/test_summarize_nonlinear_replicate_spread.py",
+]
+artifact_paths = [
+  "docs/_static/qa_ess_descent_profile_rel2_replicate_spread_diagnostic.json",
+  "docs/_static/qa_ess_descent_profile_rel2_replicate_spread_diagnostic.png",
+]
+next_tests = [
+  "add paired-replicate sign-stability classification once another matched long-window gradient campaign finishes",
+  "connect spread-diagnostic recommendations to the nonlinear-gradient campaign planner",
+]
+
+[[modules]]
 module = "spectraxgk.quasilinear"
 path = "src/spectraxgk/quasilinear.py"
 owned_modules = [

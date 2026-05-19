@@ -946,6 +946,19 @@ promoted nonlinear turbulence-gradient claim.
    but nonlocal and too uncertain, so the result is retained as fail-closed
    evidence for the next campaign design rather than a promoted gradient.
 
+.. figure:: _static/qa_ess_descent_profile_rel2_replicate_spread_diagnostic.png
+   :width: 90%
+   :align: center
+   :alt: QA/ESS composite profile-direction replicate-spread diagnostic
+
+   QA/ESS composite profile-direction replicate-spread diagnostic. The
+   baseline and minus states remain within the seed/timestep spread gate, while
+   the plus state fails because the high window is the ``seed32`` run and the
+   low window is the ``dt0p04`` timestep run. This mixed seed/timestep failure
+   is exactly the case where the correct action is not to add blind replicas at
+   the same bracket: the next campaign must first separate timestep sensitivity
+   from seed sensitivity or shrink the finite-difference bracket.
+
 .. figure:: _static/qa_ess_rbc11_bracket_sweep.png
    :width: 90%
    :align: center
