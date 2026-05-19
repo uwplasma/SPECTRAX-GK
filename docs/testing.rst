@@ -420,6 +420,18 @@ metadata. The current QA/ESS composite profile-direction diagnostic is
 the plus state is a mixed seed/timestep failure, so the next GPU campaign must
 disambiguate timestep sensitivity or shrink the bracket rather than adding
 blind replicas.
+``tools/write_nonlinear_replicate_followup_campaign.py`` turns that diagnostic
+back into a minimal run list. It reads the original
+``gradient_campaign_manifest.json`` and the spread diagnostic, infers the seed
+and timestep metadata from the already-generated TOMLs, and writes only the
+cross variants needed to disambiguate the failed state. For the current QA/ESS
+profile-direction audit, the tracked launch artifact is
+``docs/_static/qa_ess_descent_profile_rel2_plus_delta_replicate_followup_plan.json``;
+it selects ``seed22_dt0p05``, ``seed32_dt0p04``, and ``seed33_dt0p05`` for the
+``plus_delta`` state. After those three GPU runs finish, rebuild the plus
+ensemble with the added outputs, rerun
+``tools/summarize_nonlinear_replicate_spread.py``, and only then rerun the
+central-FD/evidence gates.
 
 ``tools/write_optimized_equilibrium_transport_configs.py`` is the production
 optimization companion for that final audit. Given a concrete post-optimization

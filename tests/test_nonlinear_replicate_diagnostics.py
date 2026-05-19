@@ -86,3 +86,30 @@ def test_replicate_spread_report_passes_with_small_seed_spread() -> None:
 
     assert report["passed"] is True
     assert report["state_rows"][0]["classification"] == "passed_replicate_spread_gate"
+
+
+def test_replicate_spread_report_preserves_joint_seed_timestep_labels() -> None:
+    report = nonlinear_replicate_spread_report(
+        [
+            {
+                "case": "qa_ess_nonlinear_gradient_plus_delta_t900_ensemble",
+                "passed": False,
+                "statistics": {"ensemble_mean": 10.0, "mean_rel_spread": 0.30},
+                "rows": [
+                    {
+                        "index": 0,
+                        "late_mean": 11.5,
+                        "source_artifact": "case_seed32_dt0p04_heat_flux_trace.csv",
+                    },
+                    {
+                        "index": 1,
+                        "late_mean": 8.5,
+                        "source_artifact": "case_seed22_dt0p05_heat_flux_trace.csv",
+                    },
+                ],
+            }
+        ]
+    )
+
+    assert report["replicate_rows"][0]["variant_label"] == "seed32_dt0p04"
+    assert report["replicate_rows"][0]["variant_axis"] == "seed_timestep"

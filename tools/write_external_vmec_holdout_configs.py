@@ -102,6 +102,28 @@ def _float_label(value: float) -> str:
     return f"{float(value):.12g}".replace(".", "p").replace("-", "m")
 
 
+def _seed_dt_label(seed: int, dt: float) -> str:
+    return f"seed{int(seed)}_dt{_float_label(float(dt))}"
+
+
+def _parse_seed_dt_variant(raw: str) -> tuple[int, float]:
+    """Parse a joint seed/timestep variant encoded as ``SEED:DT``."""
+
+    parts = raw.split(":")
+    if len(parts) != 2:
+        raise ValueError("joint seed/timestep variants must have format SEED:DT")
+    try:
+        seed = int(parts[0])
+        dt_value = float(parts[1])
+    except ValueError as exc:
+        raise ValueError(f"invalid seed/timestep variant {raw!r}") from exc
+    if seed < 0:
+        raise ValueError("joint seed/timestep variant seed must be non-negative")
+    if dt_value <= 0.0:
+        raise ValueError("joint seed/timestep variant dt must be positive")
+    return seed, dt_value
+
+
 def _resolved_vmec_file(path: Path) -> Path:
     """Return an absolute VMEC source path before rendering generated TOMLs.
 
@@ -130,10 +152,12 @@ def _build_variants(
     baseline_seed: int,
     seed_variants: Iterable[int] | None,
     dt_variants: Iterable[float] | None,
+    seed_dt_variants: Iterable[tuple[int, float]] | None = None,
 ) -> tuple[VariantSpec | None, ...]:
     seed_values = tuple(int(value) for value in (seed_variants or ()))
     dt_values = tuple(float(value) for value in (dt_variants or ()))
-    if not seed_values and not dt_values:
+    seed_dt_values = tuple((int(seed), float(dt_value)) for seed, dt_value in (seed_dt_variants or ()))
+    if not seed_values and not dt_values and not seed_dt_values:
         return (None,)
     variants: list[VariantSpec] = []
     for seed in seed_values:
@@ -154,6 +178,19 @@ def _build_variants(
                 random_seed=int(baseline_seed),
                 dt=dt_value,
                 axis="timestep",
+            )
+        )
+    for seed, dt_value in seed_dt_values:
+        if seed < 0:
+            raise ValueError("joint seed/timestep variant seed must be non-negative")
+        if dt_value <= 0.0:
+            raise ValueError("joint seed/timestep variant dt must be positive")
+        variants.append(
+            VariantSpec(
+                label=_seed_dt_label(seed, dt_value),
+                random_seed=seed,
+                dt=dt_value,
+                axis="seed_timestep",
             )
         )
     labels = [variant.label for variant in variants]
@@ -334,6 +371,7 @@ def write_configs(
     baseline_seed: int = 22,
     seed_variants: Iterable[int] | None = None,
     dt_variants: Iterable[float] | None = None,
+    seed_dt_variants: Iterable[tuple[int, float]] | None = None,
 ) -> list[WrittenConfig]:
     """Write all configs and return their metadata."""
 
@@ -349,6 +387,7 @@ def write_configs(
         baseline_seed=int(baseline_seed),
         seed_variants=seed_variants,
         dt_variants=dt_variants,
+        seed_dt_variants=seed_dt_variants,
     )
     for variant in variants:
         variant_dt = float(dt if variant is None else variant.dt)
@@ -504,6 +543,12 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Timestep replicate to generate. Repeat for multiple dt variants.",
     )
+    parser.add_argument(
+        "--seed-dt-variant",
+        action="append",
+        default=None,
+        help="Joint seed/timestep replicate encoded as SEED:DT. Repeat for multiple cross variants.",
+    )
     parser.add_argument("--horizons", default=",".join(str(v).rstrip("0").rstrip(".") for v in DEFAULT_HORIZONS))
     parser.add_argument("--grid", action="append", default=None, help="Grid spec label:Nx:Ny:Nz:ntheta")
     return parser
@@ -526,6 +571,7 @@ def main(argv: list[str] | None = None) -> int:
         baseline_seed=int(args.baseline_seed),
         seed_variants=args.seed_variant,
         dt_variants=args.dt_variant,
+        seed_dt_variants=tuple(_parse_seed_dt_variant(raw) for raw in (args.seed_dt_variant or ())),
     )
     manifest = write_manifest(args.out_dir, written)
     print(f"wrote {len(written)} configs")

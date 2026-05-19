@@ -959,6 +959,16 @@ promoted nonlinear turbulence-gradient claim.
    the same bracket: the next campaign must first separate timestep sensitivity
    from seed sensitivity or shrink the finite-difference bracket.
 
+The targeted follow-up launch artifact for that decision is
+``docs/_static/qa_ess_descent_profile_rel2_plus_delta_replicate_followup_plan.json``.
+It keeps the nonlinear-gradient claim fail-closed and writes only three
+``plus_delta`` cross variants: ``seed22_dt0p05`` tests whether the low window
+follows the seed at the nominal timestep, ``seed32_dt0p04`` tests whether the
+high window persists at the refined timestep, and ``seed33_dt0p05`` adds one
+fresh nominal-timestep seed. These are campaign-design runs; they become
+physics evidence only after the corresponding ``t=900`` outputs pass the same
+runtime-output, window-convergence, replicate-spread, and central-FD gates.
+
 .. figure:: _static/qa_ess_rbc11_bracket_sweep.png
    :width: 90%
    :align: center

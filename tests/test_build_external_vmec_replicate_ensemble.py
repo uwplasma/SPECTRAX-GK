@@ -87,3 +87,20 @@ def test_replicate_ensemble_tool_builds_trace_reports_and_plot(tmp_path: Path) -
         readiness["observed_artifacts"][0]["source_artifact"]
         .startswith("docs/_static/demo_replicates/")
     )
+
+
+def test_replicate_ensemble_tool_parses_joint_seed_timestep_variant(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    variant = mod._variant_from_path(
+        tmp_path / "demo_nonlinear_t100_n64_seed32_dt0p04.out.nc",
+        baseline_seed=22,
+        baseline_dt=0.05,
+    )
+
+    assert variant == {
+        "variant_axis": "seed_timestep",
+        "variant_label": "seed32_dt0p04",
+        "seed": 32,
+        "dt": 0.04,
+        "variant": {"seed": 32, "timestep": 0.04},
+    }

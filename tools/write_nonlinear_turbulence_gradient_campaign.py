@@ -18,6 +18,7 @@ if str(ROOT) not in sys.path:
 from tools.write_external_vmec_holdout_configs import (  # noqa: E402
     _parse_grid,
     _parse_horizons,
+    _parse_seed_dt_variant,
     write_configs,
     write_manifest,
 )
@@ -138,6 +139,7 @@ def _state_ensemble_command(
     seed_variants: tuple[int, ...],
     dt_variant: float,
     dt_variant_label: str,
+    seed_dt_variants: tuple[tuple[int, float], ...] = (),
 ) -> dict[str, Any]:
     state_case = f"{case}_{state}"
     ensemble_dir = ROOT / "docs" / "_static" / f"{case}_{state}_replicates"
@@ -148,6 +150,10 @@ def _state_ensemble_command(
     inputs.append(_expected_output(state_out_dir, state_case, tmax, grid_label, dt_variant_label))
     variants = [(f"seed{seed}", float(baseline_dt)) for seed in seed_variants]
     variants.append((dt_variant_label, float(dt_variant)))
+    for seed, seed_dt in seed_dt_variants:
+        label = f"seed{int(seed)}_dt{_float_label(seed_dt)}"
+        inputs.append(_expected_output(state_out_dir, state_case, tmax, grid_label, label))
+        variants.append((label, float(seed_dt)))
     direct_full_horizon_step_counts = {
         label: int(round(float(tmax) / dt)) for label, dt in variants
     }
@@ -256,6 +262,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--dt-variant", type=float, default=DEFAULT_DT_VARIANT)
     parser.add_argument("--baseline-seed", type=int, default=22)
     parser.add_argument("--seed-variant", action="append", type=int, default=None)
+    parser.add_argument(
+        "--seed-dt-variant",
+        action="append",
+        default=None,
+        help="Joint seed/timestep replicate encoded as SEED:DT. Repeat for cross-check variants.",
+    )
     parser.add_argument("--horizons", default=DEFAULT_HORIZONS)
     parser.add_argument("--grid", action="append", default=None, help="Grid spec label:Nx:Ny:Nz:ntheta")
     parser.add_argument("--Nl", type=int, default=4)
@@ -281,6 +293,7 @@ def main(argv: list[str] | None = None) -> int:
     if len(grids) != 1:
         raise ValueError("gradient campaign configs currently require exactly one grid")
     seed_variants = tuple(args.seed_variant or DEFAULT_SEEDS)
+    seed_dt_variants = tuple(_parse_seed_dt_variant(raw) for raw in (args.seed_dt_variant or ()))
     dt_variant_label = f"dt{_float_label(float(args.dt_variant))}"
     state_vmec = {
         "minus_delta": args.minus_vmec_file,
@@ -310,6 +323,7 @@ def main(argv: list[str] | None = None) -> int:
             baseline_seed=int(args.baseline_seed),
             seed_variants=seed_variants,
             dt_variants=(float(args.dt_variant),),
+            seed_dt_variants=seed_dt_variants,
         )
         total_configs += len(written)
         state_manifests[state] = _repo_relative(write_manifest(state_out_dir, written))
@@ -324,6 +338,7 @@ def main(argv: list[str] | None = None) -> int:
             seed_variants=seed_variants,
             dt_variant=float(args.dt_variant),
             dt_variant_label=dt_variant_label,
+            seed_dt_variants=seed_dt_variants,
         )
 
     manifest = {
@@ -360,6 +375,9 @@ def main(argv: list[str] | None = None) -> int:
             "analysis_window": [float(args.window_tmin), float(args.window_tmax)],
             "grid": grids[0].label,
             "replicates": [f"seed{seed}" for seed in seed_variants] + [dt_variant_label],
+            "joint_seed_timestep_replicates": [
+                f"seed{seed}_dt{_float_label(seed_dt)}" for seed, seed_dt in seed_dt_variants
+            ],
         },
         "configs_written": total_configs,
     }

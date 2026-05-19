@@ -70,6 +70,16 @@ def _variant_from_path(
     stem = _base_stem(path)
     seed_match = re.search(r"(?:^|_)seed([0-9]+)(?:_|$)", stem)
     dt_match = re.search(r"(?:^|_)dt([0-9]+(?:p[0-9]+)?)(?:_|$)", stem)
+    if seed_match and dt_match:
+        seed = int(seed_match.group(1))
+        dt = _float_from_label(dt_match.group(1))
+        return {
+            "variant_axis": "seed_timestep",
+            "variant_label": f"seed{seed}_dt{dt_match.group(1)}",
+            "seed": seed,
+            "dt": dt,
+            "variant": {"seed": seed, "timestep": dt},
+        }
     if seed_match:
         seed = int(seed_match.group(1))
         return {

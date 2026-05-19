@@ -500,6 +500,39 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.nonlinear_replicate_followup"
+path = "src/spectraxgk/nonlinear_replicate_followup.py"
+owner_lane = "targeted seed/timestep follow-up planning for blocked nonlinear-gradient campaigns"
+status = "active"
+coverage_priority = "medium"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "paired seed/timestep nonlinear transport windows for production turbulence-gradient audits",
+  "fail-closed finite-difference evidence contracts before spending additional GPU time",
+]
+physics_contracts = [
+  "mixed seed/timestep replicate spread is resolved by crossed variants before rerunning central finite differences",
+  "follow-up artifacts remain launch plans and cannot promote nonlinear-gradient physics claims without completed output/window gates",
+]
+numerics_contracts = [
+  "follow-up selection deduplicates seed/timestep pairs and preserves finite timestep values",
+  "missing seed/timestep metadata keeps the campaign blocked instead of fabricating run labels",
+]
+fast_tests = [
+  "tests/test_nonlinear_replicate_followup.py",
+  "tests/test_write_nonlinear_replicate_followup_campaign.py",
+  "tests/test_write_external_vmec_holdout_configs.py",
+  "tests/test_build_external_vmec_replicate_ensemble.py",
+]
+artifact_paths = [
+  "docs/_static/qa_ess_descent_profile_rel2_plus_delta_replicate_followup_plan.json",
+]
+next_tests = [
+  "after the targeted plus-state outputs finish, add a regression fixture for a passing crossed-replicate ensemble",
+  "add direct paired-seed finite-difference ranking once a second profile direction has complete long-window runs",
+]
+
+[[modules]]
 module = "spectraxgk.quasilinear"
 path = "src/spectraxgk/quasilinear.py"
 owned_modules = [

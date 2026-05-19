@@ -1228,6 +1228,58 @@ def test_gradient_campaign_writer_creates_matched_state_run_contract(tmp_path: P
     assert "restart-ladder segments" in baseline_commands["restart_ladder_note"]
 
 
+def test_gradient_campaign_writer_can_add_joint_seed_timestep_variants(tmp_path: Path) -> None:
+    mod = _load_campaign_tool_module()
+    baseline = tmp_path / "wout_baseline.nc"
+    plus = tmp_path / "wout_plus.nc"
+    minus = tmp_path / "wout_minus.nc"
+    baseline.write_text("baseline-equilibrium", encoding="utf-8")
+    plus.write_text("plus-equilibrium", encoding="utf-8")
+    minus.write_text("minus-equilibrium", encoding="utf-8")
+    out_dir = tmp_path / "campaign"
+
+    rc = mod.main(
+        [
+            "--baseline-vmec-file",
+            str(baseline),
+            "--plus-vmec-file",
+            str(plus),
+            "--minus-vmec-file",
+            str(minus),
+            "--case",
+            "qa_gradient",
+            "--parameter-name",
+            "rbc_1_0",
+            "--delta-parameter",
+            "0.02",
+            "--out-dir",
+            str(out_dir),
+            "--horizons",
+            "2",
+            "--grid",
+            "n4:4:4:4:4",
+            "--window-tmin",
+            "1",
+            "--window-tmax",
+            "2",
+            "--seed-variant",
+            "31",
+            "--dt-variant",
+            "0.04",
+            "--seed-dt-variant",
+            "32:0.04",
+        ]
+    )
+
+    manifest = json.loads((out_dir / "gradient_campaign_manifest.json").read_text(encoding="utf-8"))
+    assert rc == 0
+    assert manifest["configs_written"] == 9
+    assert manifest["run_contract"]["joint_seed_timestep_replicates"] == ["seed32_dt0p04"]
+    baseline_commands = manifest["state_ensemble_commands"]["baseline"]
+    assert "seed32_dt0p04" in baseline_commands["direct_full_horizon_step_counts"]
+    assert any("seed32_dt0p04.toml" in command for command in baseline_commands["direct_full_horizon_launch_commands"])
+
+
 def test_gradient_campaign_writer_fails_closed_on_duplicate_vmec_paths(tmp_path: Path) -> None:
     mod = _load_campaign_tool_module()
     vmec_file = tmp_path / "wout_same.nc"

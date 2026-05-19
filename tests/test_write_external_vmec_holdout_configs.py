@@ -6,6 +6,7 @@ import pytest
 from tools.write_external_vmec_holdout_configs import (
     _parse_grid,
     _parse_horizons,
+    _parse_seed_dt_variant,
     write_configs,
     write_manifest,
 )
@@ -74,9 +75,10 @@ def test_write_external_vmec_holdout_configs_replicate_variants(tmp_path: Path) 
         baseline_seed=22,
         seed_variants=[31, 32],
         dt_variants=[0.2, 0.125],
+        seed_dt_variants=[(31, 0.2)],
     )
 
-    assert len(written) == 8
+    assert len(written) == 10
     labels = [item.variant.label if item.variant is not None else "" for item in written]
     assert labels == [
         "seed31",
@@ -87,8 +89,10 @@ def test_write_external_vmec_holdout_configs_replicate_variants(tmp_path: Path) 
         "dt0p2",
         "dt0p125",
         "dt0p125",
+        "seed31_dt0p2",
+        "seed31_dt0p2",
     ]
-    assert [item.steps for item in written] == [4, 4, 4, 4, 5, 5, 8, 8]
+    assert [item.steps for item in written] == [4, 4, 4, 4, 5, 5, 8, 8, 5, 5]
 
     seed_config = written[0].path.read_text(encoding="utf-8")
     assert 'path = "replicate_nonlinear_t1_n8_seed31.out.nc"' in seed_config
@@ -96,6 +100,60 @@ def test_write_external_vmec_holdout_configs_replicate_variants(tmp_path: Path) 
     assert 'variant_axis = "seed"' in seed_config
     assert 'variant_label = "seed31"' in seed_config
     assert "timestep = 0.25" in seed_config
+
+    dt_config = written[-1].path.read_text(encoding="utf-8")
+    assert 'path = "replicate_nonlinear_t2_n8_seed31_dt0p2.out.nc"' in dt_config
+    assert "dt = 0.2" in dt_config
+    assert "random_seed = 31" in dt_config
+    assert 'variant_axis = "seed_timestep"' in dt_config
+    assert 'variant_label = "seed31_dt0p2"' in dt_config
+
+    dt_only_config = written[-3].path.read_text(encoding="utf-8")
+    assert 'path = "replicate_nonlinear_t2_n8_dt0p125.out.nc"' in dt_only_config
+    assert "dt = 0.125" in dt_only_config
+    assert "random_seed = 22" in dt_only_config
+    assert 'variant_axis = "timestep"' in dt_only_config
+    assert "timestep = 0.125" in dt_only_config
+
+    manifest = write_manifest(tmp_path / "runs", written)
+    payload = json.loads(manifest.read_text(encoding="utf-8"))
+    assert len(payload["restart_seed_commands"]) == 5
+    assert "replicate_nonlinear_t1_n8_seed31" in payload["restart_seed_commands"][0]
+    assert "replicate_nonlinear_t2_n8_seed31" in payload["restart_seed_commands"][0]
+    assert "replicate_nonlinear_t1_n8_seed31_dt0p2" in payload["restart_seed_commands"][-1]
+    assert "replicate_nonlinear_t2_n8_seed31_dt0p2" in payload["restart_seed_commands"][-1]
+    variants = [item["variant"] for item in payload["configs"]]
+    assert variants[0] == {"axis": "seed", "label": "seed31", "seed": 31, "timestep": 0.25}
+    assert variants[-1] == {"axis": "seed_timestep", "label": "seed31_dt0p2", "seed": 31, "timestep": 0.2}
+
+
+def test_seed_dt_variant_parser_rejects_bad_inputs() -> None:
+    assert _parse_seed_dt_variant("31:0.04") == (31, 0.04)
+    with pytest.raises(ValueError, match="SEED:DT"):
+        _parse_seed_dt_variant("31")
+    with pytest.raises(ValueError, match="non-negative"):
+        _parse_seed_dt_variant("-1:0.04")
+    with pytest.raises(ValueError, match="positive"):
+        _parse_seed_dt_variant("31:0")
+
+
+def test_write_external_vmec_holdout_configs_timestep_only_metadata(tmp_path: Path) -> None:
+    vmec_file = tmp_path / "wout_fixture.nc"
+    vmec_file.write_text("placeholder", encoding="utf-8")
+
+    written = write_configs(
+        case="replicate",
+        vmec_file=vmec_file,
+        out_dir=tmp_path / "runs",
+        grids=[_parse_grid("n8:8:8:6:6")],
+        horizons=(1.0, 2.0),
+        dt=0.25,
+        ky=0.3,
+        nl=2,
+        nm=3,
+        baseline_seed=22,
+        dt_variants=[0.125],
+    )
 
     dt_config = written[-1].path.read_text(encoding="utf-8")
     assert 'path = "replicate_nonlinear_t2_n8_dt0p125.out.nc"' in dt_config
@@ -106,13 +164,10 @@ def test_write_external_vmec_holdout_configs_replicate_variants(tmp_path: Path) 
 
     manifest = write_manifest(tmp_path / "runs", written)
     payload = json.loads(manifest.read_text(encoding="utf-8"))
-    assert len(payload["restart_seed_commands"]) == 4
-    assert "replicate_nonlinear_t1_n8_seed31" in payload["restart_seed_commands"][0]
-    assert "replicate_nonlinear_t2_n8_seed31" in payload["restart_seed_commands"][0]
+    assert len(payload["restart_seed_commands"]) == 1
     assert "replicate_nonlinear_t1_n8_dt0p125" in payload["restart_seed_commands"][-1]
     assert "replicate_nonlinear_t2_n8_dt0p125" in payload["restart_seed_commands"][-1]
     variants = [item["variant"] for item in payload["configs"]]
-    assert variants[0] == {"axis": "seed", "label": "seed31", "seed": 31, "timestep": 0.25}
     assert variants[-1] == {"axis": "timestep", "label": "dt0p125", "seed": 22, "timestep": 0.125}
 
 

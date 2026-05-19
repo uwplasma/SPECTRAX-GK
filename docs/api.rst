@@ -98,6 +98,12 @@ Nonlinear Replicate Diagnostics
 .. automodule:: spectraxgk.nonlinear_replicate_diagnostics
    :members:
 
+Nonlinear Replicate Follow-Up
+-----------------------------
+
+.. automodule:: spectraxgk.nonlinear_replicate_followup
+   :members:
+
 Benchmarks
 ----------
 
