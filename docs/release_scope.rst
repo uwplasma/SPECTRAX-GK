@@ -281,16 +281,19 @@ Quasilinear model-selection state:
   nonlinear turbulence-gradient claim gate. The tracked
   ``docs/_static/nonlinear_turbulence_gradient_evidence_status.json`` artifact
   passes the replicated long-window uncertainty side but fails closed on the
-  gradient side. The current tracked production-candidate artifact is the
-  re-equilibrated optimized QA/ESS ``ZBS(1,0)`` 5% campaign at ``t=[450,900]``:
-  all baseline/plus/minus replicated nonlinear windows pass, and the finite
-  difference has bounded response fraction, subtraction condition number, and
-  forward/backward locality. The remaining blocker is propagated uncertainty:
-  ``gradient_uncertainty_rel = 0.768`` exceeds the ``0.5`` gate. The companion
-  ``ZBS(1,1)`` 5% campaign passes uncertainty at ``0.225`` but remains mildly
-  nonlocal with ``fd_asymmetry_rel = 0.663``. The
-  ``docs/_static/nonlinear_turbulence_gradient_evidence_gap_report.json`` now
-  records this as a failed production-candidate gate, not as a missing campaign.
+  gradient side. The current best tracked production-candidate artifact is the
+  completed overdetermined optimized-QA/ESS ``RBC(1,1)`` 3% campaign at
+  ``t=[450,900]``: all runtime-output and replicated-window gates pass, and
+  the finite difference has bounded response fraction, subtraction condition
+  number, and forward/backward locality. The remaining blocker is propagated
+  uncertainty: ``gradient_uncertainty_rel = 0.559`` exceeds the ``0.5`` gate.
+  The companion ``ZBS(1,1)`` 3% overdetermined campaign passes uncertainty at
+  ``0.355`` but remains nonlocal with ``fd_asymmetry_rel = 0.605``. ``ZBS(1,0)``
+  is not response-resolved in this overdetermined bracket. The
+  ``docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_status.json``
+  status artifact records complete runtime coverage and zero promoted controls,
+  so this remains a failed production-candidate gate rather than a missing
+  campaign.
   Until a paired post-transient artifact passes all response, asymmetry,
   conditioning, and propagated uncertainty gates, nonlinear turbulence-gradient
   evidence remains explicitly unpromoted.

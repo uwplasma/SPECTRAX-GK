@@ -895,24 +895,26 @@ uncertainty, but the finite-difference asymmetry worsens from about ``0.897``
 to ``1.895`` as the bracket grows. The recommendation is therefore to shrink
 the perturbation or move to a more local/composite profile-gradient control
 before spending more nonlinear GPU time.
-The concrete next-campaign launch contract is tracked in
+The concrete overdetermined campaign is tracked in
 ``docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_plan.json``.
-It starts from the same optimized-QA/ESS VMEC input and writes matched
+It starts from the same optimized-QA/ESS VMEC input, writes matched
 ``vmec_jax`` perturbation inputs for ``ZBS(1,1)``, ``ZBS(1,0)``, and
-``RBC(1,1)`` at 3% relative amplitude, followed by identical
-``t=900``, ``n64:64:64:40:40`` nonlinear launch ladders and a final candidate
-ranking command. This is still a launch plan, not gradient evidence.
-The current status artifact,
+``RBC(1,1)`` at 3% relative amplitude, and launches identical
+``t=900``, ``n64:64:64:40:40`` nonlinear ladders. That full campaign has now
+completed: all 27 runtime outputs pass the output gates, all three
+``RBC(1,1)`` baseline/plus/minus replicated ensembles pass, and the central-FD
+artifact is local and response-resolved. It remains fail-closed only because
+the propagated gradient uncertainty is still above the promotion gate:
+``gradient_uncertainty_rel = 0.559 > 0.5``. The companion controls fail for
+complementary reasons: ``ZBS(1,1)`` passes uncertainty but is nonlocal
+(``fd_asymmetry_rel = 0.605``), while ``ZBS(1,0)`` is not response-resolved.
+The final status artifact,
 ``docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_status.json``,
-shows that all nine VMEC-JAX re-equilibrations have completed and the three
-nested nonlinear campaign manifests are ready. The remaining task is the
-two-GPU execution of 27 full-horizon nonlinear outputs, followed by the
-per-control ensemble, central finite-difference, and candidate-ranking gates.
-The post-runtime command
-``tools/postprocess_overdetermined_nonlinear_gradient_campaign.py`` now runs
-those gates and the final status checker as one reproducible promotion step.
-Until those gates pass, the nonlinear turbulence-gradient claim remains
-blocked.
+therefore reports complete runtime coverage but zero promoted controls. The
+post-runtime command
+``tools/postprocess_overdetermined_nonlinear_gradient_campaign.py`` is the
+reproducible fail-closed path that produced these output, ensemble,
+central-FD, ranking, and status artifacts.
 Because both single-control amplitude sweeps point away from more blind
 replicas, SPECTRAX-GK now also includes
 ``tools/write_vmec_boundary_profile_perturbation_inputs.py`` for a smoother
@@ -944,6 +946,19 @@ promoted nonlinear turbulence-gradient claim.
    forward finite-difference gradients. The artifact is a production-candidate
    long-window campaign, but it remains blocked because the propagated
    gradient uncertainty is still above the release gate.
+
+.. figure:: _static/qa_ess_profile_gradient_rbc_1_1_nonlinear_gradient_rbc_1_1_central_fd_gradient_gate.png
+   :width: 90%
+   :align: center
+   :alt: QA/ESS overdetermined RBC(1,1) nonlinear turbulence-gradient gate
+
+   QA/ESS overdetermined ``RBC(1,1)`` 3% long-window nonlinear-gradient gate.
+   This is the best completed overdetermined candidate: the response is
+   resolved and the backward/forward finite-difference asymmetry is below the
+   locality gate. The artifact still fails closed because propagated
+   uncertainty remains slightly above the production threshold, so it supports
+   model-development and next-campaign design rather than a promoted nonlinear
+   turbulence-gradient claim.
 
 .. figure:: _static/qa_ess_descent_profile_rel2_nonlinear_gradient_profile_direction_zbs_1_1_zbs_1_0_rbc_1_1_central_fd_gradient_gate.png
    :width: 90%

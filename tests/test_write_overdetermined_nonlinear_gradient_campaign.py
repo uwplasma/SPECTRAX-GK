@@ -97,6 +97,9 @@ def test_overdetermined_writer_creates_multi_control_launch_manifest(tmp_path: P
     assert "rank_nonlinear_turbulence_gradient_candidates.py" in manifest["promotion_contract"][
         "candidate_ranking_command"
     ]
+    assert "--campaign-context overdetermined_followup" in manifest["promotion_contract"][
+        "candidate_ranking_command"
+    ]
     assert len(manifest["promotion_contract"]["expected_fd_artifacts"]) == 2
 
 

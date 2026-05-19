@@ -546,6 +546,34 @@ def test_candidate_ranking_selects_profile_gradient_when_failures_are_complement
     )
 
 
+def test_candidate_ranking_context_reports_completed_overdetermined_followup() -> None:
+    local_but_noisy = nonlinear_turbulence_gradient_finite_difference_report(
+        minus=_ensemble(16.08, sem=0.59),
+        baseline=_ensemble(15.52, sem=0.45),
+        plus=_ensemble(14.74, sem=0.46),
+        delta_parameter=0.00301141510243,
+        parameter_name="rbc_1_1",
+    )
+    quiet_but_nonlocal = nonlinear_turbulence_gradient_finite_difference_report(
+        minus=_ensemble(14.67, sem=0.27),
+        baseline=_ensemble(16.31, sem=0.45),
+        plus=_ensemble(17.13, sem=0.48),
+        delta_parameter=0.004699871690217756,
+        parameter_name="zbs_1_1",
+    )
+
+    report = nonlinear_turbulence_gradient_candidate_ranking_report(
+        [local_but_noisy, quiet_but_nonlocal],
+        config=NonlinearTurbulenceGradientCandidateRankingConfig(
+            campaign_context="overdetermined_followup"
+        ),
+    )
+
+    assert report["passed"] is False
+    assert "overdetermined follow-up completed" in report["recommendation"]
+    assert "keep the nonlinear-gradient claim fail-closed" in report["recommendation"]
+
+
 def test_candidate_ranking_can_promote_a_passing_production_candidate() -> None:
     passing = nonlinear_turbulence_gradient_finite_difference_report(
         minus=_ensemble(9.0, sem=0.02),

@@ -320,7 +320,15 @@ def overdetermined_campaign_status_report(manifest: dict[str, Any], *, manifest_
     if any(row["ready_for_runtime"] and not row["runtime_outputs_complete"] for row in control_rows):
         next_actions.append("run direct full-horizon nonlinear tasks for each nested campaign manifest")
     if all(row["runtime_outputs_complete"] for row in control_rows) and not promoted_controls:
-        next_actions.append("run output gates, ensemble gates, central-FD gates, then candidate ranking")
+        all_fd_artifacts_exist = all(bool(row["central_fd_status"]["exists"]) for row in control_rows)
+        if all_fd_artifacts_exist and bool(ranking.get("exists", False)):
+            recommendation = str(ranking.get("recommendation", "")).strip()
+            next_actions.append(
+                recommendation
+                or "keep the nonlinear-gradient claim fail-closed; no candidate passes production gates"
+            )
+        else:
+            next_actions.append("run output gates, ensemble gates, central-FD gates, then candidate ranking")
     if not next_actions and not passed:
         next_actions.append("inspect failed central-FD/ranking blockers before any release promotion")
     return {

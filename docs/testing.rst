@@ -415,6 +415,17 @@ After the long runtime queue completes,
 per-control output gates, ensemble gates, central finite-difference gates,
 candidate ranking, and final fail-closed status check in one reproducible
 sequence.
+The completed QA/ESS overdetermined campaign is intentionally tracked as a
+negative gate result: all 27 full-horizon nonlinear outputs pass the runtime
+coverage checks, but no control passes every production central-FD gate. The
+best candidate is ``RBC(1,1)`` with resolved response and bounded locality, but
+``gradient_uncertainty_rel = 0.559`` remains above the ``0.5`` promotion gate.
+The status artifact
+``docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_status.json``
+therefore reports complete runtime coverage and zero promoted controls. This is
+a regression target for the fail-closed workflow and a design input for future
+variance-reduction or smaller-bracket campaigns, not a nonlinear turbulence
+gradient validation claim.
 ``tools/write_vmec_boundary_profile_perturbation_inputs.py`` is the companion
 for a single smoother composite direction. It perturbs several VMEC boundary
 coefficients together, normalizes the finite-difference scalar by the Euclidean

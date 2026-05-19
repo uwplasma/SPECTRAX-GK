@@ -156,6 +156,21 @@ def test_overdetermined_status_tracks_runtime_and_fd_progression(tmp_path: Path)
     assert promoted["ranking_status"]["passed"] is True
 
 
+def test_overdetermined_status_uses_ranking_recommendation_after_failed_final_gates(
+    tmp_path: Path,
+) -> None:
+    mod = _load_tool_module()
+
+    report = mod.overdetermined_campaign_status_report(
+        _manifest(tmp_path, with_nested=True, with_runtime=True, fd_passed=False)
+    )
+
+    assert report["passed"] is False
+    assert report["summary"]["runtime_complete_count"] == 1
+    assert report["summary"]["central_fd_promoted_count"] == 0
+    assert report["next_actions"] == ["blocked"]
+
+
 def test_overdetermined_status_requires_full_runtime_time_coverage(tmp_path: Path) -> None:
     mod = _load_tool_module()
 

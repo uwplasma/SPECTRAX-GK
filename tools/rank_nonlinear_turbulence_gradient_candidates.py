@@ -50,6 +50,15 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--max-fd-condition-number", type=float, default=1.0e8)
     parser.add_argument("--min-fd-response-fraction", type=float, default=0.03)
     parser.add_argument(
+        "--campaign-context",
+        choices=("single_control_screen", "overdetermined_followup"),
+        default="single_control_screen",
+        help=(
+            "Recommendation context. Use overdetermined_followup when the input "
+            "candidates are the result of a completed multi-control follow-up."
+        ),
+    )
+    parser.add_argument(
         "--fail-on-no-promotable",
         action="store_true",
         help="Return nonzero unless at least one candidate already passes all production gates.",
@@ -70,6 +79,7 @@ def main(argv: list[str] | None = None) -> int:
             max_fd_asymmetry_rel=args.max_fd_asymmetry_rel,
             max_fd_condition_number=args.max_fd_condition_number,
             min_fd_response_fraction=args.min_fd_response_fraction,
+            campaign_context=args.campaign_context,
         ),
     )
     text = json.dumps(report, indent=2, sort_keys=True)

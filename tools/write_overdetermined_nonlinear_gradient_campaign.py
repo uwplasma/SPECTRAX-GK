@@ -194,6 +194,7 @@ def write_overdetermined_campaign(
         f"{PYTHON_CMD} tools/rank_nonlinear_turbulence_gradient_candidates.py "
         + " ".join(_repo_relative(path) for path in fd_artifacts)
         + f" --json-out {_repo_relative(ranking_json)}"
+        + " --campaign-context overdetermined_followup"
         + " --fail-on-no-promotable"
     )
     manifest = {
