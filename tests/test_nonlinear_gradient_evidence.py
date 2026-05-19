@@ -504,6 +504,17 @@ def test_long_window_fd_gate_fails_closed_for_nonfinite_window_statistics() -> N
     assert classified["qualifies_for_production_turbulence_gradient"] is False
 
 
+def test_long_window_fd_gate_rejects_nonpositive_delta() -> None:
+    with pytest.raises(ValueError, match="delta_parameter must be finite and positive"):
+        nonlinear_turbulence_gradient_finite_difference_report(
+            minus=_ensemble(9.0),
+            baseline=_ensemble(10.0),
+            plus=_ensemble(11.0),
+            delta_parameter=0.0,
+            parameter_name="rbc_1_0",
+        )
+
+
 def test_candidate_ranking_selects_profile_gradient_when_failures_are_complementary() -> None:
     local_but_noisy = nonlinear_turbulence_gradient_finite_difference_report(
         minus=_ensemble(16.94, sem=0.67),
@@ -552,6 +563,89 @@ def test_candidate_ranking_can_promote_a_passing_production_candidate() -> None:
     assert report["passed"] is True
     assert report["promotion_ready_candidate_count"] == 1
     assert report["best_candidate"]["parameter_name"] == "profile_gradient"
+
+
+def test_candidate_ranking_handles_metadata_errors_and_empty_screens() -> None:
+    assert nonlinear_turbulence_gradient_candidate_ranking_report([])["recommendation"].startswith(
+        "screen new profile-gradient"
+    )
+
+    with pytest.raises(ValueError, match="paths length"):
+        nonlinear_turbulence_gradient_candidate_ranking_report(
+            [_production_gradient()],
+            paths=["first.json", "second.json"],
+        )
+    with pytest.raises(ValueError, match="labels length"):
+        nonlinear_turbulence_gradient_candidate_ranking_report(
+            [_production_gradient()],
+            labels=["first", "second"],
+        )
+
+
+def test_candidate_ranking_distinguishes_single_failure_modes() -> None:
+    local_but_noisy = nonlinear_turbulence_gradient_finite_difference_report(
+        minus=_ensemble(9.0, sem=5.0),
+        baseline=_ensemble(10.0, sem=5.0),
+        plus=_ensemble(11.0, sem=5.0),
+        delta_parameter=0.05,
+        parameter_name="local_but_noisy",
+    )
+    quiet_but_nonlocal = nonlinear_turbulence_gradient_finite_difference_report(
+        minus=_ensemble(9.0, sem=0.02),
+        baseline=_ensemble(9.6, sem=0.02),
+        plus=_ensemble(11.0, sem=0.02),
+        delta_parameter=0.05,
+        parameter_name="quiet_but_nonlocal",
+        config=NonlinearTurbulenceGradientFiniteDifferenceConfig(
+            max_fd_asymmetry_rel=0.5,
+        ),
+    )
+
+    noisy_report = nonlinear_turbulence_gradient_candidate_ranking_report([local_but_noisy])
+    nonlocal_report = nonlinear_turbulence_gradient_candidate_ranking_report(
+        [quiet_but_nonlocal]
+    )
+
+    assert "extend statistical power" in noisy_report["recommendation"]
+    assert "reduce bracket size" in nonlocal_report["recommendation"]
+    assert "more replicas" in noisy_report["candidates"][0]["next_action"]
+    assert "smaller bracket" in nonlocal_report["candidates"][0]["next_action"]
+
+
+def test_candidate_ranking_flags_bad_conditioning_and_unscoped_artifacts() -> None:
+    ill_conditioned = nonlinear_turbulence_gradient_finite_difference_report(
+        minus=_ensemble(0.09, sem=1.0e-4),
+        baseline=_ensemble(0.10, sem=1.0e-4),
+        plus=_ensemble(0.11, sem=1.0e-4),
+        delta_parameter=0.05,
+        parameter_name="near_null_response",
+    )
+    unscoped = {
+        "kind": "legacy_gradient_summary",
+        "passed": True,
+        "metrics": {
+            "central_gradient": 1.0,
+            "response_fraction": 0.1,
+            "fd_asymmetry_rel": 0.1,
+            "fd_condition_number": 2.0,
+            "gradient_uncertainty_rel": 0.1,
+        },
+    }
+
+    report = nonlinear_turbulence_gradient_candidate_ranking_report(
+        [ill_conditioned, unscoped],
+        config=NonlinearTurbulenceGradientCandidateRankingConfig(
+            max_fd_condition_number=5.0,
+        ),
+    )
+
+    assert report["passed"] is False
+    by_name = {row["parameter_name"]: row for row in report["candidates"]}
+    assert by_name["near_null_response"]["next_action"].startswith(
+        "choose a better-conditioned"
+    )
+    assert by_name["candidate_1"]["evidence_class"] == "unscoped_gradient_or_fd_artifact_not_production"
+    assert by_name["candidate_1"]["failed_gates"] == ["explicit_production_long_window_scope"]
 
 
 def test_bracket_sweep_blocks_repeating_unstable_same_bracket() -> None:
@@ -657,6 +751,106 @@ def test_bracket_sweep_promotes_only_passing_long_window_bracket() -> None:
     assert "smallest passing delta is 0.05" in report["recommendation"]
 
 
+def test_bracket_sweep_fail_closed_metadata_and_empty_inputs() -> None:
+    report = nonlinear_turbulence_gradient_bracket_sweep_report([])
+
+    assert report["passed"] is False
+    assert report["promotion_ready_bracket_count"] == 0
+    assert "at least two matched plus/minus perturbation amplitudes" in report["recommendation"]
+
+    with pytest.raises(ValueError, match="paths length"):
+        nonlinear_turbulence_gradient_bracket_sweep_report(
+            [_production_gradient()],
+            paths=["first.json", "second.json"],
+        )
+    with pytest.raises(ValueError, match="labels length"):
+        nonlinear_turbulence_gradient_bracket_sweep_report(
+            [_production_gradient()],
+            labels=["first", "second"],
+        )
+
+
+def test_bracket_sweep_recommends_shrinking_nonlocal_quiet_bracket() -> None:
+    quiet_but_nonlocal = nonlinear_turbulence_gradient_finite_difference_report(
+        minus=_ensemble(9.0, sem=0.02),
+        baseline=_ensemble(9.6, sem=0.02),
+        plus=_ensemble(11.0, sem=0.02),
+        delta_parameter=0.05,
+        parameter_name="rbc_1_1",
+        config=NonlinearTurbulenceGradientFiniteDifferenceConfig(
+            max_fd_asymmetry_rel=0.5,
+        ),
+    )
+
+    report = nonlinear_turbulence_gradient_bracket_sweep_report([quiet_but_nonlocal])
+
+    assert report["passed"] is False
+    assert report["brackets"][0]["margins"]["uncertainty"] >= 1.0
+    assert report["brackets"][0]["margins"]["locality"] < 1.0
+    assert "shrink the perturbation" in report["recommendation"]
+
+
+def test_bracket_sweep_recommends_profile_gradient_for_noisy_nonlocal_response() -> None:
+    noisy_and_nonlocal = nonlinear_turbulence_gradient_finite_difference_report(
+        minus=_ensemble(9.0, sem=5.0),
+        baseline=_ensemble(9.6, sem=5.0),
+        plus=_ensemble(11.0, sem=5.0),
+        delta_parameter=0.05,
+        parameter_name="zbs_1_0",
+        config=NonlinearTurbulenceGradientFiniteDifferenceConfig(
+            max_fd_asymmetry_rel=0.5,
+        ),
+    )
+
+    report = nonlinear_turbulence_gradient_bracket_sweep_report([noisy_and_nonlocal])
+
+    assert report["passed"] is False
+    assert report["brackets"][0]["margins"]["response"] >= 1.0
+    assert report["brackets"][0]["margins"]["locality"] < 1.0
+    assert report["brackets"][0]["margins"]["uncertainty"] < 1.0
+    assert "neither local nor statistically resolved" in report["recommendation"]
+
+
+def test_bracket_sweep_recommends_abandoning_unresolved_single_control() -> None:
+    unresolved = nonlinear_turbulence_gradient_finite_difference_report(
+        minus=_ensemble(10.0, sem=0.02),
+        baseline=_ensemble(10.0, sem=0.02),
+        plus=_ensemble(10.01, sem=0.02),
+        delta_parameter=0.05,
+        parameter_name="weak_single_control",
+    )
+
+    report = nonlinear_turbulence_gradient_bracket_sweep_report([unresolved])
+
+    assert report["passed"] is False
+    assert report["brackets"][0]["margins"]["response"] < 1.0
+    assert "response is not resolved" in report["recommendation"]
+
+
+def test_bracket_sweep_fail_closed_for_legacy_missing_delta_artifact() -> None:
+    report = nonlinear_turbulence_gradient_bracket_sweep_report(
+        [
+            {
+                "kind": "legacy_gradient_summary",
+                "passed": True,
+                "parameter_name": "legacy_control",
+                "metrics": {
+                    "central_gradient": 1.0,
+                    "response_fraction": 0.1,
+                    "fd_asymmetry_rel": 0.1,
+                    "fd_condition_number": 2.0,
+                    "gradient_uncertainty_rel": 0.1,
+                },
+            }
+        ]
+    )
+
+    assert report["passed"] is False
+    assert report["brackets"][0]["delta_parameter"] is None
+    assert "explicit_production_long_window_scope" in report["brackets"][0]["failed_gates"]
+    assert "production long-window scope" in report["recommendation"]
+
+
 def test_gap_report_distinguishes_failed_production_candidate_from_missing_campaign() -> None:
     fd_report = nonlinear_turbulence_gradient_finite_difference_report(
         minus=_ensemble(9.9, sem=0.5),
@@ -687,6 +881,25 @@ def test_gap_report_distinguishes_failed_production_candidate_from_missing_campa
     }
     assert "artifact_passed" in failed_metrics
     assert "gradient_uncertainty_bounded" in failed_metrics
+
+
+def test_gap_report_handles_malformed_evidence_report_fail_closed() -> None:
+    gap = nonlinear_turbulence_gradient_evidence_gap_report(
+        {
+            "passed": False,
+            "blockers": [
+                "production_gradient_artifact",
+                "replicated_long_window_uncertainty",
+            ],
+            "gradient_artifact": "not-a-dict",
+            "window_evidence": "not-a-dict",
+        }
+    )
+
+    assert gap["passed"] is False
+    assert gap["current_gradient_candidate_present"] is False
+    assert gap["missing_evidence"][0]["current_artifact_class"] is None
+    assert gap["missing_evidence"][1]["qualifying_window_ensembles"] == 0
 
 
 def test_window_evidence_handles_input_ensembles_unsupported_rows_and_path_mismatch() -> None:
