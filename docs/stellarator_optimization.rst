@@ -884,7 +884,10 @@ artifacts for one control, plots gradient, response, asymmetry, and uncertainty
 against perturbation amplitude, and preserves the same claim boundary: the
 sweep can recommend the next campaign, but it does not promote a nonlinear
 turbulence-gradient claim unless one input artifact already passes the
-production long-window gate.
+production long-window gate. If resolved central finite differences change sign
+across nearby amplitudes, the utility recommends a new locality/amplitude sweep
+or smoother composite profile-gradient control instead of more replicas at one
+amplitude.
 The concrete next-campaign launch contract is tracked in
 ``docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_plan.json``.
 It starts from the same optimized-QA/ESS VMEC input and writes matched

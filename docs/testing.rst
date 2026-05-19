@@ -371,7 +371,9 @@ bracket, shrink/enlarge the amplitude, add statistical power, or abandon the
 single-control direction. It also reads the diagnostic-only paired-replicate
 rows when present. If those same-seed rows show sign reversals or large paired
 uncertainty, the utility explicitly recommends not spending more GPU time on
-more replicas at that same bracket.
+more replicas at that same bracket. It also fails the campaign-planning
+recommendation toward a new locality sweep or smoother composite control when
+resolved central finite differences change sign across nearby amplitudes.
 ``tools/write_overdetermined_nonlinear_gradient_campaign.py`` implements that
 next launch-contract step. It writes multiple matched boundary-control VMEC
 perturbation manifests from one baseline input, records the per-control

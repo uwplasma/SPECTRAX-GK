@@ -600,6 +600,36 @@ def test_bracket_sweep_blocks_repeating_unstable_same_bracket() -> None:
     assert bracket["metrics"]["repeated_bracket_stable"] is False
 
 
+def test_bracket_sweep_flags_resolved_gradient_sign_change() -> None:
+    negative = nonlinear_turbulence_gradient_finite_difference_report(
+        minus=_ensemble(16.9, sem=0.8),
+        baseline=_ensemble(16.3, sem=0.8),
+        plus=_ensemble(15.8, sem=0.8),
+        delta_parameter=0.0016,
+        parameter_name="zbs_1_0",
+    )
+    positive = nonlinear_turbulence_gradient_finite_difference_report(
+        minus=_ensemble(15.8, sem=0.8),
+        baseline=_ensemble(16.0, sem=0.8),
+        plus=_ensemble(16.4, sem=0.8),
+        delta_parameter=0.0010,
+        parameter_name="zbs_1_0",
+        config=NonlinearTurbulenceGradientFiniteDifferenceConfig(
+            max_fd_asymmetry_rel=1.0,
+        ),
+    )
+
+    report = nonlinear_turbulence_gradient_bracket_sweep_report(
+        [negative, positive],
+        config=NonlinearTurbulenceGradientBracketSweepConfig(
+            max_fd_asymmetry_rel=1.0,
+        ),
+    )
+
+    assert report["passed"] is False
+    assert "change central-gradient sign" in report["recommendation"]
+
+
 def test_bracket_sweep_promotes_only_passing_long_window_bracket() -> None:
     small = nonlinear_turbulence_gradient_finite_difference_report(
         minus=_ensemble(9.9, sem=0.4),
