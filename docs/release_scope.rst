@@ -343,6 +343,10 @@ Quasilinear model-selection state:
   runtime, but none has completed the required nine long-window nonlinear
   outputs or central-FD/ranking gates yet. This keeps the broader gradient
   claim blocked until real post-transient outputs exist.
+- ``tools/postprocess_overdetermined_nonlinear_gradient_campaign.py`` is the
+  matching fail-closed post-runtime driver. It runs each nested campaign's
+  output, ensemble, and central-FD gates, then runs the overdetermined
+  candidate ranking and final status checker before any release promotion.
 - ``tools/write_vmec_boundary_profile_perturbation_inputs.py`` writes a
   launch-contract for a smoother composite VMEC boundary direction. The
   tracked

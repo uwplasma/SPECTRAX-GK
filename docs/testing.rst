@@ -408,6 +408,11 @@ long-window tasks through one shared CPU/GPU worker queue. The checker must
 remain fail-closed until the VMEC states, nonlinear runtime outputs, ensemble
 gates, central finite-difference gates, and candidate ranking all exist and
 pass.
+After the long runtime queue completes,
+``tools/postprocess_overdetermined_nonlinear_gradient_campaign.py`` runs the
+per-control output gates, ensemble gates, central finite-difference gates,
+candidate ranking, and final fail-closed status check in one reproducible
+sequence.
 ``tools/write_vmec_boundary_profile_perturbation_inputs.py`` is the companion
 for a single smoother composite direction. It perturbs several VMEC boundary
 coefficients together, normalizes the finite-difference scalar by the Euclidean

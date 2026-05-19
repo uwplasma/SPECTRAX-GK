@@ -908,6 +908,9 @@ shows that all nine VMEC-JAX re-equilibrations have completed and the three
 nested nonlinear campaign manifests are ready. The remaining task is the
 two-GPU execution of 27 full-horizon nonlinear outputs, followed by the
 per-control ensemble, central finite-difference, and candidate-ranking gates.
+The post-runtime command
+``tools/postprocess_overdetermined_nonlinear_gradient_campaign.py`` now runs
+those gates and the final status checker as one reproducible promotion step.
 Until those gates pass, the nonlinear turbulence-gradient claim remains
 blocked.
 Because both single-control amplitude sweeps point away from more blind
