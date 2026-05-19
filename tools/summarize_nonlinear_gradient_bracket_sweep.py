@@ -53,7 +53,12 @@ def _artifact_label(payload: dict[str, Any], path: Path) -> str:
     return path.stem
 
 
-def write_artifacts(report: dict[str, Any], out_prefix: Path) -> dict[str, str]:
+def write_artifacts(
+    report: dict[str, Any],
+    out_prefix: Path,
+    *,
+    write_pdf: bool = True,
+) -> dict[str, str]:
     import matplotlib
 
     matplotlib.use("Agg")
@@ -176,14 +181,16 @@ def write_artifacts(report: dict[str, Any], out_prefix: Path) -> dict[str, str]:
             axes[0].annotate(label.split(":")[-1], (delta, gradient), xytext=(3, 4), textcoords="offset points", fontsize=7)
     fig.suptitle(str(report.get("recommendation", "")), fontsize=10)
     fig.savefig(png_path, dpi=220)
-    fig.savefig(pdf_path)
-    plt.close(fig)
-    return {
+    paths = {
         "json": str(json_path),
         "csv": str(csv_path),
         "png": str(png_path),
-        "pdf": str(pdf_path),
     }
+    if write_pdf:
+        fig.savefig(pdf_path)
+        paths["pdf"] = str(pdf_path)
+    plt.close(fig)
+    return paths
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -196,6 +203,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--min-fd-response-fraction", type=float, default=0.03)
     parser.add_argument("--max-repeated-bracket-uncertainty-rel", type=float, default=0.75)
     parser.add_argument("--min-repeated-bracket-same-sign-fraction", type=float, default=0.80)
+    parser.add_argument(
+        "--no-pdf",
+        action="store_true",
+        help="Write JSON/CSV/PNG only. Useful for tracked documentation previews.",
+    )
     parser.add_argument("--fail-on-no-promotable", action="store_true")
     return parser
 
@@ -218,7 +230,7 @@ def main(argv: list[str] | None = None) -> int:
             ),
         ),
     )
-    paths = write_artifacts(report, Path(args.json_out_prefix))
+    paths = write_artifacts(report, Path(args.json_out_prefix), write_pdf=not bool(args.no_pdf))
     print(
         json.dumps(
             {

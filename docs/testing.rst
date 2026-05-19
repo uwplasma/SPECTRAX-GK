@@ -366,14 +366,19 @@ not itself promotion evidence.
 ``tools/summarize_nonlinear_gradient_bracket_sweep.py`` is the next
 same-control locality utility. It consumes one or more central-FD JSON
 artifacts for the same control at different perturbation amplitudes, writes
-JSON/CSV/PNG/PDF sidecars, and decides whether to promote an already passing
+JSON/CSV/PNG sidecars plus an optional PDF, and decides whether to promote an already passing
 bracket, shrink/enlarge the amplitude, add statistical power, or abandon the
 single-control direction. It also reads the diagnostic-only paired-replicate
 rows when present. If those same-seed rows show sign reversals or large paired
 uncertainty, the utility explicitly recommends not spending more GPU time on
 more replicas at that same bracket. It also fails the campaign-planning
 recommendation toward a new locality sweep or smoother composite control when
-resolved central finite differences change sign across nearby amplitudes.
+resolved central finite differences change sign across nearby amplitudes. The
+tracked ``RBC(1,1)`` 5%/8% result,
+``docs/_static/qa_ess_rbc11_bracket_sweep.json``, is a same-control negative
+audit: response is resolved at both amplitudes, but finite-difference
+asymmetry grows with amplitude, so the correct next action is a smaller
+locality sweep or an overdetermined profile-gradient control.
 ``tools/write_overdetermined_nonlinear_gradient_campaign.py`` implements that
 next launch-contract step. It writes multiple matched boundary-control VMEC
 perturbation manifests from one baseline input, records the per-control

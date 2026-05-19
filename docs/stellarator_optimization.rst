@@ -887,7 +887,14 @@ turbulence-gradient claim unless one input artifact already passes the
 production long-window gate. If resolved central finite differences change sign
 across nearby amplitudes, the utility recommends a new locality/amplitude sweep
 or smoother composite profile-gradient control instead of more replicas at one
-amplitude.
+amplitude. The tool now also enforces the same-control contract explicitly: a
+mixed-control input set is rejected as a candidate-ranking problem, not a
+bracket sweep. The tracked ``RBC(1,1)`` 5%/8% sweep is a negative but useful
+result: both amplitudes have resolved responses and acceptable-to-marginal
+uncertainty, but the finite-difference asymmetry worsens from about ``0.897``
+to ``1.895`` as the bracket grows. The recommendation is therefore to shrink
+the perturbation or move to a more local/composite profile-gradient control
+before spending more nonlinear GPU time.
 The concrete next-campaign launch contract is tracked in
 ``docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_plan.json``.
 It starts from the same optimized-QA/ESS VMEC input and writes matched
@@ -907,6 +914,18 @@ ranking command. This is still a launch plan, not gradient evidence.
    forward finite-difference gradients. The artifact is a production-candidate
    long-window campaign, but it remains blocked because the propagated
    gradient uncertainty is still above the release gate.
+
+.. figure:: _static/qa_ess_rbc11_bracket_sweep.png
+   :width: 90%
+   :align: center
+   :alt: QA/ESS RBC(1,1) nonlinear-gradient perturbation-amplitude sweep
+
+   QA/ESS ``RBC(1,1)`` same-control perturbation-amplitude sweep. The two
+   completed long-window central-FD artifacts show that increasing the
+   perturbation amplitude does not improve locality: the response remains
+   resolved, but the forward/backward asymmetry grows. This keeps the
+   single-control ``RBC(1,1)`` path fail-closed and supports the move to a
+   smaller locality sweep or an overdetermined profile-gradient campaign.
 
 For boundary-coefficient gradients, first use
 ``tools/write_vmec_boundary_perturbation_inputs.py``. It starts from a concrete

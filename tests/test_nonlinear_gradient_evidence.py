@@ -851,6 +851,31 @@ def test_bracket_sweep_fail_closed_for_legacy_missing_delta_artifact() -> None:
     assert "production long-window scope" in report["recommendation"]
 
 
+def test_bracket_sweep_rejects_mixed_controls() -> None:
+    zbs = nonlinear_turbulence_gradient_finite_difference_report(
+        minus=_ensemble(9.0, sem=0.02),
+        baseline=_ensemble(10.0, sem=0.02),
+        plus=_ensemble(11.0, sem=0.02),
+        delta_parameter=0.05,
+        parameter_name="zbs_1_0",
+    )
+    rbc = nonlinear_turbulence_gradient_finite_difference_report(
+        minus=_ensemble(8.8, sem=0.02),
+        baseline=_ensemble(10.0, sem=0.02),
+        plus=_ensemble(11.2, sem=0.02),
+        delta_parameter=0.05,
+        parameter_name="rbc_1_1",
+    )
+
+    report = nonlinear_turbulence_gradient_bracket_sweep_report([zbs, rbc])
+
+    assert report["passed"] is False
+    assert report["promotion_ready_bracket_count"] == 0
+    assert report["same_control_gate"]["passed"] is False
+    assert report["same_control_gate"]["parameter_names"] == ["rbc_1_1", "zbs_1_0"]
+    assert "mixed controls" in report["recommendation"]
+
+
 def test_gap_report_distinguishes_failed_production_candidate_from_missing_campaign() -> None:
     fd_report = nonlinear_turbulence_gradient_finite_difference_report(
         minus=_ensemble(9.9, sem=0.5),
@@ -1103,6 +1128,36 @@ def test_bracket_sweep_cli_writes_json_csv_and_plot(tmp_path: Path) -> None:
     assert out_prefix.with_suffix(".csv").exists()
     assert out_prefix.with_suffix(".png").exists()
     assert out_prefix.with_suffix(".pdf").exists()
+
+
+def test_bracket_sweep_cli_can_skip_pdf_for_tracked_docs_preview(tmp_path: Path) -> None:
+    mod = _load_bracket_tool_module()
+    small = nonlinear_turbulence_gradient_finite_difference_report(
+        minus=_ensemble(9.9, sem=0.4),
+        baseline=_ensemble(10.0, sem=0.4),
+        plus=_ensemble(10.1, sem=0.4),
+        delta_parameter=0.01,
+        parameter_name="profile_gradient",
+    )
+    path = tmp_path / "small.json"
+    out_prefix = tmp_path / "sweep"
+    path.write_text(json.dumps(small), encoding="utf-8")
+
+    rc = mod.main(
+        [
+            str(path),
+            "--json-out-prefix",
+            str(out_prefix),
+            "--no-pdf",
+        ]
+    )
+
+    payload = json.loads(out_prefix.with_suffix(".json").read_text(encoding="utf-8"))
+    assert rc == 0
+    assert payload["same_control_gate"]["passed"] is True
+    assert out_prefix.with_suffix(".csv").exists()
+    assert out_prefix.with_suffix(".png").exists()
+    assert not out_prefix.with_suffix(".pdf").exists()
 
 
 def test_gradient_campaign_writer_creates_matched_state_run_contract(tmp_path: Path) -> None:

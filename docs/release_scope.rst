@@ -320,11 +320,14 @@ Quasilinear model-selection state:
   uncertainty failures.
 - ``tools/summarize_nonlinear_gradient_bracket_sweep.py`` is the bounded
   follow-up for a same-control perturbation-amplitude sweep. It writes
-  JSON/CSV/PNG/PDF sidecars from completed central finite-difference artifacts
-  and recommends whether to add replicas, shrink/enlarge the bracket, or switch
-  controls. It is deliberately not a promotion checker; it only promotes when
-  one of the supplied long-window central-FD artifacts already passes all
-  production gates.
+  JSON/CSV/PNG sidecars and an optional PDF from completed central
+  finite-difference artifacts and recommends whether to add replicas,
+  shrink/enlarge the bracket, or switch controls. It is deliberately not a
+  promotion checker; it only promotes when one of the supplied long-window
+  central-FD artifacts already passes all production gates. It now fails closed
+  for mixed-control inputs, and the tracked ``RBC(1,1)`` amplitude sweep
+  confirms that the current larger bracket worsens locality instead of closing
+  the nonlinear turbulence-gradient gate.
 - ``tools/write_overdetermined_nonlinear_gradient_campaign.py`` is the concrete
   launch-contract writer for that next campaign shape. The current tracked
   ``docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_plan.json``
