@@ -90,7 +90,8 @@ command-line paths are resolved from the shell's current working directory,
 while paths written in the TOML remain resolved from the TOML location.
 
 Use ``--vmec-file`` when the runtime config already uses a VMEC-backed geometry
-model:
+model. VMEC NetCDF files are external inputs and are not bundled in Git, so a
+normal clone stays lightweight:
 
 .. code-block:: bash
 

@@ -728,10 +728,12 @@ Non-axisymmetric HSX holdout
 
 The first non-axisymmetric quasilinear calibration audit uses the same HSX
 adiabatic-electron ITG setup as the tracked nonlinear window gate. The linear
-quasilinear spectrum is generated from the checked-in VMEC equilibrium:
+quasilinear spectrum is generated from an external HSX VMEC equilibrium supplied
+through ``HSX_VMEC_FILE``; VMEC NetCDF files are not checked into Git:
 
 .. code-block:: bash
 
+   export HSX_VMEC_FILE=/absolute/path/to/wout_HSX_QHS_vac.nc
    spectraxgk scan-runtime-linear \
      --config examples/linear/non-axisymmetric/runtime_hsx_linear_quasilinear.toml \
      --ky-values 0.047619047619047616,0.09523809523809523,0.14285714285714285,0.19047619047619047,0.23809523809523808,0.2857142857142857 \
