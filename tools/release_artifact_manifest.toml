@@ -18,8 +18,8 @@ replay_command = "pytest -q tests/test_example_smoke.py tests/test_geometry.py"
 
 [[artifacts]]
 path = "docs/_static/benchmark_readme_panel.png"
-size_bytes = 467429
-sha256 = "4ae97254c6f2cb38a1d8c2f0b3b4a76b5e0f37f8f539956266e7f551d31b5f27"
+size_bytes = 247399
+sha256 = "6333c48c2d1a559794bc762826aaca409480ccd2a5062c0d7eca8824b05a523e"
 action = "keep_preview_in_repo"
 artifact_type = "documentation_preview"
 release_asset_name = "benchmark_readme_panel.png"
@@ -42,8 +42,8 @@ replay_command = "python tools/make_benchmark_atlas.py"
 
 [[artifacts]]
 path = "docs/_static/benchmark_core_nonlinear_atlas.png"
-size_bytes = 314953
-sha256 = "5cb36f5371111e17ac908d8f93baadbdea2a2dbc4dfcc94d5d240f196b41bc08"
+size_bytes = 172344
+sha256 = "d9cf0bbb2b6976efe09b530ab7777ab2fac25a2dd2831a868ea2506fe83fe9d0"
 action = "keep_preview_in_repo"
 artifact_type = "documentation_preview"
 release_asset_name = "benchmark_core_nonlinear_atlas.png"
@@ -66,8 +66,8 @@ replay_command = "python tools/make_benchmark_atlas.py"
 
 [[artifacts]]
 path = "docs/_static/benchmark_core_linear_atlas.png"
-size_bytes = 267796
-sha256 = "5b2872b5d383520236a2995e036ab184d9fb15dd00b0567a0d503816d4e62730"
+size_bytes = 142351
+sha256 = "fb9b967b6a8450f0fd2d98982e7d75dfa6047eb4a35e1cdb07ba72afd742d99f"
 action = "keep_preview_in_repo"
 artifact_type = "documentation_preview"
 release_asset_name = "benchmark_core_linear_atlas.png"
@@ -77,8 +77,8 @@ replay_command = "python tools/make_benchmark_atlas.py"
 
 [[artifacts]]
 path = "docs/_static/gx_publication_panel.png"
-size_bytes = 267275
-sha256 = "eb15c28612a4614307f029678025dd7cb4988a836642dd96219fc94f15bbb688"
+size_bytes = 142940
+sha256 = "f0efa3af8a11b316c43bafece659616dce70953adcedd7b64fe1aab8edd7aced"
 action = "keep_preview_in_repo"
 artifact_type = "comparison_panel"
 release_asset_name = "gx_publication_panel.png"
@@ -101,8 +101,8 @@ replay_command = "python tools/make_benchmark_atlas.py"
 
 [[artifacts]]
 path = "docs/_static/gx_summary_panel.png"
-size_bytes = 265198
-sha256 = "ecb0bc89f9f2866685d6638a63433228eb6a401f6beadadb86139238c702592f"
+size_bytes = 142910
+sha256 = "6635d367da28dd1fe725fa162df9e30931ecc59247d6a82ac9bd06ff2c0a4ac5"
 action = "keep_preview_in_repo"
 artifact_type = "comparison_panel"
 release_asset_name = "gx_summary_panel.png"
@@ -112,8 +112,8 @@ replay_command = "python tools/make_benchmark_atlas.py"
 
 [[artifacts]]
 path = "docs/_static/gx_cyclone_kbm_panel.png"
-size_bytes = 201479
-sha256 = "af057ec62afd0e8efd525fcfdaa8e0868589824a947b84fac7ecb81180e9bff8"
+size_bytes = 112474
+sha256 = "c477ed140de98335efc559fa642a65774de93aa2e2a59fec8f13140b9a5bf690"
 action = "keep_preview_in_repo"
 artifact_type = "comparison_panel"
 release_asset_name = "gx_cyclone_kbm_panel.png"
