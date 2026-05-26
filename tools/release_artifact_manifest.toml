@@ -7,10 +7,13 @@ status = "planned"
 path = "examples/wout_HSX_QHS_vacuum_ns201.nc"
 size_bytes = 3924584
 sha256 = "a666187e934128dad37683cb7d19551622a58a638fdbd71c4da7943473be0671"
-action = "keep_in_repo"
+action = "move_to_release"
 artifact_type = "vmec_fixture"
 release_asset_name = "wout_HSX_QHS_vacuum_ns201.nc"
-reason = "Small HSX VMEC fixture used by non-axisymmetric examples and tests; keep in Git until a smaller synthetic fixture replaces it."
+release_tag = "v1.6.1"
+release_url = "https://github.com/uwplasma/SPECTRAX-GK/releases/download/v1.6.1/wout_HSX_QHS_vacuum_ns201.nc"
+reason = "HSX VMEC fixture used by non-axisymmetric examples; hosted as a release asset so normal Git clones stay lightweight."
+preview_strategy = "release-hosted VMEC NetCDF fixture, not checked into Git"
 replay_command = "pytest -q tests/test_example_smoke.py tests/test_geometry.py"
 
 [[artifacts]]

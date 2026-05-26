@@ -91,7 +91,9 @@ while paths written in the TOML remain resolved from the TOML location.
 
 Use ``--vmec-file`` when the runtime config already uses a VMEC-backed geometry
 model. VMEC NetCDF files are external inputs and are not bundled in Git, so a
-normal clone stays lightweight:
+normal clone stays lightweight. The release-hosted HSX fixture used by the
+examples is available at
+``https://github.com/uwplasma/SPECTRAX-GK/releases/download/v1.6.1/wout_HSX_QHS_vacuum_ns201.nc``:
 
 .. code-block:: bash
 
