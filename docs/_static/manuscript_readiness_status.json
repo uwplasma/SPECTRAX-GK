@@ -1,0 +1,231 @@
+{
+  "claim_scope": "current_manuscript_excludes_w7x_zonal_recurrence_and_tem_kinetic_electron_extension; quasilinear absolute-flux models are validated as diagnostics/model-selection results only",
+  "kind": "manuscript_readiness_status",
+  "lanes": [
+    {
+      "claim_level": "scoped_candidate_model_selection_not_runtime_flux_predictor",
+      "key_metrics": {
+        "absolute_flux_promoted": false,
+        "accepted_uq_candidates": [
+          "spectral_envelope_ridge"
+        ],
+        "circular_replicate_combined_sem_rel": 0.04283952221624353,
+        "circular_replicate_mean_rel_spread": 0.035473869975602645,
+        "circular_replicate_passed": true,
+        "dataset_blockers": [],
+        "dataset_current_total_cases": 8,
+        "dataset_current_train_geometries": 2,
+        "dataset_min_total_cases": 6,
+        "dataset_min_train_geometries": 2,
+        "dataset_sufficiency_promotion_passed": true,
+        "dshape_replicate_combined_sem_rel": 0.05360630620607054,
+        "dshape_replicate_mean_rel_spread": 0.14102885109482344,
+        "dshape_replicate_passed": true,
+        "holdout_mean_abs_relative_error": 2.114098664675138,
+        "holdout_points": 6,
+        "model_selection_candidate_mean_error": 0.29524327596674427,
+        "model_selection_interval_coverage": 0.875,
+        "model_selection_status_passed": true,
+        "null_training_mean_error": 0.899798561209823,
+        "promotion_guardrails_passed": true,
+        "shape_aware_promotion_passed": false,
+        "simple_rule_promotion_passed": false,
+        "train_points": 2,
+        "uq_candidate_promotion_passed": true,
+        "validated_inputs_passed": true
+      },
+      "lane": "Quasilinear diagnostics and saturation-model selection",
+      "next_action": "Document the accepted richer candidate with scoped wording and keep the legacy one-scalar and shape-only diagnostics as negative transfer controls.",
+      "primary_artifacts": [
+        "docs/_static/quasilinear_validated_calibration_inputs.json",
+        "docs/_static/quasilinear_stellarator_train_holdout_report.json",
+        "docs/_static/quasilinear_saturation_rule_sweep.json",
+        "docs/_static/quasilinear_shape_aware_saturation.json",
+        "docs/_static/quasilinear_candidate_uncertainty.json",
+        "docs/_static/quasilinear_dataset_sufficiency.json",
+        "docs/_static/quasilinear_model_selection_status.json",
+        "docs/_static/quasilinear_promotion_guardrails.json",
+        "docs/_static/external_vmec_dshape_replicates/dshape_replicate_t250_ensemble_gate.json",
+        "docs/_static/external_vmec_circular_replicates/circular_replicate_t700_ensemble_gate.json"
+      ],
+      "status": "closed"
+    },
+    {
+      "claim_level": "zero_beta_equal_arc_geometry_bridge_closed",
+      "key_metrics": {
+        "bridge_ad_fd_available": true,
+        "matrix_all_equal_arc_passed": true,
+        "matrix_n_cases": 3,
+        "minimum_boozer_mode_count": 21
+      },
+      "lane": "VMEC/Boozer differentiable geometry parity",
+      "next_action": "Keep finite-beta pressure-correction drift parity as a future extension unless the manuscript claims finite-beta transport-gradient optimization.",
+      "primary_artifacts": [
+        "docs/_static/differentiable_geometry_bridge.json",
+        "docs/_static/vmec_boozer_parity_matrix.json"
+      ],
+      "status": "closed"
+    },
+    {
+      "claim_level": "reduced_objective_optimization_closed_not_full_production_vmec_gk",
+      "key_metrics": {
+        "all_objective_gradient_gates_passed": true,
+        "best_reduction_factor": 0.05282149157273069,
+        "matched_qa_no_ess_relative_reduction": 0.1844401904195982,
+        "matched_qa_no_ess_to_optimized_audit_passed": true,
+        "matched_qa_no_ess_uncertainty_separation_sigma": 7.819308425110687,
+        "n_objectives": 3,
+        "production_nonlinear_optimization_guard_safe": true,
+        "production_nonlinear_optimization_promoted": true,
+        "production_nonlinear_optimized_equilibrium_ensembles": 1,
+        "production_nonlinear_replicated_holdout_ensembles": 2,
+        "weighted_residual_uq_gate_passed": true,
+        "worst_reduction_factor": 0.14944986630532714
+      },
+      "lane": "Reduced differentiable stellarator ITG optimization",
+      "next_action": "Use as the current optimization figure only with scoped wording; the matched QA no-ESS to optimized QA/ESS audit is closed, but nonlinear-window VMEC/Boozer/GK gradients and matched audits across broader geometry families remain future requirements before claiming broad end-to-end stellarator heat-flux optimization.",
+      "primary_artifacts": [
+        "docs/_static/stellarator_itg_optimization_comparison.json",
+        "docs/_static/stellarator_itg_optimization_comparison.png",
+        "docs/_static/stellarator_itg_optimization_uq.json",
+        "docs/_static/stellarator_itg_optimization_uq.png",
+        "docs/_static/production_nonlinear_optimization_guard.json",
+        "docs/_static/production_nonlinear_optimization_guard.png",
+        "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json",
+        "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.png",
+        "docs/_static/qa_no_ess_reference_replicates/qa_no_ess_reference_t700_ensemble_gate.json",
+        "docs/_static/qa_no_ess_reference_replicates/qa_no_ess_reference_t700_ensemble_gate.png",
+        "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json",
+        "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.png"
+      ],
+      "status": "closed"
+    },
+    {
+      "claim_level": "required_for_full_end_to_end_stellarator_optimization_claim",
+      "key_metrics": {
+        "full_vmec_boozer_frequency_gradient_gate": true,
+        "full_vmec_boozer_quasilinear_gradient_gate": true,
+        "full_vmec_boozer_reduced_nonlinear_window_gradient_gate": true,
+        "linear_growth_gradient_gate": true,
+        "multi_equilibrium_gradient_cases": 2,
+        "multi_equilibrium_gradient_holdout_matrix": true,
+        "multi_equilibrium_gradient_max_rel_error": 0.026774412331418387,
+        "multi_equilibrium_reduced_nonlinear_window_gradient_gate": true,
+        "nonlinear_transport_average_gate": false,
+        "optimized_equilibrium_replicated_transport_ensembles": 1,
+        "production_nonlinear_observable_fd_path_gate": false,
+        "production_nonlinear_optimization_guard_safe": true,
+        "production_nonlinear_optimization_promoted": true,
+        "production_nonlinear_window_gradient_gate": false,
+        "quasilinear_weight_gradient_gate": true,
+        "reduced_nonlinear_window_gradient_gate": true,
+        "solver_ready_gradient_gate": true,
+        "source_scope": "solver_ready_geometry_contract",
+        "startup_nonlinear_plumbing_fd_path_gate": true,
+        "startup_nonlinear_plumbing_max_window_cv": 0.09509712103158827,
+        "startup_nonlinear_plumbing_max_window_trend": 0.3125158414254592,
+        "startup_nonlinear_plumbing_repeatability_rel_error": 0.0,
+        "startup_nonlinear_plumbing_response_fraction": 0.11085605870343603,
+        "vmec_boozer_frequency_rel_error": 0.004892743510544424,
+        "vmec_boozer_li383_reduced_nonlinear_window_rel_error": 0.0009180110087433277,
+        "vmec_boozer_nonlinear_transport_average_gate": false,
+        "vmec_boozer_production_nonlinear_observable_fd_path_gate": false,
+        "vmec_boozer_quasilinear_rel_error": 0.004282152564851315,
+        "vmec_boozer_reduced_nonlinear_window_rel_error": 0.026774412331418387,
+        "vmec_boozer_startup_nonlinear_derivative_asymmetry": 2.8552511209300935,
+        "vmec_boozer_startup_nonlinear_plumbing_fd_path_gate": true,
+        "vmec_boozer_startup_nonlinear_response_fraction": 0.04008881189273438
+      },
+      "lane": "Production solver-objective geometry gradients",
+      "next_action": "Full VMEC/Boozer eigenfrequency, quasilinear, and multi-equilibrium reduced nonlinear-window estimator gradients are closed. The compact nonlinear FD audits are tracked only as startup plumbing checks; they do not validate transport heat-flux averages. The selected optimized-equilibrium long-window audit is closed; VMEC/Boozer turbulence gradients, local-gradient conditioning, and broader multi-surface baseline-to-optimized audits remain required before full nonlinear stellarator-optimization claims.",
+      "primary_artifacts": [
+        "docs/_static/solver_objective_gradient_gate.json",
+        "docs/_static/vmec_boozer_solver_frequency_gradient_gate.json",
+        "docs/_static/vmec_boozer_quasilinear_gradient_gate.json",
+        "docs/_static/vmec_boozer_nonlinear_window_gradient_gate.json",
+        "docs/_static/vmec_boozer_li383_nonlinear_window_gradient_gate.json",
+        "docs/_static/vmec_boozer_gradient_holdout_matrix.json",
+        "docs/_static/nonlinear_window_fd_audit.json",
+        "docs/_static/nonlinear_window_fd_audit.png",
+        "docs/_static/vmec_boozer_nonlinear_window_fd_audit.json",
+        "docs/_static/vmec_boozer_nonlinear_window_fd_audit.png",
+        "docs/_static/production_nonlinear_optimization_guard.json",
+        "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json"
+      ],
+      "status": "closed"
+    },
+    {
+      "claim_level": "release_performance_artifacts_closed_no_broad_speedup_claim",
+      "key_metrics": {
+        "best_identity_candidate": "kx",
+        "best_identity_candidate_speedup": 0.9595023934720446,
+        "engineering_speedup": 0.8051065199561345,
+        "full_trace_cpu_warm_seconds": 0.3346847665961832,
+        "full_trace_gpu_transpose_count": 32.0,
+        "full_trace_gpu_warm_seconds": 0.012807567021809518,
+        "hsx_cpu_full_rhs": 0.3086076334118843,
+        "hsx_gpu_full_rhs": 0.027057467214763164,
+        "identity_gate_pass": true,
+        "miller_cpu_grid_full_rhs": 0.3484569167951122,
+        "miller_gpu_grid_full_rhs": 0.012803101912140846,
+        "miller_gpu_spectral_full_rhs": 0.014757980592548847,
+        "release_performance_gate": true,
+        "rhs_cpu_bracket_grid_over_spectral": 1.544788374379975,
+        "rhs_cpu_full_grid_over_spectral": 1.3022508836871707,
+        "rhs_fastest_full_label": "GPU spectral",
+        "rhs_gpu_bracket_grid_over_spectral": 2.2429853842950562,
+        "rhs_gpu_full_grid_over_spectral": 1.5129955548419813,
+        "w7x_cpu_full_rhs": 0.30949455841910095,
+        "w7x_gpu_full_rhs": 0.027265143021941184
+      },
+      "lane": "Profiler-backed nonlinear performance claims",
+      "next_action": "Release performance evidence is closed for scoped CPU/GPU profiler artifacts; keep broad production nonlinear speedup and domain-decomposition claims for the next manuscript/science lane.",
+      "primary_artifacts": [
+        "docs/_static/nonlinear_sharding_profile_office_gpu.json",
+        "docs/_static/nonlinear_rhs_profile.json",
+        "docs/_static/nonlinear_rhs_profile_miller.json",
+        "docs/_static/nonlinear_rhs_profile_stellarator_runtime.json",
+        "docs/_static/full_nonlinear_rhs_trace_summary.json",
+        "docs/_static/full_nonlinear_rhs_trace_gpu_summary.json"
+      ],
+      "status": "closed"
+    },
+    {
+      "claim_level": "deferred_out_of_current_manuscript_scope",
+      "key_metrics": {},
+      "lane": "W7-X zonal recurrence/damping",
+      "next_action": "Post-manuscript lane.",
+      "primary_artifacts": [
+        "docs/_static/w7x_zonal_reference_compare.json"
+      ],
+      "status": "deferred"
+    },
+    {
+      "claim_level": "deferred_out_of_current_manuscript_scope",
+      "key_metrics": {},
+      "lane": "TEM / kinetic-electron stellarator extension",
+      "next_action": "Post-manuscript lane.",
+      "primary_artifacts": [
+        "docs/_static/w7x_tem_extension_status.json"
+      ],
+      "status": "deferred"
+    }
+  ],
+  "status_order": {
+    "blocked": 4,
+    "closed": 0,
+    "deferred": 3,
+    "open": 2,
+    "partial": 1
+  },
+  "summary": {
+    "active_fraction_closed": 1.0,
+    "n_active": 5,
+    "n_blocked": 0,
+    "n_closed": 5,
+    "n_deferred": 2,
+    "n_lanes": 7,
+    "n_open": 0,
+    "n_partial": 0
+  }
+}

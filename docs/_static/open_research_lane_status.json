@@ -1,0 +1,248 @@
+{
+  "claim_scope": "post_v1_5_development_tracking_no_unvalidated_promotion",
+  "kind": "open_research_lane_status",
+  "lanes": [
+    {
+      "claim_level": "open_physical_closure_not_normalization",
+      "key_metrics": {
+        "best_bounded_candidate": {
+          "hermite_tail": 0.3101830131688138,
+          "label": "Nl12 Nm48 none",
+          "mean_abs_error": 0.2761868293295642,
+          "source_path": "tools_out/zonal_response/w7x_recurrence_nl12_nm48_none_t100/w7x_test4_kx070.out.nc",
+          "tail_std_ratio": 3.78054920131388
+        },
+        "best_constant_hypercollision_probe": {
+          "free_energy_ratio": 0.5995926659677548,
+          "hermite_tail": 0.09923573863156468,
+          "label": "Nl16 Nm64 const nuhm0.03",
+          "mean_abs_error": 0.28925894943488784,
+          "source_path": "tools_out/zonal_response/w7x_probe_nl16_nm64_nuhm0p03_const_t100/w7x_test4_kx070.out.nc",
+          "tail_std_ratio": 4.279647778235477,
+          "validation_status": "open"
+        },
+        "best_mixed_lm_resolution_probe": {
+          "hermite_tail": 0.00015602049252875098,
+          "label": "Nl16 Nm64 mixedLM dt0.05",
+          "mean_abs_error": 0.27533040750757953,
+          "source_path": "tools_out/zonal_response/closure_sweep_manifest/const_nuhlm_0p01/w7x_test4_kx070.out.nc",
+          "tail_std_ratio": 4.237661194874913
+        },
+        "failed_reference_gates": [
+          "tail_envelope_std_kx050",
+          "residual_kx070",
+          "tail_envelope_std_kx070",
+          "residual_kx100",
+          "tail_envelope_std_kx100",
+          "residual_kx300",
+          "tail_envelope_std_kx300"
+        ],
+        "stable_high_moment_mixed_lm_probe": {
+          "Nl": 24,
+          "Nm": 96,
+          "hermite_tail": 1.2347881778555376e-05,
+          "label": "Nl24 Nm96 mixedLM dt0.025",
+          "laguerre_tail": 0.008188658227352008,
+          "mean_abs_error": 0.2768222683690581,
+          "source_path": "tools_out/zonal_response/closure_sweep_manifest/const_nuhlm_0p01_nl24_nm96_dt0025_t100/w7x_test4_kx070.out.nc",
+          "tail_std_ratio": 4.11033280204103
+        }
+      },
+      "lane": "W7-X zonal long-window recurrence/damping",
+      "next_action": "Move beyond constant Hermite and mixed Laguerre-Hermite damping: test a closure/operator that improves trace error, late-window envelope, and moment-tail gates together without losing high-moment stability.",
+      "primary_artifacts": [
+        "docs/_static/w7x_zonal_reference_compare.json",
+        "docs/_static/w7x_zonal_recurrence_sweep_kx070.json",
+        "docs/_static/w7x_zonal_hypercollision_probe_kx070.json",
+        "docs/_static/w7x_zonal_mixedlm_resolution_kx070.json"
+      ],
+      "status": "open"
+    },
+    {
+      "claim_level": "validated_simulation_spectrum_tem_extension_open",
+      "key_metrics": {
+        "dominant_heat_flux_ky": 1.2857143878936768,
+        "dominant_phi_ky": 0.1904762089252472,
+        "open_extension_rows": [
+          "TEM / kinetic-electron linear parity",
+          "W7-X multi-flux-tube and multi-surface scan",
+          "W7-X kinetic-electron/TEM nonlinear window"
+        ],
+        "time_samples": 76,
+        "time_window": [
+          0.06476377695798874,
+          197.77346801757812
+        ]
+      },
+      "lane": "W7-X fluctuation spectrum and TEM/multi-flux extension",
+      "next_action": "Add W7-X multi-alpha/multi-surface ITG and kinetic-electron density-gradient/TEM scans before broad stellarator-validation claims.",
+      "primary_artifacts": [
+        "docs/_static/w7x_fluctuation_spectrum_panel.json",
+        "docs/_static/w7x_tem_extension_status.json",
+        "docs/_static/tem_branch_parity_audit.json",
+        "docs/_static/tem_mismatch_table.csv"
+      ],
+      "status": "partial"
+    },
+    {
+      "claim_level": "scoped_candidate_model_selection_not_absolute_flux",
+      "key_metrics": {
+        "calibration_report_passed": false,
+        "circular_external_vmec_t250_converged": false,
+        "circular_external_vmec_t700_replicate_mean_rel_spread": 0.035473869975602645,
+        "circular_external_vmec_t700_replicate_sem_rel": 0.04283952221624353,
+        "circular_external_vmec_t700_replicated": true,
+        "cth_like_external_vmec_converged": false,
+        "dataset_sufficiency_promotion_passed": true,
+        "dshape_external_vmec_t250_converged": true,
+        "dshape_external_vmec_t250_replicate_mean_rel_spread": 0.14102885109482344,
+        "dshape_external_vmec_t250_replicate_sem_rel": 0.05360630620607054,
+        "dshape_external_vmec_t250_replicated": true,
+        "holdout_cases": [
+          "cyclone_miller_long_window",
+          "hsx_nonlinear_window",
+          "w7x_nonlinear_window",
+          "dshape_external_vmec_t250_window",
+          "updown_asym_external_vmec_t450_window",
+          "circular_external_vmec_t450_window"
+        ],
+        "holdout_points": 6,
+        "itermodel_external_vmec_t350_converged": true,
+        "matched_qa_no_ess_relative_reduction": 0.1844401904195982,
+        "matched_qa_no_ess_to_optimized_audit_passed": true,
+        "matched_qa_no_ess_uncertainty_separation_sigma": 7.819308425110687,
+        "model_selection_candidate_mean_error": 0.29524327596674427,
+        "model_selection_status_passed": true,
+        "production_nonlinear_optimization_guard_safe": true,
+        "production_nonlinear_optimization_promoted": true,
+        "production_nonlinear_optimized_equilibrium_ensembles": 1,
+        "production_nonlinear_replicated_holdout_ensembles": 2,
+        "qh_external_vmec_low_to_mid_grid_converged": false,
+        "qh_external_vmec_mid_to_high_grid_converged": false,
+        "train_points": 2,
+        "updown_asym_external_vmec_t450_converged": true,
+        "uq_accepted_candidates": [
+          "spectral_envelope_ridge"
+        ],
+        "uq_candidate_promotion_passed": true,
+        "validated_inputs_passed": true
+      },
+      "lane": "Nonlinear holdouts for quasilinear absolute-flux promotion",
+      "next_action": "Document the accepted richer candidate and matched QA no-ESS to optimized QA/ESS audit with scoped wording; keep circular, QH, and CTH-like excluded until their common-window and grid-refinement gates pass.",
+      "primary_artifacts": [
+        "docs/_static/quasilinear_validated_calibration_inputs.json",
+        "docs/_static/quasilinear_stellarator_train_holdout_report.json",
+        "docs/_static/quasilinear_candidate_uncertainty.json",
+        "docs/_static/quasilinear_dataset_sufficiency.json",
+        "docs/_static/quasilinear_model_selection_status.json",
+        "docs/_static/external_vmec_circular_t250_high_grid_convergence_gate.json",
+        "docs/_static/external_vmec_circular_replicates/circular_replicate_t700_ensemble_gate.json",
+        "docs/_static/external_vmec_dshape_t250_high_grid_convergence_gate.json",
+        "docs/_static/external_vmec_dshape_replicates/dshape_replicate_t250_ensemble_gate.json",
+        "docs/_static/production_nonlinear_optimization_guard.json",
+        "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json",
+        "docs/_static/qa_no_ess_reference_replicates/qa_no_ess_reference_t700_ensemble_gate.json",
+        "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json",
+        "docs/_static/external_vmec_itermodel_t350_high_grid_convergence_gate.json",
+        "docs/_static/external_vmec_updown_asym_t450_high_grid_convergence_gate.json",
+        "docs/_static/external_vmec_qh_grid_convergence_gate.json",
+        "docs/_static/external_vmec_qh_high_grid_convergence_gate.json",
+        "docs/_static/external_vmec_cth_like_grid_convergence_gate.json"
+      ],
+      "status": "closed"
+    },
+    {
+      "claim_level": "contract_gradient_gate_not_full_stellarator_optimization",
+      "key_metrics": {
+        "booz_xform_jax_api_available": true,
+        "inverse_residual_norm": 0.0,
+        "max_abs_ad_fd_error": 1.2885199573986483e-09,
+        "sensitivity_rank": 2,
+        "vmec_boozer_equal_arc_bgrad_passed": true,
+        "vmec_boozer_equal_arc_bgrad_worst_norm": 0.02293812612720306,
+        "vmec_boozer_equal_arc_core_passed": true,
+        "vmec_boozer_equal_arc_core_worst_norm": 0.0045333009497922905,
+        "vmec_boozer_equal_arc_core_worst_scalar_rel": 0.002371666376645776,
+        "vmec_boozer_equal_arc_drift_passed": true,
+        "vmec_boozer_equal_arc_drift_worst_norm": 0.03495826655465857,
+        "vmec_boozer_equal_arc_metric_passed": true,
+        "vmec_boozer_equal_arc_metric_worst_norm": 0.03450681072966357,
+        "vmec_boozer_matrix_all_equal_arc_passed": true,
+        "vmec_boozer_matrix_limiting_drift": {
+          "case_name": "nfp3_QI_fixed_resolution_final",
+          "value": 0.07126818847704412
+        },
+        "vmec_boozer_matrix_minimum_mode_count": 21,
+        "vmec_boozer_matrix_n_cases": 3,
+        "vmec_field_line_tensor_max_abs_ad_fd_error": 0.0020914513322054518,
+        "vmec_field_line_tensor_max_rel_ad_fd_error": 2.380707718617408e-05,
+        "vmec_jax_available": true,
+        "vmec_metric_tensor_max_abs_ad_fd_error": 5.8812382242035e-08,
+        "vmec_metric_tensor_max_rel_ad_fd_error": 1.3046566776351664e-07,
+        "vmec_state_boozer_flux_tube_max_abs_ad_fd_error": 5.773192057745291e-07,
+        "vmec_state_boozer_flux_tube_max_rel_ad_fd_error": 1.3940665202206006e-08,
+        "vmec_tensor_flux_tube_max_abs_ad_fd_error": 9.916271416819654,
+        "vmec_tensor_flux_tube_max_rel_ad_fd_error": 0.00011329869001865003,
+        "vmec_tensor_vs_eik_array_parity_passed": false,
+        "vmec_tensor_vs_eik_array_parity_worst_core_norm": 5668.069765980051
+      },
+      "lane": "vmec_jax / booz_xform_jax differentiable geometry bridge",
+      "next_action": "Generalize the now-matched zero-beta Boozer equal-arc core/metric/drift convention across finite-beta pressure corrections and solver-objective geometry gradients for growth-rate/quasilinear gates.",
+      "primary_artifacts": [
+        "docs/_static/differentiable_geometry_bridge.json",
+        "docs/_static/vmec_boozer_parity_matrix.json"
+      ],
+      "status": "partial"
+    },
+    {
+      "claim_level": "release_hot_path_localization_closed_future_optimization_scoped",
+      "key_metrics": {
+        "backend": "gpu",
+        "best_identity_candidate": "kx",
+        "best_identity_candidate_speedup": 0.9595023934720446,
+        "device_count": 2,
+        "engineering_speedup": 0.8051065199561345,
+        "full_trace_cpu_warm_seconds": 0.3346847665961832,
+        "full_trace_gpu_warm_seconds": 0.012807567021809518,
+        "hsx_cpu_full_rhs": 0.3086076334118843,
+        "hsx_gpu_full_rhs": 0.027057467214763164,
+        "identity_gate_pass": true,
+        "miller_cpu_grid_full_rhs": 0.3484569167951122,
+        "miller_gpu_grid_full_rhs": 0.012803101912140846,
+        "miller_gpu_spectral_full_rhs": 0.014757980592548847,
+        "release_performance_gate": true,
+        "rhs_cpu_bracket_grid_over_spectral": 1.544788374379975,
+        "rhs_cpu_full_grid_over_spectral": 1.3022508836871707,
+        "rhs_fastest_full_label": "GPU spectral",
+        "rhs_gpu_bracket_grid_over_spectral": 2.2429853842950562,
+        "rhs_gpu_full_grid_over_spectral": 1.5129955548419813,
+        "w7x_cpu_full_rhs": 0.30949455841910095,
+        "w7x_gpu_full_rhs": 0.027265143021941184
+      },
+      "lane": "Profiler-backed nonlinear hot-path optimization",
+      "next_action": "Release hot-path localization is closed with matched CPU/GPU profiler artifacts and conservative claim scope; continue larger-state algorithmic optimization as a future science/performance lane.",
+      "primary_artifacts": [
+        "docs/_static/nonlinear_sharding_profile_office_gpu.json",
+        "docs/_static/nonlinear_rhs_profile.json",
+        "docs/_static/nonlinear_rhs_profile_miller.json",
+        "docs/_static/nonlinear_rhs_profile_stellarator_runtime.json",
+        "docs/_static/full_nonlinear_rhs_trace_summary.json",
+        "docs/_static/full_nonlinear_rhs_trace_gpu_summary.json"
+      ],
+      "status": "closed"
+    }
+  ],
+  "status_order": {
+    "blocked": 3,
+    "closed": 0,
+    "open": 2,
+    "partial": 1
+  },
+  "summary": {
+    "n_blocked": 0,
+    "n_closed": 2,
+    "n_lanes": 5,
+    "n_open": 1,
+    "n_partial": 2
+  }
+}

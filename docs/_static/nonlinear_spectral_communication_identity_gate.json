@@ -1,0 +1,86 @@
+{
+  "case": "Nonlinear spectral communication identity gate",
+  "claim_scope": "diagnostic spectral communication identity gate only; split/reassemble layout simulation with no production routing or speedup claim",
+  "communication_decomposition": {
+    "blocked_reasons": [],
+    "x_chunks": [
+      2,
+      2
+    ],
+    "x_offsets": [
+      0,
+      2
+    ],
+    "y_chunks": [
+      2,
+      2,
+      2
+    ],
+    "y_offsets": [
+      0,
+      2,
+      4
+    ]
+  },
+  "gate": {
+    "atol": 5e-06,
+    "blocked_reasons": [],
+    "bracket_max_abs_error": 0.0,
+    "bracket_max_rel_error": 0.0,
+    "claim_scope": "diagnostic spectral communication identity gate only; split/reassemble layout simulation with no production routing or speedup claim",
+    "decomposed_path_enabled": true,
+    "fft_max_abs_error": 0.0,
+    "fft_max_rel_error": 0.0,
+    "field_max_abs_error": 0.0,
+    "field_max_rel_error": 0.0,
+    "identity_passed": true,
+    "rtol": 5e-06,
+    "state_shape": [
+      2,
+      3,
+      6,
+      4,
+      2
+    ],
+    "x_chunks": [
+      2,
+      2
+    ],
+    "x_offsets": [
+      0,
+      2
+    ],
+    "y_chunks": [
+      2,
+      2,
+      2
+    ],
+    "y_offsets": [
+      0,
+      2,
+      4
+    ]
+  },
+  "kind": "nonlinear_spectral_communication_identity_gate",
+  "rows": [
+    {
+      "identity_passed": true,
+      "max_abs_error": 0.0,
+      "max_rel_error": 0.0,
+      "operator": "fft_forward_inverse"
+    },
+    {
+      "identity_passed": true,
+      "max_abs_error": 0.0,
+      "max_rel_error": 0.0,
+      "operator": "nonlinear_bracket"
+    },
+    {
+      "identity_passed": true,
+      "max_abs_error": 0.0,
+      "max_rel_error": 0.0,
+      "operator": "spectral_field_solve_layout"
+    }
+  ],
+  "source": "spectraxgk.nonlinear_parallel nonlinear-spectral communication utilities"
+}

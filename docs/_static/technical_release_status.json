@@ -1,0 +1,411 @@
+{
+  "failed_required": [],
+  "kind": "spectraxgk_technical_release_status",
+  "lanes": {
+    "ci_coverage_release": {
+      "checks": [
+        {
+          "exists": true,
+          "name": "wide coverage matrix",
+          "passed": true,
+          "path": ".github/workflows/ci.yml",
+          "required": true,
+          "snippet": "wide-coverage-shards"
+        },
+        {
+          "exists": true,
+          "name": "wide shard manifest",
+          "passed": true,
+          "path": ".github/workflows/ci.yml",
+          "required": true,
+          "snippet": "coverage-wide-shard-manifest.json"
+        },
+        {
+          "exists": true,
+          "name": "95 percent gate",
+          "passed": true,
+          "path": ".github/workflows/ci.yml",
+          "required": true,
+          "snippet": "--fail-under 95"
+        },
+        {
+          "exists": true,
+          "name": "measured manifest coverage audit",
+          "passed": true,
+          "path": ".github/workflows/ci.yml",
+          "required": true,
+          "snippet": "--coverage-xml coverage-wide.xml"
+        },
+        {
+          "exists": true,
+          "name": "codecov upload",
+          "passed": true,
+          "path": ".github/workflows/ci.yml",
+          "required": true,
+          "snippet": "codecov/codecov-action"
+        },
+        {
+          "exists": true,
+          "name": "release readiness check",
+          "passed": true,
+          "path": ".github/workflows/ci.yml",
+          "required": true,
+          "snippet": "tools/check_release_readiness.py"
+        }
+      ],
+      "completion_percent": 100.0,
+      "failed_required": [],
+      "passed_required": 6,
+      "required": 6
+    },
+    "docs_release_hygiene": {
+      "checks": [
+        {
+          "exists": true,
+          "name": "readme install",
+          "passed": true,
+          "path": "README.md",
+          "required": true,
+          "snippet": "pip install spectraxgk"
+        },
+        {
+          "exists": true,
+          "name": "readme executable",
+          "passed": true,
+          "path": "README.md",
+          "required": true,
+          "snippet": "spectraxgk"
+        },
+        {
+          "exists": true,
+          "name": "MIT license in README",
+          "passed": true,
+          "path": "README.md",
+          "required": true,
+          "snippet": "MIT"
+        },
+        {
+          "exists": true,
+          "name": "release scope ledger",
+          "passed": true,
+          "path": "docs/release_scope.rst",
+          "required": true,
+          "snippet": "Claim scope"
+        },
+        {
+          "exists": true,
+          "name": "roadmap",
+          "passed": true,
+          "path": "docs/roadmap.rst",
+          "required": true,
+          "snippet": "Release-ready"
+        },
+        {
+          "exists": true,
+          "name": "examples docs",
+          "passed": true,
+          "path": "docs/examples.rst",
+          "required": true,
+          "snippet": "parallelization"
+        },
+        {
+          "exists": true,
+          "name": "release workflow",
+          "passed": true,
+          "path": ".github/workflows/release.yml",
+          "required": true,
+          "snippet": "gh-action-pypi-publish"
+        }
+      ],
+      "completion_percent": 100.0,
+      "failed_required": [],
+      "passed_required": 7,
+      "required": 7
+    },
+    "parallelization_release_surface": {
+      "checks": [
+        {
+          "exists": true,
+          "name": "parallelization policy docs",
+          "passed": true,
+          "path": "docs/parallelization.rst",
+          "required": true,
+          "snippet": "Production-ready parallelism"
+        },
+        {
+          "exists": true,
+          "name": "runtime parallel input docs",
+          "passed": true,
+          "path": "docs/inputs.rst",
+          "required": true,
+          "snippet": "strategy = \"batch\""
+        },
+        {
+          "exists": true,
+          "name": "independent ky scaling artifact",
+          "passed": true,
+          "path": "docs/_static/independent_ky_scan_scaling_large.json",
+          "required": true,
+          "snippet": "not a nonlinear domain-decomposition"
+        },
+        {
+          "exists": true,
+          "name": "quasilinear UQ scaling artifact",
+          "passed": true,
+          "path": "docs/_static/quasilinear_uq_ensemble_scaling_large.json",
+          "required": true,
+          "snippet": "not a promoted absolute nonlinear heat-flux predictor"
+        },
+        {
+          "exists": true,
+          "name": "parallelization completion status",
+          "passed": true,
+          "path": "docs/_static/parallelization_completion_status.json",
+          "required": true,
+          "snippet": "production_completion_percent"
+        },
+        {
+          "exists": true,
+          "name": "nonlinear sharding scoped diagnostic",
+          "passed": true,
+          "path": "docs/_static/nonlinear_sharding_strong_scaling_large.json",
+          "required": true,
+          "snippet": "not a production speedup claim"
+        },
+        {
+          "exists": true,
+          "name": "nonlinear domain identity gate",
+          "passed": true,
+          "path": "docs/_static/nonlinear_domain_parallel_identity_gate.json",
+          "required": true,
+          "snippet": "no production routing or speedup claim"
+        },
+        {
+          "exists": true,
+          "name": "nonlinear spectral communication gate",
+          "passed": true,
+          "path": "docs/_static/nonlinear_spectral_communication_identity_gate.json",
+          "required": true,
+          "snippet": "no production routing or speedup claim"
+        },
+        {
+          "exists": true,
+          "name": "parallel artifact checker",
+          "passed": true,
+          "path": "tools/check_parallel_scaling_artifacts.py",
+          "required": true,
+          "snippet": "FAMILIES"
+        }
+      ],
+      "completion_percent": 100.0,
+      "failed_required": [],
+      "passed_required": 9,
+      "required": 9
+    },
+    "performance_artifacts": {
+      "checks": [
+        {
+          "exists": true,
+          "name": "runtime memory figure",
+          "passed": true,
+          "path": "docs/_static/runtime_memory_benchmark.png",
+          "required": true,
+          "snippet": null
+        },
+        {
+          "exists": true,
+          "name": "runtime memory manifest",
+          "passed": true,
+          "path": "tools/runtime_memory_manifest.toml",
+          "required": true,
+          "snippet": null
+        },
+        {
+          "exists": true,
+          "name": "performance manifest",
+          "passed": true,
+          "path": "tools/performance_optimization_manifest.toml",
+          "required": true,
+          "snippet": "parallel_scaling"
+        },
+        {
+          "exists": true,
+          "name": "nonlinear RHS profile",
+          "passed": true,
+          "path": "docs/_static/nonlinear_rhs_profile.json",
+          "required": true,
+          "snippet": null
+        },
+        {
+          "exists": true,
+          "name": "full nonlinear RHS trace",
+          "passed": true,
+          "path": "docs/_static/full_nonlinear_rhs_trace_summary.json",
+          "required": true,
+          "snippet": null
+        },
+        {
+          "exists": true,
+          "name": "performance docs",
+          "passed": true,
+          "path": "docs/performance.rst",
+          "required": true,
+          "snippet": "No speedup claim"
+        }
+      ],
+      "completion_percent": 100.0,
+      "failed_required": [],
+      "passed_required": 6,
+      "required": 6
+    },
+    "refactor_modularity": {
+      "checks": [
+        {
+          "exists": true,
+          "name": "runtime orchestration module",
+          "passed": true,
+          "path": "src/spectraxgk/runtime_orchestration.py",
+          "required": true,
+          "snippet": null
+        },
+        {
+          "exists": true,
+          "name": "runtime policy module",
+          "passed": true,
+          "path": "src/spectraxgk/runtime_policies.py",
+          "required": true,
+          "snippet": "RuntimeIndependentParallelPlan"
+        },
+        {
+          "exists": true,
+          "name": "linear cache module",
+          "passed": true,
+          "path": "src/spectraxgk/linear_cache.py",
+          "required": true,
+          "snippet": null
+        },
+        {
+          "exists": true,
+          "name": "linear moments module",
+          "passed": true,
+          "path": "src/spectraxgk/linear_moments.py",
+          "required": true,
+          "snippet": null
+        },
+        {
+          "exists": true,
+          "name": "linear params module",
+          "passed": true,
+          "path": "src/spectraxgk/linear_params.py",
+          "required": true,
+          "snippet": null
+        },
+        {
+          "exists": true,
+          "name": "linear parallel module",
+          "passed": true,
+          "path": "src/spectraxgk/linear_parallel.py",
+          "required": true,
+          "snippet": null
+        },
+        {
+          "exists": true,
+          "name": "nonlinear helper module",
+          "passed": true,
+          "path": "src/spectraxgk/nonlinear_helpers.py",
+          "required": true,
+          "snippet": null
+        },
+        {
+          "exists": true,
+          "name": "benchmark scan module",
+          "passed": true,
+          "path": "src/spectraxgk/benchmark_scan.py",
+          "required": true,
+          "snippet": null
+        },
+        {
+          "exists": true,
+          "name": "diagnostics channel module",
+          "passed": true,
+          "path": "src/spectraxgk/diagnostics_channels.py",
+          "required": true,
+          "snippet": null
+        },
+        {
+          "exists": true,
+          "name": "coverage manifest",
+          "passed": true,
+          "path": "tools/validation_coverage_manifest.toml",
+          "required": true,
+          "snippet": "spectraxgk.runtime_orchestration"
+        }
+      ],
+      "completion_percent": 100.0,
+      "failed_required": [],
+      "passed_required": 10,
+      "required": 10
+    },
+    "scientific_gate_guardrails": {
+      "checks": [
+        {
+          "exists": true,
+          "name": "validation gate index",
+          "passed": true,
+          "path": "docs/_static/validation_gate_index.json",
+          "required": true,
+          "snippet": null
+        },
+        {
+          "exists": true,
+          "name": "quasilinear guardrails",
+          "passed": true,
+          "path": "docs/_static/quasilinear_promotion_guardrails.json",
+          "required": true,
+          "snippet": null
+        },
+        {
+          "exists": true,
+          "name": "manuscript readiness",
+          "passed": true,
+          "path": "docs/_static/manuscript_readiness_status.json",
+          "required": true,
+          "snippet": null
+        },
+        {
+          "exists": true,
+          "name": "open lane status",
+          "passed": true,
+          "path": "docs/_static/open_research_lane_status.json",
+          "required": true,
+          "snippet": null
+        },
+        {
+          "exists": true,
+          "name": "stellarator optimization docs",
+          "passed": true,
+          "path": "docs/stellarator_optimization.rst",
+          "required": true,
+          "snippet": "finite-difference"
+        },
+        {
+          "exists": true,
+          "name": "quasilinear docs",
+          "passed": true,
+          "path": "docs/quasilinear.rst",
+          "required": true,
+          "snippet": "absolute-flux"
+        }
+      ],
+      "completion_percent": 100.0,
+      "failed_required": [],
+      "passed_required": 6,
+      "required": 6
+    }
+  },
+  "passed": true,
+  "root": "/Users/rogeriojorge/local/SPECTRAX-GK",
+  "scope": "Technical release readiness for CI, refactor, docs/release hygiene, parallelization artifacts, performance artifacts, and guardrails. Deferred manuscript physics lanes remain scoped separately.",
+  "target_percent": 98.0,
+  "technical_release_completion_percent": 100.0
+}
