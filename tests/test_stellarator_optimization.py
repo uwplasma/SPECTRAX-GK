@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import json
+
 import jax
 import jax.numpy as jnp
 import numpy as np
+import pytest
 
 import spectraxgk
 import spectraxgk.stellarator_optimization as so
@@ -12,6 +15,7 @@ from spectraxgk.stellarator_optimization import (
     PARAMETER_NAMES,
     StellaratorITGOptimizationConfig,
     StellaratorITGOptimizationResult,
+    StellaratorITGSampleSet,
     compare_stellarator_itg_objectives,
     default_stellarator_initial_params,
     nonlinear_heat_flux_trace,
@@ -21,7 +25,13 @@ from spectraxgk.stellarator_optimization import (
     stellarator_itg_objective,
     stellarator_itg_objective_residual_names,
     stellarator_itg_objective_residual_vector,
+    stellarator_itg_portfolio_gate_payload,
+    stellarator_itg_portfolio_sensitivity_report,
+    stellarator_itg_reduced_portfolio_objective,
     stellarator_itg_residual_sensitivity_report,
+    stellarator_itg_sample_objective_table,
+    stellarator_itg_vmec_boozer_portfolio_objective_from_state,
+    stellarator_itg_vmec_boozer_sample_objective_table_from_state,
 )
 
 
@@ -122,6 +132,179 @@ def test_quasilinear_residual_sensitivity_report_checks_fd_and_conditioning() ->
     assert report["covariance"]["source"] == "weighted_objective_residual"
     assert report["covariance"]["conditioning_gate"]["passed"] is True
     assert report["residual_names"] == list(stellarator_itg_objective_residual_names("quasilinear_flux"))
+
+
+def test_stellarator_itg_sample_portfolio_is_rectangular_and_exported() -> None:
+    assert spectraxgk.StellaratorITGSampleSet is StellaratorITGSampleSet
+    assert spectraxgk.stellarator_itg_sample_objective_table is stellarator_itg_sample_objective_table
+    assert spectraxgk.stellarator_itg_reduced_portfolio_objective is stellarator_itg_reduced_portfolio_objective
+    assert spectraxgk.stellarator_itg_portfolio_sensitivity_report is stellarator_itg_portfolio_sensitivity_report
+    assert spectraxgk.stellarator_itg_portfolio_gate_payload is stellarator_itg_portfolio_gate_payload
+
+    cfg = _fast_config()
+    samples = StellaratorITGSampleSet(
+        surfaces=(0.55, 0.64),
+        alphas=(0.0, 0.7),
+        ky_values=(0.1, 0.3, 0.5),
+        surface_weights=(1.0, 2.0),
+        ky_weights=(1.0, 2.0, 1.0),
+    )
+    params = jnp.asarray([0.18, 0.25, 0.22, -0.16])
+    table = stellarator_itg_sample_objective_table(
+        params,
+        ("growth", "quasilinear_flux", "nonlinear_heat_flux"),
+        cfg,
+        samples,
+    )
+    reduced = stellarator_itg_reduced_portfolio_objective(
+        params,
+        ("growth", "quasilinear_flux"),
+        cfg,
+        samples,
+        objective_weights=(2.0, 1.0),
+    )
+
+    assert samples.n_samples == 12
+    assert table.shape == (2, 2, 3, 3)
+    assert float(jnp.min(table)) > 0.0
+    assert float(reduced) > 0.0
+    assert samples.to_dict()["reduction"] == "weighted_mean"
+
+
+def test_stellarator_itg_portfolio_sensitivity_report_checks_rows_and_scalar() -> None:
+    cfg = _fast_config()
+    samples = StellaratorITGSampleSet(
+        surfaces=(0.55, 0.64),
+        alphas=(0.0, 0.7),
+        ky_values=(0.15, 0.35),
+    )
+    params = jnp.asarray([0.16, 0.21, 0.24, -0.18])
+
+    report = stellarator_itg_portfolio_sensitivity_report(
+        params,
+        ("growth", "quasilinear_flux"),
+        cfg,
+        samples,
+        workers=2,
+    )
+    inner = report["portfolio_report"]
+
+    assert report["passed"] is True
+    assert report["objective_names"] == ["growth", "quasilinear_flux"]
+    assert report["sample_set"]["n_samples"] == 8
+    assert inner["portfolio_contract"]["row_shape"] == [2, 2, 2, 2]
+    assert inner["scalar_gradient_gate"]["passed"] is True
+    assert inner["row_jacobian_gate"]["passed"] is True
+    assert inner["conditioning_gate"]["sensitivity_map_rank"] == len(PARAMETER_NAMES)
+    assert inner["scalar_gradient_gate"]["finite_difference_parallel"]["requested_workers"] == 2
+
+
+def test_stellarator_itg_portfolio_gate_payload_is_json_ready() -> None:
+    cfg = _fast_config()
+    samples = StellaratorITGSampleSet(
+        surfaces=(0.55, 0.64),
+        alphas=(0.0, 0.7),
+        ky_values=(0.15, 0.35),
+    )
+    params = jnp.asarray([0.16, 0.21, 0.24, -0.18])
+
+    payload = stellarator_itg_portfolio_gate_payload(
+        params,
+        ("growth", "quasilinear_flux"),
+        cfg,
+        samples,
+        objective_weights=(2.0, 1.0),
+        finite_difference_workers=2,
+    )
+
+    assert payload["kind"] == "stellarator_itg_portfolio_gate"
+    assert payload["passed"] is True
+    assert payload["production_nonlinear_optimization_claim"] is False
+    assert payload["sample_set"]["n_samples"] == 8
+    assert len(payload["samples"]) == 8
+    assert len(payload["base_sample_values"]) == 8
+    json.dumps(payload, allow_nan=False)
+    objective_table = np.asarray(payload["base_objective_table"], dtype=float)
+    objective_tensor = np.asarray(payload["base_objective_tensor"], dtype=float)
+    objective_weights = np.asarray(payload["objective_weights"], dtype=float)
+    sample_values = np.asarray(payload["base_sample_values"], dtype=float)
+    sample_rows = payload["samples"]
+
+    assert objective_table.shape == (8, 2)
+    assert objective_tensor.shape == (2, 2, 2, 2)
+    np.testing.assert_allclose(objective_table, objective_tensor.reshape((8, 2)))
+    np.testing.assert_allclose(sample_values, objective_table @ objective_weights)
+    assert [(row["surface"], row["alpha"], row["ky"]) for row in sample_rows] == [
+        (surface, alpha, ky)
+        for surface in samples.surfaces
+        for alpha in samples.alphas
+        for ky in samples.ky_values
+    ]
+    np.testing.assert_allclose(sum(payload["objective_weights"]), 1.0)
+    np.testing.assert_allclose(sum(row["weight"] for row in payload["samples"]), 1.0)
+    np.testing.assert_allclose(
+        payload["base_value"],
+        float(np.dot(sample_values, [row["weight"] for row in sample_rows])),
+        rtol=1.0e-6,
+        atol=1.0e-8,
+    )
+    assert payload["portfolio_report"]["scalar_gradient_gate"]["passed"] is True
+    assert payload["portfolio_report"]["row_jacobian_gate"]["passed"] is True
+    assert "real vmec_jax" in payload["next_action"]
+
+
+def test_stellarator_itg_vmec_boozer_portfolio_wraps_real_table_contract(monkeypatch) -> None:
+    calls: dict[str, object] = {}
+
+    def fake_table(_state, _static, _indata, _wout, **kwargs):  # noqa: ANN001, ANN202
+        calls.update(kwargs)
+        rows = []
+        for index in range(8):
+            value = float(index + 1)
+            rows.append([value, 0.0, 1.0, 2.0, 0.0, 10.0 * value])
+        metadata = [{"sample": index} for index in range(8)]
+        return jnp.asarray(rows), metadata
+
+    monkeypatch.setattr(so, "vmec_boozer_solver_objective_table_with_metadata_from_state", fake_table)
+    samples = StellaratorITGSampleSet(
+        surfaces=(0.50, 0.70),
+        alphas=(0.0, 0.6),
+        ky_values=(0.1, 0.3),
+    )
+
+    table = stellarator_itg_vmec_boozer_sample_objective_table_from_state(
+        "state",
+        "static",
+        "indata",
+        "wout",
+        ("growth", "quasilinear_flux"),
+        samples,
+        ntheta=8,
+    )
+    reduced = stellarator_itg_vmec_boozer_portfolio_objective_from_state(
+        "state",
+        "static",
+        "indata",
+        "wout",
+        ("growth", "quasilinear_flux"),
+        samples,
+        objective_weights=(1.0, 0.0),
+        ntheta=8,
+    )
+
+    assert spectraxgk.stellarator_itg_vmec_boozer_sample_objective_table_from_state is (
+        stellarator_itg_vmec_boozer_sample_objective_table_from_state
+    )
+    assert spectraxgk.stellarator_itg_vmec_boozer_portfolio_objective_from_state is (
+        stellarator_itg_vmec_boozer_portfolio_objective_from_state
+    )
+    assert table.shape == (2, 2, 2, 2)
+    np.testing.assert_allclose(np.asarray(table)[0, 0, 0], (1.0, 10.0))
+    assert float(reduced) == pytest.approx(4.5)
+    assert calls["torflux_values"] == samples.surfaces
+    assert calls["alphas"] == samples.alphas
+    assert calls["ky_values"] == samples.ky_values
+    assert calls["ntheta"] == 8
 
 
 def test_nonlinear_heat_flux_window_metrics_use_late_stable_samples() -> None:

@@ -726,14 +726,17 @@ The report is generated with:
 Non-axisymmetric HSX holdout
 ----------------------------
 
-The first non-axisymmetric quasilinear calibration audit uses the same HSX
-adiabatic-electron ITG setup as the tracked nonlinear window gate. The linear
-quasilinear spectrum is generated from an external HSX VMEC equilibrium supplied
-through ``HSX_VMEC_FILE``; VMEC NetCDF files are not checked into Git:
+The first non-axisymmetric quasilinear calibration audit uses the same
+adiabatic-electron ITG setup as the tracked nonlinear window gate. The checked
+TOML points to a self-contained QHS VMEC deck generated locally by
+``vmec_jax``; exact HSX validation should override ``--vmec-file`` with the
+machine-specific benchmark WOUT:
 
 .. code-block:: bash
 
-   export HSX_VMEC_FILE=/absolute/path/to/wout_HSX_QHS_vac.nc
+   cd examples/vmec
+   vmec_jax input.NuhrenbergZille_1988_QHS
+   cd ../..
    spectraxgk scan-runtime-linear \
      --config examples/linear/non-axisymmetric/runtime_hsx_linear_quasilinear.toml \
      --ky-values 0.047619047619047616,0.09523809523809523,0.14285714285714285,0.19047619047619047,0.23809523809523808,0.2857142857142857 \
@@ -795,7 +798,9 @@ ignored local ``tools_out/*.eik.nc`` file:
 
 .. code-block:: bash
 
-   export W7X_VMEC_FILE=/path/to/wout_w7x.nc
+   cd examples/vmec
+   vmec_jax input.nfp3_QI_fixed_resolution_final
+   cd ../..
    spectraxgk scan-runtime-linear \
      --config examples/linear/non-axisymmetric/runtime_w7x_linear_quasilinear_vmec.toml \
      --ky-values 0.047619047619047616,0.09523809523809523,0.14285714285714285,0.19047619047619047,0.23809523809523808,0.2857142857142857 \
@@ -804,12 +809,12 @@ ignored local ``tools_out/*.eik.nc`` file:
      --out docs/_static/quasilinear_w7x_spectrum_scan \
      --no-progress
 
-The tracked W7-X spectrum artifact was generated from the W7-X benchmark VMEC
-equilibrium available on the office machine at
-``/home/rjorge/gx_refs/main_clean_20260312/nonlinear/w7x/wout_w7x.nc``. The
-equilibrium itself is not shipped in the repository, so users who want to
-regenerate the artifact must point ``W7X_VMEC_FILE`` at an equivalent W7-X VMEC
-file.
+The bundled command above regenerates the demo spectrum from the shipped QI
+VMEC input deck after ``vmec_jax`` creates
+``examples/vmec/wout_nfp3_QI_fixed_resolution_final.nc``. Exact W7-X
+validation should use the same TOML with ``--vmec-file`` pointing to the
+machine-specific benchmark WOUT; the benchmark WOUT itself is not shipped in
+Git.
 
 .. image:: _static/quasilinear_w7x_spectrum.png
    :alt: W7-X quasilinear spectrum

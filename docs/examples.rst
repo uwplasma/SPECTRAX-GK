@@ -27,25 +27,21 @@ Tokamak cases
    python examples/nonlinear/axisymmetric/kbm_runtime_nonlinear.py --steps 200
    python examples/nonlinear/axisymmetric/miller_nonlinear_runtime.py --steps 200
 
-Stellarator and imported-geometry cases
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+VMEC-backed tokamak and stellarator cases
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: bash
 
-   python examples/linear/non-axisymmetric/w7x_linear_imported_geometry.py \
-     --geometry-file /path/to/itg_w7x_adiabatic_electrons.eik.nc
+   pip install vmec-jax
+   cd examples/vmec
+   ./generate_wouts.sh
+   cd ../..
 
-   python examples/linear/non-axisymmetric/hsx_linear_imported_geometry.py \
-     --geometry-file /path/to/hsx_linear.eik.nc
+   spectraxgk run --config examples/linear/axisymmetric/runtime_circular_vmec_linear.toml
+   spectraxgk run --config examples/nonlinear/axisymmetric/runtime_circular_vmec_nonlinear.toml
 
-   python examples/nonlinear/non-axisymmetric/w7x_nonlinear_imported_geometry.py \
-     --geometry-file /path/to/w7x_adiabatic_electrons.eik.nc
-
-   python examples/nonlinear/non-axisymmetric/hsx_nonlinear_imported_geometry.py \
-     --geometry-file /path/to/hsx_nonlinear.eik.nc
-
-   export W7X_VMEC_FILE=/absolute/path/to/wout_w7x.nc
-   export HSX_VMEC_FILE=/absolute/path/to/wout_HSX_QHS_vac.nc
+   spectraxgk run --config examples/linear/non-axisymmetric/runtime_hsx_linear_quasilinear.toml
+   spectraxgk run --config examples/linear/non-axisymmetric/runtime_w7x_linear_quasilinear_vmec.toml
    python examples/nonlinear/non-axisymmetric/w7x_nonlinear_vmec_geometry.py --steps 200
    python examples/nonlinear/non-axisymmetric/hsx_nonlinear_vmec_geometry.py --steps 200
 
@@ -54,6 +50,12 @@ default adaptive horizon. Set ``--steps`` only when you intentionally want a
 short profiling or diagnostic window. For longer W7-X nonlinear runs, keep
 adaptive timesteps enabled (the default for the examples) or reduce ``dt`` if
 you need a fixed-step stability study.
+
+The bundled VMEC decks are self-contained examples. Exact HSX or W7-X
+validation should use the same TOMLs with ``--vmec-file`` pointing to the
+machine-specific benchmark WOUT. If you only need one local WOUT, run
+``vmec_jax input.NAME`` in ``examples/vmec`` instead of the full
+``generate_wouts.sh`` helper.
 
 The shipped nonlinear stellarator runtime TOMLs now also emit artifact bundles
 under ``tools_out/`` by default:
@@ -428,9 +430,10 @@ Miller inputs when the external helper scripts are available:
 
 .. code-block:: bash
 
-   export W7X_VMEC_FILE=/absolute/path/to/wout_w7x.nc
-   export HSX_VMEC_FILE=/absolute/path/to/wout_HSX_QHS_vac.nc
-   export SPECTRAX_BOOZ_XFORM_JAX_PATH=/absolute/path/to/booz_xform_jax
+   cd examples/vmec
+   vmec_jax input.NuhrenbergZille_1988_QHS
+   cd ../..
+   export SPECTRAX_BOOZ_XFORM_JAX_PATH=/absolute/or/relative/booz_xform_jax
    python tools/generate_gx_vmec_eik.py \
      --config examples/nonlinear/non-axisymmetric/runtime_hsx_nonlinear_vmec_geometry.toml
 
@@ -469,6 +472,40 @@ blocks without running a full benchmark case:
    python examples/theory_and_demos/gradB_coupling_hl_1d.py
    python examples/theory_and_demos/linear_rhs_demo.py
    python examples/theory_and_demos/two_stream_hermite_1d.py
+
+Differentiable optimization examples
+------------------------------------
+
+These scripts exercise the reduced QA stellarator ITG optimization lane before
+promotion to the full ``vmec_jax -> booz_xform_jax -> SPECTRAX-GK`` geometry
+path:
+
+.. code-block:: bash
+
+   python examples/optimization/stellarator_itg_growth_optimization.py
+   python examples/optimization/stellarator_itg_quasilinear_flux_optimization.py
+   python examples/optimization/stellarator_itg_nonlinear_heat_flux_optimization.py
+   python examples/optimization/compare_stellarator_itg_optimizations.py
+   python examples/optimization/stellarator_itg_portfolio_gate.py --finite-difference-workers 2
+
+The portfolio gate writes JSON/PNG/PDF artifacts and checks scalar plus
+row-wise AD/finite-difference agreement for the same surface/alpha/``k_y``
+reduction that will be used by the production VMEC/Boozer objective rows. Its
+default table covers three surfaces, two field-line ``alpha`` values, and
+three ``k_y`` values with growth and quasilinear-flux columns. This is a
+reduced/model-development gate; it does not claim optimized nonlinear heat
+flux or calibrated saturated transport. Treat the JSON sidecar as the audit
+source; the PNG/PDF summarize the same sidecar for docs and review.
+
+The production bridge now exposes the same portfolio layout for real
+``vmec_jax -> booz_xform_jax -> SPECTRAX-GK`` rows:
+``stellarator_itg_vmec_boozer_sample_objective_table_from_state`` returns a
+``(surface, alpha, ky, objective)`` table and
+``stellarator_itg_vmec_boozer_portfolio_objective_from_state`` reduces it with
+the same weights as the cheap gate. Promotion still requires held-out
+surface/field-line artifacts and matched baseline/optimized long
+post-transient nonlinear windows, not startup traces or reduced-window
+estimators.
 
 The autodiff demos write summary JSON plus `R/L_Ti` and `R/L_n` sweep CSVs in
 the chosen output directory alongside the publication-ready plots. The

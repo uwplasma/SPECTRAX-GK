@@ -36,9 +36,10 @@ fixed_dt = true
 
 [geometry]
 model = "vmec"
-# Set HSX_VMEC_FILE to an external HSX VMEC wout file. VMEC NetCDF files are
-# intentionally not checked into Git so normal clones remain lightweight.
-vmec_file = "$HSX_VMEC_FILE"
+# Generate this file with:
+#   cd examples/vmec && vmec_jax input.NuhrenbergZille_1988_QHS
+# For exact HSX validation, override with the benchmark HSX wout.
+vmec_file = "../../vmec/wout_NuhrenbergZille_1988_QHS.nc"
 torflux = 0.64
 alpha = 0.0
 npol = 1.0

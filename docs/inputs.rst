@@ -199,7 +199,7 @@ For slab benchmarks, set ``model = "slab"``. Optional slab-specific keys are
 normalization) and ``zero_shat = true`` (forces the zero-shear slab metric
 ``gds2 = 1, gds21 = 0, gds22 = 1``).
 It also accepts ``model = "gx-netcdf"`` with
-``geometry_file = "/path/to/gx_geometry.nc"`` to run from imported sampled
+``geometry_file = "external_geometry.nc"`` to run from imported sampled
 field-line geometry instead of the analytic ``s-alpha`` model. The imported
 file can be a tracked benchmark ``*.out.nc`` or a root-level ``*.eik.nc`` geometry
 file produced by the VMEC workflow. When that imported geometry is used with a
@@ -209,18 +209,19 @@ analytic s-alpha grid defaults.
 For direct VMEC workflows, the runtime also accepts ``model = "vmec"``.
 In that mode SPECTRAX-GK calls the VMEC geometry helper to generate a
 matching ``*.eik.nc`` file on demand, then immediately reuses the same imported
-geometry path as the W7-X examples. Set ``vmec_file`` plus the flux-tube keys
+geometry path as the VMEC examples. Set ``vmec_file`` plus the flux-tube keys
 ``torflux``, ``npol`` and optionally ``alpha``. ``geometry_file`` can be used
 as an explicit output path for the generated ``*.eik.nc`` file, and
 ``gx_repo`` can point to a non-default helper checkout if needed. The preferred
 VMEC path is the internal ``booz_xform_jax`` backend, discovered from
 ``BOOZ_XFORM_JAX_PATH`` or ``SPECTRAX_BOOZ_XFORM_JAX_PATH`` when it is not
 installed into the active Python environment. This is now the recommended
-imported-geometry route for new stellarator cases such as HSX.
+imported-geometry route for new stellarator cases. The shipped VMEC TOMLs
+point to locally generated files under ``examples/vmec``; generate those files
+with ``vmec_jax input.<case>`` before running the examples.
 ``vmec_file`` supports ``$ENV_VAR`` expansion, and relative paths are resolved
-against ``gx_repo`` before falling back to the current working directory. The
-W7-X runtime TOML uses that contract so the same config works on both local
-and office-style GX checkouts.
+against the TOML directory first. Command-line overrides are resolved from the
+shell working directory.
 When ``geometry_file`` is set for ``model = "vmec"``, SPECTRAX regenerates
 that target instead of reusing a stale file from an older VMEC conversion.
 For VMEC ``fix aspect`` runs, SPECTRAX follows the helper default contract and
@@ -246,8 +247,8 @@ runtime-configured runs:
 
 .. code-block:: bash
 
-   spectrax-gk run --config case.toml --vmec-file /path/to/wout.nc
-   spectrax-gk run --config case.toml --geometry-file /path/to/geometry.eik.nc
+   spectrax-gk run --config case.toml --vmec-file examples/vmec/wout_circular_tokamak.nc
+   spectrax-gk run --config case.toml --geometry-file external_geometry.eik.nc
    spectrax-gk run-runtime-nonlinear --config case.toml --init-file ~/restart.nc
 
 These override paths expand ``~`` and environment variables and are resolved

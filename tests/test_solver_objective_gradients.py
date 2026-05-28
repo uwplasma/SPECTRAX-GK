@@ -31,6 +31,7 @@ from spectraxgk.solver_objective_gradients import (
     mode21_vmec_boozer_quasilinear_gradient_report,
     solver_objective_branch_gradient_report,
     solver_objective_vector_from_geometry,
+    solver_grid_options_from_ky_values,
     solver_scalar_objective_from_vector,
     solver_ready_geometry_mapping,
     tiny_differentiable_objective_gradient_report,
@@ -42,6 +43,7 @@ from spectraxgk.solver_objective_gradients import (
     vmec_boozer_scalar_objective_from_state,
     vmec_boozer_scalar_objective_line_search_report,
     vmec_boozer_solver_objective_table_from_state,
+    vmec_boozer_solver_objective_table_with_metadata_from_state,
     vmec_boozer_solver_objective_vector_from_state,
 )
 
@@ -178,6 +180,25 @@ def test_solver_scalar_objective_selector_aliases_and_errors() -> None:
         solver_scalar_objective_from_vector(vector, "bad")  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="length"):
         solver_scalar_objective_from_vector(jnp.ones(2), "growth")
+
+
+def test_solver_grid_options_from_ky_values_maps_physical_scan_to_fft_rows() -> None:
+    options = solver_grid_options_from_ky_values((0.1, 0.3, 0.5))
+
+    assert spectraxgk.solver_grid_options_from_ky_values is solver_grid_options_from_ky_values
+    assert options["selected_ky_indices"] == (1, 3, 5)
+    assert options["ny"] == 12
+    assert float(options["ly"]) == pytest.approx(2.0 * np.pi / 0.1)
+    np.testing.assert_allclose(options["resolved_ky_values"], (0.1, 0.3, 0.5), rtol=5.0e-6, atol=5.0e-8)
+
+    shifted = solver_grid_options_from_ky_values((0.15, 0.35), ky_base=0.05)
+    assert shifted["selected_ky_indices"] == (3, 7)
+    assert shifted["ny"] == 16
+    np.testing.assert_allclose(shifted["resolved_ky_values"], (0.15, 0.35), rtol=5.0e-6, atol=5.0e-8)
+    with pytest.raises(ValueError, match="integer multiples"):
+        solver_grid_options_from_ky_values((0.15, 0.35))
+    with pytest.raises(ValueError, match="positive"):
+        solver_grid_options_from_ky_values((0.0, 0.1))
 
 
 def test_solver_objective_branch_gradient_report_gates_public_evaluator() -> None:
@@ -333,6 +354,70 @@ def test_vmec_boozer_solver_objective_table_samples_surfaces_alphas_and_ky(
         )
 
 
+def test_vmec_boozer_solver_objective_table_with_metadata_accepts_torflux_and_physical_ky(
+    monkeypatch,
+) -> None:
+    geometry_calls: list[dict[str, object]] = []
+    objective_calls: list[dict[str, object]] = []
+
+    def fake_geometry(_state, _static, _indata, _wout, **kwargs):  # noqa: ANN001, ANN202
+        geometry_calls.append(dict(kwargs))
+        return f"geom-{len(geometry_calls)}"
+
+    def fake_objective(_geom, **kwargs):  # noqa: ANN001, ANN202
+        objective_calls.append(dict(kwargs))
+        ky = float(kwargs["selected_ky_index"])
+        return jnp.asarray([ky, 0.0, 1.0, 2.0, 0.0, 3.0])
+
+    monkeypatch.setattr(sog, "flux_tube_geometry_from_vmec_boozer_state", fake_geometry)
+    monkeypatch.setattr(sog, "solver_objective_vector_from_geometry", fake_objective)
+
+    table, metadata = vmec_boozer_solver_objective_table_with_metadata_from_state(
+        "state",
+        "static",
+        "indata",
+        "wout",
+        torflux_values=(0.45, 0.65),
+        alphas=(0.0, 0.5),
+        ky_values=(0.1, 0.3),
+        ntheta=8,
+        ny=4,
+        n_laguerre=2,
+    )
+
+    assert spectraxgk.vmec_boozer_solver_objective_table_with_metadata_from_state is (
+        vmec_boozer_solver_objective_table_with_metadata_from_state
+    )
+    assert np.asarray(table).shape == (8, len(SOLVER_OBJECTIVE_NAMES))
+    assert geometry_calls[0] == {"torflux": 0.45, "alpha": 0.0, "ntheta": 8}
+    assert objective_calls[0]["selected_ky_index"] == 1
+    assert objective_calls[0]["ny"] == 8
+    assert objective_calls[0]["ly"] == pytest.approx(2.0 * np.pi / 0.1)
+    assert metadata[0]["surface"] == pytest.approx(0.45)
+    assert metadata[0]["torflux"] == pytest.approx(0.45)
+    assert metadata[0]["ky"] == pytest.approx(0.1)
+    assert metadata[1]["selected_ky_index"] == 3
+    assert metadata[1]["selected_ky"] == pytest.approx(0.3, rel=5.0e-6, abs=5.0e-8)
+    with pytest.raises(TypeError, match="torflux_values or surface_indices"):
+        vmec_boozer_solver_objective_table_with_metadata_from_state(
+            "state",
+            "static",
+            "indata",
+            "wout",
+            surface_indices=[1],
+            torflux_values=[0.5],
+        )
+    with pytest.raises(TypeError, match="ky_values or selected_ky_indices"):
+        vmec_boozer_solver_objective_table_with_metadata_from_state(
+            "state",
+            "static",
+            "indata",
+            "wout",
+            selected_ky_indices=[1],
+            ky_values=[0.1],
+        )
+
+
 def test_vmec_boozer_aggregate_scalar_objective_from_state_reductions(
     monkeypatch,
 ) -> None:
@@ -483,11 +568,13 @@ def test_vmec_boozer_aggregate_scalar_objective_finite_difference_report(
         coeff = float(np.asarray(state.Rcos[2, 1]))
         ky_indices = tuple(kwargs["selected_ky_indices"])
         rows = []
+        metadata = []
         for ky in ky_indices:
             rows.append([1.0 + 2.0 * coeff + float(ky), 0.0, 1.0, 3.0, 0.0, 5.0 + coeff])
-        return jnp.asarray(rows)
+            metadata.append({"surface_index": None, "alpha": 0.0, "selected_ky_index": int(ky)})
+        return jnp.asarray(rows), metadata
 
-    monkeypatch.setattr(sog, "vmec_boozer_solver_objective_table_from_state", fake_table)
+    monkeypatch.setattr(sog, "vmec_boozer_solver_objective_table_with_metadata_from_state", fake_table)
 
     report = vmec_boozer_aggregate_scalar_objective_finite_difference_report(
         case_name="case",

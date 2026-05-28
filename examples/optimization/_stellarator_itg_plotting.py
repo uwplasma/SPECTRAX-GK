@@ -38,6 +38,15 @@ def write_comparison_artifacts(payload: dict[str, Any], out_base: Path) -> None:
     _plot_comparison(payload, out_base.with_suffix(".pdf"))
 
 
+def write_portfolio_gate_artifacts(payload: dict[str, Any], out_base: Path) -> None:
+    """Write a reduced multi-surface/alpha/ky portfolio-gate payload and plot."""
+
+    out_base.parent.mkdir(parents=True, exist_ok=True)
+    out_base.with_suffix(".json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    _plot_portfolio_gate(payload, out_base.with_suffix(".png"))
+    _plot_portfolio_gate(payload, out_base.with_suffix(".pdf"))
+
+
 def _write_history_csv(payload: dict[str, Any], path: Path) -> None:
     names = list(payload["observable_names"])
     params = list(payload["parameter_names"])
@@ -255,3 +264,86 @@ def _objective_label(kind: str) -> str:
         "quasilinear_flux": "quasilinear flux",
         "nonlinear_heat_flux": "reduced NL window",
     }.get(kind, kind.replace("_", " "))
+
+
+def _plot_portfolio_gate(payload: dict[str, Any], path: Path) -> None:
+    sample = payload["sample_set"]
+    surfaces = np.asarray(sample["surfaces"], dtype=float)
+    alphas = np.asarray(sample["alphas"], dtype=float)
+    ky_values = np.asarray(sample["ky_values"], dtype=float)
+    objectives = list(payload["objective_names"])
+    n_obj = len(objectives)
+    table = _portfolio_tensor_from_payload(payload, surfaces, alphas, ky_values, objectives)
+    alpha_mean = np.mean(table, axis=1)
+
+    fig, axs = plt.subplots(1, n_obj + 1, figsize=(5.1 * (n_obj + 1), 4.3), constrained_layout=True)
+    if n_obj == 0:
+        axs = np.asarray([axs])
+    fig.suptitle("Reduced multi-surface/field-line ITG objective portfolio gate", fontsize=13.5, fontweight="bold")
+
+    for idx, objective in enumerate(objectives):
+        ax = axs[idx]
+        data = alpha_mean[:, :, idx]
+        im = ax.imshow(data, origin="lower", aspect="auto", cmap="magma")
+        ax.set_title(_objective_label(objective))
+        ax.set_xlabel(r"$k_y \rho_i$")
+        ax.set_ylabel("normalized toroidal flux")
+        ax.set_xticks(np.arange(len(ky_values)), [f"{value:.2f}" for value in ky_values])
+        ax.set_yticks(np.arange(len(surfaces)), [f"{value:.2f}" for value in surfaces])
+        for i in range(data.shape[0]):
+            for j in range(data.shape[1]):
+                ax.text(j, i, f"{data[i, j]:.2e}", ha="center", va="center", color="white", fontsize=8)
+        fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+
+    report = payload["portfolio_report"]
+    conditioning = report["conditioning_gate"]
+    scalar_gate = report["scalar_gradient_gate"]
+    row_gate = report["row_jacobian_gate"]
+    text = (
+        f"Gate passed: {payload['passed']}\n"
+        f"Samples: {sample['n_samples']} ({len(surfaces)} surfaces, {len(sample['alphas'])} alphas, {len(ky_values)} ky)\n"
+        f"Reduction: {sample['reduction']}\n"
+        f"Scalar AD/FD: {scalar_gate['passed']}  max |err|={scalar_gate['max_abs_error']:.2e}\n"
+        f"Rows AD/FD: {row_gate['passed']}  max |err|={row_gate['max_abs_error']:.2e}\n"
+        f"Rank: {conditioning['sensitivity_map_rank']}/{conditioning['min_rank']}\n"
+        f"Condition number: {conditioning['jacobian_condition_number']:.2e}\n"
+        "Claim: reduced portfolio gate, not a nonlinear transport claim"
+    )
+    axs[-1].axis("off")
+    axs[-1].text(
+        0.02,
+        0.96,
+        text,
+        va="top",
+        ha="left",
+        fontsize=10,
+        bbox={"boxstyle": "round,pad=0.45", "facecolor": "#f8fafc", "edgecolor": "#cbd5e1"},
+    )
+    for ax in axs[:-1]:
+        for spine in ax.spines.values():
+            spine.set_alpha(0.35)
+    fig.savefig(path, dpi=220, bbox_inches="tight")
+    plt.close(fig)
+
+
+def _portfolio_tensor_from_payload(
+    payload: dict[str, Any],
+    surfaces: np.ndarray,
+    alphas: np.ndarray,
+    ky_values: np.ndarray,
+    objectives: list[str],
+) -> np.ndarray:
+    """Return ``(surface, alpha, ky, objective)`` rows from old or new payloads."""
+
+    raw_table = payload.get("base_objective_tensor", payload["base_objective_table"])
+    table = np.asarray(raw_table, dtype=float)
+    expected_shape = (len(surfaces), len(alphas), len(ky_values), len(objectives))
+    if table.shape == expected_shape:
+        return table
+    flat_shape = (int(np.prod(expected_shape[:-1])), expected_shape[-1])
+    if table.shape == flat_shape:
+        return table.reshape(expected_shape)
+    raise ValueError(
+        "portfolio gate table must have shape "
+        f"{expected_shape} or flattened shape {flat_shape}; got {table.shape}"
+    )

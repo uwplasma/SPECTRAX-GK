@@ -31,8 +31,13 @@ fixed_dt = false
 cfl = 1.0
 
 [geometry]
-model = "vmec-eik"
-geometry_file = "/path/to/w7x_adiabatic_electrons.eik.nc"
+model = "vmec"
+# Backward-compatible filename, but the default is now direct VMEC import so
+# users can generate the wout with vmec_jax instead of preparing an EIK file.
+vmec_file = "../../vmec/wout_nfp3_QI_fixed_resolution_final.nc"
+torflux = 0.64
+alpha = 0.0
+npol = 1.0
 
 [init]
 init_field = "density"

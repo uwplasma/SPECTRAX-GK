@@ -119,6 +119,59 @@ def test_reduced_portfolio_guard_passes_real_metadata_contract() -> None:
     assert report["claim_scope_gate"]["passed"] is True
 
 
+def test_reduced_portfolio_guard_distinguishes_physical_torflux_surfaces() -> None:
+    artifact = _row_artifact()
+    artifact["samples"] = [
+        {
+            "surface_index": None,
+            "torflux": 0.5,
+            "surface": 0.5,
+            "alpha": 0.0,
+            "ky": 0.1,
+            "selected_ky_index": 1,
+            "weight": 0.25,
+        },
+        {
+            "surface_index": None,
+            "torflux": 0.5,
+            "surface": 0.5,
+            "alpha": 0.0,
+            "ky": 0.2,
+            "selected_ky_index": 2,
+            "weight": 0.25,
+        },
+        {
+            "surface_index": None,
+            "torflux": 0.7,
+            "surface": 0.7,
+            "alpha": 0.0,
+            "ky": 0.1,
+            "selected_ky_index": 1,
+            "weight": 0.25,
+        },
+        {
+            "surface_index": None,
+            "torflux": 0.7,
+            "surface": 0.7,
+            "alpha": 0.0,
+            "ky": 0.2,
+            "selected_ky_index": 2,
+            "weight": 0.25,
+        },
+    ]
+    report = reduced_portfolio_artifact_guard_report(
+        artifact,
+        gradient_artifacts=[_gradient_artifact()],
+        config=ReducedPortfolioArtifactGuardConfig(min_alphas=1),
+    )
+
+    assert report["passed"] is True
+    assert report["coverage_gate"]["n_surfaces"] == 2
+    assert report["coverage_gate"]["n_alphas"] == 1
+    assert report["coverage_gate"]["n_ky"] == 2
+    assert report["portfolio_reducer_gate"]["contract"]["row_shape"] == [2, 1, 2, 1]
+
+
 def test_reduced_portfolio_guard_fails_single_alpha_or_missing_gradient_gate() -> None:
     artifact = _row_artifact()
     artifact["samples"] = [
@@ -178,6 +231,31 @@ def test_tool_writes_guard_artifact(tmp_path: Path) -> None:
     data = json.loads(out_path.read_text(encoding="utf-8"))
     assert data["passed"] is True
     assert data["row_artifact"] == str(row_path)
+
+
+def test_tool_exposes_reducer_value_tolerances(tmp_path: Path) -> None:
+    row = _row_artifact()
+    row["base_value"] = 0.95000004
+    row_path = tmp_path / "row.json"
+    gradient_path = tmp_path / "gradient.json"
+    row_path.write_text(json.dumps(row), encoding="utf-8")
+    gradient_path.write_text(json.dumps(_gradient_artifact()), encoding="utf-8")
+
+    strict_payload = mod.build_vmec_boozer_reduced_portfolio_guard_payload(
+        row_artifact=row_path,
+        gradient_artifacts=[gradient_path],
+    )
+    loose_payload = mod.build_vmec_boozer_reduced_portfolio_guard_payload(
+        row_artifact=row_path,
+        gradient_artifacts=[gradient_path],
+        value_rtol=1.0e-6,
+        value_atol=1.0e-6,
+    )
+
+    assert strict_payload["portfolio_reducer_gate"]["passed"] is False
+    assert strict_payload["passed"] is False
+    assert loose_payload["portfolio_reducer_gate"]["passed"] is True
+    assert loose_payload["passed"] is True
 
 
 def test_tool_main_returns_nonzero_for_failed_guard(tmp_path: Path) -> None:

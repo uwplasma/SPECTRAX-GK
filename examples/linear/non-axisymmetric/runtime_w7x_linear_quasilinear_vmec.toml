@@ -1,7 +1,8 @@
-# W7-X linear quasilinear transport diagnostic example.
-# Set W7X_VMEC_FILE to the W7-X VMEC equilibrium before running. The runtime
-# will generate/reuse the VMEC-derived eik geometry cache, keeping the example
-# reproducible without checking a local tools_out/*.eik.nc artifact into git.
+# VMEC-backed stellarator linear quasilinear transport diagnostic example.
+# Generate the self-contained QI equilibrium with:
+#   cd examples/vmec && vmec_jax input.nfp3_QI_fixed_resolution_final
+# For exact W7-X validation, override geometry.vmec_file with the benchmark
+# W7-X wout. The runtime generates/reuses the VMEC-derived eik cache.
 # The uncalibrated mixing-length output is a model diagnostic and must be
 # compared against nonlinear windows before making absolute-flux claims.
 
@@ -37,7 +38,7 @@ fixed_dt = true
 
 [geometry]
 model = "vmec"
-vmec_file = "$W7X_VMEC_FILE"
+vmec_file = "../../vmec/wout_nfp3_QI_fixed_resolution_final.nc"
 torflux = 0.64
 alpha = 0.0
 npol = 1.0

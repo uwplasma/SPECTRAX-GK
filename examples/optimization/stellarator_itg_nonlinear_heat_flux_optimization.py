@@ -30,7 +30,18 @@ def main() -> None:
         default=1,
         help="Thread workers for finite-difference gradient-gate columns.",
     )
+    parser.add_argument(
+        "--portfolio",
+        action="store_true",
+        help="Print the nonlinear portfolio scope boundary; no nonlinear production portfolio artifact is written.",
+    )
     args = parser.parse_args()
+    if args.portfolio:
+        print(
+            "portfolio gate not written for nonlinear_heat_flux: production nonlinear evidence still requires "
+            "long post-transient transport windows, replicate/seed audits, and optimized-equilibrium nonlinear "
+            "transport validation; this script only reports a reduced nonlinear-window estimator."
+        )
 
     result = optimize_stellarator_itg(
         "nonlinear_heat_flux",

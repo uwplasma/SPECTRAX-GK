@@ -146,7 +146,7 @@ contract inside SPECTRAX-GK.
 
 Runtime and executable paths can now construct that bridge directly from config with
 ``geometry.model = "gx-netcdf"`` and
-``geometry.geometry_file = "/path/to/geometry.nc"``. Analytic s-alpha remains
+``geometry.geometry_file = "external_geometry.nc"``. Analytic s-alpha remains
 the default with ``geometry.model = "s-alpha"``. For slab cases use
 ``geometry.model = "slab"`` with optional ``geometry.z0`` and
 ``geometry.zero_shat`` controls. In practice an imported geometry file
@@ -444,9 +444,12 @@ SPECTRAX-GK solver observables, but it has not yet validated converged
 nonlinear turbulence gradients, broad QI transport behavior, or nonlinear
 audits of optimized equilibria.
 The VMEC bridge now also expands environment variables in ``geometry.vmec_file``.
-Tracked portable runtime TOMLs should therefore pass external VMEC equilibria
-through explicit environment variables such as ``$W7X_VMEC_FILE`` and
-``$HSX_VMEC_FILE`` instead of relying on a machine-local checkout layout.
+The shipped portable runtime TOMLs now point to relative ``wout_*.nc`` paths
+under ``examples/vmec``. Generate those WOUT files locally from the bundled
+``vmec_jax`` input decks with ``examples/vmec/generate_wouts.sh`` or a single
+``vmec_jax input.<case>`` command. Environment variables and ``--vmec-file``
+remain useful for machine-specific validation equilibria, but they are no
+longer required for the bundled demos.
 For future validation-lane selection, the external ``vmec_jax`` example-data
 portfolio can be inventoried without copying those VMEC files into this
 repository:
@@ -516,11 +519,10 @@ Two user-facing entry points now exercise that bridge:
   Miller ``*.eiknc.nc`` file from a SPECTRAX runtime TOML.
 - ``examples/nonlinear/non-axisymmetric/hsx_nonlinear_vmec_geometry.py`` and
   ``examples/nonlinear/non-axisymmetric/runtime_hsx_nonlinear_vmec_geometry.toml`` run a nonlinear
-  adiabatic-electron ITG case on the supplied HSX VMEC equilibrium file while
+  adiabatic-electron ITG case on the bundled QHS VMEC input deck after its
+  ``wout_NuhrenbergZille_1988_QHS.nc`` file is generated with ``vmec_jax``.
+  They still accept ``--vmec-file`` for exact HSX validation WOUTs while
   letting SPECTRAX generate and reuse the field-line geometry automatically.
-  The wrapper now follows the same config-backed pattern as W7-X by default:
-  set ``HSX_VMEC_FILE`` for the runtime TOML path, or pass ``--vmec-file``
-  when you intentionally want the older manual-builder entry point.
 
 VMEC and Miller runtime examples
 --------------------------------
@@ -529,13 +531,17 @@ VMEC-driven stellarator runs:
 
 .. code-block:: bash
 
-   export W7X_VMEC_FILE=/absolute/path/to/wout_w7x.nc
+   cd examples/vmec
+   vmec_jax input.nfp3_QI_fixed_resolution_final
+   cd ../..
    spectrax-gk run-runtime-nonlinear \
      --config examples/nonlinear/non-axisymmetric/runtime_w7x_nonlinear_vmec_geometry.toml \
      --steps 200 \
      --out tools_out/w7x_vmec.out.nc
 
-   export HSX_VMEC_FILE=/absolute/path/to/wout_HSX_QHS_vac.nc
+   cd examples/vmec
+   vmec_jax input.NuhrenbergZille_1988_QHS
+   cd ../..
    spectrax-gk run-runtime-nonlinear \
      --config examples/nonlinear/non-axisymmetric/runtime_hsx_nonlinear_vmec_geometry.toml \
      --steps 200 \

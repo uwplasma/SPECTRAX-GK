@@ -66,7 +66,13 @@ def test_cli_without_args_runs_default_demo(capsys, monkeypatch, tmp_path: Path)
 
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr("spectraxgk.cli._default_example_config_path", lambda: None)
-    monkeypatch.setattr("spectraxgk.cli.run_cyclone_linear", lambda **_kwargs: _FakeResult())
+    run_kwargs: dict[str, object] = {}
+
+    def _fake_run(**kwargs):
+        run_kwargs.update(kwargs)
+        return _FakeResult()
+
+    monkeypatch.setattr("spectraxgk.cli.run_cyclone_linear", _fake_run)
     monkeypatch.setattr("spectraxgk.cli.extract_mode_time_series", lambda *_args, **_kwargs: np.asarray([1.0 + 0.0j, 1.2 + 0.1j]))
     monkeypatch.setattr("spectraxgk.cli.extract_eigenfunction", lambda *_args, **_kwargs: np.asarray([1.0 + 0.0j, 0.5 + 0.2j]))
     monkeypatch.setattr("spectraxgk.cli.normalize_eigenfunction", lambda eigen, _z: np.asarray(eigen))
@@ -79,7 +85,12 @@ def test_cli_without_args_runs_default_demo(capsys, monkeypatch, tmp_path: Path)
     out = capsys.readouterr().out
     assert code == 0
     assert "No input file specified" in out
-    assert (tmp_path / "tools_out" / "spectraxgk_default_linear.png").exists()
+    assert run_kwargs["solver"] == "time"
+    assert run_kwargs["sample_stride"] == 5
+    assert run_kwargs["show_progress"] is True
+    assert (tmp_path / "spectraxgk_default_linear.png").exists()
+    assert (tmp_path / "spectraxgk_default_linear.toml").exists()
+    assert (tmp_path / "spectraxgk_default_linear.summary.json").exists()
 
 
 def test_cli_global_plot_uses_saved_output_renderer(capsys, monkeypatch, tmp_path: Path) -> None:
@@ -251,7 +262,8 @@ def test_cmd_default_demo_uses_example_config_branch(monkeypatch, capsys, tmp_pa
     out = capsys.readouterr().out
     assert "source=" in out
     assert "cyclone.toml" in out
-    assert (tmp_path / "tools_out" / "spectraxgk_default_linear.png").exists()
+    assert (tmp_path / "spectraxgk_default_linear.png").exists()
+    assert (tmp_path / "spectraxgk_default_linear.toml").exists()
 
 
 def test_cli_run_runtime_linear(capsys, monkeypatch, tmp_path: Path):
@@ -445,6 +457,7 @@ def test_cmd_run_linear_plot_branch(monkeypatch, tmp_path: Path) -> None:
         method=None,
         dt=None,
         steps=None,
+        sample_stride=None,
         fit_signal=None,
         plot=True,
         outdir=str(tmp_path),
@@ -467,7 +480,14 @@ def test_cmd_scan_linear_branches(monkeypatch, tmp_path: Path, capsys) -> None:
     })()
     scan_calls: list[dict] = []
 
-    monkeypatch.setattr("spectraxgk.cli.load_case_from_toml", lambda *_args: ("other", _Cfg(), {"scan": {"ky": [0.1, 0.2]}, "fit": {"fit_signal": "density"}}))
+    monkeypatch.setattr(
+        "spectraxgk.cli.load_case_from_toml",
+        lambda *_args: (
+            "other",
+            _Cfg(),
+            {"scan": {"ky": [0.1, 0.2]}, "fit": {"fit_signal": "density", "auto_window": False}},
+        ),
+    )
     monkeypatch.setattr("spectraxgk.cli._resolve_case", lambda _name: (object, object()))
     monkeypatch.setattr("spectraxgk.cli.load_linear_terms_from_toml", lambda _data: None)
     monkeypatch.setattr("spectraxgk.cli.load_krylov_from_toml", lambda _data: None)
@@ -493,6 +513,8 @@ def test_cmd_scan_linear_branches(monkeypatch, tmp_path: Path, capsys) -> None:
     )
     assert _cmd_scan_linear(args) == 0
     assert scan_calls[-1]["run_kwargs"] == {"fit_signal": "density"}
+    assert scan_calls[-1]["auto_window"] is False
+    assert "auto_window" not in scan_calls[-1]["window_kw"]
     assert "No reference available" in capsys.readouterr().out
 
     monkeypatch.setattr("spectraxgk.cli.load_case_from_toml", lambda *_args: ("cyclone", _Cfg(), {"scan": {}, "fit": {}}))

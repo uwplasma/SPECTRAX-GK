@@ -27,13 +27,26 @@ Executable demo
    spectraxgk run-runtime-linear --config examples/linear/axisymmetric/runtime_cyclone.toml --out tools_out/cyclone_runtime
    spectraxgk run-runtime-nonlinear --config examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear.toml --steps 50 --out tools_out/cyclone_nonlinear.out.nc
    spectraxgk --plot tools_out/cyclone_nonlinear.out.nc
-   spectraxgk --plot tools_out/spectraxgk_default_linear.summary.json
+   spectraxgk --plot spectraxgk_default_linear.summary.json
 
-Running ``spectraxgk`` with no TOML launches the default Cyclone linear example
-and writes ``tools_out/spectraxgk_default_linear.png``. That plot is the
-standard two-panel linear quickstart view: the log-scale ``|\phi|^2`` history
-with fitted ``(\gamma, \omega)`` on the left, and the normalized real/imaginary
-eigenfunction on the right.
+Running ``spectraxgk`` with no TOML launches a short Cyclone initial-value
+linear demo, prints live progress with elapsed time and ETA, and writes the
+artifacts in the current directory:
+
+- ``spectraxgk_default_linear.toml``: the input file that reproduces the run
+- ``spectraxgk_default_linear.summary.json``
+- ``spectraxgk_default_linear.timeseries.csv``
+- ``spectraxgk_default_linear.eigenfunction.csv``
+- ``spectraxgk_default_linear.png``
+
+The plot is the standard two-panel linear quickstart view: the log-scale
+``|\phi|^2`` time history with fitted ``(\gamma, \omega)`` on the left, and
+the normalized real/imaginary eigenfunction on the right. To rerun the same
+numerical case explicitly:
+
+.. code-block:: bash
+
+   spectraxgk run-linear --config spectraxgk_default_linear.toml --progress
 
 When progress output is enabled (for example on a TTY or with the explicit
 progress flags), the executable prints live status lines with step/time
@@ -80,38 +93,58 @@ Plot diagnostics directly from the output:
 .. code-block:: bash
 
    spectraxgk --plot tools_out/cyclone_nonlinear.out.nc
-   spectraxgk --plot tools_out/spectraxgk_default_linear.summary.json
+   spectraxgk --plot spectraxgk_default_linear.summary.json
+
+Self-contained VMEC geometry
+----------------------------
+
+The VMEC-backed examples are prefilled with relative ``wout_*.nc`` paths. The
+repository ships small ``vmec_jax`` input decks, not large generated WOUT
+files. Generate the needed equilibria locally, then run the TOMLs directly:
+
+.. code-block:: bash
+
+   pip install vmec-jax
+   cd examples/vmec
+   vmec_jax input.circular_tokamak
+   vmec_jax input.NuhrenbergZille_1988_QHS
+   vmec_jax input.nfp3_QI_fixed_resolution_final
+   cd ../..
+
+   spectraxgk run --config examples/linear/axisymmetric/runtime_circular_vmec_linear.toml
+   spectraxgk run --config examples/linear/non-axisymmetric/runtime_hsx_linear_quasilinear.toml
+   spectraxgk run --config examples/linear/non-axisymmetric/runtime_w7x_linear_quasilinear_vmec.toml
+
+The bundled QHS/QI/QA decks are self-contained demonstrators. Exact
+machine-specific HSX or W7-X validation should use the same TOMLs with
+``--vmec-file`` pointing to the corresponding benchmark ``wout_*.nc``.
 
 Geometry path overrides
 -----------------------
 
-The executable can override geometry paths without editing the TOML. These
-command-line paths are resolved from the shell's current working directory,
-while paths written in the TOML remain resolved from the TOML location.
-
-Use ``--vmec-file`` when the runtime config already uses a VMEC-backed geometry
-model. VMEC NetCDF files are external inputs and are not bundled in Git, so a
-normal clone stays lightweight. The release-hosted HSX fixture used by the
-examples is available at
-``https://github.com/uwplasma/SPECTRAX-GK/releases/download/v1.6.1/wout_HSX_QHS_vacuum_ns201.nc``:
+The executable can still override geometry paths without editing the TOML.
+These command-line paths are resolved from the shell's current working
+directory, while paths written in the TOML remain resolved from the TOML
+location. Use ``--vmec-file`` when the runtime config already uses a
+VMEC-backed geometry model:
 
 .. code-block:: bash
 
    spectrax-gk run \
      --config examples/nonlinear/non-axisymmetric/runtime_hsx_nonlinear_vmec_geometry.toml \
-     --vmec-file /path/to/wout_HSX_QHS_vacuum_ns201.nc \
+     --vmec-file /absolute/or/relative/wout_machine_specific.nc \
      --out tools_out/hsx_vmec_run
 
-Use ``--geometry-file`` when the runtime config already uses an imported
-geometry model such as ``model = "vmec-eik"``, ``model = "gx-eik"``, or
-``model = "gx-netcdf"``:
+Use ``--geometry-file`` only for advanced imported-geometry configs that
+already use ``model = "vmec-eik"``, ``model = "gx-eik"``, or
+``model = "gx-netcdf"``. This is not needed for the shipped VMEC examples:
 
 .. code-block:: bash
 
    spectrax-gk run \
-     --config examples/nonlinear/non-axisymmetric/runtime_w7x_nonlinear_imported_geometry.toml \
-     --geometry-file /path/to/w7x_adiabatic_electrons.eik.nc \
-     --out tools_out/w7x_imported_run
+     --config external_imported_geometry_case.toml \
+     --geometry-file /absolute/or/relative/external_geometry.eik.nc \
+     --out tools_out/imported_run
 
 ``--geometry-file`` only replaces ``[geometry].geometry_file``; it does not
 switch ``model = "vmec"`` into imported-geometry mode. For ``model = "vmec"``,

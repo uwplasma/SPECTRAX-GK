@@ -1,4 +1,7 @@
 {
+  "alphas": [
+    0.0
+  ],
   "base_delta": 0.0,
   "base_objective_table": [
     [
@@ -18,38 +21,42 @@
       2.091512728974186
     ],
     [
-      0.06543371889707285,
-      -0.0955906379454453,
-      0.009479604437044617,
-      0.33026822638456693,
+      0.06665161643756963,
+      -0.09881354457166147,
+      0.012343064741264958,
+      0.3863069587305568,
       0.0,
-      2.2797025371050155
+      2.086028371413563
     ],
     [
-      0.12227304665072689,
-      -0.19229568962707835,
-      0.038029114852687104,
-      0.633947092626237,
+      0.15281261057707368,
+      0.03821219690435934,
+      0.08423105315368903,
+      0.8413693926046528,
       0.0,
-      2.03829730802434
+      1.5264186844366059
     ]
   ],
   "base_sample_values": [
     2.4988841497952174,
     2.091512728974186,
-    2.2797025371050155,
-    2.03829730802434
+    2.086028371413563,
+    1.5264186844366059
   ],
-  "base_value": 2.22709918097469,
+  "base_value": 2.050710983654893,
   "case_name": "nfp4_QH_warm_start",
-  "central_derivative": -28797.462285483634,
+  "central_derivative": -31252.249366673368,
   "claim_scope": "finite-difference sensitivity of an aggregated linear/quasilinear VMEC/Boozer/SPECTRAX-GK objective over fixed surfaces, field lines, and ky points; not a nonlinear transport optimization claim",
-  "curvature_abs": 0.0009601761185642488,
-  "curvature_ratio": 0.1667119326428043,
+  "curvature_abs": 0.00018336629497461843,
+  "curvature_ratio": 0.029336495562805112,
   "finite_difference_consistent": true,
   "finite_values": true,
   "input_path": "/Users/rogeriojorge/local/vmec_jax/examples/data/input.nfp4_QH_warm_start",
   "kind": "vmec_boozer_aggregate_scalar_objective_finite_difference_report",
+  "ky_values": [
+    0.1,
+    0.2
+  ],
   "max_curvature_ratio": 10.0,
   "minus_objective_table": [
     [
@@ -69,29 +76,29 @@
       2.0990583677064953
     ],
     [
-      0.06525195660542574,
-      -0.09542679976815775,
-      0.009444157726888022,
-      0.33022880239552765,
+      0.06665161643756963,
+      -0.09881354457166147,
+      0.012343064741264958,
+      0.3863069587305568,
       0.0,
-      2.281630200057561
+      2.086028371413563
     ],
     [
-      0.12194040504967807,
-      -0.19203566221482335,
-      0.03796989562040741,
-      0.6332968047543117,
+      0.15281261057707368,
+      0.03821219690435934,
+      0.08423105315368903,
+      0.8413693926046528,
       0.0,
-      2.033834110592139
+      1.5264186844366059
     ]
   ],
   "minus_sample_values": [
     2.5034726782196293,
     2.0990583677064953,
-    2.281630200057561,
-    2.033834110592139
+    2.086028371413563,
+    1.5264186844366059
   ],
-  "minus_value": 2.229498839143956,
+  "minus_value": 2.053744525444073,
   "n_samples": 4,
   "next_action": "Use this gate before any multi-surface or multi-ky optimizer loop. Promote only after branch-continuity and held-out nonlinear-window evidence pass.",
   "objective": "quasilinear_flux",
@@ -141,35 +148,35 @@
       2.0836681657694336
     ],
     [
-      0.06562125980986036,
-      -0.09576170148236915,
-      0.009522897516528087,
-      0.3302911259255093,
+      0.06665161643756963,
+      -0.09881354457166147,
+      0.012343064741264958,
+      0.3863069587305568,
       0.0,
-      2.2760005292119563
+      2.086028371413563
     ],
     [
-      0.12261347326153692,
-      -0.19257049831448442,
-      0.03811381919189624,
-      0.6345681334460679,
+      0.15281261057707368,
+      0.03821219690435934,
+      0.08423105315368903,
+      0.8413693926046528,
       0.0,
-      2.041427611102696
+      1.5264186844366059
     ]
   ],
   "plus_sample_values": [
     2.493861080663351,
     2.0836681657694336,
-    2.2760005292119563,
-    2.041427611102696
+    2.086028371413563,
+    1.5264186844366059
   ],
-  "plus_value": 2.2237393466868594,
+  "plus_value": 2.0474940755707385,
   "reduction": "weighted_mean",
   "requested_ky_values": [
     0.1,
     0.2
   ],
-  "response_abs": 0.0057594924570967265,
+  "response_abs": 0.006250449873334674,
   "response_atol": 0.0,
   "response_resolved": true,
   "samples": [
@@ -179,7 +186,9 @@
       "ky_abs_error": 1.4901161138336505e-09,
       "selected_ky": 0.10000000149011612,
       "selected_ky_index": 1,
+      "surface": 0.5,
       "surface_index": null,
+      "torflux": 0.5,
       "weight": 0.25
     },
     {
@@ -188,27 +197,37 @@
       "ky_abs_error": 2.980232227667301e-09,
       "selected_ky": 0.20000000298023224,
       "selected_ky_index": 2,
+      "surface": 0.5,
       "surface_index": null,
+      "torflux": 0.5,
       "weight": 0.25
     },
     {
-      "alpha": 0.7,
+      "alpha": 0.0,
       "ky": 0.1,
       "ky_abs_error": 1.4901161138336505e-09,
       "selected_ky": 0.10000000149011612,
       "selected_ky_index": 1,
+      "surface": 0.7,
       "surface_index": null,
+      "torflux": 0.7,
       "weight": 0.25
     },
     {
-      "alpha": 0.7,
+      "alpha": 0.0,
       "ky": 0.2,
       "ky_abs_error": 2.980232227667301e-09,
       "selected_ky": 0.20000000298023224,
       "selected_ky_index": 2,
+      "surface": 0.7,
       "surface_index": null,
+      "torflux": 0.7,
       "weight": 0.25
     }
+  ],
+  "selected_ky_indices": [
+    1,
+    2
   ],
   "solver_grid_options_from_ky_values": {
     "ky_base": 0.1,
@@ -224,5 +243,13 @@
     ]
   },
   "source_scope": "mode21_vmec_boozer_state_multi_point",
+  "surface_indices": [
+    null,
+    null
+  ],
+  "torflux_values": [
+    0.5,
+    0.7
+  ],
   "wout_path": "/Users/rogeriojorge/local/vmec_jax/examples/data/wout_nfp4_QH_warm_start.nc"
 }

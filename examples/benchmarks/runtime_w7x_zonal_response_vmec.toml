@@ -38,7 +38,11 @@ diagnostics = true
 
 [geometry]
 model = "vmec"
-vmec_file = "$W7X_VMEC_FILE"
+# Self-contained default: generate with
+#   cd examples/vmec && vmec_jax input.nfp3_QI_fixed_resolution_final
+# For the paper-facing W7-X zonal benchmark, override this with the exact
+# W7-X high-mirror VMEC equilibrium before treating the result as validation.
+vmec_file = "../vmec/wout_nfp3_QI_fixed_resolution_final.nc"
 torflux = 0.64
 alpha = 0.0
 npol = 1.0

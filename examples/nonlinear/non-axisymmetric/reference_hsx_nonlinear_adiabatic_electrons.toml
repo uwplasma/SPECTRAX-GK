@@ -33,7 +33,7 @@ init_amp = 1.0e-3
 
 [Geometry]
 geo_option = "vmec"
-vmec_file = "wout_HSX_QHS_vac.nc"
+vmec_file = "../../vmec/wout_NuhrenbergZille_1988_QHS.nc"
 alpha = 0.0
 npol = 1.0
 desired_normalized_toroidal_flux = 0.64

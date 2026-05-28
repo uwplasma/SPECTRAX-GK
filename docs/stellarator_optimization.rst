@@ -4,24 +4,27 @@ Differentiable Stellarator Optimization
 Purpose
 -------
 
-SPECTRAX-GK now includes a compact, fully JAX-differentiable stellarator ITG
-optimization layer. It is designed as the validation gate before promoting a
-full ``vmec_jax -> booz_xform_jax -> SPECTRAX-GK`` nonlinear optimization loop.
-The current examples optimize a quasi-axisymmetric, max-mode-1 control vector
-around a target aspect ratio ``A = 7`` and mean rotational transform
-``iota = 0.41``. They follow the same objective-block logic used by the local
-``vmec_jax`` fixed-boundary QA examples: preserve aspect, preserve iota,
-reduce quasisymmetry error, and add a turbulence objective.
+SPECTRAX-GK now includes a compact, fully JAX-differentiable reduced
+stellarator ITG optimization layer. It is designed as the validation gate
+before promoting a full ``vmec_jax -> booz_xform_jax -> SPECTRAX-GK``
+optimization loop. The current examples optimize a quasi-axisymmetric,
+max-mode-1 control vector around a target aspect ratio ``A = 7`` and mean
+rotational transform ``iota = 0.41``. They follow the same objective-block
+logic used by the local ``vmec_jax`` fixed-boundary QA examples: preserve
+aspect, preserve iota, reduce quasisymmetry error, and add a turbulence
+objective.
 
 This page is deliberately conservative about claims:
 
-- the examples below are end-to-end differentiable and finite-difference
-  checked;
-- they validate optimization, sensitivity, covariance, and plotting machinery;
+- the reduced examples below are end-to-end differentiable and
+  finite-difference checked;
+- they validate optimization, sensitivity, covariance, sample-set reduction,
+  and plotting machinery;
+- the new multi-surface/alpha/``k_y`` portfolio gate is reduced
+  model-development evidence for objective plumbing;
 - they do **not** yet claim a production VMEC/Boozer/nonlinear gyrokinetic
-  stellarator optimization, because the high-fidelity geometry path still
-  needs parity and gradient gates before it can replace the reduced feature
-  map used here.
+  stellarator optimization, and production nonlinear heat-flux optimization
+  requires long post-transient replicated windows.
 
 Source Map
 ----------
@@ -59,12 +62,14 @@ Source Map
   :download:`stellarator_itg_nonlinear_heat_flux_optimization.py <../examples/optimization/stellarator_itg_nonlinear_heat_flux_optimization.py>`
 - Three-objective comparison:
   :download:`compare_stellarator_itg_optimizations.py <../examples/optimization/compare_stellarator_itg_optimizations.py>`
+- Multi-surface/field-line portfolio gate:
+  :download:`stellarator_itg_portfolio_gate.py <../examples/optimization/stellarator_itg_portfolio_gate.py>`
 - Plotting helper:
   :download:`_stellarator_itg_plotting.py <../examples/optimization/_stellarator_itg_plotting.py>`
 
 The corresponding ``vmec_jax`` workflow that motivated this structure is the
 local fixed-boundary QA script
-``/Users/rogeriojorge/local/vmec_jax/examples/optimization/qa_fixed_resolution_jax_ess.py``.
+``/Users/rogeriojorge/local/vmec_jax/examples/optimization/QA_optimization.py``.
 That script builds residual blocks for aspect ratio, mean iota, and
 quasisymmetry, then minimizes them over boundary Fourier coefficients. The
 SPECTRAX-GK examples use the same optimization pattern but keep the transport
@@ -79,6 +84,134 @@ geometry path. It is a forward evaluator, not by itself a gradient claim:
 end-to-end differentiability is claimed only after VMEC/Boozer geometry parity,
 branch-continuity, and AD/finite-difference gates pass for the optimized
 equilibrium and held-out field lines.
+
+VMEC-JAX Geometry Examples
+--------------------------
+
+The user-facing VMEC geometry examples are WOUT-backed runtime workflows. They
+use small ``vmec_jax`` input decks shipped under ``examples/vmec`` and avoid
+separate EIK generation for the common demo path:
+
+.. code-block:: bash
+
+   pip install vmec-jax
+   cd examples/vmec
+   ./generate_wouts.sh
+   cd ../..
+
+   spectraxgk run --config examples/linear/axisymmetric/runtime_circular_vmec_linear.toml
+   spectraxgk run --config examples/linear/non-axisymmetric/runtime_hsx_linear_quasilinear.toml
+   spectraxgk run --config examples/linear/non-axisymmetric/runtime_w7x_linear_quasilinear_vmec.toml
+
+Run ``vmec_jax input.NAME`` inside ``examples/vmec`` when only one WOUT is
+needed. These bundled QHS/QI/QA decks are self-contained demonstration
+equilibria. Machine-specific HSX or W7-X validation should use the same TOMLs
+with ``--vmec-file`` pointing to the benchmark WOUT.
+
+This disk-WOUT path is the runtime example path, not the production optimizer
+gradient contract. The production optimizer starts from an in-memory solved
+``vmec_jax`` state, transforms through ``booz_xform_jax``, and then builds the
+SPECTRAX-GK flux tube without relying on intermediate NetCDF files.
+
+Production VMEC-JAX Optimization Plan
+-------------------------------------
+
+The production lane starts from the ``vmec_jax`` fixed-boundary QA optimizer:
+aspect ratio and mean iota are constrained, the quasisymmetry residual is
+penalized, and a SPECTRAX-GK transport objective is added as another residual
+block. The default paper-facing seed targets ``A = 7`` and ``iota = 0.41`` at
+a fixed ITG flux tube, initially ``torflux = 0.64`` and ``alpha = 0.0``. The
+optimized result must also pass held-out field-line and surface gates before
+any stellarator-wide claim.
+
+The three reduced optimization examples are:
+
+- ``stellarator_itg_growth_optimization.py``: minimize a smooth reduction of
+  the ITG linear growth rate over selected ``k_y``, surface, and ``alpha``
+  samples. The gate is branch-continuity plus AD/JVP/finite-difference
+  agreement.
+- ``stellarator_itg_quasilinear_flux_optimization.py``: minimize the
+  electrostatic quasilinear heat-flux diagnostic over the same sample set.
+  The output carries saturation-rule metadata and uncertainty intervals; it is
+  not an absolute turbulent-flux claim until nonlinear holdouts calibrate it.
+- ``stellarator_itg_nonlinear_heat_flux_optimization.py``: generate nonlinear
+  candidates using a cheap differentiable surrogate, then promote only if
+  matched baseline and optimized equilibria pass replicated long-window
+  post-transient heat-flux audits.
+
+For the geometry layer, the user-facing runtime examples use WOUT files
+generated from the small ``examples/vmec/input.*`` decks with ``vmec_jax``.
+The optimizer path should avoid disk I/O: it should pass a solved
+``vmec_jax`` state through ``booz_xform_jax`` with ``mboz >= 21`` and
+``nboz >= 21``, then into the SPECTRAX-GK flux-tube contract. Disk WOUTs
+remain useful for reproducibility, release artifacts, and external benchmark
+comparison.
+
+Every promoted optimization figure needs a sidecar JSON/CSV artifact and a
+gate:
+
+- objective history and coefficient trajectory;
+- before/after Boozer ``|B|`` contours and quasisymmetry residuals;
+- before/after growth-rate spectra;
+- before/after quasilinear spectra with uncertainty intervals;
+- nonlinear heat-flux time traces with transient cut, running mean, block/SEM
+  uncertainty, and replicate spread;
+- AD-vs-finite-difference gradient parity and sensitivity/covariance maps;
+- Pareto plot of quasisymmetry residual, aspect/iota constraint error, and
+  transport reduction.
+
+The nonlinear heat-flux optimizer must not use startup or reduced-window
+values as final evidence. Production evidence requires long post-transient
+averages whose running means are converged and whose seed/timestep/grid
+replicates agree within the documented gate.
+
+Reduced Portfolio Gate
+----------------------
+
+Before the VMEC/Boozer optimizer is promoted, the same reducer used by the
+future production objective is exercised on a cheap differentiable sample
+table. The table is rectangular in normalized toroidal flux, field-line
+``alpha``, and ``k_y rho_i``. The default gate covers three surfaces, two
+field-line ``alpha`` values, and three ``k_y`` values with growth-rate and
+quasilinear-flux columns. It checks both the scalar reduced objective and
+every unreduced row against central finite differences.
+
+.. code-block:: bash
+
+   python examples/optimization/stellarator_itg_portfolio_gate.py \
+     --finite-difference-workers 2
+
+By default this writes
+``docs/_static/stellarator_itg_portfolio_gate.{json,png,pdf}``. Use
+``--surfaces``, ``--alphas``, ``--ky-values``, and ``--objectives`` only when
+the changed sample set is also recorded in the artifact sidecar. The JSON
+sidecar is the audit source: it records ``claim_level``, ``sample_set``,
+``backend_boundary``, scalar/row-wise pass status, and the reduced objective
+table. The PNG/PDF are human-readable renderings of that sidecar, not separate
+validation evidence.
+
+.. figure:: _static/stellarator_itg_portfolio_gate.png
+   :alt: Reduced multi-surface field-line ITG objective portfolio gate
+   :width: 100%
+
+   Reduced multi-surface/field-line ITG objective portfolio gate. The
+   heatmaps show the alpha-averaged growth and quasilinear-flux objective
+   rows across three surfaces and three ``k_y`` values. The side panel records
+   scalar and row-wise AD/finite-difference agreement, full-rank sensitivity,
+   and the explicit claim boundary: this is a reduced portfolio gate, not a
+   nonlinear turbulent-transport optimization claim.
+
+The production bridge now uses the same portfolio layout for real
+``vmec_jax -> booz_xform_jax -> SPECTRAX-GK`` row production:
+``stellarator_itg_vmec_boozer_sample_objective_table_from_state`` evaluates
+physical toroidal-flux, field-line ``alpha``, and ``k_y rho_i`` samples, while
+``stellarator_itg_vmec_boozer_portfolio_objective_from_state`` applies the
+same weighted reducer. The aggregate VMEC/Boozer artifact tool accepts
+physical ``--ky-values`` and records the resolved solver indices, ``Ly``,
+``Ny``, and per-sample ``ky_abs_error`` in the sidecar. The remaining
+promotion step is scientific, not plumbing: rerun held-out surface/field-line
+gates and promote nonlinear candidates only after long post-transient
+replicated windows pass for matched baseline and optimized equilibria.
 
 For CI-scale development, ``solver_objective_branch_gradient_report`` applies
 the same branch-continuity and implicit AD/finite-difference logic to the
@@ -548,6 +681,22 @@ transport claims.
    not a nonlinear turbulent heat-flux optimization claim. The tracked
    two-``k_y`` artifact intentionally does not satisfy the held-out
    surface/field-line promotion gate by itself.
+
+.. figure:: _static/vmec_boozer_torflux_aggregate_objective_gate.png
+   :width: 90%
+   :align: center
+   :alt: VMEC/Boozer toroidal-flux aggregate-objective finite-difference gate
+
+   Physical-surface VMEC/Boozer aggregate-objective gate. The same QH fixture
+   evaluates the quasilinear proxy at two normalized toroidal-flux values
+   (``torflux = 0.5`` and ``0.7``) and two physical ``k_y rho_i`` values
+   (``0.1`` and ``0.2``). The JSON/CSV sidecars record the requested physical
+   ``torflux`` and ``k_y`` values, the resolved solver ``selected_ky_index``,
+   and ``ky_abs_error``. The companion
+   ``vmec_boozer_torflux_reduced_portfolio_guard.json`` passes with two
+   surfaces, one field line, and two ``k_y`` samples; this is surface-axis
+   reduced-objective evidence, not nonlinear turbulent-transport optimization
+   evidence.
 
 .. figure:: _static/vmec_boozer_multi_point_objective_gate.png
    :width: 90%

@@ -21,6 +21,7 @@ if str(ROOT) not in sys.path:
 
 from spectraxgk.plotting import set_plot_style  # noqa: E402
 from spectraxgk.solver_objective_gradients import (  # noqa: E402
+    solver_grid_options_from_ky_values,
     vmec_boozer_aggregate_scalar_objective_finite_difference_report,
 )
 from tools.build_solver_objective_gradient_gate import _json_clean  # noqa: E402
@@ -56,8 +57,13 @@ def write_vmec_boozer_aggregate_objective_artifacts(
     fieldnames = [
         "sample",
         "surface_index",
+        "torflux",
+        "surface",
         "alpha",
+        "ky",
         "selected_ky_index",
+        "selected_ky",
+        "ky_abs_error",
         "weight",
         "minus_value",
         "base_value",
@@ -72,8 +78,13 @@ def write_vmec_boozer_aggregate_objective_artifacts(
                 {
                     "sample": index,
                     "surface_index": sample.get("surface_index", ""),
+                    "torflux": sample.get("torflux", ""),
+                    "surface": sample.get("surface", ""),
                     "alpha": sample.get("alpha", ""),
+                    "ky": sample.get("ky", ""),
                     "selected_ky_index": sample.get("selected_ky_index", ""),
+                    "selected_ky": sample.get("selected_ky", ""),
+                    "ky_abs_error": sample.get("ky_abs_error", ""),
                     "weight": sample.get("weight", ""),
                     "minus_value": minus_values[index] if isinstance(minus_values, list) and index < len(minus_values) else "",
                     "base_value": base_values[index] if isinstance(base_values, list) and index < len(base_values) else "",
@@ -84,11 +95,24 @@ def write_vmec_boozer_aggregate_objective_artifacts(
     base = np.asarray(base_values, dtype=float)
     minus = np.asarray(minus_values, dtype=float)
     plus = np.asarray(plus_values, dtype=float)
-    labels = [
-        f"s={row.get('surface_index', 'mid')}, a={float(row.get('alpha', 0.0)):.2g}, ky#{int(row.get('selected_ky_index', 0))}"
-        for row in rows
-        if isinstance(row, dict)
-    ]
+    labels = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        surface = row.get("surface_index", "mid")
+        if row.get("torflux") not in (None, ""):
+            surface_label = f"{float(row['torflux']):.3g}"
+        else:
+            surface_label = "mid" if surface is None else str(surface)
+        ky_label = (
+            f"ky={float(row['ky']):.3g}"
+            if "ky" in row and row.get("ky") not in (None, "")
+            else f"ky#{int(row.get('selected_ky_index', 0))}"
+        )
+        labels.append(
+            f"s={surface_label}, a={float(row.get('alpha', 0.0)):.2g}, "
+            f"{ky_label}"
+        )
     if not labels:
         labels = [str(index) for index in range(base.size)]
 
@@ -156,8 +180,28 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--objective", default="quasilinear_flux")
     parser.add_argument("--reduction", choices=["mean", "weighted_mean", "max"], default="mean")
     parser.add_argument("--surface-indices", nargs="*", type=int, default=[])
+    parser.add_argument(
+        "--torflux-values",
+        nargs="*",
+        type=float,
+        default=[],
+        help="Optional physical normalized toroidal-flux samples. Cannot be combined with --surface-indices.",
+    )
     parser.add_argument("--alphas", nargs="+", type=float, default=[0.0])
     parser.add_argument("--selected-ky-indices", nargs="+", type=int, default=[1, 2])
+    parser.add_argument(
+        "--ky-values",
+        nargs="*",
+        type=float,
+        default=[],
+        help="Optional physical ky*rho_i values. When set, selected indices, Ly, and Ny are inferred.",
+    )
+    parser.add_argument(
+        "--ky-base",
+        type=float,
+        default=None,
+        help="Base ky spacing for --ky-values; defaults to the smallest requested ky.",
+    )
     parser.add_argument("--radial-index", type=int, default=None)
     parser.add_argument("--mode-index", type=int, default=1)
     parser.add_argument("--perturbation-step", type=float, default=1.0e-7)
@@ -175,29 +219,95 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _annotate_physical_ky_samples(
+    payload: dict[str, object],
+    *,
+    requested_ky_values: list[float],
+    solver_grid_options: dict[str, object],
+) -> None:
+    index_to_requested = {
+        int(index): float(ky)
+        for index, ky in zip(
+            solver_grid_options["selected_ky_indices"],
+            requested_ky_values,
+            strict=True,
+        )
+    }
+    index_to_resolved = {
+        int(index): float(ky)
+        for index, ky in zip(
+            solver_grid_options["selected_ky_indices"],
+            solver_grid_options["resolved_ky_values"],
+            strict=True,
+        )
+    }
+    rows = payload.get("samples")
+    if not isinstance(rows, list):
+        return
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        selected = int(row.get("selected_ky_index", 0))
+        if selected not in index_to_requested:
+            continue
+        requested = index_to_requested[selected]
+        resolved = index_to_resolved[selected]
+        row["ky"] = requested
+        row["selected_ky"] = resolved
+        row["ky_abs_error"] = abs(resolved - requested)
+
+
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    if args.torflux_values and args.surface_indices:
+        raise ValueError("use --torflux-values or --surface-indices, not both")
+    selected_ky_indices = tuple(args.selected_ky_indices)
+    solver_grid_options: dict[str, object] = {}
+    objective_kwargs: dict[str, object] = {
+        "ntheta": args.ntheta,
+        "mboz": args.mboz,
+        "nboz": args.nboz,
+        "surface_stencil_width": None if args.surface_stencil_width <= 0 else args.surface_stencil_width,
+        "n_laguerre": args.n_laguerre,
+        "n_hermite": args.n_hermite,
+        "nx": args.nx,
+        "ny": args.ny,
+    }
+    if args.ky_values:
+        solver_grid_options = solver_grid_options_from_ky_values(
+            tuple(args.ky_values),
+            ky_base=args.ky_base,
+            min_ny=args.ny,
+        )
+        selected_ky_indices = tuple(int(item) for item in solver_grid_options["selected_ky_indices"])
+        objective_kwargs["ny"] = int(solver_grid_options["ny"])
+        objective_kwargs["ly"] = float(solver_grid_options["ly"])
+
     payload = vmec_boozer_aggregate_scalar_objective_finite_difference_report(
         case_name=args.case_name,
         objective=args.objective,
         reduction=args.reduction,
-        surface_indices=_surface_indices(args.surface_indices),
+        surface_indices=(None,) if args.torflux_values else _surface_indices(args.surface_indices),
+        torflux_values=tuple(args.torflux_values) if args.torflux_values else None,
         alphas=tuple(args.alphas),
-        selected_ky_indices=tuple(args.selected_ky_indices),
+        selected_ky_indices=selected_ky_indices,
         radial_index=args.radial_index,
         mode_index=args.mode_index,
         perturbation_step=args.perturbation_step,
         response_atol=args.response_atol,
         max_curvature_ratio=args.max_curvature_ratio,
-        ntheta=args.ntheta,
-        mboz=args.mboz,
-        nboz=args.nboz,
-        surface_stencil_width=None if args.surface_stencil_width <= 0 else args.surface_stencil_width,
-        n_laguerre=args.n_laguerre,
-        n_hermite=args.n_hermite,
-        nx=args.nx,
-        ny=args.ny,
+        **objective_kwargs,
     )
+    if solver_grid_options:
+        requested_ky_values = [float(item) for item in args.ky_values]
+        _annotate_physical_ky_samples(
+            payload,
+            requested_ky_values=requested_ky_values,
+            solver_grid_options=solver_grid_options,
+        )
+        payload["requested_ky_values"] = requested_ky_values
+        payload["ky_values"] = requested_ky_values
+        payload["solver_grid_options_from_ky_values"] = solver_grid_options
     if args.json_only:
         print(json.dumps(_json_clean(payload), indent=2, sort_keys=True))
         return 0

@@ -58,6 +58,8 @@ def build_vmec_boozer_reduced_portfolio_guard_payload(
     min_ky: int = 2,
     min_objectives: int = 1,
     min_boozer_mode: int = 21,
+    value_rtol: float = 1.0e-8,
+    value_atol: float = 1.0e-8,
 ) -> dict[str, object]:
     """Return the VMEC/Boozer reduced-portfolio promotion guard payload."""
 
@@ -70,6 +72,8 @@ def build_vmec_boozer_reduced_portfolio_guard_payload(
         min_ky=int(min_ky),
         min_objectives=int(min_objectives),
         min_boozer_mode=int(min_boozer_mode),
+        value_rtol=float(value_rtol),
+        value_atol=float(value_atol),
     )
     report = reduced_portfolio_artifact_guard_report(
         row_payload,
@@ -109,6 +113,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--min-ky", type=int, default=2)
     parser.add_argument("--min-objectives", type=int, default=1)
     parser.add_argument("--min-boozer-mode", type=int, default=21)
+    parser.add_argument("--value-rtol", type=float, default=1.0e-8)
+    parser.add_argument("--value-atol", type=float, default=1.0e-8)
     parser.add_argument("--json-only", action="store_true")
     return parser
 
@@ -127,6 +133,8 @@ def main(argv: list[str] | None = None) -> int:
         min_ky=args.min_ky,
         min_objectives=args.min_objectives,
         min_boozer_mode=args.min_boozer_mode,
+        value_rtol=args.value_rtol,
+        value_atol=args.value_atol,
     )
     if args.json_only:
         print(json.dumps(_json_clean(payload), indent=2, sort_keys=True))

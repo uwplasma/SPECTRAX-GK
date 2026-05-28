@@ -23,7 +23,7 @@
     "passed": true
   },
   "config": {
-    "min_alphas": 2,
+    "min_alphas": 1,
     "min_boozer_mode": 21,
     "min_ky": 2,
     "min_objectives": 2,
@@ -35,22 +35,22 @@
   },
   "coverage_gate": {
     "alphas": [
-      0.0,
-      0.7
+      0.0
     ],
     "ky_values": [
       0.1,
       0.2
     ],
-    "min_alphas": 2,
+    "min_alphas": 1,
     "min_ky": 2,
-    "n_alphas": 2,
+    "n_alphas": 1,
     "n_ky": 2,
     "n_samples": 4,
-    "n_surfaces": 1,
+    "n_surfaces": 2,
     "passed": true,
     "surface_labels": [
-      "__mid_surface__"
+      "torflux=0.5",
+      "torflux=0.7"
     ]
   },
   "finite_difference_gate": {
@@ -108,25 +108,25 @@
   },
   "passed": true,
   "portfolio_reducer_gate": {
-    "abs_error": 7.531322232523507e-10,
-    "artifact_base_value": 2.22709918097469,
+    "abs_error": 6.713572808791923e-08,
+    "artifact_base_value": 2.050710983654893,
     "atol": 1e-06,
     "contract": {
-      "n_alphas": 2,
+      "n_alphas": 1,
       "n_ky": 2,
       "n_objectives": 1,
       "n_samples": 4,
-      "n_surfaces": 1,
+      "n_surfaces": 2,
       "reduction": "weighted_mean",
       "row_shape": [
-        1,
         2,
+        1,
         2,
         1
       ],
       "sample_shape": [
-        1,
         2,
+        1,
         2
       ],
       "uses_objective_weights": false,
@@ -134,7 +134,7 @@
       "uses_separable_sample_weights": false
     },
     "passed": true,
-    "reduced_base_value": 2.2270991802215576,
+    "reduced_base_value": 2.050710916519165,
     "reduction": "weighted_mean",
     "rtol": 1e-06
   },
@@ -149,5 +149,5 @@
     "requires_vmec_paths": true,
     "wout_path": "/Users/rogeriojorge/local/vmec_jax/examples/data/wout_nfp4_QH_warm_start.nc"
   },
-  "row_artifact": "docs/_static/vmec_boozer_aggregate_objective_gate.json"
+  "row_artifact": "docs/_static/vmec_boozer_torflux_aggregate_objective_gate.json"
 }

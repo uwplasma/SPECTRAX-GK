@@ -4,6 +4,9 @@ import importlib.util
 import json
 from pathlib import Path
 
+import numpy as np
+import pytest
+
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "tools" / "build_vmec_boozer_aggregate_objective_gate.py"
@@ -37,8 +40,14 @@ def _payload() -> dict[str, object]:
 
 
 def test_write_vmec_boozer_aggregate_objective_artifacts(tmp_path: Path) -> None:
+    payload = _payload()
+    payload["samples"][0]["torflux"] = 0.64
+    payload["samples"][0]["surface"] = 0.64
+    payload["samples"][0]["ky"] = 0.1
+    payload["samples"][0]["selected_ky"] = 0.1
+    payload["samples"][0]["ky_abs_error"] = 0.0
     paths = mod.write_vmec_boozer_aggregate_objective_artifacts(
-        _payload(),
+        payload,
         out=tmp_path / "aggregate_gate.png",
     )
 
@@ -46,7 +55,10 @@ def test_write_vmec_boozer_aggregate_objective_artifacts(tmp_path: Path) -> None
         assert Path(paths[suffix]).exists()
     data = json.loads(Path(paths["json"]).read_text(encoding="utf-8"))
     assert data["passed"] is True
-    assert "selected_ky_index" in Path(paths["csv"]).read_text(encoding="utf-8")
+    csv_text = Path(paths["csv"]).read_text(encoding="utf-8")
+    assert "selected_ky_index" in csv_text
+    assert "torflux" in csv_text
+    assert "ky_abs_error" in csv_text
 
 
 def test_vmec_boozer_aggregate_objective_gate_main_uses_report(monkeypatch, tmp_path: Path) -> None:
@@ -76,3 +88,88 @@ def test_vmec_boozer_aggregate_objective_gate_main_uses_report(monkeypatch, tmp_
     assert calls["surface_indices"] == (3, 5)
     assert calls["selected_ky_indices"] == (1, 2)
     assert calls["mboz"] == 21
+
+
+def test_vmec_boozer_aggregate_objective_gate_main_maps_physical_ky_values(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    calls: dict[str, object] = {}
+
+    def fake_report(**kwargs):  # noqa: ANN003, ANN202
+        calls.update(kwargs)
+        return _payload()
+
+    monkeypatch.setattr(mod, "vmec_boozer_aggregate_scalar_objective_finite_difference_report", fake_report)
+
+    result = mod.main(
+        [
+            "--out",
+            str(tmp_path / "gate.png"),
+            "--ky-values",
+            "0.1",
+            "0.3",
+            "0.5",
+            "--json-only",
+        ]
+    )
+
+    assert result == 0
+    assert calls["selected_ky_indices"] == (1, 3, 5)
+    assert calls["ny"] == 12
+    assert calls["ly"] == pytest.approx(2.0 * np.pi / 0.1)
+
+
+def test_vmec_boozer_aggregate_objective_gate_main_forwards_physical_torflux(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    calls: dict[str, object] = {}
+
+    def fake_report(**kwargs):  # noqa: ANN003, ANN202
+        calls.update(kwargs)
+        return _payload()
+
+    monkeypatch.setattr(mod, "vmec_boozer_aggregate_scalar_objective_finite_difference_report", fake_report)
+
+    result = mod.main(
+        [
+            "--out",
+            str(tmp_path / "gate.png"),
+            "--torflux-values",
+            "0.5",
+            "0.7",
+            "--json-only",
+        ]
+    )
+
+    assert result == 0
+    assert calls["surface_indices"] == (None,)
+    assert calls["torflux_values"] == (0.5, 0.7)
+    with pytest.raises(ValueError, match="torflux-values or --surface-indices"):
+        mod.main(
+            [
+                "--surface-indices",
+                "3",
+                "--torflux-values",
+                "0.5",
+                "--json-only",
+            ]
+        )
+
+
+def test_physical_ky_annotation_adds_resolved_metadata() -> None:
+    payload = _payload()
+    mod._annotate_physical_ky_samples(
+        payload,
+        requested_ky_values=[0.1, 0.2],
+        solver_grid_options={
+            "selected_ky_indices": (1, 2),
+            "resolved_ky_values": (0.100000001, 0.200000003),
+        },
+    )
+
+    assert payload["samples"][0]["ky"] == pytest.approx(0.1)
+    assert payload["samples"][0]["selected_ky"] == pytest.approx(0.100000001)
+    assert payload["samples"][0]["ky_abs_error"] == pytest.approx(1.0e-9)
+    assert payload["samples"][1]["ky"] == pytest.approx(0.2)

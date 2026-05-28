@@ -1,39 +1,43 @@
+# VMEC-backed circular tokamak linear ITG example.
+# Generate the equilibrium with:
+#   cd examples/vmec && vmec_jax input.circular_tokamak
+
 [[species]]
 name = "ion"
 charge = 1.0
 mass = 1.0
 density = 1.0
 temperature = 1.0
-tprim = 3.0
-fprim = 1.0
+tprim = 2.49
+fprim = 0.8
 nu = 0.0
 kinetic = true
 
 [grid]
 Nx = 1
-Ny = 82
-Nz = 256
+Ny = 24
+Nz = 96
 Lx = 62.8
 Ly = 62.8
 boundary = "linked"
-y0 = 10.0
+y0 = 20.0
+ntheta = 32
+nperiod = 2
 
 [time]
-t_max = 2.0
-dt = 0.005890226417991923
-method = "rk4"
+t_max = 10.0
+dt = 0.002
+method = "imex2"
 use_diffrax = false
-sample_stride = 1
-fixed_dt = false
+sample_stride = 2
 
 [geometry]
 model = "vmec"
-# Backward-compatible filename, but the default is now direct VMEC import so
-# users can generate the wout with vmec_jax instead of preparing an EIK file.
-vmec_file = "../../vmec/wout_nfp3_QI_fixed_resolution_final.nc"
+vmec_file = "../../vmec/wout_circular_tokamak.nc"
 torflux = 0.64
 alpha = 0.0
 npol = 1.0
+R0 = 2.77778
 
 [init]
 init_field = "density"
@@ -47,7 +51,6 @@ nonlinear = false
 electrostatic = true
 electromagnetic = false
 adiabatic_electrons = true
-adiabatic_ions = false
 tau_e = 1.0
 collisions = true
 hypercollisions = true
@@ -57,14 +60,14 @@ nu_hermite = 1.0
 nu_laguerre = 2.0
 nu_hyper = 0.0
 p_hyper = 4.0
-hypercollisions_const = 0.0
-hypercollisions_kz = 1.0
+hypercollisions_const = 1.0
+hypercollisions_kz = 0.0
 damp_ends_amp = 0.1
 damp_ends_widthfrac = 0.125
 
 [normalization]
-contract = "kinetic"
-diagnostic_norm = "gx"
+contract = "cyclone"
+diagnostic_norm = "none"
 
 [terms]
 streaming = 1.0
@@ -75,12 +78,18 @@ diamagnetic = 1.0
 collisions = 1.0
 hypercollisions = 1.0
 end_damping = 1.0
-apar = 0.0
+apar = 1.0
 bpar = 0.0
 nonlinear = 0.0
 
 [run]
 ky = 0.3
-Nl = 12
-Nm = 32
-solver = "explicit_time"
+Nl = 24
+Nm = 12
+solver = "krylov"
+
+[scan]
+ky = [0.1, 0.2, 0.3, 0.4, 0.5]
+Nl = 24
+Nm = 12
+solver = "krylov"
