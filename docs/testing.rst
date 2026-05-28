@@ -202,6 +202,7 @@ The first reusable tooling for this lane now exists:
 - ``tools/write_w7x_zonal_closure_sweep.py``
 - ``tools/plot_w7x_zonal_state_convention_audit.py``
 - ``tools/plot_w7x_zonal_recurrence_sweep.py``
+- ``tools/build_zonal_flow_objective_gate.py``
 - ``tools/plot_w7x_fluctuation_spectrum_panel.py``
 
 The gate-report helpers are intentionally small and JSON-ready. They should be

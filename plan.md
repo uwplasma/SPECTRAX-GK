@@ -19,6 +19,28 @@ The target paper should show:
 4. A full `vmec_jax -> booz_xform_jax -> SPECTRAX-GK` pipeline for stellarator sensitivity analysis, uncertainty quantification, inverse design, and optimization.
 5. Nonlinear audit runs that confirm where the reduced objective does and does not predict saturated transport trends.
 
+## 2026-05-28 Zonal-flow Objective Row Artifact
+
+- Added the first production-style row builder for the zonal-flow optimization
+  lane: `spectraxgk.zonal_objective.zonal_flow_objective_artifact_from_records`
+  maps validated response summaries onto the shared `(surface, alpha, kx,
+  objective)` portfolio and writes strict JSON-friendly tables.
+- Added `tools/build_zonal_flow_objective_gate.py` plus
+  `docs/_static/zonal_flow_objective_gate.{json,csv,png,pdf}`.  The current
+  W7-X artifact is intentionally diagnostic-only because the long-window
+  damping/recurrence gates are still deferred/open; missing GAM damping rows
+  force `promotion_ready=false` unless a caller uses closed records and
+  `--missing-damping-policy=fail`.
+- Added focused tests for the row builder and tool, and registered the artifact
+  in the validation coverage manifest.  This closes the software bridge from
+  zonal-response outputs into differentiable stellarator objective rows, while
+  keeping the physics claim scoped until QA/QH/Miller or closed W7-X rows pass
+  damping, recurrence, AD/FD, and nonlinear heat-flux holdout gates.
+
+Next best step: postprocess the completed office GPU RBC(1,1) follow-up
+campaign and decide whether the replicated nonlinear transport-gradient
+uncertainty gate can be promoted or must stay scoped as a diagnostic holdout.
+
 ## 2026-05-27 VMEC-JAX Stellarator Optimization Lane
 
 Goal: turn the reduced stellarator-optimization examples into a production

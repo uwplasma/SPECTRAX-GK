@@ -610,13 +610,36 @@ The CI-scale gate is:
 
 .. code-block:: bash
 
-   pytest -q tests/test_zonal_objective.py
+   pytest -q tests/test_zonal_objective.py tests/test_build_zonal_flow_objective_gate.py
+   python tools/build_zonal_flow_objective_gate.py
 
 The test exercises the optimization contract that the literature motivates:
 larger residuals and lower damping lower the scalar objective, the
 surface/field-line/wavenumber portfolio shape is explicit, and the resulting
 row map passes AD/finite-difference and conditioning checks before optimizer
 use.
+
+``tools/build_zonal_flow_objective_gate.py`` is the artifact bridge from
+validated zonal-response outputs to optimizer rows.  It currently emits a
+W7-X diagnostic artifact from ``w7x_zonal_response_panel.csv`` and
+``w7x_zonal_reference_compare.csv``.  Because the frozen W7-X trace still has
+open long-window recurrence/damping gates, the artifact is intentionally
+marked ``promotion_ready=false`` and ``gate_index_include=false``.  A promoted
+QA/QH/Miller-style optimization gate should instead run the same builder with
+``--missing-damping-policy=fail`` so absent GAM damping or recurrence metrics
+stop the workflow.
+
+.. figure:: _static/zonal_flow_objective_gate.png
+   :width: 90%
+   :align: center
+   :alt: Zonal-flow objective row-production gate
+
+   Zonal-flow objective row-production gate.  The panel shows the row metrics
+   consumed by the reduced objective for each W7-X ``k_x``.  Large residuals
+   lower the inverse-residual penalty, while large late-window tail ratios
+   remain explicit penalties.  The current W7-X artifact is a diagnostic
+   bridge, not a promoted optimization claim, because the damping fits are not
+   closed under the paper-facing normalization.
 
 Connection to Literature
 ------------------------

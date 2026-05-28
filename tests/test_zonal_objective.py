@@ -10,6 +10,7 @@ import pytest
 from spectraxgk.zonal_objective import (
     ZONAL_FLOW_OBJECTIVE_NAMES,
     ZonalFlowObjectiveConfig,
+    zonal_flow_objective_artifact_from_records,
     zonal_flow_objective_rows,
     zonal_flow_objective_sensitivity_report,
     zonal_flow_reduced_objective,
@@ -143,3 +144,108 @@ def test_zonal_flow_objective_rejects_invalid_contracts() -> None:
         zonal_flow_objective_rows(residual_level=good, damping_rate=jnp.ones((1, 1, 3)))
     with pytest.raises(ValueError, match="residual_level and damping_rate"):
         zonal_flow_objective_sensitivity_report(lambda _p: {"residual_level": good}, jnp.ones(1))
+
+
+def test_zonal_flow_objective_artifact_from_records_is_strict_and_ranked() -> None:
+    records = [
+        {
+            "surface": 0.25,
+            "alpha": 0.0,
+            "kx_target": 0.05,
+            "residual_level": 0.22,
+            "gam_damping_rate": 0.07,
+            "linear_growth_rate": 0.30,
+            "tail_std_ratio": 1.8,
+        },
+        {
+            "surface": 0.25,
+            "alpha": 0.0,
+            "kx_target": 0.10,
+            "residual_level": 0.44,
+            "gam_damping_rate": 0.03,
+            "linear_growth_rate": 0.28,
+            "tail_std_ratio": 0.8,
+        },
+    ]
+    payload = zonal_flow_objective_artifact_from_records(
+        records,
+        config=ZonalFlowObjectiveConfig(
+            residual_weight=1.0,
+            damping_weight=1.0,
+            growth_over_residual_weight=0.5,
+            recurrence_weight=0.25,
+        ),
+        source_paths=["docs/_static/example.csv"],
+    )
+
+    assert payload["promotion_ready"] is True
+    assert payload["missing_damping_count"] == 0
+    assert payload["axes"] == {"surface": [0.25], "alpha": [0.0], "kx": [0.05, 0.1]}
+    assert payload["sample_count"] == 2
+    assert np.asarray(payload["objective_rows"]).shape == (1, 1, 2, len(ZONAL_FLOW_OBJECTIVE_NAMES))
+    assert payload["row_table"][1]["sample_objective"] < payload["row_table"][0]["sample_objective"]
+    assert payload["source_paths"] == ["docs/_static/example.csv"]
+    json.dumps(payload, allow_nan=False)
+
+
+def test_zonal_flow_objective_artifact_missing_damping_policy_and_shape_guards() -> None:
+    records = [
+        {"kx": 0.05, "residual_level": 0.25, "tail_std_ratio": 1.0},
+        {"kx": 0.10, "residual_level": 0.35, "tail_std_ratio": 0.7},
+    ]
+
+    with pytest.raises(ValueError, match="missing finite damping_rate"):
+        zonal_flow_objective_artifact_from_records(records)
+
+    payload = zonal_flow_objective_artifact_from_records(records, missing_damping_policy="zero")
+    assert payload["promotion_ready"] is False
+    assert payload["missing_damping_count"] == 2
+    np.testing.assert_allclose(np.asarray(payload["metrics"]["damping_rate"]), 0.0)
+
+    with pytest.raises(ValueError, match="duplicate"):
+        zonal_flow_objective_artifact_from_records(
+            [records[0], records[0]],
+            missing_damping_policy="zero",
+        )
+
+    with pytest.raises(ValueError, match="strictly positive"):
+        zonal_flow_objective_artifact_from_records(
+            [{"kx": 0.05, "residual_level": 0.0, "damping_rate": 0.1}],
+        )
+
+    recurrence_missing = zonal_flow_objective_artifact_from_records(
+        [{"kx": 0.05, "residual_level": 0.25, "damping_rate": 0.1}],
+    )
+    assert recurrence_missing["missing_recurrence_count"] == 1
+
+    with pytest.raises(ValueError, match="missing_damping_policy"):
+        zonal_flow_objective_artifact_from_records(
+            [{"kx": 0.05, "residual_level": 0.25, "damping_rate": 0.1}],
+            missing_damping_policy="skip",  # type: ignore[arg-type]
+        )
+
+    with pytest.raises(ValueError, match="at least one"):
+        zonal_flow_objective_artifact_from_records([], missing_damping_policy="zero")
+
+    with pytest.raises(ValueError, match="missing finite kx"):
+        zonal_flow_objective_artifact_from_records(
+            [{"residual_level": 0.25, "damping_rate": 0.1}],
+        )
+
+    with pytest.raises(ValueError, match="numeric"):
+        zonal_flow_objective_artifact_from_records(
+            [{"kx": "not-a-number", "residual_level": 0.25, "damping_rate": 0.1}],
+        )
+
+    with pytest.raises(ValueError, match="missing finite residual_level"):
+        zonal_flow_objective_artifact_from_records(
+            [{"kx": 0.05, "residual_level": "nan", "damping_rate": 0.1}],
+        )
+
+    with pytest.raises(ValueError, match="complete finite tensor"):
+        zonal_flow_objective_artifact_from_records(
+            [
+                {"surface": 0.0, "kx": 0.05, "residual_level": 0.25, "damping_rate": 0.1},
+                {"surface": 1.0, "kx": 0.10, "residual_level": 0.35, "damping_rate": 0.1},
+            ],
+        )

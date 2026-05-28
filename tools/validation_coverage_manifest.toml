@@ -958,12 +958,15 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/test_zonal_objective.py",
+  "tests/test_build_zonal_flow_objective_gate.py",
 ]
 artifact_paths = [
   "docs/_static/stellarator_objective_portfolio_gate.json",
+  "docs/_static/zonal_flow_objective_gate.json",
+  "docs/_static/zonal_flow_objective_gate.png",
 ]
 next_tests = [
-  "wire production VMEC/Boozer/SPECTRAX zonal-response rows into the reduced objective",
+  "replace the diagnostic W7-X row artifact with a promotion-ready QA/QH/Miller row set once damping and recurrence metrics are closed",
   "add optimizer-history artifacts once the W7-X and QA/QH zonal-response physics gates pass",
 ]
 
