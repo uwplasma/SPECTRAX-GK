@@ -6868,3 +6868,31 @@ Exit gate:
 - Next action: push the coverage-margin repair and confirm the replacement CI
   run clears the exact wide package coverage gate before starting the next
   scientific campaign tranche.
+
+### 2026-05-28 Nonlinear Gradient Follow-up Targeting
+
+- CI/CD is green again on `main` at commit `2cd63e3`:
+  - all quick shards, docs/package, mypy, repo hygiene, fast coverage, and wide
+    coverage passed;
+  - exact wide package coverage is `20856` statements, `1024` misses, and about
+    `95.09%`.
+- Added `spectraxgk.nonlinear_gradient_followup` and
+  `tools/plan_nonlinear_gradient_followup.py` so failed long-window central-FD
+  turbulence-gradient artifacts produce bounded next-campaign plans rather than
+  blind reruns.
+- Generated the tracked overdetermined QA/ESS follow-up artifact:
+  `docs/_static/qa_ess_overdetermined_nonlinear_gradient_followup_plan.json`.
+- Current decision from the real artifacts:
+  - `RBC(1,1)` is local and response-resolved but marginally uncertain
+    (`gradient_uncertainty_rel = 0.559 > 0.5`), so the bounded plan is two new
+    matched nominal-timestep seed replicas per state (`seed33` and `seed34` for
+    baseline, plus, and minus), six nonlinear runs total;
+  - `ZBS(1,1)` is statistically quiet but nonlocal, so it needs a smaller
+    bracket or replacement control before more replicas;
+  - `ZBS(1,0)` is not response-resolved, so it needs a different control or a
+    checked bracket before more replicas.
+- Claim boundary:
+  - this is campaign targeting, not nonlinear turbulence-gradient promotion;
+  - promotion remains blocked until the additional matched `RBC(1,1)` replicas
+    finish and the rebuilt ensemble plus central-FD gates pass without relaxing
+    response, locality, conditioning, or uncertainty limits.

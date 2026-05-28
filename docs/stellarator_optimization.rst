@@ -1064,6 +1064,17 @@ post-runtime command
 ``tools/postprocess_overdetermined_nonlinear_gradient_campaign.py`` is the
 reproducible fail-closed path that produced these output, ensemble,
 central-FD, ranking, and status artifacts.
+The bounded follow-up decision is tracked separately in
+``docs/_static/qa_ess_overdetermined_nonlinear_gradient_followup_plan.json``
+and can be regenerated with
+``tools/plan_nonlinear_gradient_followup.py``. It recommends only two new
+matched nominal-timestep ``RBC(1,1)`` seed replicas per state
+(``seed33`` and ``seed34`` for baseline, plus, and minus), because that is the
+only completed overdetermined candidate whose response and locality already
+pass. It explicitly blocks more ``ZBS(1,1)`` replicas until the bracket is made
+more local, and blocks ``ZBS(1,0)`` replicas because its response is not
+resolved. This keeps the next office campaign bounded to six nonlinear runs
+instead of repeating all 27 long-window simulations.
 Because both single-control amplitude sweeps point away from more blind
 replicas, SPECTRAX-GK now also includes
 ``tools/write_vmec_boundary_profile_perturbation_inputs.py`` for a smoother

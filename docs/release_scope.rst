@@ -321,6 +321,14 @@ Quasilinear model-selection state:
   and recommends an overdetermined least-squares/profile-gradient campaign next
   because the best single-control candidates have complementary locality and
   uncertainty failures.
+- ``tools/plan_nonlinear_gradient_followup.py`` turns completed central-FD
+  artifacts into a bounded follow-up prescription. For the completed
+  overdetermined QA/ESS campaign it writes
+  ``docs/_static/qa_ess_overdetermined_nonlinear_gradient_followup_plan.json``:
+  add only two new matched nominal-timestep ``RBC(1,1)`` seed replicas per
+  state, because ``RBC(1,1)`` is local and response-resolved but slightly too
+  uncertain. It refuses more replicas for the nonlocal ``ZBS(1,1)`` bracket
+  and the unresolved ``ZBS(1,0)`` response.
 - ``tools/summarize_nonlinear_gradient_bracket_sweep.py`` is the bounded
   follow-up for a same-control perturbation-amplitude sweep. It writes
   JSON/CSV/PNG sidecars and an optional PDF from completed central
