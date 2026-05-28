@@ -6840,3 +6840,31 @@ Exit gate:
 - Best next scientific step:
   - keep the current artifacts as a reviewer-facing negative/model-development result;
   - either add independent replicas or a lower-variance observable for the best local `RBC(1,1)` direction, or design a smaller-bracket/profile-gradient campaign that reduces uncertainty without losing locality.
+
+### 2026-05-28 CI Coverage Margin Repair
+
+- Fixed the post-VMEC-default CI failure on `main`:
+  - all quick shards, docs/package, and fast coverage passed for commit
+    `70271a6`;
+  - the only failed job was the exact wide-coverage manifest combine at
+    `94.94% < 95.00%`, even though `coverage report` rounded the package to
+    `95%`.
+- Added a small branch-coverage tranche that exercises real fail-closed
+  behavior rather than lowering the threshold:
+  - KREHM and invalid reduced-model input parsing;
+  - malformed zonal-response CSV/reference-table contracts and empty
+    late-window trace metrics;
+  - four-dimensional gyroaverage family inputs and bad-rank guards;
+  - raw restart writing, positive-ky expansion, reduced-kx expansion guards,
+    and malformed NetCDF restart inputs.
+- Local validation:
+  - focused tests passed for `tests/test_gx_reduced_models.py`,
+    `tests/test_zonal_validation.py`, `tests/test_gx_diagnostics.py`, and
+    `tests/test_restart.py`;
+  - `ruff` passed on the edited tests;
+  - focused coverage now reports `100%` for `diagnostics_weights.py` and
+    `gx_reduced_models.py`, `99%` for `zonal_validation.py`, and `93%` for
+    `restart.py`.
+- Next action: push the coverage-margin repair and confirm the replacement CI
+  run clears the exact wide package coverage gate before starting the next
+  scientific campaign tranche.

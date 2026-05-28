@@ -104,6 +104,61 @@ init_amp = 1.0e-3
     assert contract.model == "cetg"
 
 
+def test_load_reduced_model_contract_parses_krehm_and_serializes(tmp_path: Path) -> None:
+    gx_input = tmp_path / "krehm.in"
+    gx_input.write_text(
+        """
+[Dimensions]
+ntheta = 12
+ny = 16
+nx = 8
+nlaguerre = 3
+nhermite = 9
+
+[Domain]
+x0 = 2.0
+y0 = 4.0
+boundary = "linked"
+
+[KREHM]
+krehm = true
+
+[Time]
+dt = 0.025
+
+[Initialization]
+init_field = "density"
+init_amp = 2.0e-4
+""",
+        encoding="utf-8",
+    )
+
+    contract = load_reduced_model_contract(gx_input)
+    payload = contract.to_dict()
+
+    assert contract.model == "krehm"
+    assert contract.Nl == 3
+    assert contract.Nm == 9
+    assert contract.t_max is None
+    assert payload["boundary"] == "linked"
+
+
+def test_load_reduced_model_contract_rejects_unmarked_inputs(tmp_path: Path) -> None:
+    gx_input = tmp_path / "ordinary.in"
+    gx_input.write_text(
+        """
+[Dimensions]
+ntheta = 4
+ny = 8
+nx = 8
+""",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="not a GX reduced-model input"):
+        load_reduced_model_contract(gx_input)
+
+
 def test_inspect_gx_reduced_model_parser_accepts_json_flag() -> None:
     args = build_parser().parse_args(["/tmp/cetg.in", "--json"])
     assert args.gx_input == Path("/tmp/cetg.in")

@@ -114,6 +114,24 @@ def test_diagnostics_refactor_preserves_legacy_import_identities() -> None:
     )
 
 
+def test_jl_family_accepts_four_dimensional_arrays_and_rejects_bad_ranks() -> None:
+    cache_4d = SimpleNamespace(
+        Jl=jnp.ones((2, 2, 1, 3), dtype=jnp.float32),
+        JlB=2.0 * jnp.ones((2, 2, 1, 3), dtype=jnp.float32),
+    )
+
+    jl, jlb, jfac = _jl_family(cache_4d)
+
+    assert jl.shape == (1, 2, 2, 1, 3)
+    assert jlb.shape == (1, 2, 2, 1, 3)
+    assert jfac.shape == jl.shape
+
+    with pytest.raises(ValueError, match="unexpected Jl rank"):
+        _jl_family(SimpleNamespace(Jl=jnp.ones((2, 3, 4)), JlB=cache_4d.JlB))
+    with pytest.raises(ValueError, match="unexpected JlB rank"):
+        _jl_family(SimpleNamespace(Jl=cache_4d.Jl, JlB=jnp.ones((2, 3, 4))))
+
+
 def test_gx_flux_fac_nonzero_matches_positive_ky_convention() -> None:
     cfg = CycloneBaseCase()
     grid = build_spectral_grid(replace(cfg.grid, Ny=8, Nx=4))
