@@ -25,11 +25,7 @@
         "metric": "artifact_passed"
       },
       {
-        "detail": "fd_asymmetry_rel=1.3720803693826555 max=0.5",
-        "metric": "fd_asymmetry_bounded"
-      },
-      {
-        "detail": "gradient_uncertainty_rel=1.1281740821680801 max=0.5",
+        "detail": "gradient_uncertainty_rel=0.6831216320977453 max=0.5",
         "metric": "gradient_uncertainty_bounded"
       }
     ],
@@ -39,18 +35,14 @@
       {
         "blocker": "production_gradient_artifact",
         "current_artifact_class": "production_long_window_turbulence_gradient_candidate",
-        "current_artifact_path": "docs/_static/qa_ess_descent_profile_rel2_nonlinear_gradient_profile_direction_zbs_1_1_zbs_1_0_rbc_1_1_central_fd_gradient_gate.json",
+        "current_artifact_path": "docs/_static/qa_ess_profile_gradient_rbc_1_1_nonlinear_gradient_rbc_1_1_central_fd_gradient_gate.json",
         "current_failed_gates": [
           {
             "detail": "kind=nonlinear_turbulence_gradient_central_fd_gate",
             "metric": "artifact_passed"
           },
           {
-            "detail": "fd_asymmetry_rel=1.3720803693826555 max=0.5",
-            "metric": "fd_asymmetry_bounded"
-          },
-          {
-            "detail": "gradient_uncertainty_rel=1.1281740821680801 max=0.5",
+            "detail": "gradient_uncertainty_rel=0.6831216320977453 max=0.5",
             "metric": "gradient_uncertainty_bounded"
           }
         ],
@@ -60,7 +52,7 @@
     "notes": "Standalone passed transport windows are necessary but not sufficient: production turbulence-gradient evidence requires paired parameter perturbations tied to the same post-transient averaging protocol.",
     "passed": false,
     "promotion_blocked": true,
-    "qualifying_window_ensemble_count": 2,
+    "qualifying_window_ensemble_count": 3,
     "required_campaign": {
       "case_slug": "optimized_equilibrium_turbulence_gradient",
       "finite_difference_audit": {
@@ -173,7 +165,7 @@
       "passed": false
     },
     {
-      "detail": "qualifying_ensembles=2 min_window_reports=2",
+      "detail": "qualifying_ensembles=3 min_window_reports=2",
       "metric": "replicated_long_window_uncertainty",
       "passed": true
     }
@@ -183,12 +175,12 @@
     "claim_level": "production_long_window_nonlinear_turbulence_gradient_candidate",
     "claim_scope": "production_long_window nonlinear turbulence gradient from matched replicated post-transient heat-flux windows",
     "conditioning": {
-      "central_gradient": -206.66700547640596,
-      "fd_asymmetry_rel": 1.3720803693826555,
-      "fd_condition_number": 39.397087876812314,
-      "gradient_uncertainty_rel": 1.1281740821680801,
+      "central_gradient": -186.95014677062397,
+      "fd_asymmetry_rel": 0.4753536451990127,
+      "fd_condition_number": 27.449676180476363,
+      "gradient_uncertainty_rel": 0.6831216320977453,
       "passed": false,
-      "response_fraction": 0.05166483779789478
+      "response_fraction": 0.07223514648647757
     },
     "evidence_class": "production_long_window_turbulence_gradient_candidate",
     "explicit_production_scope": true,
@@ -204,33 +196,33 @@
         "passed": true
       },
       {
-        "detail": "central_gradient=-206.66700547640596",
+        "detail": "central_gradient=-186.95014677062397",
         "metric": "finite_gradient_estimate",
         "passed": true
       },
       {
-        "detail": "response_fraction=0.05166483779789478 min=0.03",
+        "detail": "response_fraction=0.07223514648647757 min=0.03",
         "metric": "fd_response_resolved",
         "passed": true
       },
       {
-        "detail": "fd_asymmetry_rel=1.3720803693826555 max=0.5",
+        "detail": "fd_asymmetry_rel=0.4753536451990127 max=0.5",
         "metric": "fd_asymmetry_bounded",
-        "passed": false
+        "passed": true
       },
       {
-        "detail": "condition_number=39.397087876812314 max=100000000.0",
+        "detail": "condition_number=27.449676180476363 max=100000000.0",
         "metric": "fd_condition_number_bounded",
         "passed": true
       },
       {
-        "detail": "gradient_uncertainty_rel=1.1281740821680801 max=0.5",
+        "detail": "gradient_uncertainty_rel=0.6831216320977453 max=0.5",
         "metric": "gradient_uncertainty_bounded",
         "passed": false
       }
     ],
     "kind": "nonlinear_turbulence_gradient_central_fd_gate",
-    "path": "docs/_static/qa_ess_descent_profile_rel2_nonlinear_gradient_profile_direction_zbs_1_1_zbs_1_0_rbc_1_1_central_fd_gradient_gate.json",
+    "path": "docs/_static/qa_ess_profile_gradient_rbc_1_1_nonlinear_gradient_rbc_1_1_central_fd_gradient_gate.json",
     "qualifies_for_production_turbulence_gradient": false,
     "scope_blockers": []
   },
@@ -249,72 +241,72 @@
     "derived_ensemble": null,
     "ensemble_rows": [
       {
-        "combined_sem_rel": 0.032632878819822644,
+        "combined_sem_rel": 0.030869270841209266,
         "kind": "nonlinear_window_ensemble_report",
-        "mean_rel_spread": 0.0267994982982098,
-        "n_reports": 3,
+        "mean_rel_spread": 0.0693683541430074,
+        "n_reports": 5,
         "passed": true,
-        "path": "docs/_static/qa_ess_descent_profile_rel2_nonlinear_gradient_baseline_replicates/qa_ess_descent_profile_rel2_nonlinear_gradient_baseline_t900_ensemble_gate.json",
+        "path": "docs/_static/qa_ess_profile_gradient_rbc_1_1_nonlinear_gradient_baseline_replicates/qa_ess_profile_gradient_rbc_1_1_nonlinear_gradient_baseline_t900_ensemble_gate.json",
         "qualifies_for_replicated_long_window_uncertainty": true,
         "source": "input_ensemble",
         "statistics": {
-          "combined_sem": 0.5147252434664683,
-          "combined_sem_rel": 0.032632878819822644,
-          "ensemble_mean": 15.77320978355736,
-          "max_individual_sem": 0.5147252434664683,
-          "mean_rel_spread": 0.0267994982982098,
-          "mean_spread": 0.42271410875175164,
-          "n_finite_means": 3,
-          "n_reports": 3,
-          "sample_sem": 0.12276601970023591
+          "combined_sem": 0.4811763168706982,
+          "combined_sem_rel": 0.030869270841209266,
+          "ensemble_mean": 15.587550459026284,
+          "max_individual_sem": 0.4811763168706982,
+          "mean_rel_spread": 0.0693683541430074,
+          "mean_spread": 1.081282720463733,
+          "n_finite_means": 5,
+          "n_reports": 5,
+          "sample_sem": 0.20485715810495866
         }
       },
       {
-        "combined_sem_rel": 0.04867065864463235,
+        "combined_sem_rel": 0.03343099700662646,
         "kind": "nonlinear_window_ensemble_report",
-        "mean_rel_spread": 0.16859753146262083,
-        "n_reports": 3,
-        "passed": false,
-        "path": "docs/_static/qa_ess_descent_profile_rel2_nonlinear_gradient_plus_delta_replicates/qa_ess_descent_profile_rel2_nonlinear_gradient_plus_delta_t900_ensemble_gate.json",
-        "qualifies_for_replicated_long_window_uncertainty": false,
-        "source": "input_ensemble",
-        "statistics": {
-          "combined_sem": 0.7614662607155822,
-          "combined_sem_rel": 0.04867065864463235,
-          "ensemble_mean": 15.645283666190133,
-          "max_individual_sem": 0.4651727256246778,
-          "mean_rel_spread": 0.16859753146262083,
-          "mean_spread": 2.637756205152119,
-          "n_finite_means": 3,
-          "n_reports": 3,
-          "sample_sem": 0.7614662607155822
-        }
-      },
-      {
-        "combined_sem_rel": 0.03129872827401187,
-        "kind": "nonlinear_window_ensemble_report",
-        "mean_rel_spread": 0.035116758127572464,
-        "n_reports": 3,
+        "mean_rel_spread": 0.11535931631561402,
+        "n_reports": 5,
         "passed": true,
-        "path": "docs/_static/qa_ess_descent_profile_rel2_nonlinear_gradient_minus_delta_replicates/qa_ess_descent_profile_rel2_nonlinear_gradient_minus_delta_t900_ensemble_gate.json",
+        "path": "docs/_static/qa_ess_profile_gradient_rbc_1_1_nonlinear_gradient_plus_delta_replicates/qa_ess_profile_gradient_rbc_1_1_nonlinear_gradient_plus_delta_t900_ensemble_gate.json",
         "qualifies_for_replicated_long_window_uncertainty": true,
         "source": "input_ensemble",
         "statistics": {
-          "combined_sem": 0.5151834520556808,
-          "combined_sem_rel": 0.03129872827401187,
-          "ensemble_mean": 16.46020399120979,
-          "max_individual_sem": 0.5151834520556808,
-          "mean_rel_spread": 0.035116758127572464,
-          "mean_spread": 0.5780290022898171,
-          "n_finite_means": 3,
-          "n_reports": 3,
-          "sample_sem": 0.16827407728647292
+          "combined_sem": 0.4978128726718814,
+          "combined_sem_rel": 0.03343099700662646,
+          "ensemble_mean": 14.890757597603457,
+          "max_individual_sem": 0.4978128726718814,
+          "mean_rel_spread": 0.11535931631561402,
+          "mean_spread": 1.71778761588107,
+          "n_finite_means": 5,
+          "n_reports": 5,
+          "sample_sem": 0.3137631283667053
+        }
+      },
+      {
+        "combined_sem_rel": 0.036608833768256875,
+        "kind": "nonlinear_window_ensemble_report",
+        "mean_rel_spread": 0.02464063751367196,
+        "n_reports": 5,
+        "passed": true,
+        "path": "docs/_static/qa_ess_profile_gradient_rbc_1_1_nonlinear_gradient_minus_delta_replicates/qa_ess_profile_gradient_rbc_1_1_nonlinear_gradient_minus_delta_t900_ensemble_gate.json",
+        "qualifies_for_replicated_long_window_uncertainty": true,
+        "source": "input_ensemble",
+        "statistics": {
+          "combined_sem": 0.5863536811854984,
+          "combined_sem_rel": 0.036608833768256875,
+          "ensemble_mean": 16.01672658837658,
+          "max_individual_sem": 0.5863536811854984,
+          "mean_rel_spread": 0.02464063751367196,
+          "mean_spread": 0.3946623540197791,
+          "n_finite_means": 5,
+          "n_reports": 5,
+          "sample_sem": 0.06749121307773472
         }
       }
     ],
     "gates": [
       {
-        "detail": "qualifying_ensembles=2 min_window_reports=2",
+        "detail": "qualifying_ensembles=3 min_window_reports=2",
         "metric": "replicated_long_window_uncertainty",
         "passed": true
       }

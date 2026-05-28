@@ -1213,11 +1213,14 @@ fast_tests = [
 artifact_paths = [
   "docs/_static/nonlinear_turbulence_gradient_evidence_status.json",
   "docs/_static/nonlinear_turbulence_gradient_evidence_gap_report.json",
+  "docs/_static/qa_ess_profile_gradient_rbc_1_1_nonlinear_gradient_rbc_1_1_central_fd_gradient_gate.json",
+  "docs/_static/qa_ess_profile_gradient_overdetermined_nonlinear_gradient_candidate_ranking.json",
+  "docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_status.json",
   "docs/_static/qa_ess_overdetermined_nonlinear_gradient_followup_plan.json",
   "docs/_static/production_nonlinear_optimization_guard.json",
 ]
 next_tests = [
-  "replace reduced-window nonlinear finite-difference evidence with converged post-transient production gradient artifacts",
+  "replace the fail-closed RBC(1,1) follow-up with a better-conditioned long-window production gradient artifact",
   "add matched baseline-to-optimized turbulence-gradient audits once long-window parameter perturbation runs are available",
 ]
 

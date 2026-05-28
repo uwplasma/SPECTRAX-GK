@@ -41,6 +41,30 @@ Next best step: postprocess the completed office GPU RBC(1,1) follow-up
 campaign and decide whether the replicated nonlinear transport-gradient
 uncertainty gate can be promoted or must stay scoped as a diagnostic holdout.
 
+## 2026-05-28 RBC(1,1) Nonlinear-gradient Follow-up Postprocess
+
+- Postprocessed the completed office-GPU ``RBC(1,1)`` follow-up without
+  launching new simulations.  The six new ``seed33``/``seed34`` nominal-``dt``
+  runs were combined with the original seed/timestep variants, giving five
+  baseline, five minus, and five plus long-window outputs over ``t=[450,900]``.
+- All three rebuilt replicated transport-window ensembles pass:
+  baseline mean ``15.588`` with combined SEM ``0.481``; minus mean ``16.017``
+  with SEM ``0.586``; plus mean ``14.891`` with SEM ``0.498``.
+- The central finite-difference gate remains fail-closed, not procedure-
+  blocked: response fraction ``0.072`` and asymmetry ``0.475`` pass, but
+  propagated gradient uncertainty is ``0.683 > 0.5``.  The ranking/status
+  artifacts still report zero promoted nonlinear turbulence-gradient controls.
+- Updated docs and tracked artifacts to reflect the negative result.  More
+  blind same-bracket replicas are not the efficient next action; the next
+  nonlinear-gradient candidate should improve conditioning through a checked
+  larger/local bracket, a variance-reduction design, or a better composite
+  profile direction.
+
+Next best step: keep the nonlinear turbulent-flux optimization claim scoped as
+diagnostic/model-development and move effort to a better-conditioned
+candidate-generation design instead of adding more identical RBC(1,1)
+replicas.
+
 ## 2026-05-27 VMEC-JAX Stellarator Optimization Lane
 
 Goal: turn the reduced stellarator-optimization examples into a production

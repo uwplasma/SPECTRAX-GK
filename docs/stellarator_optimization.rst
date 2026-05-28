@@ -1104,12 +1104,13 @@ The concrete overdetermined campaign is tracked in
 It starts from the same optimized-QA/ESS VMEC input, writes matched
 ``vmec_jax`` perturbation inputs for ``ZBS(1,1)``, ``ZBS(1,0)``, and
 ``RBC(1,1)`` at 3% relative amplitude, and launches identical
-``t=900``, ``n64:64:64:40:40`` nonlinear ladders. That full campaign has now
-completed: all 27 runtime outputs pass the output gates, all three
-``RBC(1,1)`` baseline/plus/minus replicated ensembles pass, and the central-FD
-artifact is local and response-resolved. It remains fail-closed only because
-the propagated gradient uncertainty is still above the promotion gate:
-``gradient_uncertainty_rel = 0.559 > 0.5``. The companion controls fail for
+``t=900``, ``n64:64:64:40:40`` nonlinear ladders. That full campaign and the
+targeted ``RBC(1,1)`` seed follow-up have now completed: all 33 relevant
+runtime outputs pass the output gates, all three ``RBC(1,1)``
+baseline/plus/minus five-member replicated ensembles pass, and the central-FD
+artifact is local and response-resolved. It remains fail-closed because the
+propagated gradient uncertainty is still above the promotion gate:
+``gradient_uncertainty_rel = 0.683 > 0.5``. The companion controls fail for
 complementary reasons: ``ZBS(1,1)`` passes uncertainty but is nonlocal
 (``fd_asymmetry_rel = 0.605``), while ``ZBS(1,0)`` is not response-resolved.
 The final status artifact,
@@ -1122,14 +1123,17 @@ central-FD, ranking, and status artifacts.
 The bounded follow-up decision is tracked separately in
 ``docs/_static/qa_ess_overdetermined_nonlinear_gradient_followup_plan.json``
 and can be regenerated with
-``tools/plan_nonlinear_gradient_followup.py``. It recommends only two new
-matched nominal-timestep ``RBC(1,1)`` seed replicas per state
-(``seed33`` and ``seed34`` for baseline, plus, and minus), because that is the
+``tools/plan_nonlinear_gradient_followup.py``. That follow-up recommended only
+two new matched nominal-timestep ``RBC(1,1)`` seed replicas per state
+(``seed33`` and ``seed34`` for baseline, plus, and minus), because that was the
 only completed overdetermined candidate whose response and locality already
-pass. It explicitly blocks more ``ZBS(1,1)`` replicas until the bracket is made
-more local, and blocks ``ZBS(1,0)`` replicas because its response is not
-resolved. This keeps the next office campaign bounded to six nonlinear runs
-instead of repeating all 27 long-window simulations.
+passed. Those six office-GPU runs are now folded into the tracked five-member
+state ensembles. The result is scientifically useful but negative: extra
+replicas lowered the individual state SEMs, but the finite-difference response
+remains too uncertain relative to the slope. More blind same-bracket replicas
+are not the best next action; the next candidate should use a larger
+response-resolved but locality-checked perturbation, variance reduction, or a
+better-conditioned composite direction.
 Because both single-control amplitude sweeps point away from more blind
 replicas, SPECTRAX-GK now also includes
 ``tools/write_vmec_boundary_profile_perturbation_inputs.py`` for a smoother
@@ -1168,12 +1172,13 @@ promoted nonlinear turbulence-gradient claim.
    :alt: QA/ESS overdetermined RBC(1,1) nonlinear turbulence-gradient gate
 
    QA/ESS overdetermined ``RBC(1,1)`` 3% long-window nonlinear-gradient gate.
-   This is the best completed overdetermined candidate: the response is
-   resolved and the backward/forward finite-difference asymmetry is below the
-   locality gate. The artifact still fails closed because propagated
-   uncertainty remains slightly above the production threshold, so it supports
-   model-development and next-campaign design rather than a promoted nonlinear
-   turbulence-gradient claim.
+   This remains the best completed overdetermined candidate after the targeted
+   ``seed33``/``seed34`` follow-up: all five-member state ensembles pass and
+   the backward/forward finite-difference asymmetry is below the locality gate.
+   The artifact still fails closed because propagated uncertainty remains above
+   the production threshold, so it supports model-development and
+   next-campaign design rather than a promoted nonlinear turbulence-gradient
+   claim.
 
 .. figure:: _static/qa_ess_descent_profile_rel2_nonlinear_gradient_profile_direction_zbs_1_1_zbs_1_0_rbc_1_1_central_fd_gradient_gate.png
    :width: 90%

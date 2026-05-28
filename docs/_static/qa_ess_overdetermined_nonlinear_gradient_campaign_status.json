@@ -214,24 +214,24 @@
         ],
         "exists": true,
         "metrics": {
-          "asymmetry_rel": 0.33841038905291376,
-          "backward_gradient": -184.57680552201265,
-          "baseline_window_mean": 15.520644190044905,
-          "baseline_window_sem": 0.4529575487194598,
-          "central_gradient": -222.1689450944582,
-          "condition_number": 23.029073729217703,
-          "fd_asymmetry_rel": 0.33841038905291376,
-          "fd_condition_number": 23.029073729217703,
-          "forward_gradient": -259.7610846669037,
-          "gradient_relative_uncertainty": 0.5585750450071276,
-          "gradient_uncertainty": 124.09802850532306,
-          "gradient_uncertainty_rel": 0.5585750450071276,
-          "minus_window_mean": 16.07648156975218,
+          "asymmetry_rel": 0.4753536451990127,
+          "backward_gradient": -142.5164299016707,
+          "baseline_window_mean": 15.587550459026284,
+          "baseline_window_sem": 0.4811763168706982,
+          "central_gradient": -186.95014677062397,
+          "condition_number": 27.449676180476363,
+          "fd_asymmetry_rel": 0.4753536451990127,
+          "fd_condition_number": 27.449676180476363,
+          "forward_gradient": -231.38386363957724,
+          "gradient_relative_uncertainty": 0.6831216320977453,
+          "gradient_uncertainty": 127.70968938286168,
+          "gradient_uncertainty_rel": 0.6831216320977453,
+          "minus_window_mean": 16.01672658837658,
           "minus_window_sem": 0.5863536811854984,
-          "plus_window_mean": 14.738395736655393,
-          "plus_window_sem": 0.46349546021645827,
-          "response": 1.3380858330967857,
-          "response_fraction": 0.08621329222630122
+          "plus_window_mean": 14.890757597603457,
+          "plus_window_sem": 0.4978128726718814,
+          "response": 1.1259689907731243,
+          "response_fraction": 0.07223514648647757
         },
         "passed": false,
         "path": "docs/_static/qa_ess_profile_gradient_rbc_1_1_nonlinear_gradient_rbc_1_1_central_fd_gradient_gate.json"
@@ -314,30 +314,30 @@
       "evidence_class": "production_long_window_turbulence_gradient_candidate",
       "failed_gates": [
         "artifact_passed",
-        "gradient_uncertainty_bounded"
+        "fd_asymmetry_bounded"
       ],
-      "index": 2,
-      "label": "rbc_1_1:qa_ess_profile_gradient_rbc_1_1_nonlinear_gradient_rbc_1_1",
+      "index": 0,
+      "label": "zbs_1_1:qa_ess_profile_gradient_zbs_1_1_nonlinear_gradient_zbs_1_1",
       "margins": {
         "conditioning": 2.0,
-        "locality": 1.4774960112758835,
+        "locality": 0.8266976311918351,
         "response": 2.0,
-        "uncertainty": 0.8951348694670379
+        "uncertainty": 1.4072329037560334
       },
       "metrics": {
-        "central_gradient": -222.1689450944582,
-        "fd_asymmetry_rel": 0.33841038905291376,
-        "fd_condition_number": 23.029073729217703,
-        "gradient_uncertainty_rel": 0.5585750450071276,
-        "response_fraction": 0.08621329222630122
+        "central_gradient": 270.7324775889983,
+        "fd_asymmetry_rel": 0.6048160550298892,
+        "fd_condition_number": 20.611014061348733,
+        "gradient_uncertainty_rel": 0.3553072122357673,
+        "response_fraction": 0.09563236430182284
       },
-      "next_action": "keep the local direction but increase statistical power: longer windows, more replicas, or a checked amplitude bracket",
-      "parameter_name": "rbc_1_1",
+      "next_action": "repeat with a smaller bracket or nearby control; uncertainty is adequate but the finite-difference response is nonlocal",
+      "parameter_name": "zbs_1_1",
       "passed": false,
-      "path": "docs/_static/qa_ess_profile_gradient_rbc_1_1_nonlinear_gradient_rbc_1_1_central_fd_gradient_gate.json",
+      "path": "docs/_static/qa_ess_profile_gradient_zbs_1_1_nonlinear_gradient_zbs_1_1_central_fd_gradient_gate.json",
       "rank": 1,
-      "score": 1.516591773496036,
-      "weakest_margin": 0.8951348694670379
+      "score": 1.4687340604664578,
+      "weakest_margin": 0.8266976311918351
     },
     "exists": true,
     "passed": false,
