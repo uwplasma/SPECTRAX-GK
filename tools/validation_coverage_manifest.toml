@@ -1152,6 +1152,9 @@ next_tests = [
 [[modules]]
 module = "spectraxgk.nonlinear_gradient_evidence"
 path = "src/spectraxgk/nonlinear_gradient_evidence.py"
+owned_modules = [
+  "spectraxgk.nonlinear_gradient_followup",
+]
 owner_lane = "fail-closed nonlinear turbulence-gradient claim-boundary evidence"
 status = "active"
 coverage_priority = "high"
@@ -1170,10 +1173,12 @@ numerics_contracts = [
 ]
 fast_tests = [
   "tests/test_nonlinear_gradient_evidence.py",
+  "tests/test_nonlinear_gradient_followup.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_turbulence_gradient_evidence_status.json",
   "docs/_static/nonlinear_turbulence_gradient_evidence_gap_report.json",
+  "docs/_static/qa_ess_overdetermined_nonlinear_gradient_followup_plan.json",
   "docs/_static/production_nonlinear_optimization_guard.json",
 ]
 next_tests = [
