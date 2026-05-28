@@ -90,6 +90,8 @@ def test_parallel_manifests_track_current_cpu_gpu_scaling_artifacts() -> None:
         "docs/_static/nonlinear_sharding_strong_scaling_gpu_xlarge.json",
         "docs/_static/nonlinear_sharding_strong_scaling_gpu_xlarge.csv",
         "docs/_static/nonlinear_sharding_strong_scaling_gpu_xlarge.png",
+        "docs/_static/nonlinear_sharding_production_speedup_gate.json",
+        "docs/_static/nonlinear_sharding_production_speedup_gate.csv",
         "docs/_static/linear_rhs_parallel_slices_sweep.json",
         "docs/_static/linear_rhs_parallel_slices_sweep.csv",
         "docs/_static/linear_rhs_parallel_slices_sweep.png",
@@ -188,8 +190,8 @@ def test_parallel_scaling_artifact_checker_validates_tracked_large_run_evidence(
     summary = mod.validate_all()
 
     assert summary["n_families"] == 4
-    assert summary["n_json_artifacts"] == 10
-    assert summary["n_sidecars"] == 30
+    assert summary["n_json_artifacts"] == 11
+    assert summary["n_sidecars"] == 32
     assert summary["manifest_checked"] is True
     assert {family["name"] for family in summary["families"]} == {
         "independent_ky_scan",
@@ -197,6 +199,10 @@ def test_parallel_scaling_artifact_checker_validates_tracked_large_run_evidence(
         "nonlinear_sharding",
         "linear_rhs_parallel_slices",
     }
+    assert summary["production_gate"]["name"] == "nonlinear_sharding_production_speedup_gate"
+    assert summary["production_gate"]["gate_passed"] is False
+    assert summary["production_gate"]["status"] == "diagnostic_only"
+    assert summary["production_gate"]["production_candidate_backends"] == ["cpu"]
 
 
 def test_parallel_scaling_artifact_checker_rejects_failed_identity_gate(tmp_path: Path) -> None:
@@ -284,6 +290,81 @@ def test_parallel_scaling_artifact_checker_rejects_tiny_problem_metadata(
 
     with pytest.raises(ValueError, match="grid Ny=16 is below required 64"):
         mod.validate_family(tmp_path, family, check_sidecars=False)
+
+
+def test_parallel_scaling_artifact_checker_rejects_stale_production_gate(
+    tmp_path: Path,
+) -> None:
+    mod = _load_parallel_checker()
+    payload = {
+        "kind": "nonlinear_sharding_production_speedup_gate",
+        "claim_scope": (
+            "Whole-state nonlinear sharding gate; otherwise keep it as a "
+            "diagnostic identity/profiler artifact."
+        ),
+        "gate_passed": True,
+        "production_speedup_claim_allowed": True,
+        "status": "production_speedup_candidate",
+        "required_backends": ["cpu", "gpu"],
+        "min_devices": 2,
+        "min_speedup_vs_1_device": 1.2,
+        "min_parallel_efficiency": 0.5,
+        "identity_atol": 1.0e-5,
+        "identity_rtol": 1.0e-5,
+        "best_candidates": {
+            "cpu": {
+                "backend": "cpu",
+                "requested_devices": 2,
+                "actual_devices": 2,
+                "source": "docs/_static/nonlinear_sharding_strong_scaling_cpu_large.json",
+                "strong_speedup_vs_1_device": 1.3,
+            },
+            "gpu": None,
+        },
+        "blockers": [],
+        "rows": [
+            {
+                "backend": "cpu",
+                "requested_devices": 2,
+                "actual_devices": 2,
+                "source": "docs/_static/nonlinear_sharding_strong_scaling_cpu_large.json",
+                "state_sharding_active": True,
+                "identity_gate_pass": True,
+                "strong_speedup_vs_1_device": 1.3,
+                "parallel_efficiency": 0.65,
+                "max_abs_state_error": 0.0,
+                "max_rel_state_error": 0.0,
+                "candidate_passed": True,
+                "classification": "production_candidate",
+                "blockers": [],
+            },
+            {
+                "backend": "gpu",
+                "requested_devices": 2,
+                "actual_devices": 2,
+                "source": "docs/_static/nonlinear_sharding_strong_scaling_gpu_xlarge.json",
+                "state_sharding_active": True,
+                "identity_gate_pass": True,
+                "strong_speedup_vs_1_device": 0.8,
+                "parallel_efficiency": 0.4,
+                "max_abs_state_error": 0.0,
+                "max_rel_state_error": 0.0,
+                "candidate_passed": False,
+                "classification": "identity_preserving_regression",
+                "blockers": [
+                    "speedup_below_threshold",
+                    "parallel_efficiency_below_threshold",
+                ],
+            },
+        ],
+    }
+    (tmp_path / mod.PRODUCTION_GATE_JSON).write_text(
+        json.dumps(payload),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="blockers do not match missing backend candidates"):
+        mod.validate_nonlinear_sharding_production_gate(tmp_path, check_sidecars=False)
 
 
 def test_independent_ky_scaling_artifact_preserves_order_and_identity_scope() -> None:

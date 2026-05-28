@@ -167,6 +167,13 @@ evidence, not a production nonlinear speedup result.
 The combined artifact is intentionally fail-closed: ``identity_passed`` may be
 true while ``speedup_passed`` is false, with explicit ``speedup_blockers`` naming
 the backend/device row that regressed.
+The companion gate
+``docs/_static/nonlinear_sharding_production_speedup_gate.json`` is the only
+artifact that may promote whole-state nonlinear sharding wording beyond
+diagnostic/profiler evidence. The fast checker
+``tools/check_parallel_scaling_artifacts.py`` now validates that gate, its CSV
+sidecar, its CPU/GPU source rows, and its required-backend blockers without
+rerunning long CPU or GPU profilers.
 
 The next decomposition step is also gated, but still diagnostic. The artifact
 ``docs/_static/nonlinear_domain_parallel_identity_gate.json`` exercises a

@@ -296,3 +296,200 @@ def test_order_and_branch_gates_preserve_open_lane_failures() -> None:
     )
     assert branch_report.passed is False
     assert branch_report.gates[-1].metric == "successive_overlap_deficit"
+
+
+def test_nonlinear_window_gate_optional_envelope_policy_is_explicit() -> None:
+    reference = NonlinearWindowMetrics(
+        tmin=1.0,
+        tmax=2.0,
+        nsamples=8,
+        heat_flux_mean=1.0,
+        heat_flux_std=0.1,
+        heat_flux_rms=1.1,
+        wphi_mean=2.0,
+        wphi_std=0.2,
+        wg_mean=3.0,
+        wg_std=0.3,
+        phi_mode_envelope_mean=1.0,
+        phi_mode_envelope_std=0.1,
+        phi_mode_envelope_max=1.2,
+    )
+    envelope_mismatch = NonlinearWindowMetrics(
+        tmin=1.0,
+        tmax=2.0,
+        nsamples=8,
+        heat_flux_mean=1.0,
+        heat_flux_std=0.1,
+        heat_flux_rms=1.1,
+        wphi_mean=2.0,
+        wphi_std=0.2,
+        wg_mean=3.0,
+        wg_std=0.3,
+        phi_mode_envelope_mean=2.0,
+        phi_mode_envelope_std=0.1,
+        phi_mode_envelope_max=2.2,
+    )
+    unresolved_mode = NonlinearWindowMetrics(
+        tmin=1.0,
+        tmax=2.0,
+        nsamples=8,
+        heat_flux_mean=1.0,
+        heat_flux_std=0.1,
+        heat_flux_rms=1.1,
+        wphi_mean=2.0,
+        wphi_std=0.2,
+        wg_mean=3.0,
+        wg_std=0.3,
+        phi_mode_envelope_mean=None,
+        phi_mode_envelope_std=None,
+        phi_mode_envelope_max=None,
+    )
+
+    envelope_report = nonlinear_window_gate_report(
+        envelope_mismatch,
+        reference,
+        case="window",
+        source="synthetic",
+        rtol=0.1,
+    )
+    excluded_report = nonlinear_window_gate_report(
+        envelope_mismatch,
+        reference,
+        case="window",
+        source="synthetic",
+        rtol=0.1,
+        include_envelope=False,
+    )
+    unresolved_report = nonlinear_window_gate_report(
+        unresolved_mode,
+        reference,
+        case="window",
+        source="synthetic",
+        rtol=0.1,
+    )
+
+    assert envelope_report.passed is False
+    assert envelope_report.gates[-1].metric == "phi_mode_envelope_mean"
+    assert excluded_report.passed is True
+    assert [gate.metric for gate in excluded_report.gates] == [
+        "heat_flux_mean",
+        "heat_flux_rms",
+        "wphi_mean",
+        "wg_mean",
+    ]
+    assert unresolved_report.passed is True
+    assert len(unresolved_report.gates) == 4
+
+
+def test_validation_gate_threshold_guards_are_fail_closed() -> None:
+    convergence = NonlinearHeatFluxConvergenceMetrics(
+        tmin=10.0,
+        tmax=20.0,
+        nsamples=8,
+        heat_flux_mean=1.0,
+        heat_flux_std=0.1,
+        heat_flux_cv=0.1,
+        heat_flux_rms=1.01,
+        terminal_tmin=15.0,
+        terminal_tmax=20.0,
+        terminal_nsamples=4,
+        terminal_heat_flux_mean=1.02,
+        mean_rel_delta=0.02,
+        trend=0.03,
+        abs_trend=0.03,
+        start_fraction=0.5,
+        terminal_fraction=0.5,
+    )
+    order = ObservedOrderMetrics(
+        step_sizes=np.array([0.4, 0.2]),
+        errors=np.array([0.02, 0.01]),
+        orders=np.array([1.0]),
+        asymptotic_order=1.0,
+    )
+    branch = BranchContinuationMetrics(
+        ky=np.array([0.1, 0.2]),
+        gamma=np.array([0.1, 0.2]),
+        omega=np.array([1.0, 1.1]),
+        rel_gamma_jumps=np.array([0.5]),
+        rel_omega_jumps=np.array([0.1]),
+        max_rel_gamma_jump=0.5,
+        max_rel_omega_jump=0.1,
+        min_successive_overlap=0.9,
+    )
+
+    with pytest.raises(ValueError, match="non-negative"):
+        nonlinear_heat_flux_convergence_gate_report(
+            convergence,
+            case="heat",
+            source="synthetic",
+            max_cv=-0.1,
+        )
+    with pytest.raises(ValueError, match="min_samples"):
+        nonlinear_heat_flux_convergence_gate_report(
+            convergence,
+            case="heat",
+            source="synthetic",
+            min_samples=0,
+        )
+    with pytest.raises(ValueError, match="min_overlap"):
+        eigenfunction_gate_report(
+            EigenfunctionComparisonMetrics(
+                overlap=0.9,
+                relative_l2=0.1,
+                phase_shift=0.0,
+            ),
+            case="mode",
+            source="synthetic",
+            min_overlap=1.01,
+        )
+    with pytest.raises(ValueError, match="relative_l2"):
+        eigenfunction_gate_report(
+            EigenfunctionComparisonMetrics(
+                overlap=0.9,
+                relative_l2=0.1,
+                phase_shift=0.0,
+            ),
+            case="mode",
+            source="synthetic",
+            max_relative_l2=-0.1,
+        )
+    with pytest.raises(ValueError, match="min_asymptotic_order"):
+        observed_order_gate_report(
+            order,
+            case="order",
+            source="synthetic",
+            min_asymptotic_order=-1.0,
+        )
+    with pytest.raises(ValueError, match="min_pairwise_order"):
+        observed_order_gate_report(
+            order,
+            case="order",
+            source="synthetic",
+            min_asymptotic_order=1.0,
+            min_pairwise_order=-1.0,
+        )
+    with pytest.raises(ValueError, match="max_final_error"):
+        observed_order_gate_report(
+            order,
+            case="order",
+            source="synthetic",
+            min_asymptotic_order=1.0,
+            max_final_error=-1.0,
+        )
+    with pytest.raises(ValueError, match="maximum relative jumps"):
+        branch_continuity_gate_report(
+            branch,
+            case="branch",
+            source="synthetic",
+            max_rel_gamma_jump=-0.1,
+            max_rel_omega_jump=0.2,
+        )
+    with pytest.raises(ValueError, match="min_successive_overlap"):
+        branch_continuity_gate_report(
+            branch,
+            case="branch",
+            source="synthetic",
+            max_rel_gamma_jump=1.0,
+            max_rel_omega_jump=1.0,
+            min_successive_overlap=-0.1,
+        )

@@ -1204,6 +1204,22 @@ promoted nonlinear turbulence-gradient claim.
    launch more blind ``RBC(1,1)`` replicas; design a better-conditioned
    control, variance-reduced observable, or new checked bracket first.
 
+.. figure:: _static/nonlinear_gradient_composite_control_design.png
+   :width: 90%
+   :align: center
+   :alt: Nonlinear-gradient composite-control admission gate
+
+   Nonlinear-gradient composite-control admission gate.  The left panel shows
+   the measured long-window central gradients and the corresponding descent
+   signs, the middle panel shows locality and uncertainty admission gates, and
+   the right panel shows the VMEC input weights that would be passed to the
+   profile-direction writer.  The current artifact intentionally fails closed:
+   only ``RBC(1,1)`` is local, resolved, and sign-robust enough to enter the
+   composite direction. ``ZBS(1,1)`` is still nonlocal, and ``ZBS(1,0)`` is
+   unresolved and nonlocal, so the next production campaign needs another
+   local/resolved control or a checked single-control bracket before long
+   nonlinear GPU runs.
+
 .. figure:: _static/qa_ess_descent_profile_rel2_nonlinear_gradient_profile_direction_zbs_1_1_zbs_1_0_rbc_1_1_central_fd_gradient_gate.png
    :width: 90%
    :align: center

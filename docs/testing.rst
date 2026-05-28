@@ -435,6 +435,17 @@ bracket scale, and extra-replica estimate. The tracked design artifact
 ``docs/_static/nonlinear_gradient_next_campaign_design.json`` currently
 recommends a better-conditioned control or variance-reduced observable before
 more GPU replicas.
+``tools/design_nonlinear_gradient_composite_control.py`` is the stricter
+control-admission gate for that next campaign. It consumes the same completed
+central-FD artifacts, admits only VMEC boundary coefficients with resolved
+response, bounded finite-difference locality, acceptable propagated
+uncertainty, and robust paired-replicate sign, and writes JSON/CSV/PNG/PDF
+sidecars. The tracked
+``docs/_static/nonlinear_gradient_composite_control_design.json`` currently
+fails closed: only ``RBC(1,1)`` is admissible, while ``ZBS(1,1)`` is nonlocal
+and ``ZBS(1,0)`` is unresolved/nonlocal. Therefore the next campaign still
+needs a new local/resolved control or an explicit single-control bracket check
+before launching expensive long-window GPU runs.
 ``tools/write_vmec_boundary_profile_perturbation_inputs.py`` is the companion
 for a single smoother composite direction. It perturbs several VMEC boundary
 coefficients together, normalizes the finite-difference scalar by the Euclidean

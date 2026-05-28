@@ -27,6 +27,23 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 STATIC = REPO_ROOT / "docs" / "_static"
 DEFAULT_MANIFEST = REPO_ROOT / "tools" / "performance_optimization_manifest.toml"
 SIDE_EXTENSIONS = (".json", ".csv", ".png")
+PRODUCTION_GATE_JSON = "nonlinear_sharding_production_speedup_gate.json"
+PRODUCTION_GATE_CSV = "nonlinear_sharding_production_speedup_gate.csv"
+PRODUCTION_GATE_ARTIFACT_PATHS = (
+    f"docs/_static/{PRODUCTION_GATE_JSON}",
+    f"docs/_static/{PRODUCTION_GATE_CSV}",
+)
+PRODUCTION_GATE_CLASSIFICATIONS = {
+    "reference_only",
+    "identity_failed",
+    "inactive_or_fallback",
+    "timing_incomplete",
+    "identity_preserving_regression",
+    "identity_only_insufficient_speedup",
+    "production_candidate",
+    "profile_error",
+    "diagnostic_only",
+}
 
 
 @dataclass(frozen=True)
@@ -340,6 +357,205 @@ def _assert_profile_payloads(payload: dict[str, Any], rows: list[dict[str, Any]]
             raise ValueError(f"{context}: profiler_trace must be present and error-free")
 
 
+def _nonlinear_sharding_split_artifacts() -> tuple[str, ...]:
+    for family in FAMILIES:
+        if family.name == "nonlinear_sharding":
+            return family.split
+    raise AssertionError("nonlinear_sharding artifact family is not configured")
+
+
+def _production_gate_candidate_key(row: dict[str, Any]) -> tuple[str, int, int, str, float]:
+    return (
+        str(row.get("backend", "")).lower(),
+        int(row.get("requested_devices") or 0),
+        int(row.get("actual_devices") or 0),
+        _path_basename(row.get("source")),
+        float(row.get("strong_speedup_vs_1_device")),
+    )
+
+
+def validate_nonlinear_sharding_production_gate(
+    root: Path,
+    *,
+    check_sidecars: bool = True,
+) -> dict[str, Any]:
+    """Validate the fail-closed nonlinear sharding promotion gate artifact."""
+
+    root = root.resolve()
+    sidecars = 0
+    if check_sidecars:
+        for artifact in PRODUCTION_GATE_ARTIFACT_PATHS:
+            path = REPO_ROOT / artifact if root == STATIC else root / Path(artifact).name
+            if not path.exists():
+                raise ValueError(
+                    f"nonlinear_sharding_production_gate: missing sidecar artifact {artifact}"
+                )
+            sidecars += 1
+
+    payload = _load_json(root, PRODUCTION_GATE_JSON)
+    context = PRODUCTION_GATE_JSON
+    if payload.get("kind") != "nonlinear_sharding_production_speedup_gate":
+        raise ValueError(f"{context}: kind must be 'nonlinear_sharding_production_speedup_gate'")
+    _assert_claim_scope(payload, "Whole-state nonlinear sharding", context)
+    _assert_claim_scope(payload, "diagnostic identity/profiler artifact", context)
+
+    gate_passed = payload.get("gate_passed")
+    if not isinstance(gate_passed, bool):
+        raise ValueError(f"{context}: gate_passed must be boolean")
+    if payload.get("production_speedup_claim_allowed") is not gate_passed:
+        raise ValueError(
+            f"{context}: production_speedup_claim_allowed must match gate_passed"
+        )
+    expected_status = "production_speedup_candidate" if gate_passed else "diagnostic_only"
+    if payload.get("status") != expected_status:
+        raise ValueError(f"{context}: status must be {expected_status!r}")
+
+    required_backends = payload.get("required_backends")
+    if not isinstance(required_backends, list) or not required_backends:
+        raise ValueError(f"{context}: required_backends must be a non-empty list")
+    required = tuple(str(backend).lower() for backend in required_backends)
+    if len(set(required)) != len(required):
+        raise ValueError(f"{context}: required_backends must not contain duplicates")
+
+    min_devices = int(payload.get("min_devices", 0))
+    min_speedup = _finite_positive(
+        payload.get("min_speedup_vs_1_device"),
+        "min_speedup_vs_1_device",
+        context,
+    )
+    min_efficiency = _finite_positive(
+        payload.get("min_parallel_efficiency"),
+        "min_parallel_efficiency",
+        context,
+    )
+    identity_atol = _finite_nonnegative(payload.get("identity_atol"), "identity_atol", context)
+    identity_rtol = _finite_nonnegative(payload.get("identity_rtol"), "identity_rtol", context)
+    rows = _as_rows(payload, context)
+
+    if check_sidecars:
+        count = _csv_row_count(root / PRODUCTION_GATE_CSV)
+        if count != len(rows):
+            raise ValueError(
+                f"nonlinear_sharding_production_gate: {PRODUCTION_GATE_CSV} has "
+                f"{count} rows, expected {len(rows)}"
+            )
+
+    source_artifacts = set(_nonlinear_sharding_split_artifacts())
+    candidates_by_backend: dict[str, list[dict[str, Any]]] = {backend: [] for backend in required}
+    observed_backends: set[str] = set()
+    for index, row in enumerate(rows):
+        row_context = f"{context}: row {index}"
+        backend = str(row.get("backend", "")).lower()
+        if backend not in required:
+            raise ValueError(f"{row_context}: backend {backend!r} is not required")
+        observed_backends.add(backend)
+        source_name = _path_basename(row.get("source"))
+        if source_name not in source_artifacts:
+            raise ValueError(f"{row_context}: source must be a nonlinear sharding split artifact")
+        requested_devices = int(row.get("requested_devices") or 0)
+        actual_devices = int(row.get("actual_devices") or 0)
+        if requested_devices < 1 or actual_devices < 1 or actual_devices > requested_devices:
+            raise ValueError(f"{row_context}: device counts are invalid")
+
+        blockers = row.get("blockers")
+        if not isinstance(blockers, list):
+            raise ValueError(f"{row_context}: blockers must be a list")
+        candidate_passed = row.get("candidate_passed")
+        if not isinstance(candidate_passed, bool):
+            raise ValueError(f"{row_context}: candidate_passed must be boolean")
+        if candidate_passed != (not blockers):
+            raise ValueError(
+                f"{row_context}: candidate_passed must be true exactly when blockers are empty"
+            )
+
+        classification = str(row.get("classification", ""))
+        if classification not in PRODUCTION_GATE_CLASSIFICATIONS:
+            raise ValueError(f"{row_context}: unknown classification {classification!r}")
+        if candidate_passed and classification != "production_candidate":
+            raise ValueError(
+                f"{row_context}: passing candidates must be classified as production_candidate"
+            )
+        if classification == "production_candidate" and not candidate_passed:
+            raise ValueError(f"{row_context}: production_candidate rows must pass")
+
+        max_abs = _finite_nonnegative(row.get("max_abs_state_error"), "max_abs_state_error", row_context)
+        max_rel = _finite_nonnegative(row.get("max_rel_state_error"), "max_rel_state_error", row_context)
+        speedup = _finite_positive(
+            row.get("strong_speedup_vs_1_device"),
+            "strong_speedup_vs_1_device",
+            row_context,
+        )
+        efficiency = _finite_positive(row.get("parallel_efficiency"), "parallel_efficiency", row_context)
+        identity_passed = bool(row.get("identity_gate_pass", False))
+        if identity_passed and (max_abs > identity_atol or max_rel > identity_rtol):
+            raise ValueError(f"{row_context}: identity errors exceed gate tolerances")
+        if candidate_passed:
+            if not identity_passed:
+                raise ValueError(f"{row_context}: passing candidate must pass identity")
+            if not bool(row.get("state_sharding_active", False)):
+                raise ValueError(f"{row_context}: passing candidate must use active sharding")
+            if actual_devices < min_devices:
+                raise ValueError(f"{row_context}: passing candidate is below min_devices")
+            if speedup < min_speedup:
+                raise ValueError(f"{row_context}: passing candidate is below min_speedup")
+            if efficiency < min_efficiency:
+                raise ValueError(f"{row_context}: passing candidate is below min_parallel_efficiency")
+            candidates_by_backend[backend].append(row)
+
+    missing_backend_rows = sorted(set(required) - observed_backends)
+    if missing_backend_rows:
+        raise ValueError(f"{context}: missing rows for backend(s): {', '.join(missing_backend_rows)}")
+
+    best_candidates = payload.get("best_candidates")
+    if not isinstance(best_candidates, dict):
+        raise ValueError(f"{context}: best_candidates must be an object")
+    gate_blockers = list(payload.get("blockers", []))
+    if not all(isinstance(blocker, str) for blocker in gate_blockers):
+        raise ValueError(f"{context}: blockers must be strings")
+
+    expected_gate_blockers: list[str] = []
+    for backend in required:
+        candidates = candidates_by_backend.get(backend, [])
+        best = best_candidates.get(backend)
+        if not candidates:
+            expected_gate_blockers.append(f"{backend}_production_speedup_candidate_missing")
+            if best is not None:
+                raise ValueError(f"{context}: best_candidates[{backend!r}] must be null")
+            continue
+        if not isinstance(best, dict):
+            raise ValueError(f"{context}: best_candidates[{backend!r}] must be an object")
+        expected_best = max(
+            candidates,
+            key=lambda item: (
+                float(item["strong_speedup_vs_1_device"]),
+                int(item["requested_devices"]),
+            ),
+        )
+        if _production_gate_candidate_key(best) != _production_gate_candidate_key(expected_best):
+            raise ValueError(f"{context}: best candidate for {backend} is stale")
+
+    if gate_blockers != expected_gate_blockers:
+        raise ValueError(f"{context}: blockers do not match missing backend candidates")
+    expected_gate_passed = not expected_gate_blockers
+    if gate_passed != expected_gate_passed:
+        raise ValueError(f"{context}: gate_passed is inconsistent with candidate rows")
+
+    return {
+        "name": "nonlinear_sharding_production_speedup_gate",
+        "json": PRODUCTION_GATE_JSON,
+        "n_rows": len(rows),
+        "n_sidecars": sidecars,
+        "required_backends": list(required),
+        "gate_passed": gate_passed,
+        "production_speedup_claim_allowed": bool(payload["production_speedup_claim_allowed"]),
+        "status": payload["status"],
+        "blockers": gate_blockers,
+        "production_candidate_backends": [
+            backend for backend in required if candidates_by_backend.get(backend)
+        ],
+    }
+
+
 def validate_family(root: Path, family: ArtifactFamily, *, check_sidecars: bool = True) -> dict[str, Any]:
     """Validate one artifact family under ``root`` and return a compact summary."""
 
@@ -427,11 +643,16 @@ def validate_all(
     """Validate all tracked parallel scaling families."""
 
     summaries = [validate_family(root, family, check_sidecars=check_sidecars) for family in FAMILIES]
+    production_gate = validate_nonlinear_sharding_production_gate(
+        root,
+        check_sidecars=check_sidecars,
+    )
 
     missing_from_manifest: list[str] = []
     if check_manifest:
         manifest_paths = _manifest_parallel_artifacts(manifest)
         required = {path for family in FAMILIES for path in family.artifact_paths}
+        required.update(PRODUCTION_GATE_ARTIFACT_PATHS)
         missing_from_manifest = sorted(required - manifest_paths)
         if missing_from_manifest:
             raise ValueError(
@@ -441,11 +662,13 @@ def validate_all(
 
     return {
         "n_families": len(summaries),
-        "n_json_artifacts": sum(1 + len(family.split) for family in FAMILIES),
-        "n_sidecars": sum(summary["n_sidecars"] for summary in summaries),
+        "n_json_artifacts": sum(1 + len(family.split) for family in FAMILIES) + 1,
+        "n_sidecars": sum(summary["n_sidecars"] for summary in summaries)
+        + int(production_gate["n_sidecars"]),
         "manifest_checked": check_manifest,
         "missing_from_manifest": missing_from_manifest,
         "families": summaries,
+        "production_gate": production_gate,
     }
 
 

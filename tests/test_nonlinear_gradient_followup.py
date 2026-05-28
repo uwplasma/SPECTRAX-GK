@@ -9,8 +9,10 @@ import pytest
 
 from spectraxgk.nonlinear_gradient_followup import (
     NonlinearGradientCandidateDesignConfig,
+    NonlinearGradientCompositeControlConfig,
     NonlinearGradientFollowupConfig,
     nonlinear_gradient_candidate_design_report,
+    nonlinear_gradient_composite_control_report,
     nonlinear_gradient_followup_plan,
 )
 
@@ -373,6 +375,96 @@ def test_design_nonlinear_gradient_next_campaign_tool_writes_artifacts(tmp_path:
     payload = json.loads(out_prefix.with_suffix(".json").read_text(encoding="utf-8"))
     assert payload["kind"] == "nonlinear_turbulence_gradient_candidate_design_report"
     assert payload["summary"]["candidate_count"] == 1
+    assert out_prefix.with_suffix(".csv").exists()
+    assert out_prefix.with_suffix(".png").exists()
+    assert out_prefix.with_suffix(".pdf").exists()
+
+
+def test_composite_control_report_builds_descent_direction_and_blocks_bad_controls() -> None:
+    rbc = _artifact(response=0.072, asymmetry=0.475, uncertainty=0.683)
+    rbc["parameter_name"] = "rbc_1_1"
+    rbc["metrics"]["central_gradient"] = -186.95
+    rbc["paired_replicate_diagnostics"] = {
+        "central_gradient_uncertainty_rel": 0.247,
+        "same_sign_fraction": 1.0,
+    }
+    zbs = _artifact(response=0.095, asymmetry=0.605, uncertainty=0.355)
+    zbs["parameter_name"] = "zbs_1_1"
+    zbs["metrics"]["central_gradient"] = 270.7
+    zbs["paired_replicate_diagnostics"] = {"same_sign_fraction": 1.0}
+
+    report = nonlinear_gradient_composite_control_report([rbc, zbs], labels=["rbc", "zbs"])
+
+    assert report["passed"] is False
+    assert report["summary"]["admissible_control_count"] == 1
+    assert report["controls"][0]["coefficient"] == "RBC(1,1)"
+    assert report["controls"][0]["weight"] == pytest.approx(1.0)
+    assert "single-control bracket" in report["next_action"]
+    assert report["candidates"][1]["blockers"] == ["nonlocal_finite_difference_bracket"]
+
+    two_control = _artifact(response=0.12, asymmetry=0.2, uncertainty=0.3)
+    two_control["parameter_name"] = "zbs_1_1"
+    two_control["metrics"]["central_gradient"] = 93.475
+    ready = nonlinear_gradient_composite_control_report([rbc, two_control])
+    assert ready["passed"] is True
+    assert ready["controls"][0]["control_argument"] == "RBC(1,1):1"
+    assert ready["controls"][1]["control_argument"] == "ZBS(1,1):-0.5"
+    assert "write_vmec_boundary_profile_perturbation_inputs.py" in ready[
+        "write_profile_direction_command_template"
+    ]
+
+
+def test_composite_control_report_validates_config_and_metadata() -> None:
+    artifact = _artifact(response=0.08, asymmetry=0.2, uncertainty=0.2)
+    artifact["parameter_name"] = "not_a_vmec_coefficient"
+    artifact["metrics"]["central_gradient"] = 1.0
+    artifact["paired_replicate_diagnostics"] = {"same_sign_fraction": 0.5}
+
+    report = nonlinear_gradient_composite_control_report([artifact])
+    assert report["controls"] == []
+    assert "parameter_not_vmec_boundary_coefficient" in report["candidates"][0]["blockers"]
+    assert "paired_replicate_sign_not_robust" in report["candidates"][0]["blockers"]
+
+    validation_cases = [
+        ("max_gradient_uncertainty_rel", NonlinearGradientCompositeControlConfig(max_gradient_uncertainty_rel=0.0)),
+        ("max_fd_asymmetry_rel", NonlinearGradientCompositeControlConfig(max_fd_asymmetry_rel=0.0)),
+        ("min_fd_response_fraction", NonlinearGradientCompositeControlConfig(min_fd_response_fraction=0.0)),
+        ("min_same_sign_fraction", NonlinearGradientCompositeControlConfig(min_same_sign_fraction=0.0)),
+        ("min_same_sign_fraction", NonlinearGradientCompositeControlConfig(min_same_sign_fraction=1.1)),
+        ("min_controls", NonlinearGradientCompositeControlConfig(min_controls=0)),
+        ("default_relative_delta", NonlinearGradientCompositeControlConfig(default_relative_delta=0.0)),
+        ("max_weight_abs", NonlinearGradientCompositeControlConfig(max_weight_abs=0.0)),
+    ]
+    for message, config in validation_cases:
+        with pytest.raises(ValueError, match=message):
+            nonlinear_gradient_composite_control_report([artifact], config=config)
+
+    with pytest.raises(ValueError, match="paths length"):
+        nonlinear_gradient_composite_control_report([artifact], paths=[None, None])
+    with pytest.raises(ValueError, match="labels length"):
+        nonlinear_gradient_composite_control_report([artifact], labels=["one", "two"])
+
+
+def test_design_nonlinear_gradient_composite_control_tool_writes_artifacts(tmp_path: Path) -> None:
+    path = ROOT / "tools" / "design_nonlinear_gradient_composite_control.py"
+    spec = importlib.util.spec_from_file_location("design_nonlinear_gradient_composite_control", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+
+    artifact = _artifact(response=0.072, asymmetry=0.475, uncertainty=0.683)
+    artifact["parameter_name"] = "rbc_1_1"
+    artifact["metrics"]["central_gradient"] = -186.95
+    candidate_path = tmp_path / "candidate.json"
+    out_prefix = tmp_path / "composite"
+    candidate_path.write_text(json.dumps(artifact), encoding="utf-8")
+
+    assert module.main([str(candidate_path), "--out-prefix", str(out_prefix), "--min-controls", "1"]) == 0
+    payload = json.loads(out_prefix.with_suffix(".json").read_text(encoding="utf-8"))
+    assert payload["kind"] == "nonlinear_turbulence_gradient_composite_control_design"
+    assert payload["passed"] is True
+    assert payload["controls"][0]["control_argument"] == "RBC(1,1):1"
     assert out_prefix.with_suffix(".csv").exists()
     assert out_prefix.with_suffix(".png").exists()
     assert out_prefix.with_suffix(".pdf").exists()

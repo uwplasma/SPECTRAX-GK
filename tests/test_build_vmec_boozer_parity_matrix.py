@@ -51,6 +51,10 @@ def _fake_report(**kwargs: object) -> dict[str, object]:
         "production_parity_passed": False,
         "worst_core_normalized_max_abs": 2.0e-1,
         "worst_scalar_rel": 1.0e-3,
+        "source_model": "vmec_jax:state->tensor-flux-tube vs imported-vmec-eik",
+        "surface_index": 4,
+        "torflux": 0.5,
+        "alpha": 0.0,
     }
 
 
@@ -84,6 +88,22 @@ def test_build_parity_matrix_uses_mode21_floor_and_summarizes_rows() -> None:
     ] == pytest.approx(7.0e-2)
     assert payload["claim_level"].endswith("not_full_transport_gradient_claim")
     assert payload["rows"][0]["production_parity_passed"] is False
+    assert payload["rows"][0]["sample_set_id"] == (
+        "nfp4_QH_warm_start:ntheta=16:mboz=21:nboz=21"
+    )
+    provenance = payload["sample_set_provenance"]
+    assert provenance["bounded_run"] is True
+    assert provenance["external_vmec_solves_launched"] is False
+    assert provenance["summary"]["n_total_sample_sets"] == 7
+    assert provenance["summary"]["n_unique_sample_sets"] == 6
+    assert provenance["summary"]["all_modes_at_or_above_floor"] is True
+    assert (
+        provenance["matrix_cases"][0]["sample_set_id"]
+        == payload["rows"][0]["sample_set_id"]
+    )
+    assert provenance["matrix_cases"][0]["field_line_alpha"] == pytest.approx(0.0)
+    assert provenance["matrix_cases"][0]["surface_index"] == 4
+    assert provenance["matrix_cases"][0]["torflux"] == pytest.approx(0.5)
     qi_summary = payload["qi_seed_robustness"]["summary"]
     assert qi_summary["n_variants"] == 5
     assert qi_summary["n_passed"] == 2
@@ -158,6 +178,7 @@ def test_qi_seed_robustness_rejects_input_only_variants() -> None:
     assert qi["summary"]["n_rejected"] == 1
     assert qi["summary"]["seed_robust_gate_passed"] is False
     row = qi["rows"][0]
+    assert row["sample_set_id"] == "nfp1_QI:ntheta=8:mboz=21:nboz=21"
     assert row["qi_gate_status"] == "artifact_rejected"
     assert row["artifact_reason"] == "missing_bundled_wout_reference"
     assert "does not launch VMEC solves" in row["rejection_reason"]
@@ -179,9 +200,8 @@ def test_write_parity_matrix_artifacts_writes_companions(tmp_path: Path) -> None
         assert Path(path).exists()
     saved = json.loads((tmp_path / "parity.json").read_text(encoding="utf-8"))
     assert saved["summary"]["n_equal_arc_passed"] == 1
-    assert "shaped_tokamak_pressure" in (tmp_path / "parity.csv").read_text(
-        encoding="utf-8"
-    )
-    assert "missing_bundled_wout_reference" in (tmp_path / "parity.csv").read_text(
-        encoding="utf-8"
-    )
+    assert saved["sample_set_provenance"]["summary"]["n_total_sample_sets"] == 6
+    csv_text = (tmp_path / "parity.csv").read_text(encoding="utf-8")
+    assert "sample_set_id" in csv_text
+    assert "shaped_tokamak_pressure:ntheta=8:mboz=21:nboz=21" in csv_text
+    assert "missing_bundled_wout_reference" in csv_text

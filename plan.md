@@ -89,6 +89,29 @@ multi-coefficient direction selected from linear/quasilinear sensitivity rows,
 a paired-seed variance-reduced finite difference, or a bracket sweep that first
 demonstrates monotone response without violating asymmetry.
 
+## 2026-05-29 Nonlinear-gradient Composite-control Admission Gate
+
+- Added `NonlinearGradientCompositeControlConfig` and
+  `nonlinear_gradient_composite_control_report` in
+  `spectraxgk.nonlinear_gradient_followup`, plus
+  `tools/design_nonlinear_gradient_composite_control.py`.
+- Generated
+  `docs/_static/nonlinear_gradient_composite_control_design.{json,csv,png,pdf}`
+  from the current QA/ESS `ZBS(1,1)`, `ZBS(1,0)`, and refreshed `RBC(1,1)`
+  central-FD artifacts.
+- Result: the candidate-generation gate also fails closed, but with a sharper
+  action. `RBC(1,1)` is the only admissible coefficient for a descent-oriented
+  VMEC profile direction. `ZBS(1,1)` remains rejected by finite-difference
+  locality, and `ZBS(1,0)` remains unresolved, nonlocal, uncertain, and not
+  paired-sign robust. Therefore the next production campaign should not rerun
+  the previous three-control profile direction; it must either screen another
+  local/resolved VMEC coefficient or run an explicit single-control bracket
+  check for `RBC(1,1)` before committing long GPU windows.
+
+Next best step: build a short bracket-screen runbook for `RBC(1,1)` plus one or
+two new VMEC-boundary coefficients selected from linear/quasilinear sensitivity
+artifacts, then only promote controls that pass this composite admission gate.
+
 ## 2026-05-27 VMEC-JAX Stellarator Optimization Lane
 
 Goal: turn the reduced stellarator-optimization examples into a production

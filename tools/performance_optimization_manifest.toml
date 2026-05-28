@@ -311,6 +311,8 @@ artifact_paths = [
     "docs/_static/nonlinear_sharding_strong_scaling_large.json",
   "docs/_static/nonlinear_sharding_strong_scaling_large.csv",
   "docs/_static/nonlinear_sharding_strong_scaling_large.png",
+  "docs/_static/nonlinear_sharding_production_speedup_gate.json",
+  "docs/_static/nonlinear_sharding_production_speedup_gate.csv",
   ]
 bottleneck_hypotheses = [
   "independent ky/batch/ensemble sharding should scale before nonlinear domain sharding",

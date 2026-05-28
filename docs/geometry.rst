@@ -363,7 +363,12 @@ multi-equilibrium matrix:
 It writes ``docs/_static/vmec_boozer_parity_matrix.{png,pdf,json,csv}``.
 The builder enforces ``mboz,nboz >= 21`` before calling the real optional
 backend path, because the QI drift gate is under-resolved at lower Boozer mode
-counts. The tracked matrix covers the ``nfp4_QH_warm_start``,
+counts. The JSON now includes a ``sample_set_provenance`` block and the CSV
+includes a ``sample_set_id`` column so each bounded row is identified by
+``case_name``, ``ntheta``, ``mboz``, and ``nboz``. That provenance block also
+records that the builder does not launch external VMEC solves; input-only QI
+variants remain explicitly artifact-limited until a bundled ``wout`` reference
+exists. The tracked matrix covers the ``nfp4_QH_warm_start``,
 ``nfp3_QI_fixed_resolution_final``, and ``shaped_tokamak_pressure`` examples.
 At ``mboz=nboz=21`` the current regenerated artifact passes all matrix rows.
 The fixed-resolution QI case passes the loaded-convention drift subgate with
