@@ -126,6 +126,27 @@ work is scientific: held-out real-geometry branch/FD gates, nonlinear
 post-transient matched audits, and calibrated quasilinear absolute-flux
 evidence.
 
+### 2026-05-28 Zonal-flow Optimization Contract Update
+
+- Added `spectraxgk.zonal_objective`, a backend-free reduced objective for the
+  next stellarator-optimization lane. The contract consumes zonal-response
+  metric tensors with shape `(surface, alpha, kx)` and forms a minimizable
+  objective from inverse residual response, damping rate, optional
+  growth-over-residual, and optional recurrence amplitude.
+- Added `zonal_flow_objective_sensitivity_report`, which reuses the portfolio
+  AD/finite-difference, row-Jacobian conditioning, and covariance diagnostics.
+  This gives the VMEC/Boozer/SPECTRAX zonal lane an explicit gate before any
+  optimizer uses the objective.
+- Added `tests/test_zonal_objective.py` and registered the new module in the
+  validation coverage manifest. The tests verify the physics direction
+  (larger residual/lower damping lowers the objective), shape contract,
+  AD/FD parity, conditioning, strict JSON output, and invalid-contract
+  failures.
+- Documented the claim boundary in `docs/stellarator_optimization.rst`: this
+  is reduced objective plumbing. A promoted zonal-flow optimization result
+  still requires validated zonal-response rows and matched long-window
+  nonlinear heat-flux holdouts before claiming turbulence suppression.
+
 2026-05-27 progress:
 
 - Added `StellaratorITGSampleSet`,

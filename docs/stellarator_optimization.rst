@@ -586,6 +586,38 @@ their worker metadata and identity contract in the JSON artifacts.
    a low coefficient of variation and trend for the optimized late-time window,
    so the plotted average is meaningful for this reduced model.
 
+Zonal-flow Objective Contract
+-----------------------------
+
+The next stellarator-optimization lane targets geometries with stronger zonal
+response before claiming nonlinear turbulence suppression. The backend-free
+contract lives in :mod:`spectraxgk.zonal_objective`. It reduces tensors of
+``residual_level``, ``damping_rate``, optional ``linear_growth_rate``, and
+optional ``recurrence_amplitude`` over a ``(surface, alpha, kx)`` portfolio.
+The minimization objective rewards large residual zonal flow through an
+``inverse_residual`` column and penalizes damping, growth not screened by the
+residual, and late-time recurrence amplitude.
+
+This is deliberately a reduced objective gate. It is appropriate for
+``vmec_jax -> booz_xform_jax -> SPECTRAX-GK`` sensitivity analysis once each
+row is produced by a validated zonal-response run and the
+AD/finite-difference gate passes. It is not, by itself, a turbulence-reduction
+claim. A promoted result must still show matched baseline and optimized
+long-window nonlinear heat-flux audits, with post-transient running averages
+and seed/timestep/grid uncertainty.
+
+The CI-scale gate is:
+
+.. code-block:: bash
+
+   pytest -q tests/test_zonal_objective.py
+
+The test exercises the optimization contract that the literature motivates:
+larger residuals and lower damping lower the scalar objective, the
+surface/field-line/wavenumber portfolio shape is explicit, and the resulting
+row map passes AD/finite-difference and conditioning checks before optimizer
+use.
+
 Connection to Literature
 ------------------------
 

@@ -165,6 +165,12 @@ Zonal Validation
 .. automodule:: spectraxgk.zonal_validation
    :members:
 
+Zonal Flow Objectives
+---------------------
+
+.. automodule:: spectraxgk.zonal_objective
+   :members:
+
 Analysis
 --------
 

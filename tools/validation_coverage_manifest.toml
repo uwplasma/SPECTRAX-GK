@@ -936,6 +936,38 @@ next_tests = [
 ]
 
 [[modules]]
+module = "spectraxgk.zonal_objective"
+path = "src/spectraxgk/zonal_objective.py"
+owner_lane = "reduced zonal-flow objective, AD/FD gates, and stellarator optimization bridge"
+status = "active"
+coverage_priority = "high"
+coverage_target_percent = 95.0
+reference_anchors = [
+  "Rosenbluth-Hinton residual zonal-flow and GAM response conventions",
+  "Sugama-Watanabe helical-system residual/damping interpretation",
+  "recent QH/QI stellarator studies connecting stronger residual zonal response to ITG suppression",
+]
+physics_contracts = [
+  "large residual zonal response lowers the minimization objective",
+  "damping, growth not screened by residuals, and recurrence amplitudes are explicit penalties",
+  "the reduced objective is not promoted to a nonlinear turbulence-suppression claim without long-window heat-flux holdouts",
+]
+numerics_contracts = [
+  "metric tensors use the shared surface/alpha/kx portfolio shape",
+  "AD/JVP finite-difference and conditioning gates are required before optimizer use",
+]
+fast_tests = [
+  "tests/test_zonal_objective.py",
+]
+artifact_paths = [
+  "docs/_static/stellarator_objective_portfolio_gate.json",
+]
+next_tests = [
+  "wire production VMEC/Boozer/SPECTRAX zonal-response rows into the reduced objective",
+  "add optimizer-history artifacts once the W7-X and QA/QH zonal-response physics gates pass",
+]
+
+[[modules]]
 module = "spectraxgk.autodiff_validation"
 path = "src/spectraxgk/autodiff_validation.py"
 owner_lane = "autodiff inverse, sensitivity-map, and UQ covariance validation"
