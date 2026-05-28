@@ -8,7 +8,9 @@ import sys
 import pytest
 
 from spectraxgk.nonlinear_gradient_followup import (
+    NonlinearGradientCandidateDesignConfig,
     NonlinearGradientFollowupConfig,
+    nonlinear_gradient_candidate_design_report,
     nonlinear_gradient_followup_plan,
 )
 
@@ -241,3 +243,136 @@ def test_plan_nonlinear_gradient_followup_tool_writes_json(tmp_path: Path) -> No
     payload = json.loads(out.read_text(encoding="utf-8"))
     assert payload["case"] == "tool_case"
     assert payload["summary"]["planned_run_count"] == 3
+
+
+def test_candidate_design_reports_infeasible_rbc_like_followup() -> None:
+    artifact = _artifact(response=0.072, asymmetry=0.475, uncertainty=0.683)
+    artifact["source_ensembles"] = {
+        "baseline": _ensemble("baseline", means=(15.0, 15.2, 15.4, 15.6, 15.8)),
+        "plus": _ensemble("plus", means=(14.4, 14.7, 15.0, 15.2, 15.5)),
+        "minus": _ensemble("minus", means=(15.8, 16.0, 16.2, 16.3, 16.4)),
+    }
+    for ensemble in artifact["source_ensembles"].values():
+        ensemble["n_reports"] = 5
+
+    report = nonlinear_gradient_candidate_design_report(
+        [artifact],
+        labels=["rbc11"],
+        config=NonlinearGradientCandidateDesignConfig(max_extra_replicates_per_state=4),
+    )
+
+    row = report["candidates"][0]
+    assert report["passed"] is False
+    assert report["next_action"].startswith("design a better-conditioned")
+    assert row["action"] == "design_better_conditioned_control_or_variance_reduction"
+    assert row["gate_status"] == {
+        "response_ok": True,
+        "locality_ok": True,
+        "uncertainty_ok": False,
+    }
+    assert row["uncertainty_required_bracket_scale"] == pytest.approx(1.366)
+    assert row["locality_safe_bracket_scale_limit"] == pytest.approx(1.0)
+    assert row["bracket_only_feasible"] is False
+    assert row["estimated_extra_replicates_at_locality_limit"] > 4
+
+
+def test_candidate_design_distinguishes_bracket_ready_replicate_ready_and_invalid() -> None:
+    bracket_ready = _artifact(response=0.08, asymmetry=0.20, uncertainty=0.60)
+    replicate_ready = _artifact(response=0.08, asymmetry=0.48, uncertainty=0.54)
+    promoted = _artifact(response=0.08, asymmetry=0.20, uncertainty=0.20, passed=True)
+    report = nonlinear_gradient_candidate_design_report(
+        [bracket_ready, replicate_ready, promoted],
+        labels=["bracket", "replicate", "promoted"],
+        config=NonlinearGradientCandidateDesignConfig(
+            sem_safety_factor=1.0,
+            max_extra_replicates_per_state=2,
+        ),
+    )
+
+    assert [row["action"] for row in report["candidates"]] == [
+        "run_checked_larger_bracket",
+        "add_limited_replicates_with_locality_cap",
+        "freeze_promoted_candidate",
+    ]
+    assert report["summary"]["bracket_ready_count"] == 1
+    assert report["summary"]["replica_ready_count"] == 1
+    assert report["summary"]["promoted_candidate_count"] == 1
+
+    with pytest.raises(ValueError, match="max_checked_bracket_scale"):
+        nonlinear_gradient_candidate_design_report(
+            [bracket_ready],
+            config=NonlinearGradientCandidateDesignConfig(max_checked_bracket_scale=0.9),
+        )
+    with pytest.raises(ValueError, match="paths length"):
+        nonlinear_gradient_candidate_design_report([bracket_ready], paths=[None, None])
+
+    validation_cases = [
+        ("max_gradient_uncertainty_rel", NonlinearGradientCandidateDesignConfig(max_gradient_uncertainty_rel=0.0)),
+        ("max_fd_asymmetry_rel", NonlinearGradientCandidateDesignConfig(max_fd_asymmetry_rel=0.0)),
+        ("min_fd_response_fraction", NonlinearGradientCandidateDesignConfig(min_fd_response_fraction=0.0)),
+        ("sem_safety_factor", NonlinearGradientCandidateDesignConfig(sem_safety_factor=0.0)),
+        ("max_extra_replicates_per_state", NonlinearGradientCandidateDesignConfig(max_extra_replicates_per_state=-1)),
+        ("locality_safety_factor", NonlinearGradientCandidateDesignConfig(locality_safety_factor=0.0)),
+    ]
+    for message, config in validation_cases:
+        with pytest.raises(ValueError, match=message):
+            nonlinear_gradient_candidate_design_report([bracket_ready], config=config)
+
+    with pytest.raises(ValueError, match="labels length"):
+        nonlinear_gradient_candidate_design_report([bracket_ready], labels=["one", "two"])
+
+
+def test_candidate_design_next_actions_and_metric_edge_cases() -> None:
+    bracket_ready = _artifact(response=1, asymmetry=0.20, uncertainty=0.60)
+    replicate_ready = _artifact(response=0.08, asymmetry=0.48, uncertainty=0.54)
+    unresolved = _artifact(response=0.01, asymmetry=0.2, uncertainty=0.2)
+    nonlocal_artifact = _artifact(response=0.08, asymmetry=0.7, uncertainty=0.2)
+    inspect = _artifact(response=0.08, asymmetry=0.2, uncertainty=0.2, passed=False)
+
+    assert nonlinear_gradient_candidate_design_report([bracket_ready])["next_action"].startswith("run a bounded")
+    assert nonlinear_gradient_candidate_design_report([replicate_ready])["next_action"].startswith("combine")
+    actions = nonlinear_gradient_candidate_design_report([unresolved, nonlocal_artifact, inspect])["candidates"]
+    assert [row["action"] for row in actions] == [
+        "increase_checked_bracket_or_replace_control",
+        "shrink_or_replace_nonlocal_control",
+        "inspect_pass_flag",
+    ]
+
+    zero_asymmetry = _artifact(response=0.08, asymmetry=0.0, uncertainty=0.6)
+    missing_asymmetry = {"metrics": {"response_fraction": 0.08, "gradient_uncertainty_rel": 0.6}}
+    edge_report = nonlinear_gradient_candidate_design_report([zero_asymmetry, missing_asymmetry])
+    assert edge_report["candidates"][0]["locality_safe_bracket_scale_limit"] is None
+    assert edge_report["candidates"][1]["usable_bracket_scale_for_estimate"] == 1.2
+    assert nonlinear_gradient_candidate_design_report([])["next_action"].startswith("inspect")
+
+    no_replicates = nonlinear_gradient_candidate_design_report(
+        [{"metrics": {"response_fraction": 0.08, "fd_asymmetry_rel": 0.2, "gradient_uncertainty_rel": 0.6}}]
+    )
+    assert no_replicates["candidates"][0]["estimated_required_replicates_no_bracket"] is None
+
+    no_runs = nonlinear_gradient_followup_plan(
+        [_artifact()],
+        config=NonlinearGradientFollowupConfig(max_extra_replicates_per_state=0),
+    )
+    assert no_runs["candidate_actions"][0]["planned_run_count"] == 0
+
+
+def test_design_nonlinear_gradient_next_campaign_tool_writes_artifacts(tmp_path: Path) -> None:
+    path = ROOT / "tools" / "design_nonlinear_gradient_next_campaign.py"
+    spec = importlib.util.spec_from_file_location("design_nonlinear_gradient_next_campaign", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+
+    artifact = tmp_path / "candidate.json"
+    out_prefix = tmp_path / "design"
+    artifact.write_text(json.dumps(_artifact(response=0.072, asymmetry=0.475, uncertainty=0.683)), encoding="utf-8")
+
+    assert module.main([str(artifact), "--out-prefix", str(out_prefix)]) == 0
+    payload = json.loads(out_prefix.with_suffix(".json").read_text(encoding="utf-8"))
+    assert payload["kind"] == "nonlinear_turbulence_gradient_candidate_design_report"
+    assert payload["summary"]["candidate_count"] == 1
+    assert out_prefix.with_suffix(".csv").exists()
+    assert out_prefix.with_suffix(".png").exists()
+    assert out_prefix.with_suffix(".pdf").exists()

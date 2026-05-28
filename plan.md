@@ -65,6 +65,30 @@ diagnostic/model-development and move effort to a better-conditioned
 candidate-generation design instead of adding more identical RBC(1,1)
 replicas.
 
+## 2026-05-28 Nonlinear-gradient Next-campaign Design Gate
+
+- Added `NonlinearGradientCandidateDesignConfig` and
+  `nonlinear_gradient_candidate_design_report` in
+  `spectraxgk.nonlinear_gradient_followup`, plus
+  `tools/design_nonlinear_gradient_next_campaign.py`.
+- Generated
+  `docs/_static/nonlinear_gradient_next_campaign_design.{json,csv,png,pdf}`
+  from the current QA/ESS `ZBS(1,1)`, `ZBS(1,0)`, and refreshed `RBC(1,1)`
+  central-FD artifacts.
+- Result: no current candidate is efficient to promote with blind same-bracket
+  GPU replicas. `ZBS(1,1)` is statistically quiet but nonlocal;
+  `ZBS(1,0)` is unresolved and nonlocal; `RBC(1,1)` is local and resolved but
+  would need a `1.366x` larger response while the locality-safe scale is only
+  about `0.999x`, and even at that cap the estimate is six extra replicas per
+  state. The next campaign should therefore use a better-conditioned control,
+  variance-reduced observable, or checked bracket redesign.
+
+Next best step: design that better-conditioned nonlinear-gradient candidate
+before launching new long GPU runs; likely candidates are a normalized
+multi-coefficient direction selected from linear/quasilinear sensitivity rows,
+a paired-seed variance-reduced finite difference, or a bracket sweep that first
+demonstrates monotone response without violating asymmetry.
+
 ## 2026-05-27 VMEC-JAX Stellarator Optimization Lane
 
 Goal: turn the reduced stellarator-optimization examples into a production

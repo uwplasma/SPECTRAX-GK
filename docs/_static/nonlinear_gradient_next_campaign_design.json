@@ -1,0 +1,107 @@
+{
+  "candidates": [
+    {
+      "action": "shrink_or_replace_nonlocal_control",
+      "bracket_only_feasible": false,
+      "current_replicates_per_state": 3,
+      "estimated_extra_replicates_at_locality_limit": 0,
+      "estimated_required_replicates_at_locality_limit": 3,
+      "estimated_required_replicates_no_bracket": 3,
+      "gate_status": {
+        "locality_ok": false,
+        "response_ok": true,
+        "uncertainty_ok": true
+      },
+      "index": 0,
+      "label": "zbs_1_1:qa_ess_profile_gradient_zbs_1_1_nonlinear_gradient_zbs_1_1",
+      "locality_safe_bracket_scale_limit": 0.7853627496322433,
+      "metrics": {
+        "fd_asymmetry_rel": 0.6048160550298892,
+        "gradient_uncertainty_rel": 0.3553072122357673,
+        "response_fraction": 0.09563236430182284
+      },
+      "parameter_name": "zbs_1_1",
+      "passed": false,
+      "path": "docs/_static/qa_ess_profile_gradient_zbs_1_1_nonlinear_gradient_zbs_1_1_central_fd_gradient_gate.json",
+      "recommendation": "the finite-difference bracket is nonlocal; shrink the bracket or replace the control before spending replicas",
+      "uncertainty_required_bracket_scale": 1.0,
+      "usable_bracket_scale_for_estimate": 1.0
+    },
+    {
+      "action": "increase_checked_bracket_or_replace_control",
+      "bracket_only_feasible": false,
+      "current_replicates_per_state": 3,
+      "estimated_extra_replicates_at_locality_limit": 1400,
+      "estimated_required_replicates_at_locality_limit": 1403,
+      "estimated_required_replicates_no_bracket": 1403,
+      "gate_status": {
+        "locality_ok": false,
+        "response_ok": false,
+        "uncertainty_ok": false
+      },
+      "index": 1,
+      "label": "zbs_1_0:qa_ess_profile_gradient_zbs_1_0_nonlinear_gradient_zbs_1_0",
+      "locality_safe_bracket_scale_limit": 0.007806466120288959,
+      "metrics": {
+        "fd_asymmetry_rel": 60.846994360928285,
+        "gradient_uncertainty_rel": 10.306621403667384,
+        "response_fraction": 0.004514913267128275
+      },
+      "parameter_name": "zbs_1_0",
+      "passed": false,
+      "path": "docs/_static/qa_ess_profile_gradient_zbs_1_0_nonlinear_gradient_zbs_1_0_central_fd_gradient_gate.json",
+      "recommendation": "the finite-difference response is below the resolved-response gate; run a checked bracket sweep or replace this control before adding replicas",
+      "uncertainty_required_bracket_scale": 20.613242807334768,
+      "usable_bracket_scale_for_estimate": 1.0
+    },
+    {
+      "action": "design_better_conditioned_control_or_variance_reduction",
+      "bracket_only_feasible": false,
+      "current_replicates_per_state": 5,
+      "estimated_extra_replicates_at_locality_limit": 6,
+      "estimated_required_replicates_at_locality_limit": 11,
+      "estimated_required_replicates_no_bracket": 11,
+      "gate_status": {
+        "locality_ok": true,
+        "response_ok": true,
+        "uncertainty_ok": false
+      },
+      "index": 2,
+      "label": "rbc_1_1:qa_ess_profile_gradient_rbc_1_1_nonlinear_gradient_rbc_1_1",
+      "locality_safe_bracket_scale_limit": 0.9992560376835553,
+      "metrics": {
+        "fd_asymmetry_rel": 0.4753536451990127,
+        "gradient_uncertainty_rel": 0.6831216320977453,
+        "response_fraction": 0.07223514648647757
+      },
+      "parameter_name": "rbc_1_1",
+      "passed": false,
+      "path": "docs/_static/qa_ess_profile_gradient_rbc_1_1_nonlinear_gradient_rbc_1_1_central_fd_gradient_gate.json",
+      "recommendation": "bracket-only and bounded-replica fixes are not efficient; design a better-conditioned composite direction, variance-reduced observable, or checked response-larger bracket",
+      "uncertainty_required_bracket_scale": 1.3662432641954907,
+      "usable_bracket_scale_for_estimate": 1.0
+    }
+  ],
+  "case": "qa_ess_nonlinear_gradient_next_campaign_design",
+  "claim_level": "campaign_design_not_gradient_evidence",
+  "config": {
+    "locality_safety_factor": 0.95,
+    "max_checked_bracket_scale": 1.5,
+    "max_extra_replicates_per_state": 4,
+    "max_fd_asymmetry_rel": 0.5,
+    "max_gradient_uncertainty_rel": 0.5,
+    "min_fd_response_fraction": 0.03,
+    "sem_safety_factor": 1.1,
+    "value_floor": 1e-12
+  },
+  "kind": "nonlinear_turbulence_gradient_candidate_design_report",
+  "next_action": "design a better-conditioned control or variance-reduced observable before more GPU replicas",
+  "passed": false,
+  "summary": {
+    "bracket_ready_count": 0,
+    "candidate_count": 3,
+    "promoted_candidate_count": 0,
+    "replacement_or_variance_reduction_count": 3,
+    "replica_ready_count": 0
+  }
+}

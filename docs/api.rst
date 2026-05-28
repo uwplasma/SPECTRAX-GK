@@ -104,6 +104,12 @@ Nonlinear Replicate Follow-Up
 .. automodule:: spectraxgk.nonlinear_replicate_followup
    :members:
 
+Nonlinear Gradient Follow-Up
+----------------------------
+
+.. automodule:: spectraxgk.nonlinear_gradient_followup
+   :members:
+
 Benchmarks
 ----------
 

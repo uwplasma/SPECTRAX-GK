@@ -1134,6 +1134,17 @@ remains too uncertain relative to the slope. More blind same-bracket replicas
 are not the best next action; the next candidate should use a larger
 response-resolved but locality-checked perturbation, variance reduction, or a
 better-conditioned composite direction.
+``tools/design_nonlinear_gradient_next_campaign.py`` now materializes that
+decision into ``docs/_static/nonlinear_gradient_next_campaign_design.json``.
+The design gate estimates the bracket scale needed to satisfy propagated
+uncertainty, the locality-safe bracket scale implied by the asymmetry gate,
+and the number of extra matched replicas needed after applying that locality
+cap. For the refreshed ``RBC(1,1)`` evidence, the uncertainty gate would need a
+``1.37`` times larger response, but the locality margin allows only about
+``1.00`` times the current bracket; even at that cap, the estimated requirement
+is six additional replicas per state. The planner therefore recommends a
+better-conditioned control or variance-reduced observable instead of more
+same-bracket replicas.
 Because both single-control amplitude sweeps point away from more blind
 replicas, SPECTRAX-GK now also includes
 ``tools/write_vmec_boundary_profile_perturbation_inputs.py`` for a smoother
@@ -1179,6 +1190,19 @@ promoted nonlinear turbulence-gradient claim.
    the production threshold, so it supports model-development and
    next-campaign design rather than a promoted nonlinear turbulence-gradient
    claim.
+
+.. figure:: _static/nonlinear_gradient_next_campaign_design.png
+   :width: 90%
+   :align: center
+   :alt: Next nonlinear-gradient campaign design gate
+
+   Next nonlinear-gradient campaign design gate.  The left panel shows the
+   current uncertainty and asymmetry margins, the middle panel compares the
+   bracket scale required by uncertainty to the locality-safe bracket scale,
+   and the right panel estimates extra replicas per state after applying the
+   locality cap.  The current conclusion is fail-closed and actionable: do not
+   launch more blind ``RBC(1,1)`` replicas; design a better-conditioned
+   control, variance-reduced observable, or new checked bracket first.
 
 .. figure:: _static/qa_ess_descent_profile_rel2_nonlinear_gradient_profile_direction_zbs_1_1_zbs_1_0_rbc_1_1_central_fd_gradient_gate.png
    :width: 90%
