@@ -469,12 +469,13 @@ artifacts and fails closed unless at least two admitted state controls have a
 conditioned, residual-bounded mapping to explicit VMEC input control
 arguments. The tracked
 ``docs/_static/nonlinear_gradient_state_control_runbook.json`` currently fails
-closed because no such mapping artifact exists yet for
-``Rsin_mid_surface_m1`` or ``Zcos_mid_surface_m1``. This is intentional: a
-VMEC-state coefficient is not automatically a patchable ``RBC/RBS/ZBC/ZBS``
-input coefficient, especially for stellarator-symmetric input decks. The next
-nonlinear campaign must first perturb candidate VMEC input directions, solve
-the baseline/plus/minus equilibria with ``vmec_jax``, measure the induced
+closed because the measured mapping artifact is rank-deficient. This is
+intentional: a VMEC-state coefficient is not automatically a patchable
+``RBC/RBS/ZBC/ZBS`` input coefficient, especially for stellarator-symmetric
+input decks. The current ``RBC/ZBS`` perturbation family produced zero response
+in the admitted ``Rsin_mid_surface_m1`` and ``Zcos_mid_surface_m1`` controls.
+The next nonlinear campaign must first find a symmetry-compatible input family,
+solve the baseline/plus/minus equilibria with ``vmec_jax``, measure the induced
 VMEC-state response, and pass the mapping condition/residual gate before any
 short-bracket or long-window nonlinear run is launch-ready.
 
@@ -489,6 +490,16 @@ currently uses the bundled QA VMEC input and the candidate ``RBC(1,1)``,
 responses, state-to-input Jacobian, condition number, and residual have not
 been extracted yet. The companion tests verify combined VMEC input lines such
 as ``RBC(...), ZBS(...)`` so second-column coefficients are not silently missed.
+
+``tools/build_vmec_state_to_input_mapping_response.py`` consumes the solved
+WOUT files from that campaign and writes
+``docs/_static/nonlinear_gradient_state_to_input_mapping_response.json``. The
+tracked response artifact uses normally terminated ``vmec_jax`` solves with a
+larger explicit iteration budget and reports a zero ``2 x 3`` response matrix,
+rank ``0``, and relative target residual ``1`` for both admitted controls. This
+negative result is useful evidence: the current stellarator-symmetric
+``RBC/ZBS`` directions cannot be used to launch the asymmetric ``Rsin/Zcos``
+nonlinear-gradient controls.
 
 ``tools/write_vmec_boundary_profile_perturbation_inputs.py`` is the companion
 for a single smoother composite direction. It perturbs several VMEC boundary

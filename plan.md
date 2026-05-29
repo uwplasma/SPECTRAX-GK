@@ -7094,3 +7094,40 @@ Exit gate:
   admitted state parameters, build the mapping artifact with explicit
   condition-number and relative-residual gates, and only then feed it to
   ``tools/design_nonlinear_gradient_state_control_runbook.py``.
+
+### 2026-05-29 VMEC State-to-Input Measured Response Result
+
+- Ran all nine QA low-resolution VMEC perturbation solves from the state-to-
+  input mapping campaign locally with
+  ``vmec_jax --fast --max-iter 4200 --no-use-input-niter``:
+  - states: baseline, plus, and minus for ``RBC(1,1)``, ``ZBS(1,1)``, and
+    ``ZBS(1,0)``;
+  - every run terminated normally and wrote a WOUT file;
+  - elapsed wall time was roughly ``53-66 s`` per solve under three-way local
+    concurrency.
+- Added ``tools/build_vmec_state_to_input_mapping_response.py`` and
+  ``tests/test_build_vmec_state_to_input_mapping_response.py``.
+- Generated
+  ``docs/_static/nonlinear_gradient_state_to_input_mapping_response.{json,csv,png,pdf}``
+  and regenerated ``docs/_static/nonlinear_gradient_state_control_runbook.*``
+  with that measured mapping artifact attached.
+- Result:
+  - measured response matrix for admitted controls
+    ``Rsin_mid_surface_m1`` and ``Zcos_mid_surface_m1`` versus
+    ``RBC(1,1)``, ``ZBS(1,1)``, ``ZBS(1,0)`` is exactly zero;
+  - rank is ``0``;
+  - condition number is effectively infinite and serialized as ``null`` plus
+    ``condition_number_label = infinite``;
+  - least-squares target residual is ``1`` for both admitted state controls;
+  - runbook remains fail-closed with one mapping artifact attached.
+- Scientific interpretation:
+  - this is a useful negative mapping result, not a failed software step;
+  - the current candidate family is stellarator-symmetric (``RBC/ZBS``), while
+    the QL-admitted controls are asymmetric internal VMEC-state coordinates
+    (``Rsin/Zcos``), so the response is symmetry-forbidden in this branch.
+- Best next scientific step:
+  - either create an explicit ``LASYM=true`` VMEC input branch with active
+    ``RBS/ZBC`` directions and repeat the response-matrix mapping gate, or
+    re-run the QL seed screen for controls that live in the
+    stellarator-symmetric ``RBC/ZBS`` subspace before spending nonlinear GPU
+    time.

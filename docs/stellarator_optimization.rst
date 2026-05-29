@@ -1247,11 +1247,11 @@ promoted nonlinear turbulence-gradient claim.
    the step between the QL seed screen and any nonlinear-gradient launch.  The
    current artifact correctly fails closed: ``Rsin_mid_surface_m1`` and
    ``Zcos_mid_surface_m1`` are admitted internal ``vmec_jax`` state controls,
-   but no conditioned mapping to perturbable VMEC input directions has been
-   established. The required next evidence is a state-to-input Jacobian built
-   from VMEC input perturbations and re-equilibrated baseline/plus/minus
-   states; only after that mapping passes should short-bracket nonlinear runs
-   be launched.
+   but the first measured ``RBC/ZBS`` response matrix is rank deficient. The
+   required next evidence is a symmetry-compatible state-to-input Jacobian built
+   from VMEC input perturbations and re-equilibrated baseline/plus/minus states;
+   only after that mapping passes should short-bracket nonlinear runs be
+   launched.
 
 .. figure:: _static/nonlinear_gradient_state_to_input_mapping_campaign.png
    :width: 90%
@@ -1266,6 +1266,21 @@ promoted nonlinear turbulence-gradient claim.
    pending`` because this figure is not mapping evidence; it becomes useful for
    nonlinear launches only after the VMEC response extraction produces a
    conditioned, residual-bounded state-to-input mapping artifact.
+
+.. figure:: _static/nonlinear_gradient_state_to_input_mapping_response.png
+   :width: 90%
+   :align: center
+   :alt: VMEC state-to-input measured response matrix
+
+   VMEC state-to-input measured response matrix.  The nine
+   baseline/plus/minus ``vmec_jax`` solves terminated normally with the stricter
+   explicit iteration budget, but the measured response of the admitted
+   ``Rsin/Zcos`` controls to the stellarator-symmetric ``RBC/ZBS`` directions
+   is identically zero. The least-squares target residual remains ``1`` for
+   both controls, so this is a negative mapping result rather than launch
+   evidence. The next viable branch must either use explicit ``LASYM=true``
+   ``RBS/ZBC`` controls or re-screen controls that live in the
+   stellarator-symmetric subspace.
 
 .. figure:: _static/qa_ess_descent_profile_rel2_nonlinear_gradient_profile_direction_zbs_1_1_zbs_1_0_rbc_1_1_central_fd_gradient_gate.png
    :width: 90%

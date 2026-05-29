@@ -179,7 +179,10 @@ launch artifact: it admits ``Rsin_mid_surface_m1`` and
 ``Zcos_mid_surface_m1`` as internal VMEC-state controls, while
 ``docs/_static/nonlinear_gradient_state_control_runbook.json`` intentionally
 fails closed until a conditioned state-to-input mapping to perturbable VMEC
-input directions exists.
+input directions exists. The current measured mapping response artifact is a
+negative result: stellarator-symmetric ``RBC/ZBS`` perturbations have zero
+response in the admitted ``Rsin/Zcos`` VMEC-state controls, so the next branch
+must use symmetry-compatible controls before nonlinear-gradient launches.
 
 Before tagging, the latest public ``main`` CI run must pass repo hygiene, mypy,
 quick shards, docs/packaging, fast coverage, and the full wide-coverage matrix.

@@ -53,7 +53,11 @@ metadata. The newer
 guardrail rather than a physics result: it shows that the QL-seeded
 ``Rsin_mid_surface_m1`` and ``Zcos_mid_surface_m1`` controls are still internal
 VMEC-state directions and require a conditioned mapping to perturbable VMEC
-input directions before nonlinear-gradient launches.
+input directions before nonlinear-gradient launches. The newer
+``docs/_static/nonlinear_gradient_state_to_input_mapping_response.png`` is a
+negative measured-response figure: the current stellarator-symmetric
+``RBC/ZBS`` input perturbations do not move those asymmetric ``Rsin/Zcos``
+state controls.
 
 Current Vs Deferred Figure Inventory
 ------------------------------------
@@ -135,9 +139,9 @@ Core Validation Figures
      - Closed only as VMEC/Boozer geometry-perturbed startup plumbing; transport-average and local-gradient promotion open
      - current artifact base: ``docs/_static/vmec_boozer_nonlinear_window_fd_audit.png`` with CSV/JSON/PDF companions. It starts from the real mode-21 ``vmec_jax -> booz_xform_jax`` QH state bridge, writes perturbed sampled geometries to temporary NetCDF files, and runs compact nonlinear startup windows at ``Rcos_mid_surface_m1 = base +/- 1e-5`` plus a repeated base point. The gate checks finite outputs, deterministic repeatability, bounded startup-window coefficient of variation and trend, resolved geometry perturbation, and resolved central finite-difference response; response/base is about ``0.040``. Its ``transport_average_gate`` is false and the forward/backward response is asymmetric, so this is a startup observable-path audit rather than a promoted transport average, local nonlinear gradient, or optimized-equilibrium transport claim.
    * - VMEC-state nonlinear-gradient launch runbook
-     - ``tools/design_nonlinear_gradient_ql_seed_screen.py``, ``tools/design_nonlinear_gradient_state_control_runbook.py``, and ``tools/write_vmec_state_to_input_mapping_campaign.py``
+     - ``tools/design_nonlinear_gradient_ql_seed_screen.py``, ``tools/design_nonlinear_gradient_state_control_runbook.py``, ``tools/write_vmec_state_to_input_mapping_campaign.py``, and ``tools/build_vmec_state_to_input_mapping_response.py``
      - Open by design; launch mapping required
-     - current artifact bases: ``docs/_static/nonlinear_gradient_state_control_runbook.png`` and ``docs/_static/nonlinear_gradient_state_to_input_mapping_campaign.png`` with CSV/JSON/PDF companions. The QH/Li383 QL seed screen admits ``Rsin_mid_surface_m1`` and ``Zcos_mid_surface_m1`` as sign-consistent internal VMEC-state controls, but the runbook fails closed because no state-to-input mapping artifact has established a conditioned perturbable VMEC input direction for either control. The launch campaign writes candidate VMEC input perturbation decks and the response-matrix protocol, but remains ``passed=false`` until re-equilibrated VMEC responses pass condition/residual gates. This is the required guard between reduced differentiable objective evidence and any nonlinear-gradient GPU campaign.
+     - current artifact bases: ``docs/_static/nonlinear_gradient_state_control_runbook.png``, ``docs/_static/nonlinear_gradient_state_to_input_mapping_campaign.png``, and ``docs/_static/nonlinear_gradient_state_to_input_mapping_response.png`` with CSV/JSON/PDF companions. The QH/Li383 QL seed screen admits ``Rsin_mid_surface_m1`` and ``Zcos_mid_surface_m1`` as sign-consistent internal VMEC-state controls, but the measured ``RBC/ZBS`` response matrix is rank zero because those stellarator-symmetric input directions do not move the asymmetric ``Rsin/Zcos`` controls. This is a fail-closed negative result and the required guard between reduced differentiable objective evidence and any nonlinear-gradient GPU campaign.
    * - Nonlinear transport time-horizon audit
      - ``tools/build_nonlinear_transport_horizon_audit.py``
      - Closed as claim-scope guardrail; QH/CTH convergence promotion open

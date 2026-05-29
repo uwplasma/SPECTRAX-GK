@@ -11,30 +11,42 @@
   "controls": [
     {
       "blockers": [
-        "missing_state_to_input_mapping"
+        "mapping_artifact_failed",
+        "missing_mapping_condition_number",
+        "mapping_relative_residual_too_large",
+        "missing_input_control_argument"
       ],
       "condition_number": null,
       "descent_direction_sign": 1.0,
       "input_control_argument": null,
-      "input_direction": null,
+      "input_direction": {
+        "terms": [],
+        "type": "least_squares_boundary_coefficient_direction"
+      },
       "input_parameter": null,
       "mapping_ready": false,
-      "relative_residual": null,
+      "relative_residual": 1.0,
       "short_bracket_command_fragment": null,
       "state_control_argument": "Rsin_mid_surface_m1:1",
       "state_parameter": "Rsin_mid_surface_m1"
     },
     {
       "blockers": [
-        "missing_state_to_input_mapping"
+        "mapping_artifact_failed",
+        "missing_mapping_condition_number",
+        "mapping_relative_residual_too_large",
+        "missing_input_control_argument"
       ],
       "condition_number": null,
       "descent_direction_sign": 1.0,
       "input_control_argument": null,
-      "input_direction": null,
+      "input_direction": {
+        "terms": [],
+        "type": "least_squares_boundary_coefficient_direction"
+      },
       "input_parameter": null,
       "mapping_ready": false,
-      "relative_residual": null,
+      "relative_residual": 1.0,
       "short_bracket_command_fragment": null,
       "state_control_argument": "Zcos_mid_surface_m1:1",
       "state_parameter": "Zcos_mid_surface_m1"
@@ -55,7 +67,8 @@
   "summary": {
     "admitted_state_control_count": 2,
     "mapped_control_count": 0,
-    "mapping_artifact_count": 0,
+    "mapping_artifact_count": 1,
+    "ql_seed_screen_usable": true,
     "required_mapped_control_count": 2
   }
 }

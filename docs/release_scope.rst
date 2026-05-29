@@ -195,6 +195,7 @@ README claims, or manuscript claims.
        ``nonlinear_gradient_ql_seed_screen.*``,
        ``nonlinear_gradient_state_control_runbook.*``,
        ``nonlinear_gradient_state_to_input_mapping_campaign.*``,
+       ``nonlinear_gradient_state_to_input_mapping_response.*``,
        ``nonlinear_window_ensemble_readiness_manifest.json``,
        ``nonlinear_window_convergence_reports/*.json``,
        ``stellarator_itg_optimization_comparison.*``, and
@@ -456,7 +457,8 @@ Differentiable-geometry state:
   aggregate gate, the blocked aggregate promotion JSON,
   ``nonlinear_gradient_ql_seed_screen.*``,
   ``nonlinear_gradient_state_control_runbook.*``,
-  ``nonlinear_gradient_state_to_input_mapping_campaign.*``, and the reduced stellarator
+  ``nonlinear_gradient_state_to_input_mapping_campaign.*``,
+  ``nonlinear_gradient_state_to_input_mapping_response.*``, and the reduced stellarator
   ITG optimization/UQ panels. This checklist is the current boundary between
   objective plumbing, fail-closed state-control launch guards, and transport
   prediction.

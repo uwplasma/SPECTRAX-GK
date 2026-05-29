@@ -85,13 +85,21 @@ def _plot(path: Path, report: dict[str, Any]) -> None:
     set_plot_style()
     fig, axes = plt.subplots(1, 3, figsize=(12.5, 3.8), constrained_layout=True)
     axes[0].bar(x, ready, color=np.where(ready > 0.5, "#4daf4a", "#bdbdbd"), edgecolor="0.25")
+    for index, value in enumerate(ready):
+        if value <= 0.5:
+            axes[0].text(index, 0.05, "blocked", ha="center", va="bottom", fontsize=8.0, color="0.25")
     axes[0].set_ylim(0.0, 1.15)
     axes[0].set_title("Launch mapping status")
     axes[0].set_ylabel("ready")
     axes[0].set_xticks(x, labels, rotation=24, ha="right")
 
-    axes[1].bar(x, condition, color="#377eb8", edgecolor="0.25")
-    axes[1].axhline(float(cfg["max_mapping_condition_number"]), color="0.25", ls="--", lw=1.1)
+    condition_limit = float(cfg["max_mapping_condition_number"])
+    condition_plot = np.where(np.isfinite(condition), condition, condition_limit * 10.0)
+    axes[1].bar(x, condition_plot, color="#377eb8", edgecolor="0.25")
+    for index, value in enumerate(condition):
+        if not np.isfinite(value):
+            axes[1].text(index, condition_limit * 10.0, "missing/inf", ha="center", va="bottom", fontsize=8.0)
+    axes[1].axhline(condition_limit, color="0.25", ls="--", lw=1.1)
     axes[1].set_yscale("log")
     axes[1].set_title("Mapping condition")
     axes[1].set_xticks(x, labels, rotation=24, ha="right")

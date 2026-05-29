@@ -1,3 +1,3 @@
 state_parameter,mapping_ready,blockers,input_control_argument,condition_number,relative_residual,short_bracket_command_fragment
-Rsin_mid_surface_m1,False,missing_state_to_input_mapping,,,,
-Zcos_mid_surface_m1,False,missing_state_to_input_mapping,,,,
+Rsin_mid_surface_m1,False,mapping_artifact_failed;missing_mapping_condition_number;mapping_relative_residual_too_large;missing_input_control_argument,,,1.0,
+Zcos_mid_surface_m1,False,mapping_artifact_failed;missing_mapping_condition_number;mapping_relative_residual_too_large;missing_input_control_argument,,,1.0,
