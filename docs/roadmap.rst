@@ -254,7 +254,7 @@ The current branch is splitting large modules into smaller, tested units while
 preserving public behavior and benchmark parity. Refactors should only land
 when they add or preserve tests for the extracted behavior.
 
-Current refactor status: runtime startup, GX-style diagnostics, adaptive chunks,
+Current refactor status: runtime startup, GX-comparison diagnostics, adaptive chunks,
 runtime result assembly, pure runtime policies, linear parameter policies,
 linear linked-boundary maps, nonlinear diagnostic packing, validation-gate
 helpers, zonal-validation helpers, and nonlinear parallelization policy metadata
@@ -391,7 +391,7 @@ CI tiers:
   release-surface coverage;
 - main/manual: wider package coverage and selected artifact checks;
 - workflow dispatch: full local validation suite;
-- office/manual: GX parity, VMEC/W7-X validation, runtime/memory sweeps, and
+- office/manual: GX-comparison parity, VMEC/W7-X validation, runtime/memory sweeps, and
   multi-GPU checks.
 
 Documentation and examples

@@ -116,8 +116,8 @@ def write_profile_direction_inputs(
 
     if len(controls) < 2:
         raise ValueError("profile directions require at least two controls")
-    if relative_delta <= 0.0:
-        raise ValueError("relative_delta must be positive")
+    if not math.isfinite(float(relative_delta)) or relative_delta <= 0.0:
+        raise ValueError("relative_delta must be finite and positive")
     specs = [control.spec for control in controls]
     if len(set(specs)) != len(specs):
         raise ValueError("control list contains duplicate coefficients")
@@ -151,7 +151,7 @@ def write_profile_direction_inputs(
             }
         )
     direction_norm = math.sqrt(direction_squared_norm)
-    if direction_norm <= 0.0:
+    if not math.isfinite(direction_norm) or direction_norm <= 0.0:
         raise ValueError("profile direction has zero coefficient norm")
 
     out_dir.mkdir(parents=True, exist_ok=True)

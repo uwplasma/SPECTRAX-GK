@@ -478,6 +478,18 @@ the baseline/plus/minus equilibria with ``vmec_jax``, measure the induced
 VMEC-state response, and pass the mapping condition/residual gate before any
 short-bracket or long-window nonlinear run is launch-ready.
 
+``tools/write_vmec_state_to_input_mapping_campaign.py`` is the launch-plan
+artifact for that missing step. It consumes the QL seed screen, writes
+baseline/plus/minus VMEC input decks for candidate perturbable coefficients,
+and records the planned response-matrix protocol. The tracked
+``docs/_static/nonlinear_gradient_state_to_input_mapping_campaign.json``
+currently uses the bundled QA VMEC input and the candidate ``RBC(1,1)``,
+``ZBS(1,1)``, and ``ZBS(1,0)`` directions. It intentionally reports
+``passed = false`` and ``ready_for_nonlinear_launch = false`` because the VMEC
+responses, state-to-input Jacobian, condition number, and residual have not
+been extracted yet. The companion tests verify combined VMEC input lines such
+as ``RBC(...), ZBS(...)`` so second-column coefficients are not silently missed.
+
 ``tools/write_vmec_boundary_profile_perturbation_inputs.py`` is the companion
 for a single smoother composite direction. It perturbs several VMEC boundary
 coefficients together, normalizes the finite-difference scalar by the Euclidean

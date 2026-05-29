@@ -16,7 +16,9 @@ Core modules
 - ``spectraxgk.linear_parallel``: gated velocity-parallel linear RHS helpers and disabled-by-default parallel dispatcher.
 - ``spectraxgk.nonlinear``: nonlinear runtime integrators and cached IMEX paths.
 - ``spectraxgk.nonlinear_diagnostics``: sampling and resolved-diagnostic packing helpers used by nonlinear integrators.
-- ``spectraxgk.nonlinear_helpers``: Hermitian/fixed-mode projectors, GX omega masks, collision-split policies, and reusable nonlinear IMEX operator construction.
+- ``spectraxgk.nonlinear_helpers``: Hermitian/fixed-mode projectors,
+  comparison-reference omega masks used by GX-comparison parity audits,
+  collision-split policies, and reusable nonlinear IMEX operator construction.
 - ``spectraxgk.runtime`` / ``spectraxgk.runtime_config``: user-facing runtime entrypoints and configuration schema.
 - ``spectraxgk.runtime_policies``: pure runtime selection policies for solver names, scan modes, nonlinear monitored modes, external fields, and step-count inference.
 - ``spectraxgk.runtime_orchestration``: runtime progress/ETA formatting, combined-ky scan batching, and nonlinear restart/checkpoint artifact handoff behind injectable compatibility seams.

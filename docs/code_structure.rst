@@ -111,9 +111,9 @@ Completed extractions:
 
 - startup/loading/initial-condition helpers:
   ``runtime_startup.py``
-- GX-style runtime diagnostic chunk helpers:
+- runtime diagnostic chunk helpers used by GX-comparison artifacts:
   ``runtime_diagnostics.py``
-- adaptive GX-style chunk execution:
+- adaptive chunk execution used by GX-comparison artifacts:
   ``runtime_chunks.py``
 - runtime result containers and nonlinear result assembly:
   ``runtime_results.py``

@@ -1253,6 +1253,20 @@ promoted nonlinear turbulence-gradient claim.
    states; only after that mapping passes should short-bracket nonlinear runs
    be launched.
 
+.. figure:: _static/nonlinear_gradient_state_to_input_mapping_campaign.png
+   :width: 90%
+   :align: center
+   :alt: VMEC state-to-input mapping campaign launch plan
+
+   VMEC state-to-input mapping campaign launch plan.  This is the concrete
+   next-step artifact after the fail-closed runbook: it writes candidate
+   ``RBC(1,1)``, ``ZBS(1,1)``, and ``ZBS(1,0)`` perturbation decks from a
+   bundled QA VMEC input and records the response matrix that must be measured
+   after re-equilibration.  The blank matrix cells are labeled ``solve
+   pending`` because this figure is not mapping evidence; it becomes useful for
+   nonlinear launches only after the VMEC response extraction produces a
+   conditioned, residual-bounded state-to-input mapping artifact.
+
 .. figure:: _static/qa_ess_descent_profile_rel2_nonlinear_gradient_profile_direction_zbs_1_1_zbs_1_0_rbc_1_1_central_fd_gradient_gate.png
    :width: 90%
    :align: center

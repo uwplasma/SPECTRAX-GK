@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 from pathlib import Path
 import re
 import sys
@@ -20,10 +21,9 @@ from tools.write_nonlinear_turbulence_gradient_campaign import PYTHON_CMD  # noq
 
 
 COEFFICIENT_RE = re.compile(
-    r"^(?P<prefix>\s*(?P<family>RBC|RBS|ZBC|ZBS)\("
-    r"\s*(?P<m>[+-]?\d+)\s*,\s*(?P<n>[+-]?\d+)\s*\)\s*=\s*)"
+    r"(?P<family>RBC|RBS|ZBC|ZBS)\("
+    r"\s*(?P<m>[+-]?\d+)\s*,\s*(?P<n>[+-]?\d+)\s*\)\s*=\s*"
     r"(?P<value>[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[EeDd][+-]?\d+)?)"
-    r"(?P<suffix>.*)$"
 )
 
 
@@ -57,12 +57,11 @@ def _parse_coefficient_spec(raw: str) -> CoefficientSpec:
 def _coefficient_rows(text: str, spec: CoefficientSpec) -> list[tuple[int, re.Match[str]]]:
     rows: list[tuple[int, re.Match[str]]] = []
     for idx, line in enumerate(text.splitlines(keepends=True)):
-        match = COEFFICIENT_RE.match(line.rstrip("\n"))
-        if match is None:
-            continue
-        row_spec = CoefficientSpec(match.group("family"), int(match.group("m")), int(match.group("n")))
-        if row_spec == spec:
-            rows.append((idx, match))
+        active_line = line.split("!", 1)[0]
+        for match in COEFFICIENT_RE.finditer(active_line):
+            row_spec = CoefficientSpec(match.group("family"), int(match.group("m")), int(match.group("n")))
+            if row_spec == spec:
+                rows.append((idx, match))
     return rows
 
 
@@ -78,8 +77,9 @@ def _patch_coefficient(text: str, spec: CoefficientSpec, value: float) -> str:
     if len(rows) > 1:
         raise ValueError(f"coefficient {spec.label} appears {len(rows)} times; refusing ambiguous patch")
     idx, match = rows[0]
-    newline = "\n" if lines[idx].endswith("\n") else ""
-    lines[idx] = f"{match.group('prefix')}{_fortran_float(value)}{match.group('suffix')}{newline}"
+    value_start = match.start("value")
+    value_end = match.end("value")
+    lines[idx] = f"{lines[idx][:value_start]}{_fortran_float(value)}{lines[idx][value_end:]}"
     return "".join(lines)
 
 
@@ -123,13 +123,17 @@ def write_perturbation_inputs(
     text = baseline_input.read_text(encoding="utf-8")
     base_value = _coefficient_value(text, coefficient)
     if relative_delta is not None:
+        if not math.isfinite(float(relative_delta)):
+            raise ValueError("relative_delta must be finite")
         if abs(base_value) <= 0.0:
             raise ValueError("relative_delta cannot be used with a zero baseline coefficient")
         delta_value = abs(base_value) * float(relative_delta)
     else:
         assert delta is not None
+        if not math.isfinite(float(delta)):
+            raise ValueError("coefficient perturbation delta must be finite")
         delta_value = float(delta)
-    if delta_value <= 0.0:
+    if not math.isfinite(delta_value) or delta_value <= 0.0:
         raise ValueError("coefficient perturbation delta must be positive")
 
     states = {

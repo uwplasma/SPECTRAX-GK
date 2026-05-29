@@ -481,6 +481,20 @@ gate.
      - Exploratory plumbing gate
      - finite-output and finite-difference-response checks pass, but
        ``transport_average_gate = false``
+   * - VMEC-state nonlinear-gradient launch runbook
+     - QL-admitted VMEC-state controls and required state-to-input mapping
+       readiness
+     - ``docs/_static/nonlinear_gradient_ql_seed_screen.json`` and
+       ``docs/_static/nonlinear_gradient_state_control_runbook.json``;
+       launch-plan inputs are tracked in
+       ``docs/_static/nonlinear_gradient_state_to_input_mapping_campaign.json``
+     - Open/fail-closed
+     - the QL seed screen admits ``Rsin_mid_surface_m1`` and
+       ``Zcos_mid_surface_m1`` as state controls, but the launch runbook has
+       zero mapped perturbable VMEC input controls. The launch-plan artifact
+       writes candidate VMEC input perturbation decks but blocks
+       nonlinear-gradient campaigns until a conditioned state-to-input mapping
+       artifact passes
    * - Selected optimized-equilibrium nonlinear transport audit
      - optimized-equilibrium post-transient heat-flux average with uncertainty
        and nonlinear audit bars

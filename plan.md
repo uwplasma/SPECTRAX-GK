@@ -7056,3 +7056,41 @@ Exit gate:
   - promotion remains blocked until the additional matched `RBC(1,1)` replicas
     finish and the rebuilt ensemble plus central-FD gates pass without relaxing
     response, locality, conditioning, or uncertainty limits.
+
+### 2026-05-29 VMEC State-to-Input Mapping Campaign Launch Guard
+
+- Fixed the VMEC boundary perturbation input parser so it finds every
+  ``RBC/RBS/ZBC/ZBS`` coefficient on a line instead of only the first token.
+  This is required for bundled VMEC decks that store combined lines such as
+  ``RBC(1,1) = ..., ZBS(1,0) = ...``. Added regression coverage that patches the
+  second coefficient on a combined line while preserving the first coefficient.
+- Added ``tools/write_vmec_state_to_input_mapping_campaign.py`` and
+  ``tests/test_write_vmec_state_to_input_mapping_campaign.py``. The tool
+  consumes ``docs/_static/nonlinear_gradient_ql_seed_screen.json``, writes
+  baseline/plus/minus VMEC input decks for candidate perturbable input
+  coefficients, and records the response-matrix protocol needed to convert
+  admitted internal ``vmec_jax`` state controls into launchable VMEC input
+  directions.
+- Generated
+  ``docs/_static/nonlinear_gradient_state_to_input_mapping_campaign.{json,csv,png,pdf}``
+  from ``examples/vmec/input.LandremanPaul2021_QA_lowres`` with candidate
+  ``RBC(1,1)``, ``ZBS(1,1)``, and ``ZBS(1,0)`` directions. The artifact is
+  intentionally fail-closed:
+  ``claim_level = state_to_input_mapping_launch_plan_not_mapping_evidence``,
+  ``passed = false``, and ``ready_for_nonlinear_launch = false``.
+- Updated README, testing, release-scope, verification-matrix, manuscript, and
+  stellarator-optimization docs so this is presented as a launch-plan guardrail,
+  not as mapping evidence or a nonlinear-gradient claim.
+- Current result:
+  - state controls admitted upstream: ``Rsin_mid_surface_m1`` and
+    ``Zcos_mid_surface_m1``;
+  - candidate input directions written: ``RBC(1,1)``, ``ZBS(1,1)``,
+    ``ZBS(1,0)``;
+  - planned response matrix shape: ``2 x 3``;
+  - blockers: VMEC response artifact missing, state-to-input Jacobian not
+    extracted, mapping conditioning not measured.
+- Best next scientific step: run the VMEC baseline/plus/minus perturbation
+  solves with ``vmec_jax``, extract ``state_from_wout`` controls for the
+  admitted state parameters, build the mapping artifact with explicit
+  condition-number and relative-residual gates, and only then feed it to
+  ``tools/design_nonlinear_gradient_state_control_runbook.py``.

@@ -69,6 +69,25 @@ def test_state_control_runbook_fails_closed_without_mapping() -> None:
     assert "upstream evidence only" in report["scope_note"]
 
 
+def test_state_control_runbook_fails_closed_for_stale_ql_screen() -> None:
+    stale = _ql_screen()
+    stale["passed"] = False
+    report = nonlinear_gradient_state_control_runbook_report(stale, mapping_artifacts=[_mapping()])
+
+    assert report["passed"] is False
+    assert report["summary"]["ql_seed_screen_usable"] is False
+    assert report["summary"]["mapped_control_count"] == 0
+    assert {row["blockers"][0] for row in report["controls"]} == {"ql_seed_screen_failed"}
+
+    wrong_kind = _ql_screen()
+    wrong_kind["kind"] = "old_or_wrong_artifact"
+    wrong_report = nonlinear_gradient_state_control_runbook_report(wrong_kind, mapping_artifacts=[_mapping()])
+    assert wrong_report["passed"] is False
+    assert {row["blockers"][0] for row in wrong_report["controls"]} == {
+        "invalid_ql_seed_screen_kind"
+    }
+
+
 def test_state_control_runbook_admits_conditioned_mapping() -> None:
     report = nonlinear_gradient_state_control_runbook_report(_ql_screen(), mapping_artifacts=[_mapping()])
 
@@ -96,6 +115,20 @@ def test_state_control_runbook_rejects_bad_mapping_and_validates_config() -> Non
     del missing_input["controls"][0]["input_control_argument"]  # type: ignore[index]
     missing_report = nonlinear_gradient_state_control_runbook_report(_ql_screen(), mapping_artifacts=[missing_input])
     assert missing_report["controls"][0]["blockers"] == ["missing_input_control_argument"]
+
+    failed_parent = _mapping()
+    failed_parent["passed"] = False
+    failed_report = nonlinear_gradient_state_control_runbook_report(_ql_screen(), mapping_artifacts=[failed_parent])
+    assert failed_report["passed"] is False
+    assert {tuple(row["blockers"]) for row in failed_report["controls"]} == {
+        ("mapping_artifact_failed",)
+    }
+    override_report = nonlinear_gradient_state_control_runbook_report(
+        _ql_screen(),
+        mapping_artifacts=[failed_parent],
+        config=NonlinearGradientStateControlRunbookConfig(require_mapping_passed=False),
+    )
+    assert override_report["passed"] is True
 
     validation_cases = [
         ("min_mapped_controls", NonlinearGradientStateControlRunbookConfig(min_mapped_controls=0)),

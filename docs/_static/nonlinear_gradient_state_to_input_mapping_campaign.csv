@@ -1,0 +1,6 @@
+row_type,state_parameter,state_control_argument,coefficient,coefficient_slug,baseline_value,delta_parameter,manifest
+state_control,Rsin_mid_surface_m1,Rsin_mid_surface_m1:1,,,,,
+state_control,Zcos_mid_surface_m1,Zcos_mid_surface_m1:1,,,,,
+input_direction,,,"RBC(1,1)",rbc_1_1,-0.1088789497913388,0.002177578995826776,tools_out/state_to_input_mapping/qa_lowres/rbc_1_1/vmec_boundary_perturbation_manifest.json
+input_direction,,,"ZBS(1,1)",zbs_1_1,0.08004202421496563,0.0016008404842993128,tools_out/state_to_input_mapping/qa_lowres/zbs_1_1/vmec_boundary_perturbation_manifest.json
+input_direction,,,"ZBS(1,0)",zbs_1_0,-0.1253658594586452,0.002507317189172904,tools_out/state_to_input_mapping/qa_lowres/zbs_1_0/vmec_boundary_perturbation_manifest.json

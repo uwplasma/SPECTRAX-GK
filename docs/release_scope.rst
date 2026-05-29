@@ -194,6 +194,7 @@ README claims, or manuscript claims.
        ``vmec_boozer_aggregate_holdout_promotion_gate.json``,
        ``nonlinear_gradient_ql_seed_screen.*``,
        ``nonlinear_gradient_state_control_runbook.*``,
+       ``nonlinear_gradient_state_to_input_mapping_campaign.*``,
        ``nonlinear_window_ensemble_readiness_manifest.json``,
        ``nonlinear_window_convergence_reports/*.json``,
        ``stellarator_itg_optimization_comparison.*``, and
@@ -452,9 +453,13 @@ Differentiable-geometry state:
   multi-alpha aggregate objective gate, the reduced-portfolio provenance guard,
   the growth-vs-quasilinear line-search comparison, the positive reduced
   alpha-heldout and surface-heldout splits, the Li383 second-equilibrium
-  aggregate gate, the blocked aggregate promotion JSON, and the reduced
-  stellarator ITG optimization/UQ panels. This checklist is the current
-  boundary between objective plumbing and transport prediction.
+  aggregate gate, the blocked aggregate promotion JSON,
+  ``nonlinear_gradient_ql_seed_screen.*``,
+  ``nonlinear_gradient_state_control_runbook.*``,
+  ``nonlinear_gradient_state_to_input_mapping_campaign.*``, and the reduced stellarator
+  ITG optimization/UQ panels. This checklist is the current boundary between
+  objective plumbing, fail-closed state-control launch guards, and transport
+  prediction.
 - ``docs/_static/vmec_boozer_reduced_portfolio_guard.json`` is the
   artifact-level guard that ties the backend-free portfolio reducer to real
   VMEC/Boozer rows. It requires VMEC/Boozer path/mode provenance, two

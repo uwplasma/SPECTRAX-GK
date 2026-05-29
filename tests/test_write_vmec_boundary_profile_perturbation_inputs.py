@@ -24,8 +24,7 @@ def _load_tool_module():
 
 def _input_text() -> str:
     return """&INDATA
-  RBC(1,1) = 1.0000000000000000E-01
-  ZBS(1,0) = -2.0000000000000000E-02
+  RBC(1,1) = 1.0000000000000000E-01,   ZBS(1,0) = -2.0000000000000000E-02
   ZBS(1,1) = 5.0000000000000000E-02
 /
 """
@@ -132,3 +131,15 @@ def test_profile_direction_writer_rejects_ambiguous_or_unusable_controls(tmp_pat
 
     with pytest.raises(ValueError, match="control weight"):
         mod._parse_weighted_coefficient("ZBS(1,1):0")
+
+    with pytest.raises(ValueError, match="finite and positive"):
+        mod.write_profile_direction_inputs(
+            baseline_input=baseline,
+            out_dir=tmp_path / "profile",
+            case="bad",
+            controls=(
+                mod._parse_weighted_coefficient("ZBS(1,1):1"),
+                mod._parse_weighted_coefficient("ZBS(1,0):1"),
+            ),
+            relative_delta=float("nan"),
+        )
