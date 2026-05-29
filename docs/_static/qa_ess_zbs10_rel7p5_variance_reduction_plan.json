@@ -1,14 +1,53 @@
 {
-  "action": "design_control_variate_or_new_observable",
+  "action": "estimate_control_mean_or_redesign_observable",
   "case": "qa_ess_zbs10_rel7p5_variance_reduction_plan",
   "claim_level": "campaign_design_not_gradient_evidence",
   "config": {
+    "max_control_variate_uncertainty_rel": 0.5,
     "max_extra_paired_seeds": 4,
     "max_paired_response_uncertainty_rel": 0.5,
     "min_common_pairs": 2,
+    "min_control_variate_sem_reduction": 0.25,
+    "require_known_control_mean": true,
     "sem_safety_factor": 1.1,
     "value_floor": 1e-12
   },
+  "control_variate_candidates": [
+    {
+      "adjusted_response_mean": -0.5197114183913005,
+      "adjusted_response_sem": 0.4649762427859566,
+      "adjusted_response_uncertainty_rel": 0.8946815989250908,
+      "admissible": false,
+      "beta": -0.4804008554690983,
+      "blockers": [
+        "control_variate_uncertainty_above_gate",
+        "control_variate_sem_reduction_too_small",
+        "control_mean_not_independently_known"
+      ],
+      "control_mean_sample": 16.286128404515622,
+      "correlation": -0.416545661294333,
+      "n_samples": 4,
+      "name": "baseline_transport_common_mode",
+      "requires_independent_control_mean": true,
+      "sem_reduction_fraction": 0.09088520413708656
+    },
+    {
+      "adjusted_response_mean": -0.5197114183913021,
+      "adjusted_response_sem": 0.12344132530168103,
+      "adjusted_response_uncertainty_rel": 0.23751897867431396,
+      "admissible": false,
+      "beta": 1.1131096688582216,
+      "blockers": [
+        "control_mean_not_independently_known"
+      ],
+      "control_mean_sample": 16.280377946207143,
+      "correlation": 0.9704379662201951,
+      "n_samples": 4,
+      "name": "plus_minus_midpoint_common_mode",
+      "requires_independent_control_mean": true,
+      "sem_reduction_fraction": 0.7586493138223735
+    }
+  ],
   "kind": "nonlinear_turbulence_gradient_variance_reduction_plan",
   "label": "zbs_1_0:qa_ess_zbs10_rel7p5_nonlinear_gradient_zbs_1_0",
   "pair_rows": [
@@ -51,8 +90,9 @@
   ],
   "passed": false,
   "path": "docs/_static/qa_ess_zbs10_rel7p5_nonlinear_gradient_zbs_1_0_central_fd_gradient_gate.json",
-  "recommendation": "paired seed differences reduce common noise but are still too uncertain; design a control-variate observable or better-conditioned response before more GPU time",
+  "recommendation": "a common-mode control variate reduces residual scatter, but its expectation is not independently known; estimate the control mean or redesign the observable before using it as a production uncertainty reducer",
   "summary": {
+    "best_control_variate": "plus_minus_midpoint_common_mode",
     "common_pair_count": 4,
     "common_with_baseline_count": 4,
     "extra_pair_count": 14,

@@ -1162,9 +1162,12 @@ common plus/minus seed or timestep labels and estimates the paired response
 uncertainty directly from matched differences. The paired estimator is better
 conditioned than treating all state ensembles as independent, but it is still
 not enough: ``paired_response_uncertainty_rel = 0.984`` and the estimated
-requirement is 18 common pairs. The next campaign therefore needs a
-control-variate observable or a better-conditioned response, not just a few
-more blind paired seeds.
+requirement is 18 common pairs. A plus/minus midpoint common-mode screen is
+promising, lowering the apparent residual uncertainty to ``0.238`` with a
+``0.759`` SEM reduction, but the result is not promotable because that control
+mean is not independently known. The next campaign therefore needs an
+independent control-mean estimate or a better-conditioned response, not just a
+few more blind paired seeds.
 Because both single-control amplitude sweeps point away from more blind
 replicas, SPECTRAX-GK now also includes
 ``tools/write_vmec_boundary_profile_perturbation_inputs.py`` for a smoother
@@ -1246,10 +1249,11 @@ promoted nonlinear turbulence-gradient claim.
 
    QA/ESS ``ZBS(1,0)`` rel7.5 paired-seed variance-reduction plan. The left
    panel shows matched plus-minus response samples for common seed/timestep
-   labels; the right panel identifies the plus state as the replicated-window
-   spread limiter. The common-label paired response uncertainty remains too
-   large, so the next production campaign should add a control-variate or
-   better-conditioned observable before more long-window GPU runs.
+   labels; the middle panel identifies the plus state as the replicated-window
+   spread limiter; the right panel screens common-mode control variates. The
+   plus/minus midpoint control lowers apparent residual uncertainty to
+   ``0.238``, but the campaign remains fail-closed until the control mean is
+   independently known or the observable is redesigned.
 
 .. figure:: _static/nonlinear_gradient_composite_control_design.png
    :width: 90%

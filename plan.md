@@ -73,6 +73,28 @@ Next best step: write the paired-seed/control-variate campaign launcher so the
 next office run reduces plus-state variance by design rather than adding blind
 replicas.
 
+## 2026-05-29 Nonlinear-gradient Control-variate Screen
+
+- Extended the rel7.5 variance-reduction runbook with two explicit
+  common-mode control-variate candidates: baseline transport and the
+  plus/minus midpoint. The tool now reports beta, sample correlation, adjusted
+  response SEM, relative uncertainty, and blockers for each candidate.
+- Regenerated
+  ``docs/_static/qa_ess_zbs10_rel7p5_variance_reduction_plan.{json,csv,png,pdf}``.
+  The raw common-label paired response remains fail-closed with
+  ``paired_response_uncertainty_rel = 0.984``. The plus/minus midpoint
+  common-mode is the best apparent control variate: it gives
+  ``adjusted_response_uncertainty_rel = 0.238`` and
+  ``sem_reduction_fraction = 0.759``.
+- Scientific conclusion: this is useful but still not promotable. The midpoint
+  control is sample-centered in the current artifact, so its expectation is not
+  independently known. The production gate therefore remains fail-closed with
+  action ``estimate_control_mean_or_redesign_observable``.
+
+Next best step: launch a bounded independent control-mean campaign for the
+midpoint common mode, or redesign the nonlinear-gradient observable/control
+direction so the response is larger relative to turbulent spread.
+
 ## 2026-05-28 Zonal-flow Objective Row Artifact
 
 - Added the first production-style row builder for the zonal-flow optimization

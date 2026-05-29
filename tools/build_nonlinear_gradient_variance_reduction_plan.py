@@ -73,7 +73,7 @@ def _plot(path: Path, report: dict[str, Any]) -> None:
     paired_sem = summary.get("paired_response_sem")
 
     set_plot_style()
-    fig, axes = plt.subplots(1, 2, figsize=(10.5, 4.0), constrained_layout=True)
+    fig, axes = plt.subplots(1, 3, figsize=(14.0, 4.0), constrained_layout=True)
     x = np.arange(len(rows))
     axes[0].bar(x, differences, color="#4c78a8", edgecolor="0.25", linewidth=0.6)
     if paired_mean is not None:
@@ -93,6 +93,22 @@ def _plot(path: Path, report: dict[str, Any]) -> None:
     axes[1].set_ylabel("mean relative spread")
     axes[1].set_title("Replicate variance limiter")
     axes[1].legend(frameon=False)
+
+    candidates = list(report.get("control_variate_candidates", []))
+    candidate_labels = [str(row.get("name", idx)).replace("_common_mode", "") for idx, row in enumerate(candidates)]
+    raw_rel = summary.get("paired_response_uncertainty_rel")
+    adjusted_rel = np.asarray(
+        [float(row.get("adjusted_response_uncertainty_rel", np.nan)) for row in candidates],
+        dtype=float,
+    )
+    axes[2].bar(np.arange(len(candidates)), adjusted_rel, color="#54a24b", edgecolor="0.25", linewidth=0.6)
+    if raw_rel is not None:
+        axes[2].axhline(float(raw_rel), color="0.35", lw=1.2, label="paired raw")
+    axes[2].axhline(0.5, color="#d62728", ls="--", lw=1.2, label="target")
+    axes[2].set_xticks(np.arange(len(candidates)), candidate_labels, rotation=25, ha="right")
+    axes[2].set_ylabel("relative uncertainty")
+    axes[2].set_title("Apparent control-variate screen")
+    axes[2].legend(frameon=False)
     for ax in axes:
         ax.grid(True, axis="y", alpha=0.25)
     rel = summary.get("paired_response_uncertainty_rel")
@@ -113,6 +129,16 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--case", default="nonlinear_gradient_variance_reduction_plan")
     parser.add_argument("--out-prefix", type=Path, default=DEFAULT_OUT_PREFIX)
     parser.add_argument("--max-paired-response-uncertainty-rel", type=float, default=0.50)
+    parser.add_argument("--max-control-variate-uncertainty-rel", type=float, default=0.50)
+    parser.add_argument("--min-control-variate-sem-reduction", type=float, default=0.25)
+    parser.add_argument(
+        "--allow-sample-control-mean",
+        action="store_true",
+        help=(
+            "Allow sample-centered control variates to pass. Omit for production planning, "
+            "where a known or independently estimated control mean is required."
+        ),
+    )
     parser.add_argument("--sem-safety-factor", type=float, default=1.10)
     parser.add_argument("--min-common-pairs", type=int, default=2)
     parser.add_argument("--max-extra-paired-seeds", type=int, default=4)
@@ -129,6 +155,9 @@ def main(argv: list[str] | None = None) -> int:
         case=args.case,
         config=NonlinearGradientVarianceReductionConfig(
             max_paired_response_uncertainty_rel=args.max_paired_response_uncertainty_rel,
+            max_control_variate_uncertainty_rel=args.max_control_variate_uncertainty_rel,
+            min_control_variate_sem_reduction=args.min_control_variate_sem_reduction,
+            require_known_control_mean=not bool(args.allow_sample_control_mean),
             sem_safety_factor=args.sem_safety_factor,
             min_common_pairs=args.min_common_pairs,
             max_extra_paired_seeds=args.max_extra_paired_seeds,

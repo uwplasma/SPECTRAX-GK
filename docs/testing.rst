@@ -448,9 +448,13 @@ paired-seed/control-variate runbook. It consumes one central-FD artifact,
 matches common plus/minus seed labels, estimates paired response SEM, records
 the limiting replicated-window state, and writes JSON/CSV/PNG/PDF sidecars. The
 tracked rel7.5 artifact fails closed with paired response relative uncertainty
-about ``0.984`` and an estimated ``18`` common pairs, so the recommended next
-action is a true control-variate or better-conditioned observable rather than
-more blind replicas.
+about ``0.984`` and an estimated ``18`` common pairs. The same runbook now
+screens two common-mode control variates. The plus/minus midpoint control
+reduces the apparent residual response uncertainty to about ``0.238`` with a
+``0.759`` SEM reduction, but it remains fail-closed because the control mean is
+not independently known. The recommended next action is therefore an
+independent control-mean estimate or a better-conditioned observable rather
+than more blind replicas.
 ``tools/design_nonlinear_gradient_composite_control.py`` is the stricter
 control-admission gate for that next campaign. It consumes the same completed
 central-FD artifacts, admits only VMEC boundary coefficients with resolved

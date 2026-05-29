@@ -452,12 +452,44 @@ def test_variance_reduction_plan_quantifies_paired_seed_response() -> None:
     )
 
     assert report["passed"] is False
-    assert report["action"] == "design_control_variate_or_new_observable"
+    assert report["action"] == "estimate_control_mean_or_redesign_observable"
     assert report["summary"]["common_pair_count"] == 4
     assert report["summary"]["common_with_baseline_count"] == 4
     assert report["summary"]["paired_response_uncertainty_rel"] > 0.5
+    assert report["summary"]["best_control_variate"] == "plus_minus_midpoint_common_mode"
+    midpoint = report["control_variate_candidates"][1]
+    assert midpoint["adjusted_response_uncertainty_rel"] < 0.5
+    assert "control_mean_not_independently_known" in midpoint["blockers"]
     assert report["variance_reduction"]["limiting_state"] == "plus"
     assert report["pair_rows"][0]["label"] == "dt0p04"
+
+    allowed = nonlinear_gradient_variance_reduction_plan(
+        artifact,
+        config=NonlinearGradientVarianceReductionConfig(require_known_control_mean=False),
+    )
+    assert allowed["action"] == "use_control_variate_response_estimator"
+    assert allowed["passed"] is True
+
+    validation_cases = [
+        (
+            "max_paired_response_uncertainty_rel",
+            NonlinearGradientVarianceReductionConfig(max_paired_response_uncertainty_rel=0.0),
+        ),
+        (
+            "max_control_variate_uncertainty_rel",
+            NonlinearGradientVarianceReductionConfig(max_control_variate_uncertainty_rel=0.0),
+        ),
+        (
+            "min_control_variate_sem_reduction",
+            NonlinearGradientVarianceReductionConfig(min_control_variate_sem_reduction=-0.1),
+        ),
+        ("sem_safety_factor", NonlinearGradientVarianceReductionConfig(sem_safety_factor=0.0)),
+        ("min_common_pairs", NonlinearGradientVarianceReductionConfig(min_common_pairs=0)),
+        ("max_extra_paired_seeds", NonlinearGradientVarianceReductionConfig(max_extra_paired_seeds=-1)),
+    ]
+    for message, config in validation_cases:
+        with pytest.raises(ValueError, match=message):
+            nonlinear_gradient_variance_reduction_plan(artifact, config=config)
 
 
 def test_variance_reduction_plan_tool_writes_artifacts(tmp_path: Path) -> None:

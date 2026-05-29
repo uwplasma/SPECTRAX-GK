@@ -567,7 +567,10 @@ gate.
        uncertainty remains too large (``gradient_uncertainty_rel = 1.81``), so
        the result is not promoted. The paired-seed runbook also fails closed:
        common-label plus-minus differences have relative uncertainty about
-       ``0.984``, motivating control-variate or better-conditioned observables
+       ``0.984``. A midpoint common-mode control variate lowers apparent
+       residual uncertainty to ``0.238`` but is blocked because the control
+       mean is not independently known, motivating an independent control-mean
+       estimate or a better-conditioned observable
 
 Use this section as the verification boundary for README figures: the
 VMEC/Boozer parity, gradient-holdout, and reduced optimization/UQ panels can be
