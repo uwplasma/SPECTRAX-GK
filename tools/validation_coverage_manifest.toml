@@ -1211,6 +1211,7 @@ numerics_contracts = [
 fast_tests = [
   "tests/test_nonlinear_gradient_evidence.py",
   "tests/test_nonlinear_gradient_followup.py",
+  "tests/test_nonlinear_gradient_state_control_runbook.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_turbulence_gradient_evidence_status.json",
@@ -1221,6 +1222,8 @@ artifact_paths = [
   "docs/_static/nonlinear_gradient_composite_control_design.png",
   "docs/_static/nonlinear_gradient_ql_seed_screen.json",
   "docs/_static/nonlinear_gradient_ql_seed_screen.png",
+  "docs/_static/nonlinear_gradient_state_control_runbook.json",
+  "docs/_static/nonlinear_gradient_state_control_runbook.png",
   "docs/_static/qa_ess_profile_gradient_rbc_1_1_nonlinear_gradient_rbc_1_1_central_fd_gradient_gate.json",
   "docs/_static/qa_ess_profile_gradient_overdetermined_nonlinear_gradient_candidate_ranking.json",
   "docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_status.json",

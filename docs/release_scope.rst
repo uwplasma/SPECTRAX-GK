@@ -74,10 +74,14 @@ score.
      - The public in-memory objective path supports reduced linear frequency,
        electrostatic quasilinear proxy, and smooth nonlinear-window-estimator
        objectives through the mode-21 VMEC/Boozer bridge. The QH and Li383
-       holdout matrix is the citeable gate for these reduced objectives. This
-       row does not promote multi-surface/multi-alpha optimization, calibrated
-       absolute quasilinear flux prediction, or converged nonlinear heat-flux
-       gradients.
+       holdout matrix is the citeable gate for these reduced objectives. The
+       QL-seeded nonlinear-gradient state-control screen has admitted
+       ``Rsin_mid_surface_m1`` and ``Zcos_mid_surface_m1`` only as internal
+       VMEC-state controls; the companion state-to-input runbook currently
+       fails closed until a conditioned mapping to perturbable VMEC input
+       directions exists. This row does not promote multi-surface/multi-alpha
+       optimization, calibrated absolute quasilinear flux prediction, or
+       converged nonlinear heat-flux gradients.
    * - Stellarator optimization examples
      - release-ready as reduced examples plus selected optimized-equilibrium audit
      - The examples demonstrate differentiable reduced ITG objectives, UQ, and
@@ -117,6 +121,8 @@ Do not make these claims from the current artifacts:
   current scoped exception;
 - converged nonlinear transport gradients through ``vmec_jax`` and
   ``booz_xform_jax``;
+- launching nonlinear-gradient campaigns directly from admitted VMEC-state
+  controls without a separate state-to-input mapping artifact;
 - treating compact nonlinear finite-difference startup audits as saturated
   transport averages;
 - treating reduced nonlinear-window estimators or startup finite-difference
@@ -186,14 +192,17 @@ README claims, or manuscript claims.
        ``vmec_boozer_aggregate_surface_holdout_gate.*``,
        ``vmec_boozer_second_equilibrium_aggregate_gate.*``,
        ``vmec_boozer_aggregate_holdout_promotion_gate.json``,
+       ``nonlinear_gradient_ql_seed_screen.*``,
+       ``nonlinear_gradient_state_control_runbook.*``,
        ``nonlinear_window_ensemble_readiness_manifest.json``,
        ``nonlinear_window_convergence_reports/*.json``,
        ``stellarator_itg_optimization_comparison.*``, and
        ``stellarator_itg_optimization_uq.*``
      - These artifacts support reduced objective differentiability, optimizer
-       plumbing, local UQ, and explicit nonlinear ensemble-readiness blockers.
-       They do not support calibrated saturated-flux prediction, production
-       nonlinear turbulence gradients, or nonlinear audits of optimized
+       plumbing, local UQ, explicit nonlinear ensemble-readiness blockers, and
+       a fail-closed state-control launch guard. They do not support
+       calibrated saturated-flux prediction, production nonlinear turbulence
+       gradients, direct VMEC-state launches, or nonlinear audits of optimized
        equilibria.
    * - Scope guardrails
      - ``technical_release_status.json``,

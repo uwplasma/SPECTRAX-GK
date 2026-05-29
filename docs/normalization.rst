@@ -199,12 +199,12 @@ convention (e.g. real-FFT nyquist handling or per-unit-time damping). The
 runtime schema therefore exposes light-weight diagnostic scale factors:
 
 - ``flux_scale``: multiplicative factor applied to the reported heat/particle
-  fluxes (default ``1.0`` for GX-reference).
+  fluxes (default ``1.0`` for the tracked comparison convention).
 - ``wphi_scale``: multiplicative factor applied to ``Wphi`` (default ``1.0``;
-  Cyclone GX-reference uses ``1.155`` in the nonlinear benchmark config).
+  the Cyclone nonlinear comparison config uses ``1.155``).
 
 These are reporting-only knobs; they do not alter the RHS/operator. They are
-intended to document the exact GX-reference settings used for benchmark plots.
+intended to document exact comparison settings used for benchmark plots.
 
 The reference end-damping defaults are ``damp_ends_amp = 0.1`` and
 ``damp_ends_widthfrac = 0.125``. The damping kernel interprets

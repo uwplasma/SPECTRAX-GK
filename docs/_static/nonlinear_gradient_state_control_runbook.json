@@ -1,0 +1,61 @@
+{
+  "case": "qa_ess_nonlinear_gradient_state_control_runbook",
+  "claim_level": "state_to_input_mapping_gate_not_nonlinear_gradient_evidence",
+  "config": {
+    "default_relative_delta": 0.02,
+    "max_mapping_condition_number": 1000000.0,
+    "max_mapping_relative_residual": 0.1,
+    "min_mapped_controls": 2,
+    "require_mapping_passed": true
+  },
+  "controls": [
+    {
+      "blockers": [
+        "missing_state_to_input_mapping"
+      ],
+      "condition_number": null,
+      "descent_direction_sign": 1.0,
+      "input_control_argument": null,
+      "input_direction": null,
+      "input_parameter": null,
+      "mapping_ready": false,
+      "relative_residual": null,
+      "short_bracket_command_fragment": null,
+      "state_control_argument": "Rsin_mid_surface_m1:1",
+      "state_parameter": "Rsin_mid_surface_m1"
+    },
+    {
+      "blockers": [
+        "missing_state_to_input_mapping"
+      ],
+      "condition_number": null,
+      "descent_direction_sign": 1.0,
+      "input_control_argument": null,
+      "input_direction": null,
+      "input_parameter": null,
+      "mapping_ready": false,
+      "relative_residual": null,
+      "short_bracket_command_fragment": null,
+      "state_control_argument": "Zcos_mid_surface_m1:1",
+      "state_parameter": "Zcos_mid_surface_m1"
+    }
+  ],
+  "kind": "nonlinear_gradient_state_control_runbook",
+  "mapped_controls": [],
+  "mapping_protocol": [
+    "select perturbable VMEC input coefficients or profile directions",
+    "solve baseline/plus/minus equilibria with vmec_jax",
+    "measure the induced VMEC-state response in the admitted state-control basis",
+    "accept the mapping only if the local Jacobian is conditioned and residual-bounded",
+    "only then launch checked short-bracket nonlinear-gradient screens"
+  ],
+  "next_action": "build a VMEC-state-to-input mapping artifact before launching nonlinear-gradient campaigns",
+  "passed": false,
+  "scope_note": "A passed QL seed screen is upstream evidence only. This runbook requires an explicit state-to-input mapping before any long-window nonlinear turbulence-gradient or optimization claim.",
+  "summary": {
+    "admitted_state_control_count": 2,
+    "mapped_control_count": 0,
+    "mapping_artifact_count": 0,
+    "required_mapped_control_count": 2
+  }
+}

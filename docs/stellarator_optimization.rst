@@ -1228,13 +1228,30 @@ promoted nonlinear turbulence-gradient claim.
    Quasilinear-seeded nonlinear-gradient control screen.  This upstream gate
    uses full-chain ``vmec_jax`` state sensitivities to decide which controls
    should even be considered for nonlinear long-window finite differences. The
-   current QH/Li383 screen is now launch-ready only for checked short
-   nonlinear bracket screens.  The tracked ``Rcos`` and ``Zsin`` controls
+   current QH/Li383 screen is now an upstream seed-admission gate only, not a
+   nonlinear launch gate.  The tracked ``Rcos`` and ``Zsin`` controls
    remain fail-closed because their primary quasilinear-proxy signs are not
    robust across the two equilibria, while ``Rsin_mid_surface_m1`` and
    ``Zcos_mid_surface_m1`` are admitted with two-case sign consistency. This is
-   still an upstream control-admission result, not a converged nonlinear
-   transport-gradient or optimized-equilibrium claim.
+   still an upstream control-admission result; a separate state-to-input
+   mapping gate must pass before checked nonlinear bracket runs, and neither
+   artifact is a converged nonlinear transport-gradient or optimized-equilibrium
+   claim.
+
+.. figure:: _static/nonlinear_gradient_state_control_runbook.png
+   :width: 90%
+   :align: center
+   :alt: VMEC-state to input-control nonlinear-gradient runbook
+
+   VMEC-state to input-control nonlinear-gradient runbook.  This guardrail is
+   the step between the QL seed screen and any nonlinear-gradient launch.  The
+   current artifact correctly fails closed: ``Rsin_mid_surface_m1`` and
+   ``Zcos_mid_surface_m1`` are admitted internal ``vmec_jax`` state controls,
+   but no conditioned mapping to perturbable VMEC input directions has been
+   established. The required next evidence is a state-to-input Jacobian built
+   from VMEC input perturbations and re-equilibrated baseline/plus/minus
+   states; only after that mapping passes should short-bracket nonlinear runs
+   be launched.
 
 .. figure:: _static/qa_ess_descent_profile_rel2_nonlinear_gradient_profile_direction_zbs_1_1_zbs_1_0_rbc_1_1_central_fd_gradient_gate.png
    :width: 90%

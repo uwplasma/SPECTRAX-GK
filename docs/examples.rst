@@ -397,7 +397,7 @@ One-shot nonlinear bundle write:
      --steps 200 \
      --out tools_out/cyclone_release.out.nc
 
-For the short GX-reference Cyclone replay (`t_max = 5`, no collisions), use
+For the short Cyclone comparison replay (``t_max = 5``, no collisions), use
 ``examples/nonlinear/axisymmetric/runtime_cyclone_nonlinear_short.toml``.
 That file pins the short-run dissipation contract explicitly
 (``p_hyper = 2``, ``damp_ends_amp = 0``) instead of relying on the longer

@@ -142,6 +142,21 @@ Next best step: build short-bracket nonlinear-gradient runbooks for
 `Rsin_mid_surface_m1` and `Zcos_mid_surface_m1`, including an explicit mapping
 from VMEC-state controls to perturbable VMEC input directions before any
 office-GPU long-window campaign.
+- Documentation/guardrail follow-up: added
+  `spectraxgk.nonlinear_gradient_followup.nonlinear_gradient_state_control_runbook_report`
+  and `tools/design_nonlinear_gradient_state_control_runbook.py`.
+  Regenerated `docs/_static/nonlinear_gradient_state_control_runbook.{json,csv,png,pdf}`.
+  The runbook fails closed, as intended: it sees the two admitted state
+  controls but no conditioned state-to-input mapping artifact. This prevents
+  the QL seed screen from being misread as permission to launch long nonlinear
+  campaigns directly from internal VMEC-state coefficients.
+
+Next best step: build the actual VMEC-state-to-input mapping artifact by
+perturbing candidate `RBC/RBS/ZBC/ZBS` input directions with `vmec_jax`,
+solving baseline/plus/minus equilibria, measuring the induced response in the
+`Rsin_mid_surface_m1` / `Zcos_mid_surface_m1` state-control basis, and only
+then launching bounded short-bracket nonlinear-gradient screens if the mapping
+condition/residual gate passes.
 
 ## 2026-05-27 VMEC-JAX Stellarator Optimization Lane
 

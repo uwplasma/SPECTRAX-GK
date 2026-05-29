@@ -357,7 +357,8 @@ Supported sections include:
 * ``[run]`` (single-ky run settings)
 * ``[scan]`` (ky scan settings)
 * ``[fit]`` (growth-rate windowing options)
-* ``gx_reference`` (top-level flag or ``[gx_reference] enabled = true`` to enforce GX-reference defaults)
+* ``gx_reference`` (top-level flag or ``[gx_reference] enabled = true`` to
+  enforce the tracked comparison defaults)
 * ``[terms]`` (toggle linear terms)
 * ``[krylov]`` (Krylov solver settings)
 
@@ -405,10 +406,10 @@ Notable runtime-only keys:
   Hermite-only, and mixed hypercollision channels.
 * ``[collisions] D_hyper`` / ``p_hyper_kperp``: perpendicular hyperdiffusion
   amplitude and exponent.
-* ``[normalization] flux_scale``: multiplicative factor applied to heat/particle
-  flux diagnostics (GX-reference default ``1.0``).
+* ``[normalization] flux_scale``: multiplicative factor applied to
+  heat/particle flux diagnostics (tracked comparison default ``1.0``).
 * ``[normalization] wphi_scale``: multiplicative factor applied to ``Wphi``
-  diagnostics (Cyclone GX-reference uses ``1.155``).
+  diagnostics (the Cyclone nonlinear comparison config uses ``1.155``).
 * ``[normalization] rho_star``: rescales the operator wavenumbers before
   building the drift/Bessel terms.
 * ``[normalization] omega_d_scale`` / ``omega_star_scale``: multiplicative

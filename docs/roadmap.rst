@@ -174,6 +174,12 @@ production nonlinear turbulence-gradient evidence or broader matched
 baseline-to-optimized finite-difference audits with local-gradient conditioning
 and converged long post-transient running-average heat-flux windows. Those are
 required before claiming a production nonlinear heat-flux stellarator optimizer.
+The latest QL-seeded nonlinear-gradient control screen is useful but not yet a
+launch artifact: it admits ``Rsin_mid_surface_m1`` and
+``Zcos_mid_surface_m1`` as internal VMEC-state controls, while
+``docs/_static/nonlinear_gradient_state_control_runbook.json`` intentionally
+fails closed until a conditioned state-to-input mapping to perturbable VMEC
+input directions exists.
 
 Before tagging, the latest public ``main`` CI run must pass repo hygiene, mypy,
 quick shards, docs/packaging, fast coverage, and the full wide-coverage matrix.

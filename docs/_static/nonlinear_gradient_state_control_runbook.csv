@@ -1,0 +1,3 @@
+state_parameter,mapping_ready,blockers,input_control_argument,condition_number,relative_residual,short_bracket_command_fragment
+Rsin_mid_surface_m1,False,missing_state_to_input_mapping,,,,
+Zcos_mid_surface_m1,False,missing_state_to_input_mapping,,,,

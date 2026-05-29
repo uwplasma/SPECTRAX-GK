@@ -457,9 +457,27 @@ QH/Li383 quasilinear artifacts cover ``Rcos``, ``Rsin``, ``Zcos``, and
 ``Zsin`` semantic mid-surface controls. ``Rcos`` and ``Zsin`` controls remain
 fail-closed because their primary quasilinear-proxy signs are not robust across
 the two equilibria, but ``Rsin_mid_surface_m1`` and ``Zcos_mid_surface_m1``
-are admitted with two-case sign consistency. This permits only checked short
-nonlinear bracket screens; it is not a converged nonlinear-gradient or
-optimization claim.
+are admitted with two-case sign consistency. This identifies candidates for
+short nonlinear bracket-screen design only after a separate state-to-input
+mapping gate passes; it is not a launch artifact, converged
+nonlinear-gradient, or optimization claim.
+
+``tools/design_nonlinear_gradient_state_control_runbook.py`` is the mandatory
+bridge from those admitted VMEC-state controls to launchable VMEC input
+directions. It consumes the QL seed screen plus optional state-to-input mapping
+artifacts and fails closed unless at least two admitted state controls have a
+conditioned, residual-bounded mapping to explicit VMEC input control
+arguments. The tracked
+``docs/_static/nonlinear_gradient_state_control_runbook.json`` currently fails
+closed because no such mapping artifact exists yet for
+``Rsin_mid_surface_m1`` or ``Zcos_mid_surface_m1``. This is intentional: a
+VMEC-state coefficient is not automatically a patchable ``RBC/RBS/ZBC/ZBS``
+input coefficient, especially for stellarator-symmetric input decks. The next
+nonlinear campaign must first perturb candidate VMEC input directions, solve
+the baseline/plus/minus equilibria with ``vmec_jax``, measure the induced
+VMEC-state response, and pass the mapping condition/residual gate before any
+short-bracket or long-window nonlinear run is launch-ready.
+
 ``tools/write_vmec_boundary_profile_perturbation_inputs.py`` is the companion
 for a single smoother composite direction. It perturbs several VMEC boundary
 coefficients together, normalizes the finite-difference scalar by the Euclidean
