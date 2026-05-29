@@ -7191,3 +7191,36 @@ Exit gate:
 - Next scientific step: run the two prepared short-bracket nonlinear campaigns
   on office GPUs, then apply runtime-output, replicated-window,
   central-finite-difference, and final nonlinear-gradient evidence gates.
+
+### 2026-05-29 VMEC-State Short-Bracket Nonlinear Audit Result
+
+- Copied the solved short-bracket VMEC/WOUT launch set to a fresh office clone
+  at `/home/rjorge/tmp/spectrax-statecontrol-47f7093` and ran the two prepared
+  nonlinear campaigns on the two office RTX A4000 GPUs.
+- Completed all 18 bounded nonlinear runs (`2` mapped controls x `3`
+  baseline/plus/minus states x `3` replicate/timestep variants) with no runtime
+  failures. First compile-heavy runs took about 234-250 s; warmed runs were
+  roughly 80-126 s, all below the 600 s per-run guard.
+- Fixed the generic nonlinear-gradient campaign writer so short-bracket output
+  gates can use bounded-run thresholds instead of the long-window defaults
+  (`--output-min-samples`, `--output-min-window-samples`, and
+  `--output-min-abs-window-mean`). With `60` total and `30` window samples, all
+  six output-gate groups pass.
+- All six replicated-window ensemble gates pass. Window heat-flux means are
+  near `10` over `t=[75,150]`, with relative spread/SEM inside the release
+  ensemble gates.
+- Both central finite-difference gates fail closed:
+  - `Rsin_mid_surface_m1`: response fraction `0.00449 < 0.03`, FD asymmetry
+    `9.51 > 0.5`, gradient uncertainty `7.73 > 0.5`.
+  - `Zcos_mid_surface_m1`: response fraction `0.00147 < 0.03`, FD asymmetry
+    `45.3 > 0.5`, gradient uncertainty `23.0 > 0.5`.
+- Added
+  `docs/_static/nonlinear_gradient_state_control_short_bracket_nonlinear_audit_status.{json,csv,png,pdf}`
+  plus the two central-FD gate artifacts and replicated-window sidecars. This
+  is useful negative short-bracket evidence: nonlinear plumbing and window
+  statistics are stable, but `alpha_delta=1e-3` is too small/noisy to promote a
+  nonlinear turbulence-gradient claim.
+- Next scientific step: run a bracket-amplitude sweep along the mapped
+  `RBS/ZBC` directions (for example `alpha_delta = 3e-3, 1e-2, 3e-2` subject to
+  VMEC locality checks), then repeat the same central-FD gate. Only if response
+  fraction and asymmetry pass should we spend on longer post-transient windows.

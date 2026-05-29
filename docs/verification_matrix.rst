@@ -516,6 +516,21 @@ gate.
        ``t=150`` nonlinear campaign manifests are prepared. This is not a
        transport-gradient claim until those nonlinear campaigns pass runtime,
        replicated-window, central-FD, and evidence gates
+   * - VMEC-state short-bracket nonlinear audit
+     - bounded nonlinear runtime outputs, replicated windows, and central-FD
+       promotion blockers for mapped state controls
+     - ``docs/_static/nonlinear_gradient_state_control_short_bracket_nonlinear_audit_status.json``
+       plus the two ``qa_lowres_state_control_short_bracket_*_central_fd_gradient_gate.json``
+       artifacts and their replicated-window sidecars
+     - Closed as negative short-bracket evidence; production gradient still open
+     - all ``18`` office GPU nonlinear runs complete. The six corrected
+       runtime-output groups and six replicated-window ensemble groups pass,
+       with heat-flux means near ``10``. Both central-FD gates fail closed:
+       the ``Rsin`` response fraction is about ``0.0045`` with asymmetry
+       about ``9.5`` and uncertainty about ``7.7``; the ``Zcos`` response
+       fraction is about ``0.0015`` with asymmetry about ``45`` and
+       uncertainty about ``23``. A bracket-amplitude sweep or longer/lower-noise
+       window is required before promotion
    * - Selected optimized-equilibrium nonlinear transport audit
      - optimized-equilibrium post-transient heat-flux average with uncertainty
        and nonlinear audit bars

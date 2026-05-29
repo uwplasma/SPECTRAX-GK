@@ -183,9 +183,12 @@ now passes the state-to-input mapping gate with rank ``2`` and condition number
 about ``1.02``, so ``docs/_static/nonlinear_gradient_state_control_runbook.json``
 can emit checked short-bracket launch directions. The launch writer now also
 has normally terminated VMEC decks and prepared bounded nonlinear campaign
-manifests for both mapped controls. The remaining open work is to run and
-promote actual nonlinear finite-difference evidence with converged long
-post-transient transport windows.
+manifests for both mapped controls. The first bounded nonlinear audit has now
+run all ``18`` short-bracket outputs and passed output/ensemble gates, but it
+fails central finite-difference promotion because the ``1e-3`` bracket has
+unresolved, asymmetric response. The remaining open work is a bracket-amplitude
+sweep and, if that resolves a local response, longer post-transient transport
+windows before any production nonlinear-gradient claim.
 
 Before tagging, the latest public ``main`` CI run must pass repo hygiene, mypy,
 quick shards, docs/packaging, fast coverage, and the full wide-coverage matrix.

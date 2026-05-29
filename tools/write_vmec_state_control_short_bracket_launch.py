@@ -152,6 +152,9 @@ def _write_one_control(
     seed_variants: tuple[int, ...],
     nl: int,
     nm: int,
+    output_min_samples: int,
+    output_min_window_samples: int,
+    output_min_abs_window_mean: float,
 ) -> dict[str, Any]:
     namelist = _import_namelist()
     state_parameter = str(control["state_parameter"])
@@ -224,7 +227,10 @@ def _write_one_control(
         f"--ky {float(ky):.16g} "
         f"--dt {float(dt):.12g} "
         f"--baseline-seed {int(baseline_seed)} "
-        f"--Nl {int(nl)} --Nm {int(nm)}"
+        f"--Nl {int(nl)} --Nm {int(nm)} "
+        f"--output-min-samples {int(output_min_samples)} "
+        f"--output-min-window-samples {int(output_min_window_samples)} "
+        f"--output-min-abs-window-mean {float(output_min_abs_window_mean):.12g}"
     )
     for seed in seed_variants:
         campaign_command += f" --seed-variant {int(seed)}"
@@ -258,6 +264,9 @@ def _write_one_control(
             "replicates": [f"seed{seed}" for seed in seed_variants],
             "Nl": int(nl),
             "Nm": int(nm),
+            "output_min_samples": int(output_min_samples),
+            "output_min_window_samples": int(output_min_window_samples),
+            "output_min_abs_window_mean": float(output_min_abs_window_mean),
         },
         "production_contract": (
             "Run vmec_jax on each generated input, then use the resulting WOUT "
@@ -374,6 +383,9 @@ def write_state_control_short_bracket_launch(
     seed_variants: tuple[int, ...] = (31, 32),
     nl: int = 4,
     nm: int = 8,
+    output_min_samples: int = 60,
+    output_min_window_samples: int = 30,
+    output_min_abs_window_mean: float = 1.0e-4,
 ) -> dict[str, Any]:
     if not math.isfinite(float(alpha_delta)) or alpha_delta <= 0.0:
         raise ValueError("alpha_delta must be finite and positive")
@@ -404,6 +416,9 @@ def write_state_control_short_bracket_launch(
             seed_variants=tuple(seed_variants),
             nl=int(nl),
             nm=int(nm),
+            output_min_samples=int(output_min_samples),
+            output_min_window_samples=int(output_min_window_samples),
+            output_min_abs_window_mean=float(output_min_abs_window_mean),
         )
         clean = _json_clean(manifest)
         launches.append(
@@ -450,6 +465,9 @@ def write_state_control_short_bracket_launch(
             "replicates": [f"seed{seed}" for seed in seed_variants],
             "Nl": int(nl),
             "Nm": int(nm),
+            "output_min_samples": int(output_min_samples),
+            "output_min_window_samples": int(output_min_window_samples),
+            "output_min_abs_window_mean": float(output_min_abs_window_mean),
         },
         "next_action": (
             "run the generated VMEC decks, then write and execute the bounded "
@@ -495,6 +513,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--seed-variant", action="append", type=int, default=None)
     parser.add_argument("--Nl", type=int, default=4)
     parser.add_argument("--Nm", type=int, default=8)
+    parser.add_argument("--output-min-samples", type=int, default=60)
+    parser.add_argument("--output-min-window-samples", type=int, default=30)
+    parser.add_argument("--output-min-abs-window-mean", type=float, default=1.0e-4)
     return parser
 
 
@@ -522,6 +543,9 @@ def main(argv: list[str] | None = None) -> int:
         seed_variants=tuple(args.seed_variant or (31, 32)),
         nl=int(args.Nl),
         nm=int(args.Nm),
+        output_min_samples=int(args.output_min_samples),
+        output_min_window_samples=int(args.output_min_window_samples),
+        output_min_abs_window_mean=float(args.output_min_abs_window_mean),
     )
     artifacts = _json_clean(report["artifacts"])
     print(

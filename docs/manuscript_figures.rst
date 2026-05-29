@@ -65,7 +65,11 @@ is the positive symmetry-compatible mapping figure. The new
 ``docs/_static/nonlinear_gradient_state_control_short_bracket_launch_status.png``
 then records that the mapped-control VMEC launch decks solved normally and that
 bounded nonlinear campaign manifests are prepared, without promoting nonlinear
-transport-gradient evidence.
+transport-gradient evidence. The follow-up
+``docs/_static/nonlinear_gradient_state_control_short_bracket_nonlinear_audit_status.png``
+records the first actual bounded nonlinear audit: all runtime and ensemble
+window gates pass, but both finite-difference gradients fail closed because the
+``1e-3`` bracket response is unresolved and asymmetric.
 
 Current Vs Deferred Figure Inventory
 ------------------------------------
@@ -149,7 +153,7 @@ Core Validation Figures
    * - VMEC-state nonlinear-gradient launch runbook
      - ``tools/design_nonlinear_gradient_ql_seed_screen.py``, ``tools/design_nonlinear_gradient_state_control_runbook.py``, ``tools/write_vmec_state_to_input_mapping_campaign.py``, ``tools/write_vmec_asymmetric_state_to_input_mapping_campaign.py``, ``tools/write_vmec_state_control_short_bracket_launch.py``, and ``tools/build_vmec_state_to_input_mapping_response.py``
      - Closed for checked short-bracket launch mapping; long-window nonlinear-gradient evidence still required
-     - current artifact bases: ``docs/_static/nonlinear_gradient_state_control_runbook.png``, ``docs/_static/nonlinear_gradient_state_to_input_mapping_campaign.png``, ``docs/_static/nonlinear_gradient_state_to_input_mapping_response.png``, ``docs/_static/nonlinear_gradient_asymmetric_state_to_input_mapping_campaign.png``, ``docs/_static/nonlinear_gradient_asymmetric_state_to_input_mapping_response.png``, and ``docs/_static/nonlinear_gradient_state_control_short_bracket_launch_status.png`` with CSV/JSON/PDF companions. The QH/Li383 QL seed screen admits ``Rsin_mid_surface_m1`` and ``Zcos_mid_surface_m1`` as sign-consistent internal VMEC-state controls. The measured ``RBC/ZBS`` response matrix is rank zero, as expected for the symmetry-forbidden branch, but the follow-up ``LASYM=true`` ``RBS/ZBC`` response has rank ``2`` and condition number about ``1.02``. The runbook now carries explicit least-squares input-control directions for both admitted controls, and the short-bracket launch status records six normally terminated VMEC solves plus two prepared bounded nonlinear campaign manifests. This is launch-mapping and campaign-readiness evidence, not yet a converged long-window nonlinear-gradient result.
+     - current artifact bases: ``docs/_static/nonlinear_gradient_state_control_runbook.png``, ``docs/_static/nonlinear_gradient_state_to_input_mapping_campaign.png``, ``docs/_static/nonlinear_gradient_state_to_input_mapping_response.png``, ``docs/_static/nonlinear_gradient_asymmetric_state_to_input_mapping_campaign.png``, ``docs/_static/nonlinear_gradient_asymmetric_state_to_input_mapping_response.png``, ``docs/_static/nonlinear_gradient_state_control_short_bracket_launch_status.png``, and ``docs/_static/nonlinear_gradient_state_control_short_bracket_nonlinear_audit_status.png`` with CSV/JSON/PDF companions. The QH/Li383 QL seed screen admits ``Rsin_mid_surface_m1`` and ``Zcos_mid_surface_m1`` as sign-consistent internal VMEC-state controls. The measured ``RBC/ZBS`` response matrix is rank zero, as expected for the symmetry-forbidden branch, but the follow-up ``LASYM=true`` ``RBS/ZBC`` response has rank ``2`` and condition number about ``1.02``. The runbook now carries explicit least-squares input-control directions for both admitted controls, and the short-bracket launch status records six normally terminated VMEC solves plus two prepared bounded nonlinear campaign manifests. The first nonlinear audit completes all ``18`` runs and passes output/ensemble gates, but both central-FD gates fail closed because the ``1e-3`` bracket response is too small and asymmetric. This is launch-mapping and negative short-bracket evidence, not yet a converged long-window nonlinear-gradient result.
    * - Nonlinear transport time-horizon audit
      - ``tools/build_nonlinear_transport_horizon_audit.py``
      - Closed as claim-scope guardrail; QH/CTH convergence promotion open

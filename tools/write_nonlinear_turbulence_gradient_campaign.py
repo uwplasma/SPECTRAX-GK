@@ -140,6 +140,9 @@ def _state_ensemble_command(
     dt_variant: float,
     dt_variant_label: str,
     seed_dt_variants: tuple[tuple[int, float], ...] = (),
+    output_min_samples: int = 200,
+    output_min_window_samples: int = 80,
+    output_min_abs_window_mean: float = 1.0e-4,
 ) -> dict[str, Any]:
     state_case = f"{case}_{state}"
     ensemble_dir = ROOT / "docs" / "_static" / f"{case}_{state}_replicates"
@@ -183,8 +186,9 @@ def _state_ensemble_command(
     output_gate_command = (
         f"{PYTHON_CMD} tools/check_nonlinear_runtime_outputs.py "
         + " ".join(_repo_relative(path) for path in inputs)
-        + f" --min-samples 200 --tmin {tmin:.12g} --tmax {tmax:.12g}"
-        + " --min-window-samples 80 --min-abs-window-mean 1e-4"
+        + f" --min-samples {int(output_min_samples)} --tmin {tmin:.12g} --tmax {tmax:.12g}"
+        + f" --min-window-samples {int(output_min_window_samples)}"
+        + f" --min-abs-window-mean {float(output_min_abs_window_mean):.12g}"
         + f" --json-out {_repo_relative(ensemble_dir / output_gate_json)}"
     )
     return {
@@ -274,6 +278,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--Nm", type=int, default=8)
     parser.add_argument("--window-tmin", type=float, default=DEFAULT_WINDOW[0])
     parser.add_argument("--window-tmax", type=float, default=DEFAULT_WINDOW[1])
+    parser.add_argument("--output-min-samples", type=int, default=200)
+    parser.add_argument("--output-min-window-samples", type=int, default=80)
+    parser.add_argument("--output-min-abs-window-mean", type=float, default=1.0e-4)
     parser.add_argument(
         "--allow-identical-vmec-content",
         action="store_true",
@@ -339,6 +346,9 @@ def main(argv: list[str] | None = None) -> int:
             dt_variant=float(args.dt_variant),
             dt_variant_label=dt_variant_label,
             seed_dt_variants=seed_dt_variants,
+            output_min_samples=int(args.output_min_samples),
+            output_min_window_samples=int(args.output_min_window_samples),
+            output_min_abs_window_mean=float(args.output_min_abs_window_mean),
         )
 
     manifest = {

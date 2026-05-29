@@ -1241,6 +1241,12 @@ artifact_paths = [
   "docs/_static/nonlinear_gradient_state_control_short_bracket_launch.png",
   "docs/_static/nonlinear_gradient_state_control_short_bracket_launch_status.json",
   "docs/_static/nonlinear_gradient_state_control_short_bracket_launch_status.png",
+  "docs/_static/nonlinear_gradient_state_control_short_bracket_nonlinear_audit_status.json",
+  "docs/_static/nonlinear_gradient_state_control_short_bracket_nonlinear_audit_status.png",
+  "docs/_static/qa_lowres_state_control_short_bracket_rsin_mid_surface_m1_nonlinear_gradient_state_control_rsin_mid_surface_m1_central_fd_gradient_gate.json",
+  "docs/_static/qa_lowres_state_control_short_bracket_rsin_mid_surface_m1_nonlinear_gradient_state_control_rsin_mid_surface_m1_central_fd_gradient_gate.png",
+  "docs/_static/qa_lowres_state_control_short_bracket_zcos_mid_surface_m1_nonlinear_gradient_state_control_zcos_mid_surface_m1_central_fd_gradient_gate.json",
+  "docs/_static/qa_lowres_state_control_short_bracket_zcos_mid_surface_m1_nonlinear_gradient_state_control_zcos_mid_surface_m1_central_fd_gradient_gate.png",
   "docs/_static/qa_ess_profile_gradient_rbc_1_1_nonlinear_gradient_rbc_1_1_central_fd_gradient_gate.json",
   "docs/_static/qa_ess_profile_gradient_overdetermined_nonlinear_gradient_candidate_ranking.json",
   "docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_status.json",
@@ -1249,7 +1255,7 @@ artifact_paths = [
 ]
 next_tests = [
   "use the next-campaign design gate to replace the fail-closed RBC(1,1) follow-up with a better-conditioned long-window production gradient artifact",
-  "run and audit the prepared LASYM=true RBS/ZBC short-bracket nonlinear-gradient campaigns",
+  "run a LASYM=true RBS/ZBC bracket-amplitude sweep because the alpha_delta=1e-3 short-bracket audit is ensemble-stable but finite-difference unresolved",
   "add matched baseline-to-optimized turbulence-gradient audits once long-window parameter perturbation runs are available",
 ]
 

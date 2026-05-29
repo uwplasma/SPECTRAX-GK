@@ -1318,6 +1318,20 @@ promoted nonlinear turbulence-gradient claim.
    panel documents readiness for the next nonlinear audit only; it is not a
    nonlinear-gradient or turbulent-flux promotion.
 
+.. figure:: _static/nonlinear_gradient_state_control_short_bracket_nonlinear_audit_status.png
+   :width: 90%
+   :align: center
+   :alt: VMEC-state short-bracket nonlinear audit status
+
+   VMEC-state short-bracket nonlinear audit status.  The prepared campaigns run
+   on the office GPUs and produce all ``18`` nonlinear outputs. Runtime-output
+   and replicated-window gates pass, with heat-flux means near ``10`` over
+   ``t=[75,150]``. The central finite-difference gates fail closed because the
+   ``1e-3`` state-control step produces response fractions well below the
+   ``0.03`` promotion threshold and large plus/minus asymmetry. The next
+   evidence step is therefore a bracket-amplitude sweep, not a transport-gradient
+   promotion.
+
 .. figure:: _static/qa_ess_descent_profile_rel2_nonlinear_gradient_profile_direction_zbs_1_1_zbs_1_0_rbc_1_1_central_fd_gradient_gate.png
    :width: 90%
    :align: center

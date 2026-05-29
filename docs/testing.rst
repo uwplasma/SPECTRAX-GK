@@ -531,6 +531,20 @@ status, not nonlinear-gradient evidence; the prepared nonlinear runs must pass
 runtime-output, replicated-window, central-finite-difference, and final
 evidence gates before promotion.
 
+The first short-bracket nonlinear audit has also been run on the office GPUs
+and summarized in
+``docs/_static/nonlinear_gradient_state_control_short_bracket_nonlinear_audit_status.json``.
+All ``18`` runtime outputs completed, the corrected bounded-output gates pass
+for all six state/replicate groups, and all six replicated-window ensemble
+gates pass. The central finite-difference gates fail closed for both mapped
+state controls: ``Rsin_mid_surface_m1`` has response fraction about ``0.0045``,
+finite-difference asymmetry about ``9.5``, and gradient uncertainty about
+``7.7``; ``Zcos_mid_surface_m1`` has response fraction about ``0.0015``,
+asymmetry about ``45``, and uncertainty about ``23``. This is the expected
+scientific use of a short-bracket audit: it proves the nonlinear plumbing and
+window statistics are stable, but it rejects promotion until a bracket sweep or
+longer/lower-noise window resolves a local response.
+
 ``tools/write_vmec_boundary_profile_perturbation_inputs.py`` is the companion
 for a single smoother composite direction. It perturbs several VMEC boundary
 coefficients together, normalizes the finite-difference scalar by the Euclidean

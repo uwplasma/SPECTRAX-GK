@@ -559,7 +559,7 @@
       "coverage_priority": "high",
       "coverage_target_percent": 95.0,
       "module": "spectraxgk.nonlinear_gradient_evidence",
-      "n_artifacts": 27,
+      "n_artifacts": 33,
       "n_fast_tests": 8,
       "n_next_tests": 3,
       "n_numerics_contracts": 2,
