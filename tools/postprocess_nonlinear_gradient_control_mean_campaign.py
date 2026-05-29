@@ -163,6 +163,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--tmin", type=float, default=450.0)
     parser.add_argument("--tmax", type=float, default=900.0)
     parser.add_argument("--min-common-pairs", type=int, default=21)
+    parser.add_argument(
+        "--min-output-tmax",
+        type=float,
+        default=None,
+        help="Minimum final time required in each output. Defaults to 0.99 * --tmax to allow fixed-step/sample-stride roundoff.",
+    )
     parser.add_argument("--min-control-mean-pairs", type=int, default=21)
     parser.add_argument("--target-response-uncertainty-rel", type=float, default=0.50)
     parser.add_argument("--bootstrap-samples", type=int, default=256)
@@ -174,13 +180,19 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    matched = discover_matched_outputs(args.campaign_dir, min_tmax=float(args.tmax))
+    min_output_tmax = (
+        float(args.min_output_tmax)
+        if args.min_output_tmax is not None
+        else 0.99 * float(args.tmax)
+    )
+    matched = discover_matched_outputs(args.campaign_dir, min_tmax=min_output_tmax)
     common_seeds = matched["common_seeds"]
     summary = {
         "campaign_dir": str(args.campaign_dir),
         "common_pair_count": len(common_seeds),
         "common_seeds": common_seeds,
-        "required_tmax": float(args.tmax),
+        "requested_tmax": float(args.tmax),
+        "min_output_tmax": min_output_tmax,
         "plus_completed": matched["plus_completed"],
         "minus_completed": matched["minus_completed"],
     }

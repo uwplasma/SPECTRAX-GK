@@ -66,6 +66,19 @@ def test_postprocess_control_mean_campaign_discovers_common_pairs(tmp_path: Path
     assert matched["minus_completed"] == [31, 33]
 
 
+def test_postprocess_control_mean_campaign_accepts_stride_rounded_final_time(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    campaign = _make_campaign(tmp_path, seeds=(31,))
+    rounded_plus = campaign / "nonlinear_campaign" / "plus_delta" / "demo_plus_t100_n64_seed32.out.nc"
+    rounded_minus = campaign / "nonlinear_campaign" / "minus_delta" / "demo_minus_t100_n64_seed32.out.nc"
+    _write_output(rounded_plus, 10.2, tmax=99.2)
+    _write_output(rounded_minus, 9.8, tmax=99.2)
+
+    matched = mod.discover_matched_outputs(campaign, min_tmax=99.0)
+
+    assert matched["common_seeds"] == [31, 32]
+
+
 def test_postprocess_control_mean_campaign_ignores_partial_outputs(tmp_path: Path) -> None:
     mod = _load_tool_module()
     campaign = _make_campaign(tmp_path, seeds=(31, 33))
