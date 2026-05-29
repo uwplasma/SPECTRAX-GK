@@ -107,6 +107,13 @@ direction so the response is larger relative to turbulent spread.
   artifacts can be evaluated without manual spreadsheet work. The gate consumes
   independent plus/minus ensemble reports and combines the residual response
   SEM with ``beta^2 SEM_control_mean^2``.
+- Added ``tools/postprocess_nonlinear_gradient_control_mean_campaign.py`` so a
+  completed GPU campaign can be reduced with one fail-closed command. The
+  wrapper discovers matched ``plus_delta``/``minus_delta`` seed outputs, builds
+  state ensemble gates, and then runs the independent control-mean gate. It
+  defaults to the full ``21`` matched-pair contract and preserves the separate
+  timestep-readiness return code as an advisory rather than conflating it with
+  the matched-seed control-mean evidence.
 - Generated
   ``docs/_static/qa_ess_zbs10_rel7p5_control_variate_campaign_plan.{json,csv,png,pdf}``.
   Using the midpoint common-mode candidate, the pre-run campaign is

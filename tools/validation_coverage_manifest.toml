@@ -1211,6 +1211,7 @@ numerics_contracts = [
 fast_tests = [
   "tests/test_nonlinear_gradient_evidence.py",
   "tests/test_nonlinear_gradient_followup.py",
+  "tests/test_postprocess_nonlinear_gradient_control_mean_campaign.py",
   "tests/test_nonlinear_gradient_state_control_runbook.py",
   "tests/test_build_vmec_state_to_input_mapping_response.py",
   "tests/test_write_vmec_boundary_perturbation_inputs.py",

@@ -1,0 +1,117 @@
+from __future__ import annotations
+
+import importlib.util
+import json
+from pathlib import Path
+import sys
+
+import numpy as np
+import pytest
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def _load_tool_module():
+    path = ROOT / "tools" / "postprocess_nonlinear_gradient_control_mean_campaign.py"
+    spec = importlib.util.spec_from_file_location(
+        "postprocess_nonlinear_gradient_control_mean_campaign", path
+    )
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def _write_output(path: Path, mean: float) -> None:
+    netcdf4 = pytest.importorskip("netCDF4")
+    time = np.linspace(0.0, 100.0, 101)
+    heat = mean + 0.002 * np.sin(2.0 * np.pi * time / 20.0)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with netcdf4.Dataset(path, "w") as root:
+        root.createDimension("time", time.size)
+        root.createDimension("s", 1)
+        grids = root.createGroup("Grids")
+        diagnostics = root.createGroup("Diagnostics")
+        grids.createVariable("time", "f8", ("time",))[:] = time
+        diagnostics.createVariable("HeatFlux_st", "f8", ("time", "s"))[:, :] = heat[:, None]
+
+
+def _make_campaign(tmp_path: Path, *, seeds: tuple[int, ...] = (31, 32, 33, 34)) -> Path:
+    campaign = tmp_path / "control_mean_campaign"
+    for idx, seed in enumerate(seeds):
+        common = 10.0 + 0.001 * idx
+        _write_output(
+            campaign / "nonlinear_campaign" / "plus_delta" / f"demo_plus_t100_n64_seed{seed}.out.nc",
+            common + 0.2,
+        )
+        _write_output(
+            campaign / "nonlinear_campaign" / "minus_delta" / f"demo_minus_t100_n64_seed{seed}.out.nc",
+            common - 0.2,
+        )
+    return campaign
+
+
+def test_postprocess_control_mean_campaign_discovers_common_pairs(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    campaign = _make_campaign(tmp_path, seeds=(31, 33))
+    extra = campaign / "nonlinear_campaign" / "plus_delta" / "demo_plus_t100_n64_seed35.out.nc"
+    _write_output(extra, 10.2)
+
+    matched = mod.discover_matched_outputs(campaign)
+
+    assert matched["common_seeds"] == [31, 33]
+    assert matched["plus_completed"] == [31, 33, 35]
+    assert matched["minus_completed"] == [31, 33]
+
+
+def test_postprocess_control_mean_campaign_builds_gate(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    campaign = _make_campaign(tmp_path)
+    out_root = tmp_path / "artifacts"
+
+    rc = mod.main(
+        [
+            "--campaign-dir",
+            str(campaign),
+            "--out-root",
+            str(out_root),
+            "--case-prefix",
+            "demo_control_mean",
+            "--tmin",
+            "50",
+            "--tmax",
+            "100",
+            "--min-common-pairs",
+            "4",
+            "--min-control-mean-pairs",
+            "4",
+            "--bootstrap-samples",
+            "32",
+        ]
+    )
+
+    assert rc == 0
+    gate = json.loads((out_root / "demo_control_mean_gate.json").read_text())
+    assert gate["passed"] is True
+    assert gate["summary"]["common_pair_count"] == 4
+    assert (out_root / "demo_control_mean_gate.png").exists()
+
+
+def test_postprocess_control_mean_campaign_fails_closed_without_pairs(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    campaign = _make_campaign(tmp_path, seeds=(31,))
+
+    rc = mod.main(
+        [
+            "--campaign-dir",
+            str(campaign),
+            "--out-root",
+            str(tmp_path / "artifacts"),
+            "--min-common-pairs",
+            "2",
+        ]
+    )
+
+    assert rc == 2
