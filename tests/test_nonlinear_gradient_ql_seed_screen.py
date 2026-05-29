@@ -91,7 +91,10 @@ def test_ql_seed_screen_tracks_gate_blockers_and_validation_errors() -> None:
     bad["objective_gates"][0]["passed"] = False  # type: ignore[index]
     bad["objective_gates"][1]["implicit"] = 0.0  # type: ignore[index]
 
-    report = nonlinear_gradient_ql_seed_screen_report([bad])
+    report = nonlinear_gradient_ql_seed_screen_report(
+        [bad],
+        config=NonlinearGradientQLSeedScreenConfig(require_artifact_passed=True),
+    )
     rows = report["objective_rows"]
     assert rows[0]["blockers"] == [
         "ad_fd_relative_error_too_large",
@@ -103,6 +106,11 @@ def test_ql_seed_screen_tracks_gate_blockers_and_validation_errors() -> None:
         "ad_fd_relative_error_too_large",
         "source_artifact_failed",
     ]
+    assert rows[0]["source_artifact_passed"] is False
+
+    primary_only_report = nonlinear_gradient_ql_seed_screen_report([_ql_artifact(passed=False)])
+    assert primary_only_report["controls"][0]["source_rows"][0]["source_artifact_passed"] is False
+    assert "source_artifact_failed" not in primary_only_report["objective_rows"][1]["blockers"]
 
     validation_cases = [
         ("target_objectives", NonlinearGradientQLSeedScreenConfig(target_objectives=())),

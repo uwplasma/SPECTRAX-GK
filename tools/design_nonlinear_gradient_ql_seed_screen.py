@@ -56,7 +56,7 @@ def _write_csv(path: Path, report: dict[str, Any]) -> None:
         "state_control_argument",
     ]
     with path.open("w", newline="", encoding="utf-8") as stream:
-        writer = csv.DictWriter(stream, fieldnames=fieldnames)
+        writer = csv.DictWriter(stream, fieldnames=fieldnames, lineterminator="\n")
         writer.writeheader()
         for row in report["controls"]:
             writer.writerow(
@@ -158,7 +158,20 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--min-sign-consistency", type=float, default=0.75)
     parser.add_argument("--max-objective-rel-error", type=float, default=0.02)
     parser.add_argument("--min-abs-sensitivity", type=float, default=1.0e-12)
-    parser.add_argument("--allow-failed-artifacts", action="store_true")
+    artifact_group = parser.add_mutually_exclusive_group()
+    artifact_group.add_argument(
+        "--require-artifact-passed",
+        dest="require_artifact_passed",
+        action="store_true",
+        default=NonlinearGradientQLSeedScreenConfig().require_artifact_passed,
+        help="Require the whole source artifact to pass, not only selected objective rows.",
+    )
+    artifact_group.add_argument(
+        "--allow-failed-artifacts",
+        dest="require_artifact_passed",
+        action="store_false",
+        help="Allow selected objective rows from artifacts that failed unrelated gates.",
+    )
     return parser
 
 
@@ -179,7 +192,7 @@ def main(argv: list[str] | None = None) -> int:
             min_sign_consistency=args.min_sign_consistency,
             max_objective_rel_error=args.max_objective_rel_error,
             min_abs_sensitivity=args.min_abs_sensitivity,
-            require_artifact_passed=not args.allow_failed_artifacts,
+            require_artifact_passed=bool(args.require_artifact_passed),
         ),
     )
     out_prefix = args.out_prefix

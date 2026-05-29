@@ -926,6 +926,15 @@ def test_mode21_vmec_boozer_frequency_gate_exports_and_scope() -> None:
         mode21_vmec_boozer_nonlinear_window_gradient_report
     )
     assert tuple(VMEC_BOOZER_STATE_PARAMETER_NAMES) == ("Rcos_mid_surface_m1",)
+    assert (
+        _vmec_boozer_state_parameter_name(17, 1, default_mid_surface=17)
+        == "Rcos_mid_surface_m1"
+    )
+    assert (
+        _vmec_boozer_state_parameter_name(17, 2, default_mid_surface=17)
+        == "Rcos_mid_surface_m2"
+    )
+    assert _vmec_boozer_state_parameter_name(16, 2, default_mid_surface=17) == "Rcos_r16_m2"
     assert tuple(VMEC_BOOZER_FREQUENCY_OBJECTIVE_NAMES) == ("gamma", "omega")
     assert tuple(VMEC_BOOZER_QUASILINEAR_OBJECTIVE_NAMES) == (
         "gamma",

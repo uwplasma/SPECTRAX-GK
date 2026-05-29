@@ -1,2 +1,4 @@
 state_parameter,state_control_family,admitted_for_nonlinear_screen,blockers,primary_objective,n_accepted_rows,n_cases,dominant_sensitivity_sign,descent_direction_sign,sign_consistency_fraction,mean_abs_sensitivity,state_control_argument
 Rcos_mid_surface_m1,Rcos,False,cross_artifact_sign_not_consistent,mixing_length_heat_flux_proxy,2,2,1.0,-1.0,0.5,140546.10678353085,Rcos_mid_surface_m1:-1
+Rcos_mid_surface_m2,Rcos,False,cross_artifact_sign_not_consistent,mixing_length_heat_flux_proxy,2,2,1.0,-1.0,0.5,82231.3223112254,Rcos_mid_surface_m2:-1
+Rcos_mid_surface_m3,Rcos,False,insufficient_case_coverage,mixing_length_heat_flux_proxy,1,1,-1.0,1.0,1.0,75689.10951246401,Rcos_mid_surface_m3:1

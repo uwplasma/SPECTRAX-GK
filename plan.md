@@ -121,19 +121,24 @@ artifacts, then only promote controls that pass this composite admission gate.
 - Generated
   `docs/_static/nonlinear_gradient_ql_seed_screen.{json,csv,png,pdf}` from the
   current full-chain QH and Li383 VMEC/Boozer quasilinear-gradient artifacts.
-- Result: the upstream sensitivity screen is correctly fail-closed. The
-  existing artifacts cover only one VMEC-state parameter
-  (`Rcos_mid_surface_m1`), and the primary quasilinear-proxy sensitivity changes
-  sign between QH and Li383, giving sign consistency `0.5 < 0.75`. This means
-  the current full-chain QL evidence cannot seed a robust two-control nonlinear
-  turbulence-gradient campaign.
+- Follow-up pass: fixed semantic naming of mid-surface VMEC-state controls so
+  `mode_index=2` and `mode_index=3` artifacts are grouped as
+  `Rcos_mid_surface_m2` and `Rcos_mid_surface_m3` instead of incompatible
+  absolute radial-index labels. Added QH/Li383 artifacts for both controls.
+- Result: the upstream sensitivity screen is correctly fail-closed with
+  6 artifacts, 3 semantic controls, and 0 admitted controls. The `m=1` and
+  `m=2` primary quasilinear-proxy sensitivities change sign between QH and
+  Li383, giving sign consistency `0.5 < 0.75`. The Li383 `m=3` row is
+  conditioned, but the matching QH `m=3` primary objective is not, so the
+  control has insufficient case coverage. This means the current full-chain QL
+  evidence still cannot seed a robust two-control nonlinear turbulence-gradient
+  campaign.
 
-Next best step: generate additional full-chain linear/quasilinear sensitivity
-artifacts for distinct VMEC-state controls, preferably other mode-21 `Rcos`
-indices and a `Zsin` control when the bridge exposes it, then rerun the
-QL-seeded screen. Only after it admits at least two controls should we write
-new VMEC profile-direction perturbation inputs or schedule office-GPU nonlinear
-windows.
+Next best step: expose and test additional full-chain linear/quasilinear
+sensitivity controls beyond `Rcos`, preferably `Zsin`/`Zcos` state controls
+when the bridge supports them, then rerun the QL-seeded screen. Only after it
+admits at least two controls should we write new VMEC profile-direction
+perturbation inputs or schedule office-GPU nonlinear-gradient campaigns.
 
 ## 2026-05-27 VMEC-JAX Stellarator Optimization Lane
 

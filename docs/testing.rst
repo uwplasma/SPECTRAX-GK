@@ -452,11 +452,14 @@ full-chain ``vmec_jax -> booz_xform_jax -> SPECTRAX-GK`` sensitivity artifacts
 and groups rows by VMEC-state parameter, not by direct input-file
 ``RBC/ZBS`` coefficient. The tracked
 ``docs/_static/nonlinear_gradient_ql_seed_screen.json`` currently fails closed:
-the QH and Li383 quasilinear artifacts cover only one state parameter
-(``Rcos_mid_surface_m1``), and the primary quasilinear-proxy sensitivity has
-opposite signs across the two equilibria. The next step is to generate
-additional linear/quasilinear sensitivity artifacts for distinct VMEC-state
-controls before any nonlinear GPU launch.
+the tracked QH/Li383 quasilinear artifacts now cover three semantic
+mid-surface controls (``Rcos_mid_surface_m1``, ``Rcos_mid_surface_m2``, and
+``Rcos_mid_surface_m3``).  The ``m=1`` and ``m=2`` primary
+quasilinear-proxy sensitivities have opposite signs across the two equilibria,
+while the QH ``m=3`` primary objective is not AD/FD-conditioned tightly enough
+to enter the cross-case screen. The next step is to expose additional
+state-control families, especially ``Zsin``/``Zcos`` if the bridge supports
+them, before any nonlinear GPU launch.
 ``tools/write_vmec_boundary_profile_perturbation_inputs.py`` is the companion
 for a single smoother composite direction. It perturbs several VMEC boundary
 coefficients together, normalizes the finite-difference scalar by the Euclidean
