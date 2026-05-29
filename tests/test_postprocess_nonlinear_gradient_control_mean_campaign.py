@@ -24,9 +24,9 @@ def _load_tool_module():
     return module
 
 
-def _write_output(path: Path, mean: float) -> None:
+def _write_output(path: Path, mean: float, *, tmax: float = 100.0) -> None:
     netcdf4 = pytest.importorskip("netCDF4")
-    time = np.linspace(0.0, 100.0, 101)
+    time = np.linspace(0.0, tmax, 101)
     heat = mean + 0.002 * np.sin(2.0 * np.pi * time / 20.0)
     path.parent.mkdir(parents=True, exist_ok=True)
     with netcdf4.Dataset(path, "w") as root:
@@ -63,6 +63,21 @@ def test_postprocess_control_mean_campaign_discovers_common_pairs(tmp_path: Path
 
     assert matched["common_seeds"] == [31, 33]
     assert matched["plus_completed"] == [31, 33, 35]
+    assert matched["minus_completed"] == [31, 33]
+
+
+def test_postprocess_control_mean_campaign_ignores_partial_outputs(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    campaign = _make_campaign(tmp_path, seeds=(31, 33))
+    partial_plus = campaign / "nonlinear_campaign" / "plus_delta" / "demo_plus_t100_n64_seed34.out.nc"
+    partial_minus = campaign / "nonlinear_campaign" / "minus_delta" / "demo_minus_t100_n64_seed34.out.nc"
+    _write_output(partial_plus, 10.2, tmax=50.0)
+    _write_output(partial_minus, 9.8, tmax=50.0)
+
+    matched = mod.discover_matched_outputs(campaign, min_tmax=100.0)
+
+    assert matched["common_seeds"] == [31, 33]
+    assert matched["plus_completed"] == [31, 33]
     assert matched["minus_completed"] == [31, 33]
 
 

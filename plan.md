@@ -111,9 +111,10 @@ direction so the response is larger relative to turbulent spread.
   completed GPU campaign can be reduced with one fail-closed command. The
   wrapper discovers matched ``plus_delta``/``minus_delta`` seed outputs, builds
   state ensemble gates, and then runs the independent control-mean gate. It
-  defaults to the full ``21`` matched-pair contract and preserves the separate
-  timestep-readiness return code as an advisory rather than conflating it with
-  the matched-seed control-mean evidence.
+  defaults to the full ``21`` matched-pair contract, ignores intermediate
+  fixed-step chunk outputs that have not reached the requested ``--tmax``, and
+  preserves the separate timestep-readiness return code as an advisory rather
+  than conflating it with the matched-seed control-mean evidence.
 - Generated
   ``docs/_static/qa_ess_zbs10_rel7p5_control_variate_campaign_plan.{json,csv,png,pdf}``.
   Using the midpoint common-mode candidate, the pre-run campaign is

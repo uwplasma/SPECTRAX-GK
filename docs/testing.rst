@@ -474,10 +474,11 @@ one-command postprocessor for the long GPU campaign. It discovers completed
 matched ``plus_delta``/``minus_delta`` seed outputs, builds the two nonlinear
 window ensemble gates, and then runs the independent control-mean gate. The
 wrapper is intentionally fail-closed: by default it requires all ``21``
-matched pairs from the rel7.5 run contract before writing a passing gate. It
-uses the replicated-window ensemble pass/fail for each state and records the
-separate timestep-readiness return code without letting that advisory hide the
-independent matched-seed control-mean result.
+matched pairs from the rel7.5 run contract and ignores intermediate chunk
+outputs whose time grid does not reach the requested ``--tmax`` before writing
+a passing gate. It uses the replicated-window ensemble pass/fail for each state
+and records the separate timestep-readiness return code without letting that
+advisory hide the independent matched-seed control-mean result.
 ``tools/design_nonlinear_gradient_composite_control.py`` is the stricter
 control-admission gate for that next campaign. It consumes the same completed
 central-FD artifacts, admits only VMEC boundary coefficients with resolved

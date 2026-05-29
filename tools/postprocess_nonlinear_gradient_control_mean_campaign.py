@@ -39,23 +39,49 @@ def _seed_from_path(path: Path) -> int | None:
     return None if match is None else int(match.group("seed"))
 
 
-def _discover_state_outputs(campaign_dir: Path, state: str) -> dict[int, Path]:
+def _output_reaches_tmax(path: Path, min_tmax: float | None) -> bool:
+    if min_tmax is None:
+        return True
+    try:
+        import netCDF4
+
+        with netCDF4.Dataset(path) as root:
+            time = root.groups["Grids"].variables["time"][:]
+    except Exception:
+        return False
+    if len(time) == 0:
+        return False
+    return float(max(time)) >= float(min_tmax)
+
+
+def _discover_state_outputs(
+    campaign_dir: Path,
+    state: str,
+    *,
+    min_tmax: float | None = None,
+) -> dict[int, Path]:
     folder = campaign_dir / "nonlinear_campaign" / state
     outputs: dict[int, Path] = {}
     if not folder.exists():
         return outputs
     for path in sorted(folder.glob("*_seed*.out.nc")):
         seed = _seed_from_path(path)
-        if seed is not None and path.stat().st_size > 0:
+        if (
+            seed is not None
+            and path.stat().st_size > 0
+            and _output_reaches_tmax(path, min_tmax)
+        ):
             outputs[seed] = path
     return outputs
 
 
-def discover_matched_outputs(campaign_dir: Path) -> dict[str, Any]:
+def discover_matched_outputs(
+    campaign_dir: Path, *, min_tmax: float | None = None
+) -> dict[str, Any]:
     """Return completed plus/minus output files keyed by common seed."""
 
-    plus = _discover_state_outputs(campaign_dir, "plus_delta")
-    minus = _discover_state_outputs(campaign_dir, "minus_delta")
+    plus = _discover_state_outputs(campaign_dir, "plus_delta", min_tmax=min_tmax)
+    minus = _discover_state_outputs(campaign_dir, "minus_delta", min_tmax=min_tmax)
     common = sorted(set(plus).intersection(minus))
     return {
         "plus": [plus[seed] for seed in common],
@@ -148,12 +174,13 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    matched = discover_matched_outputs(args.campaign_dir)
+    matched = discover_matched_outputs(args.campaign_dir, min_tmax=float(args.tmax))
     common_seeds = matched["common_seeds"]
     summary = {
         "campaign_dir": str(args.campaign_dir),
         "common_pair_count": len(common_seeds),
         "common_seeds": common_seeds,
+        "required_tmax": float(args.tmax),
         "plus_completed": matched["plus_completed"],
         "minus_completed": matched["minus_completed"],
     }
