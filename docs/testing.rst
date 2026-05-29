@@ -446,6 +446,17 @@ fails closed: only ``RBC(1,1)`` is admissible, while ``ZBS(1,1)`` is nonlocal
 and ``ZBS(1,0)`` is unresolved/nonlocal. Therefore the next campaign still
 needs a new local/resolved control or an explicit single-control bracket check
 before launching expensive long-window GPU runs.
+``tools/design_nonlinear_gradient_ql_seed_screen.py`` is the upstream
+linear/quasilinear sensitivity screen for finding those controls. It consumes
+full-chain ``vmec_jax -> booz_xform_jax -> SPECTRAX-GK`` sensitivity artifacts
+and groups rows by VMEC-state parameter, not by direct input-file
+``RBC/ZBS`` coefficient. The tracked
+``docs/_static/nonlinear_gradient_ql_seed_screen.json`` currently fails closed:
+the QH and Li383 quasilinear artifacts cover only one state parameter
+(``Rcos_mid_surface_m1``), and the primary quasilinear-proxy sensitivity has
+opposite signs across the two equilibria. The next step is to generate
+additional linear/quasilinear sensitivity artifacts for distinct VMEC-state
+controls before any nonlinear GPU launch.
 ``tools/write_vmec_boundary_profile_perturbation_inputs.py`` is the companion
 for a single smoother composite direction. It perturbs several VMEC boundary
 coefficients together, normalizes the finite-difference scalar by the Euclidean

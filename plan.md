@@ -112,6 +112,29 @@ Next best step: build a short bracket-screen runbook for `RBC(1,1)` plus one or
 two new VMEC-boundary coefficients selected from linear/quasilinear sensitivity
 artifacts, then only promote controls that pass this composite admission gate.
 
+## 2026-05-29 QL-seeded Nonlinear-gradient Control Screen
+
+- Added `NonlinearGradientQLSeedScreenConfig` and
+  `nonlinear_gradient_ql_seed_screen_report` in
+  `spectraxgk.nonlinear_gradient_followup`, plus
+  `tools/design_nonlinear_gradient_ql_seed_screen.py`.
+- Generated
+  `docs/_static/nonlinear_gradient_ql_seed_screen.{json,csv,png,pdf}` from the
+  current full-chain QH and Li383 VMEC/Boozer quasilinear-gradient artifacts.
+- Result: the upstream sensitivity screen is correctly fail-closed. The
+  existing artifacts cover only one VMEC-state parameter
+  (`Rcos_mid_surface_m1`), and the primary quasilinear-proxy sensitivity changes
+  sign between QH and Li383, giving sign consistency `0.5 < 0.75`. This means
+  the current full-chain QL evidence cannot seed a robust two-control nonlinear
+  turbulence-gradient campaign.
+
+Next best step: generate additional full-chain linear/quasilinear sensitivity
+artifacts for distinct VMEC-state controls, preferably other mode-21 `Rcos`
+indices and a `Zsin` control when the bridge exposes it, then rerun the
+QL-seeded screen. Only after it admits at least two controls should we write
+new VMEC profile-direction perturbation inputs or schedule office-GPU nonlinear
+windows.
+
 ## 2026-05-27 VMEC-JAX Stellarator Optimization Lane
 
 Goal: turn the reduced stellarator-optimization examples into a production

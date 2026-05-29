@@ -1220,6 +1220,21 @@ promoted nonlinear turbulence-gradient claim.
    local/resolved control or a checked single-control bracket before long
    nonlinear GPU runs.
 
+.. figure:: _static/nonlinear_gradient_ql_seed_screen.png
+   :width: 90%
+   :align: center
+   :alt: Quasilinear-seeded nonlinear-gradient control screen
+
+   Quasilinear-seeded nonlinear-gradient control screen.  This upstream gate
+   uses full-chain ``vmec_jax`` state sensitivities to decide which controls
+   should even be considered for nonlinear long-window finite differences. The
+   current QH/Li383 screen is useful but not launch-ready: both artifacts only
+   expose ``Rcos_mid_surface_m1``, and the primary quasilinear-proxy
+   sensitivity changes sign across equilibria. The result is fail-closed and
+   points to the next scientific action: generate additional linear/quasilinear
+   sensitivity artifacts for distinct VMEC-state controls before nonlinear GPU
+   campaigns.
+
 .. figure:: _static/qa_ess_descent_profile_rel2_nonlinear_gradient_profile_direction_zbs_1_1_zbs_1_0_rbc_1_1_central_fd_gradient_gate.png
    :width: 90%
    :align: center
