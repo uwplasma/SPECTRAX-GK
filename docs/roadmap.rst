@@ -174,15 +174,16 @@ production nonlinear turbulence-gradient evidence or broader matched
 baseline-to-optimized finite-difference audits with local-gradient conditioning
 and converged long post-transient running-average heat-flux windows. Those are
 required before claiming a production nonlinear heat-flux stellarator optimizer.
-The latest QL-seeded nonlinear-gradient control screen is useful but not yet a
-launch artifact: it admits ``Rsin_mid_surface_m1`` and
-``Zcos_mid_surface_m1`` as internal VMEC-state controls, while
-``docs/_static/nonlinear_gradient_state_control_runbook.json`` intentionally
-fails closed until a conditioned state-to-input mapping to perturbable VMEC
-input directions exists. The current measured mapping response artifact is a
-negative result: stellarator-symmetric ``RBC/ZBS`` perturbations have zero
-response in the admitted ``Rsin/Zcos`` VMEC-state controls, so the next branch
-must use symmetry-compatible controls before nonlinear-gradient launches.
+The latest QL-seeded nonlinear-gradient control screen admits
+``Rsin_mid_surface_m1`` and ``Zcos_mid_surface_m1`` as internal VMEC-state
+controls. The first measured mapping response is a negative result:
+stellarator-symmetric ``RBC/ZBS`` perturbations have zero response in those
+admitted asymmetric controls. The follow-up ``LASYM=true`` ``RBS/ZBC`` branch
+now passes the state-to-input mapping gate with rank ``2`` and condition number
+about ``1.02``, so ``docs/_static/nonlinear_gradient_state_control_runbook.json``
+can emit checked short-bracket launch directions. The remaining open work is to
+run and promote actual nonlinear finite-difference evidence with converged
+long post-transient transport windows.
 
 Before tagging, the latest public ``main`` CI run must pass repo hygiene, mypy,
 quick shards, docs/packaging, fast coverage, and the full wide-coverage matrix.

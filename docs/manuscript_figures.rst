@@ -51,13 +51,17 @@ parallelization claims separated from diagnostic nonlinear domain-partition
 metadata. The newer
 ``docs/_static/nonlinear_gradient_state_control_runbook.png`` is a claim
 guardrail rather than a physics result: it shows that the QL-seeded
-``Rsin_mid_surface_m1`` and ``Zcos_mid_surface_m1`` controls are still internal
-VMEC-state directions and require a conditioned mapping to perturbable VMEC
-input directions before nonlinear-gradient launches. The newer
+``Rsin_mid_surface_m1`` and ``Zcos_mid_surface_m1`` controls must be mapped to
+perturbable VMEC input directions before nonlinear-gradient launches. The
+newest ``LASYM=true`` ``RBS/ZBC`` response artifact provides that mapping with
+rank ``2`` and condition number about ``1.02``, so the runbook now passes for
+checked short-bracket launches. The older
 ``docs/_static/nonlinear_gradient_state_to_input_mapping_response.png`` is a
 negative measured-response figure: the current stellarator-symmetric
 ``RBC/ZBS`` input perturbations do not move those asymmetric ``Rsin/Zcos``
-state controls.
+state controls. The companion
+``docs/_static/nonlinear_gradient_asymmetric_state_to_input_mapping_response.png``
+is the positive symmetry-compatible mapping figure.
 
 Current Vs Deferred Figure Inventory
 ------------------------------------
@@ -139,9 +143,9 @@ Core Validation Figures
      - Closed only as VMEC/Boozer geometry-perturbed startup plumbing; transport-average and local-gradient promotion open
      - current artifact base: ``docs/_static/vmec_boozer_nonlinear_window_fd_audit.png`` with CSV/JSON/PDF companions. It starts from the real mode-21 ``vmec_jax -> booz_xform_jax`` QH state bridge, writes perturbed sampled geometries to temporary NetCDF files, and runs compact nonlinear startup windows at ``Rcos_mid_surface_m1 = base +/- 1e-5`` plus a repeated base point. The gate checks finite outputs, deterministic repeatability, bounded startup-window coefficient of variation and trend, resolved geometry perturbation, and resolved central finite-difference response; response/base is about ``0.040``. Its ``transport_average_gate`` is false and the forward/backward response is asymmetric, so this is a startup observable-path audit rather than a promoted transport average, local nonlinear gradient, or optimized-equilibrium transport claim.
    * - VMEC-state nonlinear-gradient launch runbook
-     - ``tools/design_nonlinear_gradient_ql_seed_screen.py``, ``tools/design_nonlinear_gradient_state_control_runbook.py``, ``tools/write_vmec_state_to_input_mapping_campaign.py``, and ``tools/build_vmec_state_to_input_mapping_response.py``
-     - Open by design; launch mapping required
-     - current artifact bases: ``docs/_static/nonlinear_gradient_state_control_runbook.png``, ``docs/_static/nonlinear_gradient_state_to_input_mapping_campaign.png``, and ``docs/_static/nonlinear_gradient_state_to_input_mapping_response.png`` with CSV/JSON/PDF companions. The QH/Li383 QL seed screen admits ``Rsin_mid_surface_m1`` and ``Zcos_mid_surface_m1`` as sign-consistent internal VMEC-state controls, but the measured ``RBC/ZBS`` response matrix is rank zero because those stellarator-symmetric input directions do not move the asymmetric ``Rsin/Zcos`` controls. This is a fail-closed negative result and the required guard between reduced differentiable objective evidence and any nonlinear-gradient GPU campaign.
+     - ``tools/design_nonlinear_gradient_ql_seed_screen.py``, ``tools/design_nonlinear_gradient_state_control_runbook.py``, ``tools/write_vmec_state_to_input_mapping_campaign.py``, ``tools/write_vmec_asymmetric_state_to_input_mapping_campaign.py``, and ``tools/build_vmec_state_to_input_mapping_response.py``
+     - Closed for checked short-bracket launch mapping; long-window nonlinear-gradient evidence still required
+     - current artifact bases: ``docs/_static/nonlinear_gradient_state_control_runbook.png``, ``docs/_static/nonlinear_gradient_state_to_input_mapping_campaign.png``, ``docs/_static/nonlinear_gradient_state_to_input_mapping_response.png``, ``docs/_static/nonlinear_gradient_asymmetric_state_to_input_mapping_campaign.png``, and ``docs/_static/nonlinear_gradient_asymmetric_state_to_input_mapping_response.png`` with CSV/JSON/PDF companions. The QH/Li383 QL seed screen admits ``Rsin_mid_surface_m1`` and ``Zcos_mid_surface_m1`` as sign-consistent internal VMEC-state controls. The measured ``RBC/ZBS`` response matrix is rank zero, as expected for the symmetry-forbidden branch, but the follow-up ``LASYM=true`` ``RBS/ZBC`` response has rank ``2`` and condition number about ``1.02``. The runbook now carries explicit least-squares input-control directions for both admitted controls. This is launch-mapping evidence for short-bracket nonlinear-gradient campaigns, not yet a converged long-window nonlinear-gradient result.
    * - Nonlinear transport time-horizon audit
      - ``tools/build_nonlinear_transport_horizon_audit.py``
      - Closed as claim-scope guardrail; QH/CTH convergence promotion open

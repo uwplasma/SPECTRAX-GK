@@ -76,12 +76,12 @@ score.
        objectives through the mode-21 VMEC/Boozer bridge. The QH and Li383
        holdout matrix is the citeable gate for these reduced objectives. The
        QL-seeded nonlinear-gradient state-control screen has admitted
-       ``Rsin_mid_surface_m1`` and ``Zcos_mid_surface_m1`` only as internal
-       VMEC-state controls; the companion state-to-input runbook currently
-       fails closed until a conditioned mapping to perturbable VMEC input
-       directions exists. This row does not promote multi-surface/multi-alpha
-       optimization, calibrated absolute quasilinear flux prediction, or
-       converged nonlinear heat-flux gradients.
+       ``Rsin_mid_surface_m1`` and ``Zcos_mid_surface_m1`` as internal
+       VMEC-state controls. The first symmetric ``RBC/ZBS`` state-to-input
+       response fails closed, while the ``LASYM=true`` ``RBS/ZBC`` response
+       passes as a conditioned launch mapping. This row still does not promote
+       multi-surface/multi-alpha optimization, calibrated absolute
+       quasilinear flux prediction, or converged nonlinear heat-flux gradients.
    * - Stellarator optimization examples
      - release-ready as reduced examples plus selected optimized-equilibrium audit
      - The examples demonstrate differentiable reduced ITG objectives, UQ, and
@@ -196,13 +196,15 @@ README claims, or manuscript claims.
        ``nonlinear_gradient_state_control_runbook.*``,
        ``nonlinear_gradient_state_to_input_mapping_campaign.*``,
        ``nonlinear_gradient_state_to_input_mapping_response.*``,
+       ``nonlinear_gradient_asymmetric_state_to_input_mapping_campaign.*``,
+       ``nonlinear_gradient_asymmetric_state_to_input_mapping_response.*``,
        ``nonlinear_window_ensemble_readiness_manifest.json``,
        ``nonlinear_window_convergence_reports/*.json``,
        ``stellarator_itg_optimization_comparison.*``, and
        ``stellarator_itg_optimization_uq.*``
      - These artifacts support reduced objective differentiability, optimizer
        plumbing, local UQ, explicit nonlinear ensemble-readiness blockers, and
-       a fail-closed state-control launch guard. They do not support
+       a checked state-control launch guard with a retained fail-closed symmetric negative control. They do not support
        calibrated saturated-flux prediction, production nonlinear turbulence
        gradients, direct VMEC-state launches, or nonlinear audits of optimized
        equilibria.
@@ -458,9 +460,11 @@ Differentiable-geometry state:
   ``nonlinear_gradient_ql_seed_screen.*``,
   ``nonlinear_gradient_state_control_runbook.*``,
   ``nonlinear_gradient_state_to_input_mapping_campaign.*``,
-  ``nonlinear_gradient_state_to_input_mapping_response.*``, and the reduced stellarator
+  ``nonlinear_gradient_state_to_input_mapping_response.*``,
+  ``nonlinear_gradient_asymmetric_state_to_input_mapping_campaign.*``,
+  ``nonlinear_gradient_asymmetric_state_to_input_mapping_response.*``, and the reduced stellarator
   ITG optimization/UQ panels. This checklist is the current boundary between
-  objective plumbing, fail-closed state-control launch guards, and transport
+  objective plumbing, checked state-control launch guards, and transport
   prediction.
 - ``docs/_static/vmec_boozer_reduced_portfolio_guard.json`` is the
   artifact-level guard that ties the backend-free portfolio reducer to real

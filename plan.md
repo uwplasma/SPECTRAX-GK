@@ -7131,3 +7131,37 @@ Exit gate:
     re-run the QL seed screen for controls that live in the
     stellarator-symmetric ``RBC/ZBS`` subspace before spending nonlinear GPU
     time.
+
+### 2026-05-29 LASYM=true VMEC State-to-Input Mapping Closure
+
+- Added `tools/write_vmec_asymmetric_state_to_input_mapping_campaign.py` and
+  `tests/test_write_vmec_asymmetric_state_to_input_mapping_campaign.py` to build
+  the symmetry-compatible follow-up to the zero-response `RBC/ZBS` mapping
+  branch.
+- Generated
+  `docs/_static/nonlinear_gradient_asymmetric_state_to_input_mapping_campaign.{json,csv,png,pdf}`
+  from `examples/vmec/input.LandremanPaul2021_QA_lowres`. The campaign sets
+  `LASYM = .TRUE.`, inserts four zero-baseline input directions
+  (`RBS(1,1)`, `ZBC(1,1)`, `RBS(1,0)`, `ZBC(1,0)`), and uses absolute
+  `1e-3` finite-difference steps.
+- Ran all 12 generated `vmec_jax` solves locally with `--fast --max-iter 4200
+  --no-use-input-niter`; every baseline/plus/minus equilibrium terminated
+  normally. Solver logs and WOUT files remain under ignored
+  `tools_out/state_to_input_mapping/qa_lowres_asymmetric/`.
+- Built
+  `docs/_static/nonlinear_gradient_asymmetric_state_to_input_mapping_response.{json,csv,png,pdf}`.
+  The measured response matrix has shape `2 x 4`, rank `2`, singular values
+  about `0.693` and `0.681`, condition number about `1.02`, and no blockers.
+  Both admitted state controls have least-squares target residuals near machine
+  precision.
+- Regenerated
+  `docs/_static/nonlinear_gradient_state_control_runbook.{json,csv,png,pdf}`
+  with the passing asymmetric response artifact. The runbook now passes and
+  emits checked short-bracket command fragments for the two admitted VMEC-state
+  controls. This closes the state-to-input launch-mapping guardrail, but it does
+  not yet promote long-window nonlinear turbulence-gradient or nonlinear flux
+  optimization evidence.
+- Next scientific step: use the mapped `RBS/ZBC` input-control directions to
+  write short-bracket nonlinear-gradient manifests, run bounded nonlinear
+  response audits, and promote only after replicated post-transient
+  transport-window finite-difference gates pass.

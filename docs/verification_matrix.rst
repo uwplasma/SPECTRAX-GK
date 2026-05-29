@@ -489,14 +489,20 @@ gate.
        launch-plan and measured-response artifacts are tracked in
        ``docs/_static/nonlinear_gradient_state_to_input_mapping_campaign.json``
        and
-       ``docs/_static/nonlinear_gradient_state_to_input_mapping_response.json``
-     - Open/fail-closed
+       ``docs/_static/nonlinear_gradient_state_to_input_mapping_response.json``,
+       plus the symmetry-compatible
+       ``docs/_static/nonlinear_gradient_asymmetric_state_to_input_mapping_campaign.json``
+       and
+       ``docs/_static/nonlinear_gradient_asymmetric_state_to_input_mapping_response.json``
+     - Closed for checked short-bracket launch mapping; nonlinear evidence still open
      - the QL seed screen admits ``Rsin_mid_surface_m1`` and
-       ``Zcos_mid_surface_m1`` as state controls, but the launch runbook has
-       zero mapped perturbable VMEC input controls. The measured ``RBC/ZBS``
+       ``Zcos_mid_surface_m1`` as state controls. The measured ``RBC/ZBS``
        response matrix has rank ``0`` and relative target residual ``1`` for
-       both controls, so nonlinear-gradient campaigns remain blocked until a
-       symmetry-compatible state-to-input mapping artifact passes
+       both controls, but the measured ``LASYM=true`` ``RBS/ZBC`` response has
+       rank ``2`` with condition number about ``1.02`` and residuals near
+       machine precision. The runbook now emits explicit least-squares input
+       directions for checked short-bracket launches; converged long-window
+       nonlinear-gradient campaigns remain the next evidence gate
    * - Selected optimized-equilibrium nonlinear transport audit
      - optimized-equilibrium post-transient heat-flux average with uncertainty
        and nonlinear audit bars

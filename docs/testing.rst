@@ -468,16 +468,19 @@ directions. It consumes the QL seed screen plus optional state-to-input mapping
 artifacts and fails closed unless at least two admitted state controls have a
 conditioned, residual-bounded mapping to explicit VMEC input control
 arguments. The tracked
-``docs/_static/nonlinear_gradient_state_control_runbook.json`` currently fails
-closed because the measured mapping artifact is rank-deficient. This is
-intentional: a VMEC-state coefficient is not automatically a patchable
-``RBC/RBS/ZBC/ZBS`` input coefficient, especially for stellarator-symmetric
-input decks. The current ``RBC/ZBS`` perturbation family produced zero response
-in the admitted ``Rsin_mid_surface_m1`` and ``Zcos_mid_surface_m1`` controls.
-The next nonlinear campaign must first find a symmetry-compatible input family,
-solve the baseline/plus/minus equilibria with ``vmec_jax``, measure the induced
-VMEC-state response, and pass the mapping condition/residual gate before any
-short-bracket or long-window nonlinear run is launch-ready.
+``docs/_static/nonlinear_gradient_state_control_runbook.json`` now passes only
+after consuming the symmetry-compatible
+``docs/_static/nonlinear_gradient_asymmetric_state_to_input_mapping_response.json``
+artifact. This is intentional and conservative: a VMEC-state coefficient is not
+automatically a patchable ``RBC/RBS/ZBC/ZBS`` input coefficient. The first
+stellarator-symmetric ``RBC/ZBS`` perturbation family produced zero response in
+the admitted ``Rsin_mid_surface_m1`` and ``Zcos_mid_surface_m1`` controls, while
+the follow-up ``LASYM=true`` ``RBS/ZBC`` family gives a full-rank measured
+``2 x 4`` response matrix with condition number about ``1.02`` and residuals
+near machine precision. The next nonlinear campaign is therefore allowed to
+write checked short-bracket launch manifests from these mapped input
+directions, but long-window nonlinear-gradient promotion still requires actual
+nonlinear finite-difference evidence.
 
 ``tools/write_vmec_state_to_input_mapping_campaign.py`` is the launch-plan
 artifact for that missing step. It consumes the QL seed screen, writes
@@ -500,6 +503,20 @@ rank ``0``, and relative target residual ``1`` for both admitted controls. This
 negative result is useful evidence: the current stellarator-symmetric
 ``RBC/ZBS`` directions cannot be used to launch the asymmetric ``Rsin/Zcos``
 nonlinear-gradient controls.
+
+``tools/write_vmec_asymmetric_state_to_input_mapping_campaign.py`` is the
+symmetry-compatible follow-up launch writer. It reads the same QL seed screen,
+sets ``LASYM = .TRUE.``, inserts explicit zero-baseline ``RBS/ZBC`` coefficients
+when needed, and writes matched baseline/plus/minus VMEC decks with absolute
+finite-difference steps. The tracked
+``docs/_static/nonlinear_gradient_asymmetric_state_to_input_mapping_campaign.json``
+uses four candidate ``RBS/ZBC`` directions. After the twelve generated
+``vmec_jax`` solves terminated normally,
+``tools/build_vmec_state_to_input_mapping_response.py`` wrote
+``docs/_static/nonlinear_gradient_asymmetric_state_to_input_mapping_response.json``:
+the measured Jacobian has rank ``2``, condition number about ``1.02``, and no
+mapping blockers, so the runbook can produce explicit short-bracket command
+fragments for both admitted state controls.
 
 ``tools/write_vmec_boundary_profile_perturbation_inputs.py`` is the companion
 for a single smoother composite direction. It perturbs several VMEC boundary

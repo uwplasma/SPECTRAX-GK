@@ -1,0 +1,7 @@
+row_type,state_parameter,state_control_argument,coefficient,coefficient_slug,baseline_value,inserted_missing_coefficient,delta_parameter,manifest
+state_control,Rsin_mid_surface_m1,Rsin_mid_surface_m1:1,,,,,,
+state_control,Zcos_mid_surface_m1,Zcos_mid_surface_m1:1,,,,,,
+input_direction,,,"RBS(1,1)",rbs_1_1,0.0,True,0.001,tools_out/state_to_input_mapping/qa_lowres_asymmetric/rbs_1_1/vmec_asymmetric_boundary_perturbation_manifest.json
+input_direction,,,"ZBC(1,1)",zbc_1_1,0.0,True,0.001,tools_out/state_to_input_mapping/qa_lowres_asymmetric/zbc_1_1/vmec_asymmetric_boundary_perturbation_manifest.json
+input_direction,,,"RBS(1,0)",rbs_1_0,0.0,True,0.001,tools_out/state_to_input_mapping/qa_lowres_asymmetric/rbs_1_0/vmec_asymmetric_boundary_perturbation_manifest.json
+input_direction,,,"ZBC(1,0)",zbc_1_0,0.0,True,0.001,tools_out/state_to_input_mapping/qa_lowres_asymmetric/zbc_1_0/vmec_asymmetric_boundary_perturbation_manifest.json

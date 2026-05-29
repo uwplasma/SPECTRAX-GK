@@ -1244,14 +1244,14 @@ promoted nonlinear turbulence-gradient claim.
    :alt: VMEC-state to input-control nonlinear-gradient runbook
 
    VMEC-state to input-control nonlinear-gradient runbook.  This guardrail is
-   the step between the QL seed screen and any nonlinear-gradient launch.  The
-   current artifact correctly fails closed: ``Rsin_mid_surface_m1`` and
-   ``Zcos_mid_surface_m1`` are admitted internal ``vmec_jax`` state controls,
-   but the first measured ``RBC/ZBS`` response matrix is rank deficient. The
-   required next evidence is a symmetry-compatible state-to-input Jacobian built
-   from VMEC input perturbations and re-equilibrated baseline/plus/minus states;
-   only after that mapping passes should short-bracket nonlinear runs be
-   launched.
+   the step between the QL seed screen and any nonlinear-gradient launch.  It
+   now passes only after the ``LASYM=true`` asymmetric state-to-input response
+   artifact is attached.  The accepted controls are least-squares combinations
+   of four explicit ``RBS/ZBC`` VMEC input coefficients with a measured response
+   condition number about ``1.02`` and residuals near machine precision. This
+   closes the launch-mapping guardrail for checked short-bracket nonlinear
+   runs; converged long-window nonlinear-gradient evidence remains a separate
+   gate.
 
 .. figure:: _static/nonlinear_gradient_state_to_input_mapping_campaign.png
    :width: 90%
@@ -1281,6 +1281,30 @@ promoted nonlinear turbulence-gradient claim.
    evidence. The next viable branch must either use explicit ``LASYM=true``
    ``RBS/ZBC`` controls or re-screen controls that live in the
    stellarator-symmetric subspace.
+
+.. figure:: _static/nonlinear_gradient_asymmetric_state_to_input_mapping_campaign.png
+   :width: 90%
+   :align: center
+   :alt: Asymmetric VMEC state-to-input mapping campaign launch plan
+
+   Asymmetric VMEC state-to-input mapping campaign launch plan.  This follow-up
+   uses the same QA input deck but writes ``LASYM=true`` baseline/plus/minus
+   decks for four zero-baseline ``RBS/ZBC`` coefficients with absolute
+   ``1e-3`` finite-difference steps.  The figure remains a launch-plan
+   artifact until the generated equilibria are solved and the response matrix
+   is measured.
+
+.. figure:: _static/nonlinear_gradient_asymmetric_state_to_input_mapping_response.png
+   :width: 90%
+   :align: center
+   :alt: Asymmetric VMEC state-to-input measured response matrix
+
+   Asymmetric VMEC state-to-input measured response matrix.  The twelve
+   ``LASYM=true`` ``vmec_jax`` solves terminated normally, and the measured
+   response from ``RBS/ZBC`` input coefficients to the admitted ``Rsin/Zcos``
+   state controls has rank ``2`` with condition number about ``1.02``.  The
+   least-squares residuals are near machine precision, so this artifact can be
+   attached to the runbook to produce explicit short-bracket launch directions.
 
 .. figure:: _static/qa_ess_descent_profile_rel2_nonlinear_gradient_profile_direction_zbs_1_1_zbs_1_0_rbc_1_1_central_fd_gradient_gate.png
    :width: 90%
