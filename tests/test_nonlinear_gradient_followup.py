@@ -689,6 +689,37 @@ def test_control_variate_campaign_plan_tool_writes_artifacts(tmp_path: Path) -> 
     assert out_prefix.with_suffix(".pdf").exists()
 
 
+
+
+def test_control_mean_gate_matches_seed_from_artifact_basename() -> None:
+    artifact = json.loads(
+        (
+            ROOT
+            / "docs"
+            / "_static"
+            / "qa_ess_zbs10_rel7p5_nonlinear_gradient_zbs_1_0_central_fd_gradient_gate.json"
+        ).read_text(encoding="utf-8")
+    )
+    variance = nonlinear_gradient_variance_reduction_plan(artifact)
+    plus = _control_ensemble("plus")
+    minus = _control_ensemble("minus")
+    for ensemble in (plus, minus):
+        for row in ensemble["rows"]:
+            row.pop("variant", None)
+            row["source_artifact"] = f"/tmp/interim_seed34_42/{row['source_artifact']}"
+            row["summary_artifact"] = f"/tmp/interim_seed34_42/{row['summary_artifact']}"
+
+    gate = nonlinear_gradient_control_mean_gate(
+        variance,
+        plus_ensemble=plus,
+        minus_ensemble=minus,
+    )
+
+    assert gate["passed"] is True
+    assert gate["summary"]["common_pair_count"] == 21
+    assert gate["pair_rows"][1]["label"] == "seed35"
+
+
 def test_control_mean_gate_tool_writes_artifacts(tmp_path: Path) -> None:
     path = ROOT / "tools" / "build_nonlinear_gradient_control_mean_gate.py"
     spec = importlib.util.spec_from_file_location("build_nonlinear_gradient_control_mean_gate", path)
