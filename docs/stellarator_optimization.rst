@@ -1168,6 +1168,13 @@ promising, lowering the apparent residual uncertainty to ``0.238`` with a
 mean is not independently known. The next campaign therefore needs an
 independent control-mean estimate or a better-conditioned response, not just a
 few more blind paired seeds.
+``tools/write_nonlinear_gradient_control_variate_campaign.py`` converts this
+screen into a launch contract for the independent control mean. With the
+current sample variances and a ``1.10`` SEM safety factor, the midpoint
+common-mode needs ``21`` new matched plus/minus pairs (``42`` nonlinear runs)
+to project a combined response uncertainty of ``0.480``. That closes the
+pre-run design question but not the physics claim; the actual runs must still
+pass output, replicated-window, control-mean, and central-response gates.
 Because both single-control amplitude sweeps point away from more blind
 replicas, SPECTRAX-GK now also includes
 ``tools/write_vmec_boundary_profile_perturbation_inputs.py`` for a smoother
@@ -1254,6 +1261,17 @@ promoted nonlinear turbulence-gradient claim.
    plus/minus midpoint control lowers apparent residual uncertainty to
    ``0.238``, but the campaign remains fail-closed until the control mean is
    independently known or the observable is redesigned.
+
+.. figure:: _static/qa_ess_zbs10_rel7p5_control_variate_campaign_plan.png
+   :width: 90%
+   :align: center
+   :alt: QA/ESS ZBS(1,0) rel7.5 control-variate campaign plan
+
+   QA/ESS ``ZBS(1,0)`` rel7.5 independent control-mean campaign plan. The
+   uncertainty budget shows the raw paired response, the screened
+   control-variate residual, and the projected combined uncertainty after
+   adding the independent control-mean estimate. The launch size is bounded at
+   ``21`` matched plus/minus pairs, or ``42`` new nonlinear runs.
 
 .. figure:: _static/nonlinear_gradient_composite_control_design.png
    :width: 90%

@@ -95,6 +95,28 @@ Next best step: launch a bounded independent control-mean campaign for the
 midpoint common mode, or redesign the nonlinear-gradient observable/control
 direction so the response is larger relative to turbulent spread.
 
+## 2026-05-29 Independent Control-mean Campaign Contract
+
+- Added ``nonlinear_gradient_control_variate_campaign_plan`` and
+  ``tools/write_nonlinear_gradient_control_variate_campaign.py``. The planner
+  carries the missing uncertainty term that the control-variate screen could
+  not provide: ``beta^2 Var(control_mean)`` from an independent control-mean
+  estimate.
+- Generated
+  ``docs/_static/qa_ess_zbs10_rel7p5_control_variate_campaign_plan.{json,csv,png,pdf}``.
+  Using the midpoint common-mode candidate, the pre-run campaign is
+  launch-ready under the current budget: ``21`` independent matched plus/minus
+  pairs, ``42`` new nonlinear runs, and projected combined response
+  uncertainty ``0.480 < 0.5``.
+- Scientific conclusion: this closes the design step, not the physics claim.
+  The nonlinear-gradient lane remains fail-closed until those independent runs
+  exist and pass output, replicated-window, control-mean, and central-response
+  gates.
+
+Next best step: run the bounded ``21``-pair midpoint-control campaign on the
+office GPUs, then rebuild the combined control-variate response gate with the
+independent control mean.
+
 ## 2026-05-28 Zonal-flow Objective Row Artifact
 
 - Added the first production-style row builder for the zonal-flow optimization

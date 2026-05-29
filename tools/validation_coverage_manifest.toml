@@ -1265,13 +1265,15 @@ artifact_paths = [
   "docs/_static/qa_ess_zbs10_rel7p5_nonlinear_gradient_minus_delta_replicates/qa_ess_zbs10_rel7p5_nonlinear_gradient_minus_delta_t900_ensemble_gate.png",
   "docs/_static/qa_ess_zbs10_rel7p5_variance_reduction_plan.json",
   "docs/_static/qa_ess_zbs10_rel7p5_variance_reduction_plan.png",
+  "docs/_static/qa_ess_zbs10_rel7p5_control_variate_campaign_plan.json",
+  "docs/_static/qa_ess_zbs10_rel7p5_control_variate_campaign_plan.png",
   "docs/_static/qa_ess_profile_gradient_overdetermined_nonlinear_gradient_candidate_ranking.json",
   "docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_status.json",
   "docs/_static/qa_ess_overdetermined_nonlinear_gradient_followup_plan.json",
   "docs/_static/production_nonlinear_optimization_guard.json",
 ]
 next_tests = [
-  "replace the fail-closed ZBS(1,0) 7.5% follow-up with a lower-variance paired-seed or control-variate design that specifically attacks plus-state spread",
+  "run the fail-closed ZBS(1,0) 7.5% midpoint-control campaign: 21 independent matched plus/minus pairs, then rebuild the combined control-variate response gate",
   "replace the fail-closed single-control RBS/ZBC bracket-amplitude sweep with lower-variance evidence: longer replicated windows, paired-seed variance reduction, or a better-conditioned multi-control observable",
   "add matched baseline-to-optimized turbulence-gradient audits once long-window parameter perturbation runs are available",
 ]

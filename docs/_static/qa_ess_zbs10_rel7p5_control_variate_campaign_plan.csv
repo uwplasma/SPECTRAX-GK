@@ -1,0 +1,22 @@
+pair_index,variant_label,plus_state,minus_state,control_observable,response_observable
+1,seed34,plus_delta,minus_delta,0.5 * (Q_plus + Q_minus),Q_plus - Q_minus
+2,seed35,plus_delta,minus_delta,0.5 * (Q_plus + Q_minus),Q_plus - Q_minus
+3,seed36,plus_delta,minus_delta,0.5 * (Q_plus + Q_minus),Q_plus - Q_minus
+4,seed37,plus_delta,minus_delta,0.5 * (Q_plus + Q_minus),Q_plus - Q_minus
+5,seed38,plus_delta,minus_delta,0.5 * (Q_plus + Q_minus),Q_plus - Q_minus
+6,seed39,plus_delta,minus_delta,0.5 * (Q_plus + Q_minus),Q_plus - Q_minus
+7,seed40,plus_delta,minus_delta,0.5 * (Q_plus + Q_minus),Q_plus - Q_minus
+8,seed41,plus_delta,minus_delta,0.5 * (Q_plus + Q_minus),Q_plus - Q_minus
+9,seed42,plus_delta,minus_delta,0.5 * (Q_plus + Q_minus),Q_plus - Q_minus
+10,seed43,plus_delta,minus_delta,0.5 * (Q_plus + Q_minus),Q_plus - Q_minus
+11,seed44,plus_delta,minus_delta,0.5 * (Q_plus + Q_minus),Q_plus - Q_minus
+12,seed45,plus_delta,minus_delta,0.5 * (Q_plus + Q_minus),Q_plus - Q_minus
+13,seed46,plus_delta,minus_delta,0.5 * (Q_plus + Q_minus),Q_plus - Q_minus
+14,seed47,plus_delta,minus_delta,0.5 * (Q_plus + Q_minus),Q_plus - Q_minus
+15,seed48,plus_delta,minus_delta,0.5 * (Q_plus + Q_minus),Q_plus - Q_minus
+16,seed49,plus_delta,minus_delta,0.5 * (Q_plus + Q_minus),Q_plus - Q_minus
+17,seed50,plus_delta,minus_delta,0.5 * (Q_plus + Q_minus),Q_plus - Q_minus
+18,seed51,plus_delta,minus_delta,0.5 * (Q_plus + Q_minus),Q_plus - Q_minus
+19,seed52,plus_delta,minus_delta,0.5 * (Q_plus + Q_minus),Q_plus - Q_minus
+20,seed53,plus_delta,minus_delta,0.5 * (Q_plus + Q_minus),Q_plus - Q_minus
+21,seed54,plus_delta,minus_delta,0.5 * (Q_plus + Q_minus),Q_plus - Q_minus

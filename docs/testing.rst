@@ -455,6 +455,12 @@ reduces the apparent residual response uncertainty to about ``0.238`` with a
 not independently known. The recommended next action is therefore an
 independent control-mean estimate or a better-conditioned observable rather
 than more blind replicas.
+``tools/write_nonlinear_gradient_control_variate_campaign.py`` turns that
+screen into a bounded pre-run contract. For the tracked rel7.5 artifact, the
+midpoint common-mode control needs ``21`` independent matched plus/minus pairs
+(``42`` new nonlinear runs) to reduce the combined response uncertainty to
+about ``0.480``. This is launch readiness only; promotion still requires the
+new output, window, control-mean, and central-response gates to pass.
 ``tools/design_nonlinear_gradient_composite_control.py`` is the stricter
 control-admission gate for that next campaign. It consumes the same completed
 central-FD artifacts, admits only VMEC boundary coefficients with resolved

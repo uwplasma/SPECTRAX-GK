@@ -570,7 +570,9 @@ gate.
        ``0.984``. A midpoint common-mode control variate lowers apparent
        residual uncertainty to ``0.238`` but is blocked because the control
        mean is not independently known, motivating an independent control-mean
-       estimate or a better-conditioned observable
+       estimate or a better-conditioned observable. The pre-run launch
+       contract estimates ``21`` independent control-mean pairs, ``42`` new
+       nonlinear runs, and projected combined uncertainty ``0.480``
 
 Use this section as the verification boundary for README figures: the
 VMEC/Boozer parity, gradient-holdout, and reduced optimization/UQ panels can be

@@ -10,10 +10,12 @@ import pytest
 from spectraxgk.nonlinear_gradient_followup import (
     NonlinearGradientCandidateDesignConfig,
     NonlinearGradientCompositeControlConfig,
+    NonlinearGradientControlVariateCampaignConfig,
     NonlinearGradientFollowupConfig,
     NonlinearGradientVarianceReductionConfig,
     nonlinear_gradient_candidate_design_report,
     nonlinear_gradient_composite_control_report,
+    nonlinear_gradient_control_variate_campaign_plan,
     nonlinear_gradient_followup_plan,
     nonlinear_gradient_variance_reduction_plan,
 )
@@ -459,6 +461,8 @@ def test_variance_reduction_plan_quantifies_paired_seed_response() -> None:
     assert report["summary"]["best_control_variate"] == "plus_minus_midpoint_common_mode"
     midpoint = report["control_variate_candidates"][1]
     assert midpoint["adjusted_response_uncertainty_rel"] < 0.5
+    assert midpoint["control_sample_std"] > 0.0
+    assert midpoint["adjusted_response_sample_std"] > 0.0
     assert "control_mean_not_independently_known" in midpoint["blockers"]
     assert report["variance_reduction"]["limiting_state"] == "plus"
     assert report["pair_rows"][0]["label"] == "dt0p04"
@@ -492,6 +496,63 @@ def test_variance_reduction_plan_quantifies_paired_seed_response() -> None:
             nonlinear_gradient_variance_reduction_plan(artifact, config=config)
 
 
+def test_control_variate_campaign_plan_requires_independent_control_mean() -> None:
+    artifact = json.loads(
+        (
+            ROOT
+            / "docs"
+            / "_static"
+            / "qa_ess_zbs10_rel7p5_nonlinear_gradient_zbs_1_0_central_fd_gradient_gate.json"
+        ).read_text(encoding="utf-8")
+    )
+    variance = nonlinear_gradient_variance_reduction_plan(
+        artifact,
+        case="qa_ess_zbs10_rel7p5_variance_reduction_plan",
+    )
+
+    plan = nonlinear_gradient_control_variate_campaign_plan(
+        variance,
+        case="qa_ess_zbs10_rel7p5_control_variate_campaign_plan",
+    )
+
+    assert plan["passed"] is True
+    assert plan["action"] == "launch_independent_control_mean_campaign"
+    assert plan["candidate_name"] == "plus_minus_midpoint_common_mode"
+    assert plan["summary"]["required_independent_control_mean_pairs"] == 21
+    assert plan["summary"]["planned_new_run_count"] == 42
+    assert plan["summary"]["predicted_combined_uncertainty_rel"] <= 0.5
+    assert plan["planned_pairs"][0]["variant_label"] == "seed34"
+    assert plan["postprocess_contract"]["promotion_rule"].startswith("do not promote")
+
+    blocked = nonlinear_gradient_control_variate_campaign_plan(
+        variance,
+        config=NonlinearGradientControlVariateCampaignConfig(max_control_mean_pairs=8),
+    )
+    assert blocked["passed"] is False
+    assert blocked["action"] == "redesign_observable_or_raise_control_mean_budget"
+    assert "control_mean_pair_budget_exceeded" in blocked["blockers"]
+
+    validation_cases = [
+        (
+            "target_response_uncertainty_rel",
+            NonlinearGradientControlVariateCampaignConfig(target_response_uncertainty_rel=0.0),
+        ),
+        ("sem_safety_factor", NonlinearGradientControlVariateCampaignConfig(sem_safety_factor=0.0)),
+        (
+            "min_control_mean_pairs",
+            NonlinearGradientControlVariateCampaignConfig(min_control_mean_pairs=0),
+        ),
+        (
+            "max_control_mean_pairs",
+            NonlinearGradientControlVariateCampaignConfig(min_control_mean_pairs=4, max_control_mean_pairs=3),
+        ),
+        ("first_new_seed", NonlinearGradientControlVariateCampaignConfig(first_new_seed=-1)),
+    ]
+    for message, config in validation_cases:
+        with pytest.raises(ValueError, match=message):
+            nonlinear_gradient_control_variate_campaign_plan(variance, config=config)
+
+
 def test_variance_reduction_plan_tool_writes_artifacts(tmp_path: Path) -> None:
     path = ROOT / "tools" / "build_nonlinear_gradient_variance_reduction_plan.py"
     spec = importlib.util.spec_from_file_location("build_nonlinear_gradient_variance_reduction_plan", path)
@@ -519,6 +580,27 @@ def test_variance_reduction_plan_tool_writes_artifacts(tmp_path: Path) -> None:
     report = json.loads(out_prefix.with_suffix(".json").read_text(encoding="utf-8"))
     assert report["kind"] == "nonlinear_turbulence_gradient_variance_reduction_plan"
     assert out_prefix.with_suffix(".csv").exists()
+    assert out_prefix.with_suffix(".png").exists()
+    assert out_prefix.with_suffix(".pdf").exists()
+
+
+def test_control_variate_campaign_plan_tool_writes_artifacts(tmp_path: Path) -> None:
+    path = ROOT / "tools" / "write_nonlinear_gradient_control_variate_campaign.py"
+    spec = importlib.util.spec_from_file_location("write_nonlinear_gradient_control_variate_campaign", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+
+    out_prefix = tmp_path / "cv_campaign"
+    source = ROOT / "docs" / "_static" / "qa_ess_zbs10_rel7p5_variance_reduction_plan.json"
+    assert module.main([str(source), "--out-prefix", str(out_prefix)]) == 0
+
+    report = json.loads(out_prefix.with_suffix(".json").read_text(encoding="utf-8"))
+    rows = out_prefix.with_suffix(".csv").read_text(encoding="utf-8").splitlines()
+    assert report["kind"] == "nonlinear_turbulence_gradient_control_variate_campaign_plan"
+    assert report["action"] == "launch_independent_control_mean_campaign"
+    assert rows[0].startswith("pair_index,variant_label")
     assert out_prefix.with_suffix(".png").exists()
     assert out_prefix.with_suffix(".pdf").exists()
 
