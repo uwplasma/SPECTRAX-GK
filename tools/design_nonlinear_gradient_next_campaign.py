@@ -53,6 +53,9 @@ def _write_csv(path: Path, report: dict[str, Any]) -> None:
         "locality_safe_bracket_scale_limit",
         "bracket_only_feasible",
         "current_replicates_per_state",
+        "variance_limiting_state",
+        "max_mean_rel_spread",
+        "failed_spread_states",
         "estimated_required_replicates_at_locality_limit",
         "estimated_extra_replicates_at_locality_limit",
     ]
@@ -61,6 +64,7 @@ def _write_csv(path: Path, report: dict[str, Any]) -> None:
         writer.writeheader()
         for rank, row in enumerate(report["candidates"], start=1):
             metrics = row.get("metrics", {}) if isinstance(row.get("metrics"), dict) else {}
+            variance = row.get("variance_reduction", {}) if isinstance(row.get("variance_reduction"), dict) else {}
             writer.writerow(
                 {
                     "rank": rank,
@@ -74,6 +78,11 @@ def _write_csv(path: Path, report: dict[str, Any]) -> None:
                     "locality_safe_bracket_scale_limit": row.get("locality_safe_bracket_scale_limit"),
                     "bracket_only_feasible": row.get("bracket_only_feasible"),
                     "current_replicates_per_state": row.get("current_replicates_per_state"),
+                    "variance_limiting_state": variance.get("limiting_state"),
+                    "max_mean_rel_spread": variance.get("max_mean_rel_spread"),
+                    "failed_spread_states": ";".join(variance.get("failed_spread_states", []))
+                    if isinstance(variance.get("failed_spread_states"), list)
+                    else "",
                     "estimated_required_replicates_at_locality_limit": row.get(
                         "estimated_required_replicates_at_locality_limit"
                     ),

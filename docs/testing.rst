@@ -438,10 +438,10 @@ sidecars that compare the uncertainty-required bracket scale, locality-safe
 bracket scale, and extra-replica estimate. The tracked design artifact
 ``docs/_static/nonlinear_gradient_next_campaign_design.json`` now summarizes
 all tracked nonlinear central-FD artifacts: ``16`` candidates, zero promoted
-nonlinear-gradient controls, one bounded-replica candidate, and ``15`` controls
+nonlinear-gradient controls, one legacy bounded-replica candidate, and ``15`` controls
 requiring replacement, locality repair, or variance reduction. Its
-recommendation is to combine a locality-capped bracket with bounded matched
-replicas only for the admitted candidate, while keeping the broader
+recommendation now prioritizes paired-seed or control-variate variance
+reduction for the current plus-state limiter, while keeping the broader
 nonlinear-gradient claim fail-closed.
 ``tools/design_nonlinear_gradient_composite_control.py`` is the stricter
 control-admission gate for that next campaign. It consumes the same completed

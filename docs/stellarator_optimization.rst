@@ -1151,10 +1151,11 @@ The design gate estimates the bracket scale needed to satisfy propagated
 uncertainty, the locality-safe bracket scale implied by the asymmetry gate,
 and the number of extra matched replicas needed after applying that locality
 cap. The refreshed design scans all 16 tracked central-FD artifacts: zero are
-promoted, one admits a bounded matched-replica follow-up class, and the other
-15 require replacement, locality repair, or variance reduction. The planner
-therefore recommends a better-conditioned control or variance-reduced
-observable instead of more same-bracket replicas.
+promoted, one legacy candidate still admits a bounded matched-replica class,
+and 15 require replacement, locality repair, or variance reduction. Because
+the newest local ``ZBS(1,0)`` follow-up is plus-state variance limited, the
+planner now recommends paired-seed or control-variate variance reduction
+instead of more same-bracket replicas.
 Because both single-control amplitude sweeps point away from more blind
 replicas, SPECTRAX-GK now also includes
 ``tools/write_vmec_boundary_profile_perturbation_inputs.py`` for a smoother
@@ -1211,10 +1212,11 @@ promoted nonlinear turbulence-gradient claim.
    bracket scale required by uncertainty to the locality-safe bracket scale,
    and the right panel estimates extra replicas per state after applying the
    locality cap.  The refreshed artifact now scans all 16 tracked central-FD
-   gates: no candidate is promoted, one candidate admits a bounded matched
-   replica follow-up, and the remaining 15 candidates require replacement,
-   locality repair, or variance reduction before more long-window GPU time is
-   justified.
+   gates: no candidate is promoted, one legacy candidate admits a bounded
+   matched-replica follow-up, and the remaining 15 candidates require
+   replacement, locality repair, or variance reduction before more long-window
+   GPU time is justified. The top-level action is now to attack the plus-state
+   variance limiter with paired-seed or control-variate design.
 
 .. figure:: _static/qa_ess_zbs10_rel7p5_nonlinear_gradient_zbs_1_0_central_fd_gradient_gate.png
    :width: 90%

@@ -343,6 +343,8 @@ def test_candidate_design_distinguishes_bracket_ready_replicate_ready_and_invali
     validation_cases = [
         ("max_gradient_uncertainty_rel", NonlinearGradientCandidateDesignConfig(max_gradient_uncertainty_rel=0.0)),
         ("max_fd_asymmetry_rel", NonlinearGradientCandidateDesignConfig(max_fd_asymmetry_rel=0.0)),
+        ("max_window_mean_rel_spread", NonlinearGradientCandidateDesignConfig(max_window_mean_rel_spread=0.0)),
+        ("max_window_sem_rel", NonlinearGradientCandidateDesignConfig(max_window_sem_rel=0.0)),
         ("min_fd_response_fraction", NonlinearGradientCandidateDesignConfig(min_fd_response_fraction=0.0)),
         ("sem_safety_factor", NonlinearGradientCandidateDesignConfig(sem_safety_factor=0.0)),
         ("max_extra_replicates_per_state", NonlinearGradientCandidateDesignConfig(max_extra_replicates_per_state=-1)),
@@ -389,6 +391,31 @@ def test_candidate_design_next_actions_and_metric_edge_cases() -> None:
         config=NonlinearGradientFollowupConfig(max_extra_replicates_per_state=0),
     )
     assert no_runs["candidate_actions"][0]["planned_run_count"] == 0
+
+
+def test_candidate_design_identifies_limiting_spread_state_for_variance_reduction() -> None:
+    artifact = _artifact(response=0.032, asymmetry=0.044, uncertainty=1.81)
+    source_ensembles = artifact["source_ensembles"]
+    assert isinstance(source_ensembles, dict)
+    for state, spread in (("baseline", 0.108), ("plus", 0.196), ("minus", 0.057)):
+        ensemble = source_ensembles[state]
+        assert isinstance(ensemble, dict)
+        ensemble["passed"] = spread <= 0.15
+        ensemble["statistics"] = {
+            "n_reports": 4,
+            "mean_rel_spread": spread,
+            "combined_sem_rel": 0.05,
+        }
+
+    report = nonlinear_gradient_candidate_design_report([artifact], labels=["zbs10_rel7p5"])
+    row = report["candidates"][0]
+
+    assert row["action"] == "design_variance_reduction_for_limiting_state"
+    assert row["variance_reduction"]["limiting_state"] == "plus"
+    assert row["variance_reduction"]["failed_spread_states"] == ["plus"]
+    assert row["variance_reduction"]["max_mean_rel_spread"] == pytest.approx(0.196)
+    assert "paired-seed" in row["recommendation"]
+    assert report["next_action"].startswith("target paired-seed")
 
 
 def test_design_nonlinear_gradient_next_campaign_tool_writes_artifacts(tmp_path: Path) -> None:

@@ -25,7 +25,45 @@
       "path": "docs/_static/qa_ess_descent_profile_rel2_nonlinear_gradient_plus_delta_followup_central_fd_gradient_gate.json",
       "recommendation": "the finite-difference bracket is nonlocal; shrink the bracket or replace the control before spending replicas",
       "uncertainty_required_bracket_scale": 2.444749883699462,
-      "usable_bracket_scale_for_estimate": 1.0
+      "usable_bracket_scale_for_estimate": 1.0,
+      "variance_reduction": {
+        "failed_sem_states": [],
+        "failed_spread_states": [
+          "plus"
+        ],
+        "limiting_state": "plus",
+        "max_mean_rel_spread": 0.16597636568684226,
+        "recommendation": "target paired-seed or control-variate variance reduction for plus before adding blind replicas",
+        "state_rows": [
+          {
+            "combined_sem_rel": 0.032632878819822644,
+            "mean_rel_spread": 0.0267994982982098,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "baseline"
+          },
+          {
+            "combined_sem_rel": 0.029270210137321662,
+            "mean_rel_spread": 0.16597636568684226,
+            "n_reports": 6,
+            "passed": false,
+            "sem_gate_passed": true,
+            "spread_gate_passed": false,
+            "state": "plus"
+          },
+          {
+            "combined_sem_rel": 0.03129872827401187,
+            "mean_rel_spread": 0.035116758127572464,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "minus"
+          }
+        ]
+      }
     },
     {
       "action": "shrink_or_replace_nonlocal_control",
@@ -52,7 +90,45 @@
       "path": "docs/_static/qa_ess_descent_profile_rel2_nonlinear_gradient_profile_direction_zbs_1_1_zbs_1_0_rbc_1_1_central_fd_gradient_gate.json",
       "recommendation": "the finite-difference bracket is nonlocal; shrink the bracket or replace the control before spending replicas",
       "uncertainty_required_bracket_scale": 2.2563481643361603,
-      "usable_bracket_scale_for_estimate": 1.0
+      "usable_bracket_scale_for_estimate": 1.0,
+      "variance_reduction": {
+        "failed_sem_states": [],
+        "failed_spread_states": [
+          "plus"
+        ],
+        "limiting_state": "plus",
+        "max_mean_rel_spread": 0.16859753146262083,
+        "recommendation": "target paired-seed or control-variate variance reduction for plus before adding blind replicas",
+        "state_rows": [
+          {
+            "combined_sem_rel": 0.032632878819822644,
+            "mean_rel_spread": 0.0267994982982098,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "baseline"
+          },
+          {
+            "combined_sem_rel": 0.04867065864463235,
+            "mean_rel_spread": 0.16859753146262083,
+            "n_reports": 3,
+            "passed": false,
+            "sem_gate_passed": true,
+            "spread_gate_passed": false,
+            "state": "plus"
+          },
+          {
+            "combined_sem_rel": 0.03129872827401187,
+            "mean_rel_spread": 0.035116758127572464,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "minus"
+          }
+        ]
+      }
     },
     {
       "action": "design_better_conditioned_control_or_variance_reduction",
@@ -79,7 +155,43 @@
       "path": "docs/_static/qa_ess_profile_gradient_rbc_1_1_nonlinear_gradient_rbc_1_1_central_fd_gradient_gate.json",
       "recommendation": "bracket-only and bounded-replica fixes are not efficient; design a better-conditioned composite direction, variance-reduced observable, or checked response-larger bracket",
       "uncertainty_required_bracket_scale": 1.3662432641954907,
-      "usable_bracket_scale_for_estimate": 1.0
+      "usable_bracket_scale_for_estimate": 1.0,
+      "variance_reduction": {
+        "failed_sem_states": [],
+        "failed_spread_states": [],
+        "limiting_state": "plus",
+        "max_mean_rel_spread": 0.11535931631561402,
+        "recommendation": "state ensembles pass spread/SEM gates; focus on finite-difference conditioning",
+        "state_rows": [
+          {
+            "combined_sem_rel": 0.030869270841209266,
+            "mean_rel_spread": 0.0693683541430074,
+            "n_reports": 5,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "baseline"
+          },
+          {
+            "combined_sem_rel": 0.03343099700662646,
+            "mean_rel_spread": 0.11535931631561402,
+            "n_reports": 5,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "plus"
+          },
+          {
+            "combined_sem_rel": 0.036608833768256875,
+            "mean_rel_spread": 0.02464063751367196,
+            "n_reports": 5,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "minus"
+          }
+        ]
+      }
     },
     {
       "action": "increase_checked_bracket_or_replace_control",
@@ -106,7 +218,43 @@
       "path": "docs/_static/qa_ess_profile_gradient_zbs_1_0_nonlinear_gradient_zbs_1_0_central_fd_gradient_gate.json",
       "recommendation": "the finite-difference response is below the resolved-response gate; run a checked bracket sweep or replace this control before adding replicas",
       "uncertainty_required_bracket_scale": 20.613242807334768,
-      "usable_bracket_scale_for_estimate": 1.0
+      "usable_bracket_scale_for_estimate": 1.0,
+      "variance_reduction": {
+        "failed_sem_states": [],
+        "failed_spread_states": [],
+        "limiting_state": "baseline",
+        "max_mean_rel_spread": 0.0650361471727721,
+        "recommendation": "state ensembles pass spread/SEM gates; focus on finite-difference conditioning",
+        "state_rows": [
+          {
+            "combined_sem_rel": 0.029184197715839095,
+            "mean_rel_spread": 0.0650361471727721,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "baseline"
+          },
+          {
+            "combined_sem_rel": 0.025614687455461107,
+            "mean_rel_spread": 0.0385414802869404,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "plus"
+          },
+          {
+            "combined_sem_rel": 0.035176906186089596,
+            "mean_rel_spread": 0.06467491448295161,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "minus"
+          }
+        ]
+      }
     },
     {
       "action": "shrink_or_replace_nonlocal_control",
@@ -133,7 +281,43 @@
       "path": "docs/_static/qa_ess_profile_gradient_zbs_1_1_nonlinear_gradient_zbs_1_1_central_fd_gradient_gate.json",
       "recommendation": "the finite-difference bracket is nonlocal; shrink the bracket or replace the control before spending replicas",
       "uncertainty_required_bracket_scale": 1.0,
-      "usable_bracket_scale_for_estimate": 1.0
+      "usable_bracket_scale_for_estimate": 1.0,
+      "variance_reduction": {
+        "failed_sem_states": [],
+        "failed_spread_states": [],
+        "limiting_state": "baseline",
+        "max_mean_rel_spread": 0.12047185129942896,
+        "recommendation": "state ensembles pass spread/SEM gates; focus on finite-difference conditioning",
+        "state_rows": [
+          {
+            "combined_sem_rel": 0.03479146015583147,
+            "mean_rel_spread": 0.12047185129942896,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "baseline"
+          },
+          {
+            "combined_sem_rel": 0.02109796700161871,
+            "mean_rel_spread": 0.06095270282638091,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "plus"
+          },
+          {
+            "combined_sem_rel": 0.027793259249691865,
+            "mean_rel_spread": 0.025153640124758042,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "minus"
+          }
+        ]
+      }
     },
     {
       "action": "shrink_or_replace_nonlocal_control",
@@ -160,7 +344,43 @@
       "path": "docs/_static/qa_ess_rbc11_rel5_nonlinear_gradient_rbc_1_1_central_fd_gradient_gate.json",
       "recommendation": "the finite-difference bracket is nonlocal; shrink the bracket or replace the control before spending replicas",
       "uncertainty_required_bracket_scale": 1.0,
-      "usable_bracket_scale_for_estimate": 1.0
+      "usable_bracket_scale_for_estimate": 1.0,
+      "variance_reduction": {
+        "failed_sem_states": [],
+        "failed_spread_states": [],
+        "limiting_state": "plus",
+        "max_mean_rel_spread": 0.1403048927651362,
+        "recommendation": "state ensembles pass spread/SEM gates; focus on finite-difference conditioning",
+        "state_rows": [
+          {
+            "combined_sem_rel": 0.027421666128794354,
+            "mean_rel_spread": 0.07629676130745845,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "baseline"
+          },
+          {
+            "combined_sem_rel": 0.04096343820621508,
+            "mean_rel_spread": 0.1403048927651362,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "plus"
+          },
+          {
+            "combined_sem_rel": 0.02804046956607492,
+            "mean_rel_spread": 0.03217747471270095,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "minus"
+          }
+        ]
+      }
     },
     {
       "action": "shrink_or_replace_nonlocal_control",
@@ -187,7 +407,43 @@
       "path": "docs/_static/qa_ess_rbc11_rel8_nonlinear_gradient_rbc_1_1_central_fd_gradient_gate.json",
       "recommendation": "the finite-difference bracket is nonlocal; shrink the bracket or replace the control before spending replicas",
       "uncertainty_required_bracket_scale": 1.0130242378116385,
-      "usable_bracket_scale_for_estimate": 1.0
+      "usable_bracket_scale_for_estimate": 1.0,
+      "variance_reduction": {
+        "failed_sem_states": [],
+        "failed_spread_states": [],
+        "limiting_state": "minus",
+        "max_mean_rel_spread": 0.07491194286616172,
+        "recommendation": "state ensembles pass spread/SEM gates; focus on finite-difference conditioning",
+        "state_rows": [
+          {
+            "combined_sem_rel": 0.035532943061142824,
+            "mean_rel_spread": 0.03224976158811012,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "baseline"
+          },
+          {
+            "combined_sem_rel": 0.045931902976901876,
+            "mean_rel_spread": 0.030943329368051588,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "plus"
+          },
+          {
+            "combined_sem_rel": 0.028288479831583904,
+            "mean_rel_spread": 0.07491194286616172,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "minus"
+          }
+        ]
+      }
     },
     {
       "action": "add_limited_replicates_with_locality_cap",
@@ -214,10 +470,46 @@
       "path": "docs/_static/qa_ess_zbs10_rel5_nonlinear_gradient_zbs_1_0_central_fd_gradient_gate.json",
       "recommendation": "combine the largest locality-safe bracket with a bounded number of matched replicas",
       "uncertainty_required_bracket_scale": 1.5353050952790863,
-      "usable_bracket_scale_for_estimate": 1.5
+      "usable_bracket_scale_for_estimate": 1.5,
+      "variance_reduction": {
+        "failed_sem_states": [],
+        "failed_spread_states": [],
+        "limiting_state": "baseline",
+        "max_mean_rel_spread": 0.07629676130745845,
+        "recommendation": "state ensembles pass spread/SEM gates; focus on finite-difference conditioning",
+        "state_rows": [
+          {
+            "combined_sem_rel": 0.027421666128794354,
+            "mean_rel_spread": 0.07629676130745845,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "baseline"
+          },
+          {
+            "combined_sem_rel": 0.03354120481158427,
+            "mean_rel_spread": 0.0286812718951146,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "plus"
+          },
+          {
+            "combined_sem_rel": 0.039727111927266606,
+            "mean_rel_spread": 0.03165093455952247,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "minus"
+          }
+        ]
+      }
     },
     {
-      "action": "design_better_conditioned_control_or_variance_reduction",
+      "action": "design_variance_reduction_for_limiting_state",
       "bracket_only_feasible": false,
       "current_replicates_per_state": 4,
       "estimated_extra_replicates_at_locality_limit": 22,
@@ -239,9 +531,47 @@
       "parameter_name": "zbs_1_0",
       "passed": false,
       "path": "docs/_static/qa_ess_zbs10_rel7p5_nonlinear_gradient_zbs_1_0_central_fd_gradient_gate.json",
-      "recommendation": "bracket-only and bounded-replica fixes are not efficient; design a better-conditioned composite direction, variance-reduced observable, or checked response-larger bracket",
+      "recommendation": "target paired-seed or control-variate variance reduction for plus before adding blind replicas",
       "uncertainty_required_bracket_scale": 3.612303939955011,
-      "usable_bracket_scale_for_estimate": 1.5
+      "usable_bracket_scale_for_estimate": 1.5,
+      "variance_reduction": {
+        "failed_sem_states": [],
+        "failed_spread_states": [
+          "plus"
+        ],
+        "limiting_state": "plus",
+        "max_mean_rel_spread": 0.19599672297291024,
+        "recommendation": "target paired-seed or control-variate variance reduction for plus before adding blind replicas",
+        "state_rows": [
+          {
+            "combined_sem_rel": 0.02723033764754902,
+            "mean_rel_spread": 0.10815040295891594,
+            "n_reports": 4,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "baseline"
+          },
+          {
+            "combined_sem_rel": 0.04853950685421821,
+            "mean_rel_spread": 0.19599672297291024,
+            "n_reports": 4,
+            "passed": false,
+            "sem_gate_passed": true,
+            "spread_gate_passed": false,
+            "state": "plus"
+          },
+          {
+            "combined_sem_rel": 0.03178597142840365,
+            "mean_rel_spread": 0.0567454109575854,
+            "n_reports": 4,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "minus"
+          }
+        ]
+      }
     },
     {
       "action": "shrink_or_replace_nonlocal_control",
@@ -268,7 +598,43 @@
       "path": "docs/_static/qa_ess_zbs11_rel5_nonlinear_gradient_zbs_1_1_central_fd_gradient_gate.json",
       "recommendation": "the finite-difference bracket is nonlocal; shrink the bracket or replace the control before spending replicas",
       "uncertainty_required_bracket_scale": 1.0,
-      "usable_bracket_scale_for_estimate": 1.0
+      "usable_bracket_scale_for_estimate": 1.0,
+      "variance_reduction": {
+        "failed_sem_states": [],
+        "failed_spread_states": [],
+        "limiting_state": "baseline",
+        "max_mean_rel_spread": 0.07629676130745845,
+        "recommendation": "state ensembles pass spread/SEM gates; focus on finite-difference conditioning",
+        "state_rows": [
+          {
+            "combined_sem_rel": 0.027421666128794354,
+            "mean_rel_spread": 0.07629676130745845,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "baseline"
+          },
+          {
+            "combined_sem_rel": 0.02818291707610637,
+            "mean_rel_spread": 0.05861346825001753,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "plus"
+          },
+          {
+            "combined_sem_rel": 0.01860617677425483,
+            "mean_rel_spread": 0.037069035414993096,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "minus"
+          }
+        ]
+      }
     },
     {
       "action": "increase_checked_bracket_or_replace_control",
@@ -295,7 +661,43 @@
       "path": "docs/_static/qa_lowres_alpha0p003_state_control_short_bracket_rsin_mid_surface_m1_nonlinear_gradient_state_control_rsin_mid_surface_m1_central_fd_gradient_gate.json",
       "recommendation": "the finite-difference response is below the resolved-response gate; run a checked bracket sweep or replace this control before adding replicas",
       "uncertainty_required_bracket_scale": 17.731640771090706,
-      "usable_bracket_scale_for_estimate": 1.0
+      "usable_bracket_scale_for_estimate": 1.0,
+      "variance_reduction": {
+        "failed_sem_states": [],
+        "failed_spread_states": [],
+        "limiting_state": "baseline",
+        "max_mean_rel_spread": 0.03554992919310915,
+        "recommendation": "state ensembles pass spread/SEM gates; focus on finite-difference conditioning",
+        "state_rows": [
+          {
+            "combined_sem_rel": 0.03381947464404109,
+            "mean_rel_spread": 0.03554992919310915,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "baseline"
+          },
+          {
+            "combined_sem_rel": 0.026372485049135256,
+            "mean_rel_spread": 0.017686347840580808,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "plus"
+          },
+          {
+            "combined_sem_rel": 0.025807971366060254,
+            "mean_rel_spread": 0.023481595352243232,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "minus"
+          }
+        ]
+      }
     },
     {
       "action": "increase_checked_bracket_or_replace_control",
@@ -322,7 +724,43 @@
       "path": "docs/_static/qa_lowres_alpha0p003_state_control_short_bracket_zcos_mid_surface_m1_nonlinear_gradient_state_control_zcos_mid_surface_m1_central_fd_gradient_gate.json",
       "recommendation": "the finite-difference response is below the resolved-response gate; run a checked bracket sweep or replace this control before adding replicas",
       "uncertainty_required_bracket_scale": 57.93761720851868,
-      "usable_bracket_scale_for_estimate": 1.0
+      "usable_bracket_scale_for_estimate": 1.0,
+      "variance_reduction": {
+        "failed_sem_states": [],
+        "failed_spread_states": [],
+        "limiting_state": "plus",
+        "max_mean_rel_spread": 0.04086978107689952,
+        "recommendation": "state ensembles pass spread/SEM gates; focus on finite-difference conditioning",
+        "state_rows": [
+          {
+            "combined_sem_rel": 0.03386056728299225,
+            "mean_rel_spread": 0.035593124435508605,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "baseline"
+          },
+          {
+            "combined_sem_rel": 0.026591513519335655,
+            "mean_rel_spread": 0.04086978107689952,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "plus"
+          },
+          {
+            "combined_sem_rel": 0.025901677259100107,
+            "mean_rel_spread": 0.03606563502014689,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "minus"
+          }
+        ]
+      }
     },
     {
       "action": "increase_checked_bracket_or_replace_control",
@@ -349,7 +787,43 @@
       "path": "docs/_static/qa_lowres_alpha0p010_state_control_short_bracket_rsin_mid_surface_m1_nonlinear_gradient_state_control_rsin_mid_surface_m1_central_fd_gradient_gate.json",
       "recommendation": "the finite-difference response is below the resolved-response gate; run a checked bracket sweep or replace this control before adding replicas",
       "uncertainty_required_bracket_scale": 20.30039469963417,
-      "usable_bracket_scale_for_estimate": 1.0
+      "usable_bracket_scale_for_estimate": 1.0,
+      "variance_reduction": {
+        "failed_sem_states": [],
+        "failed_spread_states": [],
+        "limiting_state": "minus",
+        "max_mean_rel_spread": 0.03807973165860214,
+        "recommendation": "state ensembles pass spread/SEM gates; focus on finite-difference conditioning",
+        "state_rows": [
+          {
+            "combined_sem_rel": 0.03386056728299225,
+            "mean_rel_spread": 0.035593124435508605,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "baseline"
+          },
+          {
+            "combined_sem_rel": 0.031717709111905315,
+            "mean_rel_spread": 0.026883926198030223,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "plus"
+          },
+          {
+            "combined_sem_rel": 0.0337326474529869,
+            "mean_rel_spread": 0.03807973165860214,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "minus"
+          }
+        ]
+      }
     },
     {
       "action": "increase_checked_bracket_or_replace_control",
@@ -376,7 +850,43 @@
       "path": "docs/_static/qa_lowres_alpha0p010_state_control_short_bracket_zcos_mid_surface_m1_nonlinear_gradient_state_control_zcos_mid_surface_m1_central_fd_gradient_gate.json",
       "recommendation": "the finite-difference response is below the resolved-response gate; run a checked bracket sweep or replace this control before adding replicas",
       "uncertainty_required_bracket_scale": 19.304953941083163,
-      "usable_bracket_scale_for_estimate": 1.0
+      "usable_bracket_scale_for_estimate": 1.0,
+      "variance_reduction": {
+        "failed_sem_states": [],
+        "failed_spread_states": [],
+        "limiting_state": "plus",
+        "max_mean_rel_spread": 0.05361156390677315,
+        "recommendation": "state ensembles pass spread/SEM gates; focus on finite-difference conditioning",
+        "state_rows": [
+          {
+            "combined_sem_rel": 0.03386056728299225,
+            "mean_rel_spread": 0.035593124435508605,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "baseline"
+          },
+          {
+            "combined_sem_rel": 0.026056295523557867,
+            "mean_rel_spread": 0.05361156390677315,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "plus"
+          },
+          {
+            "combined_sem_rel": 0.026178112349009654,
+            "mean_rel_spread": 0.0458009269371776,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "minus"
+          }
+        ]
+      }
     },
     {
       "action": "increase_checked_bracket_or_replace_control",
@@ -403,7 +913,43 @@
       "path": "docs/_static/qa_lowres_state_control_short_bracket_rsin_mid_surface_m1_nonlinear_gradient_state_control_rsin_mid_surface_m1_central_fd_gradient_gate.json",
       "recommendation": "the finite-difference response is below the resolved-response gate; run a checked bracket sweep or replace this control before adding replicas",
       "uncertainty_required_bracket_scale": 15.454183941497213,
-      "usable_bracket_scale_for_estimate": 1.0
+      "usable_bracket_scale_for_estimate": 1.0,
+      "variance_reduction": {
+        "failed_sem_states": [],
+        "failed_spread_states": [],
+        "limiting_state": "minus",
+        "max_mean_rel_spread": 0.03578588211170623,
+        "recommendation": "state ensembles pass spread/SEM gates; focus on finite-difference conditioning",
+        "state_rows": [
+          {
+            "combined_sem_rel": 0.03381947464404109,
+            "mean_rel_spread": 0.03554992919310915,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "baseline"
+          },
+          {
+            "combined_sem_rel": 0.025264679701246344,
+            "mean_rel_spread": 0.01670666161328044,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "plus"
+          },
+          {
+            "combined_sem_rel": 0.024319100233048112,
+            "mean_rel_spread": 0.03578588211170623,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "minus"
+          }
+        ]
+      }
     },
     {
       "action": "increase_checked_bracket_or_replace_control",
@@ -430,7 +976,43 @@
       "path": "docs/_static/qa_lowres_state_control_short_bracket_zcos_mid_surface_m1_nonlinear_gradient_state_control_zcos_mid_surface_m1_central_fd_gradient_gate.json",
       "recommendation": "the finite-difference response is below the resolved-response gate; run a checked bracket sweep or replace this control before adding replicas",
       "uncertainty_required_bracket_scale": 46.03428924474893,
-      "usable_bracket_scale_for_estimate": 1.0
+      "usable_bracket_scale_for_estimate": 1.0,
+      "variance_reduction": {
+        "failed_sem_states": [],
+        "failed_spread_states": [],
+        "limiting_state": "minus",
+        "max_mean_rel_spread": 0.07938082343110472,
+        "recommendation": "state ensembles pass spread/SEM gates; focus on finite-difference conditioning",
+        "state_rows": [
+          {
+            "combined_sem_rel": 0.03386056728299225,
+            "mean_rel_spread": 0.035593124435508605,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "baseline"
+          },
+          {
+            "combined_sem_rel": 0.0241882281622391,
+            "mean_rel_spread": 0.05583318733855544,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "plus"
+          },
+          {
+            "combined_sem_rel": 0.0244750760060611,
+            "mean_rel_spread": 0.07938082343110472,
+            "n_reports": 3,
+            "passed": true,
+            "sem_gate_passed": true,
+            "spread_gate_passed": true,
+            "state": "minus"
+          }
+        ]
+      }
     }
   ],
   "case": "qa_ess_nonlinear_gradient_next_campaign_design",
@@ -441,18 +1023,21 @@
     "max_extra_replicates_per_state": 4,
     "max_fd_asymmetry_rel": 0.5,
     "max_gradient_uncertainty_rel": 0.5,
+    "max_window_mean_rel_spread": 0.15,
+    "max_window_sem_rel": 0.25,
     "min_fd_response_fraction": 0.03,
     "sem_safety_factor": 1.1,
     "value_floor": 1e-12
   },
   "kind": "nonlinear_turbulence_gradient_candidate_design_report",
-  "next_action": "combine locality-capped bracket scale with bounded matched replicas",
+  "next_action": "target paired-seed or control-variate variance reduction for limiting states",
   "passed": false,
   "summary": {
     "bracket_ready_count": 0,
     "candidate_count": 16,
     "promoted_candidate_count": 0,
     "replacement_or_variance_reduction_count": 15,
-    "replica_ready_count": 1
+    "replica_ready_count": 1,
+    "variance_limited_count": 1
   }
 }

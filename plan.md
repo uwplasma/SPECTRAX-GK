@@ -36,8 +36,9 @@ The target paper should show:
 - Refreshed
   ``docs/_static/nonlinear_gradient_next_campaign_design.{json,csv,png,pdf}``
   over all 16 tracked central-FD artifacts. Result: zero promoted controls,
-  one bounded-replica follow-up class, and 15 cases needing replacement,
-  locality repair, or variance reduction.
+  one legacy bounded-replica follow-up class, one explicit variance-limited
+  rel7.5 candidate, and 15 cases needing replacement, locality repair, or
+  variance reduction.
 - Scientific conclusion: this is valuable negative evidence. The locality
   problem can be controlled at this bracket, but plus-state turbulent variance
   still prevents a reviewer-proof nonlinear turbulence-gradient claim. More
@@ -48,6 +49,22 @@ The target paper should show:
 Next best step: design the variance-reduced nonlinear-gradient candidate
 explicitly, with a pre-run gate targeting plus-state spread, before spending
 more long-window GPU time.
+
+## 2026-05-29 Nonlinear-gradient Variance-limiter Gate
+
+- Extended the next-campaign design gate so each central-FD candidate records
+  per-state replicated-window variance diagnostics: limiting state,
+  ``mean_rel_spread``, ``combined_sem_rel``, failed spread/SEM states, and a
+  variance-reduction recommendation.
+- Regenerated
+  ``docs/_static/nonlinear_gradient_next_campaign_design.{json,csv,png,pdf}``.
+  The top-level next action is now paired-seed or control-variate variance
+  reduction. The new report identifies the rel7.5 ``ZBS(1,0)`` plus ensemble as
+  the current limiter with ``mean_rel_spread = 0.196``.
+
+Next best step: write the paired-seed/control-variate campaign launcher so the
+next office run reduces plus-state variance by design rather than adding blind
+replicas.
 
 ## 2026-05-28 Zonal-flow Objective Row Artifact
 
