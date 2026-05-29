@@ -330,7 +330,11 @@ For the direct one-shot route, launch the recorded commands with
 ``tools/run_nonlinear_gradient_direct_campaign.py`` instead of an ad-hoc shell
 loop. The launcher reads the manifest, assigns one worker per listed GPU, writes
 per-task logs and a status JSON, supports ``--skip-existing`` for safe restarts,
-and keeps the command provenance identical to the manifest.
+and keeps the command provenance identical to the manifest. The status JSON is
+created before the first long nonlinear task exits, with ``status="running"``,
+``task_count``, and ``pending_count`` fields, so multi-hour office-GPU campaigns
+have immediate machine-readable progress even when no output NetCDF has finished
+yet.
 Then use
 ``tools/build_nonlinear_turbulence_gradient_fd_gate.py`` after the matched
 ``baseline``/``plus_delta``/``minus_delta`` ensembles finish. The builder writes

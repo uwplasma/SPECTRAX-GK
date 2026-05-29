@@ -110,14 +110,26 @@ def _task_env(gpu: str, *, extra_env: dict[str, str] | None = None) -> dict[str,
     return env
 
 
-def _write_status(path: Path, results: list[dict[str, Any]]) -> None:
+def _write_status(
+    path: Path,
+    results: list[dict[str, Any]],
+    *,
+    task_count: int | None = None,
+    campaign_status: str | None = None,
+) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
+    expected = len(results) if task_count is None else task_count
+    finished_count = sum(row["status"] in {"finished", "skipped"} for row in results)
+    failed_count = sum(row["status"] == "failed" for row in results)
     payload = {
         "kind": "nonlinear_gradient_direct_campaign_status",
         "updated": time.time(),
+        "status": campaign_status or ("failed" if failed_count else "finished"),
+        "task_count": expected,
         "results": results,
-        "finished_count": sum(row["status"] in {"finished", "skipped"} for row in results),
-        "failed_count": sum(row["status"] == "failed" for row in results),
+        "finished_count": finished_count,
+        "failed_count": failed_count,
+        "pending_count": max(expected - len(results), 0),
     }
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
@@ -183,6 +195,7 @@ def run_tasks(
     results: list[dict[str, Any]] = []
     lock = threading.Lock()
     stop_event = threading.Event()
+    _write_status(status_json, results, task_count=len(tasks), campaign_status="running")
 
     def worker(gpu: str) -> None:
         while not stop_event.is_set():
@@ -214,7 +227,7 @@ def run_tasks(
                 }
             with lock:
                 results.append(result)
-                _write_status(status_json, results)
+                _write_status(status_json, results, task_count=len(tasks), campaign_status="running")
                 if stop_on_failure and result["status"] == "failed":
                     stop_event.set()
             work_queue.task_done()
@@ -224,6 +237,8 @@ def run_tasks(
         thread.start()
     for thread in threads:
         thread.join()
+    final_status = "failed" if any(row["status"] == "failed" for row in results) else "finished"
+    _write_status(status_json, results, task_count=len(tasks), campaign_status=final_status)
     return results
 
 

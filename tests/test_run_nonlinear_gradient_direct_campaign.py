@@ -102,3 +102,18 @@ def test_config_parser_rejects_commands_without_config() -> None:
 
     with pytest.raises(ValueError, match="--config"):
         mod._config_from_command("python3 -m spectraxgk.cli run-runtime-nonlinear --steps 3")
+
+
+def test_status_writer_records_initial_running_campaign(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    status = tmp_path / "status.json"
+
+    mod._write_status(status, [], task_count=4, campaign_status="running")
+
+    payload = json.loads(status.read_text(encoding="utf-8"))
+    assert payload["kind"] == "nonlinear_gradient_direct_campaign_status"
+    assert payload["status"] == "running"
+    assert payload["task_count"] == 4
+    assert payload["pending_count"] == 4
+    assert payload["finished_count"] == 0
+    assert payload["failed_count"] == 0
