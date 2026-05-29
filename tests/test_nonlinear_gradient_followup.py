@@ -247,6 +247,38 @@ def test_plan_nonlinear_gradient_followup_tool_writes_json(tmp_path: Path) -> No
     assert payload["summary"]["planned_run_count"] == 3
 
 
+def test_plan_nonlinear_gradient_followup_tool_hydrates_compact_ensembles(tmp_path: Path) -> None:
+    tool = _load_tool_module()
+    artifact_payload = _artifact(uncertainty=0.56)
+    for state in ("baseline", "plus", "minus"):
+        ensemble = tmp_path / f"{state}_ensemble.json"
+        ensemble.write_text(json.dumps(_ensemble(state)), encoding="utf-8")
+        artifact_payload["source_ensembles"][state] = {
+            "n_reports": 3,
+            "path": str(ensemble),
+        }
+    artifact = tmp_path / "candidate.json"
+    out = tmp_path / "plan.json"
+    artifact.write_text(json.dumps(artifact_payload), encoding="utf-8")
+
+    rc = tool.main(
+        [
+            str(artifact),
+            "--case",
+            "hydrated_case",
+            "--json-out",
+            str(out),
+            "--sem-safety-factor",
+            "1.0",
+        ]
+    )
+
+    assert rc == 0
+    payload = json.loads(out.read_text(encoding="utf-8"))
+    assert payload["summary"]["planned_run_count"] == 3
+    assert {row["variant_label"] for row in payload["planned_runs"]} == {"seed33"}
+
+
 def test_candidate_design_reports_infeasible_rbc_like_followup() -> None:
     artifact = _artifact(response=0.072, asymmetry=0.475, uncertainty=0.683)
     artifact["source_ensembles"] = {

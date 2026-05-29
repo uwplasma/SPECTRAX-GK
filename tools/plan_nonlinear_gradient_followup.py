@@ -35,6 +35,46 @@ def _label(payload: dict[str, Any], path: Path) -> str:
     return path.stem
 
 
+def _resolve_artifact_path(raw: Any) -> Path | None:
+    if not isinstance(raw, str) or not raw:
+        return None
+    path = Path(raw)
+    if path.is_absolute():
+        return path if path.exists() else None
+    for candidate in (ROOT / path, path):
+        if candidate.exists():
+            return candidate
+    return None
+
+
+def _hydrate_source_ensembles(payload: dict[str, Any]) -> dict[str, Any]:
+    """Load compact source-ensemble rows from tracked ensemble artifacts."""
+
+    source_ensembles = payload.get("source_ensembles")
+    if not isinstance(source_ensembles, dict):
+        return payload
+    hydrated: dict[str, Any] = {}
+    changed = False
+    for state, raw in source_ensembles.items():
+        if not isinstance(raw, dict):
+            hydrated[state] = raw
+            continue
+        row = dict(raw)
+        if isinstance(row.get("rows"), list):
+            hydrated[state] = row
+            continue
+        ensemble_path = _resolve_artifact_path(row.get("path"))
+        if ensemble_path is not None:
+            ensemble = load_json_artifact(ensemble_path)
+            if isinstance(ensemble.get("rows"), list):
+                row["rows"] = ensemble["rows"]
+                changed = True
+        hydrated[state] = row
+    if not changed:
+        return payload
+    return {**payload, "source_ensembles": hydrated}
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -61,7 +101,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    artifacts = [load_json_artifact(path) for path in args.artifact]
+    artifacts = [_hydrate_source_ensembles(load_json_artifact(path)) for path in args.artifact]
     report = nonlinear_gradient_followup_plan(
         artifacts,
         paths=[_repo_relative(path) for path in args.artifact],
