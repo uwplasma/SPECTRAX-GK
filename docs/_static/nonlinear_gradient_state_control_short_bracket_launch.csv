@@ -1,0 +1,9 @@
+state_parameter,coefficient,weight,alpha_delta,coefficient_delta,inserted_missing_coefficient,manifest
+Rsin_mid_surface_m1,"RBS(1,1)",-0.03069180424412453,0.001,-3.069180424412453e-05,True,tools_out/state_control_short_bracket/qa_lowres/rsin_mid_surface_m1/vmec_state_control_short_bracket_launch_manifest.json
+Rsin_mid_surface_m1,"ZBC(1,1)",0.008727324143980593,0.001,8.727324143980593e-06,True,tools_out/state_control_short_bracket/qa_lowres/rsin_mid_surface_m1/vmec_state_control_short_bracket_launch_manifest.json
+Rsin_mid_surface_m1,"RBS(1,0)",1.4556363565645647,0.001,0.0014556363565645647,True,tools_out/state_control_short_bracket/qa_lowres/rsin_mid_surface_m1/vmec_state_control_short_bracket_launch_manifest.json
+Rsin_mid_surface_m1,"ZBC(1,0)",0.008241734442345465,0.001,8.241734442345465e-06,True,tools_out/state_control_short_bracket/qa_lowres/rsin_mid_surface_m1/vmec_state_control_short_bracket_launch_manifest.json
+Zcos_mid_surface_m1,"RBS(1,1)",-0.04755392767412258,0.001,-4.755392767412258e-05,True,tools_out/state_control_short_bracket/qa_lowres/zcos_mid_surface_m1/vmec_state_control_short_bracket_launch_manifest.json
+Zcos_mid_surface_m1,"ZBC(1,1)",0.07355807445317508,0.001,7.355807445317509e-05,True,tools_out/state_control_short_bracket/qa_lowres/zcos_mid_surface_m1/vmec_state_control_short_bracket_launch_manifest.json
+Zcos_mid_surface_m1,"RBS(1,0)",0.015673933576633412,0.001,1.5673933576633413e-05,True,tools_out/state_control_short_bracket/qa_lowres/zcos_mid_surface_m1/vmec_state_control_short_bracket_launch_manifest.json
+Zcos_mid_surface_m1,"ZBC(1,0)",1.4541210486145921,0.001,0.0014541210486145922,True,tools_out/state_control_short_bracket/qa_lowres/zcos_mid_surface_m1/vmec_state_control_short_bracket_launch_manifest.json

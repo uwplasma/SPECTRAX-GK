@@ -181,9 +181,11 @@ stellarator-symmetric ``RBC/ZBS`` perturbations have zero response in those
 admitted asymmetric controls. The follow-up ``LASYM=true`` ``RBS/ZBC`` branch
 now passes the state-to-input mapping gate with rank ``2`` and condition number
 about ``1.02``, so ``docs/_static/nonlinear_gradient_state_control_runbook.json``
-can emit checked short-bracket launch directions. The remaining open work is to
-run and promote actual nonlinear finite-difference evidence with converged
-long post-transient transport windows.
+can emit checked short-bracket launch directions. The launch writer now also
+has normally terminated VMEC decks and prepared bounded nonlinear campaign
+manifests for both mapped controls. The remaining open work is to run and
+promote actual nonlinear finite-difference evidence with converged long
+post-transient transport windows.
 
 Before tagging, the latest public ``main`` CI run must pass repo hygiene, mypy,
 quick shards, docs/packaging, fast coverage, and the full wide-coverage matrix.

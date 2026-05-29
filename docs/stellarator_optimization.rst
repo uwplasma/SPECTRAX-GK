@@ -1306,6 +1306,18 @@ promoted nonlinear turbulence-gradient claim.
    least-squares residuals are near machine precision, so this artifact can be
    attached to the runbook to produce explicit short-bracket launch directions.
 
+.. figure:: _static/nonlinear_gradient_state_control_short_bracket_launch_status.png
+   :width: 90%
+   :align: center
+   :alt: VMEC-state short-bracket launch status
+
+   VMEC-state short-bracket launch status.  The passing runbook is converted
+   into two explicit ``LASYM=true`` VMEC input directions, one for each admitted
+   state control.  All six baseline/plus/minus VMEC decks terminate normally,
+   and the bounded ``t=150`` nonlinear campaign manifests are prepared. This
+   panel documents readiness for the next nonlinear audit only; it is not a
+   nonlinear-gradient or turbulent-flux promotion.
+
 .. figure:: _static/qa_ess_descent_profile_rel2_nonlinear_gradient_profile_direction_zbs_1_1_zbs_1_0_rbc_1_1_central_fd_gradient_gate.png
    :width: 90%
    :align: center

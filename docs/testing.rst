@@ -518,6 +518,19 @@ the measured Jacobian has rank ``2``, condition number about ``1.02``, and no
 mapping blockers, so the runbook can produce explicit short-bracket command
 fragments for both admitted state controls.
 
+``tools/write_vmec_state_control_short_bracket_launch.py`` consumes that
+passing runbook and writes the next launch contract:
+``docs/_static/nonlinear_gradient_state_control_short_bracket_launch.json``.
+It perturbs the least-squares ``RBS/ZBC`` input directions with an absolute
+state-control scalar step, keeps ``LASYM = .TRUE.``, and records the bounded
+``t=150`` nonlinear campaign-writer commands. The tracked status sidecar
+``docs/_static/nonlinear_gradient_state_control_short_bracket_launch_status.json``
+shows that the six generated VMEC decks terminated normally and that two
+short-bracket nonlinear campaign manifests were prepared. This is still launch
+status, not nonlinear-gradient evidence; the prepared nonlinear runs must pass
+runtime-output, replicated-window, central-finite-difference, and final
+evidence gates before promotion.
+
 ``tools/write_vmec_boundary_profile_perturbation_inputs.py`` is the companion
 for a single smoother composite direction. It perturbs several VMEC boundary
 coefficients together, normalizes the finite-difference scalar by the Euclidean

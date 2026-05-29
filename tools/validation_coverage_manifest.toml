@@ -1216,6 +1216,7 @@ fast_tests = [
   "tests/test_write_vmec_boundary_perturbation_inputs.py",
   "tests/test_write_vmec_state_to_input_mapping_campaign.py",
   "tests/test_write_vmec_asymmetric_state_to_input_mapping_campaign.py",
+  "tests/test_write_vmec_state_control_short_bracket_launch.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_turbulence_gradient_evidence_status.json",
@@ -1236,6 +1237,10 @@ artifact_paths = [
   "docs/_static/nonlinear_gradient_asymmetric_state_to_input_mapping_campaign.png",
   "docs/_static/nonlinear_gradient_asymmetric_state_to_input_mapping_response.json",
   "docs/_static/nonlinear_gradient_asymmetric_state_to_input_mapping_response.png",
+  "docs/_static/nonlinear_gradient_state_control_short_bracket_launch.json",
+  "docs/_static/nonlinear_gradient_state_control_short_bracket_launch.png",
+  "docs/_static/nonlinear_gradient_state_control_short_bracket_launch_status.json",
+  "docs/_static/nonlinear_gradient_state_control_short_bracket_launch_status.png",
   "docs/_static/qa_ess_profile_gradient_rbc_1_1_nonlinear_gradient_rbc_1_1_central_fd_gradient_gate.json",
   "docs/_static/qa_ess_profile_gradient_overdetermined_nonlinear_gradient_candidate_ranking.json",
   "docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_status.json",
@@ -1244,7 +1249,7 @@ artifact_paths = [
 ]
 next_tests = [
   "use the next-campaign design gate to replace the fail-closed RBC(1,1) follow-up with a better-conditioned long-window production gradient artifact",
-  "use the passing LASYM=true RBS/ZBC state-to-input mapping to write and audit checked short-bracket nonlinear-gradient launch manifests",
+  "run and audit the prepared LASYM=true RBS/ZBC short-bracket nonlinear-gradient campaigns",
   "add matched baseline-to-optimized turbulence-gradient audits once long-window parameter perturbation runs are available",
 ]
 

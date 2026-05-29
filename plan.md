@@ -7165,3 +7165,29 @@ Exit gate:
   write short-bracket nonlinear-gradient manifests, run bounded nonlinear
   response audits, and promote only after replicated post-transient
   transport-window finite-difference gates pass.
+
+### 2026-05-29 Mapped VMEC-State Short-Bracket Launch Contract
+
+- Added `tools/write_vmec_state_control_short_bracket_launch.py` and
+  `tests/test_write_vmec_state_control_short_bracket_launch.py` to convert the
+  passing VMEC-state runbook into explicit `LASYM=true` VMEC input decks.
+- Generated
+  `docs/_static/nonlinear_gradient_state_control_short_bracket_launch.{json,csv,png,pdf}`
+  from the passing runbook. The launch contract uses absolute `alpha_delta =
+  1e-3` along the least-squares `RBS/ZBC` directions for
+  `Rsin_mid_surface_m1` and `Zcos_mid_surface_m1`, and records bounded
+  short-bracket nonlinear settings (`t=150`, `n48:48:48:32:32`, two seeds).
+- Ran the six generated VMEC decks locally with `--fast --max-iter 4200
+  --no-use-input-niter`; every baseline/plus/minus solve terminated normally.
+- Executed both generated nonlinear campaign-writer commands. They produced
+  two ignored `gradient_campaign_manifest.json` files under
+  `tools_out/state_control_short_bracket/qa_lowres/*/nonlinear_campaign/`, each
+  with 9 bounded nonlinear configs.
+- Added
+  `docs/_static/nonlinear_gradient_state_control_short_bracket_launch_status.{json,csv,png,pdf}`
+  showing the solved VMEC launch status and prepared nonlinear campaign counts.
+  This is campaign-readiness evidence only; it is not a nonlinear turbulence
+  gradient claim.
+- Next scientific step: run the two prepared short-bracket nonlinear campaigns
+  on office GPUs, then apply runtime-output, replicated-window,
+  central-finite-difference, and final nonlinear-gradient evidence gates.

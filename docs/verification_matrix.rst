@@ -503,6 +503,19 @@ gate.
        machine precision. The runbook now emits explicit least-squares input
        directions for checked short-bracket launches; converged long-window
        nonlinear-gradient campaigns remain the next evidence gate
+   * - VMEC-state short-bracket launch status
+     - mapped state-control VMEC launch decks and bounded nonlinear campaign
+       manifests
+     - ``docs/_static/nonlinear_gradient_state_control_short_bracket_launch.json``
+       and
+       ``docs/_static/nonlinear_gradient_state_control_short_bracket_launch_status.json``
+     - Closed as launch readiness; nonlinear-gradient evidence still open
+     - the two mapped state controls are converted to explicit ``LASYM=true``
+       ``RBS/ZBC`` input directions with absolute ``1e-3`` scalar steps. All
+       six baseline/plus/minus VMEC solves terminate normally, and two bounded
+       ``t=150`` nonlinear campaign manifests are prepared. This is not a
+       transport-gradient claim until those nonlinear campaigns pass runtime,
+       replicated-window, central-FD, and evidence gates
    * - Selected optimized-equilibrium nonlinear transport audit
      - optimized-equilibrium post-transient heat-flux average with uncertainty
        and nonlinear audit bars

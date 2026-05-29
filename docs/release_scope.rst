@@ -198,6 +198,8 @@ README claims, or manuscript claims.
        ``nonlinear_gradient_state_to_input_mapping_response.*``,
        ``nonlinear_gradient_asymmetric_state_to_input_mapping_campaign.*``,
        ``nonlinear_gradient_asymmetric_state_to_input_mapping_response.*``,
+       ``nonlinear_gradient_state_control_short_bracket_launch.*``,
+       ``nonlinear_gradient_state_control_short_bracket_launch_status.*``,
        ``nonlinear_window_ensemble_readiness_manifest.json``,
        ``nonlinear_window_convergence_reports/*.json``,
        ``stellarator_itg_optimization_comparison.*``, and
@@ -462,7 +464,9 @@ Differentiable-geometry state:
   ``nonlinear_gradient_state_to_input_mapping_campaign.*``,
   ``nonlinear_gradient_state_to_input_mapping_response.*``,
   ``nonlinear_gradient_asymmetric_state_to_input_mapping_campaign.*``,
-  ``nonlinear_gradient_asymmetric_state_to_input_mapping_response.*``, and the reduced stellarator
+  ``nonlinear_gradient_asymmetric_state_to_input_mapping_response.*``,
+  ``nonlinear_gradient_state_control_short_bracket_launch.*``,
+  ``nonlinear_gradient_state_control_short_bracket_launch_status.*``, and the reduced stellarator
   ITG optimization/UQ panels. This checklist is the current boundary between
   objective plumbing, checked state-control launch guards, and transport
   prediction.
