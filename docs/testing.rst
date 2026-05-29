@@ -437,8 +437,8 @@ gate. It consumes completed central-FD artifacts and writes JSON/CSV/PNG/PDF
 sidecars that compare the uncertainty-required bracket scale, locality-safe
 bracket scale, and extra-replica estimate. The tracked design artifact
 ``docs/_static/nonlinear_gradient_next_campaign_design.json`` now summarizes
-all tracked nonlinear central-FD artifacts: ``15`` candidates, zero promoted
-nonlinear-gradient controls, one bounded-replica candidate, and ``14`` controls
+all tracked nonlinear central-FD artifacts: ``16`` candidates, zero promoted
+nonlinear-gradient controls, one bounded-replica candidate, and ``15`` controls
 requiring replacement, locality repair, or variance reduction. Its
 recommendation is to combine a locality-capped bracket with bounded matched
 replicas only for the admitted candidate, while keeping the broader

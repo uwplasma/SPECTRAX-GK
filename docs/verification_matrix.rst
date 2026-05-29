@@ -553,6 +553,18 @@ gate.
      - the selected QA optimized equilibrium passes the ``t=[350,700]`` seed
        and timestep ensemble gate; nonlinear turbulence-gradient and broad
        multi-surface/multi-field-line optimization claims remain open
+   * - QA/ESS ``ZBS(1,0)`` 7.5% nonlinear-gradient follow-up
+     - matched baseline/plus/minus post-transient heat-flux windows and central
+       finite-difference response
+     - ``docs/_static/qa_ess_zbs10_rel7p5_nonlinear_gradient_zbs_1_0_central_fd_gradient_gate.json``
+       plus the three replicated ensemble sidecar directories
+     - Closed as negative bounded-gradient evidence; production gradient still open
+     - all twelve ``t=900`` office-GPU outputs pass the ``t=[450,900]`` output
+       gates, and the central finite-difference response is resolved and local
+       (``response_fraction = 0.0319``, ``fd_asymmetry_rel = 0.044``). The
+       plus ensemble fails its spread gate (``0.196 > 0.15``), and propagated
+       uncertainty remains too large (``gradient_uncertainty_rel = 1.81``), so
+       the result is not promoted
 
 Use this section as the verification boundary for README figures: the
 VMEC/Boozer parity, gradient-holdout, and reduced optimization/UQ panels can be

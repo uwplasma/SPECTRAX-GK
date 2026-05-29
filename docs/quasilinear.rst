@@ -1090,9 +1090,14 @@ The companion claim-boundary artifact
 ``docs/_static/nonlinear_turbulence_gradient_evidence_status.json`` is
 deliberately stricter: it records that replicated long-window transport
 evidence is present, while the current nonlinear-gradient artifact is a
-long-window production candidate that still fails closed on finite-difference
-locality and propagated gradient uncertainty. It is therefore not promoted as
-production turbulence-gradient evidence.
+long-window production candidate that still fails closed on plus-state
+transport-window spread and propagated gradient uncertainty. The current
+tracked artifact is the ``QA/ESS ZBS(1,0)`` ``7.5%`` bracket: all twelve
+``t=900`` nonlinear outputs pass the ``t=[450,900]`` output gates, the response
+is resolved (``response_fraction = 0.0319``), and the finite-difference
+bracket is local (``fd_asymmetry_rel = 0.044``), but the plus ensemble spread
+is ``0.196 > 0.15`` and ``gradient_uncertainty_rel = 1.81 > 0.5``. It is
+therefore not promoted as production turbulence-gradient evidence.
 
 Holdout-gap report
 ------------------

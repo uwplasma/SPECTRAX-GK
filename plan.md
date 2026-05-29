@@ -1,6 +1,6 @@
 # SPECTRAX-GK Quasilinear Transport and Optimization Plan
 
-Last updated: 2026-05-28
+Last updated: 2026-05-29
 Active repository: `uwplasma/SPECTRAX-GK`
 Historical planning archive: private repo `rogeriojorge/spectraxgk_plan`
 Current public baseline: `main` at v1.6.0, with the historical ship-readiness log archived before this file was reset.
@@ -18,6 +18,36 @@ The target paper should show:
 3. Differentiable quasilinear objectives with finite-difference, tangent, and covariance validation.
 4. A full `vmec_jax -> booz_xform_jax -> SPECTRAX-GK` pipeline for stellarator sensitivity analysis, uncertainty quantification, inverse design, and optimization.
 5. Nonlinear audit runs that confirm where the reduced objective does and does not predict saturated transport trends.
+
+## 2026-05-29 QA/ESS ZBS(1,0) rel7.5 Nonlinear-gradient Follow-up
+
+- Completed the bounded optimized-QA/ESS ``ZBS(1,0)`` ``7.5%`` follow-up on the
+  office GPUs and synced only compact postprocessed artifacts into the docs
+  tree. The campaign contains twelve long ``t=900`` nonlinear outputs: four
+  baseline, four plus, and four minus state runs. All outputs pass the
+  ``t=[450,900]`` runtime-output gates.
+- Postprocessed with the manifest driver in fail-closed mode. Baseline and
+  minus replicated ensembles pass. The plus ensemble remains the blocker:
+  ``mean_rel_spread = 0.196 > 0.15`` even though all individual windows are
+  finite and pass. The central finite-difference artifact is local and
+  response-resolved (``response_fraction = 0.0319``,
+  ``fd_asymmetry_rel = 0.044``), but propagated uncertainty remains too large:
+  ``gradient_uncertainty_rel = 1.81 > 0.5``.
+- Refreshed
+  ``docs/_static/nonlinear_gradient_next_campaign_design.{json,csv,png,pdf}``
+  over all 16 tracked central-FD artifacts. Result: zero promoted controls,
+  one bounded-replica follow-up class, and 15 cases needing replacement,
+  locality repair, or variance reduction.
+- Scientific conclusion: this is valuable negative evidence. The locality
+  problem can be controlled at this bracket, but plus-state turbulent variance
+  still prevents a reviewer-proof nonlinear turbulence-gradient claim. More
+  blind replicas at the same setup are lower priority than paired-seed
+  variance reduction, a control-variate observable, or a better-conditioned
+  multi-control direction.
+
+Next best step: design the variance-reduced nonlinear-gradient candidate
+explicitly, with a pre-run gate targeting plus-state spread, before spending
+more long-window GPU time.
 
 ## 2026-05-28 Zonal-flow Objective Row Artifact
 

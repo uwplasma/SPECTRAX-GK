@@ -1134,17 +1134,27 @@ remains too uncertain relative to the slope. More blind same-bracket replicas
 are not the best next action; the next candidate should use a larger
 response-resolved but locality-checked perturbation, variance reduction, or a
 better-conditioned composite direction.
+The latest bounded ``ZBS(1,0)`` follow-up uses a larger ``7.5%`` bracket and
+four matched long-window outputs per state. All twelve ``t=900`` office-GPU
+outputs pass the ``t=[450,900]`` runtime-output gates, and the central
+finite-difference bracket now passes the response and locality gates:
+``response_fraction = 0.0319`` and ``fd_asymmetry_rel = 0.044``. The claim still
+fails closed because the plus-state ensemble has excessive spread
+(``mean_rel_spread = 0.196 > 0.15``) and the propagated slope uncertainty is
+too large (``gradient_uncertainty_rel = 1.81 > 0.5``). This is the clearest
+evidence so far that the finite-difference direction can be made local, but it
+also shows that plus-state turbulence variance must be reduced before any
+production nonlinear turbulence-gradient claim is scientifically defensible.
 ``tools/design_nonlinear_gradient_next_campaign.py`` now materializes that
 decision into ``docs/_static/nonlinear_gradient_next_campaign_design.json``.
 The design gate estimates the bracket scale needed to satisfy propagated
 uncertainty, the locality-safe bracket scale implied by the asymmetry gate,
 and the number of extra matched replicas needed after applying that locality
-cap. For the refreshed ``RBC(1,1)`` evidence, the uncertainty gate would need a
-``1.37`` times larger response, but the locality margin allows only about
-``1.00`` times the current bracket; even at that cap, the estimated requirement
-is six additional replicas per state. The planner therefore recommends a
-better-conditioned control or variance-reduced observable instead of more
-same-bracket replicas.
+cap. The refreshed design scans all 16 tracked central-FD artifacts: zero are
+promoted, one admits a bounded matched-replica follow-up class, and the other
+15 require replacement, locality repair, or variance reduction. The planner
+therefore recommends a better-conditioned control or variance-reduced
+observable instead of more same-bracket replicas.
 Because both single-control amplitude sweeps point away from more blind
 replicas, SPECTRAX-GK now also includes
 ``tools/write_vmec_boundary_profile_perturbation_inputs.py`` for a smoother
@@ -1200,11 +1210,23 @@ promoted nonlinear turbulence-gradient claim.
    current uncertainty and asymmetry margins, the middle panel compares the
    bracket scale required by uncertainty to the locality-safe bracket scale,
    and the right panel estimates extra replicas per state after applying the
-   locality cap.  The refreshed artifact now scans all tracked central-FD
+   locality cap.  The refreshed artifact now scans all 16 tracked central-FD
    gates: no candidate is promoted, one candidate admits a bounded matched
-   replica follow-up, and the remaining candidates require replacement,
+   replica follow-up, and the remaining 15 candidates require replacement,
    locality repair, or variance reduction before more long-window GPU time is
    justified.
+
+.. figure:: _static/qa_ess_zbs10_rel7p5_nonlinear_gradient_zbs_1_0_central_fd_gradient_gate.png
+   :width: 90%
+   :align: center
+   :alt: QA/ESS ZBS(1,0) 7.5% bounded nonlinear turbulence-gradient follow-up
+
+   QA/ESS ``ZBS(1,0)`` 7.5% bounded nonlinear-gradient follow-up. The response
+   and finite-difference locality gates now pass, but the plus-state
+   replicated window is too broad and the propagated gradient uncertainty is
+   too large. This artifact should be read as fail-closed evidence motivating
+   variance reduction or a better-conditioned observable, not as a promoted
+   nonlinear turbulence-gradient.
 
 .. figure:: _static/nonlinear_gradient_composite_control_design.png
    :width: 90%

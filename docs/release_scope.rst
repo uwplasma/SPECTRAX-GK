@@ -297,19 +297,22 @@ Quasilinear model-selection state:
   nonlinear turbulence-gradient claim gate. The tracked
   ``docs/_static/nonlinear_turbulence_gradient_evidence_status.json`` artifact
   passes the replicated long-window uncertainty side but fails closed on the
-  gradient side. The current best tracked production-candidate artifact is the
-  completed overdetermined optimized-QA/ESS ``RBC(1,1)`` 3% campaign at
-  ``t=[450,900]``: all runtime-output and replicated-window gates pass, and
-  the finite difference has bounded response fraction, subtraction condition
-  number, and forward/backward locality. The remaining blocker is propagated
-  uncertainty: ``gradient_uncertainty_rel = 0.559`` exceeds the ``0.5`` gate.
-  The companion ``ZBS(1,1)`` 3% overdetermined campaign passes uncertainty at
-  ``0.355`` but remains nonlocal with ``fd_asymmetry_rel = 0.605``. ``ZBS(1,0)``
-  is not response-resolved in this overdetermined bracket. The
-  ``docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_status.json``
-  status artifact records complete runtime coverage and zero promoted controls,
-  so this remains a failed production-candidate gate rather than a missing
-  campaign.
+  gradient side. The current tracked production-candidate artifact is the
+  optimized-QA/ESS ``ZBS(1,0)`` 7.5% follow-up at ``t=[450,900]``: all twelve
+  runtime outputs pass, the baseline and minus replicated ensembles pass, and
+  the central finite difference is both response-resolved
+  (``response_fraction = 0.0319``) and local
+  (``fd_asymmetry_rel = 0.044``). It still fails promotion because the plus
+  ensemble spread is ``0.196 > 0.15`` and the propagated uncertainty is
+  ``gradient_uncertainty_rel = 1.81 > 0.5``. The earlier overdetermined
+  optimized-QA/ESS ``RBC(1,1)`` 3% campaign and seed follow-up also remain
+  failed production candidates: all runtime-output and replicated-window gates
+  pass, but ``gradient_uncertainty_rel = 0.683`` remains above the ``0.5`` gate.
+  The companion ``ZBS(1,1)`` 3% overdetermined campaign passes uncertainty but
+  remains nonlocal, while the overdetermined ``ZBS(1,0)`` bracket is not
+  response-resolved. The status artifacts therefore record complete runtime
+  coverage where expected and zero promoted controls, so this remains a failed
+  production-candidate gate rather than a missing campaign.
   Until a paired post-transient artifact passes all response, asymmetry,
   conditioning, and propagated uncertainty gates, nonlinear turbulence-gradient
   evidence remains explicitly unpromoted.
@@ -469,10 +472,11 @@ Differentiable-geometry state:
   ``nonlinear_gradient_state_control_short_bracket_launch.*``,
   ``nonlinear_gradient_state_control_short_bracket_launch_status.*``,
   ``nonlinear_gradient_state_control_short_bracket_nonlinear_audit_status.*``,
-  ``nonlinear_gradient_state_control_bracket_sweep_status.*``, and the reduced stellarator
-  ITG optimization/UQ panels. This checklist is the current boundary between
-  objective plumbing, checked state-control launch guards, and transport
-  prediction.
+  ``nonlinear_gradient_state_control_bracket_sweep_status.*``,
+  ``qa_ess_zbs10_rel7p5_nonlinear_gradient_zbs_1_0_central_fd_gradient_gate.*``,
+  and the reduced stellarator ITG optimization/UQ panels. This checklist is the
+  current boundary between objective plumbing, checked state-control launch
+  guards, and transport prediction.
 - ``docs/_static/vmec_boozer_reduced_portfolio_guard.json`` is the
   artifact-level guard that ties the backend-free portfolio reducer to real
   VMEC/Boozer rows. It requires VMEC/Boozer path/mode provenance, two

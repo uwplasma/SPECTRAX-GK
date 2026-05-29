@@ -217,6 +217,33 @@
       "usable_bracket_scale_for_estimate": 1.5
     },
     {
+      "action": "design_better_conditioned_control_or_variance_reduction",
+      "bracket_only_feasible": false,
+      "current_replicates_per_state": 4,
+      "estimated_extra_replicates_at_locality_limit": 22,
+      "estimated_required_replicates_at_locality_limit": 26,
+      "estimated_required_replicates_no_bracket": 58,
+      "gate_status": {
+        "locality_ok": true,
+        "response_ok": true,
+        "uncertainty_ok": false
+      },
+      "index": 8,
+      "label": "zbs_1_0:qa_ess_zbs10_rel7p5_nonlinear_gradient_zbs_1_0",
+      "locality_safe_bracket_scale_limit": 10.732315169202671,
+      "metrics": {
+        "fd_asymmetry_rel": 0.04425885678078618,
+        "gradient_uncertainty_rel": 1.8061519699775055,
+        "response_fraction": 0.03191129318661172
+      },
+      "parameter_name": "zbs_1_0",
+      "passed": false,
+      "path": "docs/_static/qa_ess_zbs10_rel7p5_nonlinear_gradient_zbs_1_0_central_fd_gradient_gate.json",
+      "recommendation": "bracket-only and bounded-replica fixes are not efficient; design a better-conditioned composite direction, variance-reduced observable, or checked response-larger bracket",
+      "uncertainty_required_bracket_scale": 3.612303939955011,
+      "usable_bracket_scale_for_estimate": 1.5
+    },
+    {
       "action": "shrink_or_replace_nonlocal_control",
       "bracket_only_feasible": false,
       "current_replicates_per_state": 3,
@@ -228,7 +255,7 @@
         "response_ok": true,
         "uncertainty_ok": true
       },
-      "index": 8,
+      "index": 9,
       "label": "zbs_1_1:qa_ess_zbs11_rel5_nonlinear_gradient_zbs_1_1",
       "locality_safe_bracket_scale_limit": 0.7168678123576101,
       "metrics": {
@@ -255,7 +282,7 @@
         "response_ok": false,
         "uncertainty_ok": false
       },
-      "index": 9,
+      "index": 10,
       "label": "state_control_rsin_mid_surface_m1:qa_lowres_alpha0p003_state_control_short_bracket_rsin_mid_surface_m1_nonlinear_gradient_state_control_rsin_mid_surface_m1",
       "locality_safe_bracket_scale_limit": 0.6858009299045975,
       "metrics": {
@@ -282,7 +309,7 @@
         "response_ok": false,
         "uncertainty_ok": false
       },
-      "index": 10,
+      "index": 11,
       "label": "state_control_zcos_mid_surface_m1:qa_lowres_alpha0p003_state_control_short_bracket_zcos_mid_surface_m1_nonlinear_gradient_state_control_zcos_mid_surface_m1",
       "locality_safe_bracket_scale_limit": 0.005577203981707227,
       "metrics": {
@@ -309,7 +336,7 @@
         "response_ok": false,
         "uncertainty_ok": false
       },
-      "index": 11,
+      "index": 12,
       "label": "state_control_rsin_mid_surface_m1:qa_lowres_alpha0p010_state_control_short_bracket_rsin_mid_surface_m1_nonlinear_gradient_state_control_rsin_mid_surface_m1",
       "locality_safe_bracket_scale_limit": 0.04227945333418241,
       "metrics": {
@@ -336,7 +363,7 @@
         "response_ok": false,
         "uncertainty_ok": false
       },
-      "index": 12,
+      "index": 13,
       "label": "state_control_zcos_mid_surface_m1:qa_lowres_alpha0p010_state_control_short_bracket_zcos_mid_surface_m1_nonlinear_gradient_state_control_zcos_mid_surface_m1",
       "locality_safe_bracket_scale_limit": 0.016844868939865882,
       "metrics": {
@@ -363,7 +390,7 @@
         "response_ok": false,
         "uncertainty_ok": false
       },
-      "index": 13,
+      "index": 14,
       "label": "state_control_rsin_mid_surface_m1:qa_lowres_state_control_short_bracket_rsin_mid_surface_m1_nonlinear_gradient_state_control_rsin_mid_surface_m1",
       "locality_safe_bracket_scale_limit": 0.049962016444074324,
       "metrics": {
@@ -390,7 +417,7 @@
         "response_ok": false,
         "uncertainty_ok": false
       },
-      "index": 14,
+      "index": 15,
       "label": "state_control_zcos_mid_surface_m1:qa_lowres_state_control_short_bracket_zcos_mid_surface_m1_nonlinear_gradient_state_control_zcos_mid_surface_m1",
       "locality_safe_bracket_scale_limit": 0.01048723996427794,
       "metrics": {
@@ -423,9 +450,9 @@
   "passed": false,
   "summary": {
     "bracket_ready_count": 0,
-    "candidate_count": 15,
+    "candidate_count": 16,
     "promoted_candidate_count": 0,
-    "replacement_or_variance_reduction_count": 14,
+    "replacement_or_variance_reduction_count": 15,
     "replica_ready_count": 1
   }
 }

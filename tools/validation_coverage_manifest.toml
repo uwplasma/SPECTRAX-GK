@@ -1255,13 +1255,21 @@ artifact_paths = [
   "docs/_static/qa_lowres_alpha0p003_state_control_short_bracket_zcos_mid_surface_m1_nonlinear_gradient_state_control_zcos_mid_surface_m1_central_fd_gradient_gate.json",
   "docs/_static/qa_lowres_alpha0p010_state_control_short_bracket_zcos_mid_surface_m1_nonlinear_gradient_state_control_zcos_mid_surface_m1_central_fd_gradient_gate.json",
   "docs/_static/qa_ess_profile_gradient_rbc_1_1_nonlinear_gradient_rbc_1_1_central_fd_gradient_gate.json",
+  "docs/_static/qa_ess_zbs10_rel7p5_nonlinear_gradient_zbs_1_0_central_fd_gradient_gate.json",
+  "docs/_static/qa_ess_zbs10_rel7p5_nonlinear_gradient_zbs_1_0_central_fd_gradient_gate.png",
+  "docs/_static/qa_ess_zbs10_rel7p5_nonlinear_gradient_baseline_replicates/qa_ess_zbs10_rel7p5_nonlinear_gradient_baseline_t900_ensemble_gate.json",
+  "docs/_static/qa_ess_zbs10_rel7p5_nonlinear_gradient_baseline_replicates/qa_ess_zbs10_rel7p5_nonlinear_gradient_baseline_t900_ensemble_gate.png",
+  "docs/_static/qa_ess_zbs10_rel7p5_nonlinear_gradient_plus_delta_replicates/qa_ess_zbs10_rel7p5_nonlinear_gradient_plus_delta_t900_ensemble_gate.json",
+  "docs/_static/qa_ess_zbs10_rel7p5_nonlinear_gradient_plus_delta_replicates/qa_ess_zbs10_rel7p5_nonlinear_gradient_plus_delta_t900_ensemble_gate.png",
+  "docs/_static/qa_ess_zbs10_rel7p5_nonlinear_gradient_minus_delta_replicates/qa_ess_zbs10_rel7p5_nonlinear_gradient_minus_delta_t900_ensemble_gate.json",
+  "docs/_static/qa_ess_zbs10_rel7p5_nonlinear_gradient_minus_delta_replicates/qa_ess_zbs10_rel7p5_nonlinear_gradient_minus_delta_t900_ensemble_gate.png",
   "docs/_static/qa_ess_profile_gradient_overdetermined_nonlinear_gradient_candidate_ranking.json",
   "docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_status.json",
   "docs/_static/qa_ess_overdetermined_nonlinear_gradient_followup_plan.json",
   "docs/_static/production_nonlinear_optimization_guard.json",
 ]
 next_tests = [
-  "use the next-campaign design gate to replace the fail-closed RBC(1,1) follow-up with a better-conditioned long-window production gradient artifact",
+  "replace the fail-closed ZBS(1,0) 7.5% follow-up with a lower-variance paired-seed or control-variate design that specifically attacks plus-state spread",
   "replace the fail-closed single-control RBS/ZBC bracket-amplitude sweep with lower-variance evidence: longer replicated windows, paired-seed variance reduction, or a better-conditioned multi-control observable",
   "add matched baseline-to-optimized turbulence-gradient audits once long-window parameter perturbation runs are available",
 ]
