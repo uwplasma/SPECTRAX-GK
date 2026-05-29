@@ -7224,3 +7224,27 @@ Exit gate:
   `RBS/ZBC` directions (for example `alpha_delta = 3e-3, 1e-2, 3e-2` subject to
   VMEC locality checks), then repeat the same central-FD gate. Only if response
   fraction and asymmetry pass should we spend on longer post-transient windows.
+
+### 2026-05-29 VMEC-State Bracket-Amplitude Sweep Result
+
+- Closed the follow-up amplitude hypothesis for the mapped VMEC-state nonlinear-gradient lane.
+- Local VMEC preparation:
+  - generated `alpha_delta = 3e-3` and `1e-2` short-bracket launch decks for `Rsin_mid_surface_m1` and `Zcos_mid_surface_m1`;
+  - all `3e-3` VMEC solves terminated normally;
+  - `1e-2` `Rsin` terminated normally;
+  - `1e-2` `Zcos` initially landed just above the final tolerance, so the generated plus/minus input decks were rerun with final-grid `NITER_ARRAY = 600,1000,2000`, after which both terminated normally.
+- Office GPU nonlinear sweep:
+  - fresh clone at `c8877d0`;
+  - copied local WOUT/campaign manifests to office;
+  - ran all `36` nonlinear outputs across the two RTX A4000 GPUs;
+  - runtime result: `36/36` completed, `0` failures, total scheduler wall time about `3542 s`.
+- Postprocessing results:
+  - all output gates and replicated-window ensemble gates passed for both amplitudes and controls;
+  - all four central-FD gates failed closed;
+  - response fractions were `0.00416` (`3e-3 Rsin`), `0.00125` (`3e-3 Zcos`), `0.00450` (`1e-2 Rsin`), and `0.00373` (`1e-2 Zcos`), all below the `0.03` resolved-response gate;
+  - relative gradient uncertainty remained large: minimum about `8.87`;
+  - asymmetry remained above the `0.5` gate for all cases, with the best case about `0.69`.
+- Artifact added:
+  - `docs/_static/nonlinear_gradient_state_control_bracket_sweep_status.{json,csv,png,pdf}`;
+  - four central-FD gate artifact families under `docs/_static/qa_lowres_alpha0p003_*` and `docs/_static/qa_lowres_alpha0p010_*`.
+- Scientific conclusion: increasing a single mapped VMEC-state bracket does not produce a resolved nonlinear turbulence-gradient signal on this short replicated window. This is negative evidence against promoting the single-control nonlinear-gradient lane. The next valid path is variance reduction or a better-conditioned observable/control basis: longer post-transient windows, more independent paired replicas, paired-seed differencing, or a multi-control direction with a larger resolved transport response.

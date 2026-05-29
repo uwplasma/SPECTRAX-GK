@@ -1332,6 +1332,20 @@ promoted nonlinear turbulence-gradient claim.
    evidence step is therefore a bracket-amplitude sweep, not a transport-gradient
    promotion.
 
+.. figure:: _static/nonlinear_gradient_state_control_bracket_sweep_status.png
+   :width: 90%
+   :align: center
+   :alt: VMEC-state bracket-amplitude sweep status
+
+   VMEC-state bracket-amplitude sweep status.  The follow-up campaign runs both
+   mapped controls at ``alpha_delta=3e-3`` and ``1e-2``. All ``36`` nonlinear
+   outputs complete on the office GPUs and the window/ensemble gates remain
+   stable, but none of the four central finite-difference gates pass. The
+   response fractions remain below ``0.005`` while the resolved-response gate is
+   ``0.03``. This is negative evidence against simply increasing the
+   single-control bracket; the next path is variance reduction or a
+   better-conditioned multi-control observable.
+
 .. figure:: _static/qa_ess_descent_profile_rel2_nonlinear_gradient_profile_direction_zbs_1_1_zbs_1_0_rbc_1_1_central_fd_gradient_gate.png
    :width: 90%
    :align: center

@@ -468,7 +468,8 @@ Differentiable-geometry state:
   ``nonlinear_gradient_asymmetric_state_to_input_mapping_response.*``,
   ``nonlinear_gradient_state_control_short_bracket_launch.*``,
   ``nonlinear_gradient_state_control_short_bracket_launch_status.*``,
-  ``nonlinear_gradient_state_control_short_bracket_nonlinear_audit_status.*``, and the reduced stellarator
+  ``nonlinear_gradient_state_control_short_bracket_nonlinear_audit_status.*``,
+  ``nonlinear_gradient_state_control_bracket_sweep_status.*``, and the reduced stellarator
   ITG optimization/UQ panels. This checklist is the current boundary between
   objective plumbing, checked state-control launch guards, and transport
   prediction.

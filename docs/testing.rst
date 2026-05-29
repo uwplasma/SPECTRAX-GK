@@ -545,6 +545,18 @@ scientific use of a short-bracket audit: it proves the nonlinear plumbing and
 window statistics are stable, but it rejects promotion until a bracket sweep or
 longer/lower-noise window resolves a local response.
 
+The bracket-amplitude follow-up is now tracked in
+``docs/_static/nonlinear_gradient_state_control_bracket_sweep_status.json``.
+It runs the same two mapped state controls at ``alpha_delta=3e-3`` and
+``1e-2`` on the office GPUs. All ``36`` nonlinear runs complete and the output
+and replicated-window gates remain stable, but all four central
+finite-difference gates still fail. The largest response fraction is only
+``0.0045`` against the ``0.03`` resolved-response gate, with relative gradient
+uncertainty still above ``8.8``. This closes the larger-single-control bracket
+as a promotion route. The next valid test is lower-variance evidence: longer
+post-transient windows, more independent replicas, paired-seed variance
+reduction, or a better-conditioned multi-control observable.
+
 ``tools/write_vmec_boundary_profile_perturbation_inputs.py`` is the companion
 for a single smoother composite direction. It perturbs several VMEC boundary
 coefficients together, normalizes the finite-difference scalar by the Euclidean

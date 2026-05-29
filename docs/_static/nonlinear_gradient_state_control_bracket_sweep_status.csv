@@ -1,0 +1,5 @@
+alpha_delta,state_parameter,passed,response_fraction,min_response_fraction,fd_asymmetry_rel,max_fd_asymmetry_rel,gradient_uncertainty_rel,max_gradient_uncertainty_rel,blockers
+0.003,rsin_mid_surface_m1,False,0.004159172848068613,0.03,0.6926208164606568,0.5,8.865820385545353,0.5,fd_response_resolved;fd_asymmetry_bounded;gradient_uncertainty_bounded
+0.003,zcos_mid_surface_m1,False,0.001247375411433147,0.03,85.16812394848048,0.5,28.96880860425934,0.5,fd_response_resolved;fd_asymmetry_bounded;gradient_uncertainty_bounded
+0.01,rsin_mid_surface_m1,False,0.004503396202871371,0.03,11.234771562572886,0.5,10.150197349817086,0.5,fd_response_resolved;fd_asymmetry_bounded;gradient_uncertainty_bounded
+0.01,zcos_mid_surface_m1,False,0.003726048769258922,0.03,28.19849781531051,0.5,9.652476970541581,0.5,fd_response_resolved;fd_asymmetry_bounded;gradient_uncertainty_bounded

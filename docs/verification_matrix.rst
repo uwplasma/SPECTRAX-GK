@@ -531,6 +531,19 @@ gate.
        fraction is about ``0.0015`` with asymmetry about ``45`` and
        uncertainty about ``23``. A bracket-amplitude sweep or longer/lower-noise
        window is required before promotion
+   * - VMEC-state bracket-amplitude sweep
+     - bounded nonlinear outputs, replicated windows, and central-FD promotion
+       blockers for mapped controls at larger single-control amplitudes
+     - ``docs/_static/nonlinear_gradient_state_control_bracket_sweep_status.json``
+       plus the four ``qa_lowres_alpha0p*_state_control_short_bracket_*_central_fd_gradient_gate.json``
+       artifacts and their replicated-window sidecars
+     - Closed as negative single-control bracket evidence; production gradient
+       still open
+     - all ``36`` office GPU nonlinear runs at ``alpha_delta=3e-3`` and
+       ``1e-2`` complete with no runtime failures. Output and replicated-window
+       gates remain stable, but all four central-FD gates fail. The best
+       response fraction is about ``0.0045`` against the ``0.03`` gate, so the
+       next test must reduce variance or change the observable/control basis
    * - Selected optimized-equilibrium nonlinear transport audit
      - optimized-equilibrium post-transient heat-flux average with uncertainty
        and nonlinear audit bars

@@ -1217,6 +1217,7 @@ fast_tests = [
   "tests/test_write_vmec_state_to_input_mapping_campaign.py",
   "tests/test_write_vmec_asymmetric_state_to_input_mapping_campaign.py",
   "tests/test_write_vmec_state_control_short_bracket_launch.py",
+  "tests/test_build_vmec_state_control_bracket_sweep_status.py",
 ]
 artifact_paths = [
   "docs/_static/nonlinear_turbulence_gradient_evidence_status.json",
@@ -1243,10 +1244,16 @@ artifact_paths = [
   "docs/_static/nonlinear_gradient_state_control_short_bracket_launch_status.png",
   "docs/_static/nonlinear_gradient_state_control_short_bracket_nonlinear_audit_status.json",
   "docs/_static/nonlinear_gradient_state_control_short_bracket_nonlinear_audit_status.png",
+  "docs/_static/nonlinear_gradient_state_control_bracket_sweep_status.json",
+  "docs/_static/nonlinear_gradient_state_control_bracket_sweep_status.png",
   "docs/_static/qa_lowres_state_control_short_bracket_rsin_mid_surface_m1_nonlinear_gradient_state_control_rsin_mid_surface_m1_central_fd_gradient_gate.json",
   "docs/_static/qa_lowres_state_control_short_bracket_rsin_mid_surface_m1_nonlinear_gradient_state_control_rsin_mid_surface_m1_central_fd_gradient_gate.png",
   "docs/_static/qa_lowres_state_control_short_bracket_zcos_mid_surface_m1_nonlinear_gradient_state_control_zcos_mid_surface_m1_central_fd_gradient_gate.json",
   "docs/_static/qa_lowres_state_control_short_bracket_zcos_mid_surface_m1_nonlinear_gradient_state_control_zcos_mid_surface_m1_central_fd_gradient_gate.png",
+  "docs/_static/qa_lowres_alpha0p003_state_control_short_bracket_rsin_mid_surface_m1_nonlinear_gradient_state_control_rsin_mid_surface_m1_central_fd_gradient_gate.json",
+  "docs/_static/qa_lowres_alpha0p010_state_control_short_bracket_rsin_mid_surface_m1_nonlinear_gradient_state_control_rsin_mid_surface_m1_central_fd_gradient_gate.json",
+  "docs/_static/qa_lowres_alpha0p003_state_control_short_bracket_zcos_mid_surface_m1_nonlinear_gradient_state_control_zcos_mid_surface_m1_central_fd_gradient_gate.json",
+  "docs/_static/qa_lowres_alpha0p010_state_control_short_bracket_zcos_mid_surface_m1_nonlinear_gradient_state_control_zcos_mid_surface_m1_central_fd_gradient_gate.json",
   "docs/_static/qa_ess_profile_gradient_rbc_1_1_nonlinear_gradient_rbc_1_1_central_fd_gradient_gate.json",
   "docs/_static/qa_ess_profile_gradient_overdetermined_nonlinear_gradient_candidate_ranking.json",
   "docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_status.json",
@@ -1255,7 +1262,7 @@ artifact_paths = [
 ]
 next_tests = [
   "use the next-campaign design gate to replace the fail-closed RBC(1,1) follow-up with a better-conditioned long-window production gradient artifact",
-  "run a LASYM=true RBS/ZBC bracket-amplitude sweep because the alpha_delta=1e-3 short-bracket audit is ensemble-stable but finite-difference unresolved",
+  "replace the fail-closed single-control RBS/ZBC bracket-amplitude sweep with lower-variance evidence: longer replicated windows, paired-seed variance reduction, or a better-conditioned multi-control observable",
   "add matched baseline-to-optimized turbulence-gradient audits once long-window parameter perturbation runs are available",
 ]
 

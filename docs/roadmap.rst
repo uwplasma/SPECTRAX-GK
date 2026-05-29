@@ -186,9 +186,14 @@ has normally terminated VMEC decks and prepared bounded nonlinear campaign
 manifests for both mapped controls. The first bounded nonlinear audit has now
 run all ``18`` short-bracket outputs and passed output/ensemble gates, but it
 fails central finite-difference promotion because the ``1e-3`` bracket has
-unresolved, asymmetric response. The remaining open work is a bracket-amplitude
-sweep and, if that resolves a local response, longer post-transient transport
-windows before any production nonlinear-gradient claim.
+unresolved, asymmetric response. The follow-up bracket-amplitude sweep has also
+run all ``36`` ``alpha_delta=3e-3`` and ``1e-2`` office-GPU outputs with no
+runtime failures. Output and ensemble gates remain stable, but all four
+central-FD gates still fail; the best response fraction is about ``0.0045``
+against the ``0.03`` gate. The remaining open work is therefore not a larger
+single-control bracket, but lower-variance evidence through longer
+post-transient windows, paired replicas, or better-conditioned multi-control
+observables before any production nonlinear-gradient claim.
 
 Before tagging, the latest public ``main`` CI run must pass repo hygiene, mypy,
 quick shards, docs/packaging, fast coverage, and the full wide-coverage matrix.
