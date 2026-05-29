@@ -375,7 +375,8 @@ def test_design_nonlinear_gradient_next_campaign_tool_writes_artifacts(tmp_path:
     payload = json.loads(out_prefix.with_suffix(".json").read_text(encoding="utf-8"))
     assert payload["kind"] == "nonlinear_turbulence_gradient_candidate_design_report"
     assert payload["summary"]["candidate_count"] == 1
-    assert out_prefix.with_suffix(".csv").exists()
+    csv_bytes = out_prefix.with_suffix(".csv").read_bytes()
+    assert b"\r" not in csv_bytes
     assert out_prefix.with_suffix(".png").exists()
     assert out_prefix.with_suffix(".pdf").exists()
 

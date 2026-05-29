@@ -73,8 +73,8 @@ replicas.
   `tools/design_nonlinear_gradient_next_campaign.py`.
 - Generated
   `docs/_static/nonlinear_gradient_next_campaign_design.{json,csv,png,pdf}`
-  from the current QA/ESS `ZBS(1,1)`, `ZBS(1,0)`, and refreshed `RBC(1,1)`
-  central-FD artifacts.
+  from the then-current QA/ESS `ZBS(1,1)`, `ZBS(1,0)`, and refreshed
+  `RBC(1,1)` central-FD artifacts.
 - Result: no current candidate is efficient to promote with blind same-bracket
   GPU replicas. `ZBS(1,1)` is statistically quiet but nonlocal;
   `ZBS(1,0)` is unresolved and nonlocal; `RBC(1,1)` is local and resolved but
@@ -111,6 +111,24 @@ demonstrates monotone response without violating asymmetry.
 Next best step: build a short bracket-screen runbook for `RBC(1,1)` plus one or
 two new VMEC-boundary coefficients selected from linear/quasilinear sensitivity
 artifacts, then only promote controls that pass this composite admission gate.
+
+### 2026-05-29 Next-campaign Design Refresh after VMEC-State Sweep
+
+- Regenerated
+  `docs/_static/nonlinear_gradient_next_campaign_design.{json,csv,png,pdf}`
+  over all `15` tracked nonlinear central-FD artifacts, including the profile,
+  composite-profile, bracket-size, and VMEC-state controls.
+- Result:
+  - promoted nonlinear-gradient controls: `0`;
+  - bounded-replica candidates: `1`;
+  - replacement/locality/variance-reduction candidates: `14`;
+  - next action: combine a locality-capped bracket with bounded matched
+    replicas only for the admitted candidate, and keep all broader nonlinear
+    turbulence-gradient claims fail-closed.
+
+Next best step: use the refreshed design artifact to choose a bounded matched
+replica follow-up only where the response/locality gates already justify it;
+do not spend more GPU time on unresolved VMEC-state single-control brackets.
 
 ## 2026-05-29 QL-seeded Nonlinear-gradient Control Screen
 

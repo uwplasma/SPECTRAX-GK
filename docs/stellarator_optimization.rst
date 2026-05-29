@@ -1200,9 +1200,11 @@ promoted nonlinear turbulence-gradient claim.
    current uncertainty and asymmetry margins, the middle panel compares the
    bracket scale required by uncertainty to the locality-safe bracket scale,
    and the right panel estimates extra replicas per state after applying the
-   locality cap.  The current conclusion is fail-closed and actionable: do not
-   launch more blind ``RBC(1,1)`` replicas; design a better-conditioned
-   control, variance-reduced observable, or new checked bracket first.
+   locality cap.  The refreshed artifact now scans all tracked central-FD
+   gates: no candidate is promoted, one candidate admits a bounded matched
+   replica follow-up, and the remaining candidates require replacement,
+   locality repair, or variance reduction before more long-window GPU time is
+   justified.
 
 .. figure:: _static/nonlinear_gradient_composite_control_design.png
    :width: 90%

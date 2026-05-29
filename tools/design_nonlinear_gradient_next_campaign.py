@@ -57,7 +57,7 @@ def _write_csv(path: Path, report: dict[str, Any]) -> None:
         "estimated_extra_replicates_at_locality_limit",
     ]
     with path.open("w", newline="", encoding="utf-8") as stream:
-        writer = csv.DictWriter(stream, fieldnames=fieldnames)
+        writer = csv.DictWriter(stream, fieldnames=fieldnames, lineterminator="\n")
         writer.writeheader()
         for rank, row in enumerate(report["candidates"], start=1):
             metrics = row.get("metrics", {}) if isinstance(row.get("metrics"), dict) else {}
