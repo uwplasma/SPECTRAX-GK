@@ -128,6 +128,35 @@ direction so the response is larger relative to turbulent spread.
   exist and pass output, replicated-window, control-mean, and central-response
   gates.
 
+## 2026-05-30 Control-mean Campaign Interim Diagnostic
+
+- The office GPU campaign is progressing on the rel7.5 ``ZBS(1,0)`` control
+  mean run set. A scheduler issue in the ad-hoc office runner briefly placed
+  both seed-35 processes on GPU 1; the runner was patched in-place to assign
+  free devices explicitly, skip only outputs whose time grid reaches the final
+  threshold, and remove partial checkpoint files before rerunning. The active
+  campaign now uses both GPUs and has no failed runs.
+- Added two postprocessing robustness fixes:
+  ``tools/postprocess_nonlinear_gradient_control_mean_campaign.py`` now accepts
+  stride-rounded final output times by defaulting the required output time to
+  ``0.99 * --tmax``; and ``nonlinear_gradient_control_mean_gate`` now matches
+  ensemble rows by explicit ``variant.seed`` or by the output basename, not by
+  parent directory names. This avoids a false collapse of all rows to
+  ``seed34`` when the diagnostic directory is named ``interim_seed34_42``.
+- A non-promotional interim postprocess of seeds ``34`` through ``42`` used
+  ``9`` matched plus/minus pairs. With state-ensemble enforcement relaxed for
+  diagnostic trend monitoring, the control-mean uncertainty gate has
+  ``combined_response_uncertainty_rel = 0.437`` and
+  ``control_mean_sem = 0.171``. This is encouraging because it is below the
+  target ``0.5``, but it is not a promotion result.
+- Current blockers to promotion remain:
+  the full ``21`` matched pairs are not finished, the minus-state ensemble has
+  one individual window failure at seed ``41`` due to terminal mean agreement
+  ``0.175 > 0.15``, and the independent nine-pair response mean
+  ``+0.165`` differs from the original four-pair response mean ``-0.520``.
+  The correct next step is to let the full campaign finish and rerun the strict
+  gate with all state-ensemble checks enabled.
+
 Next best step: run the bounded ``21``-pair midpoint-control campaign on the
 office GPUs, then rebuild the combined control-variate response gate with the
 independent control mean.
