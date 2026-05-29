@@ -222,7 +222,11 @@ def main(argv: list[str] | None = None) -> int:
         "gate": _repo_relative(gate_prefix.with_suffix(".json")),
     }
     print(json.dumps(payload, indent=2, sort_keys=True), flush=True)
-    return 0 if plus_state["ensemble_passed"] and minus_state["ensemble_passed"] and gate_rc == 0 else 1
+    state_gate_ok = (
+        bool(args.allow_failed_state_ensembles)
+        or (plus_state["ensemble_passed"] and minus_state["ensemble_passed"])
+    )
+    return 0 if state_gate_ok and gate_rc == 0 else 1
 
 
 if __name__ == "__main__":  # pragma: no cover
