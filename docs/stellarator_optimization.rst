@@ -1175,6 +1175,13 @@ common-mode needs ``21`` new matched plus/minus pairs (``42`` nonlinear runs)
 to project a combined response uncertainty of ``0.480``. That closes the
 pre-run design question but not the physics claim; the actual runs must still
 pass output, replicated-window, control-mean, and central-response gates.
+The companion
+``tools/build_nonlinear_gradient_control_mean_gate.py`` consumes the post-run
+plus/minus ensemble reports and evaluates the full uncertainty budget,
+``SEM_total^2 = SEM_residual^2 + beta^2 SEM_control_mean^2``. This keeps the
+control-variate path auditable: the sample-centered screen can motivate a
+campaign, but only the independent control-mean gate can promote the response
+uncertainty.
 Because both single-control amplitude sweeps point away from more blind
 replicas, SPECTRAX-GK now also includes
 ``tools/write_vmec_boundary_profile_perturbation_inputs.py`` for a smoother

@@ -10,11 +10,13 @@ import pytest
 from spectraxgk.nonlinear_gradient_followup import (
     NonlinearGradientCandidateDesignConfig,
     NonlinearGradientCompositeControlConfig,
+    NonlinearGradientControlMeanGateConfig,
     NonlinearGradientControlVariateCampaignConfig,
     NonlinearGradientFollowupConfig,
     NonlinearGradientVarianceReductionConfig,
     nonlinear_gradient_candidate_design_report,
     nonlinear_gradient_composite_control_report,
+    nonlinear_gradient_control_mean_gate,
     nonlinear_gradient_control_variate_campaign_plan,
     nonlinear_gradient_followup_plan,
     nonlinear_gradient_variance_reduction_plan,
@@ -553,6 +555,88 @@ def test_control_variate_campaign_plan_requires_independent_control_mean() -> No
             nonlinear_gradient_control_variate_campaign_plan(variance, config=config)
 
 
+def _control_ensemble(state: str, *, passed: bool = True) -> dict[str, object]:
+    rows = []
+    for idx, seed in enumerate(range(34, 55)):
+        control = 16.28 + 0.02 * ((idx % 3) - 1)
+        response = -0.52 + 0.01 * ((idx % 5) - 2)
+        if state == "plus":
+            value = control + 0.5 * response
+        else:
+            value = control - 0.5 * response
+        rows.append(
+            {
+                "late_mean": value,
+                "source_artifact": f"{state}_seed{seed}_heat_flux_trace.csv",
+                "summary_artifact": f"{state}_seed{seed}_transport_window.json",
+                "variant": {"seed": seed, "timestep": 0.05},
+            }
+        )
+    return {
+        "kind": "nonlinear_window_ensemble_report",
+        "passed": passed,
+        "n_reports": len(rows),
+        "rows": rows,
+        "statistics": {
+            "n_reports": len(rows),
+            "ensemble_mean": sum(float(row["late_mean"]) for row in rows) / len(rows),
+            "combined_sem": 0.02,
+            "combined_sem_rel": 0.001,
+            "mean_rel_spread": 0.002,
+        },
+    }
+
+
+def test_control_mean_gate_combines_independent_control_uncertainty() -> None:
+    artifact = json.loads(
+        (
+            ROOT
+            / "docs"
+            / "_static"
+            / "qa_ess_zbs10_rel7p5_nonlinear_gradient_zbs_1_0_central_fd_gradient_gate.json"
+        ).read_text(encoding="utf-8")
+    )
+    variance = nonlinear_gradient_variance_reduction_plan(artifact)
+
+    gate = nonlinear_gradient_control_mean_gate(
+        variance,
+        plus_ensemble=_control_ensemble("plus"),
+        minus_ensemble=_control_ensemble("minus"),
+        plus_path="plus.json",
+        minus_path="minus.json",
+    )
+
+    assert gate["passed"] is True
+    assert gate["candidate_name"] == "plus_minus_midpoint_common_mode"
+    assert gate["summary"]["common_pair_count"] == 21
+    assert gate["summary"]["combined_response_uncertainty_rel"] < 0.5
+    assert gate["pair_rows"][0]["label"] == "seed34"
+
+    blocked = nonlinear_gradient_control_mean_gate(
+        variance,
+        plus_ensemble=_control_ensemble("plus", passed=False),
+        minus_ensemble=_control_ensemble("minus"),
+    )
+    assert blocked["passed"] is False
+    assert "plus_control_ensemble_failed" in blocked["blockers"]
+
+    validation_cases = [
+        (
+            "target_response_uncertainty_rel",
+            NonlinearGradientControlMeanGateConfig(target_response_uncertainty_rel=0.0),
+        ),
+        ("min_control_mean_pairs", NonlinearGradientControlMeanGateConfig(min_control_mean_pairs=0)),
+    ]
+    for message, config in validation_cases:
+        with pytest.raises(ValueError, match=message):
+            nonlinear_gradient_control_mean_gate(
+                variance,
+                plus_ensemble=_control_ensemble("plus"),
+                minus_ensemble=_control_ensemble("minus"),
+                config=config,
+            )
+
+
 def test_variance_reduction_plan_tool_writes_artifacts(tmp_path: Path) -> None:
     path = ROOT / "tools" / "build_nonlinear_gradient_variance_reduction_plan.py"
     spec = importlib.util.spec_from_file_location("build_nonlinear_gradient_variance_reduction_plan", path)
@@ -601,6 +685,45 @@ def test_control_variate_campaign_plan_tool_writes_artifacts(tmp_path: Path) -> 
     assert report["kind"] == "nonlinear_turbulence_gradient_control_variate_campaign_plan"
     assert report["action"] == "launch_independent_control_mean_campaign"
     assert rows[0].startswith("pair_index,variant_label")
+    assert out_prefix.with_suffix(".png").exists()
+    assert out_prefix.with_suffix(".pdf").exists()
+
+
+def test_control_mean_gate_tool_writes_artifacts(tmp_path: Path) -> None:
+    path = ROOT / "tools" / "build_nonlinear_gradient_control_mean_gate.py"
+    spec = importlib.util.spec_from_file_location("build_nonlinear_gradient_control_mean_gate", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+
+    plus = tmp_path / "plus.json"
+    minus = tmp_path / "minus.json"
+    plus.write_text(json.dumps(_control_ensemble("plus")), encoding="utf-8")
+    minus.write_text(json.dumps(_control_ensemble("minus")), encoding="utf-8")
+    source = ROOT / "docs" / "_static" / "qa_ess_zbs10_rel7p5_variance_reduction_plan.json"
+    out_prefix = tmp_path / "control_mean_gate"
+
+    assert (
+        module.main(
+            [
+                "--variance-report",
+                str(source),
+                "--plus-ensemble",
+                str(plus),
+                "--minus-ensemble",
+                str(minus),
+                "--out-prefix",
+                str(out_prefix),
+            ]
+        )
+        == 0
+    )
+
+    report = json.loads(out_prefix.with_suffix(".json").read_text(encoding="utf-8"))
+    assert report["kind"] == "nonlinear_turbulence_gradient_control_mean_gate"
+    assert report["passed"] is True
+    assert out_prefix.with_suffix(".csv").exists()
     assert out_prefix.with_suffix(".png").exists()
     assert out_prefix.with_suffix(".pdf").exists()
 

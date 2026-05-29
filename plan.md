@@ -102,6 +102,11 @@ direction so the response is larger relative to turbulent spread.
   carries the missing uncertainty term that the control-variate screen could
   not provide: ``beta^2 Var(control_mean)`` from an independent control-mean
   estimate.
+- Added ``nonlinear_gradient_control_mean_gate`` and
+  ``tools/build_nonlinear_gradient_control_mean_gate.py`` so the post-run
+  artifacts can be evaluated without manual spreadsheet work. The gate consumes
+  independent plus/minus ensemble reports and combines the residual response
+  SEM with ``beta^2 SEM_control_mean^2``.
 - Generated
   ``docs/_static/qa_ess_zbs10_rel7p5_control_variate_campaign_plan.{json,csv,png,pdf}``.
   Using the midpoint common-mode candidate, the pre-run campaign is

@@ -461,6 +461,14 @@ midpoint common-mode control needs ``21`` independent matched plus/minus pairs
 (``42`` new nonlinear runs) to reduce the combined response uncertainty to
 about ``0.480``. This is launch readiness only; promotion still requires the
 new output, window, control-mean, and central-response gates to pass.
+``tools/build_nonlinear_gradient_control_mean_gate.py`` is the matching
+post-run gate. It consumes the original variance report plus independent plus
+and minus ensemble reports, estimates the held-out mean of
+``0.5 * (Q_plus + Q_minus)``, and combines that uncertainty with the screened
+control-variate residual SEM through ``SEM_total^2 = SEM_residual^2 +
+beta^2 SEM_control_mean^2``. The gate fails if either state ensemble fails, if
+there are too few matched pairs, or if the combined response uncertainty stays
+above target.
 ``tools/design_nonlinear_gradient_composite_control.py`` is the stricter
 control-admission gate for that next campaign. It consumes the same completed
 central-FD artifacts, admits only VMEC boundary coefficients with resolved
