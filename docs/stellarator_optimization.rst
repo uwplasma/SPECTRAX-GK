@@ -1228,14 +1228,13 @@ promoted nonlinear turbulence-gradient claim.
    Quasilinear-seeded nonlinear-gradient control screen.  This upstream gate
    uses full-chain ``vmec_jax`` state sensitivities to decide which controls
    should even be considered for nonlinear long-window finite differences. The
-   current QH/Li383 screen is useful but not launch-ready: the tracked
-   mid-surface ``Rcos`` controls ``m=1`` and ``m=2`` have opposite
-   quasilinear-proxy sensitivity signs across equilibria, and the QH ``m=3``
-   primary objective is not conditioned tightly enough to complete a two-case
-   comparison. The result is fail-closed and points to the next scientific
-   action: expose additional state-control families, especially
-   ``Zsin``/``Zcos`` controls if the bridge supports them, before nonlinear GPU
-   campaigns.
+   current QH/Li383 screen is now launch-ready only for checked short
+   nonlinear bracket screens.  The tracked ``Rcos`` and ``Zsin`` controls
+   remain fail-closed because their primary quasilinear-proxy signs are not
+   robust across the two equilibria, while ``Rsin_mid_surface_m1`` and
+   ``Zcos_mid_surface_m1`` are admitted with two-case sign consistency. This is
+   still an upstream control-admission result, not a converged nonlinear
+   transport-gradient or optimized-equilibrium claim.
 
 .. figure:: _static/qa_ess_descent_profile_rel2_nonlinear_gradient_profile_direction_zbs_1_1_zbs_1_0_rbc_1_1_central_fd_gradient_gate.png
    :width: 90%

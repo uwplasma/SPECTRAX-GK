@@ -125,20 +125,23 @@ artifacts, then only promote controls that pass this composite admission gate.
   `mode_index=2` and `mode_index=3` artifacts are grouped as
   `Rcos_mid_surface_m2` and `Rcos_mid_surface_m3` instead of incompatible
   absolute radial-index labels. Added QH/Li383 artifacts for both controls.
-- Result: the upstream sensitivity screen is correctly fail-closed with
-  6 artifacts, 3 semantic controls, and 0 admitted controls. The `m=1` and
-  `m=2` primary quasilinear-proxy sensitivities change sign between QH and
-  Li383, giving sign consistency `0.5 < 0.75`. The Li383 `m=3` row is
-  conditioned, but the matching QH `m=3` primary objective is not, so the
-  control has insufficient case coverage. This means the current full-chain QL
-  evidence still cannot seed a robust two-control nonlinear turbulence-gradient
-  campaign.
+- Follow-up pass: exposed the VMEC-state `parameter_family` selector through
+  the full-chain VMEC/Boozer frequency, quasilinear, reduced nonlinear-window,
+  scalar-FD, and aggregate-FD gradient paths, then generated QH/Li383
+  quasilinear artifacts for `Zsin_mid_surface_m1`,
+  `Zcos_mid_surface_m1`, and `Rsin_mid_surface_m1`.
+- Result: the upstream sensitivity screen now passes the short-bracket
+  admission gate with 12 artifacts, 6 semantic controls, and 2 admitted
+  controls. `Rsin_mid_surface_m1` and `Zcos_mid_surface_m1` have two-case
+  primary quasilinear-proxy sign consistency `1.0`; `Rcos` and `Zsin` controls
+  remain fail-closed due sign flips or incomplete conditioning. This permits
+  checked short nonlinear bracket screens only. It is not a converged nonlinear
+  turbulence-gradient or optimization claim.
 
-Next best step: expose and test additional full-chain linear/quasilinear
-sensitivity controls beyond `Rcos`, preferably `Zsin`/`Zcos` state controls
-when the bridge supports them, then rerun the QL-seeded screen. Only after it
-admits at least two controls should we write new VMEC profile-direction
-perturbation inputs or schedule office-GPU nonlinear-gradient campaigns.
+Next best step: build short-bracket nonlinear-gradient runbooks for
+`Rsin_mid_surface_m1` and `Zcos_mid_surface_m1`, including an explicit mapping
+from VMEC-state controls to perturbable VMEC input directions before any
+office-GPU long-window campaign.
 
 ## 2026-05-27 VMEC-JAX Stellarator Optimization Lane
 

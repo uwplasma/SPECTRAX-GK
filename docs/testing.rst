@@ -451,15 +451,15 @@ linear/quasilinear sensitivity screen for finding those controls. It consumes
 full-chain ``vmec_jax -> booz_xform_jax -> SPECTRAX-GK`` sensitivity artifacts
 and groups rows by VMEC-state parameter, not by direct input-file
 ``RBC/ZBS`` coefficient. The tracked
-``docs/_static/nonlinear_gradient_ql_seed_screen.json`` currently fails closed:
-the tracked QH/Li383 quasilinear artifacts now cover three semantic
-mid-surface controls (``Rcos_mid_surface_m1``, ``Rcos_mid_surface_m2``, and
-``Rcos_mid_surface_m3``).  The ``m=1`` and ``m=2`` primary
-quasilinear-proxy sensitivities have opposite signs across the two equilibria,
-while the QH ``m=3`` primary objective is not AD/FD-conditioned tightly enough
-to enter the cross-case screen. The next step is to expose additional
-state-control families, especially ``Zsin``/``Zcos`` if the bridge supports
-them, before any nonlinear GPU launch.
+``docs/_static/nonlinear_gradient_ql_seed_screen.json`` now passes the
+upstream seed-admission gate after expanding beyond ``Rcos``.  The tracked
+QH/Li383 quasilinear artifacts cover ``Rcos``, ``Rsin``, ``Zcos``, and
+``Zsin`` semantic mid-surface controls. ``Rcos`` and ``Zsin`` controls remain
+fail-closed because their primary quasilinear-proxy signs are not robust across
+the two equilibria, but ``Rsin_mid_surface_m1`` and ``Zcos_mid_surface_m1``
+are admitted with two-case sign consistency. This permits only checked short
+nonlinear bracket screens; it is not a converged nonlinear-gradient or
+optimization claim.
 ``tools/write_vmec_boundary_profile_perturbation_inputs.py`` is the companion
 for a single smoother composite direction. It perturbs several VMEC boundary
 coefficients together, normalizes the finite-difference scalar by the Euclidean

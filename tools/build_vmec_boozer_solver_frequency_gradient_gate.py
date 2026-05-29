@@ -24,6 +24,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--case-name", default="nfp4_QH_warm_start")
     parser.add_argument("--radial-index", type=int, default=None)
     parser.add_argument("--mode-index", type=int, default=1)
+    parser.add_argument("--parameter-family", default="Rcos")
     parser.add_argument("--surface-index", type=int, default=None)
     parser.add_argument("--fd-step", type=float, default=1.0e-6)
     parser.add_argument("--rtol", type=float, default=5.0e-2)
@@ -47,6 +48,7 @@ def main(argv: list[str] | None = None) -> int:
         case_name=args.case_name,
         radial_index=args.radial_index,
         mode_index=args.mode_index,
+        parameter_family=args.parameter_family,
         surface_index=args.surface_index,
         fd_step=args.fd_step,
         rtol=args.rtol,

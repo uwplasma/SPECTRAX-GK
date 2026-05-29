@@ -20,6 +20,7 @@ from spectraxgk.solver_objective_gradients import (
     VMEC_BOOZER_FREQUENCY_OBJECTIVE_NAMES,
     VMEC_BOOZER_NONLINEAR_WINDOW_OBJECTIVE_NAMES,
     VMEC_BOOZER_QUASILINEAR_OBJECTIVE_NAMES,
+    VMEC_BOOZER_STATE_PARAMETER_FAMILIES,
     VMEC_BOOZER_STATE_PARAMETER_NAMES,
     _objective_gate_rows,
     _reduced_nonlinear_window_metrics_from_linear_observables,
@@ -110,12 +111,16 @@ def test_tiny_differentiable_objective_gradient_report_is_finite_and_conditioned
 
 def test_vmec_boozer_state_parameter_name_tracks_default_and_explicit_modes() -> None:
     assert (
-        _vmec_boozer_state_parameter_name(17, 1, default_mid_surface=17)
+        _vmec_boozer_state_parameter_name("Rcos", 17, 1, default_mid_surface=17)
         == "Rcos_mid_surface_m1"
     )
     assert (
-        _vmec_boozer_state_parameter_name(11, 2, default_mid_surface=17)
+        _vmec_boozer_state_parameter_name("Rcos", 11, 2, default_mid_surface=17)
         == "Rcos_r11_m2"
+    )
+    assert (
+        _vmec_boozer_state_parameter_name("Zsin", 17, 2, default_mid_surface=17)
+        == "Zsin_mid_surface_m2"
     )
 
 
@@ -542,6 +547,56 @@ def test_vmec_boozer_scalar_objective_finite_difference_report(
         vmec_boozer_scalar_objective_finite_difference_report(radial_index=99)
 
 
+def test_vmec_boozer_scalar_objective_finite_difference_report_selects_state_family(
+    monkeypatch,
+) -> None:
+    @dataclass(frozen=True)
+    class FakeState:
+        Rcos: jnp.ndarray
+        Zsin: jnp.ndarray
+
+    fake_state = FakeState(
+        Rcos=jnp.zeros((5, 3), dtype=jnp.float32),
+        Zsin=jnp.zeros((5, 3), dtype=jnp.float32),
+    )
+    monkeypatch.setattr(
+        sog,
+        "_load_vmec_jax_example_state_bundle",
+        lambda case_name: {
+            "case_name": case_name,
+            "input_path": "input.test",
+            "wout_path": "wout.test",
+            "state": fake_state,
+            "static": "static",
+            "indata": "indata",
+            "wout": "wout",
+        },
+    )
+
+    def fake_vector(state, *_args, **_kwargs):  # noqa: ANN001, ANN202
+        coeff = float(np.asarray(state.Zsin[2, 1]))
+        return jnp.asarray([2.0 + 4.0 * coeff, 0.0, 2.0, 4.0, 0.5, 5.0])
+
+    monkeypatch.setattr(sog, "vmec_boozer_solver_objective_vector_from_state", fake_vector)
+
+    report = vmec_boozer_scalar_objective_finite_difference_report(
+        case_name="case",
+        objective="growth",
+        parameter_family="Zsin",
+        base_delta=0.0,
+        perturbation_step=1.0e-3,
+        response_atol=1.0e-6,
+    )
+
+    assert report["passed"] is True
+    assert report["parameter_name"] == "Zsin_mid_surface_m1"
+    assert report["parameter_indices"] == {"Zsin": [2, 1]}
+    assert report["central_derivative"] == pytest.approx(4.0, rel=1.0e-4)
+
+    with pytest.raises(ValueError, match="parameter_family"):
+        vmec_boozer_scalar_objective_finite_difference_report(parameter_family="BadFamily")
+
+
 def test_vmec_boozer_aggregate_scalar_objective_finite_difference_report(
     monkeypatch,
 ) -> None:
@@ -926,15 +981,28 @@ def test_mode21_vmec_boozer_frequency_gate_exports_and_scope() -> None:
         mode21_vmec_boozer_nonlinear_window_gradient_report
     )
     assert tuple(VMEC_BOOZER_STATE_PARAMETER_NAMES) == ("Rcos_mid_surface_m1",)
+    assert spectraxgk.VMEC_BOOZER_STATE_PARAMETER_FAMILIES is VMEC_BOOZER_STATE_PARAMETER_FAMILIES
+    assert tuple(VMEC_BOOZER_STATE_PARAMETER_FAMILIES) == (
+        "Rcos",
+        "Rsin",
+        "Zcos",
+        "Zsin",
+        "Lcos",
+        "Lsin",
+    )
     assert (
-        _vmec_boozer_state_parameter_name(17, 1, default_mid_surface=17)
+        _vmec_boozer_state_parameter_name("Rcos", 17, 1, default_mid_surface=17)
         == "Rcos_mid_surface_m1"
     )
     assert (
-        _vmec_boozer_state_parameter_name(17, 2, default_mid_surface=17)
+        _vmec_boozer_state_parameter_name("Rcos", 17, 2, default_mid_surface=17)
         == "Rcos_mid_surface_m2"
     )
-    assert _vmec_boozer_state_parameter_name(16, 2, default_mid_surface=17) == "Rcos_r16_m2"
+    assert (
+        _vmec_boozer_state_parameter_name("Zsin", 17, 2, default_mid_surface=17)
+        == "Zsin_mid_surface_m2"
+    )
+    assert _vmec_boozer_state_parameter_name("Rcos", 16, 2, default_mid_surface=17) == "Rcos_r16_m2"
     assert tuple(VMEC_BOOZER_FREQUENCY_OBJECTIVE_NAMES) == ("gamma", "omega")
     assert tuple(VMEC_BOOZER_QUASILINEAR_OBJECTIVE_NAMES) == (
         "gamma",

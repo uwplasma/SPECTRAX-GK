@@ -1,5 +1,66 @@
 {
-  "admitted_controls": [],
+  "admitted_controls": [
+    {
+      "admitted_for_nonlinear_screen": true,
+      "blockers": [],
+      "descent_direction_sign": 1.0,
+      "dominant_sensitivity_sign": -1.0,
+      "mean_abs_sensitivity": 15866.412915948646,
+      "n_accepted_rows": 2,
+      "n_cases": 2,
+      "primary_objective": "mixing_length_heat_flux_proxy",
+      "sign_consistency_fraction": 1.0,
+      "source_rows": [
+        {
+          "case_name": "nfp4_QH_warm_start",
+          "implicit_sensitivity": -29369.38259828796,
+          "path": "docs/_static/vmec_boozer_qh_rsin_mid_m1_quasilinear_gradient_gate.json",
+          "relative_error": 0.00022073564117440172,
+          "source_artifact_passed": true
+        },
+        {
+          "case_name": "li383_low_res",
+          "implicit_sensitivity": -2363.4432336093305,
+          "path": "docs/_static/vmec_boozer_li383_rsin_mid_m1_quasilinear_gradient_gate.json",
+          "relative_error": 2.563431482988003e-07,
+          "source_artifact_passed": true
+        }
+      ],
+      "state_control_argument": "Rsin_mid_surface_m1:1",
+      "state_control_family": "Rsin",
+      "state_parameter": "Rsin_mid_surface_m1"
+    },
+    {
+      "admitted_for_nonlinear_screen": true,
+      "blockers": [],
+      "descent_direction_sign": 1.0,
+      "dominant_sensitivity_sign": -1.0,
+      "mean_abs_sensitivity": 3127.9415563508674,
+      "n_accepted_rows": 2,
+      "n_cases": 2,
+      "primary_objective": "mixing_length_heat_flux_proxy",
+      "sign_consistency_fraction": 1.0,
+      "source_rows": [
+        {
+          "case_name": "nfp4_QH_warm_start",
+          "implicit_sensitivity": -5072.891090983687,
+          "path": "docs/_static/vmec_boozer_qh_zcos_mid_m1_quasilinear_gradient_gate.json",
+          "relative_error": 0.002004012534931473,
+          "source_artifact_passed": false
+        },
+        {
+          "case_name": "li383_low_res",
+          "implicit_sensitivity": -1182.9920217180477,
+          "path": "docs/_static/vmec_boozer_li383_zcos_mid_m1_quasilinear_gradient_gate.json",
+          "relative_error": 1.5671921477023748e-06,
+          "source_artifact_passed": true
+        }
+      ],
+      "state_control_argument": "Zcos_mid_surface_m1:1",
+      "state_control_family": "Zcos",
+      "state_parameter": "Zcos_mid_surface_m1"
+    }
+  ],
   "case": "qa_ess_nonlinear_gradient_ql_seed_screen",
   "claim_level": "ql_seeded_control_screen_not_nonlinear_gradient_evidence",
   "config": {
@@ -105,10 +166,102 @@
       "state_control_argument": "Rcos_mid_surface_m3:1",
       "state_control_family": "Rcos",
       "state_parameter": "Rcos_mid_surface_m3"
+    },
+    {
+      "admitted_for_nonlinear_screen": true,
+      "blockers": [],
+      "descent_direction_sign": 1.0,
+      "dominant_sensitivity_sign": -1.0,
+      "mean_abs_sensitivity": 15866.412915948646,
+      "n_accepted_rows": 2,
+      "n_cases": 2,
+      "primary_objective": "mixing_length_heat_flux_proxy",
+      "sign_consistency_fraction": 1.0,
+      "source_rows": [
+        {
+          "case_name": "nfp4_QH_warm_start",
+          "implicit_sensitivity": -29369.38259828796,
+          "path": "docs/_static/vmec_boozer_qh_rsin_mid_m1_quasilinear_gradient_gate.json",
+          "relative_error": 0.00022073564117440172,
+          "source_artifact_passed": true
+        },
+        {
+          "case_name": "li383_low_res",
+          "implicit_sensitivity": -2363.4432336093305,
+          "path": "docs/_static/vmec_boozer_li383_rsin_mid_m1_quasilinear_gradient_gate.json",
+          "relative_error": 2.563431482988003e-07,
+          "source_artifact_passed": true
+        }
+      ],
+      "state_control_argument": "Rsin_mid_surface_m1:1",
+      "state_control_family": "Rsin",
+      "state_parameter": "Rsin_mid_surface_m1"
+    },
+    {
+      "admitted_for_nonlinear_screen": true,
+      "blockers": [],
+      "descent_direction_sign": 1.0,
+      "dominant_sensitivity_sign": -1.0,
+      "mean_abs_sensitivity": 3127.9415563508674,
+      "n_accepted_rows": 2,
+      "n_cases": 2,
+      "primary_objective": "mixing_length_heat_flux_proxy",
+      "sign_consistency_fraction": 1.0,
+      "source_rows": [
+        {
+          "case_name": "nfp4_QH_warm_start",
+          "implicit_sensitivity": -5072.891090983687,
+          "path": "docs/_static/vmec_boozer_qh_zcos_mid_m1_quasilinear_gradient_gate.json",
+          "relative_error": 0.002004012534931473,
+          "source_artifact_passed": false
+        },
+        {
+          "case_name": "li383_low_res",
+          "implicit_sensitivity": -1182.9920217180477,
+          "path": "docs/_static/vmec_boozer_li383_zcos_mid_m1_quasilinear_gradient_gate.json",
+          "relative_error": 1.5671921477023748e-06,
+          "source_artifact_passed": true
+        }
+      ],
+      "state_control_argument": "Zcos_mid_surface_m1:1",
+      "state_control_family": "Zcos",
+      "state_parameter": "Zcos_mid_surface_m1"
+    },
+    {
+      "admitted_for_nonlinear_screen": false,
+      "blockers": [
+        "cross_artifact_sign_not_consistent"
+      ],
+      "descent_direction_sign": -1.0,
+      "dominant_sensitivity_sign": 1.0,
+      "mean_abs_sensitivity": 42089.222170650784,
+      "n_accepted_rows": 2,
+      "n_cases": 2,
+      "primary_objective": "mixing_length_heat_flux_proxy",
+      "sign_consistency_fraction": 0.5,
+      "source_rows": [
+        {
+          "case_name": "nfp4_QH_warm_start",
+          "implicit_sensitivity": 82548.19994346345,
+          "path": "docs/_static/vmec_boozer_qh_zsin_mid_m1_quasilinear_gradient_gate.json",
+          "relative_error": 0.0010983064733906158,
+          "source_artifact_passed": false
+        },
+        {
+          "case_name": "li383_low_res",
+          "implicit_sensitivity": -1630.2443978381264,
+          "path": "docs/_static/vmec_boozer_li383_zsin_mid_m1_quasilinear_gradient_gate.json",
+          "relative_error": 2.129833281056179e-06,
+          "source_artifact_passed": true
+        }
+      ],
+      "state_control_argument": "Zsin_mid_surface_m1:-1",
+      "state_control_family": "Zsin",
+      "state_parameter": "Zsin_mid_surface_m1"
     }
   ],
   "kind": "nonlinear_turbulence_gradient_ql_seed_screen",
-  "next_action": "generate additional QL/linear sensitivity artifacts for distinct VMEC-state controls before nonlinear GPU campaigns",
+  "next_action": "build checked short-bracket nonlinear-gradient screens for admitted VMEC-state controls",
   "objective_rows": [
     {
       "accepted_objective_gate": true,
@@ -583,15 +736,486 @@
       "source_kind": "mode21_vmec_boozer_quasilinear_gradient_gate",
       "state_control_family": "Rcos",
       "state_parameter": "Rcos_mid_surface_m3"
+    },
+    {
+      "accepted_objective_gate": true,
+      "artifact_index": 6,
+      "blockers": [],
+      "case_name": "nfp4_QH_warm_start",
+      "gate_index": 0,
+      "label": "nfp4_QH_warm_start:vmec_boozer_qh_zsin_mid_m1_quasilinear_gradient_gate",
+      "metrics": {
+        "descent_direction_sign": -1.0,
+        "finite_difference_sensitivity": 5770.61598383638,
+        "implicit_sensitivity": 5778.084851585723,
+        "relative_error": 0.0012942929784729481
+      },
+      "objective": "gamma",
+      "parameter_indices": {
+        "Zsin": [
+          17,
+          1
+        ]
+      },
+      "path": "docs/_static/vmec_boozer_qh_zsin_mid_m1_quasilinear_gradient_gate.json",
+      "source_artifact_passed": false,
+      "source_kind": "mode21_vmec_boozer_quasilinear_gradient_gate",
+      "state_control_family": "Zsin",
+      "state_parameter": "Zsin_mid_surface_m1"
+    },
+    {
+      "accepted_objective_gate": false,
+      "artifact_index": 6,
+      "blockers": [
+        "ad_fd_relative_error_too_large",
+        "objective_gate_failed"
+      ],
+      "case_name": "nfp4_QH_warm_start",
+      "gate_index": 3,
+      "label": "nfp4_QH_warm_start:vmec_boozer_qh_zsin_mid_m1_quasilinear_gradient_gate",
+      "metrics": {
+        "descent_direction_sign": 1.0,
+        "finite_difference_sensitivity": -608.375350819923,
+        "implicit_sensitivity": -641.4270901447235,
+        "relative_error": 0.05432787386973482
+      },
+      "objective": "linear_heat_flux_weight",
+      "parameter_indices": {
+        "Zsin": [
+          17,
+          1
+        ]
+      },
+      "path": "docs/_static/vmec_boozer_qh_zsin_mid_m1_quasilinear_gradient_gate.json",
+      "source_artifact_passed": false,
+      "source_kind": "mode21_vmec_boozer_quasilinear_gradient_gate",
+      "state_control_family": "Zsin",
+      "state_parameter": "Zsin_mid_surface_m1"
+    },
+    {
+      "accepted_objective_gate": true,
+      "artifact_index": 6,
+      "blockers": [],
+      "case_name": "nfp4_QH_warm_start",
+      "gate_index": 4,
+      "label": "nfp4_QH_warm_start:vmec_boozer_qh_zsin_mid_m1_quasilinear_gradient_gate",
+      "metrics": {
+        "descent_direction_sign": -1.0,
+        "finite_difference_sensitivity": 82638.96285131734,
+        "implicit_sensitivity": 82548.19994346345,
+        "relative_error": 0.0010983064733906158
+      },
+      "objective": "mixing_length_heat_flux_proxy",
+      "parameter_indices": {
+        "Zsin": [
+          17,
+          1
+        ]
+      },
+      "path": "docs/_static/vmec_boozer_qh_zsin_mid_m1_quasilinear_gradient_gate.json",
+      "source_artifact_passed": false,
+      "source_kind": "mode21_vmec_boozer_quasilinear_gradient_gate",
+      "state_control_family": "Zsin",
+      "state_parameter": "Zsin_mid_surface_m1"
+    },
+    {
+      "accepted_objective_gate": true,
+      "artifact_index": 7,
+      "blockers": [],
+      "case_name": "li383_low_res",
+      "gate_index": 0,
+      "label": "li383_low_res:vmec_boozer_li383_zsin_mid_m1_quasilinear_gradient_gate",
+      "metrics": {
+        "descent_direction_sign": 1.0,
+        "finite_difference_sensitivity": -125.33344215318044,
+        "implicit_sensitivity": -125.333564570619,
+        "relative_error": 9.767340340945245e-07
+      },
+      "objective": "gamma",
+      "parameter_indices": {
+        "Zsin": [
+          8,
+          1
+        ]
+      },
+      "path": "docs/_static/vmec_boozer_li383_zsin_mid_m1_quasilinear_gradient_gate.json",
+      "source_artifact_passed": true,
+      "source_kind": "mode21_vmec_boozer_quasilinear_gradient_gate",
+      "state_control_family": "Zsin",
+      "state_parameter": "Zsin_mid_surface_m1"
+    },
+    {
+      "accepted_objective_gate": true,
+      "artifact_index": 7,
+      "blockers": [],
+      "case_name": "li383_low_res",
+      "gate_index": 3,
+      "label": "li383_low_res:vmec_boozer_li383_zsin_mid_m1_quasilinear_gradient_gate",
+      "metrics": {
+        "descent_direction_sign": -1.0,
+        "finite_difference_sensitivity": 354.5561526737684,
+        "implicit_sensitivity": 354.5551354647648,
+        "relative_error": 2.8689644670021916e-06
+      },
+      "objective": "linear_heat_flux_weight",
+      "parameter_indices": {
+        "Zsin": [
+          8,
+          1
+        ]
+      },
+      "path": "docs/_static/vmec_boozer_li383_zsin_mid_m1_quasilinear_gradient_gate.json",
+      "source_artifact_passed": true,
+      "source_kind": "mode21_vmec_boozer_quasilinear_gradient_gate",
+      "state_control_family": "Zsin",
+      "state_parameter": "Zsin_mid_surface_m1"
+    },
+    {
+      "accepted_objective_gate": true,
+      "artifact_index": 7,
+      "blockers": [],
+      "case_name": "li383_low_res",
+      "gate_index": 4,
+      "label": "li383_low_res:vmec_boozer_li383_zsin_mid_m1_quasilinear_gradient_gate",
+      "metrics": {
+        "descent_direction_sign": 1.0,
+        "finite_difference_sensitivity": -1630.2409256967467,
+        "implicit_sensitivity": -1630.2443978381264,
+        "relative_error": 2.129833281056179e-06
+      },
+      "objective": "mixing_length_heat_flux_proxy",
+      "parameter_indices": {
+        "Zsin": [
+          8,
+          1
+        ]
+      },
+      "path": "docs/_static/vmec_boozer_li383_zsin_mid_m1_quasilinear_gradient_gate.json",
+      "source_artifact_passed": true,
+      "source_kind": "mode21_vmec_boozer_quasilinear_gradient_gate",
+      "state_control_family": "Zsin",
+      "state_parameter": "Zsin_mid_surface_m1"
+    },
+    {
+      "accepted_objective_gate": true,
+      "artifact_index": 8,
+      "blockers": [],
+      "case_name": "nfp4_QH_warm_start",
+      "gate_index": 0,
+      "label": "nfp4_QH_warm_start:vmec_boozer_qh_zcos_mid_m1_quasilinear_gradient_gate",
+      "metrics": {
+        "descent_direction_sign": 1.0,
+        "finite_difference_sensitivity": -5043.865929027836,
+        "implicit_sensitivity": -5042.663862047127,
+        "relative_error": 0.00023832254814524118
+      },
+      "objective": "gamma",
+      "parameter_indices": {
+        "Zcos": [
+          17,
+          1
+        ]
+      },
+      "path": "docs/_static/vmec_boozer_qh_zcos_mid_m1_quasilinear_gradient_gate.json",
+      "source_artifact_passed": false,
+      "source_kind": "mode21_vmec_boozer_quasilinear_gradient_gate",
+      "state_control_family": "Zcos",
+      "state_parameter": "Zcos_mid_surface_m1"
+    },
+    {
+      "accepted_objective_gate": true,
+      "artifact_index": 8,
+      "blockers": [],
+      "case_name": "nfp4_QH_warm_start",
+      "gate_index": 3,
+      "label": "nfp4_QH_warm_start:vmec_boozer_qh_zcos_mid_m1_quasilinear_gradient_gate",
+      "metrics": {
+        "descent_direction_sign": -1.0,
+        "finite_difference_sensitivity": 27673.486486077705,
+        "implicit_sensitivity": 27667.808144247923,
+        "relative_error": 0.00020519069155375787
+      },
+      "objective": "linear_heat_flux_weight",
+      "parameter_indices": {
+        "Zcos": [
+          17,
+          1
+        ]
+      },
+      "path": "docs/_static/vmec_boozer_qh_zcos_mid_m1_quasilinear_gradient_gate.json",
+      "source_artifact_passed": false,
+      "source_kind": "mode21_vmec_boozer_quasilinear_gradient_gate",
+      "state_control_family": "Zcos",
+      "state_parameter": "Zcos_mid_surface_m1"
+    },
+    {
+      "accepted_objective_gate": true,
+      "artifact_index": 8,
+      "blockers": [],
+      "case_name": "nfp4_QH_warm_start",
+      "gate_index": 4,
+      "label": "nfp4_QH_warm_start:vmec_boozer_qh_zcos_mid_m1_quasilinear_gradient_gate",
+      "metrics": {
+        "descent_direction_sign": 1.0,
+        "finite_difference_sensitivity": -5083.077642294876,
+        "implicit_sensitivity": -5072.891090983687,
+        "relative_error": 0.002004012534931473
+      },
+      "objective": "mixing_length_heat_flux_proxy",
+      "parameter_indices": {
+        "Zcos": [
+          17,
+          1
+        ]
+      },
+      "path": "docs/_static/vmec_boozer_qh_zcos_mid_m1_quasilinear_gradient_gate.json",
+      "source_artifact_passed": false,
+      "source_kind": "mode21_vmec_boozer_quasilinear_gradient_gate",
+      "state_control_family": "Zcos",
+      "state_parameter": "Zcos_mid_surface_m1"
+    },
+    {
+      "accepted_objective_gate": true,
+      "artifact_index": 9,
+      "blockers": [],
+      "case_name": "li383_low_res",
+      "gate_index": 0,
+      "label": "li383_low_res:vmec_boozer_li383_zcos_mid_m1_quasilinear_gradient_gate",
+      "metrics": {
+        "descent_direction_sign": -1.0,
+        "finite_difference_sensitivity": 54.50670521897627,
+        "implicit_sensitivity": 54.50671019990437,
+        "relative_error": 9.138193322513957e-08
+      },
+      "objective": "gamma",
+      "parameter_indices": {
+        "Zcos": [
+          8,
+          1
+        ]
+      },
+      "path": "docs/_static/vmec_boozer_li383_zcos_mid_m1_quasilinear_gradient_gate.json",
+      "source_artifact_passed": true,
+      "source_kind": "mode21_vmec_boozer_quasilinear_gradient_gate",
+      "state_control_family": "Zcos",
+      "state_parameter": "Zcos_mid_surface_m1"
+    },
+    {
+      "accepted_objective_gate": true,
+      "artifact_index": 9,
+      "blockers": [],
+      "case_name": "li383_low_res",
+      "gate_index": 3,
+      "label": "li383_low_res:vmec_boozer_li383_zcos_mid_m1_quasilinear_gradient_gate",
+      "metrics": {
+        "descent_direction_sign": 1.0,
+        "finite_difference_sensitivity": -101.07786152824261,
+        "implicit_sensitivity": -101.0781396185614,
+        "relative_error": 2.7512485383279696e-06
+      },
+      "objective": "linear_heat_flux_weight",
+      "parameter_indices": {
+        "Zcos": [
+          8,
+          1
+        ]
+      },
+      "path": "docs/_static/vmec_boozer_li383_zcos_mid_m1_quasilinear_gradient_gate.json",
+      "source_artifact_passed": true,
+      "source_kind": "mode21_vmec_boozer_quasilinear_gradient_gate",
+      "state_control_family": "Zcos",
+      "state_parameter": "Zcos_mid_surface_m1"
+    },
+    {
+      "accepted_objective_gate": true,
+      "artifact_index": 9,
+      "blockers": [],
+      "case_name": "li383_low_res",
+      "gate_index": 4,
+      "label": "li383_low_res:vmec_boozer_li383_zcos_mid_m1_quasilinear_gradient_gate",
+      "metrics": {
+        "descent_direction_sign": 1.0,
+        "finite_difference_sensitivity": -1182.990167745146,
+        "implicit_sensitivity": -1182.9920217180477,
+        "relative_error": 1.5671921477023748e-06
+      },
+      "objective": "mixing_length_heat_flux_proxy",
+      "parameter_indices": {
+        "Zcos": [
+          8,
+          1
+        ]
+      },
+      "path": "docs/_static/vmec_boozer_li383_zcos_mid_m1_quasilinear_gradient_gate.json",
+      "source_artifact_passed": true,
+      "source_kind": "mode21_vmec_boozer_quasilinear_gradient_gate",
+      "state_control_family": "Zcos",
+      "state_parameter": "Zcos_mid_surface_m1"
+    },
+    {
+      "accepted_objective_gate": true,
+      "artifact_index": 10,
+      "blockers": [],
+      "case_name": "nfp4_QH_warm_start",
+      "gate_index": 0,
+      "label": "nfp4_QH_warm_start:vmec_boozer_qh_rsin_mid_m1_quasilinear_gradient_gate",
+      "metrics": {
+        "descent_direction_sign": 1.0,
+        "finite_difference_sensitivity": -860.2467700305206,
+        "implicit_sensitivity": -860.509271943499,
+        "relative_error": 0.0003051472230103662
+      },
+      "objective": "gamma",
+      "parameter_indices": {
+        "Rsin": [
+          17,
+          1
+        ]
+      },
+      "path": "docs/_static/vmec_boozer_qh_rsin_mid_m1_quasilinear_gradient_gate.json",
+      "source_artifact_passed": true,
+      "source_kind": "mode21_vmec_boozer_quasilinear_gradient_gate",
+      "state_control_family": "Rsin",
+      "state_parameter": "Rsin_mid_surface_m1"
+    },
+    {
+      "accepted_objective_gate": true,
+      "artifact_index": 10,
+      "blockers": [],
+      "case_name": "nfp4_QH_warm_start",
+      "gate_index": 3,
+      "label": "nfp4_QH_warm_start:vmec_boozer_qh_rsin_mid_m1_quasilinear_gradient_gate",
+      "metrics": {
+        "descent_direction_sign": 1.0,
+        "finite_difference_sensitivity": -7859.573751514582,
+        "implicit_sensitivity": -7857.536683581345,
+        "relative_error": 0.0002591830037659121
+      },
+      "objective": "linear_heat_flux_weight",
+      "parameter_indices": {
+        "Rsin": [
+          17,
+          1
+        ]
+      },
+      "path": "docs/_static/vmec_boozer_qh_rsin_mid_m1_quasilinear_gradient_gate.json",
+      "source_artifact_passed": true,
+      "source_kind": "mode21_vmec_boozer_quasilinear_gradient_gate",
+      "state_control_family": "Rsin",
+      "state_parameter": "Rsin_mid_surface_m1"
+    },
+    {
+      "accepted_objective_gate": true,
+      "artifact_index": 10,
+      "blockers": [],
+      "case_name": "nfp4_QH_warm_start",
+      "gate_index": 4,
+      "label": "nfp4_QH_warm_start:vmec_boozer_qh_rsin_mid_m1_quasilinear_gradient_gate",
+      "metrics": {
+        "descent_direction_sign": 1.0,
+        "finite_difference_sensitivity": -29375.866899102988,
+        "implicit_sensitivity": -29369.38259828796,
+        "relative_error": 0.00022073564117440172
+      },
+      "objective": "mixing_length_heat_flux_proxy",
+      "parameter_indices": {
+        "Rsin": [
+          17,
+          1
+        ]
+      },
+      "path": "docs/_static/vmec_boozer_qh_rsin_mid_m1_quasilinear_gradient_gate.json",
+      "source_artifact_passed": true,
+      "source_kind": "mode21_vmec_boozer_quasilinear_gradient_gate",
+      "state_control_family": "Rsin",
+      "state_parameter": "Rsin_mid_surface_m1"
+    },
+    {
+      "accepted_objective_gate": true,
+      "artifact_index": 11,
+      "blockers": [],
+      "case_name": "li383_low_res",
+      "gate_index": 0,
+      "label": "li383_low_res:vmec_boozer_li383_rsin_mid_m1_quasilinear_gradient_gate",
+      "metrics": {
+        "descent_direction_sign": 1.0,
+        "finite_difference_sensitivity": -16.87068379876977,
+        "implicit_sensitivity": -16.870688226382303,
+        "relative_error": 2.6244416549113255e-07
+      },
+      "objective": "gamma",
+      "parameter_indices": {
+        "Rsin": [
+          8,
+          1
+        ]
+      },
+      "path": "docs/_static/vmec_boozer_li383_rsin_mid_m1_quasilinear_gradient_gate.json",
+      "source_artifact_passed": true,
+      "source_kind": "mode21_vmec_boozer_quasilinear_gradient_gate",
+      "state_control_family": "Rsin",
+      "state_parameter": "Rsin_mid_surface_m1"
+    },
+    {
+      "accepted_objective_gate": true,
+      "artifact_index": 11,
+      "blockers": [],
+      "case_name": "li383_low_res",
+      "gate_index": 3,
+      "label": "li383_low_res:vmec_boozer_li383_rsin_mid_m1_quasilinear_gradient_gate",
+      "metrics": {
+        "descent_direction_sign": -1.0,
+        "finite_difference_sensitivity": 18.80778377016945,
+        "implicit_sensitivity": 18.807805035834306,
+        "relative_error": 1.1306842483720756e-06
+      },
+      "objective": "linear_heat_flux_weight",
+      "parameter_indices": {
+        "Rsin": [
+          8,
+          1
+        ]
+      },
+      "path": "docs/_static/vmec_boozer_li383_rsin_mid_m1_quasilinear_gradient_gate.json",
+      "source_artifact_passed": true,
+      "source_kind": "mode21_vmec_boozer_quasilinear_gradient_gate",
+      "state_control_family": "Rsin",
+      "state_parameter": "Rsin_mid_surface_m1"
+    },
+    {
+      "accepted_objective_gate": true,
+      "artifact_index": 11,
+      "blockers": [],
+      "case_name": "li383_low_res",
+      "gate_index": 4,
+      "label": "li383_low_res:vmec_boozer_li383_rsin_mid_m1_quasilinear_gradient_gate",
+      "metrics": {
+        "descent_direction_sign": 1.0,
+        "finite_difference_sensitivity": -2363.443839461965,
+        "implicit_sensitivity": -2363.4432336093305,
+        "relative_error": 2.563431482988003e-07
+      },
+      "objective": "mixing_length_heat_flux_proxy",
+      "parameter_indices": {
+        "Rsin": [
+          8,
+          1
+        ]
+      },
+      "path": "docs/_static/vmec_boozer_li383_rsin_mid_m1_quasilinear_gradient_gate.json",
+      "source_artifact_passed": true,
+      "source_kind": "mode21_vmec_boozer_quasilinear_gradient_gate",
+      "state_control_family": "Rsin",
+      "state_parameter": "Rsin_mid_surface_m1"
     }
   ],
-  "passed": false,
+  "passed": true,
   "scope_note": "Rows describe vmec_jax state controls. They are not direct VMEC input-file RBC/ZBS coefficients unless a separate mapping artifact establishes that relation.",
   "summary": {
-    "admitted_control_count": 0,
-    "artifact_count": 6,
-    "control_count": 3,
-    "objective_row_count": 18,
+    "admitted_control_count": 2,
+    "artifact_count": 12,
+    "control_count": 6,
+    "objective_row_count": 36,
     "required_distinct_controls": 2
   }
 }
