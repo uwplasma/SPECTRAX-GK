@@ -390,6 +390,9 @@ def write_state_control_short_bracket_launch(
     if not math.isfinite(float(alpha_delta)) or alpha_delta <= 0.0:
         raise ValueError("alpha_delta must be finite and positive")
     controls = _mapped_controls(runbook, state_parameter)
+    # Validate mapped control directions before importing optional VMEC I/O.
+    for control in controls:
+        _terms_from_control(control)
     out_dir.mkdir(parents=True, exist_ok=True)
     launches: list[dict[str, Any]] = []
     vmec_run_commands: list[str] = []
