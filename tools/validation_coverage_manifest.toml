@@ -1263,6 +1263,8 @@ artifact_paths = [
   "docs/_static/qa_ess_zbs10_rel7p5_nonlinear_gradient_plus_delta_replicates/qa_ess_zbs10_rel7p5_nonlinear_gradient_plus_delta_t900_ensemble_gate.png",
   "docs/_static/qa_ess_zbs10_rel7p5_nonlinear_gradient_minus_delta_replicates/qa_ess_zbs10_rel7p5_nonlinear_gradient_minus_delta_t900_ensemble_gate.json",
   "docs/_static/qa_ess_zbs10_rel7p5_nonlinear_gradient_minus_delta_replicates/qa_ess_zbs10_rel7p5_nonlinear_gradient_minus_delta_t900_ensemble_gate.png",
+  "docs/_static/qa_ess_zbs10_rel7p5_variance_reduction_plan.json",
+  "docs/_static/qa_ess_zbs10_rel7p5_variance_reduction_plan.png",
   "docs/_static/qa_ess_profile_gradient_overdetermined_nonlinear_gradient_candidate_ranking.json",
   "docs/_static/qa_ess_overdetermined_nonlinear_gradient_campaign_status.json",
   "docs/_static/qa_ess_overdetermined_nonlinear_gradient_followup_plan.json",

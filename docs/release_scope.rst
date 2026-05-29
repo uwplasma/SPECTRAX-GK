@@ -474,6 +474,7 @@ Differentiable-geometry state:
   ``nonlinear_gradient_state_control_short_bracket_nonlinear_audit_status.*``,
   ``nonlinear_gradient_state_control_bracket_sweep_status.*``,
   ``qa_ess_zbs10_rel7p5_nonlinear_gradient_zbs_1_0_central_fd_gradient_gate.*``,
+  ``qa_ess_zbs10_rel7p5_variance_reduction_plan.*``,
   and the reduced stellarator ITG optimization/UQ panels. This checklist is the
   current boundary between objective plumbing, checked state-control launch
   guards, and transport prediction.

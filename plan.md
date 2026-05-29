@@ -61,6 +61,13 @@ more long-window GPU time.
   The top-level next action is now paired-seed or control-variate variance
   reduction. The new report identifies the rel7.5 ``ZBS(1,0)`` plus ensemble as
   the current limiter with ``mean_rel_spread = 0.196``.
+- Added ``tools/build_nonlinear_gradient_variance_reduction_plan.py`` and
+  generated
+  ``docs/_static/qa_ess_zbs10_rel7p5_variance_reduction_plan.{json,csv,png,pdf}``.
+  The common-label paired plus-minus response has
+  ``paired_response_uncertainty_rel = 0.984`` and would require about 18 common
+  pairs to reach the current gate, so the plan rejects more blind replicas in
+  favor of a control-variate or better-conditioned observable.
 
 Next best step: write the paired-seed/control-variate campaign launcher so the
 next office run reduces plus-state variance by design rather than adding blind

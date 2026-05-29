@@ -11,9 +11,11 @@ from spectraxgk.nonlinear_gradient_followup import (
     NonlinearGradientCandidateDesignConfig,
     NonlinearGradientCompositeControlConfig,
     NonlinearGradientFollowupConfig,
+    NonlinearGradientVarianceReductionConfig,
     nonlinear_gradient_candidate_design_report,
     nonlinear_gradient_composite_control_report,
     nonlinear_gradient_followup_plan,
+    nonlinear_gradient_variance_reduction_plan,
 )
 
 
@@ -416,6 +418,77 @@ def test_candidate_design_identifies_limiting_spread_state_for_variance_reductio
     assert row["variance_reduction"]["max_mean_rel_spread"] == pytest.approx(0.196)
     assert "paired-seed" in row["recommendation"]
     assert report["next_action"].startswith("target paired-seed")
+
+
+def test_variance_reduction_plan_quantifies_paired_seed_response() -> None:
+    artifact = _artifact(response=0.032, asymmetry=0.044, uncertainty=1.81)
+    source_ensembles = artifact["source_ensembles"]
+    assert isinstance(source_ensembles, dict)
+    values = {
+        "baseline": {"seed31": 15.4, "seed32": 16.9, "seed33": 17.2, "dt0p04": 15.7},
+        "plus": {"seed31": 18.1, "seed32": 15.6, "seed33": 15.5, "dt0p04": 14.9},
+        "minus": {"seed31": 17.1, "seed32": 16.2, "seed33": 16.5, "dt0p04": 16.4},
+    }
+    for state, labeled_values in values.items():
+        source_ensembles[state] = {
+            "passed": state != "plus",
+            "statistics": {
+                "n_reports": 4,
+                "mean_rel_spread": 0.196 if state == "plus" else 0.05,
+                "combined_sem_rel": 0.05,
+            },
+            "rows": [
+                {
+                    "late_mean": value,
+                    "source_artifact": f"{state}_nonlinear_t900_n64_{label}_heat_flux_trace.csv",
+                }
+                for label, value in labeled_values.items()
+            ],
+        }
+
+    report = nonlinear_gradient_variance_reduction_plan(
+        artifact,
+        config=NonlinearGradientVarianceReductionConfig(max_extra_paired_seeds=1),
+    )
+
+    assert report["passed"] is False
+    assert report["action"] == "design_control_variate_or_new_observable"
+    assert report["summary"]["common_pair_count"] == 4
+    assert report["summary"]["common_with_baseline_count"] == 4
+    assert report["summary"]["paired_response_uncertainty_rel"] > 0.5
+    assert report["variance_reduction"]["limiting_state"] == "plus"
+    assert report["pair_rows"][0]["label"] == "dt0p04"
+
+
+def test_variance_reduction_plan_tool_writes_artifacts(tmp_path: Path) -> None:
+    path = ROOT / "tools" / "build_nonlinear_gradient_variance_reduction_plan.py"
+    spec = importlib.util.spec_from_file_location("build_nonlinear_gradient_variance_reduction_plan", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+
+    artifact = tmp_path / "candidate.json"
+    payload = _artifact(response=0.032, asymmetry=0.044, uncertainty=1.81)
+    source_ensembles = payload["source_ensembles"]
+    assert isinstance(source_ensembles, dict)
+    for state in ("baseline", "plus", "minus"):
+        ensemble = source_ensembles[state]
+        assert isinstance(ensemble, dict)
+        ensemble["statistics"] = {
+            "n_reports": 3,
+            "mean_rel_spread": 0.18 if state == "plus" else 0.04,
+            "combined_sem_rel": 0.05,
+        }
+    artifact.write_text(json.dumps(payload), encoding="utf-8")
+    out_prefix = tmp_path / "variance_plan"
+
+    assert module.main([str(artifact), "--out-prefix", str(out_prefix)]) == 0
+    report = json.loads(out_prefix.with_suffix(".json").read_text(encoding="utf-8"))
+    assert report["kind"] == "nonlinear_turbulence_gradient_variance_reduction_plan"
+    assert out_prefix.with_suffix(".csv").exists()
+    assert out_prefix.with_suffix(".png").exists()
+    assert out_prefix.with_suffix(".pdf").exists()
 
 
 def test_design_nonlinear_gradient_next_campaign_tool_writes_artifacts(tmp_path: Path) -> None:

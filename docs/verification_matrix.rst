@@ -557,14 +557,17 @@ gate.
      - matched baseline/plus/minus post-transient heat-flux windows and central
        finite-difference response
      - ``docs/_static/qa_ess_zbs10_rel7p5_nonlinear_gradient_zbs_1_0_central_fd_gradient_gate.json``
-       plus the three replicated ensemble sidecar directories
+       plus the three replicated ensemble sidecar directories and
+       ``docs/_static/qa_ess_zbs10_rel7p5_variance_reduction_plan.json``
      - Closed as negative bounded-gradient evidence; production gradient still open
      - all twelve ``t=900`` office-GPU outputs pass the ``t=[450,900]`` output
        gates, and the central finite-difference response is resolved and local
        (``response_fraction = 0.0319``, ``fd_asymmetry_rel = 0.044``). The
        plus ensemble fails its spread gate (``0.196 > 0.15``), and propagated
        uncertainty remains too large (``gradient_uncertainty_rel = 1.81``), so
-       the result is not promoted
+       the result is not promoted. The paired-seed runbook also fails closed:
+       common-label plus-minus differences have relative uncertainty about
+       ``0.984``, motivating control-variate or better-conditioned observables
 
 Use this section as the verification boundary for README figures: the
 VMEC/Boozer parity, gradient-holdout, and reduced optimization/UQ panels can be

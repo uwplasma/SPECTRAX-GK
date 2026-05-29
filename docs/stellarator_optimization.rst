@@ -1156,6 +1156,15 @@ and 15 require replacement, locality repair, or variance reduction. Because
 the newest local ``ZBS(1,0)`` follow-up is plus-state variance limited, the
 planner now recommends paired-seed or control-variate variance reduction
 instead of more same-bracket replicas.
+``tools/build_nonlinear_gradient_variance_reduction_plan.py`` is the concrete
+runbook for that recommendation. Applied to the rel7.5 artifact, it finds four
+common plus/minus seed or timestep labels and estimates the paired response
+uncertainty directly from matched differences. The paired estimator is better
+conditioned than treating all state ensembles as independent, but it is still
+not enough: ``paired_response_uncertainty_rel = 0.984`` and the estimated
+requirement is 18 common pairs. The next campaign therefore needs a
+control-variate observable or a better-conditioned response, not just a few
+more blind paired seeds.
 Because both single-control amplitude sweeps point away from more blind
 replicas, SPECTRAX-GK now also includes
 ``tools/write_vmec_boundary_profile_perturbation_inputs.py`` for a smoother
@@ -1229,6 +1238,18 @@ promoted nonlinear turbulence-gradient claim.
    too large. This artifact should be read as fail-closed evidence motivating
    variance reduction or a better-conditioned observable, not as a promoted
    nonlinear turbulence-gradient.
+
+.. figure:: _static/qa_ess_zbs10_rel7p5_variance_reduction_plan.png
+   :width: 90%
+   :align: center
+   :alt: QA/ESS ZBS(1,0) rel7.5 paired-seed variance-reduction plan
+
+   QA/ESS ``ZBS(1,0)`` rel7.5 paired-seed variance-reduction plan. The left
+   panel shows matched plus-minus response samples for common seed/timestep
+   labels; the right panel identifies the plus state as the replicated-window
+   spread limiter. The common-label paired response uncertainty remains too
+   large, so the next production campaign should add a control-variate or
+   better-conditioned observable before more long-window GPU runs.
 
 .. figure:: _static/nonlinear_gradient_composite_control_design.png
    :width: 90%
