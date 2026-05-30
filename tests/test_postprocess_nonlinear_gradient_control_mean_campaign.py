@@ -125,6 +125,24 @@ def test_postprocess_control_mean_campaign_status_only_reports_readiness(tmp_pat
     assert payload["common_seeds"] == [31, 32]
 
 
+def test_postprocess_control_mean_campaign_status_deduplicates_horizon_tomls(tmp_path: Path) -> None:
+    mod = _load_tool_module()
+    campaign = _make_campaign(tmp_path, seeds=(31, 32))
+    for state in ("plus_delta", "minus_delta"):
+        folder = campaign / "nonlinear_campaign" / state
+        for horizon in (300, 500, 700, 900):
+            (folder / f"demo_{state}_t{horizon}_seed31.toml").write_text("title = 'demo'\n")
+            (folder / f"demo_{state}_t{horizon}_seed32.toml").write_text("title = 'demo'\n")
+
+    status = mod.discover_campaign_status(campaign, min_tmax=99.0, min_common_pairs=2)
+
+    assert status["ready_for_strict_postprocess"] is True
+    assert status["states"]["plus_delta"]["planned_count"] == 2
+    assert status["states"]["minus_delta"]["planned_count"] == 2
+    assert status["states"]["plus_delta"]["planned_seeds"] == [31, 32]
+    assert status["states"]["minus_delta"]["planned_seeds"] == [31, 32]
+
+
 def test_postprocess_control_mean_campaign_builds_gate(tmp_path: Path) -> None:
     mod = _load_tool_module()
     campaign = _make_campaign(tmp_path)

@@ -7414,3 +7414,9 @@ Exit gate:
   - `docs/_static/nonlinear_gradient_state_control_bracket_sweep_status.{json,csv,png,pdf}`;
   - four central-FD gate artifact families under `docs/_static/qa_lowres_alpha0p003_*` and `docs/_static/qa_lowres_alpha0p010_*`.
 - Scientific conclusion: increasing a single mapped VMEC-state bracket does not produce a resolved nonlinear turbulence-gradient signal on this short replicated window. This is negative evidence against promoting the single-control nonlinear-gradient lane. The next valid path is variance reduction or a better-conditioned observable/control basis: longer post-transient windows, more independent paired replicas, paired-seed differencing, or a multi-control direction with a larger resolved transport response.
+
+### 2026-05-30 Control-Mean Campaign Monitor Tightening
+
+- Fixed the nonlinear-gradient control-mean status monitor so repeated time-horizon TOML files for the same seed count as one planned seed per state.
+- Added a regression test covering the real campaign layout where each seed has multiple horizon configs. The monitor now reports the physically relevant planned-pair count instead of inflated horizon-file counts.
+- Current strict final gate status remains unchanged: the 21-pair control-mean campaign is complete but not promotable until strict state-window convergence is repaired by a longer common post-transient continuation or a separately justified control-mean-specific gate policy.

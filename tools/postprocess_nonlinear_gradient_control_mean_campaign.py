@@ -102,7 +102,7 @@ def _planned_state_seeds(campaign_dir: Path, state: str) -> list[int]:
     if not folder.exists():
         return []
     seeds = [_seed_from_path(path) for path in sorted(folder.glob("*_seed*.toml"))]
-    return sorted(seed for seed in seeds if seed is not None)
+    return sorted({seed for seed in seeds if seed is not None})
 
 
 def _state_output_status(campaign_dir: Path, state: str, *, min_tmax: float) -> dict[str, Any]:
