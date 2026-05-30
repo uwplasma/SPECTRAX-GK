@@ -94,6 +94,37 @@ def test_postprocess_control_mean_campaign_ignores_partial_outputs(tmp_path: Pat
     assert matched["minus_completed"] == [31, 33]
 
 
+def test_postprocess_control_mean_campaign_status_only_reports_readiness(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    mod = _load_tool_module()
+    campaign = _make_campaign(tmp_path, seeds=(31, 32))
+    partial_plus = campaign / "nonlinear_campaign" / "plus_delta" / "demo_plus_t100_n64_seed33.out.nc"
+    partial_minus = campaign / "nonlinear_campaign" / "minus_delta" / "demo_minus_t100_n64_seed33.out.nc"
+    _write_output(partial_plus, 10.2, tmax=50.0)
+    _write_output(partial_minus, 9.8, tmax=50.0)
+
+    status = mod.discover_campaign_status(campaign, min_tmax=99.0, min_common_pairs=3)
+
+    assert status["common_pair_count"] == 2
+    assert status["ready_for_strict_postprocess"] is False
+    assert status["states"]["plus_delta"]["partial_outputs"][0]["seed"] == 33
+
+    rc = mod.main(
+        [
+            "--campaign-dir",
+            str(campaign),
+            "--status-only",
+            "--min-common-pairs",
+            "2",
+            "--tmax",
+            "100",
+        ]
+    )
+    assert rc == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["ready_for_strict_postprocess"] is True
+    assert payload["common_seeds"] == [31, 32]
+
+
 def test_postprocess_control_mean_campaign_builds_gate(tmp_path: Path) -> None:
     mod = _load_tool_module()
     campaign = _make_campaign(tmp_path)

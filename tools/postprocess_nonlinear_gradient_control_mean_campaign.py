@@ -42,16 +42,21 @@ def _seed_from_path(path: Path) -> int | None:
 def _output_reaches_tmax(path: Path, min_tmax: float | None) -> bool:
     if min_tmax is None:
         return True
+    final_time = _output_final_time(path)
+    return final_time is not None and final_time >= float(min_tmax)
+
+
+def _output_final_time(path: Path) -> float | None:
     try:
         import netCDF4
 
         with netCDF4.Dataset(path) as root:
             time = root.groups["Grids"].variables["time"][:]
     except Exception:
-        return False
+        return None
     if len(time) == 0:
-        return False
-    return float(max(time)) >= float(min_tmax)
+        return None
+    return float(max(time))
 
 
 def _discover_state_outputs(
@@ -89,6 +94,80 @@ def discover_matched_outputs(
         "common_seeds": common,
         "plus_completed": sorted(plus),
         "minus_completed": sorted(minus),
+    }
+
+
+def _planned_state_seeds(campaign_dir: Path, state: str) -> list[int]:
+    folder = campaign_dir / "nonlinear_campaign" / state
+    if not folder.exists():
+        return []
+    seeds = [_seed_from_path(path) for path in sorted(folder.glob("*_seed*.toml"))]
+    return sorted(seed for seed in seeds if seed is not None)
+
+
+def _state_output_status(campaign_dir: Path, state: str, *, min_tmax: float) -> dict[str, Any]:
+    folder = campaign_dir / "nonlinear_campaign" / state
+    planned = _planned_state_seeds(campaign_dir, state)
+    output_by_seed: dict[int, Path] = {}
+    if folder.exists():
+        for path in sorted(folder.glob("*_seed*.out.nc")):
+            seed = _seed_from_path(path)
+            if seed is not None:
+                output_by_seed[seed] = path
+    completed: list[int] = []
+    partial: list[dict[str, Any]] = []
+    missing: list[int] = []
+    for seed in sorted(set(planned).union(output_by_seed)):
+        path = output_by_seed.get(seed)
+        if path is None:
+            missing.append(seed)
+            continue
+        final_time = _output_final_time(path)
+        row = {
+            "seed": seed,
+            "path": str(path),
+            "final_time": final_time,
+            "size_bytes": path.stat().st_size,
+        }
+        if final_time is not None and final_time >= min_tmax:
+            completed.append(seed)
+        else:
+            partial.append(row)
+    return {
+        "planned_count": len(planned),
+        "planned_seeds": planned,
+        "completed_count": len(completed),
+        "completed_seeds": completed,
+        "partial_count": len(partial),
+        "partial_outputs": partial,
+        "missing_count": len(missing),
+        "missing_seeds": missing,
+    }
+
+
+def discover_campaign_status(
+    campaign_dir: Path,
+    *,
+    min_tmax: float,
+    min_common_pairs: int,
+) -> dict[str, Any]:
+    """Summarize output readiness without building ensemble artifacts."""
+
+    plus = _state_output_status(campaign_dir, "plus_delta", min_tmax=float(min_tmax))
+    minus = _state_output_status(campaign_dir, "minus_delta", min_tmax=float(min_tmax))
+    common = sorted(set(plus["completed_seeds"]).intersection(minus["completed_seeds"]))
+    return {
+        "kind": "nonlinear_gradient_control_mean_campaign_status",
+        "campaign_dir": str(campaign_dir),
+        "min_output_tmax": float(min_tmax),
+        "min_common_pairs": int(min_common_pairs),
+        "common_pair_count": len(common),
+        "common_seeds": common,
+        "ready_for_strict_postprocess": len(common) >= int(min_common_pairs),
+        "states": {
+            "plus_delta": plus,
+            "minus_delta": minus,
+        },
     }
 
 
@@ -175,6 +254,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--min-samples", type=int, default=24)
     parser.add_argument("--min-blocks", type=int, default=4)
     parser.add_argument("--allow-failed-state-ensembles", action="store_true")
+    parser.add_argument(
+        "--status-only",
+        action="store_true",
+        help="Only summarize completed/partial/missing outputs. Return 0 when ready, 2 otherwise.",
+    )
     return parser
 
 
@@ -185,6 +269,14 @@ def main(argv: list[str] | None = None) -> int:
         if args.min_output_tmax is not None
         else 0.99 * float(args.tmax)
     )
+    if args.status_only:
+        status = discover_campaign_status(
+            args.campaign_dir,
+            min_tmax=min_output_tmax,
+            min_common_pairs=int(args.min_common_pairs),
+        )
+        print(json.dumps(status, indent=2, sort_keys=True), flush=True)
+        return 0 if bool(status["ready_for_strict_postprocess"]) else 2
     matched = discover_matched_outputs(args.campaign_dir, min_tmax=min_output_tmax)
     common_seeds = matched["common_seeds"]
     summary = {
