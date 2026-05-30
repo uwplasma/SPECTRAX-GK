@@ -7420,3 +7420,16 @@ Exit gate:
 - Fixed the nonlinear-gradient control-mean status monitor so repeated time-horizon TOML files for the same seed count as one planned seed per state.
 - Added a regression test covering the real campaign layout where each seed has multiple horizon configs. The monitor now reports the physically relevant planned-pair count instead of inflated horizon-file counts.
 - Current strict final gate status remains unchanged: the 21-pair control-mean campaign is complete but not promotable until strict state-window convergence is repaired by a longer common post-transient continuation or a separately justified control-mean-specific gate policy.
+
+### 2026-05-30 Independent Control-Mean Long-Window Closure
+
+- Completed the independent control-mean campaign for the QA/ESS ``ZBS(1,0)`` rel7.5 nonlinear-gradient lane on office GPUs.
+- The original ``t=900`` strict postprocess failed because plus-state spread and two minus-state terminal-window rows did not clear the generic nonlinear-window gate. A full common continuation to ``t≈999.929`` repaired the original terminal-row failures but still left a narrow minus-state readiness failure under earlier windows.
+- A final common continuation to ``t≈1099.930`` for all ``21`` plus/minus seed pairs, evaluated over the late post-transient window ``t=[600,1100]``, passes the unchanged strict postprocessor:
+  - plus ensemble: passed, ``mean_rel_spread = 0.1268``, ``combined_sem_rel = 0.0355``;
+  - minus ensemble: passed, ``mean_rel_spread = 0.1193``, ``combined_sem_rel = 0.0434``;
+  - control-mean gate: passed, ``combined_response_uncertainty_rel = 0.3115 < 0.5``, ``common_pair_count = 21``.
+- Copied compact final artifacts into ``docs/_static``:
+  - ``qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_gate.{json,csv,png,pdf}``;
+  - plus/minus ``*_t1100_ensemble_gate.{json,png}`` and ``*_readiness.json``.
+- Scope: this closes the independent control-mean uncertainty blocker for the rel7.5 variance-reduced nonlinear-gradient evidence lane. It does not by itself create a universal nonlinear turbulent-flux optimization claim; future manuscript language must cite the exact perturbation, 21-pair campaign, and late-window gate.

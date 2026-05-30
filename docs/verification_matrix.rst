@@ -572,7 +572,11 @@ gate.
        mean is not independently known, motivating an independent control-mean
        estimate or a better-conditioned observable. The pre-run launch
        contract estimates ``21`` independent control-mean pairs, ``42`` new
-       nonlinear runs, and projected combined uncertainty ``0.480``
+       nonlinear runs, and projected combined uncertainty ``0.480``. The
+       follow-up office campaign now completes those ``21`` matched pairs and
+       passes the strict ``t=[600,1100]`` control-mean gate with combined
+       response uncertainty ``0.311 < 0.5``, plus spread ``0.1268``, minus
+       spread ``0.1193``, and no failed per-seed window rows.
 
 Use this section as the verification boundary for README figures: the
 VMEC/Boozer parity, gradient-holdout, and reduced optimization/UQ panels can be

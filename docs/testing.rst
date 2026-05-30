@@ -451,16 +451,21 @@ tracked rel7.5 artifact fails closed with paired response relative uncertainty
 about ``0.984`` and an estimated ``18`` common pairs. The same runbook now
 screens two common-mode control variates. The plus/minus midpoint control
 reduces the apparent residual response uncertainty to about ``0.238`` with a
-``0.759`` SEM reduction, but it remains fail-closed because the control mean is
-not independently known. The recommended next action is therefore an
-independent control-mean estimate or a better-conditioned observable rather
-than more blind replicas.
+``0.759`` SEM reduction. The independent control-mean follow-up for that
+screen is now complete: ``21`` matched plus/minus pairs reach
+``t \simeq 1099.93`` and pass the strict late-window postprocessor over
+``t=[600,1100]``. The final gate has
+``combined_response_uncertainty_rel = 0.311 < 0.5``, no failed plus/minus
+window rows, plus ``mean_rel_spread = 0.1268``, and minus
+``mean_rel_spread = 0.1193``.
 ``tools/write_nonlinear_gradient_control_variate_campaign.py`` turns that
 screen into a bounded pre-run contract. For the tracked rel7.5 artifact, the
 midpoint common-mode control needs ``21`` independent matched plus/minus pairs
 (``42`` new nonlinear runs) to reduce the combined response uncertainty to
-about ``0.480``. This is launch readiness only; promotion still requires the
-new output, window, control-mean, and central-response gates to pass.
+about ``0.480``. The tracked post-run campaign now exceeds that pre-run target;
+future use of this result should cite the exact rel7.5 perturbation, the
+``21``-pair campaign, and the ``t=[600,1100]`` window rather than presenting it
+as a generic nonlinear turbulent-flux optimization result.
 ``tools/build_nonlinear_gradient_control_mean_gate.py`` is the matching
 post-run gate. It consumes the original variance report plus independent plus
 and minus ensemble reports, estimates the held-out mean of

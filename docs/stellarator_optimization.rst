@@ -1266,8 +1266,8 @@ promoted nonlinear turbulence-gradient claim.
    labels; the middle panel identifies the plus state as the replicated-window
    spread limiter; the right panel screens common-mode control variates. The
    plus/minus midpoint control lowers apparent residual uncertainty to
-   ``0.238``, but the campaign remains fail-closed until the control mean is
-   independently known or the observable is redesigned.
+   ``0.238``. The independent control-mean follow-up below closes the missing
+   control-mean uncertainty for this rel7.5 evidence lane.
 
 .. figure:: _static/qa_ess_zbs10_rel7p5_control_variate_campaign_plan.png
    :width: 90%
@@ -1279,6 +1279,19 @@ promoted nonlinear turbulence-gradient claim.
    control-variate residual, and the projected combined uncertainty after
    adding the independent control-mean estimate. The launch size is bounded at
    ``21`` matched plus/minus pairs, or ``42`` new nonlinear runs.
+
+.. figure:: _static/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_gate.png
+   :width: 90%
+   :align: center
+   :alt: QA/ESS ZBS(1,0) rel7.5 independent control-mean gate
+
+   QA/ESS ``ZBS(1,0)`` rel7.5 independent control-mean gate. The completed
+   office campaign uses ``21`` matched plus/minus seed pairs and the late
+   post-transient window ``t=[600,1100]``. Both state ensembles pass their
+   spread and per-seed convergence gates, and the combined response
+   uncertainty is ``0.311 < 0.5``. This closes the independent control-mean
+   blocker for this specific variance-reduced nonlinear-gradient evidence
+   lane.
 
 .. figure:: _static/nonlinear_gradient_composite_control_design.png
    :width: 90%
