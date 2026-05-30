@@ -194,6 +194,10 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
     ql_model_status = _read_json(root, "docs/_static/quasilinear_model_selection_status.json")
     production_nl_guard = _read_json(root, "docs/_static/production_nonlinear_optimization_guard.json")
     baseline_optimized_audit = _read_json(root, "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json")
+    nonlinear_control_mean_gate = _read_json(
+        root,
+        "docs/_static/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_gate.json",
+    )
     circular_t250_gate = _read_json(root, "docs/_static/external_vmec_circular_t250_high_grid_convergence_gate.json")
     circular_t700_replicate = _read_json(
         root,
@@ -265,6 +269,11 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
     baseline_optimized_comparison = (
         (baseline_optimized_audit or {}).get("comparison", {})
         if isinstance((baseline_optimized_audit or {}).get("comparison", {}), dict)
+        else {}
+    )
+    nonlinear_control_mean_summary = (
+        (nonlinear_control_mean_gate or {}).get("summary", {})
+        if isinstance((nonlinear_control_mean_gate or {}).get("summary", {}), dict)
         else {}
     )
     itermodel_passed = bool((itermodel_gate or {}).get("gate_report", {}).get("passed", False))
@@ -472,6 +481,7 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
                 "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json",
                 "docs/_static/qa_no_ess_reference_replicates/qa_no_ess_reference_t700_ensemble_gate.json",
                 "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json",
+                "docs/_static/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_gate.json",
                 "docs/_static/external_vmec_itermodel_t350_high_grid_convergence_gate.json",
                 "docs/_static/external_vmec_updown_asym_t450_high_grid_convergence_gate.json",
                 "docs/_static/external_vmec_qh_grid_convergence_gate.json",
@@ -547,6 +557,18 @@ def build_status_payload(root: Path = REPO_ROOT) -> dict[str, Any]:
                     baseline_optimized_comparison.get(
                         "uncertainty_separation_sigma"
                     )
+                ),
+                "variance_reduced_nonlinear_gradient_control_mean_passed": bool(
+                    (nonlinear_control_mean_gate or {}).get("passed", False)
+                ),
+                "variance_reduced_nonlinear_gradient_common_pairs": (
+                    nonlinear_control_mean_summary.get("common_pair_count")
+                ),
+                "variance_reduced_nonlinear_gradient_uncertainty_rel": _finite_float(
+                    nonlinear_control_mean_summary.get("combined_response_uncertainty_rel")
+                ),
+                "variance_reduced_nonlinear_gradient_response_mean": _finite_float(
+                    nonlinear_control_mean_summary.get("independent_response_mean")
                 ),
                 "itermodel_external_vmec_t350_converged": itermodel_passed,
                 "updown_asym_external_vmec_t450_converged": updown_passed,
@@ -738,9 +760,14 @@ def write_status_artifacts(payload: dict[str, Any], *, out_png: Path = DEFAULT_O
                 )
                 if key_metrics.get(key)
             )
+            cv_pairs = key_metrics.get("variance_reduced_nonlinear_gradient_common_pairs")
+            cv_uncertainty = key_metrics.get("variance_reduced_nonlinear_gradient_uncertainty_rel")
+            cv_text = ""
+            if cv_pairs is not None and cv_uncertainty is not None:
+                cv_text = f"; CV pairs: {cv_pairs}, u={float(cv_uncertainty):.2f}"
             metric = (
                 f"holdouts: {key_metrics.get('holdout_points')}, replicated: {replicated}, "
-                f"promoted: {key_metrics.get('calibration_report_passed')}"
+                f"promoted: {key_metrics.get('calibration_report_passed')}{cv_text}"
             )
         elif lane["lane"].startswith("vmec_jax"):
             field_line_abs = key_metrics.get("vmec_field_line_tensor_max_abs_ad_fd_error")

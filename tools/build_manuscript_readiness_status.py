@@ -207,6 +207,10 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
     baseline_optimized_audit = _read_json(
         root, "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json"
     )
+    nonlinear_control_mean_gate = _read_json(
+        root,
+        "docs/_static/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_gate.json",
+    )
     profile = _read_json(
         root, "docs/_static/nonlinear_sharding_profile_office_gpu.json"
     )
@@ -396,6 +400,11 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
     baseline_optimized_comparison = (
         (baseline_optimized_audit or {}).get("comparison", {})
         if isinstance((baseline_optimized_audit or {}).get("comparison", {}), dict)
+        else {}
+    )
+    nonlinear_control_mean_summary = (
+        (nonlinear_control_mean_gate or {}).get("summary", {})
+        if isinstance((nonlinear_control_mean_gate or {}).get("summary", {}), dict)
         else {}
     )
     matched_baseline_optimized_audit_passed = bool(
@@ -691,6 +700,10 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                         production_nl_guard,
                     ),
                     (
+                        "docs/_static/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_gate.json",
+                        nonlinear_control_mean_gate,
+                    ),
+                    (
                         "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json",
                         production_nl_guard,
                     ),
@@ -781,6 +794,18 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                     production_nl_guard_summary.get(
                         "qualifying_optimized_equilibrium_ensembles"
                     )
+                ),
+                "variance_reduced_nonlinear_gradient_control_mean_passed": bool(
+                    (nonlinear_control_mean_gate or {}).get("passed", False)
+                ),
+                "variance_reduced_nonlinear_gradient_common_pairs": (
+                    nonlinear_control_mean_summary.get("common_pair_count")
+                ),
+                "variance_reduced_nonlinear_gradient_uncertainty_rel": _finite_float(
+                    nonlinear_control_mean_summary.get("combined_response_uncertainty_rel")
+                ),
+                "variance_reduced_nonlinear_gradient_response_mean": _finite_float(
+                    nonlinear_control_mean_summary.get("independent_response_mean")
                 ),
             },
             "next_action": (
@@ -982,13 +1007,18 @@ def write_manuscript_readiness_artifacts(
         elif str(lane["lane"]).startswith("Production"):
             max_err = km.get("multi_equilibrium_gradient_max_rel_error")
             err_text = "n/a" if max_err is None else f"{float(max_err):.1e}"
+            cv_pairs = km.get("variance_reduced_nonlinear_gradient_common_pairs")
+            cv_uncertainty = km.get("variance_reduced_nonlinear_gradient_uncertainty_rel")
+            cv_text = (
+                "CV gate: n/a"
+                if cv_pairs is None or cv_uncertainty is None
+                else f"CV gate: {cv_pairs} pairs, u={float(cv_uncertainty):.2f}"
+            )
             metric = (
                 f"solver-ready: {km.get('solver_ready_gradient_gate')}; "
                 f"holdouts: {km.get('multi_equilibrium_gradient_cases')}; "
                 f"max err: {err_text}; "
-                f"startup FD: {km.get('startup_nonlinear_plumbing_fd_path_gate')}; "
-                f"transport avg: {km.get('nonlinear_transport_average_gate')}; "
-                f"VMEC startup: {km.get('vmec_boozer_startup_nonlinear_plumbing_fd_path_gate')}"
+                f"{cv_text}"
             )
         elif str(lane["lane"]).startswith("Profiler"):
             speed = km.get("engineering_speedup")

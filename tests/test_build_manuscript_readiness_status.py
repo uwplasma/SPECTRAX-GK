@@ -255,6 +255,18 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
             },
         },
     )
+    _write_json(
+        tmp_path,
+        "docs/_static/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_gate.json",
+        {
+            "passed": True,
+            "summary": {
+                "common_pair_count": 21,
+                "combined_response_uncertainty_rel": 0.311,
+                "independent_response_mean": -0.356,
+            },
+        },
+    )
 
     payload = mod.build_manuscript_readiness_payload(tmp_path)
     lanes = {lane["lane"]: lane for lane in payload["lanes"]}
@@ -375,6 +387,30 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
     assert (
         "docs/_static/vmec_boozer_nonlinear_window_fd_audit.json"
         in lanes["Production solver-objective geometry gradients"]["primary_artifacts"]
+    )
+    assert (
+        "docs/_static/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_gate.json"
+        in lanes["Production solver-objective geometry gradients"][
+            "primary_artifacts"
+        ]
+    )
+    assert (
+        lanes["Production solver-objective geometry gradients"]["key_metrics"][
+            "variance_reduced_nonlinear_gradient_control_mean_passed"
+        ]
+        is True
+    )
+    assert (
+        lanes["Production solver-objective geometry gradients"]["key_metrics"][
+            "variance_reduced_nonlinear_gradient_common_pairs"
+        ]
+        == 21
+    )
+    assert (
+        lanes["Production solver-objective geometry gradients"]["key_metrics"][
+            "variance_reduced_nonlinear_gradient_uncertainty_rel"
+        ]
+        == 0.311
     )
     assert lanes["W7-X zonal recurrence/damping"]["status"] == "deferred"
     assert lanes["TEM / kinetic-electron stellarator extension"]["status"] == "deferred"

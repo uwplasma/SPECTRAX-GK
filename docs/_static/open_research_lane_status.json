@@ -125,7 +125,11 @@
           "spectral_envelope_ridge"
         ],
         "uq_candidate_promotion_passed": true,
-        "validated_inputs_passed": true
+        "validated_inputs_passed": true,
+        "variance_reduced_nonlinear_gradient_common_pairs": 21,
+        "variance_reduced_nonlinear_gradient_control_mean_passed": true,
+        "variance_reduced_nonlinear_gradient_response_mean": -0.3561353531352798,
+        "variance_reduced_nonlinear_gradient_uncertainty_rel": 0.31148835872140096
       },
       "lane": "Nonlinear holdouts for quasilinear absolute-flux promotion",
       "next_action": "Document the accepted richer candidate and matched QA no-ESS to optimized QA/ESS audit with scoped wording; keep circular, QH, and CTH-like excluded until their common-window and grid-refinement gates pass.",
@@ -143,6 +147,7 @@
         "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json",
         "docs/_static/qa_no_ess_reference_replicates/qa_no_ess_reference_t700_ensemble_gate.json",
         "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json",
+        "docs/_static/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_gate.json",
         "docs/_static/external_vmec_itermodel_t350_high_grid_convergence_gate.json",
         "docs/_static/external_vmec_updown_asym_t450_high_grid_convergence_gate.json",
         "docs/_static/external_vmec_qh_grid_convergence_gate.json",

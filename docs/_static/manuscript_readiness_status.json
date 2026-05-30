@@ -126,6 +126,10 @@
         "startup_nonlinear_plumbing_max_window_trend": 0.3125158414254592,
         "startup_nonlinear_plumbing_repeatability_rel_error": 0.0,
         "startup_nonlinear_plumbing_response_fraction": 0.11085605870343603,
+        "variance_reduced_nonlinear_gradient_common_pairs": 21,
+        "variance_reduced_nonlinear_gradient_control_mean_passed": true,
+        "variance_reduced_nonlinear_gradient_response_mean": -0.3561353531352798,
+        "variance_reduced_nonlinear_gradient_uncertainty_rel": 0.31148835872140096,
         "vmec_boozer_frequency_rel_error": 0.004892743510544424,
         "vmec_boozer_li383_reduced_nonlinear_window_rel_error": 0.0009180110087433277,
         "vmec_boozer_nonlinear_transport_average_gate": false,
@@ -150,6 +154,7 @@
         "docs/_static/vmec_boozer_nonlinear_window_fd_audit.json",
         "docs/_static/vmec_boozer_nonlinear_window_fd_audit.png",
         "docs/_static/production_nonlinear_optimization_guard.json",
+        "docs/_static/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_gate.json",
         "docs/_static/optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.json"
       ],
       "status": "closed"

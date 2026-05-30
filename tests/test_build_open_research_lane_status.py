@@ -156,6 +156,18 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
     )
     _write_json(
         tmp_path,
+        "docs/_static/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_gate.json",
+        {
+            "passed": True,
+            "summary": {
+                "common_pair_count": 21,
+                "combined_response_uncertainty_rel": 0.311,
+                "independent_response_mean": -0.356,
+            },
+        },
+    )
+    _write_json(
+        tmp_path,
         "docs/_static/external_vmec_dshape_t250_high_grid_convergence_gate.json",
         {"gate_report": {"passed": True}},
     )
@@ -311,6 +323,20 @@ def test_build_status_payload_keeps_open_lanes_scoped(tmp_path: Path) -> None:
     assert holdout_metrics["qh_external_vmec_mid_to_high_grid_converged"] is False
     assert holdout_metrics["dshape_external_vmec_t250_converged"] is True
     assert holdout_metrics["itermodel_external_vmec_t350_converged"] is True
+    assert (
+        holdout_metrics[
+            "variance_reduced_nonlinear_gradient_control_mean_passed"
+        ]
+        is True
+    )
+    assert (
+        holdout_metrics["variance_reduced_nonlinear_gradient_common_pairs"]
+        == 21
+    )
+    assert (
+        holdout_metrics["variance_reduced_nonlinear_gradient_uncertainty_rel"]
+        == 0.311
+    )
     profiler = lanes["Profiler-backed nonlinear hot-path optimization"]
     assert profiler["status"] == "closed"
     assert profiler["key_metrics"]["release_performance_gate"] is True
@@ -391,6 +417,30 @@ def test_static_open_lane_status_keeps_deferred_w7x_zonal_and_tem_explicit() -> 
         "W7-X kinetic-electron/TEM nonlinear window",
     }.issubset(open_rows)
     assert "docs/_static/w7x_tem_extension_status.json" in tem["primary_artifacts"]
+
+    holdouts = lanes["Nonlinear holdouts for quasilinear absolute-flux promotion"]
+    assert (
+        "docs/_static/qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_gate.json"
+        in holdouts["primary_artifacts"]
+    )
+    assert (
+        holdouts["key_metrics"][
+            "variance_reduced_nonlinear_gradient_control_mean_passed"
+        ]
+        is True
+    )
+    assert (
+        holdouts["key_metrics"][
+            "variance_reduced_nonlinear_gradient_common_pairs"
+        ]
+        == 21
+    )
+    assert (
+        holdouts["key_metrics"][
+            "variance_reduced_nonlinear_gradient_uncertainty_rel"
+        ]
+        < 0.5
+    )
 
 
 def test_write_status_artifacts_writes_all_formats(tmp_path: Path) -> None:
