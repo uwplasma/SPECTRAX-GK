@@ -149,6 +149,12 @@ direction so the response is larger relative to turbulent spread.
   ``combined_response_uncertainty_rel = 0.437`` and
   ``control_mean_sem = 0.171``. This is encouraging because it is below the
   target ``0.5``, but it is not a promotion result.
+- Added ``--status-only`` to
+  ``tools/postprocess_nonlinear_gradient_control_mean_campaign.py`` so active
+  campaigns can be monitored without rebuilding figures or ensemble gates. The
+  status mode reports completed matched pairs, partial checkpoint chunks,
+  missing outputs, and ``ready_for_strict_postprocess`` with a fail-closed exit
+  code.
 - Current blockers to promotion remain:
   the full ``21`` matched pairs are not finished, the minus-state ensemble has
   one individual window failure at seed ``41`` due to terminal mean agreement

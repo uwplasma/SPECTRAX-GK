@@ -483,6 +483,13 @@ checkpoint chunks are rejected. It uses the replicated-window ensemble
 pass/fail for each state and records the separate timestep-readiness return
 code without letting that advisory hide the independent matched-seed
 control-mean result.
+For live campaign monitoring, the same tool accepts ``--status-only``. That
+mode reads the planned TOML files and output NetCDF files, reports completed
+matched pairs, partial checkpoint chunks, missing seeds, and
+``ready_for_strict_postprocess``, and exits with status ``0`` only once the
+requested matched-pair count is available. It does not build figures or
+ensemble gates, so it is the preferred lightweight polling command while long
+GPU campaigns are still running.
 ``tools/design_nonlinear_gradient_composite_control.py`` is the stricter
 control-admission gate for that next campaign. It consumes the same completed
 central-FD artifacts, admits only VMEC boundary coefficients with resolved
