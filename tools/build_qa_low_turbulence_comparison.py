@@ -308,7 +308,10 @@ def write_artifacts(payload: dict[str, Any], out: Path, *, write_pdf: bool = Tru
         "scan_csv": str(base.with_suffix(".scan.csv")),
     }
     base.parent.mkdir(parents=True, exist_ok=True)
-    base.with_suffix(".json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    base.with_suffix(".json").write_text(
+        json.dumps(payload, separators=(",", ":")),
+        encoding="utf-8",
+    )
     _write_summary_csv(payload, base.with_suffix(".summary.csv"))
     _write_scan_csv(payload, base.with_suffix(".scan.csv"))
     plot_payload(payload, base.with_suffix(".png"))
