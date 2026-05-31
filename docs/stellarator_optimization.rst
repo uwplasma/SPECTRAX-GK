@@ -127,6 +127,50 @@ The command writes:
    the reduced late-window heat flux by about ``11%`` and roughly halves the
    fitted ``Q_i`` versus ``a/L_n`` slope while retaining the geometry gates.
 
+
+Model Hierarchy Used in the Panel
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The comparison deliberately separates four layers that are often conflated in
+optimization figures:
+
+1. **Linear ITG response.** The reduced controls define smooth proxies for the
+   linear growth rate ``gamma(p)``, perpendicular scale ``kperp_eff2(p)``, and
+   heat-flux weight ``W_i(p)``. In the production code those quantities come
+   from the SPECTRAX-GK linear operator and its selected eigenbranch; in this
+   reduced gate they are analytic JAX functions chosen to exercise the same
+   differentiability and branch-stability contracts without launching a full
+   VMEC/Boozer solve.
+2. **Quasilinear diagnostic.** The reduced quasilinear scalar follows the same
+   mixing-length structure used elsewhere in the code,
+
+   .. math::
+
+      Q_i^{QL,red}(p) = C_{sat}\,W_i(p)\,\frac{\gamma(p)^2}{k_\perp^2(p)},
+
+   with ``C_sat = 0.72`` in this aspect-6 reduced gate. It is recorded as a
+   diagnostic and optimization-adjacent observable, not as a promoted absolute
+   turbulent-flux predictor. The broader quasilinear promotion rules remain in
+   :doc:`quasilinear` and follow the model-selection cautions in [Stephens21]_,
+   [Parker23]_, [Staebler24]_, and [Jorge24]_.
+3. **Reduced nonlinear envelope.** The transport-aware objective uses the
+   differentiable RK2 energy envelope described below. This creates a stable
+   local optimization target and a meaningful post-transient window diagnostic,
+   but it is still a reduced model. Production nonlinear claims must use the
+   replicated long-window SPECTRAX-GK audits described in
+   :doc:`validation_strategy` and :doc:`release_scope`, consistent with the
+   nonlinear turbulence-in-the-loop standard in [Kim24]_.
+4. **End-to-end differentiability.** JAX differentiates the explicit reduced
+   map from controls to residuals. The artifact then checks both the scalar
+   objective gradient and the full residual Jacobian against central finite
+   differences. The same pattern is used before replacing the reduced row
+   producer with ``vmec_jax`` and ``booz_xform_jax`` in-memory geometry.
+
+This hierarchy is the reason the README panel uses the phrase "reduced NL Q".
+It shows how the optimizer plumbing behaves and how a transport objective can
+change the shape, gradient-scan slope, and late-window heat-flux envelope, while
+keeping the stronger full-nonlinear-GK optimization claim gated separately.
+
 Objective Blocks
 ~~~~~~~~~~~~~~~~
 
