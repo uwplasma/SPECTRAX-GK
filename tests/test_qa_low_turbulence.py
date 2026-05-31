@@ -23,10 +23,11 @@ from spectraxgk.qa_low_turbulence import (
 def _fast_config() -> QALowTurbulenceConfig:
     return QALowTurbulenceConfig(
         steps=20,
-        nonlinear_steps=80,
+        nonlinear_steps=480,
+        long_window_min_time=60.0,
         surface_ntheta=12,
         surface_nzeta=14,
-        scan_density_gradients=(0.8, 1.4, 2.2, 3.2),
+        scan_density_gradients=(0.8, 2.2, 3.2),
     )
 
 
@@ -60,11 +61,14 @@ def test_qa_low_turbulence_payload_passes_gradient_and_transport_gates() -> None
     for result in results.values():
         assert result["scalar_gradient_gate"]["passed"] is True
         assert result["residual_gradient_gate"]["passed"] is True
+        assert result["observable_gradient_gate"]["passed"] is True
         obs = dict(zip(QA_LOW_TURBULENCE_OBSERVABLE_NAMES, result["final_observables"], strict=True))
         assert abs(obs["aspect"] - 6.0) / 6.0 < 0.03
-        assert obs["mean_iota"] >= 0.408
+        assert obs["mean_iota"] >= _fast_config().iota_operating_floor - 2.0e-3
         assert obs["qa_residual"] < 0.03
 
+    assert metrics["long_window_gates_passed"] is True
+    assert payload["differentiable_plumbing"]["passed"] is True
     slopes = {
         design["design_name"]: design["density_gradient_scan"]["linear_slope_dQ_d_a_over_Ln"]
         for design in payload["designs"]

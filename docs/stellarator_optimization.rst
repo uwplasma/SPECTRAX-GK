@@ -124,8 +124,9 @@ The command writes:
    for quasisymmetry, aspect ratio, the minimum-iota floor, and regularization.
    The orange design adds the reduced late-window nonlinear heat-flux residual.
    At fixed ``a/L_n = 2.2`` and ``a/L_Ti = 6``, the tracked artifact reduces
-   the reduced late-window heat flux by about ``11%`` and roughly halves the
-   fitted ``Q_i`` versus ``a/L_n`` slope while retaining the geometry gates.
+   the reduced late-window heat flux by about ``20.5%`` at ``t v_ti/a = 400``
+   and reduces the fitted ``Q_i`` versus ``a/L_n`` slope by about an order of
+   magnitude while retaining the geometry and differentiability gates.
 
 
 Model Hierarchy Used in the Panel
@@ -161,10 +162,11 @@ optimization figures:
    :doc:`validation_strategy` and :doc:`release_scope`, consistent with the
    nonlinear turbulence-in-the-loop standard in [Kim24]_.
 4. **End-to-end differentiability.** JAX differentiates the explicit reduced
-   map from controls to residuals. The artifact then checks both the scalar
-   objective gradient and the full residual Jacobian against central finite
-   differences. The same pattern is used before replacing the reduced row
-   producer with ``vmec_jax`` and ``booz_xform_jax`` in-memory geometry.
+   map from controls to residuals and observables. The artifact then checks
+   the scalar objective gradient, the full residual Jacobian, and the full
+   observable Jacobian against central finite differences. The same pattern is
+   used before replacing the reduced row producer with ``vmec_jax`` and
+   ``booz_xform_jax`` in-memory geometry.
 
 This hierarchy is the reason the README panel uses the phrase "reduced NL Q".
 It shows how the optimizer plumbing behaves and how a transport objective can
@@ -182,13 +184,13 @@ control-only objective is
 
 .. math::
 
-   J_{QA}(p) = \| r_A, r_\iota, r_{QA}, r_{reg} \|_2^2,
+   J_{QA}(p) = \| r_A, r_{\iota,min}, r_{\iota,op}, r_{QA}, r_{reg} \|_2^2,
 
 while the transport-aware objective is
 
 .. math::
 
-   J_{QA+Q}(p) = \| r_A, r_\iota, r_{QA}, r_{reg}, r_Q \|_2^2.
+   J_{QA+Q}(p) = \| r_A, r_{\iota,min}, r_{\iota,op}, r_{QA}, r_{reg}, r_Q \|_2^2.
 
 The residuals are
 
@@ -198,8 +200,13 @@ The residuals are
 
 .. math::
 
-   r_\iota = \sqrt{w_\iota}\,\mathrm{softplus}_{\beta}\left(\iota_{min}-\bar{\iota}(p)\right),
+   r_{\iota,min} = \sqrt{w_{\iota,min}}\,\mathrm{softplus}_{\beta}\left(\iota_{min}-\bar{\iota}(p)\right),
    \qquad \iota_{min}=0.41,
+
+.. math::
+
+   r_{\iota,op} = \sqrt{w_{\iota,op}}\,\mathrm{softplus}_{\beta}\left(\iota_{op}-\bar{\iota}(p)\right),
+   \qquad \iota_{op}=0.70,
 
 .. math::
 
@@ -212,11 +219,13 @@ and, only for the transport-aware design,
 
    r_Q = \sqrt{w_Q\,\langle Q_i^{red}\rangle_{late}}.
 
-The iota term is a floor, not an equality target. Once ``bar(iota)`` is above
-``0.41`` it contributes only the exponentially small smooth one-sided tail.
-That distinction matters: the constraint-only optimizer should not be forced
-to match one specific rotational transform if a nearby QA design satisfies the
-minimum-iota requirement.
+The first iota term is the formal floor requested for the configuration. The
+second iota term is an operating floor, currently ``0.70``, added after QA of
+the initial artifact showed that the bare ``0.41`` floor allowed low-iota
+solutions that were not useful for the intended stellarator-optimization
+comparison. Both terms are one-sided smooth floors, not equality targets. Once
+``bar(iota)`` is above the relevant floor, that residual contributes only the
+exponentially small smooth tail.
 
 Reduced ITG Envelope
 ~~~~~~~~~~~~~~~~~~~~
@@ -236,25 +245,31 @@ late-window average is
    \langle Q_i^{red}\rangle_{late}
       = \frac{1}{t_1-t_0}\int_{t_0}^{t_1} Q_i^{red}(t)\,dt,
 
-where the artifact uses the final configured fraction of the trace. The JSON
-sidecar records the late-window coefficient of variation and linear trend so a
-small heat-flux value cannot be confused with a startup transient. The density
-scan keeps ``a/L_T`` fixed and recomputes the same late-window average over the
-specified ``a/L_n`` grid.
+where the artifact uses the final configured fraction of the trace. The
+current tracked comparison runs to ``t v_ti/a = 400`` and requires ``tmax >=
+300`` before the long-window gate can pass. The JSON sidecar records the
+late-window coefficient of variation, linear trend, first-half/second-half
+mean drift, and running-mean drift so a small heat-flux value cannot be
+confused with a startup transient. The density scan keeps ``a/L_T`` fixed and
+recomputes the same late-window average over the specified ``a/L_n`` grid.
 
 Gradient, Conditioning, and UQ Gates
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Every optimized point records two differentiability gates:
+Every optimized point records three differentiability gates:
 
 - a scalar-objective AD versus central finite-difference check;
-- a full weighted-residual Jacobian AD versus central finite-difference check.
+- a full weighted-residual Jacobian AD versus central finite-difference check;
+- a full observable-vector AD versus central finite-difference check from
+  controls to aspect, iota, QA residual, linear features, quasilinear flux, and
+  long-window nonlinear heat-flux statistics.
 
 The residual Jacobian is passed to the same Gauss-Newton covariance diagnostic
 used by the inverse/UQ examples. The sidecar records singular values, rank,
 condition number, covariance, and parameter correlations. This prevents a plot
 from being promoted if the scalar gradient passes only because the residual map
-is locally rank deficient.
+is locally rank deficient. The observable gate checks the complete reduced
+plumbing rather than only the final scalar objective.
 
 Geometry and Claim Boundary
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~

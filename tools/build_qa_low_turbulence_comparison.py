@@ -39,9 +39,11 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT, help="PNG output path")
     parser.add_argument("--pdf", action="store_true", help="also write a PDF companion")
     parser.add_argument("--workers", type=int, default=1, help="finite-difference worker count")
-    parser.add_argument("--steps", type=int, default=40, help="Adam steps for each reduced optimization")
-    parser.add_argument("--nonlinear-steps", type=int, default=540, help="RK2 steps in the reduced nonlinear envelope")
+    parser.add_argument("--steps", type=int, default=60, help="Adam steps for each reduced optimization")
+    parser.add_argument("--nonlinear-dt", type=float, default=0.20, help="RK2 time step in the reduced nonlinear envelope")
+    parser.add_argument("--nonlinear-steps", type=int, default=2000, help="RK2 steps in the reduced nonlinear envelope")
     parser.add_argument("--nonlinear-weight", type=float, default=8.0, help="transport residual weight")
+    parser.add_argument("--iota-operating-floor", type=float, default=0.70, help="operating iota floor above the formal minimum")
     return parser.parse_args()
 
 
@@ -101,7 +103,7 @@ def _write_scan_csv(payload: dict[str, Any], path: Path) -> None:
                 }
             )
     with path.open("w", newline="", encoding="utf-8") as fh:
-        writer = csv.DictWriter(fh, fieldnames=list(rows[0]))
+        writer = csv.DictWriter(fh, fieldnames=list(rows[0]), lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
 
@@ -116,17 +118,19 @@ def _write_summary_csv(payload: dict[str, Any], path: Path) -> None:
                 "includes_nonlinear_heat_flux": result["includes_nonlinear_heat_flux"],
                 "aspect": obs["aspect"],
                 "mean_iota": obs["mean_iota"],
+                "iota_operating_floor_violation": obs["iota_operating_floor_violation"],
                 "qa_residual": obs["qa_residual"],
                 "growth_rate": obs["growth_rate"],
                 "quasilinear_heat_flux": obs["quasilinear_heat_flux"],
                 "nonlinear_heat_flux_mean": obs["nonlinear_heat_flux_mean"],
                 "scalar_gradient_gate_passed": result["scalar_gradient_gate"]["passed"],
                 "residual_gradient_gate_passed": result["residual_gradient_gate"]["passed"],
+                "observable_gradient_gate_passed": result["observable_gradient_gate"]["passed"],
                 "final_objective": result["final_objective"],
             }
         )
     with path.open("w", newline="", encoding="utf-8") as fh:
-        writer = csv.DictWriter(fh, fieldnames=list(rows[0]))
+        writer = csv.DictWriter(fh, fieldnames=list(rows[0]), lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
 
@@ -163,7 +167,9 @@ def plot_payload(payload: dict[str, Any], out: Path) -> None:
         time = np.asarray(trace["times"], dtype=float)
         q = np.asarray(trace["heat_flux"], dtype=float)
         start = int(trace["window"]["start_index"])
+        running = np.cumsum(q[start:]) / np.arange(1, q[start:].size + 1, dtype=float)
         ax_trace.plot(time, q, lw=2.1, color=color, label=label)
+        ax_trace.plot(time[start:], running, lw=1.4, color=color, ls=":", alpha=0.85)
         ax_trace.axhline(float(trace["window"]["mean"]), color=color, ls="--", lw=1.1, alpha=0.75)
         ax_trace.axvspan(time[start], time[-1], color=color, alpha=0.08)
 
@@ -229,9 +235,12 @@ def plot_payload(payload: dict[str, Any], out: Path) -> None:
         "Gate summary",
         f"Aspect target: {payload['target_aspect']:.1f}",
         f"Minimum iota: {payload['minimum_iota']:.2f}",
+        f"Operating iota floor: {payload['operating_iota_floor']:.2f}",
         f"AD/FD gates passed: {metrics['ad_fd_gates_passed']}",
         f"Constraint gates passed: {metrics['constraints_passed']}",
+        f"Long-window gates passed: {metrics['long_window_gates_passed']}",
         f"Fixed-gradient Q reduction: {100.0 * metrics['relative_heat_flux_reduction_at_fixed_gradients']:.1f}%",
+        f"Trace tmax: {payload['designs'][0]['fixed_gradient_trace']['times'][-1]:.0f}",
         "",
         "Final values",
     ]
@@ -260,9 +269,9 @@ def plot_payload(payload: dict[str, Any], out: Path) -> None:
     scope = [
         "Scope and method",
         "- Reduced max-mode-1 QA controls",
-        "- Aspect-ratio and iota-floor constraints",
-        "- Differentiable RK2 nonlinear ITG envelope",
-        "- Central finite-difference gradient gates",
+        "- Aspect-ratio and two iota-floor constraints",
+        "- Long differentiable RK2 nonlinear ITG envelope",
+        "- Scalar/residual/observable AD-FD gates",
         "- Production nonlinear claims still need long-window GK audits",
         "",
         "Equations used in this panel",
@@ -313,8 +322,10 @@ def main() -> int:
     args = _parse_args()
     cfg = QALowTurbulenceConfig(
         steps=int(args.steps),
+        nonlinear_dt=float(args.nonlinear_dt),
         nonlinear_steps=int(args.nonlinear_steps),
         nonlinear_weight=float(args.nonlinear_weight),
+        iota_operating_floor=float(args.iota_operating_floor),
     )
     payload = qa_low_turbulence_comparison_payload(cfg, finite_difference_workers=int(args.workers))
     paths = write_artifacts(payload, args.out, write_pdf=bool(args.pdf))
