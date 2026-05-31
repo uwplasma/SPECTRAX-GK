@@ -85,6 +85,166 @@ end-to-end differentiability is claimed only after VMEC/Boozer geometry parity,
 branch-continuity, and AD/finite-difference gates pass for the optimized
 equilibrium and held-out field lines.
 
+
+Aspect-6 QA Low-Turbulence Comparison
+-------------------------------------
+
+The new aspect-6 comparison exercises the optimization workflow that is needed
+before a full ``vmec_jax -> booz_xform_jax -> SPECTRAX-GK`` nonlinear design
+loop is promoted. It follows the fixed-boundary QA objective structure used by
+``vmec_jax`` examples and by stellarator microturbulence optimization studies
+[Jorge24]_ [Kim24]_: constrain the MHD/geometry family, then add a turbulence
+objective whose gradients are audited before any design claim is made. The
+current artifact is intentionally reduced and trace-safe. It is useful for
+algorithm development, AD/finite-difference validation, uncertainty plumbing,
+and manuscript figure layout; it is not a solved-VMEC, long-window nonlinear
+transport optimization claim.
+
+Run the complete comparison with:
+
+.. code-block:: bash
+
+   python tools/build_qa_low_turbulence_comparison.py --pdf
+
+The command writes:
+
+- ``docs/_static/qa_low_turbulence_comparison.png`` and ``.pdf`` for the
+  publication panel;
+- ``docs/_static/qa_low_turbulence_comparison.json`` as the audit source;
+- ``docs/_static/qa_low_turbulence_comparison.summary.csv`` for the optimized
+  design metrics;
+- ``docs/_static/qa_low_turbulence_comparison.scan.csv`` for the fixed-
+  ``a/L_T`` density-gradient scan.
+
+.. figure:: _static/qa_low_turbulence_comparison.png
+   :alt: Aspect-6 QA low-turbulence optimization comparison
+   :width: 100%
+
+   Aspect-6 QA low-turbulence comparison. The blue design is optimized only
+   for quasisymmetry, aspect ratio, the minimum-iota floor, and regularization.
+   The orange design adds the reduced late-window nonlinear heat-flux residual.
+   At fixed ``a/L_n = 2.2`` and ``a/L_Ti = 6``, the tracked artifact reduces
+   the reduced late-window heat flux by about ``11%`` and roughly halves the
+   fitted ``Q_i`` versus ``a/L_n`` slope while retaining the geometry gates.
+
+Objective Blocks
+~~~~~~~~~~~~~~~~
+
+The two designs use the same four reduced low-order controls
+``p = (p_a, p_kappa, p_h, p_s)`` exposed by
+:mod:`spectraxgk.qa_low_turbulence`: a minor-radius/aspect shift, a vertical
+elongation shift, a helical-ripple amplitude, and a magnetic-shear shift. The
+control-only objective is
+
+.. math::
+
+   J_{QA}(p) = \| r_A, r_\iota, r_{QA}, r_{reg} \|_2^2,
+
+while the transport-aware objective is
+
+.. math::
+
+   J_{QA+Q}(p) = \| r_A, r_\iota, r_{QA}, r_{reg}, r_Q \|_2^2.
+
+The residuals are
+
+.. math::
+
+   r_A = \sqrt{w_A}\, \frac{A(p)-A_0}{A_0}, \qquad A_0=6,
+
+.. math::
+
+   r_\iota = \sqrt{w_\iota}\,\mathrm{softplus}_{\beta}\left(\iota_{min}-\bar{\iota}(p)\right),
+   \qquad \iota_{min}=0.41,
+
+.. math::
+
+   r_{QA}=\sqrt{w_{QA}}\,\epsilon_{QA}(p), \qquad
+   r_{reg}=\sqrt{w_{reg}}\,p,
+
+and, only for the transport-aware design,
+
+.. math::
+
+   r_Q = \sqrt{w_Q\,\langle Q_i^{red}\rangle_{late}}.
+
+The iota term is a floor, not an equality target. Once ``bar(iota)`` is above
+``0.41`` it contributes only the exponentially small smooth one-sided tail.
+That distinction matters: the constraint-only optimizer should not be forced
+to match one specific rotational transform if a nearby QA design satisfies the
+minimum-iota requirement.
+
+Reduced ITG Envelope
+~~~~~~~~~~~~~~~~~~~~
+
+The reduced nonlinear diagnostic integrates one smooth energy envelope,
+
+.. math::
+
+   \frac{dE}{dt} = 2\gamma(p, a/L_n, a/L_T)E - \alpha(p, a/L_n, a/L_T)E^2,
+   \qquad Q_i^{red}(t) = W_i(p, a/L_n, a/L_T)E(t),
+
+with a fixed-step RK2 method so the entire map is differentiable by JAX. The
+late-window average is
+
+.. math::
+
+   \langle Q_i^{red}\rangle_{late}
+      = \frac{1}{t_1-t_0}\int_{t_0}^{t_1} Q_i^{red}(t)\,dt,
+
+where the artifact uses the final configured fraction of the trace. The JSON
+sidecar records the late-window coefficient of variation and linear trend so a
+small heat-flux value cannot be confused with a startup transient. The density
+scan keeps ``a/L_T`` fixed and recomputes the same late-window average over the
+specified ``a/L_n`` grid.
+
+Gradient, Conditioning, and UQ Gates
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Every optimized point records two differentiability gates:
+
+- a scalar-objective AD versus central finite-difference check;
+- a full weighted-residual Jacobian AD versus central finite-difference check.
+
+The residual Jacobian is passed to the same Gauss-Newton covariance diagnostic
+used by the inverse/UQ examples. The sidecar records singular values, rank,
+condition number, covariance, and parameter correlations. This prevents a plot
+from being promoted if the scalar gradient passes only because the residual map
+is locally rank deficient.
+
+Geometry and Claim Boundary
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The 3D LCFS and ``|B|`` maps in the figure are reduced max-mode-1
+visualizations derived from the same controls. They are included so readers can
+see the qualitative shape change chosen by the transport-aware objective. They
+are not VMEC equilibria and should not be used for final physics claims. The
+production path remains:
+
+.. code-block:: text
+
+   vmec_jax fixed-boundary state
+      -> booz_xform_jax Boozer transform, mboz >= 21, nboz >= 21
+      -> SPECTRAX-GK flux-tube objective rows
+      -> AD/FD and held-out geometry gates
+      -> long post-transient replicated nonlinear transport audits
+
+This is consistent with VMEC's fixed-boundary MHD-equilibrium role
+[HirshmanWhitson83]_, modern high-precision quasisymmetric optimization
+[LandremanPaul22]_, quasilinear microstability optimization [Jorge24]_, and
+nonlinear turbulence-in-the-loop optimization evidence [Kim24]_. The reduced
+comparison is therefore a validated optimization-plumbing and figure-generation
+artifact, not the final production nonlinear turbulent heat-flux optimization.
+
+Implementation Map
+~~~~~~~~~~~~~~~~~~
+
+- Core reduced model: :mod:`spectraxgk.qa_low_turbulence`
+- Artifact builder: :download:`build_qa_low_turbulence_comparison.py <../tools/build_qa_low_turbulence_comparison.py>`
+- Tests: ``tests/test_qa_low_turbulence.py``
+- Output JSON: :download:`qa_low_turbulence_comparison.json <_static/qa_low_turbulence_comparison.json>`
+- Scan CSV: :download:`qa_low_turbulence_comparison.scan.csv <_static/qa_low_turbulence_comparison.scan.csv>`
+
 VMEC-JAX Geometry Examples
 --------------------------
 

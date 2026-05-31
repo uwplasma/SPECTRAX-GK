@@ -91,3 +91,12 @@ References
    `Cambridge Core <https://www.cambridge.org/core/journals/journal-of-plasma-physics/article/optimization-of-nonlinear-turbulence-in-stellarators/916FCC56452B5B166C14868F56D99AF5>`__,
    `arXiv <https://arxiv.org/abs/2310.18842>`__,
    `DOI <https://doi.org/10.1017/S0022377824000369>`__.
+
+.. [HirshmanWhitson83] S. P. Hirshman and J. C. Whitson,
+   "Steepest-descent moment method for three-dimensional magnetohydrodynamic
+   equilibria," Physics of Fluids 26, 3553 (1983).
+   `DOI <https://doi.org/10.1063/1.864116>`__.
+
+.. [LandremanPaul22] M. Landreman and E. Paul, "Magnetic Fields with Precise
+   Quasisymmetry for Plasma Confinement," Physical Review Letters 128, 035001
+   (2022). `DOI <https://doi.org/10.1103/PhysRevLett.128.035001>`__.

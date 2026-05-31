@@ -251,6 +251,12 @@ Parallel Decomposition Contracts
 .. automodule:: spectraxgk.parallel_decomposition
    :members:
 
+QA Low-Turbulence Optimization
+------------------------------
+
+.. automodule:: spectraxgk.qa_low_turbulence
+   :members:
+
 Stellarator Objective Portfolios
 --------------------------------
 

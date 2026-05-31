@@ -487,6 +487,7 @@ path:
    python examples/optimization/stellarator_itg_nonlinear_heat_flux_optimization.py
    python examples/optimization/compare_stellarator_itg_optimizations.py
    python examples/optimization/stellarator_itg_portfolio_gate.py --finite-difference-workers 2
+   python tools/build_qa_low_turbulence_comparison.py --pdf
 
 The portfolio gate writes JSON/PNG/PDF artifacts and checks scalar plus
 row-wise AD/finite-difference agreement for the same surface/alpha/``k_y``
@@ -496,6 +497,15 @@ three ``k_y`` values with growth and quasilinear-flux columns. This is a
 reduced/model-development gate; it does not claim optimized nonlinear heat
 flux or calibrated saturated transport. Treat the JSON sidecar as the audit
 source; the PNG/PDF summarize the same sidecar for docs and review.
+
+The aspect-6 QA low-turbulence comparison tool writes
+``docs/_static/qa_low_turbulence_comparison.{json,png,pdf}`` plus CSV sidecars.
+It compares a quasisymmetry/aspect/iota-floor design with a design that adds a
+reduced nonlinear heat-flux residual, then plots the fixed-``a/L_T`` ``Q_i``
+versus ``a/L_n`` scan, fixed-gradient heat-flux traces, reduced LCFS surfaces,
+and LCFS ``|B|`` maps. This is a reduced differentiability and visualization
+example; production nonlinear optimization still requires long post-transient
+transport-window audits.
 
 The production bridge now exposes the same portfolio layout for real
 ``vmec_jax -> booz_xform_jax -> SPECTRAX-GK`` rows:
