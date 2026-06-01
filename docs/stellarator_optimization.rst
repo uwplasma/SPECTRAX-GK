@@ -159,12 +159,14 @@ Then run the two comparable branches:
      --use-simple-seed \
      --max-mode 5 \
      --min-vmec-mode 7 \
+     --make-plots \
      --outdir runs/qa_constraints_only
 
    python examples/optimization/QA_optimization_with_nonlinear_heat_flux.py \
      --use-simple-seed \
      --max-mode 5 \
      --min-vmec-mode 7 \
+     --make-plots \
      --outdir runs/qa_plus_reduced_nonlinear_heat_flux \
      --spectrax-weight 0.05 \
      --transport-kind nonlinear_window_heat_flux \
@@ -172,9 +174,14 @@ Then run the two comparable branches:
      --alphas 0.0 \
      --ky-values 0.3
 
+On a GPU node, append ``--solver-device gpu``; otherwise JAX will use the
+available default backend.
+
 Both use ``A=6``, a high-weight ``MeanIota`` target ``iota = 0.41``, a signed
-solved-profile floor ``iota(s) >= 0.41``, and ``mboz=nboz=21`` by default.
-The transport-aware branch adds a small SPECTRAX-GK residual. A passed VMEC-JAX
+solved-profile floor ``iota(s) >= 0.41``, ``mboz=nboz=21``, and the upstream
+VMEC-JAX simple-seed convention of solving the requested ``max_mode`` branch
+directly rather than using mode continuation. The transport-aware branch adds
+a small SPECTRAX-GK residual. A passed VMEC-JAX
 optimization is still only a candidate; the next required audit is a WOUT
 profile check followed by a matched long-window SPECTRAX-GK nonlinear heat-flux
 comparison of the final WOUTs.

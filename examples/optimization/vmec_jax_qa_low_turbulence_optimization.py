@@ -177,16 +177,37 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--nboz", type=int, default=21)
     parser.add_argument("--n-laguerre", type=int, default=2)
     parser.add_argument("--n-hermite", type=int, default=3)
-    parser.add_argument("--max-nfev", type=int, default=35)
-    parser.add_argument("--continuation-nfev", type=int, default=12)
-    parser.add_argument("--inner-max-iter", type=int, default=80)
-    parser.add_argument("--inner-ftol", type=float, default=1.0e-8)
-    parser.add_argument("--trial-max-iter", type=int, default=80)
-    parser.add_argument("--trial-ftol", type=float, default=1.0e-8)
+    parser.add_argument("--max-nfev", type=int, default=70)
+    parser.add_argument("--continuation-nfev", type=int, default=25)
+    parser.add_argument("--inner-max-iter", type=int, default=120)
+    parser.add_argument("--inner-ftol", type=float, default=1.0e-9)
+    parser.add_argument("--trial-max-iter", type=int, default=120)
+    parser.add_argument("--trial-ftol", type=float, default=1.0e-9)
     parser.add_argument("--method", default="scipy", help="VMEC-JAX optimizer method")
+    parser.add_argument(
+        "--solver-device",
+        choices=("cpu", "gpu"),
+        default=None,
+        help="Force the VMEC-JAX solve onto a specific backend; by default JAX chooses",
+    )
+    parser.add_argument(
+        "--scipy-tr-solver",
+        choices=("exact", "lsmr"),
+        default="exact",
+        help="SciPy trust-region solver used when --method=scipy",
+    )
+    parser.add_argument(
+        "--scipy-lsmr-maxiter",
+        type=int,
+        default=None,
+        help="Optional LSMR iteration cap used when --scipy-tr-solver=lsmr",
+    )
     parser.add_argument("--ftol", type=float, default=1.0e-5)
     parser.add_argument("--gtol", type=float, default=1.0e-5)
     parser.add_argument("--xtol", type=float, default=1.0e-6)
+    parser.add_argument("--save-stage-wouts", action="store_true", help="Write per-stage WOUT files")
+    parser.add_argument("--save-final-outputs", action="store_true", help="Keep VMEC-JAX final-output side files")
+    parser.add_argument("--make-plots", action="store_true", help="Generate VMEC-JAX boundary/|B|/history plots")
     parser.add_argument("--dry-run", action="store_true", help="Assemble objectives and stop before solving")
     return parser.parse_args()
 
@@ -199,6 +220,7 @@ def main() -> int:
     min_vmec_mode = int(args.min_vmec_mode)
     if args.use_simple_seed:
         min_vmec_mode = max(min_vmec_mode, max_mode + 2)
+    use_mode_continuation = max_mode > 1 and not bool(args.use_simple_seed)
 
     input_file = Path(args.input)
     if args.use_simple_seed:
@@ -266,6 +288,7 @@ def main() -> int:
         "simple_seed_perturbation": float(args.simple_seed_perturbation),
         "max_mode": max_mode,
         "min_vmec_mode": min_vmec_mode,
+        "use_mode_continuation": use_mode_continuation,
         "outdir": str(args.outdir),
         "target_aspect": float(args.target_aspect),
         "min_iota": float(args.min_iota),
@@ -287,6 +310,18 @@ def main() -> int:
             "n_laguerre": int(args.n_laguerre),
             "n_hermite": int(args.n_hermite),
             "gradient_scope": spectrax_config.gradient_scope,
+        },
+        "optimizer": {
+            "method": str(args.method),
+            "max_nfev": int(args.max_nfev),
+            "continuation_nfev": int(args.continuation_nfev),
+            "inner_max_iter": int(args.inner_max_iter),
+            "inner_ftol": float(args.inner_ftol),
+            "trial_max_iter": int(args.trial_max_iter),
+            "trial_ftol": float(args.trial_ftol),
+            "solver_device": args.solver_device,
+            "scipy_tr_solver": args.scipy_tr_solver,
+            "scipy_lsmr_maxiter": args.scipy_lsmr_maxiter,
         },
         "objectives": list(problem.objective_names),
         "claim_scope": (
@@ -310,7 +345,7 @@ def main() -> int:
         problem,
         stage_modes=vj.qs_stage_modes(
             max_mode=int(args.max_mode),
-            use_mode_continuation=max_mode > 1,
+            use_mode_continuation=use_mode_continuation,
             continuation_nfev=int(args.continuation_nfev),
         ),
         max_nfev=int(args.max_nfev),
@@ -322,14 +357,17 @@ def main() -> int:
         use_ess=True,
         ess_alpha=1.2,
         label="QA optimization with SPECTRAX-GK transport residual",
-        use_mode_continuation=max_mode > 1,
+        use_mode_continuation=use_mode_continuation,
         inner_max_iter=int(args.inner_max_iter),
         inner_ftol=float(args.inner_ftol),
         trial_max_iter=int(args.trial_max_iter),
         trial_ftol=float(args.trial_ftol),
+        solver_device=args.solver_device,
+        scipy_tr_solver=str(args.scipy_tr_solver),
+        scipy_lsmr_maxiter=args.scipy_lsmr_maxiter,
         save_stage_inputs=True,
-        save_stage_wouts=False,
-        save_final_outputs=False,
+        save_stage_wouts=bool(args.save_stage_wouts),
+        save_final_outputs=bool(args.save_final_outputs),
     )
     saved = vj.save_optimization_result(result, output_dir=args.outdir)
     print("\nFinal VMEC-JAX diagnostics:")
@@ -340,6 +378,26 @@ def main() -> int:
     print("\nFiles:")
     for name, path in saved.as_dict().items():
         print(f"  {name}: {path}")
+    if args.make_plots:
+        plot_paths = {
+            "boundary_comparison": vj.plot_3d_boundary_comparison(
+                saved.initial_wout,
+                saved.final_wout,
+                outdir=args.outdir,
+            ),
+            "lcfs_boozer_bmag": vj.plot_boozer_lcfs_bmag_comparison(
+                saved.initial_wout,
+                saved.final_wout,
+                outdir=args.outdir,
+            ),
+            "objective_history": vj.plot_objective_history(
+                saved.history,
+                outdir=args.outdir,
+            ),
+        }
+        print("\nPlot files:")
+        for name, path in plot_paths.items():
+            print(f"  {name}: {path}")
     return 0
 
 

@@ -57,6 +57,7 @@ python examples/optimization/QA_optimization_with_nonlinear_heat_flux.py \
   --use-simple-seed \
   --max-mode 5 \
   --min-vmec-mode 7 \
+  --make-plots \
   --outdir runs/qa_constraints_only
 ```
 
@@ -67,6 +68,7 @@ python examples/optimization/QA_optimization_with_nonlinear_heat_flux.py \
   --use-simple-seed \
   --max-mode 5 \
   --min-vmec-mode 7 \
+  --make-plots \
   --outdir runs/qa_plus_reduced_nonlinear_heat_flux \
   --spectrax-weight 0.05 \
   --transport-kind nonlinear_window_heat_flux \
@@ -75,10 +77,13 @@ python examples/optimization/QA_optimization_with_nonlinear_heat_flux.py \
   --ky-values 0.3
 ```
 
+On a GPU node, append `--solver-device gpu`; otherwise JAX will use the
+available default backend.
+
 The recommended solved-boundary commands above mirror the upstream VMEC-JAX QA
 script: use a simple omnigeneity seed, optimize active boundary modes through
-`max_mode=5`, target aspect ratio `A=6`, use the original high-weight
-`MeanIota` target `iota = 0.41`, add a signed solved-profile floor
+`max_mode=5` without mode continuation, target aspect ratio `A=6`, use the
+original high-weight `MeanIota` target `iota = 0.41`, add a signed solved-profile floor
 `iota(s) >= 0.41`, use `mboz=nboz=21`, and append a small SPECTRAX-GK transport
 residual. The profile-floor gate must be checked from the final WOUT; a passed
 mean-iota target is not sufficient. For quick local validation before launching
@@ -87,6 +92,9 @@ a longer solve, run a bounded growth-only smoke:
 ```bash
 python examples/optimization/QA_optimization_with_nonlinear_heat_flux.py \
   --outdir /tmp/spectraxgk_vmec_jax_qa_scalar_smoke \
+  --use-simple-seed \
+  --max-mode 5 \
+  --min-vmec-mode 7 \
   --method scalar_trust \
   --max-nfev 1 \
   --continuation-nfev 1 \
