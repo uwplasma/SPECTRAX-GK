@@ -77,7 +77,12 @@ stellarator-design narrative. It is publication-ready for reduced
 differentiable optimization plumbing, AD/finite-difference gates, and
 side-by-side visualization of the control-only and transport-aware reduced
 designs. It is intentionally scoped away from full VMEC/nonlinear-GK
-production claims.
+production claims. The companion
+``docs/_static/qa_low_turbulence_time_horizon_audit.png`` panel checks the
+reduced nonlinear-envelope horizon directly: the ``t=400`` late-window means
+are unchanged at the ``1e-7`` level or better relative to a ``t=1000``
+reference for the tracked designs, so the compact comparison panel does not
+need to extend beyond ``t v_ti/a = 400``.
 
 Current Vs Deferred Figure Inventory
 ------------------------------------
@@ -183,9 +188,9 @@ Core Validation Figures
      - Current manuscript scope with W7-X zonal and TEM deferred
      - current artifact base: ``docs/_static/manuscript_readiness_status.png`` with CSV/JSON/PDF companions. It records the narrower manuscript scope where W7-X zonal recurrence and TEM/kinetic-electron extensions are deferred. In that scope, quasilinear diagnostics and saturation-model selection are closed as a validated negative/model-selection result rather than as an absolute-flux predictor; VMEC/Boozer zero-beta equal-arc geometry parity is closed at ``mboz=nboz=21``; reduced differentiable stellarator ITG optimization is closed with AD/FD gates; and production solver-objective geometry gradients are closed for solver-ready arrays plus mode-21 VMEC/Boozer eigenfrequency, quasilinear heat-flux-weight, and reduced nonlinear-window estimator gates on QH and Li383. The compact nonlinear FD audits are retained only as startup plumbing checks with false transport-average gates. The production nonlinear optimization guard adds the D-shaped and circular long post-transient replicated holdout ensembles plus the selected optimized-equilibrium ``t=[350,700]`` seed/timestep replicated audit. Broader nonlinear turbulence-gradient, absolute-flux prediction, and multi-surface stellarator optimization claims remain separate gates.
    * - Aspect-6 QA low-turbulence optimization comparison
-     - ``tools/build_qa_low_turbulence_comparison.py``
+     - ``tools/build_qa_low_turbulence_comparison.py`` and ``tools/build_qa_low_turbulence_time_horizon_audit.py``
      - Closed for reduced differentiable optimization-plumbing claims
-     - current artifact base: ``docs/_static/qa_low_turbulence_comparison.png`` with JSON/CSV/PDF companions. The panel compares a QA constraints-only optimum against a QA plus reduced nonlinear-heat-flux optimum at aspect ``A = 6`` and minimum mean ``iota = 0.41``. It includes the fixed-``a/L_T`` ``Q_i`` versus ``a/L_n`` scan, fixed-gradient reduced nonlinear heat-flux traces, objective histories, reduced LCFS surfaces, LCFS ``|B|`` maps, and gradient/constraint gates. The tracked artifact passes scalar, residual, and observable AD/finite-difference gates, runs the fixed-gradient reduced nonlinear trace to ``t v_ti/a = 400``, enforces the formal ``iota >= 0.41`` floor plus an operating ``iota >= 0.70`` floor, and shows about ``20.5%`` reduced late-window heat flux at the fixed gradient. The figure supports a reduced differentiable optimization and visualization claim only; long-window full nonlinear transport optimization remains governed by the production nonlinear audit gates.
+     - current artifact bases: ``docs/_static/qa_low_turbulence_comparison.png`` and ``docs/_static/qa_low_turbulence_time_horizon_audit.png`` with JSON/CSV/PDF companions. The panel compares a QA constraints-only optimum against a QA plus reduced nonlinear-heat-flux optimum at aspect ``A = 6`` and minimum mean ``iota = 0.41``. It includes the fixed-``a/L_T`` ``Q_i`` versus ``a/L_n`` scan, fixed-gradient reduced nonlinear heat-flux traces, objective histories, reduced LCFS surfaces, LCFS ``|B|`` maps, and gradient/constraint gates. The tracked artifact passes scalar, residual, and observable AD/finite-difference gates, runs the fixed-gradient reduced nonlinear trace to ``t v_ti/a = 400``, enforces the formal ``iota >= 0.41`` floor plus an operating ``iota >= 0.70`` floor, and shows about ``20.5%`` reduced late-window heat flux at the fixed gradient. The horizon audit compares ``t=400`` against a ``t=1000`` reduced-envelope reference and finds relative late-window mean changes of ``1.1e-7`` or smaller, with CV/trend/half-window drift below ``1e-3``. The figure supports a reduced differentiable optimization and visualization claim only; long-window full nonlinear transport optimization remains governed by the production nonlinear audit gates.
    * - Quasilinear spectrum panel
      - ``tools/plot_quasilinear_spectrum.py``
      - Electrostatic diagnostic closed; absolute-flux prediction not promoted

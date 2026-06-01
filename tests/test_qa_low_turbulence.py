@@ -42,6 +42,24 @@ def _load_tool_module():
     return module
 
 
+def _load_time_horizon_tool_module():
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "tools"
+        / "build_qa_low_turbulence_time_horizon_audit.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "build_qa_low_turbulence_time_horizon_audit",
+        path,
+    )
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
 def test_qa_low_turbulence_payload_passes_gradient_and_transport_gates() -> None:
     assert spectraxgk.QALowTurbulenceConfig is QALowTurbulenceConfig
     assert spectraxgk.qa_low_turbulence_comparison_payload is qa_low_turbulence_comparison_payload
@@ -105,3 +123,49 @@ def test_qa_low_turbulence_artifact_tool_writes_json_csv_and_png(tmp_path: Path)
     assert Path(paths["scan_csv"]).exists()
     written = json.loads(Path(paths["json"]).read_text(encoding="utf-8"))
     assert written["comparison_metrics"]["passed"] is True
+
+
+def test_qa_low_turbulence_time_horizon_tool_recommends_t400(tmp_path: Path) -> None:
+    mod = _load_time_horizon_tool_module()
+    comparison = tmp_path / "comparison.json"
+    comparison.write_text(
+        json.dumps(
+            {
+                "results": [
+                    {
+                        "design_name": "qa_constraints",
+                        "final_params": [
+                            0.05045250803232193,
+                            0.6147764325141907,
+                            -0.011947174556553364,
+                            0.43690305948257446,
+                        ],
+                    },
+                    {
+                        "design_name": "qa_plus_nonlinear_heat_flux",
+                        "final_params": [
+                            0.17298658192157745,
+                            1.1715737581253052,
+                            0.005890185013413429,
+                            0.4853994846343994,
+                        ],
+                    },
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    payload = mod.build_time_horizon_payload(
+        comparison,
+        horizons=(150.0, 200.0, 300.0, 400.0),
+        nonlinear_dt=0.20,
+    )
+    paths = mod.write_artifacts(payload, tmp_path / "horizon", write_pdf=False)
+
+    assert payload["passed"] is True
+    assert Path(paths["json"]).exists()
+    assert Path(paths["csv"]).exists()
+    assert Path(paths["png"]).exists()
+    for metric in payload["metrics"].values():
+        assert metric["passed"] is True
+        assert "t=400 is sufficient" in metric["recommendation"]

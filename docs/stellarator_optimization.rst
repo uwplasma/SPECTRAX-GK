@@ -105,6 +105,7 @@ Run the complete comparison with:
 .. code-block:: bash
 
    python tools/build_qa_low_turbulence_comparison.py --pdf
+   python tools/build_qa_low_turbulence_time_horizon_audit.py --pdf
 
 The command writes:
 
@@ -115,6 +116,8 @@ The command writes:
   design metrics;
 - ``docs/_static/qa_low_turbulence_comparison.scan.csv`` for the fixed-
   ``a/L_T`` density-gradient scan.
+- ``docs/_static/qa_low_turbulence_time_horizon_audit.png`` and sidecars for
+  the reduced nonlinear-envelope horizon check.
 
 .. figure:: _static/qa_low_turbulence_comparison.png
    :alt: Aspect-6 QA low-turbulence optimization comparison
@@ -127,6 +130,19 @@ The command writes:
    the reduced late-window heat flux by about ``20.5%`` at ``t v_ti/a = 400``
    and reduces the fitted ``Q_i`` versus ``a/L_n`` slope by about an order of
    magnitude while retaining the geometry and differentiability gates.
+
+.. figure:: _static/qa_low_turbulence_time_horizon_audit.png
+   :alt: Reduced nonlinear time-horizon audit for the QA low-turbulence comparison
+   :width: 95%
+
+   Reduced nonlinear time-horizon audit for the same optimized designs. The
+   ``t v_ti/a = 400`` late-window mean differs from the ``t=1000`` reference by
+   ``1.1e-7`` for the constraints-only design and by zero at printed precision
+   for the transport-aware design. The coefficient of variation, normalized
+   trend, and first/second-half drift are all below ``1e-3`` at ``t=400``.
+   Therefore the tracked reduced-envelope figure keeps ``t=400`` as a
+   conservative but compact horizon; this is still not a full nonlinear
+   SPECTRAX-GK transport-window convergence claim.
 
 
 Model Hierarchy Used in the Panel
@@ -300,9 +316,11 @@ Implementation Map
 
 - Core reduced model: :mod:`spectraxgk.qa_low_turbulence`
 - Artifact builder: :download:`build_qa_low_turbulence_comparison.py <../tools/build_qa_low_turbulence_comparison.py>`
+- Time-horizon audit builder: :download:`build_qa_low_turbulence_time_horizon_audit.py <../tools/build_qa_low_turbulence_time_horizon_audit.py>`
 - Tests: ``tests/test_qa_low_turbulence.py``
 - Output JSON: :download:`qa_low_turbulence_comparison.json <_static/qa_low_turbulence_comparison.json>`
 - Scan CSV: :download:`qa_low_turbulence_comparison.scan.csv <_static/qa_low_turbulence_comparison.scan.csv>`
+- Horizon audit CSV: :download:`qa_low_turbulence_time_horizon_audit.csv <_static/qa_low_turbulence_time_horizon_audit.csv>`
 
 VMEC-JAX Geometry Examples
 --------------------------

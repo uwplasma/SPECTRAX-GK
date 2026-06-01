@@ -488,6 +488,7 @@ path:
    python examples/optimization/compare_stellarator_itg_optimizations.py
    python examples/optimization/stellarator_itg_portfolio_gate.py --finite-difference-workers 2
    python tools/build_qa_low_turbulence_comparison.py --pdf
+   python tools/build_qa_low_turbulence_time_horizon_audit.py --pdf
 
 The portfolio gate writes JSON/PNG/PDF artifacts and checks scalar plus
 row-wise AD/finite-difference agreement for the same surface/alpha/``k_y``
@@ -506,6 +507,10 @@ versus ``a/L_n`` scan, fixed-gradient heat-flux traces, reduced LCFS surfaces,
 and LCFS ``|B|`` maps. This is a reduced differentiability and visualization
 example; production nonlinear optimization still requires long post-transient
 transport-window audits.
+The companion time-horizon audit writes
+``docs/_static/qa_low_turbulence_time_horizon_audit.{json,csv,png,pdf}`` and
+shows that ``t v_ti/a = 400`` is already converged relative to the
+``t=1000`` reduced-envelope reference for the tracked designs.
 
 The production bridge now exposes the same portfolio layout for real
 ``vmec_jax -> booz_xform_jax -> SPECTRAX-GK`` rows:

@@ -1471,6 +1471,10 @@ artifact_paths = [
   "docs/_static/qa_low_turbulence_comparison.pdf",
   "docs/_static/qa_low_turbulence_comparison.summary.csv",
   "docs/_static/qa_low_turbulence_comparison.scan.csv",
+  "docs/_static/qa_low_turbulence_time_horizon_audit.json",
+  "docs/_static/qa_low_turbulence_time_horizon_audit.csv",
+  "docs/_static/qa_low_turbulence_time_horizon_audit.png",
+  "docs/_static/qa_low_turbulence_time_horizon_audit.pdf",
 ]
 next_tests = [
   "replace the reduced nonlinear envelope with converged post-transient SPECTRAX-GK nonlinear audits before broad nonlinear turbulent-flux optimization claims",
