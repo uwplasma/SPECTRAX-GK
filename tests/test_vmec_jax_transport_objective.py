@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import sys
+from types import ModuleType
 from types import SimpleNamespace
 
 import jax.numpy as jnp
@@ -152,3 +154,35 @@ def test_vmec_jax_transport_config_rejects_underresolved_boozer_modes() -> None:
         assert "at least 21" in str(exc)
     else:  # pragma: no cover
         raise AssertionError("underresolved Boozer mode count should fail")
+
+
+def test_vmec_jax_transport_objective_pins_imported_backend_paths(monkeypatch, tmp_path) -> None:
+    import spectraxgk.vmec_jax_transport_objective as mod
+
+    vmec_root = tmp_path / "vmec_jax_repo"
+    vmec_pkg = vmec_root / "vmec_jax"
+    vmec_pkg.mkdir(parents=True)
+    vmec_file = vmec_pkg / "__init__.py"
+    vmec_file.write_text("", encoding="utf-8")
+
+    booz_root = tmp_path / "booz_xform_jax_repo" / "src"
+    booz_pkg = booz_root / "booz_xform_jax"
+    booz_pkg.mkdir(parents=True)
+    booz_file = booz_pkg / "__init__.py"
+    booz_file.write_text("", encoding="utf-8")
+
+    vmec_module = ModuleType("vmec_jax")
+    vmec_module.__file__ = str(vmec_file)
+    booz_module = ModuleType("booz_xform_jax")
+    booz_module.__file__ = str(booz_file)
+    monkeypatch.setitem(sys.modules, "vmec_jax", vmec_module)
+    monkeypatch.setitem(sys.modules, "booz_xform_jax", booz_module)
+    monkeypatch.delenv("SPECTRAX_VMEC_JAX_PATH", raising=False)
+    monkeypatch.delenv("VMEC_JAX_PATH", raising=False)
+    monkeypatch.delenv("SPECTRAX_BOOZ_XFORM_JAX_PATH", raising=False)
+    monkeypatch.delenv("BOOZ_XFORM_JAX_PATH", raising=False)
+
+    mod._pin_current_optional_backend_paths()
+
+    assert str(vmec_root) == mod.os.environ["SPECTRAX_VMEC_JAX_PATH"]
+    assert str(booz_root) == mod.os.environ["SPECTRAX_BOOZ_XFORM_JAX_PATH"]

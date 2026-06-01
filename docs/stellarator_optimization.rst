@@ -175,7 +175,11 @@ Then run the two comparable branches:
      --ky-values 0.3
 
 On a GPU node, append ``--solver-device gpu``; otherwise JAX will use the
-available default backend.
+available default backend. The QA-only branch defaults to the upstream
+VMEC-JAX ``scipy`` optimizer. The transport-aware branch defaults to
+``scalar_trust`` because dense exact SciPy Jacobians are memory-heavy for the
+SPECTRAX-GK transport residual; override ``--method`` only when you have a
+specific optimizer/memory reason.
 
 Both use ``A=6``, a high-weight ``MeanIota`` target ``iota = 0.41``, a signed
 solved-profile floor ``iota(s) >= 0.41``, ``mboz=nboz=21``, and the upstream

@@ -183,7 +183,14 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--inner-ftol", type=float, default=1.0e-9)
     parser.add_argument("--trial-max-iter", type=int, default=120)
     parser.add_argument("--trial-ftol", type=float, default=1.0e-9)
-    parser.add_argument("--method", default="scipy", help="VMEC-JAX optimizer method")
+    parser.add_argument(
+        "--method",
+        default=None,
+        help=(
+            "VMEC-JAX optimizer method. Defaults to scipy for constraints-only "
+            "runs and scalar_trust when the SPECTRAX-GK transport residual is enabled."
+        ),
+    )
     parser.add_argument(
         "--solver-device",
         choices=("cpu", "gpu"),
@@ -280,6 +287,7 @@ def main() -> int:
     if not args.constraints_only:
         objective_tuples.append((transport.J, 0.0, float(args.spectrax_weight)))
     problem = vj.LeastSquaresProblem.from_tuples(objective_tuples)
+    optimizer_method = str(args.method or ("scipy" if args.constraints_only else "scalar_trust"))
     summary = {
         "kind": "vmec_jax_qa_low_turbulence_optimization",
         "input": str(input_file),
@@ -312,7 +320,7 @@ def main() -> int:
             "gradient_scope": spectrax_config.gradient_scope,
         },
         "optimizer": {
-            "method": str(args.method),
+            "method": optimizer_method,
             "max_nfev": int(args.max_nfev),
             "continuation_nfev": int(args.continuation_nfev),
             "inner_max_iter": int(args.inner_max_iter),
@@ -350,7 +358,7 @@ def main() -> int:
         ),
         max_nfev=int(args.max_nfev),
         continuation_nfev=int(args.continuation_nfev),
-        method=str(args.method),
+        method=optimizer_method,
         ftol=float(args.ftol),
         gtol=float(args.gtol),
         xtol=float(args.xtol),
