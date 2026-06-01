@@ -82,7 +82,18 @@ production claims. The companion
 reduced nonlinear-envelope horizon directly: the ``t=400`` late-window means
 are unchanged at the ``1e-7`` level or better relative to a ``t=1000``
 reference for the tracked designs, so the compact comparison panel does not
-need to extend beyond ``t v_ti/a = 400``.
+need to extend beyond ``t v_ti/a = 400``. The refreshed reduced objectives also
+include a high-weight QA-compatible helical-shaping residual, so the displayed
+LCFS surfaces are visibly non-axisymmetric rather than collapsing to an
+axisymmetric boundary.
+The companion solved-boundary guardrail
+``docs/_static/vmec_jax_qa_transport_candidate_comparison.png`` is not a
+promoted optimization result. It documents the VMEC-JAX/SPECTRAX-GK objective
+assembly and WOUT-writing path, while deliberately failing closed when the
+mean iota target passes but the solved WOUT profile dips below the
+``iota(s) >= 0.41`` floor. A future paper-facing solved-boundary optimization
+figure must pass this profile gate before launching long-window nonlinear
+transport audits.
 
 Current Vs Deferred Figure Inventory
 ------------------------------------
@@ -190,7 +201,7 @@ Core Validation Figures
    * - Aspect-6 QA low-turbulence optimization comparison
      - ``tools/build_qa_low_turbulence_comparison.py`` and ``tools/build_qa_low_turbulence_time_horizon_audit.py``
      - Closed for reduced differentiable optimization-plumbing claims
-     - current artifact bases: ``docs/_static/qa_low_turbulence_comparison.png`` and ``docs/_static/qa_low_turbulence_time_horizon_audit.png`` with JSON/CSV/PDF companions. The panel compares a QA constraints-only optimum against a QA plus reduced nonlinear-heat-flux optimum at aspect ``A = 6`` and minimum mean ``iota = 0.41``. It includes the fixed-``a/L_T`` ``Q_i`` versus ``a/L_n`` scan, fixed-gradient reduced nonlinear heat-flux traces, objective histories, reduced LCFS surfaces, LCFS ``|B|`` maps, and gradient/constraint gates. The tracked artifact passes scalar, residual, and observable AD/finite-difference gates, runs the fixed-gradient reduced nonlinear trace to ``t v_ti/a = 400``, enforces the formal ``iota >= 0.41`` floor plus an operating ``iota >= 0.70`` floor, and shows about ``20.5%`` reduced late-window heat flux at the fixed gradient. The horizon audit compares ``t=400`` against a ``t=1000`` reduced-envelope reference and finds relative late-window mean changes of ``1.1e-7`` or smaller, with CV/trend/half-window drift below ``1e-3``. The figure supports a reduced differentiable optimization and visualization claim only; long-window full nonlinear transport optimization remains governed by the production nonlinear audit gates.
+     - current artifact bases: ``docs/_static/qa_low_turbulence_comparison.png`` and ``docs/_static/qa_low_turbulence_time_horizon_audit.png`` with JSON/CSV/PDF companions. The panel compares a QA constraints-only optimum against a QA plus reduced nonlinear-heat-flux optimum at aspect ``A = 6`` and minimum mean ``iota = 0.41``. It includes the fixed-``a/L_T`` ``Q_i`` versus ``a/L_n`` scan, fixed-gradient reduced nonlinear heat-flux traces, objective histories, reduced non-axisymmetric LCFS surfaces, LCFS ``|B|`` maps, and gradient/constraint gates. The tracked artifact passes scalar, residual, and observable AD/finite-difference gates, runs the fixed-gradient reduced nonlinear trace to ``t v_ti/a = 400``, enforces the formal ``iota >= 0.41`` floor plus an operating ``iota >= 0.70`` floor, keeps a helical boundary amplitude near ``0.16``, and shows about ``10.7%`` reduced late-window heat flux at the fixed gradient. The horizon audit compares ``t=400`` against a ``t=1000`` reduced-envelope reference and finds relative late-window mean changes of ``1.2e-7`` or smaller, with CV/trend/half-window drift below ``1e-3``. The figure supports a reduced differentiable optimization and visualization claim only; long-window full nonlinear transport optimization remains governed by the production nonlinear audit gates.
    * - Quasilinear spectrum panel
      - ``tools/plot_quasilinear_spectrum.py``
      - Electrostatic diagnostic closed; absolute-flux prediction not promoted

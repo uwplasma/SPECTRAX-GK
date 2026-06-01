@@ -62,19 +62,23 @@ def _obs_map(result: dict[str, Any]) -> dict[str, float]:
 
 
 def _set_equal_3d(ax: plt.Axes, x: np.ndarray, y: np.ndarray, z: np.ndarray) -> None:
-    limits = np.array(
+    xy_limits = np.array(
         [
             [np.nanmin(x), np.nanmax(x)],
             [np.nanmin(y), np.nanmax(y)],
-            [np.nanmin(z), np.nanmax(z)],
         ],
         dtype=float,
     )
-    center = np.mean(limits, axis=1)
-    radius = 0.52 * float(np.max(limits[:, 1] - limits[:, 0]))
-    ax.set_xlim(center[0] - radius, center[0] + radius)
-    ax.set_ylim(center[1] - radius, center[1] + radius)
-    ax.set_zlim(center[2] - radius, center[2] + radius)
+    xy_center = np.mean(xy_limits, axis=1)
+    xy_radius = 0.52 * float(np.max(xy_limits[:, 1] - xy_limits[:, 0]))
+    z_min = float(np.nanmin(z))
+    z_max = float(np.nanmax(z))
+    z_center = 0.5 * (z_min + z_max)
+    z_radius = max(0.06, 0.62 * (z_max - z_min))
+    ax.set_xlim(xy_center[0] - xy_radius, xy_center[0] + xy_radius)
+    ax.set_ylim(xy_center[1] - xy_radius, xy_center[1] + xy_radius)
+    ax.set_zlim(z_center - z_radius, z_center + z_radius)
+    ax.set_box_aspect((1.0, 1.0, 0.45))
 
 
 def _write_scan_csv(payload: dict[str, Any], path: Path) -> None:
@@ -120,6 +124,7 @@ def _write_summary_csv(payload: dict[str, Any], path: Path) -> None:
                 "mean_iota": obs["mean_iota"],
                 "iota_operating_floor_violation": obs["iota_operating_floor_violation"],
                 "qa_residual": obs["qa_residual"],
+                "helical_ripple_amplitude": result["final_params"][2],
                 "growth_rate": obs["growth_rate"],
                 "quasilinear_heat_flux": obs["quasilinear_heat_flux"],
                 "nonlinear_heat_flux_mean": obs["nonlinear_heat_flux_mean"],
@@ -208,8 +213,18 @@ def plot_payload(payload: dict[str, Any], out: Path) -> None:
         y = np.asarray(surface["y"], dtype=float)
         z = np.asarray(surface["z"], dtype=float)
         ax.plot_surface(x, y, z, color=COLORS[name], alpha=0.85, linewidth=0, antialiased=True)
+        ax.plot_wireframe(
+            x,
+            y,
+            z,
+            rstride=max(1, x.shape[0] // 10),
+            cstride=max(1, x.shape[1] // 10),
+            color="white",
+            linewidth=0.28,
+            alpha=0.42,
+        )
         _set_equal_3d(ax, x, y, z)
-        ax.view_init(elev=22, azim=35)
+        ax.view_init(elev=26, azim=48)
         ax.set_title(f"Reduced LCFS: {LABELS[name]}")
         ax.set_xlabel("X")
         ax.set_ylabel("Y")
@@ -250,6 +265,7 @@ def plot_payload(payload: dict[str, Any], out: Path) -> None:
             [
                 LABELS[result["design_name"]],
                 f"  A={obs['aspect']:.3f}, iota={obs['mean_iota']:.3f}",
+                f"  helical h={float(result['final_params'][2]):.3f}",
                 f"  QA residual={obs['qa_residual']:.2e}",
                 f"  <Q_i>={obs['nonlinear_heat_flux_mean']:.3e}",
             ]
@@ -295,7 +311,7 @@ def plot_payload(payload: dict[str, Any], out: Path) -> None:
         fontweight="bold",
     )
     out.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(out, dpi=220, bbox_inches="tight")
+    fig.savefig(out, dpi=185, bbox_inches="tight")
     plt.close(fig)
 
 

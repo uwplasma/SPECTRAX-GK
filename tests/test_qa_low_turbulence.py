@@ -80,6 +80,7 @@ def test_qa_low_turbulence_payload_passes_gradient_and_transport_gates() -> None
         assert result["scalar_gradient_gate"]["passed"] is True
         assert result["residual_gradient_gate"]["passed"] is True
         assert result["observable_gradient_gate"]["passed"] is True
+        assert abs(float(result["final_params"][2])) > 0.08
         obs = dict(zip(QA_LOW_TURBULENCE_OBSERVABLE_NAMES, result["final_observables"], strict=True))
         assert abs(obs["aspect"] - 6.0) / 6.0 < 0.03
         assert obs["mean_iota"] >= _fast_config().iota_operating_floor - 2.0e-3
@@ -135,19 +136,19 @@ def test_qa_low_turbulence_time_horizon_tool_recommends_t400(tmp_path: Path) -> 
                     {
                         "design_name": "qa_constraints",
                         "final_params": [
-                            0.05045250803232193,
-                            0.6147764325141907,
-                            -0.011947174556553364,
-                            0.43690305948257446,
+                            0.08530009537935257,
+                            0.7973108291625977,
+                            0.16232633590698242,
+                            0.4597696363925934,
                         ],
                     },
                     {
                         "design_name": "qa_plus_nonlinear_heat_flux",
                         "final_params": [
-                            0.17298658192157745,
-                            1.1715737581253052,
-                            0.005890185013413429,
-                            0.4853994846343994,
+                            0.17546722292900085,
+                            1.1668813228607178,
+                            0.16293159127235413,
+                            0.47783327102661133,
                         ],
                     },
                 ]

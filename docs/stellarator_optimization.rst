@@ -7,12 +7,16 @@ Purpose
 SPECTRAX-GK now includes a compact, fully JAX-differentiable reduced
 stellarator ITG optimization layer. It is designed as the validation gate
 before promoting a full ``vmec_jax -> booz_xform_jax -> SPECTRAX-GK``
-optimization loop. The current examples optimize a quasi-axisymmetric,
-max-mode-1 control vector around a target aspect ratio ``A = 7`` and mean
-rotational transform ``iota = 0.41``. They follow the same objective-block
-logic used by the local ``vmec_jax`` fixed-boundary QA examples: preserve
-aspect, preserve iota, reduce quasisymmetry error, and add a turbulence
-objective.
+optimization loop. The reduced CI-scale examples optimize a
+quasi-axisymmetric, max-mode-1 control vector around a target aspect ratio
+``A = 7`` and mean rotational transform ``iota = 0.41``. The VMEC-JAX
+paper-facing example instead follows the current QA request directly:
+target ``A = 6``, use the original high-weight ``MeanIota`` target
+``iota = 0.41``, add a signed solved-profile floor ``iota(s) >= 0.41`` by
+default, reduce quasisymmetry error, and add a controlled SPECTRAX-GK transport
+objective. The profile floor is intentionally separate from the mean-iota
+target because bounded audits have shown that a candidate can satisfy the mean
+target while a point in the WOUT ``iota`` profile remains below ``0.41``.
 
 This page is deliberately conservative about claims:
 
@@ -64,6 +68,12 @@ Source Map
   :download:`compare_stellarator_itg_optimizations.py <../examples/optimization/compare_stellarator_itg_optimizations.py>`
 - Multi-surface/field-line portfolio gate:
   :download:`stellarator_itg_portfolio_gate.py <../examples/optimization/stellarator_itg_portfolio_gate.py>`
+- VMEC-JAX QA optimizer with a SPECTRAX-GK transport residual:
+  :download:`vmec_jax_qa_low_turbulence_optimization.py <../examples/optimization/vmec_jax_qa_low_turbulence_optimization.py>`
+- Discoverable VMEC-JAX QA + nonlinear heat-flux example alias:
+  :download:`QA_optimization_with_nonlinear_heat_flux.py <../examples/optimization/QA_optimization_with_nonlinear_heat_flux.py>`
+- Optimization examples README:
+  :download:`README.md <../examples/optimization/README.md>`
 - Plotting helper:
   :download:`_stellarator_itg_plotting.py <../examples/optimization/_stellarator_itg_plotting.py>`
 
@@ -71,19 +81,27 @@ The corresponding ``vmec_jax`` workflow that motivated this structure is the
 local fixed-boundary QA script
 ``/Users/rogeriojorge/local/vmec_jax/examples/optimization/QA_optimization.py``.
 That script builds residual blocks for aspect ratio, mean iota, and
-quasisymmetry, then minimizes them over boundary Fourier coefficients. The
-SPECTRAX-GK examples use the same optimization pattern but keep the transport
-objective inside a trace-safe reduced map until the production geometry bridge
-is fully gated.
+quasisymmetry, then minimizes them over boundary Fourier coefficients.
+SPECTRAX-GK now provides the optional objective object
+``spectraxgk.vmec_jax_transport_objective.VMECJAXSpectraxTransportObjective``.
+It plugs into ``LeastSquaresProblem.from_tuples`` as another residual block and
+evaluates ``vmec_jax`` state coefficients through
+``flux_tube_geometry_from_vmec_boozer_state`` and the SPECTRAX-GK linear/QL
+objective vector. The nonlinear-window option is a differentiable transport
+candidate objective derived from SPECTRAX-GK linear rows; promoted turbulent
+heat-flux claims still require matched long-time nonlinear transport audits.
+The example driver also adds a local ``iota_profile_floor`` objective that
+calls ``vmec_jax.equilibrium_iota_profiles_from_state`` and penalizes solved
+full-mesh profile values below the requested signed floor, excluding the
+magnetic axis.
 
-The next implementation stage replaces that reduced map with
-``flux_tube_geometry_from_vmec_boozer_state`` followed by
-``vmec_boozer_solver_objective_vector_from_state``. The latter evaluates the
-dominant SPECTRAX-GK linear/quasilinear objective vector from the in-memory
-geometry path. It is a forward evaluator, not by itself a gradient claim:
-end-to-end differentiability is claimed only after VMEC/Boozer geometry parity,
-branch-continuity, and AD/finite-difference gates pass for the optimized
-equilibrium and held-out field lines.
+The current optimizer gradient scope is explicit. ``growth`` objectives use
+eigenvalue-only AD and avoid nonsymmetric eigenvector differentiation.
+``quasilinear_flux`` and ``nonlinear_window_heat_flux`` objectives combine that
+solver growth rate with differentiable geometry-level transport weights. That
+is a useful, trace-safe design residual, but the full eigenfunction-weight
+adjoint remains a promotion gate before claiming fully differentiated absolute
+quasilinear or nonlinear turbulent flux optimization.
 
 
 Aspect-6 QA Low-Turbulence Comparison
@@ -119,6 +137,64 @@ The command writes:
 - ``docs/_static/qa_low_turbulence_time_horizon_audit.png`` and sidecars for
   the reduced nonlinear-envelope horizon check.
 
+To experiment with the solved-boundary VMEC-JAX path, first assemble the
+objective without solving. This path requires the optional ``vmec_jax`` and
+``booz_xform_jax`` packages because it works from in-memory VMEC states rather
+than pre-generated geometry files:
+
+.. code-block:: bash
+
+   python examples/optimization/QA_optimization_with_nonlinear_heat_flux.py \
+     --dry-run \
+     --use-simple-seed \
+     --max-mode 5 \
+     --min-vmec-mode 7
+
+Then run the two comparable branches:
+
+.. code-block:: bash
+
+   python examples/optimization/QA_optimization_with_nonlinear_heat_flux.py \
+     --constraints-only \
+     --use-simple-seed \
+     --max-mode 5 \
+     --min-vmec-mode 7 \
+     --outdir runs/qa_constraints_only
+
+   python examples/optimization/QA_optimization_with_nonlinear_heat_flux.py \
+     --use-simple-seed \
+     --max-mode 5 \
+     --min-vmec-mode 7 \
+     --outdir runs/qa_plus_reduced_nonlinear_heat_flux \
+     --spectrax-weight 0.05 \
+     --transport-kind nonlinear_window_heat_flux \
+     --surfaces 0.64 \
+     --alphas 0.0 \
+     --ky-values 0.3
+
+Both use ``A=6``, a high-weight ``MeanIota`` target ``iota = 0.41``, a signed
+solved-profile floor ``iota(s) >= 0.41``, and ``mboz=nboz=21`` by default.
+The transport-aware branch adds a small SPECTRAX-GK residual. A passed VMEC-JAX
+optimization is still only a candidate; the next required audit is a WOUT
+profile check followed by a matched long-window SPECTRAX-GK nonlinear heat-flux
+comparison of the final WOUTs.
+
+For bounded local candidate pairs, build the solved-boundary audit panel with:
+
+.. code-block:: bash
+
+   python tools/build_vmec_jax_qa_transport_candidate_comparison.py --pdf
+
+.. figure:: _static/vmec_jax_qa_transport_candidate_comparison.png
+   :alt: VMEC-JAX QA candidate iota-profile and scalar diagnostic audit
+   :width: 95%
+
+   Bounded VMEC-JAX solved-boundary plumbing audit. This panel intentionally
+   fails closed when the mean iota target passes but the final WOUT profile
+   still dips below the signed ``iota(s) >= 0.41`` floor. It should be used to
+   decide whether a candidate is ready for expensive long-window nonlinear
+   transport audits.
+
 .. figure:: _static/qa_low_turbulence_comparison.png
    :alt: Aspect-6 QA low-turbulence optimization comparison
    :width: 100%
@@ -127,9 +203,11 @@ The command writes:
    for quasisymmetry, aspect ratio, the minimum-iota floor, and regularization.
    The orange design adds the reduced late-window nonlinear heat-flux residual.
    At fixed ``a/L_n = 2.2`` and ``a/L_Ti = 6``, the tracked artifact reduces
-   the reduced late-window heat flux by about ``20.5%`` at ``t v_ti/a = 400``
-   and reduces the fitted ``Q_i`` versus ``a/L_n`` slope by about an order of
-   magnitude while retaining the geometry and differentiability gates.
+   the reduced late-window heat flux by about ``10.7%`` at ``t v_ti/a = 400``
+   and reduces the fitted ``Q_i`` versus ``a/L_n`` slope while retaining the
+   geometry and differentiability gates. Both final designs keep a visible
+   non-axisymmetric helical boundary amplitude near ``0.16`` and satisfy
+   ``iota > 0.70``.
 
 .. figure:: _static/qa_low_turbulence_time_horizon_audit.png
    :alt: Reduced nonlinear time-horizon audit for the QA low-turbulence comparison
@@ -137,7 +215,7 @@ The command writes:
 
    Reduced nonlinear time-horizon audit for the same optimized designs. The
    ``t v_ti/a = 400`` late-window mean differs from the ``t=1000`` reference by
-   ``1.1e-7`` for the constraints-only design and by zero at printed precision
+   ``1.2e-7`` for the constraints-only design and by ``6.5e-8``
    for the transport-aware design. The coefficient of variation, normalized
    trend, and first/second-half drift are all below ``1e-3`` at ``t=400``.
    Therefore the tracked reduced-envelope figure keeps ``t=400`` as a
@@ -196,17 +274,25 @@ The two designs use the same four reduced low-order controls
 ``p = (p_a, p_kappa, p_h, p_s)`` exposed by
 :mod:`spectraxgk.qa_low_turbulence`: a minor-radius/aspect shift, a vertical
 elongation shift, a helical-ripple amplitude, and a magnetic-shear shift. The
+helical amplitude is not allowed to collapse to zero: both objectives include
+a high-weight QA-compatible shaping residual that keeps ``p_h`` near ``0.16``.
+This is why the reduced LCFS visualization remains non-axisymmetric while the
+QA residual stays small. The formal iota floor and the higher operating iota
+floor also use high weights, so the optimized points remain comfortably above
+``iota = 0.41``.
+
+The
 control-only objective is
 
 .. math::
 
-   J_{QA}(p) = \| r_A, r_{\iota,min}, r_{\iota,op}, r_{QA}, r_{reg} \|_2^2,
+   J_{QA}(p) = \| r_A, r_{\iota,min}, r_{\iota,op}, r_{QA}, r_h, r_{reg} \|_2^2,
 
 while the transport-aware objective is
 
 .. math::
 
-   J_{QA+Q}(p) = \| r_A, r_{\iota,min}, r_{\iota,op}, r_{QA}, r_{reg}, r_Q \|_2^2.
+   J_{QA+Q}(p) = \| r_A, r_{\iota,min}, r_{\iota,op}, r_{QA}, r_h, r_{reg}, r_Q \|_2^2.
 
 The residuals are
 
@@ -354,12 +440,23 @@ Production VMEC-JAX Optimization Plan
 -------------------------------------
 
 The production lane starts from the ``vmec_jax`` fixed-boundary QA optimizer:
-aspect ratio and mean iota are constrained, the quasisymmetry residual is
-penalized, and a SPECTRAX-GK transport objective is added as another residual
-block. The default paper-facing seed targets ``A = 7`` and ``iota = 0.41`` at
-a fixed ITG flux tube, initially ``torflux = 0.64`` and ``alpha = 0.0``. The
-optimized result must also pass held-out field-line and surface gates before
-any stellarator-wide claim.
+aspect ratio is constrained, the mean rotational transform uses the original
+VMEC-JAX high-weight ``MeanIota`` target by default, the quasisymmetry residual
+is penalized, and a SPECTRAX-GK transport objective is added as another
+residual block. The default paper-facing seed now targets ``A = 6`` and
+``iota = 0.41`` at a fixed ITG flux tube, initially ``torflux = 0.64`` and
+``alpha = 0.0``. A one-sided floor mode remains available for experiments, but
+the target mode is the default because it prevents the low-signed-mean-iota
+failure observed with the absolute-floor smoke. The optimized result must also
+pass held-out field-line and surface gates before any stellarator-wide claim.
+
+A bounded VMEC-JAX smoke run has been checked with ``max_mode=1``,
+``mboz=nboz=21``, a SPECTRAX-GK growth residual, and a single scalar-trust
+evaluation. It assembled the four residual blocks (aspect, absolute-iota
+floor, quasisymmetry, SPECTRAX-GK transport) and retained the iota floor with
+``min |iota| = 0.410000`` and mean iota ``0.481850``. This validates the
+in-memory optimizer hook and iota-floor convention; it is not yet the final
+transport-aware optimized equilibrium used for a turbulence claim.
 
 The three reduced optimization examples are:
 

@@ -19,6 +19,75 @@ The target paper should show:
 4. A full `vmec_jax -> booz_xform_jax -> SPECTRAX-GK` pipeline for stellarator sensitivity analysis, uncertainty quantification, inverse design, and optimization.
 5. Nonlinear audit runs that confirm where the reduced objective does and does not predict saturated transport trends.
 
+## 2026-06-01 VMEC-JAX QA Transport Objective Fix
+
+- Responded to QA of the low-turbulence panel: the tracked reduced optimizer
+  had nonzero helical amplitude and passed iota/AD/FD gates, but the 3D
+  visualization looked too axisymmetric. The reduced LCFS renderer now
+  exaggerates only the display deformation and writes explicit visualization
+  amplitudes in the JSON sidecar; this does not change the reduced objective.
+- Added ``spectraxgk.vmec_jax_transport_objective`` with
+  ``VMECJAXSpectraxTransportObjective``. It is the actual VMEC-JAX optimizer
+  hook: append it to ``LeastSquaresProblem.from_tuples`` beside aspect,
+  the original VMEC-JAX high-weight ``MeanIota`` target ``iota=0.41`` (or the
+  optional floor mode), and quasisymmetry residuals. The default paper-facing
+  mode requires ``mboz=nboz=21`` and evaluates SPECTRAX-GK
+  growth, quasilinear flux, or a reduced nonlinear-window transport objective
+  from the in-memory VMEC/Boozer state path.
+- Added ``examples/optimization/vmec_jax_qa_low_turbulence_optimization.py``.
+  Its dry-run assembles objectives ``aspect``, ``iota``,
+  ``iota_profile_floor``, ``qs``, and optionally ``spectraxgk_transport`` with
+  ``A=6``, a high-weight ``MeanIota`` target ``iota = 0.41``, a signed solved
+  profile floor ``iota(s) >= 0.41`` excluding the magnetic axis,
+  ``mboz=nboz=21``, and a small transport weight ``0.05``. It writes a setup
+  summary and can run the full VMEC-JAX solve when the user wants an actual
+  optimized WOUT candidate.
+- Added a trace-safe gradient scope to the VMEC-JAX transport hook. Growth
+  objectives differentiate the SPECTRAX-GK eigenvalue directly. Quasilinear and
+  reduced nonlinear-window optimizer objectives now combine that growth factor
+  with differentiable geometry-level transport weights; the full
+  eigenfunction-weight adjoint is an explicit promotion gate, not a completed
+  claim.
+- Bounded VMEC-JAX scalar-trust evaluation passed with ``max_mode=1``,
+  ``mboz=nboz=21``, ``ntheta=4``, and one scalar objective evaluation. The
+  WOUT audit exposed the important convention issue: mean iota passed
+  (``0.461016``), while the solved profile minimum excluding the axis remained
+  below the requested floor (``0.400085 < 0.41``). The example now has an
+  explicit ``iota_profile_floor`` residual and the docs require a WOUT profile
+  gate before promoting any candidate.
+- Refreshed ``docs/_static/qa_low_turbulence_comparison.{json,csv,png,pdf}``
+  and updated README/docs/API. Bounded validation run:
+  ``pytest -q tests/test_vmec_jax_transport_objective.py tests/test_qa_low_turbulence.py``
+  passed.
+
+Next best step: run the actual VMEC-JAX optimizer with and without the
+SPECTRAX-GK transport residual, inspect final aspect/iota/QS/WOUT surfaces, and
+then launch matched long-window nonlinear SPECTRAX-GK audits before making a
+production nonlinear turbulent-flux optimization claim.
+
+### 2026-06-01 Example/README follow-up
+
+- Added the discoverable example entry point
+  ``examples/optimization/QA_optimization_with_nonlinear_heat_flux.py`` as a
+  wrapper around the canonical VMEC-JAX QA transport optimizer. It supports
+  ``--constraints-only`` for the QA/aspect/iota baseline and the default
+  transport-aware branch with the SPECTRAX-GK reduced nonlinear-window heat-
+  flux residual.
+- Added ``examples/optimization/README.md`` with commands to regenerate the
+  README panel, dry-run the objective assembly, run the QA-only branch, run the
+  transport-aware branch, and launch the bounded growth-only local smoke.
+- Added ``--use-simple-seed`` support to mirror the upstream VMEC-JAX QA
+  script. The recommended non-axisymmetric solved-boundary command now uses
+  ``--use-simple-seed --max-mode 5 --min-vmec-mode 7``; the small local
+  one-evaluation smoke remains a bounded plumbing check only.
+- Updated the top-level README and stellarator-optimization docs so users can
+  reproduce ``docs/_static/qa_low_turbulence_comparison.png`` and then move to
+  the optional ``vmec_jax``/``booz_xform_jax`` solved-boundary example.
+- Validation: ``ruff`` passed; QA-only dry-run assembled ``aspect``, ``iota``,
+  ``iota_profile_floor``, ``qs``; transport-aware dry-run added
+  ``spectraxgk_transport``; simple-seed dry-runs wrote ``input.simple_seed`` and
+  assembled the same objective families.
+
 ## 2026-05-29 QA/ESS ZBS(1,0) rel7.5 Nonlinear-gradient Follow-up
 
 - Completed the bounded optimized-QA/ESS ``ZBS(1,0)`` ``7.5%`` follow-up on the

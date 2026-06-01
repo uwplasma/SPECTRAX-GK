@@ -257,6 +257,12 @@ QA Low-Turbulence Optimization
 .. automodule:: spectraxgk.qa_low_turbulence
    :members:
 
+VMEC-JAX Transport Objective
+----------------------------
+
+.. automodule:: spectraxgk.vmec_jax_transport_objective
+   :members:
+
 Stellarator Objective Portfolios
 --------------------------------
 
