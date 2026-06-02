@@ -161,7 +161,12 @@ def test_stellarator_itg_plotting_artifact_includes_reduced_diagnostics(tmp_path
         "covariance": {},
         "nonlinear_trace": None,
         "config": asdict(cfg),
-        "backend_info": {},
+        "backend_info": {
+            "vmec_jax_available": True,
+            "booz_xform_jax_available": True,
+            "vmec_jax_paths": ["/Users/tester/local/vmec_jax"],
+            "booz_xform_jax_paths": ["/Users/tester/local/booz_xform_jax"],
+        },
         "claim_level": "reduced_linear_or_quasilinear_objective_optimization",
     }
     result = SimpleNamespace(to_dict=lambda: payload)
@@ -170,6 +175,11 @@ def test_stellarator_itg_plotting_artifact_includes_reduced_diagnostics(tmp_path
     plotting.write_result_artifacts(result, out, title="test panel")
 
     written = json.loads(out.with_suffix(".json").read_text(encoding="utf-8"))
+    assert "/Users/tester" not in out.with_suffix(".json").read_text(encoding="utf-8")
+    assert written["backend_info"] == {
+        "vmec_jax_available": True,
+        "booz_xform_jax_available": True,
+    }
     assert out.with_suffix(".history.csv").exists()
     assert out.with_suffix(".png").exists()
     assert out.with_suffix(".pdf").exists()

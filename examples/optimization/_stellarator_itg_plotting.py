@@ -32,7 +32,7 @@ def write_result_artifacts(result: Any, out_base: Path, *, title: str) -> None:
 
     out_base.parent.mkdir(parents=True, exist_ok=True)
     payload = _sanitize_artifact_payload(_augment_result_payload(result.to_dict()))
-    out_base.with_suffix(".json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    _write_json(payload, out_base.with_suffix(".json"))
     _write_history_csv(payload, out_base.with_suffix(".history.csv"))
     _plot_result(payload, out_base.with_suffix(".png"), title=title)
     _plot_result(payload, out_base.with_suffix(".pdf"), title=title)
@@ -43,7 +43,7 @@ def write_comparison_artifacts(payload: dict[str, Any], out_base: Path) -> None:
 
     out_base.parent.mkdir(parents=True, exist_ok=True)
     payload = _sanitize_artifact_payload(payload)
-    out_base.with_suffix(".json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    _write_json(payload, out_base.with_suffix(".json"))
     _plot_comparison(payload, out_base.with_suffix(".png"))
     _plot_comparison(payload, out_base.with_suffix(".pdf"))
 
@@ -53,7 +53,7 @@ def write_portfolio_gate_artifacts(payload: dict[str, Any], out_base: Path) -> N
 
     out_base.parent.mkdir(parents=True, exist_ok=True)
     payload = _sanitize_artifact_payload(payload)
-    out_base.with_suffix(".json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    _write_json(payload, out_base.with_suffix(".json"))
     _plot_portfolio_gate(payload, out_base.with_suffix(".png"))
     _plot_portfolio_gate(payload, out_base.with_suffix(".pdf"))
 
@@ -70,6 +70,12 @@ def _sanitize_artifact_payload(value: Any) -> Any:
     if isinstance(value, list):
         return [_sanitize_artifact_payload(item) for item in value]
     return value
+
+
+def _write_json(payload: dict[str, Any], path: Path) -> None:
+    """Write compact public sidecars to keep the tracked docs bundle small."""
+
+    path.write_text(json.dumps(payload, separators=(",", ":")) + "\n", encoding="utf-8")
 
 
 def _config_from_payload(payload: dict[str, Any]) -> StellaratorITGOptimizationConfig:
