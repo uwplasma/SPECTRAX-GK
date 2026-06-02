@@ -102,6 +102,47 @@ def test_guarded_ladder_dry_run_writes_commands(tmp_path: Path) -> None:
     assert payload["promoted_candidate"]["baseline"] is True
 
 
+def test_guarded_ladder_stops_after_first_failed_transport_gate(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    constraints = tmp_path / "constraints"
+    _write_candidate(constraints, passed=True, objective=0.03)
+    (constraints / "input.final").write_text("! vmec restart\n", encoding="utf-8")
+    out_json = tmp_path / "ladder.json"
+    launched: list[list[str]] = []
+
+    def fake_run(command, **_kwargs):
+        launched.append(list(command))
+        outdir = Path(command[command.index("--outdir") + 1])
+        _write_candidate(outdir, passed=False, objective=0.04, qs=1.0)
+        return None
+
+    monkeypatch.setattr(mod.subprocess, "run", fake_run)
+
+    rc = mod.main(
+        [
+            "--constraints-dir",
+            str(constraints),
+            "--outdir",
+            str(tmp_path / "ladder"),
+            "--weights",
+            "0.001,0.005",
+            "--driver-args",
+            "--max-mode 5",
+            "--out-json",
+            str(out_json),
+        ]
+    )
+
+    payload = json.loads(out_json.read_text(encoding="utf-8"))
+    assert rc == 0
+    assert len(launched) == 1
+    assert len(payload["commands"]) == 1
+    assert payload["stopped_after_failed_gate"] is True
+    assert payload["promoted_candidate"]["baseline"] is True
+
+
 def test_candidate_summary_keeps_reconstructed_gate_advisory_by_default(
     tmp_path: Path,
     monkeypatch,

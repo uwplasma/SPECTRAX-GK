@@ -225,6 +225,11 @@ def build_parser() -> argparse.ArgumentParser:
             "Default is fail-closed because history and restart-input QS conventions can drift."
         ),
     )
+    parser.add_argument(
+        "--continue-after-failed-gate",
+        action="store_true",
+        help="Continue trying larger transport weights after a transport candidate fails the solved-candidate gate.",
+    )
     parser.add_argument("--timeout-s", type=float, default=0.0, help="Per-candidate subprocess timeout; 0 disables")
     parser.add_argument("--dry-run", action="store_true", help="Write the launch plan without running candidates")
     parser.add_argument("--out-json", type=Path, default=None, help="Summary JSON path; defaults inside --outdir")
@@ -262,6 +267,7 @@ def main(argv: list[str] | None = None) -> int:
         )
     ]
     run_failures: list[dict[str, Any]] = []
+    stopped_after_failed_gate = False
     for weight in tuple(float(w) for w in args.weights):
         candidate_dir = outdir / f"transport_weight_{_weight_token(weight)}"
         command = build_driver_command(
@@ -285,19 +291,21 @@ def main(argv: list[str] | None = None) -> int:
                 run_failures.append({"transport_weight": weight, "outdir": str(candidate_dir), "returncode": exc.returncode})
             except subprocess.TimeoutExpired:
                 run_failures.append({"transport_weight": weight, "outdir": str(candidate_dir), "timeout_s": float(args.timeout_s)})
-            summaries.append(
-                candidate_summary(
-                    candidate_dir,
-                    label=f"transport weight {weight:.3g}",
-                    weight=weight,
-                    target_aspect=gate_policy["target_aspect"],
-                    aspect_atol=gate_policy["aspect_atol"],
-                    min_abs_mean_iota=gate_policy["min_abs_mean_iota"],
-                    qs_residual_max=gate_policy["qs_residual_max"],
-                    iota_profile_floor=gate_policy["iota_profile_floor"],
-                    allow_reconstructed_gate=bool(args.allow_reconstructed_gate),
-                )
+            summary = candidate_summary(
+                candidate_dir,
+                label=f"transport weight {weight:.3g}",
+                weight=weight,
+                target_aspect=gate_policy["target_aspect"],
+                aspect_atol=gate_policy["aspect_atol"],
+                min_abs_mean_iota=gate_policy["min_abs_mean_iota"],
+                qs_residual_max=gate_policy["qs_residual_max"],
+                iota_profile_floor=gate_policy["iota_profile_floor"],
+                allow_reconstructed_gate=bool(args.allow_reconstructed_gate),
             )
+            summaries.append(summary)
+            if not bool(summary.get("passed")) and not bool(args.continue_after_failed_gate):
+                stopped_after_failed_gate = True
+                break
     promoted = select_promoted_candidate(summaries)
     payload = {
         "kind": "vmec_jax_guarded_transport_ladder",
@@ -309,6 +317,8 @@ def main(argv: list[str] | None = None) -> int:
         "restart_input": str(input_file),
         "gate_policy": gate_policy,
         "allow_reconstructed_gate": bool(args.allow_reconstructed_gate),
+        "continue_after_failed_gate": bool(args.continue_after_failed_gate),
+        "stopped_after_failed_gate": bool(stopped_after_failed_gate),
         "dry_run": bool(args.dry_run),
         "commands": commands,
         "candidates": summaries,
