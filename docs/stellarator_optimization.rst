@@ -186,14 +186,18 @@ VMEC-JAX ``scipy`` optimizer. The transport-aware branch defaults to
 SPECTRAX-GK transport residual; override ``--method`` only when you have a
 specific optimizer/memory reason.
 
-Both use ``A=6``, a high-weight ``MeanIota`` target ``iota = 0.41``, a signed
-solved-profile floor ``iota(s) >= 0.41``, ``mboz=nboz=21``, and the upstream
-VMEC-JAX simple-seed convention of solving the requested ``max_mode`` branch
-directly rather than using mode continuation. The transport-aware branch adds
-a small SPECTRAX-GK residual. A passed VMEC-JAX
-optimization is still only a candidate; the next required audit is a WOUT
-profile check followed by a matched long-window SPECTRAX-GK nonlinear heat-flux
-comparison of the final WOUTs.
+Both use the upstream VMEC-JAX simple-seed convention of solving the requested
+``max_mode`` branch directly rather than using mode continuation, and both use
+``mboz=nboz=21`` for the transport objective and Boozer LCFS plots. The
+SPECTRAX-GK low-turbulence study targets ``A=6`` and adds a signed
+solved-profile floor ``iota(s) >= 0.41``. The upstream VMEC-JAX
+``QA_optimization.py`` baseline targets ``A=5`` and does not include that
+profile-floor gate; to reproduce it, run the constraints-only command with
+``--target-aspect 5.0`` and ``--disable-iota-profile-floor``. The
+transport-aware A=6 branch adds a small SPECTRAX-GK residual. A passed
+VMEC-JAX optimization is still only a candidate; the next required audit is a
+WOUT profile check followed by a matched long-window SPECTRAX-GK nonlinear
+heat-flux comparison of the final WOUTs.
 
 For bounded local candidate pairs, build the solved-boundary audit panel with:
 
@@ -919,26 +923,34 @@ their worker metadata and identity contract in the JSON artifacts.
    :align: center
    :alt: QA stellarator growth-rate optimization
 
-   Growth-rate objective history and coupled transport observables.
+   Growth-rate objective history, coupled transport observables, reduced
+   ``a/L_n`` response, fixed-gradient ``Q_env`` trace, optimized reduced LCFS
+   ``|B|`` surface, and reduced Boozer-LCFS ``|B|`` map. These geometry
+   panels are reduced max-mode-1 diagnostics, not solved VMEC WOUT plots.
 
 .. figure:: _static/stellarator_itg_quasilinear_optimization.png
    :width: 90%
    :align: center
    :alt: QA stellarator quasilinear-flux optimization
 
-   Quasilinear heat-flux objective history. The quasilinear objective uses the
-   same differentiable mixing-length feature map tested in
-   :doc:`quasilinear`.
+   Quasilinear heat-flux objective history and the same reduced scan, trace,
+   LCFS ``|B|``, and Boozer-LCFS ``|B|`` diagnostics. The quasilinear
+   objective uses the differentiable mixing-length feature map tested in
+   :doc:`quasilinear`; it is still a reduced diagnostic, not a promoted
+   absolute-flux predictor.
 
 .. figure:: _static/stellarator_itg_nonlinear_optimization.png
    :width: 90%
    :align: center
    :alt: QA stellarator nonlinear-window heat-flux optimization
 
-   Nonlinear-window objective history and heat-flux envelope. The shaded region
-   is the averaging window used in the objective. The shipped artifact records
-   a low coefficient of variation and trend for the optimized late-time window,
-   so the plotted average is meaningful for this reduced model.
+   Reduced nonlinear-window objective history, fixed-gradient heat-flux
+   envelope, reduced density-gradient response, and reduced LCFS/Boozer
+   ``|B|`` diagnostics. The shaded region is the averaging window used in the
+   objective. The shipped artifact records a low coefficient of variation and
+   trend for the optimized late-time window, so the plotted average is
+   meaningful for this reduced model; production turbulent-flux optimization
+   still requires solved-WOUT nonlinear transport audits.
 
 Zonal-flow Objective Contract
 -----------------------------

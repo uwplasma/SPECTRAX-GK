@@ -364,7 +364,11 @@ def main() -> int:
         xtol=float(args.xtol),
         use_ess=True,
         ess_alpha=1.2,
-        label="QA optimization with SPECTRAX-GK transport residual",
+        label=(
+            "QA constraints-only optimization"
+            if args.constraints_only
+            else "QA optimization with SPECTRAX-GK transport residual"
+        ),
         use_mode_continuation=use_mode_continuation,
         inner_max_iter=int(args.inner_max_iter),
         inner_ftol=float(args.inner_ftol),
@@ -397,6 +401,8 @@ def main() -> int:
                 saved.initial_wout,
                 saved.final_wout,
                 outdir=args.outdir,
+                mbooz=int(args.mboz),
+                nbooz=int(args.nboz),
             ),
             "objective_history": vj.plot_objective_history(
                 saved.history,

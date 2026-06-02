@@ -461,8 +461,9 @@ repository:
 
 .. code-block:: bash
 
+   VMEC_JAX_ROOT=/path/to/vmec_jax
    python tools/plot_vmec_jax_equilibrium_inventory.py \
-     --data-dir /Users/rogeriojorge/local/vmec_jax/examples/data \
+     --data-dir "$VMEC_JAX_ROOT/examples/data" \
      --out docs/_static/vmec_jax_equilibrium_inventory.png
 
 This writes ``docs/_static/vmec_jax_equilibrium_inventory.{png,pdf,json}``.

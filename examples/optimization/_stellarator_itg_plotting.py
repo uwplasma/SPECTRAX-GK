@@ -8,7 +8,16 @@ from pathlib import Path
 from typing import Any
 
 import matplotlib.pyplot as plt
+from matplotlib import colors as mpl_colors
 import numpy as np
+
+from spectraxgk import (
+    StellaratorITGOptimizationConfig,
+    nonlinear_heat_flux_trace,
+    nonlinear_heat_flux_window_metrics,
+    qa_max_mode1_observables,
+    stellarator_itg_density_gradient_scan,
+)
 
 
 COLORS = {
@@ -22,7 +31,7 @@ def write_result_artifacts(result: Any, out_base: Path, *, title: str) -> None:
     """Write JSON/CSV plus a publication-style summary figure."""
 
     out_base.parent.mkdir(parents=True, exist_ok=True)
-    payload = result.to_dict()
+    payload = _sanitize_artifact_payload(_augment_result_payload(result.to_dict()))
     out_base.with_suffix(".json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
     _write_history_csv(payload, out_base.with_suffix(".history.csv"))
     _plot_result(payload, out_base.with_suffix(".png"), title=title)
@@ -33,6 +42,7 @@ def write_comparison_artifacts(payload: dict[str, Any], out_base: Path) -> None:
     """Write the three-objective comparison payload and plot."""
 
     out_base.parent.mkdir(parents=True, exist_ok=True)
+    payload = _sanitize_artifact_payload(payload)
     out_base.with_suffix(".json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
     _plot_comparison(payload, out_base.with_suffix(".png"))
     _plot_comparison(payload, out_base.with_suffix(".pdf"))
@@ -42,9 +52,140 @@ def write_portfolio_gate_artifacts(payload: dict[str, Any], out_base: Path) -> N
     """Write a reduced multi-surface/alpha/ky portfolio-gate payload and plot."""
 
     out_base.parent.mkdir(parents=True, exist_ok=True)
+    payload = _sanitize_artifact_payload(payload)
     out_base.with_suffix(".json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
     _plot_portfolio_gate(payload, out_base.with_suffix(".png"))
     _plot_portfolio_gate(payload, out_base.with_suffix(".pdf"))
+
+
+def _sanitize_artifact_payload(value: Any) -> Any:
+    """Drop machine-local optional-package path metadata from public sidecars."""
+
+    if isinstance(value, dict):
+        return {
+            key: _sanitize_artifact_payload(item)
+            for key, item in value.items()
+            if key not in {"vmec_jax_paths", "booz_xform_jax_paths"}
+        }
+    if isinstance(value, list):
+        return [_sanitize_artifact_payload(item) for item in value]
+    return value
+
+
+def _config_from_payload(payload: dict[str, Any]) -> StellaratorITGOptimizationConfig:
+    return StellaratorITGOptimizationConfig(**payload["config"])
+
+
+def _obs_for_params(params: list[float], cfg: StellaratorITGOptimizationConfig) -> dict[str, float]:
+    return {
+        key: float(value)
+        for key, value in qa_max_mode1_observables(params, cfg).items()
+        if np.ndim(np.asarray(value)) == 0
+    }
+
+
+def _trace_payload(params: list[float], cfg: StellaratorITGOptimizationConfig) -> dict[str, Any]:
+    times, heat_flux = nonlinear_heat_flux_trace(params, cfg)
+    window = nonlinear_heat_flux_window_metrics(
+        times,
+        heat_flux,
+        tail_fraction=cfg.nonlinear_tail_fraction,
+    )
+    return {
+        "trace_kind": "smooth_reduced_nonlinear_envelope_not_full_turbulent_gk",
+        "trace_equation": "dE/dt = 2 gamma E - alpha E^2; Q_env = W_i E",
+        "density_gradient": float(cfg.reference_density_gradient),
+        "temperature_gradient": float(cfg.reference_temperature_gradient),
+        "times": np.asarray(times, dtype=float).tolist(),
+        "heat_flux": np.asarray(heat_flux, dtype=float).tolist(),
+        "window": {
+            "mean": float(window["mean"]),
+            "std": float(window["std"]),
+            "cv": float(window["cv"]),
+            "trend": float(window["trend"]),
+            "slope": float(window["slope"]),
+            "start_index": int(window["start_index"]),
+        },
+    }
+
+
+def _reduced_surface(params: list[float], cfg: StellaratorITGOptimizationConfig) -> dict[str, Any]:
+    obs = _obs_for_params(params, cfg)
+    minor_shift, elong_shift, ripple, shear_shift = [float(value) for value in params]
+    theta = np.linspace(0.0, 2.0 * np.pi, 44, endpoint=False)
+    zeta = np.linspace(0.0, 2.0 * np.pi, 44, endpoint=False)
+    tt, zz = np.meshgrid(theta, zeta, indexing="ij")
+    aspect = max(float(obs["aspect"]), 1.0e-6)
+    major_radius = 1.0
+    minor_radius = major_radius / aspect
+    nfp = 2
+    elongation = 1.0 + 0.22 * elong_shift
+    axis_radius = major_radius * (1.0 + 0.18 * ripple * np.cos(nfp * zz))
+    axis_height = minor_radius * 0.95 * ripple * np.sin(nfp * zz)
+    radius = axis_radius + minor_radius * (
+        np.cos(tt)
+        + 1.10 * ripple * np.cos(tt - nfp * zz)
+        + 0.035 * shear_shift * np.cos(2.0 * tt)
+        + 0.050 * minor_shift * np.cos(tt + nfp * zz)
+    )
+    height = axis_height + minor_radius * (
+        elongation * np.sin(tt)
+        + 0.90 * ripple * np.sin(tt - nfp * zz)
+        + 0.035 * shear_shift * np.sin(2.0 * tt)
+    )
+    return {
+        "theta": theta.tolist(),
+        "zeta": zeta.tolist(),
+        "x": (radius * np.cos(zz)).tolist(),
+        "y": (radius * np.sin(zz)).tolist(),
+        "z": height.tolist(),
+        "scope": "reduced_max_mode1_visualization_not_solved_vmec_equilibrium",
+    }
+
+
+def _reduced_lcfs_bmag(params: list[float], cfg: StellaratorITGOptimizationConfig) -> dict[str, Any]:
+    obs = _obs_for_params(params, cfg)
+    _, elong_shift, ripple, _ = [float(value) for value in params]
+    theta = np.linspace(0.0, 2.0 * np.pi, 44, endpoint=False)
+    zeta = np.linspace(0.0, 2.0 * np.pi, 44, endpoint=False)
+    tt, zz = np.meshgrid(theta, zeta, indexing="ij")
+    nfp = 2
+    qa_amp = float(obs["qa_residual"])
+    bmag = (
+        1.0
+        + 0.052 * np.cos(tt)
+        + 0.016 * elong_shift * np.cos(2.0 * tt)
+        + 0.190 * ripple * np.cos(tt - nfp * zz)
+        + 0.026 * qa_amp * np.cos(2.0 * tt - nfp * zz)
+    )
+    return {
+        "theta": theta.tolist(),
+        "zeta": zeta.tolist(),
+        "bmag": bmag.tolist(),
+        "scope": "synthetic_reduced_lcfs_bmag_not_booz_xform_jax_output",
+    }
+
+
+def _augment_result_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    cfg = _config_from_payload(payload)
+    initial_params = [float(value) for value in payload["initial_params"]]
+    final_params = [float(value) for value in payload["final_params"]]
+    payload["reduced_diagnostics"] = {
+        "claim_level": "reduced_max_mode1_diagnostics_not_solved_vmec_or_full_nonlinear_scan",
+        "initial": {
+            "density_gradient_scan": stellarator_itg_density_gradient_scan(initial_params, cfg),
+            "fixed_gradient_trace": _trace_payload(initial_params, cfg),
+            "surface": _reduced_surface(initial_params, cfg),
+            "lcfs_bmag": _reduced_lcfs_bmag(initial_params, cfg),
+        },
+        "final": {
+            "density_gradient_scan": stellarator_itg_density_gradient_scan(final_params, cfg),
+            "fixed_gradient_trace": _trace_payload(final_params, cfg),
+            "surface": _reduced_surface(final_params, cfg),
+            "lcfs_bmag": _reduced_lcfs_bmag(final_params, cfg),
+        },
+    }
+    return payload
 
 
 def _write_history_csv(payload: dict[str, Any], path: Path) -> None:
@@ -65,102 +206,229 @@ def _write_history_csv(payload: dict[str, Any], path: Path) -> None:
             writer.writerow(out)
 
 
+def _set_equal_3d(ax: plt.Axes, x: np.ndarray, y: np.ndarray, z: np.ndarray) -> None:
+    limits = np.asarray(
+        [
+            [np.nanmin(x), np.nanmax(x)],
+            [np.nanmin(y), np.nanmax(y)],
+        ],
+        dtype=float,
+    )
+    center = np.mean(limits, axis=1)
+    radius = 0.52 * float(np.max(limits[:, 1] - limits[:, 0]))
+    z_center = 0.5 * float(np.nanmin(z) + np.nanmax(z))
+    z_radius = max(0.045, 0.62 * float(np.nanmax(z) - np.nanmin(z)))
+    ax.set_xlim(center[0] - radius, center[0] + radius)
+    ax.set_ylim(center[1] - radius, center[1] + radius)
+    ax.set_zlim(z_center - z_radius, z_center + z_radius)
+    ax.set_box_aspect((1.0, 1.0, 0.45))
+
+
+def _plot_reduced_surface(ax: plt.Axes, fig: plt.Figure, diagnostics: dict[str, Any], *, title: str) -> None:
+    surface = diagnostics["surface"]
+    bmap = diagnostics["lcfs_bmag"]
+    x = np.asarray(surface["x"], dtype=float)
+    y = np.asarray(surface["y"], dtype=float)
+    z = np.asarray(surface["z"], dtype=float)
+    bmag = np.asarray(bmap["bmag"], dtype=float)
+    norm = mpl_colors.Normalize(vmin=float(np.nanmin(bmag)), vmax=float(np.nanmax(bmag)))
+    cmap = plt.colormaps["cividis"]
+    ax.plot_surface(
+        x,
+        y,
+        z,
+        facecolors=cmap(norm(bmag)),
+        alpha=0.95,
+        linewidth=0,
+        antialiased=True,
+        shade=False,
+    )
+    ax.plot_wireframe(
+        x,
+        y,
+        z,
+        rstride=max(1, x.shape[0] // 9),
+        cstride=max(1, x.shape[1] // 9),
+        color="white",
+        linewidth=0.25,
+        alpha=0.40,
+    )
+    _set_equal_3d(ax, x, y, z)
+    ax.view_init(elev=25, azim=48)
+    ax.set_title(title)
+    ax.set_xlabel("X")
+    ax.set_ylabel("Y")
+    ax.set_zlabel("Z")
+    ax.grid(False)
+    mappable = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
+    mappable.set_array([])
+    fig.colorbar(mappable, ax=ax, fraction=0.045, pad=0.02, label=r"$|B|/B_0$")
+
+
+def _plot_reduced_boozer_bmag(ax: plt.Axes, fig: plt.Figure, diagnostics: dict[str, Any], *, title: str) -> None:
+    bmap = diagnostics["lcfs_bmag"]
+    theta = np.asarray(bmap["theta"], dtype=float) / np.pi
+    zeta = np.asarray(bmap["zeta"], dtype=float) / np.pi
+    zz, tt = np.meshgrid(zeta, theta, indexing="xy")
+    bmag = np.asarray(bmap["bmag"], dtype=float)
+    bmin = float(np.nanmin(bmag))
+    bmax = float(np.nanmax(bmag))
+    zpad = 0.08 * max(bmax - bmin, 1.0e-6)
+    norm = mpl_colors.Normalize(vmin=bmin, vmax=bmax)
+    cmap = plt.colormaps["cividis"]
+    ax.plot_surface(zz, tt, bmag, cmap=cmap, norm=norm, linewidth=0, antialiased=True, alpha=0.96)
+    ax.contourf(zz, tt, bmag, zdir="z", offset=bmin - zpad, levels=18, cmap=cmap, norm=norm, alpha=0.76)
+    ax.contour(zz, tt, bmag, levels=9, colors="white", linewidths=0.32, alpha=0.7)
+    ax.set_xlabel(r"$\phi_B/\pi$")
+    ax.set_ylabel(r"$\theta_B/\pi$")
+    ax.set_zlabel("")
+    ax.set_zlim(bmin - zpad, bmax + zpad)
+    ax.view_init(elev=30, azim=-52)
+    ax.set_title(title)
+    mappable = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
+    mappable.set_array([])
+    fig.colorbar(mappable, ax=ax, fraction=0.045, pad=0.02, label=r"$|B|/B_0$")
+
+
 def _plot_result(payload: dict[str, Any], path: Path, *, title: str) -> None:
     history = payload["history"]
     names = list(payload["observable_names"])
     params = list(payload["parameter_names"])
-    steps = np.asarray([row["step"] for row in history])
-    objective = np.asarray([row["objective"] for row in history])
+    steps = np.asarray([row["step"] for row in history], dtype=float)
+    objective = np.asarray([row["objective"] for row in history], dtype=float)
     obs = np.asarray([row["observables"] for row in history], dtype=float)
     par = np.asarray([row["params"] for row in history], dtype=float)
     idx = {name: names.index(name) for name in names}
     color = COLORS.get(payload["objective_kind"], "#3f3f46")
-    has_trace = payload.get("nonlinear_trace") is not None
+    diagnostics = payload["reduced_diagnostics"]
+    initial_diag = diagnostics["initial"]
+    final_diag = diagnostics["final"]
 
-    if has_trace:
-        fig, axs = plt.subplots(2, 3, figsize=(13.2, 7.2), constrained_layout=True)
-        axes = axs.ravel()
-    else:
-        fig, axs = plt.subplots(2, 2, figsize=(10.6, 7.0), constrained_layout=True)
-        axes = axs.ravel()
+    fig = plt.figure(figsize=(17.0, 13.0), constrained_layout=True)
+    grid = fig.add_gridspec(3, 3, hspace=0.12, wspace=0.10)
+    ax_obj = fig.add_subplot(grid[0, 0])
+    ax_obs = fig.add_subplot(grid[0, 1])
+    ax_constraints = fig.add_subplot(grid[0, 2])
+    ax_controls = fig.add_subplot(grid[1, 0])
+    ax_scan = fig.add_subplot(grid[1, 1])
+    ax_trace = fig.add_subplot(grid[1, 2])
+    ax_surface = fig.add_subplot(grid[2, 0], projection="3d")
+    ax_boozer = fig.add_subplot(grid[2, 1], projection="3d")
+    ax_metrics = fig.add_subplot(grid[2, 2])
     fig.suptitle(title, fontsize=15, fontweight="bold")
 
-    axes[0].semilogy(steps, objective, color=color, lw=2.4)
-    axes[0].scatter([steps[0], steps[-1]], [objective[0], objective[-1]], color=color, s=34, zorder=3)
-    axes[0].set_xlabel("optimizer step")
-    axes[0].set_ylabel("constrained objective")
-    axes[0].set_title("Objective reduction")
-    axes[0].grid(alpha=0.25)
+    ax_obj.semilogy(steps, objective, color=color, lw=2.4)
+    ax_obj.scatter([steps[0], steps[-1]], [objective[0], objective[-1]], color=color, s=34, zorder=3)
+    ax_obj.set_xlabel("optimizer step")
+    ax_obj.set_ylabel("constrained objective")
+    ax_obj.set_title("Objective reduction")
+    ax_obj.grid(alpha=0.25)
 
-    axes[1].plot(steps, obs[:, idx["growth_rate"]], lw=2.0, label=r"$\gamma$")
-    axes[1].plot(steps, obs[:, idx["quasilinear_heat_flux"]], lw=2.0, label=r"$Q_i^{QL}$")
-    axes[1].plot(
+    ax_obs.plot(steps, obs[:, idx["growth_rate"]], lw=2.0, label=r"$\gamma$")
+    ax_obs.plot(steps, obs[:, idx["quasilinear_heat_flux"]], lw=2.0, label=r"$Q_i^{QL}$")
+    ax_obs.plot(
         steps,
         obs[:, idx["nonlinear_heat_flux_mean"]],
         lw=2.0,
-        label=r"$Q_i^{red\ NL}$",
+        label=r"$Q_{\rm env}$",
     )
-    axes[1].set_xlabel("optimizer step")
-    axes[1].set_ylabel("ITG observable")
-    axes[1].set_title("Transport observables")
-    axes[1].legend(frameon=False, fontsize=9)
-    axes[1].grid(alpha=0.25)
+    ax_obs.set_xlabel("optimizer step")
+    ax_obs.set_ylabel("ITG observable")
+    ax_obs.set_title("Transport observables")
+    ax_obs.legend(frameon=False, fontsize=9)
+    ax_obs.grid(alpha=0.25)
 
-    axes[2].plot(steps, obs[:, idx["aspect"]], color="#0f766e", lw=2.0, label="aspect")
-    axes[2].axhline(payload["config"]["target_aspect"], color="#0f766e", ls=":", lw=1.4)
-    ax_iota = axes[2].twinx()
+    ax_constraints.plot(steps, obs[:, idx["aspect"]], color="#0f766e", lw=2.0, label="aspect")
+    ax_constraints.axhline(payload["config"]["target_aspect"], color="#0f766e", ls=":", lw=1.4)
+    ax_iota = ax_constraints.twinx()
     ax_iota.plot(steps, obs[:, idx["mean_iota"]], color="#7c2d12", lw=2.0, label=r"$\iota$")
     ax_iota.axhline(payload["config"]["target_iota"], color="#7c2d12", ls=":", lw=1.4)
-    axes[2].set_xlabel("optimizer step")
-    axes[2].set_ylabel("aspect")
+    ax_constraints.set_xlabel("optimizer step")
+    ax_constraints.set_ylabel("aspect")
     ax_iota.set_ylabel(r"mean $\iota$")
-    axes[2].set_title("QA constraints")
-    axes[2].grid(alpha=0.25)
+    ax_constraints.set_title("QA constraints")
+    ax_constraints.grid(alpha=0.25)
 
     for col, name in enumerate(params):
-        axes[3].plot(steps, par[:, col], lw=1.8, label=_short_param(name))
-    axes[3].set_xlabel("optimizer step")
-    axes[3].set_ylabel("control value")
-    axes[3].set_title("Max-mode-1 controls")
-    axes[3].legend(frameon=False, fontsize=8, ncol=2)
-    axes[3].grid(alpha=0.25)
+        ax_controls.plot(steps, par[:, col], lw=1.8, label=_short_param(name))
+    ax_controls.set_xlabel("optimizer step")
+    ax_controls.set_ylabel("control value")
+    ax_controls.set_title("Max-mode-1 controls")
+    ax_controls.legend(frameon=False, fontsize=8, ncol=2)
+    ax_controls.grid(alpha=0.25)
 
-    if has_trace:
-        trace = payload["nonlinear_trace"]
+    for label, diag, plot_color, linestyle in (
+        ("initial", initial_diag, "#9ca3af", "--"),
+        ("optimized", final_diag, color, "-"),
+    ):
+        scan = diag["density_gradient_scan"]
+        ax_scan.plot(
+            scan["density_gradient_axis"],
+            scan["heat_flux_mean"],
+            marker="o",
+            lw=2.1,
+            color=plot_color,
+            ls=linestyle,
+            label=f"{label} " + r"$Q_{\rm env}$",
+        )
+    ax_scan.set_xlabel(r"density gradient $a/L_n$")
+    ax_scan.set_ylabel(r"late-window $\langle Q_{\rm env}\rangle$")
+    ax_scan.set_title(r"Reduced response at fixed $a/L_{Ti}=6$")
+    ax_scan.legend(frameon=False, fontsize=8)
+    ax_scan.grid(alpha=0.25)
+
+    for label, diag, plot_color, linestyle in (
+        ("initial", initial_diag, "#9ca3af", "--"),
+        ("optimized", final_diag, color, "-"),
+    ):
+        trace = diag["fixed_gradient_trace"]
         time = np.asarray(trace["times"], dtype=float)
-        initial_q = np.asarray(trace["initial_heat_flux"], dtype=float)
-        final_q = np.asarray(trace["final_heat_flux"], dtype=float)
-        start = int(trace["final_window"]["start_index"])
-        axes[4].plot(time, initial_q, color="#9ca3af", lw=1.8, label="initial")
-        axes[4].plot(time, final_q, color=color, lw=2.2, label="optimized")
-        axes[4].axvspan(time[start], time[-1], color=color, alpha=0.12, label="averaging window")
-        axes[4].axhline(trace["final_window"]["mean"], color=color, ls="--", lw=1.4)
-        axes[4].set_xlabel(r"$t v_{ti}/a$")
-        axes[4].set_ylabel(r"$Q_i$ reduced envelope")
-        axes[4].set_title("Reduced nonlinear-window estimator")
-        axes[4].legend(frameon=False, fontsize=8)
-        axes[4].grid(alpha=0.25)
+        heat_flux = np.asarray(trace["heat_flux"], dtype=float)
+        start = int(trace["window"]["start_index"])
+        ax_trace.plot(time, heat_flux, color=plot_color, ls=linestyle, lw=2.0, label=label)
+        if label == "optimized":
+            ax_trace.axvspan(time[start], time[-1], color=color, alpha=0.10)
+            ax_trace.axhline(float(trace["window"]["mean"]), color=color, ls=":", lw=1.2)
+    ax_trace.set_xlabel(r"$t v_{ti}/a$")
+    ax_trace.set_ylabel(r"$Q_{\rm env}(t)$")
+    ax_trace.set_title("Reduced fixed-gradient envelope")
+    ax_trace.legend(frameon=False, fontsize=8)
+    ax_trace.grid(alpha=0.25)
 
-        final = payload["final_observables"]
-        text = (
-            f"AD/FD gate: {payload['gradient_gate']['passed']}\n"
-            f"max |AD-FD| = {payload['gradient_gate']['max_abs_error']:.2e}\n"
-            f"tail CV = {trace['final_window']['cv']:.3f}\n"
-            f"tail trend = {trace['final_window']['trend']:.3f}\n"
-            f"final QA residual = {final[idx['qa_residual']]:.2e}"
-        )
-        axes[5].axis("off")
-        axes[5].text(
-            0.02,
-            0.92,
-            text,
-            va="top",
-            ha="left",
-            fontsize=10,
-            bbox={"boxstyle": "round,pad=0.45", "facecolor": "#f8fafc", "edgecolor": "#cbd5e1"},
-        )
+    _plot_reduced_surface(ax_surface, fig, final_diag, title=r"Optimized reduced LCFS $|B|$")
+    _plot_reduced_boozer_bmag(ax_boozer, fig, final_diag, title=r"Optimized Boozer LCFS $|B|$")
 
-    for ax in axes:
+    initial_vals = np.asarray(payload["initial_observables"], dtype=float)
+    final_vals = np.asarray(payload["final_observables"], dtype=float)
+    metric_keys = ("growth_rate", "quasilinear_heat_flux", "nonlinear_heat_flux_mean")
+    ratios = [
+        final_vals[idx[key]] / max(initial_vals[idx[key]], 1.0e-14)
+        for key in metric_keys
+    ]
+    metric_labels = [r"$\gamma$", r"$Q_i^{QL}$", r"$Q_{\rm env}$"]
+    x = np.arange(len(metric_labels), dtype=float)
+    ax_metrics.bar(x, ratios, color=color, alpha=0.88, label="final / initial")
+    ax_metrics.axhline(1.0, color="black", ls=":", lw=1.0, alpha=0.55)
+    ax_metrics.set_xticks(x, metric_labels)
+    ax_metrics.set_ylabel("ratio")
+    ax_metrics.set_title("Reduced transport reduction")
+    ax_metrics.grid(axis="y", alpha=0.25)
+    ax_gate = ax_metrics.twinx()
+    gate_values = [
+        float(payload["gradient_gate"]["max_abs_error"]),
+        float(final_diag["fixed_gradient_trace"]["window"]["cv"]),
+        float(final_diag["fixed_gradient_trace"]["window"]["trend"]),
+    ]
+    gate_labels = ("AD-FD", "CV", "trend")
+    x_gate = np.arange(len(gate_labels), dtype=float) + len(metric_labels) + 0.65
+    ax_gate.bar(x_gate, gate_values, width=0.42, color="#475569", alpha=0.72, label="gates")
+    ax_gate.set_yscale("log")
+    ax_gate.set_ylabel("gate metric")
+    ax_metrics.set_xlim(-0.6, float(x_gate[-1]) + 0.7)
+    ax_metrics.set_xticks(np.concatenate([x, x_gate]))
+    ax_metrics.set_xticklabels(metric_labels + list(gate_labels), rotation=18, ha="right")
+
+    for ax in (ax_obj, ax_obs, ax_constraints, ax_controls, ax_scan, ax_trace, ax_metrics):
         for spine in ax.spines.values():
             spine.set_alpha(0.35)
     fig.savefig(path, dpi=220, bbox_inches="tight")
@@ -192,7 +460,7 @@ def _plot_comparison(payload: dict[str, Any], path: Path) -> None:
 
     width = 0.24
     metrics = ["growth_rate", "quasilinear_heat_flux", "nonlinear_heat_flux_mean"]
-    metric_labels = [r"$\gamma$", r"$Q_i^{QL}$", r"$Q_i^{red\ NL}$"]
+    metric_labels = [r"$\gamma$", r"$Q_i^{QL}$", r"$Q_{\rm env}$"]
     for j, metric in enumerate(metrics):
         axs[0, 1].bar(x + (j - 1) * width, final_obs[:, idx[metric]], width=width, label=metric_labels[j])
     axs[0, 1].set_xticks(x, wrapped_labels, rotation=0, ha="center")

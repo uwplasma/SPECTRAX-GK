@@ -1,6 +1,11 @@
 from __future__ import annotations
 
+from dataclasses import asdict
+import importlib.util
 import json
+from pathlib import Path
+import sys
+from types import SimpleNamespace
 
 import jax
 import jax.numpy as jnp
@@ -22,6 +27,7 @@ from spectraxgk.stellarator_optimization import (
     nonlinear_heat_flux_window_metrics,
     optimize_stellarator_itg,
     qa_observable_vector,
+    stellarator_itg_density_gradient_scan,
     stellarator_itg_objective,
     stellarator_itg_objective_residual_names,
     stellarator_itg_objective_residual_vector,
@@ -63,10 +69,22 @@ def _disable_optional_backend_discovery(monkeypatch) -> None:
     )
 
 
+def _load_stellarator_itg_plotting_module():
+    path = Path(__file__).resolve().parents[1] / "examples" / "optimization" / "_stellarator_itg_plotting.py"
+    spec = importlib.util.spec_from_file_location("_stellarator_itg_plotting_for_test", path)
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
 def test_stellarator_itg_observable_contract_is_finite_and_exported() -> None:
     assert spectraxgk.STELLARATOR_ITG_PARAMETER_NAMES == PARAMETER_NAMES
     assert spectraxgk.STELLARATOR_ITG_OBSERVABLE_NAMES == OBSERVABLE_NAMES
     assert spectraxgk.optimize_stellarator_itg is optimize_stellarator_itg
+    assert spectraxgk.stellarator_itg_density_gradient_scan is stellarator_itg_density_gradient_scan
     assert (
         spectraxgk.stellarator_itg_residual_sensitivity_report
         is stellarator_itg_residual_sensitivity_report
@@ -85,6 +103,84 @@ def test_stellarator_itg_observable_contract_is_finite_and_exported() -> None:
     assert obs["linear_heat_flux_weight"] > 0.0
     assert obs["quasilinear_heat_flux"] > 0.0
     assert obs["nonlinear_heat_flux_mean"] > 0.0
+
+
+def test_stellarator_itg_density_gradient_scan_is_monotone_and_scoped() -> None:
+    cfg = _fast_config()
+    params = default_stellarator_initial_params()
+    scan = stellarator_itg_density_gradient_scan(
+        params,
+        cfg,
+        density_gradients=(0.8, cfg.reference_density_gradient, 4.8),
+    )
+    default_obs = dict(zip(OBSERVABLE_NAMES, qa_observable_vector(params, cfg), strict=True))
+
+    assert scan["scope"] == "reduced_max_mode1_density_gradient_response_not_full_nonlinear_scan"
+    assert scan["fixed_temperature_gradient"] == cfg.reference_temperature_gradient
+    assert scan["density_gradient_axis"] == [0.8, cfg.reference_density_gradient, 4.8]
+    assert np.all(np.diff(scan["heat_flux_mean"]) > 0.0)
+    assert np.all(np.diff(scan["growth_rate"]) > 0.0)
+    assert scan["linear_slope_dQ_d_a_over_Ln"] > 0.0
+    assert scan["heat_flux_mean"][1] == pytest.approx(default_obs["nonlinear_heat_flux_mean"])
+
+
+@pytest.mark.parametrize("density_gradients", [(), (0.8, np.nan), (-0.1, 1.0)])
+def test_stellarator_itg_density_gradient_scan_rejects_invalid_axes(
+    density_gradients: tuple[float, ...],
+) -> None:
+    with pytest.raises(ValueError, match="density_gradients"):
+        stellarator_itg_density_gradient_scan(
+            default_stellarator_initial_params(),
+            _fast_config(),
+            density_gradients=density_gradients,
+        )
+
+
+def test_stellarator_itg_plotting_artifact_includes_reduced_diagnostics(tmp_path: Path) -> None:
+    plotting = _load_stellarator_itg_plotting_module()
+    cfg = _fast_config()
+    p0 = np.asarray(default_stellarator_initial_params(), dtype=float)
+    p1 = 0.55 * p0
+    obs0 = np.asarray(qa_observable_vector(p0, cfg), dtype=float)
+    obs1 = np.asarray(qa_observable_vector(p1, cfg), dtype=float)
+    payload = {
+        "objective_kind": "growth",
+        "parameter_names": list(PARAMETER_NAMES),
+        "observable_names": list(OBSERVABLE_NAMES),
+        "initial_params": p0.tolist(),
+        "final_params": p1.tolist(),
+        "initial_objective": 1.0,
+        "final_objective": 0.5,
+        "initial_observables": obs0.tolist(),
+        "final_observables": obs1.tolist(),
+        "history": [
+            {"step": 0, "objective": 1.0, "gradient_norm": 1.0, "params": p0.tolist(), "observables": obs0.tolist()},
+            {"step": 1, "objective": 0.5, "gradient_norm": 0.2, "params": p1.tolist(), "observables": obs1.tolist()},
+        ],
+        "gradient_gate": {"passed": True, "max_abs_error": 1.0e-8},
+        "covariance": {},
+        "nonlinear_trace": None,
+        "config": asdict(cfg),
+        "backend_info": {},
+        "claim_level": "reduced_linear_or_quasilinear_objective_optimization",
+    }
+    result = SimpleNamespace(to_dict=lambda: payload)
+    out = tmp_path / "stellarator_itg_panel"
+
+    plotting.write_result_artifacts(result, out, title="test panel")
+
+    written = json.loads(out.with_suffix(".json").read_text(encoding="utf-8"))
+    assert out.with_suffix(".history.csv").exists()
+    assert out.with_suffix(".png").exists()
+    assert out.with_suffix(".pdf").exists()
+    diagnostics = written["reduced_diagnostics"]
+    assert diagnostics["claim_level"] == "reduced_max_mode1_diagnostics_not_solved_vmec_or_full_nonlinear_scan"
+    assert diagnostics["final"]["density_gradient_scan"]["scope"].startswith("reduced_max_mode1")
+    assert diagnostics["final"]["fixed_gradient_trace"]["trace_kind"] == (
+        "smooth_reduced_nonlinear_envelope_not_full_turbulent_gk"
+    )
+    assert diagnostics["final"]["surface"]["scope"].endswith("not_solved_vmec_equilibrium")
+    assert diagnostics["final"]["lcfs_bmag"]["scope"].startswith("synthetic_reduced_lcfs_bmag")
 
 
 def test_stellarator_itg_objectives_have_fd_checked_gradients() -> None:

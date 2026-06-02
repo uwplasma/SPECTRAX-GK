@@ -90,13 +90,37 @@ SPECTRAX-GK transport residual; override `--method` only when you have a
 specific optimizer/memory reason.
 
 The recommended solved-boundary commands above mirror the upstream VMEC-JAX QA
-script: use a simple omnigeneity seed, optimize active boundary modes through
-`max_mode=5` without mode continuation, target aspect ratio `A=6`, use the
-original high-weight `MeanIota` target `iota = 0.41`, add a signed solved-profile floor
-`iota(s) >= 0.41`, use `mboz=nboz=21`, and append a small SPECTRAX-GK transport
-residual. The profile-floor gate must be checked from the final WOUT; a passed
-mean-iota target is not sufficient. For quick local validation before launching
-a longer solve, run a bounded growth-only smoke:
+script structure: use a simple omnigeneity seed, optimize active boundary modes
+through `max_mode=5` without mode continuation, and use the high-weight
+`MeanIota` target `iota = 0.41`. The SPECTRAX-GK low-turbulence study targets
+aspect ratio `A=6` and adds a signed solved-profile floor `iota(s) >= 0.41`;
+the upstream VMEC-JAX example itself targets `A=5` and does not include that
+profile-floor gate. To reproduce the upstream A=5 baseline, run:
+
+```bash
+VMEC_JAX_ROOT=/path/to/vmec_jax
+python examples/optimization/QA_optimization_with_nonlinear_heat_flux.py \
+  --constraints-only \
+  --input "$VMEC_JAX_ROOT/examples/data/input.minimal_seed_nfp2" \
+  --use-simple-seed \
+  --max-mode 5 \
+  --min-vmec-mode 7 \
+  --target-aspect 5.0 \
+  --min-iota 0.41 \
+  --iota-objective target \
+  --disable-iota-profile-floor \
+  --method scipy \
+  --scipy-tr-solver exact \
+  --mboz 21 \
+  --nboz 21 \
+  --make-plots \
+  --outdir runs/qa_constraints_only_upstream_a5
+```
+
+For the A=6 low-turbulence branch, use `mboz=nboz=21` and append a small
+SPECTRAX-GK transport residual. The profile-floor gate must be checked from the
+final WOUT; a passed mean-iota target is not sufficient. For quick local
+validation before launching a longer solve, run a bounded growth-only smoke:
 
 ```bash
 python examples/optimization/QA_optimization_with_nonlinear_heat_flux.py \
