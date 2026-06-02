@@ -232,6 +232,25 @@ equilibrium branch. Failed candidates can still be retained for diagnostics with
 ``--allow-failed-solved-wout-gate``, but they should not be promoted to
 long-window nonlinear turbulent-flux audits.
 
+Guarded transport-weight ladders should be run through the explicit
+orchestration tool rather than by manually picking a successful-looking
+``history.json``:
+
+.. code-block:: bash
+
+   python tools/run_vmec_jax_guarded_transport_ladder.py \
+     --constraints-dir runs/qa_constraints_only \
+     --outdir runs/qa_transport_ladder \
+     --weights 0.0005,0.001,0.0025,0.005 \
+     --driver-args "--max-mode 5 --min-vmec-mode 7 --mboz 21 --nboz 21"
+
+The tool restarts each transport candidate from the QA ``input.final``, keeps
+failed candidates for inspection, and selects only the largest transport weight
+whose final ``solved_wout_gate.json`` passes. If no transport-weight candidate
+passes, the QA-only WOUT remains the only admissible candidate for expensive
+matched long-window nonlinear audits. This is an admission policy, not a proof
+of reduced turbulent heat flux.
+
 .. figure:: _static/qa_low_turbulence_comparison.png
    :alt: Aspect-6 QA low-turbulence optimization comparison
    :width: 100%

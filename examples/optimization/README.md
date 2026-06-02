@@ -157,6 +157,23 @@ reduces a reduced SPECTRAX-GK residual but breaks the QA/iota constraints is not
 ready for a long nonlinear turbulent-flux audit. For exploratory sweeps that
 should keep failed candidates, pass `--allow-failed-solved-wout-gate`.
 
+For transport-weight ladders, use the fail-closed runner instead of manually
+choosing from `history.json`:
+
+```bash
+python tools/run_vmec_jax_guarded_transport_ladder.py \
+  --constraints-dir runs/qa_constraints_only \
+  --outdir runs/qa_transport_ladder \
+  --weights 0.0005,0.001,0.0025,0.005 \
+  --driver-args "--max-mode 5 --min-vmec-mode 7 --mboz 21 --nboz 21"
+```
+
+The runner restarts every candidate from the QA `input.final`, writes a summary
+JSON, keeps failed candidates for diagnosis, and promotes only the largest
+transport weight whose `solved_wout_gate.json` passes. If none pass, the
+QA-only WOUT remains the only candidate ready for a matched long-window
+nonlinear SPECTRAX-GK audit.
+
 After a real QA-only and transport-aware pair is produced, the next scientific
 step is not another reduced figure. It is a matched long-window SPECTRAX-GK
 nonlinear transport audit of both final WOUT files, with running-average,
