@@ -91,6 +91,73 @@ def test_candidate_gate_extracts_iota_profiles_from_vmec_jax_state(monkeypatch) 
     assert report["checks"]["iota_profile"]["minimum_iotas_excluding_axis"] == 0.411
 
 
+def test_candidate_gate_prefers_independent_state_qs_over_history(monkeypatch) -> None:
+    def fake_profiles_from_state(*, state, static, indata, signgs):
+        return None, np.asarray([0.0, 0.411, 0.415]), np.asarray([0.412, 0.416])
+
+    fake_vmec_jax = SimpleNamespace(equilibrium_iota_profiles_from_state=fake_profiles_from_state)
+    monkeypatch.setitem(sys.modules, "vmec_jax", fake_vmec_jax)
+
+    class FakeOptimizer:
+        _static = "static"
+        _indata = "indata"
+        _signgs = 1
+
+        def _evaluate_residuals_from_state(self, state):
+            assert state == "state"
+            return {"combined": 99.0}
+
+        def _qs_total_from_state(self, state, residuals):
+            assert state == "state"
+            assert residuals == {"combined": 99.0}
+            return 0.013
+
+    result = SimpleNamespace(
+        history={"aspect_final": 6.0, "iota_final": 0.428, "qs_final": 99.0},
+        final_state="state",
+        final_optimizer=FakeOptimizer(),
+    )
+
+    report = build_solved_vmec_candidate_gate(result, **POLICY)
+
+    assert report["passed"] is True
+    assert report["checks"]["quasisymmetry"]["value"] == 0.013
+    assert report["checks"]["quasisymmetry"]["source"] == "vmec_jax_state"
+
+
+def test_candidate_gate_state_qs_falls_back_to_optimizer_method(monkeypatch) -> None:
+    def fake_profiles_from_state(*, state, static, indata, signgs):
+        return None, np.asarray([0.0, 0.411, 0.415]), np.asarray([0.412, 0.416])
+
+    fake_vmec_jax = SimpleNamespace(equilibrium_iota_profiles_from_state=fake_profiles_from_state)
+    monkeypatch.setitem(sys.modules, "vmec_jax", fake_vmec_jax)
+
+    class FakeOptimizer:
+        _static = "static"
+        _indata = "indata"
+        _signgs = 1
+
+        def _evaluate_residuals_from_state(self, _state):
+            raise RuntimeError("state residual unavailable")
+
+        def quasisymmetry_objective(self, params):
+            assert params == (1.0, 2.0)
+            return 0.017
+
+    result = SimpleNamespace(
+        history={"aspect_final": 6.0, "iota_final": 0.428, "qs_final": 99.0},
+        final_state="state",
+        final_params=(1.0, 2.0),
+        final_optimizer=FakeOptimizer(),
+    )
+
+    report = build_solved_vmec_candidate_gate(result, **POLICY)
+
+    assert report["passed"] is True
+    assert report["checks"]["quasisymmetry"]["value"] == 0.017
+    assert report["checks"]["quasisymmetry"]["source"] == "vmec_jax_state"
+
+
 def test_final_iota_profiles_from_vmec_result_handles_vmec_jax_failure(monkeypatch) -> None:
     def fake_profiles_from_state(**_kwargs):
         raise RuntimeError("not converged")
