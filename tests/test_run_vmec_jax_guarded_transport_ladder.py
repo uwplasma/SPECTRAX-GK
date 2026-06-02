@@ -52,8 +52,8 @@ def test_select_promoted_candidate_uses_largest_passing_transport_weight(tmp_pat
     high = tmp_path / "high"
     failed = tmp_path / "failed"
     _write_candidate(baseline, passed=True, objective=0.04)
-    _write_candidate(low, passed=True, objective=0.5)
-    _write_candidate(high, passed=True, objective=0.8)
+    _write_candidate(low, passed=True, objective=0.03)
+    _write_candidate(high, passed=True, objective=0.02)
     _write_candidate(failed, passed=False, objective=0.1, qs=0.2)
 
     summaries = [
@@ -68,6 +68,24 @@ def test_select_promoted_candidate_uses_largest_passing_transport_weight(tmp_pat
     assert selected is not None
     assert selected["label"] == "high"
     assert selected["transport_weight"] == 0.005
+
+
+def test_select_promoted_candidate_requires_transport_improvement(tmp_path: Path) -> None:
+    baseline = tmp_path / "baseline"
+    worse = tmp_path / "worse"
+    _write_candidate(baseline, passed=True, objective=0.04)
+    _write_candidate(worse, passed=True, objective=0.05)
+
+    summaries = [
+        mod.candidate_summary(baseline, label="baseline", baseline=True),
+        mod.candidate_summary(worse, label="worse", weight=0.001),
+    ]
+
+    selected = mod.select_promoted_candidate(summaries)
+
+    assert selected is not None
+    assert selected["label"] == "baseline"
+    assert selected["baseline"] is True
 
 
 def test_guarded_ladder_dry_run_writes_commands(tmp_path: Path) -> None:
@@ -96,6 +114,7 @@ def test_guarded_ladder_dry_run_writes_commands(tmp_path: Path) -> None:
     assert rc == 0
     assert payload["dry_run"] is True
     assert payload["passed"] is True
+    assert payload["transport_candidate_admitted"] is False
     assert len(payload["commands"]) == 2
     assert "--allow-failed-solved-wout-gate" in payload["commands"][0]["command"]
     assert "--disable-mode-continuation" in payload["commands"][0]["command"]
@@ -140,6 +159,7 @@ def test_guarded_ladder_stops_after_first_failed_transport_gate(
     assert len(launched) == 1
     assert len(payload["commands"]) == 1
     assert payload["stopped_after_failed_gate"] is True
+    assert payload["transport_candidate_admitted"] is False
     assert payload["promoted_candidate"]["baseline"] is True
 
 

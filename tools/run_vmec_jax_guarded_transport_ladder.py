@@ -5,9 +5,10 @@ The ladder starts from a solved QA candidate directory containing ``input.final`
 Each transport-weight refinement is run in its own output directory with
 ``--allow-failed-solved-wout-gate`` so failed branches remain inspectable. The
 promotion rule is intentionally conservative: only candidates whose
-``solved_wout_gate.json`` passes may be selected, and the selected candidate is
-the largest passing transport weight. A separate long-window nonlinear
-SPECTRAX-GK audit is still required before making turbulent-flux claims.
+``solved_wout_gate.json`` passes and whose lower-is-better transport metric
+improves relative to the QA baseline may be selected. A separate long-window
+nonlinear SPECTRAX-GK audit is still required before making turbulent-flux
+claims.
 """
 
 from __future__ import annotations
@@ -27,6 +28,11 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from spectraxgk.vmec_jax_candidate_gate import build_solved_vmec_candidate_gate  # type: ignore[import-untyped] # noqa: E402
+from spectraxgk.vmec_jax_transport_admission import (  # type: ignore[import-untyped] # noqa: E402
+    DEFAULT_TRANSPORT_METRIC_KEYS,
+    VMECJAXTransportAdmissionPolicy,
+    build_transport_admission_report,
+)
 
 DEFAULT_DRIVER = ROOT / "examples" / "optimization" / "vmec_jax_qa_low_turbulence_optimization.py"
 DEFAULT_OUTDIR = ROOT / "tools_out" / "vmec_jax_guarded_transport_ladder"
@@ -149,6 +155,9 @@ def candidate_summary(
         "gate_reported_passed": gate_reported_passed,
         "passed": passed,
         "objective_final": history.get("objective_final"),
+        "transport_objective_final": history.get("transport_objective_final"),
+        "spectrax_objective_final": history.get("spectrax_objective_final"),
+        "transport_metric_final": history.get("transport_metric_final"),
         "aspect_final": history.get("aspect_final"),
         "iota_final": history.get("iota_final"),
         "qs_final": history.get("qs_final"),
@@ -157,21 +166,16 @@ def candidate_summary(
     }
 
 
-def select_promoted_candidate(summaries: list[dict[str, Any]]) -> dict[str, Any] | None:
-    """Select the largest passing transport-weight candidate, if any."""
+def select_promoted_candidate(
+    summaries: list[dict[str, Any]],
+    *,
+    policy: VMECJAXTransportAdmissionPolicy | None = None,
+) -> dict[str, Any] | None:
+    """Select a physically admitted transport candidate, or the QA baseline."""
 
-    passing_transport = [
-        item
-        for item in summaries
-        if bool(item.get("passed", False)) and item.get("transport_weight") is not None
-    ]
-    if passing_transport:
-        return max(
-            passing_transport,
-            key=lambda item: (float(item["transport_weight"]), -float(item.get("objective_final") or 0.0)),
-        )
-    passing_baselines = [item for item in summaries if bool(item.get("passed", False)) and bool(item.get("baseline"))]
-    return passing_baselines[0] if passing_baselines else None
+    report = build_transport_admission_report(summaries, policy=policy)
+    promoted = report.get("promoted_candidate")
+    return dict(promoted) if isinstance(promoted, dict) else None
 
 
 def build_driver_command(
@@ -229,6 +233,21 @@ def build_parser() -> argparse.ArgumentParser:
         "--continue-after-failed-gate",
         action="store_true",
         help="Continue trying larger transport weights after a transport candidate fails the solved-candidate gate.",
+    )
+    parser.add_argument(
+        "--transport-metric-key",
+        action="append",
+        default=None,
+        help=(
+            "Candidate summary key used for lower-is-better transport admission. May be repeated. "
+            f"Default order: {', '.join(DEFAULT_TRANSPORT_METRIC_KEYS)}."
+        ),
+    )
+    parser.add_argument(
+        "--min-transport-improvement",
+        type=float,
+        default=0.0,
+        help="Minimum relative transport-metric improvement required before a transport branch is admitted.",
     )
     parser.add_argument("--timeout-s", type=float, default=0.0, help="Per-candidate subprocess timeout; 0 disables")
     parser.add_argument("--dry-run", action="store_true", help="Write the launch plan without running candidates")
@@ -306,16 +325,25 @@ def main(argv: list[str] | None = None) -> int:
             if not bool(summary.get("passed")) and not bool(args.continue_after_failed_gate):
                 stopped_after_failed_gate = True
                 break
-    promoted = select_promoted_candidate(summaries)
+    admission_policy = VMECJAXTransportAdmissionPolicy(
+        metric_keys=tuple(args.transport_metric_key or DEFAULT_TRANSPORT_METRIC_KEYS),
+        minimum_relative_improvement=float(args.min_transport_improvement),
+        lower_is_better=True,
+        require_authoritative_gate=not bool(args.allow_reconstructed_gate),
+        allow_baseline_fallback=True,
+    )
+    transport_admission = build_transport_admission_report(summaries, policy=admission_policy)
+    promoted = transport_admission.get("promoted_candidate")
     payload = {
         "kind": "vmec_jax_guarded_transport_ladder",
         "claim_scope": (
-            "solved-candidate transport-weight admission only; long-window nonlinear SPECTRAX-GK "
-            "audits are required before turbulent-flux optimization claims"
+            "solved-candidate transport-weight admission only; candidates must pass physical gates "
+            "and improve the selected transport metric before long-window nonlinear SPECTRAX-GK audits"
         ),
         "constraints_dir": str(constraints_dir),
         "restart_input": str(input_file),
         "gate_policy": gate_policy,
+        "transport_admission_policy": admission_policy.to_dict(),
         "allow_reconstructed_gate": bool(args.allow_reconstructed_gate),
         "continue_after_failed_gate": bool(args.continue_after_failed_gate),
         "stopped_after_failed_gate": bool(stopped_after_failed_gate),
@@ -323,13 +351,11 @@ def main(argv: list[str] | None = None) -> int:
         "commands": commands,
         "candidates": summaries,
         "run_failures": run_failures,
+        "transport_admission": transport_admission,
         "promoted_candidate": promoted,
+        "transport_candidate_admitted": bool(transport_admission.get("transport_candidate_admitted")),
         "passed": promoted is not None,
-        "next_action": (
-            "launch matched long-window nonlinear SPECTRAX-GK audits for the promoted candidate"
-            if promoted is not None and promoted.get("transport_weight") is not None
-            else "no transport-weight refinement passed; keep QA-only candidate or run a more conservative ladder"
-        ),
+        "next_action": transport_admission.get("next_action"),
     }
     out_json = Path(args.out_json) if args.out_json is not None else outdir / "guarded_transport_ladder.json"
     out_json.parent.mkdir(parents=True, exist_ok=True)

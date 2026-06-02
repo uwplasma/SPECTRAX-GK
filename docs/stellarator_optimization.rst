@@ -249,8 +249,15 @@ orchestration tool rather than by manually picking a successful-looking
 
 The tool restarts each transport candidate from the QA ``input.final``, keeps
 failed candidates for inspection, and selects only the largest transport weight
-whose final authoritative ``solved_wout_gate.json`` passes. If no
-transport-weight candidate passes, the QA-only WOUT remains the only admissible
+whose final authoritative ``solved_wout_gate.json`` passes and whose selected
+lower-is-better transport metric improves relative to the admitted QA baseline.
+By default the ladder searches for ``transport_objective_final``,
+``spectrax_objective_final``, ``transport_metric_final``, then
+``objective_final`` as a last-resort proxy; use repeated
+``--transport-metric-key`` options when a run records a cleaner transport-only
+diagnostic, and ``--min-transport-improvement`` to require a nonzero relative
+improvement. If no transport-weight candidate satisfies both the physical gate
+and the transport-improvement gate, the QA-only WOUT remains the only admissible
 candidate for expensive matched long-window nonlinear audits. This is an
 admission policy, not a proof of reduced turbulent heat flux.
 
