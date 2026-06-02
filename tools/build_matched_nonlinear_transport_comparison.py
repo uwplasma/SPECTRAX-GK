@@ -136,12 +136,22 @@ def build_comparison(
 def _write_plot(report: dict[str, Any], path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     set_plot_style()
+    plt.rcParams.update(
+        {
+            "figure.facecolor": "white",
+            "axes.facecolor": "white",
+            "savefig.facecolor": "white",
+            "savefig.transparent": False,
+        }
+    )
     base = report["baseline"]
     cand = report["candidate"]
     stats = report["statistics"]
     means = [float(base["ensemble_mean"]), float(cand["ensemble_mean"])]
     sems = [float(base["combined_sem"]), float(cand["combined_sem"])]
-    fig, ax = plt.subplots(figsize=(5.8, 4.2), constrained_layout=True)
+    fig, ax = plt.subplots(figsize=(6.6, 4.8), constrained_layout=True)
+    fig.patch.set_facecolor("white")
+    ax.set_facecolor("white")
     colors = ["#334155", "#0f766e"]
     ax.bar([0, 1], means, yerr=sems, capsize=5, color=colors, alpha=0.9, edgecolor="0.15", linewidth=0.6)
     ax.set_xticks([0, 1], ["baseline", "transport\ncandidate"])
@@ -149,10 +159,12 @@ def _write_plot(report: dict[str, Any], path: Path) -> None:
     rel = float(stats["relative_reduction"])
     z_score = float(stats["uncertainty_z_score"])
     status = "passes" if bool(report["passed"]) else "not promoted"
-    ax.set_title(f"Matched nonlinear transport comparison: {status}")
+    ax.set_title(f"Matched nonlinear transport comparison: {status}", pad=12)
+    ymax = max(mean + sem for mean, sem in zip(means, sems))
+    ax.set_ylim(0.0, ymax * 1.30)
     ax.text(
-        0.5,
-        0.96,
+        0.50,
+        0.88,
         f"relative reduction = {100.0 * rel:.2f}%\nuncertainty z-score = {z_score:.2f}",
         transform=ax.transAxes,
         ha="center",

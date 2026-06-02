@@ -95,8 +95,11 @@ score.
        boundary gradient for the aspect-6 QA restart and a solved-gate
        projected line-search bracket: the best accepted reduced transport
        metric improves by ``3.55%``, while the next larger step is rejected by
-       the QS gate. This supports gate-aware projected admission but is still
-       not a long-window nonlinear turbulent-flux optimization claim.
+       the QS gate. This supports gate-aware projected admission. The matched
+       long-window audit of that accepted projected step is negative: both
+       seed/timestep ensembles pass, but the ensemble mean heat flux changes
+       from ``9.833`` to ``9.891`` (relative reduction ``-0.00585``). It is
+       therefore not a nonlinear turbulent-flux optimization claim.
    * - Parallelization
      - production-ready for independent work
      - Independent ``k_y`` scans, quasilinear spectra, sensitivity batches, and

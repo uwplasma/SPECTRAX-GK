@@ -330,6 +330,29 @@ claim.
    transport metric by ``3.55%`` and defines the candidate for the next matched
    long-window nonlinear audit.
 
+The matched long-window nonlinear audit for that admitted projected candidate
+has now been run at the production ``n64`` grid with two seed replicates and one
+timestep replicate over ``t=[350,700]``. Both the baseline and projected
+candidate ensembles pass their individual stationarity/replicate gates, but the
+matched comparison does **not** promote the projected step: the baseline
+late-window mean ion heat flux is ``9.833`` while the projected candidate is
+``9.891``. The relative reduction is therefore ``-0.00585`` with a combined
+uncertainty of ``0.293`` and uncertainty z-score ``-0.20``. This closes the
+first projected-candidate audit as a negative transfer result: the reduced
+single-sample transport metric is locally differentiable and useful for
+admission, but it did not predict a statistically resolved lower long-window
+nonlinear flux for this boundary step.
+
+.. figure:: _static/qa_projected_transport_step1e3_matched_comparison.png
+   :alt: Matched long-window nonlinear transport audit for projected QA candidate
+   :width: 70%
+   :align: center
+
+   Matched replicated nonlinear transport comparison for the accepted projected
+   QA boundary step. Each bar is a passed ``t=[350,700]`` seed/timestep ensemble.
+   The projected candidate is not promoted because its ensemble mean is slightly
+   higher than the baseline within uncertainty.
+
 .. figure:: _static/qa_low_turbulence_comparison.png
    :alt: Aspect-6 QA low-turbulence optimization comparison
    :width: 100%
@@ -1455,7 +1478,9 @@ the following pass:
    nonlinear audit for this candidate is therefore interpreted as a
    post-transient optimized-equilibrium transport-window check, not as evidence
    that the uncalibrated quasilinear zero-flux estimate predicts an absolute
-   saturated flux.
+   saturated flux. The separate projected-gradient candidate above is a negative
+   long-window transfer audit and is intentionally not used as the selected
+   optimized-equilibrium success case.
 
 .. figure:: _static/optimized_equilibrium_linear_screen.png
    :width: 90%
