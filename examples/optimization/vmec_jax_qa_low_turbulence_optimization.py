@@ -120,6 +120,11 @@ def _parse_args() -> argparse.Namespace:
         help="Mirror the upstream VMEC-JAX QA example by rebuilding the input as a simple omnigeneity seed",
     )
     parser.add_argument(
+        "--disable-mode-continuation",
+        action="store_true",
+        help="Optimize the requested max-mode branch directly when restarting from an existing VMEC input",
+    )
+    parser.add_argument(
         "--simple-seed-perturbation",
         type=float,
         default=1.0e-5,
@@ -227,7 +232,9 @@ def main() -> int:
     min_vmec_mode = int(args.min_vmec_mode)
     if args.use_simple_seed:
         min_vmec_mode = max(min_vmec_mode, max_mode + 2)
-    use_mode_continuation = max_mode > 1 and not bool(args.use_simple_seed)
+    use_mode_continuation = (
+        max_mode > 1 and not bool(args.use_simple_seed) and not bool(args.disable_mode_continuation)
+    )
 
     input_file = Path(args.input)
     if args.use_simple_seed:

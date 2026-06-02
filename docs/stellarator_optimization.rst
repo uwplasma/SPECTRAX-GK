@@ -215,6 +215,14 @@ For bounded local candidate pairs, build the solved-boundary audit panel with:
    decide whether a candidate is ready for expensive long-window nonlinear
    transport audits.
 
+For restart sweeps from an already optimized ``input.final``, pass
+``--disable-mode-continuation`` to
+``examples/optimization/QA_optimization_with_nonlinear_heat_flux.py``. That
+keeps the requested ``max_mode`` branch fixed instead of rebuilding the
+lower-mode continuation ladder, which is the efficient path for profile-floor,
+target-iota, and transport-weight refinements after a solved WOUT already
+passes the basic aspect/iota/QS gates.
+
 .. figure:: _static/qa_low_turbulence_comparison.png
    :alt: Aspect-6 QA low-turbulence optimization comparison
    :width: 100%

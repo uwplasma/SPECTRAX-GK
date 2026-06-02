@@ -144,6 +144,12 @@ python examples/optimization/QA_optimization_with_nonlinear_heat_flux.py \
   --ky-values 0.3
 ```
 
+When refining an already optimized `input.final`, add
+`--disable-mode-continuation` so the driver optimizes the requested `max_mode`
+branch directly instead of rebuilding the lower-mode continuation ladder. This
+is useful for profile-floor and transport-weight sweeps after a solved WOUT has
+already passed the basic aspect/iota/QS gates.
+
 After a real QA-only and transport-aware pair is produced, the next scientific
 step is not another reduced figure. It is a matched long-window SPECTRAX-GK
 nonlinear transport audit of both final WOUT files, with running-average,
