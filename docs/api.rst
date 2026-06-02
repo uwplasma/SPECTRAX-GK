@@ -269,6 +269,12 @@ VMEC-JAX Transport Admission
 .. automodule:: spectraxgk.vmec_jax_transport_admission
    :members:
 
+VMEC-JAX Transport Gradient
+---------------------------
+
+.. automodule:: spectraxgk.vmec_jax_transport_gradient
+   :members:
+
 VMEC-JAX Candidate Gates
 ------------------------
 

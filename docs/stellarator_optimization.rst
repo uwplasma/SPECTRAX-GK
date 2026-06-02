@@ -265,6 +265,31 @@ the QA-only WOUT remains the only admissible candidate for expensive matched
 long-window nonlinear audits. This is an admission policy, not a proof of
 reduced turbulent heat flux.
 
+When the guarded ladder preserves the solved-equilibrium gate but reports no
+improvement in the explicit transport metric, the next step is a local
+boundary-gradient diagnostic rather than another blind increase in the scalar
+transport weight:
+
+.. code-block:: bash
+
+   python tools/build_vmec_jax_transport_gradient_diagnostic.py \
+     --input runs/qa_constraints_only/input.final \
+     --out-json runs/qa_constraints_only/transport_gradient.json \
+     --max-mode 5 --min-vmec-mode 7 \
+     --mboz 21 --nboz 21 \
+     --transport-kind nonlinear_window_heat_flux \
+     --solver-device gpu
+
+The diagnostic rebuilds a transport-only VMEC-JAX objective at the solved
+input, evaluates the residual and reverse scalar-gradient with respect to the
+active boundary coefficients, ranks the leading ``R``/``Z`` Fourier directions,
+and classifies the objective as either locally sensitive or locally
+flat/underconditioned. A sensitive report supports a constraint-preserving
+projected update or constrained line search along the leading components. A
+flat report means the transport observable, sample set, finite-difference
+scale, or nonlinear-window evidence must be changed before more optimization
+iterations are scientifically meaningful.
+
 .. figure:: _static/qa_low_turbulence_comparison.png
    :alt: Aspect-6 QA low-turbulence optimization comparison
    :width: 100%
