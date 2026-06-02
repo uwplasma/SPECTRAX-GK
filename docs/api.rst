@@ -263,6 +263,12 @@ VMEC-JAX Transport Objective
 .. automodule:: spectraxgk.vmec_jax_transport_objective
    :members:
 
+VMEC-JAX Transport Admission
+----------------------------
+
+.. automodule:: spectraxgk.vmec_jax_transport_admission
+   :members:
+
 VMEC-JAX Candidate Gates
 ------------------------
 

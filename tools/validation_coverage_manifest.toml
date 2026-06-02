@@ -1286,6 +1286,7 @@ owned_modules = [
   "spectraxgk.stellarator_optimization",
   "spectraxgk.nonlinear_transport_optimization",
   "spectraxgk.vmec_jax_candidate_gate",
+  "spectraxgk.vmec_jax_transport_admission",
   "spectraxgk.vmec_jax_transport_objective",
 ]
 owner_lane = "production solver-objective geometry-gradient validation"
@@ -1335,6 +1336,7 @@ fast_tests = [
   "tests/test_nonlinear_transport_optimization.py",
   "tests/test_vmec_jax_candidate_gate.py",
   "tests/test_vmec_jax_qa_optimization_driver.py",
+  "tests/test_vmec_jax_transport_admission.py",
   "tests/test_vmec_jax_transport_objective.py",
 ]
 artifact_paths = [
