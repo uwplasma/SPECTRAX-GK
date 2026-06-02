@@ -117,6 +117,46 @@ def test_vmec_jax_transport_objective_nonlinear_proxy_is_positive_and_exported(m
     assert float(high) > float(low)
 
 
+def test_vmec_jax_transport_objective_transform_scales_large_residuals(monkeypatch) -> None:
+    import spectraxgk.vmec_jax_transport_objective as mod
+
+    def fake_geom(*_args, **_kwargs):
+        return _fake_geometry()
+
+    def fake_growth(_geom, **_kwargs):
+        return jnp.asarray(20.0)
+
+    monkeypatch.setattr(mod, "flux_tube_geometry_from_vmec_boozer_state", fake_geom)
+    monkeypatch.setattr(mod, "solver_growth_rate_from_geometry", fake_growth)
+    samples = StellaratorITGSampleSet(surfaces=(0.5,), alphas=(0.0,), ky_values=(0.2,))
+    raw_cfg = VMECJAXTransportObjectiveConfig(
+        kind="nonlinear_window_heat_flux",
+        sample_set=samples,
+        objective_transform="raw",
+    )
+    scaled_cfg = VMECJAXTransportObjectiveConfig(
+        kind="nonlinear_window_heat_flux",
+        sample_set=samples,
+        objective_transform="scaled",
+        objective_scale=10.0,
+    )
+    log_cfg = VMECJAXTransportObjectiveConfig(
+        kind="nonlinear_window_heat_flux",
+        sample_set=samples,
+        objective_transform="log1p",
+        objective_scale=10.0,
+    )
+
+    raw = vmec_jax_transport_objective_from_state("state", "static", "indata", object(), raw_cfg)
+    scaled = vmec_jax_transport_objective_from_state("state", "static", "indata", object(), scaled_cfg)
+    logged = vmec_jax_transport_objective_from_state("state", "static", "indata", object(), log_cfg)
+
+    assert float(raw) > 1.0
+    assert float(scaled) == pytest.approx(float(raw) / 10.0)
+    assert float(logged) == pytest.approx(float(jnp.log1p(jnp.abs(scaled))))
+    assert float(logged) < float(scaled)
+
+
 def test_vmec_jax_transport_objective_vmec_callback_builds_reference_wout(monkeypatch) -> None:
     import spectraxgk.vmec_jax_transport_objective as mod
 
@@ -155,6 +195,10 @@ def test_vmec_jax_transport_config_rejects_underresolved_boozer_modes() -> None:
         assert "at least 21" in str(exc)
     else:  # pragma: no cover
         raise AssertionError("underresolved Boozer mode count should fail")
+    with pytest.raises(ValueError, match="objective_scale"):
+        VMECJAXTransportObjectiveConfig(objective_scale=0.0)
+    with pytest.raises(ValueError, match="objective transform"):
+        VMECJAXTransportObjectiveConfig(objective_transform="bad")  # type: ignore[arg-type]
 
 
 def test_vmec_jax_transport_objective_pins_imported_backend_paths(monkeypatch, tmp_path) -> None:

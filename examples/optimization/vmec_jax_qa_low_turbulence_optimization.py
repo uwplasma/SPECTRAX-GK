@@ -183,6 +183,18 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--nboz", type=int, default=21)
     parser.add_argument("--n-laguerre", type=int, default=2)
     parser.add_argument("--n-hermite", type=int, default=3)
+    parser.add_argument(
+        "--spectrax-objective-transform",
+        choices=("raw", "scaled", "log1p"),
+        default="log1p",
+        help="Transform applied to the SPECTRAX-GK transport residual before VMEC-JAX least squares",
+    )
+    parser.add_argument(
+        "--spectrax-objective-scale",
+        type=float,
+        default=1.0,
+        help="Positive scale used by --spectrax-objective-transform=scaled/log1p",
+    )
     parser.add_argument("--max-nfev", type=int, default=70)
     parser.add_argument("--continuation-nfev", type=int, default=25)
     parser.add_argument("--inner-max-iter", type=int, default=120)
@@ -290,6 +302,8 @@ def main() -> int:
         nboz=int(args.nboz),
         n_laguerre=int(args.n_laguerre),
         n_hermite=int(args.n_hermite),
+        objective_transform=str(args.spectrax_objective_transform),
+        objective_scale=float(args.spectrax_objective_scale),
     )
     transport = VMECJAXSpectraxTransportObjective(config=spectrax_config)
 
@@ -354,6 +368,8 @@ def main() -> int:
             "nboz": int(args.nboz),
             "n_laguerre": int(args.n_laguerre),
             "n_hermite": int(args.n_hermite),
+            "objective_transform": str(args.spectrax_objective_transform),
+            "objective_scale": float(args.spectrax_objective_scale),
             "gradient_scope": spectrax_config.gradient_scope,
         },
         "optimizer": {
