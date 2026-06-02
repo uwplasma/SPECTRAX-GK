@@ -78,10 +78,15 @@ Source Map
   :download:`_stellarator_itg_plotting.py <../examples/optimization/_stellarator_itg_plotting.py>`
 
 The corresponding ``vmec_jax`` workflow that motivated this structure is the
-local fixed-boundary QA script
-``/Users/rogeriojorge/local/vmec_jax/examples/optimization/QA_optimization.py``.
+fixed-boundary QA script
+``examples/optimization/QA_optimization.py`` in the ``vmec_jax`` repository.
 That script builds residual blocks for aspect ratio, mean iota, and
-quasisymmetry, then minimizes them over boundary Fourier coefficients.
+quasisymmetry, then minimizes them over boundary Fourier coefficients. The
+``QA constraints`` branch in the reduced SPECTRAX-GK README panel is not that
+final solved WOUT; it is a fast max-mode-1 reduced stand-in for validating the
+objective plumbing. A paper-facing solved-boundary baseline should be produced
+by running the VMEC-JAX QA script or the constraints-only branch below to
+completion and plotting its final WOUT.
 SPECTRAX-GK now provides the optional objective object
 ``spectraxgk.vmec_jax_transport_objective.VMECJAXSpectraxTransportObjective``.
 It plugs into ``LeastSquaresProblem.from_tuples`` as another residual block and
@@ -211,14 +216,18 @@ For bounded local candidate pairs, build the solved-boundary audit panel with:
    :width: 100%
 
    Aspect-6 QA low-turbulence comparison. The blue design is optimized only
-   for quasisymmetry, aspect ratio, the minimum-iota floor, and regularization.
-   The orange design adds the reduced late-window nonlinear heat-flux residual.
-   At fixed ``a/L_n = 2.2`` and ``a/L_Ti = 6``, the tracked artifact reduces
-   the reduced late-window heat flux by about ``10.7%`` at ``t v_ti/a = 400``
-   and reduces the fitted ``Q_i`` versus ``a/L_n`` slope while retaining the
-   geometry and differentiability gates. Both final designs keep a visible
-   non-axisymmetric helical boundary amplitude near ``0.16`` and satisfy
-   ``iota > 0.70``.
+   for reduced quasisymmetry, aspect ratio, the minimum-iota floor, and
+   regularization. The orange design adds the reduced late-window nonlinear
+   heat-flux envelope residual. At fixed ``a/L_n = 2.2`` and ``a/L_Ti = 6``,
+   the tracked artifact reduces the reduced late-window ``Q_env`` by about
+   ``10.7%`` at ``t v_ti/a = 400`` and reduces the fitted ``Q_env`` versus
+   ``a/L_n`` slope while retaining the geometry and differentiability gates.
+   The smooth trace is expected because it solves
+   ``dE/dt = 2 gamma E - alpha E^2`` rather than a full turbulent nonlinear
+   gyrokinetic initial-value problem. The middle-row surfaces are colored by
+   reduced ``|B|`` and the bottom row shows reduced Boozer-LCFS ``|B|`` maps.
+   Both final designs keep a visible non-axisymmetric helical boundary
+   amplitude near ``0.16`` and satisfy ``iota > 0.70``.
 
 .. figure:: _static/qa_low_turbulence_time_horizon_audit.png
    :alt: Reduced nonlinear time-horizon audit for the QA low-turbulence comparison

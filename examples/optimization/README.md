@@ -27,7 +27,12 @@ Outputs:
 
 The figure is a reduced differentiable optimization-plumbing artifact. It is
 useful for teaching, debugging, and manuscript layout, but it is not a final
-solved-VMEC nonlinear turbulent heat-flux optimization claim.
+solved-VMEC nonlinear turbulent heat-flux optimization claim. The trace in the
+figure is a smooth reduced envelope (`dE/dt = 2 gamma E - alpha E^2`,
+`Q_env = W_i E`), not a chaotic SPECTRAX-GK nonlinear heat-flux trace. The
+QA-only branch in that figure is also not the final WOUT from upstream
+`vmec_jax/examples/optimization/QA_optimization.py`; use the solved-boundary
+commands below when you need that baseline.
 
 ## VMEC-JAX QA + SPECTRAX-GK Transport Objective
 

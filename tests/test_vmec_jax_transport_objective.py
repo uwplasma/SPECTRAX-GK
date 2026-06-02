@@ -8,6 +8,7 @@ from types import SimpleNamespace
 
 import jax.numpy as jnp
 import numpy as np
+import pytest
 
 import spectraxgk
 from spectraxgk import (
@@ -186,3 +187,254 @@ def test_vmec_jax_transport_objective_pins_imported_backend_paths(monkeypatch, t
 
     assert str(vmec_root) == mod.os.environ["SPECTRAX_VMEC_JAX_PATH"]
     assert str(booz_root) == mod.os.environ["SPECTRAX_BOOZ_XFORM_JAX_PATH"]
+
+
+def test_module_search_root_handles_paths_and_missing_modules(monkeypatch, tmp_path) -> None:
+    import spectraxgk.vmec_jax_transport_objective as mod
+
+    namespace_root = tmp_path / "namespace_backend"
+    namespace_root.mkdir()
+    namespace_module = ModuleType("namespace_backend")
+    namespace_module.__path__ = [str(namespace_root)]
+
+    missing_path_module = ModuleType("missing_path_backend")
+    missing_path_module.__path__ = [str(tmp_path / "does_not_exist")]
+
+    no_path_module = ModuleType("no_path_backend")
+
+    monkeypatch.setitem(sys.modules, "namespace_backend", namespace_module)
+    monkeypatch.setitem(sys.modules, "missing_path_backend", missing_path_module)
+    monkeypatch.setitem(sys.modules, "no_path_backend", no_path_module)
+
+    assert mod._module_search_root("namespace_backend") == namespace_root.resolve(strict=False)
+    assert mod._module_search_root("missing_path_backend") is None
+    assert mod._module_search_root("no_path_backend") is None
+    assert mod._module_search_root("spectraxgk_missing_backend_for_test") is None
+
+
+def test_pin_current_optional_backend_paths_respects_explicit_environment(monkeypatch) -> None:
+    import spectraxgk.vmec_jax_transport_objective as mod
+
+    def unexpected_search(module_name: str):
+        raise AssertionError(f"backend search should be skipped for {module_name}")
+
+    monkeypatch.setattr(mod, "_module_search_root", unexpected_search)
+    monkeypatch.delenv("SPECTRAX_VMEC_JAX_PATH", raising=False)
+    monkeypatch.setenv("VMEC_JAX_PATH", "/explicit/vmec-jax")
+    monkeypatch.setenv("SPECTRAX_BOOZ_XFORM_JAX_PATH", "/explicit/booz-xform-jax")
+    monkeypatch.delenv("BOOZ_XFORM_JAX_PATH", raising=False)
+
+    mod._pin_current_optional_backend_paths()
+
+    assert "SPECTRAX_VMEC_JAX_PATH" not in mod.os.environ
+    assert mod.os.environ["VMEC_JAX_PATH"] == "/explicit/vmec-jax"
+    assert mod.os.environ["SPECTRAX_BOOZ_XFORM_JAX_PATH"] == "/explicit/booz-xform-jax"
+
+
+def test_static_grid_options_maps_integer_ky_multiples_to_solver_grid() -> None:
+    import spectraxgk.vmec_jax_transport_objective as mod
+
+    options = mod._static_grid_options_from_ky_values((0.15, 0.45), min_ny=12)
+
+    assert options["ky_base"] == pytest.approx(0.15)
+    assert options["ly"] == pytest.approx(2.0 * np.pi / 0.15)
+    assert options["ny"] == 12
+    assert options["selected_ky_indices"] == (1, 3)
+
+
+@pytest.mark.parametrize(
+    ("ky_values", "message"),
+    (
+        ((), "finite non-empty vector"),
+        ((0.2, np.nan), "finite non-empty vector"),
+        ((0.0,), "positive"),
+        ((0.2, 0.31), "integer multiples"),
+        ((0.2, 0.2), "duplicate selected ky indices"),
+    ),
+)
+def test_static_grid_options_rejects_invalid_ky_values(
+    ky_values: tuple[float, ...],
+    message: str,
+) -> None:
+    import spectraxgk.vmec_jax_transport_objective as mod
+
+    with pytest.raises(ValueError, match=message):
+        mod._static_grid_options_from_ky_values(ky_values, min_ny=3)
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "message"),
+    (
+        ({"kind": "invalid"}, "unknown VMEC-JAX transport objective kind"),
+        ({"ntheta": 3}, "ntheta must be >= 4"),
+        ({"n_laguerre": 0}, "n_laguerre and n_hermite must be positive"),
+        ({"ny": 2}, "nx must be positive and ny must be at least 3"),
+        ({"nonlinear_csat": 0.0}, "nonlinear_csat must be positive"),
+    ),
+)
+def test_vmec_jax_transport_config_rejects_invalid_edges(
+    kwargs: dict[str, object],
+    message: str,
+) -> None:
+    with pytest.raises(ValueError, match=message):
+        VMECJAXTransportObjectiveConfig(**kwargs)
+
+
+def test_vmec_jax_transport_config_objective_options_filter_none_values() -> None:
+    default_options = VMECJAXTransportObjectiveConfig().objective_options()
+    configured_options = VMECJAXTransportObjectiveConfig(
+        reference_length=2.5,
+        reference_b=0.7,
+        validate_finite=False,
+    ).objective_options()
+
+    assert "reference_length" not in default_options
+    assert "reference_b" not in default_options
+    assert configured_options["reference_length"] == 2.5
+    assert configured_options["reference_b"] == 0.7
+    assert configured_options["validate_finite"] is False
+
+
+def test_geometry_transport_weights_use_safe_defaults_for_minimal_geometry() -> None:
+    import spectraxgk.vmec_jax_transport_objective as mod
+
+    theta = jnp.linspace(-jnp.pi, jnp.pi, 6, endpoint=False)
+    kperp, heat_weight, particle_weight = mod._geometry_transport_weights(
+        SimpleNamespace(theta=theta),
+        selected_ky_index=2,
+        ly=5.0,
+    )
+
+    assert np.isfinite(float(kperp))
+    assert np.isfinite(float(heat_weight))
+    assert np.isfinite(float(particle_weight))
+    assert float(kperp) > 0.0
+    assert float(heat_weight) > 0.0
+    assert float(particle_weight) == pytest.approx(0.25 * float(heat_weight))
+
+
+def test_transport_feature_table_rejects_empty_sample_rows() -> None:
+    import spectraxgk.vmec_jax_transport_objective as mod
+
+    config = SimpleNamespace(
+        sample_set=SimpleNamespace(surfaces=(), alphas=(0.0,), ky_values=(0.2,)),
+        kind="growth",
+    )
+
+    with pytest.raises(RuntimeError, match="produced no sample rows"):
+        mod._transport_feature_table_from_state(
+            "state",
+            "static",
+            "indata",
+            object(),
+            config,
+            {"selected_ky_indices": (1,), "ny": 4, "ly": 2.0 * np.pi / 0.2},
+        )
+
+
+def test_quasilinear_flux_uses_geometry_transport_weights(monkeypatch) -> None:
+    import spectraxgk.vmec_jax_transport_objective as mod
+
+    def fake_geom(*_args, **_kwargs):
+        return _fake_geometry()
+
+    def fake_growth(_geom, **_kwargs):
+        return jnp.asarray(0.2)
+
+    monkeypatch.setattr(mod, "flux_tube_geometry_from_vmec_boozer_state", fake_geom)
+    monkeypatch.setattr(mod, "solver_growth_rate_from_geometry", fake_growth)
+    samples = StellaratorITGSampleSet(surfaces=(0.5,), alphas=(0.0,), ky_values=(0.2,))
+    cfg = VMECJAXTransportObjectiveConfig(kind="quasilinear_flux", sample_set=samples)
+
+    value = vmec_jax_transport_objective_from_state("state", "static", "indata", object(), cfg)
+
+    assert float(value) > 0.0
+
+
+def test_vmec_objective_term_prepares_and_prewarms_backend(monkeypatch) -> None:
+    import spectraxgk.vmec_jax_transport_objective as mod
+
+    constructed_terms: list[SimpleNamespace] = []
+    prewarm_calls: list[dict[str, object]] = []
+
+    def fake_objective_term(name, callback, *, target, weight, metadata, prepare=None):
+        term = SimpleNamespace(
+            name=name,
+            callback=callback,
+            target=target,
+            weight=weight,
+            metadata=metadata,
+            prepare=prepare,
+        )
+        constructed_terms.append(term)
+        return term
+
+    def fake_prewarm(static, wout_reference, **kwargs):
+        prewarm_calls.append({"static": static, "wout": wout_reference, **kwargs})
+
+    vmec_module = ModuleType("vmec_jax")
+    vmec_module.ObjectiveTerm = fake_objective_term
+    monkeypatch.setitem(sys.modules, "vmec_jax", vmec_module)
+    monkeypatch.setattr(mod, "prewarm_vmec_boozer_equal_arc_cache", fake_prewarm)
+    cfg = VMECJAXTransportObjectiveConfig(kind="growth", ntheta=28, mboz=23, nboz=25)
+    objective = VMECJAXSpectraxTransportObjective(config=cfg, name="transport_test")
+    ctx = SimpleNamespace(static=SimpleNamespace(cfg=SimpleNamespace(nfp=7)), indata="indata", signgs=-1)
+
+    term = objective.to_objective_term(target=0.0, residual_weight=2.5)
+    prepared = term.prepare(ctx)
+
+    assert len(constructed_terms) == 2
+    assert term.name == "transport_test"
+    assert term.weight == 2.5
+    assert term.metadata["spectraxgk_transport_kind"] == "growth"
+    assert term.metadata["gradient_scope"] == "eigenvalue_growth_ad"
+    assert term.metadata["mboz"] == 23
+    assert term.metadata["nboz"] == 25
+    assert term.metadata["ntheta"] == 28
+    assert prepared.prepare is None
+    assert prepared.metadata == term.metadata
+    assert len(prewarm_calls) == 1
+    assert prewarm_calls[0]["static"] is ctx.static
+    assert prewarm_calls[0]["mboz"] == 23
+    assert prewarm_calls[0]["nboz"] == 25
+    assert prewarm_calls[0]["wout"].signgs == -1
+    assert prewarm_calls[0]["wout"].nfp == 7
+    assert prewarm_calls[0]["wout"].Aminor_p == 1.0
+    assert np.allclose(prewarm_calls[0]["wout"].phi, np.asarray([0.0, -np.pi]))
+
+
+def test_spectrax_transport_objective_tuple_uses_config_and_wout_reference(monkeypatch) -> None:
+    import spectraxgk.vmec_jax_transport_objective as mod
+
+    captured: dict[str, object] = {}
+    wout_reference = object()
+    config = VMECJAXTransportObjectiveConfig(kind="growth")
+
+    def fake_eval(state, static, indata, wout, cfg):
+        captured["state"] = state
+        captured["static"] = static
+        captured["indata"] = indata
+        captured["wout"] = wout
+        captured["config"] = cfg
+        return jnp.asarray(0.5)
+
+    monkeypatch.setattr(mod, "vmec_jax_transport_objective_from_state", fake_eval)
+
+    callback, target, weight = mod.spectrax_transport_objective_tuple(
+        weight=3.0,
+        target=1.5,
+        config=config,
+        wout_reference=wout_reference,
+    )
+    value = callback(SimpleNamespace(static="static", indata="indata", signgs=1), "state")
+
+    assert target == 1.5
+    assert weight == 3.0
+    assert float(value) == 0.5
+    assert captured == {
+        "state": "state",
+        "static": "static",
+        "indata": "indata",
+        "wout": wout_reference,
+        "config": config,
+    }

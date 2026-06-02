@@ -13,6 +13,7 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
+from matplotlib import colors  # noqa: E402
 import numpy as np  # noqa: E402
 
 from spectraxgk.plotting import set_plot_style  # noqa: E402
@@ -29,8 +30,8 @@ COLORS = {
     "qa_plus_nonlinear_heat_flux": "#b45f2a",
 }
 LABELS = {
-    "qa_constraints": "QA constraints",
-    "qa_plus_nonlinear_heat_flux": "QA + reduced NL Q",
+    "qa_constraints": "Reduced QA constraints",
+    "qa_plus_nonlinear_heat_flux": "Reduced QA + NL envelope",
 }
 
 
@@ -145,17 +146,23 @@ def plot_payload(payload: dict[str, Any], out: Path) -> None:
 
     set_plot_style()
     plt.rcParams.update({"font.size": 10, "axes.titlesize": 11, "axes.labelsize": 10})
-    fig = plt.figure(figsize=(16.5, 13.2), constrained_layout=True)
+    fig = plt.figure(figsize=(17.2, 13.2), constrained_layout=True)
     grid = fig.add_gridspec(3, 3, hspace=0.12, wspace=0.08)
     ax_scan = fig.add_subplot(grid[0, 0])
     ax_trace = fig.add_subplot(grid[0, 1])
     ax_hist = fig.add_subplot(grid[0, 2])
     ax_surf0 = fig.add_subplot(grid[1, 0], projection="3d")
     ax_surf1 = fig.add_subplot(grid[1, 1], projection="3d")
-    ax_metrics = fig.add_subplot(grid[1, 2])
-    ax_b0 = fig.add_subplot(grid[2, 0])
-    ax_b1 = fig.add_subplot(grid[2, 1])
-    ax_scope = fig.add_subplot(grid[2, 2])
+    ax_final = fig.add_subplot(grid[1, 2])
+    ax_b0 = fig.add_subplot(grid[2, 0], projection="3d")
+    ax_b1 = fig.add_subplot(grid[2, 1], projection="3d")
+    ax_window = fig.add_subplot(grid[2, 2])
+
+    b_values = [np.asarray(design["lcfs_bmag"]["bmag"], dtype=float) for design in payload["designs"]]
+    bmin = min(float(np.nanmin(item)) for item in b_values)
+    bmax = max(float(np.nanmax(item)) for item in b_values)
+    bnorm = colors.Normalize(vmin=bmin, vmax=bmax)
+    bcmap = plt.colormaps["cividis"]
 
     for design in payload["designs"]:
         name = design["design_name"]
@@ -179,15 +186,15 @@ def plot_payload(payload: dict[str, Any], out: Path) -> None:
         ax_trace.axvspan(time[start], time[-1], color=color, alpha=0.08)
 
     ax_scan.set_xlabel(r"density gradient $a/L_n$")
-    ax_scan.set_ylabel(r"late-window $\langle Q_i \rangle$ (reduced NL)")
+    ax_scan.set_ylabel(r"late-window $\langle Q_{\rm env}\rangle$")
     ax_scan.set_title(r"Gradient scan at fixed $a/L_{Ti}=6$")
     ax_scan.legend(frameon=False, fontsize=8)
     ax_scan.grid(alpha=0.25)
 
     ax_trace.set_xlabel(r"$t v_{ti}/a$")
-    ax_trace.set_ylabel(r"$Q_i(t)$")
+    ax_trace.set_ylabel(r"$Q_{\rm env}(t)$")
     ax_trace.set_title(
-        rf"Fixed-gradient trace: $a/L_n={payload['fixed_density_gradient']:.1f}$, "
+        rf"Reduced envelope: $a/L_n={payload['fixed_density_gradient']:.1f}$, "
         rf"$a/L_{{Ti}}={payload['fixed_temperature_gradient']:.1f}$"
     )
     ax_trace.legend(frameon=False, fontsize=8)
@@ -212,7 +219,17 @@ def plot_payload(payload: dict[str, Any], out: Path) -> None:
         x = np.asarray(surface["x"], dtype=float)
         y = np.asarray(surface["y"], dtype=float)
         z = np.asarray(surface["z"], dtype=float)
-        ax.plot_surface(x, y, z, color=COLORS[name], alpha=0.85, linewidth=0, antialiased=True)
+        bmag = np.asarray(design["lcfs_bmag"]["bmag"], dtype=float)
+        ax.plot_surface(
+            x,
+            y,
+            z,
+            facecolors=bcmap(bnorm(bmag)),
+            alpha=0.95,
+            linewidth=0,
+            antialiased=True,
+            shade=False,
+        )
         ax.plot_wireframe(
             x,
             y,
@@ -225,88 +242,92 @@ def plot_payload(payload: dict[str, Any], out: Path) -> None:
         )
         _set_equal_3d(ax, x, y, z)
         ax.view_init(elev=26, azim=48)
-        ax.set_title(f"Reduced LCFS: {LABELS[name]}")
+        ax.set_title(rf"Reduced LCFS $|B|$: {LABELS[name]}")
         ax.set_xlabel("X")
         ax.set_ylabel("Y")
         ax.set_zlabel("Z")
         ax.grid(False)
+        mappable = plt.cm.ScalarMappable(norm=bnorm, cmap=bcmap)
+        mappable.set_array([])
+        fig.colorbar(mappable, ax=ax, fraction=0.040, pad=0.02, label=r"$|B|/B_0$")
 
     for ax, design in zip(b_axes, payload["designs"], strict=True):
         name = design["design_name"]
         bmap = design["lcfs_bmag"]
         theta = np.asarray(bmap["theta"], dtype=float) / np.pi
         zeta = np.asarray(bmap["zeta"], dtype=float) / np.pi
+        zz, tt = np.meshgrid(zeta, theta, indexing="xy")
         bmag = np.asarray(bmap["bmag"], dtype=float)
-        c = ax.contourf(zeta, theta, bmag, levels=18, cmap="cividis")
-        ax.contour(zeta, theta, bmag, levels=8, colors="white", linewidths=0.35, alpha=0.7)
-        ax.set_xlabel(r"$\zeta/\pi$")
-        ax.set_ylabel(r"$\theta/\pi$")
-        ax.set_title(rf"LCFS $|B|$: {LABELS[name]}")
-        fig.colorbar(c, ax=ax, fraction=0.047, pad=0.02, label=r"$|B|/B_0$")
-
-    ax_metrics.axis("off")
-    metrics = payload["comparison_metrics"]
-    lines = [
-        "Gate summary",
-        f"Aspect target: {payload['target_aspect']:.1f}",
-        f"Minimum iota: {payload['minimum_iota']:.2f}",
-        f"Operating iota floor: {payload['operating_iota_floor']:.2f}",
-        f"AD/FD gates passed: {metrics['ad_fd_gates_passed']}",
-        f"Constraint gates passed: {metrics['constraints_passed']}",
-        f"Long-window gates passed: {metrics['long_window_gates_passed']}",
-        f"Fixed-gradient Q reduction: {100.0 * metrics['relative_heat_flux_reduction_at_fixed_gradients']:.1f}%",
-        f"Trace tmax: {payload['designs'][0]['fixed_gradient_trace']['times'][-1]:.0f}",
-        "",
-        "Final values",
-    ]
-    for result in payload["results"]:
-        obs = _obs_map(result)
-        lines.extend(
-            [
-                LABELS[result["design_name"]],
-                f"  A={obs['aspect']:.3f}, iota={obs['mean_iota']:.3f}",
-                f"  helical h={float(result['final_params'][2]):.3f}",
-                f"  QA residual={obs['qa_residual']:.2e}",
-                f"  <Q_i>={obs['nonlinear_heat_flux_mean']:.3e}",
-            ]
+        zpad = 0.08 * max(bmax - bmin, 1.0e-6)
+        ax.plot_surface(zz, tt, bmag, cmap=bcmap, norm=bnorm, linewidth=0, antialiased=True, alpha=0.96)
+        ax.contourf(
+            zz,
+            tt,
+            bmag,
+            zdir="z",
+            offset=bmin - zpad,
+            levels=18,
+            cmap=bcmap,
+            norm=bnorm,
+            alpha=0.78,
         )
-    ax_metrics.text(
-        0.02,
-        0.98,
-        "\n".join(lines),
-        va="top",
-        ha="left",
-        fontsize=10,
-        family="monospace",
-        bbox={"boxstyle": "round,pad=0.45", "facecolor": "#f8fafc", "edgecolor": "#cbd5e1"},
-    )
+        ax.contour(zz, tt, bmag, levels=9, colors="white", linewidths=0.35, alpha=0.72)
+        ax.set_xlabel(r"$\phi_B/\pi$")
+        ax.set_ylabel(r"$\theta_B/\pi$")
+        ax.set_zlabel("")
+        ax.set_zlim(bmin - zpad, bmax + zpad)
+        ax.view_init(elev=30, azim=-52)
+        ax.set_title(rf"Boozer LCFS $|B|$: {LABELS[name]}")
+        mappable = plt.cm.ScalarMappable(norm=bnorm, cmap=bcmap)
+        mappable.set_array([])
+        fig.colorbar(mappable, ax=ax, fraction=0.040, pad=0.02, label=r"$|B|/B_0$")
 
-    ax_scope.axis("off")
-    scope = [
-        "Scope and method",
-        "- Reduced max-mode-1 QA controls",
-        "- Aspect-ratio and two iota-floor constraints",
-        "- Long differentiable RK2 nonlinear ITG envelope",
-        "- Scalar/residual/observable AD-FD gates",
-        "- Production nonlinear claims still need long-window GK audits",
-        "",
-        "Equations used in this panel",
-        r"$J=||r_{A}, r_{\iota}, r_{QA}, r_{reg}, r_Q||^2$",
-        r"$dE/dt=2\gamma E-\alpha E^2$",
-        r"$Q_i=W_iE$",
-    ]
-    ax_scope.text(
-        0.02,
-        0.98,
-        "\n".join(scope),
-        va="top",
-        ha="left",
-        fontsize=10,
-        bbox={"boxstyle": "round,pad=0.45", "facecolor": "#fff7ed", "edgecolor": "#fed7aa"},
-    )
+    result_by_name = {result["design_name"]: result for result in payload["results"]}
+    metric_names = (r"$A/A_0$", r"$\iota$", r"$10^4 R_{QA}$", r"$10^2\langle Q_{\rm env}\rangle$")
+    x = np.arange(len(metric_names), dtype=float)
+    width = 0.36
+    for offset, design in zip((-0.5 * width, 0.5 * width), payload["designs"], strict=True):
+        name = design["design_name"]
+        obs = _obs_map(result_by_name[name])
+        values = [
+            obs["aspect"] / payload["target_aspect"],
+            obs["mean_iota"],
+            1.0e4 * obs["qa_residual"],
+            1.0e2 * obs["nonlinear_heat_flux_mean"],
+        ]
+        ax_final.bar(x + offset, values, width=width, color=COLORS[name], label=LABELS[name])
+    ax_final.axhline(1.0, color="black", ls=":", lw=1.0, alpha=0.5)
+    ax_final.axhline(payload["operating_iota_floor"], color="#7c2d12", ls=":", lw=1.0, alpha=0.55)
+    ax_final.set_xticks(x)
+    ax_final.set_xticklabels(metric_names, rotation=18, ha="right")
+    ax_final.set_title("Final reduced observables")
+    ax_final.grid(axis="y", alpha=0.25)
+    ax_final.legend(frameon=False, fontsize=8)
+
+    conv_names = ("CV", "trend", "half-window drift")
+    x = np.arange(len(conv_names), dtype=float)
+    for offset, design in zip((-0.5 * width, 0.5 * width), payload["designs"], strict=True):
+        name = design["design_name"]
+        trace = design["fixed_gradient_trace"]
+        window = trace["window"]
+        gate = trace["long_window_convergence"]
+        values = [
+            float(window["cv"]),
+            float(window["trend"]),
+            float(gate["half_window_relative_mean_change"]),
+        ]
+        ax_window.bar(x + offset, values, width=width, color=COLORS[name], label=LABELS[name])
+    ax_window.axhline(payload["config"]["long_window_max_cv"], color="black", ls=":", lw=1.0, alpha=0.45)
+    ax_window.set_yscale("log")
+    ax_window.set_xticks(x)
+    ax_window.set_xticklabels(conv_names, rotation=18, ha="right")
+    ax_window.set_ylabel("relative metric")
+    ax_window.set_title("Reduced-envelope late-window convergence")
+    ax_window.grid(axis="y", alpha=0.25)
+    ax_window.legend(frameon=False, fontsize=8)
 
     fig.suptitle(
-        "Aspect-6 QA low-turbulence optimization: constraints-only vs transport-aware design",
+        "Aspect-6 reduced QA low-turbulence optimizer: constraints-only vs transport-aware design",
         fontsize=15,
         fontweight="bold",
     )

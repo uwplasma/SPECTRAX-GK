@@ -234,9 +234,9 @@ def _plot(payload: dict[str, Any], path: Path) -> None:
         ax.plot(times, q, color=COLORS[name], lw=2.0, label=LABELS[name])
         ax.axvline(400.0, color=COLORS[name], ls="--", alpha=0.65)
         ax.axvspan(times[start], times[-1], color=COLORS[name], alpha=0.06)
-    ax.set_title("Fixed-gradient reduced nonlinear traces to reference horizon")
+    ax.set_title("Fixed-gradient reduced-envelope traces to reference horizon")
     ax.set_xlabel(r"$t v_{ti}/a$")
-    ax.set_ylabel(r"$Q_i(t)$")
+    ax.set_ylabel(r"$Q_{\rm env}(t)$")
     ax.grid(alpha=0.25)
     ax.legend(frameon=False)
 
@@ -252,7 +252,7 @@ def _plot(payload: dict[str, Any], path: Path) -> None:
         )
     ax.set_title("Late-window mean vs horizon")
     ax.set_xlabel(r"$t_{end} v_{ti}/a$")
-    ax.set_ylabel(r"late-window $\langle Q_i\rangle$")
+    ax.set_ylabel(r"late-window $\langle Q_{\rm env}\rangle$")
     ax.grid(alpha=0.25)
     ax.legend(frameon=False)
 

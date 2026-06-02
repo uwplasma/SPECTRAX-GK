@@ -502,11 +502,14 @@ source; the PNG/PDF summarize the same sidecar for docs and review.
 The aspect-6 QA low-turbulence comparison tool writes
 ``docs/_static/qa_low_turbulence_comparison.{json,png,pdf}`` plus CSV sidecars.
 It compares a quasisymmetry/aspect/iota-floor design with a design that adds a
-reduced nonlinear heat-flux residual, then plots the fixed-``a/L_T`` ``Q_i``
-versus ``a/L_n`` scan, fixed-gradient heat-flux traces, reduced LCFS surfaces,
-and LCFS ``|B|`` maps. This is a reduced differentiability and visualization
-example; production nonlinear optimization still requires long post-transient
-transport-window audits.
+reduced nonlinear heat-flux envelope residual, then plots the fixed-``a/L_T``
+``Q_env`` versus ``a/L_n`` scan, fixed-gradient reduced-envelope traces,
+reduced LCFS surfaces colored by ``|B|``, and reduced Boozer-LCFS ``|B|`` maps.
+The trace is smooth by construction because it integrates
+``dE/dt = 2 gamma E - alpha E^2``; it should not be read as a turbulent
+nonlinear SPECTRAX-GK heat-flux time series. This is a reduced
+differentiability and visualization example; production nonlinear optimization
+still requires long post-transient transport-window audits.
 The companion time-horizon audit writes
 ``docs/_static/qa_low_turbulence_time_horizon_audit.{json,csv,png,pdf}`` and
 shows that ``t v_ti/a = 400`` is already converged relative to the

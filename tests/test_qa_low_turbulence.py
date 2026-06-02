@@ -69,6 +69,7 @@ def test_qa_low_turbulence_payload_passes_gradient_and_transport_gates() -> None
     results = {result["design_name"]: result for result in payload["results"]}
 
     assert payload["kind"] == "qa_low_turbulence_comparison"
+    assert "Q_env" in payload["model_equations"]["nonlinear_envelope"]
     assert set(results) == set(QA_LOW_TURBULENCE_DESIGN_NAMES)
     assert metrics["passed"] is True
     assert metrics["ad_fd_gates_passed"] is True
@@ -88,6 +89,10 @@ def test_qa_low_turbulence_payload_passes_gradient_and_transport_gates() -> None
 
     assert metrics["long_window_gates_passed"] is True
     assert payload["differentiable_plumbing"]["passed"] is True
+    for design in payload["designs"]:
+        trace = design["fixed_gradient_trace"]
+        assert trace["trace_kind"] == "smooth_reduced_nonlinear_envelope_not_full_turbulent_gk"
+        assert "Q_env" in trace["trace_equation"]
     slopes = {
         design["design_name"]: design["density_gradient_scan"]["linear_slope_dQ_d_a_over_Ln"]
         for design in payload["designs"]

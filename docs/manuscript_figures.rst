@@ -76,8 +76,10 @@ aspect-6 QA low-turbulence optimization comparison requested for the
 stellarator-design narrative. It is publication-ready for reduced
 differentiable optimization plumbing, AD/finite-difference gates, and
 side-by-side visualization of the control-only and transport-aware reduced
-designs. It is intentionally scoped away from full VMEC/nonlinear-GK
-production claims. The companion
+designs. It now labels the smooth heat-flux trace as the reduced
+``Q_env = W_i E`` envelope and shows reduced ``|B|`` coloring on both the LCFS
+surface renderings and the Boozer-LCFS maps. It is intentionally scoped away
+from full VMEC/nonlinear-GK production claims. The companion
 ``docs/_static/qa_low_turbulence_time_horizon_audit.png`` panel checks the
 reduced nonlinear-envelope horizon directly: the ``t=400`` late-window means
 are unchanged at the ``1e-7`` level or better relative to a ``t=1000``
@@ -201,7 +203,7 @@ Core Validation Figures
    * - Aspect-6 QA low-turbulence optimization comparison
      - ``tools/build_qa_low_turbulence_comparison.py`` and ``tools/build_qa_low_turbulence_time_horizon_audit.py``
      - Closed for reduced differentiable optimization-plumbing claims
-     - current artifact bases: ``docs/_static/qa_low_turbulence_comparison.png`` and ``docs/_static/qa_low_turbulence_time_horizon_audit.png`` with JSON/CSV/PDF companions. The panel compares a QA constraints-only optimum against a QA plus reduced nonlinear-heat-flux optimum at aspect ``A = 6`` and minimum mean ``iota = 0.41``. It includes the fixed-``a/L_T`` ``Q_i`` versus ``a/L_n`` scan, fixed-gradient reduced nonlinear heat-flux traces, objective histories, reduced non-axisymmetric LCFS surfaces, LCFS ``|B|`` maps, and gradient/constraint gates. The tracked artifact passes scalar, residual, and observable AD/finite-difference gates, runs the fixed-gradient reduced nonlinear trace to ``t v_ti/a = 400``, enforces the formal ``iota >= 0.41`` floor plus an operating ``iota >= 0.70`` floor, keeps a helical boundary amplitude near ``0.16``, and shows about ``10.7%`` reduced late-window heat flux at the fixed gradient. The horizon audit compares ``t=400`` against a ``t=1000`` reduced-envelope reference and finds relative late-window mean changes of ``1.2e-7`` or smaller, with CV/trend/half-window drift below ``1e-3``. The figure supports a reduced differentiable optimization and visualization claim only; long-window full nonlinear transport optimization remains governed by the production nonlinear audit gates.
+     - current artifact bases: ``docs/_static/qa_low_turbulence_comparison.png`` and ``docs/_static/qa_low_turbulence_time_horizon_audit.png`` with JSON/CSV/PDF companions. The panel compares a reduced QA constraints-only optimum against a reduced QA plus nonlinear-envelope optimum at aspect ``A = 6`` and minimum mean ``iota = 0.41``. It includes the fixed-``a/L_T`` ``Q_env`` versus ``a/L_n`` scan, fixed-gradient reduced-envelope traces, objective histories, reduced non-axisymmetric LCFS surfaces colored by ``|B|``, reduced Boozer-LCFS ``|B|`` maps, and gradient/constraint gates. The tracked artifact passes scalar, residual, and observable AD/finite-difference gates, runs the fixed-gradient reduced envelope to ``t v_ti/a = 400``, enforces the formal ``iota >= 0.41`` floor plus an operating ``iota >= 0.70`` floor, keeps a helical boundary amplitude near ``0.16``, and shows about ``10.7%`` reduced late-window heat flux at the fixed gradient. The horizon audit compares ``t=400`` against a ``t=1000`` reduced-envelope reference and finds relative late-window mean changes of ``1.2e-7`` or smaller, with CV/trend/half-window drift below ``1e-3``. The figure supports a reduced differentiable optimization and visualization claim only; it is not the upstream VMEC-JAX ``QA_optimization.py`` final WOUT, and long-window full nonlinear transport optimization remains governed by the production nonlinear audit gates.
    * - Quasilinear spectrum panel
      - ``tools/plot_quasilinear_spectrum.py``
      - Electrostatic diagnostic closed; absolute-flux prediction not promoted
