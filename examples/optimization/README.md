@@ -12,14 +12,13 @@ low-turbulence scripts are intentionally split into two levels:
 From the repository root:
 
 ```bash
-python tools/build_qa_low_turbulence_comparison.py --pdf
-python tools/build_qa_low_turbulence_time_horizon_audit.py --pdf
+python tools/build_qa_low_turbulence_comparison.py
+python tools/build_qa_low_turbulence_time_horizon_audit.py
 ```
 
 Outputs:
 
 - `docs/_static/qa_low_turbulence_comparison.png`
-- `docs/_static/qa_low_turbulence_comparison.pdf`
 - `docs/_static/qa_low_turbulence_comparison.json`
 - `docs/_static/qa_low_turbulence_comparison.summary.csv`
 - `docs/_static/qa_low_turbulence_comparison.scan.csv`

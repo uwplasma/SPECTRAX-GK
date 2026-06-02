@@ -1470,7 +1470,7 @@ physics_contracts = [
 numerics_contracts = [
   "scalar objective, residual Jacobian, and observable Jacobian pass central finite-difference parity gates",
   "late-window heat-flux metrics report coefficient of variation, trend, half-window drift, and minimum simulated time",
-  "generated JSON/CSV/PDF/PNG artifacts stay under repository-size policy and remain reproducible from the builder",
+  "generated JSON/CSV/PNG artifacts stay under repository-size policy and remain reproducible from the builder",
 ]
 fast_tests = [
   "tests/test_qa_low_turbulence.py",
@@ -1478,13 +1478,11 @@ fast_tests = [
 artifact_paths = [
   "docs/_static/qa_low_turbulence_comparison.json",
   "docs/_static/qa_low_turbulence_comparison.png",
-  "docs/_static/qa_low_turbulence_comparison.pdf",
   "docs/_static/qa_low_turbulence_comparison.summary.csv",
   "docs/_static/qa_low_turbulence_comparison.scan.csv",
   "docs/_static/qa_low_turbulence_time_horizon_audit.json",
   "docs/_static/qa_low_turbulence_time_horizon_audit.csv",
   "docs/_static/qa_low_turbulence_time_horizon_audit.png",
-  "docs/_static/qa_low_turbulence_time_horizon_audit.pdf",
 ]
 next_tests = [
   "replace the reduced nonlinear envelope with converged post-transient SPECTRAX-GK nonlinear audits before broad nonlinear turbulent-flux optimization claims",
