@@ -1,0 +1,3 @@
+label,passed,aspect_final,iota_final,qs_final,min_iota_profile,min_iotaf,objective_initial,objective_final,next_action
+QA constraints,True,5.999232723441375,0.4270111766163378,0.026040133345612775,0.4101309713189027,0.4107058976590493,0.5672376091088054,0.027400417634840177,candidate may proceed to matched long-window nonlinear transport audits
+QA + SPECTRAX-GK transport,False,5.996816729369647,0.42502832377677124,0.10912358716960052,0.40204260423395993,0.40249266128984656,0.9082362434219884,0.8003137234324589,do not promote this candidate; refine constraints or reduce/re-scale the transport residual

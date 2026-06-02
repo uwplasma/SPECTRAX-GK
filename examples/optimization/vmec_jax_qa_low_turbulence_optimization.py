@@ -20,7 +20,6 @@ import argparse
 import json
 from pathlib import Path
 import sys
-from typing import Any
 
 import jax.numpy as jnp
 import numpy as np
@@ -34,6 +33,7 @@ from spectraxgk import (  # noqa: E402
     VMECJAXSpectraxTransportObjective,
     VMECJAXTransportObjectiveConfig,
 )
+from spectraxgk.vmec_jax_candidate_gate import build_solved_vmec_candidate_gate  # noqa: E402
 
 
 def _float_tuple(raw: str) -> tuple[float, ...]:
@@ -102,128 +102,6 @@ def jax_softplus(x):
     """Stable softplus without importing ``jax.nn`` at module import time."""
 
     return jnp.logaddexp(x, jnp.asarray(0.0, dtype=jnp.asarray(x).dtype))
-
-
-def _safe_float(value: Any) -> float:
-    try:
-        return float(value)
-    except Exception:
-        return float("nan")
-
-
-def _finite_gate(value: float, *, lower: float | None = None, upper: float | None = None) -> bool:
-    if not np.isfinite(value):
-        return False
-    if lower is not None and value < float(lower):
-        return False
-    if upper is not None and value > float(upper):
-        return False
-    return True
-
-
-def _final_iota_profiles_from_result(result: Any) -> tuple[np.ndarray, np.ndarray] | None:
-    """Return final solved iota profiles from the VMEC-JAX state if available."""
-
-    state = getattr(result, "final_state", None)
-    optimizer = getattr(result, "final_optimizer", None)
-    if state is None or optimizer is None:
-        return None
-    try:
-        import vmec_jax as vj
-
-        _chips, iotas, iotaf = vj.equilibrium_iota_profiles_from_state(
-            state=state,
-            static=getattr(optimizer, "_static"),
-            indata=getattr(optimizer, "_indata"),
-            signgs=int(getattr(optimizer, "_signgs")),
-        )
-    except Exception:
-        return None
-    return np.asarray(iotas, dtype=float), np.asarray(iotaf, dtype=float)
-
-
-def _build_solved_wout_gate_report(
-    result: Any,
-    *,
-    target_aspect: float,
-    aspect_atol: float,
-    min_abs_mean_iota: float,
-    qs_residual_max: float,
-    iota_profile_floor: float | None,
-    iota_profiles: tuple[np.ndarray, np.ndarray] | None = None,
-) -> dict[str, Any]:
-    """Build the solved-VMEC candidate gate used before nonlinear audits."""
-
-    history = getattr(result, "history", {}) or {}
-    aspect = _safe_float(history.get("aspect_final"))
-    mean_iota = abs(_safe_float(history.get("iota_final")))
-    qs_residual = _safe_float(history.get("qs_final"))
-    aspect_error = abs(aspect - float(target_aspect))
-    profile_source = "provided"
-    if iota_profiles is None:
-        profile_source = "vmec_jax_state"
-        iota_profiles = _final_iota_profiles_from_result(result)
-
-    min_iota_profile: float | None = None
-    min_iotaf_profile: float | None = None
-    profile_passed = iota_profile_floor is None
-    if iota_profiles is not None:
-        iotas, iotaf = iota_profiles
-        iotas = np.asarray(iotas, dtype=float)
-        iotaf = np.asarray(iotaf, dtype=float)
-        profile = iotas[1:] if iotas.size > 1 else iotas
-        full_profile = iotaf[np.isfinite(iotaf)]
-        min_iota_profile = float(np.nanmin(profile)) if profile.size else float("nan")
-        min_iotaf_profile = float(np.nanmin(full_profile)) if full_profile.size else float("nan")
-        if iota_profile_floor is not None:
-            profile_passed = _finite_gate(min_iota_profile, lower=float(iota_profile_floor)) and _finite_gate(
-                min_iotaf_profile,
-                lower=float(iota_profile_floor),
-            )
-    elif iota_profile_floor is not None:
-        profile_source = "missing"
-        profile_passed = False
-
-    checks = {
-        "aspect": {
-            "value": aspect,
-            "target": float(target_aspect),
-            "absolute_error": aspect_error,
-            "absolute_tolerance": float(aspect_atol),
-            "passed": _finite_gate(aspect_error, upper=float(aspect_atol)),
-        },
-        "mean_iota": {
-            "value": mean_iota,
-            "minimum_abs": float(min_abs_mean_iota),
-            "margin": mean_iota - float(min_abs_mean_iota),
-            "passed": _finite_gate(mean_iota, lower=float(min_abs_mean_iota)),
-        },
-        "quasisymmetry": {
-            "value": qs_residual,
-            "maximum": float(qs_residual_max),
-            "margin": float(qs_residual_max) - qs_residual,
-            "passed": _finite_gate(qs_residual, upper=float(qs_residual_max)),
-        },
-        "iota_profile": {
-            "minimum_iotas_excluding_axis": min_iota_profile,
-            "minimum_iotaf": min_iotaf_profile,
-            "floor": None if iota_profile_floor is None else float(iota_profile_floor),
-            "source": profile_source,
-            "passed": bool(profile_passed),
-        },
-    }
-    passed = all(bool(check["passed"]) for check in checks.values())
-    return {
-        "kind": "vmec_jax_solved_wout_candidate_gate",
-        "passed": bool(passed),
-        "checks": checks,
-        "claim_level": "solved VMEC candidate gate before expensive SPECTRAX-GK nonlinear transport audit",
-        "next_action": (
-            "candidate may proceed to matched long-window nonlinear transport audits"
-            if passed
-            else "do not promote this candidate; refine constraints or reduce/re-scale the transport residual"
-        ),
-    }
 
 
 def _parse_args() -> argparse.Namespace:
@@ -575,7 +453,7 @@ def main() -> int:
             else float(args.iota_profile_floor)
         )
     )
-    gate_report = _build_solved_wout_gate_report(
+    gate_report = build_solved_vmec_candidate_gate(
         result,
         target_aspect=float(args.target_aspect),
         aspect_atol=float(args.solved_wout_gate_aspect_atol),

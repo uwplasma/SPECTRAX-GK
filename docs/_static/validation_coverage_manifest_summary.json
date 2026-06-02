@@ -27,8 +27,8 @@
   "n_excluded_modules": 6,
   "n_high_priority_open": 22,
   "n_modules": 37,
-  "n_owned_modules": 52,
-  "n_package_modules": 95,
+  "n_owned_modules": 54,
+  "n_package_modules": 97,
   "owned_modules_by_owner": {
     "spectraxgk.autodiff_validation": [],
     "spectraxgk.benchmark_defaults": [
@@ -128,7 +128,9 @@
     ],
     "spectraxgk.solver_objective_gradients": [
       "spectraxgk.stellarator_optimization",
-      "spectraxgk.nonlinear_transport_optimization"
+      "spectraxgk.nonlinear_transport_optimization",
+      "spectraxgk.vmec_jax_candidate_gate",
+      "spectraxgk.vmec_jax_transport_objective"
     ],
     "spectraxgk.stellarator_objective_portfolio": [],
     "spectraxgk.validation_gates": [],
@@ -575,11 +577,11 @@
       "coverage_priority": "high",
       "coverage_target_percent": 95.0,
       "module": "spectraxgk.solver_objective_gradients",
-      "n_artifacts": 100,
-      "n_fast_tests": 15,
+      "n_artifacts": 103,
+      "n_fast_tests": 17,
       "n_next_tests": 4,
       "n_numerics_contracts": 9,
-      "n_owned_modules": 2,
+      "n_owned_modules": 4,
       "n_physics_contracts": 8,
       "n_reference_anchors": 2,
       "path": "src/spectraxgk/solver_objective_gradients.py",

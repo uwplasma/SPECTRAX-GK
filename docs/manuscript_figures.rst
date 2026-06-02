@@ -92,10 +92,10 @@ The companion solved-boundary guardrail
 ``docs/_static/vmec_jax_qa_transport_candidate_comparison.png`` is not a
 promoted optimization result. It documents the VMEC-JAX/SPECTRAX-GK objective
 assembly and WOUT-writing path, while deliberately failing closed when the
-mean iota target passes but the solved WOUT profile dips below the
-``iota(s) >= 0.41`` floor. A future paper-facing solved-boundary optimization
-figure must pass this profile gate before launching long-window nonlinear
-transport audits.
+transport-weight refinement degrades the solved WOUT profile-iota and
+quasisymmetry margins. A future paper-facing solved-boundary optimization
+figure must pass this full solved-candidate gate before launching long-window
+nonlinear transport audits.
 
 Current Vs Deferred Figure Inventory
 ------------------------------------

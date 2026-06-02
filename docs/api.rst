@@ -263,6 +263,12 @@ VMEC-JAX Transport Objective
 .. automodule:: spectraxgk.vmec_jax_transport_objective
    :members:
 
+VMEC-JAX Candidate Gates
+------------------------
+
+.. automodule:: spectraxgk.vmec_jax_candidate_gate
+   :members:
+
 Stellarator Objective Portfolios
 --------------------------------
 

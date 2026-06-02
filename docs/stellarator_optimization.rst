@@ -209,11 +209,12 @@ For bounded local candidate pairs, build the solved-boundary audit panel with:
    :alt: VMEC-JAX QA candidate iota-profile and scalar diagnostic audit
    :width: 95%
 
-   Bounded VMEC-JAX solved-boundary plumbing audit. This panel intentionally
-   fails closed when the mean iota target passes but the final WOUT profile
-   still dips below the signed ``iota(s) >= 0.41`` floor. It should be used to
-   decide whether a candidate is ready for expensive long-window nonlinear
-   transport audits.
+   Bounded VMEC-JAX solved-boundary plumbing audit. The current refreshed
+   campaign promotes the QA-only branch to the expensive long-window nonlinear
+   audit queue, while the transport-weight refinement fails closed because it
+   degrades the solved profile-iota and quasisymmetry gates. This panel should
+   be used to decide whether a candidate is ready for expensive long-window
+   nonlinear transport audits.
 
 For restart sweeps from an already optimized ``input.final``, pass
 ``--disable-mode-continuation`` to

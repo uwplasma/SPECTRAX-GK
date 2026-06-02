@@ -1,37 +1,21 @@
 from __future__ import annotations
 
-import importlib.util
 import json
-from pathlib import Path
-import sys
 from types import SimpleNamespace
 
 import numpy as np
 
-
-def _load_driver_module():
-    path = (
-        Path(__file__).resolve().parents[1]
-        / "examples"
-        / "optimization"
-        / "vmec_jax_qa_low_turbulence_optimization.py"
-    )
-    spec = importlib.util.spec_from_file_location("_vmec_jax_qa_driver_for_test", path)
-    assert spec is not None
-    assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+import spectraxgk
+from spectraxgk.vmec_jax_candidate_gate import build_solved_vmec_candidate_gate
 
 
 def test_solved_wout_candidate_gate_passes_valid_qa_branch() -> None:
-    driver = _load_driver_module()
+    assert spectraxgk.build_solved_vmec_candidate_gate is build_solved_vmec_candidate_gate
     result = SimpleNamespace(
         history={"aspect_final": 5.999233, "iota_final": 0.427011, "qs_final": 2.604013e-2},
     )
 
-    report = driver._build_solved_wout_gate_report(
+    report = build_solved_vmec_candidate_gate(
         result,
         target_aspect=6.0,
         aspect_atol=5.0e-2,
@@ -53,12 +37,11 @@ def test_solved_wout_candidate_gate_passes_valid_qa_branch() -> None:
 
 
 def test_solved_wout_candidate_gate_rejects_transport_branch_that_breaks_constraints() -> None:
-    driver = _load_driver_module()
     result = SimpleNamespace(
         history={"aspect_final": 5.996817, "iota_final": 0.425028, "qs_final": 1.091236e-1},
     )
 
-    report = driver._build_solved_wout_gate_report(
+    report = build_solved_vmec_candidate_gate(
         result,
         target_aspect=6.0,
         aspect_atol=5.0e-2,

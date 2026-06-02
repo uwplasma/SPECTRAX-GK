@@ -1285,6 +1285,7 @@ path = "src/spectraxgk/solver_objective_gradients.py"
 owned_modules = [
   "spectraxgk.stellarator_optimization",
   "spectraxgk.nonlinear_transport_optimization",
+  "spectraxgk.vmec_jax_candidate_gate",
   "spectraxgk.vmec_jax_transport_objective",
 ]
 owner_lane = "production solver-objective geometry-gradient validation"
@@ -1332,6 +1333,7 @@ fast_tests = [
   "tests/test_build_vmec_boozer_nonlinear_window_fd_audit.py",
   "tests/test_build_nonlinear_transport_horizon_audit.py",
   "tests/test_nonlinear_transport_optimization.py",
+  "tests/test_vmec_jax_qa_optimization_driver.py",
   "tests/test_vmec_jax_transport_objective.py",
 ]
 artifact_paths = [
@@ -1391,6 +1393,7 @@ artifact_paths = [
   "docs/_static/vmec_boozer_nonlinear_window_fd_audit.json",
   "docs/_static/vmec_boozer_nonlinear_window_fd_audit.png",
   "docs/_static/vmec_jax_qa_transport_candidate_comparison.json",
+  "docs/_static/vmec_jax_qa_transport_candidate_comparison.csv",
   "docs/_static/vmec_jax_qa_transport_candidate_comparison.png",
   "docs/_static/quasilinear_vmec_dshape_linear_spectrum.png",
   "docs/_static/quasilinear_vmec_itermodel_linear_spectrum.png",
