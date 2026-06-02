@@ -256,10 +256,14 @@ By default the ladder searches for ``transport_objective_final``,
 ``objective_final`` as a last-resort proxy; use repeated
 ``--transport-metric-key`` options when a run records a cleaner transport-only
 diagnostic, and ``--min-transport-improvement`` to require a nonzero relative
-improvement. If no transport-weight candidate satisfies both the physical gate
-and the transport-improvement gate, the QA-only WOUT remains the only admissible
-candidate for expensive matched long-window nonlinear audits. This is an
-admission policy, not a proof of reduced turbulent heat flux.
+improvement. The VMEC-JAX/SPECTRAX-GK optimization example writes
+``transport_objective_final`` into ``history.json`` after every completed solve,
+including constraints-only baselines, so production admission does not need to
+use total objective history except for legacy artifacts. If no transport-weight
+candidate satisfies both the physical gate and the transport-improvement gate,
+the QA-only WOUT remains the only admissible candidate for expensive matched
+long-window nonlinear audits. This is an admission policy, not a proof of
+reduced turbulent heat flux.
 
 .. figure:: _static/qa_low_turbulence_comparison.png
    :alt: Aspect-6 QA low-turbulence optimization comparison

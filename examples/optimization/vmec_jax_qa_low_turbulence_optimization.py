@@ -20,6 +20,8 @@ import argparse
 import json
 from pathlib import Path
 import sys
+from types import SimpleNamespace
+from typing import Any, cast
 
 import jax.numpy as jnp
 import numpy as np
@@ -34,6 +36,7 @@ from spectraxgk import (  # noqa: E402
     VMECJAXTransportObjectiveConfig,
 )
 from spectraxgk.vmec_jax_candidate_gate import build_solved_vmec_candidate_gate  # noqa: E402
+from spectraxgk.vmec_jax_transport_objective import VMECJAXTransportObjectiveTransform  # noqa: E402
 
 
 def _float_tuple(raw: str) -> tuple[float, ...]:
@@ -45,7 +48,7 @@ def _float_tuple(raw: str) -> tuple[float, ...]:
 
 def _default_input_file() -> Path:
     try:
-        import vmec_jax as vj
+        import vmec_jax as vj  # type: ignore[import-not-found]
 
         package_root = Path(vj.__file__).resolve().parents[1]
         candidate = package_root / "examples" / "data" / "input.nfp2_QA_omnigenity"
@@ -102,6 +105,73 @@ def jax_softplus(x):
     """Stable softplus without importing ``jax.nn`` at module import time."""
 
     return jnp.logaddexp(x, jnp.asarray(0.0, dtype=jnp.asarray(x).dtype))
+
+
+def _finite_float_or_none(value: Any) -> float | None:
+    try:
+        out = float(np.asarray(value))
+    except Exception:
+        return None
+    return out if np.isfinite(out) else None
+
+
+def _transport_metric_from_result(
+    transport: VMECJAXSpectraxTransportObjective,
+    result: Any,
+) -> dict[str, Any]:
+    """Evaluate the SPECTRAX-GK transport residual on the final VMEC-JAX state."""
+
+    optimizer = getattr(result, "final_optimizer", None)
+    state = getattr(result, "final_state", None)
+    if optimizer is None or state is None:
+        return {
+            "transport_objective_final": None,
+            "transport_objective_source": "missing_final_vmec_jax_state",
+        }
+    try:
+        static = getattr(optimizer, "_static")
+        ctx = SimpleNamespace(
+            static=static,
+            indata=getattr(optimizer, "_indata"),
+            signgs=int(getattr(optimizer, "_signgs")),
+            flux=getattr(optimizer, "_flux"),
+            pressure=jnp.zeros_like(jnp.asarray(getattr(static, "s"))),
+        )
+        value = _finite_float_or_none(transport.J(ctx, state))
+        return {
+            "transport_objective_final": value,
+            "spectrax_objective_final": value,
+            "transport_metric_final": value,
+            "transport_objective_source": "final_vmec_jax_state",
+            "transport_metric_kind": transport.config.kind,
+            "transport_metric_transform": transport.config.objective_transform,
+            "transport_metric_scale": float(transport.config.objective_scale),
+        }
+    except Exception as exc:
+        return {
+            "transport_objective_final": None,
+            "transport_objective_source": "final_vmec_jax_state_error",
+            "transport_objective_error": f"{type(exc).__name__}: {exc}",
+        }
+
+
+def _update_history_with_transport_metric(history_path: Path, metric: dict[str, Any]) -> None:
+    """Persist transport-only metric fields into VMEC-JAX ``history.json``."""
+
+    if not history_path.exists():
+        return
+    payload = json.loads(history_path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        return
+    for key, value in metric.items():
+        if value is not None:
+            payload[key] = value
+    history = payload.get("history")
+    if isinstance(history, list) and history and isinstance(history[-1], dict):
+        for key, value in metric.items():
+            if value is not None:
+                history[-1][key] = value
+    history_path.write_text(json.dumps(payload, indent=2, allow_nan=False), encoding="utf-8")
 
 
 def _parse_args() -> argparse.Namespace:
@@ -302,7 +372,7 @@ def main() -> int:
         nboz=int(args.nboz),
         n_laguerre=int(args.n_laguerre),
         n_hermite=int(args.n_hermite),
-        objective_transform=str(args.spectrax_objective_transform),
+        objective_transform=cast(VMECJAXTransportObjectiveTransform, str(args.spectrax_objective_transform)),
         objective_scale=float(args.spectrax_objective_scale),
     )
     transport = VMECJAXSpectraxTransportObjective(config=spectrax_config)
@@ -452,11 +522,19 @@ def main() -> int:
         save_final_outputs=bool(args.save_final_outputs),
     )
     saved = vj.save_optimization_result(result, output_dir=args.outdir)
+    transport_metric = _transport_metric_from_result(transport, result)
+    for key, value in transport_metric.items():
+        if value is not None:
+            result.history[key] = value
+    _update_history_with_transport_metric(args.outdir / "history.json", transport_metric)
     print("\nFinal VMEC-JAX diagnostics:")
     print(f"  aspect ratio: {result.history['aspect_final']:.6g}")
     print(f"  mean iota:    {result.history['iota_final']:.6g}")
     print(f"  QS residual:  {result.history['qs_final']:.6e}")
     print(f"  objective:    {result.history['objective_final']:.6e}")
+    transport_value = _finite_float_or_none(transport_metric.get("transport_objective_final"))
+    if transport_value is not None:
+        print(f"  transport:    {transport_value:.6e}")
     print("\nFiles:")
     for name, path in saved.as_dict().items():
         print(f"  {name}: {path}")
