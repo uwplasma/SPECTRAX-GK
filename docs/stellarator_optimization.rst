@@ -209,12 +209,15 @@ For bounded local candidate pairs, build the solved-boundary audit panel with:
    :alt: VMEC-JAX QA candidate iota-profile and scalar diagnostic audit
    :width: 95%
 
-   Bounded VMEC-JAX solved-boundary plumbing audit. The current refreshed
-   campaign promotes the QA-only branch to the expensive long-window nonlinear
-   audit queue, while the transport-weight refinement fails closed because it
-   degrades the solved profile-iota and quasisymmetry gates. This panel should
-   be used to decide whether a candidate is ready for expensive long-window
-   nonlinear transport audits.
+   Bounded VMEC-JAX solved-boundary plumbing audit. Admission is fail-closed:
+   only a final authoritative ``solved_wout_gate.json`` can place a candidate in
+   the expensive long-window nonlinear audit queue. Gates reconstructed from
+   ``history.json`` plus ``wout_final.nc`` are recorded as advisory diagnostics
+   only, because scalar histories can mix optimizer-residual and VMEC-state
+   conventions. The current refreshed campaign admits the QA-only branch and
+   blocks the scalar transport-weight refinement until a
+   constraint-preserving/projection admission method produces a solved WOUT that
+   keeps the aspect, profile-iota, and quasisymmetry margins.
 
 For restart sweeps from an already optimized ``input.final``, pass
 ``--disable-mode-continuation`` to
@@ -246,10 +249,10 @@ orchestration tool rather than by manually picking a successful-looking
 
 The tool restarts each transport candidate from the QA ``input.final``, keeps
 failed candidates for inspection, and selects only the largest transport weight
-whose final ``solved_wout_gate.json`` passes. If no transport-weight candidate
-passes, the QA-only WOUT remains the only admissible candidate for expensive
-matched long-window nonlinear audits. This is an admission policy, not a proof
-of reduced turbulent heat flux.
+whose final authoritative ``solved_wout_gate.json`` passes. If no
+transport-weight candidate passes, the QA-only WOUT remains the only admissible
+candidate for expensive matched long-window nonlinear audits. This is an
+admission policy, not a proof of reduced turbulent heat flux.
 
 .. figure:: _static/qa_low_turbulence_comparison.png
    :alt: Aspect-6 QA low-turbulence optimization comparison

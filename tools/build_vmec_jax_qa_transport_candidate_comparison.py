@@ -7,6 +7,7 @@ import argparse
 import csv
 import json
 from pathlib import Path
+import sys
 from typing import Any
 
 import matplotlib
@@ -15,11 +16,17 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 
-from spectraxgk.plotting import set_plot_style  # noqa: E402
-from spectraxgk.vmec_jax_candidate_gate import build_solved_vmec_candidate_gate  # noqa: E402
-
-
 ROOT = Path(__file__).resolve().parents[1]
+SRC = ROOT / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
+
+from spectraxgk.plotting import set_plot_style  # type: ignore[import-untyped] # noqa: E402
+from spectraxgk.vmec_jax_candidate_gate import (  # type: ignore[import-untyped] # noqa: E402
+    build_solved_vmec_candidate_gate,
+)
+
+
 DEFAULT_OUT = ROOT / "docs" / "_static" / "vmec_jax_qa_transport_candidate_comparison.png"
 DEFAULT_PAYLOAD_JSON = DEFAULT_OUT.with_suffix(".json")
 DEFAULT_CONSTRAINTS_DIR = (
@@ -77,8 +84,18 @@ def _load_history(root: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _load_solved_gate(root: Path) -> dict[str, Any] | None:
+    path = root / "solved_wout_gate.json"
+    if not path.exists():
+        return None
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise ValueError(f"{path} must contain a JSON object")
+    return data
+
+
 def _load_iota_profiles(root: Path) -> tuple[np.ndarray, np.ndarray]:
-    import vmec_jax as vj
+    import vmec_jax as vj  # type: ignore[import-not-found]
 
     path = root / "wout_final.nc"
     if not path.exists():
@@ -113,16 +130,30 @@ def _branch_summary(
     history = _load_history(root)
     iotas, iotaf = _load_iota_profiles(root)
     s = np.linspace(0.0, 1.0, iotas.size)
-    gate = build_solved_vmec_candidate_gate(
-        history,
-        target_aspect=target_aspect,
-        aspect_atol=aspect_atol,
-        min_abs_mean_iota=min_iota,
-        qs_residual_max=qs_max,
-        iota_profile_floor=min_iota,
-        iota_profiles=(iotas, iotaf),
-        profile_source="wout_final.nc",
-    )
+    gate_source = "solved_wout_gate.json"
+    gate = _load_solved_gate(root)
+    if gate is None:
+        gate_source = "reconstructed_history_wout"
+        gate = build_solved_vmec_candidate_gate(
+            history,
+            target_aspect=target_aspect,
+            aspect_atol=aspect_atol,
+            min_abs_mean_iota=min_iota,
+            qs_residual_max=qs_max,
+            iota_profile_floor=min_iota,
+            iota_profiles=(iotas, iotaf),
+            profile_source="wout_final.nc",
+        )
+    gate_is_authoritative = gate_source == "solved_wout_gate.json"
+    gate_reported_passed = bool(gate.get("passed", False))
+    admission_blockers = [
+        name
+        for name, check in gate.get("checks", {}).items()
+        if isinstance(check, dict) and not bool(check.get("passed", False))
+    ]
+    if not gate_is_authoritative:
+        admission_blockers.insert(0, "non_authoritative_reconstructed_gate")
+    admitted = bool(gate_reported_passed and gate_is_authoritative)
     return {
         "label": label,
         "root": _repo_relative(root),
@@ -155,6 +186,11 @@ def _branch_summary(
             "edge": float(iotas[-1]),
         },
         "gate": gate,
+        "gate_source": gate_source,
+        "gate_is_authoritative": gate_is_authoritative,
+        "gate_reported_passed": gate_reported_passed,
+        "admitted_for_long_window_nonlinear_audit": admitted,
+        "admission_blockers": admission_blockers,
     }
 
 
@@ -187,13 +223,18 @@ def build_payload(
             qs_max=qs_max,
         ),
     ]
-    ready = [branch["label"] for branch in branches if bool(branch["gate"]["passed"])]
+    ready = [branch["label"] for branch in branches if bool(branch["admitted_for_long_window_nonlinear_audit"])]
+    transport_branch = next(
+        (branch for branch in branches if branch["label"] == "QA + SPECTRAX-GK transport"),
+        branches[-1],
+    )
+    transport_admitted = bool(transport_branch["admitted_for_long_window_nonlinear_audit"])
     return {
         "kind": "vmec_jax_qa_transport_candidate_comparison",
         "claim_scope": (
             "bounded VMEC-JAX solved-boundary candidate comparison; validates objective assembly, "
-            "trace-safe SPECTRAX-GK transport residual, WOUT writing, and solved-equilibrium gates; "
-            "not a converged optimized-equilibrium nonlinear turbulent-flux claim"
+            "trace-safe SPECTRAX-GK transport residual, WOUT writing, and authoritative solved-equilibrium "
+            "admission gates; not a converged optimized-equilibrium nonlinear turbulent-flux claim"
         ),
         "target_aspect": float(target_aspect),
         "aspect_atol": float(aspect_atol),
@@ -202,12 +243,24 @@ def build_payload(
         "qs_residual_max": float(qs_max),
         "branches": branches,
         "summary": {
-            "all_branches_passed_solved_wout_gate": all(bool(branch["gate"]["passed"]) for branch in branches),
+            "all_branches_passed_solved_wout_gate": all(
+                bool(branch["admitted_for_long_window_nonlinear_audit"]) for branch in branches
+            ),
+            "all_branches_have_authoritative_gate": all(bool(branch["gate_is_authoritative"]) for branch in branches),
             "ready_for_long_window_nonlinear_audit": ready,
-            "blocked_branches": [branch["label"] for branch in branches if not bool(branch["gate"]["passed"])],
+            "blocked_branches": [
+                branch["label"] for branch in branches if not bool(branch["admitted_for_long_window_nonlinear_audit"])
+            ],
+            "transport_candidate_admitted": transport_admitted,
+            "transport_optimization_status": (
+                "candidate_admitted_pending_long_window_nonlinear_audit"
+                if transport_admitted
+                else "blocked_before_transport_claim"
+            ),
             "next_step": (
-                "Use only branches that pass the solved-WOUT gate for matched long-window SPECTRAX-GK "
-                "nonlinear audits; reduce or rescale the transport residual for failed branches."
+                "Use only branches with authoritative passing solved-WOUT gates for matched long-window "
+                "SPECTRAX-GK nonlinear audits. If the transport branch is blocked, switch to a "
+                "constraint-preserving/projection/admission method instead of promoting scalar-weight sweeps."
             ),
         },
     }
@@ -337,6 +390,13 @@ def _write_csv(payload: dict[str, Any], path: Path) -> None:
             {
                 "label": branch["label"],
                 "passed": gate["passed"],
+                "admitted_for_long_window_nonlinear_audit": branch.get(
+                    "admitted_for_long_window_nonlinear_audit",
+                    False,
+                ),
+                "gate_source": branch.get("gate_source"),
+                "gate_is_authoritative": branch.get("gate_is_authoritative"),
+                "admission_blockers": ";".join(str(item) for item in branch.get("admission_blockers", ())),
                 "aspect_final": hist["aspect_final"],
                 "iota_final": hist["iota_final"],
                 "qs_final": hist["qs_final"],

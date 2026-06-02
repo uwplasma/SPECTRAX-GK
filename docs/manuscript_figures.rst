@@ -93,9 +93,11 @@ The companion solved-boundary guardrail
 promoted optimization result. It documents the VMEC-JAX/SPECTRAX-GK objective
 assembly and WOUT-writing path, while deliberately failing closed when the
 transport-weight refinement degrades the solved WOUT profile-iota and
-quasisymmetry margins. A future paper-facing solved-boundary optimization
-figure must pass this full solved-candidate gate before launching long-window
-nonlinear transport audits.
+quasisymmetry margins. The refreshed builder also treats gates reconstructed
+from ``history.json`` and ``wout_final.nc`` as advisory only; paper-facing
+admission requires an authoritative final ``solved_wout_gate.json``. A future
+solved-boundary optimization figure must pass this full solved-candidate gate
+before launching long-window nonlinear transport audits.
 
 Current Vs Deferred Figure Inventory
 ------------------------------------
