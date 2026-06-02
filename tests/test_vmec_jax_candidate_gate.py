@@ -125,6 +125,54 @@ def test_candidate_gate_prefers_independent_state_qs_over_history(monkeypatch) -
     assert report["checks"]["quasisymmetry"]["source"] == "vmec_jax_state"
 
 
+def test_candidate_gate_uses_standalone_qs_not_assembled_transport_block(monkeypatch) -> None:
+    def fake_profiles_from_state(*, state, static, indata, signgs):
+        return None, np.asarray([0.0, 0.411, 0.415]), np.asarray([0.412, 0.416])
+
+    class FakeQS:
+        def __init__(self, *, helicity_m, helicity_n, surfaces):
+            assert helicity_m == 1
+            assert helicity_n == 0
+            assert np.asarray(surfaces).shape[0] == 11
+
+        def total(self, ctx, state):
+            assert state == "state"
+            assert ctx.signgs == 1
+            return 0.009
+
+    fake_vmec_jax = SimpleNamespace(
+        equilibrium_iota_profiles_from_state=fake_profiles_from_state,
+        QuasisymmetryRatioResidual=FakeQS,
+    )
+    monkeypatch.setitem(sys.modules, "vmec_jax", fake_vmec_jax)
+
+    class FakeOptimizer:
+        _static = SimpleNamespace(s=np.asarray([0.0, 0.5, 1.0]))
+        _indata = "indata"
+        _signgs = 1
+        _flux = "flux"
+        _helicity_m = 1
+        _helicity_n = 0
+
+        def _evaluate_residuals_from_state(self, _state):
+            return {"transport_contaminated_block": 99.0}
+
+        def _qs_total_from_state(self, _state, _residuals):
+            return 99.0
+
+    result = SimpleNamespace(
+        history={"aspect_final": 6.0, "iota_final": 0.428, "qs_final": 99.0},
+        final_state="state",
+        final_optimizer=FakeOptimizer(),
+    )
+
+    report = build_solved_vmec_candidate_gate(result, **POLICY)
+
+    assert report["passed"] is True
+    assert report["checks"]["quasisymmetry"]["value"] == 0.009
+    assert report["checks"]["quasisymmetry"]["source"] == "vmec_jax_state"
+
+
 def test_candidate_gate_state_qs_falls_back_to_optimizer_method(monkeypatch) -> None:
     def fake_profiles_from_state(*, state, static, indata, signgs):
         return None, np.asarray([0.0, 0.411, 0.415]), np.asarray([0.412, 0.416])
