@@ -1333,6 +1333,7 @@ fast_tests = [
   "tests/test_build_vmec_boozer_nonlinear_window_fd_audit.py",
   "tests/test_build_nonlinear_transport_horizon_audit.py",
   "tests/test_nonlinear_transport_optimization.py",
+  "tests/test_vmec_jax_candidate_gate.py",
   "tests/test_vmec_jax_qa_optimization_driver.py",
   "tests/test_vmec_jax_transport_objective.py",
 ]

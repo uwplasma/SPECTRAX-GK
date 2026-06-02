@@ -22,6 +22,12 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
+SRC = ROOT / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
+
+from spectraxgk.vmec_jax_candidate_gate import build_solved_vmec_candidate_gate  # type: ignore[import-untyped] # noqa: E402
+
 DEFAULT_DRIVER = ROOT / "examples" / "optimization" / "vmec_jax_qa_low_turbulence_optimization.py"
 DEFAULT_OUTDIR = ROOT / "tools_out" / "vmec_jax_guarded_transport_ladder"
 DEFAULT_WEIGHTS = (5.0e-4, 1.0e-3, 2.5e-3, 5.0e-3, 1.0e-2)
@@ -48,13 +54,76 @@ def _parse_weights(raw: str) -> tuple[float, ...]:
     return values
 
 
-def candidate_summary(root: Path, *, label: str, weight: float | None = None, baseline: bool = False) -> dict[str, Any]:
+def _load_wout_iota_profiles(root: Path) -> tuple[Any, Any] | None:
+    wout_path = root / "wout_final.nc"
+    if not wout_path.exists():
+        return None
+    try:
+        import vmec_jax as vj  # type: ignore[import-not-found]
+
+        wout = vj.load_wout(wout_path)
+        return getattr(wout, "iotas"), getattr(wout, "iotaf")
+    except Exception:
+        return None
+
+
+def _candidate_gate_from_artifacts(
+    root: Path,
+    history: dict[str, Any],
+    *,
+    target_aspect: float,
+    aspect_atol: float,
+    min_abs_mean_iota: float,
+    qs_residual_max: float,
+    iota_profile_floor: float | None,
+) -> tuple[dict[str, Any], str | None]:
+    gate_path = root / "solved_wout_gate.json"
+    if gate_path.exists():
+        return _read_json_object(gate_path), str(gate_path)
+    if not history:
+        return {}, None
+    profiles = _load_wout_iota_profiles(root)
+    source = "wout_final.nc" if profiles is not None else "missing"
+    return (
+        build_solved_vmec_candidate_gate(
+            history,
+            target_aspect=target_aspect,
+            aspect_atol=aspect_atol,
+            min_abs_mean_iota=min_abs_mean_iota,
+            qs_residual_max=qs_residual_max,
+            iota_profile_floor=iota_profile_floor,
+            iota_profiles=profiles,
+            profile_source=source,
+        ),
+        None,
+    )
+
+
+def candidate_summary(
+    root: Path,
+    *,
+    label: str,
+    weight: float | None = None,
+    baseline: bool = False,
+    target_aspect: float = 6.0,
+    aspect_atol: float = 5.0e-2,
+    min_abs_mean_iota: float = 0.41,
+    qs_residual_max: float = 5.0e-2,
+    iota_profile_floor: float | None = 0.41,
+) -> dict[str, Any]:
     """Return a compact promotion summary for a solved candidate directory."""
 
     history_path = root / "history.json"
-    gate_path = root / "solved_wout_gate.json"
     history = _read_json_object(history_path) if history_path.exists() else {}
-    gate = _read_json_object(gate_path) if gate_path.exists() else {}
+    gate, gate_path = _candidate_gate_from_artifacts(
+        root,
+        history,
+        target_aspect=target_aspect,
+        aspect_atol=aspect_atol,
+        min_abs_mean_iota=min_abs_mean_iota,
+        qs_residual_max=qs_residual_max,
+        iota_profile_floor=iota_profile_floor,
+    )
     passed = bool(gate.get("passed", False))
     return {
         "label": label,
@@ -62,7 +131,8 @@ def candidate_summary(root: Path, *, label: str, weight: float | None = None, ba
         "baseline": bool(baseline),
         "transport_weight": None if weight is None else float(weight),
         "history_path": str(history_path) if history_path.exists() else None,
-        "gate_path": str(gate_path) if gate_path.exists() else None,
+        "gate_path": gate_path,
+        "gate_source": "solved_wout_gate.json" if gate_path is not None else ("reconstructed" if gate else None),
         "passed": passed,
         "objective_final": history.get("objective_final"),
         "aspect_final": history.get("aspect_final"),
@@ -128,6 +198,11 @@ def build_parser() -> argparse.ArgumentParser:
         default="",
         help="Additional arguments passed to the VMEC-JAX QA driver, parsed with shlex.split",
     )
+    parser.add_argument("--target-aspect", type=float, default=6.0, help="Solved-candidate aspect target")
+    parser.add_argument("--aspect-atol", type=float, default=5.0e-2, help="Solved-candidate aspect tolerance")
+    parser.add_argument("--min-iota", type=float, default=0.41, help="Minimum accepted absolute mean iota")
+    parser.add_argument("--qs-max", type=float, default=5.0e-2, help="Maximum accepted QS residual")
+    parser.add_argument("--iota-profile-floor", type=float, default=0.41, help="Minimum accepted solved iota profile")
     parser.add_argument("--timeout-s", type=float, default=0.0, help="Per-candidate subprocess timeout; 0 disables")
     parser.add_argument("--dry-run", action="store_true", help="Write the launch plan without running candidates")
     parser.add_argument("--out-json", type=Path, default=None, help="Summary JSON path; defaults inside --outdir")
@@ -144,7 +219,25 @@ def main(argv: list[str] | None = None) -> int:
     outdir = Path(args.outdir)
     outdir.mkdir(parents=True, exist_ok=True)
     commands: list[dict[str, Any]] = []
-    summaries = [candidate_summary(constraints_dir, label="QA constraints restart", baseline=True)]
+    gate_policy = {
+        "target_aspect": float(args.target_aspect),
+        "aspect_atol": float(args.aspect_atol),
+        "min_abs_mean_iota": float(args.min_iota),
+        "qs_residual_max": float(args.qs_max),
+        "iota_profile_floor": float(args.iota_profile_floor),
+    }
+    summaries = [
+        candidate_summary(
+            constraints_dir,
+            label="QA constraints restart",
+            baseline=True,
+            target_aspect=gate_policy["target_aspect"],
+            aspect_atol=gate_policy["aspect_atol"],
+            min_abs_mean_iota=gate_policy["min_abs_mean_iota"],
+            qs_residual_max=gate_policy["qs_residual_max"],
+            iota_profile_floor=gate_policy["iota_profile_floor"],
+        )
+    ]
     run_failures: list[dict[str, Any]] = []
     for weight in tuple(float(w) for w in args.weights):
         candidate_dir = outdir / f"transport_weight_{_weight_token(weight)}"
@@ -169,7 +262,18 @@ def main(argv: list[str] | None = None) -> int:
                 run_failures.append({"transport_weight": weight, "outdir": str(candidate_dir), "returncode": exc.returncode})
             except subprocess.TimeoutExpired:
                 run_failures.append({"transport_weight": weight, "outdir": str(candidate_dir), "timeout_s": float(args.timeout_s)})
-            summaries.append(candidate_summary(candidate_dir, label=f"transport weight {weight:.3g}", weight=weight))
+            summaries.append(
+                candidate_summary(
+                    candidate_dir,
+                    label=f"transport weight {weight:.3g}",
+                    weight=weight,
+                    target_aspect=gate_policy["target_aspect"],
+                    aspect_atol=gate_policy["aspect_atol"],
+                    min_abs_mean_iota=gate_policy["min_abs_mean_iota"],
+                    qs_residual_max=gate_policy["qs_residual_max"],
+                    iota_profile_floor=gate_policy["iota_profile_floor"],
+                )
+            )
     promoted = select_promoted_candidate(summaries)
     payload = {
         "kind": "vmec_jax_guarded_transport_ladder",
@@ -179,6 +283,7 @@ def main(argv: list[str] | None = None) -> int:
         ),
         "constraints_dir": str(constraints_dir),
         "restart_input": str(input_file),
+        "gate_policy": gate_policy,
         "dry_run": bool(args.dry_run),
         "commands": commands,
         "candidates": summaries,
