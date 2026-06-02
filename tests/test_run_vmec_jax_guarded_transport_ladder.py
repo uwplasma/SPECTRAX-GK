@@ -102,7 +102,7 @@ def test_guarded_ladder_dry_run_writes_commands(tmp_path: Path) -> None:
     assert payload["promoted_candidate"]["baseline"] is True
 
 
-def test_candidate_summary_reconstructs_missing_gate_from_wout_profiles(
+def test_candidate_summary_keeps_reconstructed_gate_advisory_by_default(
     tmp_path: Path,
     monkeypatch,
 ) -> None:
@@ -133,7 +133,49 @@ def test_candidate_summary_reconstructs_missing_gate_from_wout_profiles(
         iota_profile_floor=0.41,
     )
 
-    assert summary["passed"] is True
+    assert summary["passed"] is False
+    assert summary["gate_reported_passed"] is True
+    assert summary["gate_is_authoritative"] is False
     assert summary["gate_path"] is None
     assert summary["gate_source"] == "reconstructed"
     assert summary["gate_checks"]["iota_profile"] is True
+    assert "advisory only" in summary["next_action"]
+
+
+def test_candidate_summary_can_allow_reconstructed_gate_for_exploration(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    constraints = tmp_path / "constraints"
+    constraints.mkdir(parents=True)
+    (constraints / "history.json").write_text(
+        json.dumps(
+            {
+                "objective_final": 0.03,
+                "aspect_final": 6.001,
+                "iota_final": 0.427,
+                "qs_final": 0.02,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(mod, "_load_wout_iota_profiles", lambda _root: ([0.0, 0.411, 0.414], [0.412, 0.414]))
+
+    summary = mod.candidate_summary(
+        constraints,
+        label="legacy constraints",
+        baseline=True,
+        target_aspect=6.0,
+        aspect_atol=0.05,
+        min_abs_mean_iota=0.41,
+        qs_residual_max=0.05,
+        iota_profile_floor=0.41,
+        allow_reconstructed_gate=True,
+    )
+
+    assert summary["passed"] is True
+    assert summary["gate_reported_passed"] is True
+    assert summary["gate_is_authoritative"] is True
+    assert summary["gate_path"] is None
+    assert summary["gate_source"] == "reconstructed"

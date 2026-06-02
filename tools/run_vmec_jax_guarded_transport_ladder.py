@@ -110,6 +110,7 @@ def candidate_summary(
     min_abs_mean_iota: float = 0.41,
     qs_residual_max: float = 5.0e-2,
     iota_profile_floor: float | None = 0.41,
+    allow_reconstructed_gate: bool = False,
 ) -> dict[str, Any]:
     """Return a compact promotion summary for a solved candidate directory."""
 
@@ -124,7 +125,18 @@ def candidate_summary(
         qs_residual_max=qs_residual_max,
         iota_profile_floor=iota_profile_floor,
     )
-    passed = bool(gate.get("passed", False))
+    gate_source = "solved_wout_gate.json" if gate_path is not None else ("reconstructed" if gate else None)
+    gate_is_authoritative = gate_source == "solved_wout_gate.json" or (
+        gate_source == "reconstructed" and bool(allow_reconstructed_gate)
+    )
+    gate_reported_passed = bool(gate.get("passed", False))
+    passed = bool(gate_reported_passed and gate_is_authoritative)
+    next_action = gate.get("next_action")
+    if gate_source == "reconstructed" and not bool(allow_reconstructed_gate):
+        next_action = (
+            "reconstructed history/WOUT gate is advisory only; generate a fresh solved_wout_gate.json "
+            "or rerun with --allow-reconstructed-gate for exploratory dry runs"
+        )
     return {
         "label": label,
         "root": str(root),
@@ -132,14 +144,16 @@ def candidate_summary(
         "transport_weight": None if weight is None else float(weight),
         "history_path": str(history_path) if history_path.exists() else None,
         "gate_path": gate_path,
-        "gate_source": "solved_wout_gate.json" if gate_path is not None else ("reconstructed" if gate else None),
+        "gate_source": gate_source,
+        "gate_is_authoritative": bool(gate_is_authoritative),
+        "gate_reported_passed": gate_reported_passed,
         "passed": passed,
         "objective_final": history.get("objective_final"),
         "aspect_final": history.get("aspect_final"),
         "iota_final": history.get("iota_final"),
         "qs_final": history.get("qs_final"),
         "gate_checks": {name: check.get("passed") for name, check in gate.get("checks", {}).items()},
-        "next_action": gate.get("next_action"),
+        "next_action": next_action,
     }
 
 
@@ -203,6 +217,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--min-iota", type=float, default=0.41, help="Minimum accepted absolute mean iota")
     parser.add_argument("--qs-max", type=float, default=5.0e-2, help="Maximum accepted QS residual")
     parser.add_argument("--iota-profile-floor", type=float, default=0.41, help="Minimum accepted solved iota profile")
+    parser.add_argument(
+        "--allow-reconstructed-gate",
+        action="store_true",
+        help=(
+            "Treat a gate reconstructed from history.json plus WOUT iota profiles as promotable. "
+            "Default is fail-closed because history and restart-input QS conventions can drift."
+        ),
+    )
     parser.add_argument("--timeout-s", type=float, default=0.0, help="Per-candidate subprocess timeout; 0 disables")
     parser.add_argument("--dry-run", action="store_true", help="Write the launch plan without running candidates")
     parser.add_argument("--out-json", type=Path, default=None, help="Summary JSON path; defaults inside --outdir")
@@ -236,6 +258,7 @@ def main(argv: list[str] | None = None) -> int:
             min_abs_mean_iota=gate_policy["min_abs_mean_iota"],
             qs_residual_max=gate_policy["qs_residual_max"],
             iota_profile_floor=gate_policy["iota_profile_floor"],
+            allow_reconstructed_gate=bool(args.allow_reconstructed_gate),
         )
     ]
     run_failures: list[dict[str, Any]] = []
@@ -272,6 +295,7 @@ def main(argv: list[str] | None = None) -> int:
                     min_abs_mean_iota=gate_policy["min_abs_mean_iota"],
                     qs_residual_max=gate_policy["qs_residual_max"],
                     iota_profile_floor=gate_policy["iota_profile_floor"],
+                    allow_reconstructed_gate=bool(args.allow_reconstructed_gate),
                 )
             )
     promoted = select_promoted_candidate(summaries)
@@ -284,6 +308,7 @@ def main(argv: list[str] | None = None) -> int:
         "constraints_dir": str(constraints_dir),
         "restart_input": str(input_file),
         "gate_policy": gate_policy,
+        "allow_reconstructed_gate": bool(args.allow_reconstructed_gate),
         "dry_run": bool(args.dry_run),
         "commands": commands,
         "candidates": summaries,
