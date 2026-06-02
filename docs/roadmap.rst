@@ -195,6 +195,17 @@ single-control bracket, but lower-variance evidence through longer
 post-transient windows, paired replicas, or better-conditioned multi-control
 observables before any production nonlinear-gradient claim.
 
+The VMEC-JAX aspect-6 QA transport restart now has a measured reduced
+transport-gradient diagnostic and a solved-gate projected line-search bracket.
+The explicit single-sample nonlinear-window metric decreases from
+``0.0580559`` to ``0.0559975`` at projected step ``1e-3`` while the physical
+aspect/iota/QS gates pass; the next step ``2e-3`` is rejected by the QS gate.
+This closes the local-sensitivity question for the current scalar-weight
+ladder failure and opens the next implementation task: make the projected
+line-search/admission path a reusable tool, then launch matched long-window
+nonlinear audits for the admitted candidate before making any turbulent-flux
+optimization claim.
+
 Before tagging, the latest public ``main`` CI run must pass repo hygiene, mypy,
 quick shards, docs/packaging, fast coverage, and the full wide-coverage matrix.
 The configured wide-coverage job enforces ``95%`` package-wide coverage. Some

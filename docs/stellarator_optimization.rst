@@ -290,6 +290,27 @@ flat report means the transport observable, sample set, finite-difference
 scale, or nonlinear-window evidence must be changed before more optimization
 iterations are scientifically meaningful.
 
+The current aspect-6 QA restart is locally sensitive: the transport-only
+diagnostic gives ``||grad J||_2 = 0.421`` for a single
+``s=0.64, alpha=0, k_y rho_i=0.30`` nonlinear-window metric. A sparse projected
+line search along the leading 12 boundary components lowers the explicit metric
+from ``0.0580559`` to ``0.0559975`` at projected step ``1e-3`` while preserving
+the aspect, mean-iota, iota-profile, and QS gates. The next larger step
+``2e-3`` is rejected because the solved QS residual rises to ``0.119846`` above
+the ``0.05`` gate. This is evidence for a gate-aware projected-admission
+algorithm; it is not yet a long-window nonlinear turbulent-flux optimization
+claim.
+
+.. figure:: _static/vmec_jax_transport_gradient_line_search.svg
+   :alt: VMEC-JAX transport-gradient line-search audit
+   :width: 100%
+
+   VMEC-JAX/SPECTRAX-GK transport-gradient line-search audit. Green points pass
+   the solved-equilibrium aspect, iota, and QS gates; the red point is rejected
+   by the QS gate. The best accepted projected step reduces the reduced
+   transport metric by ``3.55%`` and defines the candidate for the next matched
+   long-window nonlinear audit.
+
 .. figure:: _static/qa_low_turbulence_comparison.png
    :alt: Aspect-6 QA low-turbulence optimization comparison
    :width: 100%

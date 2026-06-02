@@ -90,7 +90,13 @@ score.
        selected optimized QA equilibrium now has a converged post-transient
        seed/timestep transport-window audit, so the production guard is closed
        for that scoped audit. Broad multi-surface nonlinear optimization and
-       nonlinear turbulence gradients remain unpromoted.
+       nonlinear turbulence gradients remain unpromoted. A VMEC-JAX
+       transport-gradient diagnostic now also shows a measurable local
+       boundary gradient for the aspect-6 QA restart and a solved-gate
+       projected line-search bracket: the best accepted reduced transport
+       metric improves by ``3.55%``, while the next larger step is rejected by
+       the QS gate. This supports gate-aware projected admission but is still
+       not a long-window nonlinear turbulent-flux optimization claim.
    * - Parallelization
      - production-ready for independent work
      - Independent ``k_y`` scans, quasilinear spectra, sensitivity batches, and
@@ -201,6 +207,8 @@ README claims, or manuscript claims.
        ``nonlinear_gradient_state_control_short_bracket_launch.*``,
        ``nonlinear_gradient_state_control_short_bracket_launch_status.*``,
        ``nonlinear_gradient_state_control_short_bracket_nonlinear_audit_status.*``,
+       ``vmec_jax_transport_gradient_diagnostic.json``,
+       ``vmec_jax_transport_gradient_line_search.*``,
        ``nonlinear_window_ensemble_readiness_manifest.json``,
        ``nonlinear_window_convergence_reports/*.json``,
        ``stellarator_itg_optimization_comparison.*``, and
