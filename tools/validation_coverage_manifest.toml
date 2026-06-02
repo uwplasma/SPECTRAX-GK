@@ -1288,6 +1288,7 @@ owned_modules = [
   "spectraxgk.vmec_jax_candidate_gate",
   "spectraxgk.vmec_jax_transport_admission",
   "spectraxgk.vmec_jax_transport_gradient",
+  "spectraxgk.vmec_jax_transport_line_search",
   "spectraxgk.vmec_jax_transport_objective",
 ]
 owner_lane = "production solver-objective geometry-gradient validation"
@@ -1339,6 +1340,7 @@ fast_tests = [
   "tests/test_vmec_jax_qa_optimization_driver.py",
   "tests/test_vmec_jax_transport_admission.py",
   "tests/test_vmec_jax_transport_gradient.py",
+  "tests/test_vmec_jax_transport_line_search.py",
   "tests/test_vmec_jax_transport_objective.py",
 ]
 artifact_paths = [

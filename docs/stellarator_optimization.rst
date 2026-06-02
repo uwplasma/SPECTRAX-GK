@@ -290,6 +290,25 @@ flat report means the transport observable, sample set, finite-difference
 scale, or nonlinear-window evidence must be changed before more optimization
 iterations are scientifically meaningful.
 
+After a sensitive diagnostic, generate bounded projected candidate inputs with:
+
+.. code-block:: bash
+
+   python tools/write_vmec_jax_projected_transport_line_search_inputs.py \
+     --input runs/qa_constraints_only/input.final \
+     --gradient-json runs/qa_constraints_only/transport_gradient.json \
+     --outdir runs/qa_projected_transport_line_search \
+     --steps 2.5e-4,5e-4,1e-3,2e-3 \
+     --top-n 12 \
+     --max-mode 5 --min-vmec-mode 7 \
+     --mboz 21 --nboz 21 \
+     --solver-device gpu
+
+The generated ``projected_line_search_inputs.json`` records the candidate
+``input.gradient_step`` decks and replay commands. Each replay must still write
+an authoritative ``solved_wout_gate.json`` and explicit transport metric before
+any candidate is admitted.
+
 The current aspect-6 QA restart is locally sensitive: the transport-only
 diagnostic gives ``||grad J||_2 = 0.421`` for a single
 ``s=0.64, alpha=0, k_y rho_i=0.30`` nonlinear-window metric. A sparse projected
