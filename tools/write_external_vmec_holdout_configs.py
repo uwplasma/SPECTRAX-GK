@@ -494,8 +494,8 @@ def write_manifest(out_dir: Path, written: list[WrittenConfig]) -> Path:
             }
         )
         launch_commands.append(
-            f"CUDA_VISIBLE_DEVICES=${{DEVICE:-0}} python3 -m spectraxgk.cli run "
-            f"--config {item.path.as_posix()} --no-progress"
+            "CUDA_VISIBLE_DEVICES=${DEVICE:-0} python3 -m spectraxgk.cli run-runtime-nonlinear "
+            f"--config {item.path.as_posix()} --steps {int(item.steps)} --no-progress"
         )
         variant_key = "" if item.variant is None else item.variant.label
         previous_key = (item.grid.label, variant_key)
