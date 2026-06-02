@@ -150,6 +150,13 @@ branch directly instead of rebuilding the lower-mode continuation ladder. This
 is useful for profile-floor and transport-weight sweeps after a solved WOUT has
 already passed the basic aspect/iota/QS gates.
 
+Every solved run now writes `solved_wout_gate.json` and exits nonzero unless
+the final equilibrium satisfies the aspect, mean-iota, solved iota-profile, and
+quasisymmetry gates. This is intentional: a transport-weight refinement that
+reduces a reduced SPECTRAX-GK residual but breaks the QA/iota constraints is not
+ready for a long nonlinear turbulent-flux audit. For exploratory sweeps that
+should keep failed candidates, pass `--allow-failed-solved-wout-gate`.
+
 After a real QA-only and transport-aware pair is produced, the next scientific
 step is not another reduced figure. It is a matched long-window SPECTRAX-GK
 nonlinear transport audit of both final WOUT files, with running-average,

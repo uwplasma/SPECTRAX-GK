@@ -223,6 +223,14 @@ lower-mode continuation ladder, which is the efficient path for profile-floor,
 target-iota, and transport-weight refinements after a solved WOUT already
 passes the basic aspect/iota/QS gates.
 
+The driver also writes ``solved_wout_gate.json`` after each solve and fails
+closed by default if the final equilibrium violates the aspect, mean-iota,
+solved iota-profile, or quasisymmetry limits. This gate exists because a small
+transport residual is not useful if the optimizer has moved to a degraded
+equilibrium branch. Failed candidates can still be retained for diagnostics with
+``--allow-failed-solved-wout-gate``, but they should not be promoted to
+long-window nonlinear turbulent-flux audits.
+
 .. figure:: _static/qa_low_turbulence_comparison.png
    :alt: Aspect-6 QA low-turbulence optimization comparison
    :width: 100%
