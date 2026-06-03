@@ -553,8 +553,12 @@ The backend-free projected line-search helpers accept the collection JSON
 through ``boundary_chain_collection`` and, by default, admit only coefficients
 that pass both frozen-axis replay and exact-FD agreement. The
 ``require_boundary_chain_exact_fd=False`` path is diagnostic only and must not
-drive promoted VMEC boundary updates. When the collection includes the
-growth-branch locality block from
+drive promoted VMEC boundary updates unless each branch-sensitive coefficient
+also carries ``frozen_axis_convention_verified = true``. That stricter gate
+checks the frozen-axis finite-difference tangent against VMEC-JAX's explicit
+tangent column and verifies both tape JVP/VJP contractions in that convention;
+internal JVP/VJP transpose alone is no longer sufficient. When the collection
+includes the growth-branch locality block from
 ``tools/probe_vmec_jax_boundary_chain.py --include-growth-branch-locality``,
 production projected-input generation should also use
 ``--require-growth-branch-locality`` so a coefficient with a switched or

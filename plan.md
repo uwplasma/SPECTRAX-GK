@@ -29,6 +29,21 @@ This file is both the active plan and the running log. Keep entries concise, dat
   local authoritative sidecar campaign when present and otherwise falls back to
   the tracked payload in clean clones.
 
+## 2026-06-03 Frozen-Axis Convention Verification Gate
+
+- Added an explicit ``frozen_axis_convention_verified`` boundary-chain gate for
+  VMEC-JAX/SPECTRAX optimization diagnostics. The probe now compares the
+  frozen-axis finite-difference initial tangent against VMEC-JAX's explicit
+  tangent column and records linear-tangent JVP/VJP contractions.
+- Collection summaries now count
+  ``n_frozen_axis_convention_verified`` separately from
+  ``n_exact_fd_consistent``. Raw exact-solve finite-difference mismatches
+  remain visible and are not relabeled as exact-FD passes.
+- Projected line-search admission remains strict by default. If branch-sensitive
+  diagnostics are explicitly allowed, a row is admitted only when exact FD
+  passes or the frozen-axis convention gate is verified; internal JVP/VJP
+  transpose alone is insufficient.
+
 ## 2026-06-03 Nonlinear-Audit Promotion Runbook
 
 - Passing VMEC-JAX/SPECTRAX-GK AD/finite-difference checks is only the

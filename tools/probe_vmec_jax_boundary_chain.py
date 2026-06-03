@@ -283,6 +283,17 @@ def main(argv: list[str] | None = None) -> int:
     frozen_axis_linear_tangent = jax.block_until_ready(
         jnp.asarray(tangent_columns[int(args.index)], dtype=jnp.float64)
     )
+    frozen_axis_initial_fd_vs_linear = jax.block_until_ready(
+        jnp.asarray(frozen_axis_initial_fd - frozen_axis_linear_tangent, dtype=jnp.float64)
+    )
+    frozen_axis_initial_fd_norm = _norm(frozen_axis_initial_fd)
+    frozen_axis_linear_initial_norm = _norm(frozen_axis_linear_tangent)
+    frozen_axis_initial_fd_vs_linear_abs_norm = _norm(frozen_axis_initial_fd_vs_linear)
+    frozen_axis_initial_fd_vs_linear_rel = frozen_axis_initial_fd_vs_linear_abs_norm / max(
+        frozen_axis_initial_fd_norm,
+        frozen_axis_linear_initial_norm,
+        float(args.absolute_tolerance),
+    )
 
     def replay(initial_tangent: Any) -> Any:
         out = checkpoint_tape_state_jvp_columns(
@@ -349,8 +360,10 @@ def main(argv: list[str] | None = None) -> int:
         "tape_jvp_final_frozen_axis_fd_norm": _norm(tape_jvp_frozen_axis_fd),
         "tape_jvp_final_frozen_axis_linear_norm": _norm(tape_jvp_frozen_axis_linear),
         "raw_initial_fd_norm": _norm(raw_initial_fd),
-        "frozen_axis_initial_fd_norm": _norm(frozen_axis_initial_fd),
-        "frozen_axis_linear_initial_norm": _norm(frozen_axis_linear_tangent),
+        "frozen_axis_initial_fd_norm": frozen_axis_initial_fd_norm,
+        "frozen_axis_linear_initial_norm": frozen_axis_linear_initial_norm,
+        "frozen_axis_initial_fd_vs_linear_abs_norm": frozen_axis_initial_fd_vs_linear_abs_norm,
+        "frozen_axis_initial_fd_vs_linear_rel": frozen_axis_initial_fd_vs_linear_rel,
         "final_cot_norm": _norm(final_cotangent),
         "initial_cot_norm": _norm(initial_cotangent),
         "base_tape_diagnostics": _safe_json(getattr(tape, "diagnostics", {})),
@@ -366,6 +379,16 @@ def main(argv: list[str] | None = None) -> int:
         final_cot_dot_exact_final_fd=result["final_cot_dot_exact_final_fd"],
         frozen_axis_replay_cost_gradient=frozen_jvp,
         frozen_axis_vjp_cost_gradient=frozen_vjp,
+        frozen_axis_linear_replay_cost_gradient=result[
+            "final_cot_dot_tape_jvp_frozen_axis_linear"
+        ],
+        frozen_axis_linear_vjp_cost_gradient=result["initial_cot_dot_frozen_axis_linear"],
+        frozen_axis_initial_fd_vs_linear_abs_norm=result[
+            "frozen_axis_initial_fd_vs_linear_abs_norm"
+        ],
+        frozen_axis_initial_fd_vs_linear_rel=result[
+            "frozen_axis_initial_fd_vs_linear_rel"
+        ],
         raw_initial_replay_cost_gradient=result[
             "final_cot_dot_tape_jvp_raw_initial_fd"
         ],

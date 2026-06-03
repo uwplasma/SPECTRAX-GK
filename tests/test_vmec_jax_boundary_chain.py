@@ -38,6 +38,36 @@ def test_boundary_chain_summary_classifies_frozen_axis_branch_sensitivity() -> N
     json.dumps(summary, allow_nan=False)
 
 
+def test_boundary_chain_summary_verifies_frozen_axis_convention_despite_raw_exact_branch_sensitivity() -> None:
+    summary = build_boundary_chain_summary(
+        exact_fd_cost_gradient=1.0,
+        final_cot_dot_exact_final_fd=0.98,
+        frozen_axis_replay_cost_gradient=0.5,
+        frozen_axis_vjp_cost_gradient=0.5 + 1.0e-13,
+        frozen_axis_linear_replay_cost_gradient=0.5 + 2.0e-13,
+        frozen_axis_linear_vjp_cost_gradient=0.5,
+        frozen_axis_initial_fd_vs_linear_abs_norm=1.0e-13,
+        frozen_axis_initial_fd_vs_linear_rel=1.0e-13,
+        raw_initial_replay_cost_gradient=3.0,
+        raw_initial_fd_norm=120.0,
+        frozen_axis_initial_fd_norm=1.0,
+        exact_relative_tolerance=0.1,
+    )
+
+    assert summary["classification"] == (
+        "frozen_axis_convention_verified_but_exact_fd_branch_sensitive"
+    )
+    assert summary["passes"]["frozen_axis_matches_exact_fd"] is False
+    assert summary["passes"]["frozen_axis_jvp_vjp_consistent"] is True
+    assert summary["passes"]["frozen_axis_fd_matches_linear_tangent"] is True
+    assert summary["passes"]["frozen_axis_fd_jvp_matches_linear_jvp"] is True
+    assert summary["passes"]["frozen_axis_linear_jvp_vjp_consistent"] is True
+    assert summary["passes"]["frozen_axis_fd_vjp_matches_linear_vjp"] is True
+    assert summary["passes"]["frozen_axis_convention_verified"] is True
+    assert summary["metrics"]["raw_to_frozen_initial_norm_ratio"] == pytest.approx(120.0)
+    assert "explicit tangent column" in summary["next_action"]
+
+
 def test_boundary_chain_summary_anchors_latest_rc14_probe() -> None:
     summary = build_boundary_chain_summary(
         exact_fd_cost_gradient=0.07727649731974727,
@@ -157,6 +187,10 @@ def test_boundary_chain_summary_from_probe_and_public_api() -> None:
         "final_cot_dot_exact_final_fd": 0.0221,
         "final_cot_dot_tape_jvp_frozen_axis_fd": 0.02079152741,
         "initial_cot_dot_frozen_axis_fd": 0.02079152740,
+        "final_cot_dot_tape_jvp_frozen_axis_linear": 0.02079152741001,
+        "initial_cot_dot_frozen_axis_linear": 0.02079152740001,
+        "frozen_axis_initial_fd_vs_linear_abs_norm": 1.0e-13,
+        "frozen_axis_initial_fd_vs_linear_rel": 1.0e-13,
         "final_cot_dot_tape_jvp_raw_initial_fd": 0.0208,
         "raw_initial_fd_norm": 1.9,
         "frozen_axis_initial_fd_norm": 1.8,
@@ -169,6 +203,7 @@ def test_boundary_chain_summary_from_probe_and_public_api() -> None:
     )
     summary = boundary_chain_summary_from_probe(payload, exact_relative_tolerance=0.1)
     assert summary["classification"] == "exact_fd_and_frozen_axis_replay_consistent"
+    assert summary["passes"]["frozen_axis_convention_verified"] is True
 
 
 def test_boundary_chain_collection_summary_counts_mixed_modes() -> None:
@@ -219,6 +254,7 @@ def test_boundary_chain_collection_summary_counts_mixed_modes() -> None:
         "n_total": 2,
         "n_finite": 2,
         "n_frozen_axis_internal_pass": 2,
+        "n_frozen_axis_convention_verified": 0,
         "n_exact_fd_consistent": 1,
         "n_branch_sensitive": 1,
         "n_growth_branch_locality_checked": 1,
@@ -234,10 +270,40 @@ def test_boundary_chain_collection_summary_counts_mixed_modes() -> None:
     assert "exclude or regularize branch-sensitive modes" in summary["next_action"]
 
 
+def test_boundary_chain_collection_counts_verified_frozen_axis_convention_separately() -> None:
+    verified = {
+        "index": 3,
+        "name": "rc11",
+        "summary": build_boundary_chain_summary(
+            exact_fd_cost_gradient=1.0,
+            final_cot_dot_exact_final_fd=0.99,
+            frozen_axis_replay_cost_gradient=0.5,
+            frozen_axis_vjp_cost_gradient=0.5,
+            frozen_axis_linear_replay_cost_gradient=0.5,
+            frozen_axis_linear_vjp_cost_gradient=0.5,
+            frozen_axis_initial_fd_vs_linear_abs_norm=0.0,
+            frozen_axis_initial_fd_vs_linear_rel=0.0,
+            raw_initial_replay_cost_gradient=4.0,
+            raw_initial_fd_norm=100.0,
+            frozen_axis_initial_fd_norm=1.0,
+        ),
+    }
+
+    summary = build_boundary_chain_collection_summary([verified])
+
+    assert summary["classification"] == "all_components_frozen_axis_convention_verified"
+    assert summary["counts"]["n_exact_fd_consistent"] == 0
+    assert summary["counts"]["n_frozen_axis_convention_verified"] == 1
+    assert summary["rows"][0]["frozen_axis_matches_exact_fd"] is False
+    assert summary["rows"][0]["frozen_axis_convention_verified"] is True
+    assert "growth-branch" in summary["next_action"]
+
+
 def test_boundary_chain_collection_summary_fails_closed_when_empty() -> None:
     summary = build_boundary_chain_collection_summary([])
 
     assert summary["finite"] is False
     assert summary["classification"] == "empty_boundary_chain_collection"
     assert summary["counts"]["n_total"] == 0
+    assert summary["counts"]["n_frozen_axis_convention_verified"] == 0
     assert summary["counts"]["n_growth_branch_locality_checked"] == 0

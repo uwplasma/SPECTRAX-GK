@@ -68,6 +68,7 @@ def _boundary_chain_collection() -> dict[str, object]:
                 "finite": True,
                 "frozen_axis_jvp_vjp_consistent": True,
                 "frozen_axis_matches_exact_fd": True,
+                "frozen_axis_convention_verified": False,
                 "growth_branch_locality_checked": True,
                 "growth_branch_locality_passed": True,
             },
@@ -77,6 +78,7 @@ def _boundary_chain_collection() -> dict[str, object]:
                 "finite": True,
                 "frozen_axis_jvp_vjp_consistent": True,
                 "frozen_axis_matches_exact_fd": False,
+                "frozen_axis_convention_verified": True,
                 "growth_branch_locality_checked": True,
                 "growth_branch_locality_passed": False,
             },
@@ -86,6 +88,7 @@ def _boundary_chain_collection() -> dict[str, object]:
                 "finite": True,
                 "frozen_axis_jvp_vjp_consistent": False,
                 "frozen_axis_matches_exact_fd": True,
+                "frozen_axis_convention_verified": False,
                 "growth_branch_locality_checked": False,
                 "growth_branch_locality_passed": False,
             },
@@ -124,6 +127,15 @@ def test_boundary_chain_filter_can_admit_internal_replay_diagnostics() -> None:
     assert direction[0] == 0.0
 
 
+def test_boundary_chain_filter_excludes_unverified_branch_sensitive_rows() -> None:
+    collection = _boundary_chain_collection()
+    rows = collection["rows"]
+    assert isinstance(rows, list)
+    rows[1]["frozen_axis_convention_verified"] = False
+
+    assert boundary_chain_accepted_parameter_indices(collection, require_exact_fd=False) == (1,)
+
+
 def test_boundary_chain_filter_can_require_growth_branch_locality() -> None:
     collection = _boundary_chain_collection()
 
@@ -160,6 +172,7 @@ def test_projected_line_search_manifest_records_boundary_chain_filter() -> None:
     assert manifest["boundary_chain_filter"] == {
         "enabled": True,
         "require_exact_fd": True,
+        "require_frozen_axis_convention_when_exact_fd_missing": False,
         "require_growth_branch_locality": True,
         "collection_classification": "mixed_exact_fd_consistency_with_branch_sensitive_modes",
         "accepted_parameter_indices": [1],
