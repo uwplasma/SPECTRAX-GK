@@ -42,9 +42,21 @@ The target paper should show:
 - Validation: focused pytest/ruff, repository-size check, validation manifest,
   docs build, and CI run ``26853904296`` passed on ``main``.
 
-Next best step: build a better-conditioned multi-sample transport-admission
-objective with multiple surfaces, field-line labels, and/or ``k_y`` values
-before launching another expensive optimized-equilibrium nonlinear audit.
+- Immediate follow-up: added a fail-closed nonlinear-audit redesign gate
+  (``VMECJAXNonlinearAuditPolicy`` and
+  ``build_nonlinear_audit_redesign_report``) plus the artifact
+  ``docs/_static/qa_projected_transport_step1e3_redesign_report.json``. The
+  gate blocks this candidate on insufficient matched reduction, insufficient
+  uncertainty separation, and under-resolved single-point sample coverage.
+- Updated the VMEC-JAX QA transport example defaults and README/docs commands
+  to use the recommended 18-point reduced objective:
+  ``s = (0.45, 0.64, 0.78)``, ``alpha = (0, pi/4)``, and
+  ``k_y rho_i = (0.190, 0.300, 0.476)``. Added regression tests so the example
+  cannot silently return to a single-point default.
+
+Next best step: run the multi-sample projected VMEC-JAX transport-admission
+path on a bounded candidate, then launch long-window nonlinear audits only if
+the multi-sample reduced objective and solved-equilibrium gates both pass.
 
 ## 2026-06-01 VMEC-JAX QA Transport Objective Fix
 
