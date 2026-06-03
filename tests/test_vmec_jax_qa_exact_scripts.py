@@ -129,16 +129,24 @@ def test_readme_uses_solved_vmec_qa_geometry_not_reduced_surface_panel() -> None
     normalized_readme = re.sub(r"\s+", " ", readme)
 
     assert "docs/_static/vmec_jax_qa_solved_boundary_boozer_panel.png" in readme
-    assert "docs/_static/stellarator_itg_optimization_comparison.png" not in readme
+    assert "docs/_static/stellarator_itg_optimization_comparison.png" in readme
+    assert readme.index("docs/_static/vmec_jax_qa_solved_boundary_boozer_panel.png") < readme.index(
+        "docs/_static/stellarator_itg_optimization_comparison.png"
+    )
     assert "not a nonlinear heat-flux optimization claim" in normalized_readme
     assert (
-        "synthetic max-mode-1 visualization, not a solved VMEC-JAX QA surface"
+        "synthetic LCFS/Boozer views are not solved VMEC surfaces"
         in normalized_readme
     )
 
     assert "_static/vmec_jax_qa_solved_boundary_boozer_panel.png" in docs
     assert "not solved VMEC WOUT surfaces" in docs
-    assert ".. figure:: _static/stellarator_itg_optimization_comparison.png" not in docs
+    assert ".. figure:: _static/stellarator_itg_optimization_comparison.png" in docs
+    assert docs.index("_static/vmec_jax_qa_solved_boundary_boozer_panel.png") < docs.index(
+        "_static/stellarator_itg_optimization_comparison.png"
+    )
+    assert "Reduced synthetic max-mode-1 comparison" in docs
+    assert "not solved VMEC WOUT surfaces" in docs
     assert (
         "current artifact bases: ``docs/_static/stellarator_itg_optimization_comparison.png``"
         not in manuscript

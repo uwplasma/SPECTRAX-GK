@@ -155,6 +155,34 @@ transport-optimization success claim.
    max-mode-1 optimization-plumbing panels below and is not a nonlinear
    heat-flux optimization claim.
 
+The next two panels are the reduced optimization evidence stack for the three
+transport objectives: linear ITG growth rate, quasilinear heat-flux proxy, and
+reduced nonlinear-window heat-flux envelope. They are intentionally placed
+below the solved VMEC-JAX baseline so the solved geometry and reduced optimizer
+diagnostics are not confused.
+
+.. figure:: _static/stellarator_itg_optimization_comparison.png
+   :alt: Reduced synthetic linear, quasilinear, and nonlinear-window QA optimization comparison
+   :width: 95%
+   :align: center
+
+   Reduced synthetic max-mode-1 comparison for the three differentiable
+   SPECTRAX-GK transport objectives. The top row compares objective histories,
+   density-gradient scans, and fixed-gradient reduced heat-flux envelopes. The
+   lower rows are synthetic reduced LCFS/Boozer ``|B|`` diagnostics, not solved
+   VMEC surfaces. Use this panel for optimization-plumbing comparisons only.
+
+.. figure:: _static/stellarator_itg_optimization_uq.png
+   :alt: Reduced stellarator ITG optimization derivative and UQ diagnostics
+   :width: 95%
+   :align: center
+
+   AD/finite-difference derivative and local Gauss-Newton covariance checks for
+   the linear-growth, quasilinear-flux, and reduced nonlinear-window objectives.
+   This is the README/docs-level differentiability and UQ gate; production
+   nonlinear turbulent-flux claims still require matched long-window nonlinear
+   audits of solved VMEC equilibria.
+
 Configurable Solved-Boundary Driver
 -----------------------------------
 
