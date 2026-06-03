@@ -4,36 +4,34 @@ Differentiable Stellarator Optimization
 Purpose
 -------
 
-SPECTRAX-GK now includes a compact, fully JAX-differentiable reduced
-stellarator ITG optimization layer. It is designed as the validation gate
-before promoting a full ``vmec_jax -> booz_xform_jax -> SPECTRAX-GK``
-optimization loop. The reduced CI-scale examples optimize a
-quasi-axisymmetric, max-mode-1 control vector around a target aspect ratio
-``A = 7`` and mean rotational transform ``iota = 0.41``. The VMEC-JAX
-paper-facing example instead follows the current QA request directly:
-target ``A = 6``, use the original high-weight ``MeanIota`` target
-``iota = 0.41``, add a signed solved-profile floor ``iota(s) >= 0.41`` by
-default, reduce quasisymmetry error, and add a controlled SPECTRAX-GK transport
-objective. The profile floor is intentionally separate from the mean-iota
-target because bounded audits have shown that a candidate can satisfy the mean
-target while a point in the WOUT ``iota`` profile remains below ``0.41``.
+SPECTRAX-GK now provides two distinct differentiable stellarator-optimization
+paths. They should not be conflated.
 
-This page is deliberately conservative about claims:
+- The paper-facing VMEC-JAX path starts from the upstream fixed-boundary QA
+  script ``examples/optimization/QA_optimization.py`` and keeps its solved-
+  equilibrium objective structure: aspect ratio, high-weight mean iota, and
+  quasisymmetry. SPECTRAX-GK transport enters as one additional objective tuple.
+- The reduced CI-scale path optimizes a max-mode-1 QA control vector for fast
+  AD/finite-difference, UQ, plotting, and sample-set plumbing checks. Its
+  figures are useful diagnostics, but they are not solved VMEC WOUT surfaces and
+  they are not production nonlinear turbulent heat-flux optimization claims.
 
-- the reduced examples below are end-to-end differentiable and
-  finite-difference checked;
-- they validate optimization, sensitivity, covariance, sample-set reduction,
-  and plotting machinery;
-- the new multi-surface/alpha/``k_y`` portfolio gate is reduced
-  model-development evidence for objective plumbing;
-- they do **not** yet claim a production VMEC/Boozer/nonlinear gyrokinetic
-  stellarator optimization, and production nonlinear heat-flux optimization
-  requires long post-transient replicated windows.
+The VMEC-JAX-style scripts intentionally preserve the upstream QA constants
+``MAX_MODE = 5``, ``TARGET_ASPECT = 5.0``, ``TARGET_IOTA = 0.41``, and
+``IOTA_WEIGHT = 10_000.0``. The SPECTRAX-GK objective is appended with a small
+editable weight so the QA/aspect/iota gates remain dominant. Any production
+nonlinear heat-flux claim still requires matched long post-transient
+SPECTRAX-GK nonlinear audits, replicate statistics, and running-average
+convergence checks.
 
 Source Map
 ----------
 
 - Core API: :mod:`spectraxgk.stellarator_optimization`
+- VMEC-JAX transport objective hook:
+  :class:`spectraxgk.VMECJAXSpectraxTransportObjective`
+- VMEC-JAX transport objective config:
+  :class:`spectraxgk.VMECJAXTransportObjectiveConfig`
 - Production in-memory geometry boundary:
   :func:`spectraxgk.flux_tube_geometry_from_vmec_boozer_state`
 - Production-adjacent linear/quasilinear objective evaluator:
@@ -47,58 +45,78 @@ Source Map
   :func:`spectraxgk.vmec_boozer_scalar_objective_finite_difference_report`
 - Multi-point finite-difference sensitivity audit:
   :func:`spectraxgk.vmec_boozer_aggregate_scalar_objective_finite_difference_report`
-- Curvature-gated one-parameter line search:
-  :func:`spectraxgk.vmec_boozer_scalar_objective_line_search_report`
-- Multi-point curvature-gated one-parameter line search:
-  :func:`spectraxgk.vmec_boozer_aggregate_scalar_objective_line_search_report`
-- Held-out aggregate line-search validation:
-  :func:`spectraxgk.vmec_boozer_aggregate_line_search_holdout_report`
-- Held-out aggregate promotion artifact check:
-  ``tools/check_vmec_boozer_aggregate_holdout_gate.py``
 - Fast branch-continuity and sensitivity gate:
   :func:`spectraxgk.solver_objective_branch_gradient_report`
-- Tests: ``tests/test_stellarator_optimization.py``
-- Growth-rate example:
-  :download:`stellarator_itg_growth_optimization.py <../examples/optimization/stellarator_itg_growth_optimization.py>`
-- Quasilinear-flux example:
-  :download:`stellarator_itg_quasilinear_flux_optimization.py <../examples/optimization/stellarator_itg_quasilinear_flux_optimization.py>`
-- Nonlinear-window example:
-  :download:`stellarator_itg_nonlinear_heat_flux_optimization.py <../examples/optimization/stellarator_itg_nonlinear_heat_flux_optimization.py>`
-- Three-objective comparison:
-  :download:`compare_stellarator_itg_optimizations.py <../examples/optimization/compare_stellarator_itg_optimizations.py>`
-- Multi-surface/field-line portfolio gate:
-  :download:`stellarator_itg_portfolio_gate.py <../examples/optimization/stellarator_itg_portfolio_gate.py>`
-- VMEC-JAX QA optimizer with a SPECTRAX-GK transport residual:
-  :download:`vmec_jax_qa_low_turbulence_optimization.py <../examples/optimization/vmec_jax_qa_low_turbulence_optimization.py>`
-- Discoverable VMEC-JAX QA + nonlinear heat-flux example alias:
+- VMEC-JAX-style growth-rate script:
+  :download:`QA_optimization_with_growth_rate.py <../examples/optimization/QA_optimization_with_growth_rate.py>`
+- VMEC-JAX-style quasilinear-flux script:
+  :download:`QA_optimization_with_quasilinear_flux.py <../examples/optimization/QA_optimization_with_quasilinear_flux.py>`
+- VMEC-JAX-style nonlinear-window script:
   :download:`QA_optimization_with_nonlinear_heat_flux.py <../examples/optimization/QA_optimization_with_nonlinear_heat_flux.py>`
+- Configurable solved-boundary driver:
+  :download:`vmec_jax_qa_low_turbulence_optimization.py <../examples/optimization/vmec_jax_qa_low_turbulence_optimization.py>`
+- Reduced growth-rate example:
+  :download:`stellarator_itg_growth_optimization.py <../examples/optimization/stellarator_itg_growth_optimization.py>`
+- Reduced quasilinear-flux example:
+  :download:`stellarator_itg_quasilinear_flux_optimization.py <../examples/optimization/stellarator_itg_quasilinear_flux_optimization.py>`
+- Reduced nonlinear-window example:
+  :download:`stellarator_itg_nonlinear_heat_flux_optimization.py <../examples/optimization/stellarator_itg_nonlinear_heat_flux_optimization.py>`
+- Reduced three-objective comparison:
+  :download:`compare_stellarator_itg_optimizations.py <../examples/optimization/compare_stellarator_itg_optimizations.py>`
 - Optimization examples README:
   :download:`README.md <../examples/optimization/README.md>`
-- Plotting helper:
-  :download:`_stellarator_itg_plotting.py <../examples/optimization/_stellarator_itg_plotting.py>`
 
-The corresponding ``vmec_jax`` workflow that motivated this structure is the
-fixed-boundary QA script
-``examples/optimization/QA_optimization.py`` in the ``vmec_jax`` repository.
-That script builds residual blocks for aspect ratio, mean iota, and
-quasisymmetry, then minimizes them over boundary Fourier coefficients. The
-``QA constraints`` branch in the reduced SPECTRAX-GK README panel is not that
-final solved WOUT; it is a fast max-mode-1 reduced stand-in for validating the
-objective plumbing. A paper-facing solved-boundary baseline should be produced
-by running the VMEC-JAX QA script or the constraints-only branch below to
-completion and plotting its final WOUT.
-SPECTRAX-GK now provides the optional objective object
-``spectraxgk.vmec_jax_transport_objective.VMECJAXSpectraxTransportObjective``.
-It plugs into ``LeastSquaresProblem.from_tuples`` as another residual block and
-evaluates ``vmec_jax`` state coefficients through
-``flux_tube_geometry_from_vmec_boozer_state`` and the SPECTRAX-GK linear/QL
-objective vector. The nonlinear-window option is a differentiable transport
-candidate objective derived from SPECTRAX-GK linear rows; promoted turbulent
-heat-flux claims still require matched long-time nonlinear transport audits.
-The example driver also adds a local ``iota_profile_floor`` objective that
-calls ``vmec_jax.equilibrium_iota_profiles_from_state`` and penalizes solved
-full-mesh profile values below the requested signed floor, excluding the
-magnetic axis.
+VMEC-JAX-Style QA Transport Scripts
+-----------------------------------
+
+The three solved-boundary examples are deliberately close to the upstream
+VMEC-JAX QA optimizer. They keep top-level constants instead of an argparse
+``main()`` wrapper:
+
+.. code-block:: bash
+
+   python examples/optimization/QA_optimization_with_growth_rate.py
+   python examples/optimization/QA_optimization_with_quasilinear_flux.py
+   python examples/optimization/QA_optimization_with_nonlinear_heat_flux.py
+
+The objective block should look familiar to VMEC-JAX users:
+
+.. code-block:: python
+
+   aspect = vj.AspectRatio()
+   iota = vj.MeanIota()
+   qs = vj.QuasisymmetryRatioResidual(
+       helicity_m=HELICITY_M,
+       helicity_n=HELICITY_N,
+       surfaces=SURFACES,
+   )
+   transport = VMECJAXSpectraxTransportObjective(
+       config=VMECJAXTransportObjectiveConfig(
+           kind=SPECTRAX_KIND,
+           sample_set=transport_sample_set,
+           ntheta=SPECTRAX_NTHETA,
+           mboz=SPECTRAX_MBOZ,
+           nboz=SPECTRAX_NBOZ,
+           n_laguerre=SPECTRAX_N_LAGUERRE,
+           n_hermite=SPECTRAX_N_HERMITE,
+           objective_transform=SPECTRAX_OBJECTIVE_TRANSFORM,
+           objective_scale=SPECTRAX_OBJECTIVE_SCALE,
+       ),
+       name="spectraxgk_transport",
+   )
+   objective_tuples = [
+       (aspect.J, TARGET_ASPECT, ASPECT_WEIGHT),
+       (iota.J, TARGET_IOTA, IOTA_WEIGHT),
+       (qs.J, 0.0, QS_WEIGHT),
+       (transport.J, 0.0, SPECTRAX_WEIGHT),
+   ]
+
+The first three tuples are the upstream QA/aspect/iota objective. The final
+SPECTRAX-GK tuple can be changed between ``growth``, ``quasilinear_flux``, and
+``nonlinear_window_heat_flux``. The scripts use ``mboz = nboz = 21`` for the
+transport bridge and a single default sample ``s = 0.64``, ``alpha = 0``,
+``k_y rho_i = 0.30``; broaden that sample set only after the one-point run keeps
+the solved-WOUT QA and iota gates intact.
 
 The current optimizer gradient scope is explicit. ``growth`` objectives use
 eigenvalue-only AD and avoid nonsymmetric eigenvector differentiation.
@@ -108,10 +126,28 @@ is a useful, trace-safe design residual, but the full eigenfunction-weight
 adjoint remains a promotion gate before claiming fully differentiated absolute
 quasilinear or nonlinear turbulent flux optimization.
 
-Three Reduced QA ITG Optimization Scripts
------------------------------------------
+Configurable Solved-Boundary Driver
+-----------------------------------
 
-The primary lightweight optimization examples are the three single-objective
+For dry-runs, guarded transport-weight ladders, profile-floor experiments, and
+small optimizer-budget checks, use the configurable driver instead of the three
+literal QA scripts:
+
+.. code-block:: bash
+
+   python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py --dry-run
+
+The driver can target aspect ``A = 6`` and add an explicit solved-profile floor
+``iota(s) >= 0.41``. That profile floor is intentionally separate from the
+upstream mean-iota target because bounded audits have shown that a candidate can
+satisfy the mean target while a point in the WOUT ``iota`` profile remains below
+``0.41``. The upstream QA baseline itself remains the aspect-5 VMEC-JAX script
+with the high-weight ``MeanIota`` objective.
+
+Reduced QA ITG Optimization Scripts
+-----------------------------------
+
+The lightweight optimization examples are the three reduced single-objective
 scripts plus their comparison driver:
 
 .. code-block:: bash
@@ -121,12 +157,11 @@ scripts plus their comparison driver:
    python examples/optimization/stellarator_itg_nonlinear_heat_flux_optimization.py
    python examples/optimization/compare_stellarator_itg_optimizations.py
 
-These scripts are deliberately written in the same educational style as
-``vmec_jax/examples/optimization/QA_optimization.py``. Problem constants are
-declared near the top of each file, objective blocks are printed explicitly,
-the Adam loop is run from the scripted objective rather than from the compact
-``optimize_stellarator_itg`` API, and AD/finite-difference plus residual
-conditioning gates are written into the sidecars.
+These scripts run a reduced max-mode-1 QA control model and are deliberately
+fast enough for local tests and figure regeneration. They validate AD/finite-
+difference checks, residual conditioning, UQ covariance diagnostics, and plotting
+machinery. They do not generate the upstream VMEC-JAX ``QA_optimization.py``
+final WOUT.
 
 The shared constrained residual is
 
@@ -139,8 +174,8 @@ The shared constrained residual is
    + w_R ||x||^2
    + r_T(x)^2 ,
 
-where ``x`` is the reduced max-mode-1 QA control vector.  The transport
-residual ``r_T`` is one of:
+where ``x`` is the reduced max-mode-1 QA control vector. The transport residual
+``r_T`` is one of:
 
 - ``growth``: the positive dominant ITG growth-rate observable ``gamma``;
 - ``quasilinear_flux``: a mixing-length proxy proportional to
@@ -153,24 +188,10 @@ residual ``r_T`` is one of:
      Q_{\rm env}(t) = W_i E(t).
 
 The comparison artifact
-``docs/_static/stellarator_itg_optimization_comparison.png`` now shows the
-three optimized controls in one panel: objective histories, reduced nonlinear
-``Q_{\rm env}`` scans, fixed-gradient traces, reduced LCFS ``|B|`` surfaces,
-and reduced Boozer-coordinate LCFS ``|B|`` maps. The LCFS visualizations use a
-72-by-72 angular grid and a shared ``jet`` colormap so the magnetic-field
-variation is visible. They remain reduced visualization diagnostics, not solved
-VMEC WOUT surfaces.
-
-The baseline convention is important. For solved-boundary production studies,
-the QA-only baseline is the final WOUT from the upstream
-``vmec_jax/examples/optimization/QA_optimization.py`` workflow, or from the
-SPECTRAX-GK constraints-only VMEC-JAX wrapper configured to mirror that
-workflow. The reduced max-mode-1 panels are used for differentiable plumbing,
-UQ, and plotting validation only. A nonlinear turbulent-flux optimization claim
-requires a matched pair of solved WOUT files, long post-transient
-SPECTRAX-GK nonlinear audits, seed/timestep replicate ensembles, and
-running-average convergence checks.
-
+``docs/_static/stellarator_itg_optimization_comparison.png`` shows objective
+histories, reduced nonlinear ``Q_{\rm env}`` scans, fixed-gradient traces,
+reduced LCFS ``|B|`` surfaces, and reduced Boozer-coordinate LCFS ``|B|`` maps.
+These are reduced visualization diagnostics, not solved VMEC WOUT surfaces.
 
 Aspect-6 QA Low-Turbulence Comparison
 -------------------------------------
@@ -212,7 +233,7 @@ than pre-generated geometry files:
 
 .. code-block:: bash
 
-   python examples/optimization/QA_optimization_with_nonlinear_heat_flux.py \
+   python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py \
      --dry-run \
      --use-simple-seed \
      --max-mode 5 \
@@ -222,7 +243,7 @@ Then run the two comparable branches:
 
 .. code-block:: bash
 
-   python examples/optimization/QA_optimization_with_nonlinear_heat_flux.py \
+   python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py \
      --constraints-only \
      --use-simple-seed \
      --max-mode 5 \
@@ -230,7 +251,7 @@ Then run the two comparable branches:
      --make-plots \
      --outdir runs/qa_constraints_only
 
-   python examples/optimization/QA_optimization_with_nonlinear_heat_flux.py \
+   python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py \
      --use-simple-seed \
      --max-mode 5 \
      --min-vmec-mode 7 \
@@ -284,7 +305,7 @@ For bounded local candidate pairs, build the solved-boundary audit panel with:
 
 For restart sweeps from an already optimized ``input.final``, pass
 ``--disable-mode-continuation`` to
-``examples/optimization/QA_optimization_with_nonlinear_heat_flux.py``. That
+``examples/optimization/vmec_jax_qa_low_turbulence_optimization.py``. That
 keeps the requested ``max_mode`` branch fixed instead of rebuilding the
 lower-mode continuation ladder, which is the efficient path for profile-floor,
 target-iota, and transport-weight refinements after a solved WOUT already

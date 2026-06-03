@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Quasi-axisymmetric VMEC-JAX optimization with SPECTRAX-GK reduced nonlinear-window heat-flux objective.
+"""Quasi-axisymmetric VMEC-JAX optimization with SPECTRAX-GK linear growth-rate objective.
 
 This script intentionally mirrors VMEC-JAX
 ``examples/optimization/QA_optimization.py``. The QA/aspect/iota objective
@@ -35,7 +35,7 @@ DATA_DIR = Path(vj.__file__).resolve().parents[1] / "examples" / "data"
 # VMEC-JAX and SIMSOPT examples.
 WARM_START_INPUT_FILE = DATA_DIR / "input.nfp2_QA_omnigenity"
 SIMPLE_SEED_INPUT_FILE = DATA_DIR / "input.minimal_seed_nfp2"
-OUTPUT_DIR = Path("results/qa_opt/spectrax_nonlinear_window")
+OUTPUT_DIR = Path("results/qa_opt/spectrax_growth")
 MAX_MODE = 5
 MIN_VMEC_MODE = MAX_MODE + 2
 USE_SIMPLE_SEED = True  # Start from near-circular RBC(0,0), RBC(0,1), ZBS(0,1).
@@ -100,8 +100,8 @@ QS_WEIGHT = 1.0
 
 # SPECTRAX-GK transport objective. Keep this weight small while tuning so the
 # upstream QA/aspect/iota objective remains the dominant solved-equilibrium gate.
-SPECTRAX_KIND = "nonlinear_window_heat_flux"
-SPECTRAX_WEIGHT = 0.0025
+SPECTRAX_KIND = "growth"
+SPECTRAX_WEIGHT = 0.01
 SPECTRAX_OBJECTIVE_TRANSFORM = "log1p"
 SPECTRAX_OBJECTIVE_SCALE = 1.0
 SPECTRAX_SURFACES = (0.64,)
@@ -149,7 +149,7 @@ transport = VMECJAXSpectraxTransportObjective(
         objective_transform=SPECTRAX_OBJECTIVE_TRANSFORM,
         objective_scale=SPECTRAX_OBJECTIVE_SCALE,
     ),
-    name="spectraxgk_nonlinear_window_heat_flux",
+    name="spectraxgk_growth",
 )
 objective_tuples = [
     (aspect.J, TARGET_ASPECT, ASPECT_WEIGHT),
@@ -177,7 +177,7 @@ problem = vj.LeastSquaresProblem.from_tuples(objective_tuples)
 print("\nAssembled least-squares problem:")
 print(f"  objectives: {', '.join(problem.objective_names)}")
 print(f"  scalar terms: {problem.scalar_objective_names}")
-print(f"  SPECTRAX-GK transport kind: {SPECTRAX_KIND} (reduced nonlinear-window heat-flux)")
+print(f"  SPECTRAX-GK transport kind: {SPECTRAX_KIND} (linear growth-rate)")
 print(f"  SPECTRAX-GK sample set: s={SPECTRAX_SURFACES}, alpha={SPECTRAX_ALPHAS}, ky={SPECTRAX_KY_VALUES}")
 print(f"  SPECTRAX-GK tuple weight: {SPECTRAX_WEIGHT:g}")
 
@@ -196,7 +196,7 @@ result = vj.least_squares_solve(
     xtol=XTOL,
     use_ess=USE_ESS,
     ess_alpha=ALPHA,
-    label=f"QA optimization + SPECTRAX-GK reduced nonlinear-window heat-flux (max_mode={MAX_MODE})",
+    label=f"QA optimization + SPECTRAX-GK linear growth-rate (max_mode={MAX_MODE})",
     use_mode_continuation=USE_MODE_CONTINUATION,
     inner_max_iter=INNER_MAX_ITER,
     inner_ftol=INNER_FTOL,

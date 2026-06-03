@@ -1,24 +1,42 @@
 # Optimization Examples
 
-This directory contains small, runnable optimization examples. The main
-SPECTRAX-GK examples are intentionally split into three transport objectives:
+This directory contains two classes of optimization examples.
 
-- small linear ITG growth rate;
-- small quasilinear ITG heat-flux proxy;
-- small reduced nonlinear-window ITG heat-flux envelope.
+- VMEC-JAX-style solved-boundary scripts that intentionally mirror upstream
+  `vmec_jax/examples/optimization/QA_optimization.py` and only append one
+  SPECTRAX-GK transport tuple to `objective_tuples`.
+- Reduced max-mode-1 scripts that run quickly and regenerate documentation
+  figures for AD/finite-difference, UQ, plotting, and objective-plumbing gates.
 
-Each script follows the editable structure of VMEC-JAX
-`examples/optimization/QA_optimization.py`: visible problem constants, explicit
-QA/aspect/iota residuals, one transport residual, optimizer settings,
-AD/finite-difference gates, and explicit artifact generation. The compact
-package API remains available, but these examples avoid hiding the workflow
-behind a single `optimize_stellarator_itg(...)` call.
+## VMEC-JAX-Style QA Transport Scripts
 
-The examples are split into two levels:
+Use these when the goal is a real VMEC-JAX QA optimization with the upstream
+high-weight iota target preserved:
 
-- Reduced, fast figure generation for README/manuscript development panels.
-- VMEC-JAX fixed-boundary QA optimization with an optional SPECTRAX-GK transport
-  residual for researchers who want to experiment with solved equilibria.
+```bash
+python examples/optimization/QA_optimization_with_growth_rate.py
+python examples/optimization/QA_optimization_with_quasilinear_flux.py
+python examples/optimization/QA_optimization_with_nonlinear_heat_flux.py
+```
+
+Each script keeps the VMEC-JAX constants visible near the top:
+
+```python
+MAX_MODE = 5
+TARGET_ASPECT = 5.0
+TARGET_IOTA = 0.41
+IOTA_WEIGHT = 10_000.0
+objective_tuples = [
+    (aspect.J, TARGET_ASPECT, ASPECT_WEIGHT),
+    (iota.J, TARGET_IOTA, IOTA_WEIGHT),
+    (qs.J, 0.0, QS_WEIGHT),
+    (transport.J, 0.0, SPECTRAX_WEIGHT),
+]
+```
+
+Keep `SPECTRAX_WEIGHT` small while tuning. The QA/aspect/iota terms must remain
+the dominant solved-equilibrium gate before any final WOUT is sent to expensive
+long-window nonlinear transport audits.
 
 ## Three Reduced ITG Optimization Examples
 
@@ -40,8 +58,7 @@ Outputs:
 
 The combined panel compares objective histories, reduced nonlinear heat-flux
 responses, fixed-gradient heat-flux traces, and reduced LCFS/Boozer `|B|`
-diagnostics for the three optimized controls. The LCFS maps use a 72-by-72
-angular grid and a shared `jet` colormap. These are reduced max-mode-1
+diagnostics for the three optimized controls. These are reduced max-mode-1
 diagnostics for optimization plumbing; they are not solved VMEC surfaces and
 they are not production nonlinear turbulent heat-flux claims.
 
@@ -80,7 +97,7 @@ path.
 The easiest entry point is:
 
 ```bash
-python examples/optimization/QA_optimization_with_nonlinear_heat_flux.py \
+python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py \
   --dry-run \
   --use-simple-seed \
   --max-mode 5 \
@@ -94,7 +111,7 @@ summary without solving. The canonical implementation is
 Run a QA-only baseline:
 
 ```bash
-python examples/optimization/QA_optimization_with_nonlinear_heat_flux.py \
+python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py \
   --constraints-only \
   --use-simple-seed \
   --max-mode 5 \
@@ -106,7 +123,7 @@ python examples/optimization/QA_optimization_with_nonlinear_heat_flux.py \
 Run the transport-aware design:
 
 ```bash
-python examples/optimization/QA_optimization_with_nonlinear_heat_flux.py \
+python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py \
   --use-simple-seed \
   --max-mode 5 \
   --min-vmec-mode 7 \
@@ -136,7 +153,7 @@ profile-floor gate. To reproduce the upstream A=5 baseline, run:
 
 ```bash
 VMEC_JAX_ROOT=/path/to/vmec_jax
-python examples/optimization/QA_optimization_with_nonlinear_heat_flux.py \
+python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py \
   --constraints-only \
   --input "$VMEC_JAX_ROOT/examples/data/input.minimal_seed_nfp2" \
   --use-simple-seed \
@@ -160,7 +177,7 @@ final WOUT; a passed mean-iota target is not sufficient. For quick local
 validation before launching a longer solve, run a bounded growth-only smoke:
 
 ```bash
-python examples/optimization/QA_optimization_with_nonlinear_heat_flux.py \
+python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py \
   --outdir /tmp/spectraxgk_vmec_jax_qa_scalar_smoke \
   --use-simple-seed \
   --max-mode 5 \
