@@ -100,6 +100,103 @@ def test_gradient_diagnostic_records_sample_coverage(tmp_path: Path, monkeypatch
     assert payload["nonlinear_audit_policy"]["recommended_ky_values"] == [0.1, 0.3, 0.5]
 
 
+def test_gradient_diagnostic_fd_consistency_passes_for_matching_reverse_gradient(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    class MatchingOptimizer:
+        _specs = (SimpleNamespace(name="rc01"), SimpleNamespace(name="zs01"))
+
+        def residual_fun(self, params):
+            params_array = np.asarray(params, dtype=float)
+            return np.asarray([1.25 + 2.0 * params_array[0] - 3.0 * params_array[1]], dtype=float)
+
+        def objective_and_gradient_fun(self, params):
+            residual = float(self.residual_fun(params)[0])
+            return 0.5 * residual**2, residual * np.asarray([2.0, -3.0], dtype=float)
+
+    def fake_stage_builder(_args):
+        return (
+            SimpleNamespace(
+                specs=MatchingOptimizer._specs,
+                optimizer=MatchingOptimizer(),
+            ),
+            {"setup_key": "setup_value"},
+        )
+
+    monkeypatch.setattr(mod, "_build_stage", fake_stage_builder)
+
+    rc = mod.main(
+        [
+            "--input",
+            str(tmp_path / "input.final"),
+            "--out-json",
+            str(tmp_path / "gradient.json"),
+            "--fd-check-indices",
+            "0,1",
+            "--require-fd-consistency",
+        ]
+    )
+
+    payload = json.loads((tmp_path / "gradient.json").read_text(encoding="utf-8"))
+    fd = payload["finite_difference_consistency"]
+    assert rc == 0
+    assert fd["enabled"] is True
+    assert fd["passed"] is True
+    assert fd["blockers"] == []
+    assert fd["rows"][0]["name"] == "rc01"
+    assert fd["rows"][1]["name"] == "zs01"
+
+
+def test_gradient_diagnostic_fd_consistency_fails_for_disconnected_reverse_gradient(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    class DisconnectedOptimizer:
+        _specs = (SimpleNamespace(name="rc01"), SimpleNamespace(name="zs01"))
+
+        def residual_fun(self, params):
+            params_array = np.asarray(params, dtype=float)
+            return np.asarray([1.25 + 2.0 * params_array[0] - 3.0 * params_array[1]], dtype=float)
+
+        def objective_and_gradient_fun(self, params):
+            residual = float(self.residual_fun(params)[0])
+            return 0.5 * residual**2, np.zeros(2, dtype=float)
+
+    def fake_stage_builder(_args):
+        return (
+            SimpleNamespace(
+                specs=DisconnectedOptimizer._specs,
+                optimizer=DisconnectedOptimizer(),
+            ),
+            {"setup_key": "setup_value"},
+        )
+
+    monkeypatch.setattr(mod, "_build_stage", fake_stage_builder)
+
+    rc = mod.main(
+        [
+            "--input",
+            str(tmp_path / "input.final"),
+            "--out-json",
+            str(tmp_path / "gradient.json"),
+            "--fd-check-indices",
+            "0,1",
+            "--require-fd-consistency",
+        ]
+    )
+
+    payload = json.loads((tmp_path / "gradient.json").read_text(encoding="utf-8"))
+    fd = payload["finite_difference_consistency"]
+    assert rc == 3
+    assert fd["enabled"] is True
+    assert fd["passed"] is False
+    assert "ad_fd_mismatch" in fd["blockers"]
+    assert fd["max_abs_fd_cost_gradient"] > 0.0
+    assert fd["rows"][0]["fd_cost_gradient"] == pytest.approx(2.5)
+    assert fd["rows"][1]["fd_cost_gradient"] == pytest.approx(-3.75)
+
+
 def test_gradient_diagnostic_surface_chunking_aggregates_raw_weighted_gradient(
     tmp_path: Path,
     monkeypatch,

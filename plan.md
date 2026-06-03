@@ -1,6 +1,6 @@
 # SPECTRAX-GK Quasilinear Transport and Optimization Plan
 
-Last updated: 2026-05-29
+Last updated: 2026-06-03
 Active repository: `uwplasma/SPECTRAX-GK`
 Historical planning archive: private repo `rogeriojorge/spectraxgk_plan`
 Current public baseline: `main` at v1.6.0, with the historical ship-readiness log archived before this file was reset.
@@ -87,12 +87,33 @@ The target paper should show:
   path reaches the differentiable Boozer transform but OOMs on a single-point
   GPU run even with ``TF_GPU_ALLOCATOR=cuda_malloc_async``.
 
-Next best step: add an explicit AD-vs-finite-difference consistency gate to
-the VMEC-JAX transport-gradient diagnostic, then repair the differentiable
-VMEC/Boozer/SPECTRAX path so reverse gradients agree with finite differences
-before generating a new projected line-search candidate. Sparse finite-
-difference directions can be used only as diagnostics, not as end-to-end AD
-optimization evidence.
+## 2026-06-03 VMEC-JAX Transport AD/FD Consistency Gate
+
+- Added an explicit AD-vs-central-finite-difference consistency gate to
+  ``tools/build_vmec_jax_transport_gradient_diagnostic.py``. The gate is
+  opt-in through ``--fd-check-indices`` because each coefficient requires a
+  plus/minus transport-objective replay, and ``--require-fd-consistency`` exits
+  with code ``3`` when AD and finite differences disagree or the finite-
+  difference signal is under-resolved.
+- The gate records base residual/cost, per-coefficient plus/minus residuals,
+  finite-difference cost gradients, reverse cost gradients, residual-gradient
+  estimates for scalar residuals, errors, blockers, and a fail-closed
+  classification in the same JSON diagnostic artifact.
+- Surface-chunked diagnostics use the same chunked weighted-mean scalar
+  residual for the finite-difference replay, so the comparison is between the
+  reported reverse gradient and the actual objective used for line-search
+  admission.
+- Added fast regression tests for both passing AD/FD agreement and the office
+  blocker class: zero reverse gradient with nonzero finite-difference response.
+  Focused test result: ``6 passed`` for
+  ``tests/test_build_vmec_jax_transport_gradient_diagnostic.py``; Ruff passes on
+  the touched tool and tests.
+- Next best step: run the new gate on office for a sparse set of previously
+  nonzero finite-difference directions, then repair the differentiable
+  VMEC/Boozer/SPECTRAX path until reverse gradients agree with finite
+  differences before generating any new projected line-search candidate.
+  Sparse finite-difference directions remain diagnostics only, not end-to-end
+  AD optimization evidence.
 
 ## 2026-06-01 VMEC-JAX QA Transport Objective Fix
 

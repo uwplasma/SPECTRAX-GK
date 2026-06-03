@@ -26,6 +26,7 @@ from spectraxgk.vmec_jax_transport_admission import (
     transport_objective_sample_summary,
 )
 from spectraxgk.vmec_jax_transport_gradient import (
+    boundary_spec_record,
     build_boundary_transport_gradient_report,
     write_boundary_transport_gradient_report,
 )
@@ -48,6 +49,13 @@ def _float_tuple(raw: str) -> tuple[float, ...]:
     values = tuple(float(item.strip()) for item in str(raw).split(",") if item.strip())
     if not values:
         raise argparse.ArgumentTypeError("expected at least one comma-separated value")
+    return values
+
+
+def _int_tuple(raw: str) -> tuple[int, ...]:
+    values = tuple(int(item.strip()) for item in str(raw).split(",") if item.strip())
+    if not values:
+        raise argparse.ArgumentTypeError("expected at least one comma-separated integer")
     return values
 
 
@@ -95,6 +103,33 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--top-n", type=int, default=12)
     parser.add_argument("--sensitivity-atol", type=float, default=1.0e-12)
     parser.add_argument(
+        "--fd-check-indices",
+        type=_int_tuple,
+        default=(),
+        help=(
+            "Comma-separated active-boundary parameter indices for central finite-difference "
+            "checks against the reverse scalar gradient"
+        ),
+    )
+    parser.add_argument(
+        "--fd-check-step",
+        type=float,
+        default=1.0e-4,
+        help="Central finite-difference step for --fd-check-indices",
+    )
+    parser.add_argument(
+        "--fd-check-rtol",
+        type=float,
+        default=5.0e-2,
+        help="Relative tolerance for AD-vs-finite-difference cost-gradient checks",
+    )
+    parser.add_argument(
+        "--fd-check-atol",
+        type=float,
+        default=1.0e-6,
+        help="Absolute tolerance for AD-vs-finite-difference cost-gradient checks",
+    )
+    parser.add_argument(
         "--surface-gradient-chunk-size",
         type=int,
         default=0,
@@ -112,6 +147,11 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--require-sensitive",
         action="store_true",
         help="Exit 2 if the local transport-gradient norm is below --sensitivity-atol",
+    )
+    parser.add_argument(
+        "--require-fd-consistency",
+        action="store_true",
+        help="Exit 3 if --fd-check-indices are absent or any AD-vs-finite-difference check fails",
     )
     return parser.parse_args(argv)
 
@@ -220,6 +260,18 @@ def _transform_residual_and_gradient(
     return weight * transformed, weight * derivative * np.asarray(raw_gradient, dtype=float)
 
 
+def _transformed_residual_value(
+    raw_value: float,
+    args: argparse.Namespace,
+) -> float:
+    transformed, _gradient = _transform_residual_and_gradient(
+        raw_value,
+        np.zeros(1, dtype=float),
+        args,
+    )
+    return float(transformed)
+
+
 @dataclass(frozen=True)
 class _SyntheticScalarOptimizer:
     _specs: tuple[object, ...]
@@ -242,10 +294,204 @@ class _SyntheticScalarOptimizer:
         return np.asarray([self.residual_gradient], dtype=float)
 
 
+def _scalar_residual_from_optimizer(optimizer: object, params: np.ndarray) -> float:
+    residual = np.asarray(getattr(optimizer, "residual_fun")(params), dtype=float).reshape(-1)
+    if residual.size != 1:
+        raise ValueError("finite-difference transport-gradient checks require a scalar residual")
+    return float(residual[0])
+
+
+def _chunked_transformed_residual_value(
+    args: argparse.Namespace,
+    sample_set: StellaratorITGSampleSet,
+    params: np.ndarray,
+) -> float:
+    raw_value = 0.0
+    expected_size: int | None = None
+    for chunk_sample_set, chunk_weight, _surface_indices in _surface_chunk_sample_sets(
+        sample_set,
+        chunk_size=int(args.surface_gradient_chunk_size),
+    ):
+        chunk_args = _copy_args(
+            args,
+            surfaces=chunk_sample_set.surfaces,
+            alphas=chunk_sample_set.alphas,
+            ky_values=chunk_sample_set.ky_values,
+            spectrax_objective_transform="raw",
+            spectrax_objective_scale=1.0,
+            transport_weight=1.0,
+        )
+        stage, _setup = _build_stage(chunk_args)
+        chunk_size = len(tuple(stage.specs))
+        if expected_size is None:
+            expected_size = chunk_size
+        elif chunk_size != expected_size:
+            raise ValueError("surface chunks produced inconsistent parameter counts")
+        if params.size != chunk_size:
+            raise ValueError(
+                f"finite-difference parameter size {params.size} does not match chunk size {chunk_size}"
+            )
+        raw_value += float(chunk_weight) * _scalar_residual_from_optimizer(stage.optimizer, params)
+    return _transformed_residual_value(raw_value, args)
+
+
+def _finite_difference_consistency_report(
+    optimizer: object,
+    params: Sequence[float] | np.ndarray,
+    *,
+    indices: Sequence[int],
+    step: float,
+    rtol: float,
+    atol: float,
+    residual_fun: object | None = None,
+) -> dict[str, object]:
+    """Compare reverse scalar-gradient components with central finite differences."""
+
+    params_array = np.asarray(params, dtype=float).reshape(-1)
+    if float(step) <= 0.0:
+        raise ValueError("--fd-check-step must be positive")
+    if float(rtol) < 0.0 or float(atol) < 0.0:
+        raise ValueError("--fd-check-rtol and --fd-check-atol must be non-negative")
+    unique_indices = tuple(dict.fromkeys(int(i) for i in indices))
+    if not unique_indices:
+        return {
+            "enabled": False,
+            "passed": False,
+            "blockers": ["no_fd_check_indices"],
+            "classification": "finite_difference_check_not_requested",
+        }
+    invalid = [int(i) for i in unique_indices if int(i) < 0 or int(i) >= params_array.size]
+    if invalid:
+        raise ValueError(f"--fd-check-indices out of range for {params_array.size} parameters: {invalid}")
+
+    specs = tuple(getattr(optimizer, "_specs", ()))
+    evaluate_residual = residual_fun if callable(residual_fun) else getattr(optimizer, "residual_fun")
+    base_residual = np.asarray(evaluate_residual(params_array), dtype=float).reshape(-1)
+    base_cost_raw, reverse_gradient_raw = getattr(optimizer, "objective_and_gradient_fun")(params_array)
+    reverse_gradient = np.asarray(reverse_gradient_raw, dtype=float).reshape(-1)
+    if reverse_gradient.size != params_array.size:
+        raise ValueError(
+            f"reverse gradient size {reverse_gradient.size} does not match parameter size {params_array.size}"
+        )
+    base_cost = float(base_cost_raw)
+    base_residual_scalar = float(base_residual[0]) if base_residual.size == 1 else None
+    rows: list[dict[str, object]] = []
+    finite = bool(np.isfinite(base_cost) and np.all(np.isfinite(base_residual)) and np.all(np.isfinite(reverse_gradient)))
+    max_abs_error = 0.0
+    max_relative_error = 0.0
+    max_abs_fd_cost_gradient = 0.0
+
+    for index in unique_indices:
+        plus = params_array.copy()
+        minus = params_array.copy()
+        plus[index] += float(step)
+        minus[index] -= float(step)
+        residual_plus = np.asarray(evaluate_residual(plus), dtype=float).reshape(-1)
+        residual_minus = np.asarray(evaluate_residual(minus), dtype=float).reshape(-1)
+        cost_plus = 0.5 * float(np.vdot(residual_plus, residual_plus))
+        cost_minus = 0.5 * float(np.vdot(residual_minus, residual_minus))
+        fd_cost_gradient = (cost_plus - cost_minus) / (2.0 * float(step))
+        reverse_cost_gradient = float(reverse_gradient[index])
+        abs_error = abs(reverse_cost_gradient - fd_cost_gradient)
+        denominator = max(abs(reverse_cost_gradient), abs(fd_cost_gradient), float(atol), 1.0e-300)
+        relative_error = abs_error / denominator
+        passed = bool(
+            np.isfinite(fd_cost_gradient)
+            and np.isfinite(reverse_cost_gradient)
+            and np.isclose(reverse_cost_gradient, fd_cost_gradient, rtol=float(rtol), atol=float(atol))
+        )
+        finite = bool(
+            finite
+            and np.all(np.isfinite(residual_plus))
+            and np.all(np.isfinite(residual_minus))
+            and np.isfinite(cost_plus)
+            and np.isfinite(cost_minus)
+            and np.isfinite(fd_cost_gradient)
+        )
+        spec = specs[index] if index < len(specs) else object()
+        row = {
+            **boundary_spec_record(spec, fallback_index=index),
+            "parameter_index": int(index),
+            "step": float(step),
+            "residual_plus": [float(x) for x in residual_plus],
+            "residual_minus": [float(x) for x in residual_minus],
+            "cost_plus": cost_plus,
+            "cost_minus": cost_minus,
+            "fd_cost_gradient": float(fd_cost_gradient),
+            "reverse_cost_gradient": reverse_cost_gradient,
+            "abs_cost_gradient_error": float(abs_error),
+            "relative_cost_gradient_error": float(relative_error),
+            "passed": passed,
+        }
+        if base_residual_scalar is not None and residual_plus.size == 1 and residual_minus.size == 1:
+            fd_residual_gradient = (float(residual_plus[0]) - float(residual_minus[0])) / (2.0 * float(step))
+            reverse_residual_gradient = (
+                reverse_cost_gradient / base_residual_scalar
+                if abs(base_residual_scalar) > 1.0e-300
+                else None
+            )
+            residual_abs_error = (
+                None
+                if reverse_residual_gradient is None
+                else abs(float(reverse_residual_gradient) - fd_residual_gradient)
+            )
+            row.update(
+                {
+                    "fd_residual_gradient": float(fd_residual_gradient),
+                    "reverse_residual_gradient": (
+                        None if reverse_residual_gradient is None else float(reverse_residual_gradient)
+                    ),
+                    "abs_residual_gradient_error": (
+                        None if residual_abs_error is None else float(residual_abs_error)
+                    ),
+                }
+            )
+        rows.append(row)
+        max_abs_error = max(max_abs_error, float(abs_error))
+        max_relative_error = max(max_relative_error, float(relative_error))
+        max_abs_fd_cost_gradient = max(max_abs_fd_cost_gradient, abs(float(fd_cost_gradient)))
+
+    mismatches = [row for row in rows if not bool(row["passed"])]
+    blockers: list[str] = []
+    if not finite:
+        blockers.append("nonfinite_ad_fd_check")
+    if mismatches:
+        blockers.append("ad_fd_mismatch")
+    if max_abs_fd_cost_gradient <= float(atol):
+        blockers.append("finite_difference_signal_below_atol")
+    passed = bool(finite and not mismatches and "finite_difference_signal_below_atol" not in blockers)
+    return {
+        "enabled": True,
+        "indices": [int(i) for i in unique_indices],
+        "step": float(step),
+        "rtol": float(rtol),
+        "atol": float(atol),
+        "base_residual": [float(x) for x in base_residual],
+        "base_cost": base_cost,
+        "row_count": len(rows),
+        "max_abs_cost_gradient_error": float(max_abs_error),
+        "max_relative_cost_gradient_error": float(max_relative_error),
+        "max_abs_fd_cost_gradient": float(max_abs_fd_cost_gradient),
+        "rows": rows,
+        "finite": finite,
+        "passed": passed,
+        "blockers": blockers,
+        "classification": "ad_fd_consistent" if passed else "ad_fd_inconsistent_or_underresolved",
+        "next_action": (
+            "reverse-mode transport gradients can be used for local projected updates"
+            if passed
+            else (
+                "do not use this reverse gradient for VMEC-JAX optimization; repair the differentiable "
+                "VMEC/Boozer/SPECTRAX path or use finite differences only as diagnostics"
+            )
+        ),
+    }
+
+
 def _chunked_boundary_transport_gradient_report(
     args: argparse.Namespace,
     sample_set: StellaratorITGSampleSet,
-) -> dict[str, object]:
+) -> tuple[dict[str, object], _SyntheticScalarOptimizer, np.ndarray]:
     """Build the same weighted-mean scalar gradient using smaller surface chunks."""
 
     params: np.ndarray | None = None
@@ -321,7 +567,7 @@ def _chunked_boundary_transport_gradient_report(
             "sample weights, then the scalar objective transform is applied once"
         ),
     }
-    return report
+    return report, synthetic, params
 
 
 def _build_stage(args: argparse.Namespace):
@@ -399,7 +645,20 @@ def main(argv: list[str] | None = None) -> int:
             "or pass --allow-underresolved-sample-set for exploratory diagnostics"
         )
     if int(args.surface_gradient_chunk_size) > 0:
-        report = _chunked_boundary_transport_gradient_report(args, sample_set)
+        report, gradient_optimizer, params = _chunked_boundary_transport_gradient_report(args, sample_set)
+
+        def residual_fun(params_array: Sequence[float] | np.ndarray) -> np.ndarray:
+            return np.asarray(
+                [
+                    _chunked_transformed_residual_value(
+                        args,
+                        sample_set,
+                        np.asarray(params_array, dtype=float).reshape(-1),
+                    )
+                ],
+                dtype=float,
+            )
+
         report["setup"] = {
             "input": str(args.input),
             "max_mode": int(args.max_mode),
@@ -425,6 +684,8 @@ def main(argv: list[str] | None = None) -> int:
     else:
         stage, setup = _build_stage(args)
         params = np.zeros(len(stage.specs), dtype=float)
+        gradient_optimizer = stage.optimizer
+        residual_fun = getattr(stage.optimizer, "residual_fun", None)
         report = build_boundary_transport_gradient_report(
             stage.optimizer,
             params=params,
@@ -435,12 +696,33 @@ def main(argv: list[str] | None = None) -> int:
         )
         report["setup"] = setup
         report["chunked_gradient"] = {"enabled": False}
+    if tuple(args.fd_check_indices):
+        report["finite_difference_consistency"] = _finite_difference_consistency_report(
+            gradient_optimizer,
+            params,
+            indices=tuple(args.fd_check_indices),
+            step=float(args.fd_check_step),
+            rtol=float(args.fd_check_rtol),
+            atol=float(args.fd_check_atol),
+            residual_fun=residual_fun,
+        )
+    else:
+        report["finite_difference_consistency"] = {
+            "enabled": False,
+            "passed": False,
+            "blockers": ["no_fd_check_indices"],
+            "classification": "finite_difference_check_not_requested",
+        }
     report["objective_sample_summary"] = sample_summary
     report["nonlinear_audit_policy"] = DEFAULT_AUDIT_POLICY.to_dict()
     write_boundary_transport_gradient_report(report, args.out_json)
     print(json.dumps(report, indent=2, allow_nan=False))
     if bool(args.require_sensitive) and not bool(report["transport_sensitivity_detected"]):
         return 2
+    if bool(args.require_fd_consistency) and not bool(
+        cast(dict[str, object], report["finite_difference_consistency"])["passed"]
+    ):
+        return 3
     return 0 if bool(report["finite"]) else 1
 
 

@@ -306,6 +306,38 @@ scalar transform once after aggregation. This is mathematically the same
 weighted-mean gradient path for ``mean``/``weighted_mean`` reductions, but it
 avoids materializing the full 18-sample reverse pass in one GPU allocation.
 
+Before using a VMEC-JAX/SPECTRAX-GK transport gradient for a projected update,
+rerun a small set of leading active-boundary components with central finite
+differences:
+
+.. code-block:: bash
+
+   python tools/build_vmec_jax_transport_gradient_diagnostic.py \
+     --input runs/qa_constraints_only/input.final \
+     --out-json runs/qa_constraints_only/transport_gradient_fd.json \
+     --max-mode 5 --min-vmec-mode 7 \
+     --mboz 21 --nboz 21 \
+     --transport-kind nonlinear_window_heat_flux \
+     --surfaces 0.45,0.64,0.78 \
+     --alphas 0.0,0.7853981633974483 \
+     --ky-values 0.10,0.30,0.50 \
+     --surface-gradient-chunk-size 1 \
+     --fd-check-indices 22,24,27,28 \
+     --fd-check-step 1e-4 \
+     --require-fd-consistency \
+     --solver-device gpu
+
+The finite-difference check is intentionally opt-in because each checked
+coefficient requires two extra objective evaluations. With
+``--surface-gradient-chunk-size`` enabled, those plus/minus evaluations use the
+same chunked weighted-mean scalar residual as the reverse-gradient report, so
+the comparison is between the advertised AD gradient and the actual objective
+that would drive the line search. Exit code ``3`` means the reverse gradient and
+central finite differences disagree or the finite-difference signal is too
+small to be useful. In that case, do not promote the reverse gradient as
+end-to-end differentiability evidence; repair the VMEC/Boozer/SPECTRAX AD path
+or use sparse finite differences only as diagnostics.
+
 After a sensitive diagnostic, generate bounded projected candidate inputs with:
 
 .. code-block:: bash
