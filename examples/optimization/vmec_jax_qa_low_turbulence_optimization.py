@@ -39,6 +39,11 @@ from spectraxgk.vmec_jax_candidate_gate import build_solved_vmec_candidate_gate 
 from spectraxgk.vmec_jax_transport_objective import VMECJAXTransportObjectiveTransform  # noqa: E402
 
 
+DEFAULT_TRANSPORT_SURFACES = (0.45, 0.64, 0.78)
+DEFAULT_TRANSPORT_ALPHAS = (0.0, 0.7853981633974483)
+DEFAULT_TRANSPORT_KY_VALUES = (0.190, 0.300, 0.476)
+
+
 def _float_tuple(raw: str) -> tuple[float, ...]:
     values = tuple(float(item.strip()) for item in raw.split(",") if item.strip())
     if not values:
@@ -245,9 +250,24 @@ def _parse_args() -> argparse.Namespace:
         choices=("growth", "quasilinear_flux", "nonlinear_window_heat_flux"),
         default="nonlinear_window_heat_flux",
     )
-    parser.add_argument("--surfaces", type=_float_tuple, default=(0.64,))
-    parser.add_argument("--alphas", type=_float_tuple, default=(0.0,))
-    parser.add_argument("--ky-values", type=_float_tuple, default=(0.30,))
+    parser.add_argument(
+        "--surfaces",
+        type=_float_tuple,
+        default=DEFAULT_TRANSPORT_SURFACES,
+        help="Comma-separated normalized toroidal-flux samples for the transport residual",
+    )
+    parser.add_argument(
+        "--alphas",
+        type=_float_tuple,
+        default=DEFAULT_TRANSPORT_ALPHAS,
+        help="Comma-separated field-line labels for the transport residual",
+    )
+    parser.add_argument(
+        "--ky-values",
+        type=_float_tuple,
+        default=DEFAULT_TRANSPORT_KY_VALUES,
+        help="Comma-separated physical ky*rho_i values for the transport residual",
+    )
     parser.add_argument("--ntheta", type=int, default=24)
     parser.add_argument("--mboz", type=int, default=21)
     parser.add_argument("--nboz", type=int, default=21)

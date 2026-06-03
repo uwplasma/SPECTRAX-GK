@@ -113,6 +113,26 @@ def test_driver_transport_metric_from_result_uses_final_state_context() -> None:
     json.dumps(metric, allow_nan=False)
 
 
+def test_driver_defaults_to_multisample_transport_admission_set(monkeypatch) -> None:
+    mod = _load_driver()
+    monkeypatch.setattr(sys, "argv", [str(DRIVER), "--dry-run"])
+
+    args = mod._parse_args()
+    summary = spectraxgk.transport_objective_sample_summary(
+        {
+            "surfaces": args.surfaces,
+            "alphas": args.alphas,
+            "ky_values": args.ky_values,
+        }
+    )
+
+    assert args.surfaces == mod.DEFAULT_TRANSPORT_SURFACES
+    assert args.alphas == mod.DEFAULT_TRANSPORT_ALPHAS
+    assert args.ky_values == mod.DEFAULT_TRANSPORT_KY_VALUES
+    assert summary["passed"] is True
+    assert summary["sample_count"] == 18
+
+
 def test_driver_updates_history_with_transport_metric(tmp_path: Path) -> None:
     mod = _load_driver()
     path = tmp_path / "history.json"
