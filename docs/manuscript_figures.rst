@@ -322,8 +322,9 @@ Differentiable-Physics Figures
      - Scoped optimizer-algorithm comparison ready for README/docs; nonlinear
        turbulent heat-flux audits remain pending
      - current artifact base:
-       ``docs/_static/vmec_jax_qa_full_sweep_panel.png`` with JSON/CSV/PDF
-       companions. The sweep compares the SciPy QA baseline, stopped
+       ``docs/_static/vmec_jax_qa_full_sweep_panel.png`` with JSON/CSV
+       companions; a PDF companion is regenerated locally with ``--pdf`` when
+       needed. The sweep compares the SciPy QA baseline, stopped
        scalar-trust QA baseline, direct growth/QL/L-BFGS transport objectives,
        a stopped direct nonlinear-window branch, and projected/admission
        transport weights ``5e-4`` and ``1e-3``. Direct scalar transport

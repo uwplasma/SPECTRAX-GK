@@ -61,6 +61,23 @@ PREFERRED_SURFACE_IDS = (
 )
 
 
+def _optimize_png_if_possible(path: Path) -> None:
+    """Keep tracked docs PNGs small without changing the plotted data."""
+
+    if path.suffix.lower() != ".png" or not path.exists():
+        return
+    try:
+        from PIL import Image
+    except Exception:
+        return
+    try:
+        with Image.open(path) as image:
+            optimized = image.convert("P", palette=Image.Palette.ADAPTIVE, colors=256)
+            optimized.save(path, optimize=True)
+    except Exception:
+        return
+
+
 def _repo_relative(path: Path | str) -> str:
     raw = Path(path)
     try:
@@ -687,6 +704,7 @@ def plot_payload(payload: dict[str, Any], out: Path) -> None:
     out.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out, dpi=220, bbox_inches="tight")
     plt.close(fig)
+    _optimize_png_if_possible(out)
 
 
 def _write_csv(payload: dict[str, Any], path: Path) -> None:
