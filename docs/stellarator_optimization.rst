@@ -364,6 +364,16 @@ sufficient for promotion: the boundary-level VMEC-JAX adjoint/replay gradient
 must agree with the sparse finite-difference checks above before a projected
 transport update is trusted.
 
+A single-coefficient office chain probe further localizes the remaining
+failure. For the ``rc14`` coefficient at step ``1e-4``, the direct exact-solve
+finite-difference cost gradient is ``0.5587`` and the SPECTRAX-GK final-state
+cotangent dotted into the finite-difference final-state change is ``0.4967``.
+The same cotangent replayed through the VMEC-JAX exact-solve tape gives
+``0.1004``. A companion tape JVP/VJP dot-product check agrees to
+``1.4e-14``, so the tape forward and reverse replays are mutually consistent;
+the remaining mismatch is between the tape linearization and exact plus/minus
+VMEC solves, not the SPECTRAX-GK final-state transport objective.
+
 After a sensitive diagnostic, generate bounded projected candidate inputs with:
 
 .. code-block:: bash

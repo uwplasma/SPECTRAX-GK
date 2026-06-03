@@ -177,6 +177,16 @@ The target paper should show:
   VMEC-JAX final-state-to-boundary adjoint/replay path or in the exact-solve
   differentiation contract, not in SPECTRAX-GK value assembly. Do not use
   projected VMEC-JAX transport-gradient updates until this gate passes.
+- Follow-up office chain probe at ``4ec1b7e`` on ``rc14`` with step ``1e-4``:
+  direct exact-solve FD cost gradient ``0.5587``; SPECTRAX-GK final-state
+  cotangent dotted into the exact-solve final-state FD change ``0.4967``;
+  VMEC-JAX tape replay to the initial-state FD direction ``0.1004``. A
+  separate tape JVP/VJP dot test gives ``0.1004299626766958`` versus
+  ``0.10042996267671023`` (absolute difference ``1.4e-14``). This means the
+  tape JVP and VJP are internally transposed, while the tape linearization does
+  not reproduce the exact plus/minus solved-state response. The next repair
+  belongs in the VMEC-JAX exact-solve tape linearization/branch contract, not
+  in SPECTRAX-GK's final-state objective cotangent.
 
 ## 2026-06-01 VMEC-JAX QA Transport Objective Fix
 
