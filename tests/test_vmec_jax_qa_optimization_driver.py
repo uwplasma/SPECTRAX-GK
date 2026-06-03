@@ -3,10 +3,12 @@ from __future__ import annotations
 import importlib.util
 import json
 from pathlib import Path
+import subprocess
 import sys
 from types import SimpleNamespace
 
 import numpy as np
+import pytest
 
 import spectraxgk
 from spectraxgk.vmec_jax_candidate_gate import build_solved_vmec_candidate_gate
@@ -131,6 +133,73 @@ def test_driver_defaults_to_multisample_transport_admission_set(monkeypatch) -> 
     assert args.ky_values == mod.DEFAULT_TRANSPORT_KY_VALUES
     assert summary["passed"] is True
     assert summary["sample_count"] == 18
+
+
+def test_driver_dry_run_cli_writes_transport_setup_summary(tmp_path: Path) -> None:
+    if importlib.util.find_spec("vmec_jax") is None:
+        pytest.skip("vmec_jax is optional")
+
+    outdir = tmp_path / "qa_growth_dry_run"
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(DRIVER),
+            "--dry-run",
+            "--use-simple-seed",
+            "--max-mode",
+            "1",
+            "--min-vmec-mode",
+            "3",
+            "--mboz",
+            "21",
+            "--nboz",
+            "21",
+            "--transport-kind",
+            "growth",
+            "--surfaces",
+            "0.64",
+            "--alphas",
+            "0.0",
+            "--ky-values",
+            "0.30",
+            "--ntheta",
+            "4",
+            "--n-laguerre",
+            "1",
+            "--n-hermite",
+            "1",
+            "--spectrax-weight",
+            "0.001",
+            "--outdir",
+            str(outdir),
+        ],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+
+    summary_path = outdir / "setup_summary.json"
+    assert summary_path.exists()
+    summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    assert summary["constraints_only"] is False
+    assert summary["transport_kind"] == "growth"
+    assert summary["objectives"] == [
+        "aspect",
+        "iota",
+        "iota_profile_floor",
+        "qs",
+        "spectraxgk_transport",
+    ]
+    assert summary["sample_set"]["n_samples"] == 1
+    assert summary["spectrax_config"]["mboz"] == 21
+    assert summary["spectrax_config"]["nboz"] == 21
+    assert summary["optimizer"]["method"] == "scalar_trust"
+    assert "production nonlinear flux claims require matched long-window" in summary["claim_scope"]
+    assert "spectraxgk_transport" in completed.stdout
+    assert not (outdir / "history.json").exists()
+    assert not (outdir / "solved_wout_gate.json").exists()
 
 
 def test_driver_updates_history_with_transport_metric(tmp_path: Path) -> None:
