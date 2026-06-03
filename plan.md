@@ -7,6 +7,27 @@ Current public baseline: `main` at v1.6.0, with the historical ship-readiness lo
 
 This file is both the active plan and the running log. Keep entries concise, dated, and tied to artifacts, tests, and figures.
 
+## 2026-06-03 Nonlinear-Audit Promotion Runbook
+
+- Passing VMEC-JAX/SPECTRAX-GK AD/finite-difference checks is only the
+  admission prerequisite. Before claiming transport optimization, rerun the
+  reduced objective on the 18-point sample gate
+  ``s = (0.45, 0.64, 0.78)``, ``alpha = (0, pi/4)``, and
+  ``k_y rho_i = (0.10, 0.30, 0.50)`` with single-grid-compatible ``k_y`` values.
+- Use the ``scalar_trust`` refinement lane from a solved QA baseline with a
+  small transport residual. The solved-WOUT gate, boundary-chain AD/FD gate, and
+  projected-line-search admission must all pass before spending nonlinear GPU
+  time.
+- For any admitted candidate, build matched long-window nonlinear audits for the
+  baseline and candidate using the same grid, analysis window, and observable.
+  Required evidence is seed replicates plus a timestep replicate, converged
+  running means, block/SEM uncertainty, and replicate-spread gates.
+- Promote only if the matched nonlinear comparison has a positive transport
+  reduction that is separated from the combined SEMs by the required z-score. If
+  the relative reduction is negative, unresolved, or uncertainty-overlapped, do
+  not promote; keep the artifact as a negative audit and redesign the reduced
+  objective or variance-reduction campaign.
+
 ## 2026-06-03 VMEC-JAX QA Transport Script Audit
 
 - Pulled the latest local optional backends used for the VMEC/SPECTRAX
@@ -45,6 +66,16 @@ This file is both the active plan and the running log. Keep entries concise, dat
   wrong sign with relative error ``1.20``. Therefore real VMEC-JAX transport
   optimization remains blocked on boundary-chain AD/FD consistency, not on
   optimizer selection or plotting.
+- The follow-up ``probe_vmec_jax_boundary_chain.py`` run for ``rc14`` localizes
+  the discrepancy: the SPECTRAX final-state cotangent agrees with exact
+  final-state FD to ``4.7%``, and frozen-axis JVP/VJP are internally transposed
+  to about ``2e-12`` relative, but frozen-axis replay differs from raw exact FD
+  by ``31.5%`` while raw/frozen initial-state norms differ by a factor
+  ``38.8``. Classification:
+  ``frozen_axis_replay_consistent_but_exact_fd_branch_sensitive``. The current
+  line-search filter should therefore continue to exclude such directions by
+  default; branch-sensitive modes are diagnostics until the finite-difference
+  convention is better conditioned.
 
 ## Current Goal
 
