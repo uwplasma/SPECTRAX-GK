@@ -1287,6 +1287,7 @@ owned_modules = [
   "spectraxgk.nonlinear_transport_optimization",
   "spectraxgk.vmec_jax_candidate_gate",
   "spectraxgk.vmec_jax_transport_admission",
+  "spectraxgk.vmec_jax_boundary_chain",
   "spectraxgk.vmec_jax_transport_gradient",
   "spectraxgk.vmec_jax_transport_line_search",
   "spectraxgk.vmec_jax_transport_objective",
@@ -1302,6 +1303,7 @@ reference_anchors = [
 physics_contracts = [
   "actual linear-RHS growth/frequency and quasilinear-weight observables must be differentiated before optimization claims",
   "solver-ready geometry gates are complemented by full vmec_jax/booz_xform_jax state-gradient gates before optimization claims",
+  "VMEC-JAX boundary-chain audits distinguish exact solved-equilibrium finite differences from frozen-axis replay derivatives before promotion",
   "mode-21 VMEC/Boozer state-to-solver eigenfrequency and quasilinear heat-flux-weight gradients must pass before reduced stellarator objective promotion",
   "multi-equilibrium reduced linear/quasilinear VMEC/Boozer state-gradient holdouts must pass before broadening differentiable stellarator-objective claims beyond one fixture",
   "multi-equilibrium reduced nonlinear-window estimator gradients may be validated as bounded differentiability gates, but not promoted as converged nonlinear heat-flux optimization claims",
@@ -1313,6 +1315,7 @@ numerics_contracts = [
   "implicit eigenpair sensitivities match nearest-branch central finite differences",
   "branch isolation and biorthogonal left/right eigenvector conditioning are recorded",
   "VMEC/Boozer finite differences use a conditioned step recorded in the artifact",
+  "boundary-chain diagnostics record exact final-state, raw initial-state, frozen-axis JVP, and frozen-axis VJP consistency before accepting a gradient convention",
   "late-window envelope metrics are smooth under JAX AD and agree with central finite differences",
   "startup nonlinear heat-flux window finite differences require repeatability, monotonic drive response, bounded coefficient of variation, bounded trend, and resolved response fraction",
   "production nonlinear heat-flux averages additionally require a discarded transient, enough post-transient samples, cumulative running-mean convergence, stable independent late blocks, and finite flux above the startup/noise floor",
@@ -1336,6 +1339,7 @@ fast_tests = [
   "tests/test_build_vmec_boozer_nonlinear_window_fd_audit.py",
   "tests/test_build_nonlinear_transport_horizon_audit.py",
   "tests/test_nonlinear_transport_optimization.py",
+  "tests/test_vmec_jax_boundary_chain.py",
   "tests/test_vmec_jax_candidate_gate.py",
   "tests/test_vmec_jax_qa_optimization_driver.py",
   "tests/test_vmec_jax_transport_admission.py",
@@ -1357,6 +1361,7 @@ artifact_paths = [
   "docs/_static/vmec_jax_transport_gradient_diagnostic.json",
   "docs/_static/vmec_jax_transport_gradient_line_search.json",
   "docs/_static/vmec_jax_transport_gradient_line_search.svg",
+  "docs/_static/vmec_jax_boundary_chain_idx28_iter500.json",
   "docs/_static/vmec_boozer_multi_point_objective_gate.json",
   "docs/_static/vmec_boozer_multi_point_objective_gate.png",
   "docs/_static/vmec_boozer_aggregate_line_search_comparison.json",
@@ -1454,6 +1459,7 @@ artifact_paths = [
 next_tests = [
   "extend the reduced nonlinear-window estimator-gradient matrix to optimized-equilibrium holdouts before broad stellarator transport-gradient claims",
   "replace reduced nonlinear-window estimator gates with converged nonlinear-window turbulence-gradient or robust finite-difference audits before broad nonlinear optimization-gradient claims",
+  "promote the boundary-chain probe from sparse diagnostic to standard geometry-gradient gate after VMEC-JAX exposes a public solved-equilibrium linearization API",
   "add matched baseline-to-optimized nonlinear audits before broad geometry-family heat-flux-reduction claims",
   "tighten VMEC/Boozer nonlinear-window finite-difference audits into local-gradient conditioning gates only after converged post-transient windows and local-gradient evidence exist",
 ]
