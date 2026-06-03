@@ -564,6 +564,18 @@ production projected-input generation should also use
 ``--require-growth-branch-locality`` so a coefficient with a switched or
 under-isolated SPECTRAX growth branch is excluded before line-search replay.
 
+The latest strict-gate rerun used the clean ``vmec_jax_latest`` checkout, local
+``booz_xform_jax`` commit ``1d5e8c``, ``mboz = nboz = 21``, and the
+authoritative QA restart. The two nonzero directions rerun with growth-branch
+locality were ``rc14`` and ``zs13``. Exact-only admission correctly returns no
+rows because the raw exact-solve FD gradients still differ from the frozen-axis
+optimizer convention. Projected strict admission returns ``(28, 27)`` only
+because both rows pass growth-branch locality and the explicit frozen-axis
+convention gate: the frozen-axis finite-difference initial tangent matches the
+VMEC-JAX linear tangent to relative errors ``5.6e-11`` and ``4.2e-11``.
+This closes the convention-comparison diagnostic for projected directions; it
+does not by itself promote a nonlinear heat-flux optimization claim.
+
 After a sensitive diagnostic, generate bounded projected candidate inputs with:
 
 .. code-block:: bash
@@ -1330,21 +1342,20 @@ option parallelizes central finite-difference columns inside each AD/FD gate
 using threads, which avoids pickling JAX objective closures. Both paths record
 their worker metadata and identity contract in the JSON artifacts.
 
-.. figure:: _static/stellarator_itg_optimization_comparison.png
-   :width: 95%
-   :align: center
-   :alt: Differentiable QA stellarator ITG optimization comparison
-
-   Three differentiable QA stellarator ITG objectives from the same initial
-   control vector. All three keep the final geometry near ``A = 7`` and
-   ``iota = 0.41`` while reducing the tracked transport observables. In the
-   current artifact, the optimized growth rate is about ``57%`` of the initial
-   value and both quasilinear and nonlinear-window heat-flux observables are
-   about ``41%`` of their initial values. The comparison is a gradient and
-   objective-reduction validation, not a claim that these reduced objectives
-   replace converged nonlinear transport simulations. The reduced surface views
-   are supporting synthetic diagnostics and are not the solved VMEC-JAX QA
-   baseline surface shown earlier on this page.
+The reduced comparison sidecar
+``docs/_static/stellarator_itg_optimization_comparison.json`` records three
+differentiable QA stellarator ITG objectives from the same initial control
+vector. All three keep the reduced objective near ``A = 7`` and ``iota = 0.41``
+while reducing the tracked transport observables. In the current artifact, the
+optimized growth rate is about ``57%`` of the initial value and both
+quasilinear and nonlinear-window heat-flux observables are about ``41%`` of
+their initial values. This is retained as model-development and AD/FD plumbing
+evidence only. Its companion rendered PNG is a synthetic max-mode-1 surface
+diagnostic that can look nearly axisymmetric when the reduced helical amplitude
+collapses; it is therefore not embedded as a paper-facing solved-geometry
+optimization figure. Use the solved VMEC-JAX QA boundary/Boozer panel above for
+baseline geometry visualization and the UQ/guard panels below for the current
+optimization-evidence figures.
 
 .. figure:: _static/stellarator_itg_optimization_uq.png
    :width: 95%

@@ -213,7 +213,9 @@ def _augment_comparison_payload(payload: dict[str, Any]) -> dict[str, Any]:
             "nzeta": LCFS_GRID_SIZE,
             "cmap": LCFS_CMAP,
         },
-        "surface_claim": "reduced max-mode-1 visualization, not a solved VMEC LCFS",
+        "surface_claim": (
+            "synthetic reduced max-mode-1 visualization, not a solved VMEC LCFS"
+        ),
         "nonlinear_trace_claim": "smooth reduced nonlinear envelope, not a chaotic production nonlinear GK trace",
     }
     return payload
@@ -532,7 +534,11 @@ def _plot_comparison(payload: dict[str, Any], path: Path) -> None:
     ax_trace = fig.add_subplot(grid[0, 2])
     surface_axes = [fig.add_subplot(grid[1, i], projection="3d") for i in range(3)]
     bmag_axes = [fig.add_subplot(grid[2, i], projection="3d") for i in range(3)]
-    fig.suptitle("Differentiable QA stellarator ITG optimization comparison", fontsize=14.5, fontweight="bold")
+    fig.suptitle(
+        "Reduced synthetic QA ITG optimization-plumbing comparison",
+        fontsize=14.5,
+        fontweight="bold",
+    )
 
     for i, result in enumerate(results):
         hist = np.asarray([row["objective"] for row in result["history"]], dtype=float)
@@ -587,14 +593,14 @@ def _plot_comparison(payload: dict[str, Any], path: Path) -> None:
             ax,
             fig,
             result["reduced_diagnostics"]["final"],
-            title=rf"LCFS $|B|$: {label}",
+            title=rf"Synthetic reduced LCFS $|B|$: {label}",
         )
     for ax, result, label in zip(bmag_axes, results, labels, strict=True):
         _plot_reduced_boozer_bmag(
             ax,
             fig,
             result["reduced_diagnostics"]["final"],
-            title=rf"Boozer LCFS $|B|$: {label}",
+            title=rf"Synthetic reduced Boozer-LCFS $|B|$: {label}",
         )
 
     metrics = ["growth_rate", "quasilinear_heat_flux", "nonlinear_heat_flux_mean"]

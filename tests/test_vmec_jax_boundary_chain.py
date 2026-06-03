@@ -262,6 +262,7 @@ def test_boundary_chain_collection_summary_counts_mixed_modes() -> None:
     }
     assert summary["rows"][0]["name"] == "rc11"
     assert summary["rows"][1]["frozen_axis_matches_exact_fd"] is True
+    assert summary["rows"][1]["exact_fd_consistent"] is True
     assert summary["rows"][1]["growth_branch_locality_passed"] is True
     assert (
         summary["rows"][1]["growth_branch_locality_classification"]
@@ -295,6 +296,7 @@ def test_boundary_chain_collection_counts_verified_frozen_axis_convention_separa
     assert summary["counts"]["n_exact_fd_consistent"] == 0
     assert summary["counts"]["n_frozen_axis_convention_verified"] == 1
     assert summary["rows"][0]["frozen_axis_matches_exact_fd"] is False
+    assert summary["rows"][0]["exact_fd_consistent"] is False
     assert summary["rows"][0]["frozen_axis_convention_verified"] is True
     assert "growth-branch" in summary["next_action"]
 

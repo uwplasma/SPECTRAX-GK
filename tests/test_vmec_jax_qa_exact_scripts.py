@@ -101,4 +101,26 @@ def test_readme_uses_solved_vmec_qa_geometry_not_reduced_surface_panel() -> None
 
     assert "_static/vmec_jax_qa_solved_boundary_boozer_panel.png" in docs
     assert "not solved VMEC WOUT surfaces" in docs
+    assert ".. figure:: _static/stellarator_itg_optimization_comparison.png" not in docs
+    assert (
+        "current artifact bases: ``docs/_static/stellarator_itg_optimization_comparison.png``"
+        not in manuscript
+    )
     assert "not used as the primary README/manuscript solved-geometry visual" in manuscript
+
+
+def test_reduced_surface_comparison_is_not_current_primary_optimization_figure() -> None:
+    readiness_source = (ROOT / "tools" / "build_manuscript_readiness_status.py").read_text(
+        encoding="utf-8"
+    )
+    examples_readme = (EXAMPLES / "README.md").read_text(encoding="utf-8")
+    docs = (ROOT / "docs" / "stellarator_optimization.rst").read_text(encoding="utf-8")
+
+    reduced_png = '"docs/_static/stellarator_itg_optimization_comparison.png"'
+    primary_block = readiness_source.split('"supporting_artifacts"', maxsplit=1)[0]
+
+    assert reduced_png not in primary_block
+    assert "Do not use the reduced synthetic surface comparison" in readiness_source
+    assert "Run a QA-only baseline" not in examples_readme
+    assert "Run an aspect-6 constraints-only branch" in examples_readme
+    assert "model-development and AD/FD plumbing evidence only" in re.sub(r"\s+", " ", docs)

@@ -70,7 +70,7 @@
       "claim_level": "reduced_objective_optimization_closed_not_full_production_vmec_gk",
       "key_metrics": {
         "all_objective_gradient_gates_passed": true,
-        "best_reduction_factor": 0.05282149157273069,
+        "best_reduction_factor": 0.05277983764808415,
         "matched_qa_no_ess_relative_reduction": 0.1844401904195982,
         "matched_qa_no_ess_to_optimized_audit_passed": true,
         "matched_qa_no_ess_uncertainty_separation_sigma": 7.819308425110687,
@@ -83,10 +83,8 @@
         "worst_reduction_factor": 0.14944986630532714
       },
       "lane": "Reduced differentiable stellarator ITG optimization",
-      "next_action": "Use as the current optimization figure only with scoped wording; the matched QA no-ESS to optimized QA/ESS audit is closed, but nonlinear-window VMEC/Boozer/GK gradients and matched audits across broader geometry families remain future requirements before claiming broad end-to-end stellarator heat-flux optimization.",
+      "next_action": "Use the UQ, production-guard, replicated-ensemble, and matched-audit artifacts as the current optimization-evidence figures. Do not use the reduced synthetic surface comparison as the solved-geometry optimization figure. The matched QA no-ESS to optimized QA/ESS audit is closed, but nonlinear-window VMEC/Boozer/GK gradients and matched audits across broader geometry families remain future requirements before claiming broad end-to-end stellarator heat-flux optimization.",
       "primary_artifacts": [
-        "docs/_static/stellarator_itg_optimization_comparison.json",
-        "docs/_static/stellarator_itg_optimization_comparison.png",
         "docs/_static/stellarator_itg_optimization_uq.json",
         "docs/_static/stellarator_itg_optimization_uq.png",
         "docs/_static/production_nonlinear_optimization_guard.json",
@@ -98,7 +96,11 @@
         "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json",
         "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.png"
       ],
-      "status": "closed"
+      "status": "closed",
+      "supporting_artifacts": [
+        "docs/_static/stellarator_itg_optimization_comparison.json",
+        "docs/_static/stellarator_itg_optimization_comparison.png"
+      ]
     },
     {
       "claim_level": "required_for_full_end_to_end_stellarator_optimization_claim",

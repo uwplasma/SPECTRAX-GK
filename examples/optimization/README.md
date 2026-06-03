@@ -118,7 +118,7 @@ That command assembles the VMEC-JAX QA objective blocks and writes a setup
 summary without solving. The canonical implementation is
 `examples/optimization/vmec_jax_qa_low_turbulence_optimization.py`.
 
-Run a QA-only baseline:
+Run an aspect-6 constraints-only branch:
 
 ```bash
 python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py \

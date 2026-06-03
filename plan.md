@@ -43,6 +43,19 @@ This file is both the active plan and the running log. Keep entries concise, dat
   diagnostics are explicitly allowed, a row is admitted only when exact FD
   passes or the frozen-axis convention gate is verified; internal JVP/VJP
   transpose alone is insufficient.
+- Re-ran the real latest-stack QA baseline boundary-chain probes with
+  ``PYTHONPATH=/Users/rogeriojorge/local/vmec_jax_latest:/Users/rogeriojorge/local/booz_xform_jax/src:src``
+  and ``mboz=nboz=21``:
+  ``tools_out/latest_vmec_stack/boundary_chain_rc14_h2e5_convention_verified.json``
+  and
+  ``tools_out/latest_vmec_stack/boundary_chain_zs13_h2e5_convention_verified.json``.
+  Both rows pass growth-branch locality and
+  ``frozen_axis_convention_verified`` with vector tangent relative errors
+  ``5.6e-11`` and ``4.2e-11`` respectively. Raw exact-solve FD remains
+  inconsistent by design for these branch-sensitive/convention-sensitive
+  directions, so exact-only admission returns no rows while projected strict
+  admission returns ``(28, 27)`` only under the verified frozen-axis convention
+  and growth-branch-locality gates.
 
 ## 2026-06-03 Nonlinear-Audit Promotion Runbook
 

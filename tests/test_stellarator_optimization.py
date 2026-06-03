@@ -273,9 +273,19 @@ def test_stellarator_itg_comparison_artifact_has_publication_lcfs_diagnostics(tm
 
     written = json.loads(out.with_suffix(".json").read_text(encoding="utf-8"))
     assert written["figure_scope"]["surface_grid"] == {"ntheta": 72, "nzeta": 72, "cmap": "jet"}
+    assert "synthetic reduced" in written["figure_scope"]["surface_claim"]
     assert "not a solved VMEC LCFS" in written["figure_scope"]["surface_claim"]
     assert out.with_suffix(".png").exists()
     assert out.with_suffix(".pdf").exists()
+    plotting_source = (
+        Path(__file__).resolve()
+        .parents[1]
+        .joinpath("examples/optimization/_stellarator_itg_plotting.py")
+        .read_text(encoding="utf-8")
+    )
+    assert "Reduced synthetic QA ITG optimization-plumbing comparison" in plotting_source
+    assert "Synthetic reduced LCFS" in plotting_source
+    assert "Synthetic reduced Boozer-LCFS" in plotting_source
     for result in written["results"]:
         diagnostics = result["reduced_diagnostics"]["final"]
         assert diagnostics["surface_summary"]["theta_count"] == 72

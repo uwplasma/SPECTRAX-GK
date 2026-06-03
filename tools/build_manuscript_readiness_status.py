@@ -605,8 +605,6 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
             else "open",
             "claim_level": "reduced_objective_optimization_closed_not_full_production_vmec_gk",
             "primary_artifacts": [
-                "docs/_static/stellarator_itg_optimization_comparison.json",
-                "docs/_static/stellarator_itg_optimization_comparison.png",
                 "docs/_static/stellarator_itg_optimization_uq.json",
                 "docs/_static/stellarator_itg_optimization_uq.png",
                 "docs/_static/production_nonlinear_optimization_guard.json",
@@ -617,6 +615,10 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                 "docs/_static/qa_no_ess_reference_replicates/qa_no_ess_reference_t700_ensemble_gate.png",
                 "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json",
                 "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.png",
+            ],
+            "supporting_artifacts": [
+                "docs/_static/stellarator_itg_optimization_comparison.json",
+                "docs/_static/stellarator_itg_optimization_comparison.png",
             ],
             "key_metrics": {
                 **opt_reductions,
@@ -651,10 +653,11 @@ def build_manuscript_readiness_payload(root: Path = ROOT) -> dict[str, Any]:
                 ),
             },
             "next_action": (
-                "Use as the current optimization figure only with scoped wording; the matched QA no-ESS to optimized "
-                "QA/ESS audit is closed, but nonlinear-window VMEC/Boozer/GK gradients and matched audits across "
-                "broader geometry families remain future requirements before claiming broad end-to-end stellarator "
-                "heat-flux optimization."
+                "Use the UQ, production-guard, replicated-ensemble, and matched-audit artifacts as the current "
+                "optimization-evidence figures. Do not use the reduced synthetic surface comparison as the solved-geometry "
+                "optimization figure. The matched QA no-ESS to optimized QA/ESS audit is closed, but nonlinear-window "
+                "VMEC/Boozer/GK gradients and matched audits across broader geometry families remain future requirements "
+                "before claiming broad end-to-end stellarator heat-flux optimization."
             ),
         },
         {

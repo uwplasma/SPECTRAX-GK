@@ -309,6 +309,16 @@ def test_manuscript_status_closes_negative_ql_and_defers_zonal_tem(
         lanes["Reduced differentiable stellarator ITG optimization"]["status"]
         == "closed"
     )
+    opt_lane = lanes["Reduced differentiable stellarator ITG optimization"]
+    assert (
+        "docs/_static/stellarator_itg_optimization_comparison.png"
+        not in opt_lane["primary_artifacts"]
+    )
+    assert (
+        "docs/_static/stellarator_itg_optimization_comparison.png"
+        in opt_lane["supporting_artifacts"]
+    )
+    assert "Do not use the reduced synthetic surface comparison" in opt_lane["next_action"]
     assert lanes["Production solver-objective geometry gradients"]["status"] == "closed"
     assert (
         lanes["Production solver-objective geometry gradients"]["key_metrics"][
