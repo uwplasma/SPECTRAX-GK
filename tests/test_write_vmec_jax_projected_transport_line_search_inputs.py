@@ -87,7 +87,9 @@ def test_projected_writer_defaults_to_multisample_transport_contract(tmp_path: P
 
 def test_projected_writer_manifest_records_sample_coverage(tmp_path: Path, monkeypatch) -> None:
     gradient = tmp_path / "gradient.json"
+    collection = tmp_path / "boundary_chain.json"
     _gradient_report(gradient)
+    _boundary_chain_collection(collection)
     saved: list[tuple[Path, object]] = []
 
     class FakeOptimizer:
@@ -105,6 +107,8 @@ def test_projected_writer_manifest_records_sample_coverage(tmp_path: Path, monke
             str(tmp_path / "input.final"),
             "--gradient-json",
             str(gradient),
+            "--boundary-chain-collection-json",
+            str(collection),
             "--outdir",
             str(tmp_path / "out"),
             "--steps",
@@ -123,6 +127,7 @@ def test_projected_writer_manifest_records_sample_coverage(tmp_path: Path, monke
     assert payload["transport_objective_sample_set"]["surfaces"] == [0.45, 0.64, 0.78]
     assert payload["transport_objective_sample_set"]["alphas"] == [0.0, 0.7853981633974483]
     assert payload["transport_objective_sample_set"]["ky_values"] == [0.1, 0.3, 0.5]
+    assert payload["boundary_chain_filter"]["accepted_parameter_indices"] == [1]
     command = payload["rows"][0]["replay_command"]
     assert "--surfaces" in command
     assert "0.45,0.64,0.78" in command
@@ -130,6 +135,27 @@ def test_projected_writer_manifest_records_sample_coverage(tmp_path: Path, monke
     assert "0.0,0.7853981633974483" in command
     assert "--ky-values" in command
     assert "0.1,0.3,0.5" in command
+
+
+def test_projected_writer_requires_boundary_chain_collection_by_default(tmp_path: Path, monkeypatch) -> None:
+    gradient = tmp_path / "gradient.json"
+    _gradient_report(gradient)
+
+    def unexpected_stage(_args):
+        raise AssertionError("ungated projected update should fail before VMEC-JAX stage construction")
+
+    monkeypatch.setattr(mod, "_build_stage", unexpected_stage)
+    with pytest.raises(ValueError, match="require --boundary-chain-collection-json"):
+        mod.main(
+            [
+                "--input",
+                str(tmp_path / "input.final"),
+                "--gradient-json",
+                str(gradient),
+                "--outdir",
+                str(tmp_path / "out"),
+            ]
+        )
 
 
 def test_projected_writer_filters_direction_by_boundary_chain_collection(tmp_path: Path, monkeypatch) -> None:
@@ -215,7 +241,9 @@ def test_projected_writer_can_mark_branch_sensitive_filter_as_diagnostic(tmp_pat
 
 def test_projected_writer_fails_closed_for_underresolved_sample_set(tmp_path: Path, monkeypatch) -> None:
     gradient = tmp_path / "gradient.json"
+    collection = tmp_path / "boundary_chain.json"
     _gradient_report(gradient)
+    _boundary_chain_collection(collection)
 
     def unexpected_stage(_args):
         raise AssertionError("under-resolved sample set should fail before VMEC-JAX stage construction")
@@ -228,6 +256,8 @@ def test_projected_writer_fails_closed_for_underresolved_sample_set(tmp_path: Pa
                 str(tmp_path / "input.final"),
                 "--gradient-json",
                 str(gradient),
+                "--boundary-chain-collection-json",
+                str(collection),
                 "--outdir",
                 str(tmp_path / "out"),
                 "--surfaces",

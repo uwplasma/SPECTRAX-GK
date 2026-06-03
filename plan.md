@@ -68,7 +68,8 @@ The target paper should show:
   directions default to exact-FD-consistent coefficients only; internal-replay
   branch-sensitive modes remain diagnostic-only.
 - Wired the same collection filter into the projected-input writer executable,
-  so generated VMEC decks now use the safe coefficient subset by default.
+  so promoted VMEC decks require a boundary-chain collection and use the safe
+  coefficient subset by default.
 
 ## 2026-06-02 Projected QA Transport Audit
 

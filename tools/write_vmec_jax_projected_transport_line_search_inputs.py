@@ -64,6 +64,11 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
             "coefficients from the boundary-chain collection."
         ),
     )
+    parser.add_argument(
+        "--allow-ungated-boundary-chain",
+        action="store_true",
+        help="Diagnostic only: generate projected inputs without a boundary-chain collection gate.",
+    )
     parser.add_argument("--outdir", type=Path, required=True, help="Directory for generated candidate inputs")
     parser.add_argument("--steps", type=_float_tuple, default=(2.5e-4, 5.0e-4, 1.0e-3, 2.0e-3))
     parser.add_argument("--top-n", type=int, default=12, help="Number of ranked gradient components to use")
@@ -207,6 +212,11 @@ def main(argv: list[str] | None = None) -> int:
         if args.boundary_chain_collection_json is None
         else json.loads(args.boundary_chain_collection_json.read_text(encoding="utf-8"))
     )
+    if boundary_chain_collection is None and not bool(args.allow_ungated_boundary_chain):
+        raise ValueError(
+            "projected VMEC boundary updates require --boundary-chain-collection-json; "
+            "use --allow-ungated-boundary-chain only for diagnostic replay"
+        )
     require_boundary_chain_exact_fd = not bool(args.allow_boundary_chain_branch_sensitive)
     direction = sparse_descent_direction_from_gradient_report(
         report,

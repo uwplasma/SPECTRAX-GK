@@ -449,14 +449,16 @@ After a sensitive diagnostic, generate bounded projected candidate inputs with:
 
 The generated ``projected_line_search_inputs.json`` records the candidate
 ``input.gradient_step`` decks, replay commands, and objective sample summary.
-With ``--boundary-chain-collection-json``, it also records the accepted
-coefficient indices and excludes branch-sensitive components by default. The
-writer fails closed if the transport objective does not satisfy the
-multi-surface/multi-field-line/multi-``k_y`` coverage gate. Exploratory
-single-point searches require ``--allow-underresolved-sample-set`` and cannot
-be used for production nonlinear-audit admission. Each replay must still write
-an authoritative ``solved_wout_gate.json`` and explicit transport metric before
-any candidate is admitted.
+The writer requires ``--boundary-chain-collection-json`` by default, records the
+accepted coefficient indices, and excludes branch-sensitive components. Ungated
+boundary updates require the explicit diagnostic override
+``--allow-ungated-boundary-chain``. The writer also fails closed if the
+transport objective does not satisfy the multi-surface/multi-field-line/multi-
+``k_y`` coverage gate. Exploratory single-point searches require
+``--allow-underresolved-sample-set`` and cannot be used for production
+nonlinear-audit admission. Each replay must still write an authoritative
+``solved_wout_gate.json`` and explicit transport metric before any candidate is
+admitted.
 
 The current aspect-6 QA restart is locally sensitive: the transport-only
 diagnostic gives ``||grad J||_2 = 0.421`` for a single
