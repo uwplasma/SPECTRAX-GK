@@ -19,6 +19,40 @@ The target paper should show:
 4. A full `vmec_jax -> booz_xform_jax -> SPECTRAX-GK` pipeline for stellarator sensitivity analysis, uncertainty quantification, inverse design, and optimization.
 5. Nonlinear audit runs that confirm where the reduced objective does and does not predict saturated transport trends.
 
+## 2026-06-03 VMEC-JAX Boundary-Chain Convention Probe
+
+- Created a clean latest VMEC-JAX checkout at
+  ``/Users/rogeriojorge/local/vmec_jax_latest`` on upstream ``main`` commit
+  ``205b04d`` and a new editable SPECTRAX/VMEC/Boozer environment at
+  ``/Users/rogeriojorge/local/venvs/spectrax_vmec_latest_20260603``.
+- Focused tests passed in the new environment:
+  ``62 passed`` for SPECTRAX VMEC-gradient tests and ``56 passed`` for
+  VMEC-JAX discrete-adjoint replay tests.
+- Re-ran the authoritative QA ``rc14`` transport-gradient diagnostic locally
+  with latest VMEC-JAX and ``booz_xform_jax`` commit ``1d5e8c``. The
+  under-converged ``120``-iteration exact-solve setting reproduced the large
+  mismatch, but raising the exact-solve budget to ``500`` and ``1000``
+  iterations reduced the AD/FD cost-gradient discrepancy to about ``7.5%`` at
+  ``eps = 1e-4``.
+- Added ``spectraxgk.vmec_jax_boundary_chain`` to classify boundary-chain
+  probes. It distinguishes raw exact-solve FD, SPECTRAX final-state
+  cotangents, frozen-axis initial-state FD, VMEC-JAX tape JVP, and VMEC-JAX
+  tape VJP. Fast tests cover the observed branch-sensitive case and the
+  convergence-controlled sparse-FD case.
+- Added ``tools/probe_vmec_jax_boundary_chain.py`` as the tracked diagnostic
+  executable. It reports the frozen-axis optimizer convention explicitly and
+  writes a JSON ``summary`` suitable for docs and future artifact gates.
+- Updated ``docs/stellarator_optimization.rst`` and ``docs/api.rst``. Current
+  interpretation: the severe raw AD/FD mismatch is not a generic SPECTRAX
+  final-state derivative failure; it is dominated by under-converged exact
+  solves and magnetic-axis branch sensitivity unless the frozen-axis convention
+  and VMEC solve budget are enforced.
+- Next best step: run the new tracked probe on ``ssh office`` for the leading
+  multi-sample gradient components after the 18-point chunked gradient is
+  available, then set a release gate that requires frozen-axis replay
+  consistency plus bounded sparse FD agreement before any new projected
+  transport-gradient candidate is promoted.
+
 ## 2026-06-02 Projected QA Transport Audit
 
 - Generated matched ``n64``, ``t ~= 700`` nonlinear replicate configs for the
