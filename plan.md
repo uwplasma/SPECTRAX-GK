@@ -19,6 +19,33 @@ The target paper should show:
 4. A full `vmec_jax -> booz_xform_jax -> SPECTRAX-GK` pipeline for stellarator sensitivity analysis, uncertainty quantification, inverse design, and optimization.
 5. Nonlinear audit runs that confirm where the reduced objective does and does not predict saturated transport trends.
 
+## 2026-06-02 Projected QA Transport Audit
+
+- Generated matched ``n64``, ``t ~= 700`` nonlinear replicate configs for the
+  authoritative aspect-6 QA baseline and the accepted projected VMEC-JAX
+  transport-gradient step (``1e-3``). The external-VMEC nonlinear launch
+  manifests now use the explicit ``run-runtime-nonlinear --steps ...`` command
+  rather than the generic executable dispatch path.
+- Completed six office-GPU runs: seed31, seed32, and ``dt=0.04`` for the
+  baseline and projected candidate. Both baseline and candidate ``t=[350,700]``
+  ensembles pass finite-window, replicate-spread, and SEM gates.
+- Baseline ensemble mean heat flux is ``9.833`` with combined SEM/mean
+  ``0.0215``. The projected candidate mean is ``9.891`` with combined SEM/mean
+  ``0.0205``.
+- The matched comparison is negative: relative reduction ``-0.00585`` and
+  uncertainty z-score ``-0.20``. The single-sample reduced-metric improvement
+  (``3.55%``) did not transfer to long-window nonlinear turbulent flux, so this
+  candidate is not promoted as a nonlinear turbulent-flux optimization result.
+- Artifacts: ``docs/_static/qa_projected_transport_step1e3_matched_comparison.png``
+  plus JSON and ensemble sidecars under
+  ``docs/_static/qa_projected_*_replicates/``.
+- Validation: focused pytest/ruff, repository-size check, validation manifest,
+  docs build, and CI run ``26853904296`` passed on ``main``.
+
+Next best step: build a better-conditioned multi-sample transport-admission
+objective with multiple surfaces, field-line labels, and/or ``k_y`` values
+before launching another expensive optimized-equilibrium nonlinear audit.
+
 ## 2026-06-01 VMEC-JAX QA Transport Objective Fix
 
 - Responded to QA of the low-turbulence panel: the tracked reduced optimizer
