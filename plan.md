@@ -965,13 +965,13 @@ sidecars live at `docs/_static/quasilinear_model_selection_status.*`.
 
 Closed by this checkpoint:
 
-- The seven-case electrostatic quasilinear model-selection lane is now
+- The current electrostatic quasilinear model-selection lane is now
   summarized by one reusable status object instead of only by separate plotting
   scripts.
 - The accepted `spectral_envelope_ridge` candidate remains scoped: mean
-  leave-one-geometry-out relative error is about `0.244`, interval coverage is
-  about `0.857`, and the candidate beats both the training-mean null and
-  linear-weight baselines.
+  leave-one-geometry-out relative error is about `0.295`, interval coverage is
+  `7/8`, and the candidate beats both the training-mean null and linear-weight
+  baselines on the tracked eight-case electrostatic portfolio.
 - The same status verifies that no tracked train/holdout calibration report is
   promoted to `calibrated_absolute_flux`, preserving the absolute-flux claim
   boundary.
@@ -3630,9 +3630,9 @@ Exit gate:
   - regenerated the saturation-rule and dataset-sufficiency diagnostics with
     DSHAPE included as a fourth holdout. That historical snapshot failed the
     six-case and two-training-geometry promotion requirements and is now
-    superseded by the current seven-case portfolio: positive-growth mixing
-    length is the least-bad simple rule at about ``2.51`` mean held-out
-    relative error, the training-mean null is about ``1.39``, and
+    superseded by a later portfolio snapshot: at that point positive-growth
+    mixing length was the least-bad simple rule at about ``2.51`` mean held-out
+    relative error, the training-mean null was about ``1.39``, and
     ``spectral_envelope_ridge`` is the scoped accepted model-development
     candidate.
 - Resumed the next external-VMEC nonlinear holdout lane after interruption:
@@ -3747,8 +3747,8 @@ Exit gate:
     train/holdout figure plus the ITERModel and up-down asymmetric convergence
     gates instead of the older Cyclone-only calibration narrative;
   - refreshed ``docs/_static/quasilinear_dataset_sufficiency.*`` so the figure
-    now reflects the admitted seven-case electrostatic portfolio
-    (``2`` training geometries, ``5`` holdouts);
+    now reflects the admitted electrostatic portfolio
+    (``2`` training geometries, ``6`` holdouts);
   - updated ``docs/quasilinear.rst`` to match the current claim surface:
     absolute-flux promotion is blocked by held-out model skill, not by missing
     validated nonlinear input volume.
@@ -3770,8 +3770,8 @@ Exit gate:
     ``docs/_static/manuscript_readiness_status.*``;
   - current gated result:
     ``spectral_envelope_ridge`` reaches leave-one-geometry-out mean relative
-    error ``0.244``, interval coverage ``0.857``, and becomes the accepted
-    richer candidate on the present seven-case electrostatic portfolio;
+    error ``0.295``, interval coverage ``7/8``, and becomes the accepted
+    richer candidate on the present eight-case electrostatic portfolio;
   - the scientific scope remains explicit:
     one-scalar saturation rules stay rejected, the higher-parameter
     ``linear_state_ridge`` candidate remains blocked by the
@@ -5285,7 +5285,7 @@ Exit gate:
     correctness/profiler gate, and no nonlinear speedup claim is allowed without
     fresh identity-preserving profiler artifacts;
   - corrected ``docs/manuscript_figures.rst`` so the quasilinear candidate
-    uncertainty and dataset-sufficiency entries match the current seven-case
+    uncertainty and dataset-sufficiency entries match the current eight-case
     artifacts: ``spectral_envelope_ridge`` is accepted as a scoped
     model-development candidate, while broader runtime/TOML, electromagnetic,
     and universal absolute-flux claims remain blocked.
@@ -5405,11 +5405,11 @@ Exit gate:
   AD/FD/JVP/VJP consistency, finite resolved diagnostics schemas, zonal tail
   envelope metrics, and explicit W7-X zonal/TEM open-lane status preservation.
 - Fixed release-facing documentation drift:
-  - manuscript quasilinear train/holdout text now reflects the seven-case
-    portfolio with Cyclone + ITERModel training and five holdouts;
+  - manuscript quasilinear train/holdout text now reflects the eight-case
+    portfolio with Cyclone + ITERModel training and six holdouts;
   - saturation-rule text now uses the current artifact values:
-    positive-growth mixing length `2.51`, linear weight `3.19`, absolute-growth
-    diagnostic `3.96`, and training-mean null `1.39` mean held-out relative
+    positive-growth mixing length `2.114`, linear weight `2.680`, absolute-growth
+    diagnostic `3.325`, and training-mean null `1.199` mean held-out relative
     error;
   - VMEC/Boozer language now distinguishes closed reduced estimator gradient
     gates from still-open production nonlinear turbulence-gradient and
