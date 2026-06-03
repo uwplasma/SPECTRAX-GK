@@ -199,6 +199,11 @@ def test_boundary_chain_collection_summary_counts_mixed_modes() -> None:
             frozen_axis_initial_fd_norm=1.8,
             exact_relative_tolerance=0.1,
         ),
+        "growth_branch_locality": {
+            "enabled": True,
+            "passed": True,
+            "classification": "all_samples_dominant_growth_branch_locally_consistent",
+        },
     }
 
     summary = build_boundary_chain_collection_summary(
@@ -216,9 +221,16 @@ def test_boundary_chain_collection_summary_counts_mixed_modes() -> None:
         "n_frozen_axis_internal_pass": 2,
         "n_exact_fd_consistent": 1,
         "n_branch_sensitive": 1,
+        "n_growth_branch_locality_checked": 1,
+        "n_growth_branch_locality_passed": 1,
     }
     assert summary["rows"][0]["name"] == "rc11"
     assert summary["rows"][1]["frozen_axis_matches_exact_fd"] is True
+    assert summary["rows"][1]["growth_branch_locality_passed"] is True
+    assert (
+        summary["rows"][1]["growth_branch_locality_classification"]
+        == "all_samples_dominant_growth_branch_locally_consistent"
+    )
     assert "exclude or regularize branch-sensitive modes" in summary["next_action"]
 
 
@@ -228,3 +240,4 @@ def test_boundary_chain_collection_summary_fails_closed_when_empty() -> None:
     assert summary["finite"] is False
     assert summary["classification"] == "empty_boundary_chain_collection"
     assert summary["counts"]["n_total"] == 0
+    assert summary["counts"]["n_growth_branch_locality_checked"] == 0

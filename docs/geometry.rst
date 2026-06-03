@@ -343,6 +343,13 @@ This branch-locality block is a diagnostic admission gate. Passing it does not
 by itself promote nonlinear turbulent-flux optimization; it only says that the
 linear growth finite-difference stencil is measuring the local branch assumed
 by the implicit left/right eigenvalue derivative.
+When this block is present in a boundary-chain probe,
+``build_boundary_chain_collection_summary(...)`` carries
+``growth_branch_locality_checked``, ``growth_branch_locality_passed``, and the
+branch-locality classification into each collection row. The projected-update
+policy still fails closed on the stricter VMEC exact-FD/frozen-axis consistency
+gate; branch locality only localizes the failure mechanism and prevents a
+VMEC-convention issue from being misdiagnosed as a SPECTRAX eigenbranch switch.
 
 The reusable low-level entry point is
 ``observable_gradient_validation_report(observable_fn, params, ...)``. It

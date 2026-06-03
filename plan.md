@@ -79,6 +79,24 @@ This file is both the active plan and the running log. Keep entries concise, dat
   while frozen-axis replay vs raw exact FD differs by ``0.140`` relative. This
   rules out a dominant-growth branch switch for that sample and leaves the
   VMEC exact-solve/frozen-axis convention mismatch as the current blocker.
+- Collection summaries now preserve optional branch-locality status per sparse
+  coefficient via ``growth_branch_locality_checked``,
+  ``growth_branch_locality_passed``, and
+  ``growth_branch_locality_classification``. This keeps projected-update
+  filtering machine-readable without weakening the stricter exact-FD/frozen-axis
+  admission gate.
+- Real bounded probe on neighboring ``zs13`` at ``step=2e-5`` with the same
+  one-sample growth setup also produced ``growth_branch_locality.passed =
+  true``. The base eigenvalue gap is ``1.68e-3``, the dominant and nearest
+  local-branch growth slopes are both ``-1.32558``, and both plus/minus sides
+  select the nearest branch. The boundary-chain summary remains fail-closed:
+  final-state cotangent vs exact final-state FD agrees to ``1.1e-3`` relative,
+  while frozen-axis replay vs raw exact FD differs by ``0.680`` relative and is
+  classified as
+  ``frozen_axis_replay_consistent_but_exact_fd_branch_sensitive``. Together
+  with ``rc14``, this makes the current blocker a VMEC exact-solve/frozen-axis
+  convention issue rather than a SPECTRAX dominant-growth branch-locality issue
+  for the sampled growth objective.
 
 ## 2026-06-03 VMEC-JAX QA Transport Script Audit
 
