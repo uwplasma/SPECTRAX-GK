@@ -358,10 +358,11 @@ The equal-arc VMEC/Boozer remap keeps the moving-coordinate sensitivity in the
 SPECTRAX-GK geometry path. Office diagnostics showed that nonfinite geometry
 cotangents originated one level upstream in ``booz_xform_jax`` inactive Fourier
 branches; safe denominators in those branches make VMEC state, Boozer input,
-Boozer output, and SPECTRAX-GK geometry profile gradients finite. This is still
-not sufficient for promotion: the boundary-level VMEC-JAX adjoint/replay
-gradient must agree with the sparse finite-difference checks above before a
-projected transport update is trusted.
+Boozer output, and SPECTRAX-GK geometry profile gradients finite. The audited
+upstream fix is ``booz_xform_jax`` commit ``1d5e8c``. This is still not
+sufficient for promotion: the boundary-level VMEC-JAX adjoint/replay gradient
+must agree with the sparse finite-difference checks above before a projected
+transport update is trusted.
 
 After a sensitive diagnostic, generate bounded projected candidate inputs with:
 
@@ -1486,6 +1487,9 @@ the following pass:
    remaining gap is finite-beta and broader production-runtime drift parity
    beyond the tracked zero-beta equal-arc fixtures before broad transport-gradient
    claims are promoted.
+   The reverse-mode state-level bridge additionally requires
+   ``booz_xform_jax`` at or after commit ``1d5e8c``; earlier JAX Boozer
+   transforms can have finite values but non-finite zero-mode cotangents.
 2. The sampled field-line arrays match the existing imported-VMEC/EIK runtime
    path for at least one small equilibrium.
 3. Geometry-observable gradients match central finite differences for the

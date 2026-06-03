@@ -1410,6 +1410,11 @@ Python environment is needed for the helper subprocesses, set
 ``geometry.gx_python`` in the runtime TOML. On ``office``, the normal audited
 path is:
 
+For differentiable VMEC/Boozer gradient audits, the ``booz_xform_jax`` checkout
+must include upstream commit ``1d5e8c`` or newer. The gate is intentionally
+strict because older checkouts can pass value/parity tests while returning
+non-finite reverse-mode cotangents for inactive zero-mode Fourier branches.
+
 .. code-block:: bash
 
    export BOOZ_XFORM_JAX_PATH=/path/to/booz_xform_jax

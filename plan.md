@@ -162,9 +162,11 @@ The target paper should show:
   reverse-mode even when those branches are not selected. Applying safe
   denominators in ``booz_xform_jax`` makes raw Boozer coefficient gradients,
   SPECTRAX-GK geometry profile gradients, and final-state transport-objective
-  VJPs finite on office. The SPECTRAX-GK equal-arc remap keeps coordinate-map
-  sensitivity; an attempted stop-gradient remap stayed finite but did not
-  improve boundary AD/FD consistency and should not be promoted.
+  VJPs finite on office. The upstream fix was pushed to ``booz_xform_jax`` as
+  commit ``1d5e8c`` (``Fix Boozer transform zero-mode gradients``). The
+  SPECTRAX-GK equal-arc remap keeps coordinate-map sensitivity; an attempted
+  stop-gradient remap stayed finite but did not improve boundary AD/FD
+  consistency and should not be promoted.
 - Added ``_interp_equal_arc_profile`` as a single audited remap helper and a
   unit contract test comparing its AD gradient against central finite
   differences. Focused local result: ``62 passed`` for the VMEC transport

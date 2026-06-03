@@ -211,6 +211,13 @@ SPECTRAX at it through ``BOOZ_XFORM_JAX_PATH`` or
 ``SPECTRAX_BOOZ_XFORM_JAX_PATH``. The internal backend is preferred. A legacy
 ``booz_xform`` install is only needed as fallback compatibility for older
 helper environments.
+Differentiable VMEC/Boozer transport-gradient audits require a
+``booz_xform_jax`` checkout at or after upstream commit ``1d5e8c``. That
+revision replaces inactive zero-mode Fourier divisions by safe denominators in
+the JAX Boozer transform so reverse-mode cotangents through ``w`` spectrum
+reconstruction remain finite. Older checkouts can produce finite values but
+non-finite gradients and must not be used for promoted transport-gradient
+claims.
 The first differentiable-geometry bridge is now explicit in
 ``spectraxgk.geometry.differentiable``. Use
 ``discover_differentiable_geometry_backends()`` to audit optional
