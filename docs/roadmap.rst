@@ -259,9 +259,9 @@ contracts and gates close:
   remains post-release;
 - W7-X multi-flux-tube and TEM extension before broad stellarator-validation
   claims.
-- production nonlinear heat-flux stellarator optimization, including converged
-  VMEC/Boozer nonlinear transport gradients and optimized-equilibrium nonlinear
-  audits.
+- production nonlinear heat-flux stellarator optimization beyond the selected QA
+  audit, including converged VMEC/Boozer nonlinear transport gradients and
+  broader optimized-equilibrium nonlinear audits.
 
 Current release-scope guardrail
 -------------------------------
@@ -273,8 +273,9 @@ validation is closed for the scoped benchmark, quasilinear diagnostic/model-
 selection, artifact-passing reduced differentiable-geometry, independent-work
 parallelization, runtime/refactor artifact-contract, and profiler-localization
 claims, including the fixed-resolution QI equal-arc row after the half-mesh
-convention fix. Production nonlinear heat-flux stellarator optimization, broad
-QI validation, runtime absolute quasilinear flux
+convention fix and the scoped selected-QA optimized-equilibrium audit.
+Production nonlinear heat-flux stellarator optimization beyond that selected
+audit, broad QI validation, runtime absolute quasilinear flux
 prediction, electromagnetic quasilinear calibration, nonlinear multi-GPU
 speedup, W7-X zonal recurrence closure, and W7-X TEM/kinetic-electron
 validation remain future gates.

@@ -16,6 +16,7 @@ from dataclasses import dataclass
 import importlib
 import json
 from pathlib import Path
+import re
 from typing import cast
 
 import numpy as np
@@ -43,6 +44,16 @@ DEFAULT_AUDIT_POLICY = VMECJAXNonlinearAuditPolicy()
 DEFAULT_TRANSPORT_SURFACES = DEFAULT_AUDIT_POLICY.recommended_surfaces
 DEFAULT_TRANSPORT_ALPHAS = DEFAULT_AUDIT_POLICY.recommended_alphas
 DEFAULT_TRANSPORT_KY_VALUES = DEFAULT_AUDIT_POLICY.recommended_ky_values
+_VMEC_COEFFICIENT_RE = re.compile(
+    r"(?P<family>RBC|RBS|ZBC|ZBS)\(\s*(?P<n>[+-]?\d+)\s*,\s*(?P<m>[+-]?\d+)\s*\)"
+    r"\s*=\s*(?P<value>[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[EeDd][+-]?\d+)?)"
+)
+_SPEC_KIND_TO_INPUT_FAMILY = {
+    "rc": "RBC",
+    "rs": "RBS",
+    "zc": "ZBC",
+    "zs": "ZBS",
+}
 
 
 def _float_tuple(raw: str) -> tuple[float, ...]:
@@ -118,6 +129,15 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Central finite-difference step for --fd-check-indices",
     )
     parser.add_argument(
+        "--fd-check-relative-step",
+        type=float,
+        default=0.0,
+        help=(
+            "If positive, cap each finite-difference step at this fraction of the "
+            "matching VMEC input coefficient magnitude when that coefficient is present"
+        ),
+    )
+    parser.add_argument(
         "--fd-check-rtol",
         type=float,
         default=5.0e-2,
@@ -160,6 +180,58 @@ def _copy_args(args: argparse.Namespace, **updates: object) -> argparse.Namespac
     payload = vars(args).copy()
     payload.update(updates)
     return argparse.Namespace(**payload)
+
+
+def _vmec_input_coefficients(input_path: Path) -> dict[str, float]:
+    """Return VMEC boundary coefficients from an input deck.
+
+    VMEC input files frequently place multiple coefficients on one line and may
+    use Fortran ``D`` exponents.  Comments are stripped before matching so
+    inactive examples do not enter the finite-difference conditioning report.
+    """
+
+    coefficients: dict[str, float] = {}
+    if not Path(input_path).exists():
+        return coefficients
+    for raw_line in Path(input_path).read_text(encoding="utf-8").splitlines():
+        line = raw_line.split("!", 1)[0]
+        for match in _VMEC_COEFFICIENT_RE.finditer(line):
+            label = (
+                f"{match.group('family')}({int(match.group('n'))},"
+                f"{int(match.group('m'))})"
+            )
+            coefficients[label] = float(match.group("value").replace("D", "E").replace("d", "e"))
+    return coefficients
+
+
+def _coefficient_label_from_spec_record(row: dict[str, object]) -> str | None:
+    kind = row.get("kind")
+    family = _SPEC_KIND_TO_INPUT_FAMILY.get(str(kind).lower()) if kind is not None else None
+    if family is None:
+        return None
+    m = row.get("m")
+    n = row.get("n")
+    if m is None or n is None:
+        return None
+    return f"{family}({int(n)},{int(m)})"
+
+
+def _effective_fd_step(
+    requested_step: float,
+    coefficient_value: float | None,
+    *,
+    relative_step: float,
+) -> float:
+    """Return the finite-difference step after optional coefficient-relative capping."""
+
+    step = float(requested_step)
+    rel = float(relative_step)
+    if rel <= 0.0 or coefficient_value is None:
+        return step
+    coefficient_abs = abs(float(coefficient_value))
+    if coefficient_abs <= 0.0:
+        return step
+    return min(step, coefficient_abs * rel)
 
 
 def _sample_set_from_args(args: argparse.Namespace) -> StellaratorITGSampleSet:
@@ -341,15 +413,19 @@ def _finite_difference_consistency_report(
     *,
     indices: Sequence[int],
     step: float,
+    relative_step: float = 0.0,
     rtol: float,
     atol: float,
     residual_fun: object | None = None,
+    input_coefficients: dict[str, float] | None = None,
 ) -> dict[str, object]:
     """Compare reverse scalar-gradient components with central finite differences."""
 
     params_array = np.asarray(params, dtype=float).reshape(-1)
     if float(step) <= 0.0:
         raise ValueError("--fd-check-step must be positive")
+    if float(relative_step) < 0.0:
+        raise ValueError("--fd-check-relative-step must be non-negative")
     if float(rtol) < 0.0 or float(atol) < 0.0:
         raise ValueError("--fd-check-rtol and --fd-check-atol must be non-negative")
     unique_indices = tuple(dict.fromkeys(int(i) for i in indices))
@@ -380,17 +456,28 @@ def _finite_difference_consistency_report(
     max_abs_error = 0.0
     max_relative_error = 0.0
     max_abs_fd_cost_gradient = 0.0
+    step_conditioning_warnings: list[str] = []
+    coefficients = input_coefficients or {}
 
     for index in unique_indices:
+        spec = specs[index] if index < len(specs) else object()
+        spec_row = boundary_spec_record(spec, fallback_index=index)
+        coefficient_label = _coefficient_label_from_spec_record(spec_row)
+        coefficient_value = None if coefficient_label is None else coefficients.get(coefficient_label)
+        effective_step = _effective_fd_step(
+            float(step),
+            coefficient_value,
+            relative_step=float(relative_step),
+        )
         plus = params_array.copy()
         minus = params_array.copy()
-        plus[index] += float(step)
-        minus[index] -= float(step)
+        plus[index] += float(effective_step)
+        minus[index] -= float(effective_step)
         residual_plus = np.asarray(evaluate_residual(plus), dtype=float).reshape(-1)
         residual_minus = np.asarray(evaluate_residual(minus), dtype=float).reshape(-1)
         cost_plus = 0.5 * float(np.vdot(residual_plus, residual_plus))
         cost_minus = 0.5 * float(np.vdot(residual_minus, residual_minus))
-        fd_cost_gradient = (cost_plus - cost_minus) / (2.0 * float(step))
+        fd_cost_gradient = (cost_plus - cost_minus) / (2.0 * float(effective_step))
         reverse_cost_gradient = float(reverse_gradient[index])
         abs_error = abs(reverse_cost_gradient - fd_cost_gradient)
         denominator = max(abs(reverse_cost_gradient), abs(fd_cost_gradient), float(atol), 1.0e-300)
@@ -408,11 +495,31 @@ def _finite_difference_consistency_report(
             and np.isfinite(cost_minus)
             and np.isfinite(fd_cost_gradient)
         )
-        spec = specs[index] if index < len(specs) else object()
+        coefficient_step_ratio = (
+            None
+            if coefficient_value is None or coefficient_value == 0.0
+            else abs(float(effective_step)) / abs(float(coefficient_value))
+        )
+        requested_step_ratio = (
+            None
+            if coefficient_value is None or coefficient_value == 0.0
+            else abs(float(step)) / abs(float(coefficient_value))
+        )
+        if requested_step_ratio is not None and requested_step_ratio > 1.0:
+            step_conditioning_warnings.append(
+                f"fd_step_exceeds_input_coefficient:{coefficient_label}"
+            )
         row = {
-            **boundary_spec_record(spec, fallback_index=index),
+            **spec_row,
             "parameter_index": int(index),
-            "step": float(step),
+            "requested_step": float(step),
+            "step": float(effective_step),
+            "coefficient_label": coefficient_label,
+            "input_coefficient_value": (
+                None if coefficient_value is None else float(coefficient_value)
+            ),
+            "requested_step_to_input_coefficient_abs": requested_step_ratio,
+            "step_to_input_coefficient_abs": coefficient_step_ratio,
             "residual_plus": [float(x) for x in residual_plus],
             "residual_minus": [float(x) for x in residual_minus],
             "cost_plus": cost_plus,
@@ -424,7 +531,9 @@ def _finite_difference_consistency_report(
             "passed": passed,
         }
         if base_residual_scalar is not None and residual_plus.size == 1 and residual_minus.size == 1:
-            fd_residual_gradient = (float(residual_plus[0]) - float(residual_minus[0])) / (2.0 * float(step))
+            fd_residual_gradient = (float(residual_plus[0]) - float(residual_minus[0])) / (
+                2.0 * float(effective_step)
+            )
             reverse_residual_gradient = (
                 reverse_cost_gradient / base_residual_scalar
                 if abs(base_residual_scalar) > 1.0e-300
@@ -464,6 +573,7 @@ def _finite_difference_consistency_report(
         "enabled": True,
         "indices": [int(i) for i in unique_indices],
         "step": float(step),
+        "relative_step": float(relative_step),
         "rtol": float(rtol),
         "atol": float(atol),
         "base_residual": [float(x) for x in base_residual],
@@ -476,6 +586,7 @@ def _finite_difference_consistency_report(
         "finite": finite,
         "passed": passed,
         "blockers": blockers,
+        "conditioning_warnings": sorted(set(step_conditioning_warnings)),
         "classification": "ad_fd_consistent" if passed else "ad_fd_inconsistent_or_underresolved",
         "next_action": (
             "reverse-mode transport gradients can be used for local projected updates"
@@ -702,9 +813,11 @@ def main(argv: list[str] | None = None) -> int:
             params,
             indices=tuple(args.fd_check_indices),
             step=float(args.fd_check_step),
+            relative_step=float(args.fd_check_relative_step),
             rtol=float(args.fd_check_rtol),
             atol=float(args.fd_check_atol),
             residual_fun=residual_fun,
+            input_coefficients=_vmec_input_coefficients(args.input),
         )
     else:
         report["finite_difference_consistency"] = {

@@ -76,6 +76,35 @@ This file is both the active plan and the running log. Keep entries concise, dat
   line-search filter should therefore continue to exclude such directions by
   default; branch-sensitive modes are diagnostics until the finite-difference
   convention is better conditioned.
+- The matching ``zs13`` boundary-chain probe also fails the current production
+  admission gate. Exact final-state FD and the SPECTRAX final-state cotangent
+  agree to ``0.23%``, and frozen-axis JVP/VJP are internally transposed to
+  ``8e-13`` relative, but frozen-axis replay differs from exact FD by
+  ``16.3%``. Classification:
+  ``frozen_axis_replay_consistent_but_exact_fd_inconsistent``. Together with
+  ``rc14``, this keeps real VMEC-JAX/SPECTRAX transport optimization blocked
+  until coefficient-local FD sweeps or a public solved-equilibrium
+  linearization convention admit a stable projected direction.
+- Added coefficient-scale reporting to
+  ``tools/build_vmec_jax_transport_gradient_diagnostic.py`` so FD rows record
+  the matching VMEC input coefficient, the effective perturbation, and
+  ``|step|/|coefficient|``. This prevents blind absolute FD steps from being
+  mistaken for local gradient evidence when a tested coefficient is smaller
+  than the perturbation.
+- Re-ran the growth-gradient FD gate at the coefficient-local step ``2e-5`` for
+  ``zs13``/``rc14``. The gate still fails: ``zs13`` relative cost-gradient
+  error is ``0.83`` and ``rc14`` remains wrong-sign with relative error
+  ``1.07``. The FD report now records ``ZBS(3,1)`` with
+  ``|step|/|coefficient| = 0.039`` and ``RBC(4,1)`` with
+  ``|step|/|coefficient| = 0.674``.
+- Re-ran the tracked ``rc14`` boundary-chain probe at the same ``2e-5`` step.
+  Exact FD gives ``-8.25e-3`` and the SPECTRAX final-state cotangent gives
+  ``-7.40e-3`` (``10.3%`` relative mismatch, just outside the gate), but the
+  frozen-axis VMEC-JAX replay/VJP remains internally transposed and wrong-sign
+  at ``+1.13e-1``. Classification: ``final_state_cotangent_mismatch`` under the
+  current 10% exact-FD gate. This keeps the transport-gradient optimization
+  lane fail-closed and points the next diagnostic toward growth-eigenbranch and
+  final-state FD locality, not toward a generic VMEC tape transpose bug.
 
 ## Current Goal
 
@@ -117,14 +146,16 @@ The target paper should show:
   final-state derivative failure; it is dominated by under-converged exact
   solves and magnetic-axis branch sensitivity unless the frozen-axis convention
   and VMEC solve budget are enforced.
-- Follow-up: ran the tracked probe on the four previously nonzero sparse-FD
-  directions ``rc11`` (22), ``rc12`` (24), ``zs13`` (27), and ``rc14`` (28) at
-  ``mboz=nboz=21`` with a common ``500``-iteration VMEC budget. ``zs13`` and
-  ``rc14`` pass the 10% exact-vs-frozen sparse gate; ``rc11`` and ``rc12`` are
-  internally transposed but branch-sensitive. Raising ``rc11``/``rc12`` to
-  ``1000`` iterations worsened agreement, so this is not closed by simply
-  increasing the solve budget. The tracked summary/figure are
-  ``docs/_static/vmec_jax_boundary_chain_multicomponent.{json,png}``.
+- Earlier follow-up: ran the tracked probe on the four previously nonzero
+  sparse-FD directions ``rc11`` (22), ``rc12`` (24), ``zs13`` (27), and
+  ``rc14`` (28) at ``mboz=nboz=21`` with a common ``500``-iteration VMEC
+  budget. The older multicomponent nonlinear-window artifact
+  ``docs/_static/vmec_jax_boundary_chain_multicomponent.{json,png}`` remains a
+  useful convention diagnostic, but the latest single-growth probes above
+  supersede it for production transport-gradient admission: ``zs13`` and
+  ``rc14`` are not admitted under the current exact-FD/frozen-axis gate.
+  Raising branch-sensitive directions to ``1000`` iterations did not close the
+  issue, so this is not solved by simply increasing the solve budget.
 - Office GPU note: the same mode-21 final-state cotangent path OOMs on an
   A4000 during Boozer reverse mode even with sequential execution; use CPU for
   this diagnostic or implement a memory-slim cotangent path before expecting

@@ -125,8 +125,8 @@ Current Vs Deferred Figure Inventory
        mode-21 QH/Li383 linear, quasilinear, and reduced nonlinear-window
        estimator gates are in scope.
      - Compact nonlinear FD audits are startup plumbing checks only; production
-       nonlinear transport gradients and optimized-equilibrium audits remain
-       future gates.
+       nonlinear transport gradients and broader optimized-equilibrium audits
+       beyond the selected QA candidate remain future gates.
    * - Performance and parallelization
      - Runtime/memory figures, independent ``k_y`` scan scaling,
        quasilinear/UQ ensemble scaling, and nonlinear RHS profiler artifacts are

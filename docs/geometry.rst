@@ -402,7 +402,7 @@ nonlinear transport optimization remain explicitly scoped as follow-up work.
 The next implementation step is to extend the same equal-arc path to
 finite-beta/production-runtime curvature and drift reconstruction, then replace
 the reduced estimator-gradient checks with converged transport-gradient and
-optimized-equilibrium audits.
+broader optimized-equilibrium audits beyond the selected QA candidate.
 
 In-memory differentiable geometry API
 -------------------------------------

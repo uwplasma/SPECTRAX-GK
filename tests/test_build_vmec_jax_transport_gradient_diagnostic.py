@@ -148,6 +148,81 @@ def test_gradient_diagnostic_fd_consistency_passes_for_matching_reverse_gradient
     assert fd["rows"][1]["name"] == "zs01"
 
 
+def test_gradient_diagnostic_fd_consistency_reports_coefficient_conditioning(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    input_file = tmp_path / "input.final"
+    input_file.write_text(
+        """
+&INDATA
+  RBC(1,1) = 2.0000000000000000E-05,  ZBS(1,1) = -1.0000000000000000E-02
+/
+""",
+        encoding="utf-8",
+    )
+
+    class MatchingOptimizer:
+        _specs = (
+            SimpleNamespace(name="rc11", kind="rc", m=1, n=1),
+            SimpleNamespace(name="zs11", kind="zs", m=1, n=1),
+        )
+
+        def residual_fun(self, params):
+            params_array = np.asarray(params, dtype=float)
+            return np.asarray([1.0 + 2.0 * params_array[0] - 3.0 * params_array[1]], dtype=float)
+
+        def objective_and_gradient_fun(self, params):
+            residual = float(self.residual_fun(params)[0])
+            return 0.5 * residual**2, residual * np.asarray([2.0, -3.0], dtype=float)
+
+    def fake_stage_builder(_args):
+        return (
+            SimpleNamespace(
+                specs=MatchingOptimizer._specs,
+                optimizer=MatchingOptimizer(),
+            ),
+            {"setup_key": "setup_value"},
+        )
+
+    monkeypatch.setattr(mod, "_build_stage", fake_stage_builder)
+
+    rc = mod.main(
+        [
+            "--input",
+            str(input_file),
+            "--out-json",
+            str(tmp_path / "gradient.json"),
+            "--fd-check-indices",
+            "0,1",
+            "--fd-check-step",
+            "1e-4",
+            "--fd-check-relative-step",
+            "0.5",
+            "--require-fd-consistency",
+        ]
+    )
+
+    payload = json.loads((tmp_path / "gradient.json").read_text(encoding="utf-8"))
+    fd = payload["finite_difference_consistency"]
+    rows = fd["rows"]
+
+    assert rc == 0
+    assert fd["passed"] is True
+    assert fd["relative_step"] == pytest.approx(0.5)
+    assert fd["conditioning_warnings"] == [
+        "fd_step_exceeds_input_coefficient:RBC(1,1)"
+    ]
+    assert rows[0]["coefficient_label"] == "RBC(1,1)"
+    assert rows[0]["input_coefficient_value"] == pytest.approx(2.0e-5)
+    assert rows[0]["requested_step_to_input_coefficient_abs"] == pytest.approx(5.0)
+    assert rows[0]["step"] == pytest.approx(1.0e-5)
+    assert rows[0]["step_to_input_coefficient_abs"] == pytest.approx(0.5)
+    assert rows[1]["coefficient_label"] == "ZBS(1,1)"
+    assert rows[1]["requested_step_to_input_coefficient_abs"] == pytest.approx(1.0e-2)
+    assert rows[1]["step"] == pytest.approx(1.0e-4)
+
+
 def test_gradient_diagnostic_fd_consistency_fails_for_disconnected_reverse_gradient(
     tmp_path: Path,
     monkeypatch,

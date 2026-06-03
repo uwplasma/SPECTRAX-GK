@@ -223,8 +223,8 @@ README claims, or manuscript claims.
        plumbing, local UQ, explicit nonlinear ensemble-readiness blockers, and
        a checked state-control launch guard with a retained fail-closed symmetric negative control. They do not support
        calibrated saturated-flux prediction, production nonlinear turbulence
-       gradients, direct VMEC-state launches, or nonlinear audits of optimized
-       equilibria.
+       gradients, direct VMEC-state launches, or optimized-equilibrium nonlinear
+       audits beyond the selected QA candidate documented below.
    * - Scope guardrails
      - ``technical_release_status.json``,
        ``parallelization_completion_status.*``,
@@ -487,6 +487,9 @@ Differentiable-geometry state:
   ``nonlinear_gradient_state_control_short_bracket_launch_status.*``,
   ``nonlinear_gradient_state_control_short_bracket_nonlinear_audit_status.*``,
   ``nonlinear_gradient_state_control_bracket_sweep_status.*``,
+  ``optimized_equilibrium_replicates/optimized_equilibrium_replicate_t700_ensemble_gate.*``,
+  ``qa_no_ess_reference_replicates/qa_no_ess_reference_t700_ensemble_gate.*``,
+  ``qa_no_ess_to_optimized_nonlinear_audit.*``,
   ``qa_ess_zbs10_rel7p5_nonlinear_gradient_zbs_1_0_central_fd_gradient_gate.*``,
   ``qa_ess_zbs10_rel7p5_variance_reduction_plan.*``,
   and the reduced stellarator ITG optimization/UQ panels. This checklist is the
@@ -503,8 +506,9 @@ Differentiable-geometry state:
   finite-difference plumbing checks. Both record ``transport_average_gate =
   false``.
 - Finite-beta drift reconstruction, converged nonlinear turbulence gradients,
-  held-out surface/field-line aggregate promotion, and optimized-equilibrium
-  nonlinear audits remain future promotion gates.
+  held-out surface/field-line aggregate promotion, and broader
+  optimized-equilibrium nonlinear audits beyond the selected QA candidate remain
+  future promotion gates.
 
 Parallelization and performance state:
 

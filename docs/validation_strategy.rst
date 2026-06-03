@@ -99,9 +99,9 @@ The remaining work should be closed in this order.
    current priority list is W7-X zonal recurrence/damping, W7-X
    fluctuation-spectrum experimental transfer functions, W7-X TEM /
    kinetic-electron and multi-flux-tube validation, production nonlinear
-   transport-gradient gates, optimized-equilibrium nonlinear audits, and any
-   stricter case-specific nonlinear window-statistics retuning that should
-   become a paper claim.
+   transport-gradient gates, broader optimized-equilibrium nonlinear audits
+   beyond the selected QA candidate, and any stricter case-specific nonlinear
+   window-statistics retuning that should become a paper claim.
 
 4. **Replace coverage gaps with physics or numerics tests.**
    Do not add shallow import-only tests to chase the number. Prefer tests for
@@ -117,8 +117,9 @@ The remaining work should be closed in this order.
    local UQ covariance diagnostics. Reduced linear, quasilinear, and
    nonlinear-window-estimator derivatives now have AD/finite-difference gates,
    but production nonlinear transport derivatives still need long-window
-   heat-flux convergence, local-gradient conditioning, and optimized-equilibrium
-   audits before they are used for stellarator heat-flux optimization claims.
+   heat-flux convergence, local-gradient conditioning, and broader
+   optimized-equilibrium audits before they are used for stellarator heat-flux
+   optimization claims.
 
 6. **Keep performance measurements separated from validation.**
    Performance panels should report cold compile, warm runtime, memory, output

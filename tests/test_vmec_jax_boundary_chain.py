@@ -65,6 +65,60 @@ def test_boundary_chain_summary_anchors_latest_rc14_probe() -> None:
     )
 
 
+def test_boundary_chain_summary_anchors_latest_zs13_probe() -> None:
+    summary = build_boundary_chain_summary(
+        exact_fd_cost_gradient=-0.11873119671939811,
+        final_cot_dot_exact_final_fd=-0.11900005540528957,
+        frozen_axis_replay_cost_gradient=-0.14192363954706916,
+        frozen_axis_vjp_cost_gradient=-0.14192363954695417,
+        raw_initial_replay_cost_gradient=-0.1419716858450226,
+        raw_initial_fd_norm=1.8888557263064212,
+        frozen_axis_initial_fd_norm=1.8114220932737053,
+        exact_relative_tolerance=0.1,
+    )
+
+    assert (
+        summary["classification"]
+        == "frozen_axis_replay_consistent_but_exact_fd_inconsistent"
+    )
+    assert summary["passes"]["final_state_matches_exact_fd"] is True
+    assert summary["passes"]["frozen_axis_jvp_vjp_consistent"] is True
+    assert summary["passes"]["frozen_axis_matches_exact_fd"] is False
+    assert summary["errors"]["final_state_vs_exact_fd_rel"] == pytest.approx(
+        0.0022593156362472975
+    )
+    assert summary["errors"]["frozen_axis_vs_exact_fd_rel"] == pytest.approx(
+        0.16341493849570599
+    )
+    assert summary["metrics"]["raw_to_frozen_initial_norm_ratio"] == pytest.approx(
+        1.0427474266325047
+    )
+
+
+def test_boundary_chain_summary_anchors_coefficient_local_rc14_probe() -> None:
+    summary = build_boundary_chain_summary(
+        exact_fd_cost_gradient=-0.008248825352711719,
+        final_cot_dot_exact_final_fd=-0.0073983155214745865,
+        frozen_axis_replay_cost_gradient=0.11282399953752609,
+        frozen_axis_vjp_cost_gradient=0.11282399953729642,
+        raw_initial_replay_cost_gradient=0.11313073901185483,
+        raw_initial_fd_norm=1.939974024843866,
+        frozen_axis_initial_fd_norm=1.8114220932738312,
+        exact_relative_tolerance=0.1,
+    )
+
+    assert summary["classification"] == "final_state_cotangent_mismatch"
+    assert summary["passes"]["final_state_matches_exact_fd"] is False
+    assert summary["passes"]["frozen_axis_jvp_vjp_consistent"] is True
+    assert summary["passes"]["frozen_axis_matches_exact_fd"] is False
+    assert summary["errors"]["final_state_vs_exact_fd_rel"] == pytest.approx(
+        0.10310678125310722
+    )
+    assert summary["errors"]["frozen_axis_vs_exact_fd_rel"] == pytest.approx(
+        1.0731123288176654
+    )
+
+
 def test_boundary_chain_summary_accepts_converged_sparse_fd_window() -> None:
     summary = build_boundary_chain_summary(
         exact_fd_cost_gradient=0.02245397716,

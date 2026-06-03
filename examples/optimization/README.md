@@ -141,9 +141,9 @@ python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py \
   --outdir runs/qa_plus_reduced_nonlinear_heat_flux \
   --spectrax-weight 0.05 \
   --transport-kind nonlinear_window_heat_flux \
-  --surfaces 0.64 \
-  --alphas 0.0 \
-  --ky-values 0.3
+  --surfaces 0.45,0.64,0.78 \
+  --alphas 0.0,0.7853981633974483 \
+  --ky-values 0.10,0.30,0.50
 ```
 
 On a GPU node, append `--solver-device gpu`; otherwise JAX will use the
@@ -234,9 +234,12 @@ python tools/run_vmec_jax_guarded_transport_ladder.py \
 
 The runner restarts every candidate from the QA `input.final`, writes a summary
 JSON, keeps failed candidates for diagnosis, and promotes only the largest
-transport weight whose `solved_wout_gate.json` passes. If none pass, the
-QA-only WOUT remains the only candidate ready for a matched long-window
-nonlinear SPECTRAX-GK audit.
+transport weight whose `solved_wout_gate.json` passes and whose explicit
+transport metric improves relative to the admitted QA baseline. If none pass,
+the QA-only WOUT remains the only candidate ready for a matched long-window
+nonlinear SPECTRAX-GK audit. Single-surface/single-`alpha`/single-`ky`
+transport runs are useful for smoke tests and diagnostics only; they are not
+admission evidence for the production nonlinear audit queue.
 
 After a real QA-only and transport-aware pair is produced, the next scientific
 step is not another reduced figure. It is a matched long-window SPECTRAX-GK
