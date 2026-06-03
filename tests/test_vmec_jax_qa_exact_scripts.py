@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 import py_compile
 import re
+import subprocess
+import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -68,6 +70,41 @@ def test_docs_do_not_show_exact_qa_scripts_as_argparse_drivers() -> None:
     assert "python examples/optimization/QA_optimization_with_quasilinear_flux.py" in examples_readme
     assert "python examples/optimization/QA_optimization_with_nonlinear_heat_flux.py" in examples_readme
     assert "python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py" in examples_readme
+
+
+def test_exact_qa_scripts_help_does_not_launch_optimization(tmp_path: Path) -> None:
+    for filename, kind in EXACT_QA_SCRIPTS.items():
+        script = EXAMPLES / filename
+
+        completed = subprocess.run(
+            [sys.executable, str(script), "--help"],
+            cwd=tmp_path,
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+
+        assert "Usage:" in completed.stdout
+        assert "edit the constants" in completed.stdout
+        assert kind.split("_")[0] in completed.stdout
+        assert not (tmp_path / "results").exists()
+
+
+def test_exact_qa_scripts_reject_unexpected_arguments_before_outputs(tmp_path: Path) -> None:
+    script = EXAMPLES / "QA_optimization_with_growth_rate.py"
+
+    completed = subprocess.run(
+        [sys.executable, str(script), "--max-nfev", "1"],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        timeout=10,
+    )
+
+    assert completed.returncode != 0
+    assert "unexpected arguments" in completed.stderr
+    assert not (tmp_path / "results").exists()
 
 
 def test_docs_scope_vmec_jax_transport_optimizer_claims() -> None:

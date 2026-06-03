@@ -37,6 +37,9 @@ objective_tuples = [
 Keep `SPECTRAX_WEIGHT` small while tuning. The QA/aspect/iota terms must remain
 the dominant solved-equilibrium gate before any final WOUT is sent to expensive
 long-window nonlinear transport audits.
+The scripts are configured by editing constants, not command-line flags. They
+accept only `--help`; any other argument fails before an optimization is
+launched so accidental flags do not create `results/` artifacts.
 
 The scripts default to `METHOD = "scalar_trust"` because the SPECTRAX-GK
 transport residual contains reverse-mode custom-VJP pieces. The pure VMEC-JAX

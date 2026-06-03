@@ -13,6 +13,29 @@ import sys
 
 import numpy as np
 
+SCRIPT_NAME = Path(__file__).name
+USAGE = f"""\
+Usage:
+  python examples/optimization/{SCRIPT_NAME}
+
+This example intentionally follows vmec_jax/examples/optimization/QA_optimization.py:
+edit the constants near the top of the file, then run the script with no
+arguments. It appends one SPECTRAX-GK quasilinear heat-flux objective tuple to
+the standard QA/aspect/iota objective list.
+"""
+
+if any(arg in {"-h", "--help"} for arg in sys.argv[1:]):
+    print(__doc__.strip())
+    print()
+    print(USAGE)
+    raise SystemExit(0)
+if len(sys.argv) > 1:
+    unknown = " ".join(sys.argv[1:])
+    raise SystemExit(
+        f"{SCRIPT_NAME} is configured by editing constants in the file; "
+        f"unexpected arguments: {unknown!r}. Use --help for usage."
+    )
+
 SPECTRAX_ROOT = Path(__file__).resolve().parents[2]
 if str(SPECTRAX_ROOT) not in sys.path:
     sys.path.insert(0, str(SPECTRAX_ROOT))
