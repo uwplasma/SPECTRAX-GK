@@ -316,6 +316,23 @@ Differentiable-Physics Figures
        This is the manuscript-facing geometry visual for the QA baseline. It
        is not a nonlinear heat-flux optimization claim and should not be
        conflated with the reduced synthetic max-mode-1 optimization panels.
+   * - Full max-mode-5 QA transport optimizer sweep
+     - ``tools/build_vmec_jax_qa_full_sweep_panel.py`` from office
+       ``runs_onepoint`` VMEC-JAX outputs
+     - Scoped optimizer-algorithm comparison ready for README/docs; nonlinear
+       turbulent heat-flux audits remain pending
+     - current artifact base:
+       ``docs/_static/vmec_jax_qa_full_sweep_panel.png`` with JSON/CSV/PDF
+       companions. The sweep compares the SciPy QA baseline, stopped
+       scalar-trust QA baseline, direct growth/QL/L-BFGS transport objectives,
+       a stopped direct nonlinear-window branch, and projected/admission
+       transport weights ``5e-4`` and ``1e-3``. Direct scalar transport
+       branches either degrade aspect ratio, iota, or quasisymmetry, while the
+       projected/admission branches keep the solved-WOUT gate and reduce the
+       reduced nonlinear-window metric from ``0.0644`` to ``0.0612``. The
+       heat-flux subplot is deliberately a pending marker: this figure does
+       not claim a saturated nonlinear ``Q(t)`` reduction until matched
+       post-transient SPECTRAX-GK audits are run from the concrete final WOUTs.
    * - Development-only optimization-plumbing figure
      - ``examples/theory_and_demos/reduced_stellarator_itg/compare_stellarator_itg_optimizations.py`` and ``tools/plot_stellarator_optimization_uq.py``
      - Initial differentiable objective-reduction and weighted-residual UQ gates closed for development diagnostics; full VMEC/Boozer/GK optimization open

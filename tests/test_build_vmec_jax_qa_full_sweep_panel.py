@@ -149,6 +149,23 @@ def test_runs_onepoint_root_uses_parent_status_directory(tmp_path: Path) -> None
     assert payload["summary"]["completed_case_ids"] == ["qa_baseline_scipy"]
 
 
+def test_projected_child_without_status_is_complete_when_gate_and_wout_exist(tmp_path: Path) -> None:
+    case = tmp_path / "campaign" / "runs_onepoint" / "projected_guarded_ladder" / "transport_weight_0p0005"
+    _write_case(case, objective_final=0.9)
+    (case / "wout_final.nc").write_bytes(b"fake-projected-wout")
+    # Projected ladder children are tracked by the parent ladder status/log, not
+    # by one status file per transport weight.
+    for status in (tmp_path / "campaign" / "logs").glob("transport_weight_0p0005.status"):
+        status.unlink()
+
+    payload = mod.build_payload(tmp_path / "campaign" / "runs_onepoint")
+    [row] = payload["cases"]
+
+    assert row["case_id"] == "projected_guarded_ladder/transport_weight_0p0005"
+    assert row["run_completed"] is True
+    assert row["recommended_nonlinear_audit_command"] is not None
+
+
 def test_plot_payload_handles_missing_wouts_and_writes_panel(tmp_path: Path) -> None:
     run_root = tmp_path / "campaign"
     _write_case(run_root / "runs" / "qa_baseline_scipy", objective_final=1.2)

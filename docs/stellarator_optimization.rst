@@ -173,6 +173,21 @@ measurement. A candidate can be promoted to a nonlinear transport claim only
 after generating replicated post-transient SPECTRAX-GK runs from its concrete
 ``wout_final.nc`` and demonstrating running-average convergence of ``Q(t)``.
 
+.. figure:: _static/vmec_jax_qa_full_sweep_panel.png
+   :alt: VMEC-JAX QA max-mode-5 optimizer sweep with SPECTRAX-GK transport objectives
+   :width: 98%
+   :align: center
+
+   Full ``max_mode=5`` optimizer sweep from the office GPU node. The direct
+   scalar growth, quasilinear, and L-BFGS growth branches expose the main
+   failure mode: a small improvement or degradation in the reduced transport
+   metric can come with large aspect-ratio, iota-profile, or quasisymmetry
+   damage. The projected/admission branches keep the solved-WOUT gate intact
+   and lower the reduced nonlinear-window metric relative to the QA baseline.
+   The nonlinear heat-flux subplot intentionally remains a pending marker until
+   matched long post-transient SPECTRAX-GK audits are run from the concrete
+   final WOUTs.
+
 .. figure:: _static/vmec_jax_qa_solved_boundary_boozer_panel.png
    :alt: Solved VMEC-JAX QA boundary and Boozer-LCFS magnetic-field diagnostics
    :width: 95%

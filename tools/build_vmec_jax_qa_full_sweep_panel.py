@@ -57,7 +57,7 @@ PREFERRED_SURFACE_IDS = (
     "qa_baseline_scipy",
     "growth_scalar_trust",
     "quasilinear_scalar_trust",
-    "nonlinear_window_scalar_trust",
+    "projected_guarded_ladder/transport_weight_0p0005",
 )
 
 
@@ -285,6 +285,8 @@ def _nonlinear_audit_command(wout_path: Path | None, case_id: str, *, run_comple
 def _case_label(case_id: str) -> str:
     if case_id in CASE_LABELS:
         return CASE_LABELS[case_id]
+    if case_id.startswith("projected_guarded_ladder/transport_weight_"):
+        return "projected\nweight " + case_id.rsplit("_", maxsplit=1)[-1]
     if case_id.startswith("transport_weight_"):
         return "projected\n" + case_id.removeprefix("transport_weight_")
     return case_id.replace("_", "\n")
@@ -307,7 +309,13 @@ def _row_from_run(root: Path, *, campaign_root: Path, runs_root: Path) -> dict[s
     iota_profile = _load_iota_profile_from_wout(wout_path)
     transport_kind = history.get("transport_metric_kind", setup.get("transport_kind"))
     status = _status_text(campaign_root, case_id.split("/")[-1])
-    run_completed = _status_completed(status)
+    artifact_completed = (
+        status == "unknown"
+        and gate is not None
+        and wout_path.exists()
+        and math.isfinite(_finite_float(history.get("objective_final")))
+    )
+    run_completed = _status_completed(status) or artifact_completed
     return {
         "case_id": case_id,
         "label": _case_label(case_id),
@@ -462,8 +470,9 @@ def _plot_summary_table(ax: plt.Axes, rows: list[dict[str, Any]]) -> None:
             status = "pass" if row["gate_passed"] is True else ("fail" if row["gate_passed"] is False else "n/a")
         transport = hist["transport_metric_final"]
         transport_text = f"{transport:9.2e}" if math.isfinite(transport) else "    n/a  "
+        label = str(row["label"]).replace("\n", " ")
         lines.append(
-            f"{str(row['case_id'])[:26]:26s} "
+            f"{label[:26]:26s} "
             f"{hist['aspect_final']:6.3g} {hist['iota_final']:8.3g} "
             f"{hist['qs_final']:8.2e} {transport_text:>13s} {status:>8s}"
         )
