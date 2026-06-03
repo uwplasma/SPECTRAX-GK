@@ -354,6 +354,13 @@ promoted, because branch changes, Boozer replay memory pressure, or
 ill-conditioned equilibria can invalidate an otherwise correct local
 eigenvalue derivative.
 
+The equal-arc VMEC/Boozer remap uses a stable reverse rule for the interpolation
+step: gradients flow through the Boozer field values on the equal-arc grid, but
+not through the moving interpolation abscissa. This preserves the primal
+paper-facing geometry convention while avoiding nonfinite JAX cotangents at
+closed-grid endpoint knots. Treat this as an optimization-gradient convention,
+not as a replacement for the sparse finite-difference checks above.
+
 After a sensitive diagnostic, generate bounded projected candidate inputs with:
 
 .. code-block:: bash

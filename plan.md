@@ -149,6 +149,28 @@ The target paper should show:
   full boundary replay still OOMs, the remaining blocker is memory/chunking in
   the VMEC-JAX/Boozer replay rather than the SPECTRAX-GK eigenvalue derivative.
 
+## 2026-06-03 VMEC/Boozer Equal-Arc VJP Repair
+
+- Office localization after the dominant-growth VJP repair showed finite
+  geometry and transport values but nonfinite packed-state gradients for every
+  VMEC/Boozer equal-arc profile (``bmag``, ``gds*``, ``grho``, and drifts).
+  The identical nonfinite count across all rows localizes the remaining blocker
+  to the equal-arc interpolation coordinate map, not to the linear solver.
+- Added ``_interp_equal_arc_profile`` so primal values still use the
+  paper-facing equal-arc remap, while reverse-mode gradients flow through the
+  interpolated field values and not through the moving interpolation abscissa.
+  This avoids the nonfinite ``jnp.interp`` cotangent at endpoint knots. The
+  omitted coordinate-map sensitivity remains covered by sparse finite-
+  difference gates before any VMEC-JAX transport optimization claim is promoted.
+- Added a unit contract test showing finite value gradients through the
+  equal-arc remap. Focused local result: ``62 passed`` for the VMEC transport
+  diagnostic/objective and solver-gradient shards; Ruff and ``git diff
+  --check`` pass.
+- Next best step: rerun the office geometry-only, final-state VJP, and sparse
+  boundary AD/FD probes. Passing finite state gradients is necessary but not
+  sufficient; the sparse coefficient AD/FD gate must agree before projected
+  VMEC-JAX transport updates can be trusted.
+
 ## 2026-06-01 VMEC-JAX QA Transport Objective Fix
 
 - Responded to QA of the low-turbulence panel: the tracked reduced optimizer

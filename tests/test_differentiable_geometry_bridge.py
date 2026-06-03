@@ -17,6 +17,7 @@ from spectraxgk.geometry.differentiable import (
     _candidate_paths,
     _cumulative_trapezoid,
     _find_importable_module,
+    _interp_equal_arc_profile,
     _interp_radial,
     _is_traced,
     _periodic_bilinear_sample_2d,
@@ -92,6 +93,27 @@ def test_flux_tube_geometry_from_mapping_builds_solver_contract() -> None:
     observables = np.asarray(flux_tube_geometry_observables(geom))
     assert observables.shape == (len(geometry_observable_names()),)
     assert np.all(np.isfinite(observables))
+
+
+def test_equal_arc_interpolation_keeps_value_gradients_finite() -> None:
+    theta_uniform = jnp.linspace(-jnp.pi, jnp.pi, 9)
+    theta_base = jnp.linspace(-jnp.pi, jnp.pi, 9)
+
+    def remapped_mean(scale: jnp.ndarray) -> jnp.ndarray:
+        theta_equal_arc = theta_base + 0.05 * scale * jnp.sin(theta_base)
+        values = (1.0 + scale) * jnp.cos(theta_base)
+        return jnp.mean(_interp_equal_arc_profile(theta_uniform, theta_equal_arc, values))
+
+    grad = jax.grad(remapped_mean)(jnp.asarray(0.2))
+    frozen_theta_equal_arc = theta_base + 0.05 * 0.2 * jnp.sin(theta_base)
+    expected = jnp.mean(jnp.interp(theta_uniform, frozen_theta_equal_arc, jnp.cos(theta_base)))
+
+    assert np.isfinite(float(grad))
+    assert float(grad) == pytest.approx(
+        float(expected),
+        rel=1.0e-6,
+        abs=1.0e-7,
+    )
 
 
 def test_flux_tube_geometry_from_vmec_boozer_state_wraps_in_memory_bridge(
