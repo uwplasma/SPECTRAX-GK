@@ -26,6 +26,7 @@ from spectraxgk.solver_objective_gradients import (
     _reduced_nonlinear_window_metrics_from_linear_observables,
     _vmec_boozer_state_parameter_name,
     default_solver_geometry_design_params,
+    dominant_eigenvalue_branch_locality_report,
     dominant_real_eigenvalue,
     linear_solver_geometry_gradient_report,
     mode21_vmec_boozer_linear_frequency_gradient_report,
@@ -227,6 +228,68 @@ def test_dominant_real_eigenvalue_validates_shape_and_casts_real_matrices() -> N
     assert float(dominant_real_eigenvalue(jnp.diag(jnp.asarray([1.0, 2.0])))) == pytest.approx(2.0)
     with pytest.raises(ValueError, match="matrix must be square"):
         dominant_real_eigenvalue(jnp.ones((2, 3)))
+
+
+def test_dominant_eigenvalue_branch_locality_report_accepts_isolated_branch() -> None:
+    base = jnp.diag(jnp.asarray([1.0 + 0.2j, 0.5 - 0.1j, -0.2 + 0.0j]))
+    plus = jnp.diag(jnp.asarray([1.02 + 0.21j, 0.48 - 0.1j, -0.2 + 0.0j]))
+    minus = jnp.diag(jnp.asarray([0.98 + 0.19j, 0.52 - 0.1j, -0.2 + 0.0j]))
+
+    report = dominant_eigenvalue_branch_locality_report(
+        base,
+        plus,
+        minus,
+        step=1.0e-2,
+        gap_floor=1.0e-3,
+    )
+
+    assert (
+        spectraxgk.dominant_eigenvalue_branch_locality_report
+        is dominant_eigenvalue_branch_locality_report
+    )
+    assert report["passed"] is True
+    assert report["classification"] == "dominant_branch_locally_consistent"
+    assert report["base_selected_index"] == 0
+    assert report["dominant_growth_fd_slope"] == pytest.approx(2.0)
+    assert report["nearest_branch_growth_fd_slope"] == pytest.approx(2.0)
+    assert report["slope_relative_difference"] == pytest.approx(0.0)
+    assert all(row["dominant_matches_nearest"] for row in report["branch_rows"])
+
+
+def test_dominant_eigenvalue_branch_locality_report_rejects_branch_switch_fd() -> None:
+    base = jnp.diag(jnp.asarray([1.0 + 0.0j, 0.8 + 0.0j, -0.1 + 0.0j]))
+    plus = jnp.diag(jnp.asarray([0.92 + 0.0j, 1.12 + 0.0j, -0.1 + 0.0j]))
+    minus = jnp.diag(jnp.asarray([1.08 + 0.0j, 0.7 + 0.0j, -0.1 + 0.0j]))
+
+    report = dominant_eigenvalue_branch_locality_report(
+        base,
+        plus,
+        minus,
+        step=1.0e-2,
+        gap_floor=1.0e-3,
+    )
+
+    assert report["passed"] is False
+    assert report["classification"] == "dominant_branch_differs_from_nearest_branch"
+    assert report["dominant_growth_fd_slope"] == pytest.approx(2.0)
+    assert report["nearest_branch_growth_fd_slope"] == pytest.approx(-8.0)
+    assert report["slope_relative_difference"] > 1.0
+    branch_rows = list(report["branch_rows"])
+    assert branch_rows[0]["side"] == "minus"
+    assert branch_rows[0]["dominant_matches_nearest"] is True
+    assert branch_rows[1]["side"] == "plus"
+    assert branch_rows[1]["dominant_matches_nearest"] is False
+    assert "do not use dominant-growth finite differences" in str(report["next_action"])
+
+    with pytest.raises(ValueError, match="positive"):
+        dominant_eigenvalue_branch_locality_report(base, plus, minus, step=0.0)
+    with pytest.raises(ValueError, match="same eigenvalue count"):
+        dominant_eigenvalue_branch_locality_report(
+            base,
+            jnp.diag(jnp.asarray([1.0, 2.0])),
+            minus,
+            step=1.0e-2,
+        )
 
 
 def test_solver_growth_rate_from_geometry_has_finite_fd_checked_gradient() -> None:

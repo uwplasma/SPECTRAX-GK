@@ -44,6 +44,20 @@ This file is both the active plan and the running log. Keep entries concise, dat
   ``pytest -q tests/test_nonlinear_spectral_communication_gate.py tests/test_nonlinear_parallel.py``
   and Ruff on the touched files.
 
+## 2026-06-03 Growth-Branch Locality Diagnostic
+
+- Added ``dominant_eigenvalue_branch_locality_report`` as a backend-free
+  diagnostic for the growth-objective AD/FD lane. It compares central
+  finite-difference slopes from the independently selected max-real branch
+  against the branch nearest to the base dominant eigenvalue.
+- This directly targets the current VMEC transport-gradient blocker: if exact
+  FD is measuring a switched dominant branch while the implicit VJP follows the
+  locally isolated base branch, the report classifies the stencil as
+  ``dominant_branch_differs_from_nearest_branch`` and fails closed.
+- Fast tests now cover both an isolated branch and a branch-switching stencil.
+  Local checks passed: ``pytest -q tests/test_solver_objective_gradients.py``,
+  Ruff on touched files, and ``mypy``.
+
 ## 2026-06-03 VMEC-JAX QA Transport Script Audit
 
 - Pulled the latest local optional backends used for the VMEC/SPECTRAX
