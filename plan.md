@@ -59,11 +59,17 @@ The target paper should show:
   non-integer-multiple ``k_y`` sets, the recommended set is the compatible
   ``(0.10, 0.30, 0.50)``, and a bounded local projected replay passed both the
   solved-equilibrium gate and the reduced transport-metric plumbing check.
+- The same bounded 18-point metric check was then run on the matched baseline.
+  Baseline metric ``6.0936e-2`` and projected-step metric ``6.1169e-2`` give
+  relative improvement ``-3.8e-3``. The formal projected line-search selector
+  therefore fails closed with ``insufficient_transport_improvement``. This is
+  the right outcome: the old single-point gradient direction should not trigger
+  a long nonlinear audit under the new multi-sample objective.
 
-Next best step: run the production-resolution multi-sample projected
-line-search or short VMEC-JAX optimization candidate, compare the reduced
-objective against the matched baseline with the same 18-point sample contract,
-then launch long-window nonlinear audits only if both the reduced objective and
+Next best step: regenerate the transport-gradient diagnostic using the full
+18-point sample contract, then run a production-resolution multi-sample
+projected line search or short VMEC-JAX optimization candidate. Launch
+long-window nonlinear audits only if both the reduced objective and
 solved-equilibrium gates pass.
 
 ## 2026-06-01 VMEC-JAX QA Transport Objective Fix
