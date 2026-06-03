@@ -91,6 +91,10 @@ This file is both the active plan and the running log. Keep entries concise, dat
   exact-FD policy passes, and the explicit SPECTRAX growth-branch locality check
   is present and passed. The default remains backward compatible for older
   boundary-chain artifacts.
+- ``tools/write_vmec_jax_projected_transport_line_search_inputs.py`` now exposes
+  this as ``--require-growth-branch-locality`` and records the policy in the
+  generated manifest, so production projected decks can require both VMEC
+  convention consistency and SPECTRAX eigenbranch locality.
 - Real bounded probe on neighboring ``zs13`` at ``step=2e-5`` with the same
   one-sample growth setup also produced ``growth_branch_locality.passed =
   true``. The base eigenvalue gap is ``1.68e-3``, the dominant and nearest

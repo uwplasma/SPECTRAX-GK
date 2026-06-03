@@ -527,7 +527,12 @@ The backend-free projected line-search helpers accept the collection JSON
 through ``boundary_chain_collection`` and, by default, admit only coefficients
 that pass both frozen-axis replay and exact-FD agreement. The
 ``require_boundary_chain_exact_fd=False`` path is diagnostic only and must not
-drive promoted VMEC boundary updates.
+drive promoted VMEC boundary updates. When the collection includes the
+growth-branch locality block from
+``tools/probe_vmec_jax_boundary_chain.py --include-growth-branch-locality``,
+production projected-input generation should also use
+``--require-growth-branch-locality`` so a coefficient with a switched or
+under-isolated SPECTRAX growth branch is excluded before line-search replay.
 
 After a sensitive diagnostic, generate bounded projected candidate inputs with:
 
@@ -540,6 +545,7 @@ After a sensitive diagnostic, generate bounded projected candidate inputs with:
      --outdir runs/qa_projected_transport_line_search \
      --steps 2.5e-4,5e-4,1e-3,2e-3 \
      --top-n 12 \
+     --require-growth-branch-locality \
      --surfaces 0.45,0.64,0.78 \
      --alphas 0.0,0.7853981633974483 \
      --ky-values 0.10,0.30,0.50 \

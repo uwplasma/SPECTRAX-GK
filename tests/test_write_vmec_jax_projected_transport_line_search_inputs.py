@@ -49,12 +49,16 @@ def _boundary_chain_collection(path: Path) -> None:
                         "name": "zs10",
                         "frozen_axis_jvp_vjp_consistent": True,
                         "frozen_axis_matches_exact_fd": True,
+                        "growth_branch_locality_checked": True,
+                        "growth_branch_locality_passed": True,
                     },
                     {
                         "index": 3,
                         "name": "rc11",
                         "frozen_axis_jvp_vjp_consistent": True,
                         "frozen_axis_matches_exact_fd": False,
+                        "growth_branch_locality_checked": True,
+                        "growth_branch_locality_passed": False,
                     },
                 ],
             }
@@ -237,6 +241,48 @@ def test_projected_writer_can_mark_branch_sensitive_filter_as_diagnostic(tmp_pat
     assert list(saved[0]) == pytest.approx([0.0, 6.0e-4, 0.0, -8.0e-4])
     assert payload["boundary_chain_filter"]["require_exact_fd"] is False
     assert payload["boundary_chain_filter"]["accepted_parameter_indices"] == [1, 3]
+
+
+def test_projected_writer_can_require_growth_branch_locality(tmp_path: Path, monkeypatch) -> None:
+    gradient = tmp_path / "gradient.json"
+    collection = tmp_path / "boundary_chain.json"
+    _gradient_report(gradient)
+    _boundary_chain_collection(collection)
+    saved: list[object] = []
+
+    class FakeOptimizer:
+        def save_input(self, path, delta):
+            Path(path).parent.mkdir(parents=True, exist_ok=True)
+            Path(path).write_text("! projected input\n", encoding="utf-8")
+            saved.append(delta)
+
+    fake_stage = SimpleNamespace(specs=[object(), object(), object(), object()], optimizer=FakeOptimizer())
+    monkeypatch.setattr(mod, "_build_stage", lambda _args: fake_stage)
+
+    mod.main(
+        [
+            "--input",
+            str(tmp_path / "input.final"),
+            "--gradient-json",
+            str(gradient),
+            "--boundary-chain-collection-json",
+            str(collection),
+            "--allow-boundary-chain-branch-sensitive",
+            "--require-growth-branch-locality",
+            "--outdir",
+            str(tmp_path / "out"),
+            "--steps",
+            "1e-3",
+            "--top-n",
+            "4",
+        ]
+    )
+
+    payload = json.loads((tmp_path / "out" / "projected_line_search_inputs.json").read_text(encoding="utf-8"))
+    assert list(saved[0]) == pytest.approx([0.0, 1.0e-3, 0.0, 0.0])
+    assert payload["boundary_chain_filter"]["require_exact_fd"] is False
+    assert payload["boundary_chain_filter"]["require_growth_branch_locality"] is True
+    assert payload["boundary_chain_filter"]["accepted_parameter_indices"] == [1]
 
 
 def test_projected_writer_fails_closed_for_underresolved_sample_set(tmp_path: Path, monkeypatch) -> None:

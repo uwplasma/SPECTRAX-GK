@@ -69,6 +69,14 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="Diagnostic only: generate projected inputs without a boundary-chain collection gate.",
     )
+    parser.add_argument(
+        "--require-growth-branch-locality",
+        action="store_true",
+        help=(
+            "Require every admitted coefficient to have an explicit passing "
+            "SPECTRAX growth-branch locality block in the boundary-chain collection."
+        ),
+    )
     parser.add_argument("--outdir", type=Path, required=True, help="Directory for generated candidate inputs")
     parser.add_argument("--steps", type=_float_tuple, default=(2.5e-4, 5.0e-4, 1.0e-3, 2.0e-3))
     parser.add_argument("--top-n", type=int, default=12, help="Number of ranked gradient components to use")
@@ -223,6 +231,7 @@ def main(argv: list[str] | None = None) -> int:
         top_n=int(args.top_n),
         boundary_chain_collection=boundary_chain_collection,
         require_boundary_chain_exact_fd=require_boundary_chain_exact_fd,
+        require_growth_branch_locality=bool(args.require_growth_branch_locality),
     )
     manifest = projected_line_search_input_manifest(
         report,
@@ -230,6 +239,7 @@ def main(argv: list[str] | None = None) -> int:
         top_n=int(args.top_n),
         boundary_chain_collection=boundary_chain_collection,
         require_boundary_chain_exact_fd=require_boundary_chain_exact_fd,
+        require_growth_branch_locality=bool(args.require_growth_branch_locality),
     )
     sample_set = _sample_set_from_args(args)
     sample_summary = transport_objective_sample_summary(sample_set)
