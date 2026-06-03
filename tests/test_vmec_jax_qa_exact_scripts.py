@@ -83,3 +83,22 @@ def test_docs_scope_vmec_jax_transport_optimizer_claims() -> None:
         assert "custom-VJP" in text or "custom VJP" in text, path
         assert "two-stage" in text, path
         assert "not a transport-optimization success claim" in normalized, path
+
+
+def test_readme_uses_solved_vmec_qa_geometry_not_reduced_surface_panel() -> None:
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    docs = (ROOT / "docs" / "stellarator_optimization.rst").read_text(encoding="utf-8")
+    manuscript = (ROOT / "docs" / "manuscript_figures.rst").read_text(encoding="utf-8")
+    normalized_readme = re.sub(r"\s+", " ", readme)
+
+    assert "docs/_static/vmec_jax_qa_solved_boundary_boozer_panel.png" in readme
+    assert "docs/_static/stellarator_itg_optimization_comparison.png" not in readme
+    assert "not a nonlinear heat-flux optimization claim" in normalized_readme
+    assert (
+        "synthetic max-mode-1 visualization, not a solved VMEC-JAX QA surface"
+        in normalized_readme
+    )
+
+    assert "_static/vmec_jax_qa_solved_boundary_boozer_panel.png" in docs
+    assert "not solved VMEC WOUT surfaces" in docs
+    assert "not used as the primary README/manuscript solved-geometry visual" in manuscript

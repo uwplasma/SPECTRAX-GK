@@ -7,6 +7,22 @@ Current public baseline: `main` at v1.6.0, with the historical ship-readiness lo
 
 This file is both the active plan and the running log. Keep entries concise, dated, and tied to artifacts, tests, and figures.
 
+## 2026-06-03 QA Geometry Figure Scope Fix
+
+- Audited the README-level stellarator optimization visuals after the reduced
+  ``stellarator_itg_optimization_comparison.png`` panel was flagged as
+  tokamak-like. The root cause is that this panel is a synthetic max-mode-1
+  reduced-control visualization, not a solved VMEC-JAX QA surface; its
+  optimized reduced helical amplitude can become small.
+- Added the solved VMEC-JAX QA baseline boundary/Boozer diagnostic
+  ``docs/_static/vmec_jax_qa_solved_boundary_boozer_panel.png`` to the README
+  and stellarator optimization docs. This panel is the README/docs geometry
+  visual for the solved QA baseline and is explicitly not a nonlinear
+  heat-flux optimization claim.
+- Kept the reduced optimization comparison as supporting differentiability,
+  UQ, and plotting-plumbing evidence only. Tests now guard against re-embedding
+  the reduced synthetic surface in the README as solved QA geometry.
+
 ## 2026-06-03 Nonlinear-Audit Promotion Runbook
 
 - Passing VMEC-JAX/SPECTRAX-GK AD/finite-difference checks is only the

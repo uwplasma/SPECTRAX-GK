@@ -142,6 +142,19 @@ Therefore the scripts demonstrate how to append a differentiable SPECTRAX-GK
 transport objective to VMEC-JAX QA optimization; by themselves they are not a
 transport-optimization success claim.
 
+.. figure:: _static/vmec_jax_qa_solved_boundary_boozer_panel.png
+   :alt: Solved VMEC-JAX QA boundary and Boozer-LCFS magnetic-field diagnostics
+   :width: 95%
+   :align: center
+
+   Solved VMEC-JAX QA baseline diagnostic generated from the local
+   ``QA_optimization.py`` workflow. The top row compares initial and optimized
+   LCFS surfaces colored by ``|B|``; the bottom row shows the corresponding
+   Boozer-LCFS ``|B|`` contours. This is the figure to use when discussing the
+   solved QA baseline geometry. It is intentionally separate from the reduced
+   max-mode-1 optimization-plumbing panels below and is not a nonlinear
+   heat-flux optimization claim.
+
 Configurable Solved-Boundary Driver
 -----------------------------------
 
@@ -177,7 +190,8 @@ These scripts run a reduced max-mode-1 QA control model and are deliberately
 fast enough for local tests and figure regeneration. They validate AD/finite-
 difference checks, residual conditioning, UQ covariance diagnostics, and plotting
 machinery. They do not generate the upstream VMEC-JAX ``QA_optimization.py``
-final WOUT.
+final WOUT, and their synthetic LCFS views should not be used as the primary
+manuscript or README visual for solved QA geometry.
 
 The shared constrained residual is
 
@@ -207,7 +221,9 @@ The comparison artifact
 ``docs/_static/stellarator_itg_optimization_comparison.png`` shows objective
 histories, reduced nonlinear ``Q_{\rm env}`` scans, fixed-gradient traces,
 reduced LCFS ``|B|`` surfaces, and reduced Boozer-coordinate LCFS ``|B|`` maps.
-These are reduced visualization diagnostics, not solved VMEC WOUT surfaces.
+These are reduced visualization diagnostics, not solved VMEC WOUT surfaces; in
+particular, the synthetic surface can look nearly axisymmetric when the reduced
+helical-control amplitude is small.
 
 Aspect-6 QA Low-Turbulence Comparison
 -------------------------------------
@@ -1312,7 +1328,9 @@ their worker metadata and identity contract in the JSON artifacts.
    value and both quasilinear and nonlinear-window heat-flux observables are
    about ``41%`` of their initial values. The comparison is a gradient and
    objective-reduction validation, not a claim that these reduced objectives
-   replace converged nonlinear transport simulations.
+   replace converged nonlinear transport simulations. The reduced surface views
+   are supporting synthetic diagnostics and are not the solved VMEC-JAX QA
+   baseline surface shown earlier on this page.
 
 .. figure:: _static/stellarator_itg_optimization_uq.png
    :width: 95%
