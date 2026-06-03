@@ -23,7 +23,7 @@ The target paper should show:
 
 - Created a clean latest VMEC-JAX checkout at
   ``/Users/rogeriojorge/local/vmec_jax_latest`` on upstream ``main`` commit
-  ``205b04d`` and a new editable SPECTRAX/VMEC/Boozer environment at
+  ``f14787b`` and a new editable SPECTRAX/VMEC/Boozer environment at
   ``/Users/rogeriojorge/local/venvs/spectrax_vmec_latest_20260603``.
 - Focused tests passed in the new environment:
   ``62 passed`` for SPECTRAX VMEC-gradient tests and ``56 passed`` for
@@ -47,11 +47,23 @@ The target paper should show:
   final-state derivative failure; it is dominated by under-converged exact
   solves and magnetic-axis branch sensitivity unless the frozen-axis convention
   and VMEC solve budget are enforced.
-- Next best step: run the new tracked probe on ``ssh office`` for the leading
-  multi-sample gradient components after the 18-point chunked gradient is
-  available, then set a release gate that requires frozen-axis replay
-  consistency plus bounded sparse FD agreement before any new projected
-  transport-gradient candidate is promoted.
+- Follow-up: ran the tracked probe on the four previously nonzero sparse-FD
+  directions ``rc11`` (22), ``rc12`` (24), ``zs13`` (27), and ``rc14`` (28) at
+  ``mboz=nboz=21`` with a common ``500``-iteration VMEC budget. ``zs13`` and
+  ``rc14`` pass the 10% exact-vs-frozen sparse gate; ``rc11`` and ``rc12`` are
+  internally transposed but branch-sensitive. Raising ``rc11``/``rc12`` to
+  ``1000`` iterations worsened agreement, so this is not closed by simply
+  increasing the solve budget. The tracked summary/figure are
+  ``docs/_static/vmec_jax_boundary_chain_multicomponent.{json,png}``.
+- Office GPU note: the same mode-21 final-state cotangent path OOMs on an
+  A4000 during Boozer reverse mode even with sequential execution; use CPU for
+  this diagnostic or implement a memory-slim cotangent path before expecting
+  GPU coverage for the boundary-chain probe.
+- Next best step: before projected VMEC transport-gradient updates, add a gate
+  that uses only components passing frozen-axis internal consistency plus
+  bounded exact-FD agreement, or regularizes/excludes branch-sensitive modes
+  until a public VMEC-JAX solved-equilibrium linearization protocol closes the
+  coefficient-level mismatch.
 
 ## 2026-06-02 Projected QA Transport Audit
 

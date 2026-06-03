@@ -1362,6 +1362,8 @@ artifact_paths = [
   "docs/_static/vmec_jax_transport_gradient_line_search.json",
   "docs/_static/vmec_jax_transport_gradient_line_search.svg",
   "docs/_static/vmec_jax_boundary_chain_idx28_iter500.json",
+  "docs/_static/vmec_jax_boundary_chain_multicomponent.json",
+  "docs/_static/vmec_jax_boundary_chain_multicomponent.png",
   "docs/_static/vmec_boozer_multi_point_objective_gate.json",
   "docs/_static/vmec_boozer_multi_point_objective_gate.png",
   "docs/_static/vmec_boozer_aggregate_line_search_comparison.json",

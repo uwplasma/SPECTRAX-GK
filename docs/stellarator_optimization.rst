@@ -390,7 +390,7 @@ state map. Raw plus/minus exact solves may move that initialization branch and
 can therefore disagree with the optimizer derivative even when the frozen-axis
 JVP and VJP are internally transposed.
 
-The latest clean-stack local audit used ``vmec_jax`` main commit ``205b04d``,
+The latest clean-stack local audit used ``vmec_jax`` main commit ``f14787b``,
 ``booz_xform_jax`` commit ``1d5e8c``, and the authoritative QA restart. With a
 short ``120``-iteration exact-solve budget, the raw ``rc14`` exact-solve finite
 difference was branch-sensitive: the raw initial-state FD norm was about
@@ -403,6 +403,25 @@ contract is frozen-axis, convergence-controlled, and must be checked with a
 sparse FD tolerance appropriate to the VMEC solve residual and branch
 conditioning. Raw exact-solve FD remains a diagnostic for convergence and
 branch sensitivity, not the sole definition of the optimizer derivative.
+
+A four-component follow-up at the same mode-21 Boozer resolution tested the
+previously nonzero finite-difference directions ``rc11``, ``rc12``, ``zs13``,
+and ``rc14``. The collection is mixed rather than promotion-ready: all four
+frozen-axis JVP/VJP contractions are internally transposed, but only ``zs13``
+and ``rc14`` agree with raw exact-solve FD within the 10% sparse gate. ``rc11``
+and ``rc12`` remain branch-sensitive, and increasing those two probes from
+``500`` to ``1000`` VMEC iterations did not improve agreement. The tracked
+summary is ``docs/_static/vmec_jax_boundary_chain_multicomponent.json``.
+
+.. image:: _static/vmec_jax_boundary_chain_multicomponent.png
+   :alt: Four-component VMEC-JAX boundary-chain audit showing exact finite-difference and frozen-axis replay gradients.
+   :width: 95%
+
+This result narrows the current differentiable-optimization scope: frozen-axis
+derivatives are usable as local diagnostics, but projected VMEC boundary updates
+must exclude or regularize branch-sensitive coefficients until a better
+conditioned finite-difference protocol or public solved-equilibrium
+linearization gate closes the mismatch.
 
 After a sensitive diagnostic, generate bounded projected candidate inputs with:
 

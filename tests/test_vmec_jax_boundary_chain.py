@@ -8,6 +8,7 @@ import pytest
 import spectraxgk
 from spectraxgk.vmec_jax_boundary_chain import (
     boundary_chain_summary_from_probe,
+    build_boundary_chain_collection_summary,
     build_boundary_chain_summary,
 )
 
@@ -87,3 +88,62 @@ def test_boundary_chain_summary_from_probe_and_public_api() -> None:
     )
     summary = boundary_chain_summary_from_probe(payload, exact_relative_tolerance=0.1)
     assert summary["classification"] == "exact_fd_and_frozen_axis_replay_consistent"
+
+
+def test_boundary_chain_collection_summary_counts_mixed_modes() -> None:
+    branch_sensitive = {
+        "index": 22,
+        "name": "rc11",
+        "summary": build_boundary_chain_summary(
+            exact_fd_cost_gradient=-0.0135,
+            final_cot_dot_exact_final_fd=-0.014,
+            frozen_axis_replay_cost_gradient=-0.0172,
+            frozen_axis_vjp_cost_gradient=-0.0172,
+            raw_initial_replay_cost_gradient=-0.092,
+            raw_initial_fd_norm=120.0,
+            frozen_axis_initial_fd_norm=1.0,
+            exact_relative_tolerance=0.1,
+        ),
+    }
+    consistent = {
+        "index": 28,
+        "name": "rc14",
+        "summary": build_boundary_chain_summary(
+            exact_fd_cost_gradient=0.02245397716,
+            final_cot_dot_exact_final_fd=0.0221,
+            frozen_axis_replay_cost_gradient=0.02079152741,
+            frozen_axis_vjp_cost_gradient=0.02079152740,
+            raw_initial_replay_cost_gradient=0.0208,
+            raw_initial_fd_norm=1.9,
+            frozen_axis_initial_fd_norm=1.8,
+            exact_relative_tolerance=0.1,
+        ),
+    }
+
+    summary = build_boundary_chain_collection_summary(
+        [branch_sensitive, consistent],
+        exact_relative_tolerance=0.1,
+    )
+
+    assert (
+        summary["classification"]
+        == "mixed_exact_fd_consistency_with_branch_sensitive_modes"
+    )
+    assert summary["counts"] == {
+        "n_total": 2,
+        "n_finite": 2,
+        "n_frozen_axis_internal_pass": 2,
+        "n_exact_fd_consistent": 1,
+        "n_branch_sensitive": 1,
+    }
+    assert summary["rows"][0]["name"] == "rc11"
+    assert summary["rows"][1]["frozen_axis_matches_exact_fd"] is True
+    assert "exclude or regularize branch-sensitive modes" in summary["next_action"]
+
+
+def test_boundary_chain_collection_summary_fails_closed_when_empty() -> None:
+    summary = build_boundary_chain_collection_summary([])
+
+    assert summary["finite"] is False
+    assert summary["classification"] == "empty_boundary_chain_collection"
+    assert summary["counts"]["n_total"] == 0
