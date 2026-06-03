@@ -75,12 +75,24 @@ The target paper should show:
   raw weighted-mean residual gradients can be computed one surface at a time
   and transformed once after aggregation, preserving the reduced-objective
   contract while reducing peak memory.
+- The chunked 18-point run on office completed under the same sample contract
+  without OOM (raw weighted residual ``0.102999``, transformed residual
+  ``0.098033``, objective ``4.805e-3``), but the reverse gradient was exactly
+  zero. A current single-point reverse-gradient check was also exactly zero,
+  while central finite differences through the same residual were strongly
+  nonzero: examples include ``rc14`` residual derivative ``9.39``, ``rc12``
+  ``-8.77``, ``rc11`` ``-6.78``, and ``zs13`` ``-3.80`` at ``eps=1e-4``.
+  Therefore the current VMEC-JAX/SPECTRAX-GK path has an AD-disconnect blocker,
+  not a physically flat transport objective. The ``vmec_jax_office_main`` VJP
+  path reaches the differentiable Boozer transform but OOMs on a single-point
+  GPU run even with ``TF_GPU_ALLOCATOR=cuda_malloc_async``.
 
-Next best step: regenerate the transport-gradient diagnostic using the full
-18-point sample contract, then run a production-resolution multi-sample
-projected line search or short VMEC-JAX optimization candidate. Launch
-long-window nonlinear audits only if both the reduced objective and
-solved-equilibrium gates pass.
+Next best step: add an explicit AD-vs-finite-difference consistency gate to
+the VMEC-JAX transport-gradient diagnostic, then repair the differentiable
+VMEC/Boozer/SPECTRAX path so reverse gradients agree with finite differences
+before generating a new projected line-search candidate. Sparse finite-
+difference directions can be used only as diagnostics, not as end-to-end AD
+optimization evidence.
 
 ## 2026-06-01 VMEC-JAX QA Transport Objective Fix
 
