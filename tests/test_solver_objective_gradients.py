@@ -223,6 +223,12 @@ def test_dominant_real_eigenvalue_custom_vjp_matches_finite_difference() -> None
     np.testing.assert_allclose(grad_ad, np.asarray(grad_fd), rtol=rtol, atol=atol)
 
 
+def test_dominant_real_eigenvalue_validates_shape_and_casts_real_matrices() -> None:
+    assert float(dominant_real_eigenvalue(jnp.diag(jnp.asarray([1.0, 2.0])))) == pytest.approx(2.0)
+    with pytest.raises(ValueError, match="matrix must be square"):
+        dominant_real_eigenvalue(jnp.ones((2, 3)))
+
+
 def test_solver_growth_rate_from_geometry_has_finite_fd_checked_gradient() -> None:
     x64_enabled = bool(jax.config.read("jax_enable_x64"))
     dtype = jnp.float64 if x64_enabled else jnp.float32
@@ -258,6 +264,26 @@ def test_solver_growth_rate_from_geometry_has_finite_fd_checked_gradient() -> No
     np.testing.assert_allclose(grad_ad, np.asarray(grad_fd), rtol=rtol, atol=atol)
 
 
+def test_solver_growth_rate_from_geometry_validates_small_grid_contracts() -> None:
+    theta = jnp.linspace(-jnp.pi, jnp.pi, 4, endpoint=False)
+    geom = spectraxgk.flux_tube_geometry_from_mapping(
+        solver_ready_geometry_mapping(default_solver_geometry_design_params(), theta),
+        source_model="solver_growth_contract_gate",
+        validate_finite=False,
+    )
+
+    with pytest.raises(ValueError, match="positive"):
+        solver_growth_rate_from_geometry(geom, n_laguerre=0)
+    with pytest.raises(ValueError, match="selected_ky_index"):
+        solver_growth_rate_from_geometry(geom, ny=4, selected_ky_index=99)
+
+    class EmptyThetaGeometry:
+        theta = jnp.asarray([])
+
+    with pytest.raises(ValueError, match="at least one theta"):
+        solver_growth_rate_from_geometry(EmptyThetaGeometry())
+
+
 def test_solver_grid_options_from_ky_values_maps_physical_scan_to_fft_rows() -> None:
     options = solver_grid_options_from_ky_values((0.1, 0.3, 0.5))
 
@@ -273,8 +299,44 @@ def test_solver_grid_options_from_ky_values_maps_physical_scan_to_fft_rows() -> 
     np.testing.assert_allclose(shifted["resolved_ky_values"], (0.15, 0.35), rtol=5.0e-6, atol=5.0e-8)
     with pytest.raises(ValueError, match="integer multiples"):
         solver_grid_options_from_ky_values((0.15, 0.35))
+    with pytest.raises(ValueError, match="duplicate"):
+        solver_grid_options_from_ky_values((0.1, 0.1))
+    with pytest.raises(ValueError, match="ky_base"):
+        solver_grid_options_from_ky_values((0.1, 0.2), ky_base=0.0)
     with pytest.raises(ValueError, match="positive"):
         solver_grid_options_from_ky_values((0.0, 0.1))
+
+
+def test_solver_objective_sampling_helpers_validate_contracts() -> None:
+    assert sog._surface_index_tuple(None) == (None,)
+    assert sog._surface_index_tuple(3) == (3,)
+    with pytest.raises(ValueError, match="surface_indices"):
+        sog._surface_index_tuple([])
+
+    assert sog._int_tuple(2, name="selected_ky_indices") == (2,)
+    with pytest.raises(ValueError, match="selected_ky_indices"):
+        sog._int_tuple([], name="selected_ky_indices")
+
+    assert sog._float_tuple(0.3, name="ky_values") == (0.3,)
+    with pytest.raises(ValueError, match="ky_values"):
+        sog._float_tuple([], name="ky_values")
+    with pytest.raises(ValueError, match="finite"):
+        sog._float_tuple([0.1, float("nan")], name="ky_values")
+
+    np.testing.assert_allclose(sog._aggregate_weights(None, 3), np.full(3, 1.0 / 3.0))
+    np.testing.assert_allclose(sog._aggregate_weights([1.0, 3.0], 2), [0.25, 0.75])
+    with pytest.raises(ValueError, match="positive"):
+        sog._aggregate_weights([0.0, 0.0], 2)
+    with pytest.raises(ValueError, match="finite"):
+        sog._aggregate_weights([1.0, float("nan")], 2)
+
+    rows = sog._aggregate_sample_metadata((None, 4), (0.0,), (1, 2), np.asarray([0.1, 0.2, 0.3, 0.4]))
+    assert rows == [
+        {"surface_index": None, "alpha": 0.0, "selected_ky_index": 1, "weight": 0.1},
+        {"surface_index": None, "alpha": 0.0, "selected_ky_index": 2, "weight": 0.2},
+        {"surface_index": 4, "alpha": 0.0, "selected_ky_index": 1, "weight": 0.3},
+        {"surface_index": 4, "alpha": 0.0, "selected_ky_index": 2, "weight": 0.4},
+    ]
 
 
 def test_solver_objective_branch_gradient_report_gates_public_evaluator() -> None:
