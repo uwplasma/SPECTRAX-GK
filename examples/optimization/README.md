@@ -186,6 +186,11 @@ SPECTRAX-GK transport residual. The profile-floor gate must be checked from the
 final WOUT; a passed mean-iota target is not sufficient. For quick local
 validation before launching a longer solve, run a bounded growth-only smoke:
 
+The candidate-comparison JSON uses `mean_iota_lower_bound` and
+`iota_profile_floor` for this A=6 admission policy. Any legacy `target_*` iota
+fields in that JSON are compatibility aliases for lower-bound gates, not the
+upstream VMEC-JAX QA script's exact mean-iota target.
+
 ```bash
 python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py \
   --outdir /tmp/spectraxgk_vmec_jax_qa_scalar_smoke \

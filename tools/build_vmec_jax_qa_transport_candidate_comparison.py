@@ -30,10 +30,10 @@ from spectraxgk.vmec_jax_candidate_gate import (  # type: ignore[import-untyped]
 DEFAULT_OUT = ROOT / "docs" / "_static" / "vmec_jax_qa_transport_candidate_comparison.png"
 DEFAULT_PAYLOAD_JSON = DEFAULT_OUT.with_suffix(".json")
 DEFAULT_CONSTRAINTS_DIR = (
-    ROOT / "tools_out" / "vmec_jax_qa_promotion_smoke" / "a6_constraints_m5_iota427_refine_nfev35"
+    ROOT / "tools_out" / "vmec_jax_qa_transport_authoritative_sidecar" / "constraints"
 )
 DEFAULT_TRANSPORT_DIR = (
-    ROOT / "tools_out" / "vmec_jax_qa_promotion_smoke" / "a6_transport_reduced_nl_m5_iota427_nfev25"
+    ROOT / "tools_out" / "vmec_jax_qa_transport_authoritative_sidecar" / "transport"
 )
 COLORS = {
     "QA constraints": "#244c66",
@@ -238,8 +238,12 @@ def build_payload(
         ),
         "target_aspect": float(target_aspect),
         "aspect_atol": float(aspect_atol),
+        "iota_gate_policy": "lower_bound_admission_not_exact_upstream_mean_iota_target",
+        "mean_iota_lower_bound": float(min_iota),
+        "iota_profile_floor": float(min_iota),
         "target_mean_iota": float(min_iota),
         "target_iota_profile_floor": float(min_iota),
+        "legacy_target_iota_fields_are_lower_bounds": True,
         "qs_residual_max": float(qs_max),
         "branches": branches,
         "summary": {
@@ -288,7 +292,8 @@ def plot_payload(payload: dict[str, Any], out: Path) -> None:
     for branch, color in zip(payload["branches"], colors, strict=True):
         profile = branch["iota_profile"]
         ax.plot(profile["s"], profile["iota"], lw=2.4, color=color, label=branch["label"])
-    ax.axhline(payload["target_iota_profile_floor"], color="black", lw=1.2, ls=":")
+    iota_profile_floor = float(payload.get("iota_profile_floor", payload["target_iota_profile_floor"]))
+    ax.axhline(iota_profile_floor, color="black", lw=1.2, ls=":")
     ax.set_xlabel("normalized toroidal flux")
     ax.set_ylabel(r"$\iota$")
     ax.set_title("Solved WOUT iota profiles")
@@ -321,13 +326,16 @@ def plot_payload(payload: dict[str, Any], out: Path) -> None:
         ),
     )
     offsets = (-1.5 * width, -0.5 * width, 0.5 * width, 1.5 * width)
+    ratio_floor = 1.0e-3
     for offset, (label, getter) in zip(offsets, metric_specs, strict=True):
-        values = [float(getter(branch)) for branch in payload["branches"]]
+        values = [max(float(getter(branch)), ratio_floor) for branch in payload["branches"]]
         ax.bar(x + offset, values, width=width, label=label)
     ax.axhline(1.0, color="black", lw=1.0, ls=":", alpha=0.55)
     ax.set_xticks(x)
     ax.set_xticklabels(["QA", "QA+Q"], rotation=0)
-    ax.set_ylabel("ratio to gate threshold")
+    ax.set_yscale("log")
+    ax.set_ylim(ratio_floor, None)
+    ax.set_ylabel("ratio to gate threshold (log)")
     ax.set_title("Normalized gate quantities")
     ax.grid(axis="y", alpha=0.25)
     ax.legend(frameon=False, fontsize=7)

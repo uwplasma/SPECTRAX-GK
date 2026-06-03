@@ -315,11 +315,21 @@ VMEC-JAX optimization is still only a candidate; the next required audit is a
 WOUT profile check followed by a matched long-window SPECTRAX-GK nonlinear
 heat-flux comparison of the final WOUTs.
 
+The A=6 admission artifact records ``mean_iota_lower_bound`` and
+``iota_profile_floor`` fields. Legacy ``target_*`` iota fields remain in the
+JSON only as compatibility aliases and should be interpreted as lower-bound
+admission gates, not as the upstream QA script's exact mean-iota objective.
+
 For bounded local candidate pairs, build the solved-boundary audit panel with:
 
 .. code-block:: bash
 
    python tools/build_vmec_jax_qa_transport_candidate_comparison.py --pdf
+
+On this development workstation the command uses the local authoritative
+sidecar directories when they are present. In a clean clone those directories
+are absent, so the tool falls back to the tracked JSON payload and reproduces
+the shipped panel without requiring large transient ``tools_out`` artifacts.
 
 .. figure:: _static/vmec_jax_qa_transport_candidate_comparison.png
    :alt: VMEC-JAX QA candidate iota-profile and scalar diagnostic audit

@@ -22,6 +22,12 @@ This file is both the active plan and the running log. Keep entries concise, dat
 - Kept the reduced optimization comparison as supporting differentiability,
   UQ, and plotting-plumbing evidence only. Tests now guard against re-embedding
   the reduced synthetic surface in the README as solved QA geometry.
+- Tightened the A=6 VMEC-JAX QA transport-candidate artifact schema:
+  ``mean_iota_lower_bound`` and ``iota_profile_floor`` are now the primary
+  machine-readable fields, while legacy ``target_*`` iota fields are retained
+  only as compatibility aliases. The candidate-panel builder defaults to the
+  local authoritative sidecar campaign when present and otherwise falls back to
+  the tracked payload in clean clones.
 
 ## 2026-06-03 Nonlinear-Audit Promotion Runbook
 

@@ -3,8 +3,12 @@
   "claim_scope": "bounded VMEC-JAX solved-boundary candidate comparison; validates objective assembly, trace-safe SPECTRAX-GK transport residual, WOUT writing, and authoritative solved-equilibrium admission gates; not a converged optimized-equilibrium nonlinear turbulent-flux claim",
   "target_aspect": 6.0,
   "aspect_atol": 0.05,
+  "iota_gate_policy": "lower_bound_admission_not_exact_upstream_mean_iota_target",
+  "mean_iota_lower_bound": 0.41,
+  "iota_profile_floor": 0.41,
   "target_mean_iota": 0.41,
   "target_iota_profile_floor": 0.41,
+  "legacy_target_iota_fields_are_lower_bounds": true,
   "qs_residual_max": 0.05,
   "branches": [
     {

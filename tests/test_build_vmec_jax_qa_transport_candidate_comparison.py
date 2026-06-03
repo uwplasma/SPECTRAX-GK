@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import importlib.util
 import json
 from pathlib import Path
@@ -16,6 +17,27 @@ assert spec.loader is not None
 mod = importlib.util.module_from_spec(spec)
 sys.modules[spec.name] = mod
 spec.loader.exec_module(mod)
+
+
+def test_default_candidate_sources_are_authoritative_sidecar_or_payload_fallback() -> None:
+    assert "vmec_jax_qa_transport_authoritative_sidecar" in str(mod.DEFAULT_CONSTRAINTS_DIR)
+    assert "vmec_jax_qa_transport_authoritative_sidecar" in str(mod.DEFAULT_TRANSPORT_DIR)
+    assert "vmec_jax_qa_promotion_smoke" not in str(mod.DEFAULT_CONSTRAINTS_DIR)
+    assert "vmec_jax_qa_promotion_smoke" not in str(mod.DEFAULT_TRANSPORT_DIR)
+    assert mod.DEFAULT_PAYLOAD_JSON.name == "vmec_jax_qa_transport_candidate_comparison.json"
+
+
+def test_load_or_build_payload_falls_back_to_tracked_payload_in_clean_clone(tmp_path: Path) -> None:
+    payload_json = tmp_path / "candidate.json"
+    expected = {"kind": "vmec_jax_qa_transport_candidate_comparison", "summary": {"from_payload": True}}
+    payload_json.write_text(json.dumps(expected), encoding="utf-8")
+    args = argparse.Namespace(
+        constraints_dir=tmp_path / "missing_constraints",
+        transport_dir=tmp_path / "missing_transport",
+        payload_json=payload_json,
+    )
+
+    assert mod._load_or_build_payload(args) == expected
 
 
 def _history(root: Path, *, qs: float = 0.02) -> None:
@@ -102,6 +124,12 @@ def test_payload_admits_only_authoritative_solved_wout_gates(tmp_path: Path, mon
     payload = mod.build_payload(constraints, transport)
     branches = {branch["label"]: branch for branch in payload["branches"]}
 
+    assert payload["iota_gate_policy"] == "lower_bound_admission_not_exact_upstream_mean_iota_target"
+    assert payload["mean_iota_lower_bound"] == 0.41
+    assert payload["iota_profile_floor"] == 0.41
+    assert payload["legacy_target_iota_fields_are_lower_bounds"] is True
+    assert payload["target_mean_iota"] == payload["mean_iota_lower_bound"]
+    assert payload["target_iota_profile_floor"] == payload["iota_profile_floor"]
     assert branches["QA constraints"]["admitted_for_long_window_nonlinear_audit"] is True
     assert branches["QA constraints"]["gate_source"] == "solved_wout_gate.json"
     assert branches["QA + SPECTRAX-GK transport"]["gate_reported_passed"] is True
