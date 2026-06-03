@@ -350,6 +350,12 @@ branch-locality classification into each collection row. The projected-update
 policy still fails closed on the stricter VMEC exact-FD/frozen-axis consistency
 gate; branch locality only localizes the failure mechanism and prevents a
 VMEC-convention issue from being misdiagnosed as a SPECTRAX eigenbranch switch.
+For projected transport line searches, ``boundary_chain_accepted_parameter_indices``
+and ``projected_line_search_input_manifest`` accept
+``require_growth_branch_locality=True`` to exclude any coefficient whose
+explicit branch-locality check is missing or failed. The default remains
+backward compatible because older boundary-chain collections did not contain
+this optional block.
 
 The reusable low-level entry point is
 ``observable_gradient_validation_report(observable_fn, params, ...)``. It

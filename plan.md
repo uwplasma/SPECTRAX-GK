@@ -85,6 +85,12 @@ This file is both the active plan and the running log. Keep entries concise, dat
   ``growth_branch_locality_classification``. This keeps projected-update
   filtering machine-readable without weakening the stricter exact-FD/frozen-axis
   admission gate.
+- Projected line-search filters now accept
+  ``require_growth_branch_locality=True``. With that option, a coefficient is
+  admitted only when frozen-axis replay is internally consistent, the configured
+  exact-FD policy passes, and the explicit SPECTRAX growth-branch locality check
+  is present and passed. The default remains backward compatible for older
+  boundary-chain artifacts.
 - Real bounded probe on neighboring ``zs13`` at ``step=2e-5`` with the same
   one-sample growth setup also produced ``growth_branch_locality.passed =
   true``. The base eigenvalue gap is ``1.68e-3``, the dominant and nearest

@@ -68,6 +68,8 @@ def _boundary_chain_collection() -> dict[str, object]:
                 "finite": True,
                 "frozen_axis_jvp_vjp_consistent": True,
                 "frozen_axis_matches_exact_fd": True,
+                "growth_branch_locality_checked": True,
+                "growth_branch_locality_passed": True,
             },
             {
                 "index": 3,
@@ -75,6 +77,8 @@ def _boundary_chain_collection() -> dict[str, object]:
                 "finite": True,
                 "frozen_axis_jvp_vjp_consistent": True,
                 "frozen_axis_matches_exact_fd": False,
+                "growth_branch_locality_checked": True,
+                "growth_branch_locality_passed": False,
             },
             {
                 "index": 0,
@@ -82,6 +86,8 @@ def _boundary_chain_collection() -> dict[str, object]:
                 "finite": True,
                 "frozen_axis_jvp_vjp_consistent": False,
                 "frozen_axis_matches_exact_fd": True,
+                "growth_branch_locality_checked": False,
+                "growth_branch_locality_passed": False,
             },
         ],
     }
@@ -118,17 +124,43 @@ def test_boundary_chain_filter_can_admit_internal_replay_diagnostics() -> None:
     assert direction[0] == 0.0
 
 
+def test_boundary_chain_filter_can_require_growth_branch_locality() -> None:
+    collection = _boundary_chain_collection()
+
+    assert (
+        boundary_chain_accepted_parameter_indices(
+            collection,
+            require_exact_fd=False,
+            require_growth_branch_locality=True,
+        )
+        == (1,)
+    )
+    direction = sparse_descent_direction_from_gradient_report(
+        _gradient_report(),
+        top_n=3,
+        boundary_chain_collection=collection,
+        require_boundary_chain_exact_fd=False,
+        require_growth_branch_locality=True,
+    )
+
+    assert direction[1] == pytest.approx(1.0)
+    assert direction[3] == 0.0
+    assert direction[0] == 0.0
+
+
 def test_projected_line_search_manifest_records_boundary_chain_filter() -> None:
     manifest = projected_line_search_input_manifest(
         _gradient_report(),
         steps=(0.1,),
         top_n=3,
         boundary_chain_collection=_boundary_chain_collection(),
+        require_growth_branch_locality=True,
     )
 
     assert manifest["boundary_chain_filter"] == {
         "enabled": True,
         "require_exact_fd": True,
+        "require_growth_branch_locality": True,
         "collection_classification": "mixed_exact_fd_consistency_with_branch_sensitive_modes",
         "accepted_parameter_indices": [1],
     }
