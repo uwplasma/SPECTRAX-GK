@@ -108,12 +108,21 @@ The target paper should show:
   Focused test result: ``6 passed`` for
   ``tests/test_build_vmec_jax_transport_gradient_diagnostic.py``; Ruff passes on
   the touched tool and tests.
+- Ran the new gate on office for a sparse, under-resolved single-point check
+  using the same solved QA baseline and four previously nonzero finite-
+  difference directions. The diagnostic exited with code ``3`` as intended:
+  reverse gradient norm ``0.0`` while finite-difference cost gradients were
+  ``-0.404`` (``rc11``), ``-0.522`` (``rc12``), ``-0.224`` (``zs13``), and
+  ``0.559`` (``rc14``). Artifact:
+  ``docs/_static/vmec_jax_transport_gradient_single_fd_gate.json``. This is
+  diagnostic-only because the one-surface/one-field-line/one-``k_y`` sample set
+  intentionally fails the production coverage gate.
 - Next best step: run the new gate on office for a sparse set of previously
-  nonzero finite-difference directions, then repair the differentiable
-  VMEC/Boozer/SPECTRAX path until reverse gradients agree with finite
-  differences before generating any new projected line-search candidate.
-  Sparse finite-difference directions remain diagnostics only, not end-to-end
-  AD optimization evidence.
+  nonzero finite-difference directions under the full 18-point chunked contract
+  if runtime permits, then repair the differentiable VMEC/Boozer/SPECTRAX path
+  until reverse gradients agree with finite differences before generating any
+  new projected line-search candidate. Sparse finite-difference directions
+  remain diagnostics only, not end-to-end AD optimization evidence.
 
 ## 2026-06-01 VMEC-JAX QA Transport Objective Fix
 

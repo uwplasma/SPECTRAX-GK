@@ -338,6 +338,13 @@ small to be useful. In that case, do not promote the reverse gradient as
 end-to-end differentiability evidence; repair the VMEC/Boozer/SPECTRAX AD path
 or use sparse finite differences only as diagnostics.
 
+The current tracked blocker artifact is
+``docs/_static/vmec_jax_transport_gradient_single_fd_gate.json``. It is an
+under-resolved single-sample diagnostic, not production admission evidence, but
+it demonstrates the failure mode cleanly: the reverse gradient is zero while
+central finite differences through the same residual are nonzero for selected
+``R``/``Z`` boundary components.
+
 After a sensitive diagnostic, generate bounded projected candidate inputs with:
 
 .. code-block:: bash
