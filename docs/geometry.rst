@@ -356,6 +356,15 @@ and ``projected_line_search_input_manifest`` accept
 explicit branch-locality check is missing or failed. The default remains
 backward compatible because older boundary-chain collections did not contain
 this optional block.
+Assemble several probe JSON files into the collection consumed by the projected
+writer with:
+
+.. code-block:: bash
+
+   python tools/build_vmec_jax_boundary_chain_collection.py \
+     --probe-json tools_out/latest_vmec_stack/boundary_chain_zs13_h2e5_branch_locality.json \
+                  tools_out/latest_vmec_stack/boundary_chain_rc14_h2e5_branch_locality.json \
+     --out-json tools_out/latest_vmec_stack/boundary_chain_growth_collection.json
 
 The reusable low-level entry point is
 ``observable_gradient_validation_report(observable_fn, params, ...)``. It

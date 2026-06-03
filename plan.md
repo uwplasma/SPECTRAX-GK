@@ -95,6 +95,12 @@ This file is both the active plan and the running log. Keep entries concise, dat
   this as ``--require-growth-branch-locality`` and records the policy in the
   generated manifest, so production projected decks can require both VMEC
   convention consistency and SPECTRAX eigenbranch locality.
+- Added ``tools/build_vmec_jax_boundary_chain_collection.py`` to assemble one or
+  more boundary-chain probe JSONs into the collection summary consumed by the
+  projected writer. The collection records exact-FD/frozen-axis counts,
+  branch-sensitive counts, optional growth-branch locality counts, source probe
+  paths, and a claim-scope string that explicitly excludes nonlinear transport
+  optimization claims.
 - Real bounded probe on neighboring ``zs13`` at ``step=2e-5`` with the same
   one-sample growth setup also produced ``growth_branch_locality.passed =
   true``. The base eigenvalue gap is ``1.68e-3``, the dominant and nearest
@@ -107,6 +113,14 @@ This file is both the active plan and the running log. Keep entries concise, dat
   with ``rc14``, this makes the current blocker a VMEC exact-solve/frozen-axis
   convention issue rather than a SPECTRAX dominant-growth branch-locality issue
   for the sampled growth objective.
+- End-to-end collection replay on the real ``zs13`` and ``rc14`` probe JSONs
+  produced ``classification = branch_sensitive_boundary_chain_collection`` with
+  counts ``n_total=2``, ``n_exact_fd_consistent=0``,
+  ``n_growth_branch_locality_checked=2``, and
+  ``n_growth_branch_locality_passed=2``. This is the desired fail-closed
+  machine-readable state: SPECTRAX eigenbranch locality is not blocking these
+  samples, but no coefficient is admitted for projected VMEC boundary updates
+  until the VMEC exact-solve/frozen-axis convention is resolved.
 
 ## 2026-06-03 VMEC-JAX QA Transport Script Audit
 
