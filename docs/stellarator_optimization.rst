@@ -134,6 +134,45 @@ Therefore the scripts demonstrate how to append a differentiable SPECTRAX-GK
 transport objective to VMEC-JAX QA optimization; by themselves they are not a
 transport-optimization success claim.
 
+Full Max-Mode-5 Optimizer Sweeps
+--------------------------------
+
+For manuscript-facing comparisons between optimizer algorithms, run the full
+``max_mode = 5`` VMEC-JAX solved-boundary sweep on the workstation/GPU node and
+then build the comparison panel from the real ``history.json`` and
+``wout_final.nc`` outputs:
+
+.. code-block:: bash
+
+   # On the GPU node, from a clean SPECTRAX-GK/vmec_jax/booz_xform_jax clone:
+   python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py \
+     --use-simple-seed --max-mode 5 --min-vmec-mode 7 \
+     --target-aspect 5.0 --min-iota 0.41 --disable-iota-profile-floor \
+     --mboz 21 --nboz 21 --surfaces 0.64 --alphas 0.0 --ky-values 0.30 \
+     --transport-kind growth --method scalar_trust --spectrax-weight 0.01 \
+     --solver-device gpu --outdir runs_onepoint/growth_scalar_trust
+
+   # Locally, after copying the campaign directory back:
+   python tools/build_vmec_jax_qa_full_sweep_panel.py \
+     --run-root tools_out/vmec_jax_qa_full_sweep_YYYYMMDD \
+     --out docs/_static/vmec_jax_qa_full_sweep_panel.png --pdf
+
+The panel builder compares the upstream-style QA baseline, growth-rate,
+quasilinear-flux, nonlinear-window, and projected/admission variants when their
+run directories are present. It plots objective histories, solved-WOUT
+``iota`` profiles, final aspect/``iota``/QS diagnostics, reduced transport
+metrics, 3-D LCFS surfaces colored by ``|B|``, and LCFS ``|B|`` maps. It only
+plots nonlinear heat-flux traces when matched long-window SPECTRAX-GK audit
+CSV files are present below the corresponding candidate directory.
+
+This distinction is deliberate. The optimizer residual named
+``nonlinear_window_heat_flux`` is a differentiable screening objective based on
+linear SPECTRAX-GK rows and a smooth late-window envelope. It is useful for
+ranking candidate directions, but it is not a saturated turbulent heat-flux
+measurement. A candidate can be promoted to a nonlinear transport claim only
+after generating replicated post-transient SPECTRAX-GK runs from its concrete
+``wout_final.nc`` and demonstrating running-average convergence of ``Q(t)``.
+
 .. figure:: _static/vmec_jax_qa_solved_boundary_boozer_panel.png
    :alt: Solved VMEC-JAX QA boundary and Boozer-LCFS magnetic-field diagnostics
    :width: 95%
