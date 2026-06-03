@@ -24,7 +24,7 @@ from collections.abc import Mapping
 import json
 from pathlib import Path
 import sys
-from typing import Any
+from typing import Any, cast
 
 import jax
 import jax.numpy as jnp
@@ -37,8 +37,13 @@ TOOLS = ROOT / "tools"
 if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
 
-from build_vmec_jax_transport_gradient_diagnostic import _build_stage  # noqa: E402
+from build_vmec_jax_transport_gradient_diagnostic import _build_stage, _sample_set_from_args  # noqa: E402
 from spectraxgk.vmec_jax_boundary_chain import build_boundary_chain_summary  # noqa: E402
+from spectraxgk.vmec_jax_transport_objective import (  # noqa: E402
+    VMECJAXTransportObjectiveConfig,
+    _reference_wout_from_context,
+    vmec_jax_transport_growth_branch_locality_report_from_states,
+)
 from vmec_jax.discrete_adjoint import (  # noqa: E402
     checkpoint_tape_state_jvp_columns,
     checkpoint_tape_state_vjp,
@@ -129,6 +134,20 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--exact-relative-tolerance", type=float, default=1.0e-1)
     parser.add_argument("--internal-relative-tolerance", type=float, default=1.0e-8)
     parser.add_argument("--absolute-tolerance", type=float, default=1.0e-10)
+    parser.add_argument(
+        "--include-growth-branch-locality",
+        action="store_true",
+        help="Also compare dominant-growth eigenbranch locality at base/plus/minus final states",
+    )
+    parser.add_argument("--branch-gap-floor", type=float, default=1.0e-8)
+    parser.add_argument("--branch-slope-rtol", type=float, default=1.0e-2)
+    parser.add_argument("--branch-slope-atol", type=float, default=1.0e-8)
+    parser.add_argument(
+        "--branch-locality-max-samples",
+        type=int,
+        default=0,
+        help="Limit branch-locality samples for debugging; 0 checks the full configured sample set",
+    )
     return parser.parse_args(argv)
 
 
@@ -356,6 +375,50 @@ def main(argv: list[str] | None = None) -> int:
         internal_relative_tolerance=float(args.internal_relative_tolerance),
         absolute_tolerance=float(args.absolute_tolerance),
     )
+    if bool(args.include_growth_branch_locality):
+        ctx = getattr(stage, "ctx", None)
+        if ctx is None:
+            result["growth_branch_locality"] = {
+                "enabled": True,
+                "passed": False,
+                "classification": "stage_context_unavailable",
+                "blockers": ["stage_context_unavailable"],
+            }
+        else:
+            config = VMECJAXTransportObjectiveConfig(
+                kind=cast(Any, args.transport_kind),
+                sample_set=_sample_set_from_args(_stage_args(args)),
+                ntheta=int(args.ntheta),
+                mboz=int(args.mboz),
+                nboz=int(args.nboz),
+                n_laguerre=int(args.n_laguerre),
+                n_hermite=int(args.n_hermite),
+                objective_transform=cast(Any, str(args.spectrax_objective_transform)),
+                objective_scale=float(args.spectrax_objective_scale),
+            )
+            result["growth_branch_locality"] = (
+                vmec_jax_transport_growth_branch_locality_report_from_states(
+                    _state_base,
+                    _state_plus,
+                    _state_minus,
+                    ctx.static,
+                    ctx.indata,
+                    _reference_wout_from_context(ctx),
+                    config,
+                    step=float(args.step),
+                    gap_floor=float(args.branch_gap_floor),
+                    slope_rtol=float(args.branch_slope_rtol),
+                    slope_atol=float(args.branch_slope_atol),
+                    max_samples=int(args.branch_locality_max_samples),
+                )
+            )
+    else:
+        result["growth_branch_locality"] = {
+            "enabled": False,
+            "passed": False,
+            "classification": "growth_branch_locality_not_requested",
+            "blockers": ["growth_branch_locality_not_requested"],
+        }
     args.out_json.parent.mkdir(parents=True, exist_ok=True)
     args.out_json.write_text(
         json.dumps(result, indent=2, allow_nan=False) + "\n", encoding="utf-8"

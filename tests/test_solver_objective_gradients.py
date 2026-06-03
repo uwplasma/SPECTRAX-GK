@@ -32,6 +32,7 @@ from spectraxgk.solver_objective_gradients import (
     mode21_vmec_boozer_linear_frequency_gradient_report,
     mode21_vmec_boozer_nonlinear_window_gradient_report,
     mode21_vmec_boozer_quasilinear_gradient_report,
+    solver_linear_operator_matrix_from_geometry,
     solver_objective_branch_gradient_report,
     solver_growth_rate_from_geometry,
     solver_objective_vector_from_geometry,
@@ -325,6 +326,34 @@ def test_solver_growth_rate_from_geometry_has_finite_fd_checked_gradient() -> No
 
     assert np.all(np.isfinite(grad_ad))
     np.testing.assert_allclose(grad_ad, np.asarray(grad_fd), rtol=rtol, atol=atol)
+
+
+def test_solver_linear_operator_matrix_matches_growth_rate_path() -> None:
+    theta = jnp.linspace(-jnp.pi, jnp.pi, 4, endpoint=False)
+    geom = spectraxgk.flux_tube_geometry_from_mapping(
+        solver_ready_geometry_mapping(default_solver_geometry_design_params(), theta),
+        validate_finite=False,
+    )
+
+    matrix = solver_linear_operator_matrix_from_geometry(
+        geom,
+        n_laguerre=1,
+        n_hermite=1,
+        ny=4,
+        selected_ky_index=1,
+    )
+    growth = solver_growth_rate_from_geometry(
+        geom,
+        n_laguerre=1,
+        n_hermite=1,
+        ny=4,
+        selected_ky_index=1,
+    )
+
+    assert spectraxgk.solver_linear_operator_matrix_from_geometry is solver_linear_operator_matrix_from_geometry
+    assert matrix.shape == (4, 4)
+    assert np.all(np.isfinite(np.asarray(matrix)))
+    assert float(np.max(np.real(np.linalg.eigvals(np.asarray(matrix))))) == pytest.approx(float(growth))
 
 
 def test_solver_growth_rate_from_geometry_validates_small_grid_contracts() -> None:

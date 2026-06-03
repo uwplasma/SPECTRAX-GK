@@ -316,6 +316,34 @@ the finite-difference step is not well scaled to the chosen VMEC coefficient.
 Research artifacts should quote both the derivative error and this conditioning
 metadata before treating a VMEC/Boozer bridge row as optimization-ready.
 
+Growth-rate transport-gradient audits also need an eigenbranch-locality check.
+The public helper
+``solver_linear_operator_matrix_from_geometry(geometry, ...)`` materializes the
+same SPECTRAX-GK linear operator used by
+``solver_growth_rate_from_geometry(...)``. The report
+``vmec_jax_transport_growth_branch_locality_report_from_states(base, plus, minus, ...)``
+then compares the dominant-growth finite-difference slope against the slope of
+the eigenvalue nearest to the base dominant eigenvalue for every configured
+surface, field line, and ``k_y`` sample. If the independently selected
+max-growth branch switches, or if the base branch is under-isolated, the report
+fails closed and labels the row before any transport-gradient optimization
+claim is admitted. The boundary-chain executable exposes the same check via:
+
+.. code-block:: bash
+
+   PYTHONPATH=src:tools:$VMEC_JAX_ROOT \
+     python tools/probe_vmec_jax_boundary_chain.py \
+       --input path/to/input.final \
+       --out-json tools_out/vmec_boundary_chain_probe.json \
+       --index 28 --step 2e-5 \
+       --transport-kind growth \
+       --include-growth-branch-locality
+
+This branch-locality block is a diagnostic admission gate. Passing it does not
+by itself promote nonlinear turbulent-flux optimization; it only says that the
+linear growth finite-difference stencil is measuring the local branch assumed
+by the implicit left/right eigenvalue derivative.
+
 The reusable low-level entry point is
 ``observable_gradient_validation_report(observable_fn, params, ...)``. It
 flattens arbitrary geometry or objective observables, compares JAX AD

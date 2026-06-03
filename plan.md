@@ -57,6 +57,18 @@ This file is both the active plan and the running log. Keep entries concise, dat
 - Fast tests now cover both an isolated branch and a branch-switching stencil.
   Local checks passed: ``pytest -q tests/test_solver_objective_gradients.py``,
   Ruff on touched files, and ``mypy``.
+- Follow-up: exposed the exact solver linear-operator matrix through
+  ``solver_linear_operator_matrix_from_geometry`` and added
+  ``vmec_jax_transport_growth_branch_locality_report_from_states``. The VMEC
+  boundary-chain probe now has an opt-in
+  ``--include-growth-branch-locality`` block that writes per-sample
+  branch-locality rows for the same surface/alpha/``k_y`` transport sample set.
+  This makes branch switches or under-isolated growth branches visible in the
+  AD/FD JSON artifact before any projected transport-gradient update is
+  admitted. Local checks passed:
+  ``pytest -q tests/test_solver_objective_gradients.py tests/test_vmec_jax_transport_objective.py``,
+  Ruff on the touched files, source ``mypy``, and probe ``mypy`` with
+  ``PYTHONPATH=src:tools:<vmec_jax> --ignore-missing-imports``.
 
 ## 2026-06-03 VMEC-JAX QA Transport Script Audit
 

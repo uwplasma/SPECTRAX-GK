@@ -15,6 +15,7 @@ from spectraxgk import (
     StellaratorITGSampleSet,
     VMECJAXSpectraxTransportObjective,
     VMECJAXTransportObjectiveConfig,
+    vmec_jax_transport_growth_branch_locality_report_from_states,
     vmec_jax_transport_objective_from_state,
 )
 from spectraxgk.solver_objective_gradients import SOLVER_OBJECTIVE_NAMES
@@ -89,6 +90,81 @@ def test_vmec_jax_transport_objective_reduces_fake_solver_rows(monkeypatch) -> N
     assert [call["selected_ky_index"] for call in growth_calls] == [1, 2, 1, 2]
     assert np.isclose(growth_calls[0]["ly"], 2.0 * np.pi / min(samples.ky_values))
     assert int(growth_calls[0]["ny"]) >= 6
+
+
+def test_vmec_jax_transport_growth_branch_locality_report_accepts_consistent_branch(monkeypatch) -> None:
+    import spectraxgk.vmec_jax_transport_objective as mod
+
+    def fake_geom(state, *_args, **kwargs):
+        return SimpleNamespace(state=state, theta=jnp.ones(2), kwargs=kwargs)
+
+    def fake_matrix(geom, **_kwargs):
+        if geom.state == "base":
+            return jnp.diag(jnp.asarray([1.0 + 0.0j, 0.5 + 0.0j]))
+        if geom.state == "plus":
+            return jnp.diag(jnp.asarray([1.02 + 0.0j, 0.48 + 0.0j]))
+        return jnp.diag(jnp.asarray([0.98 + 0.0j, 0.52 + 0.0j]))
+
+    monkeypatch.setattr(mod, "flux_tube_geometry_from_vmec_boozer_state", fake_geom)
+    monkeypatch.setattr(mod, "solver_linear_operator_matrix_from_geometry", fake_matrix)
+    samples = StellaratorITGSampleSet(surfaces=(0.5,), alphas=(0.0,), ky_values=(0.2,))
+    cfg = VMECJAXTransportObjectiveConfig(kind="growth", sample_set=samples)
+
+    report = vmec_jax_transport_growth_branch_locality_report_from_states(
+        "base",
+        "plus",
+        "minus",
+        "static",
+        "indata",
+        object(),
+        cfg,
+        step=1.0e-2,
+    )
+
+    assert (
+        spectraxgk.vmec_jax_transport_growth_branch_locality_report_from_states
+        is vmec_jax_transport_growth_branch_locality_report_from_states
+    )
+    assert report["passed"] is True
+    assert report["classification"] == "all_samples_dominant_growth_branch_locally_consistent"
+    assert report["sample_count"] == 1
+    assert report["evaluated_sample_count"] == 1
+    assert report["rows"][0]["classification"] == "dominant_branch_locally_consistent"
+
+
+def test_vmec_jax_transport_growth_branch_locality_report_fails_on_branch_switch(monkeypatch) -> None:
+    import spectraxgk.vmec_jax_transport_objective as mod
+
+    def fake_geom(state, *_args, **kwargs):
+        return SimpleNamespace(state=state, theta=jnp.ones(2), kwargs=kwargs)
+
+    def fake_matrix(geom, **_kwargs):
+        if geom.state == "base":
+            return jnp.diag(jnp.asarray([1.0 + 0.0j, 0.8 + 0.0j]))
+        if geom.state == "plus":
+            return jnp.diag(jnp.asarray([1.02 + 0.0j, 1.05 + 0.0j]))
+        return jnp.diag(jnp.asarray([0.98 + 0.0j, 0.65 + 0.0j]))
+
+    monkeypatch.setattr(mod, "flux_tube_geometry_from_vmec_boozer_state", fake_geom)
+    monkeypatch.setattr(mod, "solver_linear_operator_matrix_from_geometry", fake_matrix)
+    samples = StellaratorITGSampleSet(surfaces=(0.5,), alphas=(0.0,), ky_values=(0.2,))
+    cfg = VMECJAXTransportObjectiveConfig(kind="growth", sample_set=samples)
+
+    report = vmec_jax_transport_growth_branch_locality_report_from_states(
+        "base",
+        "plus",
+        "minus",
+        "static",
+        "indata",
+        object(),
+        cfg,
+        step=1.0e-2,
+    )
+
+    assert report["passed"] is False
+    assert report["classification"] == "growth_branch_locality_failed_or_incomplete"
+    assert report["blockers"] == ["branch_locality_mismatch_or_underisolated"]
+    assert report["rows"][0]["classification"] == "dominant_branch_differs_from_nearest_branch"
 
 
 def test_vmec_jax_transport_objective_nonlinear_proxy_is_positive_and_exported(monkeypatch) -> None:
