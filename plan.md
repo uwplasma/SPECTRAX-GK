@@ -28,6 +28,22 @@ This file is both the active plan and the running log. Keep entries concise, dat
   not promote; keep the artifact as a negative audit and redesign the reduced
   objective or variance-reduction campaign.
 
+## 2026-06-03 Nonlinear Parallelization Identity Gate
+
+- Added ``NonlinearSpectralRHSIdentityReport`` plus
+  ``nonlinear_spectral_rhs_identity_gate``. The gate splits deterministic
+  complex spectral states into logical row-major ``(k_y,k_x)`` tiles,
+  reconstructs them, recomputes the spectral field solve, pseudo-spectral
+  bracket, and nonlinear RHS contribution ``-\{\phi,g\}``, then compares the
+  logical route against the serial route.
+- This advances nonlinear domain decomposition from layout-only spectral
+  communication toward a real RHS dataflow identity check. It remains
+  diagnostic-only: there is no distributed FFT routing, conservation/transport
+  window promotion, profiler-backed speedup, or production multi-device claim.
+- Local checks passed:
+  ``pytest -q tests/test_nonlinear_spectral_communication_gate.py tests/test_nonlinear_parallel.py``
+  and Ruff on the touched files.
+
 ## 2026-06-03 VMEC-JAX QA Transport Script Audit
 
 - Pulled the latest local optional backends used for the VMEC/SPECTRAX

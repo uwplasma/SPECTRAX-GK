@@ -205,6 +205,17 @@ nonlinear bracket, and spectral field-solve layout. Passing this gate promotes
 distributed FFT routing, conservation checks, nonlinear transport-window
 acceptance, profiler evidence, or any speedup claim.
 
+The package also exposes
+``spectraxgk.nonlinear_parallel.nonlinear_spectral_rhs_identity_gate`` as the
+next diagnostic micro-route. This gate owns logical row-major ``(k_y,k_x)``
+tiles, reconstructs them, recomputes the spectral field and pseudo-spectral
+bracket, and compares the serial nonlinear RHS contribution ``-\{\phi,g\}``
+against the tile-reassembled route. It is useful because it exercises the
+field/bracket/RHS dataflow instead of only layout round trips. It remains
+fail-closed and diagnostic-only: logical tiles are reconstructed for identity
+validation, not executed through a production ``pjit``/``shard_map`` distributed
+FFT path.
+
 Before nonlinear domain decomposition can be promoted beyond this diagnostic
 state, the runtime route must pass all of the following gates on the same
 workload family that appears in the speedup figure:
