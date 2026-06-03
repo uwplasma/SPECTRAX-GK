@@ -69,6 +69,12 @@ The target paper should show:
   sample contract and fails closed for under-resolved exploratory gradients
   unless explicitly overridden. This prevents future projected candidates from
   being generated from single-point gradients by accident.
+- Office GPU attempt at the full 18-point reverse gradient on one A4000 failed
+  with a ``RESOURCE_EXHAUSTED`` allocation of about ``10.1 GiB`` inside the
+  VMEC-JAX cotangent path. Added surface-chunked gradient aggregation so the
+  raw weighted-mean residual gradients can be computed one surface at a time
+  and transformed once after aggregation, preserving the reduced-objective
+  contract while reducing peak memory.
 
 Next best step: regenerate the transport-gradient diagnostic using the full
 18-point sample contract, then run a production-resolution multi-sample

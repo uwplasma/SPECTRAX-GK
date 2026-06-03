@@ -281,6 +281,7 @@ transport weight:
      --surfaces 0.45,0.64,0.78 \
      --alphas 0.0,0.7853981633974483 \
      --ky-values 0.10,0.30,0.50 \
+     --surface-gradient-chunk-size 1 \
      --solver-device gpu
 
 The diagnostic rebuilds a transport-only VMEC-JAX objective at the solved
@@ -297,6 +298,13 @@ the 18-point ``3 x 2 x 3`` surface/field-line/``k_y`` set above, and
 single-point exploratory gradients require
 ``--allow-underresolved-sample-set``. Such exploratory gradients are not valid
 admission evidence for long nonlinear audits.
+
+On 16 GB GPUs, keep ``--surface-gradient-chunk-size 1`` for the 18-point
+production contract. It computes raw residual gradients one surface at a time,
+combines them with the original weighted-mean sample weights, and applies the
+scalar transform once after aggregation. This is mathematically the same
+weighted-mean gradient path for ``mean``/``weighted_mean`` reductions, but it
+avoids materializing the full 18-sample reverse pass in one GPU allocation.
 
 After a sensitive diagnostic, generate bounded projected candidate inputs with:
 

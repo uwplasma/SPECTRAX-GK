@@ -6,6 +6,7 @@ from pathlib import Path
 import sys
 from types import SimpleNamespace
 
+import numpy as np
 import pytest
 
 
@@ -97,3 +98,75 @@ def test_gradient_diagnostic_records_sample_coverage(tmp_path: Path, monkeypatch
     assert payload["objective_sample_summary"]["passed"] is True
     assert payload["objective_sample_summary"]["sample_count"] == 18
     assert payload["nonlinear_audit_policy"]["recommended_ky_values"] == [0.1, 0.3, 0.5]
+
+
+def test_gradient_diagnostic_surface_chunking_aggregates_raw_weighted_gradient(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    class FakeOptimizer:
+        _specs = (SimpleNamespace(name="rc01"), SimpleNamespace(name="zs01"))
+
+        def __init__(self, residual: float, residual_gradient: np.ndarray) -> None:
+            self.residual = float(residual)
+            self.residual_gradient = np.asarray(residual_gradient, dtype=float)
+
+        def residual_fun(self, _params):
+            return np.asarray([self.residual], dtype=float)
+
+        def objective_and_gradient_fun(self, _params):
+            return 0.5 * self.residual**2, self.residual * self.residual_gradient
+
+    by_surface = {
+        0.45: (1.0, np.asarray([2.0, 0.0])),
+        0.64: (3.0, np.asarray([4.0, 0.0])),
+        0.78: (5.0, np.asarray([6.0, 0.0])),
+    }
+    seen_surfaces: list[float] = []
+
+    def fake_stage_builder(args):
+        assert args.spectrax_objective_transform == "raw"
+        assert args.transport_weight == 1.0
+        assert len(args.surfaces) == 1
+        surface = round(float(args.surfaces[0]), 2)
+        seen_surfaces.append(surface)
+        residual, gradient = by_surface[surface]
+        return (
+            SimpleNamespace(
+                specs=FakeOptimizer._specs,
+                optimizer=FakeOptimizer(residual, gradient),
+            ),
+            {"surfaces": [surface]},
+        )
+
+    monkeypatch.setattr(mod, "_build_stage", fake_stage_builder)
+
+    rc = mod.main(
+        [
+            "--input",
+            str(tmp_path / "input.final"),
+            "--out-json",
+            str(tmp_path / "gradient.json"),
+            "--surface-gradient-chunk-size",
+            "1",
+        ]
+    )
+
+    payload = json.loads((tmp_path / "gradient.json").read_text(encoding="utf-8"))
+    expected_raw = (1.0 + 3.0 + 5.0) / 3.0
+    expected_raw_gradient = (np.asarray([2.0, 0.0]) + np.asarray([4.0, 0.0]) + np.asarray([6.0, 0.0])) / 3.0
+    expected_residual = np.log1p(expected_raw)
+    expected_residual_gradient = expected_raw_gradient / (1.0 + expected_raw)
+    expected_cost_gradient = expected_residual * expected_residual_gradient
+
+    assert rc == 0
+    assert seen_surfaces == [0.45, 0.64, 0.78]
+    assert payload["chunked_gradient"]["enabled"] is True
+    assert payload["chunked_gradient"]["chunk_count"] == 3
+    assert payload["chunked_gradient"]["raw_weighted_residual"] == pytest.approx(expected_raw)
+    assert payload["chunked_gradient"]["raw_weighted_gradient_norm_l2"] == pytest.approx(
+        np.linalg.norm(expected_raw_gradient)
+    )
+    assert payload["residual_norm_l2"] == pytest.approx(expected_residual)
+    assert payload["gradient_norm_l2"] == pytest.approx(np.linalg.norm(expected_cost_gradient))
+    assert payload["top_gradient_components"][0]["name"] == "rc01"
