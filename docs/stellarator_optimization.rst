@@ -336,6 +336,29 @@ the shipped panel without requiring large transient ``tools_out`` artifacts.
    constraint-preserving/projection admission method produces a solved WOUT that
    keeps the aspect, profile-iota, and quasisymmetry margins.
 
+The compact status panel combines that admission result with the reduced
+growth-rate/quasilinear line-search diagnostics, the quasilinear model-selection
+status, and the long-window nonlinear audit anchor:
+
+.. code-block:: bash
+
+   python tools/build_vmec_jax_qa_transport_optimization_status.py --pdf
+
+.. figure:: _static/vmec_jax_qa_transport_optimization_status.png
+   :alt: VMEC-JAX QA plus SPECTRAX-GK transport optimization status
+   :width: 100%
+
+   Fail-closed max-mode-5 QA transport-optimization status. The QA
+   solved-equilibrium branch passes the aspect/iota/QS gate. The direct scalar
+   transport-residual branch is blocked because it breaks solved-equilibrium
+   gates. The projected transport step preserves those gates but worsens the
+   reduced nonlinear-window metric by ``0.38%`` in the tracked metric-evaluation
+   artifact, so it is not promoted. The quasilinear model-selection entry is a
+   scoped model-development result, not a universal absolute-flux predictor.
+   The nonlinear heat-flux bar pair is the separate replicated long-window
+   audit anchor used to keep optimized-equilibrium transport claims distinct
+   from reduced-objective optimization attempts.
+
 For restart sweeps from an already optimized ``input.final``, pass
 ``--disable-mode-continuation`` to
 ``examples/optimization/vmec_jax_qa_low_turbulence_optimization.py``. That

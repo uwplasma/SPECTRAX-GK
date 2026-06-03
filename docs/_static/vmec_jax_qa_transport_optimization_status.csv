@@ -1,0 +1,11 @@
+section,label,passed,metric,relative_change,objective_kind
+candidate,QA max_mode=5 baseline,True,nan,,constraints_only
+candidate,projected transport step,True,0.06116865407774504,,constraint_preserving_projected_nonlinear_window_metric
+candidate,direct scalar transport,False,nan,,scalar_transport_residual
+line_search,growth,True,0.3039503792073248,0.0004950742332255541,growth
+line_search,quasilinear_flux,True,0.8850873757682598,0.00220170083056736,quasilinear_flux
+quasilinear_model,absolute_growth_mixing_length,False,3.3245843428684867,,simple_saturation_rule
+quasilinear_model,linear_weight,False,2.6801413240896292,,simple_saturation_rule
+quasilinear_model,positive_mixing_length,False,2.114098664675138,,simple_saturation_rule
+quasilinear_model,spectral_envelope_ridge,True,0.29524327596674427,,model_selection_status
+long_window_nonlinear_audit,optimized_vs_baseline,True,10.19273263179093,0.1844401904195982,matched_baseline_to_optimized_replicated_nonlinear_transport_audit

@@ -1,0 +1,195 @@
+{
+  "kind": "vmec_jax_qa_transport_optimization_status",
+  "claim_scope": "max_mode=5 VMEC-JAX QA/SPECTRAX-GK optimization status; solved-equilibrium gates, reduced line searches, quasilinear model-development diagnostics, and long-window nonlinear audit anchors are reported separately",
+  "inputs": {
+    "constraints_dir": "tools_out/vmec_jax_qa_transport_authoritative_sidecar/constraints",
+    "direct_transport_dir": "tools_out/vmec_jax_qa_transport_authoritative_sidecar/transport",
+    "projected_baseline_dir": "tools_out/multisample_projected_line_search_smoke_grid_compatible/baseline_transport_metric_eval",
+    "projected_step_dir": "tools_out/multisample_projected_line_search_smoke_grid_compatible/step_1p0em04/transport_metric_eval",
+    "line_search_json": "docs/_static/vmec_boozer_aggregate_line_search_comparison.json",
+    "ql_rule_json": "docs/_static/quasilinear_saturation_rule_sweep.json",
+    "ql_model_json": "docs/_static/quasilinear_model_selection_status.json",
+    "nonlinear_audit_json": "docs/_static/qa_no_ess_to_optimized_nonlinear_audit.json"
+  },
+  "projected_baseline": {
+    "label": "projected baseline metric",
+    "root": "tools_out/multisample_projected_line_search_smoke_grid_compatible/baseline_transport_metric_eval",
+    "objective_kind": "baseline_nonlinear_window_metric",
+    "passed_solved_wout_gate": true,
+    "aspect_final": 5.999232723441375,
+    "iota_final": 0.4278228599349674,
+    "qs_final": 0.0019658697953045196,
+    "objective_initial": 0.0019664607286222447,
+    "objective_final": 0.0019664607286222447,
+    "transport_metric_final": 0.06093621913731924,
+    "transport_metric_kind": "nonlinear_window_heat_flux",
+    "total_wall_time_s": 64.55930512499617,
+    "gate_checks": {
+      "aspect": true,
+      "mean_iota": true,
+      "iota_profile": true,
+      "quasisymmetry": true
+    },
+    "gate_margins": {
+      "aspect": 0.04923272344137537,
+      "mean_iota": 0.017822859934967406,
+      "iota_profile": 0.006006897945722511,
+      "quasisymmetry": 0.04821979134483298
+    },
+    "next_action": "candidate may proceed to matched long-window nonlinear transport audits"
+  },
+  "candidates": [
+    {
+      "label": "QA max_mode=5 baseline",
+      "root": "tools_out/vmec_jax_qa_transport_authoritative_sidecar/constraints",
+      "objective_kind": "constraints_only",
+      "passed_solved_wout_gate": true,
+      "aspect_final": 6.000183609867784,
+      "iota_final": 0.4270411353710809,
+      "qs_final": 0.0015893993622550827,
+      "objective_initial": 0.008551784313986432,
+      "objective_final": 0.0016065522644580534,
+      "transport_metric_final": null,
+      "transport_metric_kind": null,
+      "total_wall_time_s": 310.6940215304494,
+      "gate_checks": {
+        "aspect": true,
+        "mean_iota": true,
+        "iota_profile": true,
+        "quasisymmetry": true
+      },
+      "gate_margins": {
+        "aspect": 0.04981639013221635,
+        "mean_iota": 4.1135371080913696e-05,
+        "iota_profile": 0.0037549933138127933,
+        "quasisymmetry": 0.04841060063774492
+      },
+      "next_action": "candidate may proceed to matched long-window nonlinear transport audits"
+    },
+    {
+      "label": "projected transport step",
+      "root": "tools_out/multisample_projected_line_search_smoke_grid_compatible/step_1p0em04/transport_metric_eval",
+      "objective_kind": "constraint_preserving_projected_nonlinear_window_metric",
+      "passed_solved_wout_gate": true,
+      "aspect_final": 5.999292560961836,
+      "iota_final": 0.42757645206236483,
+      "qs_final": 0.0022924259588802095,
+      "objective_initial": 0.0022929808530679,
+      "objective_final": 0.0022929808530679,
+      "transport_metric_final": 0.06116865407774504,
+      "transport_metric_kind": "nonlinear_window_heat_flux",
+      "total_wall_time_s": 66.6615939589974,
+      "gate_checks": {
+        "aspect": true,
+        "mean_iota": true,
+        "iota_profile": true,
+        "quasisymmetry": true
+      },
+      "gate_margins": {
+        "aspect": 0.04929256096183572,
+        "mean_iota": 0.017576452062364856,
+        "iota_profile": 0.004376818139659788,
+        "quasisymmetry": 0.04789465425320304
+      },
+      "next_action": "candidate may proceed to matched long-window nonlinear transport audits"
+    },
+    {
+      "label": "direct scalar transport",
+      "root": "tools_out/vmec_jax_qa_transport_authoritative_sidecar/transport",
+      "objective_kind": "scalar_transport_residual",
+      "passed_solved_wout_gate": false,
+      "aspect_final": 6.101980940984345,
+      "iota_final": 0.46367560547498066,
+      "qs_final": 9.98760837205291,
+      "objective_initial": 97.76238144635631,
+      "objective_final": 44.245475330282865,
+      "transport_metric_final": null,
+      "transport_metric_kind": null,
+      "total_wall_time_s": 107.50070590898395,
+      "gate_checks": {
+        "aspect": false,
+        "mean_iota": true,
+        "iota_profile": false,
+        "quasisymmetry": false
+      },
+      "gate_margins": {
+        "aspect": -0.051980940984344845,
+        "mean_iota": 0.036675605474980666,
+        "iota_profile": -0.09704196434038681,
+        "quasisymmetry": -9.93760837201299
+      },
+      "next_action": "do not promote this candidate; refine constraints or reduce/re-scale the transport residual"
+    }
+  ],
+  "line_search_rows": [
+    {
+      "objective": "growth",
+      "passed": true,
+      "initial_objective": 0.3041009317429306,
+      "final_objective": 0.3039503792073248,
+      "relative_reduction": 0.0004950742332255541,
+      "initial_update_direction": "positive_delta"
+    },
+    {
+      "objective": "quasilinear_flux",
+      "passed": true,
+      "initial_objective": 0.8870403732948899,
+      "final_objective": 0.8850873757682598,
+      "relative_reduction": 0.00220170083056736,
+      "initial_update_direction": "negative_delta"
+    }
+  ],
+  "quasilinear_model_rows": [
+    {
+      "model": "absolute_growth_mixing_length",
+      "label": "$|\\gamma|\\,\\hat Q/k_\\perp^2$",
+      "source": "simple_saturation_rule",
+      "mean_abs_relative_error": 3.3245843428684867,
+      "passed": false
+    },
+    {
+      "model": "linear_weight",
+      "label": "$\\hat Q$",
+      "source": "simple_saturation_rule",
+      "mean_abs_relative_error": 2.6801413240896292,
+      "passed": false
+    },
+    {
+      "model": "positive_mixing_length",
+      "label": "$\\max(\\gamma,0)\\,\\hat Q/k_\\perp^2$",
+      "source": "simple_saturation_rule",
+      "mean_abs_relative_error": 2.114098664675138,
+      "passed": false
+    },
+    {
+      "model": "spectral_envelope_ridge",
+      "label": "spectral envelope ridge",
+      "source": "model_selection_status",
+      "mean_abs_relative_error": 0.29524327596674427,
+      "passed": true
+    }
+  ],
+  "long_window_nonlinear_audit": {
+    "passed": true,
+    "baseline_mean": 12.497835857108996,
+    "optimized_mean": 10.19273263179093,
+    "relative_reduction": 0.1844401904195982,
+    "uncertainty_separation_sigma": 7.819308425110687,
+    "claim_level": "matched_baseline_to_optimized_replicated_nonlinear_transport_audit"
+  },
+  "summary": {
+    "qa_baseline_gate_passed": true,
+    "direct_scalar_transport_gate_passed": false,
+    "direct_scalar_transport_blocked": true,
+    "projected_transport_gate_passed": true,
+    "projected_transport_relative_metric_change": 0.0038143971469909088,
+    "projected_transport_improved": false,
+    "quasilinear_model_selection_passed": true,
+    "simple_quasilinear_absolute_flux_promoted": false,
+    "long_window_nonlinear_audit_passed": true,
+    "blocked_candidates": [
+      "direct scalar transport"
+    ],
+    "next_action": "Use the passing QA baseline and any constraint-preserving candidates for long-window nonlinear audits; do not promote direct scalar transport branches that fail aspect/iota/QS gates."
+  }
+}
