@@ -250,6 +250,32 @@ def _q_traces(root: Path) -> list[dict[str, Any]]:
     return traces
 
 
+def _audit_case_token(case_id: str) -> str:
+    return (
+        "vmec_qa_full_sweep_"
+        + case_id.replace("/", "_")
+        .replace(".", "p")
+        .replace("-", "m")
+        .replace("+", "p")
+    )
+
+
+def _nonlinear_audit_command(wout_path: Path | None, case_id: str) -> str | None:
+    if wout_path is None or not wout_path.exists():
+        return None
+    token = _audit_case_token(case_id)
+    out_dir = ROOT / "tools_out" / "vmec_qa_full_sweep_nonlinear_audits" / token
+    return (
+        "python tools/write_optimized_equilibrium_transport_configs.py "
+        f"--vmec-file {_repo_relative(wout_path)} "
+        f"--case {token} "
+        f"--out-dir {_repo_relative(out_dir)} "
+        "--horizons 700 "
+        "--grid n64:64:64:40:40 "
+        "--window-tmin 350 --window-tmax 700"
+    )
+
+
 def _case_label(case_id: str) -> str:
     if case_id in CASE_LABELS:
         return CASE_LABELS[case_id]
@@ -306,6 +332,10 @@ def _row_from_run(root: Path, *, campaign_root: Path, runs_root: Path) -> dict[s
         "gate_blockers": _gate_blockers(gate),
         "iota_profile": iota_profile,
         "q_traces": _q_traces(root),
+        "recommended_nonlinear_audit_command": _nonlinear_audit_command(
+            wout_path if wout_path.exists() else None,
+            case_id,
+        ),
     }
 
 

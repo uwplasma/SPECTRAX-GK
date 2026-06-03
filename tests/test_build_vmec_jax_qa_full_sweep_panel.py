@@ -102,6 +102,20 @@ def test_q_trace_csv_is_used_only_when_present(tmp_path: Path) -> None:
     assert row["q_traces"][0]["late_window_tmin"] == 2.0
 
 
+def test_completed_wout_rows_include_reproducible_nonlinear_audit_command(tmp_path: Path) -> None:
+    case = tmp_path / "campaign" / "runs" / "nonlinear_window_scalar_trust"
+    _write_case(case, objective_final=0.4, transport_metric=0.08)
+    (case / "wout_final.nc").write_bytes(b"not-a-real-netcdf-needed-for-command-test")
+
+    payload = mod.build_payload(tmp_path / "campaign")
+    [row] = payload["cases"]
+
+    command = row["recommended_nonlinear_audit_command"]
+    assert "write_optimized_equilibrium_transport_configs.py" in command
+    assert "vmec_qa_full_sweep_nonlinear_window_scalar_trust" in command
+    assert "--window-tmin 350 --window-tmax 700" in command
+
+
 def test_plot_payload_handles_missing_wouts_and_writes_panel(tmp_path: Path) -> None:
     run_root = tmp_path / "campaign"
     _write_case(run_root / "runs" / "qa_baseline_scipy", objective_final=1.2)
