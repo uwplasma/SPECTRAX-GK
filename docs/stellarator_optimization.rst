@@ -126,6 +126,22 @@ is a useful, trace-safe design residual, but the full eigenfunction-weight
 adjoint remains a promotion gate before claiming fully differentiated absolute
 quasilinear or nonlinear turbulent flux optimization.
 
+The VMEC-JAX-style transport scripts default to ``METHOD = "scalar_trust"``.
+This is intentional: SPECTRAX-GK transport residuals include reverse-mode
+custom-VJP components, while the pure VMEC-JAX dense ``scipy``/``exact`` path
+requests forward-mode JVP columns. The recommended paper workflow is two-stage:
+
+1. Run the upstream QA baseline and verify the solved aspect-ratio,
+   mean-iota, quasisymmetry, WOUT, LCFS ``|B|``, and Boozer ``|B|`` outputs.
+2. Restart from that solved input/WOUT with a small transport weight, a
+   scalar-adjoint optimizer, and explicit AD/finite-difference gradient gates.
+3. Promote a candidate only after matched long-window nonlinear audits show a
+   statistically resolved post-transient heat-flux reduction.
+
+Therefore the scripts demonstrate how to append a differentiable SPECTRAX-GK
+transport objective to VMEC-JAX QA optimization; by themselves they are not a
+transport-optimization success claim.
+
 Configurable Solved-Boundary Driver
 -----------------------------------
 

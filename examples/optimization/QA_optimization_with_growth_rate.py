@@ -59,7 +59,7 @@ STAGE_MODES = vj.qs_stage_modes(
 )
 
 # Optimizer parameters.
-METHOD = "scipy"  # Try also "auto", "auto_scalar", "gauss_newton", "scipy_matrix_free", or "scalar_trust".
+METHOD = "scalar_trust"  # SPECTRAX transport uses custom VJP; dense scipy exact asks for JVP columns.
 SCIPY_TR_SOLVER = "exact"  # For METHOD="scipy": "lsmr" is memory-light; "exact" is dense.
 SCIPY_LSMR_MAXITER = None  # For scipy_matrix_free, None uses vmec_jax's bounded cap of 4.
 FTOL = 1.0e-5  # Relative cost-reduction tolerance for the outer optimizer.
@@ -75,8 +75,8 @@ SOLVER_DEVICE = None  # None uses JAX default; set "cpu" or "gpu" to force one b
 USE_ESS = True  # Set False for an unscaled trust-region solve.
 ALPHA = 1.2  # ESS high-mode scaling strength.
 # Common alternatives:
-# METHOD = "gauss_newton"
 # METHOD = "lbfgs_adjoint"
+# METHOD = "scipy"  # Pure VMEC-JAX QA only; transport objectives need scalar-adjoint AD.
 # USE_SIMPLE_SEED = False
 # USE_MODE_CONTINUATION = False
 # STAGE_MODES = [MAX_MODE]

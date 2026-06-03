@@ -7,6 +7,36 @@ Current public baseline: `main` at v1.6.0, with the historical ship-readiness lo
 
 This file is both the active plan and the running log. Keep entries concise, dated, and tied to artifacts, tests, and figures.
 
+## 2026-06-03 VMEC-JAX QA Transport Script Audit
+
+- Pulled the latest local optional backends used for the VMEC/SPECTRAX
+  bridge: ``vmec_jax_latest`` reached upstream commit ``0faa770`` and
+  ``booz_xform_jax`` reached commit ``1d5e8c8``.
+- Re-ran the authoritative upstream
+  ``vmec_jax/examples/optimization/QA_optimization.py`` locally under a
+  600 s cap. It completed in about ``356`` s and produced the expected solved
+  QA baseline: aspect ``5.000192``, mean-iota objective ``0.410000``, QS
+  objective ``4.479e-4``, and non-axisymmetric nfp=2 LCFS/Boozer ``|B|``
+  plots. The WOUT ``iotaf`` profile spans roughly ``0.396..0.420``; the
+  upstream script therefore enforces the mean-iota objective, not a strict
+  minimum-iota-everywhere condition.
+- Tested the exact SPECTRAX growth-rate script with its previous
+  ``METHOD = "scipy"`` default. It failed through the VMEC-JAX dense exact
+  path with ``can't apply forward-mode autodiff (jvp) to a custom_vjp
+  function`` and returned the simple-seed initial point.
+- Tested reverse-mode-compatible refinements with ``lbfgs_adjoint`` and
+  ``scalar_trust``. Both preserve the solved QA baseline when restarted from
+  the upstream ``input.final`` but did not produce a resolved transport
+  objective reduction in the bounded local probes.
+- Updated the three VMEC-JAX-style SPECTRAX scripts to default to
+  ``METHOD = "scalar_trust"`` and documented the two-stage workflow: solve the
+  upstream QA baseline first, then refine with a small transport residual and
+  require AD/finite-difference gradient gates plus matched long-window
+  nonlinear audits before making any transport-optimization claim.
+- Next best step: add a tracked finite-difference/adjoint admission utility for
+  the exact QA scripts using solved QA WOUTs, then use office for heavier
+  multi-sample transport refinements only after the local gradient gate passes.
+
 ## Current Goal
 
 Bake a research-grade quasilinear transport capability into SPECTRAX-GK and use it as the reduced-model layer for differentiable stellarator optimization. The work must remain honest about what quasilinear theory can and cannot claim: linear weights and sensitivities can be exact within the implemented model; absolute saturated flux prediction requires saturation-rule calibration and nonlinear validation.

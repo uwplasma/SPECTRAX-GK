@@ -38,6 +38,16 @@ Keep `SPECTRAX_WEIGHT` small while tuning. The QA/aspect/iota terms must remain
 the dominant solved-equilibrium gate before any final WOUT is sent to expensive
 long-window nonlinear transport audits.
 
+The scripts default to `METHOD = "scalar_trust"` because the SPECTRAX-GK
+transport residual contains reverse-mode custom-VJP pieces. The pure VMEC-JAX
+QA script can use dense `scipy`/`exact`, but that path asks for forward-mode
+JVP columns and is not the right default once the SPECTRAX-GK transport tuple is
+active. For research runs, use a two-stage workflow: solve and verify the
+upstream QA baseline first, then refine from that solved input/WOUT with
+transport weight, AD/finite-difference gradient gates, and matched nonlinear
+audits. Running one of these scripts is not a transport-optimization success
+claim until those gates pass.
+
 ## Three Reduced ITG Optimization Examples
 
 From the repository root:
