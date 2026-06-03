@@ -111,7 +111,7 @@ def _case_sort_key(row: dict[str, Any]) -> tuple[int, str]:
 def _campaign_root(run_root: Path) -> Path:
     if (run_root / "runs").is_dir():
         return run_root
-    if run_root.name == "runs":
+    if run_root.name in {"runs", "runs_onepoint"}:
         return run_root.parent
     return run_root
 
@@ -132,9 +132,15 @@ def discover_run_dirs(run_root: Path) -> list[Path]:
 def _status_text(campaign_root: Path, case_id: str) -> str:
     status = campaign_root / "logs" / f"{case_id}.status"
     if not status.exists():
+        status = campaign_root / "logs_onepoint" / f"{case_id}.status"
+    if not status.exists():
         return "unknown"
     lines = [line.strip() for line in status.read_text(encoding="utf-8").splitlines() if line.strip()]
     return lines[-1] if lines else "unknown"
+
+
+def _status_completed(status: str) -> bool:
+    return " END " in f" {status} " and "rc=0" in status
 
 
 def _objective_series(history: dict[str, Any]) -> list[float]:
@@ -260,8 +266,8 @@ def _audit_case_token(case_id: str) -> str:
     )
 
 
-def _nonlinear_audit_command(wout_path: Path | None, case_id: str) -> str | None:
-    if wout_path is None or not wout_path.exists():
+def _nonlinear_audit_command(wout_path: Path | None, case_id: str, *, run_completed: bool) -> str | None:
+    if not run_completed or wout_path is None or not wout_path.exists():
         return None
     token = _audit_case_token(case_id)
     out_dir = ROOT / "tools_out" / "vmec_qa_full_sweep_nonlinear_audits" / token
@@ -300,11 +306,14 @@ def _row_from_run(root: Path, *, campaign_root: Path, runs_root: Path) -> dict[s
     wout_path = root / "wout_final.nc"
     iota_profile = _load_iota_profile_from_wout(wout_path)
     transport_kind = history.get("transport_metric_kind", setup.get("transport_kind"))
+    status = _status_text(campaign_root, case_id.split("/")[-1])
+    run_completed = _status_completed(status)
     return {
         "case_id": case_id,
         "label": _case_label(case_id),
         "root": _repo_relative(root),
-        "status": _status_text(campaign_root, case_id.split("/")[-1]),
+        "status": status,
+        "run_completed": run_completed,
         "setup": setup,
         "has_wout_final": wout_path.exists(),
         "wout_final": _repo_relative(wout_path) if wout_path.exists() else None,
@@ -335,6 +344,7 @@ def _row_from_run(root: Path, *, campaign_root: Path, runs_root: Path) -> dict[s
         "recommended_nonlinear_audit_command": _nonlinear_audit_command(
             wout_path if wout_path.exists() else None,
             case_id,
+            run_completed=run_completed,
         ),
     }
 
@@ -350,7 +360,11 @@ def build_payload(run_root: Path = DEFAULT_RUN_ROOT) -> dict[str, Any]:
         for root in discover_run_dirs(run_root)
     ]
     rows.sort(key=_case_sort_key)
-    completed = [row for row in rows if bool(row["has_wout_final"])]
+    completed = [
+        row
+        for row in rows
+        if bool(row["run_completed"]) and bool(row["has_wout_final"])
+    ]
     with_q = [row for row in rows if row["q_traces"]]
     return {
         "kind": "vmec_jax_qa_full_max_mode5_sweep",
@@ -382,12 +396,12 @@ def _selected_rows(rows: list[dict[str, Any]], *, max_count: int = 4) -> list[di
     by_id = {str(row["case_id"]): row for row in rows}
     for case_id in PREFERRED_SURFACE_IDS:
         row = by_id.get(case_id)
-        if row is not None and bool(row.get("has_wout_final")):
+        if row is not None and bool(row.get("run_completed")) and bool(row.get("has_wout_final")):
             selected.append(row)
     for row in rows:
         if len(selected) >= max_count:
             break
-        if bool(row.get("has_wout_final")) and row not in selected:
+        if bool(row.get("run_completed")) and bool(row.get("has_wout_final")) and row not in selected:
             selected.append(row)
     return selected[:max_count]
 
@@ -439,16 +453,19 @@ def _resolved_path(raw: str | None) -> Path | None:
 
 def _plot_summary_table(ax: plt.Axes, rows: list[dict[str, Any]]) -> None:
     ax.axis("off")
-    lines = ["case                         A      iota      QS        transport       gate"]
+    lines = ["case                         A      iota      QS        transport       status"]
     for row in rows[:8]:
         hist = row["history"]
-        gate = "pass" if row["gate_passed"] is True else ("fail" if row["gate_passed"] is False else "n/a")
+        if not row.get("run_completed"):
+            status = "running"
+        else:
+            status = "pass" if row["gate_passed"] is True else ("fail" if row["gate_passed"] is False else "n/a")
         transport = hist["transport_metric_final"]
         transport_text = f"{transport:9.2e}" if math.isfinite(transport) else "    n/a  "
         lines.append(
             f"{str(row['case_id'])[:26]:26s} "
             f"{hist['aspect_final']:6.3g} {hist['iota_final']:8.3g} "
-            f"{hist['qs_final']:8.2e} {transport_text:>13s} {gate:>6s}"
+            f"{hist['qs_final']:8.2e} {transport_text:>13s} {status:>8s}"
         )
     ax.text(
         0.01,

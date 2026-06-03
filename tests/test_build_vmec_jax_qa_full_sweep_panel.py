@@ -22,6 +22,7 @@ def _write_case(
     objective_final: float,
     transport_metric: float | None = None,
     gate_passed: bool = True,
+    completed: bool = True,
 ) -> None:
     root.mkdir(parents=True, exist_ok=True)
     history = {
@@ -58,6 +59,13 @@ def _write_case(
         ),
         encoding="utf-8",
     )
+    campaign = root.parent.parent if root.parent.name in {"runs", "runs_onepoint"} else root.parent
+    log_dir = campaign / ("logs_onepoint" if root.parent.name == "runs_onepoint" else "logs")
+    log_dir.mkdir(parents=True, exist_ok=True)
+    lines = [f"[now] START {root.name} gpu=0"]
+    if completed:
+        lines.append(f"[now] END {root.name} rc=0")
+    (log_dir / f"{root.name}.status").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 def test_build_payload_discovers_completed_cases_without_faking_q_traces(tmp_path: Path) -> None:
@@ -69,7 +77,7 @@ def test_build_payload_discovers_completed_cases_without_faking_q_traces(tmp_pat
         transport_metric=0.25,
         gate_passed=False,
     )
-    (run_root / "logs").mkdir()
+    (run_root / "logs").mkdir(exist_ok=True)
     (run_root / "logs" / "growth_scalar_trust.status").write_text(
         "[now] START growth_scalar_trust gpu=1\n",
         encoding="utf-8",
@@ -114,6 +122,31 @@ def test_completed_wout_rows_include_reproducible_nonlinear_audit_command(tmp_pa
     assert "write_optimized_equilibrium_transport_configs.py" in command
     assert "vmec_qa_full_sweep_nonlinear_window_scalar_trust" in command
     assert "--window-tmin 350 --window-tmax 700" in command
+
+
+def test_in_progress_wout_is_not_promoted_to_completed_or_audit_ready(tmp_path: Path) -> None:
+    case = tmp_path / "campaign" / "runs" / "quasilinear_scalar_trust"
+    _write_case(case, objective_final=0.9, transport_metric=0.2, completed=False)
+    (case / "wout_final.nc").write_bytes(b"partial-output")
+
+    payload = mod.build_payload(tmp_path / "campaign")
+    [row] = payload["cases"]
+
+    assert payload["summary"]["n_completed_wouts"] == 0
+    assert row["run_completed"] is False
+    assert row["recommended_nonlinear_audit_command"] is None
+
+
+def test_runs_onepoint_root_uses_parent_status_directory(tmp_path: Path) -> None:
+    case = tmp_path / "campaign" / "runs_onepoint" / "qa_baseline_scipy"
+    _write_case(case, objective_final=1.1)
+    (case / "wout_final.nc").write_bytes(b"fake-wout")
+
+    payload = mod.build_payload(tmp_path / "campaign" / "runs_onepoint")
+    [row] = payload["cases"]
+
+    assert row["run_completed"] is True
+    assert payload["summary"]["completed_case_ids"] == ["qa_baseline_scipy"]
 
 
 def test_plot_payload_handles_missing_wouts_and_writes_panel(tmp_path: Path) -> None:
