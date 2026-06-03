@@ -36,6 +36,15 @@ This file is both the active plan and the running log. Keep entries concise, dat
 - Next best step: add a tracked finite-difference/adjoint admission utility for
   the exact QA scripts using solved QA WOUTs, then use office for heavier
   multi-sample transport refinements only after the local gradient gate passes.
+- Follow-up bounded local gate using
+  ``tools/build_vmec_jax_transport_gradient_diagnostic.py`` on the solved QA
+  ``input.final`` with ``s=0.64``, ``alpha=0``, ``ky=0.3`` and FD indices
+  ``27,28`` exited with code ``3`` as intended. The reverse gradient is finite
+  and nonzero (L2 norm ``0.380``), but AD/FD consistency fails:
+  ``zs13`` has relative cost-gradient error ``0.107`` and ``rc14`` has the
+  wrong sign with relative error ``1.20``. Therefore real VMEC-JAX transport
+  optimization remains blocked on boundary-chain AD/FD consistency, not on
+  optimizer selection or plotting.
 
 ## Current Goal
 
