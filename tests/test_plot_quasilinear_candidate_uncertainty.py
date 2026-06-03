@@ -198,3 +198,29 @@ def test_candidate_uncertainty_can_be_run_as_unvalidated_development_audit(
     assert report["input_validation"]["passed"] is None
     assert report["claim_level"] == "candidate_model_development_not_runtime_option"
     assert report["promotion_gate"]["requires_candidate_eligibility"] is True
+
+
+def test_tracked_candidate_uncertainty_sidecar_accepts_only_spectral_envelope() -> None:
+    """Lock the scoped quasilinear model-development claim to the tracked artifact."""
+
+    root = Path(__file__).resolve().parents[1]
+    payload = json.loads(
+        (root / "docs/_static/quasilinear_candidate_uncertainty.json").read_text(encoding="utf-8")
+    )
+    gate = payload["promotion_gate"]
+    candidates = payload["candidates"]
+    spectral = candidates["spectral_envelope_ridge"]
+    linear = candidates["linear_weight"]
+    state = candidates["linear_state_ridge"]
+    null = payload["null_training_mean_baseline"]
+
+    assert payload["claim_level"] == "candidate_model_development_not_runtime_option"
+    assert gate["passed"] is True
+    assert gate["accepted_candidates"] == ["spectral_envelope_ridge"]
+    assert spectral["promotion_eligible"] is True
+    assert spectral["mean_abs_relative_error"] <= gate["transport_mean_relative_error_gate"]
+    assert spectral["mean_abs_relative_error"] < linear["mean_abs_relative_error"]
+    assert spectral["mean_abs_relative_error"] < null["mean_abs_relative_error"]
+    assert spectral["prediction_interval_coverage"] >= gate["interval_coverage_gate"]
+    assert state["promotion_eligible"] is False
+    assert state["eligibility_failures"] == ["insufficient_train_to_parameter_ratio"]
