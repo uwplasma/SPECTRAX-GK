@@ -104,16 +104,13 @@ def test_equal_arc_interpolation_keeps_value_gradients_finite() -> None:
         values = (1.0 + scale) * jnp.cos(theta_base)
         return jnp.mean(_interp_equal_arc_profile(theta_uniform, theta_equal_arc, values))
 
-    grad = jax.grad(remapped_mean)(jnp.asarray(0.2))
-    frozen_theta_equal_arc = theta_base + 0.05 * 0.2 * jnp.sin(theta_base)
-    expected = jnp.mean(jnp.interp(theta_uniform, frozen_theta_equal_arc, jnp.cos(theta_base)))
+    scale = jnp.asarray(0.2)
+    step = jnp.asarray(1.0e-3)
+    grad = jax.grad(remapped_mean)(scale)
+    fd = (remapped_mean(scale + step) - remapped_mean(scale - step)) / (2.0 * step)
 
     assert np.isfinite(float(grad))
-    assert float(grad) == pytest.approx(
-        float(expected),
-        rel=1.0e-6,
-        abs=1.0e-7,
-    )
+    assert float(grad) == pytest.approx(float(fd), rel=2.0e-3, abs=2.0e-5)
 
 
 def test_flux_tube_geometry_from_vmec_boozer_state_wraps_in_memory_bridge(

@@ -354,12 +354,14 @@ promoted, because branch changes, Boozer replay memory pressure, or
 ill-conditioned equilibria can invalidate an otherwise correct local
 eigenvalue derivative.
 
-The equal-arc VMEC/Boozer remap uses a stable reverse rule for the interpolation
-step: gradients flow through the Boozer field values on the equal-arc grid, but
-not through the moving interpolation abscissa. This preserves the primal
-paper-facing geometry convention while avoiding nonfinite JAX cotangents at
-closed-grid endpoint knots. Treat this as an optimization-gradient convention,
-not as a replacement for the sparse finite-difference checks above.
+The equal-arc VMEC/Boozer remap keeps the moving-coordinate sensitivity in the
+SPECTRAX-GK geometry path. Office diagnostics showed that nonfinite geometry
+cotangents originated one level upstream in ``booz_xform_jax`` inactive Fourier
+branches; safe denominators in those branches make VMEC state, Boozer input,
+Boozer output, and SPECTRAX-GK geometry profile gradients finite. This is still
+not sufficient for promotion: the boundary-level VMEC-JAX adjoint/replay
+gradient must agree with the sparse finite-difference checks above before a
+projected transport update is trusted.
 
 After a sensitive diagnostic, generate bounded projected candidate inputs with:
 

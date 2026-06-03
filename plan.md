@@ -149,27 +149,32 @@ The target paper should show:
   full boundary replay still OOMs, the remaining blocker is memory/chunking in
   the VMEC-JAX/Boozer replay rather than the SPECTRAX-GK eigenvalue derivative.
 
-## 2026-06-03 VMEC/Boozer Equal-Arc VJP Repair
+## 2026-06-03 VMEC/Boozer State-Level VJP Repair
 
 - Office localization after the dominant-growth VJP repair showed finite
   geometry and transport values but nonfinite packed-state gradients for every
   VMEC/Boozer equal-arc profile (``bmag``, ``gds*``, ``grho``, and drifts).
-  The identical nonfinite count across all rows localizes the remaining blocker
-  to the equal-arc interpolation coordinate map, not to the linear solver.
-- Added ``_interp_equal_arc_profile`` so primal values still use the
-  paper-facing equal-arc remap, while reverse-mode gradients flow through the
-  interpolated field values and not through the moving interpolation abscissa.
-  This avoids the nonfinite ``jnp.interp`` cotangent at endpoint knots. The
-  omitted coordinate-map sensitivity remains covered by sparse finite-
-  difference gates before any VMEC-JAX transport optimization claim is promoted.
-- Added a unit contract test showing finite value gradients through the
-  equal-arc remap. Focused local result: ``62 passed`` for the VMEC transport
+  A follow-up upstream probe showed VMEC packed-state and ``vmec_jax.booz_input``
+  gradients were finite, while raw ``booz_xform_jax`` output gradients were
+  nonfinite.
+- The source is the Boozer transform ``w`` spectrum reconstruction: inactive
+  ``jnp.where`` branches divided by zero mode numbers, which contaminates JAX
+  reverse-mode even when those branches are not selected. Applying safe
+  denominators in ``booz_xform_jax`` makes raw Boozer coefficient gradients,
+  SPECTRAX-GK geometry profile gradients, and final-state transport-objective
+  VJPs finite on office. The SPECTRAX-GK equal-arc remap keeps coordinate-map
+  sensitivity; an attempted stop-gradient remap stayed finite but did not
+  improve boundary AD/FD consistency and should not be promoted.
+- Added ``_interp_equal_arc_profile`` as a single audited remap helper and a
+  unit contract test comparing its AD gradient against central finite
+  differences. Focused local result: ``62 passed`` for the VMEC transport
   diagnostic/objective and solver-gradient shards; Ruff and ``git diff
   --check`` pass.
-- Next best step: rerun the office geometry-only, final-state VJP, and sparse
-  boundary AD/FD probes. Passing finite state gradients is necessary but not
-  sufficient; the sparse coefficient AD/FD gate must agree before projected
-  VMEC-JAX transport updates can be trusted.
+- Remaining blocker: sparse boundary AD/FD now has finite, nonzero reverse
+  gradients but still fails the four-direction gate. The mismatch is in the
+  VMEC-JAX final-state-to-boundary adjoint/replay path or in the exact-solve
+  differentiation contract, not in SPECTRAX-GK value assembly. Do not use
+  projected VMEC-JAX transport-gradient updates until this gate passes.
 
 ## 2026-06-01 VMEC-JAX QA Transport Objective Fix
 
