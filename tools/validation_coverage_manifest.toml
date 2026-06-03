@@ -1346,6 +1346,7 @@ fast_tests = [
   "tests/test_vmec_jax_transport_gradient.py",
   "tests/test_vmec_jax_transport_line_search.py",
   "tests/test_vmec_jax_transport_objective.py",
+  "tests/test_write_vmec_jax_projected_transport_line_search_inputs.py",
 ]
 artifact_paths = [
   "docs/_static/solver_objective_gradient_gate.json",
