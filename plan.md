@@ -65,6 +65,10 @@ The target paper should show:
   therefore fails closed with ``insufficient_transport_improvement``. This is
   the right outcome: the old single-point gradient direction should not trigger
   a long nonlinear audit under the new multi-sample objective.
+- The transport-gradient diagnostic tool now defaults to the same 18-point
+  sample contract and fails closed for under-resolved exploratory gradients
+  unless explicitly overridden. This prevents future projected candidates from
+  being generated from single-point gradients by accident.
 
 Next best step: regenerate the transport-gradient diagnostic using the full
 18-point sample contract, then run a production-resolution multi-sample

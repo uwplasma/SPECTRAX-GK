@@ -19,6 +19,10 @@ from typing import cast
 import numpy as np
 
 from spectraxgk.stellarator_optimization import StellaratorITGSampleSet
+from spectraxgk.vmec_jax_transport_admission import (
+    VMECJAXNonlinearAuditPolicy,
+    transport_objective_sample_summary,
+)
 from spectraxgk.vmec_jax_transport_gradient import (
     build_boundary_transport_gradient_report,
     write_boundary_transport_gradient_report,
@@ -32,6 +36,10 @@ from spectraxgk.vmec_jax_transport_objective import (
 
 
 ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_AUDIT_POLICY = VMECJAXNonlinearAuditPolicy()
+DEFAULT_TRANSPORT_SURFACES = DEFAULT_AUDIT_POLICY.recommended_surfaces
+DEFAULT_TRANSPORT_ALPHAS = DEFAULT_AUDIT_POLICY.recommended_alphas
+DEFAULT_TRANSPORT_KY_VALUES = DEFAULT_AUDIT_POLICY.recommended_ky_values
 
 
 def _float_tuple(raw: str) -> tuple[float, ...]:
@@ -52,9 +60,14 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument("--max-mode", type=int, default=5, help="Active boundary max mode")
     parser.add_argument("--min-vmec-mode", type=int, default=7, help="VMEC resolution floor")
-    parser.add_argument("--surfaces", type=_float_tuple, default=(0.64,))
-    parser.add_argument("--alphas", type=_float_tuple, default=(0.0,))
-    parser.add_argument("--ky-values", type=_float_tuple, default=(0.30,))
+    parser.add_argument("--surfaces", type=_float_tuple, default=DEFAULT_TRANSPORT_SURFACES)
+    parser.add_argument("--alphas", type=_float_tuple, default=DEFAULT_TRANSPORT_ALPHAS)
+    parser.add_argument("--ky-values", type=_float_tuple, default=DEFAULT_TRANSPORT_KY_VALUES)
+    parser.add_argument(
+        "--allow-underresolved-sample-set",
+        action="store_true",
+        help="Permit exploratory single-point gradients; production gradient admission fails closed by default",
+    )
     parser.add_argument(
         "--transport-kind",
         choices=("growth", "quasilinear_flux", "nonlinear_window_heat_flux"),
@@ -92,6 +105,14 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
+def _sample_set_from_args(args: argparse.Namespace) -> StellaratorITGSampleSet:
+    return StellaratorITGSampleSet(
+        surfaces=tuple(float(x) for x in args.surfaces),
+        alphas=tuple(float(x) for x in args.alphas),
+        ky_values=tuple(float(x) for x in args.ky_values),
+    )
+
+
 def _build_stage(args: argparse.Namespace):
     vj = importlib.import_module("vmec_jax")
     build_stage = getattr(vj, "build_fixed_boundary_objective_stage", None)
@@ -99,11 +120,7 @@ def _build_stage(args: argparse.Namespace):
         workflow = importlib.import_module("vmec_jax.optimization_workflow")
         build_stage = getattr(workflow, "build_fixed_boundary_objective_stage")
 
-    sample_set = StellaratorITGSampleSet(
-        surfaces=tuple(float(x) for x in args.surfaces),
-        alphas=tuple(float(x) for x in args.alphas),
-        ky_values=tuple(float(x) for x in args.ky_values),
-    )
+    sample_set = _sample_set_from_args(args)
     config = VMECJAXTransportObjectiveConfig(
         kind=cast(VMECJAXTransportObjectiveKind, str(args.transport_kind)),
         sample_set=sample_set,
@@ -163,6 +180,13 @@ def _build_stage(args: argparse.Namespace):
 
 def main(argv: list[str] | None = None) -> int:
     args = _parse_args(argv)
+    sample_set = _sample_set_from_args(args)
+    sample_summary = transport_objective_sample_summary(sample_set)
+    if not bool(sample_summary["passed"]) and not bool(args.allow_underresolved_sample_set):
+        raise ValueError(
+            "under-resolved transport-gradient sample set; use the default multi-sample set "
+            "or pass --allow-underresolved-sample-set for exploratory diagnostics"
+        )
     stage, setup = _build_stage(args)
     params = np.zeros(len(stage.specs), dtype=float)
     report = build_boundary_transport_gradient_report(
@@ -174,6 +198,8 @@ def main(argv: list[str] | None = None) -> int:
         include_jacobian=bool(args.include_jacobian),
     )
     report["setup"] = setup
+    report["objective_sample_summary"] = sample_summary
+    report["nonlinear_audit_policy"] = DEFAULT_AUDIT_POLICY.to_dict()
     write_boundary_transport_gradient_report(report, args.out_json)
     print(json.dumps(report, indent=2, allow_nan=False))
     if bool(args.require_sensitive) and not bool(report["transport_sensitivity_detected"]):

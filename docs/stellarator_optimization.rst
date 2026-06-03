@@ -278,6 +278,9 @@ transport weight:
      --max-mode 5 --min-vmec-mode 7 \
      --mboz 21 --nboz 21 \
      --transport-kind nonlinear_window_heat_flux \
+     --surfaces 0.45,0.64,0.78 \
+     --alphas 0.0,0.7853981633974483 \
+     --ky-values 0.10,0.30,0.50 \
      --solver-device gpu
 
 The diagnostic rebuilds a transport-only VMEC-JAX objective at the solved
@@ -288,7 +291,12 @@ flat/underconditioned. A sensitive report supports a constraint-preserving
 projected update or constrained line search along the leading components. A
 flat report means the transport observable, sample set, finite-difference
 scale, or nonlinear-window evidence must be changed before more optimization
-iterations are scientifically meaningful.
+iterations are scientifically meaningful. The gradient diagnostic now uses the
+same fail-closed sample contract as the projected-input writer: the default is
+the 18-point ``3 x 2 x 3`` surface/field-line/``k_y`` set above, and
+single-point exploratory gradients require
+``--allow-underresolved-sample-set``. Such exploratory gradients are not valid
+admission evidence for long nonlinear audits.
 
 After a sensitive diagnostic, generate bounded projected candidate inputs with:
 
