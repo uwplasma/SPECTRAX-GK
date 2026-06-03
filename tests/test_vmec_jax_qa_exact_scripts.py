@@ -129,29 +129,19 @@ def test_readme_uses_solved_vmec_qa_geometry_not_reduced_surface_panel() -> None
     normalized_readme = re.sub(r"\s+", " ", readme)
 
     assert "docs/_static/vmec_jax_qa_solved_boundary_boozer_panel.png" in readme
-    assert "docs/_static/stellarator_itg_optimization_comparison.png" in readme
-    assert readme.index("docs/_static/vmec_jax_qa_solved_boundary_boozer_panel.png") < readme.index(
-        "docs/_static/stellarator_itg_optimization_comparison.png"
-    )
+    assert "docs/_static/stellarator_itg_optimization_comparison.png" not in readme
+    assert "docs/_static/stellarator_itg_optimization_uq.png" not in readme
     assert "not a nonlinear heat-flux optimization claim" in normalized_readme
-    assert (
-        "synthetic LCFS/Boozer views are not solved VMEC surfaces"
-        in normalized_readme
-    )
 
     assert "_static/vmec_jax_qa_solved_boundary_boozer_panel.png" in docs
-    assert "not solved VMEC WOUT surfaces" in docs
-    assert ".. figure:: _static/stellarator_itg_optimization_comparison.png" in docs
-    assert docs.index("_static/vmec_jax_qa_solved_boundary_boozer_panel.png") < docs.index(
-        "_static/stellarator_itg_optimization_comparison.png"
-    )
-    assert "Reduced synthetic max-mode-1 comparison" in docs
-    assert "not solved VMEC WOUT surfaces" in docs
+    assert ".. figure:: _static/stellarator_itg_optimization_comparison.png" not in docs
+    assert "Development-Only Reduced Diagnostics" in docs
     assert (
         "current artifact bases: ``docs/_static/stellarator_itg_optimization_comparison.png``"
         not in manuscript
     )
-    assert "not used as the primary README/manuscript solved-geometry visual" in manuscript
+    assert "is not a solved-geometry optimization figure" in manuscript
+    assert "production QA optimization examples are the VMEC-JAX-style scripts" in manuscript
 
 
 def test_reduced_surface_comparison_is_not_current_primary_optimization_figure() -> None:
@@ -166,6 +156,6 @@ def test_reduced_surface_comparison_is_not_current_primary_optimization_figure()
 
     assert reduced_png not in primary_block
     assert "Do not use the reduced synthetic surface comparison" in readiness_source
-    assert "Run a QA-only baseline" not in examples_readme
-    assert "Run an aspect-6 constraints-only branch" in examples_readme
-    assert "model-development and AD/FD plumbing evidence only" in re.sub(r"\s+", " ", docs)
+    assert "stellarator_itg_growth_optimization.py" not in examples_readme
+    assert "reduced_stellarator_itg" not in examples_readme
+    assert "development diagnostics only" in re.sub(r"\s+", " ", docs)

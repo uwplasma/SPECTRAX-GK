@@ -4,17 +4,17 @@ Differentiable Stellarator Optimization
 Purpose
 -------
 
-SPECTRAX-GK now provides two distinct differentiable stellarator-optimization
-paths. They should not be conflated.
+SPECTRAX-GK's public optimization examples are actual VMEC-JAX QA
+stellarator workflows with SPECTRAX-GK transport objectives appended to the
+VMEC-JAX objective tuple list.
 
 - The paper-facing VMEC-JAX path starts from the upstream fixed-boundary QA
   script ``examples/optimization/QA_optimization.py`` and keeps its solved-
   equilibrium objective structure: aspect ratio, high-weight mean iota, and
   quasisymmetry. SPECTRAX-GK transport enters as one additional objective tuple.
-- The reduced CI-scale path optimizes a max-mode-1 QA control vector for fast
-  AD/finite-difference, UQ, plotting, and sample-set plumbing checks. Its
-  figures are useful diagnostics, but they are not solved VMEC WOUT surfaces and
-  they are not production nonlinear turbulent heat-flux optimization claims.
+- Reduced max-mode-1 synthetic controls are development diagnostics only. They
+  live outside ``examples/optimization`` and are not README-facing
+  stellarator-optimization examples.
 
 The VMEC-JAX-style scripts intentionally preserve the upstream QA constants
 ``MAX_MODE = 5``, ``TARGET_ASPECT = 5.0``, ``TARGET_IOTA = 0.41``, and
@@ -55,14 +55,6 @@ Source Map
   :download:`QA_optimization_with_nonlinear_heat_flux.py <../examples/optimization/QA_optimization_with_nonlinear_heat_flux.py>`
 - Configurable solved-boundary driver:
   :download:`vmec_jax_qa_low_turbulence_optimization.py <../examples/optimization/vmec_jax_qa_low_turbulence_optimization.py>`
-- Reduced growth-rate example:
-  :download:`stellarator_itg_growth_optimization.py <../examples/optimization/stellarator_itg_growth_optimization.py>`
-- Reduced quasilinear-flux example:
-  :download:`stellarator_itg_quasilinear_flux_optimization.py <../examples/optimization/stellarator_itg_quasilinear_flux_optimization.py>`
-- Reduced nonlinear-window example:
-  :download:`stellarator_itg_nonlinear_heat_flux_optimization.py <../examples/optimization/stellarator_itg_nonlinear_heat_flux_optimization.py>`
-- Reduced three-objective comparison:
-  :download:`compare_stellarator_itg_optimizations.py <../examples/optimization/compare_stellarator_itg_optimizations.py>`
 - Optimization examples README:
   :download:`README.md <../examples/optimization/README.md>`
 
@@ -151,37 +143,8 @@ transport-optimization success claim.
    ``QA_optimization.py`` workflow. The top row compares initial and optimized
    LCFS surfaces colored by ``|B|``; the bottom row shows the corresponding
    Boozer-LCFS ``|B|`` contours. This is the figure to use when discussing the
-   solved QA baseline geometry. It is intentionally separate from the reduced
-   max-mode-1 optimization-plumbing panels below and is not a nonlinear
-   heat-flux optimization claim.
-
-The next two panels are the reduced optimization evidence stack for the three
-transport objectives: linear ITG growth rate, quasilinear heat-flux proxy, and
-reduced nonlinear-window heat-flux envelope. They are intentionally placed
-below the solved VMEC-JAX baseline so the solved geometry and reduced optimizer
-diagnostics are not confused.
-
-.. figure:: _static/stellarator_itg_optimization_comparison.png
-   :alt: Reduced synthetic linear, quasilinear, and nonlinear-window QA optimization comparison
-   :width: 95%
-   :align: center
-
-   Reduced synthetic max-mode-1 comparison for the three differentiable
-   SPECTRAX-GK transport objectives. The top row compares objective histories,
-   density-gradient scans, and fixed-gradient reduced heat-flux envelopes. The
-   lower rows are synthetic reduced LCFS/Boozer ``|B|`` diagnostics, not solved
-   VMEC surfaces. Use this panel for optimization-plumbing comparisons only.
-
-.. figure:: _static/stellarator_itg_optimization_uq.png
-   :alt: Reduced stellarator ITG optimization derivative and UQ diagnostics
-   :width: 95%
-   :align: center
-
-   AD/finite-difference derivative and local Gauss-Newton covariance checks for
-   the linear-growth, quasilinear-flux, and reduced nonlinear-window objectives.
-   This is the README/docs-level differentiability and UQ gate; production
-   nonlinear turbulent-flux claims still require matched long-window nonlinear
-   audits of solved VMEC equilibria.
+   solved QA baseline geometry. It is not a nonlinear heat-flux optimization
+   claim.
 
 Configurable Solved-Boundary Driver
 -----------------------------------
@@ -201,25 +164,25 @@ satisfy the mean target while a point in the WOUT ``iota`` profile remains below
 ``0.41``. The upstream QA baseline itself remains the aspect-5 VMEC-JAX script
 with the high-weight ``MeanIota`` objective.
 
-Reduced QA ITG Optimization Scripts
------------------------------------
+Development-Only Reduced Diagnostics
+------------------------------------
 
-The lightweight optimization examples are the three reduced single-objective
-scripts plus their comparison driver:
+The reduced max-mode-1 scripts are development diagnostics for AD/finite-
+difference checks, UQ plumbing, figure rendering, and sample-set reducers. They
+are intentionally outside ``examples/optimization`` and should not be used as
+solved QA stellarator optimization evidence.
 
 .. code-block:: bash
 
-   python examples/optimization/stellarator_itg_growth_optimization.py
-   python examples/optimization/stellarator_itg_quasilinear_flux_optimization.py
-   python examples/optimization/stellarator_itg_nonlinear_heat_flux_optimization.py
-   python examples/optimization/compare_stellarator_itg_optimizations.py
+   python examples/theory_and_demos/reduced_stellarator_itg/stellarator_itg_growth_optimization.py
+   python examples/theory_and_demos/reduced_stellarator_itg/stellarator_itg_quasilinear_flux_optimization.py
+   python examples/theory_and_demos/reduced_stellarator_itg/stellarator_itg_nonlinear_heat_flux_optimization.py
+   python examples/theory_and_demos/reduced_stellarator_itg/compare_stellarator_itg_optimizations.py
 
-These scripts run a reduced max-mode-1 QA control model and are deliberately
-fast enough for local tests and figure regeneration. They validate AD/finite-
-difference checks, residual conditioning, UQ covariance diagnostics, and plotting
-machinery. They do not generate the upstream VMEC-JAX ``QA_optimization.py``
-final WOUT, and their synthetic LCFS views should not be used as the primary
-manuscript or README visual for solved QA geometry.
+They run a reduced max-mode-1 QA control model and are deliberately fast enough
+for local tests and figure regeneration. They do not generate the upstream
+VMEC-JAX ``QA_optimization.py`` final WOUT, and their synthetic LCFS views must
+not be used as README or manuscript evidence for solved QA geometry.
 
 The shared constrained residual is
 
@@ -961,20 +924,20 @@ floor, quasisymmetry, SPECTRAX-GK transport) and retained the iota floor with
 in-memory optimizer hook and iota-floor convention; it is not yet the final
 transport-aware optimized equilibrium used for a turbulence claim.
 
-The three reduced optimization examples are:
+The public VMEC-JAX QA transport scripts are:
 
-- ``stellarator_itg_growth_optimization.py``: minimize a smooth reduction of
-  the ITG linear growth rate over selected ``k_y``, surface, and ``alpha``
-  samples. The gate is branch-continuity plus AD/JVP/finite-difference
-  agreement.
-- ``stellarator_itg_quasilinear_flux_optimization.py``: minimize the
-  electrostatic quasilinear heat-flux diagnostic over the same sample set.
-  The output carries saturation-rule metadata and uncertainty intervals; it is
-  not an absolute turbulent-flux claim until nonlinear holdouts calibrate it.
-- ``stellarator_itg_nonlinear_heat_flux_optimization.py``: generate nonlinear
-  candidates using a cheap differentiable surrogate, then promote only if
-  matched baseline and optimized equilibria pass replicated long-window
-  post-transient heat-flux audits.
+- ``QA_optimization_with_growth_rate.py``: append a SPECTRAX-GK ITG
+  growth-rate objective to the upstream QA/aspect/iota tuple list.
+- ``QA_optimization_with_quasilinear_flux.py``: append a quasilinear transport
+  diagnostic objective to the same solved-equilibrium optimization.
+- ``QA_optimization_with_nonlinear_heat_flux.py``: append a nonlinear-window
+  heat-flux screening objective, then promote only if matched baseline and
+  optimized equilibria pass replicated long-window post-transient heat-flux
+  audits.
+
+Development-only reduced diagnostics remain under
+``examples/theory_and_demos/reduced_stellarator_itg`` for AD/FD and plotting
+tests; they are not production QA optimization examples.
 
 For the geometry layer, the user-facing runtime examples use WOUT files
 generated from the small ``examples/vmec/input.*`` decks with ``vmec_jax``.
@@ -1002,8 +965,8 @@ values as final evidence. Production evidence requires long post-transient
 averages whose running means are converged and whose seed/timestep/grid
 replicates agree within the documented gate.
 
-Reduced Portfolio Gate
-----------------------
+Development Portfolio Gate
+--------------------------
 
 Before the VMEC/Boozer optimizer is promoted, the same reducer used by the
 future production objective is exercised on a cheap differentiable sample
@@ -1015,7 +978,7 @@ every unreduced row against central finite differences.
 
 .. code-block:: bash
 
-   python examples/optimization/stellarator_itg_portfolio_gate.py \
+   python examples/theory_and_demos/reduced_stellarator_itg/stellarator_itg_portfolio_gate.py \
      --finite-difference-workers 2
 
 By default this writes
@@ -1345,22 +1308,22 @@ transport audit tracked below. That audit is closed for the selected QA
 candidate, while nonlinear turbulence gradients and broad multi-surface
 optimization remain separate gates.
 
-Results
--------
+Development Diagnostic Results
+------------------------------
 
 Generate the three individual optimization panels with:
 
 .. code-block:: bash
 
-   JAX_ENABLE_X64=1 python examples/optimization/stellarator_itg_growth_optimization.py --finite-difference-workers 2
-   JAX_ENABLE_X64=1 python examples/optimization/stellarator_itg_quasilinear_flux_optimization.py --finite-difference-workers 2
-   JAX_ENABLE_X64=1 python examples/optimization/stellarator_itg_nonlinear_heat_flux_optimization.py --finite-difference-workers 2
+   JAX_ENABLE_X64=1 python examples/theory_and_demos/reduced_stellarator_itg/stellarator_itg_growth_optimization.py --finite-difference-workers 2
+   JAX_ENABLE_X64=1 python examples/theory_and_demos/reduced_stellarator_itg/stellarator_itg_quasilinear_flux_optimization.py --finite-difference-workers 2
+   JAX_ENABLE_X64=1 python examples/theory_and_demos/reduced_stellarator_itg/stellarator_itg_nonlinear_heat_flux_optimization.py --finite-difference-workers 2
 
 Generate the comparison panel with:
 
 .. code-block:: bash
 
-   JAX_ENABLE_X64=1 python examples/optimization/compare_stellarator_itg_optimizations.py --workers 3 --finite-difference-workers 2
+   JAX_ENABLE_X64=1 python examples/theory_and_demos/reduced_stellarator_itg/compare_stellarator_itg_optimizations.py --workers 3 --finite-difference-workers 2
    JAX_ENABLE_X64=1 python tools/plot_stellarator_optimization_uq.py
 
 The ``--workers`` option parallelizes the independent growth-rate,
@@ -1370,20 +1333,19 @@ option parallelizes central finite-difference columns inside each AD/FD gate
 using threads, which avoids pickling JAX objective closures. Both paths record
 their worker metadata and identity contract in the JSON artifacts.
 
-The reduced comparison sidecar
+The development-only reduced comparison sidecar
 ``docs/_static/stellarator_itg_optimization_comparison.json`` records three
-differentiable QA stellarator ITG objectives from the same initial control
-vector. All three keep the reduced objective near ``A = 7`` and ``iota = 0.41``
+differentiable QA-control ITG residuals from the same initial control vector.
+All three keep the reduced objective near ``A = 7`` and ``iota = 0.41``
 while reducing the tracked transport observables. In the current artifact, the
 optimized growth rate is about ``57%`` of the initial value and both
 quasilinear and nonlinear-window heat-flux observables are about ``41%`` of
 their initial values. This is retained as model-development and AD/FD plumbing
 evidence only. Its companion rendered PNG is a synthetic max-mode-1 surface
 diagnostic that can look nearly axisymmetric when the reduced helical amplitude
-collapses; it is therefore not embedded as a paper-facing solved-geometry
-optimization figure. Use the solved VMEC-JAX QA boundary/Boozer panel above for
-baseline geometry visualization and the UQ/guard panels below for the current
-optimization-evidence figures.
+collapses; it is therefore not a paper-facing solved-geometry optimization
+figure. Use the solved VMEC-JAX QA boundary/Boozer panel above for baseline
+geometry visualization.
 
 .. figure:: _static/stellarator_itg_optimization_uq.png
    :width: 95%

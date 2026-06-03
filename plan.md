@@ -997,7 +997,7 @@ evidence.
   `stellarator_itg_sample_objective_table`,
   `stellarator_itg_reduced_portfolio_objective`, and
   `stellarator_itg_portfolio_sensitivity_report`.
-- Added `examples/optimization/stellarator_itg_portfolio_gate.py`, which
+- Added `examples/theory_and_demos/reduced_stellarator_itg/stellarator_itg_portfolio_gate.py`, which
   writes JSON/PNG/PDF artifacts for the reduced multi-surface/alpha/`k_y`
   growth/QL portfolio gate.
 - Regenerated `docs/_static/stellarator_itg_portfolio_gate.*`. The default
@@ -5185,7 +5185,7 @@ Exit gate:
     heat-flux objective ``1.592690e-01 -> 8.412824e-03`` and late-window
     ``CV=5.830e-03``, ``trend=1.978e-02``.
 - Verification for this tranche:
-  - ``python -m ruff check src/spectraxgk/autodiff_validation.py src/spectraxgk/stellarator_optimization.py examples/optimization/compare_stellarator_itg_optimizations.py examples/optimization/stellarator_itg_growth_optimization.py examples/optimization/stellarator_itg_quasilinear_flux_optimization.py examples/optimization/stellarator_itg_nonlinear_heat_flux_optimization.py tools/plot_stellarator_optimization_uq.py tests/test_autodiff_validation.py tests/test_stellarator_optimization.py tests/test_plot_stellarator_optimization_uq.py``;
+  - ``python -m ruff check src/spectraxgk/autodiff_validation.py src/spectraxgk/stellarator_optimization.py examples/theory_and_demos/reduced_stellarator_itg/compare_stellarator_itg_optimizations.py examples/theory_and_demos/reduced_stellarator_itg/stellarator_itg_growth_optimization.py examples/theory_and_demos/reduced_stellarator_itg/stellarator_itg_quasilinear_flux_optimization.py examples/theory_and_demos/reduced_stellarator_itg/stellarator_itg_nonlinear_heat_flux_optimization.py tools/plot_stellarator_optimization_uq.py tests/test_autodiff_validation.py tests/test_stellarator_optimization.py tests/test_plot_stellarator_optimization_uq.py``;
   - ``mypy src/spectraxgk/autodiff_validation.py src/spectraxgk/stellarator_optimization.py``;
   - ``pytest -q tests/test_autodiff_validation.py tests/test_stellarator_optimization.py tests/test_plot_stellarator_optimization_uq.py tests/test_parallel.py``;
   - ``python -m sphinx -b html docs docs/_build/html``.

@@ -70,7 +70,13 @@ def _disable_optional_backend_discovery(monkeypatch) -> None:
 
 
 def _load_stellarator_itg_plotting_module():
-    path = Path(__file__).resolve().parents[1] / "examples" / "optimization" / "_stellarator_itg_plotting.py"
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "examples"
+        / "theory_and_demos"
+        / "reduced_stellarator_itg"
+        / "_stellarator_itg_plotting.py"
+    )
     spec = importlib.util.spec_from_file_location("_stellarator_itg_plotting_for_test", path)
     assert spec is not None
     assert spec.loader is not None
@@ -80,8 +86,13 @@ def _load_stellarator_itg_plotting_module():
     return module
 
 
-def test_stellarator_itg_example_scripts_are_explicit_workflows() -> None:
-    examples = Path(__file__).resolve().parents[1] / "examples" / "optimization"
+def test_reduced_stellarator_itg_development_scripts_are_explicit_workflows() -> None:
+    examples = (
+        Path(__file__).resolve().parents[1]
+        / "examples"
+        / "theory_and_demos"
+        / "reduced_stellarator_itg"
+    )
     scripts = [
         examples / "stellarator_itg_growth_optimization.py",
         examples / "stellarator_itg_quasilinear_flux_optimization.py",
@@ -94,6 +105,19 @@ def test_stellarator_itg_example_scripts_are_explicit_workflows() -> None:
         assert "run_stellarator_itg_adam" in text or "compare_scripted_stellarator_itg_objectives" in text
         assert "optimize_stellarator_itg" not in text
         assert "QA_optimization.py" in text
+
+
+def test_public_optimization_examples_exclude_reduced_synthetic_workflows() -> None:
+    examples = Path(__file__).resolve().parents[1] / "examples" / "optimization"
+    names = {path.name for path in examples.iterdir() if path.is_file()}
+
+    assert "QA_optimization_with_growth_rate.py" in names
+    assert "QA_optimization_with_quasilinear_flux.py" in names
+    assert "QA_optimization_with_nonlinear_heat_flux.py" in names
+    assert "vmec_jax_qa_low_turbulence_optimization.py" in names
+    assert not any(name.startswith("stellarator_itg_") for name in names)
+    assert "_stellarator_itg_plotting.py" not in names
+    assert "compare_stellarator_itg_optimizations.py" not in names
 
 
 def test_stellarator_itg_observable_contract_is_finite_and_exported() -> None:
@@ -280,7 +304,7 @@ def test_stellarator_itg_comparison_artifact_has_publication_lcfs_diagnostics(tm
     plotting_source = (
         Path(__file__).resolve()
         .parents[1]
-        .joinpath("examples/optimization/_stellarator_itg_plotting.py")
+        .joinpath("examples/theory_and_demos/reduced_stellarator_itg/_stellarator_itg_plotting.py")
         .read_text(encoding="utf-8")
     )
     assert "Reduced synthetic QA ITG optimization-plumbing comparison" in plotting_source

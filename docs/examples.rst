@@ -144,12 +144,12 @@ path on laptops. Multi-device runs should still be checked against the serial
 result before publication speedups are claimed.
 
 Autodiff validation reports also accept ``workers`` for thread-parallel
-central finite-difference columns, and the stellarator optimization comparison
-script exposes the same pattern:
+central finite-difference columns. The development-only reduced diagnostic
+comparison exposes the same pattern:
 
 .. code-block:: bash
 
-   JAX_ENABLE_X64=1 python examples/optimization/compare_stellarator_itg_optimizations.py \
+   JAX_ENABLE_X64=1 python examples/theory_and_demos/reduced_stellarator_itg/compare_stellarator_itg_optimizations.py \
      --workers 3 \
      --finite-difference-workers 2
 
@@ -476,17 +476,31 @@ blocks without running a full benchmark case:
 Differentiable optimization examples
 ------------------------------------
 
-These scripts exercise the reduced QA stellarator ITG optimization lane before
-promotion to the full ``vmec_jax -> booz_xform_jax -> SPECTRAX-GK`` geometry
-path:
+The public optimization examples are actual VMEC-JAX QA stellarator workflows
+with one SPECTRAX-GK transport tuple appended to the VMEC-JAX objective list:
 
 .. code-block:: bash
 
-   python examples/optimization/stellarator_itg_growth_optimization.py
-   python examples/optimization/stellarator_itg_quasilinear_flux_optimization.py
-   python examples/optimization/stellarator_itg_nonlinear_heat_flux_optimization.py
-   python examples/optimization/compare_stellarator_itg_optimizations.py
-   python examples/optimization/stellarator_itg_portfolio_gate.py --finite-difference-workers 2
+   python examples/optimization/QA_optimization_with_growth_rate.py
+   python examples/optimization/QA_optimization_with_quasilinear_flux.py
+   python examples/optimization/QA_optimization_with_nonlinear_heat_flux.py
+   python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py --dry-run
+
+The three ``QA_optimization_with_*`` scripts intentionally mirror upstream
+``vmec_jax/examples/optimization/QA_optimization.py`` and preserve the
+high-weight ``iota = 0.41`` target. Keep the SPECTRAX-GK transport weight small
+until the solved-equilibrium aspect, iota, and quasisymmetry gates pass.
+
+Reduced synthetic scripts are kept outside ``examples/optimization`` as
+development diagnostics only:
+
+.. code-block:: bash
+
+   python examples/theory_and_demos/reduced_stellarator_itg/stellarator_itg_growth_optimization.py
+   python examples/theory_and_demos/reduced_stellarator_itg/stellarator_itg_quasilinear_flux_optimization.py
+   python examples/theory_and_demos/reduced_stellarator_itg/stellarator_itg_nonlinear_heat_flux_optimization.py
+   python examples/theory_and_demos/reduced_stellarator_itg/compare_stellarator_itg_optimizations.py
+   python examples/theory_and_demos/reduced_stellarator_itg/stellarator_itg_portfolio_gate.py --finite-difference-workers 2
    python tools/build_qa_low_turbulence_comparison.py --pdf
    python tools/build_qa_low_turbulence_time_horizon_audit.py --pdf
 

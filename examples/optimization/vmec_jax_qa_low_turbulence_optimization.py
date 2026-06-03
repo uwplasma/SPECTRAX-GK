@@ -6,7 +6,7 @@ controls the fixed-boundary equilibrium, quasisymmetry, aspect ratio, and mean
 iota target, while SPECTRAX-GK supplies an extra transport objective evaluated from
 the in-memory VMEC/Boozer flux-tube bridge.
 
-The default transport residual is a trace-safe reduced nonlinear-window
+The default transport residual is a trace-safe nonlinear-window screening
 objective built from SPECTRAX-GK linear ITG rows. Growth-only runs use
 eigenvalue AD; quasilinear and nonlinear-window runs combine that solver
 growth rate with differentiable geometry-level transport weights. Long

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Quasi-axisymmetric VMEC-JAX optimization with SPECTRAX-GK reduced nonlinear-window heat-flux objective.
+"""Quasi-axisymmetric VMEC-JAX optimization with SPECTRAX-GK nonlinear-window heat-flux screening objective.
 
 This script intentionally mirrors VMEC-JAX
 ``examples/optimization/QA_optimization.py``. The QA/aspect/iota objective
@@ -20,7 +20,7 @@ Usage:
 
 This example intentionally follows vmec_jax/examples/optimization/QA_optimization.py:
 edit the constants near the top of the file, then run the script with no
-arguments. It appends one SPECTRAX-GK reduced nonlinear-window heat-flux
+arguments. It appends one SPECTRAX-GK nonlinear-window heat-flux screening
 objective tuple to the standard QA/aspect/iota objective list.
 """
 
@@ -200,7 +200,7 @@ problem = vj.LeastSquaresProblem.from_tuples(objective_tuples)
 print("\nAssembled least-squares problem:")
 print(f"  objectives: {', '.join(problem.objective_names)}")
 print(f"  scalar terms: {problem.scalar_objective_names}")
-print(f"  SPECTRAX-GK transport kind: {SPECTRAX_KIND} (reduced nonlinear-window heat-flux)")
+print(f"  SPECTRAX-GK transport kind: {SPECTRAX_KIND} (nonlinear-window heat-flux screening)")
 print(f"  SPECTRAX-GK sample set: s={SPECTRAX_SURFACES}, alpha={SPECTRAX_ALPHAS}, ky={SPECTRAX_KY_VALUES}")
 print(f"  SPECTRAX-GK tuple weight: {SPECTRAX_WEIGHT:g}")
 
@@ -219,7 +219,7 @@ result = vj.least_squares_solve(
     xtol=XTOL,
     use_ess=USE_ESS,
     ess_alpha=ALPHA,
-    label=f"QA optimization + SPECTRAX-GK reduced nonlinear-window heat-flux (max_mode={MAX_MODE})",
+    label=f"QA optimization + SPECTRAX-GK nonlinear-window heat-flux screening (max_mode={MAX_MODE})",
     use_mode_continuation=USE_MODE_CONTINUATION,
     inner_max_iter=INNER_MAX_ITER,
     inner_ftol=INNER_FTOL,
