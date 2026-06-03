@@ -108,6 +108,69 @@ is a useful, trace-safe design residual, but the full eigenfunction-weight
 adjoint remains a promotion gate before claiming fully differentiated absolute
 quasilinear or nonlinear turbulent flux optimization.
 
+Three Reduced QA ITG Optimization Scripts
+-----------------------------------------
+
+The primary lightweight optimization examples are the three single-objective
+scripts plus their comparison driver:
+
+.. code-block:: bash
+
+   python examples/optimization/stellarator_itg_growth_optimization.py
+   python examples/optimization/stellarator_itg_quasilinear_flux_optimization.py
+   python examples/optimization/stellarator_itg_nonlinear_heat_flux_optimization.py
+   python examples/optimization/compare_stellarator_itg_optimizations.py
+
+These scripts are deliberately written in the same educational style as
+``vmec_jax/examples/optimization/QA_optimization.py``. Problem constants are
+declared near the top of each file, objective blocks are printed explicitly,
+the Adam loop is run from the scripted objective rather than from the compact
+``optimize_stellarator_itg`` API, and AD/finite-difference plus residual
+conditioning gates are written into the sidecars.
+
+The shared constrained residual is
+
+.. math::
+
+   ||r(x)||^2 =
+   w_A \left({A(x)-A_0 \over A_0}\right)^2
+   + w_\iota \left(\iota(x)-\iota_0\right)^2
+   + w_{QS} R_{QS}(x)^2
+   + w_R ||x||^2
+   + r_T(x)^2 ,
+
+where ``x`` is the reduced max-mode-1 QA control vector.  The transport
+residual ``r_T`` is one of:
+
+- ``growth``: the positive dominant ITG growth-rate observable ``gamma``;
+- ``quasilinear_flux``: a mixing-length proxy proportional to
+  ``gamma Q_i / <k_perp^2>`` with tracked saturation metadata;
+- ``nonlinear_heat_flux``: the late-window mean of the differentiable envelope
+
+  .. math::
+
+     {dE \over dt} = 2\gamma E - \alpha E^2,\qquad
+     Q_{\rm env}(t) = W_i E(t).
+
+The comparison artifact
+``docs/_static/stellarator_itg_optimization_comparison.png`` now shows the
+three optimized controls in one panel: objective histories, reduced nonlinear
+``Q_{\rm env}`` scans, fixed-gradient traces, reduced LCFS ``|B|`` surfaces,
+and reduced Boozer-coordinate LCFS ``|B|`` maps. The LCFS visualizations use a
+72-by-72 angular grid and a shared ``jet`` colormap so the magnetic-field
+variation is visible. They remain reduced visualization diagnostics, not solved
+VMEC WOUT surfaces.
+
+The baseline convention is important. For solved-boundary production studies,
+the QA-only baseline is the final WOUT from the upstream
+``vmec_jax/examples/optimization/QA_optimization.py`` workflow, or from the
+SPECTRAX-GK constraints-only VMEC-JAX wrapper configured to mirror that
+workflow. The reduced max-mode-1 panels are used for differentiable plumbing,
+UQ, and plotting validation only. A nonlinear turbulent-flux optimization claim
+requires a matched pair of solved WOUT files, long post-transient
+SPECTRAX-GK nonlinear audits, seed/timestep replicate ensembles, and
+running-average convergence checks.
+
 
 Aspect-6 QA Low-Turbulence Comparison
 -------------------------------------

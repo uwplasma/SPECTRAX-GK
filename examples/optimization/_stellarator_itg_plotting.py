@@ -25,6 +25,8 @@ COLORS = {
     "quasilinear_flux": "#b55a30",
     "nonlinear_heat_flux": "#386641",
 }
+LCFS_GRID_SIZE = 72
+LCFS_CMAP = "jet"
 
 
 def write_result_artifacts(result: Any, out_base: Path, *, title: str) -> None:
@@ -42,10 +44,10 @@ def write_comparison_artifacts(payload: dict[str, Any], out_base: Path) -> None:
     """Write the three-objective comparison payload and plot."""
 
     out_base.parent.mkdir(parents=True, exist_ok=True)
-    payload = _sanitize_artifact_payload(payload)
-    _write_json(payload, out_base.with_suffix(".json"))
-    _plot_comparison(payload, out_base.with_suffix(".png"))
-    _plot_comparison(payload, out_base.with_suffix(".pdf"))
+    plot_payload = _sanitize_artifact_payload(_augment_comparison_payload(payload))
+    _write_json(_compact_comparison_json_payload(plot_payload), out_base.with_suffix(".json"))
+    _plot_comparison(plot_payload, out_base.with_suffix(".png"))
+    _plot_comparison(plot_payload, out_base.with_suffix(".pdf"))
 
 
 def write_portfolio_gate_artifacts(payload: dict[str, Any], out_base: Path) -> None:
@@ -118,8 +120,8 @@ def _trace_payload(params: list[float], cfg: StellaratorITGOptimizationConfig) -
 def _reduced_surface(params: list[float], cfg: StellaratorITGOptimizationConfig) -> dict[str, Any]:
     obs = _obs_for_params(params, cfg)
     minor_shift, elong_shift, ripple, shear_shift = [float(value) for value in params]
-    theta = np.linspace(0.0, 2.0 * np.pi, 44, endpoint=False)
-    zeta = np.linspace(0.0, 2.0 * np.pi, 44, endpoint=False)
+    theta = np.linspace(0.0, 2.0 * np.pi, LCFS_GRID_SIZE, endpoint=False)
+    zeta = np.linspace(0.0, 2.0 * np.pi, LCFS_GRID_SIZE, endpoint=False)
     tt, zz = np.meshgrid(theta, zeta, indexing="ij")
     aspect = max(float(obs["aspect"]), 1.0e-6)
     major_radius = 1.0
@@ -152,8 +154,8 @@ def _reduced_surface(params: list[float], cfg: StellaratorITGOptimizationConfig)
 def _reduced_lcfs_bmag(params: list[float], cfg: StellaratorITGOptimizationConfig) -> dict[str, Any]:
     obs = _obs_for_params(params, cfg)
     _, elong_shift, ripple, _ = [float(value) for value in params]
-    theta = np.linspace(0.0, 2.0 * np.pi, 44, endpoint=False)
-    zeta = np.linspace(0.0, 2.0 * np.pi, 44, endpoint=False)
+    theta = np.linspace(0.0, 2.0 * np.pi, LCFS_GRID_SIZE, endpoint=False)
+    zeta = np.linspace(0.0, 2.0 * np.pi, LCFS_GRID_SIZE, endpoint=False)
     tt, zz = np.meshgrid(theta, zeta, indexing="ij")
     nfp = 2
     qa_amp = float(obs["qa_residual"])
@@ -192,6 +194,78 @@ def _augment_result_payload(payload: dict[str, Any]) -> dict[str, Any]:
         },
     }
     return payload
+
+
+def _augment_comparison_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    """Attach reduced LCFS and nonlinear-window diagnostics to comparison rows."""
+
+    rows = []
+    for result in payload["results"]:
+        row = dict(result)
+        if "reduced_diagnostics" not in row:
+            row = _augment_result_payload(row)
+        rows.append(row)
+    payload = dict(payload)
+    payload["results"] = rows
+    payload["figure_scope"] = {
+        "surface_grid": {
+            "ntheta": LCFS_GRID_SIZE,
+            "nzeta": LCFS_GRID_SIZE,
+            "cmap": LCFS_CMAP,
+        },
+        "surface_claim": "reduced max-mode-1 visualization, not a solved VMEC LCFS",
+        "nonlinear_trace_claim": "smooth reduced nonlinear envelope, not a chaotic production nonlinear GK trace",
+    }
+    return payload
+
+
+def _array_summary(values: Any) -> dict[str, Any]:
+    arr = np.asarray(values, dtype=float)
+    return {
+        "shape": list(arr.shape),
+        "min": float(np.nanmin(arr)),
+        "max": float(np.nanmax(arr)),
+    }
+
+
+def _compact_reduced_diagnostics(diagnostics: dict[str, Any]) -> dict[str, Any]:
+    """Keep comparison JSON small while preserving plotted-data provenance."""
+
+    compact = dict(diagnostics)
+    for key in ("initial", "final"):
+        phase = dict(compact[key])
+        surface = phase.pop("surface")
+        lcfs_bmag = phase.pop("lcfs_bmag")
+        phase["surface_summary"] = {
+            "theta_count": len(surface["theta"]),
+            "zeta_count": len(surface["zeta"]),
+            "x": _array_summary(surface["x"]),
+            "y": _array_summary(surface["y"]),
+            "z": _array_summary(surface["z"]),
+            "scope": surface["scope"],
+        }
+        phase["lcfs_bmag_summary"] = {
+            "theta_count": len(lcfs_bmag["theta"]),
+            "zeta_count": len(lcfs_bmag["zeta"]),
+            "bmag": _array_summary(lcfs_bmag["bmag"]),
+            "scope": lcfs_bmag["scope"],
+            "cmap": LCFS_CMAP,
+        }
+        compact[key] = phase
+    return compact
+
+
+def _compact_comparison_json_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    """Return a compact sidecar; full LCFS grids live in the rendered figure."""
+
+    compact = dict(payload)
+    rows = []
+    for result in compact["results"]:
+        row = dict(result)
+        row["reduced_diagnostics"] = _compact_reduced_diagnostics(row["reduced_diagnostics"])
+        rows.append(row)
+    compact["results"] = rows
+    return compact
 
 
 def _write_history_csv(payload: dict[str, Any], path: Path) -> None:
@@ -238,7 +312,7 @@ def _plot_reduced_surface(ax: plt.Axes, fig: plt.Figure, diagnostics: dict[str, 
     z = np.asarray(surface["z"], dtype=float)
     bmag = np.asarray(bmap["bmag"], dtype=float)
     norm = mpl_colors.Normalize(vmin=float(np.nanmin(bmag)), vmax=float(np.nanmax(bmag)))
-    cmap = plt.colormaps["cividis"]
+    cmap = plt.colormaps[LCFS_CMAP]
     ax.plot_surface(
         x,
         y,
@@ -281,7 +355,7 @@ def _plot_reduced_boozer_bmag(ax: plt.Axes, fig: plt.Figure, diagnostics: dict[s
     bmax = float(np.nanmax(bmag))
     zpad = 0.08 * max(bmax - bmin, 1.0e-6)
     norm = mpl_colors.Normalize(vmin=bmin, vmax=bmax)
-    cmap = plt.colormaps["cividis"]
+    cmap = plt.colormaps[LCFS_CMAP]
     ax.plot_surface(zz, tt, bmag, cmap=cmap, norm=norm, linewidth=0, antialiased=True, alpha=0.96)
     ax.contourf(zz, tt, bmag, zdir="z", offset=bmin - zpad, levels=18, cmap=cmap, norm=norm, alpha=0.76)
     ax.contour(zz, tt, bmag, levels=9, colors="white", linewidths=0.32, alpha=0.7)
@@ -446,77 +520,92 @@ def _plot_comparison(payload: dict[str, Any], path: Path) -> None:
     names = list(payload["observable_names"])
     idx = {name: names.index(name) for name in names}
     labels = [_objective_label(str(r["objective_kind"])) for r in results]
-    wrapped_labels = [label.replace("quasilinear flux", "quasilinear\nflux") for label in labels]
     colors = [COLORS.get(r["objective_kind"], "#3f3f46") for r in results]
+    linestyles = ["-", "--", ":"]
+    markers = ["o", "s", "^"]
     final_obs = np.asarray([r["final_observables"] for r in results], dtype=float)
     initial_obs = np.asarray([r["initial_observables"] for r in results], dtype=float)
-    x = np.arange(len(results))
-
-    fig, axs = plt.subplots(2, 2, figsize=(11.6, 7.8), constrained_layout=True)
-    fig.suptitle("Differentiable QA stellarator ITG optimization comparison", fontsize=13.5, fontweight="bold")
+    fig = plt.figure(figsize=(18.0, 14.4), constrained_layout=True)
+    grid = fig.add_gridspec(3, 3, hspace=0.10, wspace=0.08)
+    ax_hist = fig.add_subplot(grid[0, 0])
+    ax_scan = fig.add_subplot(grid[0, 1])
+    ax_trace = fig.add_subplot(grid[0, 2])
+    surface_axes = [fig.add_subplot(grid[1, i], projection="3d") for i in range(3)]
+    bmag_axes = [fig.add_subplot(grid[2, i], projection="3d") for i in range(3)]
+    fig.suptitle("Differentiable QA stellarator ITG optimization comparison", fontsize=14.5, fontweight="bold")
 
     for i, result in enumerate(results):
         hist = np.asarray([row["objective"] for row in result["history"]], dtype=float)
-        axs[0, 0].semilogy(hist, color=colors[i], lw=2.0, label=labels[i])
-    axs[0, 0].set_xlabel("optimizer step")
-    axs[0, 0].set_ylabel("objective")
-    axs[0, 0].set_title("Constrained objective histories")
-    axs[0, 0].legend(frameon=False, fontsize=8)
-    axs[0, 0].grid(alpha=0.25)
+        steps = np.asarray([row["step"] for row in result["history"]], dtype=float)
+        ax_hist.semilogy(steps, hist, color=colors[i], lw=2.0, label=labels[i])
+    ax_hist.set_xlabel("optimizer step")
+    ax_hist.set_ylabel(r"$||r||^2$")
+    ax_hist.set_title("Constrained objective histories")
+    ax_hist.legend(frameon=False, fontsize=8)
+    ax_hist.grid(alpha=0.25)
 
-    width = 0.24
-    metrics = ["growth_rate", "quasilinear_heat_flux", "nonlinear_heat_flux_mean"]
-    metric_labels = [r"$\gamma$", r"$Q_i^{QL}$", r"$Q_{\rm env}$"]
-    for j, metric in enumerate(metrics):
-        axs[0, 1].bar(x + (j - 1) * width, final_obs[:, idx[metric]], width=width, label=metric_labels[j])
-    axs[0, 1].set_xticks(x, wrapped_labels, rotation=0, ha="center")
-    axs[0, 1].set_ylabel("final value")
-    axs[0, 1].set_title("Final transport observables")
-    axs[0, 1].legend(frameon=False, fontsize=8)
-    axs[0, 1].grid(axis="y", alpha=0.25)
-
-    reduction = final_obs[:, [idx[m] for m in metrics]] / initial_obs[:, [idx[m] for m in metrics]]
-    im = axs[1, 0].imshow(reduction, cmap="viridis_r", vmin=0.0, vmax=max(1.0, float(np.nanmax(reduction))))
-    axs[1, 0].set_xticks(np.arange(len(metrics)), metric_labels)
-    axs[1, 0].set_yticks(x, wrapped_labels)
-    axs[1, 0].set_title("Final / initial transport ratio")
-    for i in range(reduction.shape[0]):
-        for j in range(reduction.shape[1]):
-            axs[1, 0].text(j, i, f"{reduction[i, j]:.2f}", ha="center", va="center", color="white", fontsize=9)
-    fig.colorbar(im, ax=axs[1, 0], fraction=0.046, pad=0.04)
-
-    aspect_values = final_obs[:, idx["aspect"]]
-    iota_values = final_obs[:, idx["mean_iota"]]
-    axs[1, 1].scatter(aspect_values, iota_values, s=90, c=colors)
-    for i, label in enumerate(labels):
-        offset = (-8, 7) if aspect_values[i] > np.nanmean(aspect_values) else (7, 7)
-        ha = "right" if offset[0] < 0 else "left"
-        axs[1, 1].annotate(
-            label,
-            (aspect_values[i], iota_values[i]),
-            xytext=offset,
-            textcoords="offset points",
-            fontsize=8,
-            ha=ha,
+    for i, result in enumerate(results):
+        diagnostics = result["reduced_diagnostics"]["final"]
+        scan = diagnostics["density_gradient_scan"]
+        ax_scan.plot(
+            np.asarray(scan["density_gradient_axis"], dtype=float) + (i - 1) * 0.018,
+            scan["heat_flux_mean"],
+            color=colors[i],
+            marker=markers[i % len(markers)],
+            ls=linestyles[i % len(linestyles)],
+            lw=2.0,
+            label=labels[i],
         )
-    axs[1, 1].axvline(results[0]["config"]["target_aspect"], color="#0f766e", ls=":", lw=1.4)
-    axs[1, 1].axhline(results[0]["config"]["target_iota"], color="#7c2d12", ls=":", lw=1.4)
-    xpad = max(1.5e-3, 0.15 * float(np.ptp(aspect_values) or 1.0e-3))
-    ypad = max(1.0e-4, 0.25 * float(np.ptp(iota_values) or 1.0e-4))
-    axs[1, 1].set_xlim(
-        min(float(np.min(aspect_values)), results[0]["config"]["target_aspect"]) - xpad,
-        max(float(np.max(aspect_values)), results[0]["config"]["target_aspect"]) + xpad,
-    )
-    axs[1, 1].set_ylim(
-        min(float(np.min(iota_values)), results[0]["config"]["target_iota"]) - ypad,
-        max(float(np.max(iota_values)), results[0]["config"]["target_iota"]) + ypad,
-    )
-    axs[1, 1].set_xlabel("aspect")
-    axs[1, 1].set_ylabel(r"mean $\iota$")
-    axs[1, 1].set_title("Final QA constraint location")
-    axs[1, 1].grid(alpha=0.25)
+        trace = diagnostics["fixed_gradient_trace"]
+        time = np.asarray(trace["times"], dtype=float)
+        heat_flux = np.asarray(trace["heat_flux"], dtype=float)
+        start = int(trace["window"]["start_index"])
+        running = np.cumsum(heat_flux[start:]) / np.arange(1, heat_flux[start:].size + 1, dtype=float)
+        ax_trace.plot(
+            time,
+            heat_flux,
+            color=colors[i],
+            ls=linestyles[i % len(linestyles)],
+            lw=1.9,
+            label=labels[i],
+        )
+        ax_trace.plot(time[start:], running, color=colors[i], ls=":", lw=1.25, alpha=0.76)
 
-    for ax in axs.ravel():
+    ax_scan.set_xlabel(r"density gradient $a/L_n$")
+    ax_scan.set_ylabel(r"late-window $\langle Q_{\rm env}\rangle$")
+    ax_scan.set_title(r"Reduced nonlinear response at fixed $a/L_{Ti}=6$")
+    ax_scan.legend(frameon=False, fontsize=8)
+    ax_scan.grid(alpha=0.25)
+    ax_trace.set_xlabel(r"$t v_{ti}/a$")
+    ax_trace.set_ylabel(r"$Q_{\rm env}(t)$")
+    ax_trace.set_title("Fixed-gradient reduced heat-flux traces")
+    ax_trace.legend(frameon=False, fontsize=8)
+    ax_trace.grid(alpha=0.25)
+
+    for ax, result, label in zip(surface_axes, results, labels, strict=True):
+        _plot_reduced_surface(
+            ax,
+            fig,
+            result["reduced_diagnostics"]["final"],
+            title=rf"LCFS $|B|$: {label}",
+        )
+    for ax, result, label in zip(bmag_axes, results, labels, strict=True):
+        _plot_reduced_boozer_bmag(
+            ax,
+            fig,
+            result["reduced_diagnostics"]["final"],
+            title=rf"Boozer LCFS $|B|$: {label}",
+        )
+
+    metrics = ["growth_rate", "quasilinear_heat_flux", "nonlinear_heat_flux_mean"]
+    reduction = final_obs[:, [idx[m] for m in metrics]] / initial_obs[:, [idx[m] for m in metrics]]
+    for i, result in enumerate(results):
+        result["transport_reduction_ratios"] = {
+            metric: float(reduction[i, j])
+            for j, metric in enumerate(metrics)
+        }
+
+    for ax in (ax_hist, ax_scan, ax_trace):
         for spine in ax.spines.values():
             spine.set_alpha(0.35)
     fig.savefig(path, dpi=220, bbox_inches="tight")

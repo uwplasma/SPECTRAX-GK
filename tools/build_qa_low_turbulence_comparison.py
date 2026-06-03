@@ -162,7 +162,7 @@ def plot_payload(payload: dict[str, Any], out: Path) -> None:
     bmin = min(float(np.nanmin(item)) for item in b_values)
     bmax = max(float(np.nanmax(item)) for item in b_values)
     bnorm = colors.Normalize(vmin=bmin, vmax=bmax)
-    bcmap = plt.colormaps["cividis"]
+    bcmap = plt.colormaps["jet"]
 
     for design in payload["designs"]:
         name = design["design_name"]

@@ -1,13 +1,51 @@
 # Optimization Examples
 
-This directory contains small, runnable optimization examples. The QA
-low-turbulence scripts are intentionally split into two levels:
+This directory contains small, runnable optimization examples. The main
+SPECTRAX-GK examples are intentionally split into three transport objectives:
 
-- Reduced, fast figure generation for the README/manuscript panel.
+- small linear ITG growth rate;
+- small quasilinear ITG heat-flux proxy;
+- small reduced nonlinear-window ITG heat-flux envelope.
+
+Each script follows the editable structure of VMEC-JAX
+`examples/optimization/QA_optimization.py`: visible problem constants, explicit
+QA/aspect/iota residuals, one transport residual, optimizer settings,
+AD/finite-difference gates, and explicit artifact generation. The compact
+package API remains available, but these examples avoid hiding the workflow
+behind a single `optimize_stellarator_itg(...)` call.
+
+The examples are split into two levels:
+
+- Reduced, fast figure generation for README/manuscript development panels.
 - VMEC-JAX fixed-boundary QA optimization with an optional SPECTRAX-GK transport
   residual for researchers who want to experiment with solved equilibria.
 
-## Rebuild The README QA Figure
+## Three Reduced ITG Optimization Examples
+
+From the repository root:
+
+```bash
+python examples/optimization/stellarator_itg_growth_optimization.py
+python examples/optimization/stellarator_itg_quasilinear_flux_optimization.py
+python examples/optimization/stellarator_itg_nonlinear_heat_flux_optimization.py
+python examples/optimization/compare_stellarator_itg_optimizations.py
+```
+
+Outputs:
+
+- `docs/_static/stellarator_itg_growth_optimization.{json,png,pdf}`
+- `docs/_static/stellarator_itg_quasilinear_optimization.{json,png,pdf}`
+- `docs/_static/stellarator_itg_nonlinear_optimization.{json,png,pdf}`
+- `docs/_static/stellarator_itg_optimization_comparison.{json,png,pdf}`
+
+The combined panel compares objective histories, reduced nonlinear heat-flux
+responses, fixed-gradient heat-flux traces, and reduced LCFS/Boozer `|B|`
+diagnostics for the three optimized controls. The LCFS maps use a 72-by-72
+angular grid and a shared `jet` colormap. These are reduced max-mode-1
+diagnostics for optimization plumbing; they are not solved VMEC surfaces and
+they are not production nonlinear turbulent heat-flux claims.
+
+## Rebuild The Reduced QA Low-Turbulence Figure
 
 From the repository root:
 
