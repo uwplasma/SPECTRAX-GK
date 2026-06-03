@@ -1,11 +1,16 @@
 from __future__ import annotations
 
+import json
+
 import spectraxgk
 from spectraxgk.vmec_jax_transport_admission import (
+    VMECJAXNonlinearAuditPolicy,
     VMECJAXTransportAdmissionPolicy,
+    build_nonlinear_audit_redesign_report,
     build_transport_admission_report,
     candidate_transport_metric,
     select_admitted_transport_candidate,
+    transport_objective_sample_summary,
 )
 
 
@@ -114,3 +119,79 @@ def test_transport_admission_exports_public_api() -> None:
     assert spectraxgk.build_transport_admission_report is build_transport_admission_report
     assert spectraxgk.candidate_transport_metric is candidate_transport_metric
     assert spectraxgk.select_admitted_transport_candidate is select_admitted_transport_candidate
+
+
+def _matched_comparison(
+    *,
+    relative_reduction: float,
+    z_score: float,
+    passed: bool,
+) -> dict[str, object]:
+    return {
+        "kind": "matched_nonlinear_transport_comparison",
+        "case": "qa_projected_transport_step1e3",
+        "passed": passed,
+        "baseline": {"passed": True, "ensemble_mean": 9.833},
+        "candidate": {"passed": True, "ensemble_mean": 9.891},
+        "statistics": {
+            "relative_reduction": relative_reduction,
+            "uncertainty_z_score": z_score,
+        },
+    }
+
+
+def test_transport_sample_summary_requires_surface_alpha_and_ky_coverage() -> None:
+    summary = transport_objective_sample_summary({"surfaces": [0.5], "alphas": [0.0], "ky_values": [0.3]})
+
+    assert summary["passed"] is False
+    assert summary["sample_count"] == 1
+    assert "insufficient_surface_coverage" in summary["blockers"]
+    assert "insufficient_field_line_coverage" in summary["blockers"]
+    assert "insufficient_ky_coverage" in summary["blockers"]
+
+
+def test_nonlinear_audit_redesign_blocks_negative_transfer_and_recommends_multisample_design() -> None:
+    report = build_nonlinear_audit_redesign_report(
+        _matched_comparison(relative_reduction=-0.00585, z_score=-0.20, passed=False),
+        objective_sample_set={"surfaces": [0.64], "alphas": [0.0], "ky_values": [0.3]},
+    )
+
+    assert report["nonlinear_audit_promoted"] is False
+    assert report["requires_objective_redesign"] is True
+    assert "insufficient_matched_reduction" in report["blockers"]
+    assert "insufficient_uncertainty_separation" in report["blockers"]
+    assert "insufficient_total_sample_count" in report["blockers"]
+    assert report["recommended_sample_set"]["sample_count"] == 18
+    assert report["gates"][0]["passed"] is False
+    json.dumps(report, allow_nan=False)
+
+
+def test_nonlinear_audit_redesign_promotes_only_when_audit_and_sample_coverage_pass() -> None:
+    policy = VMECJAXNonlinearAuditPolicy(
+        minimum_relative_reduction=0.02,
+        minimum_uncertainty_z_score=1.0,
+        minimum_surface_count=3,
+        minimum_alpha_count=2,
+        minimum_ky_count=3,
+        minimum_sample_count=12,
+    )
+    sample_set = {
+        "surfaces": [0.45, 0.64, 0.78],
+        "alphas": [0.0, 0.7853981633974483],
+        "ky_values": [0.19, 0.3, 0.476],
+    }
+
+    report = build_nonlinear_audit_redesign_report(
+        _matched_comparison(relative_reduction=0.08, z_score=2.5, passed=True),
+        objective_sample_set=sample_set,
+        policy=policy,
+    )
+
+    assert report["nonlinear_audit_promoted"] is True
+    assert report["requires_objective_redesign"] is False
+    assert report["blockers"] == []
+    assert report["objective_sample_summary"]["sample_count"] == 18
+    assert all(gate["passed"] for gate in report["gates"])
+    assert spectraxgk.VMECJAXNonlinearAuditPolicy is VMECJAXNonlinearAuditPolicy
+    assert spectraxgk.build_nonlinear_audit_redesign_report is build_nonlinear_audit_redesign_report
+    assert spectraxgk.transport_objective_sample_summary is transport_objective_sample_summary

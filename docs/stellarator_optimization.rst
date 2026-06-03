@@ -353,6 +353,17 @@ nonlinear flux for this boundary step.
    The projected candidate is not promoted because its ensemble mean is slightly
    higher than the baseline within uncertainty.
 
+The redesign gate in
+``docs/_static/qa_projected_transport_step1e3_redesign_report.json`` converts
+this negative audit into the next objective contract. It blocks promotion on
+``insufficient_matched_reduction``, ``insufficient_uncertainty_separation``,
+and under-resolved single-point objective coverage. The recommended next
+reduced objective evaluates ``3 x 2 x 3 = 18`` points: surfaces
+``s = (0.45, 0.64, 0.78)``, field-line labels
+``alpha = (0, pi/4)``, and ``k_y rho_i = (0.190, 0.300, 0.476)``. Future
+projected candidates must pass that multi-sample reduced admission before
+another expensive matched nonlinear audit is scientifically justified.
+
 .. figure:: _static/qa_low_turbulence_comparison.png
    :alt: Aspect-6 QA low-turbulence optimization comparison
    :width: 100%

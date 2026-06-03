@@ -99,7 +99,10 @@ score.
        long-window audit of that accepted projected step is negative: both
        seed/timestep ensembles pass, but the ensemble mean heat flux changes
        from ``9.833`` to ``9.891`` (relative reduction ``-0.00585``). It is
-       therefore not a nonlinear turbulent-flux optimization claim.
+       therefore not a nonlinear turbulent-flux optimization claim. The
+       companion redesign report fails closed and requires a multi-surface,
+       multi-field-line, multi-``k_y`` objective before another nonlinear
+       audit can be used for promotion.
    * - Parallelization
      - production-ready for independent work
      - Independent ``k_y`` scans, quasilinear spectra, sensitivity batches, and

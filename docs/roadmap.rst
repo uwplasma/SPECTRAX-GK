@@ -208,7 +208,10 @@ their ``t=[350,700]`` gates, but the projected candidate raises the ensemble
 mean heat flux slightly from ``9.833`` to ``9.891`` (relative reduction
 ``-0.00585``). The next implementation task is therefore not to promote this
 boundary step, but to add better-conditioned multi-sample objectives and
-matched long-window audits before any turbulent-flux optimization claim.
+matched long-window audits before any turbulent-flux optimization claim. The
+new ``qa_projected_transport_step1e3_redesign_report.json`` gate now records
+that requirement explicitly and recommends an 18-point reduced objective over
+three surfaces, two field-line labels, and three ``k_y`` values.
 
 Before tagging, the latest public ``main`` CI run must pass repo hygiene, mypy,
 quick shards, docs/packaging, fast coverage, and the full wide-coverage matrix.
