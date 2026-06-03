@@ -37,6 +37,32 @@ def _gradient_report(path: Path) -> None:
     )
 
 
+def _boundary_chain_collection(path: Path) -> None:
+    path.write_text(
+        json.dumps(
+            {
+                "kind": "vmec_jax_boundary_chain_collection_summary",
+                "classification": "mixed_exact_fd_consistency_with_branch_sensitive_modes",
+                "rows": [
+                    {
+                        "index": 1,
+                        "name": "zs10",
+                        "frozen_axis_jvp_vjp_consistent": True,
+                        "frozen_axis_matches_exact_fd": True,
+                    },
+                    {
+                        "index": 3,
+                        "name": "rc11",
+                        "frozen_axis_jvp_vjp_consistent": True,
+                        "frozen_axis_matches_exact_fd": False,
+                    },
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+
 def test_projected_writer_defaults_to_multisample_transport_contract(tmp_path: Path) -> None:
     args = mod._parse_args(
         [
@@ -104,6 +130,87 @@ def test_projected_writer_manifest_records_sample_coverage(tmp_path: Path, monke
     assert "0.0,0.7853981633974483" in command
     assert "--ky-values" in command
     assert "0.1,0.3,0.5" in command
+
+
+def test_projected_writer_filters_direction_by_boundary_chain_collection(tmp_path: Path, monkeypatch) -> None:
+    gradient = tmp_path / "gradient.json"
+    collection = tmp_path / "boundary_chain.json"
+    _gradient_report(gradient)
+    _boundary_chain_collection(collection)
+    saved: list[object] = []
+
+    class FakeOptimizer:
+        def save_input(self, path, delta):
+            Path(path).parent.mkdir(parents=True, exist_ok=True)
+            Path(path).write_text("! projected input\n", encoding="utf-8")
+            saved.append(delta)
+
+    fake_stage = SimpleNamespace(specs=[object(), object(), object(), object()], optimizer=FakeOptimizer())
+    monkeypatch.setattr(mod, "_build_stage", lambda _args: fake_stage)
+
+    rc = mod.main(
+        [
+            "--input",
+            str(tmp_path / "input.final"),
+            "--gradient-json",
+            str(gradient),
+            "--boundary-chain-collection-json",
+            str(collection),
+            "--outdir",
+            str(tmp_path / "out"),
+            "--steps",
+            "1e-3",
+            "--top-n",
+            "4",
+        ]
+    )
+
+    payload = json.loads((tmp_path / "out" / "projected_line_search_inputs.json").read_text(encoding="utf-8"))
+    assert rc == 0
+    assert len(saved) == 1
+    assert list(saved[0]) == pytest.approx([0.0, 1.0e-3, 0.0, 0.0])
+    assert payload["boundary_chain_filter"]["accepted_parameter_indices"] == [1]
+    assert payload["boundary_chain_collection_json"] == str(collection)
+
+
+def test_projected_writer_can_mark_branch_sensitive_filter_as_diagnostic(tmp_path: Path, monkeypatch) -> None:
+    gradient = tmp_path / "gradient.json"
+    collection = tmp_path / "boundary_chain.json"
+    _gradient_report(gradient)
+    _boundary_chain_collection(collection)
+    saved: list[object] = []
+
+    class FakeOptimizer:
+        def save_input(self, path, delta):
+            Path(path).parent.mkdir(parents=True, exist_ok=True)
+            Path(path).write_text("! projected input\n", encoding="utf-8")
+            saved.append(delta)
+
+    fake_stage = SimpleNamespace(specs=[object(), object(), object(), object()], optimizer=FakeOptimizer())
+    monkeypatch.setattr(mod, "_build_stage", lambda _args: fake_stage)
+
+    mod.main(
+        [
+            "--input",
+            str(tmp_path / "input.final"),
+            "--gradient-json",
+            str(gradient),
+            "--boundary-chain-collection-json",
+            str(collection),
+            "--allow-boundary-chain-branch-sensitive",
+            "--outdir",
+            str(tmp_path / "out"),
+            "--steps",
+            "1e-3",
+            "--top-n",
+            "4",
+        ]
+    )
+
+    payload = json.loads((tmp_path / "out" / "projected_line_search_inputs.json").read_text(encoding="utf-8"))
+    assert list(saved[0]) == pytest.approx([0.0, 6.0e-4, 0.0, -8.0e-4])
+    assert payload["boundary_chain_filter"]["require_exact_fd"] is False
+    assert payload["boundary_chain_filter"]["accepted_parameter_indices"] == [1, 3]
 
 
 def test_projected_writer_fails_closed_for_underresolved_sample_set(tmp_path: Path, monkeypatch) -> None:

@@ -436,6 +436,7 @@ After a sensitive diagnostic, generate bounded projected candidate inputs with:
    python tools/write_vmec_jax_projected_transport_line_search_inputs.py \
      --input runs/qa_constraints_only/input.final \
      --gradient-json runs/qa_constraints_only/transport_gradient.json \
+     --boundary-chain-collection-json docs/_static/vmec_jax_boundary_chain_multicomponent.json \
      --outdir runs/qa_projected_transport_line_search \
      --steps 2.5e-4,5e-4,1e-3,2e-3 \
      --top-n 12 \
@@ -448,8 +449,10 @@ After a sensitive diagnostic, generate bounded projected candidate inputs with:
 
 The generated ``projected_line_search_inputs.json`` records the candidate
 ``input.gradient_step`` decks, replay commands, and objective sample summary.
-By default the writer fails closed if the transport objective does not satisfy
-the multi-surface/multi-field-line/multi-``k_y`` coverage gate. Exploratory
+With ``--boundary-chain-collection-json``, it also records the accepted
+coefficient indices and excludes branch-sensitive components by default. The
+writer fails closed if the transport objective does not satisfy the
+multi-surface/multi-field-line/multi-``k_y`` coverage gate. Exploratory
 single-point searches require ``--allow-underresolved-sample-set`` and cannot
 be used for production nonlinear-audit admission. Each replay must still write
 an authoritative ``solved_wout_gate.json`` and explicit transport metric before

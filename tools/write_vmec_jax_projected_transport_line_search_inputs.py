@@ -46,6 +46,24 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", type=Path, required=True, help="Solved VMEC input deck")
     parser.add_argument("--gradient-json", type=Path, required=True, help="Transport-gradient diagnostic JSON")
+    parser.add_argument(
+        "--boundary-chain-collection-json",
+        type=Path,
+        default=None,
+        help=(
+            "Optional VMEC-JAX boundary-chain collection JSON. When supplied, "
+            "projected directions use only coefficients that pass frozen-axis "
+            "replay and exact finite-difference agreement."
+        ),
+    )
+    parser.add_argument(
+        "--allow-boundary-chain-branch-sensitive",
+        action="store_true",
+        help=(
+            "Diagnostic only: admit internally transposed but exact-FD branch-sensitive "
+            "coefficients from the boundary-chain collection."
+        ),
+    )
     parser.add_argument("--outdir", type=Path, required=True, help="Directory for generated candidate inputs")
     parser.add_argument("--steps", type=_float_tuple, default=(2.5e-4, 5.0e-4, 1.0e-3, 2.0e-3))
     parser.add_argument("--top-n", type=int, default=12, help="Number of ranked gradient components to use")
@@ -184,14 +202,24 @@ def _replay_command(args: argparse.Namespace, input_path: Path, outdir: Path) ->
 def main(argv: list[str] | None = None) -> int:
     args = _parse_args(argv)
     report = json.loads(args.gradient_json.read_text(encoding="utf-8"))
+    boundary_chain_collection = (
+        None
+        if args.boundary_chain_collection_json is None
+        else json.loads(args.boundary_chain_collection_json.read_text(encoding="utf-8"))
+    )
+    require_boundary_chain_exact_fd = not bool(args.allow_boundary_chain_branch_sensitive)
     direction = sparse_descent_direction_from_gradient_report(
         report,
         top_n=int(args.top_n),
+        boundary_chain_collection=boundary_chain_collection,
+        require_boundary_chain_exact_fd=require_boundary_chain_exact_fd,
     )
     manifest = projected_line_search_input_manifest(
         report,
         steps=tuple(float(x) for x in args.steps),
         top_n=int(args.top_n),
+        boundary_chain_collection=boundary_chain_collection,
+        require_boundary_chain_exact_fd=require_boundary_chain_exact_fd,
     )
     sample_set = _sample_set_from_args(args)
     sample_summary = transport_objective_sample_summary(sample_set)
@@ -226,6 +254,8 @@ def main(argv: list[str] | None = None) -> int:
         )
     manifest["input"] = str(args.input)
     manifest["gradient_json"] = str(args.gradient_json)
+    if args.boundary_chain_collection_json is not None:
+        manifest["boundary_chain_collection_json"] = str(args.boundary_chain_collection_json)
     manifest["transport_objective_sample_set"] = sample_set.to_dict()
     manifest["objective_sample_summary"] = sample_summary
     manifest["nonlinear_audit_policy"] = DEFAULT_AUDIT_POLICY.to_dict()
