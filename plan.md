@@ -70,6 +70,10 @@ The target paper should show:
 - Wired the same collection filter into the projected-input writer executable,
   so promoted VMEC decks require a boundary-chain collection and use the safe
   coefficient subset by default.
+- Real writer smoke passed on the local latest stack using the tracked
+  multicomponent collection: generated a one-step projected VMEC deck from the
+  authoritative QA baseline with only indices ``27`` and ``28`` admitted and
+  the 18-sample transport coverage gate passing.
 
 ## 2026-06-02 Projected QA Transport Audit
 
