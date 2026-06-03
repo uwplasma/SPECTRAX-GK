@@ -69,6 +69,16 @@ This file is both the active plan and the running log. Keep entries concise, dat
   ``pytest -q tests/test_solver_objective_gradients.py tests/test_vmec_jax_transport_objective.py``,
   Ruff on the touched files, source ``mypy``, and probe ``mypy`` with
   ``PYTHONPATH=src:tools:<vmec_jax> --ignore-missing-imports``.
+- Real bounded probe on the solved QA ``rc14`` coefficient at ``step=2e-5``
+  with one growth sample ``s=0.64, alpha=0, ky=0.3`` produced
+  ``growth_branch_locality.passed = true``. The base branch gap is
+  ``1.68e-3`` and the independently dominant and nearest-branch FD slopes are
+  both ``0.73694``. The same probe still classifies the boundary chain as
+  ``frozen_axis_replay_consistent_but_exact_fd_inconsistent``:
+  final-state cotangent vs exact final-state FD agrees to ``6.2e-6`` relative,
+  while frozen-axis replay vs raw exact FD differs by ``0.140`` relative. This
+  rules out a dominant-growth branch switch for that sample and leaves the
+  VMEC exact-solve/frozen-axis convention mismatch as the current blocker.
 
 ## 2026-06-03 VMEC-JAX QA Transport Script Audit
 
