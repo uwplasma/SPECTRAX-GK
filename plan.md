@@ -124,6 +124,31 @@ The target paper should show:
   new projected line-search candidate. Sparse finite-difference directions
   remain diagnostics only, not end-to-end AD optimization evidence.
 
+## 2026-06-03 Dominant-Growth VJP Repair
+
+- Localized the reverse-gradient disconnect to the growth-rate scalar used by
+  the VMEC-JAX transport residual. The direct ``jnp.linalg.eigvals`` +
+  ``max(real(lambda))`` path can produce nonfinite final-state derivatives for
+  the non-Hermitian linear operator, which VMEC-JAX then sanitizes to a zero
+  cotangent.
+- Added ``dominant_real_eigenvalue`` with an implicit left/right eigenvalue
+  VJP, using ``d lambda = w^H dA v`` and ``w^H v = 1`` for the branch selected
+  at the primal point. ``solver_growth_rate_from_geometry`` now uses this path,
+  while branch continuity remains enforced by finite-difference and
+  eigenbranch gates before any optimization claim is promoted.
+- Added regression gates comparing the custom VJP against central finite
+  differences on both a non-Hermitian matrix family and the actual
+  solver-ready geometry growth-rate path. Focused local result:
+  ``59 passed`` for
+  ``tests/test_solver_objective_gradients.py``,
+  ``tests/test_vmec_jax_transport_objective.py``, and
+  ``tests/test_build_vmec_jax_transport_gradient_diagnostic.py``; Ruff passes
+  on the touched files.
+- Next best step: rerun the office final-state VJP probe and sparse VMEC-JAX
+  AD/FD transport-gradient gate. If final-state gradients are finite but the
+  full boundary replay still OOMs, the remaining blocker is memory/chunking in
+  the VMEC-JAX/Boozer replay rather than the SPECTRAX-GK eigenvalue derivative.
+
 ## 2026-06-01 VMEC-JAX QA Transport Objective Fix
 
 - Responded to QA of the low-turbulence panel: the tracked reduced optimizer

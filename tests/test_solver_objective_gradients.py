@@ -26,11 +26,13 @@ from spectraxgk.solver_objective_gradients import (
     _reduced_nonlinear_window_metrics_from_linear_observables,
     _vmec_boozer_state_parameter_name,
     default_solver_geometry_design_params,
+    dominant_real_eigenvalue,
     linear_solver_geometry_gradient_report,
     mode21_vmec_boozer_linear_frequency_gradient_report,
     mode21_vmec_boozer_nonlinear_window_gradient_report,
     mode21_vmec_boozer_quasilinear_gradient_report,
     solver_objective_branch_gradient_report,
+    solver_growth_rate_from_geometry,
     solver_objective_vector_from_geometry,
     solver_grid_options_from_ky_values,
     solver_scalar_objective_from_vector,
@@ -185,6 +187,75 @@ def test_solver_scalar_objective_selector_aliases_and_errors() -> None:
         solver_scalar_objective_from_vector(vector, "bad")  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="length"):
         solver_scalar_objective_from_vector(jnp.ones(2), "growth")
+
+
+def test_dominant_real_eigenvalue_custom_vjp_matches_finite_difference() -> None:
+    x64_enabled = bool(jax.config.read("jax_enable_x64"))
+    dtype = jnp.float64 if x64_enabled else jnp.float32
+    step = 1.0e-5 if x64_enabled else 2.0e-3
+    rtol = 1.0e-4 if x64_enabled else 5.0e-2
+    atol = 1.0e-6 if x64_enabled else 5.0e-4
+    params = jnp.asarray([0.3, -0.2, 0.5, 0.1, 0.7], dtype=dtype)
+
+    def matrix_from_params(x: jnp.ndarray) -> jnp.ndarray:
+        return jnp.asarray(
+            [
+                [1.0 + 0.2j * x[0], x[0] + 1j * x[1], 0.1 + 0.2j * x[4]],
+                [0.2 * x[2] - 0.1j, -0.3 + 0.4j * x[3], 0.05 + 0.1j * x[1]],
+                [0.01 + x[4], -0.2j * x[2], 0.2 + 0.3j],
+            ],
+            dtype=jnp.complex128 if x64_enabled else jnp.complex64,
+        )
+
+    def objective(x: jnp.ndarray) -> jnp.ndarray:
+        return dominant_real_eigenvalue(matrix_from_params(x))
+
+    grad_ad = np.asarray(jax.grad(objective)(params), dtype=float)
+    eye = jnp.eye(int(params.size), dtype=params.dtype)
+    grad_fd = []
+    for index in range(int(params.size)):
+        plus = objective(params + step * eye[index])
+        minus = objective(params - step * eye[index])
+        grad_fd.append(float((plus - minus) / (2.0 * step)))
+
+    assert spectraxgk.dominant_real_eigenvalue is dominant_real_eigenvalue
+    assert np.all(np.isfinite(grad_ad))
+    np.testing.assert_allclose(grad_ad, np.asarray(grad_fd), rtol=rtol, atol=atol)
+
+
+def test_solver_growth_rate_from_geometry_has_finite_fd_checked_gradient() -> None:
+    x64_enabled = bool(jax.config.read("jax_enable_x64"))
+    dtype = jnp.float64 if x64_enabled else jnp.float32
+    step = 2.0e-4 if x64_enabled else 2.0e-3
+    rtol = 5.0e-2 if x64_enabled else 2.0e-1
+    atol = 2.0e-4 if x64_enabled else 2.0e-3
+    params = default_solver_geometry_design_params().astype(dtype)
+    theta = jnp.linspace(-jnp.pi, jnp.pi, 4, endpoint=False, dtype=dtype)
+
+    def objective(x: jnp.ndarray) -> jnp.ndarray:
+        geom = spectraxgk.flux_tube_geometry_from_mapping(
+            solver_ready_geometry_mapping(x, theta),
+            source_model="solver_growth_custom_vjp_gate",
+            validate_finite=False,
+        )
+        return solver_growth_rate_from_geometry(
+            geom,
+            n_laguerre=1,
+            n_hermite=1,
+            ny=4,
+            selected_ky_index=1,
+        )
+
+    grad_ad = np.asarray(jax.grad(objective)(params), dtype=float)
+    eye = jnp.eye(int(params.size), dtype=params.dtype)
+    grad_fd = []
+    for index in range(int(params.size)):
+        plus = objective(params + step * eye[index])
+        minus = objective(params - step * eye[index])
+        grad_fd.append(float((plus - minus) / (2.0 * step)))
+
+    assert np.all(np.isfinite(grad_ad))
+    np.testing.assert_allclose(grad_ad, np.asarray(grad_fd), rtol=rtol, atol=atol)
 
 
 def test_solver_grid_options_from_ky_values_maps_physical_scan_to_fft_rows() -> None:

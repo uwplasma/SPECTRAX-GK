@@ -345,6 +345,15 @@ it demonstrates the failure mode cleanly: the reverse gradient is zero while
 central finite differences through the same residual are nonzero for selected
 ``R``/``Z`` boundary components.
 
+The SPECTRAX-GK growth-rate scalar used by this VMEC-JAX transport residual
+uses a branch-fixed implicit eigenvalue VJP rather than raw reverse-mode AD
+through non-Hermitian eigenvectors. The local solver-ready gates compare that
+VJP against central finite differences. The full VMEC-JAX/Boozer path still
+must pass the sparse coefficient checks above before a projected update is
+promoted, because branch changes, Boozer replay memory pressure, or
+ill-conditioned equilibria can invalidate an otherwise correct local
+eigenvalue derivative.
+
 After a sensitive diagnostic, generate bounded projected candidate inputs with:
 
 .. code-block:: bash
