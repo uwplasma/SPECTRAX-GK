@@ -64,6 +64,9 @@ The target paper should show:
   bounded exact-FD agreement, or regularizes/excludes branch-sensitive modes
   until a public VMEC-JAX solved-equilibrium linearization protocol closes the
   coefficient-level mismatch.
+- Implemented the backend-free projected line-search safeguard: collection-gated
+  directions default to exact-FD-consistent coefficients only; internal-replay
+  branch-sensitive modes remain diagnostic-only.
 
 ## 2026-06-02 Projected QA Transport Audit
 

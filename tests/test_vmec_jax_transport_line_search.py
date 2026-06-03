@@ -8,6 +8,7 @@ import pytest
 import spectraxgk
 from spectraxgk.vmec_jax_transport_line_search import (
     ProjectedLineSearchPolicy,
+    boundary_chain_accepted_parameter_indices,
     projected_line_search_input_manifest,
     select_projected_line_search_candidate,
     sparse_descent_direction_from_gradient_report,
@@ -56,6 +57,85 @@ def test_sparse_descent_direction_rejects_bad_gradient_report() -> None:
         )
 
 
+def _boundary_chain_collection() -> dict[str, object]:
+    return {
+        "kind": "vmec_jax_boundary_chain_collection_summary",
+        "classification": "mixed_exact_fd_consistency_with_branch_sensitive_modes",
+        "rows": [
+            {
+                "index": 1,
+                "name": "zs10",
+                "finite": True,
+                "frozen_axis_jvp_vjp_consistent": True,
+                "frozen_axis_matches_exact_fd": True,
+            },
+            {
+                "index": 3,
+                "name": "rc11",
+                "finite": True,
+                "frozen_axis_jvp_vjp_consistent": True,
+                "frozen_axis_matches_exact_fd": False,
+            },
+            {
+                "index": 0,
+                "name": "rc01",
+                "finite": True,
+                "frozen_axis_jvp_vjp_consistent": False,
+                "frozen_axis_matches_exact_fd": True,
+            },
+        ],
+    }
+
+
+def test_boundary_chain_filter_keeps_only_exact_fd_consistent_components() -> None:
+    collection = _boundary_chain_collection()
+
+    assert boundary_chain_accepted_parameter_indices(collection) == (1,)
+    direction = sparse_descent_direction_from_gradient_report(
+        _gradient_report(),
+        top_n=3,
+        boundary_chain_collection=collection,
+    )
+
+    assert direction[1] == pytest.approx(1.0)
+    assert direction[3] == 0.0
+    assert direction[0] == 0.0
+
+
+def test_boundary_chain_filter_can_admit_internal_replay_diagnostics() -> None:
+    collection = _boundary_chain_collection()
+
+    assert boundary_chain_accepted_parameter_indices(collection, require_exact_fd=False) == (1, 3)
+    direction = sparse_descent_direction_from_gradient_report(
+        _gradient_report(),
+        top_n=3,
+        boundary_chain_collection=collection,
+        require_boundary_chain_exact_fd=False,
+    )
+
+    assert direction[1] == pytest.approx(3.0 / 5.0)
+    assert direction[3] == pytest.approx(-4.0 / 5.0)
+    assert direction[0] == 0.0
+
+
+def test_projected_line_search_manifest_records_boundary_chain_filter() -> None:
+    manifest = projected_line_search_input_manifest(
+        _gradient_report(),
+        steps=(0.1,),
+        top_n=3,
+        boundary_chain_collection=_boundary_chain_collection(),
+    )
+
+    assert manifest["boundary_chain_filter"] == {
+        "enabled": True,
+        "require_exact_fd": True,
+        "collection_classification": "mixed_exact_fd_consistency_with_branch_sensitive_modes",
+        "accepted_parameter_indices": [1],
+    }
+    assert manifest["steps"][0]["parameter_linf_norm"] == pytest.approx(0.1)
+    json.dumps(manifest, allow_nan=False)
+
+
 def test_projected_line_search_admission_selects_best_gate_passing_candidate() -> None:
     report = select_projected_line_search_candidate(
         {"transport_metric_final": 10.0, "gate_passed": True},
@@ -88,6 +168,7 @@ def test_projected_line_search_admission_fails_closed_without_improvement() -> N
 
 def test_projected_line_search_public_api_exports() -> None:
     assert spectraxgk.ProjectedLineSearchPolicy is ProjectedLineSearchPolicy
+    assert spectraxgk.boundary_chain_accepted_parameter_indices is boundary_chain_accepted_parameter_indices
     assert spectraxgk.sparse_descent_direction_from_gradient_report is sparse_descent_direction_from_gradient_report
     assert spectraxgk.projected_line_search_input_manifest is projected_line_search_input_manifest
     assert spectraxgk.select_projected_line_search_candidate is select_projected_line_search_candidate

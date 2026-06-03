@@ -423,6 +423,12 @@ must exclude or regularize branch-sensitive coefficients until a better
 conditioned finite-difference protocol or public solved-equilibrium
 linearization gate closes the mismatch.
 
+The backend-free projected line-search helpers accept the collection JSON
+through ``boundary_chain_collection`` and, by default, admit only coefficients
+that pass both frozen-axis replay and exact-FD agreement. The
+``require_boundary_chain_exact_fd=False`` path is diagnostic only and must not
+drive promoted VMEC boundary updates.
+
 After a sensitive diagnostic, generate bounded projected candidate inputs with:
 
 .. code-block:: bash
