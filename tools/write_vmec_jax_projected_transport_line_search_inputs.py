@@ -12,6 +12,10 @@ from typing import cast
 import numpy as np
 
 from spectraxgk.stellarator_optimization import StellaratorITGSampleSet
+from spectraxgk.vmec_jax_transport_admission import (
+    VMECJAXNonlinearAuditPolicy,
+    transport_objective_sample_summary,
+)
 from spectraxgk.vmec_jax_transport_line_search import (
     projected_line_search_input_manifest,
     sparse_descent_direction_from_gradient_report,
@@ -25,6 +29,10 @@ from spectraxgk.vmec_jax_transport_objective import (
 
 
 ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_AUDIT_POLICY = VMECJAXNonlinearAuditPolicy()
+DEFAULT_TRANSPORT_SURFACES = DEFAULT_AUDIT_POLICY.recommended_surfaces
+DEFAULT_TRANSPORT_ALPHAS = DEFAULT_AUDIT_POLICY.recommended_alphas
+DEFAULT_TRANSPORT_KY_VALUES = DEFAULT_AUDIT_POLICY.recommended_ky_values
 
 
 def _float_tuple(raw: str) -> tuple[float, ...]:
@@ -43,9 +51,14 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--top-n", type=int, default=12, help="Number of ranked gradient components to use")
     parser.add_argument("--max-mode", type=int, default=5)
     parser.add_argument("--min-vmec-mode", type=int, default=7)
-    parser.add_argument("--surfaces", type=_float_tuple, default=(0.64,))
-    parser.add_argument("--alphas", type=_float_tuple, default=(0.0,))
-    parser.add_argument("--ky-values", type=_float_tuple, default=(0.30,))
+    parser.add_argument("--surfaces", type=_float_tuple, default=DEFAULT_TRANSPORT_SURFACES)
+    parser.add_argument("--alphas", type=_float_tuple, default=DEFAULT_TRANSPORT_ALPHAS)
+    parser.add_argument("--ky-values", type=_float_tuple, default=DEFAULT_TRANSPORT_KY_VALUES)
+    parser.add_argument(
+        "--allow-underresolved-sample-set",
+        action="store_true",
+        help="Permit exploratory single-point projected searches; production admission fails closed by default",
+    )
     parser.add_argument(
         "--transport-kind",
         choices=("growth", "quasilinear_flux", "nonlinear_window_heat_flux"),
@@ -71,6 +84,14 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
+def _sample_set_from_args(args: argparse.Namespace) -> StellaratorITGSampleSet:
+    return StellaratorITGSampleSet(
+        surfaces=tuple(float(x) for x in args.surfaces),
+        alphas=tuple(float(x) for x in args.alphas),
+        ky_values=tuple(float(x) for x in args.ky_values),
+    )
+
+
 def _build_stage(args: argparse.Namespace):
     vj = importlib.import_module("vmec_jax")
     build_stage = getattr(vj, "build_fixed_boundary_objective_stage", None)
@@ -80,11 +101,7 @@ def _build_stage(args: argparse.Namespace):
 
     config = VMECJAXTransportObjectiveConfig(
         kind=cast(VMECJAXTransportObjectiveKind, str(args.transport_kind)),
-        sample_set=StellaratorITGSampleSet(
-            surfaces=tuple(float(x) for x in args.surfaces),
-            alphas=tuple(float(x) for x in args.alphas),
-            ky_values=tuple(float(x) for x in args.ky_values),
-        ),
+        sample_set=_sample_set_from_args(args),
         ntheta=int(args.ntheta),
         mboz=int(args.mboz),
         nboz=int(args.nboz),
@@ -176,6 +193,13 @@ def main(argv: list[str] | None = None) -> int:
         steps=tuple(float(x) for x in args.steps),
         top_n=int(args.top_n),
     )
+    sample_set = _sample_set_from_args(args)
+    sample_summary = transport_objective_sample_summary(sample_set)
+    if not bool(sample_summary["passed"]) and not bool(args.allow_underresolved_sample_set):
+        raise ValueError(
+            "under-resolved transport objective sample set; use the default multi-sample set "
+            "or pass --allow-underresolved-sample-set for exploratory diagnostics"
+        )
     stage = _build_stage(args)
     if len(stage.specs) != int(direction.size):
         raise ValueError(
@@ -202,6 +226,9 @@ def main(argv: list[str] | None = None) -> int:
         )
     manifest["input"] = str(args.input)
     manifest["gradient_json"] = str(args.gradient_json)
+    manifest["transport_objective_sample_set"] = sample_set.to_dict()
+    manifest["objective_sample_summary"] = sample_summary
+    manifest["nonlinear_audit_policy"] = DEFAULT_AUDIT_POLICY.to_dict()
     manifest["rows"] = rows
     manifest_path = args.outdir / "projected_line_search_inputs.json"
     manifest_path.write_text(json.dumps(manifest, indent=2, allow_nan=False) + "\n", encoding="utf-8")

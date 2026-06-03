@@ -177,7 +177,7 @@ Then run the two comparable branches:
      --transport-kind nonlinear_window_heat_flux \
      --surfaces 0.45,0.64,0.78 \
      --alphas 0.0,0.7853981633974483 \
-     --ky-values 0.190,0.300,0.476
+     --ky-values 0.10,0.30,0.50
 
 On a GPU node, append ``--solver-device gpu``; otherwise JAX will use the
 available default backend. The QA-only branch defaults to the upstream
@@ -300,12 +300,19 @@ After a sensitive diagnostic, generate bounded projected candidate inputs with:
      --outdir runs/qa_projected_transport_line_search \
      --steps 2.5e-4,5e-4,1e-3,2e-3 \
      --top-n 12 \
+     --surfaces 0.45,0.64,0.78 \
+     --alphas 0.0,0.7853981633974483 \
+     --ky-values 0.10,0.30,0.50 \
      --max-mode 5 --min-vmec-mode 7 \
      --mboz 21 --nboz 21 \
      --solver-device gpu
 
 The generated ``projected_line_search_inputs.json`` records the candidate
-``input.gradient_step`` decks and replay commands. Each replay must still write
+``input.gradient_step`` decks, replay commands, and objective sample summary.
+By default the writer fails closed if the transport objective does not satisfy
+the multi-surface/multi-field-line/multi-``k_y`` coverage gate. Exploratory
+single-point searches require ``--allow-underresolved-sample-set`` and cannot
+be used for production nonlinear-audit admission. Each replay must still write
 an authoritative ``solved_wout_gate.json`` and explicit transport metric before
 any candidate is admitted.
 
@@ -318,7 +325,9 @@ the aspect, mean-iota, iota-profile, and QS gates. The next larger step
 ``2e-3`` is rejected because the solved QS residual rises to ``0.119846`` above
 the ``0.05`` gate. This is evidence for a gate-aware projected-admission
 algorithm; it is not yet a long-window nonlinear turbulent-flux optimization
-claim.
+claim. The matched nonlinear audit below shows that this historical
+single-point reduced metric did not transfer to long-window transport, so new
+projected candidates must use the multi-sample command above.
 
 .. figure:: _static/vmec_jax_transport_gradient_line_search.svg
    :alt: VMEC-JAX transport-gradient line-search audit
@@ -360,7 +369,8 @@ this negative audit into the next objective contract. It blocks promotion on
 and under-resolved single-point objective coverage. The recommended next
 reduced objective evaluates ``3 x 2 x 3 = 18`` points: surfaces
 ``s = (0.45, 0.64, 0.78)``, field-line labels
-``alpha = (0, pi/4)``, and ``k_y rho_i = (0.190, 0.300, 0.476)``. Future
+``alpha = (0, pi/4)``, and grid-compatible
+``k_y rho_i = (0.10, 0.30, 0.50)``. Future
 projected candidates must pass that multi-sample reduced admission before
 another expensive matched nonlinear audit is scientifically justified.
 

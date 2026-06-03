@@ -178,7 +178,7 @@ def test_nonlinear_audit_redesign_promotes_only_when_audit_and_sample_coverage_p
     sample_set = {
         "surfaces": [0.45, 0.64, 0.78],
         "alphas": [0.0, 0.7853981633974483],
-        "ky_values": [0.19, 0.3, 0.476],
+        "ky_values": [0.1, 0.3, 0.5],
     }
 
     report = build_nonlinear_audit_redesign_report(
@@ -195,3 +195,16 @@ def test_nonlinear_audit_redesign_promotes_only_when_audit_and_sample_coverage_p
     assert spectraxgk.VMECJAXNonlinearAuditPolicy is VMECJAXNonlinearAuditPolicy
     assert spectraxgk.build_nonlinear_audit_redesign_report is build_nonlinear_audit_redesign_report
     assert spectraxgk.transport_objective_sample_summary is transport_objective_sample_summary
+
+
+def test_transport_sample_summary_rejects_ky_values_not_supported_by_single_solver_grid() -> None:
+    summary = transport_objective_sample_summary(
+        {
+            "surfaces": [0.45, 0.64, 0.78],
+            "alphas": [0.0, 0.7853981633974483],
+            "ky_values": [0.19, 0.3, 0.476],
+        }
+    )
+
+    assert summary["passed"] is False
+    assert "ky_values_not_single_grid_compatible" in summary["blockers"]

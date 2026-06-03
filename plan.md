@@ -51,12 +51,20 @@ The target paper should show:
 - Updated the VMEC-JAX QA transport example defaults and README/docs commands
   to use the recommended 18-point reduced objective:
   ``s = (0.45, 0.64, 0.78)``, ``alpha = (0, pi/4)``, and
-  ``k_y rho_i = (0.190, 0.300, 0.476)``. Added regression tests so the example
+  ``k_y rho_i = (0.10, 0.30, 0.50)``. Added regression tests so the example
   cannot silently return to a single-point default.
+- The first bounded multi-sample replay exposed a real grid-contract issue:
+  the earlier ``k_y = (0.190, 0.300, 0.476)`` recommendation could not share
+  the current single-``Ly`` solver grid. The admission gate now fails closed on
+  non-integer-multiple ``k_y`` sets, the recommended set is the compatible
+  ``(0.10, 0.30, 0.50)``, and a bounded local projected replay passed both the
+  solved-equilibrium gate and the reduced transport-metric plumbing check.
 
-Next best step: run the multi-sample projected VMEC-JAX transport-admission
-path on a bounded candidate, then launch long-window nonlinear audits only if
-the multi-sample reduced objective and solved-equilibrium gates both pass.
+Next best step: run the production-resolution multi-sample projected
+line-search or short VMEC-JAX optimization candidate, compare the reduced
+objective against the matched baseline with the same 18-point sample contract,
+then launch long-window nonlinear audits only if both the reduced objective and
+solved-equilibrium gates pass.
 
 ## 2026-06-01 VMEC-JAX QA Transport Objective Fix
 

@@ -41,7 +41,7 @@ from spectraxgk.vmec_jax_transport_objective import VMECJAXTransportObjectiveTra
 
 DEFAULT_TRANSPORT_SURFACES = (0.45, 0.64, 0.78)
 DEFAULT_TRANSPORT_ALPHAS = (0.0, 0.7853981633974483)
-DEFAULT_TRANSPORT_KY_VALUES = (0.190, 0.300, 0.476)
+DEFAULT_TRANSPORT_KY_VALUES = (0.10, 0.30, 0.50)
 
 
 def _float_tuple(raw: str) -> tuple[float, ...]:
