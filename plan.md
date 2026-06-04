@@ -28,8 +28,8 @@ historical logs live outside the release repository so clones stay small.
 | --- | ---: | --- |
 | CI/CD, release infrastructure, package coverage | 100% | Green CI, 95% package-wide coverage |
 | Rerun-WOUT admission and artifact policy | 100% | Explicit authoritative rerun-WOUT path implemented and tested |
-| Strict QA candidate screening | 85% | One-coefficient projected search closed fail-safe; broader directions open |
-| Strict nonlinear turbulent-flux optimization evidence | 70% | No matched rerun-authoritative candidate has reduced the 18-point metric yet |
+| Strict QA candidate screening | 95% | Top-12 projected edge candidate passes rerun-WOUT gates and reduces the 18-point metric by 2.29% |
+| Strict nonlinear turbulent-flux optimization evidence | 80% | Matched t=700 baseline/candidate nonlinear audit is launched on office; no turbulent-flux claim until it passes |
 | Docs/readme/release hygiene | 90% | Needs final sync after the next admitted or failed scientific tranche |
 | Performance/parallelization release lane | 95% | Independent-work parallel paths are release-ready; nonlinear domain sharding remains research/development |
 
@@ -172,23 +172,20 @@ No long nonlinear audit should be launched from these candidates.
 
 ## Immediate Next Steps
 
-1. Build a broader strict boundary-chain collection around the rerun-WOUT
-   baseline: target top 8 to 12 gradient coefficients, require frozen-axis
-   convention verification and growth-branch locality, and record exact rows
-   separately from branch-sensitive rows.
-2. Run projected line searches over the accepted multi-coefficient subspace,
-   not the single `rc24` direction. Evaluate every candidate with the same
-   18-point reduced nonlinear-window metric under the authoritative rerun-WOUT
-   convention.
-3. Launch matched long-window nonlinear audits on office only if a candidate:
-   passes rerun-WOUT admission, improves the 18-point reduced metric by at
-   least 1-2%, preserves aspect/iota/QS gates, and has no branch-locality
-   failure.
-4. If the broader projected search still fails, record the strict QA turbulence
-   optimization lane as a negative result for this release and move the next
-   scientific push to a better-conditioned objective or variance-reduced
-   transport metric.
-5. Keep CI green after each tranche: fast unit shards, coverage aggregation,
+1. Monitor the matched long-window nonlinear audit on office:
+   `/home/rjorge/tmp/spectrax_strict_matched_nonlinear_audit_top12_edge_0d887d3`.
+   It contains strict baseline and top-12 edge candidate `t=700`, `n64`,
+   seed/timestep replicate runs with post-transient window `350..700`.
+2. After all six nonlinear outputs exist, build baseline and candidate
+   replicated-window ensemble gates, then run
+   `tools/build_matched_nonlinear_transport_comparison.py` on the two
+   ensembles. Promote only if the matched nonlinear comparison is separated
+   from uncertainty overlap.
+3. If the matched nonlinear audit fails or is uncertainty-overlapped, record the
+   top-12 edge candidate as reduced-objective-only evidence and redesign the
+   transport metric or variance-reduction campaign before spending more long
+   GPU time.
+4. Keep CI green after each tranche: fast unit shards, coverage aggregation,
    repository-size gate, docs links, and package build.
 
 ## Release Hygiene Rules
@@ -214,3 +211,25 @@ No long nonlinear audit should be launched from these candidates.
 - Trimmed this active plan from the old public historical running log to the
   current release/science lanes so the repository stays below the 50 MB tracked
   payload limit.
+- CI passed again on `main` at `0d887d3` after the plan trim.
+- Ran a strict rerun-WOUT boundary-chain campaign on office:
+  `/home/rjorge/tmp/spectrax_strict_boundary_chain_top12_cpu_0d887d3`.
+  All 12 leading gradient coefficients are finite, frozen-axis convention
+  verified, and growth-branch-locality passing; 4 are exact-FD consistent.
+- Ran top-6 and top-12 projected line searches under the strict
+  rerun-authoritative convention. Top-6 best was `step=5e-4`, metric
+  `0.07987162077`, a `0.293%` reduction from the strict baseline
+  `0.08010670290`. Top-12 best in the regular sweep was `step=1e-3`, metric
+  `0.07941291648`, a `0.866%` reduction; larger `1.5e-3` and `2e-3` failed
+  iota admission.
+- Ran a top-12 edge scan. `step=1.25e-3` passes rerun-WOUT admission with mean
+  iota `0.41001918798`, QS residual `0.01257245066`, and 18-point reduced
+  metric `0.07827418221`, a `2.2876%` reduction from baseline. This is a
+  reduced-objective admission result only.
+- Wrote matched long-window nonlinear audit configs for the strict baseline and
+  the top-12 edge candidate under
+  `/home/rjorge/tmp/spectrax_strict_matched_nonlinear_audit_top12_edge_0d887d3`.
+  Launched six `t=700`, `n64`, post-transient `350..700` runs on office with
+  two-way GPU concurrency. The runtime's `10000`-step log entry is the first
+  checkpoint chunk; the CLI invocation passes the required manifest step counts
+  (`14000` for `dt=0.05`, `17500` for `dt=0.04`).
