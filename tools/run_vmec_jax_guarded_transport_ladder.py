@@ -222,6 +222,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--qs-max", type=float, default=5.0e-2, help="Maximum accepted QS residual")
     parser.add_argument("--iota-profile-floor", type=float, default=0.41, help="Minimum accepted solved iota profile")
     parser.add_argument(
+        "--disable-iota-profile-floor",
+        action="store_true",
+        help=(
+            "Disable profile-floor admission and forward the same convention to the candidate driver. "
+            "Use this for strict upstream-QA baselines that gate high-weight mean iota instead."
+        ),
+    )
+    parser.add_argument(
         "--allow-reconstructed-gate",
         action="store_true",
         help=(
@@ -262,6 +270,8 @@ def main(argv: list[str] | None = None) -> int:
     if not input_file.exists():
         raise FileNotFoundError(f"missing constraints restart input: {input_file}")
     driver_args = tuple(shlex.split(str(args.driver_args)))
+    if bool(args.disable_iota_profile_floor) and "--disable-iota-profile-floor" not in driver_args:
+        driver_args = (*driver_args, "--disable-iota-profile-floor")
     outdir = Path(args.outdir)
     outdir.mkdir(parents=True, exist_ok=True)
     commands: list[dict[str, Any]] = []
@@ -270,7 +280,7 @@ def main(argv: list[str] | None = None) -> int:
         "aspect_atol": float(args.aspect_atol),
         "min_abs_mean_iota": float(args.min_iota),
         "qs_residual_max": float(args.qs_max),
-        "iota_profile_floor": float(args.iota_profile_floor),
+        "iota_profile_floor": None if bool(args.disable_iota_profile_floor) else float(args.iota_profile_floor),
     }
     summaries = [
         candidate_summary(

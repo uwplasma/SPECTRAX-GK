@@ -121,6 +121,41 @@ def test_guarded_ladder_dry_run_writes_commands(tmp_path: Path) -> None:
     assert payload["promoted_candidate"]["baseline"] is True
 
 
+def test_guarded_ladder_can_disable_profile_floor_for_strict_mean_iota_baseline(tmp_path: Path) -> None:
+    constraints = tmp_path / "constraints"
+    _write_candidate(constraints, passed=True, objective=0.03)
+    (constraints / "input.final").write_text("! vmec restart\n", encoding="utf-8")
+    out_json = tmp_path / "ladder.json"
+
+    rc = mod.main(
+        [
+            "--constraints-dir",
+            str(constraints),
+            "--outdir",
+            str(tmp_path / "ladder"),
+            "--weights",
+            "0.0005",
+            "--target-aspect",
+            "5.0",
+            "--min-iota",
+            "0.41",
+            "--disable-iota-profile-floor",
+            "--driver-args",
+            "--target-aspect 5.0 --min-iota 0.4102 --mboz 21 --nboz 21",
+            "--dry-run",
+            "--out-json",
+            str(out_json),
+        ]
+    )
+
+    payload = json.loads(out_json.read_text(encoding="utf-8"))
+    command = payload["commands"][0]["command"]
+    assert rc == 0
+    assert payload["gate_policy"]["iota_profile_floor"] is None
+    assert "--disable-iota-profile-floor" in command
+    assert command.count("--disable-iota-profile-floor") == 1
+
+
 def test_guarded_ladder_stops_after_first_failed_transport_gate(
     tmp_path: Path,
     monkeypatch,

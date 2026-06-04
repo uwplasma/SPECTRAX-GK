@@ -54,6 +54,12 @@ This file is both the active plan and the running log. Keep entries concise, dat
   generated from this exact baseline, require reduced-objective improvement
   plus solved-WOUT and boundary-gradient gates, and only then launch matched
   long-window nonlinear audits on office.
+- Tightened ``tools/run_vmec_jax_guarded_transport_ladder.py`` for this strict
+  baseline convention. The ladder now accepts ``--disable-iota-profile-floor``,
+  records ``iota_profile_floor=null`` in its gate policy, and forwards the flag
+  to the candidate driver. This prevents future strict-QA transport candidates
+  from mixing the upstream mean-iota target convention with an unrelated
+  profile-floor gate.
 
 ## 2026-06-03 QA Geometry Figure Scope Fix
 

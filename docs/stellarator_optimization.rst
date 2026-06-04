@@ -196,6 +196,9 @@ The tracked exact SciPy/ESS strict-baseline evidence is stored in
 ``2.60e-4``, and a passed solved-WOUT gate. The iota-profile floor is disabled
 for this baseline because the upstream ``QA_optimization.py`` objective uses a
 high-weight mean-iota target, not a profile-floor constraint.
+When using ``tools/run_vmec_jax_guarded_transport_ladder.py`` from this
+baseline, pass ``--disable-iota-profile-floor`` at the ladder level; the tool
+forwards the same convention to each candidate driver command.
 
 Transport-admission bookkeeping for the strict baseline is separated from
 optimization. After a baseline or candidate writes ``input.final``, run:
