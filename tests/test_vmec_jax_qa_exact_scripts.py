@@ -69,7 +69,8 @@ def test_docs_do_not_show_exact_qa_scripts_as_argparse_drivers() -> None:
     assert "python examples/optimization/QA_optimization_with_growth_rate.py" in examples_readme
     assert "python examples/optimization/QA_optimization_with_quasilinear_flux.py" in examples_readme
     assert "python examples/optimization/QA_optimization_with_nonlinear_heat_flux.py" in examples_readme
-    assert "python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py" in examples_readme
+    assert "python tools/vmec_jax_qa_low_turbulence_optimization.py" in examples_readme
+    assert "python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py" not in examples_readme
 
 
 def test_exact_qa_scripts_help_does_not_launch_optimization(tmp_path: Path) -> None:

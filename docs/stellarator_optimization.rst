@@ -54,7 +54,7 @@ Source Map
 - VMEC-JAX-style nonlinear-window script:
   :download:`QA_optimization_with_nonlinear_heat_flux.py <../examples/optimization/QA_optimization_with_nonlinear_heat_flux.py>`
 - Configurable solved-boundary driver:
-  :download:`vmec_jax_qa_low_turbulence_optimization.py <../examples/optimization/vmec_jax_qa_low_turbulence_optimization.py>`
+  :download:`vmec_jax_qa_low_turbulence_optimization.py <../tools/vmec_jax_qa_low_turbulence_optimization.py>`
 - Optimization examples README:
   :download:`README.md <../examples/optimization/README.md>`
 
@@ -149,12 +149,12 @@ then build the comparison panel from the real ``history.json`` and
    # max-mode-5 controls, but increases the solve budget/tightens tolerances so
    # the final WOUT can pass the strict aspect/iota/QS gate. The default iota
    # target is 0.4102 while the admission gate remains iota >= 0.41.
-   python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py \
+   python tools/vmec_jax_qa_low_turbulence_optimization.py \
      --strict-upstream-qa-baseline --solver-device gpu \
      --outdir runs_onepoint/qa_baseline_strict_upstream
 
    # On the GPU node, from a clean SPECTRAX-GK/vmec_jax/booz_xform_jax clone:
-   python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py \
+   python tools/vmec_jax_qa_low_turbulence_optimization.py \
      --use-simple-seed --max-mode 5 --min-vmec-mode 7 \
      --target-aspect 5.0 --min-iota 0.41 --disable-iota-profile-floor \
      --mboz 21 --nboz 21 --surfaces 0.64 --alphas 0.0 --ky-values 0.30 \
@@ -249,7 +249,7 @@ literal QA scripts:
 
 .. code-block:: bash
 
-   python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py --dry-run
+   python tools/vmec_jax_qa_low_turbulence_optimization.py --dry-run
 
 The driver can target aspect ``A = 6`` and add an explicit solved-profile floor
 ``iota(s) >= 0.41``. That profile floor is intentionally separate from the
@@ -350,7 +350,7 @@ than pre-generated geometry files:
 
 .. code-block:: bash
 
-   python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py \
+   python tools/vmec_jax_qa_low_turbulence_optimization.py \
      --dry-run \
      --use-simple-seed \
      --max-mode 5 \
@@ -360,7 +360,7 @@ Then run the two comparable branches:
 
 .. code-block:: bash
 
-   python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py \
+   python tools/vmec_jax_qa_low_turbulence_optimization.py \
      --constraints-only \
      --use-simple-seed \
      --max-mode 5 \
@@ -368,7 +368,7 @@ Then run the two comparable branches:
      --make-plots \
      --outdir runs/qa_constraints_only
 
-   python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py \
+   python tools/vmec_jax_qa_low_turbulence_optimization.py \
      --use-simple-seed \
      --max-mode 5 \
      --min-vmec-mode 7 \
@@ -456,7 +456,7 @@ status, and the long-window nonlinear audit anchor:
 
 For restart sweeps from an already optimized ``input.final``, pass
 ``--disable-mode-continuation`` to
-``examples/optimization/vmec_jax_qa_low_turbulence_optimization.py``. That
+``tools/vmec_jax_qa_low_turbulence_optimization.py``. That
 keeps the requested ``max_mode`` branch fixed instead of rebuilding the
 lower-mode continuation ladder, which is the efficient path for profile-floor,
 target-iota, and transport-weight refinements after a solved WOUT already

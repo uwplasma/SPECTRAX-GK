@@ -34,7 +34,7 @@ from spectraxgk.vmec_jax_transport_admission import (  # type: ignore[import-unt
     build_transport_admission_report,
 )
 
-DEFAULT_DRIVER = ROOT / "examples" / "optimization" / "vmec_jax_qa_low_turbulence_optimization.py"
+DEFAULT_DRIVER = ROOT / "tools" / "vmec_jax_qa_low_turbulence_optimization.py"
 DEFAULT_OUTDIR = ROOT / "tools_out" / "vmec_jax_guarded_transport_ladder"
 DEFAULT_WEIGHTS = (5.0e-4, 1.0e-3, 2.5e-3, 5.0e-3, 1.0e-2)
 

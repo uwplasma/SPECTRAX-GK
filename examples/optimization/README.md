@@ -38,18 +38,21 @@ The transport scripts default to `METHOD = "scalar_trust"`. SPECTRAX-GK transpor
 Running one script is not a transport-optimization success claim, and is not,
 by itself, a nonlinear turbulent-flux optimization success claim.
 
-## Configurable QA Driver
+## Campaign Tooling
 
-For dry-runs, guarded transport-weight ladders, solved-WOUT admission gates, and bounded optimizer-budget checks, use:
+The user-facing files in this directory are intentionally edited through
+top-level constants. Argparse-heavy dry-runs, guarded transport-weight ladders,
+solved-WOUT admission gates, and bounded optimizer-budget checks live under
+`tools/` so the examples remain close to VMEC-JAX `QA_optimization.py`:
 
 ```bash
-python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py --dry-run
+python tools/vmec_jax_qa_low_turbulence_optimization.py --dry-run
 ```
 
 A typical constraints-only branch is:
 
 ```bash
-python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py \
+python tools/vmec_jax_qa_low_turbulence_optimization.py \
   --constraints-only \
   --use-simple-seed \
   --max-mode 5 \
@@ -63,7 +66,7 @@ python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py \
 For paper-facing sweeps, prefer the strict upstream baseline preset:
 
 ```bash
-python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py \
+python tools/vmec_jax_qa_low_turbulence_optimization.py \
   --strict-upstream-qa-baseline \
   --solver-device gpu \
   --outdir runs/qa_baseline_strict_upstream
@@ -87,7 +90,7 @@ against this stricter WOUT.
 A transport-aware branch should start from a solved baseline and use a small transport weight:
 
 ```bash
-python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py \
+python tools/vmec_jax_qa_low_turbulence_optimization.py \
   --use-simple-seed \
   --max-mode 5 \
   --min-vmec-mode 7 \

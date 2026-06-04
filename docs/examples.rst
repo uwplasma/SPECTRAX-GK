@@ -484,19 +484,26 @@ with one SPECTRAX-GK transport tuple appended to the VMEC-JAX objective list:
    python examples/optimization/QA_optimization_with_growth_rate.py
    python examples/optimization/QA_optimization_with_quasilinear_flux.py
    python examples/optimization/QA_optimization_with_nonlinear_heat_flux.py
-   python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py --dry-run
 
 The three ``QA_optimization_with_*`` scripts intentionally mirror upstream
 ``vmec_jax/examples/optimization/QA_optimization.py`` and preserve the
 high-weight ``iota = 0.41`` target. Keep the SPECTRAX-GK transport weight small
 until the solved-equilibrium aspect, iota, and quasisymmetry gates pass.
+They are deliberately edited through top-level constants, not command-line
+arguments. Reproducible campaign drivers, dry-runs, and plotting/gate
+generation scripts live under ``tools/``; for example:
+
+.. code-block:: bash
+
+   python tools/vmec_jax_qa_low_turbulence_optimization.py --dry-run
+
 For a paper-facing constraints-only baseline that uses the same simple seed,
 ESS scaling, and max-mode-5 objective recipe but tighter admission tolerances,
 run:
 
 .. code-block:: bash
 
-   python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py \
+   python tools/vmec_jax_qa_low_turbulence_optimization.py \
      --strict-upstream-qa-baseline --solver-device gpu \
      --outdir tools_out/vmec_jax_qa_strict_baseline
 

@@ -114,10 +114,21 @@ def test_public_optimization_examples_exclude_reduced_synthetic_workflows() -> N
     assert "QA_optimization_with_growth_rate.py" in names
     assert "QA_optimization_with_quasilinear_flux.py" in names
     assert "QA_optimization_with_nonlinear_heat_flux.py" in names
-    assert "vmec_jax_qa_low_turbulence_optimization.py" in names
+    assert "vmec_jax_qa_low_turbulence_optimization.py" not in names
     assert not any(name.startswith("stellarator_itg_") for name in names)
     assert "_stellarator_itg_plotting.py" not in names
     assert "compare_stellarator_itg_optimizations.py" not in names
+    assert (Path(__file__).resolve().parents[1] / "tools" / "vmec_jax_qa_low_turbulence_optimization.py").exists()
+
+
+def test_public_optimization_examples_keep_editable_constant_style() -> None:
+    examples = Path(__file__).resolve().parents[1] / "examples" / "optimization"
+    for script in sorted(examples.glob("*.py")):
+        text = script.read_text(encoding="utf-8")
+        assert "argparse" not in text
+        assert "def main(" not in text
+        assert "def _main(" not in text
+        assert "if __name__ == \"__main__\"" not in text
 
 
 def test_stellarator_itg_observable_contract_is_finite_and_exported() -> None:

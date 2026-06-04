@@ -172,7 +172,7 @@ def _label_for_step(step: float) -> str:
 def _replay_command(args: argparse.Namespace, input_path: Path, outdir: Path) -> list[str]:
     return [
         "python",
-        "examples/optimization/vmec_jax_qa_low_turbulence_optimization.py",
+        "tools/vmec_jax_qa_low_turbulence_optimization.py",
         "--input",
         str(input_path),
         "--outdir",

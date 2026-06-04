@@ -15,7 +15,7 @@ from spectraxgk.vmec_jax_candidate_gate import build_solved_vmec_candidate_gate
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DRIVER = ROOT / "examples" / "optimization" / "vmec_jax_qa_low_turbulence_optimization.py"
+DRIVER = ROOT / "tools" / "vmec_jax_qa_low_turbulence_optimization.py"
 
 
 def _load_driver():

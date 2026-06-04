@@ -14,7 +14,7 @@ This file is both the active plan and the running log. Keep entries concise, dat
   old artifact used the upstream-style objective but stopped at
   ``iota_final = 0.409985379`` with ``xtol`` termination.
 - Added ``--strict-upstream-qa-baseline`` to
-  ``examples/optimization/vmec_jax_qa_low_turbulence_optimization.py``. The
+  ``tools/vmec_jax_qa_low_turbulence_optimization.py``. The
   preset keeps the upstream simple seed, ESS scaling, ``MAX_MODE=5``,
   ``MIN_VMEC_MODE=7``, aspect/QS objective blocks, and high-weight mean-iota
   objective, but uses a small target buffer: optimize to ``iota = 0.4102`` and
@@ -534,7 +534,7 @@ The target paper should show:
   mode requires ``mboz=nboz=21`` and evaluates SPECTRAX-GK
   growth, quasilinear flux, or a reduced nonlinear-window transport objective
   from the in-memory VMEC/Boozer state path.
-- Added ``examples/optimization/vmec_jax_qa_low_turbulence_optimization.py``.
+- Added ``tools/vmec_jax_qa_low_turbulence_optimization.py``.
   Its dry-run assembles objectives ``aspect``, ``iota``,
   ``iota_profile_floor``, ``qs``, and optionally ``spectraxgk_transport`` with
   ``A=6``, a high-weight ``MeanIota`` target ``iota = 0.41``, a signed solved
