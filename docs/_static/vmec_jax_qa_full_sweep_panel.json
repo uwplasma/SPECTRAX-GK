@@ -2051,14 +2051,33 @@
         "nfp": 2,
         "ns": 31
       },
-      "q_traces": [],
+      "q_traces": [
+        {
+          "path": "tools_out/vmec_jax_qa_full_sweep_onepoint_final/runs_onepoint/projected_guarded_ladder/transport_weight_0p001/nonlinear_transport_audit/vmec_qa_full_sweep_projected_weight_0p001_nonlinear_t700_n64_dt0p04_heat_flux_trace.csv",
+          "late_window_mean": 9.479953749794944,
+          "late_window_tmin": 524.02722168,
+          "late_window_tmax": 699.967956543
+        },
+        {
+          "path": "tools_out/vmec_jax_qa_full_sweep_onepoint_final/runs_onepoint/projected_guarded_ladder/transport_weight_0p001/nonlinear_transport_audit/vmec_qa_full_sweep_projected_weight_0p001_nonlinear_t700_n64_seed31_heat_flux_trace.csv",
+          "late_window_mean": 9.5356016965,
+          "late_window_tmin": 525.063598633,
+          "late_window_tmax": 700.024291992
+        },
+        {
+          "path": "tools_out/vmec_jax_qa_full_sweep_onepoint_final/runs_onepoint/projected_guarded_ladder/transport_weight_0p001/nonlinear_transport_audit/vmec_qa_full_sweep_projected_weight_0p001_nonlinear_t700_n64_seed32_heat_flux_trace.csv",
+          "late_window_mean": 9.251095147200562,
+          "late_window_tmin": 525.063598633,
+          "late_window_tmax": 700.024291992
+        }
+      ],
       "recommended_nonlinear_audit_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_jax_qa_full_sweep_onepoint_final/runs_onepoint/projected_guarded_ladder/transport_weight_0p001/wout_final.nc --case vmec_qa_full_sweep_projected_guarded_ladder_transport_weight_0p001 --out-dir tools_out/vmec_qa_full_sweep_nonlinear_audits/vmec_qa_full_sweep_projected_guarded_ladder_transport_weight_0p001 --horizons 700 --grid n64:64:64:40:40 --window-tmin 350 --window-tmax 700"
     }
   ],
   "summary": {
     "n_cases": 7,
     "n_completed_wouts": 6,
-    "n_cases_with_nonlinear_q_traces": 2,
+    "n_cases_with_nonlinear_q_traces": 3,
     "completed_case_ids": [
       "qa_baseline_scipy",
       "growth_scalar_trust",
@@ -2069,7 +2088,8 @@
     ],
     "cases_with_nonlinear_q_traces": [
       "qa_baseline_scipy",
-      "projected_guarded_ladder/transport_weight_0p0005"
+      "projected_guarded_ladder/transport_weight_0p0005",
+      "projected_guarded_ladder/transport_weight_0p001"
     ],
     "nonlinear_transport_audit_status": "available_for_some_candidates"
   }

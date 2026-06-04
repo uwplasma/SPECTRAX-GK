@@ -320,12 +320,14 @@ Differentiable-Physics Figures
      - ``tools/build_vmec_jax_qa_full_sweep_panel.py`` from office
        ``runs_onepoint`` VMEC-JAX outputs
      - Scoped optimizer-algorithm comparison ready for README/docs; baseline
-       and projected-weight ``5e-4`` single-point nonlinear audits closed
+       and projected-weight ``5e-4``/``1e-3`` single-point nonlinear audits closed
      - current artifact base:
        ``docs/_static/vmec_jax_qa_full_sweep_panel.png`` with JSON/CSV
        companions and
        ``docs/_static/vmec_jax_qa_projected_weight_0p0005_matched_comparison.png``
-       with its JSON companion; a PDF companion is regenerated locally with
+       and
+       ``docs/_static/vmec_jax_qa_projected_weight_0p001_matched_comparison.png``
+       with JSON companions; a PDF companion is regenerated locally with
        ``--pdf`` when needed. The sweep compares the SciPy QA baseline, stopped
        scalar-trust QA baseline, direct growth/QL/L-BFGS transport objectives,
        a stopped direct nonlinear-window branch, and projected/admission
@@ -334,11 +336,13 @@ Differentiable-Physics Figures
        projected/admission branches keep the solved-WOUT gate and reduce the
        reduced nonlinear-window metric from ``0.0644`` to ``0.0612``. The
        heat-flux subplot now includes matched post-transient SPECTRAX-GK
-       seed/timestep ensembles for the QA baseline and projected weight
-       ``5e-4`` candidate. The candidate lowers the late-window mean ion heat
-       flux from ``9.695`` to ``9.436`` over ``t=[350,700]``: a ``2.68%``
-       reduction with uncertainty separation ``z=1.32``. This supports a
-       single-surface, single-field-line, single-``k_y`` positive audit only;
+       seed/timestep ensembles for the QA baseline and projected weights
+       ``5e-4`` and ``1e-3``. The best audited candidate so far, projected
+       weight ``1e-3``, lowers the late-window mean ion heat flux from
+       ``9.695`` to ``9.370`` over ``t=[350,700]``: a ``3.35%`` reduction with
+       uncertainty separation ``z=1.56``. Projected weight ``5e-4`` also
+       passes with a ``2.68%`` reduction and ``z=1.32``. This supports
+       single-surface, single-field-line, single-``k_y`` positive audits only;
        broader nonlinear turbulent-flux optimization still requires
        multi-surface, multi-alpha, and multi-``k_y`` promotion gates.
    * - Development-only optimization-plumbing figure

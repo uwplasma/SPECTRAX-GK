@@ -652,7 +652,15 @@ def _plot_q_traces(ax: plt.Axes, rows: list[dict[str, Any]]) -> None:
     ax.set_title("Matched nonlinear heat-flux audits")
     ax.grid(alpha=0.25)
     if plotted:
-        ax.legend(frameon=False, fontsize=7, ncols=2)
+        ax.legend(
+            loc="lower right",
+            frameon=True,
+            framealpha=0.88,
+            fontsize=6,
+            ncols=1,
+            borderpad=0.35,
+            handlelength=1.6,
+        )
     else:
         ax.clear()
         ax.axis("off")

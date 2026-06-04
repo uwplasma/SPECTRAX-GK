@@ -186,20 +186,21 @@ after generating replicated post-transient SPECTRAX-GK runs from its concrete
    and lower the reduced nonlinear-window metric relative to the QA baseline.
    The heat-flux subplot now includes matched post-transient SPECTRAX-GK
    seed/timestep ensembles for the QA baseline and the projected weight
-   ``5e-4`` candidate over ``t=[350,700]``.
+   ``5e-4`` and ``1e-3`` candidates over ``t=[350,700]``.
 
-.. figure:: _static/vmec_jax_qa_projected_weight_0p0005_matched_comparison.png
+.. figure:: _static/vmec_jax_qa_projected_weight_0p001_matched_comparison.png
    :alt: Matched nonlinear transport comparison for projected max-mode-5 QA candidate
    :width: 68%
    :align: center
 
    Matched single-point nonlinear transport audit for the full max-mode-5
-   projected weight ``5e-4`` candidate. Both baseline and candidate
+   projected weight ``1e-3`` candidate. Both baseline and candidate
    seed/timestep ensembles pass their individual long-window gates. The
    candidate lowers the late-window mean ion heat flux from ``9.695`` to
-   ``9.436``: a ``2.68%`` reduction with uncertainty separation ``z=1.32``.
-   This is a scoped single-surface, single-field-line, single-``k_y`` positive
-   audit, not a broad stellarator-optimization claim.
+   ``9.370``: a ``3.35%`` reduction with uncertainty separation ``z=1.56``.
+   The projected weight ``5e-4`` candidate also passes with ``2.68%``
+   reduction. These are scoped single-surface, single-field-line,
+   single-``k_y`` positive audits, not broad stellarator-optimization claims.
 
 .. figure:: _static/vmec_jax_qa_solved_boundary_boozer_panel.png
    :alt: Solved VMEC-JAX QA boundary and Boozer-LCFS magnetic-field diagnostics
@@ -420,7 +421,7 @@ status, and the long-window nonlinear audit anchor:
    transport-residual branch is blocked because it breaks solved-equilibrium
    gates. Earlier projected-gradient artifacts in this status panel remain
    useful negative controls, while the newer full max-mode-5 sweep and matched
-   audit above now provide a positive single-point projected-candidate result.
+   audits above now provide positive single-point projected-candidate results.
    The quasilinear model-selection entry is a scoped model-development result,
    not a universal absolute-flux predictor. The nonlinear heat-flux bar pair is
    the separate replicated long-window audit anchor used to keep
