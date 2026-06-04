@@ -315,9 +315,13 @@ The strict rerun-WOUT top-12 QA edge audit is the current reference negative
 transfer example: ``docs/_static/strict_qa_top12_edge_matched_nonlinear_transport.json``
 records passing baseline and candidate replicated-window ensembles but a
 failed matched promotion gate, with ``0.58%`` relative reduction and
-uncertainty z-score ``0.20``. This artifact is intentionally tracked so
-future transport-objective redesigns can be judged against a real
-long-window nonlinear failure, not a startup proxy.
+uncertainty z-score ``0.20``. The companion
+``docs/_static/strict_qa_top12_edge_redesign_report.json`` confirms that the
+18-point reduced objective passes surface/field-line/``k_y`` coverage, so the
+next blocker is predictive transfer margin and uncertainty separation rather
+than a missing sample dimension. These artifacts are intentionally tracked so
+future transport-objective redesigns can be judged against a real long-window
+nonlinear failure, not a startup proxy.
 For actual nonlinear turbulence-gradient promotion, use
 ``tools/write_vmec_boundary_perturbation_inputs.py`` when the perturbation is a
 VMEC boundary coefficient. It writes the matched ``input.*`` files and records

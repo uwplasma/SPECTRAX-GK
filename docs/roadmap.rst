@@ -213,6 +213,13 @@ matched long-window audits before any turbulent-flux optimization claim. The
 new ``qa_projected_transport_step1e3_redesign_report.json`` gate now records
 that requirement explicitly and recommends an 18-point reduced objective over
 three surfaces, two field-line labels, and three ``k_y`` values.
+The stricter rerun-WOUT top-12 QA edge campaign used that 18-point coverage
+and improved the reduced metric by ``2.29%``, but its matched long-window
+nonlinear audit still failed promotion with only ``0.58%`` reduction and
+uncertainty z-score ``0.20``. The companion
+``strict_qa_top12_edge_redesign_report.json`` therefore marks the next blocker
+as predictive transfer margin and uncertainty separation, not merely sample
+coverage.
 
 Before tagging, the latest public ``main`` CI run must pass repo hygiene, mypy,
 quick shards, docs/packaging, fast coverage, and the full wide-coverage matrix.

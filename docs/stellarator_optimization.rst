@@ -836,6 +836,14 @@ reduced objective evaluates ``3 x 2 x 3 = 18`` points: surfaces
 ``k_y rho_i = (0.10, 0.30, 0.50)``. Future
 projected candidates must pass that multi-sample reduced admission before
 another expensive matched nonlinear audit is scientifically justified.
+The later strict top-12 QA edge candidate does pass this 18-point reduced
+coverage and lowers the reduced metric by ``2.29%``, but its matched
+``t=[350,700]`` nonlinear audit still fails promotion: the relative reduction
+is only ``0.58%`` with uncertainty z-score ``0.20``. Its
+``docs/_static/strict_qa_top12_edge_redesign_report.json`` artifact therefore
+keeps the nonlinear turbulent-flux optimization claim blocked until the
+reduced objective has stronger predictive margin and uncertainty-aware
+admission.
 
 .. figure:: _static/qa_low_turbulence_comparison.png
    :alt: Aspect-6 QA low-turbulence optimization comparison

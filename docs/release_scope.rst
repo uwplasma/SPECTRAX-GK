@@ -102,7 +102,10 @@ score.
        therefore not a nonlinear turbulent-flux optimization claim. The
        companion redesign report fails closed and requires a multi-surface,
        multi-field-line, multi-``k_y`` objective before another nonlinear
-       audit can be used for promotion.
+       audit can be used for promotion. A later strict top-12 QA edge audit
+       uses that 18-point objective coverage but still fails promotion
+       (``0.58%`` relative reduction, uncertainty z-score ``0.20``), so the
+       release scope remains reduced-objective/model-development only.
    * - Parallelization
      - production-ready for independent work
      - Independent ``k_y`` scans, quasilinear spectra, sensitivity batches, and

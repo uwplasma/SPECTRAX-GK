@@ -183,7 +183,8 @@ No long nonlinear audit should be launched from these candidates.
    and require a larger reduced-objective margin before launch.
 3. Keep the tracked failed-promotion artifacts in docs as negative evidence:
    `docs/_static/strict_qa_top12_edge_matched_nonlinear_transport.json`,
-   `docs/_static/strict_qa_top12_edge_matched_nonlinear_transport.png`, and the
+   `docs/_static/strict_qa_top12_edge_matched_nonlinear_transport.png`,
+   `docs/_static/strict_qa_top12_edge_redesign_report.json`, and the
    baseline/candidate ensemble JSON sidecars.
 4. Keep CI green after each tranche: fast unit shards, coverage aggregation,
    repository-size gate, docs links, and package build.
@@ -242,7 +243,11 @@ No long nonlinear audit should be launched from these candidates.
   compact artifacts:
   `docs/_static/strict_qa_top12_edge_matched_nonlinear_transport.json`,
   `docs/_static/strict_qa_top12_edge_matched_nonlinear_transport.png`,
+  `docs/_static/strict_qa_top12_edge_redesign_report.json`,
   `docs/_static/strict_qa_rerun_baseline_ensemble_gate.json`, and
   `docs/_static/strict_qa_top12_step1p25em3_candidate_ensemble_gate.json`.
-  Conclusion: this is a fail-closed negative transfer result, not a nonlinear
-  turbulence-optimization claim.
+  The redesign report confirms that the 18-point reduced objective has
+  sufficient surface, field-line, and `k_y` coverage, but blocks promotion on
+  insufficient matched nonlinear reduction and insufficient uncertainty
+  separation. Conclusion: this is a fail-closed negative transfer result, not a
+  nonlinear turbulence-optimization claim.
