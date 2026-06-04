@@ -260,6 +260,15 @@ def _matching_float_lists(left: tuple[float, ...], right: list[Any], *, rtol: fl
     return all(math.isclose(float(a), float(b), rel_tol=rtol, abs_tol=rtol) for a, b in zip(left, right))
 
 
+def _compact_sample_statistics(value: Any) -> Any:
+    if not isinstance(value, dict):
+        return value
+    compact = dict(value)
+    compact.pop("rows", None)
+    compact["rows_included"] = False
+    return compact
+
+
 def _reuse_reduced_metrics_from_report(
     *,
     rows: list[dict[str, Any]],
@@ -308,19 +317,30 @@ def _reuse_reduced_metrics_from_report(
                 f"expected {float(row['coefficient_value']):.16g}"
             )
         metrics = stored.get("reduced_metrics", {})
+        reports = stored.get("reduced_metric_reports", {})
         if not isinstance(metrics, dict):
             continue
+        if not isinstance(reports, dict):
+            reports = {}
         for kind in kinds:
             value = metrics.get(kind)
             if value is None:
                 continue
-            row["reduced_metrics"][kind] = float(value)
-            row["reduced_metric_reports"][kind] = {
+            stored_report = reports.get(kind, {})
+            payload = stored_report.get("payload", {}) if isinstance(stored_report, dict) else {}
+            sample_statistics = payload.get("sample_statistics") if isinstance(payload, dict) else None
+            reused_report: dict[str, Any] = {
                 "kind": kind,
                 "value": float(value),
                 "returncode": 0,
                 "reused_from": path,
             }
+            if sample_statistics is not None:
+                reused_report["payload"] = {
+                    "sample_statistics": _compact_sample_statistics(sample_statistics)
+                }
+            row["reduced_metrics"][kind] = float(value)
+            row["reduced_metric_reports"][kind] = reused_report
 
 
 def _write_csv(rows: list[dict[str, Any]], path: Path) -> None:
@@ -352,17 +372,37 @@ def _write_csv(rows: list[dict[str, Any]], path: Path) -> None:
             )
 
 
-def _normalize(values: np.ndarray, *, baseline_index: int) -> np.ndarray:
+def _normalization_scale(values: np.ndarray, *, baseline_index: int) -> float:
     finite = np.isfinite(values)
     if not np.any(finite):
-        return values
+        return 1.0
     baseline_index = max(0, min(int(baseline_index), int(values.size) - 1))
     scale = float(values[baseline_index]) if np.isfinite(values[baseline_index]) else float("nan")
     if abs(scale) < 1.0e-14:
         scale = float(np.nanmax(np.abs(values[finite])))
     if abs(scale) <= 0.0 or not np.isfinite(scale):
         scale = 1.0
+    return scale
+
+
+def _normalize(values: np.ndarray, *, baseline_index: int) -> np.ndarray:
+    finite = np.isfinite(values)
+    if not np.any(finite):
+        return values
+    scale = _normalization_scale(values, baseline_index=baseline_index)
     return values / scale
+
+
+def _sample_standard_error(row: dict[str, Any], kind: str) -> float:
+    report = row.get("reduced_metric_reports", {}).get(kind, {})
+    payload = report.get("payload", {}) if isinstance(report, dict) else {}
+    stats = payload.get("sample_statistics", {}) if isinstance(payload, dict) else {}
+    if not isinstance(stats, dict):
+        return float("nan")
+    value = stats.get("weighted_standard_error")
+    if value is None:
+        return float("nan")
+    return float(value)
 
 
 def _write_plot(
@@ -377,6 +417,7 @@ def _write_plot(
     x = np.asarray([float(row["relative_fraction"]) for row in rows], dtype=float) * 100.0
     baseline_index = int(np.argmin(np.abs(x)))
     metrics = {kind: np.asarray([row.get("reduced_metrics", {}).get(kind, np.nan) for row in rows], dtype=float) for kind in DEFAULT_KINDS}
+    metric_errors = {kind: np.asarray([_sample_standard_error(row, kind) for row in rows], dtype=float) for kind in DEFAULT_KINDS}
 
     fig, axes = plt.subplots(3, 1, figsize=(7.8, 8.2), sharex=True, constrained_layout=True)
     colors = {
@@ -393,7 +434,19 @@ def _write_plot(
     for kind in ("growth", "quasilinear_flux"):
         y = metrics[kind]
         if np.any(np.isfinite(y)):
-            ax0.plot(x, _normalize(y, baseline_index=baseline_index), marker="o", lw=1.8, color=colors[kind], label=labels[kind])
+            scale = abs(_normalization_scale(y, baseline_index=baseline_index))
+            yerr = metric_errors[kind] / max(scale, 1.0e-30)
+            yerr = yerr if np.any(np.isfinite(yerr)) else None
+            ax0.errorbar(
+                x,
+                _normalize(y, baseline_index=baseline_index),
+                yerr=yerr,
+                marker="o",
+                lw=1.8,
+                capsize=3,
+                color=colors[kind],
+                label=labels[kind],
+            )
     ax0.set_ylabel("normalized reduced objective")
     ax0.set_title(f"{report['coefficient']} transport-objective landscape")
     ax0.legend(frameon=False, fontsize=8)
@@ -402,7 +455,19 @@ def _write_plot(
     ax1 = axes[1]
     y = metrics["nonlinear_window_heat_flux"]
     if np.any(np.isfinite(y)):
-        ax1.plot(x, _normalize(y, baseline_index=baseline_index), marker="o", lw=1.8, color=colors["nonlinear_window_heat_flux"], label=labels["nonlinear_window_heat_flux"])
+        scale = abs(_normalization_scale(y, baseline_index=baseline_index))
+        yerr = metric_errors["nonlinear_window_heat_flux"] / max(scale, 1.0e-30)
+        yerr = yerr if np.any(np.isfinite(yerr)) else None
+        ax1.errorbar(
+            x,
+            _normalize(y, baseline_index=baseline_index),
+            yerr=yerr,
+            marker="o",
+            lw=1.8,
+            capsize=3,
+            color=colors["nonlinear_window_heat_flux"],
+            label=labels["nonlinear_window_heat_flux"],
+        )
     ax1.set_ylabel("normalized reduced objective")
     ax1.legend(frameon=False, fontsize=8)
     ax1.grid(True, alpha=0.25)

@@ -10,6 +10,7 @@ from netCDF4 import Dataset
 from tools.build_vmec_boundary_transport_landscape import (
     _parse_float_list,
     _reuse_reduced_metrics_from_report,
+    _sample_standard_error,
     _write_scan_inputs,
 )
 from tools.patch_vmec_jax_wout_metadata import patch_wout
@@ -96,7 +97,14 @@ def test_reuse_reduced_metrics_validates_sample_set_and_point_values(tmp_path: P
   "coefficient": "RBC(0,1)",
   "sample_set": {"surfaces": [0.64], "alphas": [0.0], "ky_values": [0.3, 0.5]},
   "rows": [
-    {"label": "0", "coefficient_value": 0.2, "reduced_metrics": {"growth": 1.2, "quasilinear_flux": 2.3}},
+    {
+      "label": "0",
+      "coefficient_value": 0.2,
+      "reduced_metrics": {"growth": 1.2, "quasilinear_flux": 2.3},
+      "reduced_metric_reports": {
+        "growth": {"payload": {"sample_statistics": {"weighted_standard_error": 0.05}}}
+      }
+    },
     {"label": "p0p1", "coefficient_value": 0.22000000000000003, "reduced_metrics": {"growth": 0.9, "quasilinear_flux": 1.7}}
   ]
 }
@@ -116,6 +124,7 @@ def test_reuse_reduced_metrics_validates_sample_set_and_point_values(tmp_path: P
 
     assert [row["reduced_metrics"]["growth"] for row in rows] == [1.2, 0.9]
     assert rows[0]["reduced_metric_reports"]["growth"]["reused_from"] == reusable
+    assert _sample_standard_error(rows[0], "growth") == 0.05
 
     bad_args = SimpleNamespace(surfaces="0.64,0.7", alphas="0.0", ky_values="0.3,0.5")
     try:

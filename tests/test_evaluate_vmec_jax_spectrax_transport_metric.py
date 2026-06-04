@@ -5,10 +5,13 @@ import importlib.util
 import json
 from pathlib import Path
 import sys
+from types import SimpleNamespace
 
+import numpy as np
 import pytest
 
 from spectraxgk import StellaratorITGSampleSet, VMECJAXTransportObjectiveConfig
+from spectraxgk.solver_objective_gradients import SOLVER_OBJECTIVE_NAMES
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -71,6 +74,46 @@ def test_build_report_is_history_compatible_and_json_safe() -> None:
     assert "not an optimization" in report["claim_scope"]
     assert "long-window" in report["next_action"]
     json.dumps(mod._json_safe(report), allow_nan=False)
+
+
+def test_sample_statistics_from_state_reports_weighted_reduced_spread(monkeypatch: pytest.MonkeyPatch) -> None:
+    samples = StellaratorITGSampleSet(
+        surfaces=(0.45, 0.64),
+        alphas=(0.0,),
+        ky_values=(0.1, 0.2),
+    )
+    config = VMECJAXTransportObjectiveConfig(
+        kind="growth",
+        sample_set=samples,
+        ntheta=8,
+        mboz=21,
+        nboz=21,
+        n_laguerre=1,
+        n_hermite=1,
+    )
+    table = np.zeros((2, 1, 2, len(SOLVER_OBJECTIVE_NAMES)))
+    table[..., SOLVER_OBJECTIVE_NAMES.index("gamma")] = np.asarray([[[1.0, 2.0]], [[3.0, 4.0]]])
+    monkeypatch.setattr(
+        mod,
+        "_static_grid_options_from_ky_values",
+        lambda ky_values, *, min_ny: {"selected_ky_indices": (1, 2), "ny": 6, "ly": 2.0},
+    )
+    monkeypatch.setattr(mod, "_transport_feature_table_from_state", lambda *args, **kwargs: table)
+
+    stats = mod.sample_statistics_from_state(
+        ctx=SimpleNamespace(static=object(), indata=object()),
+        state=object(),
+        config=config,
+        include_rows=True,
+    )
+
+    assert stats["n_samples"] == 4
+    assert stats["weighted_mean"] == pytest.approx(2.5)
+    assert stats["weighted_std"] == pytest.approx(np.sqrt(1.25))
+    assert stats["weighted_standard_error"] == pytest.approx(np.sqrt(1.25) / 2.0)
+    assert len(stats["rows"]) == 4
+    assert stats["rows_included"] is True
+    assert "not stochastic" in stats["claim_scope"]
 
 
 def test_parse_args_defaults_to_multisample_admission_set(tmp_path: Path) -> None:

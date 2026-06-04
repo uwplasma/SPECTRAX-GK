@@ -1071,8 +1071,10 @@ admission gate: ``s = (0.45, 0.64, 0.78)``,
 scan, the ``+3%`` coefficient perturbation lowers the linear growth objective
 by about ``51%``, the quasilinear-flux objective by about ``49%``, and the
 reduced nonlinear-window objective by about ``4.7%``. The last reduction is
-small enough that replicated nonlinear heat-flux error bars are required before
-using this direction for a turbulent-flux optimization claim.
+small compared with the deterministic cross-sample spread over the
+surface/field-line/``k_y`` grid, so replicated nonlinear heat-flux error bars
+are required before using this direction for a turbulent-flux optimization
+claim.
 
 The reduced scan is intentionally reusable. Once the long nonlinear ensembles
 finish, regenerate the same figure without recomputing the 18-point reduced
@@ -1091,7 +1093,9 @@ sample by passing the stored JSON plus the nonlinear sidecars::
    :align: center
 
    ``RBC(0,1)`` transport-objective landscape. The top two panels are reduced
-   deterministic diagnostics only. The bottom panel is reserved for replicated
+   deterministic diagnostics only; their error bars are cross-sample standard
+   errors over the configured surface/field-line/``k_y`` grid, not stochastic
+   turbulent-flux uncertainty. The bottom panel is reserved for replicated
    nonlinear heat-flux ensemble means and SEM bars; those office GPU runs are
    the required next step before optimizer selection.
 

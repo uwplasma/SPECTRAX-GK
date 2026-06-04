@@ -29,7 +29,18 @@ from spectraxgk import (  # noqa: E402
     VMECJAXSpectraxTransportObjective,
     VMECJAXTransportObjectiveConfig,
 )
+from spectraxgk.solver_objective_gradients import SOLVER_OBJECTIVE_NAMES  # noqa: E402
+from spectraxgk.stellarator_objective_portfolio import (  # noqa: E402
+    portfolio_objective_weight_vector,
+    portfolio_sample_weight_tensor,
+)
 from spectraxgk.vmec_jax_transport_objective import VMECJAXTransportObjectiveTransform  # noqa: E402
+from spectraxgk.vmec_jax_transport_objective import (  # noqa: E402
+    _reference_wout_from_context,
+    _solver_table_to_nonlinear_window_proxy,
+    _static_grid_options_from_ky_values,
+    _transport_feature_table_from_state,
+)
 
 
 DEFAULT_SURFACES = (0.45, 0.64, 0.78)
@@ -72,6 +83,7 @@ def build_report(
     inner_ftol: float,
     trial_max_iter: int,
     trial_ftol: float,
+    sample_statistics: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Return a JSON-safe metric report."""
 
@@ -109,11 +121,117 @@ def build_report(
             "trial_max_iter": int(trial_max_iter),
             "trial_ftol": float(trial_ftol),
         },
+        "sample_statistics": sample_statistics,
         "next_action": (
             "use this metric only for reduced-objective admission; matched long-window "
             "nonlinear audits remain required for turbulent-flux claims"
         ),
     }
+
+
+def _objective_table_from_feature_table(
+    table: Any,
+    config: VMECJAXTransportObjectiveConfig,
+) -> Any:
+    if config.kind == "nonlinear_window_heat_flux":
+        return _solver_table_to_nonlinear_window_proxy(table, config)[..., None]
+    if config.kind == "growth":
+        return table[..., SOLVER_OBJECTIVE_NAMES.index("gamma")][..., None]
+    return table[..., SOLVER_OBJECTIVE_NAMES.index("mixing_length_heat_flux_proxy")][..., None]
+
+
+def sample_statistics_from_state(
+    *,
+    ctx: Any,
+    state: Any,
+    config: VMECJAXTransportObjectiveConfig,
+    wout_reference: Any | None = None,
+    include_rows: bool = False,
+) -> dict[str, Any]:
+    """Return deterministic sample-spread diagnostics for the reduced objective.
+
+    The returned standard error is the weighted sample dispersion across the
+    configured surface/field-line/``k_y`` grid. It is not a stochastic error bar
+    and must not be presented as nonlinear heat-flux uncertainty.
+    """
+
+    samples = config.sample_set
+    grid_options = _static_grid_options_from_ky_values(
+        samples.ky_values,
+        min_ny=int(config.ny),
+    )
+    table = _transport_feature_table_from_state(
+        state,
+        ctx.static,
+        ctx.indata,
+        wout_reference if wout_reference is not None else _reference_wout_from_context(ctx),
+        config,
+        grid_options,
+    )
+    objective_table = _objective_table_from_feature_table(table, config)
+    if samples.reduction not in ("weighted_mean", "mean"):
+        return {
+            "claim_scope": "sample_spread_not_defined_for_non_mean_reduction",
+            "reduction": samples.reduction,
+        }
+    if samples.reduction == "mean":
+        weights = np.full(objective_table.shape[:-1], 1.0 / float(np.prod(objective_table.shape[:-1])), dtype=float)
+        objective_weights = np.full((int(objective_table.shape[-1]),), 1.0 / float(objective_table.shape[-1]), dtype=float)
+    else:
+        weights = np.asarray(
+            portfolio_sample_weight_tensor(
+                objective_table,
+                surface_weights=samples.surface_weights,
+                alpha_weights=samples.alpha_weights,
+                ky_weights=samples.ky_weights,
+            ),
+            dtype=float,
+        )
+        objective_weights = np.asarray(
+            portfolio_objective_weight_vector(
+                objective_table,
+                objective_weights=config.objective_weights,
+            ),
+            dtype=float,
+        )
+    per_sample = np.sum(np.asarray(objective_table, dtype=float) * objective_weights, axis=-1)
+    if not np.all(np.isfinite(per_sample)):
+        raise RuntimeError("non-finite reduced objective sample value")
+    mean = float(np.sum(weights * per_sample))
+    variance = float(np.sum(weights * (per_sample - mean) ** 2))
+    std = float(np.sqrt(max(0.0, variance)))
+    n_samples = int(per_sample.size)
+    sem = float(std / np.sqrt(max(1, n_samples)))
+    payload: dict[str, Any] = {
+        "claim_scope": (
+            "deterministic cross-sample dispersion over the configured surface/field-line/ky grid; "
+            "not stochastic uncertainty and not a nonlinear heat-flux SEM"
+        ),
+        "reduction": samples.reduction,
+        "n_samples": n_samples,
+        "weighted_mean": mean,
+        "weighted_std": std,
+        "weighted_standard_error": sem,
+        "min": float(np.min(per_sample)),
+        "max": float(np.max(per_sample)),
+        "rows_included": bool(include_rows),
+    }
+    if include_rows:
+        rows: list[dict[str, Any]] = []
+        for i_surface, surface in enumerate(samples.surfaces):
+            for i_alpha, alpha in enumerate(samples.alphas):
+                for i_ky, ky in enumerate(samples.ky_values):
+                    rows.append(
+                        {
+                            "surface": float(surface),
+                            "alpha": float(alpha),
+                            "ky": float(ky),
+                            "value": float(per_sample[i_surface, i_alpha, i_ky]),
+                            "weight": float(weights[i_surface, i_alpha, i_ky]),
+                        }
+                    )
+        payload["rows"] = rows
+    return payload
 
 
 def evaluate_metric(args: argparse.Namespace) -> dict[str, Any]:
@@ -169,6 +287,13 @@ def evaluate_metric(args: argparse.Namespace) -> dict[str, Any]:
     metric = float(np.asarray(objective.J(stage.ctx, state)))
     if not np.isfinite(metric):
         raise RuntimeError(f"non-finite SPECTRAX transport metric: {metric!r}")
+    sample_statistics = sample_statistics_from_state(
+        ctx=stage.ctx,
+        state=state,
+        config=config,
+        wout_reference=objective.wout_reference,
+        include_rows=bool(args.include_sample_rows),
+    )
     return build_report(
         input_path=Path(args.input),
         max_mode=int(args.max_mode),
@@ -182,6 +307,7 @@ def evaluate_metric(args: argparse.Namespace) -> dict[str, Any]:
         inner_ftol=float(args.inner_ftol),
         trial_max_iter=int(args.trial_max_iter),
         trial_ftol=float(args.trial_ftol),
+        sample_statistics=sample_statistics,
     )
 
 
@@ -227,6 +353,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--trial-max-iter", type=int, default=120)
     parser.add_argument("--trial-ftol", type=float, default=1.0e-9)
     parser.add_argument("--solver-device", choices=("cpu", "gpu"), default=None)
+    parser.add_argument(
+        "--include-sample-rows",
+        action="store_true",
+        help="Store every deterministic surface/alpha/ky sample value, not only summary spread statistics.",
+    )
     return parser.parse_args(argv)
 
 

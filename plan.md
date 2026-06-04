@@ -31,7 +31,7 @@ historical logs live outside the release repository so clones stay small.
 | Rerun-WOUT admission and artifact policy | 100% | Explicit authoritative rerun-WOUT path implemented and tested |
 | Strict QA candidate screening | 100% | Top-12 projected edge candidate passes rerun-WOUT gates and reduces the 18-point metric by 2.29% |
 | Strict nonlinear turbulent-flux optimization evidence | 82% | Matched t=700 audit fails promotion: 0.58% reduction, z=0.20, below the 2% gate |
-| Boundary-coefficient landscape and optimizer-noise diagnosis | 60% | 18-point RBC(0,1) reduced landscape complete; replicated nonlinear error-bar queue running on office |
+| Boundary-coefficient landscape and optimizer-noise diagnosis | 70% | 18-point RBC(0,1) reduced landscape includes deterministic sample-spread bars; replicated nonlinear error-bar queue running on office |
 | Docs/readme/release hygiene | 94% | Strict QA failed-promotion and landscape artifacts are tracked; final wording must stay scoped |
 | Performance/parallelization release lane | 95% | Independent-work parallel paths are release-ready; nonlinear domain sharding remains research/development |
 
@@ -277,3 +277,7 @@ No long nonlinear audit should be launched from these candidates.
   builder so finished reduced metrics can be reused when overlaying expensive
   nonlinear ensemble error bars. The reuse gate validates coefficient values
   and the full surface/field-line/``k_y`` sample set before accepting metrics.
+- Extended the reduced landscape metric sidecars to store deterministic
+  per-sample rows and cross-sample standard errors. These error bars diagnose
+  surface/field-line/``k_y`` spread in the reduced model; they are explicitly
+  not stochastic nonlinear heat-flux SEMs.
