@@ -346,6 +346,9 @@ def test_projected_writer_replay_command_honors_strict_qa_gate_arguments(
             "1",
             "--solver-device",
             "gpu",
+            "--save-rerun-wouts",
+            "--require-rerun-wout-gate",
+            "--admit-authoritative-rerun-wout",
         ]
     )
 
@@ -361,6 +364,9 @@ def test_projected_writer_replay_command_honors_strict_qa_gate_arguments(
     assert command[command.index("--solved-wout-gate-qs-max") + 1] == "0.01"
     assert command[command.index("--surface-chunk-size") + 1] == "1"
     assert command[command.index("--solver-device") + 1] == "gpu"
+    assert "--save-rerun-wouts" in command
+    assert "--require-rerun-wout-gate" in command
+    assert "--admit-authoritative-rerun-wout" in command
     assert payload["boundary_chain_filter"]["accepted_parameter_indices"] == [1]
 
 

@@ -122,6 +122,9 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--trial-max-iter", type=int, default=120)
     parser.add_argument("--trial-ftol", type=float, default=1.0e-9)
     parser.add_argument("--solver-device", choices=("cpu", "gpu"), default=None)
+    parser.add_argument("--save-rerun-wouts", action="store_true")
+    parser.add_argument("--require-rerun-wout-gate", action="store_true")
+    parser.add_argument("--admit-authoritative-rerun-wout", action="store_true")
     parser.add_argument("--target-aspect", type=float, default=6.0)
     parser.add_argument("--min-iota", type=float, default=0.41)
     parser.add_argument("--iota-objective", choices=("target", "floor"), default="floor")
@@ -265,6 +268,12 @@ def _replay_command(args: argparse.Namespace, input_path: Path, outdir: Path) ->
             )
     if args.solver_device is not None:
         command.extend(["--solver-device", str(args.solver_device)])
+    if bool(args.save_rerun_wouts):
+        command.append("--save-rerun-wouts")
+    if bool(args.require_rerun_wout_gate):
+        command.append("--require-rerun-wout-gate")
+    if bool(args.admit_authoritative_rerun_wout):
+        command.append("--admit-authoritative-rerun-wout")
     return command
 
 
