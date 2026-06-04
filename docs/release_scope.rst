@@ -96,7 +96,7 @@ score.
        projected line-search bracket: the best accepted reduced transport
        metric improves by ``3.55%``, while the next larger step is rejected by
        the QS gate. This supports gate-aware projected admission. The matched
-       long-window audit of that accepted projected step is negative: both
+       long-window audit of that earlier aspect-6 accepted projected step is negative: both
        seed/timestep ensembles pass, but the ensemble mean heat flux changes
        from ``9.833`` to ``9.891`` (relative reduction ``-0.00585``). It is
        therefore not a nonlinear turbulent-flux optimization claim. The

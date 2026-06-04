@@ -184,9 +184,22 @@ after generating replicated post-transient SPECTRAX-GK runs from its concrete
    metric can come with large aspect-ratio, iota-profile, or quasisymmetry
    damage. The projected/admission branches keep the solved-WOUT gate intact
    and lower the reduced nonlinear-window metric relative to the QA baseline.
-   The nonlinear heat-flux subplot intentionally remains a pending marker until
-   matched long post-transient SPECTRAX-GK audits are run from the concrete
-   final WOUTs.
+   The heat-flux subplot now includes matched post-transient SPECTRAX-GK
+   seed/timestep ensembles for the QA baseline and the projected weight
+   ``5e-4`` candidate over ``t=[350,700]``.
+
+.. figure:: _static/vmec_jax_qa_projected_weight_0p0005_matched_comparison.png
+   :alt: Matched nonlinear transport comparison for projected max-mode-5 QA candidate
+   :width: 68%
+   :align: center
+
+   Matched single-point nonlinear transport audit for the full max-mode-5
+   projected weight ``5e-4`` candidate. Both baseline and candidate
+   seed/timestep ensembles pass their individual long-window gates. The
+   candidate lowers the late-window mean ion heat flux from ``9.695`` to
+   ``9.436``: a ``2.68%`` reduction with uncertainty separation ``z=1.32``.
+   This is a scoped single-surface, single-field-line, single-``k_y`` positive
+   audit, not a broad stellarator-optimization claim.
 
 .. figure:: _static/vmec_jax_qa_solved_boundary_boozer_panel.png
    :alt: Solved VMEC-JAX QA boundary and Boozer-LCFS magnetic-field diagnostics
@@ -405,13 +418,14 @@ status, and the long-window nonlinear audit anchor:
    Fail-closed max-mode-5 QA transport-optimization status. The QA
    solved-equilibrium branch passes the aspect/iota/QS gate. The direct scalar
    transport-residual branch is blocked because it breaks solved-equilibrium
-   gates. The projected transport step preserves those gates but worsens the
-   reduced nonlinear-window metric by ``0.38%`` in the tracked metric-evaluation
-   artifact, so it is not promoted. The quasilinear model-selection entry is a
-   scoped model-development result, not a universal absolute-flux predictor.
-   The nonlinear heat-flux bar pair is the separate replicated long-window
-   audit anchor used to keep optimized-equilibrium transport claims distinct
-   from reduced-objective optimization attempts.
+   gates. Earlier projected-gradient artifacts in this status panel remain
+   useful negative controls, while the newer full max-mode-5 sweep and matched
+   audit above now provide a positive single-point projected-candidate result.
+   The quasilinear model-selection entry is a scoped model-development result,
+   not a universal absolute-flux predictor. The nonlinear heat-flux bar pair is
+   the separate replicated long-window audit anchor used to keep
+   optimized-equilibrium transport claims distinct from reduced-objective
+   optimization attempts.
 
 For restart sweeps from an already optimized ``input.final``, pass
 ``--disable-mode-continuation`` to
@@ -699,7 +713,8 @@ projected candidates must use the multi-sample command above.
    transport metric by ``3.55%`` and defines the candidate for the next matched
    long-window nonlinear audit.
 
-The matched long-window nonlinear audit for that admitted projected candidate
+The matched long-window nonlinear audit for that earlier aspect-6 admitted
+projected candidate
 has now been run at the production ``n64`` grid with two seed replicates and one
 timestep replicate over ``t=[350,700]``. Both the baseline and projected
 candidate ensembles pass their individual stationarity/replicate gates, but the

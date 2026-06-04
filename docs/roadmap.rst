@@ -202,8 +202,9 @@ The explicit single-sample nonlinear-window metric decreases from
 aspect/iota/QS gates pass; the next step ``2e-3`` is rejected by the QS gate.
 This closes the local-sensitivity question for the current scalar-weight
 ladder failure and the projected line-search/admission path is now reusable.
-The matched long-window nonlinear audit for the accepted ``1e-3`` candidate is
-negative: both baseline and projected-candidate seed/timestep ensembles pass
+The matched long-window nonlinear audit for the earlier aspect-6 accepted
+``1e-3`` candidate is negative: both baseline and projected-candidate
+seed/timestep ensembles pass
 their ``t=[350,700]`` gates, but the projected candidate raises the ensemble
 mean heat flux slightly from ``9.833`` to ``9.891`` (relative reduction
 ``-0.00585``). The next implementation task is therefore not to promote this

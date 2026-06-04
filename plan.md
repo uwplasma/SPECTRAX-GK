@@ -7972,3 +7972,13 @@ Exit gate:
   - ``qa_ess_zbs10_rel7p5_control_mean_tmin600_t1100_gate.{json,csv,png,pdf}``;
   - plus/minus ``*_t1100_ensemble_gate.{json,png}`` and ``*_readiness.json``.
 - Scope: this closes the independent control-mean uncertainty blocker for the rel7.5 variance-reduced nonlinear-gradient evidence lane. It does not by itself create a universal nonlinear turbulent-flux optimization claim; future manuscript language must cite the exact perturbation, 21-pair campaign, and late-window gate.
+
+### 2026-06-04 Full Max-Mode-5 QA Projected Nonlinear Audit
+
+- Office campaign root: `/home/rjorge/tmp/spectrax_vmec_qa_full_20260603_172124/SPECTRAX-GK`.
+- Completed the matched `n64`, `mboz=nboz=21`, `t=[350,700]` nonlinear audit for the full max-mode-5 QA baseline and projected/admission transport-weight `5e-4` candidate.
+- Both baseline and projected candidate seed/timestep ensembles pass their stationarity/replicate gates.
+- Matched comparison result: baseline late-window mean `Q_i = 9.695`, projected `5e-4` candidate `Q_i = 9.436`, relative reduction `2.68%`, uncertainty separation `z = 1.32`.
+- Added publication-facing artifacts: `docs/_static/vmec_jax_qa_full_sweep_panel.{png,json,csv}` and `docs/_static/vmec_jax_qa_projected_weight_0p0005_matched_comparison.{png,json}`.
+- Scope: this is a positive single-surface, single-field-line, single-`ky` nonlinear transport audit. It does not yet promote broad stellarator turbulent-flux optimization; that requires the planned multi-surface, multi-alpha, multi-`ky` promotion gate.
+- Remaining near-term step: let the office queue finish projected weight `1e-3` seed/timestep audits, then add a second matched comparison if its ensemble gate passes.
