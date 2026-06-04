@@ -116,6 +116,28 @@ def _json_ready(value: Any) -> Any:
     return value
 
 
+def _compact_payload_for_json(payload: dict[str, Any]) -> dict[str, Any]:
+    """Drop dense plotted arrays from tracked JSON while preserving audit facts."""
+
+    compact = _json_ready(payload)
+    for row in compact.get("cases", []):
+        traces = row.get("q_traces", [])
+        row["q_traces"] = [
+            {
+                key: trace.get(key)
+                for key in (
+                    "path",
+                    "late_window_mean",
+                    "late_window_tmin",
+                    "late_window_tmax",
+                )
+                if key in trace
+            }
+            for trace in traces
+        ]
+    return compact
+
+
 def _case_sort_key(row: dict[str, Any]) -> tuple[int, str]:
     case_id = str(row["case_id"])
     try:
@@ -773,7 +795,7 @@ def main() -> int:
         raise FileNotFoundError(f"no optimizer history.json files found under {args.run_root}")
     base = args.out.with_suffix("")
     base.with_suffix(".json").write_text(
-        json.dumps(_json_ready(payload), indent=2, allow_nan=False),
+        json.dumps(_compact_payload_for_json(payload), indent=2, allow_nan=False),
         encoding="utf-8",
     )
     _write_csv(payload, base.with_suffix(".csv"))

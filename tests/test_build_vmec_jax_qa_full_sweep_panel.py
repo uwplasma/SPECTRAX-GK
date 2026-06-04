@@ -110,6 +110,24 @@ def test_q_trace_csv_is_used_only_when_present(tmp_path: Path) -> None:
     assert row["q_traces"][0]["late_window_tmin"] == 2.0
 
 
+def test_compact_json_payload_keeps_q_trace_stats_without_dense_arrays(tmp_path: Path) -> None:
+    case = tmp_path / "campaign" / "runs" / "qa_baseline_scipy"
+    _write_case(case, objective_final=1.2)
+    (case / "audit_heat_flux_trace.csv").write_text(
+        "t,heat_flux\n0.0,1.0\n1.0,2.0\n2.0,3.0\n",
+        encoding="utf-8",
+    )
+
+    payload = mod.build_payload(tmp_path / "campaign")
+    compact = mod._compact_payload_for_json(payload)
+    [trace] = compact["cases"][0]["q_traces"]
+
+    assert trace["late_window_mean"] == 3.0
+    assert trace["late_window_tmax"] == 2.0
+    assert "t" not in trace
+    assert "heat_flux" not in trace
+
+
 def test_completed_wout_rows_include_reproducible_nonlinear_audit_command(tmp_path: Path) -> None:
     case = tmp_path / "campaign" / "runs" / "nonlinear_window_scalar_trust"
     _write_case(case, objective_final=0.4, transport_metric=0.08)
