@@ -122,6 +122,7 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--trial-max-iter", type=int, default=120)
     parser.add_argument("--trial-ftol", type=float, default=1.0e-9)
     parser.add_argument("--solver-device", choices=("cpu", "gpu"), default=None)
+    parser.add_argument("--python-executable", default="python3")
     parser.add_argument("--save-rerun-wouts", action="store_true")
     parser.add_argument("--require-rerun-wout-gate", action="store_true")
     parser.add_argument("--admit-authoritative-rerun-wout", action="store_true")
@@ -198,7 +199,7 @@ def _label_for_step(step: float) -> str:
 
 def _replay_command(args: argparse.Namespace, input_path: Path, outdir: Path) -> list[str]:
     command = [
-        "python",
+        str(args.python_executable),
         "tools/vmec_jax_qa_low_turbulence_optimization.py",
         "--input",
         str(input_path),

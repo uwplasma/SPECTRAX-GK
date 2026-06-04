@@ -346,6 +346,8 @@ def test_projected_writer_replay_command_honors_strict_qa_gate_arguments(
             "1",
             "--solver-device",
             "gpu",
+            "--python-executable",
+            "python3",
             "--save-rerun-wouts",
             "--require-rerun-wout-gate",
             "--admit-authoritative-rerun-wout",
@@ -354,6 +356,7 @@ def test_projected_writer_replay_command_honors_strict_qa_gate_arguments(
 
     payload = json.loads((tmp_path / "out" / "projected_line_search_inputs.json").read_text(encoding="utf-8"))
     command = payload["rows"][0]["replay_command"]
+    assert command[0] == "python3"
     assert command[command.index("--target-aspect") + 1] == "5.0"
     assert command[command.index("--min-iota") + 1] == "0.4102"
     assert command[command.index("--iota-objective") + 1] == "target"
