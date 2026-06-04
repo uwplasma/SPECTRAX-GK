@@ -1084,6 +1084,10 @@ nonlinear heat flux by ``26.7%`` with uncertainty separation ``z=18.0``; the
 one-coefficient landscape/noise diagnostic and motivates uncertainty-aware
 optimizer admission, but it remains a selected nonlinear audit rather than a
 multi-coefficient, multi-flux-tube turbulent-optimization claim.
+The machine-readable admission sidecar
+:download:`vmec_boundary_transport_landscape_admission.json <_static/vmec_boundary_transport_landscape_admission.json>`
+applies the nonlinear landscape policy to these ensembles and selects the
+``+3%`` coefficient step.
 
 The reduced scan is intentionally reusable. Once the long nonlinear ensembles
 finish, regenerate the same figure without recomputing the 18-point reduced
@@ -1129,6 +1133,8 @@ Implementation Map
 - VMEC-JAX WOUT metadata patcher: :download:`patch_vmec_jax_wout_metadata.py <../tools/patch_vmec_jax_wout_metadata.py>`
 - Tests: ``tests/test_qa_low_turbulence.py`` and
   ``tests/test_vmec_boundary_transport_landscape.py``
+- Nonlinear landscape admission report:
+  :download:`vmec_boundary_transport_landscape_admission.json <_static/vmec_boundary_transport_landscape_admission.json>`
 - Output JSON: :download:`qa_low_turbulence_comparison.json <_static/qa_low_turbulence_comparison.json>`
 - Scan CSV: :download:`qa_low_turbulence_comparison.scan.csv <_static/qa_low_turbulence_comparison.scan.csv>`
 - Horizon audit CSV: :download:`qa_low_turbulence_time_horizon_audit.csv <_static/qa_low_turbulence_time_horizon_audit.csv>`

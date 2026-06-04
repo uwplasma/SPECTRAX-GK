@@ -6,6 +6,7 @@ import spectraxgk
 from spectraxgk.vmec_jax_transport_admission import (
     VMECJAXNonlinearAuditPolicy,
     VMECJAXTransportAdmissionPolicy,
+    build_nonlinear_landscape_admission_report,
     build_nonlinear_audit_redesign_report,
     build_transport_admission_report,
     candidate_transport_metric,
@@ -138,6 +139,83 @@ def _matched_comparison(
             "uncertainty_z_score": z_score,
         },
     }
+
+
+def _ensemble(mean: float, sem: float, *, passed: bool = True, n_reports: int = 3) -> dict[str, object]:
+    return {
+        "case": f"ensemble_mean_{mean}",
+        "passed": passed,
+        "statistics": {
+            "ensemble_mean": mean,
+            "combined_sem": sem,
+            "combined_sem_rel": sem / abs(mean),
+            "n_reports": n_reports,
+        },
+    }
+
+
+def test_nonlinear_landscape_admission_selects_uncertainty_resolved_candidate() -> None:
+    report = build_nonlinear_landscape_admission_report(
+        _ensemble(8.554362366164424, 0.11951503416978174),
+        [
+            _ensemble(6.274543846475065, 0.04213243251063571),
+            _ensemble(6.42653555490751, 0.04399590111876854),
+        ],
+        candidate_labels=("+3%", "+6%"),
+        policy=VMECJAXNonlinearAuditPolicy(
+            minimum_relative_reduction=0.02,
+            minimum_uncertainty_z_score=2.0,
+            maximum_combined_sem_rel=0.05,
+            minimum_replicate_count=3,
+        ),
+    )
+
+    assert report["passed"] is True
+    assert report["selected_candidate"]["label"] == "+3%"
+    assert report["selected_candidate"]["relative_reduction"] > 0.26
+    assert report["selected_candidate"]["uncertainty_z_score"] > 17.0
+    assert all(row["admitted"] for row in report["candidates"])
+    assert spectraxgk.build_nonlinear_landscape_admission_report is build_nonlinear_landscape_admission_report
+    json.dumps(report, allow_nan=False)
+
+
+def test_nonlinear_landscape_admission_fails_closed_for_noisy_or_unresolved_candidates() -> None:
+    report = build_nonlinear_landscape_admission_report(
+        _ensemble(8.0, 0.5),
+        [
+            _ensemble(7.95, 0.5),
+            _ensemble(6.0, 2.0, n_reports=2),
+            _ensemble(5.0, 0.1, passed=False),
+        ],
+        policy=VMECJAXNonlinearAuditPolicy(
+            minimum_relative_reduction=0.02,
+            minimum_uncertainty_z_score=2.0,
+            maximum_combined_sem_rel=0.2,
+            minimum_replicate_count=3,
+        ),
+    )
+
+    assert report["passed"] is False
+    assert report["selected_candidate"] is None
+    blockers = [set(row["admission_blockers"]) for row in report["candidates"]]
+    assert "insufficient_relative_reduction" in blockers[0]
+    assert "insufficient_uncertainty_separation" in blockers[0]
+    assert "candidate_combined_sem_rel_too_large" in blockers[1]
+    assert "candidate_insufficient_replicates" in blockers[1]
+    assert "candidate_ensemble_failed" in blockers[2]
+
+
+def test_nonlinear_landscape_admission_validates_candidate_labels() -> None:
+    try:
+        build_nonlinear_landscape_admission_report(
+            _ensemble(8.0, 0.1),
+            [_ensemble(7.0, 0.1)],
+            candidate_labels=("one", "two"),
+        )
+    except ValueError as exc:
+        assert "same length" in str(exc)
+    else:  # pragma: no cover
+        raise AssertionError("mismatched candidate labels were accepted")
 
 
 def test_transport_sample_summary_requires_surface_alpha_and_ky_coverage() -> None:

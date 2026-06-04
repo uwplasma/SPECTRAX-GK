@@ -290,3 +290,9 @@ No long nonlinear audit should be launched from these candidates.
   is `docs/_static/vmec_boundary_transport_landscape_rbc01.png`; only the
   compact ensemble JSON sidecars are tracked, not NetCDF outputs or office
   scratch traces.
+- Added a backend-free nonlinear landscape admission helper in
+  `spectraxgk.vmec_jax_transport_admission` and materialized
+  `docs/_static/vmec_boundary_transport_landscape_admission.json`. The policy
+  requires passed ensembles, three replicas, bounded relative SEM, a minimum
+  relative heat-flux reduction, and an uncertainty-separated z-score. Applied
+  to the ``RBC(0,1)`` landscape, it selects ``+3% RBC(0,1)``.
