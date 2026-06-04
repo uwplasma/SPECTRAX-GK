@@ -325,3 +325,91 @@ def test_authoritative_wout_candidate_gate_rejects_missing_qs() -> None:
     assert report["passed"] is False
     assert report["checks"]["quasisymmetry"]["passed"] is False
     assert report["checks"]["quasisymmetry"]["error"] == "missing_qs_residual"
+
+
+def test_authoritative_wout_candidate_gate_reads_wout_file_with_profile_floor(
+    tmp_path, monkeypatch
+) -> None:
+    class FakeVar:
+        def __init__(self, value):
+            self.value = value
+
+        def __getitem__(self, _key):
+            return np.asarray(self.value)
+
+    class FakeDataset:
+        def __init__(self, path):
+            assert path == tmp_path / "wout_final_rerun.nc"
+            self.variables = {
+                "aspect": FakeVar(5.0002),
+                "iotas": FakeVar([0.0, 0.412, 0.418]),
+                "iotaf": FakeVar([0.413, 0.419]),
+            }
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_exc):
+            return False
+
+    def fake_load_wout(path):
+        assert path == tmp_path / "wout_final_rerun.nc"
+        return "loaded-wout"
+
+    def fake_qs_from_wout(wout, *, surfaces, helicity_m, helicity_n, ntheta, nphi):
+        assert wout == "loaded-wout"
+        assert tuple(np.asarray(surfaces, dtype=float)) == (0.0, 0.5, 1.0)
+        assert (helicity_m, helicity_n, ntheta, nphi) == (1, 0, 31, 32)
+        return {"total": 0.003}
+
+    monkeypatch.setitem(sys.modules, "netCDF4", SimpleNamespace(Dataset=FakeDataset))
+    monkeypatch.setitem(
+        sys.modules,
+        "vmec_jax",
+        SimpleNamespace(
+            load_wout=fake_load_wout,
+            quasisymmetry_ratio_residual_from_wout=fake_qs_from_wout,
+        ),
+    )
+
+    report = build_authoritative_wout_candidate_gate(
+        tmp_path / "wout_final_rerun.nc",
+        target_aspect=5.0,
+        aspect_atol=5.0e-2,
+        min_abs_mean_iota=0.41,
+        qs_residual_max=5.0e-2,
+        iota_profile_floor=0.411,
+        qs_surfaces=(0.0, 0.5, 1.0),
+        qs_ntheta=31,
+        qs_nphi=32,
+    )
+
+    assert report["passed"] is True
+    assert report["authoritative_wout"]["mean_iota"] == pytest.approx(0.415)
+    assert report["checks"]["iota_profile"]["passed"] is True
+    assert report["checks"]["quasisymmetry"]["source"] == "vmec_jax_wout"
+
+
+def test_authoritative_wout_candidate_gate_reports_wout_load_errors(tmp_path, monkeypatch) -> None:
+    def broken_dataset(_path):
+        raise OSError("missing variable")
+
+    def broken_load_wout(_path):
+        raise RuntimeError("bad wout")
+
+    monkeypatch.setitem(sys.modules, "netCDF4", SimpleNamespace(Dataset=broken_dataset))
+    monkeypatch.setitem(sys.modules, "vmec_jax", SimpleNamespace(load_wout=broken_load_wout))
+
+    report = build_authoritative_wout_candidate_gate(
+        tmp_path / "bad_wout.nc",
+        target_aspect=5.0,
+        aspect_atol=5.0e-2,
+        min_abs_mean_iota=0.41,
+        qs_residual_max=5.0e-2,
+        iota_profile_floor=0.41,
+    )
+
+    assert report["passed"] is False
+    assert report["authoritative_wout"]["aspect"] is None
+    assert report["checks"]["iota_profile"]["passed"] is False
+    assert report["checks"]["quasisymmetry"]["source"] == "vmec_jax_wout_error"

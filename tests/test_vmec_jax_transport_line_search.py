@@ -57,6 +57,25 @@ def test_sparse_descent_direction_rejects_bad_gradient_report() -> None:
         )
 
 
+def test_sparse_descent_direction_rejects_malformed_gradient_rows() -> None:
+    with pytest.raises(ValueError, match="parameter_count must be positive"):
+        sparse_descent_direction_from_gradient_report({"top_gradient_components": []})
+    with pytest.raises(ValueError, match="top_gradient_components"):
+        sparse_descent_direction_from_gradient_report({"parameter_count": 2, "top_gradient_components": []})
+    with pytest.raises(ValueError, match="rows must be mappings"):
+        sparse_descent_direction_from_gradient_report(
+            {"parameter_count": 2, "top_gradient_components": [object()]}
+        )
+    with pytest.raises(ValueError, match="outside parameter_count"):
+        sparse_descent_direction_from_gradient_report(
+            {"parameter_count": 2, "top_gradient_components": [{"parameter_index": 3, "gradient": 1.0}]}
+        )
+    with pytest.raises(ValueError, match="not finite"):
+        sparse_descent_direction_from_gradient_report(
+            {"parameter_count": 2, "top_gradient_components": [{"parameter_index": 1, "gradient": "bad"}]}
+        )
+
+
 def _boundary_chain_collection() -> dict[str, object]:
     return {
         "kind": "vmec_jax_boundary_chain_collection_summary",
@@ -160,6 +179,33 @@ def test_boundary_chain_filter_can_require_growth_branch_locality() -> None:
     assert direction[0] == 0.0
 
 
+def test_boundary_chain_filter_rejects_malformed_rows_and_skips_missing_index() -> None:
+    with pytest.raises(ValueError, match="must contain rows"):
+        boundary_chain_accepted_parameter_indices({"rows": None})
+    with pytest.raises(ValueError, match="rows must be mappings"):
+        boundary_chain_accepted_parameter_indices({"rows": [object()]})
+
+    accepted = boundary_chain_accepted_parameter_indices(
+        {
+            "rows": [
+                {"name": "missing-index", "frozen_axis_jvp_vjp_consistent": True},
+                {
+                    "index": 2,
+                    "frozen_axis_jvp_vjp_consistent": True,
+                    "frozen_axis_matches_exact_fd": True,
+                },
+                {
+                    "index": 2,
+                    "frozen_axis_jvp_vjp_consistent": True,
+                    "frozen_axis_matches_exact_fd": True,
+                },
+            ]
+        }
+    )
+
+    assert accepted == (2,)
+
+
 def test_projected_line_search_manifest_records_boundary_chain_filter() -> None:
     manifest = projected_line_search_input_manifest(
         _gradient_report(),
@@ -179,6 +225,11 @@ def test_projected_line_search_manifest_records_boundary_chain_filter() -> None:
     }
     assert manifest["steps"][0]["parameter_linf_norm"] == pytest.approx(0.1)
     json.dumps(manifest, allow_nan=False)
+
+
+def test_projected_line_search_manifest_rejects_nonpositive_steps() -> None:
+    with pytest.raises(ValueError, match="finite and positive"):
+        projected_line_search_input_manifest(_gradient_report(), steps=(0.0,), top_n=2)
 
 
 def test_projected_line_search_admission_selects_best_gate_passing_candidate() -> None:
@@ -209,6 +260,30 @@ def test_projected_line_search_admission_fails_closed_without_improvement() -> N
     assert report["passed"] is False
     assert report["selected_candidate"] is None
     assert "insufficient_transport_improvement" in report["candidates"][0]["admission_blockers"]
+
+
+def test_projected_line_search_admission_reports_missing_metrics_and_higher_is_better() -> None:
+    missing = select_projected_line_search_candidate(
+        {},
+        [{"label": "candidate", "step": 0.1, "gate_passed": True}],
+    )
+    assert missing["passed"] is False
+    blockers = missing["candidates"][0]["admission_blockers"]
+    assert "missing_transport_metric" in blockers
+    assert "missing_baseline_transport_metric" in blockers
+
+    higher = select_projected_line_search_candidate(
+        {"transport_metric_final": 10.0, "gate_passed": True},
+        [{"label": "higher", "step": 0.1, "spectrax_objective_final": 11.0, "gate_passed": False}],
+        policy=ProjectedLineSearchPolicy(
+            minimum_relative_improvement=0.05,
+            lower_is_better=False,
+            require_gate_passed=False,
+        ),
+    )
+    assert higher["passed"] is True
+    assert higher["selected_candidate"]["label"] == "higher"
+    assert higher["selected_candidate"]["relative_transport_improvement"] == pytest.approx(0.1)
 
 
 def test_projected_line_search_public_api_exports() -> None:
