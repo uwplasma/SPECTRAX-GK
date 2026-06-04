@@ -122,6 +122,24 @@ This file is both the active plan and the running log. Keep entries concise, dat
   the strict baseline with the new rerun-WOUT gate enabled and, if it fails,
   increase/adjust the VMEC-JAX solve until ``input.final`` reproduces the
   optimizer-state WOUT within the rerun gate.
+- Ran the rerun-gated strict baseline on office at ``bd85fae``:
+  ``/home/rjorge/tmp/spectrax_strict_qa_rerun_gate_bd85fae``. The exact
+  optimizer-state solved gate still passes after ``nfev=39`` and
+  ``706.95 s``: aspect ``5.000154379``, mean iota ``0.410199722``, QS
+  ``2.60098e-4``. The new WOUT reproducibility gate fails. The fresh
+  fixed-boundary ``wout_final_rerun.nc`` has mean iota ``0.411691350`` and
+  profile minima ``0.402859/0.402619`` versus optimizer-state
+  ``0.410199722`` and ``0.405670/0.405506``. The rerun WOUT itself passes the
+  lower-bound iota gate, but it is not the same equilibrium as the
+  optimizer-state WOUT used by the history/gate. This confirms the next blocker
+  is an authoritative VMEC-JAX state/input/WOUT convention, not a SPECTRAX-GK
+  nonlinear run.
+- Next strict-QA action: add an admission path that either (1) treats the
+  rerun WOUT as authoritative and evaluates SPECTRAX-GK transport directly
+  from that WOUT, or (2) fixes the VMEC-JAX optimizer/save path so
+  ``input.final`` reproduces the optimizer-state WOUT within the new
+  reproducibility gate. Do not spend long nonlinear audit time until one of
+  those two state conventions is closed.
 
 ## 2026-06-03 QA Geometry Figure Scope Fix
 

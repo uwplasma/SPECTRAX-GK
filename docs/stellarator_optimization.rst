@@ -197,13 +197,16 @@ The tracked exact SciPy/ESS strict-baseline evidence is stored in
 for this baseline because the upstream ``QA_optimization.py`` objective uses a
 high-weight mean-iota target, not a profile-floor constraint.
 Publication-facing admission must also require input/WOUT reproducibility.
-After this strict run, a fresh VMEC rerun from the saved ``input.final``
-reproduced aspect and QS but dropped the mean-iota diagnostic to about
-``0.4085``. Therefore a saved optimizer-state ``wout_final.nc`` is not enough:
-run the driver with ``--save-rerun-wouts --require-rerun-wout-gate`` and
-require ``wout_final_rerun.nc`` to match the optimizer-state WOUT and pass the
-same aspect/iota/profile gates before attaching SPECTRAX-GK transport metrics
-or projected line-search candidates to that input deck.
+After this strict run, independent replay/rerun paths did not reproduce the
+same rotational transform: a one-evaluation VMEC-JAX replay from
+``input.final`` reported mean iota near ``0.4085``, while a fresh
+fixed-boundary ``wout_final_rerun.nc`` reported mean iota near ``0.41169``
+instead of the optimizer-state ``0.41020``. Therefore a saved optimizer-state
+``wout_final.nc`` is not enough: run the driver with
+``--save-rerun-wouts --require-rerun-wout-gate`` and require
+``wout_final_rerun.nc`` to match the optimizer-state WOUT and pass the same
+aspect/iota/profile gates before attaching SPECTRAX-GK transport metrics or
+projected line-search candidates to that input deck.
 When using ``tools/run_vmec_jax_guarded_transport_ladder.py`` from this
 baseline, pass ``--disable-iota-profile-floor`` at the ladder level; the tool
 forwards the same convention to each candidate driver command.
