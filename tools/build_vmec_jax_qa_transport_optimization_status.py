@@ -99,6 +99,10 @@ def _candidate_row(label: str, root: Path, *, objective_kind: str) -> dict[str, 
     gate = _read_json(root / "solved_wout_gate.json")
     wout_repro_gate_path = root / "wout_reproducibility_gate.json"
     wout_repro_gate = _read_json(wout_repro_gate_path) if wout_repro_gate_path.exists() else None
+    rerun_wout_admission_gate_path = root / "rerun_wout_admission_gate.json"
+    rerun_wout_admission_gate = (
+        _read_json(rerun_wout_admission_gate_path) if rerun_wout_admission_gate_path.exists() else None
+    )
     checks = gate.get("checks", {})
     if not isinstance(checks, dict):
         checks = {}
@@ -125,8 +129,18 @@ def _candidate_row(label: str, root: Path, *, objective_kind: str) -> dict[str, 
     wout_repro_gate_passed = (
         None if wout_repro_gate is None else bool(wout_repro_gate.get("passed", False))
     )
+    rerun_wout_admission_gate_passed = (
+        None if rerun_wout_admission_gate is None else bool(rerun_wout_admission_gate.get("passed", False))
+    )
+    uses_authoritative_rerun_wout = (
+        wout_repro_gate_passed is False
+        and rerun_wout_admission_gate_passed is True
+        and (root / "wout_final_rerun.nc").exists()
+    )
     admission_gate_passed = solved_gate_passed and (
-        wout_repro_gate_passed is None or bool(wout_repro_gate_passed)
+        wout_repro_gate_passed is None
+        or bool(wout_repro_gate_passed)
+        or bool(uses_authoritative_rerun_wout)
     )
     return {
         "label": label,
@@ -136,6 +150,12 @@ def _candidate_row(label: str, root: Path, *, objective_kind: str) -> dict[str, 
         "solved_wout_gate_passed": bool(solved_gate_passed),
         "wout_reproducibility_gate_passed": wout_repro_gate_passed,
         "wout_reproducibility_gate": wout_repro_gate,
+        "rerun_wout_admission_gate_passed": rerun_wout_admission_gate_passed,
+        "rerun_wout_admission_gate": rerun_wout_admission_gate,
+        "uses_authoritative_rerun_wout": uses_authoritative_rerun_wout,
+        "authoritative_wout": _repo_relative(
+            root / ("wout_final_rerun.nc" if uses_authoritative_rerun_wout else "wout_final.nc")
+        ),
         "aspect_final": _finite_float(history.get("aspect_final")),
         "iota_final": _finite_float(history.get("iota_final")),
         "qs_final": _finite_float(history.get("qs_final")),

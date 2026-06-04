@@ -251,6 +251,13 @@ def _load_wout_reproducibility_gate(root: Path) -> dict[str, Any] | None:
     return _read_json(path)
 
 
+def _load_rerun_wout_admission_gate(root: Path) -> dict[str, Any] | None:
+    path = root / "rerun_wout_admission_gate.json"
+    if not path.exists():
+        return None
+    return _read_json(path)
+
+
 def _gate_blockers(gate: dict[str, Any] | None) -> list[str]:
     if gate is None:
         return ["missing_solved_wout_gate"]
@@ -281,6 +288,20 @@ def _wout_reproducibility_blockers(gate: dict[str, Any] | None) -> list[str]:
     if not bool(gate.get("passed", False)) and not blockers:
         blockers.append("wout_reproducibility_gate_reported_failed")
     return blockers
+
+
+def _admitted_authoritative_rerun_wout(
+    root: Path,
+    *,
+    wout_repro_gate_passed: bool | None,
+    rerun_wout_admission_gate: dict[str, Any] | None,
+) -> Path | None:
+    path = root / "wout_final_rerun.nc"
+    if wout_repro_gate_passed is not False:
+        return None
+    if rerun_wout_admission_gate is None or not bool(rerun_wout_admission_gate.get("passed", False)):
+        return None
+    return path if path.exists() else None
 
 
 def _load_q_trace(path: Path) -> dict[str, Any] | None:
@@ -368,8 +389,8 @@ def _row_from_run(root: Path, *, campaign_root: Path, runs_root: Path) -> dict[s
     setup = _read_json(setup_path) if setup_path.exists() else {}
     gate = _load_gate(root)
     wout_repro_gate = _load_wout_reproducibility_gate(root)
+    rerun_wout_admission_gate = _load_rerun_wout_admission_gate(root)
     wout_path = root / "wout_final.nc"
-    iota_profile = _load_iota_profile_from_wout(wout_path)
     transport_kind = history.get("transport_metric_kind", setup.get("transport_kind"))
     status = _status_text(campaign_root, case_id.split("/")[-1])
     artifact_completed = (
@@ -383,13 +404,34 @@ def _row_from_run(root: Path, *, campaign_root: Path, runs_root: Path) -> dict[s
     wout_repro_gate_passed = (
         None if wout_repro_gate is None else bool(wout_repro_gate.get("passed", False))
     )
+    authoritative_rerun_wout = _admitted_authoritative_rerun_wout(
+        root,
+        wout_repro_gate_passed=wout_repro_gate_passed,
+        rerun_wout_admission_gate=rerun_wout_admission_gate,
+    )
+    uses_authoritative_rerun_wout = authoritative_rerun_wout is not None
+    authoritative_wout = authoritative_rerun_wout if authoritative_rerun_wout is not None else wout_path
+    rerun_wout_admission_gate_passed = (
+        None if rerun_wout_admission_gate is None else bool(rerun_wout_admission_gate.get("passed", False))
+    )
     gate_passed = (
         None
         if solved_gate_passed is None
         else bool(solved_gate_passed)
-        and (wout_repro_gate_passed is None or bool(wout_repro_gate_passed))
+        and (
+            wout_repro_gate_passed is None
+            or bool(wout_repro_gate_passed)
+            or bool(uses_authoritative_rerun_wout)
+        )
     )
     nonlinear_audit_ready = run_completed and gate_passed is True
+    gate_blockers = _gate_blockers(gate)
+    if not uses_authoritative_rerun_wout:
+        gate_blockers += _wout_reproducibility_blockers(wout_repro_gate)
+    gate_warnings = []
+    if uses_authoritative_rerun_wout:
+        gate_warnings.append("optimizer_state_wout_not_reproduced_authoritative_rerun_wout_used")
+    iota_profile = _load_iota_profile_from_wout(authoritative_wout)
     return {
         "case_id": case_id,
         "label": _case_label(case_id),
@@ -399,6 +441,12 @@ def _row_from_run(root: Path, *, campaign_root: Path, runs_root: Path) -> dict[s
         "setup": setup,
         "has_wout_final": wout_path.exists(),
         "wout_final": _repo_relative(wout_path) if wout_path.exists() else None,
+        "has_authoritative_wout": authoritative_wout.exists(),
+        "authoritative_wout": _repo_relative(authoritative_wout) if authoritative_wout.exists() else None,
+        "authoritative_wout_source": (
+            "wout_final_rerun.nc" if uses_authoritative_rerun_wout else "wout_final.nc"
+        ),
+        "uses_authoritative_rerun_wout": uses_authoritative_rerun_wout,
         "history": {
             "objective_initial": _finite_float(history.get("objective_initial")),
             "objective_final": _finite_float(history.get("objective_final")),
@@ -422,12 +470,15 @@ def _row_from_run(root: Path, *, campaign_root: Path, runs_root: Path) -> dict[s
         "solved_wout_gate_passed": solved_gate_passed,
         "wout_reproducibility_gate": wout_repro_gate,
         "wout_reproducibility_gate_passed": wout_repro_gate_passed,
+        "rerun_wout_admission_gate": rerun_wout_admission_gate,
+        "rerun_wout_admission_gate_passed": rerun_wout_admission_gate_passed,
         "gate_passed": gate_passed,
-        "gate_blockers": _gate_blockers(gate) + _wout_reproducibility_blockers(wout_repro_gate),
+        "gate_blockers": gate_blockers,
+        "gate_warnings": gate_warnings,
         "iota_profile": iota_profile,
         "q_traces": _q_traces(root),
         "recommended_nonlinear_audit_command": _nonlinear_audit_command(
-            wout_path if wout_path.exists() else None,
+            authoritative_wout if authoritative_wout.exists() else None,
             case_id,
             run_completed=nonlinear_audit_ready,
         ),
@@ -707,7 +758,7 @@ def _plot_q_traces(ax: plt.Axes, rows: list[dict[str, Any]]) -> None:
             0.5,
             0.5,
             "Pending for this sweep:\nrun long post-transient SPECTRAX-GK audits\n"
-            "from each completed wout_final.nc before comparing Q(t).",
+            "from each admitted authoritative WOUT before comparing Q(t).",
             ha="center",
             va="center",
             fontsize=9,
@@ -715,7 +766,7 @@ def _plot_q_traces(ax: plt.Axes, rows: list[dict[str, Any]]) -> None:
 
 
 def _plot_surface(ax: plt.Axes, row: dict[str, Any]) -> None:
-    wout_path = _resolved_path(row.get("wout_final"))
+    wout_path = _resolved_path(row.get("authoritative_wout", row.get("wout_final")))
     arrays = _surface_arrays(wout_path) if wout_path is not None else None
     if arrays is None:
         ax.text2D(0.08, 0.5, "surface\npending", transform=ax.transAxes)
@@ -743,7 +794,7 @@ def _plot_surface(ax: plt.Axes, row: dict[str, Any]) -> None:
 
 
 def _plot_bmag(ax: plt.Axes, row: dict[str, Any]) -> None:
-    wout_path = _resolved_path(row.get("wout_final"))
+    wout_path = _resolved_path(row.get("authoritative_wout", row.get("wout_final")))
     arrays = _bmag_arrays(wout_path) if wout_path is not None else None
     if arrays is None:
         ax.axis("off")

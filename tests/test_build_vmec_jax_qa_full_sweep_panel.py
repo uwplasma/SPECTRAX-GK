@@ -86,6 +86,23 @@ def _write_failed_wout_reproducibility_gate(root: Path) -> None:
     )
 
 
+def _write_passed_rerun_wout_admission_gate(root: Path) -> None:
+    (root / "rerun_wout_admission_gate.json").write_text(
+        json.dumps(
+            {
+                "passed": True,
+                "checks": {
+                    "aspect": {"passed": True},
+                    "mean_iota": {"passed": True},
+                    "iota_profile": {"passed": True},
+                    "quasisymmetry": {"passed": True},
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+
 def test_build_payload_discovers_completed_cases_without_faking_q_traces(tmp_path: Path) -> None:
     run_root = tmp_path / "campaign"
     _write_case(run_root / "runs" / "qa_baseline_scipy", objective_final=1.5)
@@ -174,6 +191,27 @@ def test_failed_wout_reproducibility_gate_blocks_nonlinear_audit_promotion(tmp_p
     assert row["gate_passed"] is False
     assert row["recommended_nonlinear_audit_command"] is None
     assert "wout_reproducibility:mean_iota_reproducibility" in row["gate_blockers"]
+
+
+def test_authoritative_rerun_wout_gate_selects_rerun_wout_for_audit(tmp_path: Path) -> None:
+    case = tmp_path / "campaign" / "runs" / "qa_baseline_scipy"
+    _write_case(case, objective_final=0.4, transport_metric=0.08)
+    _write_failed_wout_reproducibility_gate(case)
+    _write_passed_rerun_wout_admission_gate(case)
+    (case / "wout_final.nc").write_bytes(b"optimizer-state-wout")
+    (case / "wout_final_rerun.nc").write_bytes(b"authoritative-rerun-wout")
+
+    payload = mod.build_payload(tmp_path / "campaign")
+    [row] = payload["cases"]
+
+    assert row["gate_passed"] is True
+    assert row["uses_authoritative_rerun_wout"] is True
+    assert row["authoritative_wout"].endswith("wout_final_rerun.nc")
+    assert row["authoritative_wout_source"] == "wout_final_rerun.nc"
+    assert row["recommended_nonlinear_audit_command"] is not None
+    assert "wout_final_rerun.nc" in row["recommended_nonlinear_audit_command"]
+    assert row["gate_blockers"] == []
+    assert row["gate_warnings"] == ["optimizer_state_wout_not_reproduced_authoritative_rerun_wout_used"]
 
 
 def test_in_progress_wout_is_not_promoted_to_completed_or_audit_ready(tmp_path: Path) -> None:

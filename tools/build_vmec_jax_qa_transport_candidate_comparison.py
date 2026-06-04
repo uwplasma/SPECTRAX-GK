@@ -104,10 +104,20 @@ def _load_wout_reproducibility_gate(root: Path) -> dict[str, Any] | None:
     return data
 
 
-def _load_iota_profiles(root: Path) -> tuple[np.ndarray, np.ndarray]:
+def _load_rerun_wout_admission_gate(root: Path) -> dict[str, Any] | None:
+    path = root / "rerun_wout_admission_gate.json"
+    if not path.exists():
+        return None
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise ValueError(f"{path} must contain a JSON object")
+    return data
+
+
+def _load_iota_profiles(root: Path, *, wout_name: str = "wout_final.nc") -> tuple[np.ndarray, np.ndarray]:
     import vmec_jax as vj  # type: ignore[import-not-found]
 
-    path = root / "wout_final.nc"
+    path = root / wout_name
     if not path.exists():
         raise FileNotFoundError(f"missing final WOUT file: {path}")
     wout = vj.load_wout(path)
@@ -138,10 +148,24 @@ def _branch_summary(
     qs_max: float,
 ) -> dict[str, Any]:
     history = _load_history(root)
-    iotas, iotaf = _load_iota_profiles(root)
-    s = np.linspace(0.0, 1.0, iotas.size)
     gate_source = "solved_wout_gate.json"
     gate = _load_solved_gate(root)
+    wout_repro_gate = _load_wout_reproducibility_gate(root)
+    wout_repro_gate_passed = (
+        None if wout_repro_gate is None else bool(wout_repro_gate.get("passed", False))
+    )
+    rerun_wout_admission_gate = _load_rerun_wout_admission_gate(root)
+    rerun_wout_admission_gate_passed = (
+        None if rerun_wout_admission_gate is None else bool(rerun_wout_admission_gate.get("passed", False))
+    )
+    uses_authoritative_rerun_wout = (
+        wout_repro_gate_passed is False
+        and rerun_wout_admission_gate_passed is True
+        and (root / "wout_final_rerun.nc").exists()
+    )
+    authoritative_wout_name = "wout_final_rerun.nc" if uses_authoritative_rerun_wout else "wout_final.nc"
+    iotas, iotaf = _load_iota_profiles(root, wout_name=authoritative_wout_name)
+    s = np.linspace(0.0, 1.0, iotas.size)
     if gate is None:
         gate_source = "reconstructed_history_wout"
         gate = build_solved_vmec_candidate_gate(
@@ -152,14 +176,10 @@ def _branch_summary(
             qs_residual_max=qs_max,
             iota_profile_floor=min_iota,
             iota_profiles=(iotas, iotaf),
-            profile_source="wout_final.nc",
+            profile_source=authoritative_wout_name,
         )
     gate_is_authoritative = gate_source == "solved_wout_gate.json"
     gate_reported_passed = bool(gate.get("passed", False))
-    wout_repro_gate = _load_wout_reproducibility_gate(root)
-    wout_repro_gate_passed = (
-        None if wout_repro_gate is None else bool(wout_repro_gate.get("passed", False))
-    )
     admission_blockers = [
         name
         for name, check in gate.get("checks", {}).items()
@@ -167,12 +187,16 @@ def _branch_summary(
     ]
     if not gate_is_authoritative:
         admission_blockers.insert(0, "non_authoritative_reconstructed_gate")
-    if wout_repro_gate_passed is False:
+    if wout_repro_gate_passed is False and not uses_authoritative_rerun_wout:
         admission_blockers.append("wout_reproducibility_gate_failed")
     admitted = bool(
         gate_reported_passed
         and gate_is_authoritative
-        and (wout_repro_gate_passed is None or bool(wout_repro_gate_passed))
+        and (
+            wout_repro_gate_passed is None
+            or bool(wout_repro_gate_passed)
+            or bool(uses_authoritative_rerun_wout)
+        )
     )
     return {
         "label": label,
@@ -211,6 +235,10 @@ def _branch_summary(
         "gate_reported_passed": gate_reported_passed,
         "wout_reproducibility_gate": wout_repro_gate,
         "wout_reproducibility_gate_passed": wout_repro_gate_passed,
+        "rerun_wout_admission_gate": rerun_wout_admission_gate,
+        "rerun_wout_admission_gate_passed": rerun_wout_admission_gate_passed,
+        "uses_authoritative_rerun_wout": uses_authoritative_rerun_wout,
+        "authoritative_wout": _repo_relative(root / authoritative_wout_name),
         "admitted_for_long_window_nonlinear_audit": admitted,
         "admission_blockers": admission_blockers,
     }

@@ -23,6 +23,7 @@ def _candidate(
     metric: float | None,
     qs: float = 0.02,
     wout_reproducibility_passed: bool | None = None,
+    rerun_wout_admission_passed: bool | None = None,
 ) -> None:
     root.mkdir(parents=True, exist_ok=True)
     payload = {
@@ -79,6 +80,23 @@ def _candidate(
             ),
             encoding="utf-8",
         )
+    if rerun_wout_admission_passed is not None:
+        (root / "rerun_wout_admission_gate.json").write_text(
+            json.dumps(
+                {
+                    "passed": rerun_wout_admission_passed,
+                    "checks": {
+                        "aspect": {"passed": rerun_wout_admission_passed},
+                        "mean_iota": {"passed": rerun_wout_admission_passed},
+                        "iota_profile": {"passed": rerun_wout_admission_passed},
+                        "quasisymmetry": {"passed": rerun_wout_admission_passed},
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
+        if rerun_wout_admission_passed:
+            (root / "wout_final_rerun.nc").write_bytes(b"authoritative-rerun-wout")
 
 
 def _supporting_artifacts(tmp_path: Path) -> dict[str, Path]:
@@ -242,3 +260,37 @@ def test_failed_wout_reproducibility_gate_blocks_status_admission(tmp_path: Path
     assert baseline["wout_reproducibility_gate_passed"] is False
     assert baseline["passed_solved_wout_gate"] is False
     assert payload["summary"]["qa_baseline_gate_passed"] is False
+
+
+def test_status_admits_explicit_authoritative_rerun_wout(tmp_path: Path) -> None:
+    constraints = tmp_path / "constraints"
+    direct = tmp_path / "direct"
+    projected_base = tmp_path / "projected_base"
+    projected_step = tmp_path / "projected_step"
+    _candidate(
+        constraints,
+        passed=True,
+        metric=None,
+        wout_reproducibility_passed=False,
+        rerun_wout_admission_passed=True,
+    )
+    _candidate(direct, passed=False, metric=None, qs=1.0)
+    _candidate(projected_base, passed=True, metric=0.1)
+    _candidate(projected_step, passed=True, metric=0.09)
+
+    payload = mod.build_payload(
+        constraints_dir=constraints,
+        direct_transport_dir=direct,
+        projected_baseline_dir=projected_base,
+        projected_step_dir=projected_step,
+        **_supporting_artifacts(tmp_path),
+    )
+    candidates = {candidate["label"]: candidate for candidate in payload["candidates"]}
+    baseline = candidates["QA max_mode=5 baseline"]
+
+    assert baseline["wout_reproducibility_gate_passed"] is False
+    assert baseline["rerun_wout_admission_gate_passed"] is True
+    assert baseline["uses_authoritative_rerun_wout"] is True
+    assert baseline["passed_solved_wout_gate"] is True
+    assert baseline["authoritative_wout"].endswith("wout_final_rerun.nc")
+    assert payload["summary"]["qa_baseline_gate_passed"] is True

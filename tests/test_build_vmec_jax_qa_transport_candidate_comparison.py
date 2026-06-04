@@ -127,6 +127,25 @@ def _wout_reproducibility_gate(root: Path, *, passed: bool) -> None:
     )
 
 
+def _rerun_wout_admission_gate(root: Path, *, passed: bool) -> None:
+    (root / "rerun_wout_admission_gate.json").write_text(
+        json.dumps(
+            {
+                "passed": passed,
+                "checks": {
+                    "aspect": {"passed": passed},
+                    "mean_iota": {"passed": passed},
+                    "iota_profile": {"passed": passed},
+                    "quasisymmetry": {"passed": passed},
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    if passed:
+        (root / "wout_final_rerun.nc").write_bytes(b"authoritative-rerun-wout")
+
+
 def test_payload_admits_only_authoritative_solved_wout_gates(tmp_path: Path, monkeypatch) -> None:
     constraints = tmp_path / "constraints"
     transport = tmp_path / "transport"
@@ -136,7 +155,7 @@ def test_payload_admits_only_authoritative_solved_wout_gates(tmp_path: Path, mon
     monkeypatch.setattr(
         mod,
         "_load_iota_profiles",
-        lambda _root: (np.asarray([0.0, 0.414, 0.427]), np.asarray([0.412, 0.421])),
+        lambda _root, *, wout_name="wout_final.nc": (np.asarray([0.0, 0.414, 0.427]), np.asarray([0.412, 0.421])),
     )
 
     payload = mod.build_payload(constraints, transport)
@@ -170,7 +189,7 @@ def test_payload_admits_transport_candidate_with_authoritative_gate(tmp_path: Pa
     monkeypatch.setattr(
         mod,
         "_load_iota_profiles",
-        lambda _root: (np.asarray([0.0, 0.414, 0.427]), np.asarray([0.412, 0.421])),
+        lambda _root, *, wout_name="wout_final.nc": (np.asarray([0.0, 0.414, 0.427]), np.asarray([0.412, 0.421])),
     )
 
     payload = mod.build_payload(constraints, transport)
@@ -197,7 +216,7 @@ def test_failed_wout_reproducibility_gate_blocks_authoritative_transport_candida
     monkeypatch.setattr(
         mod,
         "_load_iota_profiles",
-        lambda _root: (np.asarray([0.0, 0.414, 0.427]), np.asarray([0.412, 0.421])),
+        lambda _root, *, wout_name="wout_final.nc": (np.asarray([0.0, 0.414, 0.427]), np.asarray([0.412, 0.421])),
     )
 
     payload = mod.build_payload(constraints, transport)
@@ -213,6 +232,39 @@ def test_failed_wout_reproducibility_gate_blocks_authoritative_transport_candida
     assert payload["summary"]["all_branches_passed_solved_wout_gate"] is False
 
 
+def test_authoritative_rerun_wout_gate_admits_transport_candidate(
+    tmp_path: Path, monkeypatch
+) -> None:
+    constraints = tmp_path / "constraints"
+    transport = tmp_path / "transport"
+    _history(constraints)
+    _history(transport)
+    _solved_gate(constraints, passed=True)
+    _solved_gate(transport, passed=True)
+    _wout_reproducibility_gate(transport, passed=False)
+    _rerun_wout_admission_gate(transport, passed=True)
+    monkeypatch.setattr(
+        mod,
+        "_load_iota_profiles",
+        lambda _root, *, wout_name="wout_final.nc": (
+            np.asarray([0.0, 0.414, 0.427]),
+            np.asarray([0.412, 0.421]),
+        ),
+    )
+
+    payload = mod.build_payload(constraints, transport)
+    branches = {branch["label"]: branch for branch in payload["branches"]}
+    transport_branch = branches["QA + SPECTRAX-GK transport"]
+
+    assert transport_branch["wout_reproducibility_gate_passed"] is False
+    assert transport_branch["rerun_wout_admission_gate_passed"] is True
+    assert transport_branch["uses_authoritative_rerun_wout"] is True
+    assert transport_branch["authoritative_wout"].endswith("wout_final_rerun.nc")
+    assert transport_branch["admitted_for_long_window_nonlinear_audit"] is True
+    assert "wout_reproducibility_gate_failed" not in transport_branch["admission_blockers"]
+    assert payload["summary"]["transport_candidate_admitted"] is True
+
+
 def test_candidate_comparison_plot_handles_normalized_gate_metrics(tmp_path: Path, monkeypatch) -> None:
     constraints = tmp_path / "constraints"
     transport = tmp_path / "transport"
@@ -223,7 +275,7 @@ def test_candidate_comparison_plot_handles_normalized_gate_metrics(tmp_path: Pat
     monkeypatch.setattr(
         mod,
         "_load_iota_profiles",
-        lambda _root: (np.asarray([0.0, 0.414, 0.427]), np.asarray([0.412, 0.421])),
+        lambda _root, *, wout_name="wout_final.nc": (np.asarray([0.0, 0.414, 0.427]), np.asarray([0.412, 0.421])),
     )
     payload = mod.build_payload(constraints, transport)
     out = tmp_path / "panel.png"
