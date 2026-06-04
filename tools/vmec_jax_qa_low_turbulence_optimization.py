@@ -36,6 +36,7 @@ from spectraxgk import (  # noqa: E402
     VMECJAXTransportObjectiveConfig,
 )
 from spectraxgk.vmec_jax_candidate_gate import (  # noqa: E402
+    build_authoritative_wout_candidate_gate,
     build_solved_vmec_candidate_gate,
     build_wout_reproducibility_gate,
 )
@@ -386,6 +387,15 @@ def _parse_args() -> argparse.Namespace:
         action="store_true",
         help="Fail the driver if input.final does not reproduce wout_final.nc within the rerun-WOUT gate",
     )
+    parser.add_argument(
+        "--admit-authoritative-rerun-wout",
+        action="store_true",
+        help=(
+            "Allow driver success when rerun-WOUT reproducibility fails but "
+            "the deterministic wout_final_rerun.nc passes its own solved-equilibrium gate; "
+            "downstream transport must then use wout_final_rerun.nc as authoritative."
+        ),
+    )
     parser.add_argument("--wout-repro-mean-iota-atol", type=float, default=5.0e-4)
     parser.add_argument("--wout-repro-aspect-atol", type=float, default=1.0e-6)
     parser.add_argument("--wout-repro-profile-atol", type=float, default=5.0e-4)
@@ -592,6 +602,7 @@ def main() -> int:
             "strict_upstream_qa_baseline": bool(args.strict_upstream_qa_baseline),
             "save_rerun_wouts": bool(args.save_rerun_wouts),
             "require_rerun_wout_gate": bool(args.require_rerun_wout_gate),
+            "admit_authoritative_rerun_wout": bool(args.admit_authoritative_rerun_wout),
             "wout_repro_mean_iota_atol": float(args.wout_repro_mean_iota_atol),
             "wout_repro_aspect_atol": float(args.wout_repro_aspect_atol),
             "wout_repro_profile_atol": float(args.wout_repro_profile_atol),
@@ -698,6 +709,7 @@ def main() -> int:
         )
     )
     rerun_gate_report = None
+    rerun_wout_admission_report = None
     if args.save_rerun_wouts:
         rerun_paths = {}
         if Path(saved.initial_input).exists():
@@ -730,6 +742,26 @@ def main() -> int:
         print("\nWOUT reproducibility gate:")
         print(f"  passed: {rerun_gate_report['passed']}")
         print(f"  file:   {rerun_gate_path}")
+        rerun_wout_admission_report = build_authoritative_wout_candidate_gate(
+            final_rerun_wout,
+            target_aspect=float(args.target_aspect),
+            aspect_atol=float(args.solved_wout_gate_aspect_atol),
+            min_abs_mean_iota=(
+                float(args.solved_wout_gate_min_abs_iota)
+                if args.solved_wout_gate_min_abs_iota is not None
+                else float(args.min_iota)
+            ),
+            qs_residual_max=float(args.solved_wout_gate_qs_max),
+            iota_profile_floor=gate_profile_floor,
+        )
+        rerun_wout_admission_path = args.outdir / "rerun_wout_admission_gate.json"
+        rerun_wout_admission_path.write_text(
+            json.dumps(rerun_wout_admission_report, indent=2, allow_nan=False),
+            encoding="utf-8",
+        )
+        print("\nAuthoritative rerun-WOUT admission gate:")
+        print(f"  passed: {rerun_wout_admission_report['passed']}")
+        print(f"  file:   {rerun_wout_admission_path}")
     gate_report = build_solved_vmec_candidate_gate(
         result,
         target_aspect=float(args.target_aspect),
@@ -777,6 +809,10 @@ def main() -> int:
         and not bool(rerun_gate_report["passed"])
         and not bool(args.allow_failed_solved_wout_gate)
     ):
+        if bool(args.admit_authoritative_rerun_wout) and bool(
+            (rerun_wout_admission_report or {}).get("passed", False)
+        ):
+            return 0
         return 2
     return 0
 

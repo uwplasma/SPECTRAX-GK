@@ -253,6 +253,7 @@ def test_driver_strict_upstream_qa_baseline_preset_is_admission_grade(tmp_path: 
     assert summary["optimizer"]["strict_upstream_qa_baseline"] is True
     assert summary["optimizer"]["save_rerun_wouts"] is True
     assert summary["optimizer"]["require_rerun_wout_gate"] is True
+    assert summary["optimizer"]["admit_authoritative_rerun_wout"] is False
     assert summary["optimizer"]["wout_repro_mean_iota_atol"] == pytest.approx(5.0e-4)
     assert summary["solved_wout_gate_policy"]["min_abs_mean_iota"] == 0.41
 

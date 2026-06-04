@@ -98,6 +98,11 @@ from ``history.json`` and ``wout_final.nc`` as advisory only; paper-facing
 admission requires an authoritative final ``solved_wout_gate.json``. A future
 solved-boundary optimization figure must pass this full solved-candidate gate
 before launching long-window nonlinear transport audits.
+For VMEC-JAX replay-sensitive runs, the figure artifact must also state which
+WOUT is authoritative. If ``wout_final_rerun.nc`` is chosen, require the
+separate rerun-WOUT aspect/iota/QS gate and use that WOUT in the transport
+audit commands; do not mix optimizer-state geometry with rerun-state
+transport metrics.
 
 Current Vs Deferred Figure Inventory
 ------------------------------------

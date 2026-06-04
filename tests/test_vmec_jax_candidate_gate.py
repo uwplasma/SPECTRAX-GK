@@ -8,6 +8,7 @@ import numpy as np
 import pytest
 
 from spectraxgk.vmec_jax_candidate_gate import (
+    build_authoritative_wout_candidate_gate,
     build_solved_vmec_candidate_gate,
     build_wout_reproducibility_gate,
     final_iota_profiles_from_vmec_result,
@@ -279,3 +280,48 @@ def test_wout_reproducibility_gate_accepts_matching_rerun() -> None:
 
     assert report["passed"] is True
     assert report["checks"]["rerun_mean_iota_admission"]["passed"] is True
+
+
+def test_authoritative_wout_candidate_gate_accepts_mapping_with_qs() -> None:
+    report = build_authoritative_wout_candidate_gate(
+        {
+            "source": "deterministic_rerun_wout",
+            "aspect": 5.0001,
+            "mean_iota": -0.411,
+            "min_iotas_excluding_axis": 0.405,
+            "min_iotaf": 0.404,
+            "qs_residual": 2.0e-3,
+        },
+        target_aspect=5.0,
+        aspect_atol=5.0e-2,
+        min_abs_mean_iota=0.41,
+        qs_residual_max=5.0e-2,
+        iota_profile_floor=None,
+    )
+
+    assert report["passed"] is True
+    assert report["checks"]["aspect"]["passed"] is True
+    assert report["checks"]["mean_iota"]["value"] == pytest.approx(0.411)
+    assert report["checks"]["quasisymmetry"]["source"] == "mapping"
+    json.dumps(report, allow_nan=False)
+
+
+def test_authoritative_wout_candidate_gate_rejects_missing_qs() -> None:
+    report = build_authoritative_wout_candidate_gate(
+        {
+            "source": "deterministic_rerun_wout",
+            "aspect": 5.0001,
+            "mean_iota": 0.411,
+            "min_iotas_excluding_axis": 0.405,
+            "min_iotaf": 0.404,
+        },
+        target_aspect=5.0,
+        aspect_atol=5.0e-2,
+        min_abs_mean_iota=0.41,
+        qs_residual_max=5.0e-2,
+        iota_profile_floor=None,
+    )
+
+    assert report["passed"] is False
+    assert report["checks"]["quasisymmetry"]["passed"] is False
+    assert report["checks"]["quasisymmetry"]["error"] == "missing_qs_residual"

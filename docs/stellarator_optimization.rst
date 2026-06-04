@@ -207,6 +207,13 @@ instead of the optimizer-state ``0.41020``. Therefore a saved optimizer-state
 ``wout_final_rerun.nc`` to match the optimizer-state WOUT and pass the same
 aspect/iota/profile gates before attaching SPECTRAX-GK transport metrics or
 projected line-search candidates to that input deck.
+There is now also an explicit rerun-WOUT-authoritative path. If that policy is
+chosen, the deterministic ``wout_final_rerun.nc`` must pass its own
+aspect/iota-profile/quasisymmetry admission gate, and all downstream
+SPECTRAX-GK audits must use that rerun WOUT as the equilibrium source. The
+current strict rerun WOUT passes this separate gate with mean iota
+``0.411691`` and QS residual ``1.85e-4``, while still failing reproducibility
+against the optimizer-state WOUT. Both facts must be reported.
 When using ``tools/run_vmec_jax_guarded_transport_ladder.py`` from this
 baseline, pass ``--disable-iota-profile-floor`` at the ladder level; the tool
 forwards the same convention to each candidate driver command.

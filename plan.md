@@ -146,6 +146,22 @@ This file is both the active plan and the running log. Keep entries concise, dat
   rerun-reproducibility candidates from generating nonlinear-audit commands,
   README/docs promotion rows, or ``ready_for_long_window_nonlinear_audit``
   summaries.
+- Ran a bounded replay matrix against
+  ``/home/rjorge/tmp/spectrax_strict_qa_rerun_gate_bd85fae/input.final``.
+  Default replay, explicit GPU replay, ``max_iter=3000``,
+  ``max_iter=6000``, and ``vmec_project=False`` all converge to the same
+  deterministic rerun WOUT with mean iota ``0.411691350`` and profile minimum
+  ``0.402859``; ``use_initial_guess=True`` falls to a worse branch with mean
+  iota ``0.301506``. Therefore iteration budget and device selection do not
+  recover the optimizer-state WOUT.
+- Added ``build_authoritative_wout_candidate_gate`` and driver support for
+  writing ``rerun_wout_admission_gate.json``. The real strict
+  ``wout_final_rerun.nc`` passes this separate WOUT-authoritative gate:
+  aspect ``5.000154``, mean iota ``0.411691``, QS residual ``1.85e-4``, no
+  failed checks. This gives a defensible path to use the deterministic rerun
+  WOUT as the publication-facing equilibrium, but downstream transport audits
+  must then point to ``wout_final_rerun.nc`` and the optimizer-state WOUT drift
+  must remain explicitly reported.
 
 ## 2026-06-03 QA Geometry Figure Scope Fix
 
