@@ -1,6 +1,6 @@
 # SPECTRAX-GK Quasilinear Transport and Optimization Plan
 
-Last updated: 2026-06-03
+Last updated: 2026-06-04
 Active repository: `uwplasma/SPECTRAX-GK`
 Historical planning archive: private repo `rogeriojorge/spectraxgk_plan`
 Current public baseline: `main` at v1.6.0, with the historical ship-readiness log archived before this file was reset.
@@ -170,6 +170,20 @@ This file is both the active plan and the running log. Keep entries concise, dat
   Do not launch these as a transport-reduction claim until a matched candidate
   WOUT with the same authoritative convention is available, or explicitly
   scope them as a baseline-only turbulence audit.
+- Added downstream admission support for explicitly authoritative rerun WOUTs:
+  when ``wout_reproducibility_gate.json`` fails but
+  ``rerun_wout_admission_gate.json`` passes and ``wout_final_rerun.nc`` exists,
+  the full-sweep, status, and candidate-comparison artifact builders use the
+  rerun WOUT for plots and recommended nonlinear-audit commands while keeping
+  the optimizer-state drift visible.
+- Rerun-gated the existing aspect-5 projected transport candidates
+  ``transport_weight_5e-4`` and ``transport_weight_1e-3`` from the earlier
+  one-point sweep. Both deterministic rerun WOUTs fail admission with mean
+  iota ``0.39849`` despite acceptable QS residuals. These candidates therefore
+  cannot be promoted as matched strict rerun-WOUT transport reductions.
+  Next strict-QA action: generate a new transport candidate directly under the
+  rerun-authoritative convention, with a stronger iota guard/buffer, before any
+  matched long-window nonlinear audit.
 
 ## 2026-06-03 QA Geometry Figure Scope Fix
 
