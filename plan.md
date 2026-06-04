@@ -30,9 +30,9 @@ historical logs live outside the release repository so clones stay small.
 | CI/CD, release infrastructure, package coverage | 100% | Green CI, 95% package-wide coverage |
 | Rerun-WOUT admission and artifact policy | 100% | Explicit authoritative rerun-WOUT path implemented and tested |
 | Strict QA candidate screening | 100% | Top-12 projected edge candidate passes rerun-WOUT gates and reduces the 18-point metric by 2.29% |
-| Strict nonlinear turbulent-flux optimization evidence | 82% | Matched t=700 audit fails promotion: 0.58% reduction, z=0.20, below the 2% gate |
-| Boundary-coefficient landscape and optimizer-noise diagnosis | 70% | 18-point RBC(0,1) reduced landscape includes deterministic sample-spread bars; replicated nonlinear error-bar queue running on office |
-| Docs/readme/release hygiene | 94% | Strict QA failed-promotion and landscape artifacts are tracked; final wording must stay scoped |
+| Strict nonlinear turbulent-flux optimization evidence | 86% | Strict top-12 matched audit fails promotion, but the RBC(0,1) landscape gives a positive replicated selected-audit direction |
+| Boundary-coefficient landscape and optimizer-noise diagnosis | 100% | 18-point RBC(0,1) reduced landscape plus replicated t=[350,700] nonlinear SEM bars closed |
+| Docs/readme/release hygiene | 96% | Strict QA failed-promotion and landscape artifacts are tracked with scoped wording |
 | Performance/parallelization release lane | 95% | Independent-work parallel paths are release-ready; nonlinear domain sharding remains research/development |
 
 Deferred post-release/manuscript extensions unless explicitly reprioritized:
@@ -189,12 +189,11 @@ No long nonlinear audit should be launched from these candidates.
    baseline/candidate ensemble JSON sidecars.
 4. Keep CI green after each tranche: fast unit shards, coverage aggregation,
    repository-size gate, docs links, and package build.
-5. Finish the office ``RBC(0,1)`` landscape nonlinear ensemble queue, copy back
-   the three ensemble JSON/PNG sidecars, and rerun
-   ``tools/build_vmec_boundary_transport_landscape.py`` with
-   ``--reuse-reduced-json`` plus ``--nonlinear-ensemble`` for baseline,
-   ``+3%``, and ``+6%`` so the deterministic 18-point reduced scan is not
-   recomputed.
+5. Use the closed ``RBC(0,1)`` landscape result to design the next optimizer
+   admission rule: require reduced-objective margins large enough to survive
+   deterministic cross-sample spread, then confirm selected directions with
+   three-replicate ``t=[350,700]`` nonlinear SEM bars before launching broader
+   multi-coefficient optimization.
 
 ## Release Hygiene Rules
 
@@ -281,3 +280,13 @@ No long nonlinear audit should be launched from these candidates.
   per-sample rows and cross-sample standard errors. These error bars diagnose
   surface/field-line/``k_y`` spread in the reduced model; they are explicitly
   not stochastic nonlinear heat-flux SEMs.
+- Completed the office ``RBC(0,1)`` replicated nonlinear landscape queue.
+  Baseline, ``+3%``, and ``+6%`` ensembles all pass the late-window gate over
+  ``t=[350,700]`` with three replicas each. The ensemble means are
+  ``8.554 +/- 0.120`` at baseline, ``6.275 +/- 0.042`` at ``+3%``, and
+  ``6.427 +/- 0.044`` at ``+6%``. The selected nonlinear audit therefore
+  confirms a ``26.65%`` reduction for ``+3%`` with ``z=17.99`` and a
+  ``24.87%`` reduction for ``+6%`` with ``z=16.71``. The final landscape panel
+  is `docs/_static/vmec_boundary_transport_landscape_rbc01.png`; only the
+  compact ensemble JSON sidecars are tracked, not NetCDF outputs or office
+  scratch traces.

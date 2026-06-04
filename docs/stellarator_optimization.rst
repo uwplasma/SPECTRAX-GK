@@ -1072,9 +1072,18 @@ scan, the ``+3%`` coefficient perturbation lowers the linear growth objective
 by about ``51%``, the quasilinear-flux objective by about ``49%``, and the
 reduced nonlinear-window objective by about ``4.7%``. The last reduction is
 small compared with the deterministic cross-sample spread over the
-surface/field-line/``k_y`` grid, so replicated nonlinear heat-flux error bars
-are required before using this direction for a turbulent-flux optimization
-claim.
+surface/field-line/``k_y`` grid, so the diagnostic was followed by replicated
+long-window nonlinear runs at the baseline, ``+3%``, and ``+6%`` points. The
+selected nonlinear audit uses three ``t=[350,700]`` post-transient windows per
+coefficient value: two random seeds at ``dt=0.05`` and one timestep replicate
+at ``dt=0.04``. The resulting ensemble means are
+``8.554 +/- 0.120`` for the baseline, ``6.275 +/- 0.042`` for ``+3%``, and
+``6.427 +/- 0.044`` for ``+6%``. Thus the ``+3%`` point reduces the audited
+nonlinear heat flux by ``26.7%`` with uncertainty separation ``z=18.0``; the
+``+6%`` point reduces it by ``24.9%`` with ``z=16.7``. This closes the
+one-coefficient landscape/noise diagnostic and motivates uncertainty-aware
+optimizer admission, but it remains a selected nonlinear audit rather than a
+multi-coefficient, multi-flux-tube turbulent-optimization claim.
 
 The reduced scan is intentionally reusable. Once the long nonlinear ensembles
 finish, regenerate the same figure without recomputing the 18-point reduced
@@ -1085,7 +1094,9 @@ sample by passing the stored JSON plus the nonlinear sidecars::
      --surfaces 0.45,0.64,0.78 \
      --alphas 0.0,0.7853981633974483 \
      --ky-values 0.1,0.3,0.5 \
-     --nonlinear-ensemble <coefficient_value>:<ensemble_gate.json>
+     --nonlinear-ensemble 0.20973126251035024:docs/_static/vmec_boundary_transport_landscape_replicates/landscape_rbc_0_1_0_ensemble_gate.json \
+     --nonlinear-ensemble 0.21602320038566075:docs/_static/vmec_boundary_transport_landscape_replicates/landscape_rbc_0_1_p0p03_ensemble_gate.json \
+     --nonlinear-ensemble 0.22231513826097127:docs/_static/vmec_boundary_transport_landscape_replicates/landscape_rbc_0_1_p0p06_ensemble_gate.json
 
 .. figure:: _static/vmec_boundary_transport_landscape_rbc01.png
    :alt: RBC(0,1) transport-objective landscape
@@ -1095,9 +1106,10 @@ sample by passing the stored JSON plus the nonlinear sidecars::
    ``RBC(0,1)`` transport-objective landscape. The top two panels are reduced
    deterministic diagnostics only; their error bars are cross-sample standard
    errors over the configured surface/field-line/``k_y`` grid, not stochastic
-   turbulent-flux uncertainty. The bottom panel is reserved for replicated
-   nonlinear heat-flux ensemble means and SEM bars; those office GPU runs are
-   the required next step before optimizer selection.
+   turbulent-flux uncertainty. The bottom panel shows replicated nonlinear
+   heat-flux ensemble means and combined SEM bars from the long-window GPU
+   audit. The reduced proxy is shallow, but the selected nonlinear points are
+   strongly separated from baseline in this one-coefficient scan.
 
 The VMEC-JAX WOUT files generated for this landscape currently require a
 metadata-only patch because their Fourier geometry is present but scalar

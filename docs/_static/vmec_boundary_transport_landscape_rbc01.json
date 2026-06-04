@@ -14,7 +14,32 @@
   "literature_context": {
     "optimization_of_nonlinear_turbulence_in_stellarators": "Published boundary-mode scans show noisy time-averaged nonlinear heat fluxes; this artifact is the analogous pre-optimizer landscape diagnostic."
   },
-  "nonlinear_ensemble_points": [],
+  "nonlinear_ensemble_points": [
+    {
+      "case": "landscape_rbc_0_1_0_replicated_nonlinear_window_ensemble_gate",
+      "coefficient_value": 0.20973126251035024,
+      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_replicates/landscape_rbc_0_1_0_ensemble_gate.json",
+      "mean": 8.554362366164424,
+      "passed": true,
+      "sem": 0.11951503416978174
+    },
+    {
+      "case": "landscape_rbc_0_1_p0p03_replicated_nonlinear_window_ensemble_gate",
+      "coefficient_value": 0.21602320038566075,
+      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_replicates/landscape_rbc_0_1_p0p03_ensemble_gate.json",
+      "mean": 6.274543846475065,
+      "passed": true,
+      "sem": 0.04213243251063571
+    },
+    {
+      "case": "landscape_rbc_0_1_p0p06_replicated_nonlinear_window_ensemble_gate",
+      "coefficient_value": 0.22231513826097127,
+      "ensemble_path": "docs/_static/vmec_boundary_transport_landscape_replicates/landscape_rbc_0_1_p0p06_ensemble_gate.json",
+      "mean": 6.42653555490751,
+      "passed": true,
+      "sem": 0.04399590111876854
+    }
+  ],
   "nonlinear_launch_manifest": {
     "claim_level": "launch_plan_for_replicated_nonlinear_heat_flux_error_bars_not_simulation_claim",
     "commands": [
