@@ -300,3 +300,6 @@ No long nonlinear audit should be launched from these candidates.
   landscape admissions can be regenerated and CI-gated directly from compact
   ensemble JSON sidecars, without manually inspecting office outputs or
   tracking large NetCDF files.
+- Added the nonlinear landscape admission JSON to the release-readiness
+  required-artifact contract, so this positive selected-audit evidence cannot
+  silently disappear from future release candidates.
