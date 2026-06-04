@@ -1102,6 +1102,20 @@ sample by passing the stored JSON plus the nonlinear sidecars::
      --nonlinear-ensemble 0.21602320038566075:docs/_static/vmec_boundary_transport_landscape_replicates/landscape_rbc_0_1_p0p03_ensemble_gate.json \
      --nonlinear-ensemble 0.22231513826097127:docs/_static/vmec_boundary_transport_landscape_replicates/landscape_rbc_0_1_p0p06_ensemble_gate.json
 
+The corresponding uncertainty-aware nonlinear admission report is built from
+the compact ensemble sidecars only::
+
+   python tools/build_nonlinear_landscape_admission_report.py \
+     --baseline-ensemble docs/_static/vmec_boundary_transport_landscape_replicates/landscape_rbc_0_1_0_ensemble_gate.json \
+     --candidate-ensemble "+3% RBC(0,1)" docs/_static/vmec_boundary_transport_landscape_replicates/landscape_rbc_0_1_p0p03_ensemble_gate.json \
+     --candidate-ensemble "+6% RBC(0,1)" docs/_static/vmec_boundary_transport_landscape_replicates/landscape_rbc_0_1_p0p06_ensemble_gate.json \
+     --min-relative-reduction 0.02 \
+     --min-uncertainty-z-score 1.0 \
+     --max-combined-sem-rel 0.25 \
+     --min-replicate-count 3 \
+     --out-json docs/_static/vmec_boundary_transport_landscape_admission.json \
+     --fail-on-no-admission
+
 .. figure:: _static/vmec_boundary_transport_landscape_rbc01.png
    :alt: RBC(0,1) transport-objective landscape
    :width: 82%
@@ -1130,9 +1144,11 @@ Implementation Map
 - Artifact builder: :download:`build_qa_low_turbulence_comparison.py <../tools/build_qa_low_turbulence_comparison.py>`
 - Time-horizon audit builder: :download:`build_qa_low_turbulence_time_horizon_audit.py <../tools/build_qa_low_turbulence_time_horizon_audit.py>`
 - Boundary landscape builder: :download:`build_vmec_boundary_transport_landscape.py <../tools/build_vmec_boundary_transport_landscape.py>`
+- Nonlinear landscape admission builder: :download:`build_nonlinear_landscape_admission_report.py <../tools/build_nonlinear_landscape_admission_report.py>`
 - VMEC-JAX WOUT metadata patcher: :download:`patch_vmec_jax_wout_metadata.py <../tools/patch_vmec_jax_wout_metadata.py>`
 - Tests: ``tests/test_qa_low_turbulence.py`` and
-  ``tests/test_vmec_boundary_transport_landscape.py``
+  ``tests/test_vmec_boundary_transport_landscape.py`` plus the nonlinear
+  admission policy tests.
 - Nonlinear landscape admission report:
   :download:`vmec_boundary_transport_landscape_admission.json <_static/vmec_boundary_transport_landscape_admission.json>`
 - Output JSON: :download:`qa_low_turbulence_comparison.json <_static/qa_low_turbulence_comparison.json>`

@@ -296,3 +296,7 @@ No long nonlinear audit should be launched from these candidates.
   requires passed ensembles, three replicas, bounded relative SEM, a minimum
   relative heat-flux reduction, and an uncertainty-separated z-score. Applied
   to the ``RBC(0,1)`` landscape, it selects ``+3% RBC(0,1)``.
+- Added `tools/build_nonlinear_landscape_admission_report.py` so future
+  landscape admissions can be regenerated and CI-gated directly from compact
+  ensemble JSON sidecars, without manually inspecting office outputs or
+  tracking large NetCDF files.
