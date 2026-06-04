@@ -156,6 +156,54 @@ def test_guarded_ladder_can_disable_profile_floor_for_strict_mean_iota_baseline(
     assert command.count("--disable-iota-profile-floor") == 1
 
 
+def test_guarded_ladder_uses_explicit_baseline_transport_metric_for_constraints_only_history(tmp_path: Path) -> None:
+    constraints = tmp_path / "constraints"
+    _write_candidate(constraints, passed=True, objective=99.0)
+    (constraints / "input.final").write_text("! vmec restart\n", encoding="utf-8")
+    metric_json = tmp_path / "baseline_metric.json"
+    metric_json.write_text(
+        json.dumps(
+            {
+                "kind": "vmec_jax_spectrax_transport_metric_eval",
+                "transport_metric_kind": "nonlinear_window_heat_flux",
+                "transport_objective_final": 0.08,
+                "spectrax_objective_final": 0.08,
+                "transport_metric_final": 0.08,
+                "sample_set": {"n_samples": 18},
+            }
+        ),
+        encoding="utf-8",
+    )
+    out_json = tmp_path / "ladder.json"
+
+    rc = mod.main(
+        [
+            "--constraints-dir",
+            str(constraints),
+            "--baseline-metric-json",
+            str(metric_json),
+            "--outdir",
+            str(tmp_path / "ladder"),
+            "--weights",
+            "0.0005",
+            "--dry-run",
+            "--out-json",
+            str(out_json),
+        ]
+    )
+
+    payload = json.loads(out_json.read_text(encoding="utf-8"))
+    baseline = payload["candidates"][0]
+    admitted_baseline = payload["transport_admission"]["candidates"][0]
+    assert rc == 0
+    assert payload["baseline_metric_json"] == str(metric_json)
+    assert baseline["objective_final"] == 99.0
+    assert baseline["transport_metric_final"] == 0.08
+    assert baseline["transport_metric_kind"] == "nonlinear_window_heat_flux"
+    assert admitted_baseline["transport_metric"]["source"] == "transport_objective_final"
+    assert admitted_baseline["transport_metric"]["uses_total_objective_proxy"] is False
+
+
 def test_guarded_ladder_stops_after_first_failed_transport_gate(
     tmp_path: Path,
     monkeypatch,

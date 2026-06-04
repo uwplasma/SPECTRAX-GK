@@ -46,6 +46,28 @@ def _read_json_object(path: Path) -> dict[str, Any]:
     return data
 
 
+def _history_with_transport_metric(history: dict[str, Any], metric_path: Path | None) -> dict[str, Any]:
+    """Return history augmented by an explicit eval-only transport metric."""
+
+    if metric_path is None:
+        return history
+    metric = _read_json_object(metric_path)
+    merged = dict(history)
+    for key in (
+        "transport_objective_final",
+        "spectrax_objective_final",
+        "transport_metric_final",
+        "transport_metric_kind",
+        "transport_objective_source",
+    ):
+        if key in metric:
+            merged[key] = metric[key]
+    merged["transport_metric_json"] = str(metric_path)
+    if "sample_set" in metric:
+        merged["transport_metric_sample_set"] = metric["sample_set"]
+    return merged
+
+
 def _weight_token(weight: float) -> str:
     token = f"{float(weight):.8g}".replace("-", "m").replace(".", "p")
     return token.replace("+", "")
@@ -117,11 +139,13 @@ def candidate_summary(
     qs_residual_max: float = 5.0e-2,
     iota_profile_floor: float | None = 0.41,
     allow_reconstructed_gate: bool = False,
+    transport_metric_json: Path | None = None,
 ) -> dict[str, Any]:
     """Return a compact promotion summary for a solved candidate directory."""
 
     history_path = root / "history.json"
     history = _read_json_object(history_path) if history_path.exists() else {}
+    history = _history_with_transport_metric(history, transport_metric_json)
     gate, gate_path = _candidate_gate_from_artifacts(
         root,
         history,
@@ -158,6 +182,9 @@ def candidate_summary(
         "transport_objective_final": history.get("transport_objective_final"),
         "spectrax_objective_final": history.get("spectrax_objective_final"),
         "transport_metric_final": history.get("transport_metric_final"),
+        "transport_metric_kind": history.get("transport_metric_kind"),
+        "transport_metric_json": history.get("transport_metric_json"),
+        "transport_metric_sample_set": history.get("transport_metric_sample_set"),
         "aspect_final": history.get("aspect_final"),
         "iota_final": history.get("iota_final"),
         "qs_final": history.get("qs_final"),
@@ -215,6 +242,15 @@ def build_parser() -> argparse.ArgumentParser:
         "--driver-args",
         default="",
         help="Additional arguments passed to the VMEC-JAX QA driver, parsed with shlex.split",
+    )
+    parser.add_argument(
+        "--baseline-metric-json",
+        type=Path,
+        default=None,
+        help=(
+            "Optional eval-only SPECTRAX transport metric JSON for the constraints baseline. "
+            "Use this when the baseline run was constraints-only and its history objective is not a transport metric."
+        ),
     )
     parser.add_argument("--target-aspect", type=float, default=6.0, help="Solved-candidate aspect target")
     parser.add_argument("--aspect-atol", type=float, default=5.0e-2, help="Solved-candidate aspect tolerance")
@@ -293,6 +329,7 @@ def main(argv: list[str] | None = None) -> int:
             qs_residual_max=gate_policy["qs_residual_max"],
             iota_profile_floor=gate_policy["iota_profile_floor"],
             allow_reconstructed_gate=bool(args.allow_reconstructed_gate),
+            transport_metric_json=Path(args.baseline_metric_json) if args.baseline_metric_json is not None else None,
         )
     ]
     run_failures: list[dict[str, Any]] = []
@@ -352,6 +389,7 @@ def main(argv: list[str] | None = None) -> int:
         ),
         "constraints_dir": str(constraints_dir),
         "restart_input": str(input_file),
+        "baseline_metric_json": None if args.baseline_metric_json is None else str(args.baseline_metric_json),
         "gate_policy": gate_policy,
         "transport_admission_policy": admission_policy.to_dict(),
         "allow_reconstructed_gate": bool(args.allow_reconstructed_gate),

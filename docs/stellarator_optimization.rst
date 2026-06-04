@@ -199,6 +199,10 @@ high-weight mean-iota target, not a profile-floor constraint.
 When using ``tools/run_vmec_jax_guarded_transport_ladder.py`` from this
 baseline, pass ``--disable-iota-profile-floor`` at the ladder level; the tool
 forwards the same convention to each candidate driver command.
+Also pass ``--baseline-metric-json`` pointing to the eval-only reduced metric
+for the same transport objective. Otherwise a constraints-only baseline has no
+transport metric in ``history.json`` and should not be compared through its QA
+objective value.
 
 Transport-admission bookkeeping for the strict baseline is separated from
 optimization. After a baseline or candidate writes ``input.final``, run:

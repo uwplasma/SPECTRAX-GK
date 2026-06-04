@@ -60,6 +60,10 @@ This file is both the active plan and the running log. Keep entries concise, dat
   to the candidate driver. This prevents future strict-QA transport candidates
   from mixing the upstream mean-iota target convention with an unrelated
   profile-floor gate.
+- Fixed strict-baseline transport admission bookkeeping for constraints-only
+  baselines. The guarded ladder now accepts ``--baseline-metric-json`` so the
+  baseline comparison uses the eval-only SPECTRAX-GK transport metric sidecar
+  instead of falling back to the QA objective in ``history.json``.
 
 ## 2026-06-03 QA Geometry Figure Scope Fix
 
