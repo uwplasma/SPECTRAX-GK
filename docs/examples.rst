@@ -490,6 +490,28 @@ The three ``QA_optimization_with_*`` scripts intentionally mirror upstream
 ``vmec_jax/examples/optimization/QA_optimization.py`` and preserve the
 high-weight ``iota = 0.41`` target. Keep the SPECTRAX-GK transport weight small
 until the solved-equilibrium aspect, iota, and quasisymmetry gates pass.
+For a paper-facing constraints-only baseline that uses the same simple seed,
+ESS scaling, and max-mode-5 objective recipe but tighter admission tolerances,
+run:
+
+.. code-block:: bash
+
+   python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py \
+     --strict-upstream-qa-baseline --solver-device gpu \
+     --outdir tools_out/vmec_jax_qa_strict_baseline
+
+Use that strict baseline before comparing transport-weight candidates; a
+baseline that terminates just below ``iota >= 0.41`` should be refined rather
+than promoted by relaxing the solved-WOUT gate. The strict preset keeps the
+admission gate at ``iota >= 0.41`` and uses a small default optimizer target
+buffer, ``target iota = 0.4102``, so roundoff-level target undershoot does not
+invalidate an otherwise precise QA solve.
+The tracked strict-baseline sidecar
+``docs/_static/vmec_jax_qa_strict_baseline/summary.json`` records the current
+office-GPU exact SciPy/ESS result: ``nfev = 39``, aspect ``5.000154``,
+mean iota ``0.4101997``, QS residual ``2.60e-4``, and a passed solved-WOUT
+gate. This is a constraints-only QA reference, not a transport-optimized
+stellarator.
 
 Reduced synthetic scripts are kept outside ``examples/optimization`` as
 development diagnostics only:

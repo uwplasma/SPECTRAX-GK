@@ -319,8 +319,9 @@ Differentiable-Physics Figures
    * - Full max-mode-5 QA transport optimizer sweep
      - ``tools/build_vmec_jax_qa_full_sweep_panel.py`` from office
        ``runs_onepoint`` VMEC-JAX outputs
-     - Scoped optimizer-algorithm comparison ready for README/docs; baseline
-       and projected-weight ``5e-4``/``1e-3`` single-point nonlinear audits closed
+     - Scoped optimizer-algorithm comparison ready for README/docs; strict
+       constraints-only QA baseline closed; projected-weight ``5e-4``/``1e-3``
+       single-point nonlinear audits remain tied to the earlier sweep baseline
      - current artifact base:
        ``docs/_static/vmec_jax_qa_full_sweep_panel.png`` with JSON/CSV
        companions and
@@ -328,7 +329,11 @@ Differentiable-Physics Figures
        and
        ``docs/_static/vmec_jax_qa_projected_weight_0p001_matched_comparison.png``
        with JSON companions; a PDF companion is regenerated locally with
-       ``--pdf`` when needed. The sweep compares the SciPy QA baseline, stopped
+       ``--pdf`` when needed. The strict constraints-only QA baseline sidecar
+       ``docs/_static/vmec_jax_qa_strict_baseline/summary.json`` records the
+       exact SciPy/ESS run with aspect ``5.000154``, mean iota ``0.4101997``,
+       QS residual ``2.60e-4``, ``nfev=39``, and a passed solved-WOUT gate.
+       The sweep compares the earlier SciPy QA baseline, stopped
        scalar-trust QA baseline, direct growth/QL/L-BFGS transport objectives,
        a stopped direct nonlinear-window branch, and projected/admission
        transport weights ``5e-4`` and ``1e-3``. Direct scalar transport
@@ -341,10 +346,13 @@ Differentiable-Physics Figures
        weight ``1e-3``, lowers the late-window mean ion heat flux from
        ``9.695`` to ``9.370`` over ``t=[350,700]``: a ``3.35%`` reduction with
        uncertainty separation ``z=1.56``. Projected weight ``5e-4`` also
-       passes with a ``2.68%`` reduction and ``z=1.32``. This supports
-       single-surface, single-field-line, single-``k_y`` positive audits only;
-       broader nonlinear turbulent-flux optimization still requires
-       multi-surface, multi-alpha, and multi-``k_y`` promotion gates.
+       passes with a ``2.68%`` reduction and ``z=1.32``. These matched
+       nonlinear traces are scoped to the earlier sweep baseline; the next
+       promotion step is to rerun baseline/candidate transport audits against
+       the strict exact QA WOUT. This supports single-surface,
+       single-field-line, single-``k_y`` positive audits only; broader
+       nonlinear turbulent-flux optimization still requires multi-surface,
+       multi-alpha, and multi-``k_y`` promotion gates.
    * - Development-only optimization-plumbing figure
      - ``examples/theory_and_demos/reduced_stellarator_itg/compare_stellarator_itg_optimizations.py`` and ``tools/plot_stellarator_optimization_uq.py``
      - Initial differentiable objective-reduction and weighted-residual UQ gates closed for development diagnostics; full VMEC/Boozer/GK optimization open

@@ -7,6 +7,36 @@ Current public baseline: `main` at v1.6.0, with the historical ship-readiness lo
 
 This file is both the active plan and the running log. Keep entries concise, dated, and tied to artifacts, tests, and figures.
 
+## 2026-06-04 Strict VMEC-JAX QA Baseline Closure
+
+- Audited the max-mode-5 QA constraints-only baseline after the sweep baseline
+  was found to terminate just below the strict mean-iota lower-bound gate. The
+  old artifact used the upstream-style objective but stopped at
+  ``iota_final = 0.409985379`` with ``xtol`` termination.
+- Added ``--strict-upstream-qa-baseline`` to
+  ``examples/optimization/vmec_jax_qa_low_turbulence_optimization.py``. The
+  preset keeps the upstream simple seed, ESS scaling, ``MAX_MODE=5``,
+  ``MIN_VMEC_MODE=7``, aspect/QS objective blocks, and high-weight mean-iota
+  objective, but uses a small target buffer: optimize to ``iota = 0.4102`` and
+  admit against ``|mean iota| >= 0.41``.
+- Fixed the constraints-only driver path so it skips SPECTRAX-GK transport
+  metric evaluation after the VMEC solve. This prevents a completed QA baseline
+  from timing out before writing ``solved_wout_gate.json``.
+- Ran the strict exact SciPy/ESS baseline on ``office`` from a clean staged
+  SPECTRAX-GK/vmec_jax checkout. The passing sidecars are tracked at
+  ``docs/_static/vmec_jax_qa_strict_baseline/``. Summary: ``nfev=39``,
+  wall time ``602.8 s``, aspect ``5.000154``, mean iota ``0.4101997``,
+  QS residual ``2.60e-4``, solved-WOUT gate passed.
+- Negative optimizer evidence: a scalar-trust constraints-only fallback
+  terminated rapidly but left mean iota near zero and failed the solved-WOUT
+  gate, so constraints-only QA baseline generation should stay on the exact
+  SciPy/ESS path.
+- Remaining transport step: rerun matched baseline/candidate nonlinear audits
+  against the strict exact QA WOUT before claiming projected transport
+  reductions relative to this stricter baseline. The existing
+  ``5e-4``/``1e-3`` matched reductions remain scoped to the earlier sweep
+  baseline.
+
 ## 2026-06-03 QA Geometry Figure Scope Fix
 
 - Audited the README-level stellarator optimization visuals after the reduced

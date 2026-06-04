@@ -144,6 +144,15 @@ then build the comparison panel from the real ``history.json`` and
 
 .. code-block:: bash
 
+   # First make an admission-grade constraints-only baseline. This uses the
+   # upstream VMEC-JAX QA simple seed, objective tuples, ESS scaling, and
+   # max-mode-5 controls, but increases the solve budget/tightens tolerances so
+   # the final WOUT can pass the strict aspect/iota/QS gate. The default iota
+   # target is 0.4102 while the admission gate remains iota >= 0.41.
+   python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py \
+     --strict-upstream-qa-baseline --solver-device gpu \
+     --outdir runs_onepoint/qa_baseline_strict_upstream
+
    # On the GPU node, from a clean SPECTRAX-GK/vmec_jax/booz_xform_jax clone:
    python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py \
      --use-simple-seed --max-mode 5 --min-vmec-mode 7 \
@@ -172,6 +181,19 @@ ranking candidate directions, but it is not a saturated turbulent heat-flux
 measurement. A candidate can be promoted to a nonlinear transport claim only
 after generating replicated post-transient SPECTRAX-GK runs from its concrete
 ``wout_final.nc`` and demonstrating running-average convergence of ``Q(t)``.
+If a constraints-only QA baseline stops a few ``1e-5`` below
+``iota >= 0.41`` because of optimizer ``xtol`` termination, treat it as
+precision-limited and rerun the strict baseline preset above. Do not promote it
+by relaxing the solved-WOUT gate; that would make later transport reductions
+depend on an inconsistent baseline.
+The strict preset uses a small target buffer rather than a relaxed gate:
+``target iota = 0.4102`` and solved-WOUT admission ``iota >= 0.41``.
+The tracked exact SciPy/ESS strict-baseline evidence is stored in
+``docs/_static/vmec_jax_qa_strict_baseline/summary.json``. It terminates at
+``nfev = 39`` with aspect ``5.000154``, mean iota ``0.4101997``, QS residual
+``2.60e-4``, and a passed solved-WOUT gate. The iota-profile floor is disabled
+for this baseline because the upstream ``QA_optimization.py`` objective uses a
+high-weight mean-iota target, not a profile-floor constraint.
 
 .. figure:: _static/vmec_jax_qa_full_sweep_panel.png
    :alt: VMEC-JAX QA max-mode-5 optimizer sweep with SPECTRAX-GK transport objectives
@@ -201,6 +223,10 @@ after generating replicated post-transient SPECTRAX-GK runs from its concrete
    The projected weight ``5e-4`` candidate also passes with ``2.68%``
    reduction. These are scoped single-surface, single-field-line,
    single-``k_y`` positive audits, not broad stellarator-optimization claims.
+   These matched nonlinear traces are tied to the earlier sweep baseline. The
+   strict exact QA baseline above should be used for the next refreshed
+   transport-audit campaign before claiming reductions relative to the stricter
+   constraints-only WOUT.
 
 .. figure:: _static/vmec_jax_qa_solved_boundary_boozer_panel.png
    :alt: Solved VMEC-JAX QA boundary and Boozer-LCFS magnetic-field diagnostics

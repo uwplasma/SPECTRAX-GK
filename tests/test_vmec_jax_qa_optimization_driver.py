@@ -202,6 +202,55 @@ def test_driver_dry_run_cli_writes_transport_setup_summary(tmp_path: Path) -> No
     assert not (outdir / "solved_wout_gate.json").exists()
 
 
+def test_driver_strict_upstream_qa_baseline_preset_is_admission_grade(tmp_path: Path) -> None:
+    if importlib.util.find_spec("vmec_jax") is None:
+        pytest.skip("vmec_jax is optional")
+
+    outdir = tmp_path / "strict_qa_baseline"
+    subprocess.run(
+        [
+            sys.executable,
+            str(DRIVER),
+            "--dry-run",
+            "--strict-upstream-qa-baseline",
+            "--outdir",
+            str(outdir),
+        ],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+
+    summary = json.loads((outdir / "setup_summary.json").read_text(encoding="utf-8"))
+
+    assert summary["constraints_only"] is True
+    assert summary["use_simple_seed"] is True
+    assert summary["requested_input"].endswith("input.minimal_seed_nfp2")
+    assert summary["max_mode"] == 5
+    assert summary["min_vmec_mode"] == 7
+    assert summary["target_aspect"] == 5.0
+    assert summary["min_iota"] == pytest.approx(0.4102)
+    assert summary["strict_upstream_qa_baseline"] is True
+    assert summary["strict_iota_admission_buffer"] == pytest.approx(2.0e-4)
+    assert summary["iota_objective"] == "target"
+    assert summary["iota_profile_floor"] is None
+    assert summary["objectives"] == ["aspect", "iota", "qs"]
+    assert summary["optimizer"]["method"] == "scipy"
+    assert summary["optimizer"]["scipy_tr_solver"] == "exact"
+    assert summary["optimizer"]["max_nfev"] >= 80
+    assert summary["optimizer"]["inner_max_iter"] >= 180
+    assert summary["optimizer"]["trial_max_iter"] >= 180
+    assert summary["optimizer"]["ftol"] <= 1.0e-5
+    assert summary["optimizer"]["gtol"] <= 1.0e-5
+    assert summary["optimizer"]["xtol"] <= 1.0e-8
+    assert summary["optimizer"]["use_ess"] is True
+    assert summary["optimizer"]["ess_alpha"] == 1.2
+    assert summary["optimizer"]["strict_upstream_qa_baseline"] is True
+    assert summary["solved_wout_gate_policy"]["min_abs_mean_iota"] == 0.41
+
+
 def test_driver_updates_history_with_transport_metric(tmp_path: Path) -> None:
     mod = _load_driver()
     path = tmp_path / "history.json"

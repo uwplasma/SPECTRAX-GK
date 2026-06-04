@@ -60,6 +60,30 @@ python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py \
   --outdir runs/qa_constraints_only
 ```
 
+For paper-facing sweeps, prefer the strict upstream baseline preset:
+
+```bash
+python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py \
+  --strict-upstream-qa-baseline \
+  --solver-device gpu \
+  --outdir runs/qa_baseline_strict_upstream
+```
+
+This uses the same upstream simple seed, `MAX_MODE = 5`, ESS scaling, and
+aspect/iota/QS objective tuples as `vmec_jax/examples/optimization/QA_optimization.py`,
+but tightens the outer step tolerance and budget so the final WOUT is admitted
+by the strict solved-equilibrium gate. The preset keeps the gate at
+`iota >= 0.41` and uses a small default optimizer target buffer
+(`target iota = 0.4102`). A baseline that stops just below the gate should be
+refined with this preset, not accepted by loosening the gate.
+
+The current tracked strict-baseline evidence is summarized in
+`docs/_static/vmec_jax_qa_strict_baseline/summary.json`: exact SciPy/ESS,
+`nfev=39`, aspect `5.000154`, mean iota `0.4101997`, QS residual `2.60e-4`,
+and a passed solved-WOUT gate. It is a constraints-only reference; rerun
+matched SPECTRAX-GK nonlinear audits before comparing transport candidates
+against this stricter WOUT.
+
 A transport-aware branch should start from a solved baseline and use a small transport weight:
 
 ```bash

@@ -67,6 +67,19 @@ def _default_input_file() -> Path:
     return local
 
 
+def _default_simple_seed_input_file() -> Path:
+    try:
+        import vmec_jax as vj  # type: ignore[import-not-found]
+
+        package_root = Path(vj.__file__).resolve().parents[1]
+        candidate = package_root / "examples" / "data" / "input.minimal_seed_nfp2"
+        if candidate.exists():
+            return candidate
+    except Exception:
+        pass
+    return ROOT / "examples" / "vmec" / "input.minimal_seed_nfp2"
+
+
 class SignedIotaProfileFloor:
     """Smooth one-sided floor for the solved VMEC rotational-transform profile."""
 
@@ -240,6 +253,23 @@ def _parse_args() -> argparse.Namespace:
         help="Run only the VMEC-JAX QA/aspect/iota objective blocks, without the SPECTRAX-GK transport residual",
     )
     parser.add_argument(
+        "--strict-upstream-qa-baseline",
+        action="store_true",
+        help=(
+            "Use the VMEC-JAX QA_optimization.py simple-seed max-mode-5 baseline "
+            "with tighter admission tolerances for paper-facing solved-WOUT gates"
+        ),
+    )
+    parser.add_argument(
+        "--strict-iota-admission-buffer",
+        type=float,
+        default=2.0e-4,
+        help=(
+            "Small iota target buffer used only by --strict-upstream-qa-baseline; "
+            "the solved-WOUT gate remains at --solved-wout-gate-min-abs-iota or 0.41"
+        ),
+    )
+    parser.add_argument(
         "--spectrax-weight",
         type=float,
         default=0.05,
@@ -320,6 +350,17 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--ftol", type=float, default=1.0e-5)
     parser.add_argument("--gtol", type=float, default=1.0e-5)
     parser.add_argument("--xtol", type=float, default=1.0e-6)
+    parser.add_argument(
+        "--disable-ess",
+        action="store_true",
+        help="Disable VMEC-JAX ESS high-mode scaling; enabled by default to mirror the upstream QA example",
+    )
+    parser.add_argument(
+        "--ess-alpha",
+        type=float,
+        default=1.2,
+        help="VMEC-JAX ESS high-mode scaling exponent",
+    )
     parser.add_argument("--save-stage-wouts", action="store_true", help="Write per-stage WOUT files")
     parser.add_argument("--save-final-outputs", action="store_true", help="Keep VMEC-JAX final-output side files")
     parser.add_argument("--make-plots", action="store_true", help="Generate VMEC-JAX boundary/|B|/history plots")
@@ -353,7 +394,43 @@ def _parse_args() -> argparse.Namespace:
         help="Write failed solved-candidate gate artifacts but exit successfully for exploratory sweeps",
     )
     parser.add_argument("--dry-run", action="store_true", help="Assemble objectives and stop before solving")
-    return parser.parse_args()
+    args = parser.parse_args()
+    if args.strict_upstream_qa_baseline:
+        gate_min_iota = (
+            float(args.solved_wout_gate_min_abs_iota)
+            if args.solved_wout_gate_min_abs_iota is not None
+            else 0.41
+        )
+        args.constraints_only = True
+        args.use_simple_seed = True
+        args.disable_mode_continuation = True
+        args.disable_iota_profile_floor = True
+        args.input = _default_simple_seed_input_file()
+        args.max_mode = 5
+        args.min_vmec_mode = 7
+        args.target_aspect = 5.0
+        args.min_iota = gate_min_iota + max(float(args.strict_iota_admission_buffer), 0.0)
+        args.solved_wout_gate_min_abs_iota = gate_min_iota
+        args.iota_objective = "target"
+        args.aspect_weight = 1.0
+        args.iota_floor_weight = 10_000.0
+        args.qs_weight = 1.0
+        args.method = args.method or "scipy"
+        args.scipy_tr_solver = "exact"
+        # The upstream script's 70/1e-6 settings can terminate a few 1e-5 below
+        # the strict iota admission gate. The preset keeps the same objective
+        # and ESS recipe but avoids the premature outer step termination while
+        # staying bounded enough for workstation/GPU artifact generation.
+        args.max_nfev = max(int(args.max_nfev), 80)
+        args.continuation_nfev = max(int(args.continuation_nfev), 25)
+        args.inner_max_iter = max(int(args.inner_max_iter), 180)
+        args.trial_max_iter = max(int(args.trial_max_iter), 180)
+        args.inner_ftol = min(float(args.inner_ftol), 1.0e-10)
+        args.trial_ftol = min(float(args.trial_ftol), 1.0e-10)
+        args.ftol = min(float(args.ftol), 1.0e-5)
+        args.gtol = min(float(args.gtol), 1.0e-5)
+        args.xtol = min(float(args.xtol), 1.0e-8)
+    return args
 
 
 def main() -> int:
@@ -441,6 +518,10 @@ def main() -> int:
         "outdir": str(args.outdir),
         "target_aspect": float(args.target_aspect),
         "min_iota": float(args.min_iota),
+        "strict_upstream_qa_baseline": bool(args.strict_upstream_qa_baseline),
+        "strict_iota_admission_buffer": (
+            float(args.strict_iota_admission_buffer) if args.strict_upstream_qa_baseline else 0.0
+        ),
         "iota_objective": str(args.iota_objective),
         "iota_profile_floor": None
         if args.disable_iota_profile_floor
@@ -473,6 +554,12 @@ def main() -> int:
             "solver_device": args.solver_device,
             "scipy_tr_solver": args.scipy_tr_solver,
             "scipy_lsmr_maxiter": args.scipy_lsmr_maxiter,
+            "ftol": float(args.ftol),
+            "gtol": float(args.gtol),
+            "xtol": float(args.xtol),
+            "use_ess": not bool(args.disable_ess),
+            "ess_alpha": float(args.ess_alpha),
+            "strict_upstream_qa_baseline": bool(args.strict_upstream_qa_baseline),
         },
         "solved_wout_gate_policy": {
             "aspect_atol": float(args.solved_wout_gate_aspect_atol),
@@ -522,8 +609,8 @@ def main() -> int:
         ftol=float(args.ftol),
         gtol=float(args.gtol),
         xtol=float(args.xtol),
-        use_ess=True,
-        ess_alpha=1.2,
+        use_ess=not bool(args.disable_ess),
+        ess_alpha=float(args.ess_alpha),
         label=(
             "QA constraints-only optimization"
             if args.constraints_only
@@ -542,7 +629,15 @@ def main() -> int:
         save_final_outputs=bool(args.save_final_outputs),
     )
     saved = vj.save_optimization_result(result, output_dir=args.outdir)
-    transport_metric = _transport_metric_from_result(transport, result)
+    transport_metric = (
+        {
+            "transport_objective_final": None,
+            "transport_objective_source": "constraints_only_skipped",
+            "transport_metric_final": None,
+        }
+        if args.constraints_only
+        else _transport_metric_from_result(transport, result)
+    )
     for key, value in transport_metric.items():
         if value is not None:
             result.history[key] = value
