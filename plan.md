@@ -162,6 +162,14 @@ This file is both the active plan and the running log. Keep entries concise, dat
   WOUT as the publication-facing equilibrium, but downstream transport audits
   must then point to ``wout_final_rerun.nc`` and the optimizer-state WOUT drift
   must remain explicitly reported.
+- Generated the rerun-WOUT-authoritative long nonlinear audit TOMLs on office:
+  ``/home/rjorge/tmp/spectrax_strict_qa_rerun_authoritative_nonlinear_audit_configs/run_manifest.json``.
+  The manifest contains three ``t=700``, ``n64``, post-transient
+  ``350..700`` configs against
+  ``/home/rjorge/tmp/spectrax_strict_qa_rerun_gate_bd85fae/wout_final_rerun.nc``.
+  Do not launch these as a transport-reduction claim until a matched candidate
+  WOUT with the same authoritative convention is available, or explicitly
+  scope them as a baseline-only turbulence audit.
 
 ## 2026-06-03 QA Geometry Figure Scope Fix
 
