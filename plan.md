@@ -192,7 +192,9 @@ No long nonlinear audit should be launched from these candidates.
 5. Finish the office ``RBC(0,1)`` landscape nonlinear ensemble queue, copy back
    the three ensemble JSON/PNG sidecars, and rerun
    ``tools/build_vmec_boundary_transport_landscape.py`` with
-   ``--nonlinear-ensemble`` for baseline, ``+3%``, and ``+6%``.
+   ``--reuse-reduced-json`` plus ``--nonlinear-ensemble`` for baseline,
+   ``+3%``, and ``+6%`` so the deterministic 18-point reduced scan is not
+   recomputed.
 
 ## Release Hygiene Rules
 
@@ -271,3 +273,7 @@ No long nonlinear audit should be launched from these candidates.
   `/home/rjorge/tmp/spectrax_landscape_rbc01_code`. The VMEC-JAX WOUTs required
   metadata-only patching because their scalar ``Aminor_p/Rmajor_p/aspect``
   fields were zero; Fourier geometry was left unchanged.
+- Added a guarded ``--reuse-reduced-json`` path to the boundary-landscape
+  builder so finished reduced metrics can be reused when overlaying expensive
+  nonlinear ensemble error bars. The reuse gate validates coefficient values
+  and the full surface/field-line/``k_y`` sample set before accepting metrics.

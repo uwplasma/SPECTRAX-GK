@@ -254,6 +254,75 @@ def _load_nonlinear_ensemble(raw: str) -> dict[str, Any]:
     }
 
 
+def _matching_float_lists(left: tuple[float, ...], right: list[Any], *, rtol: float = 1.0e-10) -> bool:
+    if len(left) != len(right):
+        return False
+    return all(math.isclose(float(a), float(b), rel_tol=rtol, abs_tol=rtol) for a, b in zip(left, right))
+
+
+def _reuse_reduced_metrics_from_report(
+    *,
+    rows: list[dict[str, Any]],
+    kinds: tuple[str, ...],
+    path: Path,
+    coefficient_label: str,
+    baseline_value: float,
+    args: argparse.Namespace,
+) -> None:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if str(payload.get("coefficient")) != coefficient_label:
+        raise ValueError(
+            f"{path} stores coefficient {payload.get('coefficient')!r}, expected {coefficient_label!r}"
+        )
+    old_base = float(payload.get("baseline_coefficient_value"))
+    if not math.isclose(old_base, float(baseline_value), rel_tol=1.0e-10, abs_tol=1.0e-12):
+        raise ValueError(
+            f"{path} baseline coefficient {old_base:.16g} does not match current {baseline_value:.16g}"
+        )
+    sample_set = payload.get("sample_set", {})
+    if not isinstance(sample_set, dict):
+        raise ValueError(f"{path} does not contain a sample_set object")
+    expected_samples = {
+        "surfaces": _parse_float_list(str(args.surfaces)),
+        "alphas": _parse_float_list(str(args.alphas)),
+        "ky_values": _parse_float_list(str(args.ky_values)),
+    }
+    for key, expected in expected_samples.items():
+        if not _matching_float_lists(expected, list(sample_set.get(key, []))):
+            raise ValueError(
+                f"{path} sample_set.{key}={sample_set.get(key)!r} does not match current {list(expected)!r}"
+            )
+
+    reusable_rows = payload.get("rows", [])
+    if not isinstance(reusable_rows, list):
+        raise ValueError(f"{path} rows must be a list")
+    by_label = {str(row.get("label")): row for row in reusable_rows if isinstance(row, dict)}
+    for row in rows:
+        stored = by_label.get(str(row["label"]))
+        if stored is None:
+            raise ValueError(f"{path} has no reusable reduced metrics for label {row['label']!r}")
+        old_value = float(stored.get("coefficient_value"))
+        if not math.isclose(old_value, float(row["coefficient_value"]), rel_tol=1.0e-10, abs_tol=1.0e-12):
+            raise ValueError(
+                f"{path} coefficient for label {row['label']!r} is {old_value:.16g}, "
+                f"expected {float(row['coefficient_value']):.16g}"
+            )
+        metrics = stored.get("reduced_metrics", {})
+        if not isinstance(metrics, dict):
+            continue
+        for kind in kinds:
+            value = metrics.get(kind)
+            if value is None:
+                continue
+            row["reduced_metrics"][kind] = float(value)
+            row["reduced_metric_reports"][kind] = {
+                "kind": kind,
+                "value": float(value),
+                "returncode": 0,
+                "reused_from": path,
+            }
+
+
 def _write_csv(rows: list[dict[str, Any]], path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     fieldnames = [
@@ -426,6 +495,16 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR)
     parser.add_argument("--out-prefix", type=Path, default=DEFAULT_DOCS_PREFIX)
     parser.add_argument("--evaluate-reduced", action="store_true")
+    parser.add_argument(
+        "--reuse-reduced-json",
+        type=Path,
+        default=None,
+        help=(
+            "Reuse deterministic reduced metrics from a previous landscape JSON after validating "
+            "coefficient values and the surface/alpha/ky sample set. Missing kinds are recomputed "
+            "only when --evaluate-reduced is also supplied."
+        ),
+    )
     parser.add_argument("--transport-kind", action="append", choices=DEFAULT_KINDS, default=None)
     parser.add_argument("--metric-timeout", type=float, default=300.0)
     parser.add_argument("--surfaces", default=DEFAULT_SURFACES)
@@ -470,8 +549,20 @@ def main(argv: list[str] | None = None) -> int:
     for row in rows:
         row["reduced_metrics"] = {}
         row["reduced_metric_reports"] = {}
+    if args.reuse_reduced_json is not None:
+        _reuse_reduced_metrics_from_report(
+            rows=rows,
+            kinds=kinds,
+            path=Path(args.reuse_reduced_json),
+            coefficient_label=spec.label,
+            baseline_value=base_value,
+            args=args,
+        )
+    for row in rows:
         if bool(args.evaluate_reduced):
             for kind in kinds:
+                if kind in row["reduced_metrics"]:
+                    continue
                 result = _run_reduced_metric(row=row, kind=kind, args=args, metric_dir=metric_dir)
                 row["reduced_metric_reports"][kind] = result
                 if result.get("value") is not None:
@@ -494,6 +585,7 @@ def main(argv: list[str] | None = None) -> int:
             "ky_values": list(_parse_float_list(str(args.ky_values))),
         },
         "reduced_metric_kinds": list(kinds),
+        "reused_reduced_metrics_json": args.reuse_reduced_json,
         "rows": rows,
         "nonlinear_ensemble_points": nonlinear_points,
         "nonlinear_launch_manifest": _nonlinear_launch_manifest(

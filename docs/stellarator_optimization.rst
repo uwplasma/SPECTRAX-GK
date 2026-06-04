@@ -1074,6 +1074,17 @@ reduced nonlinear-window objective by about ``4.7%``. The last reduction is
 small enough that replicated nonlinear heat-flux error bars are required before
 using this direction for a turbulent-flux optimization claim.
 
+The reduced scan is intentionally reusable. Once the long nonlinear ensembles
+finish, regenerate the same figure without recomputing the 18-point reduced
+sample by passing the stored JSON plus the nonlinear sidecars::
+
+   python tools/build_vmec_boundary_transport_landscape.py \
+     --reuse-reduced-json docs/_static/vmec_boundary_transport_landscape_rbc01.json \
+     --surfaces 0.45,0.64,0.78 \
+     --alphas 0.0,0.7853981633974483 \
+     --ky-values 0.1,0.3,0.5 \
+     --nonlinear-ensemble <coefficient_value>:<ensemble_gate.json>
+
 .. figure:: _static/vmec_boundary_transport_landscape_rbc01.png
    :alt: RBC(0,1) transport-objective landscape
    :width: 82%
@@ -1100,7 +1111,8 @@ Implementation Map
 - Time-horizon audit builder: :download:`build_qa_low_turbulence_time_horizon_audit.py <../tools/build_qa_low_turbulence_time_horizon_audit.py>`
 - Boundary landscape builder: :download:`build_vmec_boundary_transport_landscape.py <../tools/build_vmec_boundary_transport_landscape.py>`
 - VMEC-JAX WOUT metadata patcher: :download:`patch_vmec_jax_wout_metadata.py <../tools/patch_vmec_jax_wout_metadata.py>`
-- Tests: ``tests/test_qa_low_turbulence.py``
+- Tests: ``tests/test_qa_low_turbulence.py`` and
+  ``tests/test_vmec_boundary_transport_landscape.py``
 - Output JSON: :download:`qa_low_turbulence_comparison.json <_static/qa_low_turbulence_comparison.json>`
 - Scan CSV: :download:`qa_low_turbulence_comparison.scan.csv <_static/qa_low_turbulence_comparison.scan.csv>`
 - Horizon audit CSV: :download:`qa_low_turbulence_time_horizon_audit.csv <_static/qa_low_turbulence_time_horizon_audit.csv>`

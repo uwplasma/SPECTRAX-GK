@@ -2,12 +2,14 @@ from __future__ import annotations
 
 from pathlib import Path
 import re
+from types import SimpleNamespace
 
 import numpy as np
 from netCDF4 import Dataset
 
 from tools.build_vmec_boundary_transport_landscape import (
     _parse_float_list,
+    _reuse_reduced_metrics_from_report,
     _write_scan_inputs,
 )
 from tools.patch_vmec_jax_wout_metadata import patch_wout
@@ -62,6 +64,73 @@ def test_parse_float_list_rejects_empty_lists() -> None:
         assert "expected at least one" in str(exc)
     else:  # pragma: no cover
         raise AssertionError("empty float list was accepted")
+
+
+def test_reuse_reduced_metrics_validates_sample_set_and_point_values(tmp_path: Path) -> None:
+    baseline = tmp_path / "input.final"
+    baseline.write_text(
+        "\n".join(
+            [
+                "&INDATA",
+                "  RBC(0,1) = 2.0000000000000000E-01",
+                "/",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    base, rows = _write_scan_inputs(
+        baseline_input=baseline,
+        coefficient=_parse_coefficient_spec("RBC(0,1)"),
+        fractions=(0.0, 0.1),
+        out_dir=tmp_path / "scan",
+    )
+    for row in rows:
+        row["reduced_metrics"] = {}
+        row["reduced_metric_reports"] = {}
+    reusable = tmp_path / "landscape.json"
+    reusable.write_text(
+        """
+{
+  "baseline_coefficient_value": 0.2,
+  "coefficient": "RBC(0,1)",
+  "sample_set": {"surfaces": [0.64], "alphas": [0.0], "ky_values": [0.3, 0.5]},
+  "rows": [
+    {"label": "0", "coefficient_value": 0.2, "reduced_metrics": {"growth": 1.2, "quasilinear_flux": 2.3}},
+    {"label": "p0p1", "coefficient_value": 0.22000000000000003, "reduced_metrics": {"growth": 0.9, "quasilinear_flux": 1.7}}
+  ]
+}
+""",
+        encoding="utf-8",
+    )
+    args = SimpleNamespace(surfaces="0.64", alphas="0.0", ky_values="0.3,0.5")
+
+    _reuse_reduced_metrics_from_report(
+        rows=rows,
+        kinds=("growth", "quasilinear_flux"),
+        path=reusable,
+        coefficient_label="RBC(0,1)",
+        baseline_value=base,
+        args=args,
+    )
+
+    assert [row["reduced_metrics"]["growth"] for row in rows] == [1.2, 0.9]
+    assert rows[0]["reduced_metric_reports"]["growth"]["reused_from"] == reusable
+
+    bad_args = SimpleNamespace(surfaces="0.64,0.7", alphas="0.0", ky_values="0.3,0.5")
+    try:
+        _reuse_reduced_metrics_from_report(
+            rows=rows,
+            kinds=("growth",),
+            path=reusable,
+            coefficient_label="RBC(0,1)",
+            baseline_value=base,
+            args=bad_args,
+        )
+    except ValueError as exc:
+        assert "sample_set.surfaces" in str(exc)
+    else:  # pragma: no cover
+        raise AssertionError("mismatched sample set was accepted")
 
 
 def test_patch_vmec_jax_wout_metadata_fills_zero_scalars(tmp_path: Path) -> None:
