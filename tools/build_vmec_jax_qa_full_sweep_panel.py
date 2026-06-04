@@ -593,15 +593,38 @@ def _plot_transport_bars(ax: plt.Axes, rows: list[dict[str, Any]]) -> None:
 
 def _plot_q_traces(ax: plt.Axes, rows: list[dict[str, Any]]) -> None:
     plotted = False
+    case_colors = plt.rcParams["axes.prop_cycle"].by_key().get("color", [])
+    color_index = 0
     for row in rows:
         traces = row.get("q_traces", [])
-        for trace in traces:
+        if not traces:
+            continue
+        color = case_colors[color_index % len(case_colors)] if case_colors else None
+        color_index += 1
+        late_tmins = []
+        late_tmaxs = []
+        for trace_index, trace in enumerate(traces):
             t = np.asarray(trace.get("t", []), dtype=float)
             q = np.asarray(trace.get("heat_flux", []), dtype=float)
             if t.size == 0 or t.size != q.size:
                 continue
-            ax.plot(t, q, lw=1.3, alpha=0.8, label=row["label"])
+            label = f"{row['label']} (n={len(traces)})" if trace_index == 0 else None
+            ax.plot(t, q, lw=1.15, alpha=0.65, color=color, label=label)
+            tmin = _finite_float(trace.get("late_window_tmin"))
+            tmax = _finite_float(trace.get("late_window_tmax"))
+            if math.isfinite(tmin):
+                late_tmins.append(tmin)
+            if math.isfinite(tmax):
+                late_tmaxs.append(tmax)
             plotted = True
+        if late_tmins and late_tmaxs:
+            ax.axvspan(
+                float(min(late_tmins)),
+                float(max(late_tmaxs)),
+                color=color,
+                alpha=0.06,
+                lw=0,
+            )
     ax.set_xlabel(r"$t v_{ti}/a$")
     ax.set_ylabel(r"$Q_i$")
     ax.set_title("Matched nonlinear heat-flux audits")
