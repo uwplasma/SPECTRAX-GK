@@ -311,6 +311,13 @@ startup finite-difference artifacts. It is the fail-closed check that allows
 release-safe scoped wording while blocking production nonlinear turbulent-flux
 optimization promotion until optimized equilibria have replicated
 post-transient transport-window audits.
+The strict rerun-WOUT top-12 QA edge audit is the current reference negative
+transfer example: ``docs/_static/strict_qa_top12_edge_matched_nonlinear_transport.json``
+records passing baseline and candidate replicated-window ensembles but a
+failed matched promotion gate, with ``0.58%`` relative reduction and
+uncertainty z-score ``0.20``. This artifact is intentionally tracked so
+future transport-objective redesigns can be judged against a real
+long-window nonlinear failure, not a startup proxy.
 For actual nonlinear turbulence-gradient promotion, use
 ``tools/write_vmec_boundary_perturbation_inputs.py`` when the perturbation is a
 VMEC boundary coefficient. It writes the matched ``input.*`` files and records

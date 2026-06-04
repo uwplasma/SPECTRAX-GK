@@ -19,8 +19,9 @@ historical logs live outside the release repository so clones stay small.
 - Repository-size policy: tracked payload must stay below 50 MB. This active
   plan replaces the old 531 KB historical log to restore edit headroom.
 - Release posture: technically shippable; manuscript-level strict QA nonlinear
-  turbulence-optimization claim remains open until a matched rerun-WOUT
-  candidate improves the reduced transport metric and passes long-window audits.
+  turbulence-optimization claim remains open. A strict rerun-WOUT projected
+  candidate improved the reduced objective, but its matched long-window
+  nonlinear audit did not promote.
 
 ## Active Lanes
 
@@ -28,9 +29,9 @@ historical logs live outside the release repository so clones stay small.
 | --- | ---: | --- |
 | CI/CD, release infrastructure, package coverage | 100% | Green CI, 95% package-wide coverage |
 | Rerun-WOUT admission and artifact policy | 100% | Explicit authoritative rerun-WOUT path implemented and tested |
-| Strict QA candidate screening | 95% | Top-12 projected edge candidate passes rerun-WOUT gates and reduces the 18-point metric by 2.29% |
-| Strict nonlinear turbulent-flux optimization evidence | 80% | Matched t=700 baseline/candidate nonlinear audit is launched on office; no turbulent-flux claim until it passes |
-| Docs/readme/release hygiene | 90% | Needs final sync after the next admitted or failed scientific tranche |
+| Strict QA candidate screening | 100% | Top-12 projected edge candidate passes rerun-WOUT gates and reduces the 18-point metric by 2.29% |
+| Strict nonlinear turbulent-flux optimization evidence | 82% | Matched t=700 audit fails promotion: 0.58% reduction, z=0.20, below the 2% gate |
+| Docs/readme/release hygiene | 93% | Strict QA failed-promotion artifacts are tracked; final wording must stay scoped |
 | Performance/parallelization release lane | 95% | Independent-work parallel paths are release-ready; nonlinear domain sharding remains research/development |
 
 Deferred post-release/manuscript extensions unless explicitly reprioritized:
@@ -172,19 +173,18 @@ No long nonlinear audit should be launched from these candidates.
 
 ## Immediate Next Steps
 
-1. Monitor the matched long-window nonlinear audit on office:
-   `/home/rjorge/tmp/spectrax_strict_matched_nonlinear_audit_top12_edge_0d887d3`.
-   It contains strict baseline and top-12 edge candidate `t=700`, `n64`,
-   seed/timestep replicate runs with post-transient window `350..700`.
-2. After all six nonlinear outputs exist, build baseline and candidate
-   replicated-window ensemble gates, then run
-   `tools/build_matched_nonlinear_transport_comparison.py` on the two
-   ensembles. Promote only if the matched nonlinear comparison is separated
-   from uncertainty overlap.
-3. If the matched nonlinear audit fails or is uncertainty-overlapped, record the
-   top-12 edge candidate as reduced-objective-only evidence and redesign the
-   transport metric or variance-reduction campaign before spending more long
-   GPU time.
+1. Treat the strict top-12 edge candidate as reduced-objective-only evidence.
+   Its matched long-window nonlinear audit passed both ensemble gates but failed
+   promotion, so it must not be described as nonlinear turbulent-flux
+   optimization.
+2. Redesign the nonlinear-transfer objective before spending more long GPU
+   time. The next campaign should use a better-conditioned multi-surface,
+   multi-alpha transport metric, include an uncertainty-aware admission rule,
+   and require a larger reduced-objective margin before launch.
+3. Keep the tracked failed-promotion artifacts in docs as negative evidence:
+   `docs/_static/strict_qa_top12_edge_matched_nonlinear_transport.json`,
+   `docs/_static/strict_qa_top12_edge_matched_nonlinear_transport.png`, and the
+   baseline/candidate ensemble JSON sidecars.
 4. Keep CI green after each tranche: fast unit shards, coverage aggregation,
    repository-size gate, docs links, and package build.
 
@@ -233,3 +233,16 @@ No long nonlinear audit should be launched from these candidates.
   two-way GPU concurrency. The runtime's `10000`-step log entry is the first
   checkpoint chunk; the CLI invocation passes the required manifest step counts
   (`14000` for `dt=0.05`, `17500` for `dt=0.04`).
+- Completed the matched long-window nonlinear audit. Baseline and candidate
+  replicated ensembles both pass: baseline late-window mean `11.22662981`
+  with combined SEM `0.27005804`; candidate mean `11.16155393` with combined
+  SEM `0.17680020`. The matched comparison fails promotion with absolute
+  reduction `0.06507587`, relative reduction `0.00579656`, combined
+  uncertainty `0.32278422`, and uncertainty z-score `0.201608`. Tracked
+  compact artifacts:
+  `docs/_static/strict_qa_top12_edge_matched_nonlinear_transport.json`,
+  `docs/_static/strict_qa_top12_edge_matched_nonlinear_transport.png`,
+  `docs/_static/strict_qa_rerun_baseline_ensemble_gate.json`, and
+  `docs/_static/strict_qa_top12_step1p25em3_candidate_ensemble_gate.json`.
+  Conclusion: this is a fail-closed negative transfer result, not a nonlinear
+  turbulence-optimization claim.
