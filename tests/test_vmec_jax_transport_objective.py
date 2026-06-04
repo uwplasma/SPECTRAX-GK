@@ -92,6 +92,51 @@ def test_vmec_jax_transport_objective_reduces_fake_solver_rows(monkeypatch) -> N
     assert int(growth_calls[0]["ny"]) >= 6
 
 
+def test_vmec_jax_transport_surface_chunking_matches_unchunked_weighted_mean(monkeypatch) -> None:
+    import spectraxgk.vmec_jax_transport_objective as mod
+
+    def fake_geom(*_args, **_kwargs):
+        return _fake_geometry()
+
+    rows = _fake_solver_rows()
+
+    def evaluate(*, chunk_size: int) -> float:
+        row_counter = {"i": 0}
+
+        def fake_growth(_geom, **_kwargs):
+            value = rows[row_counter["i"], SOLVER_OBJECTIVE_NAMES.index("gamma")]
+            row_counter["i"] += 1
+            return value
+
+        monkeypatch.setattr(mod, "solver_growth_rate_from_geometry", fake_growth)
+        samples = StellaratorITGSampleSet(
+            surfaces=(0.5, 0.7),
+            alphas=(0.0,),
+            ky_values=(0.2, 0.4),
+            surface_weights=(3.0, 1.0),
+        )
+        cfg = VMECJAXTransportObjectiveConfig(
+            kind="growth",
+            sample_set=samples,
+            ny=4,
+            objective_transform="log1p",
+            surface_chunk_size=chunk_size,
+        )
+        value = vmec_jax_transport_objective_from_state(
+            object(),
+            object(),
+            object(),
+            SimpleNamespace(signgs=1, nfp=2, Aminor_p=1.0, phi=np.asarray([0.0, -np.pi])),
+            cfg,
+        )
+        assert row_counter["i"] == 4
+        return float(value)
+
+    monkeypatch.setattr(mod, "flux_tube_geometry_from_vmec_boozer_state", fake_geom)
+
+    assert evaluate(chunk_size=1) == pytest.approx(evaluate(chunk_size=0))
+
+
 def test_vmec_jax_transport_growth_branch_locality_report_accepts_consistent_branch(monkeypatch) -> None:
     import spectraxgk.vmec_jax_transport_objective as mod
 
@@ -390,6 +435,11 @@ def test_static_grid_options_rejects_invalid_ky_values(
         ({"n_laguerre": 0}, "n_laguerre and n_hermite must be positive"),
         ({"ny": 2}, "nx must be positive and ny must be at least 3"),
         ({"nonlinear_csat": 0.0}, "nonlinear_csat must be positive"),
+        ({"surface_chunk_size": -1}, "surface_chunk_size must be non-negative"),
+        (
+            {"sample_set": StellaratorITGSampleSet(reduction="max"), "surface_chunk_size": 1},
+            "surface_chunk_size currently supports only mean or weighted_mean reductions",
+        ),
     ),
 )
 def test_vmec_jax_transport_config_rejects_invalid_edges(
@@ -496,7 +546,7 @@ def test_vmec_objective_term_prepares_and_prewarms_backend(monkeypatch) -> None:
     vmec_module.ObjectiveTerm = fake_objective_term
     monkeypatch.setitem(sys.modules, "vmec_jax", vmec_module)
     monkeypatch.setattr(mod, "prewarm_vmec_boozer_equal_arc_cache", fake_prewarm)
-    cfg = VMECJAXTransportObjectiveConfig(kind="growth", ntheta=28, mboz=23, nboz=25)
+    cfg = VMECJAXTransportObjectiveConfig(kind="growth", ntheta=28, mboz=23, nboz=25, surface_chunk_size=1)
     objective = VMECJAXSpectraxTransportObjective(config=cfg, name="transport_test")
     ctx = SimpleNamespace(static=SimpleNamespace(cfg=SimpleNamespace(nfp=7)), indata="indata", signgs=-1)
 
@@ -511,6 +561,7 @@ def test_vmec_objective_term_prepares_and_prewarms_backend(monkeypatch) -> None:
     assert term.metadata["mboz"] == 23
     assert term.metadata["nboz"] == 25
     assert term.metadata["ntheta"] == 28
+    assert term.metadata["surface_chunk_size"] == 1
     assert prepared.prepare is None
     assert prepared.metadata == term.metadata
     assert len(prewarm_calls) == 1

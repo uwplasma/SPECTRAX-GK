@@ -304,6 +304,15 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--n-laguerre", type=int, default=2)
     parser.add_argument("--n-hermite", type=int, default=3)
     parser.add_argument(
+        "--surface-chunk-size",
+        type=int,
+        default=0,
+        help=(
+            "Evaluate the SPECTRAX-GK transport residual in surface chunks before applying the scalar transform. "
+            "Use 1 for memory-safe 18-point VMEC-JAX transport optimization on 16 GB GPUs."
+        ),
+    )
+    parser.add_argument(
         "--spectrax-objective-transform",
         choices=("raw", "scaled", "log1p"),
         default="log1p",
@@ -471,6 +480,7 @@ def main() -> int:
         n_hermite=int(args.n_hermite),
         objective_transform=cast(VMECJAXTransportObjectiveTransform, str(args.spectrax_objective_transform)),
         objective_scale=float(args.spectrax_objective_scale),
+        surface_chunk_size=int(args.surface_chunk_size),
     )
     transport = VMECJAXSpectraxTransportObjective(config=spectrax_config)
 
@@ -541,6 +551,7 @@ def main() -> int:
             "n_hermite": int(args.n_hermite),
             "objective_transform": str(args.spectrax_objective_transform),
             "objective_scale": float(args.spectrax_objective_scale),
+            "surface_chunk_size": int(args.surface_chunk_size),
             "gradient_scope": spectrax_config.gradient_scope,
         },
         "optimizer": {

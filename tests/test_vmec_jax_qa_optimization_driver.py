@@ -168,6 +168,8 @@ def test_driver_dry_run_cli_writes_transport_setup_summary(tmp_path: Path) -> No
             "1",
             "--n-hermite",
             "1",
+            "--surface-chunk-size",
+            "1",
             "--spectrax-weight",
             "0.001",
             "--outdir",
@@ -195,6 +197,7 @@ def test_driver_dry_run_cli_writes_transport_setup_summary(tmp_path: Path) -> No
     assert summary["sample_set"]["n_samples"] == 1
     assert summary["spectrax_config"]["mboz"] == 21
     assert summary["spectrax_config"]["nboz"] == 21
+    assert summary["spectrax_config"]["surface_chunk_size"] == 1
     assert summary["optimizer"]["method"] == "scalar_trust"
     assert "production nonlinear flux claims require matched long-window" in summary["claim_scope"]
     assert "spectraxgk_transport" in completed.stdout

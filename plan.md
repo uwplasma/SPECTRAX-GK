@@ -64,6 +64,19 @@ This file is both the active plan and the running log. Keep entries concise, dat
   baselines. The guarded ladder now accepts ``--baseline-metric-json`` so the
   baseline comparison uses the eval-only SPECTRAX-GK transport metric sidecar
   instead of falling back to the QA objective in ``history.json``.
+- Office strict-candidate attempt ``spectrax_strict_transport_ladder_56b99ab_w0005``
+  exposed the next technical blocker before any candidate history was written:
+  full 18-point VMEC-JAX reverse-mode transport optimization on the 16 GB GPU
+  requested a ``10.14 GiB`` allocation and failed with ``RESOURCE_EXHAUSTED``.
+  The ladder remained fail-closed and admitted only the QA baseline.
+- Added memory-safe surface chunking to
+  ``VMECJAXTransportObjectiveConfig(surface_chunk_size=...)`` and exposed
+  ``--surface-chunk-size`` in both the QA transport driver and eval-only metric
+  tool. For ``mean``/``weighted_mean`` reductions, the objective is algebraically
+  unchanged: each surface chunk is reduced with local weights, multiplied by
+  its global surface weight, summed, and transformed once after aggregation.
+  Next action is to rerun the strict ``5e-4`` candidate on office with
+  ``--surface-chunk-size 1`` before considering any long nonlinear audit.
 
 ## 2026-06-03 QA Geometry Figure Scope Fix
 

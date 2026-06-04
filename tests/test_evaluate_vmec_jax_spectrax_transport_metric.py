@@ -67,6 +67,7 @@ def test_build_report_is_history_compatible_and_json_safe() -> None:
     assert report["transport_metric_final"] == 0.067
     assert report["sample_set"]["n_samples"] == 18
     assert report["spectrax_config"]["gradient_scope"] == "eigenvalue_growth_ad"
+    assert report["spectrax_config"]["surface_chunk_size"] == 0
     assert "not an optimization" in report["claim_scope"]
     assert "long-window" in report["next_action"]
     json.dumps(mod._json_safe(report), allow_nan=False)
@@ -88,3 +89,4 @@ def test_parse_args_defaults_to_multisample_admission_set(tmp_path: Path) -> Non
     assert args.transport_kind == "growth"
     assert args.mboz == 21
     assert args.nboz == 21
+    assert args.surface_chunk_size == 0

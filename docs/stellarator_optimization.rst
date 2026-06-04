@@ -203,6 +203,11 @@ Also pass ``--baseline-metric-json`` pointing to the eval-only reduced metric
 for the same transport objective. Otherwise a constraints-only baseline has no
 transport metric in ``history.json`` and should not be compared through its QA
 objective value.
+For the 18-point production sample set on 16 GB GPUs, add
+``--surface-chunk-size 1`` to the candidate driver arguments. This evaluates
+the raw weighted-mean transport objective one surface chunk at a time and
+applies ``raw``/``scaled``/``log1p`` only after the chunks are aggregated, so it
+is the same scalar objective with lower peak reverse-mode memory.
 
 Transport-admission bookkeeping for the strict baseline is separated from
 optimization. After a baseline or candidate writes ``input.final``, run:

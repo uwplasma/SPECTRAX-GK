@@ -99,6 +99,7 @@ def build_report(
             "n_hermite": int(config.n_hermite),
             "objective_transform": str(config.objective_transform),
             "objective_scale": float(config.objective_scale),
+            "surface_chunk_size": int(config.surface_chunk_size),
             "gradient_scope": config.gradient_scope,
         },
         "solver": {
@@ -136,6 +137,7 @@ def evaluate_metric(args: argparse.Namespace) -> dict[str, Any]:
         n_hermite=int(args.n_hermite),
         objective_transform=cast(VMECJAXTransportObjectiveTransform, str(args.spectrax_objective_transform)),
         objective_scale=float(args.spectrax_objective_scale),
+        surface_chunk_size=int(args.surface_chunk_size),
     )
     objective = VMECJAXSpectraxTransportObjective(config=config)
     vmec = vj.FixedBoundaryVMEC.from_input(
@@ -208,6 +210,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--nboz", type=int, default=21)
     parser.add_argument("--n-laguerre", type=int, default=2)
     parser.add_argument("--n-hermite", type=int, default=3)
+    parser.add_argument(
+        "--surface-chunk-size",
+        type=int,
+        default=0,
+        help="Evaluate the transport objective in surface chunks before applying the scalar transform",
+    )
     parser.add_argument(
         "--spectrax-objective-transform",
         choices=("raw", "scaled", "log1p"),
