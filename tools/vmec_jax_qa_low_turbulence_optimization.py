@@ -35,7 +35,10 @@ from spectraxgk import (  # noqa: E402
     VMECJAXSpectraxTransportObjective,
     VMECJAXTransportObjectiveConfig,
 )
-from spectraxgk.vmec_jax_candidate_gate import build_solved_vmec_candidate_gate  # noqa: E402
+from spectraxgk.vmec_jax_candidate_gate import (  # noqa: E402
+    build_solved_vmec_candidate_gate,
+    build_wout_reproducibility_gate,
+)
 from spectraxgk.vmec_jax_transport_objective import VMECJAXTransportObjectiveTransform  # noqa: E402
 
 
@@ -373,6 +376,19 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--save-stage-wouts", action="store_true", help="Write per-stage WOUT files")
     parser.add_argument("--save-final-outputs", action="store_true", help="Keep VMEC-JAX final-output side files")
+    parser.add_argument(
+        "--save-rerun-wouts",
+        action="store_true",
+        help="Write fresh VMEC rerun WOUTs from input.initial/input.final and gate input/WOUT reproducibility",
+    )
+    parser.add_argument(
+        "--require-rerun-wout-gate",
+        action="store_true",
+        help="Fail the driver if input.final does not reproduce wout_final.nc within the rerun-WOUT gate",
+    )
+    parser.add_argument("--wout-repro-mean-iota-atol", type=float, default=5.0e-4)
+    parser.add_argument("--wout-repro-aspect-atol", type=float, default=1.0e-6)
+    parser.add_argument("--wout-repro-profile-atol", type=float, default=5.0e-4)
     parser.add_argument("--make-plots", action="store_true", help="Generate VMEC-JAX boundary/|B|/history plots")
     parser.add_argument(
         "--solved-wout-gate-aspect-atol",
@@ -427,6 +443,8 @@ def _parse_args() -> argparse.Namespace:
         args.qs_weight = 1.0
         args.method = args.method or "scipy"
         args.scipy_tr_solver = "exact"
+        args.save_rerun_wouts = True
+        args.require_rerun_wout_gate = True
         # The upstream script's 70/1e-6 settings can terminate a few 1e-5 below
         # the strict iota admission gate. The preset keeps the same objective
         # and ESS recipe but avoids the premature outer step termination while
@@ -572,6 +590,11 @@ def main() -> int:
             "use_ess": not bool(args.disable_ess),
             "ess_alpha": float(args.ess_alpha),
             "strict_upstream_qa_baseline": bool(args.strict_upstream_qa_baseline),
+            "save_rerun_wouts": bool(args.save_rerun_wouts),
+            "require_rerun_wout_gate": bool(args.require_rerun_wout_gate),
+            "wout_repro_mean_iota_atol": float(args.wout_repro_mean_iota_atol),
+            "wout_repro_aspect_atol": float(args.wout_repro_aspect_atol),
+            "wout_repro_profile_atol": float(args.wout_repro_profile_atol),
         },
         "solved_wout_gate_policy": {
             "aspect_atol": float(args.solved_wout_gate_aspect_atol),
@@ -674,6 +697,39 @@ def main() -> int:
             else float(args.iota_profile_floor)
         )
     )
+    rerun_gate_report = None
+    if args.save_rerun_wouts:
+        rerun_paths = {}
+        if Path(saved.initial_input).exists():
+            initial_rerun_wout = args.outdir / "wout_initial_rerun.nc"
+            initial_rerun = vj.run_fixed_boundary(str(saved.initial_input), verbose=False)
+            vj.write_wout_from_fixed_boundary_run(str(initial_rerun_wout), initial_rerun)
+            rerun_paths["initial_rerun_wout"] = str(initial_rerun_wout)
+        final_rerun_wout = args.outdir / "wout_final_rerun.nc"
+        final_rerun = vj.run_fixed_boundary(str(saved.final_input), verbose=False)
+        vj.write_wout_from_fixed_boundary_run(str(final_rerun_wout), final_rerun)
+        rerun_paths["final_rerun_wout"] = str(final_rerun_wout)
+        rerun_gate_report = build_wout_reproducibility_gate(
+            saved.final_wout,
+            final_rerun_wout,
+            target_aspect=float(args.target_aspect),
+            aspect_atol=float(args.solved_wout_gate_aspect_atol),
+            min_abs_mean_iota=(
+                float(args.solved_wout_gate_min_abs_iota)
+                if args.solved_wout_gate_min_abs_iota is not None
+                else float(args.min_iota)
+            ),
+            iota_profile_floor=gate_profile_floor,
+            mean_iota_repro_atol=float(args.wout_repro_mean_iota_atol),
+            aspect_repro_atol=float(args.wout_repro_aspect_atol),
+            profile_repro_atol=float(args.wout_repro_profile_atol),
+        )
+        rerun_gate_report["rerun_paths"] = rerun_paths
+        rerun_gate_path = args.outdir / "wout_reproducibility_gate.json"
+        rerun_gate_path.write_text(json.dumps(rerun_gate_report, indent=2, allow_nan=False), encoding="utf-8")
+        print("\nWOUT reproducibility gate:")
+        print(f"  passed: {rerun_gate_report['passed']}")
+        print(f"  file:   {rerun_gate_path}")
     gate_report = build_solved_vmec_candidate_gate(
         result,
         target_aspect=float(args.target_aspect),
@@ -714,6 +770,13 @@ def main() -> int:
         for name, path in plot_paths.items():
             print(f"  {name}: {path}")
     if not bool(gate_report["passed"]) and not bool(args.allow_failed_solved_wout_gate):
+        return 2
+    if (
+        args.require_rerun_wout_gate
+        and rerun_gate_report is not None
+        and not bool(rerun_gate_report["passed"])
+        and not bool(args.allow_failed_solved_wout_gate)
+    ):
         return 2
     return 0
 

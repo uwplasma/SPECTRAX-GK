@@ -5,9 +5,11 @@ import sys
 from types import SimpleNamespace
 
 import numpy as np
+import pytest
 
 from spectraxgk.vmec_jax_candidate_gate import (
     build_solved_vmec_candidate_gate,
+    build_wout_reproducibility_gate,
     final_iota_profiles_from_vmec_result,
 )
 
@@ -218,3 +220,62 @@ def test_final_iota_profiles_from_vmec_result_handles_vmec_jax_failure(monkeypat
     )
 
     assert final_iota_profiles_from_vmec_result(result) is None
+
+
+def test_wout_reproducibility_gate_rejects_iota_drift() -> None:
+    report = build_wout_reproducibility_gate(
+        {
+            "source": "optimizer_state_wout",
+            "aspect": 5.000154,
+            "mean_iota": 0.41020,
+            "min_iotas_excluding_axis": 0.40567,
+            "min_iotaf": 0.40550,
+        },
+        {
+            "source": "input_final_rerun_wout",
+            "aspect": 5.000154,
+            "mean_iota": 0.40851,
+            "min_iotas_excluding_axis": 0.39598,
+            "min_iotaf": 0.39581,
+        },
+        target_aspect=5.0,
+        aspect_atol=5.0e-2,
+        min_abs_mean_iota=0.41,
+        iota_profile_floor=None,
+        mean_iota_repro_atol=5.0e-4,
+    )
+
+    assert report["passed"] is False
+    assert report["checks"]["rerun_mean_iota_admission"]["passed"] is False
+    assert report["checks"]["mean_iota_reproducibility"]["passed"] is False
+    assert report["checks"]["mean_iota_reproducibility"]["absolute_drift"] == pytest.approx(0.00169)
+    json.dumps(report, allow_nan=False)
+
+
+def test_wout_reproducibility_gate_accepts_matching_rerun() -> None:
+    report = build_wout_reproducibility_gate(
+        {
+            "source": "optimizer_state_wout",
+            "aspect": 5.000154,
+            "mean_iota": 0.41020,
+            "min_iotas_excluding_axis": 0.40567,
+            "min_iotaf": 0.40550,
+        },
+        {
+            "source": "input_final_rerun_wout",
+            "aspect": 5.0001542,
+            "mean_iota": 0.41010,
+            "min_iotas_excluding_axis": 0.40561,
+            "min_iotaf": 0.40545,
+        },
+        target_aspect=5.0,
+        aspect_atol=5.0e-2,
+        min_abs_mean_iota=0.41,
+        iota_profile_floor=None,
+        mean_iota_repro_atol=5.0e-4,
+        aspect_repro_atol=5.0e-7,
+        profile_repro_atol=5.0e-4,
+    )
+
+    assert report["passed"] is True
+    assert report["checks"]["rerun_mean_iota_admission"]["passed"] is True

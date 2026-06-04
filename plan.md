@@ -106,6 +106,22 @@ This file is both the active plan and the running log. Keep entries concise, dat
   strict solved-WOUT gate, evaluate the 18-point reduced metric, and launch
   nonlinear audits only if a candidate improves the strict-baseline metric
   ``0.08010670290`` while preserving the solved-equilibrium gates.
+- Projected replay exposed a more fundamental artifact issue: replaying the
+  strict baseline ``input.final`` itself with the same max-mode-5 constraints
+  gives aspect ``5.000154`` and QS ``2.59e-4`` but mean iota only ``0.40851``.
+  The optimizer-state ``wout_final.nc`` from the original exact solve has mean
+  iota ``0.4101997`` and passes. Therefore the saved input deck and saved WOUT
+  are not reproducible enough for reviewer-proof transport admission. Added
+  ``build_wout_reproducibility_gate`` and driver flags
+  ``--save-rerun-wouts --require-rerun-wout-gate`` so future strict baselines
+  must pass a fresh ``wout_final_rerun.nc`` gate before any SPECTRAX-GK reduced
+  metric, projected line search, or nonlinear audit is promoted.
+- Status update: the current strict optimizer-state WOUT remains useful as a
+  diagnostic artifact, but strict-QA transport optimization is blocked until a
+  rerun-reproducible baseline is generated. The next office run should rerun
+  the strict baseline with the new rerun-WOUT gate enabled and, if it fails,
+  increase/adjust the VMEC-JAX solve until ``input.final`` reproduces the
+  optimizer-state WOUT within the rerun gate.
 
 ## 2026-06-03 QA Geometry Figure Scope Fix
 
