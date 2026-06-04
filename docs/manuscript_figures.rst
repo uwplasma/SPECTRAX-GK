@@ -358,6 +358,10 @@ Differentiable-Physics Figures
        single-field-line, single-``k_y`` positive audits only; broader
        nonlinear turbulent-flux optimization still requires multi-surface,
        multi-alpha, and multi-``k_y`` promotion gates.
+   * - Boundary-coefficient transport landscape
+     - ``tools/build_vmec_boundary_transport_landscape.py`` and ``tools/patch_vmec_jax_wout_metadata.py``
+     - Reduced landscape diagnostic closed; replicated nonlinear heat-flux error bars running on office
+     - current artifact base: ``docs/_static/vmec_boundary_transport_landscape_rbc01.png`` with JSON/CSV companions. The scan perturbs the strict QA ``RBC(0,1)`` coefficient over ``[-6%, -3%, 0, +3%, +6%]`` and evaluates the 18-point reduced sample set over three surfaces, two field-line labels, and three ``k_y`` values. The ``+3%`` perturbation is best for all three reduced objectives: growth decreases by about ``51%``, quasilinear flux by about ``49%``, and the reduced nonlinear-window objective by about ``4.7%``. Because the reduced nonlinear-window improvement is small, this is a pre-optimizer/noise diagnostic rather than a nonlinear turbulent-flux claim. The office GPU queue is running replicated ``t=[350,700]`` nonlinear windows for the baseline, ``+3%``, and ``+6%`` points; rerun the plot with ``--nonlinear-ensemble`` sidecars once those ensembles finish.
    * - Development-only optimization-plumbing figure
      - ``examples/theory_and_demos/reduced_stellarator_itg/compare_stellarator_itg_optimizations.py`` and ``tools/plot_stellarator_optimization_uq.py``
      - Initial differentiable objective-reduction and weighted-residual UQ gates closed for development diagnostics; full VMEC/Boozer/GK optimization open

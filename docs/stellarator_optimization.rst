@@ -1051,12 +1051,55 @@ nonlinear turbulence-in-the-loop optimization evidence [Kim24]_. The reduced
 comparison is therefore a validated optimization-plumbing and figure-generation
 artifact, not the final production nonlinear turbulent heat-flux optimization.
 
+Boundary-Coefficient Objective Landscapes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Before launching another optimizer, SPECTRAX-GK now includes a
+boundary-coefficient landscape diagnostic:
+:download:`build_vmec_boundary_transport_landscape.py <../tools/build_vmec_boundary_transport_landscape.py>`.
+It perturbs one VMEC input coefficient, writes the corresponding ``input.*``
+decks, evaluates deterministic reduced transport objectives, and optionally
+overlays replicated nonlinear heat-flux ensemble points with error bars. This
+mirrors the optimization lesson in [Kim24]_: time-averaged nonlinear heat flux
+can be noisy enough that local deterministic descent may fail near a minimum,
+so the optimizer choice should be informed by a pre-optimizer landscape scan.
+
+The current ``RBC(0,1)`` diagnostic starts from the strict QA baseline and
+uses the same 18-point reduced objective coverage used by the projected
+admission gate: ``s = (0.45, 0.64, 0.78)``,
+``alpha = (0, pi/4)``, and ``k_y rho_i = (0.10, 0.30, 0.50)``. In this reduced
+scan, the ``+3%`` coefficient perturbation lowers the linear growth objective
+by about ``51%``, the quasilinear-flux objective by about ``49%``, and the
+reduced nonlinear-window objective by about ``4.7%``. The last reduction is
+small enough that replicated nonlinear heat-flux error bars are required before
+using this direction for a turbulent-flux optimization claim.
+
+.. figure:: _static/vmec_boundary_transport_landscape_rbc01.png
+   :alt: RBC(0,1) transport-objective landscape
+   :width: 82%
+   :align: center
+
+   ``RBC(0,1)`` transport-objective landscape. The top two panels are reduced
+   deterministic diagnostics only. The bottom panel is reserved for replicated
+   nonlinear heat-flux ensemble means and SEM bars; those office GPU runs are
+   the required next step before optimizer selection.
+
+The VMEC-JAX WOUT files generated for this landscape currently require a
+metadata-only patch because their Fourier geometry is present but scalar
+summary fields such as ``Aminor_p`` can be zero. The helper
+:download:`patch_vmec_jax_wout_metadata.py <../tools/patch_vmec_jax_wout_metadata.py>`
+fills positive scalar metadata from the LCFS Fourier boundary without changing
+the equilibrium Fourier coefficients. This patch is a runtime-EIK compatibility
+step, not a geometry optimization result.
+
 Implementation Map
 ~~~~~~~~~~~~~~~~~~
 
 - Core reduced model: :mod:`spectraxgk.qa_low_turbulence`
 - Artifact builder: :download:`build_qa_low_turbulence_comparison.py <../tools/build_qa_low_turbulence_comparison.py>`
 - Time-horizon audit builder: :download:`build_qa_low_turbulence_time_horizon_audit.py <../tools/build_qa_low_turbulence_time_horizon_audit.py>`
+- Boundary landscape builder: :download:`build_vmec_boundary_transport_landscape.py <../tools/build_vmec_boundary_transport_landscape.py>`
+- VMEC-JAX WOUT metadata patcher: :download:`patch_vmec_jax_wout_metadata.py <../tools/patch_vmec_jax_wout_metadata.py>`
 - Tests: ``tests/test_qa_low_turbulence.py``
 - Output JSON: :download:`qa_low_turbulence_comparison.json <_static/qa_low_turbulence_comparison.json>`
 - Scan CSV: :download:`qa_low_turbulence_comparison.scan.csv <_static/qa_low_turbulence_comparison.scan.csv>`

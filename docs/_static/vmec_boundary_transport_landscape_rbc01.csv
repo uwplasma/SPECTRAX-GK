@@ -1,0 +1,6 @@
+label,relative_fraction,coefficient_value,input_path,growth,quasilinear_flux,nonlinear_window_heat_flux
+m0p06,-0.06,0.1971473867597292,tools_out/vmec_boundary_transport_landscape_rbc01_18pt/inputs/input.rbc_0_1_m0p06,0.0017962884875411427,0.004621161345622225,0.06982705865625889
+m0p03,-0.03,0.20343932463503972,tools_out/vmec_boundary_transport_landscape_rbc01_18pt/inputs/input.rbc_0_1_m0p03,0.001090115630410179,0.003455259797803204,0.06580802969120689
+0,0.0,0.20973126251035024,tools_out/vmec_boundary_transport_landscape_rbc01_18pt/inputs/input.rbc_0_1_0,0.0018852700681558552,0.0050953337392465325,0.06558065223919245
+p0p03,0.03,0.21602320038566075,tools_out/vmec_boundary_transport_landscape_rbc01_18pt/inputs/input.rbc_0_1_p0p03,0.0009220158045821192,0.002608403782530324,0.06251277500404685
+p0p06,0.06,0.22231513826097127,tools_out/vmec_boundary_transport_landscape_rbc01_18pt/inputs/input.rbc_0_1_p0p06,0.00142632684129469,0.003338369096049585,0.0629233996962587

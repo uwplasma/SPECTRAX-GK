@@ -31,7 +31,8 @@ historical logs live outside the release repository so clones stay small.
 | Rerun-WOUT admission and artifact policy | 100% | Explicit authoritative rerun-WOUT path implemented and tested |
 | Strict QA candidate screening | 100% | Top-12 projected edge candidate passes rerun-WOUT gates and reduces the 18-point metric by 2.29% |
 | Strict nonlinear turbulent-flux optimization evidence | 82% | Matched t=700 audit fails promotion: 0.58% reduction, z=0.20, below the 2% gate |
-| Docs/readme/release hygiene | 93% | Strict QA failed-promotion artifacts are tracked; final wording must stay scoped |
+| Boundary-coefficient landscape and optimizer-noise diagnosis | 60% | 18-point RBC(0,1) reduced landscape complete; replicated nonlinear error-bar queue running on office |
+| Docs/readme/release hygiene | 94% | Strict QA failed-promotion and landscape artifacts are tracked; final wording must stay scoped |
 | Performance/parallelization release lane | 95% | Independent-work parallel paths are release-ready; nonlinear domain sharding remains research/development |
 
 Deferred post-release/manuscript extensions unless explicitly reprioritized:
@@ -188,6 +189,10 @@ No long nonlinear audit should be launched from these candidates.
    baseline/candidate ensemble JSON sidecars.
 4. Keep CI green after each tranche: fast unit shards, coverage aggregation,
    repository-size gate, docs links, and package build.
+5. Finish the office ``RBC(0,1)`` landscape nonlinear ensemble queue, copy back
+   the three ensemble JSON/PNG sidecars, and rerun
+   ``tools/build_vmec_boundary_transport_landscape.py`` with
+   ``--nonlinear-ensemble`` for baseline, ``+3%``, and ``+6%``.
 
 ## Release Hygiene Rules
 
@@ -251,3 +256,18 @@ No long nonlinear audit should be launched from these candidates.
   insufficient matched nonlinear reduction and insufficient uncertainty
   separation. Conclusion: this is a fail-closed negative transfer result, not a
   nonlinear turbulence-optimization claim.
+- Added a boundary-coefficient landscape diagnostic for strict QA ``RBC(0,1)``.
+  The 18-point reduced scan over ``[-6%, -3%, 0, +3%, +6%]`` finds the ``+3%``
+  coefficient point best for all reduced objectives: growth improves by about
+  ``51%``, quasilinear flux by about ``49%``, and reduced nonlinear-window heat
+  flux by about ``4.7%``. The small reduced nonlinear-window margin makes this
+  an optimizer-noise diagnostic, not a nonlinear heat-flux claim. Generated
+  artifacts:
+  `docs/_static/vmec_boundary_transport_landscape_rbc01.png`,
+  `docs/_static/vmec_boundary_transport_landscape_rbc01.json`, and
+  `docs/_static/vmec_boundary_transport_landscape_rbc01.csv`.
+- Launched a two-GPU office nonlinear error-bar queue for the baseline, ``+3%``,
+  and ``+6%`` landscape points under
+  `/home/rjorge/tmp/spectrax_landscape_rbc01_code`. The VMEC-JAX WOUTs required
+  metadata-only patching because their scalar ``Aminor_p/Rmajor_p/aspect``
+  fields were zero; Fourier geometry was left unchanged.
