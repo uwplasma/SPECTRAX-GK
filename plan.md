@@ -75,8 +75,37 @@ This file is both the active plan and the running log. Keep entries concise, dat
   tool. For ``mean``/``weighted_mean`` reductions, the objective is algebraically
   unchanged: each surface chunk is reduced with local weights, multiplied by
   its global surface weight, summed, and transformed once after aggregation.
-  Next action is to rerun the strict ``5e-4`` candidate on office with
-  ``--surface-chunk-size 1`` before considering any long nonlinear audit.
+- Office rerun ``spectrax_strict_transport_ladder_bfb55e6_w0005_chunked`` with
+  ``--surface-chunk-size 1`` and ``TF_GPU_ALLOCATOR=cuda_malloc_async`` still
+  failed after ``398.8 s`` with the same VMEC-JAX final-state cotangent
+  ``10.14 GiB`` allocation. Conclusion: surface chunking is valid for reduced
+  metric evaluation and gradient diagnostics, but it does not by itself make
+  the full VMEC-JAX optimizer memory-safe at the strict 18-point,
+  ``mboz=nboz=21`` setting on 16 GB GPUs.
+- Chunked gradient diagnostics do work on office: the 18-point strict-baseline
+  nonlinear-window diagnostic with ``--surface-gradient-chunk-size 1`` finished
+  in ``515.9 s`` without OOM and produced
+  ``/home/rjorge/tmp/spectrax_strict_transport_gradient_bfb55e6/transport_gradient.json``.
+  The objective is boundary-sensitive with gradient L2 norm ``0.45568`` and
+  top components led by ``rc2-5`` and ``rc24``.
+- GPU boundary-chain replay still OOMs at ``mboz=nboz=21`` even for a
+  single-sample top coefficient because the VMEC/Boozer final-state cotangent
+  path remains monolithic. CPU replay of the two top coefficients completed:
+  both verify the frozen-axis convention, but only ``rc24`` passes the
+  SPECTRAX growth-branch locality gate. The collection artifact is
+  ``/home/rjorge/tmp/spectrax_strict_boundary_chain_top_cpu_bfb55e6/boundary_chain_top2_collection.json``.
+- Patched ``tools/write_vmec_jax_projected_transport_line_search_inputs.py`` so
+  projected replay commands carry the strict QA gate explicitly
+  (``target_aspect=5``, target-iota convention, disabled iota-profile floor,
+  solved-WOUT gate, transport resolution, and chunk metadata) instead of
+  silently reverting to the older aspect-6/floor-iota defaults.
+- Next strict-QA action: generate a boundary-chain-gated projected line search
+  from the strict gradient using branch-sensitive frozen-axis convention rows
+  but requiring growth-branch locality. This should admit only ``rc24`` from
+  the current top-two collection. Replay the generated candidates against the
+  strict solved-WOUT gate, evaluate the 18-point reduced metric, and launch
+  nonlinear audits only if a candidate improves the strict-baseline metric
+  ``0.08010670290`` while preserving the solved-equilibrium gates.
 
 ## 2026-06-03 QA Geometry Figure Scope Fix
 

@@ -141,6 +141,14 @@ def test_projected_writer_manifest_records_sample_coverage(tmp_path: Path, monke
     assert "0.0,0.7853981633974483" in command
     assert "--ky-values" in command
     assert "0.1,0.3,0.5" in command
+    assert "--target-aspect" in command
+    assert "6.0" in command
+    assert "--iota-objective" in command
+    assert "floor" in command
+    assert "--iota-profile-floor" in command
+    assert "--solved-wout-gate-min-abs-iota" in command
+    assert "--surface-chunk-size" in command
+    assert "0" in command
 
 
 def test_projected_writer_requires_boundary_chain_collection_by_default(tmp_path: Path, monkeypatch) -> None:
@@ -284,6 +292,75 @@ def test_projected_writer_can_require_growth_branch_locality(tmp_path: Path, mon
     assert list(saved[0]) == pytest.approx([0.0, 1.0e-3, 0.0, 0.0])
     assert payload["boundary_chain_filter"]["require_exact_fd"] is False
     assert payload["boundary_chain_filter"]["require_growth_branch_locality"] is True
+    assert payload["boundary_chain_filter"]["accepted_parameter_indices"] == [1]
+
+
+def test_projected_writer_replay_command_honors_strict_qa_gate_arguments(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    gradient = tmp_path / "gradient.json"
+    collection = tmp_path / "boundary_chain.json"
+    _gradient_report(gradient)
+    _boundary_chain_collection(collection)
+
+    class FakeOptimizer:
+        def save_input(self, path, delta):
+            del delta
+            Path(path).parent.mkdir(parents=True, exist_ok=True)
+            Path(path).write_text("! projected input\n", encoding="utf-8")
+
+    fake_stage = SimpleNamespace(specs=[object(), object(), object(), object()], optimizer=FakeOptimizer())
+    monkeypatch.setattr(mod, "_build_stage", lambda _args: fake_stage)
+
+    mod.main(
+        [
+            "--input",
+            str(tmp_path / "input.final"),
+            "--gradient-json",
+            str(gradient),
+            "--boundary-chain-collection-json",
+            str(collection),
+            "--allow-boundary-chain-branch-sensitive",
+            "--require-growth-branch-locality",
+            "--outdir",
+            str(tmp_path / "out"),
+            "--steps",
+            "1e-3",
+            "--top-n",
+            "4",
+            "--target-aspect",
+            "5.0",
+            "--min-iota",
+            "0.4102",
+            "--iota-objective",
+            "target",
+            "--disable-iota-profile-floor",
+            "--solved-wout-gate-min-abs-iota",
+            "0.41",
+            "--solved-wout-gate-aspect-atol",
+            "0.02",
+            "--solved-wout-gate-qs-max",
+            "0.01",
+            "--surface-chunk-size",
+            "1",
+            "--solver-device",
+            "gpu",
+        ]
+    )
+
+    payload = json.loads((tmp_path / "out" / "projected_line_search_inputs.json").read_text(encoding="utf-8"))
+    command = payload["rows"][0]["replay_command"]
+    assert command[command.index("--target-aspect") + 1] == "5.0"
+    assert command[command.index("--min-iota") + 1] == "0.4102"
+    assert command[command.index("--iota-objective") + 1] == "target"
+    assert "--disable-iota-profile-floor" in command
+    assert "--iota-profile-floor" not in command
+    assert command[command.index("--solved-wout-gate-min-abs-iota") + 1] == "0.41"
+    assert command[command.index("--solved-wout-gate-aspect-atol") + 1] == "0.02"
+    assert command[command.index("--solved-wout-gate-qs-max") + 1] == "0.01"
+    assert command[command.index("--surface-chunk-size") + 1] == "1"
+    assert command[command.index("--solver-device") + 1] == "gpu"
     assert payload["boundary_chain_filter"]["accepted_parameter_indices"] == [1]
 
 

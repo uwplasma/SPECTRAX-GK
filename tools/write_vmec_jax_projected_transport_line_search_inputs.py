@@ -102,6 +102,16 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--n-laguerre", type=int, default=2)
     parser.add_argument("--n-hermite", type=int, default=3)
     parser.add_argument(
+        "--surface-chunk-size",
+        type=int,
+        default=0,
+        help=(
+            "Chunk the transport residual by surfaces in the generated VMEC-JAX "
+            "stage. This is useful for diagnostics/evaluation, but it does not "
+            "by itself make the full VMEC-JAX optimizer memory-safe."
+        ),
+    )
+    parser.add_argument(
         "--spectrax-objective-transform",
         choices=("raw", "scaled", "log1p"),
         default="log1p",
@@ -112,6 +122,19 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--trial-max-iter", type=int, default=120)
     parser.add_argument("--trial-ftol", type=float, default=1.0e-9)
     parser.add_argument("--solver-device", choices=("cpu", "gpu"), default=None)
+    parser.add_argument("--target-aspect", type=float, default=6.0)
+    parser.add_argument("--min-iota", type=float, default=0.41)
+    parser.add_argument("--iota-objective", choices=("target", "floor"), default="floor")
+    parser.add_argument("--iota-profile-floor", type=float, default=0.41)
+    parser.add_argument(
+        "--disable-iota-profile-floor",
+        action="store_true",
+        help="Forward the upstream MeanIota-only convention to replay commands.",
+    )
+    parser.add_argument("--solved-wout-gate-aspect-atol", type=float, default=5.0e-2)
+    parser.add_argument("--solved-wout-gate-min-abs-iota", type=float, default=None)
+    parser.add_argument("--solved-wout-gate-qs-max", type=float, default=5.0e-2)
+    parser.add_argument("--solved-wout-gate-profile-floor", type=float, default=None)
     return parser.parse_args(argv)
 
 
@@ -140,6 +163,7 @@ def _build_stage(args: argparse.Namespace):
         n_hermite=int(args.n_hermite),
         objective_transform=cast(VMECJAXTransportObjectiveTransform, str(args.spectrax_objective_transform)),
         objective_scale=float(args.spectrax_objective_scale),
+        surface_chunk_size=int(args.surface_chunk_size),
     )
     transport = VMECJAXSpectraxTransportObjective(config=config)
     vmec = vj.FixedBoundaryVMEC.from_input(
@@ -170,7 +194,7 @@ def _label_for_step(step: float) -> str:
 
 
 def _replay_command(args: argparse.Namespace, input_path: Path, outdir: Path) -> list[str]:
-    return [
+    command = [
         "python",
         "tools/vmec_jax_qa_low_turbulence_optimization.py",
         "--input",
@@ -187,10 +211,20 @@ def _replay_command(args: argparse.Namespace, input_path: Path, outdir: Path) ->
         str(int(args.mboz)),
         "--nboz",
         str(int(args.nboz)),
+        "--ntheta",
+        str(int(args.ntheta)),
+        "--n-laguerre",
+        str(int(args.n_laguerre)),
+        "--n-hermite",
+        str(int(args.n_hermite)),
+        "--surface-chunk-size",
+        str(int(args.surface_chunk_size)),
         "--transport-kind",
         str(args.transport_kind),
         "--spectrax-objective-transform",
         str(args.spectrax_objective_transform),
+        "--spectrax-objective-scale",
+        str(float(args.spectrax_objective_scale)),
         "--surfaces",
         ",".join(str(float(x)) for x in args.surfaces),
         "--alphas",
@@ -198,18 +232,40 @@ def _replay_command(args: argparse.Namespace, input_path: Path, outdir: Path) ->
         "--ky-values",
         ",".join(str(float(x)) for x in args.ky_values),
         "--iota-objective",
-        "floor",
+        str(args.iota_objective),
         "--target-aspect",
-        "6.0",
+        str(float(args.target_aspect)),
         "--min-iota",
-        "0.41",
-        "--iota-profile-floor",
-        "0.41",
+        str(float(args.min_iota)),
+        "--solved-wout-gate-aspect-atol",
+        str(float(args.solved_wout_gate_aspect_atol)),
+        "--solved-wout-gate-min-abs-iota",
+        str(
+            float(args.solved_wout_gate_min_abs_iota)
+            if args.solved_wout_gate_min_abs_iota is not None
+            else float(args.min_iota)
+        ),
+        "--solved-wout-gate-qs-max",
+        str(float(args.solved_wout_gate_qs_max)),
         "--max-nfev",
         "1",
         "--save-final-outputs",
         "--allow-failed-solved-wout-gate",
     ]
+    if bool(args.disable_iota_profile_floor):
+        command.append("--disable-iota-profile-floor")
+    else:
+        command.extend(["--iota-profile-floor", str(float(args.iota_profile_floor))])
+        if args.solved_wout_gate_profile_floor is not None:
+            command.extend(
+                [
+                    "--solved-wout-gate-profile-floor",
+                    str(float(args.solved_wout_gate_profile_floor)),
+                ]
+            )
+    if args.solver_device is not None:
+        command.extend(["--solver-device", str(args.solver_device)])
+    return command
 
 
 def main(argv: list[str] | None = None) -> int:

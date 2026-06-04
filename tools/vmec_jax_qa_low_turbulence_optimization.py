@@ -309,7 +309,8 @@ def _parse_args() -> argparse.Namespace:
         default=0,
         help=(
             "Evaluate the SPECTRAX-GK transport residual in surface chunks before applying the scalar transform. "
-            "Use 1 for memory-safe 18-point VMEC-JAX transport optimization on 16 GB GPUs."
+            "This is useful for eval-only metrics and chunked gradient diagnostics; the full VMEC-JAX "
+            "optimizer can still be limited by its final-state cotangent memory path."
         ),
     )
     parser.add_argument(
