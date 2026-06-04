@@ -36,6 +36,24 @@ This file is both the active plan and the running log. Keep entries concise, dat
   reductions relative to this stricter baseline. The existing
   ``5e-4``/``1e-3`` matched reductions remain scoped to the earlier sweep
   baseline.
+- Added ``tools/evaluate_vmec_jax_spectrax_transport_metric.py`` so a solved
+  VMEC-JAX ``input.final`` can be evaluated against SPECTRAX-GK transport
+  objectives without taking any outer optimization step. This gives
+  history-compatible JSON sidecars for reduced-objective admission before
+  spending nonlinear GPU time.
+- Copied the passing strict-baseline ``input.final``/``wout_final.nc`` from
+  office into ignored local ``tools_out/vmec_jax_qa_strict_exact_nfev40/`` and
+  evaluated the 18-point admission sample
+  ``s=(0.45,0.64,0.78)``, ``alpha=(0,pi/4)``,
+  ``k_y rho_i=(0.10,0.30,0.50)`` at ``mboz=nboz=21``. The strict-baseline
+  log1p metrics are: growth ``0.03657107649``, quasilinear flux
+  ``0.1230452010``, and nonlinear-window reduced heat flux ``0.08010670290``.
+  These are reduced admission metrics only; they do not promote an absolute
+  quasilinear-flux or nonlinear turbulent-flux claim.
+- Next strict-QA action: run the same eval-only metric triplet on any candidate
+  generated from this exact baseline, require reduced-objective improvement
+  plus solved-WOUT and boundary-gradient gates, and only then launch matched
+  long-window nonlinear audits on office.
 
 ## 2026-06-03 QA Geometry Figure Scope Fix
 
