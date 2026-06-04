@@ -140,6 +140,12 @@ This file is both the active plan and the running log. Keep entries concise, dat
   ``input.final`` reproduces the optimizer-state WOUT within the new
   reproducibility gate. Do not spend long nonlinear audit time until one of
   those two state conventions is closed.
+- Patched the QA full-sweep, optimization-status, and candidate-comparison
+  artifact builders to fail closed when ``wout_reproducibility_gate.json`` is
+  present and failing. This keeps old artifacts readable but prevents failed
+  rerun-reproducibility candidates from generating nonlinear-audit commands,
+  README/docs promotion rows, or ``ready_for_long_window_nonlinear_audit``
+  summaries.
 
 ## 2026-06-03 QA Geometry Figure Scope Fix
 

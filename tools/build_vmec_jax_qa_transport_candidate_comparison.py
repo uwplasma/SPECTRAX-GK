@@ -94,6 +94,16 @@ def _load_solved_gate(root: Path) -> dict[str, Any] | None:
     return data
 
 
+def _load_wout_reproducibility_gate(root: Path) -> dict[str, Any] | None:
+    path = root / "wout_reproducibility_gate.json"
+    if not path.exists():
+        return None
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise ValueError(f"{path} must contain a JSON object")
+    return data
+
+
 def _load_iota_profiles(root: Path) -> tuple[np.ndarray, np.ndarray]:
     import vmec_jax as vj  # type: ignore[import-not-found]
 
@@ -146,6 +156,10 @@ def _branch_summary(
         )
     gate_is_authoritative = gate_source == "solved_wout_gate.json"
     gate_reported_passed = bool(gate.get("passed", False))
+    wout_repro_gate = _load_wout_reproducibility_gate(root)
+    wout_repro_gate_passed = (
+        None if wout_repro_gate is None else bool(wout_repro_gate.get("passed", False))
+    )
     admission_blockers = [
         name
         for name, check in gate.get("checks", {}).items()
@@ -153,7 +167,13 @@ def _branch_summary(
     ]
     if not gate_is_authoritative:
         admission_blockers.insert(0, "non_authoritative_reconstructed_gate")
-    admitted = bool(gate_reported_passed and gate_is_authoritative)
+    if wout_repro_gate_passed is False:
+        admission_blockers.append("wout_reproducibility_gate_failed")
+    admitted = bool(
+        gate_reported_passed
+        and gate_is_authoritative
+        and (wout_repro_gate_passed is None or bool(wout_repro_gate_passed))
+    )
     return {
         "label": label,
         "root": _repo_relative(root),
@@ -189,6 +209,8 @@ def _branch_summary(
         "gate_source": gate_source,
         "gate_is_authoritative": gate_is_authoritative,
         "gate_reported_passed": gate_reported_passed,
+        "wout_reproducibility_gate": wout_repro_gate,
+        "wout_reproducibility_gate_passed": wout_repro_gate_passed,
         "admitted_for_long_window_nonlinear_audit": admitted,
         "admission_blockers": admission_blockers,
     }

@@ -244,6 +244,13 @@ def _load_gate(root: Path) -> dict[str, Any] | None:
     return _read_json(path)
 
 
+def _load_wout_reproducibility_gate(root: Path) -> dict[str, Any] | None:
+    path = root / "wout_reproducibility_gate.json"
+    if not path.exists():
+        return None
+    return _read_json(path)
+
+
 def _gate_blockers(gate: dict[str, Any] | None) -> list[str]:
     if gate is None:
         return ["missing_solved_wout_gate"]
@@ -257,6 +264,22 @@ def _gate_blockers(gate: dict[str, Any] | None) -> list[str]:
     ]
     if not bool(gate.get("passed", False)) and not blockers:
         blockers.append("gate_reported_failed")
+    return blockers
+
+
+def _wout_reproducibility_blockers(gate: dict[str, Any] | None) -> list[str]:
+    if gate is None:
+        return []
+    checks = gate.get("checks", {})
+    if not isinstance(checks, dict):
+        return ["malformed_wout_reproducibility_gate"]
+    blockers = [
+        f"wout_reproducibility:{name}"
+        for name, check in checks.items()
+        if isinstance(check, dict) and not bool(check.get("passed", False))
+    ]
+    if not bool(gate.get("passed", False)) and not blockers:
+        blockers.append("wout_reproducibility_gate_reported_failed")
     return blockers
 
 
@@ -344,6 +367,7 @@ def _row_from_run(root: Path, *, campaign_root: Path, runs_root: Path) -> dict[s
     setup_path = root / "setup_summary.json"
     setup = _read_json(setup_path) if setup_path.exists() else {}
     gate = _load_gate(root)
+    wout_repro_gate = _load_wout_reproducibility_gate(root)
     wout_path = root / "wout_final.nc"
     iota_profile = _load_iota_profile_from_wout(wout_path)
     transport_kind = history.get("transport_metric_kind", setup.get("transport_kind"))
@@ -355,6 +379,17 @@ def _row_from_run(root: Path, *, campaign_root: Path, runs_root: Path) -> dict[s
         and math.isfinite(_finite_float(history.get("objective_final")))
     )
     run_completed = _status_completed(status) or artifact_completed
+    solved_gate_passed = None if gate is None else bool(gate.get("passed", False))
+    wout_repro_gate_passed = (
+        None if wout_repro_gate is None else bool(wout_repro_gate.get("passed", False))
+    )
+    gate_passed = (
+        None
+        if solved_gate_passed is None
+        else bool(solved_gate_passed)
+        and (wout_repro_gate_passed is None or bool(wout_repro_gate_passed))
+    )
+    nonlinear_audit_ready = run_completed and gate_passed is True
     return {
         "case_id": case_id,
         "label": _case_label(case_id),
@@ -384,14 +419,17 @@ def _row_from_run(root: Path, *, campaign_root: Path, runs_root: Path) -> dict[s
         },
         "objective_history": _objective_series(history),
         "gate": gate,
-        "gate_passed": None if gate is None else bool(gate.get("passed", False)),
-        "gate_blockers": _gate_blockers(gate),
+        "solved_wout_gate_passed": solved_gate_passed,
+        "wout_reproducibility_gate": wout_repro_gate,
+        "wout_reproducibility_gate_passed": wout_repro_gate_passed,
+        "gate_passed": gate_passed,
+        "gate_blockers": _gate_blockers(gate) + _wout_reproducibility_blockers(wout_repro_gate),
         "iota_profile": iota_profile,
         "q_traces": _q_traces(root),
         "recommended_nonlinear_audit_command": _nonlinear_audit_command(
             wout_path if wout_path.exists() else None,
             case_id,
-            run_completed=run_completed,
+            run_completed=nonlinear_audit_ready,
         ),
     }
 

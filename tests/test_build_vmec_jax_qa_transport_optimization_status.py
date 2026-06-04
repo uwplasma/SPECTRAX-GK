@@ -16,7 +16,14 @@ sys.modules[spec.name] = mod
 spec.loader.exec_module(mod)
 
 
-def _candidate(root: Path, *, passed: bool, metric: float | None, qs: float = 0.02) -> None:
+def _candidate(
+    root: Path,
+    *,
+    passed: bool,
+    metric: float | None,
+    qs: float = 0.02,
+    wout_reproducibility_passed: bool | None = None,
+) -> None:
     root.mkdir(parents=True, exist_ok=True)
     payload = {
         "objective_initial": 2.0,
@@ -56,6 +63,22 @@ def _candidate(root: Path, *, passed: bool, metric: float | None, qs: float = 0.
         ),
         encoding="utf-8",
     )
+    if wout_reproducibility_passed is not None:
+        (root / "wout_reproducibility_gate.json").write_text(
+            json.dumps(
+                {
+                    "passed": wout_reproducibility_passed,
+                    "checks": {
+                        "mean_iota_reproducibility": {
+                            "passed": wout_reproducibility_passed,
+                            "absolute_error": 0.0 if wout_reproducibility_passed else 1.5e-3,
+                            "absolute_tolerance": 5.0e-4,
+                        }
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
 
 
 def _supporting_artifacts(tmp_path: Path) -> dict[str, Path]:
@@ -188,3 +211,34 @@ def test_status_plot_and_json_ready_handle_missing_transport_metric(tmp_path: Pa
     assert out.stat().st_size > 0
     assert cleaned["candidates"][0]["transport_metric_final"] is None
     json.dumps(cleaned, allow_nan=False)
+
+
+def test_failed_wout_reproducibility_gate_blocks_status_admission(tmp_path: Path) -> None:
+    constraints = tmp_path / "constraints"
+    direct = tmp_path / "direct"
+    projected_base = tmp_path / "projected_base"
+    projected_step = tmp_path / "projected_step"
+    _candidate(
+        constraints,
+        passed=True,
+        metric=None,
+        wout_reproducibility_passed=False,
+    )
+    _candidate(direct, passed=False, metric=None, qs=1.0)
+    _candidate(projected_base, passed=True, metric=0.1)
+    _candidate(projected_step, passed=True, metric=0.09)
+
+    payload = mod.build_payload(
+        constraints_dir=constraints,
+        direct_transport_dir=direct,
+        projected_baseline_dir=projected_base,
+        projected_step_dir=projected_step,
+        **_supporting_artifacts(tmp_path),
+    )
+    candidates = {candidate["label"]: candidate for candidate in payload["candidates"]}
+    baseline = candidates["QA max_mode=5 baseline"]
+
+    assert baseline["solved_wout_gate_passed"] is True
+    assert baseline["wout_reproducibility_gate_passed"] is False
+    assert baseline["passed_solved_wout_gate"] is False
+    assert payload["summary"]["qa_baseline_gate_passed"] is False

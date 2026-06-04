@@ -97,6 +97,8 @@ def _json_ready(value: Any) -> Any:
 def _candidate_row(label: str, root: Path, *, objective_kind: str) -> dict[str, Any]:
     history = _read_json(root / "history.json")
     gate = _read_json(root / "solved_wout_gate.json")
+    wout_repro_gate_path = root / "wout_reproducibility_gate.json"
+    wout_repro_gate = _read_json(wout_repro_gate_path) if wout_repro_gate_path.exists() else None
     checks = gate.get("checks", {})
     if not isinstance(checks, dict):
         checks = {}
@@ -119,11 +121,21 @@ def _candidate_row(label: str, root: Path, *, objective_kind: str) -> dict[str, 
         history.get("transport_metric_final", history.get("transport_objective_final")),
         default=math.nan,
     )
+    solved_gate_passed = bool(gate.get("passed", False))
+    wout_repro_gate_passed = (
+        None if wout_repro_gate is None else bool(wout_repro_gate.get("passed", False))
+    )
+    admission_gate_passed = solved_gate_passed and (
+        wout_repro_gate_passed is None or bool(wout_repro_gate_passed)
+    )
     return {
         "label": label,
         "root": _repo_relative(root),
         "objective_kind": objective_kind,
-        "passed_solved_wout_gate": bool(gate.get("passed", False)),
+        "passed_solved_wout_gate": bool(admission_gate_passed),
+        "solved_wout_gate_passed": bool(solved_gate_passed),
+        "wout_reproducibility_gate_passed": wout_repro_gate_passed,
+        "wout_reproducibility_gate": wout_repro_gate,
         "aspect_final": _finite_float(history.get("aspect_final")),
         "iota_final": _finite_float(history.get("iota_final")),
         "qs_final": _finite_float(history.get("qs_final")),

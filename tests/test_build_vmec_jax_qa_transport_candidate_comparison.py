@@ -109,6 +109,24 @@ def _solved_gate(root: Path, *, passed: bool = True, qs: float = 0.02) -> None:
     )
 
 
+def _wout_reproducibility_gate(root: Path, *, passed: bool) -> None:
+    (root / "wout_reproducibility_gate.json").write_text(
+        json.dumps(
+            {
+                "passed": passed,
+                "checks": {
+                    "mean_iota_reproducibility": {
+                        "passed": passed,
+                        "absolute_error": 0.0 if passed else 1.5e-3,
+                        "absolute_tolerance": 5.0e-4,
+                    }
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+
 def test_payload_admits_only_authoritative_solved_wout_gates(tmp_path: Path, monkeypatch) -> None:
     constraints = tmp_path / "constraints"
     transport = tmp_path / "transport"
@@ -164,6 +182,35 @@ def test_payload_admits_transport_candidate_with_authoritative_gate(tmp_path: Pa
         "QA + SPECTRAX-GK transport",
     ]
     assert payload["summary"]["transport_candidate_admitted"] is True
+
+
+def test_failed_wout_reproducibility_gate_blocks_authoritative_transport_candidate(
+    tmp_path: Path, monkeypatch
+) -> None:
+    constraints = tmp_path / "constraints"
+    transport = tmp_path / "transport"
+    _history(constraints)
+    _history(transport)
+    _solved_gate(constraints, passed=True)
+    _solved_gate(transport, passed=True)
+    _wout_reproducibility_gate(transport, passed=False)
+    monkeypatch.setattr(
+        mod,
+        "_load_iota_profiles",
+        lambda _root: (np.asarray([0.0, 0.414, 0.427]), np.asarray([0.412, 0.421])),
+    )
+
+    payload = mod.build_payload(constraints, transport)
+    branches = {branch["label"]: branch for branch in payload["branches"]}
+    transport_branch = branches["QA + SPECTRAX-GK transport"]
+
+    assert transport_branch["gate_reported_passed"] is True
+    assert transport_branch["gate_is_authoritative"] is True
+    assert transport_branch["wout_reproducibility_gate_passed"] is False
+    assert transport_branch["admitted_for_long_window_nonlinear_audit"] is False
+    assert "wout_reproducibility_gate_failed" in transport_branch["admission_blockers"]
+    assert payload["summary"]["transport_candidate_admitted"] is False
+    assert payload["summary"]["all_branches_passed_solved_wout_gate"] is False
 
 
 def test_candidate_comparison_plot_handles_normalized_gate_metrics(tmp_path: Path, monkeypatch) -> None:

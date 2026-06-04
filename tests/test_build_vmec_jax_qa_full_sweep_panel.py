@@ -68,6 +68,24 @@ def _write_case(
     (log_dir / f"{root.name}.status").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def _write_failed_wout_reproducibility_gate(root: Path) -> None:
+    (root / "wout_reproducibility_gate.json").write_text(
+        json.dumps(
+            {
+                "passed": False,
+                "checks": {
+                    "mean_iota_reproducibility": {
+                        "passed": False,
+                        "absolute_error": 1.5e-3,
+                        "absolute_tolerance": 5.0e-4,
+                    }
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+
 def test_build_payload_discovers_completed_cases_without_faking_q_traces(tmp_path: Path) -> None:
     run_root = tmp_path / "campaign"
     _write_case(run_root / "runs" / "qa_baseline_scipy", objective_final=1.5)
@@ -140,6 +158,22 @@ def test_completed_wout_rows_include_reproducible_nonlinear_audit_command(tmp_pa
     assert "write_optimized_equilibrium_transport_configs.py" in command
     assert "vmec_qa_full_sweep_nonlinear_window_scalar_trust" in command
     assert "--window-tmin 350 --window-tmax 700" in command
+
+
+def test_failed_wout_reproducibility_gate_blocks_nonlinear_audit_promotion(tmp_path: Path) -> None:
+    case = tmp_path / "campaign" / "runs" / "nonlinear_window_scalar_trust"
+    _write_case(case, objective_final=0.4, transport_metric=0.08)
+    _write_failed_wout_reproducibility_gate(case)
+    (case / "wout_final.nc").write_bytes(b"not-a-real-netcdf-needed-for-command-test")
+
+    payload = mod.build_payload(tmp_path / "campaign")
+    [row] = payload["cases"]
+
+    assert row["solved_wout_gate_passed"] is True
+    assert row["wout_reproducibility_gate_passed"] is False
+    assert row["gate_passed"] is False
+    assert row["recommended_nonlinear_audit_command"] is None
+    assert "wout_reproducibility:mean_iota_reproducibility" in row["gate_blockers"]
 
 
 def test_in_progress_wout_is_not_promoted_to_completed_or_audit_ready(tmp_path: Path) -> None:
