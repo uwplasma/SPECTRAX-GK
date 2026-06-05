@@ -111,9 +111,9 @@ def test_public_optimization_examples_exclude_reduced_synthetic_workflows() -> N
     examples = Path(__file__).resolve().parents[1] / "examples" / "optimization"
     names = {path.name for path in examples.iterdir() if path.is_file()}
 
-    assert "QA_optimization_with_growth_rate.py" in names
-    assert "QA_optimization_with_quasilinear_flux.py" in names
-    assert "QA_optimization_with_nonlinear_heat_flux.py" in names
+    assert "QA_optimization_linear_ITG.py" in names
+    assert "QA_optimization_quasilinear_ITG.py" in names
+    assert "QA_optimization_nonlinear_ITG.py" in names
     assert "vmec_jax_qa_low_turbulence_optimization.py" not in names
     assert not any(name.startswith("stellarator_itg_") for name in names)
     assert "_stellarator_itg_plotting.py" not in names
@@ -123,15 +123,27 @@ def test_public_optimization_examples_exclude_reduced_synthetic_workflows() -> N
 
 def test_public_optimization_examples_keep_editable_constant_style() -> None:
     examples = Path(__file__).resolve().parents[1] / "examples" / "optimization"
+    optimizer_scripts = {
+        "QA_optimization_linear_ITG.py",
+        "QA_optimization_quasilinear_ITG.py",
+        "QA_optimization_nonlinear_ITG.py",
+    }
     for script in sorted(examples.glob("*.py")):
         text = script.read_text(encoding="utf-8")
         assert "argparse" not in text
         assert "def main(" not in text
         assert "def _main(" not in text
-        assert "if __name__ == \"__main__\"" not in text
-        assert "SPECTRAX_SURFACES = (0.45, 0.64, 0.78)" in text
-        assert "SPECTRAX_ALPHAS = (0.0, np.pi / 4.0)" in text
-        assert "SPECTRAX_KY_VALUES = (0.10, 0.30, 0.50)" in text
+        assert 'if __name__ == "__main__"' not in text
+        if script.name in optimizer_scripts:
+            assert "SPECTRAX_SURFACES = (0.45, 0.64, 0.78)" in text
+            assert "SPECTRAX_ALPHAS = (0.0, np.pi / 4.0)" in text
+            assert "SPECTRAX_KY_VALUES = (0.10, 0.30, 0.50)" in text
+        elif script.name == "QA_parameter_scan.py":
+            assert 'COEFFICIENT = "RBC(0,1)"' in text
+            assert 'SURFACES = "0.45,0.64,0.78"' in text
+            assert 'KY_VALUES = "0.10,0.30,0.50"' in text
+        else:
+            raise AssertionError(f"unexpected optimization example {script.name}")
 
 
 def test_stellarator_itg_observable_contract_is_finite_and_exported() -> None:

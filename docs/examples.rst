@@ -481,11 +481,12 @@ with one SPECTRAX-GK transport tuple appended to the VMEC-JAX objective list:
 
 .. code-block:: bash
 
-   python examples/optimization/QA_optimization_with_growth_rate.py
-   python examples/optimization/QA_optimization_with_quasilinear_flux.py
-   python examples/optimization/QA_optimization_with_nonlinear_heat_flux.py
+   python examples/optimization/QA_optimization_linear_ITG.py
+   python examples/optimization/QA_optimization_quasilinear_ITG.py
+   python examples/optimization/QA_optimization_nonlinear_ITG.py
+   python examples/optimization/QA_parameter_scan.py
 
-The three ``QA_optimization_with_*`` scripts intentionally mirror upstream
+The three ``QA_optimization_*_ITG.py`` scripts intentionally mirror upstream
 ``vmec_jax/examples/optimization/QA_optimization.py`` and preserve the
 high-weight ``iota = 0.41`` target. Keep the SPECTRAX-GK transport weight small
 until the solved-equilibrium aspect, iota, and quasisymmetry gates pass.

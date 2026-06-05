@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Quasi-axisymmetric VMEC-JAX optimization with SPECTRAX-GK linear growth-rate objective.
+"""Quasi-axisymmetric VMEC-JAX optimization with SPECTRAX-GK nonlinear-window heat-flux screening objective.
 
 This script intentionally mirrors VMEC-JAX
 ``examples/optimization/QA_optimization.py``. The QA/aspect/iota objective
@@ -8,7 +8,9 @@ transport tuple in ``objective_tuples``. Edit the constants below directly,
 as in the upstream VMEC-JAX example.
 """
 
+import json
 from pathlib import Path
+import subprocess
 import sys
 
 import numpy as np
@@ -20,8 +22,8 @@ Usage:
 
 This example intentionally follows vmec_jax/examples/optimization/QA_optimization.py:
 edit the constants near the top of the file, then run the script with no
-arguments. It appends one SPECTRAX-GK linear growth-rate objective tuple to the
-standard QA/aspect/iota objective list.
+arguments. It appends one SPECTRAX-GK nonlinear-window heat-flux screening
+objective tuple to the standard QA/aspect/iota objective list.
 """
 
 if any(arg in {"-h", "--help"} for arg in sys.argv[1:]):
@@ -58,7 +60,7 @@ DATA_DIR = Path(vj.__file__).resolve().parents[1] / "examples" / "data"
 # VMEC-JAX and SIMSOPT examples.
 WARM_START_INPUT_FILE = DATA_DIR / "input.nfp2_QA_omnigenity"
 SIMPLE_SEED_INPUT_FILE = DATA_DIR / "input.minimal_seed_nfp2"
-OUTPUT_DIR = Path("results/qa_opt/spectrax_growth")
+OUTPUT_DIR = Path("results/qa_opt/spectrax_nonlinear_window")
 MAX_MODE = 5
 MIN_VMEC_MODE = MAX_MODE + 2
 USE_SIMPLE_SEED = True  # Start from near-circular RBC(0,0), RBC(0,1), ZBS(0,1).
@@ -110,6 +112,21 @@ SAVE_STAGE_INPUTS = True  # Keep per-stage input decks for continuation/debuggin
 SAVE_STAGE_WOUTS = False  # Set True to also write per-stage WOUT files.
 MAKE_PLOTS = True
 
+# Post-optimization nonlinear ITG audit controls. The example writes the same
+# long-window config manifest used by the production promotion pipeline. Flip
+# RUN_LONG_NONLINEAR_AUDIT_COMMANDS to True only on a workstation/GPU node.
+WRITE_LONG_NONLINEAR_AUDIT_CONFIGS = True
+RUN_LONG_NONLINEAR_AUDIT_COMMANDS = False
+NONLINEAR_AUDIT_OUT_DIR = OUTPUT_DIR / "nonlinear_transport_audit_configs"
+NONLINEAR_AUDIT_HORIZONS = "700"
+NONLINEAR_AUDIT_WINDOW_TMIN = 350.0
+NONLINEAR_AUDIT_WINDOW_TMAX = 700.0
+NONLINEAR_AUDIT_GRID = "n64:64:64:40:40"
+NONLINEAR_AUDIT_KY = 0.47619047619047616
+NONLINEAR_AUDIT_DT = 0.05
+NONLINEAR_AUDIT_DT_VARIANT = 0.04
+NONLINEAR_AUDIT_SEED_VARIANTS = (31, 32)
+
 # Physics targets and least-squares objective weights. These are SIMSOPT-style
 # tuple weights, so vmec_jax minimizes sqrt(weight) * (J - target).
 TARGET_ASPECT = 5.0
@@ -125,8 +142,8 @@ QS_WEIGHT = 1.0
 # upstream QA/aspect/iota objective remains the dominant solved-equilibrium gate.
 # The default sample set matches the 18-point nonlinear-audit prelaunch policy:
 # three surfaces, two field-line labels, and three grid-compatible ky values.
-SPECTRAX_KIND = "growth"
-SPECTRAX_WEIGHT = 0.01
+SPECTRAX_KIND = "nonlinear_window_heat_flux"
+SPECTRAX_WEIGHT = 0.0025
 SPECTRAX_OBJECTIVE_TRANSFORM = "log1p"
 SPECTRAX_OBJECTIVE_SCALE = 1.0
 SPECTRAX_SURFACES = (0.45, 0.64, 0.78)
@@ -174,7 +191,7 @@ transport = VMECJAXSpectraxTransportObjective(
         objective_transform=SPECTRAX_OBJECTIVE_TRANSFORM,
         objective_scale=SPECTRAX_OBJECTIVE_SCALE,
     ),
-    name="spectraxgk_growth",
+    name="spectraxgk_nonlinear_window_heat_flux",
 )
 objective_tuples = [
     (aspect.J, TARGET_ASPECT, ASPECT_WEIGHT),
@@ -202,7 +219,7 @@ problem = vj.LeastSquaresProblem.from_tuples(objective_tuples)
 print("\nAssembled least-squares problem:")
 print(f"  objectives: {', '.join(problem.objective_names)}")
 print(f"  scalar terms: {problem.scalar_objective_names}")
-print(f"  SPECTRAX-GK transport kind: {SPECTRAX_KIND} (linear growth-rate)")
+print(f"  SPECTRAX-GK transport kind: {SPECTRAX_KIND} (nonlinear-window heat-flux screening)")
 print(f"  SPECTRAX-GK sample set: s={SPECTRAX_SURFACES}, alpha={SPECTRAX_ALPHAS}, ky={SPECTRAX_KY_VALUES}")
 print(f"  SPECTRAX-GK tuple weight: {SPECTRAX_WEIGHT:g}")
 
@@ -221,7 +238,7 @@ result = vj.least_squares_solve(
     xtol=XTOL,
     use_ess=USE_ESS,
     ess_alpha=ALPHA,
-    label=f"QA optimization + SPECTRAX-GK linear growth-rate (max_mode={MAX_MODE})",
+    label=f"QA optimization + SPECTRAX-GK nonlinear-window heat-flux screening (max_mode={MAX_MODE})",
     use_mode_continuation=USE_MODE_CONTINUATION,
     inner_max_iter=INNER_MAX_ITER,
     inner_ftol=INNER_FTOL,
@@ -292,3 +309,83 @@ if MAKE_PLOTS:
     print("\nPlot files selected by this script:")
     for name, path in plot_paths.items():
         print(f"  {name}: {path}")
+
+if WRITE_LONG_NONLINEAR_AUDIT_CONFIGS:
+    print("\nWriting long-window initial/final nonlinear ITG audit configs:")
+    audit_manifests = {}
+    for state_label, wout_path in (
+        ("initial", saved_paths.initial_wout),
+        ("final", saved_paths.final_wout),
+    ):
+        audit_out = NONLINEAR_AUDIT_OUT_DIR / state_label
+        command = [
+            sys.executable,
+            str(SPECTRAX_ROOT / "tools" / "write_optimized_equilibrium_transport_configs.py"),
+            "--vmec-file",
+            str(wout_path),
+            "--case",
+            f"{OUTPUT_DIR.name}_{state_label}",
+            "--out-dir",
+            str(audit_out),
+            "--horizons",
+            NONLINEAR_AUDIT_HORIZONS,
+            "--window-tmin",
+            f"{NONLINEAR_AUDIT_WINDOW_TMIN:.12g}",
+            "--window-tmax",
+            f"{NONLINEAR_AUDIT_WINDOW_TMAX:.12g}",
+            "--grid",
+            NONLINEAR_AUDIT_GRID,
+            "--ky",
+            f"{NONLINEAR_AUDIT_KY:.16g}",
+            "--dt",
+            f"{NONLINEAR_AUDIT_DT:.16g}",
+            "--dt-variant",
+            f"{NONLINEAR_AUDIT_DT_VARIANT:.16g}",
+        ]
+        for seed in NONLINEAR_AUDIT_SEED_VARIANTS:
+            command.extend(["--seed-variant", str(int(seed))])
+        subprocess.run(command, cwd=SPECTRAX_ROOT, check=True)
+        manifest = audit_out / "run_manifest.json"
+        audit_manifests[state_label] = manifest
+        print(f"  {state_label}: {manifest}")
+
+    if RUN_LONG_NONLINEAR_AUDIT_COMMANDS:
+        print("\nLaunching nonlinear ITG audit commands from generated manifests:")
+        audit_ensembles = {}
+        for state_label, manifest in audit_manifests.items():
+            payload = json.loads(manifest.read_text(encoding="utf-8"))
+            for command in payload.get("launch_commands", []):
+                print(f"  [{state_label}] {command}")
+                subprocess.run(command, cwd=SPECTRAX_ROOT, shell=True, check=True)
+            promotion = payload.get("promotion_contract", {})
+            build_ensemble_command = promotion.get("build_ensemble_command")
+            if build_ensemble_command:
+                print(f"  [{state_label}] {build_ensemble_command}")
+                subprocess.run(build_ensemble_command, cwd=SPECTRAX_ROOT, shell=True, check=True)
+                audit_ensembles[state_label] = SPECTRAX_ROOT / str(promotion["ensemble_json"])
+        if {"initial", "final"}.issubset(audit_ensembles):
+            comparison_json = NONLINEAR_AUDIT_OUT_DIR / "initial_final_matched_nonlinear_audit.json"
+            comparison_png = NONLINEAR_AUDIT_OUT_DIR / "initial_final_matched_nonlinear_audit.png"
+            comparison_command = [
+                sys.executable,
+                str(SPECTRAX_ROOT / "tools" / "build_matched_nonlinear_transport_comparison.py"),
+                "--baseline-ensemble",
+                str(audit_ensembles["initial"]),
+                "--candidate-ensemble",
+                str(audit_ensembles["final"]),
+                "--case",
+                f"{OUTPUT_DIR.name}_initial_to_final_nonlinear_transport",
+                "--min-relative-reduction",
+                "0.0",
+                "--out-json",
+                str(comparison_json),
+                "--out-figure",
+                str(comparison_png),
+            ]
+            subprocess.run(comparison_command, cwd=SPECTRAX_ROOT, check=True)
+            print(f"\nInitial-vs-final nonlinear audit figure: {comparison_png}")
+    else:
+        print("\nNonlinear audit configs were written but not launched.")
+        print("Set RUN_LONG_NONLINEAR_AUDIT_COMMANDS = True in this script to run them")
+        print("or launch the commands listed in each run_manifest.json on a GPU node.")
+        print("When launched from this script, it also builds the initial-vs-final Q(t) audit plot.")

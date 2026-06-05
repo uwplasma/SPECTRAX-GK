@@ -48,11 +48,13 @@ Source Map
 - Fast branch-continuity and sensitivity gate:
   :func:`spectraxgk.solver_objective_branch_gradient_report`
 - VMEC-JAX-style growth-rate script:
-  :download:`QA_optimization_with_growth_rate.py <../examples/optimization/QA_optimization_with_growth_rate.py>`
+  :download:`QA_optimization_linear_ITG.py <../examples/optimization/QA_optimization_linear_ITG.py>`
 - VMEC-JAX-style quasilinear-flux script:
-  :download:`QA_optimization_with_quasilinear_flux.py <../examples/optimization/QA_optimization_with_quasilinear_flux.py>`
+  :download:`QA_optimization_quasilinear_ITG.py <../examples/optimization/QA_optimization_quasilinear_ITG.py>`
 - VMEC-JAX-style nonlinear-window script:
-  :download:`QA_optimization_with_nonlinear_heat_flux.py <../examples/optimization/QA_optimization_with_nonlinear_heat_flux.py>`
+  :download:`QA_optimization_nonlinear_ITG.py <../examples/optimization/QA_optimization_nonlinear_ITG.py>`
+- VMEC-JAX-style boundary-parameter scan script:
+  :download:`QA_parameter_scan.py <../examples/optimization/QA_parameter_scan.py>`
 - Configurable solved-boundary driver:
   :download:`vmec_jax_qa_low_turbulence_optimization.py <../tools/vmec_jax_qa_low_turbulence_optimization.py>`
 - Eval-only reduced transport-admission metric tool:
@@ -69,9 +71,10 @@ VMEC-JAX QA optimizer. They keep top-level constants instead of an argparse
 
 .. code-block:: bash
 
-   python examples/optimization/QA_optimization_with_growth_rate.py
-   python examples/optimization/QA_optimization_with_quasilinear_flux.py
-   python examples/optimization/QA_optimization_with_nonlinear_heat_flux.py
+   python examples/optimization/QA_optimization_linear_ITG.py
+   python examples/optimization/QA_optimization_quasilinear_ITG.py
+   python examples/optimization/QA_optimization_nonlinear_ITG.py
+   python examples/optimization/QA_parameter_scan.py
 
 The objective block should look familiar to VMEC-JAX users:
 
@@ -137,6 +140,33 @@ requests forward-mode JVP columns. The recommended paper workflow is two-stage:
 Therefore the scripts demonstrate how to append a differentiable SPECTRAX-GK
 transport objective to VMEC-JAX QA optimization; by themselves they are not a
 transport-optimization success claim.
+
+Each optimization script also writes long-window initial/final nonlinear ITG
+audit manifests after saving the VMEC-JAX result. Those manifests use the same
+``write_optimized_equilibrium_transport_configs.py`` path as the production
+promotion pipeline. They are not launched by default because the audits are
+multi-hour GPU jobs; set ``RUN_LONG_NONLINEAR_AUDIT_COMMANDS = True`` inside
+the script to launch them, build replicated initial/final ensemble gates, and
+write the initial-vs-final nonlinear ``Q(t)`` comparison plot, or launch the
+generated ``run_manifest.json`` commands explicitly on the target workstation.
+
+The parameter-scan example calls
+``tools/build_vmec_boundary_transport_landscape.py`` with top-level constants.
+Its default mode reuses the tracked reduced-metric JSON and overlays replicated
+``t=[350,700]`` nonlinear ensemble gates. Set ``EVALUATE_REDUCED = True`` to
+rerun the deterministic growth, quasilinear, and nonlinear-window metrics for
+a new coefficient scan.
+
+.. figure:: _static/qa_itg_optimization_summary_panel.png
+   :alt: QA ITG optimization summary panel
+   :width: 98%
+   :align: center
+
+   Compact README-facing summary built from tracked VMEC-JAX WOUTs,
+   SPECTRAX-GK reduced transport landscapes, and matched long-window nonlinear
+   heat-flux audits. The sidecar
+   :download:`qa_itg_optimization_summary_panel.json <_static/qa_itg_optimization_summary_panel.json>`
+   records the exact artifact provenance.
 
 Full Max-Mode-5 Optimizer Sweeps
 --------------------------------
@@ -1273,11 +1303,11 @@ transport-aware optimized equilibrium used for a turbulence claim.
 
 The public VMEC-JAX QA transport scripts are:
 
-- ``QA_optimization_with_growth_rate.py``: append a SPECTRAX-GK ITG
+- ``QA_optimization_linear_ITG.py``: append a SPECTRAX-GK ITG
   growth-rate objective to the upstream QA/aspect/iota tuple list.
-- ``QA_optimization_with_quasilinear_flux.py``: append a quasilinear transport
+- ``QA_optimization_quasilinear_ITG.py``: append a quasilinear transport
   diagnostic objective to the same solved-equilibrium optimization.
-- ``QA_optimization_with_nonlinear_heat_flux.py``: append a nonlinear-window
+- ``QA_optimization_nonlinear_ITG.py``: append a nonlinear-window
   heat-flux screening objective, then promote only if matched baseline and
   optimized equilibria pass replicated long-window post-transient heat-flux
   audits.

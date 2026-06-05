@@ -7,9 +7,10 @@ This directory is reserved for actual VMEC-JAX QA stellarator optimization workf
 Use these when the goal is a real VMEC-JAX QA optimization with the upstream high-weight iota target preserved and one SPECTRAX-GK transport objective appended to the VMEC-JAX objective tuple list:
 
 ```bash
-python examples/optimization/QA_optimization_with_growth_rate.py
-python examples/optimization/QA_optimization_with_quasilinear_flux.py
-python examples/optimization/QA_optimization_with_nonlinear_heat_flux.py
+python examples/optimization/QA_optimization_linear_ITG.py
+python examples/optimization/QA_optimization_quasilinear_ITG.py
+python examples/optimization/QA_optimization_nonlinear_ITG.py
+python examples/optimization/QA_parameter_scan.py
 ```
 
 Each script deliberately follows the structure of `vmec_jax/examples/optimization/QA_optimization.py`: constants are visible at the top level, the objective blocks are assembled in `objective_tuples`, and there is no argparse `main()` wrapper. The only supported command-line argument is `--help`; any other argument fails before a `results/` directory can be created.
@@ -37,6 +38,16 @@ The transport scripts default to `METHOD = "scalar_trust"`. SPECTRAX-GK transpor
 
 Running one script is not a transport-optimization success claim, and is not,
 by itself, a nonlinear turbulent-flux optimization success claim.
+
+The optimization scripts write long-window initial/final nonlinear ITG audit
+config manifests after the VMEC-JAX solve. These audits are not launched by
+default; edit `RUN_LONG_NONLINEAR_AUDIT_COMMANDS = True` inside the script to
+run them and build the initial-vs-final nonlinear `Q(t)` comparison plot, or
+run the commands from the generated `run_manifest.json` on a GPU node.
+
+`QA_parameter_scan.py` scans `RBC(0,1)` by default and regenerates the noisy
+linear/quasilinear/nonlinear objective landscape with replicated nonlinear
+error bars from tracked ensemble gates.
 
 ## Campaign Tooling
 

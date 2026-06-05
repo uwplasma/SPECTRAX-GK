@@ -10,9 +10,9 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 EXAMPLES = ROOT / "examples" / "optimization"
 EXACT_QA_SCRIPTS = {
-    "QA_optimization_with_growth_rate.py": "growth",
-    "QA_optimization_with_quasilinear_flux.py": "quasilinear_flux",
-    "QA_optimization_with_nonlinear_heat_flux.py": "nonlinear_window_heat_flux",
+    "QA_optimization_linear_ITG.py": "growth",
+    "QA_optimization_quasilinear_ITG.py": "quasilinear_flux",
+    "QA_optimization_nonlinear_ITG.py": "nonlinear_window_heat_flux",
 }
 
 
@@ -59,16 +59,16 @@ def test_vmec_jax_style_qa_scripts_keep_upstream_iota_tuple_and_append_transport
 def test_docs_do_not_show_exact_qa_scripts_as_argparse_drivers() -> None:
     docs = [ROOT / "README.md", ROOT / "docs" / "stellarator_optimization.rst", EXAMPLES / "README.md"]
     cli_flag_after_exact_script = re.compile(
-        r"QA_optimization_with_(growth_rate|quasilinear_flux|nonlinear_heat_flux)\.py\s*\\\n\s+--"
+        r"QA_optimization_(linear_ITG|quasilinear_ITG|nonlinear_ITG)\.py\s*\\\n\s+--"
     )
     for path in docs:
         text = path.read_text(encoding="utf-8")
         assert cli_flag_after_exact_script.search(text) is None, path
 
     examples_readme = (EXAMPLES / "README.md").read_text(encoding="utf-8")
-    assert "python examples/optimization/QA_optimization_with_growth_rate.py" in examples_readme
-    assert "python examples/optimization/QA_optimization_with_quasilinear_flux.py" in examples_readme
-    assert "python examples/optimization/QA_optimization_with_nonlinear_heat_flux.py" in examples_readme
+    assert "python examples/optimization/QA_optimization_linear_ITG.py" in examples_readme
+    assert "python examples/optimization/QA_optimization_quasilinear_ITG.py" in examples_readme
+    assert "python examples/optimization/QA_optimization_nonlinear_ITG.py" in examples_readme
     assert "python tools/vmec_jax_qa_low_turbulence_optimization.py" in examples_readme
     assert "python examples/optimization/vmec_jax_qa_low_turbulence_optimization.py" not in examples_readme
 
@@ -88,12 +88,12 @@ def test_exact_qa_scripts_help_does_not_launch_optimization(tmp_path: Path) -> N
 
         assert "Usage:" in completed.stdout
         assert "edit the constants" in completed.stdout
-        assert kind.split("_")[0] in completed.stdout
+        assert ("linear" if kind == "growth" else kind.split("_")[0]) in completed.stdout
         assert not (tmp_path / "results").exists()
 
 
 def test_exact_qa_scripts_reject_unexpected_arguments_before_outputs(tmp_path: Path) -> None:
-    script = EXAMPLES / "QA_optimization_with_growth_rate.py"
+    script = EXAMPLES / "QA_optimization_linear_ITG.py"
 
     completed = subprocess.run(
         [sys.executable, str(script), "--max-nfev", "1"],
@@ -117,10 +117,13 @@ def test_docs_scope_vmec_jax_transport_optimizer_claims() -> None:
     for path in docs:
         text = path.read_text(encoding="utf-8")
         normalized = re.sub(r"\s+", " ", text)
-        assert "scalar_trust" in text, path
-        assert "custom-VJP" in text or "custom VJP" in text, path
-        assert "two-stage" in text, path
-        assert "not a transport-optimization success claim" in normalized, path
+        assert "transport" in text, path
+        assert "nonlinear" in text, path
+        assert "replicated" in text or "two-stage" in text, path
+        if path.name != "README.md":
+            assert "scalar_trust" in text, path
+            assert "custom-VJP" in text or "custom VJP" in text, path
+            assert "not a transport-optimization success claim" in normalized, path
 
 
 def test_readme_uses_solved_vmec_qa_geometry_not_reduced_surface_panel() -> None:
@@ -129,10 +132,11 @@ def test_readme_uses_solved_vmec_qa_geometry_not_reduced_surface_panel() -> None
     manuscript = (ROOT / "docs" / "manuscript_figures.rst").read_text(encoding="utf-8")
     normalized_readme = re.sub(r"\s+", " ", readme)
 
-    assert "docs/_static/vmec_jax_qa_solved_boundary_boozer_panel.png" in readme
+    assert "docs/_static/qa_itg_optimization_summary_panel.png" in readme
+    assert "docs/_static/vmec_jax_qa_solved_boundary_boozer_panel.png" not in readme
     assert "docs/_static/stellarator_itg_optimization_comparison.png" not in readme
     assert "docs/_static/stellarator_itg_optimization_uq.png" not in readme
-    assert "not a nonlinear heat-flux optimization claim" in normalized_readme
+    assert "turbulent-flux reductions require replicated post-transient nonlinear audits" in normalized_readme
 
     assert "_static/vmec_jax_qa_solved_boundary_boozer_panel.png" in docs
     assert ".. figure:: _static/stellarator_itg_optimization_comparison.png" not in docs
