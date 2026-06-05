@@ -46,220 +46,220 @@
     "commands": [
       {
         "coefficient_value": 0.031656127034592856,
-        "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p75.nc",
+        "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p75.nc",
         "label": "m0p75",
-        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape/inputs && vmec_jax input.rbc_1_1_m0p75",
-        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p75.nc --case landscape_rbc_1_1_m0p75 --out-dir tools_out/vmec_boundary_transport_landscape/nonlinear_configs/m0p75 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
+        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs && vmec_jax input.rbc_1_1_m0p75",
+        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p75.nc --case landscape_rbc_1_1_m0p75 --out-dir tools_out/vmec_boundary_transport_landscape_rbc11_full/nonlinear_configs/m0p75 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
       },
       {
         "coefficient_value": 0.037987352441511434,
-        "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p7.nc",
+        "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p7.nc",
         "label": "m0p7",
-        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape/inputs && vmec_jax input.rbc_1_1_m0p7",
-        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p7.nc --case landscape_rbc_1_1_m0p7 --out-dir tools_out/vmec_boundary_transport_landscape/nonlinear_configs/m0p7 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
+        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs && vmec_jax input.rbc_1_1_m0p7",
+        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p7.nc --case landscape_rbc_1_1_m0p7 --out-dir tools_out/vmec_boundary_transport_landscape_rbc11_full/nonlinear_configs/m0p7 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
       },
       {
         "coefficient_value": 0.04431857784843,
-        "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p65.nc",
+        "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p65.nc",
         "label": "m0p65",
-        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape/inputs && vmec_jax input.rbc_1_1_m0p65",
-        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p65.nc --case landscape_rbc_1_1_m0p65 --out-dir tools_out/vmec_boundary_transport_landscape/nonlinear_configs/m0p65 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
+        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs && vmec_jax input.rbc_1_1_m0p65",
+        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p65.nc --case landscape_rbc_1_1_m0p65 --out-dir tools_out/vmec_boundary_transport_landscape_rbc11_full/nonlinear_configs/m0p65 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
       },
       {
         "coefficient_value": 0.05064980325534857,
-        "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p6.nc",
+        "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p6.nc",
         "label": "m0p6",
-        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape/inputs && vmec_jax input.rbc_1_1_m0p6",
-        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p6.nc --case landscape_rbc_1_1_m0p6 --out-dir tools_out/vmec_boundary_transport_landscape/nonlinear_configs/m0p6 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
+        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs && vmec_jax input.rbc_1_1_m0p6",
+        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p6.nc --case landscape_rbc_1_1_m0p6 --out-dir tools_out/vmec_boundary_transport_landscape_rbc11_full/nonlinear_configs/m0p6 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
       },
       {
         "coefficient_value": 0.05698102866226713,
-        "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p55.nc",
+        "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p55.nc",
         "label": "m0p55",
-        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape/inputs && vmec_jax input.rbc_1_1_m0p55",
-        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p55.nc --case landscape_rbc_1_1_m0p55 --out-dir tools_out/vmec_boundary_transport_landscape/nonlinear_configs/m0p55 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
+        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs && vmec_jax input.rbc_1_1_m0p55",
+        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p55.nc --case landscape_rbc_1_1_m0p55 --out-dir tools_out/vmec_boundary_transport_landscape_rbc11_full/nonlinear_configs/m0p55 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
       },
       {
         "coefficient_value": 0.06331225406918571,
-        "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p5.nc",
+        "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p5.nc",
         "label": "m0p5",
-        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape/inputs && vmec_jax input.rbc_1_1_m0p5",
-        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p5.nc --case landscape_rbc_1_1_m0p5 --out-dir tools_out/vmec_boundary_transport_landscape/nonlinear_configs/m0p5 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
+        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs && vmec_jax input.rbc_1_1_m0p5",
+        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p5.nc --case landscape_rbc_1_1_m0p5 --out-dir tools_out/vmec_boundary_transport_landscape_rbc11_full/nonlinear_configs/m0p5 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
       },
       {
         "coefficient_value": 0.06964347947610429,
-        "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p45.nc",
+        "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p45.nc",
         "label": "m0p45",
-        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape/inputs && vmec_jax input.rbc_1_1_m0p45",
-        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p45.nc --case landscape_rbc_1_1_m0p45 --out-dir tools_out/vmec_boundary_transport_landscape/nonlinear_configs/m0p45 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
+        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs && vmec_jax input.rbc_1_1_m0p45",
+        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p45.nc --case landscape_rbc_1_1_m0p45 --out-dir tools_out/vmec_boundary_transport_landscape_rbc11_full/nonlinear_configs/m0p45 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
       },
       {
         "coefficient_value": 0.07597470488302285,
-        "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p4.nc",
+        "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p4.nc",
         "label": "m0p4",
-        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape/inputs && vmec_jax input.rbc_1_1_m0p4",
-        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p4.nc --case landscape_rbc_1_1_m0p4 --out-dir tools_out/vmec_boundary_transport_landscape/nonlinear_configs/m0p4 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
+        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs && vmec_jax input.rbc_1_1_m0p4",
+        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p4.nc --case landscape_rbc_1_1_m0p4 --out-dir tools_out/vmec_boundary_transport_landscape_rbc11_full/nonlinear_configs/m0p4 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
       },
       {
         "coefficient_value": 0.08230593028994143,
-        "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p35.nc",
+        "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p35.nc",
         "label": "m0p35",
-        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape/inputs && vmec_jax input.rbc_1_1_m0p35",
-        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p35.nc --case landscape_rbc_1_1_m0p35 --out-dir tools_out/vmec_boundary_transport_landscape/nonlinear_configs/m0p35 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
+        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs && vmec_jax input.rbc_1_1_m0p35",
+        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p35.nc --case landscape_rbc_1_1_m0p35 --out-dir tools_out/vmec_boundary_transport_landscape_rbc11_full/nonlinear_configs/m0p35 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
       },
       {
         "coefficient_value": 0.08863715569686,
-        "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p3.nc",
+        "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p3.nc",
         "label": "m0p3",
-        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape/inputs && vmec_jax input.rbc_1_1_m0p3",
-        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p3.nc --case landscape_rbc_1_1_m0p3 --out-dir tools_out/vmec_boundary_transport_landscape/nonlinear_configs/m0p3 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
+        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs && vmec_jax input.rbc_1_1_m0p3",
+        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p3.nc --case landscape_rbc_1_1_m0p3 --out-dir tools_out/vmec_boundary_transport_landscape_rbc11_full/nonlinear_configs/m0p3 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
       },
       {
         "coefficient_value": 0.09496838110377856,
-        "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p25.nc",
+        "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p25.nc",
         "label": "m0p25",
-        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape/inputs && vmec_jax input.rbc_1_1_m0p25",
-        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p25.nc --case landscape_rbc_1_1_m0p25 --out-dir tools_out/vmec_boundary_transport_landscape/nonlinear_configs/m0p25 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
+        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs && vmec_jax input.rbc_1_1_m0p25",
+        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p25.nc --case landscape_rbc_1_1_m0p25 --out-dir tools_out/vmec_boundary_transport_landscape_rbc11_full/nonlinear_configs/m0p25 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
       },
       {
         "coefficient_value": 0.10129960651069714,
-        "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p2.nc",
+        "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p2.nc",
         "label": "m0p2",
-        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape/inputs && vmec_jax input.rbc_1_1_m0p2",
-        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p2.nc --case landscape_rbc_1_1_m0p2 --out-dir tools_out/vmec_boundary_transport_landscape/nonlinear_configs/m0p2 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
+        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs && vmec_jax input.rbc_1_1_m0p2",
+        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p2.nc --case landscape_rbc_1_1_m0p2 --out-dir tools_out/vmec_boundary_transport_landscape_rbc11_full/nonlinear_configs/m0p2 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
       },
       {
         "coefficient_value": 0.1076308319176157,
-        "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p15.nc",
+        "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p15.nc",
         "label": "m0p15",
-        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape/inputs && vmec_jax input.rbc_1_1_m0p15",
-        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p15.nc --case landscape_rbc_1_1_m0p15 --out-dir tools_out/vmec_boundary_transport_landscape/nonlinear_configs/m0p15 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
+        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs && vmec_jax input.rbc_1_1_m0p15",
+        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p15.nc --case landscape_rbc_1_1_m0p15 --out-dir tools_out/vmec_boundary_transport_landscape_rbc11_full/nonlinear_configs/m0p15 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
       },
       {
         "coefficient_value": 0.11396205732453428,
-        "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p1.nc",
+        "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p1.nc",
         "label": "m0p1",
-        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape/inputs && vmec_jax input.rbc_1_1_m0p1",
-        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p1.nc --case landscape_rbc_1_1_m0p1 --out-dir tools_out/vmec_boundary_transport_landscape/nonlinear_configs/m0p1 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
+        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs && vmec_jax input.rbc_1_1_m0p1",
+        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p1.nc --case landscape_rbc_1_1_m0p1 --out-dir tools_out/vmec_boundary_transport_landscape_rbc11_full/nonlinear_configs/m0p1 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
       },
       {
         "coefficient_value": 0.12029328273145284,
-        "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p05.nc",
+        "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p05.nc",
         "label": "m0p05",
-        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape/inputs && vmec_jax input.rbc_1_1_m0p05",
-        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p05.nc --case landscape_rbc_1_1_m0p05 --out-dir tools_out/vmec_boundary_transport_landscape/nonlinear_configs/m0p05 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
+        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs && vmec_jax input.rbc_1_1_m0p05",
+        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p05.nc --case landscape_rbc_1_1_m0p05 --out-dir tools_out/vmec_boundary_transport_landscape_rbc11_full/nonlinear_configs/m0p05 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
       },
       {
         "coefficient_value": 0.12662450813837142,
-        "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_0.nc",
+        "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_0.nc",
         "label": "0",
-        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape/inputs && vmec_jax input.rbc_1_1_0",
-        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_0.nc --case landscape_rbc_1_1_0 --out-dir tools_out/vmec_boundary_transport_landscape/nonlinear_configs/0 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
+        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs && vmec_jax input.rbc_1_1_0",
+        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_0.nc --case landscape_rbc_1_1_0 --out-dir tools_out/vmec_boundary_transport_landscape_rbc11_full/nonlinear_configs/0 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
       },
       {
         "coefficient_value": 0.13295573354529,
-        "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p05.nc",
+        "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p05.nc",
         "label": "p0p05",
-        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape/inputs && vmec_jax input.rbc_1_1_p0p05",
-        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p05.nc --case landscape_rbc_1_1_p0p05 --out-dir tools_out/vmec_boundary_transport_landscape/nonlinear_configs/p0p05 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
+        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs && vmec_jax input.rbc_1_1_p0p05",
+        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p05.nc --case landscape_rbc_1_1_p0p05 --out-dir tools_out/vmec_boundary_transport_landscape_rbc11_full/nonlinear_configs/p0p05 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
       },
       {
         "coefficient_value": 0.13928695895220858,
-        "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p1.nc",
+        "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p1.nc",
         "label": "p0p1",
-        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape/inputs && vmec_jax input.rbc_1_1_p0p1",
-        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p1.nc --case landscape_rbc_1_1_p0p1 --out-dir tools_out/vmec_boundary_transport_landscape/nonlinear_configs/p0p1 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
+        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs && vmec_jax input.rbc_1_1_p0p1",
+        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p1.nc --case landscape_rbc_1_1_p0p1 --out-dir tools_out/vmec_boundary_transport_landscape_rbc11_full/nonlinear_configs/p0p1 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
       },
       {
         "coefficient_value": 0.14561818435912713,
-        "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p15.nc",
+        "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p15.nc",
         "label": "p0p15",
-        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape/inputs && vmec_jax input.rbc_1_1_p0p15",
-        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p15.nc --case landscape_rbc_1_1_p0p15 --out-dir tools_out/vmec_boundary_transport_landscape/nonlinear_configs/p0p15 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
+        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs && vmec_jax input.rbc_1_1_p0p15",
+        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p15.nc --case landscape_rbc_1_1_p0p15 --out-dir tools_out/vmec_boundary_transport_landscape_rbc11_full/nonlinear_configs/p0p15 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
       },
       {
         "coefficient_value": 0.1519494097660457,
-        "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p2.nc",
+        "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p2.nc",
         "label": "p0p2",
-        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape/inputs && vmec_jax input.rbc_1_1_p0p2",
-        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p2.nc --case landscape_rbc_1_1_p0p2 --out-dir tools_out/vmec_boundary_transport_landscape/nonlinear_configs/p0p2 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
+        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs && vmec_jax input.rbc_1_1_p0p2",
+        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p2.nc --case landscape_rbc_1_1_p0p2 --out-dir tools_out/vmec_boundary_transport_landscape_rbc11_full/nonlinear_configs/p0p2 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
       },
       {
         "coefficient_value": 0.15828063517296428,
-        "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p25.nc",
+        "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p25.nc",
         "label": "p0p25",
-        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape/inputs && vmec_jax input.rbc_1_1_p0p25",
-        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p25.nc --case landscape_rbc_1_1_p0p25 --out-dir tools_out/vmec_boundary_transport_landscape/nonlinear_configs/p0p25 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
+        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs && vmec_jax input.rbc_1_1_p0p25",
+        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p25.nc --case landscape_rbc_1_1_p0p25 --out-dir tools_out/vmec_boundary_transport_landscape_rbc11_full/nonlinear_configs/p0p25 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
       },
       {
         "coefficient_value": 0.16461186057988286,
-        "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p3.nc",
+        "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p3.nc",
         "label": "p0p3",
-        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape/inputs && vmec_jax input.rbc_1_1_p0p3",
-        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p3.nc --case landscape_rbc_1_1_p0p3 --out-dir tools_out/vmec_boundary_transport_landscape/nonlinear_configs/p0p3 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
+        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs && vmec_jax input.rbc_1_1_p0p3",
+        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p3.nc --case landscape_rbc_1_1_p0p3 --out-dir tools_out/vmec_boundary_transport_landscape_rbc11_full/nonlinear_configs/p0p3 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
       },
       {
         "coefficient_value": 0.17094308598680144,
-        "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p35.nc",
+        "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p35.nc",
         "label": "p0p35",
-        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape/inputs && vmec_jax input.rbc_1_1_p0p35",
-        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p35.nc --case landscape_rbc_1_1_p0p35 --out-dir tools_out/vmec_boundary_transport_landscape/nonlinear_configs/p0p35 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
+        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs && vmec_jax input.rbc_1_1_p0p35",
+        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p35.nc --case landscape_rbc_1_1_p0p35 --out-dir tools_out/vmec_boundary_transport_landscape_rbc11_full/nonlinear_configs/p0p35 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
       },
       {
         "coefficient_value": 0.17727431139372,
-        "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p4.nc",
+        "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p4.nc",
         "label": "p0p4",
-        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape/inputs && vmec_jax input.rbc_1_1_p0p4",
-        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p4.nc --case landscape_rbc_1_1_p0p4 --out-dir tools_out/vmec_boundary_transport_landscape/nonlinear_configs/p0p4 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
+        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs && vmec_jax input.rbc_1_1_p0p4",
+        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p4.nc --case landscape_rbc_1_1_p0p4 --out-dir tools_out/vmec_boundary_transport_landscape_rbc11_full/nonlinear_configs/p0p4 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
       },
       {
         "coefficient_value": 0.18360553680063857,
-        "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p45.nc",
+        "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p45.nc",
         "label": "p0p45",
-        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape/inputs && vmec_jax input.rbc_1_1_p0p45",
-        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p45.nc --case landscape_rbc_1_1_p0p45 --out-dir tools_out/vmec_boundary_transport_landscape/nonlinear_configs/p0p45 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
+        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs && vmec_jax input.rbc_1_1_p0p45",
+        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p45.nc --case landscape_rbc_1_1_p0p45 --out-dir tools_out/vmec_boundary_transport_landscape_rbc11_full/nonlinear_configs/p0p45 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
       },
       {
         "coefficient_value": 0.18993676220755712,
-        "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p5.nc",
+        "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p5.nc",
         "label": "p0p5",
-        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape/inputs && vmec_jax input.rbc_1_1_p0p5",
-        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p5.nc --case landscape_rbc_1_1_p0p5 --out-dir tools_out/vmec_boundary_transport_landscape/nonlinear_configs/p0p5 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
+        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs && vmec_jax input.rbc_1_1_p0p5",
+        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p5.nc --case landscape_rbc_1_1_p0p5 --out-dir tools_out/vmec_boundary_transport_landscape_rbc11_full/nonlinear_configs/p0p5 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
       },
       {
         "coefficient_value": 0.1962679876144757,
-        "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p55.nc",
+        "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p55.nc",
         "label": "p0p55",
-        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape/inputs && vmec_jax input.rbc_1_1_p0p55",
-        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p55.nc --case landscape_rbc_1_1_p0p55 --out-dir tools_out/vmec_boundary_transport_landscape/nonlinear_configs/p0p55 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
+        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs && vmec_jax input.rbc_1_1_p0p55",
+        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p55.nc --case landscape_rbc_1_1_p0p55 --out-dir tools_out/vmec_boundary_transport_landscape_rbc11_full/nonlinear_configs/p0p55 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
       },
       {
         "coefficient_value": 0.20259921302139428,
-        "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p6.nc",
+        "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p6.nc",
         "label": "p0p6",
-        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape/inputs && vmec_jax input.rbc_1_1_p0p6",
-        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p6.nc --case landscape_rbc_1_1_p0p6 --out-dir tools_out/vmec_boundary_transport_landscape/nonlinear_configs/p0p6 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
+        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs && vmec_jax input.rbc_1_1_p0p6",
+        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p6.nc --case landscape_rbc_1_1_p0p6 --out-dir tools_out/vmec_boundary_transport_landscape_rbc11_full/nonlinear_configs/p0p6 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
       },
       {
         "coefficient_value": 0.20893043842831283,
-        "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p65.nc",
+        "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p65.nc",
         "label": "p0p65",
-        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape/inputs && vmec_jax input.rbc_1_1_p0p65",
-        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p65.nc --case landscape_rbc_1_1_p0p65 --out-dir tools_out/vmec_boundary_transport_landscape/nonlinear_configs/p0p65 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
+        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs && vmec_jax input.rbc_1_1_p0p65",
+        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p65.nc --case landscape_rbc_1_1_p0p65 --out-dir tools_out/vmec_boundary_transport_landscape_rbc11_full/nonlinear_configs/p0p65 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
       },
       {
         "coefficient_value": 0.2152616638352314,
-        "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p7.nc",
+        "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p7.nc",
         "label": "p0p7",
-        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape/inputs && vmec_jax input.rbc_1_1_p0p7",
-        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p7.nc --case landscape_rbc_1_1_p0p7 --out-dir tools_out/vmec_boundary_transport_landscape/nonlinear_configs/p0p7 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
+        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs && vmec_jax input.rbc_1_1_p0p7",
+        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p7.nc --case landscape_rbc_1_1_p0p7 --out-dir tools_out/vmec_boundary_transport_landscape_rbc11_full/nonlinear_configs/p0p7 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
       },
       {
         "coefficient_value": 0.22159288924214998,
-        "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p75.nc",
+        "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p75.nc",
         "label": "p0p75",
-        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape/inputs && vmec_jax input.rbc_1_1_p0p75",
-        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p75.nc --case landscape_rbc_1_1_p0p75 --out-dir tools_out/vmec_boundary_transport_landscape/nonlinear_configs/p0p75 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
+        "vmec_command": "cd tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs && vmec_jax input.rbc_1_1_p0p75",
+        "write_nonlinear_configs_command": "python tools/write_optimized_equilibrium_transport_configs.py --vmec-file tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p75.nc --case landscape_rbc_1_1_p0p75 --out-dir tools_out/vmec_boundary_transport_landscape_rbc11_full/nonlinear_configs/p0p75 --horizons 700 --window-tmin 350 --window-tmax 700 --grid n64:64:64:40:40"
       }
     ],
     "kind": "vmec_boundary_transport_landscape_nonlinear_launch_manifest",
@@ -277,8 +277,8 @@
   "rows": [
     {
       "coefficient_value": 0.031656127034592856,
-      "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p75.nc",
-      "input_path": "tools_out/vmec_boundary_transport_landscape/inputs/input.rbc_1_1_m0p75",
+      "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p75.nc",
+      "input_path": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/input.rbc_1_1_m0p75",
       "label": "m0p75",
       "reduced_metric_reports": {
         "growth": {
@@ -410,8 +410,8 @@
     },
     {
       "coefficient_value": 0.037987352441511434,
-      "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p7.nc",
-      "input_path": "tools_out/vmec_boundary_transport_landscape/inputs/input.rbc_1_1_m0p7",
+      "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p7.nc",
+      "input_path": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/input.rbc_1_1_m0p7",
       "label": "m0p7",
       "reduced_metric_reports": {
         "growth": {
@@ -543,8 +543,8 @@
     },
     {
       "coefficient_value": 0.04431857784843,
-      "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p65.nc",
-      "input_path": "tools_out/vmec_boundary_transport_landscape/inputs/input.rbc_1_1_m0p65",
+      "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p65.nc",
+      "input_path": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/input.rbc_1_1_m0p65",
       "label": "m0p65",
       "reduced_metric_reports": {
         "growth": {
@@ -676,8 +676,8 @@
     },
     {
       "coefficient_value": 0.05064980325534857,
-      "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p6.nc",
-      "input_path": "tools_out/vmec_boundary_transport_landscape/inputs/input.rbc_1_1_m0p6",
+      "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p6.nc",
+      "input_path": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/input.rbc_1_1_m0p6",
       "label": "m0p6",
       "reduced_metric_reports": {
         "growth": {
@@ -809,8 +809,8 @@
     },
     {
       "coefficient_value": 0.05698102866226713,
-      "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p55.nc",
-      "input_path": "tools_out/vmec_boundary_transport_landscape/inputs/input.rbc_1_1_m0p55",
+      "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p55.nc",
+      "input_path": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/input.rbc_1_1_m0p55",
       "label": "m0p55",
       "reduced_metric_reports": {
         "growth": {
@@ -942,8 +942,8 @@
     },
     {
       "coefficient_value": 0.06331225406918571,
-      "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p5.nc",
-      "input_path": "tools_out/vmec_boundary_transport_landscape/inputs/input.rbc_1_1_m0p5",
+      "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p5.nc",
+      "input_path": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/input.rbc_1_1_m0p5",
       "label": "m0p5",
       "reduced_metric_reports": {
         "growth": {
@@ -1075,8 +1075,8 @@
     },
     {
       "coefficient_value": 0.06964347947610429,
-      "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p45.nc",
-      "input_path": "tools_out/vmec_boundary_transport_landscape/inputs/input.rbc_1_1_m0p45",
+      "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p45.nc",
+      "input_path": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/input.rbc_1_1_m0p45",
       "label": "m0p45",
       "reduced_metric_reports": {
         "growth": {
@@ -1208,8 +1208,8 @@
     },
     {
       "coefficient_value": 0.07597470488302285,
-      "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p4.nc",
-      "input_path": "tools_out/vmec_boundary_transport_landscape/inputs/input.rbc_1_1_m0p4",
+      "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p4.nc",
+      "input_path": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/input.rbc_1_1_m0p4",
       "label": "m0p4",
       "reduced_metric_reports": {
         "growth": {
@@ -1341,8 +1341,8 @@
     },
     {
       "coefficient_value": 0.08230593028994143,
-      "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p35.nc",
-      "input_path": "tools_out/vmec_boundary_transport_landscape/inputs/input.rbc_1_1_m0p35",
+      "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p35.nc",
+      "input_path": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/input.rbc_1_1_m0p35",
       "label": "m0p35",
       "reduced_metric_reports": {
         "growth": {
@@ -1474,8 +1474,8 @@
     },
     {
       "coefficient_value": 0.08863715569686,
-      "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p3.nc",
-      "input_path": "tools_out/vmec_boundary_transport_landscape/inputs/input.rbc_1_1_m0p3",
+      "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p3.nc",
+      "input_path": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/input.rbc_1_1_m0p3",
       "label": "m0p3",
       "reduced_metric_reports": {
         "growth": {
@@ -1607,8 +1607,8 @@
     },
     {
       "coefficient_value": 0.09496838110377856,
-      "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p25.nc",
-      "input_path": "tools_out/vmec_boundary_transport_landscape/inputs/input.rbc_1_1_m0p25",
+      "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p25.nc",
+      "input_path": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/input.rbc_1_1_m0p25",
       "label": "m0p25",
       "reduced_metric_reports": {
         "growth": {
@@ -1740,8 +1740,8 @@
     },
     {
       "coefficient_value": 0.10129960651069714,
-      "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p2.nc",
-      "input_path": "tools_out/vmec_boundary_transport_landscape/inputs/input.rbc_1_1_m0p2",
+      "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p2.nc",
+      "input_path": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/input.rbc_1_1_m0p2",
       "label": "m0p2",
       "reduced_metric_reports": {
         "growth": {
@@ -1873,8 +1873,8 @@
     },
     {
       "coefficient_value": 0.1076308319176157,
-      "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p15.nc",
-      "input_path": "tools_out/vmec_boundary_transport_landscape/inputs/input.rbc_1_1_m0p15",
+      "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p15.nc",
+      "input_path": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/input.rbc_1_1_m0p15",
       "label": "m0p15",
       "reduced_metric_reports": {
         "growth": {
@@ -2006,8 +2006,8 @@
     },
     {
       "coefficient_value": 0.11396205732453428,
-      "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p1.nc",
-      "input_path": "tools_out/vmec_boundary_transport_landscape/inputs/input.rbc_1_1_m0p1",
+      "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p1.nc",
+      "input_path": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/input.rbc_1_1_m0p1",
       "label": "m0p1",
       "reduced_metric_reports": {
         "growth": {
@@ -2139,8 +2139,8 @@
     },
     {
       "coefficient_value": 0.12029328273145284,
-      "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_m0p05.nc",
-      "input_path": "tools_out/vmec_boundary_transport_landscape/inputs/input.rbc_1_1_m0p05",
+      "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_m0p05.nc",
+      "input_path": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/input.rbc_1_1_m0p05",
       "label": "m0p05",
       "reduced_metric_reports": {
         "growth": {
@@ -2272,8 +2272,8 @@
     },
     {
       "coefficient_value": 0.12662450813837142,
-      "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_0.nc",
-      "input_path": "tools_out/vmec_boundary_transport_landscape/inputs/input.rbc_1_1_0",
+      "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_0.nc",
+      "input_path": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/input.rbc_1_1_0",
       "label": "0",
       "reduced_metric_reports": {
         "growth": {
@@ -2405,8 +2405,8 @@
     },
     {
       "coefficient_value": 0.13295573354529,
-      "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p05.nc",
-      "input_path": "tools_out/vmec_boundary_transport_landscape/inputs/input.rbc_1_1_p0p05",
+      "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p05.nc",
+      "input_path": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/input.rbc_1_1_p0p05",
       "label": "p0p05",
       "reduced_metric_reports": {
         "growth": {
@@ -2538,8 +2538,8 @@
     },
     {
       "coefficient_value": 0.13928695895220858,
-      "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p1.nc",
-      "input_path": "tools_out/vmec_boundary_transport_landscape/inputs/input.rbc_1_1_p0p1",
+      "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p1.nc",
+      "input_path": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/input.rbc_1_1_p0p1",
       "label": "p0p1",
       "reduced_metric_reports": {
         "growth": {
@@ -2671,8 +2671,8 @@
     },
     {
       "coefficient_value": 0.14561818435912713,
-      "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p15.nc",
-      "input_path": "tools_out/vmec_boundary_transport_landscape/inputs/input.rbc_1_1_p0p15",
+      "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p15.nc",
+      "input_path": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/input.rbc_1_1_p0p15",
       "label": "p0p15",
       "reduced_metric_reports": {
         "growth": {
@@ -2804,8 +2804,8 @@
     },
     {
       "coefficient_value": 0.1519494097660457,
-      "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p2.nc",
-      "input_path": "tools_out/vmec_boundary_transport_landscape/inputs/input.rbc_1_1_p0p2",
+      "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p2.nc",
+      "input_path": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/input.rbc_1_1_p0p2",
       "label": "p0p2",
       "reduced_metric_reports": {
         "growth": {
@@ -2937,8 +2937,8 @@
     },
     {
       "coefficient_value": 0.15828063517296428,
-      "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p25.nc",
-      "input_path": "tools_out/vmec_boundary_transport_landscape/inputs/input.rbc_1_1_p0p25",
+      "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p25.nc",
+      "input_path": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/input.rbc_1_1_p0p25",
       "label": "p0p25",
       "reduced_metric_reports": {
         "growth": {
@@ -3070,8 +3070,8 @@
     },
     {
       "coefficient_value": 0.16461186057988286,
-      "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p3.nc",
-      "input_path": "tools_out/vmec_boundary_transport_landscape/inputs/input.rbc_1_1_p0p3",
+      "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p3.nc",
+      "input_path": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/input.rbc_1_1_p0p3",
       "label": "p0p3",
       "reduced_metric_reports": {
         "growth": {
@@ -3203,8 +3203,8 @@
     },
     {
       "coefficient_value": 0.17094308598680144,
-      "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p35.nc",
-      "input_path": "tools_out/vmec_boundary_transport_landscape/inputs/input.rbc_1_1_p0p35",
+      "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p35.nc",
+      "input_path": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/input.rbc_1_1_p0p35",
       "label": "p0p35",
       "reduced_metric_reports": {
         "growth": {
@@ -3336,8 +3336,8 @@
     },
     {
       "coefficient_value": 0.17727431139372,
-      "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p4.nc",
-      "input_path": "tools_out/vmec_boundary_transport_landscape/inputs/input.rbc_1_1_p0p4",
+      "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p4.nc",
+      "input_path": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/input.rbc_1_1_p0p4",
       "label": "p0p4",
       "reduced_metric_reports": {
         "growth": {
@@ -3469,8 +3469,8 @@
     },
     {
       "coefficient_value": 0.18360553680063857,
-      "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p45.nc",
-      "input_path": "tools_out/vmec_boundary_transport_landscape/inputs/input.rbc_1_1_p0p45",
+      "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p45.nc",
+      "input_path": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/input.rbc_1_1_p0p45",
       "label": "p0p45",
       "reduced_metric_reports": {
         "growth": {
@@ -3602,8 +3602,8 @@
     },
     {
       "coefficient_value": 0.18993676220755712,
-      "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p5.nc",
-      "input_path": "tools_out/vmec_boundary_transport_landscape/inputs/input.rbc_1_1_p0p5",
+      "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p5.nc",
+      "input_path": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/input.rbc_1_1_p0p5",
       "label": "p0p5",
       "reduced_metric_reports": {
         "growth": {
@@ -3735,8 +3735,8 @@
     },
     {
       "coefficient_value": 0.1962679876144757,
-      "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p55.nc",
-      "input_path": "tools_out/vmec_boundary_transport_landscape/inputs/input.rbc_1_1_p0p55",
+      "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p55.nc",
+      "input_path": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/input.rbc_1_1_p0p55",
       "label": "p0p55",
       "reduced_metric_reports": {
         "growth": {
@@ -3868,8 +3868,8 @@
     },
     {
       "coefficient_value": 0.20259921302139428,
-      "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p6.nc",
-      "input_path": "tools_out/vmec_boundary_transport_landscape/inputs/input.rbc_1_1_p0p6",
+      "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p6.nc",
+      "input_path": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/input.rbc_1_1_p0p6",
       "label": "p0p6",
       "reduced_metric_reports": {
         "growth": {
@@ -4001,8 +4001,8 @@
     },
     {
       "coefficient_value": 0.20893043842831283,
-      "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p65.nc",
-      "input_path": "tools_out/vmec_boundary_transport_landscape/inputs/input.rbc_1_1_p0p65",
+      "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p65.nc",
+      "input_path": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/input.rbc_1_1_p0p65",
       "label": "p0p65",
       "reduced_metric_reports": {
         "growth": {
@@ -4134,8 +4134,8 @@
     },
     {
       "coefficient_value": 0.2152616638352314,
-      "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p7.nc",
-      "input_path": "tools_out/vmec_boundary_transport_landscape/inputs/input.rbc_1_1_p0p7",
+      "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p7.nc",
+      "input_path": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/input.rbc_1_1_p0p7",
       "label": "p0p7",
       "reduced_metric_reports": {
         "growth": {
@@ -4267,8 +4267,8 @@
     },
     {
       "coefficient_value": 0.22159288924214998,
-      "expected_wout": "tools_out/vmec_boundary_transport_landscape/inputs/wout_rbc_1_1_p0p75.nc",
-      "input_path": "tools_out/vmec_boundary_transport_landscape/inputs/input.rbc_1_1_p0p75",
+      "expected_wout": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/wout_rbc_1_1_p0p75.nc",
+      "input_path": "tools_out/vmec_boundary_transport_landscape_rbc11_full/inputs/input.rbc_1_1_p0p75",
       "label": "p0p75",
       "reduced_metric_reports": {
         "growth": {
