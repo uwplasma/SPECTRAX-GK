@@ -300,7 +300,10 @@ def _optimize_png(path: Path) -> None:
     except Exception:
         return
     with Image.open(path) as image:
-        image.save(path, optimize=True)
+        # The README panel is plot-heavy, so palette PNG keeps labels readable
+        # while staying below the repository hygiene limit for tracked artifacts.
+        optimized = image.convert("RGB").quantize(colors=256, method=Image.Quantize.MEDIANCUT)
+        optimized.save(path, optimize=True)
 
 
 def build_panel(
