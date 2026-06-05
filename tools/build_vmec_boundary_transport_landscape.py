@@ -48,7 +48,7 @@ from tools.write_vmec_boundary_perturbation_inputs import (  # noqa: E402
 DEFAULT_BASELINE_INPUT = ROOT / "tools_out/latest_vmec_stack/authoritative_qa_baseline/input.final"
 DEFAULT_OUT_DIR = ROOT / "tools_out/vmec_boundary_transport_landscape"
 DEFAULT_DOCS_PREFIX = ROOT / "docs/_static/vmec_boundary_transport_landscape_rbc01"
-DEFAULT_FRACTIONS = (-0.06, -0.03, 0.0, 0.03, 0.06)
+DEFAULT_FRACTIONS = tuple(float(round(value, 2)) for value in np.linspace(-0.50, 0.50, 21))
 DEFAULT_KINDS = ("growth", "quasilinear_flux", "nonlinear_window_heat_flux")
 DEFAULT_SURFACES = "0.64"
 DEFAULT_ALPHAS = "0.0"

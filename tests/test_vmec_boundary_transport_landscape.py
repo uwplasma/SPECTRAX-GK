@@ -8,6 +8,7 @@ import numpy as np
 from netCDF4 import Dataset
 
 from tools.build_vmec_boundary_transport_landscape import (
+    DEFAULT_FRACTIONS,
     _parse_float_list,
     _reuse_reduced_metrics_from_report,
     _sample_standard_error,
@@ -65,6 +66,13 @@ def test_parse_float_list_rejects_empty_lists() -> None:
         assert "expected at least one" in str(exc)
     else:  # pragma: no cover
         raise AssertionError("empty float list was accepted")
+
+
+def test_default_landscape_scan_spans_dense_half_range() -> None:
+    assert len(DEFAULT_FRACTIONS) == 21
+    assert DEFAULT_FRACTIONS[0] == -0.5
+    assert DEFAULT_FRACTIONS[-1] == 0.5
+    assert 0.0 in DEFAULT_FRACTIONS
 
 
 def test_reuse_reduced_metrics_validates_sample_set_and_point_values(tmp_path: Path) -> None:

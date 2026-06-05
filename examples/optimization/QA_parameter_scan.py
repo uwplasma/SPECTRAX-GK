@@ -40,7 +40,7 @@ SPECTRAX_ROOT = Path(__file__).resolve().parents[2]
 # the deterministic reduced metrics instead of reusing the tracked audit JSON.
 BASELINE_INPUT = SPECTRAX_ROOT / "tools_out/latest_vmec_stack/authoritative_qa_baseline/input.final"
 COEFFICIENT = "RBC(0,1)"
-FRACTIONS = "-0.06,-0.03,0.0,0.03,0.06"
+FRACTIONS = "-0.50,-0.45,-0.40,-0.35,-0.30,-0.25,-0.20,-0.15,-0.10,-0.05,0.0,0.05,0.10,0.15,0.20,0.25,0.30,0.35,0.40,0.45,0.50"
 EVALUATE_REDUCED = False
 REUSE_REDUCED_JSON = SPECTRAX_ROOT / "docs/_static/vmec_boundary_transport_landscape_rbc01.json"
 OUT_PREFIX = SPECTRAX_ROOT / "results/qa_opt/parameter_scan/qa_parameter_scan_rbc01"
