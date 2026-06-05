@@ -37,6 +37,19 @@ def _load_parallel_checker():
     return module
 
 
+def _write_nonlinear_sharding_source_artifacts(tmp_path: Path, rows: list[dict]) -> None:
+    split_names = {
+        "cpu": "nonlinear_sharding_strong_scaling_cpu_large.json",
+        "gpu": "nonlinear_sharding_strong_scaling_gpu_xlarge.json",
+    }
+    for backend, name in split_names.items():
+        backend_rows = [row for row in rows if row.get("backend") == backend]
+        (tmp_path / name).write_text(
+            json.dumps({"rows": backend_rows}),
+            encoding="utf-8",
+        )
+
+
 def _assert_positive_stats(stats: dict) -> None:
     assert stats["min"] > 0.0
     assert stats["median"] > 0.0
@@ -358,12 +371,82 @@ def test_parallel_scaling_artifact_checker_rejects_stale_production_gate(
             },
         ],
     }
+    _write_nonlinear_sharding_source_artifacts(tmp_path, payload["rows"])
     (tmp_path / mod.PRODUCTION_GATE_JSON).write_text(
         json.dumps(payload),
         encoding="utf-8",
     )
 
     with pytest.raises(ValueError, match="blockers do not match missing backend candidates"):
+        mod.validate_nonlinear_sharding_production_gate(tmp_path, check_sidecars=False)
+
+
+def test_parallel_scaling_artifact_checker_rejects_stale_production_gate_source_row(
+    tmp_path: Path,
+) -> None:
+    mod = _load_parallel_checker()
+    source_row = {
+        "backend": "cpu",
+        "requested_devices": 2,
+        "actual_devices": 2,
+        "best_spec": "kx",
+        "state_sharding_active": True,
+        "identity_gate_pass": True,
+        "strong_speedup_vs_1_device": 1.30,
+        "max_abs_state_error": 0.0,
+        "max_rel_state_error": 0.0,
+    }
+    gate_row = {
+        **source_row,
+        "source": "docs/_static/nonlinear_sharding_strong_scaling_cpu_large.json",
+        "strong_speedup_vs_1_device": 1.40,
+        "parallel_efficiency": 0.70,
+        "candidate_passed": True,
+        "classification": "production_candidate",
+        "blockers": [],
+    }
+    _write_nonlinear_sharding_source_artifacts(
+        tmp_path,
+        [
+            source_row,
+            {
+                "backend": "gpu",
+                "requested_devices": 1,
+                "actual_devices": 1,
+                "best_spec": "auto",
+                "state_sharding_active": False,
+                "identity_gate_pass": True,
+                "strong_speedup_vs_1_device": 1.0,
+                "max_abs_state_error": 0.0,
+                "max_rel_state_error": 0.0,
+            },
+        ],
+    )
+    payload = {
+        "kind": "nonlinear_sharding_production_speedup_gate",
+        "claim_scope": (
+            "Whole-state nonlinear sharding gate; otherwise keep it as a "
+            "diagnostic identity/profiler artifact."
+        ),
+        "gate_passed": True,
+        "production_speedup_claim_allowed": True,
+        "status": "production_speedup_candidate",
+        "required_backends": ["cpu"],
+        "min_devices": 2,
+        "min_speedup_vs_1_device": 1.2,
+        "min_parallel_efficiency": 0.5,
+        "identity_atol": 1.0e-5,
+        "identity_rtol": 1.0e-5,
+        "best_candidates": {"cpu": gate_row},
+        "blockers": [],
+        "rows": [gate_row],
+    }
+    (tmp_path / mod.PRODUCTION_GATE_JSON).write_text(
+        json.dumps(payload),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="stale relative to source artifact"):
         mod.validate_nonlinear_sharding_production_gate(tmp_path, check_sidecars=False)
 
 

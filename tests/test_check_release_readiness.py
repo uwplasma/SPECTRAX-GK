@@ -101,20 +101,29 @@ spectrax-gk = "spectraxgk.cli:main"
   "prelaunch_gates": [
     {
       "label": "replicated landscape admission",
+      "path": "docs/_static/vmec_boundary_transport_landscape_admission.json",
       "passed": true,
+      "expected_raw_passed": true,
       "raw_passed": true,
+      "sample_count": 12.0,
       "blockers": []
     },
     {
       "label": "selected reduced prelaunch",
+      "path": "docs/_static/vmec_boundary_transport_prelaunch_gate.json",
       "passed": true,
+      "expected_raw_passed": true,
       "raw_passed": true,
+      "sample_count": 18.0,
       "blockers": []
     },
     {
       "label": "weak reduced-margin reference",
+      "path": "docs/_static/strict_qa_top12_edge_prelaunch_gate.json",
       "passed": true,
+      "expected_raw_passed": false,
       "raw_passed": false,
+      "sample_count": 18.0,
       "blockers": ["insufficient_reduced_margin_for_nonlinear_audit"]
     }
   ],
@@ -348,6 +357,65 @@ def test_release_readiness_requires_explicit_optimization_status_booleans(
   "summary": {
     "qa_baseline_gate_passed": true,
     "quasilinear_model_selection_passed": true,
+    "long_window_nonlinear_audit_passed": true,
+    "nonlinear_prelaunch_policy_ready": true,
+    "negative_reference_blocks_weak_margin": true
+  }
+}
+""".lstrip(),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+        ReleaseReadinessError,
+        match="optimization status prelaunch/claim-boundary flags failed",
+    ):
+        check_release_readiness(tmp_path)
+
+
+def test_release_readiness_rejects_stale_prelaunch_gate_rows(
+    tmp_path: Path,
+) -> None:
+    _write_release_ready_tree(tmp_path)
+    (
+        tmp_path / "docs" / "_static" / "vmec_jax_qa_transport_optimization_status.json"
+    ).write_text(
+        """
+{
+  "kind": "vmec_jax_qa_transport_optimization_status",
+  "prelaunch_gates": [
+    {
+      "label": "replicated landscape admission",
+      "path": "docs/_static/vmec_boundary_transport_landscape_admission.json",
+      "passed": true,
+      "expected_raw_passed": true,
+      "raw_passed": true,
+      "sample_count": 12.0,
+      "blockers": []
+    },
+    {
+      "label": "selected reduced prelaunch",
+      "path": "docs/_static/vmec_boundary_transport_prelaunch_gate.json",
+      "passed": true,
+      "expected_raw_passed": true,
+      "raw_passed": true,
+      "sample_count": 1.0,
+      "blockers": []
+    },
+    {
+      "label": "weak reduced-margin reference",
+      "path": "docs/_static/strict_qa_top12_edge_prelaunch_gate.json",
+      "passed": true,
+      "expected_raw_passed": true,
+      "raw_passed": true,
+      "sample_count": 18.0,
+      "blockers": []
+    }
+  ],
+  "summary": {
+    "qa_baseline_gate_passed": true,
+    "quasilinear_model_selection_passed": true,
+    "simple_quasilinear_absolute_flux_promoted": false,
     "long_window_nonlinear_audit_passed": true,
     "nonlinear_prelaunch_policy_ready": true,
     "negative_reference_blocks_weak_margin": true

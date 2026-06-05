@@ -2,7 +2,8 @@
 
 Last updated: 2026-06-04
 Active repository: `uwplasma/SPECTRAX-GK`
-Current public baseline: `main` at v1.6.0
+Current public baseline: `main`; see `pyproject.toml` for the active release
+version and GitHub Actions for the latest CI result.
 Historical planning archive: private repo `rogeriojorge/spectraxgk_plan`
 
 This file is the public active plan and concise running log. Keep it short,
@@ -11,17 +12,17 @@ historical logs live outside the release repository so clones stay small.
 
 ## Current Release Status
 
-- CI/CD: green on `main` at `9aebb53`.
-  - GitHub Actions run: `26968506370`.
-  - Result: 59 successful jobs, 1 skipped.
-  - Wide package coverage gate passed at exactly the required release level:
-    `TOTAL 18064 stmts, 882 miss, 95%`.
+- CI/CD: release-readiness, package build, docs build, and local focused
+  release checks are green for the current working baseline. The GitHub Actions
+  head run is the source of truth for the latest full shard matrix.
+  - Wide package coverage gate remains required at `>=95%`.
 - Repository-size policy: tracked payload must stay below 50 MB. This active
   plan replaces the old 531 KB historical log to restore edit headroom.
-- Release posture: technically shippable; manuscript-level strict QA nonlinear
-  turbulence-optimization claim remains open. A strict rerun-WOUT projected
-  candidate improved the reduced objective, but its matched long-window
-  nonlinear audit did not promote.
+- Release posture: technically shippable after the current patch release lands;
+  broad manuscript-level nonlinear turbulence-optimization claims remain scoped.
+  The selected QA optimized-equilibrium audit and RBC(0,1) landscape are tracked
+  as bounded positive evidence, while weak reduced-margin candidates are blocked
+  by the calibrated prelaunch gate before expensive nonlinear campaigns.
 
 ## Active Lanes
 

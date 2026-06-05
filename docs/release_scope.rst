@@ -191,7 +191,10 @@ README claims, or manuscript claims.
        ``nonlinear_window_fd_audit.*``, and
        ``vmec_boozer_nonlinear_window_fd_audit.*``
      - Reduced AD/finite-difference gates are in scope. Production nonlinear
-       turbulence-gradient and optimized-equilibrium heat-flux claims are not.
+       turbulence-gradient and broad optimized-equilibrium heat-flux claims are
+       not; the selected QA optimized-equilibrium replicated audit is covered by
+       the scoped stellarator-optimization row rather than by this general AD
+       inventory row.
    * - VMEC/Boozer objective and optimization checklist
      - ``vmec_boozer_solver_frequency_gradient_gate.*``,
        ``vmec_boozer_quasilinear_gradient_gate.*``,

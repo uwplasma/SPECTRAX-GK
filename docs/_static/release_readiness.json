@@ -155,6 +155,58 @@
     },
     "target_fraction": 0.98
   },
+  "optimization_status": {
+    "failed_flags": [],
+    "failed_prelaunch_contracts": [],
+    "failed_prelaunch_rows": [],
+    "kind": "vmec_jax_qa_transport_optimization_status",
+    "passed": true,
+    "prelaunch_gate_count": 3,
+    "required_flags": {
+      "long_window_nonlinear_audit_passed": true,
+      "negative_reference_blocks_weak_margin": true,
+      "nonlinear_prelaunch_policy_ready": true,
+      "qa_baseline_gate_passed": true,
+      "quasilinear_model_selection_passed": true,
+      "simple_quasilinear_absolute_flux_promoted": false
+    },
+    "required_prelaunch_gate_rows": [
+      {
+        "expected_raw_passed": true,
+        "label": "replicated landscape admission",
+        "min_sample_count": 12.0,
+        "path": "docs/_static/vmec_boundary_transport_landscape_admission.json",
+        "required_blocker": null
+      },
+      {
+        "expected_raw_passed": true,
+        "label": "selected reduced prelaunch",
+        "min_sample_count": 18.0,
+        "path": "docs/_static/vmec_boundary_transport_prelaunch_gate.json",
+        "required_blocker": null
+      },
+      {
+        "expected_raw_passed": false,
+        "label": "weak reduced-margin reference",
+        "min_sample_count": 18.0,
+        "path": "docs/_static/strict_qa_top12_edge_prelaunch_gate.json",
+        "required_blocker": "insufficient_reduced_margin_for_nonlinear_audit"
+      }
+    ],
+    "source": "docs/_static/vmec_jax_qa_transport_optimization_status.json",
+    "summary": {
+      "direct_scalar_transport_blocked": true,
+      "landscape_admission_passed": true,
+      "long_window_nonlinear_audit_passed": true,
+      "negative_reference_blocks_weak_margin": true,
+      "nonlinear_prelaunch_policy_ready": true,
+      "positive_prelaunch_gate_passed": true,
+      "projected_transport_improved": false,
+      "qa_baseline_gate_passed": true,
+      "quasilinear_model_selection_passed": true,
+      "simple_quasilinear_absolute_flux_promoted": false
+    }
+  },
   "passed": true,
   "project": {
     "name": "spectraxgk",
@@ -162,7 +214,7 @@
       "spectrax-gk",
       "spectraxgk"
     ],
-    "version": "1.6.2"
+    "version": "1.6.3"
   },
   "release_target": {
     "status_source": "docs/_static/manuscript_readiness_status.json:lanes",
@@ -201,7 +253,11 @@
     "docs/_static/parallelization_completion_status.json",
     "docs/_static/nonlinear_sharding_strong_scaling_large.json",
     "docs/_static/nonlinear_domain_parallel_identity_gate.json",
-    "docs/_static/nonlinear_spectral_communication_identity_gate.json"
+    "docs/_static/nonlinear_spectral_communication_identity_gate.json",
+    "docs/_static/vmec_jax_qa_transport_optimization_status.json",
+    "docs/_static/vmec_boundary_transport_landscape_admission.json",
+    "docs/_static/vmec_boundary_transport_prelaunch_gate.json",
+    "docs/_static/strict_qa_top12_edge_prelaunch_gate.json"
   ],
   "root": "/Users/rogeriojorge/local/SPECTRAX-GK",
   "technical_status": {
@@ -215,9 +271,9 @@
     "checked_pypi": false,
     "duplicate_on_pypi": false,
     "package": "spectraxgk",
-    "project_version": "1.6.2",
+    "project_version": "1.6.3",
     "require_tag": false,
-    "source_version": "1.6.2",
+    "source_version": "1.6.3",
     "tag": null
   }
 }

@@ -33,12 +33,13 @@ publication-ready as diagnostics, model-selection evidence, and explicit
 negative promotion gates, but they do not support a calibrated absolute-flux
 predictor. The stellarator optimization figures are publication-ready for
 reduced differentiable optimization/UQ plumbing and gradient validation, but
-not yet for production nonlinear heat-flux optimization. Those stronger claims
-require converged post-transient nonlinear heat-flux windows, VMEC/Boozer
-nonlinear turbulence-gradient or robust finite-difference gates, local-gradient
-conditioning, and nonlinear audits of optimized equilibria. W7-X zonal
-recurrence and TEM/kinetic-electron stellarator validation remain deferred from
-the current manuscript scope.
+not yet for broad production nonlinear heat-flux optimization beyond the
+selected QA optimized-equilibrium audit. Those stronger claims require
+converged post-transient nonlinear heat-flux windows, VMEC/Boozer nonlinear
+turbulence-gradient or robust finite-difference gates, local-gradient
+conditioning, and nonlinear audits of additional optimized equilibria. W7-X
+zonal recurrence and TEM/kinetic-electron stellarator validation remain
+deferred from the current manuscript scope.
 
 The latest manuscript-stack additions are deliberately contract-level figures:
 ``docs/_static/quasilinear_holdout_gap_report.png`` with CSV/JSON/PDF

@@ -33,6 +33,17 @@ PRODUCTION_GATE_ARTIFACT_PATHS = (
     f"docs/_static/{PRODUCTION_GATE_JSON}",
     f"docs/_static/{PRODUCTION_GATE_CSV}",
 )
+PRODUCTION_GATE_SOURCE_FIELDS = (
+    "backend",
+    "requested_devices",
+    "actual_devices",
+    "best_spec",
+    "state_sharding_active",
+    "identity_gate_pass",
+    "strong_speedup_vs_1_device",
+    "max_abs_state_error",
+    "max_rel_state_error",
+)
 PRODUCTION_GATE_CLASSIFICATIONS = {
     "reference_only",
     "identity_failed",
@@ -374,6 +385,54 @@ def _production_gate_candidate_key(row: dict[str, Any]) -> tuple[str, int, int, 
     )
 
 
+def _production_gate_source_row_key(row: dict[str, Any], source_name: str) -> tuple[str, str, int, int]:
+    return (
+        source_name,
+        str(row.get("backend", "")).lower(),
+        int(row.get("requested_devices") or 0),
+        int(row.get("actual_devices") or 0),
+    )
+
+
+def _assert_production_gate_row_matches_source(
+    row: dict[str, Any],
+    *,
+    index: int,
+    source_rows: dict[tuple[str, str, int, int], dict[str, Any]],
+) -> None:
+    source_name = _path_basename(row.get("source"))
+    key = _production_gate_source_row_key(row, source_name)
+    source = source_rows.get(key)
+    if source is None:
+        raise ValueError(
+            f"{PRODUCTION_GATE_JSON}: row {index}: no matching source row in {source_name}"
+        )
+    for field in PRODUCTION_GATE_SOURCE_FIELDS:
+        if row.get(field) != source.get(field):
+            raise ValueError(
+                f"{PRODUCTION_GATE_JSON}: row {index}: {field} is stale relative "
+                f"to source artifact {source_name}"
+            )
+
+
+def _load_production_gate_source_rows(root: Path) -> dict[tuple[str, str, int, int], dict[str, Any]]:
+    source_rows: dict[tuple[str, str, int, int], dict[str, Any]] = {}
+    for source_name in _nonlinear_sharding_split_artifacts():
+        payload = _load_json(root, source_name)
+        for index, row in enumerate(_as_rows(payload, source_name)):
+            key = _production_gate_source_row_key(row, source_name)
+            if key in source_rows:
+                raise ValueError(
+                    f"{source_name}: duplicate source row for backend/device key at row {index}"
+                )
+            source_rows[key] = row
+    return source_rows
+
+
+def _production_gate_source_artifacts_exist(root: Path) -> bool:
+    return all((root / source_name).exists() for source_name in _nonlinear_sharding_split_artifacts())
+
+
 def validate_nonlinear_sharding_production_gate(
     root: Path,
     *,
@@ -441,6 +500,11 @@ def validate_nonlinear_sharding_production_gate(
             )
 
     source_artifacts = set(_nonlinear_sharding_split_artifacts())
+    source_rows = (
+        _load_production_gate_source_rows(root)
+        if check_sidecars or _production_gate_source_artifacts_exist(root)
+        else {}
+    )
     candidates_by_backend: dict[str, list[dict[str, Any]]] = {backend: [] for backend in required}
     observed_backends: set[str] = set()
     for index, row in enumerate(rows):
@@ -452,6 +516,12 @@ def validate_nonlinear_sharding_production_gate(
         source_name = _path_basename(row.get("source"))
         if source_name not in source_artifacts:
             raise ValueError(f"{row_context}: source must be a nonlinear sharding split artifact")
+        if source_rows:
+            _assert_production_gate_row_matches_source(
+                row,
+                index=index,
+                source_rows=source_rows,
+            )
         requested_devices = int(row.get("requested_devices") or 0)
         actual_devices = int(row.get("actual_devices") or 0)
         if requested_devices < 1 or actual_devices < 1 or actual_devices > requested_devices:

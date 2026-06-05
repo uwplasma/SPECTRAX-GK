@@ -70,6 +70,29 @@ REQUIRED_OPTIMIZATION_STATUS_FLAGS = {
     "nonlinear_prelaunch_policy_ready": True,
     "negative_reference_blocks_weak_margin": True,
 }
+REQUIRED_PRELAUNCH_GATE_ROWS = (
+    {
+        "label": "replicated landscape admission",
+        "path": "docs/_static/vmec_boundary_transport_landscape_admission.json",
+        "expected_raw_passed": True,
+        "required_blocker": None,
+        "min_sample_count": 12.0,
+    },
+    {
+        "label": "selected reduced prelaunch",
+        "path": "docs/_static/vmec_boundary_transport_prelaunch_gate.json",
+        "expected_raw_passed": True,
+        "required_blocker": None,
+        "min_sample_count": 18.0,
+    },
+    {
+        "label": "weak reduced-margin reference",
+        "path": "docs/_static/strict_qa_top12_edge_prelaunch_gate.json",
+        "expected_raw_passed": False,
+        "required_blocker": "insufficient_reduced_margin_for_nonlinear_audit",
+        "min_sample_count": 18.0,
+    },
+)
 LANE_STATUS_ARTIFACTS = (
     "docs/_static/manuscript_readiness_status.json",
     "docs/_static/open_research_lane_status.json",
@@ -187,6 +210,109 @@ def _technical_release_status(root: Path) -> dict[str, Any]:
     }
 
 
+def _prelaunch_gate_failures(prelaunch_gates: list[Any]) -> list[dict[str, Any]]:
+    failures: list[dict[str, Any]] = []
+    rows_by_label: dict[str, dict[str, Any]] = {}
+    duplicate_labels: set[str] = set()
+    for row in prelaunch_gates:
+        if not isinstance(row, dict):
+            failures.append({"label": None, "reason": "prelaunch row must be an object"})
+            continue
+        label = row.get("label")
+        if not isinstance(label, str) or not label:
+            failures.append({"label": label, "reason": "prelaunch row missing label"})
+            continue
+        if label in rows_by_label:
+            duplicate_labels.add(label)
+            continue
+        rows_by_label[label] = row
+
+    for label in sorted(duplicate_labels):
+        failures.append({"label": label, "reason": "duplicate prelaunch gate label"})
+
+    for contract in REQUIRED_PRELAUNCH_GATE_ROWS:
+        label = str(contract["label"])
+        row = rows_by_label.get(label)
+        if row is None:
+            failures.append({"label": label, "reason": "missing required prelaunch gate"})
+            continue
+        if row.get("passed") is not True:
+            failures.append(
+                {
+                    "label": label,
+                    "reason": "normalized prelaunch row must pass",
+                    "passed": row.get("passed"),
+                }
+            )
+        if row.get("path") != contract["path"]:
+            failures.append(
+                {
+                    "label": label,
+                    "reason": "prelaunch gate path mismatch",
+                    "expected": contract["path"],
+                    "observed": row.get("path"),
+                }
+            )
+        expected_raw = bool(contract["expected_raw_passed"])
+        if row.get("expected_raw_passed") is not expected_raw:
+            failures.append(
+                {
+                    "label": label,
+                    "reason": "expected_raw_passed mismatch",
+                    "expected": expected_raw,
+                    "observed": row.get("expected_raw_passed"),
+                }
+            )
+        if row.get("raw_passed") is not expected_raw:
+            failures.append(
+                {
+                    "label": label,
+                    "reason": "raw_passed mismatch",
+                    "expected": expected_raw,
+                    "observed": row.get("raw_passed"),
+                }
+            )
+        blockers = row.get("blockers")
+        if not isinstance(blockers, list) or not all(isinstance(item, str) for item in blockers):
+            failures.append(
+                {
+                    "label": label,
+                    "reason": "blockers must be a list of strings",
+                    "blockers": blockers,
+                }
+            )
+            blockers = []
+        required_blocker = contract["required_blocker"]
+        if required_blocker is None and blockers:
+            failures.append(
+                {
+                    "label": label,
+                    "reason": "passing positive gate must not carry blockers",
+                    "blockers": blockers,
+                }
+            )
+        if required_blocker is not None and required_blocker not in blockers:
+            failures.append(
+                {
+                    "label": label,
+                    "reason": "negative reference missing required blocker",
+                    "required_blocker": required_blocker,
+                    "blockers": blockers,
+                }
+            )
+        sample_count = row.get("sample_count")
+        if not isinstance(sample_count, (int, float)) or float(sample_count) < float(contract["min_sample_count"]):
+            failures.append(
+                {
+                    "label": label,
+                    "reason": "prelaunch sample count below contract",
+                    "expected_min": contract["min_sample_count"],
+                    "observed": sample_count,
+                }
+            )
+    return failures
+
+
 def _lane_status_summary(root: Path) -> dict[str, Any]:
     artifacts: dict[str, Any] = {}
     for artifact in LANE_STATUS_ARTIFACTS:
@@ -262,14 +388,22 @@ def _optimization_status_summary(root: Path) -> dict[str, Any]:
         for row in prelaunch_gates
         if isinstance(row, dict) and not bool(row.get("passed", False))
     ]
-    passed = not failed_flags and not failed_prelaunch_rows and len(prelaunch_gates) >= 3
+    failed_prelaunch_contracts = _prelaunch_gate_failures(prelaunch_gates)
+    passed = (
+        not failed_flags
+        and not failed_prelaunch_rows
+        and not failed_prelaunch_contracts
+        and len(prelaunch_gates) >= len(REQUIRED_PRELAUNCH_GATE_ROWS)
+    )
     return {
         "source": OPTIMIZATION_STATUS_ARTIFACT,
         "kind": payload.get("kind"),
         "passed": passed,
         "required_flags": REQUIRED_OPTIMIZATION_STATUS_FLAGS,
+        "required_prelaunch_gate_rows": list(REQUIRED_PRELAUNCH_GATE_ROWS),
         "failed_flags": failed_flags,
         "failed_prelaunch_rows": failed_prelaunch_rows,
+        "failed_prelaunch_contracts": failed_prelaunch_contracts,
         "prelaunch_gate_count": len(prelaunch_gates),
         "summary": {
             key: summary.get(key)
@@ -373,7 +507,8 @@ def check_release_readiness(root: Path = REPO_ROOT) -> dict[str, Any]:
             failures.append(
                 "optimization status prelaunch/claim-boundary flags failed: "
                 f"flags={optimization_status['failed_flags']} "
-                f"prelaunch_rows={optimization_status['failed_prelaunch_rows']}"
+                f"prelaunch_rows={optimization_status['failed_prelaunch_rows']} "
+                f"prelaunch_contracts={optimization_status['failed_prelaunch_contracts']}"
             )
     except ReleaseReadinessError as exc:
         optimization_status = {
