@@ -48,11 +48,18 @@ from tools.write_vmec_boundary_perturbation_inputs import (  # noqa: E402
 DEFAULT_BASELINE_INPUT = ROOT / "tools_out/latest_vmec_stack/authoritative_qa_baseline/input.final"
 DEFAULT_OUT_DIR = ROOT / "tools_out/vmec_boundary_transport_landscape"
 DEFAULT_DOCS_PREFIX = ROOT / "docs/_static/vmec_boundary_transport_landscape_rbc11"
-DEFAULT_FRACTIONS = tuple(float(round(value, 2)) for value in np.linspace(-0.50, 0.50, 21))
-DEFAULT_KINDS = ("growth", "quasilinear_flux", "nonlinear_window_heat_flux")
-DEFAULT_SURFACES = "0.64"
-DEFAULT_ALPHAS = "0.0"
-DEFAULT_KY_VALUES = "0.3"
+DEFAULT_FRACTIONS = tuple(float(round(value, 2)) for value in np.linspace(-0.75, 0.75, 31))
+DEFAULT_KINDS = (
+    "growth",
+    "quasilinear_flux_linear_weight",
+    "quasilinear_flux_mixing_length",
+    "quasilinear_flux_lapillonne_2011",
+    "quasilinear_flux_absolute_growth_mixing_length",
+    "quasilinear_flux_shape_aware_power_law",
+)
+DEFAULT_SURFACES = "0.45,0.64,0.78"
+DEFAULT_ALPHAS = "0.0,0.7853981633974483"
+DEFAULT_KY_VALUES = "0.10,0.30,0.50"
 
 
 def _repo_relative(path: Path | str) -> str:
@@ -470,14 +477,16 @@ def _reuse_reduced_metrics_from_report(
 
 def _write_csv(rows: list[dict[str, Any]], path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
+    metric_names = sorted(
+        {str(key) for row in rows for key in row.get("reduced_metrics", {}).keys()}
+        | set(DEFAULT_KINDS)
+    )
     fieldnames = [
         "label",
         "relative_fraction",
         "coefficient_value",
         "input_path",
-        "growth",
-        "quasilinear_flux",
-        "nonlinear_window_heat_flux",
+        *metric_names,
     ]
     with path.open("w", encoding="utf-8", newline="") as fh:
         writer = csv.DictWriter(fh, fieldnames=fieldnames)
@@ -490,9 +499,7 @@ def _write_csv(rows: list[dict[str, Any]], path: Path) -> None:
                     "relative_fraction": row["relative_fraction"],
                     "coefficient_value": row["coefficient_value"],
                     "input_path": _repo_relative(row["input_path"]),
-                    "growth": metrics.get("growth"),
-                    "quasilinear_flux": metrics.get("quasilinear_flux"),
-                    "nonlinear_window_heat_flux": metrics.get("nonlinear_window_heat_flux"),
+                    **{name: metrics.get(name) for name in metric_names},
                 }
             )
 
@@ -540,88 +547,68 @@ def _write_plot(
     path.parent.mkdir(parents=True, exist_ok=True)
     set_plot_style()
     x = np.asarray([float(row["relative_fraction"]) for row in rows], dtype=float) * 100.0
-    baseline_index = int(np.argmin(np.abs(x)))
     baseline_value = float(report["baseline_coefficient_value"])
     scan_amplitude = float(report.get("scan_amplitude", baseline_value))
-    metrics = {kind: np.asarray([row.get("reduced_metrics", {}).get(kind, np.nan) for row in rows], dtype=float) for kind in DEFAULT_KINDS}
-    metric_errors = {kind: np.asarray([_sample_standard_error(row, kind) for row in rows], dtype=float) for kind in DEFAULT_KINDS}
+    metric_kinds = tuple(str(kind) for kind in report.get("reduced_metric_kinds", DEFAULT_KINDS))
+    metrics = {
+        kind: np.asarray([row.get("reduced_metrics", {}).get(kind, np.nan) for row in rows], dtype=float)
+        for kind in metric_kinds
+    }
+    metric_errors = {
+        kind: np.asarray([_sample_standard_error(row, kind) for row in rows], dtype=float)
+        for kind in metric_kinds
+    }
 
-    n_axes = 3 if nonlinear_points else 2
-    fig, axes = plt.subplots(n_axes, 1, figsize=(7.8, 8.2 if nonlinear_points else 6.2), sharex=True, constrained_layout=True)
+    fig, axes = plt.subplots(2, 1, figsize=(7.8, 6.6), sharex=True, constrained_layout=True)
     axes = np.atleast_1d(axes)
     colors = {
-        "growth": "#0f766e",
+        "growth": "#111827",
         "quasilinear_flux": "#1d4ed8",
-        "nonlinear_window_heat_flux": "#c2410c",
+        "quasilinear_flux_linear_weight": "#0891b2",
+        "quasilinear_flux_mixing_length": "#2563eb",
+        "quasilinear_flux_lapillonne_2011": "#7c3aed",
+        "quasilinear_flux_absolute_growth_mixing_length": "#db2777",
+        "quasilinear_flux_shape_aware_power_law": "#ea580c",
     }
     labels = {
-        "growth": "linear growth objective",
-        "quasilinear_flux": "quasilinear-flux objective",
-        "nonlinear_window_heat_flux": "reduced nonlinear-window objective",
+        "growth": r"linear growth $\gamma$",
+        "quasilinear_flux": "QL mixing-length",
+        "quasilinear_flux_linear_weight": "QL linear weight",
+        "quasilinear_flux_mixing_length": "QL mixing-length",
+        "quasilinear_flux_lapillonne_2011": "QL Lapillonne 2011",
+        "quasilinear_flux_absolute_growth_mixing_length": r"QL $|\gamma|/k_\perp^2$",
+        "quasilinear_flux_shape_aware_power_law": "QL shape-aware",
     }
     ax0 = axes[0]
-    top_absolute = any(
-        np.any(np.isfinite(metrics[kind]))
-        and (
-            not np.isfinite(metrics[kind][baseline_index])
-            or abs(float(metrics[kind][baseline_index])) < 1.0e-10
-        )
-        for kind in ("growth", "quasilinear_flux")
-    )
-    for kind in ("growth", "quasilinear_flux"):
+    top_kinds = tuple(kind for kind in metric_kinds if kind == "growth" or kind.startswith("quasilinear_flux"))
+    for kind in top_kinds:
         y = metrics[kind]
         if np.any(np.isfinite(y)):
-            scale = abs(_normalization_scale(y, baseline_index=baseline_index))
-            if top_absolute:
-                y_plot = y
-                yerr = metric_errors[kind]
-            else:
-                y_plot = _normalize(y, baseline_index=baseline_index)
-                yerr = metric_errors[kind] / max(scale, 1.0e-30)
+            y_plot = y
+            yerr = metric_errors[kind]
             yerr = yerr if np.any(np.isfinite(yerr)) else None
             ax0.errorbar(
                 x,
                 y_plot,
                 yerr=yerr,
                 marker="o",
-                lw=1.8,
+                lw=1.6,
                 capsize=3,
-                color=colors[kind],
-                label=labels[kind],
+                color=colors.get(kind),
+                label=labels.get(kind, kind),
             )
-    ax0.set_ylabel("absolute reduced objective" if top_absolute else "normalized reduced objective")
-    if top_absolute:
-        positive = np.concatenate([metrics["growth"], metrics["quasilinear_flux"]])
-        positive = positive[np.isfinite(positive) & (positive > 0.0)]
-        if positive.size and float(np.nanmax(positive) / max(np.nanmin(positive), 1.0e-300)) > 100.0:
-            ax0.set_yscale("log")
-    ax0.set_title(f"{report['coefficient']} transport-objective landscape")
+    ax0.set_ylabel("linear / QL metric")
+    positive = np.concatenate([metrics[kind] for kind in top_kinds if kind in metrics])
+    positive = positive[np.isfinite(positive) & (positive > 0.0)]
+    if positive.size and float(np.nanmax(positive) / max(np.nanmin(positive), 1.0e-300)) > 100.0:
+        ax0.set_yscale("log")
+    ax0.set_title(f"{report['coefficient']} linear and quasilinear landscape")
     if ax0.has_data():
-        ax0.legend(frameon=False, fontsize=8)
+        ax0.legend(frameon=False, fontsize=7, ncols=2)
     ax0.grid(True, alpha=0.25)
 
     ax1 = axes[1]
-    y = metrics["nonlinear_window_heat_flux"]
-    if np.any(np.isfinite(y)):
-        yerr = metric_errors["nonlinear_window_heat_flux"]
-        yerr = yerr if np.any(np.isfinite(yerr)) else None
-        ax1.errorbar(
-            x,
-            y,
-            yerr=yerr,
-            marker="o",
-            lw=1.8,
-            capsize=3,
-            color=colors["nonlinear_window_heat_flux"],
-            label=labels["nonlinear_window_heat_flux"],
-        )
-    ax1.set_ylabel("absolute reduced objective")
-    if ax1.has_data():
-        ax1.legend(frameon=False, fontsize=8)
-    ax1.grid(True, alpha=0.25)
-
     if nonlinear_points:
-        ax2 = axes[2]
         base = float(report["baseline_coefficient_value"])
         xs = np.asarray([(float(point["coefficient_value"]) / base - 1.0) * 100.0 for point in nonlinear_points])
         if abs(base) <= 0.0:
@@ -636,27 +623,30 @@ def _write_plot(
         means = np.asarray([float(point["mean"]) for point in nonlinear_points])
         sem = np.asarray([float(point["sem"]) for point in nonlinear_points])
         colors_nl = ["#0f766e" if bool(point.get("passed", False)) else "#b91c1c" for point in nonlinear_points]
-        ax2.errorbar(xs, means, yerr=sem, fmt="none", ecolor="0.25", elinewidth=1.1, capsize=4)
-        ax2.scatter(xs, means, c=colors_nl, s=48, edgecolors="0.15", linewidths=0.5, zorder=3)
-        ax2.set_ylabel(r"replicated $\langle Q_i\rangle$")
-        ax2.grid(True, alpha=0.25)
-        ax2.set_xlabel(f"relative {report['coefficient']} perturbation [%]")
-        ax_secondary = ax2.secondary_xaxis(
-            "top",
-            functions=(
-                lambda frac_percent: baseline_value + scan_amplitude * (frac_percent / 100.0),
-                lambda value: (value - baseline_value) / scan_amplitude * 100.0,
-            ),
-        )
+        order = np.argsort(xs)
+        ax1.errorbar(xs[order], means[order], yerr=sem[order], fmt="none", ecolor="0.25", elinewidth=1.1, capsize=4)
+        ax1.plot(xs[order], means[order], color="#475569", lw=1.0, alpha=0.45)
+        ax1.scatter(xs, means, c=colors_nl, s=48, edgecolors="0.15", linewidths=0.5, zorder=3)
     else:
-        ax1.set_xlabel(f"relative {report['coefficient']} perturbation [%]")
-        ax_secondary = ax1.secondary_xaxis(
-            "top",
-            functions=(
-                lambda frac_percent: baseline_value + scan_amplitude * (frac_percent / 100.0),
-                lambda value: (value - baseline_value) / scan_amplitude * 100.0,
-            ),
+        ax1.text(
+            0.5,
+            0.5,
+            "Long-window nonlinear heat-flux landscape pending.\n"
+            "Generate t=[350,700] or longer simulation ensembles for each coefficient.",
+            transform=ax1.transAxes,
+            ha="center",
+            va="center",
         )
+    ax1.set_ylabel(r"long-window $\langle Q_i\rangle$")
+    ax1.grid(True, alpha=0.25)
+    ax1.set_xlabel(f"relative {report['coefficient']} perturbation [%]")
+    ax_secondary = ax1.secondary_xaxis(
+        "top",
+        functions=(
+            lambda frac_percent: baseline_value + scan_amplitude * (frac_percent / 100.0),
+            lambda value: (value - baseline_value) / scan_amplitude * 100.0,
+        ),
+    )
     ax_secondary.set_xlabel(f"{report['coefficient']} value")
     fig.savefig(path, dpi=220, bbox_inches="tight")
     plt.close(fig)
@@ -733,7 +723,12 @@ def build_parser() -> argparse.ArgumentParser:
             "only when --evaluate-reduced is also supplied."
         ),
     )
-    parser.add_argument("--transport-kind", action="append", choices=DEFAULT_KINDS, default=None)
+    parser.add_argument(
+        "--transport-kind",
+        action="append",
+        choices=(*DEFAULT_KINDS, "quasilinear_flux", "nonlinear_window_heat_flux"),
+        default=None,
+    )
     parser.add_argument("--metric-timeout", type=float, default=300.0)
     parser.add_argument("--surfaces", default=DEFAULT_SURFACES)
     parser.add_argument("--alphas", default=DEFAULT_ALPHAS)
@@ -815,8 +810,9 @@ def main(argv: list[str] | None = None) -> int:
     report = {
         "kind": "vmec_boundary_transport_objective_landscape",
         "claim_level": (
-            "coefficient_landscape_diagnostic; deterministic reduced metrics are not nonlinear "
-            "turbulent-flux claims, and nonlinear heat-flux points require replicated ensemble JSON"
+            "coefficient_landscape_diagnostic; top-panel linear/quasilinear metrics are deterministic "
+            "linear-state diagnostics, and bottom-panel nonlinear heat-flux points require long-window "
+            "post-transient ensemble JSON"
         ),
         "baseline_input": args.baseline_input,
         "coefficient": spec.label,

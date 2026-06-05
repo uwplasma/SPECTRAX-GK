@@ -50,6 +50,19 @@ DEFAULT_SURFACES = (0.45, 0.64, 0.78)
 DEFAULT_ALPHAS = (0.0, 0.7853981633974483)
 DEFAULT_KY_VALUES = (0.10, 0.30, 0.50)
 DEFAULT_TRANSPORT_KINDS = ("growth", "quasilinear_flux", "nonlinear_window_heat_flux")
+QUASILINEAR_METHOD_KINDS = (
+    "quasilinear_flux_linear_weight",
+    "quasilinear_flux_mixing_length",
+    "quasilinear_flux_lapillonne_2011",
+    "quasilinear_flux_absolute_growth_mixing_length",
+    "quasilinear_flux_shape_aware_power_law",
+)
+SUPPORTED_TRANSPORT_KINDS = (
+    "growth",
+    "quasilinear_flux",
+    *QUASILINEAR_METHOD_KINDS,
+    "nonlinear_window_heat_flux",
+)
 
 
 def _float_tuple(raw: str) -> tuple[float, ...]:
@@ -133,15 +146,53 @@ def build_report(
     }
 
 
+def _base_config_kind_for_metric(transport_kind: str) -> str:
+    if transport_kind == "growth":
+        return "growth"
+    return "quasilinear_flux"
+
+
 def _objective_table_from_feature_table(
     table: Any,
     config: VMECJAXTransportObjectiveConfig,
+    *,
+    transport_kind: str | None = None,
+    ky_values: tuple[float, ...] | None = None,
+    shape_aware_exponent: float = 0.5,
 ) -> Any:
-    if config.kind == "nonlinear_window_heat_flux":
+    kind = str(transport_kind or config.kind)
+    idx = {name: i for i, name in enumerate(SOLVER_OBJECTIVE_NAMES)}
+    if kind == "nonlinear_window_heat_flux":
         return _solver_table_to_nonlinear_window_proxy(table, config)[..., None]
-    if config.kind == "growth":
-        return table[..., SOLVER_OBJECTIVE_NAMES.index("gamma")][..., None]
-    return table[..., SOLVER_OBJECTIVE_NAMES.index("mixing_length_heat_flux_proxy")][..., None]
+    if kind == "growth":
+        return table[..., idx["gamma"]][..., None]
+    if kind in {
+        "quasilinear_flux",
+        "quasilinear_flux_mixing_length",
+        "quasilinear_flux_lapillonne_2011",
+    }:
+        return table[..., idx["mixing_length_heat_flux_proxy"]][..., None]
+    if kind == "quasilinear_flux_linear_weight":
+        return table[..., idx["linear_heat_flux_weight"]][..., None]
+    if kind == "quasilinear_flux_absolute_growth_mixing_length":
+        arr = np.asarray(table, dtype=float)
+        gamma = arr[..., idx["gamma"]]
+        kperp_eff2 = np.maximum(arr[..., idx["kperp_eff2"]], 1.0e-30)
+        heat_weight = arr[..., idx["linear_heat_flux_weight"]]
+        return (np.abs(gamma) * heat_weight / kperp_eff2)[..., None]
+    if kind == "quasilinear_flux_shape_aware_power_law":
+        if ky_values is None:
+            ky_values = tuple(float(x) for x in config.sample_set.ky_values)
+        arr = np.asarray(table, dtype=float)
+        heat_weight = arr[..., idx["linear_heat_flux_weight"]]
+        ky = np.asarray(ky_values, dtype=float)
+        if ky.size != int(heat_weight.shape[-1]):
+            raise ValueError("ky_values must match the objective table ky axis")
+        positive_ky = np.maximum(ky, 1.0e-30)
+        ky_ref = float(np.exp(np.mean(np.log(positive_ky))))
+        envelope = (positive_ky / max(ky_ref, 1.0e-30)) ** float(shape_aware_exponent)
+        return (heat_weight * envelope[None, None, :])[..., None]
+    raise ValueError(f"unknown transport metric kind {kind!r}")
 
 
 def _metric_from_objective_table(
@@ -350,8 +401,14 @@ def evaluate_metrics(args: argparse.Namespace, kinds: tuple[str, ...]) -> dict[s
     )
     reports: dict[str, dict[str, Any]] = {}
     for kind in kinds:
-        config = replace(base_config, kind=kind)
-        objective_table = _objective_table_from_feature_table(table, config)
+        config = replace(base_config, kind=_base_config_kind_for_metric(kind))
+        objective_table = _objective_table_from_feature_table(
+            table,
+            config,
+            transport_kind=kind,
+            ky_values=sample_set.ky_values,
+            shape_aware_exponent=float(args.ql_shape_aware_exponent),
+        )
         metric = _metric_from_objective_table(objective_table, config)
         if not np.isfinite(metric):
             raise RuntimeError(f"non-finite SPECTRAX transport metric for {kind}: {metric!r}")
@@ -398,7 +455,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--min-vmec-mode", type=int, default=7)
     parser.add_argument(
         "--transport-kind",
-        choices=(*DEFAULT_TRANSPORT_KINDS, "all"),
+        choices=(*SUPPORTED_TRANSPORT_KINDS, "all"),
         default="growth",
     )
     parser.add_argument(
@@ -427,6 +484,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default="log1p",
     )
     parser.add_argument("--spectrax-objective-scale", type=float, default=1.0)
+    parser.add_argument(
+        "--ql-shape-aware-exponent",
+        type=float,
+        default=0.5,
+        help="Power-law exponent for quasilinear_flux_shape_aware_power_law.",
+    )
     parser.add_argument("--inner-max-iter", type=int, default=120)
     parser.add_argument("--inner-ftol", type=float, default=1.0e-9)
     parser.add_argument("--trial-max-iter", type=int, default=120)
@@ -443,7 +506,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     if args.transport_kind == "all":
-        reports = evaluate_metrics(args, DEFAULT_TRANSPORT_KINDS)
+        reports = evaluate_metrics(args, ("growth", *QUASILINEAR_METHOD_KINDS))
         if args.out_json_dir is not None:
             args.out_json_dir.mkdir(parents=True, exist_ok=True)
             for kind, report in reports.items():

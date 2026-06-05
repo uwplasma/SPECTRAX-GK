@@ -2,11 +2,11 @@
 """VMEC-JAX QA boundary-parameter scan with SPECTRAX-GK ITG objectives.
 
 This example scans one VMEC boundary coefficient, here ``RBC(1,1)``, and plots
-linear growth, quasilinear heat-flux, and reduced nonlinear-window diagnostics.
-Optional replicated long-window nonlinear heat-flux diagnostics can be overlaid
-when ensemble sidecars are available. It is intentionally configured by editing
-constants below, matching the style of VMEC-JAX example scripts instead of using
-a command-line driver wrapper.
+linear growth plus all currently exposed quasilinear heat-flux rules. The lower
+plot is reserved for true long-window nonlinear heat-flux sidecars, not reduced
+startup/window proxies. It is intentionally configured by editing constants
+below, matching the style of VMEC-JAX example scripts instead of using a
+command-line driver wrapper.
 """
 
 from pathlib import Path
@@ -44,17 +44,16 @@ BASELINE_INPUT = (
     / "tools_out/vmec_jax_qa_full_sweep_20260605/runs/qa_baseline_scipy/input.final"
 )
 COEFFICIENT = "RBC(1,1)"
-FRACTIONS = "-0.50,-0.45,-0.40,-0.35,-0.30,-0.25,-0.20,-0.15,-0.10,-0.05,0.0,0.05,0.10,0.15,0.20,0.25,0.30,0.35,0.40,0.45,0.50"
+FRACTIONS = "-0.75,-0.70,-0.65,-0.60,-0.55,-0.50,-0.45,-0.40,-0.35,-0.30,-0.25,-0.20,-0.15,-0.10,-0.05,0.0,0.05,0.10,0.15,0.20,0.25,0.30,0.35,0.40,0.45,0.50,0.55,0.60,0.65,0.70,0.75"
 EVALUATE_REDUCED = False
 REUSE_REDUCED_JSON = SPECTRAX_ROOT / "docs/_static/vmec_boundary_transport_landscape_rbc11.json"
 OUT_PREFIX = SPECTRAX_ROOT / "results/qa_opt/parameter_scan/qa_parameter_scan_rbc11"
 
-# SPECTRAX-GK reduced objective settings. The tracked paper-facing landscape
-# uses one representative sample so the coefficient response can be regenerated
-# quickly before selecting candidates for expensive nonlinear audits.
-SURFACES = "0.64"
-ALPHAS = "0.0"
-KY_VALUES = "0.30"
+# SPECTRAX-GK linear/quasilinear settings. These match the optimizer examples:
+# three surfaces, two field-line labels, and three grid-compatible ky values.
+SURFACES = "0.45,0.64,0.78"
+ALPHAS = "0.0,0.7853981633974483"
+KY_VALUES = "0.10,0.30,0.50"
 NTHETA = 16
 MBOZ = 21
 NBOZ = 21
@@ -62,9 +61,9 @@ N_LAGUERRE = 1
 N_HERMITE = 2
 SOLVER_DEVICE = None  # Set "cpu" or "gpu" to force a backend.
 
-# Optional replicated nonlinear overlays. These should be long-window
-# t=[350,700] or longer ensemble gates produced from concrete VMEC WOUTs, not
-# reduced diagnostics.
+# Optional nonlinear overlays. These must be long-window t=[350,700] or longer
+# heat-flux ensemble gates produced from concrete VMEC WOUTs, not reduced
+# diagnostics. Leave empty until the expensive simulation campaign is complete.
 NONLINEAR_ENSEMBLES: tuple[str, ...] = ()
 
 command = [

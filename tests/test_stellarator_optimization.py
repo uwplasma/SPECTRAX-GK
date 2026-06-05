@@ -140,10 +140,11 @@ def test_public_optimization_examples_keep_editable_constant_style() -> None:
             assert "SPECTRAX_KY_VALUES = (0.10, 0.30, 0.50)" in text
         elif script.name == "QA_parameter_scan.py":
             assert 'COEFFICIENT = "RBC(1,1)"' in text
-            assert 'FRACTIONS = "-0.50,-0.45,-0.40' in text
-            assert '0.40,0.45,0.50"' in text
-            assert 'SURFACES = "0.64"' in text
-            assert 'KY_VALUES = "0.30"' in text
+            assert 'FRACTIONS = "-0.75,-0.70,-0.65' in text
+            assert '0.65,0.70,0.75"' in text
+            assert 'SURFACES = "0.45,0.64,0.78"' in text
+            assert 'ALPHAS = "0.0,0.7853981633974483"' in text
+            assert 'KY_VALUES = "0.10,0.30,0.50"' in text
         else:
             raise AssertionError(f"unexpected optimization example {script.name}")
 

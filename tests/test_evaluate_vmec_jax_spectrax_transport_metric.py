@@ -146,6 +146,66 @@ def test_sample_statistics_from_objective_table_reuses_batched_table() -> None:
     assert [row["value"] for row in stats["rows"]] == [0.5, 1.0, 1.5, 2.0]
 
 
+def test_objective_table_exposes_all_quasilinear_landscape_methods() -> None:
+    samples = StellaratorITGSampleSet(
+        surfaces=(0.64,),
+        alphas=(0.0,),
+        ky_values=(0.1, 0.4),
+    )
+    config = VMECJAXTransportObjectiveConfig(
+        kind="quasilinear_flux",
+        sample_set=samples,
+        ntheta=8,
+        mboz=21,
+        nboz=21,
+        n_laguerre=1,
+        n_hermite=1,
+    )
+    table = np.zeros((1, 1, 2, len(SOLVER_OBJECTIVE_NAMES)))
+    table[..., SOLVER_OBJECTIVE_NAMES.index("gamma")] = np.asarray([[[0.2, -0.3]]])
+    table[..., SOLVER_OBJECTIVE_NAMES.index("kperp_eff2")] = np.asarray([[[0.5, 2.0]]])
+    table[..., SOLVER_OBJECTIVE_NAMES.index("linear_heat_flux_weight")] = np.asarray([[[10.0, 20.0]]])
+    table[..., SOLVER_OBJECTIVE_NAMES.index("mixing_length_heat_flux_proxy")] = np.asarray([[[4.0, 5.0]]])
+
+    linear_weight = mod._objective_table_from_feature_table(
+        table,
+        config,
+        transport_kind="quasilinear_flux_linear_weight",
+        ky_values=samples.ky_values,
+    )
+    mixing_length = mod._objective_table_from_feature_table(
+        table,
+        config,
+        transport_kind="quasilinear_flux_mixing_length",
+        ky_values=samples.ky_values,
+    )
+    lapillonne = mod._objective_table_from_feature_table(
+        table,
+        config,
+        transport_kind="quasilinear_flux_lapillonne_2011",
+        ky_values=samples.ky_values,
+    )
+    absolute_growth = mod._objective_table_from_feature_table(
+        table,
+        config,
+        transport_kind="quasilinear_flux_absolute_growth_mixing_length",
+        ky_values=samples.ky_values,
+    )
+    shape_aware = mod._objective_table_from_feature_table(
+        table,
+        config,
+        transport_kind="quasilinear_flux_shape_aware_power_law",
+        ky_values=samples.ky_values,
+        shape_aware_exponent=1.0,
+    )
+
+    np.testing.assert_allclose(linear_weight[..., 0], [[[10.0, 20.0]]])
+    np.testing.assert_allclose(mixing_length[..., 0], [[[4.0, 5.0]]])
+    np.testing.assert_allclose(lapillonne[..., 0], [[[4.0, 5.0]]])
+    np.testing.assert_allclose(absolute_growth[..., 0], [[[4.0, 3.0]]])
+    np.testing.assert_allclose(shape_aware[..., 0], [[[5.0, 40.0]]])
+
+
 def test_parse_args_defaults_to_multisample_admission_set(tmp_path: Path) -> None:
     args = mod.parse_args(
         [
@@ -163,6 +223,7 @@ def test_parse_args_defaults_to_multisample_admission_set(tmp_path: Path) -> Non
     assert args.mboz == 21
     assert args.nboz == 21
     assert args.surface_chunk_size == 0
+    assert args.ql_shape_aware_exponent == 0.5
 
 
 def test_parse_args_accepts_batched_metric_output_dir(tmp_path: Path) -> None:

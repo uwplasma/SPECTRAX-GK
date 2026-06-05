@@ -9,6 +9,7 @@ from netCDF4 import Dataset
 
 from tools.build_vmec_boundary_transport_landscape import (
     DEFAULT_FRACTIONS,
+    DEFAULT_KINDS,
     _load_nonlinear_ensemble,
     _parse_float_list,
     _reuse_reduced_metrics_from_report,
@@ -108,10 +109,22 @@ def test_parse_float_list_rejects_empty_lists() -> None:
 
 
 def test_default_landscape_scan_spans_dense_half_range() -> None:
-    assert len(DEFAULT_FRACTIONS) == 21
-    assert DEFAULT_FRACTIONS[0] == -0.5
-    assert DEFAULT_FRACTIONS[-1] == 0.5
+    assert len(DEFAULT_FRACTIONS) == 31
+    assert DEFAULT_FRACTIONS[0] == -0.75
+    assert DEFAULT_FRACTIONS[-1] == 0.75
     assert 0.0 in DEFAULT_FRACTIONS
+
+
+def test_default_landscape_metrics_are_linear_and_quasilinear_only() -> None:
+    assert DEFAULT_KINDS[0] == "growth"
+    assert "nonlinear_window_heat_flux" not in DEFAULT_KINDS
+    assert {
+        "quasilinear_flux_linear_weight",
+        "quasilinear_flux_mixing_length",
+        "quasilinear_flux_lapillonne_2011",
+        "quasilinear_flux_absolute_growth_mixing_length",
+        "quasilinear_flux_shape_aware_power_law",
+    }.issubset(set(DEFAULT_KINDS))
 
 
 def test_reuse_reduced_metrics_validates_sample_set_and_point_values(tmp_path: Path) -> None:
