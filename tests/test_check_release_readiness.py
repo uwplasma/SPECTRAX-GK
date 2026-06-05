@@ -73,6 +73,7 @@ spectrax-gk = "spectraxgk.cli:main"
         "nonlinear_sharding_strong_scaling_large.json",
         "nonlinear_domain_parallel_identity_gate.json",
         "nonlinear_spectral_communication_identity_gate.json",
+        "vmec_jax_qa_transport_optimization_status.json",
         "vmec_boundary_transport_landscape_admission.json",
         "vmec_boundary_transport_prelaunch_gate.json",
         "strict_qa_top12_edge_prelaunch_gate.json",
@@ -87,6 +88,44 @@ spectrax-gk = "spectraxgk.cli:main"
   "passed": true,
   "target_percent": 98.0,
   "technical_release_completion_percent": 100.0
+}
+""".lstrip(),
+        encoding="utf-8",
+    )
+    (
+        root / "docs" / "_static" / "vmec_jax_qa_transport_optimization_status.json"
+    ).write_text(
+        """
+{
+  "kind": "vmec_jax_qa_transport_optimization_status",
+  "prelaunch_gates": [
+    {
+      "label": "replicated landscape admission",
+      "passed": true,
+      "raw_passed": true,
+      "blockers": []
+    },
+    {
+      "label": "selected reduced prelaunch",
+      "passed": true,
+      "raw_passed": true,
+      "blockers": []
+    },
+    {
+      "label": "weak reduced-margin reference",
+      "passed": true,
+      "raw_passed": false,
+      "blockers": ["insufficient_reduced_margin_for_nonlinear_audit"]
+    }
+  ],
+  "summary": {
+    "qa_baseline_gate_passed": true,
+    "quasilinear_model_selection_passed": true,
+    "simple_quasilinear_absolute_flux_promoted": false,
+    "long_window_nonlinear_audit_passed": true,
+    "nonlinear_prelaunch_policy_ready": true,
+    "negative_reference_blocks_weak_margin": true
+  }
 }
 """.lstrip(),
         encoding="utf-8",
@@ -178,6 +217,11 @@ def test_release_readiness_accepts_ci_release_docs_and_artifact_contracts(
     assert report["lane_status"]["release_scoped_open_or_blocked"] == 0
     assert report["technical_status"]["passed"] is True
     assert report["technical_status"]["completion_percent"] >= 98.0
+    assert report["optimization_status"]["passed"] is True
+    assert (
+        report["optimization_status"]["summary"]["nonlinear_prelaunch_policy_ready"]
+        is True
+    )
     assert report["lane_status"]["status_artifacts"][
         "docs/_static/manuscript_readiness_status.json"
     ]["status_counts"] == {"closed": 1, "deferred": 1}
@@ -251,5 +295,36 @@ def test_release_readiness_rejects_failed_technical_status(tmp_path: Path) -> No
     with pytest.raises(
         ReleaseReadinessError,
         match="technical release status below target",
+    ):
+        check_release_readiness(tmp_path)
+
+
+def test_release_readiness_rejects_missing_optimization_prelaunch_policy(
+    tmp_path: Path,
+) -> None:
+    _write_release_ready_tree(tmp_path)
+    (
+        tmp_path / "docs" / "_static" / "vmec_jax_qa_transport_optimization_status.json"
+    ).write_text(
+        """
+{
+  "kind": "vmec_jax_qa_transport_optimization_status",
+  "prelaunch_gates": [],
+  "summary": {
+    "qa_baseline_gate_passed": true,
+    "quasilinear_model_selection_passed": true,
+    "simple_quasilinear_absolute_flux_promoted": false,
+    "long_window_nonlinear_audit_passed": true,
+    "nonlinear_prelaunch_policy_ready": false,
+    "negative_reference_blocks_weak_margin": false
+  }
+}
+""".lstrip(),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+        ReleaseReadinessError,
+        match="optimization status prelaunch/claim-boundary flags failed",
     ):
         check_release_readiness(tmp_path)

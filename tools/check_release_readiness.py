@@ -54,12 +54,22 @@ REQUIRED_STATIC_ARTIFACTS = (
     "docs/_static/nonlinear_sharding_strong_scaling_large.json",
     "docs/_static/nonlinear_domain_parallel_identity_gate.json",
     "docs/_static/nonlinear_spectral_communication_identity_gate.json",
+    "docs/_static/vmec_jax_qa_transport_optimization_status.json",
     "docs/_static/vmec_boundary_transport_landscape_admission.json",
     "docs/_static/vmec_boundary_transport_prelaunch_gate.json",
     "docs/_static/strict_qa_top12_edge_prelaunch_gate.json",
 )
 TECHNICAL_COMPLETION_TARGET = 0.98
 TECHNICAL_STATUS_ARTIFACT = "docs/_static/technical_release_status.json"
+OPTIMIZATION_STATUS_ARTIFACT = "docs/_static/vmec_jax_qa_transport_optimization_status.json"
+REQUIRED_OPTIMIZATION_STATUS_FLAGS = {
+    "qa_baseline_gate_passed": True,
+    "quasilinear_model_selection_passed": True,
+    "simple_quasilinear_absolute_flux_promoted": False,
+    "long_window_nonlinear_audit_passed": True,
+    "nonlinear_prelaunch_policy_ready": True,
+    "negative_reference_blocks_weak_margin": True,
+}
 LANE_STATUS_ARTIFACTS = (
     "docs/_static/manuscript_readiness_status.json",
     "docs/_static/open_research_lane_status.json",
@@ -222,6 +232,59 @@ def _lane_status_summary(root: Path) -> dict[str, Any]:
     }
 
 
+def _optimization_status_summary(root: Path) -> dict[str, Any]:
+    payload = _read_json(root / OPTIMIZATION_STATUS_ARTIFACT)
+    summary = payload.get("summary")
+    if not isinstance(summary, dict):
+        raise ReleaseReadinessError(f"{OPTIMIZATION_STATUS_ARTIFACT} missing summary object")
+    prelaunch_gates = payload.get("prelaunch_gates")
+    if not isinstance(prelaunch_gates, list):
+        raise ReleaseReadinessError(f"{OPTIMIZATION_STATUS_ARTIFACT} missing prelaunch_gates list")
+
+    failed_flags = []
+    for key, expected in REQUIRED_OPTIMIZATION_STATUS_FLAGS.items():
+        if bool(summary.get(key)) is not expected:
+            failed_flags.append(
+                {
+                    "key": key,
+                    "expected": expected,
+                    "observed": summary.get(key),
+                }
+            )
+    failed_prelaunch_rows = [
+        {
+            "label": row.get("label"),
+            "passed": row.get("passed"),
+            "raw_passed": row.get("raw_passed"),
+            "blockers": row.get("blockers"),
+        }
+        for row in prelaunch_gates
+        if isinstance(row, dict) and not bool(row.get("passed", False))
+    ]
+    passed = not failed_flags and not failed_prelaunch_rows and len(prelaunch_gates) >= 3
+    return {
+        "source": OPTIMIZATION_STATUS_ARTIFACT,
+        "kind": payload.get("kind"),
+        "passed": passed,
+        "required_flags": REQUIRED_OPTIMIZATION_STATUS_FLAGS,
+        "failed_flags": failed_flags,
+        "failed_prelaunch_rows": failed_prelaunch_rows,
+        "prelaunch_gate_count": len(prelaunch_gates),
+        "summary": {
+            key: summary.get(key)
+            for key in sorted(
+                set(REQUIRED_OPTIMIZATION_STATUS_FLAGS)
+                | {
+                    "direct_scalar_transport_blocked",
+                    "projected_transport_improved",
+                    "positive_prelaunch_gate_passed",
+                    "landscape_admission_passed",
+                }
+            )
+        },
+    }
+
+
 def check_release_readiness(root: Path = REPO_ROOT) -> dict[str, Any]:
     """Return a JSON-ready release-readiness report or raise on failure."""
 
@@ -303,6 +366,22 @@ def check_release_readiness(root: Path = REPO_ROOT) -> dict[str, Any]:
         }
         failures.append(str(exc))
 
+    try:
+        optimization_status = _optimization_status_summary(root)
+        if not optimization_status["passed"]:
+            failures.append(
+                "optimization status prelaunch/claim-boundary flags failed: "
+                f"flags={optimization_status['failed_flags']} "
+                f"prelaunch_rows={optimization_status['failed_prelaunch_rows']}"
+            )
+    except ReleaseReadinessError as exc:
+        optimization_status = {
+            "source": OPTIMIZATION_STATUS_ARTIFACT,
+            "passed": False,
+            "error": str(exc),
+        }
+        failures.append(str(exc))
+
     report = {
         "kind": "spectraxgk_release_readiness",
         "root": str(root),
@@ -314,6 +393,7 @@ def check_release_readiness(root: Path = REPO_ROOT) -> dict[str, Any]:
         },
         "technical_status": technical_status,
         "lane_status": lane_status,
+        "optimization_status": optimization_status,
         "required_ci_snippets": list(REQUIRED_CI_SNIPPETS),
         "required_readme_snippets": list(REQUIRED_README_SNIPPETS),
         "required_static_artifacts": list(REQUIRED_STATIC_ARTIFACTS),
